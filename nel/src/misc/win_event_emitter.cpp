@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.7 2002/03/15 10:57:51 vizerie Exp $
+ * $Id: win_event_emitter.cpp,v 1.8 2002/03/28 10:31:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,8 +80,8 @@ TKeyButton getKeyButton (bool _altButton, bool _shiftButton, bool _ctrlButton)
 	return button;
 }
 
-TMouseButton getMouseButton (uint32 wParam, bool _altButton)
-{
+/*TMouseButton getMouseButton (uint32 wParam, bool _altButton)
+{	
 	TMouseButton button=noButton;
 	if (wParam&MK_CONTROL)
 		(int&)button|=ctrlButton;
@@ -95,9 +95,21 @@ TMouseButton getMouseButton (uint32 wParam, bool _altButton)
 		(int&)button|=shiftButton;
 	if (_altButton)
 		(int&)button|=altButton;
- 
-	return button;
+}*/
+
+
+TMouseButton CWinEventEmitter::getButtons() const
+{	
+	uint result = (_CtrlButton ? ctrlButton : 0)
+				 | (_AltButton ? altButton : 0)
+				 | (_ShiftButton ? shiftButton : 0)
+				 | (_CtrlButton ? ctrlButton : 0)
+				 | (_MouseButtons[0] ? leftButton : 0)
+				 | (_MouseButtons[1] ? rightButton : 0)
+				 | (_MouseButtons[2] ? middleButton : 0);
+	return (TMouseButton) result;
 }
+
 
 void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server)
 {
@@ -168,63 +180,74 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 	case WM_MBUTTONDBLCLK:
 	case WM_LBUTTONDBLCLK:
 		{
-			// MSWindows coordinates to NeL window coordinate
-			float fX, fY;
-			RECT client;
-
-			float xPos = (float)GET_X_LPARAM(lParam); 
-			float yPos = (float)GET_Y_LPARAM(lParam); 
-
-			GetClientRect ((HWND)hWnd, &client);
-			fX=xPos/(float)(client.right-client.left);
-			fY=1.f-yPos/(float)(client.bottom-client.top);
-
-			// buttons
-			TMouseButton button=getMouseButton (wParam, _AltButton);
-
-			// Reswitch
-			switch (msg)
+			if (_MouseEventsEnabled)
 			{
-			case WM_MOUSEMOVE:
-				server->postEvent (new CEventMouseMove (fX, fY, button, this));
-				break;
+				// MSWindows coordinates to NeL window coordinate
+				float fX, fY;
+				RECT client;
 
-			case WM_RBUTTONDOWN:
-				server->postEvent (new CEventMouseDown (fX, fY, (TMouseButton)(rightButton|(button&~(leftButton|middleButton|rightButton))), this));
-				break;
-			case WM_MBUTTONDOWN:
-				server->postEvent (new CEventMouseDown (fX, fY, (TMouseButton)(middleButton|(button&~(leftButton|middleButton|rightButton))), this));
-				break;
-			case WM_LBUTTONDOWN:
-				server->postEvent (new CEventMouseDown (fX, fY, (TMouseButton)(leftButton|(button&~(leftButton|middleButton|rightButton))), this));
-				break;
+				float xPos = (float)GET_X_LPARAM(lParam); 
+				float yPos = (float)GET_Y_LPARAM(lParam); 
 
-			case WM_RBUTTONUP:
-				server->postEvent (new CEventMouseUp (fX, fY, (TMouseButton)(rightButton|(button&~(leftButton|middleButton|rightButton))), this));
-				break;
-			case WM_MBUTTONUP:
-				server->postEvent (new CEventMouseUp (fX, fY, (TMouseButton)(middleButton|(button&~(leftButton|middleButton|rightButton))), this));
-				break;
-			case WM_LBUTTONUP:
-				server->postEvent (new CEventMouseUp (fX, fY, (TMouseButton)(leftButton|(button&~(leftButton|middleButton|rightButton))), this));
-				break;
+				GetClientRect ((HWND)hWnd, &client);
+				fX=xPos/(float)(client.right-client.left);
+				fY=1.f-yPos/(float)(client.bottom-client.top);
 
-			case WM_RBUTTONDBLCLK:
-				server->postEvent (new CEventMouseDblClk (fX, fY, (TMouseButton)(rightButton|(button&~(leftButton|middleButton|rightButton))), this));
-				break;
-			case WM_MBUTTONDBLCLK:
-				server->postEvent (new CEventMouseDblClk (fX, fY, (TMouseButton)(middleButton|(button&~(leftButton|middleButton|rightButton))), this));
-				break;
-			case WM_LBUTTONDBLCLK:
-				server->postEvent (new CEventMouseDblClk (fX, fY, (TMouseButton)(leftButton|(button&~(leftButton|middleButton|rightButton))), this));
+				// buttons
+				TMouseButton button=getButtons();
+
+				// Reswitch
+				switch (msg)
+				{
+				case WM_MOUSEMOVE:
+					server->postEvent (new CEventMouseMove (fX, fY, button, this));
+					nlinfo("mouse move");
+					break;
+
+				case WM_RBUTTONDOWN:
+					_MouseButtons[1] = true;
+					server->postEvent (new CEventMouseDown (fX, fY, (TMouseButton)(rightButton|(button&~(leftButton|middleButton|rightButton))), this));
+					break;
+				case WM_MBUTTONDOWN:
+					_MouseButtons[2] = true;
+					server->postEvent (new CEventMouseDown (fX, fY, (TMouseButton)(middleButton|(button&~(leftButton|middleButton|rightButton))), this));
+					break;
+				case WM_LBUTTONDOWN:
+					_MouseButtons[0] = true;
+					server->postEvent (new CEventMouseDown (fX, fY, (TMouseButton)(leftButton|(button&~(leftButton|middleButton|rightButton))), this));
+					break;
+
+				case WM_RBUTTONUP:
+					_MouseButtons[1] = false;
+					server->postEvent (new CEventMouseUp (fX, fY, (TMouseButton)(rightButton|(button&~(leftButton|middleButton|rightButton))), this));
+					break;
+				case WM_MBUTTONUP:
+					_MouseButtons[2] = false;
+					server->postEvent (new CEventMouseUp (fX, fY, (TMouseButton)(middleButton|(button&~(leftButton|middleButton|rightButton))), this));
+					break;
+				case WM_LBUTTONUP:
+					_MouseButtons[0] = false;
+					server->postEvent (new CEventMouseUp (fX, fY, (TMouseButton)(leftButton|(button&~(leftButton|middleButton|rightButton))), this));
+					break;
+
+				case WM_RBUTTONDBLCLK:
+					server->postEvent (new CEventMouseDblClk (fX, fY, (TMouseButton)(rightButton|(button&~(leftButton|middleButton|rightButton))), this));
+					break;
+				case WM_MBUTTONDBLCLK:
+					server->postEvent (new CEventMouseDblClk (fX, fY, (TMouseButton)(middleButton|(button&~(leftButton|middleButton|rightButton))), this));
+					break;
+				case WM_LBUTTONDBLCLK:
+					server->postEvent (new CEventMouseDblClk (fX, fY, (TMouseButton)(leftButton|(button&~(leftButton|middleButton|rightButton))), this));
+					break;
+				}
 				break;
 			}
-			break;
 		}
 	case WM_DESTROY:
 		server->postEvent (new CEventDestroyWindow (this));
 		break;
 	case WM_MOUSEWHEEL:
+		if (_MouseEventsEnabled)
 		{
 			// MSWindows coordinates to NeL window coordinate
 			float fX, fY;
@@ -234,7 +257,7 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 			fY=1.f-(float)HIWORD(lParam)/(float)(client.bottom-client.top);
 
 			// buttons
-			TMouseButton button=getMouseButton (LOWORD(wParam), _AltButton);
+			TMouseButton button=getButtons();
 
 			server->postEvent (new CEventMouseWheel (fX, fY, button, (short) HIWORD(wParam)>=0, this));
 			break;
@@ -242,12 +265,33 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 	}
 }
 
+//==========================================================
 void CWinEventEmitter::resetButtonFlagState ()
 { 
 	_CtrlButton=( (GetAsyncKeyState(VK_CONTROL)&0x8000) != 0);
 	_ShiftButton=( (GetAsyncKeyState(VK_SHIFT)&0x8000) != 0);
 	_AltButton=( (GetAsyncKeyState(VK_MENU)&0x8000) != 0);
+	//
+	_MouseButtons[0]=( (GetAsyncKeyState(VK_LBUTTON)&0x8000) != 0);
+	_MouseButtons[1]=( (GetAsyncKeyState(VK_RBUTTON)&0x8000) != 0);
+	_MouseButtons[2]=( (GetAsyncKeyState(VK_MBUTTON)&0x8000) != 0);
+
+
+
 }
+
+//==========================================================
+TMouseButton CWinEventEmitter::buildFlags() const
+{
+	uint flags = (_CtrlButton ? ctrlButton : 0)
+				 | (_ShiftButton ? shiftButton : 0)
+				 | (_AltButton   ? altButton : 0)
+				 | (_MouseButtons[0] ? leftButton : 0)
+				 | (_MouseButtons[1] ? rightButton : 0)
+				 | (_MouseButtons[2] ? middleButton : 0);
+	return (TMouseButton) flags;
+}
+
 
 } // NLMISC
 

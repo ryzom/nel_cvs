@@ -1,7 +1,7 @@
 /** \file win_event_emitter.h
  * <File description>
  *
- * $Id: win_event_emitter.h,v 1.2 2001/02/23 09:08:46 corvazier Exp $
+ * $Id: win_event_emitter.h,v 1.3 2002/03/28 10:34:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/event_emitter.h"
+#include "nel/misc/events.h"
+
 
 #ifdef NL_OS_WINDOWS
 
@@ -40,7 +42,7 @@ namespace NLMISC {
 class CWinEventEmitter : public IEventEmitter
 {
 public:
-	CWinEventEmitter ()
+	CWinEventEmitter () : _MouseEventsEnabled(true)
 	{
 		_HWnd=NULL;
 		resetButtonFlagState ();
@@ -57,9 +59,19 @@ public:
 	 * \param server
 	 */	
 	virtual void submitEvents(CEventServer & server);
-private:
+
+	/// Build the flags of the current buttons state
+	TMouseButton buildFlags() const;
+
 	// Reset button flag state
 	void resetButtonFlagState ();
+
+	// enable / disable mouse events to be processed. The default is enabled.
+	void enableMouseEvents(bool enabled = true) { _MouseEventsEnabled = enabled;}
+	// Test wether mouse events are enabled.
+	bool areMouseEventsEnabled() const { return _MouseEventsEnabled; }
+private:
+	
 
 	// Private internal server message
 	class CWinEventServer : CEventServer
@@ -88,9 +100,15 @@ public:
 private:
 	CWinEventServer		_InternalServer;
 	uint32				_HWnd;
+public:
+	// private: may need to be in sync with direct input flags however...
 	bool				_CtrlButton;
 	bool				_ShiftButton;
 	bool				_AltButton;
+	bool				_MouseButtons[3];
+	bool				_MouseEventsEnabled;
+private:
+	NLMISC::TMouseButton		getButtons() const;
 };
 
 } // NLMISC

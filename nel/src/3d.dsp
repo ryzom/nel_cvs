@@ -1976,6 +1976,10 @@ SOURCE=.\3d\ps_attrib_maker_iterators.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\ps_attrib_maker_template.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_attrib_maker_template.h
 # End Source File
 # Begin Source File

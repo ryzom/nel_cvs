@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.10 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.11 2001/07/04 09:11:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -182,7 +182,12 @@ void			CDriverUser::setDisplay(const CMode &mode)
 
 	// 2D Material.
 	_MatFlat.initUnlit();
+	_MatFlat.setZFunc(UMaterial::always);
+	_MatFlat.setZWrite(false);
 	_MatText.initUnlit();
+	_MatText.setZFunc(UMaterial::always);
+	_MatText.setZWrite(false);
+
 }
 // ***************************************************************************
 void			CDriverUser::release() 

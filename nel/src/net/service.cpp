@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.56 2001/05/15 14:45:04 cado Exp $
+ * $Id: service.cpp,v 1.57 2001/05/18 16:52:09 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -29,6 +29,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
+#include "nel/misc/command.h"
 
 #include "nel/net/unitime.h"
 
@@ -77,7 +78,7 @@ uint16 IService::_DefaultPort = 0;
 uint32 IService::_UpdateTimeout = 1;
 
 
-CConfigFile IService::_ConfigFile;
+CConfigFile IService::ConfigFile;
 
 IService	 *IService::Instance = NULL;
 
@@ -199,6 +200,18 @@ void IService::getCustomParams()
 
 }
 
+
+NLMISC_COMMAND (hello, "hello", "")
+{
+	if(args.size() != 0) return false;
+
+	log.displayNL ("Hello World!");
+	return true;
+}
+
+CLog commandLog;
+CNetDisplayer commandDisplayer(false);
+
 void AESConnection (const string &serviceName, TSockId from, void *arg)
 {
 	// established a connection to the AES, identify myself
@@ -212,8 +225,39 @@ void AESConnection (const string &serviceName, TSockId from, void *arg)
 		CMessage msgout2 (CNetManager::getSIDA ("AES"), "SR");
 		CNetManager::send ("AES", msgout2);
 	}
+
+	// add the displayer to the standard logger
+	CCallbackClient *client = dynamic_cast<CCallbackClient *>(CNetManager::getNetBase("AES"));
+	commandDisplayer.setLogServer (client);
+	commandLog.addDisplayer (&commandDisplayer);
 }
 
+
+void AESDisconnection (const string &serviceName, TSockId from, void *arg)
+{
+	commandLog.removeDisplayer (&commandDisplayer);
+}
+
+static void cbExecCommand (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	string command;
+	msgin.serial (command);
+
+	ICommand::execute (command, commandLog);
+}
+
+// if we receive the stop service, we try to exit now
+static void cbStopService (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	ExitSignalAsked = true;
+}
+
+
+TCallbackItem AESCallbackArray[] =
+{
+	{ "STOPS", cbStopService },
+	{ "EXEC_COMMAND", cbExecCommand },
+};
 
 /*
  * Returns a pointer to the CCallbackServer object
@@ -326,7 +370,7 @@ sint IService::main (int argc, char **argv)
 		// Load the config file
 		//
 
-		_ConfigFile.load (_LongName + ".cfg");
+		ConfigFile.load (_LongName + ".cfg");
 
 		//
 		// Initialize server parameters
@@ -345,7 +389,7 @@ sint IService::main (int argc, char **argv)
 			while (!ok)
 			{
 				// read the naming service address from the config file
-				CInetAddress loc(_ConfigFile.getVar("NSHost").asString(), _ConfigFile.getVar("NSPort").asInt());
+				CInetAddress loc(ConfigFile.getVar("NSHost").asString(), ConfigFile.getVar("NSPort").asInt());
 				try
 				{
 					CNetManager::init (&loc);
@@ -370,7 +414,9 @@ sint IService::main (int argc, char **argv)
 		if (_ShortName != "AES" && _ShortName != "AS")
 		{
 			CNetManager::setConnectionCallback ("AES", AESConnection, NULL);
+			CNetManager::setDisconnectionCallback ("AES", AESDisconnection, NULL);
 			CNetManager::addClient ("AES", "localhost:49997");
+			CNetManager::addCallbackArray ("AES", AESCallbackArray, sizeof(AESCallbackArray)/sizeof(AESCallbackArray[0]));
 		}
 
 		//
@@ -379,7 +425,7 @@ sint IService::main (int argc, char **argv)
 
 		try
 		{
-			sint32 sid = _ConfigFile.getVar("SId").asInt();
+			sint32 sid = ConfigFile.getVar("SId").asInt();
 			if (sid<0 || sid>255)
 			{
 				nlwarning("Bad SId in the config file, %d is not in [0;255] range", sid);

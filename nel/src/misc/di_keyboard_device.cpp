@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.5 2002/04/12 16:15:51 berenguier Exp $
+ * $Id: di_keyboard_device.cpp,v 1.6 2002/04/15 15:17:04 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -391,6 +391,7 @@ void CDIKeyboard::keyTriggered(bool pressed, uint dikey, CEventServer *server, u
 		else // not a repeatable key
 		{
 			_LastDIKeyPressed = 0;
+			return;
 		}
 	}
 	else
@@ -399,11 +400,15 @@ void CDIKeyboard::keyTriggered(bool pressed, uint dikey, CEventServer *server, u
 		if (dikey == _LastDIKeyPressed)
 		{
 			_LastDIKeyPressed = 0;
-		}	
+		}
+		
+		if (_RepetitionDisabled[(uint) keyValue] == true)
+		{
+			return;
+		}
 	}
 
-	// first char event
-
+	// first char event (if repetition not disabled)	
 	if (keyValue >= KeyNUMPAD0 && keyValue <= KeyNUMPAD9 || keyValue == KeyDECIMAL)
 	{
 		if ((_VKKeyState[KeyNUMLOCK] & 0x01) != 0)

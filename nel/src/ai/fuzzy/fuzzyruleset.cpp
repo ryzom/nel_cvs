@@ -1,7 +1,7 @@
 /** \file fuzzyruleset.cpp
  *	A container for fuzzy rules
  *	
- * $Id: fuzzyruleset.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
+ * $Id: fuzzyruleset.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,6 +1,6 @@
 /** \file opcode_register.cpp
  *
- * $Id: opcode_register.cpp,v 1.4 2001/01/08 14:42:12 valignat Exp $
+ * $Id: opcode_register.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

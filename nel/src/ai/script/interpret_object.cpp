@@ -1,6 +1,6 @@
 /** \file object.cpp
  *
- * $Id: interpret_object.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: interpret_object.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

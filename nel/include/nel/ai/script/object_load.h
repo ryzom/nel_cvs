@@ -1,7 +1,7 @@
 /** \file object_load.h
  * Sevral class for loading object from the context.
  *
- * $Id: object_load.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: object_load.h,v 1.4 2001/01/10 10:09:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

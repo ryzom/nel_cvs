@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.4 2001/01/09 15:19:15 chafik Exp $
+ * $Id: lexsupport.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

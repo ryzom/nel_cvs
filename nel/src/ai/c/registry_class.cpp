@@ -1,6 +1,6 @@
 /** \file register_class.cpp
  *
- * $Id: registry_class.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
+ * $Id: registry_class.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

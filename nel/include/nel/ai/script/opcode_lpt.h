@@ -1,7 +1,7 @@
 /** \file opcode_lpt.h
  * Sevral op-code for loading referance object to the stack.
  *
- * $Id: opcode_lpt.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: opcode_lpt.h,v 1.4 2001/01/10 10:09:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.35 2001/09/07 08:06:32 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.36 2001/10/16 15:44:26 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -472,7 +472,8 @@ namespace NLAISCRIPT
 	}
 */
 	const NLAIAGENT::IObjectIA *CAgentClass::getStaticMember(sint32 index) const
-	{					
+	{	
+		int iiii = 0;
 		try
 		{
 			/*NLAIC::CIdentType id(_Components[i]->RegisterName->getString());

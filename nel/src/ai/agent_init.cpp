@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.4 2001/05/31 13:30:33 chafik Exp $
+ * $Id: agent_init.cpp,v 1.5 2001/10/16 15:44:26 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,4 +85,47 @@ void staticReleaseLibClass()
 	delete IAgent::IdAgent;
 	delete CObjectIdent::IdObjectIdent;
 	delete CLocWordNumRef::IdLocWordNumRef;
+}
+
+namespace NLAIE
+{		
+	CExceptionContainer::CExceptionContainer(const IException &exc):_Excep((IException *)exc.clone())
+	{
+	}
+
+	const IException *CExceptionContainer::clone() const
+	{
+		return new CExceptionContainer(*_Excep->clone());
+	}
+
+	const IException *CExceptionIndexError::clone() const
+	{
+		return new CExceptionIndexError();
+	}
+	const IException *CExceptionIndexHandeledError::clone() const
+	{
+		return new CExceptionIndexHandeledError();
+	}
+	const IException *CExceptionUnRegisterClassError::clone() const
+	{
+		return new CExceptionUnRegisterClassError(_ClassName);
+	}
+
+	const IException *CExceptionObjectNotFoundError::clone() const
+	{
+		return new CExceptionObjectNotFoundError(_ClassName);
+	}
+	const IException *CExceptionNotImplemented::clone() const
+	{
+		return new CExceptionNotImplemented(_Text);
+	}
+	const IException *CExceptionUnReference::clone() const
+	{
+		return new CExceptionUnReference(_Text);
+	}
+
+	const IException *CExceptionAllReadyExist::clone() const
+	{
+		return new CExceptionAllReadyExist(_Text);
+	}
 }

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.48 2004/05/14 15:38:53 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.49 2004/06/01 16:26:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -344,7 +344,7 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	{
 		PSLookAtRenderTime = 0;
 		//NLMISC::TTicks start = NLMISC::CTime::getPerformanceTime();					
-		ps->step(CParticleSystem::SolidRender, delay, *this);
+		ps->step(CParticleSystem::SolidRender, delay, *this, *psm);
 		/*NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
 		nlinfo("Solid render time time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(end - start)));	
 		nlinfo("LookAt Render time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(PSLookAtRenderTime)));	*/
@@ -353,7 +353,7 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	{
 		//PSLookAtRenderTime = 0;
 		//NLMISC::TTicks start = NLMISC::CTime::getPerformanceTime();
-		ps->step(CParticleSystem::BlendRender, delay, *this);
+		ps->step(CParticleSystem::BlendRender, delay, *this, *psm);
 		/*NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
 		nlinfo("Blend render time time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(end - start)));
 		nlinfo("LookAt Render time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(PSLookAtRenderTime)));	*/
@@ -361,7 +361,7 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	PARTICLES_CHECK_MEM;
 	if (psm->isToolDisplayEnabled())
 	{
-		ps->step(CParticleSystem::ToolRender, delay, *this);
+		ps->step(CParticleSystem::ToolRender, delay, *this, *psm);
 		PARTICLES_CHECK_MEM;
 	}	
 }

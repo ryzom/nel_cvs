@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.9 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: transform.h,v 1.10 2001/03/13 17:11:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,6 +116,13 @@ public:
 
 	/// From IAnimatable
 	virtual ITrack* getDefaultTrack (uint valueId);
+
+	/// \name Get some track name
+
+	/// Return the name of the pos track
+	static const char *getScaleValueName() {return "scale";}
+	static const char *getRotValueName() {return "rot";}
+	static const char *getPosValueName() {return "pos";}
 
 // ********
 private:

@@ -573,6 +573,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 	vector<string> dirmapDirs;
 	string dirmapSheetCode;
 	bool WriteEmptyProperties = false, WriteSheetsToDisk = true;
+	bool ForceInsertParents = false;
 
 	if ( generate )
 	{
@@ -642,6 +643,11 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			if ( wstd )
 				WriteSheetsToDisk = (wstd->asInt() == 1);
 			nlinfo( "Write sheets to disk mode: %s", WriteSheetsToDisk ? "ON" : "OFF" );
+
+			CConfigFile::CVar *fiparents = dirmapcfg.getVarPtr( "ForceInsertParents" );
+			if ( fiparents )
+				ForceInsertParents = (fiparents->asInt() == 1);
+			nlinfo( "Force insert parents mode: %s", ForceInsertParents ? "ON" : "OFF" );
 		}
 		catch ( EConfigFile& e )
 		{
@@ -781,14 +787,22 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			// Special case for parent sheet
 			if ( var == "parent" ) // already case-lowered
 			{
-				if ( isNewSheet && (! val.empty()) )
+				vector<string> parentVals;
+				explode( val, ":", parentVals );
+				if ( (parentVals.size() == 1) && (parentVals[0].empty()) )
+					parentVals.clear();
+				if ( (isNewSheet || ForceInsertParents) && (! parentVals.empty()) )
 				{
 					// This is slow. Opti: insertParent() should have an option to do it without loading the form
 					CSmartPtr<CForm> parentForm = (CForm*)formLoader->loadForm( val.c_str() );
 					if ( ! parentForm )
 						nlwarning( "Can't load parent form %s", val.c_str() );
 					else
-						form->insertParent( 0, val.c_str(), parentForm );
+					{
+						for ( uint p=0; p!=parentVals.size(); ++p )
+							form->insertParent( p, val.c_str(), parentForm );
+						nldebug( "Inserted %u parent(s)", parentVals.size() );
+					}
 				}
 				// NOTE: Changing the parent is not currently implemented!
 				continue;

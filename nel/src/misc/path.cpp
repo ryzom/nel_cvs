@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.68 2003/01/07 17:46:20 miller Exp $
+ * $Id: path.cpp,v 1.69 2003/01/07 18:12:08 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,7 +27,6 @@
 #include "stdmisc.h"
 
 #include <fstream>
-#include <io.h>
 
 #include "nel/misc/big_file.h"
 #include "nel/misc/path.h"
@@ -1156,10 +1155,14 @@ uint32	CFile::getFileSize (const std::string &filename)
 uint32	CFile::getFileSize (FILE *f)
 {
 #if defined (NL_OS_WINDOWS)
-	return _filelength(fileno(f));
+	struct _stat buf;
+	int result = _fstat (filno(f), &buf);
 #elif defined (NL_OS_UNIX)
-	return filelength(fileno(f));
+	struct stat buf;
+	int result = fstat (filno(f), &buf);
 #endif
+	if (result != 0) return 0;
+	else return buf.st_size;
 }
 
 uint32	CFile::getFileModificationDate(const std::string &filename)

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.46 2001/09/12 16:02:54 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.47 2001/09/14 17:37:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,8 @@
 // this macro check the memory integrity (windows platform for now). It may be useful after violent vb access
 #if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)
 	#include <crtdbg.h>
-	#define PARTICLES_CHECK_MEM //nlassert(_CrtCheckMemory());
+	#define PARTICLES_CHECK_MEM 
+    //nlassert(_CrtCheckMemory());
 #else
 	#define PARTICLES_CHECK_MEM
 #endif

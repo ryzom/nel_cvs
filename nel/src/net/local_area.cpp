@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * <File description>
  *
- * $Id: local_area.cpp,v 1.1 2000/10/23 14:18:51 cado Exp $
+ * $Id: local_area.cpp,v 1.2 2000/10/24 10:16:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,9 +42,8 @@ CLocalArea* CLocalArea::Instance;
 void NLNET::cbProcessEntityState( CMessage& msgin, TSenderId idfrom )
 {
 	IMovingEntity es;
-	TEntityId id;
 	msgin.serial( es );
-	CLocalArea::Instance->_Neighbors[id]->changeStateTo( es );
+	CLocalArea::Instance->_Neighbors[es.id()]->changeStateTo( es );
 }
 
 

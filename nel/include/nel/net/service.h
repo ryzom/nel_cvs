@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.12 2000/10/19 16:35:57 cado Exp $
+ * $Id: service.h,v 1.13 2000/10/24 10:16:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,17 +54,18 @@ class CMsgSocket;
 	};
 	// Create the main() function that create a foo service instance and execute it.
 	// ("FS" is the short service name)
-	NLNET_SERVICE_MAIN(CFooService, "FS");
+	NLNET_SERVICE_MAIN(CFooService, "FS", 41200);
  *\endcode
  */
-#define NLNET_SERVICE_MAIN(ServiceClassName, ServiceName) \
+#define NLNET_SERVICE_MAIN(ServiceClassName, ServiceName, ServicePort) \
 const char IService::_Name[] = ServiceName; \
+const uint16 IService::_DefaultPort = ServicePort; \
 sint16 CallbackArraySize = sizeof(CallbackArray)/sizeof(TCallbackItem); \
-	int main(int argc, char **argv) { \
-	ServiceClassName *scn = new ServiceClassName; \
-	sint retval = scn->main (argc, argv); \
-	delete scn; \
-	return retval; \
+int main(int argc, char **argv) { \
+ServiceClassName *scn = new ServiceClassName; \
+sint retval = scn->main (argc, argv); \
+delete scn; \
+return retval; \
 }
 
 

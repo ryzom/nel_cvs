@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.16 2000/10/11 13:23:50 valignat Exp $
+ * $Id: socket.cpp,v 1.17 2000/10/24 10:16:50 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -105,12 +105,12 @@ void CSocket::send( CMessage& message ) throw(ESocket)
 	{
 		if ( message.typeIsNumber() )
 		{
-			nldebug( "Socket %d sent message %hd (%s) (%d bytes)",
+			rkdebug( "Socket %d sent message %hd (%s) (%d bytes)",
 				_Sock, message.typeAsNumber(), message.typeAsString().c_str(), alldata.length() );
 		}
 		else
 		{
-			nldebug( "Socket %d sent message %s (%d bytes)",
+			rkdebug( "Socket %d sent message %s (%d bytes)",
 				_Sock, message.typeAsString().c_str(), alldata.length() );
 		}
 	}
@@ -144,7 +144,7 @@ void CSocket::processBindMessage( CMessage& message )
 	_MsgMap.insert( TMsgMapItem(key,num) );
 	if ( _Logging )
 	{
-		nldebug( "Socket %d : %s is now known as %hu for received messages", _Sock, key.c_str(), num );
+		rkdebug( "Socket %d : %s is now known as %hu for received messages", _Sock, key.c_str(), num );
 	}
 }
 
@@ -291,7 +291,9 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	// 1. Read message type
 	TTypeNum msgtype;
 	CBaseSocket::doReceive( (uint8*)&msgtype, sizeof(msgtype) );
+#ifdef NL_BIG_ENDIAN
 	NLMISC_BSWAP16(msgtype);
+#endif
 	//cout << msgtype << " ";
 
 	// 2. Read message name (optional)
@@ -307,7 +309,9 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	// 3. Read message payload size
 	uint32 msgsize;
 	CBaseSocket::doReceive( (uint8*)&msgsize, sizeof(msgsize) );
+#ifdef NL_BIG_ENDIAN
 	NLMISC_BSWAP32(msgsize);
+#endif
 	//cout << (int)msgsize << endl;
 
 	// Set message type
@@ -329,12 +333,12 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	{
 		if ( message.typeIsNumber() )
 		{
-			nldebug( "Socket %d received message %hd (%d bytes)",
+			rkdebug( "Socket %d received message %hd (%d bytes)",
 				_Sock, message.typeAsNumber(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
 		}
 		else
 		{
-			nldebug( "Socket %d received message %s (%d bytes)",
+			rkdebug( "Socket %d received message %s (%d bytes)",
 				_Sock, message.typeAsString().c_str(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
 		}
 	}
@@ -352,12 +356,12 @@ void CSocket::sendTo( CMessage& message, const CInetAddress& addr ) throw (ESock
 	{
 		if ( message.typeIsNumber() )
 		{
-			nldebug( "Socket %d sent message %hd (%s)",
+			rkdebug( "Socket %d sent message %hd (%s)",
 				_Sock, message.typeAsNumber(), message.typeAsString().c_str() );
 		}
 		else
 		{
-			nldebug( "Socket %d sent message %s of %d bytes",
+			rkdebug( "Socket %d sent message %s of %d bytes",
 				_Sock, message.typeAsString().c_str() );
 		}
 	}
@@ -380,12 +384,12 @@ bool CSocket::receivedFrom( CMessage& message, CInetAddress& addr ) throw (ESock
 		{
 			if ( message.typeIsNumber() )
 			{
-				nldebug( "Socket %d received message %hd",
+				rkdebug( "Socket %d received message %hd",
 					_Sock, message.typeAsNumber() );
 			}
 			else
 			{
-				nldebug( "Socket %d received message %s",
+				rkdebug( "Socket %d received message %s",
 					_Sock, message.typeAsString().c_str() );
 			}
 		}

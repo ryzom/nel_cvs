@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.1 2001/05/18 16:51:49 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.2 2001/05/31 16:41:59 lecroart Exp $
  *
  *
  */
@@ -41,6 +41,7 @@
 
 #include "datas.h"
 #include "connection_as.h"
+#include "interf.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -51,6 +52,7 @@ using namespace NLNET;
 #pragma comment(lib, "gtk-1.3.lib")
 #pragma comment(lib, "gdk-1.3.lib")
 #pragma comment(lib, "glib-1.3.lib")
+#pragma comment(lib, "gthread-1.3.lib")
 #endif
 
 //
@@ -66,11 +68,19 @@ GtkWidget *RootSubTree;
 GtkWidget *Toolbar;
 GtkWidget *ConnectButton;
 
+GtkWidget *OutputText;
+GtkWidget *InputText;
+
+static CLog logstdout;
+
+class CGtkDisplayer;
+static CGtkDisplayer *GtkDisplayer;
+
 //
 // Functions
 //
 
-void cbStartService ()
+/*void cbStartService ()
 {
 	nlinfo("staring service ...");
 }
@@ -100,12 +110,66 @@ void addServiceAliasPopup (CAdminExecutorService *aes)
 		gtk_item_factory_create_items (GTK_ITEM_FACTORY(aes->ItemFactory), 1, &toto, &(aes->ServiceAliasList[i]));
 	}
 }
+*/
+
+static GdkColor DisplayerColors[] =
+{
+	{ 0, 0x0000, 0x0000, 0x0000 }, //"black" },
+	{ 0, 0xFFFF, 0xFFFF, 0xFFFF }, //"white" },
+	{ 0, 0xFFFF, 0x0000, 0x0000 }, //"red" },
+	{ 0, 0x0000, 0xFFFF, 0x0000 }, //"green" },
+	{ 0, 0x0000, 0x0000, 0xFFFF }, //"blue" }, 
+	{ 0, 0x0000, 0xFFFF, 0xFFFF }, //"cyan" },
+	{ 0, 0xFFFF, 0x0000, 0xFFFF }, //"magenta" },
+	{ 0, 0xFFFF, 0xFFFF, 0x0000 }, //"yellow" }
+};
+
+class CGtkDisplayer : virtual public IDisplayer
+{
+
+
+protected:
+
+	/// Display the string to stdout and OutputDebugString on Windows
+	virtual void doDisplay ( const TDisplayInfo& args, const char *message )
+	{
+		GtkAdjustment *Adj = (GTK_TEXT(OutputText))->vadj;
+		bool Bottom = (Adj->value >= Adj->upper - Adj->page_size);
+
+		sint colnum;
+		switch (args.LogType)
+		{
+		case CLog::LOG_INFO: colnum = 0; break;
+		case CLog::LOG_WARNING: colnum = 2; break;
+		case CLog::LOG_ERROR: colnum = 2; break;
+		default: colnum = 0; break;
+		}
+
+		gdk_threads_enter();
+		gtk_text_freeze (GTK_TEXT (OutputText));
+		gtk_text_insert (GTK_TEXT (OutputText), NULL, &DisplayerColors[colnum], NULL, message, -1);
+		gtk_text_thaw (GTK_TEXT (OutputText));
+
+		if (Bottom)
+		{
+			gtk_adjustment_set_value(Adj,Adj->upper-Adj->page_size);
+		}
+
+		gdk_threads_leave();
+	}
+};
+
 
 void setBitmap (const string &bitmapName, void *&bitmap)
 {
 	GtkStyle *style = gtk_widget_get_style (RootWindow);
-	GdkBitmap *mask;
-	GdkBitmap *pixmap = gdk_pixmap_create_from_xpm (RootWindow->window, &mask, &style->bg[GTK_STATE_NORMAL], bitmapName.c_str());
+	GdkPixmap *mask;
+	//GdkPixmap *pixmap = gdk_pixmap_create_from_xpm (RootWindow->window, &mask, &style->bg[GTK_STATE_NORMAL], bitmapName.c_str());
+
+	// use this to avoid warning when the window is not realized/shown
+	GdkPixmap *pixmap = gdk_pixmap_colormap_create_from_xpm (NULL, gtk_widget_get_colormap(RootWindow), &mask, NULL, bitmapName.c_str());
+
+	if (pixmap == NULL) nlerror ("bitmap '%s' not found", bitmapName.c_str());
 
 	if (bitmap == NULL)
 		bitmap = gtk_pixmap_new (pixmap, mask);
@@ -118,27 +182,21 @@ void setLabel (const string &text, void *&label)
 	gtk_label_set_text (GTK_LABEL (label), text.c_str());
 }
 
-void createTreeItem (const string &bitmapName, const string &text, GtkWidget *rootTree, void *&treeItem, void *&bitmap, void *&label)
+void createTreeItem (GtkWidget *rootTree, void *&treeItem, void *&bitmap, void *&label)
 {
 	nlassert (treeItem == NULL);
 
 	treeItem = gtk_tree_item_new ();
 
     GtkWidget *hbox = gtk_hbox_new (FALSE, 0);
-/*	GtkStyle *style = gtk_widget_get_style (RootWindow);
-	GdkBitmap *mask;
-	GdkBitmap *pixmap = gdk_pixmap_create_from_xpm (RootWindow->window, &mask, &style->bg[GTK_STATE_NORMAL], bitmapName.c_str());
-
-	bitmap = gtk_pixmap_new (pixmap, mask);
-*/
 
 	bitmap = NULL;
-	setBitmap (bitmapName, bitmap);
+	setBitmap ("empty.xpm", bitmap);
 
 	gtk_widget_show (GTK_WIDGET(bitmap));
 	gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET(bitmap), FALSE, FALSE, 0);
 
-	label = gtk_label_new (text.c_str());
+	label = gtk_label_new ("<Unknown>");
 	gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
 	gtk_widget_show (GTK_WIDGET(label));
 	gtk_box_pack_start (GTK_BOX (hbox), GTK_WIDGET(label), FALSE, FALSE, 0);
@@ -205,8 +263,6 @@ static void cbConnectToAS()
 
 	printf("connecting to...%p\n", PopupAS);
 
-//	setBitmap ("as_connecting.xpm", PopupAS->Bitmap);
-
 	connectionASInit (PopupAS);
 
 	PopupAS = NULL;
@@ -222,9 +278,31 @@ static void cbDisconnectToAS()
 
 	printf("disconnecting to...%p\n", PopupAS);
 
-	setBitmap ("as_connecting.xpm", PopupAS->Bitmap);
+	setBitmap ("as_dcnt.xpm", PopupAS->Bitmap);
 
 	connectionASRelease (PopupAS);
+
+	PopupAS = NULL;
+}
+
+static void cbStartAllServices()
+{
+	nlassert (PopupAS != NULL);
+	
+	string cmd = "startall ";
+	cmd += toString (PopupAS->Id);
+	ICommand::execute (cmd, logstdout);
+
+	PopupAS = NULL;
+}
+
+static void cbStopAllServices()
+{
+	nlassert (PopupAS != NULL);
+	
+	string cmd = "stopall ";
+	cmd += toString (PopupAS->Id);
+	ICommand::execute (cmd, logstdout);
 
 	PopupAS = NULL;
 }
@@ -232,16 +310,112 @@ static void cbDisconnectToAS()
 static GtkItemFactoryEntry ASMenuItems[] = {
 	{ "/Connect", NULL, cbConnectToAS, 0, NULL },
 	{ "/Disconnect", NULL, cbDisconnectToAS, 0, NULL },
-	{ "/Services", NULL, NULL, 0, "<Branch>" },
+	{ "/Start All Services", NULL, cbStartAllServices, 0, NULL },
+	{ "/Stop All Services", NULL, cbStopAllServices, 0, NULL },
+//	{ "/Services", NULL, NULL, 0, "<Branch>" },
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////// POPUP MENU FOR S //////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+CService *PopupS = NULL;
+
+// POPUP MENU
+GtkWidget *SMenu;
+gint cbPopupSMenu (GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+	if (event->type == GDK_BUTTON_PRESS && event->button.button == 3)
+	{
+		GdkEventButton *bevent = (GdkEventButton *) event; 
+		gtk_menu_popup (GTK_MENU (data), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
+		gtk_signal_emit_stop_by_name (GTK_OBJECT(widget), "button_press_event");
+
+		ASIT asit;
+		for (asit = AdminServices.begin(); asit != AdminServices.end(); asit++)
+		{
+			AESIT aesit;
+			for (aesit = (*asit).AdminExecutorServices.begin(); aesit != (*asit).AdminExecutorServices.end(); aesit++)
+			{
+				SIT sit;
+				for (sit = (*aesit).Services.begin(); sit != (*aesit).Services.end(); sit++)
+				{
+					if ((*sit).RootTreeItem == widget)
+					{
+						PopupS = &(*sit);
+						return TRUE;
+					}
+				}
+			}
+		}
+		nlstop;
+	}
+	return TRUE;
+}
+
+
+static void cbStartService()
+{
+	if (PopupS->Connected)
+	{
+		nlwarning("already connected!!!");
+		return;
+	}
+
+	string cmd = "start";
+	cmd += " ";
+	cmd += toString (PopupS->AES->AS->Id);
+	cmd += " ";
+	cmd += toString (PopupS->AES->Id);
+	cmd += " ";
+	cmd += PopupS->AliasName;
+
+	ICommand::execute (cmd, logstdout);
+
+//	connectionASInit (PopupAS);
+
+	PopupS = NULL;
+}
+
+static void cbStopService()
+{
+	if (!PopupS->Connected)
+	{
+		nlwarning("not connected!!!");
+		return;
+	}
+
+	printf("disconnecting to...%p\n", PopupS);
+
+	string cmd = "stop";
+	cmd += " ";
+	cmd += toString (PopupS->AES->AS->Id);
+	cmd += " ";
+	cmd += toString (PopupS->AES->Id);
+	cmd += " ";
+	cmd += toString (PopupS->Id);
+
+	ICommand::execute (cmd, logstdout);
+
+//	connectionASRelease (PopupAS);
+
+	PopupS = NULL;
+}
+
+static GtkItemFactoryEntry SMenuItems[] = {
+	{ "/Start Service", NULL, cbStartService, 0, NULL },
+	{ "/Stop Service", NULL, cbStopService, 0, NULL },
+};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////// POPUP MENU FOR AES ////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/*
 CAdminExecutorService *PopupAES = NULL;
 
 gint cbPopupAESMenu (GtkWidget *widget, GdkEvent *event, gpointer data)
@@ -267,17 +441,23 @@ gint cbPopupAESMenu (GtkWidget *widget, GdkEvent *event, gpointer data)
 	}
 	return FALSE;
 }
-
+*/
 /*
-static void cbStartService()
+static void cbStartAllServices()
 {
-	printf("starting service ...%p\n", PopupAES);
+	nlassert (PopupAES != NULL);
+	
+	string cmd = "startall ";
+	cmd += toString (AES->Id);
+	ICommand::execute (cmd, logstdout);
+
 	PopupAES = NULL;
 }
 */
-static GtkItemFactoryEntry AESMenuItems[] = {
-	{ "/Coucou", NULL, NULL, 0, NULL }
+/*static GtkItemFactoryEntry AESMenuItems[] = {
+	{ "/Start All Services", NULL, cbStartAllServices, 0, NULL }
 };
+*/
 
 /*
 CAdminService *ASSelected = NULL;
@@ -293,6 +473,10 @@ void interfAddAS (CAdminService *as)
 	}
 
 	// create the item
+	createTreeItem (RootSubTree, as->RootTreeItem, as->Bitmap, as->Label);
+	
+	setBitmap ("as_dcnt.xpm", as->Bitmap);
+	
 	string name;
 	name = "AS";
 	name += toString(as->Id);
@@ -301,7 +485,7 @@ void interfAddAS (CAdminService *as)
 	name += "' (";
 	name += as->ASAddr;
 	name += ")";
-	createTreeItem ("as_not_connected.xpm", name, RootSubTree, as->RootTreeItem, as->Bitmap, as->Label);
+	setLabel (name, as->Label);
 
 //	gtk_signal_connect (GTK_OBJECT (as->RootTreeItem), "select", GTK_SIGNAL_FUNC(cbASSelected), as);
 //	gtk_signal_connect (GTK_OBJECT (as->RootTreeItem), "deselect", GTK_SIGNAL_FUNC(cbASDeselected), as);
@@ -328,9 +512,9 @@ void interfUpdateAES (CAdminExecutorService *aes)
 
 	string icon;
 	if (aes->Connected)
-		icon = "as_connected.xpm";
+		icon = "aes_cnt.xpm";
 	else
-		icon = "as_not_connected.xpm";
+		icon = "aes_dcnt.xpm";
 
 	// check if we already create widgets
 	nlassert (aes->RootTreeItem != NULL);
@@ -349,23 +533,9 @@ void interfAddAES (CAdminService *as, CAdminExecutorService *aes)
 	}
 
 	// create the item
-	string name;
-	name = "AES";
-	name += toString(aes->Id);
-	name += " '";
-	name += aes->ServerAlias;
-	name += "' (";
-	name += aes->ServerAddr;
-	name += ")";
-
-	string icon;
-	if (aes->Connected)
-		icon = "as_connected.xpm";
-	else
-		icon = "as_not_connected.xpm";
-
-	createTreeItem (icon, name, GTK_WIDGET(as->RootSubTree), aes->RootTreeItem, aes->Bitmap, aes->Label);
-
+	createTreeItem (GTK_WIDGET(as->RootSubTree), aes->RootTreeItem, aes->Bitmap, aes->Label);
+	interfUpdateAES (aes);
+/*
 	// AES POPUP MENU
 	GtkAccelGroup *accel_group;
 	gint nmenu_items = sizeof (AESMenuItems) / sizeof (AESMenuItems[0]);
@@ -376,7 +546,7 @@ void interfAddAES (CAdminService *as, CAdminExecutorService *aes)
 	GtkWidget *menu = gtk_item_factory_get_widget (GTK_ITEM_FACTORY(aes->ItemFactory), "<main>");
 
 	gtk_signal_connect (GTK_OBJECT (aes->RootTreeItem), "button-press-event", GTK_SIGNAL_FUNC(cbPopupAESMenu), menu);
-
+*/
 	if (as->AdminExecutorServices.size () == 1)
 	{
 		// it's the first AS, we have to add the subtree
@@ -391,18 +561,28 @@ void interfUpdateS (CService *s)
 	name = "S";
 	name += toString(s->Id);
 	name += " '";
-	name += s->ServiceAlias;
+	name += s->AliasName;
 	name += "' '";
 	name += s->ShortName;
 	name += "' '";
 	name += s->LongName;
-	name += "'";
+	name += "' (";
+	name += toString(s->Unknown);
+	name += ", ";
+	name += toString(s->Connected);
+	name += ", ";
+	name += toString(s->InConfig);
+	name += ", ";
+	name += toString(s->Ready);
+	name += ")";
 
 	string icon;
-	if (s->Connected)
-		icon = "as_connected.xpm";
+	if (s->Unknown)
+		icon = "s_ukn.xpm";
+	else if (s->Connected)
+		icon = "s_cnt.xpm";
 	else
-		icon = "as_not_connected.xpm";
+		icon = "s_dcnt.xpm";
 
 	// check if we already create widgets
 	nlassert (s->RootTreeItem != NULL);
@@ -419,25 +599,11 @@ void interfAddS (CAdminExecutorService *aes, CService *s)
 		aes->RootSubTree = gtk_tree_new();
 	}
 
-	string name;
-	name = "S";
-	name += toString(s->Id);
-	name += " '";
-	name += s->ServiceAlias;
-	name += "' '";
-	name += s->ShortName;
-	name += "' '";
-	name += s->LongName;
-	name += "'";
-
-	string icon;
-	if (aes->Connected)
-		icon = "as_connected.xpm";
-	else
-		icon = "as_not_connected.xpm";
-
 	// create the item
-	createTreeItem (icon, name, GTK_WIDGET(aes->RootSubTree), s->RootTreeItem, s->Bitmap, s->Label);
+	createTreeItem (GTK_WIDGET(aes->RootSubTree), s->RootTreeItem, s->Bitmap, s->Label);
+	interfUpdateS (s);
+
+	gtk_signal_connect (GTK_OBJECT (s->RootTreeItem), "button-press-event", GTK_SIGNAL_FUNC(cbPopupSMenu), SMenu);
 
 	if (aes->Services.size () == 1)
 	{
@@ -449,6 +615,7 @@ void interfAddS (CAdminExecutorService *aes, CService *s)
 
 void removeSubTree (CAdminService *as)
 {
+	// bug todo kan on kill un admin service ca plante dans le remove
 	gtk_tree_item_remove_subtree (GTK_TREE_ITEM(as->RootTreeItem));
 }
 
@@ -468,7 +635,23 @@ void interfRemoveAS (CAdminService *as)
 }
 
 // windows delete event => quit
-gint delete_event (GtkWidget *widget, GdkEvent *event, gpointer data) { gtk_main_quit(); return FALSE; }
+gint delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+	gtk_main_quit();
+
+	return FALSE;
+}
+
+
+gint cbValidateCommand (GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+	// execute the command
+	ICommand::execute (gtk_entry_get_text (GTK_ENTRY(widget)), logstdout);
+	// clear the input text
+	gtk_entry_set_text (GTK_ENTRY(widget), "");
+	return TRUE;
+}
+
 
 /*gint cbConnectToAS (GtkWidget *widget, gpointer data)
 {
@@ -518,27 +701,25 @@ void initToolbar (GtkWidget *container)
 
 void initInterf ()
 {
-    gtk_init (NULL, NULL);
+	g_thread_init (NULL);
+	gtk_init (NULL, NULL);
 
-    RootWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (RootWindow), "Admin client for NeL Shard administration ("__DATE__" "__TIME__")");
-    gtk_signal_connect (GTK_OBJECT (RootWindow), "delete_event", GTK_SIGNAL_FUNC (delete_event), NULL);
+	RootWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title (GTK_WINDOW (RootWindow), "Admin client for NeL Shard administration ("__DATE__" "__TIME__")");
+	gtk_signal_connect (GTK_OBJECT (RootWindow), "delete_event", GTK_SIGNAL_FUNC (delete_event), NULL);
 
-    GtkWidget *vrootbox = gtk_vbox_new (FALSE, 0);
-    gtk_container_add (GTK_CONTAINER (RootWindow), vrootbox);
+	GtkWidget *vrootbox = gtk_vbox_new (FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (RootWindow), vrootbox);
 	
 //	initToolbar (vrootbox);
 
 
-    GtkWidget *hrootbox = gtk_hbox_new (FALSE, 0);
-    gtk_container_add (GTK_CONTAINER (vrootbox), hrootbox);
+//	GtkWidget *hrootbox = gtk_hbox_new (FALSE, 0);
+//	gtk_container_add (GTK_CONTAINER (vrootbox), hrootbox);
 
+	GtkWidget *hrootbox = gtk_hpaned_new ();
+	gtk_container_add (GTK_CONTAINER (vrootbox), hrootbox);
 
-	GtkWidget *scrolled_win = gtk_scrolled_window_new (NULL, NULL);
-	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_win), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_box_pack_start (GTK_BOX (hrootbox), scrolled_win, TRUE, TRUE, 0);
-	gtk_widget_set_usize (scrolled_win, 400, 400);
-	gtk_widget_show (scrolled_win);
 
 	// AS POPUP MENU
 	{
@@ -552,9 +733,26 @@ void initInterf ()
 		ASMenu = gtk_item_factory_get_widget (item_factory, "<main>");
 	}
 
-///////////////
+	// S POPUP MENU (service menu)
+	{
+		GtkItemFactory *item_factory;
+		GtkAccelGroup *accel_group;
+		gint nmenu_items = sizeof (SMenuItems) / sizeof (SMenuItems[0]);
+		accel_group = gtk_accel_group_new ();
+		item_factory = gtk_item_factory_new (GTK_TYPE_MENU, "<main>", accel_group);
+		gtk_item_factory_create_items (item_factory, nmenu_items, SMenuItems, NULL);
+		gtk_window_add_accel_group (GTK_WINDOW (RootWindow), accel_group);
+		SMenu = gtk_item_factory_get_widget (item_factory, "<main>");
+	}
 
 /////// TREE
+	GtkWidget *scrolled_win = gtk_scrolled_window_new (NULL, NULL);
+	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_win), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+//*	gtk_box_pack_start (GTK_BOX (hrootbox), scrolled_win, TRUE, TRUE, 0);
+	gtk_paned_add1 (GTK_PANED (hrootbox), scrolled_win);
+
+	gtk_widget_set_usize (scrolled_win, 300, 400);
+	gtk_widget_show (scrolled_win);
 
 	RootTree = gtk_tree_new();
 //	gtk_signal_connect (GTK_OBJECT (root_tree), "selection_changed", (GtkSignalFunc)cb_tree_changed, (gpointer)NULL);
@@ -567,18 +765,54 @@ void initInterf ()
 ////////////
 
 	void *btm, *lbl;
-	createTreeItem ("world.xpm", "Internet", RootTree, (void *&)RootTreeItem, btm, lbl);
-
-	/*
-	GtkWidget *item_subtree = gtk_tree_new();
-	GtkWidget *root_item2 = gtk_tree_item_new_with_label("toto");
-	gtk_tree_append (GTK_TREE (item_subtree), root_item2);
-    gtk_tree_item_set_subtree (GTK_TREE_ITEM (root_item), item_subtree);
-	gtk_widget_show (root_item2);
-    */
+	createTreeItem (RootTree, (void *&)RootTreeItem, btm, lbl);
+	setBitmap ("internet.xpm", btm);
+	setLabel ("Internet", lbl);
 
 ////////
 
+	// OUTPUT TEXT
+
+	GtkWidget *scrolled_win2 = gtk_scrolled_window_new (NULL, NULL);
+	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_win2), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+//*	gtk_box_pack_start (GTK_BOX (hrootbox), scrolled_win2, TRUE, TRUE, 0);
+	gtk_paned_add2 (GTK_PANED (hrootbox), scrolled_win2);
+	gtk_widget_set_usize (scrolled_win2, 600, 400);
+	gtk_widget_show (scrolled_win2);
+
+	OutputText = gtk_text_new (NULL, NULL);
+	gtk_text_set_editable (GTK_TEXT (OutputText), FALSE);
+	gtk_container_add (GTK_CONTAINER (scrolled_win2), OutputText);
+//	gtk_widget_grab_focus (OutputText);
+	gtk_widget_show (OutputText);
+
+	GtkDisplayer = new CGtkDisplayer;
+//	DebugLog->addDisplayer (GtkDisplayer);
+	WarningLog->addDisplayer (GtkDisplayer);
+	InfoLog->addDisplayer (GtkDisplayer);
+	ErrorLog->addDisplayer (GtkDisplayer);
+
+	// INPUT TEXT
+
+	InputText = gtk_entry_new ();
+//	gtk_entry_set_text (GTK_ENTRY (InputText), "hello world");
+//	gtk_editable_select_region (GTK_EDITABLE (InputText), 0, 5);
+	gtk_signal_connect (GTK_OBJECT(InputText), "activate", GTK_SIGNAL_FUNC(cbValidateCommand), NULL);
+	gtk_box_pack_start (GTK_BOX (vrootbox), InputText, TRUE, TRUE, 0);
+	gtk_widget_show (InputText);
+
+
+
+
+
+
+
+
+/*
+	gtk_text_freeze (GTK_TEXT (OutputText));
+
+	GdkFont *font = gdk_font_load ("-adobe-courier-medium-r-normal--*-120-*-*-*-*-*-*");
+*/
 	gtk_widget_show (hrootbox);
 	gtk_widget_show (vrootbox);
     gtk_widget_show (RootWindow);
@@ -597,20 +831,40 @@ gint updateInterf (gpointer data)
 	return TRUE;
 }
 
-static CLog logstdout;
 static CStdDisplayer dispstdout;
 
 void runInterf ()
 {
 	logstdout.addDisplayer (&dispstdout);
+	logstdout.addDisplayer (GtkDisplayer);
+
 	// todo virer ca pour pas que ca connecte automatiquement
 	ICommand::execute ("connect 1", logstdout);
 	
     gtk_timeout_add (500, updateInterf, NULL);
-    gtk_main ();
+	gdk_threads_enter ();
+	gtk_main ();
+	gdk_threads_leave ();
+	
+	//	DebugLog->removeDisplayer (GtkDisplayer);
+	WarningLog->removeDisplayer (GtkDisplayer);
+	InfoLog->removeDisplayer (GtkDisplayer);
+	ErrorLog->removeDisplayer (GtkDisplayer);
 }
 
 
+// COMMANDS
+
+NLMISC_COMMAND (quit, "quit", "")
+{
+	if(args.size() != 0) return false;
+
+	gtk_main_quit ();
+	
+	return true;
+}
 
 
 #endif // INTERF_GTK
+
+// todo reflechir a ce qu on propose sur les services a administrer (variables (once, autoupdate, fonction, etc..)

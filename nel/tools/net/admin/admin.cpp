@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * 
  *
- * $Id: admin.cpp,v 1.4 2001/05/18 16:51:49 lecroart Exp $
+ * $Id: admin.cpp,v 1.5 2001/05/31 16:41:59 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -44,9 +44,9 @@ int main (int argc, char **argv)
 {
 	nlinfo("Admin client for NeL Shard administration ("__DATE__" "__TIME__")\n");
 
-	DebugLog->addNegativeFilter ("L0:");
-	DebugLog->addNegativeFilter ("L1:");
-	DebugLog->addNegativeFilter ("L2:");
+//	DebugLog->addNegativeFilter ("L0:");
+//	DebugLog->addNegativeFilter ("L1:");
+//	DebugLog->addNegativeFilter ("L2:");
 
 	CNetManager::init (NULL);
 

@@ -1,7 +1,7 @@
 /** \file coammnds.cpp
  * 
  *
- * $Id: commands.cpp,v 1.2 2001/05/18 16:51:49 lecroart Exp $
+ * $Id: commands.cpp,v 1.3 2001/05/31 16:41:59 lecroart Exp $
  *
  * contains all admin commands
  *
@@ -55,7 +55,7 @@ NLMISC_COMMAND (connect, "connect to the AS", "<asid>")
 }
 
 
-NLMISC_COMMAND (start, "start a service", "<asid> <aesid> <service_name>")
+NLMISC_COMMAND (start, "start a service", "<asid> <aesid> <service_alias>")
 {
 	if(args.size() != 3) return false;
 
@@ -189,32 +189,57 @@ NLMISC_COMMAND (sys, "execute a system command", "<asid> <aesid> <command>")
 	return true;
 }
 
-
-NLMISC_COMMAND (exec, "execute a script on the AS", "<asid> <script_name>")
-{
-	if(args.size() != 2) return false;
-
-	uint32 asid = atoi(args[0].c_str());
-	ASIT asit = findAdminService (asid, false);
-	if (asit == AdminServices.end())
-	{
-		nlwarning("couldn't execute script, asid %d doesn't exist", asid);
-		return false;
-	}
-
-	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "EXEC");
-	msgout.serial (const_cast<string &>(args[1]));
-	CNetManager::send ((*asit).ASAddr, msgout);
-
-	return true;
-}
-
-
 NLMISC_COMMAND (list, "display list of service", "")
 {
 	if(args.size() != 0) return false;
 
 	displayServices ();
 	
+	return true;
+}
+
+NLMISC_COMMAND (startall, "start all services on a as", "<asid>")
+{
+	if(args.size() != 1) return false;
+
+	uint32 asid = atoi(args[0].c_str());
+	ASIT asit = findAdminService (asid, false);
+	if (asit == AdminServices.end())
+	{
+		nlwarning ("couldn't run all services, asid %d doesn't exist", asid);
+		return false;
+	}
+
+	if (!(*asit).Connected)
+	{
+		nlwarning ("couldn't run all service, asid %d is not connected", asid);
+	}
+
+	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "START_ALL_SERVICES");
+	CNetManager::send ((*asit).ASAddr, msgout);
+
+	return true;
+}
+
+NLMISC_COMMAND (stopall, "stop all services on a as", "<asid>")
+{
+	if(args.size() != 1) return false;
+
+	uint32 asid = atoi(args[0].c_str());
+	ASIT asit = findAdminService (asid, false);
+	if (asit == AdminServices.end())
+	{
+		nlwarning ("couldn't run all services, asid %d doesn't exist", asid);
+		return false;
+	}
+
+	if (!(*asit).Connected)
+	{
+		nlwarning ("couldn't run all service, asid %d is not connected", asid);
+	}
+
+	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "STOP_ALL_SERVICES");
+	CNetManager::send ((*asit).ASAddr, msgout);
+
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file datas.h
  *
  *
- * $Id: datas.h,v 1.2 2001/05/18 16:51:49 lecroart Exp $
+ * $Id: datas.h,v 1.3 2001/05/31 16:41:59 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,29 +35,35 @@
 #include <string>
 
 // Structures
+struct CAdminExecutorService;
+
 
 struct CService
 {
-	CService () : Id(0xFFFFFFFF), Ready(false), Connected(false), InConfig(false), RootTreeItem(NULL) { }
+	CService () : Id(0xFFFFFFFF), Ready(false), Connected(false), InConfig(false), Unknown(true), RootTreeItem(NULL) { }
 
 	uint32		Id;				/// uint32 to identify the service
-	std::string	ServiceAlias;	/// alias of the service used in the AES and AS to find him (unique per AES)
+	std::string	AliasName;		/// alias of the service used in the AES and AS to find him (unique per AES)
 	std::string	ShortName;		/// name of the service in short format ("NS" for example)
 	std::string	LongName;		/// name of the service in long format ("naming_service")
 	bool		Ready;			/// true if the service is ready
 	bool		Connected;		/// true if the service is connected to the AES
 	bool		InConfig;		/// true if the service is in the configuration
+	bool		Unknown;		/// true if the aes is not connected
+
+	CAdminExecutorService *AES;
 
 	void setValues (const CService &t)
 	{
 		// copy all except gtk stuffs
 		Id = t.Id;
-		ServiceAlias = t.ServiceAlias;
+		AliasName = t.AliasName;
 		ShortName = t.ShortName;
 		LongName = t.LongName;
 		Ready = t.Ready;
 		Connected = t.Connected;
 		InConfig = t.InConfig;
+		Unknown = t.Unknown;
 	}
 
 	// used by gtk
@@ -69,6 +75,7 @@ struct CService
 typedef std::list<CService> TServices;
 typedef std::list<CService>::iterator SIT;
 
+struct CAdminService;
 
 struct CAdminExecutorService
 {
@@ -81,6 +88,8 @@ struct CAdminExecutorService
 	bool		Connected;		/// true if the AES is connected
 
 	TServices	Services;
+
+	CAdminService *AS;
 
 	std::vector<std::string>	ServiceAliasList;	/// contains all service aliases that this AES can run
 
@@ -105,6 +114,18 @@ struct CAdminExecutorService
 		return sit;
 	}
 
+	SIT findService (const std::string &alias, bool asrt = true)
+	{
+		SIT sit;
+		for (sit = Services.begin(); sit != Services.end(); sit++)
+			if ((*sit).AliasName == alias)
+				break;
+
+		if (asrt)
+			nlassert (sit != Services.end());
+		return sit;
+	}
+
 	// used by gtk
 	void	*RootTreeItem;
 	void	*RootSubTree;
@@ -120,8 +141,6 @@ struct CAdminService
 {
 	CAdminService () : Connected(false), SockId(NULL), Id(NextId++), RootTreeItem(NULL) { }
 	
-	~CAdminService() { nlinfo("removing AS %d", Id); }
-
 	NLNET::TSockId	SockId;			/// connection to the AS
 	uint32			Id;				/// uint32 to identify the AS
 

@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.3 2001/05/16 16:21:04 lecroart Exp $
+ * $Id: net_manager.h,v 1.4 2001/05/31 16:41:59 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,6 +151,9 @@ private:
 	static	ItBaseMap find (const std::string &serviceName);
 
 	friend void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInetAddress &addr);
+
+	// It's a static class, you can't instanciate it
+	CNetManager() { }
 };
 
 

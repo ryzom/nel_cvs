@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.10 2002/07/08 10:02:30 berenguier Exp $
+ * $Id: u_transform.h,v 1.11 2002/08/05 15:30:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,6 +160,12 @@ public:
 
 	/// Return true if the object was rendered during the last Scene->rendere(). return false else (ie clipped)
 	virtual bool			getLastClippedState() const = 0;
+
+	/** get the last world matrix computed in last render().
+	 *	NB: this WM is computed in last render() only if the object was not clipped. So use it wisely.
+	 *	use getLastClippedState() to konw if the object was visible in last render().
+	 */
+	virtual	const CMatrix	&getLastWorldMatrixComputed() const =0;
 
 
 	/// name Load Balancing Behavior.

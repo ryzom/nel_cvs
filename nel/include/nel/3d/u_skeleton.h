@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.10 2002/07/11 09:27:22 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.11 2002/08/05 15:30:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@ namespace NL3D
 
 class	UInstance;
 class	UBone;
+class	UPlayList;
 
 // ***************************************************************************
 /**
@@ -177,6 +178,27 @@ public:
 
 	// @}
 
+
+	/// \name Misc.
+	// @{
+	/** Retrieve the current approx BBox around the skeleton, computed in the last USene::render().
+	 *	for all computed bones, extend the bbox with their pos
+	 *	\param bbox return the bbox of the skinned skeleton, local to the skeleton. If the skeleton was clipped, the bbox
+	 *	is not modified.
+	 *	\return true if the bbox is computed, false otherwise.
+	 */
+	virtual	bool		computeRenderedBBox(NLMISC::CAABBox &bbox) =0;
+
+	/** same as computeRenderedBBox() but force animation and compute of all bones => don't need render(), but slower.
+	 *	for all used bones, extend the bbox with their pos
+	 *	\param bbox return the bbox of the skinned skeleton, local to the skeleton. If the skeleton is not skinned/sticked
+	 *	at all, bbox is not modified.
+	 *	\param playList set NULL if no one, else this playList will be played at the time playTime
+	 *	\return true if the bbox is computed, false otherwise.
+	 */
+	virtual	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0) =0;
+
+	// @}
 
 };
 

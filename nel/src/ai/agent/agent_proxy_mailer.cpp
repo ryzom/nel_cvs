@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.1 2001/01/31 16:07:09 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.2 2001/01/31 17:45:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

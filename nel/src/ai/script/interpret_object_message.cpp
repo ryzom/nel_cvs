@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.7 2001/01/31 17:29:35 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.8 2001/01/31 17:42:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/ai/script/lexsupport.h"
 
 #include "nel/ai/script/interpret_object_message.h"
+#include "nel/ai/agent/msg_notify.h"
 
 namespace NLAISCRIPT
 {
@@ -100,7 +101,7 @@ namespace NLAISCRIPT
 
 	CMsgNotifyParentClass::CMsgNotifyParentClass()
 	{
-
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CNotifyParentScript::IdNotifyParentScript.getFactory()->getClass());
 	}
 	
 	const NLAIC::IBasicType *CMsgNotifyParentClass::clone() const
@@ -111,5 +112,9 @@ namespace NLAISCRIPT
 	{
 		return new CMsgNotifyParentClass();
 	}
-	
+
+	NLAIAGENT::IObjectIA *CMsgNotifyParentClass::buildNewInstance() const
+	{
+		return new NLAIAGENT::CNotifyParentScript( (CMessageClass *) this );
+	}	
 }

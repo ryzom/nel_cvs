@@ -1,7 +1,7 @@
 /** \file u_retriever_bank.h
  * <File description>
  *
- * $Id: u_retriever_bank.h,v 1.2 2001/06/22 15:03:05 corvazier Exp $
+ * $Id: u_retriever_bank.h,v 1.3 2002/12/06 12:41:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 
+namespace NLMISC
+{
+	class IProgressCallback;
+}
 
 namespace NLPACS {
 

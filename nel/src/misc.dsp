@@ -768,6 +768,14 @@ SOURCE=..\include\nel\misc\path.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\progress_callback.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\progress_callback.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\quad.cpp
 # End Source File
 # Begin Source File

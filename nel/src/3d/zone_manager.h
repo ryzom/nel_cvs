@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.5 2002/11/04 15:40:43 boucher Exp $
+ * $Id: zone_manager.h,v 1.6 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,9 @@ public:
 
 	/// Is a work has been completed ? 
 	bool isWorkComplete (SZoneManagerWork &rWork);
+
+	/// Return the count of zone left to load
+	uint getNumZoneLeftToLoad ();
 
 	/**
 	 * Accessors

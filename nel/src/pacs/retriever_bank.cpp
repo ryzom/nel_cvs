@@ -1,7 +1,7 @@
 /** \file retriever_bank.cpp
  *
  *
- * $Id: retriever_bank.cpp,v 1.6 2002/10/29 17:17:29 corvazier Exp $
+ * $Id: retriever_bank.cpp,v 1.7 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
+#include "nel/misc/progress_callback.h"
 
 #include "pacs/retriever_bank.h"
 

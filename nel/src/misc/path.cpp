@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.64 2002/11/25 14:10:51 boucher Exp $
+ * $Id: path.cpp,v 1.65 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/big_file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/progress_callback.h"
 
 #ifdef NL_OS_WINDOWS
 #	include <windows.h>
@@ -520,7 +521,7 @@ string getname (dirent *de)
 #endif // NL_OS_WINDOWS
 }
 
-void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool wantFile, vector<string> &result)
+void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool wantFile, vector<string> &result, class IProgressCallback *progressCallBack)
 {			
 #ifndef NL_OS_WINDOWS
 	BasePathgetPathContent = CPath::standardizePath (path);
@@ -608,7 +609,20 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 	// let s recurse
 	for (uint i = 0; i < recursPath.size (); i++)
 	{		
-		getPathContent (recursPath[i], recurse, wantDir, wantFile, result);
+		// Progress bar
+		if (progressCallBack)
+		{
+			progressCallBack->progress ((float)i/(float)recursPath.size ());
+			progressCallBack->pushCropedValues ((float)i/(float)recursPath.size (), (float)(i+1)/(float)recursPath.size ());
+		}
+
+		getPathContent (recursPath[i], recurse, wantDir, wantFile, result, progressCallBack);
+
+		// Progress bar
+		if (progressCallBack)
+		{
+			progressCallBack->popCropedValues ();
+		}
 	}
 }
 
@@ -620,7 +634,7 @@ void CPath::removeAllAlternativeSearchPath ()
 }
 
 
-void CPath::addSearchPath (const string &path, bool recurse, bool alternative)
+void CPath::addSearchPath (const string &path, bool recurse, bool alternative, class IProgressCallback *progressCallBack)
 {
 	H_AUTO_INST(addSearchPath);
 
@@ -637,7 +651,7 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative)
 	if (!CFile::isDirectory (path))
 	{
 		nlinfo ("CPath::addSearchPath(%s, %d, %d): '%s' is not a directory, I'll call addSearchFile()", path.c_str(), recurse, alternative, path.c_str());
-		addSearchFile (path);
+		addSearchFile (path, false, "", progressCallBack);
 		return;
 	}
 
@@ -664,7 +678,7 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative)
 		if (recurse)
 		{
 			// find all path and subpath
-			getPathContent (newPath, recurse, true, false, pathsToProcess);
+			getPathContent (newPath, recurse, true, false, pathsToProcess, progressCallBack);
 		}
 
 		for (uint p = 0; p < pathsToProcess.size(); p++)
@@ -691,21 +705,56 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative)
 	else
 	{
 		vector<string> filesToProcess;
+
+		// Progree bar
+		if (progressCallBack)
+		{
+			progressCallBack->progress (0);
+			progressCallBack->pushCropedValues (0, 0.5f);
+		}
+
 		// find all files in the path and subpaths
-		getPathContent (newPath, recurse, false, true, filesToProcess);
+		getPathContent (newPath, recurse, false, true, filesToProcess, progressCallBack);
+
+		// Progree bar
+		if (progressCallBack)
+		{
+			progressCallBack->popCropedValues ();
+			progressCallBack->progress (0.5);
+			progressCallBack->pushCropedValues (0.5f, 1);
+		}
 
 		// add them in the map
 		for (uint f = 0; f < filesToProcess.size(); f++)
 		{
+			// Progree bar
+			if (progressCallBack)
+			{
+				progressCallBack->progress ((float)f/(float)filesToProcess.size());
+				progressCallBack->pushCropedValues ((float)f/(float)filesToProcess.size(), (float)(f+1)/(float)filesToProcess.size());
+			}
+
 			string filename = CFile::getFilename (filesToProcess[f]);
 			string filepath = CFile::getPath (filesToProcess[f]);
 //			insertFileInMap (filename, filepath, false, CFile::getExtension(filename));
-			addSearchFile (filesToProcess[f]);
+			addSearchFile (filesToProcess[f], false, "", progressCallBack);
+
+			// Progree bar
+			if (progressCallBack)
+			{
+				progressCallBack->popCropedValues ();
+			}
+		}
+
+		// Progree bar
+		if (progressCallBack)
+		{
+			progressCallBack->popCropedValues ();
 		}
 	}
 }
 
-void CPath::addSearchFile (const string &file, bool remap, const string &virtual_ext)
+void CPath::addSearchFile (const string &file, bool remap, const string &virtual_ext, NLMISC::IProgressCallback *progressCallBack)
 {
 	CPath *inst = CPath::getInstance();
 	string newFile = standardizePath(file, false);
@@ -735,7 +784,7 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 	if (CFile::getExtension(newFile) == "bnp")
 	{
 		NL_DISPLAY_PATH ("CPath::addSearchFile(%s, %d, %s): '%s' is a big file, add it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
-		addSearchBigFile(file, false, false);
+		addSearchBigFile(file, false, false, progressCallBack);
 		return;
 	}
 
@@ -763,7 +812,7 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 			if (inst->_Extensions[i].first == strlwr(ext))
 			{
 				// need to remap
-				addSearchFile (newFile, true, inst->_Extensions[i].second);
+				addSearchFile (newFile, true, inst->_Extensions[i].second, progressCallBack);
 			}
 		}
 	}
@@ -797,7 +846,7 @@ void CPath::addSearchListFile (const string &filename, bool recurse, bool altern
 }
 
 // WARNING : recurse is not used
-void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alternative)
+void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alternative, NLMISC::IProgressCallback *progressCallBack)
 {
 	// Check if filename is not empty
 	if (sBigFilename.empty())
@@ -841,6 +890,13 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 	fread (&nNbFile, sizeof(uint32), 1, Handle);
 	for (uint32 i = 0; i < nNbFile; ++i)
 	{
+		// Progress bar
+		if (progressCallBack)
+		{
+			progressCallBack->progress ((float)i/(float)nNbFile);
+			progressCallBack->pushCropedValues ((float)i/(float)nNbFile, (float)(i+1)/(float)nNbFile);
+		}
+
 		char FileName[256];
 		uint8 nStringSize;
 		fread (&nStringSize, 1, 1, Handle);
@@ -874,6 +930,11 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 			}
 		}
 
+		// Progress bar
+		if (progressCallBack)
+		{
+			progressCallBack->popCropedValues ();
+		}
 	}
 	fclose (Handle);
 }

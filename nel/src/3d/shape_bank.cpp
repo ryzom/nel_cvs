@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.17 2002/11/18 09:27:31 berenguier Exp $
+ * $Id: shape_bank.cpp,v 1.18 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/path.h"
 #include "nel/misc/rect.h"
 #include "nel/misc/algo.h"
+#include "nel/misc/progress_callback.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -723,7 +724,7 @@ bool CShapeBank::isShapeCache(const std::string &shapeCacheName) const
 
 // ***************************************************************************
 void CShapeBank::preLoadShapes(const std::string &shapeCacheName, 
-	const std::vector<std::string> &listFile, const std::string &wildCardNotLwr)
+	const std::vector<std::string> &listFile, const std::string &wildCardNotLwr, NLMISC::IProgressCallback *progress)
 {
 	// Abort if cache don't exist.
 	if(!isShapeCache(shapeCacheName))
@@ -735,6 +736,10 @@ void CShapeBank::preLoadShapes(const std::string &shapeCacheName,
 	// For all files
 	for(uint i=0;i<listFile.size();i++)
 	{
+		// Progress bar
+		if (progress)
+			progress->progress ((float)i/(float)listFile.size ());
+
 		string	fileName= CFile::getFilename(listFile[i]);
 		strlwr(fileName);
 		// if the file is ok for the wildCard, process it

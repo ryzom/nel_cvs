@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.9 2002/10/14 15:52:50 besson Exp $
+ * $Id: zone_manager.cpp,v 1.10 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,27 @@ CZoneManager::CZoneManager()
 // ------------------------------------------------------------------------------------------------
 CZoneManager::~CZoneManager()
 {
+}
+
+// ------------------------------------------------------------------------------------------------
+uint CZoneManager::getNumZoneLeftToLoad ()
+{
+	// Make a set of the loaded zone
+	set<uint16> zoneLoaded;
+	uint32 i;
+	for (i = 0; i < _LoadedZones.size(); ++i)
+	{
+		zoneLoaded.insert (_LoadedZones[i]);
+	}
+
+	// Check for each zone in the list if they are loaded or not
+	uint zoneCount = 0;
+	for (i = 0; i < _ZoneList.size(); ++i)
+	{
+		if (zoneLoaded.find (_ZoneList[i]) == zoneLoaded.end ())
+			zoneCount++;
+	}
+	return zoneCount;
 }
 
 // ------------------------------------------------------------------------------------------------

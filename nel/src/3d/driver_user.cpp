@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.26 2002/11/21 15:53:40 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.27 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,10 +92,10 @@ void					UDriver::setMatrixMode2D43()
 
 
 // ***************************************************************************
-UDriver					*UDriver::createDriver()
+UDriver					*UDriver::createDriver(uint windowIcon)
 {
 	NL3D_MEM_DRIVER
-	return new CDriverUser;
+	return new CDriverUser (windowIcon);
 }
 
 
@@ -111,7 +111,7 @@ bool	CDriverUser::_StaticInit= false;
 
 
 // ***************************************************************************
-CDriverUser::CDriverUser()
+CDriverUser::CDriverUser (uint windowIcon)
 {
 	NL3D_MEM_DRIVER
 
@@ -135,7 +135,7 @@ CDriverUser::CDriverUser()
 	// Create/Init Driver.
 	_Driver= CDRU::createGlDriver();
 	nlassert(_Driver);
-	_Driver->init();
+	_Driver->init (windowIcon);
 
 	_WindowInit= false;
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.44 2002/11/14 17:30:27 vizerie Exp $
+ * $Id: driver.h,v 1.45 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,7 +167,7 @@ public:
 							IDriver(void);
 	virtual					~IDriver(void);
 
-	virtual bool			init(void)=0;
+	virtual bool			init (uint windowIcon = 0)=0;
 
 	virtual ModeList		enumModes()=0;
 

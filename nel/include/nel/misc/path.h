@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.30 2002/11/25 14:04:04 boucher Exp $
+ * $Id: path.h,v 1.31 2002/12/06 12:41:25 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -69,20 +69,21 @@ public:
 	 * \param path the path name. The separator for directories could be '/' or '\' (bit '\' will be translate into '/' in the function).
 	 * \param recurse true if you want the function recurse in sub-directories.
 	 * \param Alternative true if you want to add the path in the Alternative directories.
+	 * \param progressCallBack is a progression callback interface pointer.
 	 */
-	static void			addSearchPath (const std::string &path, bool recurse, bool alternative);
+	static void			addSearchPath (const std::string &path, bool recurse, bool alternative, class IProgressCallback *progressCallBack = NULL);
 
 	/** Used only for compatibility with the old CPath. In this case, we don't use the map to have the same behavior as the old CPath */
-	static void			addSearchPath (const std::string &path) { addSearchPath (path, false, true); }
+	static void			addSearchPath (const std::string &path) { addSearchPath (path, false, true, NULL); }
 
 	/** Same as AddSearchPath but with a file "c:/autoexec.bat" this file only will included. wildwards *doesn't* work */
-	static void			addSearchFile (const std::string &file, bool remap = false, const std::string &virtual_ext = "");
+	static void			addSearchFile (const std::string &file, bool remap = false, const std::string &virtual_ext = "", class NLMISC::IProgressCallback *progressCallBack = NULL);
 
 	/** Same as AddSearchPath but with a path file "c:/test.pth" all files name contain in this file will be included (the extention is used to know that it's a path file) */
 	static void			addSearchListFile (const std::string &filename, bool recurse, bool alternative);
 	
 	/** Same as AddSearchPath but with a big file "c:/test.nbf" all files name contain in the big file will be included  (the extention (Nel Big File) is used to know that it's a big file) */
-	static void			addSearchBigFile (const std::string &filename, bool recurse, bool alternative);
+	static void			addSearchBigFile (const std::string &filename, bool recurse, bool alternative, class NLMISC::IProgressCallback *progressCallBack = NULL);
 
 	/** Remove all search path contains in the alternative directories */
 	static void			removeAllAlternativeSearchPath ();
@@ -152,8 +153,9 @@ public:
 	 *	\param wantDir true if want to add directorires in result
 	 *	\param wantFile true if want to add files in result
 	 *	\param result list of string where directories/files names are added.
+	 *  \param progressCallBack is a progression callback interface pointer.
 	 */
-	static void			getPathContent (const std::string &path, bool recurse, bool wantDir, bool wantFile, std::vector<std::string> &result);
+	static void			getPathContent (const std::string &path, bool recurse, bool wantDir, bool wantFile, std::vector<std::string> &result, class IProgressCallback *progressCallBack = NULL);
 
 	/** Get the full path based on a file/path and the current directory. Example, imagine that the current path is c:\temp and toto is a directory
 	 * getFullPath ("toto") returns "c:/temp/toto/"

@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.17 2002/08/07 15:23:42 berenguier Exp $
+ * $Id: u_landscape.h,v 1.18 2002/12/06 12:41:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,10 @@
 #include "nel/3d/height_map.h"
 #include <string>
 
+namespace NLMISC
+{
+	class IProgressCallback;
+}
 
 namespace NL3D
 {
@@ -68,7 +72,7 @@ public:
 	/// Set the zonePath from where zones are loaded.
 	virtual	void	setZonePath(const std::string &zonePath) =0;
 	/// Load the tile banks:  the ".bank" and the  ".farbank".
-	virtual	void	loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile) =0;
+	virtual	void	loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile, NLMISC::IProgressCallback &progress) =0;
 	/// Load all Zones around a position. This is a blocking call.
 	virtual	void	loadAllZonesAround(const CVector &pos, float radius) =0;
 	/** Load all Zones around a position. This is a blocking call.
@@ -84,7 +88,8 @@ public:
 	 */
 	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved) =0;
 	/// Delete old zones, or load new zones, around a position, until it is finished. This is a blocking call.
-	virtual	void	refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, std::vector<std::string> &zonesRemoved) =0;
+	virtual	void	refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, 
+		std::vector<std::string> &zonesRemoved, NLMISC::IProgressCallback &progress) =0;
 	/** Get list of zones currently loaded in landscape.
 	 *	\zonesLoaded array of name of the zones added, without extension (eg: "150_EM").
 	 */

@@ -1,7 +1,7 @@
 /** \file shape_bank_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: shape_bank_user.cpp,v 1.5 2002/11/18 09:27:57 berenguier Exp $
+ * $Id: shape_bank_user.cpp,v 1.6 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,7 +78,7 @@ void CShapeBankUser::linkShapeToShapeCache(const std::string &shapeName, const s
 
 // ***************************************************************************
 void CShapeBankUser::preLoadShapesFromDirectory(const std::string &shapeCacheName, 
-	const std::string &path, const std::string &wildCardNotLwr, bool recurs)
+	const std::string &path, const std::string &wildCardNotLwr, bool recurs, NLMISC::IProgressCallback *progress)
 {
 	// List all files From the path
 	vector<string>	listFile;
@@ -86,12 +86,12 @@ void CShapeBankUser::preLoadShapesFromDirectory(const std::string &shapeCacheNam
 
 	// preLoad
 	if(!listFile.empty())
-		_ShapeBank.preLoadShapes(shapeCacheName, listFile, wildCardNotLwr);
+		_ShapeBank.preLoadShapes(shapeCacheName, listFile, wildCardNotLwr, progress);
 }
 
 // ***************************************************************************
 void CShapeBankUser::preLoadShapesFromBNP(const std::string &shapeCacheName, 
-		const std::string &bnpName, const std::string &wildCardNotLwr)
+		const std::string &bnpName, const std::string &wildCardNotLwr, NLMISC::IProgressCallback *progress)
 {
 	// List all files From the bnp
 	vector<string>	listFile;
@@ -99,7 +99,7 @@ void CShapeBankUser::preLoadShapesFromBNP(const std::string &shapeCacheName,
  
 	// preLoad
 	if(!listFile.empty())
-		_ShapeBank.preLoadShapes(shapeCacheName, listFile, wildCardNotLwr);
+		_ShapeBank.preLoadShapes(shapeCacheName, listFile, wildCardNotLwr, progress);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.7 2002/11/18 09:27:31 berenguier Exp $
+ * $Id: shape_bank.h,v 1.8 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,11 @@
 #include <list>
 
 #include "3d/async_file_manager_3d.h"
+
+namespace NLMISC
+{
+	class IProgressCallback;
+}
 
 namespace NL3D
 {
@@ -146,7 +151,7 @@ public:
 	 *	\param wildcard a filter string like: "*.shape", "??_HOM*.shape". NB: strlwr-ed internally
 	 */
 	void			preLoadShapes(const std::string &shapeCacheName, 
-		const std::vector<std::string> &listFile, const std::string &wildCardNotLwr);
+		const std::vector<std::string> &listFile, const std::string &wildCardNotLwr, NLMISC::IProgressCallback *progress = NULL);
 	// @}
 
 private:

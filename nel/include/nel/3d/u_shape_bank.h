@@ -1,7 +1,7 @@
 /** \file u_shape_bank.h
  * Game interface for managing shape bank.
  *
- * $Id: u_shape_bank.h,v 1.2 2002/11/18 09:32:25 berenguier Exp $
+ * $Id: u_shape_bank.h,v 1.3 2002/12/06 12:41:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,11 @@
 #define NL_U_SHAPE_BANK_H
 
 #include "nel/misc/types_nl.h"
+
+namespace NLMISC
+{
+	class IProgressCallback;
+}
 
 namespace NL3D 
 {
@@ -78,7 +83,7 @@ public:
 	 *	\param recurs true if want to recurs in sub directory
 	 */
 	virtual void	preLoadShapesFromDirectory(const std::string &shapeCacheName, 
-		const std::string &path, const std::string &wildCard, bool recurs= false) =0;
+		const std::string &path, const std::string &wildCard, bool recurs= false, NLMISC::IProgressCallback *progress = NULL) =0;
 
 	/** PreLoad all shapes (.shape, .ps, .skel...) files from a directory into a shapeCache.
 	 *	same as preLoadShapesFromDirectory() but take a BNP name which must have been added with
@@ -86,7 +91,7 @@ public:
 	 *	\param bnpName eg: "characters.bnp" (NB: set the bigFileNAme without any path).
 	 */
 	virtual void	preLoadShapesFromBNP(const std::string &shapeCacheName, 
-		const std::string &bnpName, const std::string &wildCard) =0;
+		const std::string &bnpName, const std::string &wildCard, NLMISC::IProgressCallback *progress = NULL) =0;
 
 };
 

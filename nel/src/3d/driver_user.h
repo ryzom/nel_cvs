@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.20 2002/11/21 15:53:40 berenguier Exp $
+ * $Id: driver_user.h,v 1.21 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,7 +123,7 @@ public:
 
 	/// \name Object
 	// @{
-	CDriverUser();
+	CDriverUser (uint windowIcon = 0);
 	virtual	~CDriverUser();
 	// @}
 

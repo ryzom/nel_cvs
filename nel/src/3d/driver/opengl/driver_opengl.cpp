@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.169 2002/11/14 17:41:20 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.170 2002/12/06 12:41:26 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -269,7 +269,7 @@ CDriverGL::~CDriverGL()
 }
 
 // ***************************************************************************
-bool CDriverGL::init()
+bool CDriverGL::init (uint windowIcon)
 {
 #ifdef WIN32
 	WNDCLASS		wc;
@@ -282,7 +282,7 @@ bool CDriverGL::init()
 		wc.cbClsExtra		= 0;
 		wc.cbWndExtra		= 0;
 		wc.hInstance		= GetModuleHandle(NULL);
-		wc.hIcon			= NULL;
+		wc.hIcon			= (HICON)windowIcon;
 		wc.hCursor			= LoadCursor(NULL,IDC_ARROW);
 		wc.hbrBackground	= WHITE_BRUSH;
 		wc.lpszClassName	= "NLClass";

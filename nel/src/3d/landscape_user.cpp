@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.30 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: landscape_user.cpp,v 1.31 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/progress_callback.h"
 
 using namespace NLMISC;
 
@@ -52,7 +53,7 @@ void	CLandscapeUser::setZonePath(const std::string &zonePath)
 	_ZoneManager.setZonePath(zonePath);
 }
 //****************************************************************************
-void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile)
+void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile, NLMISC::IProgressCallback &progress)
 {
 	NL3D_MEM_LANDSCAPE
 	NL3D_HAUTO_LOAD_LANDSCAPE;
@@ -81,21 +82,49 @@ void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::s
 	farbankFile.close();
 
 
+	// Count tiles
+	uint tileCount = 0;
+	sint	ts;
+	for (ts=0; ts<_Landscape->Landscape.TileBank.getTileSetCount (); ts++)
+	{
+		CTileSet *tileSet=_Landscape->Landscape.TileBank.getTileSet (ts);
+		tileCount += tileSet->getNumTile128();
+		tileCount += tileSet->getNumTile256();
+		tileCount += CTileSet::count;
+	}
+
 	// Second, temporary, flushTiles.
 	//===============================
-	sint	ts;
+	uint tile = 0;
 	for (ts=0; ts<_Landscape->Landscape.TileBank.getTileSetCount (); ts++)
 	{
 		CTileSet *tileSet=_Landscape->Landscape.TileBank.getTileSet (ts);
 		sint tl;
 		for (tl=0; tl<tileSet->getNumTile128(); tl++)
-			_Landscape->Landscape.flushTiles (_Scene->getDriver(), (uint16)tileSet->getTile128(tl), 1);
-		for (tl=0; tl<tileSet->getNumTile256(); tl++)
-			_Landscape->Landscape.flushTiles (_Scene->getDriver(), (uint16)tileSet->getTile256(tl), 1);
-		for (tl=0; tl<CTileSet::count; tl++)
-			_Landscape->Landscape.flushTiles (_Scene->getDriver(), (uint16)tileSet->getTransition(tl)->getTile (), 1);
-	}
+		{
+			// Progress bar
+			progress.progress ((float)tile/(float)tileCount);
+			tile++;
 
+			_Landscape->Landscape.flushTiles (_Scene->getDriver(), (uint16)tileSet->getTile128(tl), 1);
+		}
+		for (tl=0; tl<tileSet->getNumTile256(); tl++)
+		{
+			// Progress bar
+			progress.progress ((float)tile/(float)tileCount);
+			tile++;
+
+			_Landscape->Landscape.flushTiles (_Scene->getDriver(), (uint16)tileSet->getTile256(tl), 1);
+		}
+		for (tl=0; tl<CTileSet::count; tl++)
+		{
+			// Progress bar
+			progress.progress ((float)tile/(float)tileCount);
+			tile++;
+
+			_Landscape->Landscape.flushTiles (_Scene->getDriver(), (uint16)tileSet->getTransition(tl)->getTile (), 1);
+		}
+	}
 }
 
 
@@ -142,7 +171,8 @@ void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius, std::v
 }
 
 //****************************************************************************
-void	CLandscapeUser::refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, std::vector<std::string> &zonesRemoved)
+void	CLandscapeUser::refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, std::vector<std::string> &zonesRemoved, 
+											  NLMISC::IProgressCallback &progress)
 {
 	NL3D_MEM_LANDSCAPE
 	NL3D_HAUTO_LOAD_LANDSCAPE;
@@ -152,8 +182,16 @@ void	CLandscapeUser::refreshAllZonesAround(const CVector &pos, float radius, std
 	std::string		za, zr;
 
 	_ZoneManager.checkZonesAround ((uint)pos.x, (uint)(-pos.y), (uint)radius);
+	refreshZonesAround (pos, radius, za, zr);
+
+	// Zone to load
+	uint zoneToLoad = _ZoneManager.getNumZoneLeftToLoad ();
 	while (_ZoneManager.isWorking())
 	{
+		// Progress bar
+		if (zoneToLoad != 0)
+			progress.progress ((float)(zoneToLoad-_ZoneManager.getNumZoneLeftToLoad ())/(float)zoneToLoad);
+
 		refreshZonesAround (pos, radius, za, zr);
 
 		// some zone added or removed??

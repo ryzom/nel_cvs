@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.136 2002/11/14 17:41:32 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.137 2002/12/06 12:41:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,7 +209,7 @@ public:
 							CDriverGL();
 	virtual					~CDriverGL();
 
-	virtual bool			init();
+	virtual bool			init (uint windowIcon = 0);
 
 	virtual ModeList		enumModes();
 

@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.38 2002/01/09 09:45:37 berenguier Exp $
+ * $Id: tile_bank.cpp,v 1.39 2002/01/21 10:11:33 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -755,7 +755,7 @@ void CTile::clearTile (CTile::TBitmap type)
 
 
 // ***************************************************************************
-const sint CTileSet::_Version=3;
+const sint CTileSet::_Version=4;
 // ***************************************************************************
 const char* CTileSet::_ErrorMessage[CTileSet::errorCount]=
 {
@@ -832,6 +832,7 @@ const CTileSet::TFlagBorder CTileSet::_TransitionFlags[CTileSet::count][4]=
 CTileSet::CTileSet ()
 {
 	// Default, tileset 0
+	_Oriented = false;
 	uint displace;
 	for (displace=FirstDisplace; displace<CountDisplace; displace++)
 		_DisplacementBitmap[displace]=0;
@@ -852,6 +853,12 @@ void CTileSet::serial(IStream &f) throw(EStream)
 	sint streamver = f.serialVersion(_Version);
 
 	CTileBorder tmp;
+
+	// serial the oriented info which tell if the tile has a special orientation
+	if (streamver>=4)
+	{
+		f.serial (_Oriented);
+	}
 
 	// serial vegetable info.
 	if (streamver>=3)

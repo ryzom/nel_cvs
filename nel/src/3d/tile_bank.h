@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.6 2001/12/06 10:15:10 corvazier Exp $
+ * $Id: tile_bank.h,v 1.7 2002/01/21 10:11:33 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -306,6 +306,7 @@ public:
 
 	// set
 	void setName (const std::string& name);
+	void setOriented (bool oriented) { _Oriented = oriented; }
 	void setTile128 (int indexInTileSet, const std::string& name, CTile::TBitmap type, CTileBank& bank);
 	void setTile256 (int indexInTileSet, const std::string& name, CTile::TBitmap type, CTileBank& bank);
 	void setTileTransition (TTransition transition, const std::string& name, CTile::TBitmap type, CTileBank& bank, const CTileBorder& border);
@@ -329,6 +330,10 @@ public:
 
 	// get
 	const std::string& getName () const;
+	bool getOriented () const
+	{
+		return _Oriented;
+	}
 	sint getNumTile128 () const
 	{
 		return (sint)_Tile128.size();
@@ -418,6 +423,7 @@ private:
 
 private:
 	std::string	_Name;
+	bool _Oriented;
 	std::vector<sint32>	_Tile128;
 	std::vector<sint32>	_Tile256;
 	CTileSetTransition _TileTransition[count];

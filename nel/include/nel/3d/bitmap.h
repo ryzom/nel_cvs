@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.13 2001/01/05 10:57:30 berenguier Exp $
+ * $Id: bitmap.h,v 1.14 2001/01/05 15:56:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,9 +68,14 @@ const uint8	MAX_MIPMAP = 12;
 
 /**
  * Class Bitmap
+ *
  * \author Stephane Coutelas
  * \author Nevrax France
  * \date 2000
+ */
+/* *** IMPORTANT ********************
+ * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
+ * **********************************
  */
 class CBitmap
 {
@@ -197,16 +202,24 @@ private :
 
 public:
 
-	enum TType { RGBA, 
-				 DXTC1 = NL_MAKEFOURCC('D','X', 'T', '1'),
-				 DXTC1Alpha,
-				 DXTC3 = NL_MAKEFOURCC('D','X', 'T', '3'), 
-				 DXTC5 = NL_MAKEFOURCC('D','X', 'T', '5'), 
-				 LUMINANCE,
-				 ALPHA,
-				 ALPHA_LUMINANCE 
+	enum TType 
+	{ 
+		RGBA=0,
+		Luminance,
+		Alpha,
+		AlphaLuminance,
+		DXTC1,
+		DXTC1Alpha,
+		DXTC3,
+		DXTC5,
+		ModeCount,
+		DonTKnow=0xffffffff
 	} PixelFormat;
 
+	static const uint32 bitPerPixels[ModeCount];
+	static const uint32 DXTC1HEADER;
+	static const uint32 DXTC3HEADER;
+	static const uint32 DXTC5HEADER;
 
 	CBitmap()
 	{
@@ -230,7 +243,7 @@ public:
 
 
 	/** 
-	 * Make a dummy "?" texture. Usefull for file not found. Mode is RGBA.
+	 * Make a dummy "?" texture. Usefull for file not found. Mode is rgba.
 	 */
 	void	makeDummy();
 
@@ -256,7 +269,7 @@ public:
 	
 	/**
 	 * Convert bitmap to another type
-	 * conversion to RGBA always work. No-op if already RGBA.
+	 * conversion to rgba always work. No-op if already rgba.
 	 * \param type new type for the bitmap
 	 * \return true if conversion succeeded, false else
 	 */
@@ -266,7 +279,7 @@ public:
 
 	/** 
 	 * Return the format of pixels stored at the present time in the object buffer.
-	 * \return Pixel format (DXTC1,DXTC1A, DXTC3, DXTC5, PIC_TGA, PIC_RGBA)
+	 * \return Pixel format (rgba luminance alpha alphaLuminance dxtc1 dxtc1Alpha dxtc3 dxtc5)
 	 */	
 	TType getPixelFormat() const
 	{
@@ -324,8 +337,10 @@ public:
 
 	/** 
 	 * Reset the buffer. Mipmaps are deleted and bitmap is not valid anymore.
+	 *
+	 * \param type is the new type used for this texture
 	 */	
-	void reset();
+	void reset(TType type=RGBA);
 	
 		
 	/** 
@@ -343,13 +358,14 @@ public:
 	 *
 	 * \param nNewWidth width after resize
 	 * \param nNewHeight height after resize
+	 * \param newType is the new type of the bitmap. If don_t_know, keep the same pixel format that before.
 	 */	
-	void resize (sint32 nNewWidth, sint32 nNewHeight);
+	void resize (sint32 nNewWidth, sint32 nNewHeight, TType newType=DonTKnow);
 
 
 	/** 
 	 * Write a TGA (24 or 32 bits) from the object pixels buffer.
-	 * If the current pixel format is not RGBA then the method does nothing
+	 * If the current pixel format is not rgba then the method does nothing
 	 * \param f IStream (must be a reading stream)
 	 * \param d depth : 24 or 32
 	 * \return 1 if succeed, 0 else

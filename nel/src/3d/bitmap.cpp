@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.14 2001/01/05 10:59:54 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.15 2001/01/05 15:57:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,9 +51,21 @@ struct EAllocationFailure : public Exception
 void blendFromui(NLMISC::CRGBA &c0, NLMISC::CRGBA &c1, uint coef);
 uint32 blend(uint32 &n0, uint32 &n1, uint32 coef0);
 
+const uint32 CBitmap::bitPerPixels[ModeCount]=
+{
+	32,		// RGBA
+	8,		// Luminance
+	8,		// Alpha
+	16,		// AlphaLuminance
+	4,		// DXTC1
+	4,		// DXTC1Alpha
+	8,		// DXTC3
+	8		// DXTC5
+};
 
-
-
+const uint32 CBitmap::DXTC1HEADER = NL_MAKEFOURCC('D','X', 'T', '1');
+const uint32 CBitmap::DXTC3HEADER = NL_MAKEFOURCC('D','X', 'T', '3');
+const uint32 CBitmap::DXTC5HEADER = NL_MAKEFOURCC('D','X', 'T', '5');
 
 /*-------------------------------------------------------------------*\
 								load		
@@ -197,7 +209,18 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f)
 	_Height = _DDSSurfaceDesc[2];
 	_Width  = _DDSSurfaceDesc[3];
 	_MipMapCount= (uint8) _DDSSurfaceDesc[6];
-	PixelFormat= static_cast<TType>(_DDSSurfaceDesc[20]);
+	switch (_DDSSurfaceDesc[20])
+	{
+	case DXTC1HEADER:
+		PixelFormat=DXTC1;
+		break;
+	case DXTC3HEADER:
+		PixelFormat=DXTC3;
+		break;
+	case DXTC5HEADER:
+		PixelFormat=DXTC5;
+		break;
+	}
 	
 	flags = _DDSSurfaceDesc[19]; //PixelFormat flags
 	
@@ -414,7 +437,7 @@ bool CBitmap::rgbaToAlphaLuminance()
 		_Data[m].resize(0);
 		_Data[m] = dataTmp;
 	}
-	PixelFormat = ALPHA_LUMINANCE;
+	PixelFormat = AlphaLuminance;
 	return true;
 }
 
@@ -441,7 +464,7 @@ bool CBitmap::luminanceToAlphaLuminance()
 		}
 		_Data[m] = dataTmp;
 	}
-	PixelFormat = ALPHA_LUMINANCE;
+	PixelFormat = AlphaLuminance;
 	return true;
 }
 
@@ -469,7 +492,7 @@ bool CBitmap::alphaToAlphaLuminance()
 		}
 		_Data[m] = dataTmp;
 	}
-	PixelFormat = ALPHA_LUMINANCE;
+	PixelFormat = AlphaLuminance;
 	return true;
 }
 
@@ -498,7 +521,7 @@ bool CBitmap::rgbaToLuminance()
 		_Data[m].resize(0);
 		_Data[m] = dataTmp;
 	}
-	PixelFormat = LUMINANCE;
+	PixelFormat = Luminance;
 	return true;
 }
 
@@ -525,7 +548,7 @@ bool CBitmap::alphaToLuminance()
 		}
 		_Data[m] = dataTmp;
 	}
-	PixelFormat = LUMINANCE;
+	PixelFormat = Luminance;
 	return true;
 }
 
@@ -557,7 +580,7 @@ bool CBitmap::alphaLuminanceToLuminance()
 		_Data[m].resize(0);
 		_Data[m] = dataTmp;
 	}
-	PixelFormat = LUMINANCE;
+	PixelFormat = Luminance;
 	return true;
 }
 
@@ -588,7 +611,7 @@ bool CBitmap::rgbaToAlpha()
 		_Data[m].resize(0);
 		_Data[m] = dataTmp;
 	}
-	PixelFormat = ALPHA;
+	PixelFormat = Alpha;
 	return true;
 }
 
@@ -614,7 +637,7 @@ bool CBitmap::luminanceToAlpha()
 		}
 		_Data[m] = dataTmp;
 	}
-	PixelFormat = ALPHA;
+	PixelFormat = Alpha;
 	return true;
 }
 
@@ -642,7 +665,7 @@ bool CBitmap::alphaLuminanceToAlpha()
 		_Data[m].resize(0);
 		_Data[m] = dataTmp;
 	}
-	PixelFormat = ALPHA;
+	PixelFormat = Alpha;
 	return true;
 }
 
@@ -658,15 +681,15 @@ bool CBitmap::convertToLuminance()
 			return rgbaToLuminance();
 			break;
 
-		case LUMINANCE :
+		case Luminance :
 			return true;
 			break;
 
-		case ALPHA :
+		case Alpha :
 			return alphaToLuminance();
 			break;
 
-		case ALPHA_LUMINANCE :
+		case AlphaLuminance :
 			return alphaLuminanceToLuminance();
 			break;
 
@@ -689,15 +712,15 @@ bool CBitmap::convertToAlpha()
 			return rgbaToAlpha();
 			break;
 
-		case LUMINANCE :
+		case Luminance :
 			return luminanceToAlpha();
 			break;
 
-		case ALPHA :
+		case Alpha :
 			return true;
 			break;
 
-		case ALPHA_LUMINANCE :
+		case AlphaLuminance :
 			return alphaLuminanceToAlpha();
 			break;
 
@@ -720,15 +743,15 @@ bool CBitmap::convertToAlphaLuminance()
 			return rgbaToAlphaLuminance();
 			break;
 
-		case LUMINANCE :
+		case Luminance :
 			return luminanceToAlphaLuminance();
 			break;
 
-		case ALPHA :
+		case Alpha :
 			return alphaToAlphaLuminance();
 			break;
 
-		case ALPHA_LUMINANCE :
+		case AlphaLuminance :
 			return true;
 			break;
 
@@ -762,15 +785,15 @@ bool CBitmap::convertToRGBA()
 			return decompressDXT5();		
 			break;
 
-		case LUMINANCE :
+		case Luminance :
 			return luminanceToRGBA();
 			break;
 
-		case ALPHA :
+		case Alpha :
 			return alphaToRGBA();
 			break;
 
-		case ALPHA_LUMINANCE :
+		case AlphaLuminance :
 			return alphaLuminanceToRGBA();
 			break;
 
@@ -798,15 +821,15 @@ bool CBitmap::convertToType(CBitmap::TType type)
 			return convertToDXTC5();		
 			break;
 
-		case LUMINANCE :
+		case Luminance :
 			return convertToLuminance();
 			break;
 
-		case ALPHA :
+		case Alpha :
 			return convertToAlpha();
 			break;
 
-		case ALPHA_LUMINANCE :
+		case AlphaLuminance :
 			return convertToAlphaLuminance();
 			break;
 
@@ -1342,7 +1365,7 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 /*-------------------------------------------------------------------*\
 							resize
 \*-------------------------------------------------------------------*/
-void CBitmap::resize (sint32 nNewWidth, sint32 nNewHeight)
+void CBitmap::resize (sint32 nNewWidth, sint32 nNewHeight, TType newType)
 {
 	// Deleting mipmaps
 	if(_MipMapCount!=0)
@@ -1355,18 +1378,24 @@ void CBitmap::resize (sint32 nNewWidth, sint32 nNewHeight)
 		_MipMapCount = 0;
 	}
 
+	// Change type of bitmap ?
+	if (newType!=DonTKnow)
+		PixelFormat=newType;
+
 	_Width = nNewWidth;
 	_Height = nNewHeight;
-	
+
 	NLMISC::contReset(_Data[0]); // free memory
-	_Data[0].resize(nNewWidth*nNewHeight*4);
+
+	// resize the buffer
+	_Data[0].resize (((uint32)(nNewWidth*nNewHeight)*bitPerPixels[PixelFormat])/8);
 }
 
 
 /*-------------------------------------------------------------------*\
 							reset
 \*-------------------------------------------------------------------*/
-void CBitmap::reset()
+void CBitmap::reset(TType type)
 {
 	NLMISC::contReset(_Data[0]);
 	_Data[0].resize(0);
@@ -1381,6 +1410,8 @@ void CBitmap::reset()
 	}
 	_Width = _Height = _MipMapCount = 0;
 	
+	// Change pixel format
+	PixelFormat=type;
 }
 
 

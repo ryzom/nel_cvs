@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.2 2002/02/20 11:20:10 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.3 2002/02/21 17:36:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,498 +27,537 @@
 #include "3d/ps_macro.h"
 #include "3d/driver.h"
 #include "3d/particle_system.h"
+#include "3d/texture_mem.h"
+#include "nel/misc/smart_ptr.h"
+
+#include <memory>
 
 namespace NL3D 
 {
+static NLMISC::CRGBA GradientB2W[] = {NLMISC::CRGBA(0, 0, 0, 0), NLMISC::CRGBA(255, 255, 255, 255) };
+
+/// private use : this create a gradient texture that goew from black to white
+static ITexture *CreateGradientTexture()
+{
+	std::auto_ptr<CTextureMem> tex(new CTextureMem((uint8 *) &GradientB2W,
+												   sizeof(GradientB2W),
+												   false, /* dont delete */
+												   false, /* not a file */
+												   2, 1)
+								  );
+	tex->setWrapS(ITexture::Clamp);
+	tex->setShareName("#GradBW");
+	return tex.release();
+}
 
 
 ///////////////////////////////
 // CPSTailDot implementation //
 ///////////////////////////////
 
-///==========================================================================================
-// ctor
-CPSTailDot::CPSTailDot(uint32 nbSegmentInTail) : _TailNbSeg(nbSegmentInTail), _ColorFading(true)
-												 ,_SystemBasisEnabled(false)
+CPSTailDot::TVBMap			CPSTailDot::_VBMap;			  // index / vertex buffers with no color
+CPSTailDot::TVBMap			CPSTailDot::_FadedVBMap;	  // index / vertex buffers for constant color with fading
+CPSTailDot::TVBMap			CPSTailDot::_ColoredVBMap;    // index / vertex buffer + colors
+CPSTailDot::TVBMap			CPSTailDot::_FadedColoredVBMap;    // index / vertex buffer + faded colors
+
+//=======================================================	
+CPSTailDot::CPSTailDot() : _ColorFading(false), _GlobalColor(false), _Touch(true)
 {
-	nlassert(_TailNbSeg <= 255);
-	init();
-	_Name = std::string("TailDot");
+	setInterpolationMode(Linear);
+	setSegDuration(0.04f);
 }
 
-///==========================================================================================
-uint32 CPSTailDot::getMaxNumFaces(void) const
+//=======================================================	
+CPSTailDot::~CPSTailDot()
 {
-	nlassert(_Owner);
-	return _Owner->getMaxSize() * _TailNbSeg;
+//	delete _DyingRibbons;
 }
 
-///==========================================================================================
+//=======================================================	
+void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+
+	sint ver = f.serialVersion(2);
+
+	if (ver == 1)
+	{
+		nlassert(f.isReading());
+
+		/// we had CPSParticle::serial(f), but this is not the base class anymore, so we emulate this...
+		/// version 2 : auto-lod saved
+		sint ver2 = f.serialVersion(2);
+
+		// here is CPSLocatedBindable::serial(f)
+		sint ver3 = f.serialVersion(4);
+		f.serialPtr(_Owner);
+		if (ver3 > 1) f.serialEnum(_LOD);
+		if (ver3 > 2) f.serial(_Name);
+		if (ver3 > 3) 
+		{
+			if (f.isReading())
+			{
+				uint32 id;
+				f.serial(id);
+				setExternID(id);
+			}
+			else
+			{
+				f.serial(_ExternID);
+			}
+		}
+
+		if (ver2 >= 2)
+		{
+			bool bDisableAutoLOD;
+			f.serial(bDisableAutoLOD);
+			disableAutoLOD(bDisableAutoLOD);
+		}
+
+		uint32 tailNbSegs;
+		bool   colorFading;
+		bool   systemBasisEnabled;
+
+		CPSColoredParticle::serialColorScheme(f);	
+		f.serial(tailNbSegs, colorFading, systemBasisEnabled);
+		
+		_NbSegs = tailNbSegs >> 1;
+		if (_NbSegs < 2) _NbSegs = 2;
+		setInterpolationMode(Linear);
+
+		serialMaterial(f);
+
+
+		nlassert(_Owner);
+		resize(_Owner->getMaxSize());
+		initDateVect();		
+		resetFromOwner();
+	}
+
+	if (ver >= 2)
+	{
+		CPSRibbonBase::serial(f);
+		CPSColoredParticle::serialColorScheme(f);
+		CPSMaterial::serialMaterial(f);
+		bool colorFading = _ColorFading;
+		f.serial(colorFading);
+		_ColorFading = colorFading;
+
+		if (f.isReading())
+		{
+			touch();
+		}
+	}	
+}
+
+
+//=======================================================	
+void CPSTailDot::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
+{	
+	if (pass == PSMotion)
+	{	
+		if (!_Parametric)
+		{
+			updateGlobals();
+		}
+	}
+	else
+	if (
+		(pass == PSBlendRender && hasTransparentFaces())
+		|| (pass == PSSolidRender && hasOpaqueFaces())
+		)
+	{
+		uint32 step;
+		uint   numToProcess;
+		computeSrcStep(step, numToProcess);	
+		if (!numToProcess) return;
+		
+		/// update the material color
+		CParticleSystem &ps = *(_Owner->getOwner());	
+		_Mat.setColor(ps.getGlobalColor());
+		
+		/** We support Auto-LOD for ribbons, although there is a built-in LOD (that change the geometry rather than the number of ribbons)
+		  * that gives better result (both can be used simultaneously)
+		  */
+
+		displayRibbons(numToProcess, step);
+
+	}
+	else 
+	if (pass == PSToolRender) // edition mode only
+	{			
+		//showTool();
+	}	
+}
+
+
+//=======================================================	
+void CPSTailDot::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+{
+	CPSRibbonBase::newElement(emitterLocated, emitterIndex);
+	newColorElement(emitterLocated, emitterIndex);	
+}
+
+
+//=======================================================	
+void CPSTailDot::deleteElement(uint32 index)
+{
+	CPSRibbonBase::deleteElement(index);
+	deleteColorElement(index);	
+}
+
+
+//=======================================================	
+void CPSTailDot::resize(uint32 size)
+{
+	nlassert(size < (1 << 16));
+	CPSRibbonBase::resize(size);	
+	resizeColor(size);	
+}
+
+//=======================================================	
+void CPSTailDot::updateMatAndVbForColor(void)
+{
+	touch();
+}
+
+//==========================================================================	
+void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
+{	
+	if (!nbRibbons) return;
+	nlassert(_Owner);	
+	CPSRibbonBase::updateLOD();
+	if (_UsedNbSegs < 2) return;
+	const float date = _Owner->getOwner()->getSystemDate();
+	uint8						*currVert;
+	CVBnPB						&VBnPB = getVBnPB(); // get the appropriate vb (built it if needed)
+	CVertexBuffer				&VB = VBnPB.VB;
+	CPrimitiveBlock				&PB = VBnPB.PB;
+	const uint32				vertexSize  = VB.getVertexSize();
+	uint						colorOffset;
+	const uint32				vertexSizeX2  = vertexSize << 1;		
+	CMatrix mat =  _Owner->isInSystemBasis() ? getViewMat()  *  getSysMat()
+																  : getViewMat();
+	IDriver *drv = this->getDriver();
+	setupDriverModelMatrix();
+	drv->activeVertexBuffer(VB);
+	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose		
+	const uint numRibbonBatch = getNumRibbonsInVB(); // number of ribons to process at once		
+	if (_UsedNbSegs == 0) return;	
+	////////////////////
+	// material setup //
+	////////////////////
+	CParticleSystem &ps = *(_Owner->getOwner());
+	bool useGlobalColor = ps.getColorAttenuationScheme() != NULL;
+	if (useGlobalColor != _GlobalColor)
+	{
+		touch();
+	}
+	updateMaterial();
+	setupGlobalColor();
+	//
+	if (_ColorScheme)
+	{
+		colorOffset = VB.getColorOff();	
+	}	
+	//	
+	uint toProcess;
+	uint ribbonIndex = 0; // index of the first ribbon in the batch being processed	
+	uint32 fpRibbonIndex = 0; // fixed point index in source
+	do
+	{
+		toProcess = std::min((uint) (nbRibbons - ribbonIndex) /* = left to do */, numRibbonBatch);
+		currVert = (uint8 *) VB.getVertexCoordPointer();
+			
+		/// compute colors colors
+		if (_ColorScheme)
+		{			
+			_ColorScheme->makeN(this->_Owner, ribbonIndex, currVert + colorOffset, vertexSize, toProcess, _NbSegs + 1, srcStep);			
+		}			
+		uint k = toProcess;
+		const uint ribbonSize = vertexSize * (_NbSegs + 1); // size of a ribbon in the vertex buffer											
+		//////////////////////////////////////////////////////////////////////////////////////
+		// interpolate and project points the result is directly setup in the vertex buffer //
+		//////////////////////////////////////////////////////////////////////////////////////
+		if (!_Parametric)
+		{
+
+			//////////////////////
+			// INCREMENTAL CASE //
+			//////////////////////
+			do
+			{
+				// the parent class has a method to get the ribbons positions
+				computeRibbon((uint) (fpRibbonIndex >> 16), (CVector *) currVert, vertexSize);
+				currVert += vertexSize * (_NbSegs + 1);
+				fpRibbonIndex += srcStep;
+			}
+			while (--k);			
+		}
+		else
+		{
+			//////////////////////
+			// PARAMETRIC  CASE //
+			//////////////////////
+			do
+			{
+				// we compute each pos thanks to the parametric curve				
+				_Owner->integrateSingle(date - _UsedSegDuration * (_UsedNbSegs + 1), _UsedSegDuration, _UsedNbSegs + 1, (uint) (fpRibbonIndex >> 16),
+										(NLMISC::CVector *) currVert, vertexSize);
+				currVert += vertexSize * (_NbSegs + 1);
+				fpRibbonIndex += srcStep;
+			}
+			while (--k);
+			
+		}																				
+		PB.setNumLine(_UsedNbSegs * toProcess);
+		// display the result
+		drv->render(PB, _Mat);
+		ribbonIndex += toProcess;		
+	}
+	while (ribbonIndex != nbRibbons);
+}	
+
+//==========================================================================	
 bool CPSTailDot::hasTransparentFaces(void)
 {
 	return getBlendingMode() != CPSMaterial::alphaTest ;
 }
 
-///==========================================================================================
+
+//==========================================================================	
 bool CPSTailDot::hasOpaqueFaces(void)
 {
 	return !hasTransparentFaces();
 }
 
-
-///==========================================================================================
-void CPSTailDot::init(void)
+//==========================================================================	
+uint32 CPSTailDot::getMaxNumFaces(void) const
 {
-	_Mat.setLighting(false);	
-	_Mat.setZFunc(CMaterial::less);
-	_Mat.setDoubleSided(true);
-
-	_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag );	
+	nlassert(_Owner);
+	return _Owner->getMaxSize() * _NbSegs;	
 }
-	
-///==========================================================================================
-void CPSTailDot::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
+
+
+
+//==========================================================================	
+CPSTailDot::CVBnPB &CPSTailDot::getVBnPB()
 {
-	if (
-			(pass == PSBlendRender && hasTransparentFaces())
-			|| (pass == PSSolidRender && hasOpaqueFaces())
-			)
+	/// choose the right vb
+	TVBMap &map = _ColorScheme ? (_ColorFading ? _FadedColoredVBMap : _ColoredVBMap)		// per ribbon coloçr
+							   : (_ColorFading ? _FadedVBMap : _VBMap);     // global color
+	TVBMap::iterator it = map.find(_UsedNbSegs + 1);
+	if (it != map.end())
 	{
-		draw(pass == PSSolidRender);
+		return it->second;
 	}
-	else 
-	if (pass == PSToolRender) // edition mode only
-	{			
-		showTool();
-	}
-	else if (pass == PSMotion)
+	else	// must create this vb, with few different size, it is still interseting, though they are only destroyed at exit
 	{
-		PARTICLES_CHECK_MEM;
-		// the number of particles
-		const uint32 size = _Owner->getSize();
+		const uint numRibbonInVB = getNumRibbonsInVB();
+		CVBnPB &VBnPB = map[_UsedNbSegs + 1]; // make an entry
 
-		if (!size) return;	
+		/// set the vb format & size
+		/// In the case of a ribbon with color and fading, we encode the fading in a texture
+		/// If the ribbon has fading, but only a global color, we encode it in the primary color
+		CVertexBuffer &vb = VBnPB.VB;
+		vb.setVertexFormat(CVertexBuffer::PositionFlag	
+						   |(_ColorScheme || _ColorFading ? CVertexBuffer::PrimaryColorFlag : 0)
+						   | (_ColorScheme && _ColorFading ? CVertexBuffer::TexCoord0Flag : 0));
 
-		// size of the vertices
-		const uint32 vSize = _Vb.getVertexSize();
+		vb.setNumVertices((_UsedNbSegs + 1) * numRibbonInVB ); // 1 seg = 1 line + terminal vertices
 
-		// size of all the vertices for a tail
-		const uint32 tailVSize = vSize * (_TailNbSeg + 1);
-		
-		// offset of the color in vertices
-		const uint32 colorOff = _Vb.getColorOff();
-
-		// offset for the head in a tail (the last vertex)
-		const uint32 headOffset = vSize * _TailNbSeg;
-
-		// address of the firstVertex
-
-		uint8 *firstVertex = (uint8 *) _Vb.getVertexCoordPointer();
-
-		// loop counters
-		uint32 k, l;
-
-		// pointer to the current vertex
-		uint8 *currVertex;
-		_Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
-
-
-		TPSAttribVector::const_iterator posIt, endPosIt = _Owner->getPos().end();
-			
-		// decal the whole vertex buffer (but not the last vertex)
-		
-		// TODO : cache optimization
-
-		if (_ColorScheme && _ColorFading)
+		// set the primitive block size
+		CPrimitiveBlock &pb = VBnPB.PB;
+		pb.setNumLine(_UsedNbSegs * numRibbonInVB);
+		/// Setup the pb and vb parts. Not very fast but executed only once
+		uint vbIndex = 0;
+		uint pbIndex = 0; 
+		for (uint i = 0; i < numRibbonInVB; ++i)
 		{
-
-			// the first color is set to black
-			// other are modulated by the ratio of the intensity n and the intensity n + 1
-			
-			// the brightness increase between each segment in the tail
-			const float lumiStep = 1.f / _TailNbSeg;
-			float lumi = lumiStep;
-
-			// set the first vertex to black				
-			currVertex = firstVertex;
-			for (k = 0; k < size; ++k)
-			{
-				CHECK_VERTEX_BUFFER(_Vb, currVertex + colorOff);
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
-
-
-				*(CRGBA *) (currVertex + colorOff) = CRGBA::Black;
-				// copy the next vertex pos
-				*(CVector *) currVertex = *(CVector *) (currVertex + vSize);
-				currVertex += tailVSize ;			
-			}
-
-			for (l = 1; l < _TailNbSeg; ++l)
-			{
-				currVertex = firstVertex + l * vSize;
-				uint8 ratio = (uint8) (255.0f * lumi / (lumi +  lumiStep));
-				lumi += lumiStep;			
-				for (k = 0; k < size; ++k)
-				{
-					CHECK_VERTEX_BUFFER(_Vb, currVertex + colorOff);
-					CHECK_VERTEX_BUFFER(_Vb, currVertex + vSize + colorOff);
-					// get the color of the next vertex and modulate
-					((CRGBA *) (currVertex + colorOff))->modulateFromui(*(CRGBA *) (currVertex + vSize + colorOff), ratio);					
-
-					// copy the next vertex pos
-					CHECK_VERTEX_BUFFER(_Vb, currVertex);
-					*(CVector *) currVertex = *(CVector *) (currVertex + vSize);
-					currVertex += tailVSize ;			
-				}
+			for (uint k = 0; k < (_UsedNbSegs + 1); ++k)
+			{								
 				
-			}			
-		}
-		else if ( !_ColorScheme || _ColorFading)
-		{		
-			// we just decal the pos
-			// we copy some extra pos, but we avoid 2 nested loops
-			const uint32 nbVerts = (size * (_TailNbSeg + 1)) - 1;
-			const uint8 *lastVert = firstVertex + nbVerts * vSize;
-
-			for (currVertex = firstVertex; currVertex != lastVert; )
-			{
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
-				*(CVector *) currVertex = *(CVector *) (currVertex + vSize);			
-				currVertex += vSize;
-			}	
-		}
-		else
-		{		
-			// we just copy the colors and the position
-			// memcpy will copy some extra bytes, but it should remains fasters that 2 nested loops
-			memcpy(firstVertex, firstVertex + vSize, size * tailVSize  - vSize); 		
-		}
-
-		// we fill the head of particles with the right color
-		// With constant color, the setup was done in setupColor
-		if (_ColorScheme)
-		{
-			_ColorScheme->make(_Owner, 0,  firstVertex + headOffset + colorOff
-								, tailVSize, _Owner->getSize());		
-		}
-
-		currVertex = firstVertex + headOffset;
-		// If we are in the same basis than the located that hold us, we can copy coordinate directly
-		if (_SystemBasisEnabled == _Owner->isInSystemBasis())
-		{	
-			for (posIt = _Owner->getPos().begin(); posIt != endPosIt; ++posIt)
-			{
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
-				*(CVector *) currVertex = *posIt;
-				currVertex += tailVSize;
-			}
-		}
-		else
-		{
-			// the tail are not in the same basis, we need a conversion matrix
-			const CMatrix &m = _SystemBasisEnabled ?   /*_Owner->getOwner()->*/getInvertedSysMat() 
-													 : /*_Owner->getOwner()->*/getSysMat();
-			// copy the position after transformation
-			for (posIt = _Owner->getPos().begin(); posIt != endPosIt; ++posIt)
-			{
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
-				*(CVector *) currVertex = m * (*posIt);
-				currVertex += tailVSize;
-			}
-		}
-	}
-}
-
-///==========================================================================================
-void CPSTailDot::draw(bool opaque)
-{
-	const uint32 size = _Owner->getSize();
-	if (!size) return;		
-
-	/// update material color
-	CParticleSystem &ps = *(_Owner->getOwner());	
-
-	IDriver *driver = getDriver();
-	if (_SystemBasisEnabled)
-	{
-		driver->setupModelMatrix(/*_Owner->getOwner()->*/getSysMat());
-	}
-	else
-	{
-		driver->setupModelMatrix(CMatrix::Identity);
-	}	
-	driver->activeVertexBuffer(_Vb);		
-	_Pb.setNumLine(size * _TailNbSeg);
-	driver->render(_Pb, _Mat);
-
-	PARTICLES_CHECK_MEM
-}
-
-///==========================================================================================
-void CPSTailDot::resize(uint32 size)
-{	
-	nlassert(size < (1 << 16));
-	resizeColor(size);
-	resizeVb(_TailNbSeg, size);	
-}
-
-///==========================================================================================
-void CPSTailDot::resizeVb(uint32 oldTailSize, uint32 size)
-{
-	
-	if (!_Owner) return; // no attachement occured yet ...
-
-	// calculate the primitive block : we got lines
-		
-	uint32 k, l;
-
-	_Pb.reserveLine(_TailNbSeg * size);
-
-	uint32 currIndex = 0;
-	uint lineIndex = 0;
-
-	for (k = 0; k < size; ++k)
-	{
-		for (l = 0; l < _TailNbSeg; ++l)
-		{
-			_Pb.setLine(lineIndex , currIndex + l, currIndex + l + 1);		
-			++lineIndex;
-		}
-
-		currIndex += _TailNbSeg + 1;		
-	}
-
-	const uint32 oldSize = _Owner->getSize(); // number of used particles
-	
-
-	_Vb.setVertexFormat(CVertexBuffer::PrimaryColorFlag | CVertexBuffer::PositionFlag);
-	_Vb.setNumVertices(size * (_TailNbSeg + 1));
-
-	// fill the vertex buffer
-
-	// particle that were present before
-	// their old positions are copied
-
-	// if the tail are not in the same basis, we need a conversion matrix
-
-	const CMatrix *m;
-
-	if (_SystemBasisEnabled == _Owner->isInSystemBasis())
-	{
-		m = &CMatrix::Identity;
-	}
-	else
-	{
-		m = _SystemBasisEnabled ?  & /*_Owner->getOwner()->*/getInvertedSysMat() 
-								: &/*_Owner->getOwner()->*/getSysMat();
-	}
-
-	const TPSAttribVector &oldPos = _Owner->getPos();
-	currIndex = 0;
-	CVector currPos;
-
-	for (k = 0; k < _Owner->getSize(); ++k)
-	{
-		currPos = *m * oldPos[k];
-		for (l = 0; l <= _TailNbSeg; ++l)
-		{
-			_Vb.setVertexCoord( currIndex + l , currPos);			
-		}
-		currIndex += _TailNbSeg + 1;		
-	}	
-	// we don't need to setup the following vertices coordinates, they will be filled with newElement anyway...
-	setupColor();	
-}
-
-///==========================================================================================
-void CPSTailDot::setupColor(void)
-{
-	if (_Owner)
-	{
-		// we setup the WHOLE vb so, we need to get the max number of particles
-		const uint32 size = _Owner->getMaxSize();	
-
-		// size of the vertices
-		const uint32 vSize = _Vb.getVertexSize();
-
-		// offset of the color in vertices
-		const uint32 colorOff = _Vb.getColorOff();
-
-		// first vertex
-		uint8 *firstVertex = (uint8 *) _Vb.getVertexCoordPointer();
-		
-		// point the current vertex color
-		uint8 *currVertex =  firstVertex + colorOff;
-
-		// loop counters
-		uint k, l;
-
-		if (_ColorScheme || !_ColorFading)
-		{
-			// we can't precompute the colors, so at first, we fill all with black
-			const CRGBA &color = _ColorScheme ? CRGBA::Black : _Color;
-			for (k = 0; k < size * (_TailNbSeg + 1); ++k)
-			{
-					CHECK_VERTEX_BUFFER(_Vb, currVertex);
-					*(CRGBA *) currVertex = color;
-					currVertex += vSize;
-			}
-		}
-		else // constant color with color fading
-		{
-			const float lumiStep = 255.0f / _TailNbSeg;
-			const  uint32 tailVSize = vSize * (_TailNbSeg + 1); // size of a whole tail in the vertex buffer
-			float lumi = 0.f;
-			for (l = 0; l <= _TailNbSeg; ++l)
-			{
-				currVertex = firstVertex + l * vSize + colorOff;
-				CRGBA col;
-				col.modulateFromui(_Color, (uint8) lumi);
-				lumi += lumiStep;			
-				for (k = 0; k < size; ++k)
-				{				
-					CHECK_VERTEX_BUFFER(_Vb, currVertex);
-					*(CRGBA *)currVertex = col;				
-					currVertex += tailVSize ;			
+				if (_ColorScheme && _ColorFading)
+				{
+					vb.setTexCoord(vbIndex, 0, 0.5f - 0.5f * ((float) k / _UsedNbSegs), 0);
+				}
+				else if (_ColorFading)
+				{
+					uint8 intensity = (uint8) (255 * (1.f - ((float) k / _UsedNbSegs)));
+					NLMISC::CRGBA col(intensity, intensity, intensity, intensity);
+					vb.setColor(vbIndex, col);						
+				}
+					
+					/// add 1 line in the primitive block
+				if (k != _UsedNbSegs)
+				{					
+					pb.setLine(pbIndex ++, vbIndex, vbIndex + 1);					
 				}				
+				++vbIndex;
 			}
 		}
-	}	
+		return VBnPB;
+	}
 }
 
-///==========================================================================================
-void CPSTailDot::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+//==========================================================================	
+uint	CPSTailDot::getNumRibbonsInVB() const
 {
-	
-	newColorElement(emitterLocated, emitterIndex);
-	// if we got a constant color, everything has been setupped before	
-	const uint32 index = _Owner->getNewElementIndex(); // the index of the element to be created
-	const uint32 vSize =_Vb.getVertexSize();	// vertex size
-	uint8 *currVert = (uint8 *) _Vb.getVertexCoordPointer() + (index * (_TailNbSeg + 1)) * vSize; // 
+	/// approximation of the max number of vertices we want in a vb
+	const uint vertexInVB = 256;	
+	return std::max(1u, (uint) (vertexInVB / (_UsedNbSegs + 1)));
+}
 
-	const CVector &pos = _Owner->getPos()[index];	
+
+//==========================================================================	
+void	CPSTailDot::updateMaterial()
+{
+	if (!_Touch) return;
+
+	static NLMISC::CRefPtr<ITexture> ptGradTexture;
+
+	CParticleSystem &ps = *(_Owner->getOwner());
 	if (_ColorScheme)
-	{
-		// check wether the located is in the same basis than the tail
-		// Otherwise, a conversion is required for the pos
-		if (_SystemBasisEnabled == _Owner->isInSystemBasis())
+	{	// PER RIBBON COLOR
+		if (ps.getColorAttenuationScheme())
 		{
-			for (uint32 k = 0; k < _TailNbSeg + 1; ++k)
+			if (_ColorFading) // global color + fading + per ribbon color
 			{
-				CHECK_VERTEX_BUFFER(_Vb, currVert);
-				CHECK_VERTEX_BUFFER(_Vb, currVert + _Vb.getColorOff());
+				// the first stage is used to get fading * global color
+				// the second stage multiply the result by the diffuse colot
+				if (ptGradTexture == NULL) // have we got a gradient texture ?
+				{
+					ptGradTexture = CreateGradientTexture();
+				}
+				_Mat.setTexture(0, ptGradTexture);
+				CPSMaterial::forceTexturedMaterialStages(2); // use constant color 0 * diffuse, 1 stage needed				
+				_Mat.texEnvOpRGB(0, CMaterial::Modulate);
+				_Mat.texEnvOpAlpha(0, CMaterial::Modulate);
+				_Mat.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcColor);
+				_Mat.texEnvArg1RGB(0, CMaterial::Constant, CMaterial::SrcColor);
+				_Mat.texEnvArg0Alpha(0, CMaterial::Texture, CMaterial::SrcAlpha);
+				_Mat.texEnvArg1Alpha(0, CMaterial::Constant, CMaterial::SrcAlpha);
 
-				*(CVector *) currVert = pos;
-				*(CRGBA *) (currVert + _Vb.getColorOff()) = CRGBA::Black;
+				_Mat.texEnvOpRGB(1, CMaterial::Modulate);
+				_Mat.texEnvOpAlpha(1, CMaterial::Modulate);
+				_Mat.texEnvArg0RGB(1, CMaterial::Previous, CMaterial::SrcColor);
+				_Mat.texEnvArg1RGB(1, CMaterial::Diffuse, CMaterial::SrcColor);
+				_Mat.texEnvArg0Alpha(1, CMaterial::Previous, CMaterial::SrcAlpha);
+				_Mat.texEnvArg1Alpha(1, CMaterial::Diffuse, CMaterial::SrcAlpha);
+			}
+			else // per ribbon color with global color 
+			{
+				CPSMaterial::forceTexturedMaterialStages(1); // use constant color 0 * diffuse, 1 stage needed				
+				_Mat.texEnvOpRGB(0, CMaterial::Modulate);
+				_Mat.texEnvOpAlpha(0, CMaterial::Modulate);
+				_Mat.texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
+				_Mat.texEnvArg1RGB(0, CMaterial::Constant, CMaterial::SrcColor);
+				_Mat.texEnvArg0Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
+				_Mat.texEnvArg1Alpha(0, CMaterial::Constant, CMaterial::SrcAlpha);		
+			}
+		}
+		else
+		{	
+			if (_ColorFading) // per ribbon color, no fading
+			{				
+				if (ptGradTexture == NULL) // have we got a gradient texture ?
+				{
+					ptGradTexture = CreateGradientTexture();
+				}
+				_Mat.setTexture(0, ptGradTexture);
+				CPSMaterial::forceTexturedMaterialStages(1);
+				_Mat.texEnvOpRGB(0, CMaterial::Modulate);
+				_Mat.texEnvOpAlpha(0, CMaterial::Modulate);
+				_Mat.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcColor);
+				_Mat.texEnvArg1RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
+				_Mat.texEnvArg0Alpha(0, CMaterial::Texture, CMaterial::SrcAlpha);
+				_Mat.texEnvArg1Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
+			}
+			else // per color ribbon with no fading, and no global color
+			{
+				CPSMaterial::forceTexturedMaterialStages(0); // no texture use constant diffuse only
+			}
+		}
+	}
+	else // GLOBAL COLOR
+	{
+		if (ps.getColorAttenuationScheme())
+		{
+			if (_ColorFading)
+			{								
+				CPSMaterial::forceTexturedMaterialStages(1); // use constant color 0 * diffuse, 1 stage needed				
+				_Mat.texEnvOpRGB(0, CMaterial::Modulate);
+				_Mat.texEnvOpAlpha(0, CMaterial::Modulate);
+				_Mat.texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
+				_Mat.texEnvArg1RGB(0, CMaterial::Constant, CMaterial::SrcColor);
+				_Mat.texEnvArg0Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
+				_Mat.texEnvArg1Alpha(0, CMaterial::Constant, CMaterial::SrcAlpha);								
+			}
+			else // color attenuation, no fading : 
+			{
+				CPSMaterial::forceTexturedMaterialStages(0); // no texture use constant diffuse only				
+			}
+		}
+		else
+		{	
+			if (_ColorFading)
+			{
+				CPSMaterial::forceTexturedMaterialStages(1); // use constant color 0 * diffuse, 1 stage needed				
+				_Mat.texEnvOpRGB(0, CMaterial::Modulate);
+				_Mat.texEnvOpAlpha(0, CMaterial::Modulate);
+				_Mat.texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
+				_Mat.texEnvArg1RGB(0, CMaterial::Constant, CMaterial::SrcColor);
+				_Mat.texEnvArg0Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
+				_Mat.texEnvArg1Alpha(0, CMaterial::Constant, CMaterial::SrcAlpha);
+			}
+			else // constant color
+			{
+				CPSMaterial::forceTexturedMaterialStages(0); // no texture use constant diffuse only			
+			}
+		}
+	}
 
-				currVert += vSize; // go to next vertex
+	_Touch = false;
+}
+
+//==========================================================================	
+void	CPSTailDot::setupGlobalColor()
+{	
+	/// setup the global color if it is used
+	CParticleSystem &ps = *(_Owner->getOwner());	
+	if (_ColorScheme)
+	{	
+		_Mat.texConstantColor(0, ps.getGlobalColor());					
+	}
+	else // GLOBAL COLOR with / without fading
+	{
+		if (ps.getColorAttenuationScheme())
+		{			
+			NLMISC::CRGBA col;
+			col.modulateFromColor(ps.getGlobalColor(), _Color);
+			if (_ColorFading)
+			{								
+				_Mat.texConstantColor(0, col);				
+			}
+			else // color attenuation, no fading : 
+			{							
+				_Mat.setColor(col);
 			}
 		}
 		else
 		{
-			const CMatrix &m = _SystemBasisEnabled ?   /*_Owner->getOwner()->*/getInvertedSysMat() 
-											 : /*_Owner->getOwner()->*/getSysMat();
-			for (uint32 k = 0; k < _TailNbSeg + 1; ++k)
+			if (_ColorFading)
 			{
-				CHECK_VERTEX_BUFFER(_Vb, currVert);
-				*(CVector *) currVert = m * pos;
-				CHECK_VERTEX_BUFFER(_Vb, currVert + _Vb.getColorOff());
-				*(CRGBA *) (currVert + _Vb.getColorOff()) = CRGBA::Black;
-
-				currVert += vSize; // go to next vertex
+				_Mat.texConstantColor(0, _Color);				
 			}
-		}
-
-	}
-	else
-	{
-		// color setup was done during setupColor()...
-
-		// check wether the located is in the same basis than the tail
-		// Otherwise, a conversion is required for the pos
-		if (_SystemBasisEnabled == _Owner->isInSystemBasis())
-		{
-			for (uint32 k = 0; k < _TailNbSeg + 1; ++k)
+			else // constant color
 			{
-				CHECK_VERTEX_BUFFER(_Vb, currVert);
-				*(CVector *) currVert = pos;			
-				currVert += vSize; // go to next vertex
-			}
-		}
-		else
-		{
-			const CMatrix &m = _SystemBasisEnabled ?  /*_Owner->getOwner()->*/getInvertedSysMat() 
-											 : /*_Owner->getOwner()->*/getSysMat();
-			for (uint32 k = 0; k < _TailNbSeg + 1; ++k)
-			{
-				CHECK_VERTEX_BUFFER(_Vb, currVert);
-				*(CVector *) currVert = m * pos;			
-				currVert += vSize; // go to next vertex
+				_Mat.setColor(_Color);
 			}
 		}
 	}
 }
-		
-///==========================================================================================
-void CPSTailDot::deleteElement(uint32 index)
-{
-	deleteColorElement(index);
-	// we copy the last element datas to this one data
-	
-	// vertex size
-	const uint32 vSize =_Vb.getVertexSize();
 
-	// source
-	const uint8 *currSrcVert = (uint8 *) _Vb.getVertexCoordPointer() + ((_Owner->getSize() - 1) * (_TailNbSeg + 1)) * vSize;
 
-	// destination
-	uint8 *currDestVert = (uint8 *) _Vb.getVertexCoordPointer() + (index * (_TailNbSeg + 1)) * vSize;
-
-	// copy the vertices
-	memcpy(currDestVert, currSrcVert, vSize * (_TailNbSeg + 1) );	
-}
-
-///==========================================================================================
-void CPSTailDot::setTailNbSeg(uint32 nbSeg)
-{
-	nlassert(nbSeg <= 255);
-	uint32 oldTailSize = _TailNbSeg;
-	_TailNbSeg = nbSeg;
-
-	if (_Owner)
-	{
-		resizeVb(nbSeg, _Owner->getMaxSize());
-	}
-	notifyOwnerMaxNumFacesChanged();
-}
-
-///==========================================================================================
-void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{
-	const uint oldTailNbSeg = _TailNbSeg;
-
-	f.serialVersion(1);
-	CPSParticle::serial(f);
-	CPSColoredParticle::serialColorScheme(f);	
-	f.serial(_TailNbSeg, _ColorFading, _SystemBasisEnabled);
-
-	serialMaterial(f);
-
-	// In this version we don't save the vb state, as we probably won't need it
-	// we just rebuild the vb
-	
-	if (f.isReading())
-	{
-		resizeVb(oldTailNbSeg, _Owner->getMaxSize());
-		// init();		
-	}		
-}
-
-///==========================================================================================
-void CPSTailDot::updateMatAndVbForColor(void)
-{
-	setupColor();
-}
 
 
 } // NL3D

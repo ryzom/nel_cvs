@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.h
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.h,v 1.2 2002/02/20 11:20:10 vizerie Exp $
+ * $Id: ps_tail_dot.h,v 1.3 2002/02/21 17:36:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,108 +26,146 @@
 #ifndef NL_PS_TAIL_DOT_H
 #define NL_PS_TAIL_DOT_H
 
-#include "3d/ps_particle_basic.h"
+#include "3d/ps_ribbon_base.h"
 #include "3d/vertex_buffer.h"
 #include "3d/primitive_block.h"
+#include <hash_map>
 
 
 namespace NL3D 
 {
 
 /**
- *  These particle are like dot, but a tail is following them. The number of segments in the tails can be tuned.
- *  Note that it doesn't derive from CPSRibbonBase, but it may be the case
- *  later... (ribbon base class has been designed to get CPSRibbonLookAt working properly, and was written after this class).
+ *  These particle are like dot, but a tail is following them. The number of segments in the tails can be tuned. 
  */
-
-class CPSTailDot : public CPSParticle, public CPSColoredParticle
-				 , public CPSTailParticle, public CPSMaterial
+class CPSTailDot : public  CPSRibbonBase, public CPSColoredParticle, public  CPSMaterial
 {
-public:			
-	/** (de)activate color fading
-	 * when its done, colors fades to black along the tail
-	 */
-	void setColorFading(bool onOff = true) 
-	{ 
-		_ColorFading = onOff; 
-		setupColor();
-	}
+public:	
+	///\name Object
+	///@{
+		/// ctor
+		CPSTailDot();
+		/// dtor
+		~CPSTailDot();
+		/// serialisation. Derivers must override this, and call their parent version
+		virtual void		serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+		//
+		NLMISC_DECLARE_CLASS(CPSTailDot);
+	///@}
 
-	/// test wether color fading is activated
-	bool getColorFading(void) const { return _ColorFading; }
 	
-	/// ctor. It tells how many segments there are in the tail. 255 is the maximum
-	CPSTailDot(uint32 nbSegmentInTail = 4);
+	///\name Behaviour
+	///@{
+			/** (de)activate color fading
+			* when its done, colors fades to black along the tail.
+			* NOT SUPPORTED FOR NOW
+			*/
+			virtual void setColorFading(bool onOff = true) 
+			{
+				_ColorFading = onOff;
+				touch();
+			}
 
-	/** set the number of segments in the tail		
-	 * 255 is the maximum
-	 */
-	void setTailNbSeg(uint32 nbSeg);
+			/** Test wether color fading is activated.
+			  * NOT SUPPORTED FOR NOW
+			  */
+			virtual bool getColorFading(void) const
+			{
+				return _ColorFading;
+			}
 
-	// get the number of segments in the tail
-	uint32 getTailNbSeg(void) const { return _TailNbSeg; }
+			/** tells in which basis is the tail
+			*  It requires one transform per particle if it is not the same as the located that hold that particle
+	  	    *  The default is false. With that you can control if a rotation of the system will rotate the tail
+			*/
+			virtual void setSystemBasis(bool yes) {}
+		
+			/// return true if the tails are in the system basis
+			virtual bool isInSystemBasis(void) const { return true; }
+		
+		//void setPersistAfterDeath(bool persit = true);
 
-	NLMISC_DECLARE_CLASS(CPSTailDot);
+		/** return true if the ribbon light persist after death 
+		 *  \see _PersistAfterDeath()
+		 */
+		//bool getPersistAfterDeath(void) const { return _DyingRibbons != NULL; }
+		
+	///@}
 
-	///serialisation
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
-	
-	/** tells in which basis is the tail
-	 *  It requires one transform per particle if it is not the same as the located that hold that particle
-	 *  The default is false. With that you can control if a rotation of the system will rotate the tail
-	 */
-	void setSystemBasis(bool yes) { _SystemBasisEnabled = yes; }
-	
-	/// return true if the tails are in the system basis
-	bool isInSystemBasis(void) const { return _SystemBasisEnabled; }
+	/// inherited from CPSParticle
+	virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
 
 	/// return true if there are transparent faces in the object
-	virtual bool hasTransparentFaces(void);
+	virtual bool			hasTransparentFaces(void);
 
 	/// return true if there are Opaque faces in the object
-	virtual bool hasOpaqueFaces(void);
+	virtual bool			hasOpaqueFaces(void);
 
-	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32 getMaxNumFaces(void) const;
+	virtual uint32			getMaxNumFaces(void) const;
 
-protected:
-	/// process one pass for the particle			
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);		
-
-	/// draw (but don't animate) particles
-	virtual void draw(bool opaque);		
+protected:		
+/// interface to derived classes
 	
-	void init(void);		
-	
-	CVertexBuffer _Vb;	
-	// a set of lines to draw
-	CPrimitiveBlock _Pb; 
+	// the number of dying ribbons that are present
+	//uint32							_NbDyingRibbons;
+	// a counter to tell how much frame is left for each ribbon
+	//std::vector<uint32>				_DyingRibbonsLifeLeft;
 
-	// number of segments in the tail
-	uint32 _TailNbSeg;
-	
-	// true if the tail is in the system basis, false otherwise
-	bool _SystemBasisEnabled;
-	
-	/// true if the tail color must fade to black
-	bool _ColorFading;
-								
-	// resize the vertex buffer to keep old datas
-	void CPSTailDot::resizeVb(uint32 oldTailNbSeg, uint32 size);
+	/// inherited from CPSLocatedBindable
+	virtual void					newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	/// inherited from CPSLocatedBindable
+	virtual void					deleteElement(uint32 index);
+	/// inherited from CPSLocatedBindable	
+	virtual void					resize(uint32 size);
+	virtual CPSLocated				*getSizeOwner(void) { return _Owner; }
+	virtual CPSLocated				*getColorOwner(void) { return _Owner; }	
 
-	// setup the initial colors in the whole vb : black or a precomputed gradient for constant color
-	void setupColor(void);
 
-	virtual CPSLocated *getColorOwner(void) { return _Owner; }
+private:		
 
-	/// update the material and the vb so that they match the color scheme
-	virtual void updateMatAndVbForColor(void);
+	/// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
+	virtual void					updateMatAndVbForColor(void);	
 
-	/// Set the max number of TailDot				
-	void resize(uint32 size);		
-	void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);		
-	void deleteElement(uint32 index);
+	/// display a set of ribbons
+	void							displayRibbons(uint32 nbRibbons, uint32 srcStep);
+
+	/**\name Vertex buffers & their corresponding index buffers. We keep a map of pretextured vertex buffer (with or without colors).
+	  * Vb for ribbons that have the same size are shared.
+	  */
+		
+	//@{
+			/// a struct containing a vertex buffer and a primitive block
+			struct CVBnPB
+			{
+				CVertexBuffer		VB;
+				CPrimitiveBlock		PB;
+			};
+
+			typedef std::hash_map<uint, CVBnPB> TVBMap;
+
+			static TVBMap					_VBMap;			  // index / vertex buffers with no color
+			static TVBMap					_FadedVBMap;	  // index / vertex buffers for constant color with fading
+			static TVBMap					_ColoredVBMap;    // index / vertex buffer + colors
+			static TVBMap					_FadedColoredVBMap;    // index / vertex buffer + faded colors
+
+			/// get a vertex buffer and a primitive suited for the current ribbon
+			CVBnPB &getVBnPB();
+
+			/// get the number of ribbons contained in a vb for a given length. (e.g the number of ribbons that can be batched)
+			uint	getNumRibbonsInVB() const;
+	//@}	
+			
+
+	bool _ColorFading : 1;
+	bool _GlobalColor : 1; // to see wether the system uses global color
+	bool _Touch		  : 1; // we use this to see if we must setup the material again
+
+	void touch() { _Touch = true; }
+
+	void	updateMaterial();
+	void	setupGlobalColor();
 };
+
 
 } // NL3D
 

@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.8 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: di_keyboard_device.cpp,v 1.8.2.1 2003/05/19 13:15:23 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -121,6 +121,7 @@ static const CKeyConv DIToNel[] =
 	//	
 	{DIK_NUMLOCK, KeyNUMLOCK, "NUMLOCK", false},		
 	//
+	{DIK_NUMPADENTER, KeyRETURN, "RETURN", true},
 	//{DIK_NUMPADENTER, KeyRETURN, "ENTER", true},
 	//
 	{DIK_CONVERT, KeyCONVERT, "CONVERT", false},

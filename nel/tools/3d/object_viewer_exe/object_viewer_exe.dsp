@@ -140,7 +140,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 msvcrtd.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"debug\object_viewer.exe" /pdbtype:sept /libpath:"..\..\..\lib"
 # SUBTRACT BASE LINK32 /incremental:no
-# ADD LINK32 msvcrtd.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"DebugFast\object_viewer.exe" /pdbtype:sept /libpath:"..\..\..\lib"
+# ADD LINK32 msvcrtd.lib libc.lib freetype.lib /nologo /subsystem:windows /debug /machine:I386 /out:"DebugFast\object_viewer.exe" /pdbtype:sept /libpath:"..\..\..\lib"
 # SUBTRACT LINK32 /incremental:no
 
 !ENDIF 

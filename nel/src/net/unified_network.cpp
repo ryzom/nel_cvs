@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.15 2001/11/22 10:40:13 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.16 2001/11/26 16:42:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,19 +96,40 @@ void	cbDisconnection(TSockId from, void *arg)
 		// now, you have a thread safe access until the end of the scope, so you can do whatever you want. for example, change the value
 		const CUnifiedNetwork::CUnifiedConnection	&cnx = access.value ()[(uint16)from->appId()];
 
+		// check if we already have a connection that we didn't process already
+		for (uint i=0; i<instance->_ConnectionStack.size(); ++i)
+		{
+			if (instance->_ConnectionStack[i].SId == cnx.ServiceId)
+			{
+				// we found a connection not processed
+				break;
+			}
+		}
+
+		if (i < instance->_ConnectionStack.size())
+		{
+			// remove it from the table
+			instance->_ConnectionStack.erase (instance->_ConnectionStack.begin()+i);
+
+			nlinfo ("**************************************************************************** OKAY CNX->DCNX in the same loop");
+		}
+		else
+		{
+			// adds the connection to the disconnection stack
+			instance->_DisconnectionStack.push_back(cnx.ServiceId);
+			if (instance->_TempDisconnectionTable.size() <= cnx.ServiceId)
+			{
+				uint	i = instance->_TempDisconnectionTable.size();
+				instance->_TempDisconnectionTable.resize(cnx.ServiceId+1);
+				for (; i <= cnx.ServiceId; ++i)
+					instance->_TempDisconnectionTable[i] = false;
+			}
+			instance->_TempDisconnectionTable[cnx.ServiceId] = true;
+		}
+
+
 		// get the deconnection callback
 		CUnifiedNetwork::TNameMappedCallback::iterator	it = instance->_DownCallbacks.find(cnx.ServiceName);
-
-		// adds the connection to the disconnection stack
-		instance->_DisconnectionStack.push_back(cnx.ServiceId);
-		if (instance->_TempDisconnectionTable.size() <= cnx.ServiceId)
-		{
-			uint	i = instance->_TempDisconnectionTable.size();
-			instance->_TempDisconnectionTable.resize(cnx.ServiceId+1);
-			for (; i <= cnx.ServiceId; ++i)
-				instance->_TempDisconnectionTable[i] = false;
-		}
-		instance->_TempDisconnectionTable[cnx.ServiceId] = true;
 
 		if (it != instance->_DownCallbacks.end())
 		{
@@ -149,7 +170,42 @@ void	cbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &ne
 	// add a new connection to the list
 	CUnifiedNetwork		*instance = CUnifiedNetwork::getInstance();
 
-	instance->_ConnectionStack.push_back(CUnifiedNetwork::CConnectionId(inSName, inSid, from));
+	// check if we already have a connection that we didn't process already
+	for (uint i=0; i<instance->_DisconnectionStack.size(); ++i)
+	{
+		if (instance->_DisconnectionStack[i] == inSid)
+		{
+			// we found a disconnection not processed
+			break;
+		}
+	}
+
+	if (i < instance->_DisconnectionStack.size())
+	{
+		// remove it from the table
+		instance->_DisconnectionStack.erase (instance->_DisconnectionStack.begin()+i);
+		instance->_ConnectionStack.push_back(CUnifiedNetwork::CConnectionId(inSName, inSid, from, false));
+
+		nlinfo ("**************************************************************************** OKAY DCNX->CNX in the same loop");
+	}
+	else
+	{
+		instance->_ConnectionStack.push_back(CUnifiedNetwork::CConnectionId(inSName, inSid, from, true));
+	}
+
+	// get the connection callback
+	CUnifiedNetwork::TNameMappedCallback::iterator	it = instance->_UpCallbacks.find(inSName);
+	if (it != instance->_UpCallbacks.end())
+	{
+		// call it
+		TUnifiedNetCallback	cb = (*it).second.first;
+		cb(inSName, inSid, (*it).second.second);
+	}
+
+	if (instance->_UpUniCallback.first != NULL)
+	{
+		instance->_UpUniCallback.first (inSName, inSid, instance->_UpUniCallback.second);
+	}
 }
 
 // the callbacks wrapper
@@ -480,6 +536,8 @@ void	CUnifiedNetwork::updateConnectionTable()
 				if (!cnx.IsServerConnection)
 					delete cnx.Connection.CbClient;
 
+///////// BBBBUUUUUUGGGGGG il faut getter TOUT les servicename et trouver le bon a deleter et pas le 1er
+
 				TNameMappedConnection::iterator	itnmc = nameAccess.value().find(cnx.ServiceName);
 				nlassert(itnmc != nameAccess.value().end());
 				nameAccess.value().erase(itnmc);
@@ -494,11 +552,22 @@ void	CUnifiedNetwork::updateConnectionTable()
 
 			CUnifiedConnection	&cnx = idAccess.value()[_ConnectionStack[i].SId];
 
-			nlassert(!cnx.EntryUsed);
+			if (_ConnectionStack[i].NeedInsert)
+			{
+				nlassert(!cnx.EntryUsed);
 
-			cnx = CUnifiedConnection(_ConnectionStack[i].SName, _ConnectionStack[i].SId, _ConnectionStack[i].SHost);
-			cnx.IsConnected = true;
-			nameAccess.value().insert(make_pair(_ConnectionStack[i].SName, _ConnectionStack[i].SId));
+				cnx = CUnifiedConnection(_ConnectionStack[i].SName, _ConnectionStack[i].SId, _ConnectionStack[i].SHost);
+				cnx.IsConnected = true;
+				nameAccess.value().insert(make_pair(_ConnectionStack[i].SName, _ConnectionStack[i].SId));
+			}
+			else
+			{
+				// only remap the from and server
+				nlassert(cnx.EntryUsed);
+				cnx.IsServerConnection = true;
+				cnx.ServiceId = 
+				cnx.Connection.HostId = _ConnectionStack[i].SHost;
+			}
 		}
 
 /*
@@ -643,15 +712,14 @@ void	CUnifiedNetwork::updateConnectionTable()
 				}
 			}
 		}
-
+/*
 		// callbacks
 		for (i=0; i<_ConnectionStack.size(); ++i)
 		{
 			const CUnifiedConnection	&cnx = idAccess.value()[_ConnectionStack[i].SId];
 
 			// get the connection callback
-			CUnifiedNetwork::TNameMappedCallback::iterator	it = _UpCallbacks.find(cnx.ServiceName);
-
+			TNameMappedCallback::iterator	it = _UpCallbacks.find(cnx.ServiceName);
 			if (it != _UpCallbacks.end())
 			{
 				// call it
@@ -664,7 +732,7 @@ void	CUnifiedNetwork::updateConnectionTable()
 				_UpUniCallback.first(cnx.ServiceName, cnx.ServiceId, _UpUniCallback.second);
 			}
 		}
-	}
+*/	}
 }
 
 //

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.8 2001/11/20 16:36:43 legros Exp $
+ * $Id: unified_network.h,v 1.9 2001/11/26 16:42:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -235,9 +235,10 @@ private:
 		std::string	SName;
 		uint16		SId;
 		TSockId		SHost;
+		bool		NeedInsert;		// patch in case of deconnection->reconnection in the same loop
 
 		CConnectionId() {}
-		CConnectionId(const std::string &name, uint16 sid, TSockId hid = 0) : SName(name), SId(sid), SHost(hid) {}
+		CConnectionId(const std::string &name, uint16 sid, TSockId hid = 0, bool needInsert = true) : SName(name), SId(sid), SHost(hid), NeedInsert(needInsert) {}
 	};
 
 	//

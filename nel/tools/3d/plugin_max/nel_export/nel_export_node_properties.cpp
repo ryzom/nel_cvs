@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.35 2002/05/07 09:05:49 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.36 2002/05/07 13:11:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2354,15 +2354,15 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.AccelType = -1;
 
 			if (CExportNel::getScriptAppData (node, NEL_OBJET_NAME_DATA, "")!=param.InstanceShape)
-				param.InstanceShape = "";
+				param.InstanceShape = "...";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "")!=param.InstanceName)
-				param.InstanceName = "";
+				param.InstanceName = "...";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, BST_UNCHECKED)!=param.DontAddToScene)
 				param.DontAddToScene = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, BST_UNCHECKED)!=param.AutomaticAnimation)
 				param.AutomaticAnimation = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "")!=param.InstanceGroupName)
-				param.InstanceGroupName = "";
+				param.InstanceGroupName = "...";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INTERFACE_FILE, "")!=param.InterfaceFileName)
 				param.InterfaceFileName = "";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INTERFACE_THRESHOLD, 0.1f)!=param.InterfaceThreshold)
@@ -2531,22 +2531,16 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				if (param.AccelType != -1)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ACCEL, param.AccelType);
 
-				if ( (param.InstanceShape != "") || (listNode.size()==1))
-					CExportNel::setScriptAppData (node, NEL_OBJET_NAME_DATA, param.InstanceShape);
-				if (param.InstanceShape == "...")
-					CExportNel::setScriptAppData (node, NEL_OBJET_NAME_DATA, "");
-				if (param.InstanceName != "")
-					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, param.InstanceName);
-				if (param.InstanceName == "...")
-					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "");
+				if ( (param.InstanceShape != "...") || (listNode.size()==1))
+					CExportNel::setScriptAppData (node, NEL_OBJET_NAME_DATA, param.InstanceShape);				
+				if (param.InstanceName != "...")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, param.InstanceName);				
 				if (param.DontAddToScene != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, param.DontAddToScene);
 				if (param.AutomaticAnimation != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, param.AutomaticAnimation);
-				if (param.InstanceGroupName != "")
-					CExportNel::setScriptAppData (node, NEL3D_APPDATA_IGNAME, param.InstanceGroupName);
-				if (param.InstanceGroupName == "...")
-					CExportNel::setScriptAppData (node, NEL3D_APPDATA_IGNAME, "");
+				if (param.InstanceGroupName != "...")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_IGNAME, param.InstanceGroupName);				
 				if (param.InterfaceFileName != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INTERFACE_FILE, param.InterfaceFileName);
 				if (param.InterfaceThreshold != -1)

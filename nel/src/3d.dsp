@@ -26,7 +26,7 @@ CFG=3d - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -48,7 +48,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d.lib"
 
@@ -72,7 +72,7 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
@@ -95,7 +95,7 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nl3d.lib"
 # ADD LIB32 /nologo /out:"../lib/nl3d_rd.lib"
 
@@ -691,6 +691,14 @@ SOURCE=.\3d\skeleton_shape.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\3d\texture_blank.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_blank.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\texture_cube.cpp
 # End Source File
 # Begin Source File
@@ -1245,6 +1253,9 @@ SOURCE=.\3d\Makefile.am
 # Begin Group "Fx"
 
 # PROP Default_Filter ""
+# Begin Group "particles"
+
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=.\3d\particle_system.cpp
@@ -1378,6 +1389,26 @@ SOURCE=.\3d\ps_plane_basis_maker.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\ps_sound.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_sound.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_sound_impl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_sound_interface.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_sound_interface.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_util.cpp
 # End Source File
 # Begin Source File
@@ -1392,6 +1423,43 @@ SOURCE=.\3d\ps_zone.cpp
 
 SOURCE=.\3d\ps_zone.h
 # End Source File
+# End Group
+# Begin Group "2d"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\deform_2d.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\deform_2d.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\heat_haze.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\heat_haze.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\motion_blur.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\motion_blur.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\quad_effect.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\quad_effect.h
+# End Source File
+# End Group
 # End Group
 # Begin Group "Collisions"
 

@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * <File description>
  *
- * $Id: mem_displayer.cpp,v 1.6 2003/03/25 16:05:35 cado Exp $
+ * $Id: mem_displayer.cpp,v 1.7 2003/07/24 17:53:50 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -126,14 +126,15 @@ static string getSourceInfo (DWORD addr)
 	::ZeroMemory (&line, sizeof (line));
 	line.SizeOfStruct = sizeof(line);
 
-	DWORD disp;
+// It doesn't work in windows 98
+/*	DWORD disp;
 	if (SymGetLineFromAddr (GetCurrentProcess(), addr, &disp, &line))
 	{
 		str = line.FileName;
 		str += "(" + toString (line.LineNumber) + ")";
 	}
 	else
-	{
+*/	{
 		IMAGEHLP_MODULE module;
 		::ZeroMemory (&module, sizeof(module));
 		module.SizeOfStruct = sizeof(module);

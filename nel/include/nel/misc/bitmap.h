@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.8 2001/10/29 09:28:19 corvazier Exp $
+ * $Id: bitmap.h,v 1.9 2001/11/07 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,6 +95,7 @@ private :
 	 * \param coef coefficient for the first integer (must be in [0,256])
 	 */
 	uint32 blend(uint32 &n0, uint32 &n1, uint32 coef0);
+
 
 	/** 
 	 * Read a DDS from an IStream. 
@@ -461,6 +462,16 @@ public:
 	 * Rotation of the bitmap of 90 degree in counter clockwise
 	 */
 	void rot90CCW();
+
+	/** Set this bitmap as the result of the blend bewteen 2 bitmap
+	  * REQUIRE : - Bm0 and Bm1 should have the same size.
+	  *           - Both bitmap should be convertible to RGBA pixel format.
+	  * The result is a RGBA bitmap.
+	  * NB: this just works with the first mipmaps
+	  * \param factor The blend factor. 0 means the result is equal to Bm0, 256 means the result is equal to Bm1
+	  */
+	void blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor);
+
 };
 
 

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.13 2001/10/29 09:28:19 corvazier Exp $
+ * $Id: bitmap.cpp,v 1.14 2001/11/07 11:18:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2582,6 +2582,80 @@ void	CBitmap::rot90CCW()
 	{
 		buildMipMaps();
 	}
+}
+
+//===========================================================================
+
+void CBitmap::blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor)
+{
+nlassert(factor >= 0 && factor <= 256)
+
+nlassert(Bm0._Width != 0 && Bm0._Height != 0
+		 && Bm1._Width != 0 && Bm1._Height != 0);
+
+nlassert(Bm0._Width  == Bm1._Width);	// the bitmap should have the same size
+nlassert(Bm0._Height == Bm1._Height);
+
+const CBitmap *nBm0, *nBm1; // pointer to the bitmap that is used for blending, or to a copy is a conversion wa required
+
+static CBitmap cp0, cp1; // these bitmap are copies of Bm1 and Bm0 if a conversion was needed
+
+if (Bm0.PixelFormat != RGBA)
+{
+	cp0 = Bm0;
+	cp0.convertToRGBA();
+	nBm0 = &cp0;
+}
+else
+{
+	nBm0 = &Bm0;
+}
+
+
+if (Bm1.PixelFormat != RGBA)
+{
+	cp1 = Bm1;
+	cp1.convertToRGBA();
+	nBm1 = &cp1;
+}
+else
+{
+	nBm1 = &Bm1;
+}
+
+this->resize(Bm0._Width, Bm0._Height, RGBA);
+
+const  uint numPix = _Width * _Height; // 4 component per pixels
+/*std::vector<uint8>::const_iterator src0		= nBm0->_Data[0].begin();
+std::vector<uint8>::const_iterator src1		= nBm1->_Data[0].begin();
+std::vector<uint8>::iterator	   dest		= this->_Data[0].begin();
+std::vector<uint8>::iterator       endPix   = dest + (numPix << 2);
+*/
+
+
+const uint8 *src0		= &(nBm0->_Data[0][0]);
+const uint8 *src1		= &(nBm1->_Data[0][0]);
+uint8 *dest				= &(this->_Data[0][0]);
+uint8 *endPix			= dest + (numPix << 2);
+
+
+uint blendFact    = (uint) factor;
+uint invblendFact = 256 - blendFact;
+
+do
+{
+	/// blend 4 component at each pass
+	*dest = (uint8) (((blendFact * *src1)		+ (invblendFact * *src0)) >> 8);
+	*(dest + 1) = (uint8) (((blendFact * *(src1 + 1)) + (invblendFact * *(src0 + 1))) >> 8);
+	*(dest + 2) = (uint8) (((blendFact * *(src1 + 2)) + (invblendFact * *(src0 + 2))) >> 8);
+	*(dest + 3)  = (uint8) (((blendFact * *(src1 + 3)) + (invblendFact * *(src0 + 3))) >> 8);
+
+	src0 = src0 + 4;
+	src1 = src1 + 4;
+	dest = dest + 4;	
+}
+while (dest != endPix);
+
 }
 
 

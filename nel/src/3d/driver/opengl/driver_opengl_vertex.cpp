@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.3 2001/07/06 12:22:55 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.4 2001/07/06 17:06:11 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -352,6 +352,15 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 	// end multipass.
 	endMultiPass(Mat);
 
+
+	// Profiling.
+	_PrimitiveProfileIn.NLines+= PB.getNumLine();
+	_PrimitiveProfileIn.NTriangles+= PB.getNumTri();
+	_PrimitiveProfileIn.NQuads+= PB.getNumQuad();
+	_PrimitiveProfileOut.NLines+= PB.getNumLine() * nPass;
+	_PrimitiveProfileOut.NTriangles+= PB.getNumTri() * nPass;
+	_PrimitiveProfileOut.NQuads+= PB.getNumQuad() * nPass;
+
 	return true;
 }
 
@@ -404,6 +413,10 @@ void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
 	// end multipass.
 	endMultiPass(Mat);
 
+
+	// Profiling.
+	_PrimitiveProfileIn.NTriangles+= ntris;
+	_PrimitiveProfileOut.NTriangles+= ntris * nPass;
 }
 
 
@@ -433,6 +446,11 @@ void	CDriverGL::renderPoints(CMaterial& Mat, uint32 numPoints)
 	}
 	// end multipass.
 	endMultiPass(Mat);
+
+
+	// Profiling.
+	_PrimitiveProfileIn.NPoints+= numPoints;
+	_PrimitiveProfileOut.NPoints+= numPoints * nPass;
 }
 
 
@@ -754,7 +772,7 @@ void			CVertexArrayRange::disable()
 	// if not already disabled.
 	if(_Driver->_CurrentVertexArrayRange!=NULL)
 	{
-		glEnableClientState(GL_VERTEX_ARRAY_RANGE_NV);
+		glDisableClientState(GL_VERTEX_ARRAY_RANGE_NV);
 		glVertexArrayRangeNV(0, 0);
 		_Driver->_CurrentVertexArrayRange= NULL;
 	}

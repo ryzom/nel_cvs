@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.25 2004/07/26 13:44:09 vizerie Exp $
+ * $Id: polygon.cpp,v 1.26 2004/07/26 14:51:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1343,6 +1343,10 @@ static void ScanOuterEdgeRight(CPolygon2D::TRaster *r, float x1, float y1, float
 			iInverseSlope = (sint32) (65536.0 * inverseSlope);
 			currRaster = r + ((sint) floorf(y1) - minY);
 			iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy
+			if (ceilf(y1) == y1)
+			{
+				iposx += iInverseSlope;
+			}
 			do
 			{
 				currRaster->second = std::max((sint) (iposx >> 16), currRaster->second);
@@ -1367,6 +1371,10 @@ static void ScanOuterEdgeRight(CPolygon2D::TRaster *r, float x1, float y1, float
 		currRaster->second = std::max((sint) floorf(x1), currRaster->second);
 		++ currRaster;
 		iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy
+		if (ceilf(y1) == y1)
+		{
+			iposx += iInverseSlope;
+		}
 		while (--height)
 		{			
 			currRaster->second = std::max((sint) (iposx >> 16), currRaster->second);
@@ -1405,6 +1413,10 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 			iInverseSlope = (sint32) (65536.0 * inverseSlope);
 			currRaster = r + ((sint) floorf(y1) - minY);
 			iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy
+			if (ceilf(y1) == y1)
+			{
+				iposx += iInverseSlope;
+			}
 			do
 			{
 				currRaster->first = std::min((sint) (iposx >> 16), currRaster->first);
@@ -1429,6 +1441,10 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 		currRaster->first = std::min((sint) floorf(x1), currRaster->first);
 		++ currRaster;
 		iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy
+		if (ceilf(y1) == y1)
+		{		
+			iposx += iInverseSlope;
+		}
 		while (--height)
 		{			
 			currRaster->first = std::min((sint) (iposx >> 16), currRaster->first);

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs main file
  *
- * $Id: client.cpp,v 1.51 2001/11/14 17:57:43 lecroart Exp $
+ * $Id: client.cpp,v 1.52 2002/02/11 10:24:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -275,6 +275,7 @@ int main(int argc, char **argv)
 	nlinfo ("Welcome to Snowballs !");
 	nlinfo ("");
 	nlinfo ("Press SHIFT-ESC to exit the game");
+	nlinfo ("Press F1 to go online");
 
 	// Get the current time
 	NewTime = CTime::getLocalTime();

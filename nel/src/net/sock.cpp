@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.31 2003/02/14 14:13:24 lecroart Exp $
+ * $Id: sock.cpp,v 1.32 2003/02/26 16:53:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,17 +43,20 @@
 #	include <sys/types.h>
 #	include <sys/time.h>
 #	include <sys/socket.h>
+#	include <sys/ioctl.h>
 #	include <netinet/in.h>
 #	include <netinet/tcp.h>
 #	include <arpa/inet.h>
 #	include <netdb.h>
 #	include <fcntl.h>
 #	include <errno.h>
+
 #	define SOCKET_ERROR (~0U)
 #	define INVALID_SOCKET (~0U)
 #	define ERROR_NUM errno
 #	define ERROR_WOULDBLOCK EWOULDBLOCK
 #	define ERROR_MSG strerror(errno)
+
 typedef int SOCKET;
 
 #endif
@@ -262,6 +265,20 @@ void CSock::createSocket( int type, int protocol )
 	{
 //		nldebug( "LNETL0: Socket %d open (TCP)", _Sock );
 	}
+
+#ifdef NL_OS_UNIX
+	// We set the close-on-exec flag on the socket to be sure that when
+	// we call the exec() to spawn an application in the AES for example,
+        // that the AES listen socket will be close and not give the the child.
+        // For google:
+        // Manipulate the close-on-exec flag to determine if a file descriptor
+        // should be closed as part of the normal processing of the exec subroutine.
+        // If the flag is set, the file descriptor is closed.
+        // If the flag is clear, the file descriptor is left open
+	ioctl(_Sock, FIOCLEX, NULL);
+	// fcntl should be more portable but not tested fcntl(_Sock, F_SETFD, FD_CLOEXEC);
+#endif
+
 }
 
 

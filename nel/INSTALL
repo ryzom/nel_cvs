@@ -63,7 +63,29 @@ Compilation
       The compilation on Windows has been done only with Visual C++ 6.0 SP4.
 
       You first need to compile STLport and FreeType libraries. It's a quite
-      long compilation process.
+      long compilation process, and you should carefully read these libraries
+      documentation (at least the README and INSTALL files) before compiling
+      and installing them. 
+
+      STLport Compilation :
+
+         - Open a Dos window and go in the STLPort's src directory.
+
+         - Rename or copy the "vc6-unicode.mak" to "Makefile".
+
+         - Execute `nmake clean all` followed by `nmake install`.
+
+      FreeType compilation :
+
+         - You need to intall gmumake and to place it in the PATH.
+
+         - Open a Dos window and go in the FreeType's src directory.
+
+         - Execute `make setup visualc' followed by `make`.
+
+      If your are using your own IDE, you must be sure that the
+      src/psaux/psaux.c file is include in the project's files list to
+      compile.
 
       Set up Visual C++ to find the STLPort and FreeType libraries. This
       is done in the [Tools -> Options -> Directories] menu :

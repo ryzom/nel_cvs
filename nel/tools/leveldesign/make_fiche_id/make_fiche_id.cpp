@@ -1,7 +1,7 @@
 /** \file make_fiche_id.cpp
  * 
  *
- * $Id: make_fiche_id.cpp,v 1.2 2002/02/12 10:33:56 coutelas Exp $
+ * $Id: make_fiche_id.cpp,v 1.3 2002/02/12 17:05:03 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -393,7 +393,7 @@ void main( int argc, char ** argv )
 	f.serialCont( IdToForm );
 
 	// display the map
-	display();
+	//display();
 
 } // main //
 

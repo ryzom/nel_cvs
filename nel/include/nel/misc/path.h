@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.36 2003/08/20 14:50:33 lecroart Exp $
+ * $Id: path.h,v 1.37 2003/11/03 10:11:48 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -178,15 +178,19 @@ public:
 	static bool setCurrentPath (const char *);
 
 	/** Create a list of file having the requested extension.
-	*/
+	 */
 	static void getFileList(const std::string &extension, std::vector<std::string> &filenames);
 
 	/** Make a path relative to another if possible, else doesn't change it.
-	  * \param basePath is the base path to be relative to.
-	  * \param relativePath is the path to make relative to basePath.
-	  * return true if relativePath as been done relative to basePath, false is relativePath has not been changed.
-	  */
+	 * \param basePath is the base path to be relative to.
+	 * \param relativePath is the path to make relative to basePath.
+	 * return true if relativePath as been done relative to basePath, false is relativePath has not been changed.
+	 */
 	static bool makePathRelative (const char *basePath, std::string &relativePath);
+
+	/** If File in this list is added more than one in an addSearchPath, it doesn't launch a warning.
+	 */
+	static void addIgnoredDoubleFile(const std::string &ignoredFile);
 
 private:
 
@@ -196,6 +200,9 @@ private:
 
 	// All path in this vector must have a terminated '/'
 	std::vector<std::string> _AlternativePaths;
+
+	std::vector<std::string> IgnoredFiles;
+
 
 	struct CFileEntry
 	{

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.83 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: path.cpp,v 1.84 2003/11/03 10:11:48 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -976,6 +976,11 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 	fclose (Handle);
 }
 
+void CPath::addIgnoredDoubleFile(const std::string &ignoredFile)
+{
+	CPath::getInstance ()->IgnoredFiles.push_back(ignoredFile);
+}
+
 void CPath::insertFileInMap (const string &filename, const string &filepath, bool remap, const string &extension)
 {
 	CPath *inst = CPath::getInstance();
@@ -987,7 +992,7 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 		if ((*it).second.Path.find("@") != string::npos && filepath.find("@") == string::npos)
 		{
 			// if there's a file in a big file and a file in a path, the file in path wins
-			// remplace with the new one
+			// replace with the new one
 			nlinfo ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s' but special case so overide it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
 			(*it).second.Path = filepath;
 			(*it).second.Remapped = remap;
@@ -995,6 +1000,15 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 		}
 		else
 		{
+			for(uint i = 0; i < inst->IgnoredFiles.size(); i++)
+			{
+				// if we don't want to display a warning, skip it
+				if(filename == inst->IgnoredFiles[i])
+					return;
+			}
+			// if the path is the same, don't warn
+			if ((*it).second.Path == filepath)
+				return;
 			nlwarning ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
 		}
 	}

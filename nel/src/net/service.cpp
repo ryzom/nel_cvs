@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.194 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: service.cpp,v 1.195 2003/11/03 10:12:33 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -900,6 +900,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 		// Add default pathes
 		//
+
+		if ((var = ConfigFile.getVarPtr ("IgnoredFiles")) != NULL)
+		{
+			for (sint i = 0; i < var->size(); i++)
+			{
+				CPath::addIgnoredDoubleFile (var->asString(i));
+			}
+		}
 
 		if ((var = ConfigFile.getVarPtr ("Paths")) != NULL)
 		{

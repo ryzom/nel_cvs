@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.12 2001/07/04 12:15:50 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.13 2001/07/04 17:16:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,7 +184,7 @@ void CParticleTreeCtrl::buildTreeFromPS(CParticleSystem *ps, CParticleSystemMode
 	CNodeType *nt = new CNodeType(ps, psm) ;
 	_NodeTypes.push_back(nt) ;
 
-	HTREEITEM rootId =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE, NULL, 5, 5, 0, 0, NULL, TVI_ROOT, TVI_LAST) ;
+	HTREEITEM rootId =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT, ps->getName().c_str(), 5, 5, 0, 0, NULL, TVI_ROOT, TVI_LAST) ;
 
 	// set the param (doesn't seems to work during first creation)
 
@@ -702,7 +702,16 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		case ID_MENU_SAVE_PS:
 		{
 				_ParticleDlg->StartStopDlg->stop() ;
-				CFileDialog fd(FALSE, ".ps", "*.ps", 0, NULL, this) ;
+				std::string fileName ;
+				if (nt->PS->getName() != std::string())
+				{
+					fileName = nt->PS->getName() + std::string(".ps") ;
+				}
+				else
+				{
+					fileName = "*.ps" ;
+				}
+				CFileDialog fd(FALSE, ".ps", fileName.c_str(), 0, NULL, this) ;
 				if (fd.DoModal() == IDOK)
 				{
 					// Add to the path
@@ -824,6 +833,11 @@ void CParticleTreeCtrl::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
 
 		switch (nt->Type)
 		{
+			case CNodeType::particleSystem :
+			{
+				nt->PS->setName(std::string(info->item.pszText)) ;
+			}
+			break ;
 			case CNodeType::located :
 			{
 				nt->Loc->setName(std::string(info->item.pszText)) ;

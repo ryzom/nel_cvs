@@ -1,7 +1,7 @@
 /** \file interf.h
  *
  *
- * $Id: interf.h,v 1.1 2001/05/18 16:51:49 lecroart Exp $
+ * $Id: interf.h,v 1.2 2001/06/27 08:32:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,17 +35,21 @@ void runInterf ();
 
 void interfAddAS (CAdminService *as);
 void interfAddAES (CAdminService *as, CAdminExecutorService *aes);
-void interfAddS (CAdminExecutorService *aes, CService *s);
+void interfAddService (CAdminExecutorService *aes, CService *s);
+void interfAddVariable (CService *s, CAdminSerialCommand *c);
 
 void interfUpdateAES (CAdminExecutorService *aes);
-void interfUpdateS (CService *aes);
+void interfUpdateService (CService *s);
+void interfUpdateVariable (CAdminSerialCommand *c);
 
-void interfRemoveS (CService *s);
+void interfRemoveService (CService *s);
 void interfRemoveAES (CAdminExecutorService *aes);
 void interfRemoveAS (CAdminService *as);
+void interfRemoveVariable (CAdminSerialCommand *c);
 
 void setBitmap (const std::string &bitmapName, void *&bitmap);
 void removeSubTree (CAdminService *as);
+void removeSubTree (CService *s);
 
 void removeServiceAliasPopup (CAdminExecutorService *aes);
 void addServiceAliasPopup (CAdminExecutorService *aes);

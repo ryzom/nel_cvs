@@ -1,7 +1,7 @@
 /** \file coammnds.cpp
  * 
  *
- * $Id: commands.cpp,v 1.3 2001/05/31 16:41:59 lecroart Exp $
+ * $Id: commands.cpp,v 1.4 2001/06/27 08:32:17 lecroart Exp $
  *
  * contains all admin commands
  *
@@ -128,7 +128,7 @@ NLMISC_COMMAND (ec, "execute a command on a service", "<asid> <aesid> <sid> <com
 	ASIT asit = findAdminService (asid, false);
 	if (asit == AdminServices.end())
 	{
-		nlwarning("couldn't stop service, asid %d doesn't exist", asid);
+		nlwarning("couldn't execute a command on this service, asid %d doesn't exist", asid);
 		return false;
 	}
 
@@ -136,7 +136,7 @@ NLMISC_COMMAND (ec, "execute a command on a service", "<asid> <aesid> <sid> <com
 	AESIT aesit = (*asit).findAdminExecutorService (aesid, false);
 	if (aesit == (*asit).AdminExecutorServices.end())
 	{
-		nlwarning("couldn't stop service, aesid %d doesn't exist", aesid);
+		nlwarning("couldn't execute a command on this service, aesid %d doesn't exist", aesid);
 		return false;
 	}
 
@@ -144,13 +144,20 @@ NLMISC_COMMAND (ec, "execute a command on a service", "<asid> <aesid> <sid> <com
 	SIT sit = (*aesit).findService (sid, false);
 	if (sit == (*aesit).Services.end())
 	{
-		nlwarning("couldn't stop service, sid %d doesn't exist", sid);
+		nlwarning("couldn't execute a command on this service, sid %d doesn't exist", sid);
 		return false;
 	}
 
+	if (!(*sit).Connected || !(*sit).Ready)
+	{
+		nlwarning("couldn't execute a command on this service, the service %d is not connected or not ready", sid);
+		return false;
+	}
+
+
 	string command;
 	for (uint32 i = 3; i < args.size(); i++)
-		command += args[i];
+		command += args[i] + " ";
 
 	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "EXEC_COMMAND");
 	msgout.serial (aesid);

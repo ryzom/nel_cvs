@@ -1,7 +1,7 @@
 /** \file connection_as.cpp
  * 
  *
- * $Id: connection_as.cpp,v 1.4 2001/06/07 16:18:17 lecroart Exp $
+ * $Id: connection_as.cpp,v 1.5 2001/06/27 08:32:17 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -73,7 +73,7 @@ static void cbAESList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 					(*sit).Unknown = false;
 					(*sit).Connected = false;
 					(*sit).Ready = false;
-					interfUpdateS (&(*sit));
+					interfUpdateService (&(*sit));
 				}
 			}
 
@@ -89,12 +89,12 @@ static void cbAESList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 						(*sit).Ready = false;
 						(*sit).Id = 0xFFFFFFFF;
 						(*sit).ShortName = (*sit).LongName = "";
-						interfUpdateS (&(*sit));
+						interfUpdateService (&(*sit));
 						sit++;
 					}
 					else
 					{
-						interfRemoveS (&(*sit));
+						interfRemoveService (&(*sit));
 						sit = (*aesit).Services.erase (sit);
 					}
 				}
@@ -145,13 +145,13 @@ static void cbServiceList (CMessage& msgin, TSockId from, CCallbackNetBase &netb
 				{
 					s.AES = &(*aesit);
 					(*aesit).Services.push_back (s);
-					interfAddS (&(*aesit), &((*aesit).Services.back()));
+					interfAddService (&(*aesit), &((*aesit).Services.back()));
 				}
 				else
 				{
 					nlassert ("the service already exists with alias, update it");
 					(*sit).setValues (s);
-					interfUpdateS (&(*sit));
+					interfUpdateService (&(*sit));
 				}
 			}
 			else
@@ -161,13 +161,13 @@ static void cbServiceList (CMessage& msgin, TSockId from, CCallbackNetBase &netb
 				{
 					s.AES = &(*aesit);
 					(*aesit).Services.push_back (s);
-					interfAddS (&(*aesit), &((*aesit).Services.back()));
+					interfAddService (&(*aesit), &((*aesit).Services.back()));
 				}
 				else
 				{
 					nlassert ("the service already exists with id, update it");
 					(*sit).setValues (s);
-					interfUpdateS (&(*sit));
+					interfUpdateService (&(*sit));
 				}
 			}
 		}
@@ -202,7 +202,7 @@ static void cbServiceList_ (CMessage& msgin, TSockId from, CCallbackNetBase &net
 		msgin.serial(aesid);
 
 		AESIT aesit = as->findAdminExecutorService (aesid, false);
-		// todo normalement, l aes ne doit pas exister => faire un assert si il existe
+		/// \todo ace: normalement, l aes ne doit pas exister => faire un assert si il existe
 		CAdminExecutorService *aes;
 		if (aesit == as->AdminExecutorServices.end ())
 		{
@@ -232,7 +232,7 @@ static void cbServiceList_ (CMessage& msgin, TSockId from, CCallbackNetBase &net
 			CService *s = &(aes->Services.back());
 			s->Id = sid;
 			msgin.serial(s->ShortName, s->LongName, s->Ready);
-			interfAddS(aes, s);
+			interfAddService(aes, s);
 		}
 	}
 
@@ -257,7 +257,7 @@ static void cbServiceAliasList (CMessage& msgin, TSockId from, CCallbackNetBase 
 //	addServiceAliasPopup (&(*aesit));
 }
 
-// todo kan on lance un service, ce deco et se reco, le service est ready mais pas connected
+/// \todo ace: kan on lance un service, ce deco et se reco, le service est ready mais pas connected
 
 static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
@@ -283,7 +283,7 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 			(*aesit).Services.push_back (CService ());
 			sit = (*aesit).Services.end();
 			sit--;
-			interfAddS (&(*aesit), &(*sit));
+			interfAddService (&(*aesit), &(*sit));
 		}
 		else
 		{
@@ -306,19 +306,20 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 		(*aesit).Services.push_back (CService ());
 		sit = (*aesit).Services.end();
 		sit--;
-		interfAddS (&(*aesit), &(*sit));
+		interfAddService (&(*aesit), &(*sit));
 	}
 	
 	(*sit).Id = sid;
 	(*sit).AliasName = alias;
 	(*sit).Connected = true;
 	(*sit).Unknown = false;
+	(*sit).AES = &(*aesit);
 	msgin.serial ((*sit).ShortName, (*sit).LongName);
 	msgin.serialCont ((*sit).Commands);
 
 	nlinfo ("%d:%d:%d is identified to be '%s' '%s' '%s'", as->Id, aesid, sid, (*sit).AliasName.c_str(), (*sit).ShortName.c_str(), (*sit).LongName.c_str());
 
-	interfUpdateS (&(*sit));
+	interfUpdateService (&(*sit));
 }
 
 static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
@@ -334,7 +335,7 @@ static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &net
 
 	nlinfo ("%d:%d:%d is ready", as->Id, aesid, sid);
 
-	interfUpdateS (&(*sit));
+	interfUpdateService (&(*sit));
 }
 
 static void cbServiceConnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
@@ -351,7 +352,7 @@ static void cbServiceConnection (CMessage& msgin, TSockId from, CCallbackNetBase
 	CService *s = &((*aesit).Services.back());
 	s->Id = sid;
 	s->AES = &(*aesit);
-	interfAddS(&(*aesit), s);
+	interfAddService(&(*aesit), s);
 */}
 
 static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
@@ -372,11 +373,11 @@ static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetB
 		(*sit).Ready = (*sit).Connected = false;
 		(*sit).Id = 0xFFFFFFFF;
 		(*sit).ShortName = (*sit).LongName = "";
-		interfUpdateS (&(*sit));
+		interfUpdateService (&(*sit));
 	}
 	else
 	{
-		interfRemoveS (&(*sit));
+		interfRemoveService (&(*sit));
 		(*aesit).Services.erase (sit);
 	}
 }
@@ -453,10 +454,42 @@ static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// received an answer for a command, give it to all admin client
 
+	// an AES gives me a message
+	CAdminService *as = (CAdminService*) from->appId();
+
 	string log;
+	uint32 sid, aesid;
+	msgin.serial (aesid);
+	msgin.serial (sid);
 	msgin.serial (log);
 
-	InfoLog->displayRaw("%s",log.c_str());
+	// parse the line before displays it
+	// (it could be a variable result and in this case we handle differently)
+
+	uint32 pos = log.find ("Variable");
+	if (pos == string::npos)
+	{
+		// nothing to parse
+		InfoLog->displayRaw("%s",log.c_str());
+	}
+	else
+	{
+		string temp, varname, value;
+		stringstream tok (log.substr (pos));
+		tok >> temp;
+		tok >> varname;
+		tok >> temp;
+		tok >> value;
+
+		AESIT aesit = as->findAdminExecutorService(aesid);
+		SIT sit = (*aesit).findService (sid);
+		CIT cit = (*sit).findCommand (varname);
+
+		(*cit).Value = value;
+		(*cit).ReceivedUpdateAnswer = true;
+		interfUpdateVariable (&(*cit));
+		nlinfo ("update var %s", varname.c_str());
+	}
 }
 
 static void cbMessage (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
@@ -492,7 +525,7 @@ TCallbackItem ASCallbackArray[] =
 	{ "AESC", cbAESConnection },
 	{ "AESD", cbAESDisconnection },
 
-	{ "LOG", cbLog },
+	{ "XLOG", cbLog },
 
 	{ "MESSAGE", cbMessage },
 

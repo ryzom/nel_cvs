@@ -1,7 +1,7 @@
 /** \file datas.h
  *
  *
- * $Id: datas.h,v 1.4 2001/06/07 16:18:17 lecroart Exp $
+ * $Id: datas.h,v 1.5 2001/06/27 08:32:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/stream.h"
+#include "nel/misc/command.h"
+#include "nel/misc/time_nl.h"
+#include "nel/misc/config_file.h"
 
 #include "nel/net/buf_net_base.h"
 
@@ -36,7 +40,34 @@
 
 // Structures
 struct CAdminExecutorService;
+struct CService;
 
+
+extern NLMISC::CConfigFile ConfigFile;
+
+
+/** Add some members into the classic serial command class */
+struct CAdminSerialCommand : public NLMISC::CSerialCommand
+{
+	CAdminSerialCommand () : IsActive(false), RootTreeItem(NULL), Service(NULL), Value("<Unknown>"), LastAskUpdate(0), UpdateFrequence(-1) { }
+
+	bool IsActive;
+	std::string Value;
+
+	sint32	UpdateFrequence;	// -1 = only first time,  0 = realtime, other value in millisecond
+	NLMISC::TTime	LastAskUpdate;
+	bool	ReceivedUpdateAnswer;
+
+	CService *Service;
+
+	// used by gtk
+	void	*RootTreeItem;
+	void	*RootSubTree;
+	void	*Bitmap, *Label;
+	void	*ItemFactory;
+};
+
+typedef std::vector<CAdminSerialCommand>::iterator CIT;
 
 struct CService
 {
@@ -50,7 +81,31 @@ struct CService
 	bool			Connected;		/// true if the service is connected to the AES
 	bool			InConfig;		/// true if the service is in the configuration
 	bool			Unknown;		/// true if the aes is not connected
-	std::vector<std::string>	Commands;
+
+	std::vector<CAdminSerialCommand>	Commands;
+
+	uint32 nbActiveCommands ()
+	{
+		CIT cit;
+		uint32 nb = 0;
+		for (cit = Commands.begin(); cit != Commands.end(); cit++)
+		{
+			if ((*cit).IsActive) nb++;
+		}
+		return nb;
+	}
+
+	CIT findCommand (std::string name, bool asrt = true)
+	{
+		CIT cit;
+		for (cit = Commands.begin(); cit != Commands.end(); cit++)
+			if ((*cit).Name == name)
+				break;
+
+		if (asrt)
+			nlassert (cit != Commands.end());
+		return cit;
+	}
 
 	CAdminExecutorService *AES;
 
@@ -174,8 +229,8 @@ private:
 	static uint32 NextId;
 };
 
-typedef std::list<CAdminService> TAdminServices;
-typedef std::list<CAdminService>::iterator ASIT;
+typedef std::vector<CAdminService> TAdminServices;
+typedef std::vector<CAdminService>::iterator ASIT;
 
 // Variables
 

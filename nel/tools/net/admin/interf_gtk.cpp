@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.3 2001/06/07 16:18:17 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.4 2001/06/27 08:32:17 lecroart Exp $
  *
  *
  */
@@ -80,6 +80,9 @@ static CGtkDisplayer *GtkDisplayer;
 //
 // Functions
 //
+
+bool queryValue (string &value);
+
 
 /*void cbStartService ()
 {
@@ -560,15 +563,52 @@ static GtkItemFactoryEntry SMenuItems[] = {
 	{ "/Start Service", NULL, cbStartService, 0, NULL },
 	{ "/Stop Service", NULL, cbStopService, 0, NULL },
 	{ "/Commands", NULL, NULL, 0, "<Branch>" },
+	{ "/Variables", NULL, NULL, 0, "<Branch>" },
 };
 
-void cbDoIt ()
+void cbExecuteCommand (gpointer callback_data, guint callback_action, GtkWidget *widget)
 {
-	// todo connecter la bonne fonction, retrouver tout le bordel (bon courage...)
-	nlinfo("execute command...");
+	/// \todo ace: blinder si popups est pas bon
+	CAdminSerialCommand *scmd = (CAdminSerialCommand *)callback_action;
+	nlinfo("execute command...%p %p %p %s", callback_data, callback_action, widget, scmd->Name.c_str());
+
+	string cmd;
+	cmd += "ec ";
+	cmd += toString (PopupS->AES->AS->Id);
+	cmd += " ";
+	cmd += toString (PopupS->AES->Id);
+	cmd += " ";
+	cmd += toString (PopupS->Id);
+	cmd += " ";
+	cmd += scmd->Name;
+
+	// add command line if needed
+	string str = "";
+	if (queryValue (str))
+	{
+		cmd += " ";
+		cmd += str;
+	}
+
+	ICommand::execute (cmd, logstdout);
 }
 
-void interfUpdateS (CService *s)
+void cbExecuteVariable (gpointer callback_data, guint callback_action, GtkWidget *widget)
+{
+	/// \todo ace: blinder si popups est pas bon
+	CAdminSerialCommand *scmd = (CAdminSerialCommand *)callback_action;
+	
+	if (scmd->IsActive)
+	{
+		nlwarning ("The variable '%s' is already active", scmd->Name.c_str());
+		return;
+	}
+
+	scmd->IsActive = true;
+	interfAddVariable (scmd->Service, scmd);
+}
+
+void interfUpdateService (CService *s)
 {
 	string name;
 	name = "S";
@@ -608,13 +648,23 @@ void interfUpdateS (CService *s)
 		// add new commands on the menu
 		for (uint i = 0; i < s->Commands.size(); i++)
 		{
-			string name = "/Commands/";
-			name += s->Commands[i];
 			GtkItemFactoryEntry ife;
+			string name;
+			if (s->Commands[i].Type == ICommand::Command)
+			{
+				name = "/Commands/";
+				ife.callback = (GtkItemFactoryCallback)cbExecuteCommand;
+			}
+			else
+			{
+				name = "/Variables/";
+				ife.callback = (GtkItemFactoryCallback)cbExecuteVariable;
+			}
+			name += s->Commands[i].Name;
+			s->Commands[i].Service = s;
 			ife.path = const_cast<char *>(name.c_str());
 			ife.accelerator = NULL;
-			ife.callback = cbDoIt;
-			ife.callback_action = 0;
+			ife.callback_action = (guint)&(s->Commands[i]);
 			ife.item_type = NULL;
 			gtk_item_factory_create_items (GTK_ITEM_FACTORY(s->ItemFactory), 1, &ife, &(s->Commands[i]));
 		}
@@ -625,16 +675,25 @@ void interfUpdateS (CService *s)
 		// delete all commands
 		for (uint i = 0; i < s->Commands.size(); i++)
 		{
-			string name = "/Commands/";
-			name += s->Commands[i];
+			string name;
+			if (s->Commands[i].Type == ICommand::Command)
+			{
+				name = "/Commands/";
+			}
+			else
+			{
+				name = "/Variables/";
+			}
+			name += s->Commands[i].Name;
 			gtk_item_factory_delete_item (GTK_ITEM_FACTORY(s->ItemFactory), name.c_str());
 		}
 		s->Commands.clear ();
+		removeSubTree (s);
 		s->MenuCreated = false;
 	}
 }
 
-void interfAddS (CAdminExecutorService *aes, CService *s)
+void interfAddService (CAdminExecutorService *aes, CService *s)
 {
 	if (aes->Services.size () == 1)
 	{
@@ -661,7 +720,7 @@ void interfAddS (CAdminExecutorService *aes, CService *s)
 
 	gtk_signal_connect (GTK_OBJECT (s->RootTreeItem), "button-press-event", GTK_SIGNAL_FUNC(cbPopupSMenu), menu);
 
-	interfUpdateS (s);
+	interfUpdateService (s);
 
 	if (aes->Services.size () == 1)
 	{
@@ -671,9 +730,164 @@ void interfAddS (CAdminExecutorService *aes, CService *s)
 	}
 }
 
+CAdminSerialCommand *PopupC = NULL;
+
+void cbSetUpdateFrequence (gpointer callback_data, guint callback_action, GtkWidget *widget)
+{
+	sint32 value = (sint32)callback_action;
+	nlinfo ("set freq to %d", value);
+	PopupC->UpdateFrequence = value;
+	PopupC->LastAskUpdate = 0;	// force to update now
+	PopupC = NULL;
+}
+
+void cbRemoveVariable ()
+{
+	PopupC->IsActive = false;
+	PopupC->UpdateFrequence = -1;
+	PopupC->LastAskUpdate = 0;
+	interfRemoveVariable (PopupC);
+
+	PopupC = NULL;
+}
+
+void cbSetVariableValue ()
+{
+	string str = PopupC->Value;
+	if (queryValue (str))
+	{
+		// need to update the value
+		string cmd;
+		cmd += "ec ";
+		cmd += toString (PopupC->Service->AES->AS->Id);
+		cmd += " ";
+		cmd += toString (PopupC->Service->AES->Id);
+		cmd += " ";
+		cmd += toString (PopupC->Service->Id);
+		cmd += " ";
+		cmd += PopupC->Name;
+		cmd += " ";
+		cmd += str;
+		ICommand::execute (cmd, logstdout);
+	}
+}
+
+static GtkItemFactoryEntry CMenuItems[] = {
+	{ "/Set Value", NULL, cbSetVariableValue, NULL, NULL },
+	{ "/Remove variable", NULL, cbRemoveVariable, 0, NULL },
+	{ "/Update one time", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, -1, NULL },
+	{ "/Update every time", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 0, NULL },
+	{ "/Update every 1s", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 1000, NULL },
+	{ "/Update every 10s", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 10*1000, NULL },
+	{ "/Update every 1mn", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 60*1000, NULL },
+	{ "/Update every 10mn", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 10*60*1000, NULL },
+	{ "/Update every 1h", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 60*60*1000, NULL },
+};
+
+// POPUP MENU
+//GtkWidget *SMenu;
+gint cbPopupCMenu (GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+	if (event->type == GDK_BUTTON_PRESS && event->button.button == 3)
+	{
+		GdkEventButton *bevent = (GdkEventButton *) event; 
+		gtk_menu_popup (GTK_MENU (data), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
+		gtk_signal_emit_stop_by_name (GTK_OBJECT(widget), "button_press_event");
+
+		ASIT asit;
+		for (asit = AdminServices.begin(); asit != AdminServices.end(); asit++)
+		{
+			AESIT aesit;
+			for (aesit = (*asit).AdminExecutorServices.begin(); aesit != (*asit).AdminExecutorServices.end(); aesit++)
+			{
+				SIT sit;
+				for (sit = (*aesit).Services.begin(); sit != (*aesit).Services.end(); sit++)
+				{
+					CIT cit;
+					for (cit = (*sit).Commands.begin(); cit != (*sit).Commands.end(); cit++)
+					{
+						if ((*cit).RootTreeItem == widget)
+						{
+							PopupC = &(*cit);
+							return TRUE;
+						}
+					}
+				}
+			}
+		}
+		nlstop;
+	}
+	return TRUE;
+}
+
+
+
+void interfUpdateVariable (CAdminSerialCommand *c)
+{
+	string name;
+	name = "C";
+	name += " '";
+	name += c->Name;
+	name += " = '";
+	name += c->Value;
+	name += "' (A";
+	name += toString(c->IsActive);
+	name += ", T";
+	name += toString(c->Type);
+	name += ", F";
+	name += toString(c->UpdateFrequence);
+	name += ")";
+
+	// check if we already create widgets
+	nlassert (c->RootTreeItem != NULL);
+
+	/// \todo ace: icone pour les variables
+//	setBitmap (icon, c->Bitmap);
+	setLabel (name, c->Label);
+}
+
+void interfAddVariable (CService *s, CAdminSerialCommand *c)
+{
+	if (s->nbActiveCommands () == 1)
+	{
+		// it's the first AS, we have to add the subtree
+		s->RootSubTree = gtk_tree_new();
+	}
+
+	//
+	// Create the item
+	//
+
+	createTreeItem (GTK_WIDGET(s->RootSubTree), c->RootTreeItem, c->Bitmap, c->Label);
+
+	//
+	// Create the popupmenu
+	//
+
+	gint nmenu_items = sizeof (CMenuItems) / sizeof (CMenuItems[0]);
+	GtkAccelGroup *accel_group = gtk_accel_group_new ();
+	c->ItemFactory = gtk_item_factory_new (GTK_TYPE_MENU, "<main>", accel_group);
+	gtk_item_factory_create_items (GTK_ITEM_FACTORY(c->ItemFactory), nmenu_items, CMenuItems, NULL);
+	gtk_window_add_accel_group (GTK_WINDOW (RootWindow), accel_group);
+	GtkWidget *menu = gtk_item_factory_get_widget (GTK_ITEM_FACTORY(c->ItemFactory), "<main>");
+
+	gtk_signal_connect (GTK_OBJECT (c->RootTreeItem), "button-press-event", GTK_SIGNAL_FUNC(cbPopupCMenu), menu);
+
+	interfUpdateVariable (c);
+
+	if (s->nbActiveCommands () == 1)
+	{
+		// it's the first AS, we have to add the subtree
+		gtk_tree_item_set_subtree (GTK_TREE_ITEM (s->RootTreeItem), (GtkWidget*)s->RootSubTree);
+		gtk_tree_item_expand (GTK_TREE_ITEM (s->RootTreeItem));
+	}
+}
+
+
+
 void removeSubTree (CAdminService *as)
 {
-	// bug todo kan on kill un admin service et que on a selectionner un sous fils du subtree
+	/// \todo ace: bug kan on kill un admin service et que on a selectionner un sous fils du subtree
 	GList *l = GTK_TREE_SELECTION(RootTree);
 	if (l != NULL)
 	{
@@ -683,7 +897,19 @@ void removeSubTree (CAdminService *as)
 	gtk_tree_item_remove_subtree (GTK_TREE_ITEM(as->RootTreeItem));
 }
 
-void interfRemoveS (CService *s)
+void removeSubTree (CService *s)
+{
+	/// \todo ace: bug kan on kill un admin service et que on a selectionner un sous fils du subtree
+	GList *l = GTK_TREE_SELECTION(RootTree);
+	if (l != NULL)
+	{
+		GtkWidget *g = GTK_WIDGET (l->data);
+		gtk_tree_item_deselect (GTK_TREE_ITEM(g));
+	}
+	gtk_tree_item_remove_subtree (GTK_TREE_ITEM(s->RootTreeItem));
+}
+
+void interfRemoveService (CService *s)
 {
 	gtk_container_remove (GTK_CONTAINER(GTK_WIDGET(s->RootTreeItem)->parent), GTK_WIDGET(s->RootTreeItem));
 }
@@ -698,6 +924,14 @@ void interfRemoveAS (CAdminService *as)
 	gtk_container_remove (GTK_CONTAINER(GTK_WIDGET(as->RootTreeItem)->parent), GTK_WIDGET(as->RootTreeItem));
 }
 
+void interfRemoveVariable (CAdminSerialCommand *c)
+{
+	gtk_container_remove (GTK_CONTAINER(GTK_WIDGET(c->RootTreeItem)->parent), GTK_WIDGET(c->RootTreeItem));
+	c->RootTreeItem = NULL;
+}
+
+
+
 // windows delete event => quit
 gint delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
@@ -711,9 +945,44 @@ gint delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
 vector<string> CommandHistory;
 uint32 CommandHistoryPos = 0;
 
+// the user typed  command, execute it
 gint cbValidateCommand (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-	string cmd = gtk_entry_get_text (GTK_ENTRY(widget));
+	string commandHeader = "";
+
+	// first, we'll check if it's a local command or a command for a service
+	GList *l = GTK_TREE_SELECTION(RootTree);
+	if (l != NULL)
+	{
+		GtkWidget *widget = GTK_WIDGET (l->data);
+
+		ASIT asit;
+		for (asit = AdminServices.begin(); asit != AdminServices.end(); asit++)
+		{
+			AESIT aesit;
+			for (aesit = (*asit).AdminExecutorServices.begin(); aesit != (*asit).AdminExecutorServices.end(); aesit++)
+			{
+				SIT sit;
+				for (sit = (*aesit).Services.begin(); sit != (*aesit).Services.end(); sit++)
+				{
+					if ((*sit).RootTreeItem == widget)
+					{
+						commandHeader += "ec ";
+						commandHeader += toString ((*asit).Id);
+						commandHeader += " ";
+						commandHeader += toString ((*aesit).Id);
+						commandHeader += " ";
+						commandHeader += toString ((*sit).Id);
+						commandHeader += " ";
+						goto found;
+					}
+				}
+			}
+		}
+	}
+found:
+
+	string cmd = commandHeader + gtk_entry_get_text (GTK_ENTRY(widget));
 	CommandHistory.push_back (cmd);
 	// execute the command
 	ICommand::execute (cmd, logstdout);
@@ -894,7 +1163,7 @@ void initInterf ()
 //	gtk_editable_select_region (GTK_EDITABLE (InputText), 0, 5);
 	gtk_signal_connect (GTK_OBJECT(InputText), "activate", GTK_SIGNAL_FUNC(cbValidateCommand), NULL);
 	gtk_signal_connect(GTK_OBJECT(InputText),"key_press_event",GTK_SIGNAL_FUNC(KeyIn),NULL);
-	gtk_box_pack_start (GTK_BOX (vrootbox), InputText, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vrootbox), InputText, FALSE, FALSE, 0);
 	gtk_widget_show (InputText);
 
 
@@ -914,6 +1183,62 @@ void initInterf ()
     gtk_widget_show (RootWindow);
 }
 
+void askVariableUpdate (CAdminSerialCommand *c)
+{
+	c->LastAskUpdate = CTime::getLocalTime ();
+	c->ReceivedUpdateAnswer = false;
+
+	// send the command to have the first time value
+	string cmd;
+	cmd += "ec ";
+	cmd += toString (c->Service->AES->AS->Id);
+	cmd += " ";
+	cmd += toString (c->Service->AES->Id);
+	cmd += " ";
+	cmd += toString (c->Service->Id);
+	cmd += " ";
+	cmd += c->Name;
+	ICommand::execute (cmd, logstdout);
+}
+
+void checkActiveVariable ()
+{
+	// parse all variables
+	ASIT asit;
+	for (asit = AdminServices.begin(); asit != AdminServices.end(); asit++)
+	{
+		AESIT aesit;
+		for (aesit = (*asit).AdminExecutorServices.begin(); aesit != (*asit).AdminExecutorServices.end(); aesit++)
+		{
+			SIT sit;
+			for (sit = (*aesit).Services.begin(); sit != (*aesit).Services.end(); sit++)
+			{
+				CIT cit;
+				for (cit = (*sit).Commands.begin(); cit != (*sit).Commands.end(); cit++)
+				{
+					if ((*cit).IsActive)
+					{
+						CAdminSerialCommand *c = &(*cit);
+						if ((*cit).LastAskUpdate == 0)
+						{
+							// it's the first time, update it anyway
+							askVariableUpdate (&(*cit));
+						}
+						else if ((*cit).ReceivedUpdateAnswer && (*cit).UpdateFrequence >= 0)
+						{
+							// it's an active variable, check if we need to update it
+							if (CTime::getLocalTime () >= (*cit).LastAskUpdate + (*cit).UpdateFrequence)
+							{
+								askVariableUpdate (&(*cit));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 gint updateInterf (gpointer data)
 {
 //	g_print("ok\n");
@@ -923,6 +1248,8 @@ gint updateInterf (gpointer data)
 //	interfAddAS(as);
 
 	CNetManager::update();
+
+	checkActiveVariable ();
 
 	return TRUE;
 }
@@ -934,10 +1261,19 @@ void runInterf ()
 	logstdout.addDisplayer (&dispstdout);
 	logstdout.addDisplayer (GtkDisplayer);
 
-	// todo virer ca pour pas que ca connecte automatiquement
-	ICommand::execute ("connect 1", logstdout);
-	
-    gtk_timeout_add (500, updateInterf, NULL);
+	// autoconnect if needed
+	CConfigFile::CVar &host = ConfigFile.getVar ("ASHosts");
+	for (sint i = 0 ; i < host.size (); i += 3)
+	{
+		if (host.asInt(i+2) == 1)
+		{
+			string str = "connect ";
+			str += toString (AdminServices[i/3].Id);
+			ICommand::execute (str, logstdout);
+		}
+	}
+
+	gtk_timeout_add (500, updateInterf, NULL);
 //	gdk_threads_enter ();
 	gtk_main ();
 //	gdk_threads_leave ();
@@ -946,6 +1282,7 @@ void runInterf ()
 	WarningLog->removeDisplayer (GtkDisplayer);
 	InfoLog->removeDisplayer (GtkDisplayer);
 	ErrorLog->removeDisplayer (GtkDisplayer);
+
 }
 
 
@@ -961,6 +1298,89 @@ NLMISC_COMMAND (quit, "quit", "")
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////// MODAL WINDOW FOR SELECTING A PARAMETER (as a string) //////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static bool QueryValueResult;
+static string QueryValueValue;
+	GtkWidget *window = NULL;
+
+static gboolean cmw_destroy_cb (GtkWidget *widget)
+{
+	// This is needed to get out of gtk_main 
+	gtk_main_quit ();
+	return FALSE;
+}
+
+static void cmw_ok (GtkWidget *widget, gpointer data)
+{
+	QueryValueValue = gtk_entry_get_text (GTK_ENTRY(data));
+	QueryValueResult = true;
+	
+	gtk_widget_destroy (window);
+}
+
+static bool queryValue (string &value)
+{
+	GtkWidget *vbox, *hbox;
+	GtkWidget *btnOk,*btnCancel;
+	GtkWidget *entry;
+
+	// Create modal window (Here you can use any window descendent )
+	window=gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title (GTK_WINDOW(window),"Enter the value");
+
+	// Set window as modal 
+	gtk_window_set_modal (GTK_WINDOW(window),TRUE);
+
+	// Create widgets 
+	vbox = gtk_vbox_new (FALSE,5);
+	hbox = gtk_hbox_new (TRUE,5);
+	btnOk = gtk_button_new_with_label ("Ok");
+	btnCancel = gtk_button_new_with_label ("Cancel");
+	entry = gtk_entry_new ();
+	gtk_entry_set_text (GTK_ENTRY (entry), value.c_str());
+
+	// Pack widgets 
+	gtk_container_add (GTK_CONTAINER (window), vbox);
+	gtk_box_pack_start (GTK_BOX (vbox), entry, FALSE, FALSE, 4);
+	gtk_box_pack_start (GTK_BOX (vbox), gtk_hseparator_new (), FALSE, FALSE, 4);
+	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 4);
+	gtk_box_pack_start (GTK_BOX (hbox), btnOk, TRUE, TRUE, 4);
+	gtk_box_pack_start (GTK_BOX (hbox), btnCancel, TRUE, TRUE, 4);
+
+	// Connect signals 
+	gtk_signal_connect_object (GTK_OBJECT (btnCancel), "clicked", GTK_SIGNAL_FUNC (gtk_widget_destroy), GTK_OBJECT (window));
+	gtk_signal_connect (GTK_OBJECT (window), "destroy", GTK_SIGNAL_FUNC (cmw_destroy_cb),NULL);
+	gtk_signal_connect (GTK_OBJECT (btnOk), "clicked", GTK_SIGNAL_FUNC (cmw_ok), entry);
+	gtk_signal_connect (GTK_OBJECT (entry), "activate", GTK_SIGNAL_FUNC(cmw_ok), entry);
+
+	// Put the focus on the entry
+	gtk_widget_grab_focus (entry);
+
+	QueryValueResult = false;
+
+	// Show widgets 
+	gtk_widget_show_all (window);
+
+	// wait until dialog get destroyed 
+	gtk_main();
+
+	if (QueryValueResult)
+	{
+		value = QueryValueValue;
+	}
+	return QueryValueResult;
+}
+
+
 #endif // INTERF_GTK
 
-// todo reflechir a ce qu on propose sur les services a administrer (variables (once, autoupdate, fonction, etc..)
+/// \todo ace: reflechir a ce qu on propose sur les services a administrer (variables (once, autoupdate, fonction, etc..)

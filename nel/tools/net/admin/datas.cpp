@@ -1,7 +1,7 @@
 /** \file datas.cpp
  * 
  *
- * $Id: datas.cpp,v 1.1 2001/05/11 13:50:59 lecroart Exp $
+ * $Id: datas.cpp,v 1.2 2001/06/27 08:32:17 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -48,6 +48,7 @@
 */
  
 #include "nel/net/buf_sock.h"
+#include "nel/misc/config_file.h"
 
 #include "datas.h"
 
@@ -57,6 +58,9 @@ using namespace NLNET;
 
 uint32 CAdminService::NextId = 1;
 
+CConfigFile ConfigFile;
+
+	
 TAdminServices AdminServices;
 
 

@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_dos.cpp,v 1.1 2001/05/18 16:51:49 lecroart Exp $
+ * $Id: interf_dos.cpp,v 1.2 2001/06/27 08:32:17 lecroart Exp $
  *
  *
  */
@@ -53,13 +53,13 @@ static string command;
 
 void interfAddAS (CAdminService *as) {}
 void interfAddAES (CAdminService *as, CAdminExecutorService *aes) {}
-void interfAddS (CAdminExecutorService *aes, CService *s) {}
+void interfAddService (CAdminExecutorService *aes, CService *s) {}
 
 void initInterf ()
 {
 	logstdout.addDisplayer (&dispstdout);
 
-	// todo virer ca pour pas que ca connecte automatiquement
+	/// \todo ace: virer ca pour pas que ca connecte automatiquement
 	ICommand::execute ("connect localhost", logstdout);
 	
 	printLine(command);

@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * 
  *
- * $Id: admin.cpp,v 1.6 2001/06/18 09:38:15 lecroart Exp $
+ * $Id: admin.cpp,v 1.7 2001/06/27 08:32:17 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -25,8 +25,9 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-
 #include <string>
+#include <stdio.h>
+
 
 #include "nel/misc/debug.h"
 #include "nel/misc/command.h"
@@ -35,6 +36,7 @@
 #include "nel/net/net_manager.h"
 
 #include "interf.h"
+#include "datas.h"
 
 using namespace NLMISC;
 using namespace NLNET;
@@ -52,11 +54,10 @@ int main (int argc, char **argv)
 
 	initInterf ();
 
-	CConfigFile ConfigFile;
 	ConfigFile.load ("admin.cfg");
 	CConfigFile::CVar &host = ConfigFile.getVar ("ASHosts");
 	
-	for (sint i = 0 ; i < host.size (); i += 2)
+	for (sint i = 0 ; i < host.size (); i += 3)
 	{
 		string ASName = host.asString(i);
 		string ASAddr = host.asString(i+1);

@@ -1,6 +1,6 @@
 /** \file string_mapper.cpp
  *
- * $Id: string_mapper.h,v 1.11 2004/06/09 09:22:47 ledorze Exp $
+ * $Id: string_mapper.h,v 1.11.8.1 2004/10/22 09:15:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include <set>
 
 #include "nel/misc/stream.h"
+#include "nel/misc/mutex.h"
 
 namespace NLMISC
 {
@@ -77,10 +78,21 @@ class CStringMapper
 		}
 	};
 
-	std::set<std::string*,CCharComp>	_StringTable;
+	class CAutoFastMutex
+	{
+		CFastMutex		*_Mutex;
+	public:
+		CAutoFastMutex(CFastMutex *mtx) : _Mutex(mtx)	{_Mutex->enter();}
+		~CAutoFastMutex() {_Mutex->leave();}
+	};
 
-	static	CStringMapper	_GlobalMapper;
+	// Local Data
+	std::set<std::string*,CCharComp>	_StringTable;
 	std::string*			_EmptyId;
+	CFastMutex				_Mutex;		// Must be thread-safe (Called by CPortal/CCluster, each of them called by CInstanceGroup)
+	
+	// The 'singleton' for static methods
+	static	CStringMapper	_GlobalMapper;
 
 	// private constructor.
 	CStringMapper();

@@ -2,7 +2,7 @@
  * This is a sub-module for calculating ligtmaps
  * This is the code of the plane wich regroup lightmap faces
  *
- * $Id: calc_lm_plane.cpp,v 1.3 2002/03/14 18:23:04 vizerie Exp $
+ * $Id: calc_lm_plane.cpp,v 1.4 2002/04/04 07:48:15 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -578,4 +578,54 @@ void SLMPlane::createFromFaceGroup (vector<CMesh::CFace*>::iterator ItFace, uint
 
 		++ItParseI;
 	}
+}
+
+// -----------------------------------------------------------------------------------------------
+CRGBAF SLMPlane::getAverageColor (uint8 nLayerNb)
+{
+	uint32 a, b, c, nNbPixel = 0;
+	CRGBAF ret (0.0f, 0.0f, 0.0f, 0.0f);
+
+	if (nLayerNb > nNbLayerUsed)
+		return ret;
+
+	c = nLayerNb;
+	for( b = 0; b < this->h; ++b )
+	for( a = 0; a < this->w; ++a )
+		if( this->msk[a+b*this->w] != 0 )
+		{
+			ret += this->col[a+b*this->w+w*h*c];
+			++nNbPixel;
+		}
+	if (nNbPixel > 0)
+	{
+		ret.R = ret.R / (float)nNbPixel;
+		ret.G = ret.G / (float)nNbPixel;
+		ret.B = ret.B / (float)nNbPixel;
+		ret.A = ret.A / (float)nNbPixel;
+	}
+	return ret;
+}
+
+// -----------------------------------------------------------------------------------------------
+bool SLMPlane::isSameColorAs (uint8 nLayerNb, CRGBAF color, float precision)
+{
+	uint32 a, b, c;
+
+	if (nLayerNb > nNbLayerUsed)
+		return false;
+
+	c = nLayerNb;
+	for( b = 0; b < this->h; ++b )
+	for( a = 0; a < this->w; ++a )
+		if( this->msk[a+b*this->w] != 0 )
+		{
+			CRGBAF lc = this->col[a+b*this->w+w*h*c];
+
+			if ((fabsf(lc.R-color.R) > precision) ||
+				(fabsf(lc.G-color.G) > precision) ||
+				(fabsf(lc.B-color.B) > precision))
+				return false;
+		}
+	return true;
 }

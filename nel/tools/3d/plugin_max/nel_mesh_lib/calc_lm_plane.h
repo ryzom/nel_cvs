@@ -2,7 +2,7 @@
  * LightMap Calculation settings
  * Plane of faces in the same smooth group
  *
- * $Id: calc_lm_plane.h,v 1.1 2001/08/21 16:33:50 besson Exp $
+ * $Id: calc_lm_plane.h,v 1.2 2002/04/04 07:48:15 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ struct SLMPlane
 						// 2 - Pixel is interior and is calculated
 						// 3 - Pixel is exterior in this plane but interior in another of the same smooth group
 						// 4 - Pixel is exterior and is extrapolated
-	vector<CRGBAF> col; // 32 bits value for each pixel of each layer.The layers are contiguous.
+	vector<CRGBAF> col; // 32 bits value for each pixel of each layer.The layers are contiguous. (0.0f -> 1.0f)
 	vector<uint8> ray;	// Raytrace composante
 						// 0 - Ray passed
 						// 1 - 254 - Ray blocked for one or more light
@@ -69,6 +69,10 @@ struct SLMPlane
 
 	void createFromFace (CMesh::CFace *pF);
 	void createFromFaceGroup (vector<CMesh::CFace*>::iterator ItFace, uint32 nNbFace);
+
+	CRGBAF getAverageColor (uint8 nLayerNb);
+	bool isSameColorAs (uint8 nLayerNb, CRGBAF color, float precision);
+
 
 	// -----------------------------------------------------------------------
 	// Implementation

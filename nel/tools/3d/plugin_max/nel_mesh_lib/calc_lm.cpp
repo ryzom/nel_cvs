@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.38 2002/04/02 13:38:12 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.39 2002/04/04 07:48:15 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2366,6 +2366,62 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			gOptions.FeedBack->update ();
 		}
 
+		// Optimize the planes if we can (if a plane contains the same color)
+		for (i = 0; i < AllPlanes.size(); ++i)
+		{
+			SLMPlane *pPlane = AllPlanes[i];
+			bool bIsGoodForOptimization = true;
+			for (j = 0; j < pPlane->nNbLayerUsed; ++j)
+			{
+				CRGBAF rAverage = pPlane->getAverageColor ((uint8)j);
+				if (!pPlane->isSameColorAs((uint8)j, rAverage, 1.0f/256.0f))
+				{
+					bIsGoodForOptimization = false;
+					break;
+				}
+			}
+			if (bIsGoodForOptimization)
+			{
+				vector<CRGBAF> allColors;
+				uint32 k;
+
+				for (j = 0; j < pPlane->nNbLayerUsed; ++j)
+					allColors.push_back(pPlane->getAverageColor ((uint8)j));
+
+				for (j = 0; j < pPlane->faces.size(); ++j)
+					for (k = 0; k < 3; ++k)
+					{
+						float u, v;
+						u = pPlane->faces[j]->Corner[k].Uvws[1].U - (float)pPlane->x - 0.5f;
+						u = u / (float)pPlane->w;
+						
+						v = pPlane->faces[j]->Corner[k].Uvws[1].V - (float)pPlane->y - 0.5f;
+						v = v / (float)pPlane->h;
+						
+						if (u < 0.0f)
+							u = 0.0f;
+						if (u > 1.0f)
+							u = 1.0f;
+
+						if (v < 0.0f)
+							v = 0.0f;
+						if (v > 1.0f)
+							v = 1.0f;
+
+						pPlane->faces[j]->Corner[k].Uvws[1].U = u + (float)pPlane->x + 0.5f;
+						pPlane->faces[j]->Corner[k].Uvws[1].V = v + (float)pPlane->y + 0.5f;
+					}
+				pPlane->resize (2,2);
+				for (j = 0; j < pPlane->nNbLayerUsed; ++j)
+					for (k = 0; k < 4; ++k)
+					pPlane->col[k+j*4] = allColors[j];
+
+				for (k = 0; k < 4; ++k)
+					pPlane->msk[k] = 1; // Just set the mask to a non zero value
+			}
+		}
+
+		// Place the planes in the lightmap
 		SLMPlane LightMap;
 		SortPlanesBySurface( AllPlanes );
 		for( i = 0; i < AllPlanes.size(); ++i )

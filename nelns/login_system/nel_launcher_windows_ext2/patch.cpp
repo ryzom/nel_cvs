@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.4 2004/02/19 13:09:30 lecroart Exp $
+ * $Id: patch.cpp,v 1.5 2004/03/30 17:33:28 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -583,7 +583,7 @@ private:
 			throw Exception (err);
 		}
 
-		string dest = filename.substr(0, filename.size ()-3);
+		string dest = filename.substr(0, filename.size ()-4);
 		setRWAccess(dest);
 		if(VerboseLog) nlinfo("Calling fopen('%s','wb')", dest.c_str());
 		FILE *fp = fopen (dest.c_str(), "wb");

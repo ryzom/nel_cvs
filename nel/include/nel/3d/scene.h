@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.19 2001/04/23 09:14:27 besson Exp $
+ * $Id: scene.h,v 1.20 2001/04/25 08:55:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,7 +97,7 @@ class	CShapeBank;
  * The scene has an instance Managagement:
  *		- IShape  design the object that is instancied (a mesh as example).
  *		- ITransformShape is the instance, which smart_point to a IShape.
- *		- user can add shape manually with addShape(), or remove them with delShape().
+ *		- user can add shape manually in the scene CShapeBank with CShapeBank::add (), or remove them with CShapeBank::release ().
  *		- user create instance of a shape with CScene::createInstance(string shapeName);
  *			This create/load auto the shape if needed (searching in CPath, shapename must be a valid file name), 
  *			and then create the instance, with help of IShape::createInstance().

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: new_service.cpp,v 1.1 2001/02/23 10:59:49 lecroart Exp $
+ * $Id: new_service.cpp,v 1.2 2001/02/23 11:13:59 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -135,8 +135,16 @@ static void sigHandler(int Sig)
 			case SIGTERM :
 			// you should not call a function and system function like printf in a SigHandle because
 			// signal-handler routines are usually called asynchronously when an interrupt occurs.
-				ExitSignalAsked = Sig;
-				return;
+				if (ExitSignalAsked == 0)
+				{
+					ExitSignalAsked = Sig;
+					return;
+				}
+				else
+				{
+					nlinfo ("Signal already received, launch the brutal exit");
+					exit (EXIT_FAILURE);
+				}
 				break;
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.18 2002/03/05 11:56:54 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.19 2002/03/06 13:45:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,37 +227,49 @@ void		CRenderTrav::resetLightSetup()
 {
 	// If lighting System disabled, skip
 	if(!LightingSystemEnabled)
+	{
+		// Dont modify Driver lights, but setup default lighting For VertexProgram Lighting.
+		_NumLightEnabled= 1;
+		// Setup A default directionnal.
+		CVector		defDir(-0.5, 0.0, -0.85);
+		defDir.normalize();
+		CRGBA		aday= CRGBA(130,  105,  119);
+		CRGBA		dday= CRGBA(238, 225, 204);
+		_DriverLight[0].setupDirectional(aday, dday, dday, defDir);
+
 		return;
-
-	uint i;
-
-	// Disable all lights.
-	for(i=0; i<Driver->getMaxLight(); i++)
-	{
-		Driver->enableLight(i, false);
 	}
-
-
-	// setup the precise cache, and setup lights according to this cache?
-	// setup blackSun (factor==0).
-	_LastSunFactor= 0;
-	_LastSunAmbient.set(0,0,0,255);
-	CLight		light;
-	light.setupDirectional(CRGBA::Black, CRGBA::Black, CRGBA::Black, _SunDirection);
-	Driver->setLight(0, light);
-	// setup NULL point lights (=> cache will fail), so no need to setup other lights in Driver.
-	for(i=0; i<NL3D_MAX_LIGHT_CONTRIBUTION; i++)
+	else
 	{
-		_LastPointLight[i]= NULL;
+		uint i;
+
+		// Disable all lights.
+		for(i=0; i<Driver->getMaxLight(); i++)
+		{
+			Driver->enableLight(i, false);
+		}
+
+
+		// setup the precise cache, and setup lights according to this cache?
+		// setup blackSun (factor==0).
+		_LastSunFactor= 0;
+		_LastSunAmbient.set(0,0,0,255);
+		_DriverLight[0].setupDirectional(CRGBA::Black, CRGBA::Black, CRGBA::Black, _SunDirection);
+		Driver->setLight(0, _DriverLight[0]);
+		// setup NULL point lights (=> cache will fail), so no need to setup other lights in Driver.
+		for(i=0; i<NL3D_MAX_LIGHT_CONTRIBUTION; i++)
+		{
+			_LastPointLight[i]= NULL;
+		}
+
+
+		// Set the global ambientColor
+		Driver->setAmbientColor(AmbientGlobal);
+
+		// clear the cache.
+		_CacheLightContribution= NULL;
+		_NumLightEnabled= 0;
 	}
-
-
-	// Set the global ambientColor
-	Driver->setAmbientColor(AmbientGlobal);
-
-	// clear the cache.
-	_CacheLightContribution= NULL;
-	_NumLightEnabled= 0;
 }
 
 

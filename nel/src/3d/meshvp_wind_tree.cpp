@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * <File description>
  *
- * $Id: meshvp_wind_tree.cpp,v 1.2 2002/02/28 12:59:50 besson Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.3 2002/03/06 13:45:26 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -82,6 +82,7 @@ static const char*	WindTreeVPCodeEnd=
 	DP4 o[HPOS].w, c[3], R5;															\n\
 	MOV o[TEX0].xy, v[8];																\n\
 	MOV o[TEX1].xy, v[9];																\n\
+	DP4	o[FOGC].x, c[6], -R5;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
 	END																					\n\
 ";
 

@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.8 2001/10/16 14:27:45 chafik Exp $
+ * $Id: ai_exception.h,v 1.9 2001/10/16 15:49:30 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -62,19 +62,19 @@ namespace NLAIE
 	private:
 		IException *_Excep;
 	public:
-		CExceptionContainer(const IException &exc):_Excep((IException *)exc.clone())
+		CExceptionContainer(const IException &exc);/*:_Excep((IException *)exc.clone())
 		{
-		}
+		}*/
 		
 		const char *what() const throw() 
 		{
 			return _Excep->what();
 		}
 
-		virtual const IException *clone() const
+		virtual const IException *clone() const;/*
 		{
 			return new CExceptionContainer(*_Excep->clone());
-		}
+		}*/
 		virtual ~CExceptionContainer()
 		{
 			delete _Excep;
@@ -94,10 +94,10 @@ namespace NLAIE
 			return "Depacement de résolution sur les index";
 		}
 
-		virtual const IException *clone() const
+		virtual const IException *clone() const;/*
 		{
 			return new CExceptionIndexError();
-		}
+		}*/
 
 		virtual ~CExceptionIndexError()
 		{
@@ -118,10 +118,10 @@ namespace NLAIE
 			return "l'index ne pointe pas rien un agent";
 		}
 
-		virtual const IException *clone() const
+		virtual const IException *clone() const;/*
 		{
 			return new CExceptionIndexHandeledError();
-		}
+		}*/
 
 		virtual ~CExceptionIndexHandeledError()
 		{
@@ -144,10 +144,10 @@ namespace NLAIE
 			return _ClassName;
 		}
 
-		virtual const IException *clone() const
+		virtual const IException *clone() const;/*
 		{
 			return new CExceptionUnRegisterClassError(_ClassName);
-		}
+		}*/
 
 		~CExceptionUnRegisterClassError()
 		{
@@ -172,10 +172,10 @@ namespace NLAIE
 			return _ClassName;
 		}
 
-		virtual const IException *clone() const
+		virtual const IException *clone() const;/*
 		{
 			return new CExceptionObjectNotFoundError(_ClassName);
-		}
+		}*/
 
 		~CExceptionObjectNotFoundError()
 		{
@@ -200,10 +200,10 @@ namespace NLAIE
 			return _Text;
 		}
 
-		virtual const IException *clone() const
+		virtual const IException *clone() const;/*
 		{
 			return new CExceptionNotImplemented(_Text);
-		}
+		}*/
 
 		virtual ~CExceptionNotImplemented()
 		{
@@ -228,10 +228,10 @@ namespace NLAIE
 			return _Text;
 		}
 
-		virtual const IException *clone() const
+		virtual const IException *clone() const;/*
 		{
 			return new CExceptionUnReference(_Text);
-		}
+		}*/
 
 		virtual ~CExceptionUnReference()
 		{
@@ -256,10 +256,10 @@ namespace NLAIE
 			return _Text;
 		}
 
-		virtual const IException *clone() const
+		virtual const IException *clone() const;/*
 		{
 			return new CExceptionAllReadyExist(_Text);
-		}
+		}*/
 
 		virtual ~CExceptionAllReadyExist()
 		{

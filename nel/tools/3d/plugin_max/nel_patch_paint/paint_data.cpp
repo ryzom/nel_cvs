@@ -89,6 +89,7 @@ PaintPatchData::PaintPatchData (PaintPatchMod *mod)
 {
 	flags = 0;
 	tempData = NULL;
+	preloadTiles = mod->preloadTiles;
 }
 
 PaintPatchData::PaintPatchData (PaintPatchData& emc)
@@ -97,6 +98,7 @@ PaintPatchData::PaintPatchData (PaintPatchData& emc)
 	tempData = NULL;
 	finalPatch = emc.finalPatch;
 	rfinalPatch = emc.rfinalPatch;
+	preloadTiles = emc.preloadTiles;
 }
 
 void PaintPatchData::Apply(TimeValue t, RPO *patchOb, int selLevel)
@@ -262,6 +264,7 @@ void PaintPatchData::UpdateChanges(PatchMesh *patch, RPatchMesh *rpatch, BOOL ch
 #define RFINALPATCH_CHUNK 0x4001
 #define RPO_MODE_TILE_TRANSITION 0x4002
 #define RPO_INCLUDE_MESHES 0x4003
+#define RPO_PRELOAD_TILES 0x4010
 
 IOResult PaintPatchData::Save(ISave *isave) 
 {
@@ -282,6 +285,10 @@ IOResult PaintPatchData::Save(ISave *isave)
 	isave->Write(&includeMeshes, sizeof(includeMeshes), &nb);
 	isave->EndChunk();
 	
+	isave->BeginChunk(RPO_PRELOAD_TILES);
+	isave->Write(&preloadTiles, sizeof(preloadTiles), &nb);
+	isave->EndChunk();
+
 	return IO_OK;
 }
 
@@ -316,10 +323,11 @@ load_change:
 			res = rfinalPatch.Load(iload);
 			break;
 			
-			break;
-			
 		case RPO_INCLUDE_MESHES:
 			res = iload->Read(&includeMeshes, sizeof(includeMeshes), &nb);
+			break;
+		case RPO_PRELOAD_TILES:
+			res = iload->Read(&preloadTiles, sizeof(preloadTiles), &nb);
 			break;
 
 		}

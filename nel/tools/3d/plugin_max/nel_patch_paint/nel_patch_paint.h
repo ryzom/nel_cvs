@@ -379,6 +379,7 @@ class PaintPatchMod : public Modifier
 		   PartID& partID, RefMessage message ) { return REF_SUCCEED; }
 
 		bool includeMeshes;
+		bool preloadTiles;
 		
 		// Remembered info
 		PatchMesh *rememberedPatch;	// NULL if using all selected patches
@@ -506,6 +507,7 @@ class PaintPatchData : public LocalModData {
 		// Here because they're kind of a global change -- not undoable.
 
 		bool includeMeshes;
+		bool preloadTiles;
 
 		DWORD flags;
 

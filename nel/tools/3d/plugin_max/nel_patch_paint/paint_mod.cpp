@@ -42,6 +42,7 @@ RefTargetHandle PaintPatchMod::Clone(RemapDir& remap)
 {
 	PaintPatchMod* newmod = new PaintPatchMod();	
 	newmod->includeMeshes = includeMeshes;
+	newmod->preloadTiles = preloadTiles;
 	return (newmod);
 }
 

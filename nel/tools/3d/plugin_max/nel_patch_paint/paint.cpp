@@ -44,11 +44,6 @@ using namespace NLMISC;
 
 #define REGKEY_EDIT_PATCH "Software\\Nevrax\\Ryzom\\edit_patch"
 
-// Define this to flush tiles load
-#ifndef NL_DEBUG
-#define FLUSH_TILES
-#endif // NL_DEBUG
-
 // Bank bitmaps
 CBankCont*	bankCont;
 
@@ -3354,32 +3349,32 @@ DWORD WINAPI myThread (LPVOID vData)
 			mouseListener.addToServer(CNELU::EventServer);
 
 			// *** Flush all selected tileset...
+			if (pData->pobj->preloadTiles)
+			{
+				// For all the tileset selected
+				for (sint tss=0; tss<(sint)tileSetSelector.getTileCount (); tss++)
+				{			
+					// Get the tileset index
+					sint ts=tileSetSelector.getTileSet (tss);
 
-#ifdef FLUSH_TILES
-			// For all the tileset selected
-			for (sint tss=0; tss<(sint)tileSetSelector.getTileCount (); tss++)
-			{			
-				// Get the tileset index
-				sint ts=tileSetSelector.getTileSet (tss);
+					// Get the tileset pointer
+					CTileSet *tileSet=bank.getTileSet (ts);
+					nlassert (tileSet);
 
-				// Get the tileset pointer
-				CTileSet *tileSet=bank.getTileSet (ts);
-				nlassert (tileSet);
+					// Flush all its 128x128 tiles
+					sint tl;
+					for (tl=0; tl<tileSet->getNumTile128(); tl++)
+						TheLand->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTile128(tl), 1);
 
-				// Flush all its 128x128 tiles
-				sint tl;
-				for (tl=0; tl<tileSet->getNumTile128(); tl++)
-					TheLand->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTile128(tl), 1);
+					// Flush all its 256x256 tiles
+					for (tl=0; tl<tileSet->getNumTile256(); tl++)
+						TheLand->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTile256(tl), 1);
 
-				// Flush all its 256x256 tiles
-				for (tl=0; tl<tileSet->getNumTile256(); tl++)
-					TheLand->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTile256(tl), 1);
-
-				// Flush all its transisitons tiles
-				for (tl=0; tl<CTileSet::count; tl++)
-					TheLand->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTransition(tl)->getTile (), 1);
+					// Flush all its transisitons tiles
+					for (tl=0; tl<CTileSet::count; tl++)
+						TheLand->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTransition(tl)->getTile (), 1);
+				}
 			}
-#endif // FLUSH_TILES
 
 			// MAIN LOOP
 			do

@@ -60,6 +60,7 @@ BOOL CALLBACK PatchOpsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 			SetWindowLong(hDlg, GWL_USERDATA, (LONG)ep);		 	
 
 			CheckDlgButton(hDlg, IDC_INCLUDE_MESHES, ep->includeMeshes);
+			CheckDlgButton(hDlg, IDC_PRELOAD_TILES, ep->preloadTiles);
 
 			return TRUE;
 		}
@@ -77,6 +78,12 @@ BOOL CALLBACK PatchOpsDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 					{
 						BOOL bCheck=(IsDlgButtonChecked(hDlg, IDC_INCLUDE_MESHES)==BST_CHECKED);
 						ep->includeMeshes=(bCheck!=0);
+						break;
+					}
+				case IDC_PRELOAD_TILES:
+					{
+						BOOL bCheck=(IsDlgButtonChecked(hDlg, IDC_PRELOAD_TILES)==BST_CHECKED);
+						ep->preloadTiles=(bCheck!=0);
 						break;
 					}
 				case IDC_PAINT:

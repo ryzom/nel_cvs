@@ -4,6 +4,7 @@
 // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #define RPO_INCLUDE_MESHES 0x2002
+#define RPO_PRELOAD_TILES 0x2003
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -16,6 +17,10 @@ IOResult PaintPatchMod::Save(ISave *isave)
 	// Tile mode
 	isave->BeginChunk(RPO_INCLUDE_MESHES);
 	isave->Write(&includeMeshes, sizeof(includeMeshes), &nb);
+	isave->	EndChunk();
+
+	isave->BeginChunk(RPO_PRELOAD_TILES);
+	isave->Write(&preloadTiles, sizeof(preloadTiles), &nb);
 	isave->	EndChunk();
 
 	return IO_OK;
@@ -49,6 +54,9 @@ IOResult PaintPatchMod::Load(ILoad *iload)
 		{
 			case RPO_INCLUDE_MESHES:
 				res = iload->Read(&includeMeshes, sizeof(includeMeshes), &nb);
+				break;
+			case RPO_PRELOAD_TILES:
+				res = iload->Read(&preloadTiles, sizeof(preloadTiles), &nb);
 				break;
 		}
 		iload->CloseChunk();

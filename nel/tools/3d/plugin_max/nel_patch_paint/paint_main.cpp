@@ -107,6 +107,7 @@ PaintPatchMod::PaintPatchMod()
 	// 3-18-99 to suport render steps and removal of the mental tesselator
 	
 	includeMeshes=false;
+	preloadTiles=true;
 	//	meshAdaptive = FALSE;	// Future use (Not used now)
 }
 

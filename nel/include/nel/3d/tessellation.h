@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.9 2000/11/10 09:57:34 berenguier Exp $
+ * $Id: tessellation.h,v 1.10 2000/11/14 13:25:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -414,7 +414,7 @@ public:
 	// Used by CPatch::unbind(). force the merging of face.
 	void			forceMerge();
 	// Used by CPatch::bind(). Split if necessary, according to neighbors.
-	bool			updateBindEdge(CTessFace	*&edgeFace);
+	bool			updateBindEdge(CTessFace	*&edgeFace, bool &splitWanted);
 	void			updateBind();
 
 

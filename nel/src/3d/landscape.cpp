@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.5 2000/11/10 09:58:04 berenguier Exp $
+ * $Id: landscape.cpp,v 1.6 2000/11/14 13:23:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,24 +61,10 @@ void			CLandscape::init(bool bumpTiles)
 
 	// TODO_TEXTURE.
 	// For TEST only here, create 2 rdrPass with random texture.
-	FarText= new CTexture;
-	TileText= new CTexture;
-	FarText->resize(64,64);
-	TileText->resize(64,64);
-	vector<CRGBA>	image;
-	image.resize(64*64);
-	for(int y=0;y<64;y++)
-	{
-		for(int x=0;x<64;x++)
-		{
-			image[y*64+x].R= rand()&255;
-			image[y*64+x].G= rand()&255;
-			image[y*64+x].B= rand()&255;
-			image[y*64+x].A= 255;
-		}
-	}
-	FarText->fillData(image);
-	TileText->fillData(image);
+
+	FarText= new CTextureFile("maps/slash.tga");
+	TileText= new CTextureFile("maps/xray.tga");
+
 
 	// Fill mat and rdr pass.
 	// Must init their BlendFunction here!!! becaus they switch between blend on/off during rendering.

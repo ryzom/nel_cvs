@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.5 2000/11/13 14:36:37 coutelas Exp $
+ * $Id: bitmap.cpp,v 1.6 2000/11/14 13:23:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1205,6 +1205,15 @@ uint32 CBitmap::getHeight(uint32 mipMap) const
 }
 
 
+/*-------------------------------------------------------------------*\
+							getHeight
+\*-------------------------------------------------------------------*/
+uint32 CBitmap::getSize(uint32 numMipMap) const
+{
+	return getHeight(numMipMap)*getWidth(numMipMap);
+}
+
+
 
 /*-------------------------------------------------------------------*\
 							buildMiMaps
@@ -1706,7 +1715,7 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 						if(imageDepth==32)
 							_Data[0][(height-y-1)*width*4 + 4*i + 3] = scanline[k++];
 						else
-							_Data[0][(height-y-1)*width*4 + 4*i + 3] = 0;
+							_Data[0][(height-y-1)*width*4 + 4*i + 3] = 255;
 					}
 					else
 					{
@@ -1716,7 +1725,7 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 						if(imageDepth==32)
 							_Data[0][y*width*4 + 4*i + 3] = scanline[k++];
 						else
-							_Data[0][y*width*4 + 4*i + 3] = 0;
+							_Data[0][y*width*4 + 4*i + 3] = 255;
 					}	
 				}
 			}

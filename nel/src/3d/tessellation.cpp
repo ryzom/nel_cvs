@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.9 2000/11/10 09:58:04 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.10 2000/11/14 13:23:21 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -195,16 +195,16 @@ CTileMaterial::CTileMaterial()
 // ***************************************************************************
 sint		CTessFace::CurrentDate=0;
 CVector		CTessFace::RefineCenter= CVector::Null;
-float		CTessFace::RefineThreshold= 0.005f;
+float		CTessFace::RefineThreshold= 0.1f;
 float		CTessFace::OORefineThreshold= 1.0f / CTessFace::RefineThreshold;
 
 float		CTessFace::FatherStartComputeLimit= 1.1f;
 float		CTessFace::ChildrenStartComputeLimit= 1.9f;
 float		CTessFace::SelfEndCompute= 2.1f;
 
-float		CTessFace::TileDistEndGeom= 40;
-float		CTessFace::TileDistNear= 50;
-float		CTessFace::TileDistFar= 90;
+float		CTessFace::TileDistNear= 20;
+float		CTessFace::TileDistEndGeom= CTessFace::TileDistNear-10;
+float		CTessFace::TileDistFar= CTessFace::TileDistNear+40;
 float		CTessFace::TileDistEndGeomSqr= sqr(CTessFace::TileDistEndGeom);
 float		CTessFace::TileDistNearSqr= sqr(CTessFace::TileDistNear);
 float		CTessFace::TileDistFarSqr= sqr(CTessFace::TileDistFar);
@@ -918,13 +918,17 @@ void		CTessFace::unbind()
 		}
 	}
 
-	// update vertex pointers (since I may have been updated by my father).
 	if(!isLeaf())
 	{
+		// update vertex pointers (since I may have been updated by my father).
 		SonLeft->VLeft= VBase;
 		SonLeft->VRight= VLeft;
 		SonRight->VLeft= VRight;
 		SonRight->VRight= VBase;
+
+		// unbind the sons.
+		SonLeft->unbind();
+		SonRight->unbind();
 	}
 
 }
@@ -933,28 +937,35 @@ void		CTessFace::forceMerge()
 {
 	if(!isLeaf())
 	{
+		// First, force merge of Sons and neighbor sons, to have a diamond configuration.
 		SonLeft->forceMerge();
 		SonRight->forceMerge();
+		if(FBase && !FBase->isLeaf())
+		{
+			FBase->SonLeft->forceMerge();
+			FBase->SonRight->forceMerge();
+		}
 		merge();
 	}
 }
 
 
 // ***************************************************************************
-bool		CTessFace::updateBindEdge(CTessFace	*&edgeFace)
+bool		CTessFace::updateBindEdge(CTessFace	*&edgeFace, bool &splitWanted)
 {
 	// REturn true, when the bind should be Ok, or if a split has occured.
 	// Return false only if pointers are updated, without splits.
 
-	if(edgeFace==NULL || edgeFace->isLeaf())
+	if(edgeFace==NULL)
+		return true;
+
+	if(edgeFace->isLeaf())
 		return true;
 
 	// If the neighbor is splitted  on ourself, split...
 	if(edgeFace->FBase==this)
 	{
-		// Split() only one time...
-		if(isLeaf())
-			split();
+		splitWanted= true;
 		return true;
 	}
 	else
@@ -973,7 +984,13 @@ bool		CTessFace::updateBindEdge(CTessFace	*&edgeFace)
 			edgeFace= sonRight;
 		}
 		else
-			nlassert(false);
+		{
+			// We should aready be splitted.
+			nlassert(!isLeaf());
+			// The neigbor should link already to one of our son.
+			nlassert(SonLeft == edgeFace->FLeft || SonRight == edgeFace->FLeft ||
+				SonLeft == edgeFace->FLeft || SonRight == edgeFace->FLeft)
+		}
 	}
 
 	return false;
@@ -983,17 +1000,26 @@ bool		CTessFace::updateBindEdge(CTessFace	*&edgeFace)
 // ***************************************************************************
 void		CTessFace::updateBind()
 {
-	// We should be a Leaf here, since, updateBind() is called to enforce splits according to neighbors.
-	nlassert(isLeaf());
+	bool	splitWanted= false;
+	while(!updateBindEdge(FBase, splitWanted));
+	while(!updateBindEdge(FLeft, splitWanted));
+	while(!updateBindEdge(FRight, splitWanted));
 
-	// Scan the base first, may be better :).
-	while(!updateBindEdge(FBase));
-	while(!updateBindEdge(FLeft));
-	while(!updateBindEdge(FRight));
+	if(splitWanted && isLeaf())
+	{
+		split();
+	}
 
 	// Recurse to sons.
 	if(!isLeaf())
 	{
+		// Force Face pointers (for enforced split face).
+		SonLeft->FBase= FLeft;
+		if(FLeft)	FLeft->changeNeighbor(this, SonLeft);
+		SonRight->FBase= FRight;
+		if(FRight)	FRight->changeNeighbor(this, SonRight);
+
+		// Update bind of sons.
 		SonLeft->updateBind();
 		SonRight->updateBind();
 	}

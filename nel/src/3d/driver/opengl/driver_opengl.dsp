@@ -135,5 +135,9 @@ SOURCE=.\driver_opengl_material.cpp
 
 SOURCE=.\driver_opengl_matrix.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\driver_opengl_texture.cpp
+# End Source File
 # End Target
 # End Project

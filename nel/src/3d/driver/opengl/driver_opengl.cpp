@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.11 2000/11/13 11:25:55 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.12 2000/11/14 13:24:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,63 +248,6 @@ bool CDriverGL::clearZBuffer(float zval)
 	return(true);
 }
 
-// --------------------------------------------------
-
-bool CDriverGL::setupTexture(CTexture& tex)
-{
-	CTextureDrvInfosGL* infos;
-
-	if ( !tex.DrvInfos )
-	{
-// C++ Hardcore style :
-//		tex.DrvInfos=new CTextureDrvInfosGL;
-//		ITextureDrvInfos* iinfos=static_cast<ITextureDrvInfos*>(tex.DrvInfos);
-//		CTextureDrvInfosGL* infos=static_cast<CTextureDrvInfosGL*>(iinfos);
-
-// C++ standard/intelligent style :
-		infos = new CTextureDrvInfosGL;
-		tex.DrvInfos=infos;
-// C style :
-//		tex.DrvInfos= static_cast<CTextureDrvInfosGL*>(tex.DrvInfos);
-//		tex.DrvInfos=new CTextureDrvInfosGL;
-//		CTextureDrvInfosGL* infos=(CTextureDrvInfosGL*)((ITextureDrvInfos*)(tex.DrvInfos));
-		glGenTextures(1,&infos->ID);
-		_pTexDrvInfos.push_back(infos);
-	}
-	if ( tex.touched() )
-	{
-		glBindTexture(GL_TEXTURE_2D,((CTextureDrvInfosGL*)(ITextureDrvInfos*)tex.DrvInfos)->ID);
-
-		glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-		glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-
-		glTexImage2D(GL_TEXTURE_2D,0,4,tex.getWidth(),tex.getHeight(),0,GL_RGBA,GL_UNSIGNED_BYTE,tex.getDataPointer());
-		tex.clearTouched();
-	}
-	return(true);
-}
-
-// --------------------------------------------------
-
-bool CDriverGL::activateTexture(uint stage, CTexture& tex)
-{
-	ITextureDrvInfos*	iinfos;
-	CTextureDrvInfosGL*	cinfos;
-
-	if (this->_CurrentTexture[stage]!=&tex)
-	{
-//		glBindTexture(GL_TEXTURE_2D,((CTextureDrvInfosGL*)(ITextureDrvInfos*)tex.DrvInfos)->ID);
-		iinfos=(ITextureDrvInfos*)tex.DrvInfos;
-		cinfos=(CTextureDrvInfosGL*)iinfos;
-		glBindTexture(GL_TEXTURE_2D,cinfos->ID);
-	}
-	this->_CurrentTexture[stage]=&tex;
-	return(true);
-}
 
 // --------------------------------------------------
 

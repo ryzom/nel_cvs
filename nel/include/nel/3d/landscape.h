@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.5 2000/11/10 11:08:42 berenguier Exp $
+ * $Id: landscape.h,v 1.6 2000/11/14 13:25:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,8 +120,8 @@ private:
 	CPatchRdrPass	TileRdrPass;
 	CMaterial		FarMat;
 	CMaterial		TileMat;
-	CSmartPtr<CTexture>		FarText;
-	CSmartPtr<CTexture>		TileText;
+	CSmartPtr<ITexture>		FarText;
+	CSmartPtr<ITexture>		TileText;
 
 };
 

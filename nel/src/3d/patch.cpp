@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.8 2000/11/10 09:58:04 berenguier Exp $
+ * $Id: patch.cpp,v 1.9 2000/11/14 13:23:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -596,10 +596,10 @@ void			CPatch::changeEdgeNeighbor(sint edge, CTessFace *to)
 
 	switch(edge)
 	{
-		case 0: Son0->FRight= to;
-		case 1: Son0->FLeft= to;
-		case 2: Son1->FRight= to;
-		case 3: Son1->FLeft= to;
+		case 0: Son0->FRight= to; break;
+		case 1: Son0->FLeft= to; break;
+		case 2: Son1->FRight= to; break;
+		case 3: Son1->FLeft= to; break;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.6 2000/11/09 17:57:49 viau Exp $
+ * $Id: driver_opengl_material.cpp,v 1.7 2000/11/14 13:24:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,52 +100,93 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	CShaderGL*	pShader;
 	GLenum		glenum;
 	uint		i;
+	uint32		touched=mat.getTouched();
 
-	if (_Material!=&mat)
+
+	// \todo: yoyo: msut change the material operator=, so it doesn't copy Touched, and pShader.
+
+
+	// 0. Setup / Bind Textures.
+	//==========================
+	// Must setup textures each frame. (need to test if touched).
+	for(i=0 ; i<4 ; i++)
 	{
-		uint32 touched=mat.getTouched();
-
-		if (!mat.pShader)
+		ITexture	*text= mat.getTexture(i);
+		if ( text )
 		{
-			mat.pShader=new CShaderGL;
+			if ( !setupTexture(*text) )
+			{
+				return(false);
+			}
 		}
-		pShader=static_cast<CShaderGL*>((IShader*)(mat.pShader));
+		activateTexture(i,text);
+	}
 
+	
+	// 1. Retrieve/Create driver shader.
+	//==================================
+	if (!mat.pShader)
+	{
+		mat.pShader=new CShaderGL;
+		// Must create all OpenGL shader states.
+		touched= 0xFFFFFFFF;
+	}
+	pShader=static_cast<CShaderGL*>((IShader*)(mat.pShader));
+
+
+	// 2. Setup modified flags of material.
+	//=====================================
+	if(touched)
+	{
+		// Convert Material to driver shader.
 		if (touched & IDRV_TOUCHED_SRCBLEND)
 		{
 			convBlend( mat.getSrcBlend(),glenum );
 			pShader->SrcBlend=glenum;
-
-			mat.clearTouched(IDRV_TOUCHED_SRCBLEND);
 		}
 		if (touched & IDRV_TOUCHED_DSTBLEND)
 		{
 			convBlend( mat.getDstBlend(),glenum );
 			pShader->DstBlend=glenum;
-			mat.clearTouched(IDRV_TOUCHED_DSTBLEND);
 		}
-		for(i=0 ; i<4 ; i++)
-		{
-			if ( mat.texturePresent(i) )
-			{
-				if ( touched & (IDRV_TOUCHED_TEX0<<i) )
-				{
-					if ( !setupTexture(mat.getTexture(i)) )
-					{
-						return(false);
-					}
-					mat.clearTouched(IDRV_TOUCHED_TEX0<<i);
-				}
-			}
-		}
-		this->_Material=&mat;
-		if ( ! activateTexture(0,mat.getTexture(0)) )
-		{
-			return(false);
-		}
+
+		// Optimize: reset all flags at the end.
+		mat.clearTouched(0xFFFFFFFF);
+
+		// Since modified, must rebind all openGL states.
+		_Material= NULL;
 	}
+
+
+	// 3. Bind OpenGL States.
+	//=======================
+	if (_Material!=&mat)
+	{
+		// \todo: yoyo: optimize with precedent material flags test.
+		// => must change the way it works with _Material.
+
+		// Bind Blend Part.
+		if(mat.getFlags()&IDRV_MAT_BLEND)
+		{
+			glEnable(GL_BLEND);
+			glBlendFunc(pShader->SrcBlend, pShader->DstBlend);
+		}
+		else
+		{
+			glDisable(GL_BLEND);
+		}
+
+
+		_Material=&mat;
+	}
+
+
+	// Temp YOYO.
+    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+	
 	return(true);
 }
+
 
 // --------------------------------------------------
 

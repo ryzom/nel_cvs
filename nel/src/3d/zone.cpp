@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.6 2000/11/10 09:58:04 berenguier Exp $
+ * $Id: zone.cpp,v 1.7 2000/11/14 13:23:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,11 @@
 
 #include "nel/3d/zone.h"
 #include "nel/misc/common.h"
+
+// Temp YOYO.
+#include "nel/misc/events.h"
+extern	bool	getKey(NLMISC::TKey key);
+
 using namespace NLMISC;
 using namespace std;
 
@@ -505,10 +510,26 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 	}
 
 }
+
+
 // ***************************************************************************
 void			CZone::refine()
 {
 	nlassert(Compiled);
+
+
+	// Temp YOYO.
+	if(getKey(NLMISC::KeyU))
+	{
+		Patchs[0].unbind();
+	}
+	if(getKey(NLMISC::KeyB))
+	{
+		TZoneMap	pipoMap;
+		pipoMap[ZoneId]= this;
+		bindPatch(pipoMap, Patchs[0], PatchConnects[0]);
+	}
+
 
 	// Force refine of invisible zones only every 8 times.
 	if(ClipResult==ClipOut && (CTessFace::CurrentDate&7)!=(ZoneId&7))

@@ -71,6 +71,11 @@ private:
 
 	CMatrix					_ViewMtx;
 
+
+private:
+	bool					activateTexture(uint stage, ITexture *tex);
+
+
 public:
 							CDriverGL() {};
 	virtual					~CDriverGL() { release(); };
@@ -89,9 +94,7 @@ public:
 
 	virtual bool			clearZBuffer(float zval=1);
 
-	virtual bool			setupTexture(CTexture& tex);
-
-	virtual bool			activateTexture(uint stage, CTexture& tex);
+	virtual bool			setupTexture(ITexture& tex);
 
 	virtual bool			setupMaterial(CMaterial& mat);
 

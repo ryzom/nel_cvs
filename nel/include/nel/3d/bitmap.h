@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.5 2000/11/13 13:31:07 coutelas Exp $
+ * $Id: bitmap.h,v 1.6 2000/11/14 13:25:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -288,6 +288,7 @@ public:
 	
 	/**
 	 * Convert bitmap to another type
+	 * conversion to RGBA always work. No-op if already RGBA.
 	 * \param type new type for the bitmap
 	 * \return true if conversion succeeded, false else
 	 * \author Stephane Coutelas
@@ -327,6 +328,16 @@ public:
 	 * \date 2000
 	 */	
 	uint32 getHeight(uint32 numMipMap = 0) const;
+
+
+	/** 
+	 * Return the size (in pixels) of the image: <=> getHeight()*getWidth().
+	 * \param mipMap mipmap level 
+	 * \return image size (0 if mipmap not found)
+	 * \author Stephane Coutelas
+	 * \date 2000
+	 */	
+	uint32 getSize(uint32 numMipMap = 0) const;
 
 
 	/** 

@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.3 2000/11/10 15:20:23 coutelas Exp $
+ * $Id: texture.h,v 1.4 2000/11/14 13:25:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,23 +33,53 @@
 #include <string>
 
 
-namespace NL3D {
+namespace NL3D 
+{
 
 
 /*===================================================================*/
+class ITextureDrvInfos : public NLMISC::CRefCount
+{
+private:
+public:
+			ITextureDrvInfos() {};
+			ITextureDrvInfos(class IDriver& driver);
+			virtual ~ITextureDrvInfos(void){ };
+};
 
+
+/*===================================================================*/
 /**
  * Interface for textures
  * \author Stephane Coutelas
  * \author Nevrax France
  * \date 2000
  */
-class ITexture : public CBitmap
+class ITexture : public CBitmap, public NLMISC::CRefCount
 {
-	bool _Releasable;
+private:
+	bool	_Releasable;
+
+protected:
+	// Derived texture should set it to true when they are updated.
+	bool	_Touched;
+
+public:
+	// Private. For Driver Only.
+	NLMISC::CRefPtr<ITextureDrvInfos>	DrvInfos;
 
 public:
 
+	/// By default, a texture is releasable.
+	ITexture() {_Touched= false; _Releasable= true;}
+	/// Need a virtual dtor.
+	virtual ~ITexture() {}
+
+
+	bool	touched(void) { return(_Touched); }
+	void	clearTouched(void) { _Touched=0; }
+
+	
 	/** 
 	 * Return whether texture can be released
 	 * \return true if texture can be released, false else
@@ -112,7 +142,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	CTextureFile(std::string s) { _FileName = s; } 
+	CTextureFile(std::string s) { _Touched=true; _FileName = s; } 
 
 
 	/** 
@@ -121,7 +151,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void setFileName(std::string s) { _FileName = s; }
+	void setFileName(std::string s) { _Touched=true; _FileName = s; }
 
 
 	/** 
@@ -153,7 +183,7 @@ public:
  * \author Nevrax France
  * \date 2000
  */
-class CTextureFont : public ITexture, public NLMISC::CRefCount
+class CTextureFont : public ITexture
 {
 	ucchar _Char;
 	uint32 _CharWidth;

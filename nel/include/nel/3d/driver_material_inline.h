@@ -2,7 +2,7 @@
  * 
  * 
  *
- * $Id: driver_material_inline.h,v 1.2 2000/11/08 15:51:54 viau Exp $
+ * $Id: driver_material_inline.h,v 1.3 2000/11/14 13:25:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ inline bool CMaterial::texturePresent(uint8 n)
 	return(false);
 }
 
-inline void CMaterial::setTexture(CTexture* ptex, uint8 n)
+inline void CMaterial::setTexture(ITexture* ptex, uint8 n)
 {
 	pTex[n]=ptex;
 	switch(n)
@@ -105,6 +105,7 @@ inline void CMaterial::setBlend(bool active)
 {
 	if (active)	_Flags|=IDRV_MAT_BLEND;
 	else		_Flags&=~IDRV_MAT_BLEND;
+	_Touched|=IDRV_TOUCHED_BLEND;
 }
 
 inline void CMaterial::setLighting(	bool active, bool DefMat,

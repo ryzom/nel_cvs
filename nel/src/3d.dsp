@@ -250,6 +250,14 @@ SOURCE=.\3d\primitive_block.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\texture.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\texture.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\vertex_buffer.cpp
 # End Source File
 # End Group
@@ -263,10 +271,6 @@ SOURCE=.\3d\aabbox.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\aabbox.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\bitmap.h
 # End Source File
 # Begin Source File
 
@@ -338,14 +342,6 @@ SOURCE=.\3d\scene_ut.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\scene_ut.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\texture.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\texture.h
 # End Source File
 # Begin Source File
 

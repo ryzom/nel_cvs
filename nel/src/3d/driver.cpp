@@ -1,8 +1,8 @@
 /** \file driver.cpp
  * Generic driver.
- * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
+ * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.cpp,v 1.1 2000/11/07 15:34:57 berenguier Exp $
+ * $Id: driver.cpp,v 1.2 2000/11/14 13:23:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,26 @@ using namespace NLMISC;
 namespace NL3D
 {
 
+// ***************************************************************************
+IDriver::IDriver()
+{
+	_Material=NULL;
+	_CurrentTexture[0]= NULL;
+	_CurrentTexture[1]= NULL;
+	_CurrentTexture[2]= NULL;
+	_CurrentTexture[3]= NULL;
+}
+
+// ***************************************************************************
+IDriver::~IDriver()
+{ 
+	std::list< CRefPtr<ITextureDrvInfos> >::iterator it = _pTexDrvInfos.begin();
+	while( it!=_pTexDrvInfos.end() )
+	{
+		it->kill();
+		it++;
+	}
+}
 
 // ***************************************************************************
 GfxMode::GfxMode(uint16 w, uint16 h, uint8 d, bool windowed)

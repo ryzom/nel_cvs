@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.6 2000/11/08 09:52:47 viau Exp $
+ * $Id: material.cpp,v 1.7 2000/11/14 13:23:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,51 +30,6 @@ using std::vector;
 namespace NL3D
 {
 
-// --------------------------------------------------
-
-CTexture::CTexture(void)
-{
-	_Width=0;
-	_Height=0;
-}
-
-CTexture::CTexture(uint16 width, uint16 height)
-{
-	_Width=0;
-	_Height=0;
-	resize(width, height);
-}
-
-
-void	CTexture::resize(uint16 width, uint16 height)
-{
-	_Width=width;
-	_Height=height;
-	_Data.resize(_Width*_Height);
-}
-
-// --------------------------------------------------
-
-bool CTexture::fillData(const void* data)
-{
-	void*	ptr;
-
-	ptr=&(*_Data.begin());
-	memcpy(ptr,data,_Width*_Height*sizeof(CRGBA));
-	_Touched=true;
-	return(true);
-}
-
-bool CTexture::fillData(const vector<CRGBA>& data)
-{
-	if ( (uint16)data.size()!=(_Width*_Height) )
-	{
-		return(false);
-	}
-	_Data=data;
-	_Touched=true;
-	return(true);
-}
 
 // ***************************************************************************
 

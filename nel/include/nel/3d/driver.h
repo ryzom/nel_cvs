@@ -1,8 +1,8 @@
 /** \file driver.h
  * Generic driver header.
- * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
+ * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.16 2000/11/14 11:01:12 corvazier Exp $
+ * $Id: driver.h,v 1.17 2000/11/14 13:26:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,40 +58,6 @@ protected:
 public:
 };
 
-// --------------------------------------------------
-
-class ITextureDrvInfos : public CRefCount
-{
-private:
-public:
-			ITextureDrvInfos() {};
-			ITextureDrvInfos(class IDriver& driver);
-			virtual ~ITextureDrvInfos(void){ };
-};
-
-class CTexture : public CRefCount
-{
-private:
-	uint16					_Width;
-	uint16					_Height;
-	std::vector<CRGBA>		_Data;
-	bool					_Touched;
-
-public:
-	CRefPtr<ITextureDrvInfos> DrvInfos;
-
-public:
-							CTexture(void);
-							CTexture(uint16 width, uint16 height);
-	void					resize(uint16 width, uint16 height);
-	bool					touched(void) { return(_Touched); }
-	void					clearTouched(void) { _Touched=0; }
-	uint16					getWidth() const { return(_Width); }
-	uint16					getHeight() const { return(_Height); }
-	bool					fillData(const void* data);
-	bool					fillData(const std::vector<CRGBA>& data);
-	void*					getDataPointer() {return( &(*_Data.begin()) );}
-};
 
 // --------------------------------------------------
 
@@ -109,6 +75,7 @@ const uint32 IDRV_TOUCHED_TEX0		=	0x00000400;
 const uint32 IDRV_TOUCHED_TEX1		=	0x00000800;
 const uint32 IDRV_TOUCHED_TEX2		=	0x00001000;
 const uint32 IDRV_TOUCHED_TEX3		=	0x00002000;
+const uint32 IDRV_TOUCHED_BLEND		=	0x00004000;
 
 const uint32 IDRV_MAT_HIDE			=	0x00000001;
 const uint32 IDRV_MAT_TSP			=	0x00000002;
@@ -140,7 +107,7 @@ private:
 	float					_Alpha;
 	uint32					_Touched;
 
-	CSmartPtr<CTexture>		pTex[4];
+	CSmartPtr<ITexture>		pTex[4];
 
 public:
 	// Private. For Driver only.
@@ -155,8 +122,8 @@ public:
 	void					clearTouched(uint32 flag) { _Touched&=~flag; }
 
 	bool					texturePresent(uint8 n);
-	CTexture&				getTexture(uint8 n) { return(*pTex[n]); }
-	void 					setTexture(CTexture* ptex, uint8 n=0);
+	ITexture*				getTexture(uint8 n) { return(pTex[n]); }
+	void 					setTexture(ITexture* ptex, uint8 n=0);
 
 	void					setShader(TShader val);
 
@@ -334,20 +301,12 @@ private:
 
 protected:
 	std::list< CRefPtr<ITextureDrvInfos> >	_pTexDrvInfos;
-	CTexture*								_CurrentTexture[4];
+	ITexture*								_CurrentTexture[4];
 	CMaterial*								_Material;
 
 public:
-							IDriver(void) { };
-	virtual					~IDriver(void) 
-	{ 
-		std::list< CRefPtr<ITextureDrvInfos> >::iterator it = _pTexDrvInfos.begin();
-		while( it!=_pTexDrvInfos.end() )
-		{
-			it->kill();
-			it++;
-		}
-	};
+							IDriver(void);
+	virtual					~IDriver(void);
 
 	virtual bool			init(void)=0;
 
@@ -366,9 +325,7 @@ public:
 
 	virtual bool			clearZBuffer(float zval=1)=0;
 
-	virtual bool			setupTexture(CTexture& tex)=0;
-
-	virtual bool			activateTexture(uint stage, CTexture& tex)=0;
+	virtual bool			setupTexture(ITexture& tex)=0;
 
 	virtual bool			setupMaterial(CMaterial& mat)=0;
 

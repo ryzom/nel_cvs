@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.9 2001/08/09 15:19:31 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.10 2001/09/12 13:36:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,13 +162,15 @@ void CStartStopParticleSystem::stop(void)
 ///////////////////////////////////
 // CPSInitialPos  implementation //
 ///////////////////////////////////
-void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
+void CPSInitialPos::reset()
 {
-	
-
 	_InitInfoVect.clear() ;
 	_RotScaleInfoVect.clear() ;
 	_InitialSizeVect.clear() ;
+}
+void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
+{
+	reset();
 	uint32 nbLocated = ps->getNbProcess() ;
 
 	_PS = ps ; 

@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.h,v 1.5 2001/07/24 08:57:22 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.6 2001/09/12 13:36:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,14 +38,14 @@
 
 namespace NL3D
 {
-	class CParticleSystem ;
-	class CPSLocated ;
+	class CParticleSystem;
+	class CPSLocated;
 }
 
 
 
 
-class CParticleDlg ;
+class CParticleDlg;
 
 
 /** this class helps to copy the position of initial instances in a particle
@@ -59,59 +59,64 @@ public:
 	CPSInitialPos() : _PS(NULL) {}
 
 	// construct this by copying the datas of the system
-	void copySystemInitialPos(NL3D::CParticleSystem *ps) ;
+	void copySystemInitialPos(NL3D::CParticleSystem *ps);
 
 	/** reinitialize the system with its initial instances positions
 	  * Works only once per copySystemInitialPos() call
 	  */	  
-	void restoreSystem() ;
+	void restoreSystem();
 
 	/// send back true when bbox display is enabled
-	bool isBBoxDisplayEnabled() ;
+	bool isBBoxDisplayEnabled();
 	
 	/// update data when a located in a particle system has been removed	
-	void removeLocated(NL3D::CPSLocated *loc) ;
+	void removeLocated(NL3D::CPSLocated *loc);
 
 	/// update data when a located bindable in a particle system has been removed	
-	void removeLocatedBindable(NL3D::CPSLocatedBindable *lb) ;	
+	void removeLocatedBindable(NL3D::CPSLocatedBindable *lb);	
+
+	// reset all initial infos
+	void reset();
 
 	// initial position and speed of a located instance in a particle system
 	struct CInitPSInstanceInfo
 	{	
-		uint32 Index ;
-		NL3D::CPSLocated *Loc ;
-		NLMISC::CVector Speed ;
-		NLMISC::CVector Pos ;		
-	} ;
+		uint32 Index;
+		NL3D::CPSLocated *Loc;
+		NLMISC::CVector Speed;
+		NLMISC::CVector Pos;		
+	};
 
 	// rotation and scale of an element
 	struct CRotScaleInfo
 	{	
-		uint32 Index ;
-		NL3D::CPSLocated *Loc ;
-		NL3D::CPSLocatedBindable *LB ;
-		NL3D::IPSMover *Psm ;
-		NLMISC::CMatrix Rot ;
-		NLMISC::CVector Scale ;
-	} ;
+		uint32 Index;
+		NL3D::CPSLocated *Loc;
+		NL3D::CPSLocatedBindable *LB;
+		NL3D::IPSMover *Psm;
+		NLMISC::CMatrix Rot;
+		NLMISC::CVector Scale;
+	};
+
+
 
 protected:
 
 
 
 
-	typedef std::vector<CInitPSInstanceInfo> TInitInfoVect ;
-	typedef std::vector<CRotScaleInfo> TRotScaleInfoVect ;
-	typedef std::vector< std::pair<NL3D::CPSLocated *, uint32> > TInitialLocatedSizeVect ;
+	typedef std::vector<CInitPSInstanceInfo> TInitInfoVect;
+	typedef std::vector<CRotScaleInfo> TRotScaleInfoVect;
+	typedef std::vector< std::pair<NL3D::CPSLocated *, uint32> > TInitialLocatedSizeVect;
 
-	TInitInfoVect _InitInfoVect ;
-	TRotScaleInfoVect _RotScaleInfoVect ;
+	TInitInfoVect _InitInfoVect;
+	TRotScaleInfoVect _RotScaleInfoVect;
 
 	// initial number of instances for each located
-	TInitialLocatedSizeVect  _InitialSizeVect ;
+	TInitialLocatedSizeVect  _InitialSizeVect;
 
-	NL3D::CParticleSystem *_PS ;
-} ;
+	NL3D::CParticleSystem *_PS;
+};
 
 
 
@@ -127,10 +132,10 @@ public:
 
 
 	/// return true if a system is being played
-	bool isRunning(void) const { return _Running ; }
+	bool isRunning(void) const { return _Running; }
 
 	/// force the system to stop
-	void stop(void) ;
+	void stop(void);
 
 	/** call this to say that a located has been removed
 	 *  When the system starts, the initial state is memorised
@@ -140,7 +145,7 @@ public:
 	{
 		if (_Running)
 		{
-			_SystemInitialPos.removeLocated(loc) ;
+			_SystemInitialPos.removeLocated(loc);
 		}
 	}
 
@@ -152,14 +157,17 @@ public:
 	{
 		if (_Running)
 		{
-			_SystemInitialPos.removeLocatedBindable(lb) ;
+			_SystemInitialPos.removeLocatedBindable(lb);
 		}
 	}
+
+	/// This remove any memorized instance from the system
+	void reset() { _SystemInitialPos.reset(); }
 
 
 
 	/// return true when the display bbox button is pressed...
-	bool isBBoxDisplayEnabled() ;
+	bool isBBoxDisplayEnabled();
 
 // Dialog Data
 	//{{AFX_DATA(CStartStopParticleSystem)
@@ -189,12 +197,12 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 	// return true if a system is being played
-	bool _Running ;
+	bool _Running;
 
 	// the dialog that own this dialog
-	CParticleDlg *_ParticleDlg ;
+	CParticleDlg *_ParticleDlg;
 
-	CPSInitialPos _SystemInitialPos ;
+	CPSInitialPos _SystemInitialPos;
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.6 2002/03/25 09:22:34 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.7 2002/04/15 14:30:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -64,6 +64,8 @@ CTransportClass::CRegisteredClass	CTransportClass::TempRegisteredClass;
 NLNET::CMessage	CTransportClass::TempMessage;
 
 vector<CTransportClass::CRegisteredBaseProp *> CTransportClass::DummyProp;
+
+bool CTRansportClass::Init = false;
 
 
 //
@@ -181,6 +183,7 @@ void CTransportClass::registerOtherSideClass (uint8 sid, TOtherSideRegisteredCla
 
 void CTransportClass::registerClass (CTransportClass &instance)
 {
+	nlassert (Init);
 	nlassert (Mode == 0);
 
 	// set the mode to register
@@ -318,6 +321,8 @@ void cbTCUpService (const std::string &serviceName, uint16 sid, void *arg)
 
 void CTransportClass::init ()
 {
+	nlassert (!Init);
+
 	// filter all my debug stuffs
 	DebugLog->addNegativeFilter ("NETTC");
 
@@ -344,6 +349,8 @@ void CTransportClass::init ()
 
 	// we have to know when a service comes, so add callback (put the callback before all other one because we have to send this message first)
 	CUnifiedNetwork::getInstance()->setServiceUpCallback("*", cbTCUpService, NULL, false);
+
+	Init = true;
 }
 
 void CTransportClass::release ()

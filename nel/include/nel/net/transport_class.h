@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.8 2002/03/28 17:45:59 lecroart Exp $
+ * $Id: transport_class.h,v 1.9 2002/04/15 14:30:50 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -118,9 +118,9 @@ public:
 	virtual void description () = 0;
 
 	/** This function will be call when we receive this class from the network. It will use the instance given at the
-	 * registration process.
+	 * registration process. By default, it does nothing.
 	 */
-	virtual void callback (const std::string &name, uint8 sid) = 0;
+	virtual void callback (const std::string &name, uint8 sid) { };
 
 
 	//
@@ -354,6 +354,7 @@ private:
 	// The message that is currently filled/emptyed
 	static NLNET::CMessage						TempMessage;
 
+	static bool									Init;
 
 	//
 	// Static methods
@@ -371,6 +372,7 @@ private:
 	// Send the local transport classes to another service using the service id
 	static void sendLocalRegisteredClass (uint8 sid)
 	{
+		nlassert (Init);
 		nldebug ("NETTC: sendLocalRegisteredClass to %d", sid);
 		createLocalRegisteredClassMessage ();
 		NLNET::CUnifiedNetwork::getInstance()->send (sid, TempMessage);
@@ -420,12 +422,14 @@ inline void CTransportClass::className (const std::string &name)
 
 inline void CTransportClass::send (uint8 sid)
 {
+	nlassert (Init);
 	NLNET::CUnifiedNetwork::getInstance()->send (sid, write ());
 }
 
 
 inline void CTransportClass::send (std::string serviceName)
 {
+	nlassert (Init);
 	NLNET::CUnifiedNetwork::getInstance()->send (serviceName, write ());
 }
 
@@ -444,6 +448,7 @@ inline void CTransportClass::display ()
 
 inline NLNET::CMessage &CTransportClass::write ()
 {
+	nlassert (Init);
 	nlassert (Mode == 0);
 
 	// set the mode to register
@@ -466,7 +471,9 @@ inline NLNET::CMessage &CTransportClass::write ()
 
 inline void CTransportClass::read (const std::string &name, uint8 sid)
 {
+	nlassert (Init);
 	nlassert (Mode == 0);
+	nlassert (States.size() > sid);
 
 	// set flag of all prop
 

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.29 2001/09/14 09:50:50 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.30 2001/09/21 11:53:30 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,6 +86,7 @@ void	NLPACS::CRetrieverInstance::reset()
 	_RetrieverId = -1;
 	_Orientation = 0;
 	_Origin = CVector::Null;
+	_Type = CLocalRetriever::Landscape;
 	resetLinks();
 }
 
@@ -670,5 +671,8 @@ void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
 	{
 		f.serialEnum(_Type);
 		f.serial(_ExteriorEdgeQuad);
+
+		// a fix for old versions (with wrong _Type value)
+		if (_Type != CLocalRetriever::Interior)	_Type = CLocalRetriever::Landscape;
 	}
 }

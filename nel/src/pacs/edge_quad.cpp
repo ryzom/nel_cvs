@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.6 2001/09/07 11:54:11 lecroart Exp $
+ * $Id: edge_quad.cpp,v 1.7 2001/09/21 11:53:30 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,10 +172,22 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 		CVector		s0, s1,
 					mins, maxs;
 
+		uint		prevEdge = (i-1)%(edges.size()-1), 
+					nextEdge = (i+1)%(edges.size()-1);
+		bool		prio0 = (edges[i].Link!=-1) || (edges[prevEdge].Link!=-1), 
+					prio1 = (edges[i].Link!=-1) || (edges[nextEdge].Link!=-1);
+
 		UGlobalPosition	gp0 = global.retrievePosition(p0);
 		global.updateHeight(gp0);
 		UGlobalPosition	gp1 = global.retrievePosition(p1);
 		global.updateHeight(gp1);
+
+		if (!prio0)
+		{
+			swap(p0, p1);
+			swap(op0, op1);
+			swap(gp0, gp1);
+		}
 
 		if (gp0.InstanceId == -1)
 		{

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.33 2001/09/14 09:50:49 legros Exp $
+ * $Id: local_retriever.cpp,v 1.34 2001/09/21 11:53:30 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -751,6 +751,9 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	f.serial(_BBox);
 	f.serialEnum(_Type);
 	f.serial(_ExteriorMesh);
+
+	// a fix for old versions (with wrong _Type value)
+	if (_Type != CLocalRetriever::Interior)	_Type = CLocalRetriever::Landscape;
 
 	if (ver >= 1)
 	{

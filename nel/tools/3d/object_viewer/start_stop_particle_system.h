@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.h,v 1.13 2004/03/23 10:14:33 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.14 2004/06/17 08:01:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,11 +32,12 @@
 
 #include "object_viewer.h"
 #include "animation_dlg.h"
-
-
+#include "ps_initial_pos.h"
+#include "particle_workspace.h"
+//
 #include "nel/misc/vector.h"
-
-
+#include "nel/misc/smart_ptr.h"
+//
 namespace NL3D
 {
 	class CParticleSystem;
@@ -44,89 +45,8 @@ namespace NL3D
 	class CPSLocatedBindable;
 	struct IPSMover;
 }
-
-
-
-
 class CParticleDlg;
 class CAnimationDlg;
-
-
-/** this class helps to copy the position of initial instances in a particle
- *  system. This enable a system to run, and have its parameter modified.
- *  When the user press stop, he will find the system at t = 0, with the new parameters
- */
-class CPSInitialPos
-{
-public:
-
-	CPSInitialPos() : _PS(NULL) {}
-
-	// construct this by copying the datas of the system
-	void copySystemInitialPos(NL3D::CParticleSystem *ps);
-
-	/** reinitialize the system with its initial instances positions
-	  * Works only once per copySystemInitialPos() call
-	  */	  
-	void restoreSystem();
-
-	/// send back true when bbox display is enabled
-	bool isBBoxDisplayEnabled();
-	
-	/// update data when a located in a particle system has been removed	
-	void removeLocated(NL3D::CPSLocated *loc);
-
-	/// update data when a located bindable in a particle system has been removed	
-	void removeLocatedBindable(NL3D::CPSLocatedBindable *lb);	
-
-	// reset all initial infos
-	void reset();
-
-	
-
-	// initial position and speed of a located instance in a particle system
-	struct CInitPSInstanceInfo
-	{	
-		uint32 Index;
-		NL3D::CPSLocated *Loc;
-		NLMISC::CVector Speed;
-		NLMISC::CVector Pos;		
-	};
-
-	// rotation and scale of an element
-	struct CRotScaleInfo
-	{	
-		uint32 Index;
-		NL3D::CPSLocated *Loc;
-		NL3D::CPSLocatedBindable *LB;
-		NL3D::IPSMover *Psm;
-		NLMISC::CMatrix Rot;
-		NLMISC::CVector Scale;
-	};
-
-	NL3D::CParticleSystem *getPS() { return _PS; }
-	const NL3D::CParticleSystem *getPS() const { return _PS; }
-
-
-protected:
-
-
-
-
-	typedef std::vector<CInitPSInstanceInfo> TInitInfoVect;
-	typedef std::vector<CRotScaleInfo> TRotScaleInfoVect;
-	typedef std::vector< std::pair<NL3D::CPSLocated *, uint32> > TInitialLocatedSizeVect;
-
-	TInitInfoVect _InitInfoVect;
-	TRotScaleInfoVect _RotScaleInfoVect;
-
-	// initial number of instances for each located
-	TInitialLocatedSizeVect  _InitialSizeVect;
-
-	NL3D::CParticleSystem *_PS;
-};
-
-
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -136,59 +56,46 @@ class CStartStopParticleSystem : public CDialog, public CObjectViewer::IMainLoop
 {
 // Construction
 public:
+	// state of the dialog
+	enum TState { Stopped, RunningSingle, RunningMultiple, PausedSingle, PausedMultiple };
 	CStartStopParticleSystem(CParticleDlg *particleDlg, CAnimationDlg *animationDLG);   // standard constructor
 	// dtor
-	~CStartStopParticleSystem();	
-	/// return true if a system is being played
-	bool isRunning() const { return _Running; }
+	~CStartStopParticleSystem();
+	// Set currently active node of the workspace.
+	void setActiveNode(CParticleWorkspace::CNode *activeNode);
+	// Get current state
+	TState getState() const { return _State; }
+	/// return true if one or several system are being played
+	bool isRunning() const { return _State == RunningSingle || _State == RunningMultiple; }
 	/** Return true if a system is paused.
 	  * Must call only if running
 	  */
 	bool isPaused() const 
-	{ 
-		nlassert(isRunning());
-		return _Paused;
+	{ 			
+		return 	_State == PausedSingle || _State == PausedMultiple;
 	}
-	/// force the system to stop
+	/// force the playing systems to stop
 	void stop();
-	/// force the system to start
+	/// force the active system to start
 	void start();	
+	/// start all systems
+	void startMultiple();
 	/// toggle between start and stop
-	void toggle();
-	/** call this to say that a located has been removed
-	 *  When the system starts, the initial state is memorised
-	 *  This must be called to ensure that the system won't try to restore instance of a removed located
-	 */
-	void removeLocated(NL3D::CPSLocated *loc)
-	{
-		if (_Running)
-		{
-			_SystemInitialPos.removeLocated(loc);
-		}
-	}
-	/** call this to say that a located bindable has been removed
-	 *  When the system starts, the initial state is memorised
-	 *  This must be called to ensure that the system won't try to restore instance of a removed located bindable
-	 */
-	void removeLocatedBindable(NL3D::CPSLocatedBindable *lb)
-	{
-		if (_Running)
-		{
-			_SystemInitialPos.removeLocatedBindable(lb);
-		}
-	}
+	void toggle();	
+	// pause the playing systems
+	void pause();
 	/// This remove any memorized instance from the system
-	void reset();
+	// void reset();
 	/// return true when the display bbox button is pressed...
 	bool isBBoxDisplayEnabled();
 	// enable / disbale auto-count
 	void enableAutoCount(bool enable);	
-	// reset the autocount the next time the system will be started
-	void resetAutoCount(bool reset = true);
-	bool getResetFlag() const { return _ResetAutoCount; }		
+	// reset the autocount the next time the system will be started	
+	void resetAutoCount(CParticleWorkspace::CNode *node, bool reset = true);		
 // Dialog Data
 	//{{AFX_DATA(CStartStopParticleSystem)
 	enum { IDD = IDD_PARTICLE_SYSTEM_START_STOP };
+	CButton	m_StartMultiplePicture;
 	CButton	m_PausePicture;
 	CButton	m_StopPicture;
 	CButton	m_StartPicture;
@@ -196,9 +103,8 @@ public:
 	int		m_SpeedSliderPos;
 	BOOL	m_DisplayHelpers;
 	BOOL	m_LinkPlayToScenePlay;
+	CString	m_TriggerAnim;
 	//}}AFX_DATA
-
-
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CStartStopParticleSystem)
@@ -223,15 +129,14 @@ private:
 	afx_msg void OnLinkPlayToScenePlay();
 	afx_msg void OnLinkToSkeleton();
 	afx_msg void OnUnlinkFromSkeleton();
+	afx_msg void OnStartMultipleSystem();
+	afx_msg void OnBrowseAnim();
+	afx_msg void OnClearAnim();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-	// return true if a system is being played
-	bool _Running;
-	// true if the system is in pause mode
-	bool _Paused;
-	// need the auto-count to be rested
-	bool _ResetAutoCount;
+	// current state
+	TState _State;	
 	// Last number of particle that was displayed (keep this to avoid flickering)
 	sint _LastCurrNumParticles;
 	sint _LastMaxNumParticles;
@@ -246,13 +151,46 @@ private:
 	// the dialog that own this dialog
 	CParticleDlg  *_ParticleDlg;
 	CAnimationDlg *_AnimationDLG;	
+	//CPSInitialPos _SystemInitialPos;
+	CParticleWorkspace::CNode *_ActiveNode;
 
-	CPSInitialPos _SystemInitialPos;
-
+	// list of fxs that are currently playing
+	typedef std::vector<NLMISC::CRefPtr<CParticleWorkspace::CNode> > TNodeVect;
+	TNodeVect _PlayingNodes;
+	// set of of fx that are being paused
+	
 private:
 	void setSpeedSliderValue(float value);
 	// From CObjectViewer::IMainLoopCallBack : update display of number of particles
-	virtual void go();	
+	virtual void goPreRender();
+	virtual void goPostRender() {}
+	NL3D::CParticleSystem      *getCurrPS() const { return _ActiveNode ? _ActiveNode->getPSPointer() : NULL; }
+	NL3D::CParticleSystemModel *getCurrPSModel() const { return _ActiveNode ? _ActiveNode->getPSModel() : NULL; }
+	// change speed of all ps
+	void setEllapsedTimeRatio(float value);
+	void forceActiveNode(CParticleWorkspace::CNode *activeNode);
+	/** helper : play a node and update tree
+	  * NB : this doesn't update the '_PlayingNodes' list
+	  * NB : no check is done on the state
+	  * NB : the ps must have no loops
+	  * \return True if the node could be played. May not be the case if the node has loops
+	  */
+	void play(CParticleWorkspace::CNode &node);
+	void unpause(CParticleWorkspace::CNode &node);
+	void pause(CParticleWorkspace::CNode &node);
+	/** helper : stop a node, and update tree
+	  * NB : this doesn't update the '_PlayingNodes' list
+	  * NB : no check is done on the state
+	  */
+	void stop(CParticleWorkspace::CNode &node);
+	// update ui to reflect the current state
+	void updateUIFromState();
+	// check is a node has loops
+	bool checkHasLoop(CParticleWorkspace::CNode &node);
+	// check if a node is inserted in the running list (it may be paused)
+	bool isRunning(CParticleWorkspace::CNode *node);
+	//
+	void restartAllFX();
 };
 
 //{{AFX_INSERT_LOCATION}}

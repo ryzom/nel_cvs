@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.23 2004/06/01 16:22:32 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.24 2004/06/17 08:01:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,8 @@
 #include "object_viewer.h"
 #include "start_stop_particle_system.h"
 #include "located_properties.h"
-
+#include "choose_animation.h"
+//
 #include "3d/particle_system.h"
 #include "3d/ps_located.h"
 #include "3d/ps_sound.h"
@@ -55,16 +56,15 @@ CStartStopParticleSystem::CStartStopParticleSystem(CParticleDlg *particleDlg,
 												   CAnimationDlg *animationDLG)
 	: CDialog(CStartStopParticleSystem::IDD, particleDlg),
 	  _ParticleDlg(particleDlg),
-	  _Running(false),
-	  _Paused(false),
-	  _ResetAutoCount(true),
+	  _State(Stopped),	  
 	  _LastCurrNumParticles(-1),
 	  _LastMaxNumParticles(-1),
 	  _LastNumWantedFaces(-1),
 	  _LastSystemDate(-1.f),
 	  _AutoRepeat(false),
 	  _AnimationDLG(animationDLG),
-	  _LastSceneAnimFrame(0.f)
+	  _LastSceneAnimFrame(0.f),
+	  _ActiveNode(NULL)
 {
 	nlassert(particleDlg && particleDlg->getObjectViewer());
 	particleDlg->getObjectViewer()->registerMainLoopCallBack(this);
@@ -73,6 +73,7 @@ CStartStopParticleSystem::CStartStopParticleSystem(CParticleDlg *particleDlg,
 	m_SpeedSliderPos = 100;	
 	m_DisplayHelpers = FALSE;
 	m_LinkPlayToScenePlay = FALSE;
+	m_TriggerAnim = _T("");
 	//}}AFX_DATA_INIT
 }
 
@@ -95,6 +96,7 @@ void CStartStopParticleSystem::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CStartStopParticleSystem)
+	DDX_Control(pDX, IDC_START_MULTIPLE_PICTURE, m_StartMultiplePicture);
 	DDX_Control(pDX, IDC_PAUSE_PICTURE, m_PausePicture);
 	DDX_Control(pDX, IDC_STOP_PICTURE, m_StopPicture);
 	DDX_Control(pDX, IDC_START_PICTURE, m_StartPicture);
@@ -102,6 +104,7 @@ void CStartStopParticleSystem::DoDataExchange(CDataExchange* pDX)
 	DDX_Slider(pDX, IDC_ANIM_SPEED, m_SpeedSliderPos);
 	DDX_Check(pDX, IDC_DISPLAY_HELPERS, m_DisplayHelpers);
 	DDX_Check(pDX, IDC_LINK_PLAY_TO_SCENE_PLAY, m_LinkPlayToScenePlay);
+	DDX_Text(pDX, IDC_TRIGGER_ANIM, m_TriggerAnim);
 	//}}AFX_DATA_MAP
 
 
@@ -121,6 +124,9 @@ BEGIN_MESSAGE_MAP(CStartStopParticleSystem, CDialog)
 	ON_BN_CLICKED(IDC_LINK_PLAY_TO_SCENE_PLAY, OnLinkPlayToScenePlay)
 	ON_BN_CLICKED(IDC_LINK_TO_SKELETON, OnLinkToSkeleton)
 	ON_BN_CLICKED(IDC_UNLINK_FROM_SKELETON, OnUnlinkFromSkeleton)
+	ON_BN_CLICKED(IDC_START_MULTIPLE_PICTURE, OnStartMultipleSystem)
+	ON_BN_CLICKED(IDC_BROWSE_ANIM, OnBrowseAnim)
+	ON_BN_CLICKED(IDC_CLEAR_ANIM, OnClearAnim)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -131,21 +137,19 @@ END_MESSAGE_MAP()
 BOOL CStartStopParticleSystem::OnInitDialog() 
 {
 	CDialog::OnInitDialog();	
-	HBITMAP bm[3];		
+	HBITMAP bm[4];		
 	bm[0] = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_START_SYSTEM));
 	bm[1] = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_STOP_SYSTEM));
 	bm[2] = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_PAUSE_SYSTEM));	
+	bm[3] = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_START_MULTIPLE_SYSTEM));
 	m_StartPicture.SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) bm[0]);
 	m_StopPicture.SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) bm[1]);
 	m_PausePicture.SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) bm[2]);
-	m_StopPicture.EnableWindow(FALSE);
-	m_PausePicture.EnableWindow(FALSE);
+	m_StartMultiplePicture.SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) bm[3]);
 	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_ANIM_SPEED);
 	sl->SetRange(0, 100);
 	setSpeedSliderValue(1.f);
-	GetDlgItem(IDC_DISPLAY_HELPERS)->EnableWindow(FALSE);	
-	((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->SetCheck(0);
-	GetDlgItem(IDC_RESET_COUNT)->EnableWindow(FALSE);
+	forceActiveNode(NULL);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -153,37 +157,153 @@ BOOL CStartStopParticleSystem::OnInitDialog()
 //******************************************************************************************************
 void CStartStopParticleSystem::OnStartSystem() 
 {
-	UpdateData();
-	if (!_Running)
-	{	
-		// check that there are no loops in the system
-		if (_ParticleDlg->getCurrPS()->hasLoop())
-		{
-			CString mess;
-			CString caption;
-			mess.LoadString(IDS_FX_HAS_LOOP);
-			caption.LoadString(IDS_WARNING);
-			MessageBox(mess, caption, MB_ICONEXCLAMATION);
-			return;
-		}
-		_Running = true;
-		_SystemInitialPos.copySystemInitialPos(_ParticleDlg->getCurrPS() );	
-		// enable the system to take the right date from the scene	
-		_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true);		
-		_ParticleDlg->getCurrPSModel()->enableDisplayTools(m_DisplayHelpers != FALSE);
-		_ParticleDlg->getCurrPS()->setSystemDate(0.f);
-		_ParticleDlg->getCurrPS()->reactivateSound();
-		if (_ParticleDlg->getCurrPS()->getAutoCountFlag())
-		{
-			if (_ResetAutoCount)
-			{
-				// reset particle size arrays
-				_ParticleDlg->getCurrPS()->matchArraySize();
-				_ResetAutoCount = false;
-				GetDlgItem(IDC_RESET_COUNT)->EnableWindow(TRUE);
-			}
-		}		
+	start();	
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnStartMultipleSystem() 
+{
+	startMultiple();	
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnStopSystem() 
+{			
+	stop();	
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnPause() 
+{
+	pause();
+}
+
+
+//******************************************************************************************************
+void CStartStopParticleSystem::updateUIFromState()
+{
+	// update actions buttons
+	switch(_State)
+	{
+		case Stopped:
+			m_StartPicture.EnableWindow(_ActiveNode != NULL);
+			m_PausePicture.EnableWindow(FALSE);
+			m_StopPicture.EnableWindow(FALSE);
+			m_StartMultiplePicture.EnableWindow(TRUE);
+		break;
+		case RunningSingle:
+			m_StartPicture.EnableWindow(FALSE);
+			m_PausePicture.EnableWindow(TRUE);
+			m_StopPicture.EnableWindow(TRUE);
+			m_StartMultiplePicture.EnableWindow(FALSE);
+		break;
+		case RunningMultiple:
+			m_StartPicture.EnableWindow(FALSE);
+			m_PausePicture.EnableWindow(TRUE);
+			m_StopPicture.EnableWindow(TRUE);
+			m_StartMultiplePicture.EnableWindow(FALSE);
+		break;
+		case PausedSingle:
+			m_StartPicture.EnableWindow(TRUE);
+			m_PausePicture.EnableWindow(FALSE);
+			m_StopPicture.EnableWindow(TRUE);
+			m_StartMultiplePicture.EnableWindow(FALSE);
+		break;
+		case PausedMultiple:
+			m_StartPicture.EnableWindow(FALSE);
+			m_PausePicture.EnableWindow(FALSE);
+			m_StopPicture.EnableWindow(TRUE);
+			m_StartMultiplePicture.EnableWindow(TRUE);
+		break;	
+		default:
+			nlassert(0);
+		break;
 	}
+	if (!getCurrPS())
+	{		
+		GetDlgItem(IDC_ENABLE_AUTO_COUNT)->EnableWindow(FALSE);
+		GetDlgItem(IDC_RESET_COUNT)->EnableWindow(FALSE);
+		((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->SetCheck(0);
+		// hide display of particle numbers
+		GetDlgItem(IDC_NUM_PARTICLES)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_NUM_ASKED_FACES)->ShowWindow(SW_HIDE);	
+		GetDlgItem(IDC_SYSTEM_DATE)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_DISPLAY_BBOX)->EnableWindow(FALSE);
+		GetDlgItem(IDC_LINK_TO_SKELETON)->EnableWindow(FALSE);
+		GetDlgItem(IDC_UNLINK_FROM_SKELETON)->EnableWindow(FALSE);
+		GetDlgItem(IDC_ACTIVE_PS)->EnableWindow(FALSE);
+		GetDlgItem(IDC_BROWSE_ANIM)->EnableWindow(FALSE);
+		GetDlgItem(IDC_DISPLAY_HELPERS)->EnableWindow(FALSE);
+		GetDlgItem(IDC_CLEAR_ANIM)->EnableWindow(FALSE);
+		m_TriggerAnim = "";
+	}
+	else
+	{		
+		GetDlgItem(IDC_ENABLE_AUTO_COUNT)->EnableWindow(TRUE);
+		((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->SetCheck(getCurrPS()->getAutoCountFlag() ? 1 : 0);
+		GetDlgItem(IDC_RESET_COUNT)->EnableWindow((_ActiveNode->getPSPointer()->getAutoCountFlag() && !_ActiveNode->getResetAutoCountFlag()) ? TRUE : FALSE);
+		GetDlgItem(IDC_NUM_PARTICLES)->ShowWindow(SW_SHOW);
+		GetDlgItem(IDC_NUM_ASKED_FACES)->ShowWindow(SW_SHOW);
+		GetDlgItem(IDC_SYSTEM_DATE)->ShowWindow(SW_SHOW);
+		GetDlgItem(IDC_DISPLAY_BBOX)->EnableWindow(TRUE);
+		GetDlgItem(IDC_LINK_TO_SKELETON)->EnableWindow(TRUE);
+		GetDlgItem(IDC_UNLINK_FROM_SKELETON)->EnableWindow(TRUE);
+		GetDlgItem(IDC_ACTIVE_PS)->EnableWindow(TRUE);
+		GetDlgItem(IDC_BROWSE_ANIM)->EnableWindow(TRUE);
+		GetDlgItem(IDC_DISPLAY_HELPERS)->EnableWindow(isRunning());
+		GetDlgItem(IDC_CLEAR_ANIM)->EnableWindow(!_ActiveNode->getTriggerAnim().empty());
+		m_TriggerAnim = _ActiveNode->getTriggerAnim().c_str();		
+	}
+	UpdateData(FALSE);
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::start()
+{
+	UpdateData();
+	switch(_State)
+	{
+		case Stopped:
+			if (_ActiveNode)
+			{	
+				if (checkHasLoop(*_ActiveNode)) return;
+				play(*_ActiveNode);	
+				nlassert(_PlayingNodes.empty());
+				_PlayingNodes.push_back(_ActiveNode);
+			}
+			GetDlgItem(IDC_RESET_COUNT)->EnableWindow(TRUE);
+		break;
+		case RunningSingle:
+			// no-op
+		return;
+		break;
+		case RunningMultiple:
+			stop();
+			start();
+		break;
+		case PausedSingle:
+			if (_ActiveNode)
+			{
+				unpause(*_ActiveNode);
+			}
+		break;
+		case PausedMultiple:
+			for(uint k = 0; k < _PlayingNodes.size(); ++k)
+			{
+				if (_PlayingNodes[k])
+				{
+					unpause(*_PlayingNodes[k]);
+				}
+			}
+			stop();
+			start();
+		break;
+		default:
+			nlassert(0);
+		break;
+	}
+	_State = RunningSingle;
+	updateUIFromState();	
 	if (m_LinkPlayToScenePlay) // is scene animation subordinated to the fx animation
 	{
 		// start animation for the scene too
@@ -191,291 +311,185 @@ void CStartStopParticleSystem::OnStartSystem()
 		{
 			_AnimationDLG->Playing = true;
 		}
-	}
-	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true);
-	_Paused = false;
-	_ParticleDlg->ParticleTreeCtrl->suppressLocatedInstanceNbItem(0);
-	m_StartPicture.EnableWindow(FALSE);
-	m_StopPicture.EnableWindow(TRUE);
-	m_PausePicture.EnableWindow(TRUE);
-	UpdateData(FALSE);
-	NL3D::CParticleSystem *ps = _SystemInitialPos.getPS();
-	if (ps)
-	{
-		ps->reactivateSound();		
 	}	
-	GetDlgItem(IDC_DISPLAY_HELPERS)->EnableWindow(TRUE);
-	
 }
 
 //******************************************************************************************************
-void CStartStopParticleSystem::OnStopSystem() 
-{		
+void CStartStopParticleSystem::startMultiple()
+{
 	UpdateData();
-	_Running = false;
-	_Paused = false;
-	_SystemInitialPos.restoreSystem();
-
-	_ParticleDlg->ParticleTreeCtrl->rebuildLocatedInstance();
-	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(false);	
-	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.f);
-	_ParticleDlg->getCurrPSModel()->enableDisplayTools(true);
-
-	m_StartPicture.EnableWindow(TRUE);
-	m_StopPicture.EnableWindow(FALSE);
-	m_PausePicture.EnableWindow(FALSE);
-
-	UpdateData(FALSE);
-	// go through all the ps to disable sounds
-	
-	NL3D::CParticleSystem *ps = _SystemInitialPos.getPS();
-	if (ps)
+	switch(_State)
 	{
-		ps->stopSound();
+		case Stopped:
+		{			
+			CParticleWorkspace *pws = _ParticleDlg->getParticleWorkspace();
+			if (!pws) return;
+			nlassert(_PlayingNodes.empty());
+			for(uint k = 0; k < pws->getNumNode(); ++k)
+			{
+				if (pws->getNode(k)->isLoaded())
+				{				
+					if (checkHasLoop(*pws->getNode(k))) return;
+				}
+			}
+			for(uint k = 0; k < pws->getNumNode(); ++k)
+			{
+				if (pws->getNode(k)->isLoaded())
+				{
+					// really start the node only if there's no trigger anim
+					if (pws->getNode(k)->getTriggerAnim().empty())
+					{					
+						play(*pws->getNode(k));
+					}
+					_PlayingNodes.push_back(pws->getNode(k));
+				}
+			}
+			GetDlgItem(IDC_RESET_COUNT)->EnableWindow(TRUE);
+		}
+		break;
+		case PausedSingle:
+		case RunningSingle:
+			stop();
+			startMultiple();
+		break;
+		case RunningMultiple:
+			// no-op
+			return;
+		break;			
+		case PausedMultiple:
+			for(uint k = 0; k < _PlayingNodes.size(); ++k)
+			{
+				if (_PlayingNodes[k])
+				{
+					unpause(*_PlayingNodes[k]);
+				}
+			}			
+		break;
+		default:
+			nlassert(0);
+		break;
 	}
-	GetDlgItem(IDC_DISPLAY_HELPERS)->EnableWindow(FALSE);	
+	_State = RunningMultiple;
+	updateUIFromState();	
 	if (m_LinkPlayToScenePlay) // is scene animation subordinated to the fx animation
 	{
 		// start animation for the scene too
 		if (_AnimationDLG)
 		{
-			_AnimationDLG->Playing = false;
-			_AnimationDLG->setCurrentFrame(_AnimationDLG->Start);			
+			_AnimationDLG->Playing = true;
 		}
-	}
-}
-
-//******************************************************************************************************
-void CStartStopParticleSystem::OnPause() 
-{
-	nlassert(_Running);
-	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(false);		
-	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.f); // pause
-	m_StartPicture.EnableWindow(TRUE);
-	m_StopPicture.EnableWindow(TRUE);
-	m_PausePicture.EnableWindow(FALSE);
-	_Paused = true;
-	if (m_LinkPlayToScenePlay) // is scene animation subordinated to the fx animation
-	{
-		// start animation for the scene too
-		if (_AnimationDLG)
-		{
-			_AnimationDLG->Playing = false;
-		}
-	}
-	UpdateData(FALSE);
-}
-
-//******************************************************************************************************
-void CStartStopParticleSystem::toggle()
-{
-	if (_Running) stop();
-	else start();
-}
-
-//******************************************************************************************************
-void CStartStopParticleSystem::start()
-{
-	if (!_Running)
-	{
-		OnStartSystem();
-	}
+	}	
 }
 
 //******************************************************************************************************
 void CStartStopParticleSystem::stop()
 {
-	if (_Running)
+	switch(_State)
 	{
-		OnStopSystem();
-	}
-}
-
-
-///////////////////////////////////
-// CPSInitialPos  implementation //
-///////////////////////////////////
-//******************************************************************************************************
-void CPSInitialPos::reset()
-{
-	_InitInfoVect.clear();
-	_RotScaleInfoVect.clear();
-	_InitialSizeVect.clear();
-}
-
-//******************************************************************************************************
-void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
-{
-	reset();
-	uint32 nbLocated = ps->getNbProcess();
-
-	_PS = ps; 
-	for(uint32 k = 0; k < nbLocated; ++k)
-	{
-
-		NL3D::CPSLocated *loc = dynamic_cast<NL3D::CPSLocated *>(ps->getProcess(k));
-		if (loc)
-		{
-
-			_InitialSizeVect.push_back(std::make_pair(loc, loc->getSize()) );
-			for (uint32 l = 0; l < loc->getSize(); ++l)
+		case Stopped:
+			// no-op
+			return;
+		case RunningSingle:
+		case RunningMultiple:			
+		case PausedSingle:		
+		case PausedMultiple:
+			for(uint k = 0; k < _PlayingNodes.size(); ++k)
 			{
-
-				CInitPSInstanceInfo ii;
-				ii.Index = l;
-				ii.Loc = loc;
-				ii.Pos = loc->getPos()[l];
-				ii.Speed = loc->getSpeed()[l];
-				_InitInfoVect.push_back(ii);
-				
-				for (uint32 m = 0; m < loc->getNbBoundObjects(); ++m)
-				{
-
-					if (dynamic_cast<NL3D::IPSMover *>(loc->getBoundObject(m)))
-					{
-						CRotScaleInfo rsi;
-						rsi.Loc = loc;
-						rsi.LB = loc->getBoundObject(m);
-						rsi.Index = l;
-						rsi.Psm = dynamic_cast<NL3D::IPSMover *>(loc->getBoundObject(m));
-						rsi.Scale = rsi.Psm->getScale(l);											
-						rsi.Rot = rsi.Psm->getMatrix(l);
-						_RotScaleInfoVect.push_back(rsi);
-					}
+				if (_PlayingNodes[k])
+				{				
+					stop(*_PlayingNodes[k]);
 				}
 			}
-		}
+			_PlayingNodes.clear();
+		break;		
+		default:
+			nlassert(0);
+		break;
 	}
-}
-
-
-// PRIVATE : a predicate used in CPSInitialPos::removeLocated
-struct CRemoveLocatedPred
-{
-	NL3D::CPSLocated *Loc	;
-};
-
-// private : predicate to remove located from a CPSInitialPos::TInitialLocatedSizeVect vector
-struct CRemoveLocatedFromLocatedSizePred : public CRemoveLocatedPred
-{
-	bool operator()(const std::pair<NL3D::CPSLocated *, uint32> &value) { return Loc == value.first; }
-};
-
-// private : predicate to remove located from a PSInitialPos::CInitPSInstanceInfo vector
-struct CRemoveLocatedFromInitPSInstanceInfoVectPred : public CRemoveLocatedPred
-{
-	bool operator()(const CPSInitialPos::CInitPSInstanceInfo &value) { return value.Loc == Loc; }
-};
-
-// private : predicate to remove located from a PSInitialPos::CRotScaleInfo vector
-struct CRemoveLocatedFromRotScaleInfoVectPred : public CRemoveLocatedPred
-{
-	bool operator()(const CPSInitialPos::CRotScaleInfo &value) { return value.Loc == Loc; }
-};
-
-// private : predicate to remove located bindable pointers in a TRotScaleInfoVect vect
-struct CRemoveLocatedBindableFromRotScaleInfoVectPred
-{
-	// the located bindable taht has been removed
-	NL3D::CPSLocatedBindable *LB;
-	bool operator()(const CPSInitialPos::CRotScaleInfo &value) { return value.LB == LB; }
-};
-
-//******************************************************************************************************
-void CPSInitialPos::removeLocated(NL3D::CPSLocated *loc)
-{
-	// in each container, we delete every element that has a pointer over lthe located loc
-	// , by using the dedicated predicate. 
-
-	CRemoveLocatedFromLocatedSizePred p;
-	p.Loc = loc;
-	_InitialSizeVect.erase(std::remove_if(_InitialSizeVect.begin(), _InitialSizeVect.end(), p)
-							, _InitialSizeVect.end() );
-
-	CRemoveLocatedFromInitPSInstanceInfoVectPred p2;
-	p2.Loc = loc;
-	_InitInfoVect.erase(std::remove_if(_InitInfoVect.begin(), _InitInfoVect.end(), p2)
-						, _InitInfoVect.end());
-
-	CRemoveLocatedFromRotScaleInfoVectPred p3;
-	p3.Loc = loc;
-	_RotScaleInfoVect.erase(std::remove_if(_RotScaleInfoVect.begin(), _RotScaleInfoVect.end(), p3)
-							 , _RotScaleInfoVect.end());
-
-}
-
-//******************************************************************************************************
-void CPSInitialPos::removeLocatedBindable(NL3D::CPSLocatedBindable *lb)
-{
-	CRemoveLocatedBindableFromRotScaleInfoVectPred p;
-	p.LB = lb;
-	_RotScaleInfoVect.erase(std::remove_if(_RotScaleInfoVect.begin(), _RotScaleInfoVect.end(), p), _RotScaleInfoVect.end() );
-}
-
-//******************************************************************************************************
-// reinitialize the system with its initial instances positions
-void CPSInitialPos::restoreSystem()
-{
-	nlassert(_PS); // no system has been memorized yet
-	_PS->stopSound();
-	// delete all the instance of the system
-	NL3D::CPSEmitter::setBypassEmitOnDeath(true);
-	for (uint k = 0; k < _PS->getNbProcess(); ++k)
+	_State = Stopped;	
+	updateUIFromState();	
+	if (m_LinkPlayToScenePlay) // is scene animation subordinated to the fx animation
 	{
-		NL3D::CPSLocated *loc = dynamic_cast<NL3D::CPSLocated *>(_PS->getProcess(k));
-		if (loc)
+		// start animation for the scene too
+		if (_AnimationDLG)
 		{
-			while (loc->getSize())
-			{
-				loc->deleteElement(0);
-			}
-
-			nlassert(loc->getSize() == 0);
-		}
-	}
-	NL3D::CPSEmitter::setBypassEmitOnDeath(false);
-
-	// recreate the initial number of instances
-
-	for (TInitialLocatedSizeVect ::iterator itSize = _InitialSizeVect.begin(); itSize != _InitialSizeVect.end(); ++itSize)
-	{
-	//	nlassert(itSize->first->getSize() == 0)
-		for (uint l = 0; l < itSize->second; ++l)
-		{
-			itSize->first->newElement(NLMISC::CVector::Null, NLMISC::CVector::Null, NULL, 0, itSize->first->getMatrixMode(), 0.f);
-		}
-
-		uint realSize = itSize->first->getSize();
-		uint size = itSize->second;
-		
-	}
-
-
-
-	for (TInitInfoVect::iterator it = _InitInfoVect.begin(); it != _InitInfoVect.end(); ++it)
-	{
-		if (it->Index < it->Loc->getSize())
-		{
-			it->Loc->getPos()[it->Index] = it->Pos;
-			it->Loc->getSpeed()[it->Index] = it->Speed;
-		}
-	}
-	for (TRotScaleInfoVect::iterator it2 = _RotScaleInfoVect.begin(); it2 != _RotScaleInfoVect.end(); ++it2)
-	{
-		if (it2->Index < it2->Loc->getSize())
-		{
-			it2->Psm->setMatrix(it2->Index, it2->Rot);
-			if (it2->Psm->supportNonUniformScaling())
-			{
-				it2->Psm->setScale(it2->Index, it2->Scale);
-			}
-			else if (it2->Psm->supportUniformScaling())
-			{
-				it2->Psm->setScale(it2->Index, it2->Scale.x);
-			}
+			_AnimationDLG->Playing = false;
 		}
 	}	
 }
+
+//******************************************************************************************************
+void CStartStopParticleSystem::pause()
+{
+	switch(_State)
+	{
+		case Stopped:
+			// no-op
+			return;
+		case RunningSingle:
+			if (_ActiveNode)
+			{			
+				pause(*_ActiveNode);				
+			}
+			_State = PausedSingle;
+			updateUIFromState();
+		break;
+		case RunningMultiple:					
+			for(uint k = 0; k < _PlayingNodes.size(); ++k)
+			{
+				if (_PlayingNodes[k])
+				{				
+					pause(*_PlayingNodes[k]);
+				}				
+			}
+			_State = PausedMultiple;
+			updateUIFromState();
+		break;
+		case PausedSingle:		
+		case PausedMultiple:
+			// no-op
+			return;
+		default:
+			nlassert(0);
+		break;
+	}
+	if (m_LinkPlayToScenePlay) // is scene animation subordinated to the fx animation
+	{
+		// start animation for the scene too
+		if (_AnimationDLG)
+		{
+			_AnimationDLG->Playing = false;
+		}
+	}
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::toggle()
+{
+	switch(_State)
+	{
+		case Stopped:		
+		break;
+		case RunningSingle:
+			pause();
+		break;
+		case RunningMultiple:
+			pause();			
+		break;
+		case PausedSingle:
+			start();
+		break;
+		case PausedMultiple:
+			startMultiple();
+		break;	
+		default:
+			nlassert(0);
+		break;
+	}
+}
+
+
+///////////////////////////////////
 
 //******************************************************************************************************
 void CStartStopParticleSystem::setSpeedSliderValue(float value)
@@ -488,28 +502,24 @@ void CStartStopParticleSystem::setSpeedSliderValue(float value)
 void CStartStopParticleSystem::OnReleasedcaptureAnimSpeed(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	UpdateData();
-	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_ANIM_SPEED);
-	_ParticleDlg->getCurrPSModel()->setEllapsedTimeRatio(m_SpeedSliderPos * 0.01f);
+	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_ANIM_SPEED);	
+	setEllapsedTimeRatio(m_SpeedSliderPos * 0.01f);
 	*pResult = 0;		
 }
 
-//******************************************************************************************************
-void CStartStopParticleSystem::reset()
-{ 
-	_SystemInitialPos.reset(); 
-	setSpeedSliderValue(1.f);
-}
 
 //******************************************************************************************************
 void CStartStopParticleSystem::OnDisplayHelpers() 
 {
 	UpdateData();
-	_ParticleDlg->getCurrPSModel()->enableDisplayTools(!_Running || m_DisplayHelpers != FALSE);
+	if (!_ActiveNode) return;	
 }
 
 //******************************************************************************************************
 void CStartStopParticleSystem::OnEnableAutoCount() 
 {		
+	nlassert(_ActiveNode);
+	stop();
 	bool autoCount = ((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->GetCheck() != 0;
 	if (autoCount)
 	{	
@@ -522,38 +532,42 @@ void CStartStopParticleSystem::OnEnableAutoCount()
 			((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->SetCheck(0);
 			return;
 		}
+		resetAutoCount(_ActiveNode);
 	}
-	enableAutoCount(autoCount);	
-	resetAutoCount();
-	if (_Running)
-	{
-		OnStopSystem();
-	}
+	enableAutoCount(autoCount);		
 }
 
 //******************************************************************************************************
-void CStartStopParticleSystem::resetAutoCount(bool reset /* = true */)
+void CStartStopParticleSystem::resetAutoCount(CParticleWorkspace::CNode *node, bool reset /* = true */)
 {
-	_ResetAutoCount = reset;
-	GetDlgItem(IDC_RESET_COUNT)->EnableWindow(_ParticleDlg->getCurrPS()->getAutoCountFlag() && !reset ? TRUE : FALSE);
+	if (!node) return;	
+	if (node->getResetAutoCountFlag() == reset) return;
+	node->setResetAutoCountFlag(reset);
+	if (node == _ActiveNode)	
+	{	
+		GetDlgItem(IDC_RESET_COUNT)->EnableWindow((_ActiveNode->getPSPointer()->getAutoCountFlag() && !reset) ? TRUE : FALSE);
+	}
+	node->setModified(true);
 }
 
 //******************************************************************************************************
 void CStartStopParticleSystem::OnResetCount() 
 {
-	resetAutoCount();
-	if (_Running)
-	{
-		OnStopSystem();
-	}
+	stop();
+	resetAutoCount(_ActiveNode);	
 }
 
 //******************************************************************************************************
 void CStartStopParticleSystem::enableAutoCount(bool enable)
+
 {	
+	if (!_ActiveNode) return;
+	if (enable == _ActiveNode->getPSPointer()->getAutoCountFlag()) return;
+	nlassert(getCurrPS());
 	((CButton *) GetDlgItem(IDC_ENABLE_AUTO_COUNT))->SetCheck(enable ? 1 : 0);
-	_ParticleDlg->getCurrPS()->setAutoCountFlag(enable);
-	GetDlgItem(IDC_RESET_COUNT)->EnableWindow(enable && !_ResetAutoCount ? TRUE : FALSE);
+	_ActiveNode->getPSPointer()->setAutoCountFlag(enable);
+	_ActiveNode->setModified(true);
+	GetDlgItem(IDC_RESET_COUNT)->EnableWindow(FALSE);
 	CLocatedProperties *lp =dynamic_cast<CLocatedProperties *>(_ParticleDlg->getRightPane());
 	if (lp)
 	{
@@ -562,78 +576,212 @@ void CStartStopParticleSystem::enableAutoCount(bool enable)
 }
 
 //******************************************************************************************************
-void CStartStopParticleSystem::go()
+void CStartStopParticleSystem::restartAllFX()
+{
+	for(uint k = 0; k < _PlayingNodes.size(); ++k)
+	{
+		if (_PlayingNodes[k] && isRunning(_PlayingNodes[k]))
+		{					
+			nlassert(_PlayingNodes[k]->isLoaded());
+			_PlayingNodes[k]->restoreState();
+			_PlayingNodes[k]->memorizeState();				
+			_PlayingNodes[k]->getPSPointer()->setSystemDate(0.f);
+			_PlayingNodes[k]->getPSPointer()->reactivateSound();
+		}
+	}
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::goPreRender()
 {	
-	NL3D::CParticleSystem *ps = _ParticleDlg->getCurrPS();
+	if (!_ActiveNode) return;
+	NL3D::CParticleSystem *ps = _ActiveNode->getPSPointer();
 	sint currNumParticles = (sint) ps->getCurrNumParticles();
 	sint maxNumParticles = (sint) ps->getMaxNumParticles();
 	// if linked with scene animation, restart if animation ends
 	if (m_LinkPlayToScenePlay) // is scene animation subordinated to the fx animation
 	{		
 		// start animation for the scene too
-		if (_AnimationDLG && _Running)
+		if (_AnimationDLG && isRunning())
 		{
 			if (_LastSceneAnimFrame > _AnimationDLG->CurrentFrame) // did animation restart ?
 			{			
-
-				// restart system
-				_SystemInitialPos.restoreSystem();
-				_SystemInitialPos.copySystemInitialPos(ps);
-				ps->setSystemDate(0.f);			
-				_ParticleDlg->getCurrPS()->reactivateSound();
+				restartAllFX();
 			}
 			_LastSceneAnimFrame = _AnimationDLG->CurrentFrame;
 		}
 	}
 	else
-	if (_AutoRepeat) // auto repeat feature
+	if (_AutoRepeat && !m_LinkPlayToScenePlay) // auto repeat feature
 	{
-		if (_Running)
+		if (isRunning())
 		{		
-			if (ps->getSystemDate() > ps->evalDuration())
+			bool allFXFinished = true;
+			bool fxStarted = false;
+			for(uint k = 0; k < _PlayingNodes.size(); ++k)
 			{
-				if (currNumParticles == 0)
-				{ 
-					// restart system
-					_SystemInitialPos.restoreSystem();
-					_SystemInitialPos.copySystemInitialPos(ps);			
-					ps->setSystemDate(0.f);	
-					_ParticleDlg->getCurrPS()->reactivateSound();
+				if (_PlayingNodes[k])
+				{					
+					if (isRunning(_PlayingNodes[k]))
+					{					
+						fxStarted = true;
+						if (_PlayingNodes[k]->getPSPointer()->getSystemDate() <= _PlayingNodes[k]->getPSPointer()->evalDuration())
+						{												
+							allFXFinished = false;
+							break;						
+						}
+						else
+						{
+							if (_PlayingNodes[k]->getPSPointer()->getCurrNumParticles() != 0)
+							{						
+								allFXFinished = false;
+								break;
+							}
+						}
+					}
+				}
+			}
+			if (fxStarted && allFXFinished)
+			{
+				restartAllFX();
+			}
+		}
+	}
+	if (_State == RunningMultiple)
+	{
+		std::set<std::string> currAnims;
+		CObjectViewer *ov = _ParticleDlg->getObjectViewer();
+		for(uint k = 0; k < ov->getNumInstance(); ++k)
+		{
+			CInstanceInfo *ci = ov->getInstance(k);
+			uint animIndex = ci->Playlist.getAnimation(0);
+			if (animIndex != NL3D::CAnimationSet::NotFound)
+			{			
+				std::string animName = ci->AnimationSet.getAnimationName(animIndex);
+				if (!animName.empty())
+				{
+					currAnims.insert(animName);
+				}
+			}
+		}				
+		// check fx that have a trigger anim
+		for(uint k = 0; k < _PlayingNodes.size(); ++k)
+		{
+			if (_PlayingNodes[k])
+			{							
+				if (!isRunning(_PlayingNodes[k]) || !_PlayingNodes[k]->getPSModel()->hasActiveEmitters())
+				{
+					// see if chosen anim is currently running
+					if (_PlayingNodes[k]->getTriggerAnim().empty() || currAnims.count(_PlayingNodes[k]->getTriggerAnim()))
+					{
+						// if the fx was shutting down, stop the restart it
+						if (!_PlayingNodes[k]->getPSModel()->hasActiveEmitters())
+						{
+							nlassert(isRunning(_PlayingNodes[k]));
+							stop(*_PlayingNodes[k]);
+						}
+						// yes -> trigger the fx	
+						play(*_PlayingNodes[k]);
+					}
+					else if (!_PlayingNodes[k]->getPSPointer()->hasParticles()) // fx is being shut down, stop it when necessary
+					{					
+						stop(*_PlayingNodes[k]); // no more particles so stop the system
+					}					
+				}
+				else
+				{					
+					if (!_PlayingNodes[k]->getTriggerAnim().empty())
+					{
+						if (_PlayingNodes[k]->getPSModel()->hasActiveEmitters())
+						{
+							// see if anim if already playing. If this is not the case then shutdown the emitters
+							if (!currAnims.count(_PlayingNodes[k]->getTriggerAnim()))
+							{
+								_PlayingNodes[k]->getPSModel()->activateEmitters(false);
+							}
+						}
+					}					
 				}
 			}
 		}
 	}
-	
-	// display number of particles		
-	if (currNumParticles != _LastCurrNumParticles || maxNumParticles != _LastMaxNumParticles)
+	if (_ActiveNode)
 	{	
-		CString numParts;	
-		numParts.LoadString(IDS_NUM_PARTICLES);
-		numParts += CString(NLMISC::toString("%d / %d",(int) currNumParticles, (int) maxNumParticles).c_str());
-		GetDlgItem(IDC_NUM_PARTICLES)->SetWindowText((LPCTSTR) numParts);
-		_LastCurrNumParticles = currNumParticles;
-		_LastMaxNumParticles = maxNumParticles;
+		// display number of particles for the currently active node
+		if (currNumParticles != _LastCurrNumParticles || maxNumParticles != _LastMaxNumParticles)
+		{	
+			CString numParts;	
+			numParts.LoadString(IDS_NUM_PARTICLES);
+			numParts += CString(NLMISC::toString("%d / %d",(int) currNumParticles, (int) maxNumParticles).c_str());
+			GetDlgItem(IDC_NUM_PARTICLES)->SetWindowText((LPCTSTR) numParts);
+			_LastCurrNumParticles = currNumParticles;
+			_LastMaxNumParticles = maxNumParticles;
+		}
+		// display max number of wanted faces
+		NLMISC::CMatrix camMat = ps->getScene()->getCam()->getMatrix();
+		sint numWantedFaces = (uint) ps->getWantedNumTris((ps->getSysMat().getPos() - camMat.getPos()).norm());
+		if (numWantedFaces != _LastNumWantedFaces)
+		{	
+			CString numWF;
+			numWF.LoadString(IDS_NUM_WANTED_FACES);
+			numWF += CString(NLMISC::toString("%d",(int) numWantedFaces).c_str());
+			GetDlgItem(IDC_NUM_ASKED_FACES)->SetWindowText((LPCTSTR) numWF);
+			_LastNumWantedFaces = numWantedFaces;		
+		}
+		// display system date
+		if (ps->getSystemDate() != _LastSystemDate)
+		{
+			_LastSystemDate = ps->getSystemDate();
+			CString sysDate;	
+			sysDate.LoadString(IDS_SYSTEM_DATE);
+			sysDate += CString(NLMISC::toString("%.2f s",_LastSystemDate).c_str());
+			GetDlgItem(IDC_SYSTEM_DATE)->SetWindowText((LPCTSTR) sysDate);
+		}	
 	}
-	// display max number of wanted faces
-	NLMISC::CMatrix camMat = ps->getScene()->getCam()->getMatrix();
-	sint numWantedFaces = (uint) ps->getWantedNumTris((ps->getSysMat().getPos() - camMat.getPos()).norm());
-	if (numWantedFaces != _LastNumWantedFaces)
-	{	
-		CString numWF;
-		numWF.LoadString(IDS_NUM_WANTED_FACES);
-		numWF += CString(NLMISC::toString("%d",(int) numWantedFaces).c_str());
-		GetDlgItem(IDC_NUM_ASKED_FACES)->SetWindowText((LPCTSTR) numWF);
-		_LastNumWantedFaces = numWantedFaces;		
-	}
-	// display system date
-	if (_ParticleDlg->getCurrPS()->getSystemDate() != _LastSystemDate)
+	if (_ParticleDlg)
 	{
-		_LastSystemDate = ps->getSystemDate();
-		CString sysDate;	
-		sysDate.LoadString(IDS_SYSTEM_DATE);
-		sysDate += CString(NLMISC::toString("%.2f s",_LastSystemDate).c_str());
-		GetDlgItem(IDC_SYSTEM_DATE)->SetWindowText((LPCTSTR) sysDate);
-	}	
+		CParticleWorkspace *pws = _ParticleDlg->getParticleWorkspace();
+		if (pws)
+		{
+			for(uint k = 0; k < pws->getNumNode(); ++k)
+			{
+				if (pws->getNode(k)->isLoaded())
+				{				
+					if (pws->getNode(k) == _ActiveNode)
+					{
+						pws->getNode(k)->getPSModel()->enableDisplayTools(!isRunning(pws->getNode(k)) || m_DisplayHelpers);
+					}
+					else
+					{
+						pws->getNode(k)->getPSModel()->enableDisplayTools(false);
+					}
+					// hide / show the node
+					if (_State == RunningMultiple)
+					{
+						if (isRunning(pws->getNode(k)))
+						{
+							pws->getNode(k)->getPSModel()->show();
+						}
+						else
+						{
+							pws->getNode(k)->getPSModel()->hide();
+						}
+					}
+					else
+					{
+						if (pws->getNode(k) == _ActiveNode)
+						{
+							pws->getNode(k)->getPSModel()->show();
+						}
+						else
+						{
+							pws->getNode(k)->getPSModel()->hide();
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 //******************************************************************************************************
@@ -662,7 +810,7 @@ void CStartStopParticleSystem::OnLinkPlayToScenePlay()
 	if (m_LinkPlayToScenePlay) 
 	{
 		m_SpeedSliderPos = 100;
-		_ParticleDlg->getCurrPSModel()->setEllapsedTimeRatio(1.f);
+		setEllapsedTimeRatio(1.f);
 	}
 	UpdateData(FALSE);
 }
@@ -670,6 +818,7 @@ void CStartStopParticleSystem::OnLinkPlayToScenePlay()
 //******************************************************************************************************
 void CStartStopParticleSystem::OnLinkToSkeleton() 
 {
+	if (!_ActiveNode) return;
 	CObjectViewer *ov = _ParticleDlg->getObjectViewer();
 	if (!ov->isSkeletonPresent())
 	{
@@ -686,13 +835,14 @@ void CStartStopParticleSystem::OnLinkToSkeleton()
 	uint boneIndex;
 	if (ov->chooseBone((LPCTSTR) chooseBoneForPS, skel, boneIndex))
 	{
-		_ParticleDlg->stickPSToSkeleton(skel, boneIndex);
+		_ParticleDlg->stickPSToSkeleton(_ActiveNode, skel, boneIndex);
 	}
 }
 
 //******************************************************************************************************
 void CStartStopParticleSystem::OnUnlinkFromSkeleton() 
 {
+	if (!_ActiveNode) return;
 	if (!_ParticleDlg->isPSStickedToSkeleton())
 	{
 		CString caption;
@@ -701,5 +851,154 @@ void CStartStopParticleSystem::OnUnlinkFromSkeleton()
 		mess.LoadString(IDS_NOT_STICKED_TO_SKELETON);
 		return;
 	}
-	_ParticleDlg->unstickPSFromSkeleton();
+	_ParticleDlg->unstickPSFromSkeleton(_ActiveNode);
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::setActiveNode(CParticleWorkspace::CNode *activeNode)
+{
+	if (activeNode == _ActiveNode) return;
+	forceActiveNode(activeNode);
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::forceActiveNode(CParticleWorkspace::CNode *activeNode)
+{
+	UpdateData();
+	bool wasRunning = _State == RunningSingle;
+	if (wasRunning)
+	{	
+		stop();
+	}		
+	_ActiveNode = activeNode;	
+	updateUIFromState();
+	if (wasRunning && _ActiveNode)
+	{
+		start();		
+	}	
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::setEllapsedTimeRatio(float value)
+{
+	CParticleWorkspace *pw = _ParticleDlg->getParticleWorkspace();
+	if (!pw) return;
+	for(uint k = 0; k < pw->getNumNode(); ++k)
+	{
+		if (pw->getNode(k)->isLoaded())
+		{
+			pw->getNode(k)->getPSModel()->setEllapsedTimeRatio(value);
+		}
+	}
+}
+
+//******************************************************************************************************
+bool CStartStopParticleSystem::checkHasLoop(CParticleWorkspace::CNode &node)
+{
+	nlassert(node.isLoaded());
+	if (!node.getPSPointer()->hasLoop()) return false;	
+	MessageBox(CString(node.getFilename().c_str()) + " : " + getStrRsc(IDS_FX_HAS_LOOP), getStrRsc(IDS_WARNING), MB_ICONEXCLAMATION);
+	return true;	
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::play(CParticleWorkspace::CNode &node)
+{
+	if (isRunning(&node)) return;
+	// NB : node must be stopped, no check is done
+	nlassert(node.isLoaded());	
+	// if node not started, start it				
+	node.memorizeState();
+	// enable the system to take the right date from the scene	
+	node.getPSModel()->enableAutoGetEllapsedTime(true);		
+	node.getPSPointer()->setSystemDate(0.f);
+	node.getPSPointer()->reactivateSound();	
+	node.getPSModel()->activateEmitters(true);
+	if (node.getPSPointer()->getAutoCountFlag())
+	{
+		if (node.getResetAutoCountFlag())
+		{
+			// reset particle size arrays
+			node.getPSPointer()->matchArraySize();
+		}
+		resetAutoCount(&node, false);	
+	}		
+	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_ANIM_SPEED);	
+	node.getPSModel()->setEllapsedTimeRatio(m_SpeedSliderPos * 0.01f);
+	_ParticleDlg->ParticleTreeCtrl->suppressLocatedInstanceNbItem(node, 0);				
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::unpause(CParticleWorkspace::CNode &node)
+{
+	if (!isRunning(&node)) return;
+	nlassert(node.isLoaded());
+	node.getPSModel()->enableAutoGetEllapsedTime(true);
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::pause(CParticleWorkspace::CNode &node)
+{
+	if (!isRunning(&node)) return;
+	nlassert(node.isLoaded());
+	node.getPSModel()->enableAutoGetEllapsedTime(false);
+	node.getPSModel()->setEllapsedTime(0.f);
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::stop(CParticleWorkspace::CNode &node)
+{
+	if (!isRunning(&node)) return;
+	nlassert(node.isLoaded());
+	node.restoreState();
+	_ParticleDlg->ParticleTreeCtrl->rebuildLocatedInstance(node);
+	node.getPSModel()->enableAutoGetEllapsedTime(false);	
+	node.getPSModel()->setEllapsedTime(0.f);	
+	node.getPSModel()->activateEmitters(true);	
+	node.getPSPointer()->stopSound();	
+}
+
+//******************************************************************************************************
+bool CStartStopParticleSystem::isRunning(CParticleWorkspace::CNode *node)
+{
+	nlassert(node);
+	return node->isStateMemorized();	
+}
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnBrowseAnim() 
+{
+	nlassert(_ActiveNode);
+	CChooseAnimation ca;
+	std::set<std::string> animSet;
+	CObjectViewer *ov = _ParticleDlg->getObjectViewer();
+	for(uint k = 0; k < ov->getNumInstance(); ++k)
+	{
+		CInstanceInfo *ii = ov->getInstance(k);
+		for(uint l = 0; l < ii->AnimationSet.getNumAnimation(); ++l)
+		{
+			animSet.insert(ii->AnimationSet.getAnimationName(l));
+		}
+	}
+	std::vector<std::string> animList(animSet.begin(), animSet.end());
+	ca.init(animList);
+	if (ca.DoModal() == IDOK)
+	{
+		m_TriggerAnim =ca.getSelectedAnim().c_str();
+		_ActiveNode->setTriggerAnim((LPCTSTR) m_TriggerAnim);
+		GetDlgItem(IDC_CLEAR_ANIM)->EnableWindow(!_ActiveNode->getTriggerAnim().empty());
+	}	
+	_ParticleDlg->ParticleTreeCtrl->updateCaption(*_ActiveNode);
+	UpdateData(FALSE);
+}
+
+
+//******************************************************************************************************
+void CStartStopParticleSystem::OnClearAnim() 
+{
+	// TODO: Add your control notification handler code here
+	m_TriggerAnim = "";
+	_ActiveNode->setTriggerAnim("");	
+	_ParticleDlg->ParticleTreeCtrl->updateCaption(*_ActiveNode);
+	UpdateData(FALSE);
 }

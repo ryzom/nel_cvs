@@ -4,6 +4,8 @@
 //
 #define IDR_MAINFRAME                   1
 #define IDEMPTY                         3
+#define ID_SAVEALL                      3
+#define ID_NO                           4
 #define IDI_MAIN_ICO                    101
 #define IDD_SLOT                        1000
 #define IDD_MAIN_DLG                    1001
@@ -187,6 +189,7 @@
 #define IDC_ALTERNATE_OP                1071
 #define IDC_STOP_PICTURE                1072
 #define IDC_SCHEME                      1073
+#define IDC_START_MULTIPLE_PICTURE      1073
 #define IDC_EDIT_SCHEME                 1074
 #define IDI_APP_ICON                    1074
 #define IDC_PAUSE_PICTURE               1074
@@ -299,13 +302,25 @@
 #define IDC_CUSTOM_DIRECTION            1132
 #define IDB_BITMAP1                     1133
 #define IDC_VECT_K                      1134
+#define IDB_BITMAP2                     1134
 #define IDC_VECT_MINUS_K                1135
+#define IDB_PS_WORKSPACE                1136
+#define IDR_PARTICLE_DLG_MENU           1137
+#define IDD_SAVE_OPTIONS_DLG            1138
 #define IDC_ENABLE_TEXTURE_ANIM         1139
+#define IDD_DIALOG1                     1139
+#define IDD_CREATE_FILE                 1139
 #define IDC_CHOOSE_TEXTURES             1140
+#define IDR_PARTICLE_WORKSPACE_MENU     1140
 #define IDC_NO_SAMPLES                  1141
+#define IDB_PARTICLE_SYSTEM_NOT_LOADED  1141
 #define IDC_BLENDING_MODE               1142
+#define IDR_PARTICLE_SYSTEM_NOT_LOADED_MENU 1142
 #define IDC_BLENDING_MODE_STATIC        1143
+#define IDD_SKIPPABLE_MESSAGE_BOX       1143
 #define IDC_BG_COLOR                    1144
+#define IDB_START_MULTIPLE_SYSTEM       1144
+#define IDD_CHOOSE_ANIM                 1145
 #define IDC_EDIT_INPUT                  1147
 #define IDC_ENABLE_SLOW_DOWN            1148
 #define IDC_FORCE_LIFE_TIME_UPDATE      1149
@@ -320,7 +335,6 @@
 #define IDC_DEC_BBOX                    1159
 #define IDC_BROWSE_SOUND                1159
 #define IDC_DIE_WHEN_OUT_OF_RANGE       1160
-#define IDC_APPLY_AFTRE_DELAY           1161
 #define IDC_APPLY_AFTER_DELAY           1161
 #define IDC_DIE_WHEN_OUT_OF_FRUSTRUM    1162
 #define IDC_DISGRADE_WITH_LOD           1163
@@ -625,6 +639,20 @@
 #define IDC_ZTEST                       1393
 #define IDC_ZBIAS_TEXT                  1394
 #define IDC_ZBIAS                       1395
+#define IDC_LOCATION                    3396
+#define IDC_STATIC_LOCATION             3397
+#define IDC_BROWSE                      3398
+#define IDC_STATIC_FILENAME             3399
+#define IDC_MB_TEXT                     3399
+#define IDC_FILENAME                    3400
+#define IDC_DONT_SHOW_AGAIN             3400
+#define IDC_MB_CONTENT                  3401
+#define IDC_ANIM                        3403
+#define IDC_BROWSE_ANIM                 3404
+#define IDC_ACTIVE_PS                   3405
+#define IDC_ANIM_LIST                   3406
+#define IDC_CLEAR_ANIM                  3406
+#define IDC_TRIGGER_ANIM                3407
 #define IDC_BUTTON_COLOR_END0           1396
 #define IDC_BUTTON_COLOR_END1           1397
 #define IDC_BUTTON_COLOR_END2           1398
@@ -687,6 +715,7 @@
 #define ID__B                           32802
 #define ID_MENU_DELETE                  32803
 #define ID_MENU_DELETE_PS               32803
+#define IDM_CLEAR_PS_CONTENT            32803
 #define ID_MENU_NEWLOCATED              32804
 #define IDM_DELETE_LOCATED_BINDABLE     32806
 #define ID_INSTANCIATE_LOCATED          32807
@@ -785,27 +814,49 @@
 #define IDM_ACTIVATE_TEXTURE_SET_8      32882
 #define IDS_FX_HAS_LOOP                 32882
 #define ID_WINDOW_GLOBALWIND            32883
+#define IDS_PS_WORKSPACE_MODIFIED       32883
 #define ID_EDIT_MOVE_OBJECT_LIGHT_TEST  32884
+#define IDS_SAVE_MODIFIED_PS            32884
 #define IDM_COPY_LOCATED                32885
+#define IDS_SAVE_FILE                   32885
+#define IDS_CONTINUE_SAVING             32886
 #define IDM_COPY_BINDABLE               32887
+#define IDS_CHOOSE_WORKSPACE_NAME       32887
 #define IDM_PASTE_BINDABLE              32888
+#define IDS_EMPTY_PATH                  32888
 #define IDM_PASTE_LOCATED               32889
+#define IDS_FILENAME_PATH               32889
 #define IDM_ACTIVATE_FOG                32890
+#define IDS_COULDNT_CREATE_DIRECTORY    32890
 #define IDM_SETUP_FOG                   32891
+#define IDS_INVALID_FILENAME            32891
 #define ID_MENU_ADD                     32892
+#define IDS_CANNOT_CREATE_FILE          32892
 #define ID_MENU_REMOVE                  32893
 #define ID_MENU_INSERT                  32894
 #define ID_MENU_COPY                    32895
+#define IDS_OVERWRITE_FILE              32895
 #define ID_MENU_LOADVEGETDESC           32896
+#define IDS_PS_ALREADY_INSERTED         32896
 #define ID_MENU_SAVEVEGETDESC           32897
+#define IDS_COULDNT_INSTANCIATE_PS      32897
 #define ID_MENU_SHOW                    32898
 #define ID_MENU_SHOWONLY                32899
+#define IDS_CLEAR_CONTENT               32899
 #define ID_MENU_SHOWALL                 32900
+#define IDS_PARTICLE_EDITOR             32900
 #define ID_WINDOW_SOUND                 32901
+#define IDS_CANT_CHANGE_PS_NAME         32901
 #define ID_WINDOW_ANIMSOUND             32902
+#define IDS_CREATE_NEW_PS               32902
 #define IDM_SHUFFLE_TEXTURE_SET         32903
+#define IDS_CHOOSE_BASE_PATH            32903
+#define IDS_SAVED                       32904
 #define ID_EDIT_MOVECAMERA              32905
+#define IDS_LOADED                      32905
 #define ID_EDIT_MOVESCENE               32906
+#define IDS_READY                       32906
+#define IDS_REMOVE_ALL_PS               32907
 #define ID_VIEW_RESET_SCENE_ROOT        32908
 #define ID_VIEW_SET_SCENE_ROTATION      32909
 #define IDC_RELOAD_TEXTURES             32910
@@ -834,14 +885,29 @@
 #define IDM_SHOW_FX_MATRIX              32965
 #define IDM_SHOW_FX_USER_MATRIX         32966
 #define IDM_FORCE_ZBIAS                 32967
+#define IDM_CREATE_NEW_PS_WORKSPACE     32968
+#define IDM_LOAD_PS_WORKSPACE           32969
+#define IDM_SAVE_PS_WORKSPACE           32970
+#define IDM_SAVE_ALL_PS_WORKSPACE       32971
+#define IDM_INSERT_NEW_PS               32972
+#define IDM_CREATE_NEW_PS               32973
+#define IDM_RELOAD_PS                   32974
+#define IDM_REMOVE_PS_FROM_WORKSPACE    32975
+#define IDM_SET_ACTIVE_PARTICLE_SYSTEM  32976
+#define IDM_PS_SORT_BY_FILENAME         32977
+#define IDM_PS_SORT_BY_NAME             32978
+#define IDM_VIEW_PS_FILENAME            32980
+#define IDM_REMOVE_ALL_PS               32981
+#define IDM_SAVE_PS_AS                  32982
+#define ID_PS_EDITOR_STATUS             36111
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1134
-#define _APS_NEXT_COMMAND_VALUE         32968
-#define _APS_NEXT_CONTROL_VALUE         1397
-#define _APS_NEXT_SYMED_VALUE           1000
+#define _APS_NEXT_RESOURCE_VALUE        1146
+#define _APS_NEXT_COMMAND_VALUE         32983
+#define _APS_NEXT_CONTROL_VALUE         1409
+#define _APS_NEXT_SYMED_VALUE           1001
 #endif
 #endif

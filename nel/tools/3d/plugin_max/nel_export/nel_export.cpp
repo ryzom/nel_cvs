@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.19 2001/12/06 09:28:02 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.20 2001/12/06 14:31:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -321,7 +321,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 							if (theCNelExport.SelectFileForSave(hWnd, sNodeMsg, vegetableFilter, sSavePath))
 							{
 								// Export the mesh
-								if (!theCNelExport.exportVegetable (sSavePath, *pNode, *theCNelExport.ip, time))
+								if (!theCNelExport.exportVegetable (sSavePath, *pNode, *theCNelExport.ip, time, true))
 								{
 									// Error message
 									char sErrorMsg[512];

@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.8 2001/10/29 09:35:56 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.9 2001/12/06 14:31:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,7 @@ def_visible_primitive ( export_ig,			"NelExportInstanceGroup");
 def_visible_primitive ( export_skeleton_weight,		"NelExportSkeletonWeight");
 def_visible_primitive ( view_shape,			"NelViewShape");
 def_visible_primitive ( test_file_date,		"NeLTestFileDate");
+def_visible_primitive ( export_vegetable,	"NelExportVegetable");
 
 char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
 char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel]";
@@ -463,6 +464,41 @@ Value* test_file_date_cf (Value** arg_list, int count)
 		}
 		CloseHandle (h0);
 	}
+
+	return ret;
+}
+
+Value* export_vegetable_cf (Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (3)
+	check_arg_count(export_shape, 3, count);
+
+	// Check to see if the arguments match up to what we expect
+	// We want to use 'TurnAllTexturesOn <object to use>'
+	char *message = "NelExportVegetable [node] [filename] [dialog error]";
+	type_check (arg_list[0], MAXNode, message);
+	type_check (arg_list[1], String, message);
+	type_check (arg_list[2], Boolean, message);
+
+	// Get a INode pointer from the argument passed to us
+	INode *node = arg_list[0]->to_node();
+	nlassert (node);
+
+	// Export path 
+	const char* sPath=arg_list[1]->to_string();
+
+	// Message in dialog
+	bool dialogMessage = arg_list[2]->to_bool() != FALSE;
+
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	// Ok ?
+	Boolean *ret=&false_value;
+
+	// Export
+	if (CNelExport::exportVegetable (sPath, *node, *ip, ip->GetTime(), dialogMessage))
+		ret = &true_value;
 
 	return ret;
 }

@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.11 2001/12/06 09:28:02 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.12 2001/12/06 14:31:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,13 +118,13 @@ bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, Time
 
 // --------------------------------------------------
 
-bool CNelExport::exportVegetable (const char *sPath, INode& node, Interface& ip, TimeValue time)
+bool CNelExport::exportVegetable (const char *sPath, INode& node, Interface& ip, TimeValue time, bool errorInDialog)
 {
 	bool bRet=false;
 
 	// Build a vegetable
 	NL3D::CVegetableShape vegetable;
-	if (CExportNel::buildVegetableShape (vegetable, node, time, &ip, false, true))
+	if (CExportNel::buildVegetableShape (vegetable, node, time, &ip, false, errorInDialog))
 	{
 		// Open a file
 		COFile file;
@@ -141,7 +141,7 @@ bool CNelExport::exportVegetable (const char *sPath, INode& node, Interface& ip,
 			catch (Exception &e)
 			{
 				// Message box
-				CExportNel::outputErrorMessage (&ip, "Error during vegetable serialisation", "NeL Export", true);
+				CExportNel::outputErrorMessage (&ip, "Error during vegetable serialisation", "NeL Export", errorInDialog);
 			}
 		}
 	}

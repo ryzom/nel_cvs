@@ -6,6 +6,7 @@ rm log.log 2> /dev/null
 build_rbank='../../bin/build_rbank.exe'
 build_indoor_rbank='../../bin/build_indoor_rbank.exe'
 build_ig_boxes='../../bin/build_ig_boxes.exe'
+ai_build_wmap='../../bin/ai_build_wmap_r.exe'
 get_neighbors='../../bin/get_neighbors.exe'
 exec_timeout='../../bin/exec_timeout.exe'
 
@@ -15,6 +16,7 @@ smooth_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_smooth_timeout" | s
 proclocal_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_proclocal_timeout" | sed -e 's/rbank_build_proclocal_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 procglobal_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_procglobal_timeout" | sed -e 's/rbank_build_procglobal_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 indoor_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_indoor_timeout" | sed -e 's/rbank_build_indoor_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
+build_wmap_timeout=`cat ../../cfg/config.cfg | grep "build_wmap_timeout" | sed -e 's/build_wmap_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the quality option to choose the goor properties.cfg file
 quality_flag=`cat ../../cfg/site.cfg | grep "build_quality" | grep "1"`
@@ -318,3 +320,12 @@ for i in "retrievers"/tempMerged_*.lr ; do
 	mv $i $finalname
 done
 
+
+
+# Check ai_build_wmap exist
+if ( test -f $ai_build_wmap )
+then
+	# rm ai_build_wmap.cfg
+	# generate wmap
+	# $exec_timeout $build_wmap_timout $ai_build_wmap
+fi

@@ -1,6 +1,6 @@
 /** \file string_mapper.cpp
  *
- * $Id: string_mapper.h,v 1.1 2003/01/08 15:52:50 boucher Exp $
+ * $Id: string_mapper.h,v 1.2 2003/03/03 13:02:12 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,17 +22,96 @@
  * MA 02111-1307, USA.
  */
 
+#ifndef STRING_MAPPER_H
+#define STRING_MAPPER_H
+
 #include "nel/misc/types_nl.h"
 #include <hash_map>
 
 namespace NLMISC
 {
 
+#if defined(_DEBUG)
+class CStringMapper;
+/** This class is a debug version for string indentifier.
+ *	In debug mode, the string identifier include the string value.
+ *	This greatly facilitate debug of stuff using mapped string.
+ *	
+ * \author Boris Boucher
+ * \author Nevrax France
+ * \date 2003
+ */
+struct TStringId
+{
+	/// Default constructor. Do nothing
+	TStringId()
+	{
+	}
+
+	/// Constructor from an uint value. You need to specifie the mapper to use or NULL for the global one
+	inline TStringId(uint stringId, CStringMapper *mapper = NULL);
+
+	/// Conversion to uint
+	operator uint() const
+	{
+		return _StringId;
+	}
+
+	/// comparison with uint
+	bool operator ==(uint value) const
+	{
+		return _StringId == value;
+	}
+
+	bool operator != (uint value) const
+	{
+		return !(operator==(value));
+	}
+
+	bool operator <(const TStringId &other) const
+	{
+		return _StringId < other._StringId;
+	}
+
+private:
+
+	friend class CStringMapper;
+
+	// A special constructor used by the string mapper only.
+	TStringId(uint stringId, const std::string &stringValue)
+		: _StringId(stringId),
+		_StringValue(stringValue)
+	{}
+	/// The integer string mapping.
+	uint			_StringId;
+	/** The mapped string value.
+	 *	NB : Do not give access in any manner to this value !
+	 *	It is here ONLY for debug purpose (in fact, to be read during debug).
+	*/
+	std::string		_StringValue;
+};
+
+}// namespace NLMISC
+// declare a hash function for the TStringId type. This is to have the same
+// behavior betrween the debug and release version of TStringId.
+__STL_BEGIN_NAMESPACE
+__STL_TEMPLATE_NULL struct hash<NLMISC::TStringId>
+{
+  size_t operator()(NLMISC::TStringId stringId) const { return uint(stringId); }
+};
+__STL_END_NAMESPACE
+
+namespace NLMISC
+{
+#else
+/// In release mode, TStringId is just a typedef on uint. Operations on TStringId are very light.
+typedef uint TStringId;
+#endif
+
 /** A static class that map string to integer and vice-versa
  * Each different string is tranformed into an unique integer identifier.
  * If the same string is submited twice, the same id is returned.
- * The class can also (but not in an optimized manner) return the
- * string associated with an id.
+ * The class can also return the string associated with an id.
  *
  * \author Boris Boucher
  * \author Nevrax France
@@ -40,15 +119,80 @@ namespace NLMISC
  */
 class CStringMapper
 {
-	/// The map string to id
-	static std::hash_map<std::string, uint>	_StringMap;
-public:
+	struct CStringRef
+		{
+		const std::string		*String;
 
-	/// Map a string into a unique Id
-	static uint					map(const std::string &str);
-	/// Unmap a string
-	static const std::string	&unmap(uint id);
+		CStringRef(const std::string *str)
+			: String(str)
+		{}
+
+		bool operator ==(const CStringRef &other) const
+		{
+			return *String == *(other.String);
+		}
+	};
+
+	struct CHashStringRef : public std::unary_function<CStringRef, size_t>
+	{
+		size_t operator() (const CStringRef &stringRef) const
+		{
+			std::hash<std::string>	hasher;
+
+			return hasher(*stringRef.String);
+		}
+	};
+
+	typedef std::hash_map<CStringRef, uint, CHashStringRef> TStringRefHashMap;
+
+	/// The map stringRef to id
+	TStringRefHashMap								_StringMap;
+	/// The linear storage for reverse mapping (id to string)
+	std::vector<CStringRef>							_StringTable;
+
+#if defined(_DEBUG)
+	friend struct TStringId;
+	// a special unmaping function
+	static const std::string &unmap(uint stringId);
+	const std::string &localUnmap(uint stringId);
+#endif
+
+	static	CStringMapper	_GlobalMapper;
+	TStringId				_EmptyId;
+
+	// private constructor.
+	CStringMapper();
+
+public:
+	/// Globaly map a string into a unique Id
+	static TStringId			map(const std::string &str);
+	/// Globaly unmap a string
+	static const std::string	&unmap(const TStringId &stringId);
+	/// Return the global id for the empty string (helper function)
+	static TStringId			emptyId();
+
+	/// Create a local mapper. You can dispose of it by deleting it.
+	static CStringMapper	*createLocalMapper();
+	/// Localy map a string into a unique Id
+	TStringId			localMap(const std::string &str);
+	/// Localy unmap a string
+	const std::string	&localUnmap(const TStringId &stringId);
+	/// Return the local id for the empty string (helper function)
+	TStringId			localEmptyId()	{return _EmptyId;}
+
 };
+
+#if defined(_DEBUG)
+TStringId::TStringId(uint stringId, CStringMapper *mapper)
+{
+	_StringId = stringId;
+	if (mapper)
+		_StringValue = mapper->localUnmap(_StringId);
+	else
+		_StringValue = CStringMapper::unmap(_StringId);
+}
+#endif
 
 } //namespace NLMISC
 
+#endif // STRING_MAPPER_H

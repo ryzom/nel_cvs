@@ -1,7 +1,7 @@
 /** \file ig_lighter.cpp
  * ig_lighter.cpp : Instance lighter
  *
- * $Id: ig_lighter.cpp,v 1.1 2002/02/06 16:57:47 berenguier Exp $
+ * $Id: ig_lighter.cpp,v 1.2 2002/02/07 09:33:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -568,8 +568,8 @@ int main(int argc, char* argv[])
 			lighterDesc.Shadow=shadow.asInt ()!=0;
 
 			// OverSampling
-			CConfigFile::CVar &oversampling = parameter.getVar ("oversampling");
-			lighterDesc.OverSampling= oversampling.asInt ();
+				CConfigFile::CVar &ig_oversampling = parameter.getVar ("ig_oversampling");
+				lighterDesc.OverSampling= ig_oversampling.asInt ();
 			// validate value: 0, 2, 4, 8, 16
 			lighterDesc.OverSampling= raiseToNextPowerOf2(lighterDesc.OverSampling);
 			clamp(lighterDesc.OverSampling, 0U, 16U);

@@ -1,0 +1,20 @@
+
+ - release correctly the video screen when an error occurs
+
+-- 02/06/2001 snowballs version 0.2, NeL version 0.3
+
+ - lensflare effect
+ - new radar system
+ - dummy mesh shadow
+ - precomputed static shadows
+ - new compressed textures
+ - zoom
+ - bug fixes
+ - compile on linux
+ - font clamping fixed
+ - you don't need ns.cfg anymore
+
+-- 01/17/2001 snowballs version 0.1, NeL version 0.2
+
+ - first release
+

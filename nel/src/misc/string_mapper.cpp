@@ -5,7 +5,7 @@
  * The class can also (but not in an optimized manner) return the
  * string associated with an id.
  *
- * $Id: string_mapper.cpp,v 1.2 2003/03/03 13:04:16 boucher Exp $
+ * $Id: string_mapper.cpp,v 1.3 2003/03/04 13:13:10 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,7 +66,7 @@ TStringId	CStringMapper::emptyId()
 NLMISC::TStringId CStringMapper::localMap(const std::string &str)
 {
 	CStringRef	ref(&str);
-	TStringRefHashMap::iterator it(_StringMap.find(ref));
+	TStringRefMap::iterator it(_StringMap.find(ref));
 
 	if (it == _StringMap.end())
 	{

@@ -1,6 +1,6 @@
 /** \file string_mapper.cpp
  *
- * $Id: string_mapper.h,v 1.2 2003/03/03 13:02:12 boucher Exp $
+ * $Id: string_mapper.h,v 1.3 2003/03/04 13:12:54 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,11 +27,13 @@
 
 #include "nel/misc/types_nl.h"
 #include <hash_map>
+#include <map>
+#include <vector>
 
 namespace NLMISC
 {
 
-#if defined(_DEBUG)
+#if defined(NL_DEBUG)
 class CStringMapper;
 /** This class is a debug version for string indentifier.
  *	In debug mode, the string identifier include the string value.
@@ -68,6 +70,11 @@ struct TStringId
 		return !(operator==(value));
 	}
 
+	bool operator == (const TStringId &other) const
+	{
+		return _StringId == other._StringId;
+	}
+	
 	bool operator <(const TStringId &other) const
 	{
 		return _StringId < other._StringId;
@@ -94,12 +101,21 @@ private:
 }// namespace NLMISC
 // declare a hash function for the TStringId type. This is to have the same
 // behavior betrween the debug and release version of TStringId.
+#if __SGI_STL_PORT <= 0x400
 __STL_BEGIN_NAMESPACE
 __STL_TEMPLATE_NULL struct hash<NLMISC::TStringId>
 {
   size_t operator()(NLMISC::TStringId stringId) const { return uint(stringId); }
 };
 __STL_END_NAMESPACE
+#else
+_STLP_BEGIN_NAMESPACE
+_STLP_TEMPLATE_NULL struct hash<NLMISC::TStringId>
+{
+	size_t operator()(const NLMISC::TStringId &stringId) const { return uint(stringId); }
+};
+_STLP_END_NAMESPACE
+#endif // __SGI_STL_PORT > 0x400
 
 namespace NLMISC
 {
@@ -120,7 +136,7 @@ typedef uint TStringId;
 class CStringMapper
 {
 	struct CStringRef
-		{
+	{
 		const std::string		*String;
 
 		CStringRef(const std::string *str)
@@ -131,9 +147,14 @@ class CStringMapper
 		{
 			return *String == *(other.String);
 		}
+
+		bool operator < (const CStringRef &other) const
+		{
+			return *String < *(other.String);
+		}
 	};
 
-	struct CHashStringRef : public std::unary_function<CStringRef, size_t>
+/*	struct CHashStringRef : public std::unary_function<CStringRef, size_t>
 	{
 		size_t operator() (const CStringRef &stringRef) const
 		{
@@ -142,15 +163,16 @@ class CStringMapper
 			return hasher(*stringRef.String);
 		}
 	};
-
-	typedef std::hash_map<CStringRef, uint, CHashStringRef> TStringRefHashMap;
-
+*/
+//	typedef std::hash_map<CStringRef, uint, CHashStringRef> TStringRefHashMap;
+	typedef std::map<CStringRef, uint>				TStringRefMap;
+	
 	/// The map stringRef to id
-	TStringRefHashMap								_StringMap;
+	TStringRefMap								_StringMap;
 	/// The linear storage for reverse mapping (id to string)
 	std::vector<CStringRef>							_StringTable;
 
-#if defined(_DEBUG)
+#if defined(NL_DEBUG)
 	friend struct TStringId;
 	// a special unmaping function
 	static const std::string &unmap(uint stringId);
@@ -182,7 +204,7 @@ public:
 
 };
 
-#if defined(_DEBUG)
+#if defined(NL_DEBUG)
 TStringId::TStringId(uint stringId, CStringMapper *mapper)
 {
 	_StringId = stringId;

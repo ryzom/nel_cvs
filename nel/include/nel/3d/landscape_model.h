@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.1 2000/11/07 17:07:54 berenguier Exp $
+ * $Id: landscape_model.h,v 1.2 2000/11/10 09:57:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,12 +37,13 @@ namespace NL3D
 class	CLandscape;
 
 // ***************************************************************************
-const NLMISC::CClassId		LandscapeId=NLMISC::CClassId(0x5a573b55, 0x6b395829);
+const NLMISC::CClassId		LandscapeModelId=NLMISC::CClassId(0x5a573b55, 0x6b395829);
 
 
 // ***************************************************************************
 /**
  * The model for MOT. A landscape is not designed to move, but easier here.
+ * If you translate/rotate this model, nothing happens. Landscape cannot move.
  * See CLandscape for more information on Landscape.
  * \see CLandscape.
  */
@@ -94,7 +95,7 @@ public:
 
 
 
-} // RK3D
+} // NL3D
 
 
 #endif // NL_LANDSCAPE_MODEL_H

@@ -1,7 +1,7 @@
 /** \file bezier_patch.h
  * <File description>
  *
- * $Id: bezier_patch.h,v 1.4 2000/11/02 13:48:14 berenguier Exp $
+ * $Id: bezier_patch.h,v 1.5 2000/11/10 09:57:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/vectord.h"
+#include "nel/misc/matrix.h"
 
 
 namespace NL3D 
@@ -37,6 +38,7 @@ namespace NL3D
 
 using NLMISC::CVector;
 using NLMISC::CVectorD;
+using NLMISC::CMatrix;
 
 
 // ***************************************************************************
@@ -83,6 +85,8 @@ public:
 	void		make(CVector vertices[4], CVector	normals[4]);
 	/// make default Interiors, according to Vertices and Tangents.
 	void		makeInteriors();
+	/// Do the matrix transformation m*patch.
+	void		applyMatrix(const CMatrix &m);
 
 	/// Evaluate.
 	CVector		eval(float s, float t);			// s,t coordinates for quad.

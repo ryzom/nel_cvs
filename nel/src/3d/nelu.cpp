@@ -1,7 +1,7 @@
 /** \file scene_ut.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.1 2000/11/07 17:08:19 berenguier Exp $
+ * $Id: nelu.cpp,v 1.2 2000/11/10 09:58:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,4 +82,4 @@ void			CSceneUt::release3d(CScene &scene)
 }
 
 
-} // RK3D
+} // NL3D

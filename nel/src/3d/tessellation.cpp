@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.8 2000/11/07 17:25:06 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.9 2000/11/10 09:58:04 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -143,7 +143,7 @@ void			CPatchRdrPass::buildPBlock(CPrimitiveBlock &pb)
 	sint	idx, n, blocklen;
 
 	pb.setNumTri(NTris);
-	uint32	*pi= (uint32	*)pb.getTriPointer();
+	uint32	*pi= pb.getTriPointer();
 
 	// Run the list of block.
 	n= NTris;
@@ -195,17 +195,21 @@ CTileMaterial::CTileMaterial()
 // ***************************************************************************
 sint		CTessFace::CurrentDate=0;
 CVector		CTessFace::RefineCenter= CVector::Null;
-float		CTessFace::RefineThreshold= 0.5;
+float		CTessFace::RefineThreshold= 0.005f;
 float		CTessFace::OORefineThreshold= 1.0f / CTessFace::RefineThreshold;
 
 float		CTessFace::FatherStartComputeLimit= 1.1f;
-float		CTessFace::SelfEndComputeMin= 0.9f;
 float		CTessFace::ChildrenStartComputeLimit= 1.9f;
-float		CTessFace::SelfEndComputeMax= 2.1f;
+float		CTessFace::SelfEndCompute= 2.1f;
 
+float		CTessFace::TileDistEndGeom= 40;
 float		CTessFace::TileDistNear= 50;
-float		CTessFace::TileDistFar= 75;
-float		CTessFace::OOTileDistDelta= 1.0f / (CTessFace::TileDistFar - CTessFace::TileDistNear);
+float		CTessFace::TileDistFar= 90;
+float		CTessFace::TileDistEndGeomSqr= sqr(CTessFace::TileDistEndGeom);
+float		CTessFace::TileDistNearSqr= sqr(CTessFace::TileDistNear);
+float		CTessFace::TileDistFarSqr= sqr(CTessFace::TileDistFar);
+float		CTessFace::OOTileDistDeltaGeomSqr= 1.0f / (CTessFace::TileDistNearSqr - CTessFace::TileDistEndGeomSqr);
+float		CTessFace::OOTileDistDeltaSqr= 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
 sint		CTessFace::TileMaxSubdivision=4;
 
 float		CTessFace::Far0Dist= 200;		// 200m.
@@ -321,30 +325,60 @@ float		CTessFace::updateErrorMetric()
 	*/
 
 
+	// TileMode Impact.
+	//-----------------
 	if(Patch->Zone->ComputeTileErrorMetric)
 	{
 		// TileMode Impact. We must split at least at TileLimitLevel.
-		if(Level<Patch->TileLimitLevel && sqrdist< sqr(TileDistFar))
+		if(Level<Patch->TileLimitLevel)
 		{
-			// General formula for Level, function of Size, treshold etc...:
-			// Level= log2(BaseSize / sqrdist / threshold);
-			// <=> Level= log2( CurSize*2^CurLevel / sqrdist / threshold).
-			// <=> Level= log2( ProjectedSize* 2^CurLevel / threshold).
-			float	limit;
-			limit= (1<<Patch->TileLimitLevel) * RefineThreshold * (OO32768*(32768>>Level));
-			nlassert(Level<14);
-			// UnOptimised formula: limit= (1<<TileLimitLevel) * RefineThreshold / (1<<Level);
-			// If we are not so subdivided.
-			if(ProjectedSize<limit)
+			// We msut take a more correct errometric here: We must have sons face which have
+			// lower projectedsize than father. This is not the case if Center of face is taken (but when not in
+			// tile mode this is nearly the case). So take the min dist from 3 points.
+			float	s0= (VBase->EndPos-RefineCenter).sqrnorm();
+			float	s1= (VLeft->EndPos-RefineCenter).sqrnorm();
+			float	s2= (VRight->EndPos-RefineCenter).sqrnorm();
+			sqrdist= minof(s0, s1, s2);
+			// It is also VERY important to take the min of 3, to ensure the split in TileMode when Far1 vertex begin
+			// to blend (si Patch::renderFar1() render).
+
+			if(sqrdist< TileDistFarSqr)
 			{
-				if(sqrdist< sqr(TileDistNear))
-						ProjectedSize=limit;
-				else
+				// General formula for Level, function of Size, treshold etc...:
+				// Level= log2(BaseSize / sqrdist / threshold);
+				// <=> Level= log2( CurSize*2^CurLevel / sqrdist / threshold).
+				// <=> Level= log2( ProjectedSize* 2^CurLevel / threshold).
+				float	endgeomLimit;
+				// UnOptimised formula: limit= (1<<Patch->TileLimitLevel) * RefineThreshold / (1<<Level);
+				endgeomLimit= (1<<Patch->TileLimitLevel) * RefineThreshold * (OO32768*(32768>>Level));
+				nlassert(Level<14);
+				// If we are not so subdivided.
+				if(ProjectedSize<endgeomLimit)
 				{
-					// Smooth transition of tesselation.
-					float	a= (float)sqrt(sqrdist);
-					float	f= (a- TileDistNear) * OOTileDistDelta;
-					ProjectedSize= limit*(1-f) + ProjectedSize*f;
+					// To have a better smooth transition, it is only necessary to have the tile splitted, 
+					// not the tile fully geomorphed. => *=0.51 to ensure the split (not 0.5 for precision problem).
+					float	nearLimit= endgeomLimit*0.51f;
+					// But, AFTER the tile transition is made, since we are splitted, it is interressant to geomorph.
+					if(sqrdist< TileDistEndGeomSqr)
+					{
+						ProjectedSize=endgeomLimit;
+					}
+					else if( sqrdist< TileDistNearSqr)
+					{
+						// Do the geomorpgh beetween TileDistNearSqr and TileDistEndGeomSqr.
+						float	f= (sqrdist- TileDistEndGeomSqr) * OOTileDistDeltaGeomSqr;
+						float	ps= endgeomLimit*(1-f) + nearLimit*f;
+						ProjectedSize= max(ps, ProjectedSize);
+					}
+					else
+					{
+						// Smooth transition to the nearLimit of tesselation.
+						float	f= (sqrdist- TileDistNearSqr) * OOTileDistDeltaSqr;
+						// This gives better result, by smoothing more the start of transition.
+						f= sqr((1-f));
+						f= sqr(f);
+						ProjectedSize= nearLimit*f + ProjectedSize*(1-f);
+					}
 				}
 			}
 		}
@@ -376,7 +410,7 @@ void		CTessFace::computeTileMaterial()
 
 		C must be created, but A and B may be created or copied from neighbor.
 	*/
-	CParamCoord	middle= (PVLeft+PVRight).shifted();
+	CParamCoord	middle(PVLeft,PVRight);
 	sint ts= ((sint)middle.S * (sint)Patch->OrderS) / 0x8000;
 	sint tt= ((sint)middle.T * (sint)Patch->OrderT) / 0x8000;
 	TileId= tt*Patch->OrderS + ts;
@@ -418,8 +452,8 @@ void		CTessFace::computeTileMaterial()
 	TileUvBase= allocTileUv(TileMaterial->TileUvFmt);
 	// TODO_TEXTURE: work with Patch, to create the good texcoordinates.
 	// for test only here....
-	((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.U= PVLeft.S<=middle.S? 0.0f: 1.0f;
-	((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.V= PVLeft.T<=middle.T? 0.0f: 1.0f;
+	((CTileUvNormal1*)TileUvBase)->UvPasses[0].PUv0.U= PVBase.S<=middle.S? 0.0f: 1.0f;
+	((CTileUvNormal1*)TileUvBase)->UvPasses[0].PUv0.V= PVBase.T<=middle.T? 0.0f: 1.0f;
 
 	// if base neighbor is already at TileLimitLevel just ptr-copy, else create the left/right TileUvs...
 	nlassert(!FBase || FBase->Level<=Patch->TileLimitLevel);
@@ -508,7 +542,7 @@ void		CTessFace::split()
 	SonLeft->VRight= VLeft;
 	// Patch management.
 	SonLeft->Patch= Patch;
-	SonLeft->PVBase= (PVLeft+PVRight).shifted();
+	SonLeft->PVBase= CParamCoord(PVLeft, PVRight);
 	SonLeft->PVLeft= PVBase;
 	SonLeft->PVRight= PVLeft;
 
@@ -527,7 +561,7 @@ void		CTessFace::split()
 	SonRight->VRight= VBase;
 	// Patch management.
 	SonRight->Patch= Patch;
-	SonRight->PVBase= (PVLeft+PVRight).shifted();
+	SonRight->PVBase= CParamCoord(PVLeft, PVRight);
 	SonRight->PVLeft= PVRight;
 	SonRight->PVRight= PVBase;
 
@@ -755,6 +789,13 @@ void		CTessFace::refine()
 		if(ps>RefineThreshold*2), the face is fully splitted/geomoprhed (tests reported on sons...).
 	*/
 
+	// In Tile/Far Transition zone, force the needCompute.
+	if(Patch->Zone->ComputeTileErrorMetric && Level<Patch->TileLimitLevel)
+	{
+		NeedCompute= true;
+	}
+
+
 	if(NeedCompute)
 	{
 		float	ps=updateErrorMetric();
@@ -816,15 +857,10 @@ void		CTessFace::refine()
 
 		// 2. Update NeedCompute.
 		//-----------------------
-		// If near a merge()/split(), parents and children should compute themselves.
-		if(Father && ps<FatherStartComputeLimit)		// 1.1
+		// If below a merge(), I may not need to compute.
+		if(Father && isLeaf() && ps<ChildrenStartComputeLimit/2)	// 1.9/2
 		{
-			// The father may merge soon.
-			Father->NeedCompute= true;
-
-			// Should I compute myself again??
-			if(ps<SelfEndComputeMin)					// 0.9
-				NeedCompute= false;
+			NeedCompute= false;
 		}
 		if(!isLeaf() && ps>ChildrenStartComputeLimit)	// 1.9
 		{
@@ -832,10 +868,13 @@ void		CTessFace::refine()
 			SonLeft->NeedCompute= true;
 			SonRight->NeedCompute= true;
 
-			// Should I compute myself again?? 
-			// (after geomorph ended).
-			if(ps>SelfEndComputeMax)					// 2.1
-				NeedCompute= false;
+		}
+		// If grandfather (may arise in enforced splits problem..., especially near tile subdivision).
+		if(!isLeaf() && (!SonLeft->isLeaf() || !SonRight->isLeaf()))
+		{
+			// The sons must test if they have to merge.
+			SonLeft->NeedCompute= true;
+			SonRight->NeedCompute= true;
 		}
 	}
 	if(SonLeft)
@@ -845,8 +884,8 @@ void		CTessFace::refine()
 	}
 
 
-	// Unstable case: the child tell to his father "NeedCompute=true", but the father previously said "NeedCompute=false".
-	// It is a normal case, at the next father->refine(), he will compute himslef.
+	// Unstable case: the child say "NeedCompute=false", but his father say "child->NeedCompute=true".
+	// OK: At the next refine, the child will be processed again...
 }
 
 

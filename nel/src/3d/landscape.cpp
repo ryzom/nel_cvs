@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.4 2000/11/07 17:08:07 berenguier Exp $
+ * $Id: landscape.cpp,v 1.5 2000/11/10 09:58:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,9 +81,14 @@ void			CLandscape::init(bool bumpTiles)
 	TileText->fillData(image);
 
 	// Fill mat and rdr pass.
+	// Must init their BlendFunction here!!! becaus they switch between blend on/off during rendering.
 	FarMat.initUnlit();
+	FarMat.setSrcBlend(CMaterial::srcalpha);
+	FarMat.setDstBlend(CMaterial::invsrcalpha);
 	FarMat.setTexture(FarText);
 	TileMat.initUnlit();
+	TileMat.setSrcBlend(CMaterial::srcalpha);
+	TileMat.setDstBlend(CMaterial::invsrcalpha);
 	TileMat.setTexture(TileText);
 	FarRdrPass.Mat= &FarMat;
 	TileRdrPass.Mat= &TileMat;
@@ -196,6 +201,10 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 		TileRdrPass.buildPBlock(PBlock);
 		// must resetTriList at each end of each material process.
 		TileRdrPass.resetTriList();
+		if(i==0)
+			TileRdrPass.Mat->setBlend(false);
+		else
+			TileRdrPass.Mat->setBlend(true);
 		driver->render(PBlock, *TileRdrPass.Mat);
 	}
 
@@ -222,6 +231,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 	FarRdrPass.buildPBlock(PBlock);
 	// must resetTriList at each end of each material process.
 	FarRdrPass.resetTriList();
+	FarRdrPass.Mat->setBlend(false);
 	driver->render(PBlock, *FarRdrPass.Mat);
 
 
@@ -247,6 +257,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 	FarRdrPass.buildPBlock(PBlock);
 	// must resetTriList at each end of each material process.
 	FarRdrPass.resetTriList();
+	FarRdrPass.Mat->setBlend(true);
 	driver->render(PBlock, *FarRdrPass.Mat);
 
 
@@ -254,4 +265,4 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 
 
 
-} // RK3D
+} // NL3D

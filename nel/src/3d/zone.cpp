@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.5 2000/11/06 15:04:03 berenguier Exp $
+ * $Id: zone.cpp,v 1.6 2000/11/10 09:58:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -497,6 +497,13 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 		ComputeTileErrorMetric= true;
 	else
 		ComputeTileErrorMetric= false;
+
+	// Easy Clip  :)
+	if(Patchs.size()==0)
+	{
+		ClipResult= ClipOut;
+	}
+
 }
 // ***************************************************************************
 void			CZone::refine()
@@ -505,6 +512,9 @@ void			CZone::refine()
 
 	// Force refine of invisible zones only every 8 times.
 	if(ClipResult==ClipOut && (CTessFace::CurrentDate&7)!=(ZoneId&7))
+		return;
+	// Fuck stlport....
+	if(Patchs.size()==0)
 		return;
 
 	// Else refine ALL patchs (even those which may be invisible).
@@ -591,4 +601,4 @@ void			CZone::renderTile(sint pass)
 
 
 
-} // RK3D
+} // NL3D

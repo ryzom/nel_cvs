@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.8 2000/11/09 17:57:49 viau Exp $
+ * $Id: driver_opengl.cpp,v 1.9 2000/11/10 09:56:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,7 +200,7 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 	glEnable(GL_DITHER);
 	glDisable(GL_FOG);
 	glDisable(GL_LIGHTING);
-	glEnable(GL_LINE_SMOOTH);
+	glDisable(GL_LINE_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
@@ -318,7 +318,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 	glEnable(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_FLOAT,VB.getVertexSize(),VB.getVertexCoordPointer());
 
-	flags=VB.getFlags();
+	flags=VB.getVertexFormat();
 
 	if (flags & IDRV_VF_RGBA)
 	{
@@ -355,6 +355,7 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 	{
 		return(false);
 	}
+
 	glDrawElements(GL_TRIANGLES,3*PB.getNumTri(),GL_UNSIGNED_INT,PB.getTriPointer());
 	return(true);
 }

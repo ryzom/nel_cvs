@@ -1,7 +1,7 @@
 /** \file bsphere.cpp
  * <File description>
  *
- * $Id: bsphere.cpp,v 1.2 2000/11/03 18:07:15 berenguier Exp $
+ * $Id: bsphere.cpp,v 1.3 2000/11/10 09:58:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,4 +101,4 @@ bool	CBSphere::intersect(const CBSphere &s) const
 }
 
 
-} // RK3D
+} // NL3D

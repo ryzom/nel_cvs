@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.1 2000/11/07 17:08:19 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.2 2000/11/10 09:58:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,9 +38,9 @@ namespace NL3D
 // ***************************************************************************
 void	CLandscapeModel::registerBasic()
 {
-	CMOT::registerModel(LandscapeId, TransformId, CLandscapeModel::creator);
-	CMOT::registerObs(ClipTravId, LandscapeId, CLandscapeClipObs::creator);
-	CMOT::registerObs(RenderTravId, LandscapeId, CLandscapeRenderObs::creator);
+	CMOT::registerModel(LandscapeModelId, TransformId, CLandscapeModel::creator);
+	CMOT::registerObs(ClipTravId, LandscapeModelId, CLandscapeClipObs::creator);
+	CMOT::registerObs(RenderTravId, LandscapeModelId, CLandscapeRenderObs::creator);
 }
 
 // ***************************************************************************
@@ -69,6 +69,10 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 	{
 		CRenderTrav		*trav= (CRenderTrav*)Trav;
 
+		CMatrix		m;
+		m.identity();
+		trav->getDriver()->setupModelMatrix(m);
+
 		// First, refine.
 		landModel->Landscape->refine(trav->CamPos);
 		// then render.
@@ -78,4 +82,4 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 
 
 
-} // RK3D
+} // NL3D

@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.4 2000/11/06 15:03:39 berenguier Exp $
+ * $Id: zone.h,v 1.5 2000/11/10 09:57:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,18 +44,6 @@ class CZone;
 class CLandscape;
 
 
-/*
-TODO: à mettre dans zone.h ou dans landscape.h
-
-	Limitations:
-		- 65535	zones maxi dans le monde entier (ZoneId sur 16 bits).
-		- 65535 patchs maxi par zone.
-		- patch d'ordre 2x2 minimum.
-		- patch d'ordre 16x16 maximum.
-		- conectivité sur un edge à 1, 2, ou 4 patchs.
-		- la valeur globale du noise est globale, et ne peut pas dépasser 10 mètres.
-
-*/
 #define	NL3D_NOISE_MAX	10
 
 // ***************************************************************************
@@ -122,6 +110,7 @@ public:
 
 	public:
 		void			serial(NLMISC::IStream &f);
+		CBindInfo() {NPatchs=0;}
 	};
 
 	
@@ -337,7 +326,7 @@ private:
 };
 
 
-} // RK3D
+} // NL3D
 
 
 #endif // NL_ZONE_H

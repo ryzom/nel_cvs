@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.2 2000/11/07 17:08:07 berenguier Exp $
+ * $Id: dru.cpp,v 1.3 2000/11/10 09:58:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,4 +54,4 @@ IDriver		*CDRU::createGlDriver()
 }
 
 
-} // RK3D
+} // NL3D

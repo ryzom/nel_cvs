@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.8 2000/11/06 15:03:39 berenguier Exp $
+ * $Id: patch.h,v 1.9 2000/11/10 09:57:34 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -59,10 +59,12 @@ public:
 	void	pack(const CVector &v, const CVector &bias, float scale)
 	{
 		float	xr,yr,zr;
-		xr= (v.x/scale - bias.x);
-		yr= (v.y/scale - bias.y);
-		zr= (v.z/scale - bias.z);
+		xr= (v.x - bias.x)/scale;
+		yr= (v.y - bias.y)/scale;
+		zr= (v.z - bias.z)/scale;
 		NLMISC::clamp(xr, -32768, 32767);
+		NLMISC::clamp(yr, -32768, 32767);
+		NLMISC::clamp(zr, -32768, 32767);
 		x= (sint16)xr;
 		y= (sint16)yr;
 		z= (sint16)zr;
@@ -259,7 +261,7 @@ private:
 	void			changeEdgeNeighbor(sint edge, CTessFace *to);
 
 	// Texture mgt.
-	CPatchRdrPass	*getFarRenderPass(sint FarLevel, float &FarUVScale, float &FarUBias, float &FarVBias);
+	CPatchRdrPass	*getFarRenderPass(sint farLevel, float &farUVScale, float &farUBias, float &farVBias);
 	// For CTessFace::computeMaterial(). Return the render pass for this material, given the number of the tile, and the
 	// desired pass. NULL may be returned if the pass is not present (eg: no alpha for this tile...).
 	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass);

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.8 2000/11/07 17:25:23 berenguier Exp $
+ * $Id: tessellation.h,v 1.9 2000/11/10 09:57:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -317,9 +317,12 @@ public:
 	public:
 		CParamCoord() {}
 		CParamCoord(uint16 s, uint16 t) {S=s; T=t;}
-		CParamCoord	operator+(const CParamCoord &v) const	{return CParamCoord(S+v.S, T+v.T);}
-		CParamCoord	operator-(const CParamCoord &v) const	{return CParamCoord(S-v.S, T-v.T);}
-		CParamCoord	shifted() const	{return CParamCoord(S>>1, T>>1);}
+		// Create at middle.
+		CParamCoord(CParamCoord a, CParamCoord b) 
+		{
+			S= (uint16) (((sint)a.S + (sint)b.S)>>1);
+			T= (uint16) (((sint)a.T + (sint)b.T)>>1);
+		}
 		// Get s,t as floats. returned s,t E [0,1].
 		float	getS() const {return S*OO32768;}
 		float	getT() const {return T*OO32768;}
@@ -427,16 +430,19 @@ public:
 	static	float	RefineThreshold;
 	// Guess.
 	static	float	OORefineThreshold;
-	// Limits for merge/split propagation. See refine(). Defaults:  1.1, 0.9,  1.9, 2.1.
-	static	float	FatherStartComputeLimit, SelfEndComputeMin;
-	static	float	ChildrenStartComputeLimit, SelfEndComputeMax;
+	// Limits for merge/split propagation. See refine(). Defaults:  1.1, 1.9, 2.1.
+	static	float	FatherStartComputeLimit;
+	static	float	ChildrenStartComputeLimit;
+	static	float	SelfEndCompute;
 
 
 	// Tile Global Info.
 	// What are the limit distances for Tile tesselation transition.
-	static	float	TileDistNear, TileDistFar;
-	// Must be set as   1.0f/(CTessFace::TileDistFar - CTessFace::TileDistNear);
-	static	float	OOTileDistDelta;
+	static	float	TileDistEndGeom, TileDistNear, TileDistFar;
+	// System, computed from prec.
+	static	float	TileDistEndGeomSqr , TileDistNearSqr, TileDistFarSqr;
+	// System, computed from prec.
+	static	float	OOTileDistDeltaGeomSqr, OOTileDistDeltaSqr;
 	// The tiles are not subdivided above this limit (but because of enforced splits). Default: 4 => 50cm.
 	static	sint	TileMaxSubdivision;
 

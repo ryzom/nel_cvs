@@ -1,7 +1,7 @@
 /** \file bezier_patch.cpp
  * <File description>
  *
- * $Id: bezier_patch.cpp,v 1.3 2000/11/02 13:48:50 berenguier Exp $
+ * $Id: bezier_patch.cpp,v 1.4 2000/11/10 09:58:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,19 @@ void		CBezierPatch::makeInteriors()
 	Interiors[2] = Tangents[3] + Tangents[4] - c;
 	Interiors[3] = Tangents[5] + Tangents[6] - d;
 }
+// ***************************************************************************
+void		CBezierPatch::applyMatrix(const CMatrix &m)
+{
+	sint	i;
+
+	for(i=0;i<4;i++)
+		Vertices[i]= m*Vertices[i];
+	for(i=0;i<8;i++)
+		Tangents[i]= m*Tangents[i];
+	for(i=0;i<4;i++)
+		Interiors[i]= m*Interiors[i];
+}
+
 
 // ***************************************************************************
 CVector		CBezierPatch::eval(float ps, float pt)

@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.2 2000/11/03 18:06:54 berenguier Exp $
+ * $Id: aabbox.h,v 1.3 2000/11/10 09:57:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,7 +174,7 @@ public:
 };
 
 
-} // RK3D
+} // NL3D
 
 
 #endif // NL_AABBOX_H

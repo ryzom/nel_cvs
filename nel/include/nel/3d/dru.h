@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.2 2000/11/07 17:07:42 berenguier Exp $
+ * $Id: dru.h,v 1.3 2000/11/10 09:57:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ public:
 
 
 
-} // RK3D
+} // NL3D
 
 
 #endif // NL_DRU_H

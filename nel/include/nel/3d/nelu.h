@@ -1,7 +1,7 @@
 /** \file scene_ut.h
  * <File description>
  *
- * $Id: nelu.h,v 1.1 2000/11/07 17:07:54 berenguier Exp $
+ * $Id: nelu.h,v 1.2 2000/11/10 09:57:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ private:
 };
 
 
-} // RK3D
+} // NL3D
 
 
 #endif // NL_SCENE_UT_H

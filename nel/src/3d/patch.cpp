@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.7 2000/11/06 15:04:03 berenguier Exp $
+ * $Id: patch.cpp,v 1.8 2000/11/10 09:58:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,9 +54,9 @@ CPatch::CPatch()
 	Son1=NULL;
 	Clipped=false;
 
-	// To froce computation on next render().
-	Far0= 0;
-	Far1= 0;
+	// To force computation on next render().
+	Far0= -1;
+	Far1= -1;
 }
 // ***************************************************************************
 CPatch::~CPatch()
@@ -83,8 +83,8 @@ void			CPatch::release()
 	Clipped=false;
 
 	// To force computation on next render().
-	Far0= 0;
-	Far1= 0;
+	Far0= -1;
+	Far1= -1;
 }
 
 
@@ -222,13 +222,14 @@ void			CPatch::makeRoots()
 // ***************************************************************************
 void			CPatch::compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVertices[4], float errorSize)
 {
+	nlassert(z);
+	Zone= z;
+
 	if(errorSize==0)
 		computeDefaultErrorSize();
 	else
 		ErrorSize= errorSize;
 
-	nlassert(z);
-	Zone= z;
 	nlassert(orderS==2 || orderS==4 || orderS==8 || orderS==16);
 	nlassert(orderT==2 || orderT==4 || orderT==8 || orderT==16);
 	OrderS= orderS;
@@ -300,10 +301,14 @@ sint			CPatch::resetTileIndices(CTessFace *pFace)
 	sint	ret=0;
 	for(;pFace; pFace=pFace->RenderNext)
 	{
-		pFace->TileUvBase->TileIndex= 0;
-		pFace->TileUvLeft->TileIndex= 0;
-		pFace->TileUvRight->TileIndex= 0;
-		ret++;
+		// If tile level reached for this face.
+		if(pFace->TileMaterial)
+		{
+			pFace->TileUvBase->TileIndex= 0;
+			pFace->TileUvLeft->TileIndex= 0;
+			pFace->TileUvRight->TileIndex= 0;
+			ret++;
+		}
 	}
 
 	return ret;
@@ -486,7 +491,7 @@ void			CPatch::renderFar0()
 	{
 		sint	nTris= resetFarIndices(RdrRoot);
 		// Realloc if necessary the VertexBuffer.
-		if(CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
+		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
 			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*nTris);
 		// Add tris.
 		CTessFace	*pFace= RdrRoot;
@@ -507,7 +512,7 @@ void			CPatch::renderFar1()
 	{
 		sint	nTris= resetFarIndices(RdrRoot);
 		// Realloc if necessary the VertexBuffer.
-		if(CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
+		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
 			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*nTris);
 		// Add tris.
 		CTessFace	*pFace= RdrRoot;
@@ -527,7 +532,7 @@ void			CPatch::renderTile(sint pass)
 	{
 		sint	nTris= resetTileIndices(RdrRoot);
 		// Realloc if necessary the VertexBuffer (at max possible).
-		if(CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
+		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
 			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*nTris);
 		// Add tris.
 		CTessFace	*pFace= RdrRoot;
@@ -563,6 +568,8 @@ void			CPatch::unbind()
 	nlassert(Son0->isLeaf() && Son1->isLeaf());
 	delete	Son0;
 	delete	Son1;
+	Son0= NULL;
+	Son1= NULL;
 
 	// re-build Sons.
 	makeRoots();
@@ -652,13 +659,13 @@ void			CPatch::serial(NLMISC::IStream &f)
 
 
 // ***************************************************************************
-CPatchRdrPass	*CPatch::getFarRenderPass(sint FarLevel, float &FarUVScale, float &FarUBias, float &FarVBias)
+CPatchRdrPass	*CPatch::getFarRenderPass(sint farLevel, float &farUVScale, float &farUBias, float &farVBias)
 {
 	// TODO_TEXTURE.
 	// dummy texture.
-	Far0UVScale= 1;
-	Far0UBias= 0;
-	Far0VBias= 0;
+	farUBias= 0;
+	farVBias= 0;
+	farUVScale= 1.0f/farLevel;
 	return Zone->Landscape->getFarRenderPass();
 }
 

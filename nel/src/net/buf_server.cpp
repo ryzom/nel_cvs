@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.20 2001/09/12 16:55:23 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.21 2001/10/16 09:24:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -902,12 +902,14 @@ void CServerReceiveTask::run()
 			/// \todo cado: the error code is not properly retrieved
 			case -1 :
 				// we'll ignore message (Interrupted system call) caused by a CTRL-C
-				if (CSock::getLastError() == 4)
+				/*if (CSock::getLastError() == 4)
 				{
 					nldebug ("L1: Select failed (in receive thread): %s (code %u) but IGNORED", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError());
 					continue;
-				}
-				nlerror( "L1: Select failed (in receive thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
+				}*/
+				//nlerror( "L1: Select failed (in receive thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
+				nldebug( "L1: Select failed (in receive thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
+				return;
 		}
 
 		// 4. Get results

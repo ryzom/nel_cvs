@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.10 2001/12/20 14:48:42 chafik Exp $
+ * $Id: entity_id.h,v 1.11 2002/01/07 13:45:27 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,34 +104,33 @@ struct CEntityId
 
 	CEntityId(const char *str)
 	{
-		char *ident;
+		char *ident = (char*)str;
 		char *id;
 		char *type;
 		char *creator;
 		char *dyn;
-		sint countdDec = 0;
-		
+		id = ident;
 		uint base = 10;
 
-		if (str == NULL)
-			return;
-
-		if(strlen(str) >= 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+//Sameh si le nombre est en hexa alors mettre la base à 16.
+		if(str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
 		{
 			base = 16;
-			countdDec = 2;
+			str+=2;
 		}
-		ident = (char *)&str[countdDec];
-		id = (char *)&str[countdDec];
+
+		ident = (char*)str;
+		id = ident;
 
 		sint n = 0;
-		while(*(ident++) != ':') ;
+		while(*(ident++) != ':');		
 		type = ident;
-		while(*(ident++) != ':') ;
+		while(*(ident++) != ':');		
 		creator = ident;
-		while(*(ident++) != ':') ;
+		while(*(ident++) != ':');		
 		dyn = ident;	
 
+//Sameh conversion en fonction de la base.
 		DynamicId = atoiInt64(dyn, base);
 		CreatorId = atoiInt64(creator, base);
 		Type = atoiInt64(type, base);
@@ -289,7 +288,8 @@ struct CEntityId
 			b[19 - n] = baseTable[(x & 15)];
 			x >>= 4;
 		}
-		str += std::string(b);
+//Sameh Pour être sûre que les nombre sont en hexa.
+		str += "0x" + std::string(b);
 	}
 
 	/// \name NLMISC::IStreamable method.

@@ -1,7 +1,7 @@
 /** \file vertex_program.h
  * Vertex program definition
  *
- * $Id: vertex_program.h,v 1.2 2001/10/08 15:01:15 corvazier Exp $
+ * $Id: vertex_program.h,v 1.3 2002/09/24 15:03:31 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -78,6 +78,12 @@ public:
  *   - "o[HPOS]" must be changed in oPos etc..
  *   - Semicolon must be changed in line return character.
  *   - ARL instruction must be changed in MOV.
+ *
+ * Behaviour of LOG may change depending on implementation: You can only expect to have dest.z = log2(abs(src.w)).
+ * LIT may or may not clamp the specular exponent to [-128, 128] (not done when EXT_vertex_shader is used for example ..) 
+ *
+ * Depending on the implementation, some optimizations can be achieved by masking the unused output values of instructions
+ * as LIT, EXPP ..
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France

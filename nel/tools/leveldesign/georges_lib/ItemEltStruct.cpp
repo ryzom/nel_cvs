@@ -7,6 +7,7 @@
 #include "ItemEltList.h"
 #include "ItemEltStruct.h"
 #include "MoldEltDefine.h"
+#include "MoldEltDefineList.h"
 #include "FormBodyElt.h"
 #include "FormBodyEltStruct.h"
 
@@ -35,7 +36,10 @@ void CItemEltStruct::Clear()
 
 void CItemEltStruct::BuildItem( CMoldElt* const _pme )
 {
-	pmed = dynamic_cast< CMoldEltDefine* >( _pme );      
+	if( _pme->IsList() )
+		pmed = dynamic_cast< CMoldEltDefineList* >( _pme );      
+	else
+		pmed = dynamic_cast< CMoldEltDefine* >( _pme );      
 	nlassert( pmed );
 
 	int i = 0;

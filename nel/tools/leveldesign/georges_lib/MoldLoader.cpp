@@ -7,6 +7,9 @@
 #include "MoldElt.h"
 #include "MoldEltDefine.h"
 #include "MoldEltType.h"
+#include "MoldEltDefineList.h"
+#include "MoldEltTypeList.h"
+#include "Loader.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -18,6 +21,16 @@ CMoldLoader::CMoldLoader()
 
 CMoldLoader::~CMoldLoader()
 {
+	Clear();
+}
+
+void CMoldLoader::Clear()
+{
+	for( std::vector< CMoldElt* >::iterator it = vpme.begin(); it != vpme.end(); ++it )
+		if( *it )
+			delete( *it );
+	vpme.clear();
+	mmold.clear();
 }
 
 void CMoldLoader::SetLoader( CLoader* const _pl )
@@ -32,7 +45,7 @@ CMoldElt* CMoldLoader::LoadMold( const CStringEx _sxfilename )
 	sxfn.purge();
 	if( sxfn.empty() )
 		return( 0 );											
-	
+
 	// liste?
 	bool blst = ( sxfn.find( "list<" ) != -1 );
 	if( blst )
@@ -42,35 +55,74 @@ CMoldElt* CMoldLoader::LoadMold( const CStringEx _sxfilename )
 			return( 0 );											
 		sxfn.mid( 5, ipos-5 ); 
 	}
-	
-	// find file extension
+
+	// find extension
 	int ipos = sxfn.reverse_find('.');
 	if( ipos < 0 )
 		return( 0 );											
 	CStringEx sxfileextension = sxfn.get_right( sxfn.length()-ipos-1 );
 
-	// define?
+	// find if loaded
+	CMoldElt* pme;
+	CStringEx sxfullname = pl->WhereIsDfnTyp( sxfn );
+	sxfullname.make_lower();
+	std::map< CStringEx, CMoldElt* >::iterator it = mmold.find( sxfullname );
+	if( it != mmold.end() )
+		if( blst )
+		{
+			if( sxfileextension == "dfn" )
+				pme = new CMoldEltDefineList( pl, dynamic_cast< CMoldEltDefine* >( it->second ) );
+			else if( sxfileextension == "typ" )
+					pme = new CMoldEltTypeList( pl, dynamic_cast< CMoldEltType* >( it->second ) );
+				else
+					return 0;
+			pme->SetName( it->second->GetName() );
+			vpme.push_back( pme );			
+			return( pme );
+		}
+		else
+			return( it->second );
+
+	// load
 	if( sxfileextension == "dfn" )
 	{
-		CMoldEltDefine* pmed = new CMoldEltDefine( pl );
-		pmed->SetList( blst );
-		pmed->Load( sxfn );
-		return( pmed );
+		pme = new CMoldEltDefine( pl );
+		vpme.push_back( pme );			
+		if( blst )
+		{
+			pme = new CMoldEltDefineList( pl, dynamic_cast< CMoldEltDefine* >( pme ) );
+			vpme.push_back( pme );			
+		}
 	}
+	else if( sxfileextension == "typ" )
+		{
+			pme = new CMoldEltType( pl );
+			vpme.push_back( pme );			
+			if( blst )
+			{
+				pme = new CMoldEltTypeList( pl, dynamic_cast< CMoldEltType* >( pme ) );
+				vpme.push_back( pme );			
+			}
+		}
+	else 
+		return( 0 );
 
-	// typ?
-	if( sxfileextension == "typ" )
-	{
-		CMoldEltType* pmet = new CMoldEltType( pl );
-		pmet->SetList( blst );
-		pmet->Load( sxfn );
-		return( pmet );
-	}
-	
-	return( 0 );
+	pme->SetName( sxfn );
+	pme->Load( sxfullname );
+	mmold.insert( std::make_pair( sxfullname, pme->GetMold() ) );
+	return( pme );
 }
 
 CMoldElt* CMoldLoader::LoadMold( const CStringEx _sxfilename, const CStringEx _sxdate )
 {
-	return( new CMoldElt( 0 ) );
+	return( 0 );
 }
+/*
+CMoldElt* CMoldLoader::Find( const CStringEx _sxfullname )
+{
+	std::map< CStringEx, CMoldElt* >::iterator it = mmold.find( _sxfullname );
+	if( it != mmold.end() )
+		return( it->second );
+	return( 0 );
+}
+*/

@@ -30,13 +30,10 @@ CStringEx CTypeUnitDouble::FormatDouble( const double dvalue ) const
 	if( dvalue == 0 )
 		return( CStringEx( "0.0" ));
 
-	buffer = _fcvt( dvalue, 3, &decimal, &sign );
+	buffer = _fcvt( dvalue, 5, &decimal, &sign );
 	CStringEx sx( buffer );
-	if( decimal < 0 )
-	{
-		sx += CStringEx(".0");
-		return sx;
-	}
+	if( decimal <= 0 )
+		sx = CStringEx( "0." ) +CStringEx( '0', -decimal ) +sx;
 	else
 		sx.insert(decimal,".");
 
@@ -72,3 +69,22 @@ CStringEx CTypeUnitDouble::CalculateResult( const CStringEx _sxbasevalue, const 
 		return( _sxbasevalue );
 	return( Format( _sxvalue ) );
 }
+
+void CTypeUnitDouble::SetDefaultValue( const CStringEx _sxdv )
+{
+	sxdefaultvalue = _sxdv;
+	ddefaultvalue = atof( sxdefaultvalue.c_str() ); 
+}
+
+void CTypeUnitDouble::SetLowLimit( const CStringEx _sxll )
+{
+	sxlowlimit = _sxll;
+	dlowlimit = atof( sxlowlimit.c_str() ); 
+}
+
+void CTypeUnitDouble::SetHighLimit( const CStringEx _sxhl )
+{
+	sxhighlimit = _sxhl;
+	dhighlimit = atof( sxhighlimit.c_str() ); 
+}
+

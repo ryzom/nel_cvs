@@ -17,10 +17,9 @@ static char THIS_FILE[]=__FILE__;
 
 CMoldElt::CMoldElt( CLoader* const _pl )
 {
-	nlassert( _pl );
 	pl = _pl;
-	bliste = false;
 	benum = false;
+	blist = false;
 }
 
 CMoldElt::~CMoldElt()
@@ -32,11 +31,11 @@ CStringEx CMoldElt::GetFormula()
 	return sxname;
 }
 
-void CMoldElt::Load( const CStringEx _sxfilename )
+void CMoldElt::Load( const CStringEx _sxfullname )
 {
 }
 
-void CMoldElt::Load( const CStringEx _sxfilename, const CStringEx _sxdate )
+void CMoldElt::Load( const CStringEx _sxfullname, const CStringEx _sxdate )
 {
 }
 
@@ -55,18 +54,28 @@ unsigned int CMoldElt::GetType() const
 	return( -1 );
 }
 
-void CMoldElt::SetList( const bool _b )
+CStringEx CMoldElt::GetName() const
 {
-	bliste = _b;
+	return( sxname );
 }
 
-bool CMoldElt::IsList() const
+void CMoldElt::SetName( const CStringEx& _sxname )
 {
-	return( bliste );
+	sxname = _sxname;
 }
+
 
 bool CMoldElt::IsEnum() const
 {
 	return( benum );
 }
 
+bool CMoldElt::IsList() const
+{
+	return( blist );
+}
+
+CMoldElt* CMoldElt::GetMold()
+{
+	return( this );
+}

@@ -45,3 +45,22 @@ CStringEx CTypeUnitIntUnsigned::CalculateResult( const CStringEx _sxbasevalue, c
 		return( _sxbasevalue );
 	return( Format( _sxvalue ) );
 }
+
+void CTypeUnitIntUnsigned::SetDefaultValue( const CStringEx _sxdv )
+{
+	sxdefaultvalue = _sxdv;
+	idefaultvalue = _atoi64( sxdefaultvalue.c_str() ); 
+}
+
+void CTypeUnitIntUnsigned::SetLowLimit( const CStringEx _sxll )
+{
+	sxlowlimit = _sxll;
+	ilowlimit = _atoi64( sxlowlimit.c_str() ); 
+}
+
+void CTypeUnitIntUnsigned::SetHighLimit( const CStringEx _sxhl )
+{
+	sxhighlimit = _sxhl;
+	ihighlimit = _atoi64( sxhighlimit.c_str() ); 
+}
+

@@ -32,3 +32,19 @@ CStringEx CTypeUnitFileName::CalculateResult( const CStringEx _sxbasevalue, cons
 		return( Format( _sxbasevalue ) );
 	return( Format( _sxvalue ) );
 }
+
+void CTypeUnitFileName::SetDefaultValue( const CStringEx _sxdv )
+{
+	sxdefaultvalue = _sxdv;
+}
+
+void CTypeUnitFileName::SetLowLimit( const CStringEx _sxll )
+{
+	sxlowlimit = _sxll;
+}
+
+void CTypeUnitFileName::SetHighLimit( const CStringEx _sxhl )
+{
+	sxhighlimit = _sxhl;
+}
+

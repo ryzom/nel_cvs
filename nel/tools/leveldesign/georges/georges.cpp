@@ -43,8 +43,8 @@ CGeorgesApp::CGeorgesApp()
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 	_MultiDocTemplate = NULL;
-	sxrootdirectory = "U:\\";
-	sxworkdirectory = "U:\\";
+	sxrootdirectory = "U:/";
+	sxworkdirectory = "U:/";
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -116,8 +116,7 @@ BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 	m_pMainWnd->UpdateWindow();
 
 	NLMISC::CPath::removeAllAlternativeSearchPath();
-					
-    NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
+	NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
     NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
 
 	return TRUE;
@@ -215,6 +214,23 @@ void CGeorgesApp::SaveAllDocument()
 
 void CGeorgesApp::CloseAllDocument()
 {
+}
+
+void CGeorgesApp::UpdateAllDocument()
+{
+	POSITION pos = _MultiDocTemplate->GetFirstDocPosition();
+	if( pos )
+	{
+		CDocument* pdoc = _MultiDocTemplate->GetNextDoc(pos);
+		while( pdoc )
+		{
+			CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( pdoc );
+			pgdoc->UpdateDocument();
+			if( !pos )
+				break;
+			pdoc = _MultiDocTemplate->GetNextDoc(pos);
+		}
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////

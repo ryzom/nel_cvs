@@ -24,46 +24,45 @@ CMoldEltType::~CMoldEltType()
 {
 }
 
-void CMoldEltType::Load( const CStringEx _sxfilename )						// TODO: Load with parents...
+void CMoldEltType::Load( const CStringEx _sxfullname )					
 {
-
-////////////////////////////////////////////////////////////////////////////
-// By this way, there is no parents... Does *.typ must have? NotSure....
-// Be sure that the form have the fields!
-// code:
-	sxname = CStringEx( _sxfilename );
+	sxfullname = _sxfullname;
 	CForm f;
-	pl->LoadForm( f, pl->WhereIsDfnTyp( _sxfilename ) );									
+	pl->LoadForm( f, _sxfullname );									
 
-	CFormBodyElt* pfbell = f.GetElt("Lowlimit");
-	CFormBodyElt* pfbehl = f.GetElt("Highlimit");
-	CFormBodyElt* pfbedv = f.GetElt("DefaultValue");
-	CFormBodyElt* pfbeenum = f.GetElt("Enum");
-	CFormBodyElt* pfbetype = f.GetElt("Type");
-	CFormBodyElt* pfbeformula = f.GetElt("Formula");
+	CStringEx sxll, sxhl, sxdv;
+	CFormBodyElt* pfbe;
+	pfbe	= f.GetElt("Type");									
+	if( pfbe )
+		sxtype = pfbe->GetValue();
+	pfbe	= f.GetElt("Lowlimit");									
+	if( pfbe )
+		sxll = pfbe->GetValue();
+	pfbe	= f.GetElt("Highlimit");									
+	if( pfbe )
+		sxhl = pfbe->GetValue();
+	pfbe	= f.GetElt("DefaultValue");									
+	if( pfbe )
+		sxdv = pfbe->GetValue();
+	pfbe	= f.GetElt("Formula");									
+	if( pfbe )
+		sxformula = pfbe->GetValue();
+	pfbe	= f.GetElt("Enum");									
+	if( pfbe )
+		sxenum = pfbe->GetValue();
 
-	nlassert( pfbell );
-	nlassert( pfbehl );
-	nlassert( pfbedv );
-	nlassert( pfbeenum );
-	nlassert( pfbetype );
-	nlassert( pfbeformula );
-// To be changed quickly by:
-// CItem* pitem = pl->LoadItem( _sxfilename );
-// ect...
-////////////////////////////////////////////////////////////////////////////
-
-	CStringEx sxtype = pfbetype->GetValue();
 	if( sxtype == "uint" )
-		ptu = new CTypeUnitIntUnsigned( pfbell->GetValue(), pfbehl->GetValue(), pfbedv->GetValue(), pfbeformula->GetValue() );
+		ptu = new CTypeUnitIntUnsigned( sxll, sxhl, sxdv, sxformula );
 	else if( sxtype == "sint" )
-		ptu = new CTypeUnitIntSigned( pfbell->GetValue(), pfbehl->GetValue(), pfbedv->GetValue(), pfbeformula->GetValue() );
+		ptu = new CTypeUnitIntSigned( sxll, sxhl, sxdv, sxformula );
 	else if( sxtype == "double" )
-		ptu = new CTypeUnitDouble( pfbell->GetValue(), pfbehl->GetValue(), pfbedv->GetValue(), pfbeformula->GetValue() );
+		ptu = new CTypeUnitDouble( sxll, sxhl, sxdv, sxformula );
 	else if( sxtype == "filename" )
-		ptu = new CTypeUnitFileName( pfbell->GetValue(), pfbehl->GetValue(), pfbedv->GetValue(), pfbeformula->GetValue() );
+		ptu = new CTypeUnitFileName( sxll, sxhl, sxdv, sxformula );
 	else if( sxtype == "string" )
-		ptu = new CTypeUnitString( pfbell->GetValue(), pfbehl->GetValue(), pfbedv->GetValue(), pfbeformula->GetValue() );
+		ptu = new CTypeUnitString( sxll, sxhl, sxdv, sxformula );
+
+	benum = ( sxenum == "true" );
 
 	CFormBodyElt* pfbepredef = f.GetElt("Predef");
 	if( pfbepredef )
@@ -80,10 +79,9 @@ void CMoldEltType::Load( const CStringEx _sxfilename )						// TODO: Load with p
 			pfbe = pfbepredef->GetElt( i++ );
 		}
 	}
-	benum = ( pfbeenum->GetValue() == "true" );
 }
 
-void CMoldEltType::Load( const CStringEx _sxfilename, const CStringEx _sxdate )
+void CMoldEltType::Load( const CStringEx _sxfullname, const CStringEx _sxdate )
 {
 }
 
@@ -94,7 +92,6 @@ CStringEx CMoldEltType::GetFormula()
 
 CStringEx CMoldEltType::Format( const CStringEx _sxvalue ) const													
 {
-
 	if( _sxvalue.empty() )
 		return( _sxvalue );
 	CStringEx sx = GetPredefSubstitute( _sxvalue );
@@ -108,7 +105,6 @@ CStringEx CMoldEltType::Format( const CStringEx _sxvalue ) const
 
 CStringEx CMoldEltType::CalculateResult( const CStringEx _sxbasevalue, const CStringEx _sxvalue ) const	
 {
-
 	if( _sxvalue.empty() )
 		return( _sxbasevalue );
 	CStringEx sx = GetPredefSubstitute( _sxvalue );
@@ -155,3 +151,140 @@ CStringEx CMoldEltType::GetPredefDesignation( const unsigned int _index ) const
 		return( vpredef[_index].first );
 	return( CStringEx() );
 }
+
+CMoldElt* CMoldEltType::GetMold()
+{
+	return( this );
+}
+
+void CMoldEltType::SetTypPredef( const std::vector< CStringEx >& _pvsx )
+{
+	
+	CStringEx sxdv = GetPredefSubstitute( ptu->GetDefaultValue() );
+
+	vpredef.clear();
+	if( sxtype == "string" || sxtype == "filename" )
+		for( std::vector< CStringEx >::const_iterator it = _pvsx.begin(); it != _pvsx.end(); ++it )
+			vpredef.push_back( std::make_pair( *it, *it ) );
+	else if( sxtype == "uint" || sxtype == "sint" )
+		{
+			CStringEx sx;
+			int i = 0;
+			for( std::vector< CStringEx >::const_iterator it = _pvsx.begin(); it != _pvsx.end(); ++it )
+			{
+				sx.format( "%d", i++ );
+				vpredef.push_back( std::make_pair( *it, sx ) );
+			}		
+			if( ( benum )&&( !vpredef.empty() ) )
+			{
+				ptu->SetLowLimit( vpredef[0].first );
+				ptu->SetHighLimit( vpredef[_pvsx.size()-1].first );
+				ptu->SetDefaultValue( vpredef[0].first );
+			}
+		}
+
+	if( ! sxdv.empty() )
+		ptu->SetDefaultValue( vpredef[0].first );
+}
+
+void CMoldEltType::Save()
+{
+	if( sxfullname.empty() )
+		return;
+
+	std::vector< std::pair< CStringEx, CStringEx > > lpsxparent;
+	pl->MakeTyp( sxfullname, sxtype, sxformula, sxenum, ptu->GetLowLimit(), ptu->GetHighLimit(), ptu->GetDefaultValue(), &vpredef, &lpsxparent );
+
+}
+
+/*	
+	CStringEx sxfullname = WhereIsDfnTyp( _sxfilename );
+
+	CForm f;
+	fl.LoadForm( f, sxfullname );
+	if( sxfullname.empty() )
+		return;
+	CFormBodyElt* pfbetype = f.GetElt("Type");
+	nlassert( pfbetype );
+	CFormBodyEltList* pfbepredef = dynamic_cast< CFormBodyEltList* >( f.GetElt("Predef") );      
+	if( !pfbepredef )
+	{
+		pfbepredef = new CFormBodyEltList;
+		f.GetBody()->AddElt( pfbepredef );
+	}	
+	pfbepredef->Clear();
+
+	int i = 0;
+	CFormBodyEltStruct* pfbes;
+	CFormBodyEltAtom* pfbea;
+	CStringEx sx;
+	CStringEx sxtype = pfbetype->GetValue();
+	if( sxtype == "string" )
+	{
+		for( std::vector< CStringEx >::const_iterator it = _pvsx.begin(); it != _pvsx.end(); ++it )
+		{
+			pfbes = new CFormBodyEltStruct;
+			sx.format( "#%d", i++ );
+			pfbes->SetName( sx );
+			pfbepredef->AddElt( pfbes );
+			
+			pfbea = new CFormBodyEltAtom;
+			pfbea->SetName( "Designation" );
+			pfbea->SetValue( *it );
+			pfbes->AddElt( pfbea );
+
+			pfbea = new CFormBodyEltAtom;
+			pfbea->SetName( "Substitute" );
+			pfbea->SetValue( *it );
+			pfbes->AddElt( pfbea );
+		}
+		pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("DefaultValue") );
+		nlassert( pfbea );
+		pfbea->SetValue( _pvsx[0] );
+	}
+	else
+	{
+		if( ( sxtype == "uint" )||( sxtype == "sint" ) )
+		{
+			CStringEx sx2;			
+			for( std::vector< CStringEx >::const_iterator it = _pvsx.begin(); it != _pvsx.end(); ++it )
+			{
+				pfbes = new CFormBodyEltStruct;
+				sx.format( "#%d", i );
+				pfbes->SetName( sx );
+				pfbepredef->AddElt( pfbes );
+				
+				pfbea = new CFormBodyEltAtom;
+				pfbea->SetName( "Designation" );
+				pfbea->SetValue( *it );
+				pfbes->AddElt( pfbea );
+
+				pfbea = new CFormBodyEltAtom;
+				pfbea->SetName( "Substitute" );
+				sx.format( "%d", i++ );
+				pfbea->SetValue( sx2 );
+				pfbes->AddElt( pfbea );
+			}
+			CFormBodyElt* pfbeenum = f.GetElt("Enum");
+			nlassert( pfbeenum );
+			pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("DefaultValue") );
+			nlassert( pfbea );
+			if( pfbeenum->GetValue() == "true" )
+				pfbea->SetValue( _pvsx[0] );
+			pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("Lowlimit") );
+			nlassert( pfbea );
+			pfbea->SetValue( _pvsx[0] );
+			pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("Highlimit") );
+			nlassert( pfbea );
+			pfbea->SetValue( _pvsx[_pvsx.size()-1] );
+		}
+	}
+}
+
+void CMoldEltType::Save()
+{
+
+	fl.SaveForm( f, sxfullname );
+}
+*/
+

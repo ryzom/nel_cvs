@@ -181,6 +181,20 @@ CStringEx CItem::GetCurrentValue( const unsigned int _index ) const
 	return( pie->GetCurrentValue() );
 }
 
+void CItem::Update()
+{
+	if( !pitemes )
+		return;
+	unsigned int i = 0;
+	CItemElt* pie = pitemes->GetElt( i++ );
+	while( pie )
+	{
+		pie->SetParentValue( pie->GetParentValue() );
+		pie->SetCurrentValue( pie->GetCurrentValue() );
+		pie = pitemes->GetElt( i++ );
+	}
+}
+
 CStringEx CItem::GetFormula( const unsigned int _index ) const
 {
 	CItemElt* pie = GetElt( _index );

@@ -9,6 +9,7 @@
 #include "FormBodyEltAtom.h"
 #include "FormBodyEltStruct.h"
 #include "FormBodyEltList.h"
+#include "MoldEltType.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -219,89 +220,10 @@ void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, con
 
 void CLoader::SetTypPredef( const CStringEx _sxfilename, const std::vector< CStringEx >& _pvsx )
 {
-	CStringEx sxpathname = WhereIsDfnTyp( _sxfilename );
-	CForm f;
-	fl.LoadForm( f, sxpathname );
-	if( sxpathname.empty() )
-		return;
-
-	CFormBodyElt* pfbetype = f.GetElt("Type");
-	nlassert( pfbetype );
-	CFormBodyEltList* pfbepredef = dynamic_cast< CFormBodyEltList* >( f.GetElt("Predef") );      
-	if( !pfbepredef )
-	{
-		pfbepredef = new CFormBodyEltList;
-		f.GetBody()->AddElt( pfbepredef );
-	}	
-	pfbepredef->Clear();
-
-	int i = 0;
-	CFormBodyEltStruct* pfbes;
-	CFormBodyEltAtom* pfbea;
-	CStringEx sx;
-	CStringEx sxtype = pfbetype->GetValue();
-	if( sxtype == "string" )
-	{
-		for( std::vector< CStringEx >::const_iterator it = _pvsx.begin(); it != _pvsx.end(); ++it )
-		{
-			pfbes = new CFormBodyEltStruct;
-			sx.format( "#%d", i++ );
-			pfbes->SetName( sx );
-			pfbepredef->AddElt( pfbes );
-			
-			pfbea = new CFormBodyEltAtom;
-			pfbea->SetName( "Designation" );
-			pfbea->SetValue( *it );
-			pfbes->AddElt( pfbea );
-
-			pfbea = new CFormBodyEltAtom;
-			pfbea->SetName( "Substitute" );
-			pfbea->SetValue( *it );
-			pfbes->AddElt( pfbea );
-		}
-		pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("DefaultValue") );
-		nlassert( pfbea );
-		pfbea->SetValue( _pvsx[0] );
-	}
-	else
-	{
-		if( ( sxtype == "uint" )||( sxtype == "sint" ) )
-		{
-			CStringEx sx2;			
-			for( std::vector< CStringEx >::const_iterator it = _pvsx.begin(); it != _pvsx.end(); ++it )
-			{
-				pfbes = new CFormBodyEltStruct;
-				sx.format( "#%d", i );
-				pfbes->SetName( sx );
-				pfbepredef->AddElt( pfbes );
-				
-				pfbea = new CFormBodyEltAtom;
-				pfbea->SetName( "Designation" );
-				pfbea->SetValue( *it );
-				pfbes->AddElt( pfbea );
-
-				pfbea = new CFormBodyEltAtom;
-				pfbea->SetName( "Substitute" );
-				sx.format( "%d", i++ );
-				pfbea->SetValue( sx2 );
-				pfbes->AddElt( pfbea );
-			}
-			CFormBodyElt* pfbeenum = f.GetElt("Enum");
-			nlassert( pfbeenum );
-			pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("DefaultValue") );
-			nlassert( pfbea );
-			if( pfbeenum->GetValue() == "true" )
-				pfbea->SetValue( _pvsx[0] );
-			pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("Lowlimit") );
-			nlassert( pfbea );
-			pfbea->SetValue( _pvsx[0] );
-			pfbea = dynamic_cast< CFormBodyEltAtom* >( f.GetElt("Highlimit") );
-			nlassert( pfbea );
-			pfbea->SetValue( _pvsx[_pvsx.size()-1] );
-		}
-	}
-		
-	fl.SaveForm( f, sxpathname );
+	CMoldElt*pme = LoadMold( _sxfilename );
+	CMoldEltType* pmet = dynamic_cast< CMoldEltType* >( pme );
+	pmet->SetTypPredef( _pvsx );
+	pmet->Save();
 }
 
 
@@ -340,9 +262,9 @@ CStringEx CLoader::WhereIs( const CStringEx _sxdirectory, const CStringEx _sxfil
 
 CStringEx CLoader::WhereIsDfnTyp( const CStringEx _sxfilename )
 {
-	CStringEx sxfullname = WhereIs( CStringEx( sxworkdirectory +"dfn\\" ), _sxfilename );
+	CStringEx sxfullname = WhereIs( CStringEx( sxworkdirectory +"dfn/" ), _sxfilename );
 	if( sxfullname.empty() && ( sxrootdirectory != sxworkdirectory ) )
-		sxfullname = WhereIs( CStringEx( sxrootdirectory +"dfn\\" ), _sxfilename );
+		sxfullname = WhereIs( CStringEx( sxrootdirectory +"dfn/" ), _sxfilename );
 	return( sxfullname );
 }
 

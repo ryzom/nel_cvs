@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "ItemEltAtom.h"
 #include "MoldEltType.h"
+#include "MoldEltTypeList.h"
 #include "FormBodyElt.h"
 #include "FormBodyEltAtom.h"
 
@@ -24,7 +25,10 @@ CItemEltAtom::~CItemEltAtom()
 
 void CItemEltAtom::BuildItem( CMoldElt* const _pme )
 {
-	pmet = dynamic_cast< CMoldEltType* >( _pme );      
+	if( _pme->IsList() )
+		pmet = dynamic_cast< CMoldEltTypeList* >( _pme );      
+	else
+		pmet = dynamic_cast< CMoldEltType* >( _pme );      
 	nlassert( pmet );
 	sxparentvalue.clear();
 	sxcurrentvalue.clear();

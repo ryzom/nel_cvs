@@ -53,6 +53,7 @@ public:
 	void AddListParent( const unsigned int _index ) const;
 	void AddListChild( const unsigned int _index ) const;
 	void DelListChild( const unsigned int _index ) const;
+	void Update();
 };
 
 #endif // !defined(AFX_ITEM_H__74DCC45F_FA98_4428_8C37_BA81F6B53601__INCLUDED_)

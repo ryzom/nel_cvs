@@ -79,7 +79,7 @@ public:
 
 	virtual void CloseAllDocument();
 
-	virtual void SetTypPredef( const std::string& _sxfilename, const std::vector< std::string >& _pvsx );
+	virtual void SetTypPredef( const std::string& _sxfilename, const std::vector< std::string >& _pvs );
 
 	virtual void MakeDfn( const std::string& _sxfullname, const std::vector< std::pair< std::string, std::string > >* const _pvdefine = 0 );
 
@@ -207,6 +207,7 @@ void CGeorgesImpl::SetRootDirectory( const std::string& _sxrootdirectory )
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 	papp->SetRootDirectory( _sxrootdirectory );
+	papp->UpdateAllDocument();
 } // SetRootDirectory //
 
 void CGeorgesImpl::SetTypPredef( const std::string& _sxfilename, const std::vector< std::string >& _pvs )

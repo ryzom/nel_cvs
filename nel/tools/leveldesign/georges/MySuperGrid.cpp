@@ -371,9 +371,17 @@ void CMySuperGrid::OnControlLButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO
 		{	
 			if(ctrlType==pInfo->CONTROLTYPE::combobox) 
 			{
+//					CStringList* list=NULL;
+//					pInfo->GetListData(ht.iSubItem-1, list);
+//					CComboBox * pList = ShowList(ht.iItem, ht.iSubItem, list);
+
+					CStringList lst;
+					pdoc->GetItemListPredef( ht.iItem-1, &lst );
+					pInfo->SetListData(1, &lst);
 					CStringList* list=NULL;
 					pInfo->GetListData(ht.iSubItem-1, list);
 					CComboBox * pList = ShowList(ht.iItem, ht.iSubItem, list);
+					
 			}
 		}								
 		else //activate default edit control
@@ -527,10 +535,16 @@ BOOL CMySuperGrid::OnVkReturn()
 					case pInfo->CONTROLTYPE::dropdownlistviewwhatevercontrol:break;
 					case pInfo->CONTROLTYPE::combobox: 
 						{
-
+//							CStringList* list=NULL;
+//							pInfo->GetListData(iSubItem-1, list);
+//							CComboBox * pList = ShowList(iItem, iSubItem, list);
+							CStringList lst;
+							pdoc->GetItemListPredef( iItem-1, &lst );
+							pInfo->SetListData(1, &lst);
 							CStringList* list=NULL;
 							pInfo->GetListData(iSubItem-1, list);
 							CComboBox * pList = ShowList(iItem, iSubItem, list);
+
 							bResult=TRUE; //I'll handle it from here
 						}break;
 					default:break;

@@ -25,6 +25,9 @@ public:
 
 	virtual	CStringEx Format( const CStringEx _sxvalue ) const;									
 	virtual	CStringEx CalculateResult( const CStringEx _sxbasevalue, const CStringEx _sxvalue ) const;	
+	virtual	void	SetDefaultValue( const CStringEx _sxdv );
+	virtual	void	SetLowLimit( const CStringEx _sxll );
+	virtual	void	SetHighLimit( const CStringEx _sxhl );
 
 };
 

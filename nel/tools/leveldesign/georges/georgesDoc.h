@@ -41,6 +41,7 @@ public:
 	void GetItemListPredef( const unsigned int _index, CStringList* _slist ) const;
 	void NewDocument( const CStringEx& _sxdfnname ) const;
 	void NewDocument( const CStringEx _sxfilename );
+	void UpdateDocument();
 
 	void AddListParent( const unsigned int _index ) const;
 	void AddListChild( const unsigned int _index ) const;

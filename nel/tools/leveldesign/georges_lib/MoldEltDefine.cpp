@@ -20,15 +20,9 @@ CMoldEltDefine::~CMoldEltDefine()
 }
 
 void CMoldEltDefine::Load( const CStringEx _sxfilename )
-// Download the form of _sxfilename and find the "data" field of the form
-// For each element of "data"
-//		Get the name and the filename
-//		Download the mold of the filename
-//		push_back the pair ( name, moldelt* )
 {
 	CForm f;
-	sxname = CStringEx( _sxfilename );
-	pl->LoadForm( f, pl->WhereIsDfnTyp( _sxfilename ) );
+	pl->LoadForm( f, _sxfilename );
 	CFormBodyElt* pbody = f.GetBody();
 
 	unsigned int i = 0;
@@ -66,3 +60,9 @@ unsigned int CMoldEltDefine::GetType() const
 {
 	return( 1 );
 }
+
+CMoldElt* CMoldEltDefine::GetMold()
+{
+	return( this );
+}
+

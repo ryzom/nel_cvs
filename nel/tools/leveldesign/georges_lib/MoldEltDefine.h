@@ -23,6 +23,7 @@ public:
 	CMoldEltDefine( CLoader* const _pl );
 	virtual ~CMoldEltDefine();
 
+	virtual CMoldElt* GetMold(); 
 	virtual void Load( const CStringEx _sxfilename );
 	virtual void Load( const CStringEx _sxfilename, const CStringEx _sxdate );
 	virtual CStringEx GetEltName( const unsigned int _index ) const;

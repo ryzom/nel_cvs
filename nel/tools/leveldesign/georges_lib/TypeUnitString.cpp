@@ -44,3 +44,20 @@ CStringEx CTypeUnitString::CalculateResult( const CStringEx _sxbasevalue, const 
 		return( Format( _sxbasevalue ) );
 	return( Format( _sxvalue ) );
 }
+
+void CTypeUnitString::SetDefaultValue( const CStringEx _sxdv )
+{
+	sxdefaultvalue = _sxdv;
+}
+
+void CTypeUnitString::SetLowLimit( const CStringEx _sxll )
+{
+	sxlowlimit = _sxll;
+}
+
+void CTypeUnitString::SetHighLimit( const CStringEx _sxhl )
+{
+	sxhighlimit = _sxhl;
+	usihighlimit = atoi( sxhighlimit.c_str() ); 
+}
+

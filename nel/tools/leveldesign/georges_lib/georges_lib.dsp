@@ -321,7 +321,23 @@ SOURCE=.\MoldEltDefine.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\MoldEltDefineList.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MoldEltDefineList.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\MoldEltType.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MoldEltTypeList.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MoldEltTypeList.h
 # End Source File
 # Begin Source File
 

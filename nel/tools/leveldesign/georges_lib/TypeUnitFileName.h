@@ -22,6 +22,9 @@ public:
 
 	virtual	CStringEx Format( const CStringEx _sxvalue ) const;									
 	virtual	CStringEx CalculateResult( const CStringEx _sxbasevalue, const CStringEx _sxvalue ) const;	
+	virtual	void	SetDefaultValue( const CStringEx _sxdv );
+	virtual	void	SetLowLimit( const CStringEx _sxll );
+	virtual	void	SetHighLimit( const CStringEx _sxhl );
 };
 
 #endif // !defined(AFX_TYPEUNITSTRING_H__C32CF14C_50DE_4747_BC9E_4C1D088308FC__INCLUDED_)

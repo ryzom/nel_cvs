@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.16 2003/05/13 09:57:00 corvazier Exp $
+ * $Id: camera.cpp,v 1.17 2003/11/06 09:17:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,6 +238,70 @@ void CCameraInfo::serial (NLMISC::IStream &s)
 	s.serial (UseFov);
 }
 
+
+// ***************************************************************************
+void CCamera::buildCameraPyramid(std::vector<CPlane>	&pyramid, bool useWorldMatrix)
+{
+	pyramid.resize(6);
+
+	// Compute pyramid in view basis.
+	CVector		pfoc(0,0,0);
+	CVector		lb(_Frustum.Left,  _Frustum.Near, _Frustum.Bottom );
+	CVector		lt(_Frustum.Left,  _Frustum.Near, _Frustum.Top    );
+	CVector		rb(_Frustum.Right, _Frustum.Near, _Frustum.Bottom );
+	CVector		rt(_Frustum.Right, _Frustum.Near, _Frustum.Top    );
+	
+	CVector		lbFar(_Frustum.Left,  _Frustum.Far, _Frustum.Bottom);
+	CVector		ltFar(_Frustum.Left,  _Frustum.Far, _Frustum.Top   );
+	CVector		rbFar(_Frustum.Right, _Frustum.Far, _Frustum.Bottom);
+	CVector		rtFar(_Frustum.Right, _Frustum.Far, _Frustum.Top   );
+	
+	// near
+	pyramid[0].make(lt, lb, rt);
+	// far
+	pyramid[1].make(lbFar, ltFar, rtFar);
+	
+	if(_Frustum.Perspective)
+	{
+		// left
+		pyramid[2].make(pfoc, lt, lb);
+		// top
+		pyramid[3].make(pfoc, rt, lt);
+		// right
+		pyramid[4].make(pfoc, rb, rt);
+		// bottom
+		pyramid[5].make(pfoc, lb, rb);
+	}
+	else
+	{
+		// left
+		pyramid[2].make(lt, ltFar, lbFar);
+		// top
+		pyramid[3].make(lt, rtFar, ltFar);
+		// right
+		pyramid[4].make(rt, rbFar, rtFar);
+		// bottom
+		pyramid[5].make(lb, lbFar, rbFar);
+	}
+	
+	// get invCamMatrix
+	CMatrix		invCamMatrix;
+	if(useWorldMatrix)
+		invCamMatrix= getWorldMatrix();
+	else
+		invCamMatrix= getMatrix();
+	invCamMatrix.invert();
+
+	// Compute pyramid in World basis.
+	// The vector transformation M of a plane p is computed as p*M-1.
+	for (uint i = 0; i < 6; i++)
+	{
+		pyramid[i]= pyramid[i]*invCamMatrix;
+	}
 }
+
+
+}
+
 
 

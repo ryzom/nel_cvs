@@ -1,7 +1,7 @@
 /** \file u_camera.h
  * <File description>
  *
- * $Id: u_camera.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_camera.h,v 1.2 2003/11/06 09:17:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,7 +90,11 @@ public:
 	virtual	void		setPerspective(float fov, float aspectRatio, float znear, float zfar) =0;
 	// @}
 
-
+	/// \name Misc
+	// @{
+	virtual	void		buildCameraPyramid(std::vector<NLMISC::CPlane>	&pyramid, bool useWorldMatrix) =0;
+	// @}
+	
 
 };
 

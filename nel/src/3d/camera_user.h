@@ -1,7 +1,7 @@
 /** \file camera_user.h
  * <File description>
  *
- * $Id: camera_user.h,v 1.5 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: camera_user.h,v 1.6 2003/11/06 09:17:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,7 +118,12 @@ public:
 	}
 	// @}
 
-
+	virtual	void		buildCameraPyramid(std::vector<NLMISC::CPlane>	&pyramid, bool useWorldMatrix)
+	{
+		NL3D_MEM_CAMERA
+		_Camera->buildCameraPyramid(pyramid, useWorldMatrix);
+	}
+	
 public:
 	/// \name Accessor for CSeneUser.
 	// @{

@@ -1,7 +1,7 @@
 /** \file camera.h
  * <File description>
  *
- * $Id: camera.h,v 1.5 2003/05/13 09:57:00 corvazier Exp $
+ * $Id: camera.h,v 1.6 2003/11/06 09:17:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -217,6 +217,9 @@ public:
 	CTrackDefaultVector*	getDefaultPos ()			{return &_DefaultPos;}
 	CTrackDefaultVector*	getDefaultTargetPos ()		{return &_DefaultTargetPos;}
 	// @}
+
+	/// Build the camera Pyramid from current worldMatrix, and frustum
+	void			buildCameraPyramid(std::vector<NLMISC::CPlane>	&pyramid, bool useWorldMatrix);
 
 protected:
 	/// Constructor

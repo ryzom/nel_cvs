@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.40 2003/09/01 09:19:48 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.41 2003/11/06 09:17:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,6 +138,7 @@ void CClipTrav::traverse()
 
 	CVector		lbFar(Left,  Far, Bottom);
 	CVector		ltFar(Left,  Far, Top   );
+	CVector		rbFar(Right, Far, Bottom);
 	CVector		rtFar(Right, Far, Top   );
 
 	uint32 i, j;
@@ -145,10 +146,20 @@ void CClipTrav::traverse()
 	ViewPyramid[NL3D_CLIP_PLANE_NEAR].make(lt, lb, rt);
 	ViewPyramid[NL3D_CLIP_PLANE_FAR].make(lbFar, ltFar, rtFar);
 
-	ViewPyramid[NL3D_CLIP_PLANE_LEFT].make(pfoc, lt, lb);
-	ViewPyramid[NL3D_CLIP_PLANE_TOP].make(pfoc, rt, lt);
-	ViewPyramid[NL3D_CLIP_PLANE_RIGHT].make(pfoc, rb, rt);
-	ViewPyramid[NL3D_CLIP_PLANE_BOTTOM].make(pfoc, lb, rb);
+	if(Perspective)
+	{
+		ViewPyramid[NL3D_CLIP_PLANE_LEFT].make(pfoc, lt, lb);
+		ViewPyramid[NL3D_CLIP_PLANE_TOP].make(pfoc, rt, lt);
+		ViewPyramid[NL3D_CLIP_PLANE_RIGHT].make(pfoc, rb, rt);
+		ViewPyramid[NL3D_CLIP_PLANE_BOTTOM].make(pfoc, lb, rb);
+	}
+	else
+	{
+		ViewPyramid[NL3D_CLIP_PLANE_LEFT].make(lt, ltFar, lbFar);
+		ViewPyramid[NL3D_CLIP_PLANE_TOP].make(lt, rtFar, ltFar);
+		ViewPyramid[NL3D_CLIP_PLANE_RIGHT].make(rt, rbFar, rtFar);
+		ViewPyramid[NL3D_CLIP_PLANE_BOTTOM].make(lb, lbFar, rbFar);
+	}
 	
 	// Compute pyramid in World basis.
 	// The vector transformation M of a plane p is computed as p*M-1.

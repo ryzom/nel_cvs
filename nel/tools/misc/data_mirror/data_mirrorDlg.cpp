@@ -454,7 +454,7 @@ void CData_mirrorDlg::OnOK()
 		{
 			if (!LogDirectory.empty())
 			{
-				string sTmp = LogDirectory + "data_mirror.log";
+				string sTmp = LogDirectory + "data_mirror.txt";
 				FILE *f = fopen(sTmp.c_str(),"at");
 				fprintf(f,"Modified file : %s\n", dest.c_str());
 				fclose(f);
@@ -489,7 +489,7 @@ void CData_mirrorDlg::OnOK()
 		{
 			if (!LogDirectory.empty())
 			{
-				string sTmp = LogDirectory + "data_mirror.log";
+				string sTmp = LogDirectory + "data_mirror.txt";
 				FILE *f = fopen(sTmp.c_str(),"at");
 				fprintf(f,"Added file : %s\n", dest.c_str());
 				fclose(f);
@@ -521,7 +521,7 @@ void CData_mirrorDlg::OnOK()
 		{
 			if (!LogDirectory.empty())
 			{
-				string sTmp = LogDirectory + "data_mirror.log";
+				string sTmp = LogDirectory + "data_mirror.txt";
 				FILE *f = fopen(sTmp.c_str(),"at");
 				fprintf(f,"Removed file : %s\n", dest.c_str());
 				fclose(f);

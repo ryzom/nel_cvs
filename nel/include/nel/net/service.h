@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.74 2004/05/10 15:46:08 distrib Exp $
+ * $Id: service.h,v 1.75 2004/06/14 15:05:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,6 +147,9 @@ int main(int argc, const char **argv) \
 
 typedef uint8 TServiceId;
 
+/// Callback where you can return true for direct clearance, or false for later clearance.
+typedef bool (*TRequestClosureClearanceCallback) ();
+
 
 //
 // Variables provided to application and unused in the NeL library itself.
@@ -188,7 +191,7 @@ public:
 	/// This function is called every "frame" (you must call init() before). It returns false if the service is stopped.
 	virtual bool			update () { return true; }
 
-	/// Finalization. Release the service. For example, this founction free all allocation made in the init() function.
+	/// Finalization. Release the service. For example, this function frees all allocations made in the init() function.
 	virtual void			release () {}
 
 	//@}
@@ -319,6 +322,24 @@ public:
 
 	uint32								getShardId() const { return _ShardId; }
 
+	/**
+	 * If your service needs a delay when it is asked to quit, provide a callback here (optional).
+	 * Then, when the service will be asked to quit, this callback will be called. Then you can
+	 * either return true to allow immediate closure, or false to delay the closure. The closure
+	 * will then happen after you call clearForClosure().
+	 * 
+	 * If you don't provide a callback here, or if you call with NULL, the service will exit
+	 * immediately when asked to quit.
+	 */
+	void								setClosureClearanceCallback( TRequestClosureClearanceCallback cb ) { _RequestClosureClearanceCallback = cb; }
+
+	/**
+	 * If using clearance for closure (see setClosureClearanceCallback()), you can call this method
+	 * to allow the service to quit. If calling it while your callback has not be called yet, the
+	 * callback will be bypassed and the service will quit immediately when asked to quit. If calling it
+	 * after you callback was called (and you returned false), the service will quit shortly.
+	 */
+	void								clearForClosure() { _ClosureClearanceStatus = CCClearedForClosure; }
 private:
 
 	/// \name methods. These methods are used by internal system.
@@ -386,6 +407,14 @@ private:
 
 	/// Shard Id
 	uint32								_ShardId;
+
+	enum TClosureClearanceStatus { CCMustRequestClearance, CCWaitingForClearance, CCClearedForClosure };
+
+	/// Closure clearance state
+	TClosureClearanceStatus				_ClosureClearanceStatus;
+
+	/// Closure clearance callback (NULL if no closure clearance required)
+	TRequestClosureClearanceCallback	_RequestClosureClearanceCallback;
 
 	//@}
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.207 2004/05/10 15:46:08 distrib Exp $
+ * $Id: service.cpp,v 1.208 2004/06/14 15:05:15 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -293,7 +293,9 @@ IService::IService() :
 	_CallbackArraySize (0),
 	_DontUseNS(false),
 	_DontUseAES(false),
-	_ResetMeasures(false)
+	_ResetMeasures(false),
+	_RequestClosureClearanceCallback(NULL),
+	_ClosureClearanceStatus(CCMustRequestClearance)
 {
 	// Singleton
 	_Instance = this;
@@ -1108,8 +1110,36 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// stop the loop if the exit signal asked
 			if (ExitSignalAsked > 0)
 			{
-				CHTimer::endBench();
-				break;
+				if ( _RequestClosureClearanceCallback )
+				{
+					if ( _ClosureClearanceStatus == CCClearedForClosure )
+					{
+						// Clearance has been granted
+						CHTimer::endBench();
+						break;
+					}
+					else if ( _ClosureClearanceStatus == CCMustRequestClearance )
+					{
+						if ( _RequestClosureClearanceCallback() )
+						{
+							// Direct clearance
+							_ClosureClearanceStatus = CCClearedForClosure;
+							CHTimer::endBench();
+							break;
+						}
+						else
+						{
+							// Delayed clearance
+							_ClosureClearanceStatus = CCWaitingForClearance;
+						}
+					}
+				}
+				else
+				{
+					// Immediate closure, no clearance needed
+					CHTimer::endBench();
+					break;
+				}
 			}
 
 			CConfigFile::checkConfigFiles ();

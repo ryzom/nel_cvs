@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.32 2003/03/17 12:53:43 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.33 2003/03/31 11:52:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,8 +70,7 @@ struct	CGlExtensions
 	sint	NbTextureStages;
 	bool	EXTTextureEnvCombine;
 
-	// Optionnal Extensions.
-	bool	ARBTextureCompression;
+	// Optionnal Extensions.	
 	// NB: Fence extension is not here, because NVVertexArrayRange is false if GL_NV_fence is not here.
 	bool	NVVertexArrayRange;
 	uint	NVVertexArrayRangeMaxVertex;
@@ -97,9 +96,15 @@ struct	CGlExtensions
 	bool	WGLARBPixelFormat;
 
 	// ATI Extensions.
-	bool	ATIVertexArrayObject;	
+	bool	ATIVertexArrayObject;
+	bool    ATIMapObjectBuffer;
 	bool	ATIXTextureEnvCombine3;
 	bool    ATIEnvMapBumpMap;
+	bool    ATIFragmentShader;
+
+	// ARB Extensions
+	bool	ARBTextureCompression;
+	bool	ARBFragmentProgram;
 
 public:
 
@@ -137,6 +142,9 @@ public:
 		EXTBlendColor= false;
 		ATIVertexArrayObject= false;
 		ATIEnvMapBumpMap = false;
+		ATIFragmentShader = false;
+		ATIVertexArrayObject = false;
+		ATIMapObjectBuffer = false;
 		EXTVertexShader= false;
 
 		/// \name Disable Hardware feature. False by default. setuped by IDriver
@@ -405,6 +413,54 @@ extern NEL_PFNGLVARIANTARRAYOBJECTATIPROC		nglVariantArrayObjectATI;
 extern NEL_PFNGLGETVARIANTARRAYOBJECTFVATIPROC	nglGetVariantArrayObjectfvATI;
 extern NEL_PFNGLGETVARIANTARRAYOBJECTIVATIPROC	nglGetVariantArrayObjectivATI;
 
+// GL_ATI_map_object_buffer
+//===================================
+
+extern NEL_PFNGLMAPOBJECTBUFFERATIPROC			nglMapObjectBufferATI;
+extern NEL_PFNGLUNMAPOBJECTBUFFERATIPROC		nglUnmapObjectBufferATI;
+
+
+// GL_ATI_fragment_shader extension
+//===================================
+
+extern NEL_PFNGLGENFRAGMENTSHADERSATIPROC			nglGenFragmentShadersATI;
+extern NEL_PFNGLBINDFRAGMENTSHADERATIPROC			nglBindFragmentShaderATI;
+extern NEL_PFNGLDELETEFRAGMENTSHADERATIPROC			nglDeleteFragmentShaderATI;
+extern NEL_PFNGLBEGINFRAGMENTSHADERATIPROC			nglBeginFragmentShaderATI;
+extern NEL_PFNGLENDFRAGMENTSHADERATIPROC			nglEndFragmentShaderATI;
+extern NEL_PFNGLPASSTEXCOORDATIPROC					nglPassTexCoordATI;
+extern NEL_PFNGLSAMPLEMAPATIPROC					nglSampleMapATI;
+extern NEL_PFNGLCOLORFRAGMENTOP1ATIPROC				nglColorFragmentOp1ATI;
+extern NEL_PFNGLCOLORFRAGMENTOP2ATIPROC				nglColorFragmentOp2ATI;
+extern NEL_PFNGLCOLORFRAGMENTOP3ATIPROC				nglColorFragmentOp3ATI;
+extern NEL_PFNGLALPHAFRAGMENTOP1ATIPROC				nglAlphaFragmentOp1ATI;
+extern NEL_PFNGLALPHAFRAGMENTOP2ATIPROC				nglAlphaFragmentOp2ATI;
+extern NEL_PFNGLALPHAFRAGMENTOP3ATIPROC				nglAlphaFragmentOp3ATI;
+extern NEL_PFNGLSETFRAGMENTSHADERCONSTANTATIPROC	nglSetFragmentShaderConstantATI;
+
+
+
+// GL_ARB_fragment_shader_extension
+//==================================
+extern NEL_PFNGLPROGRAMSTRINGARBPROC nglProgramStringARB;
+extern NEL_PFNGLBINDPROGRAMARBPROC nglBindProgramARB;
+extern NEL_PFNGLDELETEPROGRAMSARBPROC nglDeleteProgramsARB;
+extern NEL_PFNGLGENPROGRAMSARBPROC nglGenProgramsARB;
+extern NEL_PFNGLPROGRAMENVPARAMETER4DARBPROC nglProgramEnvParameter4dARB;
+extern NEL_PFNGLPROGRAMENVPARAMETER4DVARBPROC nglProgramEnvParameter4dvARB;
+extern NEL_PFNGLPROGRAMENVPARAMETER4FARBPROC nglProgramEnvParameter4fARB;
+extern NEL_PFNGLPROGRAMENVPARAMETER4FVARBPROC nglProgramEnvParameter4fvARB;
+extern NEL_PFNGLPROGRAMLOCALPARAMETER4DARBPROC nglGetProgramLocalParameter4dARB;
+extern NEL_PFNGLPROGRAMLOCALPARAMETER4DVARBPROC nglGetProgramLocalParameter4dvARB;
+extern NEL_PFNGLPROGRAMLOCALPARAMETER4FARBPROC nglGetProgramLocalParameter4fARB;
+extern NEL_PFNGLPROGRAMLOCALPARAMETER4FVARBPROC nglGetProgramLocalParameter4fvARB;
+extern NEL_PFNGLGETPROGRAMENVPARAMETERDVARBPROC nglGetProgramEnvParameterdvARB;
+extern NEL_PFNGLGETPROGRAMENVPARAMETERFVARBPROC nglGetProgramEnvParameterfvARB;
+extern NEL_PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC nglGetProgramLocalParameterdvARB;
+extern NEL_PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC nglGetProgramLocalParameterfvARB;
+extern NEL_PFNGLGETPROGRAMIVARBPROC nglGetProgramivARB;
+extern NEL_PFNGLGETPROGRAMSTRINGARBPROC nglGetProgramStringARB;
+extern NEL_PFNGLISPROGRAMARBPROC nglIsProgramARB;
 
 
 #ifdef NL_OS_WINDOWS

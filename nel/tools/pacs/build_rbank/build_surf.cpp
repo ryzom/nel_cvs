@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.5 2002/06/17 14:25:12 corvazier Exp $
+ * $Id: build_surf.cpp,v 1.6 2002/06/24 14:41:05 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,9 +103,9 @@ CAABBox	getZoneBBoxById(uint16 id)
 
 	x = id%256;
 	y = id/256;
-
 	bbox.setMinMax(CVector(zdim*x,		-zdim*(y+1),	-10000.0f),
 				   CVector(zdim*(x+1),	-zdim*y,		+10000.0f));
+
 
 	return bbox;
 }
@@ -606,9 +606,9 @@ void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 	{
 		CSurfElement	&el = *(*it);
 
-		CVector			V0 = (*(el.Vertices))[el.Tri[0]],
-						V1 = (*(el.Vertices))[el.Tri[1]],
-						V2 = (*(el.Vertices))[el.Tri[2]];
+		const CVector	&V0 = (*(el.Vertices))[el.Tri[0]],
+						&V1 = (*(el.Vertices))[el.Tri[1]],
+						&V2 = (*(el.Vertices))[el.Tri[2]];
 		selected.push_back(CTriangle(V0, V1, V2));
 
 		if (&el == this)
@@ -621,10 +621,10 @@ void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 		if (i<boxes.size())
 			continue;
 
-		CVector		v0 = CVector(V0.x, V0.y, 0.0f),
-					v1 = CVector(V1.x, V1.y, 0.0f),
-					v2 = CVector(V2.x, V2.y, 0.0f),
-					h  = CVector(center.x, center.y, 0.0f);
+		CVector	v0 = CVector(V0.x, V0.y, 0.0f),
+				v1 = CVector(V1.x, V1.y, 0.0f),
+				v2 = CVector(V2.x, V2.y, 0.0f),
+				h  = CVector(center.x, center.y, 0.0f);
 
 		CPlane		plane;
 		plane.make(V0, V1, V2);
@@ -1657,29 +1657,6 @@ void	NLPACS::CZoneTessellation::compile()
 		element.computeQuantas();
 	}
 
-	// compute elements level
-	if (ComputeLevels)
-	{
-		nldebug("compute elements levels");
-		// Insert all elements into a CQuadGrid
-		CQuadGrid<CSurfElement *>	quadGrid;
-		quadGrid.create(1024, 0.5f);
-		sint	i;
-		for (i=0; i<(sint)Elements.size(); ++i)
-		{
-			if (Elements[i]->IsHorizontal)
-			{
-				CAABBox	box = Elements[i]->getBBox();
-				quadGrid.insert(box.getMin(), box.getMax(), Elements[i]);
-			}
-		}
-
-		for (i=0; i<(sint)Elements.size(); ++i)
-		{
-			Elements[i]->computeLevel(quadGrid);
-		}
-	}
-
 	if (ReduceSurfaces)
 	{
 		// optimizes the number of generated segments
@@ -1801,6 +1778,98 @@ void	NLPACS::CZoneTessellation::compile()
 				surf.computeHeightQuad();
 		}
 	}
+/*
+	// compute elements level
+	if (ComputeLevels)
+	{
+		nldebug("compute elements levels");
+		// Insert all elements into a CQuadGrid
+		CQuadGrid<CSurfElement *>	quadGrid;
+		quadGrid.create(1024, 0.5f);
+		sint	i;
+		for (i=0; i<(sint)Elements.size(); ++i)
+		{
+			if (Elements[i]->IsHorizontal)
+			{
+				CAABBox	box = Elements[i]->getBBox();
+				quadGrid.insert(box.getMin(), box.getMax(), Elements[i]);
+			}
+		}
+
+		for (i=0; i<(sint)Elements.size(); ++i)
+		{
+			Elements[i]->computeLevel(quadGrid);
+		}
+	}
+*/
+
+	// compute elements level
+	if (ComputeLevels)
+	{
+		nldebug("compute elements levels");
+		// Insert all elements into a CQuadGrid
+
+		CQuadGrid<CSurfElement *>	quadGrid;
+		quadGrid.create(1024, 0.25f);
+
+		sint	s;
+		for (s=0; s<(sint)Surfaces.size(); ++s)
+		{
+			CComputableSurface	&surf = Surfaces[s];
+			if (!surf.IsHorizontal)
+				continue;
+
+			sint	i;			
+
+			for (i=0; i<(sint)surf.Elements.size(); ++i)
+			{
+				CAABBox	box = surf.Elements[i]->getBBox();
+				quadGrid.insert(box.getMin(), box.getMax(), surf.Elements[i]);
+			}
+
+			for (i=0; i<(sint)surf.Elements.size(); ++i)
+			{
+				surf.Elements[i]->computeLevel(quadGrid);
+			}
+
+			quadGrid.clear();
+		}
+	}
+
+	//
+	Surfaces.clear();
+	ExtSurfaces.clear();
+
+	//
+	for (i=0; i<(sint)Elements.size(); ++i)
+		Elements[i]->SurfaceId = UnaffectedSurfaceId;
+
+	//
+	for (p=0; p<(sint)Elements.size(); ++p)
+	{
+		if (Elements[p]->SurfaceId == UnaffectedSurfaceId)
+		{
+			bool	elInCentral = (Elements[p]->Root->ZoneId == CentralZoneId);
+//			bool	elInCentral = true;
+
+			++totalSurf;
+			sint32	thisSurfId = (elInCentral) ? surfId++ : extSurf--;
+			if (elInCentral)
+				Surfaces.push_back(CComputableSurface());
+			else
+				ExtSurfaces.push_back(CComputableSurface());
+
+		
+			CComputableSurface	&surf = (elInCentral) ? Surfaces.back() : ExtSurfaces.back();
+			surf.BorderKeeper = &Borders;
+			surf.floodFill(Elements[p], thisSurfId);
+			surf.BBox = BestFittingBBox;
+			if (surf.IsHorizontal && elInCentral)
+				surf.computeHeightQuad();
+		}
+	}
+
+
 	nldebug("%d surfaces generated", totalSurf);
 }
 

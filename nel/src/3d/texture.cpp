@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.8 2000/12/04 16:58:43 berenguier Exp $
+ * $Id: texture.cpp,v 1.9 2000/12/05 10:39:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/3d/font_generator.h"
 #include "nel/misc/file.h"
 #include "nel/misc/common.h"
+#include "nel/misc/mem_stream.h"
 #include <vector>
 
 
@@ -37,8 +38,6 @@ namespace NL3D
 /*==================================================================*\
 							ITEXTURE
 \*==================================================================*/
-
-
 
 ITexture &ITexture::operator=(const ITexture &tex)
 {
@@ -55,6 +54,7 @@ ITexture::~ITexture()
 	// Must kill the drv mirror of this texture.
 	DrvInfos.kill();
 }
+
 
 
 
@@ -78,6 +78,33 @@ void CTextureFile::generate()
 	}
 	
 }
+
+
+
+/*==================================================================*\
+							CTEXTUREMEM
+\*==================================================================*/
+
+/*------------------------------------------------------------------*\
+							generate()
+\*------------------------------------------------------------------*/
+void CTextureMem::generate()
+{
+	NLMISC::CMemStream m;
+	if (_Data)
+	{
+		m.fill (_Data, _Length);
+		load (m);
+	}
+	else
+	{
+		makeDummy();
+	}
+}
+
+
+
+
 
 
 /*==================================================================*\

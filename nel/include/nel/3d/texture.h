@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.9 2000/12/04 17:08:04 berenguier Exp $
+ * $Id: texture.h,v 1.10 2000/12/05 10:39:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,13 +171,108 @@ public:
 
 	/** 
 	 * Generate the texture
-	 * \return name of the file
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
 	void generate();
 
 };
+
+
+//****************************************************************************
+
+
+/**
+ * CTextureMem
+ * \author Cyril Corvazier
+ * \author Nevrax France
+ * \date 2000
+ */
+class CTextureMem : public ITexture
+{
+	uint8		*_Data;
+	uint32		_Length;
+	bool		_Delete;
+
+public:
+
+	/** 
+	 * Default constructor
+	 * \date 2000
+	 */	
+	CTextureMem() 
+	{ 
+		_Data=NULL;
+		_Delete=false;
+	}
+
+
+	/** 
+	 * Destructor
+	 * \date 2000
+	 */	
+	virtual ~CTextureMem() 
+	{ 
+		if (_Data&&_Delete)
+			delete [] _Data;
+	}
+
+
+	/** 
+	 * constructor
+	 * \param data Pointer of the file.
+	 * \param _delete Is true if the class must delete the pointer.
+	 * \date 2000
+	 */	
+	CTextureMem(uint8 *data, uint32 lenght, bool _delete) { CTextureMem(); setPointer(data, lenght, _delete); }
+
+
+	/** 
+	 * Set the pointer of the mem file containing the texture
+	 * \param data Pointer of the file.
+	 * \param _delete Is true if the class must delete the pointer.
+	 * \date 2000
+	 */	
+	void setPointer(uint8 *data, uint32 length, bool _delete) 
+	{ 
+		if (_Data&&_Delete)
+			delete [] _Data;
+		_Touched=true;
+		_Data=data;
+		_Length=length;
+		_Delete=_delete;
+	}
+
+
+	/** 
+	 * Get the Pointer of the memory file containing the texture
+	 * \date 2000
+	 */	
+	uint8* getPointer() const { return _Data; } 
+
+
+	/** 
+	 * Get length of the memory file containing the texture
+	 * \date 2000
+	 */	
+	uint32 getLength() const { return _Length; } 
+
+
+	/** 
+	 * Return true if the class handle the delete of the pointer.
+	 * \date 2000
+	 */	
+	bool isDeletable() const { return _Delete; } 
+
+
+	/** 
+	 * Generate the texture
+	 * \date 2000
+	 */	
+	void generate();
+
+};
+
 
 
 //****************************************************************************

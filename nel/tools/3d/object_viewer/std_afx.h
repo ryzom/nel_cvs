@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.6 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: std_afx.h,v 1.7 2001/07/24 09:01:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,9 @@
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
+
+
+
 #include "nel/misc/common.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/vector.h"
@@ -65,18 +68,25 @@
 #include <nel/misc/time_nl.h>
 #include <nel/misc/config_file.h>
 
-#include "3d/particle_system.h"
-#include "3d/ps_located.h"
+#include "3d/particle_system_process.h"
 #include "3d/ps_particle.h"
 #include "3d/ps_force.h"
 #include "3d/ps_emitter.h"
 #include "3d/ps_zone.h"
+
+
+#include <vector>
+#include <map>
+#include <algorithm>
+
+
 #include <3d/nelu.h>
 #include <3d/mesh.h>
 #include <3d/transform_shape.h>
 #include <3d/mesh_instance.h>
 #include <3d/text_context.h>
 #include <3d/skeleton_model.h>
+
 
 
 //{{AFX_INSERT_LOCATION}}

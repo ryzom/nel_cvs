@@ -960,5 +960,29 @@ SOURCE=..\include\nel\ai\e\nel_exception_def.h
 # End Source File
 # End Group
 # End Group
+# Begin Group "nimat"
+
+# PROP Default_Filter ""
+# Begin Group "n_cpp"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\ai\nimat\classifier.cpp
+# End Source File
+# End Group
+# Begin Group "n_h"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\include\nel\ai\nimat\black_box.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\nimat\classifier.h
+# End Source File
+# End Group
+# End Group
 # End Target
 # End Project

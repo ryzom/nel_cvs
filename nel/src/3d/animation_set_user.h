@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.7 2001/08/01 09:38:25 berenguier Exp $
+ * $Id: animation_set_user.h,v 1.8 2001/09/18 14:35:19 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -223,9 +223,9 @@ public:
 
 	// @}
 
-
+	// Access the animation set
+	const CAnimationSet* getAnimationSet () const;
 };
-
 
 } // NL3D
 

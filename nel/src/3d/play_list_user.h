@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * <File description>
  *
- * $Id: play_list_user.h,v 1.4 2001/09/05 11:45:28 corvazier Exp $
+ * $Id: play_list_user.h,v 1.5 2001/09/18 14:35:19 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -181,6 +181,10 @@ public:
 		_PlayList.setStartWeight (slot, weight, 0);
 		_PlayList.setEndWeight (slot, weight, 0);
 	}
+
+	virtual CAnimationTime getLocalTime (uint8 slot, double globalTime, const UAnimationSet& animSet) const;
+
+	virtual float getLocalWeight (uint8 slot, double globalTime) const;
 
 	// @}
 

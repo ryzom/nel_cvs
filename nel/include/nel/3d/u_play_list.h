@@ -1,7 +1,7 @@
 /** \file u_play_list.h
  * <File description>
  *
- * $Id: u_play_list.h,v 1.5 2001/09/05 11:45:28 corvazier Exp $
+ * $Id: u_play_list.h,v 1.6 2001/09/18 14:35:18 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@ namespace NL3D
 
 
 class	UTransform;
+class	UAnimationSet;
 
 
 // ***************************************************************************
@@ -260,6 +261,26 @@ public:
 	  * \param weight is the factor to use in this slot.
 	  */
 	virtual	void setWeight (uint8 slot, float weight)=0;
+
+	/**
+	  * Convert a playlist global time in local time in a slot animation including wrap evaluation.
+	  *
+	  * \param slot is the slot in which the local time must be computed
+	  * \param time is the global time of the playlist
+	  *
+	  * \return the local time in the slot. If no animation are set in the slot, globalTime is returned.
+	  */
+	virtual CAnimationTime getLocalTime (uint8 slot, double globalTime, const UAnimationSet& animSet) const=0;
+
+	/**
+	  * Compute weight of a slot at a given global playlist time
+	  *
+	  * \param slot is the slot in which the weight must be computed
+	  * \param time is the global time of the playlist
+	  *
+	  * \return the weight of the slot for the given time.
+	  */
+	virtual float getLocalWeight (uint8 slot, double globalTime) const=0;
 
 	// @}
 

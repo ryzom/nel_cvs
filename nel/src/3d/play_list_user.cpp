@@ -1,7 +1,7 @@
 /** \file play_list_user.cpp
  * <File description>
  *
- * $Id: play_list_user.cpp,v 1.2 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: play_list_user.cpp,v 1.3 2001/09/18 14:35:19 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,11 +24,35 @@
  */
 
 #include "3d/play_list_user.h"
+#include "3d/animation_set_user.h"
 
+#include "nel/misc/debug.h"
+
+using namespace NLMISC;
 
 namespace NL3D {
 
+// ***************************************************************************
 
+CAnimationTime CPlayListUser::getLocalTime (uint8 slot, double globalTime, const UAnimationSet& animSet) const
+{
+	// Cast
+	const CAnimationSetUser *cAnimSetUser=safe_cast<const CAnimationSetUser*>(&animSet);
 
+	// Get the animationset pointer
+	const CAnimationSet* cAnimSet=cAnimSetUser->getAnimationSet ();
+	nlassert (cAnimSet);
+
+	return _PlayList.getLocalTime (slot, globalTime, *cAnimSet);
+}
+
+// ***************************************************************************
+
+float CPlayListUser::getLocalWeight (uint8 slot, double globalTime) const
+{
+	return _PlayList.getLocalWeight (slot, globalTime);
+}
+
+// ***************************************************************************
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file animation_playlist.cpp
  * <File description>
  *
- * $Id: animation_playlist.cpp,v 1.7 2001/09/05 11:45:28 corvazier Exp $
+ * $Id: animation_playlist.cpp,v 1.8 2001/09/18 14:35:18 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -186,42 +186,19 @@ void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, double time) const
 		{
 			if (_Animations[s]!=empty)
 			{
+				// Get the local time
+				CAnimationTime wrappedTime = getLocalTime (s, time, *animSet);
+
 				// Get the animation
 				const CAnimation *pAnimation=animSet->getAnimation (_Animations[s]);
 
-				// If this animation exists
-				if (pAnimation)
-				{
-					// Compute the non-wrapped time
-					CAnimationTime wrappedTime=pAnimation->getBeginTime ()+(CAnimationTime)((time-_TimeOrigin[s])*_SpeedFactor[s]);
+				// Disable mode ?
+				if ((_WrapMode[s]==Disable)&&((wrappedTime<pAnimation->getBeginTime ())||(wrappedTime>pAnimation->getEndTime ())))
+					enabled=false;
 
-					// Wrap mode
-					switch (_WrapMode[s])
-					{
-					case Clamp:
-						clamp (wrappedTime, pAnimation->getBeginTime (), pAnimation->getEndTime ());
-						break;
-					case Repeat:
-						// Mod repeat the time
-						{
-							float length=pAnimation->getEndTime ()-pAnimation->getBeginTime();
-							if (wrappedTime>=pAnimation->getBeginTime())
-								wrappedTime=pAnimation->getBeginTime()+(float)fmod (wrappedTime-pAnimation->getBeginTime(), length);
-							else
-								wrappedTime=pAnimation->getBeginTime()+(float)fmod (wrappedTime-pAnimation->getBeginTime(), length)+length;
-						}
-						break;
-					case Disable:
-						// Disable the animation if out of bounds
-						if ((wrappedTime<pAnimation->getBeginTime ())||(wrappedTime>pAnimation->getEndTime ()))
-							enabled=false;
-						break;
-					}
-
-					// Set the time
-					if (enabled)
-						mixer.setSlotTime (s, wrappedTime);
-				}
+				// Set the time
+				if (enabled)
+					mixer.setSlotTime (s, wrappedTime);
 			}
 		}
 
@@ -328,5 +305,53 @@ void CAnimationPlaylist::serial (NLMISC::IStream& f)
 		f.serialEnum (_WrapMode[i]);
 	}
 }
+
+// ***************************************************************************
+
+CAnimationTime CAnimationPlaylist::getLocalTime (uint8 slot, double globalTime, const CAnimationSet& animSet) const
+{
+	// Get the animation
+	const CAnimation *pAnimation=animSet.getAnimation (_Animations[slot]);
+
+	// If this animation exists
+	if (pAnimation)
+	{
+		// Compute the non-wrapped time
+		CAnimationTime wrappedTime=pAnimation->getBeginTime ()+(CAnimationTime)((globalTime-_TimeOrigin[slot])*_SpeedFactor[slot]);
+
+		// Wrap mode
+		switch (_WrapMode[slot])
+		{
+		case Clamp:
+			clamp (wrappedTime, pAnimation->getBeginTime (), pAnimation->getEndTime ());
+			break;
+		case Repeat:
+			// Mod repeat the time
+			{
+				float length=pAnimation->getEndTime ()-pAnimation->getBeginTime();
+				if (wrappedTime>=pAnimation->getBeginTime())
+					wrappedTime=pAnimation->getBeginTime()+(float)fmod (wrappedTime-pAnimation->getBeginTime(), length);
+				else
+					wrappedTime=pAnimation->getBeginTime()+(float)fmod (wrappedTime-pAnimation->getBeginTime(), length)+length;
+			}
+			break;
+		}
+
+		// Return localTime
+		return wrappedTime;
+	}
+
+	return (CAnimationTime)globalTime;
+}
+
+// ***************************************************************************
+
+float CAnimationPlaylist::getLocalWeight (uint8 slot, double globalTime) const
+{
+	return getWeightValue (_StartWeightTime[slot], _EndWeightTime[slot], globalTime, _StartWeight[slot], _EndWeight[slot], _Smoothness[slot]);
+}
+
+// ***************************************************************************
+
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file animation_playlist.h
  * <File description>
  *
- * $Id: animation_playlist.h,v 1.2 2001/09/05 11:45:28 corvazier Exp $
+ * $Id: animation_playlist.h,v 1.3 2001/09/18 14:35:19 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -242,6 +242,26 @@ public:
 	  * \return the wrap mode in use.
 	  */
 	TWrapMode getWrapMode (uint8 slot) const;
+
+	/**
+	  * Convert a playlist global time in local time in a slot animation including wrap evaluation.
+	  *
+	  * \param slot is the slot in which the local time must be computed
+	  * \param time is the global time of the playlist
+	  *
+	  * \return the local time in the slot. If no animation are set in the slot, globalTime is returned.
+	  */
+	CAnimationTime getLocalTime (uint8 slot, double globalTime, const CAnimationSet& animSet) const;
+
+	/**
+	  * Compute weight of a slot at a given global playlist time
+	  *
+	  * \param slot is the slot in which the weight must be computed
+	  * \param time is the global time of the playlist
+	  *
+	  * \return the weight of the slot for the given time.
+	  */
+	float getLocalWeight (uint8 slot, double globalTime) const;
 
 	/**
 	  * Serial

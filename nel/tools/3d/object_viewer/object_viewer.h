@@ -29,6 +29,7 @@
 #include <nel/3d/channel_mixer.h>
 #include <nel/3d/shape.h>
 #include <nel/3d/event_mouse_listener.h>
+#include <nel/3d/light.h>
 #include <nel/misc/event_listener.h>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -81,6 +82,12 @@ public:
 
 	// Load a shape
 	bool loadShape (const char* filename);
+
+	// Set ambient color
+	void setAmbientColor (const NLMISC::CRGBA& color);
+
+	// Set ambient color
+	void setLight (unsigned char id, const NL3D::CLight& light);
 
 	// Load a shape
 	void resetCamera ();

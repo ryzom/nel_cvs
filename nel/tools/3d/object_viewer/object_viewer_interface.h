@@ -15,6 +15,12 @@ namespace NL3D
 {
 	class IShape;
 	class CAnimation;
+	class CLight;
+}
+
+namespace NLMISC
+{
+	class CRGBA;
 }
 
 class IObjectViewer
@@ -42,6 +48,12 @@ public:
 
 	// Set single animation
 	virtual void setSingleAnimation (NL3D::CAnimation* pAnim, const char* name)=0;
+
+	// Set ambient color
+	virtual void setAmbientColor (const NLMISC::CRGBA& color)=0;
+
+	// Set ambient color
+	virtual void setLight (unsigned char id, const NL3D::CLight& light)=0;
 
 	// Get instance
 	static OBJECT_VIEWER_EXPORT IObjectViewer* getInterface (int version=OBJECT_VIEWER_VERSION);

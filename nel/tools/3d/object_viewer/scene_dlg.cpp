@@ -248,6 +248,7 @@ void CSceneDlg::OnResetCamera()
 
 		// Reset the radius
 		float radius=pMesh->getBoundingBox().getRadius();
+		radius=pTransform->getMatrix().mulVector (CVector (radius, 0, 0)).norm();
 
 		// For each model in the list
 		for (uint m=1; m<ObjView->_ListTransformShape.size(); m++)
@@ -262,6 +263,7 @@ void CSceneDlg::OnResetCamera()
 
 			// Get the radius
 			float radius2=pMesh->getBoundingBox().getRadius();
+			radius2=pTransform->getMatrix().mulVector (CVector (radius2, 0, 0)).norm();
 
 			// *** Merge with previous
 

@@ -616,3 +616,19 @@ void CObjectViewer::setSingleAnimation (NL3D::CAnimation* pAnim, const char* nam
 
 // ***************************************************************************
 
+void CObjectViewer::setAmbientColor (const NLMISC::CRGBA& color)
+{
+	CNELU::Driver->setAmbientColor (color);
+}
+
+// ***************************************************************************
+
+void CObjectViewer::setLight (unsigned char id, const NL3D::CLight& light)
+{
+	CNELU::Driver->enableLight (id);
+	CNELU::Driver->setLight (id, light);
+}
+
+// ***************************************************************************
+
+

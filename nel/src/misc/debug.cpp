@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.35 2001/04/27 15:48:22 lecroart Exp $
+ * $Id: debug.cpp,v 1.36 2001/05/01 16:45:52 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,10 +167,13 @@ void nlMtDebug( const char *format, ... )
 {
 	createDebug ();
 
-	char *str;
-	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
-	DebugLog->displayNL (str);
-	MutexNLDebug->leave();
+	if ( ! DebugLog->noDisplayer() )
+	{
+		char *str;
+		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+		DebugLog->displayNL (str);
+		MutexNLDebug->leave();
+	}
 }
 
 } // NLMISC

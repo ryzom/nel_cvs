@@ -1,7 +1,7 @@
 /** \file log.h
  * CLog class
  *
- * $Id: log.h,v 1.16 2001/02/13 16:49:45 lecroart Exp $
+ * $Id: log.h,v 1.17 2001/05/01 16:45:52 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,9 @@ public:
 
 	/// Display a string (and nothing more) to all attached displayers
 	void displayRaw (const char *format, ...);
+
+	/// Returns true if no displayer is attached
+	bool noDisplayer() const { return _Displayers.empty(); }
 
 protected:
 

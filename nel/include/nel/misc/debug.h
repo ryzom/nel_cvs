@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.29 2001/04/17 15:33:09 lecroart Exp $
+ * $Id: debug.h,v 1.30 2001/05/01 16:45:52 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,8 +86,18 @@ void createDebug ();
 extern CMutex *MutexNLDebug;
 void nlMtDebug( const char *format, ... );
 
+
+inline void EnterMutexNLDebug()
+{
+	if ( ! DebugLog->noDisplayer() )
+	{
+		MutexNLDebug->enter();
+	}
+}
+
+
 #define nldebug \
-NLMISC::createDebug (), NLMISC::MutexNLDebug->enter(), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlMtDebug
+NLMISC::createDebug (), NLMISC::EnterMutexNLDebug(), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlMtDebug
 
 
 /**

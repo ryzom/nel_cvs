@@ -1,7 +1,7 @@
 /** \file env_effect.h
  * CEnvEffect: environmental effects and where they are applied
  *
- * $Id: env_effect.h,v 1.3 2001/07/17 14:21:54 cado Exp $
+ * $Id: env_effect.h,v 1.4 2001/08/02 13:48:22 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,60 @@
 #include "bounding_shape.h"
 
 namespace NLSOUND {
+
+
+/// EAX environmental effect presets
+enum TEnvEffectPreset
+{
+    ENVEFFECT_GENERIC,
+    ENVEFFECT_PADDEDCELL,
+    ENVEFFECT_ROOM,
+    ENVEFFECT_BATHROOM,
+    ENVEFFECT_LIVINGROOM,
+    ENVEFFECT_STONEROOM,
+    ENVEFFECT_AUDITORIUM,
+    ENVEFFECT_CONCERTHALL,
+    ENVEFFECT_CAVE,
+    ENVEFFECT_ARENA,
+    ENVEFFECT_HANGAR,
+    ENVEFFECT_CARPETEDHALLWAY,
+    ENVEFFECT_HALLWAY,
+    ENVEFFECT_STONECORRIDOR,
+    ENVEFFECT_ALLEY,
+    ENVEFFECT_FOREST,
+    ENVEFFECT_CITY,
+    ENVEFFECT_MOUNTAINS,
+    ENVEFFECT_QUARRY,
+    ENVEFFECT_PLAIN,
+    ENVEFFECT_PARKINGLOT,
+    ENVEFFECT_SEWERPIPE,
+    ENVEFFECT_UNDERWATER,
+    ENVEFFECT_DRUGGED,
+    ENVEFFECT_DIZZY,
+    ENVEFFECT_PSYCHOTIC,
+
+    ENVEFFECT_COUNT
+}; // Note: must follow the EAX enum
+
+
+/// Enveffect preset and size
+struct TEnvEffectRoom
+{
+	TEnvEffectPreset	Preset;
+	float				Size;
+
+	/// Constructor
+	TEnvEffectRoom( const TEnvEffectPreset& preset=ENVEFFECT_ROOM, float size=7.5 ) : Preset(preset), Size(size) {}
+
+	/// Serialize
+	void serial ( NLMISC::IStream& s )
+	{
+		uint8 preset8 = (uint8)Preset; // out
+		s.serial( preset8 );
+		Preset = (TEnvEffectPreset)preset8; // in
+		s.serial( Size );
+	}
+};
 
 
 /**
@@ -65,13 +119,16 @@ public:
 	/// Select the current environment
 	void			selectEnv( const std::string& tag );
 	/// Return the environment type
-	uint			getEnvNum() const		{ return _EnvNums[_Current]; }
+	TEnvEffectPreset getEnvNum() const		{ return _EnvNums[_Current].Preset; }
 	/// Return the environment size
-	float			getEnvSize() const		{ return _BoundingShape->getDiameter(); }
+	float			getEnvSize() const;
 
 
-	/// Set the environment type (EDIT)
-	void			addEnvNum( uint8 num, const std::string& tag="" );
+	/** Set the environment type (EDIT). 
+	 * The size of the environment is computed with the bounding shape, unless the argument
+	 * customshape is positive.
+	 */
+	void			addEnvNum( TEnvEffectPreset num, const std::string& tag="", float customsize=-1.0f );
 	/// Access the bounding shape (EDIT)
 	IBoundingShape	*getBoundingShape()		{ return _BoundingShape; }
 	/// Set the bounding shape (EDIT)
@@ -83,16 +140,16 @@ public:
 private:
 
 	// Index of the current environment type
-	uint8						_Current;
+	uint8							_Current;
 
 	// Types of environment
-	std::vector<uint8>			_EnvNums;
+	std::vector<TEnvEffectRoom>		_EnvNums;
 
 	// Environment tags (indicate which env to select)
-	std::vector<std::string>	_Tags;
+	std::vector<std::string>		_Tags;
 
 	// Bounding shape
-	IBoundingShape				*_BoundingShape;
+	IBoundingShape					*_BoundingShape;
 };
 
 
@@ -102,3 +159,5 @@ private:
 #endif // NL_ENV_EFFECT_H
 
 /* End of env_effect.h */
+
+	

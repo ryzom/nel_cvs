@@ -1,7 +1,7 @@
 /** \file env_effect.cpp
  * CEnvEffect: environmental effects and where they are applied
  *
- * $Id: env_effect.cpp,v 1.3 2001/07/19 12:50:14 cado Exp $
+ * $Id: env_effect.cpp,v 1.4 2001/08/02 13:48:22 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ CEnvEffect::CEnvEffect() : _Current(0), _BoundingShape(NULL)
 void			CEnvEffect::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 {
 	s.serialCheck( (uint32)'FEN' ); // NeL Environment FX
-	s.serialVersion( 1 );
+	s.serialVersion( 2 );
 	s.serial( nb );
 }
 
@@ -78,10 +78,26 @@ uint32			CEnvEffect::load( std::vector<CEnvEffect*>& container, NLMISC::IStream&
 /*
  * Set the environment type (EDIT)
  */
-void			CEnvEffect::addEnvNum( uint8 num, const std::string& tag )
+void			CEnvEffect::addEnvNum( TEnvEffectPreset num, const std::string& tag, float customsize )
 {
-	_EnvNums.push_back( num );
+	_EnvNums.push_back( TEnvEffectRoom(num,customsize) );
 	_Tags.push_back( tag );
+}
+
+
+/*
+ * Return the environment size
+ */
+float			CEnvEffect::getEnvSize() const
+{
+	if ( _EnvNums[_Current].Size > 0 )
+	{
+		return _EnvNums[_Current].Size;
+	}
+	else
+	{
+		return _BoundingShape->getDiameter();
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file tess_face_priority_list.h
  * <File description>
  *
- * $Id: tess_face_priority_list.h,v 1.3 2002/08/22 15:17:55 corvazier Exp $
+ * $Id: tess_face_priority_list.h,v 1.4 2002/08/22 16:33:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,7 +109,7 @@ public:
 	 *	To avoid this, if distMaxMod==800, then insert(1050) will really insert at 850, so elements will be poped
 	 *	not as the same time (for the extra cost of some elements get poped too early...).
 	 *
-	 *	\param numQuadrant set 0 if don't want to support quadrant notion
+	 *	\param numQuadrant set 0 if don't want to support quadrant notion. else set >=4 and a power of 2 (else nlassert)
 	 */
 	void			init(float distStep, float distMax, float distMaxMod, uint numQuadrant);
 	/** Clear the priority list. All elements are removed. NB: for convenience, the remainder is reset.
@@ -165,6 +165,10 @@ private:
 	uint			_NEntries;
 	uint			_EntryModStart;
 	uint			_NumQuadrant;
+	// For Fast Selection of Quadrant. Split the list of quadrant into 4. NB: ids start at 0. and must AND the Ids.
+	uint			_MaskQuadrant;
+	uint			_QuarterQuadrantStart[4];
+	uint			_QuarterQuadrantEnd[4];
 
 
 	/// \name The rolling tables

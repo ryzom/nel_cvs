@@ -1,7 +1,7 @@
 /** \file tess_face_priority_list.cpp
  * <File description>
  *
- * $Id: tess_face_priority_list.cpp,v 1.3 2002/08/22 14:41:41 berenguier Exp $
+ * $Id: tess_face_priority_list.cpp,v 1.4 2002/08/22 16:33:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -178,9 +178,11 @@ CTessFacePriorityList::~CTessFacePriorityList()
 // ***************************************************************************
 void		CTessFacePriorityList::init(float distStep, float distMax, float distMaxMod, uint numQuadrant)
 {
+	uint i;
 	nlassert(distStep>0);
 	nlassert(distMax>0);
 	nlassert(distMaxMod<distMax);
+	nlassert(numQuadrant==0 || (numQuadrant>=4 && isPowerOf2(numQuadrant)) );
 
 	// clear the prioriy list before.
 	clear();
@@ -192,9 +194,9 @@ void		CTessFacePriorityList::init(float distStep, float distMax, float distMaxMo
 	NLMISC::clamp(_EntryModStart, 0U, _NEntries-1);
 	_NumQuadrant= numQuadrant;
 
-	// Allocate the Rolling tables.
+	// Build the Rolling tables.
 	_RollingTables.resize(1+_NumQuadrant);
-	for(uint i=0;i<_RollingTables.size();i++)
+	for(i=0;i<_RollingTables.size();i++)
 	{
 		_RollingTables[i].init(_NEntries);
 		// setup the quadrant direction. NB: 0 not used since "Direction less rolling table"
@@ -209,6 +211,18 @@ void		CTessFacePriorityList::init(float distStep, float distMax, float distMaxMo
 			_RollingTables[i].QuadrantDirection= mat.getJ();
 		}
 	}
+
+	// Build Quarter Selection. In is in CCW order. Out: see selectQuadrant()
+	const	uint	quarterLut[4]= {1,3,2,0};
+	_MaskQuadrant= _NumQuadrant-1;
+	for(i=0;i<4;i++)
+	{
+		// Re-Order for faster ASM acces. see selectQuadrant()
+		uint	idx= quarterLut[i];
+		_QuarterQuadrantStart[idx]= i*_NumQuadrant/4;
+		_QuarterQuadrantEnd[idx]= 1+ (i+1)*_NumQuadrant/4;
+	}
+
 }
 
 // ***************************************************************************
@@ -222,12 +236,55 @@ void		CTessFacePriorityList::clear()
 // ***************************************************************************
 uint		CTessFacePriorityList::selectQuadrant(const CVector &direction)
 {
-	// For all quadrant not 0, return the best direction
+	// if numQuadrants=0, ret 0.
+	if(_NumQuadrant==0)
+		return 0;
+
+
+	// select the quarter.
+	uint	quarterId;
+#ifdef	NL_OS_WINDOWS
+	__asm
+	{
+		mov		esi, direction
+		mov		eax, [esi]direction.y
+		mov		ebx, [esi]direction.x
+		// read the sign
+		and		eax, 0x80000000
+		and		ebx, 0x80000000
+		// set the bit
+		shr		eax, 30
+		shr		ebx, 31
+		// assemble
+		or		eax, ebx
+		mov		quarterId, eax
+	}
+#else
+	if(direction.y>0)
+	{
+		if(direction.x>0)	quarterId= 0;
+		else				quarterId= 1;
+	}
+	else
+	{
+		if(direction.x>0)	quarterId= 2;
+		else				quarterId= 3;
+	}
+#endif
+
+	// Run only the quadrants of the associated quarter.
+	uint	quadrantStart= _QuarterQuadrantStart[quarterId];
+	uint	quadrantEnd= _QuarterQuadrantEnd[quarterId];
+
+
+	// For all quadrants of the quarter, return the best direction
 	float	bestDirPs= -FLT_MAX;
 	uint	bestQuadrant= 0;
-	// NB: if numQuad=0, still work since return 0 => "direction less rolling table"
-	for(uint i=1;i<_RollingTables.size();i++)
+	for(uint i=quadrantStart;i<quadrantEnd;i++)
 	{
+		// get the quadrant Id. Must mask for last (0). And Start at 1 in the _RollingTables.
+		uint	quadrantId= (i&_MaskQuadrant)+1;
+		// Test with this quadrant
 		float	ps= direction*_RollingTables[i].QuadrantDirection;
 		if(ps>bestDirPs)
 		{

@@ -182,9 +182,12 @@ void CMainFrame::getAllInterfaces()
 		#ifdef NL_DEBUG_FAST
 			_WorldEditorModule = AfxLoadLibrary ("WorldEditor_debug_fast.dll");
 		#endif
-		IWEGetInterface = (IWORLDEDITOR_GETINTERFACE)::GetProcAddress (_WorldEditorModule, IWORLDEDITOR_GETINTERFACE_NAME);
-		if (IWEGetInterface != NULL)
-			_WorldEditor = IWEGetInterface (WORLDEDITOR_VERSION);
+		if (_WorldEditorModule != NULL)
+		{
+			IWEGetInterface = (IWORLDEDITOR_GETINTERFACE)::GetProcAddress (_WorldEditorModule, IWORLDEDITOR_GETINTERFACE_NAME);
+			if (IWEGetInterface != NULL)
+				_WorldEditor = IWEGetInterface (WORLDEDITOR_VERSION);
+		}
 	}
 
 	// Get Georges Interface
@@ -198,9 +201,12 @@ void CMainFrame::getAllInterfaces()
 		#ifdef NL_DEBUG_FAST
 			_GeorgesModule = AfxLoadLibrary ("Georges_debug_fast.dll");
 		#endif
-		IGGetInterface = (IGEORGES_GETINTERFACE)::GetProcAddress (_GeorgesModule, IGEORGES_GETINTERFACE_NAME);
-		if (IGGetInterface != NULL)
-			_Georges = IGGetInterface (GEORGES_VERSION);
+		if (_GeorgesModule != NULL)
+		{
+			IGGetInterface = (IGEORGES_GETINTERFACE)::GetProcAddress (_GeorgesModule, IGEORGES_GETINTERFACE_NAME);
+			if (IGGetInterface != NULL)
+				_Georges = IGGetInterface (GEORGES_VERSION);
+		}
 	}
 
 	// Get LogicEditor Interface
@@ -209,14 +215,17 @@ void CMainFrame::getAllInterfaces()
 		ILOGICEDITOR_GETINTERFACE ILEGetInterface = NULL;
 
 		#ifdef NL_RELEASE_DEBUG
-			_LogicEditorModule = AfxLoadLibrary ("Logic_Editor_release_debug.dll");
+			_LogicEditorModule = AfxLoadLibrary ("Logic_Editor_rd.dll");
 		#endif
 		#ifdef NL_DEBUG_FAST
 			_LogicEditorModule = AfxLoadLibrary ("Logic_Editor_df.dll");
 		#endif
-		ILEGetInterface = (ILOGICEDITOR_GETINTERFACE)::GetProcAddress (_LogicEditorModule, ILOGICEDITOR_GETINTERFACE_NAME);
-		if (ILEGetInterface != NULL)
-			_LogicEditor = ILEGetInterface (LOGIC_EDITOR_VERSION);
+		if (_LogicEditorModule != NULL)
+		{
+			ILEGetInterface = (ILOGICEDITOR_GETINTERFACE)::GetProcAddress (_LogicEditorModule, ILOGICEDITOR_GETINTERFACE_NAME);
+			if (ILEGetInterface != NULL)
+				_LogicEditor = ILEGetInterface (LOGIC_EDITOR_VERSION);
+		}
 	}
 }
 

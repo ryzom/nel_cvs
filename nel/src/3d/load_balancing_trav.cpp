@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.1 2001/06/29 09:48:57 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.2 2001/08/23 10:13:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,8 +74,7 @@ void				CLoadBalancingTrav::traverse()
 	// reset NbFacePass0.
 	NbFacePass0= 0;
 	// count NbFacePass0.
-	if(Root)
-		Root->traverse(NULL);
+	traverseVisibilityList();
 
 
 	// Compute ratio
@@ -97,9 +96,21 @@ void				CLoadBalancingTrav::traverse()
 	// 2nd pass, compute Faces that will be drawed.
 	//================
 	_LoadPass= 1;
-	if(Root)
-		Root->traverse(NULL);
+	traverseVisibilityList();
 
+}
+
+
+// ***************************************************************************
+void				CLoadBalancingTrav::traverseVisibilityList()
+{
+	// Traverse all nodes of the visibility list.
+	uint	nObs= _ClipTrav->numVisibleObs();
+	for(uint i=0; i<nObs; i++)
+	{
+		IBaseClipObs	*clipObs= _ClipTrav->getVisibleObs(i);
+		clipObs->LoadBalancingObs->traverse(NULL);
+	}
 }
 
 

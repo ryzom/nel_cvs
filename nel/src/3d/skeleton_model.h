@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.4 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.5 2001/08/23 10:13:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -176,7 +176,7 @@ class	CSkeletonModelAnimDetailObs : public CTransformAnimDetailObs
 public:
 
 	/** this do :
-	 *  - call CTransformAnimDetailObs::traverse() => traverseSons.
+	 *  - call CTransformAnimDetailObs::traverse()
 	 *  - update animated bones.
 	 */
 	virtual	void	traverse(IObs *caller);

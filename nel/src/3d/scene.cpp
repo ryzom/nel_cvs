@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.44 2001/08/16 15:50:00 besson Exp $
+ * $Id: scene.cpp,v 1.45 2001/08/23 10:13:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,8 +192,10 @@ void	CScene::initDefaultRoots()
 	Root= static_cast<CTransform*>(createModel(TransformId));
 	HrcTrav->setRoot(Root);
 	ClipTrav->setRoot(Root);
-	AnimDetailTrav->setRoot(Root);
-	LoadBalancingTrav->setRoot(Root);
+
+	// need no root for AnimDetailTrav and LoadBalancingTrav.
+	// AnimDetailTrav->setRoot(Root);
+	// LoadBalancingTrav->setRoot(Root);
 
 
 	// The root is always freezed (never move).
@@ -264,6 +266,11 @@ void	CScene::render(bool	doHrcPass)
 	RenderTrav->setViewport (_Viewport);
 
 	LoadBalancingTrav->setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+
+
+	// Set the clipTrav for AnimDetailTrav and LoadBalancingTrav.
+	AnimDetailTrav->setClipTrav (ClipTrav);
+	LoadBalancingTrav->setClipTrav (ClipTrav);
 
 
 	// Set the renderTrav for cliptrav.

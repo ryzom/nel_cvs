@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.6 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.7 2001/08/23 10:13:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -185,39 +185,38 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 	CTransformAnimDetailObs::traverse(caller);
 
 	// if skeleton is clipped, no need to transform.
-	if(ClipObs->Visible)
+	// NB: no need to test ClipObs->Visible because of VisibilityList use.
+
+	// test if bones must be updated.
+	CSkeletonModel	*sm= (CSkeletonModel*)Model;
+	if(sm->IAnimatable::isTouched(CSkeletonModel::OwnerBit))
 	{
-		// test if bones must be updated.
-		CSkeletonModel	*sm= (CSkeletonModel*)Model;
-		if(sm->IAnimatable::isTouched(CSkeletonModel::OwnerBit))
+		// Retrieve the WorldMatrix of the current CTransformShape.
+		CMatrix		&modelWorldMatrix= HrcObs->WorldMatrix;
+
+		// must test / update the hierarchy of Bones.
+		// Since they are orderd in depth-first order, we are sure that parent are computed before sons.
+		for(uint i=0;i<sm->Bones.size();i++)
 		{
-			// Retrieve the WorldMatrix of the current CTransformShape.
-			CMatrix		&modelWorldMatrix= HrcObs->WorldMatrix;
-
-			// must test / update the hierarchy of Bones.
-			// Since they are orderd in depth-first order, we are sure that parent are computed before sons.
-			for(uint i=0;i<sm->Bones.size();i++)
-			{
-				sint	fatherId= sm->Bones[i].getFatherId();
-				// if a root bone...
-				if(fatherId==-1)
-					// Compute root bone worldMatrix.
-					sm->Bones[i].compute( NULL, modelWorldMatrix);
-				else
-					// Compute bone worldMatrix.
-					sm->Bones[i].compute( &sm->Bones[fatherId], modelWorldMatrix);
-			}
-
-			sm->IAnimatable::clearFlag(CSkeletonModel::OwnerBit);
+			sint	fatherId= sm->Bones[i].getFatherId();
+			// if a root bone...
+			if(fatherId==-1)
+				// Compute root bone worldMatrix.
+				sm->Bones[i].compute( NULL, modelWorldMatrix);
+			else
+				// Compute bone worldMatrix.
+				sm->Bones[i].compute( &sm->Bones[fatherId], modelWorldMatrix);
 		}
 
-		// Sticked Objects: must update their WorldMatrix.
-		CSkeletonModel::ItStickObjectSet	it;
-		for(it=sm->_StickedObjects.begin(); it!=sm->_StickedObjects.end(); it++)
-		{
-			CBone	&bone= sm->Bones[it->BoneId];
-			it->Transform->updateWorldMatrixFromSkeleton(bone.getWorldMatrix());
-		}
+		sm->IAnimatable::clearFlag(CSkeletonModel::OwnerBit);
+	}
+
+	// Sticked Objects: must update their WorldMatrix.
+	CSkeletonModel::ItStickObjectSet	it;
+	for(it=sm->_StickedObjects.begin(); it!=sm->_StickedObjects.end(); it++)
+	{
+		CBone	&bone= sm->Bones[it->BoneId];
+		it->Transform->updateWorldMatrixFromSkeleton(bone.getWorldMatrix());
 	}
 
 }

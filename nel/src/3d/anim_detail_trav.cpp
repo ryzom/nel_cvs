@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * <File description>
  *
- * $Id: anim_detail_trav.cpp,v 1.3 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.4 2001/08/23 10:13:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,23 @@ IObs				*CAnimDetailTrav::createDefaultObs() const
 	return new CDefaultAnimDetailObs;
 }
 
+
+// ***************************************************************************
+void				CAnimDetailTrav::traverse()
+{
+	// Inc the date.
+	CurrentDate++;
+
+	// Traverse all nodes of the visibility list.
+	uint	nObs= _ClipTrav->numVisibleObs();
+	for(uint i=0; i<nObs; i++)
+	{
+		IBaseClipObs	*clipObs= _ClipTrav->getVisibleObs(i);
+		clipObs->AnimDetailObs->traverse(NULL);
+	}
+}
+
+
 // ***************************************************************************
 void	IBaseAnimDetailObs::init()
 {
@@ -47,6 +64,7 @@ void	IBaseAnimDetailObs::init()
 	nlassert( dynamic_cast<IBaseClipObs*> (getObs(ClipTravId)) );
 	ClipObs= static_cast<IBaseClipObs*> (getObs(ClipTravId));
 }
+
 
 
 } // NL3D

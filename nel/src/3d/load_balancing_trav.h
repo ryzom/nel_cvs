@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.h
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.h,v 1.1 2001/06/29 09:48:57 berenguier Exp $
+ * $Id: load_balancing_trav.h,v 1.2 2001/08/23 10:13:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@ using NLMISC::CMatrix;
 class IBaseLoadBalancingObs;
 class IBaseHrcObs;
 class IBaseClipObs;
+class CClipTrav;
 
 
 // ***************************************************************************
@@ -83,6 +84,8 @@ public:
 	//@}
 
 
+	void				setClipTrav(CClipTrav *trav) {_ClipTrav= trav;}
+
 
 	/// \name LoadBalancing mgt.
 	//@{
@@ -121,6 +124,11 @@ private:
 
 	// use this ratio into Pass 1 to reduce faces.
 	float				_FaceRatio;
+
+	// The loadBalancing balance only visible objects.
+	CClipTrav			*_ClipTrav;
+	void				traverseVisibilityList();
+
 };
 
 
@@ -174,7 +182,7 @@ public:
  * The default LoadBalancing observer, used by unspecified models.
  * This observer:
  * - leave the notification system to DO NOTHING.
- * - implement the traverse() method to DO NOTHING, but traverseSons.
+ * - implement the traverse() method to DO NOTHING
  *
  * \sa IBaseLoadBalancingObs
  * \author Lionel Berenguier
@@ -193,7 +201,7 @@ public:
 	//@{
 	virtual	void	traverse(IObs *caller)
 	{
-		traverseSons();
+		// no need to traverseSons. No graph here.
 	}
 	//@}
 

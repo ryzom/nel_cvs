@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.h
  * <File description>
  *
- * $Id: anim_detail_trav.h,v 1.2 2001/06/29 09:48:57 berenguier Exp $
+ * $Id: anim_detail_trav.h,v 1.3 2001/08/23 10:13:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,9 +41,10 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 
-class IBaseAnimDetailObs;
-class IBaseHrcObs;
-class IBaseClipObs;
+class	IBaseAnimDetailObs;
+class	IBaseHrcObs;
+class	IBaseClipObs;
+class	CClipTrav;
 
 
 // ***************************************************************************
@@ -56,6 +57,7 @@ const NLMISC::CClassId		AnimDetailTravId=NLMISC::CClassId(0x373f6772, 0x3f562fa3
 /**
  * The AnimDetail traversal.
  * AnimDetail observers MUST derive from IBaseAnimDetailObs.
+ * There is no AnimDetail graph. traverse() use the clipTrav VisibilityList to traverse all observers.
  *
  * NB: see CScene for 3d conventions (orthonormal basis...)
  * \sa CScene IBaseAnimDetailObs
@@ -82,21 +84,20 @@ public:
 	 * This order is important for possibles lights sticked to bones of skeletons.
 	 */
 	sint				getRenderOrder() const {return 2200;}
-	void				traverse()
-	{
-		// Inc the date.
-		CurrentDate++;
-		// Traverse the graph.
-		if(Root)
-			Root->traverse(NULL);
-	}
+	void				traverse();
 	//@}
+
+
+	void				setClipTrav(CClipTrav *trav) {_ClipTrav= trav;}
 
 
 public:
 	// ONLY FOR OBSERVERS.
 
 	sint64		CurrentDate;	// The current date of the traversal, usefull for evaldetail just one time..
+
+private:
+	CClipTrav	*_ClipTrav;
 };
 
 
@@ -151,7 +152,7 @@ public:
  * The default AnimDetail observer, used by unspecified models.
  * This observer:
  * - leave the notification system to DO NOTHING.
- * - implement the traverse() method to DO NOTHING, but traverseSons.
+ * - implement the traverse() method to DO NOTHING.
  *
  * \sa IBaseAnimDetailObs
  * \author Lionel Berenguier
@@ -170,7 +171,7 @@ public:
 	//@{
 	virtual	void	traverse(IObs *caller)
 	{
-		traverseSons();
+		// no need to traverseSons. No graph here.
 	}
 	//@}
 

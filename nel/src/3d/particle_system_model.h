@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.15 2001/08/16 17:06:18 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.16 2001/08/23 10:13:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -277,7 +277,7 @@ class	CParticleSystemDetailObs : public CTransformAnimDetailObs
 public:
 
 	/** this do :
-	 *  - call CTransformAnimDetailObs::traverse() => traverseSons.
+	 *  - call CTransformAnimDetailObs::traverse()
 	 *  - update particles.
 	 */
 	virtual	void	traverse(IObs *caller);	

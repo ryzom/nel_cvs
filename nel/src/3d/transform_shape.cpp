@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.12 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.13 2001/08/23 10:13:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,8 +105,7 @@ void	CTransformShapeLoadBalancingObs::traverse(IObs *caller)
 	else
 		traversePass1();
 
-	// important for the root only. Else, There is no reason to do a hierarchy for LoadBalancing.
-	traverseSons();
+	// There is no reason to do a hierarchy for LoadBalancing. => no traverseSons()
 }
 
 

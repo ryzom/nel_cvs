@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.16 2001/08/16 17:07:38 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.17 2001/08/23 10:13:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,85 +191,78 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 	CTransformAnimDetailObs::traverse(caller);
 	
 
+	nlassert(dynamic_cast<CParticleSystemModel *>(Model));
+	CParticleSystemModel *psm= (CParticleSystemModel *)Model;
+	if (psm->_Invalidated) return;
 
-	if (ClipObs->Visible)
+	CParticleSystem *ps = psm->getPS();
+
+	
+
+	// check for trigger. If the trigger is false, and there is a system instanciated, we delete it.
+	if (!psm->getEditionMode())
 	{
-		
-
-		nlassert(dynamic_cast<CParticleSystemModel *>(Model));
-		CParticleSystemModel *psm= (CParticleSystemModel *)Model;
-		if (psm->_Invalidated) return;
-
-		CParticleSystem *ps = psm->getPS();
-
-		
-	
-		// check for trigger. If the trigger is false, and there is a system instanciated, we delete it.
-		if (!psm->getEditionMode())
-		{
-			if (!psm->_TriggerAnimatedValue.Value)
-			{									
-				// system is off, or hasn't been instanciated now...
-				if (ps)
-				{
-					delete ps;
-					psm->_ParticleSystem = NULL;			
-				}
-				return;
-			}
-		}
-
-	
-
-		// the system or its center is in the view frustum, but it may not have been instanciated from its shape now
-		if (!ps)
-		{
-			nlassert(psm->_Scene);
-			nlassert(psm->Shape);
-			ps = psm->_ParticleSystem = (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) psm->Shape))->instanciatePS(*psm->_Scene);			
-		}
-
-		CClipTrav			*trav= (CClipTrav*) ClipObs->Trav;
-		const CMatrix		&mat= HrcObs->WorldMatrix;	 
-		ps->setSysMat(mat);
-		ps->setViewMat(trav->ViewMatrix);
-
-
-
-		if (psm->isAutoGetEllapsedTimeEnabled())
-		{
-			psm->setEllapsedTime(ps->getScene()->getEllapsedTime());
-		}
-		CAnimationTime delay = psm->getEllapsedTime();
-
-		psm->updateOpacityInfos();
-
-		//ps->setSysMat(psm->getWorldMatrix());
-		nlassert(ps->getScene());	
-
-
-		// setup the number of faces we allow
-		ps->setNumTris((uint) psm->getNumTrianglesAfterLoadBalancing());
-
-		// setup system user parameters for parameters that have been touched
-		for (uint k = 0; k < MaxPSUserParam; ++k)
-		{
-			if (psm->isTouched((uint)CParticleSystemModel::PSParam0 + k))
+		if (!psm->_TriggerAnimatedValue.Value)
+		{									
+			// system is off, or hasn't been instanciated now...
+			if (ps)
 			{
-				ps->setUserParam(k, psm->_UserParam[k].Value);
-				psm->clearFlag((uint)CParticleSystemModel::PSParam0 + k);
+				delete ps;
+				psm->_ParticleSystem = NULL;			
 			}
+			return;
 		}
-		
-
-		
-	
-		// animate particles
-		ps->step(PSCollision, delay);
-		ps->step(PSMotion, delay);	 
-		
-		
 	}
+
+
+
+	// the system or its center is in the view frustum, but it may not have been instanciated from its shape now
+	if (!ps)
+	{
+		nlassert(psm->_Scene);
+		nlassert(psm->Shape);
+		ps = psm->_ParticleSystem = (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) psm->Shape))->instanciatePS(*psm->_Scene);			
+	}
+
+	CClipTrav			*trav= (CClipTrav*) ClipObs->Trav;
+	const CMatrix		&mat= HrcObs->WorldMatrix;	 
+	ps->setSysMat(mat);
+	ps->setViewMat(trav->ViewMatrix);
+
+
+
+	if (psm->isAutoGetEllapsedTimeEnabled())
+	{
+		psm->setEllapsedTime(ps->getScene()->getEllapsedTime());
+	}
+	CAnimationTime delay = psm->getEllapsedTime();
+
+	psm->updateOpacityInfos();
+
+	//ps->setSysMat(psm->getWorldMatrix());
+	nlassert(ps->getScene());	
+
+
+	// setup the number of faces we allow
+	ps->setNumTris((uint) psm->getNumTrianglesAfterLoadBalancing());
+
+	// setup system user parameters for parameters that have been touched
+	for (uint k = 0; k < MaxPSUserParam; ++k)
+	{
+		if (psm->isTouched((uint)CParticleSystemModel::PSParam0 + k))
+		{
+			ps->setUserParam(k, psm->_UserParam[k].Value);
+			psm->clearFlag((uint)CParticleSystemModel::PSParam0 + k);
+		}
+	}
+	
+
+	
+
+	// animate particles
+	ps->step(PSCollision, delay);
+	ps->step(PSMotion, delay);	 
+	
 }
 
 
@@ -298,6 +291,12 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
 		CClipTrav			*trav= (CClipTrav*)Trav;
 		CParticleSystemModel		*m= (CParticleSystemModel*)Model;	
+
+
+		// Test if already visited.
+		if ((Date == trav->CurrentDate) && Visible)
+			return;
+		Date = trav->CurrentDate;
 
 
 		const std::vector<CPlane>	&pyramid= trav->WorldPyramid;
@@ -369,6 +368,8 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 				static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
 
 				Visible = true;		
+				// add this observer to the visibility list.
+				trav->addVisibleObs(this);
 				return;
 			}
 			else
@@ -409,6 +410,8 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 				static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
 
 				Visible = true;		
+				// add this observer to the visibility list.
+				trav->addVisibleObs(this);
 				return;
 				
 			}
@@ -485,6 +488,8 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 					static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
 					Visible = true;	       // we perform motion, but we don't show anything
 					m->_OutOfFrustum = true;
+					// add this observer to the visibility list.
+					trav->addVisibleObs(this);
 					return;
 				}
 
@@ -520,6 +525,8 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		nlassert(dynamic_cast<CClipTrav*>(Trav));
 		static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
 		Visible = true;
+		// add this observer to the visibility list.
+		trav->addVisibleObs(this);
 		m->_OutOfFrustum = false;
 }
 

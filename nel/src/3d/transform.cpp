@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.22 2001/07/30 14:40:14 besson Exp $
+ * $Id: transform.cpp,v 1.23 2001/08/23 10:13:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,9 @@
 
 #include "3d/transform.h"
 #include "3d/skeleton_model.h"
+
+
+using namespace NLMISC;
 
 
 namespace	NL3D
@@ -287,9 +290,12 @@ void	CTransformClipObs::traverse(IObs *caller)
 {
 	nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
 
-	if ((Date == static_cast<CClipTrav*>(Trav)->CurrentDate) && Visible)
+	CClipTrav		*clipTrav= safe_cast<CClipTrav*>(Trav);
+	IBaseClipObs	*callerClipObs= static_cast<IBaseClipObs*>(caller);
+
+	if ((Date == clipTrav->CurrentDate) && Visible)
 		return;
-	Date = static_cast<CClipTrav*>(Trav)->CurrentDate;
+	Date = clipTrav->CurrentDate;
 
 	Visible= false;
 
@@ -298,19 +304,20 @@ void	CTransformClipObs::traverse(IObs *caller)
 	bool	skeletonClip= false;
 	if( ((CTransform*)Model)->_FatherSkeletonModel!=NULL )
 	{
-		skeletonClip= static_cast<IBaseClipObs*>(caller)->Visible;
+		skeletonClip= callerClipObs->Visible;
 	}
 
 	// Test visibility or clip.
-	if(HrcObs->WorldVis && ( skeletonClip  ||  clip( static_cast<IBaseClipObs*>(caller)) )  )
+	if(HrcObs->WorldVis && ( skeletonClip  ||  clip(callerClipObs) )  )
 	{
 		Visible= true;
+		// add this observer to the visibility list.
+		clipTrav->addVisibleObs(this);
 
 		// Insert the model in the render list.
 		if(isRenderable())
 		{
-			nlassert(dynamic_cast<CClipTrav*>(Trav));
-			static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
+			clipTrav->RenderTrav->addRenderObs(RenderObs);
 		}
 	}
 
@@ -323,19 +330,17 @@ void	CTransformClipObs::traverse(IObs *caller)
 void	CTransformAnimDetailObs::traverse(IObs *caller)
 {
 	// AnimDetail behavior: animate only if not clipped.
-	if(ClipObs->Visible)
+	// NB: no need to test because of VisibilityList use.
+
+	// test if the refptr is NULL or not (RefPtr).
+	CChannelMixer	*chanmix= static_cast<CTransform*>(Model)->_ChannelMixer;
+	if(chanmix)
 	{
-		// test if the refptr is NULL or not (RefPtr).
-		CChannelMixer	*chanmix= static_cast<CTransform*>(Model)->_ChannelMixer;
-		if(chanmix)
-		{
-			// eval detail!!
-			chanmix->eval(true, static_cast<CAnimDetailTrav*>(Trav)->CurrentDate);
-		}
+		// eval detail!!
+		chanmix->eval(true, static_cast<CAnimDetailTrav*>(Trav)->CurrentDate);
 	}
 
-	// important for the root only. Else, There is no reason to do a hierarchy for AnimDetail.
-	traverseSons();
+	// no need to traverseSons. No graph here.
 }
 
 

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.5 2001/07/30 14:40:14 besson Exp $
+ * $Id: transform.h,v 1.6 2001/08/23 10:13:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -280,7 +280,8 @@ public:
 	 * The behavior is to:
 	 *	- test if HrcObs->WorldVis is visible.
 	 *	- test if the observer is clipped with clip() OR IF SKELETON MODEL, USE SKELETON MODEL clip!!
-	 *	- if visible and not clipped, set \c Visible=true (else false).
+	 *	- if visible and not clipped, set \c Visible=true (else false). and
+	 *		- add the <CTransformClipObs*> to the ClipTrav list
 	 *	- if Visible==true, and renderable, add it to the RenderTraversal: \c RenderTrav->addRenderObs(RenderObs);
 	 *	- always traverseSons(), to clip the sons.
 	 */

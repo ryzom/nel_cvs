@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.4 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: mesh_base_instance.h,v 1.5 2001/08/23 10:13:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,7 +156,7 @@ class	CMeshBaseInstanceAnimDetailObs : public CTransformAnimDetailObs
 public:
 
 	/** this do :
-	 *  - call CTransformAnimDetailObs::traverse() => traverseSons.
+	 *  - call CTransformAnimDetailObs::traverse()
 	 *  - update animated materials.
 	 */
 	virtual	void	traverse(IObs *caller);

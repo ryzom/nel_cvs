@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.11 2001/08/16 15:50:00 besson Exp $
+ * $Id: clip_trav.cpp,v 1.12 2001/08/23 10:13:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #include "3d/clip_trav.h"
 #include "3d/hrc_trav.h"
 #include "3d/render_trav.h"
+#include "3d/anim_detail_trav.h"
+#include "3d/load_balancing_trav.h"
 #include "3d/cluster.h"
 #include "3d/scene_group.h"
 #include "3d/transform_shape.h"
@@ -43,6 +45,7 @@ namespace	NL3D
 // ***************************************************************************
 CClipTrav::CClipTrav() : ViewPyramid(6), WorldPyramid(6)
 {
+	_VisibleList.reserve(1024);
 	RenderTrav = NULL;
 	CurrentDate = 0;
 	Accel.create (64, 16.0f);
@@ -123,6 +126,7 @@ void CClipTrav::traverse()
 
 	// Clear the render list.
 	RenderTrav->clearRenderList();
+	_VisibleList.clear();
 
 	// Found the cluster where the camera is
 	static vector<CCluster*> vCluster;
@@ -290,6 +294,10 @@ void IBaseClipObs::init()
 	HrcObs= static_cast<IBaseHrcObs*> (getObs(HrcTravId));
 	nlassert( dynamic_cast<IBaseRenderObs*> (getObs(RenderTravId)) );
 	RenderObs= static_cast<IBaseRenderObs*> (getObs(RenderTravId));
+
+	AnimDetailObs= safe_cast<IBaseAnimDetailObs*> (getObs(AnimDetailTravId));
+	LoadBalancingObs= safe_cast<IBaseLoadBalancingObs*> (getObs(LoadBalancingTravId));
+
 }
 
 

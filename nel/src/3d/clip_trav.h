@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.2 2001/07/30 14:40:14 besson Exp $
+ * $Id: clip_trav.h,v 1.3 2001/08/23 10:13:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,8 +41,11 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 
+class	IBaseClipObs;
 class	IBaseHrcObs;
 class	IBaseRenderObs;
+class	IBaseAnimDetailObs;
+class	IBaseLoadBalancingObs;
 class	CRenderTrav;
 class	CHrcTrav;
 class	CCluster;
@@ -97,6 +100,15 @@ public:
 
 	bool fullSearch (std::vector<CCluster*>& result, CInstanceGroup *pIG, CVector& pos);
 
+	/// \name Visible List mgt. Those visible observers are updated each traverse().
+	//@{
+	uint				numVisibleObs() const {return _VisibleList.size();}
+	IBaseClipObs		*getVisibleObs(uint i) const {return _VisibleList[i];}
+
+	// For ClipObservers only. NB: list is cleared at begining of traverse().
+	void				addVisibleObs(IBaseClipObs *obs) {_VisibleList.push_back(obs);}
+	//@}
+
 public:
 
 	/** \name FOR OBSERVERS ONLY.  (Read only)
@@ -117,6 +129,9 @@ public:
 	CCamera *Camera;
 	
 	CQuadGrid<CCluster*> Accel;
+
+private:
+	std::vector<IBaseClipObs*>	_VisibleList;
 };
 
 
@@ -145,6 +160,8 @@ public:
 	/// Shortcut to observers.
 	IBaseHrcObs		*HrcObs;
 	IBaseRenderObs	*RenderObs;
+	IBaseAnimDetailObs		*AnimDetailObs;
+	IBaseLoadBalancingObs	*LoadBalancingObs;
 
 	/** OUT variable (good after traverse()).
 	 * set to true is the object is visible (not clipped).

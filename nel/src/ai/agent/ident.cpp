@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.11 2001/04/09 08:49:41 chafik Exp $
+ * $Id: ident.cpp,v 1.12 2001/04/10 16:18:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,9 +108,11 @@ namespace NLAIAGENT
 
 			case 0:
 				return k;
+			case ':':
+				return k;
 				break;
 			}
-			if(*ident != 0) k <<= 4;
+			if(*ident != 0 && *ident != ':') k <<= 4;
 		}
 
 		return k;

@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.14 2001/04/05 15:29:02 chafik Exp $
+ * $Id: mailbox.cpp,v 1.15 2001/04/10 16:18:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,7 +76,7 @@ namespace NLAIAGENT
 
 	void CSimpleLocalMailBox::addMessage(IMessageBase *msg)
 	{
-		_ListMessage.push_back( msg );
+		_ListMessage.push_front( msg );
 	}
 
 	void CSimpleLocalMailBox::addMailBox(IMailBox *)
@@ -301,7 +301,7 @@ namespace NLAIAGENT
 
 	void CLocalMailBox::addMessage(IMessageBase *msg)
 	{
-		_ListMessageIn.push_back(msg);
+		_ListMessageIn.push_front(msg);
 	}
 	
 	// Ajoute une boite aux lettre dans la liste des boites aux lettres "source" (les bals à consulter).

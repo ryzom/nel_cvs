@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.13 2001/04/03 08:45:28 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.14 2001/04/10 16:18:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,9 +92,13 @@ namespace NLAIAGENT
 			_CodeContext->Self = this;
 
 			CIteratorContener i = m.getIterator();
-			NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *)i++;			
-			_CodeContext->Code = o;			
-			IObjectIA::CProcessResult r = o->run(*_CodeContext);			
+			NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *)i++;						
+			NLAISCRIPT::CStackPointer stack;
+			NLAISCRIPT::CStackPointer heap;
+			_CodeContext->InputOutput->incRef();
+			NLAISCRIPT::CCodeContext codeContext(stack,heap,NULL,this,_CodeContext->InputOutput);
+			codeContext.Code = o;
+			IObjectIA::CProcessResult r = o->run(codeContext);			
 		}
 		return NULL;
 	}	

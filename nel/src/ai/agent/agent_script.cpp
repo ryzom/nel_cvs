@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.51 2001/04/10 12:35:18 chafik Exp $
+ * $Id: agent_script.cpp,v 1.52 2001/04/10 16:18:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1306,7 +1306,9 @@ namespace NLAIAGENT
 		{
 			NLAISCRIPT::IOpCode &op = *opPtr;//getMethode(inheritance,i);
 			NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
-			int ip = (uint32)*context.Code;
+			int ip;
+			if(context.Code != NULL) ip = (uint32)*context.Code;
+			else ip =0;
 			context.Code = (NLAISCRIPT::CCodeBrancheRun *)opPtr;
 			*context.Code = 0;
 

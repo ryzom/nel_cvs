@@ -589,7 +589,9 @@ namespace NLAISCRIPT
 			{
 				NLAISCRIPT::IOpCode &op = *opPtr;
 				NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
-				int ip = (uint32)*context.Code;
+				int ip;
+				if(context.Code != NULL) ip = (uint32)*context.Code;
+				else ip =0;
 				context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
 				*context.Code = 0;
 

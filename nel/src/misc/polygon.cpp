@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.15 2002/08/21 09:41:13 lecroart Exp $
+ * $Id: polygon.cpp,v 1.16 2002/08/22 14:43:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1266,7 +1266,7 @@ bool  CPolygon2D::getNonNullSeg(uint &index) const
 	float norm2 = (Vertices[Vertices.size() - 1] - Vertices[0]).sqrnorm();
 	if ( norm2 > bestLength) 
 	{ 
-		bestIndex = Vertices.size() - 1;
+		index = Vertices.size() - 1;
 		return true;
 	}
 

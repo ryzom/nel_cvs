@@ -1,7 +1,7 @@
 /** \file task_manager.cpp
  * <File description>
  *
- * $Id: task_manager.cpp,v 1.4 2001/02/16 14:47:40 saffray Exp $
+ * $Id: task_manager.cpp,v 1.5 2001/02/20 15:36:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NLMISC {
  */
 CTaskManager::CTaskManager()
 {
-	_TreadRunning = true;
+	_ThreadRunning = true;
 	_Thread = IThread::create(this);
 	_Thread->start();
 }
@@ -44,8 +44,9 @@ CTaskManager::CTaskManager()
  */
 CTaskManager::~CTaskManager()
 {
-	_TreadRunning = false;
-	while(!_TreadRunning);
+	_ThreadRunning = false;
+	while(!_ThreadRunning)
+		nlSleep(0);
 }
 
 // Manage TaskQueue
@@ -53,7 +54,7 @@ void CTaskManager::run(void)
 {
 	IRunnable *runnableTask;
 
-	while(_TreadRunning)
+	while(_ThreadRunning)
 	{
 		{
 			CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
@@ -76,7 +77,7 @@ void CTaskManager::run(void)
 			sleepTask();
 		}
 	}
-	_TreadRunning = true;
+	_ThreadRunning = true;
 }
 
 // Add a task to TaskManager

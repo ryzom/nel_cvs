@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.35 2001/08/31 15:45:59 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.36 2001/09/03 12:43:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -5117,7 +5117,11 @@ void CPSConstraintMesh::clean(void)
 	if (_ModelBank)
 	{
 		nlassert(_ModelShape);
-		_ModelBank->release(_ModelShape);
+		/// todo Nicolas: check this \\// (Hulud)
+		if (_ModelShape)
+		{
+			_ModelBank->release(_ModelShape);
+		}
 		_ModelBank = NULL;
 		_ModelShape = NULL;
 		_ModelVb = NULL;

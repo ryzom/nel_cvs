@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.21 2002/08/27 14:36:24 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.22 2002/09/04 16:13:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,7 @@ Value* export_shape_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, false, ip);
+	theCNelExport.init (false, false, ip, true);
 
 	// Export path 
 	const char* sPath=arg_list[1]->to_string();
@@ -131,8 +131,6 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, false, ip);
-
 	// Get a INode pointer from the argument passed to us
 	INode *node = arg_list[0]->to_node();
 	nlassert (node);
@@ -149,6 +147,8 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	theExportSceneStruct.nOverSampling = arg_list[7]->to_int();
 	theExportSceneStruct.bExcludeNonSelected = arg_list[8]->to_bool()!=FALSE;
 	theExportSceneStruct.bShowLumel = arg_list[9]->to_bool()!=FALSE;
+
+	theCNelExport.init (false, false, ip, false);
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -190,7 +190,7 @@ Value* export_skeleton_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, false, ip);
+	theCNelExport.init (false, false, ip, true);
 
 	// Get a INode pointer from the argument passed to us
 	INode *node = arg_list[0]->to_node();
@@ -230,7 +230,7 @@ Value* export_animation_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, false, ip);
+	theCNelExport.init (false, false, ip, true);
 
 	// Export path 
 	const char* sPath=arg_list[1]->to_string();
@@ -296,7 +296,7 @@ Value* export_ig_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, false, ip);
+	theCNelExport.init (false, false, ip, true);
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -351,7 +351,7 @@ Value* export_skeleton_weight_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, false, ip);
+	theCNelExport.init (false, false, ip, true);
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -400,7 +400,7 @@ Value* view_shape_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (true, true, ip);
+	theCNelExport.init (true, true, ip, true);
 
 	theCNelExport.viewMesh (ip->GetTime());
 
@@ -418,7 +418,7 @@ Value* test_file_date_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, false, ip);
+	theCNelExport.init (false, false, ip, true);
 
 	// The 2 filenames
 	string file0 = arg_list[0]->to_string();
@@ -494,7 +494,7 @@ Value* export_vegetable_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, dialogMessage, ip);
+	theCNelExport.init (false, dialogMessage, ip, true);
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -516,7 +516,7 @@ Value* reload_texture_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, false, ip);
+	theCNelExport.init (false, false, ip, true);
 
 	// The 2 filenames
 	Texmap *texmap = arg_list[0]->to_texmap ();
@@ -551,7 +551,7 @@ Value* export_collision_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, false, ip);
+	theCNelExport.init (false, false, ip, true);
 
 	// Export path 
 	string sPath = arg_list[1]->to_string();
@@ -606,7 +606,7 @@ Value* export_pacs_primitives_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, false, ip);
+	theCNelExport.init (false, false, ip, true);
 
 	// Export path 
 	string sPath = arg_list[1]->to_string();
@@ -672,7 +672,7 @@ Value* export_lod_character_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, dialogMessage, ip);
+	theCNelExport.init (false, dialogMessage, ip, true);
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -719,7 +719,7 @@ Value* node_properties_cf (Value** arg_list, int count)
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
-	theCNelExport.init (false, dialogMessage, ip);
+	theCNelExport.init (false, dialogMessage, ip, true);
 	
 	// Build a seleted set
 	std::set<INode*> listNode;

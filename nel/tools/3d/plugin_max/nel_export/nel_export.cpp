@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.34 2002/08/27 14:36:24 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.35 2002/09/04 16:13:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -299,7 +299,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				{
 					// Init the exporter
 					nlassert (theIP);
-					theCNelExport.init (false, true, theIP);
+					theCNelExport.init (false, true, theIP, true);
 
 					// Register 3d models
 					// done in dllentry registerSerial3d();
@@ -422,7 +422,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
 					// Init the exporter
 					nlassert (theIP);
-					theCNelExport.init (false, true, theIP);
+					theCNelExport.init (false, true, theIP, true);
 
 					// Get time
 					TimeValue time=theCNelExport._Ip->GetTime();
@@ -469,7 +469,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
 					// Init the exporter
 					nlassert (theIP);
-					theCNelExport.init (false, true, theIP);
+					theCNelExport.init (false, true, theIP, true);
 
 					// Get time
 					TimeValue time=theCNelExport._Ip->GetTime();
@@ -525,7 +525,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				{
 					// Init the exporter
 					nlassert (theIP);
-					theCNelExport.init (true, true, theIP);
+					theCNelExport.init (true, true, theIP, true);
 
 					// Get time
 					TimeValue time=theCNelExport._Ip->GetTime();
@@ -539,7 +539,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				{
 					// Init the exporter
 					nlassert (theIP);
-					theCNelExport.init (false, true, theIP);
+					theCNelExport.init (false, true, theIP, true);
 					
 					uint nNumSelNode = theCNelExport._Ip->GetSelNodeCount();
 
@@ -576,7 +576,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				{
 					// Init the exporter
 					nlassert (theIP);
-					theCNelExport.init (false, true, theIP);
+					theCNelExport.init (false, true, theIP, true);
 					
 					char sConfigFileName[512];
 					strcpy( sConfigFileName, theCNelExport._Ip->GetDir(APP_PLUGCFG_DIR) );
@@ -604,7 +604,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				{
 					// Init the exporter
 					nlassert (theIP);
-					theCNelExport.init (false, true, theIP);
+					theCNelExport.init (false, true, theIP, true);
 					
 					// Build a seleted set
 					std::set<INode*> listNode;
@@ -627,7 +627,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				{
 					// Init the exporter
 					nlassert (theIP);
-					theCNelExport.init (false, true, theIP);
+					theCNelExport.init (false, true, theIP, true);
 					
 					uint nNumSelNode = theCNelExport._Ip->GetSelNodeCount();
 
@@ -661,7 +661,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				{
 					// Init the exporter
 					nlassert (theIP);
-					theCNelExport.init (false, true, theIP);
+					theCNelExport.init (false, true, theIP, true);
 					
 					uint nNumSelNode = theCNelExport._Ip->GetSelNodeCount();
 					if (nNumSelNode!=1)
@@ -696,7 +696,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				case ID_TEST_INTERFACE_MESH:					
 				{										
 					nlassert (theIP);					
-					theCNelExport.init (false, true, theIP);
+					theCNelExport.init (false, true, theIP, true);
 					// Get time
 					TimeValue time = theCNelExport._Ip->GetTime();
 					
@@ -844,7 +844,7 @@ void CNelExport::initOptions()
 	}
 }
 
-void CNelExport::init (bool view, bool errorInDialog, Interface *ip)
+void CNelExport::init (bool view, bool errorInDialog, Interface *ip, bool loadStruct)
 {
 	if (_ExportNel)
 	{
@@ -856,7 +856,8 @@ void CNelExport::init (bool view, bool errorInDialog, Interface *ip)
 	_Ip = ip;
 	
 	// Load the options
-	theCNelExport.initOptions();
+	if (loadStruct)
+		theCNelExport.initOptions();
 
 	// Create the CExportNel class
 	_ExportNel = new CExportNel (errorInDialog, view, view, ip, "NeL Export", &theExportSceneStruct);

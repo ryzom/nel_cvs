@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.16 2002/08/27 14:36:24 corvazier Exp $
+ * $Id: nel_export.h,v 1.17 2002/09/04 16:13:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ public:
 
 	~CNelExport();
 
-	void init (bool view, bool errorInDialog, Interface	*ip);
+	void init (bool view, bool errorInDialog, Interface	*ip, bool loadStruct);
 
 	TCHAR* fixupName(TCHAR* name);
 	bool nodeEnum(INode* pNode, bool selected);

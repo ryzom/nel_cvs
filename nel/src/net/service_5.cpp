@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.22 2002/03/19 17:42:48 valignat Exp $
+ * $Id: service_5.cpp,v 1.23 2002/03/20 12:43:49 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -89,9 +89,12 @@ static sint32 NetSpeedLoop, UserSpeedLoop;
 
 // class static member
 
-string		 IService5::_ShortName		= "";
-string		 IService5::_LongName		= "";
-string		 IService5::_AliasName		= "";
+string		 IService5::_ShortName;
+string		 IService5::_LongName;
+string		 IService5::_AliasName;
+string		 IService5::_ConfigDir;
+string		 IService5::_LogDir;
+
 uint16		 IService5::_DefaultPort	= 0;
 TTime		 IService5::_UpdateTimeout	= 100;
 CEntityId	 IService5::_NextEntityId;
@@ -99,8 +102,6 @@ CEntityId	 IService5::_NextEntityId;
 IService5	*IService5::Instance		= NULL;
 CConfigFile	 IService5::ConfigFile;
 
-char		*IService5::_ConfigDir		= NULL;
-char		*IService5::_LogDir		= NULL;
 
 //
 // Prototypes
@@ -306,15 +307,13 @@ void IService5::setServiceName (const char *shortName, const char *longName)
 
 	createDebug ();
 
-/* DEBUG BEN
-	fd.setParam ((getLogDir() ? getLogDir() : "") + _LongName + ".log", false);
+	fd.setParam (getLogDir() + _LongName + ".log", false);
 
 	DebugLog->addDisplayer (&fd);
 	InfoLog->addDisplayer (&fd);
 	WarningLog->addDisplayer (&fd);
 	AssertLog->addDisplayer (&fd);
 	ErrorLog->addDisplayer (&fd);
-*/
 }
 
 //
@@ -366,7 +365,7 @@ sint IService5::main ()
 		// Load the config file
 		//
 
-		ConfigFile.load ((getConfigDir() ? getConfigDir() : "") + _LongName + ".cfg");
+		ConfigFile.load (getConfigDir() + _LongName + ".cfg");
 
 		try
 		{
@@ -634,8 +633,19 @@ sint IService5::main ()
 			_SId = 0;
 		}
 
+
+		// look if we don't want to use NS
+		bool DontUseNS = false;
+		try
+		{
+			DontUseNS = ConfigFile.getVar("DontUseNS").asInt() == 1;
+		}
+		catch ( EUnknownVar& )
+		{
+		}
+
 		// normal setup for the common services
-		if (IService5::_ShortName != "NS" && IService5::_ShortName != "LS" && IService5::_ShortName != "AES" && IService5::_ShortName != "AS")
+		if (!DontUseNS && IService5::_ShortName != "NS" && IService5::_ShortName != "LS" && IService5::_ShortName != "AES" && IService5::_ShortName != "AS")
 		{
 			bool ok = false;
 			while (!ok)
@@ -664,7 +674,17 @@ sint IService5::main ()
 		// Connect to the local AES and send identification
 		//
 
-		if (_ShortName != "AES" && _ShortName != "AS")
+		// look if we don't want to use NS
+		bool DontUseAES = false;
+		try
+		{
+			DontUseAES = ConfigFile.getVar("DontUseAES").asInt() == 1;
+		}
+		catch ( EUnknownVar& )
+		{
+		}
+
+		if (!DontUseAES && _ShortName != "AES" && _ShortName != "AS")
 		{
 			instance->setServiceUpCallback ("AES", AESConnection, NULL);
 			instance->setServiceDownCallback ("AES", AESDisconnection, NULL);

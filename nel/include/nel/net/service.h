@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.42 2002/03/19 17:42:48 valignat Exp $
+ * $Id: service.h,v 1.43 2002/03/20 12:43:59 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,15 +169,15 @@ public:
 	sint				main (int argc, char **argv);
 	sint				main (char *args);
 
-	static void			setServiceName (const char *shortName, const char *longName);
+	static void					 setServiceName (const char *shortName, const char *longName);
 
-	static void			setConfigDir (const char *configDir) { if(_ConfigDir) free(_ConfigDir); _ConfigDir = strdup(configDir); }
-	static const char		*getConfigDir () { return _ConfigDir; }
+	static void					 setConfigDir (const char *configDir) { _ConfigDir = configDir; }
+	static const std::string	&getConfigDir () { return _ConfigDir; }
 
-	static void			setLogDir (const char *logDir) { if(_LogDir) free(_LogDir); _LogDir = strdup(logDir); }
-	static const char		*getLogDir () { return _LogDir; }
+	static void					 setLogDir (const char *logDir) { _LogDir = logDir; }
+	static const std::string	&getLogDir () { return _LogDir; }
 
-	static void			setPort (uint16 Port) { _DefaultPort = Port; }
+	static void					 setPort (uint16 Port) { _DefaultPort = Port; }
 
 	/** Select timeout value in milliseconds for each update. You are absolutely certain that your update()
 	 * function will not be called before this amount of time you set.
@@ -267,8 +267,8 @@ private:
 	/// This variable is used to generate uniq id for entities on this service.
 	static NLMISC::CEntityId	_NextEntityId;
 
-	static char			*_ConfigDir;
-	static char			*_LogDir;
+	static std::string			_ConfigDir;
+	static std::string			_LogDir;
 };
 
 }; // NLNET

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.109 2002/03/19 17:42:48 valignat Exp $
+ * $Id: service.cpp,v 1.110 2002/03/20 12:43:49 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -89,21 +89,20 @@ static CStdDisplayer sd;
 // services stat
 static sint32  _NetSpeedLoop, _UserSpeedLoop;
 
-string IService::_ShortName = "";
-string IService::_LongName = "";
-string IService::_AliasName= "";
-uint16 IService::_DefaultPort = 0;
+// class static member
 
-TTime IService::_UpdateTimeout = 100;
+string		 IService::_ShortName;
+string		 IService::_LongName;
+string		 IService::_AliasName;
+string		 IService::_ConfigDir;
+string		 IService::_LogDir;
 
-CConfigFile IService::ConfigFile;
+uint16		 IService::_DefaultPort		= 0;
+TTime		 IService::_UpdateTimeout	= 100;
+CEntityId	 IService::_NextEntityId;
 
-char	 *IService::_ConfigDir = NULL;
-char	 *IService::_LogDir = NULL;
-
-IService	 *IService::Instance = NULL;
-
-NLMISC::CEntityId	IService::_NextEntityId;
+IService	*IService::Instance			= NULL;
+CConfigFile  IService::ConfigFile;
 
 
 //
@@ -197,7 +196,6 @@ IService::IService()
 	IService::Instance = this;
 	_Initialized = false;
 	_WindowDisplayer = NULL;
-	_ConfigDir = strdup("");
 }
 
 
@@ -316,7 +314,7 @@ void IService::setServiceName (const char *shortName, const char *longName)
 
 	createDebug ();
 
-	fd.setParam ((getLogDir() ? getLogDir() : "") + _LongName + ".log", false);
+	fd.setParam (getLogDir() + _LongName + ".log", false);
 
 	DebugLog->addDisplayer (&fd);
 	InfoLog->addDisplayer (&fd);
@@ -374,7 +372,7 @@ sint IService::main ()
 		// Load the config file
 		//
 
-		ConfigFile.load ((getConfigDir() ? getConfigDir() : "") + _LongName + ".cfg");
+		ConfigFile.load (getConfigDir() + _LongName + ".cfg");
 
 		try
 		{

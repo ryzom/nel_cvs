@@ -198,6 +198,10 @@ SOURCE=..\include\nel\misc\log.h
 # End Source File
 # Begin Source File
 
+SOURCE=R:\code\nel\src\misc\smart_ptr.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=R:\code\nel\include\nel\misc\smart_ptr.h
 # End Source File
 # Begin Source File

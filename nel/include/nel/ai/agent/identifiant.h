@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identifiant.h,v 1.5 2001/01/09 17:16:52 chafik Exp $
+ * $Id: identifiant.h,v 1.6 2001/01/10 09:54:33 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -255,7 +255,7 @@ namespace NLAIAGENT
 	*/
 	class CNumericIndex
 	{
-	private:		
+	public:		
 		///_I is a static IndexVariant were he have 0 at the initial time.
 		static CIndexVariant<maxIndex> _I;
 	private:

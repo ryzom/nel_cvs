@@ -1,7 +1,7 @@
 /** \file fuzzyvar.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: fuzzyvar.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: fuzzyvar.cpp,v 1.5 2001/01/10 09:56:03 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NLAIFUZZY
 	CFuzzyVar::CFuzzyVar(const NLAIAGENT::IVarName &name, double min, double max, NLAIAGENT::IObjetOp *value) : IBaseVar(name)
 	{
 		if ( value )
-			_Value = ((NLAIAGENT::INombre<double> &)value).getValue();
+			_Value = ((NLAIAGENT::INombre<double> *)value)->getValue();
 		else
 			_Value = 0;
 
@@ -224,7 +224,7 @@ namespace NLAIFUZZY
  
 	void CFuzzyVar::getDebugString(char *txt) const
 	{
-		sprintf(txt, "CFuzzyVar<%s> = %f\n", getName(), _Value);
+		sprintf(txt, "CFuzzyVar<%s> = %f\n", getName().getString(), _Value);
 		for(sint32 i = 0; i < (sint32) _sets.size(); i++)
 		{
 			if ( _sets[i]->isIn( _Value ) )

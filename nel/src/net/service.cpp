@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.97 2001/11/05 15:42:24 lecroart Exp $
+ * $Id: service.cpp,v 1.98 2001/11/13 12:00:29 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -902,13 +902,14 @@ sint IService::main ()
 
 		if (wd != NULL)
 		{
-			DebugLog->addDisplayer (wd);
-			InfoLog->addDisplayer (wd);
-			WarningLog->addDisplayer (wd);
-			ErrorLog->addDisplayer (wd);
-			AssertLog->addDisplayer (wd);
+			DebugLog->removeDisplayer (wd);
+			InfoLog->removeDisplayer (wd);
+			WarningLog->removeDisplayer (wd);
+			ErrorLog->removeDisplayer (wd);
+			AssertLog->removeDisplayer (wd);
 
 			delete wd;
+			wd = NULL;
 		}
 
 		nlinfo ("Service released succesfuly");

@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.7 2001/11/05 15:42:24 lecroart Exp $
+ * $Id: service_5.cpp,v 1.8 2001/11/13 12:00:29 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -929,18 +929,18 @@ sint IService5::main ()
 		CUnifiedNetwork::getInstance()->release ();
 
 		CSock::releaseNetwork ();
-/*
+
 		if (wd != NULL)
 		{
-			DebugLog->addDisplayer (wd);
-			InfoLog->addDisplayer (wd);
-			WarningLog->addDisplayer (wd);
-			ErrorLog->addDisplayer (wd);
-			AssertLog->addDisplayer (wd);
+			DebugLog->removeDisplayer (wd);
+			InfoLog->removeDisplayer (wd);
+			WarningLog->removeDisplayer (wd);
+			ErrorLog->removeDisplayer (wd);
+			AssertLog->removeDisplayer (wd);
 
 			delete wd;
 		}
-*/
+
 		nlinfo ("Service released succesfuly");
 	}
 	catch (EFatalError &)
@@ -1115,11 +1115,11 @@ NLMISC_COMMAND(removefilter_info, "remove a filter on InfoLog", "<filterstr>")
 	return true;
 }
 
-
+/*
 NLMISC_COMMAND (time_5, "displays the universal time", "")
 {
 	if(args.size() != 0) return false;
-/*
+
 	if ( CUniTime::Sync )
 	{
 		log.displayNL ("CTime::getLocalTime(): %"NL_I64"dms, CUniTime::getUniTime(): %"NL_I64"dms", CTime::getLocalTime (), CUniTime::getUniTime ());
@@ -1129,9 +1129,9 @@ NLMISC_COMMAND (time_5, "displays the universal time", "")
 	{
 		log.displayNL ("CTime::getLocalTime(): %"NL_I64"dms <Universal time not sync>", CTime::getLocalTime ());
 	}
-*/
+
 	return true;
 }
-
+*/
 
 } //NLNET

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.9 2000/12/05 16:12:28 lecroart Exp $
+ * $Id: i18n.cpp,v 1.10 2000/12/14 15:30:57 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -160,12 +160,9 @@ void CI18N::createLanguageFile (uint32 lid)
 {
 	nlassert (lid >= 0 && lid < sizeof (_LanguageFiles)/sizeof(_LanguageFiles[0]));
 	
-	string fn = _LanguageFiles[lid];
-	fn += ".uxt";
-
 	// write the new string in the file
 	COFile cof;
-	nlverify (cof.open (fn, true, true));
+	nlverify (cof.open (_Path + _LanguageFiles[lid] + ".uxt", true, true));
 
 	stringstream ss2;
 	ss2 << "\"" << _LanguageFiles[lid] << "\"" << endl;
@@ -196,10 +193,7 @@ void CI18N::createLanguageEntry (const string &lval, const string &rval)
 	for (i = 0; i < sizeof(_LanguageFiles)/sizeof(_LanguageFiles[0]); i++)
 	{
 		COFile cof;
-		string fn = _LanguageFiles[i];
-		fn += ".uxt";
-
-		nlverify (cof.open (fn, true, true));
+		nlverify (cof.open (_Path + _LanguageFiles[i] + ".uxt", true, true));
 
 		stringstream ss2;
 		ss2 << "\"";
@@ -231,22 +225,20 @@ void CI18N::load (uint32 lid)
 {
 	nlassert (lid >= 0 && lid < sizeof (_LanguageFiles)/sizeof(_LanguageFiles[0]));
 
-	_FileName  = _Path;
-	_FileName  = _LanguageFiles[lid];
-	_FileName += ".uxt";
+	_FileName  = _Path + _LanguageFiles[lid] + ".uxt";
 
 	if (_StrMapLoaded)	_StrMap.clear ();
 	else				_StrMapLoaded = true;
 	
 	CIFile cf;
 	// if the file does not exist, it'll be create automatically
-	if (!cf.open (_Path + _FileName, true))
+	if (!cf.open (_FileName, true))
 	{
-		nlwarning ("Could not open file \"%s\" (this file should contain the %s language (lid:%d))", _FileName.c_str (), _LanguageNames[lid].c_str (), lid);
+		nlwarning ("Could not open file \"%s\" (this file should contain the %s language (lid:%d))", _FileName.c_str (), _LanguageNames[lid].toString (), lid);
 		createLanguageFile (lid);
 		return;
 	}
-	nldebug ("Loading file \"%s\" (this file should contain the %s language (lid:%d))", _FileName.c_str (), _LanguageNames[lid].c_str (), lid);
+	nldebug ("Loading file \"%s\" (this file should contain the %s language (lid:%d))", _FileName.c_str (), _LanguageNames[lid].toString (), lid);
 
 	bool startstr = false, equal = false, second = false;
 	int line = 1;
@@ -441,7 +433,7 @@ const vector<ucstring> &CI18N::getLanguageNames()
 			}
 			// add the language name
 			_LanguageNames.push_back (lg);
-			nldebug ("add %d %s %s -> %s", i, fn.c_str (), _LanguageFiles[i], lg.c_str ());
+			nldebug ("add %d %s %s -> %s", i, fn.c_str (), _LanguageFiles[i], lg.toString ());
 		}
 		_LanguagesNamesLoaded = true;
 	}

@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.5 2000/11/21 17:16:36 valignat Exp $
+ * $Id: displayer.cpp,v 1.6 2000/12/14 15:30:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include <stdio.h>
+//#include <stdio.h>
+#include <iostream>
+#include <fstream>
 
 #include "nel/misc/types_nl.h"
 
@@ -37,15 +39,18 @@
 
 #include "nel/misc/displayer.h"
 
+using namespace std;
+
 namespace NLMISC
 {
 
 void CStdDisplayer::display (const std::string& str)
 {
-	printf("%s", str.c_str ());
-	
+//	printf("%s", str.c_str ());
+	cout << str;
+
 #ifdef NL_OS_WINDOWS
-	// don't install signal is the application is started in debug mode
+	// display the string in the debugger is the application is started with the debugger
 	if (IsDebuggerPresent ())
 		OutputDebugString(str.c_str ());
 #endif
@@ -57,13 +62,21 @@ void CFileDisplayer::display (const std::string& str)
 {
 	if (_FileName.size () == 0) return;
 
+	ofstream ofs (_FileName.c_str (), ios::out | ios::app);
+	if (ofs.is_open ())
+	{
+		ofs << str;
+		ofs.close();
+	}
+
+/*
 	FILE *fp = fopen (_FileName.c_str (), "a");
 	if (fp == NULL) return;
 
 	fprintf (fp, "%s", str.c_str ());
 	
 	fclose (fp);
-}
+*/}
 
 
 //****************************************************************************

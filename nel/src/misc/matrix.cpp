@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.17 2000/12/01 10:13:54 corvazier Exp $
+ * $Id: matrix.cpp,v 1.18 2000/12/04 10:13:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -912,20 +912,45 @@ bool		CMatrix::normalize(TRotOrder ro)
 	tk= getK();
 
 	// Normalize with help of ro
-	CVector	*t0, *t1, *t2;
 	switch(ro)
 	{
-		case XYZ: t2=&ti; t1=&tj; t0=&tk; break;
-		case XZY: t2=&ti; t1=&tk; t0=&tj; break;
-		case YXZ: t2=&tj; t1=&ti; t0=&tk; break;
-		case YZX: t2=&tj; t1=&tk; t0=&ti; break;
-		case ZXY: t2=&tk; t1=&ti; t0=&tj; break;
-		case ZYX: t2=&tk; t1=&tj; t0=&ti; break;
+		case XYZ:
+			ti.normalize();
+			tk= ti^tj;
+			tk.normalize();
+			tj= tk^ti;
+			break;
+		case XZY:
+			ti.normalize();
+			tj= tk^ti;
+			tj.normalize();
+			tk= ti^tj;
+			break;
+		case YXZ:
+			tj.normalize();
+			tk= ti^tj;
+			tk.normalize();
+			ti= tj^tk;
+			break;
+		case YZX:
+			tj.normalize();
+			ti= tj^tk;
+			ti.normalize();
+			tk= ti^tj;
+			break;
+		case ZXY:
+			tk.normalize();
+			tj= tk^ti;
+			tj.normalize();
+			ti= tj^tk;
+			break;
+		case ZYX:
+			tk.normalize();
+			ti= tj^tk;
+			ti.normalize();
+			tj= tk^ti;
+			break;
 	}
-	t2->normalize();
-	*t0= *t1^*t2;
-	t0->normalize();
-	*t1= *t2^*t0;
 
 	// Check, and set result.
 	if( ti.isNull() || tj.isNull() || tk.isNull() )

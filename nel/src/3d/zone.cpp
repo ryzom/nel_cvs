@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.15 2000/11/30 17:54:16 berenguier Exp $
+ * $Id: zone.cpp,v 1.16 2000/12/01 11:14:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/3d/zone.h"
+#include "nel/3d/landscape.h"
 #include "nel/misc/common.h"
 
 
@@ -733,19 +734,33 @@ void			CZone::renderTile(sint pass)
 
 
 // ***************************************************************************
-void			CZone::changePatchTexture(TZoneMap &loadedZones, sint numPatch, const std::vector<CTileElement> &tiles)
+void			CZone::changePatchTexture(sint numPatch, const std::vector<CTileElement> &tiles)
 {
 	nlassert(numPatch>=0);
 	nlassert(numPatch<getNumPatchs());
+	
 	// unbind => forceMerge() the patch. Hence, tiles are reseted.
-	unbindPatch(loadedZones, Patchs[numPatch], PatchConnects[numPatch]);
+	if (Compiled)
+		unbindPatch(Landscape->Zones, Patchs[numPatch], PatchConnects[numPatch]);
 
 	// Update the patch texture.
 	nlassert(Patchs[numPatch].Tiles.size() ==tiles.size() );
 	Patchs[numPatch].Tiles= tiles;
 
 	// rebind. At next refine(), tesselation will be updated and tiles created.
-	bindPatch(loadedZones, Patchs[numPatch], PatchConnects[numPatch]);
+	if (Compiled)
+		bindPatch(Landscape->Zones, Patchs[numPatch], PatchConnects[numPatch]);
+}
+
+
+// ***************************************************************************
+const std::vector<CTileElement> &CZone::getPatchTexture(sint numPatch) const
+{
+	nlassert(numPatch>=0);
+	nlassert(numPatch<getNumPatchs());
+
+	// Update the patch texture.
+	return Patchs[numPatch].Tiles;
 }
 
 

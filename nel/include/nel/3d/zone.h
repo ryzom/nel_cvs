@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.9 2000/11/30 10:57:13 berenguier Exp $
+ * $Id: zone.h,v 1.10 2000/12/01 11:14:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -225,8 +225,23 @@ public:
 	void			serial(NLMISC::IStream &f);
 
 
-	/// Change a texture of a patch. See CLandscape::changePatchTexture() for more information.
-	void			changePatchTexture(TZoneMap &loadedZones, sint numPatch, const std::vector<CTileElement> &tiles);
+	/** 
+	 * Update and refresh a patch texture.
+	 * Usefull for Tile edition. Even if patch is in tile mode, it is refreshed...
+	 * \param numPatch the index of patch in this zone which will receive his new texture. assert if bad id.
+	 * \param tiles the patch texture. assert if not of good size (OrderS*OrderT).
+	 */
+	void			changePatchTexture(sint numPatch, const std::vector<CTileElement> &tiles);
+
+	/** 
+	 * Get a patch texture.
+	 * Return the tile array.
+	 * \param numPatch the index of patch in this zone which will get his texture. assert if bad id.
+	 * \param 
+	 * \return The tiles the patch texture. The size should be OrderS*OrderT.
+	 * \see getPatch()
+	 */
+	const std::vector<CTileElement> &getPatchTexture(sint numPatch) const;
 
 
 	// NB: for all those function, CTessFace static rendering context must be setup.
@@ -248,6 +263,14 @@ public:
 	bool			compiled() const {return Compiled;}
 	uint16			getZoneId() const {return ZoneId;}
 	sint			getNumPatchs() const {return Patchs.size();}
+
+	/** 
+	 * Get a read only patch pointer.
+	 *
+	 * \param patch the index of patch to get.
+	 * \return A patch pointer in read only.
+	 */
+	const CPatch	*getPatch(sint patch) const {nlassert(patch>=0 && patch<(sint)Patchs.size()); return &(Patchs[patch]);}
 
 
 // Private part.

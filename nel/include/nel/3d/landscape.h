@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.9 2000/12/01 10:11:10 corvazier Exp $
+ * $Id: landscape.h,v 1.10 2000/12/01 11:14:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,20 +111,25 @@ public:
 	// TODO: landscape param setup (Transition etc...).
 	// Store it by landscape, and not only globally in CTessFace statics.
 
-
-	/** Update and refresh a patch texture.
-	 * Usefull for Tile edition. Even if patch is in tile mode, it is refreshed...
+	/** Get a zone pointer.
+	 * 
 	 * \param zoneId the zone of the update.
-	 * \param numPatch the index of patch in zoneId which will receive his new texture. assert if bad id.
-	 * \param tiles the patch texture. assert if not of good size (OrderS*OrderT).
-	 * \return false if zone not loaded in landscape.
+	 * \return Return a zone pointer. NULL if the zone doesn't exist or isn't loaded.
 	 */
-	bool			changePatchTexture(sint zoneId, sint numPatch, const std::vector<CTileElement> &tiles);
+	CZone*			getZone (sint zoneId);
+
+	/** Get a zone pointer.
+	 * 
+	 * \param zoneId the zone of the update.
+	 * \return Return a zone pointer. NULL if the zone doesn't exist or isn't loaded.
+	 */
+	const CZone*	getZone (sint zoneId) const;
 
 
 private:
 	// Private part used by CPatch.
 	friend class	CPatch;
+	friend class	CZone;
 
 	// TODO_TEXTURE.
 	// dummy Far texture here.

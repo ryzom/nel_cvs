@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.9 2000/12/01 10:10:01 corvazier Exp $
+ * $Id: landscape.cpp,v 1.10 2000/12/01 11:14:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -418,18 +418,28 @@ void			CLandscape::getTileUvScaleBias(sint tileId, bool additiveRdrPass, CVector
 
 
 // ***************************************************************************
-bool			CLandscape::changePatchTexture(sint zoneId, sint numPatch, const std::vector<CTileElement> &tiles)
+CZone*			CLandscape::getZone (sint zoneId)
 {
-	ItZoneMap	it;
+	TZoneMap::iterator	it;
 
 	it= Zones.find(zoneId);
-	if(it==Zones.end())
-		return false;
-	nlassert(numPatch>=0);
-	nlassert(numPatch<(*it).second->getNumPatchs());
-	(*it).second->changePatchTexture(Zones, numPatch, tiles);
+	if (it!=Zones.end())
+		return (*it).second;
+	else
+		return NULL;
+}
 
-	return true;
+
+// ***************************************************************************
+const CZone*	CLandscape::getZone (sint zoneId) const
+{
+	TZoneMap::const_iterator	it;
+
+	it= Zones.find(zoneId);
+	if (it!=Zones.end())
+		return (*it).second;
+	else
+		return NULL;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.39 2002/08/23 12:27:13 lecroart Exp $
+ * $Id: displayer.cpp,v 1.40 2002/08/23 12:28:02 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,7 @@ const char *IDisplayer::dateToHumanString ()
 const char *IDisplayer::dateToHumanString (time_t date)
 {
 	static char cstime[25];
-	strftime (cstime, 25, "%y/%m/%d %H:%M:%S", localtime(&date));
+	strftime (cstime, 25, "%Y/%m/%d %H:%M:%S", localtime(&date));
 	return cstime;
 }
 
@@ -560,7 +560,6 @@ void CStdDisplayer::display (const std::string& str)
 #endif
 }
 
-//****************************************************************************
 
 void CFileDisplayer::display (const std::string& str)
 {
@@ -583,7 +582,6 @@ void CFileDisplayer::display (const std::string& str)
 }
 
 
-//****************************************************************************
 
 void CMsgBoxDisplayer::display (const std::string& str)
 {

@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.7 2001/03/01 13:44:05 chafik Exp $
+ * $Id: agent_object.h,v 1.8 2001/03/07 15:25:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -577,6 +577,7 @@ namespace NLAIAGENT
 		tVectorType &getVector();
 
 	public:
+		///Construct a vector with n uninitialize momory unite. Programmer must initialize the vector list after. 
 		CVectorGroupType(sint32 );
 		CVectorGroupType();
 		CVectorGroupType(const CVectorGroupType &g);

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.36 2003/11/25 16:18:40 berenguier Exp $
+ * $Id: u_driver.h,v 1.37 2004/02/13 10:48:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,7 +103,7 @@ public:
 		uint16				Width;
 		uint16				Height;
 		uint8				Depth;
-		uint				Frequency;	// In hz. Used only in fullscreen, default is 60hz
+		uint				Frequency;	// In hz. Used only in fullscreen, default is window selection
 
 							CMode(void) 
 							{ 
@@ -111,9 +111,9 @@ public:
 								Width=0;
 								Height=0;
 								Depth=0;
-								Frequency=60;
+								Frequency=0;
 							}
-							CMode(uint16 w, uint16 h, uint8 d, bool windowed= true, uint frequency = 60)
+							CMode(uint16 w, uint16 h, uint8 d, bool windowed= true, uint frequency = 0)
 							{
 								Windowed=windowed;
 								Width=w;

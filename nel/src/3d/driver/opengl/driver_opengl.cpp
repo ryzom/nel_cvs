@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.201 2004/02/06 18:06:57 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.202 2004/02/13 10:48:38 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -309,7 +309,7 @@ CDriverGL::~CDriverGL()
 // ***************************************************************************
 bool CDriverGL::init (uint windowIcon)
 {
-#ifdef WIN32
+#ifdef NL_OS_WINDOWS
 	WNDCLASS		wc;
 
 	if (!_Registered)
@@ -736,11 +736,22 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 
 				devMode.dmSize= sizeof(DEVMODE);
 				devMode.dmDriverExtra= 0;
-				devMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
+				devMode.dmFields= DM_PELSWIDTH | DM_PELSHEIGHT;
 				devMode.dmPelsWidth= width;
 				devMode.dmPelsHeight= height;
-				devMode.dmBitsPerPel= mode.Depth;
-				devMode.dmDisplayFrequency= mode.Frequency;
+
+				if(mode.Depth > 0)
+				{
+					devMode.dmBitsPerPel= mode.Depth;
+					devMode.dmFields |= DM_BITSPERPEL;
+				}
+
+				if(mode.Frequency > 0)
+				{
+					devMode.dmDisplayFrequency= mode.Frequency;
+					devMode.dmFields |= DM_DISPLAYFREQUENCY;
+				}
+
 				if (ChangeDisplaySettings(&devMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
 					return false;
 			}
@@ -758,8 +769,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 									NULL,
 									GetModuleHandle(NULL),
 									NULL);
-			if (!_hWnd) 
+			if (_hWnd == NULL) 
 			{
+				DWORD res = GetLastError();
+				nlwarning("CreateWindow failed: %u", res);
 				return false;
 			}
 
@@ -1329,11 +1342,13 @@ bool CDriverGL::setMode(const GfxMode& mode)
 		}
 		_WindowWidth  = mode.Width;
 		_WindowHeight = mode.Height;
+
 	}
 	else
 	{
 		_WindowWidth  = mode.Width;
 		_WindowHeight = mode.Height;
+		_Depth= mode.Depth;
 
 		DEVMODE		devMode;
 		if (!_FullScreen)
@@ -1346,11 +1361,22 @@ bool CDriverGL::setMode(const GfxMode& mode)
 
 		devMode.dmSize= sizeof(DEVMODE);
 		devMode.dmDriverExtra= 0;
-		devMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY ;
-		devMode.dmPelsWidth  = _WindowWidth;
-		devMode.dmPelsHeight = _WindowHeight;
-		devMode.dmBitsPerPel = _Depth;
-		devMode.dmDisplayFrequency = mode.Frequency;
+		devMode.dmFields= DM_PELSWIDTH | DM_PELSHEIGHT;
+		devMode.dmPelsWidth= _WindowWidth;
+		devMode.dmPelsHeight= _WindowHeight;
+
+		if(mode.Depth > 0)
+		{
+			devMode.dmBitsPerPel= mode.Depth;
+			devMode.dmFields |= DM_BITSPERPEL;
+		}
+
+		if(mode.Frequency > 0)
+		{
+			devMode.dmDisplayFrequency= mode.Frequency;
+			devMode.dmFields |= DM_DISPLAYFREQUENCY;
+		}
+
 		if (ChangeDisplaySettings(&devMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
 			return false;
 		

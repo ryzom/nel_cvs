@@ -13,9 +13,9 @@ Requirements
 
    The NeL library need the following libraries :
 
-      - STLPort 4.0    <URL:http://www.stlport.org/>
+      - STLPort  4.0   <URL:http://www.stlport.org/>
       - FreeType 2     <URL:http://www.freetype.org/>
-      - Python         <URL:http://www.python.org/>
+      - Python   1.5   <URL:http://www.python.org/>
 
    On a GNU/Linux platform you will need the following libraries and
    softwares :
@@ -25,10 +25,15 @@ Requirements
       - Libtool        <URL:http://www.gnu.org/software/libtool/libtool.html>
       - Lex / Flex     <URL:http://www.gnu.org/software/flex/flex.html>
       - Yacc / Bison   <URL:http://www.gnu.org/software/bison/bison.html>
-      - Mesa           <URL:http://www.mesa3d.org/>
+      - Mesa     3.3   <URL:http://www.mesa3d.org/>
 
    Most of these softwares should be already installed on your system or
    provided on your installation disk. 
+
+   The given sofware or library version numbers are the ones that we are
+   using. We don't know if it working with other (older or more recent)
+   versions of these softwares or libraries. You are welcome to help us
+   to define more precisely these informations ;-)
 
 
 Compilation

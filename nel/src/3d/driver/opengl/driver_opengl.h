@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.45 2001/01/25 10:15:45 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.46 2001/01/31 11:27:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -178,6 +178,12 @@ public:
 
 	virtual void			getBuffer (CBitmap &bitmap);
 
+	virtual void			getZBuffer (std::vector<float>  &zbuffer);
+
+	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect);
+
+	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect);
+
 	virtual void			setPolygonMode (TPolygonMode mode);
 
 	/// \name Fog support.
@@ -241,6 +247,9 @@ private:
 	// According to extensions, retrieve GL tex format of the texture.
 	GLint					getGlTextureFormat(ITexture& tex, bool &compressed);
 
+
+	// Clip the wanted rectangle with window. return true if rect is not NULL.
+	bool					clipRect(NLMISC::CRect &rect);
 };
 
 } // NL3D

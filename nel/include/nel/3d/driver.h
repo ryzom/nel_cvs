@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.52 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: driver.h,v 1.53 2001/01/31 11:26:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@
 namespace NLMISC
 {
 class IEventEmitter;
+class CRect;
 };
 
 namespace NL3D
@@ -244,11 +245,33 @@ public:
 	/// If true, capture the mouse to force it to stay under the window.
 	virtual void			setCapture (bool b) = 0;
 
-	/** get the front buffer
+	/** get the RGBA back buffer
 	  *
 	  * \param bitmap the buffer will be written in this bitmap
 	  */
 	virtual void			getBuffer (CBitmap &bitmap) = 0;
+
+	/** get the ZBuffer (back buffer).
+	  *
+	  * \param zbuffer the returned array of Z. size of getWindowSize() .
+	  */
+	virtual void			getZBuffer (std::vector<float>  &zbuffer) = 0;
+
+	/** get a part of the RGBA back buffer
+	  * NB: 0,0 is the bottom left corner of the screen.
+	  *
+	  * \param bitmap the buffer will be written in this bitmap
+	  * \param rect the in/out (wanted/clipped) part of Color buffer to retrieve.
+	  */
+	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect) = 0;
+
+	/** get a part of the ZBuffer (back buffer).
+	  * NB: 0,0 is the bottom left corner of the screen.
+	  *
+	  * \param zbuffer the returned array of Z. size of rec.Width*rec.Height.
+	  * \param rect the in/out (wanted/clipped) part of ZBuffer to retrieve.
+	  */
+	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) = 0;
 
 	/** Set the global polygon mode. Can be filled, line or point. The implementation driver must
 	  * call IDriver::setPolygonMode and active this mode.

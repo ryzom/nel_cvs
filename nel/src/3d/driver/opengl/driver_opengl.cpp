@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.64 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.65 2001/01/31 11:27:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,7 @@
 #include "nel/3d/viewport.h"
 #include "nel/3d/vertex_buffer.h"
 #include "nel/3d/primitive_block.h"
+#include "nel/misc/rect.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -830,15 +831,65 @@ void CDriverGL::setCapture (bool b)
 #endif // NL_OS_UNIX
 }
 
-void CDriverGL::getBuffer (CBitmap &bitmap)
+
+bool			CDriverGL::clipRect(NLMISC::CRect &rect)
 {
-	bitmap.reset();
+	// Clip the wanted rectangle with window.
 	uint32 width, height;
 	getWindowSize(width, height);
-	bitmap.resize(width, height, CBitmap::RGBA);
-	vector<uint8> &d = bitmap.getPixels ();
-	glReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, &(d[0]));
+
+	uint32	xr=rect.right() ,yr=rect.bottom();
+	clamp(rect.X, 0, (sint32)width);
+	clamp(rect.Y, 0, (sint32)height);
+	clamp(xr, (uint32)rect.X, width);
+	clamp(yr, (uint32)rect.Y, height);
+	rect.Width= xr-rect.X;
+	rect.Height= yr-rect.Y;
+
+	return rect.Width>0 && rect.Height>0;
 }
+
+
+
+void			CDriverGL::getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect)
+{
+	bitmap.reset();
+
+	if(clipRect(rect))
+	{
+		bitmap.resize(rect.Width, rect.Height, CBitmap::RGBA);
+		vector<uint8> &d = bitmap.getPixels ();
+		glReadPixels (rect.X, rect.Y, rect.Width, rect.Height, GL_RGBA, GL_UNSIGNED_BYTE, &(d[0]));
+	}
+}
+
+
+void			CDriverGL::getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect)
+{
+	zbuffer.clear();
+
+	if(clipRect(rect))
+	{
+		zbuffer.resize(rect.Width*rect.Height);
+		glReadPixels (rect.X, rect.Y, rect.Width, rect.Height, GL_DEPTH_COMPONENT , GL_FLOAT, &(zbuffer[0]));
+	}
+}
+
+
+void			CDriverGL::getZBuffer (std::vector<float>  &zbuffer)
+{
+	CRect	rect(0,0);
+	getWindowSize(rect.Width, rect.Height);
+	getZBufferPart(zbuffer, rect);
+}
+
+void CDriverGL::getBuffer (CBitmap &bitmap)
+{
+	CRect	rect(0,0);
+	getWindowSize(rect.Width, rect.Height);
+	getBufferPart(bitmap, rect);
+}
+
 
 void CDriverGL::setPolygonMode (TPolygonMode mode)
 {

@@ -1,7 +1,7 @@
 /** \file frustum.cpp
  * <File description>
  *
- * $Id: frustum.cpp,v 1.1 2000/12/06 14:42:38 berenguier Exp $
+ * $Id: frustum.cpp,v 1.2 2001/01/31 11:27:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,8 +24,11 @@
  */
 
 #include "nel/3d/frustum.h"
+#include "nel/misc/matrix.h"
 #include <math.h>
 
+
+using namespace NLMISC;
 
 namespace NL3D 
 {
@@ -61,6 +64,50 @@ void			CFrustum::getValues(float &left, float &right, float &bottom, float &top,
 	top= Top;
 	znear= Near;
 	zfar= Far;
+}
+
+
+// ***************************************************************************
+CVector			CFrustum::project(const CVector &vec) const
+{
+	CVector		ret;
+	float		decalX, decalY;
+	float		w, h;
+	float		OOw, OOh;
+
+	// Fast transform to openGL like axis, but with Z to front (and not back).
+	CVector		pt;
+	pt.x= vec.x;
+	pt.y= vec.z;
+	pt.z= vec.y;	// => this is a left hand axis.
+
+	decalX= (Right+Left);
+	decalY= (Top+Bottom);
+	w= Right-Left;
+	h= Top-Bottom;
+	OOw= 1.0f/w;
+	OOh= 1.0f/h;
+
+	// project to -1..+1.
+	if(Perspective)
+	{
+		ret.x= (2*Near*pt.x + decalX*pt.z)*OOw;
+		ret.x/= pt.z;
+		ret.y= (2*Near*pt.y + decalY*pt.z)*OOw;
+		ret.y/= pt.z;
+	}
+	else
+	{
+		ret.x= (2-decalX)*OOw;
+		ret.y= (2-decalY)*OOh;
+	}
+
+	// Map it to 0..1.
+	ret.x= 0.5f*(ret.x+1);
+	ret.y= 0.5f*(ret.y+1);
+	ret.z= 0;
+
+	return ret;
 }
 
 

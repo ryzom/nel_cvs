@@ -1,7 +1,7 @@
 /** \file frustum.h
  * <File description>
  *
- * $Id: frustum.h,v 1.1 2000/12/06 14:42:21 berenguier Exp $
+ * $Id: frustum.h,v 1.2 2001/01/31 11:26:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,10 +27,13 @@
 #define NL_FRUSTUM_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
 
 
 namespace NL3D 
 {
+
+using NLMISC::CVector;
 
 
 // ***************************************************************************
@@ -63,6 +66,13 @@ public:
 
 	/// Get the value of the frustum.
 	void			getValues(float &left, float &right, float &bottom, float &top, float &znear, float &zfar) const;
+
+
+	/** project a vector (x,y,z) onto frustum.
+	  * \param vec the point in 3D frustum space. Axis is NL3D axis: Xright, Yfront, Ztop.
+	  * \return the point in 2D: Xright, Ytop, Z=0.  Screen is mapped to X:[0..1], Y: [0..1].
+	  */
+	CVector			project(const CVector &vec) const;
 };
 
 

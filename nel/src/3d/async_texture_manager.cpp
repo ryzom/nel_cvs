@@ -1,7 +1,7 @@
 /** \file async_texture_manager.cpp
  * <File description>
  *
- * $Id: async_texture_manager.cpp,v 1.7 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: async_texture_manager.cpp,v 1.8 2004/01/30 13:51:28 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -510,7 +510,8 @@ bool			CAsyncTextureManager::uploadTexturePart(ITexture *pText, IDriver *pDriver
 		{
 			// We cannot upload the whole mipmap -> we have to cut it
 			uint nSizeToUpload = _MaxUploadPerFrame - nTotalUploaded ;
-			uint nLineWeight = (pText->getWidth(nMM)*CBitmap::bitPerPixels[pText->getPixelFormat()])/8;
+			// DXTC => min block of 4x4 
+			uint nLineWeight = (max(pText->getWidth(nMM), (uint32)4)*CBitmap::bitPerPixels[pText->getPixelFormat()])/8;
 			uint nNbLineToUpload = nSizeToUpload / nLineWeight;
 			// Upload 4 line by 4 line, and upload at leat one 4*line.
 			nNbLineToUpload = nNbLineToUpload / 4;

@@ -1,6 +1,6 @@
 /** \file texture_chooser.cpp
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.cpp,v 1.8 2001/12/18 18:40:58 vizerie Exp $
+ * $Id: texture_chooser.cpp,v 1.9 2002/01/28 14:56:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -185,7 +185,13 @@ BOOL CTextureChooser::OnInitDialog()
 
 void CTextureChooser::OnBrowseTexture() 
 {
-	CFileDialog fd(TRUE, ".tga", "*.tga", 0, NULL, this);
+	std::string texName("*.tga");
+	/// get the name of the previously set texture if there is one
+	if (dynamic_cast<NL3D::CTextureFile *>(_Wrapper->get()))
+	{
+		texName = (static_cast<NL3D::CTextureFile *>(_Wrapper->get()))->getFileName();
+	}
+	CFileDialog fd(TRUE, ".tga", texName.c_str(), 0, NULL, this);
 	if (fd.DoModal() == IDOK)
 	{
 		// Add to the path

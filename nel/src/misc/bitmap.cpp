@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.47 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: bitmap.cpp,v 1.48 2004/03/23 10:27:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2330,6 +2330,73 @@ void CBitmap::rotateCCW()
 	_Data[0]=copy;
 }
 
+void CBitmap::blit(const CBitmap &src, sint srcX, sint srcY, sint srcWidth, sint srcHeight, sint destX, sint destY)
+{
+	nlassert(PixelFormat == RGBA);
+	nlassert(src.PixelFormat == RGBA);
+	// clip x
+	if (srcX < 0)
+	{
+		srcWidth += srcX;
+		if (srcWidth <= 0) return;
+		destX -= srcX;
+		srcX = 0;
+	}
+	if (srcX + srcWidth > (sint) src.getWidth())
+	{
+		srcWidth = src.getWidth() - srcX;
+		if (srcWidth <= 0) return;
+	}
+	if (destX < 0)
+	{
+		srcWidth += destX;
+		if (srcWidth <= 0) return;
+		srcX -= destX;
+		destX = 0;
+	}
+	if (destX + srcWidth > (sint) getWidth())
+	{
+		srcWidth = getWidth() - destX;
+		if (srcWidth <= 0) return;
+	}
+	// clip y
+	if (srcY < 0)
+	{
+		srcWidth += srcY;
+		if (srcWidth <= 0) return;
+		destY -= srcY;
+		srcY = 0;
+	}
+	if (srcY + srcWidth > (sint) src.getHeight())
+	{
+		srcWidth = src.getHeight() - srcY;
+		if (srcWidth <= 0) return;
+	}
+	if (destY < 0)
+	{
+		srcWidth += destY;
+		if (srcWidth <= 0) return;
+		srcY -= destY;
+		destY = 0;
+	}
+	if (destY + srcWidth > (sint) getHeight())
+	{
+		srcWidth = getWidth() - destY;
+		if (srcWidth <= 0) return;
+	}
+	uint32 *srcPtr = &(((uint32 *) src.getPixels()[0])[srcX + srcY * src.getWidth()]);
+	uint32 *srcEndPtr = srcPtr + srcHeight * src.getWidth();
+	uint32 *destPtr = 	&(((uint32 *) getPixels()[0])[destX + destY * getWidth()]);
+	while (srcPtr != srcEndPtr)
+	{
+		memcpy(destPtr, srcPtr, sizeof(uint32) * srcWidth);
+		srcPtr += src.getWidth();
+		destPtr += getWidth();
+	}
+	
+}
+
+
 bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 {
 	
@@ -3151,6 +3218,49 @@ CRGBA CBitmap::getPixelColor(sint x, sint y, uint32 numMipMap /*=0*/) const
 		break;
 	}
 	return CRGBA::Black;
+}
+
+
+//-----------------------------------------------
+void CBitmap::swap(CBitmap &other)
+{
+	std::swap(PixelFormat, other.PixelFormat);
+	std::swap(_MipMapCount, other._MipMapCount);
+	std::swap(_LoadGrayscaleAsAlpha, other._LoadGrayscaleAsAlpha);
+	std::swap(_Width, other._Width);
+	std::swap(_Height, other._Height);
+	for(uint k = 0; k < MAX_MIPMAP; ++k)
+	{
+		_Data[k].swap(other._Data[k]);
+	}
+}
+
+//-----------------------------------------------
+void CBitmap::unattachPixels(CObjectVector<uint8> *mipmapDestArray, uint maxMipMapCount /*=MAX_MIPMAP*/)
+{
+	if (!mipmapDestArray) return;
+	uint k;
+	for(k = 0; k < std::min((uint) _MipMapCount, maxMipMapCount); ++k)
+	{
+		mipmapDestArray[k].swap(_Data[k]);
+		_Data[k].clear();
+	}
+	for(; k < _MipMapCount; ++k)
+	{
+		_Data[k].clear();
+	}
+	#ifdef NL_DEBUG
+		// check that remaining mipmaps are empty
+		for(; k < _MipMapCount; ++k)
+		{
+			nlassert(_Data[k].empty());
+		}
+	#endif
+	_MipMapCount = 1;
+	_Width = 0;
+	_Height = 0;
+	PixelFormat = RGBA;
+	_LoadGrayscaleAsAlpha = true;
 }
 
 

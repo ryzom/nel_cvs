@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.22 2004/02/20 14:35:33 vizerie Exp $
+ * $Id: bitmap.h,v 1.23 2004/03/23 10:27:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -262,6 +262,9 @@ public:
 
 	virtual ~CBitmap() { }
 
+	// swap 2 bitmaps contents
+	void	swap(CBitmap &other);
+
 	/** 
 	 * Read a bitmap(TGA or DDS) from an IStream. 
 	 * Bitmap supported are DDS (DXTC1, DXTC1 with Alpha, DXTC3, DXTC5, and
@@ -315,6 +318,14 @@ public:
 		//nlassert (numMipMap<=_MipMapCount);
 		return _Data[numMipMap]; 
 	}
+	/** Gain ownership of this texture datas. As a result, the bitmap is reseted (put in the same state than when ctor is called, e.g a single mipmap with null size)
+	  * The CObjectVector objects that contains the bitmap (one per mipmap) datas are 'swapped' with those in the array  provided by the caller.
+	  * NB : The user must provide at least min(getMipMapCount(), maxMipMapCount) entries in the array
+	  * \param mipmapArray Array of mipmap that receive the bitmap datas
+	  * \param maxMipMapCount Max number of mipmap to be copied in the destination array. 
+	  */
+	void unattachPixels(CObjectVector<uint8> *mipmapDestArray, uint maxMipMapCount = MAX_MIPMAP);
+	
 	///@}
 	
 	
@@ -492,9 +503,18 @@ public:
 	 * For now, this texture and the source must have the same format
 	 * With DXTC format, the dest coordinates must be a multiple of 4
 	 * mipmap are not rebuild when present
-	 * \return true if the params were corrects and if the blit occures. In debug build there's an assertion
+	 * IMPORTANT : copy to self is not handled correctly
+	 * \return true if the params were corrects and if the blit occurs. In debug build there's an assertion
 	 */
 	bool blit(const CBitmap *src, sint32 x, sint32 y) ;
+	/**
+	 * Extended version of blit. The destinaion of the blit is 'this' bitmap
+	 * Source and dest rect are clamped as necessary.
+	 * For now, only RGBA is uspported (an asertion occurs otherwise)
+	 * mipmap are not updated.	 
+	 * IMPORTANT : copy to self is not handled correctly
+	 */
+	void blit(const CBitmap &src, sint srcX, sint srcY, sint srcWidth, sint srcHeight, sint destX, sint destY);
 
 
 	/**

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.17 2002/10/29 14:40:00 berenguier Exp $
+ * $Id: particle_system_instance_user.h,v 1.18 2002/11/14 17:32:10 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -94,6 +94,8 @@ public:
 		virtual bool		getSystemBBox(NLMISC::CAABBox &bbox);
 		virtual void		setUserParam		(uint index, float value);
 		virtual float		getUserParam		(uint index) const;
+		virtual void        bypassGlobalUserParamValue(uint userParamIndex, bool byPass = true);
+		virtual bool        isGlobalUserParamValueBypassed(uint userParamIndex) const;
 		virtual bool		isValid				(void) const;
 		virtual void		registerPSObserver	(IPSObserver *observer);
 		virtual bool		isPSObserver		(IPSObserver *observer);

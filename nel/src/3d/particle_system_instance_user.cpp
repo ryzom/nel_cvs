@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.19 2002/10/29 14:40:00 berenguier Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.20 2002/11/14 17:32:10 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -82,8 +82,11 @@ bool		CParticleSystemInstanceUser::getSystemBBox(NLMISC::CAABBox &bbox)
 //===================================================================
 void		CParticleSystemInstanceUser::setUserParam(uint index, float value)
 {	
-	NL3D_MEM_PS_INSTANCE			
-	nlassert(index < MaxPSUserParam); // invalid parameter index
+	if (index >= MaxPSUserParam)
+	{
+		nlwarning("invalid user param index");
+		return;
+	}	
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	// psm->getPS()->setUserParam(index, value);
 	IAnimatedValue *av = psm->getValue(CParticleSystemModel::PSParam0 + index);
@@ -95,8 +98,11 @@ void		CParticleSystemInstanceUser::setUserParam(uint index, float value)
 float		CParticleSystemInstanceUser::getUserParam(uint index) const
 {
 	NL3D_MEM_PS_INSTANCE			
-	//nlassert(isSystemPresent())      ; // user : you forgot to check wether the system was present with isPresent() !!
-	nlassert(index < MaxPSUserParam) ; // invalid parameter index
+	if (index >= MaxPSUserParam)
+	{
+		nlwarning("invalid user param index");
+		return 0.f;
+	}
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
 	//return psm->getPS()->getUserParam(index) ;
 	IAnimatedValue *av = psm->getValue(CParticleSystemModel::PSParam0 + index);
@@ -174,9 +180,9 @@ static inline uint32 IDToLittleEndian(uint32 input)
 		return input;
 	#else
 		return ((input & (0xff<<24))>>24)
-				|| ((input & (0xff<<16))>>8)
-				|| ((input & (0xff<<8))<<8)
-				|| ((input & 0xff)<<24);
+				| ((input & (0xff<<16))>>8)
+				| ((input & (0xff<<8))<<8)
+				| ((input & 0xff)<<24);
 	#endif
 }
 
@@ -282,7 +288,7 @@ void		CParticleSystemInstanceUser::setShapeDistMax(float distMax)
 //===================================================================
 float		CParticleSystemInstanceUser::getShapeDistMax() const
 {
-	NL3D_MEM_PS_INSTANCE			
+	NL3D_MEM_PS_INSTANCE
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	if(psm && psm->Shape)
 	{
@@ -295,6 +301,7 @@ float		CParticleSystemInstanceUser::getShapeDistMax() const
 //===================================================================
 bool CParticleSystemInstanceUser::setActive(uint32 anId, bool active)
 {
+	NL3D_MEM_PS_INSTANCE
 	const uint32 id = IDToLittleEndian(anId);
 	if (!isSystemPresent()) return false;
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
@@ -312,6 +319,7 @@ bool CParticleSystemInstanceUser::setActive(uint32 anId, bool active)
 //===================================================================
 bool CParticleSystemInstanceUser::activateEmitters(bool active)
 {	
+	NL3D_MEM_PS_INSTANCE
 	if (!isSystemPresent()) return false;
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
 	for(uint k = 0; k < ps->getNbProcess(); ++k)
@@ -332,6 +340,7 @@ bool CParticleSystemInstanceUser::activateEmitters(bool active)
 //===================================================================
 bool CParticleSystemInstanceUser::hasParticles() const
 {
+	NL3D_MEM_PS_INSTANCE
 	if (!isSystemPresent()) return false;
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
 	return ps->hasParticles();
@@ -340,6 +349,7 @@ bool CParticleSystemInstanceUser::hasParticles() const
 //===================================================================
 bool CParticleSystemInstanceUser::hasEmmiters() const
 {
+	NL3D_MEM_PS_INSTANCE
 	if (!isSystemPresent()) return false;
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
 	return ps->hasEmitters();
@@ -347,6 +357,7 @@ bool CParticleSystemInstanceUser::hasEmmiters() const
 //===================================================================
 bool CParticleSystemInstanceUser::isShared() const
 {
+	NL3D_MEM_PS_INSTANCE
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	if(psm->Shape)
 	{
@@ -355,26 +366,81 @@ bool CParticleSystemInstanceUser::isShared() const
 	return false;
 }
 
+//===================================================================
+void UParticleSystemInstance::setGlobalUserParamValue(const std::string &name, float value)
+{
+	NL3D_MEM_PS_INSTANCE
+	if (name.empty())
+	{
+		nlwarning("invalid name");
+		return;
+	}
+	CParticleSystem::setGlobalValue(name, value);
+}
 
+//===================================================================
+float UParticleSystemInstance::getGlobalUserParamValue(const std::string &name)
+{
+	NL3D_MEM_PS_INSTANCE
+	if (name.empty())
+	{
+		nlwarning("invalid name");
+		return 0.f;
+	}
+	return CParticleSystem::getGlobalValue(name);
+}
 
+//===================================================================
+void UParticleSystemInstance::setGlobalVectorValue(const std::string &name,const NLMISC::CVector &v)
+{
+	NL3D_MEM_PS_INSTANCE
+	if (name.empty())
+	{
+		nlwarning("invalid name");
+	}
+	CParticleSystem::setGlobalVectorValue(name, v);
+}
 
-// ***************************************************************************
+//===================================================================
+NLMISC::CVector UParticleSystemInstance::getGlobalVectorValue(const std::string &name)
+{
+	NL3D_MEM_PS_INSTANCE
+	if (name.empty())
+	{
+		nlwarning("invalid name");
+		return NLMISC::CVector::Null;
+	}
+	else return CParticleSystem::getGlobalVectorValue(name);
+}
+
+//===================================================================
 void		CParticleSystemInstanceUser::enableAsyncTextureMode(bool enable) 
 {
+	NL3D_MEM_PS_INSTANCE
 }
+
+//===================================================================
 bool		CParticleSystemInstanceUser::getAsyncTextureMode() const 
 {
+	NL3D_MEM_PS_INSTANCE
 	return false;
 }
+
+//===================================================================
 void		CParticleSystemInstanceUser::startAsyncTextureLoading() 
 {
+	NL3D_MEM_PS_INSTANCE
 }
+
+//===================================================================
 bool		CParticleSystemInstanceUser::isAsyncTextureReady() 
 {
+	NL3D_MEM_PS_INSTANCE
 	return true;
 }
 void		CParticleSystemInstanceUser::setAsyncTextureDistance(float dist)
 {
+	NL3D_MEM_PS_INSTANCE
 }
 float		CParticleSystemInstanceUser::getAsyncTextureDistance() const
 {
@@ -388,5 +454,30 @@ bool		CParticleSystemInstanceUser::isAsyncTextureDirty() const
 	return false;
 }
 
+//===================================================================
+void CParticleSystemInstanceUser::bypassGlobalUserParamValue(uint userParamIndex, bool byPass /*=true*/)
+{
+	NL3D_MEM_PS_INSTANCE
+	if (userParamIndex >= MaxPSUserParam)
+	{
+		nlwarning("invalid user param index");
+		return;
+	}
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	psm->bypassGlobalUserParamValue(userParamIndex, byPass);
+}
+
+//===================================================================
+bool CParticleSystemInstanceUser::isGlobalUserParamValueBypassed(uint userParamIndex) const
+{
+	NL3D_MEM_PS_INSTANCE
+	if (userParamIndex >= MaxPSUserParam)
+	{
+		nlwarning("invalid user param index");
+		return 0.f;
+	}
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	return isGlobalUserParamValueBypassed(userParamIndex);
+}
 
 } // NL3D

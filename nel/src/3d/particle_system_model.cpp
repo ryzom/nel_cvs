@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.42 2002/11/14 12:55:14 berenguier Exp $
+ * $Id: particle_system_model.cpp,v 1.43 2002/11/14 17:33:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,8 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 											   _EditionMode(false),
 											   _Invalidated(false),
 											   _InsertedInVisibleList(false),
-											   _InClusterAndVisible(false)
+											   _InClusterAndVisible(false),
+											   _BypassGlobalUserParam(0)
 {
 	setOpacity(false);
 	setTransparency(true);
@@ -409,8 +410,8 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 	CParticleSystemModel *psm= NLMISC::safe_cast<CParticleSystemModel *>(Model);
 	CParticleSystem *ps = psm->getPS();
 	if (psm->_Invalidated) return;
-
-
+	if (psm->getVisibility() == CHrcTrav::Hide) return;
+	
 	
 	if (!psm->_EditionMode && !psm->_InClusterAndVisible)
 	{
@@ -460,17 +461,20 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 		bool animate = true;
 		if (ps->isSharingEnabled()) /// with shared system, we only animate one version!
 		{
-			if (ps->_LastUpdateDate != trav->CurrentDate)
+			if (ps->_LastUpdateDate == trav->CurrentDate)
 			{
-				ps->_LastUpdateDate = trav->CurrentDate;
+				animate = false;				
 			}
 			else
 			{
-				animate = false;
+				ps->_LastUpdateDate = trav->CurrentDate;
 			}
 		}
-
-
+		else
+		{
+			ps->_LastUpdateDate = trav->CurrentDate;
+		}	
+		ps->_LastUpdateDate = trav->CurrentDate;
 		if (animate)
 		{
 			const CMatrix		&mat= HrcObs->WorldMatrix;	 
@@ -484,6 +488,11 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 
 			// setup the number of faces we allow
 			ps->setNumTris((uint) psm->getNumTrianglesAfterLoadBalancing());
+
+
+			// set the global user param that are bypassed
+			nlctassert(MaxPSUserParam < 8); // there should be less than 8 parameters because of mask stored in a byte
+			ps->_BypassGlobalUserParam = psm->_BypassGlobalUserParam;
 
 			// setup system user parameters for parameters that have been touched
 			for (uint k = 0; k < MaxPSUserParam; ++k)
@@ -506,9 +515,10 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 				ps->step(CParticleSystem::Anim, delay);					
 			}
 		}
-	}	
+	}		
+	
 
-	// add a render obs if in cluster
+	// add a render obs if in cluster & not hidden
 	if (psm->_InClusterAndVisible)
 	{
 		trav->RenderTrav->addRenderObs(ClipObs->RenderObs);
@@ -734,7 +744,6 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		m->_InClusterAndVisible = true;
 }
 
-
 //===================================================================
 bool CParticleSystemClipObs::checkDestroyCondition(CParticleSystem *ps, CParticleSystemModel *m)
 {
@@ -774,6 +783,23 @@ bool CParticleSystemClipObs::checkDestroyCondition(CParticleSystem *ps, CParticl
 		}
 	}
 	return false;
+}
+
+//===================================================================
+void CParticleSystemModel::bypassGlobalUserParamValue(uint userParamIndex,bool byPass /*=true*/)
+{
+	nlctassert(MaxPSUserParam < 8); // there should be less than 8 parameters because of mask stored in a byte
+	nlassert(userParamIndex < MaxPSUserParam);
+	if (byPass) _BypassGlobalUserParam |= (1 << userParamIndex);
+	else _BypassGlobalUserParam &= ~(1 << userParamIndex);
+}
+
+//===================================================================
+bool CParticleSystemModel::isGlobalUserParamValueBypassed(uint userParamIndex) const
+{
+	nlctassert(MaxPSUserParam < 8); // there should be less than 8 parameters because of mask stored in a byte
+	nlassert(userParamIndex < MaxPSUserParam);
+	return (_BypassGlobalUserParam & (1 << userParamIndex)) != 0;
 }
 
 

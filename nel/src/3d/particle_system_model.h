@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.27 2002/10/10 14:53:55 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.28 2002/11/14 17:33:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,275 +52,247 @@ class CScene;
 class CParticleSystemShape;
 
 
-/** A particle system model : it is build using a CParticleSystemShape.
+/** A particle system model : it is built using a CParticleSystemShape.
   * You should forgot to call the animate() method of the CScene it is part of
   * if you want motion to be performed
   */
  
 class CParticleSystemModel : public CTransformShape
 {
-	public:
-	
-		///\name Object
-			//@{
-			/// ctor
-			CParticleSystemModel();
-			/// dtor
-			~CParticleSystemModel();
+public:
+	///\name Object
+	//@{
+		/// ctor
+		CParticleSystemModel();
+		/// dtor
+		~CParticleSystemModel();
 
-			/// register the basic models and observers
-			static	void				registerBasic();
-			//@}
+		/// register the basic models and observers
+		static	void				registerBasic();
+	//@}
 
+	///\name Embedded particle system
+	//@{
 
-	
-		///\name Embedded particle system
-			//@{
-
-			/** Get the particle system contained in this transform shape. (NB: This is shared by a smart ptr)
-			  * \return pointer to the system, or NULL if no system is currently hold by this model.
-			  *			this may happen when the system is not visible and that it has been deleted
-			  */
-			CParticleSystem				*getPS(void)
-			{
-				return _ParticleSystem;
-			}
-
-			/** Get the particle system (NB : This is shared by a smart ptr) contained in this transform shape. 
-			  * This may be null if the model is not visible. 
-			  */
-			const CParticleSystem		*getPS(void) const
-			{		
-				return _ParticleSystem;
-			}
-			
-			/** Set the particle system for this transform shape after it has been instanciated (from a memory stream, or by sharing)
-			 *  see CParticleSystemShape
-			 */
-			void						setParticleSystem(CParticleSystem *ps)
-			{
-				nlassert(!_ParticleSystem);
-				_ParticleSystem = ps;	
-				updateOpacityInfos();
-			}
-			//@}
-
-		///\name Life managment 
-			//@{
-			/**
-			 * test wether the system has become invalid. The condition for a system to be invalid
-			 * are encoded in the system itself (no more particles for example). When a system has become invalid, you may want to remove it most of the time
-			 */
-			bool isInvalid(void) const { return _Invalidated; }
-
-			/// interface for object that observe this model. They will be notified when it becomes invalid
-			struct IPSModelObserver
-			{
-				/// called when a system has been invalidated
-				virtual void invalidPS(CParticleSystemModel *psm) = 0;
-			};
-							
-			/// register an observer that will be notified when this model becomes invalid
-			void registerPSModelObserver(IPSModelObserver *obs);
- 
-			/** remove an observer
-			  * \see registerPSModelObserver
-			  */
-			void removePSModelObserver(IPSModelObserver *obs);
-			
-			/// test wether obs observe this model
-			bool isPSModelObserver(IPSModelObserver *obs);
-
-			//@}
-						
-
-		//\name Time managment
-			//@{
-
-			/** when called with true, this force the model to querry himself the ellapsed time to the scene.
-			  * This is the default. Otherwise, setEllapsedTime must be called
-			  */
-			void						enableAutoGetEllapsedTime(bool enable = true) 
-			{ 
-				_AutoGetEllapsedTime = enable; 
-			}
-
-			/** This apply a ratio on the ellapsed time. This can be used to slow down a system
-			  * This must be in the >= 0.
-			  * 1 means the system run at normal speed
-			  */
-			void						setEllapsedTimeRatio(float value)
-			{
-				nlassert(value >= 0);
-				_EllapsedTimeRatio = value;
-			}
-			//
-			float						getEllapsedTimeRatio() const { return _EllapsedTimeRatio; }			
-
-			/// tells wether the model will querry himself for the ellapsed time
-			bool						isAutoGetEllapsedTimeEnabled(void) const 
-			{ 
-				return _AutoGetEllapsedTime; 
-			}
-
-			/// set the ellapsed time (in second) used for animation. 		  
-			void						setEllapsedTime(TAnimationTime ellapsedTime) 
-			{ 
-				_EllapsedTime = ellapsedTime; 
-			}
-			
-			/// get the ellapsed time used for animation
-			TAnimationTime				getEllapsedTime(void) const 
-			{ 
-				return _EllapsedTime; 
-			}
-
-			//@}
-		
-		///\name Edition related methods
-			//@{
-			/// activate the display of tool (for edition purpose)
-			void						enableDisplayTools(bool enable = true) 
-			{ 
-				_ToolDisplayEnabled = enable; touchTransparencyState(); 
-			}
-
-			// check wether the display of tools is enabled
-			bool						isToolDisplayEnabled(void) const 
-			{ 
-				return _ToolDisplayEnabled; 
-			}			
-
-			/** force the edition mode : this will prevent the system from being removed when it is out of range.
-			 * When the model is first allocated, the system resource are not allocated until it becomes visible.
-			 * This also forces the resources to be allocated.
-			 * when there are no more particles in it etc. (this also mean that you can safely keep a pointer on it)
-			 * This flag is not saved.
-			 */
-			void						setEditionMode(bool enable = true) ;
-			
-
-			/// test if edition mode is activated
-			bool						getEditionMode(void) const 
-			{ 
-				return _EditionMode; 
-			}
-			/// edition purpose : touch the system to tell that the transparency state of the system has changed (added/removes opaque/tansparent faces )
-			void						touchTransparencyState(void) 
-			{ 
-				_TransparencyStateTouched = true; 
-			}
-			//@}
-	
-		///\name User params / animation
-			//@{
-			/// for now, we have 4 animatables value in a system
-			enum	TAnimValues
-			{
-				OwnerBit= CTransformShape::AnimValueLast,
-				PSParam0,
-				PSParam1,
-				PSParam2,
-				PSParam3,
-				PSTrigger, // trigger the instanciation of the system
-				AnimValueLast,
-			};
-
-	
-			virtual IAnimatedValue		*getValue (uint valueId);
-			virtual const char			*getValueName (uint valueId) const; 
-			static const char			*getPSParamName (uint valueId);			
-			virtual ITrack				*getDefaultTrack (uint valueId);		
-			virtual	void				registerToChannelMixer(CChannelMixer *chanMixer
-															   , const std::string &prefix=std::string());
-			//@}
-
-
-		/** This update the infos about opacity (e.g are there solid faces and / or transparent faces in the system).
-		  * This must be called when the system is instanciated, or when attributes have changed, such as the blending mode
+		/** Get the particle system contained in this transform shape. (NB: This is shared by a smart ptr)
+		  * \return pointer to the system, or NULL if no system is currently hold by this model.
+		  *			this may happen when the system is not visible and that it has been deleted
 		  */
-		void						updateOpacityInfos(void);
-
-		/// get the world matrix
-		const CMatrix				&getWorldMatrix(void)
+		CParticleSystem				*getPS(void)
 		{
-			IBaseHrcObs *bobs= (IBaseHrcObs *) getObs(HrcTravId);
-			return bobs->WorldMatrix;
-		}		
-
-		virtual void				getAABBox(NLMISC::CAABBox &bbox) const;
-
-
-		/// inherited from CTransformShape. Returns the number of triangles wanted depeneding on the distance
-		virtual float				getNumTriangles (float distance);
-
-			
-		/// to instanciate that model from a scene
-		static IModel				*creator() 
-		{
-			return new CParticleSystemModel;
+			return _ParticleSystem;
 		}
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	private:
-
-		friend class CParticleSystemShape;
-		friend class CParticleSystemDetailObs;
-		friend class CParticleSystemClipObs;
-		friend class CParticleSystemRenderObs;
-		friend class CParticleSystemManager;
-
-
-		/// Called when the resource (attached system) for this system must be reallocated
-		void reallocRsc();
-
-		/** Called by the particle system manager to see wether this model resources must be released
-		  * If this is the case, this releases the resource and return true.
-		  * IMPORTANT: the handle of the model in the p.s manager is automatically removed
-		  * when this returns true
+		/** Get the particle system (NB : This is shared by a smart ptr) contained in this transform shape. 
+		  * This may be null if the model is not visible. 
 		  */
-		bool refreshRscDeletion(const std::vector<CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos);
+		const CParticleSystem		*getPS(void) const
+		{		
+			return _ParticleSystem;
+		}
+		
+		/** Set the particle system for this transform shape after it has been instanciated (from a memory stream, or by sharing)
+		 *  see CParticleSystemShape
+		 */
+		void						setParticleSystem(CParticleSystem *ps)
+		{
+			nlassert(!_ParticleSystem);
+			_ParticleSystem = ps;	
+			updateOpacityInfos();
+		}
+	//@}
 
-		// Release the resources (attached system) of this model, but doesn't make it invalid.
-		void releaseRsc();
+	///\name Life managment 
+		//@{
+		/**
+		 * test wether the system has become invalid. The condition for a system to be invalid
+		 * are encoded in the system itself (no more particles for example). When a system has become invalid, you may want to remove it most of the time
+		 */
+		bool isInvalid(void) const { return _Invalidated; }
 
-		// Mark this system model as invalid, delete the attached system, and calls his observers
-		void releaseRscAndInvalidate();
+		/// interface for object that observe this model. They will be notified when it becomes invalid
+		struct IPSModelObserver
+		{
+			/// called when a system has been invalidated
+			virtual void invalidPS(CParticleSystemModel *psm) = 0;
+		};
+						
+		/// register an observer that will be notified when this model becomes invalid
+		void registerPSModelObserver(IPSModelObserver *obs);
+
+		/** remove an observer
+		  * \see registerPSModelObserver
+		  */
+		void removePSModelObserver(IPSModelObserver *obs);
+		/// test wether obs observe this model
+		bool isPSModelObserver(IPSModelObserver *obs);
+	//@}
+					
+
+	//\name Time managment
+	//@{
+
+		/** when called with true, this force the model to querry himself the ellapsed time to the scene.
+		  * This is the default. Otherwise, setEllapsedTime must be called
+		  */
+		void						enableAutoGetEllapsedTime(bool enable = true) 
+		{ 
+			_AutoGetEllapsedTime = enable; 
+		}
+		/** This apply a ratio on the ellapsed time. This can be used to slow down a system
+		  * This must be in the >= 0.
+		  * 1 means the system run at normal speed
+		  */
+		void						setEllapsedTimeRatio(float value)
+		{
+			nlassert(value >= 0);
+			_EllapsedTimeRatio = value;
+		}
+		//
+		float						getEllapsedTimeRatio() const { return _EllapsedTimeRatio; }			
+		/// tells wether the model will querry himself for the ellapsed time
+		bool						isAutoGetEllapsedTimeEnabled(void) const 
+		{ 
+			return _AutoGetEllapsedTime; 
+		}
+		/// set the ellapsed time (in second) used for animation. 		  
+		void						setEllapsedTime(TAnimationTime ellapsedTime) 
+		{ 
+			_EllapsedTime = ellapsedTime; 
+		}		
+		/// get the ellapsed time used for animation
+		TAnimationTime				getEllapsedTime(void) const 
+		{ 
+			return _EllapsedTime; 
+		}
+	//@}
+	
+	///\name Edition related methods
+	//@{
+		/// activate the display of tool (for edition purpose)
+		void						enableDisplayTools(bool enable = true) 
+		{ 
+			_ToolDisplayEnabled = enable; touchTransparencyState(); 
+		}
+		// check wether the display of tools is enabled
+		bool						isToolDisplayEnabled(void) const 
+		{ 
+			return _ToolDisplayEnabled; 
+		}			
+		/** force the edition mode : this will prevent the system from being removed when it is out of range.
+		 * When the model is first allocated, the system resource are not allocated until it becomes visible.
+		 * This also forces the resources to be allocated.
+		 * when there are no more particles in it etc. (this also mean that you can safely keep a pointer on it)
+		 * This flag is not saved.
+		 */
+		void						setEditionMode(bool enable = true) ;		
+		/// test if edition mode is activated
+		bool						getEditionMode(void) const 
+		{ 
+			return _EditionMode; 
+		}
+		/// edition purpose : touch the system to tell that the transparency state of the system has changed (added/removes opaque/tansparent faces )
+		void						touchTransparencyState(void) 
+		{ 
+			_TransparencyStateTouched = true; 
+		}
+	//@}
+
+	///\name User params / animation
+	//@{
+		/// for now, we have 4 animatables value in a system
+		enum	TAnimValues
+		{
+			OwnerBit= CTransformShape::AnimValueLast,
+			PSParam0,
+			PSParam1,
+			PSParam2,
+			PSParam3,
+			PSTrigger, // trigger the instanciation of the system
+			AnimValueLast,
+		};
+		virtual IAnimatedValue		*getValue (uint valueId);
+		virtual const char			*getValueName (uint valueId) const; 
+		static const char			*getPSParamName (uint valueId);			
+		virtual ITrack				*getDefaultTrack (uint valueId);		
+		virtual	void				registerToChannelMixer(CChannelMixer *chanMixer,
+														   const std::string &prefix = "");
+		// Bypass a global user param.
+		void  bypassGlobalUserParamValue(uint userParamIndex, bool byPass = true);
+		bool  isGlobalUserParamValueBypassed(uint userParamIndex) const;		
+	//@}
+
+	/** This update the infos about opacity (e.g are there solid faces and / or transparent faces in the system).
+	  * This must be called when the system is instanciated, or when attributes have changed, such as the blending mode
+	  */
+	void						updateOpacityInfos(void);
+	/// get the world matrix
+	const CMatrix				&getWorldMatrix(void)
+	{
+		IBaseHrcObs *bobs= (IBaseHrcObs *) getObs(HrcTravId);
+		return bobs->WorldMatrix;
+	}		
+	virtual void				getAABBox(NLMISC::CAABBox &bbox) const;
+	/// inherited from CTransformShape. Returns the number of triangles wanted depeneding on the distance
+	virtual float				getNumTriangles (float distance);		
+	/// create an instance of this class
+	static IModel				*creator() 
+	{
+		return new CParticleSystemModel;
+	}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+private:
+	friend class CParticleSystemShape;
+	friend class CParticleSystemDetailObs;
+	friend class CParticleSystemClipObs;
+	friend class CParticleSystemRenderObs;
+	friend class CParticleSystemManager;
 
 
-		/// Return true if the system is in the given world pyramid
-		bool checkAgainstPyramid(const std::vector<CPlane>	&worldFrustumPyramid) const;
+	/// Called when the resource (attached system) for this system must be reallocated
+	void reallocRsc();
+	/** Called by the particle system manager to see wether this model resources must be release
+	  * If this is the case, this releases the resource and return true.
+	  * IMPORTANT: the handle of the model in the p.s manager is automatically removed
+	  * when this returns true
+	  */
+	bool refreshRscDeletion(const std::vector<CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos);
+	// Release the resources (attached system) of this model, but doesn't make it invalid.
+	void releaseRsc();
+	// Mark this system model as invalid, delete the attached system, and calls his observers
+	void releaseRscAndInvalidate();
+	/// Return true if the system is in the given world pyramid
+	bool checkAgainstPyramid(const std::vector<CPlane>	&worldFrustumPyramid) const;
+	// Release PS and backup system params
+	void releasePSPointer();
 
-		// Release PS and backup system params
-		void releasePSPointer();
+private:		
+	CParticleSystemManager::TModelHandle    _ModelHandle; /** a handle to say when the resources
+															* of the model (_ParticleSystem) are deleted
+															*/
 
-	private:		
-		CParticleSystemManager::TModelHandle    _ModelHandle; /** a handle to say when the resources
-																* of the model (_ParticleSystem) are deleted
-																*/
+	CParticleSystemManager::TModelHandle    _AnimatedModelHandle; // handle for permanenlty animated models
+															
+	bool									_AutoGetEllapsedTime;		
+	NLMISC::CSmartPtr<CParticleSystem>		_ParticleSystem;
+	CScene							  	   *_Scene;
+	TAnimationTime						    _EllapsedTime;
+	float									_EllapsedTimeRatio;
 
-		CParticleSystemManager::TModelHandle    _AnimatedModelHandle; // handle for permanenlty animated models
-																
-		bool									_AutoGetEllapsedTime;		
-		NLMISC::CSmartPtr<CParticleSystem>		_ParticleSystem;
-		CScene							  	   *_Scene;
-		TAnimationTime						    _EllapsedTime;
-		float									_EllapsedTimeRatio;
+	///\todo nico : may optimize this with a bitfield...
+	bool									_ToolDisplayEnabled;		
+	bool									_TransparencyStateTouched;
+	bool									_EditionMode;
+	bool									_Invalidated; /// if false, system should be recreated
+	bool									_InsertedInVisibleList;
+	bool									_InClusterAndVisible;
+	std::vector<IPSModelObserver *>			_Observers;		
+	CAnimatedValueBool						_TriggerAnimatedValue;
+	/// user params of the system
+	CAnimatedValueFloat						_UserParam[MaxPSUserParam];
+	uint8                                    _BypassGlobalUserParam;  // mask to bypass a global user param. This state is not serialized
 
-		///\todo nico : may optimize this with a bitfield...
-		bool									_ToolDisplayEnabled;		
-		bool									_TransparencyStateTouched;
-		bool									_EditionMode;
-		bool									_Invalidated; /// it false, system should be recreated
-		bool									_InsertedInVisibleList;
-		bool									_InClusterAndVisible;
-		std::vector<IPSModelObserver *>			_Observers;		
-
-		CAnimatedValueBool						_TriggerAnimatedValue;
-		/// user params of the system
-		CAnimatedValueFloat						_UserParam[MaxPSUserParam];
 };
 
 

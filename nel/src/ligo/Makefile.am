@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.3 2003/11/12 10:27:53 distrib Exp $
+# $Id: Makefile.am,v 1.4 2004/08/23 08:38:08 distrib Exp $
 #
 
 MAINTAINERCLEANFILES     = Makefile.in
@@ -16,7 +16,8 @@ libnelligo_la_SOURCES = ligo_config.cpp                        \
                         zone_bank.h                    \
 						zone_edge.cpp                      \
 						zone_region.cpp                   \
-						zone_template.cpp
+						zone_template.cpp		\
+			primitive_utils.cpp
 
 AM_CXXFLAGS         	 = -I$(top_srcdir)/src
 

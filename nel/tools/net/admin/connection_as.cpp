@@ -1,7 +1,7 @@
 /** \file connection_as.cpp
  * 
  *
- * $Id: connection_as.cpp,v 1.7 2001/07/05 09:20:04 lecroart Exp $
+ * $Id: connection_as.cpp,v 1.8 2001/07/05 14:16:06 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -44,7 +44,7 @@ using namespace NLNET;
 ///
 static void cbAESList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	uint32 nbaes;
 	msgin.serial(nbaes);
@@ -112,7 +112,7 @@ static void cbAESList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 /// Get the list of Services on the AS
 static void cbServiceList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	// get the list of all aes
 	uint32 nbaes;
@@ -190,7 +190,7 @@ static void cbServiceList_ (CMessage& msgin, TSockId from, CCallbackNetBase &net
 ///////////////////////////
 
 	// receive all information about the admin service
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	// get the list of all aes
 	uint32 nbaes;
@@ -242,7 +242,7 @@ static void cbServiceList_ (CMessage& msgin, TSockId from, CCallbackNetBase &net
 static void cbServiceAliasList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// receive all information about the admin service
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	uint32 aesid;
 	msgin.serial(aesid);
@@ -261,7 +261,7 @@ static void cbServiceAliasList (CMessage& msgin, TSockId from, CCallbackNetBase 
 
 static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	uint32 aesid, sid;
 	string alias;
@@ -324,7 +324,7 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 
 static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	uint32 aesid, sid;
 	msgin.serial (aesid, sid);
@@ -340,7 +340,7 @@ static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &net
 
 static void cbServiceConnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	uint32 aesid, sid;
 	msgin.serial (aesid, sid);
@@ -358,7 +358,7 @@ static void cbServiceConnection (CMessage& msgin, TSockId from, CCallbackNetBase
 static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// remove the service from the list
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	uint32 aesid, sid;
 	msgin.serial (aesid, sid);
@@ -386,7 +386,7 @@ static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetB
 static void cbAESConnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// an AES is disconnected, remove the aes from the list
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	uint32 aesid;
 	msgin.serial (aesid);
@@ -404,7 +404,7 @@ static void cbAESConnection (CMessage& msgin, TSockId from, CCallbackNetBase &ne
 static void cbAESDisconnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// an AES is disconnected, remove the aes from the list
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	uint32 aesid;
 	msgin.serial (aesid);
@@ -421,7 +421,7 @@ static void cbASConnection (const string &serviceName, TSockId from, void *arg)
 	// i'm connected to a new admin service, add the new admin service in the list
 
 	CAdminService *as = (CAdminService *) arg;
-	from->setAppId ((uint64)as);
+	from->setAppId ((uint64)(uint)as);
 
 	as->Connected = true;
 	as->SockId = from;
@@ -435,7 +435,7 @@ static void cbASConnection (const string &serviceName, TSockId from, void *arg)
 static void cbASDisconnection (const string &serviceName, TSockId from, void *arg)
 {
 	// lost the connection to an admin service
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	nlinfo ("%d:*:* disconnected", as->Id);
 
@@ -455,7 +455,7 @@ static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 	// received an answer for a command, give it to all admin client
 
 	// an AES gives me a message
-	CAdminService *as = (CAdminService*) from->appId();
+	CAdminService *as = (CAdminService*) (uint) from->appId();
 
 	string log;
 	uint32 sid, aesid;

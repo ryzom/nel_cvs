@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.6 2001/07/05 09:20:04 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.7 2001/07/05 14:16:06 lecroart Exp $
  *
  *
  */
@@ -28,7 +28,6 @@
 #ifdef INTERF_GTK
 
 #include <string>
-#include <conio.h>
 
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -86,7 +85,7 @@ static CGtkDisplayer *GtkDisplayer;
 // Functions
 //
 
-bool queryValue (string &value);
+static bool queryValue (string &value);
 void saveConfig ();
 
 string toPath () { return "/"; }
@@ -95,7 +94,7 @@ string toPath (CAdminExecutorService *aes) { return toPath(aes->AS) + "/" + aes-
 string toPath (CService *s) { return toPath(s->AES) + "/" + s->AliasName; }
 string toPath (CAdminSerialCommand *asc) { return toPath(asc->Service) + "/" + asc->Name; }
 
-void activateVariable (CAdminSerialCommand *scmd, sint32 freq);
+void activateVariable (CAdminSerialCommand *scmd, uint32 freq);
 
 bool wasActiveVariable (string path, sint32 &freq);
 bool wasExpanded (string path);
@@ -724,7 +723,7 @@ void cbExecuteCommand (gpointer callback_data, guint callback_action, GtkWidget 
 	ICommand::execute (cmd, logstdout);
 }
 
-void activateVariable (CAdminSerialCommand *scmd, sint32 freq)
+void activateVariable (CAdminSerialCommand *scmd, uint32 freq)
 {
 	if (scmd->IsActive)
 	{
@@ -865,8 +864,8 @@ CAdminSerialCommand *PopupC = NULL;
 
 void cbSetUpdateFrequency (gpointer callback_data, guint callback_action, GtkWidget *widget)
 {
-	sint32 value = (sint32)callback_action;
-	nlinfo ("set freq to %d", value);
+	uint32 value = (uint32)callback_action;
+	nlinfo ("set freq to %u", value);
 	PopupC->UpdateFrequency = value;
 	PopupC->LastAskUpdate = 0;	// force to update now
 	PopupC = NULL;
@@ -875,7 +874,7 @@ void cbSetUpdateFrequency (gpointer callback_data, guint callback_action, GtkWid
 void cbRemoveVariable ()
 {
 	PopupC->IsActive = false;
-	PopupC->UpdateFrequency = -1;
+	PopupC->UpdateFrequency = 0xFFFFFFFF;
 	PopupC->LastAskUpdate = 0;
 	interfRemoveVariable (PopupC);
 
@@ -904,9 +903,9 @@ void cbSetVariableValue ()
 }
 
 static GtkItemFactoryEntry CMenuItems[] = {
-	{ "/Set Value", NULL, cbSetVariableValue, NULL, NULL },
+	{ "/Set Value", NULL, cbSetVariableValue, 0, NULL },
 	{ "/Remove variable", NULL, cbRemoveVariable, 0, NULL },
-	{ "/Update one time", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, -1, NULL },
+	{ "/Update one time", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 0xFFFFFFFF, NULL },
 	{ "/Update every time", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 0, NULL },
 	{ "/Update every 1s", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 1000, NULL },
 	{ "/Update every 10s", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 10*1000, NULL },
@@ -1375,7 +1374,7 @@ void checkActiveVariable ()
 							// it's the first time, update it anyway
 							askVariableUpdate (&(*cit));
 						}
-						else if ((*cit).ReceivedUpdateAnswer && (*cit).UpdateFrequency >= 0)
+						else if ((*cit).ReceivedUpdateAnswer && (*cit).UpdateFrequency != 0xFFFFFFFF)
 						{
 							// it's an active variable, check if we need to update it
 							if (CTime::getLocalTime () >= (*cit).LastAskUpdate + (*cit).UpdateFrequency)

@@ -1,7 +1,7 @@
 /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.9 2002/02/15 17:20:17 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.10 2002/08/07 08:38:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,9 +118,9 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	{
 		_UserParamWrapper[k].PS = _PS;
 		_UserParamWrapper[k].Index = k;
-		CEditableRangeFloat *erf = new CEditableRangeFloat (std::string("USER PARAM") + (char) (k + 65), 0, 0.999f);
+		CEditableRangeFloat *erf = new CEditableRangeFloat (std::string("USER PARAM") + (char) (k + 65), 0, 1.0f);
 		erf->enableLowerBound(0, false);
-		erf->enableUpperBound(1, true);
+		erf->enableUpperBound(1, false);
 		pushWnd(erf);
 		erf->setWrapper(&_UserParamWrapper[k]);	
 		erf->init(xPos, yPos, this);

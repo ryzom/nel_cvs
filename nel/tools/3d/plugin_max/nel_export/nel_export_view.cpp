@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.19 2001/11/12 18:12:51 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.20 2002/02/12 15:46:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,12 +32,14 @@
 #include "3d/mesh_instance.h"
 #include "3d/light.h"
 #include "3d/water_pool_manager.h"
+#include "3d/instance_lighter.h"
 
 #include "r:/code/nel/tools/3d/object_viewer/object_viewer_interface.h"
 
 
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_patch_lib/rpo.h"
+#include "../nel_mesh_lib/calc_lm.h"
 
 #include "nel/misc/time_nl.h"
 
@@ -65,6 +67,30 @@ public:
 	}
 	CSkeletonModel	*SkeletonShape;
 	TInodePtrInt	MapId;
+};
+
+
+// -----------------------------------------------------------------------------------------------
+class	CMaxInstanceLighter : public NL3D::CInstanceLighter
+{
+public:
+	CProgressBar	ProgressBar;
+
+	void	initMaxLighter(Interface& ip)
+	{
+		ProgressBar.initProgressBar (100, ip);
+	}
+	void	closeMaxLighter()
+	{
+		ProgressBar.uninitProgressBar ();
+	}
+
+	virtual void progress (const char *message, float progress)
+	{
+		ProgressBar.setLine(0, string(message));
+		ProgressBar.update();
+		ProgressBar.updateProgressBar ((uint32)(100 * progress));
+	}
 };
 
 // -----------------------------------------------------------------------------------------------
@@ -223,6 +249,21 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		}
 		view->setAutoAnimation (autoAnim);
 
+		// *******************
+		// * Then, build Mesh shapes
+		// *******************
+
+		// Prepare ig export.
+		std::vector<INode*>						igVectNode;
+		std::map<std::string, NL3D::IShape *>	igShapeMap;
+		// Default SunDirection. replaced with any directionnal light
+		NLMISC::CVector							igSunDirection(0, 1, -1);
+		// Default SunColor. replaced with any directionnal light
+		NLMISC::CRGBA							igSunColor(255, 255, 255);
+		SLightBuild								sgLightBuild;
+
+
+		// Build Mesh Shapes.
 		CProgressBar ProgBar;
 		ProgBar.initProgressBar (nNbMesh, ip);
 		opt.FeedBack = &ProgBar;
@@ -300,14 +341,51 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 					// Export successful ?
 					if (pShape)
 					{
-						// Add to the view
-						view->addMesh (pShape, pNode->GetName(), (CExportNel::getName (*pNode)+".").c_str(), NULL);
+						// get the nelObjectName, as used in building of the instanceGroup.
+						std::string	nelObjectName= CExportNel::getNelObjectName(*pNode);
+
+						// ugly way to verify the shape is really added to the sahepBank: use a refPtr :)
+						NLMISC::CRefPtr<IShape>		prefShape= pShape;
+
+						// Add to the view, but don't create the instance (created in ig).
+						view->addMesh (pShape, (nelObjectName + ".shape").c_str(), (nelObjectName + ".").c_str(), NULL, false);
+
+						// If the shape is not destroyed in addMesh() (with smarPtr), then add it to the shape map.
+						if(prefShape)
+						{
+							igShapeMap.insert( std::make_pair(nelObjectName, pShape) );
+						}
+						
+						// Add to list of node for IgExport.
+						igVectNode.push_back(pNode);
 					}
 				}
 
 				// Add tracks
 				CExportNel::addAnimation (*anim, *pNode, (CExportNel::getName (*pNode)+".").c_str(), &ip, true, true);
 			}
+			// Try to export a light for Ig. Only if ExportLighting
+			else if( sgLightBuild.canConvertFromMaxLight(pNode, time) && opt.bExportLighting)
+			{
+				// Convert it.
+				sgLightBuild.convertFromMaxLight(pNode, time);
+
+				// PointLight ??
+				if(sgLightBuild.Type == SLightBuild::LightPoint)
+				{
+					// Add to list of node for IgExport.
+					igVectNode.push_back(pNode);
+				}
+				// "SunLight" ??
+				else if( sgLightBuild.Type == SLightBuild::LightDir )
+				{
+					// Replace sun Direciton.
+					igSunDirection= sgLightBuild.Direction;
+					// Replace sun Color.
+					igSunColor= sgLightBuild.Diffuse;
+				}
+			}
+
 			ProgBar.updateProgressBar (nNbMesh);
 			if( ProgBar.isCanceledProgressBar() )
 				break;
@@ -315,6 +393,58 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 		ProgBar.uninitProgressBar();
 		opt.FeedBack = NULL;
+
+		// *******************
+		// * Export instance Group.
+		// *******************
+
+
+		// Build the ig (with pointLights)
+		NL3D::CInstanceGroup	*ig= CExportNel::buildInstanceGroup(igVectNode, time);
+		if(ig)
+		{
+			// If ExportLighting
+			if( opt.bExportLighting )
+			{
+				// Light the ig.
+				NL3D::CInstanceGroup	*igOut= new NL3D::CInstanceGroup;
+				// Init the lighter.
+				CMaxInstanceLighter		maxInstanceLighter;
+				maxInstanceLighter.initMaxLighter(ip);
+
+				// Setup LightDesc Ig.
+				CInstanceLighter::CLightDesc	lightDesc;
+				// Copy map to get info on shapes.
+				lightDesc.UserShapeMap= igShapeMap;
+				// Setup Shadow and overSampling.
+				lightDesc.Shadow= opt.bShadow;
+				lightDesc.OverSampling= NLMISC::raiseToNextPowerOf2(opt.nOverSampling);
+				clamp(lightDesc.OverSampling, 0U, 32U);
+				if(lightDesc.OverSampling==1)
+					lightDesc.OverSampling= 0;
+				// Setup LightDirection.
+				lightDesc.LightDirection= igSunDirection.normed();
+
+				// Simply Light Ig.
+				CInstanceLighter::lightIgSimple(maxInstanceLighter, *ig, *igOut, lightDesc);
+
+				// Close the lighter.
+				maxInstanceLighter.closeMaxLighter();
+
+				// Swap pointer and release unlighted one.
+				swap(ig, igOut);
+				delete igOut;
+			}
+
+
+			// Setup the ig in Viewer.
+			view->addInstanceGroup(ig);
+		}
+
+
+		// *******************
+		// * Launch
+		// *******************
 
 		// Set the single animation
 		view->setSingleAnimation (anim, "3dsmax current animation");
@@ -326,13 +456,25 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		if (opt.bExportBgColor)
 			view->setBackGroundColor(CExportNel::getBackGroundColor(ip, time));
 
-		// Build light vector
-		std::vector<CLight> vectLight;
-		CExportNel::getLights (vectLight, time, ip);
+		// ExportLighting?
+		if ( opt.bExportLighting )
+		{
+			// setup lighting and sun, if any light added. Else use std OpenGL front lighting
+			view->setupSceneLightingSystem(true, igSunDirection, igSunColor);
+		}
+		else
+		{
+			// Use old Driver Light mgt.
+			view->setupSceneLightingSystem(false, igSunDirection, igSunColor);
 
-		// Insert each lights
-		for (uint light=0; light<vectLight.size(); light++)
-			view->setLight (light, vectLight[light]);
+			// Build light vector
+			std::vector<CLight> vectLight;
+			CExportNel::getLights (vectLight, time, ip);
+
+			// Insert each lights
+			for (uint light=0; light<vectLight.size(); light++)
+				view->setLight (light, vectLight[light]);
+		}
 
 		// Reset the camera
 		view->resetCamera ();

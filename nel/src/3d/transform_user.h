@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.7 2001/12/20 16:54:47 vizerie Exp $
+ * $Id: transform_user.h,v 1.8 2002/01/23 17:49:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,6 +153,10 @@ public:
 
 	/// Get the ordering layer
 	virtual uint getOrderingLayer() const { return _Transform->getOrderingLayer(); }
+
+
+	virtual bool	getLastClippedState() const {return _Transform->getLastClippedState();}
+
 
 public:
 	/// \name Accessor for CSeneUser / Other.

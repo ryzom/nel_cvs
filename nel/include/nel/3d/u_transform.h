@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.5 2002/01/07 10:23:58 vizerie Exp $
+ * $Id: u_transform.h,v 1.6 2002/01/23 17:49:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,6 +132,10 @@ public:
 
 	/// Get the ordering layer
 	virtual uint getOrderingLayer() const = 0;
+
+
+	/// Return true if the object was rendered during the last Scene->rendere(). return false else (ie clipped)
+	virtual bool	getLastClippedState() const = 0;
 
 };
 

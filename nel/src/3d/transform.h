@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.11 2001/12/20 16:54:47 vizerie Exp $
+ * $Id: transform.h,v 1.12 2002/01/23 17:49:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,6 +161,12 @@ public:
 	 * Get the worldMatrix that is stored in the hrc observer
 	 */
 	const CMatrix& getWorldMatrix();
+
+	/**
+	 * Get the Visible state that is stored in the clip observer. True if visible.
+	 */
+	bool	getLastClippedState() const;
+
 
 
 	void					setClusterSystem (CInstanceGroup *pIG) { _ClusterSystem = pIG; }

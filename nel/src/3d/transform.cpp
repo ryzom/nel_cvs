@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.29 2001/12/20 16:54:47 vizerie Exp $
+ * $Id: transform.cpp,v 1.30 2002/01/23 17:49:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -232,6 +232,13 @@ const CMatrix& CTransform::getWorldMatrix()
 {
 	return _HrcObs->WorldMatrix;
 }
+
+// ***************************************************************************
+bool	CTransform::getLastClippedState() const
+{
+	return _ClipObs->Visible;
+}
+
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.15 2002/03/26 09:44:58 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.16 2002/05/22 08:22:37 lecroart Exp $
  *
  *
  */
@@ -655,7 +655,7 @@ static void cbStartService()
 		return;
 	}
 
-	string cmd = "start_service";
+	string cmd = "startService";
 	cmd += " ";
 	cmd += toString (PopupS->AES->AS->Id);
 	cmd += " ";
@@ -680,7 +680,7 @@ static void cbStopService()
 
 	printf("disconnecting to...%p\n", PopupS);
 
-	string cmd = "stop_service";
+	string cmd = "stopService";
 	cmd += " ";
 	cmd += toString (PopupS->AES->AS->Id);
 	cmd += " ";

@@ -1,7 +1,7 @@
 /** \file connection_as.cpp
  * 
  *
- * $Id: connection_as.cpp,v 1.12 2002/03/25 10:19:13 lecroart Exp $
+ * $Id: connection_as.cpp,v 1.13 2002/05/22 08:22:37 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -368,7 +368,13 @@ static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetB
 	nlinfo ("%d:%d:%d disconnected", as->Id, aesid, sid);
 
 	AESIT aesit = as->findAdminExecutorService(aesid);
-	SIT sit = (*aesit).findService(sid);
+	SIT sit = (*aesit).findService(sid, false);
+
+	if (sit == (*aesit).Services.end())
+	{
+		nlwarning ("%d:%d:%d disconnected but not identified", as->Id, aesid, sid);
+		return;
+	}
 
 	if ((*sit).InConfig)
 	{

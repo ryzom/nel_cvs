@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.20 2003/02/07 16:07:13 lecroart Exp $
+ * $Id: hierarchical_timer.h,v 1.21 2003/02/21 15:53:31 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -237,6 +237,9 @@ public:
 	static void		adjust() {}
 	/// Ends a bench session
 	static void		endBench();
+
+	static bool		benching () { return _Benching; }
+
 	/** Display results
 	  * \param displayEx true to display more detailed infos
 	  */

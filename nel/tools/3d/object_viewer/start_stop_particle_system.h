@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.h,v 1.8 2001/11/23 18:49:50 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.9 2002/04/25 08:31:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,7 +141,12 @@ public:
 	bool isRunning(void) const { return _Running; }
 
 	/// force the system to stop
-	void stop(void);
+	void stop();
+	/// force the system to start
+	void start();
+	/// toggle between start and stop
+	void toggle();
+
 
 	/** call this to say that a located has been removed
 	 *  When the system starts, the initial state is memorised

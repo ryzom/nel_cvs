@@ -1,7 +1,7 @@
 /** \file class_registry.cpp
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.cpp,v 1.8 2002/03/14 18:26:38 vizerie Exp $
+ * $Id: class_registry.cpp,v 1.9 2002/03/15 13:45:22 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,19 +36,29 @@ namespace NLMISC
 
 
 // ======================================================================================================
-set<CClassRegistry::CClassNode>		CClassRegistry::RegistredClasses;
+set<CClassRegistry::CClassNode>		*CClassRegistry::RegistredClasses = NULL;
+
+
+// ======================================================================================================
+void		CClassRegistry::init()
+{
+	if (RegistredClasses == NULL)
+		RegistredClasses = new set<CClassRegistry::CClassNode>();
+}
 
 	
 // ======================================================================================================
 IClassable	*CClassRegistry::create(const string &className)  throw(ERegistry)
 {
+	init();
+
 	set<CClassNode>::iterator	it;
 	CClassNode	node;
 
 	node.ClassName= className;
-	it=RegistredClasses.find(node);
+	it=RegistredClasses->find(node);
 
-	if(it==RegistredClasses.end())
+	if(it==RegistredClasses->end())
 		return NULL;
 	else
 	{
@@ -65,11 +75,13 @@ IClassable	*CClassRegistry::create(const string &className)  throw(ERegistry)
 // ======================================================================================================
 void		CClassRegistry::registerClass(const string &className, IClassable* (*creator)(), const string &typeidCheck)  throw(ERegistry)
 {
+	init();
+
 	CClassNode	node;
 	node.ClassName= className;
 	node.Creator=creator;
 	node.TypeIdCheck= typeidCheck;
-	if(!RegistredClasses.insert(node).second)
+	if(!RegistredClasses->insert(node).second)
 	{
 		nlstop;
 		throw ERegisteredClass();
@@ -79,12 +91,14 @@ void		CClassRegistry::registerClass(const string &className, IClassable* (*creat
 // ======================================================================================================
 bool		CClassRegistry::checkObject(IClassable* obj)
 {
+	init();
+
 	set<CClassNode>::iterator	it;
 	CClassNode	node;
 	node.ClassName= obj->getClassName();
 
-	it=RegistredClasses.find(node);
-	if(it==RegistredClasses.end())
+	it=RegistredClasses->find(node);
+	if(it==RegistredClasses->end())
 		return false;
 	node= *it;
 

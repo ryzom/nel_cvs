@@ -1,7 +1,7 @@
 /** \file class_registry.h
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.h,v 1.9 2002/02/20 18:05:44 lecroart Exp $
+ * $Id: class_registry.h,v 1.10 2002/03/15 13:45:12 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,7 +108,10 @@ private:
 			return ClassName<n.ClassName;
 		}
 	};
-	static	std::set<CClassNode>		RegistredClasses;
+	static	std::set<CClassNode>		*RegistredClasses;
+
+	/// Inits the ClassRegistry (especially RegistredClasses)
+	static void			init();
 };
 
 

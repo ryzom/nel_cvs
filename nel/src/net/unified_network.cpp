@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.22 2001/11/28 10:36:52 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.23 2001/11/28 11:12:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1020,7 +1020,7 @@ void	CUnifiedNetwork::autoCheck()
 		}
 
 		nlassert(idAccess.value()[i].ServiceId == i);
-		nlassert(idAccess.value()[i].IsConnected);
+		nlassert(idAccess.value()[i].AutoRetry || idAccess.value()[i].IsConnected);
 		nlassert(idAccess.value()[i].AutoCheck);
 		idAccess.value()[i].AutoCheck = false;
 
@@ -1032,7 +1032,7 @@ void	CUnifiedNetwork::autoCheck()
 				break;
 			}
 
-		if (!stillConnected)
+		if (!stillConnected || !idAccess.value()[i].IsConnected)
 			continue;
 
 		uint16 appId = (idAccess.value()[i].IsServerConnection) ?

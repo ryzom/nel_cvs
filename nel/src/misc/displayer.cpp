@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.37 2002/08/22 14:36:59 lecroart Exp $
+ * $Id: displayer.cpp,v 1.38 2002/08/23 12:17:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,9 @@
 
 #include "nel/misc/path.h"
 #include "nel/misc/mutex.h"
+#include "nel/misc/report.h"
+
+#include "nel/misc/debug.h"
 
 
 #ifdef NL_OS_WINDOWS
@@ -57,7 +60,8 @@ namespace NLMISC
 
 static char *LogTypeToString[][8] = {
 	{ "", "ERR", "WRN", "INF", "DBG", "STT", "AST", "UKN" },
-	{ "", "Error", "Warning", "Information", "Debug", "Statistic", "Assert", "Unknown" }
+	{ "", "Error", "Warning", "Information", "Debug", "Statistic", "Assert", "Unknown" },
+	{ "", "A fatal error occurs. The program must quit", "", "", "", "", "A failed assertion occurs", "" },
 };
 
 const char *IDisplayer::logTypeToString (CLog::TLogType logType, bool longFormat)
@@ -78,7 +82,7 @@ const char *IDisplayer::dateToHumanString ()
 const char *IDisplayer::dateToHumanString (time_t date)
 {
 	static char cstime[25];
-	strftime (cstime, 25, "%Y/%m/%d %H:%M:%S", localtime(&date));
+	strftime (cstime, 25, "%y/%m/%d %H:%M:%S", localtime(&date));
 	return cstime;
 }
 
@@ -174,6 +178,7 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 
 	// we don't use cout because sometimes, it crashs because cout isn't already init, printf doesn t crash.
 	printf ("%s", s.c_str()); 
+	printf (args.CallstackAndLog.c_str());
 
 	fflush(stdout);
 
@@ -220,7 +225,7 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 		}
 		else
 		{
-			/*tputDebugString(ss2.str().c_str());
+			/*OutputDebugString(ss2.str().c_str());
 			OutputDebugString("\n\t\t\t");
 			OutputDebugString("message end: ");
 			OutputDebugString(&message[strlen(message) - 1024]);
@@ -248,6 +253,25 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 					OutputDebugString("\n\t\t\t");
 					count += maxOutString;
 				}
+			}
+		}
+
+		// OutputDebugString is a big shit, we can't display big string in one time, we need to split
+		uint32 pos = 0;
+		string splited;
+		while(true)
+		{
+			if (pos+1000 < args.CallstackAndLog.size ())
+			{
+				splited = args.CallstackAndLog.substr (pos, 1000);
+				OutputDebugString(splited.c_str());
+				pos += 1000;
+			}
+			else
+			{
+				splited = args.CallstackAndLog.substr (pos);
+				OutputDebugString(splited.c_str());
+				break;
 			}
 		}
 	}
@@ -355,6 +379,7 @@ void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 		}
 		
 		ofs << ss.str();
+		ofs << args.CallstackAndLog;
 		ofs.close();
 	}
 }
@@ -457,14 +482,43 @@ void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message
 	ss2 << message;
 	ss2 << endl << endl << "(this message was copied in the clipboard)";
 
-	if (IsDebuggerPresent ())
+/*	if (IsDebuggerPresent ())
 	{
 		// Must break in assert call
 		DebugNeedAssert = true;
 	}
 	else
-	{
+*/	{
+
+		// Display the report
+
+		string body;
+
+		body += toString(LogTypeToString[2][args.LogType]) + "\n";
+		body += "Date: " + string(dateToHumanString(args.Date)) + "\n";
+		if(args.Filename == NULL)
+			body += "File: <???>\n";
+		else
+			body += "File: " + string(args.Filename) + "\n";
+		body += "Line: " + toString(args.Line) + "\n";
+		body += "Reason: " + toString(message);
+
+		body += args.CallstackAndLog;
+
+		string subject;
+
+		subject += args.ProcessName + " NeL " + toString(LogTypeToString[0][args.LogType]) + " " + string(args.Filename) + " " + toString(args.Line);
+
 		// Check the envvar NEL_IGNORE_ASSERT
+		if (getenv ("NEL_IGNORE_ASSERT") == NULL)
+		{
+			if  (ReportDebug == report (args.ProcessName + " NeL " + toString(logTypeToString(args.LogType, true)), "", subject, body, true, 2, true, 1, true, IgnoreNextTime))
+			{
+				DebugNeedAssert = true;
+			}
+		}
+
+/*		// Check the envvar NEL_IGNORE_ASSERT
 		if (getenv ("NEL_IGNORE_ASSERT") == NULL)
 		{
 			// Ask the user to continue, debug or ignore
@@ -484,7 +538,7 @@ void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message
 				// Continue, do nothing
 			}
 		}
-	}
+*/	}
 
 #endif
 }
@@ -494,7 +548,6 @@ void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message
 /***************************************************************/
 /******************* THE FOLLOWING CODE IS COMMENTED OUT *******/
 /***************************************************************
-
 void CStdDisplayer::display (const std::string& str)
 {
 //	printf("%s", str.c_str ());
@@ -506,6 +559,8 @@ void CStdDisplayer::display (const std::string& str)
 		OutputDebugString(str.c_str ());
 #endif
 }
+
+//****************************************************************************
 
 void CFileDisplayer::display (const std::string& str)
 {
@@ -527,6 +582,8 @@ void CFileDisplayer::display (const std::string& str)
 //	fclose (fp);
 }
 
+
+//****************************************************************************
 
 void CMsgBoxDisplayer::display (const std::string& str)
 {
@@ -551,8 +608,7 @@ void CMsgBoxDisplayer::display (const std::string& str)
 	MessageBox (NULL, strf.c_str (), "", MB_OK | MB_ICONEXCLAMATION);
 #endif
 }
-***************************************************************/
-
+**************************************************************************/
 
 
 } // NLMISC

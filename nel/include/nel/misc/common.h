@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.41 2002/06/11 09:51:17 vizerie Exp $
+ * $Id: common.h,v 1.42 2002/08/23 12:18:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ namespace	NLMISC
  * The maximum size allowed for C string (zero terminated string) buffer.
  * This value is used when we have to create a standard C string buffer and we don't know exactly the final size of the string.
  */
-const int MaxCStringSize = 1024*64;
+const int MaxCStringSize = 1024*2;
 
 
 /** Pi constant in double format.

@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.6 2002/05/21 16:40:47 lecroart Exp $
+ * $Id: system_info.cpp,v 1.7 2002/08/23 12:17:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -353,6 +353,18 @@ bool CSystemInfo::hasCPUID ()
 bool CSystemInfo::hasMMX () { return HaveMMX; }
 bool CSystemInfo::hasSSE () { return HaveSSE; }
 
+
+bool CSystemInfo::isNT()
+{
+#ifdef NL_OS_WINDOWS
+	OSVERSIONINFO ver;
+	ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	GetVersionEx(&ver);
+	return ver.dwPlatformId == VER_PLATFORM_WIN32_NT;
+#else
+	return false;
+#endif
+}
 
 
 } // NLMISC

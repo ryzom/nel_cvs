@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.cpp,v 1.6 2002/08/21 09:41:13 lecroart Exp $
+ * $Id: window_displayer.cpp,v 1.7 2002/08/23 12:17:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,6 +156,20 @@ void CWindowDisplayer::doDisplay (const NLMISC::TDisplayInfo &args, const char *
 	uint nbl = 1;
 
 	char *npos, *pos = const_cast<char *>(message);
+	while ((npos = strchr (pos, '\n')))
+	{
+		*npos = '\0';
+		ss << pos;
+		if (needSlashR)
+			ss << "\r";
+		ss << "\n";
+		*npos = '\n';
+		pos = npos+1;
+		nbl++;
+	}
+	ss << pos;
+
+	pos = const_cast<char *>(args.CallstackAndLog.c_str());
 	while ((npos = strchr (pos, '\n')))
 	{
 		*npos = '\0';

@@ -1,7 +1,7 @@
 /** \file system_info.h
  * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.4 2002/05/21 16:40:54 lecroart Exp $
+ * $Id: system_info.h,v 1.5 2002/08/23 12:18:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,8 @@ public:
 	  * (always false on non 0x86 architecture ...)
 	  */
 	static bool hasSSE ();
+
+	static bool isNT();
 };
 
 

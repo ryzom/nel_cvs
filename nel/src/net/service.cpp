@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.139 2002/08/22 12:09:55 lecroart Exp $
+ * $Id: service.cpp,v 1.140 2002/08/23 12:17:47 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -58,12 +58,14 @@
 #include "nel/misc/win_displayer.h"
 #include "nel/misc/path.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/report.h"
 
 #include "nel/net/naming_client.h"
 #include "nel/net/service.h"
 #include "nel/net/unified_network.h"
 #include "nel/net/net_manager.h"
 #include "nel/net/net_displayer.h"
+#include "nel/net/email.h"
 
 #include "nel/misc/hierarchical_timer.h"
 
@@ -441,6 +443,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	bool resyncEvenly = false;
 	CConfigFile::CVar *var = NULL;
 
+	setReportEmailFunction (sendEmail);
+	setDefaultEmailParams ("gw.nevrax.com", "", "lecroart@nevrax.com");
+	
 	try
 	{
 		// get the path where to run the service if any in the command line
@@ -1202,7 +1207,13 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		}
 		while (true);
 	}
-	catch (EFatalError &)
+/*	catch (ETrapDebug &)
+	{
+		// Somebody call nlerror, so we have to quit now, the message already display
+		// so we don't have to to anything
+		setStatus (EXIT_FAILURE);
+	}
+*/	catch (EFatalError &)
 	{
 		// Somebody call nlerror, so we have to quit now, the message already display
 		// so we don't have to to anything
@@ -1270,7 +1281,13 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		nlinfo ("Service released succesfuly");
 	}
-	catch (EFatalError &)
+/*	catch (ETrapDebug &)
+	{
+		// Somebody call nlerror, so we have to quit now, the message already display
+		// so we don't have to to anything
+		setStatus (EXIT_FAILURE);
+	}
+*/	catch (EFatalError &)
 	{
 		// Somebody call nlerror, so we have to quit now, the message already display
 		// so we don't have to to anything

@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.14 2002/03/14 13:49:43 lecroart Exp $
+ * $Id: displayer.h,v 1.15 2002/08/23 12:18:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,8 @@ struct TDisplayInfo
 	uint				ThreadId;
 	const char			*Filename;
 	sint				Line;
+
+	std::string			CallstackAndLog;	// contains the callstack and a log with not filter of N last line (only in error/assert log type)
 };
 
 
@@ -162,7 +164,9 @@ private:
 class CMsgBoxDisplayer : virtual public IDisplayer
 {
 public:
-	CMsgBoxDisplayer (const char *displayerName = "") : IDisplayer (displayerName) {}
+	CMsgBoxDisplayer (const char *displayerName = "") : IgnoreNextTime(false), IDisplayer (displayerName) {}
+
+	bool IgnoreNextTime;
 
 protected:
 	/// Put the string into the file.

@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * <File description>
  *
- * $Id: mem_displayer.cpp,v 1.2 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: mem_displayer.cpp,v 1.3 2002/08/23 12:17:40 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -314,7 +314,7 @@ static void displayCallStack (CLog *log)
 /*
  * Constructor
  */
-CMemDisplayer::CMemDisplayer (const char *displayerName) : IDisplayer (displayerName), _CanUseStrings(true), _NeedHeader(true), _MaxStrings(50)
+CMemDisplayer::CMemDisplayer (const char *displayerName) : IDisplayer (displayerName), _NeedHeader(true), _MaxStrings(50), _CanUseStrings(true)
 {
 	setParam (50);
 }
@@ -413,5 +413,14 @@ void CMemDisplayer::write (CLog *log)
 	log->forceDisplayRaw ("----------------------------------------- end of MemDisplayer display --------\n");
 	log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
 }
+
+void CMemDisplayer::write (string &str)
+{
+	for (deque<string>::iterator it = _Strings.begin(); it != _Strings.end(); it++)
+	{
+		str += (*it);
+	}
+}
+
 
 } // NLMISC

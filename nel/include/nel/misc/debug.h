@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.42 2002/06/26 09:51:43 berenguier Exp $
+ * $Id: debug.h,v 1.43 2002/08/23 12:18:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/log.h"
 #include "nel/misc/mutex.h"
 #include "nel/misc/mem_displayer.h"
+#include "nel/misc/displayer.h"
 
 namespace NLMISC
 {
@@ -47,6 +48,7 @@ extern CLog *DebugLog;
 extern CLog *AssertLog;
 
 extern CMemDisplayer *DefaultMemDisplayer;
+extern CMsgBoxDisplayer *DefaultMsgBoxDisplayer;
 
 //
 // Functions
@@ -252,12 +254,18 @@ extern bool DebugNeedAssert;
 
 #define nlassert(exp) \
 { \
-	if (!(exp)) { \
+	static bool ignoreNextTime = false; \
+	if (!ignoreNextTime && !(exp)) { \
 		NLMISC::DebugNeedAssert = false; \
 		NLMISC::createDebug (); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
+		else \
+			NLMISC::DebugNeedAssert = true; \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
-		NLMISC::DefaultMemDisplayer->write (); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
 		if (NLMISC::DebugNeedAssert) \
 			NLMISC_BREAKPOINT; \
 	} \
@@ -265,14 +273,19 @@ extern bool DebugNeedAssert;
 
 #define nlassertonce(exp) \
 { \
-	static bool ignoreAlways = false; \
-	if (!ignoreAlways && !(exp)) { \
+	static bool ignoreNextTime = false; \
+	if (!ignoreNextTime && !(exp)) { \
+		ignoreNextTime = true; \
 		NLMISC::DebugNeedAssert = false; \
-		ignoreAlways=true; \
 		NLMISC::createDebug (); \
-		NLMISC::AssertLog->setPosition( __LINE__, __FILE__ ); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
+		else \
+			NLMISC::DebugNeedAssert = true; \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
-		NLMISC::DefaultMemDisplayer->write (); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
 		if (NLMISC::DebugNeedAssert) \
 			NLMISC_BREAKPOINT; \
 	} \
@@ -280,14 +293,19 @@ extern bool DebugNeedAssert;
 
 #define nlassertex(exp, str) \
 { \
-	if (!(exp)) \
-	{ \
+	static bool ignoreNextTime = false; \
+	if (!ignoreNextTime && !(exp)) { \
 		NLMISC::DebugNeedAssert = false; \
 		NLMISC::createDebug (); \
-		NLMISC::AssertLog->setPosition( __LINE__, __FILE__ ); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
+		else \
+			NLMISC::DebugNeedAssert = true; \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
-		NLMISC::DefaultMemDisplayer->write (); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
 		if (NLMISC::DebugNeedAssert) \
 			NLMISC_BREAKPOINT; \
 	} \
@@ -295,12 +313,18 @@ extern bool DebugNeedAssert;
 
 #define nlverify(exp) \
 { \
-	if (!(exp)) { \
+	static bool ignoreNextTime = false; \
+	if (!ignoreNextTime && !(exp)) { \
 		NLMISC::DebugNeedAssert = false; \
 		NLMISC::createDebug (); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
+		else \
+			NLMISC::DebugNeedAssert = true; \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
-		NLMISC::DefaultMemDisplayer->write (); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
 		if (NLMISC::DebugNeedAssert) \
 			NLMISC_BREAKPOINT; \
 	} \
@@ -308,14 +332,19 @@ extern bool DebugNeedAssert;
 
 #define nlverifyonce(exp) \
 { \
-	static bool ignoreAlways = false; \
-	if (!ignoreAlways && !(exp)) { \
+	static bool ignoreNextTime = false; \
+	if (!ignoreNextTime && !(exp)) { \
+		ignoreNextTime = true; \
 		NLMISC::DebugNeedAssert = false; \
-		ignoreAlways=true; \
 		NLMISC::createDebug (); \
-		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
+		else \
+			NLMISC::DebugNeedAssert = true; \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
-		NLMISC::DefaultMemDisplayer->write (); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
 		if (NLMISC::DebugNeedAssert) \
 			NLMISC_BREAKPOINT; \
 	} \
@@ -323,56 +352,86 @@ extern bool DebugNeedAssert;
 
 #define nlverifyex(exp, str) \
 { \
-	if (!(exp)) \
-	{ \
+	static bool ignoreNextTime = false; \
+	if (!ignoreNextTime && !(exp)) { \
 		NLMISC::DebugNeedAssert = false; \
 		NLMISC::createDebug (); \
-		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
+		else \
+			NLMISC::DebugNeedAssert = true; \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
-		NLMISC::DefaultMemDisplayer->write (); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
 		if (NLMISC::DebugNeedAssert) \
 			NLMISC_BREAKPOINT; \
 	} \
 }
 
+
+
 #define nlstop \
 { \
-	NLMISC::DebugNeedAssert = false; \
-	NLMISC::createDebug (); \
-	NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
-	NLMISC::AssertLog->displayNL ("STOP "); \
-	NLMISC::DefaultMemDisplayer->write (); \
-	if (NLMISC::DebugNeedAssert) \
-		NLMISC_BREAKPOINT; \
+	static bool ignoreNextTime = false; \
+	if (!ignoreNextTime) { \
+		NLMISC::DebugNeedAssert = false; \
+		NLMISC::createDebug (); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
+		else \
+			NLMISC::DebugNeedAssert = true; \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->displayNL ("STOP"); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
+		if (NLMISC::DebugNeedAssert) \
+			NLMISC_BREAKPOINT; \
+	} \
 }
 
 #define nlstoponce \
 { \
-	static bool ignoreAlways = false; \
-	if (!ignoreAlways) { \
+	static bool ignoreNextTime = false; \
+	if (!ignoreNextTime) { \
+		ignoreNextTime = true; \
 		NLMISC::DebugNeedAssert = false; \
-		ignoreAlways=true; \
 		NLMISC::createDebug (); \
-		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
-		NLMISC::AssertLog->displayNL ("STOP "); \
-		NLMISC::DefaultMemDisplayer->write (); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
+		else \
+			NLMISC::DebugNeedAssert = true; \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->displayNL ("STOP"); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
 		if (NLMISC::DebugNeedAssert) \
 			NLMISC_BREAKPOINT; \
 	} \
 }
 
+
 #define nlstopex(str) \
 { \
-	NLMISC::DebugNeedAssert = false; \
-	NLMISC::createDebug (); \
-	NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
-	NLMISC::AssertLog->display ("STOP "); \
-	NLMISC::AssertLog->displayRawNL str; \
-	NLMISC::DefaultMemDisplayer->write (); \
-	if (NLMISC::DebugNeedAssert) \
-		NLMISC_BREAKPOINT; \
+	static bool ignoreNextTime = false; \
+	if (!ignoreNextTime) { \
+		NLMISC::DebugNeedAssert = false; \
+		NLMISC::createDebug (); \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
+		else \
+			NLMISC::DebugNeedAssert = true; \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->display ("STOP"); \
+		NLMISC::AssertLog->displayRawNL str; \
+		if (NLMISC::DefaultMsgBoxDisplayer) \
+			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
+		if (NLMISC::DebugNeedAssert) \
+			NLMISC_BREAKPOINT; \
+	} \
 }
+
 
 /* removed because we always check assert (even in release mode) 
 #else // NL_DEBUG
@@ -404,6 +463,9 @@ struct EFatalError : public Exception
 	EFatalError() : Exception( "nlerror() called" ) {}
 };
 
+class ETrapDebug : public Exception
+{
+};
 
 // undef default assert to force people to use nlassert() instead of assert()
 #ifdef assert
@@ -412,6 +474,8 @@ struct EFatalError : public Exception
 #define assert(a) you_must_not_use_assert___use_nl_assert___read_debug_h_file
 
 
+/// Get the call stack and set it with result
+void getCallStackAndLog (std::string &result, sint skipNFirst = 0);
 
 /**
  * safe_cast<>: this is a function which nlassert() a dynamic_cast in Debug, and just do a static_cast in release.
@@ -425,8 +489,6 @@ template<class T, class U>	inline T	safe_cast(U o)
 #endif
 	return static_cast<T>(o);
 }
-
-
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.42 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: log.cpp,v 1.43 2002/08/23 12:17:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #ifdef NL_OS_WINDOWS
 #include <process.h>
+#include <windows.h>
 #else
 #include <unistd.h>
 #endif
@@ -36,6 +37,8 @@
 
 #include "nel/misc/displayer.h"
 #include "nel/misc/log.h"
+#include "nel/misc/debug.h"
+#include "nel/misc/path.h"
 
 using namespace std;
 
@@ -45,8 +48,16 @@ namespace NLMISC
 
 string CLog::_ProcessName = "";
 
-CLog::CLog( TLogType logType) : _LogType (logType), _Line(-1), _FileName(NULL), _Mutex("LOG"+toString((uint)logType)), _PosSet(false)
+CLog::CLog( TLogType logType) : _LogType (logType), _Line(-1), _FileName(NULL), _PosSet(false), _Mutex("LOG"+toString((uint)logType))
 {
+#ifdef NL_OS_WINDOWS
+	if (_ProcessName.empty())
+	{
+		char name[1024];
+		GetModuleFileName (NULL, name, 1023);
+		_ProcessName = CFile::getFilename(name);
+	}
+#endif
 }
 
 void CLog::setProcessName (const std::string &processName)
@@ -205,36 +216,79 @@ bool CLog::attached(IDisplayer *displayer) const
 			(find( _BypassFilterDisplayers.begin(), _BypassFilterDisplayers.end(), displayer ) != _BypassFilterDisplayers.end());
 }
 
+static string TempString;
+static TDisplayInfo TempArgs;
+
 
 void CLog::displayString (const char *str)
 {
-	TDisplayInfo args;
-	time (&args.Date);
-	args.LogType = _LogType;
-	args.ProcessName = _ProcessName;
-	args.ThreadId = getThreadId();
-	args.Filename = _FileName;
-	args.Line = _Line;
+	const char *disp = NULL;
+	TDisplayInfo localargs, *args = NULL;
 
-	IDisplayer *id = NULL;
+	if(strchr(str,'\n') == NULL)
+	{
+		if (TempString.empty())
+		{
+			time (&TempArgs.Date);
+			TempArgs.LogType = _LogType;
+			TempArgs.ProcessName = _ProcessName;
+			TempArgs.ThreadId = getThreadId();
+			TempArgs.Filename = _FileName;
+			TempArgs.Line = _Line;
+			TempArgs.CallstackAndLog = "";
+
+			TempString = str;
+		}
+		else
+		{
+			TempString += str;
+		}
+		return;
+	}
+	else
+	{
+		if (TempString.empty())
+		{
+			time (&localargs.Date);
+			localargs.LogType = _LogType;
+			localargs.ProcessName = _ProcessName;
+			localargs.ThreadId = getThreadId();
+			localargs.Filename = _FileName;
+			localargs.Line = _Line;
+			localargs.CallstackAndLog = "";
+
+			disp = str;
+			args = &localargs;
+		}
+		else
+		{
+			TempString += str;
+			disp = TempString.c_str();
+			args = &TempArgs;
+		}
+	}
 
 	// send to all bypass filter displayers
 	for (CDisplayers::iterator idi=_BypassFilterDisplayers.begin(); idi!=_BypassFilterDisplayers.end(); idi++ )
 	{
-		id = *idi;
-		(*idi)->display( args, str );
+		(*idi)->display( *args, disp );
 	}
 
-	if (passFilter (str))
+	// get the log at the last minute to be sure to have everything
+	if(args->LogType == LOG_ERROR || args->LogType == LOG_ASSERT)
+	{
+		getCallStackAndLog (args->CallstackAndLog, 4);
+	}
+
+	if (passFilter (disp))
 	{
 		// Send to the attached displayers
 		for (CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
 		{
-			id = *idi;
-			(*idi)->display( args, str );
+			(*idi)->display( *args, disp );
 		}
 	}
-
+	TempString = "";
 	unsetPosition();
 }
 
@@ -248,7 +302,7 @@ void CLog::displayNL (const char *format, ...)
 	{
 		return;
 	}
-	
+
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, 256/*NLMISC::MaxCStringSize*/);
 
@@ -308,29 +362,73 @@ void CLog::display (const char *format, ...)
 
 void CLog::displayRawString (const char *str)
 {
-	TDisplayInfo args;
-	args.Date = 0;
-	args.LogType = LOG_NO;
-	args.ProcessName = "";
-	args.ThreadId = 0;
-	args.Filename = NULL;
-	args.Line = -1;
+	const char *disp = NULL;
+	TDisplayInfo localargs, *args = NULL;
+
+	if(strchr(str,'\n') == NULL)
+	{
+		if (TempString.empty())
+		{
+			time (&TempArgs.Date);
+			TempArgs.LogType = _LogType;
+			TempArgs.ProcessName = _ProcessName;
+			TempArgs.ThreadId = getThreadId();
+			TempArgs.Filename = _FileName;
+			TempArgs.Line = _Line;
+			TempArgs.CallstackAndLog = "";
+
+			TempString = str;
+		}
+		else
+		{
+			TempString += str;
+		}
+		return;
+	}
+	else
+	{
+		if (TempString.empty())
+		{
+			time (&localargs.Date);
+			localargs.LogType = _LogType;
+			localargs.ProcessName = _ProcessName;
+			localargs.ThreadId = getThreadId();
+			localargs.Filename = _FileName;
+			localargs.Line = _Line;
+			localargs.CallstackAndLog = "";
+
+			disp = str;
+			args = &localargs;
+		}
+		else
+		{
+			TempString += str;
+			disp = TempString.c_str();
+			args = &TempArgs;
+		}
+	}
 
 	// send to all bypass filter displayers
 	for (CDisplayers::iterator idi=_BypassFilterDisplayers.begin(); idi!=_BypassFilterDisplayers.end(); idi++ )
 	{
-		(*idi)->display( args, str );
+		(*idi)->display( *args, disp );
 	}
 
-	if ( passFilter( str ) )
+	// get the log at the last minute to be sure to have everything
+	if(args->LogType == LOG_ERROR || args->LogType == LOG_ASSERT)
+	{
+		getCallStackAndLog (args->CallstackAndLog, 4);
+	}
+
+	if ( passFilter( disp ) )
 	{
 		// Send to the attached displayers
 		for ( CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
 		{
-			(*idi)->display( args, str );
+			(*idi)->display( *args, disp );
 		}
 	}
-
+	TempString = "";
 	unsetPosition();
 }
 
@@ -481,7 +579,8 @@ void CLog::addNegativeFilter( const char *filterstr )
 void CLog::resetFilters()
 {
 	//displayNL ("CLog::resetFilter()");
-	_PositiveFilter.clear(); _NegativeFilter.clear();
+	_PositiveFilter.clear();
+	_NegativeFilter.clear();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.37 2002/07/03 16:37:35 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.38 2002/07/19 13:29:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,8 +166,19 @@ void	NLPACS::CRetrieverInstance::linkEdgeQuad(NLPACS::CGlobalRetriever &gr)
 				CRetrieverInstance::CLink	&borderLink = _BorderChainLinks[link.BorderChainId];
 				borderLink.ChainId = 0xFFFF;		// no opposite chain
 				borderLink.BorderChainId = 0xFFFF;	// idem
-				borderLink.Instance = (uint16)(ee[i].Exterior.RetrieverInstanceId);
-				borderLink.SurfaceId = (uint16)(ee[i].Exterior.SurfaceId);
+				if ((borderLink.Instance == 0xFFFF && borderLink.SurfaceId == 0xFFFF) ||
+					(borderLink.Instance == (uint16)(ee[i].Exterior.RetrieverInstanceId) &&
+					 borderLink.SurfaceId == (uint16)(ee[i].Exterior.SurfaceId) ))
+				{
+					borderLink.Instance = (uint16)(ee[i].Exterior.RetrieverInstanceId);
+					borderLink.SurfaceId = (uint16)(ee[i].Exterior.SurfaceId);
+				}
+				else
+				{
+					nlwarning("Instance %d, borderLink %d: link already set to inst=%d, surf=%d, try to set to inst=%d, surf=%d",
+								_InstanceId, link.BorderChainId, borderLink.Instance, borderLink.SurfaceId, 
+								(uint16)(ee[i].Exterior.RetrieverInstanceId), (uint16)(ee[i].Exterior.SurfaceId));
+				}
 			}
 		}
 	}

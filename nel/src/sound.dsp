@@ -201,6 +201,14 @@ SOURCE=.\sound\ambiant_source.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\sound\background_sound_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\background_sound_manager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\sound\bounding_box.cpp
 # End Source File
 # Begin Source File

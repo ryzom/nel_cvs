@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * <File description>
  *
- * $Id: object_vector.h,v 1.5 2003/04/25 13:45:27 berenguier Exp $
+ * $Id: object_vector.h,v 1.6 2003/04/25 14:50:54 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -398,12 +398,14 @@ template<> class CObjectVector<uint64, true> : public CObjectVector<uint64, fals
 template<> class CObjectVector<sint64, true> : public CObjectVector<sint64, false>
 {
 };
+#ifdef NL_OS_WINDOWS
 template<> class CObjectVector<uint, true> : public CObjectVector<uint, false>
 {
 };
 template<> class CObjectVector<sint, true> : public CObjectVector<sint, false>
 {
 };
+#endif
 template<> class CObjectVector<float, true> : public CObjectVector<float, false>
 {
 };

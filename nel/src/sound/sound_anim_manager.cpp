@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.cpp,v 1.4 2002/07/03 10:08:06 vizerie Exp $
+ * $Id: sound_anim_manager.cpp,v 1.5 2002/07/03 10:12:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -199,6 +199,13 @@ void CSoundAnimManager::playAnimation(TSoundAnimId id, float lastTime, float cur
 	nlassert(anim);
 
 	anim->play(_Mixer, lastTime, curTime, position);
+}
+
+
+// ********************************************************
+TSoundAnimPlayId		CSoundAnimManager::playAnimation(TSoundAnimId id, float time, NLMISC::CVector* position)
+{
+	return 0;
 }
 
 // ********************************************************

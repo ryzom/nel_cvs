@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.34 2002/05/07 14:09:43 berenguier Exp $
+ * $Id: nel_export_view.cpp,v 1.35 2002/06/03 12:52:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -179,9 +179,6 @@ void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 							// Insert one
 							skeletonMap.insert (mapRootMapBoneBindPos::value_type (skeletonRoot, CExportNel::mapBoneBindPos()));
 							iteSkeleton=skeletonMap.find (skeletonRoot);
-
-							// Add tracks
-							//CExportNel::addBoneTracks (*anim[skeletonRoot], *skeletonRoot, "", &_Ip, true, true);
 						}
 						
 						// Add the bind pos for the skin

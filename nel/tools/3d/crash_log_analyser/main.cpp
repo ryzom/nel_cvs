@@ -6,6 +6,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/algo.h"
 
 
 using namespace std;
@@ -147,6 +148,7 @@ struct CStatVal
 
 typedef	map<sint, CStatVal>			TStatMap;
 typedef	map<string, CStatVal>		TStatStrMap;
+typedef	map<string, TStatStrMap>	TStatStrStrMap;
 
 class CCrashCont
 {
@@ -189,6 +191,8 @@ void	statRyzomBug(const char *dirSrc)
 	TStatMap				patchVersionMap;
 	TStatMap				info3dMap;
 	std::vector<CVector>	userPosArray;
+	TStatStrStrMap			senderToCrashFileMap;
+	TStatStrStrMap			crashFileToSenderMap;
 	uint					totalCrash= 0;
 	uint					totalCrashDuplicate= 0;
 	
@@ -197,6 +201,11 @@ void	statRyzomBug(const char *dirSrc)
 	for(uint i=0;i<fileList.size();i++)
 	{
 		const string &fileFullPath= fileList[i];
+		string	fileNoDir= CFile::getFilename(fileFullPath);
+		// skip not .log files
+		if(!testWildCard(fileFullPath, "*.log"))
+			continue;
+		// parse
 		CIFile	f;
 		if(f.open(fileFullPath, true))
 		{
@@ -298,8 +307,10 @@ void	statRyzomBug(const char *dirSrc)
 						precCard3D= 2;
 
 					// END a block, add info in map (only if not repetition)
+					sint64	absTime= precLocalTime-precLocalTime2;
+					if(absTime<0)	absTime= -absTime;
 					if( precSenderId!=precSenderId2 ||
-						abs(precLocalTime-precLocalTime2)>sint64(60) )
+						absTime>sint64(60) )
 					{
 						senderMap[precSenderId].Val++;
 						shardMap[precShardId].Val++;
@@ -311,6 +322,8 @@ void	statRyzomBug(const char *dirSrc)
 							precCard3D= 2;
 						info3dMap[precNel3DMode*256+precCard3D].Val++;
 						userPosArray.push_back(precUserPos);
+						crashFileToSenderMap[fileNoDir][precSenderId].Val++;
+						senderToCrashFileMap[precSenderId][fileNoDir].Val++;
 						totalCrash++;
 					}
 					totalCrashDuplicate++;
@@ -334,7 +347,8 @@ void	statRyzomBug(const char *dirSrc)
 	{
 		resortSender.insert(make_pair(itStr->second.Val, itStr->first));
 	}
-	for(multimap<uint, string>::iterator it2=resortSender.begin();it2!=resortSender.end();it2++)
+	multimap<uint, string>::iterator it2;
+	for(it2=resortSender.begin();it2!=resortSender.end();it2++)
 	{
 		myinfo("**** %d Crashs for UserId %s", it2->first, it2->second.c_str());
 	}
@@ -415,6 +429,71 @@ void	statRyzomBug(const char *dirSrc)
 		}
 		myinfo("   NotFound: %d", numNotFound);
 	}
+
+
+	// **** display detailed Stats
+	myinfo("");
+	myinfo("");
+	myinfo("**************************");
+	myinfo("**************************");
+	myinfo("********* DETAIL *********");
+	myinfo("**************************");
+	myinfo("**************************");
+	myinfo("");
+	
+	// Stats per User
+	myinfo("");
+	myinfo("**** Detailed Crashs per user:");
+	for(it2=resortSender.begin();it2!=resortSender.end();it2++)
+	{
+		string		userId= it2->second;
+		TStatStrMap	&crashFileMap= senderToCrashFileMap[userId];
+		if(crashFileMap.empty())
+		{
+			myinfo("    Error parsing Crashs for UserId %s (?????)", userId.c_str());
+		}
+		else
+		{
+			myinfo("    %d Crashs for %s:", it2->first, userId.c_str());
+			for(TStatStrMap::iterator it=crashFileMap.begin();it!=crashFileMap.end();it++)
+			{
+				myinfo("        %d in %s", it->second.Val, it->first.c_str());
+			}
+		}
+	}
+	
+	// Stats per Crash File
+	myinfo("");
+	myinfo("**** Detailed Crashs per crash Log:");
+	multimap<uint, string>	resortCrashLog;
+	for(TStatStrStrMap::iterator	itStrStr=crashFileToSenderMap.begin();itStrStr!=crashFileToSenderMap.end();itStrStr++)
+	{
+		// count total crash instance
+		uint	numCrash= 0;
+		TStatStrMap	&userIdMap= itStrStr->second;
+		for(TStatStrMap::iterator it=userIdMap.begin();it!=userIdMap.end();it++)
+			numCrash+= it->second.Val;
+		// insert for resort by this number
+		resortCrashLog.insert(make_pair(numCrash, itStrStr->first));
+	}
+	for(it2=resortCrashLog.begin();it2!=resortCrashLog.end();it2++)
+	{
+		string		crashLog= it2->second;
+		TStatStrMap	&userIdMap= crashFileToSenderMap[crashLog];
+		if(userIdMap.empty())
+		{
+			myinfo("    Error parsing Crashs for CrashFile %s (?????)", crashLog.c_str());
+		}
+		else
+		{
+			myinfo("    %d Crashs in  %s:", it2->first, crashLog.c_str());
+			for(TStatStrMap::iterator it=userIdMap.begin();it!=userIdMap.end();it++)
+			{
+				myinfo("        %d for %s", it->second.Val, it->first.c_str());
+			}
+		}
+	}
+	
 	// RAW userPos
 	myinfo("");
 	myinfo("**** RAW Crashs Pos (copy in excel, and use insert/chart/(X/Y)Scatter):");

@@ -36,6 +36,7 @@ then
 	seoll=`cat ../../cfg/config.cfg | grep "shape_export_opt_lighting_limit" | sed -e 's/shape_export_opt_lighting_limit//' | sed -e 's/ //g' | sed -e 's/=//g'`
 	seols=`cat ../../cfg/config.cfg | grep "shape_export_opt_lumel_size" | sed -e 's/shape_export_opt_lumel_size//' | sed -e 's/ //g' | sed -e 's/=//g'`
 	seoo=`cat ../../cfg/config.cfg | grep "shape_export_opt_oversampling" | sed -e 's/shape_export_opt_oversampling//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	seo8b=`cat ../../cfg/config.cfg | grep "shape_export_opt_8bits_lightmap" | sed -e 's/shape_export_opt_8bits_lightmap//' | sed -e 's/ //g' | sed -e 's/=//g'`
 else
 	# We are in DRAFT mode
 	seoel='false'
@@ -43,6 +44,7 @@ else
 	seoll='0'
 	seols='0.25'
 	seoo='1'
+	seo8b='false'
 fi
 
 # Log error
@@ -59,7 +61,7 @@ date
 
 for i in $shape_source_directories ; do
 	# Copy the script
-	cat maxscript/shape_export.ms | sed -e "s&output_logfile&$build_gamedata_directory/processes/shape/log.log&g" | sed -e "s&shape_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/shape/tag&g" | sed -e "s&output_directory_without_coarse_mesh&$build_gamedata_directory/processes/shape/shape_not_optimized&g" | sed -e "s&output_directory_with_coarse_mesh&$build_gamedata_directory/processes/shape/shape_with_coarse_mesh&g" | sed -e "s&shape_export_opt_export_lighting&$seoel&g" | sed -e "s&shape_export_opt_shadow&$seos&g" | sed -e "s&shape_export_opt_lighting_limit&$seoll&g" | sed -e "s&shape_export_opt_lumel_size&$seols&g" | sed -e "s&shape_export_opt_oversampling&$seoo&g" | sed -e "s&shape_lightmap_path&$build_gamedata_directory/processes/shape/lightmap_not_optimized&g"  | sed -e "s&output_directory_anim&$build_gamedata_directory/processes/shape/anim&g" > $max_directory/scripts/shape_export.ms
+	cat maxscript/shape_export.ms | sed -e "s&output_logfile&$build_gamedata_directory/processes/shape/log.log&g" | sed -e "s&shape_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/shape/tag&g" | sed -e "s&output_directory_without_coarse_mesh&$build_gamedata_directory/processes/shape/shape_not_optimized&g" | sed -e "s&output_directory_with_coarse_mesh&$build_gamedata_directory/processes/shape/shape_with_coarse_mesh&g" | sed -e "s&shape_export_opt_export_lighting&$seoel&g" | sed -e "s&shape_export_opt_shadow&$seos&g" | sed -e "s&shape_export_opt_lighting_limit&$seoll&g" | sed -e "s&shape_export_opt_lumel_size&$seols&g" | sed -e "s&shape_export_opt_oversampling&$seoo&g"| sed -e "s&shape_export_opt_8bits_lightmap&$seo8b&g" | sed -e "s&shape_lightmap_path&$build_gamedata_directory/processes/shape/lightmap_not_optimized&g"  | sed -e "s&output_directory_anim&$build_gamedata_directory/processes/shape/anim&g" > $max_directory/scripts/shape_export.ms
 
 	# Start max
 	echo Try 1 >> log.log

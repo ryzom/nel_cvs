@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.6 2002/12/17 10:53:55 coutelas Exp $
+ * $Id: memory_manager.h,v 1.7 2002/12/19 15:53:38 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,13 +28,13 @@
 
 #undef MEMORY_API
 #ifdef MEMORY_EXPORTS
- #ifdef NL_OS_WINDOWS
+ #ifdef WIN32
   #define MEMORY_API __declspec(dllexport)
  #else 
   #define MEMORY_API
  #endif // NL_OS_WINDOWS
 #else
- #ifdef NL_OS_WINDOWS
+ #ifdef WIN32
   #define MEMORY_API __declspec(dllimport)
  #else 
   #define MEMORY_API
@@ -117,9 +117,9 @@
 namespace NLMEMORY
 {
 
-//inline void*		MemoryAllocate (unsigned int size);
-//inline void*		MemoryAllocateDebug (unsigned int size, const char *filename, unsigned int line, const char *category);
-//inline void			MemoryDeallocate (void *p);
+MEMORY_API void*		MemoryAllocate (unsigned int size);
+MEMORY_API void*		MemoryAllocateDebug (unsigned int size, const char *filename, unsigned int line, const char *category);
+MEMORY_API void			MemoryDeallocate (void *p);
 inline unsigned int GetAllocatedMemory () { return 0;}
 inline unsigned int GetFreeMemory () { return 0;}
 inline unsigned int GetTotalMemoryUsed () { return 0;}

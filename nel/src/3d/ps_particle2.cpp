@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle2.cpp,v 1.1 2001/09/26 17:45:09 vizerie Exp $
+ * $Id: ps_particle2.cpp,v 1.2 2001/10/02 16:36:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,13 +75,18 @@ CPSRibbonLookAt::~CPSRibbonLookAt()
 
 void CPSRibbonLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(1);
+	sint ver = f.serialVersion(3);
 	CPSParticle::serial(f);
 	CPSColoredParticle::serialColorScheme(f);	
 	CPSSizedParticle::serialSizeScheme(f);		
 	serialMaterial(f);
 	f.serial(_SegDuration, _NbSegs, _NbDyingRibbons);
 	ITexture *tex = NULL;
+
+	if (ver > 2)
+	{
+		f.serial(_Parametric);
+	}
 
 	if (!f.isReading())
 	{		
@@ -93,8 +98,7 @@ void CPSRibbonLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serialPolyPtr(tex);
 		setTexture(tex);
 		setTailNbSeg(_NbSegs); // force to build the vb
-	}
-	
+	}	
 }
 
 void CPSRibbonLookAt::setTexture(CSmartPtr<ITexture> tex)
@@ -158,10 +162,10 @@ void CPSRibbonLookAt::deleteElement(uint32 index)
 
 void CPSRibbonLookAt::resize(uint32 size)
 {
+	resizeVb();
 	if (_Parametric) return;
 	resizeColor(size);
-	resizeSize(size);	
-	resizeVb();
+	resizeSize(size);		
 	resizeRibbons(_Ribbons, size);
 	if (_DyingRibbons)
 	{
@@ -357,14 +361,13 @@ struct CVectInfo
 typedef std::vector<CVectInfo> TRibbonVect;
 	
 
-static inline void MakeProj(const NLMISC::CMatrix &mat, NLMISC::CVector &dest, const NLMISC::CVector &src)
-{	
-	NLMISC::CVector p = mat * src;
-	if (fabsf(p.y) > NormEpsilon * NormEpsilon)
+static inline void MakeProj(NLMISC::CVector &dest, const NLMISC::CVector &src)
+{		
+	if (fabsf(src.y) > NormEpsilon * NormEpsilon)
 	{
-		dest.x = p.x / p.y;
-		dest.z = p.z / p.y;
-		dest.y = p.y;	
+		dest.x = src.x / src.y;
+		dest.z = src.z / src.y;
+		dest.y = src.y;	
 	}	
 }
 
@@ -414,7 +417,7 @@ static inline void BuildSlice(const NLMISC::CMatrix &mat, CVertexBuffer &vb, uin
 		{
 				float lambda = (next->Proj.y - ZEpsilon) / (next->Proj.y - prev->Proj.y);
 				inter = lambda * prev->Interp + (1.f - lambda) * next->Interp;				
-				MakeProj(mat, tInter, inter);
+				MakeProj(tInter, mat * inter);
 		}
 		else // 
 		{
@@ -450,7 +453,7 @@ static inline void BuildSlice(const NLMISC::CMatrix &mat, CVertexBuffer &vb, uin
 		{
 				float lambda = (next->Proj.y - ZEpsilon) / (next->Proj.y - prev->Proj.y);
 				inter = lambda * prev->Interp + (1.f - lambda) * next->Interp;				
-				MakeProj(mat, tInter, inter);
+				MakeProj(tInter, mat * inter);
 		}
 		else // 
 		{
@@ -555,13 +558,8 @@ void CPSRibbonLookAt::displayRibbons(CRibbons &r, uint32 nbRibbons)
 	{			
 		currVert = (uint8 *) _VB.getVertexCoordPointer();		
 
-		// get the lambda to decal ribbon slices
-		float lambda = r._Times[k] / _SegDuration;
-		float oneMinusLambda = 1.f - lambda;
-
-
-
-		TRibbonVect::iterator rIt = currRibbon.begin(), rItEnd = currRibbon.end() - 1;
+		
+		TRibbonVect::iterator rIt = currRibbon.begin(), rItEnd = currRibbon.end(), rItEndMinusOne = rItEnd - 1;
 
 		////////////////////////////////////
 		// interpolate and project points //
@@ -575,17 +573,22 @@ void CPSRibbonLookAt::displayRibbons(CRibbons &r, uint32 nbRibbons)
 				//////////////////////								
 				// we use the previous position to build the curve				
 
+				// get the lambda to decal ribbon slices
+				float lambda = r._Times[k] / _SegDuration;
+				float oneMinusLambda = 1.f - lambda;
+
 				do
 				{
 					rIt->Interp = lambda * *(posIt + 1) + oneMinusLambda * *posIt;			
-					MakeProj(mat, rIt->Proj, rIt->Interp);
+					MakeProj(rIt->Proj, mat * rIt->Interp);
 					++rIt;
 					++posIt;						
 				}
-				while (rIt != rItEnd);
+				while (rIt != rItEndMinusOne);
 
 				rIt->Interp = *posIt;		
-				MakeProj(mat, rIt->Proj, rIt->Interp);															
+				MakeProj(rIt->Proj, mat * rIt->Interp);
+				++posIt;
 			}
 			else
 			{
@@ -593,15 +596,15 @@ void CPSRibbonLookAt::displayRibbons(CRibbons &r, uint32 nbRibbons)
 				// PARAMETRIC  CASE //
 				//////////////////////
 				// we compute each pos thanks to the parametric curve
-				_Owner->integrateSingle(date, _SegDuration, _NbSegs + 1, mat, k,
+				_Owner->integrateSingle(date - _SegDuration * (_NbSegs + 1), _SegDuration, _NbSegs + 1, k,
 									 &rIt->Interp, sizeof(CVectInfo) );
 				// project each position now
 				do
 				{					
-					MakeProj(mat, rIt->Proj, rIt->Interp);
+					MakeProj(rIt->Proj, mat * rIt->Interp); // we don't multiply by mat, this was done during integarteSingle
 					++rIt;				
 				}
-				while (rIt != rItEnd);
+				while (rIt != rItEnd);			
 
 			}
 
@@ -611,8 +614,7 @@ void CPSRibbonLookAt::displayRibbons(CRibbons &r, uint32 nbRibbons)
 		// deals with first point //
 		////////////////////////////		
 		BuildSlice(mat, _VB, currVert, vertexSize, I, K, rIt, rIt, rIt + 1, *ptCurrSize); 
-		currVert += vertexSizeX2;
-		++posIt;
+		currVert += vertexSizeX2;		
 		++rIt;
 
 		/////////////////////////////
@@ -623,17 +625,15 @@ void CPSRibbonLookAt::displayRibbons(CRibbons &r, uint32 nbRibbons)
 		{						
 			// build 2 vertices with the right tangent. /* to project 2 */ is old projected point
 			BuildSlice(mat, _VB, currVert, vertexSize, I, K, rIt, rIt - 1, rIt + 1, *ptCurrSize); 
-			// next position
-			++posIt;
-			if (rIt == rItEnd) break;
-			// next vertex
+			// next position		
 			++rIt;
+			if (rIt == rItEndMinusOne) break;					
+			// next vertex			
 			currVert += vertexSizeX2;		
 		}
 		currVert += vertexSizeX2;
 		// last point.
-		BuildSlice(mat, _VB, currVert, vertexSize, I, K, rIt + 1, rIt, rIt + 1, *ptCurrSize); 
-		++posIt;			
+		BuildSlice(mat, _VB, currVert, vertexSize, I, K, rIt , rIt - 1, rIt, *ptCurrSize); 			
 		
 		_Mat.setColor(*ptCurrColor);
 
@@ -704,7 +704,8 @@ void CPSRibbonLookAt::reinitFromOwner(void)
 {
 	if (_Parametric) return;
 	if (!_Owner) return;
-	const uint32 size = _Owner->getSize();
+	const uint32 size = _Owner->getMaxSize();
+	resize(size);
 	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt = _Owner->getPos().end();
 	TPSAttribVector::const_iterator speedIt = _Owner->getSpeed().begin();
 

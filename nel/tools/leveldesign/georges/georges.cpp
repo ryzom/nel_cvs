@@ -7,6 +7,7 @@
 #include "MainFrm.h"
 #include "GeorgesDoc.h"
 #include "GeorgesView.h"
+#include "childfrm.h"
 
 #include "../georges_lib/formbodyelt.h"
 #include "../georges_lib/formbodyeltatom.h"
@@ -42,11 +43,6 @@ CGeorgesApp::CGeorgesApp()
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 	_MultiDocTemplate = NULL;
-
-	NLMISC_REGISTER_CLASS( CFormBodyElt );
-	NLMISC_REGISTER_CLASS( CFormBodyEltAtom );
-	NLMISC_REGISTER_CLASS( CFormBodyEltList );
-	NLMISC_REGISTER_CLASS( CFormBodyEltStruct );
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -70,6 +66,10 @@ BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 */
 	if (_MultiDocTemplate == NULL)
 	{
+		NLMISC_REGISTER_CLASS( CFormBodyElt );
+		NLMISC_REGISTER_CLASS( CFormBodyEltAtom );
+		NLMISC_REGISTER_CLASS( CFormBodyEltList );
+		NLMISC_REGISTER_CLASS( CFormBodyEltStruct );
 		// Change the registry key under which our settings are stored.
 		// TODO: You should modify this string to be something appropriate
 		// such as the name of your company or organization.
@@ -83,9 +83,13 @@ BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 		_MultiDocTemplate = new CMultiDocTemplate(
 			IDR_MAINFRAME,
 			RUNTIME_CLASS(CGeorgesDoc),
-			RUNTIME_CLASS(CMainFrame),       // main SDI frame window
+			RUNTIME_CLASS(CChildFrame),
 			RUNTIME_CLASS(CGeorgesView));
 		AddDocTemplate(_MultiDocTemplate);
+
+		// Enable DDE Execute open
+		EnableShellOpen();
+		RegisterShellFileTypes(TRUE);
 	}
 
 	m_pMainWnd = new CMainFrame();

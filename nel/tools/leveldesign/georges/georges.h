@@ -1,8 +1,8 @@
-// georges.h : main header file for the GEORGES application
+// Georges.h : main header file for the GEORGES application
 //
 
-#if !defined(AFX_GEORGES_H__F140BB57_1483_406C_BCEA_4FB43A9E5BB0__INCLUDED_)
-#define AFX_GEORGES_H__F140BB57_1483_406C_BCEA_4FB43A9E5BB0__INCLUDED_
+#if !defined(AFX_GEORGES_H__FCC07321_0C96_48BE_AE90_C3E1F0E61134__INCLUDED_)
+#define AFX_GEORGES_H__FCC07321_0C96_48BE_AE90_C3E1F0E61134__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
@@ -14,16 +14,14 @@
 
 #include "resource.h"       // main symbols
 
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////²///////////////////////////////////////////////////
 // CGeorgesApp:
-// See georges.cpp for the implementation of this class
+// See Georges.cpp for the implementation of this class
 //
 
 class CGeorgesApp : public CWinApp
 {
-	bool _Initialized;
-	CSingleDocTemplate* _DocTemplate;
-	
+	CMultiDocTemplate *_MultiDocTemplate;
 public:
 	CGeorgesApp();
 
@@ -31,7 +29,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CGeorgesApp)
 	public:
-	BOOL initInstance(int x=0,int y=0, int cx=0, int cy=0);
+	BOOL initInstance (int x = 0, int y = 0, int cx = 0, int cy = 0);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -49,4 +47,4 @@ public:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_GEORGES_H__F140BB57_1483_406C_BCEA_4FB43A9E5BB0__INCLUDED_)
+#endif // !defined(AFX_GEORGES_H__FCC07321_0C96_48BE_AE90_C3E1F0E61134__INCLUDED_)

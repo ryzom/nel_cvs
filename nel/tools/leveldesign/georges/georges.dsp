@@ -107,7 +107,11 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../georges_exe/georges.dll" /pdbtype:sept
-# ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../master/georges_debug_fast.dll" /pdbtype:sept
+# ADD LINK32 libxml2.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../master/georges_debug_fast.dll" /pdbtype:sept
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=copy ..\master\georges_debug_fast.dll ..\georges_exe
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "georges - Win32 ReleaseDebug"
 
@@ -163,11 +167,15 @@ SOURCE=.\georgesView.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\MainFrm.cpp
+SOURCE=.\InPlaceEdit.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\PropertyList.cpp
+SOURCE=.\ListViewEx.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MainFrm.cpp
 # End Source File
 # Begin Source File
 
@@ -196,11 +204,15 @@ SOURCE=.\georgesView.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\MainFrm.h
+SOURCE=.\InPlaceEdit.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\PropertyList.h
+SOURCE=.\ListViewEx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MainFrm.h
 # End Source File
 # Begin Source File
 

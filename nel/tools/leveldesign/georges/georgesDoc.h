@@ -1,14 +1,19 @@
-// georgesDoc.h : interface of the CGeorgesDoc class
+// GeorgesDoc.h : interface of the CGeorgesDoc class
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_GEORGESDOC_H__15C67AB4_5DBC_4EB2_91D7_716FB8CAE880__INCLUDED_)
-#define AFX_GEORGESDOC_H__15C67AB4_5DBC_4EB2_91D7_716FB8CAE880__INCLUDED_
+#if !defined(AFX_GEORGESDOC_H__16A90258_8DA9_4F0C_873E_E0B4C98228A1__INCLUDED_)
+#define AFX_GEORGESDOC_H__16A90258_8DA9_4F0C_873E_E0B4C98228A1__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
+//#include "Form.h"
+#include "../georges_lib/Loader.h"
+#include "../georges_lib/Item.h"
+
+class CFormFile;
 
 class CGeorgesDoc : public CDocument
 {
@@ -18,16 +23,30 @@ protected: // create from serialization only
 
 // Attributes
 public:
+//	CFormFile*	pff;	//	Only for tests
+	CLoader		loader;
+	CItem		item;
 
-// Operations
+// Operations 
 public:
-
+	void SetItemValue( const unsigned int _index, const CString s );
+	unsigned int GetItemNbElt() const;
+	unsigned int GetItemInfos( const unsigned int _index ) const;
+	CString GetItemName( const unsigned int _index ) const;
+	CString GetItemCurrentResult( const unsigned int _index ) const;
+	CString GetItemCurrentValue( const unsigned int _index ) const;
+	CString GetItemFormula( const unsigned int _index ) const;
+	
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CGeorgesDoc)
 	public:
 	virtual BOOL OnNewDocument();
 	virtual void Serialize(CArchive& ar);
+	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
+	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
+	virtual void DeleteContents();
+	virtual void OnCloseDocument();
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -54,4 +73,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_GEORGESDOC_H__15C67AB4_5DBC_4EB2_91D7_716FB8CAE880__INCLUDED_)
+#endif // !defined(AFX_GEORGESDOC_H__16A90258_8DA9_4F0C_873E_E0B4C98228A1__INCLUDED_)

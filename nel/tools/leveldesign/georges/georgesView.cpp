@@ -1,13 +1,12 @@
-// georgesView.cpp : implementation of the CGeorgesView class
+// GeorgesView.cpp : implementation of the CGeorgesView class
 //
 
 #include "stdafx.h"
-#include "georges.h"
+#include "Georges.h"
 
-#include "georgesDoc.h"
-#include "georgesView.h"
-
-#include "propertylist.h"
+#include "GeorgesDoc.h"
+#include "GeorgesView.h"
+#include "../georges_lib/Common.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -18,100 +17,41 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CGeorgesView
 
-IMPLEMENT_DYNCREATE(CGeorgesView, CFormView)
+IMPLEMENT_DYNCREATE(CGeorgesView, CListViewEx)
 
-BEGIN_MESSAGE_MAP(CGeorgesView, CFormView)
+BEGIN_MESSAGE_MAP(CGeorgesView, CListViewEx)
 	//{{AFX_MSG_MAP(CGeorgesView)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-	ON_WM_CREATE()
-	ON_WM_SIZE ()
-		//    DO NOT EDIT what you see in these blocks of generated code!
+	ON_WM_RBUTTONDOWN()
+	ON_WM_LBUTTONDOWN()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGeorgesView construction/destruction
 
-CGeorgesView::CGeorgesView() : CFormView(IDD_TOOLS)
+CGeorgesView::CGeorgesView()
 {
-	// TODO: add construction code here
-	_List = NULL;
-	pPipo1 = pPipo2 = pPipo3 = pPipo4 = pPipo5 = NULL;
 }
 
 CGeorgesView::~CGeorgesView()
 {
-	delete pPipo1;
-	delete pPipo2;
-	delete pPipo3;
-	delete pPipo4;
-	delete pPipo5;
 }
 
 BOOL CGeorgesView::PreCreateWindow(CREATESTRUCT& cs)
 {
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
-
-	return CView::PreCreateWindow(cs);
+	cs.style |= LVS_SHOWSELALWAYS | LVS_OWNERDATA | LVS_SINGLESEL | LVS_EDITLABELS | LVS_NOSORTHEADER;
+	return CListViewEx::PreCreateWindow(cs);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CGeorgesView drawing
 
-void CGeorgesView::OnDraw(CDC* pDC)
+void CGeorgesView::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
-	CGeorgesDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	// TODO: add draw code for native data here
-}
-
-#define LIST_TOP 50
-#define IDC_LIST 0x0010
-
-/////////////////////////////////////////////////////////////////////////////
-
-int CGeorgesView::OnCreate (LPCREATESTRUCT lpCreateStruct)
-{
-	if (CFormView::OnCreate (lpCreateStruct) == -1)
-		return -1;
-	CRect iniRect;
-	GetClientRect(&iniRect);
-	iniRect.top = LIST_TOP; iniRect.left = 10;
-	iniRect.right -= 20; iniRect.bottom -= 20;
-	_List = new CPropertyList;
-	//_List = new CListBox;
-	_List->Create (WS_CHILD|WS_VISIBLE|WS_BORDER|WS_HSCROLL|WS_VSCROLL|LBS_OWNERDRAWVARIABLE|LBS_NOTIFY,
-				iniRect, this, IDC_LIST);
-	pPipo1 = new CPropertyItem("Entity Name","",PIT_EDIT,"");
-	_List->AddPropItem(pPipo1);
-
-	pPipo2 = new CPropertyItem("Visible","true",PIT_COMBO,"true|false|");
-	_List->AddPropItem(pPipo2);
-
-	pPipo3 = new CPropertyItem("Color","",PIT_COLOR,"");
-	_List->AddPropItem(pPipo3);
-
-	pPipo4 = new CPropertyItem("Refernce","",PIT_FILE,"");
-	_List->AddPropItem(pPipo4);
-
-	pPipo5 = new CPropertyItem("Child","one",PIT_COMBO,"one|two|three|four|five|six|");
-	_List->AddPropItem(pPipo5);
-
-	return 0;
-
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-void CGeorgesView::OnSize (UINT nType, int cx, int cy)
-{
-	CFormView::OnSize(nType, cx, cy);
-	if (_List != NULL)
-	{
-		_List->MoveWindow (10, LIST_TOP, cx-20, cy-(LIST_TOP+10));
-		_List->Invalidate();
-	}
+	m_clrTextBk = ::GetSysColor(COLOR_WINDOW);
+	m_clrText = ::GetSysColor(COLOR_WINDOWTEXT);
+//		m_clrText = RGB( 128, 128, 128 );
+	CListViewEx::DrawItem(lpDrawItemStruct);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -135,5 +75,135 @@ CGeorgesDoc* CGeorgesView::GetDocument() // non-debug version is inline
 }
 #endif //_DEBUG
 
-/////////////////////////////////////////////////////////////////////////////
-// CGeorgesView message handlers
+void CGeorgesView::OnInitialUpdate() 
+{
+	CListViewEx::OnInitialUpdate();
+
+	LV_COLUMN lvc;
+	lvc.mask = LVCF_TEXT | LVCF_SUBITEM | LVCF_WIDTH;
+
+	lvc.iSubItem = 0;
+	lvc.pszText = _T("Name");
+	lvc.cx = 350;
+	GetListCtrl().InsertColumn(0,&lvc);
+
+	lvc.iSubItem = 1;
+	lvc.pszText = _T("Result");
+	lvc.cx = 180;
+	GetListCtrl().InsertColumn(1,&lvc);
+	
+	lvc.iSubItem = 2;
+	lvc.pszText = _T("Value");
+	lvc.cx = 180;
+	GetListCtrl().InsertColumn(2,&lvc);
+	
+	lvc.iSubItem = 3;
+	lvc.pszText = _T("Type");
+	lvc.cx = 180;
+	GetListCtrl().InsertColumn(3,&lvc);
+
+	GetListCtrl().SetExtendedStyle( GetListCtrl().GetExtendedStyle() | LVS_EX_GRIDLINES | LVS_EX_ONECLICKACTIVATE  );
+}
+
+BOOL CGeorgesView::OnChildNotify(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pLResult) 
+{
+	if(message == WM_NOTIFY)
+	{
+		NMHDR* phdr = (NMHDR*)lParam;
+
+		switch(phdr->code)
+		{
+		case LVN_GETDISPINFO:
+			{
+				NMLVDISPINFO* pLvdi = (NMLVDISPINFO*)lParam;
+				GetDispInfo(&pLvdi->item);
+			}
+			if(pLResult != NULL)
+				*pLResult = 0;
+			break;
+		case LVN_ODCACHEHINT:
+			if(pLResult != NULL)
+				*pLResult = 0;
+			break;
+		case LVN_ODFINDITEM:
+			if(pLResult != NULL)
+				*pLResult = -1;
+			break;
+		case LVN_ENDLABELEDIT:
+			{
+				NMLVDISPINFO* pdi = (NMLVDISPINFO*) lParam;
+				LV_ITEM	*pItem = &pdi->item;
+				if (pItem->pszText != NULL)
+				{
+					int r = pItem->iSubItem;
+					GetDocument()->SetItemValue( pItem->iItem, pItem->pszText );  
+				}
+				GetListCtrl().RedrawItems( ySubItem, ySubItem );
+				*pLResult = FALSE;
+				break;
+			}
+		default:
+			return CListViewEx::OnChildNotify(message, wParam, lParam, pLResult);
+		}
+	}
+	else
+		return CListViewEx::OnChildNotify(message, wParam, lParam, pLResult);
+
+	return TRUE;
+}
+
+
+void CGeorgesView::GetDispInfo(LVITEM* const pItem )
+{
+	unsigned int inblines = GetDocument()->GetItemNbElt();				
+	if( ( pItem->mask & LVIF_TEXT )&&( pItem->iItem < ( int )( inblines ) ) )
+		switch(pItem->iSubItem)
+		{
+		case 0:
+			lstrcpy( pItem->pszText, GetDocument()->GetItemName( pItem->iItem ) );
+			break;
+		case 1:
+			lstrcpy( pItem->pszText, GetDocument()->GetItemCurrentResult( pItem->iItem ) );
+			break;
+		case 2:
+			lstrcpy( pItem->pszText, GetDocument()->GetItemCurrentValue( pItem->iItem ) );
+			break;
+		case 3:
+			lstrcpy( pItem->pszText, GetDocument()->GetItemFormula( pItem->iItem ) );
+			break;
+		}
+}
+
+void CGeorgesView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
+{
+	GetListCtrl().SetItemCountEx( GetDocument()->GetItemNbElt(), 0);				
+	CListViewEx::OnUpdate( pSender, lHint, pHint);
+}
+
+void CGeorgesView::OnRButtonDown(UINT nFlags, CPoint point) 
+{
+	LVHITTESTINFO lvhti;
+	lvhti.pt = point;
+	if( GetListCtrl().SubItemHitTest(&lvhti) == -1 )
+		return;
+}
+
+void CGeorgesView::OnLButtonDown(UINT nFlags, CPoint point) 
+{
+	LVHITTESTINFO lvhti;
+	lvhti.pt = point;
+	if( GetListCtrl().SubItemHitTest(&lvhti) == -1 )
+		return;
+	if( ( ( lvhti.iSubItem == 2 )&&( GetDocument()->GetItemInfos( lvhti.iItem ) & ITEM_ISATOM ) ) )
+	{
+		unsigned int oldy = ySubItem;
+		ySubItem = lvhti.iItem;
+		xSubItem = lvhti.iSubItem;
+
+		GetListCtrl().SetItemState( ySubItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED ); 
+		if( oldy != ySubItem )
+			GetListCtrl().RedrawItems( oldy, oldy ); 
+		GetListCtrl().RedrawItems( ySubItem, ySubItem ); 
+		CListViewEx::OnLButtonDown(nFlags, point);
+	}
+}

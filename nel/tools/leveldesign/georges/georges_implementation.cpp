@@ -96,8 +96,7 @@ void CGeorgesImpl::initUILight (int x, int y, int cx, int cy)
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	
 	theApp.initInstance (x, y, cx, cy);
-		
-	// The main window has been initialized, so show and update it.
+	
 	_MainFrame = (CMainFrame*)theApp.m_pMainWnd;
 
 } // initUILight //

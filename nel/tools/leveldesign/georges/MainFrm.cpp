@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "georges.h"
+#include "Georges.h"
 
 #include "MainFrm.h"
 
@@ -40,8 +40,8 @@ static UINT indicators[] =
 CMainFrame::CMainFrame()
 {
 	// TODO: add member initialization code here
-	Exit = false;
 	CreateX = CreateY = CreateCX = CreateCY = 0;
+	Exit = false;
 }
 
 CMainFrame::~CMainFrame()
@@ -78,14 +78,21 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
+void CMainFrame::OnClose()
+{
+	Exit = true;
+}
+
+
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-	if (!((CreateCX == CreateCY) && (CreateCX == 0)))
+	if ((CreateCX != 0)&&(CreateCY != 0))
 	{
 		cs.x = CreateX;
 		cs.y = CreateY;
 		cs.cx = CreateCX;
 		cs.cy = CreateCY;
+		// cs.style ~= WS_SYSMENU;
 	}
 
 	if( !CFrameWnd::PreCreateWindow(cs) )
@@ -94,11 +101,6 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	//  the CREATESTRUCT cs
 
 	return TRUE;
-}
-
-void CMainFrame::OnClose()
-{
-	Exit = true;
 }
 
 /////////////////////////////////////////////////////////////////////////////

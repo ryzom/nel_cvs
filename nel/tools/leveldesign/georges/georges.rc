@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+//Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -7,21 +7,14 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
+
 #include "afxres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
-/////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
-
 #ifdef APSTUDIO_INVOKED
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // TEXTINCLUDE
@@ -29,13 +22,13 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE DISCARDABLE 
 BEGIN
-    "resource.h\0"
+	"resource.h\0"
 END
 
 2 TEXTINCLUDE DISCARDABLE 
 BEGIN
-    "#include ""afxres.h""\r\n"
-    "\0"
+	"#include ""afxres.h""\r\n"
+	"\0"
 END
 
 3 TEXTINCLUDE DISCARDABLE 
@@ -44,16 +37,17 @@ BEGIN
     "#define _AFX_NO_OLE_RESOURCES\r\n"
     "#define _AFX_NO_TRACKER_RESOURCES\r\n"
     "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
-    "\r\n"
-    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
-    "#ifdef _WIN32\r\n"
-    "LANGUAGE 9, 1\r\n"
-    "#pragma code_page(1252)\r\n"
-    "#endif //_WIN32\r\n"
-    "#include ""res\\georges.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
-    "#include ""afxres.rc""         // Standard components\r\n"
-    "#endif\r\n"
-    "\0"
+	"\r\n"
+	"#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)\r\n"
+	"#ifdef _WIN32\r\n"
+	"LANGUAGE 12, 1\r\n"
+	"#pragma code_page(1252)\r\n"
+	"#endif //_WIN32\r\n"
+	"#include ""res\\Georges.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+	"#include ""l.fra\\afxres.rc""  	// Standard components\r\n"
+	"#include ""l.fra\\afxdb.rc""		// Database resources\r\n"
+	"#endif\r\n"
+	"\0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -66,8 +60,15 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\georges.ico"
-IDR_GEORGETYPE          ICON    DISCARDABLE     "res\\georgesDoc.ico"
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE 12, 1
+#pragma code_page(1252)
+#endif //_WIN32
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\Georges.ico"
+IDR_GEORGETYPE         ICON    DISCARDABLE     "res\\GeorgesDoc.ico"
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -86,17 +87,24 @@ BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
     BUTTON      ID_FILE_SAVE
-    SEPARATOR
+	SEPARATOR
     BUTTON      ID_EDIT_CUT
     BUTTON      ID_EDIT_COPY
     BUTTON      ID_EDIT_PASTE
-    SEPARATOR
+	SEPARATOR
     BUTTON      ID_FILE_PRINT
-    SEPARATOR
+	SEPARATOR
     BUTTON      ID_APP_ABOUT
 END
 
 
+
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE 12, 1
+#pragma code_page(1252)
+#endif //_WIN32
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
@@ -104,35 +112,36 @@ END
 
 IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
 BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
-        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
-        MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_APP_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
-        MENUITEM SEPARATOR
-        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-    END
-    POPUP "&View"
-    BEGIN
-        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
-        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "&About georges...",           ID_APP_ABOUT
-    END
+	POPUP "&Fichier"
+	BEGIN
+		MENUITEM "&Nouveau\tCtrl+N",                ID_FILE_NEW
+		MENUITEM "&Ouvrir...\tCtrl+O",            ID_FILE_OPEN
+		MENUITEM "&Enregistrer\tCtrl+S",               ID_FILE_SAVE
+		MENUITEM "En&registrer sous...",                 ID_FILE_SAVE_AS
+		MENUITEM SEPARATOR
+		MENUITEM "Fichier récent",                 ID_FILE_MRU_FILE1,GRAYED
+		MENUITEM SEPARATOR
+		MENUITEM "&Quitter",                       ID_APP_EXIT
+	END
+	POPUP "&Edition"
+	BEGIN
+		MENUITEM "&Annuler\tCtrl+Z",               ID_EDIT_UNDO
+		MENUITEM SEPARATOR
+		MENUITEM "&Couper\tCtrl+X",                ID_EDIT_CUT
+		MENUITEM "&Copier\tCtrl+C",               ID_EDIT_COPY
+		MENUITEM "C&oller\tCtrl+V",              ID_EDIT_PASTE
+	END
+	POPUP "&Affichage"
+	BEGIN
+		MENUITEM "&Barre d'outils",                    ID_VIEW_TOOLBAR
+		MENUITEM "Barre d'é&tat",                 ID_VIEW_STATUS_BAR
+	END
+	POPUP "&?"
+	BEGIN
+		MENUITEM "&A propos de Georges...",          ID_APP_ABOUT
+	END
 END
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -140,22 +149,24 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE
 BEGIN
-    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
-    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
-    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
-    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
-    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
-    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
-    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
-    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
-    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
-    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
-    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
-    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
-    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+	"N",            ID_FILE_NEW,            VIRTKEY,CONTROL
+	"O",            ID_FILE_OPEN,           VIRTKEY,CONTROL
+	"S",            ID_FILE_SAVE,           VIRTKEY,CONTROL
+	"Z",            ID_EDIT_UNDO,           VIRTKEY,CONTROL
+	"X",            ID_EDIT_CUT,            VIRTKEY,CONTROL
+	"C",            ID_EDIT_COPY,           VIRTKEY,CONTROL
+	"V",            ID_EDIT_PASTE,          VIRTKEY,CONTROL
+	VK_BACK,        ID_EDIT_UNDO,           VIRTKEY,ALT
+	VK_DELETE,      ID_EDIT_CUT,            VIRTKEY,SHIFT
+	VK_INSERT,      ID_EDIT_COPY,           VIRTKEY,CONTROL
+	VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY,SHIFT
+	VK_F6,          ID_NEXT_PANE,           VIRTKEY 
+	VK_F6,          ID_PREV_PANE,           VIRTKEY,SHIFT
 END
+
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -164,34 +175,27 @@ END
 //
 
 IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 55
+CAPTION "A propos de Georges"
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About georges"
 FONT 8, "MS Sans Serif"
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "georges Version 1.0",IDC_STATIC,40,10,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2001",IDC_STATIC,40,25,119,8
-    DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
-END
-
-IDD_TOOLS DIALOG DISCARDABLE  0, 0, 136, 58
-STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
-BEGIN
-    COMBOBOX        IDC_CHOOSE_INSTANCE,7,7,110,87,CBS_DROPDOWN | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
+	ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+	LTEXT           "Georges version 1.0",IDC_STATIC,40,10,119,8,
+                    SS_NOPREFIX
+	LTEXT           "Copyright (C) 2001",IDC_STATIC,40,25,119,8
+	DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
 END
 
 
-#ifndef _MAC
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+VS_VERSION_INFO     VERSIONINFO
+  FILEVERSION       1,0,0,1
+  PRODUCTVERSION    1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -202,29 +206,26 @@ VS_VERSION_INFO VERSIONINFO
  FILETYPE 0x1L
  FILESUBTYPE 0x0L
 BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904B0"
-        BEGIN
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "georges MFC Application\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "georges\0"
-            VALUE "LegalCopyright", "Copyright (C) 2001\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "georges.EXE\0"
-            VALUE "ProductName", "georges Application\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1200
+	BLOCK "StringFileInfo"
+	BEGIN
+        BLOCK "040C04B0"
+		BEGIN 
+			VALUE "CompanyName",     "\0"
+			VALUE "FileDescription", "Application MFC Georges\0"
+			VALUE "FileVersion",     "1, 0, 0, 1\0"
+			VALUE "InternalName",    "Georges\0"
+			VALUE "LegalCopyright",  "Copyright (C) 2001\0"
+			VALUE "LegalTrademarks", "\0"
+			VALUE "OriginalFilename","Georges.EXE\0"
+			VALUE "ProductName",     "Application Georges\0"
+			VALUE "ProductVersion",  "1, 0, 0, 1\0"
+		END
+	END
+	BLOCK "VarFileInfo" 
+	BEGIN 
+		VALUE "Translation", 0x40C, 1200
     END
 END
-
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -241,34 +242,8 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 48
     END
-
-    IDD_TOOLS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 130
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 51
-    END
 END
 #endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog Info
-//
-
-IDD_TOOLS DLGINIT
-BEGIN
-    IDC_CHOOSE_INSTANCE, 0x403, 8, 0
-0x6e45, 0x6974, 0x7974, 0x0031, 
-    IDC_CHOOSE_INSTANCE, 0x403, 8, 0
-0x6e45, 0x6974, 0x7974, 0x0032, 
-    IDC_CHOOSE_INSTANCE, 0x403, 8, 0
-0x6e45, 0x6974, 0x7974, 0x0033, 
-    0
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -277,112 +252,81 @@ END
 
 STRINGTABLE PRELOAD DISCARDABLE 
 BEGIN
-    IDR_MAINFRAME           "georges\n\nGeorge\n\n\nGeorges.Document\nGeorge Document"
-END
+	IDR_MAINFRAME           "Georges\n\nGeorge\n\n\nGeorges.Document\nGeorge Document"
 
+END
 STRINGTABLE PRELOAD DISCARDABLE 
 BEGIN
-    AFX_IDS_APP_TITLE       "georges"
-    AFX_IDS_IDLEMESSAGE     "Ready"
+	AFX_IDS_APP_TITLE       "Georges"
+	AFX_IDS_IDLEMESSAGE     "Prêt"
+END
+STRINGTABLE DISCARDABLE 
+BEGIN
+	ID_INDICATOR_EXT        "EXT"
+	ID_INDICATOR_CAPS       "MAJ"
+	ID_INDICATOR_NUM        "NUM"
+	ID_INDICATOR_SCRL       "DEF"
+	ID_INDICATOR_OVR        "ECR"
+	ID_INDICATOR_REC        "ENR"
+END
+STRINGTABLE DISCARDABLE 
+BEGIN
+	ID_FILE_NEW             "Crée un nouveau document\nNouveau"
+	ID_FILE_OPEN            "Ouvre un document existant\nOuvrir"
+	ID_FILE_CLOSE           "Ferme le document actif\nFermer"
+	ID_FILE_SAVE            "Enregistre le document actif\nEnregistrer"
+	ID_FILE_SAVE_AS         "Enregistre le document actif sous un nouveau nom\nEnregistrer sous"
+	ID_APP_ABOUT            "Affiche des informations sur le programme, le numéro de version et le copyright\nA propos de"
+	ID_APP_EXIT             "Ferme l'application ; propose d'enregistrer les documents\nQuitter"
+	ID_FILE_MRU_FILE1       "Ouvre ce document"
+	ID_FILE_MRU_FILE2       "Ouvre ce document"
+	ID_FILE_MRU_FILE3       "Ouvre ce document"
+	ID_FILE_MRU_FILE4       "Ouvre ce document"
+	ID_FILE_MRU_FILE5       "Ouvre ce document"
+	ID_FILE_MRU_FILE6       "Ouvre ce document"
+	ID_FILE_MRU_FILE7       "Ouvre ce document"
+	ID_FILE_MRU_FILE8       "Ouvre ce document"
+	ID_FILE_MRU_FILE9       "Ouvre ce document"
+	ID_FILE_MRU_FILE10      "Ouvre ce document"
+	ID_FILE_MRU_FILE11      "Ouvre ce document"
+	ID_FILE_MRU_FILE12      "Ouvre ce document"
+	ID_FILE_MRU_FILE13      "Ouvre ce document"
+	ID_FILE_MRU_FILE14      "Ouvre ce document"
+	ID_FILE_MRU_FILE15      "Ouvre ce document"
+	ID_FILE_MRU_FILE16      "Ouvre ce document"
+	ID_NEXT_PANE            "Passe au volet de fenêtre suivant\nVolet suivant"
+	ID_PREV_PANE            "Revient au volet précédent\nVolet précédent"
+	ID_WINDOW_SPLIT         "Réorganise les fenêtres en une mosaïque\nMosaïque"
+	ID_EDIT_CLEAR           "Efface la sélection\nEffacer"
+	ID_EDIT_CLEAR_ALL       "Efface tout\nEffacer tout"
+	ID_EDIT_COPY            "Copie la sélection et la place dans le Presse-papiers\nCopier"
+	ID_EDIT_CUT             "Supprime la sélection et la place dans le Presse-papiers\nCouper"
+	ID_EDIT_FIND            "Recherche le texte spécifié\nRechercher"
+	ID_EDIT_PASTE           "Insère le contenu du Presse-papiers\nColler"
+	ID_EDIT_REPEAT          "Répète la dernière action\nRépéter"
+	ID_EDIT_REPLACE         "Remplace le texte spécifique par un texte différent\nRemplacer"
+	ID_EDIT_SELECT_ALL      "Sélectionne le document entier\nSélectionner tout"
+	ID_EDIT_UNDO            "Annule la dernière action\nAnnuler"
+	ID_EDIT_REDO            "Rétablit l'action précédemment annulée\nRétablir"
+	ID_VIEW_TOOLBAR         "Affiche ou masque la barre d'outils\nBarre d'outils"
+	ID_VIEW_STATUS_BAR      "Affiche ou masque la barre d'état\nBarre d'état"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_INDICATOR_EXT        "EXT"
-    ID_INDICATOR_CAPS       "CAP"
-    ID_INDICATOR_NUM        "NUM"
-    ID_INDICATOR_SCRL       "SCRL"
-    ID_INDICATOR_OVR        "OVR"
-    ID_INDICATOR_REC        "REC"
+	AFX_IDS_SCSIZE          "Change la taille de la fenêtre"
+	AFX_IDS_SCMOVE          "Change la position de la fenêtre"
+	AFX_IDS_SCMINIMIZE      "Réduit la fenêtre en icône"
+	AFX_IDS_SCMAXIMIZE      "Agrandit la fenêtre au format de l'écran"
+	AFX_IDS_SCNEXTWINDOW    "Passe à la fenêtre de document suivante"
+	AFX_IDS_SCPREVWINDOW    "Passe à la fenêtre de document précédente"
+	AFX_IDS_SCCLOSE         "Ferme la fenêtre active et propose l'enregistrement des documents"
+	AFX_IDS_SCRESTORE       "Restaure la fenêtre à sa taille d'origine"
+	AFX_IDS_SCTASKLIST      "Active la liste des tâches"
 END
 
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_FILE_NEW             "Create a new document\nNew"
-    ID_FILE_OPEN            "Open an existing document\nOpen"
-    ID_FILE_CLOSE           "Close the active document\nClose"
-    ID_FILE_SAVE            "Save the active document\nSave"
-    ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
-END
 
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
-    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_FILE_MRU_FILE1       "Open this document"
-    ID_FILE_MRU_FILE2       "Open this document"
-    ID_FILE_MRU_FILE3       "Open this document"
-    ID_FILE_MRU_FILE4       "Open this document"
-    ID_FILE_MRU_FILE5       "Open this document"
-    ID_FILE_MRU_FILE6       "Open this document"
-    ID_FILE_MRU_FILE7       "Open this document"
-    ID_FILE_MRU_FILE8       "Open this document"
-    ID_FILE_MRU_FILE9       "Open this document"
-    ID_FILE_MRU_FILE10      "Open this document"
-    ID_FILE_MRU_FILE11      "Open this document"
-    ID_FILE_MRU_FILE12      "Open this document"
-    ID_FILE_MRU_FILE13      "Open this document"
-    ID_FILE_MRU_FILE14      "Open this document"
-    ID_FILE_MRU_FILE15      "Open this document"
-    ID_FILE_MRU_FILE16      "Open this document"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
-    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_EDIT_CLEAR           "Erase the selection\nErase"
-    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
-    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
-    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
-    ID_EDIT_FIND            "Find the specified text\nFind"
-    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
-    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
-    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
-    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
-    ID_EDIT_UNDO            "Undo the last action\nUndo"
-    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
-    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    AFX_IDS_SCSIZE          "Change the window size"
-    AFX_IDS_SCMOVE          "Change the window position"
-    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
-    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
-    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
-    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
-    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    AFX_IDS_SCRESTORE       "Restore the window to normal size"
-    AFX_IDS_SCTASKLIST      "Activate Task List"
-END
-
-#endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
+#endif
 
 
 #ifndef APSTUDIO_INVOKED
@@ -390,20 +334,20 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
+
 #define _AFX_NO_SPLITTER_RESOURCES
 #define _AFX_NO_OLE_RESOURCES
 #define _AFX_NO_TRACKER_RESOURCES
 #define _AFX_NO_PROPERTY_RESOURCES
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
 #ifdef _WIN32
-LANGUAGE 9, 1
+LANGUAGE 12, 1
 #pragma code_page(1252)
 #endif //_WIN32
-#include "res\georges.rc2"  // non-Microsoft Visual C++ edited resources
-#include "afxres.rc"         // Standard components
+#include "res\\Georges.rc2"  // non-Microsoft Visual C++ edited resources
+#include "l.fra\\afxres.rc"  	// Standard components
+#include "l.fra\\afxdb.rc"		// Database resources
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-

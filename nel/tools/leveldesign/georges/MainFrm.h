@@ -2,8 +2,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_MAINFRM_H__9A8DCE6B_CA03_40D2_B0B0_A4558B2B535E__INCLUDED_)
-#define AFX_MAINFRM_H__9A8DCE6B_CA03_40D2_B0B0_A4558B2B535E__INCLUDED_
+#if !defined(AFX_MAINFRM_H__1F5663E0_587A_45C3_9BA0_659E20993634__INCLUDED_)
+#define AFX_MAINFRM_H__1F5663E0_587A_45C3_9BA0_659E20993634__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
@@ -11,20 +11,21 @@
 
 class CMainFrame : public CFrameWnd
 {
-	
-protected: // create from serialization only
+protected: // create from serialization only	
 	DECLARE_DYNCREATE(CMainFrame)
+	
+public:
+	CMainFrame();
+
 
 // Attributes
 public:
-	bool	Exit;
-	int		CreateX, CreateY, CreateCX, CreateCY;
-
-
 // Operations
-public:
 
-	CMainFrame();
+public:
+	
+	int CreateX, CreateY, CreateCX, CreateCY;
+	bool Exit;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -60,4 +61,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_MAINFRM_H__9A8DCE6B_CA03_40D2_B0B0_A4558B2B535E__INCLUDED_)
+#endif // !defined(AFX_MAINFRM_H__1F5663E0_587A_45C3_9BA0_659E20993634__INCLUDED_)

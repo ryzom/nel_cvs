@@ -1,31 +1,24 @@
-// georgesView.h : interface of the CGeorgesView class
+// GeorgesView.h : interface of the CGeorgesView class
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_GEORGESVIEW_H__D3FDCE92_15B3_4874_8A5F_CABD8546FCF2__INCLUDED_)
-#define AFX_GEORGESVIEW_H__D3FDCE92_15B3_4874_8A5F_CABD8546FCF2__INCLUDED_
+#if !defined(AFX_GEORGESVIEW_H__CFA2DDEB_C5A3_40B6_BC45_B36EEECCEA65__INCLUDED_)
+#define AFX_GEORGESVIEW_H__CFA2DDEB_C5A3_40B6_BC45_B36EEECCEA65__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
-class CPropertyList;
-class CPropertyItem;
+#include "ListViewEx.h"
 
-class CGeorgesView : public CFormView
+class CGeorgesView : public CListViewEx
 {
-	CPropertyList	*_List;
-
-	CPropertyItem	*pPipo1;
-	CPropertyItem	*pPipo2;
-	CPropertyItem	*pPipo3;
-	CPropertyItem	*pPipo4;
-	CPropertyItem	*pPipo5;
-	//CListBox*_List;
-
 protected: // create from serialization only
 	CGeorgesView();
 	DECLARE_DYNCREATE(CGeorgesView)
+
+	void GetDispInfo( LVITEM* const );
+	virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
 
 // Attributes
 public:
@@ -38,9 +31,11 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CGeorgesView)
 	public:
-	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual BOOL OnChildNotify(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pLResult);
+	virtual void OnInitialUpdate();
 	protected:
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -52,19 +47,19 @@ public:
 #endif
 
 protected:
+	unsigned int xSubItem;
+	unsigned int ySubItem;
 
 // Generated message map functions
 protected:
 	//{{AFX_MSG(CGeorgesView)
-		// NOTE - the ClassWizard will add and remove member functions here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
-	afx_msg int OnCreate (LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnSize (UINT nType, int cx, int cy);
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
 
-#ifndef _DEBUG  // debug version in georgesView.cpp
+#ifndef _DEBUG  // debug version in GeorgesView.cpp
 inline CGeorgesDoc* CGeorgesView::GetDocument()
    { return (CGeorgesDoc*)m_pDocument; }
 #endif
@@ -74,4 +69,4 @@ inline CGeorgesDoc* CGeorgesView::GetDocument()
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_GEORGESVIEW_H__D3FDCE92_15B3_4874_8A5F_CABD8546FCF2__INCLUDED_)
+#endif // !defined(AFX_GEORGESVIEW_H__CFA2DDEB_C5A3_40B6_BC45_B36EEECCEA65__INCLUDED_)

@@ -1,12 +1,18 @@
-// georges.cpp : Defines the class behaviors for the application.
+// Georges.cpp : Defines the class behaviors for the application.
 //
 
 #include "stdafx.h"
-#include "georges.h"
+#include "Georges.h"
 
 #include "MainFrm.h"
-#include "georgesDoc.h"
-#include "georgesView.h"
+#include "GeorgesDoc.h"
+#include "GeorgesView.h"
+
+#include "../georges_lib/formbodyelt.h"
+#include "../georges_lib/formbodyeltatom.h"
+#include "../georges_lib/formbodyeltlist.h"
+#include "../georges_lib/formbodyeltstruct.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,51 +41,69 @@ CGeorgesApp::CGeorgesApp()
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
-	_Initialized = false;
-	_DocTemplate = NULL;
+	_MultiDocTemplate = NULL;
+
+	NLMISC_REGISTER_CLASS( CFormBodyElt );
+	NLMISC_REGISTER_CLASS( CFormBodyEltAtom );
+	NLMISC_REGISTER_CLASS( CFormBodyEltList );
+	NLMISC_REGISTER_CLASS( CFormBodyEltStruct );
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// The one and only CGeorgesApp object
 
 /////////////////////////////////////////////////////////////////////////////
 // CGeorgesApp initialization
 
 BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 {
-	AfxEnableControlContainer();
-
-	if (!_Initialized)
+	// Standard initialization
+	// If you are not using these features and wish to reduce the size
+	//  of your final executable, you should remove from the following
+	//  the specific initialization routines you do not need.
+/*
+#ifdef _AFXDLL
+	Enable3dControls();			// Call this when using MFC in a shared DLL
+#else
+	Enable3dControlsStatic();	// Call this when linking to MFC statically
+#endif
+*/
+	if (_MultiDocTemplate == NULL)
 	{
-		_Initialized = true;
-		LoadStdProfileSettings();  // Load standard INI file options (including MRU)
+		// Change the registry key under which our settings are stored.
+		// TODO: You should modify this string to be something appropriate
+		// such as the name of your company or organization.
+		SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+
+		LoadStdProfileSettings(16);  // Load standard INI file options (including MRU)
 
 		// Register the application's document templates.  Document templates
 		//  serve as the connection between documents, frame windows and views.
 
-		
-		_DocTemplate = new CSingleDocTemplate(
+		_MultiDocTemplate = new CMultiDocTemplate(
 			IDR_MAINFRAME,
 			RUNTIME_CLASS(CGeorgesDoc),
 			RUNTIME_CLASS(CMainFrame),       // main SDI frame window
 			RUNTIME_CLASS(CGeorgesView));
-		AddDocTemplate(_DocTemplate);
+		AddDocTemplate(_MultiDocTemplate);
 	}
 
-	CMainFrame* pMainFrame = new CMainFrame;
-	pMainFrame->CreateX = x;
-	pMainFrame->CreateY = y;
-	pMainFrame->CreateCX = cx;
-	pMainFrame->CreateCY = cy;
-	CCreateContext context;
-	context.m_pCurrentDoc = _DocTemplate->CreateNewDocument();
-	context.m_pCurrentFrame = NULL;
-	context.m_pLastView = NULL;
-	context.m_pNewDocTemplate = _DocTemplate;
-	context.m_pNewViewClass = RUNTIME_CLASS(CGeorgesView);
+	m_pMainWnd = new CMainFrame();
+	((CMainFrame*)m_pMainWnd)->CreateX = x;
+	((CMainFrame*)m_pMainWnd)->CreateY = y;
+	((CMainFrame*)m_pMainWnd)->CreateCX = cx;
+	((CMainFrame*)m_pMainWnd)->CreateCY = cy;
+	((CMainFrame*)m_pMainWnd)->LoadFrame (IDR_MAINFRAME);
 
-	if (!pMainFrame->LoadFrame(IDR_MAINFRAME, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
-								NULL, &context))
+/*
+	// Parse command line for standard shell commands, DDE, file open
+	CCommandLineInfo cmdInfo;
+	ParseCommandLine(cmdInfo);
+
+	// Dispatch commands specified on the command line
+	if (!ProcessShellCommand(cmdInfo))
 		return FALSE;
-	m_pMainWnd = pMainFrame;
-
+*/
 	// The one and only window has been initialized, so show and update it.
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();

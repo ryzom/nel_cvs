@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.28 2002/06/06 13:12:50 lecroart Exp $
+ * $Id: config_file.h,v 1.29 2002/06/12 10:04:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,6 +197,9 @@ public:
 
 	/// Get a variable with the variable name
 	CVar &getVar (const std::string &varName);
+
+	/// Get a variable pointer with the variable name, without throwing exception. Return NULL if not found.
+	CVar *getVarPtr (const std::string &varName);
 
 	/// load and parse the file
 	void load (const std::string &fileName);

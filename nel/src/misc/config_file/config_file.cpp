@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.33 2002/06/06 13:13:32 lecroart Exp $
+ * $Id: config_file.cpp,v 1.34 2002/06/12 10:04:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -231,9 +231,10 @@ void CConfigFile::load (const string &fileName)
 	reparse ();
 
 	// If we find a linked config file, load it but don't overload already existant variable
-	try
+	CVar *var = getVarPtr ("RootConfigFilename");
+	if (var)
 	{
-		string RootConfigFilename = getVar ("RootConfigFilename").asString();
+		string RootConfigFilename = var->asString();
 		nlinfo ("RootConfigFilename variable found in the '%s' config file, parse it (%s)", fileName.c_str(), RootConfigFilename.c_str());
 
 		string path = CFile::getPath(fileName);
@@ -244,10 +245,6 @@ void CConfigFile::load (const string &fileName)
 		path += RootConfigFilename;
 
 		reparse (path.c_str());
-	}
-	catch (EConfigFile &)
-	{
-		// variable not found, not important
 	}
 
 //	print ();
@@ -315,6 +312,20 @@ CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
 		}
 	}
 	throw EUnknownVar (_FileName, varName);
+}
+
+
+CConfigFile::CVar *CConfigFile::getVarPtr (const std::string &varName)
+{
+	for (int i = 0; i < (int)_Vars.size(); i++)
+	{
+		// the type could be T_UNKNOWN if we add a callback on this name but this var is not in the config file
+		if (_Vars[i].Name == varName && (_Vars[i].Type != CVar::T_UNKNOWN || _Vars[i].Comp))
+		{
+			return &(_Vars[i]);
+		}
+	}
+	return NULL;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file track_tcb.h
  * ITrack TCB implementation
  *
- * $Id: track_tcb.h,v 1.4 2001/03/29 09:47:56 corvazier Exp $
+ * $Id: track_tcb.h,v 1.5 2001/03/29 10:19:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -412,7 +412,7 @@ public:
 			date = ease(previous, date);
 
 			// quad slerp.
-			_Value.Value= CQuat::squadrev(next->Value, previous->Quat, previous->A, next->B, next->Quat, date);
+			_Value.Value= CQuat::squadrev(next->LocalAngleAxis, previous->Quat, previous->A, next->B, next->Quat, date);
 		}
 		else
 		{
@@ -442,24 +442,29 @@ public:
 		{
 			CKeyTCBQuat		&key= it->second;
 
+			// Compute Local AngleAxis.
 			if(it!= _MapKey.begin())
 			{
 				NLMISC::CMatrix		mat;
 				mat.setRot(itPrev->second.Quat);
 				mat.invert();
-				key.Value.Axis= mat*key.Value.Axis;
+				key.LocalAngleAxis.Axis= mat*key.Value.Axis;
+				key.LocalAngleAxis.Angle= key.Value.Angle;
 			}
+			else
+				key.LocalAngleAxis= key.Value;
 
-			key.Value.Axis.normalize();
+
+			key.LocalAngleAxis.Axis.normalize();
 			// make angle positive.
-			if(key.Value.Angle<0.f)
+			if(key.LocalAngleAxis.Angle<0.f)
 			{
-				key.Value.Axis= -key.Value.Axis;
-				key.Value.Angle= -key.Value.Angle;
+				key.LocalAngleAxis.Axis= -key.LocalAngleAxis.Axis;
+				key.LocalAngleAxis.Angle= -key.LocalAngleAxis.Angle;
 			}
 
 			// relative quat
-			key.Quat.setAngleAxis(key.Value);
+			key.Quat.setAngleAxis(key.LocalAngleAxis);
 
 			// absolute quat
 			if (it!= _MapKey.begin())
@@ -519,8 +524,8 @@ private:
 		// compute qm.
 		if (!firstKey || isLoop)
 		{
-			float	angle= key.Value.Angle;
-			CVector	&axis= key.Value.Axis;
+			float	angle= key.LocalAngleAxis.Angle;
+			CVector	&axis= key.LocalAngleAxis.Axis;
 
 			if (angle > 2*NLMISC::Pi- NLMISC::QuatEpsilon)
 			{
@@ -538,8 +543,8 @@ private:
 		// compute qp.
 		if (!endKey || isLoop)
 		{
-			float	angle= keyAfter.Value.Angle;
-			CVector	&axis= keyAfter.Value.Axis;
+			float	angle= keyAfter.LocalAngleAxis.Angle;
+			CVector	&axis= keyAfter.LocalAngleAxis.Axis;
 
 			if (angle > 2*NLMISC::Pi- NLMISC::QuatEpsilon)
 			{

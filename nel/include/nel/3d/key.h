@@ -1,7 +1,7 @@
 /** \file key.h
  * class CKey
  *
- * $Id: key.h,v 1.7 2001/03/29 09:47:56 corvazier Exp $
+ * $Id: key.h,v 1.8 2001/03/29 10:19:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -178,6 +178,7 @@ public:
 /**
  * Implementation of CKeyTCB for rotation.
  * WARNING!!! the value (an angleaxis!!) is a rotation relative to the preceding key!!  (unlike CKeyBezier)
+ * WARNING!!! the axis of the value (an angleaxis) is relative to World Space!!, not relative to preceding key basis. (like in 3DS Max).
  *
  * \author Lionel berenguier
  * \author Nevrax France
@@ -212,6 +213,8 @@ public:
 // *********************
 public:
 	// PRIVATE. used by ITrackKeyFramer, not serialised (compiled).
+	// Local AngleAxis to the preceding Key (axis is in local basis, unlike "Value" where the axis is in World space ).
+	NLMISC::CAngleAxis	LocalAngleAxis;
 	// computed quaternions/tangents.
 	NLMISC::CQuat		Quat, A, B;
 	// computed ease parameters, with next key.

@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.21 2002/07/11 09:26:57 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.22 2002/08/01 16:45:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -262,11 +262,13 @@ private:
 	friend	class CTransformClipObs;
 
 
+public:
 	/// tells if the skeleton has been clipped in the clip traversal.
 	bool	isClipVisible() const
 	{
 		return _ClipObs->Visible;
 	}
+private:
 
 	/// skins/sticked objects
 	typedef	std::set<CTransform*>		TTransformSet;

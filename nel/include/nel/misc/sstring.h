@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.3 2003/11/14 09:27:27 distrib Exp $
+ * $Id: sstring.h,v 1.4 2004/01/13 18:32:11 cado Exp $
  */
 
 
@@ -494,6 +494,8 @@ public:
 	/// Find index at which a sub-string starts (case not sensitive) - if sub-string not found then returns string::npos
 	unsigned find(const char *toFind,unsigned startLocation=0) const
 	{
+		const char *constStr = c_str();
+
 		// just bypass the problems that can cause a crash...
 		if (toFind==NULL || *toFind==0 || startLocation>size())
 			return std::string::npos;
@@ -502,9 +504,9 @@ public:
 		for (i=startLocation;i<size();++i)
 		{
 			// string compare toFind against (*this)+i ...
-			for (j=0;toFind[j] && i+j<size();++j)
+			for (j=0;toFind[j];++j)
 			{
-				if (tolower((*this)[i+j])!=tolower(toFind[j]))
+				if (tolower(constStr[i+j])!=tolower(toFind[j]))
 					break;
 			}
 			// if strings were identical then we're done

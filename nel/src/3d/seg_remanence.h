@@ -1,6 +1,6 @@
 /** \file seg_remanence.h
  * A segment that let a remanence on the screen (for sword trace)
- * $Id: seg_remanence.h,v 1.9 2005/02/22 10:19:12 besson Exp $
+ * $Id: seg_remanence.h,v 1.10 2005/03/15 18:05:44 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -68,9 +68,9 @@ public:
 	/// to instanciate that model from a scene
 	static CTransform		*creator() { return new CSegRemanence; }	
 	// Render this model with currently setupped material and matrix
-	void					render(IDriver *drv, CVertexBuffer &vb, CIndexBuffer &pb, CMaterial &mat);
+	void					render(IDriver *drv, CMaterial &mat);
 	// sample current position
-	void					samplePos(float date);
+	void					samplePos(double date);
 	/** Setup from the shape (no effect if geometry described in the shape didn't change)	  
 	  */ 
 	void					setupFromShape();
@@ -133,31 +133,24 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 private:	
-	struct CSampledPos
+	class CSample
 	{
-		CSampledPos(const NLMISC::CVector &pos = NLMISC::CVector::Null, float date = 0.f) : Pos(pos), SamplingDate(date)
-		{
-		}
-		NLMISC::CVector Pos;
-		float			SamplingDate;		
-	};
-	class CRibbon
-	{
-		public:
-			CRibbon();
-			void setNumSlices(uint numSlices);
-			void samplePos(const NLMISC::CVector &pos, float date, float sliceDuration);
-			void fillVB(uint8 *dest, uint stride, uint nbSegs, float sliceTime);
-			void duplicateFirstPos();
-		private:
-			typedef std::deque<CSampledPos> TSampledPosVect;
-			TSampledPosVect	_Ribbon;
-			float			_LastSamplingDate;
+	public:
+		double				 Date;
+		std::vector<CVector> Pos;          // sampled pos for each shape corner at the given date
+		void swap(CSample &other) { std::swap(Date, other.Date); Pos.swap(other.Pos);}
 	};	
-	typedef std::vector<CRibbon> TRibbonVect;
-private:	
-	TRibbonVect			_Ribbons; // sampled positions at each extremities of segment
-	uint				_NumSlice;
+	CSample					 _Samples[4];    // 4 last sampled positions for all vertices	
+	uint					 _HeadSample;    // current sample for the head
+	float					 _HeadProgress;  // progression of head in current sample (in [0, 1])
+	//
+	typedef std::vector<CVector> TPosVect;  // positions for each shape vertex at regular dates
+	                                       // positions are ordered per date, then per shape
+
+	
+private:		
+	TPosVect			_Pos;
+	uint				_NumSlices;
 	uint				_NumCorners;
 	bool				_Started;
 	bool				_Stopping; // true if the effect is unrolling
@@ -168,6 +161,9 @@ private:
 	float				_SliceTime;
 	CAnimatedMaterial   *_AniMat;	
 	uint64				_LastSampleFrame;
+	//
+	static CVertexBuffer _VB;
+	static CIndexBuffer  _IB;
 
 private:
 	void		updateOpacityFromShape();

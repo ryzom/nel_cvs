@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.18 2005/02/22 10:19:11 besson Exp $
+ * $Id: seg_remanence.cpp,v 1.19 2005/03/15 18:05:44 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -42,6 +42,11 @@
 namespace NL3D
 {
 
+
+CVertexBuffer CSegRemanence::_VB;
+CIndexBuffer CSegRemanence::_IB;
+
+
 /// TODO : put this in a header (same code in ps_ribbon_base.cpp ..)
 static inline void BuildHermiteVector(const NLMISC::CVector &P0,
 							   const NLMISC::CVector &P1,
@@ -65,9 +70,24 @@ static inline void BuildHermiteVector(const NLMISC::CVector &P0,
 }
 
 
+/// for test
+static inline void BuildLinearVector(const NLMISC::CVector &P0,
+									 const NLMISC::CVector &P1,							   
+									 NLMISC::CVector &dest,									 
+									 float lambda,
+									 float oneMinusLambda
+							        )
+{
+	NL_PS_FUNC(BuildLinearVector)
+	dest.set (lambda * P1.x + oneMinusLambda * P0.x,
+			  lambda * P1.y + oneMinusLambda * P0.y,
+			  lambda * P1.z + oneMinusLambda * P0.z);			  		
+}
+
+
 
 //===============================================================
-CSegRemanence::CSegRemanence() : _NumSlice(0),
+CSegRemanence::CSegRemanence() : _NumSlices(0),
 								 _Started(false),
 								 _Stopping(false),
 								 _Restarted(false),
@@ -122,16 +142,21 @@ void CSegRemanence::copyFromOther(CSegRemanence &other)
 														  : NULL;
 	delete _AniMat;
 	_AniMat = otherMat;
-
-	_Ribbons	= other._Ribbons; // sampled positions at each extremities of segment
-	_NumSlice	= other._NumSlice;
-	_NumCorners = other._NumCorners;
-	_Started    = other._Started;
-	_Restarted  = other._Restarted;
-	_Stopping   = other._Stopping;
-	_StartDate  = other._StartDate;
-	_CurrDate   = other._CurrDate;
-	
+	std::copy(other._Samples, other._Samples + 4, _Samples);
+	_HeadSample   = other._HeadSample;
+	_HeadProgress = other._HeadProgress;
+	//
+	_Pos	         = other._Pos; // sampled positions at each extremities of segment
+	_NumSlices	     = other._NumSlices;
+	_NumCorners      = other._NumCorners;
+	_Started         = other._Started;
+	_Stopping        = other._Stopping;
+	_Restarted       = other._Restarted;	
+	_StartDate       = other._StartDate;
+	_CurrDate        = other._CurrDate;
+	_UnrollRatio     = other._UnrollRatio;
+	_SliceTime       = other._SliceTime;
+	_LastSampleFrame = other._LastSampleFrame;	
 }
 
 //===============================================================
@@ -142,53 +167,104 @@ void CSegRemanence::registerBasic()
 
 
 
+// helper functions to fill vb
+static inline void vbPush(uint8 *&dest, const CVector &v)
+{	
+	*(CVector *) dest = v;
+	dest +=sizeof(CVector);	
+}
+
+static inline void vbPush(uint8 *&dest, float f)
+{	
+	*(float *) dest = f;
+	dest +=sizeof(float);	
+}
+
 //===============================================================
-void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CIndexBuffer &pb, CMaterial &mat)
-{
-	CSegRemanenceShape *srs = NLMISC::safe_cast<CSegRemanenceShape *>((IShape *) Shape);		
-	const uint vertexSize = vb.getVertexSize();
-	{
+void CSegRemanence::render(IDriver *drv, CMaterial &mat)
+{	
+	nlassert(_NumSlices >= 2);
+	nlassert(_NumCorners >= 2);
+	CSegRemanenceShape *srs = NLMISC::safe_cast<CSegRemanenceShape *>((IShape *) Shape);
+	// resize before locking because of volatile vb
+	_VB.setPreferredMemory(CVertexBuffer::AGPVolatile, false);
+	_VB.setVertexFormat(CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag);
+	_VB.setNumVertices(_NumCorners * (_NumSlices + 1));
+	const uint vertexSize = _VB.getVertexSize();
+	// Fill Vertex Buffer part
+	{		
 		CVertexBufferReadWrite vba;
-		vb.lock (vba);
-		uint8 *datas = (uint8 *) vba.getVertexCoordPointer();
-		uint numCorners = _Ribbons.size();
-		uint k;		
-		for(k = 0; k < numCorners; ++k)
+		_VB.lock (vba);
+		uint8 *datas = (uint8 *) vba.getVertexCoordPointer();		
+		const uint8 *endDatas = datas + vertexSize *_VB.getNumVertices();
+		//
+		const CVector *src = &_Pos[0];
+
+		float deltaV = 1.f / (_NumCorners - 1);
+		// first slice		
+		for(uint k = 0; k < _NumCorners; ++k)
 		{
-			_Ribbons[k].fillVB(datas, vertexSize, srs->getNumSlices(), _SliceTime);
-			datas += (_NumSlice + 1) * vertexSize;
+			vbPush(datas, *src++);
+			vbPush(datas, 0.f);  // U
+			vbPush(datas, k * deltaV);  // V
+			nlassert(datas <= endDatas); 
 		}
-//#define DEBUG_SEG_REMANENCE_DISPLAY 
-#ifdef DEBUG_SEG_REMANENCE_DISPLAY		
-		drv->setupModelMatrix(CMatrix::Identity);
-		if (!numCorners) return;
-		/*
-		for(k = 0; k < numCorners - 1; ++k)
+
+		float deltaU = 1.f / _NumSlices;		
+		float baseU = _HeadProgress * deltaU;
+
+		for (uint l = 1; l < _NumSlices; ++l)
 		{
-			_Ribbons[k].fillVB(datas, vertexSize, srs->getNumSlices(), _SliceTime);
-			datas += (_NumSlice + 1) * vertexSize;
-			CDRU::drawLine(srs->getCorner(k), srs->getCorner(k + 1), CRGBA::White, *drv);
-		}
-		*/
-		CVertexBufferReadWrite bfrw;
-		vb.lock(bfrw);
-		datas = (uint8 *) bfrw.getVertexCoordPointer();
-		for(uint k = 0; k < _NumSlice - 1; ++k)
-		{
-			for(uint l = 0; l < _NumCorners - 1; ++l)
+			float currU  = baseU + (l - 1) * deltaU;
+			for(uint k = 0; k < _NumCorners; ++k)
 			{
-				const NLMISC::CVector &v0 = *(const NLMISC::CVector *) (datas + vertexSize * (k + l * (_NumSlice + 1)));
-				const NLMISC::CVector &v1 = *(const NLMISC::CVector *) (datas + vertexSize * (k + 1 + l * (_NumSlice + 1)));
-				const NLMISC::CVector &v2 = *(const NLMISC::CVector *) (datas + vertexSize * (k + 1 + (l + 1) * (_NumSlice + 1)));
-				const NLMISC::CVector &v3 = *(const NLMISC::CVector *) (datas + vertexSize * (k + 1 + (l + 1) * (_NumSlice + 1)));
-				CDRU::drawLine(v0, v1, CRGBA::White, *drv);
-				CDRU::drawLine(v0, v3, CRGBA::White, *drv);
-				CDRU::drawLine(v0, v2, CRGBA::White, *drv);
+				vbPush(datas, *src++);
+				vbPush(datas, currU);       // U
+				vbPush(datas, k * deltaV);  // V
+				nlassert(datas <= endDatas); 
 			}
-		}		
-#endif
+		}	
+		// last slice
+		const CVector *prevRow = src - _NumCorners;
+		for(uint k = 0; k < _NumCorners; ++k)
+		{
+			vbPush(datas, (1.f - _HeadProgress) * *src + _HeadProgress * *prevRow);
+			++ src;
+			++ prevRow;
+			vbPush(datas, 1.f);         // U
+			vbPush(datas, k * deltaV);  // V
+			nlassert(datas <= endDatas); 
+		}
 	}
-	
+	//
+	uint numQuads = (_NumCorners - 1) * _NumSlices;
+	// Fill Index Buffer part
+	{		
+		_IB.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
+		_IB.setFormat(CIndexBuffer::Indices16);
+		_IB.setNumIndexes(numQuads * 6);
+		//
+		CIndexBufferReadWrite iba;
+		_IB.lock(iba);
+		uint16 *indexPtr = (uint16 *) iba.getPtr();
+		
+		for (uint l = 0; l < _NumSlices; ++l)
+		{		
+			for(uint k = 0; k < (_NumCorners - 1); ++k)
+			{				
+				*indexPtr++ = l * _NumCorners + k;
+				*indexPtr++ = l * _NumCorners + k + 1;
+				*indexPtr++ = (l + 1) * _NumCorners + k;
+				//
+				*indexPtr++ = l * _NumCorners + k + 1;
+				*indexPtr++ = (l + 1) * _NumCorners + k + 1;
+				*indexPtr++ = (l + 1) * _NumCorners + k;				
+			}
+		}
+		nlassert(indexPtr == (uint16 *) iba.getPtr() + _IB.getNumIndexes());
+
+	}
+			
 	// roll / unroll using texture matrix
 	CMatrix texMat;	
 	texMat.setPos(NLMISC::CVector(1.f - _UnrollRatio, 0, 0));
@@ -197,9 +273,20 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CIndexBuffer &pb, CM
 		mat.setUserTexMat(0, texMat);		
 	drv->setupModelMatrix(CMatrix::Identity);
 	
-	drv->activeVertexBuffer(vb);	
-	drv->activeIndexBuffer(pb);
-	drv->renderTriangles(mat, 0, pb.getNumIndexes()/3);
+	drv->activeVertexBuffer(_VB);	
+	drv->activeIndexBuffer(_IB);
+	drv->renderTriangles(mat, 0, numQuads * 2);
+
+	// draw wire frame version if needed
+	#ifdef DEBUG_SEG_REMANENCE_DISPLAY	
+		static CMaterial unlitWF;
+		unlitWF.initUnlit();
+		unlitWF.setDoubleSided(true);
+		IDriver::TPolygonMode oldPM = drv->getPolygonMode();
+		drv->setPolygonMode(IDriver::Line);
+		drv->renderTriangles(unlitWF, 0, numQuads * 2);
+		drv->setPolygonMode(oldPM);		
+	#endif
 
 	CScene *scene = getOwnerScene();
 	// change unroll ratio
@@ -220,172 +307,151 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CIndexBuffer &pb, CM
 }
 
 //===============================================================
-CSegRemanence::CRibbon::CRibbon() : _LastSamplingDate(0)
-{
-}
-
-//===============================================================
-void CSegRemanence::CRibbon::fillVB(uint8 *dest, uint stride, uint nbSegs, float sliceTime)
-{		
-	TSampledPosVect::iterator currIt      = _Ribbon.begin();			
-
-	NLMISC::CVector t0 = (currIt + 1)->Pos - currIt->Pos;
-	NLMISC::CVector t1 = 0.5f * ((currIt + 2)->Pos - currIt->Pos);
-
-	uint leftToDo = nbSegs + 1;
-
-	float lambda = 0.f;
-	float lambdaStep = 1.f;
-
-/*	nlinfo("===============================");
-	for(uint k = 0; k < _Ribbon.size(); ++k)
-	{
-		nlinfo("pos = (%.2f, %.2f, %.2f)", _Ribbon[k].Pos.x, _Ribbon[k].Pos.y, _Ribbon[k].Pos.z);
-	}*/
-
-	for (;;)
-	{		
-		float dt = currIt->SamplingDate - (currIt + 1)->SamplingDate;
-
-		if (dt < 10E-6f) // we reached the start of ribbon
-		{
-
-			do
-			{
-				(NLMISC::CVector &) *dest = currIt->Pos;
-				dest  += stride;
-			}
-			while (--leftToDo);			
-			return;
-		}
-
-		float newLambdaStep = sliceTime / dt;
-		// readapt lambda
-		lambda *= newLambdaStep / lambdaStep;
-		lambdaStep = newLambdaStep;
-		for(;;)
-		{
-			if (lambda >= 1.f) break;
-			/// compute a location
-			BuildHermiteVector(currIt->Pos, (currIt + 1)->Pos, t0, t1, (NLMISC::CVector &) *dest, lambda);
-			dest  += stride;
-			-- leftToDo;
-			if (!leftToDo) return;												
-			lambda += lambdaStep;			
-		}
-		
-		lambda -= 1.f;
-
-		// Start new segment and compute new tangents
-		t0 = t1;
-		++currIt;		
-		t1 = 0.5f * ((currIt + 2)->Pos - currIt->Pos);
-	}	 
-}
-
-//===============================================================
-void CSegRemanence::CRibbon::duplicateFirstPos()
-{
-	uint ribSize = _Ribbon.size();
-	for(uint k = 1; k < ribSize; ++k)
-	{
-		_Ribbon[k] = _Ribbon[0];
-	}
-}
-
-//===============================================================
 void CSegRemanence::setupFromShape()
 {
 	CSegRemanenceShape *srs = NLMISC::safe_cast<CSegRemanenceShape *>((IShape *) Shape);		
-	if (srs->getNumCorners() != _NumCorners || srs->getNumSlices() != _NumSlice)
+	if (srs->getNumCorners() != _NumCorners || srs->getNumSlices() != _NumSlices)
 	{
-		_Ribbons.resize(srs->getNumCorners());
-		for(uint k = 0; k < _Ribbons.size(); ++k)
-		{
-			_Ribbons[k].setNumSlices(srs->getNumSlices());
-		}		
 		_NumCorners = srs->getNumCorners();
-		_NumSlice  = srs->getNumSlices();
+		_NumSlices  = srs->getNumSlices();
+		_Pos.resize(_NumCorners * (_NumSlices + 1));
+		for(uint k = 0; k < 4; ++k)
+		{
+			_Samples[k].Pos.resize(_NumSlices + 1);
+		}				
 	}
 	updateOpacityFromShape();
 }
 
-
 //===============================================================
-void CSegRemanence::CRibbon::setNumSlices(uint numSegs)
-{	
-	_Ribbon.resize(numSegs + 3);
-}
-
-//===============================================================
-void CSegRemanence::CRibbon::samplePos(const NLMISC::CVector &pos, float date, float sliceDuration)
+void CSegRemanence::samplePos(double date)
 {
-	nlassert(_Ribbon.size() != 0);
-	if (date - _LastSamplingDate > sliceDuration)
+	uint  newHeadSample = (uint) floor(date / _SliceTime);
+	double sliceElapsedTime = date - (newHeadSample * _SliceTime);
+	_HeadProgress = (float) (sliceElapsedTime / _SliceTime);
+	NLMISC::clamp(_HeadProgress, 0.f, 1.f);		
+	uint offset = newHeadSample - _HeadSample; // number of samples to remove
+	if(!_Restarted)
 	{
-		_Ribbon.pop_back();
-		CSampledPos sp(pos, date);
-		_Ribbon.push_front(sp);
-		_LastSamplingDate = date;
-	}
-	else
-	{
-		_Ribbon.front().Pos = pos;
-		_Ribbon.front().SamplingDate = date;
-	}
-}
-
-//===============================================================
-void CSegRemanence::samplePos(float date)
-{
-	if (_Started)
-	{	
-		CSegRemanenceShape *srs = NLMISC::safe_cast<CSegRemanenceShape *>((IShape *) Shape);
-		uint numCorners = _Ribbons.size();
-		for(uint k = 0; k < numCorners; ++k)
-		{		
-			_Ribbons[k].samplePos(getWorldMatrix() * srs->getCorner(k), date, _SliceTime);
-		}
-		if (_Restarted)
+		if (offset > 0)
 		{
-			for(uint k = 0; k < numCorners; ++k)
-			{
-				_Ribbons[k].duplicateFirstPos();
+			offset = std::min(offset, (uint) _NumSlices);
+			_Samples[0].swap(_Samples[1]);
+			_Samples[1].swap(_Samples[2]);
+			_Samples[2].swap(_Samples[3]);		
+			if (offset < _NumSlices + 1)
+			{					
+				// make room for new position
+				memmove(&_Pos[_NumCorners * offset], &_Pos[0], sizeof(_Pos[0]) * _NumCorners * (_NumSlices + 1 - offset));
 			}
-			_Restarted = false;
-			_StartDate = date;
+			// else, too much time ellapsed, are sampled pos are invalidated			
+			_HeadSample = newHeadSample;
 		}
-		_CurrDate = date;
 	}
-}
-
-//===============================================================
-/*
-void CSegRemanence::traverseHrc()
-{
-	CTransformShape::traverseHrc ();
-	if (isStarted())
-	{	
-		CScene *scene = getOwnerScene();
-		if (scene->getNumRender() != (_LastSampleFrame + 1))
+	_Samples[3].Date = date;
+	//
+	CSegRemanenceShape *srs = NLMISC::safe_cast<CSegRemanenceShape *>((IShape *) Shape);
+	// update positions for sample head
+	for(uint k = 0; k <_NumCorners;++k)
+	{
+		_Samples[3].Pos[k] = getWorldMatrix() * srs->getCorner(k);
+	}
+	if (_Restarted)
+	{
+		_HeadSample = newHeadSample;
+		_Samples[0] = _Samples[1] = _Samples[2] = _Samples[3];
+		CVector *head = &_Pos[0];		
+		for(uint l = 0; l < _NumSlices + 1; ++l)
+		{		
+			for(uint k = 0; k < _NumCorners;++k)
+			{
+				*head++ = _Samples[0].Pos[k];
+			}
+		}
+		_Restarted = false;
+		return;
+	}
+	// update head pos
+	CVector *head = &_Pos[0];
+	CVector *endPtr = head + _NumCorners * (_NumSlices + 1);
+	for(uint k = 0; k < _NumCorners;++k)
+	{
+		*head++ = _Samples[3].Pos[k];
+	}
+	// update current positions from sample pos
+    double currDate = _Samples[3].Date - sliceElapsedTime;		
+	// interpolate linearly for 2 firstsamples
+	while (currDate > _Samples[2].Date && head != endPtr)
+	{
+		double dt = _Samples[3].Date - _Samples[2].Date;			
+		float lambda = (float) (dt != 0 ? (currDate - _Samples[2].Date) / dt : 0);		
+		for(uint k = 0; k < _NumCorners;++k)
 		{
-			if (!isStopping())
-			{			
-				// if wasn't visible at previous frame, must invalidate position
-				restart();
+			*head++ = lambda * (_Samples[3].Pos[k] - _Samples[2].Pos[k]) + _Samples[2].Pos[k];
+		}
+		currDate -= _SliceTime;		
+	}
+	if (head != endPtr)
+	{
+		// interpolate smoothly for remaining samples		
+		while (currDate >= _Samples[1].Date)
+		{
+			double dt = _Samples[2].Date - _Samples[1].Date;
+			if (dt == 0)
+			{
+				for(uint k = 0; k < _NumCorners;++k)
+				{
+					*head++ = _Samples[2].Pos[k];					
+				}
 			}
 			else
 			{
-				// ribbon started unrolling when it disapperaed from screen so simply remove it
-				stopNoUnroll();
+				double lambda = (currDate - _Samples[1].Date) / dt;
+				CVector T0, T1;
+				for(uint k = 0; k < _NumCorners;++k)
+				{
+					if (_Samples[2].Date != _Samples[0].Date)
+					{
+						T0 = (float) dt * (_Samples[2].Pos[k] - _Samples[0].Pos[k]) / (float) (_Samples[2].Date - _Samples[0].Date);
+					}
+					else
+					{
+						T0= NLMISC::CVector::Null;
+					}					
+					if (_Samples[3].Date != _Samples[1].Date)
+					{
+						T1 = (float) dt * (_Samples[3].Pos[k] - _Samples[1].Pos[k]) / (float) (_Samples[3].Date - _Samples[1].Date);
+					}
+					else
+					{
+						T1= NLMISC::CVector::Null;
+					}
+					BuildHermiteVector(_Samples[1].Pos[k], _Samples[2].Pos[k], T0, T1, *head, (float) lambda);	
+					++ head;
+				}
 			}
-		}		
-		_LastSampleFrame = scene->getNumRender();
-		setupFromShape();
-		samplePos((float) scene->getCurrentTime());
+			if (head == endPtr) break;
+			currDate -= _SliceTime;
+		}
+		/*		
+			// Version with no time correction
+			while (currDate >= _Samples[1].Date)
+			{
+				float lambda = (float) ((currDate - _Samples[1].Date) / (_Samples[2].Date - _Samples[1].Date));
+				for(uint k = 0; k < _NumCorners;++k)
+				{								
+					CVector T1 = 0.5f * (_Samples[3].Pos[k] - _Samples[1].Pos[k]);
+					CVector T0 = 0.5f * (_Samples[2].Pos[k] - _Samples[0].Pos[k]);
+					BuildHermiteVector(_Samples[1].Pos[k], _Samples[2].Pos[k], T0, T1, *head, lambda);				
+					++ head;
+				}
+				if (head == endPtr) break;
+				currDate -= _SliceTime;
+			}
+		*/
 	}
 }
-*/
+
 
 //===============================================================
 void CSegRemanence::start()
@@ -494,7 +560,7 @@ void CSegRemanence::traverseAnimDetail()
 		}		
 		_LastSampleFrame = scene->getNumRender();
 		setupFromShape();
-		samplePos((float) scene->getCurrentTime());
+		samplePos(scene->getCurrentTime());
 
 		/////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////

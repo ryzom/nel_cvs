@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.h
  *
- * $Id: seg_remanence_shape.h,v 1.9 2005/02/22 10:19:12 besson Exp $
+ * $Id: seg_remanence_shape.h,v 1.10 2005/03/15 18:05:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -174,8 +174,6 @@ private:
 	TCornerVect					_Corners;	// start of segment	
 	//
 	CMaterial					_Mat;
-	CVertexBuffer				_VB;
-	CIndexBuffer				_PB;
 	/// For clipping.
 	NLMISC::CAABBoxExt			_BBox;
 	CMaterialBase				*_AnimatedMat;
@@ -184,7 +182,6 @@ private:
 	CTrackDefaultQuat			_DefaultRotQuat;
 	CTrackDefaultVector			_DefaultScale;	
 private:	
-	void	setupVBnPB();
 	void    setupMaterial();
 	void	copyFromOther(const CSegRemanenceShape &other);
 };

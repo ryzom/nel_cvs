@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.17 2005/02/22 10:19:12 besson Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.18 2005/03/15 18:05:44 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -49,7 +49,6 @@ CSegRemanenceShape::CSegRemanenceShape() : _GeomTouched(true),
 	_BBox.setCenter(NLMISC::CVector::Null);
 	_BBox.setHalfSize(NLMISC::CVector(3, 3, 3));
 	setNumCorners(2);
-	NL_SET_IB_NAME(_PB, "CSegRemanenceShape");
 }
 
 //===========================================================
@@ -133,10 +132,9 @@ void CSegRemanenceShape::render(IDriver *drv, CTransformShape *trans, bool opaqu
 		#ifndef DEBUG_SEG_REMANENCE_DISPLAY
 		if (!sr->isStarted()) return;	
 		#endif
-		setupVBnPB();
 		setupMaterial();		
 		//		
-		sr->render(drv, _VB, _PB, _Mat);		
+		sr->render(drv, _Mat);		
 	}
 }
 
@@ -181,45 +179,6 @@ float CSegRemanenceShape::getNumTriangles(float distance)
 
 
 //===========================================================
-void CSegRemanenceShape::setupVBnPB()
-{
-	if (!_GeomTouched) return;
-
-	uint numCorners = _Corners.size();
-	_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
-	_VB.setNumVertices(numCorners * (_NumSlices + 1));
-	uint k, l;
-
-	CVertexBufferReadWrite vba;
-	_VB.lock (vba);
-	
-	// set tex coords
-	for(l = 0; l < numCorners; ++l)
-	{		
-		for(k = 0; k <= _NumSlices; ++k)
-		{
-		
-			vba.setTexCoord((_NumSlices + 1) * l + k, 0, (float) k / _NumSlices, (float) l / (numCorners - 1));
-		}
-	}
-	// create primitive block
-	_PB.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
-	_PB.setNumIndexes(3 * 2 * (numCorners - 1) * _NumSlices);
-	CIndexBufferReadWrite ibaWrite;
-	_PB.lock (ibaWrite);
-	//
-	for(l = 0; l < numCorners - 1; ++l)
-	{
-		for(k = 0; k < _NumSlices; ++k)
-		{
-			ibaWrite.setTri(3 * 2 * (l * _NumSlices + k), (_NumSlices + 1) * l + k,  (_NumSlices + 1) * (l + 1) + k + 1, (_NumSlices + 1) * (l + 1) + k);
-			ibaWrite.setTri(3 * (2 * (l * _NumSlices + k) + 1), (_NumSlices + 1) * l + k, (_NumSlices + 1) * l + k + 1, (_NumSlices + 1) * (l + 1) + k + 1);
-		}
-	}
-	_GeomTouched = false;	
-}
-
-//===========================================================
 void CSegRemanenceShape::setBBox(const NLMISC::CAABBox &bbox)
 {
 	_BBox = bbox;
@@ -251,7 +210,11 @@ void CSegRemanenceShape::setupMaterial()
 {
 	if (!_MatTouched) return;	
 	_Mat.enableUserTexMat(0);
-	if (_Mat.getTexture(0)) _Mat.getTexture(0)->setWrapS(ITexture::Clamp);	
+	if (_Mat.getTexture(0))
+	{
+		_Mat.getTexture(0)->setWrapS(ITexture::Clamp);
+		_Mat.getTexture(0)->setWrapT(ITexture::Clamp);
+	}
 	_Mat.setDoubleSided(true);
 	_Mat.setLighting(false); // lighting not supported (the vb has no normals anyway..)
 	_MatTouched = false;
@@ -307,8 +270,6 @@ void CSegRemanenceShape::copyFromOther(const CSegRemanenceShape &other)
 	_SliceTime       = other._SliceTime;
 	_Corners		 = other._Corners;	
 	_Mat             = other._Mat;
-	_VB              = other._VB;
-	_PB              = other._PB;
 	_BBox			 = other._BBox;	
 	_RollUpRatio     = other._RollUpRatio;	
 }

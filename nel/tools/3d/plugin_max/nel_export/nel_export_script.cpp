@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.4 2001/06/11 09:21:53 besson Exp $
+ * $Id: nel_export_script.cpp,v 1.5 2001/06/12 12:30:58 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #define EXPORT_GET_ALLOCATOR
 
 #include "nel/misc/debug.h"
+#include "nel/misc/file.h"
 
 using namespace NLMISC;
 
@@ -42,6 +43,8 @@ def_visible_primitive ( export_shape,	"NelExportShape");
 def_visible_primitive ( export_ig,		"NelExportInstanceGroup");
 def_visible_primitive ( view_shape,		"NelViewShape");
 
+char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
+
 Value* export_shape_cf (Value** arg_list, int count)
 {
 	// Make sure we have the correct number of arguments (2)
@@ -49,8 +52,8 @@ Value* export_shape_cf (Value** arg_list, int count)
 
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
-	type_check (arg_list[0], MAXNode, "NeLExportShape [Object] [Filename.shape]");
-	type_check (arg_list[1], String, "NeLExportShape [Object] [Filename.shape]");
+	type_check (arg_list[0], MAXNode, sExportShapeErrorMsg);
+	type_check (arg_list[1], String, sExportShapeErrorMsg);
 
 	// Get a INode pointer from the argument passed to us
 	INode *node = arg_list[0]->to_node();
@@ -65,10 +68,28 @@ Value* export_shape_cf (Value** arg_list, int count)
 	// Ok ?
 	Boolean *ret=&false_value;
 
+	// For the moment load the default config file.
+	CExportNelOptions opt;
+	char sConfigFileName[512];
+	strcpy( sConfigFileName, ip->GetDir(APP_PLUGCFG_DIR) );
+	strcat( sConfigFileName, "\\NelExportScene.cfg" );
+	if( CNelExport::FileExists(sConfigFileName) )
+	{
+		// Serial the configuration
+		try {
+			CIFile inputFile;
+			if( inputFile.open(sConfigFileName) )
+			{
+				opt.serial( inputFile );
+			}
+		}
+		catch(...)
+		{
+		}
+	}
+	
 	// Export
-//	CExportNel::deleteLM( *node );
-	// TODO
-	CExportNelOptions opt; // TODO !!!
+	CExportNel::deleteLM( *node, opt );
 	if (CNelExport::exportMesh (sPath, *node, *ip, ip->GetTime(), opt))
 		ret = &true_value;
 
@@ -130,8 +151,25 @@ Value* view_shape_cf (Value** arg_list, int count)
 	Interface *ip = MAXScript_interface;
 
 	// View
-	CExportNelOptions opt; // TODO !!!
-
+	// For the moment load the default options for lightmap
+	CExportNelOptions opt;
+	char sConfigFileName[512];
+	strcpy( sConfigFileName, ip->GetDir(APP_PLUGCFG_DIR) );
+	strcat( sConfigFileName, "\\NelExportScene.cfg" );
+	if( CNelExport::FileExists(sConfigFileName) )
+	{
+		// Serial the configuration
+		try {
+			CIFile inputFile;
+			if( inputFile.open(sConfigFileName) )
+			{
+				opt.serial( inputFile );
+			}
+		}
+		catch(...)
+		{
+		}
+	}
 	CNelExport::viewMesh (*ip, ip->GetTime(), opt);
 
 	return &true_value;

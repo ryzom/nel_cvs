@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.3 2001/06/11 09:21:53 besson Exp $
+ * $Id: nel_export.h,v 1.4 2001/06/12 12:30:58 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,7 @@ public:
 	ULONG SelectFileForLoad(HWND Parent, char* Title, const char* Mask, char* FileName);
 	ULONG SelectFileForSave(HWND Parent, char* Title, const char* Mask, char* FileName);
 	ULONG SelectDir(HWND Parent, char* Title, char* Path);
-	ULONG FileExists(const char* FileName);
+	static ULONG FileExists(const char* FileName);
 	ULONG GetFileSize(char* FileName);
 	ULONG ProcessDir(char* Dir, const char* Mask, unsigned long flag, ULONG Fnct(char* FileName) );
 	ULONG CleanFileName(char* FileName);

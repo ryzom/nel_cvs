@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.4 2000/11/10 15:19:37 coutelas Exp $
+ * $Id: bitmap.cpp,v 1.5 2000/11/13 14:36:37 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,7 @@ uint8 CBitmap::load(NLMISC::IStream &f)
 	nlassert(f.isReading()); 
 	
 	// testing if DDS
-	uint32 fileType;
+	uint32 fileType = 0;;
 	f.serial(fileType);
 	if(fileType == DDS)
 	{
@@ -174,7 +174,7 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f)
 
 	//-------------- reading entire header
 	
-	uint32 size;
+	uint32 size = 0;
 	f.serial(size); // size in Bytes of header(without "DDS")
 	 uint32 * _DDSSurfaceDesc = new uint32[size]; 
 	 std::auto_ptr<uint32> _DDSSurfaceDescAuto(_DDSSurfaceDesc);

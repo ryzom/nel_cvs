@@ -1,7 +1,7 @@
 /** \file primitive_configuration.cpp
  * Ligo primitive configuration description.
  *
- * $Id: primitive_configuration.cpp,v 1.1 2003/11/07 15:50:20 corvazier Exp $
+ * $Id: primitive_configuration.cpp,v 1.2 2003/11/12 10:27:27 distrib Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -74,7 +74,7 @@ bool CPrimitiveConfigurations::read (xmlNodePtr configurationNode, const char *f
 					}
 					else
 					{
-						config.syntaxError (filename, match, "Missing match name in configuration (%s)", name);
+						config.syntaxError (filename, match, "Missing match name in configuration (%s)", name.c_str());
 						return false;
 					}
 

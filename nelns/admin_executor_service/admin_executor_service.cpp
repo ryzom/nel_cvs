@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.61 2004/04/30 15:29:14 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.62 2004/04/30 16:05:15 lecroart Exp $
  *
  */
 
@@ -1613,12 +1613,22 @@ NLMISC_COMMAND (aesSystem, "Execute a system() call", "<command>")
 		cmd += args[i]+" ";
 	}
 	
-	string fn = CFile::findNewFile("aessystem.tmp");
+	string path;
+#ifdef NL_OS_UNIX
+	path = "/tmp/";
+#endif
+
+	string fn = path+CFile::findNewFile("aessys.tmp");
+	string fne = path+CFile::findNewFile("aessyse.tmp");
 	
-	cmd += ">" + fn;
+	cmd += " >" + fn + " 2>" + fne;
+	
+	log.displayNL("Executing: '%s' in directory '%s'", cmd.c_str(), CPath::getCurrentPath().c_str());
+
 	system (cmd.c_str());
 	
 	char str[1024];
+
 	FILE *fp = fopen (fn.c_str(), "rt");
 	if (fp != NULL)
 	{
@@ -1632,8 +1642,31 @@ NLMISC_COMMAND (aesSystem, "Execute a system() call", "<command>")
 		
 		fclose (fp);
 	}
+	else
+	{
+		log.displayNL("No stdout");
+	}
 	
+	fp = fopen (fne.c_str(), "rt");
+	if (fp != NULL)
+	{
+		while (true)
+		{
+			char *res = fgets (str, 1023, fp);
+			if (res == NULL)
+				break;
+			log.displayRaw(res);
+		}
+		
+		fclose (fp);
+	}
+	else
+	{
+		log.displayNL("No stderr");
+	}
+
 	CFile::deleteFile(fn);
+	CFile::deleteFile(fne);
 
 	return true;
 }

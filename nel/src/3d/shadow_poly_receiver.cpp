@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * <File description>
  *
- * $Id: shadow_poly_receiver.cpp,v 1.5 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.6 2004/04/27 11:57:43 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -34,7 +34,6 @@
 
 using	namespace std;
 using	namespace NLMISC;
-
 
 namespace NL3D {
 
@@ -134,6 +133,9 @@ void			CShadowPolyReceiver::removeTriangle(uint id)
 uint			CShadowPolyReceiver::allocateVertex(const CVector &v)
 {
 	uint	id;
+
+	// if not valid double, will crash cause map<float,...> crash when float are not valid
+	nlassert(isValidDouble(v.x) && isValidDouble(v.y) && isValidDouble(v.z));
 
 	// Look for a free vertex entry.
 	if(_FreeVertices.empty())

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.6 2000/11/08 09:55:10 viau Exp $
+ * $Id: driver_opengl.cpp,v 1.7 2000/11/08 15:52:08 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,6 +227,7 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 	glEnable(GL_LINE_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_TEXTURE_2D);
 	glDepthFunc(GL_LEQUAL);
 	return(true);
 }
@@ -305,9 +306,15 @@ bool CDriverGL::setupTexture(CTexture& tex)
 
 bool CDriverGL::activateTexture(uint stage, CTexture& tex)
 {
+	ITextureDrvInfos*	iinfos;
+	CTextureDrvInfosGL*	cinfos;
+
 	if (this->_CurrentTexture[stage]!=&tex)
 	{
-		glBindTexture(GL_TEXTURE_2D,((CTextureDrvInfosGL*)(ITextureDrvInfos*)tex.DrvInfos)->ID);
+//		glBindTexture(GL_TEXTURE_2D,((CTextureDrvInfosGL*)(ITextureDrvInfos*)tex.DrvInfos)->ID);
+		iinfos=(ITextureDrvInfos*)tex.DrvInfos;
+		cinfos=(CTextureDrvInfosGL*)iinfos;
+		glBindTexture(GL_TEXTURE_2D,cinfos->ID);
 	}
 	this->_CurrentTexture[stage]=&tex;
 	return(true);
@@ -372,13 +379,6 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 	{
 		return(false);
 	}
-	if ( ! activateTexture(0,Mat.getTexture(0)) )
-	{
-		return(false);
-	}
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glDisable(GL_TEXTURE_2D);
 	glDrawElements(GL_TRIANGLES,3*PB.getNumTri(),GL_UNSIGNED_INT,PB.getTriPointer());
 	return(true);
 }

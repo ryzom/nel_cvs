@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.10 2000/11/08 09:50:47 viau Exp $
+ * $Id: driver.h,v 1.11 2000/11/08 15:51:54 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,8 +24,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_IDRV_H
-#define NL_IDRV_H
+#ifndef NL_DRV_H
+#define NL_DRV_H
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
@@ -105,14 +105,14 @@ const uint32 IDRV_TOUCHED_TEX1		=	0x00000800;
 const uint32 IDRV_TOUCHED_TEX2		=	0x00001000;
 const uint32 IDRV_TOUCHED_TEX3		=	0x00002000;
 
-const uint32	IDRV_MAT_HIDE		= 0x00000001;
-const uint32	IDRV_MAT_TSP		= 0x00000002;
-const uint32	IDRV_MAT_ZWRITE		= 0x00000004;
-const uint32	IDRV_MAT_ZLIST		= 0x00000008;
-const uint32	IDRV_MAT_LIGHTING	= 0x00000010;
-const uint32	IDRV_MAT_SPECULAR	= 0x00000020;
-const uint32	IDRV_MAT_DEFMAT		= 0x00000040;
-const uint32	IDRV_MAT_BLEND		= 0x00000080;
+const uint32 IDRV_MAT_HIDE			=	0x00000001;
+const uint32 IDRV_MAT_TSP			=	0x00000002;
+const uint32 IDRV_MAT_ZWRITE		=	0x00000004;
+const uint32 IDRV_MAT_ZLIST			=	0x00000008;
+const uint32 IDRV_MAT_LIGHTING		=	0x00000010;
+const uint32 IDRV_MAT_SPECULAR		=	0x00000020;
+const uint32 IDRV_MAT_DEFMAT		=	0x00000040;
+const uint32 IDRV_MAT_BLEND			=	0x00000080;
 
 class CMaterial : public CRefCount
 {
@@ -143,131 +143,43 @@ public:
 
 
 public:
-	CMaterial() {_Touched= 0;}
+							CMaterial() {_Touched= 0;}
 
 	uint32					getTouched(void) { return(_Touched); }
-
 	void					clearTouched(uint32 flag) { _Touched&=~flag; }
 
-	bool					texturePresent(uint8 n)
-	{
-		if (pTex[n])
-		{
-			return(true);
-		}
-		return(false);
-	}
+	bool					texturePresent(uint8 n);
+	CTexture&				getTexture(uint8 n) { return(*pTex[n]); }
+	void 					setTexture(CTexture* ptex, uint8 n=0);
 
-	CTexture&				getTexture(uint8 n)
-	{
-		return(*pTex[n]);
-	}
+	void					setShader(TShader val);
 
-	void 					setTexture(CTexture* ptex, uint8 n=0)
-	{
-		pTex[n]=ptex;
-		switch(n)
-		{
-		case 0:
-			_Touched|=IDRV_TOUCHED_TEX0;
-		case 1:
-			_Touched|=IDRV_TOUCHED_TEX1;
-		case 2:
-			_Touched|=IDRV_TOUCHED_TEX2;
-		case 3:
-			_Touched|=IDRV_TOUCHED_TEX3;
-		default:
-			break;
-		}
-	}
-
-	void					setShader(TShader val)
-	{
-		_ShaderType=val;
-		_Touched|=IDRV_TOUCHED_SHADER;
-	}
-
-	void					setOpacity(float val)
-	{
-		_Opacity=val;
-		_Touched|=IDRV_TOUCHED_OPACITY;
-	}
+	void					setOpacity(float val);
 
 	TBlend					getSrcBlend(void) { return(_SrcBlend); }
-	void					setSrcBlend(TBlend val)
-	{
-		_SrcBlend=val;
-		_Touched|=IDRV_TOUCHED_SRCBLEND;
-	}
+	void					setSrcBlend(TBlend val);
 
 	TBlend					getDstBlend(void) { return(_DstBlend); }
-	void					setDstBlend(TBlend val)
-	{
-		_DstBlend=val;
-		_Touched|=IDRV_TOUCHED_DSTBLEND;
-	}
+	void					setDstBlend(TBlend val);
 
 	ZFunc					getZFunc(void) { return(_ZFunction); }		
-	void					setZFunction(ZFunc val)
-	{
-		_ZFunction=val;
-		_Touched|=IDRV_TOUCHED_ZFUNC;
-	}
+	void					setZFunction(ZFunc val);
 
 	float					getZBias(void) { return(_ZBias); }
-	void					setZBias(float val)
-	{
-		_ZBias=val;
-		_Touched|=IDRV_TOUCHED_ZBIAS;
-	}
+	void					setZBias(float val);
 
 	CRGBA					getColor(void) { return(_Color); }
-	void					setColor(CRGBA& rgba)
-	{
-		_Color=rgba;
-		_Touched|=IDRV_TOUCHED_COLOR;
-	}
+	void					setColor(CRGBA& rgba);
 
-	void					setBlend(bool active)
-	{
-		if (active)	_Flags|=IDRV_MAT_BLEND;
-		else		_Flags&=~IDRV_MAT_BLEND;
-	}
+	void					setBlend(bool active);
 
 	void					setLighting(	bool active, bool DefMat=true,
 											CRGBA& emissive=CRGBA(0,0,0), 
 											CRGBA& ambient=CRGBA(0,0,0), 
 											CRGBA& diffuse=CRGBA(0,0,0), 
-											CRGBA& specular=CRGBA(0,0,0) )
-	{
-		if (active)
-		{
-			_Flags|=IDRV_MAT_LIGHTING;
-			if (DefMat)
-			{
-				_Flags|=IDRV_MAT_DEFMAT;
-			}
-			else
-			{
-				_Flags&=~IDRV_MAT_DEFMAT;
-			}
-		}
-		else
-		{
-			_Flags&=~IDRV_MAT_LIGHTING;
-		}
-		_Emissive=emissive;
-		_Ambient=ambient;
-		_Diffuse=diffuse;
-		_Specular=specular;
-		_Touched|=IDRV_TOUCHED_LIGHTING;
-	}
+											CRGBA& specular=CRGBA(0,0,0) );
 
-	void					setAlpha(float val)
-	{
-		_Alpha=val;
-		_Touched|=IDRV_TOUCHED_ALPHA;
-	}
+	void					setAlpha(float val);
 
 	/** Init the material as unlit. normal shader, no lighting ....
 	 * Default to: normal shader, no lighting, color to White(1,1,1,1), no texture, ZBias=0, ZFunc= lessequal, no blend.
@@ -350,19 +262,19 @@ public:
 class CPrimitiveBlock
 {
 private:
-	uint16				_TriIdx;
-	std::vector<uint32>	_Tri;
-	uint16				_StripIdx;
-	uint16*				_Strip;
-	uint16				_FanIdx;
-	uint16*				_Fan;
+	uint16					_TriIdx;
+	std::vector<uint32>		_Tri;
+	uint16					_StripIdx;
+	uint16*					_Strip;
+	uint16					_FanIdx;
+	uint16*					_Fan;
 public:
-						CPrimitiveBlock(void) {};
-						~CPrimitiveBlock(void) {}; 
-	bool				setNumTri(uint16 n);
-	bool				addTri(uint16 idx1, uint16 idx2, uint16 idx3);
-	uint16				getNumTri(void);
-	void*				getTriPointer(void);
+							CPrimitiveBlock(void) {};
+							~CPrimitiveBlock(void) {}; 
+	bool					setNumTri(uint16 n);
+	bool					addTri(uint16 idx1, uint16 idx2, uint16 idx3);
+	uint16					getNumTri(void);
+	void*					getTriPointer(void);
 };
 
 // --------------------------------------------------
@@ -370,19 +282,19 @@ public:
 class GfxMode 
 {
 public:
-	bool			Windowed;
-	uint16			Width;
-	uint16			Height;
-	uint8			Depth;
+	bool				Windowed;
+	uint16				Width;
+	uint16				Height;
+	uint8				Depth;
 
-					GfxMode(void) 
-					{ 
-						Windowed=false;
-						Width=0;
-						Height=0;
-						Depth=0;
-					}
-					GfxMode(uint16 w, uint16 h, uint8 d, bool windowed= true);
+						GfxMode(void) 
+						{ 
+							Windowed=false;
+							Width=0;
+							Height=0;
+							Depth=0;
+						}
+						GfxMode(uint16 w, uint16 h, uint8 d, bool windowed= true);
 };
 
 typedef std::vector<GfxMode> ModeList;
@@ -391,8 +303,6 @@ typedef std::vector<GfxMode> ModeList;
 
 class IDriver
 {
-friend class ITextureDrvInfos;
-
 private:
 	static IDriver*							_Current;
 
@@ -439,7 +349,7 @@ public:
 //	virtual bool			activateMaterial(CMaterial& mat)=0;
 
 	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
-	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective= true)=0;
+	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective=true)=0;
 
 	virtual void			setupViewMatrix(const CMatrix& mtx)=0;
 
@@ -454,13 +364,13 @@ public:
 	virtual bool			swapBuffers(void)=0;
 
 	virtual bool			release(void)=0;
-
-
 };
 
 // --------------------------------------------------
 
 }
 
-#endif // NL_IDRV_H
+#include "nel/3d/driver_material_inline.h"
+
+#endif // NL_DRV_H
 

@@ -2,7 +2,7 @@
  * 
  * 
  *
- * $Id: driver_material_inline.h,v 1.1 2000/11/08 15:08:50 viau Exp $
+ * $Id: driver_material_inline.h,v 1.2 2000/11/08 15:51:54 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #ifndef NL_DRIVER_MATERIAL_INLINE_H
 #define NL_DRIVER_MATERIAL_INLINE_H
 
-namespace	NL3D
+namespace NL3D
 {
 
 // --------------------------------------------------

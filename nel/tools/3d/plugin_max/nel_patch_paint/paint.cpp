@@ -503,7 +503,7 @@ void transformDesc (tileDesc &desc, bool symmetry, uint rotate, uint mesh, uint 
 		// Get the state of the layer 0
 		bool goofy = false;
 		uint tileRotation = desc.getLayer (0).Rotate;
-		if (symmetry || rotate)
+		if (symmetry)
 		{
 			if (bank.getTileSet (tileSet)->getOriented ())
 			{
@@ -543,7 +543,7 @@ void transformDesc (tileDesc &desc, bool symmetry, uint rotate, uint mesh, uint 
 
 		// Get the state of the
 		bool goofy = false;
-		if (symmetry || rotate)
+		if (symmetry)
 		{
 			if (bank.getTileSet (tileSet)->getOriented ())
 			{

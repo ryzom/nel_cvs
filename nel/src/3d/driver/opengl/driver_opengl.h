@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.97 2001/10/31 10:13:36 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.98 2001/11/07 10:50:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -517,7 +517,7 @@ public:
 
 	virtual bool isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) const;
 
-	virtual void setMatrix2DForTextureOffsetAddrMode(const float mat[4]);
+	virtual void setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4]);
 	// @}
 
 

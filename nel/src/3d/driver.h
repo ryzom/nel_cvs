@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.22 2001/10/31 10:11:26 berenguier Exp $
+ * $Id: driver.h,v 1.23 2001/11/07 10:49:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -707,7 +707,7 @@ public:
 		  * [a0 a1]
 		  * [a2 a3]
 		  */
-		virtual void setMatrix2DForTextureOffsetAddrMode(const float mat[4]) = 0;		  	
+		virtual void setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4]) = 0;		  	
 	//@}
 
 protected:

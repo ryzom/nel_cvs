@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.125 2001/10/26 08:27:31 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.126 2001/11/07 10:50:25 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1529,9 +1529,11 @@ bool CDriverGL::isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) c
 }
 
 // ***************************************************************************
-void CDriverGL::setMatrix2DForTextureOffsetAddrMode(const float mat[4])
+void CDriverGL::setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4])
 {
 	nlassert(supportTextureShaders());
+	nlassert(stage < (uint) getNbTextureStages() )
+	_DriverGLStates.activeTextureARB(stage);
 	glTexEnvfv(GL_TEXTURE_SHADER_NV, GL_OFFSET_TEXTURE_MATRIX_NV, mat);
 }
 

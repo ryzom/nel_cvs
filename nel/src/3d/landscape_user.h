@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.3 2001/08/22 16:40:53 berenguier Exp $
+ * $Id: landscape_user.h,v 1.4 2001/08/24 16:32:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,6 +123,16 @@ public:
 	// @{
 	/// Return the name of the zone around a particular position (in NL3D basis!).
 	virtual	std::string	getZoneName(const CVector &pos);
+
+	virtual	void		show()
+	{
+		_Landscape->show();
+	}
+	virtual	void		hide()
+	{
+		_Landscape->hide();
+	}
+
 	// @}
 
 

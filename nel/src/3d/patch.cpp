@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.60 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: patch.cpp,v 1.61 2001/08/24 16:32:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2109,20 +2109,6 @@ void		CPatch::computeTileLightmapPixelAutomatic(uint ts, uint tt, uint s, uint t
 	clamp(ic, 0, 255);
 
 	// ambiant/diffuse lighting.
-
-// ***************************************************************************
-// TempYoyo.
-static	CRGBA	dummyGetColor(uint ts, uint tt)
-{
-	CRGBA	col;
-	ts&=1;
-	tt&=1;
-	if(ts==0 && tt==0) col.set(128,128,128);
-	if(ts==1 && tt==1) col.R= 255;
-	if(ts==1 && tt==0) col.G= 255;
-	if(ts==0 && tt==1) col.B= 255;
-	return col;
-}
 	*dest= getLandscape()->getStaticLight()[ic];
 }
 

@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.3 2001/08/22 16:40:53 berenguier Exp $
+ * $Id: u_landscape.h,v 1.4 2001/08/24 16:32:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,6 +121,12 @@ public:
 	// @{
 	/// Return the name of the zone around a particular position (in NL3D basis!).
 	virtual	std::string	getZoneName(const CVector &pos) =0;
+
+	/// show the landscape. visible by default.
+	virtual	void		show() =0;
+	/// hide the landscape. It is nor refined, nor rendered (=> take 0 CPU time).
+	virtual	void		hide() =0;
+
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.62 2002/03/21 15:21:13 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.63 2002/04/12 16:28:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,8 @@
 #include <3d/animation_playlist.h>
 #include <3d/track_keyframer.h>
 #include <3d/font_generator.h>
+#include <3d/register_3d.h>
+
 
 
 
@@ -195,6 +197,8 @@ CObjectViewer::CObjectViewer ()
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	
 	init3d ();
+
+	registerSerial3d();
 
 	_SlotDlg=NULL;
 	_AnimationSetDlg=NULL;
@@ -345,10 +349,28 @@ CObjectViewer::CObjectViewer ()
 		}
 
 
-
 		// Load vegetable Landscape cfg.
 		loadVegetableLandscapeCfg(cf);
 
+		// load automatic animations
+		try
+		{
+			CConfigFile::CVar &var = cf.getVar("automatic_animation_path");
+			std::auto_ptr<CAnimationSet> as(new CAnimationSet);
+			//
+			bool loadingOk = as->loadFromFiles(var.asString(),true ,"anim",true);	
+			//
+			if (!loadingOk)
+			{
+				::MessageBox(NULL, "Warning : Unable to load all automatic animation", "Error", MB_OK | MB_ICONEXCLAMATION);
+			}
+			CNELU::Scene.setAutomaticAnimationSet(as.release());
+		}
+		catch (EUnknownVar &)
+		{
+			::MessageBox(NULL, "No automatic animation path specified, please set 'automatic_animation_path'", "warning", MB_OK);
+			nlwarning("No automatic animation path specified");
+		}
 
 	}
 	catch (Exception& e)
@@ -1184,8 +1206,18 @@ void CObjectViewer::reinitChannels ()
 		// Setup animation set
 		_ListInstance[i]->ChannelMixer.setAnimationSet (&(_ListInstance[i]->AnimationSet));
 
-		// Register the transform
-		_ListInstance[i]->TransformShape->registerToChannelMixer (&(_ListInstance[i]->ChannelMixer), "");
+		// Register the transform (but not if it has automatic animation, as a channel mixer has been created for us)
+		bool autoAnim = false;
+		if (dynamic_cast<CMeshBaseInstance *>(_ListInstance[i]->TransformShape))
+		{
+			CMeshBase *mb = NLMISC::safe_cast<CMeshBase *>( (IShape *) static_cast<CMeshBaseInstance *>(_ListInstance[i]->TransformShape)->Shape );
+			autoAnim = mb->getAutoAnim();
+		}
+
+		if (!autoAnim)
+		{
+			_ListInstance[i]->TransformShape->registerToChannelMixer (&(_ListInstance[i]->ChannelMixer), "");
+		}
 	}
 
 	// Enable / disable channels

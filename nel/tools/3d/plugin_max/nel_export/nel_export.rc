@@ -325,11 +325,15 @@ BEGIN
     CONTROL         "Don't export the shape. If checked, no shape file will be exported from this object.",
                     IDC_DONT_EXPORT,"Button",BS_AUTO3STATE | WS_TABSTOP,5,85,
                     271,10
-    GROUPBOX        "Collision",IDC_STATIC,5,100,170,45
+    GROUPBOX        "Collision",IDC_STATIC,5,141,170,45
     CONTROL         "Collision Mesh",IDC_CHECK_COLLISION,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,10,110,110,10
+                    BS_AUTO3STATE | WS_TABSTOP,10,151,110,10
     CONTROL         "Collision Mesh Exterior",IDC_CHECK_COLLISION_EXTERIOR,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,10,126,110,10
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,10,167,110,10
+    CONTROL         "Allow automatic animation.",IDC_AUTOMATIC_ANIM,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,100,96,9
+    LTEXT           "If the shape is ""obj.shape"", then it will bind ""obj.anim"" automatically.",
+                    IDC_STATIC,17,110,88,24
 END
 
 
@@ -457,7 +461,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,114
+ FILEVERSION 1, 0, 0, 115
  PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -475,7 +479,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "TECH: \0"
             VALUE "CompanyName", "\0"
-            VALUE "FileVersion", "1, 0, 0, 114\0"
+            VALUE "FileVersion", "1, 0, 0, 115\0"
             VALUE "InternalName", "CNelExport\0"
             VALUE "LegalCopyright", "\0"
             VALUE "LegalTrademarks", "\0"

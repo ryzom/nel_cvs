@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.31 2002/04/04 14:47:57 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.32 2002/04/12 16:33:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -179,6 +179,8 @@ public:
 	int						VegetableBendCenter;
 	std::string				VegetableBendFactor;
 
+	// automatic animation
+	int						AutomaticAnimation;
 
 	// Collision
 	int						Collision;
@@ -727,6 +729,8 @@ int CALLBACK InstanceDialogCallback (
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), currentParam->InstanceName.c_str());
 
 			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_SETCHECK, currentParam->DontAddToScene, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_AUTOMATIC_ANIM), BM_SETCHECK, currentParam->AutomaticAnimation, 0);
+
 
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), currentParam->InstanceGroupName.c_str());
 
@@ -759,6 +763,7 @@ int CALLBACK InstanceDialogCallback (
 							currentParam->InstanceName=tmp;
 							
 							currentParam->DontAddToScene=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_GETCHECK, 0, 0);
+							currentParam->AutomaticAnimation=SendMessage (GetDlgItem (hwndDlg, IDC_AUTOMATIC_ANIM), BM_GETCHECK, 0, 0);
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), tmp, 512);
 							currentParam->InstanceGroupName=tmp;
 							currentParam->DontExport=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), BM_GETCHECK, 0, 0);
@@ -2212,6 +2217,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.InstanceShape=CExportNel::getScriptAppData (node, NEL_OBJET_NAME_DATA, "");
 		param.InstanceName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "");
 		param.DontAddToScene=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, BST_UNCHECKED);
+		param.AutomaticAnimation=CExportNel::getScriptAppData (node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, BST_UNCHECKED);
 		param.InstanceGroupName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "");
 		param.DontExport=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED);
 		param.ExportNoteTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED);
@@ -2329,6 +2335,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.InstanceName = "";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, BST_UNCHECKED)!=param.DontAddToScene)
 				param.DontAddToScene = BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, BST_UNCHECKED)!=param.AutomaticAnimation)
+				param.AutomaticAnimation = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "")!=param.InstanceGroupName)
 				param.InstanceGroupName = "";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED)!=param.DontExport)
@@ -2501,6 +2509,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, param.InstanceName);
 				if (param.DontAddToScene != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, param.DontAddToScene);
+				if (param.AutomaticAnimation != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, param.AutomaticAnimation);
 				if (param.InstanceGroupName != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_IGNAME, param.InstanceGroupName);
 				if (param.DontExport != BST_INDETERMINATE)

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.38 2002/04/04 12:31:47 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.39 2002/04/12 16:31:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -514,6 +514,13 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 							meshBase->setAnimatedMaterial (i, maxBaseBuild.MaterialInfo[i].MaterialName);													
 						}
 					}
+				}
+
+				// check wether this mesh is auto-animated
+				if (CExportNel::getScriptAppData (&node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, 0) != 0)
+				{
+					// yes, it is
+					meshBase->setAutoAnim(true);
 				}
 
 				// Return the mesh base

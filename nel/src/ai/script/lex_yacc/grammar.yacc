@@ -272,8 +272,8 @@ using  namespace NLAIFUZZY;
 									op_class->setGoal( (NLAIAGENT::CStringVarName &) goal_name );
 								}
 							}
-							POINT_VI
-							END
+//							POINT_VI
+//							END
 						;
 
 

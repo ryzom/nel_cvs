@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.3 2004/01/14 10:31:25 distrib Exp $
+ * $Id: words_dictionary.cpp,v 1.4 2004/03/12 16:50:09 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include <stdmisc.h>
+#include "stdmisc.h"
 
 #include "nel/misc/words_dictionary.h"
 #include "nel/misc/config_file.h"

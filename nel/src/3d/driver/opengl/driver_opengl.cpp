@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.165 2002/10/14 15:50:54 besson Exp $
+ * $Id: driver_opengl.cpp,v 1.166 2002/10/31 09:14:49 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1982,20 +1982,17 @@ uint32			CDriverGL::getUsedTextureMemory() const
 {
 	// Sum memory used
 	uint32 memory=0;
-	
+
 	// For each texture used
-	set<NLMISC::CSmartPtr<ITexture> >::iterator ite=_TextureUsed.begin();
+	set<CTextureDrvInfosGL*>::iterator ite=_TextureUsed.begin();
 	while (ite!=_TextureUsed.end())
 	{
-		if ((*ite)->TextureDrvShare)
-		{
-			// Get a gl texture
-			CTextureDrvInfosGL*	gltext;
-			gltext= (CTextureDrvInfosGL*)(ITextureDrvInfos*)((*ite)->TextureDrvShare->DrvTexture);
+		// Get the gl texture
+		CTextureDrvInfosGL*	gltext;
+		gltext= (*ite);
 
-			// Sum the memory used by this texture
-			memory+=gltext->TextureMemory;
-		}
+		// Sum the memory used by this texture
+		memory+=gltext->TextureMemory;
 
 		// Next texture
 		ite++;

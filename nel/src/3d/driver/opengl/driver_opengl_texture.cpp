@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.59 2002/10/25 16:16:08 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.60 2002/10/31 09:14:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,6 +62,9 @@ CTextureDrvInfosGL::~CTextureDrvInfosGL()
 
 	// release profiling texture mem.
 	_Driver->_AllocatedTextureMemory-= TextureMemory;
+
+	// release in TextureUsed.
+	_Driver->_TextureUsed.erase (this);
 }
 
 
@@ -319,14 +322,6 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 	
 	if(tex.isTextureCube() && (!_Extensions.ARBTextureCubeMap))
 		return true;
-
-	// -1. Profile, log the use of this texture
-	//=========================================
-	if (_SumTextureMemoryUsed)
-	{
-		// Insert the pointer of this texture
-		_TextureUsed.insert (&tex);
-	}
 
 	// 0. Create/Retrieve the driver texture.
 	//=======================================
@@ -890,9 +885,22 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 {	
 	if (this->_CurrentTexture[stage]!=tex)
 	{
-		_DriverGLStates.activeTextureARB(stage);		
+		_DriverGLStates.activeTextureARB(stage);
 		if(tex)
 		{
+			// get the drv info. should be not NULL.
+			CTextureDrvInfosGL*	gltext;
+			gltext= getTextureGl(*tex);
+
+			// Profile, log the use of this texture
+			//=========================================
+			if (_SumTextureMemoryUsed)
+			{
+				// Insert the pointer of this texture
+				_TextureUsed.insert (gltext);
+			}
+
+
 			if(tex->isTextureCube())
 			{
 				// setup texture mode, after activeTextureARB()
@@ -902,8 +910,6 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 				{
 					// Activate texturing...
 					//======================
-					CTextureDrvInfosGL*	gltext;
-					gltext= getTextureGl(*tex);
 
 					// If the shared texture is the same than before, no op.
 					if(_CurrentTextureInfoGL[stage] != gltext)
@@ -937,8 +943,6 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 
 				// Activate texture...
 				//======================
-				CTextureDrvInfosGL*	gltext;
-				gltext= getTextureGl(*tex);
 
 				// If the shared texture is the same than before, no op.
 				if(_CurrentTextureInfoGL[stage] != gltext)

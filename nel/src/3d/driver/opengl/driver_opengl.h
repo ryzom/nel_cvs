@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.134 2002/10/25 16:16:08 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.135 2002/10/31 09:14:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -826,7 +826,7 @@ private:
 	uint32												_NbSetupMaterialCall;
 	uint32												_NbSetupModelMatrixCall;
 	bool												_SumTextureMemoryUsed;
-	std::set<NLMISC::CSmartPtr<ITexture> >				_TextureUsed;
+	std::set<CTextureDrvInfosGL*>						_TextureUsed;
 	uint							computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const;
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.7 2001/11/20 11:11:59 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.8 2002/01/14 11:15:07 lecroart Exp $
  *
  */
 
@@ -53,6 +53,9 @@ static const uint32 ServerVersion = 1;
 
 /// Contains the correspondance between userid and the FES connection where the userid is connected.
 map<uint32, TServiceId> UserIdSockAssociations;
+
+// ubi hack
+string FrontEndAddress;
 
 /// \todo ace: code a better heuristic to distribute user on FES (using NbUser and not only NbEstimatedUser)
 
@@ -122,7 +125,11 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 	if (reason.empty())
 	{
 		msgin.serial (addr);
-		msgout.serial (addr);
+
+		if (FrontEndAddress.empty())
+			FrontEndAddress = addr;
+
+		msgout.serial (FrontEndAddress);
 	}
 	
 	CUnifiedNetwork::getInstance()->send ("LS", msgout);
@@ -302,6 +309,14 @@ public:
 	void init ()
 	{
 		string FrontendServiceName = ConfigFile.getVar ("FrontendServiceName").asString();
+
+		try
+		{
+			FrontEndAddress = ConfigFile.getVar ("FrontEndAddress").asString();
+		}
+		catch(Exception &)
+		{
+		}
 
 		nlinfo ("Waiting frontend service named '%s'", FrontendServiceName.c_str());
 

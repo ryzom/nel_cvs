@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.38 2002/09/24 14:47:44 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.39 2002/11/12 13:56:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,7 +195,9 @@ void		CRenderTrav::traverse()
 	//OrderTransparentList.reset(0);
 
 	// Start LodCharacter Manager render.
-	Scene->getLodCharacterManager()->beginRender(getDriver(), CamPos);
+	CLodCharacterManager	*clodMngr= Scene->getLodCharacterManager();
+	if(clodMngr)
+		clodMngr->beginRender(getDriver(), CamPos);
 
 	// Render the opaque materials
 	_CurrentPassOpaque = true;
@@ -217,7 +219,8 @@ void		CRenderTrav::traverse()
 
 
 	// End LodCharacter Manager render.
-	Scene->getLodCharacterManager()->endRender();
+	if(clodMngr)
+		clodMngr->endRender();
 
 
 	/* Render Scene CoarseMeshManager. 

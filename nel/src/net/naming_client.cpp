@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.9 2000/11/23 14:11:51 cado Exp $
+ * $Id: naming_client.cpp,v 1.10 2000/11/24 11:22:13 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,12 +140,13 @@ void CNamingClient::closeT()
 
 
 /*
- * Callback for dynamic config file change
+ * Callback for dynamic config file change (useless!)
  */
-void cbNamingServiceAddrChanged()
+/*void cbNamingServiceAddrChanged()
 {
 	try
 	{
+		// Change the address
 		CNamingClient::NamingServiceAddress.setByName( CNamingClient::_ConfigFile->getVar( "Host" ).asString() );
 		CNamingClient::NamingServiceAddress.setPort( CNamingClient::_ConfigFile->getVar( "Port" ).asInt() );
 		nlinfo( "Naming Service is now at %s", CNamingClient::NamingServiceAddress.asIPString().c_str() );
@@ -155,7 +156,8 @@ void cbNamingServiceAddrChanged()
 		// Do not change the address if the file has a problem
 		nlinfo ( "New config file is invalid" );
 	}
-}
+}*/
+
 
 /*
  * Performs a socket connection
@@ -183,7 +185,7 @@ void CNamingClient::doOpen()
 		{
 			CNamingClient::NamingServiceAddress.setPort( CNamingClient::NamingServiceDefPort );
 		}
-		_ConfigFile->setCallback( cbNamingServiceAddrChanged );
+		//_ConfigFile->setCallback( cbNamingServiceAddrChanged );
 		nlinfo( "Naming Service is at %s", CNamingClient::NamingServiceAddress.asIPString().c_str() );
 	}
 	nldebug("Trying to connect to the Naming Service");

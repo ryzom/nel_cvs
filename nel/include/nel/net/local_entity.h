@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.8 2000/11/23 16:53:29 cado Exp $
+ * $Id: local_entity.h,v 1.9 2000/11/24 11:22:13 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,7 +143,7 @@ public:
 
 protected:
 
-	/// Computes trajectory vector. \todo Cado: rotateZ() for NeL instead of rotateY() for GLTest (also in yaw() and roll())
+	/// Computes trajectory vector.
 	void			computeVector();
 
 	/// Dead reckoning divergence test: returns true if the replica needs to converge

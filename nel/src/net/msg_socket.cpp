@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.29 2000/11/22 15:56:47 cado Exp $
+ * $Id: msg_socket.cpp,v 1.30 2000/11/24 11:22:13 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,7 +148,7 @@ void CMsgSocket::connectToService()
 				time( &_ConnectTime );
 				return;
 			}
-			// Otherwise, disconnect from the previous one
+			// Otherwise, disconnect from the previous one (note: it breaks any current transaction)
 			delete _ClientSock;
 		}
 

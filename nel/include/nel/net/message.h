@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.13 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: message.h,v 1.14 2000/11/24 11:22:13 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,7 +70,6 @@ typedef CVector8::iterator It8;
 /**
  * Message memory stream. Can be serialized to/from (see SerialBuffer()). Can be sent or received
  * over a network, using a CSocket or preferably a CMsgSocket object.
- * \test Test program is /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -157,7 +156,6 @@ public:
 	/** EXPERIMENTAL: Returns a pointer to the message buffer for filling by an external function (use at your own risk,
 	 * you MUST fill the number of bytes you specify in "msgsize").
 	 * This method prevents from doing one useless buffer copy, using fill().
-	 * \todo cado Perhaps choose a safe solution
 	 */
 	uint8			*bufferToFill( uint32 msgsize );
 

@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.10 2000/11/23 14:11:51 cado Exp $
+ * $Id: naming_client.h,v 1.11 2000/11/24 11:22:13 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,6 @@ typedef std::map<std::string,CInetAddress> CRegServices;
  * If no such file is provided, the default values are used (see NamingServiceDefHost
  * and NamingServiceDefPort).
  *
- * \todo Cado: Add config file check for NS address change
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

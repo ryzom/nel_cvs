@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.h,v 1.18 2000/11/10 16:58:35 cado Exp $
+ * $Id: socket.h,v 1.19 2000/11/24 11:22:13 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,6 @@ typedef std::pair<std::string,TTypeNum> TMsgMapItem;
  * we must prevent the socket used in CNetDisplayer from logging itself... otherwise we
  * would have an infinite recursion.
  *
- * \test Test program is /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

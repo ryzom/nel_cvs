@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.55 2003/01/20 13:50:56 lecroart Exp $
+ * $Id: common.h,v 1.56 2003/03/06 14:37:42 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -258,6 +258,11 @@ sint			nlstricmp(const char *lhs, const char *rhs);
 /** Compare 2 strings without regard to case
   */
 sint			nlstricmp(const std::string &lhs, const std::string &rhs);
+
+/** Compare 2 strings (1 of which is c-style) without regard to case
+  */
+inline sint		nlstricmp(const std::string &lhs, const char *rhs) { return nlstricmp(lhs.c_str(),rhs); }
+inline sint		nlstricmp(const char *lhs, const std::string &rhs) { return nlstricmp(lhs,rhs.c_str()); }
 
 
 

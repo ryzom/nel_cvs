@@ -1,7 +1,7 @@
 /** \file bezier_patch.h
  * <File description>
  *
- * $Id: bezier_patch.h,v 1.5 2000/11/10 09:57:34 berenguier Exp $
+ * $Id: bezier_patch.h,v 1.6 2001/01/11 10:09:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,7 +92,7 @@ public:
 	CVector		eval(float s, float t);			// s,t coordinates for quad.
 	/// Evaluate, but return a vector double.
 	CVectorD	evalDouble(double s, double t);	// s,t coordinates for quad.
-	/// Evaluate the normal at (s,t).
+	/// Evaluate the normal at (s,t). returned vector is normalized.
 	CVector		evalNormal(float s, float t);			// s,t coordinates for quad.
 
 };

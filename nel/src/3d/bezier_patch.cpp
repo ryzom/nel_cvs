@@ -1,7 +1,7 @@
 /** \file bezier_patch.cpp
  * <File description>
  *
- * $Id: bezier_patch.cpp,v 1.4 2000/11/10 09:58:04 berenguier Exp $
+ * $Id: bezier_patch.cpp,v 1.5 2001/01/11 10:09:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,7 +238,9 @@ CVector		CBezierPatch::evalNormal(float ps, float pt)
 	
 
 	// Return the normal.
-	return tgtS^tgtT;
+	CVector	norm= tgtT^tgtS;
+	norm.normalize();
+	return norm;
 }
 
 

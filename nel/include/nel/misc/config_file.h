@@ -1,7 +1,7 @@
 /** \file config_file.h
  * CConfigFile class
  *
- * $Id: config_file.h,v 1.14 2000/12/13 14:38:36 cado Exp $
+ * $Id: config_file.h,v 1.15 2001/01/19 09:17:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,6 +198,8 @@ public:
 
 	/// set a callback function to a variable, it will be called when this variable is modified
 	void setCallback (const std::string &VarName, void (*cb)(CConfigFile::CVar &var));
+
+	void setLastModifiedNow ();
 
 	/// set the time between 2 file checking (default value is 1 second)
 	/// \param timeout time in millisecond, if timeout=0, the check will be made each "frame"

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.15 2001/01/10 18:06:41 lecroart Exp $
+ * $Id: config_file.cpp,v 1.16 2001/01/19 09:17:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -336,6 +336,11 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 	Var.Name = VarName;
 	Var.Callback = cb;
 	_Vars.push_back (Var);
+}
+
+void CConfigFile::setLastModifiedNow ()
+{
+	_LastModified = getLastModified ();
 }
 
 

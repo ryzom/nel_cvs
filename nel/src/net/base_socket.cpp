@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.36 2001/01/17 16:34:36 lecroart Exp $
+ * $Id: base_socket.cpp,v 1.37 2001/01/19 09:17:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,7 +76,19 @@ ESocket::ESocket( const char *reason, bool systemerror )
 	}
 	_Reason = ss.str();
   */
-  _Reason = "toto2";
+	_Reason = "Socket error: ";
+	_Reason += reason;
+	if ( systemerror )
+	{
+		_Reason += " (";
+		char str[128];
+		_Reason += itoa (ERROR_NUM,str,10);
+#ifdef NL_OS_UNIX
+		_Reason += ": ";
+		_Reason += ERROR_MSG;
+#endif
+		_Reason += ")";
+	}
 }
 
 

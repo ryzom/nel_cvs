@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.12 2001/12/05 09:52:55 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.13 2001/12/06 09:28:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,8 +119,15 @@ public:
 
 	// misc
 	int						FloatingObject;
-	int						Vegetable;
 
+	// Vegetable
+	int						Vegetable;
+	int						VegetableAlphaBlend;
+	int						VegetableAlphaBlendOnLighted;
+	int						VegetableAlphaBlendOffLighted;
+	int						VegetableAlphaBlendOffDoubleSided;
+	int						VegetableBendCenter;
+	std::string				VegetableBendFactor;
 };
 
 // ***************************************************************************
@@ -149,6 +156,31 @@ void CoarseStateChanged (HWND hwndDlg)
 	// Bouton enabled ?
 	bool enable = SendMessage (GetDlgItem (hwndDlg, IDC_COARSE_MESH), BM_GETCHECK, 0, 0)==BST_UNCHECKED;
 	EnableWindow (GetDlgItem (hwndDlg, IDC_ACTIVE_MRM), enable);
+}
+
+// ***************************************************************************
+
+void VegetableStateChanged (HWND hwndDlg)
+{
+	// Vegetable ?
+	bool enable = ( SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE), BM_GETCHECK, 0, 0)!=BST_UNCHECKED );
+	
+	// Enable alpha blend button
+	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_ALPHA_BLEND_ON), enable);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_ALPHA_BLEND_OFF), enable);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_CENTER_Z), enable);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_CENTER_NULL), enable);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_BEND_FACTOR), enable);
+	
+	// Alpha blend ?
+	bool alphaBlend = IsDlgButtonChecked (hwndDlg, IDC_VEGETABLE_ALPHA_BLEND_ON)!=BST_UNCHECKED;
+
+	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_ON_LIGHTED_PRECOMPUTED), enable && alphaBlend);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_ON_UNLIGHTED), enable && alphaBlend);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_LIGHTED_PRECOMPUTED), enable && !alphaBlend);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_LIGHTED_DYNAMIC), enable && !alphaBlend);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_UNLIGHTED), enable && !alphaBlend);
+	EnableWindow (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_DOUBLE_SIDED), enable && !alphaBlend);
 }
 
 // ***************************************************************************
@@ -270,6 +302,15 @@ int CALLBACK AccelDialogCallback (
 						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
 						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
 						EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
+						break;
+					case IDC_FATHER_VISIBLE:
+					case IDC_VISIBLE_FROM_FATHER:
+					case IDC_DYNAMIC_PORTAL:
+					case IDC_CLUSTERIZE:
+						{
+							if (SendMessage (hwndButton, BM_GETCHECK, 0, 0)==BST_INDETERMINATE)
+								SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+						}
 						break;
 				}
 			}
@@ -720,6 +761,20 @@ int CALLBACK VegetableDialogCallback (
 			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 			SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE), BM_SETCHECK, currentParam->Vegetable, 0);
+			
+			CheckRadioButton(hwndDlg, IDC_VEGETABLE_ALPHA_BLEND_ON, IDC_VEGETABLE_ALPHA_BLEND_OFF, IDC_VEGETABLE_ALPHA_BLEND_ON+currentParam->VegetableAlphaBlend);
+			
+			CheckRadioButton(hwndDlg, IDC_VEGETABLE_AB_ON_LIGHTED_PRECOMPUTED, IDC_VEGETABLE_AB_ON_UNLIGHTED, IDC_VEGETABLE_AB_ON_LIGHTED_PRECOMPUTED+currentParam->VegetableAlphaBlendOnLighted);
+			
+			CheckRadioButton(hwndDlg, IDC_VEGETABLE_AB_OFF_LIGHTED_PRECOMPUTED, IDC_VEGETABLE_AB_OFF_UNLIGHTED, IDC_VEGETABLE_AB_OFF_LIGHTED_PRECOMPUTED+currentParam->VegetableAlphaBlendOffLighted);
+			
+			SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_DOUBLE_SIDED), BM_SETCHECK, currentParam->VegetableAlphaBlendOffDoubleSided, 0);
+			
+			CheckRadioButton(hwndDlg, IDC_CENTER_NULL, IDC_CENTER_Z, IDC_CENTER_NULL+currentParam->VegetableBendCenter);
+
+			SetWindowText (GetDlgItem (hwndDlg, IDC_VEGETABLE_BEND_FACTOR), currentParam->VegetableBendFactor.c_str());
+
+			VegetableStateChanged (hwndDlg);
 		}
 		break;
 
@@ -735,9 +790,52 @@ int CALLBACK VegetableDialogCallback (
 					case IDOK:
 						{
 							currentParam->Vegetable=SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE), BM_GETCHECK, 0, 0);
+
+							if (IsDlgButtonChecked (hwndDlg, IDC_VEGETABLE_ALPHA_BLEND_ON) == BST_CHECKED)
+								currentParam->VegetableAlphaBlend = 0;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_VEGETABLE_ALPHA_BLEND_OFF) == BST_CHECKED)
+								currentParam->VegetableAlphaBlend = 1;
+							else 
+								currentParam->VegetableAlphaBlend = -1;
+							
+							if (IsDlgButtonChecked (hwndDlg, IDC_VEGETABLE_AB_ON_LIGHTED_PRECOMPUTED) == BST_CHECKED)
+								currentParam->VegetableAlphaBlendOnLighted = 0;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_VEGETABLE_AB_ON_UNLIGHTED) == BST_CHECKED)
+								currentParam->VegetableAlphaBlendOnLighted = 1;
+							else 
+								currentParam->VegetableAlphaBlendOnLighted = -1;
+							
+							if (IsDlgButtonChecked (hwndDlg, IDC_VEGETABLE_AB_OFF_LIGHTED_PRECOMPUTED) == BST_CHECKED)
+								currentParam->VegetableAlphaBlendOffLighted = 0;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_VEGETABLE_AB_OFF_LIGHTED_DYNAMIC) == BST_CHECKED)
+								currentParam->VegetableAlphaBlendOffLighted = 1;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_VEGETABLE_AB_OFF_UNLIGHTED) == BST_CHECKED)
+								currentParam->VegetableAlphaBlendOffLighted = 2;
+							else 
+								currentParam->VegetableAlphaBlendOffLighted = -1;
+							
+							currentParam->VegetableAlphaBlendOffDoubleSided = SendMessage (GetDlgItem (hwndDlg, IDC_VEGETABLE_AB_OFF_DOUBLE_SIDED), BM_GETCHECK, 0, 0);
+
+							if (IsDlgButtonChecked (hwndDlg, IDC_CENTER_NULL) == BST_CHECKED)
+								currentParam->VegetableBendCenter = 0;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_CENTER_Z) == BST_CHECKED)
+								currentParam->VegetableBendCenter = 1;
+							else 
+								currentParam->VegetableBendCenter = -1;
+							
+							char tmp[512];
+							GetWindowText (GetDlgItem (hwndDlg, IDC_VEGETABLE_BEND_FACTOR), tmp, 512);
+							currentParam->VegetableBendFactor = tmp;
 						}
 					break;
 					case IDC_VEGETABLE:
+						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
+							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+					case IDC_VEGETABLE_ALPHA_BLEND_ON:
+					case IDC_VEGETABLE_ALPHA_BLEND_OFF:
+						VegetableStateChanged (hwndDlg);
+						break;
+					case IDC_VEGETABLE_AB_OFF_DOUBLE_SIDED:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 						break;
@@ -792,9 +890,6 @@ int CALLBACK MiscDialogCallback (
 						}
 					break;
 					case IDC_EXPORT_NOTE_TRACK:
-						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
-							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
-						break;
 					case IDC_FLOATING_OBJECT:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
@@ -1401,11 +1496,19 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.DontExport=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED);
 		param.ExportNoteTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED);
 		param.FloatingObject=CExportNel::getScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, BST_UNCHECKED);
-		param.Vegetable=CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE, BST_UNCHECKED);
 		param.LumelSizeMul=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0");
 		param.SoftShadowRadius=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toString(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT));
 		param.SoftShadowConeLength=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toString(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT));
-		
+
+		// Vegetable
+		param.Vegetable = CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE, BST_UNCHECKED);
+		param.VegetableAlphaBlend = CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND, 0);
+		param.VegetableAlphaBlendOnLighted = CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_ON_LIGHTED, BST_UNCHECKED);
+		param.VegetableAlphaBlendOffLighted = CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_LIGHTED, BST_UNCHECKED);
+		param.VegetableAlphaBlendOffDoubleSided = CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_DOUBLE_SIDED, BST_UNCHECKED);
+		param.VegetableBendCenter = CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, 0);
+		param.VegetableBendFactor = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT));
+
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
 		ite++;
@@ -1458,9 +1561,25 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.ExportNoteTrack = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, BST_UNCHECKED)!=param.FloatingObject)
 				param.FloatingObject = BST_INDETERMINATE;
+
+			
+			// Vegetable
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE, BST_UNCHECKED)!=param.Vegetable)
 				param.Vegetable = BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND, 0)!=param.VegetableAlphaBlend)
+				param.VegetableAlphaBlend = -1;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_ON_LIGHTED, 0)!=param.VegetableAlphaBlendOnLighted)
+				param.VegetableAlphaBlendOnLighted = -1;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_LIGHTED, 0)!=param.VegetableAlphaBlendOffLighted)
+				param.VegetableAlphaBlendOffLighted = -1;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_DOUBLE_SIDED, BST_UNCHECKED)!=param.VegetableAlphaBlendOffDoubleSided)
+				param.VegetableAlphaBlendOffDoubleSided = BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, BST_UNCHECKED)!=param.VegetableBendCenter)
+				param.VegetableBendCenter = -1;
+			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, NEL3D_APPDATA_BEND_FACTOR_DEFAULT))!=param.VegetableBendFactor)
+				param.VegetableBendFactor = "";
 
+			// Lightmap
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0")!=param.LumelSizeMul)
 				param.LumelSizeMul = "";
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toString(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT))!=param.SoftShadowRadius)
@@ -1554,8 +1673,22 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, param.SoftShadowConeLength);
 				if (param.FloatingObject != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, param.FloatingObject);
+
+				// Vegetable
 				if (param.Vegetable != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_VEGETABLE, param.Vegetable);
+				if (param.VegetableAlphaBlend != -1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND, param.VegetableAlphaBlend);
+				if (param.VegetableAlphaBlendOnLighted != -1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_ON_LIGHTED, param.VegetableAlphaBlendOnLighted);
+				if (param.VegetableAlphaBlendOffLighted != -1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_LIGHTED, param.VegetableAlphaBlendOffLighted);
+				if (param.VegetableAlphaBlendOffDoubleSided != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_DOUBLE_SIDED, param.VegetableAlphaBlendOffDoubleSided);
+				if (param.VegetableBendCenter != -1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_BEND_CENTER, param.VegetableBendCenter);
+				if (param.VegetableBendFactor != "")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_BEND_FACTOR, param.VegetableBendFactor);
 
 				if (param.ListActived)
 				{

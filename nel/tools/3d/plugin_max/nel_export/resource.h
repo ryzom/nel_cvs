@@ -110,6 +110,17 @@
 #define IDC_VEGETABLE                   1066
 #define IDC_CANCEL                      1066
 #define IDC_OK                          1067
+#define IDC_VEGETABLE_ALPHA_BLEND_ON    1067
+#define IDC_VEGETABLE_ALPHA_BLEND_OFF   1068
+#define IDC_VEGETABLE_AB_ON_LIGHTED_PRECOMPUTED 1069
+#define IDC_VEGETABLE_AB_ON_UNLIGHTED   1070
+#define IDC_VEGETABLE_AB_OFF_LIGHTED_PRECOMPUTED 1071
+#define IDC_VEGETABLE_AB_OFF_LIGHTED_DYNAMIC 1072
+#define IDC_VEGETABLE_AB_OFF_UNLIGHTED  1073
+#define IDC_VEGETABLE_AB_OFF_DOUBLE_SIDED 1074
+#define IDC_CENTER_NULL                 1075
+#define IDC_CENTER_Z                    1076
+#define IDC_VEGETABLE_BEND_FACTOR       1077
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -120,7 +131,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        122
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1067
+#define _APS_NEXT_CONTROL_VALUE         1078
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.20 2001/12/05 09:52:55 corvazier Exp $
+ * $Id: export_material.cpp,v 1.21 2001/12/06 09:28:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -235,6 +235,17 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bAlphaTest", (ParamType2)TYPE_BOOL, &bAlphaTest, time);
 		material.setAlphaTest (bAlphaTest != 0);
 
+		// Vertex alpha
+		int bAlphaVertex = 0;
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bAlphaVertex", (ParamType2)TYPE_BOOL, &bAlphaVertex, time);
+
+		// Active vertex alpha if in alpha test or alpha blend mode
+		materialInfo.AlphaVertex = (bAlphaBlend || bAlphaTest) && (bAlphaVertex != 0);
+
+		// Get channel to use for alpha vertex
+		materialInfo.AlphaVertexChannel = 0;
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "iAlphaVertexChannel", (ParamType2)TYPE_INT, &materialInfo.AlphaVertexChannel, time);
+
 		// *** Zbuffer
 
 		// ZBias
@@ -264,7 +275,11 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 
 		int bColorVertex = 0;
 		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bColorVertex", (ParamType2)TYPE_BOOL, &bColorVertex, time);
-		material.setLightedVertexColor (bColorVertex != 0);
+		material.setLightedVertexColor (material.isLighted() && (bColorVertex != 0));
+
+		// Ok, color vertex
+		materialInfo.ColorVertex = bColorVertex != 0;
+
 
 		// * Diffuse
 

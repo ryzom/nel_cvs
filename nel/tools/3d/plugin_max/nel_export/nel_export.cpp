@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.18 2001/12/05 09:52:55 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.19 2001/12/06 09:28:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ static const char *animModelFilter="NeL model animation file (*.anim)\0*.anim\0A
 static const char *SWTFilter="NeL Skeleton Weight Template file (*.swt)\0*.swt\0All files (*.*)\0*.*\0";
 static const char *InstanceGroupFilter="NeL Instance Group file (*.ig)\0*.ig\0All files (*.*)\0*.*\0";
 static const char *skeletonFilter="NeL Skeleton file (*.skel)\0*.skel\0All files (*.*)\0*.*\0";
-static const char *vegetableFilter="NeL Vegetable file (*.skel)\0*.skel\0All files (*.*)\0*.*\0";
+static const char *vegetableFilter="NeL Vegetable file (*.veget)\0*.veget\0All files (*.*)\0*.*\0";
 
 
 void *CNelExportClassDesc::Create(BOOL loading)
@@ -306,6 +306,26 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 									// Error message
 									char sErrorMsg[512];
 									sprintf (sErrorMsg, "Error exporting the zone %s in the file\n%s", pNode->GetName(), sSavePath);
+									MessageBox (hWnd, sErrorMsg, "NeL export", MB_OK|MB_ICONEXCLAMATION);
+								}
+							}
+						}
+						else if (CExportNel::isVegetable (*pNode, time))
+						{
+							// Save path
+							char sSavePath[256];
+							strcpy (sSavePath, pNode->GetName());
+
+							// Choose a file to export
+							if (!CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_DONTEXPORT, 0))
+							if (theCNelExport.SelectFileForSave(hWnd, sNodeMsg, vegetableFilter, sSavePath))
+							{
+								// Export the mesh
+								if (!theCNelExport.exportVegetable (sSavePath, *pNode, *theCNelExport.ip, time))
+								{
+									// Error message
+									char sErrorMsg[512];
+									sprintf (sErrorMsg, "Error exporting the vegetable %s in the file\n%s", pNode->GetName(), sSavePath);
 									MessageBox (hWnd, sErrorMsg, "NeL export", MB_OK|MB_ICONEXCLAMATION);
 								}
 							}

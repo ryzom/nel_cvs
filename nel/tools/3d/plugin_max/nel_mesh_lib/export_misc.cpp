@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.9 2001/11/22 08:49:23 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.10 2001/12/06 09:28:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
+#include "export_lod.h"
 #include <3d/texture_file.h>
 #include <modstack.h> // class IDerivedObject
 #include <decomp.h> // class IDerivedObject
@@ -549,3 +550,25 @@ bool CExportNel::hasLightMap (INode& node, TimeValue time)
 	}
 	return false;
 }
+
+// --------------------------------------------------
+
+void CExportNel::outputErrorMessage (Interface *ip, const char *message, const char *title, bool dialog)
+{
+	if (dialog)
+	{
+		MessageBox (ip->GetMAXHWnd(), message, title, MB_OK|MB_ICONEXCLAMATION);
+	}
+	mprintf (message);
+	nlwarning (message);
+}
+
+// --------------------------------------------------
+
+bool CExportNel::isVegetable (INode& node, TimeValue time)
+{
+	return CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VEGETABLE, BST_UNCHECKED) != BST_UNCHECKED;
+}
+
+// --------------------------------------------------
+

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.34 2001/12/05 09:52:55 corvazier Exp $
+ * $Id: export_nel.h,v 1.35 2001/12/06 09:28:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,6 +87,7 @@ namespace NL3D
 	class CMRMParameters;
 	class IMeshGeom;
 	class CInstanceGroup;
+	class CVegetableShape;
 };
 
 // ***************************************************************************
@@ -216,6 +217,7 @@ public:
 	  * skeletonShape must be NULL if no bones.
 	  */
 	static bool						isMesh (INode& node, TimeValue time);
+	static bool						isVegetable (INode& node, TimeValue time);
 
 	/**
 	  * Return true if the node is a mesh and has a Nel_Material attached to it
@@ -429,6 +431,20 @@ public:
 
 	// Set an appData integer
 	static void						setScriptAppData (Animatable *node, uint32 id, const std::string& value);
+
+	// Output error message
+	static void						outputErrorMessage (Interface *ip, const char *message, const char *title, bool dialog);
+
+	// ********************
+	// *** Export Vegetable
+	// ********************
+
+	/* 
+	 * Build a skeleton shape
+	 *
+	 * mapBindPos is the pointer of the map of bind pos by bone. Can be NULL if the skeleton is already in the bind pos.
+	 */
+	static bool						buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INode& node, TimeValue time, Interface *ip, bool view, bool messageError);
 
 private:
 

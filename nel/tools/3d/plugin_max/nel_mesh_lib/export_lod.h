@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.10 2001/12/05 09:52:55 corvazier Exp $
+ * $Id: export_lod.h,v 1.11 2001/12/06 09:28:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,14 @@
 
 #define NEL3D_APPDATA_FLOATING_OBJECT			    (1423062570)
 
+// Vegetable
 #define NEL3D_APPDATA_VEGETABLE						(1423062580)
+#define NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND			(1423062581)
+#define NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_ON_LIGHTED	(1423062582)
+#define NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_LIGHTED	(1423062583)
+#define NEL3D_APPDATA_VEGETABLE_ALPHA_BLEND_OFF_DOUBLE_SIDED	(1423062584)
+#define NEL3D_APPDATA_BEND_CENTER					(1423062585)
+#define NEL3D_APPDATA_BEND_FACTOR					(1423062586)
 
 // ***************************************************************************
 
@@ -84,6 +91,8 @@
 
 #define NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT		1.4f
 #define NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT	15.0f
+
+#define NEL3D_APPDATA_BEND_FACTOR_DEFAULT			1.0f
 
 // ***************************************************************************
 

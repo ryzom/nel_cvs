@@ -229,6 +229,10 @@ SOURCE=.\export_skinning.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\export_vegetable.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\stdafx.cpp
 # ADD CPP /Yc"stdafx.h"
 # End Source File

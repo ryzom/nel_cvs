@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.21 2001/09/26 17:43:16 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.22 2001/10/04 08:54:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -214,7 +214,7 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 	
 	if (!psm->_EditionMode && !psm->_InCluster)
 	{
-		CParticleSystemShape		*pss= NLMISC::safe_cast<CParticleSystemShape *>((IShape *)psm->Shape);
+		CParticleSystemShape		*pss = NLMISC::safe_cast<CParticleSystemShape *>((IShape *)psm->Shape);
 		if (pss->_DestroyWhenOutOfFrustum)
 		{
 			if (pss->_DestroyModelWhenOutOfRange)
@@ -229,14 +229,10 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 			return;
 		}
 		if (!ps) return;
-	}
-
-	
-
-	
+	}	
 
 	// check for trigger. If the trigger is false, and there is a system instanciated, we delete it.
-	if (!psm->getEditionMode())
+	if (!psm->_EditionMode)
 	{
 		if (!psm->_TriggerAnimatedValue.Value)
 		{									
@@ -258,9 +254,10 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 		ps = psm->_ParticleSystem = (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) psm->Shape))->instanciatePS(*psm->_Scene);			
 	}
 
+	CClipTrav			*trav= (CClipTrav*) ClipObs->Trav;
+
 	if (psm->_InCluster ||  ps->doesPerformMotionWhenOutOfFrustum())
-	{
-		CClipTrav			*trav= (CClipTrav*) ClipObs->Trav;
+	{		
 		const CMatrix		&mat= HrcObs->WorldMatrix;	 
 		ps->setSysMat(mat);
 		ps->setViewMat(trav->ViewMatrix);
@@ -289,13 +286,13 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 			}
 		}
 		// animate particles
-		ps->step(CParticleSystem::Anim, delay);
+		ps->step(CParticleSystem::Anim, delay);	
+	}
 
-		// add a render obs if in cluster
-		if (psm->_InCluster)
-		{
-			trav->RenderTrav->addRenderObs(ClipObs->RenderObs);
-		}
+	// add a render obs if in cluster
+	if (psm->_InCluster)
+	{
+		trav->RenderTrav->addRenderObs(ClipObs->RenderObs);
 	}
 }
 
@@ -336,9 +333,10 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		{
 			m->_InsertedInVisibleList = false;
 			m->_InCluster = false;
+			Date = trav->CurrentDate;
 		}
 		if (m->_InCluster) return; // already visible
-		Date = trav->CurrentDate;
+		
 
 
 		const std::vector<CPlane>	&pyramid= trav->WorldPyramid;	
@@ -400,10 +398,14 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 						}						
 						return;
 					}
-				}			
+				}	
+				
 				Visible = true; // not too far, but not in cluster
-				m->_InsertedInVisibleList = true;
-				trav->addVisibleObs(this);
+				if (!m->_InsertedInVisibleList)
+				{
+					m->_InsertedInVisibleList = true;
+					trav->addVisibleObs(this);
+				}
 				m->_InCluster = true;
 				return;						
 			}
@@ -503,7 +505,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		}
 
 		// Transform the pyramid in Object space.	
-		for(sint i=0;i<(sint)pyramid.size();i++)
+		for(sint i=0; i < (sint) pyramid.size(); i++)
 		{	
 			// test wether the bbox is entirely in the neg side of the plane
 			if (!bbox.clipBack(pyramid[i]  * mat  )) 
@@ -523,8 +525,11 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		}
 
 		Visible = true; // not too far, but not in cluster
-		m->_InsertedInVisibleList = true;
-		trav->addVisibleObs(this);
+		if (!m->_InsertedInVisibleList)
+		{
+			m->_InsertedInVisibleList = true;
+			trav->addVisibleObs(this);
+		}
 		m->_InCluster = true;
 }
 

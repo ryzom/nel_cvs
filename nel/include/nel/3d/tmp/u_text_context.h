@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.1 2001/02/28 16:19:35 berenguier Exp $
+ * $Id: u_text_context.h,v 1.2 2001/03/21 17:56:46 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,16 +160,16 @@ public:
 	 */
 	virtual	void			clear()  =0;
 	/**
-	 * print a string of the list (2D method)
+	 * print a string of the list (2D method). x/y E [0,1]
 	 * (rq : it leaves the string in the stack)
 	 */
 	virtual	void			printAt(float x, float y, uint32 i) =0;
 	/**
-	 * compute and print a ucstring at the location (2D method)
+	 * compute and print a ucstring at the location (2D method) x/y E [0,1]
 	 */
 	virtual	void			printAt(float x, float y, ucstring ucstr) =0;
 	/**
-	 * compute and print a string at the location (2D method)
+	 * compute and print a string at the location (2D method) x/y E [0,1]
 	 */
 	virtual	void			printfAt(float x, float y, const char * format, ...) =0;
 

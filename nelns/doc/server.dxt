@@ -1,0 +1,45 @@
+/**
+\mainpage Server
+
+\section server_intro Introduction
+
+This documentation describes NEVRAX NeL Network Services, a set of services built on the top of NeL. One service is usually one process. A service class must be or inherit from NLNET::IService. Report to NeL documents for further information.
+
+The format of the messages that can be processed by a service are described in the documentation of the .cpp file of the service, in the detailed description of the callbacks. For example, if you want to know how to interact with the Naming Service (or rather how NLNET::CNamingClient interacts with it), read the documentation of naming_service.cpp. 
+
+\subsection nelns_services The NEVRAX NeL Network Services
+
+NeLNS is made up of one unique login service, one or several shards (aka game servers), and a few utility services. 
+- naming_service  -> used to find a specific service by its name (naming_service.cpp)
+- log_service     -> centralized logger for all services (log_service.cpp)
+- time_service    -> centralized time reference manager (time_service.cpp)
+- login_service   -> centralized user account manager for all shards (login_service.cpp)
+- admin_executor_service -> collects stats about a physical machine (admin_executor_service.cpp)
+- agent_service	  -> routes messages for inter-agent communication over several machines (agent_service.cpp)
+
+\subsection nelns_config_files Configuration files
+
+For all services : ns.cfg
+\code
+Host = "hostname_of_your_machine_where_naming_service_will_run";
+Port = 50000;
+\endcode
+
+For login_service : ls.txt
+\code
+Shards = {
+ "hostname_of_your_machine_where_game_service_will_run", "Name of the shard as it will appear on the client"
+};
+\endcode
+
+\subsection nelns_output_files Output files
+
+The services create/modify the following config or log files:
+- unitime.cfg (time_service) : Contains the time reference
+- logs.log (very big especially if you have compiled the services with NL_DEBUG defined) (log_service) : Contains all debug information sent by the services.
+- ls.txt (login_service) : Every time a new user (not registered before) logs in, its login
+  and password are saved into ls.txt
+- ls.log (login_service) : Every time someone logs in, its configuration information is
+  saved into ls.log
+
+*/

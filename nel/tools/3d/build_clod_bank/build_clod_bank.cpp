@@ -1,7 +1,7 @@
 /** \file build_clod_bank.cpp
  * build a .clodbank with a config file.
  *
- * $Id: build_clod_bank.cpp,v 1.5 2002/09/04 10:18:22 berenguier Exp $
+ * $Id: build_clod_bank.cpp,v 1.6 2002/09/04 10:32:34 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -184,7 +184,7 @@ int	main(int argc, char *argv[])
 					}
 					catch(EPathNotFound &)
 					{
-						printf("ERROR anim not found %s", animFileName.c_str());
+						printf("ERROR anim not found %s\n", animFileName.c_str());
 						delete	anim;
 					}
 				}

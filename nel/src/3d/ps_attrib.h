@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.19 2003/07/07 09:54:01 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.20 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/3d/animation_time.h"
+#include "3d/ps_allocator.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/common.h"
@@ -279,7 +280,7 @@ public:
 		  * The container type is likely to change depending on memory requirement.
 		  */
 		//typedef CSnappedVector<T> TContType;
-			typedef std::vector<T> TContType;
+		typedef CPSVector<T>::V TContType;
 
 		/// The type used by the container. Its is the type used to instanciate this template.
 		typedef T value_type;

@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.5 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_face.cpp,v 1.6 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/ps_macro.h"
 #include "3d/driver.h"
 #include "3d/ps_iterator.h"
+#include "3d/particle_system.h"
 #include "nel/misc/quat.h"
 
 
@@ -126,7 +127,7 @@ public:
 					++posIt;
 				}
 				while (posIt != endPosIt);
-				driver->renderQuads(f._Mat, 0, toProcess);
+				driver->renderQuads(f._Mat, 0, toProcess);				
 				leftFaces -= toProcess;
 			}
 			while (leftFaces);
@@ -192,7 +193,7 @@ public:
 					currBasis += ptPlaneBasisIncrement;
 				}
 				while (posIt != endPosIt);
-				driver->renderQuads(f._Mat, 0, toProcess);
+				driver->renderQuads(f._Mat, 0, toProcess);				
 				leftFaces -= toProcess;
 			}
 			while (leftFaces);
@@ -204,7 +205,7 @@ public:
 ///======================================================================================
 CPSFace::CPSFace(CSmartPtr<ITexture> tex) : CPSQuad(tex)
 {   
-	_Name = std::string("Face");	
+	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("Face");	
 }
 
 ///======================================================================================
@@ -400,3 +401,24 @@ void CPSFace::resize(uint32 size)
 }
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.7 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.8 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,9 @@
 #include "3d/ps_face_look_at.h"
 #include "3d/ps_macro.h"
 #include "3d/driver.h"
-#include "nel/misc/fast_floor.h"
 #include "3d/ps_iterator.h"
+#include "3d/particle_system.h"
+#include "nel/misc/fast_floor.h"
 
 
 namespace NL3D 
@@ -43,6 +44,10 @@ struct CLookAtAlign
 	CVector I;
 	CVector K;
 };
+
+
+uint64 PSLookAtRenderTime = 0;
+
 
 //////////////////////////////////
 // CPSFaceLookAt implementation //
@@ -101,7 +106,7 @@ public:
 		uint32 leftToDo = size, toProcess;
 		float pSizes[CPSQuad::quadBufSize]; // the sizes to use	
 		float pSecondSizes[CPSQuad::quadBufSize]; // the second sizes to use
-		uint8 laAlignRaw[sizeof(CLookAtAlign) * CPSQuad::quadBufSize]; // orienation computed from motion for each particle
+		uint8 laAlignRaw[sizeof(CLookAtAlign) * CPSQuad::quadBufSize]; // orientation computed from motion for each particle
 		CLookAtAlign *laAlign = (CLookAtAlign *) laAlignRaw; // cast to avoid unilined ctor calls
 		float *currentSize; 
 		uint32 currentSizeStep = la._SizeScheme ? 1 : 0;
@@ -222,9 +227,10 @@ public:
 						currentSize += currentSizeStep;
 						currentSize2 += currentSizeStep2;
 					}					
-				}
-											
-				driver->renderQuads(la._Mat, 0, toProcess);			
+				}				
+				// uint64 startTick = NLMISC::CTime::getPerformanceTime();				
+				driver->renderQuads(la._Mat, 0, toProcess);				
+				// PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				leftToDo -= toProcess;				
 			}
 			while (leftToDo);
@@ -355,8 +361,11 @@ public:
 						currentSize2 += currentSizeStep2;			
 					}
 				}				
-				NLMISC::OptFastFloorEnd();							
-				driver->renderQuads(la._Mat, 0, toProcess);			
+				NLMISC::OptFastFloorEnd();				
+				//tmp
+				// uint64 startTick = NLMISC::CTime::getPerformanceTime();				
+				driver->renderQuads(la._Mat, 0, toProcess);				
+				// PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				leftToDo -= toProcess;
 			}
 			while (leftToDo);
@@ -369,6 +378,7 @@ public:
 	template <class T>	
 	static void drawLookAt(T it, T speedIt, CPSFaceLookAt &la, uint size, uint32 srcStep)
 	{
+		//uint64 startTick = NLMISC::CTime::getPerformanceTime();									
 		PARTICLES_CHECK_MEM;	
 		nlassert(la._Owner);			
 		IDriver *driver = la.getDriver();
@@ -391,9 +401,10 @@ public:
 		float *currentSize; 
 		uint32 currentSizeStep = la._SizeScheme ? 1 : 0;
 		// point the vector part in the current vertex
-		uint8 *ptPos;
+		uint8 *ptPos; 
 		// strides to go from one vertex to another one
 		const uint32 stride = vb.getVertexSize(), stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride << 2;	
+		//PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;		
 		if (!la._Angle2DScheme)
 		{
 			// constant rotation case
@@ -538,8 +549,11 @@ public:
 							currentSize += currentSizeStep;
 							currentSize2 += currentSizeStep2;
 						}					
-					}
-					driver->renderQuads(la._Mat, 0, toProcess);
+					}		
+					//tmp
+					//uint64 startTick = NLMISC::CTime::getPerformanceTime();					
+					driver->renderQuads(la._Mat, 0, toProcess);					
+					//PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				}
 				else
 				{
@@ -678,7 +692,9 @@ public:
 						++speedIt;
 						currentSize += currentSizeStep;					
 					}
+					//uint64 startTick = NLMISC::CTime::getPerformanceTime();					
 					driver->renderOrientedQuads(la._Mat, 0, toProcess);
+					//PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				}							
 				leftToDo -= toProcess;				
 			}
@@ -805,8 +821,11 @@ public:
 						currentSize2 += currentSizeStep2;			
 					}
 				}				
-				NLMISC::OptFastFloorEnd();							
-				driver->renderQuads(la._Mat, 0, toProcess);			
+				NLMISC::OptFastFloorEnd();											
+				//tmp
+				// uint64 startTick = NLMISC::CTime::getPerformanceTime();				
+				driver->renderQuads(la._Mat, 0, toProcess);				
+				//PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;*/
 				leftToDo -= toProcess;
 			}
 			while (leftToDo);
@@ -817,15 +836,13 @@ public:
 
 ///===========================================================================================
 void CPSFaceLookAt::draw(bool opaque)
-{
+{			
 	PARTICLES_CHECK_MEM;	
 	if (!_Owner->getSize()) return;	
-
 	uint32 step;
 	uint   numToProcess;
 	computeSrcStep(step, numToProcess);	
-	if (!numToProcess) return;
-	
+	if (!numToProcess) return;		
 
 	if (step == (1 << 16))
 	{
@@ -868,9 +885,8 @@ void CPSFaceLookAt::draw(bool opaque)
 											             step				
 										                );
 		}
-	}
-	
-	PARTICLES_CHECK_MEM;
+	}	
+	PARTICLES_CHECK_MEM;	
 }
 
 ///===========================================================================================
@@ -881,7 +897,7 @@ CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex),
 														_AlignOnMotion(false)
 {	
 	_SecondSize.Owner = this;
-	_Name = std::string("LookAt");
+	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("LookAt");
 }
 
 ///===========================================================================================

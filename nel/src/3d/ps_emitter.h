@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.28 2003/11/25 14:37:15 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.29 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/ps_edit.h"
 #include "3d/ps_plane_basis.h"
 #include "3d/ps_direction.h"
+#include "3d/particle_system.h"
 
 
 namespace NL3D {
@@ -454,7 +455,9 @@ public:
 
 
 	CPSEmitterDirectionnal() : _Dir(NLMISC::CVector::K)
-	{ _Name = std::string("DirectionnalEmitter"); }
+	{ 
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("DirectionnalEmitter"); 
+	}
 
 	/// Serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -487,7 +490,9 @@ class CPSRadialEmitter : public CPSEmitterDirectionnal
 {
 	public:
 	CPSRadialEmitter()
-	{ _Name = std::string("RadialEmitter"); }
+	{ 
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("RadialEmitter"); 
+	}
 	/// Serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
 	NLMISC_DECLARE_CLASS(CPSRadialEmitter);
@@ -506,7 +511,7 @@ public:
 
 	CPSEmitterOmni()
 	{
-		_Name = std::string("EmitterOmni");
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("EmitterOmni");
 	}
 
 	/// Serialisation
@@ -539,7 +544,7 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 		CPSEmitterRectangle() : _Dir(-NLMISC::CVector::K)
 		{
-			_Name = std::string("EmitterRectangle");
+			if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("EmitterRectangle");
 		}
 
 		/// Serialisation
@@ -612,7 +617,7 @@ public:
 
 	CPSEmitterConic() : _Radius(1.f)
 	{
-		_Name = std::string("EmitterConic");
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("EmitterConic");
 	}
 
 	/// Serialisation
@@ -651,7 +656,7 @@ public:
 
 	CPSSphericalEmitter()
 	{
-		_Name = std::string("spherical emitter");
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("spherical emitter");
 	}
 
 	/// Serialisation

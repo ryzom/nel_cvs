@@ -1,7 +1,7 @@
 /** \file ps_quad.h
  * Base quads particles.
  *
- * $Id: ps_quad.h,v 1.5 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_quad.h,v 1.6 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,8 +70,12 @@ public:
 	// from CPSParticle
 	virtual bool supportGlobalColorLighting() const { return true; }
 
+	// from CPSParticle
+	virtual void setZBias(float value);
+
 	// from CPSLocatedBindable
-	virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
+	virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);	
+
 
 protected:		
 	// dtor
@@ -168,4 +172,25 @@ public:
 #endif // NL_PS_QUAD_H
 
 /* End of ps_quad.h */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

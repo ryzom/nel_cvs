@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.10 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.11 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -240,7 +240,7 @@ CPSRibbon::CPSRibbon() : _UFactor(1.f),
 {
 	setInterpolationMode(Linear);
 	setSegDuration(0.06f);
-	_Name = std::string("Ribbon");
+	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("Ribbon");
 	setShape(Triangle, NbVerticesInTriangle);
 	_Mat.setDoubleSided(true);
 }

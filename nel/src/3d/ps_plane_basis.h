@@ -1,7 +1,7 @@
 /** \file ps_plane_basis.h
  * <File description>
  *
- * $Id: ps_plane_basis.h,v 1.5 2003/04/09 15:59:48 vizerie Exp $
+ * $Id: ps_plane_basis.h,v 1.6 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,11 +93,14 @@ inline bool operator<(const CPlaneBasis &p1, const CPlaneBasis &p2)
 }
 
 
-
-
-
-
 } // NL3D
+
+// special traits for optimization
+namespace NLMISC
+{
+	NL_TRIVIAL_TYPE_TRAITS(NL3D::CPlaneBasis);
+}
+
 
 
 #endif // NL_PS_PLANE_BASIS_H

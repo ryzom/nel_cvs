@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.15 2004/01/14 10:41:42 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.16 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "3d/primitive_block.h"
 #include "3d/shape.h"
 #include "3d/mesh.h"
+#include "3d/particle_system.h"
 
 
 #include <string>
@@ -80,7 +81,7 @@ public:
 	CPSMesh(const std::string &shape = "") : _Invalidated(false)
 	{
 		_Shape = shape;
-		_Name = std::string("Mesh");
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("Mesh");
 	}
 
 	/// set a new shape for that kind of particles
@@ -121,6 +122,10 @@ public:
 
 	// from CPSParticle
 	virtual bool supportGlobalColorLighting() const { return false; }
+
+	// from CPSParticle. No-op for meshs
+	virtual void setZBias(float value) {}
+		
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
@@ -370,6 +375,9 @@ public:
 	// from CPSParticle
 	virtual bool supportGlobalColorLighting() const { return false; }
 
+	// from CPSParticle. No-op for meshs
+	virtual void setZBias(float value) {}
+
 protected:
 	friend class CPSConstraintMeshHelper;
 	// inherited from CPSColoredParticle
@@ -452,8 +460,8 @@ protected:
 
 	
 	typedef NLMISC::CSmartPtr<CMesh>		  PMesh;
-	typedef std::vector<std::string>		  TMeshNameVect;
-	typedef std::vector<PMesh>				  TMeshVect;	
+	typedef CPSVector<std::string>::V		  TMeshNameVect;
+	typedef CPSVector<PMesh>::V				  TMeshVect;	
 
 	// name of the shapes being used by this particle mesh.
 	TMeshNameVect _MeshShapeFileName;
@@ -519,10 +527,10 @@ protected:
 	};
 
 	/// a set of precomp basis, before and after transfomation in world space, used if the hint 'RotateTheSame' has been called
-	std::vector< CPlaneBasisPair > _PrecompBasis;
+	CPSVector<CPlaneBasisPair>::V _PrecompBasis;
 
 	/// this contain an index in _PrecompBasis for each particle
-	std::vector<uint32> _IndexInPrecompBasis;
+	CPSVector<uint32>::V		  _IndexInPrecompBasis;
 
 	/// fill _IndexInPrecompBasis with index in the range [0.. nb configurations[
 	void fillIndexesInPrecompBasis(void);

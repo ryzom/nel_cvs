@@ -1,7 +1,7 @@
 /** \file ps_ribbon.h
  * Ribbons particles.
  *
- * $Id: ps_ribbon.h,v 1.6 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_ribbon.h,v 1.7 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -177,6 +177,10 @@ public:
 
 	// from CPSLocatedBindable
 	virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
+
+	// from CPSParticle
+	virtual void setZBias(float value) { CPSMaterial::setZBias(value); }	
+
 protected:		
 /// interface to derived classes
 	
@@ -242,8 +246,8 @@ private:
 			uint	getNumRibbonsInVB() const;
 	//@}	
 
-	CSmartPtr<ITexture>			 _Tex;
-	std::vector<NLMISC::CVector> _Shape;
+	CSmartPtr<ITexture>			  _Tex;
+	CPSVector<NLMISC::CVector>::V _Shape;
 	float _UFactor, _VFactor;
 			
 

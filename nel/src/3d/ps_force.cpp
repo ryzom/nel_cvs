@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.33 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.34 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1035,7 +1035,7 @@ NLMISC::CVector CPSBrownianForce::PrecomputedImpulsions[BFNumPrecomputedImpulsio
 CPSBrownianForce::CPSBrownianForce(float intensity /* = 1.f*/) : _ParametricFactor(1.f)
 {
 	setIntensity(intensity);
-	_Name = std::string("BrownianForce");
+	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("BrownianForce");
 
 }
 

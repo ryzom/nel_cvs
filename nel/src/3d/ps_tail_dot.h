@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.h
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.h,v 1.6 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_tail_dot.h,v 1.7 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,6 +105,9 @@ public:
 	virtual bool			hasLightableFaces() { 	return false; }
 
 	virtual bool			supportGlobalColorLighting() const { return true; }
+
+	// from CPSParticle
+	virtual void setZBias(float value) { CPSMaterial::setZBias(value); }	
 protected:		
 /// interface to derived classes
 	

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.19 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.20 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,8 @@
 #include "3d/ps_attrib_maker_helper.h"
 #include "3d/ps_plane_basis.h"
 #include "nel/misc/fast_floor.h"
-#include "nel/misc/object_vector.h"
+#include "nel/misc/rgba.h"
+#include "nel/misc/traits_nl.h"
 
 namespace NL3D {
 
@@ -343,11 +344,10 @@ public:
 
 	/// change the number of stages between each value
 	void setNumStages(uint32 numStages)
-	{
-		std::vector<T> v;
-		v.resize(getNumValues());
+	{				
+		std::vector<T> v(getNumValues());			
 		getValues(&v[0]);
-		setValues(&v[0], getNumValues(), numStages);
+		setValues(&v[0], getNumValues(), numStages);		
 	}
 
 	/// serialization
@@ -375,7 +375,7 @@ public:
 	
 protected:
 	// a table of Values that interpolate the values given
-	NLMISC::CObjectVector<T, false> _Tab;
+	CPSVector<T>::V _Tab;
 
 
 	// number of interpolated value between each 'key'
@@ -424,7 +424,7 @@ public:
 
 // tool function used by CPSValueGradientFunc<T>::setValues(
 template <typename T> 
-inline void computeGradient(const T *valueTab, uint32 numValues, uint32 nbStages, NLMISC::CObjectVector<T, false> &grad, T &minValue, T &maxValue)
+inline void computeGradient(const T *valueTab, uint32 numValues, uint32 nbStages, CPSVector<T>::V &grad, T &minValue, T &maxValue)
 {
 	minValue = maxValue = valueTab[0];
 	float step = 1.0f / float(nbStages);
@@ -454,7 +454,7 @@ inline void computeGradient(const T *valueTab, uint32 numValues, uint32 nbStages
 }
 
 // special optimisation for rgba
-void computeGradient(const NLMISC::CRGBA *valueTab, uint32 numValues, uint32 nbStages, NLMISC::CObjectVector<NLMISC::CRGBA, false> &grad, NLMISC::CRGBA &minValue, NLMISC::CRGBA &maxValue);
+void computeGradient(const NLMISC::CRGBA *valueTab, uint32 numValues, uint32 nbStages, CPSVector<CRGBA>::V &grad, NLMISC::CRGBA &minValue, NLMISC::CRGBA &maxValue);
 
 	
 template <typename T> 
@@ -471,8 +471,6 @@ inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValu
 }
 
 
-// special optimization for rgba
-void CPSValueGradientFunc<NLMISC::CRGBA>::setValues(const NLMISC::CRGBA *valueTab, uint32 numValues, uint32 nbStages);
 
 
 
@@ -503,18 +501,19 @@ void CPSValueGradientFunc<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(numVal);		
 		_NbValues = (numVal - 1) * _NbStages;
 
-		// create the table on the stack for small gradient
-		if (numVal < 256)
-		{
-			T tab[256];
+		// create the table on the stack for small gradient		
+		if (NLMISC::CTraits<T>::HasTrivialCtor && NLMISC::CTraits<T>::HasTrivialDtor && numVal < 256)
+		{			
+			uint8 tab[sizeof(T) * 256]; // avoid empty ctor calls
+			T *tabT = (T *) tab;
 			for (uint32 k = 0; k < numVal; ++k)
 			{
-				f.serial(tab[k]);
+				f.serial(tabT[k]);
 			}
-			setValues(tab, numVal, _NbStages);
+			setValues(tabT, numVal, _NbStages);
 		}	
 		else
-		{
+		{			
 			std::vector<T> tab(numVal);
 			for (uint32 k = 0; k < numVal; ++k)
 			{

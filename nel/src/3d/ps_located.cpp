@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.65 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.66 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,8 @@
 #include "nel/misc/system_info.h"
 #include "nel/misc/common.h"
 
+//
+#include "3d/particle_system_model.h"
 
 
 #ifdef NL_DEBUG
@@ -1470,94 +1472,101 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 	if (pass == PSMotion)
 	{		
 
-		
-		// check wether we must perform LOD degradation
-		if (_LODDegradation)
-		{
-			if (ellapsedTime > 0)
+		{						
+			MINI_TIMER(PSMotion1)
+			// check wether we must perform LOD degradation
+			if (_LODDegradation)
 			{
-				nlassert(_Owner);
-				// compute the number of particles to show
-				const uint maxToHave = (uint) (_MaxSize * _Owner->getOneMinusCurrentLODRatio());
-				if (_Size > maxToHave) // too much instances ?
+				if (ellapsedTime > 0)
 				{
-					// choose a random element to start at, and a random step
-					// this will avoid a pulse effect when the system is far away
-					
-					uint pos = maxToHave ? rand() % maxToHave : 0;
-					uint step  = maxToHave ? rand() % maxToHave : 0;
-
-					do
+					nlassert(_Owner);
+					// compute the number of particles to show
+					const uint maxToHave = (uint) (_MaxSize * _Owner->getOneMinusCurrentLODRatio());
+					if (_Size > maxToHave) // too much instances ?
 					{
-						deleteElement(pos);
-						pos += step;
-						if (pos >= maxToHave) pos -= maxToHave;
+						// choose a random element to start at, and a random step
+						// this will avoid a pulse effect when the system is far away
+						
+						uint pos = maxToHave ? rand() % maxToHave : 0;
+						uint step  = maxToHave ? rand() % maxToHave : 0;
+
+						do
+						{
+							deleteElement(pos);
+							pos += step;
+							if (pos >= maxToHave) pos -= maxToHave;
+						}
+						while (_Size !=maxToHave);				
 					}
-					while (_Size !=maxToHave);				
 				}
 			}
 		}
 
-
+				
 		// check if we must skip frames
 		if (!_NbFramesToSkip || !( (uint32) _Owner->getDate() % (_NbFramesToSkip + 1)))
 		{
 			
-
-			// update the located creation requests that may have been posted
-			updateNewElementRequestStack();
-
+			{						
+				MINI_TIMER(PSMotion2)
+				// update the located creation requests that may have been posted
+				updateNewElementRequestStack();
+			}
 
 			// there are 2 integration steps : with and without collisions
 
 			if (!_CollisionInfo) // no collisionner are used
 			{
-				if (_Size != 0) // avoid referencing _Pos[0] if there's no size, causes STL vectors to assert...
-					IntegrateSpeed(_Size * 3, &_Pos[0].x, &_Speed[0].x, ellapsedTime);
+				{						
+					MINI_TIMER(PSMotion3)
+					if (_Size != 0) // avoid referencing _Pos[0] if there's no size, causes STL vectors to assert...
+						IntegrateSpeed(_Size * 3, &_Pos[0].x, &_Speed[0].x, ellapsedTime);
+				}
 			}
 			else
 			{
-				// integration with collisions
+				{						
+					MINI_TIMER(PSMotion4)
+					// integration with collisions
+					nlassert(_CollisionInfo);
+					TPSAttribCollisionInfo::iterator itc = _CollisionInfo->begin();
+					TPSAttribVector::iterator itSpeed = _Speed.begin();		
+					TPSAttribVector::iterator itPos = _Pos.begin();		
 
-				nlassert(_CollisionInfo);
-				TPSAttribCollisionInfo::iterator itc = _CollisionInfo->begin();
-				TPSAttribVector::iterator itSpeed = _Speed.begin();		
-				TPSAttribVector::iterator itPos = _Pos.begin();		
-
-				for (uint k = 0; k < _Size;)
-				{
-					if (itc->dist != -1)
+					for (uint k = 0; k < _Size;)
 					{
-						(*itPos) = itc->newPos;
-						(*itSpeed) = itc->newSpeed;
-						// notify each located bindable that a bounce occured ...
-						for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
-						{	
-							(*it)->bounceOccured(k);
-						}
-						switch(itc->collisionZone->getCollisionBehaviour())
+						if (itc->dist != -1)
 						{
-							case CPSZone::bounce:
-								itc->reset();
-								++k, ++itPos, ++itSpeed, ++itc;
-							break;
-							case CPSZone::destroy:
-								deleteElement(k);
-							break;
+							(*itPos) = itc->newPos;
+							(*itSpeed) = itc->newSpeed;
+							// notify each located bindable that a bounce occured ...
+							for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+							{	
+								(*it)->bounceOccured(k);
+							}
+							switch(itc->collisionZone->getCollisionBehaviour())
+							{
+								case CPSZone::bounce:
+									itc->reset();
+									++k, ++itPos, ++itSpeed, ++itc;
+								break;
+								case CPSZone::destroy:
+									deleteElement(k);
+								break;
+							}
+						}
+						else
+						{
+							(*itPos) += ellapsedTime * (*itSpeed) * itc->TimeSliceRatio;
+							itc->reset();
+							++k, ++itPos, ++itSpeed, ++itc;
 						}
 					}
-					else
-					{
-						(*itPos) += ellapsedTime * (*itSpeed) * itc->TimeSliceRatio;
-						itc->reset();
-						++k, ++itPos, ++itSpeed, ++itc;
-					}
-				}
 
-				
-				// reset collision info for the next time => done during the traversal
-				/// resetCollisionInfo();
-				
+					
+					// reset collision info for the next time => done during the traversal
+					/// resetCollisionInfo();
+				}				
 			}		
 		}
 		else
@@ -1568,14 +1577,28 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 
 	if (pass != PSMotion)
 	{
-		// apply the pass to all bound objects
-		for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
-		{
-			if ((*it)->isActive())
-			{			
-				if ((*it)->getLOD() == PSLod1n2 || _Owner->getLOD() == (*it)->getLOD()) // has this object the right LOD ?
-				{
-					(*it)->step(pass, ellapsedTime, realEt);
+		{			
+			/*
+			uint64 *target;
+			switch(pass)
+			{
+				case PSEmit: target = &PSStatEmit; break;
+				case PSCollision: target = &PSStatCollision; break;
+				default:
+					target = &PSStatRender;
+				break;
+			}
+			MINI_TIMER(*target)
+			*/
+			// apply the pass to all bound objects
+			for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+			{
+				if ((*it)->isActive())
+				{			
+					if ((*it)->getLOD() == PSLod1n2 || _Owner->getLOD() == (*it)->getLOD()) // has this object the right LOD ?
+					{
+						(*it)->step(pass, ellapsedTime, realEt);
+					}
 				}
 			}
 		}
@@ -1829,7 +1852,7 @@ void CPSLocated::unregisterIntegrableForce(CPSForce *f)
 {
 	CHECK_PS_INTEGRITY
 	nlassert(f->getOwner()); // f must be attached to a located
-	std::vector<CPSForce *>::iterator it = std::find(_IntegrableForces.begin(), _IntegrableForces.end(), f);
+	CPSVector<CPSForce *>::V::iterator it = std::find(_IntegrableForces.begin(), _IntegrableForces.end(), f);
 	nlassert(it != _IntegrableForces.end() );	
 	_IntegrableForces.erase(it);
 	if (getMatrixMode() != f->getOwner()->getMatrixMode())
@@ -1978,8 +2001,8 @@ void CPSLocatedBindable::notifyTargetRemoved(CPSLocated *ptr)
 ///***************************************************************************************
 void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(4);
-	f.serialPtr(_Owner);
+	sint ver = f.serialVersion(4);	
+	f.serialPtr(_Owner);	
 	if (ver > 1) f.serialEnum(_LOD);
 	if (ver > 2) 
 	{
@@ -2277,6 +2300,13 @@ void CPSLocated::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriv
 	}
 }
 
-
+///***************************************************************************************
+void CPSLocated::setZBias(float value)
+{
+	for(TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+	{
+		(*it)->setZBias(value);
+	}
+}
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.9 2003/12/05 11:08:17 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.10 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ CPSTailDot::CPSTailDot() : _ColorFading(false),
 {
 	setInterpolationMode(Linear);
 	setSegDuration(0.06f);
-	_Name = std::string("TailDot");
+	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("TailDot");
 }
 
 //=======================================================	

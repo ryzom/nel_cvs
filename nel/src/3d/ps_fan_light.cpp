@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.8 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_fan_light.cpp,v 1.9 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -408,7 +408,7 @@ CPSFanLight::CPSFanLight(uint32 nbFans) : _NbFans(nbFans),
 
 
 	init();
-	_Name = std::string("FanLight");
+	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("FanLight");
 }
 
 

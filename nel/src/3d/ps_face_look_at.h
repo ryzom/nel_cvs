@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.h
  * Face look at particles.
  *
- * $Id: ps_face_look_at.h,v 1.5 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_face_look_at.h,v 1.6 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,6 +130,8 @@ protected:
 	virtual CPSLocated		*getAngle2DOwner(void) { return _Owner; }
 
 };
+
+extern uint64 PSLookAtRenderTime;
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.24 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.25 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,10 @@
 #include "3d/dru.h"
 #include "3d/particle_system.h"
 #include "nel/misc/plane.h"
+
+// tmp
+
+#include "3d/particle_system_model.h"
 
 #include <math.h>
 #include <limits>
@@ -210,6 +214,7 @@ void CPSZonePlane::deleteElement(uint32 index)
 
 void CPSZonePlane::performMotion(TAnimationTime ellapsedTime)
 {
+	MINI_TIMER(PSStatsZonePlane)
 	// for each target, we must check wether they are going through the plane
 	// if so they must bounce
 	TPSAttribVector::const_iterator planePosIt, planePosEnd, normalIt, targetPosIt, targetPosEnd;
@@ -323,6 +328,7 @@ void CPSZonePlane::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 void CPSZoneSphere::performMotion(TAnimationTime ellapsedTime)
 {
+	MINI_TIMER(PSStatsZoneSphere)		
 	// for each target, we must check wether they are going through the plane
 	// if so they must bounce
 
@@ -526,6 +532,7 @@ void CPSZoneSphere::deleteElement(uint32 index)
 
 void CPSZoneDisc::performMotion(TAnimationTime ellapsedTime)
 {
+	MINI_TIMER(PSStatsZoneDisc)		
 	// for each target, we must check wether they are going through the disc
 	// if so they must bounce
 	TPSAttribVector::const_iterator discPosIt, discPosEnd, normalIt, targetPosIt, targetPosEnd;
@@ -938,6 +945,7 @@ void CPSZoneCylinder::performMotion(TAnimationTime ellapsedTime)
 
 void CPSZoneCylinder::performMotion(TAnimationTime ellapsedTime)
 {
+	MINI_TIMER(PSStatsZoneCylinder)
 	TPSAttribVector::const_iterator dimIt;
 	CPSAttrib<CPlaneBasis>::const_iterator basisIt;
 	TPSAttribVector::const_iterator cylinderPosIt, cylinderPosEnd, targetPosIt, targetPosEnd;
@@ -1266,7 +1274,7 @@ void CPSZoneCylinder::deleteElement(uint32 index)
 
 void CPSZoneRectangle::performMotion(TAnimationTime ellapsedTime)
 {
-
+	MINI_TIMER(PSStatsZoneRectangle)
 	// for each target, we must check wether they are going through the rectangle
 	// if so they must bounce
 	TPSAttribVector::const_iterator rectanglePosIt, rectanglePosEnd, targetPosIt, targetPosEnd;

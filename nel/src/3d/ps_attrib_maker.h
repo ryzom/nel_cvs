@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.13 2003/04/09 16:03:06 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.14 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,13 +27,10 @@
 #define NL_PS_ATTRIB_MAKER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/object_arena_allocator.h"
 #include "3d/ps_attrib.h"
 #include "3d/ps_located.h"
 #include "nel/misc/stream.h"
-
- 
-
-
 
 
 namespace NL3D {
@@ -106,6 +103,8 @@ public:
 	virtual const char *getType() = 0;
 	// duplicate this attribute maker
 	virtual CPSAttribMakerBase *clone() const = 0;
+	// fast alloc for attrib makers
+	PS_FAST_OBJ_ALLOC
 };
 
 

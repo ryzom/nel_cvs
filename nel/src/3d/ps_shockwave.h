@@ -1,7 +1,7 @@
 /** \file ps_shockwave.h
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.h,v 1.5 2004/02/19 09:49:43 vizerie Exp $
+ * $Id: ps_shockwave.h,v 1.6 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,9 @@ public:
 
 	// from CPSLocatedBindable
 	virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
+
+	// from CPSParticle
+	virtual void setZBias(float value) { CPSMaterial::setZBias(value); }	
 
 protected:
 

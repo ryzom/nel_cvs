@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.30 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_located.h,v 1.31 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,8 @@
 #include "3d/ps_attrib.h" // an attribute template container
 #include "3d/ps_lod.h"
 #include "nel/misc/stream.h"
+//
+#include "nel/misc/object_arena_allocator.h"
 
 namespace NLMISC
 {
@@ -128,6 +130,7 @@ typedef CPSAttrib<CPSCollisionInfo> TPSAttribCollisionInfo;
 class CPSLocated : public CParticleSystemProcess
 {
 public:
+	PS_FAST_OBJ_ALLOC
 	/// Constructor
 	CPSLocated();
 
@@ -567,8 +570,11 @@ public:
 	// from CParticleSystemProcess
 	 virtual uint	getUserMatrixUsageCount() const;	
 
-	 // from CPSProcess
+	 // from CParticleSystemProcess
 	 virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
+
+	 // from CParticleSystemProcess
+	 virtual void setZBias(float value);	 
 	
 protected:
 
@@ -585,7 +591,7 @@ protected:
 	uint32 _NbFramesToSkip;
 
 	// container of all object that are bound to a located
-	typedef std::vector< CPSLocatedBindable *> TLocatedBoundCont;
+	typedef CPSVector<CPSLocatedBindable *>::V TLocatedBoundCont;
 
 
 	// the list of all located
@@ -707,7 +713,7 @@ protected:
 	 /// this prepare the located ofr collision tests
 	 void resetCollisionInfo(void);
 	
-	 typedef std::vector<CPSLocatedBindable *>			TDtorObserversVect;
+	 typedef CPSVector<CPSLocatedBindable *>::V			TDtorObserversVect;
 	 TDtorObserversVect									_DtorObserversVect;
 
 	 /// true when LOD degradation apply to this located
@@ -720,7 +726,7 @@ protected:
 	 /// number of forces that apply on that located that have the same basis that this one (required for parametric animation)
 	 uint16												_NumIntegrableForceWithDifferentBasis;
 	 /// a vector of integrable forces that apply on this located
-	 typedef std::vector<CPSForce *>					TForceVect;
+	 typedef CPSVector<CPSForce *>::V					TForceVect;
 	 TForceVect											_IntegrableForces;
 	 bool												_TriggerOnDeath;
 	uint32												_TriggerID;
@@ -806,6 +812,7 @@ const uint32 PSSound = 5;
 class CPSLocatedBindable : public NLMISC::IStreamable
 {
 public:	
+	PS_FAST_OBJ_ALLOC
 	///\name Object
 	//@{
 		/// ctor	
@@ -957,6 +964,8 @@ public:
 	// enum tex used by the object, and append them to dest
 	virtual	void			enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv) {}
 	
+	// change z-bias in material (default does nothing)
+	virtual void			setZBias(float value) {}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1098,7 +1107,7 @@ protected:
 	 * This also call releaseTargetRsc for clean up
 	 */		
 	virtual void		notifyTargetRemoved(CPSLocated *ptr);
-	typedef std::vector<CPSLocated *> TTargetCont;
+	typedef CPSVector<CPSLocated *>::V TTargetCont;
 	TTargetCont _Targets;	
 
 };

@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.6 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.7 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -192,7 +192,7 @@ CPSShockWave::CPSShockWave(uint nbSeg, float radiusCut, CSmartPtr<ITexture> tex)
 	nlassert(nbSeg > 2 && nbSeg <= 64);
 	setTexture(tex);
 	init();
-	_Name = std::string("ShockWave");
+	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("ShockWave");
 }
 
 ///=================================================================================

@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.18 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_force.h,v 1.19 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -360,7 +360,7 @@ class CPSDirectionnalForce : public CPSForceIntensityHelper, public CPSDirection
 
 	CPSDirectionnalForce(float i = 1.f) 
 	{ 
-		_Name = std::string("DirectionnalForce"); 
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("DirectionnalForce"); 
 		setIntensity(i); 
 		_Dir = NLMISC::CVector(0, 0, -1);
 	}
@@ -404,7 +404,7 @@ public:
 
 	CPSGravity(float g = 9.8f) 
 	{ 
-		_Name = std::string("Gravity"); 
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("Gravity"); 
 		setIntensity(g); 
 	}
 
@@ -450,7 +450,7 @@ public:
 
 	CPSCentralGravity(float i = 1.f) 
 	{ 
-		_Name = std::string("CentralGravity"); 
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("CentralGravity"); 
 		setIntensity(i); 
 	}
 
@@ -470,7 +470,7 @@ public:
 	/// ctor : k is the coefficient of the spring
 	CPSSpring(float k = 1.0f)
 	{ 
-		_Name = std::string("Spring"); 
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("Spring"); 
 		setIntensity(k);
 	}
 
@@ -537,7 +537,7 @@ public:
 	CPSFluidFriction(float frictionCoeff = 1.f)
 	{
 		setIntensity(frictionCoeff);
-		_Name = std::string("FluidFriction");
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("FluidFriction");
 	}
 
 	// inherited from CIsotropicForceT
@@ -680,7 +680,7 @@ public:
 		nlassert(numOctaves > 0);
 		setScale(scale);	
 		setNumOctaves(numOctaves);
-		_Name = std::string("Turbulence");
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("Turbulence");
 	}
 
 	
@@ -739,7 +739,7 @@ public:
 	CPSCylindricVortex(float intensity = 1.f) : _RadialViscosity(.1f), _TangentialViscosity(.1f) 
 	{
 		setIntensity(intensity);
-		_Name = std::string("Cylindric Vortex"); 
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("Cylindric Vortex"); 
 	}
 
 	// inherited from IPSMover
@@ -805,7 +805,7 @@ class CPSMagneticForce : public CPSDirectionnalForce
 	public:	
 	CPSMagneticForce(float i = 1.f)  : CPSDirectionnalForce(i)
 	{ 
-		_Name = std::string("MagneticForce");	
+		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("MagneticForce");	
 	}
 	virtual void performDynamic(TAnimationTime ellapsedTime);
 	/// serialization

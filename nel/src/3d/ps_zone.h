@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.11 2002/02/20 11:20:51 vizerie Exp $
+ * $Id: ps_zone.h,v 1.12 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_PS_ZONE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/stream.h"
 #include "3d/ps_force.h"
 #include "3d/ps_edit.h"
 #include "3d/ps_attrib.h"
@@ -207,7 +208,7 @@ class CPSZoneSphere : public CPSZone, public IPSMover
 
 		CPSZoneSphere()
 		{
-			_Name = std::string("ZoneSphere");
+			if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("ZoneSphere");
 		}
 	 
 	
@@ -248,7 +249,7 @@ class CPSZoneDisc : public CPSZone, public IPSMover
 	
 		CPSZoneDisc()
 		{
-			_Name = std::string("ZoneDisc");
+			if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("ZoneDisc");
 		}
 
 		NLMISC_DECLARE_CLASS(CPSZoneDisc);
@@ -295,7 +296,7 @@ class CPSZoneCylinder : public CPSZone, public IPSMover
 	
 		CPSZoneCylinder()
 		{
-			_Name = std::string("ZoneCylinder");
+			if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("ZoneCylinder");
 		}
 
 		NLMISC_DECLARE_CLASS(CPSZoneCylinder);
@@ -347,7 +348,7 @@ class CPSZoneRectangle : public CPSZone, public IPSMover
 	
 		CPSZoneRectangle()
 		{
-			_Name = std::string("CPSZoneRectangle");
+			if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("CPSZoneRectangle");
 		}
 
 		NLMISC_DECLARE_CLASS(CPSZoneRectangle);

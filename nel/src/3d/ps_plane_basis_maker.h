@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.h,v 1.11 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.12 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -200,7 +200,7 @@ public:
 	/// serial this object
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
 protected:
-	NLMISC::CObjectVector<CPlaneBasis, false>	_PBTab;
+	CPSVector<CPlaneBasis>::V   _PBTab;
 	uint32						_NbSamples;
 	NLMISC::CVector				_Axis;
 	/// update the samples tab

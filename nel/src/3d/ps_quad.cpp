@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.9 2004/02/23 13:49:05 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.10 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -206,7 +206,7 @@ CPSQuad::CPSQuad(CSmartPtr<ITexture> tex)
 	setTexture(tex);
 	init();
 	// we don't init the _IndexBuffer for now, as it will be when resize is called
-	_Name = std::string("quad");
+	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("quad");
 }
 
 
@@ -574,11 +574,19 @@ void CPSQuad::updateMatBeforeRendering(IDriver *drv)
 	}
 }
 
+//*****************************************************************************************************
 void CPSQuad::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
 {
 	CPSTexturedParticle::enumTexs(dest);
 	CPSMultiTexturedParticle::enumTexs(dest, drv);
 }
+
+//*****************************************************************************************************
+void CPSQuad::setZBias(float value)
+{
+	CPSMaterial::setZBias(value);
+}
+
 
 
 } // NL3D

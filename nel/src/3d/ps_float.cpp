@@ -1,7 +1,7 @@
 /** \file ps_float.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.18 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.19 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,12 +30,6 @@
 #include "nel/misc/fast_floor.h"
 
 namespace NL3D {
-
-
-
-
-
-float CPSFloatGradient::_DefaultGradient[] = { 0.1f, 1.0f } ;
 
 
 /////////////////////////////////////
@@ -112,12 +106,12 @@ float CPSFloatCurveFunctor::getValue(float date) const
 {
 	NLMISC::clamp(date, 0, 1);	
 	// find a key that has a higher value
-	std::vector<CCtrlPoint>::const_iterator it = _CtrlPoints.begin();
+	CPSVector<CCtrlPoint>::V::const_iterator it = _CtrlPoints.begin();
 	while ( it != _CtrlPoints.end() && it->Date <= date ) ++it;
 
 	if (it == _CtrlPoints.begin()) return _CtrlPoints[0].Value;
 	if (it == _CtrlPoints.end()) return _CtrlPoints[_CtrlPoints.size() - 1].Value;
-	std::vector<CCtrlPoint>::const_iterator precIt = it - 1;
+	CPSVector<CCtrlPoint>::V::const_iterator precIt = it - 1;
 	if (precIt->Date == it->Date) return 0.5f * (precIt->Value + it->Value);
 	const float lambda = (date - precIt->Date) / (it->Date - precIt->Date);
 	if (!_Smoothing) // linear interpolation

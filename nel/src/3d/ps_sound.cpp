@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.27 2004/02/11 14:08:53 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.28 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ CPSSound::CPSSound() : _Gain(1.f),
 					   _SoundReactivated(false),
 					   _UseOriginalPitch(false)
 {
-	_Name = std::string("sound");
+	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("sound");
 	_SoundName = NLMISC::CStringMapper::emptyId();
 }
 

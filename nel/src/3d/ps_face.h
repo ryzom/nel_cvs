@@ -1,7 +1,7 @@
 /** \file ps_face.h
  * Face particles.
  *
- * $Id: ps_face.h,v 1.4 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: ps_face.h,v 1.5 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,20 @@
 #define NL_PS_FACE_H
 
 #include "3d/ps_quad.h"
+//
+#include "nel/misc/traits_nl.h"
 
 namespace NL3D 
 {
+
+struct CPlaneBasisPair
+{		
+	CPlaneBasis Basis;
+	CVector		Axis; // an axis for rotation
+	float		AngularVelocity; // an angular velocity
+};
+
+	
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,23 +135,25 @@ protected:
 	// we must store them for serialization
 	float			_MinAngularVelocity;
 	float			_MaxAngularVelocity;
-	struct CPlaneBasisPair
-	{		
-		CPlaneBasis Basis;
-		CVector Axis; // an axis for rotation
-		float AngularVelocity; // an angular velocity
-	};
-
+	
 	/// a set of precomp basis, before and after transfomation in world space, used if the hint 'RotateTheSame' has been called
-	std::vector< CPlaneBasisPair > _PrecompBasis;
+	CPSVector<CPlaneBasisPair>::V _PrecompBasis;
 
 	/// this contain an index in _PrecompBasis for each particle
-	std::vector<uint32> _IndexInPrecompBasis;	
+	CPSVector<uint32>::V _IndexInPrecompBasis;	
 };
 
 
 
+
+
 } // NL3D
+
+// special traits
+namespace NLMISC
+{
+	NL_TRIVIAL_TYPE_TRAITS(NL3D::CPlaneBasisPair)
+}
 
 
 #endif // NL_PS_FACE_H

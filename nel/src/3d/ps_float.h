@@ -1,7 +1,7 @@
 /** \file ps_float.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.13 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_float.h,v 1.14 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,17 +62,18 @@ class CPSFloatGradient : public CPSValueGradient<float>
 public:
 	NLMISC_DECLARE_CLASS(CPSFloatGradient);
 
+	
+	CPSFloatGradient() : CPSValueGradient<float>(1.f) {}
+
 	/**	
 	 *	Construct the value gradient blender by passing a pointer to a float table.
 	 *  \param nbStages The result is sampled into a table by linearly interpolating values. This give the number of step between each value
 	 * \param nbCycles : The nb of time the pattern is repeated during particle life. see ps_attrib_maker.h
 	 */
 
-	CPSFloatGradient(const float *floatTab = CPSFloatGradient::_DefaultGradient
-						, uint32 nbValues = 2, uint32 nbStages = 16, float nbCycles = 1.0f);
+	CPSFloatGradient(const float *floatTab, uint32 nbValues, uint32 nbStages, float nbCycles = 1.0f);
 
-	
-	static float _DefaultGradient[];
+		
 	CPSAttribMakerBase *clone() const { return new CPSFloatGradient(*this); }
 	// F is serialized by base classes...	
 };
@@ -183,9 +184,9 @@ class CPSFloatCurveFunctor
 		void						sortPoints(void);	
 		/// update the value tab
 		void						updateTab(void);	
-		std::vector<CCtrlPoint>		_CtrlPoints;
+		CPSVector<CCtrlPoint>::V	_CtrlPoints;
 		uint32						_NumSamples;
-		std::vector<float>			_Tab; // sampled version of the curve		
+		CPSVector<float>::V			_Tab; // sampled version of the curve		
 		bool						_Smoothing;
 		float						_MinValue;
 		float						_MaxValue;

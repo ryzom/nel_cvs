@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.13 2004/02/20 16:28:47 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.14 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector_2f.h"
+#include "nel/misc/stream.h"
 #include "3d/ps_located.h"
 #include "3d/ps_plane_basis.h"
 #include "3d/material.h"
@@ -137,6 +138,9 @@ public:
 
 	/// Test wether Auto-LOD is disabled.
 	bool    isAutoLODDisabled() const { return _DisableAutoLOD; }	
+
+	// Change z-bias of material. this must be redefined for all renderable particles
+	virtual void			setZBias(float value) = 0;
 
 protected:
 
@@ -832,7 +836,10 @@ public:
 	void enableZTest(bool enabled);
 	// test if z test is enabled
 	bool isZTestEnabled() const;
-	
+
+	// set z-bias. This state isn't serialized
+	void setZBias(float value) { _Mat.setZBias(value); }	
+
 protected:
 	CMaterial _Mat;		
 };

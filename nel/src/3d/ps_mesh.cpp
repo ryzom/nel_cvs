@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.31 2004/01/14 10:41:42 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.32 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -947,7 +947,7 @@ CPSConstraintMesh::CPSConstraintMesh() : _NumFaces(0),
 										 _MorphValue(0),
 										 _MorphScheme(NULL)
 {		
-	_Name = std::string("ConstraintMesh");
+	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("ConstraintMesh");
 }
 
 //====================================================================================
@@ -1134,8 +1134,8 @@ void CPSConstraintMesh::getShapeNumVerts(std::vector<sint> &numVerts)
 bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 {		
 	bool ok = true;
-	if (!_Touched) return ok;
-
+	if (!_Touched) return ok;	
+	
 	clean();
 	
 	nlassert(_Owner->getScene());
@@ -1292,7 +1292,8 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 	_GlobalAnimDate = _Owner->getOwner()->getSystemDate();
 	_Touched = 0;
 	_ValidBuild = ok ? 1 : 0;
-	nlassert(_Meshes.size() > 0);
+	nlassert(_Meshes.size() > 0);		
+
 	return ok;
 	
 }
@@ -1343,7 +1344,7 @@ void CPSConstraintMesh::fillIndexesInPrecompBasis(void)
 	{
 		_IndexInPrecompBasis.resize( _Owner->getMaxSize() );
 	}	
-	for (std::vector<uint32>::iterator it = _IndexInPrecompBasis.begin(); it != _IndexInPrecompBasis.end(); ++it)
+	for (CPSVector<uint32>::V::iterator it = _IndexInPrecompBasis.begin(); it != _IndexInPrecompBasis.end(); ++it)
 	{
 		*it = rand() % nbConf;
 	}
@@ -1554,7 +1555,7 @@ CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb, TA
 	// rotate basis
 	// and compute the set of prerotated meshs that will then duplicated (with scale and translation) to create the Vb of what must be drawn
 	uint8 *outVertex = (uint8 *) prerotatedVb.getVertexCoordPointer();
-	for (std::vector< CPlaneBasisPair >::iterator it = _PrecompBasis.begin(); it != _PrecompBasis.end(); ++it)
+	for (CPSVector<CPlaneBasisPair>::V::iterator it = _PrecompBasis.begin(); it != _PrecompBasis.end(); ++it)
 	{
 		// not optimized at all, but this will apply to very few elements anyway...
 		CMatrix mat;
@@ -2047,12 +2048,15 @@ CPSConstraintMesh::CMeshDisplay &CPSConstraintMesh::CMeshDisplayShare::getMeshDi
 		_Cache.pop_back(); // remove least recently used mesh
 		-- _NumMD;
 	}
+	//NLMISC::TTicks start = NLMISC::CTime::getPerformanceTime();	
 	_Cache.push_front(CMDEntry());
 	_Cache.front().Mesh = mesh;
 	_Cache.front().Format = format;
 	buildRdrPassSet(_Cache.front().MD.RdrPasses, *mesh);
 	buildVB(_Cache.front().MD.VB, *mesh, format);
 	++ _NumMD;
+	/*NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
+	nlinfo("mesh setup time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(end - start)));	*/
 	return _Cache.front().MD;
 }
 

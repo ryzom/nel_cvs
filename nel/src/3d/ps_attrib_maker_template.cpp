@@ -1,6 +1,6 @@
 /** \file ps_attrib_maker_template.cpp
  *
- * $Id: ps_attrib_maker_template.cpp,v 1.1 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_attrib_maker_template.cpp,v 1.2 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -31,7 +31,7 @@ namespace NL3D
 {
 
 
-void computeGradient(const NLMISC::CRGBA *valueTab, uint32 numValues, uint32 nbStages, NLMISC::CObjectVector<NLMISC::CRGBA, false> &grad, NLMISC::CRGBA &minValue, NLMISC::CRGBA &maxValue)
+void computeGradient(const NLMISC::CRGBA *valueTab, uint32 numValues, uint32 nbStages, CPSVector<NLMISC::CRGBA>::V &grad, NLMISC::CRGBA &minValue, NLMISC::CRGBA &maxValue)
 {	
 	nlassert(numValues > 1);
 	nlassert(nbStages > 0);

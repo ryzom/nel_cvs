@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.h
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.h,v 1.7 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_ribbon_look_at.h,v 1.8 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,6 +111,9 @@ public:
 	virtual bool					supportGlobalColorLighting() const { return true; }	
 	// from CPSLocatedBindable
 	virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
+
+	// from CPSParticle
+	virtual void setZBias(float value) { CPSMaterial::setZBias(value); }	
 protected:		
 
 	CSmartPtr<ITexture>				_Tex;

@@ -1,7 +1,7 @@
 /** \file ps_dot.h
  * Dot particles
  *
- * $Id: ps_dot.h,v 1.4 2003/08/08 16:55:01 vizerie Exp $
+ * $Id: ps_dot.h,v 1.5 2004/03/04 14:29:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "3d/ps_particle_basic.h"
 #include "3d/vertex_buffer.h"
+#include "3d/particle_system.h"
 
 
 namespace NL3D {
@@ -44,7 +45,11 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 {
 public:					
 	/// ctor
-	CPSDot() { init(); _Name = std::string("point");}
+	CPSDot() 
+	{ 
+		init(); 
+		if (CParticleSystem::getSerializeIdentifierFlag()); _Name = std::string("point");
+	}
 
 	NLMISC_DECLARE_CLASS(CPSDot);
 
@@ -68,6 +73,9 @@ public:
 
 	// from CPSParticle
 	virtual bool supportGlobalColorLighting() const { return true; }
+
+	// from CPSParticle
+	virtual void setZBias(float value) { CPSMaterial::setZBias(value); }	
 
 protected:	
 	virtual void draw(bool opaque);

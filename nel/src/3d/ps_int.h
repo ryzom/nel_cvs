@@ -1,7 +1,7 @@
 /** \file ps_int.h
  * <File description>
  *
- * $Id: ps_int.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_int.h,v 1.2 2001/07/04 12:30:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,6 +108,30 @@ public:
 	// F is serialized by base classes...	
 
 } ;
+
+/** this memorize value by applying some function on the emitter. For a particle's attribute, each particle has its
+  * own value memorized
+  *  You MUST called setScheme (from CPSAttribMakerMemory) to tell how the value will be generted
+  */
+class CPSIntMemory : public CPSAttribMakerMemory<sint32>
+{
+public:
+	NLMISC_DECLARE_CLASS(CPSIntMemory) ;
+	CPSIntMemory() { setDefaultValue(0) ; }
+} ;
+
+
+/** this memorize value by applying some function on the emitter. For a particle's attribute, each particle has its
+  * own value memorized
+  *  You MUST called setScheme (from CPSAttribMakerMemory) to tell how the value will be generted
+  */
+class CPSUIntMemory : public CPSAttribMakerMemory<uint32>
+{
+public:
+	CPSUIntMemory() { setDefaultValue(0) ; }
+	NLMISC_DECLARE_CLASS(CPSUIntMemory) ;
+} ;
+
 
 
 } // NL3D

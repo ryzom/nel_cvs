@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.33 2002/06/14 14:44:55 corvazier Exp $
+ * $Id: displayer.cpp,v 1.34 2002/07/02 15:56:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdmisc.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include <iostream>
@@ -468,7 +469,7 @@ void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message
 		if (result == IDABORT)
 		{
 			// Exit the program now
-			exit (-1);
+			exit (EXIT_FAILURE);
 		}
 		else if (result == IDRETRY)
 		{

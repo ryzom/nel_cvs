@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.46 2003/04/16 16:57:37 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.47 2003/04/16 16:59:53 lecroart Exp $
  *
  */
 
@@ -211,7 +211,7 @@ vector<string> GraphUpdate;	// contains *all* the graph update
 //
 //
 
-template <class T>
+/*template <class T>
 class CVariable2 : public ICommand
 {
 public:
@@ -302,7 +302,7 @@ private:
 
 CVariable2<int> Toto("Toto", "help", 10);
 
-
+*/
 
 //
 // Alarms

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.64 2003/03/19 15:44:57 cado Exp $
+ * $Id: unified_network.cpp,v 1.65 2003/04/23 16:28:36 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1585,7 +1585,7 @@ void CUnifiedNetwork::displayInternalTables (NLMISC::CLog *log)
 	{
 		if(_IdCnx[i].State != CUnifiedNetwork::CUnifiedConnection::NotUsed)
 		{
-			log->displayNL ("> %s-%hu %s %s %s (%d extaddr %d cnx) tcbc %d", _IdCnx[i].ServiceName.c_str (), _IdCnx[i].ServiceId, _IdCnx[i].IsExternal?"ext":"int", _IdCnx[i].AutoRetry?"autoretry":"noautoretry", _IdCnx[i].SendId?"sendid":"nosendid", _IdCnx[i].ExtAddress.size (), _IdCnx[i].Connection.size (), _IdCnx[i].TotalCallbackCalled);
+/*			log->displayNL ("> %s-%hu %s %s %s (%d extaddr %d cnx) tcbc %d", _IdCnx[i].ServiceName.c_str (), _IdCnx[i].ServiceId, _IdCnx[i].IsExternal?"ext":"int", _IdCnx[i].AutoRetry?"autoretry":"noautoretry", _IdCnx[i].SendId?"sendid":"nosendid", _IdCnx[i].ExtAddress.size (), _IdCnx[i].Connection.size (), _IdCnx[i].TotalCallbackCalled);
 			uint maxc = _IdCnx[i].Connection.size ();
 			if(_IdCnx[i].Connection.size () <= _IdCnx[i].ExtAddress.size ())
 				maxc = _IdCnx[i].ExtAddress.size ();
@@ -1626,7 +1626,9 @@ void CUnifiedNetwork::displayInternalTables (NLMISC::CLog *log)
 				}
 
 				log->displayNL ("     - %s %s", base.c_str (), ext.c_str ());
-			}
+			}*/
+
+			_IdCnx[i].display (false, log);
 			for (j = 0; j < _IdCnx[i].NetworkConnectionAssociations.size (); j++)
 			{
 				log->displayNL ("     * nid %d -> cnxn %hu", j, (uint16)_IdCnx[i].NetworkConnectionAssociations[j]);
@@ -1788,6 +1790,62 @@ void CUnifiedNetwork::callServiceDownCallback (const std::string &serviceName, u
 		}
 	}
 }
+
+void CUnifiedNetwork::CUnifiedConnection::display (bool full, CLog *log)
+{
+	log->displayNL ("> %s-%hu %s %s %s (%d ExtAddr %d Cnx) TotalCb %d", ServiceName.c_str (), ServiceId, IsExternal?"External":"NotExternal",
+		AutoRetry?"AutoRetry":"NoAutoRetry", SendId?"SendId":"NoSendId", ExtAddress.size (), Connection.size (), TotalCallbackCalled);
+	
+	uint maxc = std::max (ExtAddress.size (), Connection.size ());
+	
+	for (uint j = 0; j < maxc; j++)
+	{
+		string base;
+		if(j < ExtAddress.size ())
+		{
+			base += ExtAddress[j].asString ();
+		}
+		else
+		{
+			base += "NotValid";
+		}
+		
+		string ext;
+		if(j < Connection.size () && Connection[j].valid())
+		{
+			if(Connection[j].IsServerConnection)
+			{
+				ext += "Server ";
+			}
+			else
+			{
+				ext += "Client ";
+			}
+			ext += Connection[j].CbNetBase->getSockId (Connection[j].HostId)->asString ();
+			ext += " AppId:" + toString(Connection[j].getAppId());
+			if (Connection[j].CbNetBase->connected ())
+				ext += " Connected";
+			else
+				ext += " NotConnected";
+		}
+		else
+		{
+			ext += "NotValid";
+		}
+		
+		log->displayNL ("  - %s %s", base.c_str (), ext.c_str ());
+		if(full)
+		{
+			log->displayNL ("     * ReceiveQueueStat");
+			Connection[j].CbNetBase->displayReceiveQueueStat(log);
+			log->displayNL ("     * SendQueueStat");
+			Connection[j].CbNetBase->displaySendQueueStat(log, Connection[j].HostId);
+			log->displayNL ("     * ThreadStat");
+			Connection[j].CbNetBase->displayThreadStat(log);
+		}
+	}
+}
+
 
 
 //
@@ -2019,54 +2077,7 @@ NLMISC_COMMAND(l5QueuesStats, "Displays queues stats of network layer5", "")
 	{
 		if(CUnifiedNetwork::getInstance()->_IdCnx[i].State != CUnifiedNetwork::CUnifiedConnection::NotUsed)
 		{
-			log.displayNL ("> %s-%hu %s %s %s (%d extaddr %d cnx) tcbc %d", CUnifiedNetwork::getInstance()->_IdCnx[i].ServiceName.c_str (), CUnifiedNetwork::getInstance()->_IdCnx[i].ServiceId, CUnifiedNetwork::getInstance()->_IdCnx[i].IsExternal?"ext":"int", CUnifiedNetwork::getInstance()->_IdCnx[i].AutoRetry?"autoretry":"noautoretry", CUnifiedNetwork::getInstance()->_IdCnx[i].SendId?"sendid":"nosendid", CUnifiedNetwork::getInstance()->_IdCnx[i].ExtAddress.size (), CUnifiedNetwork::getInstance()->_IdCnx[i].Connection.size (), CUnifiedNetwork::getInstance()->_IdCnx[i].TotalCallbackCalled);
-			uint maxc = CUnifiedNetwork::getInstance()->_IdCnx[i].Connection.size ();
-			if(CUnifiedNetwork::getInstance()->_IdCnx[i].Connection.size () <= CUnifiedNetwork::getInstance()->_IdCnx[i].ExtAddress.size ())
-				maxc = CUnifiedNetwork::getInstance()->_IdCnx[i].ExtAddress.size ();
-			
-			for (uint j = 0; j < maxc; j++)
-			{
-				string base;
-				if(j < CUnifiedNetwork::getInstance()->_IdCnx[i].ExtAddress.size ())
-				{
-					base += CUnifiedNetwork::getInstance()->_IdCnx[i].ExtAddress[j].asString ();
-				}
-				else
-				{
-					base += "notvalid";
-				}
-				
-				string ext;
-				if(j < CUnifiedNetwork::getInstance()->_IdCnx[i].Connection.size () && CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].valid())
-				{
-					if(CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].IsServerConnection)
-					{
-						ext += "server ";
-					}
-					else
-					{
-						ext += "client ";
-					}
-					ext += CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].CbNetBase->getSockId (CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].HostId)->asString ();
-					ext += " appid:" + toString(CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].getAppId());
-					if (CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].CbNetBase->connected ())
-						ext += " connected";
-					else
-						ext += " notconnected";
-				}
-				else
-				{
-					ext += "notvalid";
-				}
-				
-				log.displayNL ("  - %s %s", base.c_str (), ext.c_str ());
-				log.displayNL ("     * ReceiveQueueStat");
-				CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].CbNetBase->displayReceiveQueueStat(&log);
-				log.displayNL ("     * SendQueueStat");
-				CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].CbNetBase->displaySendQueueStat(&log, CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].HostId);
-				log.displayNL ("     * ThreadStat");
-				CUnifiedNetwork::getInstance()->_IdCnx[i].Connection[j].CbNetBase->displayThreadStat(&log);
-			}
+			CUnifiedNetwork::getInstance()->_IdCnx[i].display (true, &log);
 		}
 	}
 	

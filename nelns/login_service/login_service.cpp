@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.29 2003/03/20 16:17:51 lecroart Exp $
+ * $Id: login_service.cpp,v 1.30 2003/04/23 16:29:13 lecroart Exp $
  *
  */
 
@@ -391,17 +391,18 @@ NLMISC_COMMAND (shards, "displays the list of all registered shards", "")
 	log.displayNL ("Display the %d registered shards :", Shards.size());
 	for (uint i = 0; i < Shards.size(); i++)
 	{
-		log.displayNL ("> ShardId: %d SId: %d NbPlayers: %d", Shards[i].ShardId, Shards[i].SId, Shards[i].NbPlayers);
+		log.displayNL ("* ShardId: %d SId: %d NbPlayers: %d", Shards[i].ShardId, Shards[i].SId, Shards[i].NbPlayers);
+		CUnifiedNetwork::getInstance()->displayUnifiedConnection (Shards[i].SId, &log);
 	}
 	log.displayNL ("End of the list");
 
 	return true;
 }
 
+/*
 NLMISC_COMMAND (registeredUsers, "displays the list of all registered users", "")
 {
 	if(args.size() != 0) return false;
-/*
 	log.displayNL ("Display the %d registered users :", Users.size());
 	for (uint i = 0; i < Users.size(); i++)
 	{
@@ -410,14 +411,13 @@ NLMISC_COMMAND (registeredUsers, "displays the list of all registered users", ""
 	log.displayNL ("End ot the list");
 
 	checkClients ();
-*/
 	return true;
 }
-
-NLMISC_COMMAND (onlineUsers, "displays the list of online users", "")
+*/
+/*NLMISC_COMMAND (onlineUsers, "displays the list of online users", "")
 {
 	if(args.size() != 0) return false;
-/*
+
 	uint32 nbusers = 0, nbauth = 0, nbwait = 0;
 	log.displayNL ("Display the online users :", Users.size());
 	for (uint i = 0; i < Users.size(); i++)
@@ -433,6 +433,6 @@ NLMISC_COMMAND (onlineUsers, "displays the list of online users", "")
 	log.displayNL ("End ot the list (%d online users, %d authorized, %d awaiting)", nbusers, nbauth, nbwait);
 
 	checkClients ();
-*/
 	return true;
 }
+*/

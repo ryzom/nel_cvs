@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.19 2001/03/01 15:16:47 portier Exp $
+ * $Id: agent_script.h,v 1.20 2001/03/01 17:08:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,7 +224,7 @@ namespace NLAIAGENT
 		{
 			return getAgentManager()->getAgentContext();
 		}
-		//@}		
+		//@}			
 
 		/// \name Base class member method. 
 		//@{

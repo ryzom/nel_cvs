@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.17 2001/07/04 12:33:00 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.18 2001/07/12 15:49:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "3d/material.h"
 #include "nel/misc/line.h"
 #include "3d/dru.h"
+#include "3d/particle_system.h"
 
 namespace NL3D {
 

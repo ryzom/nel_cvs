@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.120 2001/09/21 10:00:48 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.121 2001/09/26 16:49:47 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -812,6 +812,7 @@ bool CDriverGL::swapBuffers()
 	//===========================================================
 	// Same reasoning as textures :)
 	_DriverGLStates.forceDefaults();
+	_CurrentMaterial= NULL;
 
 
 	// Reset the profiling counter.
@@ -826,7 +827,6 @@ bool CDriverGL::swapBuffers()
 	{
 		_CurrentVertexBufferHard->disable();
 	}
-
 
 	return true;
 }

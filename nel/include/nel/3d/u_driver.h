@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.38 2004/03/19 10:11:33 corvazier Exp $
+ * $Id: u_driver.h,v 1.39 2004/03/19 17:49:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,6 +172,7 @@ public:
 	virtual	bool			setDisplay(const CMode &mode, bool show = true) =0;
 	virtual bool			setMode(const CMode& mode)=0;
 	virtual bool			getModes(std::vector<CMode> &modes)=0;
+	virtual bool			getCurrentScreenMode(CMode &mode)=0;
 	/// Release the window. All components are released (Texture, materials, scene, textcontexts).
 	virtual	void			release() =0;
 

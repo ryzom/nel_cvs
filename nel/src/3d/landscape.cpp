@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.141 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: landscape.cpp,v 1.142 2004/03/19 17:49:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,7 +221,7 @@ CLandscape::CLandscape() :
 	_RenderMustRefillVB= false;
 
 	// priority list.
-	_OldRefineCenterSetuped= false;
+	_MustRefineAllAtNextRefine= true;
 	_SplitPriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_NUM_ENTRIES, NL3D_REFINE_PLIST_DIST_MAX_MOD, NL3D_REFINE_PLIST_SPLIT_NUMQUADRANT);
 	// See updateRefine* Doc in tesselation.cpp for why the merge list do not need quadrants.
 	_MergePriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_NUM_ENTRIES, NL3D_REFINE_PLIST_DIST_MAX_MOD, 0);
@@ -322,6 +322,8 @@ void			CLandscape::setThreshold (float thre)
 	{
 		_Threshold= thre;
 		_VPThresholdChange= true;
+		// force refine all at next refine
+		_MustRefineAllAtNextRefine= true;
 	}
 }
 
@@ -335,6 +337,8 @@ void			CLandscape::setTileNear (float tileNear)
 	{
 		_TileDistNear= tileNear;
 		resetRenderFarAndDeleteVBFV();
+		// force refine all at next refine
+		_MustRefineAllAtNextRefine= true;
 	}
 
 }
@@ -620,10 +624,10 @@ void			CLandscape::refine(const CVector &refineCenter)
 	// ==========================
 	CTessFacePListNode		rootSplitTessFaceToUpdate;
 	CTessFacePListNode		rootMergeTessFaceToUpdate;
-	if( !_OldRefineCenterSetuped )
+	if( _MustRefineAllAtNextRefine )
 	{
-		// If never refine, and setup OldRefineCetner
-		_OldRefineCenterSetuped= true;
+		// ok, first pass done, setup OldRefineCetner
+		_MustRefineAllAtNextRefine= false;
 		_OldRefineCenter= refineCenter;
 
 		// then shift all faces

@@ -1,7 +1,7 @@
 /** \file frustum.h
  * <File description>
  *
- * $Id: frustum.h,v 1.7 2003/09/15 12:01:17 corvazier Exp $
+ * $Id: frustum.h,v 1.8 2004/03/19 17:49:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,6 +106,10 @@ public:
 	 * \return the point in the frustum space (NL3D right hand axis).
 	 */
 	CVector			unProjectZ(const CVector &vec) const;
+
+	/** return the aspect ration of this frustum. this is simply (Right-Left)/(Top-Bottom)
+	 */
+	float			getAspectRatio() const;
 };
 
 

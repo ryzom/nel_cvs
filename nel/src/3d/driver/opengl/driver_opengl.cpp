@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.204 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.205 2004/03/19 17:50:32 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1417,7 +1417,24 @@ bool CDriverGL::getModes(std::vector<GfxMode> &modes)
 }
 
 // --------------------------------------------------
+bool CDriverGL::getCurrentScreenMode(GfxMode &mode)
+{
+	DEVMODE	devmode;
+	devmode.dmSize= sizeof(DEVMODE);
+	devmode.dmDriverExtra= 0;
+	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &devmode);
 
+	mode.Windowed= false;
+	mode.OffScreen= false;
+	mode.Depth= (uint8)devmode.dmBitsPerPel;
+	mode.Frequency= devmode.dmDisplayFrequency,
+	mode.Width= (uint16)devmode.dmPelsWidth;
+	mode.Height= (uint16)devmode.dmPelsHeight;
+
+	return true;
+}
+
+// --------------------------------------------------
 void CDriverGL::resetTextureShaders()
 {	
 	if (_Extensions.NVTextureShader)

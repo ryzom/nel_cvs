@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.35 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: driver_user.h,v 1.36 2004/03/19 17:49:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,6 +142,7 @@ public:
 	virtual	bool			setDisplay(const CMode &mode, bool show) ;
 	virtual bool			setMode(const CMode& mode);
 	virtual bool			getModes(std::vector<CMode> &modes);
+	virtual bool			getCurrentScreenMode(CMode &mode);
 
 	/// Release the window.
 	virtual	void			release() ;

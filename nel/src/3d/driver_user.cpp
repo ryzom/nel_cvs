@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.41 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: driver_user.cpp,v 1.42 2004/03/19 17:49:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -268,6 +268,19 @@ bool CDriverUser::getModes(std::vector<CMode> &modes)
 	modes.clear();
 	for (uint i = 0; i < vTmp.size(); ++i)
 		modes.push_back(CMode(vTmp[i].Width, vTmp[i].Height, vTmp[i].Depth, vTmp[i].Windowed, vTmp[i].Frequency));
+	return res;
+}
+
+// ***************************************************************************
+bool CDriverUser::getCurrentScreenMode(CMode &mode)
+{
+	GfxMode		gfxMode;
+	bool		res= _Driver->getCurrentScreenMode(gfxMode);
+	mode.Windowed= gfxMode.Windowed;
+	mode.Width= gfxMode.Width;
+	mode.Height= gfxMode.Height;
+	mode.Depth= gfxMode.Depth;
+	mode.Frequency= gfxMode.Frequency;
 	return res;
 }
 

@@ -1,7 +1,7 @@
 /** \file frustum.cpp
  * <File description>
  *
- * $Id: frustum.cpp,v 1.13 2003/09/25 16:09:07 berenguier Exp $
+ * $Id: frustum.cpp,v 1.14 2004/03/19 17:49:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -293,6 +293,16 @@ CVector			CFrustum::unProjectZ(const CVector &vec) const
 	return ret;
 }
 
+// ***************************************************************************
+float		CFrustum::getAspectRatio() const
+{
+	float	w= Right-Left;
+	float	h= Top-Bottom;
+	if(h!=0)
+		return w/h;
+	else
+		return 1.f;
+}
 
 
 } // NL3D

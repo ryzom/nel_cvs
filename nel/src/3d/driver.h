@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.65 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: driver.h,v 1.66 2004/03/19 17:49:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -179,6 +179,9 @@ public:
 	// Must be called after a setDisplay that initialize the mode
 	virtual bool			setMode(const GfxMode& mode)=0;
 	virtual bool			getModes(std::vector<GfxMode> &modes)=0;
+
+	/// return the current screen mode (if we are in windowed, return the screen mode behind the window)
+	virtual bool			getCurrentScreenMode(GfxMode &mode)=0;
 
 	// Return is the associated window information. (Implementation dependant)
 	// Must be a HWND for Windows (WIN32).

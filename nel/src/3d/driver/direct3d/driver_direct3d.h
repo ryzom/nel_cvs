@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_direct3d.h,v 1.2 2004/03/19 17:50:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -320,6 +320,7 @@ public:
 	// todo hulud d3d switch mode
 	virtual bool			setMode(const GfxMode& mode) {return false;};
 	virtual bool			getModes(std::vector<GfxMode> &modes);
+	virtual bool			getCurrentScreenMode(GfxMode &mode);
 	virtual bool			activate();
 	virtual bool			isActive ();
 	// todo hulud d3d vertex buffer hard

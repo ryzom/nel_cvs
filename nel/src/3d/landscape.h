@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.53 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: landscape.h,v 1.54 2004/03/19 17:49:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -898,7 +898,7 @@ private:
 	CTessFacePriorityList		_MergePriorityList;
 	/// OldRefineCenter setuped in prec refine()
 	CVector						_OldRefineCenter;
-	bool						_OldRefineCenterSetuped;
+	bool						_MustRefineAllAtNextRefine;
 	/// newTessFace() append the face to _RootNewLeaves.
 	CTessFacePListNode			_RootNewLeaves;
 	// @}

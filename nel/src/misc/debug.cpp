@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.87 2004/01/15 17:39:59 lecroart Exp $
+ * $Id: debug.cpp,v 1.88 2004/02/13 10:09:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -701,7 +701,7 @@ public:
 					else if (type == "char")
 					{
 						if (!IsBadReadPtr(addr,sizeof(char)))
-							if (isprint(*addr))
+							if (nlisprint(*addr))
 							{
 								sprintf (tmp, "'%c'", *addr);
 							}

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.17 2001/12/20 16:57:08 vizerie Exp $
+ * $Id: water_model.cpp,v 1.18 2001/12/21 10:30:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -817,7 +817,7 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 	WaterMat.setBlend(true);
 	WaterMat.setSrcBlend(CMaterial::srcalpha);
 	WaterMat.setDstBlend(CMaterial::invsrcalpha);
-	WaterMat.setZWrite(false);
+	WaterMat.setZWrite(true);
 	if (drv->isVertexProgramSupported())
 	{
 		const uint cstOffset = 4; // 4 places for the matrix

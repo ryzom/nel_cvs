@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.66 2001/06/12 15:37:59 lecroart Exp $
+ * $Id: service.cpp,v 1.67 2001/06/13 10:20:05 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -302,6 +302,7 @@ sint IService::main (int argc, char **argv)
 
 	try
 	{
+		createDebug ();
 		DebugLog->addNegativeFilter ("L3NB_ASSOC:");
 		DebugLog->addNegativeFilter ("L3NB_CB:");
 

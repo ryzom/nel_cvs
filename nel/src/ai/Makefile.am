@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.9 2001/07/27 15:40:25 valignat Exp $
+# $Id: Makefile.am,v 1.10 2001/10/04 09:56:10 chafik Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -17,9 +17,9 @@ SUBDIRS              = agent                               \
 
 lib_LTLIBRARIES      = libnelai.la
 
-libnelai_la_SOURCES  = ai.cpp                              \
-                       static_def_init.cpp                 \
-		       agent_init.cpp
+libnelai_la_SOURCES  = agent_init.cpp \
+                       static_def_init.cpp \
+                       ai.cpp
 
 libnelai_la_LIBADD   = agent/libagent.la                   \
                        character/libcharacter.la           \

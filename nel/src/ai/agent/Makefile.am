@@ -1,23 +1,48 @@
 #
-# $Id: Makefile.am,v 1.16 2001/03/26 08:44:57 chafik Exp $
+# $Id: Makefile.am,v 1.17 2001/10/04 09:56:10 chafik Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
 
 noinst_LTLIBRARIES      = libagent.la
 
-libagent_la_SOURCES     = actor.cpp actor_script.cpp agent_input.cpp \
-                          agent_local_mailer.cpp agent_nombre.cpp \
-                          agent_object.cpp agent_operator.cpp \
-                          agent_proxy_mailer.cpp agent_script.cpp \
-                          agent_string.cpp agents.cpp baseai.cpp \
-                          basic_agent.cpp digital.cpp gd_agent_script.cpp \
-                          group_type.cpp ident.cpp init_agent.cpp \
-                          list_manager.cpp mailbox.cpp main_agent_script.cpp \
-                          message_script.cpp msg.cpp msg_action.cpp \
-                          msg_container.cpp msg_debug.cpp msg_fact.cpp \
-                          msg_goal.cpp msg_group.cpp msg_notify.cpp \
-                          msg_on_change.cpp paire_type.cpp agent_3dvector.cpp
+libagent_la_SOURCES     = baseai.cpp \
+                          agents.cpp \
+                          baseia.cpp \
+                          msg.cpp \
+                          mailbox.cpp \
+                          actor.cpp \
+                          agent_3dvector.cpp \
+                          agent_input.cpp \
+                          basic_agent.cpp \
+                          agent_proxy_mailer.cpp \
+                          group_type.cpp \
+                          goal_stack.cpp \
+                          agent_operator.cpp \
+                          main_agent_script.cpp \
+                          actor_script.cpp \
+                          agent_string.cpp \
+                          agent_script.cpp \
+                          agent_timer.cpp \
+                          gd_agent_script.cpp \
+                          ident.cpp \
+                          init_agent.cpp \
+                          msg_container.cpp \
+                          msg_debug.cpp \
+                          msg_group.cpp \
+                          msg_notify.cpp \
+                          msg_on_change.cpp \
+                          paire_type.cpp \
+                          agent_local_mailer.cpp \
+                          agent_nombre.cpp \
+                          list_manager.cpp \
+                          volatil_memory.cpp \
+                          digital.cpp \
+                          msg_action.cpp \
+                          msg_goal.cpp \
+                          msg_fact.cpp \
+                          message_script.cpp \
+                          agent_object.cpp
 
 
 # End of Makefile.am

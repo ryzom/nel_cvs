@@ -1,17 +1,32 @@
 #
-# $Id: Makefile.am,v 1.7 2001/03/29 12:00:57 chafik Exp $
+# $Id: Makefile.am,v 1.8 2001/10/04 09:56:10 chafik Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
 
 noinst_LTLIBRARIES      = liblogic.la
 
-liblogic_la_SOURCES     = ai_assert.cpp bool_assert.cpp bool_cond.cpp \
-                          bool_operator.cpp boolval.cpp clause.cpp \
-                          fact.cpp factbase.cpp fo_assert.cpp \
-                          fo_operator.cpp interpret_object_operator.cpp \
-                          operator.cpp operator_script.cpp rule.cpp  fsm_seq_script.cpp fsm_script.cpp \
-                          valueset.cpp var.cpp varset.cpp goal.cpp
+liblogic_la_SOURCES     = ai_assert.cpp \
+                          bool_assert.cpp \
+                          bool_cond.cpp \
+                          bool_operator.cpp \
+                          fsm_seq_script.cpp \
+                          operator.cpp \
+                          var_mem.cpp \
+                          varset.cpp \
+                          var.cpp \
+                          clause.cpp \
+                          fo_assert.cpp \
+                          fo_operator.cpp \
+                          rule.cpp \
+                          valueset.cpp \
+                          fsm_script.cpp \
+                          fact.cpp \
+                          factbase.cpp \
+                          boolval.cpp \
+                          interpret_object_operator.cpp \
+                          goal.cpp \
+                          operator_script.cpp
 
 
 # End of Makefile.am

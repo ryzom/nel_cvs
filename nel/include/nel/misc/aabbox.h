@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.5 2002/01/28 14:20:31 vizerie Exp $
+ * $Id: aabbox.h,v 1.6 2002/04/02 15:25:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NLMISC
 {
 
 class CMatrix;
+class CBSphere;
 
 using	NLMISC::CVector;
 using	NLMISC::CPlane;
@@ -108,6 +109,8 @@ public:
 	bool			intersect(const CAABBox &box) const;
 	/// Does the bbox intersect the triangle ABC.
 	bool			intersect(const CVector &a, const CVector &b, const CVector &c) const;
+	/// Does the bbox instersect the sphere s
+	bool			intersect(const CBSphere &s) const;
 	// @}
 
 	/// \name Misc

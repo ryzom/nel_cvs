@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.4 2002/01/07 14:34:15 vizerie Exp $
+ * $Id: aabbox.cpp,v 1.5 2002/04/02 15:25:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "nel/misc/aabbox.h"
 #include "nel/misc/polygon.h"
+#include "nel/misc/bsphere.h"
 #include "nel/misc/matrix.h"
 
 
@@ -118,6 +119,21 @@ bool			CAABBox::intersect(const CVector &a, const CVector &b, const CVector &c) 
 		return false;
 	return true;
 }
+
+// ***************************************************************************
+bool			CAABBox::intersect(const CBSphere &s) const
+{
+	if (Center.x + HalfSize.x < s.Center.x - s.Radius) return false; 
+	if (Center.y + HalfSize.y < s.Center.y - s.Radius) return false; 
+	if (Center.z + HalfSize.z < s.Center.z - s.Radius) return false; 
+
+	if (Center.x - HalfSize.x > s.Center.x + s.Radius) return false; 
+	if (Center.y - HalfSize.y > s.Center.y + s.Radius) return false; 
+	if (Center.z - HalfSize.z > s.Center.z + s.Radius) return false; 
+
+	return true;
+}
+
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.32 2002/07/02 12:27:19 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.33 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include "3d/mrm_parameters.h"
 #include "3d/bone.h"
 #include "3d/mesh_geom.h"
+#include "3d/mrm_level_detail.h"
 #include <set>
 #include <vector>
 
@@ -105,6 +106,9 @@ public:
 
 	/// render() this mesh in a driver, given an instance and his materials.
 	virtual void	render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha);
+
+	/// render() this mesh as a skin
+	virtual void	renderSkin(CTransformShape *trans, float alphaMRM);
 
 	/// get an approximation of the number of triangles this instance will render for a fixed distance.
 	virtual float	getNumTriangles (float distance);
@@ -230,6 +234,10 @@ public:
 	virtual	void	endMesh(CMeshGeomRenderContext &rdrCtx) ;
 
 	// @}
+
+
+	/// get the MRM level detail information
+	const	CMRMLevelDetail		&getLevelDetail() const {return _LevelDetail;}
 
 
 // ************************
@@ -408,10 +416,6 @@ private:
 	std::vector<CLod>			_Lods;
 	/// For clipping. this is the BB of all vertices of all Lods.
 	NLMISC::CAABBoxExt			_BBox;
-	/// For Load balancing, the min number of faces this MRM use.
-	uint32						_MinFaceUsed;
-	/// For Load balancing, the max number of faces this MRM use.
-	uint32						_MaxFaceUsed;
 
 
 	/// Info for pre-loading Lods.
@@ -421,18 +425,7 @@ private:
 
 	/// \Degradation control.
 	// @{
-	/// The MRM has its max faces when dist<=DistanceFinest. nlassert if <0.
-	float						_DistanceFinest;
-	/// The MRM has 50% of its faces at dist==DistanceMiddle. nlassert if <= DistanceFinest.
-	float						_DistanceMiddle;
-	/// The MRM has faces/Divisor when dist>=DistanceCoarsest. nlassert if <= DistanceMiddle.
-	float						_DistanceCoarsest;
-
-	float						_OODistanceDelta;
-	float						_DistancePow;
-
-	/// return a float [0,1], computed from a distance (should be >0).
-	float						getLevelDetailFromDist(float dist);
+	CMRMLevelDetail				_LevelDetail;
 	// @}
 
 
@@ -470,6 +463,8 @@ private:
 	/// serial a subset of the vertices.
 	void	serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint endWedge);
 
+	/// choose the lod according to the alphaMRM [0,1] given.
+	sint	chooseLod(float alphaMRM, float &alphaLod);
 
 	/// Apply the geomorph to the _VBuffer, or the VBhard, if exist/used
 	void	applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod, IVertexBufferHard *currentVBHard);
@@ -515,9 +510,6 @@ private:
 
 	// Build bone Usage information for serialized mesh <= version 2.
 	void		buildBoneUsageVer2 ();
-
-	/// compile precalc for distanceSetup
-	void		compileDistanceSetup();
 
 	// Some runtime not serialized compilation
 	void		compileRunTime();

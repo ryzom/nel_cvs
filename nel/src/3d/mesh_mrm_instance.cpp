@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.7 2002/06/10 14:02:47 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.8 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "3d/mesh_mrm.h"
 #include "3d/skeleton_model.h"
 
+
+using namespace NLMISC;
 
 namespace NL3D 
 {
@@ -112,6 +114,36 @@ bool	CMeshMRMInstance::isSkinnable() const
 
 	// true if the mesh is skinned
 	return pMesh->getMeshGeom().isSkinned();
+}
+
+
+// ***************************************************************************
+void	CMeshMRMInstance::renderSkin(float alphaMRM)
+{
+	// Don't setup lighting or matrix in Skin. Done by the skeleton
+
+	if(Shape)
+	{
+		// Get a pointer on the shape
+		CMeshMRM *pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+
+		// render the meshGeom
+		CMeshMRMGeom	&meshGeom= const_cast<CMeshMRMGeom&>(pMesh->getMeshGeom ());
+		meshGeom.renderSkin( this, alphaMRM );
+	}
+}
+
+
+// ***************************************************************************
+const	CMRMLevelDetail		*CMeshMRMInstance::getMRMLevelDetail() const
+{
+	if(Shape)
+	{
+		CMeshMRM	*meshMrm= safe_cast<CMeshMRM*>((IShape*)Shape);
+		return &meshMrm->getMeshGeom().getLevelDetail();
+	}
+	else
+		return NULL;
 }
 
 

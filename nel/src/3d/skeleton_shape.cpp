@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * <File description>
  *
- * $Id: skeleton_shape.cpp,v 1.11 2002/03/21 16:07:51 berenguier Exp $
+ * $Id: skeleton_shape.cpp,v 1.12 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,6 +172,9 @@ CTransformShape		*CSkeletonShape::createInstance(CScene &scene)
 
 	// Must create and init skeleton bone usage to 0.
 	sm->initBoneUsages();
+
+	// For skinning: setup skeleton in Global LoadBalancing group
+	sm->setLoadBalancingGroup("Global");
 
 	return sm;
 }

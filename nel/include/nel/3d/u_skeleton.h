@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.7 2002/06/10 14:03:02 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.8 2002/07/08 10:02:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,7 @@ public:
 	// @}
 
 
-	/// \name Bone Lod interaction
+	/// \name Bone Lod interaction / MRM
 	// @{
 
 	/// return the number of bones currently animated/computed (because of bindSkin()/stickObject() / Lod system).
@@ -124,6 +124,16 @@ public:
 
 	/// see setShapeDistMax()
 	virtual float		getShapeDistMax() const =0;
+
+	/** Special version for skins. NB: skins never follow their original MRM distance setup, but follow
+	 *	this skeleton MRM setup. Default is 3-10-50. 
+	 *	NB: Unlike UInstance::changeMRMDistanceSetup(), this setup applies to the SkeletonModel, not the shape.
+	 *	NB: no-op if distanceFinest<0, distanceMiddle<=distanceFinest or if distanceCoarsest<=distanceMiddle.
+	 *	\param distanceFinest The MRM has its max faces when dist<=distanceFinest.
+	 *	\param distanceMiddle The MRM has 50% of its faces at dist==distanceMiddle.
+	 *	\param distanceCoarsest The MRM has faces/Divisor (ie near 0) when dist>=distanceCoarsest.
+	 */
+	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest) =0;
 
 	// @}
 

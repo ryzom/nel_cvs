@@ -1,7 +1,7 @@
 /** \file skip_model.cpp
  * <File description>
  *
- * $Id: skip_model.cpp,v 1.2 2002/02/28 12:59:51 besson Exp $
+ * $Id: skip_model.cpp,v 1.3 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,17 +33,50 @@ namespace NL3D
 {
 
 
+// ***************************************************************************
 void	CSkipModel::registerBasic()
 {
 	CMOT::registerModel( SkipModelId, 0, CSkipModel::creator);
 	CMOT::registerObs( HrcTravId, SkipModelId, CSkipModelHrcObs::creator );
+	CMOT::registerObs( ClipTravId, SkipModelId, CSkipModelClipObs::creator );
+	CMOT::registerObs( AnimDetailTravId, SkipModelId, CSkipModelAnimDetailObs::creator );
+	CMOT::registerObs( LoadBalancingTravId, SkipModelId, CSkipModelLoadBalancingObs::creator );
+	CMOT::registerObs( LightTravId, SkipModelId, CSkipModelLightObs::creator );
+	CMOT::registerObs( RenderTravId, SkipModelId, CSkipModelRenderObs::creator );
 }
 
 
+// ***************************************************************************
 void	CSkipModelHrcObs::traverse(IObs *caller)
 {
 	// do nothing.
 }
+// ***************************************************************************
+void	CSkipModelClipObs::traverse(IObs *caller)
+{
+	// do nothing.
+}
+// ***************************************************************************
+void	CSkipModelAnimDetailObs::traverse(IObs *caller)
+{
+	// do nothing.
+}
+// ***************************************************************************
+void	CSkipModelLoadBalancingObs::traverse(IObs *caller)
+{
+	// do nothing.
+}
+// ***************************************************************************
+void	CSkipModelLightObs::traverse(IObs *caller)
+{
+	// do nothing.
+}
+// ***************************************************************************
+void	CSkipModelRenderObs::traverse(IObs *caller)
+{
+	// do nothing.
+}
+
 
 
 } // NL3D

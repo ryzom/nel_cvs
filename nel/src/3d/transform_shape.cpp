@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.30 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.31 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,6 +90,13 @@ void		CTransformShape::getAABBox(NLMISC::CAABBox &bbox) const
 	}
 }
 
+
+// ***************************************************************************
+void		CTransformShape::setupCurrentLightContribution(CLightContribution *lightContrib, bool useLocalAtt)
+{
+	_CurrentLightContribution= lightContrib;
+	_CurrentUseLocalAttenuation= useLocalAtt;
+}
 
 // ***************************************************************************
 void		CTransformShape::changeLightSetup(CRenderTrav *rdrTrav)

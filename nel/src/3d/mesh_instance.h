@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.9 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.10 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,10 @@ protected:
 
 	/// Called for lod character coloring.
 	virtual const std::vector<sint32>	*getSkinBoneUsage() const;
+
+	/// Implementation of the renderSkin
+	virtual void	renderSkin(float alphaMRM);
+
 	// @}
 
 

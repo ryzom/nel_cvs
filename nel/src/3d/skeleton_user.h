@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.10 2002/06/28 16:52:10 berenguier Exp $
+ * $Id: skeleton_user.h,v 1.11 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,6 +107,7 @@ public:
 	virtual	float		getInterpolationDistance() const;
 	virtual void		setShapeDistMax(float distMax);
 	virtual float		getShapeDistMax() const;
+	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
 	// @}
 
 

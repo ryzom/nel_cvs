@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.9 2002/05/15 16:56:28 berenguier Exp $
+ * $Id: u_transform.h,v 1.10 2002/07/08 10:02:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,8 +167,9 @@ public:
 
 	/** Change the load Balancing group of a model. Every models are in a special LoadBalancingGroup.
 	 *	NB: the group is  created if did not exist.
+	 *	NB: if models are skinned, it is their Skeleton which drive the group
 	 *
-	 *	By default, models lies in the "Default" group, but MRM with skinning and ParticlesSystems which
+	 *	By default, models lies in the "Default" group, but Skeletons for skinning and ParticlesSystems which
 	 *	are in "Global" group (for backward compatibility).
 	 *	The "Default" group is special because it is not balanced (ie models are only degraded from 
 	 *	their distance to camera)

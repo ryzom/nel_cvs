@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.16 2002/07/03 09:11:27 vizerie Exp $
+ * $Id: transform_shape.h,v 1.17 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,7 @@ class	CTransformShapeClipObs;
 class	CTransformShapeRenderObs;
 class	CTransformShapeLoadBalancingObs;
 class	CRenderTrav;
+class	CMRMLevelDetail;
 
 
 // ***************************************************************************
@@ -98,6 +99,9 @@ public:
 	 */
 	float				getNumTrianglesAfterLoadBalancing() {return _NumTrianglesAfterLoadBalancing;}
 
+	/// If the model support MRM, return the level detail setup. default is return NULL.
+	virtual	const	CMRMLevelDetail		*getMRMLevelDetail() const {return NULL;}
+
 	// @}
 
 
@@ -121,6 +125,11 @@ protected:
 	CTransformShape();
 	/// Destructor
 	virtual ~CTransformShape() {}
+
+	/** For deriver who wants to setup their own current lightContribution setup (as skeleton).
+	 *	Must call changeLightSetup() so change are effectively made in driver
+	 */
+	void			setupCurrentLightContribution(CLightContribution *lightContrib, bool useLocalAtt);
 
 private:
 	static IModel	*creator() {return new CTransformShape;}

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.24 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: transform.h,v 1.25 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,7 @@ class	CTransformClipObs;
 class	CTransformLightObs;
 class	CSkeletonModel;
 class	CSkeletonModelAnimDetailObs;
+class	CSkeletonModelRenderObs;
 class	CInstanceGroup;
 class	ILogicInfo;
 
@@ -105,7 +106,10 @@ public:
 
 public:
 
-	/// Accessors for opacity/transparency
+	/** Accessors for opacity/transparency
+	 *	Warning: if you call it on a Skin which is already binded to a skeleton, you should call
+	 *	CSkeletonModel::dirtSkinRenderLists(), else it won't takes effect.
+	 */
 	void			setTransparency(bool v) { setStateFlag(IsTransparent, v); }
 	void			setOpacity(bool v) { setStateFlag(IsOpaque, v); }
 	// return a non-zero value if true
@@ -271,8 +275,9 @@ public:
 
 	/** Change the load Balancing group of a model. Every models are in a special LoadBalancingGroup.
 	 *	NB: the group is  created if did not exist.
+	 *	NB: if models are skinned, it is their Skeleton which drive the group
 	 *
-	 *	By default, models lies in the "Default" group, but MRM with skinning and ParticlesSystems which
+	 *	By default, models lies in the "Default" group, but Skeletons for skinning and ParticlesSystems which
 	 *	are in "Global" group (for backward compatibility).
 	 *	The "Default" group is special because it is not balanced (ie models are only degraded from 
 	 *	their distance to camera)
@@ -367,6 +372,12 @@ protected:
 	 *	default is to return NULL.
 	 */
 	virtual const std::vector<sint32>	*getSkinBoneUsage() const {return NULL;}
+	/** Deriver must change this method if isSkinnable(). It renders the skin with current ctx of the skeletonModel
+	 *	SkeletonModel has already setuped the Light and the modelMatrix in the driver.
+	 *	If the skin is a MRM, it is the skeleton which drives the MRM level with alphaMRM: [0,1]
+	 *	default is nop
+	 */
+	virtual void			renderSkin(float alphaMRM) {}
 
 
 	// The SkeletonModel, root of us (skinning or sticked object). NULL , if normal mode.
@@ -430,6 +441,7 @@ private:
 	friend class	CTransformAnimDetailObs;
 	friend class	CSkeletonModel;
 	friend class	CSkeletonModelAnimDetailObs;
+	friend class	CSkeletonModelRenderObs;
 
 	/** For Skeleton Object Stick.
 	 *	update the wolrd matrix. no-op if skinned.

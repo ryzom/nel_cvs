@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.81 2002/07/03 09:10:27 vizerie Exp $
+ * $Id: scene.cpp,v 1.82 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -275,8 +275,6 @@ void	CScene::initDefaultRoots()
 
 	// Create a SkipModelRoot, for CTransform::freezeHRC().
 	SkipModelRoot= static_cast<CSkipModel*>(createModel(SkipModelId));
-	// Inform the HrcTrav of this model.
-	HrcTrav->setSkipModelRoot(SkipModelRoot);
 
 
 	// Create a SonsOfAncestorSkeletonModelGroup, for models which have a skeleton ancestor

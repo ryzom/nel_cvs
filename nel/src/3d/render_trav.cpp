@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.31 2002/07/02 12:16:14 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.32 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,13 +133,8 @@ void		CRenderTrav::traverse()
 		CTransform			*pTransform = safe_cast<CTransform*>(pObs->Model);
 		CTransformHrcObs	*trHrcObs= safe_cast<CTransformHrcObs*>(pObs->HrcObs);
 
-		// If the object is binded to a skeleton (skined or sticked, or sticked indirectly), 
-		// get the skeleton WM.
-		if( trHrcObs->_AncestorSkeletonModel )
-			rPseudoZ = (trHrcObs->_AncestorSkeletonModel->getWorldMatrix().getPos() - CamPos).norm();
-		// else get the object WM.
-		else
-			rPseudoZ = (trHrcObs->WorldMatrix.getPos() - CamPos).norm();
+		// Yoyo: skins are rendered through skeletons, so models WorldMatrix are all good here (even sticked objects)
+		rPseudoZ = (trHrcObs->WorldMatrix.getPos() - CamPos).norm();
 
 		// rPseudoZ from 0.0 -> 1.0
 		rPseudoZ =  sqrtf( rPseudoZ * OOFar );

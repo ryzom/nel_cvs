@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.9 2002/06/10 14:02:47 berenguier Exp $
+ * $Id: skeleton_user.cpp,v 1.10 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -221,5 +221,12 @@ bool		CSkeletonUser::getLodCharacterWrapMode() const
 	return _Skeleton->getLodCharacterWrapMode();
 }
 
+
+// ***************************************************************************
+void		CSkeletonUser::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
+{
+	NL3D_HAUTO_UI_SKELETON;
+	_Skeleton->changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
+}
 
 } // NL3D

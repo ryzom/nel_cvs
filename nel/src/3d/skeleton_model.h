@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.17 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.18 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,10 @@
 #define NL_SKELETON_MODEL_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/object_vector.h"
 #include "3d/transform_shape.h"
 #include "3d/bone.h"
+#include "3d/mrm_level_detail.h"
 
 
 namespace NL3D
@@ -89,7 +91,7 @@ public:
 	 * NB: nlassert() if there is too many skins/sticked objects on this skeleton (more than 255).
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
-	 * NB: mi is made son of skeleton model in Traversals Hrc, and change are made at render() for ClipTrav.
+	 * NB: For Skins, all Hrc/Clip/ValidateList link is done here
 	 * \return false if mi is not skinnable, true otherwise
 	 */
 	bool		bindSkin(CTransform *mi);
@@ -107,10 +109,18 @@ public:
 	 */
 	void		stickObjectEx(CTransform *mi, uint boneId, bool forceCLod);
 
-	/** unparent a CTransform from a bone of the skeleton, or unbind a skin. No-op if not here.
+	/** unparent a CTransform from a bone of the skeleton, or unbind a skin. No-op if not a son of this skeleton
 	 * NB: mi is made son of Root in Traversals Hrc, and change are made at render() for ClipTrav.
+	 * NB: For Skins, all Hrc/Clip/ValidateList link is done here
 	 */
 	void		detachSkeletonSon(CTransform *mi);
+
+	/** Force the skeletonModel to recompute at next render which skins to render, at wich pass.
+	 *	If you call setOpacity()/setTransparency() on one of the skins binded to the skeleton, you should call this
+	 *	method, else strange result may occurs.
+	 *	NB: this is automatically called by bindSkin()/detachSkeletonSon()
+	 */
+	void		dirtSkinRenderLists() {_SkinToRenderDirty= true;}
 	// @}
 
 
@@ -210,6 +220,23 @@ public:
 
 	// @}
 
+	/// \name Load balancing methods
+	// @{
+
+	/// Special version for skins
+	virtual float	getNumTriangles (float distance);
+
+	/** Special version for skins. NB: skins never follow their original MRM distance setup, but follow
+	 *	this skeleton MRM setup. Default is 3-10-50. 
+	 *	NB: Unlike CMeshBaseInstance::changeMRMDistanceSetup(), this setup applies to the SkeletonModel, not the shape.
+	 *	NB: no-op if distanceFinest<0, distanceMiddle<=distanceFinest or if distanceCoarsest<=distanceMiddle.
+	 *	\param distanceFinest The MRM has its max faces when dist<=distanceFinest.
+	 *	\param distanceMiddle The MRM has 50% of its faces at dist==distanceMiddle.
+	 *	\param distanceCoarsest The MRM has faces/Divisor (ie near 0) when dist>=distanceCoarsest.
+	 */
+	void			changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
+
+	// @}
 
 // ***********************
 protected:
@@ -217,6 +244,9 @@ protected:
 	CSkeletonModel();
 	/// Destructor
 	virtual ~CSkeletonModel();
+
+	/// Build link to traversals.
+	virtual	void	initModel();
 
 
 private:
@@ -242,6 +272,22 @@ private:
 	/// The StickedObjects.
 	TTransformSet				_StickedObjects;
 
+	// see dirtSkinRenderLists
+	bool						_SkinToRenderDirty;
+	// Raw lists of Skins. Both for transparent and opaque pass
+	typedef NLMISC::CObjectVector<CTransform*, false>	TTransformArray;
+	TTransformArray				_OpaqueSkins;
+	TTransformArray				_TransparentSkins;
+	// Skins which need to be animated (very rare)
+	TTransformArray				_AnimDetailSkins;
+
+	// The level detail used to drive MRM skins
+	CMRMLevelDetail				_LevelDetail;
+	// build a bug-free level detail
+	void						buildDefaultLevelDetail();
+
+	// update if needed the renderList
+	void						updateSkinRenderLists();
 
 	/// \name Bone Usage.
 	// @{
@@ -329,21 +375,14 @@ private:
 	// @}
 
 
-
-	// The Hrc traversal of the Scene which owns this Skeleton.
+	// The traversal of the Scene which owns this Skeleton.
 	CHrcTrav		*HrcTrav;
-	// test if HrcTrav!=NULL, else get from observers (done only one time).
-	void			cacheTravs();
+	CClipTrav		*ClipTrav;
 };
 
 
 // ***************************************************************************
 /**
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - extend the traverse method.
- *
- * \sa CHrcTrav CTransformHrcObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -354,7 +393,7 @@ public:
 
 	/** this do :
 	 *  - call CTransformShapeClipObs::traverse()
-	 *  - If needed flag _DisplayedAsLodCharacter as true, and add renderObs in this case
+	 *  - update _DisplayedAsLodCharacter flag
 	 */
 	virtual	void	traverse(IObs *caller);
 
@@ -404,12 +443,23 @@ class	CSkeletonModelRenderObs : public CTransformShapeRenderObs
 {
 public:
  
-	/** this should be called only if in CLodCaharacter state. In this case, it replaces CTransformShapeRenderObs:
-	 *  - update instance Lighting
-	 *  - render the lod.
+	/** It replaces CTransformShapeRenderObs:
+	 *	If displayed as a CLod, render it, else render the skins binded to this skeleton
 	 */
 	virtual	void	traverse(IObs *caller);
 
+	/** render the skeleton as a CLod.
+	 *  - update instance Lighting
+	 *  - render the lod.
+	 */
+	void			renderCLod();
+
+	/** render the skins of the skeleton
+	 *  - update instance Lighting, and setup Driver lighting
+	 *	- activate skeleton Matrix
+	 *  - render all the skins (according if passOpaque or not)
+	 */
+	void			renderSkins();
 
 public:
 	static IObs	*creator() {return new CSkeletonModelRenderObs;}

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.23 2002/06/28 16:47:31 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.24 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,9 @@
 #include "3d/scene.h"
 #include "3d/lod_character_manager.h"
 #include "3d/lod_character_shape.h"
+#include "3d/skip_model.h"
 #include "nel/misc/rgba.h"
+
 
 
 using namespace std;
@@ -48,8 +50,8 @@ namespace NL3D
 void		CSkeletonModel::registerBasic()
 {
 	CMOT::registerModel(SkeletonModelId, TransformShapeId, CSkeletonModel::creator);
-	CMOT::registerObs(AnimDetailTravId, SkeletonModelId, CSkeletonModelAnimDetailObs::creator);
 	CMOT::registerObs(ClipTravId, SkeletonModelId, CSkeletonModelClipObs::creator);
+	CMOT::registerObs(AnimDetailTravId, SkeletonModelId, CSkeletonModelAnimDetailObs::creator);
 	CMOT::registerObs(RenderTravId, SkeletonModelId, CSkeletonModelRenderObs::creator);
 }
 
@@ -73,9 +75,12 @@ CSkeletonModel::CSkeletonModel()
 {
 	IAnimatable::resize(AnimValueLast);
 	HrcTrav= NULL;
+	ClipTrav= NULL;
 	_DisplayedAsLodCharacter= false;
 	_LodCharacterDistance= 0;
 	_DisplayLodCharacterDate= -1;
+
+	_SkinToRenderDirty= false;
 
 	_CLodShapeId= -1;
 	_CLodAnimId= 0;
@@ -86,19 +91,25 @@ CSkeletonModel::CSkeletonModel()
 	// Inform the transform that I am a skeleton
 	CTransform::setIsSkeleton(true);
 
-	// The model may be rendered when it enters in LodCharacter mode. Must be rendered at Opaque Pass only.
+	// By default, no skins, hence, impossible to have transparent pass. But opaque pass is always possible
+	// because of CLod rendering
 	setOpacity(true);
 	setTransparency(false);
 
 	// AnimDetail behavior: Must be traversed in AnimDetail, even if no channel mixer registered
 	CTransform::setIsForceAnimDetail(true);
 
+	// LoadBalancing behavior. true because directly act on skins to draw all their MRM level
+	CTransform::setIsLoadbalancable(true);
+
 	// Lighting behavior. Lightable because skins/stickedObjects may surely need its LightContribution
 	CTransform::setIsLightable(true);
 
-	// Render behavior. I am NOT renderable by default, but clip Observer is special and may addRenderObs() in some case
-	// Override CTransformShape behavior which is renderable
-	CTransform::setIsRenderable(false);
+	// Render behavior. Always renderable, because either render the skeleton as a CLod, or render skins
+	CTransform::setIsRenderable(true);
+
+	// build a bug-free level detail
+	buildDefaultLevelDetail();
 }
 
 	
@@ -118,6 +129,19 @@ CSkeletonModel::~CSkeletonModel()
 		detachSkeletonSon(*_StickedObjects.begin());
 	}
 
+}
+
+
+// ***************************************************************************
+void	CSkeletonModel::initModel()
+{
+	IObs			*HrcObs= getObs(NL3D::HrcTravId);
+	HrcTrav= (CHrcTrav*)HrcObs->Trav;
+	IObs			*ClipObs= getObs(NL3D::ClipTravId);
+	ClipTrav= (CClipTrav*)ClipObs->Trav;
+
+	// Call base class
+	CTransformShape::initModel();
 }
 
 
@@ -317,8 +341,9 @@ bool		CSkeletonModel::bindSkin(CTransform *mi)
 	if( !mi->isSkinnable() )
 		return false;
 
-	// try to detach this object from me first.
-	detachSkeletonSon(mi);
+	// try to detach this object from any skeleton first (possibly me).
+	if(mi->_FatherSkeletonModel)
+		mi->_FatherSkeletonModel->detachSkeletonSon(mi);
 
 	// Then Add me.
 	_Skins.insert(mi);
@@ -328,12 +353,31 @@ bool		CSkeletonModel::bindSkin(CTransform *mi)
 	// setApplySkin() use _FatherSkeletonModel to computeBonesId() and to update current skeleton bone usage.
 	mi->setApplySkin(true);
 
-	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
-	cacheTravs();
-	HrcTrav->link(this, mi);
+
+	// Unlink the Skin from Hrc and clip, because SkeletonModel now does the job for him.
+	nlassert(HrcTrav && ClipTrav);
+	// First ensure that the transform is not frozen (unlink from some quadGrids etc...)
+	mi->unfreezeHRC();
+	// then never re-parse in validateList/Hrc/Clip
+	mi->unlinkFromValidateList();
+	HrcTrav->link(HrcTrav->Scene->getSkipModelRoot(), mi);
+	// ClipTrav is a graph, so must unlink from ALL olds models.
+	IModel	*father= ClipTrav->getFirstParent(mi);
+	while(father)
+	{
+		ClipTrav->unlink(father, mi);
+		father= ClipTrav->getFirstParent(mi);
+	}
+	// Ensure flag is correct
+	mi->_HrcObs->ClipLinkedInSonsOfAncestorSkeletonModelGroup= false;
+	// link to the SkipModelRoot One.
+	ClipTrav->link(ClipTrav->Scene->getSkipModelRoot(), mi);
+
 
 	// must recompute lod vertex color when LodCharacter used
 	dirtLodVertexColor();
+	// must recompute list of skins.
+	dirtSkinRenderLists();
 
 	// Ok, skinned
 	return true;
@@ -353,8 +397,9 @@ void		CSkeletonModel::stickObjectEx(CTransform *mi, uint boneId, bool forceCLod)
 	if(dynamic_cast<CSkeletonModel*>(mi))
 		forceCLod= true;
 
-	// try to detach this object from me first.
-	detachSkeletonSon(mi);
+	// try to detach this object from any skeleton first (possibly me).
+	if(mi->_FatherSkeletonModel)
+		mi->_FatherSkeletonModel->detachSkeletonSon(mi);
 
 	// Then Add me.
 	_StickedObjects.insert(mi);
@@ -368,7 +413,7 @@ void		CSkeletonModel::stickObjectEx(CTransform *mi, uint boneId, bool forceCLod)
 	mi->_ForceCLodSticked= forceCLod;
 
 	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
-	cacheTravs();
+	nlassert(HrcTrav && ClipTrav);
 	HrcTrav->link(this, mi);
 
 	// must recompute lod vertex color when LodCharacter used
@@ -380,7 +425,7 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 	nlassert(tr);
 
 	// If the instance is not binded/sticked to the skeleton, exit.
-	if(!tr->_FatherSkeletonModel)
+	if(tr->_FatherSkeletonModel!=this)
 		return;
 
 	// try to erase from StickObject.
@@ -389,7 +434,8 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 	_Skins.erase(tr);
 
 	// If the instance is not skinned, then it is sticked
-	if( !tr->isSkinned() )
+	bool	wasSkinned= tr->isSkinned()!=0;
+	if( !wasSkinned )
 	{
 		// Then decrement Bone Usage RefCount. Decrement from CLodForcedUsage if was sticked with forceCLod==true
 		decForcedBoneUsageAndParents(tr->_FatherBoneId, tr->_ForceCLodSticked);
@@ -405,21 +451,29 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 	tr->_FatherSkeletonModel= NULL;
 	tr->_ForceCLodSticked= false;
 
-	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
-	cacheTravs();
+	// link correctly Hrc / Clip / ValidateList...
+	nlassert(HrcTrav && ClipTrav);
 	HrcTrav->link(NULL, tr);
+	if( !wasSkinned )
+	{
+		//  No-op. ClipTrav graph/ValidateList updated in Hrc traversal.
+	}
+	else
+	{
+		// Skin case: must do the Job here.
+		// Update ClipTrav here.
+		ClipTrav->unlink(ClipTrav->Scene->getSkipModelRoot(), tr);
+		ClipTrav->link(ClipTrav->getRoot(), tr);
+		// Must re-add to the validate list.
+		tr->linkToValidateList();
+	}
+
 
 	// must recompute lod vertex color when LodCharacter used
 	dirtLodVertexColor();
-}
-
-
-// ***************************************************************************
-void		CSkeletonModel::cacheTravs()
-{
-	IObs			*HrcObs= getObs(NL3D::HrcTravId);
-
-	HrcTrav= (CHrcTrav*)HrcObs->Trav;
+	// must recompute list of skins if was skinned
+	if( wasSkinned )
+		dirtSkinRenderLists();
 }
 
 
@@ -566,6 +620,20 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 	// Sticked Objects: 
 	// they will update their WorldMatrix after, because of the AnimDetail traverse scheme:
 	// traverse visible ClipObs, and if skeleton, traverse Hrc sons.
+
+
+	// Update Animated Skins.
+	//===============
+	for(uint i=0;i<sm->_AnimDetailSkins.size();i++)
+	{
+		// get the detail Obs, via the clipObs
+		CTransformAnimDetailObs		*adObs;
+		adObs= safe_cast<CTransformAnimDetailObs*>(sm->_AnimDetailSkins[i]->_ClipObs->AnimDetailObs);
+
+		// traverse it. NB: updateWorldMatrixFromFather() is called but no-op because isSkinned()
+		adObs->traverse(NULL);
+	}
+
 }
 
 
@@ -666,104 +734,37 @@ void		CSkeletonModel::updateDisplayLodCharacterFlag(const CClipTrav *clipTrav)
 // ***************************************************************************
 void		CSkeletonModelClipObs::traverse(IObs *caller)
 {
-	// get model and trav
-	CClipTrav		*clipTrav= (CClipTrav*)Trav;
-	CSkeletonModel	*sm= (CSkeletonModel*)Model;
-
-
-	// Copied from CTransformClipObs::traverse(). Must do it now, to avoid 2 addRenderObs() below.
-	// This is possible if the skeleton clip obs is traversed twice because of clusters.
-	if ((Date == clipTrav->CurrentDate) && Visible)
-		return;
-
 	// call base clip method
 	CTransformShapeClipObs::traverse(caller);
 
-
-	// update the _DisplayedAsLodCharacter flag
-	//=================
-
-	// do it if not already done
-	sm->updateDisplayLodCharacterFlag(clipTrav);
-
-	// The model must be rendered if Visible and if isDisplayedAsLodCharacter
-	if(Visible && sm->isDisplayedAsLodCharacter())
+	// some extra stuff if visible
+	if (Visible)
 	{
-		clipTrav->RenderTrav->addRenderObs(RenderObs);
-	}
+		// update the _DisplayedAsLodCharacter flag
+		CClipTrav		*clipTrav= (CClipTrav*)Trav;
+		CSkeletonModel	*sm= (CSkeletonModel*)Model;
+		// do it if not already done
+		sm->updateDisplayLodCharacterFlag(clipTrav);
 
+		/* Update Here the Skin render Lists.
+			Done here, because AnimDetail and Render need correct lists. NB: important to do it 
+			before Render Traversal, because updateSkinRenderLists() may change the transparency flag!!
+		*/
+		sm->updateSkinRenderLists();
+	}
 }
 
 
 // ***************************************************************************
 void		CSkeletonModelRenderObs::traverse(IObs *caller)
 {
-	CRenderTrav			*trav= (CRenderTrav*)Trav;
 	CSkeletonModel		*sm= (CSkeletonModel*)Model;
-	IDriver				*drv= trav->getDriver();
-	CScene				*scene= trav->Scene;
 
-	// Must be used only for CLod display
-	nlassert(sm->isDisplayedAsLodCharacter());
-
-
-	// Get global lighting on the instance. Suppose SunAmbient only.
-	//=================
-	const CLightContribution	*lightContrib;
-	// Get HrcObs.
-	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)HrcObs;
-
-	// the std case is to take my model lightContribution
-	if(hrcObs->_AncestorSkeletonModel==NULL)
-		lightContrib= &sm->getSkeletonLightContribution();
-	// but if skinned/sticked (directly or not) to a skeleton, take its.
+	// render as CLod, or render Skins.
+	if(sm->isDisplayedAsLodCharacter())
+		renderCLod();
 	else
-		lightContrib= &hrcObs->_AncestorSkeletonModel->getSkeletonLightContribution();
-
-	// compute his sun contribution result
-	CRGBA	sunContrib= scene->getSunDiffuse();
-	// simulate/average diffuse lighting over the mesh by dividing diffuse by 2.
-	sunContrib.modulateFromuiRGBOnly(sunContrib, lightContrib->SunContribution/2 );
-	// Add Ambient
-	sunContrib.addRGBOnly(sunContrib, scene->getSunAmbient());
-	sunContrib.A= 255;
-
-
-	// compute colors of the lods.
-	//=================
-	// the lod manager
-	CLodCharacterManager	*mngr= trav->Scene->getLodCharacterManager();
-
-	// If must recompute color because of change of skin color or if skin added/deleted
-	if(sm->_CLodVertexColorDirty)
-	{
-		// recompute vertex colors
-		sm->computeCLodVertexColors(mngr);
-		// set sm->_CLodVertexColorDirty to false.
-		sm->_CLodVertexColorDirty= false;
-	}
-
-	// render the Lod in the LodManager.
-	//=================
-	// render must have been intialized
-	nlassert(mngr->isRendering());
-
-	// add the instance to the manager. 
-	if(!mngr->addRenderCharacterKey(sm->_CLodShapeId, sm->_CLodAnimId, sm->_CLodAnimTime, sm->_CLodWrapMode, 
-		hrcObs->WorldMatrix, sm->_CLodVertexColors, sunContrib))
-	{
-		// If failed to add it because no more vertex space in the manager, retry.
-
-		// close vertexBlock, compile render
-		mngr->endRender();
-		// and restart.
-		mngr->beginRender(drv, trav->CamPos);
-
-		// retry. but no-op if refail.
-		mngr->addRenderCharacterKey(sm->_CLodShapeId, sm->_CLodAnimId, sm->_CLodAnimTime, sm->_CLodWrapMode, 
-			hrcObs->WorldMatrix, sm->_CLodVertexColors, sunContrib);
-	}
-
+		renderSkins();
 }
 
 
@@ -851,6 +852,268 @@ void			CSkeletonModel::computeCLodVertexColors(CLodCharacterManager *mngr)
 		lodShape->endBoneColor(tmpColors, _CLodVertexColors);
 	}
 
+}
+
+
+// ***************************************************************************
+void			CSkeletonModel::updateSkinRenderLists()
+{
+	// If need to update array of skins to compute
+	if(_SkinToRenderDirty)
+	{
+		_SkinToRenderDirty= false;
+
+		// Reset the LevelDetail.
+		_LevelDetail.MinFaceUsed= 0;
+		_LevelDetail.MaxFaceUsed= 0;
+
+		// Parse to count new size of the arrays, and to build MRM info
+		uint	opaqueSize= 0;
+		uint	transparentSize= 0;
+		uint	animDetailSize= 0;
+		ItTransformSet		it;
+		for(it= _Skins.begin();it!=_Skins.end();it++)
+		{
+			CTransform	*skin= *it;
+			// if transparent, then must fill in transparent list.
+			if(skin->isTransparent())
+				transparentSize++;
+			// else may fill in opaquelist. NB: for optimisation, don't add in opaqueList 
+			// if added to the transperent list (all materials are rendered)
+			else if(skin->isOpaque())
+				opaqueSize++;
+
+			// if animDetailable, then must fill list
+			if(skin->isAnimDetailable())
+				animDetailSize++;
+
+			// if the skin support MRM, then must update levelDetal number of faces
+			CTransformShape		*trShape= dynamic_cast<CTransformShape*>(skin);
+			if(trShape)
+			{
+				const	CMRMLevelDetail		*skinLevelDetail= trShape->getMRMLevelDetail();
+				if(skinLevelDetail)
+				{
+					// Add Faces to the Skeleton level detail
+					_LevelDetail.MinFaceUsed+= skinLevelDetail->MinFaceUsed;
+					_LevelDetail.MaxFaceUsed+= skinLevelDetail->MaxFaceUsed;
+				}
+			}
+		}
+
+
+		// alloc array.
+		_OpaqueSkins.clear();
+		_TransparentSkins.clear();
+		_AnimDetailSkins.clear();
+		_OpaqueSkins.resize(opaqueSize);
+		_TransparentSkins.resize(transparentSize);
+		_AnimDetailSkins.resize(animDetailSize);
+
+		// ReParse, to fill array.
+		uint	opaqueId= 0;
+		uint	transparentId= 0;
+		uint	animDetailId= 0;
+		for(it= _Skins.begin();it!=_Skins.end();it++)
+		{
+			CTransform	*skin= *it;
+			// if transparent, then must fill in transparent list.
+			if(skin->isTransparent())
+			{
+				nlassert(transparentId<transparentSize);
+				_TransparentSkins[transparentId++]= skin;
+			}
+			// else may fill in opaquelist. NB: for optimisation, don't add in opaqueList 
+			// if added to the transperent list (all materials are rendered)
+			else if(skin->isOpaque())
+			{
+				nlassert(opaqueId<opaqueSize);
+				_OpaqueSkins[opaqueId++]= skin;
+			}
+
+			// if animDetailable, then must fill list
+			if(skin->isAnimDetailable())
+			{
+				nlassert(animDetailId<animDetailSize);
+				_AnimDetailSkins[animDetailId++]= skin;
+			}
+		}
+
+		// set the Transparency to the skeleton only if has at least one transparent skin
+		setTransparency( transparentSize>0 );
+	}
+}
+
+
+// ***************************************************************************
+void			CSkeletonModel::buildDefaultLevelDetail()
+{
+	// Avoid divide by zero.
+	_LevelDetail.MinFaceUsed= 0;
+	_LevelDetail.MaxFaceUsed= 0;
+	_LevelDetail.DistanceFinest= 3;
+	_LevelDetail.DistanceMiddle= 10;
+	_LevelDetail.DistanceCoarsest= 50;
+	_LevelDetail.compileDistanceSetup();
+}
+
+
+// ***************************************************************************
+void			CSkeletonModelRenderObs::renderCLod()
+{
+	CRenderTrav			*trav= (CRenderTrav*)Trav;
+	CSkeletonModel		*sm= (CSkeletonModel*)Model;
+	IDriver				*drv= trav->getDriver();
+	CScene				*scene= trav->Scene;
+
+	// Get global lighting on the instance. Suppose SunAmbient only.
+	//=================
+	const CLightContribution	*lightContrib;
+	// Get HrcObs.
+	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)HrcObs;
+
+	// the std case is to take my model lightContribution
+	if(hrcObs->_AncestorSkeletonModel==NULL)
+		lightContrib= &sm->getSkeletonLightContribution();
+	// but if skinned/sticked (directly or not) to a skeleton, take its.
+	else
+		lightContrib= &hrcObs->_AncestorSkeletonModel->getSkeletonLightContribution();
+
+	// compute his sun contribution result
+	CRGBA	sunContrib= scene->getSunDiffuse();
+	// simulate/average diffuse lighting over the mesh by dividing diffuse by 2.
+	sunContrib.modulateFromuiRGBOnly(sunContrib, lightContrib->SunContribution/2 );
+	// Add Ambient
+	sunContrib.addRGBOnly(sunContrib, scene->getSunAmbient());
+	sunContrib.A= 255;
+
+
+	// compute colors of the lods.
+	//=================
+	// the lod manager
+	CLodCharacterManager	*mngr= trav->Scene->getLodCharacterManager();
+
+	// If must recompute color because of change of skin color or if skin added/deleted
+	if(sm->_CLodVertexColorDirty)
+	{
+		// recompute vertex colors
+		sm->computeCLodVertexColors(mngr);
+		// set sm->_CLodVertexColorDirty to false.
+		sm->_CLodVertexColorDirty= false;
+	}
+
+	// render the Lod in the LodManager.
+	//=================
+	// render must have been intialized
+	nlassert(mngr->isRendering());
+
+	// add the instance to the manager. 
+	if(!mngr->addRenderCharacterKey(sm->_CLodShapeId, sm->_CLodAnimId, sm->_CLodAnimTime, sm->_CLodWrapMode, 
+		hrcObs->WorldMatrix, sm->_CLodVertexColors, sunContrib))
+	{
+		// If failed to add it because no more vertex space in the manager, retry.
+
+		// close vertexBlock, compile render
+		mngr->endRender();
+		// and restart.
+		mngr->beginRender(drv, trav->CamPos);
+
+		// retry. but no-op if refail.
+		mngr->addRenderCharacterKey(sm->_CLodShapeId, sm->_CLodAnimId, sm->_CLodAnimTime, sm->_CLodWrapMode, 
+			hrcObs->WorldMatrix, sm->_CLodVertexColors, sunContrib);
+	}
+}
+
+
+// ***************************************************************************
+void			CSkeletonModelRenderObs::renderSkins()
+{
+	// Render skins according to the pass.
+	CRenderTrav			*rdrTrav= (CRenderTrav*)Trav;
+	CSkeletonModel		*sm= (CSkeletonModel*)Model;
+	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)HrcObs;
+	// get a ptr on the driver
+	IDriver				*drv= rdrTrav->getDriver();
+	nlassert(drv);
+
+
+	// Compute the levelOfDetail
+	float	alphaMRM= sm->_LevelDetail.getLevelDetailFromPolyCount(sm->getNumTrianglesAfterLoadBalancing());
+
+	// force normalisation of normals..
+	bool	bkupNorm= drv->isForceNormalize();
+	drv->forceNormalize(true);			
+
+
+	// rdr good pass
+	if(rdrTrav->isCurrentPassOpaque())
+	{
+		// Compute in Pass Opaque only the light contribution. 
+		// Easier for skeleton: suppose lightable, no local attenuation
+
+		// the std case is to take my model lightContribution
+		if(hrcObs->_AncestorSkeletonModel==NULL)
+			sm->setupCurrentLightContribution(&sm->_LightContribution, false);
+		// but if sticked (directly or not) to a skeleton, take its.
+		else
+			sm->setupCurrentLightContribution(&hrcObs->_AncestorSkeletonModel->_LightContribution, false);
+
+
+		// Activate Driver setup: light and modelMatrix
+		sm->changeLightSetup( rdrTrav );
+		rdrTrav->getDriver()->setupModelMatrix(hrcObs->WorldMatrix);
+
+
+		// Render all totaly opaque skins.
+		for(uint i=0;i<sm->_OpaqueSkins.size();i++)
+		{
+			sm->_OpaqueSkins[i]->renderSkin(alphaMRM);
+		}
+	}
+	else
+	{
+		// NB: must have some transparent skins, since thee skeletonModel is traversed in the transparent pass.
+
+		// Activate Driver setup: light and modelMatrix
+		sm->changeLightSetup( rdrTrav );
+		rdrTrav->getDriver()->setupModelMatrix(hrcObs->WorldMatrix);
+
+
+		// render all opaque/transparent skins
+		for(uint i=0;i<sm->_TransparentSkins.size();i++)
+		{
+			sm->_TransparentSkins[i]->renderSkin(alphaMRM);
+		}
+	}
+
+
+	// bkup force normalisation.
+	drv->forceNormalize(bkupNorm);
+}
+
+
+// ***************************************************************************
+float			CSkeletonModel::getNumTriangles (float distance)
+{
+	// NB: this is an approximation, but this is continious.
+	return _LevelDetail.getNumTriangles(distance);
+}
+
+// ***************************************************************************
+void			CSkeletonModel::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
+{
+	// check input.
+	if(distanceFinest<0)	return;
+	if(distanceMiddle<=distanceFinest)	return;
+	if(distanceCoarsest<=distanceMiddle)	return;
+
+	// Change.
+	_LevelDetail.DistanceFinest= distanceFinest;
+	_LevelDetail.DistanceMiddle= distanceMiddle;
+	_LevelDetail.DistanceCoarsest= distanceCoarsest;
+
+	// compile 
+	_LevelDetail.compileDistanceSetup();
 }
 
 

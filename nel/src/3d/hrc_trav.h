@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.6 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.7 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,9 +94,6 @@ public:
 	//@}
 
 
-	void		setSkipModelRoot(CSkipModel *m);
-
-
 public:
 
 	std::vector<IModel*> _MovingObjects;
@@ -104,8 +101,6 @@ public:
 	// ONLY FOR OBSERVERS.
 
 	sint64		CurrentDate;	// The current date of the traversal, usefull for matrix update.
-
-	CSkipModel		*SkipModelRoot;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.28 2002/07/03 09:10:28 vizerie Exp $
+ * $Id: scene.h,v 1.29 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -431,6 +431,10 @@ public:
 	CAnimDetailTrav		*getAnimDetailTrav() const {return AnimDetailTrav;}
 	CLoadBalancingTrav	*getLoadBalancingTrav() const {return LoadBalancingTrav;}
 	CRenderTrav			*getRenderTrav() const {return RenderTrav;}
+
+	// Link models to this one to disable their use in the wanted traversal
+	CSkipModel			*getSkipModelRoot() const {return SkipModelRoot;}
+
 	//@}
 
 

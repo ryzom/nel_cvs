@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.46 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: transform.cpp,v 1.47 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,6 +219,13 @@ void	CTransform::registerToChannelMixer(CChannelMixer *chanMixer, const std::str
 	// Update flag, if we must be inserted in AnimDetail
 	setStateFlag(IsAnimDetailable, _ChannelMixer || getStateFlag(IsForceAnimDetail) );
 
+	// If skinned, then must inform skeleton parent that it must recompute skin render/animDetail lists
+	if(isSkinned())
+	{
+		nlassert(_FatherSkeletonModel);
+		_FatherSkeletonModel->dirtSkinRenderLists();
+	}
+
 	// For CTransfom, channels are not detailled.
 	addValue(chanMixer, PosValue, OwnerBit, prefix, false);
 	addValue(chanMixer, RotEulerValue, OwnerBit, prefix, false);
@@ -320,7 +327,7 @@ void		CTransform::unfreezeHRC()
 			// Trick: get the traversal via the HrcObs.
 			CHrcTrav	*hrcTrav= static_cast<CHrcTrav*>(_HrcObs->Trav);
 			// if linked to SkipModelRoot, link this model to root of HRC.
-			if( hrcTrav->getFirstParent(this) == hrcTrav->SkipModelRoot )
+			if( hrcTrav->getFirstParent(this) == hrcTrav->Scene->getSkipModelRoot() )
 				hrcTrav->link(NULL, this);
 
 			// Link this object to the validateList.
@@ -372,7 +379,7 @@ void		CTransform::update()
 			CHrcTrav	*hrcTrav= static_cast<CHrcTrav*>(_HrcObs->Trav);
 			// if linked to root of HRC, link this model to SkipModelRoot.
 			if( hrcTrav->getFirstParent(this) == hrcTrav->getRoot() )
-				hrcTrav->link(hrcTrav->SkipModelRoot, this);
+				hrcTrav->link(hrcTrav->Scene->getSkipModelRoot(), this);
 
 			// unLink this object from the validateList. NB: the list will still be correclty parsed.
 			unlinkFromValidateList();
@@ -495,6 +502,13 @@ void		CTransform::setIsForceAnimDetail(bool val)
 
 	// Update flag, if we must be inserted in AnimDetail
 	setStateFlag(IsAnimDetailable, _ChannelMixer || getStateFlag(IsForceAnimDetail) );
+
+	// If skinned, then must inform skeleton parent that it must recompute skin render/animDetail lists
+	if(isSkinned())
+	{
+		nlassert(_FatherSkeletonModel);
+		_FatherSkeletonModel->dirtSkinRenderLists();
+	}
 }
 // ***************************************************************************
 void		CTransform::setIsLoadbalancable(bool val)

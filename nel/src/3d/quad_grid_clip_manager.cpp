@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.7 2002/02/28 12:59:51 besson Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.8 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -324,7 +324,7 @@ void				CQuadGridClipManager::newCaseModels(CQuadGridClusterCase &clusterCase)
 		clusterCase.QuadGridClipClusters[i]= cluster;
 		// disable it from HRC
 		CHrcTrav	*hrcTrav= (CHrcTrav*)_Scene->getTrav(HrcTravId);
-		hrcTrav->link(hrcTrav->SkipModelRoot, cluster);
+		hrcTrav->link(_Scene->getSkipModelRoot(), cluster);
 		// NB: disabled from validation in CQuadGridClipCluster::update()
 		// Hence it will be never traversed but in ClipTrav.
 

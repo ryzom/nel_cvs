@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.46 2002/07/02 12:27:19 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.47 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -223,25 +223,12 @@ void			CMeshMRMGeom::changeMRMDistanceSetup(float distanceFinest, float distance
 	if(distanceCoarsest<=distanceMiddle)	return;
 
 	// Change.
-	_DistanceFinest= distanceFinest;
-	_DistanceMiddle= distanceMiddle;
-	_DistanceCoarsest= distanceCoarsest;
+	_LevelDetail.DistanceFinest= distanceFinest;
+	_LevelDetail.DistanceMiddle= distanceMiddle;
+	_LevelDetail.DistanceCoarsest= distanceCoarsest;
 
 	// compile 
-	compileDistanceSetup();
-}
-
-
-// ***************************************************************************
-void			CMeshMRMGeom::compileDistanceSetup()
-{
-	// Compute _OODistDelta.
-	_OODistanceDelta= 1.0f / (_DistanceCoarsest - _DistanceFinest);
-	/* Compute exponent pow, such that 0.5= dMiddle^pow;
-		ie 0.5= e(ln dMiddle * pow)
-	*/
-	float	dMiddle= (_DistanceCoarsest - _DistanceMiddle) * _OODistanceDelta;
-	_DistancePow= (float)(log(0.5) / log(dMiddle));
+	_LevelDetail.compileDistanceSetup();
 }
 
 
@@ -294,14 +281,14 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 
 	// Compute degradation control.
 	//================================================
-	_DistanceFinest= meshBuildMRM.DistanceFinest;
-	_DistanceMiddle= meshBuildMRM.DistanceMiddle;
-	_DistanceCoarsest= meshBuildMRM.DistanceCoarsest;
-	nlassert(_DistanceFinest>=0);
-	nlassert(_DistanceMiddle > _DistanceFinest);
-	nlassert(_DistanceCoarsest > _DistanceMiddle);
-	// Compute _OODistDelta and _DistancePow
-	compileDistanceSetup();
+	_LevelDetail.DistanceFinest= meshBuildMRM.DistanceFinest;
+	_LevelDetail.DistanceMiddle= meshBuildMRM.DistanceMiddle;
+	_LevelDetail.DistanceCoarsest= meshBuildMRM.DistanceCoarsest;
+	nlassert(_LevelDetail.DistanceFinest>=0);
+	nlassert(_LevelDetail.DistanceMiddle > _LevelDetail.DistanceFinest);
+	nlassert(_LevelDetail.DistanceCoarsest > _LevelDetail.DistanceMiddle);
+	// Compute OODistDelta and DistancePow
+	_LevelDetail.compileDistanceSetup();
 
 
 	// Build the _LodInfos.
@@ -323,8 +310,8 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 	// For load balancing.
 	//================================================
 	// compute Max Face Used
-	_MaxFaceUsed= 0;
-	_MinFaceUsed= 0;
+	_LevelDetail.MaxFaceUsed= 0;
+	_LevelDetail.MinFaceUsed= 0;
 	// Count of primitive block
 	if(_Lods.size()>0)
 	{
@@ -335,7 +322,7 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 		{
 			CRdrPass &pass= firstLod.RdrPass[pb];
 			// Sum tri
-			_MinFaceUsed+= pass.PBlock.getNumTriangles ();
+			_LevelDetail.MinFaceUsed+= pass.PBlock.getNumTriangles ();
 		}
 		// Compute MaxFaces.
 		CLod	&lastLod= _Lods[_Lods.size()-1];
@@ -343,7 +330,7 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 		{
 			CRdrPass &pass= lastLod.RdrPass[pb];
 			// Sum tri
-			_MaxFaceUsed+= pass.PBlock.getNumTriangles ();
+			_LevelDetail.MaxFaceUsed+= pass.PBlock.getNumTriangles ();
 		}
 	}
 
@@ -459,19 +446,6 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 	// Some runtime not serialized compilation
 	compileRunTime();
 
-}
-
-
-// ***************************************************************************
-float	CMeshMRMGeom::getLevelDetailFromDist(float dist)
-{
-	if(dist <= _DistanceFinest)
-		return 1;
-	if(dist >= _DistanceCoarsest)
-		return 0;
-
-	float	d= (_DistanceCoarsest - dist) * _OODistanceDelta;
-	return  (float)pow(d, _DistancePow);
 }
 
 
@@ -847,37 +821,11 @@ bool	CMeshMRMGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &world
 
 
 // ***************************************************************************
-void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha)
+inline sint	CMeshMRMGeom::chooseLod(float alphaMRM, float &alphaLod)
 {
-	nlassert(drv);
-	if(_Lods.size()==0)
-		return;
-
-
-	// get the meshMRM instance.
-	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
-	// get a ptr on scene
-	CScene			*ownerScene= mi->getScene();
-	// get a ptr on renderTrav
-	CRenderTrav		*renderTrav= ownerScene->getRenderTrav();
-
-
-	// get the result of the Load Balancing.
-	float	alphaMRM;
-	if(_MaxFaceUsed > _MinFaceUsed)
-	{
-		// compute the level of detail we want.
-		alphaMRM= (polygonCount - _MinFaceUsed) / (_MaxFaceUsed - _MinFaceUsed);
-		clamp(alphaMRM, 0, 1);
-	}
-	else
-		alphaMRM= 1;
-
-
 	// Choose what Lod to draw.
 	alphaMRM*= _Lods.size()-1;
 	sint	numLod= (sint)ceil(alphaMRM);
-	float	alphaLod;
 	if(numLod==0)
 	{
 		numLod= 0;
@@ -896,6 +844,33 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 		numLod= _NbLodLoaded-1;
 		alphaLod= 1;
 	}
+
+	return numLod;
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha)
+{
+	nlassert(drv);
+	if(_Lods.size()==0)
+		return;
+
+
+	// get the meshMRM instance.
+	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
+	// get a ptr on scene
+	CScene				*ownerScene= mi->getScene();
+	// get a ptr on renderTrav
+	CRenderTrav			*renderTrav= ownerScene->getRenderTrav();
+
+
+	// get the result of the Load Balancing.
+	float	alphaMRM= _LevelDetail.getLevelDetailFromPolyCount(polygonCount);
+
+	// choose the lod.
+	float	alphaLod;
+	sint	numLod= chooseLod(alphaMRM, alphaLod);
 
 
 	// Render the choosen Lod.
@@ -918,31 +893,23 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel *skeleton;
 	skeleton = mi->getSkeletonModel();
-	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and instance isSkinned()
+	// The mesh must not be skinned for render()
+	nlassert(!(_Skinned && mi->isSkinned() && skeleton));
 	bool bMorphApplied = _MeshMorpher.BlendShapes.size() > 0;
-	bool bSkinApplied = _Skinned && mi->isSkinned() && skeleton;
 	bool useNormal= (_VBufferFinal.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
 	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
 
 
 	// Profiling
 	//===========
-	// Special profile: Split between Skinned or not.
-#ifdef  ALLOW_TIMING_MEASURES
-	static NLMISC::CHTimer	NL3D_MeshMRMGeom_Render_Normal_timer( "NL3D_MeshMRMGeom_RenderNormal" ); 
-	static NLMISC::CHTimer	NL3D_MeshMRMGeom_Render_Skinned_timer( "NL3D_MeshMRMGeom_RenderSkinned" ); 
-	// choose what to time according to skin mode.
-	NLMISC::CAutoTimer	NL3D_MeshMRMGeom_Render_auto( 
-		bSkinApplied? &NL3D_MeshMRMGeom_Render_Skinned_timer : &NL3D_MeshMRMGeom_Render_Normal_timer);
-#endif
+	H_AUTO( NL3D_MeshMRMGeom_RenderNormal );
 
 
 	// Morphing
 	// ========
 	if (bMorphApplied)
 	{
-		// If Skinned we must update original skin vertices and normals because skinning use it
-		// If Skinned and not bSkinApplied and lod.OriginalSkinRestored restoreOriginalSkinPart is
+		// If _Skinned (NB: the skin is not applied) and if lod.OriginalSkinRestored, then restoreOriginalSkinPart is
 		// not called but mush morpher write changed vertices into VBHard so its ok. The unchanged vertices
 		// are written in the preceding call to restoreOriginalSkinPart.
 		if (_Skinned)
@@ -954,7 +921,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 								 &_OriginalSkinVertices,
 								 &_OriginalSkinNormals,
 								 useTangentSpace ? &_OriginalTGSpace : NULL,
-								 bSkinApplied );
+								 false );
 			_MeshMorpher.updateSkinned (mi->getBlendShapeFactors());
 		}
 		else // Not even skinned so we have to do all the stuff
@@ -969,105 +936,17 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 
 	// Skinning.
 	//===========
-	// if ready to skin.
-	if (bSkinApplied)
-	{
-		// Use RawSkin if possible: only if no morph, and only Vertex/Normal
-		if ( !bMorphApplied && !useTangentSpace && useNormal )
-			updateRawSkinNormal();
-		// Use RawSkin TgSpace if possible: only if no morph, and Vertex/Normal/TgSpace
-		else if ( !bMorphApplied && useTangentSpace && useNormal )
-			updateRawSkinTgSpace();
-		// Use none
-		else
-			clearRawSkin();
-
-		// applySkin.
-		//--------
-
-		// If skin without normal (rare/usefull?) always simple (slow) case.
-		if(!useNormal)
-		{
-			// skinning with just position
-			applySkin (lod, skeleton);
-		}
-		else
-		{
-			// Use SSE when possible
-			if( CSystemInfo::hasSSE() )
-			{
-				// apply skin for this Lod only.
-				if (!useTangentSpace)
-				{
-					// skinning with normal, but no tangent space
-					if(_NumLodRawSkin>0)
-						// Use faster RawSkin if possible.
-						applyRawSkinWithNormalSSE(lod, _RawSkinNormalLods[numLod], skeleton);
-					else
-						applySkinWithNormalSSE (lod, skeleton);
-				}
-				else
-				{
-					// Tangent space stored in the last texture coordinate
-					if(_NumLodRawSkin>0)
-						// Use faster RawSkin if possible.
-						applyRawSkinWithTangentSpaceSSE(lod, _RawSkinTgSpaceLods[numLod], 
-							skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
-					else
-						applySkinWithTangentSpaceSSE(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
-				}
-			}
-			// Standard FPU skinning
-			else
-			{
-				// apply skin for this Lod only.
-				if (!useTangentSpace)
-				{
-					// skinning with normal, but no tangent space
-					if(_NumLodRawSkin>0)
-						// Use faster RawSkin if possible.
-						applyRawSkinWithNormal (lod, _RawSkinNormalLods[numLod], skeleton);
-					else
-						applySkinWithNormal (lod, skeleton);
-				}
-				else
-				{
-					// Tangent space stored in the last texture coordinate
-					if(_NumLodRawSkin>0)
-						// Use faster RawSkin if possible.
-						applyRawSkinWithTangentSpace(lod, _RawSkinTgSpaceLods[numLod], 
-							skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
-					else
-						applySkinWithTangentSpace(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
-				}
-			}
-		}
-
-		// endSkin.
-		//--------
-		// Fill the usefull AGP memory (if any one loaded/Used).
-		fillAGPSkinPart(lod, currentVBHard);
-		// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
-		lod.OriginalSkinRestored= false;
-	}
-	// if instance skin is invalid but mesh is skinned , we must copy vertices/normals from original vertices.
-	else if (!bSkinApplied && _Skinned)
+	// if mesh is skinned (but here skin not applied), we must copy vertices/normals from original vertices.
+	if (_Skinned)
 	{
 		// do it for this Lod only, and if cache say it is necessary.
 		if (!lod.OriginalSkinRestored)
 			restoreOriginalSkinPart(lod, currentVBHard);
 	}
 
-	// If skinning, Setup the skeleton matrix
-	if (bSkinApplied)
-	{
-		drv->setupModelMatrix(skeleton->getWorldMatrix());
-	}
-	// else set the instance worldmatrix.
-	else
-	{
-		drv->setupModelMatrix(trans->getWorldMatrix());
-	}
+
+	// set the instance worldmatrix.
+	drv->setupModelMatrix(trans->getWorldMatrix());
 
 
 	// Geomorph.
@@ -1092,10 +971,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 	if( useMeshVP )
 	{
 		CMatrix		invertedObjectMatrix;
-		if (bSkinApplied)
-			invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
-		else
-			invertedObjectMatrix = trans->getWorldMatrix().inverted();
+		invertedObjectMatrix = trans->getWorldMatrix().inverted();
 		// really ok if success to begin VP
 		useMeshVP= _MeshVertexProgram->begin(drv, mi->getScene(), mi, invertedObjectMatrix, renderTrav->CamPos);
 	}
@@ -1194,6 +1070,224 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 
 
 // ***************************************************************************
+void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
+{
+	if(_Lods.size()==0)
+		return;
+
+
+	// get the meshMRM instance.
+	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
+	// get a ptr on scene
+	CScene				*ownerScene= mi->getScene();
+	// get a ptr on renderTrav
+	CRenderTrav			*renderTrav= ownerScene->getRenderTrav();
+	// get a ptr on the driver
+	IDriver				*drv= renderTrav->getDriver();
+	nlassert(drv);
+
+
+	// choose the lod.
+	float	alphaLod;
+	sint	numLod= chooseLod(alphaMRM, alphaLod);
+
+
+	// Render the choosen Lod.
+	CLod	&lod= _Lods[numLod];
+	if(lod.RdrPass.size()==0)
+		return;
+
+
+	// Update the vertexBufferHard (if possible).
+	// \toto yoyo: TODO_OPTIMIZE: allocate only what is needed for the current Lod (Max of all instances, like
+	// the loading....) (see loadHeader()).
+	updateVertexBufferHard(drv, _VBufferFinal.getNumVertices());
+	/* currentVBHard is NULL if must disable it temporarily
+		For now, never disable it, but switch of VBHard may be VERY EXPENSIVE if NV_vertex_array_range2 is not
+		supported (old drivers).
+	*/
+	IVertexBufferHard		*currentVBHard= _VBHard;
+
+
+	// get the skeleton model to which I am skinned
+	CSkeletonModel *skeleton;
+	skeleton = mi->getSkeletonModel();
+	// must be skinned for renderSkin()
+	nlassert(_Skinned && mi->isSkinned() && skeleton);
+	bool bMorphApplied = _MeshMorpher.BlendShapes.size() > 0;
+	bool useNormal= (_VBufferFinal.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
+	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
+
+
+	// Profiling
+	//===========
+	H_AUTO( NL3D_MeshMRMGeom_RenderSkinned );
+
+
+	// Morphing
+	// ========
+	if (bMorphApplied)
+	{
+		// Since Skinned we must update original skin vertices and normals because skinning use it
+		_MeshMorpher.initSkinned(&_VBufferOriginal,
+							 &_VBufferFinal,
+							 currentVBHard,
+							 useTangentSpace,
+							 &_OriginalSkinVertices,
+							 &_OriginalSkinNormals,
+							 useTangentSpace ? &_OriginalTGSpace : NULL,
+							 true );
+		_MeshMorpher.updateSkinned (mi->getBlendShapeFactors());
+	}
+
+	// Skinning.
+	//===========
+
+	// Use RawSkin if possible: only if no morph, and only Vertex/Normal
+	if ( !bMorphApplied && !useTangentSpace && useNormal )
+		updateRawSkinNormal();
+	// Use RawSkin TgSpace if possible: only if no morph, and Vertex/Normal/TgSpace
+	else if ( !bMorphApplied && useTangentSpace && useNormal )
+		updateRawSkinTgSpace();
+	// Use none
+	else
+		clearRawSkin();
+
+	// applySkin.
+	//--------
+
+	// If skin without normal (rare/usefull?) always simple (slow) case.
+	if(!useNormal)
+	{
+		// skinning with just position
+		applySkin (lod, skeleton);
+	}
+	else
+	{
+		// Use SSE when possible
+		if( CSystemInfo::hasSSE() )
+		{
+			// apply skin for this Lod only.
+			if (!useTangentSpace)
+			{
+				// skinning with normal, but no tangent space
+				if(_NumLodRawSkin>0)
+					// Use faster RawSkin if possible.
+					applyRawSkinWithNormalSSE(lod, _RawSkinNormalLods[numLod], skeleton);
+				else
+					applySkinWithNormalSSE (lod, skeleton);
+			}
+			else
+			{
+				// Tangent space stored in the last texture coordinate
+				if(_NumLodRawSkin>0)
+					// Use faster RawSkin if possible.
+					applyRawSkinWithTangentSpaceSSE(lod, _RawSkinTgSpaceLods[numLod], 
+						skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
+				else
+					applySkinWithTangentSpaceSSE(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
+			}
+		}
+		// Standard FPU skinning
+		else
+		{
+			// apply skin for this Lod only.
+			if (!useTangentSpace)
+			{
+				// skinning with normal, but no tangent space
+				if(_NumLodRawSkin>0)
+					// Use faster RawSkin if possible.
+					applyRawSkinWithNormal (lod, _RawSkinNormalLods[numLod], skeleton);
+				else
+					applySkinWithNormal (lod, skeleton);
+			}
+			else
+			{
+				// Tangent space stored in the last texture coordinate
+				if(_NumLodRawSkin>0)
+					// Use faster RawSkin if possible.
+					applyRawSkinWithTangentSpace(lod, _RawSkinTgSpaceLods[numLod], 
+						skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
+				else
+					applySkinWithTangentSpace(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
+			}
+		}
+	}
+
+	// endSkin.
+	//--------
+	// Fill the usefull AGP memory (if any one loaded/Used).
+	fillAGPSkinPart(lod, currentVBHard);
+	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
+	lod.OriginalSkinRestored= false;
+
+
+	// NB: the skeleton matrix has already been setuped by CSkeletonModel
+	// NB: the normalize flag has already been setuped by CSkeletonModel
+
+
+	// Geomorph.
+	//===========
+	// Geomorph the choosen Lod (if not the coarser mesh).
+	if(numLod>0)
+	{
+		applyGeomorph(lod.Geomorphs, alphaLod, currentVBHard);
+	}
+
+
+	// Setup meshVertexProgram
+	//===========
+
+	// use MeshVertexProgram effect?
+	bool	useMeshVP= _MeshVertexProgram != NULL;
+	if( useMeshVP )
+	{
+		CMatrix		invertedObjectMatrix;
+		invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
+		// really ok if success to begin VP
+		useMeshVP= _MeshVertexProgram->begin(drv, mi->getScene(), mi, invertedObjectMatrix, renderTrav->CamPos);
+	}
+	
+
+	// Render the lod.
+	//===========
+	// active VB.
+	if(currentVBHard)
+		drv->activeVertexBufferHard(currentVBHard);
+	else
+		drv->activeVertexBuffer(_VBufferFinal);
+
+
+	// Render all pass.
+	for(uint i=0;i<lod.RdrPass.size();i++)
+	{
+		CRdrPass	&rdrPass= lod.RdrPass[i];
+
+		// CMaterial Ref
+		CMaterial &material=mi->Materials[rdrPass.MaterialId];
+
+		// Setup VP material
+		if (useMeshVP)
+		{
+			if(currentVBHard)
+				_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
+			else
+				_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBufferFinal);
+		}
+
+		// Render with the Materials of the MeshInstance.
+		drv->render(rdrPass.PBlock, material);
+	}
+
+	// End VertexProgram effect
+	if(useMeshVP)
+	{
+		// end it.
+		_MeshVertexProgram->end(drv);
+	}
+}
+
+// ***************************************************************************
 void	CMeshMRMGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	// because of complexity, serial is separated in save / load.
@@ -1256,13 +1350,13 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// ==================
 	f.serial(_Skinned);
 	f.serial(_BBox);
-	f.serial(_MaxFaceUsed);
-	f.serial(_MinFaceUsed);
-	f.serial(_DistanceFinest);
-	f.serial(_DistanceMiddle);
-	f.serial(_DistanceCoarsest);
-	f.serial(_OODistanceDelta);
-	f.serial(_DistancePow);
+	f.serial(_LevelDetail.MaxFaceUsed);
+	f.serial(_LevelDetail.MinFaceUsed);
+	f.serial(_LevelDetail.DistanceFinest);
+	f.serial(_LevelDetail.DistanceMiddle);
+	f.serial(_LevelDetail.DistanceCoarsest);
+	f.serial(_LevelDetail.OODistanceDelta);
+	f.serial(_LevelDetail.DistancePow);
 	// preload the Lods.
 	f.serialCont(_LodInfos);
 
@@ -1408,13 +1502,13 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// ==================
 	f.serial(_Skinned);
 	f.serial(_BBox);
-	f.serial(_MaxFaceUsed);
-	f.serial(_MinFaceUsed);
-	f.serial(_DistanceFinest);
-	f.serial(_DistanceMiddle);
-	f.serial(_DistanceCoarsest);
-	f.serial(_OODistanceDelta);
-	f.serial(_DistancePow);
+	f.serial(_LevelDetail.MaxFaceUsed);
+	f.serial(_LevelDetail.MinFaceUsed);
+	f.serial(_LevelDetail.DistanceFinest);
+	f.serial(_LevelDetail.DistanceMiddle);
+	f.serial(_LevelDetail.DistanceCoarsest);
+	f.serial(_LevelDetail.OODistanceDelta);
+	f.serial(_LevelDetail.DistancePow);
 	f.serialCont(_LodInfos);
 
 	// save number of wedges.
@@ -1770,10 +1864,7 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod, IVertexBufferHard *current
 float CMeshMRMGeom::getNumTriangles (float distance)
 {
 	// NB: this is an approximation, but this is continious.
-	// return the lod detail [0,1].
-	float	ld= getLevelDetailFromDist(distance);
-	// return in nb face.
-	return _MinFaceUsed + ld * (_MaxFaceUsed - _MinFaceUsed);
+	return _LevelDetail.getNumTriangles(distance);
 }
 
 
@@ -2126,14 +2217,6 @@ CTransformShape		*CMeshMRM::createInstance(CScene &scene)
 
 	// do some instance init for MeshGeom
 	_MeshMRMGeom.initInstance(mi);
-
-
-	// LoadBalancing backward compatibility: if the mesh is skinned, add it to the 
-	// "Global" Load Balancing Group.
-	if(_MeshMRMGeom.isSkinned())
-	{
-		mi->setLoadBalancingGroup("Global");
-	}
 
 	return mi;
 }

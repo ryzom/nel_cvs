@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.65 2002/07/02 12:27:19 berenguier Exp $
+ * $Id: mesh.cpp,v 1.66 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -586,31 +586,23 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel		*skeleton;
 	skeleton= mi->getSkeletonModel();
-	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and instance isSkinned().
+	// The mesh must not be skinned for render()
+	nlassert(!(_Skinned && mi->isSkinned() && skeleton));
 	bool bMorphApplied = _MeshMorpher->BlendShapes.size() > 0;
-	bool bSkinApplied = _Skinned && mi->isSkinned() && skeleton;
 	bool useNormal= (_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
 	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
 
 
 	// Profiling
 	//===========
-	// Special profile: Split between Skinned or not.
-#ifdef  ALLOW_TIMING_MEASURES
-	static NLMISC::CHTimer	NL3D_MeshGeom_Render_Normal_timer( "NL3D_MeshGeom_RenderNormal" ); 
-	static NLMISC::CHTimer	NL3D_MeshGeom_Render_Skinned_timer( "NL3D_MeshGeom_RenderSkinned" ); 
-	// choose what to time according to skin mode.
-	NLMISC::CAutoTimer	NL3D_MeshGeom_Render_auto( 
-		bSkinApplied? &NL3D_MeshGeom_Render_Skinned_timer : &NL3D_MeshGeom_Render_Normal_timer);
-#endif
+	H_AUTO( NL3D_MeshGeom_RenderNormal );
 
 
 	// Morphing
 	// ========
 	if (bMorphApplied)
 	{
-		// If Skinned we must update original skin vertices and normals because skinning use it
-		// If Skinned and not bSkinApplied and _OriginalSkinRestored restoreOriginalSkinPart is
+		// If _Skinned (NB: the skin is not applied) and if lod.OriginalSkinRestored, then restoreOriginalSkinPart is
 		// not called but mush morpher write changed vertices into VBHard so its ok. The unchanged vertices
 		// are written in the preceding call to restoreOriginalSkinPart.
 		if (_Skinned)
@@ -622,7 +614,7 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 								 &_OriginalSkinVertices,
 								 &_OriginalSkinNormals,
 								 useTangentSpace ? &_OriginalTGSpace : NULL,
-								 bSkinApplied );
+								 false );
 			_MeshMorpher->updateSkinned (mi->getBlendShapeFactors());
 		}
 		else // Not even skinned so we have to do all the stuff
@@ -639,37 +631,17 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 	// Skinning
 	// ========
 
-	// If skinning, setup skeleton matrix
-	if(bSkinApplied)
-	{
-		drv->setupModelMatrix(skeleton->getWorldMatrix());
-	}
 	// else setup instance matrix
-	else
-	{
-		drv->setupModelMatrix(trans->getWorldMatrix());
-	}
+	drv->setupModelMatrix(trans->getWorldMatrix());
 
 
-	// If skinning
-	bool	bkupNorm;
-	if(bSkinApplied)
-	{
-		// force normalisation of normals..
-		bkupNorm= drv->isForceNormalize();
-		drv->forceNormalize(true);
-
-		// apply the skinning: _VBuffer is modified.
-		applySkin(skeleton);
-	}
-	// if instance skin is invalid but mesh is skinned , we must copy vertices/normals from original vertices.
-	else if (!bSkinApplied && _Skinned)
+	// since instance skin is invalid but mesh is skinned , we must copy vertices/normals from original vertices.
+	if (_Skinned)
 	{
 		// do it for this Lod only, and if cache say it is necessary.
 		if (!_OriginalSkinRestored)
 			restoreOriginalSkinVertices();
 	}
-
 
 
 	// Setup meshVertexProgram
@@ -680,10 +652,7 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 	if( useMeshVP )
 	{
 		CMatrix		invertedObjectMatrix;
-		if (bSkinApplied)
-			invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
-		else
-			invertedObjectMatrix = trans->getWorldMatrix().inverted();
+		invertedObjectMatrix = trans->getWorldMatrix().inverted();
 		// really ok if success to begin VP
 		useMeshVP= _MeshVertexProgram->begin(drv, ownerScene, mi, invertedObjectMatrix, renderTrav->CamPos);
 	}
@@ -782,12 +751,134 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 		// Apply it.
 		_MeshVertexProgram->end(drv);
 	}
+}
 
-	// end skin
-	if(bSkinApplied)
+
+// ***************************************************************************
+void	CMeshGeom::renderSkin(CTransformShape *trans, float alphaMRM)
+{
+	// get the mesh instance.
+	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
+	// get a ptr on scene
+	CScene			*ownerScene= mi->getScene();
+	// get a ptr on renderTrav
+	CRenderTrav		*renderTrav= ownerScene->getRenderTrav();
+	// get a ptr on the driver
+	IDriver			*drv= renderTrav->getDriver();
+	nlassert(drv);
+
+
+	// update the VBufferHard (create/delete), to maybe render in AGP memory.
+	updateVertexBufferHard (drv);
+	/* currentVBHard is NULL if must disable it temporarily
+		For now, never disable it, but switch of VBHard may be VERY EXPENSIVE if NV_vertex_array_range2 is not
+		supported (old drivers).
+	*/
+	IVertexBufferHard		*currentVBHard= _VertexBufferHard;
+
+
+	// get the skeleton model to which I am binded (else NULL).
+	CSkeletonModel		*skeleton;
+	skeleton= mi->getSkeletonModel();
+	// must be skinned for renderSkin()
+	nlassert(_Skinned && mi->isSkinned() && skeleton);
+	bool bMorphApplied = _MeshMorpher->BlendShapes.size() > 0;
+	bool useNormal= (_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
+	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
+
+
+	// Profiling
+	//===========
+	H_AUTO( NL3D_MeshGeom_RenderSkinned );
+
+
+	// Morphing
+	// ========
+	if (bMorphApplied)
 	{
-		drv->forceNormalize(bkupNorm);
+		// Since Skinned we must update original skin vertices and normals because skinning use it
+		_MeshMorpher->initSkinned(&_VBufferOri,
+							 &_VBuffer,
+							 currentVBHard,
+							 useTangentSpace,
+							 &_OriginalSkinVertices,
+							 &_OriginalSkinNormals,
+							 useTangentSpace ? &_OriginalTGSpace : NULL,
+							 true );
+		_MeshMorpher->updateSkinned (mi->getBlendShapeFactors());
 	}
+
+
+	// Skinning
+	// ========
+
+	// NB: the skeleton matrix has already been setuped by CSkeletonModel
+	// NB: the normalize flag has already been setuped by CSkeletonModel
+
+
+	// apply the skinning: _VBuffer is modified.
+	applySkin(skeleton);
+
+
+	// Setup meshVertexProgram
+	//===========
+
+	// use MeshVertexProgram effect?
+	bool	useMeshVP= _MeshVertexProgram != NULL;
+	if( useMeshVP )
+	{
+		CMatrix		invertedObjectMatrix;
+		invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
+		// really ok if success to begin VP
+		useMeshVP= _MeshVertexProgram->begin(drv, ownerScene, mi, invertedObjectMatrix, renderTrav->CamPos);
+	}
+	
+
+	// Render the mesh.
+	//===========
+	// active VB.
+	if(currentVBHard != NULL)
+		drv->activeVertexBufferHard(currentVBHard);
+	else
+		drv->activeVertexBuffer(_VBuffer);
+
+
+	// For all _MatrixBlocks
+	for(uint mb=0;mb<_MatrixBlocks.size();mb++)
+	{
+		CMatrixBlock	&mBlock= _MatrixBlocks[mb];
+		if(mBlock.RdrPass.size()==0)
+			continue;
+
+		// Render all pass.
+		for(uint i=0;i<mBlock.RdrPass.size();i++)
+		{
+			CRdrPass	&rdrPass= mBlock.RdrPass[i];
+
+			// CMaterial Ref
+			CMaterial &material=mi->Materials[rdrPass.MaterialId];
+
+			// Setup VP material
+			if (useMeshVP)
+			{
+				if(currentVBHard)
+					_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
+				else
+					_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
+			}									
+
+			// render primitives
+			drv->render(rdrPass.PBlock, material);
+		}
+	}
+
+	// End VertexProgram effect
+	if(useMeshVP)
+	{
+		// Apply it.
+		_MeshVertexProgram->end(drv);
+	}
+
 }
 
 

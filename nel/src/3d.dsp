@@ -960,6 +960,14 @@ SOURCE=.\3d\meshvp_wind_tree.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mrm_level_detail.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mrm_level_detail.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\particle_system_shape.cpp
 # End Source File
 # Begin Source File

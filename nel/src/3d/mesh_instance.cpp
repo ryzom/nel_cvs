@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.13 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: mesh_instance.cpp,v 1.14 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,6 +110,22 @@ bool	CMeshInstance::isSkinnable() const
 	return pMesh->getMeshGeom().isSkinned();
 }
 
+
+// ***************************************************************************
+void	CMeshInstance::renderSkin(float alphaMRM)
+{
+	// Don't setup lighting or matrix in Skin. Done by the skeleton
+
+	if(Shape)
+	{
+		// Get a pointer on the shape
+		CMesh *pMesh = NLMISC::safe_cast<CMesh *>((IShape*)Shape);
+
+		// render the meshGeom
+		CMeshGeom	&meshGeom= const_cast<CMeshGeom&>(pMesh->getMeshGeom ());
+		meshGeom.renderSkin( this, alphaMRM );
+	}
+}
 
 
 } // NL3D

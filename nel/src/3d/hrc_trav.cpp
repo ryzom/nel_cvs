@@ -1,7 +1,7 @@
 /** \file hrc_trav.cpp
  * <File description>
  *
- * $Id: hrc_trav.cpp,v 1.9 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: hrc_trav.cpp,v 1.10 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,13 +43,6 @@ namespace	NL3D
 IObs				*CHrcTrav::createDefaultObs() const
 {
 	return new CDefaultHrcObs;
-}
-
-
-// ***************************************************************************
-void				CHrcTrav::setSkipModelRoot(CSkipModel *m)
-{
-	SkipModelRoot= m;
 }
 
 

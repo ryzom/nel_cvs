@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_mrm_instance.h,v 1.7 2002/06/10 14:02:47 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.8 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,12 +77,23 @@ protected:
 
 	/// Called for lod character coloring.
 	virtual const std::vector<sint32>	*getSkinBoneUsage() const;
+
+	/// Implementation of the renderSkin
+	virtual void	renderSkin(float alphaMRM);
+
 	// @}
 
+
+	/// \name Load balancing methods
+	// @{
 
 	/** Change MRM Distance setup. See CMeshBaseInstance::changeMRMDistanceSetup()
 	 */
 	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
+
+	virtual	const	CMRMLevelDetail		*getMRMLevelDetail() const;
+
+	// @}
 
 
 private:

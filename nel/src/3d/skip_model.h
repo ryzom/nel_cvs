@@ -1,7 +1,7 @@
 /** \file skip_model.h
  * <File description>
  *
- * $Id: skip_model.h,v 1.1 2001/08/24 16:37:16 berenguier Exp $
+ * $Id: skip_model.h,v 1.2 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,11 @@
 #include "nel/misc/types_nl.h"
 #include "3d/mot.h"
 #include "3d/hrc_trav.h"
+#include "3d/clip_trav.h"
+#include "3d/anim_detail_trav.h"
+#include "3d/load_balancing_trav.h"
+#include "3d/light_trav.h"
+#include "3d/render_trav.h"
 
 
 namespace NL3D {
@@ -41,7 +46,8 @@ const NLMISC::CClassId		SkipModelId=NLMISC::CClassId(0x143f5849, 0x2847496e);
 
 // ***************************************************************************
 /**
- * The purpose of this model is to have an HrcObserver which do nothing in traverse, and don't traverseSons.
+ * The purpose of this model is to have Observers which do nothing in traverse, even not "traverseSons".
+ *	This is made only for Hrc, Clip, AnimDetail, LoadBalancing, Lighting and render Trav.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -62,34 +68,80 @@ protected:
 private:
 	static IModel	*creator() {return new CSkipModel;}
 	friend class	CSkipModelHrcObs;
+	friend class	CSkipModelClipObs;
+	friend class	CSkipModelAnimDetailObs;
+	friend class	CSkipModelLoadBalancingObs;
+	friend class	CSkipModelLightObs;
+	friend class	CSkipModelRenderObs;
 
 };
 
 
 // ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to do nothing
- * - implement the traverse() method, to do nothing
- *
- * \sa CHrcTrav IBaseHrcObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
 class	CSkipModelHrcObs : public IBaseHrcObs
 {
 public:
 	CSkipModelHrcObs() {}
 
-
-	/// \name The base doit method.
-	//@{
-	/// The behavior is to do nothing at all.
 	virtual	void	traverse(IObs *caller);
-	//@}
 
 	static IObs	*creator() {return new CSkipModelHrcObs;}
+
+};
+// ***************************************************************************
+class	CSkipModelClipObs : public IBaseClipObs
+{
+public:
+	CSkipModelClipObs() {}
+
+	virtual	bool	clip(IBaseClipObs *caller)	{return true;}
+	virtual	void	traverse(IObs *caller);
+
+	static IObs	*creator() {return new CSkipModelClipObs;}
+
+};
+// ***************************************************************************
+class	CSkipModelAnimDetailObs : public IBaseAnimDetailObs
+{
+public:
+	CSkipModelAnimDetailObs() {}
+
+	virtual	void	traverse(IObs *caller);
+
+	static IObs	*creator() {return new CSkipModelAnimDetailObs;}
+
+};
+// ***************************************************************************
+class	CSkipModelLoadBalancingObs : public IBaseLoadBalancingObs
+{
+public:
+	CSkipModelLoadBalancingObs() {}
+
+	virtual	void	traverse(IObs *caller);
+
+	static IObs	*creator() {return new CSkipModelLoadBalancingObs;}
+
+};
+// ***************************************************************************
+class	CSkipModelLightObs : public IBaseLightObs
+{
+public:
+	CSkipModelLightObs() {}
+
+	virtual	void	traverse(IObs *caller);
+
+	static IObs	*creator() {return new CSkipModelLightObs;}
+
+};
+// ***************************************************************************
+class	CSkipModelRenderObs : public IBaseRenderObs
+{
+public:
+	CSkipModelRenderObs() {}
+
+	virtual	void	traverse(IObs *caller);
+
+	static IObs	*creator() {return new CSkipModelRenderObs;}
 
 };
 

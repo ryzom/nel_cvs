@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.12 2002/07/02 12:27:19 berenguier Exp $
+ * $Id: mesh_geom.h,v 1.13 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,8 +108,16 @@ public:
 	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) {return true;}
 
 	/** render() this meshGeom in a driver, with the specified TransformShape instance information.
+	 *	NB: the meshGeom is ensured to not be skinned to a skeleton, but CMeshGeom may still have skin information.
 	 */
 	virtual void	render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha) =0;
+
+	/** render this meshGeom as a skin, with the specified TransformShape instance information (which gives the driver)
+	 *	NB: trans->isSkinned() is ensured to be true.
+	 *	All the materials must be rendered.
+	 */
+	virtual void	renderSkin(CTransformShape *trans, float alphaMRM) =0;
+
 
 	/// \name Load balancing methods
 	// @{

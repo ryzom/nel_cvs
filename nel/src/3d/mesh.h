@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.29 2002/07/02 12:27:19 berenguier Exp $
+ * $Id: mesh.h,v 1.30 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -313,6 +313,9 @@ public:
 
 	/// render() this mesh in a driver.
 	virtual void	render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha);
+
+	/// render() this mesh as a skin
+	virtual void	renderSkin(CTransformShape *trans, float alphaMRM);
 
 	// get an approximation of the number of triangles this instance will render for a fixed distance.
 	virtual float	getNumTriangles (float distance);

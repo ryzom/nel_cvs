@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.2 2001/05/18 14:00:29 cado Exp $
+ * $Id: sock.h,v 1.3 2001/05/18 14:06:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,7 +171,7 @@ public:
 	void				close();
 
 	/// Destructor (shutdown + close)
-	virtual ~CSock() {};
+	virtual ~CSock();
 
 	//@}
 

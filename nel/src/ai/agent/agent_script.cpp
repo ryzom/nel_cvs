@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.88 2001/10/02 14:53:41 chafik Exp $
+ * $Id: agent_script.cpp,v 1.89 2001/10/04 13:40:58 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1284,7 +1284,7 @@ namespace NLAIAGENT
 				CGroupType *param = (CGroupType *) o;
 				CStringType *comp_name = (CStringType *)((IBaseGroupType *)param)->popFront();
 				IObjectIA *value = (IObjectIA *)((IBaseGroupType *)param)->popFront();
-				int index = _AgentClass->getComponentIndex( IVarName( comp_name->getStr() ) );
+				int index = _AgentClass->getComponentIndex(  comp_name->getStr()  );
 				_AgentClass->updateStaticMember(index, value);
 			}
 

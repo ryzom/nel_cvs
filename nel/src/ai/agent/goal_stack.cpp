@@ -89,6 +89,7 @@ namespace NLAILOGIC
 		{
 			if ( (**it_g) == *g )
 			{
+				(*it_g)->cancel();
 				_Goals.erase( it_g );
 				return;
 			}

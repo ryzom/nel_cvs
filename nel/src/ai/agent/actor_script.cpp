@@ -140,7 +140,13 @@ namespace NLAIAGENT
 				}
 			}
 			// Destroys launched childs?
-			cancel();
+			while ( _Launched.size() )
+			{
+				( (CActorScript *) _Launched.front() )->cancel();
+				_Launched.front()->Kill();
+				delete _Launched.front();
+				_Launched.pop_front();
+			}
 			onUnActivate();
 			_IsActivated = false;
 			_IsPaused = false;
@@ -832,16 +838,10 @@ namespace NLAIAGENT
 
 	void CActorScript::cancel()
 	{
-
 #ifdef NL_DEBUG
 		const char *dbg_this_type = (const char *) getType();
 #endif
-		while ( _Launched.size() )
-		{
-			_Launched.front()->Kill();
-			delete _Launched.front();
-			_Launched.pop_front();
-		}
+		unActivate();
 	}
 
 	float CActorScript::priority() const

@@ -1,7 +1,7 @@
 /** \file net_log.cpp
  * Class CNetLog (logger for network transfers)
  *
- * $Id: net_log.cpp,v 1.13 2002/10/24 08:44:37 lecroart Exp $
+ * $Id: net_log.cpp,v 1.14 2002/11/13 12:06:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,7 @@ void CNetLog::output( const char *srchost, uint8 msgnum,
 		srchost, (uint16)msgnum, _ProcessName.c_str(), desthost, msgname, msgsize );
 */
 	displayRawNL( "@@0@%s@%hu@%s@%s@%s@%u@",
-		srchost, (uint16)msgnum, _ProcessName.c_str(), desthost, msgname, msgsize );
+		srchost, (uint16)msgnum, (*_ProcessName).c_str(), desthost, msgname, msgsize );
 }
 
 
@@ -99,7 +99,7 @@ void CNetLog::input( const char *srchost, uint8 msgnum, const char *desthost )
 		  srchost, msgnum, _ProcessName.c_str(), desthost );
 */
 	displayRawNL( "##0#%s#%hu#%s#%s#", 
-		  srchost, msgnum, _ProcessName.c_str(), desthost );
+		  srchost, msgnum, (*_ProcessName).c_str(), desthost );
 }
 
 

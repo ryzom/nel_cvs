@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.150 2002/11/12 17:24:25 lecroart Exp $
+ * $Id: service.cpp,v 1.151 2002/11/13 12:06:25 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -480,6 +480,15 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 	try
 	{
+		//
+		// Init parameters
+		//
+		
+		_ConfigDir = CPath::standardizePath(configDir);
+		_LogDir = CPath::standardizePath(logDir);
+		_ShortName = serviceShortName;
+		_LongName = serviceLongName;
+
 		// Set the process name
 		CLog::setProcessName (_ShortName);
 
@@ -496,15 +505,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			chdir (_RunningPath.c_str());
 #endif
 		}
-
-		//
-		// Init parameters
-		//
-
-		_ConfigDir = CPath::standardizePath(configDir);
-		_LogDir = CPath::standardizePath(logDir);
-		_ShortName = serviceShortName;
-		_LongName = serviceLongName;
 
 		//
 		// Init debug/log stuffs (must be first things otherwise we can't log if errors)

@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.28 2000/12/14 10:52:21 cado Exp $
+ * $Id: msg_socket.h,v 1.29 2000/12/14 15:30:05 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,6 +144,12 @@ public:
 		return (_ClientSock != NULL);
 	}
 
+	/// Returns connection id (client mode only)
+	TSenderId id()
+	{
+		return _ClientSock->senderId();
+	}
+
 	/// Send an output message to the specified host id
 	static void		send( CMessage& outmsg, TSenderId id );
 
@@ -152,6 +158,9 @@ public:
 
 	/// Send an output message to all connected hosts except the one with the specified excluded id
 	static void		sendToAllExceptHost( CMessage& outmsg, TSenderId excluded );
+
+	/// Send an output message to all connected hosts except the ones in the excluded ids in the specified set
+	static void		sendToAllExceptHosts( CMessage& outmsg, const std::set<TSenderId>& excludedset );
 
 	/// Returns the number of connected hosts
 	static uint32	numberOfConnections()
@@ -298,6 +307,8 @@ protected:
 	 * from the previous one (in order to receive potential responses) but arm a timeout.
 	 */
 	void			connectToService();
+
+	friend void printOutCallbacks( const CSearchSet& s ); // debug
 
 private:
 

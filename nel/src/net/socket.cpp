@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.36 2000/12/13 15:15:11 cado Exp $
+ * $Id: socket.cpp,v 1.37 2000/12/14 15:30:05 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -386,7 +386,7 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 
 	if ( _Logging )
 	{
-		/*if ( message.typeIsNumber() )
+		if ( message.typeIsNumber() )
 		{
 			nldebug( "Socket %d received message %hd (%d bytes +%d)",
 				_Sock, message.typeAsNumber(), message.length(), sizeof(msgtype)+msgnamelen+sizeof(msgsize) );
@@ -395,7 +395,7 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 		{
 			nldebug( "Socket %d received message %s (%d bytes +%d)",
 				_Sock, message.typeAsString().c_str(), message.length(), sizeof(msgtype)+msgnamelen+sizeof(msgsize) );
-		}*/
+		}
 		nlnetinput( remoteAddr().asIPString().c_str(), recvd_msg_number, localAddr().asIPString().c_str() );
 	}
 }

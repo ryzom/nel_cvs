@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.38 2000/12/14 10:52:21 cado Exp $
+ * $Id: msg_socket.cpp,v 1.39 2000/12/14 15:30:05 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,7 +211,6 @@ void CMsgSocket::init( const TCallbackItem *callbackarray, TTypeNum arraysize, b
 			_SearchSet.insert( CPtCallbackItem(pt) );
 		}
 	}
-	
 }
 
 
@@ -435,10 +434,30 @@ void CMsgSocket::sendToAllExceptHost( CMessage& outmsg, TSenderId excluded )
 	{
 		handleConnectionClosure( ilps );
 	}
-
 }
 
 
+/*
+ * Send an output message to all connected hosts except the ones in the excluded ids in the specified set
+ */
+void CMsgSocket::sendToAllExceptHosts( CMessage& outmsg, const set<TSenderId>& excludedset )
+{
+	CConnections::iterator ilps = _Connections.begin();
+	try
+	{
+		for ( ilps++; ilps!=_Connections.end(); ++ilps ) // not including the first one which is the listening socket
+		{
+			if ( excludedset.find( (*ilps).first ) == excludedset.end() )
+			{
+				(*ilps).second->send( outmsg );
+			}
+		}
+	}
+	catch ( ESocket& )
+	{
+		handleConnectionClosure( ilps );
+	}
+}
 
 
 /*
@@ -686,6 +705,22 @@ bool CMsgSocket::msgIsBinding( const CMessage& msg )
 }
 
 
+void printOutCallbacks( const CSearchSet& s )
+{
+	nldebug( "Callbacks:" );
+	CSearchSet::iterator is;
+	for ( is=s.begin(); is!=s.end(); ++is )
+	{
+		NLMISC::DebugLog.displayRawNL( (*is).key() );
+	}
+	nldebug( "Static callbacks:" );
+	for ( is=CMsgSocket::_SearchSet.begin(); is!=CMsgSocket::_SearchSet.end(); ++is )
+	{
+		NLMISC::DebugLog.displayRawNL( (*is).key() );
+	}
+}
+
+
 /* Calls the good callback, and send a binding message if needed
  * \param msg [in] An input message to pass to the callback
  * \param sock [in] The socket from which the message was received
@@ -695,21 +730,27 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 {
 	// Choose between per client and static callback management
 	CMsgSocket *clientsocket = sock.ownerClient();
-	TTypeNum&			the_cba_size = _CbaSize;
-	const TCallbackItem	*the_callback_array = _CallbackArray;
-	CSearchSet&			the_search_set = _SearchSet;
-	if ( clientsocket != NULL )
+	TTypeNum			*the_cba_size;
+	const TCallbackItem	*the_callback_array;
+	CSearchSet			*the_search_set;
+	if ( clientsocket == NULL )
 	{
-		the_cba_size = clientsocket->_ClientCbaSize;
+		the_cba_size = &_CbaSize;
+		the_callback_array = _CallbackArray;
+		the_search_set = &_SearchSet;
+	}
+	else
+	{
+		the_cba_size = &clientsocket->_ClientCbaSize;
 		the_callback_array = clientsocket->_ClientCallbackArray;
-		the_search_set = clientsocket->_ClientSearchSet;
+		the_search_set = &clientsocket->_ClientSearchSet;
 	}
 
 	// Callback management
 	if ( msg.typeIsNumber() )
 	{
 		TTypeNum num = msg.typeAsNumber();
-		if ( num < the_cba_size )
+		if ( num < *the_cba_size )
 		{
 			// Call the callback by index
 			the_callback_array[num].Callback( msg, sock.senderId() );
@@ -721,11 +762,14 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 	}
 	else
 	{
+/*#ifdef NL_DEBUG
+		printOutCallbacks( *the_search_set );
+#endif*/
 		// Get the callback by key string
 		TMsgCallback callback;
 		string s = msg.typeAsString();
-		CSearchSet::iterator its = the_search_set.find( CPtCallbackItem( s.c_str() ) );
-		if ( its != the_search_set.end() )
+		CSearchSet::iterator its = the_search_set->find( CPtCallbackItem( s.c_str() ) );
+		if ( its != the_search_set->end() )
 		{
 			callback = (*its).pt()->Callback;
 		}

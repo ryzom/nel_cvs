@@ -14,7 +14,7 @@ EXPORT USER GUIDE
 * EXPORT DATA IN THE GAMEDATA DIRECTORY
 * EXPORT DSS FILES FROM PHOTOSHOP
 * EXPORT A MESH
-* EXPORT A PARTICUL SYSTEM
+* EXPORT A PARTICLE SYSTEM
 * EXPORT A SKELETON
 * EXPORT A SKELETON TEMPLATE WEIGHT
 * EXPORT AN ANIMATION
@@ -37,7 +37,7 @@ TECHNICAL NOTES ABOUT AUTOMATIC DATA PROCESS
 
 INSTALL
 
-To export and build the gamedate, you will need to install the project build_gamedata.
+To export and build the gamedata, you will need to install the project build_gamedata.
 You will need cygwin installed. The path must be configurated with cygwin path
 before any other directory, include winnt root pathes.
 
@@ -254,7 +254,7 @@ build_gamedata/processes/shape/lightmap_16_bits/*.* in client/data/lightmaps
 
 -----------------------------------------------------------------------------------------------------
 
-* EXPORT A PARTICUL SYSTEM
+* EXPORT A PARTICLE SYSTEM
 
 Manual process:
 ---------------

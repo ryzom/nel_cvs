@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.43 2002/08/23 12:18:13 lecroart Exp $
+ * $Id: debug.h,v 1.44 2002/09/09 17:19:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/mutex.h"
 #include "nel/misc/mem_displayer.h"
 #include "nel/misc/displayer.h"
+
 
 namespace NLMISC
 {
@@ -247,7 +248,7 @@ extern bool DebugNeedAssert;
 #if defined (NL_OS_WINDOWS)
 #define NLMISC_BREAKPOINT _asm { int 3 }
 #else
-#define NLMISC_BREAKPOINT
+#define NLMISC_BREAKPOINT abort()
 #endif
 
 // removed because we always check assert (even in release mode) #if defined(NL_DEBUG)

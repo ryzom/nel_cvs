@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.2 2001/04/19 13:45:01 chafik Exp $
+ * $Id: agent_timer.h,v 1.3 2001/04/23 17:20:02 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -145,7 +145,7 @@ namespace NLAIAGENT
 	public:
 		static void initClass();
 		static void releaseClass();
-	};
+	};	
 
 	class CAgentWatchTimer: public CAgentScript
 	{
@@ -165,8 +165,8 @@ namespace NLAIAGENT
 	protected:
 
 		int _Clock;
-		IObjectIA *_Call;
-		IMessageBase *_MSG;
+		IConnectIA *_Call;
+		IMessageBase *_MSG;		
 		
 	public:
 		CAgentWatchTimer();
@@ -178,6 +178,8 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual const NLAIC::CIdentType &getType() const;
+		virtual void getDebugString(char *t) const;
+		virtual void onKill(IConnectIA *A);
 
 		uint getClock() const
 		{
@@ -189,7 +191,7 @@ namespace NLAIAGENT
 			_Clock = c;
 		}
 
-		void setAttrib(IObjectIA *,IMessageBase *);
+		void setAttrib(IConnectIA *,IMessageBase *);
 		void attach();
 		void tellBroker();
 
@@ -253,6 +255,35 @@ namespace NLAIAGENT
 		static void releaseClass();
 
 
+	};
+
+	class CAgentTimerHandle: public IObjectIA
+	{
+	public:
+		static const NLAIC::CIdentType *IdAgentTimerHandle;
+
+	private:		
+		CAgentWatchTimer *_Timer;
+
+	public:
+
+		CAgentTimerHandle();
+		CAgentTimerHandle(CAgentWatchTimer *);
+		CAgentTimerHandle(const CAgentTimerHandle &);
+		virtual ~CAgentTimerHandle();
+
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
+		virtual const NLAIC::CIdentType &getType() const;
+		virtual void getDebugString(char *t) const;
+		virtual void save(NLMISC::IStream &os);		
+		virtual void load(NLMISC::IStream &is);
+		virtual const NLAIAGENT::IObjectIA::CProcessResult &run(){return NLAIAGENT::IObjectIA::ProcessRun;}
+		virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
+		virtual IObjectIA::CProcessResult sendMessage(IObjectIA *m);
+	public:
+		static void initClass();
+		static void releaseClass();
 	};
 }
 #endif

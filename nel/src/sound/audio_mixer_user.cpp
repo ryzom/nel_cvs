@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.51 2003/04/24 13:45:37 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.52 2003/05/06 12:00:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1524,7 +1524,14 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 		// This is a simple sound
 		if (simpleSound->getBuffer() == NULL)
 		{
-			nlwarning ("Can't create the sound '%s'", CStringMapper::unmap(simpleSound->getBuffername()).c_str());
+			static std::set<std::string> warned;
+
+			const std::string &name = CStringMapper::unmap(simpleSound->getBuffername());
+			if (warned.find(name) == warned.end())
+			{
+				nlwarning ("Can't create the sound '%s'", name.c_str());
+				warned.insert(name);
+			}
 			return NULL;
 		}
 

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.95 2003/12/04 17:00:34 corvazier Exp $
+ * $Id: path.cpp,v 1.96 2003/12/29 16:28:29 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1402,6 +1402,7 @@ bool CFile::isExists (const string &filename)
 
 bool CFile::fileExists (const string& filename)
 {
+	H_AUTO(FileExists);
 	return ! ! fstream( filename.c_str(), ios::in );
 }
 

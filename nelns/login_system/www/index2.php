@@ -35,7 +35,7 @@
 
 				if (mysql_num_rows ($result) == 1)
 				{
-					$reason = "Login '".$login."' was created because it was not found in database";
+					$reason = "Login '".$login."' was created because it was not found in database (error code 50)";
 					$row = mysql_fetch_row ($result);
 					$id = $row[0];
 					$priv = $row[5];
@@ -48,13 +48,13 @@
 				}
 				else
 				{
-					$reason = "Can't fetch the login '".$login."'";
+					$reason = "Can't fetch the login '".$login."' (error code 51)";
 					$res = false;
 				}
 			}
 			else
 			{
-				$reason = "Unknown login '".$login."'";
+				$reason = "Unknown login '".$login."' (error code 52)";
 				$res = false;
 			}
 		}
@@ -70,7 +70,7 @@
 				if (mysql_num_rows ($result) == 0)
 				{
 					// no permission
-					$reason = "You can't use the client application '$clientApplication'";
+					$reason = "You can't use the client application '$clientApplication' (error code 53)";
 					$res = false;
 				}
 				else
@@ -83,7 +83,7 @@
 						// ask the LS to remove the client
 						if (disconnectClient ($row[3], $row[0], $tempres))
 						{
-							$reason =  $reason."was just disconnected. Now you can retry the identification.";
+							$reason =  $reason."was just disconnected. Now you can retry the identification (error code 54)";
 
 							$query = "update shard set NbPlayers=NbPlayers-1 where ShardId=$row[3]";
 							$result = mysql_query ($query) or die ("Can't execute the query: '$query' errno:".mysql_errno().": ".mysql_error());
@@ -93,7 +93,7 @@
 						}
 						else
 						{
-							$reason = $reason."can't be disconnected: $tempres.";
+							$reason = $reason."can't be disconnected: $tempres (error code 55)";
 						}
 						$res = false;
 					}
@@ -107,7 +107,7 @@
 			}
 			else
 			{
-				$reason = "Bad password";
+				$reason = "Bad password (error code 56)";
 				$res = false;
 			}
 		}

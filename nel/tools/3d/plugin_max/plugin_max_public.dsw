@@ -57,6 +57,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "ligo"=..\..\..\src\ligo.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "misc"=..\..\..\src\misc.dsp - Package Owner=<4>
 
 Package=<5>
@@ -124,6 +136,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name ig_lighter_lib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ligo
     End Project Dependency
 }}}
 
@@ -235,6 +250,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name georges
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ligo
     End Project Dependency
 }}}
 

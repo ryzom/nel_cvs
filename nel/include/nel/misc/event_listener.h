@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * events listener
  *
- * $Id: event_listener.h,v 1.8 2000/12/05 15:18:30 berenguier Exp $
+ * $Id: event_listener.h,v 1.9 2000/12/06 12:50:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,9 +102,10 @@ public:
 	  * If the user has press (by error) the key 'C' during the first period, this API has record it, and then, at the
 	  * second period, isKeyDown(KeyC) will return true the first time the key is tested, unless if you do a 
 	  * clearDownStates() at the beggining of the second period.
+	  * Clear all the push states to false too.
 	  * \see isKeyDown()
 	  */
-	void clearDownStates();
+	void reset ();
 
 
 protected:

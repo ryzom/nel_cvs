@@ -1,7 +1,7 @@
 /** \file event_listener.cpp
  * <File description>
  *
- * $Id: event_listener.cpp,v 1.8 2000/12/05 15:18:38 berenguier Exp $
+ * $Id: event_listener.cpp,v 1.9 2000/12/06 12:49:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,7 @@ CEventListenerAsync::CEventListenerAsync()
 	_KeyArray.resize (KeyCount);
 	_KeyDownArray.resize (KeyCount);
 	_KeyReleaseArray.resize (KeyCount);
+	reset ();
 }
 // ***************************************************************************
 void CEventListenerAsync::addToServer (CEventServer& server)
@@ -120,8 +121,9 @@ void CEventListenerAsync::operator ()(const CEvent& event)
 
 
 // ***************************************************************************
-void CEventListenerAsync::clearDownStates()
+void CEventListenerAsync::reset ()
 {
+	_KeyArray.clearAll ();
 	_KeyDownArray.clearAll ();
 	_KeyReleaseArray.clearAll ();
 }

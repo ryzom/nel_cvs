@@ -128,7 +128,7 @@ plugin material NelMaterial
 		iWaterPoolID		   type:#integer default: 0   ui:ciWaterPoolID
 
 		-- new in version 7
-		cbCalcWaterLightmap         	type:#boolean default:false
+		bCalcWaterLightmap         	type:#boolean default:false ui:cbCalcWaterLightmap
 		
 	
 		-- New in version 3

@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.14 2002/04/09 15:32:31 berenguier Exp $
+ * $Id: u_landscape.h,v 1.15 2002/04/23 14:38:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,14 @@ public:
 	  *  \param multiply is the multiply factor. Final color is (diffuse*multiply*shading+ambiant*(1.0-shading))
 	  */
 	virtual	void	setupStaticLight (const CRGBA &diffuse, const CRGBA &ambiant, float multiply) =0;
+
+	/**	 Setup the equivalent material diffuse component used for both Static and Dynamic PointLights.
+	  *	 Default is White.
+	  */
+	virtual	void	setPointLightDiffuseMaterial(CRGBA diffuse) =0;
+	/**	 \see setPointLightDiffuseMaterial
+	  */
+	virtual	CRGBA	getPointLightDiffuseMaterial () const =0;
 
 
 	/** 
@@ -207,6 +215,20 @@ public:
 
 	// @}
 
+
+	/// \name Dynamic Lighting management
+	// @{
+
+	/** For Vegetable Dynamic ligthing only: this is an approximate color of all vegetables.
+	 *	Default is (180, 180, 180).
+	 */
+	virtual	void		setDLMGlobalVegetableColor(CRGBA gvc) =0;
+
+	/** see setDLMGlobalVegetableColor()
+	 */
+	virtual	CRGBA		getDLMGlobalVegetableColor() const =0;
+
+	// @}
 };
 
 

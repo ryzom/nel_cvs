@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.11 2003/03/31 16:23:57 berenguier Exp $
+ * $Id: water_model.h,v 1.12 2003/04/01 15:44:34 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,9 +28,13 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/polygon.h"
+#include "nel/3d/u_water.h"
+//
 #include "3d/transform_shape.h"
 #include "3d/material.h"
-#include "nel/3d/u_water.h"
+#include "3d/vertex_buffer.h"
+#include "3d/texture_emboss.h"
+
 
 namespace MISC
 {
@@ -82,13 +86,23 @@ public:
 	// @}
 
 protected:
-	friend class CWaterShape;
-	static CMaterial _WaterMat;		
+	friend class CWaterShape;	
 	void setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight);
+	// compute the clipped poly for cards that have vertex shaders
 	void computeClippedPoly();
+	// compute the clipped poly for simple shader version
+	void computeSimpleClippedPoly();
+	// simple rendering version
+	void doSimpleRender(IDriver *drv);
+
 private:
 	NLMISC::CPolygon _ClippedPoly;
 	NLMISC::CPolygon _EndClippedPoly;	
+	CSmartPtr<CTextureEmboss> _EmbossTexture;
+	// vertex buffer for simple rendering
+	static CVertexBuffer _SimpleRenderVB;
+	static CMaterial _WaterMat;
+	static CMaterial _SimpleWaterMat;
 };
 
 //=====================================================================================================================

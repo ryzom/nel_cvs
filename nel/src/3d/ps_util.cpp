@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.34 2002/01/28 14:38:23 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.35 2002/02/15 17:11:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,33 +23,22 @@
  * MA 02111-1307, USA.
  */
 
-#include "3d/ps_util.h"
-#include "3d/driver.h"
+
 #include "nel/misc/aabbox.h"
+#include "nel/misc/matrix.h"
+
+#include "3d/ps_util.h"
+#include "3d/particle_system.h"
+#include "3d/driver.h"
 #include "3d/vertex_buffer.h"
 #include "3d/primitive_block.h"
 #include "3d/material.h"
 #include "3d/nelu.h"
-
 #include "3d/font_generator.h"
 #include "3d/font_manager.h"
 #include "3d/computed_string.h"
-
-#include "nel/misc/matrix.h"
-
 #include "3d/dru.h"
-
-#include "3d/ps_emitter.h"
 #include "3d/ps_located.h"
-#include "3d/ps_particle.h"
-#include "3d/ps_particle2.h"
-#include "3d/ps_mesh.h"
-#include "3d/ps_force.h"
-#include "3d/ps_zone.h"
-#include "3d/ps_color.h"
-#include "3d/ps_float.h"
-#include "3d/ps_int.h"
-#include "3d/ps_plane_basis_maker.h"
 #include "3d/ps_sound.h"
 
 #include "3d/particle_system_shape.h"
@@ -70,6 +59,7 @@ using NLMISC::CVector;
 float CPSUtil::_CosTable[256];
 float CPSUtil::_SinTable[256];
 float CPSUtil::_PerlinNoiseTab[1024];
+
 
 
 
@@ -101,75 +91,22 @@ void CPSUtil::initFastCosNSinTable(void)
 
 //==========================================================================
 void CPSUtil::registerSerialParticleSystem(void)
-{
-		NLMISC_REGISTER_CLASS(CPSEmitterOmni);
-		NLMISC_REGISTER_CLASS(CPSEmitterDirectionnal);
-		NLMISC_REGISTER_CLASS(CPSEmitterRectangle);
-		NLMISC_REGISTER_CLASS(CPSEmitterConic);
-		NLMISC_REGISTER_CLASS(CPSSphericalEmitter);
-		NLMISC_REGISTER_CLASS(CPSRadialEmitter);
-		NLMISC_REGISTER_CLASS(CPSDirectionnalForce); 
-		NLMISC_REGISTER_CLASS(CPSGravity); 
-		NLMISC_REGISTER_CLASS(CPSBrownianForce);
-		NLMISC_REGISTER_CLASS(CPSCentralGravity); 
-		NLMISC_REGISTER_CLASS(CPSFluidFriction);
-		NLMISC_REGISTER_CLASS(CPSTurbul);
-		NLMISC_REGISTER_CLASS(CPSCylindricVortex);
-		NLMISC_REGISTER_CLASS(CPSMagneticForce);
-		NLMISC_REGISTER_CLASS(CPSLocated); 
-		NLMISC_REGISTER_CLASS(CPSDot);
-		NLMISC_REGISTER_CLASS(CPSFaceLookAt);
-		NLMISC_REGISTER_CLASS(CPSZonePlane);
-		NLMISC_REGISTER_CLASS(CPSZoneSphere);
-		NLMISC_REGISTER_CLASS(CPSZoneDisc);
-		NLMISC_REGISTER_CLASS(CPSZoneRectangle);
-		NLMISC_REGISTER_CLASS(CPSZoneCylinder);
-		NLMISC_REGISTER_CLASS(CPSColorBlender);
-		NLMISC_REGISTER_CLASS(CPSColorMemory);
-		NLMISC_REGISTER_CLASS(CPSColorBinOp);
-		NLMISC_REGISTER_CLASS(CPSColorBlenderExact);
-		NLMISC_REGISTER_CLASS(CPSColorGradient);
-		NLMISC_REGISTER_CLASS(CPSFloatBlender);		
-		NLMISC_REGISTER_CLASS(CPSFloatGradient);
-		NLMISC_REGISTER_CLASS(CPSFloatMemory);
-		NLMISC_REGISTER_CLASS(CPSFloatBinOp);
-		NLMISC_REGISTER_CLASS(CPSFloatCurve);
-		NLMISC_REGISTER_CLASS(CPSIntBlender);		
-		NLMISC_REGISTER_CLASS(CPSIntMemory);		
-		NLMISC_REGISTER_CLASS(CPSIntBinOp);		
-		NLMISC_REGISTER_CLASS(CPSIntGradient);
-		NLMISC_REGISTER_CLASS(CPSUIntBlender);		
-		NLMISC_REGISTER_CLASS(CPSUIntMemory);		
-		NLMISC_REGISTER_CLASS(CPSUIntBinOp);		
-		NLMISC_REGISTER_CLASS(CPSUIntGradient);
-		NLMISC_REGISTER_CLASS(CPSSpring);
-		NLMISC_REGISTER_CLASS(CPSFanLight);
-		NLMISC_REGISTER_CLASS(CPSTailDot);
-		NLMISC_REGISTER_CLASS(CPSRibbon);
-		NLMISC_REGISTER_CLASS(CPSRibbonLookAt);
-		NLMISC_REGISTER_CLASS(CPSShockWave);
-		NLMISC_REGISTER_CLASS(CPSFace);
-		NLMISC_REGISTER_CLASS(CPSMesh);
-		NLMISC_REGISTER_CLASS(CPSConstraintMesh);
-		NLMISC_REGISTER_CLASS(CParticleSystemShape);
-		NLMISC_REGISTER_CLASS(CPSPlaneBasisBlender);
-		NLMISC_REGISTER_CLASS(CPSPlaneBasisGradient);
-		NLMISC_REGISTER_CLASS(CPSPlaneBasisMemory);
-		NLMISC_REGISTER_CLASS(CPSPlaneBasisBinOp);
-		NLMISC_REGISTER_CLASS(CPSPlaneBasisFollowSpeed);
-		NLMISC_REGISTER_CLASS(CPSBasisSpinner);
+{				
+		NLMISC_REGISTER_CLASS(CPSLocated); 										
+		NLMISC_REGISTER_CLASS(CParticleSystemShape);		
 		NLMISC_REGISTER_CLASS(CPSSound);
 
 
-		// while we are here, we perform some important inits
-		CPSRotated2DParticle::initRotTable(); // init the precalc rot table for face lookat
+		registerParticles();
+		registerForces();
+		registerEmitters();
+		registerZones();
+		registerAttribs();
+
+
+		// while we are here, we perform some important inits		
 		initFastCosNSinTable(); // init fast cosine lookup table
-		initPerlinNoiseTable(); // init perlin noise table
-		CPSFanLight::initFanLightPrecalc();
-		CPSDot::initVertexBuffers();
-		CPSQuad::initVertexBuffers();
-		CPSConstraintMesh::initPrerotVB();
-		CPSBrownianForce::initPrecalc();
+		initPerlinNoiseTable(); // init perlin noise table				
 }
 
 //==========================================================================

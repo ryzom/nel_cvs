@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.7 2002/01/07 14:35:09 vizerie Exp $
+ * $Id: ps_util.h,v 1.8 2002/02/15 17:11:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,7 @@ namespace NL3D
  */
 struct CPSUtil
 {
+public:
 	/// register the classes of the system mus be called when serializing
 
 	static void registerSerialParticleSystem(void);
@@ -149,32 +150,24 @@ struct CPSUtil
 	static void initPerlinNoiseTable(void);
 		
 
-	protected:
+private:	
+	static void registerForces();
+	static void registerParticles();
+	static void registerEmitters();
+	static void registerZones();
+	static void registerAttribs();
 
-		//#ifdef NL_DEBUG
-			static bool _CosTableInitialized;
-		//#endif
-
-		//#ifdef NL_DEBUG
-			static bool _PerlinNoiseTableInitialized;
-		//#endif
-
-		// a table for fast cosine lookup
-		static float _CosTable[256];
-		// a table for fast sinus lookup
-		static float _SinTable[256];
-
-		static float _PerlinNoiseTab[1024];
-
-
-		// used by perlin noise to compute each octave		
-		static float getInterpolatedNoise(const NLMISC::CVector &pos);
-
-		// get non interpolated noise 
-		static float getPerlinNoise(uint x, uint y, uint z);
-
-
-
+	static bool _CosTableInitialized;	
+	static bool _PerlinNoiseTableInitialized;	
+	// a table for fast cosine lookup
+	static float _CosTable[256];
+	// a table for fast sinus lookup
+	static float _SinTable[256];
+	static float _PerlinNoiseTab[1024];
+	// used by perlin noise to compute each octave		
+	static float getInterpolatedNoise(const NLMISC::CVector &pos);
+	// get non interpolated noise 
+	static float getPerlinNoise(uint x, uint y, uint z);
 };
 
 ///////////////////////////

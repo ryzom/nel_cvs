@@ -1,6 +1,6 @@
 /** \file login_client.cpp
  *
- * $Id: login_client.cpp,v 1.3 2001/05/02 12:57:16 lecroart Exp $
+ * $Id: login_client.cpp,v 1.4 2001/05/03 13:30:01 lecroart Exp $
  *
  */
 
@@ -209,7 +209,7 @@ string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx
 
 	// ok, we can try to connect to the good front end
 
-	nlinfo("addr:%s cookie:%s", ShardChooseShardAddr.c_str(), ShardChooseShardCookie.toString());
+	nlinfo("addr:%s cookie:%s", ShardChooseShardAddr.c_str(), ShardChooseShardCookie.toString().c_str());
 
 	try
 	{

@@ -460,7 +460,8 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 					rect_scroll.top = rect_scroll.bottom + scroll_pixel;
 					pDC->FillRect(&rect_scroll,&brush);
 					if ((iLV-i)<iFV) i = iLV - iFV;
-					for (int k = 0;k<old_iLV-i;k++) p++;
+					int k;
+					for (k = 0;k<old_iLV-i;k++) p++;
 					for (k=old_iLV - i;k<=iLV;k++) 
 					{
 						m_ctrl.DrawTile(p,pDC,0,m_128x128);
@@ -672,7 +673,8 @@ void Browse::Init()
 	
 	// 128
 	m_ctrl.InfoList.theList128.resize (tileSet->getNumTile128 ());
-	for (int i=0; i<tileSet->getNumTile128 (); i++)
+	int i;
+	for (i=0; i<tileSet->getNumTile128 (); i++)
 	{
 		m_ctrl.InfoList.theList128[i].id=i;
 		m_ctrl.InfoList.theList128[i].Selected=0;

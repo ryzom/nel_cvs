@@ -1072,7 +1072,8 @@ void CTView::OnPaint()
 	}
 	
 	tilelist::iterator p = InfoList.GetFirst(parent->m_128x128);
-	for (int i=0;i<iFV;i++) p++;
+	int i;
+	for (i=0;i<iFV;i++) p++;
 	for (i=iFV;i<=iLV;i++) 
 		DrawTile(p++,&dc,0, parent->m_128x128);
 	::ReleaseDC (*this, dc);

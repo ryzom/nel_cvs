@@ -2,7 +2,7 @@
  * zone_ig_lighter.cpp : instance lighter for ig in landscape zones
  * greatly copied from ../zone_lighter/zone_lighter.cpp
  *
- * $Id: zone_ig_lighter.cpp,v 1.7 2002/05/13 15:44:57 valignat Exp $
+ * $Id: zone_ig_lighter.cpp,v 1.8 2002/06/26 14:28:03 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,13 +127,46 @@ int main(int argc, char* argv[])
 			{
 				// Read the config file
 				CConfigFile parameter;
-				CConfigFile dependency;
 
 				// Load and parse the parameter file
 				parameter.load (argv[3]);
 
-				// Load and parse the dependency file
-				dependency.load (argv[4]);
+				// **********
+				// *** Build the lighter descriptor
+				// **********
+
+				CInstanceLighter::CLightDesc lighterDesc;
+
+				// Light direction
+				CConfigFile::CVar &sun_direction = parameter.getVar ("sun_direction");
+				lighterDesc.LightDirection.x=sun_direction.asFloat(0);
+				lighterDesc.LightDirection.y=sun_direction.asFloat(1);
+				lighterDesc.LightDirection.z=sun_direction.asFloat(2);
+				lighterDesc.LightDirection.normalize ();
+
+				// Grid size
+				CConfigFile::CVar &quad_grid_size = parameter.getVar ("quad_grid_size");
+				lighterDesc.GridSize=quad_grid_size.asInt();
+
+				// Grid size
+				CConfigFile::CVar &quad_grid_cell_size = parameter.getVar ("quad_grid_cell_size");
+				lighterDesc.GridCellSize=quad_grid_cell_size.asFloat();
+
+				// Shadows enabled ?
+				CConfigFile::CVar &shadow = parameter.getVar ("shadow");
+				lighterDesc.Shadow=shadow.asInt ()!=0;
+
+				// OverSampling
+				CConfigFile::CVar &ig_oversampling = parameter.getVar ("ig_oversampling");
+				lighterDesc.OverSampling= ig_oversampling.asInt ();
+				// validate value: 0, 2, 4, 8, 16
+				lighterDesc.OverSampling= raiseToNextPowerOf2(lighterDesc.OverSampling);
+				clamp(lighterDesc.OverSampling, 0U, 16U);
+				if(lighterDesc.OverSampling<2)
+					lighterDesc.OverSampling= 0;
+
+				// For ig of Zones, never disable Sun contrib !!!
+				lighterDesc.DisableSunContribution= false;
 
 				// Get the search pathes
 				CConfigFile::CVar &search_pathes = parameter.getVar ("search_pathes");
@@ -285,99 +318,69 @@ int main(int argc, char* argv[])
 					}
 				}
 				
-				// *** Scan dependency file
-				CConfigFile::CVar &dependant_zones = dependency.getVar ("dependencies");
-				for (uint i=0; i<(uint)dependant_zones.size(); i++)
+				// Shadow ?
+				if (lighterDesc.Shadow)
 				{
-					// Get zone name
-					string zoneName=dependant_zones.asString(i);
+					// Load and parse the dependency file
+					CConfigFile dependency;
+					dependency.load (argv[4]);
 
-					// Load the zone
-					CZone zoneBis;
-
-					// Open it for reading
-					if (inputFile.open (dir+zoneName+ext))
+					// *** Scan dependency file
+					CConfigFile::CVar &dependant_zones = dependency.getVar ("dependencies");
+					for (uint i=0; i<(uint)dependant_zones.size(); i++)
 					{
-						// Read it
-						zoneBis.serial (inputFile);
-						inputFile.close();
+						// Get zone name
+						string zoneName=dependant_zones.asString(i);
 
-						// Add the zone
-						landscape->addZone (zoneBis);
-						listZoneId.push_back (zoneBis.getZoneId());
-					}
-					else
-					{
-						// Error message and continue
-						nlwarning ("ERROR can't load zone %s\n", (dir+zoneName+ext).c_str());
-					}
+						// Load the zone
+						CZone zoneBis;
 
-					// Try to load an instance group.
-					if (loadInstanceGroup)
-					{
-						string name = zoneName+".ig";
-						string nameLookup = CPath::lookup (name, false, false);
-						if (!nameLookup.empty())
-							name = nameLookup;
-
-						// Name of the instance group
-						if (inputFile.open (name))
+						// Open it for reading
+						if (inputFile.open (dir+zoneName+ext))
 						{
-							// New ig
-							CInstanceGroup *group=new CInstanceGroup;
-
-							// Serial it
-							group->serial (inputFile);
+							// Read it
+							zoneBis.serial (inputFile);
 							inputFile.close();
 
-							// Add to the list
-							instanceGroup.push_back (group);
+							// Add the zone
+							landscape->addZone (zoneBis);
+							listZoneId.push_back (zoneBis.getZoneId());
 						}
 						else
 						{
 							// Error message and continue
-							nlwarning ("WARNING can't load instance group %s\n", name.c_str());
+							nlwarning ("ERROR can't load zone %s\n", (dir+zoneName+ext).c_str());
+						}
+
+						// Try to load an instance group.
+						if (loadInstanceGroup)
+						{
+							string name = zoneName+".ig";
+							string nameLookup = CPath::lookup (name, false, false);
+							if (!nameLookup.empty())
+								name = nameLookup;
+
+							// Name of the instance group
+							if (inputFile.open (name))
+							{
+								// New ig
+								CInstanceGroup *group=new CInstanceGroup;
+
+								// Serial it
+								group->serial (inputFile);
+								inputFile.close();
+
+								// Add to the list
+								instanceGroup.push_back (group);
+							}
+							else
+							{
+								// Error message and continue
+								nlwarning ("WARNING can't load instance group %s\n", name.c_str());
+							}
 						}
 					}
 				}
-
-				// **********
-				// *** Build the lighter descriptor
-				// **********
-
-				CInstanceLighter::CLightDesc lighterDesc;
-
-				// Light direction
-				CConfigFile::CVar &sun_direction = parameter.getVar ("sun_direction");
-				lighterDesc.LightDirection.x=sun_direction.asFloat(0);
-				lighterDesc.LightDirection.y=sun_direction.asFloat(1);
-				lighterDesc.LightDirection.z=sun_direction.asFloat(2);
-				lighterDesc.LightDirection.normalize ();
-
-				// Grid size
-				CConfigFile::CVar &quad_grid_size = parameter.getVar ("quad_grid_size");
-				lighterDesc.GridSize=quad_grid_size.asInt();
-
-				// Grid size
-				CConfigFile::CVar &quad_grid_cell_size = parameter.getVar ("quad_grid_cell_size");
-				lighterDesc.GridCellSize=quad_grid_cell_size.asFloat();
-
-				// Shadows enabled ?
-				CConfigFile::CVar &shadow = parameter.getVar ("shadow");
-				lighterDesc.Shadow=shadow.asInt ()!=0;
-
-				// OverSampling
-				CConfigFile::CVar &ig_oversampling = parameter.getVar ("ig_oversampling");
-				lighterDesc.OverSampling= ig_oversampling.asInt ();
-				// validate value: 0, 2, 4, 8, 16
-				lighterDesc.OverSampling= raiseToNextPowerOf2(lighterDesc.OverSampling);
-				clamp(lighterDesc.OverSampling, 0U, 16U);
-				if(lighterDesc.OverSampling<2)
-					lighterDesc.OverSampling= 0;
-
-				// For ig of Zones, never disable Sun contrib !!!
-				lighterDesc.DisableSunContribution= false;
-
 
 				// A vector of CInstanceLighter::CTriangle
 				vector<CInstanceLighter::CTriangle> vectorTriangle;

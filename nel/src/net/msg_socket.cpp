@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.20 2000/11/06 14:00:07 cado Exp $
+ * $Id: msg_socket.cpp,v 1.21 2000/11/08 14:57:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,6 +93,7 @@ CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, 
 	_ClientSock( NULL ),
 	_ServiceName ( service )
 {
+	nldebug("Trying to connect to the service \"%s\"", service);
 	init( callbackarray, arraysize );
 	connectToService();
 	addNewConnection( _ClientSock );

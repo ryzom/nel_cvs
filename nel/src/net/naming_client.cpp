@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.5 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.6 2000/11/08 14:57:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,6 +139,7 @@ void CNamingClient::closeT()
  */
 void CNamingClient::doOpen()
 {
+	nldebug("Trying to connect to the Naming Service");
 	CNamingClient::_ClientSock = new CSocket();
 	CNamingClient::_ClientSock->connect( CNamingClient::NamingServiceAddress );
 }

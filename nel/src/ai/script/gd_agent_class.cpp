@@ -1,6 +1,6 @@
 /** \file gd_agent_class.cpp
  *
- * $Id: gd_agent_class.cpp,v 1.1 2001/03/01 15:03:00 portier Exp $
+ * $Id: gd_agent_class.cpp,v 1.2 2001/03/02 17:26:50 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ namespace NLAISCRIPT
 		setBaseObjectInstance(((NLAIAGENT::CGDAgentScript *)(NLAIAGENT::CGDAgentScript::IdGDAgentScript.getFactory()->getClass())));		
 	}	
 
-	CGDAgentClass::CGDAgentClass()
+	CGDAgentClass::CGDAgentClass() : CAgentClass()
 	{
 		setBaseMethodCount(((NLAIAGENT::CGDAgentScript *)(NLAIAGENT::CGDAgentScript::IdGDAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CGDAgentScript *)(NLAIAGENT::CGDAgentScript::IdGDAgentScript.getFactory()->getClass())));

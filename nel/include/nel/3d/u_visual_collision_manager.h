@@ -1,7 +1,7 @@
 /** \file u_visual_collision_manager.h
  * Interface to visual collision manager.
  *
- * $Id: u_visual_collision_manager.h,v 1.8 2004/06/24 17:34:06 berenguier Exp $
+ * $Id: u_visual_collision_manager.h,v 1.9 2004/08/03 16:18:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,12 @@
 #include <vector>
 
 #include "nel/misc/vector.h"
+#include "nel/3d/u_visual_collision_mesh.h"
+
+namespace NLMISC
+{
+	class CAABBox;
+}
 
 namespace NL3D
 {
@@ -39,6 +45,7 @@ namespace NL3D
 class	ULandscape;
 class	UVisualCollisionEntity;
 class	UVisualCollisionMesh;
+
 
 
 // ***************************************************************************
@@ -56,6 +63,15 @@ protected:
 
 
 public:
+	// Infos about a collision mesh instance
+	class CMeshInstanceColInfo
+	{
+	public:
+		UVisualCollisionMesh  Mesh;
+		const NLMISC::CMatrix *WorldMatrix;
+		const NLMISC::CAABBox *WorldBBox;
+		uint ID;
+	};
 
 	/** setup the landscape used for this collision manager. ptr is kept, and manager must be cleared
 	 * when the landscape is deleted.
@@ -114,7 +130,8 @@ public:
 	/** Remove a Mesh from the collision manager.
 	 */
 	virtual void					removeMeshCollision(uint id) =0;
-
+	// retrieve mesh that are in the given box
+	virtual	void					getMeshs(const NLMISC::CAABBox &aabbox, std::vector<CMeshInstanceColInfo> &dest) = 0;		
 };
 
 

@@ -1,7 +1,7 @@
 /** \file u_visual_collision_mesh.h
  * <File description>
  *
- * $Id: u_visual_collision_mesh.h,v 1.1 2004/03/23 15:39:21 berenguier Exp $
+ * $Id: u_visual_collision_mesh.h,v 1.2 2004/08/03 16:18:22 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -52,7 +52,10 @@ public:
 	bool			empty() const {return _Mesh==NULL;}
 	/// For Advanced usage, get the Collision Mesh ptr
 	class CVisualCollisionMesh	*getMeshPtr() const {return _Mesh;}
-	
+	// get vertices of the mesh
+	const std::vector<NLMISC::CVector> &getVertices() const;
+	// get triangles of the mesh
+	const std::vector<uint16> &getTriangles() const;
 private:
 	class CVisualCollisionMesh	*_Mesh;
 

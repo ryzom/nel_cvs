@@ -1,7 +1,7 @@
 /** \file u_visual_collision_mesh.cpp
  * <File description>
  *
- * $Id: u_visual_collision_mesh.cpp,v 1.1 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: u_visual_collision_mesh.cpp,v 1.2 2004/08/03 16:18:22 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -42,6 +42,18 @@ UVisualCollisionMesh::UVisualCollisionMesh() : _Mesh(NULL)
 void			UVisualCollisionMesh::attach(class CVisualCollisionMesh	*mesh)
 {
 	_Mesh= mesh;
+}
+
+// ***************************************************************************
+const std::vector<NLMISC::CVector> &UVisualCollisionMesh::getVertices() const
+{
+	return _Mesh->getVertices();
+}
+
+// ***************************************************************************
+const std::vector<uint16> &UVisualCollisionMesh::getTriangles() const
+{
+	return _Mesh->getTriangles();
 }
 
 

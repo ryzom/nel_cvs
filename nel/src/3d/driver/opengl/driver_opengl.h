@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.25 2000/12/19 09:55:14 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.26 2000/12/20 09:29:28 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,7 @@
 #ifdef NL_OS_WINDOWS
 #include "nel/misc/win_event_emitter.h"
 #elif defined (NL_OS_UNIX)
-#include "nel/misc/unix_event_emitter.h"
+#include "unix_event_emitter.h"
 #endif // NL_OS_UNIX
 
 namespace NL3D {

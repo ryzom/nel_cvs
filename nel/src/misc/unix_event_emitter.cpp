@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: unix_event_emitter.cpp,v 1.4 2000/12/19 17:30:26 lecroart Exp $
+ * $Id: unix_event_emitter.cpp,v 1.5 2000/12/20 09:29:28 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 #include "nel/misc/events.h"
-#include "nel/misc/unix_event_emitter.h"
+#include "unix_event_emitter.h"
 
 #ifdef NL_OS_UNIX
 

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.91 2003/02/17 16:25:39 corvazier Exp $
+ * $Id: patch.cpp,v 1.92 2003/04/03 14:34:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/fast_floor.h"
 #include "3d/light_influence_interpolator.h"
 #include "3d/patchdlm_context.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using	namespace	std;
 using	namespace	NLMISC;
@@ -615,7 +616,6 @@ void			CPatch::addRefTessBlocks()
 			TessBlocks[i].init(this);
 
 
-
 		// Vegetable management
 		//==========
 		CVegetableManager	*vegetableManager= getLandscape()->_VegetableManager;
@@ -636,6 +636,7 @@ void			CPatch::addRefTessBlocks()
 		//==========
 		// append patch for Near updateLighting, since TessBlock lightmap may/will exist.
 		getLandscape()->linkPatchToNearUL(this);
+
 	}
 }
 

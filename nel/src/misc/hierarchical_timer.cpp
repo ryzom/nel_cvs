@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.37 2004/07/12 14:02:04 miller Exp $
+ * $Id: hierarchical_timer.cpp,v 1.37.4.1 2004/08/27 13:00:39 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -259,6 +259,13 @@ void	CHTimer::startBench(bool wantStandardDeviation /*= false*/, bool quick, boo
 		CSimpleClock::init();
 	}
 
+	// if reset needed, clearup all
+	if (reset)
+		clearSessionStats();
+
+	// clear current for session
+	clearSessionCurrent();
+
 	// Launch
 	_Benching = true;
 	_BenchStartedOnce = true;
@@ -282,6 +289,9 @@ void	CHTimer::endBench()
 		nlwarning("HTIMER: Stopping the bench inside a benched functions !");
 	}
 	_Benching = false;
+
+	// spread session stats if root node is greater
+	updateSessionStats();
 }
 
 //=================================================================
@@ -349,7 +359,7 @@ void	CHTimer::display(CLog *log, TSortCriterion criterion, bool displayInline /*
 	}
 	std::string statsInline;
 
-	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits |  loc%/ glb% |       min |       max |      mean");
+	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits |  loc%/ glb% | sessn max |       min |       max |      mean");
 
 	for(TTimerStatPtrVect::iterator statIt = statsPtr.begin(); statIt != statsPtr.end(); ++statIt)
 	{
@@ -444,7 +454,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 		}
 	}
 
-	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits |  loc%/ glb% |       min |       max |      mean");
+	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits |  loc%/ glb% | sessn max |       min |       max |      mean");
 
 	for(TNodeStatPtrVect::iterator it = nodeStatsPtrs.begin(); it != nodeStatsPtrs.end(); ++it)
 	{
@@ -489,7 +499,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 		nodeLeft.insert(nodeLeft.end(), currNode->Sons.begin(), currNode->Sons.end());
 
 	}
-	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%%/ glb%% |       min |       max |      mean", labelNumChar, "");
+	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%%/ glb%% | sessn max |       min |       max |      mean", labelNumChar, "");
 
 	/// 2 ) get root total time.
 	CStats	rootStats;
@@ -569,7 +579,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 	CLog::TDisplayInfo	dummyDspInfo;
 	log->displayRawNL("HTIMER: =========================================================================");
 	log->displayRawNL("HTIMER: Hierarchical display of bench by execution path");
-	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%%/ glb%% |       min |       max |      mean", labelNumChar, "");
+	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%%/ glb%% | sessn max |       min |       max |      mean", labelNumChar, "");
 
 
 	// use list because vector of vector is bad.
@@ -688,7 +698,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 	CLog::TDisplayInfo	dummyDspInfo;
 	log->displayRawNL("HTIMER: =========================================================================");
 	log->displayRawNL("HTIMER: Hierarchical display of bench by execution path");
-	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%%/ glb%% |       min |       max |      mean", labelNumChar, "");
+	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%%/ glb%% | sessn max |       min |       max |      mean", labelNumChar, "");
 
 
 	// use list because vector of vector is bad.
@@ -811,12 +821,13 @@ void CHTimer::CStats::buildFromNode(CNode *node, double msPerTick)
 //=================================================================
 void CHTimer::CStats::buildFromNodes(CNode **nodes, uint numNodes, double msPerTick)
 {
-	TotalTime = 0;	
-	TotalTimeWithoutSons = 0;	
+	TotalTime = 0;
+	TotalTimeWithoutSons = 0;
 	NumVisits = 0;
 	
 	uint64 minTime = (uint64) -1;
 	uint64 maxTime = 0;
+	uint64 sessionMaxTime = 0;
 	
 	uint k, l;
 	for(k = 0; k < numNodes; ++k)
@@ -825,7 +836,8 @@ void CHTimer::CStats::buildFromNodes(CNode **nodes, uint numNodes, double msPerT
 		TotalTimeWithoutSons += (nodes[k]->TotalTime -  nodes[k]->LastSonsTotalTime) * msPerTick;
 		NumVisits += nodes[k]->NumVisits;
 		minTime = std::min(minTime, nodes[k]->MinTime);
-		maxTime = std::max(maxTime, nodes[k]->MaxTime);				
+		maxTime = std::max(maxTime, nodes[k]->MaxTime);
+		sessionMaxTime = std::max(sessionMaxTime, nodes[k]->SessionMax);
 	}
 	if (minTime == (uint64) -1) 
 	{
@@ -833,6 +845,8 @@ void CHTimer::CStats::buildFromNodes(CNode **nodes, uint numNodes, double msPerT
 	}
 	MinTime  = minTime * msPerTick;
 	MaxTime  = maxTime * msPerTick;
+	SessionMaxTime = sessionMaxTime * msPerTick;
+
 	if (NumVisits > 0)
 		MeanTime = TotalTime / NumVisits;
 	else
@@ -868,6 +882,7 @@ void CHTimer::CStats::display(CLog *log, bool displayEx, bool wantStandardDeviat
 			{
 			log->displayRawNL("HTIMER: Standard deviation        = %.3f ms", (float) TimeStandardDeviation);
 			}
+			log->displayRawNL("HTIMER: Session Max time          = %.3f ms", (float) SessionMaxTime);
 			//log->displayRawNL("Time standard deviation	= %.3f ms", (float) TimeStandardDeviation);
 	}
 }
@@ -885,9 +900,10 @@ void CHTimer::CStats::getStats(std::string &dest, bool statEx, double rootTotalT
 		}
 		else
 		{
-			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s | %5.1f/%5.1f | %9.3f | %9.3f | %9.3f",
+			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s | %5.1f/%5.1f | %9.3f | %9.3f | %9.3f | %9.3f",
 					  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
 					  float(100*TotalTimeWithoutSons/rootTotalTime), float(100*TotalTime/rootTotalTime), 
+					  (float) SessionMaxTime,
 					  (float) MinTime, (float) MaxTime, (float) MeanTime
 					 );
 		}
@@ -900,9 +916,10 @@ void CHTimer::CStats::getStats(std::string &dest, bool statEx, double rootTotalT
 		}
 		else
 		{
-			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s | %5.1f/%5.1f | %9.3f | %9.3f | %9.3f | std deviation %9.3f",
+			NLMISC::smprintf(buf, 1024, " | %10.3f | %10.3f | %12s | %5.1f/%5.1f | %9.3f | %9.3f | %9.3f | %9.3f | std deviation %9.3f",
 							  (float) TotalTime, (float) TotalTimeWithoutSons, toString(NumVisits).c_str(), 
 							  float(100*TotalTimeWithoutSons/rootTotalTime), float(100*TotalTime/rootTotalTime), 
+							  (float) SessionMaxTime,
 							  (float) MinTime, (float) MaxTime, (float) MeanTime,
 							  (float) TimeStandardDeviation
 							);
@@ -973,6 +990,8 @@ void	CHTimer::doAfter(bool displayAfter)
 	_CurrNode->MaxTime = std::max(_CurrNode->MaxTime, (uint64)numTicks);
 	_CurrNode->LastSonsTotalTime = _CurrNode->SonsTotalTime;
 
+	_CurrNode->SessionCurrent += (uint64)numTicks;
+
 	if (displayAfter)
 	{		
 		nlinfo("HTIMER: %s %.3fms loop number %d", _Name, numTicks * _MsPerTick, _CurrNode->NumVisits);
@@ -1011,6 +1030,36 @@ void	CHTimer::doAfter(bool displayAfter)
 		_PreambuleClock.stop();
 	}
 }
+
+
+
+
+/*
+ * Clears SessionMax current stats (only current value)
+ */
+void	CHTimer::clearSessionCurrent()
+{
+	_RootNode.resetSessionCurrent();
+}
+
+/*
+ * Clears all SessionMax stats (max and current values)
+ */
+void	CHTimer::clearSessionStats()
+{
+	_RootNode.resetSessionStats();
+}
+
+/*
+ * Update session stats
+ */
+void	CHTimer::updateSessionStats()
+{
+	if (_RootNode.SessionCurrent > _RootNode.SessionMax)
+		_RootNode.spreadSession();
+}
+
+
 
 
 //

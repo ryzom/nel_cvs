@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.29 2004/01/16 09:07:42 lecroart Exp $
+ * $Id: hierarchical_timer.h,v 1.29.4.1 2004/08/27 13:00:25 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -273,7 +273,16 @@ public:
 	static void		displaySummary(CLog *log= InfoLog, TSortCriterion criterion = TotalTime, bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2, uint maxDepth = 3);
 
 	/// Clears stats, and reinits all timer structure
-	static void		clear();		
+	static void		clear();
+
+	/// Clears SessionMax current stats (only current value)
+	static void		clearSessionCurrent();
+
+	/// Clears all SessionMax stats (max and current values)
+	static void		clearSessionStats();
+
+	/// Update session stats
+	static void		updateSessionStats();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -297,6 +306,9 @@ private:
 		uint64					MinTime;   // the minimum time spent in that node
 		uint64					MaxTime;   // the maximum time spent in that node
 		uint64					NumVisits; // the number of time the execution has gone through this node		
+		// session max measure
+		uint64					SessionCurrent;
+		uint64					SessionMax;
 		//
 		uint64					SonsPreambule; // preambule time for the sons		
 		CSimpleClock			Clock;         // a clock to do the measures at this node
@@ -321,12 +333,38 @@ private:
 			NumVisits			 = 0;
 			SonsPreambule	     = 0;			
 			LastSonsTotalTime    = 0;
+			SessionCurrent       = 0;
+			SessionMax           = 0;
 			NLMISC::contReset(Measures);
 		}
+		// 
 		// Display this node path
 		void	displayPath(CLog *log) const;
 		// Get this node path
-		void    getPath(std::string &dest) const;		
+		void    getPath(std::string &dest) const;
+
+		// reset session current
+		void	resetSessionCurrent()
+		{
+			SessionCurrent = 0;
+			for (uint i=0; i<Sons.size(); ++i)
+				Sons[i]->resetSessionCurrent();
+		}
+		// reset all session stats
+		void	resetSessionStats()
+		{
+			SessionCurrent = 0;
+			SessionMax = 0;
+			for (uint i=0; i<Sons.size(); ++i)
+				Sons[i]->resetSessionStats();
+		}
+		// spread session value through the while node tree
+		void	spreadSession()
+		{
+			SessionMax = SessionCurrent;
+			for (uint i=0; i<Sons.size(); ++i)
+				Sons[i]->spreadSession();
+		}
 	};
 
 	/** Some statistics
@@ -340,7 +378,8 @@ private:
 		double	MeanTime;
 		uint64	NumVisits;
 		double	MinTime;
-		double	MaxTime;		
+		double	MaxTime;
+		double	SessionMaxTime;
 
 		// build stats from a single node
 		void buildFromNode(CNode *node, double msPerTick);

@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.3 2000/11/10 09:58:04 berenguier Exp $
+ * $Id: dru.cpp,v 1.4 2000/11/10 11:09:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ IDriver		*CDRU::createGlDriver()
 	HINSTANCE			hInst;
 	IDRV_CREATE_PROC	createDriver;
 
-	hInst=LoadLibrary("r:\\code\\nel\\driver_opengl.dll");
+	hInst=LoadLibrary("r:\\code\\nel\\lib\\driver_opengl.dll");
 	if (!hInst)
 		return	NULL;
 

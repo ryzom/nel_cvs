@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.4 2000/11/10 09:57:34 berenguier Exp $
+ * $Id: landscape.h,v 1.5 2000/11/10 11:08:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,12 +41,12 @@ namespace NL3D
  * A landscape. Use CZone to build zone, and use landscape to dynamically add/remove them, for render.
  *
  *	Limits:
- *		- 65535	zones max in whole dans le monde entier (ZoneId sur 16 bits).
- *		- 65535 patchs maxi par zone.
- *		- patch d'ordre 2x2 minimum.
- *		- patch d'ordre 16x16 maximum.
- *		- conectivité sur un edge à 1, 2, ou 4 patchs.
- *		- la valeur globale du noise est globale, et ne peut pas dépasser 10 mètres.
+ *		- 65535	zones max in whole world (16 bits ZoneId ).
+ *		- 65535 patchs max by zone.
+ *		- patch order 2x2 minimum.
+ *		- patch order 16x16 maximum.
+ *		- conectivity on a edge: 1/1, 1/2, or 1/4.
+ *		- The value of Noise amplitude is global and cannot go over 10 meters.
  *
  * \author Lionel Berenguier
  * \author Nevrax France

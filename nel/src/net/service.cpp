@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.76 2001/07/09 10:12:45 lecroart Exp $
+ * $Id: service.cpp,v 1.77 2001/07/10 16:50:45 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -390,7 +390,7 @@ sint IService::main (void *wd)
 			localhost = CInetAddress::localHost().hostName();
 		}
 		catch (NLNET::ESocket &)
-	{
+		{
 			localhost = "<UnknownHost>";
 		}
 

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.36 2003/03/20 14:55:18 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.35 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -973,12 +973,6 @@ void		CSceneUser::getProfileResults(CBenchResults &results)
 {
 	// Fill profile results
 	results= _Scene.BenchRes;
-}
-
-// ***************************************************************************
-void		CSceneUser::profileQuadGridClipManager()
-{
-	_Scene.getClipTrav()->getQuadGridClipManager()->profile(_Scene.getClipTrav());
 }
 
 

@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.7 2003/03/20 09:15:26 besson Exp $
+ * $Id: cloud_scape.cpp,v 1.6 2003/03/13 17:37:26 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -257,7 +257,6 @@ CCloudScape::CCloudScape (NL3D::IDriver *pDriver) : _Noise3D (pDriver)
 	_IsIncomingCSS = false;
 	_DebugQuad = false;
 	_NbHalfCloudToUpdate = 1;
-	_CurrentCloudInProcess = NULL;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -362,44 +361,26 @@ void CCloudScape::init (SCloudScapeSetup *pCSS, NL3D::CCamera *pCamera)
 	for (i = 0; i < MAX_CLOUDS; ++i)
 		_CloudSchedulerLastAdded[i].ValidPos = false;
 
-	if (_CurrentCSS.NbCloud == 0)
+	for (i = 0; i < QUEUE_SIZE; ++i)
 	{
-		for (i = 0; i < QUEUE_SIZE; ++i)
+		sint32 nCloudNb = i%_CurrentCSS.NbCloud;
+		SCloudSchedulerEntry cse;
+		cse.CloudIndex = nCloudNb;
+		if (_CloudSchedulerLastAdded[nCloudNb].ValidPos == true)
 		{
-			SCloudSchedulerEntry cse;
-			cse.CloudIndex = -1;
-			cse.Frame = _FrameCounter;
-			cse.Ambient = _CurrentCSS.Ambient;
-			cse.Diffuse = _CurrentCSS.Diffuse;
-			_CloudScheduler.insert(_CloudScheduler.end(), cse);
-			++_FrameCounter;
+			SCloudSchedulerEntry &lastCSE = *_CloudSchedulerLastAdded[nCloudNb].Pos;
+			sint32 delta = _FrameCounter - lastCSE.Frame;
+			lastCSE.DeltaNextCalc = delta;
 		}
+		cse.Frame = _FrameCounter;
+		cse.Ambient = _CurrentCSS.Ambient;
+		cse.Diffuse = _CurrentCSS.Diffuse;
+		cse.Power = _CloudPower[cse.CloudIndex];
+		_CloudSchedulerLastAdded[nCloudNb].Pos = _CloudScheduler.insert(_CloudScheduler.end(), cse);
+		_CloudSchedulerLastAdded[nCloudNb].ValidPos = true;
+//		_CloudSchedulerLastAdded[nCloudNb].Pos = _CloudScheduler.end()-1;
+		++_FrameCounter;
 	}
-	else
-	{
-		for (i = 0; i < QUEUE_SIZE; ++i)
-		{
-			sint32 nCloudNb;
-			nCloudNb = i%_CurrentCSS.NbCloud;
-			SCloudSchedulerEntry cse;
-			cse.CloudIndex = nCloudNb;
-			if (_CloudSchedulerLastAdded[nCloudNb].ValidPos == true)
-			{
-				SCloudSchedulerEntry &lastCSE = *_CloudSchedulerLastAdded[nCloudNb].Pos;
-				sint32 delta = _FrameCounter - lastCSE.Frame;
-				lastCSE.DeltaNextCalc = delta;
-			}
-			cse.Frame = _FrameCounter;
-			cse.Ambient = _CurrentCSS.Ambient;
-			cse.Diffuse = _CurrentCSS.Diffuse;
-			cse.Power = _CloudPower[cse.CloudIndex];
-			_CloudSchedulerLastAdded[cse.CloudIndex].Pos = _CloudScheduler.insert(_CloudScheduler.end(), cse);
-			_CloudSchedulerLastAdded[cse.CloudIndex].ValidPos = true;
-			//_CloudSchedulerLastAdded[cse.CloudIndex].Pos = _CloudScheduler.end()-1;
-			++_FrameCounter;
-		}
-	}
-
 	_GlobalTime = 0.0f;
 	_DTRest = 0.0f;
 	_Generate = true;
@@ -545,9 +526,7 @@ void CCloudScape::makeHalfCloud ()
 
 		// Is the cloud do not have another reference in the list add it now because it should be processed
 		sint32 CloudIndexToAdd = -1;
-
-		if ((FrontCSE.CloudIndex != -1) && 
-			(_ShouldProcessCloud[FrontCSE.CloudIndex] == true) && 
+		if ((_ShouldProcessCloud[FrontCSE.CloudIndex] == true) && 
 			(	(_CloudSchedulerLastAdded[FrontCSE.CloudIndex].ValidPos == false) ||
 				((_CloudSchedulerLastAdded[FrontCSE.CloudIndex].ValidPos == true) &&
 				(_CloudSchedulerLastAdded[FrontCSE.CloudIndex].Pos == _CloudScheduler.begin()))
@@ -557,7 +536,7 @@ void CCloudScape::makeHalfCloud ()
 			CloudIndexToAdd = FrontCSE.CloudIndex;
 			FrontCSE.DeltaNextCalc = QUEUE_SIZE;
 		}
-		else if (_CurrentCSS.NbCloud != 0)
+		else
 		{
 			// Choose a Cloud Index To Add at the end of the list
 			uint32 nPeriodeMax = _CurrentCSS.NbCloud+_CurrentCSS.NbCloud/10;
@@ -648,40 +627,33 @@ void CCloudScape::makeHalfCloud ()
 		newCSE.Frame = _FrameCounter;
 		newCSE.Ambient = _CurrentCSS.Ambient;
 		newCSE.Diffuse = _CurrentCSS.Diffuse;
-		if (CloudIndexToAdd != -1)
+		newCSE.Power = _CloudPower[CloudIndexToAdd];
+
+		// If the cloud where added previously to the list
+		if (_CloudSchedulerLastAdded[CloudIndexToAdd].ValidPos == true)
 		{
-			newCSE.Power = _CloudPower[CloudIndexToAdd];
+			// This means that the cloud were added from a long time ago
+			SCloudSchedulerEntry &lastCSE = *_CloudSchedulerLastAdded[CloudIndexToAdd].Pos;
+			sint32 delta = _FrameCounter - lastCSE.Frame;			
+			lastCSE.DeltaNextCalc = delta;
 
-			// If the cloud where added previously to the list
-			if (_CloudSchedulerLastAdded[CloudIndexToAdd].ValidPos == true)
-			{
-				// This means that the cloud were added from a long time ago
-				SCloudSchedulerEntry &lastCSE = *_CloudSchedulerLastAdded[CloudIndexToAdd].Pos;
-				sint32 delta = _FrameCounter - lastCSE.Frame;			
-				lastCSE.DeltaNextCalc = delta;
-
-				// But the cloud can be removed (if so we have to not process it anymore)
-				if (newCSE.Power == 0)
-					_ShouldProcessCloud[CloudIndexToAdd] = false;
-			}
-			else
-			{
-				// No the cloud do not appear previously in the list... So its a new one
-				_AllClouds[CloudIndexToAdd].reset (_ViewerCam);
-			}
-
-			// If the last cloud occurence of the cloud appear at beginning so no more occurence in list
-			if (_CloudSchedulerLastAdded[FrontCSE.CloudIndex].Pos == _CloudScheduler.begin())
-				_CloudSchedulerLastAdded[FrontCSE.CloudIndex].ValidPos = false;
-
-			_CloudSchedulerLastAdded[CloudIndexToAdd].Pos = _CloudScheduler.insert(_CloudScheduler.end(), newCSE);
-			_CloudSchedulerLastAdded[CloudIndexToAdd].ValidPos = true;
-			//_CloudSchedulerLastAdded[CloudIndexToAdd].Pos = _CloudScheduler.end()-1;
+			// But the cloud can be removed (if so we have to not process it anymore)
+			if (newCSE.Power == 0)
+				_ShouldProcessCloud[CloudIndexToAdd] = false;
 		}
 		else
 		{
-			_CloudScheduler.insert(_CloudScheduler.end(), newCSE);
+			// No the cloud do not appear previously in the list... So its a new one
+			_AllClouds[CloudIndexToAdd].reset (_ViewerCam);
 		}
+
+		// If the last cloud occurence of the cloud appear at beginning so no more occurence in list
+		if (_CloudSchedulerLastAdded[FrontCSE.CloudIndex].Pos == _CloudScheduler.begin())
+			_CloudSchedulerLastAdded[FrontCSE.CloudIndex].ValidPos = false;
+
+		_CloudSchedulerLastAdded[CloudIndexToAdd].Pos = _CloudScheduler.insert(_CloudScheduler.end(), newCSE);
+		_CloudSchedulerLastAdded[CloudIndexToAdd].ValidPos = true;
+//		_CloudSchedulerLastAdded[CloudIndexToAdd].Pos = _CloudScheduler.end()-1;
 		_CloudScheduler.pop_front ();
 		++_FrameCounter;
 		// End of scheduling
@@ -708,67 +680,57 @@ void CCloudScape::makeHalfCloud ()
 			CSEToCalc = *it;
 		}
 
-		// Is the cloud to calc is a real cloud
-		if (CSEToCalc.CloudIndex == -1)
-		{
-			_CurrentCloudInProcess = NULL;	
-		}
+		_CurrentCloudInProcess = &_AllClouds[CSEToCalc.CloudIndex];
+		CCloud &c = *_CurrentCloudInProcess;
+
+		// To go from Front cloud to CSEToCalc cloud we should take the front DeltaNextCalc
+
+		_CurrentCloudInProcessFuturTime = ((0.04/_NbHalfCloudToUpdate) * FrontCSE.DeltaNextCalc * 2);
+		c.setX ((float)(c.getLastX() +  _CurrentCloudInProcessFuturTime * _CurrentCSS.WindSpeed));
+
+		float d2D = sqrtf(SQR(c.getX()+c.getSizeX()/2-Viewer.x)+SQR(c.getY()+c.getSizeY()/2-Viewer.y));
+
+		if (d2D > MAX_DIST)
+			c.CloudDistAtt = 255;
+		else if (d2D > (MAX_DIST-100.0f))
+			c.CloudDistAtt = (uint8)(255*((d2D-(MAX_DIST-100.0f))/100.0f));
 		else
-		{
-			_CurrentCloudInProcess = &_AllClouds[CSEToCalc.CloudIndex];
-			CCloud &c = *_CurrentCloudInProcess;
+			c.CloudDistAtt = 0;
 
-			// To go from Front cloud to CSEToCalc cloud we should take the front DeltaNextCalc
+		c.LastCloudPower = c.CloudPower;
+		c.CloudPower = CSEToCalc.Power;
+		c.CloudDiffuse = CSEToCalc.Diffuse;
+		c.CloudAmbient = CSEToCalc.Ambient;
 
-			_CurrentCloudInProcessFuturTime = ((0.04/_NbHalfCloudToUpdate) * FrontCSE.DeltaNextCalc * 2);
-			c.setX ((float)(c.getLastX() +  _CurrentCloudInProcessFuturTime * _CurrentCSS.WindSpeed));
+		c.anim (_CurrentCloudInProcessFuturTime*_CurrentCSS.CloudSpeed, 
+				_CurrentCloudInProcessFuturTime*_CurrentCSS.WindSpeed);
 
-			float d2D = sqrtf(SQR(c.getX()+c.getSizeX()/2-Viewer.x)+SQR(c.getY()+c.getSizeY()/2-Viewer.y));
+		c.generate (_Noise3D);
 
-			if (d2D > MAX_DIST)
-				c.CloudDistAtt = 255;
-			else if (d2D > (MAX_DIST-100.0f))
-				c.CloudDistAtt = (uint8)(255*((d2D-(MAX_DIST-100.0f))/100.0f));
-			else
-				c.CloudDistAtt = 0;
-
-			c.LastCloudPower = c.CloudPower;
-			c.CloudPower = CSEToCalc.Power;
-			c.CloudDiffuse = CSEToCalc.Diffuse;
-			c.CloudAmbient = CSEToCalc.Ambient;
-
-			c.anim (_CurrentCloudInProcessFuturTime*_CurrentCSS.CloudSpeed, 
-					_CurrentCloudInProcessFuturTime*_CurrentCSS.WindSpeed);
-
-			c.generate (_Noise3D);
-		}
 	}
 	else
 	{
-		if (_CurrentCloudInProcess != NULL)
+		CCloud &c = *_CurrentCloudInProcess;
+
+		c.Time = 0;
+		c.FuturTime = _CurrentCloudInProcessFuturTime;
+		c.light();
+
+		if (c.getX() > MAX_DIST)
 		{
-			CCloud &c = *_CurrentCloudInProcess;
-
-			c.Time = 0;
-			c.FuturTime = _CurrentCloudInProcessFuturTime;
-			c.light();
-
-			if (c.getX() > MAX_DIST)
-			{
-				c.setX (c.getX() - (2 * MAX_DIST));
-				c.setLooping ();
-			}
-			
-			float r = sqrtf(SQR(c.getSizeX()/2)+SQR(c.getSizeY()/2)+SQR(c.getSizeZ()/2));
-			float d2D = sqrtf(SQR(c.getX()+c.getSizeX()/2-Viewer.x)+SQR(c.getY()+c.getSizeY()/2-Viewer.y));
-			float d = sqrtf(SQR(c.getX()+c.getSizeX()/2-Viewer.x)+SQR(c.getY()+c.getSizeY()/2-Viewer.y)+
-							SQR(c.getZ()+c.getSizeZ()/2-Viewer.z));
-			uint32 lookAtSize = (uint32)(_LODQualityThreshold*r/d);
-			lookAtSize = raiseToNextPowerOf2 (lookAtSize);
-			if (lookAtSize > 128) lookAtSize = 128;
-
-			c.genBill (_ViewerCam, lookAtSize);
+			c.setX (c.getX() - (2 * MAX_DIST));
+			c.setLooping ();
 		}
+		
+		float r = sqrtf(SQR(c.getSizeX()/2)+SQR(c.getSizeY()/2)+SQR(c.getSizeZ()/2));
+		float d2D = sqrtf(SQR(c.getX()+c.getSizeX()/2-Viewer.x)+SQR(c.getY()+c.getSizeY()/2-Viewer.y));
+		float d = sqrtf(SQR(c.getX()+c.getSizeX()/2-Viewer.x)+SQR(c.getY()+c.getSizeY()/2-Viewer.y)+
+						SQR(c.getZ()+c.getSizeZ()/2-Viewer.z));
+		uint32 lookAtSize = (uint32)(_LODQualityThreshold*r/d);
+		lookAtSize = raiseToNextPowerOf2 (lookAtSize);
+		if (lookAtSize > 128) lookAtSize = 128;
+
+		c.genBill (_ViewerCam, lookAtSize);
 	}
 	_Generate = !_Generate;
 }

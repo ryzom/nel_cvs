@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.8 2003/03/20 14:54:35 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.7 2002/07/08 10:00:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,6 @@ class	IBaseHrcObs;
 class	CSkipModel;
 class	IBaseClipObs;
 class	IBaseAnimDetailObs;
-class	CTransformShape;
 
 // ***************************************************************************
 // ClassIds.
@@ -97,8 +96,7 @@ public:
 
 public:
 
-	// ClusterSystem. The moving object for the current frame (only TransformShape can be inserted dynamiccaly in Clusters).
-	std::vector<CTransformShape*> _MovingObjects;
+	std::vector<IModel*> _MovingObjects;
 
 	// ONLY FOR OBSERVERS.
 

@@ -1,7 +1,7 @@
 /** \file base_clip_obs.cpp
  * <File description>
  *
- * $Id: base_clip_obs.cpp,v 1.2 2003/03/20 15:01:24 berenguier Exp $
+ * $Id: base_clip_obs.cpp,v 1.1 2002/06/28 14:21:29 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -75,6 +75,19 @@ void IBaseClipObs::init()
 	AnimDetailObs= safe_cast<IBaseAnimDetailObs*> (getObs(AnimDetailTravId));
 	LoadBalancingObs= safe_cast<IBaseLoadBalancingObs*> (getObs(LoadBalancingTravId));
 
+}
+
+
+// ***************************************************************************
+void	IBaseClipObs::forceClip(TClipReason clipReason)
+{
+	// for all sons
+	for(IObs *c= getFirstChild(); c!=NULL; c= getNextChild())
+	{
+		IBaseClipObs	*clipObs= static_cast<IBaseClipObs*>(c);
+		// call it on son.
+		clipObs->forceClip(clipReason);
+	}
 }
 
 

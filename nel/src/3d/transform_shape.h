@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.21 2003/03/20 14:59:02 berenguier Exp $
+ * $Id: transform_shape.h,v 1.20 2003/03/11 09:42:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,6 @@
 #include "3d/shape.h"
 #include "3d/load_balancing_trav.h"
 #include <vector>
-#include "3d/fast_ptr_list.h"
 
 
 namespace NL3D 
@@ -49,7 +48,6 @@ class	CTransformShapeLoadBalancingObs;
 class	CRenderTrav;
 class	CMRMLevelDetail;
 class	CMaterial;
-class	CQuadGridClipCluster;
 
 
 // ***************************************************************************
@@ -149,9 +147,6 @@ protected:
 	 */
 	void			setupCurrentLightContribution(CLightContribution *lightContrib, bool useLocalAtt);
 
-	/// special feature for CQuadGridClipManager. remove from it.
-	virtual	void	unlinkFromQuadCluster();
-
 private:
 	static IModel	*creator() {return new CTransformShape;}
 	friend class	CTransformShapeClipObs;
@@ -199,18 +194,16 @@ private:
  */
 class	CTransformShapeClipObs : public CTransformClipObs
 {
+	bool	_ClipDueToDistMax;
 public:
+
 	/// clip the shape, and set renderable.
 	virtual	bool	clip(IBaseClipObs *caller);
 
+	/// if last call to clip() return false, and if clip reason was a "DistMax clip", return true
+	bool			isLastClipDueToDistMax() const {return _ClipDueToDistMax;}
+
 	static IObs	*creator() {return new CTransformShapeClipObs;}
-
-public:
-	// Link to QuadGridCluster
-	CFastPtrListNode	QuadClusterListNode;
-
-	bool			isLinkToQuadCluster() const {return QuadClusterListNode.isLinked();}
-	void			unlinkFromQuadCluster() {QuadClusterListNode.unlink();}
 };
 
 

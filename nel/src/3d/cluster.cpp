@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.14 2003/03/20 14:55:39 berenguier Exp $
+ * $Id: cluster.cpp,v 1.13 2003/03/03 12:57:27 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,9 +55,6 @@ CCluster::CCluster ()
 	_EnvironmentFxId = CStringMapper::map("no fx");
 	// map a no soundgroup string
 	_SoundGroupId = CStringMapper::map("");
-
-	// I am a transform cluster
-	CTransform::setIsCluster(true);
 }
 
 

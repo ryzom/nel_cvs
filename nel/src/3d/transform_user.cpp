@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.12 2003/03/20 14:57:41 berenguier Exp $
+ * $Id: transform_user.cpp,v 1.11 2003/02/06 09:16:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ UInstanceGroup *CTransformUser::getClusterSystem ()
 
 void			CTransformUser::getLastParentClusters(std::vector<CCluster*> &clusters) const
 {
-	// look in the list of parent of the transform object and extract the CCluster parents
+	// look in the list of parent of the transform object and extract the CCluster and CQuadGridClipCluster parents
 	if (_Scene == NULL)
 		return;
 
@@ -72,13 +72,14 @@ void			CTransformUser::getLastParentClusters(std::vector<CCluster*> &clusters) c
 		CCluster *pcluster = dynamic_cast<CCluster*>(m);
 		if (pcluster != NULL)
 			clusters.push_back(pcluster);
+		else 
+		{
+			CQuadGridClipCluster *pquad = dynamic_cast<CQuadGridClipCluster*>(m);
+			if (pquad != NULL)
+				clusters.push_back(clipTrav->RootCluster);
+		}
 		m = clipTrav->getNextParent(_Transform);
 	}
-
-	// If the object is link to a QuadCluster, add the RootCluster to the list
-	CTransformShapeClipObs	*shpClipObs= dynamic_cast<CTransformShapeClipObs*>( _Transform->getClipObs() );
-	if( shpClipObs && shpClipObs->isLinkToQuadCluster() )
-		clusters.push_back(clipTrav->RootCluster);
 }
 
 

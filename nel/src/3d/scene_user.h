@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.39 2003/03/20 14:55:18 berenguier Exp $
+ * $Id: scene_user.h,v 1.38 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -281,7 +281,6 @@ public:
 	virtual	void				enableElementRender(TRenderFilter elt, bool state);
 	virtual void				profileNextRender();
 	virtual void				getProfileResults(CBenchResults &results);
-	virtual void				profileQuadGridClipManager();
 	// @}
 
 public:

@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_cluster.cpp,v 1.4 2003/03/20 15:00:03 berenguier Exp $
+ * $Id: quad_grid_clip_cluster.cpp,v 1.3 2002/06/12 12:26:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,41 +26,26 @@
 #include "std3d.h"
 
 #include "3d/quad_grid_clip_cluster.h"
-#include "nel/misc/hierarchical_timer.h"
-#include "3d/transform_shape.h"
-#include "3d/cluster.h"
 
 
 using namespace NLMISC;
 using namespace std;
 
 
-namespace NL3D 
-{
-
-
-H_AUTO_DECL( NL3D_QuadClip_ClusterClip );
+namespace NL3D {
 
 
 // ***************************************************************************
-CQuadGridClipCluster::CQuadGridClipCluster(float distMax) : _DistMax(distMax)
+void		CQuadGridClipCluster::registerBasic()
 {
-	_Empty= true;
-	_TestDistMax= _DistMax!=1;
+	CMOT::registerModel( QuadGridClipClusterId, 0, CQuadGridClipCluster::creator);
+	CMOT::registerObs( ClipTravId, QuadGridClipClusterId, CQuadGridClipClusterClipObs::creator );
 }
 
-// ***************************************************************************
-CQuadGridClipCluster::~CQuadGridClipCluster()
-{
-	nlassert(_Models.empty());
-}
 
 // ***************************************************************************
-void		CQuadGridClipCluster::addModel(const NLMISC::CAABBox &worldBBox, CTransformShapeClipObs *clipObs)
+void		CQuadGridClipCluster::extendCluster(const NLMISC::CAABBox &worldBBox)
 {
-	// check not already inserted
-	nlassert(!clipObs->QuadClusterListNode.isLinked());
-
 	if(_Empty)
 	{
 		_Empty= false;
@@ -74,38 +59,67 @@ void		CQuadGridClipCluster::addModel(const NLMISC::CAABBox &worldBBox, CTransfor
 	}
 
 	// update _Radius
-	_SqrDistMaxRadius= sqr(_DistMax + _BBox.getRadius());
-
-	// update bboxExt
-	_BBoxExt= _BBox;
-
-	// Add the model
-	_Models.insert(clipObs, &clipObs->QuadClusterListNode);
+	_Radius= _BBox.getRadius();
 }
 
 
 // ***************************************************************************
-void		CQuadGridClipCluster::removeModel(CTransformShapeClipObs *clipObs)
+void		CQuadGridClipCluster::update()
 {
-	_Models.erase(&clipObs->QuadClusterListNode);
+	// never need to update, so unlink me from ValidateList.
+	unlinkFromValidateList();
 }
 
 
 // ***************************************************************************
-void		CQuadGridClipCluster::clip(CClipTrav *clipTrav)
+CQuadGridClipClusterClipObs::CQuadGridClipClusterClipObs()
 {
-	H_AUTO_USE( NL3D_QuadClip_ClusterClip );
+	_LastClipWasDistMaxClip= false;
+	_LastClipWasFrustumClip= false;
+}
+
+// ***************************************************************************
+void		CQuadGridClipClusterClipObs::traverse(IObs *caller)
+{
+	CQuadGridClipCluster	*cluster= (CQuadGridClipCluster*)Model;
+	CClipTrav			*clipTrav= (CClipTrav*)Trav;
+
+	// if empty, just return (not visible at all).
+	if(cluster->_Empty)
+	{
+		/* reset cache, to be sure that any instances added to this cluster later will 
+			be correctly updated if a clip of this cluster occurs.
+		*/
+		_LastClipWasDistMaxClip= false;
+		_LastClipWasFrustumClip= false;
+		return;
+	}
 
 	// First, clip DistMax.
-	if( _TestDistMax )
+	CAABBox		&bbox= cluster->_BBox;
+	// if clip DistMax enabled
+	if(cluster->_DistMax!=-1)
 	{
-		CVector		c= _BBoxExt.getCenter();
-		float		sqrDist= (c - clipTrav->CamPos).sqrnorm();
+		CVector		c= bbox.getCenter();
+		float		dist= (c - clipTrav->CamPos).norm();
 		// it the bbox is entirely out the distMax
-		if( sqrDist > _SqrDistMaxRadius )
+		if( dist-cluster->_Radius > cluster->_DistMax )
 		{
+			// if the cluster was DistMax-visible at last frame
+			if( !_LastClipWasDistMaxClip )
+			{
+				// Advert sons of the clip. Important for CMeshMultiLodInstace. Do it for me and my sons.
+				forceClip(IBaseClipObs::DistMaxClip);
+				// new state.
+				_LastClipWasDistMaxClip= true;
+			}
 			// quit
 			return;
+		}
+		else
+		{
+			// reset.
+			_LastClipWasDistMaxClip= false;
 		}
 	}
 
@@ -115,7 +129,7 @@ void		CQuadGridClipCluster::clip(CClipTrav *clipTrav)
 	for(sint i=0;i<(sint)clipTrav->WorldPyramid.size();i++)
 	{
 		// We are sure that pyramid has normalized plane normals.
-		if(!_BBoxExt.clipBack(clipTrav->WorldPyramid[i]))
+		if(!bbox.clipBack(clipTrav->WorldPyramid[i]))
 		{
 			visible= false;
 			break;
@@ -124,59 +138,42 @@ void		CQuadGridClipCluster::clip(CClipTrav *clipTrav)
 		else if(!unspecified)
 		{
 			// if clipFront AND clipBack, it means partially.
-			if(_BBoxExt.clipFront(clipTrav->WorldPyramid[i]))
+			if(bbox.clipFront(clipTrav->WorldPyramid[i]))
 				unspecified= true;
 		}
 	}
 
-	// if visible, parse sons
-	if(visible)
+	// if ! visible at all, just skip sons.
+	if(!visible)
 	{
+		// if the cluster was frustum visible at last frame
+		if( !_LastClipWasFrustumClip )
+		{
+			// Advert sons of the clip. Do it for me and my sons.
+			forceClip(IBaseClipObs::FrustumClip);
+			// new state.
+			_LastClipWasFrustumClip= true;
+		}
+	}
+	else
+	{
+		// reset frustum clip cache.
+		_LastClipWasFrustumClip= false;
+
 		// clip sons.
 		if(unspecified)
 		{
-			H_AUTO( NL3D_QuadClip_SonsClip );
-
 			// clip the sons individually 
-			clipSons();
+			traverseSons();
 		}
 		else
 		{
-			H_AUTO( NL3D_QuadClip_SonsShowNoClip );
-
 			// udpdate the sons, but don't clip, because we know they are fully visible.
 			clipTrav->ForceNoFrustumClip= true;
-			clipSons();
+			traverseSons();
 			clipTrav->ForceNoFrustumClip= false;
 		}
 	}
-}
-
-// ***************************************************************************
-void		CQuadGridClipCluster::clipSons()
-{
-	CTransformShapeClipObs	** pModel= _Models.begin();
-	uint	nSons= _Models.size();
-	for(;nSons>0;nSons--, pModel++)
-	{
-		(*pModel)->traverse(NULL);
-	}
-}
-
-// ***************************************************************************
-void		CQuadGridClipCluster::resetSons(CClipTrav *clipTrav)
-{
-	// clean up model list
-	CTransformShapeClipObs	** pModel= _Models.begin();
-	uint	nSons= _Models.size();
-	for(;nSons>0;nSons--, pModel++)
-	{
-		// link the model to the rootCluster
-		clipTrav->link(clipTrav->RootCluster, (*pModel)->Model );
-	}
-	// unlink all my sons from me
-	_Models.clear();
-
 }
 
 

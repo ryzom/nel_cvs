@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.10 2003/03/20 15:00:03 berenguier Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.9 2002/11/18 17:52:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,6 @@
 #include "nel/misc/aabbox.h"
 #include "3d/cluster.h"
 #include "3d/skip_model.h"
-#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace std;
@@ -116,8 +115,6 @@ void				CQuadGridClipManager::reset()
 // ***************************************************************************
 void				CQuadGridClipManager::updateClustersFromCamera(CClipTrav *pClipTrav, const CVector &camPos)
 {
-	H_AUTO( NL3D_QuadClip_updateClusters );
-
 	sint	newX0, newX1, newY0, newY1;
 	sint	oldX0, oldX1, oldY0, oldY1;
 
@@ -201,8 +198,6 @@ void				CQuadGridClipManager::updateClustersFromCamera(CClipTrav *pClipTrav, con
 // ***************************************************************************
 bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pClipTrav)
 {
-	H_AUTO( NL3D_QuadClip_linkModel );
-
 	// use the position to get the cluster to use.
 	CAABBox box;
 	pTfmShp->getAABBox (box);
@@ -268,18 +263,11 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pCl
 			bestCluster= i;
 		}
 
-		// add the model and extend the bbox of this cluster.
-		CTransformShapeClipObs	*clipObs= (CTransformShapeClipObs*)pTfmShp->getClipObs();
-		CQuadGridClipCluster	*cluster= clusterCase.QuadGridClipClusters[bestCluster];
+		// extend the bbox of this cluster.
+		clusterCase.QuadGridClipClusters[bestCluster]->extendCluster(worldBBox);
+		// link the model to this cluster.
+		pClipTrav->link(clusterCase.QuadGridClipClusters[bestCluster], pTfmShp);
 
-		// if this cluster is empty, add it now to the list of not empty (do the test before add)
-		if( cluster->isEmpty() )
-		{
-			_NotEmptyQuadGridClipClusters.insert(cluster, &cluster->ListNode);
-		}
-
-		// add the model => no more empty
-		cluster->addModel(worldBBox, clipObs);
 
 		return true;
 	}
@@ -294,8 +282,6 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pCl
 // ***************************************************************************
 void				CQuadGridClipManager::deleteCaseModels(CClipTrav *pClipTrav, sint x, sint y)
 {
-	H_AUTO( NL3D_QuadClip_deleteCaseModels );
-
 	nlassert(x>=_X && x<_X+_Width && y>=_Y && y<_Y+_Height);
 
 	CQuadGridClusterCase	&clusterCase= _QuadGridClusterCases[ (y-_Y)*_Width + (x-_X) ];
@@ -304,10 +290,20 @@ void				CQuadGridClipManager::deleteCaseModels(CClipTrav *pClipTrav, sint x, sin
 		CQuadGridClipCluster	*cluster= clusterCase.QuadGridClipClusters[j];
 
 		// first, unlink all sons from cluster, and link thems to RootCluster.
-		cluster->resetSons(pClipTrav);
+		IModel	*son= pClipTrav->getFirstChild(cluster);
+		while( son != NULL )
+		{
+			// unlink from us.
+			pClipTrav->unlink(cluster, son);
+			// link to the rootCluster
+			pClipTrav->link(pClipTrav->RootCluster, son);
 
-		// delete the cluster. NB: auto-unlinked from _NotEmptyQuadGridClipClusters
-		delete cluster;
+			// next son.
+			son= pClipTrav->getFirstChild(cluster);
+		}
+
+		// delete the cluster.
+		_Scene->deleteModel(cluster);
 	}
 
 	// NB: do not delete array for alloc/free optimisation.
@@ -317,100 +313,32 @@ void				CQuadGridClipManager::deleteCaseModels(CClipTrav *pClipTrav, sint x, sin
 // ***************************************************************************
 void				CQuadGridClipManager::newCaseModels(CQuadGridClusterCase &clusterCase)
 {
-	H_AUTO( NL3D_QuadClip_newCaseModels );
-
 	// resize of the number of bbox per distance.
 	clusterCase.QuadGridClipClusters.resize(_MaxDists.size()+1);
 
 	// create clusters.
 	for(uint i=0; i<clusterCase.QuadGridClipClusters.size(); i++)
 	{
-		float	maxDist= i>=_MaxDists.size()?-1:_MaxDists[i];
 		// create the cluster.
-		CQuadGridClipCluster	*cluster= new CQuadGridClipCluster(maxDist);
+		CQuadGridClipCluster	*cluster= (CQuadGridClipCluster*)_Scene->createModel(QuadGridClipClusterId);
 		clusterCase.QuadGridClipClusters[i]= cluster;
-	}
-}
+		// disable it from HRC
+		CHrcTrav	*hrcTrav= (CHrcTrav*)_Scene->getTrav(HrcTravId);
+		hrcTrav->link(_Scene->getSkipModelRoot(), cluster);
+		// NB: disabled from validation in CQuadGridClipCluster::update()
+		// Hence it will be never traversed but in ClipTrav.
+
+		// link it in RootCluster, so it may be clipped in city etc...
+		CClipTrav	*clipTrav= (CClipTrav*)_Scene->getTrav(ClipTravId);
+		clipTrav->unlink(NULL, cluster);
+		clipTrav->link(clipTrav->RootCluster, cluster);
 
 
-// ***************************************************************************
-void				CQuadGridClipManager::clipClusters(CClipTrav *pClipTrav)
-{
-	// Run All NotEmpty Clusters,
-	CQuadGridClipCluster	**it;
-	it= _NotEmptyQuadGridClipClusters.begin();
-	uint	numClusters= _NotEmptyQuadGridClipClusters.size();
-	for(;numClusters>0;numClusters--,it++)
-	{
-		(*it)->clip(pClipTrav);
-	}
-}
-
-
-// ***************************************************************************
-void				CQuadGridClipManager::profile(CClipTrav	*clipTrav) const
-{
-	nlinfo(" ***** CQuadGridClipManager stats");
-	nlinfo(" There is %d clusters per level", _Width*_Height );
-	for(uint lvl=0;lvl<_MaxDists.size()+1;lvl++)
-	{
-		nlinfo("    * Stats for Distance up to %f m", lvl<_MaxDists.size()?_MaxDists[lvl]:-1.0f);
-		sint	numEmptyClusters= 0;
-		float	minAreaRatio= 1000;
-		float	maxAreaRatio= 0;
-		float	meanAreaRatio= 0;
-		sint	minNumChildren= 100000000;
-		sint	maxNumChildren= 0;
-		float	meanNumChildren= 0;
-		sint	totalNumChildren= 0;
-
-		// test all cases
-		for(sint y=0;y<_Height;y++)
-		{
-			for(sint x=0;x<_Width;x++)
-			{
-				const CQuadGridClusterCase	&cc= _QuadGridClusterCases[y*_Width+x];
-				const CQuadGridClipCluster	*cluster= cc.QuadGridClipClusters[lvl];
-				if( cluster->isEmpty() )
-					numEmptyClusters++;
-				else
-				{
-					CAABBox	bb= cluster->getBBox();
-					float	area= (bb.getSize().x*bb.getSize().y) / (_ClusterSize*_ClusterSize);
-					meanAreaRatio+= area;
-					minAreaRatio= min( minAreaRatio, area);
-					maxAreaRatio= max( maxAreaRatio, area);
-					// count number of sons
-					sint	numSons;
-					numSons= cluster->getNumChildren();
-					meanNumChildren+= numSons;
-					totalNumChildren+= numSons;
-					minNumChildren= min( minNumChildren, numSons);
-					maxNumChildren= max( maxNumChildren, numSons);
-				}
-			}
-		}
-
-		// display
-		if( numEmptyClusters==_Width*_Height )
-		{
-			nlinfo( "    This Level is completely Empty!!!!");
-		}
+		// init distMax
+		if(i<_MaxDists.size())
+			clusterCase.QuadGridClipClusters[i]->setDistMax(_MaxDists[i]);
 		else
-		{
-			sint	numClusters= _Width*_Height-numEmptyClusters;
-			nlinfo( "    This Level has %d clusters not empty over %d", numClusters, _Width*_Height);
-			meanAreaRatio/= numClusters;
-			meanNumChildren/= numClusters;
-			nlinfo("     . minAreaRatio= %f", minAreaRatio);
-			nlinfo("     . maxAreaRatio= %f", maxAreaRatio);
-			nlinfo("     . meanAreaRatio= %f", meanAreaRatio);
-			nlinfo("     . minNumChildren= %d", minNumChildren);
-			nlinfo("     . maxNumChildren= %d", maxNumChildren);
-			nlinfo("     . meanNumChildren= %f", meanNumChildren);
-			nlinfo("     . totalNumChildren= %d", totalNumChildren);
-			
-		}
+			clusterCase.QuadGridClipClusters[i]->setDistMax(-1);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.h
  * <File description>
  *
- * $Id: quad_grid_clip_manager.h,v 1.2 2003/03/20 15:00:03 berenguier Exp $
+ * $Id: quad_grid_clip_manager.h,v 1.1 2001/08/28 11:44:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,6 @@
 #include "nel/misc/plane.h"
 #include "3d/quad_grid_clip_cluster.h"
 #include <vector>
-#include "3d/fast_ptr_list.h"
 
 
 namespace NL3D 
@@ -80,13 +79,6 @@ public:
 	 */
 	bool				linkModel(CTransformShape *pTfmShp, CClipTrav *pClipTrav);
 
-	/** Parse Clusters
-	 */
-	void				clipClusters(CClipTrav *pClipTrav);
-
-	/**	output (nlinfo) Stats for Usage of the QuadClip
-	 */
-	void				profile(CClipTrav	*clipTrav) const;
 
 private:
 
@@ -103,10 +95,6 @@ private:
 	sint							_X, _Y;
 	sint							_Width, _Height;
 	std::vector<CQuadGridClusterCase>	_QuadGridClusterCases;
-
-	// List of not empty QuadGridClusters
-	typedef CFastPtrList<CQuadGridClipCluster>	TClusterList;
-	TClusterList					_NotEmptyQuadGridClipClusters;
 
 
 	void				deleteCaseModels(CClipTrav *pClipTrav, sint x, sint y);

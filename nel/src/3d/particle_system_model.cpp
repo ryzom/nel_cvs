@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.49 2003/03/20 15:00:37 berenguier Exp $
+ * $Id: particle_system_model.cpp,v 1.48 2003/03/18 10:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -781,15 +781,6 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		insertInVisibleList();
 		m->_InClusterAndVisible = true;
 }
-
-
-//===================================================================
-bool	CParticleSystemClipObs::clip(IBaseClipObs *caller)
-{
-	// no-op clip() because all done in special traverse()
-	return true;
-}
-
 
 //===================================================================
 bool CParticleSystemClipObs::checkDestroyCondition(CParticleSystem *ps, CParticleSystemModel *m)

@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.8 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_force.cpp,v 1.9 2001/06/25 13:47:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,7 +166,7 @@ void CPSGravity::show(CAnimationTime ellapsedTime)
 		// must have set this
 		nlassert(getFontGenerator() && getFontGenerator()) ;
 		
-		CPSUtil::print(std::string("G")
+		CPSUtil::print(driver, std::string("G")
 							, *getFontGenerator()
 							, *getFontManager()
 							, pos

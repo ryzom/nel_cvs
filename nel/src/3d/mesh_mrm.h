@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.51 2004/08/13 15:38:52 vizerie Exp $
+ * $Id: mesh_mrm.h,v 1.52 2004/10/19 12:51:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -361,6 +361,7 @@ private:
 		{
 			NL_SET_IB_NAME(PBlock, "CMeshMRM::CRdrPass::PBlock");
 			NL_SET_IB_NAME(VBHeapPBlock, "CMeshMRM::CRdrPass::VBHeapPBlock");
+			PBlock.setFormat(NL_MESH_MRM_INDEX_FORMAT);
 		}
 	};
 
@@ -557,7 +558,7 @@ private:
 	/// \name ShadowMap Skin rendering
 	// @{
 	std::vector<CShadowVertex>		_ShadowSkinVertices;
-	std::vector<uint32>				_ShadowSkinTriangles;
+	std::vector<TMeshMRMIndexType>	_ShadowSkinTriangles;
 	bool							_SupportShadowSkinGrouping;
 	void		applyArrayShadowSkin(CShadowVertex *src, CVector *dst, CSkeletonModel *skeleton, uint numVerts);
 	// @}

@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.17 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.18 2004/10/19 12:56:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -429,6 +429,7 @@ CPSTailDot::CVBnPB &CPSTailDot::getVBnPB()
 
 		// set the primitive block size
 		CIndexBuffer &pb = VBnPB.PB;
+		pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 		pb.setNumIndexes(2 * _UsedNbSegs * numRibbonInVB);
 		/// Setup the pb and vb parts. Not very fast but executed only once
 		uint vbIndex = 0;

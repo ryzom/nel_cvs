@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.23 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.24 2004/10/19 12:55:03 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -439,6 +439,8 @@ protected:
 		{
 			NL_SET_IB_NAME(PbLine, "CPSMesh::CRdrPass::PbLine");
 			NL_SET_IB_NAME(PbLine, "CPSMesh::CRdrPass::PbTri");
+			PbTri.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+			PbLine.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 		}
 	};
 

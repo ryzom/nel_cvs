@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.15 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: ps_fan_light.cpp,v 1.16 2004/10/19 12:53:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -526,11 +526,12 @@ void CPSFanLight::getVBnIB(CVertexBuffer *&retVb, CIndexBuffer *&retIb)
 		vb.setNumVertices(size * (2 + _NbFans));
 		vb.setPreferredMemory(CVertexBuffer::AGPVolatile, true); // keep local memory because of interleaved format
 		vb.setName("CPSFanLight");
+		ib.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 		ib.setNumIndexes(size * _NbFans * 3);		
 		// pointer on the current index to fill
 		CIndexBufferReadWrite iba;
 		ib.lock (iba);
-		uint32 *ptIndex = iba.getPtr();
+		TIndexType *ptIndex = (TIndexType *) iba.getPtr();
 
 		CVertexBufferReadWrite vba;
 		vb.lock (vba);
@@ -545,9 +546,9 @@ void CPSFanLight::getVBnIB(CVertexBuffer *&retVb, CIndexBuffer *&retIb)
 		{
 			for (l = 0; l < _NbFans; ++l)
 			{
-				*ptIndex++ = currVertFan;
-				*ptIndex++ = currVertFan + (l + 1);
-				*ptIndex++ = currVertFan + (l + 2);
+				*ptIndex++ = (TIndexType) currVertFan;
+				*ptIndex++ = (TIndexType) (currVertFan + (l + 1));
+				*ptIndex++ = (TIndexType) (currVertFan + (l + 2));
 			}					
 			currVertFan += 2 + _NbFans;
 		}

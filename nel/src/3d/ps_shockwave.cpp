@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.14 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.15 2004/10/19 12:55:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -540,6 +540,7 @@ void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CIndexBuffer *&retPb)
 		vb.setPreferredMemory(CVertexBuffer::AGPVolatile, true);
 		CVertexBufferReadWrite vba;
 		vb.lock (vba);
+		pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 		pb.reserve(2 * 3 * size * _NbSeg);
 		CIndexBufferReadWrite ibaWrite;
 		pb.lock (ibaWrite);

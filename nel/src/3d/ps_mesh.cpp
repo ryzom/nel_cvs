@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.41 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.42 2004/10/19 12:54:47 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -2065,7 +2065,8 @@ static void DuplicatePrimitiveBlock(const CIndexBuffer &srcBlock, CIndexBuffer &
 
 	// duplicate triangles
 	uint numTri = srcBlock.getNumIndexes()/3;
-	destBlock.reserve(3 * numTri * nbReplicate);
+	destBlock.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	destBlock.setNumIndexes(3 * numTri * nbReplicate);
 	
 	index = 0;
 	currVertOffset = 0;
@@ -2075,19 +2076,47 @@ static void DuplicatePrimitiveBlock(const CIndexBuffer &srcBlock, CIndexBuffer &
 	CIndexBufferReadWrite ibaWrite;
 	destBlock.lock (ibaWrite);
 
-	const uint32 *triPtr = ibaRead.getPtr();
-	const uint32 *currTriPtr; // current Tri
-	for (k = 0; k < nbReplicate; ++k)
+	
+	nlassert(destBlock.getFormat() == CIndexBuffer::Indices16);
+
+	// TMP TMP TMP
+	if (ibaRead.getFormat() == CIndexBuffer::Indices16)
 	{
-		currTriPtr = triPtr;
-		for (l = 0; l < numTri; ++l)
+		const TIndexType *triPtr = (TIndexType *) ibaRead.getPtr();
+		const TIndexType *currTriPtr; // current Tri
+		for (k = 0; k < nbReplicate; ++k)
 		{
-			ibaWrite.setTri(3*index, currTriPtr[0] + currVertOffset, currTriPtr[1] + currVertOffset, currTriPtr[2] + currVertOffset);
-			currTriPtr += 3;
-			++ index;
+			currTriPtr = triPtr;
+			for (l = 0; l < numTri; ++l)
+			{
+				ibaWrite.setTri(3*index, currTriPtr[0] + currVertOffset, currTriPtr[1] + currVertOffset, currTriPtr[2] + currVertOffset);
+				currTriPtr += 3;
+				++ index;
+			}
+			currVertOffset += vertOffset;
 		}
-		currVertOffset += vertOffset;
 	}
+	else	
+	{
+		const uint32 *triPtr = (uint32 *) ibaRead.getPtr();
+		const uint32 *currTriPtr; // current Tri
+		for (k = 0; k < nbReplicate; ++k)
+		{
+			currTriPtr = triPtr;
+			for (l = 0; l < numTri; ++l)
+			{
+				nlassert(currTriPtr[0] + currVertOffset <= 0xffff);
+				nlassert(currTriPtr[1] + currVertOffset <= 0xffff);
+				nlassert(currTriPtr[2] + currVertOffset <= 0xffff);
+				//
+				ibaWrite.setTri(3*index, (uint16) (currTriPtr[0] + currVertOffset), (uint16) (currTriPtr[1] + currVertOffset), (uint16) (currTriPtr[2] + currVertOffset));
+				currTriPtr += 3;
+				++ index;
+			}
+			currVertOffset += vertOffset;
+		}
+	}
+
 
 
 	// TODO quad / strips duplication : (unimplemented in primitive blocks for now)

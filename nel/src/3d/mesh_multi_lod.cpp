@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.39 2004/10/06 09:14:23 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.40 2004/10/19 12:52:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -791,18 +791,56 @@ void	CMeshMultiLod::compileCoarseMeshes()
 					slotRef.CoarseNumTris+= meshGeom->getRdrPassPrimitiveBlock(0, i).getNumIndexes()/3;
 				}
 
-				// 2snd allocate and fill
+				// 2nd allocate and fill
 				if( slotRef.CoarseNumTris )
 				{
 					slotRef.CoarseTriangles.resize(slotRef.CoarseNumTris * 3);
-					uint32	*dstPtr= &slotRef.CoarseTriangles[0];
+					TCoarseMeshIndexType	*dstPtr= &slotRef.CoarseTriangles[0];					
 					for(uint i=0;i<meshGeom->getNbRdrPass(0);i++)
 					{
 						const CIndexBuffer	&pb= meshGeom->getRdrPassPrimitiveBlock(0, i);
 						CIndexBufferRead ibaRead;
 						pb.lock (ibaRead);
 						uint	numTris= pb.getNumIndexes()/3;
-						memcpy(dstPtr, ibaRead.getPtr(), numTris*3*sizeof(uint32));
+						if (pb.getFormat() == CIndexBuffer::Indices16)
+						{
+							if (sizeof(TCoarseMeshIndexType) == sizeof(uint16))
+							{
+								memcpy(dstPtr, (uint16 *) ibaRead.getPtr(), numTris*3*sizeof(uint16));
+							}
+							else
+							{
+								// 16 -> 32
+								uint16 *src = (uint16 *) ibaRead.getPtr();
+								for(uint k = 0; k < numTris; ++k)
+								{
+									*dstPtr++ = (TCoarseMeshIndexType) *src++;
+									*dstPtr++ = (TCoarseMeshIndexType) *src++;
+									*dstPtr++ = (TCoarseMeshIndexType) *src++;
+								}
+							}
+						}
+						else
+						{
+							if (sizeof(TCoarseMeshIndexType) == sizeof(uint32))
+							{
+								memcpy(dstPtr, (uint32 *) ibaRead.getPtr(), numTris*3*sizeof(uint32));
+							}
+							else
+							{
+								const uint32 *src = (const uint32 *) ibaRead.getPtr();
+								for(uint k = 0; k < numTris; ++k)
+								{
+									// 32 -> 16
+									nlassert(src[0] <= 0xffff);
+									nlassert(src[1] <= 0xffff);
+									nlassert(src[2] <= 0xffff);
+									*dstPtr++ = (TCoarseMeshIndexType) *src++;
+									*dstPtr++ = (TCoarseMeshIndexType) *src++;
+									*dstPtr++ = (TCoarseMeshIndexType) *src++;
+								}
+							}
+						}
 						dstPtr+= numTris*3;
 					}
 				}

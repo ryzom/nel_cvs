@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.23 2004/10/04 09:14:51 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.24 2004/10/19 12:55:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -979,6 +979,7 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 						   (_Tex != NULL && _ColorScheme && _ColorFading ? CVertexBuffer::TexCoord1Flag : 0) /* need 2nd texture coordinates ? */
 						  );		
 		vb.setNumVertices((_UsedNbSegs + 1) * numRibbonInVB * numVerticesInSlice); // 1 seg = 1 line + terminal vertices
+		pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 		// set the primitive block size		
 		if (_BraceMode)
 		{		

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.23 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.24 2004/10/19 12:52:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -234,7 +234,7 @@ private:
 
 		// For Coarse Mesh only. Precomputed Triangles indexes.
 		uint					CoarseNumTris;
-		std::vector<uint32>		CoarseTriangles;
+		std::vector<TCoarseMeshIndexType>	CoarseTriangles;
 
 		/// Serial
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);

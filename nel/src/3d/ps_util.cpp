@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.42 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.43 2004/10/19 12:56:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,6 +152,7 @@ void CPSUtil::displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLM
 
 
 	CIndexBuffer pb;
+	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	pb.setNumIndexes(2*12);
 	{
 		CIndexBufferReadWrite ibaWrite;
@@ -186,13 +187,14 @@ void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector 
 	const float coneSize = size * 0.1f;
 
 	static CIndexBuffer vTab;
-	static const uint32 vTabIndexes[] = 
+	static const TIndexType vTabIndexes[] = 
 	{ 1, 2, 4,
 	  4, 2, 3,
 	  1, 2, 0,
 	  2, 3, 0,
 	  3, 4, 0,
 	  4, 1, 0 };
+	vTab.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	if (vTab.getNumIndexes()==0)
 	{
 		vTab.setNumIndexes (sizeof(vTabIndexes)/sizeof(uint32));

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.23 2004/09/19 09:56:43 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.24 2004/10/19 12:55:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -589,6 +589,7 @@ CPSRibbonLookAt::CVBnPB &CPSRibbonLookAt::getVBnPB()
 
 		// set the primitive block size
 		CIndexBuffer &pb = VBnPB.PB;
+		pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 		pb.setNumIndexes((_UsedNbSegs << 1) * numRibbonInVB * 3);
 		CIndexBufferReadWrite iba;
 		pb.lock (iba);

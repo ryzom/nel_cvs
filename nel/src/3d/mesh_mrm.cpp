@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.74 2004/09/02 17:03:12 vizerie Exp $
+ * $Id: mesh_mrm.cpp,v 1.75 2004/10/19 12:51:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1538,36 +1538,70 @@ void	CMeshMRMGeom::updateShiftedTriangleCache(CMeshMRMInstance *mi, sint curLodI
 		}
 
 		// Allocate triangles indices.
+		mi->_ShiftedTriangleCache->RawIndices.setFormat(NL_MESH_MRM_INDEX_FORMAT);
 		mi->_ShiftedTriangleCache->RawIndices.setNumIndexes(totalTri*3);
 
 		// Lock the index buffer
 		CIndexBufferReadWrite ibaWrite;
 		mi->_ShiftedTriangleCache->RawIndices.lock (ibaWrite);
-		uint32 *dstPtr = ibaWrite.getPtr();
-
-		// Second pass, fill ptrs, and fill Arrays
-		uint	indexTri= 0;
-		for(i=0;i<pbList.size();i++)
+		if (ibaWrite.getFormat() == CIndexBuffer::Indices32)
 		{
-			CShiftedTriangleCache::CRdrPass	&dstRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
-			dstRdrPass.Triangles= indexTri*3;
-
-			// Fill the array
-			uint	numTris= pbList[i]->getNumIndexes()/3;
-			if(numTris)
+			uint32 *dstPtr = (uint32 *) ibaWrite.getPtr();
+			// Second pass, fill ptrs, and fill Arrays
+			uint	indexTri= 0;
+			for(i=0;i<pbList.size();i++)
 			{
-				uint	nIds= numTris*3;
-				// index, and fill
-				CIndexBufferRead ibaRead;
-				pbList[i]->lock (ibaRead);
-				const uint32	*pSrcTri= ibaRead.getPtr();
-				uint32	*pDstTri= dstPtr+dstRdrPass.Triangles;
-				for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
-					*pDstTri= *pSrcTri + baseVertex;
-			}
+				CShiftedTriangleCache::CRdrPass	&dstRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
+				dstRdrPass.Triangles= indexTri*3;
 
-			// Next
-			indexTri+= dstRdrPass.NumTriangles;
+				// Fill the array
+				uint	numTris= pbList[i]->getNumIndexes()/3;
+				if(numTris)
+				{
+					uint	nIds= numTris*3;
+					// index, and fill
+					CIndexBufferRead ibaRead;
+					pbList[i]->lock (ibaRead);
+					nlassert(ibaRead.getFormat() == CIndexBuffer::Indices32);
+					const uint32	*pSrcTri= (const uint32 *) ibaRead.getPtr();
+					uint32	*pDstTri= dstPtr+dstRdrPass.Triangles;
+					for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
+						*pDstTri= *pSrcTri + baseVertex;
+				}
+
+				// Next
+				indexTri+= dstRdrPass.NumTriangles;
+			}
+		}
+		else
+		{
+			nlassert(ibaWrite.getFormat() == CIndexBuffer::Indices16);
+			uint16 *dstPtr = (uint16 *) ibaWrite.getPtr();
+			// Second pass, fill ptrs, and fill Arrays
+			uint	indexTri= 0;
+			for(i=0;i<pbList.size();i++)
+			{
+				CShiftedTriangleCache::CRdrPass	&dstRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
+				dstRdrPass.Triangles= indexTri*3;
+
+				// Fill the array
+				uint	numTris= pbList[i]->getNumIndexes()/3;
+				if(numTris)
+				{
+					uint	nIds= numTris*3;
+					// index, and fill
+					CIndexBufferRead ibaRead;
+					pbList[i]->lock (ibaRead);
+					nlassert(ibaRead.getFormat() == CIndexBuffer::Indices16);
+					const uint16	*pSrcTri= (const uint16 *) ibaRead.getPtr();
+					uint16	*pDstTri= (uint16 *) dstPtr+dstRdrPass.Triangles;
+					for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
+						*pDstTri= *pSrcTri + baseVertex;
+				}
+
+				// Next
+				indexTri+= dstRdrPass.NumTriangles;
+			}
 		}
 	}
 }
@@ -1676,8 +1710,33 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// if >= version 5, serial Shadow Skin Information
 	if(ver>=5)
 	{
-		f.serialCont (_ShadowSkinVertices);
-		f.serialCont (_ShadowSkinTriangles);
+		f.serialCont (_ShadowSkinVertices);		
+		#ifndef NL_MESH_MRM_INDEX16
+			f.serialCont (_ShadowSkinTriangles);
+		#else			
+			// must convert to 32 bits at serial
+			if (f.isReading())
+			{
+				std::vector<uint32> savedIndices;
+				f.serialCont(savedIndices);
+				_ShadowSkinTriangles.resize(savedIndices.size());
+				for(uint k = 0; k < savedIndices.size(); ++k)
+				{
+					nlassert(savedIndices[k] <= 0xffff); 
+					_ShadowSkinTriangles[k] = (TMeshMRMIndexType) savedIndices[k];
+				}
+			}
+			else
+			{
+				std::vector<uint32> savedIndices;
+				savedIndices.resize(_ShadowSkinTriangles.size());
+				for(uint k = 0; k < savedIndices.size(); ++k)
+				{
+					savedIndices[k] = _ShadowSkinTriangles[k];
+				}
+				f.serialCont(savedIndices);
+			}			
+		#endif
 	}
 
 
@@ -2692,8 +2751,12 @@ void	CMeshMRMGeom::computeMeshVBHeap(void *dst, uint indexStart)
 			CIndexBufferReadWrite ibaWrite;
 			srcPb.lock (ibaWrite);
 			dstPb.setNumIndexes(srcPb.getNumIndexes());
-			const uint32	*srcTriPtr= ibaRead.getPtr();
-			uint32			*dstTriPtr= ibaWrite.getPtr();
+			// nico : apparently not used, so don't manage 16 bit index here
+			nlassert(ibaRead.getIndexNumBytes() == sizeof(uint32));
+			nlassert(ibaWrite.getIndexNumBytes() == sizeof(uint32)4);
+			nlassert(ibaRead.getFormat() == CIndexBuffer::Indices32); // nico : apparently not called for now
+			const uint32	*srcTriPtr= (const uint32 *) ibaRead.getPtr();
+			uint32			*dstTriPtr= (uint32 *) ibaWrite.getPtr();
 			for(j=0; j<dstPb.getNumIndexes();j++)
 			{
 				dstTriPtr[j]= srcTriPtr[j]+indexStart;
@@ -2963,7 +3026,7 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 			}
 
 			// The remap from old index in _VBufferFinal to RawSkin vertices (without Geomorphs).
-			static	vector<uint32>	vertexRemap;
+			static	vector<TMeshMRMIndexType>	vertexRemap;
 			vertexRemap.resize( _VBufferFinal.getNumVertices() );
 			sint	softSize[4];
 			sint	hardSize[4];
@@ -3144,22 +3207,43 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 				// NB: since RawSkin is possible only with SkinGrouping, and since SkniGrouping is 
 				// possible only with no Quads/Lines, we should have only Tris here.
 				// remap tris.
+				skinLod.RdrPass[i].setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 				skinLod.RdrPass[i].setNumIndexes(lod.RdrPass[i].PBlock.getNumIndexes());
 				CIndexBufferRead ibaRead;
 				lod.RdrPass[i].PBlock.lock (ibaRead);
 				CIndexBufferReadWrite ibaWrite;
 				skinLod.RdrPass[i].lock (ibaWrite);
-				const uint32	*srcTriPtr= ibaRead.getPtr();
-				uint32	*dstTriPtr= ibaWrite.getPtr();
-				uint32	numIndices= lod.RdrPass[i].PBlock.getNumIndexes();
-				for(uint j=0;j<numIndices;j++, srcTriPtr++, dstTriPtr++)
+				if (skinLod.RdrPass[i].getFormat() == CIndexBuffer::Indices32)
 				{
-					uint	vid= *srcTriPtr;
-					// If this index refers to a Geomorphed vertex, don't modify!
-					if(vid<numGeoms)
-						*dstTriPtr= vid;
-					else
-						*dstTriPtr= vertexRemap[vid] + numGeoms;
+					nlassert(ibaRead.getFormat() == CIndexBuffer::Indices32);
+					const uint32	*srcTriPtr= (const uint32 *) ibaRead.getPtr();
+					uint32	*dstTriPtr= (uint32	*) ibaWrite.getPtr();
+					uint32	numIndices= lod.RdrPass[i].PBlock.getNumIndexes();
+					for(uint j=0;j<numIndices;j++, srcTriPtr++, dstTriPtr++)
+					{
+						uint	vid= *srcTriPtr;
+						// If this index refers to a Geomorphed vertex, don't modify!
+						if(vid<numGeoms)
+							*dstTriPtr= vid;
+						else
+							*dstTriPtr= vertexRemap[vid] + numGeoms;
+					}
+				}
+				else
+				{
+					nlassert(ibaRead.getFormat() == CIndexBuffer::Indices16);
+					const uint16	*srcTriPtr= (const uint16 *) ibaRead.getPtr();
+					uint16	*dstTriPtr= (uint16	*) ibaWrite.getPtr();
+					uint32	numIndices= lod.RdrPass[i].PBlock.getNumIndexes();
+					for(uint j=0;j<numIndices;j++, srcTriPtr++, dstTriPtr++)
+					{
+						uint	vid= *srcTriPtr;
+						// If this index refers to a Geomorphed vertex, don't modify!
+						if(vid<numGeoms)
+							*dstTriPtr= vid;
+						else
+							*dstTriPtr= vertexRemap[vid] + numGeoms;
+					}
 				}
 			}
 
@@ -3212,7 +3296,16 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 void			CMeshMRMGeom::setShadowMesh(const std::vector<CShadowVertex> &shadowVertices, const std::vector<uint32> &triangles)
 {
 	_ShadowSkinVertices= shadowVertices;
-	_ShadowSkinTriangles= triangles;
+	#ifndef NL_MESH_MRM_INDEX16
+		_ShadowSkinTriangles= triangles;
+	#else
+		_ShadowSkinTriangles.resize(triangles.size());
+		for(uint k = 0; k < triangles.size(); ++k)
+		{
+			nlassert(triangles[k] <= 0xffff);
+			_ShadowSkinTriangles[k] = (uint16) triangles[k];
+		}
+	#endif
 	// update flag. Support Shadow SkinGrouping if Shadow setuped, and if not too many vertices.
 	_SupportShadowSkinGrouping= !_ShadowSkinVertices.empty() &&
 		NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT==CVertexBuffer::PositionFlag &&
@@ -3282,18 +3375,19 @@ void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial 
 	NL_SET_IB_NAME(shiftedTris, "CMeshMRMGeom::renderShadowSkinPrimitives::shiftedTris");
 	if(shiftedTris.getNumIndexes()<_ShadowSkinTriangles.size())
 	{
+		shiftedTris.setFormat(NL_MESH_MRM_INDEX_FORMAT);
 		shiftedTris.setNumIndexes(_ShadowSkinTriangles.size());
 	}	
 	shiftedTris.setPreferredMemory(CIndexBuffer::RAMVolatile, false);	
 	{
 		CIndexBufferReadWrite iba;
 		shiftedTris.lock(iba);
-		const uint32	*src= &_ShadowSkinTriangles[0];
-		uint32	*dst= iba.getPtr();
+		const TMeshMRMIndexType	*src= &_ShadowSkinTriangles[0];				
+		TMeshMRMIndexType *dst= (TMeshMRMIndexType *) iba.getPtr();
 		for(uint n= _ShadowSkinTriangles.size();n>0;n--, src++, dst++)
 		{
 			*dst= *src + baseVertex;
-		}
+		}		
 	}
 
 	// Render Triangles with cache

@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.37 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.38 2004/10/19 12:54:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -440,7 +440,7 @@ void CPSGravity::show()
 		vba.setVertexCoord(4, -toolSize * I  - 5.0f * toolSize * K);
 		vba.setVertexCoord(5, toolSize * I - 5.0f * toolSize * K);
 	}
-
+	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	pb.setNumIndexes(2*4);
 	{
 		CIndexBufferReadWrite ibaWrite;

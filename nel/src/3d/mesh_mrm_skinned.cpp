@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.cpp,v 1.9 2004/09/21 09:13:41 lecroart Exp $
+ * $Id: mesh_mrm_skinned.cpp,v 1.10 2004/10/19 12:52:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,6 +115,7 @@ void	CMeshMRMSkinnedGeom::CLod::getRdrPassPrimitiveBlock (uint renderPass, CInde
 {
 	const CRdrPass &rd = RdrPass[renderPass];
 	const uint count = rd.getNumTriangle();
+	block.setFormat(NL_SKINNED_MESH_MRM_INDEX_FORMAT);
 	block.setNumIndexes (count*3);
 
 	CIndexBufferReadWrite ibaWrite;
@@ -137,12 +138,25 @@ void	CMeshMRMSkinnedGeom::CLod::buildPrimitiveBlock(uint renderPass, const CInde
 	uint i;
 	CIndexBufferRead ibaRead;
 	block.lock (ibaRead);
-	const uint32 *triPtr = ibaRead.getPtr ();
-	for (i=0; i<count; i++)
+	if (ibaRead.getFormat() == CIndexBuffer::Indices32)
 	{
-		rd.PBlock[i*3+0] = (uint16)(triPtr[3*i+0]);
-		rd.PBlock[i*3+1] = (uint16)(triPtr[3*i+1]);
-		rd.PBlock[i*3+2] = (uint16)(triPtr[3*i+2]);
+		const uint32 *triPtr = (const uint32 *) ibaRead.getPtr ();
+		for (i=0; i<count; i++)
+		{
+			rd.PBlock[i*3+0] = (uint16) (triPtr[3*i+0]);
+			rd.PBlock[i*3+1] = (uint16) (triPtr[3*i+1]);
+			rd.PBlock[i*3+2] = (uint16) (triPtr[3*i+2]);
+		}
+	}
+	else
+	{
+		const uint16 *triPtr = (const uint16 *) ibaRead.getPtr ();
+		for (i=0; i<count; i++)
+		{
+			rd.PBlock[i*3+0] = (triPtr[3*i+0]);
+			rd.PBlock[i*3+1] = (triPtr[3*i+1]);
+			rd.PBlock[i*3+2] = (triPtr[3*i+2]);
+		}
 	}
 }
 
@@ -955,6 +969,7 @@ void	CMeshMRMSkinnedGeom::updateShiftedTriangleCache(CMeshMRMSkinnedInstance *mi
 		}
 
 		// Allocate triangles indices.
+		mi->_ShiftedTriangleCache->RawIndices.setFormat(NL_SKINNED_MESH_MRM_INDEX_FORMAT);
 		mi->_ShiftedTriangleCache->RawIndices.setNumIndexes(totalTri*3);
 
 		CIndexBufferReadWrite iba;
@@ -975,10 +990,19 @@ void	CMeshMRMSkinnedGeom::updateShiftedTriangleCache(CMeshMRMSkinnedInstance *mi
 				// index, and fill
 				CIndexBufferRead ibaRead;
 				pbList[i]->lock (ibaRead);
-				const uint32	*pSrcTri= ibaRead.getPtr();
-				uint32	*pDstTri= iba.getPtr() + dstRdrPass.Triangles;
-				for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
-					*pDstTri= *pSrcTri + baseVertex;
+				#ifndef NL_SKINNED_MESH_MRM_INDEX16				
+					nlassert(iba.getFormat() == CIndexBuffer::Indices32);
+					const uint32	*pSrcTri= (const uint32 *) ibaRead.getPtr();
+					uint32	*pDstTri= (uint32 *) iba.getPtr() + dstRdrPass.Triangles;
+					for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
+						*pDstTri= *pSrcTri + baseVertex;
+				#else				
+					nlassert(iba.getFormat() == CIndexBuffer::Indices16);
+					const uint16	*pSrcTri= (const uint16 *) ibaRead.getPtr();
+					uint16	*pDstTri= (uint16 *) iba.getPtr() + dstRdrPass.Triangles;
+					for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
+						*pDstTri= *pSrcTri + baseVertex;
+				#endif
 			}
 
 			// Next
@@ -1866,21 +1890,38 @@ void		CMeshMRMSkinnedGeom::updateRawSkinNormal(bool enabled, CMeshMRMSkinnedInst
 			for(i=0;i<skinLod.RdrPass.size();i++)
 			{
 				// remap tris.
+				skinLod.RdrPass[i].setFormat(NL_SKINNED_MESH_MRM_INDEX_FORMAT);
 				skinLod.RdrPass[i].setNumIndexes(lod.RdrPass[i].getNumTriangle()*3);
 				const uint16	*srcTriPtr= &(lod.RdrPass[i].PBlock[0]);
 				CIndexBufferReadWrite ibaWrite;
 				skinLod.RdrPass[i].lock (ibaWrite);
-				uint32	*dstTriPtr= ibaWrite.getPtr();
-				uint32	numIndices= lod.RdrPass[i].PBlock.size();
-				for(uint j=0;j<numIndices;j++, srcTriPtr++, dstTriPtr++)
-				{
-					uint	vid= (uint)*srcTriPtr;
-					// If this index refers to a Geomorphed vertex, don't modify!
-					if(vid<numGeoms)
-						*dstTriPtr= vid;
-					else
-						*dstTriPtr= vertexRemap[vid] + numGeoms;
-				}
+				#ifndef NL_SKINNED_MESH_MRM_INDEX16
+					nlassert(ibaWrite.getFormat() == CIndexBuffer::Indices32)									
+					uint32	*dstTriPtr= (uint32	*) ibaWrite.getPtr();
+					uint32	numIndices= lod.RdrPass[i].PBlock.size();
+					for(uint j=0;j<numIndices;j++, srcTriPtr++, dstTriPtr++)
+					{
+						uint	vid= (uint)*srcTriPtr;
+						// If this index refers to a Geomorphed vertex, don't modify!
+						if(vid<numGeoms)
+							*dstTriPtr= vid;
+						else
+							*dstTriPtr= vertexRemap[vid] + numGeoms;
+					}
+				#else				
+					nlassert(ibaWrite.getFormat() == CIndexBuffer::Indices16);
+					uint16	*dstTriPtr= (uint16 *) ibaWrite.getPtr();
+					uint32	numIndices= lod.RdrPass[i].PBlock.size();
+					for(uint j=0;j<numIndices;j++, srcTriPtr++, dstTriPtr++)
+					{
+						uint	vid= (uint)*srcTriPtr;
+						// If this index refers to a Geomorphed vertex, don't modify!
+						if(vid<numGeoms)
+							*dstTriPtr= vid;
+						else
+							*dstTriPtr= (uint16) (vertexRemap[vid] + numGeoms);
+					}
+				#endif
 			}
 		}
 	}
@@ -1968,16 +2009,30 @@ void			CMeshMRMSkinnedGeom::renderShadowSkinPrimitives(CMeshMRMSkinnedInstance	*
 	if (shiftedTris.getName().empty()) NL_SET_IB_NAME(shiftedTris, "CMeshMRMSkinnedGeom::renderShadowSkinPrimitives::shiftedTris");
 	//if(shiftedTris.getNumIndexes()<_ShadowSkinTriangles.size())
 	//{
+		shiftedTris.setFormat(NL_SKINNED_MESH_MRM_INDEX_FORMAT);
 		shiftedTris.setNumIndexes(_ShadowSkinTriangles.size());
 	//}
 	{
 		CIndexBufferReadWrite iba;
 		shiftedTris.lock(iba);
-		const uint32	*src= &_ShadowSkinTriangles[0];
-		uint32	*dst= iba.getPtr();
-		for(uint n= _ShadowSkinTriangles.size();n>0;n--, src++, dst++)
+		if (iba.getFormat() == CIndexBuffer::Indices32)
 		{
-			*dst= *src + baseVertex;
+			const uint32	*src= &_ShadowSkinTriangles[0];
+			uint32	*dst= (uint32 *) iba.getPtr();
+			for(uint n= _ShadowSkinTriangles.size();n>0;n--, src++, dst++)
+			{
+				*dst= *src + baseVertex;
+			}
+		}
+		else
+		{
+			nlassert(iba.getFormat() == CIndexBuffer::Indices16);
+			const uint32	*src= &_ShadowSkinTriangles[0];
+			uint16	*dst= (uint16 *) iba.getPtr();
+			for(uint n= _ShadowSkinTriangles.size();n>0;n--, src++, dst++)
+			{
+				*dst= (uint16) (*src + baseVertex);
+			}
 		}
 	}
 

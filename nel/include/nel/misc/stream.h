@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.64 2004/02/23 10:27:32 ledorze Exp $
+ * $Id: stream.h,v 1.65 2004/03/04 14:35:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,10 +44,6 @@ namespace	NLMISC
 
 class	IStream;
 class	CMemStream;
-
-struct nelhash {
-  size_t operator()(const uint64 &x) const { return (size_t)x; }
-};
 
 
 // ======================================================================================================
@@ -324,8 +320,8 @@ public:
 	 * Support up to sint32 length containers.
 	 * \see serialContPtr() serialContPolyPtr()
 	 */
-	template<class T>
-	void			serialCont(std::vector<T> &cont) 	{serialVector(cont);}
+	template<class T, class Allocator>
+	void			serialCont(std::vector<T, Allocator> &cont)	{serialVector(cont);}
 	template<class T>
 	void			serialCont(std::list<T> &cont) 	{serialSTLCont(cont);}
 	template<class T>
@@ -354,8 +350,8 @@ public:
 	 * Support up to sint32 length containers.
 	 * \see serialCont() serialContPolyPtr()
 	 */
-	template<class T>
-	void			serialContPtr(std::vector<T> &cont) 	{serialVectorPtr(cont);}
+	template<class T, class Allocator>
+	void			serialContPtr(std::vector<T, Allocator> &cont) 	{serialVectorPtr(cont);}
 	template<class T>
 	void			serialContPtr(std::list<T> &cont) 	{serialSTLContPtr(cont);}
 	template<class T>
@@ -371,8 +367,8 @@ public:
 	 * Support up to sint32 length containers.
 	 * \see serialCont() serialContPtr()
 	 */
-	template<class T>
-	void			serialContPolyPtr(std::vector<T> &cont) 	{serialVectorPolyPtr(cont);}
+	template<class T, class Allocator>
+	void			serialContPolyPtr(std::vector<T, Allocator> &cont) 	{serialVectorPolyPtr(cont);}
 	template<class T>
 	void			serialContPolyPtr(std::list<T> &cont) 	{serialSTLContPolyPtr(cont);}
 	template<class T>
@@ -417,7 +413,7 @@ public:
 				// Test if object already created/read.
 				if( it==_IdMap.end() )
 				{
-					// Construct object.
+					// Construct object.					
 					ptr= new T;
 					if(ptr==NULL)
 						throw EStream();
@@ -891,9 +887,9 @@ private:
 
 	// Ptr registry. We store 64 bit Id, to be compatible with futur 64+ bits pointers.
 	uint32								_NextSerialPtrId;
-	std::hash_map<uint64, void*,nelhash>		_IdMap;
-	typedef std::hash_map<uint64, void*,nelhash>::iterator	ItIdMap;
-	typedef std::hash_map<uint64, void*,nelhash>::value_type	ValueIdMap;
+	std::hash_map<uint64, void*, CHashFunctionUInt64>		_IdMap;
+	typedef std::hash_map<uint64, void*, CHashFunctionUInt64>::iterator	ItIdMap;
+	typedef std::hash_map<uint64, void*, CHashFunctionUInt64>::value_type	ValueIdMap;
 
 	// Ptr serialisation.
 	void			serialIStreamable(IStreamable* &ptr) ;

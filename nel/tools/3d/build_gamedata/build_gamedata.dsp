@@ -1039,5 +1039,49 @@ SOURCE=.\processes\font\export_build_data.bat
 SOURCE=.\processes\font\sh\install.sh
 # End Source File
 # End Group
+# Begin Group "Pacs_prim"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\processes\pacs_prim\0_setup.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\pacs_prim\1_clean.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\pacs_prim\2_export.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\pacs_prim\3_build.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\pacs_prim\4_install.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\pacs_prim\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\pacs_prim\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\pacs_prim\export_build_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\pacs_prim\sh\install.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\pacs_prim\maxscript\pacs_prim_export.ms
+# End Source File
+# End Group
 # End Target
 # End Project

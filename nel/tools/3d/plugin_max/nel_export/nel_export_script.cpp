@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.14 2002/03/26 10:11:43 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.15 2002/03/26 15:24:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,7 @@ def_visible_primitive ( test_file_date,		"NeLTestFileDate");
 def_visible_primitive ( export_vegetable,	"NelExportVegetable");
 def_visible_primitive ( reload_texture,		"NelReloadTexture" );
 def_visible_primitive ( export_collision,	"NelExportCollision" );
-def_visible_primitive ( export_pacs_primitives,	"NelExportPACSPrimitves" );
+def_visible_primitive ( export_pacs_primitives,	"NelExportPACSPrimitives" );
 
 char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
 char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel]";

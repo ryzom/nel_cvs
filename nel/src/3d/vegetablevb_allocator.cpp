@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.cpp
  * <File description>
  *
- * $Id: vegetablevb_allocator.cpp,v 1.7 2002/02/28 12:59:52 besson Exp $
+ * $Id: vegetablevb_allocator.cpp,v 1.8 2002/09/10 13:39:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,6 +97,14 @@ void			CVegetableVBAllocator::updateDriver(IDriver *driver)
 		deleteVertexBufferHard();
 		_Driver= driver;
 		_VBHardOk= (_MaxVertexInBufferHard>0) && (_Driver->supportVertexBufferHard());
+		/* Because so much lock/unlock are performed during a frame (refine/clip etc...).
+			we must disable VBHard for ATI Gl extension.
+			NB: CLandscape don't do this and fast copy the entire VB each frame.
+			This is not possible for vegetables because the VB describe all Vegetable around the camera, not only
+			what is in frustrum. Hence a fast copy each frame would copy far too much unseen vertices (4x).
+		*/
+		if(_Driver->slowUnlockVertexBufferHard())
+			_VBHardOk= false;
 
 		// Driver must support VP.
 		nlassert(_Driver->isVertexProgramSupported());

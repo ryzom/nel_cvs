@@ -1,19 +1,27 @@
-/* <quaternion.cpp>
+/** \file quaternion.cpp
+ * 
  *
- * Copyright (C) 2000 Nevrax. All rights reserved. 
- * 
- * You may distribute under the terms of the GNU General Public.
- */
- 
-/*
- * $Id: quaternion.cpp,v 1.1 2000/09/20 15:55:32 viau Exp $
- * 
- * <Quaternion class bodies> 
+ * $Id: quaternion.cpp,v 1.2 2000/11/09 10:32:17 viau Exp $
  */
 
-// <File content>
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
 
-/* End of <quaternion.cpp> */
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
 
 #include "quaternion.h"
 

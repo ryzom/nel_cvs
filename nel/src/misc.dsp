@@ -137,6 +137,14 @@ SOURCE=R:\code\nel\include\nel\misc\plane_inline.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\quaternion.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\quaternion.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\vector.cpp
 # End Source File
 # Begin Source File

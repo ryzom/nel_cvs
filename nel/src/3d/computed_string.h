@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.4 2002/07/05 14:46:08 besson Exp $
+ * $Id: computed_string.h,v 1.5 2002/08/22 13:38:45 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,7 @@ struct CComputedString
 
 public:
 	CVertexBuffer Vertices;
+	CVertexBuffer VerticesClipped;
 	CMaterial	*Material;
 	CRGBA Color;
 	float StringWidth;
@@ -100,6 +101,7 @@ public:
 		StringWidth = 0;
 		StringHeight = 0;
 		Vertices.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+		VerticesClipped.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	}
 
 	/**
@@ -123,6 +125,11 @@ public:
 					THotSpot hotspot = BottomLeft,
 					float scaleX = 1, float scaleZ = 1,
 					float rotateY = 0);
+
+	// Hotspot = bottomLeft
+	void render2DClip (IDriver& driver, 
+					float x, float z,
+					float xmin=0, float ymin=0, float xmax=1, float ymax=1);
 
 	/** 
 	 * Render the unicode string in a driver.

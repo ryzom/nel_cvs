@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.6 2002/06/10 09:30:09 berenguier Exp $
+ * $Id: text_context_user.h,v 1.7 2002/08/22 13:38:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,6 +97,8 @@ public:
 	virtual	CStringInfo		getStringInfo(uint32 i);
 	void clear()  ;
 	void printAt(float x, float y, uint32 i) ;
+	void printClipAt(float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) ;
+
 	void printAt(float x, float y, ucstring ucstr) ;
 	void printfAt(float x, float y, const char * format, ...) ;
 

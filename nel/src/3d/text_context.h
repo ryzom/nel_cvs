@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.5 2001/12/27 10:19:16 lecroart Exp $
+ * $Id: text_context.h,v 1.6 2002/08/22 13:38:45 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -286,14 +286,24 @@ public:
 		nlassert(itstr!= _StringList.end());
 		
 		(*itstr).second.render2D(*_Driver,
-								x,z,
+								x, z,
 								_HotSpot,
-								_ScaleX,_ScaleZ);
+								_ScaleX, _ScaleZ);
 
 		_XBound = x + (*itstr).second.StringWidth;
-
 	}
 
+	void printClipAt (float x, float z, uint32 i, float xmin, float ymin, float xmax, float ymax)
+	{
+		std::map<uint32,CComputedString>::iterator itstr = _StringList.find(i);
+		nlassert(itstr!= _StringList.end());
+		CComputedString &cs = (*itstr).second;
+		cs.render2DClip (	*_Driver,
+							x, z,
+							xmin, ymin, xmax, ymax );
+
+		_XBound = x + (*itstr).second.StringWidth;
+	}
 	/**
 	 * compute and print a ucstring at the location
 	 */

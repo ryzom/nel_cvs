@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.4 2002/07/05 14:46:08 besson Exp $
+ * $Id: u_text_context.h,v 1.5 2002/08/22 13:38:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -195,6 +195,7 @@ public:
 	 * (rq : it leaves the string in the stack)
 	 */
 	virtual	void			printAt(float x, float y, uint32 i) =0;
+	virtual	void			printClipAt(float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) =0;
 	/**
 	 * compute and print a ucstring at the location (2D method) x/y E [0,1]
 	 */

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.14 2002/08/14 08:49:04 berenguier Exp $
+ * $Id: u_driver.h,v 1.15 2002/08/22 13:38:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -326,6 +326,8 @@ public:
 	virtual	void			drawQuad(const NLMISC::CQuadUV &tri, UMaterial &mat) =0;
 	/// Draw the Quad, taking color from primitive. With UV for texture.
 	virtual	void			drawQuad(const NLMISC::CQuadColorUV &tri, UMaterial &mat) =0;
+
+	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV> &tri, UMaterial &mat) =0;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.6 2002/07/05 14:46:08 besson Exp $
+ * $Id: text_context_user.cpp,v 1.7 2002/08/22 13:38:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -207,6 +207,13 @@ void CTextContextUser::printAt(float x, float y, uint32 i)
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	_TextContext.printAt(x, y, i);
+	_DriverUser->restoreMatrixContext();
+}
+void CTextContextUser::printClipAt(float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax)
+{
+	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
+
+	_TextContext.printClipAt(x, y, i, xmin, ymin, xmax, ymax);
 	_DriverUser->restoreMatrixContext();
 }
 void CTextContextUser::printAt(float x, float y, ucstring ucstr) 

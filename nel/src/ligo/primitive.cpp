@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.21 2003/11/28 15:04:09 corvazier Exp $
+ * $Id: primitive.cpp,v 1.22 2003/12/04 13:13:43 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -299,7 +299,7 @@ bool CPrimZone::contains (const NLMISC::CVector &v, const std::vector<CPrimVecto
 		const CVector &p1 = points[i];
 		const CVector &p2 = points[(i+1)%points.size()];
 
-		if (((p1.y-v.y) < 0.0)&&((p2.y-v.y) < 0.0))
+		if (((p1.y-v.y) <= 0.0)&&((p2.y-v.y) <= 0.0))
 			continue;
 		if (((p1.y-v.y) > 0.0)&&((p2.y-v.y) > 0.0))
 			continue;
@@ -348,7 +348,7 @@ bool CPrimZone::contains (const NLMISC::CVector &v, const std::vector<NLMISC::CV
 		const CVector &p1 = points[i];
 		const CVector &p2 = points[(i+1)%points.size()];
 
-		if (((p1.y-v.y) < 0.0)&&((p2.y-v.y) < 0.0))
+		if (((p1.y-v.y) <= 0.0)&&((p2.y-v.y) <= 0.0))
 			continue;
 		if (((p1.y-v.y) > 0.0)&&((p2.y-v.y) > 0.0))
 			continue;
@@ -725,7 +725,7 @@ bool CPrimZone::contains (const NLMISC::CVector &v, const std::vector<CPrimVecto
 			nearPos = pos;
 		}
 
-		if (((p1.y-v.y) < 0.0)&&((p2.y-v.y) < 0.0))
+		if (((p1.y-v.y) <= 0.0)&&((p2.y-v.y) <= 0.0))
 			continue;
 		if (((p1.y-v.y) > 0.0)&&((p2.y-v.y) > 0.0))
 			continue;
@@ -823,7 +823,7 @@ bool CPrimZone::contains (const NLMISC::CVector &v, const std::vector<CVector> &
 			nearPos = pos;
 		}
 
-		if (((p1.y-v.y) < 0.0)&&((p2.y-v.y) < 0.0))
+		if (((p1.y-v.y) <= 0.0)&&((p2.y-v.y) <= 0.0))
 			continue;
 		if (((p1.y-v.y) > 0.0)&&((p2.y-v.y) > 0.0))
 			continue;

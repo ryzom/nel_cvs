@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.30 2002/07/01 18:23:55 legros Exp $
+ * $Id: move_container.cpp,v 1.31 2002/07/15 13:03:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -882,7 +882,7 @@ bool CMoveContainer::evalPrimAgainstPrimCollision (double beginTime, CMovePrimit
 								dynamicColInfo);
 
 			// Collision
-			return true;
+			return collision;
 		}
 	}
 	return false;

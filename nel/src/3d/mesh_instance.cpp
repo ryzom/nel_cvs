@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.1 2001/03/27 09:55:41 berenguier Exp $
+ * $Id: mesh_instance.cpp,v 1.2 2001/04/03 13:31:17 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/3d/mesh_instance.h"
+#include "nel/3d/mesh.h"
 
 
 namespace NL3D 
@@ -46,11 +47,37 @@ void		CMeshInstance::registerToChannelMixer(CChannelMixer *chanMixer, const std:
 	for(uint i=0;i<_AnimatedMaterials.size();i++)
 	{
 		// append material  matname.*
-		_AnimatedMaterials[i].registerToChannelMixer(chanMixer, prefix + _AnimatedMaterials[i].getMaterialName());
+		_AnimatedMaterials[i].registerToChannelMixer(chanMixer, prefix + _AnimatedMaterials[i].getMaterialName() + ".");
 	}
 
 
 	// TODO: Add any bones.
+}
+
+
+// ***************************************************************************
+ITrack*		CMeshInstance::getDefaultTrack (uint valueId)
+{
+	// Pointer on the CMesh
+	CMesh* pMesh=(CMesh*)(IShape*)Shape;
+
+	// Switch the value
+	switch (valueId)
+	{
+	case CTransform::PosValue:			
+		return pMesh->getDefaultPos();
+	case CTransform::RotEulerValue:		
+		return pMesh->getDefaultRotEuler();
+	case CTransform::RotQuatValue:		
+		return pMesh->getDefaultRotQuat();
+	case CTransform::ScaleValue:		
+		return pMesh->getDefaultScale();
+	case CTransform::PivotValue:		
+		return pMesh->getDefaultPivot();
+	default:
+		// Problem, new values ?
+		nlstop;
+	};
 }
 
 

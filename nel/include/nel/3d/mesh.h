@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.10 2001/03/27 09:54:29 berenguier Exp $
+ * $Id: mesh.h,v 1.11 2001/04/03 13:31:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,8 +110,21 @@ public:
 		 * more information. NB: IDRV_VF_XYZ is always considered to true.
 		 */
 		sint					VertexFlags;
+
+		// Default value for position of this mesh
+		CVector					DefaultPos;
+		CVector					DefaultPivot;
+		CVector					DefaultRotEuler;
+		CQuat					DefaultRotQuat;
+		CVector					DefaultScale;
+
+		// Material array
 		std::vector<CMaterial>	Materials;
+
+		// Vertices array
 		std::vector<CVector>	Vertices;
+
+		// Faces array
 		std::vector<CFace>		Faces;
 	};
 	//@}
@@ -133,6 +146,14 @@ public:
 	CMaterialBase	*getAnimatedMaterial(uint id);
 	// @}
 
+	/// \name access default tracks.
+	// @{
+	CTrackDefaultVector*	getDefaultPos ()		{return &_DefaultPos;}
+	CTrackDefaultVector*	getDefaultPivot ()		{return &_DefaultPivot;}
+	CTrackDefaultVector*	getDefaultRotEuler ()	{return &_DefaultRotEuler;}
+	CTrackDefaultQuat*		getDefaultRotQuat ()	{return &_DefaultRotQuat;}
+	CTrackDefaultVector*	getDefaultScale ()		{return &_DefaultScale;}
+	// @}
 
 	/// \name From IShape
 	// @{
@@ -192,6 +213,13 @@ private:
 	TAnimatedMaterialMap			_AnimatedMaterials;
 
 
+	/// Transform default tracks. Those default tracks are instancied, ie, CInstanceMesh will have the same and can't specialize it.
+	CTrackDefaultVector		_DefaultPos;
+	CTrackDefaultVector		_DefaultPivot;
+	CTrackDefaultVector		_DefaultRotEuler;
+	CTrackDefaultQuat		_DefaultRotQuat;
+	CTrackDefaultVector		_DefaultScale;
+
 private:
 	// Locals, for build.
 	class	CCornerPred
@@ -245,9 +273,7 @@ private:
 			}
 		}
 	}
-
 };
-
 
 } // NL3D
 

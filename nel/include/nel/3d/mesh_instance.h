@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.2 2001/03/28 10:31:09 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.3 2001/04/03 13:31:17 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,13 @@ public:
 	virtual	void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix);
 
 	// @}
+
+	/// \name Derived from ITransformable.
+	// @{
+	/// Default Track Values.
+	virtual ITrack* getDefaultTrack (uint valueId);
+	// @}
+
 
 
 protected:

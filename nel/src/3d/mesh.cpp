@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.9 2001/03/28 10:33:00 berenguier Exp $
+ * $Id: mesh.cpp,v 1.10 2001/04/03 13:31:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -187,6 +187,13 @@ void	CMesh::build(const CMeshBuild &m)
 		_RdrPass[pFace->MaterialId].PBlock.addTri(pFace->Corner[0].VBId, pFace->Corner[1].VBId, pFace->Corner[2].VBId);
 	}
 
+	/// 4. Copy default position values
+	_DefaultPos.setValue (m.DefaultPos);
+	_DefaultPivot.setValue (m.DefaultPivot);
+	_DefaultRotEuler.setValue (m.DefaultRotEuler);
+	_DefaultRotQuat.setValue (m.DefaultRotQuat);
+	_DefaultScale.setValue (m.DefaultScale);
+
 	// End!!
 }
 
@@ -271,12 +278,14 @@ void	CMesh::render(IDriver *drv, CTransformShape *trans)
 void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 2:
+		- Default track for position.
 	Version 1:
 		- Animated Materials.
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(1);
+	sint	ver= f.serialVersion(2);
 
 	f.serial(_VBuffer);
 	f.serialCont(_RdrPass);
@@ -289,6 +298,17 @@ void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		if(f.isReading())
 			_AnimatedMaterials.clear();
+	}
+
+	// New features
+	switch (ver)
+	{
+	case 2:
+		f.serial (_DefaultPos);
+		f.serial (_DefaultPivot);
+		f.serial (_DefaultRotEuler);
+		f.serial (_DefaultRotQuat);
+		f.serial (_DefaultScale);
 	}
 }
 
@@ -307,6 +327,8 @@ void			CMesh::setAnimatedMaterial(uint id, const std::string &matName)
 	{
 		// add / replace animated material.
 		_AnimatedMaterials[id].Name= matName;
+		// copy Material default.
+		_AnimatedMaterials[id].copyFromMaterial(&_RdrPass[id].Material);
 	}
 }
 

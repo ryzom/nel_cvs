@@ -1,7 +1,7 @@
 /** \file lexsupport.h
  * Method and class for lex&yacc support.
  *
- * $Id: lexsupport.h,v 1.2 2001/01/08 11:16:29 chafik Exp $
+ * $Id: lexsupport.h,v 1.3 2001/01/08 14:17:22 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,12 +28,13 @@
 #ifndef PARSER_NO_REDEF_YYTABLE_H_
 	#include "script/ytable.h"
 #endif
+#ifdef NL_OS_WINDOWS
 #pragma warning (disable: 4666)
 #pragma warning (disable: 4786)
 #pragma warning (disable: 4275)
 #pragma warning (disable: 4275)
-
 #pragma warning (disable: 4251)
+#endif
 #include "agent/agent_method_def.h"
 #include <list>
 #include <map>

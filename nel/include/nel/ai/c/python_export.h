@@ -1,7 +1,7 @@
 /** \file registry.h
  * Includes class factory object for register class.
  *
- * $Id: python_export.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: python_export.h,v 1.3 2001/01/08 14:17:22 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,9 @@
 #ifndef _PY_EXPORT_H
 #define _PY_EXPORT_H
 
+#ifdef NL_OS_WINDOWS
 #pragma warning (disable: 4666)
+#endif
 #include "pyserver/pylib.h"
 #include "c/abstract_interface.h"
 

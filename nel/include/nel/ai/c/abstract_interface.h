@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.4 2001/01/08 10:50:46 chafik Exp $
+ * $Id: abstract_interface.h,v 1.5 2001/01/08 14:17:22 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,11 +25,16 @@
 
 #ifndef NL_ABSTRACT_H
 #define NL_ABSTRACT_H
+
+#ifdef NL_OS_WINDOWS
+
 #pragma warning (disable: 4666)
 #pragma warning (disable: 4786) 
 #pragma warning (disable: 4620) 
 #pragma warning (disable: 4275)
 #pragma warning (disable: 4251)
+
+#endif
 
 #include <map>
 #include <iostream>

@@ -1,7 +1,7 @@
 /** \file build_surfaces.cpp
  * 
  *
- * $Id: build_surfaces.cpp,v 1.1 2002/01/07 11:17:03 lecroart Exp $
+ * $Id: build_surfaces.cpp,v 1.2 2003/08/27 09:26:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -314,7 +314,7 @@ void	buildSurfaces(CCollisionMeshBuild &cmb, CLocalRetriever &lr)
 		computeSurfaceBorders(surfaces[surf], borders);
 		computeSurfaceCenter(surfaces[surf]);
 		computeSurfaceQuadTree(surfaces[surf], quad);
-		lr.addSurface(0, 0, (uint8)surfaces[surf].Material, 0, 0, false, 0.0f, surfaces[surf].Center, quad);
+		lr.addSurface(0, 0, (uint8)surfaces[surf].Material, 0, 0, false, 0.0f, false, surfaces[surf].Center, quad);
 	}
 
 	sint	numBorderChains = 0;

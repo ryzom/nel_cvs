@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.44 2003/05/06 09:47:36 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.45 2003/08/27 09:25:39 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -213,17 +213,26 @@ void	NLPACS::CRetrieverInstance::link(CRetrieverInstance &neighbor,
 	_BorderChainLinks.resize(borderChains.size());
 	neighbor._BorderChainLinks.resize(nBorderChains.size());
 
+/*
 	for (i=0; i<borderChains.size(); ++i)
 		chainTips.push_back(make_pair(retriever.getTip(chains[borderChains[i]].getStartTip()).Point,
 									  retriever.getTip(chains[borderChains[i]].getStopTip()).Point));
+*/
+	for (i=0; i<borderChains.size(); ++i)
+		chainTips.push_back(make_pair(retriever.getStartVector(borderChains[i]),
+									  retriever.getStopVector(borderChains[i])));
 
 	/// \todo Compute real position using _Orientation
 
 	CVector	translation = neighbor._Origin - _Origin;
-
+/*
 	for (i=0; i<nBorderChains.size(); ++i)
 		nChainTips.push_back(make_pair(nRetriever.getTip(nChains[nBorderChains[i]].getStartTip()).Point+translation,
 									   nRetriever.getTip(nChains[nBorderChains[i]].getStopTip()).Point+translation));
+*/
+	for (i=0; i<nBorderChains.size(); ++i)
+		nChainTips.push_back(make_pair(nRetriever.getStartVector(nBorderChains[i])+translation,
+									   nRetriever.getStopVector(nBorderChains[i])+translation));
 
 	for (i=0; i<borderChains.size(); ++i)
 	{

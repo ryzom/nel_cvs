@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.9 2003/05/06 09:47:36 legros Exp $
+ * $Id: retrievable_surface.h,v 1.10 2003/08/27 09:25:39 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,6 +96,7 @@ public:
 		IsSlantBit = 25,
 		IsCeilingBit = 26,
 		IsUnderWaterBit = 27,
+		ClusterHintBit = 28,
 		NormalQuantasStartBit = 0,
 		NormalQuantasStopBit = 3,
 		NormalQuantasBitMask = 0x0000000f,
@@ -165,6 +166,7 @@ public:
 	uint8								getLevel() const { return _Level; }
 	bool								isFloor() const { return _IsFloor; }
 	bool								isCeiling() const { return _IsCeiling; }
+	bool								clusterHint() const { return (_Flags & ClusterHintBit) != 0; }
 	const CSurfaceQuadTree				&getQuadTree() const { return _Quad; }
 	sint32								getTopology(uint model) const { return _Topologies[model]; }
 	uint32								getFlags() const { return _Flags; }

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.27 2003/06/26 15:36:29 legros Exp $
+ * $Id: local_retriever.h,v 1.28 2003/08/27 09:25:39 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -298,7 +298,7 @@ protected:
 	NLMISC::CAABBox						_BBox;
 
 	/// The tips making links between different chains.
-	std::vector<CTip>					_Tips;
+	std::vector<CTip>					__Tips;
 
 	/// The chains on the edges of the zone.
 	std::vector<uint16>					_BorderChains;
@@ -371,9 +371,9 @@ public:
 	// @{
 
 	/// Returns the chain tips inside the local retrievers.
-	const std::vector<CTip>				&getTips() const { return _Tips; }
+	//const std::vector<CTip>				&getTips() const { return _Tips; }
 	/// Returns the nth tip in the retriever.
-	const CTip							&getTip(uint n) const { return _Tips[n]; }
+	//const CTip							&getTip(uint n) const { return _Tips[n]; }
 
 	/// Returns the ordered chains.
 	const std::vector<COrderedChain>	&getOrderedChains() const { return _OrderedChains; }
@@ -464,6 +464,7 @@ public:
 	sint32								addSurface(uint8 normalq, uint8 orientationq,
 												   uint8 mat, uint8 charact, uint8 level,
 												   bool isUnderWater, float waterHeight,
+												   bool clusterHint,
 												   const NLMISC::CVector &center,
 												   const CSurfaceQuadTree &quad,
 												   sint8 quantHeight = 0);
@@ -615,13 +616,13 @@ public:
 
 	const NLMISC::CVector				&getStartVector(uint32 chain, sint32 surface) const;
 	const NLMISC::CVector				&getStopVector(uint32 chain, sint32 surface) const;
-
+/*
 	uint16								getStartTip(uint32 chain, sint32 surface) const;
 	uint16								getStopTip(uint32 chain, sint32 surface) const;
 	
 	void								setStartTip(uint32 chain, sint32 surface, uint16 startTip);
 	void								setStopTip(uint32 chain, sint32 surface, uint16 stopTip);
-
+*/
 	uint32								getPreviousChain(uint32 chain, sint32 surface) const;
 	uint32								getNextChain(uint32 chain, sint32 surface) const;
 

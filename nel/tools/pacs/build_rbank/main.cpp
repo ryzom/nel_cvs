@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.10 2003/05/06 09:47:58 legros Exp $
+ * $Id: main.cpp,v 1.11 2003/08/27 09:23:07 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 
 #include "build_surf.h"
 #include "build_rbank.h"
+#include "prim_checker.h"
 
 #include "pacs/global_retriever.h"
 #include "pacs/retriever_bank.h"
@@ -65,12 +66,9 @@ bool												ReduceSurfaces;
 bool												SmoothBorders;
 bool												ComputeElevation;
 bool												ComputeLevels;
-bool												LinkElements;
-bool												CutEdges;
 vector<string>										ZoneNames;
 string												ZoneExt;
 string												ZoneLookUpPath;
-string												InteriorGrPath;
 bool												TessellateZones;
 bool												MoulineZones;
 bool												ProcessRetrievers;
@@ -83,24 +81,43 @@ string												RetrieverBank;
 string												GlobalUL;
 string												GlobalDR;
 bool												ProcessGlobal;
+string												LevelDesignWorldPath;
 
-string												BanksPath;
-string												Bank;
+CPrimChecker										PrimChecker;
 
 /****************************************************************\
 					initMoulinette
 \****************************************************************/
-int		getInt(CConfigFile &cf, const string &varName)
+int		getInt(CConfigFile &cf, const string &varName, int defaultValue=0)
 {
-	CConfigFile::CVar &var = cf.getVar(varName);
-	return var.asInt();
+	CConfigFile::CVar *var = cf.getVarPtr(varName);
+	if (var)
+		nlinfo("Read %s = %d", varName.c_str(), var->asInt());
+	else
+		nlinfo("Couldn't read %s, using default = %d", varName.c_str(), defaultValue);
+	return var ? var->asInt() : defaultValue;
 }
 
-string	getString(CConfigFile &cf, const string &varName)
+string	getString(CConfigFile &cf, const string &varName, const string &defaultValue="")
 {
-	CConfigFile::CVar &var = cf.getVar(varName);
-	return var.asString();
+	CConfigFile::CVar *var = cf.getVarPtr(varName);
+	if (var)
+		nlinfo("Read %s = '%s'", varName.c_str(), var->asString().c_str());
+	else
+		nlinfo("Couldn't read %s, using default = '%s'", varName.c_str(), defaultValue.c_str());
+	return var ? var->asString() : defaultValue;
 }
+
+bool	getBool(CConfigFile &cf, const string &varName, bool defaultValue=false)
+{
+	CConfigFile::CVar *var = cf.getVarPtr(varName);
+	if (var)
+		nlinfo("Read %s = %s", varName.c_str(), (var->asInt()!=0 ? "true" : "false"));
+	else
+		nlinfo("Couldn't read %s, using default = '%s'", varName.c_str(), (defaultValue ? "true" : "false"));
+	return var ? (var->asInt() != 0) : defaultValue;
+}
+
 
 
 void	initMoulinette()
@@ -114,84 +131,66 @@ void	initMoulinette()
 	
 		cf.load("build_rbank.cfg");
 
-		//
-		CConfigFile::CVar &cvPathes = cf.getVar("Pathes");
-		for (i=0; i<cvPathes.size(); ++i)
-		{
-			// nldebug("Using search path %s", cvPathes.asString(i).c_str());
-			CPath::addSearchPath(cvPathes.asString(i));
-		}
+		// Read paths
+		CConfigFile::CVar *cvPathes = cf.getVarPtr("Pathes");
+		for (i=0; cvPathes != NULL && i<cvPathes->size(); ++i)
+			CPath::addSearchPath(cvPathes->asString(i));
+
+		TessellateZones = getBool(cf, "TessellateZones", false);
+		MoulineZones = getBool(cf, "MoulineZones", false);
+		ProcessRetrievers = getBool(cf, "ProcessRetrievers", false);
+		ProcessGlobal = getBool(cf, "ProcessGlobal", false);
 
 		OutputRootPath = getString(cf, "OutputRootPath");
+		UseZoneSquare = getBool(cf, "UseZoneSquare", false);
 
-		TessellateLevel = getInt(cf, "TessellateLevel");
-
-		ReduceSurfaces = getInt(cf, "ReduceSurfaces") ? true : false;
-		SmoothBorders = getInt(cf, "SmoothBorders") ? true : false;
-
-		if (SmoothBorders)
-			OutputDirectory = getString(cf, "SmoothDirectory");
-		else
-			OutputDirectory = getString(cf, "RawDirectory");
-
-		TessellationPath = getString(cf, "TessellationPath");
-
-		ComputeElevation = getInt(cf, "ComputeElevation") ? true : false;
-		ComputeLevels = getInt(cf, "ComputeLevels") ? true : false;
-		LinkElements = getInt(cf, "LinkElements") ? true : false;
-		CutEdges = getInt(cf, "CutEdges") ? true : false;
-
-		CConfigFile::CVar &cvZones = cf.getVar("Zones");
-		for (i=0; i<cvZones.size(); i++)
+		//if (TessellateZones || MoulineZones)
 		{
-			ZoneNames.push_back(cvZones.asString(i));
+			ZoneExt = getString(cf, "ZoneExt", ".zonew");
+			ZoneLookUpPath = getString(cf, "ZonePath", "./");
+			CPath::addSearchPath(ZoneLookUpPath);
+
+			TessellationPath = getString(cf, "TessellationPath");
+			TessellateLevel = getInt(cf, "TessellateLevel");
 		}
 
-		ZoneExt = getString(cf, "ZoneExt");
-		ZoneLookUpPath = getString(cf, "ZonePath");
+		//if (MoulineZones)
+		{
+			LevelDesignWorldPath = getString(cf, "LevelDesignWorldPath");
+			IGBoxes = getString(cf, "IGBoxes", "./temp.bbox");
+			ReduceSurfaces = getBool(cf, "ReduceSurfaces", true);
+			ComputeElevation = getBool(cf, "ComputeElevation", false);
+			ComputeLevels = getBool(cf, "ComputeLevels", true);
+		}
 
-		CPath::addSearchPath(ZoneLookUpPath);
+		//if (MoulineZones || ProcessRetrievers || ProcessGlobal)
+		{
+			SmoothBorders = getBool(cf, "SmoothBorders", true);
+			PreprocessDirectory = getString(cf, "PreprocessDirectory");
 
-		IGBoxes = getString(cf, "IGBoxes");
+			if (SmoothBorders)
+				OutputDirectory = getString(cf, "SmoothDirectory");
+			else
+				OutputDirectory = getString(cf, "RawDirectory");
 
-		TessellateZones = getInt(cf, "TessellateZones") ? true : false;
-		MoulineZones = getInt(cf, "MoulineZones") ? true : false;
-		ProcessRetrievers = getInt(cf, "ProcessRetrievers") ? true : false;
-		PreprocessDirectory = getString(cf, "PreprocessDirectory");
+			OutputPath = OutputRootPath+OutputDirectory;
+		}
 
-		UseZoneSquare = getInt(cf, "UseZoneSquare") ? true : false;
-		ZoneUL = getString(cf, "ZoneUL");
-		ZoneDR = getString(cf, "ZoneDR");
+		//if (ProcessGlobal)
+		{
+			GlobalRetriever = getString(cf, "GlobalRetriever");
+			RetrieverBank = getString(cf, "RetrieverBank");
+			GlobalUL = getString(cf, "GlobalUL");
+			GlobalDR = getString(cf, "GlobalDR");
+		}
 
-		GlobalRetriever = getString(cf, "GlobalRetriever");
-		RetrieverBank = getString(cf, "RetrieverBank");
-		GlobalUL = getString(cf, "GlobalUL");
-		GlobalDR = getString(cf, "GlobalDR");
-		ProcessGlobal = getInt(cf, "ProcessGlobal") ? true : false;
 
-		BanksPath = getString(cf, "BanksPath");
-		Bank = getString(cf, "Bank");
-		CPath::addSearchPath(BanksPath);
-
-		InteriorGrPath = getString(cf, "InteriorGrPath");
-
-		nldebug("OutputRootPath=%s", OutputRootPath.c_str());
-		nldebug("Outputdirectory=%s", OutputDirectory.c_str());
-		nldebug("TessellationPath=%s", TessellationPath.c_str());
-		nldebug("ReduceSurfaces=%s", ReduceSurfaces ? "true" : "false");
-		nldebug("SmoothBorders=%s", SmoothBorders ? "true" : "false");
-		nldebug("ComputeElevation=%s", ComputeElevation ? "true" : "false");
-		nldebug("ComputeLevels=%s", ComputeLevels ? "true" : "false");
-		nldebug("LinkElements=%s", LinkElements ? "true" : "false");
-		nldebug("CutEdges=%s", CutEdges ? "true" : "false");
-		nldebug("TessellateZones=%s", TessellateZones ? "true" : "false");
-		nldebug("MoulineZones=%s", MoulineZones ? "true" : "false");
-		nldebug("ProcessRetrievers=%s", ProcessRetrievers ? "true" : "false");
-		nldebug("ZoneLookUpPath=%s", ZoneLookUpPath.c_str());
-
+		ZoneNames.clear();
 		if (UseZoneSquare)
 		{
-			ZoneNames.clear();
+			ZoneUL = getString(cf, "ZoneUL");
+			ZoneDR = getString(cf, "ZoneDR");
+
 			uint	ul = getZoneIdByName(ZoneUL),
 					dr = getZoneIdByName(ZoneDR);
 			uint	x0 = ul%256, 
@@ -203,106 +202,18 @@ void	initMoulinette()
 				for (x=x0; x<=x1; ++x)
 					ZoneNames.push_back(getZoneNameById(x+y*256));
 		}
+		else
+		{
+			CConfigFile::CVar *cvZones = cf.getVarPtr("Zones");
+			for (i=0; cvZones != NULL && i<cvZones->size(); i++)
+				ZoneNames.push_back(cvZones->asString(i));
+		}
 	}
 	catch (EConfigFile &e)
 	{
 		nlwarning("Problem in config file : %s\n", e.what ());
 	}
-
-	OutputPath = OutputRootPath+OutputDirectory;
 }
-
-bool	interiorForceMergeFileUpToDate()
-{
-	string	idbname = CPath::standardizePath(InteriorGrPath)+"interior_door_boxes.bin";
-	if (!CFile::fileExists(idbname))
-		return false;
-
-	string	igrname = CPath::standardizePath(InteriorGrPath)+"interiors.gr";
-	string	irbname = CPath::standardizePath(InteriorGrPath)+"interiors.rbank";
-
-	return (CFile::getFileModificationDate(idbname) > CFile::getFileModificationDate(igrname) &&
-			CFile::getFileModificationDate(idbname) > CFile::getFileModificationDate(irbname));
-}
-
-void	buildInteriorForceMergeFile()
-{
-	string	idbname = CPath::standardizePath(InteriorGrPath)+"interior_door_boxes.bin";
-	string	igrname = CPath::standardizePath(InteriorGrPath)+"interiors.gr";
-	string	irbname = CPath::standardizePath(InteriorGrPath)+"interiors.rbank";
-
-	NLPACS::CRetrieverBank		rbank;
-	NLPACS::CGlobalRetriever	gr;
-
-	try
-	{
-		CIFile	rf(irbname);
-		rbank.serial(rf);
-
-		CIFile	gf(igrname);
-		gr.serial(gf);
-
-		gr.setRetrieverBank(&rbank);
-
-		vector<NLPACS::CZoneTessellation::CMergeForceBox>	idBoxes;
-
-		//
-		uint	i;
-		for (i=0; i<gr.getInstances().size(); ++i)
-		{
-			const NLPACS::CRetrieverInstance	&inst = gr.getInstance(i);
-			const NLPACS::CLocalRetriever		&retr = gr.getRetriever(inst.getRetrieverId());
-			const NLPACS::CExteriorMesh			&em = retr.getExteriorMesh();
-
-			uint	j;
-			sint	lastLink = -1;
-			CAABBox	box;
-
-			for (j=0; j<em.getEdges().size(); ++j)
-			{
-				if (em.getEdge(j).Link >= 0)
-				{
-					if (lastLink != em.getEdge(j).Link)
-					{
-						if (lastLink >= 0)
-						{
-							NLPACS::CZoneTessellation::CMergeForceBox	mfb;
-							mfb.MergeBox = box;
-							mfb.MergeId = i*65536+lastLink;
-							idBoxes.push_back(mfb);
-						}
-
-						box.setCenter(em.getEdge(j).Start+inst.getOrigin());
-						box.setHalfSize(CVector::Null);
-					}
-
-					box.extend(em.getEdge(j).Start+inst.getOrigin());
-					lastLink = em.getEdge(j).Link;
-				}
-				else
-				{
-					if (lastLink >= 0)
-					{
-						NLPACS::CZoneTessellation::CMergeForceBox	mfb;
-						mfb.MergeBox = box;
-						mfb.MergeId = i*65536+lastLink;
-						idBoxes.push_back(mfb);
-					}
-
-					lastLink = -1;
-				}
-			}
-		}
-
-		COFile	idbofile(idbname);
-
-		idbofile.serialCont(idBoxes);
-	}
-	catch (Exception &)
-	{
-	}
-}
-
 
 /****************************************************************\
 					moulineZones
@@ -312,9 +223,6 @@ void	moulineZones(vector<string> &zoneNames)
 	uint	i;
 
 	NLPACS::StatsSurfaces.init();
-
-	if (!interiorForceMergeFileUpToDate())
-		buildInteriorForceMergeFile();
 
 	if (TessellateZones)
 	{
@@ -327,6 +235,8 @@ void	moulineZones(vector<string> &zoneNames)
 
 	if (MoulineZones)
 	{
+		PrimChecker.init(LevelDesignWorldPath);
+
 		for (i=0; i<zoneNames.size(); ++i)
 		{
 			nlinfo("Preprocess .lr for zone %s", zoneNames[i].c_str());
@@ -452,10 +362,10 @@ int main(int argc, char **argv)
 		nlwarning ("main trapped an exception: '%s'\n", e.what ());
 	}
 #ifndef NL_DEBUG
-	catch (...)
+/*	catch (...)
 	{
 		nlwarning("main trapped an unknown exception\n");
-	}
+	}*/
 #endif // NL_DEBUG
 
 	return 0;

@@ -1,7 +1,7 @@
 /** \file build_indoor.cpp
  * 
  *
- * $Id: build_indoor.cpp,v 1.4 2003/01/30 17:56:43 legros Exp $
+ * $Id: build_indoor.cpp,v 1.5 2003/08/27 09:25:39 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -380,7 +380,8 @@ void	buildSurfaces(CCollisionMeshBuild &cmb, CLocalRetriever &lr)
 		computeSurfaceBorders(surfaces[surf], borders);
 		computeSurfaceCenter(surfaces[surf]);
 		computeSurfaceQuadTree(surfaces[surf], quad);
-		lr.addSurface(0, 0, (uint8)surfaces[surf].Material, 0, 0, false, 0.0f, surfaces[surf].Center, quad);
+		lr.addSurface(0, 0, (uint8)surfaces[surf].Material, 0, 0, false, 0.0f, false, surfaces[surf].Center, quad);
+		//lr.addSurface(0, 0, (uint8)surfaces[surf].Material, 0, 0, false, 0.0f, /*false,*/ surfaces[surf].Center, quad);
 	}
 
 	sint	numBorderChains = 0;

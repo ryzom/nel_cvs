@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.8 2003/05/06 09:47:58 legros Exp $
+ * $Id: build_surf.h,v 1.9 2003/08/27 09:23:07 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,8 @@
 #include "pacs/surface_quad.h"
 #include "pacs/retrievable_surface.h"
 
+#include "prim_checker.h"
+
 
 
 extern std::string				OutputRootPath;
@@ -59,13 +61,9 @@ extern bool						ReduceSurfaces;
 extern bool						SmoothBorders;
 extern bool						ComputeElevation;
 extern bool						ComputeLevels;
-extern bool						LinkElements;
-extern bool						CutEdges;
 extern std::vector<std::string>	ZoneNames;
 extern std::string				ZoneExt;
 extern std::string				ZoneLookUpPath;
-//extern std::string				BBoxLookUpPath;
-extern std::string				InteriorGrPath;
 
 extern bool						TessellateZones;
 extern bool						MoulineZones;
@@ -82,8 +80,7 @@ extern std::string				GlobalUL;
 extern std::string				GlobalDR;
 extern bool						ProcessGlobal;
 
-extern std::string				BanksPath;
-extern std::string				Bank;
+extern CPrimChecker				PrimChecker;
 
 std::string			getZoneNameById(uint16 id);
 uint16				getZoneIdByName(std::string &name);
@@ -240,6 +237,7 @@ public:
 	bool							IsHorizontal;
 	bool							IsValid;
 	bool							IsMergable;
+	bool							ClusterHint;
 
 	enum
 	{
@@ -306,6 +304,7 @@ public:
 		IsHorizontal = false;
 		IsValid = false;
 		IsMergable = true;
+		ClusterHint = false;
 		CutFlag = 0;
 		WaterShape = 255;
 		QuantHeight = 0;
@@ -449,6 +448,7 @@ public:
 
 	bool									IsHorizontal;
 	bool									IsUnderWater;
+	bool									ClusterHint;
 
 	float									Area;
 	float									WaterHeight;
@@ -468,7 +468,7 @@ public:
 	 * Constructor.
 	 * Builds an empty surface.
 	 */
-	CComputableSurface() : SurfaceId(UnaffectedSurfaceId), NormalQuanta(0), OrientationQuanta(0), Material(0), BorderKeeper(NULL)	{}
+	CComputableSurface() : SurfaceId(UnaffectedSurfaceId), NormalQuanta(0), OrientationQuanta(0), Material(0), BorderKeeper(NULL), ClusterHint(false)	{}
 
 	/**
 	 * Flood fills the surface elements to find iso-criteria surfaces.

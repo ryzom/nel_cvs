@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.11 2003/05/06 09:47:58 legros Exp $
+ * $Id: build_rbank.cpp,v 1.12 2003/08/27 09:23:07 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,6 +264,7 @@ void moulineZone(string &zoneName)
 									 tessellation.Surfaces[j].Level,
 									 tessellation.Surfaces[j].IsUnderWater,
 									 tessellation.Surfaces[j].WaterHeight,
+									 tessellation.Surfaces[j].ClusterHint,
 									 tessellation.Surfaces[j].Center,
 									 tessellation.Surfaces[j].HeightQuad,
 									 tessellation.Surfaces[j].QuantHeight);

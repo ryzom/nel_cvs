@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.13 2003/01/15 10:43:26 legros Exp $
+ * $Id: build_surf.cpp,v 1.14 2003/08/27 09:23:07 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -480,6 +480,7 @@ void	NLPACS::CSurfElement::computeQuantas()
 	QuantHeight = ((uint8)(floor((v0.z+v1.z+v2.z)/6.0f)))%255;
 	
 	Area = 0.5f*n.norm();
+
 /*
 	uint	i;
 	for (i=0; i<NumCreatureModels-1; ++i)
@@ -514,6 +515,28 @@ void	NLPACS::CSurfElement::computeQuantas()
 	OrientationQuanta = 0;
 	IsHorizontal = (NormalQuanta == 0);
 	IsValid = IsHorizontal;
+
+	uint8	bits = 0;
+	bits |= PrimChecker.get((uint)v0.x, (uint)v0.y);
+	bits |= PrimChecker.get((uint)v1.x, (uint)v1.y);
+	bits |= PrimChecker.get((uint)v2.x, (uint)v2.y);
+
+	if (bits & CPrimChecker::Include)
+	{
+		IsValid = true;
+		IsHorizontal = true;
+		NormalQuanta = 0;
+	}
+
+	if (bits & CPrimChecker::Exclude)
+	{
+		IsValid = false;
+		IsHorizontal = false;
+		NormalQuanta = 1;
+	}
+
+	if (bits & CPrimChecker::ClusterHint && IsValid)
+		ClusterHint = true;
 
 	Material = 0;
 	Level = 0;
@@ -600,89 +623,6 @@ CAABBox	NLPACS::CSurfElement::getBBox() const
 	return box;
 }
 
-/*
-void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
-{
-	if (!IsHorizontal)
-	{
-		Level = 0;
-		return;
-	}
-
-	CVector	center = ((*Vertices)[Tri[0]]+(*Vertices)[Tri[1]]+(*Vertices)[Tri[2]])/3.0f;
-	CVector top = center-CVector(0.0f, 0.0f, 8.0e1f);
-	grid.select(center, center);
-	CQuadGrid<CSurfElement *>::CIterator	it;
-	uint	level = 0;
-
-	vector<CVector>					hits;
-
-	vector<CAABBox>					boxes;
-	uint							i;
-
-	CAABBox							ownBox;
-
-	const CVector	&v0 = (*(el.Vertices))[el.Tri[0]],
-					&v1 = (*(el.Vertices))[el.Tri[1]],
-					&v2 = (*(el.Vertices))[el.Tri[2]];
-
-	ownBox.setCenter(V0+CVector(0.05f, 0.05f, 0.05f));
-	ownBox.extend(V0-CVector(0.05f, 0.05f, 0.05f));
-	ownBox.extend(V1+CVector(0.05f, 0.05f, 0.05f));
-	ownBox.extend(V1-CVector(0.05f, 0.05f, 0.05f));
-	ownBox.extend(V2+CVector(0.05f, 0.05f, 0.05f));
-	ownBox.extend(V2-CVector(0.05f, 0.05f, 0.05f));
-
-	for (it=grid.begin(); it!=grid.end(); ++it)
-	{
-		CSurfElement	&el = *(*it);
-
-		const CVector	&V0 = (*(el.Vertices))[el.Tri[0]],
-						&V1 = (*(el.Vertices))[el.Tri[1]],
-						&V2 = (*(el.Vertices))[el.Tri[2]];
-
-		if (&el == this || ownBox.intersect(V0, V1, V2))
-			continue;
-
-		for (i=0; i<boxes.size(); ++i)
-			if (boxes[i].intersect(V0, V1, V2))
-				break;
-
-		if (i<boxes.size())
-			continue;
-
-		CVector	v0 = CVector(V0.x, V0.y, 0.0f),
-				v1 = CVector(V1.x, V1.y, 0.0f),
-				v2 = CVector(V2.x, V2.y, 0.0f),
-				h  = CVector(center.x, center.y, 0.0f);
-
-		CPlane		plane;
-		plane.make(V0, V1, V2);
-		CVector		hit;
-		CTriangle	t = CTriangle(V0, V1, V2);
-		
-		float	zmax = std::max(V0.z, std::max(V1.z, V2.z));
-		if (t.intersect(center, top, hit, plane))
-		{
-			++level;
-
-			// Use bbox to avoid multiple selection on the same level
-			boxes.push_back(CAABBox());
-			CAABBox	&box = boxes.back();
-			box.setCenter(V0+CVector(0.1f, 0.1f, 0.1f));
-			box.extend(V0-CVector(0.1f, 0.1f, 0.1f));
-			box.extend(V1+CVector(0.1f, 0.1f, 0.1f));
-			box.extend(V1-CVector(0.1f, 0.1f, 0.1f));
-			box.extend(V2+CVector(0.1f, 0.1f, 0.1f));
-			box.extend(V2-CVector(0.1f, 0.1f, 0.1f));
-			triangles.push_back(CTriangle(V0, V1, V2));
-			hits.push_back(hit);
-		}
-	}
-
-	Level = level;
-}
-*/
 
 void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 {
@@ -937,6 +877,7 @@ void	NLPACS::CComputableSurface::floodFill(CSurfElement *first, sint32 surfId)
 	Character = first->Character;
 	Level = first->Level;
 	IsHorizontal = first->IsHorizontal;
+	ClusterHint = first->ClusterHint;
 	QuantHeight = first->QuantHeight;
 	uint	waterShape = first->WaterShape;
 
@@ -959,6 +900,7 @@ void	NLPACS::CComputableSurface::floodFill(CSurfElement *first, sint32 surfId)
 		{
 			if (pop->EdgeLinks[i] != NULL &&
 				pop->EdgeLinks[i]->IsValid &&
+				pop->EdgeLinks[i]->ClusterHint == ClusterHint &&
 				pop->EdgeLinks[i]->SurfaceId == UnaffectedSurfaceId &&
 				pop->EdgeLinks[i]->Material == Material &&
 				pop->EdgeLinks[i]->OrientationQuanta == OrientationQuanta &&
@@ -1467,12 +1409,8 @@ bool	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 		{
 			for (j=0; j<retriever.PatchInfos.size(); ++j)
 			{
-//				CAABBox	pbox = retriever.Zone->getPatch(j)->buildBBox();
-//				if (pbox.intersect(selectBBox) && retriever.PatchRemap[j] == -1)
-				{
-					retriever.PatchRemap[j] = retriever.TotalNew++;
-					_Landscape.excludePatchFromRefineAll(_Zones[i].ZoneId, j, false);
-				}
+				retriever.PatchRemap[j] = retriever.TotalNew++;
+				_Landscape.excludePatchFromRefineAll(_Zones[i].ZoneId, j, false);
 			}
 		}
 		else
@@ -1484,123 +1422,17 @@ bool	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 				CAABBox	pbox = retriever.Zone->getPatch(j)->buildBBox();
 				if (enlBBox.intersect(pbox) && retriever.PatchRemap[j] == -1)
 				{
-//					if (pbox.intersect(selectBBox))
-					{
-						retriever.PatchRemap[j] = retriever.TotalNew++;
-						_Landscape.excludePatchFromRefineAll(_Zones[i].ZoneId, j, false);
-					}
+					retriever.PatchRemap[j] = retriever.TotalNew++;
+					_Landscape.excludePatchFromRefineAll(_Zones[i].ZoneId, j, false);
 				}
 				else
 				{
 					_Landscape.excludePatchFromRefineAll(_Zones[i].ZoneId, j, true);
 				}
-/*
-				for (k=0; k<4; ++k)
-					if (retriever.PatchInfos[j].BindEdges[k].ZoneId == CentralZoneId && retriever.PatchRemap[j] == -1)
-						retriever.PatchRemap[j] = retriever.TotalNew++;
-*/
 			}
 		}
 	}
 
-/*
-	// add closing patchs
-	bool	added;
-	do
-	{
-		added = false;
-		for (i=0; i<_Zones.size(); ++i)
-		{
-			CPatchRetriever	&retriever = _Zones[i];
-			for (j=0; j<retriever.PatchInfos.size(); ++j)
-			{
-				CPatchInfo	&patch = retriever.PatchInfos[j];
-				if (retriever.PatchRemap[j] != -1)
-				{
-					for (k=0; k<4; ++k)
-					{
-						// only care if we hve more than 1 neighbor
-						uint	np = patch.BindEdges[k].NPatchs;
-						if (np == 0 || np == 5 || np == 1)
-							continue;
-
-						CPatchRetriever	*neighb = retrieveZone(patch.BindEdges[k].ZoneId);
-
-						// and only care if one or more neighbors are in
-						uint	p;
-						bool	hasNeighbIn = false;
-						for (p=0; p<np; ++p)
-							if (neighb->PatchRemap[patch.BindEdges[k].Next[p]] != -1)
-								hasNeighbIn = true;
-
-						if (hasNeighbIn)
-						{
-							for (p=0; p<np; ++p)
-							{
-								if (neighb->PatchRemap[patch.BindEdges[k].Next[p]] == -1)
-								{
-									added = true;
-									neighb->PatchRemap[patch.BindEdges[k].Next[p]] = neighb->TotalNew++;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	while (added);
-	
-	for (i=0; i<_Zones.size(); ++i)
-	{
-		CPatchRetriever	&retriever = _Zones[i];
-		vector<CPatchInfo>	newPatches;
-		newPatches.resize(retriever.TotalNew);
-
-		for (j=0; j<retriever.PatchInfos.size(); ++j)
-		{
-			if (retriever.PatchRemap[j] == -1)
-				continue;
-
-			CPatchInfo	&newPatch = newPatches[retriever.PatchRemap[j]];
-			newPatch = retriever.PatchInfos[j];
-			for (k=0; k<4; ++k)
-			{
-				CPatchRetriever	*neighb = retrieveZone(newPatch.BindEdges[k].ZoneId);
-				if (neighb == NULL)
-					continue;
-
-				uint	p;
-				uint	np = newPatch.BindEdges[k].NPatchs;
-				if (np == 5 || np == 1)
-					np = 1;
-
-				for (p=0; p<np; ++p)
-				{
-					sint32	remap = neighb->PatchRemap[newPatch.BindEdges[k].Next[p]];
-					if (remap == -1)
-					{
-						newPatch.BindEdges[k].NPatchs = 0;
-						break;
-					}
-					newPatch.BindEdges[k].Next[p] = (uint16)remap;
-				}
-			}
-		}
-		retriever.PatchInfos = newPatches;
-	}
-
-	_Landscape.clear();
-
-
-	for (i=0; i<_Zones.size(); ++i)
-	{
-		CZone	zone;
-		zone.build(_Zones[i].ZoneId, _Zones[i].PatchInfos, _Zones[i].BorderVertices, _Zones[i].MaxVertex+1);
-		_Landscape.addZone(zone);
-		_Zones[i].Zone = _Landscape.getZone(_Zones[i].ZoneId);
-	}
-*/
 
 
 	// setup patches
@@ -1637,14 +1469,6 @@ void	NLPACS::CZoneTessellation::build()
 		sint												i, j;
 		nldebug("Compute landscape tessellation");
 
-		// setup landscape for the tessellation
-		// try not to load tile bank ?
-/*
-		nldebug("   - load tile bank");
-		CIFile bankFile(CPath::lookup(Bank));
-		_Landscape.TileBank.serial(bankFile);
-		bankFile.close();
-*/
 		nldebug("   - tessellate landscape");
 		_Landscape.setThreshold(0.0f);
 		_Landscape.setTileMaxSubdivision(TessellateLevel);
@@ -1894,7 +1718,7 @@ void	NLPACS::CZoneTessellation::compile()
 
 	for (el=0; el<(sint)Elements.size(); ++el)
 	{
-		Elements[el]->IsHorizontal = Elements[el]->NormalQuanta == 0;
+		Elements[el]->IsHorizontal = (Elements[el]->NormalQuanta == 0);
 		Elements[el]->IsValid = Elements[el]->IsHorizontal;
 	}
 
@@ -1965,30 +1789,6 @@ void	NLPACS::CZoneTessellation::compile()
 			}
 		}
 	}
-/*
-	// compute elements level
-	if (ComputeLevels)
-	{
-		nldebug("compute elements levels");
-		// Insert all elements into a CQuadGrid
-		CQuadGrid<CSurfElement *>	quadGrid;
-		quadGrid.create(1024, 0.5f);
-		sint	i;
-		for (i=0; i<(sint)Elements.size(); ++i)
-		{
-			if (Elements[i]->IsHorizontal)
-			{
-				CAABBox	box = Elements[i]->getBBox();
-				quadGrid.insert(box.getMin(), box.getMax(), Elements[i]);
-			}
-		}
-
-		for (i=0; i<(sint)Elements.size(); ++i)
-		{
-			Elements[i]->computeLevel(quadGrid);
-		}
-	}
-*/
 
 	// compute elements level
 	if (ComputeLevels)
@@ -2016,10 +1816,6 @@ void	NLPACS::CZoneTessellation::compile()
 
 			for (i=0; i<(sint)surf.Elements.size(); ++i)
 			{
-/*
-				if (surf.Elements[i]->ElemId == 32911)
-					nlstop;
-*/
 				surf.Elements[i]->computeLevel(quadGrid);
 			}
 

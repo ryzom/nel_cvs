@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.64 2003/06/26 15:36:29 legros Exp $
+ * $Id: local_retriever.cpp,v 1.65 2003/08/27 09:25:39 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ void	NLPACS::CLocalRetriever::clear()
 	contReset(_FullOrderedChains);
 	contReset(_Chains);
 	contReset(_Surfaces);
-	contReset(_Tips);
+	contReset(__Tips);
 	contReset(_BorderChains);
 	uint	i;
 	for (i=0; i<NumMaxCreatureModels; ++i)
@@ -124,7 +124,7 @@ const CVector	&NLPACS::CLocalRetriever::getStopVector(uint32 chain, sint32 surfa
 
 
 
-
+/*
 uint16			NLPACS::CLocalRetriever::getStartTip(uint32 chain, sint32 surface) const
 {
 	return (_Chains[chain].getLeft() == surface) ? _Chains[chain].getStartTip() : _Chains[chain].getStopTip();
@@ -154,7 +154,7 @@ void			NLPACS::CLocalRetriever::setStopTip(uint32 chain, sint32 surface, uint16 
 	else
 		_Chains[chain]._StartTip = stopTip;
 }
-
+*/
 
 
 
@@ -205,6 +205,7 @@ uint32			NLPACS::CLocalRetriever::getNextChain(uint32 chain, sint32 surface) con
 
 void	NLPACS::CLocalRetriever::unify()
 {
+/*
 	uint	i, j;
 
 	for (i=0; i<_Chains.size(); ++i)
@@ -235,6 +236,7 @@ void	NLPACS::CLocalRetriever::unify()
 	_FullOrderedChains.resize(_OrderedChains.size());
 	for (i=0; i<_OrderedChains.size(); ++i)
 		_FullOrderedChains[i].unpack(_OrderedChains[i]);
+*/
 }
 
 
@@ -315,6 +317,7 @@ float	NLPACS::CLocalRetriever::distanceToBorder(const ULocalPosition &pos) const
 sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 											uint8 mat, uint8 charact, uint8 level,
 											bool isUnderWater, float waterHeight,
+											bool clusterHint,
 											const CVector &center,
 											const NLPACS::CSurfaceQuadTree &quad,
 											sint8 quantHeight)
@@ -342,6 +345,7 @@ sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 	surf._Flags |= (surf._IsFloor) ? (1<<CRetrievableSurface::IsFloorBit) : 0;
 	surf._Flags |= (surf._IsCeiling) ? (1<<CRetrievableSurface::IsCeilingBit) : 0;
 	surf._Flags |= (!surf._IsFloor && !surf._IsCeiling) ? (1<<CRetrievableSurface::IsSlantBit) : 0;
+	surf._Flags |= clusterHint ? (1<<CRetrievableSurface::ClusterHintBit) : 0;
 
 	surf._Flags |= (isUnderWater) ? (1<<CRetrievableSurface::IsUnderWaterBit) : 0;
 	surf._WaterHeight = waterHeight;
@@ -541,9 +545,15 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 			}
 		}
 	}
+/*
+	dumpSurface(9);
+	dumpSurface(10);
 
 	for (i=0; i<_Chains.size(); ++i)
 	{
+		if (i == 127)
+			nlinfo("");
+
 		uint	whichTip;
 		// for both tips (start and stop)
 		for (whichTip=0; whichTip<=1; ++whichTip)
@@ -562,6 +572,9 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 			{
 				uint	turn;
 				uint	tipId = _Tips.size();
+
+				if (tipId == 62)
+					nlinfo("");
 
 				_Tips.resize(tipId+1);
 				CTip	&tip = _Tips[tipId];
@@ -610,17 +623,17 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 		uint	startTip = _Chains[i].getStartTip(),
 				stopTip = _Chains[i].getStopTip();
 
-/*
-		if (_Chains[i].getEdge() >= 0 && startTip == stopTip)
-		{
-			nlwarning("NLPACS::CLocalRetriever::computeLoopsAndTips(): chain %d on edge %d has same StartTip and StopTip", i, _Chains[i].getEdge(), startTip, stopTip);
-		}
-*/
+
+//		if (_Chains[i].getEdge() >= 0 && startTip == stopTip)
+//		{
+//			nlwarning("NLPACS::CLocalRetriever::computeLoopsAndTips(): chain %d on edge %d has same StartTip and StopTip", i, _Chains[i].getEdge(), startTip, stopTip);
+//		}
+
 
 		_Tips[startTip].Chains.push_back(CTip::CChainTip(i, true));
 		_Tips[stopTip].Chains.push_back(CTip::CChainTip(i, false));
 	}
-
+*/
 	for (i=0; i<_Surfaces.size(); ++i)
 	{
 		for (j=0; j<_Surfaces[i]._Loops.size(); ++j)
@@ -870,8 +883,10 @@ void	NLPACS::CLocalRetriever::translate(const NLMISC::CVector &translation)
 		_OrderedChains[i].translate(translation);
 	for (i=0; i<_Surfaces.size(); ++i)
 		_Surfaces[i].translate(translation);
+/*
 	for (i=0; i<_Tips.size(); ++i)
 		_Tips[i].translate(translation);
+*/
 }
 
 void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
@@ -898,7 +913,7 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	f.serialCont(_OrderedChains);
 	f.serialCont(_FullOrderedChains);
 	f.serialCont(_Surfaces);
-	f.serialCont(_Tips);
+	f.serialCont(__Tips);
 	f.serialCont(_BorderChains);
 	if (ver < 4)
 	{

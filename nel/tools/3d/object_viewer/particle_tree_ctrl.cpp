@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.56 2004/06/17 17:02:14 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.57 2004/10/05 17:01:36 vizerie Exp $
  */
 
 /* Copyright,  2000 Nevrax Ltd.
@@ -578,10 +578,12 @@ void CParticleTreeCtrl::deleteSelection()
 			NL3D::CPSEmitter::setBypassEmitOnDeath(false);
 			CParticleWorkspace::CNode *ownerNode = getOwnerNode(nt);
 			nlassert(ownerNode);
-			removeTreePart(GetSelectedItem());
+			// Move selection to parent
+			HTREEITEM currItem = GetSelectedItem();
+			SelectItem(GetParentItem(GetSelectedItem()));
+			removeTreePart(currItem);
 			suppressLocatedInstanceNbItem(*ownerNode, 0);
-			rebuildLocatedInstance(*ownerNode);
-			_ParticleDlg->setRightPane(NULL);
+			rebuildLocatedInstance(*ownerNode);			
 		}
 		break;
 		case CNodeType::workspace:

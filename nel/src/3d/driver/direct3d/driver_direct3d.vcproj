@@ -89,6 +89,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="../../"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;driver_direct3d_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -221,6 +222,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../../"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;driver_direct3d_EXPORTS;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.25 2001/05/07 14:41:57 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.26 2001/05/30 16:40:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,6 +89,17 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		if (text != NULL && !setupTexture(*text))
 			return(false);
 	}
+	// Here, for Lightmap materials, setup the lightmaps.
+	if(mat.getShader()==CMaterial::LightMap)
+	{
+		for(stage=0 ; stage<(sint)mat._LightMaps.size() ; stage++)
+		{
+			ITexture	*text= mat._LightMaps[stage].Texture;
+			if (text != NULL && !setupTexture(*text))
+				return(false);
+		}
+	}
+
 	// Activate the textures.
 	for(stage=0 ; stage<getNbTextureStages() ; stage++)
 	{
@@ -174,6 +185,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	{
 		// \todo: yoyo: optimize with precedent material flags test.
 		// => must change the way it works with _CurrentMaterial.
+		// Warning! this implies modification in setupPass()/endMultiPass() for multiPass materials.
 
 		// Bind Blend Part.
 		//=================
@@ -245,6 +257,183 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	}
 
 	return true;
+}
+
+
+// ***************************************************************************
+sint			CDriverGL::beginMultiPass(const CMaterial &mat)
+{
+	// Depending on material type and hardware, return number of pass required to draw this material.
+	if(mat.getShader()==CMaterial::LightMap)
+	{
+		uint	nLMaps= mat._LightMaps.size();
+		// One texture stage hardware not supported.
+		if(getNbTextureStages()<2)
+			return 1;
+		uint	nLMapPerPass= getNbTextureStages()-1;
+		uint	nPass= (nLMaps+nLMapPerPass-1)/(nLMapPerPass);
+
+		// Manage too if no lightmaps.
+		nPass= std::max(nPass, (uint)1);
+		return	nPass;
+	}
+	else
+		// All others materials require just 1 pass.
+		return 1;
+}
+// ***************************************************************************
+void			CDriverGL::setupPass(const CMaterial &mat, uint pass)
+{
+	if(mat.getShader()==CMaterial::LightMap)
+	{
+		// compute Lightmaps infos.
+		//=========================
+		uint	nLMaps= mat._LightMaps.size();
+		// One texture stage hardware not supported.
+		if(getNbTextureStages()<2)
+			return;
+		uint	nLMapPerPass= getNbTextureStages()-1;
+		uint	nPass= (nLMaps+nLMapPerPass-1)/(nLMapPerPass);
+
+		// No lightmap??, just setup "replace texture" for stage 0.
+		if(nPass==0)
+		{
+			ITexture	*text= mat.getTexture(0);
+			activateTexture(0,text);
+
+			CMaterial::CTexEnv	env;
+			env.Env.OpRGB= CMaterial::Replace;
+			env.Env.SrcArg0RGB= CMaterial::Texture;
+			env.Env.OpArg0RGB= CMaterial::SrcColor;
+			if(_CurrentTexEnv[0].EnvPacked!= env.EnvPacked)
+				activateTexEnvMode(0, env);
+
+			return;
+		}
+
+		nlassert(pass<nPass);
+
+
+		// setup Texture Pass.
+		//=========================
+		uint	lmapId;
+		uint	nstages;
+		lmapId= pass*nLMapPerPass;
+		// N lightmaps for this pass, plus the texture.
+		nstages= std::min(nLMapPerPass, nLMaps-lmapId) + 1;
+		// setup all stages.
+		for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++, lmapId++)
+		{
+			if(stage<nstages-1)
+			{
+				// setup lightMap.
+				ITexture	*text= mat._LightMaps[lmapId].Texture;
+				activateTexture(stage,text);
+
+				// If texture not NULL, Change texture env fonction.
+				//==================================================
+				if(text)
+				{
+					CMaterial::CTexEnv	env;
+
+					env.Env.OpRGB= stage==0? CMaterial::Replace : CMaterial::Add;
+					env.Env.SrcArg0RGB= CMaterial::Texture;
+					env.Env.OpArg0RGB= CMaterial::SrcColor;
+					env.Env.SrcArg1RGB= CMaterial::Previous;
+					env.Env.OpArg1RGB= CMaterial::SrcColor;
+					env.ConstantColor.A= mat._LightMaps[lmapId].Factor;
+
+					if(_CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
+						activateTexEnvMode(stage, env);
+					if(_CurrentTexEnv[stage].ConstantColor!= env.ConstantColor)
+						activateTexEnvColor(stage, env);
+					// NB: no need to disable modulate2x here, because always setuped at the last stage
+					// but for the last pass.
+
+					// TODO_LIGHTMAP_FACTOR. (with texEnvCombine4)
+
+
+					// setup UV, with UV1.
+					setupUVPtr(stage, *_LastVB, 1);
+				}
+			}
+			else if(stage<nstages)
+			{
+				// setup texture in final stage.
+				// here, stage==nLMapPerPass==getNbTextureStages()-1
+				ITexture	*text= mat.getTexture(0);
+				activateTexture(stage,text);
+
+				// activate the texture at last stage, with modulate2x.
+				// setup default env (modulate).
+				CMaterial::CTexEnv	env;
+				if(_CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
+					activateTexEnvMode(stage, env);
+				if(_CurrentTexEnv[stage].ConstantColor!= env.ConstantColor)
+					activateTexEnvColor(stage, env);
+				// special modulate2x.
+				glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+				glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 2);
+
+
+				// setup UV, with UV0.
+				setupUVPtr(stage, *_LastVB, 0);
+			}
+			else
+			{
+				// else all other stages are disabled.
+				activateTexture(stage,NULL);
+			}
+		}
+
+
+		// setup blend.
+		//=========================
+		if(pass==0)
+		{
+			// no transparency for first pass.
+			glDisable(GL_BLEND);
+		}
+		else if(pass==1)
+		{
+			// setup an Additive transparency (only for pass 1, will be kept for successives pass).
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE);
+		}
+
+	}
+	else
+		// All others materials do not require multi pass.
+		return;
+}
+
+
+// ***************************************************************************
+void			CDriverGL::endMultiPass(const CMaterial &mat)
+{
+	if(mat.getShader()==CMaterial::LightMap)
+	{
+		// special for all stage, clean up envstages + blend mode.
+		for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++)
+		{
+			// special: disable  modulate2x.
+			glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+			glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 1);
+		}
+
+		// special for all stage, normal UV behavior.
+		for(sint i=0; i<getNbTextureStages(); i++)
+		{
+			// normal behavior: each texture has its own UV.
+			setupUVPtr(i, *_LastVB, i);
+		}
+
+		// NB: for now, nothing to do with blending, since always setuped in activeMaterial().
+	}
+	else
+		// All others materials do not require multi pass.
+		return;
+
 }
 
 

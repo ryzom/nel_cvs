@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.17 2001/04/18 09:19:16 berenguier Exp $
+ * $Id: material.cpp,v 1.18 2001/05/30 16:40:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,9 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 		_TexEnvs[i]= mat._TexEnvs[i];
 	}
 
+	// copy lightmaps.
+	_LightMaps= mat._LightMaps;
+
 	// Must do not copy drv info.
 
 	// All states of material is modified.
@@ -115,6 +118,8 @@ CMaterial::~CMaterial()
 void		CMaterial::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 3:
+		- LightMaps.
 	Version 2:
 		- Shininess.
 	Version 1:
@@ -123,7 +128,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 		- base version.
 	*/
 
-	sint	ver= f.serialVersion(2);
+	sint	ver= f.serialVersion(3);
 	// For the version <=1:
 	nlassert(IDRV_MAT_MAXTEXTURES==4);
 
@@ -166,6 +171,11 @@ void		CMaterial::serial(NLMISC::IStream &f)
 			if(f.isReading())
 				_TexEnvs[i].setDefault();
 		}
+	}
+
+	if(ver>=3)
+	{
+		f.serialCont(_LightMaps);
 	}
 
 	if(f.isReading())
@@ -227,11 +237,70 @@ void CMaterial::setTexture(uint8 n, ITexture* ptex)
 		_Touched|=IDRV_TOUCHED_TEX[0];
 		_Touched|=IDRV_TOUCHED_TEX[1];
 	}
+	else if( _ShaderType== CMaterial::LightMap)
+	{
+		// Only texture 0 can be set.
+		nlassert( n==0 );
+		_Textures[n]=ptex;
+		_Touched|=IDRV_TOUCHED_TEX[n];
+	}
 	// Normal material?
 	else
 	{
 		_Textures[n]=ptex;
 		_Touched|=IDRV_TOUCHED_TEX[n];
+	}
+}
+
+
+// ***************************************************************************
+void					CMaterial::setLightMap(uint lmapId, ITexture *lmap)
+{
+	nlassert(_ShaderType==CMaterial::LightMap);
+	if(lmapId>=_LightMaps.size())
+		_LightMaps.resize(lmapId+1);
+	_LightMaps[lmapId].Texture= lmap;
+
+	_Touched|=IDRV_TOUCHED_LIGHTMAP;
+}
+
+// ***************************************************************************
+ITexture				*CMaterial::getLightMap(uint lmapId) const
+{
+	nlassert(_ShaderType==CMaterial::LightMap);
+	if(lmapId<_LightMaps.size())
+		return _LightMaps[lmapId].Texture;
+	else
+		return NULL;	
+}
+
+// ***************************************************************************
+void					CMaterial::setLightMapFactor(uint lmapId, uint8 factor)
+{
+	nlassert(_ShaderType==CMaterial::LightMap);
+	if(lmapId>=_LightMaps.size())
+		_LightMaps.resize(lmapId+1);
+	_LightMaps[lmapId].Factor= factor;
+
+	_Touched|=IDRV_TOUCHED_LIGHTMAP;
+}
+
+
+// ***************************************************************************
+void			CMaterial::CLightMap::serial(NLMISC::IStream &f)
+{
+	f.serial(Factor);
+	// Serial texture descriptor.
+	ITexture*	text= NULL;
+	if(f.isReading())
+	{
+		f.serialPolyPtr(text);
+		Texture= text;
+	}
+	else
+	{
+		text= Texture;
+		f.serialPolyPtr(text);
 	}
 }
 

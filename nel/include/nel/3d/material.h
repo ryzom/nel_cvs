@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.16 2001/04/23 09:14:27 besson Exp $
+ * $Id: material.h,v 1.17 2001/05/30 16:40:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,7 @@ const uint32 IDRV_TOUCHED_LIGHTING		=	0x00000040;
 const uint32 IDRV_TOUCHED_DEFMAT		=	0x00000080;
 const uint32 IDRV_TOUCHED_ZWRITE		=	0x00000100;
 const uint32 IDRV_TOUCHED_DOUBLE_SIDED	=	0x00000200;
+const uint32 IDRV_TOUCHED_LIGHTMAP		=	0x00000400;
 
 // Start texture touch at 0x10000.
 const uint32 IDRV_TOUCHED_TEX[IDRV_MAT_MAXTEXTURES]		=
@@ -93,8 +94,13 @@ public:
 	 * UserColor:
 	 *	- UserColor (see setUserColor()) is blended with precomputed texture/textureAlpha.
 	 *	- Alpha Blending ignore Alpha of texture (of course :) ), but use Alpha diffuse (vertex/material color).
+	 * LightMap:
+	 *	- Texture of stage 0 is blended with sum of lightmaps (see setLightmap()). Vertex Color (or color, or lighting)
+	 *	doesn't affect the final result (neither diffuse part nor specular part). No Blending is applied too.
+	 *	- NB: if no texture in stage 0, undefined result.
+	 *	- UV0 is the UV for decal Texture. UV1 is the UVs for all the lightmaps.
 	 */
-	enum TShader			{ Normal=0, Bump, UserColor, shaderCount};
+	enum TShader			{ Normal=0, Bump, UserColor, LightMap, shaderCount};
 
 	/// \name Texture Env Modes.
 	// @{
@@ -158,6 +164,7 @@ public:
 	 * set a texture for a special stage. Different usage according to shader:
 	 *	- Normal shader do multitexturing (see texEnv*() methods).
 	 *	- UserColor assert if stage!=0. (NB: internal only: UserColor setup texture to stage 0 and 1).
+	 *	- LightMap assert if stage!=0.
 	 */ 
 	void 					setTexture(uint8 stage, ITexture* ptex);
 
@@ -277,6 +284,19 @@ public:
 	CRGBA					getUserColor() const;
 	// @}
 
+	/// \name LightMap. LightMap shader only.
+	/** This part is valid for LightMap shaders (nlassert).
+	 * \see TShader.
+	 */
+	// @{
+	/// Set the ith lightmap. undef results if holes in lightmap array.
+	void					setLightMap(uint lmapId, ITexture *lmap);
+	/// Get the ith lightmap. (NULl if none)
+	ITexture				*getLightMap(uint lmapId) const;
+	/// Set the lightmap intensity. (default to 255).
+	void					setLightMapFactor(uint lmapId, uint8 factor);
+	// @}
+
 
 	/// \name Tools..
 	// @{
@@ -384,6 +404,22 @@ public:
 	// Private. For Driver only.
 	CTexEnv					_TexEnvs[IDRV_MAT_MAXTEXTURES];
 	CRefPtr<IShader>		pShader;
+
+	// Private. For Driver only. LightMaps.
+	struct	CLightMap
+	{
+		CSmartPtr<ITexture>		Texture;
+		uint8					Factor;
+		CLightMap()
+		{
+			Factor= 255;
+		}
+
+		void	serial(NLMISC::IStream &f);
+	};
+	typedef	std::vector<CLightMap>	TTexturePtrs;
+	TTexturePtrs			_LightMaps;
+	
 
 	uint32					getFlags() const {return _Flags;}
 	uint32					getTouched(void)  const { return(_Touched); }

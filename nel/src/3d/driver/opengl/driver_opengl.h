@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.64 2001/05/07 14:41:57 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.65 2001/05/30 16:40:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -414,6 +414,23 @@ private:
 	void			computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pVertexDst);
 	void			computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pNormalDst);
 	void			refreshSoftwareSkinning();
+
+
+	/// \name Material multipass.
+	// @{
+	/// init multipass for this material. return number of pass required to render this material.
+	sint			beginMultiPass(const CMaterial &mat);
+	/// active the ith pass of this material.
+	void			setupPass(const CMaterial &mat, uint pass);
+	/// end multipass for this material.
+	void			endMultiPass(const CMaterial &mat);
+	/// LastVB for UV setup.
+	CVertexBuffer	*_LastVB;
+	// @}
+
+
+	/// setup a texture stage with an UV from VB.
+	void		setupUVPtr(uint stage, CVertexBuffer &VB, uint uvId);
 
 };
 

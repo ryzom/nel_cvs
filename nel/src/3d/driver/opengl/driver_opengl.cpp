@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.197 2003/11/12 11:40:56 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.198 2003/11/25 16:19:25 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -3067,7 +3067,8 @@ void	CDriverGL::endProfileVBHardLock(vector<std::string> &result)
 
 	// Fill infos.
 	result.clear();
-	result.resize(_VBHardProfiles.size());
+	result.resize(_VBHardProfiles.size() + 1);
+	float	total= 0;
 	for(uint i=0;i<_VBHardProfiles.size();i++)
 	{
 		const	uint tmpSize= 256;
@@ -3083,12 +3084,14 @@ void	CDriverGL::endProfileVBHardLock(vector<std::string> &result)
 			vbName= "????";
 		}
 		// Display in ms.
-		smprintf(tmp, tmpSize, "%16s%c: %2.3f ms", vbName, vbProf.Change?'*':' ', 
-			CTime::ticksToSecond(vbProf.AccumTime)*1000 / _NumVBHardProfileFrame);
+		float	timeLock= (float)CTime::ticksToSecond(vbProf.AccumTime)*1000 / max(_NumVBHardProfileFrame,1U);
+		smprintf(tmp, tmpSize, "%16s%c: %2.3f ms", vbName, vbProf.Change?'*':' ', timeLock );
+		total+= timeLock;
 
 		result[i]= tmp;
 	}
-
+	result[_VBHardProfiles.size()]= toString("Total: %2.3f", total);
+	
 	// clear.
 	_VBHardProfiling= false;
 	contReset(_VBHardProfiles);
@@ -3117,6 +3120,43 @@ void	CDriverGL::appendVBHardLockProfile(NLMISC::TTicks time, IVertexBufferHard *
 
 	// next!
 	_CurVBHardLockCount++;
+}
+
+
+// ***************************************************************************
+void	CDriverGL::profileVBHardAllocation(std::vector<std::string> &result)
+{
+	result.clear();
+	result.reserve(1000);
+	result.push_back(toString("Memory Allocated: %4d Ko in AGP / %4df Ko in VRAM", 
+		getAvailableVertexAGPMemory()/1000, getAvailableVertexVRAMMemory()/1000 ));
+	result.push_back(toString("Num VBHard: %d", _VertexBufferHardSet.Set.size()));
+
+	uint	totalMemUsed= 0;
+	set<IVertexBufferHardGL*>::iterator	it;
+	for(it= _VertexBufferHardSet.Set.begin(); it!=_VertexBufferHardSet.Set.end(); it++)
+	{
+		IVertexBufferHardGL	*vbHard= *it;
+		if(vbHard)
+		{
+			uint	vSize= vbHard->getVertexSize();
+			uint	numVerts= vbHard->getNumVertices();
+			totalMemUsed+= vSize*numVerts;
+		}
+	}
+	result.push_back(toString("Mem Used: %4d Ko", totalMemUsed/1000) );
+	
+	for(it= _VertexBufferHardSet.Set.begin(); it!=_VertexBufferHardSet.Set.end(); it++)
+	{
+		IVertexBufferHardGL	*vbHard= *it;
+		if(vbHard)
+		{
+			uint	vSize= vbHard->getVertexSize();
+			uint	numVerts= vbHard->getNumVertices();
+			result.push_back(toString("  %16s: %4d ko (format: %d / numVerts: %d)", 
+				vbHard->getName().c_str(), vSize*numVerts/1000, vSize, numVerts ));
+		}
+	}
 }
 
 

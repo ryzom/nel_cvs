@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.61 2003/11/13 08:56:29 corvazier Exp $
+ * $Id: driver.h,v 1.62 2003/11/25 16:16:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -566,6 +566,10 @@ public:
 	 *	NB: ???? string is displayed if the VBHard has no name or if was just deleted.
 	 */
 	virtual	void			endProfileVBHardLock(std::vector<std::string> &result) = 0;
+
+	/** display VBhards allocated
+	 */
+	virtual	void			profileVBHardAllocation(std::vector<std::string> &result) = 0;
 
 	// @}
 

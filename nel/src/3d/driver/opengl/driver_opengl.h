@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.154 2003/11/18 17:58:41 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.155 2003/11/25 16:19:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -363,6 +363,8 @@ public:
 
 	virtual	void			endProfileVBHardLock(std::vector<std::string> &result);
 
+	virtual	void			profileVBHardAllocation(std::vector<std::string> &result);
+	
 	virtual bool			release();
 
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);

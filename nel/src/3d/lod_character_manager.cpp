@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.12 2003/11/24 11:11:46 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.13 2003/11/25 16:15:54 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -44,9 +44,6 @@ using	namespace NLMISC;
 
 namespace NL3D 
 {
-
-
-H_AUTO_DECL ( NL3D_CharacterLod_Render )
 
 
 // ***************************************************************************
@@ -297,7 +294,7 @@ void			CLodCharacterManager::deleteVertexBuffer()
 // ***************************************************************************
 void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &managerPos)
 {
-	H_AUTO_USE ( NL3D_CharacterLod_Render )
+	H_AUTO( NL3D_CharacterLod_beginRender );
 
 	// we must not be beewteen beginRender() and endRender()
 	nlassert(!isRendering());
@@ -765,8 +762,8 @@ bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instan
 // ***************************************************************************
 void			CLodCharacterManager::endRender()
 {
-	H_AUTO_USE ( NL3D_CharacterLod_Render )
-
+	H_AUTO ( NL3D_CharacterLod_endRender );
+	
 	nlassert(_Driver);
 	// we must be beewteen beginRender() and endRender()
 	nlassert(isRendering());

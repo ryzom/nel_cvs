@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.35 2003/11/07 14:27:32 besson Exp $
+ * $Id: u_driver.h,v 1.36 2003/11/25 16:18:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -624,6 +624,10 @@ public:
 	 *	NB: ???? string is displayed if the VBHard has no name or if was just deleted.
 	 */
 	virtual	void			endProfileVBHardLock(std::vector<std::string> &result) = 0;
+
+	/** display VBhards allocated
+	 */
+	virtual	void			profileVBHardAllocation(std::vector<std::string> &result) = 0;
 
 	// @}
 

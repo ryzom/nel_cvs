@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.32 2003/11/07 14:27:13 besson Exp $
+ * $Id: driver_user.h,v 1.33 2003/11/25 16:16:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -437,6 +437,8 @@ public:
 	virtual	void			startProfileVBHardLock();
 
 	virtual	void			endProfileVBHardLock(std::vector<std::string> &result);
+
+	virtual	void			profileVBHardAllocation(std::vector<std::string> &result);
 
 	// @}
 

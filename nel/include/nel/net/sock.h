@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.3 2001/05/18 14:06:03 cado Exp $
+ * $Id: sock.h,v 1.4 2001/05/30 08:52:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,6 +112,8 @@ struct EServiceNotFound : public ESocket
  * You must call CSock::initNetwork() before using any network class (even CInetAddress).
  * You must call CSock::releaseNetwork() at the end of your program.
  *
+ * By default, a socket is in blocking mode. Call setNonBlockingMode() to change this
+ * behaviour.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000-2001

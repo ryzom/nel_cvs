@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.9 2001/12/06 14:31:46 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.10 2001/12/14 16:48:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,9 @@
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_mesh_lib/export_lod.h"
 
+// From max
+#include <notify.h>
+
 
 #define EXPORT_GET_ALLOCATOR
 
@@ -51,6 +54,7 @@ def_visible_primitive ( export_skeleton_weight,		"NelExportSkeletonWeight");
 def_visible_primitive ( view_shape,			"NelViewShape");
 def_visible_primitive ( test_file_date,		"NeLTestFileDate");
 def_visible_primitive ( export_vegetable,	"NelExportVegetable");
+def_visible_primitive ( reload_texture,		"NelReloadTexture" );
 
 char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
 char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel]";
@@ -501,6 +505,34 @@ Value* export_vegetable_cf (Value** arg_list, int count)
 		ret = &true_value;
 
 	return ret;
+}
+
+Value* reload_texture_cf (Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (1)
+	check_arg_count(reload_texture, 1, count);
+	char *message = "NelReloadTexture [BitmapTex]";
+	//type_check (arg_list[0], TextureMap, message);
+
+	// The 2 filenames
+	Texmap *texmap = arg_list[0]->to_texmap ();
+
+	// BitmapTex ?
+	if (texmap->ClassID() == Class_ID (BMTEX_CLASS_ID, 0))
+	{
+		// Cast
+		BitmapTex *bitmap = (BitmapTex*)texmap;
+
+		// Reload
+		bitmap->ReloadBitmapAndUpdate ();
+
+		// Tell the bitmap has changed
+		BroadcastNotification (NOTIFY_BITMAP_CHANGED, (void *)bitmap->GetMapName());
+		
+		return &true_value;
+	}
+
+	return &false_value;
 }
 
 /*===========================================================================*\

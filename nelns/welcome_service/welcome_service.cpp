@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.26 2003/11/18 15:19:45 legros Exp $
+ * $Id: welcome_service.cpp,v 1.27 2004/02/12 16:30:10 lecroart Exp $
  *
  */
 
@@ -557,7 +557,10 @@ public:
 		{
 			// add a connection to the LS
 			string LSAddr = ConfigFile.getVar("LSHost").asString(i);
-			
+
+			// the config file must have a valid address where the login service is
+			nlassert(!LSAddr.empty());
+
 			// add default port if not set by the config file
 			if (LSAddr.find (":") == string::npos)
 				LSAddr += ":49999";

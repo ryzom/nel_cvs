@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.18 2002/03/04 16:54:06 lecroart Exp $
+ * $Id: common.cpp,v 1.19 2002/03/21 13:53:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -376,9 +376,13 @@ bool isPowerOf2(sint32 v)
 std::string strlwr ( const std::string &str )
 {
 	string res;
+	res.reserve (str.size());
 	for (uint i=0; i<str.size(); i++)
 	{
-		res += tolower(str[i]);
+		if ( (str[i] >= 'A') && (str[i] <= 'Z') )
+			res += str[i] - 'A' + 'a';
+		else
+			res += str[i];
 	}
 
 	return res;
@@ -388,7 +392,10 @@ std::string &strlwr ( std::string &str )
 {
 	for (int i=str.size()-1; i>=0; i--)
 	{
-		str[i] = tolower(str[i]);
+		if ( (str[i] >= 'A') && (str[i] <= 'Z') )
+		{
+			str[i] = str[i] - 'A' + 'a';
+		}
 	}
 
 	return (str);
@@ -401,7 +408,10 @@ char *strlwr ( char *str )
 
 	while (*str != '\0')
 	{
-		*str = tolower(*str);
+		if ( (*str >= 'A') && (*str <= 'Z') )
+		{
+			*str = *str - 'A' + 'a';
+		}
 		str++;
 	}
 
@@ -412,7 +422,10 @@ std::string &strupr ( std::string &str )
 {
 	for (int i=str.size()-1; i>=0; i--)
 	{
-		str[i] = toupper(str[i]);
+		if ( (str[i] >= 'a') && (str[i] <= 'z') )
+		{
+			str[i] = str[i] - 'a' + 'A';
+		}
 	}
 
 	return (str);
@@ -425,7 +438,10 @@ char *strupr ( char *str )
 
 	while (*str != '\0')
 	{
-		*str = toupper(*str);
+		if ( (*str >= 'a') && (*str <= 'z') )
+		{
+			*str = *str - 'a' + 'A';
+		}
 		str++;
 	}
 

@@ -1,7 +1,7 @@
 /** \file editable_range.h
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.h,v 1.6 2001/09/05 08:47:58 vizerie Exp $
+ * $Id: editable_range.h,v 1.7 2001/09/12 13:28:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "range_manager.h"
 #include "range_selector.h"
 #include "ps_wrapper.h"
+#include "bound_checker.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -140,62 +141,18 @@ protected:
  */
 
 template <typename T>
-class CEditableRangeT : public CEditableRange
+class CEditableRangeT : public CEditableRange, public CBoundChecker<T>
 {
 public:
 /// ctor, it gives the range for the values
 	CEditableRangeT(const std::string &id, T defaultMin, T defaultMax)
-		: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)
-			,_UpperBoundEnabled(false), _LowerBoundEnabled(false)
+		: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)		
 	{		
 	}
 	
 	// set an interface of a wrapper  to read / write values in the particle system
 	void setWrapper(IPSWrapper<T> *wrapper) { _Wrapper = wrapper; }
 
-	/** enable upper bound use (e.g. value must be < or <= upper bound )
-	 *  \param upperBoundExcluded if true then the test is <, otherwise its <=
-	 */
-	void enableUpperBound(T upperBound, bool upperBoundExcluded) 
-	{ 
-		_UpperBoundEnabled = true;
-		_UpperBoundExcluded = upperBoundExcluded;
-		_UpperBound = upperBound; 
-	}
-
-	// disable upper bound usage
-	void disableUpperBound(void) { _UpperBoundEnabled = false; }
-
-	// get the upper bound
-	T getUpperBound(void) const { return _UpperBound; }
-
-	// test wether the upper bound is excluded of the test
-	bool isUpperBoundExcluded(void) const
-	{
-		return _UpperBoundExcluded;
-	}
-
-	/** enable lower bound use (e.g. value must be < or <= lower bound )
-	 *  \param lowerBoundExcluded if true then the test is <, otherwise its <=
-	 */
-	void enableLowerBound(T lowerBound, bool lowerBoundExcluded) 
-	{ 
-		_LowerBoundEnabled = true;
-		_LowerBoundExcluded = lowerBoundExcluded;
-		_LowerBound = lowerBound; 
-	}
-	
-	// disable lower bound
-	void disableLowerBound(void) { _LowerBoundEnabled = false; }
-	
-	// get the lower bound
-	T getLowerBound(void) const { return _LowerBound; }
-
-	// test wether the lower bound is excluded of the test
-	bool isLowerBoundExcluded(void) const
-	{
-		return _LowerBoundExcluded;
-	}
 
 
 public:	
@@ -226,31 +183,7 @@ public:
 		}
 	}
 protected:	
-
-	/** validate a value against upper bound. (if an upper bound was set
-	 *  \return NULL if ok or an error message
-	 */
-	const char *validateUpperBound(T v)
-	{
-		if (!_UpperBoundEnabled) return NULL;
-		if (_UpperBoundExcluded && v < _UpperBound) return NULL;
-		if (!_UpperBoundExcluded && v <= _UpperBound) return NULL;
-		return "value too high";
-	}
-
 	
-	/** validate a value against lower bound. (if an lower bound was set
-	 *  \return NULL if ok or an error message
-	 */
-	const char *validateLowerBound(T v)
-	{
-		if (!_LowerBoundEnabled) return NULL;
-		if (_LowerBoundExcluded && v > _LowerBound) return NULL;
-		if (!_LowerBoundExcluded && v >= _LowerBound) return NULL;
-		return "value too low";
-	}
-
-
 
 	void updateValueFromText(void)
 	{
@@ -380,15 +313,7 @@ protected:
 
 		return true;
 	}
-
-	bool _UpperBoundEnabled;
-	bool _UpperBoundExcluded;
-	T _UpperBound;
-
-	bool _LowerBoundEnabled;
-	bool _LowerBoundExcluded;
-	T _LowerBound;
-
+	
 	// min max values
 	std::pair<T, T> _Range;
 

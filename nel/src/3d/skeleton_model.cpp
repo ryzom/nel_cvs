@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.58 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.59 2004/07/27 16:16:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -250,7 +250,7 @@ void		CSkeletonModel::incBoneUsage(uint i, TBoneUsageType boneUsageType)
 	nlassert(i<_BoneUsage.size());
 
 	// Get ptr on according refCount
-	uint8	*usagePtr;
+	uint16	*usagePtr;
 	if(boneUsageType == UsageNormal)
 		usagePtr= &_BoneUsage[i].Usage;
 	else if(boneUsageType == UsageForced)
@@ -263,7 +263,7 @@ void		CSkeletonModel::incBoneUsage(uint i, TBoneUsageType boneUsageType)
 		_BoneToComputeDirty= true;
 
 	// Inc the refCount of the bone.
-	nlassert(*usagePtr<255);
+	nlassert(*usagePtr<65535);
 	(*usagePtr)++;
 }
 
@@ -274,7 +274,7 @@ void		CSkeletonModel::decBoneUsage(uint i, TBoneUsageType boneUsageType)
 	nlassert(i<_BoneUsage.size());
 
 	// Get ptr on according refCount
-	uint8	*usagePtr;
+	uint16	*usagePtr;
 	if(boneUsageType == UsageNormal)
 		usagePtr= &_BoneUsage[i].Usage;
 	else if(boneUsageType == UsageForced)
@@ -1753,7 +1753,7 @@ bool			CSkeletonModel::computeCurrentBBox(NLMISC::CAABBox &bbox, bool forceCompu
 	for(i=0;i<Bones.size();i++)
 	{
 		// Is the bone used ?? (whatever bone lod, or CLod state)
-		uint8	mustCompute = forceCompute ? 1 : _BoneUsage[i].Usage | _BoneUsage[i].ForcedUsage | _BoneUsage[i].CLodForcedUsage;
+		uint16	mustCompute = forceCompute ? 1 : _BoneUsage[i].Usage | _BoneUsage[i].ForcedUsage | _BoneUsage[i].CLodForcedUsage;
 
 		// If the bone is used.
 		if(mustCompute)

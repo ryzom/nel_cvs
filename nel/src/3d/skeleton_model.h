@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.41 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.42 2004/07/27 16:16:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -430,18 +430,18 @@ private:
 	struct CBoneUsage
 	{
 		/// The bone Usage (refCount).
-		uint8			Usage;
+		uint16			Usage;
 		/// Same as Usage, but must be animated/computed, even if Skeleton Lods say not (stickedObjects).
-		uint8			ForcedUsage;
+		uint16			ForcedUsage;
 		/** Same as ForcedUsage, but must be animated/computed, even if the skeleton is in CLod state 
 		 *	ie displayed with a CLodCharacterShape. This is important for skeletons which have skeletons 
 		 *	sons sticked on them
 		 */
-		uint8			CLodForcedUsage;
+		uint16			CLodForcedUsage;
 		/** The current state: which bones need to be computed. ie: 
 		 *	(CLodForcedUsage) | ( ((Usage & currentLodUsage) | ForcedUsage) & skeleton not in CLod state )
 		 */
-		uint8			MustCompute;
+		uint16			MustCompute;
 		/// Myself if MustCompute==true, or the first parent with MustCompute==true.
 		uint			ValidBoneSkinMatrix;
 	};

@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.34 2001/01/15 13:40:57 cado Exp $
+ * $Id: base_socket.cpp,v 1.35 2001/01/15 14:44:26 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -312,13 +312,13 @@ void CBaseSocket::setLocalAddress()
 void CBaseSocket::bind( uint16 port ) throw (ESocket)
 {
 	// Get local socket name
-	const uint MAXLENGTH = 80;
+	/*const uint MAXLENGTH = 80;
 	char localhost [MAXLENGTH];
 	if ( gethostname( localhost, MAXLENGTH ) != 0 )
 	{
 		throw ESocket( "Unabled to get local hostname" );
 	}
-	_LocalAddr.setByName( localhost );
+	_LocalAddr.setByName( localhost );*/
 	_LocalAddr.setPort( port );
 
 	// Bind the socket

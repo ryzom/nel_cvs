@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.47 2001/01/15 13:40:57 cado Exp $
+ * $Id: msg_socket.cpp,v 1.48 2001/01/15 14:44:26 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -290,7 +290,7 @@ CMsgSocket::~CMsgSocket()
  */
 void CMsgSocket::listen( CSocket *listensock, uint16 port ) throw (ESocket)
 {
-	CInetAddress localaddr = CInetAddress::localHost();
+	CInetAddress localaddr; // By default, INETADDR_ANY // = CInetAddress::localHost();
 	localaddr.setPort( port );
 	listen( listensock, localaddr ); // throw (ESocket)
 }

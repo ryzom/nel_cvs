@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.h,v 1.16 2001/01/02 14:39:21 cado Exp $
+ * $Id: inet_address.h,v 1.17 2001/01/15 14:44:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,7 @@ class CInetAddress
 {
 public:
 
-	/// Default Constructor
+	/// Default Constructor. The address is set to INADDR_ANY
 	CInetAddress();
 
 	/// Alternate constructor (calls setByName())

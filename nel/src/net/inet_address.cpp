@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.23 2001/01/15 13:40:57 cado Exp $
+ * $Id: inet_address.cpp,v 1.24 2001/01/15 14:44:26 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,8 @@ CInetAddress::CInetAddress() :
   _Valid( false )
 {
 	init();
+	_SockAddr->sin_port = 0; // same as htons(0)
+	memset( &_SockAddr->sin_addr, 0, sizeof(in_addr) ); // same as htonl(INADDR_ANY)
 }
 
 
@@ -152,8 +154,6 @@ void CInetAddress::init()
 	CBaseSocket::init();
 	_SockAddr = new sockaddr_in;
 	_SockAddr->sin_family = AF_INET;
-	_SockAddr->sin_port = 0; // same as htons(0)
-	memset( &_SockAddr->sin_addr, 0, sizeof(in_addr) );
 	memset( _SockAddr->sin_zero, 0, 8 );
 }
 

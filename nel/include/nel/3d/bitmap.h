@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.4 2000/11/10 15:20:08 coutelas Exp $
+ * $Id: bitmap.h,v 1.5 2000/11/13 13:31:07 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -247,6 +247,7 @@ public:
 		_MipMapCount = 0;
 		_Width = 0;
 		_Height = 0;
+		PixelFormat = RGBA;
 	}
 
 

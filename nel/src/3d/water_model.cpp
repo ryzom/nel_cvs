@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.43 2004/08/03 16:15:52 vizerie Exp $
+ * $Id: water_model.cpp,v 1.44 2004/08/13 15:48:53 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -67,6 +67,7 @@ void CWaterModel::setupVertexBuffer(uint numWantedVertices, IDriver *drv)
 	if (VB.getNumVertices() == 0 || drv != _CurrDrv) // not setupped yet, or driver changed ?
 	{
 		VB.setNumVertices(0);
+		VB.setName("Water");
 		VB.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
 		if (drv->isWaterShaderSupported())
 		{		

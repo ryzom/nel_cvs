@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.96 2004/06/28 09:00:23 lecroart Exp $
+ * $Id: debug.cpp,v 1.97 2004/07/12 14:03:08 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1061,7 +1061,7 @@ void beep( uint freq, uint duration )
 // Commands
 //
 
-NLMISC_COMMAND (displayMemlog, "displays the last N line of the log in memory", "[<NbLines>]")
+NLMISC_CATEGORISED_COMMAND(nel, displayMemlog, "displays the last N line of the log in memory", "[<NbLines>]")
 {
 	uint nbLines;
 
@@ -1088,7 +1088,7 @@ NLMISC_COMMAND (displayMemlog, "displays the last N line of the log in memory", 
 }
 
 
-NLMISC_COMMAND(resetFilters, "disable all filters on Nel loggers", "[debug|info|warning|error|assert]")
+NLMISC_CATEGORISED_COMMAND(nel, resetFilters, "disable all filters on Nel loggers", "[debug|info|warning|error|assert]")
 {
 	if(args.size() == 0)
 	{
@@ -1114,21 +1114,21 @@ NLMISC_COMMAND(resetFilters, "disable all filters on Nel loggers", "[debug|info|
 	return true;
 }
 
-NLMISC_COMMAND(addPositiveFilterDebug, "add a positive filter on DebugLog", "<filterstr>")
+NLMISC_CATEGORISED_COMMAND(nel, addPositiveFilterDebug, "add a positive filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	DebugLog->addPositiveFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(addNegativeFilterDebug, "add a negative filter on DebugLog", "<filterstr>")
+NLMISC_CATEGORISED_COMMAND(nel, addNegativeFilterDebug, "add a negative filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	DebugLog->addNegativeFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(removeFilterDebug, "remove a filter on DebugLog", "[<filterstr>]")
+NLMISC_CATEGORISED_COMMAND(nel, removeFilterDebug, "remove a filter on DebugLog", "[<filterstr>]")
 {
 	if(args.size() == 0)
 		DebugLog->removeFilter();
@@ -1138,28 +1138,28 @@ NLMISC_COMMAND(removeFilterDebug, "remove a filter on DebugLog", "[<filterstr>]"
 	return true;
 }
 
-NLMISC_COMMAND(displayFilterDebug, "display filter on DebugLog", "")
+NLMISC_CATEGORISED_COMMAND(nel, displayFilterDebug, "display filter on DebugLog", "")
 {
 	if(args.size() != 0) return false;
 	DebugLog->displayFilter(log);
 	return true;
 }
 
-NLMISC_COMMAND(addPositiveFilterInfo, "add a positive filter on InfoLog", "<filterstr>")
+NLMISC_CATEGORISED_COMMAND(nel, addPositiveFilterInfo, "add a positive filter on InfoLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	InfoLog->addPositiveFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(addNegativeFilterInfo, "add a negative filter on InfoLog", "<filterstr>")
+NLMISC_CATEGORISED_COMMAND(nel, addNegativeFilterInfo, "add a negative filter on InfoLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	InfoLog->addNegativeFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(removeFilterInfo, "remove a filter on InfoLog", "[<filterstr>]")
+NLMISC_CATEGORISED_COMMAND(nel, removeFilterInfo, "remove a filter on InfoLog", "[<filterstr>]")
 {
 	if(args.size() == 0)
 		InfoLog->removeFilter();
@@ -1169,7 +1169,7 @@ NLMISC_COMMAND(removeFilterInfo, "remove a filter on InfoLog", "[<filterstr>]")
 	return true;
 }
 
-NLMISC_COMMAND(displayFilterInfo, "display filter on InfoLog", "[d|i|w|e]")
+NLMISC_CATEGORISED_COMMAND(nel, displayFilterInfo, "display filter on InfoLog", "[d|i|w|e]")
 {
 	if(args.size() > 1) return false;
 	if ( args.size() == 1 )
@@ -1192,21 +1192,21 @@ NLMISC_COMMAND(displayFilterInfo, "display filter on InfoLog", "[d|i|w|e]")
 	return true;
 }
 
-NLMISC_COMMAND(addPositiveFilterWarning, "add a positive filter on WarningLog", "<filterstr>")
+NLMISC_CATEGORISED_COMMAND(nel, addPositiveFilterWarning, "add a positive filter on WarningLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	WarningLog->addPositiveFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(addNegativeFilterWarning, "add a negative filter on WarningLog", "<filterstr>")
+NLMISC_CATEGORISED_COMMAND(nel, addNegativeFilterWarning, "add a negative filter on WarningLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	WarningLog->addNegativeFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(removeFilterWarning, "remove a filter on WarningLog", "[<filterstr>]")
+NLMISC_CATEGORISED_COMMAND(nel, removeFilterWarning, "remove a filter on WarningLog", "[<filterstr>]")
 {
 	if(args.size() == 0)
 		WarningLog->removeFilter();
@@ -1216,7 +1216,7 @@ NLMISC_COMMAND(removeFilterWarning, "remove a filter on WarningLog", "[<filterst
 	return true;
 }
 
-NLMISC_COMMAND(displayFilterWarning, "display filter on WarningLog", "")
+NLMISC_CATEGORISED_COMMAND(nel, displayFilterWarning, "display filter on WarningLog", "")
 {
 	if(args.size() != 0) return false;
 	WarningLog->displayFilter(log);
@@ -1225,28 +1225,28 @@ NLMISC_COMMAND(displayFilterWarning, "display filter on WarningLog", "")
 
 // commands to generate different "crash"
 
-NLMISC_COMMAND(assert, "generate a failed nlassert()", "")
+NLMISC_CATEGORISED_COMMAND(nel, assert, "generate a failed nlassert()", "")
 {
 	if(args.size() != 0) return false;
 	nlassertex (false, ("Assert generated by the assert command"));
 	return true;
 }
 
-NLMISC_COMMAND(stop, "generate a nlstop()", "")
+NLMISC_CATEGORISED_COMMAND(nel, stop, "generate a nlstop()", "")
 {
 	if(args.size() != 0) return false;
 	nlstopex (("Stop generated by the stop command"));
 	return true;
 }
 
-NLMISC_COMMAND(abort, "generate a abort()", "")
+NLMISC_CATEGORISED_COMMAND(nel, abort, "generate a abort()", "")
 {
 	if(args.size() != 0) return false;
 	abort();
 	return true;
 }
 
-NLMISC_COMMAND(divbyzero, "generate a divide by zero", "")
+NLMISC_CATEGORISED_COMMAND(nel, divbyzero, "generate a divide by zero", "")
 {
 	if(args.size() != 0) return false;
 	float a=10,b=0;
@@ -1254,7 +1254,7 @@ NLMISC_COMMAND(divbyzero, "generate a divide by zero", "")
 	return true;
 }
 
-NLMISC_COMMAND(writeaccess, "write a uint8 value in an invalid address", "[<adr> [<value>]]")
+NLMISC_CATEGORISED_COMMAND(nel, writeaccess, "write a uint8 value in an invalid address", "[<adr> [<value>]]")
 {
 	uint8 val = 123;
 	uint8 *adr = (uint8*)0;
@@ -1269,7 +1269,7 @@ NLMISC_COMMAND(writeaccess, "write a uint8 value in an invalid address", "[<adr>
 	return true;
 }
 
-NLMISC_COMMAND(readaccess, "read a uint8 value in an invalid address", "[<adr>]")
+NLMISC_CATEGORISED_COMMAND(nel, readaccess, "read a uint8 value in an invalid address", "[<adr>]")
 {
 	uint8 val;
 	uint8 *adr = (uint8*)0;

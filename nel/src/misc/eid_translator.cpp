@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.26 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.27 2004/07/12 14:02:04 miller Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -624,7 +624,7 @@ std::string CEntityIdTranslator::getRegisterableString( const ucstring & entityN
 }
 
 
-NLMISC_COMMAND(findEIdByUser,"Find entity ids using the user name","<username>|<uid>")
+NLMISC_CATEGORISED_COMMAND(nel,findEIdByUser,"Find entity ids using the user name","<username>|<uid>")
 {
 	if (args.size () != 1)
 		return false;
@@ -654,7 +654,7 @@ NLMISC_COMMAND(findEIdByUser,"Find entity ids using the user name","<username>|<
 	return true;
 }
 
-NLMISC_COMMAND(findEIdByEntity,"Find entity id using the entity name","<entityname>|<eid>")
+NLMISC_CATEGORISED_COMMAND(nel,findEIdByEntity,"Find entity id using the entity name","<entityname>|<eid>")
 {
 	if (args.size () != 1)
 		return false;
@@ -685,7 +685,7 @@ NLMISC_COMMAND(findEIdByEntity,"Find entity id using the entity name","<entityna
 	return true;
 }
 
-NLMISC_COMMAND(entityNameValid,"Tell if an entity name is valid or not using CEntityIdTranslator validation rulez","<entityname>")
+NLMISC_CATEGORISED_COMMAND(nel,entityNameValid,"Tell if an entity name is valid or not using CEntityIdTranslator validation rulez","<entityname>")
 {
 	if (args.size () != 1) return false;
 
@@ -708,7 +708,7 @@ NLMISC_COMMAND(entityNameValid,"Tell if an entity name is valid or not using CEn
 	return true;
 }
 
-NLMISC_COMMAND(playerInfo,"Get informations about a player or all players in CEntityIdTranslator","[<entityname>|<eid>|<username>|<uid>]")
+NLMISC_CATEGORISED_COMMAND(nel,playerInfo,"Get informations about a player or all players in CEntityIdTranslator","[<entityname>|<eid>|<username>|<uid>]")
 {
 	if (args.size () == 0)
 	{

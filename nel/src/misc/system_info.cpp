@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.26 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: system_info.cpp,v 1.27 2004/07/12 14:00:44 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -706,22 +706,22 @@ uint32 CSystemInfo::totalPhysicalMemory ()
 }
 
 
-NLMISC_DYNVARIABLE(string, AvailablePhysicalMemory, "Physical memory available on this computer in bytes")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, string, AvailablePhysicalMemory, "Physical memory available on this computer in bytes")
 {
 	if (get) *pointer = bytesToHumanReadable(CSystemInfo::availablePhysicalMemory ());
 }
 
-NLMISC_DYNVARIABLE(string, TotalPhysicalMemory, "Total physical memory on this computer in bytes")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, string, TotalPhysicalMemory, "Total physical memory on this computer in bytes")
 {
 	if (get) *pointer = bytesToHumanReadable(CSystemInfo::totalPhysicalMemory ());
 }
 
-NLMISC_DYNVARIABLE(string, ProcessUsedMemory, "Memory used by this process in bytes")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, string, ProcessUsedMemory, "Memory used by this process in bytes")
 {
 	if (get) *pointer = bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ());
 }
 
-NLMISC_DYNVARIABLE(string, OS, "OS used")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, string, OS, "OS used")
 {
 	if (get) *pointer = CSystemInfo::getOS();
 }

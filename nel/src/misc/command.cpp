@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.30 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: command.cpp,v 1.31 2004/07/12 14:01:27 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,16 +26,18 @@
 #include "stdmisc.h"
 
 #include "nel/misc/command.h"
+#include "nel/misc/algo.h"
 
 using namespace std;
 using namespace NLMISC;
 
 namespace NLMISC {
 
-ICommand::TCommand *ICommand::Commands;
+ICommand::TCategorySet* ICommand::Categories;
+ICommand::TCommand* ICommand::Commands;
 bool ICommand::CommandsInit;
 
-ICommand::ICommand(const char *commandName, const char *commandHelp, const char *commandArgs)
+ICommand::ICommand(const char *categoryName, const char *commandName, const char *commandHelp, const char *commandArgs)
 {
 	// self registration
 
@@ -43,6 +45,7 @@ ICommand::ICommand(const char *commandName, const char *commandHelp, const char 
 	{
 		//nlinfo ("create map");
 		Commands = new TCommand;
+		Categories = new TCategorySet;
 		CommandsInit = true;
 	}
 
@@ -57,11 +60,13 @@ ICommand::ICommand(const char *commandName, const char *commandHelp, const char 
 	{
 		// insert the new command in the map
 		//nlinfo ("add command '%s'", commandName);
+		CategoryName = categoryName;
 		HelpString = commandHelp;
 		CommandArgs = commandArgs;
 		_CommandName = commandName;
 		Type = Command;
 		(*Commands)[commandName] = this;
+		Categories->insert(categoryName);
 	}
 }
 
@@ -392,38 +397,85 @@ bool ICommand::exists (std::string &commandName)
 	return ((*Commands).find(commandName) != (*Commands).end ());
 }
 
-NLMISC_COMMAND(help,"display help on a specific variable/commands or on all variables and commands", "[<variable>|<command>]")
+NLMISC_CATEGORISED_COMMAND(nel,help,"display help on a specific variable/commands or on all variables and commands", "[<variable>|<command>]")
 {	
 	nlassert (Commands != NULL);
 	
+	// make sure we have a valid number of paramaters
+	if (args.size()>1)
+		return false;
+
+	// treat the case where we have no parameters
 	if (args.size() == 0)
 	{
+		// display a list of all command categories
+		log.displayNL("Help commands:");
+		log.displayNL("- help all");
+		for (TCategorySet::iterator it=Categories->begin();it!=Categories->end();++it)
+		{
+			log.displayNL("- help %s",(*it).c_str());
+		}
+		log.displayNL("- help <wildcard>");
+		log.displayNL("- help <command name>");
+		return true;
+	}
+
+	// treat the case where the supplied parameter is "all"
+	if (args[0]=="all")
+	{
 		// display all commands
-		log.displayNL("There's %d variables and commands: ", (*Commands).size());
+		log.displayNL("Displaying all %d variables and commands: ", (*Commands).size());
 		uint i = 0;
 		for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++, i++)
 		{
 			log.displayNL("%2d %-15s: %s", i, (*comm).first.c_str(), (*comm).second->HelpString.c_str());
 		}
+		return true;
 	}
-	else if (args.size() == 1)
+
+	// treat the case where the supplied parameter is a category name
+	if (Categories->find(args[0])!=Categories->end())
 	{
-		// display help of the command
-		TCommand::iterator comm = (*Commands).find(args[0].c_str());
-		if (comm == (*Commands).end ())
+		log.displayNL("Displaying commands and variables from category: %s", args[0].c_str());
+		uint i = 0;
+		for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
 		{
-			log.displayNL("command '%s' not found", args[0].c_str());
+			if ((*comm).second->CategoryName==args[0])
+			{
+				log.displayNL("%2d %-15s: %s", i, (*comm).first.c_str(), (*comm).second->HelpString.c_str());
+				i++;
+			}
 		}
-		else
-		{
-			log.displayNL("%s", (*comm).second->HelpString.c_str());
-			log.displayNL("usage: %s %s", (*comm).first.c_str(), (*comm).second->CommandArgs.c_str(), (*comm).second->HelpString.c_str());
-		}
+		return true;
 	}
-	else
+
+	// treat the case where the supplied parameter is a wildcard
+	if (args[0].find('*')!=std::string::npos || args[0].find('?')!=std::string::npos)
 	{
-		return false;
+		log.displayNL("Displaying commands and variables matching wildcard: %s", args[0].c_str());
+		uint i = 0;
+		for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
+		{
+			if (testWildCard((*comm).first,args[0]))
+			{
+				log.displayNL("%2d %-15s: %s", i, (*comm).first.c_str(), (*comm).second->HelpString.c_str());
+				i++;
+			}
+		}
+		return true;
 	}
+
+	// treat the case where we're looking at help on a given command
+	if ((*Commands).find(args[0]) == (*Commands).end())
+	{
+		TCommand::iterator comm = (*Commands).find(args[0]);
+		log.displayNL("%s", (*comm).second->HelpString.c_str());
+		log.displayNL("usage: %s %s", (*comm).first.c_str(), (*comm).second->CommandArgs.c_str(), (*comm).second->HelpString.c_str());
+		return true;
+	}
+
+	// we've failed to find a case that works so display an error message and prompt the player
+	log.displayNL("'%s' is not a command, category or wildcard. Type 'help' for more information", args[0].c_str());
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.62 2004/06/29 12:23:15 boucher Exp $
+ * $Id: common.cpp,v 1.63 2004/07/12 14:02:37 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -471,7 +471,7 @@ uint32 humanReadableToBytes (const string &str)
 }
 
 
-NLMISC_COMMAND(btohr, "Convert a bytes number into an human readable number", "<int>")
+NLMISC_CATEGORISED_COMMAND(nel,btohr, "Convert a bytes number into an human readable number", "<int>")
 {
 	if (args.size() != 1)
 		return false;
@@ -482,7 +482,7 @@ NLMISC_COMMAND(btohr, "Convert a bytes number into an human readable number", "<
 }
 
 
-NLMISC_COMMAND(hrtob, "Convert a human readable number into a bytes number", "<hr>")
+NLMISC_CATEGORISED_COMMAND(nel,hrtob, "Convert a human readable number into a bytes number", "<hr>")
 {
 	if (args.size() != 1)
 		return false;
@@ -543,7 +543,7 @@ uint32 fromHumanReadable (const std::string &str)
 }
 
 
-NLMISC_COMMAND(stohr, "Convert a second number into an human readable time", "<int>")
+NLMISC_CATEGORISED_COMMAND(nel,stohr, "Convert a second number into an human readable time", "<int>")
 {
 	if (args.size() != 1)
 		return false;
@@ -961,7 +961,7 @@ int	nlfseek64( FILE *stream, sint64 offset, int origin )
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-NLMISC_COMMAND(sleep, "Freeze the service for N seconds (for debug purpose)", "<N>")
+NLMISC_CATEGORISED_COMMAND(nel, sleep, "Freeze the service for N seconds (for debug purpose)", "<N>")
 {
 	if(args.size() != 1) return false;
 	
@@ -973,7 +973,7 @@ NLMISC_COMMAND(sleep, "Freeze the service for N seconds (for debug purpose)", "<
 	return true;
 }
 
-NLMISC_COMMAND(system, "Execute the command line using system() function call (wait until the end of the command)", "<commandline>")
+NLMISC_CATEGORISED_COMMAND(nel, system, "Execute the command line using system() function call (wait until the end of the command)", "<commandline>")
 {
 	if(args.size() != 1) return false;
 	
@@ -984,7 +984,7 @@ NLMISC_COMMAND(system, "Execute the command line using system() function call (w
 	return true;
 }
 
-NLMISC_COMMAND(launchProgram, "Execute the command line using launcProgram() function call (launch in background task without waiting the end of the execution)", "<programName> <arguments>")
+NLMISC_CATEGORISED_COMMAND(nel, launchProgram, "Execute the command line using launcProgram() function call (launch in background task without waiting the end of the execution)", "<programName> <arguments>")
 {
 	if(args.size() != 2) return false;
 	
@@ -996,7 +996,7 @@ NLMISC_COMMAND(launchProgram, "Execute the command line using launcProgram() fun
 	return true;
 }
 
-NLMISC_COMMAND(killProgram, "kill a program given the pid", "<pid>")
+NLMISC_CATEGORISED_COMMAND(nel, killProgram, "kill a program given the pid", "<pid>")
 {
 	if(args.size() != 1) return false;
 	killProgram(atoi(args[0].c_str()));

@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.36 2004/01/15 17:39:41 lecroart Exp $
+ * $Id: hierarchical_timer.cpp,v 1.37 2004/07/12 14:02:04 miller Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1017,7 +1017,7 @@ void	CHTimer::doAfter(bool displayAfter)
 // Commands
 //
 
-NLMISC_COMMAND(displayMeasures, "display hierarchical timer", "[depth]")
+NLMISC_CATEGORISED_COMMAND(nel,displayMeasures, "display hierarchical timer", "[depth]")
 {
 	if (args.size() < 1)
 	{

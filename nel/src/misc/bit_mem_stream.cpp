@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.33 2004/05/14 10:13:12 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.34 2004/07/12 14:03:40 miller Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -146,7 +146,7 @@ void	CBitMemStream::_serialBitAndLog( const char *argstr, bool& bit )
 		nldebug( "TRAFFIC/%p/%s: %s: 1 bit at bitpos %d (%hu)", this, isReading()?"I":"O", argstr, bitpos, (uint16)bit );
 }
 
-NLMISC_COMMAND( verboseAllTraffic, "Verbose the all-traffic logs", "" )
+NLMISC_CATEGORISED_COMMAND(nel, verboseAllTraffic, "Verbose the all-traffic logs", "" )
 {
 	if(args.size()>1)
 		return false;

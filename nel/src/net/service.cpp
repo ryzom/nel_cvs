@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.210 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: service.cpp,v 1.211 2004/07/12 13:59:21 miller Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -117,8 +117,8 @@ IService	*IService::_Instance = NULL;
 static sint ExitSignalAsked = 0;
 
 // services stat
-CVariable<sint32> UserSpeedLoop ("UserSpeedLoop", "duration of the last network loop (in ms)", 10, false);
-CVariable<sint32> NetSpeedLoop ("NetSpeedLoop", "duration of the last user loop (in ms)", 10, false);
+CVariable<sint32> UserSpeedLoop ("nel", "UserSpeedLoop", "duration of the last network loop (in ms)", 10, false);
+CVariable<sint32> NetSpeedLoop ("nel", "NetSpeedLoop", "duration of the last user loop (in ms)", 10, false);
 
 
 // this is the thread that initialized the signal redirection
@@ -148,12 +148,12 @@ string CompilationMode = "???";
 
 //static bool Bench = false;
 
-CVariable<bool> Bench ("Bench", "1 if benching 0 if not", 0, true);
+CVariable<bool> Bench ("nel", "Bench", "1 if benching 0 if not", 0, true);
 
 // This produce an assertion in the thread if the update loop is too slow
 static CTimeoutAssertionThread	MyTAT;
 static void						UpdateAssertionThreadTimeoutCB(IVariable &var) { MyTAT.timeout(atoi(var.toString().c_str())); }
-static CVariable<uint32>		UpdateAssertionThreadTimeout("UpdateAssertionThreadTimeout", "in millisecond, timeout before thread assertion", 0, 0, true, UpdateAssertionThreadTimeoutCB);
+static CVariable<uint32>		UpdateAssertionThreadTimeout("nel", "UpdateAssertionThreadTimeout", "in millisecond, timeout before thread assertion", 0, 0, true, UpdateAssertionThreadTimeoutCB);
 
 
 //
@@ -277,18 +277,18 @@ TUnifiedCallbackItem builtinServiceCallbacks [] =
 // Ctor
 IService::IService() :
 	WindowDisplayer(0),
-	WriteFilesDirectory("WriteFilesDirectory", "directory where to save generic shard information (packed_sheets for example)", ".", 0, true, cbDirectoryChanged),
-	SaveFilesDirectory("SaveFilesDirectory", "directory where to save specific shard information (shard time for example)", ".", 0, true, cbDirectoryChanged),
-	ListeningPort("ListeningPort", "listening port for this service", 0, 0, true),
+	WriteFilesDirectory("nel", "WriteFilesDirectory", "directory where to save generic shard information (packed_sheets for example)", ".", 0, true, cbDirectoryChanged),
+	SaveFilesDirectory("nel", "SaveFilesDirectory", "directory where to save specific shard information (shard time for example)", ".", 0, true, cbDirectoryChanged),
+	ListeningPort("nel", "ListeningPort", "listening port for this service", 0, 0, true),
 	_RecordingState(CCallbackNetBase::Off),
 	_UpdateTimeout(100),
 	_SId(0),
 	_Status(0),
 	_Initialized(false),
-	ConfigDirectory("ConfigDirectory", "directory where config files are", ".", 0, true, cbDirectoryChanged),
-	LogDirectory("LogDirectory", "directory where the service is logging", ".", 0, true, cbDirectoryChanged),
-	RunningDirectory("RunningDirectory", "directory where the service is running on", ".", 0, true, cbDirectoryChanged),
-	Version("Version", "Version of the shard", ""),
+	ConfigDirectory("nel", "ConfigDirectory", "directory where config files are", ".", 0, true, cbDirectoryChanged),
+	LogDirectory("nel", "LogDirectory", "directory where the service is logging", ".", 0, true, cbDirectoryChanged),
+	RunningDirectory("nel", "RunningDirectory", "directory where the service is running on", ".", 0, true, cbDirectoryChanged),
+	Version("nel", "Version", "Version of the shard", ""),
 	_CallbackArray (0),
 	_CallbackArraySize (0),
 	_DontUseNS(false),
@@ -1426,12 +1426,12 @@ std::string IService::getServiceUnifiedName () const
 // Commands and Variables for controling all services
 //
 
-NLMISC_DYNVARIABLE(string, LaunchingDate, "date of the launching of the program")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, string, LaunchingDate, "date of the launching of the program")
 {
 	if (get) *pointer = asctime (localtime ((time_t*)&LaunchingDate));
 }
 
-NLMISC_DYNVARIABLE(string, Uptime, "time from the launching of the program")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, string, Uptime, "time from the launching of the program")
 {
 	if (get)
 	{
@@ -1448,17 +1448,17 @@ NLMISC_DYNVARIABLE(string, Uptime, "time from the launching of the program")
 
 //NLMISC_VARIABLE(bool, Bench, "1 if benching 0 if not");
 
-NLMISC_VARIABLE(string, CompilationDate, "date of the compilation");
-NLMISC_VARIABLE(string, CompilationMode, "mode of the compilation");
+NLMISC_CATEGORISED_VARIABLE(nel, string, CompilationDate, "date of the compilation");
+NLMISC_CATEGORISED_VARIABLE(nel, string, CompilationMode, "mode of the compilation");
 
-NLMISC_VARIABLE(uint32, NbUserUpdate, "number of time the user IService::update() called");
+NLMISC_CATEGORISED_VARIABLE(nel, uint32, NbUserUpdate, "number of time the user IService::update() called");
 
 /*NLMISC_DYNVARIABLE(uint32, ListeningPort, "default listening port for this service")
 {
 	if (get) *pointer = IService::getInstance()->getPort();
 }
 */
-NLMISC_DYNVARIABLE(string, Scroller, "current size in bytes of the sent queue size")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, string, Scroller, "current size in bytes of the sent queue size")
 {
 	if (get)
 	{
@@ -1470,7 +1470,7 @@ NLMISC_DYNVARIABLE(string, Scroller, "current size in bytes of the sent queue si
 	}
 }
 
-NLMISC_COMMAND (quit, "exit the service", "")
+NLMISC_CATEGORISED_COMMAND(nel, quit, "exit the service", "")
 {
 	if(args.size() != 0) return false;
 
@@ -1480,7 +1480,7 @@ NLMISC_COMMAND (quit, "exit the service", "")
 	return true;
 }
 
-NLMISC_COMMAND (brutalQuit, "exit the service brutally", "")
+NLMISC_CATEGORISED_COMMAND(nel, brutalQuit, "exit the service brutally", "")
 {
 	if(args.size() != 0) return false;
 
@@ -1491,7 +1491,7 @@ NLMISC_COMMAND (brutalQuit, "exit the service brutally", "")
 
 
 #ifdef MUTEX_DEBUG
-NLMISC_COMMAND (mutex, "display mutex values", "")
+NLMISC_CATEGORISED_COMMAND(nel, mutex, "display mutex values", "")
 {
 	if(args.size() != 0) return false;
 
@@ -1510,7 +1510,7 @@ NLMISC_COMMAND (mutex, "display mutex values", "")
 }
 #endif // MUTEX_DEBUG
 
-NLMISC_COMMAND (serviceInfo, "display information about this service", "")
+NLMISC_CATEGORISED_COMMAND(nel, serviceInfo, "display information about this service", "")
 {
 	if(args.size() != 0) return false;
 
@@ -1540,13 +1540,13 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 	return true;
 }
 
-NLMISC_COMMAND(resetMeasures, "reset hierarchical timer", "")
+NLMISC_CATEGORISED_COMMAND(nel, resetMeasures, "reset hierarchical timer", "")
 {
 	IService::getInstance()->requireResetMeasures();
 	return true;
 }
 
-NLMISC_COMMAND(getWinDisplayerInfo, "display the info about the pos and size of the window displayer", "")
+NLMISC_CATEGORISED_COMMAND(nel, getWinDisplayerInfo, "display the info about the pos and size of the window displayer", "")
 {
 	uint32 x,y,w,h;
 	IService::getInstance()->WindowDisplayer->getWindowPos (x,y,w,h);
@@ -1554,13 +1554,13 @@ NLMISC_COMMAND(getWinDisplayerInfo, "display the info about the pos and size of 
 	return true;
 }
 
-NLMISC_COMMAND(displayConfigFile, "display the variables of the default configfile", "")
+NLMISC_CATEGORISED_COMMAND(nel, displayConfigFile, "display the variables of the default configfile", "")
 {
 	IService::getInstance()->ConfigFile.display (&log);
 	return true;
 }
 
-NLMISC_COMMAND(getUnknownConfigFileVariables, "display the variables from config file that are called but not present", "")
+NLMISC_CATEGORISED_COMMAND(nel, getUnknownConfigFileVariables, "display the variables from config file that are called but not present", "")
 {
 	log.displayNL ("%d Variables not found in the configfile '%s'", IService::getInstance()->ConfigFile.UnknownVariables.size(), IService::getInstance()->ConfigFile.getFilename().c_str() );
 	for (uint i = 0; i < IService::getInstance()->ConfigFile.UnknownVariables.size(); i++)
@@ -1576,7 +1576,7 @@ NLMISC_COMMAND(getUnknownConfigFileVariables, "display the variables from config
 // 2 = service is launching
 // 3 = service failed launching
 
-NLMISC_DYNVARIABLE(string, State, "Set this value to 0 to shutdown the service and 1 to start the service")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, string, State, "Set this value to 0 to shutdown the service and 1 to start the service")
 {
 	static string running = "Online";
 
@@ -1606,7 +1606,7 @@ NLMISC_DYNVARIABLE(string, State, "Set this value to 0 to shutdown the service a
 }
 
 
-NLMISC_DYNVARIABLE(uint32, ShardId, "Get value of shardId set for this particular service")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, uint32, ShardId, "Get value of shardId set for this particular service")
 {
 	// read or write the variable
 	if (get)

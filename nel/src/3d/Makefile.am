@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.108 2004/05/07 19:29:43 lecroart Exp $
+# $Id: Makefile.am,v 1.109 2004/05/24 08:30:51 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -45,15 +45,11 @@ libnel3d_la_SOURCES  = \
 	bezier_patch.h \
 	bone.cpp \
 	bone.h \
-	bone_user.cpp \
-	bone_user.h \
 	bsp_tree.h \
 	camera.cpp \
 	camera.h \
 	camera_col.cpp \
 	camera_col.h \
-	camera_user.cpp \
-	camera_user.h \
 	channel_mixer.cpp \
 	channel_mixer.h \
 	clip_trav.cpp \
@@ -124,10 +120,6 @@ libnel3d_la_SOURCES  = \
 	instance_group_user.h \
 	instance_lighter.cpp \
 	instance_lighter.h \
-	instance_material_user.cpp \
-	instance_material_user.h \
-	instance_user.cpp \
-	instance_user.h \
 	key.cpp \
 	key.h \
 	landscape.cpp \
@@ -181,8 +173,6 @@ libnel3d_la_SOURCES  = \
 	logic_info.cpp \
 	material.cpp \
 	material.h \
-	material_user.cpp \
-	material_user.h \
 	matrix_3x4.cpp \
 	matrix_3x4.h \
 	mesh.cpp \
@@ -243,8 +233,6 @@ libnel3d_la_SOURCES  = \
 	ordering_table.h \
 	particle_system.cpp \
 	particle_system.h \
-	particle_system_instance_user.cpp \
-	particle_system_instance_user.h \
 	particle_system_manager.cpp \
 	particle_system_manager.h \
 	particle_system_model.cpp \
@@ -280,8 +268,6 @@ libnel3d_la_SOURCES  = \
 	point_light_named.h \
 	point_light_named_array.cpp \
 	point_light_named_array.h \
-	point_light_user.cpp \
-	point_light_user.h \
 	portal.cpp \
 	portal.h \
 	primitive_profile.cpp \
@@ -415,8 +401,6 @@ libnel3d_la_SOURCES  = \
 	skeleton_model.h \
 	skeleton_shape.cpp \
 	skeleton_shape.h \
-	skeleton_user.cpp \
-	skeleton_user.h \
 	skeleton_weight.cpp \
 	skeleton_weight.h \
 	static_quad_grid.cpp \
@@ -506,15 +490,23 @@ libnel3d_la_SOURCES  = \
 	transform.h \
 	transform_shape.cpp \
 	transform_shape.h \
-	transform_user.cpp \
-	transform_user.h \
 	transformable.cpp \
 	transformable.h \
-	transformable_user.cpp \
-	transformable_user.h \
 	trav_scene.cpp \
 	trav_scene.h \
+	u_bone.cpp \
+	u_camera.cpp \
+	u_instance.cpp \
+	u_instance_material.cpp \
+	u_material.cpp \
+	u_particle_system_instance.cpp \
+	u_point_light.cpp \
 	u_shape.cpp \
+	u_skeleton.cpp \
+	u_transform.cpp \
+	u_transformable.cpp \
+	u_visual_collision_mesh.cpp \
+	u_water.cpp \
 	vegetable.cpp \
 	vegetable.h \
 	vegetable_blend_layer_model.cpp \
@@ -554,11 +546,10 @@ libnel3d_la_SOURCES  = \
 	visual_collision_entity_user.h \
 	visual_collision_manager.cpp \
 	visual_collision_manager.h \
-	u_visual_collision_mesh.cpp \
-	visual_collision_mesh.cpp \
-	visual_collision_mesh.h \
 	visual_collision_manager_user.cpp \
 	visual_collision_manager_user.h \
+	visual_collision_mesh.cpp \
+	visual_collision_mesh.h \
 	water_height_map.cpp \
 	water_height_map.h \
 	water_model.cpp \
@@ -567,8 +558,6 @@ libnel3d_la_SOURCES  = \
 	water_pool_manager.h \
 	water_shape.cpp \
 	water_shape.h \
-	water_user.cpp \
-	water_user.h \
 	zone.cpp \
 	zone.h \
 	zone_corner_smoother.cpp \

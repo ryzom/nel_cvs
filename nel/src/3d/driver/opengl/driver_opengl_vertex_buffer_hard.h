@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.h
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.h,v 1.6 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.h,v 1.7 2004/04/01 19:08:18 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -35,6 +35,7 @@ namespace NL3D
 	
 class	CDriverGL;
 class	IVertexBufferHardGL;
+class   CVertexBufferInfo;
 
 
 // ***************************************************************************
@@ -91,9 +92,9 @@ public:
 	virtual	void			enable() =0;
 	virtual	void			disable() =0;
 
-	virtual void		setupATIMode (bool &enabled, uint &vertexObjectId) = 0;
+	virtual void		setupVBInfos(CVertexBufferInfo &vb) = 0;
 
-	enum TVBType { NVidiaVB, ATIVB, ATIMapObjectVB, UnknownVB };
+	enum TVBType { NVidiaVB, ATIVB, ATIMapObjectVB, ARBVB, UnknownVB };
 	// true if NVidia vertex buffer hard.
 	TVBType	 VBType;	
 	// For Fence access. Ignored for ATI.
@@ -186,7 +187,7 @@ public:
 	virtual	void		enable();
 	virtual	void		disable();
 	virtual void		lockHintStatic(bool staticLock);
-	virtual void		setupATIMode (bool &enabled, uint &vertexObjectId);
+	virtual void		setupVBInfos(CVertexBufferInfo &vb);
 	// @}
 
 
@@ -310,7 +311,7 @@ public:
 	virtual	void		enable();
 	virtual	void		disable();
 	virtual void		lockHintStatic(bool staticLock);
-	virtual void		setupATIMode (bool &enabled, uint &vertexObjectId);
+	virtual void		setupVBInfos(CVertexBufferInfo &vb);
 	// @}
 
 
@@ -402,7 +403,7 @@ public:
 	virtual	void		enable();
 	virtual	void		disable();
 	virtual void		lockHintStatic(bool staticLock);
-	virtual void		setupATIMode (bool &enabled, uint &vertexObjectId);
+	virtual void		setupVBInfos(CVertexBufferInfo &vb);
 	// @}
 
    /**	setup ptrs allocated by createVBHard()
@@ -423,7 +424,88 @@ private:
 	CVertexArrayRangeMapObjectATI  *_VertexArrayRange;
 };
 
+// ***************************************************************************
+// ***************************************************************************
+// ARB_vertex_buffer_object implementation
+// ***************************************************************************
+// ***************************************************************************
+class CVertexArrayRangeARB : public IVertexArrayRange
+{
+public:
+	CVertexArrayRangeARB(CDriverGL *drv);
 
+
+	/// \name Implementation
+	// @{	
+	/** Allocate a vertex array space. false if error. must free before re-allocate.
+	  * Will always succeed, because vb are not managed in a heap, but are rather kept as separate objects
+	  */
+	virtual	bool					allocate(uint32 size, CVertexBuffer::TPreferredMemory vbType);
+	/// free this space.
+	virtual	void					free();
+	/// create a IVertexBufferHardGL
+	virtual	IVertexBufferHardGL		*createVBHardGL(uint size, CVertexBuffer *vb);
+	/// return the size allocated. 0 if not allocated or failure
+	virtual	uint					sizeAllocated() const { return _SizeAllocated; }	
+	// @}
+
+
+	// Those methods read/write in _Driver->_CurrentVertexArrayRange.
+	/** active this VertexArrayRange as the current vertex array range used. no-op if already setup.
+	 *	NB: no-op for ARB, but ensure correct _Driver->_CurrentVertexArrayRange value.
+	 */
+	void			enable();
+	/** disable this VertexArrayRange. _Driver->_CurrentVertexArrayRange= NULL;
+	 *	NB: no-op for ARB, but ensure correct _Driver->_CurrentVertexArrayRange value.
+	 */
+	void			disable();	
+	
+// *************************
+private:
+	CVertexBuffer::TPreferredMemory _VBType;
+	uint32							_SizeAllocated;	
+};
+
+
+/** vb hard using the ARB_vertex_buffer_object extension. Buffer are kept separate rather than managed in a heap
+  */
+class CVertexBufferHardARB : public IVertexBufferHardGL
+{
+public:
+
+	CVertexBufferHardARB(CDriverGL *drv, CVertexBuffer *vb);
+	virtual	~CVertexBufferHardARB();
+
+
+	/// \name Implementation
+	// @{
+	virtual	void		*lock();
+	virtual	void		unlock();
+	virtual void		unlock(uint startVert, uint endVert);
+	virtual void		*getPointer();
+	virtual	void		enable();
+	virtual	void		disable();
+	virtual void		lockHintStatic(bool staticLock);	
+	virtual void		setupVBInfos(CVertexBufferInfo &vb);
+	// @}
+
+   /**	setup ptrs allocated by createVBHard()
+	 */
+	void					initGL(uint vertexObjectID, CVertexBuffer::TPreferredMemory memType);
+
+	
+public:
+
+	/// get Handle of the ARB buffer.
+	uint					getARBVertexObjectId() const { return _VertexObjectId;}
+
+
+// *************************
+private:
+	uint							_VertexObjectId;	
+	CVertexBuffer::TPreferredMemory _MemType;
+	void							*_VertexPtr; // pointer on current datas. Null if not locked
+};
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.20 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.21 2004/04/01 19:09:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,9 +35,10 @@ namespace NL3D
 {
 
 // ***************************************************************************
-	CDriverGLStates::CDriverGLStates()
+CDriverGLStates::CDriverGLStates()
 {
 	_TextureCubeMapSupported= false;
+	_CurrARBVertexBuffer = 0;
 }
 
 
@@ -627,6 +628,20 @@ void			CDriverGLStates::enableVertexAttribArray(uint glIndex, bool enable)
 	}
 }
 
+// ***************************************************************************
+void CDriverGLStates::enableVertexAttribArrayARB(uint glIndex,bool enable)
+{
+	if(_VertexAttribArrayEnabled[glIndex] != enable)
+	{
+		if(enable)
+			nglEnableVertexAttribArrayARB(glIndex);
+		else
+			nglDisableVertexAttribArrayARB(glIndex);			
+		_VertexAttribArrayEnabled[glIndex]= enable;
+	}
+}
+
+
 
 // ***************************************************************************
 void CDriverGLStates::enableVertexAttribArrayForEXTVertexShader(uint glIndex, bool enable, uint *variants)
@@ -711,6 +726,22 @@ void			CDriverGLStates::enableFog(uint enable)
 	}
 }
 
+// ***************************************************************************
+void CDriverGLStates::forceBindARBVertexBuffer(uint objectID)
+{
+	nglBindBufferARB(GL_ARRAY_BUFFER_ARB, objectID);
+	_CurrARBVertexBuffer = objectID;
+}
+
+
+// ***************************************************************************
+void CDriverGLStates::bindARBVertexBuffer(uint objectID)
+{
+	if (objectID != _CurrARBVertexBuffer)
+	{
+		forceBindARBVertexBuffer(objectID);
+	} 
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.13 2003/10/13 09:42:27 berenguier Exp $
+ * $Id: driver_opengl_states.h,v 1.14 2004/04/01 19:09:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,9 +159,17 @@ public:
 	  */
 	void			enableVertexAttribArrayForEXTVertexShader(uint glIndex, bool enable, uint *variants);	
 
+	// special version for ARB_vertex_program
+	void			enableVertexAttribArrayARB(uint glIndex, bool enable);	
 
 	// @}
 	
+
+	// ARB_vertex_buffer_object buffer binding
+	void			bindARBVertexBuffer(uint objectID);
+	void			forceBindARBVertexBuffer(uint objectID);
+	uint			getCurrBoundARBVertexBuffer() const { return _CurrARBVertexBuffer; }
+
 private:
 	bool			_CurBlend;
 	bool			_CurFog;
@@ -198,6 +206,8 @@ private:
 	GLint			_TexGenMode[8];
 
 	float			_CurZRangeDelta;
+
+	uint			_CurrARBVertexBuffer;	
 };
 
 

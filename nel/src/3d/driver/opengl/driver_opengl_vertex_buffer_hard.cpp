@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.11 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.12 2004/04/01 19:08:18 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "driver_opengl.h"
 #include "driver_opengl_vertex_buffer_hard.h"
 
+#include "3d/vertex_buffer.h"
 
 using	namespace std;
 using	namespace NLMISC;
@@ -383,9 +384,9 @@ void			CVertexBufferHardGLNVidia::lockHintStatic(bool staticLock)
 
 // ***************************************************************************
 
-void CVertexBufferHardGLNVidia::setupATIMode (bool &enabled, uint &vertexObjectId)
+void CVertexBufferHardGLNVidia::setupVBInfos(CVertexBufferInfo &vb)
 {
-	enabled = false;
+	vb.VBMode = CVertexBufferInfo::HwNVIDIA;	
 }
 
 // ***************************************************************************
@@ -674,7 +675,7 @@ void		CVertexBufferHardGLATI::unlock(uint startVert, uint endVert)
 // ***************************************************************************
 void		*CVertexBufferHardGLATI::getPointer()
 {
-	return _VertexPtr;
+	return (uint8 *) _VertexPtr - NL3D_DRV_ATI_FAKE_MEM_START;
 }
 
 // ***************************************************************************
@@ -708,10 +709,10 @@ void			CVertexBufferHardGLATI::lockHintStatic(bool staticLock)
 
 // ***************************************************************************
 
-void CVertexBufferHardGLATI::setupATIMode (bool &enabled, uint &vertexObjectId)
+void CVertexBufferHardGLATI::setupVBInfos(CVertexBufferInfo &vb)
 {
-	enabled = true;
-	vertexObjectId = getATIVertexObjectId();
+	vb.VBMode = CVertexBufferInfo::HwATI;
+	vb.VertexObjectId = getATIVertexObjectId();
 }
 
 // ***************************************************************************
@@ -901,13 +902,226 @@ void			CVertexBufferHardGLMapObjectATI::lockHintStatic(bool staticLock)
 
 // ***************************************************************************
 
-void CVertexBufferHardGLMapObjectATI::setupATIMode (bool &enabled, uint &vertexObjectId)
+void CVertexBufferHardGLMapObjectATI::setupVBInfos(CVertexBufferInfo &vb)
 {
-	enabled = true;
-	vertexObjectId = getATIVertexObjectId();
+	vb.VBMode = CVertexBufferInfo::HwATI;
+	vb.VertexObjectId = getATIVertexObjectId();
 }
 
 // ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+// ARB implementation
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+// CVertexArrayRangeARB
+// ***************************************************************************
+
+
+// ***************************************************************************
+CVertexArrayRangeARB::CVertexArrayRangeARB(CDriverGL *drv) : IVertexArrayRange(drv),
+															 _VBType(CVertexBuffer::AGPPreferred),
+															 _SizeAllocated(0)
+{
+}
+
+// ***************************************************************************
+bool CVertexArrayRangeARB::allocate(uint32 size, CVertexBuffer::TPreferredMemory vbType)
+{
+	nlassert(_SizeAllocated == 0);
+	/*
+	// We don't manage memory ourselves, but test if there's enough room anyway
+	GLuint vertexBufferID;
+	glGetError();
+	nglGenBuffersARB(1, &vertexBufferID);
+	if (glGetError() != GL_NO_ERROR) return false;
+		
+	switch(vbType)
+	{	
+		case CVertexBuffer::AGPPreferred: 
+			nglBufferDataARB(GL_ARRAY_BUFFER_ARB, size, NULL, GL_DYNAMIC_DRAW_ARB);
+		break;
+		case CVertexBuffer::VRAMPreferred:
+			nglBufferDataARB(GL_ARRAY_BUFFER_ARB, size, NULL, GL_STATIC_DRAW_ARB);
+		break;
+		default:
+			nlassert(0);
+		break;
+	}
+
+	if (glGetError() != GL_NO_ERROR)
+	{
+		nglDeleteBuffersARB(1, &vertexBufferID);
+		return false;
+	}
+	nglDeleteBuffersARB(1, &vertexBufferID);			
+	*/
+	_SizeAllocated = size;
+	_VBType = vbType;	
+	return true;	
+}
+
+// ***************************************************************************
+void CVertexArrayRangeARB::free()
+{
+	_SizeAllocated = 0;
+}
+
+// ***************************************************************************
+IVertexBufferHardGL *CVertexArrayRangeARB::createVBHardGL(uint size, CVertexBuffer *vb)
+{
+	if (!_SizeAllocated) return NULL;
+	// create a ARB VBHard
+	GLuint vertexBufferID;
+	glGetError();
+	nglGenBuffersARB(1, &vertexBufferID);
+	if (glGetError() != GL_NO_ERROR) return false;		
+	_Driver->_DriverGLStates.forceBindARBVertexBuffer(vertexBufferID);
+	switch(_VBType)
+	{	
+		case CVertexBuffer::AGPPreferred: 
+			nglBufferDataARB(GL_ARRAY_BUFFER_ARB, size, NULL, GL_DYNAMIC_DRAW_ARB);
+			break;
+		case CVertexBuffer::VRAMPreferred:
+			nglBufferDataARB(GL_ARRAY_BUFFER_ARB, size, NULL, GL_STATIC_DRAW_ARB);
+			break;
+		default:
+			nlassert(0);
+			break;
+	}
+	if (glGetError() != GL_NO_ERROR)
+	{
+		nglDeleteBuffersARB(1, &vertexBufferID);
+		return false;
+	}
+	CVertexBufferHardARB *newVbHard= new CVertexBufferHardARB(_Driver, vb);
+	newVbHard->initGL(vertexBufferID, _VBType);
+	return newVbHard;
+}
+
+// ***************************************************************************
+void CVertexArrayRangeARB::enable()
+{
+	if(_Driver->_CurrentVertexArrayRange != this)
+	{				
+		_Driver->_CurrentVertexArrayRange= this;
+	}
+}
+
+// ***************************************************************************
+void CVertexArrayRangeARB::disable()
+{
+	if(_Driver->_CurrentVertexBufferHard != NULL)
+	{		
+		_Driver->_CurrentVertexBufferHard= NULL;
+	}
+}
+
+// ***************************************************************************
+// CVertexBufferHardARB
+// ***************************************************************************
+
+
+// ***************************************************************************
+CVertexBufferHardARB::CVertexBufferHardARB(CDriverGL *drv, CVertexBuffer *vb) :  IVertexBufferHardGL(drv, vb),
+																				_VertexObjectId(0),
+																				_VertexPtr(NULL)
+																					
+{	
+	// Flag our type
+	VBType = ARBVB;		
+}
+
+// ***************************************************************************
+CVertexBufferHardARB::~CVertexBufferHardARB()
+{
+	if (_Driver && _VertexObjectId)
+	{
+		if (_Driver->_DriverGLStates.getCurrBoundARBVertexBuffer() == _VertexObjectId)
+		{
+			_Driver->_DriverGLStates.forceBindARBVertexBuffer(0);
+		}		
+	}
+	if (_VertexObjectId) nglDeleteBuffersARB(1, &_VertexObjectId);
+}
+
+// ***************************************************************************
+void *CVertexBufferHardARB::lock()
+{
+	if (_VertexPtr) return _VertexPtr; // already locked
+	if (!_VertexObjectId) return NULL;
+	_Driver->_DriverGLStates.bindARBVertexBuffer(_VertexObjectId);
+	_VertexPtr = nglMapBufferARB(GL_ARRAY_BUFFER_ARB, VB->isResident() ?	GL_WRITE_ONLY_ARB : GL_READ_WRITE_ARB);	
+	return _VertexPtr;
+}
+
+// ***************************************************************************
+void CVertexBufferHardARB::unlock()
+{
+	if (!_VertexObjectId || !_VertexPtr) return;
+	_Driver->_DriverGLStates.bindARBVertexBuffer(_VertexObjectId);	
+	nglUnmapBufferARB(GL_ARRAY_BUFFER_ARB);	
+	_VertexPtr = NULL;
+}
+
+// ***************************************************************************
+void		*CVertexBufferHardARB::getPointer()
+{
+	return _VertexPtr;
+}
+
+// ***************************************************************************
+void CVertexBufferHardARB::unlock(uint startVert,uint endVert)
+{
+	unlock(); // can't do a lock on a range of the vb..
+}
+
+// ***************************************************************************
+void CVertexBufferHardARB::enable()
+{
+	if(_Driver->_CurrentVertexBufferHard != this)
+	{
+		/* nlassert(_VertexArrayRange);
+		_VertexArrayRange->enable(); */
+		_Driver->_CurrentVertexBufferHard= this;
+	}
+}
+
+// ***************************************************************************
+void CVertexBufferHardARB::disable()
+{
+	if(_Driver->_CurrentVertexBufferHard != NULL)
+	{
+		/* nlassert(_VertexArrayRange);
+		_VertexArrayRange->disable(); */
+		_Driver->_CurrentVertexBufferHard= NULL;
+	}
+}
+
+// ***************************************************************************
+void CVertexBufferHardARB::initGL(uint vertexObjectID, CVertexBuffer::TPreferredMemory memType)
+{	
+	_VertexObjectId = vertexObjectID;
+	_MemType = memType;
+}
+
+// ***************************************************************************
+void			CVertexBufferHardARB::lockHintStatic(bool staticLock)
+{
+	// no op.
+}
+
+// ***************************************************************************
+void CVertexBufferHardARB::setupVBInfos(CVertexBufferInfo &vb)
+{
+	vb.VBMode = CVertexBufferInfo::HwARB;
+	vb.VertexObjectId = _VertexObjectId;
+}
+
 
 }
 

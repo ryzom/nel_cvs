@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.15 2000/12/22 09:56:04 berenguier Exp $
+ * $Id: scene.cpp,v 1.16 2001/01/11 08:57:30 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,23 +227,16 @@ CTransformShape	*CScene::createInstance(const std::string &shapeName)
 	{
 		try
 		{
-			string	path= CPath::lookup(shapeName);
-			IShape	*shape=NULL;
-			CIFile	file;
-
-			// Load the shape.
-			if(!file.open(path))
-				return NULL;
-			file.serialPolyPtr(shape);
-			file.close();
-			if(shape==NULL)
-				return NULL;
+			CShapeStream	mesh;
+			CIFile meshfile(CPath::lookup(shapeName));
+			meshfile.serial( mesh );
+			meshfile.close();
 
 			// Add the shape to the map.
-			CSmartPtr<IShape>	spShape= shape;
+			CSmartPtr<IShape>	spShape= mesh.getShapePointer();
 			addShape(shapeName, spShape);
 			it= ShapeMap.find(shapeName);
-			nlassert(it==ShapeMap.end());
+			nlassert(it!=ShapeMap.end());
 		}
 		catch(EPathNotFound &)
 		{

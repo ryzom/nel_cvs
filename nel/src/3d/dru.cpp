@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.21 2001/01/09 14:55:20 berenguier Exp $
+ * $Id: dru.cpp,v 1.22 2001/01/11 08:57:30 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -253,6 +253,39 @@ void	CDRU::drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	driver.render(pb, mat);
 }
 
+
+void	CDRU::drawQuad (float xcenter, float ycenter, float radius, IDriver& driver, CRGBA col, CViewport viewport)
+{
+	CMatrix mtx;
+	mtx.identity();
+	driver.setupViewport (viewport);
+	driver.setupViewMatrix (mtx);
+	driver.setupModelMatrix (mtx);
+	driver.setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
+
+	static CMaterial mat;
+	mat.initUnlit();
+	mat.setSrcBlend(CMaterial::srcalpha);
+	mat.setDstBlend(CMaterial::invsrcalpha);
+	mat.setBlend(true);
+	mat.setColor(col);
+	
+	static CVertexBuffer vb;
+	vb.setVertexFormat (IDRV_VF_XYZ);
+	vb.setNumVertices (4);
+	vb.setVertexCoord (0, CVector (xcenter-radius, 0, ycenter-radius));
+	vb.setVertexCoord (1, CVector (xcenter+radius, 0, ycenter-radius));
+	vb.setVertexCoord (2, CVector (xcenter+radius, 0, ycenter+radius));
+	vb.setVertexCoord (3, CVector (xcenter-radius, 0, ycenter+radius));
+	
+	driver.activeVertexBuffer(vb);
+
+	CPrimitiveBlock pb;
+	pb.setNumQuad (1);
+	pb.setQuad (0, 0, 1, 2, 3);
+
+	driver.render(pb, mat);
+}
 
 } // NL3D
 

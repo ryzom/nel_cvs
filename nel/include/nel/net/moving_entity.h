@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.13 2001/01/09 16:54:02 cado Exp $
+ * $Id: moving_entity.h,v 1.14 2001/01/11 08:57:45 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -229,6 +229,12 @@ public:
 	/// Sets the previous pos
 	void					setPreviousPos( const NLMISC::CVector& prevpos ) { _PrevPos = prevpos; }
 
+	/// Returns the previous up vector 
+	const NLMISC::CVector&	previousVectorUp() const						{ return _PrevVectorUp; }
+
+	/// Sets the previous vector up
+	void					setPreviousVectorUp( const NLMISC::CVector& prevVectorUp ) { _PrevVectorUp = prevVectorUp; }
+
 	// Custom data
 	uint32					Tag;
 	//void*					Data;
@@ -280,6 +286,9 @@ private:
 
 	/// Previous position (that was valid before the latest update)
 	NLMISC::CVector			_PrevPos;
+
+	/// Previous vector up 
+	NLMISC::CVector			_PrevVectorUp;
 };
 
 

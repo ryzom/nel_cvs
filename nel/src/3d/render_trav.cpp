@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.30 2002/06/28 15:10:07 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.31 2002/07/02 12:16:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -179,7 +179,7 @@ void		CRenderTrav::traverse()
 	// Render Opaque stuff.
 	// =============================
 
-	// TempYoyo
+	// TestYoyo
 	//OrderOpaqueList.reset(0);
 	//OrderTransparentList.reset(0);
 

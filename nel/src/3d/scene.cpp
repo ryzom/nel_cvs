@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.79 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: scene.cpp,v 1.80 2002/07/02 12:16:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -403,7 +403,7 @@ void	CScene::render(bool	doHrcPass)
 	for(it= RenderTraversals.begin(); it!= RenderTraversals.end(); it++)
 	{
 		ITravScene	*trav= (*it).second;
-		// TempYoyo
+		// TestYoyo
 		/*if(AnimDetailTravId!=trav->getClassId() && 
 			LoadBalancingTravId!=trav->getClassId() && 
 			HrcTravId!=trav->getClassId() && 

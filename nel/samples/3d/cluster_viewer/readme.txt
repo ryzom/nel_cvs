@@ -62,5 +62,9 @@ A: Yes because there are no automatic detection for the moving object.
 You have to get this information from the PACS system and give it to
 the Cluster/Portal system through the setClusterSystem function.
 
+Q: What if my moving objects are using skeleton animation.
+A: You will need to use setClusterSystem for the skeleton
+only, the shape will inherit the visibility of the skeleton.
+
 Q: ok thanks
 A: you're welcome :)

@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.2 2002/04/24 16:26:02 besson Exp $
+ * $Id: primitive.h,v 1.3 2002/07/16 13:15:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,8 +80,11 @@ public:
 
 public:
 
-	bool contains (NLMISC::CVector &v);
+	bool contains (const NLMISC::CVector &v) { return CPrimZone::contains(v, VPoints); }
 	void serial (NLMISC::IStream &f);
+
+	// returns true if the vector v is inside of the patatoid
+	static bool contains (const NLMISC::CVector &v, const std::vector<NLMISC::CVector> &points);
 };
 
 // ***************************************************************************

@@ -8,6 +8,7 @@ database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 
 
 # Get the maps directories
 map_source_directories=`cat ../../cfg/directories.cfg | grep "map_source_directory" | sed -e 's/map_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+map_uncompressed_source_directories=`cat ../../cfg/directories.cfg | grep "map_uncompressed_source_directory" | sed -e 's/map_uncompressed_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 
 # Log error
@@ -35,6 +36,18 @@ for i in $map_source_directories; do
 			then
 				cp -u -p $dds tga 2>> log.log
 			fi
+		fi
+	done
+	# Idle
+	../../idle.bat
+done
+
+for i in $map_uncompressed_source_directories; do
+	for j in $database_directory/$i/*.[tT][gG][aA]; do
+		if ( test -f $j )
+		then
+			# Copy the dds and the tga
+			cp -u -p $j tga_uncompressed 2>> log.log
 		fi
 	done
 	# Idle

@@ -176,7 +176,7 @@ int cfwrap()
 //"//".*\n	{ /* ignore one line comment but count the new line */ cf_CurrentLine++; DEBUG_PRINTF("*****line++ %d\n", cf_CurrentLine); }
 void comment ()
 {
-	char c;
+	int c;
 
 	do
 	{

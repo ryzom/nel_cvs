@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.67 2003/04/23 10:07:41 berenguier Exp $
+ * $Id: zone.cpp,v 1.68 2003/12/17 14:15:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1829,18 +1829,12 @@ bool CPatchInfo::transform (std::vector<CPatchInfo> &patchInfo, NL3D::CZoneSymme
 			}
 
 			// Smooth flags
-			uint backupFlag = pi.Flags;
-			for (int edge=0; edge<4; edge+=2)
-			{
-				// Clear smooth flags
-				pi.Flags &= (1<<edge);
-
-				// Symmetry edge
-				uint symEdge = ((edge+2)&3);
-
-				// Copy the flag
-				pi.Flags |= (((backupFlag>>symEdge)&1)<<edge);
-			}
+			uint flags = (uint)(pi.getSmoothFlag (0))<<2;
+			flags |= (uint)(pi.getSmoothFlag (2))<<0;
+			flags |= (uint)(pi.getSmoothFlag (1))<<1;
+			flags |= (uint)(pi.getSmoothFlag (3))<<3;
+			pi.Flags &= ~3;
+			pi.Flags |= flags;
 		}
 
 		// --- Symmetry of the bind info.

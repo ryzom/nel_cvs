@@ -1,7 +1,7 @@
 /** \file zone_smoother.cpp
  * <File description>
  *
- * $Id: zone_smoother.cpp,v 1.4 2003/09/18 16:14:51 corvazier Exp $
+ * $Id: zone_smoother.cpp,v 1.5 2003/12/17 14:15:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,7 +96,7 @@ void			CZoneSmoother::smoothTangents(CZoneInfo zones[5], float angleThreshold, b
 		// For all edges.
 		for(j=0;j<4;j++)
 		{
-			if (pat0.getSmoothFlag (i) == false)
+			if (pat0.getSmoothFlag (i))
 			{
 				CPatchInfo::CBindInfo	&bd= pat0.BindEdges[j];
 				// If normal bind (1/1), we can do the smooth.

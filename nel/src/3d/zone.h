@@ -1,7 +1,7 @@
 /** \file 3d/zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.19 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: zone.h,v 1.20 2003/12/17 14:15:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -187,7 +187,7 @@ public:
 	}
 
 	/**
-	  * Get the smooth flag for the n-th edge. Return false if this edge must by smoothed, true else.
+	  * Get the smooth flag for the n-th edge. Return true if this edge must by smoothed, false else.
 	  */
 	bool getSmoothFlag (uint edge)
 	{

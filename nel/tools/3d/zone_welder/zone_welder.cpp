@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.19 2003/12/16 18:01:11 corvazier Exp $
+ * $Id: zone_welder.cpp,v 1.20 2003/12/17 14:15:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -590,7 +590,7 @@ void weldZones(const char *center)
 
 					// force the same smooth flag
 					bool smoothFlag = centerZonePatchs[ptch].getSmoothFlag (j);
-					smoothFlag |= adjZonePatchs[patchIndex].getSmoothFlag (edgeIndex);
+					smoothFlag &= adjZonePatchs[patchIndex].getSmoothFlag (edgeIndex);
 					centerZonePatchs[ptch].setSmoothFlag (j, smoothFlag);
 					adjZonePatchs[patchIndex].setSmoothFlag (edgeIndex, smoothFlag);
 

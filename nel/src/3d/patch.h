@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.34 2003/08/19 14:11:34 berenguier Exp $
+ * $Id: patch.h,v 1.35 2003/12/17 14:15:39 corvazier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -574,7 +574,7 @@ public:
 	}
 
 	/**
-	  * Get the smooth flag for the n-th edge. Return false if this edge must by smoothed, true else.
+	  * Get the smooth flag for the n-th edge. Return true if this edge must by smoothed, false else.
 	  */
 	bool getSmoothFlag (uint edge) const
 	{

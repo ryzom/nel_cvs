@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.11 2003/08/19 14:11:34 berenguier Exp $
+ * $Id: patch_lightmap.cpp,v 1.12 2003/12/17 14:15:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -910,7 +910,7 @@ void		CPatch::computeNearBlockLightmap(uint uts, uint utt, CRGBA	*lightText)
 			CBindInfo			bindInfo;
 			bindInfo.Zone= NULL;
 
-			// if smmothed edge, search the neighbor.
+			// if smoothed edge, search the neighbor.
 			if(getSmoothFlag(edge))
 			{
 				// Build the bindInfo against this edge.

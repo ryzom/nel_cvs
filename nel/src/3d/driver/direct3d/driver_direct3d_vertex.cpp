@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex.cpp,v 1.9 2004/09/02 16:58:57 vizerie Exp $
+ * $Id: driver_direct3d_vertex.cpp,v 1.10 2004/09/07 15:26:02 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -50,7 +50,7 @@ namespace NL3D
 
 // ***************************************************************************
 
-CVBDrvInfosD3D::CVBDrvInfosD3D(IDriver *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) : IVBDrvInfos(drv, it, vb)
+CVBDrvInfosD3D::CVBDrvInfosD3D(CDriverD3D *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) : IVBDrvInfos(drv, it, vb)
 {
 	H_AUTO_D3D(CVBDrvInfosD3D_CVBDrvInfosD3D)
 	CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
@@ -61,6 +61,7 @@ CVBDrvInfosD3D::CVBDrvInfosD3D(IDriver *drv, ItVBDrvInfoPtrList it, CVertexBuffe
 	#ifdef NL_DEBUG
 		Locked = false;
 	#endif
+	Driver = drv;
 }
 
 // ***************************************************************************
@@ -81,8 +82,16 @@ CVBDrvInfosD3D::~CVBDrvInfosD3D()
 	// Don't release VertexDecl, it is release by the driver
 	if (VertexBuffer && !Volatile)
 	{
+		if (Driver)
+		{
+			if (Driver->_VertexBufferCache.VertexBuffer == VertexBuffer)
+			{
+				Driver->_VertexBufferCache.VertexBuffer = NULL;
+				Driver->touchRenderVariable(&Driver->_VertexBufferCache);
+			}
+		}
 		vertexCount--;
-		VertexBuffer->Release();
+		VertexBuffer->Release();		
 	}
 
 	// Stats
@@ -422,8 +431,9 @@ bool CDriverD3D::activeVertexBuffer(CVertexBuffer& VB)
 	VB.fillBuffer ();
 
 	// Set the vertex buffer
-	setVertexDecl (info->VertexDecl);
-	setVertexBuffer (info->VertexBuffer, info->Offset, info->Stride, info->UseVertexColor, VB.getNumVertices(), VB.getPreferredMemory(), info->Usage);
+	setVertexDecl (info->VertexDecl, info->Stride);	
+	setVertexBuffer (info->VertexBuffer, info->Offset, info->Stride, info->UseVertexColor, VB.getNumVertices(), VB.getPreferredMemory(), info->Usage);	
+	nlassert(_VertexDeclStride == _VertexStreamStride);
 
 	// Set UVRouting
 	const uint8 *uvRouting = VB.getUVRouting();

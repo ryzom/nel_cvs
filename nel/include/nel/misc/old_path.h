@@ -1,7 +1,8 @@
+#if 0
 /** \file path.h
  * Abstract system directory architecture and file management
  *
- * $Id: old_path.h,v 1.1 2001/11/23 16:53:50 lecroart Exp $
+ * $Id: old_path.h,v 1.2 2001/12/03 14:21:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,3 +126,4 @@ struct CFile
 #endif // NL_PATH_H
 
 /* End of path.h */
+#endif

@@ -1,7 +1,8 @@
+#if 0
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: new_path.cpp,v 1.3 2001/11/22 17:44:36 cado Exp $
+ * $Id: new_path.cpp,v 1.4 2001/12/03 14:21:23 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -796,3 +797,4 @@ string CNewFile::findNewFile (const string &filename)
 }
 
 } // NLMISC
+#endif

@@ -1,7 +1,8 @@
+#if 0
 /** \file path.cpp
  * CPath
  *
- * $Id: old_path.cpp,v 1.1 2001/11/23 16:54:03 lecroart Exp $
+ * $Id: old_path.cpp,v 1.2 2001/12/03 14:21:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -178,3 +179,4 @@ string CFile::findNewFile (const string &filename)
 }
 
 } // NLMISC
+#endif

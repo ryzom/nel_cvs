@@ -1,7 +1,8 @@
+#if 0
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: new_path.h,v 1.3 2001/11/23 16:53:50 lecroart Exp $
+ * $Id: new_path.h,v 1.4 2001/12/03 14:21:12 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -204,3 +205,4 @@ struct CNewFile
 #endif // NL_NEW_PATH_H
 
 /* End of path.h */
+#enfif

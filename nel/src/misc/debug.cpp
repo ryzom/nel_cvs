@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.37 2001/05/02 10:32:46 cado Exp $
+ * $Id: debug.cpp,v 1.38 2001/06/12 15:38:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,7 +143,7 @@ void createDebug ()
 
 		sd = new CStdDisplayer;
 		mbd = new CMsgBoxDisplayer;
-		fd = new CFileDisplayer ("log.log", true);
+		fd = new CFileDisplayer ("log.log", false);
 		
 		initDebug2();
 

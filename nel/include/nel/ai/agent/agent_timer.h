@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.13 2003/01/21 11:24:25 chafik Exp $
+ * $Id: agent_timer.h,v 1.14 2003/01/23 15:40:56 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -30,7 +30,7 @@
 #include "nel/misc/time_nl.h"
 
 namespace NLAIAGENT
-{
+{	
 	class CAgentManagerTimer: public CAgentScript
 	{	
 

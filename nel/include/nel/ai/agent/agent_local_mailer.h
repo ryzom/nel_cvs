@@ -1,7 +1,7 @@
 /** \file agent_local_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_local_mailer.h,v 1.8 2003/01/21 11:24:25 chafik Exp $
+ * $Id: agent_local_mailer.h,v 1.9 2003/01/23 15:40:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,8 @@ namespace NLAIAGENT
 	public:
 		static const NLAIC::CIdentType LocalAgentMail;
 	private:
-		IBasicAgent *_HostAgent; ///host agent where we have to establish communication.
+		 ///host agent where we have to establish communication.
+		IBasicAgent *_HostAgent;
 
 	public:
 		CLocalAgentMail():IAgent(NULL),_HostAgent(NULL)
@@ -202,7 +203,7 @@ namespace NLAIAGENT
 		virtual IObjectIA::CProcessResult sendMessage(IObjectIA *msg);		
 		//virtual IObjectIA::CProcessResult sendMessage(IMessageBase *msg, IBasicAgent &receiver);		
 
-		///Mailer do'nt have own activity.
+		///Mailer don't have activity or own activity.
 		virtual IObjectIA::CProcessResult runActivity()
 		{
 			return ProcessRun;

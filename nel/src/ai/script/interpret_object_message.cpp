@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.27 2002/05/27 09:23:04 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.28 2003/01/23 15:41:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,6 @@
 #include "nel/ai/agent/msg_notify.h"
 #include "nel/ai/agent/msg_goal.h"
 #include "nel/ai/agent/msg_fact.h"
-#include "nel/ai/agent/msg_debug.h"
 #include "nel/ai/agent/msg_on_change.h"
 #include "nel/ai/c/registry_type.h"
 
@@ -325,60 +324,6 @@ namespace NLAISCRIPT
 		return x;
 	}	
 
-
-//#########################################
-//		CDebugMsgClass
-//#########################################
-	
-	CDebugMsgClass::CDebugMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
-	{
-		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
-		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
-		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
-		setClassName(NLAIAGENT::CStringVarName("CDebugMsgClass"));
-		buildVTable();
-	}
-	CDebugMsgClass::CDebugMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
-	{
-		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
-		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
-		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
-		setClassName(NLAIAGENT::CStringVarName("CDebugMsgClass"));
-		buildVTable();
-	}
-
-	CDebugMsgClass::CDebugMsgClass() : CMessageClass()
-	{		
-		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
-		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
-		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
-		setClassName(NLAIAGENT::CStringVarName("CDebugMsgClass"));
-		buildVTable();
-	}
-	
-	const NLAIC::IBasicType *CDebugMsgClass::clone() const
-	{
-		return new CDebugMsgClass();
-	}
-
-	const NLAIC::IBasicType *CDebugMsgClass::newInstance() const
-	{
-		return new CDebugMsgClass();
-	}
-
-	NLAIAGENT::IObjectIA *CDebugMsgClass::buildNewInstance() const
-	{
-//		return new NLAIAGENT::CGoalMsg( (CMessageClass *) this );
-		std::list<NLAIAGENT::IObjectIA *> components;
-		createBaseClassComponents( components );
-
-		// Création du message
-		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CMsgDebug( components,  (CMessageClass *) this );		
-		return x;
-	}
 
 //#########################################
 //		COnChangeMsgClass

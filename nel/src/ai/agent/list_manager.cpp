@@ -1,6 +1,6 @@
 /** \file list_manager.cpp
  *
- * $Id: list_manager.cpp,v 1.11 2003/01/21 11:24:39 chafik Exp $
+ * $Id: list_manager.cpp,v 1.12 2003/01/23 15:41:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -296,48 +296,5 @@ namespace NLAIAGENT
 		return NULL;
 	}
 
-/*
-	########################
-	class CListGroupManager
-	########################
-*/
-	CListGroupManager::CListGroupManager():IListManager(new CGroupType())
-	{
-	}
-
-	CListGroupManager::CListGroupManager(const CListGroupManager &l):IListManager(l)
-	{
-	}
-
-	CListGroupManager::~CListGroupManager()
-	{
-	}
-
-	const NLAIC::CIdentType &CListGroupManager::getType() const
-	{
-		return IdListGroupManager;
-	}
-
-	const NLAIC::IBasicType *CListGroupManager::clone() const
-	{
-		return new CListGroupManager(*this);
-	}
-
-	const NLAIC::IBasicType *CListGroupManager::newInstance() const
-	{
-		return new CListGroupManager();
-	}
-
-	void CListGroupManager::trie()
-	{
-		// TODO : Sort the agent on the ID value.
-		throw;
-	}
-
-	const IObjectIA *CListGroupManager::getObject(const CObjectIdent &) const
-	{
-		// TODO.
-		throw;
-		return NULL;
-	}
+	
 }

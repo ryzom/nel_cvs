@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.31 2003/01/21 11:24:39 chafik Exp $
+ * $Id: mailbox.cpp,v 1.32 2003/01/23 15:41:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,13 +54,7 @@ namespace NLAIAGENT
 
 
 	CLocalMailBox::CLocalMailBox (const CLocalMailBox &A):IMailBox(A),_RunState(A._RunState),_Size(0)
-	{						
-		/*TListMailBox::const_reverse_iterator i = A._ListMailBox.rbegin();
-		while(i != A._ListMailBox.rend())
-		{
-			connect(*i);
-			_ListMailBox.push_back(*i++);
-		}*/	
+	{								
 	}
 
 	CLocalMailBox::~CLocalMailBox()
@@ -68,19 +62,9 @@ namespace NLAIAGENT
 		while(_ListMessageIn.begin() != _ListMessageIn.end())
 		{
 			IMessageBase *msg = (IMessageBase *)_ListMessageIn.back();
-#ifdef NL_DEBUG
-			const char *mname = (const char *)msg->getType();
-#endif
 			msg->release();
 			_ListMessageIn.pop_back();
-		}
-
-		while(_ListSharedMessage.begin() != _ListSharedMessage.end())
-		{
-			IMessageBase *msg = (IMessageBase *)_ListSharedMessage.back();
-			msg->release();
-			_ListSharedMessage.pop_back();
-		}
+		}		
 
 	}
 
@@ -90,18 +74,7 @@ namespace NLAIAGENT
 	}
 
 	void CLocalMailBox::popMessage()
-	{	
-
-		/*IMessageBase *msg = (IMessageBase *)_ListMessageIn.back();
-		_ListMessageIn.pop_back();
-		if(msg->getDispatch())
-		{
-			_ListSharedMessage.push_back(msg);
-		}
-		else
-		{			
-			msg->release();
-		}*/
+	{			
 		((IMessageBase *)_ListMessageIn.back())->release();
 		_ListMessageIn.pop_back();
 		_Size --;
@@ -114,17 +87,12 @@ namespace NLAIAGENT
 
 	bool CLocalMailBox::isEmpty() const
 	{
-		return _Size == 0;//_ListMessageIn.begin() == _ListMessageIn.end();
+		return _Size == 0;
 	}
-	
-	/*void CLocalMailBox::sendMessage(const IBasicAgent &,const IBaseGroupType &)
-	{					
-	}*/
-
+		
 	IObjectIA::CProcessResult CLocalMailBox::sendMessage(IMessageBase *m)
 	{
-		m->release();
-		//_listMessageOut.push_back((const IMessageBase *)msg.clone());
+		m->release();		
 		return IObjectIA::ProcessRun;
 	}
 
@@ -138,14 +106,7 @@ namespace NLAIAGENT
 	void CLocalMailBox::addMailBox(IMailBox *mail)
 	{
 		connect( mail );
-		_ListMailBox.push_back((IMailBox *)mail);
-
-		/*std::list<IBasicMessageGroup *>::const_iterator it_grp = mail->getGroups().begin();
-		while ( it_grp != mail->getGroups().end() )
-		{
-			_Msg_grps.push_back( *it_grp );
-			it_grp++;
-		}*/
+		_ListMailBox.push_back((IMailBox *)mail);		
 
 	}
 
@@ -156,9 +117,7 @@ namespace NLAIAGENT
 		removeConnection(mail);
 	}
 
-	void CLocalMailBox::setName(const IVarName &)
-	{				
-	}
+	
 
 	const NLAIC::IBasicType *CLocalMailBox::clone() const
 	{
@@ -229,17 +188,7 @@ namespace NLAIAGENT
 			os.serial( (NLAIC::CIdentType &) (msg->getType()) );
 			msg->save(os);
 		}
-
-		size = _ListSharedMessage.size();
-		os.serial( size );
-		msgItr = _ListSharedMessage.begin();
-		while(msgItr != _ListSharedMessage.end())
-		{
-			IMessageBase *msg = (IMessageBase *)*msgItr++;
-			os.serial( (NLAIC::CIdentType &) (msg->getType()) );
-			msg->save(os);
-		}
-		//_ListMessageIn.save(os);
+				
 	}
 
 	void CLocalMailBox::load(NLMISC::IStream &is)
@@ -261,8 +210,6 @@ namespace NLAIAGENT
 				delete num;
 			}
 		}
-
-		//_ListMessageIn.load(is);
 	}					
 
 	const IObjectIA::CProcessResult &CLocalMailBox::getState() const 

@@ -1,7 +1,7 @@
 /** \file agent_proxy_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_proxy_mailer.h,v 1.18 2003/01/21 11:24:25 chafik Exp $
+ * $Id: agent_proxy_mailer.h,v 1.19 2003/01/23 15:40:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,10 @@ namespace NLAIAGENT
 {	
 	class IMainAgent;
 
+	/**
+	This is an proxy, tha allow to make a stdandar way for communication between distant agent on the server.
+
+	*/
 	class CProxyAgentMail: public IBasicAgent
 	{
 	public:
@@ -49,6 +53,7 @@ namespace NLAIAGENT
 		static void releaseClass();
 
 	private:
+		///Reference of the distant agent.
 		CAgentNumber *_AgentRef;
 	public:
 		CProxyAgentMail();

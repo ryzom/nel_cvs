@@ -1,7 +1,7 @@
 /** \file agent_input.h
  * An interface giving a direct value from an agent component or telling when the value changed.
  *
- * $Id: agent_input.h,v 1.4 2001/03/27 08:21:42 chafik Exp $
+ * $Id: agent_input.h,v 1.5 2003/01/23 15:40:55 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 namespace NLAIAGENT
 {
+
 	/**
 	 * An interface giving a direct value from an agent component or telling when the value changed.
 	 * \author Gabriel ROBERT
@@ -44,7 +45,7 @@ namespace NLAIAGENT
 	protected :
 		bool				_ActiveInput;	// True if _ConnexionList not empty.
 		IObjectIA			*_LocalValue;	// Last value of the component for know if his value as changed.
-		CListGroupManager	_ConnexionList;	// A list of IConnectIA interested by the change of the value.	
+		CGroupType			_ConnexionList;	// A list of IConnectIA interested by the change of the value.	
 
 	public:
 

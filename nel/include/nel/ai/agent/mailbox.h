@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.15 2003/01/21 11:24:25 chafik Exp $
+ * $Id: mailbox.h,v 1.16 2003/01/23 15:40:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,17 +89,26 @@ namespace NLAIAGENT
 		public:
 			static const NLAIC::CIdentType IdLocalMailBox;
 		public:			
+			///Type deffinition for list and iterator for message container
+			//{@
 			typedef std::list<const IMessageBase *>::iterator TListMessageIter;
 			typedef std::list<const IMessageBase *>::const_iterator TListMessageCstIter;
+			//@}
 			
+			///Type deffinition for list aned iterator for connectong mailbox container
+			//{@
 			typedef std::list<IMailBox *>::iterator TListMailBoxIter;
 			typedef std::list<IMailBox *>::const_iterator TListMailBoxCstIter;
+			//@}
 
-		private:						
+		private:
+			///Statue of run.
 			IObjectIA::CProcessResult	_RunState;
+			///List of reciption messages.
 			TListMessage _ListMessageIn;
-			TListMessage _ListSharedMessage;
+			///List of mailboxs connected.
 			TListMailBox _ListMailBox;
+			///Count of messages.
 			sint _Size;
 			
 		public:
@@ -118,8 +127,7 @@ namespace NLAIAGENT
 			// Ajoute une boite aux lettre dans la liste des boites aux lettres "source" (les bals à consulter).
 			virtual void addMailBox(IMailBox *mail);
 			// Supprime une boite aux lettre dans la liste des boites aux lettres "source" (les bals à consulter).
-			virtual void removeMailBox(IMailBox *mail);
-			virtual void setName(const IVarName &);
+			virtual void removeMailBox(IMailBox *mail);			
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual const NLAIC::CIdentType &getType() const;

@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.23 2003/01/21 11:24:25 chafik Exp $
+ * $Id: agent_object.h,v 1.24 2003/01/23 15:40:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,9 +260,9 @@ namespace NLAIAGENT
 	};	
 
 	/**	
-	  This class is an iterator for list access.
+	  This class is an iterator for IObjetOp list access.
 	
-	  We have two list type a std::vector list and a std::list type we define is class to standardize iterator list access.
+	  We have two list type a std::vector list and a std::list type we define this class to standardize iterator list access.
 
 	  * \author Chafik sameh
 	  * \author Nevrax France
@@ -608,8 +608,7 @@ namespace NLAIAGENT
 
 		///Find an element on the list the operator == is use.
 		virtual const IObjectIA *find(const IObjectIA &obj) const = 0;
-		
-		//virtual void eraseFirst(const IObjectIA &) = 0;
+				
 		///Erase all element find equal at the const IObjectIA & on argument. 
 		virtual void eraseAll(const IObjectIA &) = 0; 
 		///Erase the element how have the same pointer memory as the argument const IObjectIA *.

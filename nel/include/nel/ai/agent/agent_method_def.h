@@ -1,7 +1,7 @@
 /** \file agent_method_def.h
- * Sevral define methods names.
+ * Sevral define methods names for script.
  *
- * $Id: agent_method_def.h,v 1.21 2002/11/15 09:20:53 chafik Exp $
+ * $Id: agent_method_def.h,v 1.22 2003/01/23 15:40:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

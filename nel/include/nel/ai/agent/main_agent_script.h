@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.18 2003/01/13 16:59:05 chafik Exp $
+ * $Id: main_agent_script.h,v 1.19 2003/01/23 15:40:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NLAIAGENT
 	class NLAISCRIPT::CStackPointer;
 
 	/**	
-	This class is the main agent, this main agent is a reception central for all agent in a server. Wen agent is in it, he can access to an script
+	This class is the main agent, this main agent is a reception central for all agent in a server. when agent is in it, he can access to an script
 	context to execute script code and send to distant agent.
 
 	* \author Chafik sameh	 	

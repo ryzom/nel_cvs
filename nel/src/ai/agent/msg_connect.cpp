@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_connect.cpp,v 1.6 2003/01/21 11:24:39 chafik Exp $
+ * $Id: msg_connect.cpp,v 1.7 2003/01/23 15:41:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,7 +22,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/ai/agent/msg_connect.h"
+
 #include "nel/ai/agent/agent_digital.h"
 #include "nel/ai/script/interpret_message_connect.h"
 #include "nel/ai/agent/object_type.h"

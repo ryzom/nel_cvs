@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.14 2002/05/17 13:46:34 chafik Exp $
+ * $Id: agent_init.cpp,v 1.15 2003/01/23 15:41:08 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,6 @@
 #include "nel/ai/agent/msg_notify.h"
 #include "nel/ai/agent/msg_goal.h"
 #include "nel/ai/agent/msg_fact.h"
-#include "nel/ai/agent/msg_debug.h"
 #include "nel/ai/agent/msg_action.h"
 #include "nel/ai/agent/msg_on_change.h"
 #include "nel/ai/character/character.h"

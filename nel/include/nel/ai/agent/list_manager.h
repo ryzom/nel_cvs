@@ -1,7 +1,7 @@
 /** \file list_manager.h
  * Sevral class for objects manipulation.
  *
- * $Id: list_manager.h,v 1.10 2003/01/21 11:24:25 chafik Exp $
+ * $Id: list_manager.h,v 1.11 2003/01/23 15:40:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,11 @@ namespace NLAIAGENT
 {
 	class CObjectIdent;
 
+	/**
+	Abstract class to define an IBaseGroupType that can store an ather. That is useful for per exemple messages defintion. Indeed messages can be 
+	considered as a list stream because the size of the messages is unknown, a list is useful in thic case. But on script all element of messages is known
+	because it is declared by the programmer, a vector is usful and more optimal in this case.
+	*/
 	class IListBasicManager : public IBaseGroupType
 	{
 	protected:
@@ -106,6 +111,9 @@ namespace NLAIAGENT
 	};
 
 
+	/**
+	this class define an list
+	*/
 	class IListManager : public IListBasicManager
 	{	
 	public:
@@ -124,6 +132,9 @@ namespace NLAIAGENT
 
 	};
 
+	/**
+	this class define an vector.
+	*/
 	class CVectorGroupManager: public IListManager
 	{
 	public:
@@ -143,24 +154,6 @@ namespace NLAIAGENT
 
 		virtual ~CVectorGroupManager();
 	};
-
-	class CListGroupManager: public IListManager
-	{
-	public:
-		static const NLAIC::CIdentType IdListGroupManager;
-
-	public:
-		CListGroupManager();
-		CListGroupManager(const CListGroupManager &);
-		
-		virtual const NLAIC::CIdentType &getType() const;		
-		virtual const NLAIC::IBasicType *clone() const;
-		virtual const NLAIC::IBasicType *newInstance() const;
-		
-		virtual void trie();
-		virtual const IObjectIA *getObject(const CObjectIdent &) const;
-
-		virtual ~CListGroupManager();
-	};
+	
 }
 #endif

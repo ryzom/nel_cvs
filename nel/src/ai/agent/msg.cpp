@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.24 2003/01/21 11:24:39 chafik Exp $
+ * $Id: msg.cpp,v 1.25 2003/01/23 15:41:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,8 +86,7 @@ namespace NLAIAGENT
 		_Receiver = NULL;
 		_Continuation = NULL;
 		_Performatif = PUndefine;
-		_comeFromC_PLUS = true;
-		_Dispatch = false;
+		_comeFromC_PLUS = true;		
 		_ProtectSender = false;
 		_SenderIsVolatile = false;
 		_ReceiverIsVolatile = false;		
@@ -100,8 +99,7 @@ namespace NLAIAGENT
 		_Receiver = NULL;
 		_Continuation = NULL;
 		_Performatif = PUndefine;
-		_comeFromC_PLUS = true;
-		_Dispatch = false;
+		_comeFromC_PLUS = true;		
 		_ProtectSender = false;
 		_SenderIsVolatile = false;
 		_ReceiverIsVolatile = false;		
@@ -116,8 +114,7 @@ namespace NLAIAGENT
 		_Receiver = NULL;
 		_Continuation = NULL;
 		_Performatif = PUndefine;
-		_comeFromC_PLUS = true;
-		_Dispatch = false;
+		_comeFromC_PLUS = true;		
 		_ProtectSender = false;
 		_SenderIsVolatile = false;
 		_ReceiverIsVolatile = false;		
@@ -138,8 +135,7 @@ namespace NLAIAGENT
 		_ReservedMethodIndexVar = m._ReservedMethodIndexVar;
 		_ReservedHeritanceIndexVar = m._ReservedHeritanceIndexVar;			
 		_Performatif = m._Performatif;
-		_comeFromC_PLUS = m._comeFromC_PLUS;
-		_Dispatch = m._Dispatch;
+		_comeFromC_PLUS = m._comeFromC_PLUS;		
 		_ProtectSender = m._ProtectSender;
 	}
 
@@ -324,7 +320,7 @@ namespace NLAIAGENT
 		else a = "NULL";
 		std::string b;
 		IListBasicManager::getDebugString(b);		
-		t += NLAIC::stringGetBuild("IMessageBase<%d>:\n_sender:'%s' Message:'%s' dispatch:%d",this,a.c_str(),b.c_str(),_Dispatch);
+		t += NLAIC::stringGetBuild("IMessageBase<%d>:\n_sender:'%s' Message:'%s'",this,a.c_str(),b.c_str());
 	}
 	
 

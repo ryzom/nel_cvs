@@ -1,6 +1,6 @@
 /** \file msg_action.h
- *
- * $Id: msg_action.h,v 1.5 2003/01/21 11:24:25 chafik Exp $
+ * Multiple messages definitions
+ * $Id: msg_action.h,v 1.6 2003/01/23 15:40:56 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,9 @@
 
 namespace NLAIAGENT
 {
+	/**
+	Class to define success on agent, it is use on opérator or generally on actor on sucess process
+	*/
 	class CSuccessMsg : public CMessageScript 
 	{
 	public:
@@ -61,6 +64,9 @@ namespace NLAIAGENT
 
 	};
 
+	/**
+	Class to define success on agent, it is use on opérator or generally on actor on fail process
+	*/
 	class CFailureMsg : public CMessageScript 
 	{
 	public:
@@ -90,9 +96,7 @@ namespace NLAIAGENT
 
 		virtual sint32 getBaseMethodCount() const;
 
-		//@}			
-
+		//@}
 	};
-
 }
 #endif

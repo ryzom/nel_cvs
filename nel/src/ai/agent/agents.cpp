@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.58 2003/01/21 11:24:39 chafik Exp $
+ * $Id: agents.cpp,v 1.59 2003/01/23 15:41:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,8 +417,7 @@ namespace NLAIAGENT
 			break;
 
 		case IMessageBase::PEven:
-			returnMsg = runEven(msg);
-			((IMessageBase &)msg).setDispatch();
+			returnMsg = runEven(msg);			
 			break;
 		default: break;
 		}

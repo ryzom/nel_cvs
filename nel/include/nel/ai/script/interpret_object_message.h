@@ -1,7 +1,7 @@
 /** \file interpret_object_message.h
- * Class for define an message class in the interpreter.
+ * multiple messages export Class for interpretor.
  *
- * $Id: interpret_object_message.h,v 1.22 2002/03/11 09:57:02 portier Exp $
+ * $Id: interpret_object_message.h,v 1.23 2003/01/23 15:40:56 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -28,6 +28,9 @@
 
 namespace NLAISCRIPT 
 {
+	/**
+	Base class for messages class under the interpretor.
+	*/
 	class CMessageClass: public CAgentClass
 	{
 	public:
@@ -58,6 +61,9 @@ namespace NLAISCRIPT
 		virtual ~CMessageClass();
 	};
 
+	/**
+	Export for the interpretor of the CMsgNotify
+	*/
 	class CMsgNotifyParentClass: public CMessageClass
 	{
 	public:
@@ -80,6 +86,9 @@ namespace NLAISCRIPT
 		//@}
 	};
 
+	/**
+	Export for the interpretor of the CGoalMsg.
+	*/
 	class CGoalMsgClass : public CMessageClass
 	{
 	public:
@@ -102,6 +111,9 @@ namespace NLAISCRIPT
 		//@}
 	};
 
+	/**
+	Export for the interpretor of the CCancelGoalMsg.
+	*/
 	class CCancelGoalMsgClass : public CMessageClass
 	{
 	public:
@@ -124,6 +136,9 @@ namespace NLAISCRIPT
 		//@}
 	};
 
+	/**
+	Export for the interpretor of the CFactMsg.
+	*/
 	class CFactMsgClass : public CMessageClass
 	{
 	public:
@@ -144,29 +159,7 @@ namespace NLAISCRIPT
 		}
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;		
 		//@}
-	};
-
-	class CDebugMsgClass : public CMessageClass
-	{
-	public:
-		static const NLAIC::CIdentType IdDebugMsgClass;
-	public:
-		CDebugMsgClass(const NLAIAGENT::IVarName &);
-		CDebugMsgClass(const NLAIC::CIdentType &);
-		CDebugMsgClass();
-		virtual ~CDebugMsgClass(){}
-
-		/// \name CAgentClass method.
-		//@{
-		virtual const NLAIC::IBasicType *clone() const;
-		virtual const NLAIC::IBasicType *newInstance() const;
-		virtual const NLAIC::CIdentType &getType() const
-		{
-			return IdDebugMsgClass;
-		}
-		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;		
-		//@}
-	};
+	};	
 
 	class COnChangeMsgClass : public CMessageClass
 	{

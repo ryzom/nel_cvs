@@ -1,7 +1,7 @@
 /** \file msg.h
  * class message.
  *
- * $Id: msg.h,v 1.21 2003/01/21 11:24:25 chafik Exp $
+ * $Id: msg.h,v 1.22 2003/01/23 15:40:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,6 @@
 #include "nel/ai/c/registry_class.h"
 #include "nel/ai/agent/agent_object.h"
 #include "nel/ai/agent/msg_group.h"
-#include "nel/ai/agent/msg_container.h"
 #include "nel/ai/agent/list_manager.h"
 
 namespace NLAIAGENT
@@ -84,6 +83,7 @@ namespace NLAIAGENT
 
 		///Who send the message.
 		IObjectIA *_Sender;
+		///statu of the sender, if true that indicate that the IObjectIA *_Sender pointer will be destruct on the destructor.
 		bool _SenderIsVolatile;
 		///witch Agent the message have to be achieve.
 		IObjectIA *_Receiver;
@@ -99,8 +99,7 @@ namespace NLAIAGENT
 		TPerformatif _Performatif;
 		///This bool allow to know here the message come from: scriptes agent or hard coded agent.
 		bool _comeFromC_PLUS;
-		///Is true if agent want to dispatch it to its child;
-		bool _Dispatch;
+		///Sender can be change on a multible send/run messages.
 		bool _ProtectSender;
 
 	public:
@@ -140,16 +139,6 @@ namespace NLAIAGENT
 		void setReceiver(IObjectIA *r, bool v = false);
 		void setContinuation(IObjectIA *r, bool v = false);		
 
-		void setDispatch(bool state = true)
-		{
-			_Dispatch = state;
-		}
-
-		bool getDispatch() const
-		{
-			return _Dispatch;
-		}
-
 		const IObjectIA *getSender() const
 		{			
 			return _Sender;
@@ -166,6 +155,7 @@ namespace NLAIAGENT
 		}
 		//@}
 		
+
 		///\name Set and get script message method processing.
 		//@{
 		void setMethodIndex(sint32 h,sint32 n)
@@ -201,42 +191,6 @@ namespace NLAIAGENT
 		//@}		
 
 	public:
-		
-		///\name IBaseGroupType methode realize.
-		//@{	
-		/*virtual IObjetOp &operator += (const IObjetOp &a);
-		virtual IObjetOp &operator -= (const IObjetOp &a);		
-
-		virtual const IObjectIA *operator[] (sint32) const;
-
-		virtual void set(int i,IObjectIA *o)
-		{
-			_Message->set(i,o);
-		}
-
-		virtual bool isTrue() const;
-
-		virtual IObjetOp *operator ! () const;
-		virtual void push(const IObjectIA *o);
-		virtual void pushFront(const IObjectIA *o);
-		virtual CIteratorContener getIterator()
-		{
-			return _Message->getIterator();
-		}
-		virtual void cpy(const IObjectIA &o);
-		virtual const IObjectIA *pop();
-		virtual const IObjectIA *get() const;
-		virtual const IObjectIA *popFront();
-		virtual const IObjectIA *getFront() const;
-		virtual sint32 size() const;
-		virtual const IObjectIA *find(const IObjectIA &obj) const;
-		virtual void eraseFirst(const IObjectIA &obj);
-		virtual void eraseAll(const IObjectIA &obj); 
-		virtual void erase(const IObjectIA *o); 
-		virtual void erase(const IObjectIA &obj);
-		virtual void erase(std::list<const IObjectIA *> &l);
-		virtual void clear();*/
-
 		virtual IObjectIA &operator = (const IObjectIA &a);		
 
 		virtual sint32 getMethodIndexSize() const;
@@ -255,7 +209,7 @@ namespace NLAIAGENT
 	};
 
 	/**		
-		AbCMessage is an IMessageBase based on a CGroupType list.
+		CMessage is an IMessageBase based on a CGroupType list.
 
 		* \author Chafik sameh
 		* \author Portier Pierre

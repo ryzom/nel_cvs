@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.11 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: shape.h,v 1.12 2002/11/18 17:51:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,6 +111,7 @@ public:
 	float						getDistMax() const {return _DistMax;}
 
 	/** setup the DistMax where the shape is no more displayed.
+	 *  Take effect only for the next created instances.
 	 *	setting <0 means -1 and so means DistMax = infinite.
 	 */
 	void						setDistMax(float distMax);

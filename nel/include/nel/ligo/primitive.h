@@ -1,7 +1,7 @@
 /** \file primitive.h
  * TODO: File description
  *
- * $Id: primitive.h,v 1.40 2005/01/11 13:16:34 corvazier Exp $
+ * $Id: primitive.h,v 1.41 2005/01/19 08:55:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,6 +151,10 @@ public:
 	}
 	// Force class to be polymorphic
 	virtual void foo () const {};
+
+	// ctors
+	CPropertyColor() {}
+	CPropertyColor(NLMISC::CRGBA col) : Color(col) {}
 };
 
 // ***************************************************************************

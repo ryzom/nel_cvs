@@ -4,6 +4,7 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "lb_extern_id_dlg.h"
+#include "3d/ps_located.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.4 2001/11/07 10:38:39 vizerie Exp $
+ * $Id: water_model.cpp,v 1.5 2001/11/07 17:09:29 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #include "3d/water_shape.h"
 #include "3d/water_pool_manager.h"
 #include "3d/water_height_map.h"
-#include "3d/quad_effect.h"
 #include "3d/dru.h"
+#include "nel/misc/vector_2d.h"
 
 
 
@@ -88,7 +88,11 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	// plane z pos in world
 	const float zHeight =  HrcObs->WorldMatrix.getPos().z;
 
+	sint numStepX = CWaterShape::getScreenXGridSize();
+	sint numStepY = CWaterShape::getScreenYGridSize();
 
+	const float invNumStepX = 1.f / numStepX;
+	const float invNumStepY = 1.f / numStepY;
 
 	//===========================//
 	// perform water animation   //
@@ -109,7 +113,9 @@ void	CWaterRenderObs::traverse(IObs *caller)
 		whm.swapBuffers();
 		whm.propagate();
 		whm.filterNStoreGradient();	
+		whm.Date = idate;	
 	}
+	
 
 	
 
@@ -143,12 +149,16 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	}*/
 
 	//======================================//
-	// polygon projection on the near plane //
+	// Polygon projection on the near plane //
 	//======================================//
-
-		static std::vector<NLMISC::CVector2f> projPoly; // projected poly
-		projPoly.resize(clippedPoly.Vertices.size());
-		const float Near = trav->Near;				
+	
+		static NLMISC::CPolygon2D projPoly; // projected poly
+		projPoly.Vertices.resize(clippedPoly.Vertices.size());
+		const float Near = trav->Near;
+		const float xFactor = (numStepX >> 1) * Near  / trav->Right;
+		const float xOffset = (float) (numStepX >> 1) + 0.5f;
+		const float yFactor = - (numStepX >> 1) * Near  / trav->Top;
+		const float yOffset = (float) (numStepY >> 1) + 0.5f;
 		
 		const NLMISC::CMatrix projMat =  trav->ViewMatrix * HrcObs->WorldMatrix;
 		for (k = 0; k < clippedPoly.Vertices.size(); ++k)
@@ -156,9 +166,21 @@ void	CWaterRenderObs::traverse(IObs *caller)
 			// project points in the view
 			NLMISC::CVector t = projMat * clippedPoly.Vertices[k];
 			float invY = 1.f / t.y;
-			projPoly[k].set(Near * t.x * invY, -Near * t.z * invY);							
+			projPoly.Vertices[k].set(xFactor * t.x * invY + xOffset, yFactor * t.z * invY + yOffset);
+			//nlinfo(" x = %f, y = %f", projPoly.Vertices[k].x, projPoly.Vertices[k].y);
 		}
 
+
+	
+	//=============================================//
+	// compute borders of poly at a low resolution //
+	//=============================================//
+
+		NLMISC::CPolygon2D::TRasterVect rasters;		
+		sint startY;
+		projPoly.computeBorders(rasters, startY);						
+
+		if (!rasters.size()) return;		
 		
 	
 	//=========================//
@@ -257,11 +279,6 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	nlassert(result);
 	
 	
-	
-	
-
-	sint numStepX = CWaterShape::getScreenXGridSize();
-	sint numStepY = CWaterShape::getScreenYGridSize();
 
 	//================================//
 	//	Vertex buffer setup           //
@@ -298,20 +315,8 @@ void	CWaterRenderObs::traverse(IObs *caller)
 		qLeft += 2;
 		qDown += 2;
 
+	
 
-		float invNumStepX = 1.f / numStepX;
-		float invNumStepY = 1.f / numStepY;
-
-	//=============================================//
-	// compute borders of poly at a low resolution //
-	//=============================================//
-
-		float startY;
-		CQuadEffect::TRasters rasters;
-		CQuadEffect::makeRasters(projPoly, (trav->Right - trav->Left) * invNumStepX, (trav->Top - trav->Bottom) * invNumStepY, rasters, startY);
-		startY = - startY;
-
-		if (!rasters.size()) return;		
 		
 	//==============================================//
 	// setup rays to be traced, and their increment //
@@ -321,7 +326,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 		const NLMISC::CMatrix &camMat = /* invObjMat * */  trav->CamMatrix;
 
 		// compute  camera rays in world space
-		CVector currHV = trav->Left * camMat.getI() + trav->Near * camMat.getJ(); // current border vector, incremented at each line
+		CVector currHV = trav->Left * camMat.getI() + trav->Near * camMat.getJ() + trav->Top * camMat.getK(); // current border vector, incremented at each line
 		CVector currV; // current ray vector
 		CVector xStep = (trav->Right - trav->Left) * invNumStepX * camMat.getI();	   // xStep for the ray vector
 		CVector yStep = (trav->Bottom - trav->Top) * invNumStepY * camMat.getK();    // yStep for the ray vector
@@ -333,117 +338,137 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	//===============================================//
 
 		// scale currHV at the top of the poly
-		currHV += startY * camMat.getK();
+		currHV += (startY - 0.5f) * yStep;
 
+		// current index buffer used. We swap each time a row has been drawn
 		std::vector<uint32> *currIB = &CWaterShape::_IBUpDown, *otherIB = &CWaterShape::_IBDownUp;
 
 				
 		sint vIndex = 0; // index in vertices	
 
 		// current raster position
-		sint startX, endX, oldStartX, oldEndX;	
-		float fStartX, fEndX;			
+		sint oldStartX, oldEndX, realStartX, realEndX;	
 		float invNearWidth = numStepX / (trav->Right - trav->Left);
 
 			//nlinfo("size = %d, maxSize = ", rasters.size(), numStepY);
 
-		for (CQuadEffect::TRasters::const_iterator it = rasters.begin(); it != rasters.end(); ++it)
-		{			
-			fStartX = invNearWidth * (it->first  - trav->Left);
-			fEndX	= invNearWidth * (it->second - trav->Left);
-			startX  = (sint) fStartX;
-			endX	= (sint) /*ceilf(*/ fEndX /*)*/;
-			currV   = currHV + (float) startX * xStep;
 
-			//nlinfo("currV.x = %f, currV.y = %f, currV.z = %f", currV.x, currV.y, currV.z);
+		const uint wqHeight = rasters.size();
+		if (wqHeight)
+		{
+			 NLMISC::CPolygon2D::TRasterVect::const_iterator it = rasters.begin();
+			for (uint l = 0; l <= wqHeight; ++l)
+			{		
+				//nlinfo("start = %d, end = %d", it->first, it->second);				
+				const sint startX = it->first;
+				const sint endX   = (it->second + 1);
 
-			nlassert(startX >= 0);
-			nlassert(endX  <= numStepX);
+				nlassert(startX >= 0);
+				nlassert(endX  <= (sint) numStepX);
 
-			
-
-			
-				sint index = vIndex + startX;
-				for (sint k = startX; k <= endX; ++k)
+				if (l != 0)
 				{
-					// compute intersection with plane			
-					float t =   (- ObsPos.z - zHeight) / currV.z;
-	//				nlassert(t >= 0);
-					CVector inter = ObsPos + t * currV;
-	//				nlinfo("inter = %f, %f, %f", inter.x, inter.y, inter.z);
+					realStartX = std::min(startX, oldStartX);
+					realEndX = std::max(endX, oldEndX);
+				}
+				else
+				{
+					realStartX = startX;
+					realEndX =   endX;
+				}
 
-					const float wXf = invWaterRatio * inter.x;
-					const float wYf = invWaterRatio * inter.y;
+				
+				currV   = currHV + (realStartX - 0.5f) * xStep;
+				
 
-					sint wx = (sint) floorf(wXf);
-					sint wy = (sint) floorf(wYf);
-
-					
-
-					if (!
-						 (wx >= qLeft && wx < qRight && wy < qUp &&  wy >= qDown)
-					   )
-					{	
-						// no perturbation is visible
-						shape->_VB.setValueFloat3Ex (WATER_VB_POS, index, inter.x, inter.y, inter.z);
-						shape->_VB.setValueFloat2Ex (WATER_VB_DX, index, 0, 0);
-					}
-					else
+				
+					sint index = vIndex + realStartX;
+					for (sint k = realStartX; k <= realEndX; ++k)
 					{
-						// filter height and gradient at the given point
-						const sint stride = doubleWaterHeightMapSize;
+					/*	if (k == realEndX)
+						{
+							currV   = currHV + (realEndX - 0.5f) * xStep;	
+						}*/
 
-						float deltaU = wXf - wx;
-						float deltaV = wYf - wy;
-						nlassert(deltaU >= 0.f && deltaU < 1.f  && deltaV >= 0.f && deltaV < 1.f);
-						const uint xm	  = (uint) (wx - qSubLeft);
-						const uint ym	  = (uint) (wy - qSubDown);
-						const sint offset = xm + stride * ym;
-						float			  *ptWater = whm.getPointer()	  + offset;
-						NLMISC::CVector2f *ptGrad  = whm.getGradPointer() + offset;
+						// compute intersection with plane			
+						float t =   (- ObsPos.z - zHeight) / currV.z;
+		//				nlassert(t >= 0);
+						CVector inter = ObsPos + t * currV;
+		//				nlinfo("inter = %f, %f, %f", inter.x, inter.y, inter.z);
 
-						float dh1 = deltaV * ptWater[stride] + (1.f - deltaV) *  ptWater[0];
-						float dh2 = deltaV * ptWater[stride + 1] + (1.f - deltaV) *  ptWater[1];
-						float h = deltaU * dh2 + (1.f - deltaU ) * dh1;
+						const float wXf = invWaterRatio * inter.x;
+						const float wYf = invWaterRatio * inter.y;
+
+						sint wx = (sint) floorf(wXf);
+						sint wy = (sint) floorf(wYf);
 
 						
-						float gR = deltaV * ptGrad[stride + 1].x + (1.f - deltaV) * ptGrad[1].x;
-						float gL = deltaV * ptGrad[stride].x + (1.f - deltaV) * ptGrad[0].x;
 
-						float grU = 4.5f * (deltaU *  gR + (1.f - deltaU) * gL);
+						if (!
+							 (wx >= qLeft && wx < qRight && wy < qUp &&  wy >= qDown)
+						   )
+						{	
+							// no perturbation is visible
+							shape->_VB.setValueFloat3Ex (WATER_VB_POS, index, inter.x, inter.y, inter.z);
+							shape->_VB.setValueFloat2Ex (WATER_VB_DX, index, 0, 0);
+						}
+						else
+						{
+							// filter height and gradient at the given point
+							const sint stride = doubleWaterHeightMapSize;
 
-						gR = deltaV * ptGrad[stride + 1].y + (1.f - deltaV) * ptGrad[1].y;
-						gL = deltaV * ptGrad[stride].y + (1.f - deltaV) * ptGrad[0].y;
+							float deltaU = wXf - wx;
+							float deltaV = wYf - wy;
+							nlassert(deltaU >= 0.f && deltaU <= 1.f  && deltaV >= 0.f && deltaV <= 1.f);
+							const uint xm	  = (uint) (wx - qSubLeft);
+							const uint ym	  = (uint) (wy - qSubDown);
+							const sint offset = xm + stride * ym;
+							float			  *ptWater = whm.getPointer()	  + offset;
+							NLMISC::CVector2f *ptGrad  = whm.getGradPointer() + offset;
 
-						float grV = 4.5f * (deltaU *  gR + (1.f - deltaU) * gL);
+							float dh1 = deltaV * ptWater[stride] + (1.f - deltaV) *  ptWater[0];
+							float dh2 = deltaV * ptWater[stride + 1] + (1.f - deltaV) *  ptWater[1];
+							float h = deltaU * dh2 + (1.f - deltaU ) * dh1;
 
-						shape->_VB.setValueFloat3Ex (WATER_VB_POS, index, inter.x, inter.y, inter.z + h);
-						shape->_VB.setValueFloat2Ex (WATER_VB_DX, index, grU, grV);
-					}
 							
-					currV += xStep;
-					++index;
-				}
-				if (it != rasters.begin()) // 2 line of the ib done ?
-				{
-					sint left  = std::max(startX, oldStartX);
-					sint right = std::min(endX,   oldEndX);
-					sint count = right - left - 1;
+							float gR = deltaV * ptGrad[stride + 1].x + (1.f - deltaV) * ptGrad[1].x;
+							float gL = deltaV * ptGrad[stride].x + (1.f - deltaV) * ptGrad[0].x;
 
-					if (count > 0)
+							float grU = 4.5f * (deltaU *  gR + (1.f - deltaU) * gL);
+
+							gR = deltaV * ptGrad[stride + 1].y + (1.f - deltaV) * ptGrad[1].y;
+							gL = deltaV * ptGrad[stride].y + (1.f - deltaV) * ptGrad[0].y;
+
+							float grV = 4.5f * (deltaU *  gR + (1.f - deltaU) * gL);
+
+							shape->_VB.setValueFloat3Ex (WATER_VB_POS, index, inter.x, inter.y, inter.z + h);
+							shape->_VB.setValueFloat2Ex (WATER_VB_DX, index, grU, grV);
+						}
+								
+						currV += xStep;
+						++index;
+					}
+					if (l != 0) // 2 line of the ib done ?
 					{						
-						drv->renderSimpleTriangles(&((*currIB)[left * 6]),
-											 2 * (right - left) );				
-					}		
-				}
+						sint count = oldEndX - oldStartX;
+						if (count > 0)
+						{						
+							drv->renderSimpleTriangles(&((*currIB)[oldStartX * 6]),
+												 2 * count );				
+						}		
+					}
 
-				oldStartX = startX;
-				oldEndX   = endX;
-				currHV    += yStep;
-				vIndex    = (numStepX + 1) - vIndex;
-				std::swap(currIB, otherIB);
-			}
-		
+					oldStartX = startX;
+					oldEndX   = endX;
+					currHV    += yStep;
+					vIndex    = (numStepX + 1) - vIndex;
+					std::swap(currIB, otherIB);
+					if (l < (wqHeight - 1))
+					{
+						++it;
+					}
+				}
+		}		
     
 
 		result =  drv->activeVertexProgram(NULL);

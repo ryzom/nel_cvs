@@ -1,6 +1,6 @@
 /** \file character.h
  *
- * $Id: character.h,v 1.2 2001/03/26 11:26:04 chafik Exp $
+ * $Id: character.h,v 1.3 2001/03/27 11:58:33 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,7 @@ namespace NLAICHARACTER
 	private:
 		std::string _Name;
 	public:
-		static const NLAIC::CIdentType IDCharacterChild;
+		static const NLAIC::CIdentType *IDCharacterChild;
 
 	public:
 		CCharacterChild(const std::string &name):_Name(name) {}
@@ -86,7 +86,7 @@ namespace NLAICHARACTER
 
 		virtual const NLAIC::CIdentType &getType() const
 		{
-			return IDCharacterChild;
+			return *IDCharacterChild;
 		}
 		virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 		virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
@@ -99,7 +99,7 @@ namespace NLAICHARACTER
 		std::list<ICharacter *> _Character;
 
 	public:
-		static const NLAIC::CIdentType IDCharacterNoeud;
+		static const NLAIC::CIdentType *IDCharacterNoeud;
 
 	public:
 		CCharacterNoeud(const std::string &name):CCharacterChild(name) {}
@@ -118,7 +118,7 @@ namespace NLAICHARACTER
 		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual const NLAIC::CIdentType &getType() const
 		{
-			return IDCharacterChild;
+			return *IDCharacterChild;
 		}
 		virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 

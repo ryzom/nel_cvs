@@ -1,6 +1,6 @@
 /** \file character.cpp
  *
- * $Id: character.cpp,v 1.2 2001/03/26 11:25:51 chafik Exp $
+ * $Id: character.cpp,v 1.3 2001/03/27 11:58:20 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,7 @@ namespace NLAICHARACTER
 	CCharacterChild
 ##############################
 */
+	const NLAIC::CIdentType *CCharacterChild::IDCharacterChild = NULL;
 	CCharacterChild::CCharacterChild(const CCharacterChild &name):ICharacter(name),_Name(name._Name)
 	{
 	}
@@ -131,6 +132,7 @@ namespace NLAICHARACTER
 ##############################
 */
 
+	const NLAIC::CIdentType *CCharacterNoeud::IDCharacterNoeud = NULL;
 	CCharacterNoeud::CCharacterNoeud(const CCharacterNoeud &c):CCharacterChild(c)
 	{
 		std::list<ICharacter *>::const_iterator i = c._Character.begin();

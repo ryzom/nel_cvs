@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * <File description>
  *
- * $Id: event_listener.h,v 1.2 2000/11/10 11:05:22 corvazier Exp $
+ * $Id: event_listener.h,v 1.3 2000/11/10 11:28:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,12 +63,12 @@ public:
  * \author Nevrax France
  * \date 2000
  */
-class CEventListenerAsynch: public CEventListener
+class CEventListenerAsync: public CEventListener
 {
 public:
 
 	/// Constructor
-	CEventListenerAsynch();
+	CEventListenerAsync();
 
 	/** 
 	  * Register the listener to the server.
@@ -92,7 +92,7 @@ private:
 	 * \param event is the event send to the listener
 	 */
 	/// Internal use
-	virtual void operator ()(const CEvent& event)=0;
+	virtual void operator ()(const CEvent& event);
 	CBitSet _KeyArray;
 };
 

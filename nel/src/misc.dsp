@@ -376,6 +376,14 @@ SOURCE=..\include\nel\misc\smart_ptr_inline.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\task_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\task_manager.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\thread.h
 # End Source File
 # Begin Source File

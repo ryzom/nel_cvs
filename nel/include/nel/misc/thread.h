@@ -1,7 +1,7 @@
 /** \file thread.h
  * thread interface
  *
- * $Id: thread.h,v 1.2 2000/12/15 14:50:19 lecroart Exp $
+ * $Id: thread.h,v 1.3 2000/12/18 18:14:52 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,7 @@ namespace NLMISC {
 class IRunnable
 {
 public:
+	int bidon;
 	// Called when a thread is run.
 	virtual void run()=0;
 };
@@ -91,6 +92,9 @@ public:
 
 	// Terminate the thread. (use with caution under win98)
 	virtual void wait()=0;
+
+	// Sleep the thread
+	virtual void sleep()=0;
 };
 
 

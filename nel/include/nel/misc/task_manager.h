@@ -1,7 +1,7 @@
-/** \file win_thread.h
- * class CWinThread
+/** \file task_manager.h
+ * CTaskManager class
  *
- * $Id: win_thread.h,v 1.2 2000/12/18 18:14:56 saffray Exp $
+ * $Id: task_manager.h,v 1.1 2000/12/18 18:14:45 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,51 +23,54 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_WIN_THREAD_H
-#define NL_WIN_THREAD_H
+#ifndef NL_TASK_MANAGER_H
+#define NL_TASK_MANAGER_H
 
+#include <list>
 #include "nel/misc/types_nl.h"
+#include "nel/misc/mutex.h"
 #include "nel/misc/thread.h"
-
-#ifdef NL_OS_WINDOWS
 
 namespace NLMISC {
 
 
 /**
- * <Class description>
- * \author Vianney Lecroart
+ * CTaskManager is a class that manage a list of Task with one Thread
+ * \author Alain Saffray
  * \author Nevrax France
  * \date 2000
  */
-class CWinThread : public IThread
+class CTaskManager : public NLMISC::IRunnable
 {
 public:
 
 	/// Constructor
-	CWinThread(IRunnable *runnable);
+	CTaskManager();
 
-	virtual ~CWinThread();
-	
-	virtual void start();
-	virtual void terminate();
-	virtual void wait();
-	virtual void sleep() { Sleep(0); }
+	/// Manage TaskQueue
+	void run(void);
 
-	/// private use
-	IRunnable	*Runnable;
+	/// Add a task to TaskManager
+	void addTask(IRunnable *);
+
+	/// Delete a task, only if task is not running, return true if found and deleted
+	bool deleteTask(IRunnable *r);
+
+	/// Sleep a Task
+	void sleepTask(void) { _Thread->sleep(); }
 
 private:
+	//queue of tasks, using list container instead of queue for DeleteTask methode
+	CSynchronized<std::list<IRunnable *> > _TaskQueue;
 
-	void		*ThreadHandle;	// HANDLE	don't put it to avoid including windows.h
-	uint32		ThreadId;		// DWORD	don't put it to avoid including windows.h
+	//thread pointer
+	IThread *_Thread;
 };
 
 
 } // NLMISC
 
-#endif // NL_OS_WINDOWS
 
-#endif // NL_WIN_THREAD_H
+#endif // NL_TASK_MANAGER_H
 
-/* End of win_thread.h */
+/* End of task_manager.h */

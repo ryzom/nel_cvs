@@ -1,7 +1,7 @@
 /** \file color_edit.h
  * <File description>
  *
- * $Id: color_edit.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: color_edit.h,v 1.3 2001/06/19 16:06:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,7 @@ protected:
 	// wrapper to the datas
 	IPSWrapperRGBA *_Wrapper ;
 
+	// once the xrapper has been set, this display the basis
 	void CColorEdit::updateColorFromReader(void) ;
 
 	// Generated message map functions

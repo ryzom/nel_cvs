@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.21 2001/02/14 15:12:37 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.22 2001/03/05 09:12:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -393,7 +393,7 @@ void CTileBank::makeAllExtensionDDS ()
 
 
 // ***************************************************************************
-const sint CTile::_Version=2;
+const sint CTile::_Version=3;
 // ***************************************************************************
 void CTile::serial(IStream &f) throw(EStream)
 {
@@ -405,8 +405,14 @@ void CTile::serial(IStream &f) throw(EStream)
 
 	switch (streamver)
 	{
+	case 3:
 	case 2:
 		f.serial (_Flags);
+
+		// Version 2, flags are not the same
+		if (streamver==2)
+			_Flags=(_Flags&NL3D_CTILE_ROT_MASK)|(_Flags&NL3D_CTILE_OLD_GROUP_MASK)|(((_Flags&NL3D_CTILE_OLD_FREE_FLAG)!=0)?NL3D_CTILE_FREE_FLAG:0);
+
 		f.serial (_BitmapName[diffuse]);
 		f.serial (_BitmapName[additive]);
 		f.serial (_BitmapName[alpha]);

@@ -1,7 +1,7 @@
 /** \file tga2dds.cpp
  * TGA to DDS converter
  *
- * $Id: tga2dds.cpp,v 1.10 2003/01/17 14:17:47 corvazier Exp $
+ * $Id: tga2dds.cpp,v 1.11 2003/04/25 13:59:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -442,10 +442,11 @@ void main(int argc, char **argv)
 
 
 	// Vectors for RGBA data
-	std::vector<uint8> RGBASrc = picTga.getPixels();
-	std::vector<uint8> RGBASrc2;
-	std::vector<uint8> RGBADest;
-	RGBADest.reserve(height*width*4);
+	CObjectVector<uint8> RGBASrc = picTga.getPixels();
+	CObjectVector<uint8> RGBASrc2;
+	CObjectVector<uint8> RGBADest;
+	RGBADest.resize(height*width*4);
+	uint	dstRGBADestId= 0;
 	
 
 
@@ -509,10 +510,10 @@ void main(int argc, char **argv)
 			// userColor and other alpha usage.
 			if(pRGBASrc2[i].A==255) 
 			{
-				RGBADest.push_back(pRGBASrc[i].R);
-				RGBADest.push_back(pRGBASrc[i].G);
-				RGBADest.push_back(pRGBASrc[i].B);
-				RGBADest.push_back(pRGBASrc[i].A);
+				RGBADest[dstRGBADestId++]= pRGBASrc[i].R;
+				RGBADest[dstRGBADestId++]= pRGBASrc[i].G;
+				RGBADest[dstRGBADestId++]= pRGBASrc[i].B;
+				RGBADest[dstRGBADestId++]= pRGBASrc[i].A;
 			}
 			else
 			{
@@ -523,10 +524,10 @@ void main(int argc, char **argv)
 					Frgb = 0;
 				else
 					Frgb = (255-pRGBASrc2[i].A)/(255-F*pRGBASrc2[i].A/255);
-				RGBADest.push_back(Frgb*pRGBASrc[i].R/255);
-				RGBADest.push_back(Frgb*pRGBASrc[i].G/255);
-				RGBADest.push_back(Frgb*pRGBASrc[i].B/255);
-				RGBADest.push_back(F*pRGBASrc[i].A/255);*/
+				RGBADest[dstRGBADestId++]= Frgb*pRGBASrc[i].R/255;
+				RGBADest[dstRGBADestId++]= Frgb*pRGBASrc[i].G/255;
+				RGBADest[dstRGBADestId++]= Frgb*pRGBASrc[i].B/255;
+				RGBADest[dstRGBADestId++]= F*pRGBASrc[i].A/255;*/
 
 				// New code: use new restrictions from IDriver.
 				float	Rt, Gt, Bt, At;
@@ -566,10 +567,10 @@ void main(int argc, char **argv)
 				clamp(g, 0,255);
 				clamp(b, 0,255);
 				clamp(a, 0,255);
-				RGBADest.push_back(r);
-				RGBADest.push_back(g);
-				RGBADest.push_back(b);
-				RGBADest.push_back(a);
+				RGBADest[dstRGBADestId++]= r;
+				RGBADest[dstRGBADestId++]= g;
+				RGBADest[dstRGBADestId++]= b;
+				RGBADest[dstRGBADestId++]= a;
 			}
 		}
 	}

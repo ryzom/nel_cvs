@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.14 2001/01/17 10:32:10 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.15 2001/01/17 10:45:12 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,7 +172,7 @@ namespace NLAISCRIPT
 	void CAgentClass::buildChildsMessageMap()
 	{
 		
-/*			sint32 i, child_index, father_index;
+		sint32 i, child_index, father_index;
 
 		std::vector< std::vector<sint32> > l_index;
 #ifdef _DEBUG
@@ -194,11 +194,11 @@ namespace NLAISCRIPT
 #ifdef _DEBUG
 			const char *dbg_class_name = _Components[ i ]->RegisterName->getString();
 #endif
-			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ... si il est de type interprété...
-			{
-				_NbScriptedComponents ++;
-				CAgentClass *child_class = (CAgentClass *) c_type.getFactory()->getClass();
-				// ... for each of its methods...
+				if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ...if it's a scripted agent...
+				{
+					_NbScriptedComponents ++;
+					CAgentClass *child_class = (CAgentClass *) c_type.getFactory()->getClass();
+					// ... for each of its methods...
 #ifdef _DEBUG
 				sint32 dbg_nb_funcs = child_class->getBrancheCodeSize();
 #endif
@@ -254,7 +254,7 @@ namespace NLAISCRIPT
 					index[ (int) child_index ] = (l_index[ (int) father_index ])[ (int) child_index ];
 				_MsgIndirectTable[ father_index ] = index;
 			}
-		}*/				
+		}
 	}
 
 	sint32 CAgentClass::getChildMessageIndex(const NLAIAGENT::IMessageBase *msg, sint32 child_index )

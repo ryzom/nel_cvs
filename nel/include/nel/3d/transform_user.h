@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.7 2001/04/13 16:39:03 berenguier Exp $
+ * $Id: transform_user.h,v 1.8 2001/04/20 12:23:36 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/3d/tmp/u_transform.h"
 #include "nel/3d/transform.h"
+#include "nel/3d/transform_shape.h"
 #include "nel/3d/scene.h"
 #include "nel/3d/transformable_user.h"
 
@@ -71,8 +72,12 @@ public:
 	}
 	virtual	~CTransformUser()
 	{
-		// Delete this model!!
-		_Scene->deleteModel(_Transform);
+		// Must test if _Transform is a CTransfromShape. If yes, must call deleteInstance().
+		CTransformShape	*pTrShp= dynamic_cast<CTransformShape*>(_Transform);
+		if(pTrShp)
+			_Scene->deleteInstance(pTrShp);
+		else
+			_Scene->deleteModel(_Transform);
 		_Transform= NULL;
 	}
 	// @}

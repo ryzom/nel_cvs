@@ -183,6 +183,14 @@ SOURCE=..\include\nel\3d\mesh_instance.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\particle_system_model.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\particle_system_model.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\skeleton_model.cpp
 # End Source File
 # Begin Source File
@@ -520,6 +528,14 @@ SOURCE=.\3d\mesh.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\mesh.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\particle_system_shape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\particle_system_shape.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.16 2000/12/07 15:18:42 cado Exp $
+ * $Id: message.h,v 1.17 2001/01/31 15:50:45 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,7 +69,7 @@ public:
 	}
 
 	/// Returns message name. Valid if !typeIsNumber()
-	std::string		typeAsString() const
+	const std::string&	typeAsString() const
 	{
 		return _MsgName;
 	}

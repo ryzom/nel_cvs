@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.16 2002/01/03 13:12:56 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.17 2002/02/11 13:15:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,6 +131,8 @@ public:
 
 	// misc
 	int						FloatingObject;
+	int						ExportRealTimeLight;
+
 
 	// Vegetable
 	int						Vegetable;
@@ -905,6 +907,9 @@ int CALLBACK MiscDialogCallback (
 			// Ligoscape
 			SendMessage (GetDlgItem (hwndDlg, IDC_LIGO_SYMMETRY), BM_SETCHECK, currentParam->LigoSymmetry, 0);
 			SetWindowText (GetDlgItem (hwndDlg, IDC_LIGO_ROTATE), currentParam->LigoRotate.c_str());
+
+			// Lighting
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_REALTIME_LIGHT), BM_SETCHECK, currentParam->ExportRealTimeLight, 0);
 		}
 		break;
 
@@ -928,11 +933,15 @@ int CALLBACK MiscDialogCallback (
 							char tmp[512];
 							GetWindowText (GetDlgItem (hwndDlg, IDC_LIGO_ROTATE), tmp, 512);
 							currentParam->LigoRotate = tmp;
+
+							// RealTime light
+							currentParam->ExportRealTimeLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_REALTIME_LIGHT), BM_GETCHECK, 0, 0);
 						}
 					break;
 					case IDC_EXPORT_NOTE_TRACK:
 					case IDC_FLOATING_OBJECT:
 					case IDC_EXPORT_ANIMATED_MATERIALS:
+					case IDC_EXPORT_REALTIME_LIGHT:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 						break;
@@ -1551,6 +1560,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.LigoSymmetry = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, BST_UNCHECKED);
 		param.LigoRotate = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, 0));
 
+		// RealTimeLigt.
+		param.ExportRealTimeLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_UNCHECKED);
+
+
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
 		ite++;
@@ -1657,6 +1670,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.LigoSymmetry = BST_INDETERMINATE;
 			if (toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, 0)) != param.LigoRotate)
 				param.LigoRotate = "";
+
+			// RealTimeLight
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_UNCHECKED) != param.ExportRealTimeLight)
+				param.ExportRealTimeLight= BST_INDETERMINATE;
 
 			// Next sel
 			ite++;
@@ -1766,6 +1783,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ZONE_SYMMETRY, param.LigoSymmetry);
 				if (param.LigoRotate != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ZONE_ROTATE, param.LigoRotate);
+
+				// RealTime Light.
+				if (param.ExportRealTimeLight != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, param.ExportRealTimeLight);
 
 				// Next node
 				ite++;

@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.12 2001/12/12 10:37:10 vizerie Exp $
+ * $Id: export_lod.h,v 1.13 2002/02/11 13:15:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,9 @@
 
 /// animated materials
 #define NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS		(1423062587)
+
+/// Export RealTime light
+#define NEL3D_APPDATA_EXPORT_REALTIME_LIGHT			(1423062588)
 
 // ***************************************************************************
 

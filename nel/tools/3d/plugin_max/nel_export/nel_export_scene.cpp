@@ -1,7 +1,7 @@
 /** \file nel_export_scene.cpp
  * <File description>
  *
- * $Id: nel_export_scene.cpp,v 1.6 2001/08/01 14:24:55 besson Exp $
+ * $Id: nel_export_scene.cpp,v 1.7 2002/02/11 13:15:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,6 +74,8 @@ bool CNelExport::exportInstanceGroup(string filename, vector<INode*>& vectNode, 
 				return false;
 			}
 		}
+
+		delete	pIG;
 	}
 	else
 	{

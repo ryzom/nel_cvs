@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.10 2001/10/10 15:39:11 besson Exp $
+ * $Id: export_scene.cpp,v 1.11 2002/02/11 13:15:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,9 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 			}
 
 			INode *pParent = pNode->GetParentNode();
+
+			// Set the DontCastShadow flag.
+			aIGArray[nNumIG].DontCastShadow= pNode->CastShadows()==0;
 
 			// Is the pNode has the root node for parent ?
 			if( pParent->IsRootNode() == 0 )
@@ -209,6 +212,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 	vGlobalPos = CVector(0,0,0); // Temporary !!!
 
 	// Accelerator Portal/Cluster part
+	//=================
 
 	// Creation of all the clusters
 	vector<CCluster> vClusters;
@@ -441,11 +445,67 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 	}
 
 
+	// PointLight part
+	//=================
+	sint	nNumPointLight = 0;
+	vector<CPointLightNamed>	pointLights;
+	pointLights.resize(vectNode.size());
+	// For all nodes
+	it = vectNode.begin();
+	for (i = 0; i < (sint)vectNode.size(); ++i, ++it)
+	{
+		INode *pNode = *it;
+
+		SLightBuild		sLightBuild;
+
+		// If it is a Max Light.
+		if ( sLightBuild.canConvertFromMaxLight(pNode, tvTime) )
+		{
+			// And if this light is checked to realtime export
+			int		nRTExport= CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_UNCHECKED);
+			if(nRTExport == BST_CHECKED)
+			{
+				// get Max Light info.
+				sLightBuild.convertFromMaxLight(pNode, tvTime);
+
+				// Skip if not pointLight.
+				if(sLightBuild.Type != SLightBuild::LightPoint)
+					continue;
+
+				// Fill PointLight Info.
+				NL3D::CPointLightNamed	&plNamed= pointLights[nNumPointLight];
+
+				// Position
+				plNamed.setPosition(sLightBuild.Position);
+				// Attenuation
+				plNamed.setupAttenuation(sLightBuild.rRadiusMin, sLightBuild.rRadiusMax);
+				// Colors
+				plNamed.setDefaultAmbient(sLightBuild.Ambient);
+				plNamed.setAmbient(sLightBuild.Ambient);
+				plNamed.setDefaultDiffuse(sLightBuild.Diffuse);
+				plNamed.setDiffuse(sLightBuild.Diffuse);
+				plNamed.setDefaultSpecular(sLightBuild.Specular);
+				plNamed.setSpecular(sLightBuild.Specular);
+				// GroupName.
+				plNamed.LightGroupName= sLightBuild.GroupName;
+
+
+				// inc Size
+				++nNumPointLight;
+			}
+		}
+	}
+	// Good size
+	pointLights.resize(nNumPointLight);
+
+
+	// Build the ig
+	//=================
 
 	CInstanceGroup* pIG = new CInstanceGroup;
 
 	// Link portals and clusters and create meta cluster if one
-	pIG->build (vGlobalPos,  aIGArray, vClusters, vPortals);
+	pIG->build (vGlobalPos,  aIGArray, vClusters, vPortals, pointLights);
 
 	return pIG;
 }

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.7 2001/05/18 08:24:06 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.8 2001/05/22 16:41:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,8 +77,10 @@ void	NLPACS::CRetrieverInstance::reset()
 	_RetrieverId = -1;
 	_Orientation = 0;
 	_Origin = CVector::Null;
+/*
 	_BBox.setHalfSize(CVector::Null);
 	_BBox.setCenter(CVector::Null);
+*/
 	resetLinks();
 }
 
@@ -111,8 +113,10 @@ void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId, con
 		_NodesInformation[i].Position = CVector2f(pos.x, pos.y);
 	}
 
+/*
 	_BBox = retriever.getBBox();
 	_BBox.setCenter(getGlobalPosition(_BBox.getCenter()));
+*/
 }
 
 /* Links the current retriever instance to another instance

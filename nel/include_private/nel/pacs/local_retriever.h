@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: local_retriever.h,v 1.2 2001/05/22 16:41:12 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,11 +159,13 @@ protected:
 	/// The tips making links between different chains.
 	std::vector<CTip>					_Tips;
 
+/*
 	/// The axis aligned bounding box of the zone. Obsolete.
 	NLMISC::CAABBox						_BBox;
 
 	/// The id of the zone. Obsolete.
 	sint32								_ZoneId;
+*/
 
 	/// The tips on the edges of the zone.
 	std::vector<uint16>					_EdgeTips[4];
@@ -211,18 +213,22 @@ private:
 	};
 
 public:
+/*
 	/// Sets the bbox of the local retriever. Obsolete since local retrievers are now CVector::Null centered...
 	void								setBBox(const NLMISC::CAABBox &box) { _BBox = box; }
 	/// Sets the ZoneId of the local retriever. Obsolete since only instances have ids...
 	void								setZoneId (sint32 id) { _ZoneId = id; }
+*/
 
 	/// @name Selectors
 	// @{
 
+/*
 	/// Gets the bbox of the retriever. Obsolete.
 	const NLMISC::CAABBox				&getBBox() const { return _BBox; }
 	/// Gets the ZoneId of the retriever. Obsolete.
 	sint32								getZoneId() const { return _ZoneId; }
+*/
 
 	/// Returns the chain tips inside the local retrievers.
 	const std::vector<CTip>				&getTips() const { return _Tips; }
@@ -293,9 +299,10 @@ public:
 	/// Sorts chains references inside the tips. NOT IMPLEMENTED YET.
 	void								sortTips();
 
+/*
 	/// Translates the local retriever by the translation vector.
 	void								translate(const NLMISC::CVector &translation);
-
+*/
 
 	/// Serialises the CLocalRetriever.
 	void								serial(NLMISC::IStream &f);

@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: retriever_instance.h,v 1.2 2001/05/22 16:41:12 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,7 +125,7 @@ protected:
 	std::vector<uint16>					_EdgeChainLinks[4];
 
 	/// The BBox.
-	NLMISC::CAABBox						_BBox;
+//	NLMISC::CAABBox						_BBox;
 
 public:
 	/// Default constructor.
@@ -197,7 +197,7 @@ public:
 	NLMISC::CVectorD					getDoubleGlobalPosition(const NLMISC::CVector &localPosition) const;
 
 	/// Returns the bbox of the instance.
-	NLMISC::CAABBox						getBBox() { return _BBox; }
+//	NLMISC::CAABBox						getBBox() { return _BBox; }
 };
 
 }; // NLPACS

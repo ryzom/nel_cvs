@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.3 2001/05/17 17:00:36 berenguier Exp $
+ * $Id: chain_quad.cpp,v 1.4 2001/05/22 16:41:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,16 +129,16 @@ void			CChainQuad::build(const std::vector<COrderedChain> &ochains)
 	// run all chains.
 	for(i=0;i<(sint)ochains.size();i++)
 	{
-		const std::vector<NLMISC::CVector>	&vertices= ochains[i].getVertices();
+		const std::vector<CVector2s>	&vertices= ochains[i].getVertices();
 
 		// run all vertices.
 		for(j= 0; j<(sint)vertices.size();j++)
 		{
 			// enlarge bbox.
 			if(first)
-				first= false, chainquadBBox.setCenter(vertices[j]);
+				first= false, chainquadBBox.setCenter(vertices[j].unpack3f());
 			else
-				chainquadBBox.extend(vertices[j]);
+				chainquadBBox.extend(vertices[j].unpack3f());
 		}
 	}
 
@@ -157,15 +157,15 @@ void			CChainQuad::build(const std::vector<COrderedChain> &ochains)
 	// run all chains.
 	for(i=0;i<(sint)ochains.size();i++)
 	{
-		const std::vector<NLMISC::CVector>	&vertices= ochains[i].getVertices();
+		const std::vector<CVector2s>	&vertices= ochains[i].getVertices();
 
 		sint	numEdges= (sint)vertices.size()-1;
 
 		// run all edges.
 		for(j= 0; j<numEdges; j++)
 		{
-			const CVector		&p0= vertices[j];
-			const CVector		&p1= vertices[j+1];
+			const CVector		p0= vertices[j].unpack3f();
+			const CVector		p1= vertices[j+1].unpack3f();
 			CVector		minP,maxP;
 			minP.minof(p0, p1);
 			maxP.maxof(p0, p1);

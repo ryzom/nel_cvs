@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.9 2001/05/18 08:24:06 legros Exp $
+ * $Id: local_retriever.cpp,v 1.10 2001/05/22 16:41:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,8 +163,11 @@ void	NLPACS::CLocalRetriever::sortTips()
 void	NLPACS::CLocalRetriever::findEdgeTips()
 {
 	uint	i;
+
+/*
 	CVector	bmin = _BBox.getMin(),
 			bmax = _BBox.getMax();
+*/
 
 	// prepares some flags...
 	for (i=0; i<_Tips.size(); ++i)
@@ -316,6 +319,7 @@ void	NLPACS::CLocalRetriever::computeTopologies()
 	}
 }
 
+/*
 void	NLPACS::CLocalRetriever::translate(const NLMISC::CVector &translation)
 {
 	uint	i;
@@ -325,8 +329,10 @@ void	NLPACS::CLocalRetriever::translate(const NLMISC::CVector &translation)
 		_Surfaces[i].translate(translation);
 	for (i=0; i<_Tips.size(); ++i)
 		_Tips[i].translate(translation);
-	_BBox.setCenter(_BBox.getCenter()+translation);
+
+//	_BBox.setCenter(_BBox.getCenter()+translation);
 }
+*/
 
 void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 {
@@ -341,8 +347,8 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	f.serialCont(_OrderedChains);
 	f.serialCont(_Surfaces);
 	f.serialCont(_Tips);
-	f.serial(_BBox);
-	f.serial(_ZoneId);
+//	f.serial(_BBox);
+//	f.serial(_ZoneId);
 	for (i=0; i<4; ++i)
 		f.serialCont(_EdgeTips[i]);
 	for (i=0; i<4; ++i)
@@ -359,6 +365,8 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 {
 	uint	ochain;
 
+	CVector2s	estim = CVector2s(estimated);
+
 	// WARNING!!
 	// retrieveTable is assumed to be 0 filled !!
 
@@ -368,10 +376,10 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 		const COrderedChain	&sub = _OrderedChains[ochain];
 
 		// checks the position against the min and max of the chain
-		if (estimated.x < sub.getVertices().front().x || estimated.x > sub.getVertices().back().x)
+		if (estim.x < sub.getVertices().front().x || estim.x > sub.getVertices().back().x)
 			continue;
 
-		const vector<CVector>	&vertices = sub.getVertices();
+		const vector<CVector2s>	&vertices = sub.getVertices();
 		uint					start = 0, stop = vertices.size()-1;
 
 		// TODO: trivial up/down check using bbox.
@@ -381,7 +389,7 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 		{
 			uint	mid = (start+stop)/2;
 
-			if (vertices[mid].x > estimated.x)
+			if (vertices[mid].x > estim.x)
 				stop = mid;
 			else
 				start = mid;
@@ -391,23 +399,23 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 		bool	isUpper;
 		
 		// first trivial case (up both tips)
-		if (estimated.y > vertices[start].y && estimated.y > vertices[stop].y)
+		if (estim.y > vertices[start].y && estim.y > vertices[stop].y)
 		{
 			isUpper = true;
 		}
 		// second trivial case (down both tips)
-		else if (estimated.y < vertices[start].y && estimated.y < vertices[stop].y)
+		else if (estim.y < vertices[start].y && estim.y < vertices[stop].y)
 		{
 			isUpper = false;
 		}
 		// full test...
 		else
 		{
-			const CVector	&vstart = vertices[start],
+			const CVector2s	&vstart = vertices[start],
 							&vstop = vertices[stop];
-			float	intersect = vstart.y + (vstop.y-vstart.y)*(estimated.x-vstart.x)/(vstop.y-vstart.y);
+			sint16	intersect = vstart.y + (vstop.y-vstart.y)*(estim.x-vstart.x)/(vstop.y-vstart.y);
 
-			isUpper = estimated.y > intersect;
+			isUpper = estim.y > intersect;
 		}
 
 		sint32	left = _Chains[sub.getParentId()].getLeft(),
@@ -519,11 +527,11 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 		// add edge collide to the list.
 		//=================================
 		CCollisionChain			&colChain= cst.CollisionChains[ccId];
-		const std::vector<NLMISC::CVector>	&oChainVertices= oChain.getVertices();
+		const std::vector<CVector2s>	&oChainVertices= oChain.getVertices();
 		for(sint edge=ece.EdgeStart; edge<ece.EdgeEnd; edge++)
 		{
-			const CVector		&v0= oChainVertices[edge];
-			const CVector		&v1= oChainVertices[edge+1];
+			CVector2f	p0= oChainVertices[edge].unpack();
+			CVector2f	p1= oChainVertices[edge+1].unpack();
 
 			// alloc a new edgeCollide.
 			uint32	ecnId= cst.allocEdgeCollideNode();
@@ -534,8 +542,6 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 			colChain.FirstEdgeCollide= ecnId;
 
 			// build this edge.
-			CVector2f	p0(v0.x, v0.y);
-			CVector2f	p1(v1.x, v1.y);
 			p0+= transBase;
 			p1+= transBase;
 			ecn.make(p0, p1);

@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: chain.h,v 1.2 2001/05/22 16:41:12 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include <vector>
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/pacs/vector_2s.h"
 #include "nel/misc/file.h"
 
 namespace NLPACS
@@ -50,7 +51,7 @@ protected:
 	friend class CRetrievableSurface;
 
 	/// The vertices of the chain, ordered following x growth.
-	std::vector<NLMISC::CVector>		_Vertices;
+	std::vector<CVector2s>				_Vertices;
 
 	/// Set if the chain should be read forward within the parent CChain (for sequential access to vertices.)
 	bool								_Forward;
@@ -60,7 +61,7 @@ protected:
 
 public:
 	/// Returns the vertices of the chain
-	const std::vector<NLMISC::CVector>	&getVertices() const { return _Vertices; }
+	const std::vector<CVector2s>		&getVertices() const { return _Vertices; }
 
 	/// Returns true if the chain should be accessed forward within the parent CChain (see _Forward.)
 	bool								isForward() const { return _Forward; }

@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.7 2001/05/18 08:24:06 legros Exp $
+ * $Id: chain.cpp,v 1.8 2001/05/22 16:41:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,8 +70,10 @@ static inline bool	isEqual(const CVector &a, const CVector &b)
 void	NLPACS::COrderedChain::translate(const CVector &translation)
 {
 	uint	i;
+	CVector2s	translat;
+	translat.pack(translation);
 	for (i=0; i<_Vertices.size(); ++i)
-		_Vertices[i] += translation;
+		_Vertices[i] += translat;
 }
 
 // serialises the ordered chain
@@ -154,10 +156,10 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 		// and then copies the vertices (sorted, btw!)
 		if (forward)
 			for (i=first; i<=last; ++i)
-				subchain._Vertices.push_back(vertices[i]);
+				subchain._Vertices.push_back(CVector2s(vertices[i]));
 		else
 			for (i=last; i>=first; --i)
-				subchain._Vertices.push_back(vertices[i]);
+				subchain._Vertices.push_back(CVector2s(vertices[i]));
 
 		first = last;
 	}

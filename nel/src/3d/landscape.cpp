@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.19 2000/12/13 10:26:09 berenguier Exp $
+ * $Id: landscape.cpp,v 1.20 2000/12/13 10:33:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,7 +75,7 @@ public:
 	}
 
 	// Dummy serial...
-	virtual void	serial(NLMISC::IStream &f) {nlstop;}
+	virtual void	serial(NLMISC::IStream &f)  throw(NLMISC::EStream) {nlstop;}
 	NLMISC_DECLARE_CLASS(CTextureCross);
 };
 

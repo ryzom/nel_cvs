@@ -1,7 +1,7 @@
 /** \file water_pool_manager.cpp
  * <File description>
  *
- * $Id: water_pool_manager.cpp,v 1.5 2001/11/14 15:39:39 vizerie Exp $
+ * $Id: water_pool_manager.cpp,v 1.6 2001/11/16 16:47:06 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -71,11 +71,22 @@ NLMISC_COMMAND(setWaterPool, "Setup a pool of water in the water pool manager",
 }
 */
 
+//===============================================================================================
+
 CWaterPoolManager &GetWaterPoolManager()
 {
 	static CWaterPoolManager singleton;
 	return singleton;
 }
+
+//===============================================================================================
+
+bool	CWaterPoolManager::hasPool(uint32 ID) const
+{
+	return _PoolMap.count(ID) != 0;
+}
+
+//===============================================================================================
 
 CWaterHeightMap *CWaterPoolManager::createWaterPool(const CWaterHeightMapBuild &params)
 {
@@ -86,11 +97,14 @@ CWaterHeightMap *CWaterPoolManager::createWaterPool(const CWaterHeightMapBuild &
 	whm->setUnitSize(params.UnitSize);
 	whm->setWaves(params.WaveIntensity, params.WavePeriod, params.WaveRadius, params.BorderWaves);
 	whm->enableWaves(params.WavesEnabled);
+	whm->setName(params.Name);
 	_PoolMap[params.ID] = whm; // in case it was just created
 	return whm;
 }
 
-CWaterHeightMap &CWaterPoolManager::getPoolByID(uint ID)
+//===============================================================================================
+
+CWaterHeightMap &CWaterPoolManager::getPoolByID(uint32 ID)
 {
 	if(_PoolMap.count(ID))
 	{
@@ -102,6 +116,7 @@ CWaterHeightMap &CWaterPoolManager::getPoolByID(uint ID)
 	}
 }
 	
+//===============================================================================================
 
 void CWaterPoolManager::reset()
 {
@@ -112,11 +127,15 @@ void CWaterPoolManager::reset()
 }
 	
 
+//===============================================================================================
+
 void CWaterPoolManager::registerWaterShape(CWaterShape *shape)
 {	
 	nlassert(std::find(_WaterShapes.begin(), _WaterShapes.end(), shape) == _WaterShapes.end()); // Shape registered twice!
 	_WaterShapes.push_back(shape);
 }
+
+//===============================================================================================
 
 void CWaterPoolManager::unRegisterWaterShape(CWaterShape *shape)
 {
@@ -125,6 +144,8 @@ void CWaterPoolManager::unRegisterWaterShape(CWaterShape *shape)
 	if (it != _WaterShapes.end())
 		_WaterShapes.erase(it);
 }
+
+//===============================================================================================
 
 void CWaterPoolManager::setBlendFactor(IDriver *drv, float factor)
 {
@@ -143,9 +164,78 @@ void CWaterPoolManager::setBlendFactor(IDriver *drv, float factor)
 	}
 }
 
+//===============================================================================================
+
 bool CWaterPoolManager::isWaterShapeObserver(const CWaterShape *shape) const
 {
 	return std::find(_WaterShapes.begin(), _WaterShapes.end(), shape) != _WaterShapes.end();
+}
+
+//===============================================================================================
+
+uint		CWaterPoolManager::getNumPools() const
+{
+	return _PoolMap.size();
+}
+
+//===============================================================================================
+
+uint		CWaterPoolManager::getPoolID(uint i) const
+{
+	nlassert(i < getNumPools());
+	TPoolMap::const_iterator it =  _PoolMap.begin();
+	while (i--) ++it;
+	return it->first;
+}
+
+//===============================================================================================
+
+void	CWaterPoolManager::removePool(uint32 ID)
+{
+	nlassert(hasPool(ID));
+	TPoolMap::iterator it = _PoolMap.find(ID);
+	delete it->second;
+	_PoolMap.erase(_PoolMap.find(ID));
+}
+
+//===============================================================================================
+void CWaterPoolManager::serial(NLMISC::IStream &f)  throw(NLMISC::EStream)
+{	
+	f.xmlPush("WaterPoolManager");
+	sint ver = f.serialVersion(0);	
+	uint32 size;
+	TPoolMap::iterator it;
+	if (!f.isReading())
+	{
+		size = _PoolMap.size();
+		it  = _PoolMap.begin();
+	}
+	else
+	{
+		reset();
+	}
+	f.xmlSerial(size, "NUM_POOLS");
+	while (size --)
+	{		
+		f.xmlPush("PoolDesc");
+		if (f.isReading())
+		{
+			CWaterHeightMap *whm;
+			uint32 id;
+			f.xmlSerial(id, "POOL_ID");
+			f.serialPtr(whm);
+			_PoolMap[id] = whm;	
+		}
+		else
+		{
+			uint32 id = it->first;
+			f.xmlSerial(id, "POOL_ID");
+			f.serialPtr(it->second);
+			++it;
+		}
+		f.xmlPop();
+	}
+	f.xmlPop();		
 }
 
 } // NL3D

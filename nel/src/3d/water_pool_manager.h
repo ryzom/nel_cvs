@@ -1,7 +1,7 @@
 /** \file water_pool_manager.h
  * <File description>
  *
- * $Id: water_pool_manager.h,v 1.3 2001/11/14 15:39:39 vizerie Exp $
+ * $Id: water_pool_manager.h,v 1.4 2001/11/16 16:47:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,8 +28,11 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
+#include "nel/misc/stream.h"
+
 #include <map>
 #include <vector>
+#include <string>
 
 namespace NL3D {
 
@@ -37,7 +40,7 @@ class CWaterHeightMap;
 class IDriver;
 
 /**
- * This class helps managing various waters pools
+ * This class helps managing various waters pools 
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001
@@ -45,24 +48,42 @@ class IDriver;
 class CWaterPoolManager
 {
 public:
+	/// this struct is used to specify a water pool parameter's
 	struct CWaterHeightMapBuild
 	{
-		uint		ID;
-		uint		Size;
+		uint32		ID;
+		uint32		Size;
+		std::string Name;
 		float		Damping;
 		float		FilterWeight;
 		float		UnitSize;
 		bool		WavesEnabled;
 		float		WaveIntensity;
-		uint		WaveRadius;
+		uint32		WaveRadius;
 		float		WavePeriod;
 		bool		BorderWaves;
-		CWaterHeightMapBuild() : ID(0), Size(256), WavesEnabled(false), Damping(0.99f), FilterWeight(4), UnitSize(0.15f), WaveIntensity(3), WavePeriod(0), WaveRadius(3), BorderWaves(true) {}
+		CWaterHeightMapBuild() : ID(0), Size(256), WavesEnabled(true), Damping(0.99f), FilterWeight(4), UnitSize(0.15f), WaveIntensity(3), WavePeriod(0), WaveRadius(3), BorderWaves(true) {}
 	};
 	/// create a water pool with the given id and the given parameters. If the pool existed before, its parameter are reset
-	CWaterHeightMap *createWaterPool(const CWaterHeightMapBuild &params = CWaterHeightMapBuild());
+	CWaterHeightMap				*createWaterPool(const CWaterHeightMapBuild &params = CWaterHeightMapBuild());
+
 	/// Get a water pool by its ID. If the ID doesn't exist, a new pool is created with default parameters
-	CWaterHeightMap		&getPoolByID(uint ID);	
+	CWaterHeightMap				&getPoolByID(uint32 ID);
+
+	/// test wether a pool of the given ID exists
+	bool						hasPool(uint32 ID) const;
+
+	/// remove the pool of the given ID
+	void						removePool(uint32 ID);
+	
+	/// Get the number of pools
+	uint						getNumPools() const;
+
+	/// get the id of the i-th pool (O(n) lookup)
+	uint						getPoolID(uint i) const;
+	
+
+
 	
 	/// delete all heightmaps
 	void reset();
@@ -73,13 +94,16 @@ public:
 	/** Set a blend factor for all pool (more precisely, all models based on a water shape) that have a blend texture for their envmap (to have cycle between night and day for example)
 	  * \param factor The blend factor which range from 0 to 1
 	  */
-	void setBlendFactor(IDriver *drv, float factor);		
+	void setBlendFactor(IDriver *drv, float factor);
+
+	/// serial the pools data's
+	void serial(NLMISC::IStream &f)  throw(NLMISC::EStream);
 
 private:		
 	friend class CWaterShape;
 	friend CWaterPoolManager				  &GetWaterPoolManager();	
 	CWaterPoolManager() {}	// private ctor needed to use the singleton pattern
-	typedef std::map<uint, CWaterHeightMap *> TPoolMap;
+	typedef std::map<uint32, CWaterHeightMap *> TPoolMap;
 	TPoolMap _PoolMap;
 	
 	/// register a water height map. The water height map will be notified when a setBlend is applied
@@ -91,7 +115,8 @@ private:
 };
 
 
-// get the only water pool manager
+// get the only water pool manager (caution : with several dll, there may be duplication however,
+// if NL3D is linked as a static lib with several of them, so you may need to pass the address of the manager being used to other dlls)
 CWaterPoolManager &GetWaterPoolManager();
 
 

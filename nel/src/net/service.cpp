@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.36 2001/01/05 15:34:53 lecroart Exp $
+ * $Id: service.cpp,v 1.37 2001/01/10 17:31:14 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -281,47 +281,56 @@ sint IService::main (int argc, char **argv)
 			}
 
 
-			// Talk with the NS
-			bool registered = false;
-			while ( ! registered )
+			if ( strcmp( IService::_Name, "LS" ) != 0 ) // The Login Service must not register itself
 			{
-				try
+				// Talk with the NS
+				bool registered = false;
+				while ( ! registered )
 				{
-					CNamingClient::open();
-					if ( _Port == 0 )
+					try
 					{
-						// Auto-assign port
-						_Port = CNamingClient::queryServicePort( IService::_Name, CInetAddress::localHost() );
+						CNamingClient::open();
+						if ( _Port == 0 )
+						{
+							// Auto-assign port
+							_Port = CNamingClient::queryServicePort( IService::_Name, CInetAddress::localHost() );
+						}
+						// Server start-up
+						_Server = new CMsgSocket( CallbackArray, CallbackArraySize, _Port );
+						CMsgSocket::setTimeout( _Timeout );
+				
+						// Register service
+						nlassert( _Server->listenAddress() != NULL );
+						CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) );
+						CNamingClient::close();
+						registered = true;
 					}
-					// Server start-up
-					_Server = new CMsgSocket( CallbackArray, CallbackArraySize, _Port );
-					CMsgSocket::setTimeout( _Timeout );
-			
-					// Register service
-					nlassert( _Server->listenAddress() != NULL );
-					CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) );
-					CNamingClient::close();
-					registered = true;
-				}
-				catch ( ESocketConnectionFailed& )
-				{
-					nlwarning( "Could not connect to the Naming Service. Retrying in a few seconds..." );
-					CNamingClient::close();
+					catch ( ESocketConnectionFailed& )
+					{
+						nlwarning( "Could not connect to the Naming Service. Retrying in a few seconds..." );
+						CNamingClient::close();
 
+					}
+					catch ( ESocket& e )
+					{
+						nlwarning( "Could not register service into the Naming Service : %s", e.what() );
+						CNamingClient::close();
+					}
+					if ( ! registered )
+					{
+	#ifdef NL_OS_WINDOWS
+						Sleep( 5000 ); // wait 5 seconds
+	#elif defined NL_OS_UNIX
+						sleep( 5 ); // wait 5 seconds
+	#endif
+					}
 				}
-				catch ( ESocket& e )
-				{
-					nlwarning( "Could not register service into the Naming Service : %s", e.what() );
-					CNamingClient::close();
-				}
-				if ( ! registered )
-				{
-#ifdef NL_OS_WINDOWS
-					Sleep( 5000 ); // wait 5 seconds
-#elif defined NL_OS_UNIX
-					sleep( 5 ); // wait 5 seconds
-#endif
-				}
+			}
+			else
+			{
+				// Server start-up
+				_Server = new CMsgSocket( CallbackArray, CallbackArraySize, _Port );
+				CMsgSocket::setTimeout( _Timeout );
 			}
 		}
 		else
@@ -370,9 +379,13 @@ sint IService::main (int argc, char **argv)
 	try
 	{
 		release ();
-		
-		// Unregister service
-		CNamingClient::finalize();
+
+		if ( (strcmp( IService::_Name, "NS" ) != 0)
+		  && (strcmp( IService::_Name, "LS" ) != 0)  )
+		{
+			// Unregister service
+			CNamingClient::finalize();
+		}
 
 		// Close server
 		if (_Server != NULL )

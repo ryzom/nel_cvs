@@ -13,8 +13,7 @@
 #include "nel/ai/logic/fsm_script.h"
 #include "nel/ai/agent/agent_timer.h"
 #include "nel/ai/agent/volatil_memory.h"
-#include "nel/ai/agent/agent_set.h"
-//#include "static_init.h"
+
 
 using namespace NLAIAGENT;
 

@@ -77,7 +77,7 @@ PreLink_Cmds=buildinc version.ver object_viewer.rc	rc /l 0x40c /fo"Release/objec
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"std_afx.h" /FD /D /GZ /Zm400 /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
@@ -105,7 +105,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"std_afx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_RELEASE_DEBUG" /Yu"std_afx.h" /FD /Zm200 /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_RELEASE_DEBUG" /Yu"std_afx.h" /FD /Zm400 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
@@ -443,6 +443,10 @@ SOURCE=.\bmp00024.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\cursor1.cur
+# End Source File
+# Begin Source File
+
 SOURCE=.\icon1.ico
 # End Source File
 # Begin Source File
@@ -480,6 +484,14 @@ SOURCE=.\attrib_list_box.cpp
 # Begin Source File
 
 SOURCE=.\attrib_list_box.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\auto_lod_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\auto_lod_dlg.h
 # End Source File
 # Begin Source File
 
@@ -724,6 +736,14 @@ SOURCE=.\precomputed_rotations_dlg.cpp
 # Begin Source File
 
 SOURCE=.\precomputed_rotations_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ps_global_color_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ps_global_color_dlg.h
 # End Source File
 # Begin Source File
 

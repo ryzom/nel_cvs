@@ -874,6 +874,10 @@ SOURCE=.\processes\rbank\sh\install.sh
 
 SOURCE=.\processes\rbank\maxscript\rbank_export.ms
 # End Source File
+# Begin Source File
+
+SOURCE=.\processes\rbank\cfg\template.cfg
+# End Source File
 # End Group
 # Begin Group "Veget Files"
 

@@ -4,7 +4,7 @@
  * Get the .land, the reference zones and the heightmap and generate
  * all zones that will be next welded and lighted.
  *
- * $Id: export.h,v 1.2 2002/02/20 18:09:06 lecroart Exp $
+ * $Id: export.h,v 1.3 2002/02/28 08:15:56 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,6 +132,7 @@ private:
 	NL3D::CTileBank		*_ZeTileBank;
 	NLMISC::CBitmap		*_HeightMap;
 	NLMISC::CBitmap		*_HeightMap2;
+	sint32				_ZoneMinX, _ZoneMinY, _ZoneMaxX, _ZoneMaxY;
 	
 private:
 

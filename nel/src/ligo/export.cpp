@@ -1,7 +1,7 @@
 /** \file ligo/export.cpp
  * Implementation of export from leveldesign data to client data
  *
- * $Id: export.cpp,v 1.3 2002/02/25 17:58:46 corvazier Exp $
+ * $Id: export.cpp,v 1.4 2002/02/28 08:15:56 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,6 +199,11 @@ bool CExport::export (SExportOptions &options, IExportCB *expCB)
 	sint32 nMaxX = _Options->ZoneRegion->getMaxX() > 255 ? 255 : _Options->ZoneRegion->getMaxX();
 	sint32 nMinY = _Options->ZoneRegion->getMinY() > 0 ? 0 : _Options->ZoneRegion->getMinY();
 	sint32 nMaxY = _Options->ZoneRegion->getMaxY() < -255 ? -255 : _Options->ZoneRegion->getMaxY();
+
+	_ZoneMinX = nMinX;
+	_ZoneMinY = nMinY;
+	_ZoneMaxX = nMaxX;
+	_ZoneMaxY = nMaxY;
 
 	if ((_Options->ZoneMin != "") && (_Options->ZoneMax != ""))
 	{
@@ -918,15 +923,18 @@ float CExport::getHeight (float x, float y)
 {
 	float deltaZ = 0.0f, deltaZ2 = 0.0f;
 	CRGBAF color;
+	sint32 SizeX = _ZoneMaxX - _ZoneMinX + 1;
+	sint32 SizeY = _ZoneMaxY - _ZoneMinY + 1;
+	
+	clamp (x, _Options->CellSize*_ZoneMinX, _Options->CellSize*(_ZoneMaxX+1));
+	clamp (y, _Options->CellSize*_ZoneMinY, _Options->CellSize*(_ZoneMaxY+1));
 
 	y = -y;
 
-	clamp (x, 0.0f, _Options->CellSize*256.0f);
-	clamp (y, 0.0f, _Options->CellSize*256.0f);
-
 	if (_HeightMap != NULL)
 	{
-		color = _HeightMap->getColor (x/(_Options->CellSize*256.0f), y/(_Options->CellSize*256.0f));
+		color = _HeightMap->getColor (	(x-_Options->CellSize*_ZoneMinX)/(_Options->CellSize*SizeX), 
+										(y-_Options->CellSize*_ZoneMinY)/(_Options->CellSize*SizeY));
 		deltaZ = color.A;
 		deltaZ = deltaZ - 127.0f; // Median intensity is 127
 		deltaZ *= _Options->ZFactor;
@@ -934,7 +942,8 @@ float CExport::getHeight (float x, float y)
 
 	if (_HeightMap2 != NULL)
 	{
-		color = _HeightMap2->getColor (x/(_Options->CellSize*256.0f), y/(_Options->CellSize*256.0f));
+		color = _HeightMap2->getColor (	(x-_Options->CellSize*_ZoneMinX)/(_Options->CellSize*SizeX), 
+										(y-_Options->CellSize*_ZoneMinY)/(_Options->CellSize*SizeY));
 		deltaZ2 = color.A;
 		deltaZ2 = deltaZ2 - 127.0f; // Median intensity is 127
 		deltaZ2 *= _Options->ZFactor2;

@@ -160,7 +160,11 @@ namespace NLAILINK
 		NLAISCRIPT::IScriptDebugSource *sourceCode = new NLAISCRIPT::CScriptDebugSourceFile(name.c_str());
 		IOTrace Interface;
 		NLAISCRIPT::CCompilateur *comp = new NLAISCRIPT::CCompilateur(Interface, scriptSrc.c_str(), scriptSrc.size(), sourceCode);
-		NLAIAGENT::IObjectIA::CProcessResult r = comp->Compile();
+		NLAIAGENT::IObjectIA::CProcessResult r = comp->Compile();		
+#ifdef NL_DEBUG
+		if(r.ResultState == NLAIAGENT::processError)
+				throw;
+#endif
 		sourceCode->release();
 		delete comp;
 	}

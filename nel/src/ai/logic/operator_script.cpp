@@ -116,6 +116,7 @@ namespace NLAIAGENT
 		std::string text;
 		text = NLAIC::stringGetBuild("%f", priority() );
 		t += text;
+		t += "\n\t";
 
 		CAgentScript::getDebugString(t);
 	}

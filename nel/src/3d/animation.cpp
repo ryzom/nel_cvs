@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.3 2001/03/08 13:29:07 corvazier Exp $
+ * $Id: animation.cpp,v 1.4 2001/03/13 17:04:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,11 +63,78 @@ void CAnimation::serial (NLMISC::IStream& f) throw (NLMISC::EStream)
 	// Serial a version
 	sint version=f.serialVersion (0);
 
+	// Serial the name
+	f.serial (_Name);
+
 	// Serial the name/id map
 	f.serialMap (_IdByName);
 
 	// Serial the vector
 	f.serialContPolyPtr (_TrackVector);
+}
+
+// ***************************************************************************
+
+void CAnimation::getTrackNames (std::set<std::string>& setString) const
+{
+	// For each track name
+	TMapStringUInt::const_iterator ite=_IdByName.begin();
+	while (ite!=_IdByName.end())
+	{
+		// Add the name in the map
+		setString.insert (ite->first);
+
+		// Next track
+		ite++;
+	}
+}
+
+// ***************************************************************************
+
+CAnimationTime CAnimation::getBeginTime () const
+{
+	// Track count
+	uint trackCount=_TrackVector.size();
+
+	// Track count empty ?
+	if (trackCount==0)
+		return 0.f;
+
+	// Look for the lowest
+	CAnimationTime lowest=_TrackVector[0]->getBeginTime ();
+
+	// Scan all keys
+	for (uint t=1; t<trackCount; t++)
+	{
+		if (_TrackVector[t]->getBeginTime ()<lowest)
+			lowest=_TrackVector[t]->getBeginTime ();
+	}
+
+	return lowest;
+}
+
+// ***************************************************************************
+
+CAnimationTime CAnimation::getEndTime () const
+{
+	// Track count
+	uint trackCount=_TrackVector.size();
+
+	// Track count empty ?
+	if (trackCount==0)
+		return 0.f;
+
+	// Look for the lowest
+	CAnimationTime highest=_TrackVector[0]->getEndTime ();
+
+	// Scan tracks keys
+	for (uint t=1; t<trackCount; t++)
+	{
+		if (_TrackVector[t]->getEndTime ()>highest)
+			highest=_TrackVector[t]->getEndTime ();
+	}
+
+	return highest;
 }
 
 // ***************************************************************************

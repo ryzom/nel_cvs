@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.5 2001/03/08 13:29:07 corvazier Exp $
+ * $Id: animation.h,v 1.6 2001/03/13 17:04:23 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_ANIMATION_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/3d/animation_time.h"
 #include <memory>
 #include <map>
 #include <set>
@@ -61,6 +62,22 @@ public:
 	/// \name Public interface.
 
 	enum { NotFound=0xffffffff };
+
+	/**
+	  * Get animation name.
+	  */
+	const std::string& getName () const
+	{
+		return _Name;
+	}
+
+	/**
+	  * Set animation name.
+	  */
+	void setName (const char* sName)
+	{
+		_Name=sName;
+	}
 
 	/** Get track with its name.
 	  *
@@ -106,6 +123,20 @@ public:
 	  */
 	void addTrack (const std::string& name, ITrack* pChannel);
 
+	/**
+	  * Get begin time of the track.
+	  *
+	  * \return the begin time.
+	  */
+	CAnimationTime getBeginTime () const;
+
+	/**
+	  * Get end time of the track.
+	  *
+	  * \return the end time.
+	  */
+	CAnimationTime getEndTime () const;
+
 	/// Serial the template
 	void serial (NLMISC::IStream& f) throw (NLMISC::EStream);
 
@@ -113,6 +144,9 @@ private:
 	/// \name Members
 	typedef std::map<std::string, uint32> TMapStringUInt;
 	typedef std::vector<ITrack* > TVectAPtrTrack;
+
+	// Animation name
+	std::string			_Name;
 
 	// Map to get a channel id with a name.
 	TMapStringUInt		_IdByName;

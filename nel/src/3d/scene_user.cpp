@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.20 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.21 2002/06/27 15:44:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -498,13 +498,7 @@ sint32				CSceneUser::getCLodAnimIdByName(uint32 shapeId, const std::string &nam
 
 // ***************************************************************************
 void			CSceneUser::render()
-{
-	// update waiting instances groups;
-	{
-		NL3D_HAUTO_ASYNC_IG
-
-		updateWaitingIG();
-	}
+{	
 
 	// render the scene.
 	{
@@ -536,7 +530,13 @@ void			CSceneUser::render()
 			}
 		}
 	}
-	
+
+	// update waiting instances groups;
+	{
+		NL3D_HAUTO_ASYNC_IG
+
+		updateWaitingIG();
+	}	
 
 	// Must restore the matrix context, so 2D/3D interface not disturbed.
 	_DriverUser->restoreMatrixContext();

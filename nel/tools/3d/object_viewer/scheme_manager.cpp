@@ -1,7 +1,7 @@
 /** \file scheme_manager.cpp
  * a collection of scheme (to set particle atributes)
  *
- * $Id: scheme_manager.cpp,v 1.1 2001/09/12 13:35:34 vizerie Exp $
+ * $Id: scheme_manager.cpp,v 1.2 2001/09/12 13:39:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ void CSchemeManager::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		_SchemeMap.clear();
 		
 		std::string name;
-		NL3D::CPSAttribMakerBase *scheme;
+		NL3D::CPSAttribMakerBase *scheme = NULL;
 		sint32 size;
 		f.serial(size);
 		for (sint32 k = 0; k < size; ++k)

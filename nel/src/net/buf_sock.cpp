@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.2 2001/05/04 09:52:56 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,8 @@ CBufSock::CBufSock( CTcpSock *sock ) :
 	_TriggerTime( 20 ),
 	_TriggerSize( -1 ),
 	_LastFlushTime( 0 ),
-	_KnowConnected( false )
+	_KnowConnected( false ),
+	_AppId (0)
 {
 	nlnettrace( "CBufSock::CBufSock" ); // don't define a global object
 
@@ -250,7 +251,16 @@ string CBufSock::asString() const
 	if (this == NULL)
 		ss << "<Null>";
 	else
-		ss << hex << this << dec << " (socket " << Sock->descriptor() << ")";
+	{
+		ss << hex << this << dec << " (socket ";
+		
+		if (Sock == NULL)
+			ss << "<Null>";
+		else
+			ss << Sock->descriptor();
+
+		ss << ")";
+	}
 	return ss.str();
 }
 

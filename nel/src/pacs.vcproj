@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="pacs"
+	ProjectGUID="{B0EA020D-00AB-4EB2-92AB-F740B2A70FC1}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

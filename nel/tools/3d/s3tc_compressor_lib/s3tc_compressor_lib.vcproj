@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="ig_lighter_lib"
+	Name="s3tc_compressor_lib"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -28,7 +28,7 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Release/ig_lighter_lib.pch"
+				PrecompiledHeaderFile=".\Release/s3tc_compressor_lib.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -38,7 +38,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Release\ig_lighter_lib.lib"
+				OutputFile=".\Release\s3tc_compressor_lib.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -73,13 +73,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_LIB;NL_RELEASE_DEBUG;WIN32;NDEBUG;PLUGIN_UE_CATCH"
+				PreprocessorDefinitions="_LIB;NL_RELEASE_DEBUG;WIN32;NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\ReleaseDebug/ig_lighter_lib.pch"
+				PrecompiledHeaderFile=".\ReleaseDebug/s3tc_compressor_lib.pch"
 				AssemblerListingLocation=".\ReleaseDebug/"
 				ObjectFile=".\ReleaseDebug/"
 				ProgramDataBaseFileName=".\ReleaseDebug/"
@@ -90,7 +90,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\ReleaseDebug\ig_lighter_lib.lib"
+				OutputFile=".\ReleaseDebug\s3tc_compressor_lib.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -103,6 +103,56 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory=".\Debug"
+			IntermediateDirectory=".\Debug"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;__STL_DEBUG"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\Debug/s3tc_compressor_lib.pch"
+				AssemblerListingLocation=".\Debug/"
+				ObjectFile=".\Debug/"
+				ProgramDataBaseFileName=".\Debug/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile=".\Debug\s3tc_compressor_lib.lib"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
 				Culture="1036"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -129,7 +179,7 @@
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\DebugFast/ig_lighter_lib.pch"
+				PrecompiledHeaderFile=".\DebugFast/s3tc_compressor_lib.pch"
 				AssemblerListingLocation=".\DebugFast/"
 				ObjectFile=".\DebugFast/"
 				ProgramDataBaseFileName=".\DebugFast/"
@@ -140,58 +190,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\DebugFast\ig_lighter_lib.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
-		</Configuration>
-		<Configuration
-			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm200 "
-				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;__STL_DEBUG"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Debug/ig_lighter_lib.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\Debug\ig_lighter_lib.lib"
+				OutputFile=".\DebugFast\s3tc_compressor_lib.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -219,7 +218,7 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="ig_lighter_lib.cpp">
+			RelativePath="s3tc_compressor.cpp">
 			<FileConfiguration
 				Name="Release|Win32">
 				<Tool
@@ -235,7 +234,7 @@
 					PreprocessorDefinitions=""/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="DebugFast|Win32">
+				Name="Debug|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
 					Optimization="0"
@@ -243,7 +242,7 @@
 					BasicRuntimeChecks="3"/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="Debug|Win32">
+				Name="DebugFast|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
 					Optimization="0"
@@ -252,7 +251,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="ig_lighter_lib.h">
+			RelativePath="s3tc_compressor.h">
 		</File>
 	</Files>
 	<Globals>

@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="nel_patch_converter"
+	ProjectGUID="{8B5A98CA-AC8B-4C0C-8E7D-27E96572E3FE}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -20,10 +21,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
+				Optimization="2"
 				InlineFunctionExpansion="1"
 				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\..\..\..\src"
-				PreprocessorDefinitions="_WINDOWS,WIN32,NDEBUG,NL_RELEASE_DEBUG"
+				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include ..\RPO"
+				PreprocessorDefinitions="NL_RELEASE_DEBUG;NDEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;PLUGIN_UE_CATCH"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -42,25 +44,27 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib freetype.lib"
-				OutputFile="../../../../lib7/nelconvertpatch.dlm"
+				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib libxml2_a.lib ws2_32.lib freetype219MT.lib"
+				OutputFile="C:\3dsmax3_1\plugins\nelconvertpatch.dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
 				ModuleDefinitionFile=".\nel_patch_converter.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\ReleaseDebug/nelconvertpatch.pdb"
 				SubSystem="2"
 				SetChecksum="TRUE"
 				BaseAddress="0x105b0000"
-				ImportLibrary=".\ReleaseDebug/nelconvertpatch.lib"/>
+				ImportLibrary=".\ReleaseDebug/nelconvertpatch.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\ReleaseDebug/nel_patch_converter.tlb"/>
+				TypeLibraryName=".\ReleaseDebug/nel_patch_converter.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -74,7 +78,85 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="DebugFast|Win32"
+			OutputDirectory=".\DebugFast"
+			IntermediateDirectory=".\DebugFast"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm200 "
+				Optimization="0"
+				InlineFunctionExpansion="1"
+				OptimizeForProcessor="2"
+				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include ..\RPO"
+				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;WIN32;_WINDOWS;NL_NO_DEFINE_NEW"
+				RuntimeLibrary="3"
+				RuntimeTypeInfo="TRUE"
+				PrecompiledHeaderFile=".\DebugFast/nel_patch_converter.pch"
+				AssemblerListingLocation=".\DebugFast/"
+				ObjectFile=".\DebugFast/"
+				ProgramDataBaseFileName=".\DebugFast/"
+				BrowseInformation="1"
+				BrowseInformationFile=".\DebugFast/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib libxml2_a.lib ws2_32.lib freetype219MT_D.lib"
+				OutputFile="C:\3dsmax3_1 debug\exe\plugins\nelconvertpatch.dlm"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
+				ModuleDefinitionFile=".\nel_patch_converter.def"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\DebugFast/nelconvertpatch.pdb"
+				SubSystem="2"
+				BaseAddress="0x105b0000"
+				ImportLibrary=".\DebugFast/nelconvertpatch.lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\DebugFast/nel_patch_converter.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Hybrid|Win32"
@@ -87,8 +169,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\..\..\..\src"
-				PreprocessorDefinitions="_WINDOWS,WIN32,__STL_DEBUG"
+				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include ..\RPO"
+				PreprocessorDefinitions="__STL_DEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
@@ -105,25 +187,27 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="delayimp.lib edmodel.lib mnmath.lib acap.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib freetype.lib"
-				OutputFile="../../../../lib7/nelconvertpatch.dlm"
-				LinkIncremental="2"
+				AdditionalDependencies="delayimp.lib edmodel.lib mnmath.lib acap.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib libxml2_a.lib ws2_32.lib freetype219MT_D.lib"
+				OutputFile="C:\3dsmax3_1\plugins\nelconvertpatch.dlm"
+				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
 				IgnoreDefaultLibraryNames="msvcrtd.lib"
 				ModuleDefinitionFile=".\nel_patch_converter.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Hybrid/nelconvertpatch.pdb"
 				SubSystem="2"
 				BaseAddress="0x105b0000"
-				ImportLibrary=".\Hybrid/nelconvertpatch.lib"/>
+				ImportLibrary=".\Hybrid/nelconvertpatch.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Hybrid/nel_patch_converter.tlb"/>
+				TypeLibraryName=".\Hybrid/nel_patch_converter.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -137,7 +221,13 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
@@ -151,8 +241,8 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\..\..\..\src"
-				PreprocessorDefinitions="_WINDOWS,__STL_DEBUG,WIN32,_DEBUG"
+				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include ..\RPO"
+				PreprocessorDefinitions="__STL_DEBUG;_DEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				PrecompiledHeaderFile=".\Debug/nel_patch_converter.pch"
@@ -167,24 +257,26 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib freetype.lib"
-				OutputFile="../../../../lib7/nelconvertpatch.dlm"
+				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib libxml2_a.lib ws2_32.lib freetype219MT_D.lib"
+				OutputFile="C:\3dsmax3_1 debug\exe\plugins\nelconvertpatch.dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
 				ModuleDefinitionFile=".\nel_patch_converter.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/nelconvertpatch.pdb"
 				SubSystem="2"
 				BaseAddress="0x105b0000"
-				ImportLibrary=".\Debug/nelconvertpatch.lib"/>
+				ImportLibrary=".\Debug/nelconvertpatch.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/nel_patch_converter.tlb"/>
+				TypeLibraryName=".\Debug/nel_patch_converter.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -198,7 +290,13 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -209,10 +307,12 @@
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm200 "
+				Optimization="2"
 				InlineFunctionExpansion="1"
 				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\..\..\..\src"
-				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS"
+				AdditionalIncludeDirectories="C:\3dsmax3_1\Maxsdk\include ..\RPO"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -230,24 +330,26 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="maxscrpt.lib version.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib freetype.lib"
-				OutputFile="../../../../lib7/nelconvertpatch.dlm"
+				AdditionalDependencies="maxscrpt.lib version.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib libxml2_a.lib ws2_32.lib freetype219MT.lib"
+				OutputFile="C:\3dsmax3_1\plugins\nelconvertpatch.dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="C:\3dsmax3_1\Maxsdk\lib"
 				ModuleDefinitionFile=".\nel_patch_converter.def"
 				ProgramDatabaseFile=".\Release/nelconvertpatch.pdb"
 				SubSystem="2"
 				SetChecksum="TRUE"
 				BaseAddress="0x105b0000"
-				ImportLibrary=".\Release/nelconvertpatch.lib"/>
+				ImportLibrary=".\Release/nelconvertpatch.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/nel_patch_converter.tlb"/>
+				TypeLibraryName=".\Release/nel_patch_converter.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -265,102 +367,179 @@ rc /l 0x40c /fo&quot;Release/nel_patch_converter.res&quot; /d &quot;NDEBUG&quot;
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-		</Configuration>
-		<Configuration
-			Name="DebugFast|Win32"
-			OutputDirectory=".\DebugFast"
-			IntermediateDirectory=".\DebugFast"
-			ConfigurationType="2"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				InlineFunctionExpansion="1"
-				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\..\..\..\src"
-				PreprocessorDefinitions="WIN32,_DEBUG,_WINDOWS,NL_DEBUG_FAST"
-				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\DebugFast/nel_patch_converter.pch"
-				AssemblerListingLocation=".\DebugFast/"
-				ObjectFile=".\DebugFast/"
-				ProgramDataBaseFileName=".\DebugFast/"
-				BrowseInformation="1"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"
-				CompileAs="0"
-				ShowIncludes="FALSE"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib freetype.lib"
-				OutputFile="../../../../lib7/nelconvertpatch.dlm"
-				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				ModuleDefinitionFile=".\nel_patch_converter.def"
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\DebugFast/nelconvertpatch.pdb"
-				SubSystem="2"
-				BaseAddress="0x105b0000"
-				ImportLibrary=".\DebugFast/nelconvertpatch.lib"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\DebugFast/nel_patch_converter.tlb"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<File
-			RelativePath=".\DllEntry.cpp">
+			RelativePath="DllEntry.cpp">
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="NL_RELEASE_DEBUG;NDEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Hybrid|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="__STL_DEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="__STL_DEBUG;_DEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\PO2RPO.h">
+			RelativePath="nel_patch_converter.cpp">
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="NL_RELEASE_DEBUG;NDEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Hybrid|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="__STL_DEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="__STL_DEBUG;_DEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\nel_patch_converter.cpp">
+			RelativePath="nel_patch_converter.def">
 		</File>
 		<File
-			RelativePath=".\nel_patch_converter.def">
+			RelativePath="nel_patch_converter.h">
 		</File>
 		<File
-			RelativePath=".\nel_patch_converter.h">
+			RelativePath="nel_patch_converter.rc">
 		</File>
 		<File
-			RelativePath=".\nel_patch_converter.rc">
+			RelativePath="PO2RPO.h">
 		</File>
 		<File
-			RelativePath=".\resource.h">
+			RelativePath="resource.h">
 		</File>
 		<File
-			RelativePath=".\rykolscript.txt">
+			RelativePath="rykolscript.txt">
 		</File>
 		<File
-			RelativePath=".\script.cpp">
+			RelativePath="script.cpp">
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="NL_RELEASE_DEBUG;NDEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Hybrid|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="__STL_DEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="__STL_DEBUG;_DEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;NL_NO_DEFINE_NEW;$(NoInherit)"
+					BrowseInformation="1"/>
+			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\todo.txt">
+			RelativePath="todo.txt">
 		</File>
 	</Files>
 	<Globals>

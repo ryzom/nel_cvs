@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="sound_lowlevel"
+	ProjectGUID="{8EB8B7A1-D4A3-44F0-9785-1135C79704DC}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

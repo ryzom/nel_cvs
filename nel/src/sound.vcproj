@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="sound"
+	ProjectGUID="{10DAA5E4-A953-4F87-B888-1D530B654B63}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="nel_patch_paint"
+	ProjectGUID="{276ABB06-3A5C-4173-B62E-41209F54F5B1}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -10,72 +11,6 @@
 			Name="Win32"/>
 	</Platforms>
 	<Configurations>
-		<Configuration
-			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\ReleaseDebug"
-			IntermediateDirectory=".\ReleaseDebug"
-			ConfigurationType="2"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
-			<Tool
-				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm200 "
-				InlineFunctionExpansion="1"
-				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\..\src"
-				PreprocessorDefinitions="_WINDOWS;WIN32;NDEBUG;NL_RELEASE_DEBUG"
-				StringPooling="TRUE"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile=".\ReleaseDebug/nel_patch_paint.pch"
-				AssemblerListingLocation=".\ReleaseDebug/"
-				ObjectFile=".\ReleaseDebug/"
-				ProgramDataBaseFileName=".\ReleaseDebug/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"
-				CompileAs="0"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="Maxscrpt.lib helpsys.lib freetype.lib winmm.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib"
-				OutputFile="../../../../lib7/nelpaintpatch.dlm"
-				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				ModuleDefinitionFile=".\nel_patch_paint.def"
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\ReleaseDebug/nelpaintpatch.pdb"
-				SubSystem="2"
-				SetChecksum="TRUE"
-				BaseAddress="0x05830000"
-				ImportLibrary=".\ReleaseDebug/nelpaintpatch.lib"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\ReleaseDebug/nel_patch_paint.tlb"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCWebDeploymentTool"/>
-		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\Release"
@@ -85,9 +20,10 @@
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
 				InlineFunctionExpansion="1"
 				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\..\src"
+				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -106,9 +42,8 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="Maxscrpt.lib helpsys.lib freetype.lib winmm.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib"
-				OutputFile="../../../../lib7/nelpaintpatch.dlm"
+				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib libxml2_a.lib ws2_32.lib freetype219MT.lib"
+				OutputFile="C:\3dsmax3_1\plugins\nelpaintpatch.dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\nel_patch_paint.def"
@@ -116,14 +51,16 @@
 				SubSystem="2"
 				SetChecksum="TRUE"
 				BaseAddress="0x05830000"
-				ImportLibrary=".\Release/nelpaintpatch.lib"/>
+				ImportLibrary=".\Release/nelpaintpatch.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/nel_patch_paint.tlb"/>
+				TypeLibraryName=".\Release/nel_patch_paint.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -141,71 +78,13 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-		</Configuration>
-		<Configuration
-			Name="Hybrid|Win32"
-			OutputDirectory=".\Hybrid"
-			IntermediateDirectory=".\Hybrid"
-			ConfigurationType="2"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\..\src"
-				PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG"
-				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile=".\Hybrid/nel_patch_paint.pch"
-				AssemblerListingLocation=".\Hybrid/"
-				ObjectFile=".\Hybrid/"
-				ProgramDataBaseFileName=".\Hybrid/"
-				BrowseInformation="1"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"
-				CompileAs="0"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="nl3d_debug.lib nlmisc_debug.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib freetype.lib"
-				OutputFile="../../../../lib7/nelpaintpatch.dlm"
-				LinkIncremental="2"
-				SuppressStartupBanner="TRUE"
-				IgnoreDefaultLibraryNames="msvcrtd.lib"
-				ModuleDefinitionFile=".\nel_patch_paint.def"
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Hybrid/nelpaintpatch.pdb"
-				SubSystem="2"
-				BaseAddress="0x05830000"
-				ImportLibrary=".\Hybrid/nelpaintpatch.lib"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\Hybrid/nel_patch_paint.tlb"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
@@ -219,7 +98,7 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\..\src"
+				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
@@ -233,15 +112,13 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
-				CompileAs="0"
-				ShowIncludes="FALSE"/>
+				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="Maxscrpt.lib helpsys.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib winmm.lib freetype.lib"
-				OutputFile="../../../../lib7/nelpaintpatch.dlm"
+				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib stlport_vc6.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib libxml2_a.lib ws2_32.lib freetype219MT_D.lib"
+				OutputFile="C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\nel_patch_paint.def"
@@ -249,14 +126,16 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 				ProgramDatabaseFile=".\Debug/nelpaintpatch.pdb"
 				SubSystem="2"
 				BaseAddress="0x05830000"
-				ImportLibrary=".\Debug/nelpaintpatch.lib"/>
+				ImportLibrary=".\Debug/nelpaintpatch.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/nel_patch_paint.tlb"/>
+				TypeLibraryName=".\Debug/nel_patch_paint.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -270,12 +149,164 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="ReleaseDebug|Win32"
+			OutputDirectory=".\ReleaseDebug"
+			IntermediateDirectory=".\ReleaseDebug"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm200 "
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				OptimizeForProcessor="2"
+				AdditionalIncludeDirectories="..\..\include"
+				PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;PLUGIN_UE_CATCH"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="stdafx.h"
+				PrecompiledHeaderFile=".\ReleaseDebug/nel_patch_paint.pch"
+				AssemblerListingLocation=".\ReleaseDebug/"
+				ObjectFile=".\ReleaseDebug/"
+				ProgramDataBaseFileName=".\ReleaseDebug/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib libxml2_a.lib ws2_32.lib freetype219MT.lib"
+				OutputFile="C:\3dsmax3_1\plugins\nelpaintpatch.dlm"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				ModuleDefinitionFile=".\nel_patch_paint.def"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\ReleaseDebug/nelpaintpatch.pdb"
+				SubSystem="2"
+				SetChecksum="TRUE"
+				BaseAddress="0x05830000"
+				ImportLibrary=".\ReleaseDebug/nelpaintpatch.lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\ReleaseDebug/nel_patch_paint.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Hybrid|Win32"
+			OutputDirectory=".\Hybrid"
+			IntermediateDirectory=".\Hybrid"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				OptimizeForProcessor="2"
+				AdditionalIncludeDirectories="..\..\include"
+				PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG"
+				RuntimeLibrary="2"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="stdafx.h"
+				PrecompiledHeaderFile=".\Hybrid/nel_patch_paint.pch"
+				AssemblerListingLocation=".\Hybrid/"
+				ObjectFile=".\Hybrid/"
+				ProgramDataBaseFileName=".\Hybrid/"
+				BrowseInformation="1"
+				BrowseInformationFile=".\Hybrid/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="4"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="nl3d_d.lib nlmisc_d.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib libxml2_a.lib ws2_32.lib freetype219MT_D.lib"
+				OutputFile="C:\3dsmax3_1\plugins\nelpaintpatch.dlm"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				IgnoreDefaultLibraryNames="msvcrtd.lib"
+				ModuleDefinitionFile=".\nel_patch_paint.def"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\Hybrid/nelpaintpatch.pdb"
+				SubSystem="2"
+				BaseAddress="0x05830000"
+				ImportLibrary=".\Hybrid/nelpaintpatch.lib"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Hybrid/nel_patch_paint.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory="DebugFast"
-			IntermediateDirectory="DebugFast"
+			OutputDirectory=".\DebugFast"
+			IntermediateDirectory=".\DebugFast"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -284,46 +315,49 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\..\include;..\..\..\..\src"
+				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile=".\Debug/nel_patch_paint.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				PrecompiledHeaderFile=".\DebugFast/nel_patch_paint.pch"
+				AssemblerListingLocation=".\DebugFast/"
+				ObjectFile=".\DebugFast/"
+				ProgramDataBaseFileName=".\DebugFast/"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
-				CompileAs="0"
-				ShowIncludes="FALSE"/>
+				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="Maxscrpt.lib helpsys.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib winmm.lib freetype.lib"
-				OutputFile="../../../../lib7/nelpaintpatch.dlm"
+				AdditionalDependencies="Maxscrpt.lib helpsys.lib winmm.lib stlport_vc6.lib comctl32.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib libxml2_a.lib ws2_32.lib freetype219MT_D.lib"
+				OutputFile="C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\nel_patch_paint.def"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Debug/nelpaintpatch.pdb"
+				ProgramDatabaseFile=".\DebugFast/nelpaintpatch.pdb"
 				SubSystem="2"
 				BaseAddress="0x05830000"
-				ImportLibrary=".\Debug/nelpaintpatch.lib"/>
+				ImportLibrary=".\DebugFast/nelpaintpatch.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/nel_patch_paint.tlb"/>
+				TypeLibraryName=".\DebugFast/nel_patch_paint.tlb"
+				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy &quot;C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm&quot; &quot;c:\3dsmax3_1\plugins&quot;
+echo copie dans max
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -335,122 +369,133 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;fi;fd">
 			<File
-				RelativePath=".\DllEntry.h">
+				RelativePath="DllEntry.h">
 			</File>
 			<File
-				RelativePath=".\nel_patch_paint.h">
+				RelativePath="nel_patch_paint.h">
 			</File>
 			<File
-				RelativePath=".\paint_fill.h">
+				RelativePath="paint_fill.h">
 			</File>
 			<File
-				RelativePath=".\paint_light.h">
+				RelativePath="paint_light.h">
 			</File>
 			<File
-				RelativePath=".\paint_tileset.h">
+				RelativePath="paint_tileset.h">
 			</File>
 			<File
-				RelativePath=".\paint_to_nel.h">
+				RelativePath="paint_to_nel.h">
 			</File>
 			<File
-				RelativePath=".\paint_ui.h">
+				RelativePath="paint_ui.h">
 			</File>
 			<File
-				RelativePath=".\paint_undo.h">
+				RelativePath="paint_undo.h">
 			</File>
 			<File
-				RelativePath=".\paint_vcolor.h">
+				RelativePath="paint_vcolor.h">
 			</File>
 			<File
-				RelativePath=".\resource.h">
+				RelativePath="resource.h">
 			</File>
 			<File
-				RelativePath=".\stdafx.h">
+				RelativePath="stdafx.h">
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath=".\cur00001.cur">
+				RelativePath="cur00001.cur">
 			</File>
 			<File
-				RelativePath=".\cursor1.cur">
+				RelativePath="cursor1.cur">
 			</File>
 			<File
-				RelativePath=".\pick_color.cur">
+				RelativePath="pick_col.cur">
+			</File>
+			<File
+				RelativePath="pick_color.cur">
 			</File>
 		</Filter>
 		<Filter
 			Name="Images"
 			Filter="*.tga">
 			<File
-				RelativePath=".\_0.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath="_0.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_0.tga">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
+				RelativePath="_0.tga">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -459,70 +504,16 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_1.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_1.tga">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -531,16 +522,7 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -549,70 +531,70 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_10.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath="_1.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_10.tga">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
+				RelativePath="_1.tga">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -621,70 +603,16 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_11.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_11.tga">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -693,16 +621,7 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -711,70 +630,70 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_128.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath="_10.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_128.tga">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
+				RelativePath="_10.tga">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -783,70 +702,16 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_2.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_2.tga">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -855,16 +720,7 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -873,70 +729,70 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_256.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath="_11.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_256.tga">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
+				RelativePath="_11.tga">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -945,70 +801,16 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_3.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_3.tga">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1017,16 +819,7 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1035,70 +828,70 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_4.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath="_128.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_4.tga">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
+				RelativePath="_128.tga">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1107,70 +900,16 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_5.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_5.tga">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1179,16 +918,7 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1197,70 +927,70 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_6.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath="_2.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_6.tga">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
+				RelativePath="_2.tga">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1269,70 +999,16 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_7.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_7.tga">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1341,16 +1017,7 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1359,70 +1026,70 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_8.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath="_256.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_8.tga">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
+				RelativePath="_256.tga">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1431,70 +1098,16 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_9.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\_9.tga">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1503,16 +1116,7 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1521,70 +1125,70 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_small.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath="_3.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\_small.tga">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
+				RelativePath="_3.tga">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1593,70 +1197,16 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\all.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\all.tga">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1665,16 +1215,7 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1683,70 +1224,70 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\large.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath="_4.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\large.tga">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
+				RelativePath="_4.tga">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1755,70 +1296,16 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\light.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\light.tga">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1827,16 +1314,7 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1845,70 +1323,70 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\lock.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath="_5.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\lock.tga">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
+				RelativePath="_5.tga">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1917,70 +1395,16 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\medium.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DebugFast|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\medium.tga">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -1989,16 +1413,7 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -2007,70 +1422,70 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\oriented.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath="_6.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\oriented.tga">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
+				RelativePath="_6.tga">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
-"
-						Outputs="$(ProjectDir)$(InputName).cpp"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Hybrid|Win32">
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -2079,7 +1494,25 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -2088,7 +1521,1294 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Generate $(InputName).cpp"
-						CommandLine="bin2c $(InputPath) $(InputName).cpp
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="_7.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="_7.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="_8.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="_8.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="_9.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="_9.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="_small.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="_small.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="all.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="all.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="goofy.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="goofy.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="large.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="large.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="light.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="light.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="lock.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="lock.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="medium.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="medium.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="nothing.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="nothing.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="oriented.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="oriented.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="regular.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="regular.tga">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
+"
+						Outputs="$(ProjectDir)$(InputName).cpp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generate $(InputName).cpp"
+						CommandLine="bin2c &quot;$(InputPath)&quot; &quot;$(InputName)&quot;.cpp
 "
 						Outputs="$(ProjectDir)$(InputName).cpp"/>
 				</FileConfiguration>
@@ -2098,104 +2818,896 @@ rc /l 0x409 /fo&quot;Release/nel_patch_paint.res&quot; /d &quot;NDEBUG&quot; nel
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90">
 			<File
-				RelativePath=".\DllEntry.cpp">
-			</File>
-			<File
-				RelativePath=".\nel_patch_paint.cpp">
-			</File>
-			<File
-				RelativePath=".\nel_patch_paint.def">
-			</File>
-			<File
-				RelativePath=".\nel_patch_paint.rc">
-			</File>
-			<File
-				RelativePath=".\paint.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_data.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_file.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_fill.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_light.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_main.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_mod.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_pops.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_record.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_restore.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_rollup.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_tileset.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_to_nel.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_ui.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_undo.cpp">
-			</File>
-			<File
-				RelativePath=".\paint_vcolor.cpp">
-			</File>
-			<File
-				RelativePath=".\stdafx.cpp">
-				<FileConfiguration
-					Name="ReleaseDebug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
+				RelativePath="DllEntry.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Hybrid|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="nel_patch_paint.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="nel_patch_paint.def">
+			</File>
+			<File
+				RelativePath="nel_patch_paint.rc">
+			</File>
+			<File
+				RelativePath="paint.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_data.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_file.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_fill.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_light.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_main.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_mod.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_pops.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_record.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_restore.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_rollup.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_tileset.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_to_nel.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_ui.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_undo.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="paint_vcolor.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="DebugFast|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="stdafx.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;$(NoInherit)"
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;__STL_DEBUG;WIN32;_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="1"
+						BrowseInformation="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;NL_RELEASE_DEBUG;WIN32;NDEBUG;$(NoInherit)"
 						UsePrecompiledHeader="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Hybrid|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_WINDOWS;__STL_DEBUG;$(NoInherit)"
+						UsePrecompiledHeader="1"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="DebugFast|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="_WINDOWS;WIN32;_DEBUG;NL_DEBUG_FAST;$(NoInherit)"
+						UsePrecompiledHeader="1"
+						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\keys.cfg">
+			RelativePath="keys.cfg">
 		</File>
 		<File
-			RelativePath=".\user_guide.txt">
+			RelativePath="user_guide.txt">
 		</File>
 	</Files>
 	<Globals>

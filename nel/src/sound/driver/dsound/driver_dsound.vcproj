@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="driver_dsound"
+	ProjectGUID="{8C5ACC8B-2BF4-4DF3-8551-FCA5FB8D9320}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

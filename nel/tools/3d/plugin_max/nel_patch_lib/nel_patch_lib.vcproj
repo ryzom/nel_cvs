@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="nel_patch_lib"
+	ProjectGUID="{A4B356C6-AFB7-41DA-AC22-371D752FA1BD}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -10,52 +11,6 @@
 			Name="Win32"/>
 	</Platforms>
 	<Configurations>
-		<Configuration
-			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\src"
-				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile=".\Debug/nel_patch_lib.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\Debug\nel_patch_lib.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\Release"
@@ -66,9 +21,9 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\..\src"
-				PreprocessorDefinitions="WIN32,NDEBUG,_LIB"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
@@ -99,6 +54,115 @@
 				Culture="1036"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory=".\Debug"
+			IntermediateDirectory=".\Debug"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				OptimizeForProcessor="2"
+				PreprocessorDefinitions="_LIB;__STL_DEBUG;WIN32;_DEBUG"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="stdafx.h"
+				PrecompiledHeaderFile=".\Debug/nel_patch_lib.pch"
+				AssemblerListingLocation=".\Debug/"
+				ObjectFile=".\Debug/"
+				ProgramDataBaseFileName=".\Debug/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile=".\Debug\nel_patch_lib.lib"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="ReleaseDebug|Win32"
+			OutputDirectory=".\ReleaseDebug"
+			IntermediateDirectory=".\ReleaseDebug"
+			ConfigurationType="4"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				PreprocessorDefinitions="_LIB;NL_RELEASE_DEBUG;WIN32;NDEBUG;PLUGIN_UE_CATCH"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				PrecompiledHeaderFile=".\ReleaseDebug/nel_patch_lib.pch"
+				AssemblerListingLocation=".\ReleaseDebug/"
+				ObjectFile=".\ReleaseDebug/"
+				ProgramDataBaseFileName=".\ReleaseDebug/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile=".\ReleaseDebug\nel_patch_lib.lib"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Hybrid|Win32"
@@ -111,8 +175,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\src"
-				PreprocessorDefinitions="_LIB,WIN32,__STL_DEBUG"
+				PreprocessorDefinitions="_LIB;WIN32;__STL_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"
@@ -146,51 +209,12 @@
 				Culture="1036"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
-		</Configuration>
-		<Configuration
-			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\ReleaseDebug"
-			IntermediateDirectory=".\ReleaseDebug"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
 			<Tool
-				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\..\src"
-				PreprocessorDefinitions="_LIB,WIN32,NDEBUG,NL_RELEASE_DEBUG"
-				StringPooling="TRUE"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\ReleaseDebug/nel_patch_lib.pch"
-				AssemblerListingLocation=".\ReleaseDebug/"
-				ObjectFile=".\ReleaseDebug/"
-				ProgramDataBaseFileName=".\ReleaseDebug/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\ReleaseDebug\nel_patch_lib.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
@@ -204,8 +228,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\..\src"
-				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,NL_DEBUG_FAST"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NL_DEBUG_FAST"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
@@ -218,8 +241,7 @@
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"
-				ShowIncludes="FALSE"/>
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
@@ -240,94 +262,134 @@
 				Culture="1036"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<File
-			RelativePath=".\nel_patch_mesh.cpp">
-		</File>
-		<File
-			RelativePath=".\nel_patch_mesh.h">
-		</File>
-		<File
-			RelativePath=".\path_mesh_alloc.cpp">
-		</File>
-		<File
-			RelativePath=".\path_mesh_alloc.h">
-		</File>
-		<File
-			RelativePath=".\rpo.cpp">
+			RelativePath="nel_patch_mesh.cpp">
 			<FileConfiguration
 				Name="Release|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="3"
-					PrecompiledHeaderThrough="stdafx.h"/>
+					Optimization="2"
+					PreprocessorDefinitions=""/>
 			</FileConfiguration>
-			<FileConfiguration
-				Name="Hybrid|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="3"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="ReleaseDebug|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="3"
-					PrecompiledHeaderThrough="stdafx.h"/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\rpo.h">
-		</File>
-		<File
-			RelativePath=".\rpo2nel.cpp">
-		</File>
-		<File
-			RelativePath=".\stdafx.cpp">
 			<FileConfiguration
 				Name="Debug|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="1"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="1"
-					PrecompiledHeaderThrough="stdafx.h"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Hybrid|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="1"/>
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="ReleaseDebug|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="1"
-					PrecompiledHeaderThrough="stdafx.h"/>
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Hybrid|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="DebugFast|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="1"/>
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\stdafx.h">
+			RelativePath="nel_patch_mesh.h">
 		</File>
 		<File
-			RelativePath=".\vertex_neighborhood.cpp">
+			RelativePath="path_mesh_alloc.cpp">
 			<FileConfiguration
 				Name="Release|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Hybrid|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="path_mesh_alloc.h">
+		</File>
+		<File
+			RelativePath="rpo.cpp">
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
+					UsePrecompiledHeader="3"
+					PrecompiledHeaderThrough="stdafx.h"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
 					UsePrecompiledHeader="3"
 					PrecompiledHeaderThrough="stdafx.h"/>
 			</FileConfiguration>
@@ -335,18 +397,171 @@
 				Name="Hybrid|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="3"/>
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					UsePrecompiledHeader="3"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="rpo.h">
+		</File>
+		<File
+			RelativePath="rpo2nel.cpp">
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="ReleaseDebug|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
-					UsePrecompiledHeader="3"
-					PrecompiledHeaderThrough="stdafx.h"/>
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Hybrid|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\vertex_neighborhood.h">
+			RelativePath="stdafx.cpp">
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
+					UsePrecompiledHeader="1"
+					PrecompiledHeaderThrough="stdafx.h"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					UsePrecompiledHeader="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
+					UsePrecompiledHeader="1"
+					PrecompiledHeaderThrough="stdafx.h"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Hybrid|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					UsePrecompiledHeader="1"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					UsePrecompiledHeader="1"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="stdafx.h">
+		</File>
+		<File
+			RelativePath="vertex_neighborhood.cpp">
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
+					UsePrecompiledHeader="3"
+					PrecompiledHeaderThrough="stdafx.h"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
+					UsePrecompiledHeader="3"
+					PrecompiledHeaderThrough="stdafx.h"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Hybrid|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					UsePrecompiledHeader="3"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"
+					BrowseInformation="1"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="vertex_neighborhood.h">
 		</File>
 	</Files>
 	<Globals>

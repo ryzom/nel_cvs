@@ -113,6 +113,14 @@ SOURCE=.\main_agent.h
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # End Group
+# Begin Group "script"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\script\agent\test.ras
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\ag_s.cfg

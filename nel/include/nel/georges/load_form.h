@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.27 2003/10/17 14:08:23 ledorze Exp $
+ * $Id: load_form.h,v 1.28 2003/10/17 14:56:50 ledorze Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -356,25 +356,34 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 				std::set<std::string>::iterator first(dependFiles.begin()), last(dependFiles.end());
 				for (; first != last; ++first)
 				{
+					const	std::string filename = NLMISC::CFile::getFilename(*first);
+					std::map<std::string,uint>::iterator	findDicIt=dictionnaryIndex.find(filename);
+
+					if	(findDicIt!=dictionnaryIndex.end())
+					{
+						depends.push_back(findDicIt->second);
+						continue;
+					}
+
 					std::string p = NLMISC::CPath::lookup (*first, false, false);
-					if (!p.empty())
+					if	(!p.empty())
 					{
 //						uint32 date = NLMISC::CFile::getFileModificationDate(p);
 
 						uint dicIndex;
-						std::string filename = NLMISC::CFile::getFilename(p);
+//						std::string filename = NLMISC::CFile::getFilename(p);
 
-						if (dictionnaryIndex.find(filename) == dictionnaryIndex.end())
-						{
+//						if (dictionnaryIndex.find(filename) == dictionnaryIndex.end())
+//						{
 							// add a new dictionnary entry
 							dicIndex = dictionnary.size();
 							dictionnaryIndex.insert(std::make_pair(filename, dictionnary.size()));
 							dictionnary.push_back(filename);
-						}
-						else
-						{
-							dicIndex = dictionnaryIndex.find(filename)->second;
-						}
+//						}
+//						else
+//						{
+//							dicIndex = dictionnaryIndex.find(filename)->second;
+//						}
 
 						// add the dependecy index
 						depends.push_back(dicIndex);

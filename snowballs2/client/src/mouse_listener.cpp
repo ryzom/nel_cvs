@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.cpp,v 1.9 2001/07/20 14:29:56 legros Exp $
+ * $Id: mouse_listener.cpp,v 1.10 2001/07/20 14:35:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,7 @@ C3dMouseListener::C3dMouseListener()
 	_ViewLagBehind = 3.0f;
 	_ViewHeight = 2.0f;
 	_ViewTargetHeight = 3.0f;
+
 	_AimingState = false;
 	_AimingDamage = 0.0f;
 	_AimingSpeed = 1.0f;

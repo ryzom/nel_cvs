@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.30 2001/07/20 14:29:56 legros Exp $
+ * $Id: entities.cpp,v 1.31 2001/07/20 14:35:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -411,7 +411,10 @@ void stateNormal (CEntity &entity)
 		// get new orientation
 		entity.Angle = MouseListener->getOrientation();
 
+		static bool wasAiming = false;
+		static bool wasWalking = false;
 		bool	isAiming = MouseListener->getAimingState();
+		bool	isWalking;
 
 		// modify the orientation depending on the straff
 		// The straff is determined by the keys that are down simultaneously
@@ -429,7 +432,7 @@ void stateNormal (CEntity &entity)
 			{
 				entity.AuxiliaryAngle = 0;
 			}
-			playAnimation (*Self, isAiming ? PrepareSnowBall : WalkAnim);
+			isWalking = true;
 		}
 		else if (Driver->AsyncListener.isKeyDown (KeyDOWN))
 		{
@@ -445,22 +448,44 @@ void stateNormal (CEntity &entity)
 			{
 				entity.AuxiliaryAngle = (float)Pi;
 			}
-			playAnimation (*Self, isAiming ? PrepareSnowBall : WalkAnim);
+			isWalking = true;
 		}
 		else if (Driver->AsyncListener.isKeyDown (KeyLEFT))
 		{
 			entity.AuxiliaryAngle = (float)Pi/2.0f;
-			playAnimation (*Self, isAiming ? PrepareSnowBall : WalkAnim);
+			isWalking = true;
 		}
 		else if (Driver->AsyncListener.isKeyDown (KeyRIGHT))
 		{
 			entity.AuxiliaryAngle = -(float)Pi/2.0f;
-			playAnimation (*Self, isAiming ? PrepareSnowBall : WalkAnim);
+			isWalking = true;
 		}
 		else
 		{
-			playAnimation (*Self, isAiming ? PrepareSnowBall : IdleAnim);
+			isWalking = false;
 		}
+
+		if (isAiming && !wasAiming)
+		{
+			// start aiming
+			playAnimation (*Self, PrepareSnowBall);
+		}
+		else if (wasAiming && !isAiming)
+		{
+			// end aiming
+			playAnimation (*Self, ThrowSnowball);
+		}
+		else if (!wasWalking && isWalking)
+		{
+			playAnimation (*Self, WalkAnim);
+		}
+		else if (wasWalking && !isWalking)
+		{
+			playAnimation (*Self, IdleAnim);
+		}
+
+		wasAiming = isAiming;
+		wasWalking = isWalking;
 
 		if (isAiming)
 			entity.AuxiliaryAngle = 0.0f;

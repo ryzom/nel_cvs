@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.38 2001/07/20 14:29:56 legros Exp $
+ * $Id: client.cpp,v 1.39 2001/07/20 14:35:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,7 +130,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdline,
 int main(int argc, char **argv)
 #endif
 {
-	nlinfo ("Starting Snowballs 2");
+	nlinfo ("Starting Snowballs 1");
 
 	// Load config file
 	ConfigFile.load ("client.cfg");
@@ -423,6 +423,10 @@ int main(int argc, char **argv)
 			COFile fs (filename);
 			btm.writeTGA (fs,24,true);
 			nlinfo("Screenshot '%s' saved", filename.c_str());
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyH))
+		{
+			playAnimation (*Self, HitAnim);
 		}
 
 		// Check if the config file was modified by another program

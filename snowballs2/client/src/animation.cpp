@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.7 2001/07/20 14:29:56 legros Exp $
+ * $Id: animation.cpp,v 1.8 2001/07/20 14:35:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,18 +73,19 @@ UPlayListManager *PlayListManager = NULL;
 struct Anim
 {
 	char	*Name;
+	bool	 Loop;
 	uint	 Id;
 };
 
 Anim AnimIdArray[][2] =
 {
-	{ { "marche.anim" }, { "" } },
-	{ { "idle.anim" }, { "" } },
-	{ { "log_on.anim" }, { "" } },
-	{ { "log_off.anim" }, { "" } },
-	{ { "lancelaboule.anim" }, { "" } },
-	{ { "prepaboule.anim" }, { "" } },
-	{ { "impact.anim" }, { "" } },
+	{ { "marche.anim", true }, { "" } },
+	{ { "idle.anim", true }, { "" } },
+	{ { "log_on.anim", false }, { "" } },
+	{ { "log_off.anim", false }, { "" } },
+	{ { "lancelaboule.anim", false }, { "" } },
+	{ { "prepaboule.anim", true }, { "" } },
+	{ { "impact.anim", false }, { "" } },
 };
 
 
@@ -104,6 +105,9 @@ void	playAnimation (CEntity &entity, EAnim anim)
 	// If we try to play the same animation as the current one, do nothing
 	if (entity.CurrentAnim == anim) return;
 
+	// Get the current time
+	CAnimationTime CurrentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
+
 	// todo a virer
 	nlinfo ("set animation for entity %u from %u to %u", entity.Id, entity.CurrentAnim, anim);
 
@@ -118,13 +122,14 @@ void	playAnimation (CEntity &entity, EAnim anim)
 		newSlot = 1; oldSlot = 0; entity.NextEmptySlot = 0;
 	}
 
-	// Get the current time
-	CAnimationTime CurrentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
-
 	// Fill the new animation slot with the new animation to play
 	entity.PlayList->setAnimation (newSlot, AnimIdArray[anim][0].Id);
 	entity.PlayList->setTimeOrigin (newSlot, CurrentTime);
-	entity.PlayList->setWrapMode (newSlot, UPlayList::Repeat);
+
+	if (AnimIdArray[anim][0].Loop)
+		entity.PlayList->setWrapMode (newSlot, UPlayList::Repeat);
+	else
+		entity.PlayList->setWrapMode (newSlot, UPlayList::Clamp);
 
 	CAnimationTime OldStartWeight, OldEndWeight;
 	CAnimationTime NewStartWeight, NewEndWeight;
@@ -199,6 +204,32 @@ void	initAnimation()
 
 void	updateAnimation()
 {
+/*	// Get the current time
+	CAnimationTime CurrentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
+
+	for (EIT eit = Entities.begin (); eit != Entities.end (); )
+	{
+		CEntity	&entity = (*eit).second;
+		if (entity.CurrentAnim == HitAnim)
+		{
+			// Hit special case
+			uint HitSlot = 3;
+
+			// Get the starting time of the old animation slot
+			CAnimationTime OldStartWeight;
+			entity.PlayList->getStartWeight (HitSlot, OldStartWeight);
+			if (CurrentTime > OldStartWeight + TransitionTime)
+			{
+				entity.PlayList->setAnimation (HitSlot, AnimIdArray[anim][0].Id);
+				entity.PlayList->setTimeOrigin (HitSlot, CurrentTime);
+				entity.PlayList->setWrapMode (newSlot, UPlayList::Clamp);
+				entity.PlayList->setStartWeight (HitSlot, 0.0f, CurrentTime);
+				entity.PlayList->setEndWeight (HitSlot, 1.0f, CurrentTime+TransitionTime);
+				entity.PlayList->setWeightSmoothness (HitSlot, 1.0f);
+			}
+		}
+	}
+*/
 	// compute new animation position depending of the current time
 	PlayListManager->animate (float(CTime::getLocalTime ())/1000.0f);
 }

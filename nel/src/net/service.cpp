@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.67 2001/06/13 10:20:05 lecroart Exp $
+ * $Id: service.cpp,v 1.68 2001/06/13 12:10:17 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -299,10 +299,9 @@ sint IService::main (int argc, char **argv)
 	bool userInitCalled = false;
 	bool resyncEvenly = false;
 
-
 	try
 	{
-		createDebug ();
+		nlinfo("Starting Service '%s' using NeL ("__DATE__" "__TIME__")", _ShortName);
 		DebugLog->addNegativeFilter ("L3NB_ASSOC:");
 		DebugLog->addNegativeFilter ("L3NB_CB:");
 

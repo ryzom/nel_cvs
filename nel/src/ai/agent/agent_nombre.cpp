@@ -1,6 +1,6 @@
 /** \file agent_nombre.cpp
  *
- * $Id: agent_nombre.cpp,v 1.3 2001/01/26 10:22:30 saffray Exp $
+ * $Id: agent_nombre.cpp,v 1.4 2001/02/27 14:18:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@ namespace NLAIAGENT
 	{
 		INombreDefine::CMethodCall(_CONSTRUCTOR_,TConst)		
 	};
-
+	
 	sint32 INombreDefine::getMethodIndexSize() const
 	{
 		return IObjetOp::getMethodIndexSize() + TLastM;

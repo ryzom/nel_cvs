@@ -13,6 +13,7 @@
 #include "nel/ai/agent/agent_proxy_mailer.h"
 #include "nel/ai/logic/logic.h"
 #include "nel/ai/fuzzy/fuzzy.h"
+#include "nel/ai/fuzzy/fuzzy_script.h"
 #include "nel/ai/agent/actor.h"
 #include "nel/ai/agent/actor_script.h"
 #include "nel/ai/script/interpret_actor.h"

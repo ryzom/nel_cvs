@@ -1,7 +1,7 @@
 /** \file automata_desc.cpp
  * A class which describe a simple success/fail automat.
  *
- * $Id: automata_desc.cpp,v 1.2 2001/03/28 14:03:56 portier Exp $
+ * $Id: automata_desc.cpp,v 1.3 2001/03/28 14:30:52 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,30 +52,14 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 	{
 		std::map<sint32,CState>::const_iterator iStates;
 		iStates = _States.find(stateId);
-		if (iStates != _States.end())
-		{
-			return (*iStates).second.SuccessStates;
-		}
-		else
-		{
-			std::list<sint32> ret;
-			return ret;
-		}
+		return (*iStates).second.SuccessStates;
 	}
 
 	const std::list<sint32> &CAutomataDesc::getFailStates(sint32 stateId) const
 	{
 		std::map<sint32,CState>::const_iterator iStates;
 		iStates = _States.find(stateId);
-		if (iStates != _States.end())
-		{
-			return (*iStates).second.FailStates;
-		}
-		else
-		{
-			std::list<sint32> ret;
-			return ret;
-		}
+		return (*iStates).second.FailStates;
 	}
 
 	std::string CAutomataDesc::getStateName(sint32 stateId) const
@@ -124,6 +108,17 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 	void CAutomataDesc::addEntryState(sint32 entryId)
 	{
 		_EntryStates.push_back(entryId);
+	}
+
+	bool CAutomataDesc::visitedState(sint32 stateId)
+	{
+		std::set<sint32>::const_iterator iSet = _VisitedState.find(stateId);
+		return (iSet != _VisitedState.end());
+	}
+
+	void CAutomataDesc::setVisitedState(sint32 stateId)
+	{
+		_VisitedState.insert(stateId);
 	}
 
 	bool CAutomataDesc::exploredState(sint32 stateId)

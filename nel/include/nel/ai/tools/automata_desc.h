@@ -1,7 +1,7 @@
 /** \file automata_desc.h
  * A class which describe a simple success/fail automat.
  *
- * $Id: automata_desc.h,v 1.1 2001/03/28 14:01:11 portier Exp $
+ * $Id: automata_desc.h,v 1.2 2001/03/28 14:31:08 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,8 @@ public:
 	void addSuccessState(sint32 id, sint32 successId);
 	void addFailState(sint32 id, sint32 faileId);
 	void addEntryState(sint32 entryId);
+	void setVisitedState(sint32 stateId);
+	bool visitedState(sint32 stateId);
 	void setExploredState(sint32 stateId);
 	//@}
 
@@ -113,6 +115,7 @@ private :
 	
 	std::map<sint32,CState>	_States;
 	std::list<sint32>		_EntryStates;
+	std::set<sint32>		_VisitedState;
 	std::set<sint32>		_ExploredState;
 	std::string				_AutomatName;
 

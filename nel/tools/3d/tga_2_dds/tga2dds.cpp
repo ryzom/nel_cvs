@@ -1,7 +1,7 @@
 /** \file tga2dds.cpp
  * TGA to DDS converter
  *
- * $Id: tga2dds.cpp,v 1.3 2001/01/23 09:20:44 berenguier Exp $
+ * $Id: tga2dds.cpp,v 1.4 2001/03/19 09:14:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #include <iostream>
 
 #include "nel/misc/file.h"
-#include "nel/3d/bitmap.h"
+#include "nel/misc/bitmap.h"
 #include "nel/misc/file.h"
 #include "nel/misc/debug.h"
 
@@ -34,7 +34,6 @@
 
 
 using namespace NLMISC;
-using namespace NL3D;
 using namespace std;
 
 
@@ -366,9 +365,9 @@ void main(int argc, char **argv)
 
 	// Reading TGA and converting to RGBA
 	//====================================
-	NL3D::CBitmap picTga;
-	NL3D::CBitmap picTga2;
-	NL3D::CBitmap picSrc;
+	CBitmap picTga;
+	CBitmap picTga2;
+	CBitmap picSrc;
 
 	
 	std::string inputFileName(argv[1]);
@@ -388,7 +387,7 @@ void main(int argc, char **argv)
 		cerr<<"Can't load file : "<<inputFileName<<endl;
 		exit(1);
 	}
-	if(imageDepth!=24 && imageDepth!=32)
+	if(imageDepth!=24 && imageDepth!=32 && imageDepth!=8)
 	{
 		cerr<<"Image not supported : "<<imageDepth<<endl;
 		exit(1);

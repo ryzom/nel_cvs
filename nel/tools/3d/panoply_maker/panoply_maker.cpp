@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.4 2002/05/13 15:44:57 valignat Exp $
+ * $Id: panoply_maker.cpp,v 1.5 2002/05/24 13:22:52 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -147,6 +147,7 @@ int main(int argc, char* argv[])
 				for (uint k = 0; k < (uint) bitmap_extensions.size(); ++k)
 				{
 					bi.BitmapExtensions[k] =  "." + bitmap_extensions.asString(k);					
+					bi.BitmapExtensions[k] = NLMISC::strupr(bi.BitmapExtensions[k]);
 				}				
 			}
 			catch (NLMISC::EUnknownVar &)
@@ -228,12 +229,17 @@ static void BuildMasksFromConfigFile(NLMISC::CConfigFile &cf,
 static void BuildColoredVersions(const CBuildInfo &bi)
 {
 	std::vector<std::string> tgaFiles;
+	if (!NLMISC::CFile::isExists(bi.InputPath))
+	{
+		nlwarning(("Path not found : " + bi.InputPath).c_str());
+		return;
+	}
 	NLMISC::CPath::getPathContent (bi.InputPath, false, false, true, tgaFiles);
 	for (uint k = 0;  k < tgaFiles.size(); ++k)
 	{
 		for (uint l = 0; l < bi.BitmapExtensions.size(); ++l)
 		{
-			std::string fileExt = "." + NLMISC::CFile::getExtension(tgaFiles[k]);						
+			std::string fileExt = "." + NLMISC::strupr(NLMISC::CFile::getExtension(tgaFiles[k]));						
 			if (fileExt == bi.BitmapExtensions[l])
 			{
 				nlinfo("Processing : %s ", tgaFiles[k].c_str());				
@@ -274,11 +280,19 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 		try
 		{
 			is.open(bi.InputPath + fileNameWithExtension);
-			depth = srcBitmap.load(is);			
+			depth = srcBitmap.load(is);
+			if (srcBitmap.PixelFormat != NLMISC::CBitmap::RGBA)
+			{
+				srcBitmap.convertToType(NLMISC::CBitmap::RGBA);
+			}
+			if (srcBitmap.getPixels().empty())
+			{
+				throw NLMISC::Exception(std::string("Failed to load bitmap ") + bi.InputPath + fileNameWithExtension);
+			}
 		}
-		catch (NLMISC::EStream &)
+		catch (NLMISC::Exception &)
 		{
-			nlinfo("File error with : %s. Processing next...", fileNameWithExtension.c_str());
+			nlinfo("File or format error with : %s. Processing next...", fileNameWithExtension.c_str());
 			return;
 		}
 	}
@@ -290,7 +304,7 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 	masks.clear();
 
 	std::string fileName = NLMISC::CFile::getFilenameWithoutExtension(fileNameWithExtension);
-	std::string fileExt  = NLMISC::CFile::getExtension(fileNameWithExtension);
+	std::string fileExt  = NLMISC::strupr(NLMISC::CFile::getExtension(fileNameWithExtension));
 
 	for (uint k = 0; k < bi.ColorMasks.size(); ++k)
 	{
@@ -309,6 +323,15 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 			{
 				is.open(maskFileName);
 				li.Mask.load(is);
+				if (li.Mask.getPixels().empty())
+				{
+					throw NLMISC::Exception(std::string("Failed to load mask ") + maskFileName);
+				}
+
+				if (li.Mask.PixelFormat != NLMISC::CBitmap::RGBA)
+				{
+					li.Mask.convertToType(NLMISC::CBitmap::RGBA);
+				}
 
 				/// make sure the mask has the same size
 				if (li.Mask.getWidth() != srcBitmap.getWidth()
@@ -367,9 +390,16 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 		nlinfo("--- writing %s", outputFileName.c_str());
 		/// Save the result. We let propagate exceptions (if there's no more space disk it useless to continue...)
 		{
-			NLMISC::COFile os;
-			os.open(bi.OutputPath + outputFileName + ".tga");
-			resultBitmap.writeTGA(os, depth);	
+			try
+			{			
+				NLMISC::COFile os;
+				os.open(bi.OutputPath + outputFileName + ".tga");
+				resultBitmap.writeTGA(os, depth);
+			}
+			catch(NLMISC::EStream &e)
+			{
+				nlwarning(("Couldn't write " + bi.OutputPath + outputFileName + ".tga" + " : " + e.what()).c_str());
+			}
 		}
 
 		/// increment counters		

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.43 2002/07/25 14:32:44 legros Exp $
+ * $Id: unified_network.cpp,v 1.44 2002/07/26 09:01:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1290,6 +1290,11 @@ bool CUnifiedNetwork::isUsed ()
 
 void	CUnifiedNetwork::autoCheck()
 {
+	static bool stopCheck = false;
+
+	if(stopCheck)
+		return;
+
 	CRWSynchronized<TNameMappedConnection>::CWriteAccessor				nameAccess(&_NamedCnx);
 	CRWSynchronized< std::vector<CUnifiedConnection> >::CWriteAccessor	idAccess(&_IdCnx);
 
@@ -1339,7 +1344,11 @@ void	CUnifiedNetwork::autoCheck()
 		{
 			nlwarning("i != appId !! -- (i = %x) != (appId = %"NL_I64"x)", i, appId);
 			if (DefaultMemDisplayer)
-				DefaultMemDisplayer->write(InfoLog);
+				DefaultMemDisplayer->write();
+
+			// ace: if this happen, we stop check because it can assert after
+			stopCheck = true;
+			return;
 		}
 	}
 

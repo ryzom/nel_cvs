@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.cpp,v 1.2 2004/06/17 12:50:28 cardouat Exp $
+ * $Id: primitive_utils.cpp,v 1.3 2004/07/13 14:43:21 cardouat Exp $
  */
 
 #include <nel/ligo/primitive_utils.h>
@@ -74,9 +74,23 @@ void selectPrimByPath(IPrimitive *rootNode, const std::string &path, TPrimitiveS
 	{
 		for (uint j=0; j<candidats.size(); ++j)
 		{
-			std::string name;
-			candidats[j]->getPropertyByName("name", name);
-			if (name == parts[i])
+			std::string tmpName;
+			std::vector<std::string> name;
+			candidats[j]->getPropertyByName("name", tmpName);
+			NLMISC::explode(tmpName,".",name);
+
+			bool test=false;
+			for(int k=0;k<name.size();k++)
+			{				
+				if (name.at(k)==parts[i+k])
+					test=true;	
+				else
+				{
+					test=false;
+					break;
+				}
+			}
+			if (test) 
 			{
 				for(uint k=0;k<candidats[j]->getNumChildren();k++)
 				{
@@ -85,9 +99,10 @@ void selectPrimByPath(IPrimitive *rootNode, const std::string &path, TPrimitiveS
 				}
 				result.clear();
 				result.push_back(candidats[j]);
-				
+				i+=name.size()-1;
 				break;
 			}
+			
 		}
 		
 		candidats.swap(nextStep);

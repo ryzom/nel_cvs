@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.24 2004/02/23 10:09:09 ledorze Exp $
+ * $Id: smart_ptr.h,v 1.25 2004/09/07 18:26:36 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/stream.h"
 
 #include <stdio.h>
 
@@ -218,6 +219,8 @@ public:
 
 	std::string toString() { if(Ptr) return toString(*Ptr); else return "<null>"; }
 
+	// serial
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream ) { f.serial( *Ptr ); }
 };
 
 

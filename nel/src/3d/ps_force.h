@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.7 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_force.h,v 1.8 2001/10/02 16:37:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,12 +105,11 @@ public:
 	 }
 
 
-	/** Compute a trajectory on several steps for a single object, rather than a step for several object. Moreover, it can apply an additionnal
-	  * matrix on the results. If the start date is lower than the creation date, the initial position is used
+	/** Compute a trajectory on several steps for a single object, rather than a step for several object.
+	  * If the start date is lower than the creation date, the initial position is used
 	  * NB : works only with integrable forces
 	  */
-	virtual void integrateSingle(float startDate, float deltaT, uint numStep,
-								 const NLMISC::CMatrix &mat,
+	virtual void integrateSingle(float startDate, float deltaT, uint numStep,								 
 								 CPSLocated *src, uint32 indexInLocated,
 								 NLMISC::CVector *destPos,
 								 bool accumulate = false,
@@ -126,6 +125,10 @@ public:
 	
 protected:	
 	friend class CPSLocated;
+	friend class CPSForceIntensity;
+
+	/// register integrable and non-integrable forces to the targets
+	void				registerToTargets(void);
 
 	/// if this force is not integrable anymore, it tells that to its targets
 	void				 cancelIntegrable(void);
@@ -215,12 +218,8 @@ protected:
 class CPSForceIntensityHelper : public CPSForce, public CPSForceIntensity
 {
 public:
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) 
-	{
-		f.serialVersion(1);
-		CPSForce::serial(f);
-		serialForceIntensity(f);
-	}
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	
 protected:
 	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner; }
 	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { newForceIntensityElement(emitterLocated, emitterIndex); }
@@ -420,8 +419,7 @@ public:
 							uint posStride = sizeof(NLMISC::CVector), uint speedStride = sizeof(NLMISC::CVector)
 							);
 
-	virtual void integrateSingle(float startDate, float deltaT, uint numStep,
-								 const NLMISC::CMatrix &mat,
+	virtual void integrateSingle(float startDate, float deltaT, uint numStep,								 
 								 CPSLocated *src, uint32 indexInLocated,
 								 NLMISC::CVector *destPos,
 								 bool accumulate = false,
@@ -553,6 +551,7 @@ public:
 		f.serialVersion(1);
 		CIsotropicForceT<CPSFluidFrictionFunctor>::serial(f);
 		serialForceIntensity(f);
+		registerToTargets();
 	}
 	
 
@@ -624,6 +623,7 @@ public:
 		f.serialVersion(1);
 		CIsotropicForceT<CPSBrownianFunctor>::serial(f);
 		serialForceIntensity(f);
+		registerToTargets();
 	}
 
 protected:
@@ -702,6 +702,7 @@ public:
 		f.serialVersion(1);
 		CIsotropicForceT<CPSTurbulForceFunc>::serial(f);
 		serialForceIntensity(f);
+		registerToTargets();
 	}
 
 	// inherited from CIsotropicForceT

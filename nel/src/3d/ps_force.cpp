@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.19 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.20 2001/10/02 16:37:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/particle_system.h"
 #include "nel/misc/common.h"
 #include "3d/ps_util.h"
+#include "3d/ps_misc.h"
 
 namespace NL3D {
 
@@ -53,25 +54,24 @@ void CPSForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serialVersion(1);	
 		CPSTargetLocatedBindable::serial(f);	
 		CPSLocatedBindable::serial(f);
-
-		if (f.isReading())
-		{
-		
-			for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
-			{
-				if (this->isIntegrable())
-				{						
-					(*it)->registerIntegrableForce(this);
-				}
-				else
-				{
-					(*it)->addNonIntegrableForceRef();
-				}
-			}
-		}
+	
 }
 
 
+void CPSForce::registerToTargets(void)
+{
+	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+	{
+		if (this->isIntegrable())
+		{						
+			(*it)->registerIntegrableForce(this);
+		}
+		else
+		{
+			(*it)->addNonIntegrableForceRef();
+		}
+	}
+}
 
 
 void CPSForce::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
@@ -217,7 +217,21 @@ void CPSForceIntensity::serialForceIntensity(NLMISC::IStream &f) throw(NLMISC::E
 		{
 			f.serialPolyPtr(_IntensityScheme);
 		}
-	}
+	}	
+}
+
+
+////////////////////////////////////////
+// CPSForceIntensityHelper            //
+////////////////////////////////////////
+
+
+void CPSForceIntensityHelper::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1);
+	CPSForce::serial(f);
+	serialForceIntensity(f);
+	registerToTargets();
 }
 
 
@@ -522,26 +536,67 @@ void CPSGravity::integrate(float date, CPSLocated *src, uint32 startIndex, uint3
 
 
 
-
-void CPSGravity::integrateSingle(float startDate, float deltaT, uint numStep,
-								 const NLMISC::CMatrix &mat,
+void CPSGravity::integrateSingle(float startDate, float deltaT, uint numStep,								 
 								 CPSLocated *src, uint32 indexInLocated,
 								 NLMISC::CVector *destPos,
 								 bool accumulate /*= false*/,
-								 uint posStride/* = sizeof(NLMISC::CVector)*/)
-{	
-	const CPSAttrib<CPSLocated::CParametricInfo> &pi = src->_PInfo;
-	if (!accumulate)
+								 uint stride/* = sizeof(NLMISC::CVector)*/)
+{		
+	nlassert(src->isParametricMotionEnabled());
+	nlassert(deltaT > 0);
+	nlassert(numStep > 0);
+	#ifdef NL_DEBUG
+		NLMISC::CVector *endPos = (NLMISC::CVector *) ( (uint8 *) destPos + stride * numStep);
+	#endif
+	const CPSLocated::CParametricInfo &pi = src->_PInfo[indexInLocated];
+	const NLMISC::CVector &startPos   = pi.Pos;	
+	if (numStep != 0)
 	{
-		// fills uncomputed datas if needed
-
-
-
+		if (!accumulate)
+		{				
+			destPos = FillBufUsingSubdiv(startPos, pi.Date, startDate, deltaT, numStep, destPos, stride);
+			if (numStep != 0)
+			{
+				float currDate = startDate - pi.Date;
+				nlassert(currDate >= 0);
+				const NLMISC::CVector &startSpeed = pi.Speed;			
+				do
+				{
+					#ifdef NL_DEBUG
+						nlassert(destPos < endPos);
+					#endif
+					float halfTimeSquare  = 0.5f * currDate * currDate;
+					destPos->x = startPos.x + currDate * startSpeed.x;
+					destPos->y = startPos.y + currDate * startSpeed.y;
+					destPos->z = startPos.z + currDate * startSpeed.z - _K * halfTimeSquare;
+					currDate += deltaT;
+					destPos = (NLMISC::CVector *) ( (uint8 *) destPos + stride);
+				}
+				while (--numStep);
+			}
+		}
+		else
+		{
+			uint numToSkip = ScaleFloatGE(startDate, deltaT, pi.Date, numStep);		
+			if (numToSkip != 0)
+			{
+				float currDate = startDate + deltaT * numToSkip - pi.Date;
+				const NLMISC::CVector &startSpeed = pi.Speed;				
+				nlassert(currDate >= 0);
+				do
+				{
+					#ifdef NL_DEBUG
+						nlassert(destPos < endPos);
+					#endif
+					float halfTimeSquare  = 0.5f * currDate * currDate;				
+					destPos->z -=  _K * halfTimeSquare;
+					currDate += deltaT;
+					destPos = (NLMISC::CVector *) ( (uint8 *) destPos + stride);
+				}
+				while (--numToSkip);
+			}				
+		}
 	}
-	
-
-
-
 }
 
 

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.33 2003/03/11 12:50:55 boucher Exp $
+ * $Id: i18n.cpp,v 1.34 2003/03/18 20:19:12 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -263,7 +263,8 @@ bool CI18N::parseLabel(ucstring::const_iterator &it, ucstring::const_iterator &l
 	// first char must be A-Za-z@_
 	if (it != last && 
 			(
-				(*it >= 'A' && *it <= 'Z')
+				(*it >= '0' && *it <= '9')
+			||	(*it >= 'A' && *it <= 'Z')
 			||	(*it >= 'a' && *it <= 'z')
 			||	(*it == '_')
 			||	(*it == '@')
@@ -314,6 +315,10 @@ bool CI18N::parseMarkedString(ucchar openMark, ucchar closeMark, ucstring::const
 					break;
 				case 'n':
 					result.push_back('\n');
+					break;
+				case 'd':
+					// insert a delete
+					result.push_back(8);
 					break;
 				default:
 					// escape the close mark ?

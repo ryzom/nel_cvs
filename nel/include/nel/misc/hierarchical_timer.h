@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.28 2003/12/17 16:04:16 legros Exp $
+ * $Id: hierarchical_timer.h,v 1.29 2004/01/16 09:07:42 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -199,8 +199,8 @@ public:
 						};
 public:
 	/// ctor
-	CHTimer() : _Name(NULL), _IsRoot(false) {}
-	CHTimer(const char *name, bool isRoot = false) : _Name(name), _IsRoot(isRoot) {}
+	CHTimer() : _Name(NULL), _Parent(NULL), _IsRoot(false) {}
+	CHTimer(const char *name, bool isRoot = false) : _Name(name), _Parent(NULL), _IsRoot(isRoot) {}
 	/// Starts a measuring session
 	void		before()
 	{

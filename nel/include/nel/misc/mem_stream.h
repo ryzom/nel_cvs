@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.33 2004/01/14 09:10:19 boucher Exp $
+ * $Id: mem_stream.h,v 1.34 2004/01/15 17:28:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -537,9 +537,9 @@ protected:
 /*
  * atoihex
  */
-inline int atoihex( const char* ident )
+inline uint32 atoihex( const char* ident )
 {
-	int number;
+	uint32 number;
 	sscanf( ident, "%x", &number );
 	return number;
 }

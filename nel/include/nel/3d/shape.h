@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.3 2000/12/13 10:25:22 berenguier Exp $
+ * $Id: shape.h,v 1.4 2000/12/18 09:45:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,6 @@ using NLMISC::CPlane;
 class	CTransformShape;
 class	IDriver;
 class	CScene;
-
 
 // ***************************************************************************
 /**
@@ -92,8 +91,45 @@ public:
 	 */
 	virtual void				render(IDriver *drv)=0;
 
+	/// serial the shape.
+	virtual void				serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 };
 
+// ***************************************************************************
+/** 
+ * This class is used to serialize a shape. In reading, just create a CShapeStream object
+ * and serial your class with your input stream using "serial (IStream&)". Then take back the shape pointer.
+ * It is yours. In writing, create a CShapeStream object with a pointer on the IShape
+ * you want to serialize and serial it with "serial (IStream&)". You have to register all
+ * the IShape derived classes you want to serial.
+ \see IShape CClassRegistry
+ */
+class CShapeStream
+{
+public:
+	/// Default constructor. Set the IShape pointer to NULL.
+	CShapeStream ();
+
+	/** Constructor. Get a IShape pointer. Used to output serialization.
+	 *  \param shape the pointer on the IShape derived object you want to serialize.
+	 */
+	CShapeStream (IShape* shape);
+
+	/** Set the pointer to the IShape object. Used to serial a shape in output.
+	 *  \param shape the pointer on the IShape derived object you want to serialize.
+	 */
+	void						setShapePointer (IShape* shape);
+
+	/** Get the pointer to the IShape object. Used to serial a shape in input.
+	 *  \return shape the pointer on the IShape derived object serialized.
+	 */
+	IShape*						getShapePointer () const;
+
+	/// serial the shape.
+	virtual void				serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+private:
+	IShape*			_Shape;
+};
 
 } // NL3D
 

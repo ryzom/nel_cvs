@@ -1,7 +1,7 @@
 /** \file shape.cpp
  * <File description>
  *
- * $Id: shape.cpp,v 1.1 2000/12/08 10:36:52 berenguier Exp $
+ * $Id: shape.cpp,v 1.2 2000/12/18 09:45:49 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,9 +27,17 @@
 #include "nel/3d/transform_shape.h"
 #include "nel/3d/scene.h"
 
+#include <string>
 
 namespace NL3D 
 {
+
+	
+// ***************************************************************************
+// ***************************************************************************
+// IShape
+// ***************************************************************************
+// ***************************************************************************
 
 
 // ***************************************************************************
@@ -40,5 +48,60 @@ CTransformShape		*IShape::createInstance(CScene &scene)
 	return mo;
 }
 
+
+// ***************************************************************************
+void	IShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialCheck (std::string ("Shape"));
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CShapeStream
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+CShapeStream::CShapeStream ()
+{
+	_Shape=NULL;
+}
+
+
+// ***************************************************************************
+CShapeStream::CShapeStream (IShape* shape)
+{
+	// Set the pointer
+	setShapePointer (shape);
+}
+
+
+// ***************************************************************************
+void CShapeStream::setShapePointer (IShape* shape)
+{
+	_Shape=shape;
+}
+
+
+// ***************************************************************************
+IShape*	CShapeStream::getShapePointer () const
+{
+	return _Shape;
+}
+
+
+// ***************************************************************************
+void CShapeStream::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	// First, serial an header or checking if it is correct
+	f.serialCheck (std::string("SHAPE"));
+
+	// Then, serial the shape
+	f.serialPolyPtr (_Shape);
+
+	// Ok, it's done
+}
 
 } // NL3D

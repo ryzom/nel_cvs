@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.16 2001/08/23 17:21:56 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.17 2001/08/24 08:23:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -314,7 +314,7 @@ void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 	{
 		// debug features, we number all packet to be sure that they are all sent and received
 		// \todo remove this debug feature when ok
-		nlinfo ("send message number %u", hostid->SendNextValue);
+		nldebug ("send message number %u", hostid->SendNextValue);
 		*(uint32*)&buffer[0] = hostid->SendNextValue++;
 
 		pushBufferToHost( buffer, hostid );
@@ -338,7 +338,7 @@ void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 						{
 							// debug features, we number all packet to be sure that they are all sent and received
 							// \todo remove this debug feature when ok
-							nlinfo ("send message number %u", (*ipb)->SendNextValue);
+							nldebug ("send message number %u", (*ipb)->SendNextValue);
 							*(uint32*)&buffer[0] = (*ipb)->SendNextValue++;
 
 							pushBufferToHost( buffer, *ipb );
@@ -460,7 +460,7 @@ void CBufServer::receive( std::vector<uint8>& buffer, TSockId* phostid )
 	// debug features, we number all packet to be sure that they are all sent and received
 	// \todo remove this debug feature when ok
 	uint32 val = *(uint32*)&buffer[0];
-	nlinfo ("receive message number %u", val);
+	nldebug ("receive message number %u", val);
 	if ((*phostid)->ReceiveNextValue != val)
 		nlerror ("LOST A MESSAGE! I received the message number %u but I'm waiting the message number %u (cnx %s)", val, (*phostid)->ReceiveNextValue, (*phostid)->asString().c_str());
 	(*phostid)->ReceiveNextValue++;

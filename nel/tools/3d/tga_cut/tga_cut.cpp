@@ -1,7 +1,7 @@
 /** \file tga_cut.cpp
  * TGA to DDS converter
  *
- * $Id: tga_cut.cpp,v 1.1 2003/07/04 15:24:43 meyrignac Exp $
+ * $Id: tga_cut.cpp,v 1.2 2003/07/07 15:44:25 meyrignac Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@ using namespace std;
 #define NOT_DEFINED 0xff
 
 const int CutSize = 160;
+const int SaveSize = 256;
 
 void writeInstructions();
 void main(int argc, char **argv);
@@ -160,11 +161,11 @@ void main(int argc, char **argv)
 	CObjectVector<uint8> RGBASrc = picTga.getPixels();
 	CObjectVector<uint8> RGBASrc2;
 	CObjectVector<uint8> RGBADest;
-	RGBADest.resize(CutSize*CutSize*4);
+	RGBADest.resize(SaveSize*SaveSize*4);
 	uint	dstRGBADestId= 0;
 
 	// Copy to the dest bitmap.
-	picSrc.resize(CutSize, CutSize, CBitmap::RGBA);
+	picSrc.resize(SaveSize, SaveSize, CBitmap::RGBA);
 	picSrc.getPixels(0) = RGBADest;
 
 	// Must be RGBA
@@ -174,6 +175,17 @@ void main(int argc, char **argv)
 	uint8 *pixelSrc = &(picTga.getPixels ()[0]);
 	uint8 *pixelDest = &(picSrc.getPixels ()[0]);
 	
+	// clear the whole texture
+	for (sint y = 0;y < SaveSize;++y)
+	{
+		for (sint x = 0;x < SaveSize;++x)
+		{
+			pixelDest[(y*SaveSize+x)*4]=-1;
+			pixelDest[(y*SaveSize+x)*4+1]=-1;
+			pixelDest[(y*SaveSize+x)*4+2]=-1;
+			pixelDest[(y*SaveSize+x)*4+3]=-1;
+		}
+	}
 	// Resample
 	sint xzone, yzone;
 	for (yzone = 0; yzone < height; yzone += CutSize)
@@ -186,7 +198,7 @@ void main(int argc, char **argv)
 				for (x=0; x<CutSize; x++)
 				{
 					const uint offsetSrc = ((y+yzone)*width+x+xzone)*4;
-					const uint offsetDest = (y*CutSize+x)*4;
+					const uint offsetDest = (y*SaveSize+x)*4;
 					uint i;
 					if (x+xzone>= width || y+yzone>=height)
 					{
@@ -205,17 +217,24 @@ void main(int argc, char **argv)
 					}
 				}
 			}
+#if 0
+			// if we don't want to save the empty pictures (useless now)
 			int empty = 1;
-			for (x=0;x<CutSize*CutSize*4;x+=4)
+			for (y = 0;y < CutSize;++y)
 			{
-				// tests R,G,B (omit A)
-				if (pixelDest[x] || pixelDest[x+1] || pixelDest[x+2])
+				for (x=0;x<CutSize;++x)
 				{
-					empty = 0;
-					break;
+					// test if pixel is black (RGB==0)
+					int offset = (y*SaveSize+x)*4;
+					if (pixelDest[offset] || pixelDest[offset+1] || pixelDest[offset+2])
+					{
+						empty = 0;
+						break;
+					}
 				}
 			}
 			if (empty) continue;
+#endif
 
 			// if the picture is empty, we don't save it !!!
 			
@@ -236,6 +255,7 @@ void main(int argc, char **argv)
 				exit(1);
 			}
 
+			cout<<"Saving "<<ZoneName<<endl;
 			// Saving TGA file
 			try 
 			{

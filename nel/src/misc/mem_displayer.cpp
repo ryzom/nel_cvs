@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * <File description>
  *
- * $Id: mem_displayer.cpp,v 1.11 2003/12/30 11:14:58 lecroart Exp $
+ * $Id: mem_displayer.cpp,v 1.12 2004/01/16 10:23:05 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -364,6 +364,7 @@ void CMemDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 	// Write thread identifier
 	if ( args.ThreadId != 0 )
 	{
+		if (needSpace) { str += " "; needSpace = false; }
 		str += NLMISC::toString("%5u", args.ThreadId);
 		needSpace = true;
 	}
@@ -377,7 +378,7 @@ void CMemDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 
 	if (args.Line != -1)
 	{
-		if (needSpace) { str + " "; needSpace = false; }
+		if (needSpace) { str += " "; needSpace = false; }
 		str += NLMISC::toString(args.Line);
 		needSpace = true;
 	}

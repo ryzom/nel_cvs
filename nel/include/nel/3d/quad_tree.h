@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.3 2000/11/23 11:40:47 corvazier Exp $
+ * $Id: quad_tree.h,v 1.4 2000/11/23 11:46:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,8 @@ public:
 	/// \name Initialization
 
 	/** Change the base matrix of the quad tree. For exemple this code init the quad tree in the plane XY:
-	  * \code CQuadTree				quadTree;
+	  * \code
+	  * CQuadTree			quadTree;
 	  * NLMISC::CMatrix		tmp;
 	  * NLMISC::CVector		I(1,0,0);
 	  * NLMISC::CVector		J(0,0,-1);
@@ -94,11 +95,12 @@ public:
 	  * 
 	  * tmp.identity();
 	  * tmp.setRot(I,J,K, true);
-	  * quadTree.ChangeBase (tmp); \endcode
+	  * quadTree.changeBase (tmp);
+	  * \endcode
 	  * 
 	  * \param base Base of the quad tree
 	  */
-	void ChangeBase(const NLMISC::CMatrix& base);
+	void changeBase(const NLMISC::CMatrix& base);
 
 	/** Init the container
 	  *
@@ -617,7 +619,7 @@ template<class T>	CQuadTree<T>::CQuadTree()
 	_ChangeBasis.identity();
 }
 // ============================================================================================
-template<class T>	void CQuadTree<T>::ChangeBase(const NLMISC::CMatrix& base)
+template<class T>	void CQuadTree<T>::changeBase(const NLMISC::CMatrix& base)
 {
 	_ChangeBasis=base;
 }

@@ -1,7 +1,7 @@
 /** \file key.h
  * class CKey
  *
- * $Id: key.h,v 1.3 2001/03/08 11:02:52 corvazier Exp $
+ * $Id: key.h,v 1.4 2001/03/13 17:08:58 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/quat.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/rgba.h"
 
 // NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
 
@@ -128,6 +129,8 @@ public:
 };
 
 // Predefined types
+
+// ** Linear keys
 class CKeyString : public CKey<std::string>
 {
 public:
@@ -158,7 +161,13 @@ class CKeyInt : public CKey<sint32>
 public:
 	NLMISC_DECLARE_CLASS (CKeyInt);
 };
+class CKeyRGBA : public CKey<NLMISC::CRGBA>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyRGBA);
+};
 
+// ** TCB keys
 class CKeyTCBFloat : public CKeyTCB<float>
 {
 public:
@@ -169,7 +178,7 @@ class CKeyTCBVector : public CKeyTCB<NLMISC::CVector>
 public:
 	NLMISC_DECLARE_CLASS (CKeyTCBVector);
 };
-class CKeyTCBQuat : public CKeyTCB<NLMISC::CQuat>
+class CKeyTCBQuat : public CKeyTCB<NLMISC::CAngleAxis>
 {
 public:
 	NLMISC_DECLARE_CLASS (CKeyTCBQuat);
@@ -179,7 +188,13 @@ class CKeyTCBInt : public CKeyTCB<sint32>
 public:
 	NLMISC_DECLARE_CLASS (CKeyTCBInt);
 };
+class CKeyTCBRGBA : public CKeyTCB<NLMISC::CRGBA>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyTCBRGBA);
+};
 
+// ** Bezier keys
 class CKeyBezierFloat : public CKeyBezier<float>
 {
 public:
@@ -199,6 +214,11 @@ class CKeyBezierInt : public CKeyBezier<sint32>
 {
 public:
 	NLMISC_DECLARE_CLASS (CKeyBezierInt);
+};
+class CKeyBezierRGBA : public CKeyBezier<NLMISC::CRGBA>
+{
+public:
+	NLMISC_DECLARE_CLASS (CKeyBezierRGBA);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file key.cpp
  * <File description>
  *
- * $Id: key.cpp,v 1.3 2001/03/08 11:02:52 corvazier Exp $
+ * $Id: key.cpp,v 1.4 2001/03/13 17:08:58 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,14 +34,20 @@ CKeyTCBFloat		ktoto0;
 CKeyTCBVector		ktoto1;
 CKeyTCBQuat			ktoto2;
 CKeyTCBInt			ktoto3;
+CKeyTCBRGBA			ktoto14;
 
 CKeyBezierFloat		ktoto4;
 CKeyBezierVector	ktoto5;
 CKeyBezierQuat		ktoto6;
 CKeyBezierInt		ktoto7;
+CKeyBezierRGBA		ktoto15;
 
 CKeyString			ktoto8;
 CKeyBool			ktoto9;
-
+CKeyFloat			ktoto10;
+CKeyVector			ktoto11;
+CKeyQuat			ktoto12;
+CKeyInt				ktoto13;
+CKeyRGBA			ktoto16;
 
 } // NL3D

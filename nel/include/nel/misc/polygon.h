@@ -1,7 +1,7 @@
 /** \file polygon.h
- * <File description>
+ * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.2 2001/10/26 08:31:49 vizerie Exp $
+ * $Id: polygon.h,v 1.3 2001/11/07 10:37:02 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/vector_2f.h"
 #include <vector>
 
 
@@ -38,6 +39,8 @@ namespace NLMISC
 using NLMISC::CVector;
 using NLMISC::CPlane;
 using NLMISC::CMatrix;
+
+
 
 
 // ***************************************************************************
@@ -66,9 +69,53 @@ public:
 	void			clip(const CPlane *planes, uint nPlanes);
 	/// Clip a polygon with a set of planes. Cohen-sutherland clipping... clipPolygonBack() is used on planes.
 	void			clip(const std::vector<CPlane> &planes);
+	
 	/// Serial this polygon
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
+};
+
+
+/**
+  * A 2d polygon
+  */
+class CPolygon2D
+{
+public:
+	/// default ctor
+	CPolygon2D() {}
+
+	/** Build a 2D polygon from this 3D polygon, by using the given projection matrix
+	  * The x and y components of projected vertices are used to create the 2D polygon
+	  */
+	CPolygon2D(const CPolygon &src, CMatrix &projMat);
+
+	/// check wether this polygon is convex
+	bool		isConvex();
+
+	/** Build a convex hull from this polygon. The result poly is ordered, so it can also be used to order a convex
+	  * poly given its set of vertices.
+	  * NB: require this != &dest
+	  */
+	void		buildConvexHull(CPolygon2D &dest) const;
+
+	/// get the best triplet of vector. e.g the triplet that has the best surface
+	void		getBestTriplet(uint &index0, uint &index1, uint &index2);	
+	
+	/// Serial this polygon
+	void		serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+
+	typedef std::pair<sint, sint> TRaster;
+	typedef std::vector<TRaster>  TRasterVect;
+
+	/** Compute the borders of this poly with sub-pixel accuracy. No clipping is performed
+	  * The output is in a vector of sint pairs. A sint is giving the highest y coordinate.
+	  * The segment are ordered from high y to low y
+	  */
+	void		computeBorders(TRasterVect &borders, sint &highestY);
+public:
+	typedef std::vector<CVector2f> TVec2fVect;
+	TVec2fVect Vertices;
 };
 
 

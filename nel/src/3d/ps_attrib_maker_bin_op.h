@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.h
  * <File description>
  *
- * $Id: ps_attrib_maker_bin_op.h,v 1.3 2001/09/12 13:19:07 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op.h,v 1.4 2001/10/03 10:14:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -213,10 +213,11 @@ public:
 	//@}
 
 protected:
+	inline void   *makePrivate	(T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const;	
+	inline void    make4Private	(T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const;	
+	inline void	   makeNPrivate  (T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const;	
 	CPSBinOp::BinOp   _Op; // the operator being used
-	CPSAttribMaker<T> *_Arg[2]; // the arguments for the binary operator	
-	// the buffers used for intermediate computations
-	static T _Buf1[PSBinOpBufSize], _Buf2[PSBinOpBufSize];
+	CPSAttribMaker<T> *_Arg[2]; // the arguments for the binary operator		
 	void clean(void);	
 	uint32 _Size, _MaxSize;
 };
@@ -299,8 +300,11 @@ T		CPSAttribMakerBinOp<T>::get			  (CPSLocated *loc, uint32 index)
 
 
 template <class T>
-void   *CPSAttribMakerBinOp<T>::make		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy /* = false */) const
+void   *CPSAttribMakerBinOp<T>::makePrivate		  (T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy /* = false */) const
 {
+
+
+
 	uint8 *dest = (uint8 *) tab;
 	uint leftToDo = numAttrib, toProcess;
 	nlassert(_Arg[0] && _Arg[1]);	
@@ -317,8 +321,8 @@ void   *CPSAttribMakerBinOp<T>::make		  (CPSLocated *loc, uint32 startIndex, voi
 	while (leftToDo)
 	{
 		toProcess = leftToDo > PSBinOpBufSize ? PSBinOpBufSize : leftToDo;
-		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &_Buf1[0], sizeof(T), toProcess, true);
-		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &_Buf2[0], sizeof(T), toProcess, true);
+		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &buf1[0], sizeof(T), toProcess, true);
+		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &buf2[0], sizeof(T), toProcess, true);
 
 		
 		uint8 *destEnd = dest + (stride * toProcess);
@@ -358,8 +362,22 @@ void   *CPSAttribMakerBinOp<T>::make		  (CPSLocated *loc, uint32 startIndex, voi
 	return tab;
 }
 
+
 template <class T>
-void    CPSAttribMakerBinOp<T>::make4		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
+void   *CPSAttribMakerBinOp<T>::make	  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy /* = false */) const
+{
+	/** init the tab used for computations. we use a trick to avoid ctor calls,
+	  * but they may be used for some types in the future , so a specilization
+	  * of this method could be added in these case.
+	  */
+	uint8 tab1[PSBinOpBufSize * sizeof(T)];
+	uint8 tab2[PSBinOpBufSize * sizeof(T)];
+	return makePrivate((T *) &tab1[0], (T *) &tab2[0], loc, startIndex, tab, stride, numAttrib, allowNoCopy);
+}
+
+
+template <class T>
+void    CPSAttribMakerBinOp<T>::make4Private	  (T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
 {
 	const uint stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride2 << 1; 
 	uint8 *dest = (uint8 *) tab;
@@ -380,8 +398,8 @@ void    CPSAttribMakerBinOp<T>::make4		  (CPSLocated *loc, uint32 startIndex, vo
 	while (leftToDo)
 	{
 		toProcess = leftToDo > PSBinOpBufSize ? PSBinOpBufSize : leftToDo;
-		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &_Buf1[0], sizeof(T), toProcess, true);
-		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &_Buf2[0], sizeof(T), toProcess, true);
+		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &buf1[0], sizeof(T), toProcess, true);
+		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &buf2[0], sizeof(T), toProcess, true);
 		
 		uint8 *destEnd = dest + ((stride<<2) * toProcess);
 
@@ -431,8 +449,23 @@ void    CPSAttribMakerBinOp<T>::make4		  (CPSLocated *loc, uint32 startIndex, vo
 	}
 }
 
+
+
 template <class T>
-void	CPSAttribMakerBinOp<T>::makeN		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const
+void    CPSAttribMakerBinOp<T>::make4	  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
+
+{
+	/** init the tab used for computations. we use a trick to avoid ctor calls,
+	  * but they may be used for some types in the future , so a specilization
+	  * of this method could be added in these case.
+	  */
+	uint8 tab1[PSBinOpBufSize * sizeof(T)];
+	uint8 tab2[PSBinOpBufSize * sizeof(T)];
+	make4Private((T *) &tab1[0], (T *) &tab2[0], loc, startIndex, tab, stride, numAttrib);
+}
+
+template <class T>
+void	CPSAttribMakerBinOp<T>::makeNPrivate	  (T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const
 {
 		const uint stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride2 << 1; 
 	uint8 *dest = (uint8 *) tab;
@@ -454,8 +487,8 @@ void	CPSAttribMakerBinOp<T>::makeN		  (CPSLocated *loc, uint32 startIndex, void 
 	while (leftToDo)
 	{
 		toProcess = leftToDo > PSBinOpBufSize ? PSBinOpBufSize : leftToDo;
-		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &_Buf1[0], sizeof(T), toProcess, true);
-		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &_Buf2[0], sizeof(T), toProcess, true);
+		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &buf1[0], sizeof(T), toProcess, true);
+		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &buf2[0], sizeof(T), toProcess, true);
 		
 		uint8 *destEnd = dest + ((stride * nbReplicate) * toProcess);
 
@@ -509,8 +542,22 @@ void	CPSAttribMakerBinOp<T>::makeN		  (CPSLocated *loc, uint32 startIndex, void 
 
 		leftToDo -= toProcess;
 	}
-
 }
+
+
+template <class T>
+void    CPSAttribMakerBinOp<T>::makeN	  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const
+
+{
+	/** init the tab used for computations. we use a trick to avoid ctor calls,
+	  * but they may be used for some types in the future , so a specilization
+	  * of this method could be added in these case.
+	  */
+	uint8 tab1[PSBinOpBufSize * sizeof(T)];
+	uint8 tab2[PSBinOpBufSize * sizeof(T)];
+	makeNPrivate((T *) &tab1[0], (T *) &tab2[0], loc, startIndex, tab, stride, numAttrib, nbReplicate);
+}
+
 
 template <class T>
 void    CPSAttribMakerBinOp<T>::serial		  (NLMISC::IStream &f) throw(NLMISC::EStream)

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.cpp
  * <File description>
  *
- * $Id: ps_attrib_maker_bin_op.cpp,v 1.2 2001/07/24 09:41:01 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op.cpp,v 1.3 2001/10/03 10:14:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@ namespace NL3D
 
 // instanciation of template static members
 
-float CPSAttribMakerBinOp<float>::_Buf1[PSBinOpBufSize] ;
+/*float CPSAttribMakerBinOp<float>::_Buf1[PSBinOpBufSize] ;
 float CPSAttribMakerBinOp<float>::_Buf2[PSBinOpBufSize] ;
 uint32 CPSAttribMakerBinOp<uint32>::_Buf1[PSBinOpBufSize] ;
 uint32 CPSAttribMakerBinOp<uint32>::_Buf2[PSBinOpBufSize] ;
@@ -41,7 +41,7 @@ NLMISC::CRGBA CPSAttribMakerBinOp<NLMISC::CRGBA>::_Buf1[PSBinOpBufSize] ;
 NLMISC::CRGBA CPSAttribMakerBinOp<NLMISC::CRGBA>::_Buf2[PSBinOpBufSize] ;
 CPlaneBasis CPSAttribMakerBinOp<CPlaneBasis>::_Buf1[PSBinOpBufSize] ;
 CPlaneBasis CPSAttribMakerBinOp<CPlaneBasis>::_Buf2[PSBinOpBufSize] ;
-
+*/
 
 
 

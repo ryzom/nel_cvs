@@ -1,7 +1,7 @@
 /** \file string_id_array.cpp
  * <File description>
  *
- * $Id: string_id_array.cpp,v 1.1 2001/03/02 09:54:30 lecroart Exp $
+ * $Id: string_id_array.cpp,v 1.2 2001/03/13 15:56:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,5 +28,8 @@
 
 namespace NLMISC {
 
+
+// todo kan on a envoye les asked machin, ne pas les effacer mais les mettre dans une autre liste pour
+// que il redemande pas en attendant la reponse de l autre
 
 } // NLMISC

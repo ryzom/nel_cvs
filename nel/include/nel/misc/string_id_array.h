@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * <File description>
  *
- * $Id: string_id_array.h,v 1.4 2001/03/06 16:50:26 lecroart Exp $
+ * $Id: string_id_array.h,v 1.5 2001/03/13 15:56:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,7 +88,7 @@ public:
 
 	std::string getString (TStringId id) const
 	{
-		nlassert (id > 0 && id < (TStringId)_StringArray.size());
+		nlassert (id >= 0 && id < (TStringId)_StringArray.size());
 
 		return _StringArray[id];
 	}

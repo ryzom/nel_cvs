@@ -1,0 +1,53 @@
+/*!
+/page NeL Whitepaper
+/author Vincent Archer <archer@nevrax.org>
+
+The purpose of this document is to present a general overview of the whole of the
+NeL infrastructure. After reading this document, you should have a good understanding
+of how NeL is structured, what parts compose it, why these parts are there, and how
+they are intended to be used for the building of a finished product.
+
+This is not an interface description or a programming manual. These interface
+descriptions are also generated using the Doxygen documentation tool, and separate
+general interface description documents for each component are provided. There is also a
+separate global programming manual, describing exactly how to code for a complete product
+using NeL components.
+
+/section build Building system
+
+Building systems are very different, depending on whether you work on a Windows/Visual
+C++ environment, or a Unix/C++ environment (the two development environments currently
+supported in the official NeL system). The building system reflects this and thus
+consists of two different subsystems:
+
+/subsection unixbuild Unix build
+
+Building the NeL system in a Unix-based environment uses the auto-configure system
+that is pretty much a standard in GNU tools and other environment-portable packages. The
+NeL library top level thus has a configure.in, which autoconf/autoheader turns into
+the classic configure script.
+
+That directory, and all its subdirectories, has Makefile.am, which automake uses to
+generate a set of Makefile.in. All modifications (notably adding source files) are made
+into the Makefile.am files themselves, and never to Makefile.in or Makefile. The .am
+template is stored in the CVS tree, but not the rest.
+
+/subsection winbuild Windows build
+
+[to be completed]
+
+/section components Components
+
+[to be completed]
+
+/section externals External components
+
+The following external components are used to build the NeL system. These components
+are either included directly in the NeL system and are available immediately when
+extracting the NeL source tree, while others are kept separate, and require you to
+obtain them separately prior to building NeL.
+
+- Autoconfig & Automake : The GNU standard configuration tools for Open Source development.
+
+[to be completed]
+ */

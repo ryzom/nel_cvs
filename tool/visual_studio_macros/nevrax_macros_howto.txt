@@ -1,7 +1,10 @@
 Mode d'emploi des macros Nevrax
 02/08/00 cado@nevrax.com
-$Id: nevrax_macros_howto.txt,v 1.5 2000/09/18 13:49:42 cado Exp $
+$Id: nevrax_macros_howto.txt,v 1.6 2000/10/12 13:55:31 cado Exp $
 ----------
+
+Dernière mise à jour : 12/10/2000
+
 
 1. Nouveautés du 18/09/2000
 --------------------------

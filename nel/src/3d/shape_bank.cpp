@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.1 2001/04/17 12:09:38 besson Exp $
+ * $Id: shape_bank.cpp,v 1.2 2001/04/17 13:28:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,24 +52,33 @@ CShapeBank::~CShapeBank()
 IShape*CShapeBank::addRef(const string &shapeName)
 {	
 	// If the shape is inserted in a shape cache remove it
-	CShapeCache *pShpCache = getShapeCachePtrFromShapeName( shapeName );
-	if( pShpCache != NULL )
+	TShapeInfoMap::iterator scfpmIt = ShapePtrToShapeInfo.find( getShapePtrFromShapeName( shapeName ) );
+	if( scfpmIt != ShapePtrToShapeInfo.end() )
 	{
-		// Check if the shape cache contains the shape
-		list<IShape*>::iterator lsIt = pShpCache->Elements.begin();
-		while(lsIt != pShpCache->Elements.end())
+		if( !scfpmIt->second.isAdded )
 		{
-			string *sTemp = getShapeNameFromShapePtr(*lsIt);
-			if( *sTemp == shapeName )
-			{
-				// Ok the shape cache contains the shape remove it and return
-				pShpCache->Elements.erase( lsIt );
-				return getShapePtrFromShapeName( shapeName );
-			}
-			++lsIt;
-		}		
+			// The shape is not inserted into a cache
+			return getShapePtrFromShapeName( shapeName );
+		}
 	}
-	return getShapePtrFromShapeName( shapeName );	
+	scfpmIt->second.isAdded = false;
+	CShapeCache *pShpCache = scfpmIt->second.pShpCache;
+	nlassert( pShpCache != NULL );
+	// Search the shape cache for the shape we want to remove
+	list<IShape*>::iterator lsIt = pShpCache->Elements.begin();
+	while(lsIt != pShpCache->Elements.end())
+	{
+		string *sTemp = getShapeNameFromShapePtr(*lsIt);
+		if( *sTemp == shapeName )
+		{
+			// Ok the shape cache contains the shape remove it and return
+			pShpCache->Elements.erase( lsIt );				
+			return getShapePtrFromShapeName( shapeName );
+		}
+		++lsIt;
+	}
+	nlassert( false );
+	return getShapePtrFromShapeName( shapeName );
 }
 
 // ***************************************************************************
@@ -85,9 +94,20 @@ void CShapeBank::release(IShape* pShp)
 			// Yes -> add the shape to its shapeCache
 			CShapeCache *pShpCache = getShapeCachePtrFromShapePtr( pShp );
 			pShpCache->Elements.push_front( pShp );
+
+			TShapeInfoMap::iterator scfpmIt = ShapePtrToShapeInfo.find( pShp );
+			if( scfpmIt != ShapePtrToShapeInfo.end() )
+			{
+				scfpmIt->second.isAdded = true;
+			}
+			
 			// check the shape cache
 			checkShapeCache(getShapeCachePtrFromShapePtr(pShp));
 		}
+	}
+	else
+	{
+		nlassert( false );
 	}
 }
 

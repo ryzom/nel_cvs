@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.1 2001/04/17 12:10:12 besson Exp $
+ * $Id: shape_bank.h,v 1.2 2001/04/17 13:28:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NL3D
  * it is linked to the default cache. The comportement of this cache is to not
  * do any cache. When the release is called on the last reference to a shape 
  * linked to this cache, the shape is removed instantly. This is the behavior
- * of all newly created cache.
+ * of all newly created cache before we call the setShapeCacheSize method.
  *
  * \author Matthieu Besson
  * \author Nevrax France
@@ -107,8 +107,10 @@ private:
 
 	struct CShapeInfo
 	{
-		CShapeCache* pShpCache;
-		std::string  sShpName;
+		CShapeCache*	pShpCache;
+		std::string		sShpName;
+		bool			isAdded;
+		CShapeInfo() { isAdded = false; pShpCache = NULL; }
 	};
 
 private:

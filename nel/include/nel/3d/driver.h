@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.24 2000/12/01 10:07:52 corvazier Exp $
+ * $Id: driver.h,v 1.25 2000/12/01 16:58:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,8 +61,8 @@ public:
 
 
 
-const uint32 IDRV_TOUCHED_SRCBLEND	=	0x00000001;
-const uint32 IDRV_TOUCHED_DSTBLEND	=	0x00000002;
+const uint32 IDRV_TOUCHED_BLENDFUNC	=	0x00000001;
+// There is a place here :)
 const uint32 IDRV_TOUCHED_OPACITY	=	0x00000004;
 const uint32 IDRV_TOUCHED_SHADER	=	0x00000008;
 const uint32 IDRV_TOUCHED_ZFUNC		=	0x00000010;
@@ -134,6 +134,8 @@ public:
 
 	TBlend					getDstBlend(void) { return(_DstBlend); }
 	void					setDstBlend(TBlend val);
+	void					setBlendFunc(TBlend src, TBlend dst);
+
 
 	ZFunc					getZFunc(void) { return(_ZFunction); }		
 	void					setZFunction(ZFunc val);

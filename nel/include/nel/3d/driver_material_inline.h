@@ -2,7 +2,7 @@
  * 
  * 
  *
- * $Id: driver_material_inline.h,v 1.4 2000/11/21 18:15:59 valignat Exp $
+ * $Id: driver_material_inline.h,v 1.5 2000/12/01 16:57:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,14 +74,22 @@ inline void CMaterial::setOpacity(float val)
 inline void CMaterial::setSrcBlend(TBlend val)
 {
 	_SrcBlend=val;
-	_Touched|=IDRV_TOUCHED_SRCBLEND;
+	_Touched|=IDRV_TOUCHED_BLENDFUNC;
 }
 
 inline void CMaterial::setDstBlend(TBlend val)
 {
 	_DstBlend=val;
-	_Touched|=IDRV_TOUCHED_DSTBLEND;
+	_Touched|=IDRV_TOUCHED_BLENDFUNC;
 }
+
+inline void	CMaterial::setBlendFunc(TBlend src, TBlend dst)
+{
+	_SrcBlend=src;
+	_DstBlend=dst;
+	_Touched|=IDRV_TOUCHED_BLENDFUNC;
+}
+
 
 inline void CMaterial::setZFunction(ZFunc val)
 {

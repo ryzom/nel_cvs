@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.44 2001/11/14 15:15:04 corvazier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.45 2001/11/14 15:49:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,8 +118,17 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	_NbSetupMaterialCall++;
 
 
-
-
+	// ======== deactivate texture shaders if needed ===========
+	if (_Extensions.NVTextureShader)
+	{
+		if ( // supported only with normal shader
+			mat.getShader() == CMaterial::Normal 
+			&& (! (mat.getFlags() & IDRV_MAT_TEX_ADDR))
+		   )
+		{	
+			enableNVTextureShader(false);			
+		}
+	}
 
 	// 0. Setup / Bind Textures.
 	//==========================
@@ -316,15 +325,12 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			   )
 			{	
 				
-				_DriverGLStates.enableNVTextureShader(true);				
-				
+				enableNVTextureShader(true);								
 				
 				GLenum glAddrMode;
 				for (stage = 0; stage < getNbTextureStages(); ++stage)
-				{
-										
+				{										
 					convTexAddr(mat.getTexture(stage), (CMaterial::TTexAddressingMode) (mat._TexAddrMode[stage]), glAddrMode);
-
 
 					if (glAddrMode != _CurrentTexAddrMode[stage]) // addressing mode different from the one in the device?
 					{
@@ -335,13 +341,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				}
 								
 			}
-			else
-			{								
-				_DriverGLStates.enableNVTextureShader(false);								
-			}
 		}
-
-
 
 		_CurrentMaterial=&mat;
 	}

@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.29 2003/07/10 15:04:07 cado Exp $
+ * $Id: mem_stream.h,v 1.30 2003/07/31 11:06:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,8 +154,15 @@ public:
 		return _BufPos - _Buffer.getPtr();
 	}
 
+	/// Const and not-virtual getPos(), for direct use. Caution: should not be overloaded in a child class.
+	sint32			getPos() const
+	{
+		return _BufPos - _Buffer.getPtr();
+	}
+
 	/**
 	 * When writing, skip 'len' bytes and return the position of the blank space for a future poke().
+	 * Warning: this has nothing to do with the semantics of reserve() in std::vector!
 	 */
 	sint32			reserve( uint len )
 	{
@@ -259,7 +266,7 @@ public:
 	 * If you are using the stream only in output mode, you can use this method as a faster version
 	 * of clear() *if you don't serialize pointers*.
 	 */
-	void resetBufPos() { _BufPos = _Buffer.getPtr(); }
+	void			resetBufPos() { _BufPos = _Buffer.getPtr(); }
 
 	/**
 	 * Resize the message buffer and fill data at position 0.
@@ -282,7 +289,8 @@ public:
 		}
 	}
 
-	void resize (uint32 size);
+	/// Resize the buffer
+	void			resize (uint32 size);
 
 	/**
 	 * Resize the stream with the specified size, set the current position at the beginning

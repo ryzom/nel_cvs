@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Frontend Service.
  *
- * $Id: main.cpp,v 1.10 2002/03/19 17:42:49 valignat Exp $
+ * $Id: main.cpp,v 1.11 2002/03/25 10:16:32 lecroart Exp $
  */
 
 /*
@@ -43,7 +43,6 @@
 
 // We're using the NeL Service framework and layer 4.
 #include <nel/net/service.h>
-#include <nel/net/net_manager.h>
 #include <nel/net/login_server.h>
 
 #include <map>
@@ -693,7 +692,7 @@ public:
  *    - and callback actions set to "ClientCallbackArray"
  *
  ****************************************************************************/
-NLNET_SERVICE_MAIN( CFrontEndService,
+NLNET_OLD_SERVICE_MAIN( CFrontEndService,
 					"FS",
 					"frontend_service",
 					37000,

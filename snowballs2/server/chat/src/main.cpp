@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Chat Service.
  *
- * $Id: main.cpp,v 1.5 2002/03/19 17:42:49 valignat Exp $
+ * $Id: main.cpp,v 1.6 2002/03/25 10:16:32 lecroart Exp $
  */
 
 /*
@@ -36,15 +36,15 @@
 #define SNOWBALLS_LOGS ""
 #endif // SNOWBALLS_LOGS
 
-#include <string>
-
 // This include is mandatory to use NeL. It include NeL types.
 #include <nel/misc/types_nl.h>
+
+#include <string>
+
 #include <nel/misc/debug.h>
 
 // We're using the NeL Service framework, and layer 4
 #include <nel/net/service.h>
-#include <nel/net/net_manager.h>
 
 
 using namespace std;
@@ -122,7 +122,7 @@ public:
  *    - and callback actions set to "CallbackArray"
  *
  ****************************************************************************/
-NLNET_SERVICE_MAIN( CChatService,
+NLNET_OLD_SERVICE_MAIN( CChatService,
 					"CHAT",
 					"chat_service",
 					0,

@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Position Service.
  *
- * $Id: main.cpp,v 1.10 2002/03/19 17:42:49 valignat Exp $
+ * $Id: main.cpp,v 1.11 2002/03/25 10:16:32 lecroart Exp $
  */
 
 /*
@@ -434,7 +434,7 @@ public:
 
 
 			// Removed if flaged snowball
-			if ( removeSnowball == true )
+			if ( removeSnowball )
 			{
 				snoList.erase( ItSb );
 				nldebug( "SB: Removed outdated SNOWBALL id %u.", snowball.id );
@@ -460,7 +460,7 @@ public:
  *    - and callback actions set to "CallbackArray"
  *
  ****************************************************************************/
-NLNET_SERVICE_MAIN( CPositionService,
+NLNET_OLD_SERVICE_MAIN( CPositionService,
 					"POS",
 					"position_service",
 					0,

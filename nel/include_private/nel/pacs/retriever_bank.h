@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.2 2001/06/05 10:37:47 legros Exp $
+ * $Id: retriever_bank.h,v 1.3 2001/06/06 12:53:03 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/misc/file.h"
 
 #include "nel/pacs/local_retriever.h"
+#include "nel/pacs/u_retriever_bank.h"
 
 namespace NLPACS
 {
@@ -44,7 +45,7 @@ namespace NLPACS
  * \author Nevrax France
  * \date 2001
  */
-class CRetrieverBank
+class CRetrieverBank : public URetrieverBank
 {
 protected:
 	/// The retrievers stored in the retriever bank.
@@ -74,8 +75,6 @@ public:
 		localRetriever.serial(input);
 		input.close();
 
-//		localRetriever.buildLoops();
-		
 		return _Retrievers.size()-1;
 	}
 

@@ -79,13 +79,16 @@ private:
 
 	void				resize (sint32 newMinX, sint32 newMaxX, sint32 newMinY, sint32 newMaxY);
 
+	void				addToUpdateAndCreate (CBuilderZoneRegion* pBZRfrom, sint32 sharePos, sint32 x, sint32 y, const std::string &sNewMat, void *pInt1, void *pInt2);
+
 	void				putTransitions (sint32 x, sint32 y, const SPiece &rMask, const std::string &MatName, void *pInternal);
 	void				putTransition (sint32 x, sint32 y, const std::string &MatName);
 	void				updateTrans (sint32 x, sint32 y);
 
 	std::string			getNextMatInTree(const std::string &sMatA, const std::string &sMatB);
 	void				tryPath (uint32 posA, uint32 posB, std::vector<uint32> &vPath);
-	
+
+	SZoneUnit			*getZoneAmongRegions (CBuilderZoneRegion*& pBZRfromAndRet, sint32 x, sint32 y);
 
 public:
 

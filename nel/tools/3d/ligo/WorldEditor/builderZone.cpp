@@ -596,6 +596,8 @@ bool CBuilderZone::load (const char *fileName)
 		}
 	}
 
+	_ZoneRegions[_ZoneRegionSelected]->init (&_ZoneBank, this);
+
 	calcMask ();
 	if (_Display)
 		_Display->OnDraw (NULL);

@@ -186,15 +186,16 @@ class CToUpdate
 {
 	struct SElt
 	{
-		sint32 x, y;
-		string MatPut; // Material put into the cell to update
+		sint32				x, y;
+		string				MatPut; // Material put into the cell to update
+		CBuilderZoneRegion	*BZR;
 	};
 
 	vector<SElt> Elts;
 
 public:
 
-	void add (sint32 x, sint32 y, const string &MatName)
+	void add (CBuilderZoneRegion* pBZR, sint32 x, sint32 y, const string &MatName)
 	{
 		bool bFound = false;
 		for (uint32 m = 0; m < Elts.size(); ++m)
@@ -209,6 +210,7 @@ public:
 			tuTmp.x = x;
 			tuTmp.y = y;
 			tuTmp.MatPut = MatName;
+			tuTmp.BZR = pBZR;
 			Elts.push_back (tuTmp);
 		}
 	}
@@ -245,6 +247,11 @@ public:
 		return Elts[m].y;
 	}
 
+	CBuilderZoneRegion* getBZR (uint32 m)
+	{
+		return Elts[m].BZR;
+	}
+
 	const string& getMat (uint32 m)
 	{
 		return Elts[m].MatPut;
@@ -279,6 +286,15 @@ void CBuilderZoneRegion::add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIG
 	rotFlip (sMask, nRot, nFlip);
 	rotFlip (sPosX, nRot, nFlip);
 	rotFlip (sPosY, nRot, nFlip);
+
+	// Test if the pieces can be put (due to mask)
+	for (j = 0; j < sMask.h; ++j)
+	for (i = 0; i < sMask.w; ++i)
+	if (sMask.Tab[i+j*sMask.w])
+	{
+		if (_Builder->getZoneMask(x+i, y+j) == false)
+			return;
+	}
 
 	// Delete all pieces that are under the mask
 	for (j = 0; j < sMask.h; ++j)
@@ -376,6 +392,48 @@ void CBuilderZoneRegion::add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIG
 }
 
 // ---------------------------------------------------------------------------
+// Get a specific zone among all zones
+CBuilderZoneRegion::SZoneUnit *CBuilderZoneRegion::getZoneAmongRegions (CBuilderZoneRegion*& pBZRfrom, sint32 x, sint32 y)
+{
+	uint32 nNbRegion = _Builder->_ZoneRegions.size();
+	for (uint32 i = 0; i < nNbRegion; ++i)
+	{
+		CBuilderZoneRegion *pBZR = _Builder->_ZoneRegions[i];
+		if ((x < pBZR->_MinX)||(x > pBZR->_MaxX)||(y < pBZR->_MinY)||(y > pBZR->_MaxY))
+			continue;
+		sint32 stride = (1 + pBZR->_MaxX - pBZR->_MinX);
+		SZoneUnit *pZU = &pBZR->_Zones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride];
+		if (pZU->ZoneName != STRING_UNUSED)
+		{
+			pBZRfrom = pBZR;
+			return pZU;
+		}
+	}
+	// The zone is not present in other region so it is an empty or oob zone of the current region
+	if ((x < pBZRfrom->_MinX)||(x > pBZRfrom->_MaxX)||(y < pBZRfrom->_MinY)||(y > pBZRfrom->_MaxY))
+		return NULL; // Out Of Bound
+	sint32 stride = (1 + pBZRfrom->_MaxX - pBZRfrom->_MinX);
+	SZoneUnit *pZU = &pBZRfrom->_Zones[(x-pBZRfrom->_MinX)+(y-pBZRfrom->_MinY)*stride];
+	return pZU;
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZoneRegion::addToUpdateAndCreate (CBuilderZoneRegion *pBZRfrom, sint32 sharePos, sint32 x, sint32 y, const string &sNewMat, void *pInt1, void *pInt2)
+{
+	CToUpdate *ptCreate = (CToUpdate*)pInt1;
+	CToUpdate *ptUpdate = (CToUpdate*)pInt2;
+	sint32 stride = (1+_MaxX-_MinX);
+
+	SZoneUnit *pZU = getZoneAmongRegions (pBZRfrom, x, y);
+	if (pZU != NULL)
+	{
+		pZU->SharingMatNames[sharePos] = sNewMat;
+		pBZRfrom->del (x, y, true, ptUpdate);
+		ptCreate->add (pBZRfrom, x, y, sNewMat);
+	}
+}
+
+// ---------------------------------------------------------------------------
 void CBuilderZoneRegion::putTransitions (sint32 inX, sint32 inY, const SPiece &rMask, const string &MatName,
 										 void *pInternal)
 {
@@ -390,136 +448,75 @@ void CBuilderZoneRegion::putTransitions (sint32 inX, sint32 inY, const SPiece &r
 	{
 		for (k = -1; k <= 1; ++k)
 		for (l = -1; l <= 1; ++l)
-			tCreate.add (inX+i+l, inY+j+k, MatName);
+		{
+			CBuilderZoneRegion *pBZR = this;
+			if (getZoneAmongRegions (pBZR, inX+i+l, inY+j+k) != NULL)
+				tCreate.add (pBZR, inX+i+l, inY+j+k, MatName);
+		}
 	}
 	
-	sint32 stride = (1+_MaxX-_MinX);
 	// Check coherency of the transition to update
 	for (m = 0; m < (sint32)tCreate.size(); ++m)
 	{
+		CBuilderZoneRegion *pBZR = tCreate.getBZR(m);
+		vector<SZoneUnit> &rZones = pBZR->_Zones;
 		x = tCreate.getX(m);
 		y = tCreate.getY(m);
 		string putMat = tCreate.getMat(m);
+		sint32 stride = (1+pBZR->_MaxX-pBZR->_MinX);
 
-		if ((x < _MinX)||(x > _MaxX)||(y < _MinY)||(y > _MaxY))
-			continue;
+		//if ((x < _MinX)||(x > _MaxX)||(y < _MinY)||(y > _MaxY))
+		//	continue;
 		
-		if (!((_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[0] == _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[1])&&
-			(_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[1] == _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[2])&&
-			(_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[2] == _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[3])))
-			del (x, y, true, ptUpdate);
+		if (!((rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[0] == rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[1])&&
+			(rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[1] == rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[2])&&
+			(rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[2] == rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[3])))
+			pBZR->del (x, y, true, ptUpdate);
 
 		// Expand material for the 1st quarter
-		string newMat = getNextMatInTree (putMat, _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[0]);
-		if (newMat != _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[0])
+		string newMat = getNextMatInTree (putMat, rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[0]);
+		if (newMat != rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[0])
 		{	// Update the quarter
-			if (_Builder->getZoneMask(x,y))
-				_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[0] = newMat;
-			if ((x > _MinX)&&(x <= _MaxX)&&(y >= _MinY)&&(y <= _MaxY))
-			{
-				if (_Builder->getZoneMask(x-1,y))
-					_Zones[(x-1-_MinX)+(y-_MinY)*stride].SharingMatNames[1] = newMat;
-				del (x-1, y, true, ptUpdate);
-				tCreate.add (x-1, y, newMat);
-			}
-			if ((x > _MinX)&&(x <= _MaxX)&&(y > _MinY)&&(y <= _MaxY))
-			{
-				if (_Builder->getZoneMask(x-1,y-1))
-					_Zones[(x-1-_MinX)+(y-1-_MinY)*stride].SharingMatNames[3] = newMat;
-				del (x-1, y-1, true, ptUpdate);
-				tCreate.add (x-1, y-1, newMat);
-			}
-			if ((x >= _MinX)&&(x <= _MaxX)&&(y > _MinY)&&(y <= _MaxY))
-			{
-				if (_Builder->getZoneMask(x,y-1))
-					_Zones[(x-_MinX)+(y-1-_MinY)*stride].SharingMatNames[2] = newMat;
-				del (x, y-1, true, ptUpdate);
-				tCreate.add (x, y-1, newMat);
-			}
+			rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[0] = newMat;
+
+			addToUpdateAndCreate (pBZR, 1, x-1, y, newMat, &tCreate, ptUpdate);
+			addToUpdateAndCreate (pBZR, 3, x-1, y-1, newMat, &tCreate, ptUpdate);
+			addToUpdateAndCreate (pBZR, 2, x, y-1, newMat, &tCreate, ptUpdate);
 		}
 
 		// Expand material for the 2nd quarter
-		newMat = getNextMatInTree (putMat, _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[1]);
-		if (newMat != _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[1])
+		newMat = getNextMatInTree (putMat, rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[1]);
+		if (newMat != rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[1])
 		{	// Update the quarter
-			_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[1] = newMat;
-			if ((x >= _MinX)&&(x < _MaxX)&&(y >= _MinY)&&(y <= _MaxY))
-			{
-				if (_Builder->getZoneMask(x+1,y))
-					_Zones[(x+1-_MinX)+(y-_MinY)*stride].SharingMatNames[0] = newMat;
-				del (x+1, y, true, ptUpdate);
-				tCreate.add (x+1, y, newMat);
-			}
-			if ((x >= _MinX)&&(x < _MaxX)&&(y > _MinY)&&(y <= _MaxY))
-			{
-				if (_Builder->getZoneMask(x+1,y-1))
-					_Zones[(x+1-_MinX)+(y-1-_MinY)*stride].SharingMatNames[2] = newMat;
-				del (x+1, y-1, true, ptUpdate);
-				tCreate.add (x+1, y-1, newMat);
-			}
-			if ((x >= _MinX)&&(x <= _MaxX)&&(y > _MinY)&&(y <= _MaxY))
-			{
-				if (_Builder->getZoneMask(x,y-1))
-					_Zones[(x-_MinX)+(y-1-_MinY)*stride].SharingMatNames[3] = newMat;
-				del (x, y-1, true, ptUpdate);
-				tCreate.add (x, y-1, newMat);
-			}
+			//if (_Builder->getZoneMask(x,y))
+				rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[1] = newMat;
+
+			addToUpdateAndCreate (pBZR, 0, x+1, y, newMat, &tCreate, ptUpdate);
+			addToUpdateAndCreate (pBZR, 2, x+1, y-1, newMat, &tCreate, ptUpdate);
+			addToUpdateAndCreate (pBZR, 3, x, y-1, newMat, &tCreate, ptUpdate);
 		}
 
 		// Expand material for the 3rd quarter
-		newMat = getNextMatInTree (putMat, _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[2]);
-		if (newMat != _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[2])
+		newMat = getNextMatInTree (putMat, rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[2]);
+		if (newMat != rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[2])
 		{	// Update the quarter
-			_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[2] = newMat;
-			if ((x > _MinX)&&(x <= _MaxX)&&(y >= _MinY)&&(y <= _MaxY))
-			{
-				if (_Builder->getZoneMask(x-1,y))
-					_Zones[(x-1-_MinX)+(y-_MinY)*stride].SharingMatNames[3] = newMat;
-				del (x-1, y, true, ptUpdate);
-				tCreate.add (x-1, y, newMat);
-			}
-			if ((x > _MinX)&&(x <= _MaxX)&&(y >= _MinY)&&(y < _MaxY))
-			{
-				if (_Builder->getZoneMask(x-1,y+1))
-					_Zones[(x-1-_MinX)+(y+1-_MinY)*stride].SharingMatNames[1] = newMat;
-				del (x-1, y+1, true, ptUpdate);
-				tCreate.add (x-1, y+1, newMat);
-			}
-			if ((x >= _MinX)&&(x <= _MaxX)&&(y >= _MinY)&&(y < _MaxY))
-			{
-				if (_Builder->getZoneMask(x,y+1))
-					_Zones[(x-_MinX)+(y+1-_MinY)*stride].SharingMatNames[0] = newMat;
-				del (x, y+1, true, ptUpdate);
-				tCreate.add (x, y+1, newMat);
-			}
+			//if (_Builder->getZoneMask(x,y))
+				rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[2] = newMat;
+			
+			addToUpdateAndCreate (pBZR, 3, x-1, y, newMat, &tCreate, ptUpdate);
+			addToUpdateAndCreate (pBZR, 1, x-1, y+1, newMat, &tCreate, ptUpdate);
+			addToUpdateAndCreate (pBZR, 0, x, y+1, newMat, &tCreate, ptUpdate);
 		}
 
 		// Expand material for the 4th quarter
-		newMat = getNextMatInTree (putMat, _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[3]);
-		if (newMat != _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[3])
+		newMat = getNextMatInTree (putMat, rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[3]);
+		if (newMat != rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[3])
 		{	// Update the quarter
-			_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[3] = newMat;
-			if ((x >= _MinX)&&(x < _MaxX)&&(y >= _MinY)&&(y <= _MaxY))
-			{
-				if (_Builder->getZoneMask(x+1,y))
-					_Zones[(x+1-_MinX)+(y-_MinY)*stride].SharingMatNames[2] = newMat;
-				del (x+1, y, true, ptUpdate);
-				tCreate.add (x+1, y, newMat);
-			}
-			if ((x >= _MinX)&&(x < _MaxX)&&(y >= _MinY)&&(y < _MaxY))
-			{
-				if (_Builder->getZoneMask(x+1,y+1))
-					_Zones[(x+1-_MinX)+(y+1-_MinY)*stride].SharingMatNames[0] = newMat;
-				del (x+1, y+1, true, ptUpdate);
-				tCreate.add (x+1, y+1, newMat);
-			}
-			if ((x >= _MinX)&&(x <= _MaxX)&&(y >= _MinY)&&(y < _MaxY))
-			{
-				if (_Builder->getZoneMask(x,y+1))
-					_Zones[(x-_MinX)+(y+1-_MinY)*stride].SharingMatNames[1] = newMat;
-				del (x, y+1, true, ptUpdate);
-				tCreate.add (x, y+1, newMat);
-			}
+			//if (_Builder->getZoneMask(x,y))
+				rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[3] = newMat;
+			addToUpdateAndCreate (pBZR, 2, x+1, y, newMat, &tCreate, ptUpdate);
+			addToUpdateAndCreate (pBZR, 0, x+1, y+1, newMat, &tCreate, ptUpdate);
+			addToUpdateAndCreate (pBZR, 1, x, y+1, newMat, &tCreate, ptUpdate);
 		}
 	}
 
@@ -534,58 +531,68 @@ void CBuilderZoneRegion::putTransitions (sint32 inX, sint32 inY, const SPiece &r
 	// For all transition to update choose the cut edge
 	for (m = 0; m < (sint32)tCreate.size(); ++m)
 	{
+		CBuilderZoneRegion *pBZR = tCreate.getBZR(m);
+		vector<SZoneUnit> &rZones = pBZR->_Zones;
 		x = tCreate.getX(m);
 		y = tCreate.getY(m);
+		sint32 stride = (1 + pBZR->_MaxX - pBZR->_MinX);
 
-		if ((x < _MinX)||(x > _MaxX)||(y < _MinY)||(y > _MaxY))
+		if ((x < pBZR->_MinX)||(x > pBZR->_MaxX)||(y < pBZR->_MinY)||(y > pBZR->_MaxY))
 			continue;
 
 		for (i = 0; i < 4; ++i)
 		{
 			uint8 nCut = (uint8)(1.0f+NLMISC::frand(2.0f));
 			NLMISC::clamp (nCut, (uint8)1, (uint8)2);
-			if (_Builder->getZoneMask(x,y))
-				_Zones[(x-_MinX)+(y-_MinY)*stride].SharingCutEdges[i] = nCut;
+			rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingCutEdges[i] = nCut;
 		}
 		// Propagate
-		if (_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[0] != 
-			_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[2])
-		if ((x > _MinX)&&(x <= _MaxX)&&(y >= _MinY)&&(y <= _MaxY))
+		if (rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[0] != 
+			rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[2])
 		{	// [x-1][y].right = [x][y].left
-			if (_Builder->getZoneMask(x-1,y))
-				_Zones[(x-1-_MinX)+(y-_MinY)*stride].SharingCutEdges[3] = 
-					_Zones[(x-_MinX)+(y-_MinY)*stride].SharingCutEdges[2]; 
-			ptUpdate->add (x-1, y, "");
+			CBuilderZoneRegion *pBZR2 = pBZR;
+			SZoneUnit *pZU = getZoneAmongRegions (pBZR2, x-1, y);
+			if (pZU != NULL)
+			{
+				pZU->SharingCutEdges[3] = rZones[(x-pBZR->_MinX)+(y-_MinY)*stride].SharingCutEdges[2]; 
+				ptUpdate->add (pBZR2, x-1, y, "");
+			}
 		}
 
-		if (_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[0] != 
-			_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[1])
-		if ((x >= _MinX)&&(x <= _MaxX)&&(y > _MinY)&&(y <= _MaxY))
+		if (rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[0] != 
+			rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[1])
 		{	// [x][y-1].up = [x][y].down
-			if (_Builder->getZoneMask(x,y-1))
-				_Zones[(x-_MinX)+(y-1-_MinY)*stride].SharingCutEdges[0] = 
-					_Zones[(x-_MinX)+(y-_MinY)*stride].SharingCutEdges[1]; 
-			ptUpdate->add (x, y-1, "");
+			CBuilderZoneRegion *pBZR2 = pBZR;
+			SZoneUnit *pZU = getZoneAmongRegions (pBZR2, x, y-1);
+			if (pZU != NULL)
+			{
+				pZU->SharingCutEdges[0] = rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingCutEdges[1]; 
+				ptUpdate->add (pBZR2, x, y-1, "");
+			}
 		}
 
-		if (_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[3] != 
-			_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[1])
-		if ((x >= _MinX)&&(x < _MaxX)&&(y >= _MinY)&&(y <= _MaxY))
+		if (rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[3] != 
+			rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[1])
 		{	// [x+1][y].left = [x][y].right
-			if (_Builder->getZoneMask(x+1,y))
-				_Zones[(x+1-_MinX)+(y-_MinY)*stride].SharingCutEdges[2] = 
-					_Zones[(x-_MinX)+(y-_MinY)*stride].SharingCutEdges[3]; 
-			ptUpdate->add (x+1, y, "");
+			CBuilderZoneRegion *pBZR2 = pBZR;
+			SZoneUnit *pZU = getZoneAmongRegions (pBZR2, x+1, y);
+			if (pZU != NULL)
+			{
+				pZU->SharingCutEdges[2] = rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingCutEdges[3]; 
+				ptUpdate->add (pBZR2, x+1, y, "");
+			}
 		}
 
-		if (_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[2] != 
-			_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[3])
-		if ((x >= _MinX)&&(x <= _MaxX)&&(y >= _MinY)&&(y < _MaxY))
+		if (rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[2] != 
+			rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[3])
 		{	// [x][y+1].down = [x][y].up
-			if (_Builder->getZoneMask(x,y+1))
-				_Zones[(x-_MinX)+(y+1-_MinY)*stride].SharingCutEdges[1] = 
-					_Zones[(x-_MinX)+(y-_MinY)*stride].SharingCutEdges[0]; 
-			ptUpdate->add (x, y+1, "");
+			CBuilderZoneRegion *pBZR2 = pBZR;
+			SZoneUnit *pZU = getZoneAmongRegions (pBZR2, x, y+1);
+			if (pZU != NULL)
+			{
+				pZU->SharingCutEdges[1] = rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingCutEdges[0]; 
+				ptUpdate->add (pBZR2, x, y+1, "");
+			}
 		}
 	}	
 
@@ -600,56 +607,60 @@ void CBuilderZoneRegion::putTransitions (sint32 inX, sint32 inY, const SPiece &r
 	// Finally update all transition
 	for (m = 0; m < (sint32)tCreate.size(); ++m)
 	{
+		CBuilderZoneRegion *pBZR = tCreate.getBZR(m);
 		x = tCreate.getX(m);
 		y = tCreate.getY(m);
-		if ((x >= _MinX)&&(x <= _MaxX)&&(y >= _MinY)&&(y <= _MaxY))
-			updateTrans (x, y);
+
+		if ((x >= pBZR->_MinX)&&(x <= pBZR->_MaxX)&&(y >= pBZR->_MinY)&&(y <= pBZR->_MaxY))
+			pBZR->updateTrans (x, y);
 	}
 	for (m = 0; m < (sint32)ptUpdate->size(); ++m)
 	{
+		CBuilderZoneRegion *pBZR = ptUpdate->getBZR(m);
 		x = ptUpdate->getX(m);
 		y = ptUpdate->getY(m);
-		if ((x >= _MinX)&&(x <= _MaxX)&&(y >= _MinY)&&(y <= _MaxY))
-			updateTrans (x, y);
+		if ((x >= pBZR->_MinX)&&(x <= pBZR->_MaxX)&&(y >= pBZR->_MinY)&&(y <= pBZR->_MaxY))
+			pBZR->updateTrans (x, y);
 	}
 
 	// Cross material
 	for (m = 0; m < (sint32)tCreate.size(); ++m)
 	{
+		CBuilderZoneRegion *pBZR = tCreate.getBZR(m);
+		vector<SZoneUnit> &rZones = pBZR->_Zones;
 		x = tCreate.getX(m);
 		y = tCreate.getY(m);
-		if ((x >= _MinX)&&(x <= _MaxX)&&(y >= _MinY)&&(y <= _MaxY))
+		sint32 stride = (1 + pBZR->_MaxX - pBZR->_MinX);
+
+		SZoneUnit &rZone = rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride];
+		std::set<string> matNameSet;
+		for (i = 0; i < 4; ++i)
+			matNameSet.insert (rZone.SharingMatNames[i]);
+
+		if (((rZone.SharingMatNames[0] == rZone.SharingMatNames[3]) &&
+			(rZone.SharingMatNames[1] == rZone.SharingMatNames[2]) &&
+			(rZone.SharingMatNames[0] != rZone.SharingMatNames[1])) 
+			|| (matNameSet.size()>2))
 		{
-			SZoneUnit &rZone = _Zones[(x-_MinX)+(y-_MinY)*stride];
-			std::set<string> matNameSet;
-			for (i = 0; i < 4; ++i)
-				matNameSet.insert (rZone.SharingMatNames[i]);
 
-			if (((rZone.SharingMatNames[0] == rZone.SharingMatNames[3]) &&
-				(rZone.SharingMatNames[1] == rZone.SharingMatNames[2]) &&
-				(rZone.SharingMatNames[0] != rZone.SharingMatNames[1])) 
-				|| (matNameSet.size()>2))
-			{
+			_ZeBank->resetSelection ();
+			_ZeBank->addOrSwitch ("Material", tCreate.getMat(m));
+			_ZeBank->addAndSwitch ("Size", "1x1");
+			vector<CZoneBankElement*> vElts;
+			_ZeBank->getSelection (vElts);
+			if (vElts.size() == 0)
+				return;
+			sint32 nRan = (sint32)(NLMISC::frand((float)vElts.size()));
+			NLMISC::clamp (nRan, (sint32)0, (sint32)(vElts.size()-1));
+			CZoneBankElement *pZBE = vElts[nRan];
+			nRan = (uint32)(NLMISC::frand (1.0) * 4);
+			NLMISC::clamp (nRan, (sint32)0, (sint32)3);
+			uint8 rot = (uint8)nRan;
+			nRan = (uint32)(NLMISC::frand (1.0) * 2);
+			NLMISC::clamp (nRan, (sint32)0, (sint32)1);
+			uint8 flip = (uint8)nRan;
 
-				_ZeBank->resetSelection ();
-				_ZeBank->addOrSwitch ("Material", tCreate.getMat(m));
-				_ZeBank->addAndSwitch ("Size", "1x1");
-				vector<CZoneBankElement*> vElts;
-				_ZeBank->getSelection (vElts);
-				if (vElts.size() == 0)
-					return;
-				sint32 nRan = (sint32)(NLMISC::frand((float)vElts.size()));
-				NLMISC::clamp (nRan, (sint32)0, (sint32)(vElts.size()-1));
-				CZoneBankElement *pZBE = vElts[nRan];
-				nRan = (uint32)(NLMISC::frand (1.0) * 4);
-				NLMISC::clamp (nRan, (sint32)0, (sint32)3);
-				uint8 rot = (uint8)nRan;
-				nRan = (uint32)(NLMISC::frand (1.0) * 2);
-				NLMISC::clamp (nRan, (sint32)0, (sint32)1);
-				uint8 flip = (uint8)nRan;
-
-				add (x, y, rot, flip, pZBE);
-			}
+			pBZR->add (x, y, rot, flip, pZBE);
 		}
 	}
 
@@ -868,8 +879,8 @@ void CBuilderZoneRegion:: updateTrans (sint32 x, sint32 y)
 	if ((x < _MinX) || (x > _MaxX) || (y < _MinY) || (y > _MaxY))
 		return;
 
-	if (!_Builder->getZoneMask(x,y))
-		return;
+	//if (!_Builder->getZoneMask(x,y))
+	//	return;
 
 	// Interpret the transition info
 	x -= _MinX;
@@ -1168,7 +1179,9 @@ void CBuilderZoneRegion::del (sint32 x, sint32 y, bool transition, void *pIntern
 			setRot (x+deltaX+i, y+deltaY+j, 0);
 			setFlip (x+deltaX+i, y+deltaY+j, 0);
 			if (pUpdate != NULL)
-				pUpdate->add (x+deltaX+i, y+deltaY+j, "");
+			{
+				pUpdate->add (this, x+deltaX+i, y+deltaY+j, "");
+			}
 		}
 		if (!transition)
 			reduceMin ();
@@ -1218,6 +1231,61 @@ void CBuilderZoneRegion::set (sint32 x, sint32 y, sint32 PosX, sint32 PosY,
 			_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[i] = sMatName;
 			_Zones[(x-_MinX)+(y-_MinY)*stride].SharingCutEdges[i] = 0;
 		}
+
+		CBuilderZoneRegion *pBZR = this;
+		SZoneUnit *pZU = getZoneAmongRegions (pBZR, x-1, y-1);
+		if (pZU != NULL)
+		{
+			pZU->SharingMatNames[3] = sMatName;
+		}
+		pBZR = this;
+		pZU = getZoneAmongRegions (pBZR, x, y-1);
+		if (pZU != NULL)
+		{
+			pZU->SharingMatNames[2] = sMatName;
+			pZU->SharingMatNames[3] = sMatName;
+		}
+		pBZR = this;
+		pZU = getZoneAmongRegions (pBZR, x+1, y-1);
+		if (pZU != NULL)
+		{
+			pZU->SharingMatNames[2] = sMatName;
+		}
+		pBZR = this;
+		pZU = getZoneAmongRegions (pBZR, x-1, y);
+		if (pZU != NULL)
+		{
+			pZU->SharingMatNames[1] = sMatName;
+			pZU->SharingMatNames[3] = sMatName;
+		}
+		pBZR = this;
+		pZU = getZoneAmongRegions (pBZR, x+1, y);
+		if (pZU != NULL)
+		{
+			pZU->SharingMatNames[0] = sMatName;
+			pZU->SharingMatNames[2] = sMatName;
+		}
+		pBZR = this;
+		pZU = getZoneAmongRegions (pBZR, x-1, y+1);
+		if (pZU != NULL)
+		{
+			pZU->SharingMatNames[1] = sMatName;
+		}
+		pBZR = this;
+		pZU = getZoneAmongRegions (pBZR, x, y+1);
+		if (pZU != NULL)
+		{
+			pZU->SharingMatNames[0] = sMatName;
+			pZU->SharingMatNames[1] = sMatName;
+		}
+		pBZR = this;
+		pZU = getZoneAmongRegions (pBZR, x+1, y+1);
+		if (pZU != NULL)
+		{
+			pZU->SharingMatNames[0] = sMatName;
+		}
+
+		/*
 		if (x > _MinX)
 		{
 			_Zones[(x-1-_MinX)+(y-_MinY)*stride].SharingMatNames[1] = sMatName;
@@ -1246,6 +1314,7 @@ void CBuilderZoneRegion::set (sint32 x, sint32 y, sint32 PosX, sint32 PosY,
 			if (y < _MaxY)
 				_Zones[(x+1-_MinX)+(y+1-_MinY)*stride].SharingMatNames[0] = sMatName;
 		}
+		*/
 	}
 }
 
@@ -1527,16 +1596,3 @@ void CBuilderZoneRegion::rotFlip (SPiece &piece, uint8 rot, uint8 flip)
 		piece.h = i;
 	}
 }
-
-// ---------------------------------------------------------------------------
-/*
-const CBuilderZoneRegion&	CBuilderZoneRegion::operator=(CBuilderZoneRegion&bzr)
-{
-	this->_Zones = bzr._Zones;
-	this->_MinX = bzr._MinX;
-	this->_MinY = bzr._MinY;
-	this->_MaxX = bzr._MaxX;
-	this->_MaxY = bzr._MaxY;
-	return *this;
-}
-*/

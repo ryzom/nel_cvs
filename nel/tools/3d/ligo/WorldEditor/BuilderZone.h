@@ -123,11 +123,12 @@ public:
 // DataBase contains the graphics for the zones
 class CBuilderZone
 {
+public:
+
 	NLLIGO::CZoneBank			_ZoneBank;
 
 	CDataBase					_DataBase;
 
-	//CBuilderZoneRegion			_ZoneRegion;
 	std::vector<CBuilderZoneRegion*>	_ZoneRegions;
 	std::vector<std::string>			_ZoneRegionsName;
 	sint32								_ZoneRegionSelected;

@@ -84,6 +84,8 @@ IDR_MAINFRAME TOOLBAR DISCARDABLE  15, 16
 BEGIN
     BUTTON      ID_MODE_ZONE
     BUTTON      ID_MODE_LOGIC
+    SEPARATOR
+    BUTTON      ID_MODE_SELECT
 END
 
 
@@ -114,6 +116,7 @@ BEGIN
         MENUITEM "&Logic",                      ID_MODE_LOGIC
         MENUITEM SEPARATOR
         MENUITEM "&Select Zone",                ID_MODE_SELECT
+        MENUITEM SEPARATOR
         MENUITEM "&Undo",                       ID_MODE_UNDO
         MENUITEM "&Redo",                       ID_MODE_REDO
     END

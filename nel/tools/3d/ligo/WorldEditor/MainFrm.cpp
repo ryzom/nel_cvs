@@ -51,7 +51,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_KEYDOWN()
 	ON_WM_CLOSE()
 	ON_WM_SIZE()
-	//ON_WM_SETFOCUS()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -84,14 +83,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
-	// create a view to occupy the client area of the frame
-	/*if (!m_wndView.Create(NULL, NULL, AFX_WS_DEFAULT_VIEW,
-		CRect(0, 0, 0, 0), this, AFX_IDW_PANE_FIRST, NULL))
-	{
-		TRACE0("Failed to create view window\n");
-		return -1;
-	}*/
-	
+
 	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP
 		| CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
 		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
@@ -109,8 +101,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
-	// TODO: Delete these three lines if you don't want the toolbar to
-	//  be dockable
+	// TODO: Delete these three lines if you don't want the toolbar to be dockable
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
 	EnableDocking(CBRS_ALIGN_ANY);
 	DockControlBar(&m_wndToolBar);
@@ -124,12 +115,6 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	if( !CFrameWnd::PreCreateWindow(cs) )
 		return FALSE;
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
-/*
-	cs.dwExStyle &= ~WS_EX_CLIENTEDGE;
-	cs.lpszClass = AfxRegisterWndClass(0);
-*/
 	return TRUE;
 }
 
@@ -224,20 +209,6 @@ void CMainFrame::displayCoordinates (NLMISC::CVector &v)
 	m_wndStatusBar.SetWindowText (sTmp.c_str());
 }
 
-/*
-void CMainFrame::OnPaint()
-{
-	CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
-	dispWnd->OnPaint();
-
-	CTools *toolWnd = dynamic_cast<CTools*>(m_wndSplitter.GetPane(0,1));
-	toolWnd->OnPaint();
-
-	m_wndToolBar.Invalidate();
-	m_wndStatusBar.Invalidate();
-}*/
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
@@ -257,6 +228,7 @@ void CMainFrame::Dump(CDumpContext& dc) const
 }
 
 #endif //_DEBUG
+
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
@@ -329,7 +301,7 @@ void CMainFrame::OnMenuFileUnloadLogic ()
 // ---------------------------------------------------------------------------
 void CMainFrame::OnMenuFileOpenLogic ()
 {
-	CFileDialog dialog (true, "logic");
+	CFileDialog dialog (true, "logic", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, "Logic (*.logic)|*.logic", this);
 	if (dialog.DoModal() == IDOK)
 	{
 		_PRegionBuilder.load ((LPCTSTR)dialog.GetFileName());
@@ -376,7 +348,7 @@ void CMainFrame::OnMenuFileUnloadLandscape ()
 // ---------------------------------------------------------------------------
 void CMainFrame::OnMenuFileOpenLandscape ()
 {
-	CFileDialog dialog (true, "land");
+	CFileDialog dialog (true, "land", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, "Landscape (*.land)|*.land", this);
 	if (dialog.DoModal() == IDOK)
 	{
 		_ZoneBuilder.load ((LPCTSTR)dialog.GetFileName());
@@ -391,6 +363,7 @@ void CMainFrame::OnMenuFileSaveLandscape ()
 	if (dialog.DoModal() == IDOK)
 	{
 		_ZoneBuilder.save ((LPCTSTR)dialog.GetFileName());
+		_ZoneBuilder.stackReset ();
 	}	
 }
 

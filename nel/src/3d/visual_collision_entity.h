@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.h
  * <File description>
  *
- * $Id: visual_collision_entity.h,v 1.10 2002/07/23 12:20:31 corvazier Exp $
+ * $Id: visual_collision_entity.h,v 1.11 2002/12/30 13:57:39 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,10 +175,10 @@ private:
 	CVector								_LastGPTPosOutput;
 	CTrianglePatch						_LastGPTTrianglePatch;
 
-
 	/// Fast "2D" test of a triangle against ray P0 P1.
-	bool		triangleIntersect2DGround(CTriangle &tri, const CVector &pos0);
-	bool		triangleIntersect2DCeil(CTriangle &tri, const CVector &pos0);
+	static bool	triangleIntersect2DGround(CTriangle &tri, const CVector &pos0);
+	static bool	triangleIntersect2DCeil(CTriangle &tri, const CVector &pos0);
+
 	/// Fast "2D" test of a triangle against ray P0 P1.
 	bool		triangleIntersect(CTriangle &tri, const CVector &pos0, const CVector &pos1, CVector &hit);
 

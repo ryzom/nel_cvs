@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.19 2004/07/29 09:06:07 lecroart Exp $
+ * $Id: animation.cpp,v 1.19.6.1 2004/11/19 10:21:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -162,7 +162,7 @@ void	playAnimation (CEntity &entity, EAnim anim, bool force)
 	CAnimationTime currentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
 
 	// Can't do animation without skeleton
-	if (!entity.Skeleton.empty())
+	if (entity.Skeleton.empty())
 		return;
 
 	// If the first time we play an animation, creates the animation class

@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.25 2003/01/15 16:06:11 lecroart Exp $
+ * $Id: login_server.cpp,v 1.24 2003/01/13 14:06:25 lecroart Exp $
  *
  */
 
@@ -263,7 +263,7 @@ void cfcbTimeBeforeEraseCookie(CConfigFile::CVar &var)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void CLoginServer::init (const string &listenAddress)
+void CLoginServer::init (string &listenAddress)
 {
 	// connect to the welcome service
 	connectToWS ();

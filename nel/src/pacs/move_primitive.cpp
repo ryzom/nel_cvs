@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.15 2003/01/15 15:26:25 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.14 2002/05/24 12:34:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -195,7 +195,8 @@ void CMovePrimitive::removeFromWorldImage (uint8 worldImage)
 	CPrimitiveWorldImage *wI=getWorldImage (worldImage);
 
 	// Remove from cells
-	wI->deleteIt (*_Container, worldImage);
+	for (uint i=0; i<4; i++)
+		wI->removeMoveElement (i, *_Container, worldImage);
 
 	// Set as non inserted
 	wI->setInWorldImageFlag (false);

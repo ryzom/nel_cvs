@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.23 2003/01/15 15:48:58 lecroart Exp $
+# $Id: Makefile.am,v 1.22 2003/01/10 09:40:59 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -29,7 +29,6 @@ libnelnet_la_SOURCES = buf_client.cpp                      \
                        sock.cpp                            \
                        tcp_sock.cpp                        \
                        udp_sock.cpp                        \
-                       udp_sim_sock.cpp                    \
                        unitime.cpp                         \
                        unified_network.cpp                 \
                        unified_network_mt.cpp              \

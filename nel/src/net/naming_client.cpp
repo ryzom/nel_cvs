@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.56 2003/01/16 09:16:12 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.55 2002/09/16 14:58:09 lecroart Exp $
  *
  */
 
@@ -352,7 +352,7 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const std::
 	{
 		_MySId = sid;
 		_RegisteredServices.insert (make_pair (*RegisteredSID, name));
-		nldebug ("NC: Registered service with sid %s-%hu at %s", name.c_str(), (uint16)*RegisteredSID, addr[0].asString().c_str());
+		nldebug ("NC: Registered service with sid %s-%hu at %s", name.c_str(), (uint16)RegisteredSID, addr[0].asString().c_str());
 	}
 	else
 	{

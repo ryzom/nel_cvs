@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.22 2003/01/16 09:57:24 lecroart Exp $
+ * $Id: command.cpp,v 1.20 2003/01/08 10:45:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -362,16 +362,12 @@ bool ICommand::exists (std::string &commandName)
 
 NLMISC_COMMAND(help,"display help on a specific variable/commands or on all variables and commands", "[<variable>|<command>]")
 {	
-	nlassert (Commands != NULL);
-	
 	if (args.size() == 0)
 	{
 		// display all commands
-		log.displayNL("There's %d variables and commands: ", (*Commands).size());
-		uint i = 0;
-		for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++, i++)
+		for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
 		{
-			log.displayNL("%2d %-15s: %s", i, (*comm).first.c_str(), (*comm).second->HelpString.c_str());
+			log.displayNL("%-15s: %s", (*comm).first.c_str(), (*comm).second->HelpString.c_str());
 		}
 	}
 	else if (args.size() == 1)

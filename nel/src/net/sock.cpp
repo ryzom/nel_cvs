@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.30 2003/01/16 09:16:08 lecroart Exp $
+ * $Id: sock.cpp,v 1.29 2002/12/16 18:02:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,11 +200,11 @@ CSock::CSock( bool logging ) :
 	_NonBlocking( false ),
 	_BytesReceived( 0 ),
 	_BytesSent( 0 ),
-	_TimeoutS( 0 ),
-	_TimeoutMs( 0 ),
 	_MaxReceiveTime( 0 ),
-	_MaxSendTime( 0 )
-	{
+	_MaxSendTime( 0 ),
+	_TimeoutS( 0 ),
+	_TimeoutMs( 0 )
+{
 	nlassert( CSock::_Initialized );
 	/*{
 		CSynchronized<bool>::CAccessor sync( &_SyncConnected );

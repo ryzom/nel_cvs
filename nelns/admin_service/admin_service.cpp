@@ -3,7 +3,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.24 2003/01/16 09:26:48 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.23 2003/01/09 17:08:32 lecroart Exp $
  *
  */
 
@@ -71,7 +71,7 @@ using namespace NLNET;
 
 struct CRequest
 {
-	CRequest (uint32 id, TSockId from) : Id(id), NbWaiting(0), NbReceived(0), From(from), NbRow(0), NbLines(1) { }
+	CRequest (uint32 id, TSockId from) : Id(id), NbWaiting(0), NbReceived(0), NbRow(0), From(from), NbLines(1) { }
 
 	uint32			Id;
 	uint			NbWaiting;
@@ -164,7 +164,7 @@ typedef list<CService>::iterator SIT;
 
 struct CAdminExecutorService
 {
-	CAdminExecutorService (const string &name, uint16 sid) : SId(sid), Name(name) { }
+	CAdminExecutorService (const string &name, uint16 sid) : Name(name), SId(sid) { }
 
 	uint16	SId;			/// uniq number to identify the AES
 	string	Name;			/// name of the admin executor service

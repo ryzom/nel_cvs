@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.35 2003/01/15 11:18:51 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.34 2003/01/13 14:13:33 lecroart Exp $
  *
  */
 
@@ -1582,8 +1582,6 @@ NLMISC_COMMAND (sendAdminEmail, "Send an email to admin", "<text>")
 		text += args[i]+" ";
 	}
 	sendAdminEmail(text.c_str());
-	
-	return true;
 }
 
 
@@ -1687,6 +1685,4 @@ NLMISC_COMMAND (system, "Execute a system() call", "<command>")
 	}
 	
 	CFile::deleteFile(fn);
-
-	return true;
 }

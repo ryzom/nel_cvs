@@ -236,6 +236,8 @@ void usage()
 	printf (" Pack the directory to a bnp file\n");
 	printf ("   bnp_make /u <bnp_file>\n");
 	printf (" Unpack the bnp file to a directory\n");
+	printf ("   bnp_make /l <bnp_file>\n");
+	printf (" List the files contained in the bnp file\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -400,6 +402,51 @@ int main (int nNbArg, char **ppArgs)
 		CFile::createDirectory(dirName);
 
 		unpack (dirName);
+
+		return 1;
+	}
+
+	if ((strcmp(ppArgs[1], "/l") == 0) || (strcmp(ppArgs[1], "/L") == 0) ||
+		(strcmp(ppArgs[1], "-l") == 0) || (strcmp(ppArgs[1], "-L") == 0))
+	{
+		int i;
+		string path;
+		gDestBNPFile = ppArgs[2];
+		if ((gDestBNPFile.rfind('/') != string::npos) || (gDestBNPFile.rfind('/') != string::npos))
+		{
+			int pos = gDestBNPFile.rfind('/');
+			if (pos == string::npos)
+				pos = gDestBNPFile.rfind('/');
+			for (i = 0; i <= pos; ++i)
+				path += gDestBNPFile[i];
+			string wholeName = gDestBNPFile;
+			gDestBNPFile = "";
+			for (; i < (int)wholeName.size(); ++i)
+				gDestBNPFile += wholeName[i];
+			if (CPath::setCurrentPath(path.c_str()))
+			{
+				path = CPath::getCurrentPath();
+			}
+			else
+			{
+				nlwarning ("ERROR (bnp_make.exe) : can't set current directory to %s", path.c_str());
+				return -1;
+			}
+		}
+		if (stricmp (gDestBNPFile.c_str()+gDestBNPFile.size()-4, ".bnp") != 0)
+		{
+			gDestBNPFile += ".bnp";
+		}
+		string dirName;
+		for (i = 0; i < (int)(gDestBNPFile.size()-4); ++i)
+			dirName += gDestBNPFile[i];
+
+		// Unpack a bnp file
+		if (!gBNPHeader.read (gDestBNPFile))
+			return -1;
+
+		for (i = 0; i < gBNPHeader.Files.size(); ++i)
+			printf ("%s\n", gBNPHeader.Files[i].Name);
 
 		return 1;
 	}

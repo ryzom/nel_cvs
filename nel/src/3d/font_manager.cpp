@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.21 2001/01/29 18:16:30 valignat Exp $
+ * $Id: font_manager.cpp,v 1.22 2001/03/16 16:51:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,9 @@ NLMISC::CSmartPtr<CMaterial> CFontManager::getFontMaterial(CFontDescriptor desc)
 
 		// creating new CMaterial and adding it at the begining of the list
 		pTexFont = new CTextureFont(desc);
+
+		// yoyo: may do this sometimes...
+		//pTexFont->setFilterMode(ITexture::Nearest, ITexture::NearestMipMapOff);
 
 		// generating texture
 		pTexFont->generate();

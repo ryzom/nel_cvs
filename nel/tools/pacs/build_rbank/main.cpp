@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.14 2004/01/13 16:36:59 legros Exp $
+ * $Id: main.cpp,v 1.15 2004/01/21 16:57:32 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,7 @@ bool												ComputeElevation;
 bool												ComputeLevels;
 vector<string>										ZoneNames;
 string												ZoneExt;
-string												ZoneNHExt;
+string												ZoneNHExt = ".zonenhw";
 string												ZoneLookUpPath;
 bool												ProcessAllPasses;
 bool												CheckPrims;

@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.15 2001/04/06 14:55:05 corvazier Exp $
+ * $Id: driver_material_inline.h,v 1.16 2001/04/18 09:18:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,19 +47,6 @@ inline ITexture*		CMaterial::getTexture(uint8 n)
 { 
 	nlassert(n<IDRV_MAT_MAXTEXTURES);
 	return(_Textures[n]); 
-}
-
-inline void CMaterial::setTexture(uint8 n, ITexture* ptex)
-{
-	nlassert(n<IDRV_MAT_MAXTEXTURES);
-	_Textures[n]=ptex;
-	_Touched|=IDRV_TOUCHED_TEX[n];
-}
-
-inline void CMaterial::setShader(TShader val)
-{
-	_ShaderType=val;
-	_Touched|=IDRV_TOUCHED_SHADER;
 }
 
 inline void CMaterial::setSrcBlend(TBlend val)
@@ -154,6 +141,47 @@ inline void CMaterial::setLighting(	bool active, bool DefMat,
 
 
 // ***************************************************************************
+inline void	CMaterial::setEmissive( CRGBA emissive)
+{
+	_Emissive= emissive;
+	_Touched|=IDRV_TOUCHED_LIGHTING;
+}
+// ***************************************************************************
+inline void	CMaterial::setAmbient( CRGBA ambient)
+{
+	_Ambient= ambient;
+	_Touched|=IDRV_TOUCHED_LIGHTING;
+}
+// ***************************************************************************
+inline void	CMaterial::setDiffuse( CRGBA diffuse)
+{
+	// Keep opacity.
+	_Diffuse.R= diffuse.R;
+	_Diffuse.G= diffuse.G;
+	_Diffuse.B= diffuse.B;
+	_Touched|=IDRV_TOUCHED_LIGHTING;
+}
+// ***************************************************************************
+inline void	CMaterial::setOpacity( uint8	opa )
+{
+	_Diffuse.A= opa;
+	_Touched|=IDRV_TOUCHED_LIGHTING;
+}
+// ***************************************************************************
+inline void	CMaterial::setSpecular( CRGBA specular)
+{
+	_Specular= specular;
+	_Touched|=IDRV_TOUCHED_LIGHTING;
+}
+// ***************************************************************************
+inline void	CMaterial::setShininess( float shininess )
+{
+	_Shininess= shininess;
+	_Touched|=IDRV_TOUCHED_LIGHTING;
+}
+
+
+// ***************************************************************************
 // ***************************************************************************
 // ***************************************************************************
 
@@ -162,12 +190,14 @@ inline void CMaterial::setLighting(	bool active, bool DefMat,
 // ***************************************************************************
 inline void					CMaterial::texEnvOpRGB(uint stage, TTexOperator ope)
 {
+	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].Env.OpRGB= ope;
 }
 // ***************************************************************************
 inline void					CMaterial::texEnvArg0RGB(uint stage, TTexSource src, TTexOperand oper)
 {
+	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].Env.SrcArg0RGB= src;
 	_TexEnvs[stage].Env.OpArg0RGB= oper;
@@ -175,6 +205,7 @@ inline void					CMaterial::texEnvArg0RGB(uint stage, TTexSource src, TTexOperand
 // ***************************************************************************
 inline void					CMaterial::texEnvArg1RGB(uint stage, TTexSource src, TTexOperand oper)
 {
+	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
 	nlassert(src!=Texture);
 	_TexEnvs[stage].Env.SrcArg1RGB= src;
@@ -185,12 +216,14 @@ inline void					CMaterial::texEnvArg1RGB(uint stage, TTexSource src, TTexOperand
 // ***************************************************************************
 inline void					CMaterial::texEnvOpAlpha(uint stage, TTexOperator ope)
 {
+	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].Env.OpAlpha= ope;
 }
 // ***************************************************************************
 inline void					CMaterial::texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper)
 {
+	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
 	nlassert(oper==SrcAlpha || oper==InvSrcAlpha);
 	_TexEnvs[stage].Env.SrcArg0Alpha= src;
@@ -199,6 +232,7 @@ inline void					CMaterial::texEnvArg0Alpha(uint stage, TTexSource src, TTexOpera
 // ***************************************************************************
 inline void					CMaterial::texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper)
 {
+	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
 	nlassert(oper==SrcAlpha || oper==InvSrcAlpha);
 	nlassert(src!=Texture);
@@ -210,6 +244,7 @@ inline void					CMaterial::texEnvArg1Alpha(uint stage, TTexSource src, TTexOpera
 // ***************************************************************************
 inline void					CMaterial::texConstantColor(uint stage, CRGBA color)
 {
+	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].ConstantColor= color;
 }
@@ -218,21 +253,48 @@ inline void					CMaterial::texConstantColor(uint stage, CRGBA color)
 // ***************************************************************************
 inline uint32				CMaterial::getTexEnvMode(uint stage)
 {
+	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
 	return _TexEnvs[stage].EnvPacked;
 }
 // ***************************************************************************
 inline void					CMaterial::setTexEnvMode(uint stage, uint32 packed)
 {
+	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].EnvPacked= packed;
 }
 // ***************************************************************************
 inline CRGBA				CMaterial::getTexConstantColor(uint stage)
 {
+	nlassert(_ShaderType==CMaterial::Normal);
 	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
 	return _TexEnvs[stage].ConstantColor;
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+inline void					CMaterial::setUserColor(CRGBA userColor)
+{
+	nlassert(_ShaderType==CMaterial::UserColor);
+	// setup stage 0 constant color (don't use texConstantColor() because of assert).
+	_TexEnvs[0].ConstantColor= userColor;
+}
+
+// ***************************************************************************
+inline CRGBA				CMaterial::getUserColor() const
+{
+	nlassert(_ShaderType==CMaterial::UserColor);
+	// setup stage 0 constant color (don't use getTexConstantColor() because of assert).
+	return _TexEnvs[0].ConstantColor;
+}
+
 
 
 }

@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.2 2001/02/28 16:19:51 berenguier Exp $
+ * $Id: instance_user.h,v 1.3 2001/04/18 09:18:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #include "nel/3d/transform_user.h"
 #include "nel/3d/transform.h"
 #include "nel/3d/transform_shape.h"
+#include "nel/3d/mesh_instance.h"
+#include "nel/3d/instance_material_user.h"
 
 
 namespace NL3D {
@@ -47,6 +49,14 @@ namespace NL3D {
 class CInstanceUser : virtual public UInstance, public CTransformUser
 {
 public:
+	/// This is the SAME pointer than _Transform, but correctly casted.
+	CMeshInstance			*_Instance;
+
+	/// This is a mirror of _Instance->Materials
+	std::vector<CInstanceMaterialUser>	_Materials;
+
+
+public:
 
 	/// \name Object
 	// @{
@@ -54,11 +64,39 @@ public:
 	CInstanceUser(CScene *scene, IModel *trans) : 
 	  CTransformUser(scene, trans)
 	{
+		nlassert(dynamic_cast<CMeshInstance*>(_Transform));
+		_Instance= (CMeshInstance*)_Transform;
+
+		// create user mats.
+		uint	numMat= _Instance->Materials.size();
+		_Materials.reserve(numMat);
+		for(uint i=0;i<numMat;i++)
+		{
+			_Materials.push_back(&_Instance->Materials[i]);
+		}
 	}
 	virtual	~CInstanceUser()
 	{
 		// deleted in CTransformUser.
+		_Instance= NULL;
+		// user mats are auto deleted.
 	}
+	// @}
+
+
+	/// \name Material access.
+	// @{
+	virtual	uint		getNumMaterials() const
+	{
+		return _Materials.size();
+	}
+	virtual	UInstanceMaterial		&getMaterial(uint materialId)
+	{
+		if(materialId>=_Materials.size())
+			nlerror("getMaterial(): bad materialId");
+		return dynamic_cast<UInstanceMaterial&>(_Materials[materialId]);
+	}
+
 	// @}
 
 };

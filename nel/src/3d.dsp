@@ -775,6 +775,14 @@ SOURCE=..\include\nel\3d\instance_group_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\instance_material_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\instance_material_user.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\instance_user.cpp
 # End Source File
 # Begin Source File
@@ -900,6 +908,10 @@ SOURCE=..\include\nel\3d\tmp\u_instance.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\tmp\u_instance_group.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tmp\u_instance_material.h
 # End Source File
 # Begin Source File
 

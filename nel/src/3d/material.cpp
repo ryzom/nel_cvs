@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.16 2001/03/26 14:55:28 berenguier Exp $
+ * $Id: material.cpp,v 1.17 2001/04/18 09:19:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,6 +172,67 @@ void		CMaterial::serial(NLMISC::IStream &f)
 		// All states of material are modified.
 		_Touched= IDRV_TOUCHED_ALL;
 
+}
+
+
+// ***************************************************************************
+void		CMaterial::setShader(TShader val)
+{
+	// First, reset all textures.
+	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+		setTexture(i ,NULL);
+
+	// If userColor, use TexEnv caps (we got it, so use it :) ).
+	if(val== CMaterial::UserColor)
+	{
+		// force normal, to setup TexEnvMode correclty. 
+		_ShaderType=CMaterial::Normal;
+
+		// First stage, interpolate Constant and texture with Alpha of texture.
+		texEnvOpRGB(0, InterpolateTexture);
+		texEnvArg0RGB(0, Texture, SrcColor);
+		texEnvArg1RGB(0, Constant, SrcColor);
+		// And just use Alpha Diffuse.
+		texEnvOpAlpha(0, Replace);
+		texEnvArg0Alpha(0, Previous, SrcAlpha);
+
+		// Second stage, modulate result with diffuse color.
+		texEnvOpRGB(1, Modulate);
+		texEnvArg0RGB(1, Previous, SrcColor);
+		texEnvArg1RGB(1, Diffuse, SrcColor);
+		// And just use Alpha Diffuse.
+		texEnvOpAlpha(1, Replace);
+		texEnvArg0Alpha(1, Previous, SrcAlpha);
+	}
+
+	_ShaderType= val;
+	_Touched|=IDRV_TOUCHED_SHADER;
+}
+
+
+// ***************************************************************************
+void CMaterial::setTexture(uint8 n, ITexture* ptex)
+{
+	nlassert(n<IDRV_MAT_MAXTEXTURES);
+
+	// User Color material?
+	if( _ShaderType== CMaterial::UserColor)
+	{
+		// user color. Only texture 0 can be set.
+		nlassert( n==0 );
+
+		// Affect the 2 first textures.
+		_Textures[0]=ptex;
+		_Textures[1]=ptex;
+		_Touched|=IDRV_TOUCHED_TEX[0];
+		_Touched|=IDRV_TOUCHED_TEX[1];
+	}
+	// Normal material?
+	else
+	{
+		_Textures[n]=ptex;
+		_Touched|=IDRV_TOUCHED_TEX[n];
+	}
 }
 
 

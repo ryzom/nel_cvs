@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.1 2001/02/28 16:19:35 berenguier Exp $
+ * $Id: u_instance.h,v 1.2 2001/04/18 09:18:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,9 @@ namespace NL3D
 {
 
 
+class	UInstanceMaterial;
+
+
 // ***************************************************************************
 /**
  * Game interface for manipulating Objects, animations etc...
@@ -53,6 +56,14 @@ protected:
 
 public:
 
+
+	/// \name Material access.
+	// @{
+	/// return number of materials this mesh instance use.
+	virtual	uint				getNumMaterials() const =0;
+	/// return a local access on a material, to change its values. (NB: overwrited, if animated).
+	virtual	UInstanceMaterial	&getMaterial(uint materialId)=0;
+	// @}
 
 };
 

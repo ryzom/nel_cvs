@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.14 2001/04/06 14:55:16 corvazier Exp $
+ * $Id: material.h,v 1.15 2001/04/18 09:18:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,16 @@ public:
 
 	enum ZFunc				{ always=0,never,equal,notequal,less,lessequal,greater,greaterequal, zfuncCount };
 	enum TBlend				{ one=0, zero, srcalpha, invsrcalpha, srccolor, invsrccolor, blendCount };
-	enum TShader			{ Normal=0, Bump, shaderCount};
+	/**
+	 * Normal shader:
+	 *	- use simple multitexturing. see texEnv*() methods.
+	 * Bump:
+	 *	- not implemented yet.
+	 * UserColor:
+	 *	- UserColor (see setUserColor()) is blended with precomputed texture/textureAlpha.
+	 *	- Alpha Blending ignore Alpha of texture (of course :) ), but use Alpha diffuse (vertex/material color).
+	 */
+	enum TShader			{ Normal=0, Bump, UserColor, shaderCount};
 
 	/// \name Texture Env Modes.
 	// @{
@@ -137,12 +146,19 @@ public:
 	// @}
 
 	/** Set the shader for this material.
-	 *
+	 * All textures are reseted!!
 	 */
 	void					setShader(TShader val);
+	/// get the current material shadertype.
+	TShader					getShader() const {return _ShaderType;}
 
 	/// \name Texture.
 	// @{
+	/**
+	 * set a texture for a special stage. Different usage according to shader:
+	 *	- Normal shader do multitexturing (see texEnv*() methods).
+	 *	- UserColor assert if stage!=0. (NB: internal only: UserColor setup texture to stage 0 and 1).
+	 */ 
 	void 					setTexture(uint8 stage, ITexture* ptex);
 
 	ITexture*				getTexture(uint8 stage);
@@ -187,6 +203,8 @@ public:
 	// @{
 	/// The Color is used only if lighting is disabled. Also, color is replaced by per vertex color (if any).
 	void					setColor(CRGBA rgba);
+
+	/// Batch setup lighting. Opacity is in diffuse.A.
 	void					setLighting(	bool active, bool DefMat=true,
 											CRGBA emissive=CRGBA(0,0,0), 
 											CRGBA ambient=CRGBA(0,0,0), 
@@ -194,19 +212,35 @@ public:
 											CRGBA specular=CRGBA(0,0,0),
 											float shininess= 10);
 
-	bool					isLighted() {return (_Flags&IDRV_MAT_LIGHTING)!=0;}
+	/// Set the emissive part ot material. Usefull only if setLighting(true, false) has been done.
+	void					setEmissive( CRGBA emissive=CRGBA(0,0,0) );
+	/// Set the Ambient part ot material. Usefull only if setLighting(true, false) has been done.
+	void					setAmbient( CRGBA ambient=CRGBA(0,0,0) );
+	/// Set the Diffuse part ot material. Usefull only if setLighting(true, false) has been done. NB: opacity is NOT copied from diffuse.A.
+	void					setDiffuse( CRGBA diffuse=CRGBA(0,0,0) );
+	/// Set the Opacity part ot material. Usefull only if setLighting(true, false) has been done.
+	void					setOpacity( uint8	opa );
+	/// Set the specular part ot material. Usefull only if setLighting(true, false) has been done.
+	void					setSpecular( CRGBA specular=CRGBA(0,0,0) );
+	/// Set the shininess part ot material. Usefull only if setLighting(true, false) has been done.
+	void					setShininess( float shininess );
+
+
+	bool					isLighted() const {return (_Flags&IDRV_MAT_LIGHTING)!=0;}
 
 	CRGBA					getColor(void) const { return(_Color); }
 	CRGBA					getEmissive() const { return _Emissive;}
 	CRGBA					getAmbient() const { return _Ambient;}
+	/// return diffuse part. NB: A==opacity.
 	CRGBA					getDiffuse() const { return _Diffuse;}
+	uint8					getOpacity() const { return _Diffuse.A;}
 	CRGBA					getSpecular() const { return _Specular;}
 	float					getShininess() const { return _Shininess;}
 	// @}
 
 
-	/// \name Texture environnement.
-	/** This part is valid for Normal shaders. It maps the EXT_texture_env_combine opengl extension.
+	/// \name Texture environnement. Normal shader only.
+	/** This part is valid for Normal shaders (nlassert). It maps the EXT_texture_env_combine opengl extension.
 	 * A stage is enabled iff his texture is !=NULL. By default, all stages are setup to Modulate style:
 	 *  AlphaOp=RGBOp= Modulate, RGBArg0= TextureSrcColor, RGBArg1= PreviousSrcColor,
 	 *  AlphaArg0= TextureSrcAlpha, AlphaArg1= PreviousSrcAlpha.  ConstantColor default to White(255,255,255,255).
@@ -231,6 +265,16 @@ public:
 	/// For push/pop only, set the packed version of the environnment mode.
 	void					setTexEnvMode(uint stage, uint32 packed);
 	CRGBA					getTexConstantColor(uint stage);
+	// @}
+
+
+	/// \name Texture UserColor. UserColor shader only.
+	/** This part is valid for Normal shaders (nlassert).
+	 * \see TShader.
+	 */
+	// @{
+	void					setUserColor(CRGBA userColor);
+	CRGBA					getUserColor() const;
 	// @}
 
 

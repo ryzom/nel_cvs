@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.23 2004/01/29 10:37:29 besson Exp $
+ * $Id: nel_export_script.cpp,v 1.24 2004/02/11 12:00:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,7 @@ def_visible_primitive ( export_collision,	"NelExportCollision" );
 def_visible_primitive ( export_pacs_primitives,	"NelExportPACSPrimitives" );
 def_visible_primitive ( export_lod_character,	"NelExportLodCharacter" );
 def_visible_primitive ( node_properties,	"NelNodeProperties" );
+def_visible_primitive ( mirror_physique, 	"NelMirrorPhysique" );
 
 char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
 char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel] [b8BitsLightmap]";
@@ -737,6 +738,51 @@ Value* node_properties_cf (Value** arg_list, int count)
 	// Call the dialog
 	theCNelExport.OnNodeProperties (listNode);
 
+	return &true_value;
+}
+
+
+// ***************************************************************************
+// Physique Mirror
+Value* mirror_physique_cf (Value** arg_list, int count)
+{
+	uint i;
+	
+	// **** retrieve args.
+	// Make sure we have the correct number of arguments (3)
+	check_arg_count(NelMirrorPhysique , 3, count);
+	
+	// Check to see if the arguments match up to what we expect
+	char *message = "NelMirrorPhysique [node] [vert_list_in] [threshold]";
+	
+	//type_check
+	type_check (arg_list[0], MAXNode, message);
+	type_check (arg_list[1], Array, message);
+	type_check (arg_list[2], Float, message);
+	
+	// get the node
+	INode	*node= arg_list[0]->to_node();
+	
+	// get vertices indices
+	Array* array=(Array*)arg_list[1];
+	std::vector<uint>	vertIn;
+	vertIn.resize(array->size);
+	for (i=0; i<(uint)array->size; i++)
+	{
+		type_check (array->get (i+1), Integer, message);
+		vertIn[i]= array->get (i+1)->to_int() - 1;
+	}
+	
+	// get threshold
+	float	threshold= arg_list[2]->to_float();
+	
+	// **** Mirror!
+	// Get time
+	TimeValue time=MAXScript_interface->GetTime();
+	
+	// do it
+	theCNelExport._ExportNel->mirrorPhysiqueSelection(*node, time, vertIn, threshold);
+	
 	return &true_value;
 }
 

@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.19 2002/08/27 12:40:46 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.20 2004/02/11 12:00:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1297,4 +1297,413 @@ void CExportNel::enableSkinModifier (INode& node, bool enable)
 }
 
 // ***************************************************************************
+#define TEMP_MAX_WEIGHT	8
+struct CTempSkinVertex
+{
+	// World Position. TODO: world,local????
+	NLMISC::CVector		Pos;
+	// The number of weight. TODO: more
+	uint				NumWeight;
+	INode				*Bone[TEMP_MAX_WEIGHT];
+	float				Weight[TEMP_MAX_WEIGHT];
+	// If this vertex belongs to the input (=> not be modified)
+	bool				Input;
+	// If this vertex is an output modified related to mirroring (NB: only 
+	bool				Mirrored;
+
+	CTempSkinVertex()
+	{
+		NumWeight= 0;
+		Input= false;
+		Mirrored= false;
+	}
+};
+
+struct CSortVertex 
+{
+	uint	Index;
+	float	SqrDist;
+	bool	operator<(const CSortVertex &o) const
+	{
+		return SqrDist < o.SqrDist;
+	}
+};
+
+// get the bone Side -1,0,1
+static sint	getBoneSide(INode *bone, std::string &mirrorName)
+{
+	sint	side= 0;
+	sint	pos;
+	mirrorName= bone->GetName();
+
+	if((pos= mirrorName.find(" R "))!=std::string::npos)
+	{
+		side= 1;
+		mirrorName[pos+1]= 'L';
+	}
+	else if((pos= mirrorName.find(" L "))!=std::string::npos)
+	{
+		side= -1;
+		mirrorName[pos+1]= 'R';
+	}
+
+	return side;
+}
+
+// From a bone, retrieve the bone mirror (by name: R / L). NB: if not found, return same (eg: important for mirror on spine).
+static INode *getMirrorBone(const std::vector<INode*>	&skeletonNodes, INode *bone)
+{
+	// TODO: optimize doing a map bone / mirrored bone
+	std::string	mirrorName;
+	sint	bs= getBoneSide(bone, mirrorName);
+
+	// if not a middle bone
+	if(bs!=0)
+	{
+		// find
+		for(uint i=0;i<skeletonNodes.size();i++)
+		{
+			if(mirrorName == skeletonNodes[i]->GetName())
+				return skeletonNodes[i];
+		}
+	}
+
+	// if fails, return him
+	return bone;
+}
+
+bool CExportNel::mirrorPhysiqueSelection(INode &node, TimeValue tvTime, const std::vector<uint> &vertIn, 
+		float threshold)
+{
+	bool	ok;
+	uint	i;
+
+	// no vertices selected?
+	if(vertIn.empty())
+		return true;
+
+	// **** Get all the skeleton node 
+	std::vector<INode*>		skeletonNodes;
+	INode	*skelRoot= getSkeletonRootBone(node);
+	if(!skelRoot)
+		return false;
+	getObjectNodes(skeletonNodes, tvTime, skelRoot);
+
+
+	// **** Build the Vector (world) part
+	std::vector<CTempSkinVertex>	tempVertex;
+	uint	vertCount;
+
+	// Get a pointer on the object's node.
+    Object *obj = node.EvalWorldState(tvTime).obj;
+
+	// Check if there is an object
+	ok= false;
+	if (obj)
+	{		
+
+		// Object can be converted in triObject ?
+		if (obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) 
+		{ 
+			// Get a triobject from the node
+			TriObject *tri = (TriObject*)obj->ConvertToType(tvTime, Class_ID(TRIOBJ_CLASS_ID, 0));
+
+			// Note that the TriObject should only be deleted
+			// if the pointer to it is not equal to the object
+			// pointer that called ConvertToType()
+			bool deleteIt=false;
+			if (obj != tri) 
+				deleteIt = true;
+
+			// Get the node matrix. TODO: Matrix headhache?
+			/*Matrix3 nodeMatrixMax;
+			CMatrix nodeMatrix;
+			getLocalMatrix (nodeMatrixMax, node, tvTime);
+			convertMatrix (nodeMatrix, nodeMatrixMax);*/
+
+			// retrive Position geometry
+			vertCount= tri->NumPoints();
+			tempVertex.resize(vertCount);
+			for(uint i=0;i<vertCount;i++)
+			{
+				Point3 v= tri->GetPoint(i);
+				tempVertex[i].Pos.set(v.x, v.y, v.z);
+			}
+
+			// Delete the triObject if we should...
+			if (deleteIt)
+				delete tri;
+
+			// ok!
+			ok= true;
+		}
+	}
+	if(!ok)
+		return false;
+
+	// no vertices? abort
+	if(vertCount==0)
+		return true;
+
+
+	// **** Mark all Input vertices
+	for(i=0;i<vertIn.size();i++)
+	{
+		nlassert(vertIn[i]<vertCount);
+		tempVertex[vertIn[i]].Input= true;
+	}
+
+
+	// **** Build the ouput vertices
+	std::vector<uint>	vertOut;
+	vertOut.reserve(tempVertex.size());
+
+	// Build the in bbox
+	CAABBox		bbox;
+	bbox.setCenter(tempVertex[vertIn[0]].Pos);
+	for(i=0;i<vertIn.size();i++)
+	{
+		bbox.extend(tempVertex[vertIn[i]].Pos);
+	}
+	bbox.setHalfSize(bbox.getHalfSize()+CVector(threshold, threshold, threshold));
+
+	// mirror in X
+	CVector		vMin= bbox.getMin();
+	CVector		vMax= bbox.getMax();
+	vMin.x= -vMin.x;
+	vMax.x= -vMax.x;
+	std::swap(vMin.x, vMax.x);
+	bbox.setMinMax(vMin, vMax);
+
+	// get all out vertices in the mirrored bbox.
+	for(i=0;i<tempVertex.size();i++)
+	{
+		if(bbox.include(tempVertex[i].Pos))
+		{
+			vertOut.push_back(i);
+		}
+	}
+
+
+	// **** Build the skin information
+	// Get the skin modifier
+	Modifier* skin=getModifier (&node, PHYSIQUE_CLASS_ID);
+
+	// Found it ?
+	ok= false;
+	if (skin)
+	{
+		// Get a com_skin2 interface
+		IPhysiqueExport *physiqueInterface=(IPhysiqueExport *)skin->GetInterface (I_PHYINTERFACE);
+
+		// Found com_skin2 ?
+		if (physiqueInterface)
+		{
+			// Get local data
+			IPhyContextExport *localData= physiqueInterface->GetContextInterface(&node);
+
+			// Found ?
+			if (localData)
+			{
+				// Use rigid export
+				localData->ConvertToRigid (TRUE);
+
+				// Allow blending
+				localData->AllowBlending (TRUE);
+
+				// Skinned
+				ok=true;
+
+				// TODO?
+				nlassert(tempVertex.size()<=(uint)localData->GetNumberVertices());
+
+				// For each vertex
+				for (uint vert=0; vert<vertCount; vert++)
+				{
+					// Get a vertex interface
+					IPhyVertexExport *vertexInterface= localData->GetVertexInterface (vert);
+
+					// Check if it is a rigid vertex or a blended vertex
+					IPhyRigidVertex			*rigidInterface=NULL;
+					IPhyBlendedRigidVertex	*blendedInterface=NULL;
+					int type=vertexInterface->GetVertexType ();
+					if (type==RIGID_TYPE)
+					{
+						// this is a rigid vertex
+						rigidInterface=(IPhyRigidVertex*)vertexInterface;
+					}
+					else
+					{
+						// It must be a blendable vertex
+						nlassert (type==RIGID_BLENDED_TYPE);
+						blendedInterface=(IPhyBlendedRigidVertex*)vertexInterface;
+					}
+
+					// Get bones count for this vertex
+					uint boneCount;
+					if (blendedInterface)
+					{
+						// If blenvertex, only one bone
+						boneCount=blendedInterface->GetNumberNodes();
+					}
+					else
+					{
+						// If rigid vertex, only one bone
+						boneCount=1;
+					}
+					if(boneCount>TEMP_MAX_WEIGHT)
+						boneCount= TEMP_MAX_WEIGHT;
+
+					// NB: if input 0, won't be mirrored
+					tempVertex[vert].NumWeight= boneCount;
+					for(uint bone=0;bone<boneCount;bone++)
+					{
+						if (blendedInterface)
+						{
+							tempVertex[vert].Bone[bone]= blendedInterface->GetNode(bone);
+							nlassert(tempVertex[vert].Bone[bone]);
+							tempVertex[vert].Weight[bone]= blendedInterface->GetWeight(bone);
+						}
+						else
+						{
+							tempVertex[vert].Bone[bone]= rigidInterface->GetNode();
+							tempVertex[vert].Weight[bone]= 1;
+						}
+					}
+
+					// Release vertex interfaces
+					localData->ReleaseVertexInterface (vertexInterface);
+				}
+
+			}
+
+			// release context interface
+			physiqueInterface->ReleaseContextInterface(localData);
+		}
+
+		// Release the interface
+		skin->ReleaseInterface (I_PHYINTERFACE, physiqueInterface);
+	}
+	if(!ok)
+		return false;
+
+
+	// **** Real Algo stuff:
+	// For all vertices wanted to be mirrored
+	std::vector<CSortVertex>	sortVert;
+	sortVert.reserve(tempVertex.size());
+	for(i=0;i<vertIn.size();i++)
+	{
+		CTempSkinVertex		&svIn= tempVertex[vertIn[i]];
+		// if it still has no bones set, skip
+		if(svIn.NumWeight==0)
+			continue;
+
+		// mirror vert to test
+		CVector		vertTest= svIn.Pos;
+		vertTest.x*= -1;
+
+		// get the best vertex
+		sortVert.clear();
+
+		// Search for all output vertices if ones match
+		for(uint j=0;j<vertOut.size();j++)
+		{
+			uint	dstIdx= vertOut[j];
+			nlassert(dstIdx<tempVertex.size());
+			CTempSkinVertex	&skinv= tempVertex[dstIdx];
+			// take only if not an input, and if not already mirrored
+			if(!skinv.Input && !skinv.Mirrored)
+			{
+				CSortVertex		sortv;
+				sortv.Index= dstIdx;
+				sortv.SqrDist= (skinv.Pos - vertTest).sqrnorm();
+				// Finally, take it only if sufficiently near
+				if(sortv.SqrDist <= threshold*threshold)
+					sortVert.push_back(sortv);
+			}
+		}
+
+		// if some found.
+		if(!sortVert.empty())
+		{
+			// sort array.
+			std::sort(sortVert.begin(), sortVert.end());
+
+			// take the first, mirror setup
+			uint	dstIdx= sortVert[0].Index;
+			tempVertex[dstIdx].NumWeight= svIn.NumWeight;
+			for(uint k=0;k<svIn.NumWeight;k++)
+			{
+				tempVertex[dstIdx].Weight[k]= svIn.Weight[k];
+				tempVertex[dstIdx].Bone[k]= getMirrorBone( skeletonNodes, svIn.Bone[k] );
+			}
+
+			// mark as mirrored!
+			tempVertex[dstIdx].Mirrored= true;
+		}
+	}
+
+
+	// **** Write the result to the skin.
+	ok= false;
+	if (skin)
+	{
+		// Get a com_skin2 interface
+		IPhysiqueImport *physiqueInterface=(IPhysiqueImport *)skin->GetInterface (I_PHYIMPORT);
+
+		// Found com_skin2 ?
+		if (physiqueInterface)
+		{
+			// Get local data
+			IPhyContextImport *localData= physiqueInterface->GetContextInterface(&node);
+
+			// TODO?
+			nlassert(tempVertex.size()<=(uint)localData->GetNumberVertices());
+
+			// Found ?
+			if (localData)
+			{
+				// Skinned
+				ok=true;
+				
+				for(uint i=0;i<tempVertex.size();i++)
+				{
+					CTempSkinVertex		&sv= tempVertex[i];
+
+					// if its a mirrored output vertex
+					if(sv.Mirrored)
+					{
+						IPhyBlendedRigidVertexImport	*blendedInterface= NULL;
+						blendedInterface= (IPhyBlendedRigidVertexImport*)localData->SetVertexInterface(i, RIGID_BLENDED_TYPE);
+
+						if(blendedInterface)
+						{
+							// set the vertex data
+							for(uint bone=0;bone<sv.NumWeight;bone++)
+							{
+								blendedInterface->SetWeightedNode(sv.Bone[bone], sv.Weight[bone], bone==0);
+							}
+
+							// UI bonus: lock it
+							blendedInterface->LockVertex(TRUE);
+
+							// release
+							localData->ReleaseVertexInterface(blendedInterface);
+						}
+					}
+				}
+			}
+
+			// release
+			physiqueInterface->ReleaseContextInterface(localData);
+		}
+
+		// release
+		skin->ReleaseInterface(I_PHYIMPORT, physiqueInterface);
+	}
+
+
+	return ok;
+}
 

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.68 2004/01/29 10:39:33 besson Exp $
+ * $Id: export_nel.h,v 1.69 2004/02/11 12:00:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -480,7 +480,10 @@ public:
 	void							getNELBoneLocalTM(INode &node, TimeValue time,
 		NLMISC::CVector &nelScale, NLMISC::CQuat &nelQuat, NLMISC::CVector &nelPos);
 
-
+	/// Physique Mirroring
+	bool							mirrorPhysiqueSelection(INode &node, TimeValue time, const std::vector<uint> &vertIn, 
+		float threshold);
+	
 	// **************
 	// *** Ëxport Lod
 	// **************

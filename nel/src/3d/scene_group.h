@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.4 2001/08/09 09:19:39 besson Exp $
+ * $Id: scene_group.h,v 1.5 2001/08/14 13:29:48 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,9 @@ public:
 		// Name of the instance
 		std::string InstanceName;
 		bool DontAddToScene;
+
+		/// Constructor
+		CInstance ();
 
 		/// Serial the instance
 		void serial (NLMISC::IStream& f);

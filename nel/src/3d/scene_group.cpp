@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.11 2001/08/09 09:19:39 besson Exp $
+ * $Id: scene_group.cpp,v 1.12 2001/08/14 13:29:48 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,12 @@ namespace NL3D
 // ---------------------------------------------------------------------------
 
 // ***************************************************************************
+CInstanceGroup::CInstance::CInstance ()
+{
+	DontAddToScene = false;
+}
 
+// ***************************************************************************
 void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
 {
 	// Serial a version number

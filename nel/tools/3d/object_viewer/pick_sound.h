@@ -1,7 +1,7 @@
 /** \file pick_sound.h
  * Dialog used to select a sound in the sound bank.
  *
- * $Id: pick_sound.h,v 1.3 2001/12/18 18:39:37 vizerie Exp $
+ * $Id: pick_sound.h,v 1.4 2002/07/08 14:53:24 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,11 +68,18 @@ protected:
 	TNameVect _Names;
 	std::string _CurrName;
 
+	UINT _Timer;
+
+	NLMISC::CVector _BackupVel;
+	float _BackupGain;
+
 	// Generated message map functions
 	//{{AFX_MSG(CPickSound)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSelchange();
 	afx_msg void OnPlaySound();
+	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnDestroy();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

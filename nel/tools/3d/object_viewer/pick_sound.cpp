@@ -1,7 +1,7 @@
 /** \file pick_sound.cpp
  * Dialog used to select a sound in the sound bank.
  *
- * $Id: pick_sound.cpp,v 1.3 2001/12/18 18:39:37 vizerie Exp $
+ * $Id: pick_sound.cpp,v 1.4 2002/07/08 14:53:24 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,10 @@
 #include "object_viewer.h"
 #include "pick_sound.h"
 #include "sound_system.h"
+
+#include "nel/sound/u_audio_mixer.h"
+#include "nel/sound/u_listener.h"
+#include "nel/sound/u_source.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -61,7 +65,9 @@ BEGIN_MESSAGE_MAP(CPickSound, CDialog)
 	//{{AFX_MSG_MAP(CPickSound)
 	ON_LBN_SELCHANGE(IDC_LIST1, OnSelchange)
 	ON_BN_CLICKED(IDC_BUTTON1, OnPlaySound)
+	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_PLAY_SOUND, OnPlaySound)
+	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -76,6 +82,22 @@ BOOL CPickSound::OnInitDialog()
 	for (TNameVect::const_iterator it = _Names.begin(); it	!= _Names.end(); ++it)
 	{
 		m_NameList.AddString(*it);
+	}
+
+	_Timer = SetTimer (1, 100, NULL);
+
+	// store value
+	_BackupGain = CSoundSystem::getAudioMixer()->getListener ()->getGain();
+	CSoundSystem::getAudioMixer()->getListener ()->getVelocity(_BackupVel);
+
+	CSoundSystem::getAudioMixer()->getListener ()->setGain(1.0f);
+	CSoundSystem::getAudioMixer()->getListener ()->setVelocity(NLMISC::CVector(0,0,0));
+
+	// set new value
+
+	if(!_Timer)
+	{
+		nlwarning ("Can't create the timer to update the sound system");
 	}
 
 	UpdateData(FALSE);
@@ -101,4 +123,23 @@ void CPickSound::OnPlaySound()
 	CString sName;
 	m_NameList.GetText(curSel, sName);
 	CSoundSystem::play(std::string( (LPCTSTR) sName));	
+}
+
+void CPickSound::OnTimer(UINT nIDEvent) 
+{
+	CSoundSystem::poll ();
+
+	CDialog::OnTimer(nIDEvent);
+}
+
+void CPickSound::OnDestroy() 
+{
+	CDialog::OnDestroy();
+
+	if(_Timer != 0)
+		KillTimer (_Timer);
+
+	// restore old value
+	CSoundSystem::getAudioMixer()->getListener ()->setGain(_BackupGain);
+	CSoundSystem::getAudioMixer()->getListener ()->setVelocity(_BackupVel);
 }

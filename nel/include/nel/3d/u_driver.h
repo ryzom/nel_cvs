@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.32 2003/08/20 10:12:41 besson Exp $
+ * $Id: u_driver.h,v 1.33 2003/08/22 09:46:00 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -355,6 +355,7 @@ public:
 	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV> &quad, UMaterial &mat) =0;
 	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV2> &quad, UMaterial &mat) =0;
 	virtual	void			drawQuads(const NLMISC::CQuadColorUV *qs, uint32 nbq, UMaterial &mat) =0;
+	virtual	void			drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads, UMaterial &mat) =0;
 
 	// @}
 

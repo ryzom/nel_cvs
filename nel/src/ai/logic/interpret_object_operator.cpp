@@ -298,59 +298,6 @@ namespace NLAISCRIPT
 		}
 	}
 
-/*	std::list<NLAILOGIC::CValueSet *> *COperatorClass::propagate(std::list<NLAILOGIC::CValueSet *> &liaisons, NLAILOGIC::CValueSet *fact, std::vector<sint32> &pos_vals) 
-	{
-		std::list<NLAILOGIC::CValueSet *> *conflits = new std::list<NLAILOGIC::CValueSet *>;
-		std::list<NLAILOGIC::CValueSet *> buf_liaisons;
-		// Pour chaque liaison...
-		std::list< NLAILOGIC::CValueSet *>::iterator it_l = liaisons.begin();
-		
-		while ( it_l != liaisons.end() )
-		{
-
-			NLAILOGIC::CValueSet *l = *it_l;
-			char buf[512];
-			l->getDebugString( buf );
-
-			NLAILOGIC::CValueSet *result = unifyLiaison( l, fact, pos_vals );
-			if ( result )
-			{
-				char buf[512];
-				result->getDebugString( buf );
-
-				if ( result->undefined() == 0 )
-				{
-					conflits->push_back( result );
-				}
-				else 
-					buf_liaisons.push_back( result );
-			}
-			it_l++;
-		}
-
-		while ( buf_liaisons.size() )
-		{
-			liaisons.push_back( buf_liaisons.front() );
-			buf_liaisons.pop_front();
-		}
-		return conflits;
-	}
-
-  */
-/*	std::list<NLAILOGIC::CFact *> *COperatorClass::test(std::list<NLAILOGIC::CFact *> &facts)
-	{
-		std::list<NLAILOGIC::CFact *> *preconds = backward( facts );
-
-		std::list<NLAILOGIC::CFact *>::iterator it_f = preconds->begin();
-		while ( it_f != preconds->end() )
-		{
-			( (NLAILOGIC::CFirstOrderAssert *)(*it_f)->getAssert() )->backward( *it_f );
-			it_f++;
-		}
-		return NULL;
-	}
-	*/
-
 	void COperatorClass::getAssertPos(NLAILOGIC::IBaseAssert *a, std::vector<NLAILOGIC::IBaseAssert *> &l, std::vector<sint32> &pos)
 	{
 		for (sint32 i = 0; i < (sint32) l.size() ; i++ )
@@ -359,7 +306,6 @@ namespace NLAISCRIPT
 				pos.push_back(i);
 		}
 	}
-
 
 	float COperatorClass::priority() const
 	{

@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * CMemStream class
  *
- * $Id: mem_stream.h,v 1.1 2000/12/05 10:03:57 lecroart Exp $
+ * $Id: mem_stream.h,v 1.2 2000/12/05 10:38:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,32 @@ public:
 
 	/// Method inherited from IStream
 	virtual void	serialBit(bool &bit) throw(EStreamOverflow);
+
+	/** 
+	 * Moves the stream pointer to a specified location.
+	 * 
+	 * NB: If the stream doesn't support the seek fonctionnality, it throw ESeekNotSupported.
+	 * Default implementation: 
+	 * { throw ESeekNotSupported; }
+	 * \param offset is the wanted offset from the origin.
+	 * \param origin is the origin of the seek
+	 * \return true if seek sucessfull.
+	 * \see ESeekNotSupported SeekOrigin getPos
+	 */
+	virtual bool	seek (sint32 offset, TSeekOrigin origin) throw(EStream);
+
+	/** 
+	 * Get the location of the stream pointer.
+	 * 
+	 * NB: If the stream doesn't support the seek fonctionnality, it throw ESeekNotSupported.
+	 * Default implementation: 
+	 * { throw ESeekNotSupported; }
+	 * \param offset is the wanted offset from the origin.
+	 * \param origin is the origin of the seek
+	 * \return the new offset regarding from the origin.
+	 * \see ESeekNotSupported SeekOrigin seek
+	 */
+	virtual sint32	getPos () throw(EStream);
 
 	/// Clears the message
 	void			clear();

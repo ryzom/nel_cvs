@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.1 2000/12/05 10:03:57 lecroart Exp $
+ * $Id: mem_stream.cpp,v 1.2 2000/12/05 10:38:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,6 +132,48 @@ void CMemStream::serialBit(bool &bit) throw(EStreamOverflow)
 		memcpy( &(*_BufPos), &thebuf, len );
 		_BufPos = _Buffer.end();
 	}
+}
+
+
+/*
+ * serialBit (inherited from IStream)
+ */
+bool CMemStream::seek (sint32 offset, TSeekOrigin origin) throw(EStream)
+{
+	switch (origin)
+	{
+	case begin:
+		if (offset >= (sint)_Buffer.size())
+			return false;
+		if (offset < 0)
+			return false;
+		_BufPos=_Buffer.begin()+offset;
+		break;
+	case current:
+		if (getPos ()+offset >= (sint)_Buffer.size())
+			return false;
+		if (getPos ()+offset < 0)
+			return false;
+		_BufPos+=offset;
+		break;
+	case end:
+		if (offset >= (sint)_Buffer.size())
+			return false;
+		if (offset < 0)
+			return false;
+		_BufPos=_Buffer.end()-offset;
+		break;
+	}
+	return true;
+}
+
+
+/*
+ * serialBit (inherited from IStream)
+ */
+sint32 CMemStream::getPos () throw(EStream)
+{
+	return (sint32)&_BufPos[0]-(sint32)_Buffer[0];
 }
 
 

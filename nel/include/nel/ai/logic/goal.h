@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.9 2001/04/17 09:26:09 portier Exp $
+ * $Id: goal.h,v 1.10 2001/04/24 08:28:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,6 +100,7 @@ namespace NLAILOGIC
 			NLAIAGENT::IBasicAgent *getReceiver();
 
 			virtual void cancel();
+			virtual float priority() const;
 	};
 }
 

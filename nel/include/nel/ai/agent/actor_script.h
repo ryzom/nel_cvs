@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.15 2001/04/18 11:45:16 portier Exp $
+ * $Id: actor_script.h,v 1.16 2001/04/24 08:28:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,6 +148,10 @@ namespace NLAIAGENT
 			/// These functions are called by other operators or goals who failed or succeeded
 			virtual void onSuccess( IObjectIA *) {}
 			virtual void onFailure( IObjectIA *) {}
+
+			/// Priority of the operator
+			virtual float priority() const;
+
 	};
 }
 #endif

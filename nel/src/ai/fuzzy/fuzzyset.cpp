@@ -1,7 +1,7 @@
 /** \file fuzzyset.cpp
  * Fuzzy sets: triangle, trapeze...
  *
- * $Id: fuzzyset.cpp,v 1.4 2001/01/17 10:47:05 chafik Exp $
+ * $Id: fuzzyset.cpp,v 1.5 2001/04/24 08:28:38 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,21 +36,6 @@ namespace NLAIFUZZY
 	{
 		if ( _Facts.size() )
 		{
-
-			// TODO: mettre les != méthodes d'aggrégation dans une classe
-			
-			// Moyenne		
-		/*	double sum;
-			list<double>::iterator it_f = _Facts.begin();
-			while ( it_f != _Facts.end() )
-			{
-				sum = sum + *it_f;
-				it_f++;
-			}
-			sum = sum / _Facts.size();
-			_Value = sum;
-			return sum;
-		*/
 			// min
 			double min = 1;
 			while ( _Facts.size() )
@@ -257,7 +242,7 @@ namespace NLAIFUZZY
 		os.serial( (double &) _X1 );
 		os.serial( (double &) _X2 );
 		os.serial( (double &) _X3);
-}
+	}
 
 	void CRightFuzzySet::load(NLMISC::IStream &is)
 	{
@@ -279,6 +264,72 @@ namespace NLAIFUZZY
 	{
 		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
+
+
+
+	NLAIAGENT::tQueue IFuzzySet::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
+	{
+
+#ifdef NL_DEBUG	
+	char nameP[1024*4];
+	char nameM[1024*4];
+	funcName->getDebugString(nameM);
+	params.getDebugString(nameP);
+
+	const char *dbg_class_name = (const char *) getType();
+#endif
+		NLAIAGENT::tQueue r;
+		if(className == NULL)
+		{
+			if( (*funcName) == NLAIAGENT::CStringVarName( "Constructor" ) )
+			{					
+				NLAIAGENT::CObjectType *c = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( CTriangleFuzzySet::IdTriangleFuzzySet ) );
+				r.push( NLAIAGENT::CIdMethod( 0 + IObjectIA::getMethodIndexSize(), 0.0, NULL, c) );
+			}
+		}
+
+		if ( r.empty() )
+			return IObjectIA::isMember(className, funcName, params);
+		else
+			return r;
+	}
+
+	NLAIAGENT::IObjectIA::CProcessResult IFuzzySet::runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p)
+	{
+		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)p;
+
+		switch(index - IObjectIA::getMethodIndexSize() )
+		{
+		case 0:
+			{					
+
+/*				NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->getFront()->clone();
+				param->popFront();*/
+#ifdef NL_DEBUG
+//				const char *dbg_name = name->getStr().getString();
+#endif
+				// If the constructor() function is explicitely called and the object has already been initialised
+/*				if ( _Name )
+					_Name->release();
+				_Args.clear();
+*/
+/*				_Name = (NLAIAGENT::IVarName *) name->getStr().clone();
+				std::list<const NLAIAGENT::IObjectIA *> args;
+				while ( param->size() )
+				{
+					_Args.push_back( (NLAIAGENT::IObjectIA *) param->getFront() );
+					param->popFront();
+				}
+				return NLAIAGENT::IObjectIA::CProcessResult();		
+				*/
+				init(p);
+			}
+			break;
+		}
+
+		return NLAIAGENT::IObjectIA::CProcessResult();
+	}
+
 
 
 /*
@@ -682,7 +733,6 @@ namespace NLAIFUZZY
 	double CTrapezeFuzzySet::center()
 	{
 		return (_X1 + _X2) /2 + (_X2 + _X3) /4;
-		//return ( _X2 - _X1 ) /2 + ( _X3 - _X2 ) /4;
 	}
 
 	const NLAIC::IBasicType *CTrapezeFuzzySet::clone() const

@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.21 2001/04/17 09:26:09 portier Exp $
+ * $Id: compilateur.h,v 1.22 2001/04/24 08:28:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,6 +177,7 @@ namespace NLAISCRIPT
 		// Logique
 		std::list< std::list<const NLAIAGENT::IVarName *> > _LastLogicParams;
 		std::list<const NLAIAGENT::CStringVarName *> _LastBooleanConds;
+		std::list<NLAIAGENT::CStringVarName *> _LastFuzzyConds;
 		std::list<const NLAIAGENT::CStringVarName *> _LastAsserts;
 		std::list<IOpCode *>	_LastCodeBranche;
 
@@ -188,8 +189,6 @@ namespace NLAISCRIPT
 		sint32 _LastFVarIndex;
 		sint32 _NbLogicParams;
 		///////////////////////////////////////////////////
-
-	
 		
 		bool   _InLineParse;
 		std::list<bool>   _FromStack;

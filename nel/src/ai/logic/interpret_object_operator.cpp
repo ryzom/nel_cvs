@@ -623,16 +623,18 @@ namespace NLAISCRIPT
 
 
 				r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
-				// If we are in Debug Mode
-				/*if (context.ContextDebug.Active)
-				{
-					context.ContextDebug.callStackPop();
-				}*/
+
 				*context.Code = ip;
 				context.Code = opTmp;		
 
 				if ( r.Result != NULL)
+				{
+#ifdef NL_DEBUG
+					const char *dbg_return_type = (const char *) r.Result->getType();
+#endif
 					return false;
+				}
+
 			}
 		}
 		return true;
@@ -706,14 +708,20 @@ namespace NLAISCRIPT
 		
 	}
 
-	/// Sets the comment for the operator
-	void COperatorClass::setComment(char *c)
-	{
-		if ( _Comment != NULL )
+		/// Sets the comment for the operator
+		void COperatorClass::setComment(char *c)
 		{
-			delete[] _Comment;
+			if ( _Comment != NULL )
+			{
+				delete[] _Comment;
+			}
+			_Comment = new char[ strlen(c) + 1];
+			strcpy(_Comment, c);
 		}
-		_Comment = new char[ strlen(c) + 1];
-		strcpy(_Comment, c);
+
+	void COperatorClass::addFuzzyCond(NLAIAGENT::IVarName *var_name, NLAIAGENT::IVarName *fset)
+	{
+		_FuzzyVars.push_back( var_name );
+		_FuzzySets.push_back( fset );
 	}
 }

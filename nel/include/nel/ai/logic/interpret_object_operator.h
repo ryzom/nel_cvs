@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.9 2001/04/17 09:26:09 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.10 2001/04/24 08:28:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/ai/logic/goal.h"
 #include "nel/ai/logic/fact.h"
 #include "nel/ai/logic/var.h"
+#include "nel/ai/fuzzy/fuzzyset.h"
 
 namespace NLAISCRIPT
 {
@@ -46,9 +47,9 @@ namespace NLAISCRIPT
 		std::vector<NLAILOGIC::IBaseAssert *>		_Concs;				/// Postconditions asserts			
 		std::vector< std::vector<sint32> >			_PosVarsConc;		/// Pos of a postcondition pattern's vars in the operator's vars table
 
-		std::vector< NLAIAGENT::IVarName *>			_FuzzyVars;
-		std::vector< NLAIAGENT::IVarName *>			_FuzzySets;
-
+/*		std::vector< int >							_FuzzyVars;
+		std::vector< NLAIFUZZY::IFuzzySet *>		_FuzzySets;
+*/
 		char										*_Comment;			/// Description of the operator
 
 		std::vector<NLAILOGIC::CGoal>				_Steps;				// Successive goals to be achieved
@@ -138,6 +139,9 @@ public:
 		std::vector< IOpCode *> _ConcCode;
 
 		NLAILOGIC::CFactBase *_FactBase;
+
+		std::vector<NLAIAGENT::IVarName *> _FuzzyVars;
+		std::vector<NLAIAGENT::IVarName *> _FuzzySets;
 	//	NLAIAGENT::CStringVarName *_GoalName;
 		///////////////////////////////////////////////////
 
@@ -165,7 +169,10 @@ public:
 		void addCodeConc(IOpCode *);
 
 		// Adds a fuzzy cond of the form <attrib> is <filter>
-		void addFuzzyCond(const NLAIAGENT::IVarName &, NLAILOGIC::IBaseBoolType *) {};
+		void addFuzzyCond(NLAIAGENT::IVarName *, NLAIAGENT::IVarName *);
+
+		// Calculates the truth of fuzzy conds
+//		virtual float truthValue() const;
 
 		/// Initialises the tables
 		void buildLogicTables();
@@ -179,6 +186,13 @@ public:
 		{
 			return _FuzzyVars;
 		}
+
+		std::vector<NLAIAGENT::IVarName *> &getFuzzySets()
+		{
+			return _FuzzySets;
+		}
+
+		
 	};
 }
 #endif

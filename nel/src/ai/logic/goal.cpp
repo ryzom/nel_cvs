@@ -102,6 +102,22 @@ namespace NLAILOGIC
 		strcpy( text ,"<CGoal> ");
 		if ( _Name ) 
 			strcat( text, _Name->getString() );
+		char buf[1024];
+		sprintf(buf," PRI = %d", priority() );
+		strcat(text, buf);
+		strcat(text," PRE = ");
+		int i;
+		for ( i = 0; i < (int) _Predecessors.size(); i++ )
+		{
+			_Predecessors[i]->getDebugString( buf );
+			strcat(text, buf);
+		}
+		strcat(text," POST = ");
+		for ( i = 0; i < (int) _Successors.size(); i++ )
+		{
+			_Successors[i]->getDebugString( buf );
+			strcat(text, buf);
+		}
 	}
 
 	bool CGoal::isTrue() const
@@ -267,5 +283,10 @@ namespace NLAILOGIC
 		{
 			( (NLAIAGENT::COperatorScript *)_Successors[i] )->cancel();
 		}
+	}
+
+	float CGoal::priority() const
+	{
+		return 1.0;
 	}
 }

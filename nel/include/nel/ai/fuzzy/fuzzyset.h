@@ -1,7 +1,7 @@
 /** \file fuzzyset.h
  *	Basic fuzzy sets
  *
- * $Id: fuzzyset.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: fuzzyset.h,v 1.4 2001/04/24 08:28:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/agent/agent_digital.h"
+#include "nel/ai/agent/object_type.h"
 
 namespace NLAIFUZZY {
 
@@ -61,6 +62,9 @@ namespace NLAIFUZZY {
 			virtual void addFact(double);
 			virtual double agregate();
 			virtual double getValue();
+
+			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
+			virtual NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, NLAIAGENT::IObjectIA *);
 	};
 
 	class CFuzzyInterval : public IFuzzySet

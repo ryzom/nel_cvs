@@ -1,7 +1,7 @@
 /** \file gd_agent_script.h
  * goal driven scripted agents with a FactBase and a goal stack
  *
- * $Id: gd_agent_script.h,v 1.3 2001/03/28 12:15:27 portier Exp $
+ * $Id: gd_agent_script.h,v 1.4 2001/04/24 08:28:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,4 +87,3 @@ namespace NLAIAGENT
 }	// NLAIAGENT
 
 #endif // NL_GD_AGENT_SCRIPT_H
-

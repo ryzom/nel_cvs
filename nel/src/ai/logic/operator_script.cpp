@@ -4,6 +4,8 @@
 #include "nel/ai/script/codage.h"
 #include "nel/ai/agent/gd_agent_script.h"
 #include "nel/ai/logic/interpret_object_operator.h"
+#include "nel/ai/agent/comp_handle.h"
+#include "nel/ai/fuzzy/fuzzyset.h"
 
 namespace NLAIAGENT
 {
@@ -208,40 +210,54 @@ namespace NLAIAGENT
 
 		bool is_activated = false;
 
-		// Looks for the goal
 		std::vector<NLAILOGIC::CGoal *> &goals = ( (CAgentScript *)getParent() )->getGoalStack();
 		std::vector<NLAILOGIC::CGoal *> activated_goals;
-		int i;
-		for ( i = 0; i < (int) goals.size(); i++ )
+
+		if ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL )
 		{
-			NLAILOGIC::CGoal *av_goal = goals[i];
-			const NLAILOGIC::CGoal *op_goal = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal();
 
-#ifdef NL_DEBUG
-			char buf_g1[1024 * 2];
-			char buf_g2[1024 * 2];
+			// Looks for the goal
+			int i;
+			for ( i = 0; i < (int) goals.size(); i++ )
+			{
+				NLAILOGIC::CGoal *av_goal = goals[i];
+				const NLAILOGIC::CGoal *op_goal = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal();
 
-			av_goal->getDebugString(buf_g1);
-			op_goal->getDebugString(buf_g2);
-#endif
-			if ( (*(goals[i])) == *( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() )
-				activated_goals.push_back( goals[i] );
-		}
+	#ifdef NL_DEBUG
+				char buf_g1[1024 * 2];
+				char buf_g2[1024 * 2];
 
-		// If a goal is posted corresponding to this operator's one
-		if ( activated_goals.size() )
-		{
-			is_activated = true;
+				av_goal->getDebugString(buf_g1);
+				op_goal->getDebugString(buf_g2);
+	#endif
+				if ( (*(goals[i])) == *( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() )
+					activated_goals.push_back( goals[i] );
+			}
 
-			// Checks the boolean funcs conditions
-			NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
-			context->Self = this;
-			
-			if ( !((NLAISCRIPT::COperatorClass *)_AgentClass)->isValidFonc( context ) )
+		
+			// If a goal is posted corresponding to this operator's one
+			if ( activated_goals.size() )
+			{
+				is_activated = true;
+
+				// Checks the boolean funcs conditions
+				NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+				context->Self = this;
+				
+				if ( !((NLAISCRIPT::COperatorClass *)_AgentClass)->isValidFonc( context ) )
+					is_activated = false;
+			}
+			else
 				is_activated = false;
 		}
 		else
-			is_activated = false;
+		{
+			NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+			context->Self = this;
+
+			if ( !((NLAISCRIPT::COperatorClass *)_AgentClass)->isValidFonc( context ) )
+				is_activated = false;
+		}
 
 		// Runs the operator if every precondition is validated	
 		if ( is_activated )
@@ -283,9 +299,28 @@ namespace NLAIAGENT
 	float COperatorScript::priority() const
 	{
 		int i;
+		double pri = 1.0;
 		for ( i = 0; i < (int) ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getFuzzyVars().size(); i++)
 		{
+#ifdef NL_DEBUG
+			const char *dbg_set_name = ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i]->getString();
+			const char *dbg_var_name = ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzyVars() )[i]->getString();
+#endif
+			CComponentHandle var_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i],(IAgent *)getParent(), true );
+			CComponentHandle set_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzyVars() )[i],(IAgent *)getParent(), true );
+
+			NLAIFUZZY::IFuzzySet *set = (NLAIFUZZY::IFuzzySet *) set_handle.getValue();
+			DigitalType *var = (DigitalType *) var_handle.getValue();
+
+			// Min
+			if ( set != NULL && var != NULL )
+			{
+				double value = var->getNumber();
+				double membership = set->membership( value );
+				if ( membership < pri )
+					pri = membership;
+			}
 		}
-		return 1.0;
+		return (float) pri;
 	}
 }

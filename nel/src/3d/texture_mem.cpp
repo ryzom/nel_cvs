@@ -1,7 +1,7 @@
 /** \file texture_mem.cpp
  * <File description>
  *
- * $Id: texture_mem.cpp,v 1.5 2002/02/04 10:38:22 vizerie Exp $
+ * $Id: texture_mem.cpp,v 1.6 2002/02/21 17:38:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #include "3d/texture_mem.h"
 #include "nel/misc/mem_stream.h"
+
+#include <memory>
 
 
 namespace NL3D 
@@ -59,6 +61,22 @@ void CTextureMem::doGenerate()
 	{
 		makeDummy();
 	}
+}
+
+
+static NLMISC::CRGBA WhitePix(255, 255, 255, 255); // the texture datas ... :)
+
+///===========================================================================
+ITexture *CTextureMem::Create1x1WhiteTex()
+{
+	std::auto_ptr<CTextureMem> tex(new CTextureMem((uint8 *) &WhitePix,
+												   sizeof(WhitePix),
+												   false, /* dont delete */
+												   false, /* not a file */
+												   1, 1)
+								  );
+	tex->setShareName("#WhitePix1x1");	
+	return tex.release();
 }
 
 

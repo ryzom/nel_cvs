@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.4 2002/02/04 10:38:22 vizerie Exp $
+ * $Id: texture_mem.h,v 1.5 2002/02/21 17:38:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/texture.h"
+#include <string>
 
 
 namespace NL3D 
@@ -44,6 +45,7 @@ class CTextureMem : public ITexture
 	uint32		_Length;
 	bool		_Delete;
 	bool        _IsFile;
+	std::string _ShareName;
 
 	/// keep size for textures that aren't from a file
 	uint		_TexWidth, _TexHeight;
@@ -84,7 +86,7 @@ public:
 		_Data=NULL;
 		_Delete=false;
 		_IsFile = isFile;
-		setPointer(data, length, _delete);
+		setPointer(data, length, _delete, isFile, width, height);
 		_TexWidth = width;
 		_TexHeight = height;
 	}
@@ -133,10 +135,33 @@ public:
 	 */	
 	void doGenerate();
 
+	/// inherited from ITexture
+	virtual bool			supportSharing() const 
+	{
+		return !_ShareName.empty();
+	}
+
+	/// inherited from ITexture
+	virtual std::string		getShareName() const 
+	{
+		nlassert(!_ShareName.empty());
+		return _ShareName;
+	}
+
+	/// Make this texture sharable by assigning it a share name. An empty share name means it is not sharable, which is the default
+	void setShareName(const std::string &shareName) 
+	{ 
+		_ShareName = shareName;
+	}
 
 	/// Todo: serialize a mem texture.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream) {nlstop;}
 	NLMISC_DECLARE_CLASS(CTextureMem);
+
+	/** This create a white square texture of 1x1
+	 *  It can be used to force the activation of a texture stage with no texture.
+	 */
+	static ITexture *Create1x1WhiteTex();	
 
 };
 

@@ -1,7 +1,7 @@
 /** \file tile_utility.cpp
  * <File description>
  *
- * $Id: tile_utility.cpp,v 1.5 2002/08/08 11:02:06 lecroart Exp $
+ * $Id: tile_utility.cpp,v 1.6 2003/07/01 15:42:17 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -440,7 +440,8 @@ bool Tile_utility::SetupMaterial () const
 	firstMtl->SetShininess (0.0, t);
 	firstMtl->SetSpecular (Color (0,0,0), t);
 
-	for (int i=0; i<Bank.getTileCount(); i++)
+	int i;
+	for (i=0; i<Bank.getTileCount(); i++)
 	{
 		// Active ?
 		bool bActive=false;

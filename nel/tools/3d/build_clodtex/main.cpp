@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.h
  * <File description>
  *
- * $Id: main.cpp,v 1.4 2003/03/11 11:20:11 berenguier Exp $
+ * $Id: main.cpp,v 1.5 2003/07/01 15:39:52 distrib Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -211,7 +211,8 @@ int main(int argc, char *argv[])
 			NLMISC::InfoLog->displayRaw("Processing %s", fileNameIn.c_str());
 
 			// search in all lods if the file Name match a filter
-			for(uint j=0;j<LodFilters.size();j++)
+			uint j;
+			for(j=0;j<LodFilters.size();j++)
 			{
 				// Make the test case-unsensitive
 				string	lwrFileName= fileNameIn;

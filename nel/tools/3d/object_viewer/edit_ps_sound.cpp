@@ -3,6 +3,8 @@
 
 #include "std_afx.h"
 #include "3d/ps_located.h"
+#include "3d/ps_sound_impl.h"
+#include "3d/particle_system.h"
 #include "object_viewer.h"
 #include "edit_ps_sound.h"
 #include "attrib_dlg.h"
@@ -13,28 +15,52 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+
+/// the particle system sound server
+static NL3D::CPSSoundServImpl PSSoundServer;
+
+/// particle system sound system initialisation
+void initPSSoundSystem(NLSOUND::UAudioMixer *am)
+{
+	nlassert(am);
+	PSSoundServer.init(am);
+	NL3D::CParticleSystem::registerSoundServer(&PSSoundServer);
+}
+
+void releasePSSoundSystem(void)
+{
+	// nothing to do for now
+}
+
+
+
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CEditPSSound dialog
 
 
 
-CEditPSSound::CEditPSSound(NL3D::CPSSound *sound) : _Sound(sound), _VolumeDlg(NULL)
-												   , _FrequencyDlg(NULL)
+CEditPSSound::CEditPSSound(NL3D::CPSSound *sound) : _Sound(sound), _GainDlg(NULL)
+												   , _PitchDlg(NULL)
 {
 	nlassert(sound);
 }
 
 CEditPSSound::~CEditPSSound()
 {
-	if (_VolumeDlg)
+	if (_GainDlg)
 	{
-		_VolumeDlg->DestroyWindow();
-		delete _VolumeDlg;
+		_GainDlg->DestroyWindow();
+		delete _GainDlg;
 	}
-	if (_FrequencyDlg)
+	if (_PitchDlg)
 	{
-		_FrequencyDlg->DestroyWindow();
-		delete _FrequencyDlg;
+		_PitchDlg->DestroyWindow();
+		delete _PitchDlg;
 	}
 }
 
@@ -50,23 +76,23 @@ void CEditPSSound::init(CWnd* pParent /*= NULL*/)
 
 	nlassert(_Sound);
 
-	_VolumeWrapper.S = _Sound;
-	_VolumeDlg = new CAttribDlgFloat(std::string("SOUND VOLUME"), 0, 1);
-	_VolumeDlg->setWrapper(&_VolumeWrapper);
-	_VolumeDlg->setSchemeWrapper(&_VolumeWrapper);	
+	_GainWrapper.S = _Sound;
+	_GainDlg = new CAttribDlgFloat(std::string("SOUND VOLUME"), 0, 1);
+	_GainDlg->setWrapper(&_GainWrapper);
+	_GainDlg->setSchemeWrapper(&_GainWrapper);	
 	HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_SOUND_VOLUME));
-	_VolumeDlg->init(bmh, posX, posY, this);
-	_VolumeDlg->GetClientRect(&r);
+	_GainDlg->init(bmh, posX, posY, this);
+	_GainDlg->GetClientRect(&r);
 	posY += r.bottom + 3;	
 
 
-	_FrequencyWrapper.S = _Sound;
-	_FrequencyDlg = new CAttribDlgFloat(std::string("SOUND FREQ"), 0, 44000);
-	_FrequencyDlg->setWrapper(&_FrequencyWrapper);
-	_FrequencyDlg->setSchemeWrapper(&_FrequencyWrapper);	
+	_PitchWrapper.S = _Sound;
+	_PitchDlg = new CAttribDlgFloat(std::string("SOUND FREQ"), 0, 1);
+	_PitchDlg->setWrapper(&_PitchWrapper);
+	_PitchDlg->setSchemeWrapper(&_PitchWrapper);	
 	bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_SOUND_FREQ));
-	_FrequencyDlg->init(bmh, posX, posY, this);
-	_FrequencyDlg->GetClientRect(&r);
+	_PitchDlg->init(bmh, posX, posY, this);
+	_PitchDlg->GetClientRect(&r);
 	posY += r.bottom + 3;	
 
 

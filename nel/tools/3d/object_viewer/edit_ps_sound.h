@@ -8,10 +8,25 @@
 #include "ps_wrapper.h"
 #include "3d/ps_sound.h"
 
-
+namespace NLSOUND
+{
+	class UAudioMixer;
+}
 
 
 class CAttribDlgFloat;
+
+
+/// particle system sound system initialisation
+extern void initPSSoundSystem(NLSOUND::UAudioMixer *am);
+
+/// release the particle system sound system
+extern void releasePSSoundSystem(void);
+
+
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditPSSound dialog
@@ -44,8 +59,8 @@ public:
 // Implementation
 protected:
 	NL3D::CPSSound *		_Sound;				// the sound being edited	
-	CAttribDlgFloat *	_VolumeDlg;			// dlg to tune sounds volume
-	CAttribDlgFloat *	_FrequencyDlg;	// dlg to tune sounds frequency
+	CAttribDlgFloat *	_GainDlg;			// dlg to tune sounds gain
+	CAttribDlgFloat *	_PitchDlg;	// dlg to tune sounds pitch
 
 	// Generated message map functions
 	//{{AFX_MSG(CEditPSSound)
@@ -57,27 +72,27 @@ protected:
 
 
 	/////////////////////////////////////////
-	// wrapper to set the volume of sounds //
+	// wrapper to set the gain of sounds //
 	/////////////////////////////////////////
-	struct CVolumeWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
+	struct CGainWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
 	{
 		NL3D::CPSSound *S;
-		float get(void) const { return S->getVolume(); }
-		void set(const float &v) { S->setVolume(v); }
-		scheme_type *getScheme(void) const { return S->getVolumeScheme(); }
-		void setScheme(scheme_type *s) { S->setVolumeScheme(s); }
-	} _VolumeWrapper;
+		float get(void) const { return S->getGain(); }
+		void set(const float &v) { S->setGain(v); }
+		scheme_type *getScheme(void) const { return S->getGainScheme(); }
+		void setScheme(scheme_type *s) { S->setGainScheme(s); }
+	} _GainWrapper;
 	////////////////////////////////////////////
-	// wrapper to set the frequency of sounds //
+	// wrapper to set the pitch of sounds //
 	////////////////////////////////////////////
-	struct CFrequencyWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
+	struct CPitchWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
 	{
 		NL3D::CPSSound *S;
-		float get(void) const { return S->getFrequency(); }
-		void set(const float &v) { S->setFrequency(v); }
-		scheme_type *getScheme(void) const { return S->getFrequencyScheme(); }
-		void setScheme(scheme_type *s) { S->setFrequencyScheme(s); }
-	} _FrequencyWrapper;
+		float get(void) const { return S->getPitch(); }
+		void set(const float &v) { S->setPitch(v); }
+		scheme_type *getScheme(void) const { return S->getPitchScheme(); }
+		void setScheme(scheme_type *s) { S->setPitchScheme(s); }
+	} _PitchWrapper;
 
 };
 

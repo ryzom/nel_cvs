@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.178 2003/03/27 17:37:31 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.179 2003/03/31 11:54:16 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -60,9 +60,13 @@ using namespace NLMISC;
 
 
 
+
+
+
 // ***************************************************************************
 // try to allocate 16Mo by default of AGP Ram.
 #define	NL3D_DRV_VERTEXARRAY_AGP_INIT_SIZE		(16384*1024)
+
 
 
 // ***************************************************************************
@@ -88,7 +92,10 @@ uint CDriverGL::_Registered=0;
 #endif // NL_OS_WINDOWS
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverGL::ReleaseVersion = 0x8;
+const uint32		CDriverGL::ReleaseVersion = 0x9;
+
+// Number of register to allocate for the EXTVertexShader extension
+const uint CDriverGL::_EVSNumConstant = 96;
 
 #ifdef NL_OS_WINDOWS
 
@@ -206,6 +213,7 @@ CDriverGL::CDriverGL()
 	_Initialized = false;
 
 	_FogEnabled= false;
+	_FogEnd = _FogStart = 0.f;
 	_CurrentFogColor[0]= 0;
 	_CurrentFogColor[1]= 0;
 	_CurrentFogColor[2]= 0;
@@ -267,6 +275,11 @@ CDriverGL::CDriverGL()
 
 	std::fill(_StageSupportEMBM, _StageSupportEMBM + IDRV_MAT_MAXTEXTURES, false);
 
+	ATIWaterShaderHandleNoDiffuseMap = 0;
+	ATIWaterShaderHandle = 0;
+
+	std::fill(ARBWaterShader, ARBWaterShader + 4, 0);
+	
 ///	buildCausticCubeMapTex();
 
 }
@@ -367,8 +380,10 @@ void CDriverGL::disableHardwareTextureShader()
 
 bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 {
+	
 	uint width = mode.Width;
 	uint height = mode.Height;
+
 
 #ifdef NL_OS_WINDOWS
 	
@@ -1021,7 +1036,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	// Driver caps.
 	//=============
 	// Retrieve the extensions for the current context.
-	NL3D::registerGlExtensions (_Extensions);
+	NL3D::registerGlExtensions (_Extensions);	
+	//
 #ifdef NL_OS_WINDOWS
 	NL3D::registerWGlExtensions (_Extensions, _hDC);
 #endif // ifdef NL_OS_WINDOWS
@@ -1071,7 +1087,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		enableNVTextureShader(false);		
 	}
 
-	// Be always in EXTSeparateSpecularColor.
+	// Be always in EXTSeparateSpecularColor.	
 	if(_Extensions.EXTSeparateSpecularColor)
 	{
 		glLightModeli((GLenum)GL_LIGHT_MODEL_COLOR_CONTROL_EXT, GL_SEPARATE_SPECULAR_COLOR_EXT);
@@ -1096,13 +1112,20 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	// Else, try with ATI ext
 	else if(_Extensions.ATIVertexArrayObject)
 	{
-		_AGPVertexArrayRange= new CVertexArrayRangeATI(this);
-		_VRAMVertexArrayRange= new CVertexArrayRangeATI(this);
+		if (!_Extensions.ATIMapObjectBuffer)
+		{		
+			_AGPVertexArrayRange= new CVertexArrayRangeATI(this);
+			_VRAMVertexArrayRange= new CVertexArrayRangeATI(this);			
+			// BAD ATI extension scheme.
+			_SlowUnlockVBHard= true;		
+		}
+		else
+		{
+			_AGPVertexArrayRange= new CVertexArrayRangeMapObjectATI(this);
+			_VRAMVertexArrayRange= new CVertexArrayRangeMapObjectATI(this);			
+		}
 		_SupportVBHard= true;
-		// BAD ATI extension scheme.
-		_SlowUnlockVBHard= true;		
-		//_MaxVerticesByVBHard= 65000;
-		_MaxVerticesByVBHard= 32767;
+		_MaxVerticesByVBHard= 65535; // should always work with recent drivers.		
 	}
 
 	// Reset VertexArrayRange.
@@ -1138,6 +1161,11 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	//===========================================================
 	initEMBM();
 
+	// Init fragment shaders if present
+	//===========================================================
+	initFragmentShaders();
+
+
 
 	// Activate the default texture environnments for all stages.
 	//===========================================================
@@ -1156,9 +1184,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 		// Not special TexEnv.
 		_CurrentTexEnvSpecial[stage]= TexEnvSpecialDisabled;
-
-		resetTextureShaders();		
+				
 	}
+	resetTextureShaders();
 
 	// Get num of light for this driver
 	int numLight;
@@ -1222,8 +1250,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 				// Skin palette
 				// This mean that they must have 4 components
 
-				// Allocate variants
-				_EVSConstantHandle = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_INVARIANT_EXT, GL_FULL_RANGE_EXT, 97);		
+				// Allocate invariants. One assitionnal variant is needed for fog coordinate
+				_EVSConstantHandle = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_INVARIANT_EXT, GL_FULL_RANGE_EXT, _EVSNumConstant + 1);
 
 				if (_EVSConstantHandle == 0)
 				{
@@ -1385,7 +1413,7 @@ bool CDriverGL::swapBuffers()
 	set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
 	while(itVBHard != _VertexBufferHardSet.Set.end() )
 	{
-		if((*itVBHard)->NVidiaVertexBufferHard)
+		if((*itVBHard)->VBType == IVertexBufferHardGL::NVidiaVB)
 		{
 			CVertexBufferHardGLNVidia	*vbHardNV= static_cast<CVertexBufferHardGLNVidia*>(*itVBHard);
 			if(vbHardNV->isFenceSet())
@@ -1412,7 +1440,7 @@ bool CDriverGL::swapBuffers()
 #else // NL_OS_WINDOWS
 	glXSwapBuffers(dpy, win);
 #endif // NL_OS_WINDOWS
-
+	
 	// Activate the default texture environnments for all stages.
 	//===========================================================
 	// This is not a requirement, but it ensure a more stable state each frame.
@@ -1464,6 +1492,9 @@ bool CDriverGL::release()
 
 	// Call IDriver::release() before, to destroy textures, shaders and VBs...
 	IDriver::release();
+
+
+	deleteFragmentShaders();	
 
 	// release caustic cube map
 //	_CauticCubeMap = NULL;
@@ -2043,13 +2074,15 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 		// register 96 is used to store fog informations
 		if (start != end)
 		{		
-			setConstant(96, 1.f / (start - end), - end / (start - end), 0, 0);
+			setConstant(_EVSNumConstant, 1.f / (start - end), - end / (start - end), 0, 0);			
 		}
 		else
 		{
-			setConstant(96, 0.f, 0, 0, 0);
+			setConstant(_EVSNumConstant, 0.f, 0, 0, 0);
 		}
 	}
+	_FogStart = start;
+	_FogEnd = end;
 }
 
 
@@ -2175,15 +2208,15 @@ void CDriverGL::checkForPerPixelLightingSupport()
 	// TODO : support for EnvCombine3
 	// TODO : support for less than 3 stages
 
-	_SupportPerPixelShaderNoSpec = (_Extensions.NVTextureEnvCombine4 /* || _Extensions.ATIXTextureEnvCombine3*/)
+	_SupportPerPixelShaderNoSpec = (_Extensions.NVTextureEnvCombine4 || _Extensions.ATIXTextureEnvCombine3)
 								   && _Extensions.ARBTextureCubeMap
 								   && _Extensions.NbTextureStages >= 3
-								   && (_Extensions.NVVertexProgram /* || _Extensions.EXTVertexShader*/);
+								   && (_Extensions.NVVertexProgram || _Extensions.EXTVertexShader);
 	
-	_SupportPerPixelShader = (_Extensions.NVTextureEnvCombine4 /*|| _Extensions.ATIXTextureEnvCombine3*/) 
+	_SupportPerPixelShader = (_Extensions.NVTextureEnvCombine4 || _Extensions.ATIXTextureEnvCombine3) 
 							 && _Extensions.ARBTextureCubeMap
 							 && _Extensions.NbTextureStages >= 2
-							 && (_Extensions.NVVertexProgram /*|| _Extensions.EXTVertexShader*/);	
+							 && (_Extensions.NVVertexProgram || _Extensions.EXTVertexShader);	
 }
 
 // ***************************************************************************
@@ -2433,5 +2466,308 @@ void CDriverGL::initEMBM()
 		}
 	}
 }
+
+
+
+
+// ***************************************************************************
+/** Water fragment program with extension ARB_fragment_program
+  */
+static const char *WaterCodeNoDiffuseForARBFragmentProgram =
+"!!ARBfp1.0																			\n\
+OPTION ARB_precision_hint_nicest;													\n\
+PARAM  bump0ScaleBias = program.env[0];												\n\
+PARAM  bump1ScaleBias = program.env[1];												\n\
+ATTRIB bump0TexCoord  = fragment.texcoord[0];										\n\
+ATTRIB bump1TexCoord  = fragment.texcoord[1];										\n\
+ATTRIB envMapTexCoord = fragment.texcoord[2];										\n\
+OUTPUT oCol  = result.color;														\n\
+TEMP   bmValue;                                                                     \n\
+#read bump map 0																	\n\
+TEX    bmValue, bump0TexCoord, texture[0], 2D;										\n\
+#bias result (include scaling)														\n\
+MAD    bmValue, bmValue, bump0ScaleBias.xxxx, bump0ScaleBias.yyzz;					\n\
+ADD    bmValue, bmValue, bump1TexCoord;                                             \n\
+#read bump map 1																	\n\
+TEX    bmValue, bmValue, texture[1], 2D;											\n\
+#bias result (include scaling)														\n\
+MAD    bmValue, bmValue, bump1ScaleBias.xxxx, bump1ScaleBias.yyzz;					\n\
+#add envmap coord																	\n\
+ADD	   bmValue, bmValue, envMapTexCoord;											\n\
+#read envmap																		\n\
+TEX    oCol, bmValue, texture[2], 2D;												\n\
+END ";
+
+static const char *WaterCodeNoDiffuseWithFogForARBFragmentProgram = 
+"!!ARBfp1.0																			\n\
+OPTION ARB_precision_hint_nicest;													\n\
+PARAM  bump0ScaleBias = program.env[0];												\n\
+PARAM  bump1ScaleBias = program.env[1];												\n\
+PARAM  fogColor       = state.fog.color;											\n\
+PARAM  fogFactor      = program.env[2];												\n\
+ATTRIB bump0TexCoord  = fragment.texcoord[0];										\n\
+ATTRIB bump1TexCoord  = fragment.texcoord[1];										\n\
+ATTRIB envMapTexCoord = fragment.texcoord[2];										\n\
+ATTRIB fogValue		  = fragment.fogcoord;											\n\
+OUTPUT oCol  = result.color;														\n\
+TEMP   bmValue;                                                                     \n\
+TEMP   envMap;																		\n\
+TEMP   tmpFog;																		\n\
+#read bump map 0																	\n\
+TEX    bmValue, bump0TexCoord, texture[0], 2D;										\n\
+#bias result (include scaling)														\n\
+MAD    bmValue, bmValue, bump0ScaleBias.xxxx, bump0ScaleBias.yyzz;					\n\
+ADD    bmValue, bmValue, bump1TexCoord;                                             \n\
+#read bump map 1																	\n\
+TEX    bmValue, bmValue, texture[1], 2D;											\n\
+#bias result (include scaling)														\n\
+MAD    bmValue, bmValue, bump1ScaleBias.xxxx, bump1ScaleBias.yyzz;					\n\
+#add envmap coord																	\n\
+ADD	   bmValue, bmValue, envMapTexCoord;											\n\
+#read envmap																		\n\
+TEX    envMap, bmValue, texture[2], 2D;												\n\
+#compute fog																		\n\
+MAD_SAT tmpFog, fogValue.x, fogFactor.x, fogFactor.y;								\n\
+LRP    oCol, tmpFog.x, envMap, fogColor;											\n\
+END ";
+
+
+
+// **************************************************************************************
+/** Water fragment program with extension ARB_fragment_program and a diffuse map applied
+  */
+static const char *WaterCodeForARBFragmentProgram =
+"!!ARBfp1.0																			\n\
+OPTION ARB_precision_hint_nicest;													\n\
+PARAM  bump0ScaleBias = program.env[0];												\n\
+PARAM  bump1ScaleBias = program.env[1];												\n\
+ATTRIB bump0TexCoord  = fragment.texcoord[0];										\n\
+ATTRIB bump1TexCoord  = fragment.texcoord[1];										\n\
+ATTRIB envMapTexCoord = fragment.texcoord[2];										\n\
+ATTRIB diffuseTexCoord = fragment.texcoord[3];										\n\
+OUTPUT oCol  = result.color;														\n\
+TEMP   bmValue;                                                                     \n\
+TEMP   diffuse;																		\n\
+TEMP   envMap;																		\n\
+#read bump map 0																	\n\
+TEX    bmValue, bump0TexCoord, texture[0], 2D;										\n\
+#bias result (include scaling)														\n\
+MAD    bmValue, bmValue, bump0ScaleBias.xxxx, bump0ScaleBias.yyzz;					\n\
+ADD    bmValue, bmValue, bump1TexCoord;                                             \n\
+#read bump map 1																	\n\
+TEX    bmValue, bmValue, texture[1], 2D;											\n\
+#bias result (include scaling)														\n\
+MAD    bmValue, bmValue, bump1ScaleBias.xxxx, bump1ScaleBias.yyzz;					\n\
+#add envmap coord																	\n\
+ADD	   bmValue, bmValue, envMapTexCoord;											\n\
+#read envmap																		\n\
+TEX    envMap, bmValue, texture[2], 2D;												\n\
+#read diffuse																		\n\
+TEX    diffuse, diffuseTexCoord, texture[3], 2D;									\n\
+#modulate diffuse and envmap to get result											\n\
+MUL    oCol, diffuse, envMap;														\n\
+END ";
+
+static const char *WaterCodeWithFogForARBFragmentProgram =
+"!!ARBfp1.0																			\n\
+OPTION ARB_precision_hint_nicest;													\n\
+PARAM  bump0ScaleBias = program.env[0];												\n\
+PARAM  bump1ScaleBias = program.env[1];												\n\
+PARAM  fogColor       = state.fog.color;											\n\
+PARAM  fogFactor      = program.env[2];												\n\
+ATTRIB bump0TexCoord  = fragment.texcoord[0];										\n\
+ATTRIB bump1TexCoord  = fragment.texcoord[1];										\n\
+ATTRIB envMapTexCoord = fragment.texcoord[2];										\n\
+ATTRIB diffuseTexCoord = fragment.texcoord[3];										\n\
+ATTRIB fogValue		   = fragment.fogcoord;											\n\
+OUTPUT oCol  = result.color;														\n\
+TEMP   bmValue;                                                                     \n\
+TEMP   diffuse;																		\n\
+TEMP   envMap;																		\n\
+TEMP   tmpFog;																		\n\
+#read bump map 0																	\n\
+TEX    bmValue, bump0TexCoord, texture[0], 2D;										\n\
+#bias result (include scaling)														\n\
+MAD    bmValue, bmValue, bump0ScaleBias.xxxx, bump0ScaleBias.yyzz;					\n\
+ADD    bmValue, bmValue, bump1TexCoord;                                             \n\
+#read bump map 1																	\n\
+TEX    bmValue, bmValue, texture[1], 2D;											\n\
+#bias result (include scaling)														\n\
+MAD    bmValue, bmValue, bump1ScaleBias.xxxx, bump1ScaleBias.yyzz;					\n\
+#add envmap coord																	\n\
+ADD	   bmValue, bmValue, envMapTexCoord;											\n\
+TEX    envMap, bmValue, texture[2], 2D;												\n\
+TEX    diffuse, diffuseTexCoord, texture[3], 2D;									\n\
+MAD_SAT tmpFog, fogValue, fogFactor.x, fogFactor.y;									\n\
+#modulate diffuse and envmap to get result											\n\
+MUL    diffuse, diffuse, envMap;													\n\
+LRP    oCol, tmpFog, diffuse, fogColor;												\n\
+END ";
+
+
+// ***************************************************************************
+/** Load a ARB_fragment_program_code, and ensure it is loaded natively
+  */
+uint loadARBFragmentProgramStringNative(const char *prog)
+{
+	if (!prog) return 0;
+	GLuint progID;
+	nglGenProgramsARB(1, &progID);
+	if (!progID) return false;
+	nglBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, progID);
+	GLint errorPos, isNative;
+	nglProgramStringARB(GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, strlen(prog), prog);
+	nglBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, 0);
+	glGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &errorPos);
+	nglGetProgramivARB(GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_UNDER_NATIVE_LIMITS_ARB, &isNative);
+	if ((errorPos == -1) && (isNative == 1))
+	{	
+		return progID;
+	}
+	else
+	{
+		if (errorPos == -1)
+		{
+			nglDeleteProgramsARB(1, &progID);			
+		}
+		return 0;
+	}
+}
+
+
+// ***************************************************************************
+/** R200 Fragment Shader :
+  * Send fragment shader to fetch a perturbed envmap from the addition of 2 bumpmap
+  * The result is in R2 after the 2nd pass
+  */
+static void fetchPerturbedEnvMapR200()
+{
+	////////////
+	// PASS 1 //
+	////////////
+
+	nglSampleMapATI(GL_REG_0_ATI, GL_TEXTURE0_ARB, GL_SWIZZLE_STR_ATI); // sample bump map 0
+	nglSampleMapATI(GL_REG_1_ATI, GL_TEXTURE1_ARB, GL_SWIZZLE_STR_ATI); // sample bump map 1
+	nglPassTexCoordATI(GL_REG_2_ATI, GL_TEXTURE2_ARB, GL_SWIZZLE_STR_ATI);	// get texcoord for envmap
+	
+	nglColorFragmentOp3ATI(GL_MAD_ATI, GL_REG_2_ATI, GL_NONE, GL_NONE, GL_REG_0_ATI, GL_NONE, GL_BIAS_BIT_ATI|GL_2X_BIT_ATI, GL_CON_0_ATI, GL_NONE, GL_NONE, GL_REG_2_ATI, GL_NONE, GL_NONE); // scale bumpmap 1 & add envmap coords	
+	nglColorFragmentOp3ATI(GL_MAD_ATI, GL_REG_2_ATI, GL_NONE, GL_NONE, GL_REG_1_ATI, GL_NONE, GL_BIAS_BIT_ATI|GL_2X_BIT_ATI, GL_CON_1_ATI, GL_NONE, GL_NONE, GL_REG_2_ATI, GL_NONE, GL_NONE); // scale bumpmap 2 & add to bump map 1
+	
+	
+
+	////////////
+	// PASS 2 //
+	////////////
+	nglSampleMapATI(GL_REG_2_ATI, GL_REG_2_ATI, GL_SWIZZLE_STR_ATI); // fetch envmap at perturbed texcoords	
+
+}
+
+// ***************************************************************************
+void CDriverGL::initFragmentShaders()
+{
+	///////////////////
+	// WATER SHADERS //
+	///////////////////
+
+	// the ARB_fragment_program is prioritary over other extensions when present
+	if (_Extensions.ARBFragmentProgram)
+	{
+		
+		ARBWaterShader[0] = loadARBFragmentProgramStringNative(WaterCodeNoDiffuseForARBFragmentProgram);
+		ARBWaterShader[1] = loadARBFragmentProgramStringNative(WaterCodeNoDiffuseWithFogForARBFragmentProgram);
+		ARBWaterShader[2] = loadARBFragmentProgramStringNative(WaterCodeForARBFragmentProgram);
+		ARBWaterShader[3] = loadARBFragmentProgramStringNative(WaterCodeWithFogForARBFragmentProgram);
+		bool ok = true;
+		for(uint k = 0; k < 4; ++k)
+		{
+			if (!ARBWaterShader[k])
+			{
+				ok = false;
+				deleteARBFragmentPrograms();
+				break;
+			}
+		}	
+		if (ok) return;
+	}
+	
+	if (_Extensions.ATIFragmentShader)
+	{
+		ATIWaterShaderHandleNoDiffuseMap = nglGenFragmentShadersATI(1);
+		ATIWaterShaderHandle = nglGenFragmentShadersATI(1);
+		if (!ATIWaterShaderHandle || !ATIWaterShaderHandleNoDiffuseMap)
+		{
+			ATIWaterShaderHandleNoDiffuseMap = ATIWaterShaderHandle = 0;
+			nlwarning("Couldn't generate water shader using ATI_fragment_shader !");
+			return;
+		}
+		else
+		{
+
+			glGetError();
+			// Water shader for R200 : we just add the 2 bump map contributions (du, dv). We then use this contribution to perturbate the envmap
+			nglBindFragmentShaderATI(ATIWaterShaderHandleNoDiffuseMap);
+			nglBeginFragmentShaderATI();			
+			//
+			fetchPerturbedEnvMapR200();
+			nglColorFragmentOp1ATI(GL_MOV_ATI, GL_REG_0_ATI, GL_NONE, GL_NONE, GL_REG_2_ATI, GL_NONE, GL_NONE);
+			nglAlphaFragmentOp1ATI(GL_MOV_ATI, GL_REG_0_ATI, GL_NONE, GL_REG_2_ATI, GL_NONE, GL_NONE);
+			//			
+			nglEndFragmentShaderATI();
+			GLenum error = glGetError();
+		    nlassert(error == GL_NONE);
+
+			// The same but with a diffuse map added
+			nglBindFragmentShaderATI(ATIWaterShaderHandle);
+			nglBeginFragmentShaderATI();
+			//
+			fetchPerturbedEnvMapR200();
+
+			nglSampleMapATI(GL_REG_3_ATI, GL_TEXTURE3_ARB, GL_SWIZZLE_STR_ATI); // fetch envmap at perturbed texcoords
+			nglColorFragmentOp2ATI(GL_MUL_ATI, GL_REG_0_ATI, GL_NONE, GL_NONE, GL_REG_3_ATI, GL_NONE, GL_NONE, GL_REG_2_ATI, GL_NONE, GL_NONE); // scale bumpmap 1 & add envmap coords
+			nglAlphaFragmentOp2ATI(GL_MUL_ATI, GL_REG_0_ATI, GL_NONE, GL_REG_3_ATI, GL_NONE, GL_NONE, GL_REG_2_ATI, GL_NONE, GL_NONE);
+
+
+			nglEndFragmentShaderATI();
+			error = glGetError();
+		    nlassert(error == GL_NONE);
+			nglBindFragmentShaderATI(0);			
+		}
+	}	
+
+	// if none of the previous programs worked, fallback on NV_texture_shader, or (todo) simpler shader
+	
+}
+
+// ***************************************************************************
+void CDriverGL::deleteARBFragmentPrograms()
+{
+	for(uint k = 0; k < 4; ++k)
+	{
+		if (ARBWaterShader[k])
+		{
+			GLuint progId = (GLuint) ARBWaterShader[k];
+			nglDeleteProgramsARB(1, &progId);
+			ARBWaterShader[k] = 0;
+		}
+	}
+
+}
+
+// ***************************************************************************
+void CDriverGL::deleteFragmentShaders()
+{	
+	deleteARBFragmentPrograms();
+	if (ATIWaterShaderHandleNoDiffuseMap)
+	{		
+		nglDeleteFragmentShaderATI((GLuint) ATIWaterShaderHandleNoDiffuseMap);		
+		ATIWaterShaderHandleNoDiffuseMap = 0;
+	}
+	if (ATIWaterShaderHandle)
+	{		
+		nglDeleteFragmentShaderATI((GLuint) ATIWaterShaderHandle);		
+		ATIWaterShaderHandle = 0;
+	}
+}
+
 
 } // NL3D

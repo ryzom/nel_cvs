@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.38 2002/09/24 14:40:46 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.39 2003/03/31 11:54:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -267,6 +267,13 @@ NEL_PFNGLVARIANTARRAYOBJECTATIPROC		nglVariantArrayObjectATI;
 NEL_PFNGLGETVARIANTARRAYOBJECTFVATIPROC	nglGetVariantArrayObjectfvATI;
 NEL_PFNGLGETVARIANTARRAYOBJECTIVATIPROC	nglGetVariantArrayObjectivATI;
 
+// GL_ATI_map_object_buffer
+//===================================
+
+NEL_PFNGLMAPOBJECTBUFFERATIPROC   nglMapObjectBufferATI;
+NEL_PFNGLUNMAPOBJECTBUFFERATIPROC nglUnmapObjectBufferATI;
+
+
 
 // GL_ATI_envmap_bumpmap extension
 //========================
@@ -274,6 +281,45 @@ PFNGLTEXBUMPPARAMETERIVATIPROC nglTexBumpParameterivATI;
 PFNGLTEXBUMPPARAMETERFVATIPROC nglTexBumpParameterfvATI;
 PFNGLGETTEXBUMPPARAMETERIVATIPROC nglGetTexBumpParameterivATI;
 PFNGLGETTEXBUMPPARAMETERFVATIPROC nglGetTexBumpParameterfvATI;
+
+// GL_ATI_fragment_shader extension
+//===================================
+NEL_PFNGLGENFRAGMENTSHADERSATIPROC			nglGenFragmentShadersATI;
+NEL_PFNGLBINDFRAGMENTSHADERATIPROC			nglBindFragmentShaderATI;
+NEL_PFNGLDELETEFRAGMENTSHADERATIPROC			nglDeleteFragmentShaderATI;
+NEL_PFNGLBEGINFRAGMENTSHADERATIPROC			nglBeginFragmentShaderATI;
+NEL_PFNGLENDFRAGMENTSHADERATIPROC			nglEndFragmentShaderATI;
+NEL_PFNGLPASSTEXCOORDATIPROC					nglPassTexCoordATI;
+NEL_PFNGLSAMPLEMAPATIPROC					nglSampleMapATI;
+NEL_PFNGLCOLORFRAGMENTOP1ATIPROC				nglColorFragmentOp1ATI;
+NEL_PFNGLCOLORFRAGMENTOP2ATIPROC				nglColorFragmentOp2ATI;
+NEL_PFNGLCOLORFRAGMENTOP3ATIPROC				nglColorFragmentOp3ATI;
+NEL_PFNGLALPHAFRAGMENTOP1ATIPROC				nglAlphaFragmentOp1ATI;
+NEL_PFNGLALPHAFRAGMENTOP2ATIPROC				nglAlphaFragmentOp2ATI;
+NEL_PFNGLALPHAFRAGMENTOP3ATIPROC				nglAlphaFragmentOp3ATI;
+NEL_PFNGLSETFRAGMENTSHADERCONSTANTATIPROC	nglSetFragmentShaderConstantATI;
+
+// GL_ARG_fragment_program
+//===================================
+NEL_PFNGLPROGRAMSTRINGARBPROC nglProgramStringARB;
+NEL_PFNGLBINDPROGRAMARBPROC nglBindProgramARB;
+NEL_PFNGLDELETEPROGRAMSARBPROC nglDeleteProgramsARB;
+NEL_PFNGLGENPROGRAMSARBPROC nglGenProgramsARB;
+NEL_PFNGLPROGRAMENVPARAMETER4DARBPROC nglProgramEnvParameter4dARB;
+NEL_PFNGLPROGRAMENVPARAMETER4DVARBPROC nglProgramEnvParameter4dvARB;
+NEL_PFNGLPROGRAMENVPARAMETER4FARBPROC nglProgramEnvParameter4fARB;
+NEL_PFNGLPROGRAMENVPARAMETER4FVARBPROC nglProgramEnvParameter4fvARB;
+NEL_PFNGLPROGRAMLOCALPARAMETER4DARBPROC nglGetProgramLocalParameter4dARB;
+NEL_PFNGLPROGRAMLOCALPARAMETER4DVARBPROC nglGetProgramLocalParameter4dvARB;
+NEL_PFNGLPROGRAMLOCALPARAMETER4FARBPROC nglGetProgramLocalParameter4fARB;
+NEL_PFNGLPROGRAMLOCALPARAMETER4FVARBPROC nglGetProgramLocalParameter4fvARB;
+NEL_PFNGLGETPROGRAMENVPARAMETERDVARBPROC nglGetProgramEnvParameterdvARB;
+NEL_PFNGLGETPROGRAMENVPARAMETERFVARBPROC nglGetProgramEnvParameterfvARB;
+NEL_PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC nglGetProgramLocalParameterdvARB;
+NEL_PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC nglGetProgramLocalParameterfvARB;
+NEL_PFNGLGETPROGRAMIVARBPROC nglGetProgramivARB;
+NEL_PFNGLGETPROGRAMSTRINGARBPROC nglGetProgramStringARB;
+NEL_PFNGLISPROGRAMARBPROC nglIsProgramARB;
 
 
 // Pbuffer extension
@@ -634,7 +680,11 @@ static bool	setupEXTVertexShader(const char	*glext)
 	//
 	GLint numVSLocals;
 	glGetIntegerv(GL_MAX_VERTEX_SHADER_LOCALS_EXT, &numVSLocals);
-	if (numVSLocals < 4 * (12 + 4) + 1 + 3) return false;	
+	if (numVSLocals < 4 * (12 + 4) + 1 + 3)
+	{
+		nlwarning("EXT_vertex_shader extension has not much register. Some vertex programm may fail loading");
+		return false;
+	}
 	//
 	GLint numVSLocalConstants;
 	glGetIntegerv(GL_MAX_VERTEX_SHADER_LOCAL_CONSTANTS_EXT, &numVSLocalConstants);
@@ -644,6 +694,10 @@ static bool	setupEXTVertexShader(const char	*glext)
 	glGetIntegerv(GL_MAX_OPTIMIZED_VERTEX_SHADER_INVARIANTS_EXT, &numVSInvariants);
 	if (numVSInvariants < 96 + 1) return false;
 	//	
+	GLint numVSVariants;
+	glGetIntegerv(GL_MAX_VERTEX_SHADER_VARIANTS_EXT, &numVSVariants);
+	if (numVSInvariants < 4) return false;
+
 	return true;
 	
 }
@@ -755,7 +809,12 @@ static bool	setupATIVertexArrayObject(const char *glext)
 	if(!(nglUpdateObjectBufferATI= (NEL_PFNGLUPDATEOBJECTBUFFERATIPROC)nelglGetProcAddress("glUpdateObjectBufferATI"))) return false;
 	if(!(nglGetObjectBufferfvATI= (NEL_PFNGLGETOBJECTBUFFERFVATIPROC)nelglGetProcAddress("glGetObjectBufferfvATI"))) return false;
 	if(!(nglGetObjectBufferivATI= (NEL_PFNGLGETOBJECTBUFFERIVATIPROC)nelglGetProcAddress("glGetObjectBufferivATI"))) return false;
-	if(!(nglDeleteObjectBufferATI= (NEL_PFNGLDELETEOBJECTBUFFERATIPROC)nelglGetProcAddress("glDeleteObjectBufferATI"))) return false;
+	
+	if(!(nglDeleteObjectBufferATI= (NEL_PFNGLDELETEOBJECTBUFFERATIPROC)nelglGetProcAddress("glDeleteObjectBufferATI")))
+	{
+		// seems that on matrox parhelia driver, this procedure is named glFreeObjectBufferATI !!
+		if(!(nglDeleteObjectBufferATI= (NEL_PFNGLDELETEOBJECTBUFFERATIPROC)nelglGetProcAddress("glFreeObjectBufferATI"))) return false;
+	}
 	if(!(nglArrayObjectATI= (NEL_PFNGLARRAYOBJECTATIPROC)nelglGetProcAddress("glArrayObjectATI"))) return false;
 	if(!(nglGetArrayObjectfvATI= (NEL_PFNGLGETARRAYOBJECTFVATIPROC)nelglGetProcAddress("glGetArrayObjectfvATI"))) return false;
 	if(!(nglGetArrayObjectivATI= (NEL_PFNGLGETARRAYOBJECTIVATIPROC)nelglGetProcAddress("glGetArrayObjectivATI"))) return false;
@@ -765,6 +824,72 @@ static bool	setupATIVertexArrayObject(const char *glext)
 
 	return true;
 }
+
+
+static bool	setupATIMapObjectBuffer(const char *glext)
+{	
+	if(strstr(glext, "GL_ATI_map_object_buffer")==NULL)
+		return false;
+	if (!(nglMapObjectBufferATI= (NEL_PFNGLMAPOBJECTBUFFERATIPROC)nelglGetProcAddress("glMapObjectBufferATI"))) return false;
+	if (!(nglUnmapObjectBufferATI= (NEL_PFNGLUNMAPOBJECTBUFFERATIPROC)nelglGetProcAddress("glUnmapObjectBufferATI"))) return false;
+	return true;	
+}
+
+
+
+// *********************************
+static bool	setupATIFragmentShader(const char *glext)
+{
+	if(strstr(glext, "GL_ATI_fragment_shader")==NULL)
+		return false;
+	if (!(nglGenFragmentShadersATI= (NEL_PFNGLGENFRAGMENTSHADERSATIPROC)nelglGetProcAddress("glGenFragmentShadersATI"))) return false;
+	if (!(nglBindFragmentShaderATI = (NEL_PFNGLBINDFRAGMENTSHADERATIPROC)nelglGetProcAddress("glBindFragmentShaderATI"))) return false;
+	if (!(nglDeleteFragmentShaderATI = (NEL_PFNGLDELETEFRAGMENTSHADERATIPROC)nelglGetProcAddress("glDeleteFragmentShaderATI"))) return false;
+	if (!(nglBeginFragmentShaderATI = (NEL_PFNGLBEGINFRAGMENTSHADERATIPROC)nelglGetProcAddress("glBeginFragmentShaderATI"))) return false;
+	if (!(nglEndFragmentShaderATI = (NEL_PFNGLENDFRAGMENTSHADERATIPROC)nelglGetProcAddress("glEndFragmentShaderATI"))) return false;
+	if (!(nglPassTexCoordATI = (NEL_PFNGLPASSTEXCOORDATIPROC)nelglGetProcAddress("glPassTexCoordATI"))) return false;
+	if (!(nglSampleMapATI = (NEL_PFNGLSAMPLEMAPATIPROC)nelglGetProcAddress("glSampleMapATI"))) return false;
+	if (!(nglColorFragmentOp1ATI = (NEL_PFNGLCOLORFRAGMENTOP1ATIPROC)nelglGetProcAddress("glColorFragmentOp1ATI"))) return false;
+	if (!(nglColorFragmentOp2ATI = (NEL_PFNGLCOLORFRAGMENTOP2ATIPROC)nelglGetProcAddress("glColorFragmentOp2ATI"))) return false;
+	if (!(nglColorFragmentOp3ATI = (NEL_PFNGLCOLORFRAGMENTOP3ATIPROC)nelglGetProcAddress("glColorFragmentOp3ATI"))) return false;
+	if (!(nglAlphaFragmentOp1ATI = (NEL_PFNGLALPHAFRAGMENTOP1ATIPROC)nelglGetProcAddress("glAlphaFragmentOp1ATI"))) return false;
+	if (!(nglAlphaFragmentOp2ATI = (NEL_PFNGLALPHAFRAGMENTOP2ATIPROC)nelglGetProcAddress("glAlphaFragmentOp2ATI"))) return false;
+	if (!(nglAlphaFragmentOp3ATI = (NEL_PFNGLALPHAFRAGMENTOP3ATIPROC)nelglGetProcAddress("glAlphaFragmentOp3ATI"))) return false;
+	if (!(nglSetFragmentShaderConstantATI = (NEL_PFNGLSETFRAGMENTSHADERCONSTANTATIPROC)nelglGetProcAddress("glSetFragmentShaderConstantATI"))) return false;
+
+	return true;
+}
+
+// *********************************
+static bool	setupARBFragmentProgram(const char *glext)
+{
+	if(strstr(glext, "GL_ARB_fragment_program")==NULL)
+		return false;
+
+	if (!(nglProgramStringARB= (NEL_PFNGLPROGRAMSTRINGARBPROC)nelglGetProcAddress("glProgramStringARB"))) return false;
+	if (!(nglBindProgramARB= (NEL_PFNGLBINDPROGRAMARBPROC)nelglGetProcAddress("glBindProgramARB"))) return false;
+	if (!(nglDeleteProgramsARB= (NEL_PFNGLDELETEPROGRAMSARBPROC)nelglGetProcAddress("glDeleteProgramsARB"))) return false;
+	if (!(nglGenProgramsARB= (NEL_PFNGLGENPROGRAMSARBPROC)nelglGetProcAddress("glGenProgramsARB"))) return false;
+	if (!(nglProgramEnvParameter4dARB= (NEL_PFNGLPROGRAMENVPARAMETER4DARBPROC)nelglGetProcAddress("glProgramEnvParameter4dARB"))) return false;
+	if (!(nglProgramEnvParameter4dvARB= (NEL_PFNGLPROGRAMENVPARAMETER4DVARBPROC)nelglGetProcAddress("glProgramEnvParameter4dvARB"))) return false;
+	if (!(nglProgramEnvParameter4fARB= (NEL_PFNGLPROGRAMENVPARAMETER4FARBPROC)nelglGetProcAddress("glProgramEnvParameter4fARB"))) return false;
+	if (!(nglProgramEnvParameter4fvARB= (NEL_PFNGLPROGRAMENVPARAMETER4FVARBPROC)nelglGetProcAddress("glProgramEnvParameter4fvARB"))) return false;
+	if (!(nglGetProgramLocalParameter4dARB= (NEL_PFNGLPROGRAMLOCALPARAMETER4DARBPROC)nelglGetProcAddress("glProgramLocalParameter4dARB"))) return false;
+	if (!(nglGetProgramLocalParameter4dvARB= (NEL_PFNGLPROGRAMLOCALPARAMETER4DVARBPROC)nelglGetProcAddress("glProgramLocalParameter4dvARB"))) return false;
+	if (!(nglGetProgramLocalParameter4fARB= (NEL_PFNGLPROGRAMLOCALPARAMETER4FARBPROC)nelglGetProcAddress("glProgramLocalParameter4fARB"))) return false;
+	if (!(nglGetProgramLocalParameter4fvARB= (NEL_PFNGLPROGRAMLOCALPARAMETER4FVARBPROC)nelglGetProcAddress("glProgramLocalParameter4fvARB"))) return false;
+	if (!(nglGetProgramEnvParameterdvARB= (NEL_PFNGLGETPROGRAMENVPARAMETERDVARBPROC)nelglGetProcAddress("glGetProgramEnvParameterdvARB"))) return false;
+	if (!(nglGetProgramEnvParameterfvARB= (NEL_PFNGLGETPROGRAMENVPARAMETERFVARBPROC)nelglGetProcAddress("glGetProgramEnvParameterfvARB"))) return false;
+	if (!(nglGetProgramLocalParameterdvARB= (NEL_PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC)nelglGetProcAddress("glGetProgramLocalParameterdvARB"))) return false;
+	if (!(nglGetProgramLocalParameterfvARB= (NEL_PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC)nelglGetProcAddress("glGetProgramLocalParameterfvARB"))) return false;
+	if (!(nglGetProgramivARB= (NEL_PFNGLGETPROGRAMIVARBPROC)nelglGetProcAddress("glGetProgramivARB"))) return false;
+	if (!(nglGetProgramStringARB= (NEL_PFNGLGETPROGRAMSTRINGARBPROC)nelglGetProcAddress("glGetProgramStringARB"))) return false;
+	if (!(nglIsProgramARB= (NEL_PFNGLISPROGRAMARBPROC)nelglGetProcAddress("glIsProgramARB"))) return false;
+
+	return true;
+}
+
+
 
 
 
@@ -837,13 +962,24 @@ void	registerGlExtensions(CGlExtensions &ext)
 		ext.NVVertexProgram = setupNVVertexProgram(glext);
 		ext.EXTVertexShader = setupEXTVertexShader(glext);
 	}
+	else
+	{
+		ext.NVVertexProgram = false;
+		ext.EXTVertexShader = false;
+	}
 
 
 
 	// Check texture shaders
 	// Disable feature ???
 	if(!ext.DisableHardwareTextureShader)
+	{	
 		ext.NVTextureShader = setupNVTextureShader(glext);
+	}
+	else
+	{
+		ext.NVTextureShader = false;
+	}
 
 	// For now, the only way to know if emulation, is to test some extension which exist only on GeForce3.
 	// if GL_NV_texture_shader is not here, then we are not on GeForce3.
@@ -872,11 +1008,21 @@ void	registerGlExtensions(CGlExtensions &ext)
 	// Check ATIVertexArrayObject
 	// Disable feature ???
 	if(!ext.DisableHardwareVertexArrayAGP)
+	{	
 		ext.ATIVertexArrayObject= setupATIVertexArrayObject(glext);
+		ext.ATIMapObjectBuffer= setupATIMapObjectBuffer(glext);
+	}
 	// Check ATIXTextureEnvCombine3.
 	ext.ATIXTextureEnvCombine3= setupATIXTextureEnvCombine3(glext);
 	// Check ATIEnvMapBumpMap
 	ext.ATIEnvMapBumpMap = setupATIEnvMapBumpMap(glext);
+	// Check ATIFragmentShader
+	ext.ATIFragmentShader = setupATIFragmentShader(glext);
+
+	// ARB extensions
+	// -------------
+	ext.ARBFragmentProgram = setupARBFragmentProgram(glext);
+
 }
 
 

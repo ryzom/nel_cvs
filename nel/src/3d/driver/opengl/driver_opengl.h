@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.140 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.141 2003/03/31 11:54:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -457,6 +457,20 @@ public:
 
 	virtual void			swapTextureHandle(ITexture &tex0, ITexture &tex1);
 
+	/// \name Material multipass.
+	/**	NB: setupMaterial() must be called before thoses methods.
+	 *  NB: This is intended to be use with the rendering of simple primitives.
+	 *  NB: Other render calls performs the needed setup automatically
+	 */
+	// @{
+	/// init multipass for _CurrentMaterial. return number of pass required to render this material.
+	virtual sint			beginMaterialMultiPass() { 	return beginMultiPass(); }
+	/// active the ith pass of this material.
+	virtual void			setupMaterialPass(uint pass) { 	setupPass(pass); }
+	/// end multipass for this material.
+	virtual void			endMaterialMultiPass() { 	endMultiPass(); }
+	// @}
+
 
 private:
 	friend class					CTextureDrvInfosGL;
@@ -554,6 +568,7 @@ private:
 
 	// Fog.
 	bool					_FogEnabled;
+	float					_FogEnd, _FogStart;
 	GLfloat					_CurrentFogColor[4];
 
 
@@ -604,6 +619,10 @@ private:
 	GLenum					_CurrentTexAddrMode[IDRV_MAT_MAXTEXTURES];
 	// Reset texture shaders to their initial state if they are used
 	void					resetTextureShaders();
+	/** set texture shaders from stage 0 to stage IDRV_MAT_MAXTEXTURES - 1
+	  * textures are needed to setup the right kind of shader (cubic or 2d texture)
+	  */
+	void					setTextureShaders(const uint8 *addressingModes, const NLMISC::CSmartPtr<ITexture> *textures);
 	// activation of texture shaders
 	bool					_NVTextureShaderEnabled;
 	// Which stages support EMBM
@@ -665,20 +684,23 @@ private:
 	// Clip the wanted rectangle with window. return true if rect is not NULL.
 	bool					clipRect(NLMISC::CRect &rect);
 
+	
 
 	/// \name Material multipass.
 	/**	NB: setupMaterial() must be called before thoses methods.
 	 */
 	// @{
 	/// init multipass for _CurrentMaterial. return number of pass required to render this material.
-	sint			beginMultiPass();
+	 sint			beginMultiPass();
 	/// active the ith pass of this material.
-	void			setupPass(uint pass);
+	 void			setupPass(uint pass);
 	/// end multipass for this material.
-	void			endMultiPass();
+	 void			endMultiPass();
+	// @}
+
 	/// LastVB for UV setup.
 	CVertexBufferInfo	_LastVB;
-	// @}
+	
 
 
 	/// setup a texture stage with an UV from VB.
@@ -716,6 +738,14 @@ private:
 	sint			beginSpecularMultiPass();
 	void			setupSpecularPass(uint pass);
 	void			endSpecularMultiPass();
+	// @}
+
+
+	/// \name Water
+	// @{
+	sint			beginWaterMultiPass();
+	void			setupWaterPass(uint pass);
+	void			endWaterMultiPass();
 	// @}
 		
 	/// \name Per pixel lighting
@@ -801,6 +831,9 @@ private:
 	friend class					CVertexBufferHardGLNVidia;
 	friend class					CVertexArrayRangeATI;
 	friend class					CVertexBufferHardGLATI;
+	friend class					CVertexArrayRangeMapObjectATI;
+	friend class					CVertexBufferHardGLMapObjectATI;
+
 	// The VertexArrayRange activated.
 	IVertexArrayRange				*_CurrentVertexArrayRange;
 	// The VertexBufferHardGL activated.
@@ -932,8 +965,10 @@ private:
 			GLuint _EVSNormalHandle;
 			GLuint _EVSColorHandle;			
 			GLuint _EVSTexHandle[8];
-			// Handle of the first constant c[0]. In vertex program wa have 96 constant c[0] .. c[95]
+			// Handle of the first constant c[0]. In vertex program we have 96 constant c[0] .. c[95]
 			GLuint _EVSConstantHandle;
+			// number of constant
+			static const uint _EVSNumConstant;
 			// 
 			bool   setupEXTVertexShader(const CVPParser::TProgram &program, GLuint id, uint variants[EVSNumVariants], uint16 &usedInputRegisters);
 			//			
@@ -947,6 +982,27 @@ private:
 	bool							_NeedToRestaureGammaRamp;
 	uint16							_GammaRampBackuped[3*256];
 #endif
+
+
+	/// \fragment shaders
+	// @{
+
+			GLuint ATIWaterShaderHandleNoDiffuseMap; // water support on R200
+			GLuint ATIWaterShaderHandle; // water support on R200
+
+			GLuint ARBWaterShader[4]; // water support on R300, NV30 & the like
+			
+
+			void   initFragmentShaders();
+			void   deleteFragmentShaders();
+			void   deleteARBFragmentPrograms();
+
+			void   setupWaterPassR200(const CMaterial &mat);
+			void   setupWaterPassARB(const CMaterial &mat);
+			void   setupWaterPassNV20(const CMaterial &mat);
+	// @}
+
+
 };
 
 

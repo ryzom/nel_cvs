@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.92 2003/11/25 14:38:09 vizerie Exp $
+ * $Id: path.cpp,v 1.93 2003/11/25 14:45:33 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/path.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/progress_callback.h"
+#include "nel/misc/file.h"
 
 #ifdef NL_OS_WINDOWS
 #	include <windows.h>
@@ -265,6 +266,58 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 	}
 }
 
+// ***************************************************************************
+void CPath::remapFile (const std::string &file1, const std::string &file2)
+{
+	NL_ALLOC_CONTEXT (MiPath);
+	CPath *inst = CPath::getInstance();
+	if (file1.empty()) return;
+	if (file2.empty()) return;
+	inst->_RemappedFiles[strlwr(file1)] = strlwr(file2);
+}
+
+// ***************************************************************************
+static void removeAllUnusedChar(string &str)
+{
+	uint32 i = 0;
+	while (!str.empty() && (i != str.size()))
+	{
+		if ((str[i] == ' ' || str[i] == '\t' || str[i] == '\r' || str[i] == '\n'))
+			str.erase(str.begin()+i);
+		else
+			i++;
+	}
+}
+
+// ***************************************************************************
+void CPath::loadRemappedFiles (const std::string &file)
+{
+	NL_ALLOC_CONTEXT (MiPath);
+	CPath *inst = CPath::getInstance();
+	string fullName = lookup(file, true, true, true);
+	CIFile f;
+	f.setCacheFileOnOpen (true);
+
+	if (!f.open (fullName))
+		return;
+
+	char sTmp[514];
+	string str;
+	
+	while (!f.eof())
+	{
+		f.getline(sTmp, 512);
+		str = sTmp;
+		if (str.find(','))
+		{
+			removeAllUnusedChar(str);
+			if (!str.empty())
+				remapFile( str.substr(0,str.find(',')), str.substr(str.find(',')+1, str.size()) );
+		}
+	}
+}
+
+// ***************************************************************************
 string CPath::lookup (const string &filename, bool throwException, bool displayWarning, bool lookupInLocalDirectory)
 {
 	// If the file already contains a @, it means that a lookup already proceed and returning a big file, do nothing
@@ -283,6 +336,10 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 	{
 		str.resize (str.size()-1);
 	}
+
+	map<string, string>::iterator itss = inst->_RemappedFiles.find(str);
+	if (itss != inst->_RemappedFiles.end())
+		str = itss->second;
 
 	if (inst->_MemoryCompressed)
 	{

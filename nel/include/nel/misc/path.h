@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.41 2003/11/25 14:37:59 vizerie Exp $
+ * $Id: path.h,v 1.42 2003/11/25 14:44:59 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -133,6 +133,18 @@ public:
 	 */
 	static void remapExtension (const std::string &ext1, const std::string &ext2, bool substitute);
 
+	/** Add file remapping
+	 * ie: If you have a file called pic.dds, and call remapFile("picture.dds", "pic.dds")
+	 * calling lookup("picture.dds") will in fact call lookup("pic.dds")
+	 */
+	static void remapFile (const std::string &file1, const std::string &file2);
+
+	/** Load a file containing the remapped file (you must have done addsearchpath, this method use lookup)
+	 * Format is remapped_name_file, real_file
+	 * separators are , and \n
+	 */
+	static void loadRemappedFiles (const std::string &file);
+
 	static void display ();
 
 	/**	Take a path and put it in the portable format and add a terminated / if needed
@@ -214,6 +226,8 @@ private:
 	std::vector<std::string> _AlternativePaths;
 
 	std::vector<std::string> IgnoredFiles;
+
+	std::map<std::string, std::string> _RemappedFiles;
 
 	// ----------------------------------------------
 	// MEMORY WISE

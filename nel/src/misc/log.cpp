@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.47 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: log.cpp,v 1.48 2002/11/13 11:57:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ using namespace std;
 namespace NLMISC
 {
 
-string CLog::_ProcessName = "";
+string *CLog::_ProcessName = NULL;
 
 CLog::CLog( TLogType logType) : _LogType (logType), _Line(-1), _FileName(NULL), _Mutex("LOG"+toString((uint)logType)), _PosSet(false)
 {
@@ -55,18 +55,28 @@ CLog::CLog( TLogType logType) : _LogType (logType), _Line(-1), _FileName(NULL), 
 void CLog::setDefaultProcessName ()
 {
 #ifdef NL_OS_WINDOWS
-	if (_ProcessName.empty())
+	if (_ProcessName == NULL)
+	{
+		_ProcessName = new string;
+	}
+	
+	if ((*_ProcessName).empty())
 	{
 		char name[1024];
 		GetModuleFileName (NULL, name, 1023);
-		_ProcessName = CFile::getFilename(name);
+		(*_ProcessName) = CFile::getFilename(name);
 	}
 #endif
 }
 
 void CLog::setProcessName (const std::string &processName)
 {
-	_ProcessName = processName;
+	if (_ProcessName == NULL)
+	{
+		_ProcessName = new string;
+	}
+
+	*_ProcessName = processName;
 }
 
 void CLog::setPosition (sint line, char *filename)
@@ -237,7 +247,7 @@ void CLog::displayString (const char *str)
 		{
 			time (&TempArgs.Date);
 			TempArgs.LogType = _LogType;
-			TempArgs.ProcessName = _ProcessName;
+			TempArgs.ProcessName = *_ProcessName;
 			TempArgs.ThreadId = getThreadId();
 			TempArgs.Filename = _FileName;
 			TempArgs.Line = _Line;
@@ -257,7 +267,7 @@ void CLog::displayString (const char *str)
 		{
 			time (&localargs.Date);
 			localargs.LogType = _LogType;
-			localargs.ProcessName = _ProcessName;
+			localargs.ProcessName = *_ProcessName;
 			localargs.ThreadId = getThreadId();
 			localargs.Filename = _FileName;
 			localargs.Line = _Line;

@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.31 2002/08/23 14:54:40 lecroart Exp $
+ * $Id: log.h,v 1.32 2002/11/13 11:57:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,7 +128,7 @@ protected:
 	bool passFilter( const char *filter );
 
 	TLogType                          _LogType;
-	static std::string		          _ProcessName;
+	static std::string		          *_ProcessName;
 
 	sint                              _Line;
 	char                             *_FileName;

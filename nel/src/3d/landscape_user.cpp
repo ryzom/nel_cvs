@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.46 2004/08/03 16:26:52 vizerie Exp $
+ * $Id: landscape_user.cpp,v 1.47 2004/08/20 14:06:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -305,6 +305,7 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius, std::s
 				catch (EBadBind &e)
 				{
 					nlwarning ("Bind error : %s", e.what());
+					nlstopex(("Zone Data Bind Error. Please send a report. You may continue but it should crash!"));
 				}
 
 				delete Work.Zone;

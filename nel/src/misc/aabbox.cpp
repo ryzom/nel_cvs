@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.8 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: aabbox.cpp,v 1.9 2003/08/07 08:54:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -223,17 +223,31 @@ CAABBox CAABBox::transformAABBox(const CMatrix &mat, const CAABBox &box)
 	// TODO : optimize this a bit if possible...
 	CAABBox result;	
 
-	const CVector &m = mat * box.getCenter();
-	const CVector &h = mat.mulVector(box.getHalfSize());
-	CVector tmp, min, max;
-	min = max = m;
-	tmp = m + CVector(h.x, h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(h.x, -h.y, h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(h.x, -h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(-h.x, h.y, h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(-h.x, h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(-h.x, -h.y, h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(-h.x, -h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
+	/* OMG. Old code was false!!  
+		if we have ht= M * h
+		then CVector(-ht.x, ht.y, ht.z) != M * CVector(-h.x, h.y, h.z) !!!!
+	*/
+	// compute corners.
+	CVector	p[8];
+	CVector	min= box.getMin();
+	CVector	max= box.getMax();
+	p[0].set(min.x, min.y, min.z);
+	p[1].set(max.x, min.y, min.z);
+	p[2].set(min.x, max.y, min.z);
+	p[3].set(max.x, max.y, min.z);
+	p[4].set(min.x, min.y, max.z);
+	p[5].set(max.x, min.y, max.z);
+	p[6].set(min.x, max.y, max.z);
+	p[7].set(max.x, max.y, max.z);
+	CVector tmp;
+	min = max = mat * p[0];
+	// transform corners.
+	for(uint i=1;i<8;i++)
+	{
+		tmp= mat * p[i];
+		min.minof(min, tmp);
+		max.maxof(max, tmp);
+	}
 
 	result.setMinMax(min, max);
 	

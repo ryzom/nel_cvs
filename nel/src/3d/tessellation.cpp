@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.45 2001/07/06 12:26:48 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.46 2001/07/06 17:03:42 berenguier Exp $
  *
  */
 
@@ -75,7 +75,7 @@ void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 	TexCoordPointer0= vb.getTexCoordPointer(0, 0);
 
 	// In Far0, we don't have Color component.
-	if(VertexFormat && IDRV_VF_COLOR)
+	if(VertexFormat & IDRV_VF_COLOR)
 	{
 		ColorOff= vb.getColorOff();
 		ColorPointer= vb.getColorPointer();
@@ -98,7 +98,7 @@ void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *v
 	TexCoordPointer0= (uint8*)vcoord + TexCoordOff0;
 
 	// In Far0, we don't have Color component.
-	if(VertexFormat && IDRV_VF_COLOR)
+	if(VertexFormat & IDRV_VF_COLOR)
 	{
 		ColorOff= vb.getColorOff();
 		ColorPointer= (uint8*)vcoord + ColorOff;

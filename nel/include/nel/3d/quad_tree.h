@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.12 2001/01/02 10:21:43 berenguier Exp $
+ * $Id: quad_tree.h,v 1.13 2001/01/02 15:32:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -707,7 +707,7 @@ template<class T>	void		CQuadTree<T>::eraseAll()
 	}
 
 	// Then erase them. Must do it OUTSIDE the select loop.
-	for(sint i=0;i<its.size();i++)
+	for(sint i=0;i<(sint)its.size();i++)
 	{
 		erase(its[i]);
 	}

@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.11.4.1 2004/09/03 09:16:09 corvazier Exp $
+ * $Id: report.cpp,v 1.11.4.2 2004/09/08 09:33:27 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -103,6 +103,32 @@ static bool IgnoreNextTime;
 
 static bool DebugDefaultBehavior, QuitDefaultBehavior;
 
+static void sendEmail()
+{
+	if (SendMessage(sendReport, BM_GETCHECK, 0, 0) != BST_CHECKED)
+	{
+		bool res = EmailFunction ("", "", "", Subject, Body, AttachedFile, false);
+		if (res)
+		{
+			// EnableWindow(sendReport, FALSE);
+			// MessageBox (dialog, "The email was successfully sent", "email", MB_OK);
+			FILE *file = fopen ("report_sent", "wb");
+			fclose (file);
+		}
+		else
+		{
+			FILE *file = fopen ("report_failed", "wb");
+			fclose (file);
+			// MessageBox (dialog, "Failed to send the email", "email", MB_OK | MB_ICONERROR);
+		}
+	}
+	else
+	{
+		FILE *file = fopen ("report_refused", "wb");
+		fclose (file);
+	}
+}
+
 static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	//MSGFILTER *pmf;
@@ -115,6 +141,7 @@ static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		}
 		else if ((HWND) lParam == debug)
 		{
+			sendEmail();
 			NeedExit = true;
 			Result = ReportDebug;
 			if (DebugDefaultBehavior)
@@ -124,11 +151,13 @@ static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		}
 		else if ((HWND) lParam == ignore)
 		{
+			sendEmail();
 			NeedExit = true;
 			Result = ReportIgnore;
 		}
 		else if ((HWND) lParam == quit)
 		{
+			sendEmail();
 			NeedExit = true;
 			Result = ReportQuit;
 
@@ -137,7 +166,7 @@ static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				exit(EXIT_SUCCESS);
 			}
 		}
-		else if ((HWND) lParam == sendReport)
+		/*else if ((HWND) lParam == sendReport)
 		{
 			if (EmailFunction != NULL)
 			{
@@ -154,13 +183,14 @@ static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 					MessageBox (dialog, "Failed to send the email", "email", MB_OK | MB_ICONERROR);
 				}
 			}
-		}
+		}*/
 	}
 	else if (message == WM_CHAR)
 	{
 		if (wParam == 27)
 		{
 			// ESC -> ignore
+			sendEmail();
 			NeedExit = true;
 			Result = ReportIgnore;
 		}
@@ -195,7 +225,7 @@ TReportResult report (const std::string &title, const std::string &header, const
 
 
 	// create the window
-	dialog = CreateWindow ("NLReportWindow", formatedTitle.c_str(), WS_DLGFRAME | WS_CAPTION /*| WS_THICKFRAME*/, CW_USEDEFAULT, CW_USEDEFAULT, 456, 375,  NULL, NULL, GetModuleHandle(NULL), NULL);
+	dialog = CreateWindow ("NLReportWindow", formatedTitle.c_str(), WS_DLGFRAME | WS_CAPTION /*| WS_THICKFRAME*/, CW_USEDEFAULT, CW_USEDEFAULT, 456, 400,  NULL, NULL, GetModuleHandle(NULL), NULL);
 
 	// create the font
 	HFONT font = CreateFont (-12, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial");
@@ -249,7 +279,7 @@ TReportResult report (const std::string &title, const std::string &header, const
 		EnableWindow(quit, FALSE);
 
 	// create the debug button control
-	sendReport = CreateWindow ("BUTTON", "Send report", WS_CHILD | WS_VISIBLE, 429-80, 315, 90, 25, dialog, (HMENU) NULL, (HINSTANCE) GetWindowLong(dialog, GWL_HINSTANCE), NULL);
+	sendReport = CreateWindow ("BUTTON", "Don't send the report", WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX, 7, 315+32, 429, 18, dialog, (HMENU) NULL, (HINSTANCE) GetWindowLong(dialog, GWL_HINSTANCE), NULL);
 	SendMessage (sendReport, WM_SETFONT, (LONG) font, TRUE);
 
 	string formatedHeader;

@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.3 2001/11/07 10:37:02 vizerie Exp $
+ * $Id: polygon.h,v 1.4 2001/11/07 17:05:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,8 +109,8 @@ public:
 	typedef std::vector<TRaster>  TRasterVect;
 
 	/** Compute the borders of this poly with sub-pixel accuracy. No clipping is performed
-	  * The output is in a vector of sint pairs. A sint is giving the highest y coordinate.
-	  * The segment are ordered from high y to low y
+	  * The output is in a vector of sint pairs. The highestY is the minimum y (assuming the highest vertex of the one with minimum y)
+	  *	Rasters are created from the min y to the highest y  
 	  */
 	void		computeBorders(TRasterVect &borders, sint &highestY);
 public:

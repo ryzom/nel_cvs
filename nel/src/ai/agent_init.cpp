@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.6 2001/10/17 08:34:10 chafik Exp $
+ * $Id: agent_init.cpp,v 1.7 2001/10/25 14:40:19 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,6 +111,18 @@ namespace NLAIE
 	const IException *CExceptionIndexHandeledError::clone() const
 	{
 		return new CExceptionIndexHandeledError();
+	}
+
+
+	CExceptionUnRegisterClassError::CExceptionUnRegisterClassError(const CExceptionUnRegisterClassError &e)
+	{
+		_ClassName = new char [strlen(e._ClassName) + 1];
+		strcpy(_ClassName,e._ClassName);
+	}
+	CExceptionUnRegisterClassError::CExceptionUnRegisterClassError(const char *name)
+	{
+		_ClassName = new char [strlen(name) + 1];
+		strcpy(_ClassName,name);
 	}
 	const IException *CExceptionUnRegisterClassError::clone() const
 	{

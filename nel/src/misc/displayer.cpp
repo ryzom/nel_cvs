@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.46 2003/01/02 12:50:52 lecroart Exp $
+ * $Id: displayer.cpp,v 1.47 2003/01/02 13:10:59 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -400,7 +400,7 @@ void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 	{
 		_FilePointer = fopen (_FileName.c_str(), "at");
 		if (_FilePointer == NULL)
-			perror ("Can't open log file '%s'", _FileName.c_str());
+			printf ("Can't open log file '%s': %s\n", _FileName.c_str(), strerror (errno));
 	}
 	
 	if (_FilePointer != 0)

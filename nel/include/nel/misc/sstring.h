@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.19 2004/11/26 21:28:19 miller Exp $
+ * $Id: sstring.h,v 1.20 2004/12/03 11:11:22 barbier Exp $
  */
 
 
@@ -1734,7 +1734,7 @@ inline bool CSString::isXMLCompatible(bool isParameter) const
 			if (!isParameter) continue;
 		}
 
-		if ((*this)[i]>127 || (*this)[i]<32)
+		if ((uint8)((*this)[i])>127 || (uint8)((*this))[i]<32)
 			return false;
 	}
 

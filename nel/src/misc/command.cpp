@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.16 2002/05/27 16:01:53 lecroart Exp $
+ * $Id: command.cpp,v 1.17 2002/06/06 13:13:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,9 +100,9 @@ ICommand::~ICommand()
 	nlstop;
 }
 
-void ICommand::execute (const std::string &commandWithArgs, CLog &log)
+void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quiet)
 {
-	nlinfo ("Executing command : '%s'", commandWithArgs.c_str());
+	if (!quiet) log.displayNL ("Executing command : '%s'", commandWithArgs.c_str());
 
 	// convert the buffer into string vector
 
@@ -137,7 +137,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 			{
 				if (i == commandWithArgs.size())
 				{
-					log.displayNL ("Missing end quote character \"");
+					if (!quiet) log.displayNL ("Missing end quote character \"");
 					return;
 				}
 				if (commandWithArgs[i] == '"')
@@ -151,7 +151,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 					i++;
 					if (i == commandWithArgs.size())
 					{
-						log.displayNL ("Missing character after the backslash \\ character");
+						if (!quiet) log.displayNL ("Missing character after the backslash \\ character");
 						return;
 					}
 					switch (commandWithArgs[i])
@@ -160,7 +160,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 						case 'n':	arg += '\n'; break; // new line
 						case '"':	arg += '"'; break; // "
 						default:
-							log.displayNL ("Unknown escape code '\\%c'", commandWithArgs[i]);
+							if (!quiet) log.displayNL ("Unknown escape code '\\%c'", commandWithArgs[i]);
 							return;
 					}
 					i++;
@@ -182,7 +182,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 					i++;
 					if (i == commandWithArgs.size())
 					{
-						log.displayNL ("Missing character after the backslash \\ character");
+						if (!quiet) log.displayNL ("Missing character after the backslash \\ character");
 						return;
 					}
 					switch (commandWithArgs[i])
@@ -191,7 +191,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 						case 'n':	arg += '\n'; break; // new line
 						case '"':	arg += '"'; break; // "
 						default:
-							log.displayNL ("Unknown escape code '\\%c'", commandWithArgs[i]);
+							if (!quiet) log.displayNL ("Unknown escape code '\\%c'", commandWithArgs[i]);
 							return;
 					}
 					i++;
@@ -231,14 +231,14 @@ end:
 	if (comm == (*Commands).end ())
 	{
 		// the command doesn't exist
-		log.displayNL("Command '%s' not found, try 'help'", command.c_str());
+		if (!quiet) log.displayNL("Command '%s' not found, try 'help'", command.c_str());
 	}
 	else
 	{
 		//printf("execute command\n");
 		if (!(*comm).second->execute (args, log))
 		{
-			log.displayNL("Bad command usage, try 'help %s'", command.c_str());
+			if (!quiet) log.displayNL("Bad command usage, try 'help %s'", command.c_str());
 		}
 	}
 }

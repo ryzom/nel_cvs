@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.27 2002/04/23 07:50:36 lecroart Exp $
+ * $Id: config_file.h,v 1.28 2002/06/06 13:12:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/log.h"
 
 #include <vector>
 #include <string>
@@ -169,9 +170,12 @@ public:
 
 		bool		operator==	(const CVar& var) const;
 		bool		operator!=	(const CVar& var) const;
-		
+
+		// add this variable with var
+		void		add (const CVar &var);
+
 		// Get the size of the variable. It's the number of element of the array or 1 if it's not an array.
-		int			 size () const;
+		int			size () const;
 
 		/// \name Internal use
 		//@{
@@ -208,6 +212,9 @@ public:
 
 	/// display all variables with nlinfo (debug use)
 	void print () const;
+
+	/// display all variables with nlinfo (debug use)
+	void print (CLog *log) const;
 
 	/// set a callback function that is called when the config file is modified
 	void setCallback (void (*cb)());

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.121 2002/05/28 13:42:22 lecroart Exp $
+ * $Id: service.cpp,v 1.122 2002/06/06 13:13:09 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -543,7 +543,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// no WindowStyle variable, no displayer
 		}
 
-		uint speedNetLabel, speedUsrLabel, rcvLabel, sndLabel, rcvQLabel, sndQLabel, scrollLabel;
+		vector <pair<string,uint> > displayedVariables;
+		//uint speedNetLabel, speedUsrLabel, rcvLabel, sndLabel, rcvQLabel, sndQLabel, scrollLabel;
 		if (_WindowDisplayer != NULL)
 		{
 			//
@@ -572,13 +573,25 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			WarningLog->addDisplayer (_WindowDisplayer);
 			ErrorLog->addDisplayer (_WindowDisplayer);
 			AssertLog->addDisplayer (_WindowDisplayer);
-			speedNetLabel = _WindowDisplayer->createLabel ("");
-			speedUsrLabel = _WindowDisplayer->createLabel ("");
-			rcvLabel = _WindowDisplayer->createLabel ("");
-			sndLabel = _WindowDisplayer->createLabel ("");
-			rcvQLabel = _WindowDisplayer->createLabel ("");
-			sndQLabel = _WindowDisplayer->createLabel ("");
-			scrollLabel = _WindowDisplayer->createLabel ("");
+
+			// adding default displayed variables
+			displayedVariables.push_back(make_pair(string("NetSpeedLoop:NetLop"), _WindowDisplayer->createLabel ("NetLop")));
+			displayedVariables.push_back(make_pair(string("UserSpeedLoop:UsrLop"), _WindowDisplayer->createLabel ("UsrLop")));
+			displayedVariables.push_back(make_pair(string("ReceivedBytes:Rcv"), _WindowDisplayer->createLabel ("Rcv")));
+			displayedVariables.push_back(make_pair(string("SentBytes:Snd"), _WindowDisplayer->createLabel ("Snd")));
+			displayedVariables.push_back(make_pair(string("ReceivedQueueSize:RcvQ"), _WindowDisplayer->createLabel ("RcvQ")));
+			displayedVariables.push_back(make_pair(string("SentQueueSize:SndQ"), _WindowDisplayer->createLabel ("SndQ")));
+			displayedVariables.push_back(make_pair(string("Scroller:"), _WindowDisplayer->createLabel ("NeL Rulez")));
+
+			try
+			{
+				CConfigFile::CVar &v = ConfigFile.getVar("DisplayedVariables");
+				for (sint i = 0; i < v.size(); i++)
+				{
+					displayedVariables.push_back(make_pair(v.asString(i), _WindowDisplayer->createLabel (v.asString(i).c_str())));
+				}
+			}
+			catch (EUnknownVar&) { }
 		}
 
 		nlinfo ("Starting Service %d '%s' using NeL ("__DATE__" "__TIME__")", isService5()?5:4, _ShortName.c_str());
@@ -922,92 +935,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 
 		//
-		// Register the name to the NS (except for the NS itself)
-		//
-
-		if (IService::_ShortName != "NS" && IService::_ShortName != "LS" && IService::_ShortName != "AES" && IService::_ShortName != "AS")
-		{
-
-			//
-			// Setup Net Displayer
-			//
-/// \todo ace: activate the netloger when we resolved the recursive logging bug
-/// \todo ace: don't forget to delete the netloger at the end of the program
-/*			if (IService::_Name != "LOGS")
-			{
-				CNetDisplayer *nd = new CNetDisplayer();
-				if ( nd->connected() )
-				{
-					NetLog.addDisplayer( nd );
-
-					// Add the net displayer for all debug information
-					ErrorLog->addDisplayer (nd);
-					WarningLog->addDisplayer (nd);
-					InfoLog->addDisplayer (nd);
-#ifdef NL_DEBUG
-					DebugLog->addDisplayer (nd);
-					AssertLog->addDisplayer (nd);
-#endif
-				}
-			}
-*/
-
-			//
-			// Get the universal time (useful for debugging)
-			//
-/*
-			// Don't call the sync if it's the Time Service or the Naming Service
-			if ( IService::_ShortName != "TS" )
-			{
-				if ( _RecordingState == CCallbackNetBase::Replay )
-				{
-					CUniTime::simulate(); 
-				}
-				CUniTime::syncUniTimeFromService ( _RecordingState );
-				resyncEvenly = true;
-			}
-*/
-			//
-			// Talk with the NS to get the port if necessary and register the service
-			//
-/*
-			bool registered = false;
-			while (!registered)
-			{
-				try
-				{
-					if (_Port == 0)
-					{
-						// Auto-assign port, ask it to the naming service
-						_Port = CNamingClient::queryServicePort ();
-					}
-
-
-					Server->init (_Port);
-
-					// Register service
-					setServiceId (CNamingClient::registerService (IService::_Name, Server->listenAddress ()));
-					registered = true;
-				}
-				catch ( ESocket& e )
-				{
-					nlwarning( "Could not register service into the Naming Service : %s", e.what() );
-				}
-				if ( ! registered )
-				{
-					// wait 5s before retrying
-					nlSleep (5000);
-				}
-			}
-		}
-		else
-		{
-			Server->init (_Port);
-		*/
-		}
-
-
-		//
 		// On Unix system, the service fork itself to give back the hand to the shell
 		//
 		// note: we don't forking anymore because it doesn't work with thread system
@@ -1168,30 +1095,52 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				}
 
 				string str;
-				str = "NetLop: ";
-				str += toString (NetSpeedLoop);
-				_WindowDisplayer->setLabel (speedNetLabel, str);
-				str = "UsrLop: ";
-				str += toString (UserSpeedLoop);
-				_WindowDisplayer->setLabel (speedUsrLabel, str);
-				str = "Rcv: ";
-				str += toString (rcv);
-				_WindowDisplayer->setLabel (rcvLabel, str);
-				str = "Snd: ";
-				str += toString (snd);
-				_WindowDisplayer->setLabel (sndLabel, str);
-				str = "RcvQ: ";
-				str += toString (rcvq);
-				_WindowDisplayer->setLabel (rcvQLabel, str);
-				str = "SndQ: ";
-				str += toString (sndq);
-				_WindowDisplayer->setLabel (sndQLabel, str);
+				CLog log;
+				CMemDisplayer md;
+				log.addDisplayer (&md);
 
-				// display the scroll text
-				static string foo =	"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! "
-									"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! ";
-				static int pos = 0;
-				_WindowDisplayer->setLabel (scrollLabel, foo.substr ((pos++)%(foo.size()/2), 10));
+				for (uint i = 0; i < displayedVariables.size(); i++)
+				{
+					if (displayedVariables[i].first.empty())
+						continue;
+
+					string dispName = displayedVariables[i].first;
+					string varName = dispName;
+					sint pos = dispName.find(":");
+					if (pos != string::npos)
+					{
+						dispName = displayedVariables[i].first.substr(pos+1);
+						varName = displayedVariables[i].first.substr(0, pos);
+					}
+
+					if (dispName.empty())
+						str = "";
+					else
+						str = dispName + ": ";
+					
+					md.clear ();
+					ICommand::execute(varName, log, true);
+					const std::deque<std::string>	&strs = md.lockStrings();
+					if (strs.size()>0)
+					{
+						sint pos = strs[0].find("=");
+						if(pos != string::npos && pos + 2 < (sint)strs[0].size())
+						{
+							sint pos2 = string::npos;
+							if(strs[0][strs[0].size()-1] == '\n')
+								pos2 = strs[0].size() - pos - 2 - 1;
+
+							str += strs[0].substr (pos+2, pos2);
+						}
+						else
+						{
+							str += "???";
+						}
+					}
+					md.unlockStrings();
+					_WindowDisplayer->setLabel (displayedVariables[i].second, str);
+				}
+
 			}
 
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
@@ -1327,48 +1276,38 @@ NLMISC_DYNVARIABLE(uint64, ReceivedBytes, "total of bytes received by this servi
 {
 	// we can only read the value
 	if (get)
-	{
-		if (IService::getInstance()->isService5 ())
-			*pointer = CUnifiedNetwork::getInstance()->getBytesReceived ();
-		else
-			*pointer = CNetManager::getBytesReceived ();
-	}
+		*pointer = IService::getInstance()->isService5()?CUnifiedNetwork::getInstance()->getBytesReceived ():CNetManager::getBytesReceived ();
 }
 
 NLMISC_DYNVARIABLE(uint64, SentBytes, "total of bytes sent by this service")
 {
 	// we can only read the value
 	if (get)
-	{
-		if (IService::getInstance()->isService5 ())
-			*pointer = CUnifiedNetwork::getInstance()->getBytesSent ();
-		else
-			*pointer = CNetManager::getBytesSent ();
-	}
+		*pointer = IService::getInstance()->isService5()?CUnifiedNetwork::getInstance()->getBytesSent ():CNetManager::getBytesSent ();
 }
 
 NLMISC_DYNVARIABLE(uint64, ReceivedQueueSize, "current size in bytes of the received queue size")
 {
 	// we can only read the value
 	if (get)
-	{
-		if (IService::getInstance()->isService5 ())
-			*pointer = CUnifiedNetwork::getInstance()->getReceiveQueueSize ();
-		else
-			*pointer = CNetManager::getReceiveQueueSize ();
-	}
+		*pointer = IService::getInstance()->isService5()?CUnifiedNetwork::getInstance()->getReceiveQueueSize ():CNetManager::getReceiveQueueSize ();
 }
 
 NLMISC_DYNVARIABLE(uint64, SentQueueSize, "current size in bytes of the sent queue size")
 {
 	// we can only read the value
 	if (get)
-	{
-		if (IService::getInstance()->isService5 ())
-			*pointer = CUnifiedNetwork::getInstance()->getSendQueueSize ();
-		else
-			*pointer = CNetManager::getSendQueueSize ();
-	}
+		*pointer = IService::getInstance()->isService5()?CUnifiedNetwork::getInstance()->getSendQueueSize ():CNetManager::getSendQueueSize ();
+}
+
+NLMISC_DYNVARIABLE(string, Scroller, "current size in bytes of the sent queue size")
+{
+	// display the scroll text
+	static string foo =	"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! "
+						"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! ";
+	static int pos = 0;
+	*pointer = foo.substr ((pos++)%(foo.size()/2), 10);
+	//				_WindowDisplayer->setLabel (scrollLabel, foo.substr ((pos++)%(foo.size()/2), 10));
 }
 
 NLMISC_COMMAND (quit, "exit the service", "")
@@ -1443,25 +1382,6 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 	return true;
 }
 
-/*
-NLMISC_COMMAND (time, "displays the universal time", "")
-{
-	if(args.size() != 0) return false;
-
-	if ( CUniTime::Sync )
-	{
-		log.displayNL ("CTime::getLocalTime(): %"NL_I64"dms, CUniTime::getUniTime(): %"NL_I64"dms", CTime::getLocalTime (), CUniTime::getUniTime ());
-		log.displayNL ("CUniTime::getStringUniTime(): '%s'", CUniTime::getStringUniTime());
-	}
-	else
-	{
-		log.displayNL ("CTime::getLocalTime(): %"NL_I64"dms <Universal time not sync>", CTime::getLocalTime ());
-	}
-
-	return true;
-}
-*/
-
 NLMISC_COMMAND(resetMeasures, "reset hierarchical timer", "")
 {
 	IService::getInstance()->requireResetMeasures();
@@ -1480,6 +1400,12 @@ NLMISC_COMMAND(getWinDisplayerInfo, "display the info about the pos and size of 
 	uint32 x,y,w,h;
 	IService::getInstance()->_WindowDisplayer->getWindowPos (x,y,w,h);
 	log.displayNL ("Window Displayer : XWinParam = %d; YWinParam = %d; WWinParam = %d; HWinParam = %d;", x, y, w, h);
+	return true;
+}
+
+NLMISC_COMMAND(printConfigFile, "display the variables of the default configfile", "")
+{
+	IService::getInstance()->ConfigFile.print(&log);
 	return true;
 }
 

@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.h,v 1.3 2002/05/27 16:48:50 lecroart Exp $
+ * $Id: window_displayer.h,v 1.4 2002/06/06 13:12:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,8 +58,8 @@ public:
 	// open the window and run the display thread (MT)
 	void	create (std::string windowNameEx = "", bool iconified = false, sint x = -1, sint y = -1, sint w = 700, sint h = 300, sint hs = 10000);
 
-	// create a new label (MT)
-	uint	createLabel (const char *value);
+	// create a new label. empty string mean separator (MT)
+	uint	createLabel (const char *value = "?");
 
 	// change the value of a label (MT)
 	void	setLabel (uint label, const std::string &value);

@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.15 2002/04/11 16:02:23 cado Exp $
+ * $Id: command.h,v 1.16 2002/06/06 13:12:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,7 +199,8 @@ public:
 	static bool		 CommandsInit;
 
 	/// Executes the command and display output to the log
-	static void execute (const std::string &commandWithArgs, NLMISC::CLog &log);
+	/// \param quiet true if you don't want to display the "executing the command ..."
+	static void execute (const std::string &commandWithArgs, NLMISC::CLog &log, bool quiet = false);
 
 	/** Command name completion.
 	 * Case-sensitive. Displays the list after two calls with the same non-unique completion.

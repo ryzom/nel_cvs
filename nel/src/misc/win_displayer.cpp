@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.18 2002/05/27 16:48:42 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.19 2002/06/06 13:13:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				int w = lParam & 0xFFFF;
 				int h = (lParam >> 16) & 0xFFFF;
 
-				SetWindowPos (cwd->_HEdit, NULL, 0, cwd->_ToolBarHeight, w, h-cwd->_ToolBarHeight-cwd->_InputEditHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+//				SetWindowPos (cwd->_HEdit, NULL, 0, cwd->_ToolBarHeight, w, h-cwd->_ToolBarHeight-cwd->_InputEditHeight, SWP_NOZORDER | SWP_NOACTIVATE );
 				SetWindowPos (cwd->_HInputEdit, NULL, 0, h-cwd->_InputEditHeight, w, cwd->_InputEditHeight, SWP_NOZORDER | SWP_NOACTIVATE );
 				cwd->resizeLabels ();
 			}
@@ -198,20 +198,21 @@ void CWinDisplayer::updateLabels ()
 		CSynchronized<std::vector<CLabelEntry> >::CAccessor access (&_Labels);
 		for (uint i = 0; i < access.value().size(); i++)
 		{
-			if (access.value()[i].Hwnd == NULL)
-			{
-				access.value()[i].Hwnd = CreateWindow ("STATIC", "", WS_CHILD | WS_VISIBLE | SS_SIMPLE, 0, 0, 0, 0, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
-				SendMessage ((HWND)access.value()[i].Hwnd, WM_SETFONT, (LONG) _HFont, TRUE);
-				needResize = true;
-			}
 			if (!access.value()[i].Value.empty())
 			{
+				if (access.value()[i].Hwnd == NULL)
+				{
+					access.value()[i].Hwnd = CreateWindow ("STATIC", "", WS_CHILD | WS_VISIBLE | SS_SIMPLE, 0, 0, 0, 0, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
+					SendMessage ((HWND)access.value()[i].Hwnd, WM_SETFONT, (LONG) _HFont, TRUE);
+					needResize = true;
+				}
+
 				// do this fucking tricks to be sure that windows will clear what is after the number
-				string n = access.value()[i].Value + "         ";
+				string n = access.value()[i].Value + "                                                 ";
 
 				SendMessage ((HWND)access.value()[i].Hwnd, WM_SETTEXT, 0, (LONG) n.c_str());
 
-				access.value()[i].Value = "";
+				//access.value()[i].Value = "?";
 			}
 		}
 	}
@@ -226,15 +227,42 @@ void CWinDisplayer::resizeLabels ()
 
 		RECT Rect;
 		GetClientRect (_HWnd, &Rect);
-		sint delta = Rect.right / (access.value().size () + 1);
 
-		SetWindowPos (_HClearBtn, NULL, 0, 0, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
-	
-		for (uint i = 0; i< access.value().size (); i++)
+		uint i = 0, nb;
+		uint y = 0, nby = 1;
+
+		for (i = 0; i < access.value().size (); i++)
+			if (access.value()[i].Value.empty())
+				nby++;
+
+		i = 0;
+
+		while (true)
 		{
-			if ((HWND)access.value()[i].Hwnd != NULL)
-				SetWindowPos ((HWND)access.value()[i].Hwnd, NULL, (i+1)*delta, 0, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+			nb = 0;
+			while (i+nb != access.value().size () && !access.value()[i+nb].Value.empty()) nb++;
+
+			sint delta;
+			if (y==0)
+				delta = Rect.right / (nb + 1);	// for the clear button
+			else
+				delta = Rect.right / nb;
+
+			if (y==0)
+				SetWindowPos (_HClearBtn, NULL, 0, y*_ToolBarHeight, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+		
+			for (uint j = 0; j< nb; j++)
+			{
+				if ((HWND)access.value()[i+j].Hwnd != NULL)
+					SetWindowPos ((HWND)access.value()[i+j].Hwnd, NULL, (y==0?j+1:j)*delta, y*_ToolBarHeight, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+			}
+			i += nb + 1;
+			y++;
+			if (i >= access.value().size())
+				break;
 		}
+
+		SetWindowPos (_HEdit, NULL, 0, nby*_ToolBarHeight, Rect.right, Rect.bottom-nby*_ToolBarHeight-_InputEditHeight, SWP_NOZORDER | SWP_NOACTIVATE );
 	}
 }
 

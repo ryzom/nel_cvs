@@ -1,7 +1,7 @@
 /** \file mem_displayer.h
  * <File description>
  *
- * $Id: mem_displayer.h,v 1.1 2002/03/14 13:49:43 lecroart Exp $
+ * $Id: mem_displayer.h,v 1.2 2002/06/06 13:12:50 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -57,6 +57,8 @@ public:
 	const std::deque<std::string>	&lockStrings () { _CanUseStrings = false; return _Strings; }
 
 	void unlockStrings() { _CanUseStrings = true; }
+
+	void clear () { if (_CanUseStrings) _Strings.clear (); }
 
 protected:
 	/// Put the string into the file.

@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.54 2002/08/22 15:25:04 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.55 2002/09/16 14:58:09 lecroart Exp $
  *
  */
 
@@ -342,6 +342,7 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const std::
 
 	// wait the answer of the naming service "RGI"
 	Registered = false;
+	RegisteredSID = &sid;
 	while (!Registered)
 	{
 		_Connection->update (-1);

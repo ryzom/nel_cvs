@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.18 2003/07/24 17:03:29 robert Exp $
+ * $Id: classifier.cpp,v 1.19 2003/08/01 09:50:01 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -371,18 +371,48 @@ void CClassifierSystem::selectBehavior( const CCSPerception* psensorMap,
 //		lastSelectionMaxPriority = higherPriority;
 }
 
-TAction CClassifierSystem::getActionPart(TClassifierNumber classifierNumber)
+TAction CClassifierSystem::getActionPart(TClassifierNumber classifierNumber) const
 {
-	std::map<TClassifierNumber, CClassifier*>::iterator itClassifiers = _Classifiers.find(classifierNumber);
+	std::map<TClassifierNumber, CClassifier*>::const_iterator itClassifiers = _Classifiers.find(classifierNumber);
 	nlassert(itClassifiers != _Classifiers.end());
 	return (*itClassifiers).second->Behavior;
 }
 
-TClassifierPriority CClassifierSystem::getPriorityPart(TClassifierNumber classifierNumber)
+TClassifierPriority CClassifierSystem::getPriorityPart(TClassifierNumber classifierNumber) const
+{
+	std::map<TClassifierNumber, CClassifier*>::const_iterator itClassifiers = _Classifiers.find(classifierNumber);
+	nlassert(itClassifiers != _Classifiers.end());
+	return (*itClassifiers).second->Priority;
+}
+
+void CClassifierSystem::setPriorityPart(TClassifierNumber classifierNumber, TClassifierPriority priority)
 {
 	std::map<TClassifierNumber, CClassifier*>::iterator itClassifiers = _Classifiers.find(classifierNumber);
 	nlassert(itClassifiers != _Classifiers.end());
-	return (*itClassifiers).second->Priority;
+	(*itClassifiers).second->Priority = priority;
+}
+
+void CClassifierSystem::dividePriorityByTheMinPriorityPart()
+{
+	TClassifierPriority minPrio = 10; // Normalement ça ne peut pas excéder 1 une prio, mais je met 10 pour le plaisir :-)
+	std::map<TClassifierNumber, CClassifier*>::iterator itClassifiers; // = _Classifiers.find(classifierNumber);
+	for(itClassifiers  = _Classifiers.begin();
+		itClassifiers != _Classifiers.end();
+		itClassifiers++)
+	{
+		TClassifierPriority prio = (*itClassifiers).second->Priority;
+		minPrio = std::min(minPrio, prio);
+	}
+	nlassert(minPrio != 10);
+
+	for(itClassifiers  = _Classifiers.begin();
+		itClassifiers != _Classifiers.end();
+		itClassifiers++)
+	{
+		TClassifierPriority prio = (*itClassifiers).second->Priority;
+		TClassifierPriority newPrio = prio - minPrio + 0.01;
+		(*itClassifiers).second->Priority = newPrio;
+	}
 }
 
 void CClassifierSystem::getDebugString(std::string &t) const
@@ -428,6 +458,50 @@ void CClassifierSystem::getDebugString(std::string &t) const
 		TClassifierPriority		prio = (*itClassifiers).second->Priority;
 		dbg += "> " + actionName + " [" + NLMISC::toString(prio) + "]\n";
 	}
+	t += dbg;
+}
+
+void CClassifierSystem::getDebugString(TClassifierNumber classifierNumber, std::string &t) const
+{
+	std::string dbg = "";
+	std::map<TClassifierNumber, CClassifier*>::const_iterator itClassifiers = _Classifiers.find(classifierNumber);
+	nlassert (itClassifiers != _Classifiers.end());
+
+	dbg += "<" + NLMISC::toString(classifierNumber) + "> ";
+	std::list<CClassifierConditionCell*>::const_iterator itConditions;
+	// On parcour la liste de sensor indépendant d'une cible
+	for (itConditions = (*itClassifiers).second->ConditionWithoutTarget.begin();
+	itConditions != (*itClassifiers).second->ConditionWithoutTarget.end();
+	itConditions++)
+	{
+		CClassifierConditionCell* condCell = (*itConditions);
+		if (condCell->getSensorIsTrue())
+		{
+			dbg += " (" + conversionSensor.toString(condCell->getSensorName()) + "= " + condCell->getValue() + ") +";
+		}
+		else
+		{
+			dbg += " (" + conversionSensor.toString(condCell->getSensorName()) + "=!" + condCell->getValue() + ") +";
+		}
+	}
+	// On parcour la liste de sensor dépendant d'une cible
+	for (itConditions = (*itClassifiers).second->ConditionWithTarget.begin();
+	itConditions != (*itClassifiers).second->ConditionWithTarget.end();
+	itConditions++)
+	{
+		CClassifierConditionCell* condCell = (*itConditions);
+		if (condCell->getSensorIsTrue())
+		{
+			dbg += " (" + conversionSensor.toString(condCell->getSensorName()) + "(x)= " + condCell->getValue() + ") +";
+		}
+		else
+		{
+			dbg += " (" + conversionSensor.toString(condCell->getSensorName()) + "(x)=!" + condCell->getValue() + ") +";
+		}
+	}
+	std::string actionName = conversionAction.toString((*itClassifiers).second->Behavior);
+	TClassifierPriority		prio = (*itClassifiers).second->Priority;
+	dbg += "> " + actionName + " [" + NLMISC::toString(prio) + "]";
 	t += dbg;
 }
 

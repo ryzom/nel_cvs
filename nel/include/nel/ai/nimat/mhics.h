@@ -1,7 +1,7 @@
 /** \file mhics.h
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.h,v 1.7 2003/07/28 13:19:50 robert Exp $
+ * $Id: mhics.h,v 1.8 2003/08/01 09:49:45 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -72,7 +72,7 @@ public :
 	/// Gestion des classeurs qui apportent la motivation
 	void	removeProvider(TMotivation providerName);
 //	void	removeProvider(TAction providerName);
-	void	addProvider(TMotivation providerName, TClassifierPriority classifierPriority);
+	void	addProvider(TMotivation providerName, TClassifierNumber classifierNumber);
 //	void	addProvider(TAction providerName, const CMotivationEnergy& providerMotivation);
 //	void	updateProvider(TMotivation providerName, const CMotivationEnergy& providerMotivation);
 //	void	updateProvider(TAction providerName, const CMotivationEnergy& providerMotivation);
@@ -93,13 +93,15 @@ public :
 	void getDebugString (std::string &t) const;
 
 	void setMHiCSagent(CMHiCSagent* pmhicsAgent) {_MHiCSagent = pmhicsAgent;}
+
+	const std::multimap<TMotivation, TClassifierNumber>* getProviders() const;
 	
 private :
 	void computeMotivationValue();
 
 	CMHiCSagent*								_MHiCSagent;
 	double										_SumValue;
-	std::multimap<TMotivation, TClassifierPriority>	_MotivationProviders;
+	std::multimap<TMotivation, TClassifierNumber>	_MotivationProviders;
 //	std::map<TMotivation, TEnergyByMotivation>	_MotivationProviders;
 	//	std::map<TAction, TEnergyByMotivation>		_VirtualActionProviders;
 	TEnergyByMotivation							_EnergyByMotivation;	// <MotivationSource, motivationValue>
@@ -152,9 +154,14 @@ public :
 	  * \param classifierNumber is the number of the classifier.
 	  * \return is the condition part of the wanted Classifier.
 	  */
-	TAction getActionPart(TMotivation motivationName, TClassifierNumber classifierNumber);
+	TAction getActionPart(TMotivation motivationName, TClassifierNumber classifierNumber) const;
 //	TAction getActionPart(TAction motivationName, TClassifierNumber classifierNumber);
-	TClassifierPriority getPriorityPart(TMotivation motivationName, TClassifierNumber classifierNumber);
+	TClassifierPriority getPriorityPart(TMotivation motivationName, TClassifierNumber classifierNumber) const;
+
+	void dividePriorityByTheMinPriorityPartInAMotivation(TMotivation motivationName);
+	
+	/// Set a new value for a classifier priority
+	void setPriorityValue(TMotivation motivationName, TClassifierNumber classifierNumber, TClassifierPriority priority);
 	
 	/// To now if a behav selected by a CS is an action (if not, it's a common CS)
 	bool isAnAction(TAction behav) const;
@@ -165,6 +172,8 @@ public :
 
 	/// Load classifiers from a file. Return false if thereis a probleme
 	bool loadClassifierFromFile(std::string fileName);
+
+	void dbgPrintClassifierPriorityInFile(std::string fileName) const;
 	
 	CActionResources*	pActionResources;	// Used to select compatible actions.
 
@@ -215,7 +224,7 @@ public :
 	/// Update the values in the NetCS
 	void run();
 
-	/// Set the snesor source
+	/// Set the sensor source
 	void setSensors(CCSPerception *psensorMap);
 
 	/// Chaine de debug
@@ -223,63 +232,27 @@ public :
 
 	const CMHiCSbase* getMHiCSbase() const {return _pMHiCSbase;}
 
+	void setLearning(bool active);
+
 private :
-	class CMotivateCS
-	{
-	public :
-		TClassifierNumber	ClassifierNumber;		// Number of the last classifier actived by this motivation
-		TTargetId			TargetId;				// Id of the laste TaretID selected by this motivation
-		double				LastSelectionMaxPriority;//LastSelectionMaxPriority is the Priority given to the last selected classifier
-		CMotivationEnergy	MotivationIntensity;
-		void setMHiCSagent(CMHiCSagent* pmhicsAgent) {_MHiCSagent = pmhicsAgent; MotivationIntensity.setMHiCSagent(_MHiCSagent);}
-
-	public :
-		CMotivateCS()
-		{
-			_MHiCSagent = NULL;
-			ClassifierNumber		= -1;
-			TargetId = 0; //NullTargetId;
-			LastSelectionMaxPriority = 0;
-		}
-
-	private :
-		CMHiCSagent* _MHiCSagent;
-	};
-
-//	class CActionToExecute
-//	{
-//	public :
-//		TAction				Action;
-//		TTargetId			TargetId;
-//		CMotivationEnergy	ExecutionIntensity;
-//
-//	public :
-//		CActionToExecute()
-//		{
-//			Action = NLAINIMAT::Action_DoNothing;
-//			TargetId = NLAINIMAT::NullTargetId;
-//		}
-//	};
-
-	// Will spread the reckon of the motivation value along a motivation branch.
-//	void spreadMotivationReckon(TMotivation CS);
-//	void spreadMotivationReckon(TAction CS);
 
 	void motivationCompute();
 // 	void virtualActionCompute();
 
-	private :
 	/// function used in debug to change a TTargetId in a string
 	std::string targetId2String(TTargetId id) const;
 
-	CMHiCSbase*								_pMHiCSbase;							// A pointer on the rules base.
-	std::map<TMotivation, CMotivateCS>		_ClassifiersAndMotivationIntensity;		// <motivationName, classeur> the motivationName is also the CS name.
-//	std::map<TAction, CMotivateCS>			_ClassifiersAndVirtualActionIntensity;	// <virtualActionName, classeur> the virtualActionName is also the CS name.
-	CCSPerception*							_pSensorsValues;						// Valeurs des senseurs
-	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >	_ActionsExecutionIntensityByTarget;
-//	std::map<TAction, CMotivationEnergy>	_ActionsExecutionIntensity;				// <actionName, ExecutionIntensity>
-//	std::map<TAction, TTargetId>			_IdByActions;							// Id associate with each action (virtual or not).
-//	std::map<TAction, TTargetId>::iterator	_ItCurrentAction;						// Iterator on the current active action in _IdByActions
+	/// If _Learning == true, it will compute new priority for each classifier.
+	void learningComputation();
+
+	CMHiCSbase*													_pMHiCSbase;							// A pointer on the rules base.
+	std::map<TMotivation, CMotivationEnergy>					_ClassifiersAndMotivationIntensity;		// the motivationName is also the CS name.
+	std::map<TMotivation, CMotivationEnergy>					_OldClassifiersAndMotivationIntensity;	// For learning
+//	std::map<TAction, CMotivateCS>								_ClassifiersAndVirtualActionIntensity;	// the virtualActionName is also the CS name.
+	CCSPerception*												_pSensorsValues;						// Valeurs des senseurs
+	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >	*_pActionsExecutionIntensityByTarget;
+	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >	*_pOldActionsExecutionIntensityByTarget;	// For learning
+	bool														_Learning;	// Is MHiCS using learning ?
 };
 
 } // NLAINIMAT

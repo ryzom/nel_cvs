@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.16 2003/07/24 17:03:15 robert Exp $
+ * $Id: classifier.h,v 1.17 2003/08/01 09:49:45 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -187,15 +187,15 @@ private :
 	void	RAZTargetSensors();
 	void	RAZNoTargetSensors();
 	TClassifierPriority	computeMaxPriorityDoingTheSameAction(const CCSPerception* psensorMap,
-												 TClassifierNumber lastClassifierNumber, 
-												 TTargetId lastTarget, 
-												 TClassifierPriority lastSelectionMaxPriority,
-												 std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS);
+															 TClassifierNumber lastClassifierNumber, 
+															 TTargetId lastTarget, 
+															 TClassifierPriority lastSelectionMaxPriority,
+															 std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS);
 	TClassifierPriority	computeHigherPriority(const CCSPerception* psensorMap,
-								  TClassifierPriority maxPriorityDoingTheSameAction,
-								  std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS);
+											  TClassifierPriority maxPriorityDoingTheSameAction,
+											  std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS);
 	std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> >::iterator 	roulletteWheelVariation(std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> > &mapActivableCS,
-																									std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> >::iterator itMapActivableCS);
+																													std::multimap<TClassifierPriority, std::pair<TitClassifiers, TTargetId> >::iterator itMapActivableCS);
 		
 private :
 	TSensorMap									_Sensors;			// The sensors are the inputs of the classifier system.
@@ -231,11 +231,19 @@ public :
 	  * \param classifierNumber is the number of the classifier.
 	  * \return is the condition part of the wanted Classifier.
 	  */
-	TAction getActionPart(TClassifierNumber classifierNumber);
+	TAction getActionPart(TClassifierNumber classifierNumber) const;
 
-	TClassifierPriority getPriorityPart(TClassifierNumber classifierNumber);
+	TClassifierPriority getPriorityPart(TClassifierNumber classifierNumber) const;
 
+	void setPriorityPart(TClassifierNumber classifierNumber, TClassifierPriority priority);
+
+	void dividePriorityByTheMinPriorityPart();
+
+	/// Return the number of classifiers
+	TClassifierNumber getClassifierNumber() const {return _ClassifierNumber;}
+	
 	void getDebugString(std::string &t) const;
+	void getDebugString(TClassifierNumber classifierNumber, std::string &t) const;
 };
 
 /**

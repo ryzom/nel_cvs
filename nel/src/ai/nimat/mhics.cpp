@@ -1,7 +1,7 @@
 /** \file mhics.cpp
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.cpp,v 1.8 2003/07/28 13:19:41 robert Exp $
+ * $Id: mhics.cpp,v 1.9 2003/08/01 09:50:01 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -62,9 +62,9 @@ void CMotivationEnergy::removeProvider(TMotivation providerName)
 //	computeMotivationValue();
 //}
 
-void CMotivationEnergy::addProvider(TMotivation providerName, TClassifierPriority classifierPriority)
+void CMotivationEnergy::addProvider(TMotivation providerName, TClassifierNumber classifierNumber)
 {
-	_MotivationProviders.insert(std::make_pair(providerName,classifierPriority));
+	_MotivationProviders.insert(std::make_pair(providerName,classifierNumber));
 	computeMotivationValue();
 }
 
@@ -93,16 +93,17 @@ void CMotivationEnergy::computeMotivationValue()
 	TMotivation lastMotivationName = Motivation_Unknown;
 	double lastMaxMotiveValue = 0.0;
 	// We look for motivation values comming directly from Motivations
-	std::multimap<TMotivation, TClassifierPriority>::iterator itMotivationProviders;
+	std::multimap<TMotivation, TClassifierNumber>::iterator itMotivationProviders;
 	for (itMotivationProviders = _MotivationProviders.begin();
 		 itMotivationProviders != _MotivationProviders.end();
 		 itMotivationProviders++)
 	{
 		TMotivation motivationName = (*itMotivationProviders).first;
-		TClassifierPriority classifierPriority = (*itMotivationProviders).second;
+		TClassifierNumber classierNumber = (*itMotivationProviders).second;
+		TClassifierPriority classifierPriority = _MHiCSagent->getMHiCSbase()->getPriorityPart(motivationName, classierNumber);
 		double motiveValue = _MHiCSagent->getMotivationValue(motivationName);
 		double motivePP = _MHiCSagent->getMotivationPP(motivationName);
-		double combinedValue = motiveValue * classifierPriority;
+		double combinedValue = (motiveValue * 100) + classifierPriority;
 		if (combinedValue > lastMaxMotiveValue)
 		{
 			lastMaxMotiveValue = combinedValue;
@@ -155,6 +156,11 @@ void CMotivationEnergy::setMotivationValue(TMotivation motivationName, double va
 double	CMotivationEnergy::getMotivationValue(TMotivation motivationName) const
 {
 	return _MyMotivationValue.Value;
+}
+
+const std::multimap<TMotivation, TClassifierNumber>* CMotivationEnergy::getProviders() const
+{
+	return &_MotivationProviders;
 }
 
 /// Chaine de debug
@@ -245,11 +251,11 @@ void CMHiCSbase::selectBehavior(TMotivation motivationName,
 //	(*itVirtualActionClassifierSystems).second.selectBehavior(&neoPerception, mapActivableCS);
 //}
 
-TAction CMHiCSbase::getActionPart(TMotivation motivationName, TClassifierNumber classifierNumber)
+TAction CMHiCSbase::getActionPart(TMotivation motivationName, TClassifierNumber classifierNumber) const
 {
 	if (classifierNumber == -1) return Action_DoNothing;
 
-	std::map<TMotivation, CClassifierSystem>::iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
+	std::map<TMotivation, CClassifierSystem>::const_iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
 	nlassert(itMotivationClassifierSystems != _MotivationClassifierSystems.end());
 	return (*itMotivationClassifierSystems).second.getActionPart(classifierNumber);
 }
@@ -263,13 +269,28 @@ TAction CMHiCSbase::getActionPart(TMotivation motivationName, TClassifierNumber 
 //	return (*itVirtualActionClassifierSystems).second.getActionPart(classifierNumber);
 //}
 
-TClassifierPriority CMHiCSbase::getPriorityPart(TMotivation motivationName, TClassifierNumber classifierNumber)
+TClassifierPriority CMHiCSbase::getPriorityPart(TMotivation motivationName, TClassifierNumber classifierNumber) const
 {
 	if (classifierNumber == -1) return 0;
 	
-	std::map<TMotivation, CClassifierSystem>::iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
+	std::map<TMotivation, CClassifierSystem>::const_iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
 	nlassert(itMotivationClassifierSystems != _MotivationClassifierSystems.end());
 	return (*itMotivationClassifierSystems).second.getPriorityPart(classifierNumber);
+}
+
+void CMHiCSbase::dividePriorityByTheMinPriorityPartInAMotivation(TMotivation motivationName)
+{
+	std::map<TMotivation, CClassifierSystem>::iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
+	nlassert(itMotivationClassifierSystems != _MotivationClassifierSystems.end());
+	(*itMotivationClassifierSystems).second.dividePriorityByTheMinPriorityPart();
+}
+
+
+void CMHiCSbase::setPriorityValue(TMotivation motivationName, TClassifierNumber classifierNumber, TClassifierPriority priority)
+{
+	std::map<TMotivation, CClassifierSystem>::iterator itMotivationClassifierSystems = _MotivationClassifierSystems.find(motivationName);
+	nlassert(itMotivationClassifierSystems != _MotivationClassifierSystems.end());
+	(*itMotivationClassifierSystems).second.setPriorityPart(classifierNumber, priority);
 }
 
 bool CMHiCSbase::isAnAction(TAction behav) const
@@ -475,6 +496,69 @@ bool CMHiCSbase::loadClassifierFromFile(std::string fileName)
 	return true;
 }
 
+void CMHiCSbase::dbgPrintClassifierPriorityInFile(std::string fileName) const
+{
+	int i;
+	std::map<TMotivation, CClassifierSystem>::const_iterator itMotivationClassifierSystems;
+	std::string nomDuFichier = "D:\\jgab\\doc\\IA\\_These\\gnuplot\\TFC\\";
+	nomDuFichier += fileName;
+	
+	NLMISC::CIFile baltazar;
+	bool yaqqunauboutdufil = baltazar.open(nomDuFichier.c_str(), true);
+	baltazar.close();
+	
+	NLMISC::COFile melkior;
+	std::string ohlabellephrase = "";
+	
+	if (!yaqqunauboutdufil)
+	{
+		melkior.open(nomDuFichier.c_str(), false, true);
+		
+		for(itMotivationClassifierSystems  = _MotivationClassifierSystems.begin();
+			itMotivationClassifierSystems != _MotivationClassifierSystems.end();
+			itMotivationClassifierSystems++)
+		{
+			TMotivation laMotive = (*itMotivationClassifierSystems).first;
+			for (i= 0; i< (*itMotivationClassifierSystems).second.getClassifierNumber(); i++)
+			{
+				ohlabellephrase += NLAINIMAT::conversionMotivation.toString(laMotive);
+				ohlabellephrase += " ";
+				(*itMotivationClassifierSystems).second.getDebugString(i,ohlabellephrase);
+//				ohlabellephrase += NLMISC::toString(i);
+				
+				ohlabellephrase += ";";
+			}
+		}
+		ohlabellephrase += "\n";
+	}
+	else
+	{
+		melkior.open(nomDuFichier.c_str(), true, true);
+	}
+
+	for(itMotivationClassifierSystems  = _MotivationClassifierSystems.begin();
+		itMotivationClassifierSystems != _MotivationClassifierSystems.end();
+		itMotivationClassifierSystems++)
+	{
+		TMotivation laMotive = (*itMotivationClassifierSystems).first;
+		for (i= 0; i< (*itMotivationClassifierSystems).second.getClassifierNumber(); i++)
+		{
+			TClassifierPriority laSuperPrio = getPriorityPart(laMotive, i);
+			ohlabellephrase += NLMISC::toString(laSuperPrio);
+			ohlabellephrase += ";";
+		}
+	}
+	ohlabellephrase += "\n";
+	
+	
+	uint8 *buf = (uint8 *)ohlabellephrase.c_str();
+	uint len = ohlabellephrase.length();
+	melkior.serialBuffer(buf,len);
+	melkior.close();
+}
+
+
+
 ///////////////////////////
 // CMHiCSagent
 ///////////////////////////
@@ -483,6 +567,9 @@ CMHiCSagent::CMHiCSagent(CMHiCSbase* pMHiCSbase)
 {
 	nlassert (pMHiCSbase != NULL);
 	_pMHiCSbase = pMHiCSbase;
+	_pActionsExecutionIntensityByTarget = new std::map<TTargetId, std::map<TAction, CMotivationEnergy> >();
+	_pOldActionsExecutionIntensityByTarget = new std::map<TTargetId, std::map<TAction, CMotivationEnergy> >();
+	_Learning = true;
 //	_ActionsExecutionIntensity[Action_DoNothing] = CMotivationEnergy();
 //	_IdByActions[Action_DoNothing] = NullTargetId;
 //	_ItCurrentAction = _IdByActions.find(Action_DoNothing);
@@ -490,6 +577,8 @@ CMHiCSagent::CMHiCSagent(CMHiCSbase* pMHiCSbase)
 
 CMHiCSagent::~CMHiCSagent()
 {
+	delete _pOldActionsExecutionIntensityByTarget;
+	delete _pActionsExecutionIntensityByTarget;
 }
 
 /// function used in debug to change a TTargetId in a string
@@ -535,26 +624,26 @@ void CMHiCSagent::getDebugString(std::string &t) const
 		}
 	}
 	ret += "\n\nMotivations :";
-	std::map<TMotivation, CMotivateCS>::const_iterator itClassifiersAndMotivationIntensity;
+	std::map<TMotivation, CMotivationEnergy>::const_iterator itClassifiersAndMotivationIntensity;
 	for (itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.begin();
 		 itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end();
 		 itClassifiersAndMotivationIntensity++)
 	{
 		ret += "\n <" + conversionMotivation.toString((*itClassifiersAndMotivationIntensity).first) + "> ";
-		ret += "[MI=" + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.MotivationIntensity.getSumValue()) + "] :";
-		(*itClassifiersAndMotivationIntensity).second.MotivationIntensity.getDebugString(ret);
-		ret += "\n  -> Classifier number " + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.ClassifierNumber); 
+		ret += "[MI=" + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.getSumValue()) + "] :";
+		(*itClassifiersAndMotivationIntensity).second.getDebugString(ret);
+//		ret += "\n  -> Classifier number " + NLMISC::toString((*itClassifiersAndMotivationIntensity).second.ClassifierNumber); 
 		ret += "\n";
 	}
 //	ret += "\nVirtual Actions :";
-//	std::map<TAction, CMotivateCS>::const_iterator itClassifiersAndVirtualActionIntensity;
+//	std::map<TAction, CMotivationEnergy>::const_iterator itClassifiersAndVirtualActionIntensity;
 //	for (itClassifiersAndVirtualActionIntensity = _ClassifiersAndVirtualActionIntensity.begin();
 //		 itClassifiersAndVirtualActionIntensity != _ClassifiersAndVirtualActionIntensity.end();
 //		 itClassifiersAndVirtualActionIntensity++)
 //	{
 //		ret += "\n <" + conversionAction.toString((*itClassifiersAndVirtualActionIntensity).first) + "> ";
-//		ret += "[MI=" + NLMISC::toString((*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getSumValue()) + "] :";
-//		(*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getDebugString(ret);
+//		ret += "[MI=" + NLMISC::toString((*itClassifiersAndVirtualActionIntensity).second.getSumValue()) + "] :";
+//		(*itClassifiersAndVirtualActionIntensity).second.getDebugString(ret);
 ////		std::map<TAction, TTargetId>::const_iterator itIdByActions = _IdByActions.find((*itClassifiersAndVirtualActionIntensity).first);
 ////		nlassert (itIdByActions != _IdByActions.end());
 ////		ret += " on target n#" + NLMISC::toString((*itIdByActions).second);
@@ -585,17 +674,17 @@ void CMHiCSagent::getDebugString(std::string &t) const
 void CMHiCSagent::setMotivationPP(TMotivation motivationName, double PP)
 {
 	_ClassifiersAndMotivationIntensity[motivationName].setMHiCSagent(this);
-	_ClassifiersAndMotivationIntensity[motivationName].MotivationIntensity.setMotivationPP(motivationName, PP);
+	_ClassifiersAndMotivationIntensity[motivationName].setMotivationPP(motivationName, PP);
 //	spreadMotivationReckon(motivationName);
 }
 
 /// Retourne la Puissance Propre d'une Motivation
 double CMHiCSagent::getMotivationPP(TMotivation motivationName) const
 {
-	std::map<TMotivation, CMotivateCS>::const_iterator itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(motivationName);
+	std::map<TMotivation, CMotivationEnergy>::const_iterator itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(motivationName);
 	if (itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end()) 
 	{
-		return (*itClassifiersAndMotivationIntensity).second.MotivationIntensity.getMotivationPP(motivationName);
+		return (*itClassifiersAndMotivationIntensity).second.getMotivationPP(motivationName);
 	}
 	else
 	{
@@ -607,16 +696,16 @@ double CMHiCSagent::getMotivationPP(TMotivation motivationName) const
 void CMHiCSagent::setMotivationValue(TMotivation motivationName, double value)
 {
 	_ClassifiersAndMotivationIntensity[motivationName].setMHiCSagent(this);
-	_ClassifiersAndMotivationIntensity[motivationName].MotivationIntensity.setMotivationValue(motivationName, value);
+	_ClassifiersAndMotivationIntensity[motivationName].setMotivationValue(motivationName, value);
 //	spreadMotivationReckon(motivationName);
 }
 
 double	CMHiCSagent::getMotivationValue(TMotivation motivationName) const
 {
-	std::map<TMotivation, CMotivateCS>::const_iterator itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(motivationName);
+	std::map<TMotivation, CMotivationEnergy>::const_iterator itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(motivationName);
 	if (itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end()) 
 	{
-		return (*itClassifiersAndMotivationIntensity).second.MotivationIntensity.getMotivationValue(motivationName);
+		return (*itClassifiersAndMotivationIntensity).second.getMotivationValue(motivationName);
 	}
 	else
 	{
@@ -627,10 +716,10 @@ double	CMHiCSagent::getMotivationValue(TMotivation motivationName) const
 /// Retourne l'intensité de motivation reçu par un action virtuel
 //double CMHiCSagent::getMotivationIntensity(TAction virtualAction) const
 //{
-//	std::map<TAction, CMotivateCS>::const_iterator itClassifiersAndVirtualActionIntensity = _ClassifiersAndVirtualActionIntensity.find(virtualAction);
+//	std::map<TAction, CMotivationEnergy>::const_iterator itClassifiersAndVirtualActionIntensity = _ClassifiersAndVirtualActionIntensity.find(virtualAction);
 //	if (itClassifiersAndVirtualActionIntensity != _ClassifiersAndVirtualActionIntensity.end()) 
 //	{
-//		return (*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getSumValue();
+//		return (*itClassifiersAndVirtualActionIntensity).second.getSumValue();
 //	}
 //	else
 //	{
@@ -642,8 +731,8 @@ double	CMHiCSagent::getMotivationValue(TMotivation motivationName) const
 double CMHiCSagent::getExecutionIntensity(TAction action, TTargetId target) const
 {
 	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::const_iterator itActionsExecutionIntensityByTarget;
-	itActionsExecutionIntensityByTarget = _ActionsExecutionIntensityByTarget.find(target);
-	if (itActionsExecutionIntensityByTarget == _ActionsExecutionIntensityByTarget.end())
+	itActionsExecutionIntensityByTarget = _pActionsExecutionIntensityByTarget->find(target);
+	if (itActionsExecutionIntensityByTarget == _pActionsExecutionIntensityByTarget->end())
 	{
 		return -1;
 	}
@@ -661,7 +750,7 @@ double CMHiCSagent::getExecutionIntensity(TAction action, TTargetId target) cons
 
 //void CMHiCSagent::spreadMotivationReckon(TMotivation CS)
 //{
-//	std::map<TMotivation, CMotivateCS>::iterator itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(CS);
+//	std::map<TMotivation, CMotivationEnergy>::iterator itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(CS);
 //	nlassert(itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end());
 //	TClassifierNumber lastClassifierNumber = (*itClassifiersAndMotivationIntensity).second.ClassifierNumber;
 //	if (lastClassifierNumber >=0 )
@@ -693,17 +782,17 @@ double CMHiCSagent::getExecutionIntensity(TAction action, TTargetId target) cons
 //		}
 //		else
 //		{
-//			std::map<TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensity = 
+//			std::map<TAction, CMotivationEnergy>::iterator itClassifiersAndVirtualActionIntensity = 
 //														_ClassifiersAndVirtualActionIntensity.find(lastActionName);
 //			// Test if the virtual action selected hasn't been removed.
 //			if (itClassifiersAndVirtualActionIntensity == _ClassifiersAndVirtualActionIntensity.end()) return;
 //			
 //			// Update the motivation provider for the virtual action execution intensity.
-//			(*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.updateProvider(CS,
+//			(*itClassifiersAndVirtualActionIntensity).second.updateProvider(CS,
 //																(*itClassifiersAndMotivationIntensity).second.MotivationIntensity);
 //			spreadMotivationReckon(lastActionName);
 //			// If the CS doesn't receive motivation any more, we remove it.
-//			double energy = (*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getSumValue();
+//			double energy = (*itClassifiersAndVirtualActionIntensity).second.getSumValue();
 //			if (energy <= 0)
 //			{
 //				_ClassifiersAndVirtualActionIntensity.erase(lastActionName);
@@ -714,7 +803,7 @@ double CMHiCSagent::getExecutionIntensity(TAction action, TTargetId target) cons
 //
 //void CMHiCSagent::spreadMotivationReckon(TAction CS)
 //{
-//	std::map<TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensityORIGIN = 
+//	std::map<TAction, CMotivationEnergy>::iterator itClassifiersAndVirtualActionIntensityORIGIN = 
 //																	_ClassifiersAndVirtualActionIntensity.find(CS);
 //	nlassert(itClassifiersAndVirtualActionIntensityORIGIN != _ClassifiersAndVirtualActionIntensity.end());
 //	TClassifierNumber lastClassifierNumber = (*itClassifiersAndVirtualActionIntensityORIGIN).second.ClassifierNumber;
@@ -747,17 +836,17 @@ double CMHiCSagent::getExecutionIntensity(TAction action, TTargetId target) cons
 //		}
 //		else
 //		{
-//			std::map<TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensity = 
+//			std::map<TAction, CMotivationEnergy>::iterator itClassifiersAndVirtualActionIntensity = 
 //				_ClassifiersAndVirtualActionIntensity.find(lastActionName);
 //			// Test if the virtual action selected hasn't been removed.
 //			if (itClassifiersAndVirtualActionIntensity == _ClassifiersAndVirtualActionIntensity.end()) return;
 //			
 //			// Update the motivation provider for the virtual action execution intensity.
-//			(*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.updateProvider(CS,
+//			(*itClassifiersAndVirtualActionIntensity).second.updateProvider(CS,
 //														(*itClassifiersAndVirtualActionIntensityORIGIN).second.MotivationIntensity);
 //			spreadMotivationReckon(lastActionName);
 //			// If the CS doesn't receive motivation any more, we remove it.
-//			double energy = (*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getSumValue();
+//			double energy = (*itClassifiersAndVirtualActionIntensity).second.getSumValue();
 //			if (energy <= 0)
 //			{
 //				_ClassifiersAndVirtualActionIntensity.erase(lastActionName);
@@ -774,15 +863,15 @@ void CMHiCSagent::motivationCompute()
 	*/
 	TAction behav;
 
-	std::map<TMotivation, CMotivateCS>::iterator itClassifiersAndMotivationIntensity;
+	std::map<TMotivation, CMotivationEnergy>::iterator itClassifiersAndMotivationIntensity;
 
 	for (itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.begin();
 		 itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end();
 		 itClassifiersAndMotivationIntensity++)
 	{
-		CMotivateCS* pCSselection = &((*itClassifiersAndMotivationIntensity).second);
+		CMotivationEnergy* pCSselection = &((*itClassifiersAndMotivationIntensity).second);
 		TMotivation selectionName = (*itClassifiersAndMotivationIntensity).first;
-		double energy = pCSselection->MotivationIntensity.getSumValue();
+		double energy = pCSselection->getSumValue();
 		if (energy > 0)
 		{
 			// On fait calculer le CS
@@ -800,7 +889,7 @@ void CMHiCSagent::motivationCompute()
 				TClassifierNumber selectedClassifierNumber = (*itMapActivableCS).second.first;
 				TTargetId currentTargetId = (*itMapActivableCS).second.second;
 				behav = _pMHiCSbase->getActionPart(selectionName, selectedClassifierNumber);
-				TClassifierPriority classifierPriority = _pMHiCSbase->getPriorityPart(selectionName, selectedClassifierNumber);
+//				TClassifierPriority classifierPriority = _pMHiCSbase->getPriorityPart(selectionName, selectedClassifierNumber);
 					
 //				// We check the last action selected by the current motivation to remove the motivation influence on this action.
 //				if (lastClassifierNumber >= 0)
@@ -829,10 +918,10 @@ void CMHiCSagent::motivationCompute()
 //						}
 //						else
 //						{
-//							_ClassifiersAndVirtualActionIntensity[lastActionName].MotivationIntensity.removeProvider(selectionName);
+//							_ClassifiersAndVirtualActionIntensity[lastActionName].removeProvider(selectionName);
 //							spreadMotivationReckon(lastActionName);
 //							// If the CS doesn't receive motivation any more, we remove it.
-//							double energy = _ClassifiersAndVirtualActionIntensity[lastActionName].MotivationIntensity.getSumValue();
+//							double energy = _ClassifiersAndVirtualActionIntensity[lastActionName].getSumValue();
 //							if (energy <= 0)
 //							{
 //								_ClassifiersAndVirtualActionIntensity.erase(lastActionName);
@@ -850,14 +939,14 @@ void CMHiCSagent::motivationCompute()
 				{
 //					if (_pMHiCSbase->isAnAction(behav))
 //					{
-						_ActionsExecutionIntensityByTarget[currentTargetId][behav].setMHiCSagent(this);
-						_ActionsExecutionIntensityByTarget[currentTargetId][behav].addProvider(selectionName, classifierPriority);
+						(*_pActionsExecutionIntensityByTarget)[currentTargetId][behav].setMHiCSagent(this);
+						(*_pActionsExecutionIntensityByTarget)[currentTargetId][behav].addProvider(selectionName, selectedClassifierNumber);
 //						_ActionsExecutionIntensity[behav].addProvider(selectionName, pCSselection->MotivationIntensity);
 //					}
 //					else
 //					{
 //						// Else it must be a virtual action (common CS)
-//						_ClassifiersAndVirtualActionIntensity[behav].MotivationIntensity.addProvider(selectionName, pCSselection->MotivationIntensity);
+//						_ClassifiersAndVirtualActionIntensity[behav].addProvider(selectionName, pCSselection->MotivationIntensity);
 //						spreadMotivationReckon(behav);
 //					}
 					
@@ -880,16 +969,16 @@ void CMHiCSagent::motivationCompute()
 //	Je met à jour l'énergie du vainqueur
 //	*/
 //	double somme = 0;
-//	typedef	std::map<TAction, CMotivateCS>::iterator TitNameAndVirtualAction;
+//	typedef	std::map<TAction, CMotivationEnergy>::iterator TitNameAndVirtualAction;
 //	std::map<double, TitNameAndVirtualAction > mapCSweel;
-//	std::map<TAction, CMotivateCS>::iterator itClassifiersAndVirtualActionIntensity;
+//	std::map<TAction, CMotivationEnergy>::iterator itClassifiersAndVirtualActionIntensity;
 //	// On calcule la somme
 //	for (itClassifiersAndVirtualActionIntensity = _ClassifiersAndVirtualActionIntensity.begin();
 //		 itClassifiersAndVirtualActionIntensity != _ClassifiersAndVirtualActionIntensity.end();
 //		 itClassifiersAndVirtualActionIntensity++)
 //	{
-//		CMotivateCS* pCMotivateCS = &((*itClassifiersAndVirtualActionIntensity).second);
-//		double energy = pCMotivateCS->MotivationIntensity.getSumValue();
+//		CMotivationEnergy* pCMotivationEnergy = &((*itClassifiersAndVirtualActionIntensity).second);
+//		double energy = pCMotivationEnergy->getSumValue();
 //		if (energy > 0)
 //		{
 //			somme += energy;
@@ -901,7 +990,7 @@ void CMHiCSagent::motivationCompute()
 //		// on selectionne le classeur;
 //		double randomeNumber = (rand()%(int(somme*100)))/100.0;
 //		std::map<double, TitNameAndVirtualAction>::iterator itMapCSweel = mapCSweel.upper_bound(randomeNumber);
-//		CMotivateCS* pCSselection = &((*((*itMapCSweel).second)).second);
+//		CMotivationEnergy* pCSselection = &((*((*itMapCSweel).second)).second);
 //		TAction selectionName = (*((*itMapCSweel).second)).first;
 //
 //		// Get the target Id for this Virtual Action
@@ -956,10 +1045,10 @@ void CMHiCSagent::motivationCompute()
 //				}
 //				else
 //				{
-//					_ClassifiersAndVirtualActionIntensity[lastActionName].MotivationIntensity.removeProvider(selectionName);
+//					_ClassifiersAndVirtualActionIntensity[lastActionName].removeProvider(selectionName);
 //					spreadMotivationReckon(lastActionName);
 //					// If the CS doesn't receive motivation any more, we remove it.
-//					double energy = _ClassifiersAndVirtualActionIntensity[lastActionName].MotivationIntensity.getSumValue();
+//					double energy = _ClassifiersAndVirtualActionIntensity[lastActionName].getSumValue();
 //					if (energy <= 0)
 //					{
 //						_ClassifiersAndVirtualActionIntensity.erase(lastActionName);
@@ -983,7 +1072,7 @@ void CMHiCSagent::motivationCompute()
 //			else
 //			{
 //				// Else it must be a virtual action (common CS)
-//				_ClassifiersAndVirtualActionIntensity[behav].MotivationIntensity.addProvider(selectionName, pCSselection->MotivationIntensity);
+//				_ClassifiersAndVirtualActionIntensity[behav].addProvider(selectionName, pCSselection->MotivationIntensity);
 //				spreadMotivationReckon(behav);
 //			}
 //
@@ -997,7 +1086,13 @@ void CMHiCSagent::motivationCompute()
 
 void CMHiCSagent::run()
 {
-	_ActionsExecutionIntensityByTarget.clear();
+	if (_Learning)
+	{
+		std::map<TTargetId, std::map<TAction, CMotivationEnergy> >	*bibu = _pOldActionsExecutionIntensityByTarget;
+		_pOldActionsExecutionIntensityByTarget = _pActionsExecutionIntensityByTarget;
+		_pActionsExecutionIntensityByTarget = bibu;
+	}
+	_pActionsExecutionIntensityByTarget->clear();
 	motivationCompute();
 //	virtualActionCompute();
 }
@@ -1006,6 +1101,151 @@ void CMHiCSagent::run()
 void CMHiCSagent::setSensors(CCSPerception* psensorMap)
 {
 	_pSensorsValues = psensorMap;
+}
+
+void CMHiCSagent::setLearning(bool active)
+{
+	_Learning = active;
+}
+
+void CMHiCSagent::learningComputation()
+{
+	/*
+	 *	Le but de l'apprentissage par ajustement des valeurs de priorité :
+	 *	La valeur de priorité est utilisé pour :
+	 *		- choisir un classeur lorsque plusieurs classeurs sont activable simultanement et partagent une même ressource d'action
+	 *		- moduler (maintenant de façon extrèmement mineur) la valeur de motivation émis par la source de motivation du classeur
+	 *	On veut la faire évoluer afin que dans une situation donnée, c'est le classeur le plus apte à satisfaire la motivation qui soit sélectionné.
+	 *	Celon le principe de bucket brigade, un classeur qui mène à satisfaire une motivation est un bon classeur.
+	 *	Ensuite un classeur qui a défaut de satisfaire la motivation mène à un classeur pouvant la satisfaire est bon mais un peut moins, etc.
+	 */
+	//	On note les descentes de motivations
+	std::map<TMotivation, double> motivationProgressionByMotivation;
+	std::map<TMotivation, CMotivationEnergy>::iterator	itOldClassifiersAndMotivationIntensity, itClassifiersAndMotivationIntensity;
+	for(itOldClassifiersAndMotivationIntensity = _OldClassifiersAndMotivationIntensity.begin();
+		itOldClassifiersAndMotivationIntensity != _OldClassifiersAndMotivationIntensity.end();
+		itOldClassifiersAndMotivationIntensity++)
+	{
+		TMotivation motivationName = (*itOldClassifiersAndMotivationIntensity).first;
+		double oldMV = (*itOldClassifiersAndMotivationIntensity).second.getMotivationValue(motivationName);
+		itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.find(motivationName);
+		nlassert(itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end());
+		double newMV = (*itClassifiersAndMotivationIntensity).second.getMotivationValue(motivationName);
+		if (newMV < oldMV)
+		{
+			motivationProgressionByMotivation[motivationName] = oldMV - newMV;
+		}
+	}
+
+	// On établit la liste des classeurs utilisés précédemment
+	std::map<TMotivation, std::set<TClassifierNumber> > oldClassifierByMotivation;
+	std::map<TMotivation, std::set<TClassifierNumber> >::iterator itOldClassifierByMotivation;
+	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::iterator itOldActionsExecutionIntensityByTarget;
+	std::map<TAction, CMotivationEnergy>::iterator itOldActionsExecutionIntensity;
+	for(itOldActionsExecutionIntensityByTarget  = _pOldActionsExecutionIntensityByTarget->begin();
+		itOldActionsExecutionIntensityByTarget != _pOldActionsExecutionIntensityByTarget->end();
+		itOldActionsExecutionIntensityByTarget++)
+	{
+		for(itOldActionsExecutionIntensity  = (*itOldActionsExecutionIntensityByTarget).second.begin();
+			itOldActionsExecutionIntensity != (*itOldActionsExecutionIntensityByTarget).second.end();
+			itOldActionsExecutionIntensity++)
+		{
+			const std::multimap<TMotivation, TClassifierNumber>* provounet = (*itOldActionsExecutionIntensity).second.getProviders();
+			std::multimap<TMotivation, TClassifierNumber>::const_iterator itProvounet;
+			// On met à jour les classeurs qui ont participés à l'évolution des motivations.
+			for(itProvounet  = provounet->begin();
+				itProvounet != provounet->end();
+				itProvounet++)
+			{
+				TMotivation motivationName = (*itProvounet).first;
+				TClassifierNumber classifierNumber = (*itProvounet).second;
+				std::map<TMotivation, double>::iterator itMotivationProgressionByMotivation = motivationProgressionByMotivation.find(motivationName);
+				if ( itMotivationProgressionByMotivation != motivationProgressionByMotivation.end())
+				{
+					double laSuperValeurDeDifferenceDeMotivation = (*itMotivationProgressionByMotivation).second;
+					double laPriorityPrecedente = _pMHiCSbase->getPriorityPart(motivationName, classifierNumber);
+					double laNouvellePriority = (laPriorityPrecedente+ (laPriorityPrecedente + ((1 - laPriorityPrecedente) * laSuperValeurDeDifferenceDeMotivation)))/2;
+					_pMHiCSbase->setPriorityValue(motivationName, classifierNumber, laNouvellePriority);
+
+					// On en profite pour rediviser l'ensemble des poids par le plus petit afin de ne pas se bloquer vers 1
+					// (vu qu'il n'y a que des renforcements positifs)
+					_pMHiCSbase->dividePriorityByTheMinPriorityPartInAMotivation(motivationName);
+				}
+				// On établit une liste des classeurs ayant été actifs.
+				oldClassifierByMotivation[motivationName].insert(classifierNumber);
+			}
+		}
+	}
+
+	// On établit la liste des classeurs nouveaux utilisés à ce pas ci
+	std::map<TMotivation, std::set<TClassifierNumber> > classifierByMotivation;
+	std::map<TMotivation, std::set<TClassifierNumber> >::iterator itClassifierByMotivation;
+	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::iterator itActionsExecutionIntensityByTarget;
+	std::map<TAction, CMotivationEnergy>::iterator itActionsExecutionIntensity;
+	std::set<TClassifierNumber>::iterator itUnChtitClassifierNumber;
+	for(itActionsExecutionIntensityByTarget  = _pActionsExecutionIntensityByTarget->begin();
+		itActionsExecutionIntensityByTarget != _pActionsExecutionIntensityByTarget->end();
+		itActionsExecutionIntensityByTarget++)
+	{
+		for(itActionsExecutionIntensity  = (*itActionsExecutionIntensityByTarget).second.begin();
+			itActionsExecutionIntensity != (*itActionsExecutionIntensityByTarget).second.end();
+			itActionsExecutionIntensity++)
+		{
+			const std::multimap<TMotivation, TClassifierNumber>* provounet = (*itActionsExecutionIntensity).second.getProviders();
+			std::multimap<TMotivation, TClassifierNumber>::const_iterator itProvounet;
+			for(itProvounet  = provounet->begin();
+				itProvounet != provounet->end();
+				itProvounet++)
+			{
+				TMotivation motivationName = (*itProvounet).first;
+				TClassifierNumber classifierNumber = (*itProvounet).second;
+				itOldClassifierByMotivation = oldClassifierByMotivation.find(motivationName);
+				if (itOldClassifierByMotivation != oldClassifierByMotivation.end() )
+				{
+					itUnChtitClassifierNumber = (*itOldClassifierByMotivation).second.find(classifierNumber);
+					if (itUnChtitClassifierNumber == (*itOldClassifierByMotivation).second.end() )
+					{
+						// S'il y avait des classeurs de la même motivation, mais pas le même classeur, c'est que ce classeur
+						// est nouveau au seins de cette motivation et va servir à la mise à jour d'anciens.
+						classifierByMotivation[motivationName].insert(classifierNumber);
+					}
+				}
+			}
+		}
+	}
+
+	// On regarde quelles sont les nouveaux classeurs activés
+	for(itClassifierByMotivation  = classifierByMotivation.begin();
+		itClassifierByMotivation != classifierByMotivation.end();
+		itClassifierByMotivation++)
+	{
+		TMotivation motivationName = (*itClassifierByMotivation).first;
+		// je commence par faire une moyenne des prios de mes nouvelles actions à ce tour ci.
+		double uneChtiteMoyenne = 0;
+		int unChtitCompteurDeMoyenne = 0;
+		for(itUnChtitClassifierNumber  = (*itClassifierByMotivation).second.begin();
+			itUnChtitClassifierNumber != (*itClassifierByMotivation).second.end();
+			itUnChtitClassifierNumber++)
+		{
+			TClassifierNumber leNumberDuClasseur = (*itUnChtitClassifierNumber);
+			uneChtiteMoyenne += _pMHiCSbase->getPriorityPart(motivationName,leNumberDuClasseur);
+			unChtitCompteurDeMoyenne++;
+		}
+		nlassert (unChtitCompteurDeMoyenne > 0);
+		uneChtiteMoyenne /= unChtitCompteurDeMoyenne;
+		// Puis je met à jour les anciens classeurs
+		itOldClassifierByMotivation = oldClassifierByMotivation.find(motivationName);
+		nlassert (itOldClassifierByMotivation != oldClassifierByMotivation.end()); // Normalement c'est assuré par la boucle précédente
+		for(itUnChtitClassifierNumber  = (*itOldClassifierByMotivation).second.begin();
+			itUnChtitClassifierNumber != (*itOldClassifierByMotivation).second.end();
+			itUnChtitClassifierNumber++)
+		{
+			TClassifierNumber leNumberDuClasseur = (*itUnChtitClassifierNumber);
+			double laPriorityPrecedente = _pMHiCSbase->getPriorityPart(motivationName, leNumberDuClasseur);
+			double laNouvellePriority = (laPriorityPrecedente + uneChtiteMoyenne)/2;
+			_pMHiCSbase->setPriorityValue(motivationName,leNumberDuClasseur,laNouvellePriority);
+		}
+	}
 }
 
 
@@ -1019,8 +1259,8 @@ const std::map<TTargetId, std::map<TAction, CMotivationEnergy> >* CMHiCSagent::s
 
 	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::iterator itActionsExecutionIntensityByTarget;
 	std::map<TAction, CMotivationEnergy>::iterator itMotiveByAction;
-	for (itActionsExecutionIntensityByTarget  = _ActionsExecutionIntensityByTarget.begin();
-		 itActionsExecutionIntensityByTarget != _ActionsExecutionIntensityByTarget.end();
+	for (itActionsExecutionIntensityByTarget  = _pActionsExecutionIntensityByTarget->begin();
+		 itActionsExecutionIntensityByTarget != _pActionsExecutionIntensityByTarget->end();
 		 itActionsExecutionIntensityByTarget++)
 	{
 		for (itMotiveByAction  = (*itActionsExecutionIntensityByTarget).second.begin();
@@ -1044,18 +1284,25 @@ const std::map<TTargetId, std::map<TAction, CMotivationEnergy> >* CMHiCSagent::s
 	{
 		 target = (*itActionsToRemove).second.first;
 		 action = (*itActionsToRemove).second.second;
-		 itActionsExecutionIntensityByTarget = _ActionsExecutionIntensityByTarget.find(target);
-		 nlassert (itActionsExecutionIntensityByTarget != _ActionsExecutionIntensityByTarget.end());
+		 itActionsExecutionIntensityByTarget = _pActionsExecutionIntensityByTarget->find(target);
+		 nlassert (itActionsExecutionIntensityByTarget != _pActionsExecutionIntensityByTarget->end());
 		 itMotiveByAction = (*itActionsExecutionIntensityByTarget).second.find(action);
 		 nlassert (itMotiveByAction != (*itActionsExecutionIntensityByTarget).second.end());
 		 (*itActionsExecutionIntensityByTarget).second.erase(action);
 		 if ( (*itActionsExecutionIntensityByTarget).second.begin() == (*itActionsExecutionIntensityByTarget).second.end() )
 		 {
-			 _ActionsExecutionIntensityByTarget.erase(target);
+			 _pActionsExecutionIntensityByTarget->erase(target);
 		 }
 	}
 
-	return &_ActionsExecutionIntensityByTarget;
+	if (_Learning)
+	{
+		learningComputation();
+
+		_OldClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity;
+	}
+
+	return _pActionsExecutionIntensityByTarget;
 }
 
 /// Inform the MHiCSAgent that an action ended

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.53 2001/05/03 16:29:21 lecroart Exp $
+ * $Id: service.cpp,v 1.54 2001/05/04 14:44:29 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -363,7 +363,22 @@ sint IService::main (int argc, char **argv)
 		// Add the server of this service
 		//
 
-		CNetManager::addServer (_ShortName, _Port);
+		try
+		{
+			_SId = _ConfigFile.getVar("SId").asInt();
+			if (_SId<0 || _SId>255)
+			{
+				nlwarning("Bad SId in the config file %d in not in [0;255] range", _SId);
+				_SId = 0;
+			}
+		}
+		catch(EUnknownVar&)
+		{
+			// ok, SId not found, use dynamic sid
+			_SId = 0;
+		}
+
+		CNetManager::addServer (_ShortName, _Port, _SId);
 		CNetManager::addCallbackArray (_ShortName, _CallbackArray, _CallbackArraySize);
 
 		//

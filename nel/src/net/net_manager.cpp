@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.2 2001/05/04 14:44:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -174,6 +174,12 @@ void CNetManager::release ()
 
 void CNetManager::addServer (const std::string &serviceName, uint16 servicePort)
 {
+	TServiceId sid = 0;
+	addServer (serviceName, servicePort, sid);
+}
+
+void CNetManager::addServer (const std::string &serviceName, uint16 servicePort, TServiceId &sid)
+{
 	nldebug ("L4: Adding server '%s' in CNetManager", serviceName.c_str ());
 	ItBaseMap itbm = find (serviceName);
 
@@ -204,7 +210,15 @@ void CNetManager::addServer (const std::string &serviceName, uint16 servicePort)
 	{
 		CInetAddress addr = CInetAddress::localHost ();
 		addr.setPort (servicePort);
-		CNamingClient::registerService (serviceName, addr);
+
+		if (sid == 0)
+		{
+			sid = CNamingClient::registerService (serviceName, addr);
+		}
+		else
+		{
+			CNamingClient::registerServiceWithSId (serviceName, addr, sid);
+		}
 	}
 }
 

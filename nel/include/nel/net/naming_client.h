@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.19 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: naming_client.h,v 1.20 2001/05/04 14:44:24 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,10 +72,14 @@ public:
 	 */
 	static TServiceId	registerService (const std::string &name, const CInetAddress &addr);
 
+	/** Register a service within the naming service, using a specified service identifier.
+	 * Returns false if the service identifier is unavailable i.e. the registration failed.
+	 */
+	static bool			registerServiceWithSId (const std::string &name, const CInetAddress &addr, TServiceId sid);
+
 
 	/// Unregister a service from the naming service, service identifier.
 	static void			unregisterService (TServiceId sid);
-
 
 	/// Unregister all services registered by this client. You don't have to
 	static void			unregisterAllServices ();

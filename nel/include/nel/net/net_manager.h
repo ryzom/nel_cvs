@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: net_manager.h,v 1.2 2001/05/04 14:44:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,8 +92,13 @@ public:
 
 	static void release ();
 
-	/// Sets up a server on a specific port with a specific service name (create a listen socket, register to naming service and so on)
+	/** Sets up a server on a specific port with a specific service name (create a listen socket, register to naming service and so on)
+	 * If servicePort is 0, it will be dynamically determinated by the Naming Service.
+	 * If sid id 0, the service id will be dynamically determinated by the Naming Service.
+	 */
 	static void	addServer (const std::string &serviceName, uint16 servicePort = 0);
+
+	static void	addServer (const std::string &serviceName, uint16 servicePort, NLNET::TServiceId &sid);
 
 	/// Creates a connection to a specific IP and associate it this a "fake" serviceName (to enable you to send data for example)
 	static void	addClient (const std::string &serviceName, const std::string &addr);

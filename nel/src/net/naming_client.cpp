@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.26 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.27 2001/05/04 14:44:24 lecroart Exp $
  *
  */
 
@@ -181,6 +181,8 @@ TServiceId CNamingClient::registerService (const std::string &name, const CInetA
 	CMessage msgout (_Connection->getSIDA(), "RG");
 	msgout.serial (const_cast<std::string&>(name));
 	msgout.serial (const_cast<CInetAddress&>(addr));
+	TServiceId sid = 0;
+	msgout.serial (sid);
 	_Connection->send (msgout);
 
 	// wait the answer of the naming service "RG"
@@ -200,6 +202,57 @@ TServiceId CNamingClient::registerService (const std::string &name, const CInetA
 
 	return RegisteredSID;
 }
+
+bool CNamingClient::registerServiceWithSId (const std::string &name, const CInetAddress &addr, TServiceId sid)
+{
+	nlassert (_Connection != NULL && _Connection->connected ());
+
+	CMessage msgout (_Connection->getSIDA(), "RG");
+	msgout.serial (const_cast<std::string&>(name));
+	msgout.serial (const_cast<CInetAddress&>(addr));
+	msgout.serial (sid);
+	_Connection->send (msgout);
+
+	// wait the answer of the naming service "RGI"
+	Registered = false;
+	while (!Registered)
+		_Connection->update ();
+
+	if (RegisteredSuccess)
+	{
+		_RegisteredServices.insert (make_pair (RegisteredSID, name));
+		nldebug ("NC: Registered service with sid %s-%hu at %s", name.c_str(), (uint16)RegisteredSID, addr.asString().c_str());
+	}
+	else
+	{
+		nlerror ("NC: Naming service refused to register service with sid %s at %s", name.c_str(), addr.asString().c_str());
+	}
+
+	return RegisteredSuccess;
+/*
+	nldebug("bool CNamingClient::registerServiceWithSId( const std::string& name, const CInetAddress& addr, TServiceId sid )");
+
+	CMessage msgin( "", true );
+	CNamingClient::_ClientSock->receive( msgin );
+	bool ok;
+	msgin.serial( ok );
+
+	//CNamingClient::closeT();
+
+	if ( ok )
+	{
+		_RegisteredServices.insert( std::make_pair(sid,name) );
+		nldebug( "Registered service %s-%hu at %s", name.c_str(), (uint16)sid, addr.asString().c_str() );
+		return true;
+	}
+	else
+	{
+		nldebug( "Cannot register service %s-%hu: service identifier unavailable", name.c_str(), (uint16)sid );
+		return false;
+	}
+	return false;
+*/}
+
 
 void CNamingClient::unregisterService (TServiceId sid)
 {

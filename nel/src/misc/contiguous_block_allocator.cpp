@@ -1,6 +1,6 @@
 /** \file contiguous_allocator.cpp
  *
- * $Id: contiguous_block_allocator.cpp,v 1.2 2004/03/30 09:17:43 berenguier Exp $
+ * $Id: contiguous_block_allocator.cpp,v 1.3 2004/04/09 14:40:47 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -50,7 +50,7 @@ CContiguousBlockAllocator::~CContiguousBlockAllocator()
 //*********************************************************************************************************
 void CContiguousBlockAllocator::init(uint numBytes /*=0*/)
 {
-	if (_BlockStart) _DefaultAlloc.deallocate(_BlockStart, _BlockEnd-_BlockStart);
+	if (_BlockStart) _DefaultAlloc.deallocate(_BlockStart, _BlockEnd - _BlockStart);
 	_BlockEnd =  NULL;
 	_BlockStart = NULL;
 	_NumAllocatedBytes = 0;
@@ -93,7 +93,7 @@ void *CContiguousBlockAllocator::alloc(uint numBytes)
 }
 
 //*********************************************************************************************************
-void CContiguousBlockAllocator::free(void *block)
+void CContiguousBlockAllocator::free(void *block, uint numBytes)
 {
 	if (!block) return;
 	#ifdef NL_DEBUG
@@ -103,7 +103,7 @@ void CContiguousBlockAllocator::free(void *block)
 	if (block < _BlockStart || block >= _BlockEnd)
 	{
 		// the block was allocated with std allocator
-		_DefaultAlloc.deallocate((uint8 *) block);
+		_DefaultAlloc.deallocate((uint8 *) block, numBytes);
 	}
 }
 

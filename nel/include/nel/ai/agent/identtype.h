@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.2 2001/03/21 15:32:15 chafik Exp $
+ * $Id: identtype.h,v 1.3 2001/03/21 15:45:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,7 +168,7 @@ namespace NLAIAGENT
 
 		}
 		///Have a debug string.
-		void getDebugString(char *str) const;		
+		virtual void getDebugString(char *str) const;		
 
 		/// \name NLMISC::IStreamable method.
 		//@{
@@ -225,6 +225,33 @@ namespace NLAIAGENT
 			TypeName = s;
 		}
 
+		bool operator == (const CIdent &a) const
+		{
+			if(TypeName == a.TypeName) 
+			{
+				return CAgentNumber::operator == (a);
+			}
+			return false;
+		}
+				
+		bool operator < (const CIdent &a) const
+		{				
+			return TypeName < a.TypeName;
+		}
+
+		bool operator > (const CIdent &a) const
+		{
+			return !(TypeName < a.TypeName);
+		}		
+		
+
+		const CIdent &operator = (const CIdent &a)
+		{
+			CAgentNumber::operator = (a);
+			TypeName = a.TypeName;
+			return *this;
+		}
+
 		///saving the nomber in an output stream.
 		virtual void save(NLMISC::IStream &os)
 		{	
@@ -239,6 +266,13 @@ namespace NLAIAGENT
 			std::string s;
 			is.serial(s);
 			TypeName = s;
+		}
+
+		///Have a debug string.
+		virtual void getDebugString(char *str) const
+		{
+			CAgentNumber::getDebugString(str);
+			sprintf(&str[strlen(str)]," '%s'",TypeName.data());
 		}
 
 		const std::string &getTypeName() const

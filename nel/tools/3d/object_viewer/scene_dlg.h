@@ -1,7 +1,7 @@
 /** \file scene_dlg.h
  * <File description>
  *
- * $Id: scene_dlg.h,v 1.8 2001/06/25 12:52:18 vizerie Exp $
+ * $Id: scene_dlg.h,v 1.9 2001/06/26 09:20:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,6 +116,7 @@ protected:
 	afx_msg void OnEnableElementXrotate();
 	afx_msg void OnEnableElementYrotate();
 	afx_msg void OnEnableElementZrotate();
+	afx_msg void OnResetRotation();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.12 2001/06/25 12:52:18 vizerie Exp $
+ * $Id: scene_dlg.cpp,v 1.13 2001/06/26 09:20:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -196,6 +196,7 @@ BEGIN_MESSAGE_MAP(CSceneDlg, CDialog)
 	ON_COMMAND(ID_ENABLE_ELEMENT_XROTATE, OnEnableElementXrotate)
 	ON_COMMAND(ID_ENABLE_ELEMENT_YROTATE, OnEnableElementYrotate)
 	ON_COMMAND(ID_ENABLE_ELEMENT_ZROTATE, OnEnableElementZrotate)
+	ON_COMMAND(IDM_RESET_ROTATION, OnResetRotation)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -578,4 +579,11 @@ void CSceneDlg::OnEnableElementYrotate()
 void CSceneDlg::OnEnableElementZrotate() 
 {
 	ObjView->getMouseListener().setModelMatrixRotationAxis(CEvent3dMouseListener::zAxis) ;	
+}
+
+void CSceneDlg::OnResetRotation() 
+{
+	CMatrix m = ObjView->getMouseListener().getModelMatrix() ;
+	m.setRot(NLMISC::CVector::I, NLMISC::CVector::J, NLMISC::CVector::K) ;		
+	ObjView->getMouseListener().setModelMatrix(m) ;
 }

@@ -827,6 +827,10 @@ SOURCE=..\include\nel\ai\agent\goal_stack.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ryzom\src\group_operator.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\logic\ia_assert.h
 # End Source File
 # Begin Source File

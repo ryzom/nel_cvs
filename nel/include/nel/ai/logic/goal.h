@@ -1,7 +1,7 @@
 /** \file goal.h
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.23 2002/05/03 14:34:51 portier Exp $
+ * $Id: goal.h,v 1.24 2002/09/16 13:49:39 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,13 @@ namespace NLAILOGIC
 			};
 
 
+			enum TPriority
+			{
+				Normal,
+				Order,
+				Urgent
+			};
+
 		protected:
 			NLAIAGENT::IVarName *_Name;
 			std::vector<NLAIAGENT::IObjectIA *>		_Args;
@@ -60,6 +67,8 @@ namespace NLAILOGIC
 			TTypeOfGoal	_Mode;
 
 			bool _Selected;
+
+			float _Priority;
 
 			NLAIAGENT::IBasicAgent *_Sender;
 			NLAIAGENT::IBasicAgent *_Receiver;
@@ -109,6 +118,14 @@ namespace NLAILOGIC
 
 			bool isExclusive();
 
+			virtual void setPriority(float);
+			virtual void calcPriority();
+			virtual float getPriority();
+
+			void setSender(NLAIAGENT::IBasicAgent *);
+			void setReceiver(NLAIAGENT::IBasicAgent *);
+			NLAIAGENT::IBasicAgent *getSender();
+			NLAIAGENT::IBasicAgent *getReceiver();
 	};
 
 	class CGoal : public IGoal
@@ -156,12 +173,6 @@ namespace NLAILOGIC
 
 
 			virtual bool operator==(const CGoal &);
-
-			void setSender(NLAIAGENT::IBasicAgent *);
-			void setReceiver(NLAIAGENT::IBasicAgent *);
-
-			NLAIAGENT::IBasicAgent *getSender();
-			NLAIAGENT::IBasicAgent *getReceiver();
 
 			virtual void cancel();
 			virtual float priority() const;

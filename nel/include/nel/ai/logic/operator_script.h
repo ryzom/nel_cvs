@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.29 2002/08/02 13:27:20 robert Exp $
+ * $Id: operator_script.h,v 1.30 2002/09/16 13:49:39 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@ namespace NLAIAGENT
 				fid_background,
 				fid_exclusive,
 				fid_achieve,
+				fid_order,
 				fid_last
 			};
 
@@ -143,6 +144,8 @@ namespace NLAIAGENT
 			void setPriority(float prio);
 
 			virtual bool checkTrigMsg();
+
+			virtual void order(NLAIAGENT::IBaseGroupType *, NLAILOGIC::IGoal *);
 	};
 }
 #endif

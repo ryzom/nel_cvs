@@ -16,6 +16,10 @@ Requirements
       - STLPort 4.0           <URL:http://www.stlport.org/>
       - NeL                   <URL:http://www.nevrax.org/>
 
+  To compile the Login system you also need :
+
+      - mysql SDK
+      - zlib
 
 Compilation
 ===========

@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.17 2002/09/17 14:12:31 coutelas Exp $
+ * $Id: welcome_service.cpp,v 1.18 2002/10/07 08:03:07 lecroart Exp $
  *
  */
 
@@ -360,7 +360,7 @@ public:
 		CUnifiedNetwork::getInstance()->setServiceUpCallback(FrontendServiceName, cbFESConnection, NULL);
 		CUnifiedNetwork::getInstance()->setServiceDownCallback(FrontendServiceName, cbFESDisconnection, NULL);
 
-		for (uint i = 0; i < ConfigFile.getVar("LSHost").size (); i++)
+		for (sint i = 0; i < ConfigFile.getVar("LSHost").size (); i++)
 		{
 			// add a connection to the LS
 			string LSAddr = ConfigFile.getVar("LSHost").asString(i);

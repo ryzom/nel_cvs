@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.15 2003/12/29 13:32:53 lecroart Exp $
+ * $Id: sheet_id.h,v 1.16 2004/02/17 19:27:36 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -216,6 +216,20 @@ private :
 	static void loadSheetId ();
 	static void loadSheetAlias ();
 	static void cbFileChange (const std::string &filename);
+};
+
+
+/**
+ * Class to be used as a hash function for a hash_map accessed by CSheetId
+ * Ex: hash_map< CSheetId, CMyData, CHashBySheetId > _MyHashMap;
+ */
+class CHashBySheetId
+{
+public:
+	uint32	operator() ( const CSheetId& sheetId ) const
+	{
+		return sheetId.asInt();
+	}
 };
 
 } // NLMISC

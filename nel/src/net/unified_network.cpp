@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.13 2001/11/19 14:24:54 legros Exp $
+ * $Id: unified_network.cpp,v 1.14 2001/11/20 16:36:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -220,10 +220,7 @@ void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 	_CbServer.setDefaultCallback(cbMsgProcessing);				// the default callback wrapper
 	_CbServer.setConnectionCallback(cbConnection, NULL);
 	_CbServer.setDisconnectionCallback(cbDisconnection, NULL);
-}
 
-void	CUnifiedNetwork::connect()
-{
 	if (CNamingClient::connected())
 	{
 		// register the service
@@ -238,6 +235,14 @@ void	CUnifiedNetwork::connect()
 			CNamingClient::registerServiceWithSId(_Name, laddr, _SId);
 		}
 
+		sid = _SId;
+	}
+}
+
+void	CUnifiedNetwork::connect()
+{
+	if (CNamingClient::connected())
+	{
 		// get the services list
 		const list<CNamingClient::CServiceEntry>	&services = CNamingClient::getRegisteredServices();
 
@@ -890,7 +895,7 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 	}
 	else if (count > 1)
 	{
-		nlwarning("L5: more than one service %s to get CCallbackNetBase", name.c_str());
+		nlwarning("L5: %d services %s to get CCallbackNetBase", count, name.c_str());
 	}
 
 	TNameMappedConnection::const_iterator	itnmc = nameAccess.value().find(name);
@@ -906,6 +911,29 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 		return cnx.Connection.CbClient;
 	}
 }
+
+CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host)
+{
+	CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
+
+	if (sid>=idAccess.value().size() || !idAccess.value()[sid].EntryUsed || !idAccess.value()[sid].EntryUsed)
+	{
+		nlwarning("L5: incorrect service id %d to get netbase", sid);
+		return NULL;
+	}
+
+	const CUnifiedConnection	&cnx = idAccess.value()[sid];
+	if (cnx.IsServerConnection)
+	{
+		host = cnx.Connection.HostId;
+		return &_CbServer;
+	}
+	else
+	{
+		return cnx.Connection.CbClient;
+	}
+}
+
 
 //
 //

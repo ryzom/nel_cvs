@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.8 2001/11/13 12:00:29 lecroart Exp $
+ * $Id: service_5.cpp,v 1.9 2001/11/20 16:36:55 legros Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -655,6 +655,8 @@ sint IService5::main ()
 
 		//
 		// Connects to the present services
+		// WARNING: only after the user init was called because the
+		// addService may call up service callbacks.
 		//
 
 		instance->connect();

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.7 2001/11/15 15:26:21 legros Exp $
+ * $Id: unified_network.h,v 1.8 2001/11/20 16:36:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,6 +160,9 @@ public:
 
 	/// Gets the CCallbackNetBase of the service
 	CCallbackNetBase	*getNetBase(const std::string &name, TSockId &host);
+
+	/// Gets the CCallbackNetBase of the service
+	CCallbackNetBase	*getNetBase(TServiceId sid, TSockId &host);
 
 	/// Gets the total number of bytes sent
 	uint64				getBytesSent ();

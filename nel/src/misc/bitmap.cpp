@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.32 2002/11/14 17:40:32 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.33 2002/11/29 09:12:35 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,12 @@
 
 #include <memory>
 #include <algorithm>
+
+/*extern "C"
+{
+#include <jpeglib.h>
+}
+*/
 
 #include "nel/misc/bitmap.h"
 #include "nel/misc/stream.h"
@@ -75,6 +81,12 @@ const uint32 CBitmap::bitPerPixels[ModeCount]=
 const uint32 CBitmap::DXTC1HEADER = NL_MAKEFOURCC('D','X', 'T', '1');
 const uint32 CBitmap::DXTC3HEADER = NL_MAKEFOURCC('D','X', 'T', '3');
 const uint32 CBitmap::DXTC5HEADER = NL_MAKEFOURCC('D','X', 'T', '5');
+
+// static data for jpeg compression (used by writeJPG())
+NLMISC::IStream *JPGStream = NULL;
+const uint32 JPGBufferSize = 1000;
+char JPGBuffer[JPGBufferSize];
+
 
 /*-------------------------------------------------------------------*\
 								load		
@@ -2067,8 +2079,6 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 	return(imageDepth);
 
 }
-
-
 
 /*-------------------------------------------------------------------*\
 							writeTGA

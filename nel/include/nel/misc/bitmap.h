@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.16 2002/10/25 15:45:59 berenguier Exp $
+ * $Id: bitmap.h,v 1.17 2002/11/29 09:12:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,15 @@
 
 #ifndef NL_BITMAP_H
 #define NL_BITMAP_H
+
+#ifdef USE_JPEG
+#define XMD_H
+#undef FAR
+extern "C"
+{
+#include <jpeglib.h>
+}
+#endif // USE_JPEG
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
@@ -441,6 +450,15 @@ public:
 	 */	
 	bool writeTGA(NLMISC::IStream &f, uint32 d, bool upsideDown = false);
 
+	/** 
+	 * Write a JPG from the object pixels buffer.
+	 * If the current pixel format is not rgba then the method does nothing
+	 * If the pixel format is Alpha then we save in 8 bpp
+	 * \param f IStream (must be a reading stream)
+	 * \param quality 0=very bad quality 100=best quality
+	 * \return true if succeed, false else
+	 */	
+	bool writeJPG(NLMISC::IStream &f, uint8 quality = 80);
 
 	/**
 	 * Tell the bitmap to load grayscale bitmap as alpha or luminance format.
@@ -520,6 +538,88 @@ public:
 	void blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor);
 
 };
+
+
+
+
+#ifdef USE_JPEG
+
+extern NLMISC::IStream *JPGStream;
+extern const uint32 JPGBufferSize = 1000;
+extern char JPGBuffer[JPGBufferSize];
+
+static void jpgCompressInit(j_compress_ptr cinfo)
+{
+	cinfo->dest->next_output_byte = (unsigned char *)JPGBuffer;
+	cinfo->dest->free_in_buffer = JPGBufferSize;
+}
+
+static boolean jpgCompressEmpty(j_compress_ptr cinfo)
+{
+	JPGStream->serialBuffer((uint8*) JPGBuffer, JPGBufferSize);
+	cinfo->dest->next_output_byte = (unsigned char *)JPGBuffer;
+	cinfo->dest->free_in_buffer = JPGBufferSize;
+	return TRUE;
+}
+
+static void jpgCompressTerm(j_compress_ptr cinfo)
+{
+	if(JPGBufferSize - cinfo->dest->free_in_buffer > 0)
+		JPGStream->serialBuffer((uint8*) JPGBuffer, JPGBufferSize - cinfo->dest->free_in_buffer);
+}
+
+static jpeg_destination_mgr jpgDestinationManager = { 0, 0, jpgCompressInit, jpgCompressEmpty, jpgCompressTerm };
+
+inline bool CBitmap::writeJPG( NLMISC::IStream &f, uint8 quality)
+{
+	if (f.isReading()) return false;
+	if (PixelFormat != RGBA) return false;
+	
+	JPGStream = &f;
+	
+	struct jpeg_compress_struct cinfo;
+	struct jpeg_error_mgr jerr;
+	cinfo.err = jpeg_std_error(&jerr);
+	jpeg_create_compress(&cinfo);
+	
+	cinfo.image_width = _Width; 	/* image width and height, in pixels */
+	cinfo.image_height = _Height;
+	cinfo.input_components = 3;		/* # of color components per pixel */
+	cinfo.in_color_space = JCS_RGB; 	/* colorspace of input image */
+	cinfo.dest = &jpgDestinationManager;
+	jpeg_set_defaults(&cinfo);
+	jpeg_set_quality(&cinfo, quality, TRUE /* limit to baseline-JPEG values */);
+	jpeg_start_compress(&cinfo, TRUE);
+	
+	JSAMPROW row_pointer[1];
+	row_pointer[0] = new unsigned char[_Width*3];
+	
+	while (cinfo.next_scanline < cinfo.image_height)
+	{
+		for (uint i = 0; i < _Width; i++)
+		{
+			row_pointer[0][i*3+0] = (unsigned char) _Data[0][cinfo.next_scanline * _Width*4 + i*4+0];
+			row_pointer[0][i*3+1] = (unsigned char) _Data[0][cinfo.next_scanline * _Width*4 + i*4+1];
+			row_pointer[0][i*3+2] = (unsigned char) _Data[0][cinfo.next_scanline * _Width*4 + i*4+2];
+		}
+		(void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
+	}
+	jpeg_finish_compress(&cinfo);
+	jpeg_destroy_compress(&cinfo);
+	delete row_pointer[0];
+	row_pointer[0] = NULL;
+	JPGStream = NULL;
+	
+	return true;
+}
+#else // USE_JPEG
+inline bool CBitmap::writeJPG( NLMISC::IStream &f, uint8 quality)
+{
+	nlwarning ("You must put #define USE_JPEG before all include in the file where you call writeJPG() if you want jpeg support");
+}
+#endif // USE_JPEG
+
+
 
 
 } // NLMISC

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.77 2004/12/17 14:32:32 legros Exp $
+# $Id: Makefile.am,v 1.78 2005/01/11 10:51:06 distrib Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -128,7 +128,7 @@ noinst_HEADERS        = di_game_device.h \
                         stdmisc.h
 
 
-libnelmisc_la_LIBADD  = config_file/libconfig.la -lc -lpthread
+libnelmisc_la_LIBADD  = config_file/libconfig.la -lc -lpthread -lrt
 
 libnelmisc_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 

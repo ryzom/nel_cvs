@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.5 2000/10/05 13:36:20 cado Exp $
+ * $Id: debug.cpp,v 1.6 2000/10/05 16:38:57 cado Exp $
  *
  * Debug
  */
@@ -33,12 +33,12 @@
  * NLMISC::CStdDisplayer is for the screen (and VC++ debug window).
  * NLMISC::CFileDisplayer is for a file.
  * NLMISC::CMsgBoxDisplayer is for a message box.
- * NLNET::CNetDisplayer is for a logging server (see CLogService)
+ * NLNET::CNetDisplayer is for a logging server (see CLogService in the server documentation)
  *
  * Example :
  * \code
  * NLMISC::CStdDisplayer sd;
- * CNLNET::NetDisplayer nd ( NLNET::CInetAddress( "log_service_machine", log_port ) )
+ * NLNET::NetDisplayer nd ( NLNET::CInetAddress( "log_service_machine", log_port ) )
  * NLMISC::ErrorLog.addDisplayer( &sd );
  * NLMISC::DebugLog.addDisplayer( &nd );
  * \endcode

@@ -1,19 +1,50 @@
 /**
- * \page network Network
- *
- * \subsection networkintro Introduction
- *
- * Conceptually, the network subsystem is divided into two layers and two more concepts :
- * -# Layer 1 is the socket layer : it allows to send/receive any data using a network.
- * -# Layer 2 is the message layer : it allows to send/receive messages and to call
- * event-driven callback functions
- * -# The recipient of a connection need not be an Internet address. It can be pointed to
- * as a specific service using a Naming Service.
- * -# Any object can be serialized to/from a message, using a stream interface.
- *
- * Here is the implementation point of view :
- * -# Layer 1 is implemented by NLNET::CSocket. It could be more abstract than it is at present.
- * -# Layer 2 is implemented by NLNET::CMsgSocket.
- * -# The addresses are implemented by NLNET::CInetAddress.
- * -# The NLNET::CMessage class inherits from NLMISC::IStream.
- */
+\page network Network
+
+\subsection networkintro Introduction
+
+Conceptually, the network subsystem is divided into two layers and two more concepts :
+-# Layer 1 is the socket layer : it allows to send/receive any data using a network.
+-# Layer 2 is the message layer : it allows to send/receive messages and to call
+event-driven callback functions
+-# The recipient of a connection need not be an Internet address. It can be pointed to
+as a specific service using a Naming Service.
+-# Any object can be serialized to/from a message, using a stream interface.
+
+Here is the implementation point of view :
+-# Layer 1 is implemented by NLNET::CSocket. It could be more abstract than it is at present.
+-# Layer 2 is implemented by NLNET::CMsgSocket.
+-# The addresses are implemented by NLNET::CInetAddress.
+-# The NLNET::CMessage class inherits from NLMISC::IStream.
+
+\subsection networkusing Using the network engine
+
+- How can I send a message to another host ?
+Example : I want to send the string "toto" to the host "server.nevrax.net" on port 40000 :
+\code
+  // Create a client "message socket" with no callback (because we don't expect to receive messages)
+  // that connects to the specified host
+  CMsgSocket client ( NULL, 0, CInetAddress( "server.nevrax.net", 40000 ) );
+
+  // Send "toto"
+  string toto = "toto";
+  CMessage msgout ( false );
+  msgout.serial( toto );
+  client.send( msgout );
+\endcode
+
+If we plan to send some more messages, we should receive any incoming messages before sending the rest of the messages :
+\code
+  CMessage msgouts ( false ) [10]; // here I don't reuse the same message
+  for ( int i=0; i<10; i++ )
+  {
+    client.receive(); // tests if a message has been received, and if so it is processed
+    msgouts[i].serial( i ); // send an integer
+    client.send( msgouts[i] );
+  }
+\endcode
+
+- How can I send a container or an object ?
+See NLMISC::IStream. 
+
+*/

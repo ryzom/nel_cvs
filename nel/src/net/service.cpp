@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.119 2002/04/30 10:12:47 lecroart Exp $
+ * $Id: service.cpp,v 1.120 2002/05/27 16:50:05 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -553,16 +553,21 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			//
 
 			sint x=-1, y=-1, w=-1, h=-1;
+			bool iconified = false;
 
 			try { x = ConfigFile.getVar("XWinParam").asInt(); } catch (EUnknownVar&) { }
 			try { y = ConfigFile.getVar("YWinParam").asInt(); } catch (EUnknownVar&) { }
 			try { w = ConfigFile.getVar("WWinParam").asInt(); } catch (EUnknownVar&) { }
 			try { h = ConfigFile.getVar("HWinParam").asInt(); } catch (EUnknownVar&) { }
 
+			try { iconified = ConfigFile.getVar("IWinParam").asInt() == 1; } catch (EUnknownVar&) { }
+
+			if (haveArg('I')) iconified = true;
+
 			if (w == -1 && h == -1)
-				_WindowDisplayer->create (_ShortName + " " + _LongName, x, y);
+				_WindowDisplayer->create (_ShortName + " " + _LongName, iconified, x, y);
 			else
-				_WindowDisplayer->create (_ShortName + " " + _LongName, x, y, w, h);
+				_WindowDisplayer->create (_ShortName + " " + _LongName, iconified, x, y, w, h);
 
 			DebugLog->addDisplayer (_WindowDisplayer);
 			InfoLog->addDisplayer (_WindowDisplayer);
@@ -1228,7 +1233,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		setStatus (EXIT_FAILURE);
 		nlinfo ("ERROR: Unknown external exception");
 	}
-*/#endif
+*/
+#endif
 
 	try
 	{
@@ -1467,6 +1473,14 @@ NLMISC_COMMAND(displayMeasures, "display hierarchical timer", "")
 {
 	CHTimer::adjust();
 	CHTimer::display();
+	return true;
+}
+
+NLMISC_COMMAND(getWinDisplayerInfo, "display the info about the pos and size of the window displayer", "")
+{
+	uint32 x,y,w,h;
+	IService::getInstance()->_WindowDisplayer->getWindowPos (x,y,w,h);
+	log.displayNL ("Window Displayer : XWinParam = %d; YWinParam = %d; WWinParam = %d; HWinParam = %d;", x, y, w, h);
 	return true;
 }
 

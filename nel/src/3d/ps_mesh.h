@@ -1,0 +1,444 @@
+/** \file ps_mesh.h
+ * <File description>
+ *
+ * $Id: ps_mesh.h,v 1.1 2001/12/06 16:51:49 vizerie Exp $
+ */
+
+/* Copyright, 2000, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#ifndef NL_PS_MESH_H
+#define NL_PS_MESH_H
+
+#include "nel/misc/types_nl.h"
+#include "nel/misc/class_registry.h"
+#include "3d/ps_particle_basic.h"
+#include "3d/ps_attrib.h"
+#include "3d/ps_plane_basis.h"
+#include "3d/vertex_buffer.h"
+#include "3d/material.h"
+#include "3d/primitive_block.h"
+
+
+
+#include <string>
+#include <vector>
+#include <queue>
+
+namespace NLMISC
+{
+	class IStream;
+	struct EStream;
+}
+
+
+namespace NL3D {
+
+
+class CPSLocated;
+class CTransformShape;
+class CShapeBank;
+class IShape;
+class CMesh;
+
+
+
+const uint ConstraintMeshMaxNumVerts = 512; // the maximum number of vertices for a constraint mesh
+const uint ConstraintMeshBufSize = 64; // number of meshs to be processed at once...
+const uint ConstraintMeshMaxNumPrerotatedModels = 32; // maximum number of meshs that can be prerotated
+
+/** This class is for mesh handling. It operates with any mesh, but it must insert them in the scene...
+ *  It is not very adapted for lots of little meshs..
+ *  To create the mesh basis, we use CPlaneBasis here. It give us the I and J vector of the basis for each mesh 
+ *  and compute K ( K =  I ^ J)
+ */
+
+class CPSMesh : public  CPSParticle, public CPSSizedParticle
+				, public CPSRotated3DPlaneParticle, public CPSRotated2DParticle
+				, public CPSShapeParticle
+{
+public:
+	/// construct the system by using the given shape for mesh
+	CPSMesh(const std::string &shape = "") : _Invalidated(false)
+	{
+		_Shape = shape;
+		_Name = std::string("Mesh");
+	}
+
+	/// set a new shape for that kind of particles
+	void setShape(const std::string &shape) { _Shape = shape; }
+
+	/// get the shape used for those particles	
+	std::string getShape(void) const { return _Shape; }
+
+		/// serialisation. Derivers must override this, and call their parent version
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+
+	virtual ~CPSMesh();
+
+	NLMISC_DECLARE_CLASS(CPSMesh);
+
+
+	/** invalidate the transformShapes that were inserted in the scene, so they need to be rebuilt
+	 *  during the next rendering. This is useful for clipping, or when the system has been loaded
+	 */
+
+	void invalidate() 
+	{ 
+		_Invalidated = true; 
+		_Instances.clear();
+	}
+
+	/// return true if there are transparent faces in the object
+	virtual bool hasTransparentFaces(void);
+
+	/// return true if there are Opaque faces in the object
+	virtual bool hasOpaqueFaces(void);
+
+	/// return the max number of faces needed for display. This is needed for LOD balancing
+	virtual uint32 getMaxNumFaces(void) const;
+
+protected:
+	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
+	 */
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	
+	/** Delete an element given its index
+	 *  Attributes of the located that hold this bindable are still accessible for the index given
+	 *  index out of range -> nl_assert
+	 */
+	virtual void deleteElement(uint32 index) ;
+
+
+	virtual void draw(bool opaque);
+
+	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
+	 * should not be called directly. Call CPSLocated::resize instead
+	 */
+	virtual void resize(uint32 size) ;	
+
+	//CSmartPtr<IShape> _Shape;
+
+	std::string _Shape;
+
+	// a container for mesh instances
+	typedef CPSAttrib<CTransformShape *> TInstanceCont;
+
+	TInstanceCont _Instances;
+
+	// this is set to true when the transformed shape have to be recerated
+
+	bool _Invalidated;
+
+	virtual CPSLocated *getSizeOwner(void) { return _Owner; }
+	virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }
+	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
+}; 
+
+
+/** This class is for mesh that have very simple geometry. The constraint is that they can only have one matrix block. 
+ *  They got a hint for constant rotation scheme. With little meshs, this is the best to draw a maximum of them
+ */
+
+class CPSConstraintMesh : public  CPSParticle, public CPSSizedParticle,
+						  public CPSRotated3DPlaneParticle,
+						  public CPSHintParticleRotateTheSame,
+						  public CPSShapeParticle,
+						  public CPSColoredParticle
+{
+public:	
+	CPSConstraintMesh() : _ModelShape(NULL), _ModelBank(NULL), _Touched(true), _RdrPasses(0),
+						  _ModulatedStages(0), _VertexColorLightingForced(false)
+	{		
+		_Name = std::string("ConstraintMesh");
+	}
+
+	virtual ~CPSConstraintMesh();
+
+	/** Construct the mesh by using the given mesh shape file.
+	  * Doesn't work with skinned meshs
+	  */
+	void				setShape(const std::string &meshFileName);
+
+
+
+	/// get the shape used for those particles	
+	std::string			getShape(void) const { return _MeshShapeFileName; }
+
+	/** Tells that all meshs are turning in the same manner, and only have a rotationnal bias
+	 *  This is a lot faster then other method. Any previous set scheme for 3d rotation is kept.
+	 *	\param: the number of rotation configuration we have. The more high it is, the slower it'll be
+	 *          If this is too low, a lot of particles will have the same orientation	           	 
+	 *          If it is 0, then the hint is disabled.
+	 *          This can't be higher than ConstraintMeshMaxNumPrerotatedModels
+ 	 *  \param  minAngularVelocity : the maximum angular velocity for particle rotation	 
+	 *  \param  maxAngularVelocity : the maximum angular velocity for particle rotation	 
+	 *  \see    CPSRotated3dPlaneParticle
+	 */
+	void				hintRotateTheSame(uint32 nbConfiguration
+											, float minAngularVelocity = NLMISC::Pi
+											, float maxAngularVelocity = NLMISC::Pi
+										  );
+
+	/** disable the hint 'hintRotateTheSame'
+	 *  The previous set scheme for roation is used
+	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
+	 */
+	void				disableHintRotateTheSame(void)
+	{
+		hintRotateTheSame(0);
+	}
+
+	/** check wether a call to hintRotateTheSame was performed
+	 *  \return 0 if the hint is disabled, the number of configurations else
+	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
+	 */
+
+	uint32				checkHintRotateTheSame(float &min, float &max) const
+	{
+		min = _MinAngularVelocity;
+		max = _MaxAngularVelocity;
+		return _PrecompBasis.size(); 
+	}
+
+
+	/// serialisation. Derivers must override this, and call their parent version
+	virtual void		serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+
+	
+	NLMISC_DECLARE_CLASS(CPSConstraintMesh);
+	
+	/// return true if there are transparent faces in the object
+	virtual bool		hasTransparentFaces(void);
+
+	/// return true if there are Opaque faces in the object
+	virtual bool		hasOpaqueFaces(void);
+
+	/// return the max number of faces needed for display. This is needed for LOD balancing
+	virtual uint32		getMaxNumFaces(void) const;
+
+
+	/** Force the n-th stage of all material to be modulated by the mesh color. This allow to put colors on meshs
+	  * that haven't got material that allow them.
+	  * \param stage The stage the modulation applies on. Range from 0 to IDRV_MAT_MAXTEXTURES - 1.
+	  * \param force True enable modulation, false disable it.
+	  */
+	void				forceStageModulationByColor(uint stage, bool force);
+	
+	/// Test if the i-th stage of all materials is forced to be modulated with the mesh color
+	bool				isStageModulationForced(uint stage) const;
+
+	/// force all material to use vertex color lighting
+	void				forceVertexColorLighting(bool force = true) { _VertexColorLightingForced = force; }
+
+	/// test wether vertex color lighting is forced.
+	bool				isVertexColorLightingForced() const { return _VertexColorLightingForced; }
+
+	/// Setup the buffers used with prerotated meshs. Must be called during initialization.
+	static	void		initPrerotVB();
+
+protected:
+	// inherited from CPSColoredParticle
+	virtual CPSLocated *getColorOwner(void) { return _Owner; }
+
+	// inherited from CPSColoredParticle
+	virtual void updateMatAndVbForColor(void);
+
+	/**	Generate a new element.
+	 */
+	virtual void		newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	
+	/** Delete an element by its index	 
+	 */
+	virtual void		deleteElement(uint32 index) ;
+
+	/** called by the system when particles must be drawn
+	  * \param opaque true if we are dealing with the opaque pass, false for transparent faces
+	  */
+	virtual void		draw(bool opaque);
+
+	/// draw for pre-rotated meshs
+	void				drawPreRotatedMeshs(bool opaque);
+
+	/// draw for non pre-rotated meshs
+	void				drawMeshs(bool opaque);
+
+
+	/** Compute (optionnal) mesh colors.
+	  * \param outVB		The destination VB.
+	  * \param inVB			the vb of the current shape
+	  * \param startIndex   Index of the mesh being processed
+	  * \param toProcess    Number of meshs to process
+	  */
+	void	computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess);
+
+	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
+	 * should not be called directly. Call CPSLocated::resize instead
+	 */
+	virtual void		resize(uint32 size);	
+	
+	/** Build the mesh data, if the 'touch' flag is set.
+	  * \return true if the mesh could be found and match the requirement
+	  */
+	bool				update(void);
+
+	/// make a vb for the prerotated mesh from a source vb
+	CVertexBuffer	    &makePrerotatedVb(const CVertexBuffer &inVB);
+	
+	/** A rendering pass. The pb block contains several duplication of the primitives of the original mesh, in order
+      * to draw sevral of them at once
+	  */
+	struct CRdrPass
+	{
+		CMaterial	  Mat;
+		CMaterial	  SourceMat;
+		CPrimitiveBlock Pb;		
+	};
+
+	/// A set of rendering pass.	
+	typedef std::vector<CRdrPass> TRdrPassSet;
+
+	/// a set of rendering pass, and the associated vertex buffer
+	struct CMeshDisplay
+	{
+		TRdrPassSet   RdrPasses;
+		CVertexBuffer VB;
+	};
+			
+	/// Perform a set of rendering passes. The VB must have been activated in the driver before to call this
+	void				doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet &rdrPasses, bool opaque);	
+
+
+
+	TRdrPassSet  *_RdrPasses; // The current primitive block. 
+	
+	// name of the mesh shape  it was generated from
+	std::string _MeshShapeFileName;
+
+	// A new mesh has been set, so we must reconstruct it when needed	
+	bool	_Touched;	
+
+	// flags that indicate wether the object has transparent faces. When the 'touch' flag is set, it is undefined, until the next update() call.
+	bool _HasTransparentFaces;
+
+	// flags that indicate wether the object has opaques faces. When the 'touch' flag is set, it is undefined, until the next update() call.
+	bool _HasOpaqueFaces;
+
+	// caches the number of faces (for load balacing)
+	uint _NumFaces;
+
+
+	// the shape bank containing the shape
+	CShapeBank  *_ModelBank;
+
+	//  the shape we're using
+	IShape  *_ModelShape;
+	
+
+	
+	/** This class manage sharing between several mesh displays.
+	  * There can be a limited number of them at a given time.
+	  */
+	class CMeshDisplayShare
+	{
+		public:
+			/// ctor giving the max number of CDipslayMesh structures to be kept simulaneously.
+			CMeshDisplayShare(uint maxNumMD) : _MaxNumMD(maxNumMD) {}
+
+			/// dtor
+			~CMeshDisplayShare();
+
+			/** Retrieve a display share from the given vertex format and shape			  
+			  * \param format The format used with the vb. It must be the same than the input mesh, but it can also add a color component (for color fading)
+			  */
+			CMeshDisplay &getMeshDisplay(IShape *shape, uint32 format);
+			
+		protected:
+			uint     _MaxNumMD;
+			typedef  NLMISC::CSmartPtr<IShape> PShape;
+			struct CKey
+			{
+				PShape Shape;
+				uint32 Format;
+				bool operator == (const CKey &key) const { return Shape == key.Shape && Format == key.Format; }
+				bool operator != (const CKey &key) const { return ! (*this == key); }
+				bool operator < (const CKey &key) const { return Shape < key.Shape || (Shape == key.Shape && Format < key.Format); }
+			};				
+			typedef std::map<CKey, CMeshDisplay *> TMDMap; // vb  sorted by their formats
+			typedef std::queue<CKey> TMDQueue; // vb sorted by creation date
+			TMDQueue MDQueue;
+			TMDMap   MDMap;
+			/// build a set of render pass from a mesh
+			static void buildRdrPassSet(TRdrPassSet &dest, const IShape *src);
+			/// Build a vb from a shape. The format can add an additionnal color
+			static void buildVB(uint32 destFormat, CVertexBuffer &dest, const IShape *src); 
+	};
+
+	friend class CMeshDisplayShare;
+
+	
+	/// manage vertex buffers and primitive blocks used for rendering
+	static CMeshDisplayShare		_MeshDisplayShare;	
+
+	/// vertex buffer used with prerotated meshs
+	static CVertexBuffer			_PreRotatedMeshVB;			  // mesh has no normals
+	static CVertexBuffer			_PreRotatedMeshVBWithNormal;  // mesh has normals
+
+	
+	// we must store them for serialization
+	float _MinAngularVelocity;
+	float _MaxAngularVelocity;
+
+
+	// use for rotation of precomputed meshs
+	struct CPlaneBasisPair
+	{		
+		CPlaneBasis Basis;
+		CVector Axis; // an axis for rotation
+		float AngularVelocity; // an angular velocity
+	};
+
+	/// a set of precomp basis, before and after transfomation in world space, used if the hint 'RotateTheSame' has been called
+	std::vector< CPlaneBasisPair > _PrecompBasis;
+
+	/// this contain an index in _PrecompBasis for each particle
+	std::vector<uint32> _IndexInPrecompBasis;
+
+	/// fill _IndexInPrecompBasis with index in the range [0.. nb configurations[
+	void fillIndexesInPrecompBasis(void);
+	
+	// release the model shape (dtor, or before loading)
+	void clean(void);
+
+	virtual CPSLocated *getSizeOwner(void) { return _Owner; }	
+	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
+
+	/// A bitfield to force some stage to be modulated with the primary color
+	uint8   _ModulatedStages;
+	bool    _VertexColorLightingForced;	
+}; 
+
+
+
+} // NL3D
+
+
+#endif // NL_PS_MESH_H
+
+/* End of ps_mesh.h */

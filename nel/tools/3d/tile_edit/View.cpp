@@ -733,7 +733,7 @@ void CTView::Delete()
 int CTView::GetNbTileLine(void)
 {
 	RECT rect; GetClientRect(&rect);
-	return (max (1, (rect.right - rect.left - spacing_x)/(sizeicon_x + spacing_x)));
+	return ( max ( 1, int( rect.right - rect.left - spacing_x ) / ( sizeicon_x + spacing_x ) ) );
 }
 
 int CTView::GetNbTileColumn(void)

@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.38 2003/03/27 19:11:24 cado Exp $
+ * $Id: mutex.cpp,v 1.39 2003/03/31 14:04:12 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -300,26 +300,6 @@ void CFairMutex::leave()
 	debugLeave();
 }
 
-// ***************************************************************************
-// CFastMutex
-// ***************************************************************************
-
-CFastMutex::CFastMutex ()
-{
-	_Lock = 0;
-}
-
-// ***************************************************************************
-// CFastMutexMP
-// ***************************************************************************
-
-CFastMutexMP::CFastMutexMP ()
-{
-	_Lock = 0;
-}
-
-// ***************************************************************************
-
 /*************
  * Unix code *
  *************/
@@ -556,17 +536,6 @@ void	CSharedMutex::leave()
 	buf.sem_num = 0;
 	buf.sem_op = 1;
 	nlverify( semop( _SemId, &buf, 1 ) != -1);
-}
-
-
-CFastMutex::CFastMutex ()
-{
-	_Lock = 0;
-}
-
-CFastMutexMP::CFastMutexMP ()
-{
-	_Lock = 0;
 }
 
 

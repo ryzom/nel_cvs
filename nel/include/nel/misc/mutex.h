@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.25 2003/03/31 09:19:06 coutelas Exp $
+ * $Id: mutex.h,v 1.26 2003/03/31 14:02:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@
 #include <pthread.h> // PThread
 #include <semaphore.h> // PThread POSIX semaphores
 #include <unistd.h>
-#define __forceinline inline
+#define __forceinline
 #endif
 
 #undef MUTEX_DEBUG
@@ -106,14 +106,25 @@ private:
 };
 
 
-// In AT&T syntax:
-// operands reversed,
-// l after opcode replaces dword ptr,
-// () instead of [],
-// immediate values prefixed by $
+// Inline assembler for gcc tutorial:
+// AT&T syntax:
+// - operands reversed,
+// - l after opcode replaces dword ptr,
+// - () instead of [],
+// - immediate values prefixed by $
 
-// Does not work (at least on multi-processor)! (with or without 'lock' prefix)
-#define ASM_ASWAP_FOR_GCC __asm__ volatile( \
+// Tested: works on multi-processor
+#define ASM_ASWAP_FOR_GCC_XCHG __asm__ volatile( \
+		    "mov %1, %%ecx;" \
+		    "mov $1, %%eax;" \
+		    "xchg %%eax, (%%ecx);" \
+		    "mov %%eax, %0" \
+	        : "=m" (result) \
+		    : "m" (lockPtr) \
+		    : "eax", "ecx", "memory" ); // force to use registers and memory
+
+// Tested: does not work (at least on multi-processor)! (with or without 'lock' prefix)
+#define ASM_ASWAP_FOR_GCC_CMPXCHG __asm__ volatile( \
 		    "mov $1, %%edx;" \
 		    "mov %1, %%ecx;" \
 		    "mov (%%ecx), %%eax;" \
@@ -121,19 +132,27 @@ private:
 		    "lock cmpxchgl %%edx, (%%ecx);" \
 		    "jne 1b;" \
 		    "mov %%eax, %0" \
-	            : "=m" (result) \
-		    : "m" (l) \
+	        : "=m" (result) \
+		    : "m" (lockPtr) \
 		    : "eax", "ecx", "edx", "memory" ); // force to use registers and memory
 
-// Works on multi-processor
-#define ASM_ASWAP_FOR_GCC_2 __asm__ volatile( \
-		    "mov $1, %%edx;" \
-		    "mov %1, %%ebx;" \
-		    "xchg %%eax, (%%ebx);" \
-		    "mov %%eax, %0" \
-	            : "=m" (result) \
-		    : "m" (l) \
-		    : "eax", "ebx", "memory" ); // force to use registers and memory
+
+// Tested: does not work on hyper-threading processors!
+/*ASM_ASWAP_FOR_MSVC_CMPXCHG
+{
+	__asm
+		{
+			mov edx,1
+			mov ecx,l
+			mov eax,[ecx]
+test_again:
+			nop
+			cmpxchg     dword ptr [ecx],edx
+			jne         test_again
+			mov [result],eax
+		}
+}*/
+
 
 /**
  * Fast mutex implementation (not fairly)
@@ -157,44 +176,54 @@ private:
  m.leave ();
  *\endcode
  * \author Cyril 'Hulud' Corvazier
+ * \author Olivier Cado
  * \author Nevrax France
- * \date 2000
+ * \date 2002, 2003
  */
 class CFastMutex
 {
 public:
 
 	/// Constructor
-	CFastMutex();
+	CFastMutex() : _Lock(0) {}
 
-	__forceinline static bool atomic_swap (volatile uint32 *l)
+	/// Same as constructor, useful for init in a shared memory block
+	void	init() volatile { _Lock = 0; }
+
+	/// Atomic swap
+	__forceinline static bool atomic_swap (volatile uint32 *lockPtr)
 	{
 		uint32 result;
 #ifdef NL_OS_WINDOWS
-		__asm 
-		{ 
+#ifdef NL_DEBUG_FAST
+		// Workaround for dumb inlining bug (returning of function goes into the choux): push/pop registers
+		__asm
+		{
+				push eax
+				push ecx
+			mov ecx,lockPtr
 			mov eax,1
-			mov ebx,l
-
-			// Lock is implicit with xchg
-			xchg [ebx],eax
-
+			xchg [ecx],eax
 			mov [result],eax
-			 /*mov edx,1
-			mov ecx,l
-			mov eax,[ecx]
-test_again:
-			nop
-			cmpxchg     dword ptr [ecx],edx
-			jne         test_again
-			mov [result],eax*/
+				pop ecx
+				pop eax
 		}
 #else
-		 ASM_ASWAP_FOR_GCC_2
+		__asm
+		{
+			mov ecx,lockPtr
+			mov eax,1
+			xchg [ecx],eax
+			mov [result],eax
+		}
 #endif
+#else
+		ASM_ASWAP_FOR_GCC_XCHG
+#endif // NL_OS_WINDOWS
 		return result != 0;
 	}
 
+	// Enter critical section
 	__forceinline void enter () volatile
 	{
 	  //std::cout << "Entering, Lock=" << _Lock << std::endl; 
@@ -229,17 +258,15 @@ test_again:
 		}
 	}
 
+	// Leave critical section
 	__forceinline void leave () volatile
 	{
 		_Lock = 0;
 		//std::cout << "Leave" << std::endl;		
 	}
 
+private:
 	volatile uint32	_Lock;
-
-	/*private:
-
-	void *Mutex;*/
 };
 
 
@@ -264,49 +291,25 @@ test_again:
  m.leave ();
  *\endcode
  * \author Cyril 'Hulud' Corvazier
+ * \author Olivier Cado
  * \author Nevrax France
- * \date 2000
+ * \date 2002, 2003
  */
 class CFastMutexMP
 {
 public:
 
 	/// Constructor
-	CFastMutexMP();
+	CFastMutexMP() : _Lock(0) {}
 
-	__forceinline static bool atomic_swap (volatile uint32 *l)
-	{
-		uint32 result;
-#ifdef NL_OS_WINDOWS
-		__asm 
-		{ 
-			mov eax,1
-			mov ebx,l
+	/// Same as constructor, useful for init in a shared memory block
+	void	init() volatile { _Lock = 0; }
 
-			// Lock is implicit with xchg
-			xchg [ebx],eax
-
-			mov [result],eax
-			  /*mov edx,1
-			mov ecx,l
-			mov eax,[ecx]
-test_again:
-			nop
-			cmpxchg     dword ptr [ecx],edx
-			jne         test_again
-		   
-			mov [result],eax*/
-		}
-#else
-		ASM_ASWAP_FOR_GCC
-#endif
-		return result != 0;
-	}
-
+	// Enter critical section
 	__forceinline void enter () volatile
 	{
 	  //std::cout << "Entering, Lock=" << _Lock << std::endl; 
-		while (atomic_swap (&_Lock))
+		while (CFastMutex::atomic_swap (&_Lock))
 		{
 			static uint last = 0;
 			static uint _max = 30;
@@ -325,7 +328,7 @@ test_again:
 				}
 				else 
 				{
-					if (!atomic_swap(&_Lock)) 
+					if (!CFastMutex::atomic_swap(&_Lock)) 
 					{
 						last = i;
 						_max = 1000;
@@ -351,7 +354,7 @@ test_again:
 				else
 					wait_time = 1 << (wait_time - 20);
 				
-				if (!atomic_swap (&_Lock))
+				if (!CFastMutex::atomic_swap (&_Lock))
 					break;
 
 #ifdef NL_OS_WINDOWS
@@ -364,17 +367,15 @@ test_again:
 		}
 	}
 
+	// Leave critical section
 	__forceinline void leave () volatile
 	{
 		_Lock = 0;
 		//std::cout << "Leave" << std::endl;
 	}
 
+private:
 	volatile uint32	_Lock;
-
-	/*private:
-
-	void *Mutex;*/
 };
 
 

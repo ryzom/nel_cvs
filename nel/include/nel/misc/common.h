@@ -1,7 +1,7 @@
 /** \file common.h
- * <File description>
+ * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.10 2000/11/10 11:05:39 corvazier Exp $
+ * $Id: common.h,v 1.11 2000/11/10 11:18:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,14 +23,13 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef	_COMMON_H_
-#define	_COMMON_H_
+#ifndef	NL_COMMON_H
+#define	NL_COMMON_H
 
 
 #include "nel/misc/types_nl.h"
-#include <algorithm>
 #include <stdlib.h>
-
+#include <algorithm>
 
 namespace	NLMISC
 {
@@ -46,16 +45,6 @@ inline float	frand(float mod)
 	return (float)(r*mod);
 }
 
-
-// ============================================================================================
-// Force v to be inside the interval [min,max]
-template<class T, class U, class V>	inline void clamp(T &v, const U &min, const V &max)
-{
-	v= v<min? min: v;
-	v= v>max? max: v;
-}
-
-
 // ============================================================================================
 template<class T>	inline T sqr(const T &v)
 {
@@ -66,6 +55,36 @@ template<class T>	inline T sqr(const T &v)
 // ============================================================================================
 const	double	Pi= 3.1415926535897932384626433832795;
 
+/* il faut trouver comment detecter stlport...
+#ifdef NL_OS_WINDOWS
+namespace std
+{
+#ifdef min
+#undef min
+#endif // min
+template <class _Tp>
+inline const _Tp& min(const _Tp& __a, const _Tp& __b) {
+  return __b < __a ? __b : __a;
+}
+
+#ifdef max
+#undef max
+#endif // max
+template <class _Tp>
+inline const _Tp& max(const _Tp& __a, const _Tp& __b) {
+  return  __a < __b ? __b : __a;
+}
+}
+#endif // NL_OS_WINDOWS
+*/
+
+// ============================================================================================
+// Force v to be inside the interval [min,max]
+template<class T, class U, class V>	inline void clamp(T &v, const U &min, const V &max)
+{
+	v = (v < min) ? min : v;
+	v = (v > max) ? max : v;
+}
 
 // ============================================================================================
 // MIN/MAX extended functions.
@@ -120,7 +139,7 @@ inline uint	getPowerOf2(uint v)
 	return ret;
 }
 
-}
+}	// NLMISC
 
 
-#endif
+#endif	// NL_COMMON_H

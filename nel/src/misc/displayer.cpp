@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.18 2001/06/12 15:39:00 lecroart Exp $
+ * $Id: displayer.cpp,v 1.19 2001/06/18 16:08:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,6 +154,13 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 		needSpace = true;
 	}
 	
+	if (!args.ProcessName.empty())
+	{
+		if (needSpace) { ss << " "; needSpace = false; }
+		ss << args.ProcessName;
+		needSpace = true;
+	}
+
 	if (needSpace) { ss << " : "; needSpace = false; }
 
 	ss << message;

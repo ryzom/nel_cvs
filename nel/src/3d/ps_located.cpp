@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.28 2001/08/16 17:11:24 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.29 2001/09/04 13:41:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -374,7 +374,8 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 			
 	_InvMass.insert(1.f / ((_MassScheme && emitter) ? _MassScheme->get(emitter, indexInEmitter) : _InitialMass ) );
 	_Time.insert(0.0f);	
-	_TimeIncrement.insert( 1.f / ((_LifeScheme && emitter) ?  _LifeScheme->get(emitter, indexInEmitter) : _InitialLife ) );
+	const float lifeTime = (_LifeScheme && emitter) ?  _LifeScheme->get(emitter, indexInEmitter) : _InitialLife ;
+	_TimeIncrement.insert( lifeTime ? 1.f / lifeTime : 10E6f);
 
 	// generate datas for all bound objects
 	

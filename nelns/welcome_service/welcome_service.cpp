@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.43 2004/09/03 15:18:37 legros Exp $
+ * $Id: welcome_service.cpp,v 1.44 2004/09/03 15:46:04 legros Exp $
  *
  */
 
@@ -409,6 +409,8 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 			msgout.serial (FrontEndAddress);
 		}
 
+		/*
+		// OBSOLETE: LS doesn't read patching URLs
 		// build patch server list
 		std::string	PatchURLS;
 		for (list<CFES>::iterator it=FESList.begin(); it!=FESList.end(); ++it)
@@ -421,7 +423,9 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 			}
 		}
 
+
 		msgout.serial(PatchURLS);
+		*/
 	}
 	
 	CUnifiedNetwork::getInstance()->send ("LS", msgout);

@@ -1,7 +1,7 @@
 /** \file connection_web.cpp
  * 
  *
- * $Id: connection_web.cpp,v 1.10 2004/09/03 09:19:55 legros Exp $
+ * $Id: connection_web.cpp,v 1.11 2004/09/03 15:46:19 legros Exp $
  *
  */
 
@@ -107,6 +107,8 @@ static void cbWSShardChooseShard/* (CMessage &msgin, TSockId from, CCallbackNetB
 		msgout.serial (addr);
 
 		// read patch addresses sent by WS
+		/*
+		// OBSOLETE: web doesn't read incoming patching URLs any longer, but them directly from database
 		std::string	patchURLS;
 		try
 		{
@@ -118,6 +120,7 @@ static void cbWSShardChooseShard/* (CMessage &msgin, TSockId from, CCallbackNetB
 		}
 
 		msgout.serial(patchURLS);
+		*/
 	}
 
 	WebServer->send (msgout, (TSockId)cookie.getUserAddr ());

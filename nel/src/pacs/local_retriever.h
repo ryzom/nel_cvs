@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.8 2001/08/13 14:22:23 legros Exp $
+ * $Id: local_retriever.h,v 1.9 2001/08/13 15:55:22 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -223,7 +223,7 @@ protected:
 	std::vector<CInteriorFace>			_InteriorFaces;
 
 	/// The face selection grid
-	mutable NL3D::CQuadGrid<uint32>		_FaceGrid;
+//	mutable NL3D::CQuadGrid<uint32>		_FaceGrid;
 
 	// @}
 

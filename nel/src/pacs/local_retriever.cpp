@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.24 2001/08/13 14:22:23 legros Exp $
+ * $Id: local_retriever.cpp,v 1.25 2001/08/13 15:55:22 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,7 @@ static float	hybrid2dNorm(const CVector &v)
 NLPACS::CLocalRetriever::CLocalRetriever()
 {
 	_Type = Landscape;
+//	_FaceGrid.clear();
 }
 
 
@@ -674,6 +675,8 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	/*
 	Version 0:
 		- base version (with collision info).
+	Version 1:
+		- interior vertices and faces, for interior ground snapping
 	*/
 	sint	ver= f.serialVersion(1);
 
@@ -806,8 +809,8 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 
 void	NLPACS::CLocalRetriever::initFaceGrid()
 {
-	_FaceGrid.clear();
-	_FaceGrid.create(64, 4.0f);
+//	_FaceGrid.clear();
+//	_FaceGrid.create(64, 4.0f);
 
 	uint32	i;
 	for (i=0; i<_InteriorFaces.size(); ++i)
@@ -818,12 +821,13 @@ void	NLPACS::CLocalRetriever::initFaceGrid()
 		box.extend(_InteriorVertices[_InteriorFaces[i].Verts[1]]);
 		box.extend(_InteriorVertices[_InteriorFaces[i].Verts[2]]);
 
-		_FaceGrid.insert(box.getMin(), box.getMax(), i);
+//		_FaceGrid.insert(box.getMin(), box.getMax(), i);
 	}
 }
 
 void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &position) const
 {
+/*
 	// first preselect faces around the (x, y) position (CQuadGrid ?)
 	_FaceGrid.select(position.Estimation, position.Estimation);
 
@@ -879,6 +883,7 @@ void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &posit
 	// and computes the real position on this face
 	if (bestDist < 50.0f)
 		position.Estimation = best;
+*/
 }
 
 

@@ -3,11 +3,15 @@
  *
  * \section intro Introduction
  *
+ * \par
  * "NeL" stands for Nevrax Library.
  *
- * NeL is a library. It is designed and maintained by Nevrax. This library contains a framework,
- * a 3D engine, an AI engine and a Network engine.
- *
+ * \par
+ * NeL is a set of open source libraries which aim to form a complete toolbox
+ * of technologies for the development of massively multi-player online role
+ * playing games.
+ * 
+ * \par
  * You will find some overviews about features of NeL in the Related Pages.
  *
  */

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.5 2001/06/20 09:36:42 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.6 2001/06/20 11:54:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -307,6 +307,9 @@ void	CMeshMRM::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod)
 void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
 {
 	nlassert(drv);
+	if(_Lods.size()==0)
+		return;
+
 	// get the meshMRM instance.
 	nlassert(dynamic_cast<CMeshMRMInstance*>(trans));
 	CMeshMRMInstance	*mi= (CMeshMRMInstance*)trans;

@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.7 2002/07/03 16:38:48 legros Exp $
+ * $Id: build_rbank.cpp,v 1.8 2002/12/17 16:23:04 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,8 @@
 
 #include "build_rbank.h"
 #include "build_surf.h"
+
+#include "surface_splitter.h"
 
 #include "pacs/global_retriever.h"
 #include "pacs/retriever_bank.h"
@@ -342,6 +344,10 @@ void processRetriever(string &zoneName)
 
 			retriever.setType(NLPACS::CLocalRetriever::Landscape);
 
+			//
+			CSurfaceSplitter	splitter;
+			splitter.build(retriever);
+
 			// and save it...
 
 			COFile	outputRetriever;
@@ -456,6 +462,8 @@ void	processGlobalRetriever()
 	nlinfo("save file %s", filename.c_str());
 	outputBank.open(filename);
 	retrieverBank.serial(outputBank);
+
+	//retrieverBank.saveRetrievers(OutputPath, CFile::getFilenameWithoutExtension(RetrieverBank));
 }
 
 ///

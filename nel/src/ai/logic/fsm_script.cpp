@@ -14,7 +14,7 @@ namespace NLAIAGENT
 
 	/////////////////////////////////////////////////////////////
 	// Succes and failure messages declaration
-
+/*
 	NLAISCRIPT::COperandSimpleListOr *CFsmScript::ParamIdSuccessMsg = NULL;
 	NLAISCRIPT::CParam *CFsmScript::ParamSuccessMsg = NULL;
 	NLAISCRIPT::COperandSimpleListOr *CFsmScript::ParamIdFailureMsg = NULL;
@@ -37,7 +37,7 @@ namespace NLAIAGENT
 		CFsmScript::ParamSuccessMsg->release();		
 		CFsmScript::ParamFailureMsg->release();
 	}
-
+*/
 	/////////////////////////////////////////////////////////////
 
 
@@ -200,7 +200,6 @@ namespace NLAIAGENT
 		{
 			double d;
 			d = ((NLAISCRIPT::CParam &)*ParamSuccessMsg).eval((NLAISCRIPT::CParam &)param);
-			
 			if ( d >= 0.0 )
 			{
 				NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );

@@ -69,7 +69,7 @@ namespace NLAILOGIC
 		}
 	}
 
-	void CGoal::operatorSucces(NLAIAGENT::IBasicAgent *)
+	void CGoal::operatorSuccess(NLAIAGENT::IBasicAgent *)
 	{
 
 	}

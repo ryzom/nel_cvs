@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.16 2001/06/21 16:00:37 portier Exp $
+ * $Id: operator_script.h,v 1.17 2001/06/22 13:50:32 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,9 @@ namespace NLAIAGENT
 
 			virtual void cancel();
 //			virtual bool isActive();
+
+			virtual void onSuccess( IObjectIA *);
+			virtual void onFailure( IObjectIA *);
 
 			// Tries to unify the facts
 			NLAILOGIC::CFact *buildFromVars(NLAILOGIC::IBaseAssert *, std::vector<sint32> &, NLAILOGIC::CValueSet *);

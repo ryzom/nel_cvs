@@ -162,9 +162,9 @@ namespace NLAIAGENT
 			if ( _IsActivated == false)
 			{
 				// Registers with the goal and gets the args
-				NLAILOGIC::CGoal *current_goal = activated_goals.front();
-				current_goal->addSuccessor( (IBasicAgent *) this );
-				linkGoalArgs( current_goal );
+				_CurrentGoal = activated_goals.front();
+				_CurrentGoal->addSuccessor( (IBasicAgent *) this );
+				linkGoalArgs( _CurrentGoal );
 
 				activate();
 
@@ -366,5 +366,21 @@ namespace NLAIAGENT
 			it_arg++;
 			it_pos++;
 		}
+	}
+
+	void COperatorScript::onSuccess( IObjectIA *)
+	{
+		// Tells the goal the operator succeded
+		_CurrentGoal->operatorSuccess( this );
+		_CurrentGoal = NULL;
+//		unActivate();
+	}
+	
+	void COperatorScript::onFailure( IObjectIA *)
+	{
+		// Tells the goal the operator failed
+		_CurrentGoal->operatorFailure( this );
+		_CurrentGoal = NULL;
+//		unActivate();
 	}
 }

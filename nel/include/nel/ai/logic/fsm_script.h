@@ -2,7 +2,7 @@
  *	
  *	Instances of finite state machines
  *
- * $Id: fsm_script.h,v 1.7 2001/06/21 16:00:37 portier Exp $
+ * $Id: fsm_script.h,v 1.8 2001/06/22 13:50:32 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,10 +41,12 @@ namespace NLAIAGENT
 	{
 
 		public:
+		/*
 			static NLAISCRIPT::COperandSimpleListOr *ParamIdSuccessMsg;
 			static NLAISCRIPT::CParam *ParamSuccessMsg;
 			static NLAISCRIPT::COperandSimpleListOr *ParamIdFailureMsg;
 			static NLAISCRIPT::CParam *ParamFailureMsg;
+		*/
 
 		private:
 			std::vector<NLAIAGENT::IObjectIA *> _VarValues;		// Values of the vars for the instanciated operator
@@ -81,7 +83,7 @@ namespace NLAIAGENT
 
 			static const NLAIC::CIdentType IdFsmScript;
 
-			virtual void save(NLMISC::IStream &os);		
+			virtual void save(NLMISC::IStream &os);	
 			virtual void load(NLMISC::IStream &is);		
 
 //			virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
@@ -91,14 +93,14 @@ namespace NLAIAGENT
 			virtual sint32 getMethodIndexSize() const;
 
 			void getFatherComponent(IVarName &);
-
 //			virtual void setParent(const IWordNumRef *parent);
 
 			virtual void activate(IBasicAgent *);
 			virtual void unactivate(IBasicAgent *);
-
+/*
 			static void initClass();
 			static void releaseClass();
+			*/
 
 			virtual void setTopLevel(NLAIAGENT::CAgentScript *);
 	};

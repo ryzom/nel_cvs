@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.14 2001/06/19 14:35:20 portier Exp $
+ * $Id: goal.h,v 1.15 2001/06/22 13:50:32 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,7 @@ namespace NLAILOGIC
 			virtual void failure();
 			virtual void success();
 
-			virtual void operatorSucces(NLAIAGENT::IBasicAgent *);
+			virtual void operatorSuccess(NLAIAGENT::IBasicAgent *);
 			virtual void operatorFailure(NLAIAGENT::IBasicAgent *);
 
 			const std::vector<IBaseOperator *> getOperators();

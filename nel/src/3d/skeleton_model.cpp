@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.22 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.23 2002/06/28 16:47:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -426,8 +426,7 @@ void		CSkeletonModel::cacheTravs()
 // ***************************************************************************
 sint32		CSkeletonModel::getBoneIdByName(const std::string &name) const
 {
-	nlassert(dynamic_cast<CSkeletonShape*>((IShape*)Shape));
-	CSkeletonShape		*shp= (CSkeletonShape*)(IShape*)Shape;
+	CSkeletonShape		*shp= safe_cast<CSkeletonShape*>((IShape*)Shape);
 	return shp->getBoneIdByName(name);
 }
 

@@ -1,7 +1,7 @@
 /** \file camera_user.h
  * <File description>
  *
- * $Id: camera_user.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: camera_user.h,v 1.2 2002/06/28 16:46:23 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,8 +57,7 @@ public:
 	CCameraUser(CScene *scene) : 
 	  CTransformUser(scene, scene->createModel(CameraId) )
 	{
-		nlassert(dynamic_cast<CCamera*>(_Transform));
-		_Camera= (CCamera*)_Transform;
+		_Camera= safe_cast<CCamera*>(_Transform);
 
 		// Default perspective.
 		setFrustum(UCamera::DefLx, UCamera::DefLy, UCamera::DefLzNear, UCamera::DefLzFar);

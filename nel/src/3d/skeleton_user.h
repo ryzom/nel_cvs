@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.8 2002/06/10 14:02:47 berenguier Exp $
+ * $Id: skeleton_user.h,v 1.9 2002/06/28 16:46:23 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,8 +63,7 @@ public:
 	CSkeletonUser(CScene *scene, IModel *model) : 
 	  CTransformUser(scene, model)
 	{
-		nlassert(dynamic_cast<CSkeletonModel*>(_Transform));
-		_Skeleton= (CSkeletonModel*)_Transform;
+		_Skeleton= safe_cast<CSkeletonModel*>(_Transform);
 
 		// create user bones.
 		uint	numBones= _Skeleton->Bones.size();

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.12 2001/10/11 13:29:05 berenguier Exp $
+ * $Id: tessellation.h,v 1.13 2002/03/07 15:39:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -300,9 +300,11 @@ public:
 	void	computeSplitPoint();
 
 	// Used by CPatch::unbind(). isolate the tesselation from other patchs.
-	void			unbind(CPatch *except[4]);
+	void			unbind();
 	// Used by CPatch::unbind(). force the merging of face.
 	void			forceMerge();
+	// Used by CPatch::linkTessFaceWithEdge(). See it. NB: it assert if the link is NULL.
+	CTessFace		*linkTessFaceWithEdge(const NLMISC::CVector2f &uv0, const NLMISC::CVector2f &uv1, CTessFace *linkTo);
 	// Used by CPatch::bind(). Split if necessary, according to neighbors.
 	bool			updateBindEdge(CTessFace	*&edgeFace, bool &splitWanted);
 	void			updateBind();
@@ -368,10 +370,6 @@ private:
 	bool	emptyTileFaces();
 
 	// @}
-
-
-	// Usefull for unbind.
-	static bool	exceptPatch(CPatch *p, CPatch *except[4]);
 
 
 	// see updateErrorMetric.

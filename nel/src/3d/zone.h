@@ -1,7 +1,7 @@
 /** \file 3d/zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.15 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: zone.h,v 1.16 2002/03/07 15:39:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -546,9 +546,8 @@ private:
 	CPatch			*getPatch(sint patch) {nlassert(patch>=0 && patch<(sint)Patchs.size()); return &(Patchs[patch]);}
 	static CPatch	*getZonePatch(TZoneMap &loadedZones, sint zoneId, sint patch);
 	// Bind the patch with ones which are loaded...
-	static void		unbindAndMakeBindInfo(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc, CPatch::CBindInfo	edges[4]);
-	static void		unbindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc);
-	static void		bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc);
+	static void		unbindPatch(CPatch &pa);
+	static void		bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc, bool rebind);
 	// Is the patch on a border of this zone???
 	bool			patchOnBorder(const CPatchConnect &pc) const;
 

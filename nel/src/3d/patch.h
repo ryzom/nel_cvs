@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.20 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: patch.h,v 1.21 2002/03/07 15:39:08 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -410,15 +410,14 @@ public:
 
 
 	/** unbind the patch from All neighbors. neighbors patchs links are modified too. The tesselation is forcemerged.
-	 * unbind from patchs except those in except (usefull for bind 2/1 or 4/1).
 	 */
-	void			unbind(CPatch *except[4]);
+	void			unbind();
 
 	/** bind the patch to 4 neighbors, given in this patch edge order (0,1,2,3). Tesselation is reseted (patch unbound first).
 	 * NB: this patch and his neighborood must be compiled...
 	 * NB: neighbor patchs must not be NULL (but according to NPatchs).
 	 */
-	void			bind(CBindInfo	Edges[4]);
+	void			bind(CBindInfo	Edges[4], bool rebind);
 
 	/// For changing TileMaxSubdivision. force tesselation to be under tile.
 	void			forceMergeAtTileLevel();
@@ -1009,6 +1008,11 @@ private:
 
 	/// The 4 neighbors zone of this patch (setuped at bind() time). NB: NULL if zone not loaded, or if no patch near us.
 	CZone		*_BindZoneNeighbor[4];
+
+	/** Used by bind(). Search in the tesselation the first face which own the edge uv0-uv1. link it with linkTo, and
+	 *	return it. NULL if not found (obviously because not so tesselated)
+	 */
+	CTessFace	*linkTessFaceWithEdge(const NLMISC::CVector2f &uv0, const NLMISC::CVector2f &uv1, CTessFace *linkTo);
 
 	// @}
 

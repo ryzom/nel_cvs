@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.61 2002/02/28 12:59:52 besson Exp $
+ * $Id: zone.cpp,v 1.62 2002/03/07 15:39:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -544,7 +544,8 @@ void			CZone::compile(CLandscape *landscape, TZoneMap &loadedZones)
 		CPatch				&pa= Patchs[j];
 		CPatchConnect		&pc= PatchConnects[j];
 
-		bindPatch(loadedZones, pa, pc);
+		// bind the patch. This is the original bind, not a rebind.
+		bindPatch(loadedZones, pa, pc, false);
 	}
 	
 	
@@ -581,14 +582,7 @@ void			CZone::release(TZoneMap &loadedZones)
 	for(j=0;j<(sint)Patchs.size();j++)
 	{
 		CPatch				&pa= Patchs[j];
-		CPatchConnect		&pc= PatchConnects[j];
-		unbindPatch(loadedZones, pa, pc);
-		/* 
-			This patch may be unbinded with exceptions (multiple patch case), but there is no problem, since in this case,
-			his neighbor will (or have precedently) unbind.
-			Since only Bind 1/1 are permitted on zone neighborood, there should be no problem:
-			patch are unbinded with no exceptions.
-		*/
+		unbindPatch(pa);
 	}
 
 
@@ -663,7 +657,10 @@ void			CZone::rebindBorder(TZoneMap &loadedZones)
 		CPatchConnect		&pc= PatchConnects[j];
 
 		if(patchOnBorder(pc))
-			bindPatch(loadedZones, pa, pc);
+		{
+			// rebind the patch. This is a rebind.
+			bindPatch(loadedZones, pa, pc, true);
+		}
 	}
 }
 
@@ -739,16 +736,9 @@ void		CZone::buildBindInfo(uint patchId, uint edge, CZone *neighborZone, CPatch:
 
 
 // ***************************************************************************
-void		CZone::unbindAndMakeBindInfo(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc, CPatch::CBindInfo	edges[4])
+void		CZone::bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc, bool rebind)
 {
-	CPatch	*exceptions[4]= {NULL, NULL, NULL, NULL};
-
-	/*
-		Remind: the old version with CPatch::unbindFrom*() doesn't work because of CZone::release(). This function
-		first erase the zone from loadedZones...
-		Not matter here. We use CPatch::unbind() which should do all the good job correctly (unbind pa from ohters
-		, and unbind others from pa at same time).
-	*/
+	CPatch::CBindInfo	edges[4];
 
 	// Fill all edges.
 	for(sint i=0;i<4;i++)
@@ -772,15 +762,35 @@ void		CZone::unbindAndMakeBindInfo(TZoneMap &loadedZones, CPatch &pa, CPatchConn
 		// Special case of a small patch connected to a bigger.
 		if(paBind.NPatchs==5)
 		{
-			// In this case, neither the unbind must not be done, nor the bind.
-			exceptions[i]= CZone::getZonePatch(loadedZones, pcBind.ZoneId, pcBind.Next[0]);
-			// This code prevent the bind in CPatch::bind() to be done!!
-			// The bind must not be done, since exceptions[] prevent the unbind!
-			paBind.NPatchs=0;
-			continue;
+			paBind.Edge[0]= pcBind.Edge[0];
+			paBind.Next[0]= CZone::getZonePatch(loadedZones, pcBind.ZoneId, pcBind.Next[0]);
+			// If not loaded, don't bind to this edge.
+			if(!paBind.Next[0])
+				paBind.NPatchs=0;
+			else
+			{
+				// Get the BindInfo on me stored in our neighbor bigger CPatch
+				CPatch::CBindInfo	nbOnMe;
+				paBind.Next[0]->getBindNeighbor(paBind.Edge[0], nbOnMe);
+				// if this patch has not already been binded on me, nbOnMe.Zone==NULL
+				if( nbOnMe.Zone == NULL )
+				{
+					// Simple case: do nothing: don't need to rebind() to the bigger patch since 
+					// himself is not bound
+					paBind.NPatchs=0;
+					paBind.Zone= NULL;
+				}
+				else
+				{
+					// pa.bind() will do the job.
+					// Leave it flagged with NPatchs==5.
+					continue;
+				}
+			}
 		}
 
 
+		// Bind 1/1 and 1/2,1/4
 		if(paBind.NPatchs>=1)
 		{
 			paBind.Edge[0]= pcBind.Edge[0];
@@ -809,28 +819,25 @@ void		CZone::unbindAndMakeBindInfo(TZoneMap &loadedZones, CPatch &pa, CPatchConn
 		}
 	}
 
-	pa.unbind(exceptions);
-}
+	// First, unbind.
+	pa.unbind();
 
-// ***************************************************************************
-void		CZone::bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc)
-{
-	CPatch::CBindInfo	edges[4];
-
-	unbindAndMakeBindInfo(loadedZones, pa, pc, edges);
-
-	pa.bind(edges);
+	// Then bind.
+	pa.bind(edges, rebind);
 }
 
 
 // ***************************************************************************
-void		CZone::unbindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc)
+void		CZone::unbindPatch(CPatch &pa)
 {
-	CPatch::CBindInfo	edges[4];
+	/*
+		Remind: the old version with CPatch::unbindFrom*() doesn't work because of CZone::release(). This function
+		first erase the zone from loadedZones...
+		Not matter here. We use CPatch::unbind() which should do all the good job correctly (unbind pa from ohters
+		, and unbind others from pa at same time).
+	*/
 
-	unbindAndMakeBindInfo(loadedZones,  pa, pc, edges);
-
-	// Don't rebind.
+	pa.unbind();
 }
 
 

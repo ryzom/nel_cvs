@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.78 2002/02/28 12:59:50 besson Exp $
+ * $Id: patch.cpp,v 1.79 2002/03/07 15:39:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,10 @@ void			CPatch::release()
 		// THIS PATCH MSUT BE UNBOUND FIRST!!!!!
 		nlassert(Son0 && Son1);
 		nlassert(Son0->isLeaf() && Son1->isLeaf());
-		// Can't test if OK, since bind 2/1 or 4/1 are not unbound.
+		nlassert(Son0->FLeft == NULL);
+		nlassert(Son0->FRight == NULL);
+		nlassert(Son1->FLeft == NULL);
+		nlassert(Son1->FRight == NULL);
 
 		// Free renderPass of landscape, and maybe force computation of texture info on next preRender().
 		// Must do it here, before deletion of Zone, OrderS/T etc...
@@ -1465,17 +1468,21 @@ void			CPatch::serial(NLMISC::IStream &f)
 
 
 // ***************************************************************************
-void			CPatch::unbind(CPatch *except[4])
+void			CPatch::unbind()
 {
 	nlassert(Son0 && Son1);
 
-	Son0->unbind(except);
-	Son1->unbind(except);
+	Son0->unbind();
+	Son1->unbind();
 	Son0->forceMerge();
 	Son1->forceMerge();
-	// Even if I am still binded to a "bigger" neigbhor patch, forcemerge should have be completed.
-	// It is because only bind 1/2 and 1/4 could be done... (make a draw to understand).
+	// forcemerge should have be completed.
 	nlassert(Son0->isLeaf() && Son1->isLeaf());
+	// unbind should have be completed.
+	nlassert(Son0->FLeft == NULL);
+	nlassert(Son0->FRight == NULL);
+	nlassert(Son1->FLeft == NULL);
+	nlassert(Son1->FRight == NULL);
 
 
 	// unbind Noise.
@@ -1571,7 +1578,20 @@ void			CPatch::changeEdgeNeighbor(sint edge, CTessFace *to)
 
 
 // ***************************************************************************
-void			CPatch::bind(CBindInfo	Edges[4])
+CTessFace		*CPatch::linkTessFaceWithEdge(const CVector2f &uv0, const CVector2f &uv1, CTessFace *linkTo)
+{
+	nlassert(Son0 && Son1);
+	// Try to link with Root Son0
+	CTessFace	*face= Son0->linkTessFaceWithEdge(uv0, uv1, linkTo);
+	// if Failed Try to link with Root Son1
+	if(!face)
+		face= Son1->linkTessFaceWithEdge(uv0, uv1, linkTo);
+	return face;
+}
+
+
+// ***************************************************************************
+void			CPatch::bind(CBindInfo	Edges[4], bool rebind)
 {
 	// The multiple Patch Face.
 	// By default, Patch==NULL, FLeft, FRight and FBase==NULL so ok!
@@ -1582,10 +1602,13 @@ void			CPatch::bind(CBindInfo	Edges[4])
 	// THIS PATCH MUST BE UNBOUND FIRST!!!!!
 	nlassert(Son0 && Son1);
 	nlassert(Son0->isLeaf() && Son1->isLeaf());
-	// Can't test if OK, since bind 2/1 or 4/1 are not unbound.
+	nlassert(Son0->FLeft == NULL);
+	nlassert(Son0->FRight == NULL);
+	nlassert(Son1->FLeft == NULL);
+	nlassert(Son1->FRight == NULL);
 
 
-	// bind the Realtime bind info here (before any computeVertex).
+	// bind the Realtime bind info here (before any computeVertex, and before bind too).
 	sint	i;
 	for(i=0;i<4;i++)
 	{
@@ -1594,20 +1617,32 @@ void			CPatch::bind(CBindInfo	Edges[4])
 	}
 
 
-	// Just recompute base vertices.
-	CTessVertex *a= BaseVertices[0];
-	CTessVertex *b= BaseVertices[1];
-	CTessVertex *c= BaseVertices[2];
-	CTessVertex *d= BaseVertices[3];
-	// Set positions.
-	a->Pos= a->StartPos= a->EndPos= computeVertex(0,0);
-	b->Pos= b->StartPos= b->EndPos= computeVertex(0,1);
-	c->Pos= c->StartPos= c->EndPos= computeVertex(1,1);
-	d->Pos= d->StartPos= d->EndPos= computeVertex(1,0);
-	// NB: no propagation problem, since the patch has root only (since has to be unbound!!!)
-	// Recompute centers.
-	Son0->computeSplitPoint();
-	Son1->computeSplitPoint();
+	if(!rebind)
+	{
+		// Just recompute base vertices.
+		CTessVertex *a= BaseVertices[0];
+		CTessVertex *b= BaseVertices[1];
+		CTessVertex *c= BaseVertices[2];
+		CTessVertex *d= BaseVertices[3];
+		// Set positions.
+		a->Pos= a->StartPos= a->EndPos= computeVertex(0,0);
+		b->Pos= b->StartPos= b->EndPos= computeVertex(0,1);
+		c->Pos= c->StartPos= c->EndPos= computeVertex(1,1);
+		d->Pos= d->StartPos= d->EndPos= computeVertex(1,0);
+		// NB: no propagation problem, since the patch has root only (since has to be unbound!!!)
+		// Recompute centers.
+		Son0->computeSplitPoint();
+		Son1->computeSplitPoint();
+	}
+	else
+	{
+		// Keep old Vertices as computed from neighbors, but reFill the 4 FarVertices.
+		// NB: don't do it on NearVertices because suppose that Near is Off when a bind occurs (often far away).
+		checkFillVertexVBFar(Son0->FVBase);
+		checkFillVertexVBFar(Son0->FVLeft);
+		checkFillVertexVBFar(Son0->FVRight);
+		checkFillVertexVBFar(Son1->FVBase);
+	}
 
 
 	// Bind the roots.
@@ -1615,7 +1650,7 @@ void			CPatch::bind(CBindInfo	Edges[4])
 	{
 		CBindInfo	&bind= Edges[i];
 
-		nlassert(bind.NPatchs==0 || bind.NPatchs==1 || bind.NPatchs==2 || bind.NPatchs==4);
+		nlassert(bind.NPatchs==0 || bind.NPatchs==1 || bind.NPatchs==2 || bind.NPatchs==4 || bind.NPatchs==5);
 		if(bind.NPatchs==1)
 		{
 			// Bind me on Next.
@@ -1665,6 +1700,62 @@ void			CPatch::bind(CBindInfo	Edges[4])
 			bind.Next[2]->changeEdgeNeighbor(bind.Edge[2], &CTessFace::MultipleBindFace);
 			bind.Next[3]->changeEdgeNeighbor(bind.Edge[3], &CTessFace::MultipleBindFace);
 		}
+		else if(bind.NPatchs==5)
+		{
+			/* I am binded to a bigger patch and this one has already done the binding on me => 
+				It must be correclty tesselated. Note also that bind 1/X are only possible on interior of zone.
+			*/
+
+			// First, make the link with the face to which I must connect.
+			// -----------------
+
+			// Get the coordinate of the current edge of this patch
+			CVector2f	uvi0, uvi1;
+			switch(i)
+			{
+			case 0: uvi0.set(0,0); uvi1.set(0,1);  break;
+			case 1: uvi0.set(0,1); uvi1.set(1,1);  break;
+			case 2: uvi0.set(1,1); uvi1.set(1,0);  break;
+			case 3: uvi0.set(1,0); uvi1.set(0,0);  break;
+			};
+			// mul by OrderS/OrderT for CPatchUVLocator
+			uvi0.x*= OrderS;
+			uvi0.y*= OrderT;
+			uvi1.x*= OrderS;
+			uvi1.y*= OrderT;
+			// build a CPatchUVLocator to transpose coorindate ot this edge in coordinate on the bigger Neighbor patch.
+			CBindInfo	bindInfo;
+			getBindNeighbor(i, bindInfo);
+			nlassert(bindInfo.Zone!=NULL && bindInfo.NPatchs==1);
+			CPatchUVLocator		puvloc;
+			puvloc.build(this, i, bindInfo);
+
+			// transpose from this patch coord in neighbor patch coord.
+			CVector2f	uvo0, uvo1;
+			uint	pid;
+			CPatch	*patchNeighbor;
+			// Do it for uvi0
+			pid= puvloc.selectPatch(uvi0);
+			puvloc.locateUV(uvi0, pid, patchNeighbor, uvo0);
+			nlassert(patchNeighbor == bindInfo.Next[0]);
+			// Do it for uvi1
+			pid= puvloc.selectPatch(uvi1);
+			puvloc.locateUV(uvi1, pid, patchNeighbor, uvo1);
+			nlassert(patchNeighbor == bindInfo.Next[0]);
+			// Rescale to have uv in 0,1 basis.
+			uvo0.x/= patchNeighbor->OrderS;
+			uvo0.y/= patchNeighbor->OrderT;
+			uvo1.x/= patchNeighbor->OrderS;
+			uvo1.y/= patchNeighbor->OrderT;
+
+			// Now, traverse the tesselation and find the first CTessFace which use this edge.
+			CTessFace	*faceNeighbor;
+			faceNeighbor= patchNeighbor->linkTessFaceWithEdge(uvo0, uvo1, this->getRootFaceForEdge(i));
+			nlassert(faceNeighbor);
+			// Bind me on Next.
+			this->changeEdgeNeighbor(i, faceNeighbor);
+		}
+
 	}
 
 	// Propagate the binds to sons.

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.58 2002/02/28 12:59:51 besson Exp $
+ * $Id: tessellation.cpp,v 1.59 2002/03/07 15:39:08 berenguier Exp $
  *
  */
 
@@ -848,6 +848,10 @@ void		CTessFace::updateNearFarVertices()
 	FVLeft->PCoord= PVLeft;
 	FVRight->PCoord= PVRight;
 
+	// Update VB for far vertices (if needed)
+	Patch->checkFillVertexVBFar(FVBase);
+	Patch->checkFillVertexVBFar(FVLeft);
+	Patch->checkFillVertexVBFar(FVRight);
 
 	// Near Vertices update (Src only).
 	for(sint i=0; i<NL3D_MAX_TILE_FACE; i++)
@@ -857,8 +861,14 @@ void		CTessFace::updateNearFarVertices()
 			TileFaces[i]->VBase->Src= VBase;
 			TileFaces[i]->VLeft->Src= VLeft;
 			TileFaces[i]->VRight->Src= VRight;
+
+			// Update VB for near vertices (if needed)
+			Patch->checkFillVertexVBNear(TileFaces[i]->VBase);
+			Patch->checkFillVertexVBNear(TileFaces[i]->VLeft);
+			Patch->checkFillVertexVBNear(TileFaces[i]->VRight);
 		}
 	}
+
 }
 
 
@@ -2156,20 +2166,7 @@ void		CTessFace::updateRefineMerge()
 
 
 // ***************************************************************************
-bool		CTessFace::exceptPatch(CPatch *p, CPatch *except[4])
-{
-	// Warning: except[i] may be NULL, so test if p is NULL.
-	// Must unbind from a CantMergeFace.
-	if(p== NULL) return false;
-	if(p== except[0]) return true;
-	if(p== except[1]) return true;
-	if(p== except[2]) return true;
-	if(p== except[3]) return true;
-	return false;
-}
-
-// ***************************************************************************
-void		CTessFace::unbind(CPatch *except[4])
+void		CTessFace::unbind()
 {
 	// NB: since CantMergeFace has a NULL patch ptr, it is unbound too.
 
@@ -2183,48 +2180,39 @@ void		CTessFace::unbind(CPatch *except[4])
 			// FLeft and FRight pointers are only valid in Leaves nodes.
 			if(FLeft && FLeft->Patch!=Patch)
 			{
-				if(!exceptPatch(FLeft->Patch, except))
-				{
-					FLeft->changeNeighbor(this, NULL);
-					FLeft= NULL;
-				}
+				FLeft->changeNeighbor(this, NULL);
+				FLeft= NULL;
 			}
 			if(FRight && FRight->Patch!=Patch)
 			{
-				if(!exceptPatch(FRight->Patch, except))
-				{
-					FRight->changeNeighbor(this, NULL);
-					FRight= NULL;
-				}
+				FRight->changeNeighbor(this, NULL);
+				FRight= NULL;
 			}
 		}
 		// Change Base neighbors.
 		if(FBase && FBase->Patch!=Patch)
 		{
-			if(!exceptPatch(FBase->Patch, except))
+			CTessFace	*oldNeigbhorFace= FBase;
+
+			FBase->changeNeighbor(this, NULL);
+			FBase= NULL;
+			if(!isLeaf())
 			{
-				CTessFace	*oldNeigbhorFace= FBase;
+				// Duplicate the VBase of sons, so the unbind is correct and no vertices are shared.
+				CTessVertex	*old= SonLeft->VBase;
+				SonLeft->VBase= Patch->getLandscape()->newTessVertex();
+				*(SonLeft->VBase)= *old;
+				SonRight->VBase= SonLeft->VBase;
 
-				FBase->changeNeighbor(this, NULL);
-				FBase= NULL;
-				if(!isLeaf())
+				// For geomorph (VertexProgram or soft), compute good MaxFaceSize and MaxNearLimit (change since unbinded)
+				// update us.
+				SonLeft->VBase->MaxFaceSize= Size;
+				SonLeft->VBase->MaxNearLimit= computeNearLimit();
+				// update our neigbhor, only if not a multiple patch face.
+				if(oldNeigbhorFace->Patch)
 				{
-					// Duplicate the VBase of sons, so the unbind is correct and no vertices are shared.
-					CTessVertex	*old= SonLeft->VBase;
-					SonLeft->VBase= Patch->getLandscape()->newTessVertex();
-					*(SonLeft->VBase)= *old;
-					SonRight->VBase= SonLeft->VBase;
-
-					// For geomorph (VertexProgram or soft), compute good MaxFaceSize and MaxNearLimit (change since unbinded)
-					// update us.
-					SonLeft->VBase->MaxFaceSize= Size;
-					SonLeft->VBase->MaxNearLimit= computeNearLimit();
-					// update our neigbhor, only if not a multiple patch face.
-					if(oldNeigbhorFace->Patch)
-					{
-						old->MaxFaceSize= oldNeigbhorFace->Size;
-						old->MaxNearLimit= oldNeigbhorFace->computeNearLimit();
-					}
+					old->MaxFaceSize= oldNeigbhorFace->Size;
+					old->MaxNearLimit= oldNeigbhorFace->computeNearLimit();
 				}
 			}
 		}
@@ -2237,36 +2225,33 @@ void		CTessFace::unbind(CPatch *except[4])
 		// In rectangular, FLeft has the behavior of FBase in square case.
 		if(FLeft && FLeft->Patch!=Patch)
 		{
-			if(!exceptPatch(FLeft->Patch, except))
+			CTessFace	*oldNeigbhorFace= FLeft;
+
+			FLeft->changeNeighbor(this, NULL);
+			FLeft= NULL;
+			if(!isLeaf())
 			{
-				CTessFace	*oldNeigbhorFace= FLeft;
+				// Duplicate the VBase of sons, so the unbind is correct and no vertices are shared.
+				// NB: this code is a bit different from square case.
+				CTessVertex	*old= SonLeft->VBase;
+				SonLeft->VBase= Patch->getLandscape()->newTessVertex();
+				*(SonLeft->VBase)= *old;
+				// This is the difference:  (see rectangle tesselation rules).
+				SonRight->VLeft= SonLeft->VBase;
+				// Yoyo_patch_himself (12/02/2001): I forgot this one!!
+				nlassert(FBase && FBase->SonLeft);
+				FBase->SonLeft->VRight= SonLeft->VBase;
 
-				FLeft->changeNeighbor(this, NULL);
-				FLeft= NULL;
-				if(!isLeaf())
+
+				// For geomorph (VertexProgram or soft), compute good MaxFaceSize and MaxNearLimit (change since unbinded)
+				// update us.
+				SonLeft->VBase->MaxFaceSize= Size;
+				SonLeft->VBase->MaxNearLimit= computeNearLimit();
+				// update our neigbhor, only if not a multiple patch face.
+				if(oldNeigbhorFace->Patch)
 				{
-					// Duplicate the VBase of sons, so the unbind is correct and no vertices are shared.
-					// NB: this code is a bit different from square case.
-					CTessVertex	*old= SonLeft->VBase;
-					SonLeft->VBase= Patch->getLandscape()->newTessVertex();
-					*(SonLeft->VBase)= *old;
-					// This is the difference:  (see rectangle tesselation rules).
-					SonRight->VLeft= SonLeft->VBase;
-					// Yoyo_patch_himself (12/02/2001): I forgot this one!!
-					nlassert(FBase && FBase->SonLeft);
-					FBase->SonLeft->VRight= SonLeft->VBase;
-
-
-					// For geomorph (VertexProgram or soft), compute good MaxFaceSize and MaxNearLimit (change since unbinded)
-					// update us.
-					SonLeft->VBase->MaxFaceSize= Size;
-					SonLeft->VBase->MaxNearLimit= computeNearLimit();
-					// update our neigbhor, only if not a multiple patch face.
-					if(oldNeigbhorFace->Patch)
-					{
-						old->MaxFaceSize= oldNeigbhorFace->Size;
-						old->MaxNearLimit= oldNeigbhorFace->computeNearLimit();
-					}
+					old->MaxFaceSize= oldNeigbhorFace->Size;
+					old->MaxNearLimit= oldNeigbhorFace->computeNearLimit();
 				}
 			}
 		}
@@ -2275,11 +2260,8 @@ void		CTessFace::unbind(CPatch *except[4])
 		{
 			if(FRight && FRight->Patch!=Patch)
 			{
-				if(!exceptPatch(FRight->Patch, except))
-				{
-					FRight->changeNeighbor(this, NULL);
-					FRight= NULL;
-				}
+				FRight->changeNeighbor(this, NULL);
+				FRight= NULL;
 			}
 		}
 	}
@@ -2316,8 +2298,8 @@ void		CTessFace::unbind(CPatch *except[4])
 		}
 
 		// unbind the sons.
-		SonLeft->unbind(except);
-		SonRight->unbind(except);
+		SonLeft->unbind();
+		SonRight->unbind();
 	}
 
 }
@@ -2801,6 +2783,65 @@ void		CTessFace::updateBind()
 		SonLeft->updateBind();
 		SonRight->updateBind();
 	}
+}
+
+// ***************************************************************************
+static	inline bool	matchEdge(const CVector2f &uv0, const CVector2f &uv1, const CVector2f &uva, const CVector2f &uvb)
+{
+	if(uv0==uva && uv1==uvb)
+		return true;
+	if(uv0==uvb && uv1==uva)
+		return true;
+	return false;
+}
+
+// ***************************************************************************
+CTessFace		*CTessFace::linkTessFaceWithEdge(const CVector2f &uv0, const CVector2f &uv1, CTessFace *linkTo)
+{
+	// Compute 0,1 coords of 3 patch coords.
+	CVector2f	vb( PVBase.getS(), PVBase.getT() );
+	CVector2f	vl( PVLeft.getS(), PVLeft.getT() );
+	CVector2f	vr( PVRight.getS(), PVRight.getT() );
+
+	// Search if one of the 3 edges of this triangle match the wanted edge.
+	// Base Edge
+	if(matchEdge(uv0, uv1, vl, vr))
+	{
+		// If leaf, check if unbound (else ptr is invalid)
+		nlassert(FBase==NULL || !isLeaf());
+		FBase= linkTo;
+		return this;
+	}
+	// Left Edge
+	if(matchEdge(uv0, uv1, vb, vl))
+	{
+		// If leaf, check if unbound (else ptr is invalid)
+		nlassert(FLeft==NULL || !isLeaf());
+		FLeft= linkTo;
+		return this;
+	}
+	// Right Edge
+	if(matchEdge(uv0, uv1, vb, vr))
+	{
+		// If leaf, check if unbound (else ptr is invalid)
+		nlassert(FRight==NULL || !isLeaf())
+		FRight= linkTo;
+		return this;
+	}
+
+
+	// If not found here, recurs to children
+	CTessFace	*ret= NULL;
+	if( !isLeaf() )
+	{
+		ret= SonLeft->linkTessFaceWithEdge(uv0, uv1, linkTo);
+		// if no found in this branch, recusr right branch.
+		if(!ret)
+			ret= SonRight->linkTessFaceWithEdge(uv0, uv1, linkTo);
+	}
+	
+	// return the result from subBranchs
+	return ret;
 }
 
 

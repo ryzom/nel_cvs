@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.9 2001/03/28 10:33:00 berenguier Exp $
+ * $Id: channel_mixer.cpp,v 1.10 2001/03/29 09:50:20 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -227,6 +227,7 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 void CChannelMixer::resetChannels ()
 {
 	_Channels.clear();
+	dirtAll ();
 }
 
 // ***************************************************************************

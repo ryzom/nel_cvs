@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.15 2001/01/24 14:09:53 valignat Exp $
+# $Id: Makefile.am,v 1.16 2001/02/05 16:55:25 corvazier Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -24,7 +24,10 @@ libnel3d_la_SOURCES  = aabbox.cpp bezier_patch.cpp bitmap.cpp bsphere.cpp \
                        vertex_buffer.cpp viewport.cpp zone.cpp \
                        texture_far.cpp shader.cpp mrm_builder.cpp \
                        mrm_mesh.cpp tile_lumel.cpp texture_near.cpp \
-                       zone_smoother.cpp zone_tgt_smoother.cpp
+                       zone_smoother.cpp zone_tgt_smoother.cpp \
+					   animatable.cpp animated_value.cpp animation.cpp \
+					   channel.cpp channel_mixer.cpp key.cpp track.cpp \
+					   animation_time.cpp 
 
 AM_CXXFLAGS          = @FREETYPE_CFLAGS@
 

@@ -1,7 +1,7 @@
 /** \file ps_edit.h
  * <File description>
  *
- * $Id: ps_edit.h,v 1.3 2001/05/28 15:30:11 vizerie Exp $
+ * $Id: ps_edit.h,v 1.4 2001/05/30 10:05:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,7 @@ namespace NL3D {
  * For example, it allows you to move a collision plane after its creation,
  * or to move a particular particle that you've instancied yourself.
  * This is needed because of the packed format used for data representation
- * (each attribute is packed into its own table)
+ * (each attribute is packed into its own table, see ps_attrib.h )
  */
 
 
@@ -71,10 +71,14 @@ struct IPSMover
 	 */
 	virtual bool supportUniformScaling(void) const { return false ; }
 
-	/** Send back true if non-uniform scaling can be applied
-	 *  If it sends false, on-uniform scaling leads to undefine results
+	/** Send back true if non-uniform (general) scaling can be applied
+	 *  If it sends false, non-uniform scaling leads to undefine results
 	 */
 	virtual bool supportScaling(void) const { return false ; }
+
+	/// send back true if non-orthogonal transforms are supported
+	virtual bool supportNonOrthogonalTransform(void) const { return false ; }
+
 	
 	// left multiply the current matrix by the given one. No valid index -> assert
 	virtual void applyMatrix(uint32 index, const CMatrix &m) = 0 ;

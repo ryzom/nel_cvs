@@ -1,7 +1,7 @@
 dnl
 dnl Configuration script for NeLNS
 dnl
-dnl $Id: configure.in,v 1.6 2001/08/08 10:23:32 valignat Exp $
+dnl $Id: configure.in,v 1.7 2001/08/16 12:42:26 valignat Exp $
 dnl 
 
 dnl Process this file with autoconf to produce a configure script.
@@ -115,7 +115,7 @@ fi
 if test -z "$no_stlport" -a  "$with_stlport_lib"
 then
     AC_MSG_RESULT(using STLPort library files located in $with_stlport_lib)
-    STLPORT_LIB="i-L$with_stlport_lib"
+    STLPORT_LIB="-L$with_stlport_lib"
 fi
 
 
@@ -126,9 +126,9 @@ dnl ==========
 dnl Ask user for path to the NeL header files
 AC_ARG_WITH( nel,
     [  --with-nel=<prefix>     prefix to the NeL files installation.
-                          e.g. /usr/local/include],
-    [NEL_DIR=$with_nel
-      AC_MSG_RESULT(using NeL header files located in $with_nel)]
+                          e.g. /usr/local],
+    [ NEL_DIR=$with_nel
+      AC_MSG_RESULT(using NeL files located in $with_nel)]
 )
 
 if test X"$NEL_DIR" != X"";

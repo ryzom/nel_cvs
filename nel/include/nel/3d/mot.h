@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.7 2001/04/12 13:54:21 berenguier Exp $
+ * $Id: mot.h,v 1.8 2001/04/12 15:27:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -298,108 +298,6 @@ private:
 
 // ***************************************************************************
 /**
- * A base Traversal.
- * A traversal represent a functionality, something which is be performed on a graph of model. Since, we may have
- * differents graph of models, dependent on the traversal, a traversal maintain rather a graph of observers. But this is
- * invisible for the user, since he calls link() methods with models.
- *
- * A traversal provide:
- * - interface to create a default observer for models which don't specify them. See createDefaultObs().
- * - interface to identify himself with a classId. getClassId()
- * - methods for building the graph of observers. setRoot(), getRoot(), link(), unlink()...
- *
- * \b DERIVERS \b RULES:
- * - Implement createDefaultObs()
- * - Implement getClassId()
- *
- * No traverse() method is provided. The deriver may use their own function.
- * \sa CMOT IModel IObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	ITrav : public NLMISC::CRefCount
-{
-public:
-
-	/// \name Object
-	//@{
-	/// Constructor. Root Must be created/linked by User via setRoot().
-	ITrav()	{Root=NULL;}
-	/// Destructor. ~ITrav() doesn't delete Root. Root Must be destructed by user.
-	virtual ~ITrav() {Root= NULL;}
-	//@}
-
-	/// \name Misc.
-	//@{
-	/** 
-	 * This method must create a default observer for this traversal. Any model which doesn't provide (by registerObs() 
-	 * or by inheritance) an observer for this view will be linked with this default observer.
-	 */
-	virtual	IObs	*createDefaultObs() const =0;
-	/// This function must return the Unique Ident for this traversal class.
-	virtual	NLMISC::CClassId	getClassId() const =0;
-	//@}
-
-
-	/// \name Graph Methods.
-	//@{
-	/**
-	 * Specify a root Model for this traversal (via his IObs).
-	 * The model must be created with a valid/final CMOT.
-	 * CMOT::createModel() will don't link the model if a traversal in the CMOT object has not specified a root. \n
-	 * ITrav::link(NULL, ...) will assert, if no root defined.
-	 *
-	 * You may specify a NULL root (this may lead to a disabled traversal).
-	 */
-	void	setRoot(IModel	*root);
-	/// Get the root of the traversal (NULL if not defined).
-	IModel	*getRoot() const;
-	/**
-	 * Link 2 models via their IObs for this traversal.
-	 * m2 becomes a child of m1.
-	 * If m1==NULL, m2 will be linked to the Root of this traversal (or do nothing if this one is NULL).
-	 * if m2 was already a son of m1, no-op.
-	 */
-	void	link(IModel *m1, IModel *m2) const;
-	/**
-	 * Unlink 2 models via their IObs for this traversal.
-	 * If m1==NULL, m2 will be unlinked from the Root of this traversal (or do nothing if this one is NULL).
-	 * if m2 was not a son of m1, no-op.
-	 */
-	void	unlink(IModel *m1, IModel *m2) const;
-	/// make the children of parentFrom unlinked, and become the children of parentTo.
-	void	moveChildren(IModel *parentFrom, IModel *parentTo) const;
-	/// make the children of parentFrom become the children of parentTo too (may works like moveChildren if children are TreeNode).
-	void	copyChildren(IModel *parentFrom, IModel *parentTo) const;
-
-
-	/// Get the number of children of the model for this traversal.
-	sint	getNumChildren(IModel *m) const;
-	/// Return the first child of the Model for this traversal. NULL returned if not found.
-	IModel	*getFirstChild(IModel *m) const;
-	/// Return the next child of the Model for this traversal. NULL returned if not found. Unpredictible results if link() / unlink() are made between a getFirstChild() / getNextChild().
-	IModel	*getNextChild(IModel *m) const;
-
-	/// Get the number of Parents of the model for this traversal.
-	sint	getNumParents(IModel *m) const;
-	/// Return the first Parent of the Model for this traversal. NULL returned if not found.
-	IModel	*getFirstParent(IModel *m) const;
-	/// Return the next Parent of the Model for this traversal. NULL returned if not found. Unpredictible results if link() / unlink() are made between a getFirstParent() / getNextParent().
-	IModel	*getNextParent(IModel *m) const;
-
-	//@}
-
-
-protected:
-	// The root observer.
-	NLMISC::CRefPtr<IObs>	Root;
-
-};
-
-
-// ***************************************************************************
-/**
  * A base model.
  * A model is the base structure for any node. The user directly manipulates Models implemented by the deriver.
  *
@@ -665,6 +563,110 @@ protected:
 	mutable	std::set<IObs*>::const_iterator	FatherIt;
 
 };
+
+
+
+// ***************************************************************************
+/**
+ * A base Traversal.
+ * A traversal represent a functionality, something which is be performed on a graph of model. Since, we may have
+ * differents graph of models, dependent on the traversal, a traversal maintain rather a graph of observers. But this is
+ * invisible for the user, since he calls link() methods with models.
+ *
+ * A traversal provide:
+ * - interface to create a default observer for models which don't specify them. See createDefaultObs().
+ * - interface to identify himself with a classId. getClassId()
+ * - methods for building the graph of observers. setRoot(), getRoot(), link(), unlink()...
+ *
+ * \b DERIVERS \b RULES:
+ * - Implement createDefaultObs()
+ * - Implement getClassId()
+ *
+ * No traverse() method is provided. The deriver may use their own function.
+ * \sa CMOT IModel IObs
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	ITrav : public NLMISC::CRefCount
+{
+public:
+
+	/// \name Object
+	//@{
+	/// Constructor. Root Must be created/linked by User via setRoot().
+	ITrav()	{Root=NULL;}
+	/// Destructor. ~ITrav() doesn't delete Root. Root Must be destructed by user.
+	virtual ~ITrav() {Root= NULL;}
+	//@}
+
+	/// \name Misc.
+	//@{
+	/** 
+	 * This method must create a default observer for this traversal. Any model which doesn't provide (by registerObs() 
+	 * or by inheritance) an observer for this view will be linked with this default observer.
+	 */
+	virtual	IObs	*createDefaultObs() const =0;
+	/// This function must return the Unique Ident for this traversal class.
+	virtual	NLMISC::CClassId	getClassId() const =0;
+	//@}
+
+
+	/// \name Graph Methods.
+	//@{
+	/**
+	 * Specify a root Model for this traversal (via his IObs).
+	 * The model must be created with a valid/final CMOT.
+	 * CMOT::createModel() will don't link the model if a traversal in the CMOT object has not specified a root. \n
+	 * ITrav::link(NULL, ...) will assert, if no root defined.
+	 *
+	 * You may specify a NULL root (this may lead to a disabled traversal).
+	 */
+	void	setRoot(IModel	*root);
+	/// Get the root of the traversal (NULL if not defined).
+	IModel	*getRoot() const;
+	/**
+	 * Link 2 models via their IObs for this traversal.
+	 * m2 becomes a child of m1.
+	 * If m1==NULL, m2 will be linked to the Root of this traversal (or do nothing if this one is NULL).
+	 * if m2 was already a son of m1, no-op.
+	 */
+	void	link(IModel *m1, IModel *m2) const;
+	/**
+	 * Unlink 2 models via their IObs for this traversal.
+	 * If m1==NULL, m2 will be unlinked from the Root of this traversal (or do nothing if this one is NULL).
+	 * if m2 was not a son of m1, no-op.
+	 */
+	void	unlink(IModel *m1, IModel *m2) const;
+	/// make the children of parentFrom unlinked, and become the children of parentTo.
+	void	moveChildren(IModel *parentFrom, IModel *parentTo) const;
+	/// make the children of parentFrom become the children of parentTo too (may works like moveChildren if children are TreeNode).
+	void	copyChildren(IModel *parentFrom, IModel *parentTo) const;
+
+
+	/// Get the number of children of the model for this traversal.
+	sint	getNumChildren(IModel *m) const;
+	/// Return the first child of the Model for this traversal. NULL returned if not found.
+	IModel	*getFirstChild(IModel *m) const;
+	/// Return the next child of the Model for this traversal. NULL returned if not found. Unpredictible results if link() / unlink() are made between a getFirstChild() / getNextChild().
+	IModel	*getNextChild(IModel *m) const;
+
+	/// Get the number of Parents of the model for this traversal.
+	sint	getNumParents(IModel *m) const;
+	/// Return the first Parent of the Model for this traversal. NULL returned if not found.
+	IModel	*getFirstParent(IModel *m) const;
+	/// Return the next Parent of the Model for this traversal. NULL returned if not found. Unpredictible results if link() / unlink() are made between a getFirstParent() / getNextParent().
+	IModel	*getNextParent(IModel *m) const;
+
+	//@}
+
+
+protected:
+	// The root observer.
+	NLMISC::CRefPtr<IObs>	Root;
+
+};
+
 
 
 

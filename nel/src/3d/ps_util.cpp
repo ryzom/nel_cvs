@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.19 2001/07/12 15:40:40 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.20 2001/07/13 16:59:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,7 +159,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 }
 
 
-void CPSUtil::displayBBox(IDriver *driver, const NLMISC::CAABBox &box)
+void CPSUtil::displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLMISC::CRGBA col /* = NLMISC::CRGBA::White */)
 {	
 	CVector max = box.getMax()
 			,min = box.getMin() ;
@@ -179,7 +179,7 @@ void CPSUtil::displayBBox(IDriver *driver, const NLMISC::CAABBox &box)
 
 	CMaterial material ;
 
-	material.setColor(CRGBA(127, 127, 127)) ;
+	material.setColor(col) ;
 	material.setLighting(false) ;
 	material.setBlendFunc(CMaterial::one, CMaterial::one) ;
 	material.setZWrite(false) ;

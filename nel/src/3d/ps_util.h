@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.4 2001/07/12 15:40:05 vizerie Exp $
+ * $Id: ps_util.h,v 1.5 2001/07/13 16:59:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ struct CPSUtil
 
 	/// this draw a bounding box		
 
-	static void displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box) ;
+	static void displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLMISC::CRGBA col = NLMISC::CRGBA::White) ;
 
 	/// draw a sphere
 	static void displaySphere(NL3D::IDriver &driver, float radius, const NLMISC::CVector &center, uint nbSubdiv = 4, NLMISC::CRGBA color = NLMISC::CRGBA::White) ;

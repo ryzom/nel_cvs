@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.42 2003/04/18 15:15:04 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.43 2003/04/22 16:38:10 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -591,7 +591,7 @@ void CNelExport::viewMesh (TimeValue time)
 
 
 				// Light Ig.
-				CIgLighterLib::lightIg(maxInstanceLighter, *ig, *igOut, lightDesc, slInfo);
+				CIgLighterLib::lightIg(maxInstanceLighter, *ig, *igOut, lightDesc, slInfo, "");
 
 				// Close the lighter.
 				maxInstanceLighter.closeMaxLighter();

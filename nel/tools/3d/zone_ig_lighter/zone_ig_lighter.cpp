@@ -2,7 +2,7 @@
  * zone_ig_lighter.cpp : instance lighter for ig in landscape zones
  * greatly copied from ../zone_lighter/zone_lighter.cpp
  *
- * $Id: zone_ig_lighter.cpp,v 1.11 2002/07/03 08:45:50 corvazier Exp $
+ * $Id: zone_ig_lighter.cpp,v 1.12 2003/04/22 16:38:10 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -485,7 +485,7 @@ int main(int argc, char* argv[])
 					for (uint plId=0; plId<pointLightList.size(); plId++)
 					{
 						// Add it to the Ig.
-						lighter.addStaticPointLight(pointLightList[plId]);
+						lighter.addStaticPointLight(pointLightList[plId], igName.c_str ());
 					}
 
 					// Next instance group

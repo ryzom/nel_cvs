@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.45 2001/11/14 15:49:16 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.46 2001/11/21 16:09:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,7 @@ static inline void convTexAddr(ITexture *tex, CMaterial::TTexAddressingMode mode
 
 bool CDriverGL::setupMaterial(CMaterial& mat)
 {
-
+	
 	CShaderGL*	pShader;
 	GLenum		glenum;
 	uint32		touched=mat.getTouched();
@@ -117,18 +117,6 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	// profile.
 	_NbSetupMaterialCall++;
 
-
-	// ======== deactivate texture shaders if needed ===========
-	if (_Extensions.NVTextureShader)
-	{
-		if ( // supported only with normal shader
-			mat.getShader() == CMaterial::Normal 
-			&& (! (mat.getFlags() & IDRV_MAT_TEX_ADDR))
-		   )
-		{	
-			enableNVTextureShader(false);			
-		}
-	}
 
 	// 0. Setup / Bind Textures.
 	//==========================
@@ -151,8 +139,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				return(false);
 		}
 	}
-
-
+	
 
 	// Activate the textures.
 	// Do not do it for Lightmap, because done in multipass in a very special fashion.
@@ -177,11 +164,12 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				activateTexEnvMode(stage, env);
 				activateTexEnvColor(stage, env);
 			}
-
-		}
+		}				
 	}
 
-	
+
+		
+
 	// 1. Retrieve/Create driver shader.
 	//==================================
 	if (!mat.pShader)
@@ -248,7 +236,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		// Optimize: reset all flags at the end.
 		mat.clearTouched(0xFFFFFFFF);
 	}
-
+	
 
 	// 3. Bind OpenGL States.
 	//=======================
@@ -314,6 +302,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			glColor4ub(col.R, col.G, col.B, col.A);
 			_DriverGLStates.setVertexColorLighted(false);
 		}
+		
 
 			// Texture addressing modes (support only via NVTextureShader for now)
 		//===================================================================				
@@ -323,23 +312,28 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				mat.getShader() == CMaterial::Normal 
 				&& (mat.getFlags() & IDRV_MAT_TEX_ADDR)
 			   )
-			{	
-				
-				enableNVTextureShader(true);								
-				
+			{		
+				enableNVTextureShader(true);
+
 				GLenum glAddrMode;
 				for (stage = 0; stage < getNbTextureStages(); ++stage)
 				{										
 					convTexAddr(mat.getTexture(stage), (CMaterial::TTexAddressingMode) (mat._TexAddrMode[stage]), glAddrMode);
 
 					if (glAddrMode != _CurrentTexAddrMode[stage]) // addressing mode different from the one in the device?
+				
 					{
 						_DriverGLStates.activeTextureARB(stage);
 						glTexEnvi(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, glAddrMode);				
 						_CurrentTexAddrMode[stage] = glAddrMode;					
 					}
 				}
+				
 								
+			}
+			else
+			{
+				enableNVTextureShader(false);
 			}
 		}
 

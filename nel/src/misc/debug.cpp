@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.46 2002/03/26 09:43:44 lecroart Exp $
+ * $Id: debug.cpp,v 1.47 2002/03/28 17:44:38 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -255,7 +255,6 @@ NLMISC_COMMAND(resetFilters, "disable all filters on Nel loggers", "[debug|info|
 	return true;
 }
 
-
 NLMISC_COMMAND(addPositiveFilterDebug, "add a positive filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
@@ -270,10 +269,20 @@ NLMISC_COMMAND(addNegativeFilterDebug, "add a negative filter on DebugLog", "<fi
 	return true;
 }
 
-NLMISC_COMMAND(removeFilterDebug, "remove a filter on DebugLog", "<filterstr>")
+NLMISC_COMMAND(removeFilterDebug, "remove a filter on DebugLog", "[<filterstr>]")
 {
-	if(args.size() != 1) return false;
-	DebugLog->removeFilter( args[0].c_str() );
+	if(args.size() == 0)
+		DebugLog->removeFilter();
+	else if(args.size() == 1)
+		DebugLog->removeFilter( args[0].c_str() );
+	else return false;
+	return true;
+}
+
+NLMISC_COMMAND(displayFilterDebug, "display filter on DebugLog", "")
+{
+	if(args.size() != 0) return false;
+	DebugLog->displayFilter(log);
 	return true;
 }
 
@@ -291,10 +300,20 @@ NLMISC_COMMAND(addNegativeFilterInfo, "add a negative filter on InfoLog", "<filt
 	return true;
 }
 
-NLMISC_COMMAND(removeFilterInfo, "remove a filter on InfoLog", "<filterstr>")
+NLMISC_COMMAND(removeFilterInfo, "remove a filter on InfoLog", "[<filterstr>]")
 {
-	if(args.size() != 1) return false;
-	InfoLog->removeFilter( args[0].c_str() );
+	if(args.size() == 0)
+		InfoLog->removeFilter();
+	else if(args.size() == 1)
+		InfoLog->removeFilter( args[0].c_str() );
+	else return false;
+	return true;
+}
+
+NLMISC_COMMAND(displayFilterInfo, "display filter on InfoLog", "")
+{
+	if(args.size() != 0) return false;
+	InfoLog->displayFilter(log);
 	return true;
 }
 
@@ -312,10 +331,20 @@ NLMISC_COMMAND(addNegativeFilterWarning, "add a negative filter on WarningLog", 
 	return true;
 }
 
-NLMISC_COMMAND(removeFilterWarning, "remove a filter on WarningLog", "<filterstr>")
+NLMISC_COMMAND(removeFilterWarning, "remove a filter on WarningLog", "[<filterstr>]")
 {
-	if(args.size() != 1) return false;
-	WarningLog->removeFilter( args[0].c_str() );
+	if(args.size() == 0)
+		WarningLog->removeFilter();
+	else if(args.size() == 1)
+		WarningLog->removeFilter( args[0].c_str() );
+	else return false;
+	return true;
+}
+
+NLMISC_COMMAND(displayFilterWarning, "display filter on WarningLog", "")
+{
+	if(args.size() != 0) return false;
+	WarningLog->displayFilter(log);
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.28 2002/03/14 13:49:43 lecroart Exp $
+ * $Id: log.h,v 1.29 2002/03/28 17:44:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,7 +111,10 @@ public:
 	void resetFilters();
 
 	/// Removes a filter by name (in both filters).
-	void removeFilter( const char *filterstr );
+	void removeFilter( const char *filterstr = NULL);
+
+	/// Displays the list of filter into a log
+	void displayFilter( CLog &log );
 
 protected:
 

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.36 2002/03/14 13:49:27 lecroart Exp $
+ * $Id: log.cpp,v 1.37 2002/03/28 17:44:38 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -427,12 +427,34 @@ bool CLog::passFilter( const char *filter )
  */
 void CLog::removeFilter( const char *filterstr )
 {
-	_PositiveFilter.remove( filterstr );
-	_NegativeFilter.remove( filterstr );
-	displayNL ("CLog::removeFilter('%s')", filterstr);
+	if (filterstr == NULL)
+	{
+		displayNL ("CLog::removeFilter(NULL)");
+		_PositiveFilter.clear();
+		_NegativeFilter.clear();
+	}
+	else
+	{
+		displayNL ("CLog::removeFilter('%s')", filterstr);
+		_PositiveFilter.remove( filterstr );
+		_NegativeFilter.remove( filterstr );
+	}
 }
 
-
+void CLog::displayFilter( CLog &log )
+{
+	std::list<std::string>::iterator it;
+	log.displayNL ("Positive Filter(s):");
+	for (it = _PositiveFilter.begin (); it != _PositiveFilter.end (); it++)
+	{
+		log.displayNL ("'%s'", (*it).c_str());
+	}
+	log.displayNL ("Negative Filter(s):");
+	for (it = _NegativeFilter.begin (); it != _NegativeFilter.end (); it++)
+	{
+		log.displayNL ("'%s'", (*it).c_str());
+	}
+}
 
 void CLog::addPositiveFilter( const char *filterstr )
 {
@@ -442,14 +464,14 @@ void CLog::addPositiveFilter( const char *filterstr )
 
 void CLog::addNegativeFilter( const char *filterstr )
 {
-	displayNL ("CLog::addNegativeFilter('%s')", filterstr);
 	_NegativeFilter.push_back( filterstr );
+	displayNL ("CLog::addNegativeFilter('%s')", filterstr);
 }
 
 void CLog::resetFilters()
 {
-	_PositiveFilter.clear(); _NegativeFilter.clear();
 	displayNL ("CLog::resetFilter()");
+	_PositiveFilter.clear(); _NegativeFilter.clear();
 }
 
 

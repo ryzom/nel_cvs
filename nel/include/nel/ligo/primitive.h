@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.13 2002/12/13 14:55:09 coutelas Exp $
+ * $Id: primitive.h,v 1.14 2002/12/19 14:33:07 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,11 @@ namespace NLLIGO
 // LayerName is the Group to which the primitive belongs to
 // Hide say if the primitive is hidden or not
 
+class CPrimitives;
+
+// ***************************************************************************
+
+void Register ();
 
 // ***************************************************************************
 
@@ -130,7 +135,7 @@ public:
  * Provide access to common properties.
  * Provide access to the primitive hierachy
  */
-class IPrimitive
+class IPrimitive : public NLMISC::IClassable
 {
 public:
 
@@ -155,9 +160,6 @@ public:
 	virtual ~IPrimitive ();
 
 	IPrimitive (const IPrimitive &node);
-
-	// Make a copy of this primitive
-	IPrimitive*	copy () const;
 
 	virtual void operator= (const IPrimitive &node);
 
@@ -287,6 +289,9 @@ public:
 	virtual const CPrimVector	*getPrimVector () const = 0;
 	virtual CPrimVector			*getPrimVector () = 0;
 
+	// Make a copy
+	virtual IPrimitive *copy () const = 0;
+
 private:
 
 	// Parent
@@ -304,11 +309,14 @@ private:
 // Simple prmiitive node
 class CPrimNode : public IPrimitive
 {
+public:
+	// \name From IClassable
+	NLMISC_DECLARE_CLASS (CPrimNode)
+
 private:
 
 	// void operator= (const CPrimNode &node);
 	
-	// \name From IPrimitive
 
 	// Get the vertices
 	virtual uint				getNumVector () const;
@@ -318,8 +326,8 @@ private:
 	// Read the primitive
 	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version);
 
-	// Write the primitive
-	virtual void write (xmlNodePtr xmlNode, const char *filename) const;
+	// \name From IPrimitive
+	virtual IPrimitive *copy () const;
 };
 
 // ***************************************************************************
@@ -344,10 +352,11 @@ public:
 	void serial (NLMISC::IStream &f);
 
 	// void operator= (const CPrimPoint &node);
+	
+	// \name From IClassable
+	NLMISC_DECLARE_CLASS (CPrimPoint);
 
 private:
-	
-	// \name From IPrimitive
 
 	// Get the vertices
 	virtual uint				getNumVector () const;
@@ -359,6 +368,9 @@ private:
 
 	// Write the primitive
 	virtual void write (xmlNodePtr xmlNode, const char *filename) const;
+
+	// \name From IPrimitive
+	virtual IPrimitive *copy () const;
 };
 
 
@@ -377,9 +389,10 @@ public:
 
 	// void operator= (const CPrimPath &node);
 
-private:
+	// \name From IClassable
+	NLMISC_DECLARE_CLASS (CPrimPath);
 
-	// \name From IPrimitive
+private:
 
 	// Get the vertices
 	virtual uint				getNumVector () const;
@@ -391,6 +404,9 @@ private:
 
 	// Write the primitive
 	virtual void write (xmlNodePtr xmlNode, const char *filename) const;
+
+	// \name From IPrimitive
+	virtual IPrimitive *copy () const;
 };
 
 
@@ -424,9 +440,10 @@ public:
 	// Returns true if the vector v is inside of the patatoid and set the distance of the nearest segement and the position of the nearsest point.
 	static bool contains (const NLMISC::CVector &v, const std::vector<CPrimVector> &points, float &distance, NLMISC::CVector &nearPos, bool isPath);
 
-private:
+	// \name From IClassable
+	NLMISC_DECLARE_CLASS (CPrimZone);
 
-	// \name From IPrimitive
+private:
 
 	// Get the vertices
 	virtual uint				getNumVector () const;
@@ -438,6 +455,9 @@ private:
 
 	// Write the primitive
 	virtual void write (xmlNodePtr xmlNode, const char *filename) const;
+
+	// \name From IPrimitive
+	virtual IPrimitive *copy () const;
 };
 
 // ***************************************************************************
@@ -484,6 +504,9 @@ public:
 
 	// Write the primitive
 	void			write (xmlDocPtr xmlNode, const char *filename) const;
+
+	// Write the primitive
+	void			write (xmlNodePtr root, const char *filename) const;
 
 private:
 	// Conversion internal methods

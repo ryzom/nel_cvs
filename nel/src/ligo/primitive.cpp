@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.9 2002/12/10 14:47:10 corvazier Exp $
+ * $Id: primitive.cpp,v 1.10 2002/12/19 14:33:07 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -355,16 +355,6 @@ bool CPrimNode::read (xmlNodePtr xmlNode, const char *filename, uint version)
 
 // ***************************************************************************
 
-void CPrimNode::write (xmlNodePtr xmlNode, const char *filename) const
-{
-	// Set the type
-	xmlSetProp (xmlNode, (const xmlChar*)"TYPE", (const xmlChar*)"node");
-
-	IPrimitive::write (xmlNode, filename);
-}
-
-// ***************************************************************************
-
 uint CPrimNode::getNumVector () const
 {
 	return 0;
@@ -382,6 +372,13 @@ const CPrimVector *CPrimNode::getPrimVector () const
 CPrimVector	*CPrimNode::getPrimVector ()
 {
 	return NULL;
+}
+
+// ***************************************************************************
+
+NLLIGO::IPrimitive *CPrimNode::copy () const
+{
+	return new CPrimNode (*this);
 }
 
 // ***************************************************************************
@@ -441,6 +438,13 @@ CPrimVector	*CPrimPoint::getPrimVector ()
 
 // ***************************************************************************
 
+NLLIGO::IPrimitive *CPrimPoint::copy () const
+{
+	return new CPrimPoint (*this);
+}
+
+// ***************************************************************************
+
 bool CPrimPoint::read (xmlNodePtr xmlNode, const char *filename, uint version)
 {
 	// Read points
@@ -473,9 +477,6 @@ bool CPrimPoint::read (xmlNodePtr xmlNode, const char *filename, uint version)
 
 void CPrimPoint::write (xmlNodePtr xmlNode, const char *filename) const
 {
-	// Set the type
-	xmlSetProp (xmlNode, (const xmlChar*)"TYPE", (const xmlChar*)"point");
-
 	// Save the point
 	xmlNodePtr ptNode = xmlNewChild ( xmlNode, NULL, (const xmlChar*)"PT", NULL);
 	WriteVector (Point, ptNode);
@@ -504,6 +505,13 @@ uint CPrimPath::getNumVector () const
 const CPrimVector *CPrimPath::getPrimVector () const
 {
 	return &(VPoints[0]);
+}
+
+// ***************************************************************************
+
+NLLIGO::IPrimitive *CPrimPath::copy () const
+{
+	return new CPrimPath (*this);
 }
 
 // ***************************************************************************
@@ -540,9 +548,6 @@ bool CPrimPath::read (xmlNodePtr xmlNode, const char *filename, uint version)
 
 void CPrimPath::write (xmlNodePtr xmlNode, const char *filename) const
 {
-	// Set the type
-	xmlSetProp (xmlNode, (const xmlChar*)"TYPE", (const xmlChar*)"path");
-
 	// Save the points
 	for (uint i=0; i<VPoints.size (); i++)
 	{
@@ -567,6 +572,13 @@ uint CPrimZone::getNumVector () const
 const CPrimVector *CPrimZone::getPrimVector () const
 {
 	return &(VPoints[0]);
+}
+
+// ***************************************************************************
+
+NLLIGO::IPrimitive *CPrimZone::copy () const
+{
+	return new CPrimZone (*this);
 }
 
 // ***************************************************************************
@@ -603,9 +615,6 @@ bool CPrimZone::read (xmlNodePtr xmlNode, const char *filename, uint version)
 
 void CPrimZone::write (xmlNodePtr xmlNode, const char *filename) const
 {
-	// Set the type
-	xmlSetProp (xmlNode, (const xmlChar*)"TYPE", (const xmlChar*)"zone");
-
 	// Save the points
 	for (uint i=0; i<VPoints.size (); i++)
 	{
@@ -910,106 +919,6 @@ IPrimitive::IPrimitive (const IPrimitive &node)
 {
 	_Parent = NULL;
 	IPrimitive::operator= (node);
-}
-
-// ***************************************************************************
-
-IPrimitive*	IPrimitive::copy () const
-{
-	// What is this primitive ?
-
-	// The copy
-	IPrimitive *theCopy;
-
-	// Is it a prim node ?
-	const CPrimNode *primNode = dynamic_cast<const CPrimNode*>(this);
-	if (primNode)
-	{
-		theCopy = new CPrimNode;
-		*(CPrimNode*)theCopy = *(const CPrimNode*)this;
-	}
-	else
-	{
-		// Is it a point node ?
-		const CPrimPoint *pointNode = dynamic_cast<const CPrimPoint*>(this);
-		if (pointNode)
-		{
-			theCopy = new CPrimPoint;
-			*(CPrimPoint*)theCopy = *(const CPrimPoint*)this;
-		}
-		else
-		{
-			// Is it a path node ?
-			const CPrimPath *pathNode = dynamic_cast<const CPrimPath*>(this);
-			if (pathNode)
-			{
-				theCopy = new CPrimPath;
-				*(CPrimPath*)theCopy = *(const CPrimPath*)this;
-			}
-			else
-			{
-				// Is it a path node ?
-				const CPrimZone *zoneNode = dynamic_cast<const CPrimZone*>(this);
-				nlverify (zoneNode);
-				theCopy = new CPrimZone;
-				*(CPrimZone*)theCopy = *(const CPrimZone*)this;
-			}
-		}
-	}
-
-	// Copy the flags
-	theCopy->Expanded = Expanded;
-
-	// Copy children
-	theCopy->_Children.resize (_Children.size ());
-	for (uint child = 0; child < _Children.size (); child++)
-	{
-		// Copy the child
-		theCopy->_Children[child] = _Children[child]->copy ();
-
-		// Set the parent
-		theCopy->_Children[child]->_Parent = theCopy;
-	}
-
-	// Copy properties
-	std::map<std::string, IProperty*>::const_iterator ite = _Properties.begin ();
-	while (ite != _Properties.end ())
-	{
-		// Get the property
-		CPropertyString *propString = dynamic_cast<CPropertyString *>(ite->second);
-		if (propString)
-		{
-			// New property
-			CPropertyString *newProp = new CPropertyString ();
-			*newProp = *propString;
-			theCopy->_Properties.insert (std::map<std::string, IProperty*>::value_type (ite->first, newProp));
-		}
-		else
-		{
-			CPropertyStringArray *propStringArray = dynamic_cast<CPropertyStringArray *>(ite->second);
-			if (propStringArray)
-			{
-				// New property
-				CPropertyStringArray *newProp = new CPropertyStringArray ();
-				*newProp = *propStringArray;
-				theCopy->_Properties.insert (std::map<std::string, IProperty*>::value_type (ite->first, newProp));
-			}
-			else
-			{
-				CPropertyColor *propColor = dynamic_cast<CPropertyColor *>(ite->second);
-				nlverify (propColor);
-
-				// New property
-				CPropertyColor *newProp = new CPropertyColor ();
-				*newProp = *propColor;
-				theCopy->_Properties.insert (std::map<std::string, IProperty*>::value_type (ite->first, newProp));
-			}
-		}
-
-		ite++;
-	}
-
-	return theCopy;
 }
 
 // ***************************************************************************
@@ -1539,29 +1448,15 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version)
 			if (GetPropertyString (type, filename, childNode, "TYPE"))
 			{
 				// Primitive
-				IPrimitive *primitive = NULL;
-
-				// Check the type
-				if (type == "node")
-				{
-					// Create new primitive
-					primitive = new CPrimNode;
-				}
-				else if (type == "point")
-				{
-					// Create new primitive
-					primitive = new CPrimPoint;
-				}
-				else if (type == "path")
-				{
-					// Create new primitive
-					primitive = new CPrimPath;
-				}
-				else if (type == "zone")
-				{
-					// Create new primitive
-					primitive = new CPrimZone;
-				}
+				if (type=="node")
+					type="CPrimNode";
+				if (type=="point")
+					type="CPrimPoint";
+				if (type=="path")
+					type="CPrimPath";
+				if (type=="zone")
+					type="CPrimZone";
+				IPrimitive *primitive = static_cast<IPrimitive *> (CClassRegistry::create (type));
 
 				// Primitive type not found ?
 				if (primitive == NULL)
@@ -1595,6 +1490,9 @@ void IPrimitive::write (xmlNodePtr xmlNode, const char *filename) const
 	// Save the expanded flag
 	if (!Expanded)
 		xmlSetProp (xmlNode, (const xmlChar*)"EXPANDED", (const xmlChar*)"false");
+
+	// Set the type
+	xmlSetProp (xmlNode, (const xmlChar*)"TYPE", (const xmlChar*)(const_cast<IPrimitive*> (this)->getClassName ().c_str ()));
 
 	// Save the properties
 	std::map<std::string, IProperty*>::const_iterator ite =	_Properties.begin ();
@@ -1754,11 +1652,20 @@ void CPrimitives::write (xmlDocPtr doc, const char *filename) const
 	xmlNodePtr primNode = xmlNewDocNode (doc, NULL, (const xmlChar*)"PRIMITIVES", NULL);
 	xmlDocSetRootElement (doc, primNode);
 
+	write (primNode, filename);
+}
+
+// ***************************************************************************
+
+void CPrimitives::write (xmlNodePtr root, const char *filename) const
+{
+	nlassert (root);
+
 	// Version node
-	xmlSetProp (primNode, (const xmlChar*)"VERSION", (const xmlChar*)toString (NLLIGO_PRIMITVE_VERSION).c_str ());
+	xmlSetProp (root, (const xmlChar*)"VERSION", (const xmlChar*)toString (NLLIGO_PRIMITVE_VERSION).c_str ());
 
 	// The primitive root node
-	xmlNodePtr nameNode = xmlNewChild ( primNode, NULL, (const xmlChar*)"ROOT_PRIMITIVE", NULL);
+	xmlNodePtr nameNode = xmlNewChild ( root, NULL, (const xmlChar*)"ROOT_PRIMITIVE", NULL);
 
 	// Write the primitive tree
 	((IPrimitive*)&RootNode)->write (nameNode, filename);
@@ -1818,7 +1725,7 @@ void CPrimitives::convertAddPrimitive (IPrimitive *child, const IPrimitive *prim
 		nameProp->String = prim->Name;
 
 		// Add the property
-		primitive->addPropertyByName ("Name", nameProp);
+		primitive->addPropertyByName ("name", nameProp);
 
 		// The primitive is hidden ?
 		if (hidden)
@@ -1827,7 +1734,7 @@ void CPrimitives::convertAddPrimitive (IPrimitive *child, const IPrimitive *prim
 			nameProp = new CPropertyString;
 
 			// Add the property
-			primitive->addPropertyByName ("Hidden", nameProp);
+			primitive->addPropertyByName ("hidden", nameProp);
 		}
 
 		// Add the child
@@ -1847,7 +1754,7 @@ void CPrimitives::convertPrimitive (const IPrimitive *prim, bool hidden)
 		IPrimitive *child;
 		nlverify (RootNode.getChild (child, j));
 		const IProperty *prop;
-		if (child->getPropertyByName ("Name", prop))
+		if (child->getPropertyByName ("name", prop))
 		{
 			// Prop string
 			const CPropertyString *name = dynamic_cast<const CPropertyString *>(prop);
@@ -1874,7 +1781,7 @@ void CPrimitives::convertPrimitive (const IPrimitive *prim, bool hidden)
 		nameProp->String = prim->Layer;
 
 		// Add the property
-		primNode->addPropertyByName ("Name", nameProp);
+		primNode->addPropertyByName ("name", nameProp);
 
 		// Add the child
 		RootNode.insertChild (primNode);
@@ -1910,6 +1817,15 @@ void CPrimitives::convert (const CPrimRegion &region)
 
 // ***************************************************************************
 
+void Register ()
+{
+	NLMISC_REGISTER_CLASS(CPrimNode);
+	NLMISC_REGISTER_CLASS(CPrimPoint);
+	NLMISC_REGISTER_CLASS(CPrimPath);
+	NLMISC_REGISTER_CLASS(CPrimZone);
+}
+
+// ***************************************************************************
 
 } // namespace NLLIGO
 

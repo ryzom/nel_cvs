@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.138 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.139 2003/03/06 10:05:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -384,6 +384,8 @@ public:
 
 	virtual void			getWindowSize (uint32 &width, uint32 &height);
 
+	virtual void			getWindowPos (uint32 &x, uint32 &y);
+
 	virtual void			getBuffer (CBitmap &bitmap);
 
 	virtual void			getZBuffer (std::vector<float>  &zbuffer);
@@ -472,7 +474,7 @@ private:
 	friend static void GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	
 	HWND						_hWnd;
-	sint32						_WindowWidth, _WindowHeight;
+	sint32						_WindowWidth, _WindowHeight, _WindowX, _WindowY;
 	HDC							_hDC;
 	PIXELFORMATDESCRIPTOR		_pfd;
     HGLRC						_hRC;

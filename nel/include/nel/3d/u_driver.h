@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.26 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: u_driver.h,v 1.27 2003/03/06 10:05:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -401,6 +401,9 @@ public:
 	virtual uint			getWindowWidth () =0;
 	/// Get the height of the window
 	virtual uint			getWindowHeight () =0;
+
+	/// Get the x and y coord of the windows always (0,0) in fullscreen
+	virtual void			getWindowPos (uint32 &x, uint32 &y) = 0;
 
 	/** Return the amount of AGP memory allocated by initVertexArrayRange() to store vertices.
 	*/

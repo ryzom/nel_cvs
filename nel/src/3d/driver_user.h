@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.24 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: driver_user.h,v 1.25 2003/03/06 10:05:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -342,6 +342,7 @@ public:
 	virtual void			getWindowSize (uint32 &width, uint32 &height);
 	virtual uint			getWindowWidth ();
 	virtual uint			getWindowHeight ();
+	virtual void			getWindowPos (uint32 &x, uint32 &y);
 	virtual uint32			getAvailableVertexAGPMemory ();
 	virtual uint32			getAvailableVertexVRAMMemory ();
 	virtual void			getBuffer (CBitmap &bitmap) ;

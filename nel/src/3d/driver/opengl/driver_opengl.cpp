@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.173 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.174 2003/03/06 10:05:13 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -106,9 +106,9 @@ static void GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam,
 {
 	if(message == WM_SIZE)
 	{
-		RECT rect;
 		if (driver != NULL)
 		{
+			RECT rect;
 			GetClientRect (driver->_hWnd, &rect);
 
 			// Setup gl viewport
@@ -116,7 +116,17 @@ static void GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam,
 			driver->_WindowHeight = rect.bottom-rect.top;
 		}
 	}
-
+	else if(message == WM_MOVE)
+	{
+		if (driver != NULL)
+		{
+			RECT rect;
+			GetWindowRect (hWnd, &rect);
+			driver->_WindowX = rect.left;
+			driver->_WindowY = rect.top;
+		}
+	}
+	
 	if (driver->_EventEmitter.getNumEmitters() > 0)
 	{
 		CWinEventEmitter *we = NLMISC::safe_cast<CWinEventEmitter *>(driver->_EventEmitter.getEmitter(0));
@@ -372,7 +382,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	// Init pointers
 	_PBuffer = NULL;
 	_hWnd = NULL;
-	_WindowWidth = _WindowHeight = 0;
+	_WindowWidth = _WindowHeight = _WindowX = _WindowY = 0;
 	_hRC = NULL;
 	_hDC = NULL;
 
@@ -411,7 +421,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		_WindowHeight = height;
 		AdjustWindowRectEx (&rc, GetWindowStyle (_hWnd), GetMenu (_hWnd) != NULL, GetWindowExStyle (_hWnd));
 		SetWindowPos (_hWnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
-
+		
 		// Get the 
 		HDC tempHDC = GetDC(tmpHWND);
 
@@ -593,7 +603,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		}
 		_WindowWidth = width;
 		_WindowHeight = height;
-
+		
 		/* The next step is to create a device context for the newly created pbuffer. To do this,
 			call the the function: */
 		_hDC = wglGetPbufferDCARB( _PBuffer );
@@ -736,6 +746,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		GetClientRect (_hWnd, &clientRect);
 		_WindowWidth = clientRect.right-clientRect.left;
 		_WindowHeight = clientRect.bottom-clientRect.top;
+		_WindowX = clientRect.left;
+		_WindowY = clientRect.top;
 
 		_hDC=GetDC(_hWnd);
 		wglMakeCurrent(_hDC,NULL);
@@ -1768,6 +1780,32 @@ void CDriverGL::getWindowSize(uint32 &width, uint32 &height)
 	height = (uint32) xwa.height;
 #endif // NL_OS_UNIX
 }
+
+void CDriverGL::getWindowPos(uint32 &x, uint32 &y)
+{
+#ifdef NL_OS_WINDOWS
+	// Off-srceen rendering ?
+	if (_OffScreen)
+	{
+		if (_PBuffer)
+		{
+			x = y = 0;
+		}
+	}
+	else
+	{
+		if (_hWnd)
+		{
+			x = (uint32)(_WindowX);
+			y = (uint32)(_WindowY);
+		}
+	}
+#elif defined (NL_OS_UNIX)
+	x = y = 0;
+#endif // NL_OS_UNIX
+}
+
+
 
 // --------------------------------------------------
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.47 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: driver.h,v 1.48 2003/03/06 10:05:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -611,7 +611,9 @@ public:
 	/// Get the width and the height of the window
 	virtual void			getWindowSize (uint32 &width, uint32 &height) = 0;
 	
-
+	/// Get the position of the window always (0,0) in fullscreen
+	virtual void			getWindowPos (uint32 &x, uint32 &y) = 0;
+	
 	/** get the RGBA back buffer
 	  *
 	  * \param bitmap the buffer will be written in this bitmap

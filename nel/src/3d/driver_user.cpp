@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.30 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.31 2003/03/06 10:05:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1143,6 +1143,13 @@ uint			CDriverUser::getWindowHeight ()
 	uint32 width, height;
 	_Driver->getWindowSize (width, height);
 	return height;
+}
+void			CDriverUser::getWindowPos (uint32 &x, uint32 &y)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER;
+	
+	_Driver->getWindowPos (x, y);
 }
 uint32			CDriverUser::getAvailableVertexAGPMemory ()
 {

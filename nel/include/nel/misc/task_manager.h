@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * CTaskManager class
  *
- * $Id: task_manager.h,v 1.2 2001/01/02 09:47:37 saffray Exp $
+ * $Id: task_manager.h,v 1.3 2001/01/03 11:01:43 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,9 @@ public:
 
 	/// Sleep a Task
 	void sleepTask(void) { _Thread->sleep(); }
+
+	/// Task list size
+	uint taskListSize(void); 
 
 private:
 	//queue of tasks, using list container instead of queue for DeleteTask methode

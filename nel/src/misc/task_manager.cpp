@@ -1,7 +1,7 @@
 /** \file task_manager.cpp
  * <File description>
  *
- * $Id: task_manager.cpp,v 1.2 2001/01/02 09:47:23 saffray Exp $
+ * $Id: task_manager.cpp,v 1.3 2001/01/03 11:01:26 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,28 +82,30 @@ void CTaskManager::run(void)
 // Add a task to TaskManager
 void CTaskManager::addTask(IRunnable *r)
 {
-	{
-		CSynchronized<std::list<IRunnable *> >::CAccessor acces(&_TaskQueue);
-		acces.value().push_back(r);
-	}
+	CSynchronized<std::list<IRunnable *> >::CAccessor acces(&_TaskQueue);
+	acces.value().push_back(r);
 }
 
 /// Delete a task, only if task is not running, return true if found and deleted
 bool CTaskManager::deleteTask(IRunnable *r)
 {
+	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
+	for(list<IRunnable *>::iterator it = acces.value().begin(); it != acces.value().end(); it++)
 	{
-		CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
-		for(list<IRunnable *>::iterator it = acces.value().begin(); it != acces.value().end(); it++)
+		if(*it == r)
 		{
-			if(*it == r)
-			{
-				acces.value().erase(it);
-				return true;
-			}
+			acces.value().erase(it);
+			return true;
 		}
 	}
 	return false;
 }
 
+/// Task list size
+uint CTaskManager::taskListSize(void)
+{
+	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
+	return acces.value().size();
+}
 
 } // NLMISC

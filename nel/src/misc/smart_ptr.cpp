@@ -1,7 +1,7 @@
 /** \file smart_ptr.cpp
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.cpp,v 1.4 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: smart_ptr.cpp,v 1.5 2004/10/15 13:23:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,16 @@
 namespace NLMISC
 {
 
-CRefCount::CPtrInfo		CRefCount::NullPtrInfo('a');
+// Use a Raw structure, to be sure it is initialized before any constructor calls...
+//CPtrInfo() {Ptr=NULL; RefCount=0x7FFFFFFF; IsNullPtrInfo=true;}
+CRefCount::CPtrInfoBase		CRefCount::NullPtrInfo= {NULL, 0x7FFFFFFF, true};
+
+
+// must not be static
+void	dummy_to_avoid_stupid_4768_smart_ptr_cpp()
+{
+}
+
 
 }
 

@@ -1,7 +1,7 @@
 /** \file smart_ptr_inline.h
  * SmartPtr class inline definitions.
  *
- * $Id: smart_ptr_inline.h,v 1.7 2004/09/07 19:12:27 boucher Exp $
+ * $Id: smart_ptr_inline.h,v 1.8 2004/10/15 13:26:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,7 +141,7 @@ SMART_INLINE void	CRefPtr<T>::unRef() const
 			if(pinfo->Ptr)
 			{
 				// Inform the Object that no more CRefPtr points on it.
-				((T*)(pinfo->Ptr))->pinfo= &CRefCount::NullPtrInfo;
+				((T*)(pinfo->Ptr))->pinfo= static_cast<CRefCount::CPtrInfo*>(&CRefCount::NullPtrInfo);
 			}
 			// Then delete the pinfo.
 			delete pinfo;
@@ -155,7 +155,7 @@ SMART_INLINE void	CRefPtr<T>::unRef() const
 // Cons - dest.
 template <class T> inline CRefPtr<T>::CRefPtr() 
 { 
-	pinfo= &CRefCount::NullPtrInfo;
+	pinfo= static_cast<CRefCount::CPtrInfo*>(&CRefCount::NullPtrInfo);
 	Ptr= NULL;
 
 	REF_TRACE("Smart()");
@@ -173,7 +173,7 @@ template <class T> inline CRefPtr<T>::CRefPtr(T *v)
 		pinfo->RefCount++;
 	}
 	else
-		pinfo= &CRefCount::NullPtrInfo;
+		pinfo= static_cast<CRefCount::CPtrInfo*>(&CRefCount::NullPtrInfo);
 
 	REF_TRACE("Smart(T*)");
 }
@@ -190,7 +190,7 @@ template <class T> inline CRefPtr<T>::~CRefPtr(void)
 	REF_TRACE("~Smart()");
 
 	unRef();
-	pinfo= &CRefCount::NullPtrInfo;
+	pinfo= static_cast<CRefCount::CPtrInfo*>(&CRefCount::NullPtrInfo);
 	Ptr= NULL;
 }
 
@@ -215,7 +215,7 @@ template <class T> CRefPtr<T> &CRefPtr<T>::operator=(T *v)
 	else
 	{
 		unRef();
-		pinfo= &CRefCount::NullPtrInfo;
+		pinfo= static_cast<CRefCount::CPtrInfo*>(&CRefCount::NullPtrInfo);
 	}
 
 
@@ -249,7 +249,7 @@ template <class T> void	CRefPtr<T>::kill()
 
 	// First, release the refptr.
 	unRef();
-	pinfo= &CRefCount::NullPtrInfo;
+	pinfo= static_cast<CRefCount::CPtrInfo*>(&CRefCount::NullPtrInfo);
 	Ptr= NULL;
 
 	// Then delete the pointer.

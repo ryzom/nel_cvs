@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.27 2004/10/14 10:37:52 berenguier Exp $
+ * $Id: smart_ptr.h,v 1.28 2004/10/15 13:26:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,24 +49,26 @@ namespace NLMISC
 class CRefCount 
 {
 public:
-	// The instance handle.
-	// Can't put those to private since must be used by CRefPtr (and friend doesn't work with template).
-	struct	CPtrInfo
+	/*  The instance handle.
+		Can't put those to private since must be used by CRefPtr (and friend doesn't work with template).
+		Use struct CPtrInfoBase / CPtrInfo idiom for NullPtrInfo, because of problems of static constructor:
+		NullPtrInfo must be init BEFORE ANY constructor calls.
+	*/
+	struct	CPtrInfoBase
 	{
-		const	void	*Ptr;			// to know if the instance is valid.
+		const	void	*Ptr;	// to know if the instance is valid.
 		sint	RefCount;		// RefCount of ptrinfo (!= instance)
-		// For fu... dll problems, must use a flag to mark NullPtrInfo.
-		bool	IsNullPtrInfo;
-
+		bool	IsNullPtrInfo;	// For dll problems, must use a flag to mark NullPtrInfo.
+	};
+	struct	CPtrInfo : public CPtrInfoBase
+	{
 		CPtrInfo(const	void *p) {Ptr=p; RefCount=0; IsNullPtrInfo=false;}
-		// Just for internal use, to mark our Null pointer.
-		CPtrInfo(char ) {Ptr=NULL; RefCount=0x7FFFFFFF; IsNullPtrInfo=true;}
 	};
 
 	// OWN null for ref ptr. (Optimisations!!!)
-	static	CPtrInfo	NullPtrInfo;
-	friend struct		CPtrInfo;
-	
+	static	CPtrInfoBase	NullPtrInfo;
+	friend struct			CPtrInfo;
+
 	// for special case use only.
 	inline	const	sint	&getRefCount()	const
 	{
@@ -83,11 +85,11 @@ public:
 	/// Destructor which release pinfo if necessary.
 	~CRefCount();
 	/// Default constructor init crefs to 0.
-    CRefCount() { crefs = 0; pinfo=&NullPtrInfo; }
+    CRefCount() { crefs = 0; pinfo=static_cast<CPtrInfo*>(&NullPtrInfo); }
 	/// operator= must NOT copy crefs/pinfo!!
 	CRefCount &operator=(const CRefCount &) {return *this;}
 	/// copy cons must NOT copy crefs/pinfo!!
-	CRefCount(const CRefCount &) {crefs = 0; pinfo=&NullPtrInfo;}
+	CRefCount(const CRefCount &) {crefs = 0; pinfo=static_cast<CPtrInfo*>(&NullPtrInfo);}
 };
 
 

@@ -188,7 +188,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1, 0, 0, 82
+ FILEVERSION 1, 0, 0, 89
  PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -206,7 +206,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "TECH: \0"
             VALUE "CompanyName", "\0"
-            VALUE "FileVersion", "1, 0, 0, 82\0"
+            VALUE "FileVersion", "1, 0, 0, 89\0"
             VALUE "InternalName", "CNelExport\0"
             VALUE "LegalCopyright", "\0"
             VALUE "LegalTrademarks", "\0"

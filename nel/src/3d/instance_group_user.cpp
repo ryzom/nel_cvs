@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.29 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: instance_group_user.cpp,v 1.30 2003/03/17 09:48:30 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,7 +175,8 @@ void CInstanceGroupUser::getInstanceMatrix(uint instanceNb,NLMISC::CMatrix &dest
 void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver)
 {
 	NL3D_MEM_IG
-	_InstanceGroup.addToScene (scene, driver);
+	if (!_InstanceGroup.addToScene (scene, driver))
+		return;
 	// Fill in the map accelerating search of instance by names
 	for( uint32 i = 0; i < _InstanceGroup._Instances.size(); ++i)
 	{

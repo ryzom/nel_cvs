@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.44 2003/03/13 08:58:58 besson Exp $
+ * $Id: scene_group.cpp,v 1.45 2003/03/17 09:48:30 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -477,8 +477,19 @@ void CInstanceGroup::setIGAddBeginCallback(IIGAddBegin *callback)
 // ***************************************************************************
 bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 {
-	uint32 i;
+	uint32 i, j;
 
+	// Test if portals are linked to their 2 clusters 
+	for (i = 0; i < _Portals.size(); ++i)
+	for (j = 0; j < 2; ++j)
+	{
+		if (_Portals[i]._Clusters[j] == NULL)
+		{
+			nlwarning("Portal %d (name:%s) is not linked to 2 clusters. Instance Group Not Added To Scene.", i, _Portals[i].getName().c_str());
+			return false;
+		}
+	}
+	
 	_Instances.resize (_InstancesInfos.size(), NULL);
 
 	if (_IGAddBeginCallback)
@@ -549,6 +560,7 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driver)
 {
 	uint32 i, j;
+
 	vector<CInstance>::iterator it = _InstancesInfos.begin();
 	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
 	{
@@ -664,8 +676,6 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 	{
 		sint32 nClusterNb;
 		nClusterNb = (_Portals[i]._Clusters[j] - &_ClusterInfos[0]);
-		// if not assert it means that a portal is not linked to 2 clusters
-		nlassert ((nClusterNb >= 0) && (nClusterNb < _ClusterInfos.size()));
 		_Portals[i]._Clusters[j] = _ClusterInstances[nClusterNb];
 	}
 

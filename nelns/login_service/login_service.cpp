@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.19 2002/06/12 10:21:45 lecroart Exp $
+ * $Id: login_service.cpp,v 1.20 2002/08/28 09:28:04 coutelas Exp $
  *
  */
 
@@ -55,6 +55,7 @@
 #include "nel/misc/command.h"
 #include "nel/misc/log.h"
 #include "nel/misc/window_displayer.h"
+#include "nel/misc/path.h"
 
 #include "nel/net/service.h"
 #include "nel/net/login_cookie.h"
@@ -98,7 +99,9 @@ vector<CShard>	Shards;
 
 IService *ServiceInstance = NULL;
 
-const char		*PlayerDatabaseName = NELNS_STATE "login_service.udb";
+#define UDB_FILENAME "login_service.udb";
+
+const char		*PlayerDatabaseName = NELNS_STATE UDB_FILENAME;
 
 //
 // Functions
@@ -453,6 +456,13 @@ public:
 		ServiceInstance = this;
 
 		beep ();
+
+		// get the file dir if any in the command line
+		if (haveArg('S'))
+		{
+			string dbName = CPath::standardizePath(getArg('S')) + UDB_FILENAME;
+			PlayerDatabaseName = dbName.c_str();
+		}
 
 		readPlayerDatabase ();
 

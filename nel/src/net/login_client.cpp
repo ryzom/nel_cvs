@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.cpp,v 1.12 2001/12/28 15:36:14 lecroart Exp $
+ * $Id: login_client.cpp,v 1.13 2002/01/14 17:51:26 lecroart Exp $
  *
  */
 
@@ -126,7 +126,7 @@ string CLoginClient::authenticate (const string &loginServiceAddr, const string 
 	}
 	catch (ESocket &e)
 	{
-		nlwarning ("Connection refused to LS (%s)", e.what ());
+		nlwarning ("Connection refused to LS (addr:%s): %s", loginServiceAddr.c_str(), e.what ());
 		return "Connection refused to LS";
 	}
 

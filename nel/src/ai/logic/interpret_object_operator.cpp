@@ -914,7 +914,7 @@ namespace NLAISCRIPT
 		}
 		return -1;
 	}
-
+/*
 	void COperatorClass::RegisterMessage(NLAIAGENT::IMessageBase::TPerformatif perf, const std::string &msg_class, const std::string &msg_varname)
 	{
 		try
@@ -980,10 +980,11 @@ namespace NLAISCRIPT
 				msg->getDebugString(buf);
 #endif
 				if ( msg->getType() == _TrigMsgClass[n] )
-					return _TrigMsgPos[n];
+					return _TrigMsgPos[n];s
 			}
 		}
 		return -1;
 	}
+	*/
 
 }

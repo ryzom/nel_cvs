@@ -1,7 +1,7 @@
 /** \file lod_character_shape.cpp
  * <File description>
  *
- * $Id: lod_character_shape.cpp,v 1.5 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: lod_character_shape.cpp,v 1.6 2002/11/14 17:27:32 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -417,7 +417,9 @@ bool			CLodCharacterShape::addAnim(const CAnimBuild &animBuild)
 	CAnim	dstAnim;
 	dstAnim.Name= animBuild.Name;
 	dstAnim.AnimLength= animBuild.AnimLength;
-	nlassert(dstAnim.AnimLength>0);
+	// Possible to have an Anim with just one key. setup an epsilon for animLength if 0.
+	if(dstAnim.AnimLength<=0)
+		dstAnim.AnimLength= 0.001f;
 	dstAnim.OOAnimLength= 1.0f / animBuild.AnimLength;
 	dstAnim.NumKeys= animBuild.NumKeys;
 	// verify size of the array
@@ -589,7 +591,7 @@ const CLodCharacterShape::CVector3s	*CLodCharacterShape::getAnimKey(uint animId,
 	clamp(localTime, 0, anim.AnimLength);
 
 	// get the key.
-	sint	keyId= (sint)floor( (localTime/anim.AnimLength) * anim.NumKeys );
+	sint	keyId= (sint)floor( (localTime*anim.OOAnimLength) * anim.NumKeys );
 	clamp(keyId, 0, sint(anim.NumKeys-1));
 
 	// return the key.

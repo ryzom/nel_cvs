@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.33 2001/07/20 17:08:11 lecroart Exp $
+ * $Id: entities.cpp,v 1.34 2001/07/20 17:31:07 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,9 +101,6 @@ float					SnowballSpeed = 10.0f;	// 36 km/h
 float					EntityNameSize;
 CRGBA					EntityNameColor;
 
-//
-// Functions
-//
 
 // Set the state of the entity (Appear, Normal, Disappear)
 void CEntity::setState (TState state)
@@ -281,6 +278,12 @@ void removeEntity (uint32 eid)
 	entity.setState (CEntity::Disappear);
 }
 
+
+
+
+
+
+
 // What to do when the entity appears
 void stateAppear (CEntity &entity)
 {
@@ -307,6 +310,8 @@ void stateAppear (CEntity &entity)
 	if (entity.MovePrimitive != NULL)
 		entity.MovePrimitive->move(CVector(0,0,0), 0);
 }
+
+
 
 // What to do when the entity disappears
 void stateDisappear (CEntity &entity)
@@ -376,6 +381,11 @@ void stateDisappear (CEntity &entity)
 	}
 }
 
+
+
+
+
+
 void stateNormal (CEntity &entity)
 {
 	double	dt = (double)(NewTime-LastTime) / 1000.0;
@@ -388,67 +398,124 @@ void stateNormal (CEntity &entity)
 	pDelta.z = 0.0f;
 
 	// find a new random server position
-	if (entity.Type == CEntity::Other && entity.AutoMove && pDelta.norm() < 0.1f)
+	if (entity.Type == CEntity::Other && entity.AutoMove)
 	{
-		float EntityMaxSpeed = 10.0f;
-		entity.AuxiliaryAngle += frand(1.5f)-0.75f;
-		entity.ServerPosition += CVector((float)cos(entity.AuxiliaryAngle),
-										 (float)sin(entity.AuxiliaryAngle),
-										 0.0f)*EntityMaxSpeed;
-
-		playAnimation (entity, WalkAnim);
+		switch (entity.BotState)
+		{
+		case 0:
+			// choose something to do
+			if (frand(1.0f) > 0.5f)
+				entity.BotState = 5;
+			else
+				entity.BotState = 2;
+			break;
+		case 1:
+			// walk
+			if (pDelta.norm() < 0.1f || NewTime - entity.BotStateStart > 3000)
+			{
+				// reached the point
+				entity.BotState = 0;
+			}
+			else
+			{
+				entity.IsWalking = true;
+				entity.IsAiming = false;
+			}
+			break;
+		case 2:
+			// aim
+			entity.IsWalking = false;
+			entity.IsAiming = true;
+			entity.BotStateStart = NewTime;
+			entity.BotState = 3;
+			break;
+		case 3:
+			// wait to shoot
+			entity.IsWalking = false;
+			entity.IsAiming = true;
+			if (NewTime - entity.BotStateStart > 1000)
+			{
+				entity.BotState = 4;
+				entity.BotStateStart = NewTime;
+				CVector	AimingPosition = entity.Position+CVector(0.0f, 0.0f, 2.0f);
+				CVector	direction = CVector((float)(cos(entity.Angle)), (float)(sin(entity.Angle)), 0.3f).normed();
+				CVector	AimedTarget = getTarget(AimingPosition,
+												direction,
+												100);
+				shotSnowball(entity.Id, AimingPosition, AimedTarget, direction*SnowballSpeed);
+			}
+			break;
+		case 4:
+			// shoot
+			entity.IsWalking = false;
+			entity.IsAiming = false;
+			if (NewTime - entity.BotStateStart > 1000)
+			{
+				entity.BotState = 5;
+				entity.BotStateStart = NewTime;
+			}
+			break;
+		case 5:
+			// choose a direction
+			float EntityMaxSpeed = 10.0f;
+			entity.AuxiliaryAngle += frand(1.5f)-0.75f;
+			entity.ServerPosition += CVector((float)cos(entity.AuxiliaryAngle),
+											 (float)sin(entity.AuxiliaryAngle),
+											 0.0f)*EntityMaxSpeed;
+			entity.BotState = 1;
+			entity.BotStateStart = NewTime;
+			break;
+		}
 	}
-	else if (entity.Type == CEntity::Snowball && entity.AutoMove && pDelta.norm() < 0.1f)
+
+
+	if (entity.Type == CEntity::Snowball && entity.AutoMove && pDelta.norm() < 0.1f)
 	{
 		removeEntity(entity.Id);
 	}
 
 
 
+	// control the character animation
+	if (entity.Type != CEntity::Snowball)
+	{
+		if (entity.IsAiming && !entity.WasAiming)
+		{
+			// start aiming
+			playAnimation (entity, PrepareSnowBall, true);
+			playAnimation (entity, PrepareSnowBallCycle, false);
+		}
+		else if (entity.WasAiming && !entity.IsAiming)
+		{
+			// end aiming
+			playAnimation (entity, ThrowSnowball, true);
+
+			// todo get isWalking in the entity
+			if (entity.IsWalking)
+				playAnimation (entity, WalkAnim);
+			else
+				playAnimation (entity, IdleAnim);
+		}
+		else if (!entity.WasWalking && entity.IsWalking)
+		{
+			playAnimation (entity, WalkAnim, true);
+		}
+		else if (entity.WasWalking && !entity.IsWalking)
+		{
+			playAnimation (entity, IdleAnim, true);
+		}
+
+		entity.WasAiming = entity.IsAiming;
+		entity.WasWalking = entity.IsWalking;
+	}
+
+
 	if (entity.Type == CEntity::Self)
 	{
-		// the self entity
 		// get new position
 		newPos = MouseListener->getPosition();
 		// get new orientation
 		entity.Angle = MouseListener->getOrientation();
-
-		static bool wasAiming = false;
-		static bool wasWalking = false;
-		bool	isAiming = MouseListener->isAiming();
-		bool	isWalking = MouseListener->isWalking();
-
-
-		if (isAiming && !wasAiming)
-		{
-			// start aiming
-			playAnimation (*Self, PrepareSnowBall, true);
-			playAnimation (*Self, PrepareSnowBallCycle, false);
-		}
-		else if (wasAiming && !isAiming)
-		{
-			// end aiming
-			playAnimation (*Self, ThrowSnowball, true);
-
-			// todo get isWalking in the entity
-			if (Driver->AsyncListener.isKeyDown (KeyUP) || Driver->AsyncListener.isKeyDown (KeyDOWN) ||
-				Driver->AsyncListener.isKeyDown (KeyLEFT) || Driver->AsyncListener.isKeyDown (KeyRIGHT))
-				playAnimation (*Self, WalkAnim);
-			else
-				playAnimation (*Self, IdleAnim);
-		
-		}
-		else if (!wasWalking && isWalking)
-		{
-			playAnimation (*Self, WalkAnim, true);
-		}
-		else if (wasWalking && !isWalking)
-		{
-			playAnimation (*Self, IdleAnim, true);
-		}
-
-		wasAiming = isAiming;
-		wasWalking = isWalking;
 
 		// Interpolate the character orientation towards the server angle
 		// for smoother movements
@@ -497,10 +564,12 @@ void stateNormal (CEntity &entity)
 
 		entity.Angle = entity.InterpolatedAuxiliaryAngle;
 
-		pDelta.normalize();
-		pDelta *= -entity.Speed;
-		entity.MovePrimitive->move(pDelta, 0);
-
+		if (entity.IsWalking)
+		{
+			pDelta.normalize();
+			pDelta *= -entity.Speed;
+			entity.MovePrimitive->move(pDelta, 0);
+		}
 	}
 	else if (entity.Type == CEntity::Snowball && pDeltaOri.norm()>0.1f)
 	{
@@ -518,6 +587,10 @@ void stateNormal (CEntity &entity)
 		newPos = oldPos;
 	}
 }
+
+
+
+
 
 void updateEntities ()
 {
@@ -646,8 +719,8 @@ void renderEntitiesNames ()
 		if (entity.Instance != NULL && entity.Type == CEntity::Other)
 		{
 			CMatrix		mat = Camera->getMatrix();
-			mat.setPos(entity.Position + CVector(0.0f, 0.0f, 2.0f));
-			mat.scale(4.0f);
+			mat.setPos(entity.Position + CVector(0.0f, 0.0f, 4.0f));
+			mat.scale(10.0f);
 			TextContext->render3D(mat, entity.Name);
 		}
 	}
@@ -719,14 +792,6 @@ void	shotSnowball(uint32 eid, const CVector &start, const CVector &target, const
 	snowball.AutoMove = 1;
 
 	snowball.Trajectory.init(start, speed, CTime::getLocalTime());
-
-	if (launcher.Type == CEntity::Self)
-	{
-		/// \todo Ben inform the server the player is shooting a snowball
-		snowball.ServerPosition = getTarget(snowball.Trajectory, 
-											(TTime)(100.0f/(SnowballSpeed*100)*1000.0f),
-											100);
-	}
 }
 
 

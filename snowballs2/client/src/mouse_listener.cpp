@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.cpp,v 1.11 2001/07/20 14:58:49 legros Exp $
+ * $Id: mouse_listener.cpp,v 1.12 2001/07/20 17:31:08 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -300,6 +300,9 @@ void C3dMouseListener::update()
 
 		if (isAiming())
 			Self->AuxiliaryAngle = 0.0f;
+
+		Self->IsAiming = isAiming();
+		Self->IsWalking = isWalking();
 	}
 
 
@@ -414,6 +417,9 @@ void	cbUpdateMouseListenerConfig(CConfigFile::CVar &var)
 {
 	if (var.Name == "MouseInvert") MouseListener->setInvertMouseMode(var.asInt() != 0);
 	else if (var.Name == "MouseZoomStep") MouseZoomStep = var.asFloat ();
+	else if (var.Name == "ViewLagBehind") MouseListener->setViewLagBehind(var.asFloat ());
+	else if (var.Name == "ViewHeight") MouseListener->setViewHeight(var.asFloat ());
+	else if (var.Name == "ViewTargetHeight") MouseListener->setViewTargetHeight(var.asFloat ());
 	else nlwarning ("Unknown variable update %s", var.Name.c_str());
 }
 
@@ -421,7 +427,13 @@ void	initMouseListenerConfig()
 {
 	ConfigFile.setCallback ("MouseInvert", cbUpdateMouseListenerConfig);
 	ConfigFile.setCallback ("MouseZoomStep", cbUpdateMouseListenerConfig);
+	ConfigFile.setCallback ("ViewLagBehind", cbUpdateMouseListenerConfig);
+	ConfigFile.setCallback ("ViewHeight", cbUpdateMouseListenerConfig);
+	ConfigFile.setCallback ("ViewTargetHeight", cbUpdateMouseListenerConfig);
 
 	cbUpdateMouseListenerConfig(ConfigFile.getVar ("MouseInvert"));
 	cbUpdateMouseListenerConfig(ConfigFile.getVar ("MouseZoomStep"));
+	cbUpdateMouseListenerConfig(ConfigFile.getVar ("ViewLagBehind"));
+	cbUpdateMouseListenerConfig(ConfigFile.getVar ("ViewHeight"));
+	cbUpdateMouseListenerConfig(ConfigFile.getVar ("ViewTargetHeight"));
 }

@@ -1,7 +1,7 @@
 /** \file entities.h
  * Snowballs 2 specific code for managing the entities
  *
- * $Id: entities.h,v 1.21 2001/07/20 17:08:11 lecroart Exp $
+ * $Id: entities.h,v 1.22 2001/07/20 17:31:08 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,9 +76,11 @@ public:
 	
 	// Create a default entity
 	CEntity () :
-	  Id(0xffffffff), Name("<Unknown>"), AutoMove(false), Instance(NULL), Skeleton(NULL),
-		  Particule(NULL), PlayList(NULL), NextEmptySlot(0), Source (NULL),
-	  Angle(0.0f), AuxiliaryAngle(0.0f), InterpolatedAuxiliaryAngle(0.0f) { }
+		Id(0xffffffff), Name("<Unknown>"), AutoMove(false), Instance(NULL), Skeleton(NULL),
+		Particule(NULL), PlayList(NULL), CurrentAnim(NoAnim), NextEmptySlot(0), Source (NULL),
+		Angle(0.0f), AuxiliaryAngle(0.0f), InterpolatedAuxiliaryAngle(0.0f),
+		IsWalking(false), WasWalking(false), IsAiming(false), WasAiming(false), BotState(0)
+		{ }
 
 
 	// The id of the entity
@@ -134,15 +136,24 @@ public:
 	// The sound source associated to the entity
 	NLSOUND::USource				*Source;
 
-	// Animation variables
+	void	setState (TState state);
+
+	bool							IsWalking;
+	bool							WasWalking;
+	bool							IsAiming;
+	bool							WasAiming;
 
 	// Playlist linked to this entity
+	EAnim							CurrentAnim;
+	uint							NextEmptySlot;
 	NL3D::UPlayList					*PlayList;
-	uint							 NextEmptySlot;
-	std::queue<EAnim>				 AnimQueue;
-	NL3D::CAnimationTime			 StartAnimationTime;
+	std::queue<EAnim>				AnimQueue;
+	NL3D::CAnimationTime			StartAnimationTime;
 
-	void setState (TState state);
+
+	/// \todo remove, just for bot automaton testing
+	uint							BotState;
+	NLMISC::TTime					BotStateStart;
 };
 
 //

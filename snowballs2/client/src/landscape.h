@@ -1,7 +1,7 @@
 /** \file landscape.h
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.h,v 1.8 2001/07/20 14:29:56 legros Exp $
+ * $Id: landscape.h,v 1.9 2001/07/20 17:31:08 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,6 @@ void			releaseAiming();
 // at maximum numSteps steps from the start. It uses full (!) physics computation, and should be
 // identical on the server
 NLMISC::CVector	getTarget(const NLMISC::CVector &start, const NLMISC::CVector &step, uint numSteps);
-NLMISC::CVector	getTarget(CTrajectory &trajectory, NLMISC::TTime dtSteps, uint numSteps);
 
 #endif // LANDSCAPE_H
 

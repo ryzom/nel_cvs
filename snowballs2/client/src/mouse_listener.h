@@ -1,7 +1,7 @@
 /** \file mouse_listener.h
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.h,v 1.7 2001/07/20 14:58:49 legros Exp $
+ * $Id: mouse_listener.h,v 1.8 2001/07/20 17:31:08 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -239,8 +239,22 @@ public:
 	/// Updates the camera
 	void updateCamera();
 
+	//
 	bool getInvertMouseMode() const { return _InvertedMouse; }
 	void setInvertMouseMode(bool invertMouse) { _InvertedMouse = invertMouse; }
+
+	/// get the ViewLagBehind of the camera
+	float getViewLagBehind() const { return _ViewLagBehind; }
+	/// set the ViewLagBehind of the camera
+	void setViewLagBehind(float viewLagBehind) { _ViewLagBehind = viewLagBehind; }
+	/// get the ViewHeight of the camera
+	float getViewHeight() const { return _ViewHeight; }
+	/// set the ViewHeight of the camera
+	void setViewHeight(float viewHeight) { _ViewHeight = viewHeight; }
+	/// get the ViewTargetHeight of the camera
+	float getViewTargetHeight() const { return _ViewTargetHeight; }
+	/// set the ViewTargetHeight of the camera
+	void setViewTargetHeight(float viewTargetHeight) { _ViewTargetHeight = viewTargetHeight; }
 
 
 private:

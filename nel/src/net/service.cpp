@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.95 2001/10/25 12:28:12 cado Exp $
+ * $Id: service.cpp,v 1.96 2001/10/25 14:59:35 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -99,7 +99,7 @@ string IService::_LongName = "";
 string IService::_AliasName= "";
 uint16 IService::_DefaultPort = 0;
 
-sint32 IService::_UpdateTimeout = 10;
+sint32 IService::_UpdateTimeout = 100;
 
 CConfigFile IService::ConfigFile;
 

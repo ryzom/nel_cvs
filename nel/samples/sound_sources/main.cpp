@@ -1,10 +1,10 @@
 /** \file sound_sources/main.cpp
  * Simple example of NeL sound engine usage
  *
- * $Id: main.cpp,v 1.7 2002/11/29 10:09:04 lecroart Exp $
+ * $Id: main.cpp,v 1.8 2003/09/05 11:18:28 lecroart Exp $
  */
 
-/* Copyright, 2001 Nevrax Ltd.
+/* Copyright, 2003 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify

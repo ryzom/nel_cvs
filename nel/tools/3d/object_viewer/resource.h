@@ -558,6 +558,7 @@
 #define IDC_ARG1                        1359
 #define IDC_ROTX                        1359
 #define IDC_ARG2                        1360
+#define IDC_ENABLE_LOAD_BALANCING       1360
 #define IDC_ARG3                        1361
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
@@ -713,7 +714,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1123
 #define _APS_NEXT_COMMAND_VALUE         32911
-#define _APS_NEXT_CONTROL_VALUE         1360
+#define _APS_NEXT_CONTROL_VALUE         1361
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

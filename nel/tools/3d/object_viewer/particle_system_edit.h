@@ -1,7 +1,7 @@
 /** \file particle_system_edit.h
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.h,v 1.8 2002/08/08 11:00:45 lecroart Exp $
+ * $Id: particle_system_edit.h,v 1.9 2002/10/14 09:50:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,6 +115,7 @@ public:
 	BOOL	m_EnableSlowDown;
 	BOOL	m_DieWhenOutOfRange;
 	BOOL	m_DieWhenOutOfFrustum;
+	BOOL	m_EnableLoadBalancing;
 	//}}AFX_DATA
 
 
@@ -157,6 +158,7 @@ protected:
 	afx_msg void OnForceLifeTimeUpdate();
 	afx_msg void OnEditGlobalColor();
 	afx_msg void OnGlobalColor();
+	afx_msg void OnEnableLoadBalancing();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -167,16 +169,12 @@ protected:
 	void updateLifeMgtPresets();
 	void childPopupClosed(CWnd *child);
 
-	static CTimeThresholdWrapper _TimeThresholdWrapper;
-
-	static CMaxViewDistWrapper _MaxViewDistWrapper;
-
-	static CMaxNbIntegrationWrapper _MaxNbIntegrationWrapper;
-
-	static CLODRatioWrapper _LODRatioWrapper;
-
+	static CTimeThresholdWrapper		_TimeThresholdWrapper;
+	static CMaxViewDistWrapper			_MaxViewDistWrapper;
+	static CMaxNbIntegrationWrapper		_MaxNbIntegrationWrapper;
+	static CLODRatioWrapper				_LODRatioWrapper;
     /// wrapper to tune user parameters
-	static CUserParamWrapper _UserParamWrapper[4];
+	static CUserParamWrapper			_UserParamWrapper[4];
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,7 +1,7 @@
 /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.10 2002/08/07 08:38:16 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.11 2002/10/14 09:50:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,7 @@ CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps)
 	m_EnableSlowDown = FALSE;
 	m_DieWhenOutOfRange = FALSE;
 	m_DieWhenOutOfFrustum = FALSE;
+	m_EnableLoadBalancing = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -157,6 +158,8 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	updatePrecomputedBBoxParams();	
 	updateLifeMgtPresets();
 
+	m_EnableLoadBalancing = _PS->isLoadBalancingEnabled();
+
 	UpdateData(FALSE);
 	ShowWindow(SW_SHOW);	
 }
@@ -241,6 +244,7 @@ void CParticleSystemEdit::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_ENABLE_SLOW_DOWN, m_EnableSlowDown);
 	DDX_Check(pDX, IDC_DIE_WHEN_OUT_OF_RANGE, m_DieWhenOutOfRange);
 	DDX_Check(pDX, IDC_DIE_WHEN_OUT_OF_FRUSTRUM, m_DieWhenOutOfFrustum);
+	DDX_Check(pDX, IDC_ENABLE_LOAD_BALANCING, m_EnableLoadBalancing);
 	//}}AFX_DATA_MAP
 }
 
@@ -265,6 +269,7 @@ BEGIN_MESSAGE_MAP(CParticleSystemEdit, CDialog)
 	ON_BN_CLICKED(IDC_FORCE_LIFE_TIME_UPDATE, OnForceLifeTimeUpdate)
 	ON_BN_CLICKED(IDC_EDIT_GLOBAL_COLOR, OnEditGlobalColor)
 	ON_BN_CLICKED(IDC_GLOBAL_COLOR, OnGlobalColor)
+	ON_BN_CLICKED(IDC_ENABLE_LOAD_BALANCING, OnEnableLoadBalancing)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -548,4 +553,26 @@ void CParticleSystemEdit::OnForceLifeTimeUpdate()
 	_PS->getAccurateIntegrationParams(t, max, csd, klt);
 	klt = ((CButton *)	GetDlgItem(IDC_FORCE_LIFE_TIME_UPDATE))->GetCheck() != 0;
 	_PS->setAccurateIntegrationParams(t, max, csd, klt);
+}
+
+void CParticleSystemEdit::OnEnableLoadBalancing() 
+{
+	UpdateData(TRUE);
+	if (m_EnableLoadBalancing == FALSE)
+	{
+		int result = MessageBox("Are you sure ?", "Load balancing on/off", MB_OKCANCEL);
+		if (result == IDOK)
+		{
+			_PS->enableLoadBalancing(false);
+		}
+		else
+		{
+			m_EnableLoadBalancing = TRUE;
+		}
+	}
+	else
+	{
+		_PS->enableLoadBalancing(false);
+	}
+	UpdateData(FALSE);
 }

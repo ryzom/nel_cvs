@@ -811,6 +811,8 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,196,244,91,55
     LTEXT           "(Wrn : Bypass multitex, not supported by all types)",
                     IDC_STATIC,204,273,81,24
+    CONTROL         "Enable load balancing",IDC_ENABLE_LOAD_BALANCING,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,119,9,128,15
 END
 
 IDD_BIN_OP DIALOG DISCARDABLE  0, 0, 390, 174

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: smart_ptr.h,v 1.1 2000/09/21 09:07:20 berenguier Exp $
+ * $Id: smart_ptr.h,v 1.2 2000/09/21 09:12:35 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -60,6 +60,41 @@ public:
  * Here, if A is a base class of B, Pa and Pb are smartptr of a and b respectively, then \c Pa=Pb; is a valid operation.
  * But, doing this, you may ensure that you have a virtual dtor(), since dtor() Pa may call ~A() (or you may ensure that Pa
  * won't destruct A, which it sound much more as a normal pointer :) ).
+ *
+ * Sample:
+ *\code
+	class A : public CRefCount
+	{
+	public:
+		A() {puts("A()");}
+		virtual ~A() {puts("~A()");}
+	};
+
+
+	class B : public A
+	{
+	public:
+		B() {puts("B()");}
+		~B() {puts("~B()");}
+	};
+
+
+	void	testPtr()
+	{
+		CSmartPtr<A>	a0,a1,a2;
+		CSmartPtr<B>	b0;
+
+		a0= new A;
+		a1= a0;
+		a1= new A;
+		a2= a1;
+		a1=NULL;
+		getch();
+		b0= new B;
+		a0=b0;
+	}
+ *\endcode
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000

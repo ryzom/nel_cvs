@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.3 2002/01/09 10:30:29 legros Exp $
+ * $Id: main.cpp,v 1.4 2002/02/19 11:08:45 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,7 +111,15 @@ void	initMoulinette()
 		int			i;
 	
 		cf.load("build_rbank.cfg");
-	
+
+		//
+		CConfigFile::CVar &cvPathes = cf.getVar("Pathes");
+		for (i=0; i<cvPathes.size(); ++i)
+		{
+			nlinfo("Using search path %s", cvPathes.asString(i).c_str());
+			CPath::addSearchPath(cvPathes.asString(i));
+		}
+
 		OutputRootPath = getString(cf, "OutputRootPath");
 		ReduceSurfaces = getInt(cf, "ReduceSurfaces") ? true : false;
 		SmoothBorders = getInt(cf, "SmoothBorders") ? true : false;

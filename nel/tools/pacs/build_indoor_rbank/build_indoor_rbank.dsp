@@ -108,6 +108,10 @@ LINK32=link.exe
 # Name "build_indoor_rbank - Win32 ReleaseDebug"
 # Begin Source File
 
+SOURCE=.\build_indoor_rbank.cfg
+# End Source File
+# Begin Source File
+
 SOURCE=.\build_surfaces.cpp
 # End Source File
 # Begin Source File

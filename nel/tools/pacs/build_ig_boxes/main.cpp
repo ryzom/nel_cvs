@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.1 2001/11/28 15:54:46 corvazier Exp $
+ * $Id: main.cpp,v 1.2 2002/02/19 11:08:37 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,7 +93,7 @@ void	init()
 		cf.load("build_ig_boxes.cfg");
 	
 		Output = getString(cf, "Output");
-		IGPath = getString(cf, "IGPath");
+		nlinfo("Output=%s", Output.c_str());
 
 		CConfigFile::CVar &cvIGs = cf.getVar("IGs");
 		for (i=0; i<cvIGs.size(); i++)
@@ -101,10 +101,12 @@ void	init()
 			IGs.push_back(cvIGs.asString(i));
 		}
 
-		CPath::addSearchPath(IGPath);
-
-		nlinfo("Output=%s", Output.c_str());
-		nlinfo("IGPath=%s", IGPath.c_str());
+		CConfigFile::CVar &cvPathes = cf.getVar("Pathes");
+		for (i=0; i<cvPathes.size(); ++i)
+		{
+			nlinfo("Using search path %s", cvPathes.asString(i).c_str());
+			CPath::addSearchPath(cvPathes.asString(i));
+		}
 	}
 	catch (EConfigFile &e)
 	{

@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.3 2002/01/09 10:30:29 legros Exp $
+ * $Id: build_rbank.cpp,v 1.4 2002/02/19 11:08:45 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -220,8 +220,9 @@ void moulineZone(string &zoneName)
 						tessellation.addWaterShape(wpoly);
 					}
 				}
-				catch (Exception &)
+				catch (Exception &e)
 				{
+					nlwarning("%s", e.what());
 				}
 			}
 		}

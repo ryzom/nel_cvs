@@ -15,6 +15,8 @@ extends:Sphere
 		texFileName5 	 type:#String default:".tga"
 		texFileName6 	 type:#String default:".tga"
 		texFileName7 	 type:#String default:".tga"
+		texFileName8 	 type:#String default:".tga"
+		texFileName9 	 type:#String default:".tga"
 		
 		flareUsed0		 type:#Boolean default: true   ui:check0
 		flareUsed1		 type:#Boolean default: false  ui:check1
@@ -24,6 +26,8 @@ extends:Sphere
 		flareUsed5		 type:#Boolean default: false  ui:check5
 		flareUsed6		 type:#Boolean default: false  ui:check6
 		flareUsed7		 type:#Boolean default: false  ui:check7
+		flareUsed8		 type:#Boolean default: false  ui:check7
+		flareUsed9		 type:#Boolean default: false  ui:check7
 		
 		size0			 type:#Float   default: 1      ui:UISize0
 		size1			 type:#Float   default: 1      ui:UISize1
@@ -33,18 +37,32 @@ extends:Sphere
 		size5			 type:#Float   default: 1      ui:UISize5
 		size6			 type:#Float   default: 1      ui:UISize6
 		size7			 type:#Float   default: 1      ui:UISize7
+		size8			 type:#Float   default: 1      ui:UISize8
+		size9			 type:#Float   default: 1      ui:UISize9
 
-
-
+		pos0			 type:#Float   default: 1      ui:UIPos0
+		pos1			 type:#Float   default: 1      ui:UIPos1
+		pos2			 type:#Float   default: 1      ui:UIPos2
+		pos3			 type:#Float   default: 1      ui:UIPos3
+		pos4			 type:#Float   default: 1      ui:UIPos4
+		pos5			 type:#Float   default: 1      ui:UIPos5
+		pos6			 type:#Float   default: 1      ui:UIPos6
+		pos7			 type:#Float   default: 1      ui:UIPos7
+		pos8			 type:#Float   default: 1      ui:UIPos8
+		pos9			 type:#Float   default: 1      ui:UIPos9
 
 
 		
-		ColorParam 		 type:#color 	animatable:false default:  white ui:UIColorParam
-		PersistenceParam 	 type:#float 	animatable:false default:  1     ui:UIPersistenceParam
-		Spacing          	 type:#float 	animatable:false default:  1     ui:UISpacing
-		AttenuationRange  	 type:#float 	animatable:false default:  1     ui:UIAttenuationRange
-		Attenuable       	 type:#boolean  animatable:false default:  false ui:UIAttenuable
-		FirstFlareKeepSize 	 type:#Boolean  animatable:false default:  false ui:UIFirstFlareKeepSize 
+		ColorParam 				 type:#color 	animatable:false default:  white ui:UIColorParam
+		PersistenceParam 		 type:#float 	animatable:false default:  1     ui:UIPersistenceParam
+		Spacing          		 type:#float 	animatable:false default:  1     ui:UISpacing
+		AttenuationRange  		 type:#float 	animatable:false default:  1     ui:UIAttenuationRange
+		Attenuable       		 type:#boolean  animatable:false default:  false ui:UIAttenuable
+		FirstFlareKeepSize 		 type:#Boolean  animatable:false default:  false ui:UIFirstFlareKeepSize 
+		HasDazzle				 type:#boolean  animatable:false default:  false ui:UIHasDazzle
+		DazzleColor				 type:#color	animatable:false default:  white ui:UIHasDazzle
+		DazzleAttenuationRange	 type:#float	animatable:false default:  0.5   ui:UIDazzleAttenuationRange
+
 	)
 
 	rollout param "Parameters"
@@ -55,12 +73,15 @@ extends:Sphere
 		checkbox    UIAttenuable        "radial attenuation" 	   type:#boolean
 		spinner     UIAttenuationRange  "atten. range"        	   range:[0,20,1]  type:#float align:#left
 		checkbox    UIFirstFlareKeepSize "keep 1st size  :"	       type:#boolean
+		checkbox	UIHasDazzle			 "Enable dazzle  :"		   type:#boolean
+
 		group "Flare 0"
 		(
 			edittext  tex_file_name_et0 "texture:"
 			button    browse0           "Browse..."
 			checkbox  check0            "enabled"
 			spinner   UISize0           "size :"  range:[0,500,1] type:#float scale:0.01 align:#left
+			spinner   UIPos0			"pos  :"  range:[0,1,0]   type:#float scale:0.01 align:#left
 		)
 		group "Flare 1"
 		(
@@ -68,6 +89,7 @@ extends:Sphere
 			button    browse1           "Browse..."
 			checkbox  check1            "enabled"
 			spinner   UISize1           "size"  range:[0,500,1] type:#float scale:0.01
+			spinner   UIPos1			"pos  :"  range:[0,1,0.1]   type:#float scale:0.01 align:#left
 		)
 		group "Flare 2"
 		(
@@ -75,6 +97,7 @@ extends:Sphere
 			button    browse2           "Browse..."
 			checkbox  check2            "enabled"
 			spinner   UISize2           "size"  range:[0,500,1] type:#float scale:0.01
+			spinner   UIPos2			"pos  :"  range:[0,1,0.2]   type:#float scale:0.01 align:#left
 		)
 		group "Flare 3"
 		(
@@ -82,6 +105,7 @@ extends:Sphere
 			button    browse3           "Browse..."
 			checkbox  check3            "enabled"
 			spinner   UISize3           "size"  range:[0,500,1] type:#float scale:0.01
+			spinner   UIPos3			"pos  :"  range:[0,1,0.3]   type:#float scale:0.01 align:#left
 		)
 		group "Flare 4"
 		(
@@ -89,6 +113,7 @@ extends:Sphere
 			button    browse4           "Browse..."
 			checkbox  check4            "enabled"
 			spinner   UISize4           "size"  range:[0,500,1] type:#float scale:0.01
+			spinner   UIPos4			"pos  :"  range:[0,1,0.4]   type:#float scale:0.01 align:#left
 		)
 		group "Flare 5"
 		(
@@ -96,6 +121,7 @@ extends:Sphere
 			button    browse5           "Browse..."
 			checkbox  check5            "enabled"
 			spinner   UISize5           "size"  range:[0,500,1] type:#float scale:0.01
+			spinner   UIPos5			"pos  :"  range:[0,1,0.5]   type:#float scale:0.01 align:#left
 		)
 		group "Flare 6"
 		(
@@ -103,6 +129,7 @@ extends:Sphere
 			button    browse6           "Browse..."
 			checkbox  check6            "enabled"
 			spinner   UISize6           "size"  range:[0,500,1] type:#float scale:0.01
+			spinner   UIPos6			"pos  :"  range:[0,1,0.6]   type:#float scale:0.01 align:#left
 		)
 		group "Flare 7"
 		(
@@ -110,6 +137,23 @@ extends:Sphere
 			button    browse7           "Browse..."
 			checkbox  check7            "enabled"
 			spinner   UISize7           "size"  range:[0,500,1] type:#float scale:0.01
+			spinner   UIPos7			"pos  :"  range:[0,1,0.7]   type:#float scale:0.01 align:#left
+		)		
+		group "Flare 8"
+		(
+			edittext  tex_file_name_et8 "texture:"
+			button    browse8           "Browse..."
+			checkbox  check8            "enabled"
+			spinner   UISize8           "size"  range:[0,500,1] type:#float scale:0.01
+			spinner   UIPos8			"pos  :"  range:[0,1,0.8]   type:#float scale:0.01 align:#left
+		)		
+		group "Flare 9"
+		(
+			edittext  tex_file_name_et9 "texture:"
+			button    browse9           "Browse..."
+			checkbox  check9            "enabled"
+			spinner   UISize9           "size"  range:[0,500,1] type:#float scale:0.01
+			spinner   UIPos9			"pos  :"  range:[0,1,0.9]   type:#float scale:0.01 align:#left
 		)		
 		
 		on tex_file_name_et0 changed val do ( texFileName0 = val )
@@ -120,6 +164,8 @@ extends:Sphere
 		on tex_file_name_et5 changed val do ( texFileName5 = val )
 		on tex_file_name_et6 changed val do ( texFileName6 = val )
 		on tex_file_name_et7 changed val do ( texFileName7 = val )
+		on tex_file_name_et8 changed val do ( texFileName8 = val )
+		on tex_file_name_et9 changed val do ( texFileName9 = val )
 		
 		on param open do
 		(
@@ -131,6 +177,8 @@ extends:Sphere
 			tex_file_name_et5.text = texFileName5
 	 		tex_file_name_et6.text = texFileName6
 			tex_file_name_et7.text = texFileName7
+			tex_file_name_et8.text = texFileName8
+			tex_file_name_et9.text = texFileName9
 		)
 		
 		on browse0 pressed do
@@ -204,6 +252,24 @@ extends:Sphere
 			  texFileName7 = fname 
 			  tex_file_name_et7.text = texFileName7
 			)			
-		)		
+		)
+		on browse8 pressed do
+		(
+			fname = getOpenFileName caption: "tga file" types:"tga(*.tga)|" filename:"*.tga"
+			if not fname == undefined then
+			(
+			  texFileName8 = fname 
+			  tex_file_name_et8.text = texFileName7
+			)			
+		)
+		on browse9 pressed do
+		(
+			fname = getOpenFileName caption: "tga file" types:"tga(*.tga)|" filename:"*.tga"
+			if not fname == undefined then
+			(
+			  texFileName9 = fname 
+			  tex_file_name_et9.text = texFileName7
+			)			
+		)
 	)
 )

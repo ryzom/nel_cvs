@@ -167,16 +167,16 @@ void unpack (const string &dirName)
 void usage()
 {
 	printf ("USAGE : \n");
-	printf ("   bnp_make /p directory_name\n");
+	printf ("   bnp_make /p <directory_name> [<destination_path>] [<destination_filename>]\n");
 	printf (" Pack the directory to a bnp file\n");
-	printf ("   bnp_make /u bnp_file\n");
+	printf ("   bnp_make /u <bnp_file>\n");
 	printf (" Unpack the bnp file to a directory\n");
 }
 
 // ---------------------------------------------------------------------------
 int main (int nNbArg, char **ppArgs)
 {
-	if (nNbArg != 3)
+	if (nNbArg < 3)
 	{
 		usage();
 		return -1;
@@ -186,10 +186,52 @@ int main (int nNbArg, char **ppArgs)
 		(strcmp(ppArgs[1], "-p") == 0) || (strcmp(ppArgs[1], "-P") == 0))
 	{
 		// Pack a directory
+
 		char sCurDir[MAX_PATH];
-		chdir (ppArgs[2]);
-		getcwd (sCurDir, MAX_PATH);
-		gDestBNPFile = string(sCurDir) + string(".bnp");
+
+		if (nNbArg >= 4)
+		{
+			// store current path
+			getcwd (sCurDir, MAX_PATH);
+	
+			// go to the dest path
+			char sDestDir[MAX_PATH];
+			chdir (ppArgs[3]);
+			getcwd (sDestDir, MAX_PATH);
+			
+			// restore current path
+			chdir (sCurDir);
+			// go to the source dir
+			chdir (ppArgs[2]);
+			getcwd (sCurDir, MAX_PATH);
+			
+			gDestBNPFile = string(sDestDir) + '\\';
+
+			if(nNbArg == 5)
+			{
+				gDestBNPFile += ppArgs[4];
+				// add ext if necessary
+				if (string(ppArgs[4]).find(".") == string::npos)
+					gDestBNPFile += string(".bnp");
+			}
+			else
+			{
+				char *pos = strrchr (sCurDir, '\\');
+				if (pos != NULL)
+				{
+					gDestBNPFile += string(pos+1);
+				}
+				// get the dest file name
+				gDestBNPFile += string(".bnp");
+			}
+		}
+		else
+		{
+			chdir (ppArgs[2]);
+			getcwd (sCurDir, MAX_PATH);
+			gDestBNPFile = string(sCurDir) + string(".bnp");
+		}
+		
 		remove (gDestBNPFile.c_str());
 		gBNPHeader.OffsetFromBeginning = 0;	
 		packSubRecurse();

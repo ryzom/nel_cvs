@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.30 2005/03/29 13:30:33 berenguier Exp $
+ * $Id: driver_direct3d.cpp,v 1.31 2005/03/29 14:32:27 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -252,6 +252,8 @@ CDriverD3D::CDriverD3D()
 	_FrustumPerspective= false;
 	_FogStart = 0;
 	_FogEnd = 1;
+
+	_SumTextureMemoryUsed = false;
 }
 
 // ***************************************************************************
@@ -441,7 +443,9 @@ void CDriverD3D::initRenderVariables()
 	for (i=0; i<MaxTexture; i++)
 	{
 		_TextureIndexStateCache[i].StageID = i;
+		_TextureIndexStateCache[i].TexGen = false;
 		_TextureIndexStateCache[i].TexGenMode = 0xcccccccc;
+		_TextureIndexStateCache[i].UVChannel = 0xcccccccc;
 		_TextureIndexStateCache[i].Modified = false;
 	}
 	for (i=0; i<MaxTexture; i++)

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.40 2005/03/29 13:30:33 berenguier Exp $
+ * $Id: driver_direct3d.h,v 1.41 2005/03/29 14:32:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1197,6 +1197,7 @@ public:
 			Decl = NULL;
 			DeclAliasDiffuseToSpecular = NULL;
 			DeclNoDiffuse = NULL;
+			Stride= 0;
 			AliasDiffuseToSpecular = false;
 			EnableVertexColor = false;
 		}				

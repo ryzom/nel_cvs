@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.109 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: scene.cpp,v 1.110 2003/08/18 14:32:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,7 +318,7 @@ void	CScene::render(bool	doHrcPass)
 
 	// **** For all render traversals, traverse them (except the Hrc one), in ascending order.
 	if( doHrcPass )
-		HrcTrav.traverse();
+		HrcTrav.traverse();	
 
 	// Set Cam World Matrix for all trav that need it
 	ClipTrav.setCamMatrix(CurrentCamera->getWorldMatrix());
@@ -330,6 +330,8 @@ void	CScene::render(bool	doHrcPass)
 	ClipTrav.traverse();
 	// animDetail
 	AnimDetailTrav.traverse();
+	//
+	_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems
 	// loadBalance
 	LoadBalancingTrav.traverse();
 	// Light
@@ -551,7 +553,6 @@ void CScene::animate( TGlobalAnimationTime atTime )
 	}
 	
 	_LMAnimsAuto.animate( atTime );
-	_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems
 
 	// Change PointLightFactors of all pointLights in registered Igs.
 	//----------------

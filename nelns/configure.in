@@ -1,7 +1,7 @@
 dnl
 dnl Configuration script for NeLNS
 dnl
-dnl $Id: configure.in,v 1.1 2001/04/18 13:54:25 valignat Exp $
+dnl $Id: configure.in,v 1.2 2001/05/03 13:19:13 lecroart Exp $
 dnl 
 
 dnl Process this file with autoconf to produce a configure script.
@@ -283,6 +283,8 @@ AC_OUTPUT( Makefile                        \
            agent_service/creature/Makefile \
            agent_service/plugin/Makefile   \
            admin_executor_service/Makefile \
+           admin_service/Makefile          \
+           welcome_service/Makefile        \
 )
 
 

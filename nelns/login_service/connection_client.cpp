@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_client.cpp,v 1.1 2001/05/02 12:36:39 lecroart Exp $
+ * $Id: connection_client.cpp,v 1.2 2001/05/03 13:19:13 lecroart Exp $
  *
  */
 
@@ -42,6 +42,11 @@
 #include "nel/net/net_manager.h"
 #include "nel/net/login_cookie.h"
 #include "login_service.h"
+
+#ifdef NL_OS_UNIX
+extern "C" char *crypt (const char *__key, const char *__salt);
+#endif
+
 
 using namespace std;
 using namespace NLMISC;
@@ -396,7 +401,8 @@ static void cbClientDisconnection (const string &serviceName, TSockId from, void
 		if ((*it).SockId == from)
 		{
 			// remove the authorized user because he's not here anymore
-			disconnectClient (*it, NULL, false);
+		  // bug? the second param was NULL??? really?
+		        disconnectClient (*it, false, false);
 			return;
 		}
 	}

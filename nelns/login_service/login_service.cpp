@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.2 2001/05/02 12:36:39 lecroart Exp $
+ * $Id: login_service.cpp,v 1.3 2001/05/03 13:19:13 lecroart Exp $
  *
  */
 
@@ -51,9 +51,6 @@ using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
 
-#ifdef NL_OS_UNIX
-extern "C" char *crypt (const char *__key, const char *__salt);
-#endif
 
 // store specific user information
 NLMISC::CFileDisplayer Fd ("ls.log");

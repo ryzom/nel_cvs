@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.1 2001/05/02 12:36:39 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.2 2001/05/03 13:19:13 lecroart Exp $
  *
  */
 
@@ -24,23 +24,19 @@
  * MA 02111-1307, USA.
  */
 
-#include <conio.h>
-
 #include <string>
 #include <list>
 
+#include "nel/net/service.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 
-#include "nel/net/service.h"
 #include "nel/net/net_manager.h"
 
  
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
-
-#include <process.h>
 
 
 struct CService

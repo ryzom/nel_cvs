@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.2 2001/05/02 12:36:39 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.3 2001/05/03 13:19:13 lecroart Exp $
  *
  */
 
@@ -24,8 +24,6 @@
  * MA 02111-1307, USA.
  */
 
-#include <io.h>
-#include <process.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 

@@ -1,14 +1,14 @@
 #
-# $Id: Makefile.am,v 1.2 2001/05/02 12:36:39 lecroart Exp $
+# $Id: Makefile.am,v 1.3 2001/05/03 13:19:13 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
 
 bin_PROGRAMS         = admin_executor_service
 
-time_service_SOURCES = admin_executor_service.cpp
+admin_executor_service_SOURCES = admin_executor_service.cpp
 
-time_service_LDADD   = -lnelnet -lnelmisc
+admin_executor_service_LDADD   = -lnelnet -lnelmisc
 
 
 # End of Makefile.am

@@ -1,6 +1,6 @@
 /** \file texture_chooser.cpp
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.cpp,v 1.11 2004/04/09 14:43:07 vizerie Exp $
+ * $Id: texture_chooser.cpp,v 1.12 2004/06/17 08:00:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,13 +40,14 @@ const uint tSize = 25;
 // CTextureChooser dialog
 
 
-CTextureChooser::CTextureChooser(NL3D::CPSMultiTexturedParticle *mtp /*= NULL*/) 
+CTextureChooser::CTextureChooser(NL3D::CPSMultiTexturedParticle *mtp /*= NULL*/, CParticleWorkspace::CNode *ownerNode) 
 	: _CurrBitmap(0),
 	  _Wrapper(NULL),
 	  _Texture(NULL),
 	  _EnableRemoveButton(false),
-	  _MTP(mtp)
-	  ,_MultiTexDlg(NULL)
+	  _MTP(mtp),
+	  _Node(ownerNode),
+	  _MultiTexDlg(NULL)
 
 {
 	//{{AFX_DATA_INIT(CTextureChooser)
@@ -202,7 +203,7 @@ void CTextureChooser::OnBrowseTexture()
 		try
 		{
 			NL3D::CTextureFile *tf = new NL3D::CTextureFile(std::string(fd.GetFileName()));
-			_Wrapper->set(tf);
+			_Wrapper->setAndUpdateModifiedFlag(tf);
 			_Texture = tf;
 			textureToBitmap();
 		}
@@ -237,7 +238,7 @@ void CTextureChooser::OnRemoveTexture()
 		_Texture->release();
 		_Texture = NULL;
 	}
-	_Wrapper->set(NULL);	
+	_Wrapper->setAndUpdateModifiedFlag(NULL);
 	textureToBitmap();
 	Invalidate();
 }
@@ -263,7 +264,7 @@ void CTextureChooser::OnEditMultitexturing()
 {
 	nlassert(_MTP);
 	EnableWindow(FALSE);
-	_MultiTexDlg = new CMultiTexDlg(_MTP, this, this);
+	_MultiTexDlg = new CMultiTexDlg(_Node, _MTP, this, this);
 	_MultiTexDlg->init(this);	
 }
 

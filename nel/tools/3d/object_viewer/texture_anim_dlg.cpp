@@ -1,7 +1,7 @@
 /** \file texture_anim_dlg.cpp
  * Dialog used to tune animation of texture on particles
  *
- * $Id: texture_anim_dlg.cpp,v 1.7 2003/07/02 17:26:31 distrib Exp $
+ * $Id: texture_anim_dlg.cpp,v 1.8 2004/06/17 08:00:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,8 +43,15 @@
 // CTextureAnimDlg dialog
 
 
-CTextureAnimDlg::CTextureAnimDlg(NL3D::CPSTexturedParticle *p, NL3D::CPSMultiTexturedParticle *mtp /*= NULL*/) : _EditedParticle(p),
-			_TextureChooser(NULL), _TextureIndexDialog(NULL), _MTP(mtp), _MultiTexDlg(NULL)
+CTextureAnimDlg::CTextureAnimDlg(CParticleWorkspace::CNode *ownerNode, 
+								 NL3D::CPSTexturedParticle *p,
+								 NL3D::CPSMultiTexturedParticle *mtp /*= NULL*/) 
+								: _Node(ownerNode),
+								  _EditedParticle(p),
+								  _TextureChooser(NULL),
+								  _TextureIndexDialog(NULL),
+								  _MTP(mtp),
+								  _MultiTexDlg(NULL)
 {	
 	nlassert(p);
 	//{{AFX_DATA_INIT(CTextureAnimDlg)	
@@ -123,8 +130,7 @@ void CTextureAnimDlg::setupCtrl(void)
 		if (!_TextureIndexDialog)
 		{
 			
-			_TextureIndexDialog = new CAttribDlgInt("TEXTURE_INDEX", 0, _EditedParticle->getTextureGroup()->getNbTextures() - 1);
-			
+			_TextureIndexDialog = new CAttribDlgInt("TEXTURE_INDEX", _Node, 0, _EditedParticle->getTextureGroup()->getNbTextures() - 1);			
 			_TextureIndexWrapper.P = _EditedParticle;
 			_TextureIndexDialog->setWrapper(&_TextureIndexWrapper );			
 			_TextureIndexDialog->setSchemeWrapper(&_TextureIndexWrapper );
@@ -143,8 +149,7 @@ void CTextureAnimDlg::setupCtrl(void)
 	}
 	else // no animation, just show a texture chooser
 	{
-		_TextureChooser = new CTextureChooser(_MTP);
-			
+		_TextureChooser = new CTextureChooser(_MTP, _Node);			
 		_TextureWrapper.P = _EditedParticle;
 		_TextureChooser->setWrapper(&_TextureWrapper);
 		_TextureChooser->init(0, 30, this);
@@ -192,8 +197,7 @@ void CTextureAnimDlg::OnChooseTextures()
 {
 	
 	_GradientInterface.P = _EditedParticle;	
-	CValueGradientDlg vd(&_GradientInterface , false, this, NULL, false, 1);
-	
+	CValueGradientDlg vd(&_GradientInterface, _Node, false, this, NULL, false, 1);	
 	_GradientInterface.Dlg = &vd;
 	vd.DoModal();	
 }
@@ -216,6 +220,7 @@ void CTextureAnimDlg::OnEnableTextureAnim()
 	}
 	cleanCtrl();
 	setupCtrl();
+	updateModifiedFlag();
 }
 
 
@@ -225,12 +230,13 @@ void CTextureAnimDlg::OnEnableTextureAnim()
 
 
 
-CEditAttribDlg *CTextureAnimDlg::CGradientInterface::createDialog(uint index, CValueGradientDlg *grad)
+CEditAttribDlg *CTextureAnimDlg::CGradientInterface::createDialog(uint index, CValueGradientDlg *grad, CParticleWorkspace::CNode *ownerNode)
 {
-	CTextureChooser *tc = new CTextureChooser();
+	CTextureChooser *tc = new CTextureChooser(NULL, ownerNode);
 	_TextureWrapper.P = P;
 	_TextureWrapper.Dlg = Dlg;
 	_TextureWrapper.Index = index;
+	_TextureWrapper.OwnerNode = ownerNode;
 	tc->setWrapper(&_TextureWrapper);
 	return tc;
 }
@@ -363,6 +369,7 @@ void CTextureAnimDlg::OnMultiTex()
 	UpdateData();
 	_MTP->enableMultiTexture(m_MultiTexEnable ? true : false /* VC WARNING */);
 	setupCtrl();
+	updateModifiedFlag();
 }
 
 void CTextureAnimDlg::childPopupClosed(CWnd *child)
@@ -377,6 +384,6 @@ void CTextureAnimDlg::childPopupClosed(CWnd *child)
 void CTextureAnimDlg::OnEditMultitex() 
 {	
 	EnableWindow(FALSE);
-	_MultiTexDlg = new 	CMultiTexDlg(_MTP, this, this);
+	_MultiTexDlg = new 	CMultiTexDlg(_Node, _MTP, this, this);
 	_MultiTexDlg->init(this);
 }

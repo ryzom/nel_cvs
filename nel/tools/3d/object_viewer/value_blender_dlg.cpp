@@ -1,7 +1,7 @@
 /** \file value_blender_dlg.cpp
  * a dialog to choose 2 values that are linearly blended in a particle system
  *
- * $Id: value_blender_dlg.cpp,v 1.6 2002/11/04 15:40:45 boucher Exp $
+ * $Id: value_blender_dlg.cpp,v 1.7 2004/06/17 08:00:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,10 +39,17 @@
 // CValueBlenderDlg dialog
 
 
-CValueBlenderDlg::CValueBlenderDlg(IValueBlenderDlgClient *creationInterface, bool destroyInterface, CWnd* pParent, IPopupNotify *pn)
-	: _CreateInterface(creationInterface) , CDialog(CValueBlenderDlg::IDD, pParent), _PN(pn)
-	 , _DestroyInterface(destroyInterface)
-	  
+CValueBlenderDlg::CValueBlenderDlg(IValueBlenderDlgClient *creationInterface,
+								   bool destroyInterface,
+								   CWnd* pParent,
+								   IPopupNotify *pn,
+								   CParticleWorkspace::CNode *ownerNode
+								  )
+	: _CreateInterface(creationInterface),
+	  CDialog(CValueBlenderDlg::IDD, pParent),
+	  _PN(pn),
+	  _DestroyInterface(destroyInterface),
+	  _Node(ownerNode)	  
 {
 	//{{AFX_DATA_INIT(CValueBlenderDlg)
 	//}}AFX_DATA_INIT
@@ -85,19 +92,12 @@ END_MESSAGE_MAP()
 BOOL CValueBlenderDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
-
 	UpdateData() ;
-	nlassert(_CreateInterface) ;
-	
-	_Dlg1 = _CreateInterface->createDialog(0) ;
-	_Dlg2 = _CreateInterface->createDialog(1) ;
-
-
-
-	RECT r, or ;
-	
+	nlassert(_CreateInterface) ;	
+	_Dlg1 = _CreateInterface->createDialog(0, _Node) ;
+	_Dlg2 = _CreateInterface->createDialog(1, _Node) ;
+	RECT r, or ;	
 	GetWindowRect(&or) ;
-
 	m_Value1.GetWindowRect(&r) ;
 	_Dlg1->init(r.left - or.left, r.top - or.top, this) ;
 	m_Value2.GetWindowRect(&r) ;

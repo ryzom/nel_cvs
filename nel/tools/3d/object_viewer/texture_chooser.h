@@ -1,6 +1,6 @@
 /** \file texture_chooser.h
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.h,v 1.7 2001/12/18 18:40:58 vizerie Exp $
+ * $Id: texture_chooser.h,v 1.8 2004/06/17 08:00:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,13 +32,14 @@
 //
 
 
-#include "nel/misc/smart_ptr.h"
-#include "3d/texture.h"
 #include "edit_attrib_dlg.h"
 #include "popup_notify.h"
-
 #include "ps_wrapper.h"
-
+#include "particle_workspace.h"
+//
+#include "nel/misc/smart_ptr.h"
+//
+#include "3d/texture.h"
 
 using NLMISC::CSmartPtr ;
 
@@ -58,7 +59,7 @@ class CTextureChooser : public CEditAttribDlg, IPopupNotify
 // Construction
 public:
 	// construct the object with the given texture
-	CTextureChooser(NL3D::CPSMultiTexturedParticle *mtp = NULL);   // standard constructor
+	CTextureChooser(NL3D::CPSMultiTexturedParticle *mtp, CParticleWorkspace::CNode *ownerNode);   // standard constructor
 
 	~CTextureChooser();
 
@@ -89,7 +90,8 @@ public:
 
 // Implementation
 protected:
-	bool _EnableRemoveButton ;
+	bool _EnableRemoveButton;
+	CParticleWorkspace::CNode *_Node;
 	IPSWrapperTexture *_Wrapper ;
 	NL3D::CPSMultiTexturedParticle *_MTP;
 	CMultiTexDlg	  *_MultiTexDlg;

@@ -1,7 +1,7 @@
 /** \file value_blender_dlg.h
  * a dialog to choose 2 values that are linearly blended in a particle system
  *
- * $Id: value_blender_dlg.h,v 1.5 2001/09/17 14:04:01 vizerie Exp $
+ * $Id: value_blender_dlg.h,v 1.6 2004/06/17 08:00:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,8 +32,7 @@
 #endif 
 
 
-
-
+#include "particle_workspace.h"
 
 struct IPopupNotify;
 class CEditAttribDlg ;
@@ -41,12 +40,11 @@ class CEditAttribDlg ;
 
 // user of the dialog must provide an implementation of this struct to provide indivual values edition
 struct IValueBlenderDlgClient
-{	
-	/** a pointer over a function that create a dialog of the right type, which must have CEditAttribDlg as a base class
-	 *  \param index must be 0 or 1, it says which value is being edited
-	 *  \infoToDelete the callback can set the pointer  to NULL or to something that must be deleted when the dialog is
+{		
+	/** Create a dialog to edit a single value.
+	 *  \param index must be 0 or 1, it says which value is being edited	 
 	 */
-	virtual CEditAttribDlg *createDialog(uint index) = 0;
+	virtual CEditAttribDlg *createDialog(uint index, CParticleWorkspace::CNode *ownerNode) = 0;
 
 	/// dtor
 	virtual ~IValueBlenderDlgClient() {};
@@ -55,19 +53,19 @@ struct IValueBlenderDlgClient
 class CValueBlenderDlg : public CDialog
 {
 // Construction
-public:
-
-	
-	/** Create the dialog. Then, it will call createFunc (with the user param lParam) to generate the appropriate dialogs
-	 *  If mustDelete is set, then new will be performed on lParam after it has been used. When destroyInterface is set to true,
-	 *  delete is called on 'createInterface'
+public:	
+	/** Create the dialog.
+	 * \param createInterface interface that allows to create a dialog to edit one of the 2 values used for the blend.
+	 * \param destroyInterface true if this object must take care to call 'delete' on the 'createInterface' pointer
 	 */
-
-	CValueBlenderDlg(IValueBlenderDlgClient *createInterface, bool destroyInterface, CWnd* pParent, IPopupNotify *pn);   // standard constructor
-
+	CValueBlenderDlg(IValueBlenderDlgClient *createInterface,
+					 bool destroyInterface,
+					 CWnd* pParent,
+					 IPopupNotify *pn,
+					 CParticleWorkspace::CNode *ownerNode
+					);   // standard constructor
 	// dtor
 	~CValueBlenderDlg() ;
-
 	// non modal display
 	void init(CWnd *pParent);
 
@@ -92,8 +90,9 @@ protected:
 	IValueBlenderDlgClient *_CreateInterface ;
 	// the 2 dialog used to choose the blending value
 	CEditAttribDlg		   *_Dlg1, *_Dlg2 ;
-	IPopupNotify		   *_PN;
-	bool				   _DestroyInterface;
+	IPopupNotify			  *_PN;
+	bool					  _DestroyInterface;
+	CParticleWorkspace::CNode *_Node;
 	// Generated message map functions
 	//{{AFX_MSG(CValueBlenderDlg)
 	virtual BOOL OnInitDialog();

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.1 2001/04/25 08:46:06 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.2 2001/04/25 17:23:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,11 @@ CPSParticle::CPSParticle()
 
 CPSDot::CPSDot(const CRGBA &c) : _Color(c)
 {
+	init() ;
+}
+
+void CPSDot::init(void)
+{
 	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
 	_Mat.setZWrite(false) ;
 	_Mat.setLighting(false) ;
@@ -57,6 +62,9 @@ void CPSDot::step(TPSProcessPass pass, CAnimationTime)
 
 
 	if (!size) return ;
+
+
+	setupDriverModelMatrix() ;
 
 	CVertexBuffer vb ;
 	vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR) ;
@@ -107,8 +115,14 @@ void CPSDot::step(TPSProcessPass pass, CAnimationTime)
 
 void CPSDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	CPSParticle::serial(f) ;
 	f.serialVersion(1) ;
 	f.serial(_Color) ;
+
+	if (f.isReading())
+	{
+		init() ;
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file tga2dds.cpp
  * TGA to DDS converter
  *
- * $Id: tga2dds.cpp,v 1.6 2001/08/07 07:26:22 corvazier Exp $
+ * $Id: tga2dds.cpp,v 1.7 2001/08/29 12:38:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -600,7 +600,7 @@ void main(int argc, char **argv)
 		uint8	*pixDest;
 		uint8	*pixSrc= &(*picSrc.getPixels(mp).begin());
 		sint	w= picSrc.getWidth(mp);
-		sint	h= picSrc.getWidth(mp);
+		sint	h= picSrc.getHeight(mp);
 		vector<uint8>	compdata;
 		DDSURFACEDESC	temp;
 		compressMipMap(pixSrc, w, h, compdata, temp, algo);

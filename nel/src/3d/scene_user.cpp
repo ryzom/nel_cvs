@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.48 2003/08/19 15:13:27 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.49 2003/09/16 13:51:54 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -746,25 +746,27 @@ void CSceneUser::stopCreatingAndAddingIG(UInstanceGroup **pIG)
 
 	for(TWaitingIGList::iterator it = _WaitingIGs.begin(); it != _WaitingIGs.end(); ++it)
 	{
-		if (it->CallerPtr == pIG)
+		CWaitingIG &rWIG = *it;
+		if (rWIG.CallerPtr == pIG)
 		{
-			if (!it->IGToLoad)
+			if (rWIG.IGToLoad == NULL)
 			{
-				UInstanceGroup::stopCreateInstanceGroupAsync(pIG);										
+				UInstanceGroup::stopCreateInstanceGroupAsync(pIG);
 			}
-			else
+			// Ig must be initialized
+			else if (rWIG.IGToLoad != (UInstanceGroup*)-1)
 			{
-				switch(it->IGToLoad->getAddToSceneState())
+				switch(rWIG.IGToLoad->getAddToSceneState())
 				{
 					case UInstanceGroup::StateAdding:
-						it->IGToLoad->stopAddToSceneAsync();
+						rWIG.IGToLoad->stopAddToSceneAsync();
 					break;
 					case UInstanceGroup::StateAdded:
-						it->IGToLoad->removeFromScene(*this);
-						delete it->IGToLoad;
+						rWIG.IGToLoad->removeFromScene(*this);
+						delete rWIG.IGToLoad;
 					break;
 					case UInstanceGroup::StateNotAdded:
-						delete it->IGToLoad;
+						delete rWIG.IGToLoad;
 					break;
 				}
 			}

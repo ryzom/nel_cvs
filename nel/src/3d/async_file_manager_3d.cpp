@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager_3d.cpp,v 1.5 2003/08/04 13:22:35 lecroart Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.6 2003/09/16 13:51:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -419,9 +419,9 @@ CAsyncFileManager3D::CIGLoadUser::CIGLoadUser (const std::string &IGName, UInsta
 void CAsyncFileManager3D::CIGLoadUser::run (void)
 {
 	NL3D_MEM_IG
+	CInstanceGroupUser *pIG = new CInstanceGroupUser();
 	try
 	{
-		CInstanceGroupUser *pIG = new CInstanceGroupUser();
 		if (pIG->init (_IGName))
 		{		
 			*_ppIG = pIG;
@@ -429,6 +429,7 @@ void CAsyncFileManager3D::CIGLoadUser::run (void)
 		else
 		{
 			nlwarning ("Couldn't init '%s'", _IGName.c_str());
+			delete pIG;
 			*_ppIG = (UInstanceGroup*)-1;
 			delete this;
 			return;
@@ -437,6 +438,7 @@ void CAsyncFileManager3D::CIGLoadUser::run (void)
 	catch(EPathNotFound &)
 	{
 		nlwarning ("Couldn't load '%s'", _IGName.c_str());
+		delete pIG;
 		*_ppIG = (UInstanceGroup*)-1;
 		delete this;
 		return;

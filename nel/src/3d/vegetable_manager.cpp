@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.38 2004/03/22 17:40:39 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.39 2004/04/09 14:19:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -534,10 +534,10 @@ const char* NL3D_CommonEndVegetableProgram=
 	DP4 o[HPOS].z, c[2], R5;															\n\
 	DP4 o[HPOS].w, c[3], R5;															\n\
 	# copy Dynamic lightmap UV in stage0, from colors Alpha part.						\n\
-	MOV o[TEX0].x, v[3].w;																\n\
+	MAD o[TEX0].xzw, v[3].w, c[8].yxxx, c[8].xxxy;										\n\
 	MOV o[TEX0].y, v[4].w;																\n\
 	# copy diffuse texture uv to stage 1.												\n\
-	MOV o[TEX1].xy, v[8];																\n\
+	MOV o[TEX1], v[8];																\n\
 	END																					\n\
 ";
 

@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.32 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: water_shape.cpp,v 1.33 2004/04/09 14:18:12 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -114,26 +114,26 @@ const char *WaterVPStartCode =
 /** This part of vertex program compute 2 layers of bump (for use with texture shaders)
   */
 const char *WaterVpBump2LayersCode = "MUL R3, v[0], c[10];			#compute bump 0 uv's			\n\
-						   ADD o[TEX0].xy, R3, c[9];												\n\
+						   ADD o[TEX0], R3, c[9];												\n\
 						   MUL R3, v[0], c[12];			#compute bump 1 uv's						\n\
-						   ADD o[TEX1].xy, R3, c[11];												\n\
+						   ADD o[TEX1], R3, c[11];												\n\
 						   DP3 R2.x, R1, R0;														\n\
 						   MUL R0, R0, R2.x;														\n\
 						   ADD R2, R0, R0;															\n\
 						   ADD R0, R2, -R1;				#compute reflection vector					\n\
-						   MAD o[TEX2].xy, R0, c[8], c[8];											\n\
+						   MAD o[TEX2], R0, c[8], c[8];											\n\
 						   ";
 
 
 /** Version with one bump map only (Texture shaders support chaining of offset textures, EMBM does not)
   */
 const char *WaterVpBump1LayersCode = "MUL R3, v[0], c[12];			#compute bump 1 uv's				\n\
-									  ADD o[TEX0].xy, R3, c[11];										\n\
+									  ADD o[TEX0], R3, c[11];										\n\
 									  DP3 R2.x, R1, R0;													\n\
 									  MUL R0, R0, R2.x;													\n\
 									  ADD R2, R0, R0;													\n\
 									  ADD R0, R2, -R1;				#compute reflection vector			\n\
-									  MAD o[TEX1].xy, R0, c[8], c[8];									\n\
+									  MAD o[TEX1], R0, c[8], c[8];									\n\
 									  ";
 
 /** Optionnal diffuse texture in stage 3
@@ -161,7 +161,7 @@ const char *WaterVpNoBumpCode = "  DP3 R2.x, R1, R0;				#project view vector on 
 								   MUL R0, R0, R2.x;															\n\
 								   ADD R2, R0, R0;															\n\
 								   ADD R0, R2, -R1;				#compute reflection vector					\n\
-								   MAD o[TEX0].xy, R0, c[8], c[8];											\n\
+								   MAD o[TEX0], R0, c[8], c[8];											\n\
 								   DP4 o[FOGC].x, c[18], R4;	#setup fog									\n\
 								 ";
 

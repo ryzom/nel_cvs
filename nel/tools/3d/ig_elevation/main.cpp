@@ -1,6 +1,6 @@
 /** \file main.cpp
  *
- * $Id: main.cpp,v 1.4 2002/06/06 08:21:23 vizerie Exp $
+ * $Id: main.cpp,v 1.5 2002/06/07 12:35:33 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -414,10 +414,11 @@ int main(int nNbArg, char**ppArgs)
 				meanPos /= (float) portal.size();
 				meanPos += vGlobalPos;
 				float z = getHeightMapZ(meanPos.x, meanPos.y, zl, options, HeightMap1, HeightMap2);
-				for(l = 0; l < portal.size(); ++k)
+				for(l = 0; l < portal.size(); ++l)
 				{
 					portal[l].z += z;
 				}
+				Portals[k].setPoly(portal);
 			}
 
 			// clusters

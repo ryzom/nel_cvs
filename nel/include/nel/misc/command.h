@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.28 2004/01/15 17:27:03 lecroart Exp $
+ * $Id: command.h,v 1.29 2004/03/18 19:24:56 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,6 +84,10 @@ struct __name##Class: public NLMISC::ICommand \
 __name##Class __name##Instance; \
 bool __name##Class::execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
 
+/** Helper to declare a command as friend of a class.
+ *	Usefull when you want to declare debug command that access private class method or data.
+*/
+#define NLMISC_COMMAND_FRIEND(__name) friend struct __name##Class
 
 /**
  * Create a function that can be call in realtime. Don't use this class directly but use the macro NLMISC_COMMAND

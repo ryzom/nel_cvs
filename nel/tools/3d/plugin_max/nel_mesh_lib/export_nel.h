@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.39 2001/12/13 14:58:43 vizerie Exp $
+ * $Id: export_nel.h,v 1.40 2002/02/12 15:47:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -393,6 +393,9 @@ public:
 
 	// Get the node name
 	static std::string				getName (INode& node);
+
+	// Get the NEL node name. ie either NEL_OBJET_NAME_DATA appData or just GetName().
+	static std::string				getNelObjectName (INode& node);
 
 	// Get lights
 	static void						getLights (std::vector<NL3D::CLight>& vectLight, TimeValue time, Interface& ip, INode* node=NULL);

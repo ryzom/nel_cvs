@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.11 2002/02/11 13:15:54 berenguier Exp $
+ * $Id: export_scene.cpp,v 1.12 2002/02/12 15:47:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,10 +39,6 @@
 using namespace NLMISC;
 using namespace NL3D;
 using namespace std;
-
-// ***************************************************************************
-
-#define NEL_OBJET_NAME_DATA 1970
 
 // ***************************************************************************
 
@@ -158,34 +154,8 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 			CQuat qRotTemp;
 			CVector vPosTemp;
 
-			// Try to get an APPDATA for the name of the object			
-			AppDataChunk *ad = pNode->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA);
-			if (ad&&ad->data)
-			{
-				// Get the name of the object in the APP data
-				aIGArray[nNumIG].Name=(const char*)ad->data;
-			}
-			else
-			{
-				Object *obj = pNode->EvalWorldState(0).obj;
-				if (obj)
-				{
-					ad = obj->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA);
-					if (ad&&ad->data)
-					{
-						// get file name only
-						char fName[_MAX_FNAME];
-						char ext[_MAX_FNAME];
-						::_splitpath((const char*)ad->data, NULL, NULL, fName, ext) ;						
-						aIGArray[nNumIG].Name=fName + std::string(ext);
-					}
-					else
-					{
-						// Extract the node name
-						aIGArray[nNumIG].Name = pNode->GetName();
-					}
-				}
-			}
+			// Get Nel Name for the object.
+			aIGArray[nNumIG].Name= CExportNel::getNelObjectName(*pNode);
 
 			//Get the local transformation matrix
 			Matrix3 nodeTM = pNode->GetNodeTM(0);

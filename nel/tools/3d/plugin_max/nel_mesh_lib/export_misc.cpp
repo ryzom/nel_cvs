@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.12 2001/12/12 11:07:46 vizerie Exp $
+ * $Id: export_misc.cpp,v 1.13 2002/02/12 15:47:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,10 @@
 
 using namespace NLMISC;
 using namespace NL3D;
+
+// ***************************************************************************
+
+#define NEL_OBJET_NAME_DATA 1970
 
 // --------------------------------------------------
 
@@ -454,6 +458,45 @@ std::string	CExportNel::getName (INode& mtl)
 	// Return its name
 	TCHAR* name=mtl.GetName();
 	return std::string (name);
+}
+
+
+// --------------------------------------------------
+
+// Get the NEL node name
+std::string		CExportNel::getNelObjectName (INode& node)
+{
+	// Try to get an APPDATA for the name of the object			
+	AppDataChunk *ad = node.GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA);
+	if (ad&&ad->data)
+	{
+		// Get the name of the object in the APP data
+		return (const char*)ad->data;
+	}
+	else
+	{
+		Object *obj = node.EvalWorldState(0).obj;
+		if (obj)
+		{
+			ad = obj->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA);
+			if (ad&&ad->data)
+			{
+				// get file name only
+				char fName[_MAX_FNAME];
+				char ext[_MAX_FNAME];
+				::_splitpath((const char*)ad->data, NULL, NULL, fName, ext) ;						
+				return std::string(fName + std::string(ext));
+			}
+			else
+			{
+				// Extract the node name
+				return node.GetName();
+			}
+		}
+		else
+			// Extract the node name
+			return node.GetName();
+	}
 }
 
 // --------------------------------------------------

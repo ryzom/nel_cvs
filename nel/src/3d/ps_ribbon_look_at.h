@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.h
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.h,v 1.3 2002/02/21 17:36:21 vizerie Exp $
+ * $Id: ps_ribbon_look_at.h,v 1.4 2002/03/14 18:33:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,7 +136,10 @@ private:
 	  */
 		
 	//@{
-			/// a struct containing a vertex buffer and a primitive block
+
+			/** a struct containing a vertex buffer and a primitive block
+			  * \todo: primitive blocks can be shared for several vbs...
+			  */
 			struct CVBnPB
 			{
 				CVertexBuffer		VB;

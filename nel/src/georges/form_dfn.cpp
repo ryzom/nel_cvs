@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.17 2002/12/30 13:56:56 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.18 2003/07/01 09:41:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -621,7 +621,7 @@ CFormDfn *CFormDfn::getSubDfn (uint index, uint &dfnIndex)
 	}
 
 	// Should be found..
-	nlstop
+	nlstop;
 	return NULL;
 }
 
@@ -648,7 +648,7 @@ const CFormDfn *CFormDfn::getSubDfn (uint index, uint &dfnIndex) const
 	}
 
 	// Should be found..
-	nlstop
+	nlstop;
 	return NULL;
 }
 

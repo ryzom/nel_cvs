@@ -1,7 +1,7 @@
 /** \file eval_num_expr.cpp
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.cpp,v 1.6 2003/03/13 17:21:12 coutelas Exp $
+ * $Id: eval_num_expr.cpp,v 1.7 2003/07/01 09:41:20 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -819,7 +819,7 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 								break;
 							default:
 								// Can't be hear after getToken
-								nlstop
+								nlstop;
 							}
 						}
 						else
@@ -956,7 +956,7 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 				break;
 			default:
 				// Can't be hear after getToken
-				nlstop
+				nlstop;
 			}
 		}
 
@@ -1082,7 +1082,7 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 				}
 				break;
 			default:
-				nlassert (0);
+				nlstop;
 			}
 
 			// Decal others values
@@ -1129,7 +1129,7 @@ bool CEvalNumExpr::internalCheck ()
 	for (uint i=0; i<ReservedWordCount-1; i++)
 		if (strcmp (_ReservedWord[i], _ReservedWord[i+1]) >= 0)
 		{
-			nlassert (0);
+			nlstop;
 			return false;
 		}
 	return true;

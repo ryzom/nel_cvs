@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.38 2003/06/05 15:42:34 boucher Exp $
+ * $Id: form_elm.cpp,v 1.39 2003/07/01 09:41:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -738,7 +738,7 @@ bool CFormElm::arrayInsertNodeByName (const char *name, const CFormDfn **parentD
 					//newelm = new CFormElmVirtualStruct (Form, array, *parentDfn, indexDfn);
 					break;
 				default:
-					nlstop
+					nlstop;
 				}
 
 				nlassert (newelm);
@@ -1232,7 +1232,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 										//newelm = new CFormElmVirtualStruct (form, array, *parentDfn, indexDfn);
 										break;
 									default:
-										nlstop
+										nlstop;
 									}
 
 									nlassert (newelm);
@@ -1321,7 +1321,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 								// *node = new CFormElmVirtualStruct (form, parentNode, *parentDfn, indexDfn);
 								break;
 							default:
-								nlstop
+								nlstop;
 							}
 
 							nlassert (*node);

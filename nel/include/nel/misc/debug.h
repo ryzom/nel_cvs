@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.50 2003/06/30 18:46:51 lecroart Exp $
+ * $Id: debug.h,v 1.51 2003/07/01 09:41:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -420,7 +420,7 @@ if(false)
 		NLMISC::createDebug (); \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else \
+		else if(!NLMISC::NoAssert) \
 			NLMISC::DebugNeedAssert = true; \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->displayNL ("STOP"); \
@@ -428,8 +428,9 @@ if(false)
 			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
 		if (NLMISC::DebugNeedAssert) \
 			NLMISC_BREAKPOINT; \
+		NLMISC::GlobalAssertCall = true; \
 	} \
-}
+} for(;NLMISC::GlobalAssertCall;NLMISC::GlobalAssertCall=false) if (NLMISC::NoAssert)
 
 #define nlstoponce \
 { \
@@ -440,7 +441,7 @@ if(false)
 		NLMISC::createDebug (); \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else \
+		else if(!NLMISC::NoAssert) \
 			NLMISC::DebugNeedAssert = true; \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->displayNL ("STOP"); \
@@ -448,8 +449,9 @@ if(false)
 			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
 		if (NLMISC::DebugNeedAssert) \
 			NLMISC_BREAKPOINT; \
+		NLMISC::GlobalAssertCall = true; \
 	} \
-}
+} for(;NLMISC::GlobalAssertCall;NLMISC::GlobalAssertCall=false) if (NLMISC::NoAssert)
 
 
 #define nlstopex(str) \
@@ -460,7 +462,7 @@ if(false)
 		NLMISC::createDebug (); \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else \
+		else if(!NLMISC::NoAssert) \
 			NLMISC::DebugNeedAssert = true; \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->display ("STOP "); \
@@ -469,8 +471,9 @@ if(false)
 			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
 		if (NLMISC::DebugNeedAssert) \
 			NLMISC_BREAKPOINT; \
+		NLMISC::GlobalAssertCall = true; \
 	} \
-}
+} for(;NLMISC::GlobalAssertCall;NLMISC::GlobalAssertCall=false) if (NLMISC::NoAssert)
 
 
 struct EFatalError : public Exception

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.30 2002/05/21 16:42:23 lecroart Exp $
+ * $Id: particle_system_shape.cpp,v 1.31 2002/05/28 09:25:40 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,6 @@
 #include "3d/driver.h"
 #include "nel/misc/file.h"
 #include "nel/misc/mem_stream.h"
-
 
 
 namespace NL3D {
@@ -77,7 +76,18 @@ void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	/// version 6 : added sharing flag
 	//NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector();
 	//f.serialCont(buf);
-	f.serialBufferWithSize ((uint8*)_ParticleSystemProto.buffer(), _ParticleSystemProto.length());
+
+	if (f.isReading ())
+	{
+		std::vector<uint8> buf;
+		f.serialCont(buf);
+		_ParticleSystemProto.fill(&buf[0], buf.size());
+	}
+	else
+	{
+		f.serialBufferWithSize ((uint8*)_ParticleSystemProto.buffer(), _ParticleSystemProto.length());
+	}
+
 	if (ver > 1)
 	{
 		// serial default tracks

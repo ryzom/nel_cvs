@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.69 2003/11/13 09:34:00 distrib Exp $
+# $Id: Makefile.am,v 1.70 2003/11/17 10:31:01 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -10,6 +10,7 @@ lib_LTLIBRARIES       = libnelmisc.la
 
 libnelmisc_la_SOURCES = aabbox.cpp                         \
 			algo.cpp 			   \
+                        async_file_manager.cpp             \
 			big_file.cpp                       \
                         bit_mem_stream.cpp                 \
                         bit_set.cpp                        \
@@ -26,22 +27,31 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         diff_tool.cpp                      \
                         displayer.cpp                      \
                         eid_translator.cpp                 \
+                        entity_id.cpp                      \
+                        eval_num_expr.cpp                  \
                         event_emitter.cpp                  \
                         event_listener.cpp                 \
                         event_server.cpp                   \
                         events.cpp                         \
+                        fast_mem.cpp                       \
                         file.cpp                           \
+                        game_device_events.cpp             \
                         geom_ext.cpp                       \
+                        gtk_displayer.cpp                  \
 			heap_allocator.cpp		   \
                         heap_memory.cpp                    \
 			hierarchical_timer.cpp             \
                         i_xml.cpp                          \
                         i18n.cpp                           \
+                        input_device.cpp                   \
+                        input_device_server.cpp            \
                         line.cpp                           \
                         log.cpp                            \
                         matrix.cpp                         \
+                        mem_displayer.cpp                  \
                         mem_stream.cpp                     \
                         mutex.cpp                          \
+			noise_value.cpp                    \
                         o_xml.cpp                          \
                         p_thread.cpp                       \
                         path.cpp                           \
@@ -50,9 +60,12 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
 			progress_callback.cpp		   \
                         quad.cpp                           \
                         quat.cpp                           \
+                        reader_writer.cpp                  \
                         rect.cpp                           \
+                        report.cpp                         \
                         rgba.cpp                           \
                         shared_memory.cpp                  \
+                        sheet_id.cpp                       \
                         smart_ptr.cpp                      \
                         stop_watch.cpp                     \
                         stream.cpp                         \
@@ -73,21 +86,9 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         vectord.cpp                        \
                         win_event_emitter.cpp              \
                         win_thread.cpp                     \
-                        reader_writer.cpp                  \
-                        entity_id.cpp                      \
                         win_displayer.cpp                  \
-                        gtk_displayer.cpp                  \
                         window_displayer.cpp               \
-                        mem_displayer.cpp                  \
-                        game_device_events.cpp             \
-                        input_device.cpp                   \
-                        input_device_server.cpp            \
-                        fast_mem.cpp                       \
-                        sheet_id.cpp                       \
-                        eval_num_expr.cpp                  \
-                        report.cpp                         \
-                        async_file_manager.cpp             \
-						words_dictionary.cpp
+                        words_dictionary.cpp
 
 noinst_HEADERS        = di_game_device.h                   \
                         di_keyboard_device.h               \

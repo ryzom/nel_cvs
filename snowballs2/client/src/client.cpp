@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.45 2001/08/07 15:38:11 valignat Exp $
+ * $Id: client.cpp,v 1.46 2001/08/14 12:31:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,7 +263,9 @@ int main(int argc, char **argv)
 	displayLoadingState ("Ready !!!");
 
 	// Display the first line
-	nlinfo ("Welcome to Snowballs");
+	nlinfo ("Welcome to Snowballs 1");
+	nlinfo ("");
+	nlinfo ("Press SHIFT-ESC to exit the game");
 
 	// Get the current time
 	NewTime = CTime::getLocalTime();
@@ -558,7 +560,7 @@ void updateLoginInterface ()
 	string str;
 	if (haveAnswer (str))
 	{
-		nlinfo ("result %s", str.c_str());
+//		nlinfo ("result %s", str.c_str());
 
 		// esc pressed, stop all only before the shard selection
 		if (str.empty () && loginState < 3)
@@ -570,7 +572,7 @@ void updateLoginInterface ()
 		switch (loginState)
 		{
 		case 1:
-			nlinfo ("login entered");
+//			nlinfo ("login entered");
 			login = str;
 			Self->Name = login;
 			askString ("Please enter your password:", ConfigFile.getVar("Password").asString (), 1);
@@ -578,7 +580,7 @@ void updateLoginInterface ()
 			break;
 		case 2:
 			{
-				nlinfo ("password entered");
+//				nlinfo ("password entered");
 				string password = str;
 
 				string LoginSystemAddress = ConfigFile.getVar("LoginSystemAddress").asString ();
@@ -604,7 +606,7 @@ void updateLoginInterface ()
 			break;
 		case 3:
 			{
-				nlinfo ("shard selected");
+//				nlinfo ("shard selected");
 				uint32 shardNum = atoi (str.c_str());
 
 				string res = CLoginClient::connectToShard (shardNum, *Connection);

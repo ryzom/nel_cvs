@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.cpp,v 1.15 2001/07/27 09:08:06 lecroart Exp $
+ * $Id: mouse_listener.cpp,v 1.16 2001/08/14 12:31:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,7 +170,7 @@ void C3dMouseListener::operator ()(const CEvent& event)
 	else if (event==EventMouseUpId)
 	{
 		// throw snowball
-		nlinfo("damage=%f", _AimingDamage);
+//		nlinfo("damage=%f", _AimingDamage);
 		_AimingState = false;
 		_AimingStartTime = 0;
 		CVector	direction = (_AimedTarget-_AimingPosition).normed();

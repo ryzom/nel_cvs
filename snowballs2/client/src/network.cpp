@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.15 2001/07/27 15:50:40 corvazier Exp $
+ * $Id: network.cpp,v 1.16 2001/08/14 12:31:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,9 +79,11 @@ static void cbAddEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 
 	msgin.serial (id, name, race, startPosition);
 
-	nlinfo ("%s", stringFromVector (msgin.bufferAsVector()).c_str());
+//	nlinfo ("%s", stringFromVector (msgin.bufferAsVector()));
 
-	nlinfo ("Receive add entity %u '%s' %s (%f,%f,%f)", id, name.c_str(), race==0?"penguin":"gnu", startPosition.x, startPosition.y, startPosition.z);
+//	nlinfo ("Receive add entity %u '%s' %s (%f,%f,%f)", id, name.c_str(), race==0?"penguin":"gnu", startPosition.x, startPosition.y, startPosition.z);
+
+	nlinfo ("New player named '%s' comes in at position (%8.2f, %8.2f, %8.2f)", name.c_str(), startPosition.x, startPosition.y, startPosition.z);
 
 	if (id != Self->Id)
 	{
@@ -89,7 +91,7 @@ static void cbAddEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 	}
 	else
 	{
-		nlinfo ("Receive my add entity");
+//		nlinfo ("Receive my add entity");
 	}
 }
 
@@ -99,7 +101,12 @@ static void cbRemoveEntity (CMessage &msgin, TSockId from, CCallbackNetBase &net
 
 	msgin.serial (id);
 
-	nlinfo ("Receive remove entity %u", id);
+//	nlinfo ("Receive remove entity %u", id);
+
+	EIT eit = findEntity (id);
+	CEntity	&entity = (*eit).second;
+
+	nlinfo ("Player named '%s' goes offline", entity.Name.c_str());
 
 	removeEntity (id);
 }
@@ -147,7 +154,7 @@ static void cbHit(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 
 	msgin.serial (sid, eid, direct);
 
-	nlinfo ("Receive hit msg %u %u %d", sid, eid, direct);
+//	nlinfo ("Receive hit msg %u %u %d", sid, eid, direct);
 
 	EIT eit = findEntity (eid);
 	CEntity	&entity = (*eit).second;
@@ -167,7 +174,7 @@ static void cbSnowball (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 
 	msgin.serial (sid, eid, position, target, speed, deflagRadius);
 	
-	nlinfo ("Receive a snowball message");
+//	nlinfo ("Receive a snowball message");
 
 	shotSnowball (sid, eid, position, target, speed, deflagRadius);
 }
@@ -184,14 +191,14 @@ static void cbIdentification (CMessage &msgin, TSockId from, CCallbackNetBase &n
 	uint32 id;
 	msgin.serial (id);
 	
-	nlinfo ("my online id is %u", id);
+//	nlinfo ("my online id is %u", id);
 
 	if (Self == NULL)
 		nlerror ("Self is NULL");
 
 	if (Self->Id != id)
 	{
-		nlinfo ("remaping my entity from %u to %u", Self->Id, id);
+//		nlinfo ("remaping my entity from %u to %u", Self->Id, id);
 		
 		// copy my old entity
 		CEntity me = *Self;
@@ -289,7 +296,7 @@ void	sendSnowBall (uint32 eid, const NLMISC::CVector &position, const NLMISC::CV
 	msgout.serial (eid, const_cast<CVector &>(position), const_cast<CVector &>(target), speed, deflagRadius);
 	Connection->send (msgout);
 
-	nlinfo("Sending snowball to network (%f,%f,%f) to (%f,%f,%f) with %f %f", position.x, position.y, position.z, target.x, target.y, target.z, speed, deflagRadius);
+//	nlinfo("Sending snowball to network (%f,%f,%f) to (%f,%f,%f) with %f %f", position.x, position.y, position.z, target.x, target.y, target.z, speed, deflagRadius);
 }
 
 

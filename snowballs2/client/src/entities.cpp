@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.40 2001/07/27 14:35:08 lecroart Exp $
+ * $Id: entities.cpp,v 1.41 2001/08/14 12:31:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,7 +125,7 @@ EIT findEntity (uint32 eid, bool needAssert)
 // Creates an entity, given its id, its type (Self, Other, Snowball), its start and server positions.
 void addEntity (uint32 eid, std::string name, CEntity::TType type, const CVector &startPosition, const CVector &serverPosition)
 {
-	nlinfo ("adding entity %u", eid);
+//	nlinfo ("adding entity %u", eid);
 
 	// Check that the entity doesn't exist yet
 	EIT eit = findEntity (eid, false);
@@ -293,7 +293,7 @@ void deleteEntity (CEntity &entity)
 
 	deleteSound (entity);
 
-	nlinfo ("Remove the entity %u from the Entities list", entity.Id);
+//	nlinfo ("Remove the entity %u from the Entities list", entity.Id);
 	EIT eit = findEntity (entity.Id);
 	Entities.erase (eit);
 }
@@ -303,7 +303,7 @@ void deleteEntity (CEntity &entity)
 // The entity passes into the Disappear state
 void removeEntity (uint32 eid)
 {
-	nlinfo ("removing entity %u", eid);
+//	nlinfo ("removing entity %u", eid);
 
 	// look for the entity
 	EIT eit = findEntity (eid);
@@ -724,7 +724,7 @@ void updateEntities ()
 			if (entity.Type == CEntity::Other &&
 				(entity.ServerPosition-entity.Position)*entity.ImmediateSpeed < 0.0f)
 			{
-				nlinfo("detected over entity %d", entity.Id);
+//				nlinfo("detected over entity %d", entity.Id);
 				entity.ServerPosition.z = entity.Position.z;
 				entity.Position = entity.ServerPosition;
 				entity.VisualCollisionEntity->snapToGround(entity.Position);

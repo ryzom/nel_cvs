@@ -115,21 +115,19 @@ the server, it's me, throw me a low one :)
 Use the mouse to look around.
 Use arrow keys to move forward, backward, strafe left and strafe right.
 
-F1: switch on/off informations
-F2: switch on/off the chat text full height
-SHIFT-F2: clear the chat
+F1: go online (display the login interface)
+F2: go offline
 F3: switch on/off the wireframe mode
-F4: change movement speed
-F5: dump client and server information to the log file
+F4: clear the chat window
+F5: switch on/off the chat text
 F6: switch on/off the radar
 F7: zoom out the radar
 F8: zoom in the radar
 F9: capture or uncapture the mouse
 F10: Windows menu
+F11: reset player position
 F12: take a screenshot
-PgUp/PgDw: Zoom in/out
-TAB: display scores
-ESC: quit
+SHIFT-ESC: quit
 Left Mouse Button: throw a snowball
 Type text followed by ENTER to broadcast messages
 

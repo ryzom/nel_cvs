@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.23 2001/03/06 15:15:13 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.24 2001/03/19 10:11:51 puzin Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -378,6 +378,15 @@ void CTileBank::makeAllExtensionDDS ()
 		{
 			tmp.replace(pos, 4, ".dds");
 			_TileVector[nTile].setFileName (CTile::additive, tmp);
+		}
+
+		// Alpha.
+		tmp= _TileVector[nTile].getRelativeFileName (CTile::alpha);
+		pos= tmp.rfind(".tga");
+		if(pos!= string::npos)
+		{
+			tmp.replace(pos, 4, ".dds");
+			_TileVector[nTile].setFileName (CTile::alpha, tmp);
 		}
 
 	}

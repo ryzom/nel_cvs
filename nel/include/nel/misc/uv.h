@@ -1,7 +1,7 @@
 /** \file uv.h
  * <File description>
  *
- * $Id: uv.h,v 1.3 2002/03/14 18:27:18 vizerie Exp $
+ * $Id: uv.h,v 1.4 2002/07/18 16:45:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,10 +56,12 @@ public:
 	// bin operators.
 	CUV	operator+(const CUV &v) const
 		{ return CUV(U+v.U, V+v.V);}
+	// binary -
 	CUV	operator-(const CUV &v) const
 		{ return CUV(U-v.U, V-v.V);}
-	CUV	operator*(float f) const
-		{ return CUV(U*f, V*f);}
+	// unary -
+	CUV operator-() const 
+		{ return CUV(-U, -V); }	
 	// = operators.
 	CUV	&operator*=(float f)
 		{ U*=f;V*=f; return *this;}
@@ -79,6 +81,19 @@ public:
 
 	void	serial(NLMISC::IStream &f)	{f.serial(U,V);}
 };
+
+
+inline CUV operator * (float f, const CUV &uv)
+{
+	return CUV(uv.U * f, uv.V * f);
+}
+
+
+inline CUV operator * (const CUV &uv, float f)
+{
+	return f * uv;
+}
+
 
 
 // ***************************************************************************

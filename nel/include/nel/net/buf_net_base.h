@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.11 2003/02/07 16:07:56 lecroart Exp $
+ * $Id: buf_net_base.h,v 1.12 2003/08/12 16:45:43 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,7 +99,9 @@ public:
 	
 	/**
 	 * Sets the max size of the received messages.
-	 * Default value: 2^31-1 (0x7FFFFFF) (which is the very maximum !).
+	 * If receiving a message bigger than the limit, the connection will be dropped.
+	 *
+	 * Default value: 1 MegaByte
 	 * If you put a negative number as limit, the max size is reset to the default value.
 	 * Warning: you can call this method only at initialization time, before connecting (for a client)
 	 * or calling init() (for a server) !
@@ -107,14 +109,16 @@ public:
 	void	setMaxExpectedBlockSize( sint32 limit )
 	{
 		if ( limit < 0 )
-			_MaxExpectedBlockSize = 0x7FFFFFF;
+			_MaxExpectedBlockSize = 1048576;
 		else
 			_MaxExpectedBlockSize = (uint32)limit;
 	}
 
 	/**
 	 * Sets the max size of the sent messages.
-	 * Default value: 2^31-1 (0x7FFFFFF) (which is the very maximum !).
+	 * Note: Limiting of sending not implemented, currently
+	 *
+	 * Default value: 1 MegaByte
 	 * If you put a negative number as limit, the max size is reset to the default value.
 	 * Warning: you can call this method only at initialization time, before connecting (for a client)
 	 * or calling init() (for a server) !
@@ -122,7 +126,7 @@ public:
 	void	setMaxSentBlockSize( sint32 limit )
 	{
 		if ( limit < 0 )
-			_MaxSentBlockSize = 0x7FFFFFF;
+			_MaxSentBlockSize = 1048576;
 		else
 			_MaxSentBlockSize = (uint32)limit;
 	}

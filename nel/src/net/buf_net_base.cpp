@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.cpp,v 1.11 2003/02/07 16:08:25 lecroart Exp $
+ * $Id: buf_net_base.cpp,v 1.12 2003/08/12 16:45:43 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,8 +48,8 @@ CBufNetBase::CBufNetBase() :
 	_DataAvailable( false ),
 	_DisconnectionCallback( NULL ),
 	_DisconnectionCbArg( NULL ),
-	_MaxExpectedBlockSize( 0x7FFFFFF ),
-	_MaxSentBlockSize( 0x7FFFFFF )
+	_MaxExpectedBlockSize( 1048576 ),
+	_MaxSentBlockSize( 1048576 )
 {
 	// Debug info for mutexes
 #ifdef MUTEX_DEBUG

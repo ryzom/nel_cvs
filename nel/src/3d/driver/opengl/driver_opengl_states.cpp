@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.5 2001/11/07 10:52:41 vizerie Exp $
+ * $Id: driver_opengl_states.cpp,v 1.6 2001/11/07 17:36:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -374,7 +374,7 @@ void			CDriverGLStates::resetTextureMode()
 	{
 		glDisable(GL_TEXTURE_CUBE_MAP_ARB);
 	}
-	_TextureMode[_CurrentActiveTextureARB]= TTextureMode::TextureDisabled;
+	_TextureMode[_CurrentActiveTextureARB]= TextureDisabled;
 }
 
 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: file.cpp,v 1.4 2000/09/13 14:55:02 berenguier Exp $
+ * $Id: file.cpp,v 1.5 2000/09/14 16:40:53 cado Exp $
  *
  * Standard File Input/Output.
  */
@@ -17,6 +17,7 @@
 #include "nel/misc/file.h"
 using namespace std;
 
+#include <stdio.h>
 
 namespace NLMISC
 {

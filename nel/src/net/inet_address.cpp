@@ -8,15 +8,15 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.1 2000/09/14 16:17:21 lecroart Exp $
+ * $Id: inet_address.cpp,v 1.2 2000/09/14 16:40:53 cado Exp $
  *
  * Implementation for CInetAddress
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  */
 
-#include "nel/network/inet_address.h"
-#include "nel/network/socket.h"
+#include "nel/net/inet_address.h"
+#include "nel/net/socket.h"
 
 
 #ifdef NL_OS_WINDOWS

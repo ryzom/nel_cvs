@@ -8,13 +8,14 @@
  */
 
 /*
- * $Id: class_registry.cpp,v 1.1 2000/09/12 08:16:20 berenguier Exp $
+ * $Id: class_registry.cpp,v 1.2 2000/09/14 16:40:53 cado Exp $
  *
  * <Replace this by a description of the file>
  */
 
 #include "nel/misc/class_registry.h"
 #include "nel/misc/assert.h"
+#include <typeinfo>
 using namespace std;
 
 

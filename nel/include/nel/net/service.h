@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.h,v 1.1 2000/09/14 16:18:47 lecroart Exp $
+ * $Id: service.h,v 1.2 2000/09/14 16:40:53 cado Exp $
  *
  * Base class for all network services
  */
@@ -16,9 +16,8 @@
 #ifndef NL_SERVICE_H
 #define NL_SERVICE_H
 
+#include <string>
 #include <vector>
-
-using namespace std;
 
 #include "nel/misc/types_nl.h"
 
@@ -41,7 +40,7 @@ public:
 protected:
 
 	/// Array of arguments
-	vector<string> _Args;
+	std::vector<std::string> _Args;
 };
 
 }; // NLNET

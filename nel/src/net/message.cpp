@@ -8,12 +8,12 @@
  */
 
 /*
- * $Id: message.cpp,v 1.1 2000/09/14 16:17:21 lecroart Exp $
+ * $Id: message.cpp,v 1.2 2000/09/14 16:40:53 cado Exp $
  *
  * Implementation of CMessage
  */
 
-#include "nel/network/message.h"
+#include "nel/net/message.h"
 
 
 namespace NLNET

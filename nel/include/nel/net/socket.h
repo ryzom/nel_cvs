@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.1 2000/09/14 16:18:47 lecroart Exp $
+ * $Id: socket.h,v 1.2 2000/09/14 16:40:53 cado Exp $
  *
  * Interface for CSocket
  */
@@ -17,7 +17,7 @@
 #define NL_SOCKET_H
 
 
-#include "nel/network/inet_address.h"
+#include "nel/net/inet_address.h"
 
 
 namespace NLNET

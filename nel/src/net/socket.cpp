@@ -8,13 +8,13 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.1 2000/09/14 16:17:21 lecroart Exp $
+ * $Id: socket.cpp,v 1.2 2000/09/14 16:40:53 cado Exp $
  *
  * Implementation for CSocket
  */
 
-#include "nel/network/socket.h"
-#include "nel/network/message.h"
+#include "nel/net/socket.h"
+#include "nel/net/message.h"
 
 
 #ifdef NL_OS_WINDOWS

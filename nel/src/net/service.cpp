@@ -8,14 +8,14 @@
  */
 
 /*
- * $Id: service.cpp,v 1.1 2000/09/14 16:17:21 lecroart Exp $
+ * $Id: service.cpp,v 1.2 2000/09/14 16:40:53 cado Exp $
  *
  * <Replace this by a description of the file>
  */
 
 #include "nel/misc/types_nl.h"
 
-#include "nel/network/service.h"
+#include "nel/net/service.h"
 
 namespace NLNET
 {
@@ -25,7 +25,7 @@ namespace NLNET
  */
 IService::IService(int argc, char **argv)
 {
-	for (uint i = 0; i < argc; i++)
+	for (sint i = 0; i < argc; i++)
 	{
 		_Args.push_back (argv[i]);
 	}

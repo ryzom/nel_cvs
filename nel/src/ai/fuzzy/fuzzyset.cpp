@@ -1,7 +1,7 @@
 /** \file fuzzyset.cpp
  * Fuzzy sets: triangle, trapeze...
  *
- * $Id: fuzzyset.cpp,v 1.5 2001/04/24 08:28:38 portier Exp $
+ * $Id: fuzzyset.cpp,v 1.6 2001/04/24 15:48:04 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,10 +78,10 @@ namespace NLAIFUZZY
 		//	throw Exc::
 		}
 		NLAIAGENT::IObjectIA  * arg = (NLAIAGENT::IObjectIA  *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_Min = (double) ((NLAIAGENT::DigitalType *) arg )->getValue();
+		_Min = (double) ((NLAIAGENT::DDigitalType *) arg )->getValue();
 		arg->release();
 		arg = (NLAIAGENT::IObjectIA  *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_Max = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_Max = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 	}
 
@@ -181,13 +181,13 @@ namespace NLAIFUZZY
 		//	throw Exc::
 		}
 		NLAIAGENT::IObjectIA *arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X1 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X1 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X2 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X2 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X3 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X3 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 	}
 
@@ -447,21 +447,26 @@ namespace NLAIFUZZY
 
 	void CTriangleFuzzySet::init(NLAIAGENT::IObjectIA *params)
 	{
+#ifdef NL_DEBUG
+		char buf[1024 * 8];
+		params->getDebugString(buf);
+#endif
+
 		sint32 i = ((NLAIAGENT::IBaseGroupType *)params)->size();
 		if ( i != 3 ) 
 		{
 		//	throw Exc::
 		}
 		NLAIAGENT::IObjectIA *arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X1 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X1 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 
 		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X2 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X2 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 
 		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X3 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X3 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 	}
 
@@ -569,15 +574,15 @@ namespace NLAIFUZZY
 		}
 		
 		NLAIAGENT::IObjectIA *arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X1 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X1 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 
 		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X2 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X2 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 
 		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X3 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X3 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 	}
 
@@ -684,16 +689,16 @@ namespace NLAIFUZZY
 		//	throw Exc::
 		}
 		NLAIAGENT::IObjectIA *arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X1 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X1 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X2 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X2 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X3 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
+		_X3 = (double) ((NLAIAGENT::DDigitalType *) arg)->getValue();
 		arg->release();
 		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
-		_X4 = (double) ((NLAIAGENT::DigitalType *)arg)->getValue();
+		_X4 = (double) ((NLAIAGENT::DDigitalType *)arg)->getValue();
 		arg->release();
 
 	}

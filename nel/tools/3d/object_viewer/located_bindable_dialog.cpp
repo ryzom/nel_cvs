@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.11 2001/07/24 09:06:57 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.12 2001/09/07 12:04:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -255,6 +255,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		{
 			CEditableRangeUInt *nbf = new CEditableRangeUInt(std::string("NB_FANS"), 3, 127) ;
 			pushWnd(nbf) ;
+			nbf->enableLowerBound(3, false) ;
 			nbf->enableUpperBound(128, true) ;
 			_FanLightWrapper.P = dynamic_cast<NL3D::CPSFanLight *>(_Bindable) ;
 			nbf->setWrapper(&_FanLightWrapper) ;
@@ -262,6 +263,20 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			CStatic *s = new CStatic ;			
 			pushWnd(s) ;
 			s->Create("Nb fan lights :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
+			s->ShowWindow(SW_SHOW) ;
+
+			nbf->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+
+			nbf = new CEditableRangeUInt(std::string("PHASE_SMOOTHNESS"), 0, 31) ;
+			pushWnd(nbf) ;
+			nbf->enableUpperBound(32, true) ;
+			_FanLightSmoothnessWrapper.P = dynamic_cast<NL3D::CPSFanLight *>(_Bindable) ;
+			nbf->setWrapper(&_FanLightSmoothnessWrapper) ;
+			nbf->init(xPos + 140, yPos, this) ;
+			s = new CStatic ;			
+			pushWnd(s) ;
+			s->Create("Phase smoothnes:", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
 			s->ShowWindow(SW_SHOW) ;
 
 			nbf->GetClientRect(&rect) ;
@@ -275,6 +290,19 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			s = new CStatic ;			
 			pushWnd(s) ;
 			s->Create("Fan light speed :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
+			s->ShowWindow(SW_SHOW) ;
+
+			nbf->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+
+			nbfp = new CEditableRangeFloat(std::string("FAN_LIGHT_INTENSITY"), 0, 4.f) ;
+			pushWnd(nbfp) ;			
+			_FanLightIntensityWrapper.P = dynamic_cast<NL3D::CPSFanLight *>(_Bindable) ;
+			nbfp->setWrapper(&_FanLightIntensityWrapper) ;
+			nbfp->init(xPos + 140, yPos, this) ;
+			s = new CStatic ;			
+			pushWnd(s) ;
+			s->Create("Fan light intensity:", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
 			s->ShowWindow(SW_SHOW) ;
 
 			nbf->GetClientRect(&rect) ;
@@ -373,6 +401,22 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			uvd->GetClientRect(&rect) ;
 			yPos += rect.bottom + 3 ;
 
+		}
+
+
+		// fanlight texture
+		if (dynamic_cast<NL3D::CPSFanLight *>(_Bindable))
+		{
+			_FanLightTextureWrapper.F = static_cast<NL3D::CPSFanLight *>(_Bindable) ;
+			CTextureChooser *tc = new CTextureChooser  ;			
+			tc->enableRemoveButton() ;
+			tc->setWrapper(&_FanLightTextureWrapper) ;
+			pushWnd(tc) ;
+						
+			tc->init(xPos, yPos, this) ;
+			tc->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+			
 		}
 
 	}	

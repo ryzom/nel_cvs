@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.h,v 1.10 2002/11/12 17:24:46 lecroart Exp $
+ * $Id: window_displayer.h,v 1.11 2003/01/17 14:13:35 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ public:
 	CWindowDisplayer (const char *displayerName = "") :
 	  IDisplayer(displayerName), 
 		_Buffer("CWindowDisplayer::_Buffer"), _Labels("CWindowDisplayer::_Labels"), _CommandsToExecute("CWindowDisplayer::_CommandsToExecute"),
-		_Continue(true), _Init(false), _ToolBarHeight(22), _InputEditHeight(25), _Thread(NULL)
+		_Continue(true), _Init(false), _ToolBarHeight(22), _InputEditHeight(25), _Thread(NULL), _HistorySize(0)
 	  { }
 
 	virtual ~CWindowDisplayer ();
@@ -90,7 +90,7 @@ protected:
 
 	// buffer that contains the text that the DT will have to display
 	// uint32 is the color of the string
-	CSynchronized<std::vector<std::pair<uint32, std::string> > >	_Buffer;
+	CSynchronized<std::list<std::pair<uint32, std::string> > >	_Buffer;
 	CSynchronized<std::vector<CLabelEntry> >						_Labels;
 	CSynchronized<std::vector<std::string> >						_CommandsToExecute;
 

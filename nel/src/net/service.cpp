@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.163 2003/01/16 14:15:45 lecroart Exp $
+ * $Id: service.cpp,v 1.164 2003/01/17 14:13:27 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -106,7 +106,7 @@ IService	*IService::_Instance = NULL;
 static sint ExitSignalAsked = 0;
 
 // services stat
-static sint32 NetSpeedLoop, UserSpeedLoop;
+sint32 NetSpeedLoop, UserSpeedLoop;
 
 // this is the thread that initialized the signal redirection
 // we ll ignore other thread signals

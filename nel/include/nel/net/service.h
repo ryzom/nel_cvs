@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.60 2003/01/13 14:07:48 lecroart Exp $
+ * $Id: service.h,v 1.61 2003/01/17 14:13:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,6 +144,7 @@ typedef uint8 TServiceId;
 
 static TUnifiedCallbackItem EmptyCallbackArray[] = { { "", NULL } };
 
+extern sint32 NetSpeedLoop, UserSpeedLoop;
 
 //
 // Classes

@@ -175,6 +175,14 @@ SOURCE=..\include\nel\3d\landscape_model.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_instance.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\mesh_instance.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\transform.cpp
 # End Source File
 # Begin Source File

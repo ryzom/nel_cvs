@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.6 2002/03/04 10:30:29 lecroart Exp $
+ * $Id: zone_manager.cpp,v 1.7 2002/03/14 17:00:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,8 +221,14 @@ void CZoneLoadingTask::run(void)
 
 	_Zm->Zone = new CZone;
 	string zonePath = _Zm->getZonePath() + _Lz->NameZone;
+
+	// Lookup the zone
+	string zonePathLookup = CPath::lookup (zonePath, false, false, true);
+	if (zonePathLookup == "")
+		zonePathLookup = zonePath;
+
 	CIFile file;
-	if(file.open(zonePath))
+	if(file.open(zonePathLookup))
 	{
 		_Zm->Zone->serial(file);
 		file.close();
@@ -235,7 +241,7 @@ void CZoneLoadingTask::run(void)
 	}
 	else
 	{
-		nldebug("CZoneLoadingTask::run(): File not found: %s", zonePath.c_str ());
+		nldebug("CZoneLoadingTask::run(): File not found: %s", zonePathLookup.c_str ());
 		_Lz->FileNotFound = true;
 		delete _Zm->Zone;
 	}

@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.16 2001/08/24 16:37:15 berenguier Exp $
+ * $Id: mot.cpp,v 1.17 2001/12/03 16:33:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,6 +197,9 @@ IModel	*CMOT::createModel(const CClassId &idModel)
 
 		// By default the model is validate() in CMOT::validateModels().
 		m->linkToValidateList();
+
+		// Once the model is correclty created, finish init him.
+		m->initModel();
 
 		return m;
 	}

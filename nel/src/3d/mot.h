@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.5 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: mot.h,v 1.6 2001/12/03 16:33:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,6 +260,20 @@ protected:
 	 */
 	IModel();
 
+	/**
+	 *	Extra init for a model. this method is called by the framework at the very end of CMOT::createModel()
+	 *	Warning! if the model is a CTransformShape, then when initModel() is called, Shape and other related member/setup
+	 *	of IShape::createInstance() are not yet done (because createModel() is called at the begining in createInstance()).
+	 *
+	 *	Because initModel() is called at the very end, deriver could implement anything like creating other models, 
+	 *	but not deleting this model...
+	 *
+	 *	Default behavior is to do nothing.
+	 */
+	virtual	void	initModel()
+	{
+	}
+
 	/** Destrutor. Model's observers are deleted automatically.
 	 * The user must delete a Model only with CMOT::deleteModel(). This ensure that model validity is correct during the 
 	 * life of CMOT.
@@ -397,7 +411,7 @@ public:
 	/// ~IObs() must destroy correclty the father/son links  (with call to virtual delChild() delParent()).
 	virtual			~IObs();
 	/** This is called at the end of createModel(). So the model is correctly constructed and linked to his observers.
-	 * The default behavior is to do nothing.
+	 * The default behavior is to do nothing. Warning! all IObs::init() are called BEFORE IModel::initModel().
 	 */
 	virtual	void	init() {}
 

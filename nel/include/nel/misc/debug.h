@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.72 2004/09/22 17:12:29 lecroart Exp $
+ * $Id: debug.h,v 1.73 2004/09/22 18:22:40 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,9 +79,9 @@ void setCrashCallback(TCrashCallback crashCallback);
 
 
 // This very amazing macro __FUNCTION__ doesn't exist on VC6, map it to NULL
-#ifndef __FUNCTION__
+#ifdef NL_COMP_VC6
 #	define __FUNCTION__ NULL
-#endif // __FUNCTION__
+#endif
 
 
 // Macros

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.109 2004/07/30 15:37:30 boucher Exp $
+ * $Id: path.cpp,v 1.110 2004/09/22 18:22:41 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -152,7 +152,7 @@ void CPath::getFileListByName(const std::string &extension, const std::string &n
 			for (; first != last; ++ first)
 			{
 				string ext = inst->SSMext.get(first->second.idExt);
-				if (first->first.find(name) != -1 && (ext == extension || extension.empty()))
+				if (first->first.find(name) != string::npos && (ext == extension || extension.empty()))
 				{
 					filenames.push_back(first->first);
 				}

@@ -1,6 +1,6 @@
 /** \file contiguous_allocator.cpp
  *
- * $Id: contiguous_block_allocator.cpp,v 1.3 2004/04/09 14:40:47 vizerie Exp $
+ * $Id: contiguous_block_allocator.cpp,v 1.4 2004/09/22 18:22:41 distrib Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.57 2004/09/22 17:12:30 lecroart Exp $
+ * $Id: log.cpp,v 1.58 2004/09/22 18:22:41 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,7 @@ void CLog::setProcessName (const std::string &processName)
 	*_ProcessName = processName;
 }
 
-void CLog::setPosition (sint line, char *fileName, char *funcName)
+void CLog::setPosition (sint line, const char *fileName, const char *funcName)
 {
 	if ( !noDisplayer() )
 	{

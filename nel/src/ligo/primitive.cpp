@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.42 2004/09/19 01:59:16 boucher Exp $
+ * $Id: primitive.cpp,v 1.43 2004/09/22 18:22:41 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1213,7 +1213,7 @@ const	IPrimitive	*IPrimitive::getPrimitive	(const	std::string	&absoluteOrRelativ
 			continue;
 		}
 		
-		int indexStr=path.find("/");
+		uint indexStr=path.find("/");
 		string	childName;
 		if (indexStr==string::npos)
 		{
@@ -1993,8 +1993,8 @@ std::string		IPrimitive::getName() const
 // ***************************************************************************
 
 CPrimAlias::CPrimAlias() :
-	_Container(NULL),
-	_Alias(0)
+	_Alias(0),
+	_Container(NULL)
 {
 }
 

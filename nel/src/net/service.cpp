@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.212 2004/08/17 16:42:07 boucher Exp $
+ * $Id: service.cpp,v 1.213 2004/09/22 18:22:41 distrib Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -294,8 +294,9 @@ IService::IService() :
 	_DontUseNS(false),
 	_DontUseAES(false),
 	_ResetMeasures(false),
-	_RequestClosureClearanceCallback(NULL),
-	_ClosureClearanceStatus(CCMustRequestClearance)
+	_ShardId(0),
+	_ClosureClearanceStatus(CCMustRequestClearance),
+	_RequestClosureClearanceCallback(NULL)
 {
 	// Singleton
 	_Instance = this;

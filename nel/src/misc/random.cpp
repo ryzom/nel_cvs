@@ -1,6 +1,6 @@
 /** \file random.cpp
  *
- * $Id: random.cpp,v 1.2 2002/12/16 15:39:27 miller Exp $
+ * $Id: random.cpp,v 1.3 2004/09/22 18:22:41 distrib Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.

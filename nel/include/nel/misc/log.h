@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.35 2004/09/22 17:12:29 lecroart Exp $
+ * $Id: log.h,v 1.36 2004/09/22 18:22:40 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,7 @@ public:
 	static void setDefaultProcessName ();
 
 	/// If !noDisplayer(), sets line and file parameters, and enters the mutex. If !noDisplayer(), don't forget to call display...() after, to release the mutex.
-	void setPosition (sint line, char *fileName, char *funcName = NULL);
+	void setPosition (sint line, const char *fileName, const char *funcName = NULL);
 
 
 #ifdef NL_OS_WINDOWS
@@ -203,9 +203,9 @@ protected:
 	TLogType							 _LogType;
 	static std::string					*_ProcessName;
 
-	char								*_FileName;
+	const char							*_FileName;
 	sint								 _Line;
-	char								*_FuncName;
+	const char							*_FuncName;
 
 	typedef std::list<IDisplayer *>		 CDisplayers;
 

@@ -1,7 +1,7 @@
 /** \file camera.h
  * 
  *
- * $Id: camera.h,v 1.5 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: camera.h,v 1.6 2001/07/18 13:18:51 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,15 +36,12 @@ void	initCamera();
 void	updateCamera();
 void	releaseCamera();
 
+// Update the sky for this frame, and render it.
+// Must be called before ANY rendering
 void	updateSky ();
 
 extern NL3D::UCamera				*Camera;
 extern NL3D::UVisualCollisionEntity	*CamCollisionEntity;
-
-extern float			ViewLagBehind;
-extern float			ViewHeight;
-extern float			ViewTargetHeight;
-extern NL3D::UCamera	*Camera;
 
 #endif // CAMERA_H
 

@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera management
  *
- * $Id: camera.cpp,v 1.10 2001/07/17 16:43:36 legros Exp $
+ * $Id: camera.cpp,v 1.11 2001/07/18 13:18:51 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,22 +42,22 @@ using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 
+// The camera for the whole scene
 UCamera					*Camera = NULL;
+// The collision entity use to snap the camera on the ground
 UVisualCollisionEntity	*CamCollisionEntity = NULL;
 
-float				ViewLagBehind = 2.0f;
-float				ViewHeight = 2.0f;
-float				ViewTargetHeight = 2.0f;
+// The particle system for the snowing effect
+UInstance				*Snow = NULL;
 
-UInstance			*Snow = NULL;
-
-
-UScene				*SkyScene = NULL;
-UCamera				*SkyCamera = NULL;
-UInstance			*Sky = NULL;
+// The sky 3D objects
+UScene					*SkyScene = NULL;
+UCamera					*SkyCamera = NULL;
+UInstance				*Sky = NULL;
 
 void	initCamera()
 {
+	// Set up directly the camera
 	Camera = Scene->getCam();
 	Camera->setTransformMode (UTransformable::DirectMatrix);
 	Camera->setPerspective ((float)Pi/2.f, 1.33f, 0.1f, 1000);
@@ -69,13 +69,17 @@ void	initCamera()
 	CamCollisionEntity = VisualCollisionManager->createEntity();
 	CamCollisionEntity->setCeilMode(true);
 
+	// Create the snowing particle system
 	Snow = Scene->createInstance("snow.ps");
+	// And setup it
 	Snow->setTransformMode (UTransformable::DirectMatrix);
 
+	// Setup the sky scene
 	SkyScene = Driver->createScene();
 
 	SkyCamera = SkyScene->getCam ();
 	SkyCamera->setTransformMode (UTransformable::DirectMatrix);
+	// et the very same frustum as the main camera
 	SkyCamera->setFrustum (Camera->getFrustum ());
 
 	Sky = SkyScene->createInstance("sky.shape");
@@ -96,6 +100,7 @@ void	updateSky ()
 {
 	CMatrix skyCameraMatrix;
 	skyCameraMatrix.identity();
+	// 
 	skyCameraMatrix= Camera->getMatrix();
 	skyCameraMatrix.setPos(CVector::Null);
 	SkyCamera->setMatrix(skyCameraMatrix);

@@ -1,7 +1,7 @@
 /** \file build_surfaces.cpp
  * 
  *
- * $Id: build_surfaces.cpp,v 1.2 2003/08/27 09:26:10 legros Exp $
+ * $Id: build_surfaces.cpp,v 1.3 2004/01/29 17:35:21 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -345,7 +345,7 @@ void	buildSnapping(CCollisionMeshBuild &cmb, CLocalRetriever &lr)
 	vector<CLocalRetriever::CInteriorFace>	&faces = lr.getInteriorFaces();
 	for (i=0; i<cmb.Faces.size(); ++i)
 	{
-		faces.push_back();
+		faces.push_back(CLocalRetriever::CInteriorFace());
 		faces.back().Verts[0] = cmb.Faces[i].V[0];
 		faces.back().Verts[1] = cmb.Faces[i].V[1];
 		faces.back().Verts[2] = cmb.Faces[i].V[2];

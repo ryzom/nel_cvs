@@ -1,7 +1,7 @@
 /** \file mouline.cpp
  * 
  *
- * $Id: mouline.cpp,v 1.5 2003/06/27 14:14:54 legros Exp $
+ * $Id: mouline.cpp,v 1.6 2004/01/29 17:35:21 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -402,6 +402,20 @@ void	computeRetriever(CCollisionMeshBuild &cmb, CLocalRetriever &lr, CVector &tr
 		translation.z = 0.0f;
 	}
 
+	uint	i, j;
+
+	for (i=0; i<cmb.Faces.size(); ++i)
+	{
+		CVector		normal = ((cmb.Vertices[cmb.Faces[i].V[1]]-cmb.Vertices[cmb.Faces[i].V[0]])^(cmb.Vertices[cmb.Faces[i].V[2]]-cmb.Vertices[cmb.Faces[i].V[0]])).normed();
+
+		if (normal.z < 0.0f)
+		{
+			nlwarning("Face %d in cmb (%s) has negative normal! -- face is flipped", i, cmb.Faces[i].Surface == CCollisionFace::InteriorSurfaceFirst ? "interior" : "exterior");
+			std::swap(cmb.Faces[i].V[1], cmb.Faces[i].V[2]);
+			std::swap(cmb.Faces[i].Visibility[1], cmb.Faces[i].Visibility[2]);
+		}
+	}
+
 	// first link faces
 /*
 	linkMesh(cmb, false);
@@ -455,7 +469,6 @@ void	computeRetriever(CCollisionMeshBuild &cmb, CLocalRetriever &lr, CVector &tr
 	linkExteriorToInterior(lr);
 
 	// compute the bbox of the retriever
-	uint	i, j;
 	CAABBox	bbox;
 	bool	first = true;
 

@@ -1,7 +1,7 @@
 /** \file u_move_container.h
  * A container for movable objects
  *
- * $Id: u_move_container.h,v 1.15 2002/07/01 18:23:04 legros Exp $
+ * $Id: u_move_container.h,v 1.16 2003/01/30 17:55:38 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,7 +124,7 @@ public:
 
 	/** The same as loadCollisionablePrimitiveBlock, but the primitive block is provided by the caller	  
 	  */
-	virtual void                addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position, bool dontSnapToGround = false) = 0;
+	virtual void                addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position, bool dontSnapToGround = false, const NLMISC::CVector &scale = NLMISC::CVector(1.0f, 1.0f, 1.0f)) = 0;
 
 	/**
 	  * Remove a primitive from the container.

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.34 2002/10/29 17:17:29 corvazier Exp $
+ * $Id: move_container.cpp,v 1.35 2003/01/30 17:55:22 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1674,7 +1674,7 @@ void UTriggerInfo::serial (NLMISC::IStream& stream)
 
 
 // ***************************************************************************
-void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 firstWorldImage,uint8 numWorldImage,std::vector<UMovePrimitive*> *primitives,float orientation,const NLMISC::CVector &position, bool dontSnapToGround /* = false*/)
+void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 firstWorldImage,uint8 numWorldImage,std::vector<UMovePrimitive*> *primitives,float orientation,const NLMISC::CVector &position, bool dontSnapToGround /* = false*/, const NLMISC::CVector &scale /* = NLMISC::CVector(1.0f, 1.0f, 1.0f)*/)
 {
 	NL_ALLOC_CONTEXT( Pacs )
 
@@ -1704,14 +1704,16 @@ void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 f
 		primitive->setDontSnapToGround(dontSnapToGround);
 		if (desc.Type == UMovePrimitive::_2DOrientedBox)
 		{
-			primitive->setSize (desc.Length[0], desc.Length[1]);
+			// ONLY ASSUME UNIFORM SCALE ON X/Y
+			primitive->setSize (desc.Length[0]*scale.x, desc.Length[1]*scale.x);
 		}
 		else
 		{
+			// ONLY ASSUME UNIFORM SCALE ON X/Y
 			nlassert (desc.Type == UMovePrimitive::_2DOrientedCylinder);
-			primitive->setRadius (desc.Length[0]);
+			primitive->setRadius (desc.Length[0]*scale.x);
 		}
-		primitive->setHeight (desc.Height);
+		primitive->setHeight (desc.Height*scale.z);
 
 		// Insert the primitives
 
@@ -1726,9 +1728,9 @@ void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 f
 			float cosa = (float) cos (orientation);
 			float sina = (float) sin (orientation);
 			CVector finalPos;
-			finalPos.x = cosa * desc.Position.x - sina * desc.Position.y + position.x;
-			finalPos.y = sina * desc.Position.y + cosa * desc.Position.y + position.y;
-			finalPos.z = desc.Position.z + position.z;
+			finalPos.x = cosa * desc.Position.x * scale.x - sina * desc.Position.y * scale.y + position.x;
+			finalPos.y = sina * desc.Position.x * scale.x + cosa * desc.Position.y * scale.y + position.y;
+			finalPos.z = desc.Position.z *scale.z + position.z;
 
 			// Set the primtive orientation
 			if (desc.Type == UMovePrimitive::_2DOrientedBox)

@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.51 2002/11/15 16:54:18 lecroart Exp $
+ * $Id: common.h,v 1.52 2002/12/18 19:14:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -338,6 +338,24 @@ inline std::string toString (const char *format, ...)
 	NLMISC_CONVERT_VARGS (Result, format, NLMISC::MaxCStringSize);
 	return Result;
 }
+
+
+#ifdef NL_OS_UNIX
+inline std::string toString (const uint8 &t)
+{
+	std::stringstream ss;
+	ss << (unsigned int)t;
+	return ss.str();
+}
+
+inline std::string toString (const sint8 &t)
+{
+	std::stringstream ss;
+	ss << (unsigned int)t;
+	return ss.str();
+}
+#endif // NL_OS_UNIX
+
 
 
 /* All the code above is used to add our types (uint8, ...) in the stringstream (used by the toString() function).

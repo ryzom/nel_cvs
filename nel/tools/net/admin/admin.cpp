@@ -1,10 +1,7 @@
 /** \file admin.cpp
  * 
  *
- * $Id: admin.cpp,v 1.9 2002/03/25 10:19:13 lecroart Exp $
- *
- * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
- *
+ * $Id: admin.cpp,v 1.10 2002/10/24 08:21:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +22,19 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+
+
+
+
+
+/*******************************************************************
+************* THIS APPLICATION IS DEPRECATED ***********************
+********************************************************************/
+
+
+
+
 
 #include "nel/misc/types_nl.h"
 

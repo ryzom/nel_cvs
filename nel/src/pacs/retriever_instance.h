@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.4 2001/07/09 08:26:26 legros Exp $
+ * $Id: retriever_instance.h,v 1.5 2001/07/09 10:54:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,11 +61,11 @@ public:
 	class CLink
 	{
 	public:
-		uint16				Instance;
-		uint16				BorderChainId;
-		uint16				ChainId;
-		uint16				SurfaceId;
-		CLink() : Instance(0xffff), BorderChainId(0xffff), ChainId(0xffff), SurfaceId(0xffff) {}
+		sint16				Instance;
+		sint16				BorderChainId;
+		sint16				ChainId;
+		sint16				SurfaceId;
+		CLink() : Instance(-1), BorderChainId(-1), ChainId(-1), SurfaceId(-1) {}
 		void	serial(NLMISC::IStream &f) { f.serial(Instance, BorderChainId, ChainId, SurfaceId); }
 	};
 

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.16 2001/07/09 09:37:53 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.17 2001/07/09 10:54:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,12 +65,12 @@ void	NLPACS::CRetrieverInstance::resetLinks(uint32 id)
 
 	uint	i;
 	for (i=0; i<_BorderChainLinks.size(); ++i)
-		if (_BorderChainLinks[i].Instance == id)
+		if (_BorderChainLinks[i].Instance == (sint16)id)
 		{
-			_BorderChainLinks[i].Instance = 0xffff;
-			_BorderChainLinks[i].BorderChainId = 0xffff;
-			_BorderChainLinks[i].ChainId = 0xffff;
-			_BorderChainLinks[i].SurfaceId = 0xffff;
+			_BorderChainLinks[i].Instance = -1;
+			_BorderChainLinks[i].BorderChainId = -1;
+			_BorderChainLinks[i].ChainId = -1;
+			_BorderChainLinks[i].SurfaceId = -1;
 		}
 }
 

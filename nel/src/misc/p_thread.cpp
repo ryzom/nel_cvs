@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
- * <File description>
+ * class CPThread (Posix threads)
  *
- * $Id: p_thread.cpp,v 1.4 2001/02/14 13:47:24 cado Exp $
+ * $Id: p_thread.cpp,v 1.5 2001/06/21 07:47:28 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

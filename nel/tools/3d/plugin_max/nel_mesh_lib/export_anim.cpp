@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.37 2004/05/26 14:34:46 vizerie Exp $
+ * $Id: export_anim.cpp,v 1.38 2004/07/08 16:11:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #include <3d/key.h>
 #include <3d/track.h>
 #include <3d/particle_system_model.h>
+#include <3d/skeleton_model.h>
+#include <nel/misc/algo.h>
 #include <notetrck.h>
 
 #include "calc_lm.h"
@@ -43,6 +45,10 @@ using namespace NL3D;
 static Class_ID DefNoteTrackClassID(NOTETRACK_CLASS_ID, 0);
 
 #define BOOL_CONTROL_CLASS_ID 0x984b8d27
+
+
+// TempYoyo
+#pragma optimize("", off)
 
 // --------------------------------------------------
 
@@ -68,6 +74,7 @@ public:
 	StdMat2		*Material;
 };
 
+
 // --------------------------------------------------
 
 // OverSamples fo BIPED animation export.
@@ -91,17 +98,19 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 		overSampleBipedAnimation(animBuildCtx, NL3D_BIPED_OVERSAMPLING);
 	}
 
+	// For Skeleton Spawn Script
+	CSSSBuild	ssBuilder;
 
 	// Is it a biped node ?
 	if (transform && (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID))
 	{
 		// Export biped skeleton animation
-		addBipedNodeTracks (animation, node, sBaseName, &animBuildCtx, root);
+		addBipedNodeTracks (animation, node, sBaseName, &animBuildCtx, root, ssBuilder);
 	}	
 	else
 	{
 		// Add node tracks
-		addNodeTracks (animation, node, sBaseName, NULL, root);
+		addNodeTracks (animation, node, sBaseName, NULL, root, ssBuilder);
 
 		// Get the object pointer
 		Object* obj=node.GetObjectRef();
@@ -124,9 +133,6 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 			}
 		}
 
-		// Add bones tracks
-		//addBonesTracks (animation, node, sBaseName);
-
 		// Add light tracks
 		addLightTracks (animation, node, sBaseName);
 
@@ -141,43 +147,88 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 		for (uint children=0; children<childrenCont; children++)
 		{
 			INode *child=node.GetChildNode(children);
-			addBoneTracks (animation, *child, sBaseName, &animBuildCtx, false);
+			addBoneTracks (animation, *child, sBaseName, &animBuildCtx, false, ssBuilder);
 		}
 	}
 
 	// check for note track export (a string track used to create events)
-	int exportNoteTrack = CExportNel::getScriptAppData(&node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, -1);	
-
+	int exportNoteTrack = CExportNel::getScriptAppData(&node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, 0);	
 	if (exportNoteTrack)
 	{
 		addNoteTrack(animation, node);		
 	}
+
+	// Compile the SkeletonSpawnScript builder
+	ssBuilder.compile(animation, sBaseName);
 }
 
-// --------------------------------------------------
 
+// --------------------------------------------------
 void CExportNel::addNoteTrack(NL3D::CAnimation& animation, INode& node)
 {
-	// check for the first Note Track		
-	NoteTrack *nt = node.GetNoteTrack(0);
+	NL3D::CTrackKeyFramerConstString*	st= buildFromNoteTrack(node);
+	
+	if(st)
+		animation.addTrack(std::string("NoteTrack"), st);		
+}
 
-					
+
+// --------------------------------------------------
+void CExportNel::addSSSTrack(CSSSBuild	&ssBuilder, INode& node)
+{
+	CSSSBuild::CBoneScript	bs;
+	bs.BoneName= getName (node);
+
+	// Build from note Track (first one)
+	NoteTrack *nt = node.GetNoteTrack(0);
     if(nt && (nt->ClassID() == DefNoteTrackClassID))
     {
-
-		CTrackKeyFramerConstString *st = new CTrackKeyFramerConstString;
-
         DefNoteTrack &dnt = *(DefNoteTrack *)nt;
         int noteCount = dnt.keys.Count();
 		float firstDate = 0, lastDate = 0;
-
+		
+		// build bs.Track
+		bs.Track.reserve(noteCount);
         for(int noteIndex = 0; noteIndex < noteCount; ++noteIndex)
         {
-
             NoteKey *note = dnt.keys[noteIndex];
-
+			
             if(note)
+            {
+				CSSSBuild::CKey		ks;
+				ks.Value = std::string(note->note);
+				ks.Time= CExportNel::convertTime (note->time);
+				bs.Track.push_back(ks);
+            }
+        }
+		
+		// if some key, add to the builder
+		if(!bs.Track.empty())
+			ssBuilder.Bones.push_back(bs);
+	}
+}
 
+// --------------------------------------------------
+NL3D::CTrackKeyFramerConstString*		CExportNel::buildFromNoteTrack(INode& node)
+{
+	// check for the first Note Track		
+	NoteTrack *nt = node.GetNoteTrack(0);
+	
+    if(nt && (nt->ClassID() == DefNoteTrackClassID))
+    {
+		
+		CTrackKeyFramerConstString *st = new CTrackKeyFramerConstString;
+		
+        DefNoteTrack &dnt = *(DefNoteTrack *)nt;
+        int noteCount = dnt.keys.Count();
+		float firstDate = 0, lastDate = 0;
+		
+        for(int noteIndex = 0; noteIndex < noteCount; ++noteIndex)
+        {
+			
+            NoteKey *note = dnt.keys[noteIndex];
+			
+            if(note)
             {
 				CKeyString ks;
 				if (noteIndex == 0)
@@ -191,12 +242,13 @@ void CExportNel::addNoteTrack(NL3D::CAnimation& animation, INode& node)
             }
         }
 		st->unlockRange (firstDate, lastDate);
-		animation.addTrack(std::string("NoteTrack"), st);		
-	}	
-	
-	
 
+		return st;
+	}
+	else
+		return NULL;
 }
+
 
 // --------------------------------------------------
 void CExportNel::addParticleSystemTracks(CAnimation& animation, INode& node, const char* parentName)
@@ -252,7 +304,7 @@ void CExportNel::addParticleSystemTracks(CAnimation& animation, INode& node, con
 // --------------------------------------------------
 
 void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* parentName,
-								CAnimationBuildCtx	*animBuildCtx, bool root, bool bodyBiped)
+								CAnimationBuildCtx	*animBuildCtx, bool root, CSSSBuild &ssBuilder, bool bodyBiped)
 {
 	// Tmp track*
 	ITrack *pTrack;
@@ -412,11 +464,18 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			}
 		}
 	}
+
+	// check for SkeletonSpawnScript track export
+	int exportSSS = CExportNel::getScriptAppData(&node, NEL3D_APPDATA_EXPORT_SSS_TRACK, 0);	
+	if(exportSSS)
+	{
+		addSSSTrack(ssBuilder, node);
+	}
 }
 
 // --------------------------------------------------
 
-void CExportNel::addBipedNodeTracks (CAnimation& animation, INode& node, const char* parentName, CAnimationBuildCtx	*animBuildCtx, bool root)
+void CExportNel::addBipedNodeTracks (CAnimation& animation, INode& node, const char* parentName, CAnimationBuildCtx	*animBuildCtx, bool root, CSSSBuild &ssBuilder)
 {
 	// Get the matrix controler
 	Control *transform=node.GetTMController();
@@ -439,26 +498,26 @@ void CExportNel::addBipedNodeTracks (CAnimation& animation, INode& node, const c
 			name=parentName;
 
 		// Export keyframes
-		addNodeTracks (animation, node, name.c_str(), animBuildCtx, root, bodyBiped);
+		addNodeTracks (animation, node, name.c_str(), animBuildCtx, root, ssBuilder, bodyBiped);
 
 		// Add child tracks
 		uint childrenCont=(uint)node.NumberOfChildren();
 		for (uint children=0; children<childrenCont; children++)
 		{
 			INode *child=node.GetChildNode(children);
-			addBipedNodeTracks (animation, *child, parentName, animBuildCtx, false);
+			addBipedNodeTracks (animation, *child, parentName, animBuildCtx, false, ssBuilder);
 		}
 	}
 	else
 	{
 		// Add normal tracks
-		addBoneTracks (animation, node, parentName, animBuildCtx, root);
+		addBoneTracks (animation, node, parentName, animBuildCtx, root, ssBuilder);
 	}
 }
 
 // --------------------------------------------------
 
-void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, CAnimationBuildCtx *animBuildCtx, bool root)
+void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, CAnimationBuildCtx *animBuildCtx, bool root, CSSSBuild &ssBuilder)
 {
 	// Create a track name
 	std::string name=parentName + getName (node) + ".";
@@ -470,12 +529,12 @@ void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const 
 	if (transform && (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID))
 	{
 		// Export biped skeleton animation
-		addBipedNodeTracks (animation, node, parentName, animBuildCtx, root);
+		addBipedNodeTracks (animation, node, parentName, animBuildCtx, root, ssBuilder);
 	}
 	else
 	{
 		// Go for normal export!
-		addNodeTracks (animation, node, name.c_str(), NULL, root);
+		addNodeTracks (animation, node, name.c_str(), NULL, root, ssBuilder);
 	}
 
 	// Recursive call
@@ -483,7 +542,7 @@ void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const 
 	for (uint children=0; children<childrenCont; children++)
 	{
 		INode *child=node.GetChildNode(children);
-		addBoneTracks (animation, *child, parentName, animBuildCtx, false);
+		addBoneTracks (animation, *child, parentName, animBuildCtx, false, ssBuilder);
 	}
 }
 
@@ -2053,3 +2112,233 @@ bool				CExportNel::CAnimationBuildCtx::mustExportBipedBonePos(INode *node)
 	// true if found in the set.
 	return (_ExportBipedBonePosSet.find(node)!=_ExportBipedBonePosSet.end());
 }
+
+
+// ***************************************************************************
+struct CSpawnCmd 
+{
+	std::string		Cmd;
+	std::string		Shape;
+	std::string		Bone;
+
+	bool	operator<(const CSpawnCmd &o) const
+	{
+		if(Shape!=o.Shape)
+			return Shape<o.Shape;
+		if(Cmd!=o.Cmd)
+			return Cmd<o.Cmd;
+		return Bone<o.Bone;
+	}
+};
+struct CSpawnObject
+{
+	uint	FinalId;
+	bool	Spawned;
+
+	CSpawnObject()
+	{
+		FinalId= 0;
+		Spawned= false;
+	}
+};
+
+
+static void commitSSSKey(NL3D::TAnimationTime keyTime, std::map<CSpawnCmd, CSpawnObject> &objects, CTrackKeyFramerConstString *finalTrack)
+{
+	CKeyString		keyValue;
+	
+	// The final script is "state script" oriented
+	// ie, generate a line for each spawned object, not for each command!
+	std::map<CSpawnCmd, CSpawnObject>::iterator		it;
+	for(it= objects.begin();it!=objects.end();it++)
+	{
+		// if the object is spawn, add a line
+		if(it->second.Spawned)
+		{
+			if(it->first.Cmd=="lspawn")
+			{
+				keyValue.Value+= toString("objl %d %s %s\n", it->second.FinalId, it->first.Shape.c_str(), it->first.Bone.c_str());
+			}
+			else if(it->first.Cmd=="wspawn")
+			{
+				keyValue.Value+= toString("objw %d %s\n", it->second.FinalId, it->first.Shape.c_str());
+			}
+		}
+	}
+
+	// add to the track
+	finalTrack->addKey(keyValue, keyTime);
+}
+
+void				CSSSBuild::compile(NL3D::CAnimation &dest, const char* sBaseName)
+{
+	// no script?
+	if(Bones.empty())
+		return;
+
+	/*	Take each script at each bone, and generate only ONE script (the global script), 
+		that will be attached to the animation
+	*/
+
+	// list of unique object
+	std::map<CSpawnCmd, CSpawnObject>			objects;
+	uint										numObjs= 0;
+
+	// timeline of cmds
+	std::multimap<NL3D::TAnimationTime, CSpawnCmd>	keys;
+
+
+	// **** first pass. compute set of objects, and generate keys timeline
+	uint i;
+	for(i=0;i<Bones.size();i++)
+	{
+		CSSSBuild::CBoneScript				&bone= Bones[i];
+		// "compile" script at each key
+		for(uint j=0;j<bone.Track.size();j++)
+		{
+			std::string		&script= bone.Track[j].Value;
+			// at each key, there can't be the same shape to create
+			std::set<CSpawnCmd>	keySet;
+			
+			// parse each line of the script
+			static std::vector<std::string>		lines;
+			lines.clear();
+			splitString(script, "\n", lines);
+			for(uint k=0;k<lines.size();k++)
+			{
+				std::string	&line= lines[k];
+
+				// remove any '\r'
+				line.resize( std::remove_if(line.begin(), line.end(), std::bind2nd(std::equal_to<char>(), '\r') )
+					- line.begin() );
+
+				// parse
+				static std::vector<std::string>		words;
+				words.clear();
+				splitString(line, " ", words);
+				
+				if(words.size()>=2)
+				{
+					bool	ok= false;
+					if(words[0]=="wspawn")		ok= true;
+					else if(words[0]=="lspawn")	ok= true;
+					else if(words[0]=="wkill")		ok= true;
+					else if(words[0]=="lkill")	ok= true;
+					
+					// if valid command
+					if(ok)
+					{
+						CSpawnCmd	oi;
+						oi.Cmd= words[0];
+						oi.Shape= words[1];
+						// lower to avoid case error, and append .shape
+						strlwr(oi.Shape);
+						if(oi.Shape.find('.')==std::string::npos)
+							oi.Shape+= ".shape";
+						// bone name
+						oi.Bone= bone.BoneName;
+						// valid if the command does not exist in the current key
+						if(keySet.insert(oi).second)
+						{
+							// if the command is not a kill, insert in the object list
+							if(oi.Cmd!="wkill" && oi.Cmd!="lkill")
+							{
+								// insert if not already done
+								if(objects.find(oi)==objects.end())
+								{
+									objects[oi].FinalId= numObjs++;
+								}
+							}
+							// insert a cmd key at this key time
+							keys.insert(std::make_pair(bone.Track[j].Time, oi));
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// **** second pass, genereate the global script animation
+	// create the final track
+	CTrackKeyFramerConstString		*finalTrack= new CTrackKeyFramerConstString;
+	// parse each key in the chronogical order
+	NL3D::TAnimationTime	precTime= 0;
+	bool					firstKey= true;
+	std::multimap<NL3D::TAnimationTime, CSpawnCmd>::iterator		kit;
+	for(kit= keys.begin();kit!=keys.end();kit++)
+	{
+		NL3D::TAnimationTime	keyTime= kit->first;
+		CSpawnCmd				keyValue= kit->second;
+
+
+		// ---- if the keyTime has changed, then commit the last key
+		if(!firstKey && precTime!=keyTime)
+		{
+			commitSSSKey(precTime, objects, finalTrack);
+			// new key to create
+			precTime= keyTime;
+		}
+		// no more first key
+		if(firstKey)
+			firstKey= false;
+		// for next loop
+		precTime= keyTime;
+		
+
+		// ---- update object state, according to the key cmd
+		std::map<CSpawnCmd, CSpawnObject>::iterator		oit;
+		bool	isSpawn;
+		if(keyValue.Cmd=="wspawn" || keyValue.Cmd=="lspawn")
+			isSpawn= true;
+		else
+		{
+			isSpawn= false;
+			// Find the associated object if a kill => replace kill by spawn
+			if(keyValue.Cmd=="wkill")	keyValue.Cmd="wspawn";
+			if(keyValue.Cmd=="lkill")	keyValue.Cmd="lspawn";
+		}
+		oit= objects.find(keyValue);
+		// NB: may not be found, if a kill has a bad ShapeName
+		if(oit!=objects.end())
+		{
+			// spawn or kill?
+			if(isSpawn)
+				oit->second.Spawned= true;
+			else
+				oit->second.Spawned= false;
+		}
+	}
+
+	// commit the last key
+	if(!firstKey)
+	{
+		commitSSSKey(precTime, objects, finalTrack);
+	}
+	else
+		// no keys added
+		delete finalTrack;
+		
+
+	// **** Add to the animation
+	if(finalTrack)
+	{
+		// ---- add the track
+		std::string		name= std::string(sBaseName) + NL3D::CSkeletonModel::getSpawnScriptValueName();
+		dest.addTrack(name, finalTrack);
+
+		// ---- must also inform the animation of all shapes it can spawn
+		std::set<std::string>	shapeSet;
+		std::map<CSpawnCmd, CSpawnObject>::iterator		oit;
+
+		// remove shape duplicate from cmd
+		for(oit= objects.begin();oit!=objects.end();oit++)
+			shapeSet.insert(oit->first.Shape);
+
+		// then for each, insert in the animation
+		std::set<std::string>::iterator		it;
+		for(it=shapeSet.begin();it!=shapeSet.end();it++)
+			dest.addSSSShape(*it);
+	}
+}
+
+

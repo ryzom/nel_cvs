@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.50 2003/04/23 12:45:30 corvazier Exp $
+ * $Id: scene_group.cpp,v 1.51 2003/04/23 14:53:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -936,6 +936,8 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 {
 	uint32 i, j, k;
 
+	// todo hulud : remove
+	/*
 	// Test if portals are linked to their 2 clusters 
 	for (i = 0; i < _Portals.size(); ++i)
 	for (j = 0; j < 2; ++j)
@@ -943,11 +945,10 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 		if (_Portals[i]._Clusters[j] == NULL)
 		{
 			nlwarning("Portal %d (name:%s) is not linked to 2 clusters. Instance Group Not Removed From Scene.", i, _Portals[i].getName().c_str());
-			// todo hulud : remove
-			return false;
+			//return false;
 		}
-	}
-
+	}*/
+	
 	// Remove shapes
 	for (i = 0; i < _Instances.size(); ++i)
 	{

@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.15 2002/02/07 13:43:48 berenguier Exp $
+ * $Id: path.h,v 1.16 2002/02/19 09:13:44 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -86,8 +86,7 @@ public:
 
 	/** Returns the long name (path + filename) for the specified file.
 	 * The directory separator is always '/'.
-	 * First, the lookup() will scan in the current directory (We do that for backward compatibility).
-	 * If not found, the function lookups in standard directories (Alternative=false).
+	 * First, the lookup() lookups in standard directories (Alternative=false).
 	 * If not found, it lookups in the Alternative directories.
 	 * If not found the lookup() returns empty string "" (and generate an excpetion if throwException is true)
 	 * 

@@ -40,7 +40,6 @@ void CGlobalWindDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CGlobalWindDlg, CDialog)
 	//{{AFX_MSG_MAP(CGlobalWindDlg)
-	ON_BN_CLICKED(IDC_BUTTON_CLOSE, OnButtonClose)
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_SLIDER_GLOBAL_WIND_POWER, OnReleasedcaptureSliderGlobalWindPower)
 	ON_WM_HSCROLL()
 	ON_WM_DESTROY()
@@ -81,13 +80,6 @@ BOOL CGlobalWindDlg::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-// ***************************************************************************
-void CGlobalWindDlg::OnButtonClose() 
-{
-	// hide the window
-	ShowWindow(false);
 }
 
 // ***************************************************************************

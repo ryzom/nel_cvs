@@ -37,7 +37,6 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CGlobalWindDlg)
 	virtual BOOL OnInitDialog();
-	afx_msg void OnButtonClose();
 	afx_msg void OnReleasedcaptureSliderGlobalWindPower(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnDestroy();

@@ -122,11 +122,12 @@ PostBuild_Cmds=copy ..\master\georges_debug_fast.dll ..\georges_exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "georges___Win32_ReleaseDebug"
-# PROP Intermediate_Dir "georges___Win32_ReleaseDebug"
+# PROP Output_Dir "ReleaseDebug"
+# PROP Intermediate_Dir "ReleaseDebug"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_RELEASE_DEBUG" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
@@ -136,7 +137,11 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386
+# ADD LINK32 libxml2.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../master/georges_release_debug.dll"
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=copy ..\master\georges_release_debug.dll ..\georges_exe
+# End Special Build Tool
 
 !ENDIF 
 
@@ -149,6 +154,10 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Source File
+
+SOURCE=.\ChildFrm.cpp
+# End Source File
 # Begin Source File
 
 SOURCE=.\georges.cpp
@@ -186,6 +195,10 @@ SOURCE=.\StdAfx.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\ChildFrm.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\georges.h
@@ -261,6 +274,8 @@ SOURCE=.\georges.def
 
 !ELSEIF  "$(CFG)" == "georges - Win32 ReleaseDebug"
 
+# PROP Exclude_From_Build 1
+
 !ENDIF 
 
 # End Source File
@@ -283,6 +298,27 @@ SOURCE=.\georges_debug_fast.def
 !ELSEIF  "$(CFG)" == "georges - Win32 ReleaseDebug"
 
 # PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\georges_release_debug.def
+
+!IF  "$(CFG)" == "georges - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "georges - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "georges - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "georges - Win32 ReleaseDebug"
 
 !ENDIF 
 

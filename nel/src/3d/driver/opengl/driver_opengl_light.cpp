@@ -1,7 +1,7 @@
 /** \file driver_opengl_light.cpp
  * OpenGL driver implementation : light
  *
- * $Id: driver_opengl_light.cpp,v 1.13 2004/08/13 15:31:54 vizerie Exp $
+ * $Id: driver_opengl_light.cpp,v 1.13.4.1 2004/09/09 18:17:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,6 +166,8 @@ void	CDriverGL::enableLight (uint8 num, bool enable)
 {
 	H_AUTO_OGL(CDriverGL_enableLight )
 	// User call => set the User flag
+	// Geforce FX tmp fix
+	if (_Extensions.IsGeforceFXOrAbove && num >=3) return;
 	if(num<_MaxDriverLight)
 	{
 		_UserLightEnable[num]= enable;

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.48 2004/08/13 15:31:54 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.48.4.1 2004/09/09 18:17:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1306,6 +1306,7 @@ void	registerGlExtensions(CGlExtensions &ext)
 	{		
 		ext.ATIFragmentShader = false;
 	}	
+	ext.IsGeforceFXOrAbove = setupNVVertexProgram(glext) && setupARBFragmentProgram(glext);
 }
 
 

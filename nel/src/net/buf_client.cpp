@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.5 2001/05/17 15:37:05 cado Exp $
+ * $Id: buf_client.cpp,v 1.6 2001/05/21 17:02:45 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -284,6 +284,18 @@ CBufClient::~CBufClient()
 {
 	nlnettrace( "CBufClient::~CBufClient" );
 
+	// Disconnect if not done
+	if ( _BufSock->Sock->connected() )
+	{
+		disconnect( true );
+	}
+	// Clean thread termination
+	if ( _RecvThread != NULL )
+	{
+		nldebug( "L1: Waiting for the end of the receive thread..." );
+		_RecvThread->wait();
+	}
+
 	if ( _RecvTask != NULL )
 		delete _RecvTask;
 
@@ -344,6 +356,8 @@ void CClientReceiveTask::run()
 			connected = false;
 		}
 	}
+
+	nlnettrace( "Exiting CClientReceiveTask::run()" );
 }
 
 

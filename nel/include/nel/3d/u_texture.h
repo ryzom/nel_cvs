@@ -1,7 +1,7 @@
 /** \file u_texture.h
  * <File description>
  *
- * $Id: u_texture.h,v 1.5 2003/04/23 10:29:18 besson Exp $
+ * $Id: u_texture.h,v 1.6 2003/12/02 11:21:52 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,7 +139,15 @@ public:
 	virtual	void			setFilterMode(TMagFilter magf, TMinFilter minf) =0;
 	virtual	TMagFilter		getMagFilter() const =0;
 	virtual	TMinFilter		getMinFilter() const =0;
+	/** Set mipmap property to off
+	 * If the texture is DXTC and has mipmap, the driver will NOT upload them in VRAM if the user dont want them.
+	 */
 	virtual	bool			mipMapOff() const =0;
+	/** Set mipmap property to on
+	 * If the texture is DXTC and has no mipmap the driver will NOT create them. (This is due to performance: to create
+	 * mipmap in DXTC the driver have to decompress the texture, create the mipmap and recompress the texture to upload
+	 * it in VRAM. This is really time consuming and texture quality is altered, so the driver will not create them).
+	 */
 	virtual	bool			mipMapOn() const =0;
 	// @}
 
@@ -152,6 +160,9 @@ public:
 // ***************************************************************************
 /**
  * Game interface for manipulating texture File.
+ * Warnings :
+ * - If your texture is compressed in DXTC format and you want your texture with mipmap in VRAM, ensure that the file
+ *   has the mipmaps because the driver will not create them.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001

@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.12 2001/11/07 17:14:58 vizerie Exp $
+ * $Id: object_viewer_interface.h,v 1.13 2002/02/12 15:39:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #endif // OBJECT_VIEWER_EXPORT
 
 // Increment this version number each time you distribute a new version of the dll.
-#define OBJECT_VIEWER_VERSION 2
+#define OBJECT_VIEWER_VERSION 3
 
 namespace NL3D
 {
@@ -62,7 +62,7 @@ public:
 	virtual void releaseUI ()=0;
 
 	// Add a mesh
-	virtual NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, const char* meshName, const char *meshBaseName, NL3D::CSkeletonModel* pSkel) =0;
+	virtual NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, const char* meshName, const char *meshBaseName, NL3D::CSkeletonModel* pSkel, bool createInstance= true) =0;
 
 	// Add a skel
 	virtual NL3D::CSkeletonModel	*addSkel (NL3D::IShape* pSkelShape, const char* skelName, const char *skelBaseName) =0;
@@ -95,6 +95,15 @@ public:
 	  * (because the 3d lib is duplicated : one version in the viewer, and one version in the exporter)
 	  */
 	virtual void setWaterPoolManager(NL3D::CWaterPoolManager &wpm)=0;
+
+	/** Add an InstanceGroup. ptr Will be deleted by objectViewer.
+	 */
+	virtual void addInstanceGroup(NL3D::CInstanceGroup *ig)=0;
+
+	/** Setup Scene lighting System. Disabled by default
+	 */
+	virtual void setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunColor)=0;
+
 
 	// Get instance
 	static OBJECT_VIEWER_EXPORT IObjectViewer* getInterface (int version=OBJECT_VIEWER_VERSION);

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.29 2002/02/04 17:41:13 vizerie Exp $
+ * $Id: object_viewer.h,v 1.30 2002/02/12 15:39:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,7 +164,7 @@ public:
 	void setAutoAnimation (NL3D::CAnimation* pAnim);
 
 	// Add a mesh
-	NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, const char* meshName, const char *meshBaseName, NL3D::CSkeletonModel* pSkel);
+	NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, const char* meshName, const char *meshBaseName, NL3D::CSkeletonModel* pSkel, bool createInstance= true);
 
 	// Add a skel
 	NL3D::CSkeletonModel	*addSkel (NL3D::IShape* pSkelShape, const char* skelName, const char *skelBaseName);
@@ -278,6 +278,13 @@ public:
 
 	NL3D::CWaterPoolManager &getWaterPoolManager() { return *_Wpm; }
 
+	/** inherited from CObjectViewerInterface
+	 */
+	virtual void addInstanceGroup(NL3D::CInstanceGroup *ig);
+
+	/** inherited from CObjectViewerInterface
+	 */
+	virtual void setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunColor);
 
 	/// \name Landscape Vegetable Edition
 	// @{
@@ -316,6 +323,13 @@ public:
 
 private:
 
+	struct	CInstanceInfo
+	{
+		NL3D::CTransformShape	*TransformShape;
+		std::string				ShapeBaseName;
+		bool					MustDelete;
+	};
+
 	CMainFrame									*_MainFrame;
 	CAnimationDlg								*_AnimationDlg;
 	CMainDlg									*_SlotDlg;
@@ -324,9 +338,8 @@ private:
 	CDayNightDlg								*_DayNightDlg ;
 	CWaterPoolEditor							*_WaterPoolDlg ;
 	CVegetableDlg								*_VegetableDlg ;
-	std::vector<std::string>					_ListShapeBaseName;
 	std::vector<CMeshDesc>						_ListMeshes;
-	std::vector<class NL3D::CTransformShape*>	_ListTransformShape;
+	std::vector<CInstanceInfo>					_ListInstance;
 	NL3D::CAnimationSet							_AnimationSet;
 	std::vector<NL3D::CChannelMixer>			_ChannelMixer;
 	NL3D::CEvent3dMouseListener					_MouseListener;
@@ -334,6 +347,8 @@ private:
 	float										_HotSpotSize;
 	NLMISC::CRGBA								_BackGroundColor;
 	NLMISC::CVector								_SceneCenter;
+	// List of static InstanceGroup.
+	std::vector<class NL3D::CInstanceGroup*>	_ListIG;
 
 	// Font mgt
 	NL3D::CFontManager							_FontManager;
@@ -383,6 +398,10 @@ private:
 
 	// @}
 
+	// Lightigng Setup (from cfg).
+	bool										_SceneLightEnabled;
+	NLMISC::CVector								_SceneLightSunDir;
+	NLMISC::CRGBA								_SceneLightSunColor;
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.54 2002/02/04 17:15:41 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.55 2002/02/12 15:39:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -266,6 +266,43 @@ CObjectViewer::CObjectViewer ()
 		}
 
 
+		// load Scene light setup.
+		try
+		{
+			CConfigFile::CVar &var = cf.getVar("scene_light_enabled");
+			_SceneLightEnabled = var.asInt() !=0 ;
+		}
+		catch (EUnknownVar &)
+		{
+			_SceneLightEnabled= false;
+		}
+		try
+		{
+			CConfigFile::CVar &var = cf.getVar("scene_light_sun_color");
+			_SceneLightSunColor.R = var.asInt(0);
+			_SceneLightSunColor.G = var.asInt(1);
+			_SceneLightSunColor.B = var.asInt(2);
+		}
+		catch (EUnknownVar &)
+		{
+			_SceneLightSunColor= NLMISC::CRGBA::White;
+		}
+		try
+		{
+			CConfigFile::CVar &var = cf.getVar("scene_light_sun_dir");
+			_SceneLightSunDir.x = var.asFloat(0);
+			_SceneLightSunDir.y = var.asFloat(1);
+			_SceneLightSunDir.z = var.asFloat(2);
+			_SceneLightSunDir.normalize();
+		}
+		catch (EUnknownVar &)
+		{
+			_SceneLightSunDir.set(0, 1, -1);
+			_SceneLightSunDir.normalize();
+		}
+
+
+
 		// Load vegetable Landscape cfg.
 		loadVegetableLandscapeCfg(cf);
 
@@ -400,6 +437,9 @@ void CObjectViewer::initUI (HWND parent)
 	// Init NELU
 	CNELU::init (640, 480, viewport, 32, true, view->m_hWnd);
 	//CNELU::init (640, 480, viewport, 32, true, _MainFrame->m_hWnd);
+
+	// Init default lighting seutp.
+	setupSceneLightingSystem(_SceneLightEnabled, _SceneLightSunDir, _SceneLightSunColor);
 
 	// Camera
 	initCamera (_CameraFocal);
@@ -606,8 +646,8 @@ void CObjectViewer::setupPlaylist (float time)
 
 			// Current animation
 			CAnimation *anim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (0));
-			ITrack *posTrack = (ITrack *)anim->getTrackByName ((_ListShapeBaseName[i]+"pos").c_str());
-			ITrack *rotquatTrack = (ITrack *)anim->getTrackByName ((_ListShapeBaseName[i]+"rotquat").c_str());
+			ITrack *posTrack = (ITrack *)anim->getTrackByName ((_ListInstance[i].ShapeBaseName+"pos").c_str());
+			ITrack *rotquatTrack = (ITrack *)anim->getTrackByName ((_ListInstance[i].ShapeBaseName+"rotquat").c_str());
 			there = posTrack || rotquatTrack;
 
 			// Accumul time
@@ -626,8 +666,8 @@ void CObjectViewer::setupPlaylist (float time)
 				{
 					// Pointer on the animation
 					CAnimation *newAnim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (index));
-					ITrack *newPosTrack = (ITrack *)newAnim->getTrackByName ((_ListShapeBaseName[i]+"pos").c_str());
-					ITrack *newRotquatTrack = (ITrack *)newAnim->getTrackByName ((_ListShapeBaseName[i]+"rotquat").c_str());
+					ITrack *newPosTrack = (ITrack *)newAnim->getTrackByName ((_ListInstance[i].ShapeBaseName+"pos").c_str());
+					ITrack *newRotquatTrack = (ITrack *)newAnim->getTrackByName ((_ListInstance[i].ShapeBaseName+"rotquat").c_str());
 
 					// Add the transformation
 					addTransformation (current, anim, newAnim->getBeginTime(), anim->getEndTime(), posTrack, rotquatTrack, newPosTrack, newRotquatTrack, true);
@@ -694,8 +734,8 @@ void CObjectViewer::setupPlaylist (float time)
 			// Setup the pos and rot for this shape
 			if (there)
 			{
-				_ListTransformShape[i]->setPos (current.getPos());
-				_ListTransformShape[i]->setRotQuat (current.getRot());
+				_ListInstance[i].TransformShape->setPos (current.getPos());
+				_ListInstance[i].TransformShape->setRotQuat (current.getRot());
 			}
 		}
 	}
@@ -958,6 +998,9 @@ void CObjectViewer::releaseUI ()
 		_VegetableLandscape= NULL;
 	}
 
+	// Release all instances and all Igs.
+	removeAllInstancesFromScene();
+
 	// release other 3D.
 	CNELU::release();
 
@@ -1028,10 +1071,10 @@ void CObjectViewer::resetSlots ()
 void CObjectViewer::reinitChannels ()
 {
 	// Reset the channel mixxer array
-	_ChannelMixer.resize (_ListTransformShape.size());
+	_ChannelMixer.resize (_ListInstance.size());
 
 	// Add all the instance in the channel mixer
-	for (uint i=0; i<_ListTransformShape.size(); i++)
+	for (uint i=0; i<_ListInstance.size(); i++)
 	{
 		// Reset the channels
 		_ChannelMixer[i].resetChannels ();
@@ -1040,7 +1083,7 @@ void CObjectViewer::reinitChannels ()
 		_ChannelMixer[i].setAnimationSet (&_AnimationSet);
 
 		// Register the transform
-		_ListTransformShape[i]->registerToChannelMixer (&(_ChannelMixer[i]), _ListShapeBaseName[i]);
+		_ListInstance[i].TransformShape->registerToChannelMixer (&(_ChannelMixer[i]), _ListInstance[i].ShapeBaseName);
 	}
 
 	// Enable / disable channels
@@ -1056,10 +1099,10 @@ void CObjectViewer::enableChannels ()
 	bool enable = (_AnimationSetDlg->UseMixer == 1);
 
 	// Add all the instance in the channel mixer
-	for (uint i=0; i<_ListTransformShape.size(); i++)
+	for (uint i=0; i<_ListInstance.size(); i++)
 	{
 		// Get the base name
-		std::string &baseName = _ListShapeBaseName[i];
+		std::string &baseName = _ListInstance[i].ShapeBaseName;
 
 		// Get the pos and rot channel id
 		uint posId = _AnimationSet.getChannelIdByName (baseName+"pos");
@@ -1235,28 +1278,25 @@ bool CObjectViewer::loadInstanceGroup(const char *igFilename)
 	CPath::addSearchPath (path);
 
 	
-	// Shape pointer
-	NL3D::CInstanceGroup ig;	
-
 	// Open a file
 	CIFile file;
 	if (file.open (igFilename))
 	{		
+		// Shape pointer
+		NL3D::CInstanceGroup	*ig= new NL3D::CInstanceGroup;	
+
 		try
 		{
 			// Stream it
-			file.serial(ig);
+			file.serial(*ig);
 
-			// Add all models to the scene		
-			ig.addToScene(CNELU::Scene, CNELU::Driver);
-			for (uint k = 0; k < ig.getNumInstance(); ++k)
-			{
-				_ListShapeBaseName.push_back (ig.getInstanceName(k) + ".");	
-				_ListTransformShape.push_back (ig._Instances[k]);								
-			}
+			// Append the ig.
+			addInstanceGroup(ig);
 		}
 		catch (Exception& e)
 		{
+			// clean
+			delete ig;
 			_MainFrame->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 			return false;
 		}
@@ -1428,7 +1468,7 @@ void CObjectViewer::resetCamera ()
 
 // ***************************************************************************
 
-CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, const char *meshBaseName, CSkeletonModel* pSkel)
+CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, const char *meshBaseName, CSkeletonModel* pSkel, bool createInstance)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -1437,33 +1477,42 @@ CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* m
 	// Store the shape pointer
 	CNELU::ShapeBank->add (meshName, CSmartPtr<IShape> (pMeshShape));
 
-	// Store the name of the shape
-	_ListShapeBaseName.push_back (meshBaseName);
+	// Must create the instance?
+	if(createInstance)
+	{
+		// Create a model and add it to the scene
+		CTransformShape	*pTrShape=CNELU::Scene.createInstance (meshName);
+		nlassert (pTrShape);
 
-	// Create a model and add it to the scene
-	CTransformShape	*pTrShape=CNELU::Scene.createInstance (meshName);
-	nlassert (pTrShape);
+		// Set the rot model
+		if (_MainFrame->Euler)
+			pTrShape->setTransformMode (ITransformable::RotEuler);
+		else
+			pTrShape->setTransformMode (ITransformable::RotQuat);
 
-	// Set the rot model
-	if (_MainFrame->Euler)
-		pTrShape->setTransformMode (ITransformable::RotEuler);
+		// Store the transform shape pointer
+		CInstanceInfo	iInfo;
+		iInfo.TransformShape= pTrShape;
+		// Store the name of the shape
+		iInfo.ShapeBaseName= meshBaseName;
+		iInfo.MustDelete= true;
+		_ListInstance.push_back (iInfo);	
+
+
+		// *** Bind to the skeleton
+
+		// Get a mesh instance
+		CMeshBaseInstance  *meshInstance=dynamic_cast<CMeshBaseInstance*>(pTrShape);
+
+		// Bind the mesh
+		if (pSkel)
+			pSkel->bindSkin (meshInstance);
+
+		// Return the instance
+		return pTrShape;
+	}
 	else
-		pTrShape->setTransformMode (ITransformable::RotQuat);
-
-	// Store the transform shape pointer
-	_ListTransformShape.push_back (pTrShape);
-
-	// *** Bind to the skeleton
-
-	// Get a mesh instance
-	CMeshBaseInstance  *meshInstance=dynamic_cast<CMeshBaseInstance*>(pTrShape);
-
-	// Bind the mesh
-	if (pSkel)
-		pSkel->bindSkin (meshInstance);
-
-	// Return the instance
-	return pTrShape;
+		return NULL;
 }
 
 // ***************************************************************************
@@ -1493,11 +1542,13 @@ CSkeletonModel *CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* sk
 		else
 			pTrShape->setTransformMode (ITransformable::RotQuat);
 
-		// Store the name of the shape
-		_ListShapeBaseName.push_back (skelBaseName);
-
 		// Store the transform shape pointer
-		_ListTransformShape.push_back (skelModel);
+		CInstanceInfo	iInfo;
+		iInfo.TransformShape= skelModel;
+		// Store the name of the shape
+		iInfo.ShapeBaseName= skelBaseName;
+		iInfo.MustDelete= true;
+		_ListInstance.push_back (iInfo);	
 	}
 
 	// Return the instance
@@ -1569,6 +1620,9 @@ void CObjectViewer::setAutoAnimation (NL3D::CAnimation* pAnim)
 void CObjectViewer::setAmbientColor (const NLMISC::CRGBA& color)
 {
 	CNELU::Driver->setAmbientColor (color);
+
+	// Setup also Scene lighting system here, even if not used.
+	CNELU::Scene.setAmbientGlobal(color);
 }
 
 // ***************************************************************************
@@ -1604,12 +1658,13 @@ void CObjectViewer::activateTextureSet(uint index)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	std::vector<class NL3D::CTransformShape*>::iterator it;
-	for (it = _ListTransformShape.begin(); it != _ListTransformShape.end(); ++it)
+	std::vector<CInstanceInfo>::iterator it;
+	for (it = _ListInstance.begin(); it != _ListInstance.end(); ++it)
 	{
-		if (dynamic_cast<NL3D::CMeshBaseInstance *>(*it))
+		NL3D::CTransformShape	*trShape= it->TransformShape;
+		if (dynamic_cast<NL3D::CMeshBaseInstance *>(trShape))
 		{
-			static_cast<NL3D::CMeshBaseInstance *>(*it)->selectTextureSet(index);
+			static_cast<NL3D::CMeshBaseInstance *>(trShape)->selectTextureSet(index);
 		}		
 	}	
 }
@@ -1620,14 +1675,24 @@ void CObjectViewer::removeAllInstancesFromScene()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	std::vector<class NL3D::CTransformShape*>::iterator it;
-	for (it = _ListTransformShape.begin(); it != _ListTransformShape.end(); ++it)
+	// Remove all stand alone TransformShapes.
+	std::vector<CInstanceInfo>::iterator it;
+	for (it = _ListInstance.begin(); it != _ListInstance.end(); ++it)
 	{
-		CNELU::Scene.deleteInstance(*it);
+		if(it->MustDelete)
+			CNELU::Scene.deleteInstance(it->TransformShape);
 	}
-	_ListTransformShape.clear();
-	_ListShapeBaseName.clear();
+	_ListInstance.clear();
 
+	// Remove added/loaded igs and their instances.
+	for(uint igId=0; igId<_ListIG.size(); igId++)
+	{
+		// remove instances.
+		_ListIG[igId]->removeFromScene(CNELU::Scene);
+		// free up the ig.
+		delete _ListIG[igId];
+	}
+	_ListIG.clear();
 
 }
 
@@ -1753,6 +1818,42 @@ void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 			}
 		}
 	}
+}
+
+
+
+// ***************************************************************************
+void CObjectViewer::addInstanceGroup(NL3D::CInstanceGroup *ig)
+{
+	// Add all models to the scene		
+	ig->addToScene(CNELU::Scene, CNELU::Driver);
+	// Unfreeze all objects from HRC.
+	ig->unfreezeHRC();
+
+	// Keep a reference on them, but they'll be destroyed by IG.
+	for (uint k = 0; k < ig->getNumInstance(); ++k)
+	{
+		CInstanceInfo	iInfo;
+		iInfo.TransformShape= ig->_Instances[k];
+		iInfo.ShapeBaseName= ig->getInstanceName(k) + ".";
+		iInfo.MustDelete= false;
+		_ListInstance.push_back (iInfo);	
+	}
+
+	// Add the ig to the list.
+	_ListIG.push_back(ig);
+}
+
+// ***************************************************************************
+void CObjectViewer::setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunColor)
+{
+	CNELU::Scene.enableLightingSystem(enable);
+
+	// Setup sun.
+	CNELU::Scene.setSunAmbient(NLMISC::CRGBA::Black);
+	CNELU::Scene.setSunDiffuse(sunColor);
+	CNELU::Scene.setSunSpecular(sunColor);
+	CNELU::Scene.setSunDirection(sunDir);
 }
 
 

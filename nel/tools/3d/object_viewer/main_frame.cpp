@@ -259,9 +259,9 @@ void CMainFrame::OnResetCamera()
 
 	// Look for a first mesh
 	uint m;
-	for (m=0; m<ObjView->_ListTransformShape.size(); m++)
+	for (m=0; m<ObjView->_ListInstance.size(); m++)
 	{
-		CTransformShape *pTransform=dynamic_cast<CTransformShape*>(ObjView->_ListTransformShape[m]);
+		CTransformShape *pTransform=dynamic_cast<CTransformShape*>(ObjView->_ListInstance[m].TransformShape);
 		if (pTransform)
 		{
 			IShape *pShape=pTransform->Shape;
@@ -303,10 +303,10 @@ void CMainFrame::OnResetCamera()
 	}
 
 	// For each model in the list
-	for (; m<ObjView->_ListTransformShape.size(); m++)
+	for (; m<ObjView->_ListInstance.size(); m++)
 	{
 		// Pointer on the CTransformShape;
-		CTransformShape *pTransform=dynamic_cast<CTransformShape*>(ObjView->_ListTransformShape[m]);
+		CTransformShape *pTransform=dynamic_cast<CTransformShape*>(ObjView->_ListInstance[m].TransformShape);
 		if (pTransform)
 		{
 			IShape *pShape=pTransform->Shape;
@@ -396,12 +396,7 @@ void CMainFrame::OnClear()
 	// *** Clear the scene.
 
 	// Remove all the instance
-	uint i;
-	for (i=0; i<ObjView->_ListTransformShape.size(); i++)
-		CNELU::Scene.deleteInstance (ObjView->_ListTransformShape[i]);
-
-	// Clear the pointer array
-	ObjView->_ListTransformShape.clear ();
+	ObjView->removeAllInstancesFromScene();
 
 	// Erase the channel mixer
 	ObjView->_ChannelMixer.clear ();

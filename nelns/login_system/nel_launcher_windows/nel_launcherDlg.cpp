@@ -376,6 +376,10 @@ string getValue (const string &str, const string &token)
 void CNel_launcherDlg::launch (const string &str)
 {
 	string exe = ConfigFile.getVar ("Application").asString(1);
+	string path;
+	
+	if (ConfigFile.getVar ("Application").size() == 4)
+		path = ConfigFile.getVar ("Application").asString(3);
 
 	string rawargs = getValue (str, "nelArgs");
 
@@ -420,8 +424,11 @@ void CNel_launcherDlg::launch (const string &str)
 	}
 	args[i+1] = NULL;
 
+	// go in the good path before launching
+	if (!path.empty())
+		_chdir (path.c_str ());
+	
 	// execute, should better use CreateProcess()
-
 	_execvp (exe.c_str(), args);
 	exit(0);
 }

@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.4 2002/12/16 16:14:19 lecroart Exp $
+ * $Id: patch.cpp,v 1.5 2002/12/24 10:51:04 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -314,7 +314,7 @@ private:
 
 	void decompressFile (const string &filename, uint32 date)
 	{
-		setState(true, "Decompressing %s.gz...", NLMISC::CFile::getFilename(filename).c_str ());
+		setState(true, "Decompressing %s...", NLMISC::CFile::getFilename(filename).c_str ());
 
 		gzFile gz = gzopen (filename.c_str (), "rb");
 		if (gz == NULL)

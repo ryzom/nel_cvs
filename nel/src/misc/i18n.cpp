@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.26 2003/03/03 16:14:56 boucher Exp $
+ * $Id: i18n.cpp,v 1.27 2003/03/04 13:32:18 berenguier Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -286,7 +286,7 @@ void CI18N::load (uint32 lid)
 
 		// ok, a line read.
 		std::pair<std::map<std::string, ucstring>::iterator, bool> ret;
-		ret = _StrMap.insert(std::make_pair(label, text));
+		ret = _StrMap.insert(std::make_pair(label, ucs));
 		if (!ret.second)
 		{
 			nlwarning("Error in %s, the label %s exist twice !", fileName.c_str(), label.c_str());

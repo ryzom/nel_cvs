@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.18 2002/02/28 12:59:50 besson Exp $
+ * $Id: mot.cpp,v 1.19 2002/04/12 16:20:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,13 +106,14 @@ void	CMOT::addTrav(ITrav *v)
 {
 	nlassert(v);
 	CClassId	idTrav= v->getClassId();
-	nlassert(idTrav!=CClassId::Null);
+	nlassert(idTrav!=CClassId::Null);	
 
 	CTravEntry	e;
 	e.TravId= idTrav;
 	e.Trav= v;
 
 	Traversals.push_back(e);
+	v->addedToMOT(this);
 }
 // ***************************************************************************
 ITrav	*CMOT::getTrav(const CClassId &idTrav) const 

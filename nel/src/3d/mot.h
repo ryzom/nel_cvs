@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.6 2001/12/03 16:33:37 berenguier Exp $
+ * $Id: mot.h,v 1.7 2002/04/12 16:20:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,6 +107,14 @@ public:
 	 * Unique ID of this traversal class.
 	 */
 	void	addTrav(ITrav *v);
+	/// Get the number of registered traversal
+	uint	getNumTrav() const { return Traversals.size(); }
+	/// Get a traversal by its index
+	ITrav  *getTrav(uint index) const 
+	{ 
+		nlassert(index < Traversals.size());
+		return Traversals[index].Trav;
+	}
 	/**
 	 * Get a traversal via its class id.
 	 * \param idTrav the Trav Unique Id.
@@ -157,7 +165,7 @@ public:
 	/** release all the models and all the traversals created/registred.
 	 * Remind that Models are deleted, but not Traversals, since CMOT do not own traversals.
 	 */
-	void	release();
+	virtual void	release();
 
 
 // ******************
@@ -603,9 +611,11 @@ public:
 	 * This method must create a default observer for this traversal. Any model which doesn't provide (by registerObs() 
 	 * or by inheritance) an observer for this view will be linked with this default observer.
 	 */
-	virtual	IObs	*createDefaultObs() const =0;
+	virtual	IObs				*createDefaultObs() const =0;
 	/// This function must return the Unique Ident for this traversal class.
 	virtual	NLMISC::CClassId	getClassId() const =0;
+	/// Called when this traversal has been added to MOT object. The default does nothing
+	virtual	void				addedToMOT(CMOT *mot) {}
 	//@}
 
 

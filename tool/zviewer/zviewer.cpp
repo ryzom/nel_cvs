@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.11 2001/05/18 07:48:23 berenguier Exp $
+ * $Id: zviewer.cpp,v 1.12 2001/05/28 09:44:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,6 +88,10 @@ struct CViewerConfig
 	float			HeightFieldSizeX;
 	float			HeightFieldSizeY;
 
+	// StaticLight
+	CRGBA			LandAmbient;
+	CRGBA			LandDiffuse;
+
 	CViewerConfig()
 	{
 		Windowed = true;
@@ -112,6 +116,11 @@ struct CViewerConfig
 		HeightFieldOriginY= -24000;
 		HeightFieldSizeX= 160;
 		HeightFieldSizeY= 160;
+
+		CRGBA diffuse (241, 226, 244);
+		CRGBA ambiant  (17, 54, 100);
+		LandDiffuse= diffuse;
+		LandAmbient= ambiant;
 
 	}
 };
@@ -337,9 +346,7 @@ void displayZones()
 	ViewerCfg.TextContext.printfAt(0.5f,0.5f,"Initializing Light...");
 	CNELU::swapBuffers();
 	
-	CRGBA diffuse (241, 226, 244);
-	CRGBA ambiant  (17, 54, 100);
-	Landscape->Landscape.setupStaticLight (diffuse, ambiant, 1.1f);
+	Landscape->Landscape.setupStaticLight (ViewerCfg.LandDiffuse, ViewerCfg.LandAmbient, 1.1f);
 
 	// Init collision manager
 	CollisionManager.init( &(Landscape->Landscape), 200);
@@ -682,6 +689,9 @@ void writeConfigFile(const char * configFileName)
 	fprintf(f,"HeightFieldSizeX = %f;\n", ViewerCfg.HeightFieldSizeX);
 	fprintf(f,"HeightFieldSizeY = %f;\n", ViewerCfg.HeightFieldSizeY);
 
+	fprintf(f,"LandAmbient = { %d, %d, %d };\n", ViewerCfg.LandAmbient.R,ViewerCfg.LandAmbient.G,ViewerCfg.LandAmbient.B);
+	fprintf(f,"LandDiffuse = { %d, %d, %d };\n", ViewerCfg.LandDiffuse.R,ViewerCfg.LandDiffuse.G,ViewerCfg.LandDiffuse.B);
+
 	fprintf(f,"Zones = {\n");
 	fprintf(f,"};\n");
 	fclose(f);
@@ -774,6 +784,19 @@ void initViewerConfig(const char * configFileName)
 
 		CConfigFile::CVar &cvHeightFieldSizeY = cf.getVar("HeightFieldSizeY");
 		ViewerCfg.HeightFieldSizeY = cvHeightFieldSizeY.asFloat();
+
+
+		CConfigFile::CVar &cvLandAmb = cf.getVar("LandAmbient");
+		nlassert(cvLandAmb.size()==3);
+		ViewerCfg.LandAmbient.R = cvLandAmb.asInt(0);
+		ViewerCfg.LandAmbient.G = cvLandAmb.asInt(1);
+		ViewerCfg.LandAmbient.B = cvLandAmb.asInt(2);
+
+		CConfigFile::CVar &cvLandDiff = cf.getVar("LandDiffuse");
+		nlassert(cvLandDiff.size()==3);
+		ViewerCfg.LandDiffuse.R = cvLandDiff.asInt(0);
+		ViewerCfg.LandDiffuse.G = cvLandDiff.asInt(1);
+		ViewerCfg.LandDiffuse.B = cvLandDiff.asInt(2);
 
 
 		CConfigFile::CVar &cvZones = cf.getVar("Zones");

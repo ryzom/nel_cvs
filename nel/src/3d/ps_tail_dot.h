@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.h
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.h,v 1.3 2002/02/21 17:36:55 vizerie Exp $
+ * $Id: ps_tail_dot.h,v 1.4 2002/03/14 18:33:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,8 +57,7 @@ public:
 	///\name Behaviour
 	///@{
 			/** (de)activate color fading
-			* when its done, colors fades to black along the tail.
-			* NOT SUPPORTED FOR NOW
+			* when its done, colors fades to black along the tail.			
 			*/
 			virtual void setColorFading(bool onOff = true) 
 			{
@@ -66,8 +65,7 @@ public:
 				touch();
 			}
 
-			/** Test wether color fading is activated.
-			  * NOT SUPPORTED FOR NOW
+			/** Test wether color fading is activated.			  
 			  */
 			virtual bool getColorFading(void) const
 			{
@@ -134,7 +132,9 @@ private:
 	  */
 		
 	//@{
-			/// a struct containing a vertex buffer and a primitive block
+			/** a struct containing a vertex buffer and the matching a primitive block
+			  * \todo: primitive blocks can be shared for several vbs...
+			  */
 			struct CVBnPB
 			{
 				CVertexBuffer		VB;

@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.8 2001/02/20 11:22:10 berenguier Exp $
+ * $Id: zviewer.cpp,v 1.9 2001/03/06 15:15:50 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "nel/3d/landscape.h"
 #include "nel/3d/text_context.h"
 #include "nel/3d/mini_col.h"
+#include "nel/3d/nelu.h"
 
 #include "nel/net/local_entity.h"
 

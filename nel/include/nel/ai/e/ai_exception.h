@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.10 2001/10/17 08:34:23 chafik Exp $
+ * $Id: ai_exception.h,v 1.11 2001/10/17 08:53:19 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -134,6 +134,11 @@ namespace NLAIE
 	private:	
 		char *_ClassName;
 	public:
+		CExceptionUnRegisterClassError(const CExceptionUnRegisterClassError &e)
+		{
+			_ClassName = new char [strlen(e._ClassName) + 1];
+			strcpy(_ClassName,e._ClassName);
+		}
 		CExceptionUnRegisterClassError(char *name)
 		{
 			_ClassName = new char [strlen(name) + 1];
@@ -162,6 +167,11 @@ namespace NLAIE
 	private:	
 		char *_ClassName;
 	public:
+		CExceptionObjectNotFoundError(const CExceptionObjectNotFoundError &e)
+		{
+			_ClassName = new char [strlen(e._ClassName) + 1];
+			strcpy(_ClassName,e._ClassName);
+		}
 		CExceptionObjectNotFoundError(char *name)
 		{
 			_ClassName = new char [strlen(name) + 1];
@@ -189,6 +199,12 @@ namespace NLAIE
 	private:
 		char *_Text;
 	public:
+
+		CExceptionNotImplemented(const CExceptionNotImplemented &e)
+		{
+			_Text = new char [strlen(e._Text) + 1];
+			strcpy(_Text,e._Text);
+		}
 		
 		CExceptionNotImplemented(const char *text)
 		{
@@ -217,6 +233,12 @@ namespace NLAIE
 	private:
 		char *_Text;
 	public:
+
+		CExceptionUnReference(const CExceptionUnReference &e)
+		{
+			_Text = new char [strlen(e._Text) + 1];
+			strcpy(_Text,e._Text);
+		}
 		
 		CExceptionUnReference(char *text)
 		{
@@ -245,6 +267,12 @@ namespace NLAIE
 	private:
 		char *_Text;
 	public:
+
+		CExceptionAllReadyExist(const CExceptionAllReadyExist &e)
+		{
+			_Text = new char [strlen(e._Text) + 1];
+			strcpy(_Text,e._Text);
+		}
 		
 		CExceptionAllReadyExist(char *text)
 		{

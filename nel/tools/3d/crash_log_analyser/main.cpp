@@ -16,7 +16,7 @@ using namespace NLMISC;
 
 
 // ***************************************************************************
-void	filterRyzomBug(const char *dirSrc, const char *dirDst, uint patchVersionWanted)
+void	filterRyzomBug(const char *dirSrc, const char *dirDst, uint patchVersionWanted, const string specialFilter)
 {
 	if(!CFile::isDirectory(dirDst))
 	{
@@ -40,6 +40,7 @@ void	filterRyzomBug(const char *dirSrc, const char *dirDst, uint patchVersionWan
 			uint	numPatchVersion= 0;
 			bool	precUserId= false;
 			bool	ok= true;
+			bool	filterFound= false;			
 			while(!f.eof())
 			{
 				char	tmp[1000];
@@ -79,6 +80,8 @@ void	filterRyzomBug(const char *dirSrc, const char *dirDst, uint patchVersionWan
 						break;
 					}
 				}
+				if(!specialFilter.empty() && str.compare(0, specialFilter.size(), specialFilter)==0)
+					filterFound= true;
 			}
 			f.close();
 			if(ok && numUserId!=numPatchVersion)
@@ -86,6 +89,9 @@ void	filterRyzomBug(const char *dirSrc, const char *dirDst, uint patchVersionWan
 				nlwarning("Don't find a PatchVersion for all UserId in %s", fileFullPath.c_str());
 				ok= false;
 			}
+			// if specialFitler defined, but not found in the file, abort
+			if(ok && !specialFilter.empty() && !filterFound)
+				ok =false;
 
 			// if ok, copy the file and the associated .dmp dir
 			if(ok)
@@ -177,6 +183,7 @@ void	statRyzomBug(const char *dirSrc)
 	TStatStrMap				senderMap;
 	TStatMap				shardMap;
 	TStatMap				timeInGameMap;
+	TStatMap				patchVersionMap;
 	TStatMap				info3dMap;
 	std::vector<CVector>	userPosArray;
 	uint					totalCrash= 0;
@@ -194,6 +201,7 @@ void	statRyzomBug(const char *dirSrc)
 			const	string	shardIdTok= "ShardId: ";
 			const	string	userPosTok= "UserPosition: ";
 			const	string	timeInGameIdTok= "Time in game: ";
+			const	string	patchVersionIdTok= "PatchVersion: ";
 			const	string	localTimeIdTok= "LocalTime: ";
 			const	string	nel3dIdTok= "NeL3D: ";
 			const	string	card3dIdTok= "3DCard: ";
@@ -204,6 +212,7 @@ void	statRyzomBug(const char *dirSrc)
 			sint	precTimeInGame= -1;	// 0 means "never in game", 1 means < 10 min, 2 means more
 			sint	precNel3DMode= -1;	// 0 OpenGL, 1 D3D, 2 ????
 			sint	precCard3D= -1;		// 0 NVidia, 1 ATI, 2 ????
+			sint	precPatchVersion= -1;
 			sint64	precLocalTime= -1;	// local time in second
 			sint64	precLocalTime2= -1;	// local time in second
 			CVector	precUserPos;
@@ -238,6 +247,10 @@ void	statRyzomBug(const char *dirSrc)
 						else
 							precTimeInGame= 2;
 					}
+				}
+				else if(str.compare(0, patchVersionIdTok.size(), patchVersionIdTok)==0)
+				{
+					precPatchVersion= atoi(str.c_str()+patchVersionIdTok.size());
 				}
 				else if(str.compare(0, localTimeIdTok.size(), localTimeIdTok)==0)
 				{
@@ -288,6 +301,7 @@ void	statRyzomBug(const char *dirSrc)
 						senderMap[precSenderId].Val++;
 						shardMap[precShardId].Val++;
 						timeInGameMap[precTimeInGame].Val++;
+						patchVersionMap[precPatchVersion].Val++;
 						if(precNel3DMode!=0 && precNel3DMode!=1)
 							precNel3DMode= 2;
 						if(precCard3D!=0 && precCard3D!=1)
@@ -336,6 +350,13 @@ void	statRyzomBug(const char *dirSrc)
 		myinfo("**** %d Crashs for TimeInGame %s", it->second.Val, it->first==0?"0h 0min 0sec":
 				(it->first==1?"<=5 min":
 				 it->first==2?"> 5 min":"??? Bad parse ???"));
+	}
+	// infoPatch
+	myinfo("");
+	myinfo("**** Stat Per PatchVersion:");
+	for(it=patchVersionMap.begin();it!=patchVersionMap.end();it++)
+	{
+		myinfo("**** %d Crashs for PatchVersion %d", it->second.Val, it->first);
 	}
 	// info3d
 	myinfo("");
@@ -408,13 +429,13 @@ int	main(int argc, char *argv[])
 	bool	filterMode= false;
 	if(argc == 3 && argv[2]==string("-s"))
 		ok=	true,statMode= true;
-	if(argc == 5 && argv[2]==string("-p"))
+	if(argc >= 5 && argv[2]==string("-p"))
 		ok=	true,filterMode= true;
 	
 	if(!ok)
 	{
 		myinfo("Usage1 (stats):\n\t%s src_dir -s\n", CFile::getFilename(argv[0]).c_str());
-		myinfo("Usage2 (patch filter):\n\t%s src_dir -p patch_version dst_dir\n", CFile::getFilename(argv[0]).c_str());
+		myinfo("Usage2 (patch filter):\n\t%s src_dir -p patch_version dst_dir [specialFilter]\n", CFile::getFilename(argv[0]).c_str());
 	}
 	else
 	{
@@ -426,7 +447,10 @@ int	main(int argc, char *argv[])
 		
 		if(filterMode)
 		{
-			filterRyzomBug(argv[1], argv[3], atoi(argv[4]));
+			string	specialFilter;
+			if(argc>=6)
+				specialFilter= argv[5];
+			filterRyzomBug(argv[1], argv[4], atoi(argv[3]), specialFilter);
 		}
 		else if(statMode)
 		{

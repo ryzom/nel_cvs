@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.7 2002/11/25 14:11:41 boucher Exp $
+ * $Id: source_dsound.h,v 1.8 2003/01/08 15:40:03 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,7 @@ public:
 	virtual ~CSourceDSound();
 
     /// Initialize the DirectSound buffers. Called by the sound driver only.
-	void					init(LPDIRECTSOUND directSound);
+	void					init(LPDIRECTSOUND8 directSound, bool useEax);
 
 	/// \name Initialization
 	//@{
@@ -384,6 +384,11 @@ private:
 	double					_Alpha;
 
 	NLMISC::CVector			_Pos;
+
+#ifdef EAX_AVAILABLE
+	LPKSPROPERTYSET			_EAXSource;
+#endif
+
 
 #if NLSOUND_PROFILE
 

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.29 2002/09/02 14:53:41 lecroart Exp $
+ * $Id: unified_network.h,v 1.30 2002/10/24 08:47:04 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -72,7 +72,7 @@ class CUnifiedNetwork
 {
 public:
 
-	/** Returns the singleton instance of the CNetManager class.
+	/** Returns the singleton instance of the CUnifiedNetwork class.
 	 */
 	static CUnifiedNetwork *getInstance ();
 
@@ -199,7 +199,7 @@ public:
 	CCallbackNetBase	*getNetBase(const std::string &name, TSockId &host, uint8 nid=0xFF);
 
 	/// Gets the CCallbackNetBase of the service
-	CCallbackNetBase	*getNetBase(TServiceId sid, TSockId &host, uint8 nid=0xFF);
+	CCallbackNetBase	*getNetBase(uint16 sid, TSockId &host, uint8 nid=0xFF);
 
 	/// Gets the total number of bytes sent
 	uint64				getBytesSent ();
@@ -314,12 +314,13 @@ private:
 
 		CUnifiedConnection() { reset(); }
 
-		CUnifiedConnection(const std::string &name, uint16 id) 
+		CUnifiedConnection(const std::string &name, uint16 id, bool isExternal) 
 		{
 			reset ();
 			ServiceName = name;
 			ServiceId = id;
 			State = Ready;
+			IsExternal = isExternal;
 		}
 
 		CUnifiedConnection(const std::string &name, uint16 id, CCallbackClient *cbc)
@@ -468,11 +469,12 @@ private:
 	// Don't keep the pointer because it can be invalid if the table is resized.
 	CUnifiedConnection	*getUnifiedConnection (uint16 sid);
 
+	bool haveNamedCnx (const std::string &name, uint16 sid);
 	void addNamedCnx (const std::string &name, uint16 sid);
 	void removeNamedCnx (const std::string &name, uint16 sid);
 
 	// with a sid and a nid, find a good connection to send a message
-	uint8 findConnectionId (uint32 sid, uint8 nid);
+	uint8 findConnectionId (uint16 sid, uint8 nid);
 
 	friend void	uncbConnection(TSockId from, void *arg);
 	friend void	uncbDisconnection(TSockId from, void *arg);

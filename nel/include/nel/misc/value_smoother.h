@@ -1,7 +1,7 @@
 /** \file value_smoother.h
  * <File description>
  *
- * $Id: value_smoother.h,v 1.9 2004/01/08 15:13:03 lecroart Exp $
+ * $Id: value_smoother.h,v 1.10 2004/04/06 10:21:03 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,7 @@ public:
 	T		getSmoothValue() const
 	{
 		if(_NumFrame>0)
-			return T(_FrameSum / _NumFrame);
+			return T(_FrameSum) / T(_NumFrame);
 		else
 			return T(0);
 	}

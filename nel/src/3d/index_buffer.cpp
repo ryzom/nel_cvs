@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Index buffers.
  *
- * $Id: index_buffer.cpp,v 1.4 2004/08/13 15:35:40 vizerie Exp $
+ * $Id: index_buffer.cpp,v 1.5 2004/10/19 12:48:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,7 @@ CIndexBuffer::CIndexBuffer()
 	_Location = NotResident;
 	_ResidentSize = 0;
 	_KeepLocalMemory = false;
+	_Format = Indices32;
 }
 
 // ***************************************************************************
@@ -93,7 +94,8 @@ CIndexBuffer::CIndexBuffer(const char *name)
 // ***************************************************************************
 
 CIndexBuffer::~CIndexBuffer()
-{
+{	
+	// Single value
 	if (DrvInfos)
 		DrvInfos->IndexBufferPtr = NULL;	// Tell the driver info to not restaure memory when it will die
 
@@ -105,8 +107,7 @@ CIndexBuffer::~CIndexBuffer()
 
 CIndexBuffer	&CIndexBuffer::operator=(const CIndexBuffer &vb)
 {
-	nlassertex (!isLocked(), ("The index buffer is locked."));
-
+	nlassertex (!isLocked(), ("The index buffer is locked."));	
 	// Single value
 	_InternalFlags = vb._InternalFlags;
 	_NbIndexes = vb._NbIndexes;
@@ -114,6 +115,7 @@ CIndexBuffer	&CIndexBuffer::operator=(const CIndexBuffer &vb)
 	_NonResidentIndexes = vb._NonResidentIndexes;
 	_PreferredMemory = vb._PreferredMemory;
 	_KeepLocalMemory = vb._KeepLocalMemory;
+	_Format = vb._Format;
 
 	// Set touch flags
 	_InternalFlags |= TouchedAll;
@@ -170,6 +172,17 @@ void CIndexBuffer::setNumIndexes(uint32 n)
 
 // ***************************************************************************
 
+void CIndexBuffer::setFormat(TFormat format)
+{
+	if (format == _Format) return;	
+	uint numIndexes = getNumIndexes();
+	deleteAllIndexes();	
+	_Format = format;
+	setNumIndexes(numIndexes);
+}
+
+// ***************************************************************************
+
 void CIndexBuffer::deleteAllIndexes()
 {
 	if (_Capacity)
@@ -209,11 +222,11 @@ void CIndexBuffer::setLocation (TLocation newLocation)
 		if (_Location != NotResident)
 			setLocation (NotResident);
 
-		// Copy the buffer containt
-		uint32 *dest = DrvInfos->lock (0, size, false);
-		nlassert (_NonResidentIndexes.size() == _Capacity);	// Internal buffer must have the good size
+		// Copy the buffer content
+		void *dest = DrvInfos->lock (0, size, false);
+		nlassert (_NonResidentIndexes.size() / getIndexNumBytes() == _Capacity);	// Internal buffer must have the good size
 		if (_Capacity != 0)
-			memcpy (dest, &(_NonResidentIndexes[0]), size*sizeof(uint32));
+			memcpy (dest, &(_NonResidentIndexes[0]), size*getIndexNumBytes());
 		DrvInfos->unlock(0, 0);
 
 		// Reset the non resident container if not a static preferred memory and not put in RAM
@@ -229,7 +242,7 @@ void CIndexBuffer::setLocation (TLocation newLocation)
 	else
 	{
 		// Resize the non resident buffer
-		_NonResidentIndexes.resize (_Capacity);
+		_NonResidentIndexes.resize (_Capacity * getIndexNumBytes());
 
 		// If resident in RAM, backup the data in non resident memory
 		if ((_Location == RAMResident) && (_PreferredMemory != RAMVolatile) && (_PreferredMemory != AGPVolatile) && !_KeepLocalMemory)
@@ -238,8 +251,8 @@ void CIndexBuffer::setLocation (TLocation newLocation)
 			nlassert (DrvInfos);
 
 			// Copy the old buffer data
-			const uint32 *src = DrvInfos->lock (0, _ResidentSize, true);
-			uint size = std::min ((uint)(_Capacity*sizeof(uint32)), (uint)(_ResidentSize*sizeof(uint32)));
+			const void *src = DrvInfos->lock (0, _ResidentSize, true);
+			uint size = std::min ((uint)(_Capacity*getIndexNumBytes()), (uint)(_ResidentSize*getIndexNumBytes()));
 			if (size)
 				memcpy (&(_NonResidentIndexes[0]), src, size);
 			DrvInfos->unlock(0, 0);
@@ -266,8 +279,50 @@ void CIndexBuffer::restaureNonResidentMemory()
 	DrvInfos.kill();
 }
 
-// ***************************************************************************
 
+// ***************************************************************************
+void CIndexBuffer::buildSerialVector(std::vector<uint32> &dest) const
+{
+	dest.resize(getNumIndexes());
+	if (_Format == Indices16)
+	{
+		const uint16 *src = (const uint16 *) &_NonResidentIndexes[0];
+		// convert to 32 bits
+		for(uint k = 0; k < getNumIndexes(); ++k)
+		{
+			dest[k] = *src ++;
+		}
+	}
+	else
+	{
+		// direct copy				
+		memcpy(&dest[0], &_NonResidentIndexes[0], sizeof(uint32) * getNumIndexes());
+	}
+}
+
+// ***************************************************************************
+void CIndexBuffer::restoreFromSerialVector(const std::vector<uint32> &src)
+{
+	// for now, just convert to wanted format
+	if (_Format == Indices16)
+	{
+		_NonResidentIndexes.resize(sizeof(uint16) * src.size());
+		uint16 *dest = (uint16 *) &_NonResidentIndexes[0];
+		for(uint k = 0; k < src.size(); ++k)
+		{
+			nlassert(src[k] <= 0xffff);
+			*dest++ = (uint16) src[k];
+		}
+	}
+	else
+	{
+		nlassert(_Format == Indices32);
+		_NonResidentIndexes.resize(sizeof(uint32) * src.size());
+		memcpy(&_NonResidentIndexes[0], &src[0], sizeof(uint32) * src.size());
+	}
+}
+
+// ***************************************************************************
 void CIndexBuffer::serial(NLMISC::IStream &f)
 {
 	/** Version 2 : no more write only flags
@@ -288,10 +343,21 @@ void CIndexBuffer::serial(NLMISC::IStream &f)
 		f.serialCont(indexes);
 
 		// Read tri
+		// NB : for backward compatibility, indices are always saved in 32 bit format
+		std::vector<uint32> nonResidentIndexes;
+		if (!f.isReading())
+		{
+			buildSerialVector(nonResidentIndexes);			
+		}
 		f.serial(nb, capacity);
 		_NbIndexes = nb*3;
 		_Capacity = capacity*3;
-		f.serialCont(_NonResidentIndexes);
+		f.serialCont(nonResidentIndexes);
+
+		if (f.isReading())
+		{
+			restoreFromSerialVector(nonResidentIndexes);
+		}
 
 		// Skip quads
 		f.serial(nb, capacity);
@@ -301,10 +367,19 @@ void CIndexBuffer::serial(NLMISC::IStream &f)
 	// Index buffer?
 	if (ver >= 1)
 	{
+		// NB : for backward compatibility, indices are always saved in 32 bit format
+		std::vector<uint32> nonResidentIndexes;
+		if (!f.isReading())
+		{
+			buildSerialVector(nonResidentIndexes);			
+		}
 		f.serial(_NbIndexes, _Capacity);
-		f.serialCont(_NonResidentIndexes);
+		f.serialCont(nonResidentIndexes);
 		f.serialEnum(_PreferredMemory);
-
+		if (f.isReading())
+		{
+			restoreFromSerialVector(nonResidentIndexes);
+		}
 		// Read the old format
 		if (ver == 1)
 		{
@@ -330,9 +405,9 @@ void CIndexBuffer::fillBuffer ()
 	if (DrvInfos && _KeepLocalMemory)
 	{
 		// Copy the local memory in local memory
-		nlassert (_NbIndexes<=_NonResidentIndexes.size());
-		uint32 *dest = DrvInfos->lock (0, _NbIndexes, false);
-		NLMISC::CFastMem::memcpy (dest, &(_NonResidentIndexes[0]), _NbIndexes*sizeof(uint32));
+		nlassert ((_NbIndexes * getIndexNumBytes()) <=_NonResidentIndexes.size());
+		void *dest = DrvInfos->lock (0, _NbIndexes, false);
+		NLMISC::CFastMem::memcpy (dest, &(_NonResidentIndexes[0]), _NbIndexes*getIndexNumBytes());
 		DrvInfos->unlock(0, _NbIndexes);
 	}
 }

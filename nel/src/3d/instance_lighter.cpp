@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.17 2004/07/20 16:22:32 berenguier Exp $
+ * $Id: instance_lighter.cpp,v 1.18 2004/10/19 12:49:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,19 +196,36 @@ void CInstanceLighter::addTriangles (const CMeshGeom &meshGeom, const CMatrix& m
 
 			// Dump triangles
 			CIndexBufferRead iba;
-			primitive.lock (iba);
-			const uint32* triIndex=iba.getPtr ();
+			primitive.lock (iba);			
 			uint numTri=primitive.getNumIndexes ()/3;
 			uint tri;
-			for (tri=0; tri<numTri; tri++)
+			if (primitive.getFormat() == CIndexBuffer::Indices16)
 			{
-				// Vertex
-				CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
-				CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
-				CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
+				const uint16* triIndex=(uint16*)iba.getPtr ();
+				for (tri=0; tri<numTri; tri++)
+				{
+					// Vertex
+					CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
+					CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
+					CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
 
-				// Make a triangle
-				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), instanceId));
+					// Make a triangle
+					triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), instanceId));
+				}
+			}
+			else
+			{
+				const uint32* triIndex=(uint32*)iba.getPtr ();
+				for (tri=0; tri<numTri; tri++)
+				{
+					// Vertex
+					CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
+					CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
+					CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
+
+					// Make a triangle
+					triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), instanceId));
+				}
 			}
 		}
 	}
@@ -232,19 +249,36 @@ void CInstanceLighter::addTriangles (const CMeshMRMGeom &meshGeom, const CMatrix
 
 		// Dump triangles
 		CIndexBufferRead iba;
-		primitive.lock (iba);
-		const uint32* triIndex=iba.getPtr ();
+		primitive.lock (iba);		
 		uint numTri=primitive.getNumIndexes ()/3;
 		uint tri;
-		for (tri=0; tri<numTri; tri++)
+		if (primitive.getFormat() == CIndexBuffer::Indices16)
 		{
-			// Vertex
-			CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
-			CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
-			CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
+			const uint16* triIndex=(uint16*)iba.getPtr ();
+			for (tri=0; tri<numTri; tri++)
+			{
+				// Vertex
+				CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
+				CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
+				CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
 
-			// Make a triangle
-			triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), instanceId));
+				// Make a triangle
+				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), instanceId));
+			}
+		}
+		else
+		{
+			const uint32* triIndex=(uint32*)iba.getPtr ();
+			for (tri=0; tri<numTri; tri++)
+			{
+				// Vertex
+				CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
+				CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
+				CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
+
+				// Make a triangle
+				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), instanceId));
+			}
 		}
 	}
 }

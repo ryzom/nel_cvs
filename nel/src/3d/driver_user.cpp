@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.50 2004/09/17 15:23:05 vizerie Exp $
+ * $Id: driver_user.cpp,v 1.51 2004/10/19 12:47:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -188,11 +188,13 @@ CDriverUser::CDriverUser (uint windowIcon, bool direct3d)
 	_VBQuadsColUv.setName("_VBQuadsColUv");
 	_VBQuadsColUv2.setName("_VBQuadsColUv2");
 
-	_PBLine.setNumIndexes(2);
+	_PBLine.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	_PBLine.setNumIndexes(2);	
 	CIndexBufferReadWrite iba;
 	_PBLine.lock (iba);
 	iba.setLine(0, 0, 1);
-	_PBTri.setNumIndexes(3);
+	_PBTri.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	_PBTri.setNumIndexes(3);	
 	_PBTri.lock (iba);
 	iba.setTri(0, 0, 1, 2);
 
@@ -1219,6 +1221,23 @@ void			CDriverUser::swapBuffers()
 	_Driver->swapBuffers();
 }
 
+// ***************************************************************************
+void CDriverUser::finish()
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_SWAP_DRIVER;
+
+	_Driver->finish();
+}
+
+// ***************************************************************************
+void CDriverUser::flush()
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_SWAP_DRIVER;
+
+	_Driver->flush();
+}
 
 // ***************************************************************************
 bool			CDriverUser::fogEnabled()

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.54 2004/09/02 17:00:23 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.55 2004/10/19 12:47:01 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -285,7 +285,15 @@ bool CDriverGL::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 		// draw the primitives.
 		if(nlines)
 		{
-			glDrawElements(GL_LINES,2*nlines,GL_UNSIGNED_INT,_LastIB._Values+firstIndex);
+			if (_LastIB._Format == CIndexBuffer::Indices16)
+			{
+				glDrawElements(GL_LINES,2*nlines,GL_UNSIGNED_SHORT,((uint16 *) _LastIB._Values)+firstIndex);
+			}
+			else
+			{
+				nlassert(_LastIB._Format == CIndexBuffer::Indices32);
+				glDrawElements(GL_LINES,2*nlines,GL_UNSIGNED_INT,((uint32 *) _LastIB._Values)+firstIndex);
+			}
 		}
 	}
 	// end multipass.
@@ -328,7 +336,15 @@ bool CDriverGL::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris)
 		// draw the primitives.		
 		if(ntris)
 		{			
-			glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT,_LastIB._Values+firstIndex);
+			if (_LastIB._Format == CIndexBuffer::Indices16)
+			{
+				glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_SHORT, ((uint16 *) _LastIB._Values)+firstIndex);
+			}
+			else
+			{
+				nlassert(_LastIB._Format == CIndexBuffer::Indices32);
+				glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, ((uint32 *) _LastIB._Values)+firstIndex);				
+			}
 		}
 	}
 	// end multipass.
@@ -363,7 +379,16 @@ bool CDriverGL::renderSimpleTriangles(uint32 firstTri, uint32 ntris)
 	//==============================
 	// NO MULTIPASS HERE!!
 	// draw the primitives. (nb: ntrsi>0).	 	
-	glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, _LastIB._Values+firstTri);
+
+	if (_LastIB._Format == CIndexBuffer::Indices16)
+	{
+		glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_SHORT, ((uint16 *) _LastIB._Values)+firstTri);
+	}
+	else
+	{
+		nlassert(_LastIB._Format == CIndexBuffer::Indices32);
+		glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, ((uint32 *) _LastIB._Values)+firstTri);
+	}
 
 	// Profiling.
 	_PrimitiveProfileIn.NTriangles+= ntris;
@@ -1758,6 +1783,7 @@ void CIndexBufferInfo::setupIndexBuffer(CIndexBuffer &ib)
 	CIndexBufferReadWrite access;
 	ib.lock (access);
 	_Values = access.getPtr();
+	_Format = access.getFormat();
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file index_buffer.h
  * Index buffers.
  *
- * $Id: index_buffer.h,v 1.7 2004/09/17 15:21:48 vizerie Exp $
+ * $Id: index_buffer.h,v 1.8 2004/10/19 12:48:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,84 @@ typedef	TIBDrvInfoPtrList::iterator		ItIBDrvInfoPtrList;
 	#define NL_SET_IB_NAME(ib, n)
 #endif
 
+
+
+#define NL_FORCE_INDEX_BUFFER_16
+
+#ifdef NL_FORCE_INDEX_BUFFER_16
+	typedef uint16 TIndexType; // default index type
+	#define NL_DEFAULT_INDEX_BUFFER_FORMAT CIndexBuffer::Indices16
+
+	#define NL_MESH_INDEX16
+	#define NL_MESH_MRM_INDEX16
+	#define NL_SKINNED_MESH_MRM_INDEX16
+	//#define NL_LANDSCAPE_INDEX16
+	#define NL_LOD_CHARACTER_INDEX16
+	#define NL_COARSE_MESH_INDEX16
+#else
+	typedef uint32 TIndexType; // default index type
+	#define NL_DEFAULT_INDEX_BUFFER_FORMAT CIndexBuffer::Indices32
+#endif
+
+
+
+// 16 bit indices for meshs ?
+#ifdef NL_MESH_INDEX16
+	typedef uint16 TMeshIndexType;
+	#define NL_MESH_INDEX_FORMAT CIndexBuffer::Indices16
+#else
+	typedef uint32 TMeshIndexType;
+	#define NL_MESH_INDEX_FORMAT CIndexBuffer::Indices32
+#endif
+
+// 16 bit indices for mesh_mrm ?
+#ifdef NL_MESH_MRM_INDEX16
+	typedef uint16 TMeshMRMIndexType;
+	#define NL_MESH_MRM_INDEX_FORMAT CIndexBuffer::Indices16
+#else
+	typedef uint32 TMeshMRMIndexType;
+	#define NL_MESH_MRM_INDEX_FORMAT CIndexBuffer::Indices32
+#endif
+
+// 16 bit indices for skinned mesh_mrm ?
+#ifdef NL_SKINNED_MESH_MRM_INDEX16
+	typedef uint16 TSkinnedMeshMRMIndexType;
+	#define NL_SKINNED_MESH_MRM_INDEX_FORMAT CIndexBuffer::Indices16
+#else
+	typedef uint32 TSkinnedMeshMRMIndexType;
+	#define NL_SKINNED_MESH_MRM_INDEX_FORMAT CIndexBuffer::Indices32
+#endif
+
+
+// 16 bit indices for landscape ?
+#ifdef NL_LANDSCAPE_INDEX16
+	typedef uint16 TLandscapeIndexType;
+	#define NL_LANDSCAPE_INDEX_FORMAT CIndexBuffer::Indices16
+#else
+	typedef uint32 TLandscapeIndexType;
+	#define NL_LANDSCAPE_INDEX_FORMAT CIndexBuffer::Indices32
+#endif
+
+// 16 bit for lod characters ?
+#ifdef NL_LOD_CHARACTER_INDEX16
+	typedef uint16 TLodCharacterIndexType;
+	#define NL_LOD_CHARACTER_INDEX_FORMAT CIndexBuffer::Indices16
+#else
+	typedef uint32 TLodCharacterIndexType;
+	#define NL_LOD_CHARACTER_INDEX_FORMAT CIndexBuffer::Indices32
+#endif
+
+// 16 bit for coarse meshs ?
+#ifdef NL_COARSE_MESH_INDEX16
+	typedef uint16 TCoarseMeshIndexType;
+	#define NL_COARSE_MESH_INDEX_FORMAT CIndexBuffer::Indices16
+#else
+	typedef uint32 TCoarseMeshIndexType;
+	#define NL_COARSE_MESH_INDEX_FORMAT CIndexBuffer::Indices32
+#endif
+
+
+
 /**
  * An index buffer to work with the driver
  *
@@ -104,6 +182,13 @@ public:
 		VRAMResident,
 		NotResident,
 		LocationCount,
+	};
+
+	enum TFormat
+	{
+		Indices16 = 0,
+		Indices32,
+		IndicesUnknownFormat // reserved, for use by driver
 	};
 
 	/**
@@ -178,6 +263,9 @@ public:
 	/**
 	  * Set the buffer preferred memory. Default preferred memory is RAM.
 	  *
+	  * Indices can be either 16 or 32 bits
+	  * Default format is 32 bits
+	  *
 	  * Preferre RAM if the buffer is changed several times in the same render pass.
 	  * Preferre AGP if the buffer is changed only one time in the same render pass.
 	  * Preferre Static if the buffer is changed only one time for initialisation.
@@ -240,7 +328,16 @@ public:
 	  * If the new size is smaller than capacity, the data are keeped, the index buffer stay resident if it is resident.
 	  */
 	void					setNumIndexes(uint32 n);
+
+	// Set format for indices. This discards previous indices
+	void					setFormat(TFormat format);
+
+	// Get format 
+	TFormat					getFormat() const { return _Format; }
 	
+	// get number of bytes per index
+	uint					getIndexNumBytes() const { return _Format == Indices16 ? 2 : 4; }
+
 	/** 
 	  * Get the number of active indexes.
 	  */
@@ -336,22 +433,32 @@ private:
 
 	// Force non resident memory
 	void		restaureNonResidentMemory();
+
+	// Convert current index to a serializable vector
+	void buildSerialVector(std::vector<uint32> &dest) const;
+
+	// Convert current index from a serialized vector
+	void restoreFromSerialVector(const std::vector<uint32> &src);
+
 	
 private:	
 	// Internal flags
 	uint16					_InternalFlags;		// Offset 18 : aligned
 
+	// Format of indices
+	TFormat					_Format;
+
 	// Index count in the buffer
-	uint32					_NbIndexes;			// Offset 20 : aligned
+	uint32					_NbIndexes;			// Offset 20 : aligned	
 
 	// Capacity of the buffer
 	uint32					_Capacity;
 
 	// Index array
-	std::vector<uint32>		_NonResidentIndexes;
+	std::vector<uint8>		_NonResidentIndexes;
 
 	// The locked index buffer
-	mutable uint32*			_LockedBuffer;
+	mutable void			*_LockedBuffer;
 
 	// The index buffer is locked n times
 	mutable uint			_LockCounter;
@@ -386,7 +493,7 @@ private:
 	ItIBDrvInfoPtrList	_DriverIterator;
 
 public:
-	CRefPtr<CIndexBuffer>	IndexBufferPtr;
+	CRefPtr<CIndexBuffer>	IndexBufferPtr;	
 
 	IIBDrvInfos(IDriver	*drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib) {_Driver= drv; _DriverIterator= it; IndexBufferPtr = ib;}
 
@@ -395,7 +502,7 @@ public:
 	  * the indexices in the index buffer remain the same.
 	  * \param last is the last index to be accessed + 1. Put 0 to select all the indexes.
 	  */
-	virtual uint32	*lock (uint first, uint last, bool readOnly) =0;
+	virtual void	    *lock (uint first, uint last, bool readOnly) =0;
 
 	/** Unlock method.
 	  * \param first is the index of the first indexes to update. 0 to update all the indexes.
@@ -406,6 +513,10 @@ public:
 	/* The virtual dtor is important.
 	 * The driver implementation must call setLocation (NotResident) if IndexBufferPtr!=NULL.*/
 	virtual ~IIBDrvInfos();
+
+
+	CIndexBuffer::TFormat getFormat() const { nlassert(IndexBufferPtr); return IndexBufferPtr->getFormat(); }
+	uint				  getIndexNumBytes() const { nlassert(IndexBufferPtr); return IndexBufferPtr->getIndexNumBytes(); }
 };
 
 /**
@@ -442,24 +553,79 @@ public:
 	inline void				setLine(uint idx, uint32 i0, uint32 i1)
 	{
 		nlassert (_Parent->checkLockedBuffer());
-		_Parent->_LockedBuffer[idx] = i0;
-		_Parent->_LockedBuffer[idx+1] = i1;
+		#ifdef NL_DEBUG
+			nlassert(idx < _Parent->getNumIndexes());
+			nlassert(idx + 1 < _Parent->getNumIndexes());
+		#endif
+		if (_Parent->getFormat() == CIndexBuffer::Indices16)
+		{
+			#ifdef NL_DEBUG
+				nlassert(i0 <= 65535);
+				nlassert(i1 <= 65535);
+			#endif
+			((uint16 *) _Parent->_LockedBuffer)[idx] = (uint16) i0;
+			((uint16 *) _Parent->_LockedBuffer)[idx+1] = (uint16) i1;
+		}
+		else if (_Parent->getFormat() == CIndexBuffer::Indices32)
+		{
+			((uint32 *) _Parent->_LockedBuffer)[idx] = i0;
+			((uint32 *) _Parent->_LockedBuffer)[idx+1] = i1;
+		}
+		else
+		{
+			nlassert(0);
+		}
 	}
 
 	// Set a line index at index idx.
 	inline void				setTri(uint idx, uint32 i0, uint32 i1, uint32 i2)
 	{
 		nlassert (_Parent->checkLockedBuffer());
-		_Parent->_LockedBuffer[idx] = i0;
-		_Parent->_LockedBuffer[idx+1] = i1;
-		_Parent->_LockedBuffer[idx+2] = i2;
+		#ifdef NL_DEBUG
+			nlassert(idx < _Parent->getNumIndexes());
+			nlassert(idx + 1 < _Parent->getNumIndexes());
+			nlassert(idx + 2 < _Parent->getNumIndexes());
+		#endif
+		if (_Parent->getFormat() == CIndexBuffer::Indices16)
+		{
+			#ifdef NL_DEBUG
+				nlassert(i0 <= 65535);
+				nlassert(i1 <= 65535);
+				nlassert(i2 <= 65535);
+			#endif
+			((uint16 *) _Parent->_LockedBuffer)[idx] = (uint16) i0;
+			((uint16 *) _Parent->_LockedBuffer)[idx+1] = (uint16) i1;
+			((uint16 *) _Parent->_LockedBuffer)[idx+2] = (uint16) i2;
+		}
+		else if (_Parent->getFormat() == CIndexBuffer::Indices32)
+		{
+			((uint32 *) _Parent->_LockedBuffer)[idx] = i0;
+			((uint32 *) _Parent->_LockedBuffer)[idx+1] = i1;
+			((uint32 *) _Parent->_LockedBuffer)[idx+2] = i2;
+		}
+		else
+		{
+			nlassert(0);
+		}
 	}
 
 	// Get a pointer on an index. 
-	uint32*					getPtr (uint idx=0)
+	void *getPtr (uint idx=0)
 	{
-		nlassert (_Parent->checkLockedBuffer());
-		return &(_Parent->_LockedBuffer[0]);
+		nlassert (_Parent->checkLockedBuffer());		
+		if (_Parent->getFormat() == CIndexBuffer::Indices16)
+		{
+			return &(((uint16 *) _Parent->_LockedBuffer)[idx]);
+		}
+		else if (_Parent->getFormat() == CIndexBuffer::Indices32)
+		{
+			return &(((uint32 *) _Parent->_LockedBuffer)[idx]);
+		}
+		else
+		{
+			nlassert(0);
+		}
+		return NULL;
 	}
 
 	/** Touch the updated indexes. If the method is not call, the accessor update all the indexes.
@@ -469,6 +635,9 @@ public:
 	void					touchIndexes (uint first, uint last);
 
 	const CIndexBuffer *getParent() const { return _Parent; }
+
+	CIndexBuffer::TFormat getFormat() const { nlassert(_Parent); return _Parent->getFormat(); }
+	uint getIndexNumBytes() const { nlassert(_Parent); return _Parent->getIndexNumBytes(); }
 
 private:
 
@@ -511,14 +680,26 @@ public:
 	}
 
 	// Get a pointer on an index. 
-	const uint32*		getPtr (uint idx=0) const
+	const void *getPtr (uint idx=0) const
 	{
-		nlassert (_Parent->checkLockedBuffer());
-		return &(_Parent->_LockedBuffer[0]);
-	}
-
+		nlassert (_Parent->checkLockedBuffer());		
+		if (_Parent->getFormat() == CIndexBuffer::Indices16)
+		{
+			return &(((const uint16 *) _Parent->_LockedBuffer)[idx]);
+		}
+		else if (_Parent->getFormat() == CIndexBuffer::Indices32)
+		{
+			return &(((const uint32 *) _Parent->_LockedBuffer)[idx]);
+		}
+		else
+		{
+			nlassert(0);			
+		}
+		return NULL;
+	}	
 	const CIndexBuffer *getParent() const { return _Parent; }
-
+	uint getIndexNumBytes() const { nlassert(_Parent); return _Parent->getIndexNumBytes(); }
+	CIndexBuffer::TFormat getFormat() const { nlassert(_Parent); return _Parent->getFormat(); }
 private:
 	
 	// No copy operators available
@@ -589,7 +770,7 @@ inline void CIndexBuffer::lock (CIndexBufferRead &accessor, uint first, uint las
 			if (_NonResidentIndexes.empty())
 				_LockedBuffer = NULL;
 			else
-				_LockedBuffer = const_cast<uint32*>(&(_NonResidentIndexes[0]));
+				_LockedBuffer = const_cast<void*>((const void *) &(_NonResidentIndexes[0]));
 		}
 	}
 	else

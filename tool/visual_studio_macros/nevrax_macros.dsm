@@ -8,7 +8,7 @@
 '
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
-' $Id: nevrax_macros.dsm,v 1.7 2000/10/16 10:27:12 cado Exp $
+' $Id: nevrax_macros.dsm,v 1.8 2000/10/17 15:14:09 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -24,7 +24,7 @@ Sub NevraxInsertFileHeader( filename, productname )
 		"/** \file " + filename + vbLf + _
 		" * <File description>" + vbLf + _
 		" *" + vbLf + _
-		" * $Id: nevrax_macros.dsm,v 1.7 2000/10/16 10:27:12 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros.dsm,v 1.8 2000/10/17 15:14:09 cado Exp $" + vbLf + _
 		" */" + vbLf + vbLf
 	ActiveDocument.Selection = _
 		"/* Copyright, 2000 Nevrax Ltd." + vbLf + _
@@ -349,7 +349,13 @@ Sub NevraxToggleHCPP()
 	NewFilename = NewFilename + ShortFilenameDot + Ext
  
 	' ** Open the alternative file
-	Documents.Open( NewFilename )
+	dim fso
+	set fso = CreateObject("Scripting.FileSystemObject")
+	if fso.FileExists( NewFilename ) then
+		Documents.Open( NewFilename )
+	else
+		MsgBox "There is no file " + NewFilename
+	end if
 End Sub
 
 

@@ -1,7 +1,7 @@
 /** \file mrm_mesh.h
  * Internal header for CMRMBuilder.
  *
- * $Id: mrm_mesh.h,v 1.1 2000/12/21 09:42:35 berenguier Exp $
+ * $Id: mrm_mesh.h,v 1.2 2001/01/02 10:21:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,24 @@ public:
 	/// Constructor
 	CMRMMesh();
 
+};
+
+
+// ***************************************************************************
+/**
+ * An internal mesh representation for MRM, with geomoprh information. USER DO NOT USE IT.
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ * \see CMRMBuilder
+ */
+class CMRMMeshGeom : public CMRMMesh
+{
+public:
+
+public:
+	/// Constructor
+	CMRMMeshGeom();
 };
 
 

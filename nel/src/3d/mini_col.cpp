@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.5 2000/12/22 17:42:24 coutelas Exp $
+ * $Id: mini_col.cpp,v 1.6 2001/01/02 10:22:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,13 +51,6 @@ CMiniCol::CMiniCol()
 	_Inited= false;
 }
 
-// ***************************************************************************
-void			CMiniCol::init(const CVector& center, float size)
-{
-	_QuadTree.clear();
-	_QuadTree.create(QuadDepth, center, size);
-}
-
 
 // ***************************************************************************
 void			CMiniCol::addFaces(const std::vector<CTriangle> &faces)
@@ -66,9 +59,10 @@ void			CMiniCol::addFaces(const std::vector<CTriangle> &faces)
 	{
 		const CTriangle	&f= faces[i];
 		CAABBox	box;
-		box.setCenter(f.V0);
-		box.extend(f.V1);
-		box.extend(f.V2);
+		// Add, relative to center.
+		box.setCenter(f.V0-_Center);
+		box.extend(f.V1-_Center);
+		box.extend(f.V2-_Center);
 		CNode	node;
 		node.Face= f;
 		node.Plane.make(f.V0, f.V1, f.V2);
@@ -78,14 +72,26 @@ void			CMiniCol::addFaces(const std::vector<CTriangle> &faces)
 
 
 // ***************************************************************************
-void			CMiniCol::addLandscapePart(CLandscape &land, const CVector &center, float size)
+void			CMiniCol::addLandscapePart(CLandscape &land, float size)
 {
 	vector<CTriangle> faces;
 	CAABBoxExt	bb;
-	bb.setCenter(center);
+	bb.setCenter(_Center);
 	bb.setSize(CVector(size, size, size));
 	land.buildCollideFaces(bb,faces, false);
 	addFaces(faces);
+}
+
+
+// ***************************************************************************
+void			CMiniCol::init(CLandscape *land, float radius)
+{
+	_Landscape= land;
+	_Radius= radius;
+	float	size= 2* _Radius;
+	_QuadTree.clear();
+	// For security, add a delta (2*50: 2*maxsize of a patch).
+	_QuadTree.create(QuadDepth, CVector::Null, 2*size+100);
 }
 
 
@@ -107,12 +113,13 @@ void			CMiniCol::setCenter(const CVector& center)
 	if(reset)
 	{
 		_Center= center;
+		// delete all elements, but not the quadtree.
+		_QuadTree.eraseAll();
 		if(_Landscape)
 		{
 			float	size= 2* _Radius;
-			init(_Center, 4*size);
 			// init the col landscape of 2*size, so we can go on sphere limit, and still have good collision around us.
-			addLandscapePart(*_Landscape, _Center, 2*size);
+			addLandscapePart(*_Landscape, 2*size);
 		}
 	}
 }
@@ -130,7 +137,8 @@ bool			CMiniCol::snapToGround(CVector &pos, float hup, float hbot)
 	b1=b2=pos;
 	b1.z-= hbot;
 	b2.z+= hup;
-	_QuadTree.select(b1,b2);
+	// Select, relative to center.
+	_QuadTree.select(b1-_Center,b2-_Center);
 
 	// For each face, test if it is under pos, then test if height is correct.
 	CQuadTree<CNode>::CIterator	iFace;

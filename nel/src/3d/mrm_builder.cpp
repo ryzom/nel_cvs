@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * <File description>
  *
- * $Id: mrm_builder.cpp,v 1.2 2000/12/21 16:05:24 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.3 2001/01/02 10:22:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -725,37 +725,80 @@ void	CMRMBuilder::collapseEdges(sint nWantedFaces)
 // ***************************************************************************
 void	CMRMBuilder::saveCoarserMesh(CMRMMesh &coarserMesh)
 {
-/*	// First clear ALL.
+	sint	i,attId,index;
+	// First clear ALL.
 	coarserMesh.Vertices.clear();
 	for(attId=0;attId<NL3D_MRM_MAX_ATTRIB;attId++)
 	{
 		coarserMesh.Attributes[attId].clear();
 	}
 	coarserMesh.Faces.clear();
-
-
-	// resize.
 	coarserMesh.NumAttributes= NumAttributes;
-	coarserMesh.Vertices.resize(TmpVertices.size());
-	for(attId=0;attId<NumAttributes;attId++)
+
+	// Vertices.
+	//==========
+	index=0;
+	// Here, CollpasedTo is used to store the new indexation.
+	for(i=0;i<(sint)TmpVertices.size();i++)
 	{
-		TmpAttributes[attId].resize(baseMesh.Attributes[attId].size());
+		CMRMVertex	&vert=TmpVertices[i];
+		if(vert.CollapsedTo==-1)	// if exist yet.
+		{
+			vert.CollapsedTo=index;
+			coarserMesh.Vertices.push_back(vert.Current);
+			index++;
+		}
+		else
+			vert.CollapsedTo=-1;	// just for bug check. vertex no more exist.
 	}
-	TmpFaces.resize(baseMesh.Faces.size());
 
 
-	// Then copy.
-	for(i=0;i<(sint)baseMesh.Vertices.size();i++)
-		TmpVertices[i].Current= TmpVertices[i].Original= baseMesh.Vertices[i];
+	// Attributes.
+	//============
+	// Here, CollpasedTo is used to store the new indexation.
 	for(attId=0;attId<NumAttributes;attId++)
 	{
-		for(i=0;i<(sint)baseMesh.Attributes[attId].size();i++)
-			TmpAttributes[attId][i].Current= TmpAttributes[attId][i].Original= 
-			baseMesh.Attributes[attId][i];
+		for(i=0;i<(sint)TmpAttributes[attId].size();i++)
+		{
+			CMRMAttribute	&wedge= TmpAttributes[attId][i];
+			if(wedge.CollapsedTo==-1)	// if exist yet.
+			{
+				wedge.CollapsedTo=index;
+				coarserMesh.Attributes[attId].push_back(wedge.Current);
+				index++;
+			}
+			else
+				wedge.CollapsedTo=-1;	// just for bug check. wedge no more exist.
+		}
 	}
-	for(i=0;i<(sint)baseMesh.Faces.size();i++)
-		TmpFaces[i]= baseMesh.Faces[i];
-*/
+
+	// Faces.
+	//=======
+	for(i=0;i<(sint)TmpFaces.size();i++)
+	{
+		CMRMFaceBuild	&face=TmpFaces[i];
+		if(!face.Deleted)
+		{
+			CMRMFace	newFace;
+			// Material.
+			newFace.MaterialId= face.MaterialId;
+			for(sint j=0;j<3;j++)
+			{
+				// Vertex.
+				newFace.Corner[j].Vertex= TmpVertices[face.Corner[i].Vertex].CollapsedTo;
+				// Attributes.
+				for(attId=0;attId<NumAttributes;attId++)
+				{
+					sint	oldidx= face.Corner[i].Attributes[attId];
+					newFace.Corner[j].Attributes[attId]= TmpAttributes[attId][oldidx].CollapsedTo;
+				}
+
+			}
+
+			coarserMesh.Faces.push_back(newFace);
+		}
+	}
+
 }
 
 

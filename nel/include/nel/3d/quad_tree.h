@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.11 2000/12/20 15:34:32 lecroart Exp $
+ * $Id: quad_tree.h,v 1.12 2001/01/02 10:21:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,6 +145,10 @@ public:
 	//@{
 	/// Clear the container. Elements are deleted, and the quadtree too (create() is undone)
 	void		clear();
+
+	/** Erase all elements from the container
+	  */
+	void		eraseAll();
 
 	/** Erase an interator from the container
 	  *
@@ -689,6 +693,25 @@ template<class T>	void		CQuadTree<T>::create(uint DepthMax, const NLMISC::CVecto
 // ============================================================================================
 
 
+// ============================================================================================
+template<class T>	void		CQuadTree<T>::eraseAll()
+{
+	CIterator				it;
+	std::vector<CIterator>	its;
+
+	// First, make a copy of all elements.
+	selectAll();
+	for(it= begin();it!=end();it++)
+	{
+		its.push_back(it);
+	}
+
+	// Then erase them. Must do it OUTSIDE the select loop.
+	for(sint i=0;i<its.size();i++)
+	{
+		erase(its[i]);
+	}
+}
 // ============================================================================================
 template<class T>	void		CQuadTree<T>::erase(CIterator it)
 {

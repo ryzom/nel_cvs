@@ -1,7 +1,7 @@
 /** \file mini_col.h
  * <File description>
  *
- * $Id: mini_col.h,v 1.2 2000/12/22 09:55:37 berenguier Exp $
+ * $Id: mini_col.h,v 1.3 2001/01/02 10:21:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ public:
 	/** Init the size of the collision system, and init it with the landscape.
 	 * \param size the radius of the area.
 	 */
-	void			init(CLandscape *land, float radius= 100) {_Landscape= land; _Radius= radius;}
+	void			init(CLandscape *land, float radius= 100);
 
 
 	/** Reset the center of interset of the collision system.
@@ -94,19 +94,13 @@ private:
 	bool				_Inited;
 	CVector				_Center;
 
-	/** Init the center of interest of the collision system. Must be as small as possible, but all faces must be IN this
-	 * area. If any, delete all faces of the collision system.
-	 * \param size the diameter (2*radius) of the area.
-	 */
-	void			init(const CVector& center, float size);
-
 	/// add faces to the collision system.
 	void			addFaces(const std::vector<CTriangle> &faces);
 
 	/** add landscape/patch faces to the collision system. 
 	 * \param size the diameter (2*radius) of the area.
 	 */
-	void			addLandscapePart(CLandscape &land, const CVector &center, float size);
+	void			addLandscapePart(CLandscape &land, float size);
 };
 
 

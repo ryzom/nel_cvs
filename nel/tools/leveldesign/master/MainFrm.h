@@ -17,8 +17,12 @@
 #include <string>
 
 // ---------------------------------------------------------------------------
+// Interface to the tools
+// ---------------------------------------------------------------------------
 
 class IWorldEditor;
+class IGeorges;
+class ILogicEditor;
 
 // ---------------------------------------------------------------------------
 
@@ -35,6 +39,14 @@ struct CEnvironnement
 	bool WorldEdOpened;
 	sint32 WorldEdX, WorldEdY, WorldEdCX, WorldEdCY;
 
+	// Georges params
+	bool GeorgesOpened;
+	sint32 GeorgesX, GeorgesY, GeorgesCX, GeorgesCY;
+
+	// LogicEditor params
+	bool LogicEditorOpened;
+	sint32 LogicEditorX, LogicEditorY, LogicEditorCX, LogicEditorCY;
+
 	CEnvironnement();
 	void serial (NLMISC::IStream& s);
 };
@@ -48,6 +60,12 @@ class CMainFrame : public CFrameWnd
 
 	IWorldEditor	*_WorldEditor;
 	HMODULE			_WorldEditorModule;
+
+	IGeorges		*_Georges;
+	HMODULE			_GeorgesModule;
+
+	ILogicEditor	*_LogicEditor;
+	HMODULE			_LogicEditorModule;
 
 	CMasterTreeDlg	*_Tree;
 
@@ -66,13 +84,30 @@ public:
 	void openWorldEditorFile (const char *fileName);
 	void closeWorldEditor ();
 
+	void openGeorges ();
+	void openGeorgesFile (const char *fileName);
+	void closeGeorges ();
+
+	void openLogicEditor ();
+	void openLogicEditorFile (const char *fileName);
+	void closeLogicEditor ();
+
 	// Tools
 	
 	void updateTree ();
 	void emptyTrash ();
+	void emptyBackup ();
 	void cleanBackup ();
 	void regionBackupAll ();
+	void regionTrashAll ();
 	void backupRestoreAll ();
+
+	void trashDelete		(const char *str);
+	void trashRestoreOne	(const char *str);
+	void backupDelete		(const char *str);
+	void backupRestoreOne	(const char *str);
+	void regionDelete		(const char *str);
+	void regionBackupOne	(const char *str);
 
 
 	void deltree (const std::string &dirName);
@@ -100,12 +135,23 @@ protected:
 	afx_msg void onRegionNew ();
 	afx_msg void onRegionSave ();
 	afx_msg void onRegionEmptyTrash ();
+	afx_msg void onRegionEmptyBackup ();
+	afx_msg void onRegionBackupAll ();
+	afx_msg void onRegionTrashRegions ();
+	afx_msg void onRegionRestoreTag ();
+
+	afx_msg void OnRegionDeleteInTrash ();
+	afx_msg void OnRegionDeleteInBackup ();
+	afx_msg void OnRegionDelete ();
+	afx_msg void OnRegionRestoreFromTrash ();
+	afx_msg void OnRegionRestoreFromBackup ();
+	afx_msg void OnRegionBackup ();
 
 	afx_msg void onOptionsTreeLock ();
 	afx_msg void onOptionsSetRoot ();
 
 	afx_msg void onWindowsWorldEditor ();
-
+	afx_msg void onWindowsGeorges ();
 
 	afx_msg void OnClose ();
 		// NOTE - the ClassWizard will add and remove member functions here.

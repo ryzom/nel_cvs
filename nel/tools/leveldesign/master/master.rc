@@ -87,6 +87,18 @@ BEGIN
         MENUITEM "&Save All",                   ID_REGION_SAVE
         MENUITEM SEPARATOR
         MENUITEM "&Empty Trash",                ID_REGION_EMPTY_TRASH
+        MENUITEM "E&mpty Backup",               ID_REGION_EMPTY_BACKUP
+        MENUITEM "Region Backup &All",          ID_REGION_REGION_BACKUP_ALL
+        MENUITEM "Trash Region&s",              ID_REGION_TRASH_REGIONS
+        MENUITEM "&Restore TAG",                ID_REGION_RESTORE_TAG
+        MENUITEM SEPARATOR
+        MENUITEM "Delete In Trash",             ID_REGION_DELETE_IN_TRASH
+        MENUITEM "Delete In Backup",            ID_REGION_DELETE_IN_BACKUP
+        MENUITEM "Delete",                      ID_REGION_DELETE
+        MENUITEM "Restore From Trash",          ID_REGION_RESTORE_FROM_TRASH
+        MENUITEM "Restore From Backup",         ID_REGION_RESTORE_FROM_BACKUP
+
+        MENUITEM "Backup",                      ID_REGION_BACKUP
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
@@ -98,6 +110,8 @@ BEGIN
     POPUP "&Windows"
     BEGIN
         MENUITEM "&WorldEditor",                ID_WINDOWS_WORLDEDITOR
+        MENUITEM "&Georges",                    ID_WINDOWS_GEORGES
+        MENUITEM "&LogicEditor",                ID_WINDOWS_LOGICEDITOR
     END
     POPUP "&Help"
     BEGIN
@@ -171,6 +185,17 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,129,74,50,14
     LISTBOX         IDC_LIST,7,7,116,81,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_CHOOSEDIR DIALOG DISCARDABLE  0, 0, 186, 95
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Choose the directory"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,74,50,14
+    LISTBOX         IDC_LIST,7,7,115,81,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
                     WS_VSCROLL | WS_TABSTOP
 END
 
@@ -251,6 +276,14 @@ BEGIN
     END
 
     IDD_CHOOSETAG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_CHOOSEDIR, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 179

@@ -7,8 +7,11 @@
 #include "MainFrm.h"
 #include "NewRegion.h"
 #include "ChooseTag.h"
+#include "ChooseDir.h"
 
 #include "/code/nel/tools/3d/ligo/worldeditor/worldeditor_interface.h"
+#include "/code/nel/tools/leveldesign/georges/georges_interface.h"
+#include "/code/nel/tools/leveldesign/logic_editor/logic_editor_interface.h"
 
 #include "nel/misc/file.h"
 #include "nel/misc/stream.h"
@@ -21,6 +24,7 @@ using namespace std;
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -42,6 +46,12 @@ CEnvironnement::CEnvironnement()
 	WorldEdY = 50;
 	WorldEdCX = 300;
 	WorldEdCY = 300;
+
+	GeorgesOpened = false;
+	GeorgesX = 50;
+	GeorgesY = 50;
+	GeorgesCX = 300;
+	GeorgesCY = 300;
 }
 
 // ---------------------------------------------------------------------------
@@ -62,6 +72,12 @@ void CEnvironnement::serial (NLMISC::IStream& s)
 	s.serial (WorldEdY);
 	s.serial (WorldEdCX);
 	s.serial (WorldEdCY);
+
+	s.serial (GeorgesOpened);
+	s.serial (GeorgesX);
+	s.serial (GeorgesY);
+	s.serial (GeorgesCX);
+	s.serial (GeorgesCY);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -76,10 +92,26 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	ON_COMMAND(ID_REGION_NEW, onRegionNew)
 	ON_COMMAND(ID_REGION_SAVE, onRegionSave)
+
 	ON_COMMAND(ID_REGION_EMPTY_TRASH, onRegionEmptyTrash)
+	ON_COMMAND(ID_REGION_EMPTY_BACKUP, onRegionEmptyBackup)
+	ON_COMMAND(ID_REGION_REGION_BACKUP_ALL, onRegionBackupAll)
+	ON_COMMAND(ID_REGION_TRASH_REGIONS, onRegionTrashRegions)
+	ON_COMMAND(ID_REGION_RESTORE_TAG, onRegionRestoreTag)
+
+	ON_COMMAND(ID_REGION_DELETE_IN_TRASH, OnRegionDeleteInTrash)
+	ON_COMMAND(ID_REGION_DELETE_IN_BACKUP, OnRegionDeleteInBackup)
+	ON_COMMAND(ID_REGION_DELETE, OnRegionDelete)
+	ON_COMMAND(ID_REGION_RESTORE_FROM_TRASH, OnRegionRestoreFromTrash)
+	ON_COMMAND(ID_REGION_RESTORE_FROM_BACKUP, OnRegionRestoreFromBackup)
+	ON_COMMAND(ID_REGION_BACKUP, OnRegionBackup)
+
 	ON_COMMAND(ID_OPTIONS_TREELOCK, onOptionsTreeLock)
 	ON_COMMAND(ID_OPTIONS_SETROOT, onOptionsSetRoot)
+
 	ON_COMMAND(ID_WINDOWS_WORLDEDITOR, onWindowsWorldEditor)
+	ON_COMMAND(ID_WINDOWS_GEORGES, onWindowsGeorges)
+
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
 	ON_WM_SIZE()
@@ -94,8 +126,8 @@ END_MESSAGE_MAP()
 // ---------------------------------------------------------------------------
 CMainFrame::CMainFrame()
 {
-	// TODO: add member initialization code here
 	_WorldEditor = NULL;
+	_Georges = NULL;
 	_Tree = NULL;
 }
 
@@ -107,14 +139,25 @@ CMainFrame::~CMainFrame()
 // ---------------------------------------------------------------------------
 // Used by getAllInterfaces method to retrieve all DLLs and tools Interfaces
 
-typedef IWorldEditor* (*IWORLDEDITOR_GETINTERFACE)(int version); 
+typedef IWorldEditor* (*IWORLDEDITOR_GETINTERFACE)(int version);
 const char *IWORLDEDITOR_GETINTERFACE_NAME = "IWorldEditorGetInterface";
-typedef void (*IWORLDEDITOR_RELINTERFACE)(IWorldEditor*pWE); 
+typedef void (*IWORLDEDITOR_RELINTERFACE)(IWorldEditor*pWE);
 const char *IWORLDEDITOR_RELINTERFACE_NAME = "IWorldEditorReleaseInterface";
+
+typedef IGeorges* (*IGEORGES_GETINTERFACE)(int version);
+const char *IGEORGES_GETINTERFACE_NAME = "IGeorgesGetInterface";
+typedef void (*IGEORGES_RELINTERFACE)(IGeorges *pGeorges);
+const char *IGEORGES_RELINTERFACE_NAME = "IGeorgesReleaseInterface";
+
+typedef ILogicEditor* (*ILOGICEDITOR_GETINTERFACE)(int version);
+const char *ILOGICEDITOR_GETINTERFACE_NAME = "ILogicEditorGetInterface";
+typedef void (*ILOGICEDITOR_RELINTERFACE)(ILogicEditor *pLogicEditor);
+const char *ILOGICEDITOR_RELINTERFACE_NAME = "ILogicEditorReleaseInterface";
 
 // ---------------------------------------------------------------------------
 void CMainFrame::getAllInterfaces()
 {
+	// Get WorldEditor Interface
 	if (_WorldEditor == NULL)
 	{
 		IWORLDEDITOR_GETINTERFACE IWEGetInterface = NULL;
@@ -129,16 +172,65 @@ void CMainFrame::getAllInterfaces()
 		if (IWEGetInterface != NULL)
 			_WorldEditor = IWEGetInterface (WORLDEDITOR_VERSION);
 	}
+
+	// Get Georges Interface
+	if (_Georges == NULL)
+	{
+		IGEORGES_GETINTERFACE IGGetInterface = NULL;
+
+		#ifdef NL_RELEASE_DEBUG
+			_GeorgesModule = AfxLoadLibrary ("Georges_release_debug.dll");
+		#endif
+		#ifdef NL_DEBUG_FAST
+			_GeorgesModule = AfxLoadLibrary ("Georges_debug_fast.dll");
+		#endif
+		IGGetInterface = (IGEORGES_GETINTERFACE)::GetProcAddress (_GeorgesModule, IGEORGES_GETINTERFACE_NAME);
+		if (IGGetInterface != NULL)
+			_Georges = IGGetInterface (GEORGES_VERSION);
+	}
+
+	// Get LogicEditor Interface
+	if (_LogicEditor == NULL)
+	{
+		ILOGICEDITOR_GETINTERFACE ILEGetInterface = NULL;
+
+		#ifdef NL_RELEASE_DEBUG
+			_LogicEditorModule = AfxLoadLibrary ("Logic_Editor_release_debug.dll");
+		#endif
+		#ifdef NL_DEBUG_FAST
+			_LogicEditorModule = AfxLoadLibrary ("Logic_Editor_debug_fast.dll");
+		#endif
+		ILEGetInterface = (ILOGICEDITOR_GETINTERFACE)::GetProcAddress (_LogicEditorModule, ILOGICEDITOR_GETINTERFACE_NAME);
+		if (ILEGetInterface != NULL)
+			_LogicEditor = ILEGetInterface (LOGIC_EDITOR_VERSION);
+	}
 }
 
 // ---------------------------------------------------------------------------
 void CMainFrame::releaseAllInterfaces()
 {
+	// Release the WorldEditor interface
 	if (_WorldEditor != NULL)
 	{
 		IWORLDEDITOR_RELINTERFACE IWERelInterface = NULL;
 		IWERelInterface = (IWORLDEDITOR_RELINTERFACE)::GetProcAddress (_WorldEditorModule, IWORLDEDITOR_RELINTERFACE_NAME);
 		IWERelInterface (_WorldEditor);
+	}
+
+	// Release the Georges interface
+	if (_Georges != NULL)
+	{
+		IGEORGES_RELINTERFACE IGRelInterface = NULL;
+		IGRelInterface = (IGEORGES_RELINTERFACE)::GetProcAddress (_GeorgesModule, IGEORGES_RELINTERFACE_NAME);
+		IGRelInterface (_Georges);
+	}
+
+	// Release the LogicEditor interface
+	if (_LogicEditor != NULL)
+	{
+		ILOGICEDITOR_RELINTERFACE ILERelInterface = NULL;
+		ILERelInterface = (ILOGICEDITOR_RELINTERFACE)::GetProcAddress (_LogicEditorModule, ILOGICEDITOR_RELINTERFACE_NAME);
+		ILERelInterface (_LogicEditor);
 	}
 }
 
@@ -179,6 +271,78 @@ void CMainFrame::closeWorldEditor()
 }
 
 // ---------------------------------------------------------------------------
+void CMainFrame::openGeorges ()
+{
+	if (_Environnement.GeorgesOpened)
+		return;
+	_Environnement.GeorgesOpened = true;
+	if (_Georges != NULL)
+		_Georges->initUILight (_Environnement.GeorgesX, _Environnement.GeorgesY, 
+								_Environnement.GeorgesCX, _Environnement.GeorgesCY);
+	GetMenu()->CheckMenuItem (ID_WINDOWS_GEORGES, MF_CHECKED);
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::openGeorgesFile (const char *fileName)
+{
+//	_Georges->loadFile (fileName);
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::closeGeorges ()
+{
+	onRegionSave();
+	if (!_Environnement.GeorgesOpened)
+		return;
+	_Environnement.GeorgesOpened = false;
+	RECT r;
+	CFrameWnd *pFW = (CFrameWnd*)_Georges->getMainFrame();
+	pFW->GetWindowRect(&r);
+	_Environnement.GeorgesY = r.top;
+	_Environnement.GeorgesX = r.left;
+	_Environnement.GeorgesCY = r.bottom - r.top;
+	_Environnement.GeorgesCX = r.right - r.left;
+	_Georges->releaseUI ();
+	GetMenu()->CheckMenuItem (ID_WINDOWS_GEORGES, MF_UNCHECKED);
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::openLogicEditor ()
+{
+	if (_Environnement.LogicEditorOpened)
+		return;
+	_Environnement.LogicEditorOpened = true;
+	if (_LogicEditor != NULL)
+		_LogicEditor->initUILight (_Environnement.LogicEditorX, _Environnement.LogicEditorY, 
+								_Environnement.LogicEditorCX, _Environnement.LogicEditorCY);
+	GetMenu()->CheckMenuItem (ID_WINDOWS_LOGICEDITOR, MF_CHECKED);
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::openLogicEditorFile (const char *fileName)
+{
+//	_LogicEditor->loadFile (fileName);
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::closeLogicEditor ()
+{
+	onRegionSave();
+	if (!_Environnement.LogicEditorOpened)
+		return;
+	_Environnement.LogicEditorOpened = false;
+	RECT r;
+	CFrameWnd *pFW = (CFrameWnd*)_LogicEditor->getMainFrame();
+	pFW->GetWindowRect(&r);
+	_Environnement.LogicEditorY = r.top;
+	_Environnement.LogicEditorX = r.left;
+	_Environnement.LogicEditorCY = r.bottom - r.top;
+	_Environnement.LogicEditorCX = r.right - r.left;
+	_LogicEditor->releaseUI ();
+	GetMenu()->CheckMenuItem (ID_WINDOWS_LOGICEDITOR, MF_UNCHECKED);
+}
+
+// ---------------------------------------------------------------------------
 void CMainFrame::updateTree()
 {
 	_Tree->update (_Environnement.RootDir);
@@ -192,7 +356,8 @@ void CMainFrame::deltree (const std::string &dirName)
 	HANDLE hFind;
 	char sCurDir[MAX_PATH];
 	GetCurrentDirectory (MAX_PATH, sCurDir);
-	SetCurrentDirectory (dirName.c_str());
+	if (!SetCurrentDirectory (dirName.c_str()))
+		return;
 	hFind = FindFirstFile ("*.*", &findData);	
 	while (hFind != INVALID_HANDLE_VALUE)
 	{
@@ -235,6 +400,28 @@ void CMainFrame::emptyTrash ()
 	SetCurrentDirectory (sCurDir);
 
 	updateTree ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::emptyBackup ()
+{
+	if (MessageBox("Do you really want to empty backup folder?", "Take care", MB_OKCANCEL|MB_ICONSTOP) == IDOK)
+	{
+		char sCurDir[MAX_PATH];
+		GetCurrentDirectory (MAX_PATH, sCurDir);
+		SetCurrentDirectory (_Environnement.RootDir.c_str());
+
+		if (!SetCurrentDirectory("Backup"))
+		{
+			SetCurrentDirectory (sCurDir);
+			return;
+		}
+		SetCurrentDirectory (_Environnement.RootDir.c_str());
+		deltree ("Backup");
+		SetCurrentDirectory (sCurDir);
+
+		updateTree ();
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -316,20 +503,21 @@ void CMainFrame::cleanBackup ()
 }
 
 // ---------------------------------------------------------------------------
-int getMaxTag(const std::string &dirName)
+int getMaxTag(const std::string &dirName, const std::string &tagName)
 {
 	WIN32_FIND_DATA findData;
 	HANDLE hFind;
 	char sCurDir[MAX_PATH];
 	GetCurrentDirectory (MAX_PATH, sCurDir);
 	SetCurrentDirectory (dirName.c_str());
-	hFind = FindFirstFile ("_T*", &findData);	
-	int ret;
+	string tmp = tagName + "*";
+	hFind = FindFirstFile (tmp.c_str(), &findData);	
+	int ret = 0;
 	while (hFind != INVALID_HANDLE_VALUE)
 	{
-		int nb =	(findData.cFileName[2]-'0')*100 + 
-					(findData.cFileName[3]-'0')*10 + 
-					(findData.cFileName[4]-'0')*1;
+		int nb =	(findData.cFileName[tagName.size()+0]-'0')*100 + 
+					(findData.cFileName[tagName.size()+1]-'0')*10 + 
+					(findData.cFileName[tagName.size()+2]-'0')*1;
 		if (nb > ret)
 			ret = nb;
 		if (FindNextFile (hFind, &findData) == 0)
@@ -380,7 +568,7 @@ void CMainFrame::regionBackupAll ()
 
 	string sRegDir = _Environnement.RootDir + "Regions";
 	string sBackDir = _Environnement.RootDir + "Backup";
-	int nb = getMaxTag(sBackDir);
+	int nb = getMaxTag(sBackDir, "_T");
 	nb++;
 	string sTag = "_T";
 	sTag += toString((nb/100)%10);
@@ -409,6 +597,41 @@ void CMainFrame::regionBackupAll ()
 			break;
 	}
 	FindClose (hFind);
+	SetCurrentDirectory (sCurDir);
+	updateTree ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::regionTrashAll ()
+{
+	char sCurDir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, sCurDir);
+
+	string sRegDir = _Environnement.RootDir + "Regions";
+	string sTrashDir = _Environnement.RootDir + "Trash";
+	SetCurrentDirectory (sRegDir.c_str());
+	WIN32_FIND_DATA findData;
+	HANDLE hFind;
+	hFind = FindFirstFile ("*", &findData);
+	while (hFind != INVALID_HANDLE_VALUE)
+	{
+		if ((stricmp (findData.cFileName, ".") != 0) && (stricmp (findData.cFileName, "..") != 0))
+		{
+			if (findData.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)
+			{
+				string srcDir = sRegDir + "\\" + findData.cFileName;
+				string dstDir = sTrashDir + "\\" + findData.cFileName;
+				deltree (dstDir);
+				CreateDirectory (dstDir.c_str(), NULL);
+				copyTree (srcDir, dstDir);
+			}
+		}
+
+		if (FindNextFile (hFind, &findData) == 0)
+			break;
+	}
+	FindClose (hFind);
+	deltree (sRegDir);
 	SetCurrentDirectory (sCurDir);
 	updateTree ();
 }
@@ -466,6 +689,92 @@ void CMainFrame::backupRestoreAll ()
 }
 
 // ---------------------------------------------------------------------------
+void CMainFrame::trashDelete		(const char *str)
+{
+	char sCurDir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, sCurDir);
+	string sDir = _Environnement.RootDir + "Trash";
+	SetCurrentDirectory (sDir.c_str());
+	deltree (str);
+	RemoveDirectory (str);
+	SetCurrentDirectory (sCurDir);
+	updateTree ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::trashRestoreOne	(const char *str)
+{
+	string srcDir = _Environnement.RootDir + "Trash\\" + str;
+	string dstDir = _Environnement.RootDir + "Regions\\" + str;
+	deltree (dstDir);
+	CreateDirectory (dstDir.c_str(), NULL);
+	copyTree (srcDir, dstDir);
+	deltree (srcDir);
+	RemoveDirectory (srcDir.c_str());
+	updateTree ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::backupDelete		(const char *str)
+{
+	char sCurDir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, sCurDir);
+	string sDir = _Environnement.RootDir + "Backup";
+	SetCurrentDirectory (sDir.c_str());
+	deltree (str);
+	RemoveDirectory (str);
+	SetCurrentDirectory (sCurDir);
+	updateTree ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::backupRestoreOne	(const char *str)
+{
+	string srcDir = _Environnement.RootDir + "Backup\\" + str;
+	string dstDir = _Environnement.RootDir + "Regions\\";
+	if (str[0] == '_')
+		dstDir += &str[6];
+	else
+		dstDir += &str[5];
+	deltree (dstDir);
+	CreateDirectory (dstDir.c_str(), NULL);
+	copyTree (srcDir, dstDir);
+	updateTree ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::regionDelete		(const char *str)
+{
+	string srcDir = _Environnement.RootDir + "Regions\\" + str;
+	string dstDir = _Environnement.RootDir + "Trash\\" + str;
+	deltree (dstDir);
+	CreateDirectory (dstDir.c_str(), NULL);
+	copyTree (srcDir, dstDir);
+	deltree (srcDir);
+	RemoveDirectory (srcDir.c_str());
+	updateTree ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::regionBackupOne	(const char *str)
+{
+	string dstDir = _Environnement.RootDir + "Backup\\";
+	int nMaxTag = getMaxTag(dstDir, "V")+1;
+	dstDir += "V";
+	dstDir += toString((nMaxTag/100)%10);
+	dstDir += toString((nMaxTag/10) %10);
+	dstDir += toString((nMaxTag/1)  %10);
+	dstDir += "_";
+	dstDir += str;
+
+	string srcDir = _Environnement.RootDir + "Regions\\" + str;
+	deltree (dstDir);
+	CreateDirectory (dstDir.c_str(), NULL);
+	copyTree (srcDir, dstDir);
+	updateTree ();
+}
+
+// ---------------------------------------------------------------------------
 void CMainFrame::OnSize (UINT nType, int cx, int cy)
 {
 }
@@ -499,18 +808,39 @@ int CMainFrame::OnCreate (LPCREATESTRUCT lpCreateStruct)
 	getAllInterfaces ();
 
 	// Restore all (windows position and size, menu checked, etc...)
+	// TREE
 	_Tree->SetWindowPos (&wndTop, _Environnement.MasterTreeX, _Environnement.MasterTreeY, 
 						_Environnement.MasterTreeCX, _Environnement.MasterTreeCY, SWP_SHOWWINDOW);
 	_Tree->ShowWindow (SW_SHOW);
 	_Tree->update (_Environnement.RootDir);
 	if (_Environnement.MasterTreeLocked)
 		GetMenu()->CheckMenuItem (ID_OPTIONS_TREELOCK, MF_CHECKED);
+
+	// WORLDEDITOR
 	if (_WorldEditor != NULL)
 		_WorldEditor->setRootDir (_Environnement.RootDir.c_str());
 	if (_Environnement.WorldEdOpened)
-	{ // Force the WorldEditor to open
+	{ 
 		_Environnement.WorldEdOpened = false;
 		openWorldEditor ();
+	}
+
+	// GEORGES
+//	if (_Georges != NULL)
+//		_Georges->setRootDir (_Environnement.RootDir.c_str());
+	if (_Environnement.GeorgesOpened)
+	{ 
+		_Environnement.GeorgesOpened = false;
+		openGeorges ();
+	}
+
+	// LOGICEDITOR
+//	if (_LogicEditor != NULL)
+//		_LogicEditor->setRootDir (_Environnement.RootDir.c_str());
+	if (_Environnement.LogicEditorOpened)
+	{ 
+		_Environnement.LogicEditorOpened = false;
+		openLogicEditor ();
 	}
 
 	return 0;
@@ -613,12 +943,112 @@ void CMainFrame::onRegionSave ()
 		if (_WorldEditor)
 			_WorldEditor->saveOpenedFiles();
 	}
+	if (_Environnement.GeorgesOpened)
+	{
+//		if (_Georges)
+//			_Georges->saveOpenedFiles();
+	}
+	if (_Environnement.LogicEditorOpened)
+	{
+//		if (_LogicEditor)
+//			_LogicEditor->saveOpenedFiles();
+	}
 }
 
 // ---------------------------------------------------------------------------
 void CMainFrame::onRegionEmptyTrash ()
 {
 	emptyTrash ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::onRegionEmptyBackup ()
+{
+	emptyBackup ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::onRegionBackupAll ()
+{
+	regionBackupAll ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::onRegionTrashRegions ()
+{
+	regionTrashAll ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::onRegionRestoreTag ()
+{
+	backupRestoreAll ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnRegionDeleteInTrash ()
+{
+	CChooseDir chooseDir(this);
+	chooseDir.setPath (_Environnement.RootDir + "Trash");
+	if (chooseDir.DoModal() == IDOK)
+	{
+		trashDelete (chooseDir.getSelected());
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnRegionDeleteInBackup ()
+{
+	CChooseDir chooseDir(this);
+	chooseDir.setPath (_Environnement.RootDir + "Backup");
+	if (chooseDir.DoModal() == IDOK)
+	{
+		backupDelete (chooseDir.getSelected());
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnRegionDelete ()
+{
+	CChooseDir chooseDir(this);
+	chooseDir.setPath (_Environnement.RootDir + "Regions");
+	if (chooseDir.DoModal() == IDOK)
+	{
+		regionDelete (chooseDir.getSelected());
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnRegionRestoreFromTrash ()
+{
+	CChooseDir chooseDir(this);
+	chooseDir.setPath (_Environnement.RootDir + "Trash");
+	if (chooseDir.DoModal() == IDOK)
+	{
+		trashRestoreOne (chooseDir.getSelected());
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnRegionRestoreFromBackup ()
+{
+	CChooseDir chooseDir(this);
+	chooseDir.setPath (_Environnement.RootDir + "Backup");
+	if (chooseDir.DoModal() == IDOK)
+	{
+		backupRestoreOne (chooseDir.getSelected());
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnRegionBackup ()
+{
+	CChooseDir chooseDir(this);
+	chooseDir.setPath (_Environnement.RootDir + "Regions");
+	if (chooseDir.DoModal() == IDOK)
+	{
+		regionBackupOne (chooseDir.getSelected());
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -686,6 +1116,15 @@ void CMainFrame::onWindowsWorldEditor ()
 }
 
 // ---------------------------------------------------------------------------
+void CMainFrame::onWindowsGeorges ()
+{
+	if (!_Environnement.GeorgesOpened)
+		openGeorges ();
+	else
+		closeGeorges ();
+}
+
+// ---------------------------------------------------------------------------
 void CMainFrame::OnClose ()
 {
 	RECT r;
@@ -706,6 +1145,28 @@ void CMainFrame::OnClose ()
 		_Environnement.WorldEdX = r.left;
 		_Environnement.WorldEdCY = r.bottom - r.top;
 		_Environnement.WorldEdCX = r.right - r.left;
+	}
+
+	// Georges saves
+	if (_Environnement.GeorgesOpened)
+	{
+		CFrameWnd *pFW = (CFrameWnd*)_Georges->getMainFrame();
+		pFW->GetWindowRect(&r);
+		_Environnement.GeorgesY = r.top;
+		_Environnement.GeorgesX = r.left;
+		_Environnement.GeorgesCY = r.bottom - r.top;
+		_Environnement.GeorgesCX = r.right - r.left;
+	}
+
+	// LogicEditor saves
+	if (_Environnement.LogicEditorOpened)
+	{
+		CFrameWnd *pFW = (CFrameWnd*)_LogicEditor->getMainFrame();
+		pFW->GetWindowRect(&r);
+		_Environnement.LogicEditorY = r.top;
+		_Environnement.LogicEditorX = r.left;
+		_Environnement.LogicEditorCY = r.bottom - r.top;
+		_Environnement.LogicEditorCX = r.right - r.left;
 	}
 
 	// Save the environnement

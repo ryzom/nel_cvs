@@ -23,15 +23,28 @@
 
 class CMasterTree : public CTreeCtrl
 {
+
+	bool _LDrag;
+	CImageList *_DragImg;
+	HTREEITEM _DragItem;
+
+	UINT    m_nTimerID;
+	UINT    m_timerticks;
 	
 public:
 
+	CMasterTree ();
+
+	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnLBeginDrag (NMHDR* pNMHDR, LRESULT* pResult);
+
+	afx_msg void OnMouseMove (UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp (UINT nFlags, CPoint point);
 	afx_msg void OnRButtonDown (UINT nFlags, CPoint point);
-	afx_msg void OnMenuFileEdit ();
-	afx_msg void OnMenuRegionDelete ();
 
 	// Top level (just under the root) handlers
 	afx_msg void OnMenuTrashEmpty ();
+	afx_msg void OnMenuBackupEmpty ();
 	afx_msg void OnMenuBackupClean ();
 	afx_msg void OnMenuBackupRestore ();
 	afx_msg void OnMenuRegionTrash ();
@@ -41,6 +54,15 @@ public:
 	afx_msg void OnMenuSortNameDec ();
 	afx_msg void OnMenuSortDateInc ();
 	afx_msg void OnMenuSortDateDec ();
+
+	// Region menus (a level under the top)
+
+	afx_msg void OnMenuTrashDelete ();
+	afx_msg void OnMenuTrashRestoreOne ();
+	afx_msg void OnMenuBackupDelete ();
+	afx_msg void OnMenuBackupRestoreOne ();
+	afx_msg void OnMenuRegionDelete ();
+	afx_msg void OnMenuRegionBackupOne ();
 
 	DECLARE_MESSAGE_MAP()
 };
@@ -70,13 +92,21 @@ public:
 	
 	void openAnyFile (const char *fname);
 	void emptyTrash ();
+	void emptyBackup ();
 	void cleanBackup ();
 	void regionBackupAll ();
+	void regionTrashAll ();
 	void backupRestoreAll ();
 	void sortRegionBy (int mt_sort_type);
 	void sortTrashBy (int mt_sort_type);
 	void sortBackupBy (int mt_sort_type);
 
+	void trashDelete (const char *str);
+	void trashRestoreOne (const char *str);
+	void backupDelete (const char *str);
+	void backupRestoreOne (const char *str);
+	void regionDelete (const char *str);
+	void regionBackupOne (const char *str);
 
 // Dialog Data
 	//{{AFX_DATA(CMasterTree)

@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.25 2004/06/03 08:41:59 boucher Exp $
+ * $Id: primitive.h,v 1.26 2004/06/09 10:23:35 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,11 @@
 
 namespace NLLIGO
 {
+
+#if defined(NL_DEBUG) || defined(NL_DEBUG_FAST) 
+#  define NLLIGO_DEBUG
+#endif
+
 
 /**
   * Ligo primitives are used to add logical geometrical gameplay informations.
@@ -362,6 +367,13 @@ private:
 
 	// Single properties
 	std::map<std::string, IProperty*>		_Properties;
+
+#ifdef NLLIGO_DEBUG
+	std::string								_DebugClassName;
+	std::string								_DebugPrimitiveName;
+#endif
+
+
 };
 
 // ***************************************************************************

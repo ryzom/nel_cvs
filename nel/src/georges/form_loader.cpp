@@ -1,7 +1,7 @@
 /** \file form_loader.cpp
  * Georges form loader implementation
  *
- * $Id: form_loader.cpp,v 1.11 2002/09/25 09:38:05 corvazier Exp $
+ * $Id: form_loader.cpp,v 1.11.6.1 2003/05/28 13:40:32 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -59,7 +59,7 @@ UFormLoader *UFormLoader::createLoader ()
 
 void UFormLoader::releaseLoader (UFormLoader *loader)
 {
-	delete loader;
+	delete ((CFormLoader*)loader);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.16 2003/01/10 17:11:56 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.17 2003/02/06 15:35:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1113,7 +1113,9 @@ void CSourceDSound::setEAXProperty( uint prop, void *value, uint valuesize )
 	{
 		HRESULT res = _EAXSource->Set( DSPROPSETID_EAX_BufferProperties, prop, NULL, 0, value, valuesize );
 		if (res != S_OK)
-			nlwarning("Setting EAX Param #%u fail : %x", prop, res);
+		{
+//			nlwarning("Setting EAX Param #%u fail : %x", prop, res);
+		}
 	}
 #endif
 }

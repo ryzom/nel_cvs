@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.12 2003/01/10 17:11:56 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.13 2003/02/06 15:35:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -254,7 +254,7 @@ LPKSPROPERTYSET	CSoundDriverDSound::createPropertySet(CSourceDSound *source)
 				propertySet->QuerySupport(DSPROPSETID_EAX_ListenerProperties, i, &ulSupport);
 				if ( (ulSupport&(KSPROPERTY_SUPPORT_GET|KSPROPERTY_SUPPORT_SET)) != (KSPROPERTY_SUPPORT_GET|KSPROPERTY_SUPPORT_SET) )
 				{
-					nlwarning("CSoundDriverDSound::createPropertySet : listener property %s not supported", listenerProperties[i]);
+//					nlwarning("CSoundDriverDSound::createPropertySet : listener property %s not supported", listenerProperties[i]);
 				}
 			}
 
@@ -283,7 +283,7 @@ LPKSPROPERTYSET	CSoundDriverDSound::createPropertySet(CSourceDSound *source)
 				propertySet->QuerySupport(DSPROPSETID_EAX_BufferProperties, i, &ulSupport);
 				if ( (ulSupport&(KSPROPERTY_SUPPORT_GET|KSPROPERTY_SUPPORT_SET)) != (KSPROPERTY_SUPPORT_GET|KSPROPERTY_SUPPORT_SET) )
 				{
-					nlwarning("CSoundDriverDSound::createPropertySet : buffer property %s not supported", bufferProperties[i]);
+//					nlwarning("CSoundDriverDSound::createPropertySet : buffer property %s not supported", bufferProperties[i]);
 				}
 			}
 		}

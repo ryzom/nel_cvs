@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.1 2002/02/14 13:11:13 besson Exp $
+ * $Id: primitive.h,v 1.2 2002/04/24 16:26:02 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,8 @@ namespace NLLIGO
 {
 
 // There are only x and y used in the vector
+// LayerName is the Group to which the primitive belongs to
+// Hide say if the primitive is hidden or not
 
 
 // ***************************************************************************
@@ -92,6 +94,10 @@ public:
 	std::vector<CPrimPoint> VPoints;
 	std::vector<CPrimZone>	VZones;
 	std::vector<CPrimPath>	VPaths;
+
+	std::vector<bool>		VHidePoints;
+	std::vector<bool>		VHideZones;
+	std::vector<bool>		VHidePaths;
 
 public:
 

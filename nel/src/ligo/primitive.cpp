@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: primitive.cpp,v 1.2 2002/04/24 16:26:02 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,8 +136,8 @@ void CPrimRegion::serial (IStream &f)
 
 	f.xmlPushEnd();
 
-	sint version = 1;
-	f.serialVersion (version);
+	sint version = 2;
+	version = f.serialVersion (version);
 	string check = "REGION";
 	f.serialCheck (check);
 
@@ -150,6 +150,25 @@ void CPrimRegion::serial (IStream &f)
 	f.xmlPush ("ZONES");
 		f.serialCont (VZones);
 	f.xmlPop ();
+
+	if (version > 1)
+	{
+		f.xmlPush ("HIDEPOINTS");
+			f.serialCont (VHidePoints);
+		f.xmlPop ();
+		f.xmlPush ("HIDEZONES");
+			f.serialCont (VHideZones);
+		f.xmlPop ();
+		f.xmlPush ("HIDEPATHS");
+			f.serialCont (VHidePaths);
+		f.xmlPop ();
+	}
+	else
+	{
+		VHidePoints.resize	(VPoints.size(), false);
+		VHideZones.resize	(VZones.size(),	false);
+		VHidePaths.resize	(VPaths.size(), false);
+	}
 }
 
 } // namespace NLLIGO

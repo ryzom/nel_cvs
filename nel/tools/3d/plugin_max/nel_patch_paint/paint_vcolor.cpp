@@ -5,6 +5,7 @@
 #include "paint_undo.h"
 #include "paint_to_nel.h"
 #include <3d/landscape.h>
+#include <3d/nelu.h>
 
 // User color 1 and 2
 extern COLORREF color1;
@@ -24,8 +25,24 @@ float distance (PaintPatchMod *pobj)
  
  /*-------------------------------------------------------------------*/
 
-void CPaintColor::paint (int mesh, int tile, const CVector& hit, std::vector<EPM_Mesh> &vectMesh)
+void CPaintColor::paint (int mesh, int tile, const CVector& hit, const CVector& topVector, std::vector<EPM_Mesh> &vectMesh)
 {
+	// Set the brush base vector
+	if (fabs (topVector * CVector::K) > fabs (topVector * CVector::J))
+	{
+		_PaintBaseX = CVector::J ^ topVector;
+		_PaintBaseX.normalize ();
+		_PaintBaseY = topVector ^ _PaintBaseX;
+		_PaintBaseY.normalize ();
+	}
+	else
+	{
+		_PaintBaseX = topVector ^ CVector::K;
+		_PaintBaseX.normalize ();
+		_PaintBaseY = topVector ^ _PaintBaseX;
+		_PaintBaseY.normalize ();
+	}
+	
 	// Only if the landscape is valid
 	if (_Landscape)
 	{
@@ -115,10 +132,14 @@ void CPaintColor::paintAVertex (int mesh, int patch, int s, int t, const CVector
 	CVector vertexPos=pPatch->computeVertex ((float)s/(float)pPatch->getOrderS(), (float)t/(float)pPatch->getOrderT());
 
 	// Compute dist from the brush
-	float distBrush=(hit-vertexPos).norm();
+	CVector deltaPos = vertexPos-hit;
+	float distBrush = deltaPos.norm();
+
+	// Brush size
+	float brushSize = distance (_PObj);
 
 	// Check if it is in distance
-	if (distBrush<=distance (_PObj))
+	if (distBrush<=brushSize)
 	{
 		// *** Compute new vertex color
 
@@ -127,14 +148,36 @@ void CPaintColor::paintAVertex (int mesh, int patch, int s, int t, const CVector
 		vectMesh[mesh].RMesh->getVertexColor (patch, s, t, old);
 
 		// Blend with distance
-		float blendDist=(distance (_PObj)-distBrush)/distance (_PObj);
+		float blendDist=(brushSize-distBrush)/brushSize;
 
 		// Blend the two colors
 		float finalFactor=256.f*opa1*((1.f-hard1)*blendDist+hard1);
 		uint16 blend=(uint16)(std::max (std::min (finalFactor, 256.f), 0.f) );
 
+		// The color
+		CRGBA theColor = maxToNel (color1);
+
+		// Use a brush ?
+		if (_bBrush)
+		{
+			// Compute the projection on the brush plane
+			float bitmapX = (1 + (_PaintBaseX * deltaPos) / brushSize) / 2;
+			float bitmapY = (1 + (_PaintBaseY * deltaPos) / brushSize) / 2;
+
+			// Read the pixel
+			CRGBAF colorF = _BrushBitmap.getColor (bitmapX, bitmapY);
+			CRGBA color;
+			color.R = (uint8)colorF.R;
+			color.G = (uint8)colorF.G;
+			color.B = (uint8)colorF.B;
+			color.A = (color.R + color.G + color.B ) / 3;
+
+			// Adjust color and blend
+			blend = (uint16)(blend * color.A / 255);
+		}
+
 		// Set the vertex color
-		setVertexColor (mesh, patch, s, t, maxToNel (color1), blend, vectMesh, nelPatchChg, true);
+		setVertexColor (mesh, patch, s, t, theColor, blend, vectMesh, nelPatchChg, true);
 	}
 }
 
@@ -196,6 +239,52 @@ void CPaintColor::setVertexColor (int mesh, int patch, int s, int t, const CRGBA
 
 	// Set the color
 	vectMesh[mesh].RMesh->setVertexColor (patch, s, t, color);
+}
+
+/*-------------------------------------------------------------------*/
+
+bool CPaintColor::loadBrush (const char *brushFileName)
+{
+	// Open the file
+	try
+	{
+		// Open the bitmap
+		CIFile inputFile;
+		if (inputFile.open (brushFileName))
+		{
+			// Read it in RGBA
+			if (_BrushTexture == NULL)
+				_BrushTexture = new CTextureFile();
+			_BrushTexture->loadGrayscaleAsAlpha (false);
+			_BrushBitmap.loadGrayscaleAsAlpha (false);
+			_BrushTexture->setFileName (brushFileName);
+			_BrushBitmap.load (inputFile);
+
+			// Convert in RGBA
+			_BrushBitmap.convertToType (CBitmap::RGBA);
+		}
+		else
+		{
+			// Error message
+			char msg[512];
+			smprintf (msg, 512, "Can't open the file %s.", brushFileName);
+			MessageBox ((HWND)CNELU::Driver->getDisplay(), msg, "NeL Painter", MB_OK|MB_ICONEXCLAMATION);
+
+			// Return false
+			return false;
+		}
+	}
+	catch (Exception &e)
+	{
+		// Error message
+		MessageBox ((HWND)CNELU::Driver->getDisplay(), e.what(), "NeL Painter", MB_OK|MB_ICONEXCLAMATION);
+
+		// Return false
+		return false;
+	}
+
+	// Ok
+	return true;
 }
 
 /*-------------------------------------------------------------------*/

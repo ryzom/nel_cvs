@@ -145,7 +145,7 @@ struct EPM_PaintTile
 	void set256 (int rotate)
 	{
 	}
-	bool intersect (const Ray& ray, std::vector<EPM_Mesh>& vectMesh, TimeValue t, NLMISC::CVector& hit);
+	bool intersect (const Ray& ray, std::vector<EPM_Mesh>& vectMesh, TimeValue t, NLMISC::CVector& hit, CVector& topVector);
 	sint32		patch;
 	sint32		tile;
 	sint16		Mesh;
@@ -271,8 +271,8 @@ protected:
 		std::set<EPM_PaintTile*>& alreadyRecursed, bool first, int rotation, CNelPatchChanger& nelPatchChg, bool _256);
 
 
-	BOOL HitATile(ViewExp *vpt, IPoint2 *p, int *tile, int *mesh, TimeValue t, std::vector<EPM_Mesh>& vectMesh, NLMISC::CVector& hit);
-	BOOL HitATile(const CViewport& viewport, const CCamera& camera, float x, float y, int *tile, int *mesh, TimeValue t, std::vector<EPM_Mesh>& vectMesh, NLMISC::CVector& hit);
+	BOOL HitATile(ViewExp *vpt, IPoint2 *p, int *tile, int *mesh, TimeValue t, std::vector<EPM_Mesh>& vectMesh, NLMISC::CVector &hit, NLMISC::CVector &topVector);
+	BOOL HitATile(const CViewport& viewport, const CCamera& camera, float x, float y, int *tile, int *mesh, TimeValue t, std::vector<EPM_Mesh>& vectMesh, NLMISC::CVector& hit, NLMISC::CVector &topVector);
 	BOOL AnyHits( ViewExp *vpt ) 
 	{ 
 		return vpt->NumSubObjHits(); 

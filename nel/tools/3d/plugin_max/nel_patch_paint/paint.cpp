@@ -168,7 +168,7 @@ void drawVertexColorBox (float x0, float y0, float x1, float y1, CRGBA color, fl
 
 
 // Draw GUI
-void drawInterface (TModeMouse select, TModePaint mode, PaintPatchMod *pobj, IDriver& driver, CLandscapeModel& landscape)
+void drawInterface (TModeMouse select, TModePaint mode, PaintPatchMod *pobj, IDriver& driver, CLandscapeModel& landscape, CPaintColor &paintColor)
 {
 	// Select a texture..
 	if (select==ModeSelect)
@@ -369,6 +369,13 @@ void drawInterface (TModeMouse select, TModePaint mode, PaintPatchMod *pobj, IDr
 
 			// Draw group icon
 			CDRU::drawBitmap ( 0, (float)(MOD_HEIGHT-4)/(float)MOD_HEIGHT, 1.f/(float)MOD_WIDTH, 1.f/(float)MOD_HEIGHT, *(group[pobj->TileGroup]), driver, CViewport(), true);
+		}
+
+		// For color only
+		if (paintColor.getBrushMode ()&&(mode==ModeColor))
+		{
+			// Draw brush icon
+			CDRU::drawBitmap ( 0, (float)(MOD_HEIGHT-3)/(float)MOD_HEIGHT, 1.f/(float)MOD_WIDTH, 1.f/(float)MOD_HEIGHT, paintColor.getBrush (), driver, CViewport(), false);
 		}
 	}
 }
@@ -932,7 +939,7 @@ bool EPM_PaintMouseProc::GetBorderDesc (EPM_PaintTile* tile, tileSetIndex *pVois
 
 			if (nL==0)
 			{
-				nlassert (border==CTileSet::_1111);
+				//nlassert (border==CTileSet::_1111);
 				if (border!=CTileSet::_1111)
 				{
 					WarningInvalidTileSet ();
@@ -976,7 +983,7 @@ const CTileSetTransition* EPM_PaintMouseProc::FindTransition (int nTileSet, int 
 	// Look for good tile..
 	CTileSet::TTransition nTransition=CTileSet::getTransitionTile 
 		(pBorderConverted[3], pBorderConverted[1], pBorderConverted[0], pBorderConverted[2]);
-	nlassert (nTransition!=CTileSet::notfound);
+	//nlassert (nTransition!=CTileSet::notfound);
 	if (nTransition==CTileSet::notfound)
 		return NULL;
 
@@ -1094,7 +1101,7 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 	CTileSet::TFlagBorder nBorder[4][3];
 	tileDesc pIndex;
 	bool bFill=GetBorderDesc (tile, nCorner, nBorder, &pIndex, bank, vectMesh, nelPatchChg);
-	nlassert (bFill);	// Problem in tile info. Wrong tileSet ?
+	//nlassert (bFill);	// Problem in tile info. Wrong tileSet ?
 	if (!bFill)
 	{
 		WarningInvalidTileSet ();
@@ -1944,7 +1951,7 @@ struct callThread
 	std::vector<EPM_Mesh>&	VectMesh;
 };
 
-void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseListener& mouseListener, CLandscapeModel& landscape, IDriver& driver, callThread *pData)
+void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseListener& mouseListener, CLandscapeModel& landscape, IDriver& driver, callThread *pData, CPaintColor &paintColor)
 {
 	// Default mode is paint
 	modeSelect=ModePaint;
@@ -2126,6 +2133,45 @@ void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseLi
 		}
 	}
 
+	// Select color brush ?
+	if (AsyncListener.isKeyPushed ((TKey)PainterKeys[SelectColorBrush]))
+	{
+		// Create a dialog filter
+		static char szFilter[] = 
+			"Targa Files (*.tga)\0*.tga\0"
+			"All Files (*.*)\0*.*\0\0";
+
+		// Filename buffer
+		char buffer[65535];
+		buffer[0]=0;
+
+		// Fill the (big) struct
+		OPENFILENAME openFile;
+		memset (&openFile, 0, sizeof (OPENFILENAME));
+		openFile.lStructSize = sizeof (OPENFILENAME);
+		openFile.hwndOwner = (HWND)CNELU::Driver->getDisplay();
+		openFile.lpstrFilter = szFilter;
+		openFile.nFilterIndex = 0;
+		openFile.lpstrFile = buffer;
+		openFile.nMaxFile = 65535;
+		openFile.Flags = OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_ENABLESIZING|OFN_EXPLORER;
+		openFile.lpstrDefExt = "*.tga";
+
+		// Open the dialog
+		if (GetOpenFileName(&openFile))
+		{		
+			// Load the file
+			paintColor.loadBrush (buffer);
+			paintColor.setBrushMode (true);
+		}
+	}
+
+	// Toggle brush mode ?
+	if (AsyncListener.isKeyPushed ((TKey)PainterKeys[ToggleColorBrushMode]))
+	{
+		paintColor.setBrushMode (!paintColor.getBrushMode());
+	}
+
 	// Change hardness ?
 	if (AsyncListener.isKeyPushed ((TKey)PainterKeys[HardnessUp]))
 	{
@@ -2210,12 +2256,11 @@ void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseLi
 		dir= mat.mulVector(dir);
 		if(AsyncListener.isKeyDown(KeyUP))		CameraPos+= dir;
 		if(AsyncListener.isKeyDown(KeyDOWN))		CameraPos-= dir;
-		if(AsyncListener.isKeyDown(KeyQ))		CameraPos.z-= speed*dt;
-		if(AsyncListener.isKeyDown(KeyR))
+		/*if(AsyncListener.isKeyDown(KeyR))
 		{
 			CameraPos.set(0,0,0);
 			CameraRot.set(0,0,0);
-		}
+		}*/
 
 		// Straff.
 		float	straff=0;
@@ -2255,7 +2300,7 @@ void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseLi
 	}
 		
 	// Draw interface
-	drawInterface (modeSelect, nModeTexture, pData->pobj, driver, landscape);
+	drawInterface (modeSelect, nModeTexture, pData->pobj, driver, landscape, paintColor);
 
 	CNELU::swapBuffers();
 }
@@ -2271,16 +2316,16 @@ private:
 	CLandscape*				_Land;
 	CEventListenerAsync*	_Async;
 	CEvent3dMouseListener*	_3dMouseListener;
-	CPaintColor				_PaintColor;
 	CFillPatch				_FillTile;
 	std::vector<EPM_Mesh>&	_VectMesh;
 	TimeValue				_T;
 public:
 	bool					WindowActive;
+	CPaintColor				PaintColor;
 public:
 	MouseListener (IObjParam *ip, CCamera *camera, CViewport *viewport, PaintPatchMod *pobj, EPM_PaintMouseProc *eproc, CLandscape* land, 
 					CEventListenerAsync* async, CEvent3dMouseListener* mouseList, std::vector<EPM_Mesh>& vectMesh, TimeValue t)
-		: _PaintColor (pobj, land, &bankCont->Undo, eproc), _FillTile (pobj, land, &bankCont->Undo, eproc), _VectMesh(vectMesh)
+		: PaintColor (pobj, land, &bankCont->Undo, eproc), _FillTile (pobj, land, &bankCont->Undo, eproc), _VectMesh(vectMesh)
 	{
 		_Ip=ip;
 		_Camera=camera;
@@ -2327,12 +2372,13 @@ private:
 					bankCont->Undo.pushUndo ();
 
 					// Call undo now
-					bankCont->Undo.undo (*_Eproc, _VectMesh, _Land, _Pobj, _PaintColor);
+					bankCont->Undo.undo (*_Eproc, _VectMesh, _Land, _Pobj, PaintColor);
 				}
 				if (mouse->Button==leftButton)
 				{
 					CVector hotSpot;
-					if (_Eproc->HitATile(*_Viewport, *_Camera, mouse->X, mouse->Y, &tile1, &mesh1, _T, _VectMesh, hotSpot))
+					CVector topVector;
+					if (_Eproc->HitATile(*_Viewport, *_Camera, mouse->X, mouse->Y, &tile1, &mesh1, _T, _VectMesh, hotSpot, topVector))
 					{
 						// Set hit as next hotspot
 						if (modeSelect!=ModePick)
@@ -2374,7 +2420,7 @@ private:
 							else if (nModeTexture==ModeColor)
 							{
 								// Paint
-								_PaintColor.paint (mesh1, tile1, hotSpot, _VectMesh);
+								PaintColor.paint (mesh1, tile1, hotSpot, topVector, _VectMesh);
 							}
 
 							// Button pressed
@@ -2394,7 +2440,7 @@ private:
 													bank);
 							else if (nModeTexture==ModeColor)
 								// Fill this patch with the current color
-								_FillTile.fillColor (mesh1, patch, _VectMesh, maxToNel (color1), (uint16)(256.f*opa1), _PaintColor);
+								_FillTile.fillColor (mesh1, patch, _VectMesh, maxToNel (color1), (uint16)(256.f*opa1), PaintColor);
 
 							else if (nModeTexture==ModeDisplace)
 								// Fill this patch with the current color
@@ -2427,7 +2473,8 @@ private:
 				if ((pressed)&&(mouse->Button==leftButton))
 				{
 					CVector hotSpot;
-					if (_Eproc->HitATile(*_Viewport, *_Camera, mouse->X, mouse->Y, &tile2, &mesh2, _T, _VectMesh, hotSpot))
+					CVector topVector;
+					if (_Eproc->HitATile(*_Viewport, *_Camera, mouse->X, mouse->Y, &tile2, &mesh2, _T, _VectMesh, hotSpot, topVector))
 					{
 						_3dMouseListener->setHotSpot (hotSpot);
 						if ((tile1!=tile2)||(mesh1!=mesh2))
@@ -2467,7 +2514,7 @@ private:
 							else if (nModeTexture==ModeColor)
 							{
 								// Paint
-								_PaintColor.paint (mesh2, tile2, hotSpot, _VectMesh);
+								PaintColor.paint (mesh2, tile2, hotSpot, topVector, _VectMesh);
 							}
 
 							// New tile touched
@@ -2487,14 +2534,14 @@ private:
 					if ((keyDown->Key==KeyZ)&&(keyDown->Button==ctrlKeyButton))
 					{
 						// Undo !
-						bankCont->Undo.undo (*_Eproc, _VectMesh, _Land, _Pobj, _PaintColor);
+						bankCont->Undo.undo (*_Eproc, _VectMesh, _Land, _Pobj, PaintColor);
 					}
 
 					// Redo ?
 					if ((keyDown->Key==KeyE)&&(keyDown->Button==ctrlKeyButton))
 					{
 						// Redo !
-						bankCont->Undo.redo (*_Eproc, _VectMesh, _Land, _Pobj, _PaintColor);
+						bankCont->Undo.redo (*_Eproc, _VectMesh, _Land, _Pobj, PaintColor);
 					}
 				}
 			}
@@ -2596,7 +2643,7 @@ void MouseListener::pick (int mesh, int tile, const CVector& hit, TModePaint mod
 			// Get another color
 			CVector pos;
 			CRGBA color;
-			_PaintColor.pickVertexColor (mesh, pTile->patch, u[i], v[i], pos, color, _VectMesh);
+			PaintColor.pickVertexColor (mesh, pTile->patch, u[i], v[i], pos, color, _VectMesh);
 
 			// Get new dist
 			float fDist=(pos-hit).norm();
@@ -3166,8 +3213,9 @@ DWORD WINAPI myThread (LPVOID vData)
 
 		// The scene
 		
-		// Loaf cgf file
+		// Loaf cfg files
 		LoadKeyCfg ();
+		LoadLightCfg ();
 
 		// Init the scene
 		CViewport viewport;
@@ -3183,7 +3231,8 @@ DWORD WINAPI myThread (LPVOID vData)
 
 			// Enbable automatique lighting
 			TheLand->Landscape.enableAutomaticLighting (false);
-			TheLand->Landscape.setupAutomaticLightDir (CVector (1, 1, -1));
+			TheLand->Landscape.setupAutomaticLightDir (LightDirection);
+			TheLand->Landscape.setupStaticLight (LightDiffuse, LightAmbiant, LightMultiply);
 
 			// *******************
 
@@ -3383,7 +3432,7 @@ DWORD WINAPI myThread (LPVOID vData)
 				CNELU::EventServer.pump();
 
 				// Call the proc
-				mainproc(CNELU::Scene, CNELU::AsyncListener, mouseListener, *TheLand, *CNELU::Scene.getDriver(), pData);
+				mainproc(CNELU::Scene, CNELU::AsyncListener, mouseListener, *TheLand, *CNELU::Scene.getDriver(), pData, listener.PaintColor);
 			}
 			while (!CNELU::AsyncListener.isKeyPushed(KeyESCAPE)&&listener.WindowActive);
 
@@ -3451,7 +3500,7 @@ public:
 	int Mesh;
 };
 
-BOOL EPM_PaintMouseProc::HitATile(ViewExp *vpt, IPoint2 *p, int *tile, int *mesh, TimeValue t, std::vector<EPM_Mesh>& vectMesh, CVector& hit)
+BOOL EPM_PaintMouseProc::HitATile(ViewExp *vpt, IPoint2 *p, int *tile, int *mesh, TimeValue t, std::vector<EPM_Mesh>& vectMesh, CVector &hit, CVector &topVector)
 {
 	// Get a world ray with the mouse 2d point
 	Ray ray;
@@ -3466,7 +3515,7 @@ BOOL EPM_PaintMouseProc::HitATile(ViewExp *vpt, IPoint2 *p, int *tile, int *mesh
 	while (it!=quadTreeSelect.end())
 	{
 		// Check if the ray intersect the tile..
-		if ((*it)->intersect (ray, vectMesh, t, hit))
+		if ((*it)->intersect (ray, vectMesh, t, hit, topVector))
 		{
 			*tile = (*it)->tile;
 			*mesh = (*it)->Mesh;
@@ -3479,7 +3528,7 @@ BOOL EPM_PaintMouseProc::HitATile(ViewExp *vpt, IPoint2 *p, int *tile, int *mesh
 }
 
 BOOL EPM_PaintMouseProc::HitATile(const CViewport& viewport, const CCamera& camera, float x, float y, int *tile, int *mesh, TimeValue t, 
-								  std::vector<EPM_Mesh>& vectMesh, NLMISC::CVector& hit)
+								  std::vector<EPM_Mesh>& vectMesh, NLMISC::CVector& hit, NLMISC::CVector &topVector)
 {
 	// Get a world ray with the mouse 2d point
 	CVector pos, dir;
@@ -3507,7 +3556,7 @@ BOOL EPM_PaintMouseProc::HitATile(const CViewport& viewport, const CCamera& came
 		ray.dir.y=dir.y;
 		ray.dir.z=dir.z;
 		CVector hit2;
-		if ((*it)->intersect (ray, vectMesh, t, hit2))
+		if ((*it)->intersect (ray, vectMesh, t, hit2, topVector))
 		{
 			float newDist=(hit2-camera.getMatrix().getPos()).norm();
 			if (newDist<fMin)
@@ -3570,7 +3619,7 @@ bool CheckTri (const Point3& pos0, const Point3& pos1, const Point3& pos2, const
 
 /*-------------------------------------------------------------------*/
 
-bool EPM_PaintTile::intersect (const Ray& ray, std::vector<EPM_Mesh>& vectMesh, TimeValue t, CVector& hit)
+bool EPM_PaintTile::intersect (const Ray& ray, std::vector<EPM_Mesh>& vectMesh, TimeValue t, CVector& hit, CVector& topVector)
 {
 	// Pointer on the patch mesh
 	PatchMesh *patchPtr=vectMesh[Mesh].PMesh;
@@ -3591,6 +3640,13 @@ bool EPM_PaintTile::intersect (const Ray& ray, std::vector<EPM_Mesh>& vectMesh, 
 	pos[2]=pos[2]*(node->GetObjectTM (t));
 	pos[3]=patchPtr->patches[patch].interp (patchPtr, (float)(u+1)/(float)(nU), (float)v/(float)(nV));
 	pos[3]=pos[3]*(node->GetObjectTM (t));
+
+	// Get the normal
+	Point3 up = (pos[1]-pos[0]) ^ (pos[2]-pos[0]);
+	topVector.x = up.x;
+	topVector.y = up.y;
+	topVector.z = up.z;
+	topVector.normalize ();
 
 	// Check first tri
 	if (CheckTri (pos[0], pos[1], pos[3], ray, hit))

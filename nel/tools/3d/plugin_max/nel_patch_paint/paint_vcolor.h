@@ -1,7 +1,13 @@
 #include "stdafx.h"
+#include "3d/texture_file.h"
 
 using namespace NL3D;
 using namespace NLMISC;
+
+namespace NL3D
+{
+	class ITexture;
+}
 
 class CPaintColor
 {
@@ -13,10 +19,11 @@ public:
 		_Landscape=landscape;
 		_Undo=undo;
 		_MouseProc=mouseProc;
+		_bBrush=false;
 	}
 
 	// Go, paint !
-	void paint (int mesh, int tile, const CVector& hit, std::vector<EPM_Mesh> &vectMesh);
+	void paint (int mesh, int tile, const CVector& hit, const CVector& topVector, std::vector<EPM_Mesh> &vectMesh);
 
 	// Set a vertex color with handle of the undo
 	void setVertexColor (int mesh, int patch, int s, int t, const CRGBA& newColor, uint16 blend, std::vector<EPM_Mesh> &vectMesh, 
@@ -24,6 +31,35 @@ public:
 
 	// picj a vertex of a patch
 	void pickVertexColor (int mesh, int patch, int s, int t, CVector& pos, CRGBA& color, std::vector<EPM_Mesh> &vectMesh);
+
+	// Set brush mode
+	void setBrushMode (bool brushOn)
+	{
+		// Brush loaded ?
+		if ( ( _BrushBitmap.getWidth()!= 0 ) && ( _BrushBitmap.getHeight()!= 0 ) && brushOn)
+		{
+			_bBrush = true;
+		}
+		else
+		{
+			_bBrush = false;
+		}
+	}
+
+	// Get brush mode
+	bool getBrushMode () const
+	{
+		return _bBrush;
+	}
+
+	// Get brush mode
+	NL3D::ITexture& getBrush ()
+	{
+		return *_BrushTexture;
+	}
+
+	// Load a brush
+	bool loadBrush (const char *brushFileName);
 
 private:
 
@@ -39,4 +75,9 @@ private:
 	CLandscape				*_Landscape;
 	CTileUndo				*_Undo;
 	EPM_PaintMouseProc		*_MouseProc;
+	bool					_bBrush;
+	CVector					_PaintBaseX;
+	CVector					_PaintBaseY;
+	CSmartPtr<CTextureFile>	_BrushTexture;
+	CBitmap					_BrushBitmap;
 };

@@ -110,11 +110,19 @@ enum PainterKeysType
 	OpacityDown,
 	Zouille,
 	AutomaticLighting,
+	SelectColorBrush,
+	ToggleColorBrushMode,
 	KeyCounter
 };
 
 // Def Keys
 extern uint PainterKeys[KeyCounter];
+
+// Light settings
+extern CVector	LightDirection;
+extern CRGBA	LightDiffuse;
+extern CRGBA	LightAmbiant;
+extern float	LightMultiply;
 
 // Keys
 extern const char* PainterKeysName[KeyCounter];
@@ -122,3 +130,4 @@ extern const char* PainterKeysName[KeyCounter];
 // Load ini file
 
 void LoadKeyCfg ();
+void LoadLightCfg ();

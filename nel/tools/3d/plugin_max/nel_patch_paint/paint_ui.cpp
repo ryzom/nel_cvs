@@ -7,6 +7,8 @@
 #include "3d/texture_mem.h"
 #include "nel/misc/config_file.h"
 
+#define REGKEY_EDIT_PATCH "Software\\Nevrax\\Ryzom\\edit_patch"
+
 /*-------------------------------------------------------------------*/
 
 // Def Keys
@@ -35,6 +37,8 @@ uint PainterKeys[KeyCounter]=
 	KeyEND,
 	KeyF11,
 	KeyA,
+	KeyS,
+	KeyQ,
 };
 
 // Keys
@@ -62,12 +66,21 @@ const char* PainterKeysName[KeyCounter]=
 	"OpacityUp",
 	"OpacityDown",
 	"Zouille",
-	"AutomaticLighting"
+	"AutomaticLighting",
+	"SelectColorBrush",
+	"ToggleColorBrushMode",
 };
+
+// Light settings
+CVector		LightDirection (1, 1, -1);
+CRGBA		LightDiffuse (255,255,255);
+CRGBA		LightAmbiant (0,0,0);
+float		LightMultiply = 1;
 
 // Load ini file
 
 void LoadKeyCfg ();
+void LoadLightCfg ();
 
 /*-------------------------------------------------------------------*/
 
@@ -255,14 +268,54 @@ CBankCont::CBankCont (CTileBank& bank, HINSTANCE hInstance)
 
 /*-------------------------------------------------------------------*/
 
+void getColors (COLORREF *array)
+{
+	// Get the custom colors
+	HKEY hKey;
+	if (RegOpenKeyEx(HKEY_CURRENT_USER, REGKEY_EDIT_PATCH, 0, KEY_READ, &hKey)==ERROR_SUCCESS)
+	{
+		for (uint i=0; i<16; i++)
+		{
+			DWORD len=4;
+			DWORD type;
+			char regName[100];
+			smprintf (regName, 100, "Color%d", i);
+			RegQueryValueEx (hKey, regName, 0, &type, (LPBYTE)(array+i), &len);
+		}
+		RegCloseKey (hKey);
+	}
+}
+
+/*-------------------------------------------------------------------*/
+
+void setColors (const COLORREF *array)
+{
+	// Set background color
+	HKEY hKey;
+	if (RegCreateKey(HKEY_CURRENT_USER, REGKEY_EDIT_PATCH, &hKey)==ERROR_SUCCESS)
+	{
+		for (uint i=0; i<16; i++)
+		{
+			DWORD len=4;
+			char regName[100];
+			smprintf (regName, 100, "Color%d", i);
+			RegSetValueEx (hKey, regName, 0, REG_DWORD, (LPBYTE)(array+i), 4);
+		}
+		RegCloseKey (hKey);
+	}
+}
+
+/*-------------------------------------------------------------------*/
+
 // Open a pick color dialog and select a color
 void chooseAColor ()
 {
 	// Call the color picker dialog
-	static COLORREF arrayColor[16];
-	CHOOSECOLOR cc;
-	
+	static COLORREF arrayColor[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	getColors (arrayColor);
+
 	// Reset the struct
+	CHOOSECOLOR cc;
 	memset (&cc, 0, sizeof(CHOOSECOLOR));
 
 	// Fill the struct
@@ -273,8 +326,11 @@ void chooseAColor ()
 
 	// Open it
 	if (ChooseColor (&cc))
+	{
 		// Set the color
 		color1=cc.rgbResult;
+		setColors (arrayColor);
+	}
 }
 
 /*-------------------------------------------------------------------*/
@@ -283,10 +339,11 @@ void chooseAColor ()
 void setBackgroundColor ()
 {
 	// Call the color picker dialog
-	static COLORREF arrayColor[16];
-	CHOOSECOLOR cc;
+	static COLORREF arrayColor[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	getColors (arrayColor);
 	
 	// Reset the struct
+	CHOOSECOLOR cc;
 	memset (&cc, 0, sizeof(CHOOSECOLOR));
 
 	// Fill the struct
@@ -297,8 +354,11 @@ void setBackgroundColor ()
 
 	// Open it
 	if (ChooseColor (&cc))
+	{
 		// Set the color
 		backGround=cc.rgbResult;
+		setColors (arrayColor);
+	}
 }
 
 /*-------------------------------------------------------------------*/
@@ -339,6 +399,80 @@ void LoadKeyCfg ()
 
 					// Get value
 					PainterKeys[key]=value.asInt ();
+				}
+				catch (EConfigFile &e)
+				{
+					// Something goes wrong... catch that
+					const char* what=e.what();
+				}
+			}
+		}
+	}
+}
+
+/*-------------------------------------------------------------------*/
+
+void LoadLightCfg ()
+{
+	// Path of the dll
+	HMODULE hModule = GetModuleHandle("neleditpatch.dlm");
+	if (hModule)
+	{
+		char sModulePath[256];
+		int res=GetModuleFileName(hModule, sModulePath, 256);
+		if (res)
+		{
+			// split path
+			char drive[256];
+			char dir[256];
+			_splitpath (sModulePath, drive, dir, NULL, NULL);
+
+			// Make a new path
+			char cgfPath[256];
+			_makepath (cgfPath, drive, dir, "keys", ".cfg");
+	
+			CConfigFile cf;
+
+			// Load and parse "test.txt" file
+			cf.load (cgfPath);
+			
+			// For each keys
+			for (uint key=0; key<KeyCounter; key++)
+			{
+				// go
+				try
+				{
+					// Get the light direction variable
+					CConfigFile::CVar &light_direction= cf.getVar ("LightDirection");
+					if (light_direction.size () == 3)
+					{
+						// Copy the light direction
+						LightDirection.x = light_direction.asFloat (0);
+						LightDirection.y = light_direction.asFloat (1);
+						LightDirection.z = light_direction.asFloat (2);
+					}
+
+					// Get the light diffuse part
+					CConfigFile::CVar &light_diffuse= cf.getVar ("LightDiffuse");
+					if (light_diffuse.size () == 3)
+					{
+						LightDiffuse.R = light_diffuse.asInt (0);
+						LightDiffuse.G = light_diffuse.asInt (1);
+						LightDiffuse.B = light_diffuse.asInt (2);
+					}
+
+					// Get the light ambiant part
+					CConfigFile::CVar &light_ambiant= cf.getVar ("LightAmbiant");
+					if (light_ambiant.size () == 3)
+					{
+						LightAmbiant.R = light_ambiant.asInt (0);
+						LightAmbiant.G = light_ambiant.asInt (1);
+						LightAmbiant.B = light_ambiant.asInt (2);
+					}
+
+					// Get the light mulitply part
+					CConfigFile::CVar &light_multiply= cf.getVar ("LightMultiply");
+					LightMultiply = light_multiply.asFloat ();
 				}
 				catch (EConfigFile &e)
 				{

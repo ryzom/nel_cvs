@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.45 2003/08/22 12:43:36 corvazier Exp $
+ * $Id: config_file.cpp,v 1.46 2003/09/01 14:57:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -301,10 +301,22 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 
 	while (!fn.empty())
 	{
+		if (!NLMISC::CFile::fileExists(fn) && FileNames.size()>0)
+		{
+			// file is not found, try with the path of the master cfg
+
+			string path = CFile::getPath(FileNames[0]);
+
+			if (!path.empty())
+				path +=  "/";
+
+			fn = path + fn;
+		}		
+
 		nldebug ("Adding config file '%s' in the configfile", fn.c_str());
 		FileNames.push_back (fn);
 		LastModified.push_back (CFile::getFileModificationDate(fn));
-		
+
 		if (cf_ifile.open (fn))
 		{
 			cfrestart (NULL);

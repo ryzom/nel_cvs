@@ -92,13 +92,10 @@ bool tryAllPos (NLMISC::CBitmap *pSrc, NLMISC::CBitmap *pDst, sint32 &x, sint32 
 		{
 			for (a = 0; a < nSrcWidth; ++a)
 			{
-				if (rSrcPix[4*(a+b*pSrc->getWidth())+3] != 0)
+				if (rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] != 0)
 				{
-					if (rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] != 0 )
-					{
-						bCanPut = false;
-						break;
-					}
+					bCanPut = false;
+					break;
 				}
 			}
 			if (bCanPut == false)
@@ -120,6 +117,7 @@ bool putIn (NLMISC::CBitmap *pSrc, NLMISC::CBitmap *pDst, sint32 x, sint32 y, bo
 
 	for (b = 0; b < pSrc->getHeight(); ++b)
 	for (a = 0; a < pSrc->getWidth(); ++a)
+	{
 		if (rSrcPix[4*(a+b*pSrc->getWidth())+3] != 0)
 		{
 			if (rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] != 0)
@@ -129,9 +127,10 @@ bool putIn (NLMISC::CBitmap *pSrc, NLMISC::CBitmap *pDst, sint32 x, sint32 y, bo
 			rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+2] = rSrcPix[4*(a+b*pSrc->getWidth())+2];
 			if (alphaTransfert)
 				rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] = rSrcPix[4*(a+b*pSrc->getWidth())+3];
-			else
-				rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] = 255;
 		}
+		if (!alphaTransfert)
+			rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] = 255;
+	}
 	return true;
 }
 
@@ -261,6 +260,34 @@ int main(int nNbArg, char **ppArgs)
 		UVMin[i].V = (float)y;
 		UVMax[i].U = (float)x+AllMaps[i]->getWidth();
 		UVMax[i].V = (float)y+AllMaps[i]->getHeight();
+
+		/* // Do not remove this is usefull for debugging
+		{
+			NLMISC::COFile outTga;
+			string fmtName = ppArgs[2];
+			if (fmtName.rfind('.') == string::npos)
+				fmtName += ".tga";
+			if (outTga.open(fmtName))
+			{
+				GlobalTexture.writeTGA (outTga, 32);
+				outTga.close();
+			}
+		}
+		{
+			NLMISC::COFile outTga;
+			string fmtName = ppArgs[2];
+			if (fmtName.rfind('.') == string::npos)
+				fmtName += "_msk.tga";
+			else
+				fmtName = fmtName.substr(0,fmtName.rfind('.')) + "_msk.tga";
+			if (outTga.open(fmtName))
+			{
+				GlobalMask.writeTGA (outTga, 32);
+				outTga.close();
+			}
+		}*/
+
+
 	}
 
 	// Convert UV from pixel to ratio

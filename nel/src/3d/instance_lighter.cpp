@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.4 2002/02/14 15:23:20 vizerie Exp $
+ * $Id: instance_lighter.cpp,v 1.5 2002/02/15 15:21:50 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "3d/instance_lighter.h"
 #include "3d/mesh_multi_lod.h"
 #include "nel/misc/file.h"
+#include "nel/misc/path.h"
 #include "3d/visual_collision_manager.h"
 #include "3d/visual_collision_entity.h"
 #include "3d/ig_surface_light_build.h"
@@ -407,12 +408,12 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 		// If not found in userShape map, try to load it from the temp loaded ShapeBank.
 		if( iteMap == lightDesc.UserShapeMap.end() )
 		{
-			// Get the instance shape name
-			name= lightDesc.ShapePath + name;
-
 			// Add a .shape at the end ?
 			if (name.find('.') == std::string::npos)
 				name += ".shape";
+
+			// Get the instance shape name
+			name = CPath::lookup (name, false, false);
 
 			// Find the shape in the bank
 			iteMap= shapeMap.find(name);
@@ -1374,12 +1375,12 @@ void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInsta
 			// If not found in userShape map, try to load it from the temp loaded ShapeBank.
 			if( iteMap == lightDesc.UserShapeMap.end() )
 			{
-				// Get the instance shape name
-				name= lightDesc.ShapePath + name;
-
 				// Add a .shape at the end ?
 				if (name.find('.') == std::string::npos)
 					name += ".shape";
+
+				// Get the instance shape name
+				name = CPath::lookup (name, false, false);
 
 				// Find the shape in the bank
 				iteMap= shapeMap.find(name);

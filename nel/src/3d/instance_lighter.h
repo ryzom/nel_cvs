@@ -1,7 +1,7 @@
 /** \file instance_lighter.h
  * <File description>
  *
- * $Id: instance_lighter.h,v 1.2 2002/02/12 15:37:52 berenguier Exp $
+ * $Id: instance_lighter.h,v 1.3 2002/02/15 15:21:50 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,9 +81,6 @@ public:
 
 		// Number of samples For sun shadowing only. Must be: 0 (disable), 2, 4, 8, 16
 		uint					OverSampling;
-
-		// Shape Path for load Shape to get correct shape center.
-		std::string				ShapePath;
 
 		// This is a user shapeMap.
 		std::map<std::string, IShape*>				UserShapeMap;

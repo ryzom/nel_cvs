@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.83 2001/09/13 09:07:35 cado Exp $
+ * $Id: service.cpp,v 1.84 2001/09/13 09:10:40 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -963,7 +963,7 @@ NLMISC_COMMAND (mutex, "display mutex values", "")
 #endif // MUTEX_DEBUG
 
 
-NLMISC_COMMAND(nofilter, "Disable all filters on Nel loggers", "")
+NLMISC_COMMAND(nofilter, "disable all filters on Nel loggers", "")
 {
 	if(args.size() != 0) return false;
 
@@ -977,7 +977,7 @@ NLMISC_COMMAND(nofilter, "Disable all filters on Nel loggers", "")
 }
 
 
-NLMISC_COMMAND(addposfilter_debug, "Add a positive filter on DebugLog", "<filterstr>")
+NLMISC_COMMAND(addposfilter_debug, "add a positive filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	
@@ -987,7 +987,7 @@ NLMISC_COMMAND(addposfilter_debug, "Add a positive filter on DebugLog", "<filter
 }
 
 
-NLMISC_COMMAND(addnegfilter_debug, "Add a negative filter on DebugLog", "<filterstr>")
+NLMISC_COMMAND(addnegfilter_debug, "add a negative filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	
@@ -997,7 +997,7 @@ NLMISC_COMMAND(addnegfilter_debug, "Add a negative filter on DebugLog", "<filter
 }
 
 
-NLMISC_COMMAND(removefilter_debug, "Remove a filter on DebugLog", "<filterstr>")
+NLMISC_COMMAND(removefilter_debug, "remove a filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	

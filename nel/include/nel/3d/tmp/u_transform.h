@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.1 2001/02/28 16:19:35 berenguier Exp $
+ * $Id: u_transform.h,v 1.2 2001/03/19 15:38:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/quat.h"
 
 
 namespace NL3D 
@@ -35,6 +36,7 @@ namespace NL3D
 
 using NLMISC::CVector;
 using NLMISC::CMatrix;
+using NLMISC::CQuat;
 
 // ***************************************************************************
 /**
@@ -49,12 +51,13 @@ protected:
 
 	/// \name Object
 	// @{
+	/// Constructor. By default, DirectMatrix mode.
 	UTransform() {}
 	virtual	~UTransform() {}
 	// @}
 
 public:
-	// Enum should be the same than in CHrcTrav.
+	// Enum should be the same than in CHrcTrav, and ITransformable.
 
 	/// The visibility flag. In the root case, Herit means Show.
 	enum	TVisibility
@@ -66,13 +69,77 @@ public:
 		VisibilityCount
 	};
 
+	// Matrix mode.
+	enum	TTransformMode
+	{
+		DirectMatrix=0,		// DirectMatrixMode (default).
+		RotEuler,			// Matrix is computed from sperated composantes, with euler rotation.
+		RotQuat,			// Matrix is computed from sperated composantes, with quat rotation.
+
+		TransformModeCount
+	};
+
+
 public:
 
 
-	/// \name Space manipulation
+	/// \name Position set
 	// @{
+	/// Change the transform mode. Components or matrix are not reseted.
+	virtual	void			setTransformMode(TTransformMode mode, CMatrix::TRotOrder ro= CMatrix::ZXY)=0;
+	/// Work only in Rot* mode(nlassert).
+	virtual	void			setPos(const CVector &pos)=0;
+	/// Work only in RotEuler mode(nlassert).
+	virtual	void			setRotEuler(const CVector &rot)=0;
+	/// Work only in RotQuat mode (nlassert).
+	virtual	void			setRotQuat(const CQuat &quat)=0;
+	/// Work only in Rot* mode (nlassert).
+	virtual	void			setScale(const CVector &scale)=0;
+	/// Work only in Rot* mode (nlassert).
+	virtual	void			setPivot(const CVector &pivot)=0;
+
+	/// Work only in DirecTMatrix mode (nlassert).
 	virtual	void			setMatrix(const CMatrix &mat)=0;
+	// @}
+
+
+	/// \name Position get
+	// @{
+
+	/// get the current transform mode.
+	virtual	TTransformMode		getTransformMode()=0;
+	/// get the current rotorder (information vlaid only when RotEuler mode).
+	virtual	CMatrix::TRotOrder	getRotOrder()=0;
+
+	/// Get the matrix, compute her if necessary (work in all modes).
 	virtual	const CMatrix	&getMatrix() const	=0;
+
+	/// Work only in Rot* mode(nlassert).
+	virtual	void			getPos(CVector &pos)=0;
+	/// Work only in RotEuler mode(nlassert).
+	virtual	void			getRotEuler(CVector &rot)=0;
+	/// Work only in RotQuat mode (nlassert).
+	virtual	void			getRotQuat(CQuat &quat)=0;
+	/// Work only in Rot* mode (nlassert).
+	virtual	void			getScale(CVector &scale)=0;
+	/// Work only in Rot* mode (nlassert).
+	virtual	void			getPivot(CVector &pivot)=0;
+
+	/// Work only in Rot* mode(nlassert).
+	virtual	CVector			getPos()=0;
+	/// Work only in RotEuler mode(nlassert).
+	virtual	CVector			getRotEuler()=0;
+	/// Work only in RotQuat mode (nlassert).
+	virtual	CQuat			getRotQuat()=0;
+	/// Work only in Rot* mode (nlassert).
+	virtual	CVector			getScale()=0;
+	/// Work only in Rot* mode (nlassert).
+	virtual	CVector			getPivot()=0;
+	// @}
+
+
+	/// \name Hierarchy manipulation
+	// @{
 	/** Hierarchy edit. unlink this from oldparent, and make this be a son of newFather.
 	 * if this was already a son of newFather, no-op.
 	 * \param newFather the new Father. If NULL, the transform will be linked to the root of the hierarchy (Default!).
@@ -97,7 +164,7 @@ public:
 	/// \name Misc
 	// @{
 	/** 
-	  * Setup Matrix by the lookAt method.
+	  * Setup Matrix by the lookAt method. Work only in DirectMatrix mode and RotQuat mode (not euler...).
 	  * 
 	  * \param eye is the coordinate of the object.
 	  * \param target is the point the object look at.

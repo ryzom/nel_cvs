@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.3 2001/03/02 09:28:11 berenguier Exp $
+ * $Id: transform_user.h,v 1.4 2001/03/19 15:38:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,7 @@ public:
 
 		// Same enums!!
 		nlassert((uint)UTransform::VisibilityCount == (uint)CHrcTrav::VisibilityCount);
+		nlassert((uint)UTransform::TransformModeCount == (uint)ITransformable::TransformModeCount);
 	}
 	virtual	~CTransformUser()
 	{
@@ -106,6 +107,88 @@ public:
 	// @}
 
 
+	/// \name space set/get.
+	// @{
+
+	virtual	void			setTransformMode(TTransformMode mode, CMatrix::TRotOrder ro= CMatrix::ZXY)
+	{
+		_Transform->setTransformMode((ITransformable::TTransformMode)(uint)mode, ro);
+	}
+	virtual	void			setPos(const CVector &pos)
+	{
+		_Transform->setPos(pos);
+	}
+	virtual	void			setRotEuler(const CVector &rot)
+	{
+		_Transform->setRotEuler(rot);
+	}
+	virtual	void			setRotQuat(const CQuat &quat)
+	{
+		_Transform->setRotQuat(quat);
+	}
+	virtual	void			setScale(const CVector &scale)
+	{
+		_Transform->setScale(scale);
+	}
+	virtual	void			setPivot(const CVector &pivot)
+	{
+		_Transform->setPivot(pivot);
+	}
+
+	virtual	TTransformMode		getTransformMode()
+	{
+		return (TTransformMode)(uint)_Transform->getTransformMode();
+	}
+	virtual	CMatrix::TRotOrder	getRotOrder()
+	{
+		return _Transform->getRotOrder();
+	}
+
+	virtual	void			getPos(CVector &pos)
+	{
+		_Transform->getPos(pos);
+	}
+	virtual	void			getRotEuler(CVector &rot)
+	{
+		_Transform->getRotEuler(rot);
+	}
+	virtual	void			getRotQuat(CQuat &quat)
+	{
+		_Transform->getRotQuat(quat);
+	}
+	virtual	void			getScale(CVector &scale)
+	{
+		_Transform->getScale(scale);
+	}
+	virtual	void			getPivot(CVector &pivot)
+	{
+		_Transform->getPivot(pivot);
+	}
+
+	virtual	CVector			getPos()
+	{
+		return _Transform->getPos();
+	}
+	virtual	CVector			getRotEuler()
+	{
+		return _Transform->getRotEuler();
+	}
+	virtual	CQuat			getRotQuat()
+	{
+		return _Transform->getRotQuat();
+	}
+	virtual	CVector			getScale()
+	{
+		return _Transform->getScale();
+	}
+	virtual	CVector			getPivot()
+	{
+		return _Transform->getPivot();
+	}
+
+	// @}
+
+
 	/// \name visibility
 	// @{
 	/// Hide the object and his sons.
@@ -134,7 +217,7 @@ public:
 	/// \name Misc
 	// @{
 	/** 
-	  * Setup Matrix by the lookAt method.
+	  * Setup Matrix by the lookAt method. Work only in DirectMatrix mode and RotQuat mode (not euler...).
 	  * 
 	  * \param eye is the coordinate of the object.
 	  * \param target is the point the object look at.

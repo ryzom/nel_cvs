@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.7 2002/03/26 10:15:43 corvazier Exp $
+# $Id: Makefile.am,v 1.8 2005/04/04 09:45:06 cado Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -52,7 +52,8 @@ libnelpacs_la_SOURCES = chain.cpp                          \
                         surface_quad.cpp                   \
                         surface_quad.h                     \
                         vector_2s.cpp                      \
-                        vector_2s.h
+                        vector_2s.h                        \
+                        build_indoor.cpp
 
 AM_CXXFLAGS           = -I$(top_srcdir)/src
 

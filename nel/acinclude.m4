@@ -2,7 +2,7 @@
 #
 # Macros used by Nevrax in configure.in files.
 #
-# $Id: acinclude.m4,v 1.18 2004/01/15 17:42:13 lecroart Exp $
+# $Id: acinclude.m4,v 1.19 2005/04/04 09:45:05 cado Exp $
 # 
 # =========================================================================
 
@@ -84,7 +84,7 @@
 # =========================================================================
 # AM_NEL_DEBUG
 
-AC_DEFUN(AM_NEL_DEBUG,
+AC_DEFUN([AM_NEL_DEBUG],
 [
 
 MAX_C_OPTIMIZE="-O6"
@@ -125,7 +125,7 @@ if test "$ac_cv_prog_cxx_g" = "yes"
 then
     DEBUG_CXXFLAGS="-g"
     DEBUG_OPTIMIZE_CXX="-O"
-    OPTIMIZE_CXXFLAGS="-g -O3"
+    OPTIMIZE_CXXFLAGS="-O3"
     OPTIMIZE_INLINE_CXXFLAGS="-finline-functions"
 else
     DEBUG_CXXFLAGS="-g"
@@ -168,7 +168,7 @@ fi
 # =========================================================================
 # MY_NEL_HEADER_CHK : NeL header files checking macros
 
-AC_DEFUN(MY_NEL_HEADER_CHK,
+AC_DEFUN([MY_NEL_HEADER_CHK],
 [ AC_REQUIRE_CPP()
 
 chk_message_obj="$1"
@@ -215,7 +215,7 @@ fi
 # =========================================================================
 # MY_NEL_LIB_CHK : NeL library checking macros
 
-AC_DEFUN(MY_NEL_LIB_CHK,
+AC_DEFUN([MY_NEL_LIB_CHK],
 [ AC_REQUIRE_CPP()
 
 chk_message_obj="$1"
@@ -232,7 +232,7 @@ fi
 
 # =========================================================================
 # AM_PATH_NEL : NeL checking macros
-AC_DEFUN(AM_PATH_NEL,
+AC_DEFUN([AM_PATH_NEL],
 [ AC_REQUIRE_CPP()
 
 AC_ARG_WITH( nel,
@@ -352,7 +352,7 @@ MY_NEL_LIB_CHK([NeL Georges], [nelgeorges], $nelgeorges_is_mandatory)
 # =========================================================================
 # AM_PATH_STLPORT : STLPort checking macros
 
-AC_DEFUN(AM_PATH_STLPORT,
+AC_DEFUN([AM_PATH_STLPORT],
 [ AC_REQUIRE_CPP()
 
 AC_ARG_WITH( stlport,
@@ -371,9 +371,9 @@ AC_ARG_WITH( stlport-lib,
 
 if test "$with_debug" = "full"
 then
- stlport_lib="stlport_debug"
+ stlport_lib="stlport_gcc_debug"
 else
- stlport_lib="stlport"
+ stlport_lib="stlport_gcc"
 fi
 
 if test "$with_stlport" = no
@@ -471,7 +471,7 @@ AC_LANG_RESTORE
 # =========================================================================
 # AM_PATH_OPENGL : OpenGL checking macros
 
-AC_DEFUN(AM_PATH_OPENGL,
+AC_DEFUN([AM_PATH_OPENGL],
 [ AC_MSG_CHECKING(for OpenGL headers and GL Version >= 1.2)
 
 is_mandatory="$1"
@@ -614,7 +614,7 @@ AC_SUBST(OPENGL_LIBS)
 # =========================================================================
 # AM_PATH_FREETYPE : FreeType checking macros
 
-AC_DEFUN(AM_PATH_FREETYPE,
+AC_DEFUN([AM_PATH_FREETYPE],
 [ is_mandatory="$1"
 
 AC_REQUIRE_CPP()
@@ -736,7 +736,7 @@ AC_SUBST(FREETYPE_LIBS)
 # =========================================================================
 # AM_PATH_XF86VIDMODE : XF86VidMode checking macros
 
-AC_DEFUN(AM_PATH_XF86VIDMODE,
+AC_DEFUN([AM_PATH_XF86VIDMODE],
 [ AC_MSG_CHECKING(for XF86VidMode extension)
 
 AC_REQUIRE_CPP()
@@ -807,7 +807,7 @@ AC_SUBST(XF86VIDMODE_LIBS)
 # =========================================================================
 # AM_PATH_OPENAL : OpenAL checking macros
 
-AC_DEFUN(AM_PATH_OPENAL,
+AC_DEFUN([AM_PATH_OPENAL],
 [ is_mandatory="$1"
 
 AC_REQUIRE_CPP()
@@ -929,7 +929,7 @@ AC_SUBST(OPENAL_LIBS)
 # =========================================================================
 # AM_PATH_PYTHON : Python checking macros
 
-AC_DEFUN(AM_PATH_PYTHON,
+AC_DEFUN([AM_PATH_PYTHON],
 [ python_version_required="$1"
 
 is_mandatory="$2"
@@ -1056,7 +1056,7 @@ fi
 # =========================================================================
 # AM_PATH_CCACHE : Ccache checking macros
 
-AC_DEFUN(AM_PATH_CCACHE,
+AC_DEFUN([AM_PATH_CCACHE],
 [
 
 AC_ARG_WITH( ccache,
@@ -1079,7 +1079,7 @@ fi
 # AM_PATH_MYSQL([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
 # Test for MYSQL, and define MYSQL_CFLAGS and MYSQL_LIBS
 #
-AC_DEFUN(AM_PATH_MYSQL,
+AC_DEFUN([AM_PATH_MYSQL],
 [# 
 # Get the cflags and libraries from the mysql_config script
 #
@@ -1242,6 +1242,126 @@ int main(int argc, char *argv[])
   AC_SUBST(MYSQL_CFLAGS)
   AC_SUBST(MYSQL_LIBS)
   rm -f conf.mysqltest
+])
+
+# =========================================================================
+# AM_PATH_FMOD : FMOD checking macros
+
+AC_DEFUN([AM_PATH_FMOD],
+[ is_mandatory="$1"
+
+AC_REQUIRE_CPP()
+
+# Get from the user option the path to the FMOD files location
+AC_ARG_WITH( fmod,
+    [  --with-fmod=<path>   path to the FMOD install files directory.
+                          e.g. /usr/local])
+
+AC_ARG_WITH( fmod-include,
+    [  --with-fmod-include=<path>
+                          path to the FMOD header files directory.
+                          e.g. /usr/local/include])
+
+AC_ARG_WITH( fmod-lib,
+    [  --with-fmod-lib=<path>
+                          path to the FMOD library files directory.
+                          e.g. /usr/local/lib])
+
+fmod_lib="fmod"
+
+if test $with_fmod
+then
+    fmod_includes="$with_fmod/include"
+    fmod_libraries="$with_fmod/lib"
+fi
+
+if test "$with_fmod_include"
+then
+    fmod_includes="$with_fmod_include"
+fi
+
+if test "$with_fmod_lib"
+then
+    fmod_libraries="$with_fmod_lib"
+fi
+
+
+# Set FMOD_CFLAGS
+if test "$fmod_includes"
+then
+    FMOD_CFLAGS="-I$fmod_includes"
+fi
+
+# Set FMOD_LIBS
+if test "$fmod_libraries"
+then
+    FMOD_LIBS="-L$fmod_libraries"
+fi
+FMOD_LIBS="$FMOD_LIBS -l$fmod_lib"
+
+_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CXXFLAGS $FMOD_CFLAGS"
+
+AC_MSG_CHECKING(for FMOD headers)
+AC_EGREP_CPP( yo_fmod,
+[#include <fmod.h>
+#ifdef FMOD_VERSION
+   yo_fmod
+#endif],
+  have_fmod_headers="yes",
+  have_fmod_headers="no" )
+
+if test "$have_fmod_headers" = "yes"
+then
+    if test "$fmod_includes"
+    then
+        AC_MSG_RESULT([$fmod_includes])
+    else
+        AC_MSG_RESULT(yes)
+    fi
+else
+    AC_MSG_RESULT(no)
+fi
+
+# Test the libraries
+AC_MSG_CHECKING(for FMOD libraries)
+
+CPPFLAGS="$CXXFLAGS $FMOD_LIBS"
+
+AC_TRY_LINK( , , have_fmod_libraries="yes", have_fmod_libraries="no")
+
+CPPFLAGS="$_CPPFLAGS"
+
+if test "$have_fmod_libraries" = "yes"
+then
+    if test "$fmod_libraries"
+    then
+        AC_MSG_RESULT([$fmod_libraries])
+    else
+        AC_MSG_RESULT(yes)
+    fi
+else
+    AC_MSG_RESULT(no)
+fi
+
+fmod_libraries="$fmod_libraries"
+
+if test "$have_fmod_headers" = "yes" \
+   && test "$have_fmod_libraries" = "yes"
+then
+    have_fmod="yes"
+else
+    have_fmod="no"
+fi
+
+if test "$have_fmod" = "no" -a "$is_mandatory" = "yes"
+then
+    AC_MSG_ERROR([FMOD is needed to compile NeL (http://www.fmod.org).])
+fi
+
+AC_SUBST(FMOD_CFLAGS)
+AC_SUBST(FMOD_LIBS)
+
 ])
 
 # =========================================================================

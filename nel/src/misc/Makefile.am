@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.79 2005/01/13 17:56:41 distrib Exp $
+# $Id: Makefile.am,v 1.80 2005/04/04 09:45:06 cado Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -120,7 +120,8 @@ libnelmisc_la_SOURCES = \
 	win_event_emitter.cpp \
 	win_thread.cpp \
 	window_displayer.cpp \
-	words_dictionary.cpp
+	words_dictionary.cpp \
+	dynloadlib.cpp
 
 
 noinst_HEADERS        = di_game_device.h \
@@ -129,7 +130,7 @@ noinst_HEADERS        = di_game_device.h \
                         stdmisc.h
 
 
-libnelmisc_la_LIBADD  = config_file/libconfig.la -lc -lpthread -lrt
+libnelmisc_la_LIBADD  = config_file/libconfig.la -lc -lpthread -lrt -ldl
 
 libnelmisc_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 

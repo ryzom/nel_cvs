@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.10 2004/03/19 16:31:28 lecroart Exp $
+# $Id: Makefile.am,v 1.11 2005/04/04 09:45:06 cado Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -31,6 +31,12 @@ libnelsnd_la_SOURCES = \
 	listener_user.h \
 	mixing_track.cpp \
 	mixing_track.h \
+	music_sound.cpp \
+	music_sound.h \
+	music_sound_manager.cpp \
+	music_sound_manager.h \
+	music_source.cpp \
+	music_source.h \
 	sample_bank.cpp \
 	sample_bank.h \
 	simple_sound.cpp \

@@ -2,7 +2,7 @@
 # Configuration script for NeL
 # ====================================================================
 #
-# $Id: configure.ac,v 1.6 2005/03/23 09:54:11 cado Exp $
+# $Id: configure.ac,v 1.7 2005/04/04 09:45:05 cado Exp $
 # 
 
 # ====================================================================
@@ -257,6 +257,7 @@ AC_HEADER_STDC
 AC_HEADER_TIME
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h malloc.h netdb.h netinet/in.h stddef.h stdlib.h string.h sys/ioctl.h sys/socket.h unistd.h sys/time.h])
 AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_LIB([dl], [dlopen])
 
 
 # ====================================================================
@@ -361,9 +362,9 @@ AM_PATH_XF86VIDMODE
 
 
 # ====================================================================
-# OpenAL
+# FMOD
 
-AM_PATH_OPENAL($enable_sound)
+AM_PATH_FMOD($enable_sound)
 
 
 # ====================================================================
@@ -404,7 +405,7 @@ AC_CONFIG_FILES([Makefile                                        \
            src/pacs/Makefile                               \
            src/sound/Makefile                              \
            src/sound/driver/Makefile                       \
-           src/sound/driver/openal/Makefile                \
+           src/sound/driver/fmod/Makefile                  \
            src/georges/Makefile                            \
            src/ligo/Makefile                               \
            tools/Makefile                                  \
@@ -420,6 +421,13 @@ AC_CONFIG_FILES([Makefile                                        \
            tools/3d/zone_lib/Makefile                      \
            tools/3d/zone_lighter/Makefile                  \
            tools/3d/zone_welder/Makefile                   \
+           samples/Makefile                                \
+           samples/sound_sources/Makefile                  \
+           samples/pacs/Makefile                           \
+           samples/georges/Makefile                        \
+           samples/3d/Makefile                             \
+           samples/3d/font/Makefile                        \
+           samples/3d/cluster_viewer/Makefile              \
            nel-config                                      \
 ])
 AC_OUTPUT

@@ -1,10 +1,10 @@
 #
-# $Id: Makefile.am,v 1.4 2002/08/21 09:42:02 lecroart Exp $
+# $Id: Makefile.am,v 1.5 2005/04/04 09:45:06 cado Exp $
 #
 
 MAINTAINERCLEANFILES          = Makefile.in
 
-SUBDIRS                       = openal
+SUBDIRS                       = fmod
 
 noinst_LTLIBRARIES            = libnelsnd_lowlevel.la
 

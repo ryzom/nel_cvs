@@ -7,21 +7,6 @@ zone_welder='../../bin/zone_welder.exe'
 zone_lighter='../../bin/zone_lighter.exe'
 zone_ig_lighter='../../bin/zone_ig_lighter.exe'
 
-# **** Copy ig and shapes
-
-# Log error
-echo ------- > log.log
-echo --- Build zone : copy shapes and igs >> log.log
-echo ------- >> log.log
-echo ------- 
-echo --- Build zone : copy shapes and igs
-echo ------- 
-
-cp ../shape/shape/*.shape shapes 2> log.log
-cp ../shape/shape_with_coarse_mesh/*.shape shapes 2> log.log
-cp ../ig/ig_land/*.ig ig 2> log.log
-cp ../ig/ig_other/*.ig ig 2> log.log
-
 # **** Build dependencies
 
 # Log error

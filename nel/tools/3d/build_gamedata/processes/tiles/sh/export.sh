@@ -18,7 +18,7 @@ echo -------
 
 # For each directoy
 for i in $tile_source_directories ; do
-	list_textures=`find $database_directory/$tile_source_directories -type f -name '*.tga'`
+	list_textures=`find $database_directory/$i -type f -name '*.tga'`
 
 	# For each textures
 	for j in $list_textures ; do

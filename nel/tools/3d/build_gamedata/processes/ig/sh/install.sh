@@ -11,6 +11,9 @@ map_install_directory=`cat ../../cfg/directories.cfg | grep "map_install_directo
 # Get the client directory
 client_directory=`cat ../../cfg/site.cfg | grep "client_directory" | sed -e 's/client_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
+# Get the landscape name
+landscape_name=`cat ../../cfg/config.cfg | grep "landscape_name" | sed -e 's/landscape_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
 # Log error
 echo ------- > log.log
 echo --- Install Ig >> log.log
@@ -19,7 +22,7 @@ echo -------
 echo --- Install Ig 
 echo ------- 
 
-cp -u landscape_ig.txt $client_directory  2>> log.log
+cp -u "$landscape_name"_ig.txt $client_directory/$ig_install_directory  2>> log.log
 
 # Do not copy ig_land, because zone process will copy zone ig lighted versions into client directory.
 #cp -u ig_land/*.ig $client_directory/$ig_install_directory  2>> log.log

@@ -17,6 +17,9 @@ ig_land_source_directories=`cat ../../cfg/directories.cfg | grep "ig_land_source
 # Get the ig directories
 ig_other_source_directories=`cat ../../cfg/directories.cfg | grep "ig_other_source_directory" | sed -e 's/ig_other_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
+# Get the landscape name
+landscape_name=`cat ../../cfg/config.cfg | grep "landscape_name" | sed -e 's/landscape_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
 # Log error
 echo ------- > log.log
 echo --- Export ig >> log.log
@@ -28,7 +31,7 @@ echo -------
 # For each directoy
 
 # List landscape ig
-rm landscape_ig.txt
+rm "$landscape_name"_ig.txt
 
 for i in $ig_land_source_directories ; do
 	# Copy the script
@@ -43,7 +46,10 @@ done
 
 cd ig_land
 for i in *.ig ; do
-	echo $i >> ../landscape_ig.txt
+	if ( test -f $i )
+	then
+		echo $i >> ../"$landscape_name"_ig.txt
+	fi
 done
 cd ..
 

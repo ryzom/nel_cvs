@@ -49,6 +49,6 @@ for i in tga/*.tga ; do
 		fi
 
 		# Convert
-		$tga_2_dds $i -o $dest 2>> log.log
+		$tga_2_dds $i -o $dest -m 2>> log.log
 	fi
 done

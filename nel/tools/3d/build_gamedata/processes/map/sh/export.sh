@@ -24,14 +24,17 @@ echo -------
 
 for i in $map_source_directories; do
 	for j in $database_directory/$i/*.tga; do
-		# Get the dds version
-		dds=`echo $j | sed -e 's&.tga&.dds&g'`
-
-		# Copy the dds and the tga
-		cp -u $j tga 2>> log.log
-		if ( test -f $dds )
+		if ( test -f $j )
 		then
-			cp -u $dds tga 2>> log.log
+			# Get the dds version
+			dds=`echo $j | sed -e 's&.tga&.dds&g'`
+
+			# Copy the dds and the tga
+			cp -u $j tga 2>> log.log
+			if ( test -f $dds )
+			then
+				cp -u $dds tga 2>> log.log
+			fi
 		fi
 	done
 done
@@ -39,14 +42,17 @@ done
 
 for i in $map_panoply_source_directories; do
 	for j in $database_directory/$i/*.tga; do
-		# Get the dds version
-		dds=`echo $j | sed -e 's&.tga&.dds&g'`
-
-		# Copy the dds and the tga
-		cp -u $j panoply 2>> log.log
-		if ( test -f $dds )
+		if ( test -f $j )
 		then
-			cp -u $dds panoply 2>> log.log
+			# Get the dds version
+			dds=`echo $j | sed -e 's&.tga&.dds&g'`
+
+			# Copy the dds and the tga
+			cp -u $j panoply 2>> log.log
+			if ( test -f $dds )
+			then
+				cp -u $dds panoply 2>> log.log
+			fi
 		fi
 	done
 done

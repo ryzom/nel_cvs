@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.18 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: texture_far.cpp,v 1.19 2002/08/21 17:18:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "3d/tile_color.h"
 #include "3d/zone.h"
 #include "3d/landscape.h"
+#include "nel/misc/system_info.h"
+
 
 using namespace NLMISC;
 using namespace NL3D;
@@ -387,6 +389,10 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 
 	// ** Fill the struct for the tile fill method for each layers
 	NL3D_CComputeTileFar TileFar;
+	TileFar.AsmMMX= false;
+#ifdef NL_OS_WINDOWS
+	TileFar.AsmMMX= NLMISC::CSystemInfo::hasMMX();
+#endif
 
 	// Destination pointer
 
@@ -409,29 +415,8 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 	lightMap.TLIColor= _TileTLIColors;
 
 	// Expand the shadowmap
-	switch (tileSize)
-	{
-	case 1:
-	case 2:
-		// Decompress it
-		patch->unpackShadowMap (_LumelExpanded);
-		lightMap.LumelTile=_LumelExpanded;
-		break;
-	case 4:
-		// Shadow map already decompressed ?
-		if (patch->UncompressedLumels.begin()!=patch->UncompressedLumels.end())
-			// ok, just pass this pointer
-			lightMap.LumelTile=&patch->UncompressedLumels[0];
-		else
-		{
-			// Decompress it
-			patch->unpackShadowMap (_LumelExpanded);
-			lightMap.LumelTile=_LumelExpanded;
-		}
-		break;
-	default:
-		nlassert (0);		// no, only 1, 2, 4 tile size
-	}
+	patch->unpackShadowMap (_LumelExpanded);
+	lightMap.LumelTile=_LumelExpanded;
 
 	// Expand the patch lightmap now
 	NL3D_expandLightmap (&lightMap);
@@ -625,22 +610,587 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 		nBaseDstTileLine+=dstDeltaY*tileSize;
 	}
 
-	// Quit Far 0 ? (ie new far ID are not 0)
-	if (patch->getFar0()&&patch->getFar1())
-	{
-		// Erase the shadow map of the patch
-		patch->clearUncompressedLumels ();
-	}
 }
 
 } // NL3D
 
+
 // ***************************************************************************
-/// \todo hulud: asm implementation of this function \\//
-//#ifdef NL_NO_ASM
+// ***************************************************************************
+// NL3D_ExpandLightmap. C and Asm Part
+// ***************************************************************************
+// ***************************************************************************
+
+#ifdef NL_OS_WINDOWS
+
+
+// ***************************************************************************
+inline	void	NL3D_asmEndMMX()
+{
+	__asm
+	{
+		// close MMX computation
+		emms
+	}
+}
+
+
+// ***************************************************************************
+/** Expand a line of color with MMX.
+ *	NB: start to write at pixel 1.
+ */
+inline	void	NL3D_asmExpandLineColor565(const uint16 *src, CRGBA *dst, uint du, uint len)
+{
+	static	uint64 blank = 0;
+	static	uint64 cF800 = 0x0000F8000000F800;
+	static	uint64 cE000 = 0x0000E0000000E000;
+	static	uint64 c07E0 = 0x000007E0000007E0;
+	static	uint64 c0600 = 0x0000060000000600;
+	static	uint64 c001F = 0x0000001F0000001F;
+	static	uint64 c001C = 0x0000001C0000001C;
+	if(len==0)
+		return;
+
+
+	// Loop for pix.
+	__asm
+	{
+		movq	mm7, blank
+
+		// start at pixel 1 => increment dst, and start u= du
+		mov		esi, src
+		mov		edi, dst
+		add		edi, 4
+		mov		ecx, len
+		mov		edx, du
+
+		// Loop
+	myLoop:
+
+
+		// Read 565 colors
+		//----------
+		// index u.
+		mov		ebx, edx
+		shr		ebx, 8
+
+		// pack the 2 colors in eax: // Hedx= color0, Ledx= color1
+		xor		eax, eax			// avoid partial stall.
+		mov		ax, [esi + ebx*2]
+		shl		eax, 16
+		mov		ax, [esi + ebx*2 +2]
+		
+		// store and unpack in mm2: Hmm2= color0, Lmm2= color1
+		movd	mm2, eax
+		punpcklwd	mm2, mm7
+
+		// reset accumulator mm3 to black
+		movq	mm3, mm7
+
+		// Expand 565 to 888: color0 and color1 in parrallel
+		// R
+		movq	mm0, mm2
+		movq	mm1, mm2
+		pand	mm0, cF800
+		pand	mm1, cE000
+		psrld	mm0, 8
+		psrld	mm1, 13
+		por		mm3, mm0
+		por		mm3, mm1
+		// G
+		movq	mm0, mm2
+		movq	mm1, mm2
+		pand	mm0, c07E0
+		pand	mm1, c0600
+		pslld	mm0, 5
+		psrld	mm1, 1
+		por		mm3, mm0
+		por		mm3, mm1
+		// B
+		movq	mm0, mm2
+		movq	mm1, mm2
+		pand	mm0, c001F
+		pand	mm1, c001C
+		pslld	mm0, 19
+		pslld	mm1, 14
+		por		mm3, mm0
+		por		mm3, mm1
+
+		// unpack mm3 quad to mm0=color0 and mm1=color1.
+		movq	mm0, mm3
+		movq	mm1, mm3
+		psrlq	mm0, 32
+
+
+		// Blend.
+		//----------
+		// blend factors
+		mov		ebx, edx
+		mov		eax, 256
+
+		and		ebx, 0xFF
+		sub		eax, ebx
+
+		movd	mm2, ebx		// mm2= factor
+		movd	mm3, eax		// mm3= 1-factor
+		// replicate to the	4 words.
+		punpckldq	mm2, mm2	// mm2= 0000 00AA 0000 00AA
+		punpckldq	mm3, mm3	// mm3= 0000 00AA 0000 00AA
+		packssdw	mm2, mm2	// mm2= 00AA 00AA 00AA 00AA
+		packssdw	mm3, mm3	// mm3= 00AA 00AA 00AA 00AA
+
+		// mul
+		punpcklbw	mm0, mm7
+		punpcklbw	mm1, mm7
+		pmullw		mm0, mm3	// color0*(1-factor)
+		pmullw		mm1, mm2	// color1*factor
+		// add, and unpack
+		paddusw		mm0, mm1
+		psrlw       mm0, 8
+		packuswb    mm0, mm0
+
+		// store
+		movd        [edi], mm0
+
+
+		// next pix
+		add	edx, du
+		add	edi, 4
+		dec ecx
+		jnz myLoop
+	}
+}
+
+
+// ***************************************************************************
+/** Expand a line of color with MMX.
+ *	NB: start to write at pixel 1.
+ */
+inline	void	NL3D_asmExpandLineColor8888(const CRGBA *src, CRGBA *dst, uint du, uint len)
+{
+	static	uint64 blank = 0;
+	if(len==0)
+		return;
+
+
+	// Loop for pix.
+	__asm
+	{
+		movq	mm7, blank
+
+		// start at pixel 1 => increment dst, and start u= du
+		mov		esi, src
+		mov		edi, dst
+		add		edi, 4
+		mov		ecx, len
+		mov		edx, du
+
+		// Loop
+	myLoop:
+
+
+		// Read 8888 colors
+		//----------
+		// index u.
+		mov		ebx, edx
+		shr		ebx, 8
+
+		// read the 2 colors: mm0= color0, mm1= color1
+		movd	mm0 , [esi + ebx*4]
+		movd	mm1 , [esi + ebx*4 + 4]
+
+
+		// Blend.
+		//----------
+		// blend factors
+		mov		ebx, edx
+		mov		eax, 256
+
+		and		ebx, 0xFF
+		sub		eax, ebx
+
+		movd	mm2, ebx		// mm2= factor
+		movd	mm3, eax		// mm3= 1-factor
+		// replicate to the	4 words.
+		punpckldq	mm2, mm2	// mm2= 0000 00AA 0000 00AA
+		punpckldq	mm3, mm3	// mm3= 0000 00AA 0000 00AA
+		packssdw	mm2, mm2	// mm2= 00AA 00AA 00AA 00AA
+		packssdw	mm3, mm3	// mm3= 00AA 00AA 00AA 00AA
+
+		// mul
+		punpcklbw	mm0, mm7
+		punpcklbw	mm1, mm7
+		pmullw		mm0, mm3	// color0*(1-factor)
+		pmullw		mm1, mm2	// color1*factor
+		// add, and unpack
+		paddusw		mm0, mm1
+		psrlw       mm0, 8
+		packuswb    mm0, mm0
+
+		// store
+		movd        [edi], mm0
+
+
+		// next pix
+		add	edx, du
+		add	edi, 4
+		dec ecx
+		jnz myLoop
+	}
+}
+
+
+// ***************************************************************************
+/** Blend 2 lines of color into one line.
+ *	NB: start at pix 0 here
+ */
+inline	void	NL3D_asmBlendLines(CRGBA *dst, const CRGBA *src0, const CRGBA *src1, uint index, uint len)
+{
+	static	uint64 blank = 0;
+	if(len==0)
+		return;
+
+
+	// Loop for pix.
+	__asm
+	{
+		movq	mm7, blank
+
+		// read the factor and expand it to 4 words.
+		mov		ebx, index
+		mov		eax, 256
+		and		ebx, 0xFF
+		sub		eax, ebx
+		movd	mm2, ebx		// mm2= factor
+		movd	mm3, eax		// mm3= 1-factor
+		punpckldq	mm2, mm2	// mm2= 0000 00AA 0000 00AA
+		punpckldq	mm3, mm3	// mm3= 0000 00AA 0000 00AA
+		packssdw	mm2, mm2	// mm2= 00AA 00AA 00AA 00AA
+		packssdw	mm3, mm3	// mm3= 00AA 00AA 00AA 00AA
+
+		// setup ptrs
+		mov		esi, src0
+		mov		edx, src1
+		sub		edx, esi	// difference between 2 src
+		mov		edi, dst
+		mov		ecx, len
+
+		// Loop
+	myLoop:
+
+		// Read
+		movd	mm0, [esi]
+		movd	mm1, [esi+edx]
+
+		// mul
+		punpcklbw	mm0, mm7
+		punpcklbw	mm1, mm7
+		pmullw		mm0, mm3	// color0*(1-factor)
+		pmullw		mm1, mm2	// color1*factor
+		// add, and unpack
+		paddusw		mm0, mm1
+		psrlw       mm0, 8
+		packuswb    mm0, mm0
+
+		// store
+		movd        [edi], mm0
+
+
+		// next pix
+		add	esi, 4
+		add	edi, 4
+		dec ecx
+		jnz myLoop
+	}
+}
+
+
+// ***************************************************************************
+/**	Lightmap Combining for Far level 2 (farthest)
+ *	Average 16 lumels, and deals with UserColor and TLI
+ */
+static void		NL3D_asmAssembleShading1x1(const uint8 *lumels, const CRGBA *colorMap, 
+	const CRGBA *srcTLIs, const CRGBA *srcUSCs, CRGBA *dst, uint lineWidth, uint nbTexel)
+{
+	static	uint64 blank = 0;
+	if(nbTexel==0)
+		return;
+
+	// local var
+	uint	offsetTLIs= ((uint)srcTLIs-(uint)dst);
+	uint	offsetUSCs= ((uint)srcUSCs-(uint)dst);
+
+	// Loop for pix.
+	__asm
+	{
+		movq		mm7, blank
+
+		// setup ptrs
+		mov			esi, lumels
+		mov			edi, dst
+		mov			ecx, nbTexel
+
+		// Loop
+	myLoop:
+
+		// Average shade part
+		//------------
+		mov			ebx, colorMap
+		mov			edx, lineWidth
+
+		// read and accumulate shade 
+		xor			eax,eax			// avoid partial stall
+		// add with line 0
+		mov			al, [esi + 0]
+		add			al, [esi + 1]
+		adc			ah, 0
+		add			al, [esi + 2]
+		adc			ah, 0
+		add			al, [esi + 3]
+		adc			ah, 0
+		// add with line 1
+		add			al, [esi + edx + 0]
+		adc			ah, 0
+		add			al, [esi + edx + 1]
+		adc			ah, 0
+		add			al, [esi + edx + 2]
+		adc			ah, 0
+		add			al, [esi + edx + 3]
+		adc			ah, 0
+		// add with line 2
+		add			al, [esi + edx*2 + 0]
+		adc			ah, 0
+		add			al, [esi + edx*2 + 1]
+		adc			ah, 0
+		add			al, [esi + edx*2 + 2]
+		adc			ah, 0
+		add			al, [esi + edx*2 + 3]
+		adc			ah, 0
+		// add with line 3
+		lea			edx, [edx + edx*2]
+		add			al, [esi + edx + 0]
+		adc			ah, 0
+		add			al, [esi + edx + 1]
+		adc			ah, 0
+		add			al, [esi + edx + 2]
+		adc			ah, 0
+		add			al, [esi + edx + 3]
+		adc			ah, 0
+		// average
+		shr			eax, 4
+
+		// convert to RGBA from the color Map
+		movd		mm0, [ebx + eax*4]
+
+		// Assemble part
+		//------------
+		mov			edx, offsetTLIs
+		mov			ebx, offsetUSCs
+
+		// Add with TLI, and clamp.
+		paddusb		mm0, [edi + edx]
+
+		// mul with USC
+		movd		mm1, [edi + ebx]
+		punpcklbw	mm0, mm7
+		punpcklbw	mm1, mm7
+		pmullw		mm0, mm1
+		// unpack
+		psrlw       mm0, 8
+		packuswb    mm0, mm0
+
+		// store
+		movd        [edi], mm0
+
+
+		// next pix
+		add			esi, 4		// skip 4 lumels
+		add			edi, 4		// next texel
+		dec			ecx
+		jnz			myLoop
+	}
+}
+
+
+// ***************************************************************************
+/**	Lightmap Combining for Far level 1 (middle)
+ *	Average 4 lumels, and deals with UserColor and TLI
+ */
+static void		NL3D_asmAssembleShading2x2(const uint8 *lumels, const CRGBA *colorMap, 
+	const CRGBA *srcTLIs, const CRGBA *srcUSCs, CRGBA *dst, uint lineWidth, uint nbTexel)
+{
+	static	uint64 blank = 0;
+	if(nbTexel==0)
+		return;
+
+	// local var
+	uint	offsetTLIs= ((uint)srcTLIs-(uint)dst);
+	uint	offsetUSCs= ((uint)srcUSCs-(uint)dst);
+
+	// Loop for pix.
+	__asm
+	{
+		movq		mm7, blank
+
+		// setup ptrs
+		mov			esi, lumels
+		mov			edi, dst
+		mov			ecx, nbTexel
+
+		// Loop
+	myLoop:
+
+		// Average shade part
+		//------------
+		mov			ebx, colorMap
+		mov			edx, lineWidth
+
+		// read and accumulate shade 
+		xor			eax,eax			// avoid partial stall
+		mov			al, [esi]		// read lumel
+		// add with nbors
+		add			al, [esi + 1]
+		adc			ah, 0
+		add			al, [esi + edx]
+		adc			ah, 0
+		add			al, [esi + edx + 1]
+		adc			ah, 0
+		// average
+		shr			eax, 2
+
+		// convert to RGBA from the color Map
+		movd		mm0, [ebx + eax*4]
+
+		// Assemble part
+		//------------
+		mov			edx, offsetTLIs
+		mov			ebx, offsetUSCs
+
+		// Add with TLI, and clamp.
+		paddusb		mm0, [edi + edx]
+
+		// mul with USC
+		movd		mm1, [edi + ebx]
+		punpcklbw	mm0, mm7
+		punpcklbw	mm1, mm7
+		pmullw		mm0, mm1
+		// unpack
+		psrlw       mm0, 8
+		packuswb    mm0, mm0
+
+		// store
+		movd        [edi], mm0
+
+
+		// next pix
+		add			esi, 2		// skip 2 lumels
+		add			edi, 4		// next texel
+		dec			ecx
+		jnz			myLoop
+	}
+}
+
+
+// ***************************************************************************
+/**	Lightmap Combining for Far level 0 (nearest)
+ *	read 1 lumel, and deals with UserColor and TLI
+ */
+static void		NL3D_asmAssembleShading4x4(const uint8 *lumels, const CRGBA *colorMap, 
+	const CRGBA *srcTLIs, const CRGBA *srcUSCs, CRGBA *dst, uint nbTexel)
+{
+	static	uint64 blank = 0;
+	if(nbTexel==0)
+		return;
+
+	// Loop for pix.
+	__asm
+	{
+		// Use ebp as a register for faster access...
+		push		ebp
+
+		movq		mm7, blank
+
+		// setup ptrs
+		mov			esi, lumels
+		mov			edi, dst
+		mov			edx, srcTLIs
+		sub			edx, edi	// difference src and dest
+		mov			ebx, srcUSCs
+		sub			ebx, edi	// difference src and dest
+		mov			ecx, nbTexel
+
+		// set ebp after reading locals...
+		mov			ebp, colorMap
+
+		// Loop
+	myLoop:
+
+		// read shade RGBA into the color Map
+		xor			eax,eax			// avoid partial stall
+		mov			al,[esi]		// read lumel
+		movd		mm0, [ebp + eax*4]
+
+		// Add with TLI, and clamp.
+		paddusb		mm0, [edi + edx]
+
+		// mul with USC
+		movd		mm1, [edi + ebx]
+		punpcklbw	mm0, mm7
+		punpcklbw	mm1, mm7
+		pmullw		mm0, mm1
+		// unpack
+		psrlw       mm0, 8
+		packuswb    mm0, mm0
+
+		// store
+		movd        [edi], mm0
+
+
+		// next pix
+		add			esi, 1		// next lumel
+		add			edi, 4		// next texel
+		dec			ecx
+		jnz			myLoop
+
+		// restore
+		pop			ebp
+	}
+
+}
+
+
+#else // NL_OS_WINDOWS
+
+// Dummy for non-windows platforms
+inline	void	NL3D_asmEndMMX() {}
+inline	void	NL3D_asmExpandLineColor565(const uint16 *src, CRGBA *dst, uint du, uint len) {}
+inline	void	NL3D_asmExpandLineColor8888(const CRGBA *src, CRGBA *dst, uint du, uint len) {}
+inline	void	NL3D_asmBlendLines(CRGBA *dst, const CRGBA *src0, const CRGBA *src1, uint index, uint len) {}
+static void		NL3D_asmAssembleShading1x1(const uint8 *lumels, const CRGBA *colorMap, 
+	const CRGBA *srcTLIs, const CRGBA *srcUSCs, CRGBA *dst, uint lineWidth, uint nbTexel)
+{
+}
+static void		NL3D_asmAssembleShading2x2(const uint8 *lumels, const CRGBA *colorMap, 
+	const CRGBA *srcTLIs, const CRGBA *srcUSCs, CRGBA *dst, uint lineWidth, uint nbTexel)
+{
+}
+static void		NL3D_asmAssembleShading4x4(const uint8 *lumels, const CRGBA *colorMap, 
+	const CRGBA *srcTLIs, const CRGBA *srcUSCs, CRGBA *dst, uint nbTexel)
+{
+}
+
+#endif // NL_OS_WINDOWS
+
+
+// ***************************************************************************
 extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 {
-	// Will be much more efficient with a MMX based code !
+	bool	asmMMX= false;
+#ifdef	NL_OS_WINDOWS
+	asmMMX= CSystemInfo::hasMMX();
+	// A CTileColor must be a 565 only.
+	nlassert(sizeof(CTileColor)==2);
+#endif
 
 	// Expanded width
 	uint dstWidth=(pLightmap->Width-1)*pLightmap->MulFactor;
@@ -681,32 +1231,44 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 		expandedUserColorLinePtr[0].set565 (colorTilePtr[0].Color565);
 		expandedTLIColorLinePtr[0]= colorTLIPtr[0];
 
-		// Index next pixel
-		uint srcIndexPixel=expandFactor;
-
-		for (u=1; u<dstWidth-1; u++)
+		// MMX implementation.
+		//-------------
+		if(asmMMX)
 		{
-			// Check
-			nlassert ( (u+v*dstWidth) < (sizeof(expandedUserColorLine)/sizeof(CRGBA)) );
+			NL3D_asmExpandLineColor565(&colorTilePtr->Color565, expandedUserColorLinePtr, expandFactor, dstWidth-2);
+			NL3D_asmExpandLineColor8888(colorTLIPtr, expandedTLIColorLinePtr, expandFactor, dstWidth-2);
+		}
+		// C implementation
+		//-------------
+		else
+		{
+			// Index next pixel
+			uint srcIndexPixel=expandFactor;
 
-			// Color index
-			uint srcIndex=srcIndexPixel>>8;
-			nlassert (srcIndex>=0);
-			nlassert (srcIndex<pLightmap->Width-1);
+			for (u=1; u<dstWidth-1; u++)
+			{
+				// Check
+				nlassert ( (u+v*dstWidth) < (sizeof(expandedUserColorLine)/sizeof(CRGBA)) );
 
-			// Compute current color
-			CRGBA color0;
-			CRGBA color1;
-			color0.set565 (colorTilePtr[srcIndex].Color565);
-			color1.set565 (colorTilePtr[srcIndex+1].Color565);
-			expandedUserColorLinePtr[u].blendFromui (color0, color1, srcIndexPixel&0xff);
-			// Compute current TLI color
-			color0= colorTLIPtr[srcIndex];
-			color1= colorTLIPtr[srcIndex+1];
-			expandedTLIColorLinePtr[u].blendFromui (color0, color1, srcIndexPixel&0xff);
+				// Color index
+				uint srcIndex=srcIndexPixel>>8;
+				nlassert (srcIndex>=0);
+				nlassert (srcIndex<pLightmap->Width-1);
 
-			// Next index
-			srcIndexPixel+=expandFactor;
+				// Compute current color
+				CRGBA color0;
+				CRGBA color1;
+				color0.set565 (colorTilePtr[srcIndex].Color565);
+				color1.set565 (colorTilePtr[srcIndex+1].Color565);
+				expandedUserColorLinePtr[u].blendFromui (color0, color1, srcIndexPixel&0xff);
+				// Compute current TLI color
+				color0= colorTLIPtr[srcIndex];
+				color1= colorTLIPtr[srcIndex+1];
+				expandedTLIColorLinePtr[u].blendFromui (color0, color1, srcIndexPixel&0xff);
+
+				// Next index
+				srcIndexPixel+=expandFactor;
+			}
 		}
 
 		// Last pixel
@@ -719,6 +1281,10 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 		colorTilePtr+=pLightmap->Width;
 		colorTLIPtr+=pLightmap->Width;
 	}
+
+	// stop MMX if used
+	if(asmMMX)
+		NL3D_asmEndMMX();
 
 	// ** Expand on V
 	//=========
@@ -735,11 +1301,8 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 	expandedTLIColorLinePtr= expandedTLIColorLine;
 
 	// Copy first row
-	for (u=0; u<dstWidth; u++)
-	{
-		expandedUserColorPtr[u]= expandedUserColorLinePtr[u];
-		expandedTLIColorPtr[u]= expandedTLIColorLinePtr[u];
-	}
+	memcpy(expandedUserColorPtr, expandedUserColorLinePtr, dstWidth*sizeof(CRGBA));
+	memcpy(expandedTLIColorPtr, expandedTLIColorLinePtr, dstWidth*sizeof(CRGBA));
 
 	// Next line
 	expandedUserColorPtr+=dstWidth;
@@ -760,11 +1323,23 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 		CRGBA *colorTLIPtr0= expandedTLIColorLine + index*dstWidth;
 		CRGBA *colorTLIPtr1= expandedTLIColorLine + (index+1)*dstWidth;
 
-		// Copy the row
-		for (u=0; u<dstWidth; u++)
+		// MMX implementation.
+		//-------------
+		if(asmMMX)
 		{
-			expandedUserColorPtr[u].blendFromui (colorTilePtr0[u], colorTilePtr1[u], indexPixel&0xff);
-			expandedTLIColorPtr[u].blendFromui (colorTLIPtr0[u], colorTLIPtr1[u],  indexPixel&0xff);
+			NL3D_asmBlendLines(expandedUserColorPtr, colorTilePtr0, colorTilePtr1, indexPixel, dstWidth);
+			NL3D_asmBlendLines(expandedTLIColorPtr, colorTLIPtr0, colorTLIPtr1, indexPixel, dstWidth);
+		}
+		// C implementation
+		//-------------
+		else
+		{
+			// Copy the row
+			for (u=0; u<dstWidth; u++)
+			{
+				expandedUserColorPtr[u].blendFromui (colorTilePtr0[u], colorTilePtr1[u], indexPixel&0xff);
+				expandedTLIColorPtr[u].blendFromui (colorTLIPtr0[u], colorTLIPtr1[u],  indexPixel&0xff);
+			}
 		}
 
 		// Next index
@@ -775,6 +1350,10 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 		expandedTLIColorPtr+=dstWidth;
 	}
 
+	// stop MMX if used
+	if(asmMMX)
+		NL3D_asmEndMMX();
+
 	// Last row
 	// Destination  pointer
 	expandedUserColorPtr= expandedUserColor + dstWidth*(dstHeight-1);
@@ -784,12 +1363,8 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 	expandedTLIColorLinePtr= expandedTLIColorLine + dstWidth*(pLightmap->Height-1);
 
 	// Copy last row
-	for (u=0; u<dstWidth; u++)
-	{
-		expandedUserColorPtr[u]= expandedUserColorLinePtr[u];
-		expandedTLIColorPtr[u]= expandedTLIColorLinePtr[u];
-	}
-
+	memcpy(expandedUserColorPtr, expandedUserColorLinePtr, dstWidth*sizeof(CRGBA));
+	memcpy(expandedTLIColorPtr, expandedTLIColorLinePtr, dstWidth*sizeof(CRGBA));
 
 	// *** Now combine with shading
 	//=========
@@ -812,26 +1387,38 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 			// For each line
 			for (v=0; v<dstHeight; v++)
 			{
-				// For each lumel block
-				for (u=0; u<dstWidth; u++)
+				// MMX implementation.
+				//-------------
+				if(asmMMX)
 				{
-					// index
-					uint lumelIndex=u<<2;
+					NL3D_asmAssembleShading1x1(lineLumelPtr, pLightmap->StaticLightColor, lineTLIPtr, lineUSCPtr, lineDestPtr,
+						lineWidth, dstWidth);
+				}
+				// C implementation
+				//-------------
+				else
+				{
+					// For each lumel block
+					for (u=0; u<dstWidth; u++)
+					{
+						// index
+						uint lumelIndex=u<<2;
 
-					// Shading is filtred
-					uint shading=
-						 ((uint)lineLumelPtr[lumelIndex]+(uint)lineLumelPtr[lumelIndex+1]+(uint)lineLumelPtr[lumelIndex+2]+(uint)lineLumelPtr[lumelIndex+3]
-						+(uint)lineLumelPtr[lumelIndex+lineWidth]+(uint)lineLumelPtr[lumelIndex+1+lineWidth]+(uint)lineLumelPtr[lumelIndex+2+lineWidth]+(uint)lineLumelPtr[lumelIndex+3+lineWidth]
-						+(uint)lineLumelPtr[lumelIndex+lineWidthx2]+(uint)lineLumelPtr[lumelIndex+1+lineWidthx2]+(uint)lineLumelPtr[lumelIndex+2+lineWidthx2]+(uint)lineLumelPtr[lumelIndex+3+lineWidthx2]
-						+(uint)lineLumelPtr[lumelIndex+lineWidthx3]+(uint)lineLumelPtr[lumelIndex+1+lineWidthx3]+(uint)lineLumelPtr[lumelIndex+2+lineWidthx3]+(uint)lineLumelPtr[lumelIndex+3+lineWidthx3]
-						)>>4;
+						// Shading is filtred
+						uint shading=
+							 ((uint)lineLumelPtr[lumelIndex]+(uint)lineLumelPtr[lumelIndex+1]+(uint)lineLumelPtr[lumelIndex+2]+(uint)lineLumelPtr[lumelIndex+3]
+							+(uint)lineLumelPtr[lumelIndex+lineWidth]+(uint)lineLumelPtr[lumelIndex+1+lineWidth]+(uint)lineLumelPtr[lumelIndex+2+lineWidth]+(uint)lineLumelPtr[lumelIndex+3+lineWidth]
+							+(uint)lineLumelPtr[lumelIndex+lineWidthx2]+(uint)lineLumelPtr[lumelIndex+1+lineWidthx2]+(uint)lineLumelPtr[lumelIndex+2+lineWidthx2]+(uint)lineLumelPtr[lumelIndex+3+lineWidthx2]
+							+(uint)lineLumelPtr[lumelIndex+lineWidthx3]+(uint)lineLumelPtr[lumelIndex+1+lineWidthx3]+(uint)lineLumelPtr[lumelIndex+2+lineWidthx3]+(uint)lineLumelPtr[lumelIndex+3+lineWidthx3]
+							)>>4;
 
-					// Add shading with TLI color.
-					CRGBA	col;
-					col.addRGBOnly(pLightmap->StaticLightColor[shading], lineTLIPtr[u]);
+						// Add shading with TLI color.
+						CRGBA	col;
+						col.addRGBOnly(pLightmap->StaticLightColor[shading], lineTLIPtr[u]);
 
-					// Mul by the userColor
-					lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
+						// Mul by the userColor
+						lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
+					}
 				}
 
 				// Next line
@@ -855,22 +1442,34 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 			// For each line
 			for (v=0; v<dstHeight; v++)
 			{
-				// For each lumel block
-				for (u=0; u<dstWidth; u++)
+				// MMX implementation.
+				//-------------
+				if(asmMMX)
 				{
-					// index
-					uint lumelIndex=u<<1;
+					NL3D_asmAssembleShading2x2(lineLumelPtr, pLightmap->StaticLightColor, lineTLIPtr, lineUSCPtr, lineDestPtr,
+						lineWidth, dstWidth);
+				}
+				// C implementation
+				//-------------
+				else
+				{
+					// For each lumel block
+					for (u=0; u<dstWidth; u++)
+					{
+						// index
+						uint lumelIndex=u<<1;
 
-					// Shading is filtred
-					uint shading=
-						((uint)lineLumelPtr[lumelIndex]+(uint)lineLumelPtr[lumelIndex+1]+(uint)lineLumelPtr[lumelIndex+lineWidth]+(uint)lineLumelPtr[lumelIndex+1+lineWidth])>>2;
+						// Shading is filtred
+						uint shading=
+							((uint)lineLumelPtr[lumelIndex]+(uint)lineLumelPtr[lumelIndex+1]+(uint)lineLumelPtr[lumelIndex+lineWidth]+(uint)lineLumelPtr[lumelIndex+1+lineWidth])>>2;
 
-					// Add shading with TLI color.
-					CRGBA	col;
-					col.addRGBOnly(pLightmap->StaticLightColor[shading], lineTLIPtr[u]);
+						// Add shading with TLI color.
+						CRGBA	col;
+						col.addRGBOnly(pLightmap->StaticLightColor[shading], lineTLIPtr[u]);
 
-					// Mul by the userColor
-					lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
+						// Mul by the userColor
+						lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
+					}
 				}
 
 				// Next line
@@ -890,28 +1489,165 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 			const uint8 *lineLumelPtr=pLightmap->LumelTile;
 			uint nbTexel=dstWidth*dstHeight;
 
-			// For each line
-			for (u=0; u<nbTexel; u++)
+			// MMX implementation.
+			//-------------
+			if(asmMMX)
 			{
-				// Shading is filtred
-				uint shading=lineLumelPtr[u];
+				NL3D_asmAssembleShading4x4(lineLumelPtr, pLightmap->StaticLightColor, lineTLIPtr, lineUSCPtr, lineDestPtr,
+					nbTexel);
+			}
+			// C implementation
+			//-------------
+			else
+			{
+				// For each pixel
+				for (u=0; u<nbTexel; u++)
+				{
+					// Shading is filtred
+					uint shading=lineLumelPtr[u];
 
-				// Add shading with TLI color.
-				CRGBA	col;
-				col.addRGBOnly(pLightmap->StaticLightColor[shading], lineTLIPtr[u]);
+					// Add shading with TLI color.
+					CRGBA	col;
+					col.addRGBOnly(pLightmap->StaticLightColor[shading], lineTLIPtr[u]);
 
-				// Mul by the userColor
-				lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
+					// Mul by the userColor
+					lineDestPtr[u].modulateFromColorRGBOnly(col, lineUSCPtr[u]);
+				}
 			}
 			break;
 	}
+
+	// stop MMX if used
+	if(asmMMX)
+		NL3D_asmEndMMX();
+
 }
-//#endif // NL_NO_ASM
 
 
 // ***************************************************************************
-// TODO: asm implementation of this function \\//
-//#ifdef NL_NO_ASM
+// ***************************************************************************
+// NL3D_drawFarTileInFar*. C and Asm Part
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+inline	void	NL3D_asmModulateLineColors(CRGBA *dst, const CRGBA *src0, const CRGBA *src1, 
+	uint len, uint	src0DeltaX, uint dstDeltaX)
+{
+	static	uint64	blank= 0;
+	if(len==0)
+		return;
+
+	__asm
+	{
+		movq		mm7, blank
+
+		mov			esi, src0	// esi point to src Pixels
+		mov			edx, src1	// edx point to src lighting pixels
+		mov			edi, dst
+		mov			ecx, len
+		// compute increments for esi and edi
+		mov			eax, src0DeltaX
+		mov			ebx, dstDeltaX
+		sal			eax, 2
+		sal			ebx, 2
+
+	myLoop:
+		// read colors
+		movd		mm0, [esi]
+		movd		mm1, [edx]
+
+		// mul mm0 and mm1
+		punpcklbw	mm0, mm7
+		punpcklbw	mm1, mm7
+		pmullw		mm0, mm1
+		psrlw       mm0, 8
+		// pack
+		packuswb    mm0, mm0
+
+		// out
+		movd		[edi], mm0
+
+		// increment
+		add			esi, eax
+		add			edi, ebx
+		add			edx, 4
+		dec			ecx
+		jnz			myLoop
+	}
+}
+
+
+// ***************************************************************************
+inline	void	NL3D_asmModulateAndBlendLineColors(CRGBA *dst, const CRGBA *src0, const CRGBA *src1, 
+	uint len, uint	src0DeltaX, uint dstDeltaX)
+{
+	static	uint64	blank= 0;
+	static	uint64	one= 0x0100010001000100;
+	if(len==0)
+		return;
+
+	__asm
+	{
+		movq		mm7, blank
+		movq		mm6, one
+
+		mov			esi, src0	// esi point to src Pixels
+		mov			edx, src1	// edx point to src lighting pixels
+		mov			edi, dst
+		mov			ecx, len
+		// compute increments for esi and edi
+		mov			eax, src0DeltaX
+		mov			ebx, dstDeltaX
+		sal			eax, 2
+		sal			ebx, 2
+
+	myLoop:
+		// read colors
+		movd		mm0, [esi]
+		movd		mm1, [edx]
+
+		// save and unpack Alpha. NB: ABGR
+		movq		mm2, mm0
+		psrld		mm2, 24		// mm2= 0000 0000 0000 00AA
+		punpckldq	mm2, mm2	// mm2= 0000 00AA 0000 00AA
+		packssdw	mm2, mm2	// mm2= 00AA 00AA 00AA 00AA
+		// negate with 256.
+		movq		mm3, mm6
+		psubusw		mm3, mm2
+
+		// mul mm0 and mm1
+		punpcklbw	mm0, mm7
+		punpcklbw	mm1, mm7
+		pmullw		mm0, mm1
+		psrlw       mm0, 8
+
+		// Alpha Blend with mm3 and mm2
+		movd		mm1, [edi]	// read dest
+		punpcklbw	mm1, mm7
+		pmullw		mm0, mm2	// mm0= srcColor*A
+		pmullw		mm1, mm3	// mm1= dstColor*(1-A)
+
+		// add and pack
+		paddusw		mm0, mm1
+		psrlw       mm0, 8
+		packuswb    mm0, mm0
+
+		// out
+		movd		[edi], mm0
+
+		// increment
+		add			esi, eax
+		add			edi, ebx
+		add			edx, 4
+		dec			ecx
+		jnz			myLoop
+	}
+}
+
+
+// ***************************************************************************
 void NL3D_drawFarTileInFarTexture (const NL3D_CComputeTileFar* pTileFar)
 {
 	// Pointer of the Src diffuse pixels
@@ -927,27 +1663,39 @@ void NL3D_drawFarTileInFarTexture (const NL3D_CComputeTileFar* pTileFar)
 	int x, y;
 	for (y=0; y<pTileFar->Size; y++)
 	{
-		// Pointer of the source line
-		const CRGBA* pSrcLine=pSrcPixels;
-
-		// Pointer of the source lighting line
-		const CRGBA* pSrcLightingLine=pSrcLightPixels;
-		
-		// Pointer of the destination line
-		CRGBA* pDstLine=pDstPixels;
-
-		// For each pixels on the line
-		for (x=0; x<pTileFar->Size; x++)
+		// MMX implementation
+		//---------
+		if(pTileFar->AsmMMX)
 		{
-			// Read and write a pixel
-			pDstLine->R=(uint8)(((uint)pSrcLine->R*(uint)pSrcLightingLine->R)>>8);
-			pDstLine->G=(uint8)(((uint)pSrcLine->G*(uint)pSrcLightingLine->G)>>8);
-			pDstLine->B=(uint8)(((uint)pSrcLine->B*(uint)pSrcLightingLine->B)>>8);
+			NL3D_asmModulateLineColors(pDstPixels, pSrcPixels, pSrcLightPixels, 
+				pTileFar->Size, pTileFar->SrcDeltaX, pTileFar->DstDeltaX);
+		}
+		// C Implementation.
+		//---------
+		else
+		{
+			// Pointer of the source line
+			const CRGBA* pSrcLine=pSrcPixels;
 
-			// Next pixel
-			pSrcLine+=pTileFar->SrcDeltaX;
-			pSrcLightingLine++;
-			pDstLine+=pTileFar->DstDeltaX;
+			// Pointer of the source lighting line
+			const CRGBA* pSrcLightingLine=pSrcLightPixels;
+			
+			// Pointer of the destination line
+			CRGBA* pDstLine=pDstPixels;
+
+			// For each pixels on the line
+			for (x=0; x<pTileFar->Size; x++)
+			{
+				// Read and write a pixel
+				pDstLine->R=(uint8)(((uint)pSrcLine->R*(uint)pSrcLightingLine->R)>>8);
+				pDstLine->G=(uint8)(((uint)pSrcLine->G*(uint)pSrcLightingLine->G)>>8);
+				pDstLine->B=(uint8)(((uint)pSrcLine->B*(uint)pSrcLightingLine->B)>>8);
+
+				// Next pixel
+				pSrcLine+=pTileFar->SrcDeltaX;
+				pSrcLightingLine++;
+				pDstLine+=pTileFar->DstDeltaX;
+			}
 		}
 
 		// Next line
@@ -955,13 +1703,14 @@ void NL3D_drawFarTileInFarTexture (const NL3D_CComputeTileFar* pTileFar)
 		pSrcLightPixels+=pTileFar->SrcLightingDeltaY;
 		pDstPixels+=pTileFar->DstDeltaY;
 	}
+
+	// stop MMX if used
+	if(pTileFar->AsmMMX)
+		NL3D_asmEndMMX();
 }
-//#endif // NL_NO_ASM
 
 
 // ***************************************************************************
-// TODO: asm implementation of this function \\//
-//#ifdef NL_NO_ASM
 void NL3D_drawFarTileInFarTextureAlpha (const NL3D_CComputeTileFar* pTileFar)
 {
 	// Pointer of the Src pixels
@@ -977,29 +1726,41 @@ void NL3D_drawFarTileInFarTextureAlpha (const NL3D_CComputeTileFar* pTileFar)
 	int x, y;
 	for (y=0; y<pTileFar->Size; y++)
 	{
-		// Pointer of the source line
-		const CRGBA* pSrcLine=pSrcPixels;
-
-		// Pointer of the source lighting line
-		const CRGBA* pSrcLightingLine=pSrcLightPixels;
-
-		// Pointer of the Dst pixels
-		CRGBA* pDstLine=pDstPixels;
-
-		// For each pixels on the line
-		for (x=0; x<pTileFar->Size; x++)
+		// MMX implementation
+		//---------
+		if(pTileFar->AsmMMX)
 		{
-			// Read and write a pixel
-			register uint alpha=pSrcLine->A;
-			register uint oneLessAlpha=255-pSrcLine->A;
-			pDstLine->R=(uint8)(((((uint)pSrcLine->R*(uint)pSrcLightingLine->R)>>8)*alpha+(uint)pDstLine->R*oneLessAlpha)>>8);
-			pDstLine->G=(uint8)(((((uint)pSrcLine->G*(uint)pSrcLightingLine->G)>>8)*alpha+(uint)pDstLine->G*oneLessAlpha)>>8);
-			pDstLine->B=(uint8)(((((uint)pSrcLine->B*(uint)pSrcLightingLine->B)>>8)*alpha+(uint)pDstLine->B*oneLessAlpha)>>8);
+			NL3D_asmModulateAndBlendLineColors(pDstPixels, pSrcPixels, pSrcLightPixels, 
+				pTileFar->Size, pTileFar->SrcDeltaX, pTileFar->DstDeltaX);
+		}
+		// C Implementation.
+		//---------
+		else
+		{
+			// Pointer of the source line
+			const CRGBA* pSrcLine=pSrcPixels;
 
-			// Next pixel
-			pSrcLine+=pTileFar->SrcDeltaX;
-			pSrcLightingLine++;
-			pDstLine+=pTileFar->DstDeltaX;
+			// Pointer of the source lighting line
+			const CRGBA* pSrcLightingLine=pSrcLightPixels;
+
+			// Pointer of the Dst pixels
+			CRGBA* pDstLine=pDstPixels;
+
+			// For each pixels on the line
+			for (x=0; x<pTileFar->Size; x++)
+			{
+				// Read and write a pixel
+				register uint alpha=pSrcLine->A;
+				register uint oneLessAlpha=255-pSrcLine->A;
+				pDstLine->R=(uint8)(((((uint)pSrcLine->R*(uint)pSrcLightingLine->R)>>8)*alpha+(uint)pDstLine->R*oneLessAlpha)>>8);
+				pDstLine->G=(uint8)(((((uint)pSrcLine->G*(uint)pSrcLightingLine->G)>>8)*alpha+(uint)pDstLine->G*oneLessAlpha)>>8);
+				pDstLine->B=(uint8)(((((uint)pSrcLine->B*(uint)pSrcLightingLine->B)>>8)*alpha+(uint)pDstLine->B*oneLessAlpha)>>8);
+
+				// Next pixel
+				pSrcLine+=pTileFar->SrcDeltaX;
+				pSrcLightingLine++;
+				pDstLine+=pTileFar->DstDeltaX;
+			}
 		}
 
 		// Next line
@@ -1007,8 +1768,11 @@ void NL3D_drawFarTileInFarTextureAlpha (const NL3D_CComputeTileFar* pTileFar)
 		pSrcLightPixels+=pTileFar->SrcLightingDeltaY;
 		pDstPixels+=pTileFar->DstDeltaY;
 	}
+
+	// stop MMX if used
+	if(pTileFar->AsmMMX)
+		NL3D_asmEndMMX();
 }
-//#endif // NL_NO_ASM
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.4 2002/04/03 17:00:40 berenguier Exp $
+ * $Id: texture_far.h,v 1.5 2002/08/21 17:18:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,6 +214,9 @@ public:
 
 	// Size
 	sint32						Size;
+
+	// Can the compute be done in MMX
+	bool						AsmMMX;
 };
 
 // For NL3D_expandLightmap external call

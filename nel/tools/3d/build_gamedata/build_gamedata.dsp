@@ -1127,5 +1127,57 @@ SOURCE=.\processes\zone_light\export_build_data.bat
 SOURCE=.\processes\zone_light\sh\install.sh
 # End Source File
 # End Group
+# Begin Group "CLodBank Files"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\processes\clodbank\0_setup.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\1_clean.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\2_export.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\3_build.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\4_install.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\sh\build.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\maxscript\clod_export.ms
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\export_build_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\sh\install.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\clodbank\cfg\local_path.cfg
+# End Source File
+# End Group
 # End Target
 # End Project

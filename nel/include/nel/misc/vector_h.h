@@ -1,7 +1,7 @@
 /** \file vector_h.h
  * Homogeneous vector
  *
- * $Id: vector_h.h,v 1.2 2000/11/23 16:53:29 cado Exp $
+ * $Id: vector_h.h,v 1.3 2001/06/14 13:36:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,31 @@ public:
 	{
 		return CVector( x, y, z );
 	}
+
+
+	/// @name Misc.
+	//@{
+	bool	operator==(const CVectorH &v) const
+	{
+		return x==v.x && y==v.y && z==v.z && w==v.w;
+	}
+	bool	operator!=(const CVectorH &v) const
+	{
+		return !(*this==v);
+	}
+	/// This operator is here just for map/set insertion (no meaning). comparison order is x,y,z,w.
+	bool	operator<(const CVectorH &v) const
+	{
+		if(x!=v.x)
+			return x<v.x;
+		if(y!=v.y)
+			return y<v.y;
+		if(z!=v.z)
+			return z<v.z;
+		return w<v.w;
+	}
+
+	//@}
 
 };
 

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: commands.cpp,v 1.11 2001/07/18 11:45:45 lecroart Exp $
+ * $Id: commands.cpp,v 1.12 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,10 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+//
+// Includes
+//
 
 #include <list>
 
@@ -44,43 +48,50 @@
 #include "client.h"
 #include "interface.h"
 
+//
+// Namespaces
+//
+
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 
-list <string> StoredLines;
-uint32 NbStoredLines = 100;
+//
+// Variables
+//
 
 CLog CommandsLog;
 
-// these variables are set with the config file
+static list <string> StoredLines;
+static uint32 NbStoredLines = 100;
 
-float CommandsBoxX, CommandsBoxY, CommandsBoxWidth;
-float CommandsBoxBorder;
-int CommandsNbLines;
-float CommandsLineHeight;
-int CommandsFontSize;
-CRGBA CommandsBackColor, CommandsFrontColor;
+// These variables are automatically set with the config file
 
+static float CommandsBoxX, CommandsBoxY, CommandsBoxWidth;
+static float CommandsBoxBorder;
+static int CommandsNbLines;
+static float CommandsLineHeight;
+static int CommandsFontSize;
+static CRGBA CommandsBackColor, CommandsFrontColor;
+
+//
+// Functions
+//
+
+// Display a string to the commands interface
 void addLine (const string &line)
 {
-	// add line
-
+	// Add the line
 	StoredLines.push_back (line);
 
-	// clear old lines
-
+	// Clear old lines if too much lines are stored
 	while (StoredLines.size () > NbStoredLines)
 	{
 		StoredLines.pop_front ();
 	}
 }
 
-/*
- * CChatDisplayer
- *
- * Log format : "<LogType>: <Msg>"
- */
+// Display used to display on the commands interface
 class CCommandsDisplayer : public IDisplayer
 {
 	virtual void doDisplay (const TDisplayInfo &args, const char *message)
@@ -102,84 +113,93 @@ class CCommandsDisplayer : public IDisplayer
 	}
 };
 
+// Instance of the displayer
+static CCommandsDisplayer CommandsDisplayer;
 
-CCommandsDisplayer CommandsDisplayer;
-
+// Check if the user line is a command or not (a commands precede by a '/')
 bool commandLine (const string &str)
 {
 	string command = "";
 
 	if (str[0]=='/')
 	{
+		// If it's a command call it
 		command = str.substr(1);
-
 		// add the string in to the chat
 		addLine (string ("command> ") + str);
-
 		ICommand::execute (command, CommandsLog);
+		return true;
 	}
 	else
+	{
 		return false;
-
-	return true;
-
+	}
 }
 
+// Manage the user keyboard input
 class CCommandsListener : public IEventListener
 {
 	virtual void	operator() ( const CEvent& event )
 	{
-		// ignore keys if interface is open
+		// If the interface is open, ignore keys for the command interface
 		if (interfaceOpen ()) return;
 
+		// Get the key
 		CEventChar &ec = (CEventChar&)event;
 
 		switch ( ec.Char )
 		{
 		case 13 : // RETURN : Send the chat message
-			if ( _Line.size() == 0 )
-				break;
+			
+			// If the line is empty, do nothing
+			if ( _Line.size() == 0 ) break;
 
-			// if, it s a command, execute it and don't send the command
+			// If it's a command, execute it and don't send the command to the network
 			if ( ! commandLine( _Line ) )
 			{
-				// it s a chat line, send  it to the server
+				// If online, send the chat line, otherwise, locally displays it
 				if (isOnline ())
 					sendChatLine (_Line);
 				else
 					addLine (string ("you said> ") + _Line);
 			}
+			// Reset the command line
 			_LastCommand = _Line;
 			_Line = "";
 			_MaxWidthReached = false;
 			break;
 
-		case 8 : // BACKSPACE
+		case 8 : // BACKSPACE : remove the last character
+
 			if ( _Line.size() != 0 )
 			{
 				_Line.erase( _Line.end()-1 );
-				// _MaxWidthReached = false; // no need
 			}
-			break;
-		case 9 : // TAB
-			{
-				if (_Line.empty())
-				{
-					_Line = _LastCommand;
-				}
-				else if (!_Line.empty() && _Line[0] == '/')
-				{
-					string command = _Line.substr(1);
-					ICommand::expand(command);
-					_Line = '/' + command;
-				}
-			}
-			break;
-		case 27 : // ESCAPE
 			break;
 
-		default: 
-			if ( ! _MaxWidthReached )
+		case 9 : // TAB : If it's a command, try to auto complete it
+			
+			if (_Line.empty())
+			{
+				_Line = _LastCommand;
+			}
+			else if (!_Line.empty() && _Line[0] == '/')
+			{
+				string command = _Line.substr(1);
+				ICommand::expand(command);
+				_Line = '/' + command;
+			}
+			break;
+
+		case 27 : // ESCAPE : clear the command
+		
+			_Line = "";
+			_MaxWidthReached = false;
+			break;
+
+		default: // OTHERWISE : add the character to the line
+
+			if (! _MaxWidthReached)
 			{
 				_Line += (char)ec.Char;
 			}
@@ -206,8 +226,10 @@ private:
 	string			_LastCommand;
 };
 
-CCommandsListener CommandsListener;
+// Instance of the listener
+static CCommandsListener CommandsListener;
 
+// This functions is automatically called when the config file changed (dynamically)
 void cbUpdateCommands (CConfigFile::CVar &var)
 {
 	if (var.Name == "CommandsBoxX") CommandsBoxX = var.asFloat ();
@@ -224,14 +246,17 @@ void cbUpdateCommands (CConfigFile::CVar &var)
 
 void	initCommands()
 {
+	// Add the keyboard listener in the event server
 	Driver->EventServer.addListener (EventCharId, &CommandsListener);
 
+	// Add the command displayer to the standard log (to display NeL info)
 	CommandsLog.addDisplayer (&CommandsDisplayer);
 	InfoLog->addDisplayer (&CommandsDisplayer);
 	WarningLog->addDisplayer (&CommandsDisplayer);
 	AssertLog->addDisplayer (&CommandsDisplayer);
 	ErrorLog->addDisplayer (&CommandsDisplayer);
 
+	// Add callback for the config file
 	ConfigFile.setCallback ("CommandsBoxX", cbUpdateCommands);
 	ConfigFile.setCallback ("CommandsBoxY", cbUpdateCommands);
 	ConfigFile.setCallback ("CommandsBoxWidth", cbUpdateCommands);
@@ -242,6 +267,7 @@ void	initCommands()
 	ConfigFile.setCallback ("CommandsFrontColor", cbUpdateCommands);
 	ConfigFile.setCallback ("CommandsFontSize", cbUpdateCommands);
   
+	// Init the config file variable
 	cbUpdateCommands (ConfigFile.getVar ("CommandsBoxX"));
 	cbUpdateCommands (ConfigFile.getVar ("CommandsBoxY"));
 	cbUpdateCommands (ConfigFile.getVar ("CommandsBoxWidth"));
@@ -255,7 +281,7 @@ void	initCommands()
 
 void	updateCommands()
 {
-	// Display
+	// Display the background
 	Driver->setMatrixMode2D11 ();
 	Driver->drawQuad (CommandsBoxX-CommandsBoxBorder, CommandsBoxY-CommandsBoxBorder, CommandsBoxX+CommandsBoxWidth+CommandsBoxBorder, CommandsBoxY + (CommandsNbLines+1) * CommandsLineHeight + CommandsBoxBorder, CommandsBackColor);
 
@@ -264,12 +290,12 @@ void	updateCommands()
 	TextContext->setColor (CommandsFrontColor);
 	TextContext->setFontSize (CommandsFontSize);
 
-	// Output text
+	// Display the user input line
 	string line = string("> ")+CommandsListener.line() + string ("_");
 	TextContext->printfAt (CommandsBoxX, CommandsBoxY + CommandsBoxBorder, line.c_str());
 	CommandsListener.setMaxWidthReached (TextContext->getLastXBound() > CommandsBoxWidth*1.33f); // max is 1.33=4/3
 
-	// display stored lines
+	// Display stored lines
 	float yPos = CommandsBoxY + CommandsBoxBorder;
 	list<string>::reverse_iterator rit = StoredLines.rbegin();
 	for (sint i = 0; i < CommandsNbLines; i++)
@@ -288,4 +314,6 @@ void	clearCommands ()
 
 void	releaseCommands()
 {
+	// Rmove the keyboard listener from the server
+	Driver->EventServer.removeListener (EventCharId, &CommandsListener);
 }

@@ -1,7 +1,7 @@
 /** \file sound.cpp
- * Sound management
+ * Sound interface between the game and NeL
  *
- * $Id: sound.cpp,v 1.1 2001/07/17 13:57:48 lecroart Exp $
+ * $Id: sound.cpp,v 1.2 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,11 @@
  * MA 02111-1307, USA.
  */
 
-#include <math.h>
+//
+// Includes
+//
 
+#include <math.h>
 #include <vector>
 
 #include <nel/misc/vector.h>
@@ -37,15 +40,27 @@
 #include "client.h"
 #include "entities.h"
 
+//
+// Namespaces
+//
+
 using namespace std;
 using namespace NLMISC;
 using namespace NLSOUND;
+
+//
+// Variables
+//
 
 UAudioMixer *AudioMixer = NULL;
 
 TSoundId SoundId;
 
 const vector<TSoundId> *SoundIdArray;
+
+//
+// Functions
+//
 
 void	initSound()
 {

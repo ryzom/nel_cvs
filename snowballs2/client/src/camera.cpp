@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera management
  *
- * $Id: camera.cpp,v 1.11 2001/07/18 13:18:51 legros Exp $
+ * $Id: camera.cpp,v 1.12 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,12 +48,12 @@ UCamera					*Camera = NULL;
 UVisualCollisionEntity	*CamCollisionEntity = NULL;
 
 // The particle system for the snowing effect
-UInstance				*Snow = NULL;
+static UInstance			*Snow = NULL;
 
 // The sky 3D objects
-UScene					*SkyScene = NULL;
-UCamera					*SkyCamera = NULL;
-UInstance				*Sky = NULL;
+static UScene				*SkyScene = NULL;
+static UCamera				*SkyCamera = NULL;
+static UInstance			*Sky = NULL;
 
 void	initCamera()
 {

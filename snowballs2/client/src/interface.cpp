@@ -1,7 +1,7 @@
 /** \file interface.cpp
- * Sound management
+ * Snowballs 2 specific code for managing interface
  *
- * $Id: interface.cpp,v 1.1 2001/07/17 13:57:48 lecroart Exp $
+ * $Id: interface.cpp,v 1.2 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+//
+// Includes
+//
+
 #include <math.h>
 #include <nel/misc/vectord.h>
 #include <nel/misc/event_listener.h>
@@ -39,9 +43,17 @@
 #include "client.h"
 #include "interface.h"
 
+//
+// Namespaces
+//
+
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
+
+//
+// Variables
+//
 
 static string QueryString, AnswerString;
 static float DisplayWidth;
@@ -52,7 +64,11 @@ static sint Prompt;
 
 static uint FontSize = 20;
 
+//
+// Functions
+//
 
+// Class that handle the keyboard input when an interface is displayed (login request for example)
 class CInterfaceListener : public IEventListener
 {
 	virtual void	operator() ( const CEvent& event )
@@ -133,11 +149,13 @@ private:
 	string			_LastCommand;
 };
 
-CInterfaceListener InterfaceListener;
+// Instance of the listener
+static CInterfaceListener InterfaceListener;
 
 
 void	initInterface()
 {
+	// Add the keyboard listener in the event server
 	Driver->EventServer.addListener (EventCharId, &InterfaceListener);
 }
 
@@ -145,7 +163,7 @@ void	updateInterface()
 {
 	if (QueryString.empty()) return;
 
-	// draw overlaped window
+	// Draw background
 	Driver->setMatrixMode2D11 ();
 	Driver->drawQuad (0.5f-DisplayWidth/2.0f, 0.5f-DisplayHeight/2.0f, 0.5f+DisplayWidth/2.0f, 0.5f+DisplayHeight/2.0f, DisplayColor);
 
@@ -154,6 +172,7 @@ void	updateInterface()
 	TextContext->setColor (CRGBA (255,255,255,255));
 	TextContext->setFontSize (FontSize);
 
+	// Display the text
 	string str;
 	float y = (nbLines * FontSize / 2.0f) / 600.0f;
 
@@ -172,8 +191,8 @@ void	updateInterface()
 	}
 	TextContext->printfAt (0.5f, 0.5f+y, str.c_str());
 
+	// Display the user input line
 	y-= (2.0f * FontSize) / 600.0f;
-
 	string str2;
 	switch (Prompt)
 	{
@@ -194,7 +213,8 @@ void	updateInterface()
 
 void	releaseInterface()
 {
-	/// \todo 
+	// Rmove the keyboard listener from the server
+	Driver->EventServer.removeListener (EventCharId, &InterfaceListener);
 }
 
 void	askString (const string &queryString, const string &defaultString, sint prompt, const CRGBA &color)

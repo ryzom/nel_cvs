@@ -1,7 +1,8 @@
 /** \file lens_flare.cpp
- * 
+ * Snowballs 2 specific code for managing the lens flare.
+ * This code was taken from Snowballs 1.
  *
- * $Id: lens_flare.cpp,v 1.2 2001/07/17 17:20:29 lecroart Exp $
+ * $Id: lens_flare.cpp,v 1.3 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +24,10 @@
  * MA 02111-1307, USA.
  */
 
+//
+// Includes
+//
+
 #include <nel/misc/types_nl.h>
 #include <nel/misc/vector.h>
 #include <nel/misc/matrix.h>
@@ -37,10 +42,20 @@
 #include "client.h"
 #include "mouse_listener.h"
 
+//
+// Namespaces
+//
+
 using namespace NLMISC;
 using namespace NL3D;
 using namespace std;
 
+/// If axis segment is longer than this value then no lens flare is displayed
+static const float _MaxLensFlareLenght = 0.4f;
+
+//
+// Functions
+//
 
 /**
  * A lens-flare class
@@ -54,9 +69,6 @@ class CLensFlare
 	NLMISC::CVector _SunDirection;
 
 	float _AlphaCoef;
-
-	/// if axis segment is longer than this value then no lens flare is displayed
-	static const float _MaxLensFlareLenght;
 
 	/// flare
 	struct _CFlare
@@ -113,9 +125,6 @@ public:
 	/// lens flare display function
 	void show();
 };
-
-
-const float CLensFlare::_MaxLensFlareLenght = 0.4f;
 
 
 /*********************************************************\
@@ -192,8 +201,7 @@ void CLensFlare::show()
 	}
 }
 
-
-CLensFlare	*LensFlare; 
+static CLensFlare	*LensFlare = NULL;
 
 void initLensFlare ()
 {

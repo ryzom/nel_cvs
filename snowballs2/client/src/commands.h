@@ -1,7 +1,7 @@
 /** \file commands.h
- * 
  *
- * $Id: commands.h,v 1.5 2001/07/12 17:07:57 lecroart Exp $
+ *
+ * $Id: commands.h,v 1.6 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,23 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+//
+// Includes
+//
+
 #include <string>
 
 #include <nel/misc/log.h>
 
+//
+// External variables
+//
+
 extern NLMISC::CLog CommandsLog;
+
+//
+// External functions
+//
 
 void	initCommands ();
 void	updateCommands ();

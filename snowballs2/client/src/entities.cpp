@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.21 2001/07/18 15:24:26 legros Exp $
+ * $Id: entities.cpp,v 1.22 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@
 #include <nel/pacs/u_global_position.h>
 
 
+
 #include "client.h"
 #include "entities.h"
 #include "pacs.h"
@@ -67,6 +68,8 @@ using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 using namespace NLPACS;
+
+map<uint32, CEntity> Entities;
 
 // The collision bits used by pacs (dynamic collisions)
 enum
@@ -242,8 +245,9 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 	else
 		entity.Instance->setPos (startPosition);
 
-	if (entity.Source != NULL)
-		entity.Source->setPosition (startPosition);
+// todo sound
+//	if (entity.Source != NULL)
+//		entity.Source->setPosition (startPosition);
 
 	if (entity.Particule != NULL)
 		entity.Particule->setPos (startPosition);
@@ -383,7 +387,6 @@ void stateNormal (CEntity &entity)
 	CVector	pDeltaOri = pDelta;
 	pDelta.z = 0.0f;
 
-/// \todo remove when server entities will work
 	// find a new random server position
 	if (entity.Type == CEntity::Other && entity.AutoMove && pDelta.norm() < 0.1f)
 	{
@@ -398,10 +401,7 @@ void stateNormal (CEntity &entity)
 	else if (entity.Type == CEntity::Snowball && entity.AutoMove && pDelta.norm() < 0.1f)
 	{
 		removeEntity(entity.Id);
-
 	}
-/// \todo end of the remove block when server entities will work
-
 
 	if (entity.Type == CEntity::Self)
 	{
@@ -654,10 +654,9 @@ void updateEntities ()
 			}
 		}
 
-		if (entity.Source != NULL)
-		{
-			entity.Source->setPosition (entity.Position);
-		}
+// todo sound
+//		if (entity.Source != NULL)
+//			entity.Source->setPosition (entity.Position);
 
 		if (entity.Particule != NULL)
 		{

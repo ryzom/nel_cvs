@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.34 2001/07/18 12:16:21 legros Exp $
+ * $Id: client.cpp,v 1.35 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,27 +33,22 @@
 #include <windows.h>
 #endif
 
-#include <nel/misc/command.h>
-#include <nel/misc/debug.h>
-#include <nel/misc/path.h>
-#include <nel/misc/i18n.h>
+#include <string>
+
 #include <nel/misc/config_file.h>
+#include <nel/misc/path.h>
 #include <nel/misc/vectord.h>
 #include <nel/misc/time_nl.h>
-
-#include <string>
-#include <deque>
+#include <nel/misc/command.h>
+#include <nel/misc/file.h>
 
 #include <nel/3d/u_camera.h>
 #include <nel/3d/u_driver.h>
-#include <nel/3d/u_text_context.h>
-#include <nel/3d/u_instance.h>
 #include <nel/3d/u_scene.h>
-//#include <nel/3d/u_3d_mouse_listener.h>
+#include <nel/3d/u_instance.h>
+#include <nel/3d/u_text_context.h>
 #include <nel/3d/u_material.h>
-#include <nel/3d/u_landscape.h>
-
-#include <nel/pacs/u_move_primitive.h>
+#include <nel/3d/u_texture.h>
 
 #include <nel/net/login_client.h>
 
@@ -69,6 +64,11 @@
 #include "lens_flare.h"
 #include "mouse_listener.h"
 #include "radar.h"
+#include "compass.h"
+
+//
+// Namespaces
+//
 
 using namespace std;
 using namespace NLMISC;
@@ -79,31 +79,362 @@ using namespace NLNET;
 // Globals
 //
 
-CConfigFile ConfigFile;
+// This class contains all variables that are in the client.cfg
+CConfigFile			 ConfigFile;
 
+// The 3d driver
 UDriver				*Driver = NULL;
-UScene				*Scene = NULL;
-UInstance			*Cube = NULL;
 
+// This is the main scene
+UScene				*Scene = NULL;
+
+// This class is used to handle mouse/keyboard input for camera movement
 C3dMouseListener	*MouseListener = NULL;
 
+// This variable is used to display text on the screen
 UTextContext		*TextContext = NULL;
 
 // The previous and current frame dates
-TTime				LastTime, 
-					NewTime;
-
+TTime				 LastTime, NewTime;
 
 // true if you want to exit the main loop
-bool				NeedExit = false;
+static bool			 NeedExit = false;
 
-bool				ShowCommands;
+// true if the commands (chat) interface must be display. This variable is set automatically with the config file
+static bool			 ShowCommands;
 
-bool				CaptureState = false;
+// if true, the mouse can't go out the client window (work only on Windows)
+static bool			 CaptureState = false;
 
+//
+// Prototypes
+//
 
-uint loginState = 0;
-string login;
+void startLoginInterface ();
+void updateLoginInterface ();
+
+//
+// Functions
+//
+
+//
+// Main
+//
+
+#if defined(NL_OS_WINDOWS) && defined (NL_RELEASE)
+int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdline, int nCmdShow)
+#else
+int main(int argc, char **argv)
+#endif
+{
+	nlinfo ("Starting Snowballs 2");
+
+	// Load config file
+	ConfigFile.load ("client.cfg");
+
+	// Set the ShowCommands with the value set in the clietn config file
+	ShowCommands = ConfigFile.getVar("ShowCommands").asInt () == 1;
+
+	// Add different path for automatic file lookup
+	string dataPath = ConfigFile.getVar("DataPath").asString ();
+	if (dataPath[dataPath.size()-1] != '/') dataPath += '/';
+	CPath::addSearchPath (dataPath);
+	CPath::addSearchPath (dataPath + "zones/");
+	CPath::addSearchPath (dataPath + "tiles/");
+	CPath::addSearchPath (dataPath + "shapes/");
+	CPath::addSearchPath (dataPath + "maps/");
+	CPath::addSearchPath (dataPath + "pacs/");
+	CPath::addSearchPath (dataPath + "anims/");
+
+	// Create a driver
+	Driver = UDriver::createDriver();
+
+	// Create the window with config file values
+	Driver->setDisplay (UDriver::CMode(ConfigFile.getVar("ScreenWidth").asInt(), 
+									   ConfigFile.getVar("ScreenHeight").asInt(),
+									   ConfigFile.getVar("ScreenDepth").asInt(),
+									   ConfigFile.getVar("ScreenFull").asInt()==0));
+
+	// Set the cache size for the font manager (in bytes)
+	Driver->setFontManagerMaxMemory (2000000);
+
+	// Init the mouse so it's trapped by the main window.
+	Driver->showCursor(false);
+	Driver->setCapture(true);
+	Driver->setMousePos(0.5f, 0.5f);
+
+	// Create a Text context for later text rendering
+	TextContext = Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
+
+	// Create a scene
+	Scene = Driver->createScene();
+
+	// Init the landscape using the previously created UScene
+	initLandscape();
+
+	// Init the pacs
+	initPACS();
+
+	// Init the aiming system
+	initAiming();
+
+	// Init the user camera
+	initCamera();
+
+	// Create a 3D mouse listener
+	MouseListener = new C3dMouseListener();
+	MouseListener->addToServer(Driver->EventServer);
+	MouseListener->setCamera(Camera);
+	MouseListener->setHotSpot (CVectorD (0,0,0));
+	MouseListener->setFrustrum (Camera->getFrustum());
+	MouseListener->setMatrix (Camera->getMatrix());
+	MouseListener->setSpeed(PlayerSpeed);
+	initMouseListenerConfig();
+
+	// Init interface
+	initInterface();
+
+	// Init radar
+	initRadar();
+
+	// Init Compass
+	initCompass();
+
+	// Init sound control
+	initSound();
+
+	// Init the command control
+	initCommands ();
+
+	// Init the entities prefs
+	initEntities();
+
+	// Init animation system
+	initAnimation ();
+
+	// Init the lens flare
+	initLensFlare ();
+
+	// Creates the self entity
+	addEntity(0xFFFFFFFF, CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
+												 ConfigFile.getVar("StartPoint").asFloat(1),
+												 ConfigFile.getVar("StartPoint").asFloat(2)),
+										 CVector(ConfigFile.getVar("StartPoint").asFloat(0),
+												 ConfigFile.getVar("StartPoint").asFloat(1),
+												 ConfigFile.getVar("StartPoint").asFloat(2)));
+
+	// Init the network structure
+	initNetwork();
+
+	// Display the first line
+	nlinfo ("Welcome to Snowballs 2");
+
+	// Get the current time
+	NewTime = CTime::getLocalTime();
+
+	// If auto login, we launch the login request interface
+	if (ConfigFile.getVar("AutoLogin").asInt() == 1)
+		startLoginInterface ();
+
+	while ((!NeedExit) && Driver->isActive())
+	{
+		// Update the login request interface
+		updateLoginInterface ();
+		
+		// Clear all buffers
+		Driver->clearBuffers ();
+
+		// Update the time counters
+		LastTime = NewTime;
+		NewTime = CTime::getLocalTime();
+
+		// Update animation
+		updateAnimation ();
+
+		// Update all entities positions
+		MouseListener->updateKeys();
+		updateEntities();
+
+		// setup the camera
+		// -> first update camera position directly from the mouselistener
+		// -> then update stuffs linked to the camera (snow, sky, lens flare etc.)
+		MouseListener->updateCamera();
+		updateCamera();
+
+		// Update the landscape
+		updateLandscape ();
+
+		// Update the sound
+		updateSound ();
+
+		// Set new animation date
+		Scene->animate (float(NewTime)/1000);
+
+		// Render the sky scene before the main scene
+		updateSky ();
+
+		// Render
+		Scene->render ();
+
+		// Render the lens flare
+		updateLensFlare ();
+
+		// Update the compass
+		updateCompass ();
+
+		// Update the commands panel
+		if (ShowCommands) updateCommands ();
+
+		// Update the radar
+		updateRadar ();
+
+		// Render the name on top of the other players
+		renderEntitiesNames();
+
+		// Update interface
+		updateInterface ();
+
+		// Display if we are online or offline
+		TextContext->setHotSpot (UTextContext::TopRight);
+		TextContext->setColor (isOnline()?CRGBA(0, 255, 0):CRGBA(255, 0, 0));
+		TextContext->setFontSize (18);
+		TextContext->printfAt (0.99f, 0.99f, isOnline()?"Online":"Offline");
+
+		// Display the frame rate
+		uint32 dt = (uint32)(NewTime-LastTime);
+		float fps = 1000.0f/(float)dt;
+		TextContext->setHotSpot (UTextContext::TopLeft);
+		TextContext->setColor (CRGBA(255, 255, 255, 255));
+		TextContext->setFontSize (14);
+		TextContext->printfAt (0.01f, 0.99f, "%.2ffps %ums", fps, dt);
+
+		// Update network messages
+		updateNetwork ();
+
+		// Swap 3d buffers
+		Driver->swapBuffers ();
+
+		// Pump user input messages
+		Driver->EventServer.pump();
+
+		// Manage the keyboard
+
+		if (Driver->AsyncListener.isKeyDown (KeySHIFT) && Driver->AsyncListener.isKeyDown (KeyESCAPE))
+		{
+			// Shift Escape -> quit
+			NeedExit = true;
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF1))
+		{
+			// F1 -> Display the login request interface (to go online)
+			if (!isOnline())
+				startLoginInterface ();
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF2))
+		{
+			// F2 -> disconnect if online (to go offline)
+			if (isOnline())
+				Connection->disconnect ();
+		}
+		else if(Driver->AsyncListener.isKeyDown(KeyF3))
+		{
+			// F3 -> radar zoom out
+			RadarDistance += 50;
+		}
+		else if(Driver->AsyncListener.isKeyDown(KeyF4))
+		{
+			// F4 -> radar zoom in
+			RadarDistance -= 50;
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF5))
+		{
+			// F5 -> display/hide the commands (chat) interface
+			ShowCommands = !ShowCommands;
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF6))
+		{
+			// F6 -> display/hide the radar interface
+			RadarState = (RadarState+1)%3;
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF8))
+		{
+			// F8 -> clear the command (chat) output
+			clearCommands ();
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF9))
+		{
+			// F9 -> release/capture the mouse cursor
+			if (!CaptureState)
+			{
+				Driver->setCapture(false);
+				Driver->showCursor(true);
+				MouseListener->removeFromServer(Driver->EventServer);
+			}
+			else
+			{
+				Driver->setCapture(true);
+				Driver->showCursor(false);
+				MouseListener->addToServer(Driver->EventServer);
+			}
+			CaptureState = !CaptureState;
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF11))
+		{
+			// F11 -> reset the PACS global position of the self entity (in case of a pacs failure :-\)
+			if (Self != NULL)
+				resetEntityPosition(Self->Id);
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF12))
+		{
+			// F12 -> take a screenshot
+			CBitmap btm;
+			Driver->getBuffer (btm);
+			string filename = CFile::findNewFile ("screenshot.tga");
+			COFile fs (filename);
+			btm.writeTGA (fs,24,true);
+			nlinfo("Screenshot '%s' saved", filename.c_str());
+		}
+
+		// Check if the config file was modified by another program
+		CConfigFile::checkConfigFiles ();
+	}
+
+	// Release the mouse cursor
+	if (CaptureState)
+	{
+		Driver->setCapture(false);
+		Driver->showCursor(true);
+	}
+
+	// Release all before quit
+
+	releaseLensFlare ();
+	releaseRadar ();
+	releaseCompass ();
+	releaseInterface ();
+	releaseNetwork ();
+	releaseAnimation ();
+	releaseAiming();
+	releasePACS();
+	releaseLandscape();
+	releaseSound ();
+
+	// Release the mouse listener
+	MouseListener->removeFromServer(Driver->EventServer);
+	delete MouseListener;
+
+	// Release the 3d driver
+	delete Driver;
+
+	// Exit
+	return EXIT_SUCCESS;
+}
+
+//
+// Login procedure
+//
+static uint loginState = 0;
+static string login;
 
 void startLoginInterface ()
 {
@@ -183,287 +514,8 @@ void updateLoginInterface ()
 	}
 }
 
-//
-// Main
-//
 
-#if defined(NL_OS_WINDOWS) && defined (NL_RELEASE)
-int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR cmdline, int nCmdShow)
-#else
-int main(int argc, char **argv)
-#endif
-{
-	nlinfo ("Starting Snowballs 2");
-
-	// Load config file
-
-	ConfigFile.load ("client.cfg");
-
-	ShowCommands = ConfigFile.getVar("ShowCommands").asInt () == 1;
-
-	// Manage paths
-
-	string dataPath = ConfigFile.getVar("DataPath").asString ();
-	if (dataPath[dataPath.size()-1] != '/') dataPath += '/';
-	CPath::addSearchPath (dataPath);
-	CPath::addSearchPath (dataPath + "zones/");
-	CPath::addSearchPath (dataPath + "tiles/");
-	CPath::addSearchPath (dataPath + "shapes/");
-	CPath::addSearchPath (dataPath + "maps/");
-	CPath::addSearchPath (dataPath + "pacs/");
-	CPath::addSearchPath (dataPath + "anims/");
-
-	// Create a driver
-	Driver = UDriver::createDriver();
-
-	// Text context
-	Driver->setDisplay (UDriver::CMode(640, 480, 0));
-	Driver->setFontManagerMaxMemory (2000000);
-
-	// Init the mouse so it's trapped by the main window.
-	Driver->showCursor(false);
-	Driver->setCapture(true);
-	Driver->setMousePos(0.5f, 0.5f);
-
-	// Create a Text context for later text display
-	TextContext = Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
-
-	// Create a scene
-	Scene = Driver->createScene();
-
-	// Init the landscape using the previously created UScene
-	initLandscape();
-
-	// Init the pacs
-	initPACS();
-
-	// Init the aiming system
-	initAiming();
-
-	// Camera
-	initCamera();
-
-	// Create a 3D mouse listener
-	MouseListener = new C3dMouseListener();
-	MouseListener->addToServer(Driver->EventServer);
-	MouseListener->setCamera(Camera);
-	MouseListener->setHotSpot (CVectorD (0,0,0));
-	MouseListener->setFrustrum (Camera->getFrustum());
-	MouseListener->setMatrix (Camera->getMatrix());
-	MouseListener->setSpeed(PlayerSpeed);
-	initMouseListenerConfig();
-
-	// Init interface
-	initInterface();
-
-	// Init radar
-	initRadar();
-
-	// Init sound control
-	initSound();
-
-	// Init the command control
-	initCommands ();
-
-	// Init the radar
-	initRadar ();
-
-	// Init the entities prefs
-	initEntities();
-
-	// Init animation
-	initAnimation ();
-
-	// Init animation
-	initLensFlare ();
-
-	// Creates a self entity
-	addEntity(0xFFFFFFFF, CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
-												 ConfigFile.getVar("StartPoint").asFloat(1),
-												 ConfigFile.getVar("StartPoint").asFloat(2)),
-										 CVector(ConfigFile.getVar("StartPoint").asFloat(0),
-												 ConfigFile.getVar("StartPoint").asFloat(1),
-												 ConfigFile.getVar("StartPoint").asFloat(2)));
-
-	// Init the network structure
-	initNetwork();
-
-	// Display the firsts line
-	nlinfo ("Welcome to Snowballs 2");
-
-	NewTime = CTime::getLocalTime();
-
-	if (ConfigFile.getVar("AutoLogin").asInt() == 1)
-		startLoginInterface ();
-
-	while ((!NeedExit) && Driver->isActive())
-	{
-		updateLoginInterface ();
-		
-		// Clear
-		Driver->clearBuffers (CRGBA (192,192,200,0));
-
-		// Update the time counters
-		LastTime = NewTime;
-		NewTime = CTime::getLocalTime();
-
-		// Update animation
-		updateAnimation ();
-
-		// Update all entities positions
-		MouseListener->updateKeys();
-		updateEntities();
-
-		// setup the camera
-		// -> first update camera position directly from the mouselistener
-		// -> then update stuffs linked to the camera (snow, sky, lens flare etc.)
-		MouseListener->updateCamera();
-		updateCamera();
-
-		// Update the landscape
-		updateLandscape ();
-
-		// Update the sound
-		updateSound ();
-
-		// Set new animation date
-		Scene->animate (float(NewTime)/1000);
-
-		// Render the sky first
-		updateSky ();
-
-		// Render
-		Scene->render ();
-
-		// Render the lens flare
-		updateLensFlare ();
-
-		// Update the commands panel
-		if (ShowCommands) updateCommands ();
-
-		// Update the radar
-		updateRadar ();
-
-		renderEntitiesNames();
-
-		updateInterface ();
-
-		TextContext->setHotSpot (UTextContext::TopRight);
-		TextContext->setColor (isOnline()?CRGBA(0, 255, 0):CRGBA(255, 0, 0));
-		TextContext->setFontSize (18);
-		TextContext->printfAt (0.99f, 0.99f, isOnline()?"Online":"Offline");
-
-
-		// Swap
-		Driver->swapBuffers ();
-
-		// Pump messages
-		Driver->EventServer.pump();
-
-		// Manage the keyboard
-
-		// Shift Escape -> quit
-		if (Driver->AsyncListener.isKeyDown (KeySHIFT) && Driver->AsyncListener.isKeyDown (KeyESCAPE))
-		{
-			NeedExit = true;
-		}
-		// F3 -> radar zoom out
-		else if(Driver->AsyncListener.isKeyDown(KeyF3))
-		{
-			RadarDistance += 50;
-		}
-		// F4 -> radar zoom in
-		else if(Driver->AsyncListener.isKeyDown(KeyF4))
-		{
-			RadarDistance -= 50;
-		}
-		else if (Driver->AsyncListener.isKeyPushed (KeyF5))
-		{
-			ShowCommands = !ShowCommands;
-		}
-		else if (Driver->AsyncListener.isKeyPushed (KeyF6))
-		{
-			RadarState = (RadarState+1)%3;
-		}
-		else if (Driver->AsyncListener.isKeyPushed (KeyF8))
-		{
-			clearCommands ();
-		}
-		// F9 -> release/capture the mouse
-		else if (Driver->AsyncListener.isKeyPushed (KeyF9))
-		{
-			if (!CaptureState)
-			{
-				Driver->setCapture(false);
-				Driver->showCursor(true);
-				MouseListener->removeFromServer(Driver->EventServer);
-			}
-			else
-			{
-				Driver->setCapture(true);
-				Driver->showCursor(false);
-				MouseListener->addToServer(Driver->EventServer);
-			}
-			CaptureState = !CaptureState;
-		}
-		// F11 -> reset the PACS global position of the self entity (in case of a pacs failure :-\)
-		else if (Driver->AsyncListener.isKeyPushed (KeyF11))
-		{
-			if (Self != NULL)
-				resetEntityPosition(Self->Id);
-		}
-		// F12 -> take a screenshot
-		else if (Driver->AsyncListener.isKeyPushed (KeyF12))
-		{
-			CBitmap btm;
-			Driver->getBuffer (btm);
-			string filename = CFile::findNewFile ("screenshot.tga");
-			COFile fs (filename);
-			btm.writeTGA (fs,24,true);
-			nlinfo("Screenshot '%s' saved", filename.c_str());
-		}
-		else if (Driver->AsyncListener.isKeyPushed (KeyF1))
-		{
-			if (!isOnline())
-				startLoginInterface ();
-		}
-		else if (Driver->AsyncListener.isKeyPushed (KeyF2))
-		{
-			if (isOnline())
-				Connection->disconnect ();
-		}
-
-
-		// Update network messages
-		updateNetwork ();
-
-		// Check if the config file was modified by another program
-		CConfigFile::checkConfigFiles ();
-	}
-
-	// release the mouse
-	Driver->setCapture(false);
-	Driver->showCursor(true);
-
-	// release all before quit
-	releaseLensFlare ();
-	releaseInterface ();
-	releaseNetwork ();
-	releaseAnimation ();
-	releaseAiming();
-	releasePACS();
-	releaseLandscape();
-	releaseAnimation ();
-	releaseSound ();
-
-	MouseListener->removeFromServer(Driver->EventServer);
-	delete MouseListener;
-
-	delete Driver;
-
-	return EXIT_SUCCESS;
-}
-
+// Command to quit the client
 NLMISC_COMMAND(quit,"quit the client","")
 {
 	// check args, if there s not the right number of parameter, return bad

@@ -150,6 +150,14 @@ SOURCE=.\src\commands.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\compass.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\compass.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\entities.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,8 @@
 /** \file radar.h
- * Class used to create and display a Lens-Flare
+ * Snowballs 2 specific code for managing the radar.
+ * This code was taken from Snowballs 1.
  *
- * $Id: radar.h,v 1.1 2001/07/17 17:20:45 lecroart Exp $
+ * $Id: radar.h,v 1.2 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,9 +27,16 @@
 #ifndef RADAR_H
 #define RADAR_H
 
+//
+// External variables
+//
 
 extern uint RadarDistance;
 extern uint RadarState;
+
+//
+// External functions
+//
 
 void initRadar ();
 void updateRadar ();

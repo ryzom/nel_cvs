@@ -1,7 +1,7 @@
 /** \file network.cpp
- * manage the connection to the shard and messages
+ * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.4 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: network.cpp,v 1.5 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include <list>
+//
+// Includes
+//
 
 #include <nel/misc/types_nl.h>
 #include <nel/misc/event_listener.h>
@@ -33,15 +35,30 @@
 
 #include <nel/net/login_client.h>
 
+#include <nel/3d/u_text_context.h>
+
 #include "client.h"
 #include "commands.h"
 #include "network.h"
 
+//
+// Namespaces
+//
+
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
+using namespace NL3D;
+
+//
+// Variables
+//
 
 CCallbackClient *Connection = NULL;
+
+//
+// Functions
+//
 
 static void cbClientDisconnected (TSockId from, void *arg)
 {
@@ -78,6 +95,7 @@ static void cbChat (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 }*/
 
+// Array that contains all callback that could comes from the server
 static TCallbackItem ClientCallbackArray[] =
 {
 	{ "ADD_ENTITY", cbAddEntity },
@@ -126,7 +144,18 @@ void	initNetwork()
 
 void	updateNetwork()
 {
-	Connection->update ();
+	if (Connection != NULL)
+	{
+		TextContext->setHotSpot (UTextContext::MiddleTop);
+		TextContext->setColor (CRGBA(255, 255, 255, 255));
+		TextContext->setFontSize (14);
+		TextContext->printfAt (0.5f, 0.99f, "u:%"NL_I64"u d:%"NL_I64"u / u:%"NL_I64"u d:%"NL_I64"u / u:%"NL_I64"u d:%"NL_I64"u",
+			Connection->bytesUploaded (), Connection->bytesDownloaded (),
+			Connection->getBytesSended (), Connection->getBytesReceived (),
+			Connection->newBytesUploaded (), Connection->newBytesDownloaded ());
+
+		Connection->update ();
+	}
 }
 
 void	releaseNetwork()

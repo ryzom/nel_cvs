@@ -1,7 +1,7 @@
 /** \file animation.cpp
- * manage anmiation
+ * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.3 2001/07/17 16:43:36 legros Exp $
+ * $Id: animation.cpp,v 1.4 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,10 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+//
+// Includes
+//
 
 #include <list>
 
@@ -44,24 +48,47 @@
 #include "entities.h"
 #include "client.h"
 
+//
+// Namespaces
+//
+
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
+
+//
+// Constantes
+//
+
+// Amount of time for the transistion between 2 animations
+CAnimationTime TransitionTime = 0.25f;
+
+//
+// Variables
+//
 
 UAnimationSet *AnimationSet = NULL;
 UPlayListManager *PlayListManager = NULL;
 
 uint WalkAnimId, IdleAnimId;
 
+//
+// Functions
+//
+
 void	playAnimation (CEntity &entity, uint id)
 {
+	// If the first time we play an animation, creates the animation class
 	if (entity.PlayList == NULL)
 		createAnimation (entity);
 
+	// If we try to play the same animation as the current one, do nothing
 	if (entity.CurrentAnimId == id) return;
 
+	// todo a virer
 	nlinfo ("set animation for entity %u from %u to %u", entity.Id, entity.CurrentAnimId, id);
 
+	// Find the new slot for the full animation (0 or 1)
 	uint newSlot, oldSlot;
 	if (entity.NextEmptySlot == 0)
 	{
@@ -72,23 +99,27 @@ void	playAnimation (CEntity &entity, uint id)
 		newSlot = 1; oldSlot = 0; entity.NextEmptySlot = 0;
 	}
 
+	// Get the current time
 	CAnimationTime CurrentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
 
+	// Fill the new animation slot with the new animation to play
 	entity.PlayList->setAnimation (newSlot, id);
 	entity.PlayList->setTimeOrigin (newSlot, CurrentTime);
 	entity.PlayList->setWrapMode (newSlot, UPlayList::Repeat);
 
 	CAnimationTime OldStartWeight, OldEndWeight;
+	CAnimationTime NewStartWeight, NewEndWeight;
+
+	// Get the starting time of the old animation slot
 	entity.PlayList->getStartWeight (oldSlot, OldStartWeight);
 	
+	// Compute the time delta between start of the old animation and now
 	CAnimationTime dt = CurrentTime - OldStartWeight;
 
-	CAnimationTime NewStartWeight;
-	CAnimationTime NewEndWeight;
+	// Compute the new transition value depending of the current time
 
-	CAnimationTime TransitionTime = 0.25f;
+/*	todo si ca marche, il faut le virer
 
-	// compute new transition value depending of the current time
 	if (dt > TransitionTime)
 	{
 		OldStartWeight = CurrentTime;
@@ -105,6 +136,18 @@ void	playAnimation (CEntity &entity, uint id)
 		NewStartWeight = CurrentTime;
 		NewEndWeight = CurrentTime + dt;
 	}
+*/
+	
+	if (dt > TransitionTime)
+		dt = TransitionTime;
+
+	OldStartWeight = CurrentTime - (TransitionTime - dt);
+	OldEndWeight = CurrentTime + dt;
+		
+	NewStartWeight = CurrentTime;
+	NewEndWeight = CurrentTime + dt;
+
+	// Set new weights on the old and the new animation slot
 
 	entity.PlayList->setStartWeight (oldSlot, 1.0f, OldStartWeight);
 	entity.PlayList->setEndWeight (oldSlot, 0.0f, OldEndWeight);
@@ -114,6 +157,7 @@ void	playAnimation (CEntity &entity, uint id)
 	entity.PlayList->setEndWeight (newSlot, 1.0f, OldEndWeight);
 	entity.PlayList->setWeightSmoothness (newSlot, 1.0f);
 
+	// Keep in mind what is the last animation id we set
 	entity.CurrentAnimId = id;
 }
 
@@ -130,6 +174,7 @@ void	deleteAnimation (CEntity &entity)
 {
 	if (entity.PlayList == NULL)
 		return;
+
 	PlayListManager->deletePlayList (entity.PlayList);
 	entity.PlayList= NULL;
 }
@@ -138,6 +183,8 @@ void	deleteAnimation (CEntity &entity)
 void	initAnimation()
 {
 	AnimationSet = Scene->createAnimationSet ();
+	
+	// Add all animations in the animation set
 	IdleAnimId = AnimationSet->addAnimation ("idle_in_place.anim","IDLE");
 	WalkAnimId = AnimationSet->addAnimation ("walk_in_place.anim","WALK");
 	AnimationSet->build ();
@@ -147,10 +194,14 @@ void	initAnimation()
 
 void	updateAnimation()
 {
+	// compute new animation position depending of the current time
 	PlayListManager->animate (float(CTime::getLocalTime ())/1000.0f);
 }
 
 void	releaseAnimation()
 {
-	/// \todo virer les truc pour les anims
+	Scene->deletePlayListManager (PlayListManager);
+
+// The next line doesn t work (say that AnimationSet is not a valid AnimationSet Ptr) so we comment it.
+//	Scene->deleteAnimationSet (AnimationSet);
 }

@@ -1,7 +1,8 @@
 /** \file lens_flare.h
- * Class used to create and display a Lens-Flare
+ * Snowballs 2 specific code for managing the lens flare.
+ * This code was taken from Snowballs 1.
  *
- * $Id: lens_flare.h,v 1.2 2001/07/17 17:20:29 lecroart Exp $
+ * $Id: lens_flare.h,v 1.3 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,10 +27,13 @@
 #ifndef LENS_FLARE_H
 #define LENS_FLARE_H
 
+//
+// External functions
+//
+
 void initLensFlare ();
 void updateLensFlare ();
 void releaseLensFlare ();
-
 
 #endif // LENS_FLARE_H
 

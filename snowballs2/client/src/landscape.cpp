@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape management with user interface
  *
- * $Id: landscape.cpp,v 1.8 2001/07/18 15:24:26 legros Exp $
+ * $Id: landscape.cpp,v 1.9 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,8 +75,12 @@ void	initLandscape()
 										   ConfigFile.getVar("StartPoint").asFloat(2)), 
 								   1000.0f);
 
-	// color of the shadow
-	Landscape->setupStaticLight(CRGBA(241, 226, 244), CRGBA(17, 54, 100), 1.1f);	// Init light color
+	// color of the landscape shadow
+	Landscape->setupStaticLight(
+		CRGBA(ConfigFile.getVar("LandscapeAmbiantColor").asInt(0), ConfigFile.getVar("LandscapeAmbiantColor").asInt(1), ConfigFile.getVar("LandscapeAmbiantColor").asInt(2)),
+		CRGBA(ConfigFile.getVar("LandscapeDiffuseColor").asInt(0), ConfigFile.getVar("LandscapeDiffuseColor").asInt(1), ConfigFile.getVar("LandscapeDiffuseColor").asInt(2)),
+		ConfigFile.getVar("LandscapeMultiplyFactor").asFloat(0));
+
 }
 
 void	updateLandscape()
@@ -122,4 +126,3 @@ CVector	getTarget(const CVector &start, const CVector &step, uint numSteps)
 
 	return testPos;
 }
-

@@ -1,7 +1,8 @@
 /** \file radar.cpp
- * 
+ * Snowballs 2 specific code for managing the radar.
+ * This code was taken from Snowballs 1.
  *
- * $Id: radar.cpp,v 1.2 2001/07/18 11:45:46 lecroart Exp $
+ * $Id: radar.cpp,v 1.3 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +24,12 @@
  * MA 02111-1307, USA.
  */
 
+//
+// Includes
+//
+
+#include <vector>
+
 #include <nel/misc/types_nl.h>
 #include <nel/misc/vector.h>
 #include <nel/misc/matrix.h>
@@ -38,18 +45,35 @@
 #include "mouse_listener.h"
 #include "entities.h"
 
+//
+// Namespaces
+//
+
 using namespace NLMISC;
 using namespace NL3D;
 using namespace std;
 
-float RadarPosX, RadarPosY, RadarWidth, RadarHeight;
-uint RadarDistance, RadarMinDistance, RadarMaxDistance;
-CRGBA RadarBackColor, RadarFrontColor, RadarSelfColor, RadarOtherColor, RadarPlaceColor;
-float RadarEntitySize;
-uint RadarState, RadarFontSize;
-float RadarLittlePosX, RadarLittlePosY, RadarLittleRadius;
+//
+// Variables
+//
 
+// These variables are automatically set with the config file
 
+static	float	RadarPosX, RadarPosY, RadarWidth, RadarHeight;
+static	uint	RadarMinDistance, RadarMaxDistance;
+static	CRGBA	RadarBackColor, RadarFrontColor, RadarSelfColor, RadarOtherColor, RadarPlaceColor;
+static	float	RadarEntitySize;
+static	uint	RadarFontSize;
+static	float	RadarLittlePosX, RadarLittlePosY, RadarLittleRadius;
+
+uint RadarState;
+uint RadarDistance;
+
+//
+// Functions
+//
+
+// Structure for particular places
 struct RadarParticularPlace
 {
 	RadarParticularPlace (float X, float Y, string Name) : x(X), y(Y), name(Name) { }
@@ -57,6 +81,7 @@ struct RadarParticularPlace
 	string name;
 };
 
+// Container for the particular places (automatically filled by the config file)
 vector<RadarParticularPlace> RadarParticularPlaces;
 
 
@@ -310,12 +335,6 @@ void displayRadar ()
 \*********************************************************/
 void displayLittleRadar()
 {
-/*	float radius = 0.1f;
-	float xLeft = 0.9f-radius*3.f/4.f;
-	float xRight = 0.9f+radius*3.f/4.f;
-	float yTop = 0.3f+radius;
-	float yBottom = 0.3f - radius;
-*/
 	float radius = RadarLittleRadius;
 
 	float xLeft = RadarLittlePosX - radius*3.f/4.f;

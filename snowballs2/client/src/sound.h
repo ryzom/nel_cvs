@@ -1,7 +1,7 @@
 /** \file sound.h
- * 
+ * Sound interface between the game and NeL
  *
- * $Id: sound.h,v 1.1 2001/07/17 13:57:48 lecroart Exp $
+ * $Id: sound.h,v 1.2 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,10 @@
 #ifndef SOUND_H
 #define SOUND_H
 
+//
+// Includes
+//
+
 #include <nel/sound/u_audio_mixer.h>
 #include <nel/sound/u_env_sound.h>
 #include <nel/sound/u_listener.h>
@@ -33,15 +37,26 @@
 
 #include "entities.h"
 
+//
+// External variables
+//
+
 extern NLSOUND::UAudioMixer *AudioMixer;
 
 extern NLSOUND::TSoundId SoundId;
 
-void	initSound();
-void	updateSound();
-void	releaseSound();
+//
+// External functions
+//
 
+void	initSound ();
+void	updateSound ();
+void	releaseSound ();
+
+// Set and play a sound on an entity
 void	playSound (CEntity &entity, NLSOUND::TSoundId id);
+
+// Remove the sound system link to the entity
 void	deleteSound (CEntity &entity);
 
 #endif // SOUND_H

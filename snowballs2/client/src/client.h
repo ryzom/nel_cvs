@@ -1,7 +1,7 @@
 /** \file client.h
- * 
+ * Snowballs 2 main file
  *
- * $Id: client.h,v 1.9 2001/07/18 12:16:21 legros Exp $
+ * $Id: client.h,v 1.10 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,16 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+//
+// Includes
+//
+
 #include <nel/misc/config_file.h>
 #include <nel/misc/time_nl.h>
+
+//
+// External definitions
+//
 
 class C3dMouseListener;
 
@@ -38,15 +46,18 @@ namespace NL3D
 	class UTextContext;
 }
 
-extern NLMISC::CConfigFile		ConfigFile;
+//
+// External variables
+//
+
+extern NLMISC::CConfigFile		 ConfigFile;
 
 extern NL3D::UDriver			*Driver;
 extern NL3D::UScene				*Scene;
 extern NL3D::UTextContext		*TextContext;
-//extern NL3D::U3dMouseListener	*MouseListener;
-extern C3dMouseListener	*MouseListener;
+extern C3dMouseListener			*MouseListener;
 
-extern NLMISC::TTime			LastTime, NewTime;
+extern NLMISC::TTime			 LastTime, NewTime;
 
 #endif // CLIENT_H
 

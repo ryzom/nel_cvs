@@ -1,7 +1,7 @@
 /** \file interface.h
- * 
+ * Snowballs 2 specific code for managing interface
  *
- * $Id: interface.h,v 1.1 2001/07/17 13:57:48 lecroart Exp $
+ * $Id: interface.h,v 1.2 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,17 +26,33 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
+//
+// Includes
+//
+
 #include <string>
 
 #include <nel/misc/rgba.h>
 
-void	initInterface();
-void	updateInterface();
-void	releaseInterface();
+//
+// External functions
+//
 
-// prompt -> 0=normal, 1=with_star 2=no_prompt
+void	initInterface ();
+void	updateInterface ();
+void	releaseInterface ();
+
+// Display the interface with a string and waiting a user event
+// queryString -> the string that will be display to the user
+// defaultString -> default prompt string
+// prompt -> set the user prompt format (0=normal, 1=with_star 2=no_prompt)
+// color -> the background coloe
 void	askString (const std::string &queryString, const std::string &defaultString="", sint prompt=0, const NLMISC::CRGBA &color=NLMISC::CRGBA(0,0,64,128));
+
+// Return true if the answer have answered with the user answer in answer string
 bool	haveAnswer (std::string &answer);
+
+// Return true if the interface is open
 bool	interfaceOpen ();
 
 #endif // INTERFACE_H

@@ -1,7 +1,7 @@
 /** \file network.h
- * 
+ * Network interface between the game and NeL
  *
- * $Id: network.h,v 1.4 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: network.h,v 1.5 2001/07/18 16:06:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,12 +35,17 @@ namespace NLNET
 	class CCallbackClient;
 }
 
+// Pointer to the connection to the server
 extern NLNET::CCallbackClient	*Connection;
 
 
-// return true if the client is online
+// Return true if the client is online
 bool	isOnline ();
+
+// Send a chat line to the server
 void	sendChatLine (std::string Line);
+
+// Send the user entity position to the server
 void	sendEntityPos (const CEntity &entity);
 
 void	initNetwork ();

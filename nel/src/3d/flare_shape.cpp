@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.15 2004/06/29 13:42:26 vizerie Exp $
+ * $Id: flare_shape.cpp,v 1.16 2004/07/13 16:15:10 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -73,7 +73,7 @@ void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	// Version 4 : - added occlusion test mesh, size reduction, angle modification when object is occluded
 	//             - added lookat mode for first flare
-	sint ver = f.serialVersion(4);
+	sint ver = f.serialVersion(5);
 	f.serial(_Color, _Persistence, _Spacing);	
 	f.serial(_Attenuable);
 	if (_Attenuable)
@@ -81,6 +81,10 @@ void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_AttenuationRange);
 	}
 	f.serial(_FirstFlareKeepSize);
+	if (f.isReading() && ver <= 4)
+	{
+		_FirstFlareKeepSize = false;
+	}
 	for (uint k = 0; k < MaxFlareNum; ++k)
 	{
 		ITexture *tex = _Tex[k];
@@ -146,7 +150,11 @@ bool				CFlareShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &wor
 	const NLMISC::CVector pos = worldMatrix.getPos();
 	for (std::vector<NLMISC::CPlane>::const_iterator it = pyramid.begin(); it != pyramid.end(); ++it)
 	{
-		if ((*it) * pos > _Size[0]) return false;
+		if ((*it) * pos > _Size[0]) 
+		{
+			//nlwarning("clipped");
+			return false;
+		}
 	}
 	return true;
 }

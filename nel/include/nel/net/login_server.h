@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.6 2002/01/02 14:52:58 lecroart Exp $
+ * $Id: login_server.h,v 1.7 2002/01/14 13:56:24 lecroart Exp $
  * 
  */
 
@@ -35,11 +35,19 @@
 #include "nel/net/callback_server.h"
 #include "nel/net/login_cookie.h"
 
+namespace NLMISC
+{
+	class CConfigFile;
+}
+
 namespace NLNET
 {
 
 /// Callback function type called when a new client is identified (with the login password procedure)
 typedef void (*TNewClientCallback) (TSockId from, const CLoginCookie &cookie);
+
+/// Callback function type called when a client need to be disconnected (double login...)
+typedef void (*TDisconnectClientCallback) (uint32 userId);
 
 class CUdpSock;
 class IDisplayer;
@@ -58,10 +66,14 @@ class CLoginServer {
 public:
 
 	/// Create the connection to the Welcome Service and install callbacks to the callback server (for a TCP cnx)
-	static void init (CCallbackServer &server, TNewClientCallback ncl);
+	/// If the cfg is not NULL, init() will try to find the ListenAddress in it and it will be used to say to the client
+	/// the address to connect to this frontend (using the login system). You can modify this in real time
+	/// The ListenAddress must be in the form of "itsalive.nevrax.org:3800" (ip+port)
+	static void init (CCallbackServer &server, TNewClientCallback ncl, NLMISC::CConfigFile *cfg = NULL);
 
 	/// Create the connection to the Welcome Service for an UDP connection
-	static void init (CUdpSock &server, TNewClientCallback ncl);
+	/// the dc will be call when the Welcome Service decides to disconnect a player (double login...)
+	static void init (CUdpSock &server, TDisconnectClientCallback dc);
 
 	/// Used only in UDP, check if the cookie is valid. return empty string if valid, reason otherwise
 	static std::string CLoginServer::isValidCookie (const CLoginCookie &lc);

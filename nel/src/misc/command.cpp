@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.13 2002/04/11 16:00:58 cado Exp $
+ * $Id: command.cpp,v 1.14 2002/04/11 16:03:01 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -247,7 +247,7 @@ end:
 /*
  * Command name completion.
  * Case-sensitive. Displays the list after two calls with the same non-unique completion.
- * Completes commands used with "help " as well.
+ * Completes commands used with prefixes (such as "help " for example) as well.
  */
 void ICommand::expand (std::string &commandName, NLMISC::CLog &log)
 {

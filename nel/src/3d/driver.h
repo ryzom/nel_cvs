@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.43 2002/10/25 15:52:29 berenguier Exp $
+ * $Id: driver.h,v 1.44 2002/11/14 17:30:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -647,10 +647,14 @@ public:
 	  * \param width				width of the area to be copied.
 	  * \param height				height of the area to be copied.	  	  
 	  */
-	virtual void			copyFrameBufferToTexture(ITexture *tex, uint32 level
-														, uint32 offsetx, uint32 offsety
-													    , uint32 x, uint32 y
-														, uint32 width, uint32 height														
+	virtual void			copyFrameBufferToTexture(ITexture *tex,
+		                                             uint32 level,
+													 uint32 offsetx,
+													 uint32 offsety,
+													 uint32 x,
+													 uint32 y,
+													 uint32 width,
+													 uint32 height														
 													) = 0 ;
 
 	/** fill the RGBA back buffer

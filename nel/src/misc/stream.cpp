@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.21 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: stream.cpp,v 1.22 2002/03/14 18:26:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,7 +156,9 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 				if(ptr==NULL)
 					throw EUnregisteredClass();
 
-				nlassert(CClassRegistry::checkObject(ptr));
+				#ifdef NL_DEBUG
+					nlassert(CClassRegistry::checkObject(ptr));
+				#endif
 
 				// Insert the node.
 				_IdMap.insert( ValueIdMap(node, ptr) );
@@ -202,7 +204,9 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 			// If the Id was not yet registered (ie insert works).
 			if( _IdMap.insert( ValueIdMap(node, ptr) ).second==true )
 			{
-				nlassert(CClassRegistry::checkObject(ptr));
+				#ifdef NL_DEBUG
+					nlassert(CClassRegistry::checkObject(ptr));
+				#endif
 
 				// Write the class name.
 				string	className=ptr->getClassName();

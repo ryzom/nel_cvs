@@ -1,7 +1,7 @@
 /** \file class_registry.cpp
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.cpp,v 1.7 2002/03/11 10:15:36 chafik Exp $
+ * $Id: class_registry.cpp,v 1.8 2002/03/14 18:26:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,9 @@ IClassable	*CClassRegistry::create(const string &className)  throw(ERegistry)
 	{
 		IClassable	*ptr;
 		ptr=it->Creator();
-		nlassert(CClassRegistry::checkObject(ptr));
+		#ifdef NL_DEBUG
+			nlassert(CClassRegistry::checkObject(ptr));
+		#endif
 		return ptr;
 	}
 

@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.28 2001/08/29 12:36:56 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.29 2001/08/29 13:11:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -527,7 +527,8 @@ void CTileBank::removeDisplacementMap (uint mapId)
 	if (mapId!=0)
 	{
 		// Check if another tileSet uses it
-		for (uint tileSet=0; tileSet<_TileSetVector.size(); tileSet++)
+		uint tileSet;
+		for (tileSet=0; tileSet<_TileSetVector.size(); tileSet++)
 		{
 			// It uses it ?
 			for (uint tile=0; tile<CTileSet::CountDisplace; tile++)
@@ -1708,7 +1709,6 @@ void CTileNoise::serial (IStream& f)
 	f.serial (_FileName);
 }
 // ***************************************************************************
-#include <crtdbg.h>
 void CTileNoise::setEmpty ()
 {
 	// Reset it

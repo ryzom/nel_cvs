@@ -115,6 +115,26 @@
 		return $res;
 	}
 
+	function checkShardAccess($id, $clientApplication, $shardId)
+	{
+		global $PHP_SELF;
+		global $DBHost, $DBUserName, $DBPassword, $DBName;
+
+		$link = mysql_connect($DBHost, $DBUserName, $DBPassword) or die ("0:Can't connect to database host:$DBHost user:$DBUserName");
+		mysql_select_db ($DBName) or die ("0:Can't access to the table dbname:$DBName");
+
+		$query = "SELECT * FROM permission WHERE UId='".$id."' AND ClientApplication='".$clientApplication."' AND ShardId='".$shardId."'";;
+		$result = mysql_query ($query) or die ("0:Can't execute the query: ".$query);
+
+		if (mysql_num_rows ($result) > 0)
+		{
+			mysql_close($link);
+			return;
+		}
+		mysql_close($link);
+		die("0:Invalid shard access");
+	}
+
 	function displayAvailableShards($id, $clientApplication, $multiplePatchers)
 	{
 		global $PHP_SELF;
@@ -202,6 +222,7 @@
 		if ($_GET["cmd"] == "login")
 		{
 			// user selected a shard, try to add the user to the shard
+			checkShardAccess($id, $_GET["clientApplication"], $_GET["shardid"]);
 
 			if (askClientConnection($_GET["shardid"], $id, $_GET["login"], $priv, $extended, $res, $patchURLS))
 			{

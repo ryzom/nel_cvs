@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.23 2002/11/29 09:11:05 lecroart Exp $
+ * $Id: i18n.cpp,v 1.24 2003/02/14 14:11:54 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -160,7 +160,7 @@ ucchar CI18N::skipWS(IStream &is, int &line)
 
 void CI18N::createLanguageFile (uint32 lid)
 {
-	nlassert (lid >= 0 && lid < sizeof (_LanguageFiles)/sizeof(_LanguageFiles[0]));
+	nlassert (lid < sizeof (_LanguageFiles)/sizeof(_LanguageFiles[0]));
 	
 	// write the new string in the file
 	COFile cof;
@@ -225,7 +225,7 @@ void CI18N::setPath (const char* str)
 
 void CI18N::load (uint32 lid)
 {
-	nlassert (lid >= 0 && lid < sizeof (_LanguageFiles)/sizeof(_LanguageFiles[0]));
+	nlassert (lid < sizeof (_LanguageFiles)/sizeof(_LanguageFiles[0]));
 	nlassert (_LanguagesNamesLoaded);
 
 	_FileName  = _Path + _LanguageFiles[lid] + ".uxt";

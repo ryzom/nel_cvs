@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.20 2004/02/11 12:00:07 berenguier Exp $
+ * $Id: export_skinning.cpp,v 1.21 2004/10/04 09:01:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1073,14 +1073,14 @@ void CExportNel::addSkeletonBindPos (INode& skinedNode, mapBoneBindPos& boneBind
 						int boneId=localData->GetAssignedBone(vert, bone);
 
 						// Get bone INode*
-						INode *bone=comSkinInterface->GetBone(boneId);
+						INode *boneNode=comSkinInterface->GetBone(boneId);
 
 						// Get the bind matrix of the bone
 						Matrix3 bindPos;
-						comSkinInterface->GetBoneInitTM(bone, bindPos);
+						comSkinInterface->GetBoneInitTM(boneNode, bindPos);
 
 						// Add an entry inthe map
-						boneBindPos.insert (mapBoneBindPos::value_type (bone, bindPos));
+						boneBindPos.insert (mapBoneBindPos::value_type (boneNode, bindPos));
 					}
 				}
 			}

@@ -1,7 +1,7 @@
 /** \file extract_filename.cpp
  * This utility extract filename from any files.
  *
- * $Id: extract_filename.cpp,v 1.3 2003/10/23 18:20:44 distrib Exp $
+ * $Id: extract_filename.cpp,v 1.4 2004/10/04 10:07:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -322,6 +322,7 @@ bool loadConfigFiles (const char *ext, const char *input_files, const char *avai
 	FILE *file = fopen (ext, "r");
 	if (file)
 	{
+		bool cont = true;
 		char name[512];
 		while (fgets (name, 512, file))
 		{
@@ -334,94 +335,104 @@ bool loadConfigFiles (const char *ext, const char *input_files, const char *avai
 			// Lower
 			strlwr (temp);
 
-			// Add the extension
-			extensions.push_back (temp);
+			// Valid extension ?
+			if (temp.size() && temp[0] == '.')
+				// Add the extension
+				extensions.push_back (temp);
+			else
+			{
+				nlwarning ("ERROR extension %s must begin with a '.' character.", temp.c_str());
+				cont = false;
+				break;
+			}
 		}
 
 		// Close 
 		fclose (file);
-
-		// Input files
-		file = fopen (input_files, "r");
-		if (file)
+		if (cont)
 		{
-			char name[512];
-			while (fgets (name, 512, file))
-			{
-				// To string
-				temp = name;
-
-				// Remove return
-				removeChar (temp, '\n');
-
-				// Add the extension
-				inputFiles.insert (temp);
-			}
-
-			// Close 
-			fclose (file);
-
-			// Available files
-			file = fopen (available_files, "r");
+			// Input files
+			file = fopen (input_files, "r");
 			if (file)
 			{
 				char name[512];
 				while (fgets (name, 512, file))
 				{
+					// To string
 					temp = name;
-					temp2 = name;
-
-					// To lower
-					temp = strlwr (temp);
-					temp2 = strlwr (temp2);
-
-					// Remove space						
-					removeBeginEndSpaces (temp);
-					removeBeginEndSpaces (temp2);
 
 					// Remove return
 					removeChar (temp, '\n');
-					removeChar (temp2, '\n');
 
-					// Remove directory
-					removeDirectory (temp);
-					
-					// Good extension
-					if (filterExtension (temp.c_str (), extensions))
-					{
-						if (validateFilename (temp.c_str ()))
-						{
-							// Add the extension
-							if (!availableFiles.insert (map<string, string>::value_type (temp, temp2)).second)
-							{
-								fprintf (stderr, "DUBLING: %s %s\n", temp.c_str (), temp2);
-							}
-						}
-						else
-						{
-							fprintf (stderr, "INVALIDE NAME: %s\n", temp.c_str ());
-						}
-					}
-					else
-					{
-						fprintf (stderr, "INVALIDE EXT: %s\n", temp.c_str ());
-					}
+					// Add the extension
+					inputFiles.insert (temp);
 				}
 
 				// Close 
 				fclose (file);
 
-				// Ok
-				return true;
+				// Available files
+				file = fopen (available_files, "r");
+				if (file)
+				{
+					char name[512];
+					while (fgets (name, 512, file))
+					{
+						temp = name;
+						temp2 = name;
+
+						// To lower
+						temp = strlwr (temp);
+						temp2 = strlwr (temp2);
+
+						// Remove space						
+						removeBeginEndSpaces (temp);
+						removeBeginEndSpaces (temp2);
+
+						// Remove return
+						removeChar (temp, '\n');
+						removeChar (temp2, '\n');
+
+						// Remove directory
+						removeDirectory (temp);
+						
+						// Good extension
+						if (filterExtension (temp.c_str (), extensions))
+						{
+							if (validateFilename (temp.c_str ()))
+							{
+								// Add the extension
+								if (!availableFiles.insert (map<string, string>::value_type (temp, temp2)).second)
+								{
+									fprintf (stderr, "DUBLING: %s %s\n", temp.c_str (), temp2);
+								}
+							}
+							else
+							{
+								fprintf (stderr, "INVALIDE NAME: %s\n", temp.c_str ());
+							}
+						}
+						else
+						{
+							fprintf (stderr, "INVALIDE EXT: %s\n", temp.c_str ());
+						}
+					}
+
+					// Close 
+					fclose (file);
+
+					// Ok
+					return true;
+				}
+				else
+				{
+					nlwarning ("ERROR can't load available files %s", ext);
+				}
 			}
 			else
 			{
-				nlwarning ("ERROR can't load available files %s", ext);
+				nlwarning ("ERROR can't load input files %s", ext);
 			}
-		}
-		else
-		{
-			nlwarning ("ERROR can't load input files %s", ext);
 		}
 	}
 	else
@@ -523,7 +534,7 @@ int main(int argc, char* argv[])
 				vector<char> fileArray;
 
 				// Read the file
-				INFO ("Open file: %s", *ite);
+				INFO ("Open file: %s", ite->c_str());
 				if (readTheFile (ite->c_str(), fileArray))
 				{
 					// Is it a ASCII file ?

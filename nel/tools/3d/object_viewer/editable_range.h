@@ -1,7 +1,7 @@
 /** \file editable_range.h
- * <File description>
+ * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.h,v 1.3 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: editable_range.h,v 1.4 2001/06/25 13:17:02 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,9 @@ public:
 	// empty the values and the slider
 	void emptyDialog(void) ;
 
+	
+	// validate the lower an upper bound of a range from their string representation
+	virtual bool editableRangeValueValidator(const CString &lo, const CString &up) = 0 ;
 
 // Implementation
 protected:
@@ -143,11 +146,56 @@ public:
 /// ctor, it gives the range for the values
 	CEditableRangeT(const std::string &id, T defaultMin, T defaultMax)
 		: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)
+			,_UpperBoundEnabled(false), _LowerBoundEnabled(false)
 	{		
 	}
 	
 	// set an interface of a wrapper  to read / write values in the particle system
 	void setWrapper(IPSWrapper<T> *wrapper) { _Wrapper = wrapper ; }
+
+	/** enable upper bound use (e.g. value must be < or <= upper bound )
+	 *  \param upperBoundExcluded if true then the test is <, otherwise its <=
+	 */
+	void enableUpperBound(T upperBound, bool upperBoundExcluded) 
+	{ 
+		_UpperBoundEnabled = true ;
+		_UpperBoundExcluded = upperBoundExcluded ;
+		_UpperBound = upperBound ; 
+	}
+
+	// disable upper bound usage
+	void disableUpperBound(void) { _UpperBoundEnabled = false ; }
+
+	// get the upper bound
+	T getUpperBound(void) const { return _UpperBound ; }
+
+	// test wether the upper bound is excluded of the test
+	bool isUpperBoundExcluded(void) const
+	{
+		return _UpperBoundExcluded ;
+	}
+
+	/** enable lower bound use (e.g. value must be < or <= lower bound )
+	 *  \param lowerBoundExcluded if true then the test is <, otherwise its <=
+	 */
+	void enableLowerBound(T lowerBound, bool lowerBoundExcluded) 
+	{ 
+		_LowerBoundEnabled = true ;
+		_LowerBoundExcluded = lowerBoundExcluded ;
+		_LowerBound = lowerBound ; 
+	}
+	
+	// disable lower bound
+	void disableLowerBound(void) { _LowerBoundEnabled = false ; }
+	
+	// get the lower bound
+	T getLowerBound(void) const { return _LowerBound ; }
+
+	// test wether the lower bound is excluded of the test
+	bool isLowerBoundExcluded(void) const
+	{
+		return _LowerBoundExcluded ;
+	}
 
 
 public:	
@@ -156,6 +204,8 @@ public:
 	// SPECIALIZE THAT. convert a CString into a value, return NULL if ok, or a pointer to an error message
 	static const char *string2value(const CString &value, T &result) ;
 	
+	
+
 	void updateRange(void)
 	{
 		// retrieve our range
@@ -176,19 +226,54 @@ public:
 		}
 	}
 protected:	
+
+	/** validate a value against upper bound. (if an upper bound was set
+	 *  \return NULL if ok or an error message
+	 */
+	const char *validateUpperBound(T v)
+	{
+		if (!_UpperBoundEnabled) return NULL ;
+		if (_UpperBoundExcluded && v < _UpperBound) return NULL ;
+		if (!_UpperBoundExcluded && v <= _UpperBound) return NULL ;
+		return "value too high" ;
+	}
+
+	
+	/** validate a value against lower bound. (if an lower bound was set
+	 *  \return NULL if ok or an error message
+	 */
+	const char *validateLowerBound(T v)
+	{
+		if (!_LowerBoundEnabled) return NULL ;
+		if (_LowerBoundExcluded && v > _LowerBound) return NULL ;
+		if (!_LowerBoundExcluded && v >= _LowerBound) return NULL ;
+		return "value too low" ;
+	}
+
+
+
 	void updateValueFromText(void)
 	{
 		T value ;
 		const char *message = string2value(m_Value, value) ;
 		if (!message)
 		{
+			const char *mess = validateUpperBound(value) 
+					  ,*mess2 = validateLowerBound(value) ;
+			if (mess || mess2)
+			{
+				MessageBox(mess ? mess : mess2, "error") ;
+				return ;
+			}
+			
+
 			_Wrapper->set(value) ;
 			setValue(value) ;
+			return ;
 		}
-		else
-		{
-			MessageBox(message, "error") ;
-		}
+		
+		MessageBox(message, "error") ;
+		
 	}
 	void selectRange(void)
 	{
@@ -196,7 +281,7 @@ protected:
 		value2CString(_Range.first, lowerBound) ;
 		value2CString(_Range.second, upperBound) ;
 	
-		CRangeSelector rs(lowerBound, upperBound, EditableRangeValueValidator)  ;
+		CRangeSelector rs(lowerBound, upperBound, this)  ;
 
 		if (rs.DoModal())
 		{
@@ -246,7 +331,7 @@ protected:
 	}
 
 
-	static bool EditableRangeValueValidator(const CString &lo, const CString &up)
+	virtual bool editableRangeValueValidator(const CString &lo, const CString &up)
 	{
 		T upT, loT ;
 
@@ -256,11 +341,26 @@ protected:
 			::MessageBox(NULL, message, "Range selection error", MB_OK) ;
 			return false ;
 		}
+		const char *mess = validateUpperBound(loT)
+					  ,*mess2 = validateLowerBound(loT) ;
+		if (!mess || ! mess2)
+		{
+			MessageBox(mess ? mess : mess2, "error") ;
+			return false ;
+		}
 
 		message = string2value(up, upT) ;
 		if (message)
 		{
 			::MessageBox(NULL, message, "Range selection error", MB_OK) ;
+			return false ;
+		}
+
+		mess = validateUpperBound(upT) ;
+		mess2 = validateLowerBound(upT) ;
+		if (mess || mess2)
+		{
+			MessageBox(mess ? mess : mess2, "error") ;
 			return false ;
 		}
 
@@ -274,6 +374,13 @@ protected:
 		return true ;
 	}
 
+	bool _UpperBoundEnabled ;
+	bool _UpperBoundExcluded ;
+	T _UpperBound ;
+
+	bool _LowerBoundEnabled ;
+	bool _LowerBoundExcluded ;
+	T _LowerBound ;
 
 	// min max values
 	std::pair<T, T> _Range ;

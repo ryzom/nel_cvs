@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.17 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: text_context.h,v 1.18 2001/02/27 15:13:38 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -296,14 +296,15 @@ public:
 	 */
 	void printAt(float x, float z, uint32 i)
 	{
-		nlassert(i<_StringList.size());
-
-		_StringList[i].render2D(*NL3D::CNELU::Driver,
+		std::map<uint32,CComputedString>::iterator itstr = _StringList.find(i);
+		
+		(*itstr).second.render2D(*NL3D::CNELU::Driver,
 								x,z,
 								_HotSpot,
 								_ScaleX,_ScaleZ);
 
-		_XBound = x + _StringList[i].StringWidth;
+		_XBound = x + (*itstr).second.StringWidth;
+
 	}
 
 	/**
@@ -350,21 +351,11 @@ public:
 	 *	operator[]
 	 * \return the computed string
 	 */
-	/*
-	const CComputedString operator[](uint32 i) const
-	{
-		return _StringList[i];
-	}
-	*/
-	
-
-	/**
-	 *	operator[]
-	 * \return the computed string
-	 */
 	CComputedString& operator[](uint32 i)
 	{
-		return _StringList[i];
+		std::map<uint32,CComputedString>::iterator itstr = _StringList.find(i);
+		
+		return (*itstr).second;
 	}
 
 	/**

@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.40 2004/07/12 09:16:27 berenguier Exp $
+ * $Id: export_anim.cpp,v 1.41 2004/07/19 16:38:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2140,7 +2140,7 @@ struct CSpawnObject
 };
 
 
-static void commitSSSKey(NL3D::TAnimationTime keyTime, std::map<CSpawnCmd, CSpawnObject> &objects, CTrackKeyFramerConstString *finalTrack)
+static void commitSSSKey(NL3D::TAnimationTime keyTime, std::map<CSpawnCmd, CSpawnObject> &objects, CTrackKeyFramerConstString *finalTrack, bool &insertedAt0)
 {
 	CKeyString		keyValue;
 	
@@ -2165,6 +2165,9 @@ static void commitSSSKey(NL3D::TAnimationTime keyTime, std::map<CSpawnCmd, CSpaw
 
 	// add to the track
 	finalTrack->addKey(keyValue, keyTime);
+
+	if(keyTime==0)
+		insertedAt0= true;
 }
 
 void				CSSSBuild::compile(NL3D::CAnimation &dest, const char* sBaseName)
@@ -2261,6 +2264,7 @@ void				CSSSBuild::compile(NL3D::CAnimation &dest, const char* sBaseName)
 	// parse each key in the chronogical order
 	NL3D::TAnimationTime	precTime= 0;
 	bool					firstKey= true;
+	bool					insertedAt0= false;
 	std::multimap<NL3D::TAnimationTime, CSpawnCmd>::iterator		kit;
 	for(kit= keys.begin();kit!=keys.end();kit++)
 	{
@@ -2271,7 +2275,7 @@ void				CSSSBuild::compile(NL3D::CAnimation &dest, const char* sBaseName)
 		// ---- if the keyTime has changed, then commit the last key
 		if(!firstKey && precTime!=keyTime)
 		{
-			commitSSSKey(precTime, objects, finalTrack);
+			commitSSSKey(precTime, objects, finalTrack, insertedAt0);
 			// new key to create
 			precTime= keyTime;
 		}
@@ -2306,10 +2310,18 @@ void				CSSSBuild::compile(NL3D::CAnimation &dest, const char* sBaseName)
 		}
 	}
 
-	// commit the last key
+	// if some keys added
 	if(!firstKey)
 	{
-		commitSSSKey(precTime, objects, finalTrack);
+		// comit the last key
+		commitSSSKey(precTime, objects, finalTrack, insertedAt0);
+
+		// If none has been inserted at 0, must add an empty key at 0
+		if(!insertedAt0)
+		{
+			CKeyString		keyValue;
+			finalTrack->addKey(keyValue, 0);
+		}
 	}
 	else
 	{

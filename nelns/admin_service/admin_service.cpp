@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.37 2003/10/20 14:34:57 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.38 2003/10/20 16:23:19 lecroart Exp $
  *
  */
 
@@ -492,7 +492,7 @@ void addRequestReceived (uint32 rid)
 		if (Requests[i].Id == rid)
 		{
 			Requests[i].NbReceived++;
-			Requests[i].display ();
+//			Requests[i].display ();
 			return;
 		}
 	}
@@ -601,7 +601,7 @@ void cleanRequest ()
 				}
 			}
 
-			Requests[i].display ();
+//			Requests[i].display ();
 			sendString (Requests[i].From, str);
 
 			// set to 0 to erase it

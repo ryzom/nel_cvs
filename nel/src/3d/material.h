@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.25 2004/03/23 10:20:01 vizerie Exp $
+ * $Id: material.h,v 1.26 2004/04/27 12:02:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,7 +205,7 @@ public:
 	 *		Texture/Previous/Diffuse/Constant, respectively if operator is
 	 *		InterpolateTexture/InterpolatePrevious/InterpolateDiffuse/InterpolateConstant.
 	 * Multiply-Add (Mad) out= arg0 * arg1 + arg2. Must be supported by driver (see IDriver::supportMADOperator)
-	 * EMBM : apply to both color and alpha : the current texture, whose format is DSDT, is used to offset the texture in the next stage.
+	 * EMBM : apply to both color and alpha : the current texture, whose format is DSDT, is used to offset the texture in the next stage, unless the EMBM unit is at the last stage, in which case it operates on texture at first stage
 	 *  NB : for EMBM, this must be supported by driver.
 	 */
 	enum TTexOperator		{ Replace=0, Modulate, Add, AddSigned, 
@@ -527,8 +527,11 @@ public:
 		void		selectTextureSet(uint index);
 	// @}
 
-	// test if material a driver supports rendering of that material
-	bool			isSupportedByDriver(IDriver &drv) const;
+	/** test if material a driver supports rendering of that material
+	  * \param  forceBaseCaps When true, the driver is considered to have the most basic required caps (2 stages hardwares, no pixelShader, support for constant color blend & multiply-add texture operator), so that any fancy material will fail the test.
+	  * \TODO allowing the user to specify the caps he wants to test against
+	  */
+	bool			isSupportedByDriver(IDriver &drv, bool forceBaseCaps) const;
 
 // **********************************
 // Private part.

@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.46 2004/03/23 10:20:01 vizerie Exp $
+ * $Id: material.cpp,v 1.47 2004/04/27 12:02:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -496,7 +496,7 @@ void				CMaterial::enableTexAddrMode(bool enable /*= true*/)
 			_Flags |= IDRV_MAT_TEX_ADDR;
 			for (uint32 k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 			{
-				_TexAddrMode[k] = (uint8) FetchTexture;
+				_TexAddrMode[k] = (uint8) TextureOff;
 			}			
 		}		
 	}
@@ -593,13 +593,15 @@ uint CMaterial::getNumUsedTextureStages() const
 }
 
 // ***************************************************************************
-bool CMaterial::isSupportedByDriver(IDriver &drv) const
+bool CMaterial::isSupportedByDriver(IDriver &drv, bool forceBaseCaps) const
 {
+	uint numTexStages = drv.getNbTextureStages();
+	if (forceBaseCaps) numTexStages = std::min(numTexStages, (uint) 2);
 	switch(getShader())
 	{
 		case Normal:
 		{
-			if ((sint) getNumUsedTextureStages() > drv.getNbTextureStages()) return false;
+			if ((sint) getNumUsedTextureStages() > numTexStages) return false;
 			// see if each tex env is supported
 			for(uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 			{
@@ -608,13 +610,13 @@ bool CMaterial::isSupportedByDriver(IDriver &drv) const
 					switch(getTexEnvOpRGB(k))
 					{
 						case InterpolateConstant: if (!drv.supportBlendConstantColor()) return false;
-						case EMBM:				  if (!drv.supportEMBM() || !drv.isEMBMSupportedAtStage(k)) return false;
+						case EMBM:				  if (forceBaseCaps || !drv.supportEMBM() || !drv.isEMBMSupportedAtStage(k)) return false;
 						case Mad:				  if (!drv.supportMADOperator()) return false;
 					}
 					switch(getTexEnvOpAlpha(k))
 					{
 						case InterpolateConstant: if (!drv.supportBlendConstantColor()) return false;
-						case EMBM:				  if (!drv.supportEMBM() || !drv.isEMBMSupportedAtStage(k)) return false;
+						case EMBM:				  if (forceBaseCaps || !drv.supportEMBM() || !drv.isEMBMSupportedAtStage(k)) return false;
 						case Mad:				  if (!drv.supportMADOperator()) return false;
 					}
 				}

@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form interface class
  *
- * $Id: u_form.h,v 1.5 2002/12/30 13:56:56 corvazier Exp $
+ * $Id: u_form.h,v 1.6 2003/01/08 15:35:18 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include	"nel/misc/types_nl.h"
 #include	"nel/misc/smart_ptr.h"
+#include	<set>
 
 namespace NLMISC
 {

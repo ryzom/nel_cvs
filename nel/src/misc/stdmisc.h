@@ -9,7 +9,9 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <hash_map>
 #include <set>
+#include <hash_set>
 #include <algorithm>
 #include <sstream>
 #include <exception>

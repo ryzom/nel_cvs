@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.5 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: track.h,v 1.6 2003/01/08 15:38:59 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -241,7 +241,6 @@ private:
 #define	NL3D_TRACKDEF_CTOR(_Son, _Father, _T)	\
 	_Son() {}									\
 	_Son(const _T &v) : _Father<_T>(v) {}
-
 
 // Predefined types
 class CTrackDefaultFloat : public CTrackDefaultBlendable<float>

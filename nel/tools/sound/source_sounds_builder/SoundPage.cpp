@@ -34,9 +34,13 @@ CSoundPage::CSoundPage(CWnd* pParent /*=NULL*/)
 	m_InnerAngleDeg = 360;
 	m_OuterAngleDeg = 360;
 	m_OuterGain = 1.0f;
+	m_Looped = FALSE;
 	//}}AFX_DATA_INIT
 
 	_CurrentSound = NULL;
+	_Tree = NULL;
+	_AudioMixer = NULL;
+	_Source = NULL;
 }
 
 
@@ -58,6 +62,7 @@ void CSoundPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxUInt(pDX, m_OuterAngleDeg, 0, 360);
 	DDX_Text(pDX, IDC_EditOuterGain, m_OuterGain);
 	DDV_MinMaxFloat(pDX, m_OuterGain, 0.f, 1.f);
+	DDX_Check(pDX, IDC_Looped, m_Looped);
 	//}}AFX_DATA_MAP
 }
 
@@ -67,8 +72,11 @@ BEGIN_MESSAGE_MAP(CSoundPage, CDialog)
 	ON_BN_CLICKED(IDC_Pos3D, OnPos3D)
 	ON_BN_CLICKED(IDC_Apply, OnApply)
 	ON_BN_CLICKED(IDC_ChooseFile, OnChooseFile)
-	ON_BN_CLICKED(IDC_Cancel, OnCancel)
 	ON_BN_CLICKED(IDC_Remove, OnRemove)
+	ON_BN_CLICKED(IDC_PlaySound, OnPlaySound)
+	ON_WM_CLOSE()
+	ON_BN_CLICKED(IDC_Cancel, OnCancel)
+	ON_BN_CLICKED(IDC_Looped, OnLooped)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -99,6 +107,23 @@ void		CSoundPage::getPropertiesFromSound()
 /////////////////////////////////////////////////////////////////////////////
 // CSoundPage message handlers
 
+
+/*
+ *
+ */
+void CSoundPage::setCurrentSound( CSound *sound, HTREEITEM hitem )
+{
+	_CurrentSound = sound;
+	_HItem = hitem;
+	if ( _Source != NULL )
+	{
+		_Source->stop();
+	}
+	m_Looped = false;
+	UpdateData( false );
+}
+
+
 /*
  *
  */
@@ -118,20 +143,19 @@ void CSoundPage::OnPos3D()
  */
 void CSoundPage::OnApply() 
 {
+	if ( _Source != NULL )
+	{
+		_Source->stop();
+	}
+
 	UpdateData( true );
+	UpdateCurrentSound();
+
 	nlassert( _Tree && _CurrentSound );
 	_Tree->SetItemText( _HItem, m_Filename );
 	_Tree->SelectItem( NULL );
 
-	if ( ! m_Pos3D )
-	{
-		_CurrentSound->setProperties( string(m_Filename), m_Gain, m_Pos3D );
-	}
-	else
-	{
-		_CurrentSound->setProperties( string(m_Filename), m_Gain, m_Pos3D,
-			m_MinDist, m_MaxDist, degToRad(m_InnerAngleDeg), degToRad(m_OuterAngleDeg), m_OuterGain );
-	}
+
 	GetOwner()->SetFocus();
 }
 
@@ -141,6 +165,11 @@ void CSoundPage::OnApply()
  */
 void CSoundPage::OnCancel() 
 {
+	if ( _Source != NULL )
+	{
+		_Source->stop();
+	}
+
 	nlassert( _Tree );
 	_Tree->SelectItem( NULL );
 	GetOwner()->SetFocus();
@@ -154,7 +183,7 @@ void CSoundPage::OnChooseFile()
 {
 	// Prompt filename
 	CFileDialog opendlg( true, "wav", "", 0, "PCM Wave files (*.wav)|*.wav", this );
-	if ( opendlg.DoModal()==IDOK ) // BUG: does not work in debug mode
+	if ( opendlg.DoModal()==IDOK )
 	{
 		m_Filename = opendlg.GetFileName();
 		UpdateData( false );
@@ -170,3 +199,117 @@ void CSoundPage::OnRemove()
 	nlassert( _Tree && _CurrentSound );
 	_Tree->DeleteItem( _HItem );
 }
+
+
+/*
+ *
+ */
+void CSoundPage::OnPlaySound() 
+{
+	CWaitCursor waitcursor;
+
+	if ( _AudioMixer == NULL )
+	{
+		// Load driver
+		_AudioMixer = UAudioMixer::createAudioMixer();
+		try
+		{
+			_AudioMixer->init();
+		}
+		catch( Exception& e )
+		{
+			waitcursor.Restore();
+
+			CString s;
+			s.Format( "No sound driver: %s", e.what() );
+			AfxMessageBox( s );
+			return;
+		}
+	}
+
+	// Load sound
+	UpdateData( true );
+	UpdateCurrentSound();
+	try 
+	{
+		nlassert( _CurrentSound );
+		_CurrentSound->loadBuffer( string(m_Filename) );
+
+		// Play source
+		if ( _Source == NULL )
+		{
+			_Source = _AudioMixer->createSource( _CurrentSound );
+		}
+		else
+		{
+			_Source->stop();
+			_Source->setSound( _CurrentSound );
+		}
+		_Source->setLooping( m_Looped );
+		_Source->play();
+
+		waitcursor.Restore();
+	}
+	catch ( Exception& e )
+	{
+		waitcursor.Restore();
+
+		CString s;
+		s.Format( "%s", e.what() );
+		AfxMessageBox( s );
+	}
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnLooped() 
+{
+	UpdateData( true );
+	if ( m_Looped )
+	{
+		OnPlaySound();
+	}
+	else
+	{
+		if ( _Source != NULL )
+		{
+			_Source->stop();
+		}
+	}
+}
+
+
+/*
+ *
+ */
+void CSoundPage::UpdateCurrentSound()
+{
+	if ( ! m_Pos3D )
+	{
+		_CurrentSound->setProperties( string(m_Filename), m_Gain, m_Pos3D );
+	}
+	else
+	{
+		_CurrentSound->setProperties( string(m_Filename), m_Gain, m_Pos3D,
+			m_MinDist, m_MaxDist, degToRad(m_InnerAngleDeg), degToRad(m_OuterAngleDeg), m_OuterGain );
+	}
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnClose() 
+{
+	if ( _AudioMixer != NULL )
+	{
+		if ( _Source != NULL )
+		{
+			delete _Source;
+		}
+		delete _AudioMixer;
+	}
+}
+

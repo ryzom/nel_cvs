@@ -33,9 +33,11 @@ CAPTION "NeL Source Sounds Builder"
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Tree1",IDC_TREE1,"SysTreeView32",TVS_HASLINES | 
-                    TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,5,25,90,155
-    DEFPUSHBUTTON   "Add a sound",IDC_AddSound,5,5,50,14
-    PUSHBUTTON      "Save file",IDC_Save,265,5,50,14
+                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
+                    WS_TABSTOP,5,25,90,155
+    DEFPUSHBUTTON   "Add a sound",IDC_AddSound,5,5,45,14
+    PUSHBUTTON      "Save file...",IDC_Save,265,5,50,14
+    PUSHBUTTON      "Load file...",IDC_Load,210,5,50,14
 END
 
 IDD_SoundPage DIALOG DISCARDABLE  98, 20, 224, 167
@@ -65,6 +67,9 @@ BEGIN
     EDITTEXT        IDC_EditMinDist,48,85,45,12,ES_AUTOHSCROLL
     LTEXT           "Units: meters, degrees",IDC_STATIC,18,116,68,8
     PUSHBUTTON      "Remove",IDC_Remove,158,140,50,14
+    PUSHBUTTON      "Play",IDC_PlaySound,160,35,50,14
+    CONTROL         "Play Looped",IDC_Looped,"Button",BS_AUTOCHECKBOX | 
+                    BS_PUSHLIKE | WS_TABSTOP,160,55,50,15
 END
 
 

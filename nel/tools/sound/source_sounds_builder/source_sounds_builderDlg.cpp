@@ -43,6 +43,7 @@ BEGIN_MESSAGE_MAP(CSource_sounds_builderDlg, CDialog)
 	ON_NOTIFY(TVN_SELCHANGED, IDC_TREE1, OnSelchangedTree1)
 	ON_BN_CLICKED(IDC_Save, OnSave)
 	ON_NOTIFY(TVN_DELETEITEM, IDC_TREE1, OnDeleteitemTree1)
+	ON_BN_CLICKED(IDC_Load, OnLoad)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -60,13 +61,7 @@ BOOL CSource_sounds_builderDlg::OnInitDialog()
 	 * Init
 	 */
 
-	// Root
-	TVINSERTSTRUCT tvInsert;
-	tvInsert.hParent = NULL;
-	tvInsert.hInsertAfter = NULL;
-	tvInsert.item.mask = TVIF_TEXT;
-	tvInsert.item.pszText = _T("Sounds");
-	m_Tree.InsertItem( &tvInsert );
+	ResetTree();
 
 	_SoundPage = new CSoundPage( this );
 	_SoundPage->Create( IDD_SoundPage );
@@ -109,6 +104,24 @@ HCURSOR CSource_sounds_builderDlg::OnQueryDragIcon()
 	return (HCURSOR) m_hIcon;
 }
 
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::ResetTree()
+{
+	m_Tree.DeleteAllItems();
+
+	// Root
+	TVINSERTSTRUCT tvInsert;
+	tvInsert.hParent = NULL;
+	tvInsert.hInsertAfter = NULL;
+	tvInsert.item.mask = TVIF_TEXT;
+	tvInsert.item.pszText = _T("Sounds");
+	m_Tree.InsertItem( &tvInsert );
+}
+
+
 /*
  *
  */
@@ -141,6 +154,7 @@ void CSource_sounds_builderDlg::OnSelchangedTree1(NMHDR* pNMHDR, LRESULT* pResul
 	else
 	{
 		_SoundPage->ShowWindow( SW_HIDE );
+		_SoundPage->setCurrentSound( NULL, NULL );
 	}
 
 	*pResult = 0;
@@ -155,12 +169,24 @@ void CSource_sounds_builderDlg::OnDeleteitemTree1(NMHDR* pNMHDR, LRESULT* pResul
 	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
 
 	nlassert( pNMTreeView );
-	if ( pNMTreeView->itemNew.hItem != m_Tree.GetRootItem() )
+	if ( pNMTreeView->itemOld.hItem != m_Tree.GetRootItem() )
 	{
 		uint32 index = m_Tree.GetItemData( pNMTreeView->itemOld.hItem );
 		if ( index < _Sounds.size() )
 		{
 			_Sounds.erase( _Sounds.begin() + index );
+		}
+
+		// Renumber
+		HTREEITEM hitem = m_Tree.GetChildItem( m_Tree.GetRootItem() );
+		for ( index=0; index!=_Sounds.size(); index++ )
+		{
+			if ( hitem == pNMTreeView->itemOld.hItem )
+			{
+				hitem = m_Tree.GetNextItem( hitem, TVGN_NEXT );
+			}
+			m_Tree.SetItemData( hitem, index );
+			hitem = m_Tree.GetNextItem( hitem, TVGN_NEXT );
 		}
 	}
 
@@ -175,14 +201,51 @@ void CSource_sounds_builderDlg::OnSave()
 {
 	// Prompt filename
 	CFileDialog savedlg( false, "nss", "sounds.nss", OFN_OVERWRITEPROMPT, "NeL Source Sounds (*.nss)|*.nss", this );
-	if ( savedlg.DoModal()==IDOK ) // BUG: does not work in debug mode
+	if ( savedlg.DoModal()==IDOK )
 	{
+		CWaitCursor waitcursor;
+
 		// Save
 		COFile file;
 		file.open( string( savedlg.GetPathName() ), false );
 		CSound::save( _Sounds, file );
 		file.close();
+
+		waitcursor.Restore();
 	}
 }
 
 
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnLoad() 
+{
+	// Prompt filename
+	CFileDialog opendlg( true, "nss", "", 0, "NeL Source Sounds (*.nss)|*.nss", this );
+	if ( opendlg.DoModal()==IDOK )
+	{
+		CWaitCursor waitcursor;
+
+		// Clear tree
+		ResetTree();
+		_SoundPage->ShowWindow( SW_HIDE );
+
+		// Load
+		CIFile file;
+		file.open( string( opendlg.GetPathName() ), false );
+		CSound::load( _Sounds, file );
+		file.close();
+
+		// Update tree
+		uint32 i;
+		for ( i=0; i!=_Sounds.size(); i++ )
+		{
+			HTREEITEM item = m_Tree.InsertItem( _Sounds[i]->getFilename().c_str(), m_Tree.GetRootItem(), TVI_LAST );
+			m_Tree.SetItemData( item, i );
+		}
+		m_Tree.Expand( m_Tree.GetRootItem(), TVE_EXPAND );
+
+		waitcursor.Restore();
+	}
+}

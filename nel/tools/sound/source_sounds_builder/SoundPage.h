@@ -6,6 +6,7 @@
 #endif // _MSC_VER > 1000
 
 #include "../src/sound/sound.h"
+#include "nel/sound/u_audio_mixer.h"
 using namespace NLSOUND;
 
 
@@ -32,6 +33,7 @@ public:
 	UINT	m_InnerAngleDeg;
 	UINT	m_OuterAngleDeg;
 	float	m_OuterGain;
+	BOOL	m_Looped;
 	//}}AFX_DATA
 
 
@@ -44,7 +46,7 @@ public:
 
 public:
 	void		setTree( CTreeCtrl *tree )						  { _Tree = tree; }
-	void		setCurrentSound( CSound *sound, HTREEITEM hitem ) { _CurrentSound = sound; _HItem = hitem; }
+	void		setCurrentSound( CSound *sound, HTREEITEM hitem );
 	void		getPropertiesFromSound();
 
 // Implementation
@@ -57,13 +59,19 @@ protected:
 	afx_msg void OnChooseFile();
 	afx_msg void OnCancel();
 	afx_msg void OnRemove();
+	afx_msg void OnPlaySound();
+	afx_msg void OnClose();
+	afx_msg void OnLooped();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 	CSound						*_CurrentSound;
 	CTreeCtrl					*_Tree;
 	HTREEITEM					_HItem;
+	UAudioMixer					*_AudioMixer;
+	USource						*_Source;
 
+	void						UpdateCurrentSound();
 };
 
 //{{AFX_INSERT_LOCATION}}

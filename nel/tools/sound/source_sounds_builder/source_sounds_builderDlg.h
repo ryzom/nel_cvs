@@ -51,12 +51,15 @@ protected:
 	afx_msg void OnSelchangedTree1(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSave();
 	afx_msg void OnDeleteitemTree1(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnLoad();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 	vector<CSound*>		_Sounds;
 
 	CSoundPage			*_SoundPage;
+
+	void				ResetTree();
 
 };
 

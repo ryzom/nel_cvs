@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.6 2004/04/15 17:17:16 corvazier Exp $
+ * $Id: driver_direct3d.cpp,v 1.7 2004/04/20 16:55:38 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -388,7 +388,7 @@ void CDriverD3D::initRenderVariables()
 	_DoubleSided = false;
 
 	// Flush caches
-	updateRenderVariables();
+	updateRenderVariablesInternal();
 }
 
 // ***************************************************************************
@@ -410,6 +410,16 @@ static const D3DTEXTURESTAGESTATETYPE SrcOperators[NL_SRC_OPERATORS_COUNT]=
 // ***************************************************************************
 
 void CDriverD3D::updateRenderVariables()
+{
+	_CurrentMaterial = NULL;
+	_CurrentMaterialInfo = NULL;
+
+	updateRenderVariablesInternal();
+}
+
+// ***************************************************************************
+
+void CDriverD3D::updateRenderVariablesInternal()
 {
 	nlassert (_DeviceInterface);
 

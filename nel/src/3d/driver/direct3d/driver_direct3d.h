@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.6 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_direct3d.h,v 1.7 2004/04/20 16:55:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -863,10 +863,13 @@ private:
 
 	// Reset render states
 	void resetRenderVariables();
-
-	// Update all modified render states
+	
+	// Update all modified render states, reset current material
 	void updateRenderVariables();
-
+	
+	// Update all modified render states, assume current material is still alive
+	void updateRenderVariablesInternal();
+	
 	// Reset the driver, release the lost resources
 	bool reset (const GfxMode& mode);
 
@@ -1340,7 +1343,7 @@ private:
 		}
 
 		// Update render states
-		updateRenderVariables();
+		updateRenderVariablesInternal();
 	}
 
 	void endMultiPass ()

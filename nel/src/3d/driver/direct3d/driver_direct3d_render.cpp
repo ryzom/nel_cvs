@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_render.cpp,v 1.2 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_direct3d_render.cpp,v 1.3 2004/04/20 16:55:38 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -120,7 +120,7 @@ bool CDriverD3D::renderSimpleTriangles(uint32 firstIndex, uint32 ntris)
 	nlassert (_IndexBufferCache.IndexBuffer);
 
 	// Update matrix and Light if needed
-	updateRenderVariables();
+	updateRenderVariablesInternal();
 
 	_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset, 0, _VertexBufferSize, 
 		firstIndex+_IndexBufferOffset, ntris);

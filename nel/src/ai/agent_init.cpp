@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.8 2001/10/25 15:11:21 chafik Exp $
+ * $Id: agent_init.cpp,v 1.9 2001/10/25 16:09:24 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -157,6 +157,11 @@ namespace NLAIE
 	CExceptionUnReference::CExceptionUnReference(const std::string &text)
 	{
 		_Text = text;			
+	}
+
+	CExceptionUnReference::CExceptionUnReference(char *text)
+	{
+		_Text = std::string(text);
 	}
 
 	const IException *CExceptionUnReference::clone() const

@@ -1,6 +1,6 @@
 /** \file texture_chooser.cpp
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.cpp,v 1.4 2001/06/27 16:37:17 vizerie Exp $
+ * $Id: texture_chooser.cpp,v 1.5 2001/07/04 17:14:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ const uint tSize = 25 ;
 // CTextureChooser dialog
 
 
-CTextureChooser::CTextureChooser() : _CurrBitmap(0), _Wrapper(NULL), _Texture(NULL)
+CTextureChooser::CTextureChooser() : _CurrBitmap(0), _Wrapper(NULL), _Texture(NULL), _EnableRemoveButton(false)
 {
 	//{{AFX_DATA_INIT(CTextureChooser)
 	//}}AFX_DATA_INIT
@@ -70,13 +70,26 @@ void CTextureChooser::init(uint32 x, uint32 y, CWnd *pParent)
 	GetClientRect(&r) ;
 	MoveWindow(x, y, r.right, r.bottom) ;	
 
+	if (!_EnableRemoveButton)
+	{
+		GetDlgItem(IDC_REMOVE_TEXTURE)->ShowWindow(SW_HIDE) ;
+	}
 	ShowWindow(SW_SHOW) ;
 }
 
 
 void CTextureChooser::textureToBitmap()
 {
-	if (!_Texture) return ;
+	if (!_Texture) 
+	{
+		if (_CurrBitmap)
+		{
+			::DeleteObject(_CurrBitmap) ;
+			_CurrBitmap = NULL ;
+		}
+
+		return ;
+	}
 	
 	if (_CurrBitmap)
 	{
@@ -114,6 +127,7 @@ BEGIN_MESSAGE_MAP(CTextureChooser, CDialog)
 	//{{AFX_MSG_MAP(CTextureChooser)
 	ON_BN_CLICKED(IDC_BROWSE_TEXTURE, OnBrowseTexture)
 	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_REMOVE_TEXTURE, OnRemoveTexture)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -178,4 +192,16 @@ void CTextureChooser::OnPaint()
 		::SelectObject(bitmapDc, old) ;
 		::DeleteDC(bitmapDc) ;
 	}
+}
+
+void CTextureChooser::OnRemoveTexture() 
+{
+	if (_Texture)
+	{
+		_Texture->release() ;
+		_Texture = NULL ;
+	}
+	_Wrapper->set(NULL) ;	
+	textureToBitmap() ;
+	Invalidate() ;
 }

@@ -1,6 +1,6 @@
 /** \file texture_chooser.h
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.h,v 1.4 2001/06/27 16:37:17 vizerie Exp $
+ * $Id: texture_chooser.h,v 1.5 2001/07/04 17:14:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,9 @@ public:
 	// set a wrapper to get the datas
 	void setWrapper(IPSWrapperTexture *wrapper) { _Wrapper = wrapper ; }
 
+
+	/// enable to remove texture. the default is false
+	void enableRemoveButton(void) { _EnableRemoveButton = true ; }
 // Dialog Data
 	//{{AFX_DATA(CTextureChooser)
 	enum { IDD = IDD_TEXTURE_CHOOSER };
@@ -78,6 +81,7 @@ public:
 
 // Implementation
 protected:
+	bool _EnableRemoveButton ;
 	IPSWrapperTexture *_Wrapper ;
 
 	// handle to the current bitmap being displayed
@@ -94,6 +98,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBrowseTexture();
 	afx_msg void OnPaint();
+	afx_msg void OnRemoveTexture();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP() ;
 

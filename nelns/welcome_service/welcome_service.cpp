@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.42 2004/09/03 14:50:27 legros Exp $
+ * $Id: welcome_service.cpp,v 1.43 2004/09/03 15:18:37 legros Exp $
  *
  */
 
@@ -511,6 +511,14 @@ void	cbFESPatchAddress(CMessage &msgin, const std::string &serviceName, uint16 s
 		if ((*it).SId == sid)
 		{
 			nldebug("Affected patch server address '%s' to frontend %s %d", address.c_str(), serviceName.c_str(), sid);
+
+			if (!UsePatchMode.get() && !acceptClients)
+			{
+				// not in patch mode, force fs to accept clients
+				acceptClients = true;
+				(*it).setToAcceptClients();
+			}
+
 			(*it).PatchAddress = address;
 			(*it).State = (acceptClients ? AcceptClientOnly : PatchOnly);
 			if (acceptClients)

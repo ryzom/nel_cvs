@@ -1,7 +1,7 @@
 /** \file smart_ptr_inline.h
  * SmartPtr class inline definitions.
  *
- * $Id: smart_ptr_inline.h,v 1.6 2003/06/19 13:56:31 ledorze Exp $
+ * $Id: smart_ptr_inline.h,v 1.7 2004/09/07 19:12:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,9 @@ inline CSmartPtr<T>::~CSmartPtr(void)
 
     if(Ptr)
 	{
+#ifdef NL_DEBUG
+		nlassert(Ptr->crefs>=0);
+#endif
 		if (--(Ptr->crefs) == 0)
 			delete Ptr;
 		Ptr=NULL;

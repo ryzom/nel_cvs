@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.25 2004/09/07 18:26:36 saffray Exp $
+ * $Id: smart_ptr.h,v 1.26 2004/09/07 19:12:27 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -348,60 +348,63 @@ public:
 	{
 //#ifdef NL_DEBUG
 //		//	check memory state ..
-//		nlassert(dbgcrefs==0x0cdcdcdcd || dbgcrefs==0x0cccccccc || dbgcrefs==0);
+//		nlassert(_DbgCRefs==0x0cdcdcdcd || _DbgCRefs==0x0cccccccc || _DbgCRefs==0);
 //#endif
-		dbgcrefs=0;
-		_maxRef=other._maxRef;
-		_checkOn=other._checkOn;
+		_DbgCRefs=0;
+		_MaxRef=other._MaxRef;
+		_CheckOn=other._CheckOn;
 	}
     CDbgRefCount(sint32 maxRef=(1<<30))
 	{
 //#ifdef NL_DEBUG
 //		//	check memory state ..
-//		nlassert(dbgcrefs==0x0cdcdcdcd || dbgcrefs==0x0cccccccc || dbgcrefs==0);
+//		nlassert(_DbgCRefs==0x0cdcdcdcd || _DbgCRefs==0x0cccccccc || _DbgCRefs==0);
 //#endif
-		dbgcrefs = 0;
-		_maxRef	= maxRef;
+		_DbgCRefs = 0;
+		_MaxRef	= maxRef;
 	}
-	virtual	~CDbgRefCount()	{	nlassert(dbgcrefs==0);	}	
+	virtual	~CDbgRefCount()	
+	{	
+		nlassert(_DbgCRefs==0);	
+	}
 	const	sint	&getDbgRef(const CDbgPtr<T>	&ptr)	const
 	{
-		return	dbgcrefs;
+		return	_DbgCRefs;
 	}
 	const	sint	&getDbgRef(const CstCDbgPtr<T>	&ptr)	const
 	{
-		return	dbgcrefs;
+		return	_DbgCRefs;
 	}
 	inline	void	incRef	(const CDbgPtr<T>	&ptr)	const
 	{
-		if (_checkOn)
-			nlassert(dbgcrefs<_maxRef);
-		dbgcrefs++;
+		if (_CheckOn)
+			nlassert(_DbgCRefs<_MaxRef);
+		_DbgCRefs++;
 	}
 	inline	void	decRef	(const CDbgPtr<T>	&ptr)	const
 	{
-		nlassert(dbgcrefs>0);
-		dbgcrefs--;
+		nlassert(_DbgCRefs>0);
+		_DbgCRefs--;
 	}
 	inline	void	incRef	(const CstCDbgPtr<T>	&ptr)	const
 	{
-		if (_checkOn)
-			nlassert(dbgcrefs<_maxRef);
-		dbgcrefs++;
+		if (_CheckOn)
+			nlassert(_DbgCRefs<_MaxRef);
+		_DbgCRefs++;
 	}
 	inline	void	decRef	(const CstCDbgPtr<T>	&ptr)	const
 	{
-		nlassert(dbgcrefs>0);
-		dbgcrefs--;
+		nlassert(_DbgCRefs>0);
+		_DbgCRefs--;
 	}
 	void	setCheckMax(const	bool	checkOnOff)	const
 	{
-		_checkOn=checkOnOff;
+		_CheckOn=checkOnOff;
 	}
 private:
-    mutable	sint	dbgcrefs;
-	sint32	_maxRef;
-	mutable	bool	_checkOn;
+    mutable	sint	_DbgCRefs;
+	sint32			_MaxRef;
+	mutable	bool	_CheckOn;
 #endif
 };
 

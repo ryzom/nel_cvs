@@ -292,7 +292,15 @@ SOURCE=.\net\net_displayer.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\net\net_displayer.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\net_log.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\net_log.h
 # End Source File
 # Begin Source File
 

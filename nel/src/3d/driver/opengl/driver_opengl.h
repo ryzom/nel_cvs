@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.86 2001/09/14 17:27:22 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.87 2001/09/18 14:42:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -451,6 +451,8 @@ public:
 
 	virtual bool			isActive ();
 
+	virtual uint8			getBitPerPixel ();
+
 	virtual void			showCursor (bool b);
 
 	// between 0.0 and 1.0
@@ -567,6 +569,9 @@ private:
 	bool					_PaletteSkinHard;
 	// @}
 
+
+	// Depth of the driver in Bit Per Pixel
+	uint8					_Depth;
 
 	// The forceNormalize() state.
 	bool					_ForceNormalize;

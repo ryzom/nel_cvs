@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.117 2001/09/14 17:27:22 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.118 2001/09/18 14:42:16 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -261,7 +261,6 @@ ModeList CDriverGL::enumModes()
 bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 {
 #ifdef NL_OS_WINDOWS
-	uint8					Depth;
 	int						pf;
 
 	_FullScreen= false;
@@ -331,14 +330,14 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	_hDC=GetDC(_hWnd);
     wglMakeCurrent(_hDC,NULL);
-	Depth=GetDeviceCaps(_hDC,BITSPIXEL);
+	_Depth=GetDeviceCaps(_hDC,BITSPIXEL);
 	// ---
 	memset(&_pfd,0,sizeof(_pfd));
 	_pfd.nSize        = sizeof(_pfd);
 	_pfd.nVersion     = 1;
 	_pfd.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
 	_pfd.iPixelType   = PFD_TYPE_RGBA;
-	_pfd.cColorBits   = (char)Depth;
+	_pfd.cColorBits   = (char)_Depth;
 	_pfd.cDepthBits   = 16;
 	_pfd.iLayerType	  = PFD_MAIN_PLANE;
 	pf=ChoosePixelFormat(_hDC,&_pfd);
@@ -1112,6 +1111,11 @@ bool CDriverGL::isActive()
 #elif defined (NL_OS_UNIX)
 	return true;
 #endif // NL_OS_UNIX
+}
+
+uint8 CDriverGL::getBitPerPixel ()
+{
+	return _Depth;
 }
 
 const char *CDriverGL::getVideocardInformation ()

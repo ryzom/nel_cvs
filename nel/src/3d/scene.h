@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.44 2003/07/11 12:47:33 corvazier Exp $
+ * $Id: scene.h,v 1.45 2003/07/15 08:36:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -592,8 +592,6 @@ private:
 
 	// The Ligths automatic movements
 	
-	// todo hulud remove
-	// CAnimationSet	_LightmapAnimations;
 	std::map<std::string, uint>					_AnimatedLightNameToIndex;
 	std::list<CAnimatedLightmap>				_AnimatedLight;
 	std::vector<CAnimatedLightmap*>				_AnimatedLightPtr;

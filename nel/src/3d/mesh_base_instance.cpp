@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.22 2003/07/11 12:47:33 corvazier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.23 2003/07/15 08:36:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -214,45 +214,6 @@ void CMeshBaseInstance::traverseHrc()
 void CMeshBaseInstance::traverseAnimDetail()
 {
 	CMeshBase			*mb = NLMISC::safe_cast<CMeshBase *>((IShape *) Shape);
-
-	// todo hulud remove
-#if 0
-	// if the base instance uses automatic animations, we must also setup the date of the channel mixer controlling this object
-	if (mb->getAutoAnim())
-	{
-		// setup the channel mixer date
-		CChannelMixer *chanMix = getChannelMixer();
-		if (chanMix)
-		{			
-			const CAnimation *anim = chanMix->getSlotAnimation(0);
-			/** We perform wrapping ourselves.
-			  * We avoid using a playlist, to not create one more obj.
-			  */
-			if (anim)
-			{
-				float animLenght = anim->getEndTime() - anim->getBeginTime();
-				if (animLenght > 0)
-				{
-					float currTime = (TAnimationTime) getOwnerScene()->getCurrentTime();
-					float startTime = (uint) (currTime / animLenght) * animLenght;
-					// Set the channel mixer date using the global date of the scene
-					chanMix->setSlotTime(0, anim->getBeginTime() + currTime - startTime);
-				}
-				else
-				{
-					chanMix->setSlotTime(0, anim->getBeginTime());
-				}
-
-				// todo hulud remove
-				/** temp: eval non detail animation 
-				  * The issue here is that this evaluation is performed after clipping.
-				  * This means that rotation will be ok, but translation may not work
-				  */
-				chanMix->eval(false);
-			}
-		}
-	}
-#endif
 
 	CTransformShape::traverseAnimDetail();
 

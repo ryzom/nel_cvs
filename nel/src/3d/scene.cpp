@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.105 2003/07/11 16:50:16 corvazier Exp $
+ * $Id: scene.cpp,v 1.106 2003/07/15 08:36:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -510,25 +510,6 @@ void CScene::deleteInstance(CTransformShape *pTrfmShp)
 	
 }
 
-// ***************************************************************************
-// todo hulud remove
-/*
-void CScene::loadLightmapAutoAnim( const std::string &filename )
-{
-	try
-	{
-		CAnimation *anim = new CAnimation();
-		CIFile fIn( CPath::lookup(filename) );
-		anim->serial( fIn );
-
-		setAutoAnim( anim );
-	}
-	catch(EPathNotFound &)
-	{
-		return;
-	}
-}
-*/
 // ***************************************************************************
 void CScene::animate( TGlobalAnimationTime atTime )
 {

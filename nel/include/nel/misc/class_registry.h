@@ -1,7 +1,7 @@
 /** \file class_registry.h
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.h,v 1.10 2002/03/15 13:45:12 legros Exp $
+ * $Id: class_registry.h,v 1.11 2002/04/12 16:36:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,7 @@ struct ERegisteredClass : public ERegistry
 struct EUnregisteredClass : public ERegistry
 {
 	EUnregisteredClass() : ERegistry( "Class not registered" ) {}
+	EUnregisteredClass(const std::string &className) : ERegistry( std::string("Class not registered : ") + className ) {}
 };
 
 

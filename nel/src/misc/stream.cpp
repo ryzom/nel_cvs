@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.23 2002/04/04 16:06:38 cado Exp $
+ * $Id: stream.cpp,v 1.24 2002/04/12 16:36:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,7 +154,12 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 				// Construct object.
 				ptr= dynamic_cast<IStreamable*> (CClassRegistry::create(className));
 				if(ptr==NULL)
+				#ifdef NL_DEBUG
+					throw EUnregisteredClass(className);
+				#else
 					throw EUnregisteredClass();
+				#endif
+
 
 				#ifdef NL_DEBUG
 					nlassert(CClassRegistry::checkObject(ptr));

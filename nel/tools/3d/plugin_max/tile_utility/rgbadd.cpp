@@ -1,7 +1,7 @@
 /** \file rgbadd.cpp
  * <File description>
  *
- * $Id: rgbadd.cpp,v 1.2 2001/11/22 08:49:23 corvazier Exp $
+ * $Id: rgbadd.cpp,v 1.3 2001/11/22 10:14:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "texutil.h"
 #include "resource.h"
 #include "iparamm2.h"
+#include "tile_utility.h"
 
 extern HINSTANCE hInstance;
 TCHAR *GetString(int id);

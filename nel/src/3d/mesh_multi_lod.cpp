@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.13 2001/08/29 17:07:35 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.14 2001/09/10 07:41:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -518,6 +518,13 @@ float CMeshMultiLod::getDistMax () const
 		return -1;
 }
 
+// ***************************************************************************
+const IMeshGeom& CMeshMultiLod::getMeshGeom (uint slot) const
+{
+	// Checks
+	nlassert (slot<getNumSlotMesh ());
 
+	return *_MeshVector[slot].MeshGeom;
+}
 
 } // NL3D

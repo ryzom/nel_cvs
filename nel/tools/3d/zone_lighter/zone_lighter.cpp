@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.7 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.8 2001/09/10 07:41:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,10 @@
 #include "3d/zone_lighter.h"
 #include "3d/quad_grid.h"
 #include "3d/landscape.h"
+#include "3d/scene_group.h"
+#include "3d/shape.h"
+#include "3d/transform_shape.h"
+#include "3d/register_3d.h"
 
 #include "../zone_welder/zone_utility.h"	// load a header file from zone_welder project
 
@@ -86,6 +90,9 @@ class CMyZoneLighter : public CZoneLighter
 
 int main(int argc, char* argv[])
 {
+	// Register 3d
+	registerSerial3d ();
+
 	// Good number of args ?
 	if (argc<5)
 	{
@@ -120,6 +127,14 @@ int main(int argc, char* argv[])
 				// Load and parse the dependency file
 				dependency.load (argv[4]);
 
+				// Fill the pathes
+				string ig_path = parameter.getVar ("ig_path").asString();
+				if ((ig_path[ig_path.length()-1]!='\\')&&(ig_path[ig_path.length()-1]!='/'))
+					ig_path+="/";
+				string shapes_path = parameter.getVar ("shapes_path").asString();
+				if ((shapes_path[shapes_path.length()-1]!='\\')&&(shapes_path[shapes_path.length()-1]!='/'))
+					shapes_path+="/";
+
 				// A landscape allocated with new: it is not delete because destruction take 3 secondes more!
 				CLandscape *landscape=new CLandscape;
 				landscape->init();
@@ -134,9 +149,34 @@ int main(int argc, char* argv[])
 				// The zone
 				CZone zone;
 
+				// List of ig
+				std::list<CInstanceGroup*> instanceGroup;
+
 				// Load
 				zone.serial (inputFile);
 				inputFile.close();
+
+				// Load ig of the zone
+				string igName=ig_path+getName (argv[1])+".ig";
+
+				// Try to open the file
+				if (inputFile.open (igName))
+				{
+					// New ig
+					CInstanceGroup *group=new CInstanceGroup;
+
+					// Serial it
+					group->serial (inputFile);
+					inputFile.close();
+
+					// Add to the list
+					instanceGroup.push_back (group);
+				}
+				else
+				{
+					// Warning
+					fprintf (stderr, "Warning: can't load instance group %s\n", igName.c_str());
+				}
 
 				// Get bank path
 				CConfigFile::CVar &bank_path = parameter.getVar ("bank_path");
@@ -166,6 +206,50 @@ int main(int argc, char* argv[])
 				landscape->addZone (zone);
 				listZoneId.push_back (zone.getZoneId());
 
+				// Load instance group ?
+				CConfigFile::CVar &load_ig= parameter.getVar ("load_ig");
+				bool loadInstanceGroup = load_ig.asInt ()!=0;
+
+				// Continue to build ?
+				bool continu=true;
+
+				// Try to load additionnal instance group.
+				if (loadInstanceGroup)
+				{
+					// Additionnal instance group
+					CConfigFile::CVar &additionnal_ig= parameter.getVar ("additionnal_ig");
+					for (uint add=0; add<(uint)additionnal_ig.size(); add++)
+					{
+						// Input file
+						CIFile inputFile;
+
+						// Name of the instance group
+						string name=ig_path+additionnal_ig.asString(add);
+
+						// Try to open the file
+						if (inputFile.open (name))
+						{
+							// New ig
+							CInstanceGroup *group=new CInstanceGroup;
+
+							// Serial it
+							group->serial (inputFile);
+							inputFile.close();
+
+							// Add to the list
+							instanceGroup.push_back (group);
+						}
+						else
+						{
+							// Error
+							fprintf (stderr, "Error: can't load instance group %s\n", name.c_str());
+
+							// Stop before build
+							continu=false;
+						}
+					}
+				}
+				
 				// *** Scan dependency file
 				CConfigFile::CVar &dependant_zones = dependency.getVar ("dependencies");
 				for (uint i=0; i<(uint)dependant_zones.size(); i++)
@@ -191,6 +275,31 @@ int main(int argc, char* argv[])
 					{
 						// Error message and continue
 						fprintf (stderr, "Error: can't load zone %s\n", (dir+zoneName+ext).c_str());
+					}
+
+					// Try to load an instance group.
+					if (loadInstanceGroup)
+					{
+						string name=ig_path+zoneName+".ig";
+
+						// Name of the instance group
+						if (inputFile.open (name))
+						{
+							// New ig
+							CInstanceGroup *group=new CInstanceGroup;
+
+							// Serial it
+							group->serial (inputFile);
+							inputFile.close();
+
+							// Add to the list
+							instanceGroup.push_back (group);
+						}
+						else
+						{
+							// Error message and continue
+							fprintf (stderr, "Warning: can't load instance group %s\n", name.c_str());
+						}
 					}
 				}
 
@@ -301,45 +410,126 @@ int main(int argc, char* argv[])
 				landscape->enableAutomaticLighting (false);
 				lighter.addTriangles (*landscape, listZoneId, 0, vectorTriangle);
 
-				// **********
-				// *** Light!
-				// **********
+				// Load and add shapes
 
-				// Start time
-				TTime time=CTime::getLocalTime ();
+				// Map of shape
+				std::map<string, IShape*> shapeMap;
 
-				// Output zone
-				CZone output;
-
-				// Light the zone
-				lighter.light (*landscape, output, zone.getZoneId(), lighterDesc, vectorTriangle, listZoneId);
-
-				// Compute time
-				printf ("\rCompute time: %d ms                                                      \r", 
-					(uint)(CTime::getLocalTime ()-time));
-
-				// Save the zone
-				COFile outputFile;
-
-				// Open it
-				if (outputFile.open (argv[2]))
+				// For each instance group
+				std::list<CInstanceGroup*>::iterator ite=instanceGroup.begin();
+				while (ite!=instanceGroup.end())
 				{
-					// Save the new zone
-					try
+					// Instance group
+					CInstanceGroup *group=*ite;
+
+					// For each instance
+					for (uint instance=0; instance<group->getNumInstance(); instance++)
 					{
-						// Save it
-						output.serial (outputFile);
+						// Get the instance shape name
+						string name=shapes_path+group->getShapeName (instance);
+
+						// Add a .shape at the end ?
+						if (name.find('.') == std::string::npos)
+							name += ".shape";
+
+						// Find the shape in the bank
+						std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);
+						if (iteMap==shapeMap.end())
+						{
+							// Input file
+							CIFile inputFile;
+
+							if (inputFile.open (name))
+							{
+								// Load it
+								CShapeStream stream;
+								stream.serial (inputFile);
+
+								// Get the pointer
+								iteMap=shapeMap.insert (std::map<string, IShape*>::value_type (name, stream.getShapePointer ())).first;
+							}
+							else
+							{
+								// Error
+								fprintf (stderr, "Error: can't load shape %s\n", name.c_str());
+
+								// Stop after adding triangles
+								continu=false;
+							}
+						}
+						
+						// Loaded ?
+						if (iteMap!=shapeMap.end())
+						{
+							// Build the matrix
+							CMatrix scale;
+							scale.identity ();
+							scale.scale (group->getInstanceScale (instance));
+							CMatrix rot;
+							rot.identity ();
+							rot.setRot (group->getInstanceRot (instance));
+							CMatrix pos;
+							pos.identity ();
+							pos.setPos (group->getInstancePos (instance));
+							CMatrix mt=pos*rot*scale;
+
+							// Add triangles
+							lighter.addTriangles (*iteMap->second, mt, vectorTriangle);
+						}
 					}
-					catch (Exception& except)
+
+					// Next instance group
+					ite++;
+				}
+
+				// Continue ?
+				if (continu)
+				{
+					// **********
+					// *** Light!
+					// **********
+
+					// Start time
+					TTime time=CTime::getLocalTime ();
+
+					// Output zone
+					CZone output;
+
+					// Light the zone
+					lighter.light (*landscape, output, zone.getZoneId(), lighterDesc, vectorTriangle, listZoneId);
+
+					// Compute time
+					printf ("\rCompute time: %d ms                                                      \r", 
+						(uint)(CTime::getLocalTime ()-time));
+
+					// Save the zone
+					COFile outputFile;
+
+					// Open it
+					if (outputFile.open (argv[2]))
 					{
-						// Error message
-						fprintf (stderr, "Error writing %s: %s\n", argv[2], except.what());
+						// Save the new zone
+						try
+						{
+							// Save it
+							output.serial (outputFile);
+						}
+						catch (Exception& except)
+						{
+							// Error message
+							fprintf (stderr, "Error writing %s: %s\n", argv[2], except.what());
+						}
+					}
+					else
+					{
+						// Error can't open the file
+						fprintf (stderr, "Can't open %s for writing\n", argv[1]);
 					}
 				}
 				else
 				{
-					// Error can't open the file
-					fprintf (stderr, "Can't open %s for writing\n", argv[1]);
+					// Error
+					fprintf (stderr, "Abort: files are missing.\n");
 				}
 			}
 			catch (Exception& except)

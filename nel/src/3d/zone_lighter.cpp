@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.3 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.4 2001/09/10 07:41:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,11 @@
 #include "3d/zone_lighter.h"
 #include "3d/landscape.h"
 #include "3d/patchuv_locator.h"
+#include "3d/shape.h"
+#include "3d/mesh.h"
+#include "3d/mesh_multi_lod.h"
+#include "3d/mesh_mrm.h"
+#include "3d/transform_shape.h"
 
 #include "nel/misc/common.h"
 #include "nel/misc/thread.h"
@@ -326,21 +331,25 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 			for (cpu=0; cpu<_ProcessCount; cpu++)
 				_QuadGrid[cpu].insert (min, max, &triangle);
 
-			// Fill the heightfield
-			sint minX=std::max (0, (sint)floor (0.5f+(min.x-_OrigineHeightField.x)/_HeightfieldCellSize));
-			sint maxX=std::min (_HeightFieldCellCount, (sint)floor (0.5f+(max.x-_OrigineHeightField.x)/_HeightfieldCellSize));
-			sint minY=std::max (0, (sint)floor (0.5f+(min.y-_OrigineHeightField.y)/_HeightfieldCellSize));
-			sint maxY=std::min (_HeightFieldCellCount, (sint)floor (0.5f+(max.y-_OrigineHeightField.y)/_HeightfieldCellSize));
-
-			// Calc position in the heightfield
-			for (sint y=minY; y<maxY; y++)
-			for (sint x=minX; x<maxX; x++)
+			// Lanscape tri ?
+			if (triangle.ZoneId!=-1)
 			{
-				// Valid position, try to insert it
-				if (max.z>_HeightField[x+y*_HeightFieldCellCount])
+				// Fill the heightfield
+				sint minX=std::max (0, (sint)floor (0.5f+(min.x-_OrigineHeightField.x)/_HeightfieldCellSize));
+				sint maxX=std::min (_HeightFieldCellCount, (sint)floor (0.5f+(max.x-_OrigineHeightField.x)/_HeightfieldCellSize));
+				sint minY=std::max (0, (sint)floor (0.5f+(min.y-_OrigineHeightField.y)/_HeightfieldCellSize));
+				sint maxY=std::min (_HeightFieldCellCount, (sint)floor (0.5f+(max.y-_OrigineHeightField.y)/_HeightfieldCellSize));
+
+				// Calc position in the heightfield
+				for (sint y=minY; y<maxY; y++)
+				for (sint x=minX; x<maxX; x++)
 				{
-					// New height in this cell
-					_HeightField[x+y*_HeightFieldCellCount]=max.z;
+					// Valid position, try to insert it
+					if (max.z>_HeightField[x+y*_HeightFieldCellCount])
+					{
+						// New height in this cell
+						_HeightField[x+y*_HeightFieldCellCount]=max.z;
+					}
 				}
 			}
 		}
@@ -1308,25 +1317,148 @@ void CZoneLighter::addTriangles (CLandscape &landscape, vector<uint> &listZone, 
 
 // ***************************************************************************
 
-void CZoneLighter::addTriangles (CTransformShape &transformShape, std::vector<CTriangle>& triangleArray)
+void CZoneLighter::addTriangles (const IShape &shape, const CMatrix& modelMT, std::vector<CTriangle>& triangleArray)
 {
-	/// \todo hulud: add triangles for transform shape to compute landscape shadow
-#if 0
-	// Get the shape pointer
-	IShape *shape=transformShape.Shape;
-
 	// Cast to CMesh
-	CMesh *mesh=dynamic_cast<CMesh*>(shape);
+	const CMesh *mesh=dynamic_cast<const CMesh*>(&shape);
 
-	// Is a CMesh ?
+	// Cast to CMeshMultiLod
+	const CMeshMultiLod *meshMulti=dynamic_cast<const CMeshMultiLod*>(&shape);
+
+	// Cast to CMeshMultiLod
+	const CMeshMRM *meshMRM=dynamic_cast<const CMeshMRM*>(&shape);
+
+	// It is a mesh ?
 	if (mesh)
 	{
-		// Ok, dump geometry
-		
-		// For each matrix block
-		getNbMatrixBlock() const;
+		// Add its triangles
+		addTriangles (mesh->getMeshGeom (), modelMT, triangleArray);
 	}
-#endif // 0
+	// It is a CMeshMultiLod ?
+	else if (meshMulti)
+	{
+		// Get the first geommesh
+		const IMeshGeom *meshGeom=&meshMulti->getMeshGeom (0);
+
+		// Dynamic cast
+		const CMeshGeom *geomMesh=dynamic_cast<const CMeshGeom*>(meshGeom);
+		if (geomMesh)
+		{
+			addTriangles (*geomMesh, modelMT, triangleArray);
+		}
+
+		// Dynamic cast
+		const CMeshMRMGeom *mrmGeomMesh=dynamic_cast<const CMeshMRMGeom*>(meshGeom);
+		if (mrmGeomMesh)
+		{
+			addTriangles (*mrmGeomMesh, modelMT, triangleArray);
+		}
+	}
+	// It is a CMeshMultiLod ?
+	else if (meshMRM)
+	{
+		// Get the first lod mesh geom
+		addTriangles (meshMRM->getMeshGeom (), modelMT, triangleArray);
+	}
+}
+
+// ***************************************************************************
+
+void CZoneLighter::addTriangles (const CMeshGeom &meshGeom, const CMatrix& modelMT, std::vector<CTriangle>& triangleArray)
+{
+	// Get the vertex buffer
+	const CVertexBuffer &vb=meshGeom.getVertexBuffer();
+
+	// For each matrix block
+	uint numBlock=meshGeom.getNbMatrixBlock();
+	for (uint block=0; block<numBlock; block++)
+	{
+		// For each render pass
+		uint numRenderPass=meshGeom.getNbRdrPass(block);
+		for (uint pass=0; pass<numRenderPass; pass++)
+		{
+			// Get the primitive block
+			const CPrimitiveBlock &primitive=meshGeom.getRdrPassPrimitiveBlock ( block, pass);
+
+			// Dump triangles
+			const uint32* triIndex=primitive.getTriPointer ();
+			uint numTri=primitive.getNumTri ();
+			uint tri;
+			for (tri=0; tri<numTri; tri++)
+			{
+				// Vertex
+				CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3]));
+				CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+1]));
+				CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+2]));
+
+				// Make a triangle
+				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2)));
+			}
+
+			// Dump quad
+			triIndex=primitive.getQuadPointer ();
+			numTri=primitive.getNumQuad ();
+			for (tri=0; tri<numTri; tri++)
+			{
+				// Vertex
+				CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4]));
+				CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+1]));
+				CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+2]));
+				CVector v3=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+3]));
+
+				// Make 2 triangles
+				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2)));
+				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v2, v3)));
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+
+void CZoneLighter::addTriangles (const CMeshMRMGeom &meshGeom, const CMatrix& modelMT, std::vector<CTriangle>& triangleArray)
+{
+	// Get the vertex buffer
+	const CVertexBuffer &vb=meshGeom.getVertexBuffer();
+
+	// For each render pass
+	uint numRenderPass=meshGeom.getNbRdrPass(0);
+	for (uint pass=0; pass<numRenderPass; pass++)
+	{
+		// Get the primitive block
+		const CPrimitiveBlock &primitive=meshGeom.getRdrPassPrimitiveBlock ( 0, pass);
+
+		// Dump triangles
+		const uint32* triIndex=primitive.getTriPointer ();
+		uint numTri=primitive.getNumTri ();
+		uint tri;
+		for (tri=0; tri<numTri; tri++)
+		{
+			// Vertex
+			CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3]));
+			CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+1]));
+			CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+2]));
+
+			// Make a triangle
+			triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2)));
+		}
+
+		// Dump quad
+		triIndex=primitive.getQuadPointer ();
+		numTri=primitive.getNumQuad ();
+		for (tri=0; tri<numTri; tri++)
+		{
+			// Vertex
+			CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4]));
+			CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+1]));
+			CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+2]));
+			CVector v3=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+3]));
+
+			// Make 2 triangles
+			triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2)));
+			triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v2, v3)));
+		}
+	}
 }
 
 // ***************************************************************************

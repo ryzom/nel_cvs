@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.15 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.16 2001/09/10 07:41:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -542,6 +542,9 @@ public:
 	{
 		return _MeshMRMGeom.getRdrPassMaterial(lodId, renderingPassIndex) ;
 	}
+
+	/// Get the mesh geom
+	const CMeshMRMGeom& getMeshGeom () const;
 
 	// @}
 

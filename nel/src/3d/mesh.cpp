@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.37 2001/09/07 07:32:08 corvazier Exp $
+ * $Id: mesh.cpp,v 1.38 2001/09/10 07:41:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1127,6 +1127,12 @@ float	CMesh::getNumTriangles (float distance)
 {
 	return _MeshGeom->getNumTriangles (distance);
 }
+// ***************************************************************************
+const	CMeshGeom& CMesh::getMeshGeom () const
+{
+	return *_MeshGeom;
+}
+
 
 
 } // NL3D

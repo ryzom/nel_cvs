@@ -1,7 +1,7 @@
 /** \file zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.2 2001/08/23 12:32:08 corvazier Exp $
+ * $Id: zone_lighter.h,v 1.3 2001/09/10 07:41:30 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -43,8 +43,10 @@ namespace NL3D
 
 class CZone;
 class CPatchUVLocator;
-class CTransformShape;
+class IShape;
 class CCalcRunnable;
+class CMeshGeom;
+class CMeshMRMGeom;
 
 // The zone lighter
 class CZoneLighter
@@ -255,13 +257,19 @@ public:
 	// Add triangles from a landscape
 	void addTriangles (CLandscape &landscape, std::vector<uint> &listZone, uint order, std::vector<CTriangle>& triangleArray);
 
-	// Add triangles from a transform shape
-	void addTriangles (CTransformShape &transformShape, std::vector<CTriangle>& triangleArray);
+	// Add triangles from a transform shape. Work only for CMesh, CMultiMesh and CMeshMRM all without skinning.
+	void addTriangles (const IShape &shape, const NLMISC::CMatrix& modelMT, std::vector<CTriangle>& triangleArray);
 
 	// Progress callback
 	virtual void progress (const char *message, float progress) {};
 
 private:
+	// Add triangles from a non skinned CMeshGeom.
+	void addTriangles (const CMeshGeom &meshGeom, const NLMISC::CMatrix& modelMT, std::vector<CTriangle>& triangleArray);
+
+	// Add triangles from a non skinned CMeshMRMGeom.
+	void addTriangles (const CMeshMRMGeom &meshGeom, const CMatrix& modelMT, std::vector<CTriangle>& triangleArray);
+
 	// One process method
 	void processCalc (uint process, uint firstPatch, uint lastPatch, const CLightDesc& description);
 

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.13 2001/09/07 09:34:27 vizerie Exp $
+ * $Id: mesh.h,v 1.14 2001/09/10 07:41:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -217,6 +217,9 @@ public:
 	 *  \param renderingPassIndex the index of the rendering pass in the matrix block
 	 */
 	uint32 getRdrPassMaterial(uint matrixBlockIndex, uint renderingPassIndex) const;
+
+	/// Get the geom mesh
+	const CMeshGeom &getMeshGeom () const;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.20 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: mesh_mrm.cpp,v 1.21 2001/09/10 07:41:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1591,6 +1591,13 @@ void	CMeshMRM::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 float	CMeshMRM::getNumTriangles (float distance)
 {
 	return _MeshMRMGeom.getNumTriangles (distance);
+}
+
+
+// ***************************************************************************
+const CMeshMRMGeom& CMeshMRM::getMeshGeom () const
+{
+	return _MeshMRMGeom;
 }
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.10 2001/08/24 16:37:15 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.11 2001/09/10 07:41:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -137,11 +137,14 @@ public:
 
 	// @}
 
+	/// Geometry accessor
+	const IMeshGeom& getMeshGeom (uint slot) const;
+
 	/// Return the global max dist for this lod
 	virtual	float getDistMax () const;
 
 	/// Get slot mesh count.
-	uint			getNumSlotMesh ()
+	uint			getNumSlotMesh () const
 	{
 		return _MeshVector.size();
 	}

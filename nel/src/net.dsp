@@ -111,6 +111,14 @@ LIB32=link.exe -lib
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\net\dummy_tcp_sock.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\dummy_tcp_sock.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\inet_address.cpp
 # End Source File
 # Begin Source File
@@ -232,6 +240,14 @@ SOURCE=.\net\callback_server.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\net\callback_server.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\message_recorder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\message_recorder.h
 # End Source File
 # End Group
 # Begin Group "Layer4"

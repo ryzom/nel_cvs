@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.4 2001/08/28 11:44:22 berenguier Exp $
+ * $Id: clip_trav.h,v 1.5 2001/08/29 12:49:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,7 +121,9 @@ public:
 	//@{
 	/// Vision Pyramid (6 normalized planes) in the view basis.
 	std::vector<CPlane>	ViewPyramid;
-	/// Vision Pyramid (6 normalized planes) in the world basis.
+	/// Vision Pyramid (6 normalized planes) in the world basis. NB: NOT modified by the ClusterSystem.
+	std::vector<CPlane>	WorldFrustumPyramid;
+	/// Vision Pyramid in the world basis. NB: may be modified by the ClusterSystem.
 	std::vector<CPlane>	WorldPyramid;	
 	/// Shortcut to the Rdr Traversals (to add the models rdr observers).
 	CRenderTrav		*RenderTrav;

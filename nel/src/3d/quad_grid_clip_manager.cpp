@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.1 2001/08/28 11:44:22 berenguier Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.2 2001/08/29 12:49:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -306,6 +306,12 @@ void				CQuadGridClipManager::newCaseModels(CQuadGridClusterCase &clusterCase)
 		hrcTrav->link(hrcTrav->SkipModelRoot, cluster);
 		// NB: disabled from validation in CQuadGridClipCluster::update()
 		// Hence it will be never traversed but in ClipTrav.
+
+		// link it in RootCluster, so it may be clipped in city etc...
+		CClipTrav	*clipTrav= (CClipTrav*)_Scene->getTrav(ClipTravId);
+		clipTrav->unlink(NULL, cluster);
+		clipTrav->link(clipTrav->RootCluster, cluster);
+
 
 		// init distMax
 		if(i<_MaxDists.size())

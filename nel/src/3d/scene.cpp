@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.47 2001/08/28 11:44:22 berenguier Exp $
+ * $Id: scene.cpp,v 1.48 2001/08/29 12:49:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,6 +260,9 @@ void	CScene::initGlobalnstanceGroup ()
 	pCluster->Name = "ClusterRoot";
 	pCluster->Group = _GlobalInstanceGroup;
 	_GlobalInstanceGroup->addCluster (pCluster);
+
+	// init the ClipTrav->RootCluster.
+	pClipTrav->RootCluster = _GlobalInstanceGroup->_ClusterInstances[0];
 }
 
 // ***************************************************************************
@@ -309,7 +312,6 @@ void	CScene::render(bool	doHrcPass)
 	// Set the renderTrav for cliptrav.
 	ClipTrav->setRenderTrav (RenderTrav);
 	ClipTrav->setHrcTrav (HrcTrav);
-	ClipTrav->RootCluster = _GlobalInstanceGroup->_ClusterInstances[0];
 	ClipTrav->Camera = CurrentCamera;
 	ClipTrav->setQuadGridClipManager (&_QuadGridClipManager);
 

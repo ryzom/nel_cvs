@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.9 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: landscape_model.cpp,v 1.10 2001/08/29 12:49:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "3d/landscape_model.h"
 #include "3d/landscape.h"
+#include "3d/cluster.h"
 #include <vector>
 using namespace std;
 using namespace NLMISC;
@@ -44,18 +45,32 @@ void	CLandscapeModel::registerBasic()
 }
 
 // ***************************************************************************
+void	CLandscapeClipObs::init()
+{
+	CTransformClipObs::init();
+
+	// Enable the landscape to be clipped by the Cluster System.
+	CClipTrav		*clipTrav= (CClipTrav*)Trav;
+	clipTrav->unlink(NULL, Model);
+	clipTrav->link(clipTrav->RootCluster, Model);
+}
+
+// ***************************************************************************
 bool	CLandscapeClipObs::clip(IBaseClipObs *caller)
 {
 
 	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
-	CClipTrav		*trav= (CClipTrav*)Trav;
-	vector<CPlane>	&pyramid= trav->WorldPyramid;
+	CClipTrav		*clipTrav= (CClipTrav*)Trav;
+
+	// Use the unClipped pyramid (not changed by cluster System).
+	vector<CPlane>	&pyramid= clipTrav->WorldFrustumPyramid;
+
 	// We are sure that pyramid has normalized plane normals.
-	landModel->Landscape.clip(trav->CamPos, pyramid);
+	landModel->Landscape.clip(clipTrav->CamPos, pyramid);
 
 	// Yes, this is ugly, but the clip pass is finished in render(), for clipping TessBlocks.
 	// This saves an other Landscape patch traversal, so this is faster...
-	landModel->CurrentPyramid= trav->WorldPyramid;
+	landModel->CurrentPyramid= pyramid;
 
 	// Well, always visible....
 	return true;

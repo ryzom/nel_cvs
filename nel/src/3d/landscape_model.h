@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.2 2001/07/05 09:38:49 besson Exp $
+ * $Id: landscape_model.h,v 1.3 2001/08/29 12:49:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,6 +121,9 @@ private:
 class	CLandscapeClipObs : public CTransformClipObs
 {
 public:
+
+	/// link this model to the RootCluster.
+	virtual	void	init();
 
 	/// Hey!! I'm renderable!!!
 	virtual	bool	isRenderable() const {return true;}

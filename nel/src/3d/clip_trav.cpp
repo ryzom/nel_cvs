@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.13 2001/08/28 11:44:22 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.14 2001/08/29 12:49:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,6 +128,9 @@ void CClipTrav::traverse()
 	{
 		WorldPyramid[i]= ViewPyramid[i]*ViewMatrix;
 	}
+
+	// bkup this pyramid (because this one may be modified by the cluster system).
+	WorldFrustumPyramid= WorldPyramid;
 
 
 	// update the QuadGridClipManager.

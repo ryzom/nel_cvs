@@ -1,7 +1,7 @@
 /** \file test_method.h
  * Library class exemple for the binary test.
  *
- * $Id: test_method.h,v 1.1 2001/01/29 11:11:24 chafik Exp $
+ * $Id: test_method.h,v 1.2 2001/03/05 13:48:34 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

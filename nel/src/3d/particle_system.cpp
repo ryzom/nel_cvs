@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.41 2002/01/28 14:22:32 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.42 2002/02/15 16:59:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,31 +73,41 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL),
 									 _CurrEditedElementIndex(0),
 									 _Driver(NULL),
 									 _TimeThreshold(0.15f),
-									 _MaxNbIntegrations(2),
-									 _CanSlowDown(true),
-									 _AccurateIntegration(true),
+									 _MaxNbIntegrations(2),									 
 									 _InvMaxViewDist(1.f / PSDefaultMaxViewDist),
 									 _InvCurrentViewDist(1.f / PSDefaultMaxViewDist),
 									 _MaxViewDist(PSDefaultMaxViewDist),
-									 _LODRatio(0.5f),
-									 _ComputeBBox(true),
-									 _BBoxTouched(true),
+									 _LODRatio(0.5f),									 
 									 _DieCondition(none),
-									 _DelayBeforeDieTest(0.2f),
-									 _DestroyModelWhenOutOfRange(false),
-									 _DestroyWhenOutOfFrustum(false),
+									 _DelayBeforeDieTest(0.2f),									 									
 									 _SystemDate(0.f),
 									 _OneMinusCurrentLODRatio(0),
 									 _MaxNumFacesWanted(0),
 									 _AnimType(AnimInCluster),
-									 _PresetBehaviour(UserBehaviour)
+									 _PresetBehaviour(UserBehaviour),									 
+									 _LastUpdateDate(-1),
+									 _AutoLODStartDistPercent(0.3f),
+									 _AutoLODDegradationExponent(1),																		 
+									 _ComputeBBox(true),
+									 _BBoxTouched(true),
+									 _AccurateIntegration(true),
+									 _CanSlowDown(true),
+									 _DestroyModelWhenOutOfRange(false),
+									 _DestroyWhenOutOfFrustum(false),
+									 _Sharing(false),
+									 _AutoLOD(false),
+									 _KeepEllapsedTimeForLifeUpdate(false),
+									 _AutoLODSkipParticles(false),
+									 _ColorAttenuationScheme(NULL),
+									 _GlobalColor(NLMISC::CRGBA::White)
+
 									
 {
 	for (uint k = 0; k < MaxPSUserParam; ++k) _UserParam[k] = 0;
 }
 
 
-
+///=======================================================================================
 /// immediatly shut down all the sound in this system
 void CParticleSystem::stopSound()
 {
@@ -118,7 +128,7 @@ void CParticleSystem::stopSound()
 	}	
 }
 
-
+///=======================================================================================
 void CParticleSystem::reactivateSound()
 {
 	for (uint k = 0; k < this->getNbProcess(); ++k)
@@ -138,6 +148,7 @@ void CParticleSystem::reactivateSound()
 }
 
 
+///=======================================================================================
 void CParticleSystem::notifyMaxNumFacesChanged(void)
 {
 	
@@ -149,6 +160,7 @@ void CParticleSystem::notifyMaxNumFacesChanged(void)
 }
 
 
+///=======================================================================================
 float CParticleSystem::getWantedNumTris(float dist)
 {
 			 	 
@@ -157,6 +169,7 @@ float CParticleSystem::getWantedNumTris(float dist)
 }
 
 
+///=======================================================================================
 void CParticleSystem::setNumTris(uint numFaces)
 {
 	float modelDist = (_SysMat.getPos() - _InvertedViewMat.getPos()).norm();
@@ -178,6 +191,7 @@ void CParticleSystem::setNumTris(uint numFaces)
 }
 
 
+///=======================================================================================
 /// dtor
 CParticleSystem::~CParticleSystem()
 {
@@ -185,18 +199,17 @@ CParticleSystem::~CParticleSystem()
 	{
 		delete *it;
 	}
+	delete _ColorAttenuationScheme;
 }
 
-
+///=======================================================================================
 void CParticleSystem::setViewMat(const NLMISC::CMatrix &m)
 {
 	_ViewMat = m;
 	_InvertedViewMat = m.inverted();
 }				
 
-
-
-
+///=======================================================================================
 bool CParticleSystem::hasEmitters(void) const
 {
 	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
@@ -205,7 +218,8 @@ bool CParticleSystem::hasEmitters(void) const
 	}
 	return false;
 }
-	
+
+///=======================================================================================
 bool CParticleSystem::hasParticles(void) const
 {
 	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
@@ -215,41 +229,76 @@ bool CParticleSystem::hasParticles(void) const
 	return false;
 }
 
-
-
-
-void CParticleSystem::stepLocated(TPSProcessPass pass, TAnimationTime et)
+///=======================================================================================
+void CParticleSystem::stepLocated(TPSProcessPass pass, TAnimationTime et, TAnimationTime realEt)
 {
 	if (pass == PSSolidRender || pass == PSBlendRender || pass == PSToolRender)
 	{
 		for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 		{
-			(*it)->step(pass, et);
+			(*it)->step(pass, et, realEt);
 		}
 	}
 	else
 	{
 		for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 		{
-			if (!(*it)->isParametricMotionEnabled()) (*it)->step(pass, et);
+			if (!(*it)->isParametricMotionEnabled()) (*it)->step(pass, et, realEt);
 		}
 	}
 }
 
+
+///=======================================================================================
+inline void CParticleSystem::updateLODRatio()
+{
+	const CVector d = _SysMat.getPos() - _ViewMat.getPos();		
+	_OneMinusCurrentLODRatio = 1.f - (d.norm() * _InvCurrentViewDist);
+	if (_OneMinusCurrentLODRatio < 0) _OneMinusCurrentLODRatio = 0.f;
+}
+
+///=======================================================================================
+inline void CParticleSystem::updateColor()
+{
+	if (_ColorAttenuationScheme)
+	{
+		float ratio = 0.99f - 	_OneMinusCurrentLODRatio;
+		_GlobalColor = 	_ColorAttenuationScheme->get(ratio > 0.f ? ratio : 0.f);
+	}
+}
+
+///=======================================================================================
 void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 {		
 	switch (pass)
 	{
 		case SolidRender:
-			++_Date; // update time		 
-			stepLocated(PSSolidRender, ellapsedTime);
+			/// When shared, the LOD ratio must be computed there
+			if (_Sharing)
+			{
+				updateLODRatio();
+			}
+			// update time
+			++_Date; 	
+			// update global color
+			updateColor();
+			stepLocated(PSSolidRender, ellapsedTime, ellapsedTime);
+
 		break;
 		case BlendRender:
-			++_Date; // update time
-			stepLocated(PSBlendRender, ellapsedTime);
+			/// When shared, the LOD ratio must be computed there
+			if (_Sharing)
+			{
+				updateLODRatio();
+			}
+			// update time
+			++_Date; 
+			// update global color
+			updateColor();
+			stepLocated(PSBlendRender, ellapsedTime, ellapsedTime);
 		break;
 		case ToolRender:
-			stepLocated(PSToolRender, ellapsedTime);
+			stepLocated(PSToolRender, ellapsedTime, ellapsedTime);
 		break;
 		case Anim:
 		{
@@ -274,21 +323,19 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 				}			
 			}
 
-			// store the view matrix for lod computation, and further rendering pass
-			// update current lod ratio
-			const CVector d = _SysMat.getPos() - _ViewMat.getPos();		
-			_OneMinusCurrentLODRatio = 1.f - (d.norm() * _InvCurrentViewDist);
-			if (_OneMinusCurrentLODRatio < 0) _OneMinusCurrentLODRatio = 0.f;								
+			updateLODRatio();
 
 			// process passes
+			float realEt = _KeepEllapsedTimeForLifeUpdate ? (ellapsedTime / nbPass)
+														  : et;
 			do
 			{
-				stepLocated(PSEmit, et);
-				stepLocated(PSCollision, et);
-				stepLocated(PSMotion, et);
-				stepLocated(PSCollision, et);
-				stepLocated(PSDynamic, et);
-				stepLocated(PSPostdynamic, et);
+				stepLocated(PSEmit, et, realEt);
+				stepLocated(PSCollision,et,  realEt);
+				stepLocated(PSMotion, et, realEt);
+				stepLocated(PSCollision, et, realEt);
+				stepLocated(PSDynamic, et, realEt);
+				stepLocated(PSPostdynamic, et, realEt);
 				_SystemDate += et;
 			}
 			while (--nbPass);
@@ -297,20 +344,23 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 			{
 				if ((*it)->isParametricMotionEnabled()) (*it)->performParametricMotion(_SystemDate, ellapsedTime);
-			}
-			
-
-			// update system date
+			}				
 			
 		}
-	}	
-		
+	}			
 }
 
+
+
+///=======================================================================================
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {		
-	sint version =  f.serialVersion(8);	
-
+	sint version =  f.serialVersion(10);	
+		
+	// version 9: Sharing flag added
+	//            Auto-lod parameters
+	//            New integration flag
+	//			  Global color attenuation
 	// version 8: Replaced the attribute '_PerformMotionWhenOutOfFrustum' by a _AnimType field which allow more precise control
 
 	//f.serial(_ViewMat);
@@ -318,6 +368,7 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_Date);
 	if (f.isReading())
 	{
+		delete _ColorAttenuationScheme;
 		// delete previous multimap
 		_LBMap.clear();
 		// delete previously attached process
@@ -398,6 +449,20 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serialEnum(_PresetBehaviour);
 	}
 
+	if (version > 8)
+	{
+		f.serial(_Sharing);
+		f.serial(_AutoLOD);
+		if (_AutoLOD)
+		{
+			f.serial(_AutoLODStartDistPercent, _AutoLODDegradationExponent);
+			f.serial(_AutoLODSkipParticles);
+		}
+		f.serial(_KeepEllapsedTimeForLifeUpdate);
+		f.serialPolyPtr(_ColorAttenuationScheme);
+	}
+	
+
 	if (f.isReading())
 	{
 		notifyMaxNumFacesChanged();
@@ -405,6 +470,7 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 
+///=======================================================================================
 void CParticleSystem::attach(CParticleSystemProcess *ptr)
 {
 	nlassert(std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr) == _ProcessVect.end() );
@@ -414,8 +480,7 @@ void CParticleSystem::attach(CParticleSystemProcess *ptr)
 	notifyMaxNumFacesChanged();
 }
 
-
-
+///=======================================================================================
 void CParticleSystem::remove(CParticleSystemProcess *ptr)
 {
 	TProcessVect::iterator it = std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr);
@@ -427,10 +492,7 @@ void CParticleSystem::remove(CParticleSystemProcess *ptr)
 	delete ptr;
 }
 
-
-
-
-
+///=======================================================================================
 void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 {
 	if (!_ComputeBBox || !_BBoxTouched)
@@ -472,17 +534,14 @@ void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 	_PreComputedBBox = aabbox;
 }
 
-
-
+///=======================================================================================
 void CParticleSystem::setSysMat(const CMatrix &m)
 {
 	_SysMat = m;
 	_InvSysMat = _SysMat.inverted();
 }
 
-
-
-
+///=======================================================================================
 bool CParticleSystem::hasOpaqueObjects(void) const
 {
 	/// for each process
@@ -503,7 +562,7 @@ bool CParticleSystem::hasOpaqueObjects(void) const
 	return false;
 }
 
-
+///=======================================================================================
 bool CParticleSystem::hasTransparentObjects(void) const
 {
 	/// for each process
@@ -524,9 +583,7 @@ bool CParticleSystem::hasTransparentObjects(void) const
 	return false;
 }
 
-
-
-
+///=======================================================================================
 void CParticleSystem::getLODVect(NLMISC::CVector &v, float &offset,  bool systemBasis)
 {
 	if (!systemBasis)
@@ -543,7 +600,7 @@ void CParticleSystem::getLODVect(NLMISC::CVector &v, float &offset,  bool system
 	}
 }
 
-
+///=======================================================================================
 TPSLod CParticleSystem::getLOD(void) const
 {
 	const float dist = fabsf(_InvCurrentViewDist * (_SysMat.getPos() - _InvertedViewMat.getPos()) * _InvertedViewMat.getJ());
@@ -551,6 +608,7 @@ TPSLod CParticleSystem::getLOD(void) const
 }
 
 
+///=======================================================================================
 void CParticleSystem::registerLocatedBindableExternID(uint32 id, CPSLocatedBindable *lb)
 {
 	nlassert(lb);
@@ -565,6 +623,7 @@ void CParticleSystem::registerLocatedBindableExternID(uint32 id, CPSLocatedBinda
 		_LBMap.insert(TLBMap::value_type (id, lb) );
 }
 
+///=======================================================================================
 void CParticleSystem::unregisterLocatedBindableExternID(CPSLocatedBindable *lb)
 {
 	nlassert(lb);	
@@ -577,11 +636,13 @@ void CParticleSystem::unregisterLocatedBindableExternID(CPSLocatedBindable *lb)
 	_LBMap.erase(el);
 }
 
+///=======================================================================================
 uint CParticleSystem::getNumLocatedBindableByExternID(uint32 id) const
 {
 	return _LBMap.count(id);
 }
 
+///=======================================================================================
 CPSLocatedBindable *CParticleSystem::getLocatedBindableByExternID(uint32 id, uint index)
 {
 	nlassert(index < _LBMap.count(id));
@@ -592,6 +653,7 @@ CPSLocatedBindable *CParticleSystem::getLocatedBindableByExternID(uint32 id, uin
 
 }
 
+///=======================================================================================
 const CPSLocatedBindable *CParticleSystem::getLocatedBindableByExternID(uint32 id, uint index) const
 {
 	nlassert(index < _LBMap.count(id));
@@ -601,8 +663,7 @@ const CPSLocatedBindable *CParticleSystem::getLocatedBindableByExternID(uint32 i
 	return  el->second;
 }
 
-
-
+///=======================================================================================
 void CParticleSystem::merge(CParticleSystemShape *pss)
 {
 	nlassert(pss);	
@@ -616,8 +677,7 @@ void CParticleSystem::merge(CParticleSystemShape *pss)
 	delete duplicate;
 }
 
-
-
+///=======================================================================================
 void CParticleSystem::activatePresetBehaviour(TPresetBehaviour behaviour)
 {
 

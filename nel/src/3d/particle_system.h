@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.22 2002/01/28 14:22:32 vizerie Exp $
+ * $Id: particle_system.h,v 1.23 2002/02/15 16:59:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,17 +29,21 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/aabbox.h"
+#include "nel/misc/smart_ptr.h"
+#include "nel/misc/rgba.h"
 #include "nel/3d/animation_time.h"
 #include "3d/mot.h"
 #include "3d/animated_value.h"
 #include "3d/particle_system_process.h"
 #include "3d/ps_lod.h"
+#include "3d/ps_attrib_maker.h"
 
 #include <map>
 
 
 
-namespace NL3D {
+namespace NL3D 
+{
 
 class CParticleSystemShape;
 class CPSLocatedBindable;
@@ -76,7 +80,7 @@ const uint MaxPSUserParam = 4;
  * \author Nevrax France
  * \date 2001
  */
-class CParticleSystem
+class CParticleSystem : public NLMISC::CRefCount
 {
 
 public:
@@ -98,10 +102,28 @@ public:
 			  */
 			void merge(CParticleSystemShape *toMerge);
 
-			/*** duplication method NOT SUPPORTED
+			/*** duplication method NOT SUPPORTED for now (suplication is using streams, but it may not last)
 			 * \param ch for private use, set to null by default
 			 */
 			//	CParticleSystem *clone(CPSCopyHelper *ch = NULL) ;
+		//@}
+
+	//*****************************************************************************************************
+
+	///\name Sharing system
+		//@{
+			/** Enable/Disable sharing. When sharing is enabled, the state of a particle system is the same for
+			  * all the system that have the same shape. This allow to gain memory.
+			  * However, such system should not be built with LOD in mind (for example, less emission with distance)
+			  * LOD should be automatic for these system (see Auto-Lod). This means that sharing is only useful for system that
+			  * have the same state, and if they are numerous : motion is performed once, but only for one system with no LOD.
+			  * LOD is done during display only (when activated).
+			  * The default for systems is to have no sharing.
+			  */
+			void	enableSharing(bool enabled = true) { _Sharing = enabled; }
+
+			/// Test wether sharing is enabled
+			bool	isSharingEnabled() const { return _Sharing; }
 		//@}
 
 	//*****************************************************************************************************	  
@@ -350,27 +372,46 @@ public:
 		  * \param canSlowDown : Allow the system to slow down in speed but to keep accuracy in its movement.
 		  *  It is useful for critical situations where the framerate is very low. The default is true.
 		  */
-		void setAccurateIntegrationParams(TAnimationTime threshold, uint32 maxNbIntegrations, bool canSlowDown)
+		void setAccurateIntegrationParams(TAnimationTime threshold,
+										  uint32 maxNbIntegrations,
+										  bool canSlowDown,
+										  bool keepEllapsedTimeForLifeUpdate
+										  )
 		{
 			_TimeThreshold = threshold;
 			_MaxNbIntegrations = maxNbIntegrations;
 			_CanSlowDown = canSlowDown;
+			_KeepEllapsedTimeForLifeUpdate = keepEllapsedTimeForLifeUpdate;
 		}
 
 		/** get the parameters used for integration.
 		  * \see setAccurateIntegrationParams()
 		  */
-		void getAccurateIntegrationParams(TAnimationTime &threshold, uint32 &maxNbIntegrations, bool &canSlowDown)
+		void getAccurateIntegrationParams(TAnimationTime &threshold,
+										  uint32 &maxNbIntegrations,
+										  bool &canSlowDown,
+										  bool &keepEllapsedTimeForLifeUpdate
+										 )
 		{
 			threshold = _TimeThreshold ;
 			maxNbIntegrations = _MaxNbIntegrations;
 			canSlowDown = _CanSlowDown;
+			keepEllapsedTimeForLifeUpdate = _KeepEllapsedTimeForLifeUpdate;
 		}
+
+
+		
 	// @}
 
 	//*****************************************************************************************************
 
-	///\name LOD managment
+	/**\name LOD managment. LOD, when used  can be performed in 2 ways :
+	  *						- Hand tuned LOD (for emission, color, size : this uses LOD as an input for attribute makers).
+	  *                     - Auto LOD : Results are less good than with Hand- tuned LOD, but this may be needed when sharing is
+	  *						  enabled. NB : auto-lod may not be supported by all kinds of particles.
+	  */
+
+
 		// @{
 
 		/// set the max view distance for the system (in meters) . The default is 50 meters.
@@ -402,6 +443,65 @@ public:
 
 		/// get 1.f - the current lod ratio (it is updated at each motion pass)
 		float getOneMinusCurrentLODRatio(void) const { return _OneMinusCurrentLODRatio; }
+
+		/** Enable / disbale auto-lod.
+		  * When auto-LOD is enabled, less particles are displayed when the system is far.
+		  * This apply to all particles in the systems (unless they override that behaviour).
+		  * The default is AutoLOD off.
+		  */
+		void	enableAutoLOD(bool enabled = true) { _AutoLOD = enabled; }
+
+		/// test wether Auto-LOD is enabled
+		bool    isAutoLODEnabled() const { return _AutoLOD; }
+
+		/** Setup auto lod parameters.
+		  * \param start A percentage of the max view dist that tells when the auto-lod must start.
+		  * \param strenght The degradation speed. It is interpreted as an exponent.
+		  */
+		void    setupAutoLOD(float startDistPercent, uint8 degradationExponent)
+		{
+			nlassert(startDistPercent < 1.f);
+			nlassert(degradationExponent > 0);
+			_AutoLODStartDistPercent    = 	startDistPercent;
+			_AutoLODDegradationExponent =	degradationExponent;
+		}
+
+		
+		float	getAutoLODStartDistPercent() const { return _AutoLODStartDistPercent; }
+		uint8   getAutoLODDegradationExponent() const { return _AutoLODDegradationExponent; }		
+
+		/** There are 2 modes for the auto-LOD :
+		  * - Particle are skip in the source container when display is performed (the default)
+		  * - There are just less particles displayed, but this can lead to 'pulse effect'. This is faster, though.
+		  */
+		void	setAutoLODMode(bool skipParticles) { _AutoLODSkipParticles = skipParticles; }
+		bool    getAutoLODMode() const { return _AutoLODSkipParticles; }
+
+		/** Setup a color attenuation scheme with the distance from the viewer. This doesn't act on a particle basis,
+		  * the whole color of the system is changed in an uniform way so it is fast (the same can be achieved on a particle basis).
+		  * This bypass the source of the scheme : it is set to 0 when the system is on the user, and to 1 when
+		  * it is at its max distance. 
+		  * \param scheme A color scheme, that is then owned by this object. NULL disable color attenuation. Any previous scheme is removed
+		  */
+		  void	setColorAttenuationScheme(CPSAttribMaker<NLMISC::CRGBA> *colScheme)
+		  {
+			delete _ColorAttenuationScheme;
+			_ColorAttenuationScheme = colScheme;
+			if (!colScheme)
+			{
+				_GlobalColor = NLMISC::CRGBA::White;
+			}
+		  }
+
+		  /// Get the global color attenuation scheme
+		  CPSAttribMaker<NLMISC::CRGBA> *getColorAttenuationScheme() { return _ColorAttenuationScheme; }
+		  const CPSAttribMaker<NLMISC::CRGBA> *getColorAttenuationScheme() const { return _ColorAttenuationScheme; }
+
+		  /** Get the current global color of the system. (It is updated just before drawing...). It there's
+		    * no color attenuation scheme it can be assumed to be white
+			*/
+		  const NLMISC::CRGBA &getGlobalColor() const {	return _GlobalColor; }
+		
 
 		// @}
 
@@ -650,13 +750,13 @@ public:
 
 	
 
-protected:
+private:
+	friend class CParticleSystemDetailObs;
 	/// process a pass on the bound located
-	void					stepLocated(TPSProcessPass pass, TAnimationTime et);
+	void					stepLocated(TPSProcessPass pass, TAnimationTime et, TAnimationTime realEt);
+	void					updateLODRatio();
+	void					updateColor();
 
-	/// when set to true, the system will compute his BBox every time computeBBox is called
-	bool					 _ComputeBBox;
-	bool					 _BBoxTouched;
 	NLMISC::CAABBox			 _PreComputedBBox;
 
 	// the driver used for rendering
@@ -680,6 +780,9 @@ protected:
 	// number of rendered pass on the system, incremented each time the system is redrawn
 	uint64					 _Date;	
 
+	/// Last update date of the system. Useful with sharing only, to avoid several motions.
+	sint64					 _LastUpdateDate;
+
 	// current edited element located (edition purpose only)
 	CPSLocated				 *_CurrEditedElementLocated;
 	// current edited located bindable, NULL means all binadable of a located. (edition purpose only)
@@ -697,13 +800,10 @@ protected:
 
 	// contains the name of the system. (VERSION >= 2 only)
 	std::string _Name;
-
-
-	bool										_AccurateIntegration;	
+	
 	TAnimationTime								_TimeThreshold;
 	TAnimationTime								_SystemDate;
-	uint32										_MaxNbIntegrations;
-	bool										_CanSlowDown;
+	uint32										_MaxNbIntegrations;	
 
 
 	float										_LODRatio;
@@ -711,13 +811,10 @@ protected:
 	float										_MaxViewDist;
 	float										_InvMaxViewDist;
 	float										_InvCurrentViewDist; // inverse of the current view dist. It can be the same than _InvMaxViewDist
-														        // but when there's LOD, the view distance may be reduced
-	bool										_Touch;
+														        // but when there's LOD, the view distance may be reduced	
 
 	TDieCondition								_DieCondition;
-	TAnimationTime								_DelayBeforeDieTest;
-	bool										_DestroyModelWhenOutOfRange;
-	bool										_DestroyWhenOutOfFrustum;		
+	TAnimationTime								_DelayBeforeDieTest;	
 	uint										_MaxNumFacesWanted;	
 	TAnimType									_AnimType;
 
@@ -730,6 +827,25 @@ protected:
 	typedef 
 	std::multimap<uint32, CPSLocatedBindable *> TLBMap;
 	TLBMap										_LBMap;
+
+	float										_AutoLODStartDistPercent;
+	uint8										_AutoLODDegradationExponent;
+
+	CPSAttribMaker<NLMISC::CRGBA>				*_ColorAttenuationScheme;
+	NLMISC::CRGBA								_GlobalColor;
+
+	/// \TODO nico replace this with a bitfield (and change serialisation accordingly)
+	/// when set to true, the system will compute his BBox every time computeBBox is called
+	bool										_ComputeBBox;
+	bool										_BBoxTouched;
+	bool										_AccurateIntegration;		
+	bool										_CanSlowDown;
+	bool										_DestroyModelWhenOutOfRange;
+	bool										_DestroyWhenOutOfFrustum;
+	bool										_Sharing;
+	bool										_AutoLOD;
+	bool										_KeepEllapsedTimeForLifeUpdate;
+	bool										_AutoLODSkipParticles;
 	
 };
 

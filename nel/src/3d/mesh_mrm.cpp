@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.56 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.57 2003/03/12 13:39:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2530,8 +2530,16 @@ void	CMeshMRMGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *tra
 	// Profile
 	if(triCount)
 	{
+		// tri per VBFormat
 		rdrTrav->Scene->incrementProfileTriVBFormat(rdrTrav->Scene->BenchRes.MeshMRMProfileTriVBFormat, 
 			_VBufferFinal.getVertexFormat(), triCount);
+
+		// VBHard
+		if(_VBHard)
+			rdrTrav->Scene->BenchRes.NumMeshMRMVBufferHard++;
+		else
+			rdrTrav->Scene->BenchRes.NumMeshMRMVBufferStd++;
+
 		// rendered in BlockRendering, only if not transparent pass (known it if RenderTransparentMaterial is set)
 		if(supportMeshBlockRendering() && (rdrFlags & IMeshGeom::RenderTransparentMaterial)==0 )
 		{

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.73 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh.cpp,v 1.74 2003/03/12 13:39:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -913,7 +913,7 @@ void	CMeshGeom::renderSimpleWithMaterial(IDriver *drv, const CMatrix &worldMatri
 	// setup matrix
 	drv->setupModelMatrix(worldMatrix);
 
-	// active VB.
+	// Active simple VB.
 	drv->activeVertexBuffer(_VBuffer);
 
 	// For all _MatrixBlocks
@@ -1936,8 +1936,16 @@ void	CMeshGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans,
 	// Profile
 	if(triCount)
 	{
+		// tri per VBFormat
 		rdrTrav->Scene->incrementProfileTriVBFormat(rdrTrav->Scene->BenchRes.MeshProfileTriVBFormat, 
 			_VBuffer.getVertexFormat(), triCount);
+
+		// VBHard
+		if(_VertexBufferHard)
+			rdrTrav->Scene->BenchRes.NumMeshVBufferHard++;
+		else
+			rdrTrav->Scene->BenchRes.NumMeshVBufferStd++;
+
 		// rendered in BlockRendering, only if not transparent pass (known it if RenderTransparentMaterial is set)
 		if(supportMeshBlockRendering() && (rdrFlags & IMeshGeom::RenderTransparentMaterial)==0 )
 		{

@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.6 2004/05/05 10:19:29 distrib Exp $
+ * $Id: patch.cpp,v 1.7 2004/05/05 17:18:54 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -294,9 +294,14 @@ private:
 						path = ClientPatchPath + filename;
 					}
 
-					nlinfo("'%s' local %u %uB server %u %uB dtime %d", filename.c_str(), NLMISC::CFile::getFileModificationDate (path), NLMISC::CFile::getFileSize (path), date, size, difftime(date, NLMISC::CFile::getFileModificationDate (path)));
+					// we have to check around 2 seconds because some windows file system store
+					// their time is less bits
+					uint32 moddate = NLMISC::CFile::getFileModificationDate(path);
+					uint32 delta = (moddate>date) ? (moddate-date) : (date-moddate);
 
-					if (NLMISC::CFile::getFileModificationDate (path) != date || NLMISC::CFile::getFileSize (path) != size)
+					nlinfo("'%s' local %u %uB server %u %uB delta %u", filename.c_str(), moddate, NLMISC::CFile::getFileSize (path), date, size, delta);
+
+					if (delta > 2 || NLMISC::CFile::getFileSize (path) != size)
 					{
 						nlinfo("file '%s' is not the same date/size than on server, need to get it", filename.c_str());
 						needToGetFilesList.push_back (CEntry(filename, size, date));

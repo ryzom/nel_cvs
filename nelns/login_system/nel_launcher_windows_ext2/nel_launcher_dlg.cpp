@@ -1,6 +1,6 @@
 /** \file nel_launcher_dlg.cpp
  *
- * $Id: nel_launcher_dlg.cpp,v 1.6 2004/04/29 17:38:56 lecroart Exp $
+ * $Id: nel_launcher_dlg.cpp,v 1.7 2004/05/05 17:18:54 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -95,6 +95,10 @@ BEGIN_MESSAGE_MAP(CNeLLauncherDlg, CDialog)
 	ON_BN_CLICKED(ID_CONNECT, OnConnect)
 	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_SIGNUP, OnSignup)
+	ON_BN_CLICKED(IDC_ATYSNEWS, OnAtysnews)
+	ON_BN_CLICKED(IDC_PLAYGUIDE, OnPlayguide)
+	ON_BN_CLICKED(IDC_RELEASENOTE, OnReleasenote)
+	ON_BN_CLICKED(IDC_LIVESUPPORT, OnLivesupport)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -578,4 +582,24 @@ void CNeLLauncherDlg::OnSignup()
 		GotoURL(ConfigFile.getVar("SignUpURL").asString().c_str());
 	else
 		GotoURL("http://www.ryzom.com");
+}
+
+void CNeLLauncherDlg::OnAtysnews() 
+{
+	GotoURL("http://atys.ryzom.com");
+}
+
+void CNeLLauncherDlg::OnPlayguide() 
+{
+	GotoURL("http://atys.ryzom.com/forums/index.php?c=4");
+}
+
+void CNeLLauncherDlg::OnReleasenote() 
+{
+	GotoURL("http://atys.ryzom.com/?page=update_latest");
+}
+
+void CNeLLauncherDlg::OnLivesupport() 
+{
+	GotoURL("http://atys.ryzom.com/?page=beta_chat");
 }

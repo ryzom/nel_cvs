@@ -1,6 +1,6 @@
 /** \file nel_launcher_dlg.h
  *
- * $Id: nel_launcher_dlg.h,v 1.3 2004/04/15 12:12:30 lecroart Exp $
+ * $Id: nel_launcher_dlg.h,v 1.4 2004/05/05 17:18:54 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -87,6 +87,10 @@ protected:
 	afx_msg void OnTimer(UINT nIDEvent);
 	virtual void OnCancel();
 	afx_msg void OnSignup();
+	afx_msg void OnAtysnews();
+	afx_msg void OnPlayguide();
+	afx_msg void OnReleasenote();
+	afx_msg void OnLivesupport();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

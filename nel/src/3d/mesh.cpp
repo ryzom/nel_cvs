@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.12 2001/04/11 10:29:35 berenguier Exp $
+ * $Id: mesh.cpp,v 1.13 2001/04/12 13:57:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,13 @@ void	CMesh::build(CMeshBuild &m)
 	// Skinning is OK only if SkinWeights are of same size as vertices.
 	_Skinned= _Skinned && (m.Vertices.size()==m.SkinWeights.size());
 
+	// If skinning is KO, remove the Skin option.
+	uint	vbFlags= m.VertexFlags;
+	if(!_Skinned)
+		vbFlags&= ~IDRV_VF_PALETTE_SKIN;
+	// Force presence of vertex.
+	vbFlags|= IDRV_VF_XYZ;
+
 
 	// If the mesh is not skinned, we have just 1 _MatrixBlocks.
 	if(!_Skinned)
@@ -193,10 +200,10 @@ void	CMesh::build(CMeshBuild &m)
 	// Setup VB.
 	_VBuffer.setNumVertices(0);
 	_VBuffer.reserve(0);
-	_VBuffer.setVertexFormat(m.VertexFlags | IDRV_VF_XYZ);
+	_VBuffer.setVertexFormat(vbFlags);
 
 	// Set local flags for corner comparison.
-	CCornerTmp::Flags= m.VertexFlags;
+	CCornerTmp::Flags= vbFlags;
 	// Setup locals.
 	TCornerSet	corners;
 	const CFaceTmp		*pFace= &(*tmpFaces.begin());
@@ -242,7 +249,7 @@ void	CMesh::build(CMeshBuild &m)
 	for(;N>0;N--, pFace++)
 	{
 		sint	mbId= pFace->MatrixBlockId;
-		nlassert(mbId>=0 && mbId<_MatrixBlocks.size());
+		nlassert(mbId>=0 && mbId<(sint)_MatrixBlocks.size());
 		// Insert the face in good MatrixBlock/RdrPass.
 		_MatrixBlocks[mbId].RdrPass[pFace->MaterialId].PBlock.addTri(pFace->Corner[0].VBId, pFace->Corner[1].VBId, pFace->Corner[2].VBId);
 	}
@@ -342,6 +349,12 @@ void	CMesh::render(IDriver *drv, CTransformShape *trans)
 	bool	skinOk= _Skinned && mi->_ApplySkinOk && skeleton;
 
 
+	// enable driver skinning.
+	if(skinOk)
+	{
+		drv->setupVertexMode(NL3D_VERTEX_MODE_SKINNING);
+	}
+
 
 	// For all _MatrixBlocks
 	for(uint mb=0;mb<_MatrixBlocks.size();mb++)
@@ -386,6 +399,12 @@ void	CMesh::render(IDriver *drv, CTransformShape *trans)
 			// Render with the Materials of the MeshInstance.
 			drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
 		}
+	}
+
+	// disable driver skinning.
+	if(skinOk)
+	{
+		drv->setupVertexMode(NL3D_VERTEX_MODE_NORMAL);
 	}
 
 }
@@ -686,7 +705,7 @@ void	CMesh::buildSkin(CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces)
 					face.MatrixBlockId= _MatrixBlocks.size()-1;
 					
 					// remove the face from remain face list.
-					remainingFaces.erase(itFace);
+					itFace= remainingFaces.erase(itFace);
 
 					// inform the algorithm that a face has been added.
 					faceAdded= true;

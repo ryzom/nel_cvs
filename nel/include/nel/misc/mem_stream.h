@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.12 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: mem_stream.h,v 1.13 2001/07/13 17:08:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,6 +174,9 @@ public:
 
 	/// Transforms the message from input to output or from output to input
 	void			invert();
+
+	/// Force to reset the ptr table
+	void				resetPtrTable() { IStream::resetPtrTable() ; }
 
 protected:
 

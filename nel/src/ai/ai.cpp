@@ -72,8 +72,8 @@ namespace NLAILINK
 	void setLocalServerID(uint8 u)
 	{
 		NLAIAGENT::CAgentNumber::ServerId = u;
-		NLAIAGENT::CNumericIndex::_I.setCreatorId( (uint64)u );
-		NLAIAGENT::CNumericIndex::_I.setDynamicId( (uint64)u );
+		NLAIAGENT::CNumericIndex::_I.setCreatorId( u );
+		NLAIAGENT::CNumericIndex::_I.setDynamicId( u );
 	}
 
 	uint8 getLocalServerID()

@@ -1,7 +1,7 @@
 /** \file cloud.cpp
  * cloud implementation
  *
- * $Id: cloud.cpp,v 1.2 2002/10/28 10:14:58 besson Exp $
+ * $Id: cloud.cpp,v 1.3 2002/10/30 13:39:16 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -50,16 +50,23 @@ CCloud::CCloud (CCloudScape *pCloudScape)
 	_WaitState = 0;
 	_BillSize = 0;
 	_OldBillSize = 0;
+	_UStart = _VStart = _WStart = NULL;
 }
 
 // ------------------------------------------------------------------------------------------------
 CCloud::~CCloud()
 {
+	delete _UStart;
+	delete _VStart;
+	delete _WStart;
 }
 
 // ------------------------------------------------------------------------------------------------
 void CCloud::init (uint32 nVoxelW, uint32 nVoxelH, uint32 nVoxelD, float rBaseFreq, uint32 nNbOctave)
 {
+	if (_UStart != NULL)
+		return;
+	
 	_BaseFreq = rBaseFreq;
 	_BillSize = 0;
 	_OldBillSize = 0;

@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.2 2002/10/28 10:14:59 besson Exp $
+ * $Id: cloud_scape.cpp,v 1.3 2002/10/30 13:39:16 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -90,6 +90,9 @@ SCloudTexture3D::SCloudTexture3D ()
 // ------------------------------------------------------------------------------------------------
 void SCloudTexture3D::init (uint32 nWidth, uint32 nHeight, uint32 nDepth)
 {
+	if (Mem != NULL)
+		return;
+
 	Width = raiseToNextPowerOf2 (nWidth);
 	Height = raiseToNextPowerOf2 (nHeight);
 	Depth = raiseToNextPowerOf2 (nDepth);
@@ -139,6 +142,9 @@ SCloudTextureClamp::SCloudTextureClamp ()
 // ------------------------------------------------------------------------------------------------
 void SCloudTextureClamp::init (uint32 nWidth, uint32 nHeight, uint32 nDepth, const std::string &filename)
 {
+	if (Mem != NULL)
+		return;
+	
 	Width = raiseToNextPowerOf2 (nWidth);
 	Height = raiseToNextPowerOf2 (nHeight);
 	Depth = raiseToNextPowerOf2 (nDepth);
@@ -351,6 +357,10 @@ void CCloudScape::init (SCloudScapeSetup *pCSS, NL3D::CCamera *pCamera)
 	_CloudSchedulerSize = _CurrentCSS.NbCloud;
 	_CloudSchedulerLastAdded.resize (MAX_CLOUDS);
 	_FrameCounter = 0;
+	_CloudScheduler.clear();
+	for (i = 0; i < MAX_CLOUDS; ++i)
+		_CloudSchedulerLastAdded[i].ValidPos = false;
+
 	for (i = 0; i < QUEUE_SIZE; ++i)
 	{
 		sint32 nCloudNb = i%_CurrentCSS.NbCloud;

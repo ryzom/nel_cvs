@@ -7,6 +7,12 @@
 // choose_frame_delay.h : header file
 //
 
+
+#include "editable_range.h"
+
+
+class CObjectViewer;
+
 /////////////////////////////////////////////////////////////////////////////
 // CChooseLag dialog
 
@@ -14,13 +20,13 @@ class CChooseFrameDelay : public CDialog
 {
 // Construction
 public:
-	CChooseFrameDelay(CWnd* pParent = NULL);   // standard constructor
+	CChooseFrameDelay(CObjectViewer *objectViewer, CWnd* pParent);   // standard constructor
+	~CChooseFrameDelay();
 
 // Dialog Data
 	//{{AFX_DATA(CChooseLag)
-	enum { IDD = IDD_CHOOSE_FRAME_DELAY };
-	UINT	m_FrameDelay;
-	//}}AFX_DATA
+	enum { IDD = IDD_CHOOSE_FRAME_DELAY };	
+	//}}A FX_DATA
 
 
 // Overrides
@@ -31,13 +37,22 @@ public:
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
-
+protected:	
+	CEditableRangeUInt  *_ER;
 	// Generated message map functions
-	//{{AFX_MSG(CChooseLag)
-		// NOTE: the ClassWizard will add member functions here
+	//{{AFX_MSG(CChooseFrameDelay)	
+	virtual BOOL OnInitDialog();
+	afx_msg void OnDestroy();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+	void updateValueFromText();
+	void updateTextFromValue(uint value);
+	struct CCFDWrapper : public IPSWrapperUInt
+	{
+		CObjectViewer *OV;		
+		uint32 get(void) const;
+		virtual void set(const uint32 &value);
+	} _CFDWrapper;
 };
 
 //{{AFX_INSERT_LOCATION}}

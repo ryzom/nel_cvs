@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.49 2001/12/12 10:31:52 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.50 2001/12/14 15:54:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -371,7 +371,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	//=====================================
 	if (
 		(_UserTexMatEnabled != 0 && (mat.getFlags() & IDRV_MAT_USER_TEX_MAT_ALL) == 0)		
-		|| mat.getFlags() != 0
+		|| (mat.getFlags() & IDRV_MAT_USER_TEX_MAT_ALL) != 0
 	   )
 	{
 		glMatrixMode(GL_TEXTURE);

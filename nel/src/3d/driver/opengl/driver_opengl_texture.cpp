@@ -1,7 +1,7 @@
 /** \file driver_opengl_texture.cpp
  * OpenGL driver implementation : setupTexture
  *
- * $Id: driver_opengl_texture.cpp,v 1.6 2000/12/08 10:33:16 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.7 2000/12/11 15:53:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,11 +108,17 @@ bool CDriverGL::setupTexture(ITexture& tex)
 
 			if(tex.getSize()>0)
 			{
-				tex.convertToType(CBitmap::RGBA);
-				void	*ptr= &(*tex.getPixels().begin());
 				GLint	texfmt=GL_RGBA8;
-				glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,tex.getWidth(),tex.getHeight(),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+				tex.convertToType(CBitmap::RGBA);
+				tex.buildMipMaps();
+				for(sint i=0;i<tex.getMipMapCount();i++)
+				{
+					void	*ptr= &(*tex.getPixels(i).begin());
+					glTexImage2D(GL_TEXTURE_2D,i,GL_RGBA8,tex.getWidth(i),tex.getHeight(i),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+				}
 			}
+
+			//printf("%d,%d,%d\n", tex.getMipMapCount(), tex.getWidth(0), tex.getHeight(0));
 
 			tex.clearTouched();
 			// Release, if wanted.
@@ -124,7 +130,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
 			//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 			//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 			glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);

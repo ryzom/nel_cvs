@@ -289,6 +289,10 @@ SOURCE=.\bmp00014.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\bmp00015.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\object_viewer.rc2
 # End Source File
 # Begin Source File
@@ -490,6 +494,14 @@ SOURCE=.\tail_particle_dlg.cpp
 # Begin Source File
 
 SOURCE=.\tail_particle_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\texture_anim_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\texture_anim_dlg.h
 # End Source File
 # Begin Source File
 

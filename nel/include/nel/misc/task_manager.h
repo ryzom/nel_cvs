@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * Manage a list of task in a separate thread
  *
- * $Id: task_manager.h,v 1.6 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: task_manager.h,v 1.7 2001/08/28 11:39:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,9 @@ public:
 
 	/// Task list size
 	uint taskListSize(void); 
+
+	/// return false if exit() is required. task added with addTask() should test this flag.
+	bool	isThreadRunning() {return _ThreadRunning;}
 
 private:
 	//queue of tasks, using list container instead of queue for DeleteTask methode

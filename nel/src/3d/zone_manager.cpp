@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.3 2001/08/22 16:40:53 berenguier Exp $
+ * $Id: zone_manager.cpp,v 1.4 2001/08/28 11:39:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,13 @@ CZoneManager::CZoneManager()
 /// Destructeur
 CZoneManager::~CZoneManager()
 {
+	// kill thread.
 	delete _pLoadTask;
+	// After thread exit, delete any zone remainining.
+	if(!ZoneAdded)
+	{
+		delete	Zone;
+	}
 	_listZone.clear();
 }
 
@@ -203,6 +209,12 @@ void CZoneLoadingTask::run(void)
 	while(!_Zm->ZoneAdded)
 	{
 		_Zm->getTask()->sleepTask();
+		// must test if thread wants to exit.
+		if(!_Zm->getTask()->isThreadRunning())
+		{
+			delete this;
+			return;
+		}
 	}
 
 	_Zm->Zone = new CZone;
@@ -240,6 +252,12 @@ void CZoneUnloadingTask::run(void)
 	while(!_Zm->ZoneRemoved)
 	{
 		_Zm->getTask()->sleepTask();
+		// must test if thread wants to exit.
+		if(!_Zm->getTask()->isThreadRunning())
+		{
+			delete this;
+			return;
+		}
 	}
 	_Zm->IdZoneToRemove = _Lz->IdZone;
 	_Zm->NameZoneRemoved= _Lz->getNameWithoutExtension();

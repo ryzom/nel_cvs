@@ -1,7 +1,7 @@
 /** \file zone_bank.h
  * Zone Bank
  *
- * $Id: zone_bank.h,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: zone_bank.h,v 1.2 2003/12/08 11:43:08 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -114,9 +114,9 @@ public:
 
 	void reset ();
 	/// Initialize the zone bank with all files present in the path given (note pathName must not end with '\\')
-	void initFromPath (const std::string &pathName);
+	bool initFromPath (const std::string &pathName, std::string &error);
 	/// Load an element in the current directory
-	void addElement (const std::string &elementName);
+	bool addElement (const std::string &elementName, std::string &error);
 
 	void getCategoriesType (std::vector<std::string> &CategoriesType);
 	void getCategoryValues (const std::string &CategoryType, std::vector<std::string> &CategoryValues);

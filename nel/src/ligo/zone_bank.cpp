@@ -1,7 +1,7 @@
 /** \file zone_bank.cpp
  * Zone Bank
  *
- * $Id: zone_bank.cpp,v 1.2 2003/09/01 12:05:57 lecroart Exp $
+ * $Id: zone_bank.cpp,v 1.3 2003/12/08 11:43:08 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -499,7 +499,7 @@ void CZoneBank::reset ()
 }
 
 // ---------------------------------------------------------------------------
-void CZoneBank::initFromPath(const string &sPathName)
+bool CZoneBank::initFromPath(const string &sPathName, std::string &error)
 {
 	char sDirBackup[512];
 	GetCurrentDirectory (512, sDirBackup);
@@ -513,30 +513,41 @@ void CZoneBank::initFromPath(const string &sPathName)
 		// If the name of the file is not . or .. then its a valid entry in the DataBase
 		if (!((strcmp (findData.cFileName, ".") == 0) || (strcmp (findData.cFileName, "..") == 0)))
 		{
-			addElement (findData.cFileName);
+			if (!addElement (findData.cFileName, error))
+				return false;
 		}
 		if (FindNextFile (hFind, &findData) == 0)
 			break;
 	}
 	SetCurrentDirectory (sDirBackup);
+	return true;
 }
 
 // ---------------------------------------------------------------------------
-void CZoneBank::addElement (const std::string &elementName)
+bool CZoneBank::addElement (const std::string &elementName, std::string &error)
 {
 	try
 	{
 		CZoneBankElement zbeTmp;
 		CIFile fileIn;
-		fileIn.open (elementName);
-		CIXml input;
-		input.init (fileIn);
-		zbeTmp.serial (input);
-		_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(),zbeTmp));
+		if (fileIn.open (elementName))
+		{
+			CIXml input;
+			input.init (fileIn);
+			zbeTmp.serial (input);
+			_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(),zbeTmp));
+			return true;
+		}
+		else
+		{
+			error = "Can't open file " + elementName;
+		}
 	}
-	catch (Exception& /*e*/)
+	catch (Exception& e)
 	{
+		error = "Error while loading ligozone "+elementName+" : "+e.what();
 	}
+	return false;
 }
 
 // ---------------------------------------------------------------------------

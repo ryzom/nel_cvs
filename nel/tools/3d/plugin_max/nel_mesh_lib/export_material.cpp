@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.37 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: export_material.cpp,v 1.38 2003/07/01 15:28:09 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1231,7 +1231,8 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 
 			uint numUsedSlots = 0;
 
-			for (uint l = 0; l < numNelTextureSlots; ++l)
+			uint l;
+			for (l = 0; l < numNelTextureSlots; ++l)
 			{
 				if (!fileName[l].empty()) numUsedSlots = l + 1;
 			}

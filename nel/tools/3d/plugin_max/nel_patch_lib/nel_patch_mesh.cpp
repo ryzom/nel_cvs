@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * <File description>
  *
- * $Id: nel_patch_mesh.cpp,v 1.10 2002/08/23 15:41:45 corvazier Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.11 2003/07/01 15:25:04 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -932,7 +932,8 @@ void RPatchMesh::Subdivide (int nPatch, int nV0, int nV1, int nV2, int nV3, int 
 	// Init patch info without intialize tabl
 	pPatch->Init (nTileU, nTileV, true);
 
-	for(int v=0; v<nTileCountV; v++)
+	int v;
+	for(v=0; v<nTileCountV; v++)
 	for(int u=0; u<nTileCountU; u++)
 	{
 		// Tile info
@@ -1108,7 +1109,8 @@ void RPatchMesh::SubdivideU (int nPatch, int nV0, int nV1, int nFirstPatch, Patc
 		// Copy info
 		int nTileCountU=1<<nTileU;
 		int nTileCountV=1<<nTileV;
-		for(int v=0; v<nTileCountV; v++)
+		int v;
+		for(v=0; v<nTileCountV; v++)
 		for(int u=0; u<nTileCountU; u++)
 		{
 			// Tile info
@@ -1202,8 +1204,10 @@ void RPatchMesh::SubdivideV (int nPatch, int nV0, int nV1, int nFirstPatch, Patc
 		// Copy info
 		int nTileCountU=1<<nTileU;
 		int nTileCountV=1<<nTileV;
-		for(int v=0; v<nTileCountV; v++)
-		for(int u=0; u<nTileCountU; u++)
+		int v;
+		int u;
+		for(v=0; v<nTileCountV; v++)
+		for(u=0; u<nTileCountU; u++)
 		{
 			// Tile info
 			int nTile=u+v*nTileCountU;
@@ -1215,7 +1219,7 @@ void RPatchMesh::SubdivideV (int nPatch, int nV0, int nV1, int nFirstPatch, Patc
 			//pPatch->Tile[nTile].Rotate=getUIPatch (nPatch).Tile[nOldTile].Rotate;
 		}
 		for(v=0; v<nTileCountV+1; v++)
-		for(int u=0; u<nTileCountU+1; u++)
+		for(u=0; u<nTileCountU+1; u++)
 		{
 			// Vertex info
 			int nVertex=u+v*(nTileCountU+1);
@@ -1530,9 +1534,11 @@ void RPatchMesh::CreateExtrusion (PatchMesh *patch)
 void RPatchMesh::FindPatch (PatchMesh *patch, int nEdge, int &WhichEdge, int &nPatch, int nFirstPatch)
 {
 	// In the new polygones
-	for (int nn=nFirstPatch; nn<patch->numPatches; nn++)
+	int nn;
+	for (nn=nFirstPatch; nn<patch->numPatches; nn++)
 	{
-		for (int nv=0; nv<4; nv++)
+		int nv;
+		for (nv=0; nv<4; nv++)
 		{
 			if (patch->patches[nn].edge[nv]==nEdge)
 			{
@@ -1594,7 +1600,8 @@ void RPatchMesh::ResolveTopoChanges(PatchMesh *patch, bool aux1)
 		cUIVertex[n]=getUIVertex (n);
 
 	// Build remap vertex info
-	for (int i = 0; i < patch->numVerts; ++i)
+	int i;
+	for (i = 0; i < patch->numVerts; ++i)
 	{
 		int nTag;
 		if (aux1)
@@ -1881,7 +1888,8 @@ IOResult RPatchMesh::Load(ILoad *iload)
 			int nSize;
 			iload->Read(&nSize, sizeof (nSize), &nb);
 			SetNumPatches (nSize);
-			for (int i=0; i<nSize; i++)
+			int i;
+			for (i=0; i<nSize; i++)
 			{
 				iload->Read(&getUIPatch (i).NbTilesU, sizeof (int), &nb);
 				iload->Read(&getUIPatch (i).NbTilesV, sizeof (int), &nb);
@@ -2051,6 +2059,7 @@ IOResult RPatchMesh::Save(ISave *isave)
 	// Patch info
 	int nSize=getUIPatchSize();
 	isave->Write(&nSize, sizeof (nSize), &nb);
+	int i;
 	for (int i=0; i<nSize; i++)
 	{
 		isave->Write(&getUIPatch (i).NbTilesU, sizeof (int), &nb);
@@ -2059,7 +2068,8 @@ IOResult RPatchMesh::Save(ISave *isave)
 		// Tiles
 		int nSize2=getUIPatch (i).getTileSize();
 		isave->Write(&nSize2, sizeof (int), &nb);
-		for (int j=0; j<nSize2; j++)
+		int j;
+		for (j=0; j<nSize2; j++)
 		{
 			USHORT num=getUIPatch (i).getTileDesc (j)._Num;
 			isave->Write(&num, sizeof (USHORT), &nb);
@@ -2378,7 +2388,8 @@ void RPatchMesh::BuildMesh(TimeValue t, PatchMesh& patch, Mesh *pMesh)
 	int nChannelCount=0;
 	BitArray pChannelBit (MAX_MESHMAPS);
 	pChannelBit.ClearAll ();
-	for (int nChannel=0; nChannel<MAX_MESHMAPS; nChannel++)
+	int nChannel;
+	for (nChannel=0; nChannel<MAX_MESHMAPS; nChannel++)
 	{
 		if ((patch.getNumMapVerts(nChannel)>0)||((!rTess.KeepMapping)&&(nChannel==1)))
 		{

@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.23 2003/03/05 14:33:19 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.24 2003/07/01 15:27:12 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,8 @@ static int getCommonVertex(PatchMesh* pPM, int ipatch1, int ipatch2, int* porder
 	patch1=&pPM->patches[ipatch1];
 	patch2=&pPM->patches[ipatch2];
 
-	for(int i=0 ; i<4 ; i++)
+	int i;
+	for(i=0 ; i<4 ; i++)
 	{
 		if (patch1->v[i]==patch2->v[0])			
 		{

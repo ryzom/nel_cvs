@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.13 2000/11/22 13:14:50 berenguier Exp $
+ * $Id: tessellation.h,v 1.14 2000/11/24 14:06:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -382,6 +382,9 @@ public:
 
 	// Utilities.
 	bool			isLeaf() const {return SonLeft==NULL;}
+	bool			isRectangular() const;
+	// tall is true if rectangle of type NxN+ (eg: 4x8) , false otherwise. isTall() implies isRectangular().
+	bool			isTall() const;
 	bool			hasVertex(CTessVertex *v) const {return VBase==v || VLeft==v || VRight==v;}
 	bool			hasEdge(CTessVertex *v0, CTessVertex *v1) const {return hasVertex(v0) && hasVertex(v1);}
 	void			changeNeighbor(CTessFace *from, CTessFace *to)
@@ -472,6 +475,13 @@ private:
 
 	// Usefull for unbind.
 	static bool	exceptPatch(CPatch *p, CPatch *except[4]);
+
+
+	// See refine() and merge().
+	bool	canMerge(bool testEm);
+
+	// see split().
+	void	splitRectangular(bool propagateSplit);
 
 
 private:

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.14 2000/11/22 15:09:47 berenguier Exp $
+ * $Id: patch.cpp,v 1.15 2000/11/24 14:06:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ CPatch::CPatch()
 	Son1=NULL;
 	Clipped=false;
 
-	// To force computation on next render().
+	// To force computation of texture info on next preRender().
 	Far0= -1;
 	Far1= -1;
 }
@@ -86,7 +86,7 @@ void			CPatch::release()
 	Son1=NULL;
 	Clipped=false;
 
-	// To force computation on next render().
+	// To force computation of texture info on next preRender().
 	Far0= -1;
 	Far1= -1;
 }
@@ -246,8 +246,12 @@ void			CPatch::compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVe
 	// Rectangular patch OK.
 	// Work, since patch 1xX are illegal. => The TileLimitLevel is at least 2 level distant from the time where
 	// the rectangular patch is said "un-rectangular-ed" (tesselation looks like square). Hence, there is no problem
-	// with rectangular UV geomorph.
+	// with rectangular UV geomorph (well don't bother me, make a draw :) ).
 	TileLimitLevel= pmin*2 + pmax-pmin;
+	// This tell us when the tess face is "un-rectangular-ed" (to say a square). Before, it is a "rectangular" face, 
+	// which has a strange fxxxxxg split.
+	// If patch is square, then SquareLimitLevel=0 (ok!!).
+	SquareLimitLevel= pmax-pmin;
 
 	// Buil the BSPhere.
 	CAABBox	bb= buildBBox();

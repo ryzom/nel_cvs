@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.13 2000/11/22 15:09:30 berenguier Exp $
+ * $Id: patch.h,v 1.14 2000/11/24 14:06:04 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -214,8 +214,10 @@ private:
 	CZone			*Zone;
 	// Tile Order for the patch.
 	uint8			OrderS, OrderT;
-	// For this patch, which level is required to be a valid Tile??
+	// For this patch, which level is required for a face to be a valid Tile??
 	sint			TileLimitLevel;
+	// For this patch, which level is required for a face to be a "square" face (not rectangular)??
+	sint			SquareLimitLevel;
 	// The Base Size*bumpiness of the patch (/2 at each subdivide).
 	float			ErrorSize;
 	// The root for tesselation.

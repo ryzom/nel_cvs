@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.43 2004/04/07 17:03:53 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.44 2004/05/26 16:04:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -318,12 +318,13 @@ void CLandscapeUser::removeAllZones()
 	NL3D_MEM_LANDSCAPE
 	NL3D_HAUTO_LOAD_LANDSCAPE;
 
+	// Ensure Async Loading is ended
 	CZoneManager::SZoneManagerWork Work;
-	// Check if new zone must be added to landscape
 	while (_ZoneManager.isLoading())
 	{
 		if (_ZoneManager.isWorkComplete(Work))
 		{
+			// Zone to add?
 			if (Work.ZoneAdded)
 			{
 				if (Work.Zone == (CZone*)-1)
@@ -332,20 +333,25 @@ void CLandscapeUser::removeAllZones()
 				}
 				else
 				{
+					// just discard it! cause will be all cleared below
 					delete Work.Zone;
 				}
 			}
 
-			// Check if a zone must be removed from landscape
+			// Zone to remove?
 			if (Work.ZoneRemoved)
 			{
 				_Landscape->Landscape.removeZone (Work.IdZoneToRemove);
 			}
 		}
+		else
+		{
+			nlSleep(1);
+		}
 	}
 
+	// Then do a full clear
 	_Landscape->Landscape.clear();
-
 	_ZoneManager.clear();
 }
 

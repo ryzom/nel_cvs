@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.24 2003/07/03 15:17:25 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.25 2003/12/01 10:28:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,7 +209,7 @@ uint32	CSourceDSound::getTime()
 
 	_Sample->getFormat(format, freq);
 
-	return 1000.0f * (_PlayOffset+1) / (float)freq;
+	return uint32(1000.0f * (_PlayOffset+1) / (float)freq);
 }
 
 // ******************************************************************

@@ -429,7 +429,7 @@ IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 109, 71
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Particle system start/stop"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Button1",IDC_START_PICTURE,7,6,24,24,BS_BITMAP
     PUSHBUTTON      "Button1",IDC_STOP_PICTURE,69,6,24,24,BS_BITMAP
@@ -1006,8 +1006,9 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Vegetable Edit"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LISTBOX         IDC_LIST_VEGETABLE,10,20,95,125,LBS_NOINTEGRALHEIGHT | 
-                    WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LIST_VEGETABLE,10,20,95,125,LBS_OWNERDRAWFIXED | 
+                    LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
+                    WS_TABSTOP
     CONTROL         "Vegetables :",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
                     WS_GROUP,10,5,95,10
     LTEXT           "Select a Vegetable to Edit",IDC_STATIC_SELECT_VEGETABLE,
@@ -2235,6 +2236,22 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "&About object viewer...",     ID_HELP_ABOUTOBJECTVIEWER
+    END
+END
+
+IDR_VEGETABLE_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "MENU"
+    BEGIN
+        MENUITEM "Show",                        ID_MENU_SHOW
+        MENUITEM SEPARATOR
+        MENUITEM "Add",                         ID_MENU_ADD
+        MENUITEM "Insert",                      ID_MENU_INSERT
+        MENUITEM "Remove",                      ID_MENU_REMOVE
+        MENUITEM SEPARATOR
+        MENUITEM "Copy vegetable",              ID_MENU_COPY
+        MENUITEM "Load .vegetdesc",             ID_MENU_LOADVEGETDESC
+        MENUITEM "Save .vegetdesc",             ID_MENU_SAVEVEGETDESC
     END
 END
 

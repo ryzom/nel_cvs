@@ -923,6 +923,14 @@ SOURCE=R:\code\nel\tools\3d\object_viewer\vegetable_edit_tools.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vegetable_list_box.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vegetable_list_box.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vegetable_list_color.cpp
 # End Source File
 # Begin Source File

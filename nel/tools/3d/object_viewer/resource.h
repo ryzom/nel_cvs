@@ -265,6 +265,7 @@
 #define IDC_SUB_COMPONENT               1119
 #define IDD_SETUP_FOG                   1120
 #define IDC_PSI_VALUE                   1121
+#define IDR_VEGETABLE_MENU              1121
 #define IDC_THETA_VALUE                 1122
 #define IDC_HINT_PRECOMPUTED_ROTATIONS  1122
 #define IDC_PHI_VALUE                   1123
@@ -663,13 +664,20 @@
 #define IDM_PASTE_LOCATED               32889
 #define IDM_ACTIVATE_FOG                32890
 #define IDM_SETUP_FOG                   32891
+#define ID_MENU_ADD                     32892
+#define ID_MENU_REMOVE                  32893
+#define ID_MENU_INSERT                  32894
+#define ID_MENU_COPY                    32895
+#define ID_MENU_LOADVEGETDESC           32896
+#define ID_MENU_SAVEVEGETDESC           32897
+#define ID_MENU_SHOW                    32898
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1121
-#define _APS_NEXT_COMMAND_VALUE         32892
+#define _APS_NEXT_RESOURCE_VALUE        1122
+#define _APS_NEXT_COMMAND_VALUE         32899
 #define _APS_NEXT_CONTROL_VALUE         1344
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

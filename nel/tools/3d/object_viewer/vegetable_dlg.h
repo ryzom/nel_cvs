@@ -9,6 +9,7 @@
 
 #include "ps_wrapper.h"
 #include "vegetable_refresh.h"
+#include "vegetable_list_box.h"
 
 
 class	CObjectViewer;
@@ -39,6 +40,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CVegetableDlg)
 	enum { IDD = IDD_VEGETABLE_DLG };
+	CVegetableListBox	VegetableList;
 	CStatic	StaticPolyCount;
 	CButton	CheckSnapToGround;
 	CButton	CheckEnableVegetable;
@@ -46,7 +48,6 @@ public:
 	CButton	ButtonRefreshLandscape;
 	CButton	CheckShowLandscape;
 	CStatic	SelectVegetableStaticText;
-	CListBox	VegetableList;
 	//}}AFX_DATA
 
 
@@ -62,6 +63,9 @@ public:
 	void				updateCurSelVegetableName();
 	NL3D::CVegetable	*getVegetable(uint id) const;
 
+	// Change the hiden state of the id vegetable.
+	void				swapShowHideVegetable (uint id);
+	bool				isVegetableVisible (uint id);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -78,6 +82,7 @@ public:
 // Implementation
 protected:
 	CObjectViewer				*_ObjView;
+	friend	class	CVegetableListBox;
 
 	// Name to save.
 	std::string					_LastVegetSetName;
@@ -89,6 +94,8 @@ protected:
 		NL3D::CVegetable		*Vegetable;
 		// The name of this vegetable.
 		std::string				VegetableName;
+		// Visibility. Editor feature only
+		bool					Visible;
 
 		CVegetableDesc();
 
@@ -123,9 +130,10 @@ protected:
 	bool			loadVegetableSet(NL3D::CTileVegetableDesc &vegetSet, const char *title);
 	/** build the vegetSet from the current _Vegetables
 	 * NB: transform Rotate Angle in Radians.
-	 * NB: if keepDefaultShapeName==true, then vegetables with a ShapeName=="" are kept.
+	 * \param keepDefaultShapeName if true, then vegetables with a ShapeName=="" are kept.
+	 * \param keepHiden if true, then vegetables maked as hiden in ObjectViewer are kept.
 	 */
-	void			buildVegetableSet(NL3D::CTileVegetableDesc &vegetSet, bool keepDefaultShapeName= true);
+	void			buildVegetableSet(NL3D::CTileVegetableDesc &vegetSet, bool keepDefaultShapeName= true, bool keepHiden= true );
 	// append the vegetSet to the current _Vegetables
 	// NB: transform Rotate Angle in Degrees.
 	void			appendVegetableSet(NL3D::CTileVegetableDesc &vegetSet);

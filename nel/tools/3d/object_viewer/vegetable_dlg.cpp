@@ -37,6 +37,9 @@ CVegetableDlg::CVegetableDlg(CObjectViewer *viewer, CWnd* pParent /*=NULL*/)
 
 	_LastVegetSetName= "*.vegetset";
 
+	// init VegetableList
+	VegetableList.VegetableDlg= this;
+
 	//{{AFX_DATA_INIT(CVegetableDlg)
 	//}}AFX_DATA_INIT
 }
@@ -46,6 +49,7 @@ void CVegetableDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CVegetableDlg)
+	DDX_Control(pDX, IDC_LIST_VEGETABLE, VegetableList);
 	DDX_Control(pDX, IDC_STATIC_VEGETABLE_PERF, StaticPolyCount);
 	DDX_Control(pDX, IDC_CHECK_VEGETABLE_SNAPTOGROUND, CheckSnapToGround);
 	DDX_Control(pDX, IDC_CHECK_VEGETABLE_ENABLE, CheckEnableVegetable);
@@ -53,7 +57,6 @@ void CVegetableDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON_VEGETABLE_REFRESH, ButtonRefreshLandscape);
 	DDX_Control(pDX, IDC_CHECK_VEGETABLE_SHOW, CheckShowLandscape);
 	DDX_Control(pDX, IDC_STATIC_SELECT_VEGETABLE, SelectVegetableStaticText);
-	DDX_Control(pDX, IDC_LIST_VEGETABLE, VegetableList);
 	//}}AFX_DATA_MAP
 }
 
@@ -121,8 +124,8 @@ void			CVegetableDlg::doRefreshVegetableDisplay()
 {
 	NL3D::CTileVegetableDesc	vegetSet;
 
-	// first build the vegetSet, but don't keep <default> shapeName.
-	buildVegetableSet(vegetSet, false);
+	// first build the vegetSet, but don't keep <default> shapeName. and skip Hiden vegetables too
+	buildVegetableSet(vegetSet, false, false);
 
 	// then refresh window.
 	_ObjView->refreshVegetableLandscape(vegetSet);
@@ -206,6 +209,7 @@ CVegetableDlg::CVegetableDesc::CVegetableDesc()
 {
 	Vegetable= NULL;
 	VegetableName= NL_DefaultVegetName;
+	Visible= true;
 }
 
 // ***************************************************************************
@@ -364,7 +368,7 @@ bool		CVegetableDlg::loadVegetableSet(NL3D::CTileVegetableDesc &vegetSet, const 
 }
 
 // ***************************************************************************
-void		CVegetableDlg::buildVegetableSet(NL3D::CTileVegetableDesc &vegetSet, bool keepDefaultShapeName)
+void		CVegetableDlg::buildVegetableSet(NL3D::CTileVegetableDesc &vegetSet, bool keepDefaultShapeName, bool keepHiden )
 {
 	vegetSet.clear();
 	float	degToRad= (float)(NLMISC::Pi / 180.f);
@@ -375,6 +379,9 @@ void		CVegetableDlg::buildVegetableSet(NL3D::CTileVegetableDesc &vegetSet, bool 
 	{
 		// if don't want to keep <default> ShapeNames, skip them.
 		if(!keepDefaultShapeName && _Vegetables[i].Vegetable->ShapeName=="")
+			continue;
+		// if don't want to keep hiden vegetables, skip them.
+		if(!keepHiden && !_Vegetables[i].Visible)
 			continue;
 
 		vegetables.push_back(*_Vegetables[i].Vegetable);
@@ -905,4 +912,26 @@ void CVegetableDlg::OnCheckVegetableSnaptoground()
 {
 	// update view.
 	_ObjView->snapToGroundVegetableLandscape(CheckSnapToGround.GetCheck()==1);
+}
+
+
+// ***************************************************************************
+void CVegetableDlg::swapShowHideVegetable (uint id)
+{
+	if(id>=_Vegetables.size())
+		return;
+
+	_Vegetables[id].Visible ^= true;
+
+	// update 3D view
+	refreshVegetableDisplay();
+}
+
+// ***************************************************************************
+bool CVegetableDlg::isVegetableVisible (uint id)
+{
+	if(id>=_Vegetables.size())
+		return true;
+
+	return _Vegetables[id].Visible;
 }

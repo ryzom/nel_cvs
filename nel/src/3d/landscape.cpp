@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.90 2001/11/07 16:41:53 berenguier Exp $
+ * $Id: landscape.cpp,v 1.91 2001/11/08 09:51:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2197,6 +2197,9 @@ bool			CLandscape::initTileBanks ()
 		_FarInitialized=true;
 	}
 
+	// Register / Load the vegetables.
+	TileBank.initTileVegetableDescs(_VegetableManager);
+
 	return bCompatibility;
 }
 
@@ -2656,83 +2659,7 @@ void		CLandscape::setVegetableWindAnimationTime(double windTime)
 // ***************************************************************************
 const CTileVegetableDesc	&CLandscape::getTileVegetableDesc(uint16 tileId)
 {
-	// TODO_VEGET: manage landscape tileSet.
-	static CTileVegetableDesc			tvDesc;
-	static bool							init= false;
-
-	if(!init)
-	{
-		init= true;
-
-		CVegetable						grass0;
-		CVegetable						grass1;
-		vector<CLandscapeVegetable>		landVegets;
-
-		// init the grass vegetable.
-		grass0.ShapeName= "grassUnlit.veget";
-		//grass0.ShapeName= "grass.veget";
-		grass0.Density.Abs= -5;
-		grass0.Density.Rand= 10;
-
-		grass0.Density.Frequency= 0.08f;
-		grass0.setAngleGround(0.7f);
-
-		grass0.Sxy.Abs= 0.5;
-		grass0.Sxy.Rand= 1;
-		grass0.Sxy.Frequency= 1;
-		grass0.Sz.Abs= 0.5;
-		grass0.Sz.Rand= 0.5;
-		grass0.Sz.Frequency= 10;
-
-		grass0.Rz.Abs=0;
-		grass0.Rz.Rand= 20*(float)Pi;
-		grass0.Rz.Frequency= 10;
-
-		grass0.Rx.Abs=-(float)Pi/4;
-		grass0.Rx.Rand= (float)Pi/2;
-		grass0.Rx.Frequency= 1;
-
-		grass0.Color.NoiseValue.Frequency= 0.1f;
-		grass0.Color.NoiseValue.Abs= -1;
-		grass0.Color.NoiseValue.Rand= 3;
-		CRGBAF	col0, col1, col2;
-		float	diff= 0.8f;
-		col0= CRGBAF(1.0f,1.0f,0.2f) * diff;
-		col1= CRGBAF(0.2f,1.0f,0.0f) * diff;
-		col2= CRGBAF(0.7f,0.6f,0.3f) * diff;
-		grass0.Color.Gradients.push_back( CColorGradient( col0, col1) );
-		grass0.Color.Gradients.push_back( CColorGradient( col1, col2) );
-
-
-		grass0.BendPhase.Abs= 0;
-		grass0.BendPhase.Rand= 2.f;
-		grass0.BendPhase.Frequency= 0.1f;
-		grass0.BendPhase.Frequency= 0.1f;
-		grass0.BendFactor.Abs= 0.5;
-		grass0.BendFactor.Rand= 0.5;
-
-		// init the array
-		landVegets.push_back(CLandscapeVegetable(grass0, 4));
-
-
-		// Copy.
-		grass1= grass0;
-		grass1.Sxy.Abs*= 0.2f;
-		grass1.Sxy.Rand*= 0.2f;
-		grass1.Sz.Abs*= 0.2f;
-		grass1.Sz.Rand*= 0.2f;
-		grass1.Density.Abs*= 10;
-		grass1.Density.Rand*= 10;
-		landVegets.push_back(CLandscapeVegetable(grass1, 0));
-
-		// build the desc.
-		tvDesc.build(landVegets);
-
-		// and compile
-		tvDesc.registerToManager(_VegetableManager);
-	}
-
-	return	tvDesc;
+	return TileBank.getTileVegetableDesc(tileId);
 }
 
 

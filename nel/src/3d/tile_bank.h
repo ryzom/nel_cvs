@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.3 2001/08/29 12:36:56 corvazier Exp $
+ * $Id: tile_bank.h,v 1.4 2001/11/08 09:51:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #include <vector>
 #include <set>
 #include <string>
+#include "3d/tile_vegetable_desc.h"
+
 
 namespace	NLMISC
 {
@@ -43,6 +45,8 @@ namespace	NL3D
 {
 
 class CTileBank;
+class CVegetableManager;
+
 
 /**
  * Tiles
@@ -308,6 +312,7 @@ public:
 	void setTileTransitionAlpha (TTransition transition, const std::string& name, CTileBank& bank, const CTileBorder& border, uint8 rotAlpha);
 	void setBorder (CTile::TBitmap type, const CTileBorder& border);
 	void setDisplacement (TDisplacement displacement, const std::string& fileName, CTileBank& bank);
+	void setTileVegetableDesc (const CTileVegetableDesc	&tvd);
 
 	// check
 	TError checkTile128 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante);
@@ -364,6 +369,11 @@ public:
 		return _DisplacementBitmap[displacement];
 	}
 
+
+	/// return the TileVegetable
+	CTileVegetableDesc			&getTileVegetableDesc();
+	const CTileVegetableDesc	&getTileVegetableDesc() const;
+
 	// Static methods
 	static const char* getErrorMessage (TError error)
 	{
@@ -408,6 +418,8 @@ private:
 	CTileBorder _Border256[2];
 	CTileBorder _BorderTransition[count][CTile::bitmapCount];
 	uint32 _DisplacementBitmap[CTileSet::CountDisplace];
+	// the info for TileVegetable
+	CTileVegetableDesc		_TileVegetableDesc;
 
 	static const sint _Version;
 	static const char* _ErrorMessage[CTileSet::errorCount];
@@ -552,6 +564,17 @@ public:
 	  * Return the tilenoisemap pointer for this tile and subnoise tile
 	  */
 	CTileNoiseMap *getTileNoiseMap (uint tileNumber, uint tileSubNoise);
+
+	/** 
+	  * return the TileVegetable desc for this tile
+	  */
+	const CTileVegetableDesc	&getTileVegetableDesc(uint tileNumber) const;
+
+	/**
+	 *	register all CVegetable to the Manager.
+	 */
+	void initTileVegetableDescs(CVegetableManager *vegetableManager);
+
 
 	void makeAllPathRelative ();
 	/// This method change ".tga" of texture filename, to ".dds". Do this only for Additive and Diffuse part (not alpha).

@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.3 2001/11/07 16:41:53 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.4 2001/11/08 09:51:21 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,11 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	const CTileVegetableDesc		&tileVegetDesc= getLandscape()->getTileVegetableDesc(tileId);
 	const std::vector<CVegetable>	&vegetableList= tileVegetDesc.getVegetableList(distType);
 	uint							distAddSeed= tileVegetDesc.getVegetableSeed(distType);
+	uint							numVegetable= vegetableList.size();
 	
+	// If no vegetables at all, skip.
+	if(numVegetable==0)
+		return;
 
 	// compute approximate tile position and normal: get the middle
 	float	tileU= (ts + 0.5f) / (float)OrderS;
@@ -120,7 +124,6 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 
 	// for all vegetable of this list, generate instances.
 	// =========================
-	uint	numVegetable= vegetableList.size();
 	for(i= 0; i<numVegetable; i++)
 	{
 		// get the vegetable

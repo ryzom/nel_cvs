@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.34 2001/10/29 09:37:24 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.35 2001/11/08 09:51:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -616,7 +616,44 @@ uint CTileBank::getDisplacementMapCount () const
 {
 	return _DisplacementMap.size();
 }
+
+
 // ***************************************************************************
+const CTileVegetableDesc	&CTileBank::getTileVegetableDesc(uint tileNumber) const
+{
+	// Check tile number..
+	if (tileNumber<_TileVector.size())
+	{
+		// Get tileset number
+		uint tileSet=_TileXRef[tileNumber]._XRefTileSet;
+
+		// Checks
+		if (tileSet<_TileSetVector.size())
+		{
+			return _TileSetVector[tileSet].getTileVegetableDesc();
+		}
+
+	}
+
+	// if fails for any reason, return an empty tileVegetableDesc;
+	static	CTileVegetableDesc	emptyTvd;
+	return emptyTvd;
+}
+
+
+// ***************************************************************************
+void	CTileBank::initTileVegetableDescs(CVegetableManager *vegetableManager)
+{
+	// For all tileSets.
+	uint tileSet;
+	
+	for(tileSet=0; tileSet<_TileSetVector.size(); tileSet++)
+	{
+		CTileVegetableDesc	&tvd= _TileSetVector[tileSet].getTileVegetableDesc();
+		tvd.registerToManager(vegetableManager);
+	}
+
+}
 
 
 // ***************************************************************************
@@ -696,7 +733,7 @@ void CTile::clearTile (CTile::TBitmap type)
 
 
 // ***************************************************************************
-const sint CTileSet::_Version=2;
+const sint CTileSet::_Version=3;
 // ***************************************************************************
 const char* CTileSet::_ErrorMessage[CTileSet::errorCount]=
 {
@@ -793,6 +830,12 @@ void CTileSet::serial(IStream &f) throw(EStream)
 	sint streamver = f.serialVersion(_Version);
 
 	CTileBorder tmp;
+
+	// serial vegetable info.
+	if (streamver>=3)
+	{
+		f.serial(_TileVegetableDesc);
+	}
 
 	// New version
 	if (streamver>=2)
@@ -1388,6 +1431,26 @@ void CTileSet::cleanUnusedData ()
 	for (uint j=0; j<CTile::bitmapCount; j++)
 		_BorderTransition[i][j].reset();
 }
+
+
+// ***************************************************************************
+void CTileSet::setTileVegetableDesc (const CTileVegetableDesc	&tvd)
+{
+	_TileVegetableDesc= tvd;
+}
+
+// ***************************************************************************
+CTileVegetableDesc			&CTileSet::getTileVegetableDesc()
+{
+	return _TileVegetableDesc;
+}
+
+// ***************************************************************************
+const CTileVegetableDesc	&CTileSet::getTileVegetableDesc() const
+{
+	return _TileVegetableDesc;
+}
+
 
 // ***************************************************************************
 // ***************************************************************************

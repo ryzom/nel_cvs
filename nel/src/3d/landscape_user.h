@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.23 2004/01/26 10:34:38 vizerie Exp $
+ * $Id: landscape_user.h,v 1.24 2004/02/04 16:50:35 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,6 +139,8 @@ public:
 	virtual	void	setTileMaxSubdivision (uint tileDiv);
 	/// Get Maximum Tile subdivision.
 	virtual	uint 	getTileMaxSubdivision ();
+	/// Set all zones monochromatic or colored
+	virtual	void 	setMonochrome (bool mono) { _ZoneManager.setZoneTileColor(!mono); }
 	// @}
 
 

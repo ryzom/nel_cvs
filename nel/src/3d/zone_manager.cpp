@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.13 2003/06/05 14:41:44 lecroart Exp $
+ * $Id: zone_manager.cpp,v 1.14 2004/02/04 16:50:35 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,7 @@ namespace NL3D
 CZoneManager::CZoneManager()
 {
 	_RemovingZone= false;
+	_ZoneTileColor = true;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -156,7 +157,7 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 				getZonePos (newZone.ZoneToAddId, x, y);
 //				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, CVector ((float)x, -(float)y, 0)));
 				CVector v = CVector ((float)x, -(float)y, 0);
-				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, v));
+				rAFM.addTask (new CZoneLoadingTask(newZone.ZoneToAddName, &newZone.Zone, v, !_ZoneTileColor));
 			}
 		}
 	}
@@ -219,12 +220,13 @@ bool CZoneManager::isWorkComplete (CZoneManager::SZoneManagerWork &rWork)
 // ------------------------------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------------
-CZoneLoadingTask::CZoneLoadingTask(const std::string &sZoneName, TVolatileZonePtr *ppZone, CVector &position)
+CZoneLoadingTask::CZoneLoadingTask(const std::string &sZoneName, TVolatileZonePtr *ppZone, CVector &position, bool monochrome)
 {
 	*ppZone = NULL;
 	_Zone = ppZone;
 	_ZoneName = sZoneName;
 	Position = position;
+	_Monochrome = monochrome;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -241,6 +243,8 @@ void CZoneLoadingTask::run(void)
 	{
 		ZoneTmp->serial(file);
 		file.close();
+		if (_Monochrome)
+			ZoneTmp->setMonochrome();
 		*_Zone = ZoneTmp;
 	}
 	else

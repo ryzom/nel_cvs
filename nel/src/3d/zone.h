@@ -1,7 +1,7 @@
 /** \file 3d/zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.20 2003/12/17 14:15:40 corvazier Exp $
+ * $Id: zone.h,v 1.21 2004/02/04 16:50:35 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -444,6 +444,12 @@ public:
 	 * \see getPatch()
 	 */
 	const std::vector<CTileColor> &getPatchColor(sint numPatch) const;
+
+	/** 
+	 * Set the zone to monochrome
+	 * Set all tile colors of all patch of this zone to monochrome
+	 */
+	void setMonochrome();
 
 	/**
 	 *  Get the landscape in which is placed this zone. If no landscape, return NULL.

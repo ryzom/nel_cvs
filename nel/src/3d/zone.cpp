@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.68 2003/12/17 14:15:40 corvazier Exp $
+ * $Id: zone.cpp,v 1.69 2004/02/04 16:50:35 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -492,6 +492,7 @@ void			CZone::serial(NLMISC::IStream &f)
 	// if(f.isReading() && ver<2) ... 
 	// Deprecated, because ver<3 not supported
 }
+
 
 
 // ***************************************************************************
@@ -1352,6 +1353,30 @@ const std::vector<CTileColor> &CZone::getPatchColor(sint numPatch) const
 	return Patchs[numPatch].TileColors;
 }
 
+// ***************************************************************************
+void CZone::setMonochrome()
+{
+	for (uint32 i = 0; i < Patchs.size(); ++i)
+	{
+		vector<CTileColor> &rTC = Patchs[i].TileColors;
+		for (uint32 j =  0; j < rTC.size(); ++j)
+		{
+			float fR = (rTC[j].Color565 & 31) / 32.0f;
+			float fG = ((rTC[j].Color565 >> 5) & 63) / 64.0f;
+			float fB = ((rTC[j].Color565 >> 11) & 31) / 32.0f;
+
+			fR = 0.28f * fR + 0.59f * fG + 0.13f * fB;
+			
+			nlassert(fR < 0.99f);
+
+			uint16 nR = (uint16)(fR * 32.0f);
+			uint16 nG = (uint16)(fR * 64.0f);
+			uint16 nB = (uint16)(fR * 32.0f);
+
+			rTC[j].Color565 = nR + (nG << 5) + (nB << 11);
+		}
+	}
+}
 
 // ***************************************************************************
 void			CZone::debugBinds(FILE *f)

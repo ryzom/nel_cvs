@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.9 2003/10/09 15:44:36 corvazier Exp $
+ * $Id: zone_manager.h,v 1.10 2004/02/04 16:50:35 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,7 +108,14 @@ public:
 	/// getZonePath : Get Path for zone loading
 	inline std::string getZonePath (void) { return _zonePath; }
 
+	/// set the zone tile color (if false tile are monochromed with the tile color)
+	void setZoneTileColor(bool color) { _ZoneTileColor = color; }
+
+	bool getZoneTileColor() const { return _ZoneTileColor; }
+
 private:
+
+	bool _ZoneTileColor;
 
 	/// Path for zone loading
 	std::string _zonePath;
@@ -152,7 +159,7 @@ class CZoneLoadingTask : public NLMISC::IRunnablePos
 {
 public:
 	/// Constructor
-	CZoneLoadingTask (const std::string &sZoneName, TVolatileZonePtr *ppZone, CVector &position);
+	CZoneLoadingTask (const std::string &sZoneName, TVolatileZonePtr *ppZone, CVector &position, bool monochrome);
 
 	/// Runnable Task
 	void run (void);
@@ -161,7 +168,8 @@ public:
 private:
 
 	TVolatileZonePtr	*_Zone;
-	std::string _ZoneName;
+	std::string			_ZoneName;
+	bool				_Monochrome;
 };
 
 

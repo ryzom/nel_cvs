@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.28 2004/06/15 13:22:49 corvazier Exp $
+ * $Id: primitive.h,v 1.29 2004/06/18 15:18:22 ledorze Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -235,6 +235,9 @@ public:
 	{
 		return _Parent;
 	}
+
+	/**	Get the primitive relative to this and the given path	 */
+	const	IPrimitive	*getPrimitive	(const	std::string	&absoluteOrRelativePath)	const;
 
 	/** Get the id of the child, return 0xffffffff if not found */
 	bool				getChildId (uint &childId, const IPrimitive *child) const;

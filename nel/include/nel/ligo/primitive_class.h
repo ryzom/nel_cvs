@@ -1,7 +1,7 @@
 /** \file primitive_class.h
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.h,v 1.7 2004/01/23 13:39:12 corvazier Exp $
+ * $Id: primitive_class.h,v 1.8 2004/06/18 15:18:22 ledorze Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -183,7 +183,11 @@ public:
 		public:
 			bool operator== (const CConstStringValue &other) const;
 			bool operator< (const CConstStringValue &other) const;
-			std::vector<std::string>		Values;
+			std::vector<std::string>	Values;
+			std::vector<std::string>	PrimitivePath;
+			void	appendFilePath				(std::vector<std::string> &pathList)	const;
+			void	appendPrimPath				(std::vector<std::string> &pathList, const	std::vector<const IPrimitive*>	&relativePrimPaths)	const;
+			void	getPrimitivesForPrimPath	(std::vector<const IPrimitive*>	&relativePrimPaths, const	std::vector<const IPrimitive*>	&startPrimPath)	const;
 		};
 
 		// Map of combobox value per context

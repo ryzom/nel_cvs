@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.31 2004/06/15 13:22:50 corvazier Exp $
+ * $Id: primitive.cpp,v 1.32 2004/06/18 15:18:21 ledorze Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1091,6 +1091,67 @@ void IPrimitive::operator= (const IPrimitive &node)
 	_DebugClassName = node._DebugClassName;
 	_DebugPrimitiveName = node._DebugPrimitiveName; 
 #endif
+}
+
+
+const	IPrimitive	*IPrimitive::getPrimitive	(const	std::string	&absoluteOrRelativePath)	const
+{
+	const	IPrimitive	*cursor=this;
+	string	path=absoluteOrRelativePath;
+
+	if (path.find("//")==0)	//	an absolute path.
+	{
+		while (cursor->getParent())
+			cursor=cursor->getParent();
+		path.erase(0,2);
+	}
+	
+	while (path.size()>0)
+	{
+		if	(path.find("/")==0)
+		{
+			path.erase(0,1);
+			continue;
+		}
+		if	(path.find("..")==0)
+		{
+			cursor=cursor->getParent();
+			if	(!cursor)
+				return	NULL;
+
+			path.erase(0,2);
+			continue;
+		}
+		
+		int indexStr=path.find("/");
+		string	childName;
+		if (indexStr==string::npos)
+		{
+			childName=path;
+			path="";
+		}
+		else
+		{
+			childName=path.substr(0,indexStr);
+			path.erase(0, indexStr);
+		}
+		childName=strupr(childName);
+		const	IPrimitive*child=NULL;
+		uint	childIndex;
+		for	(childIndex=0;childIndex<cursor->getNumChildren();childIndex++)
+		{
+			cursor->getChild(child,childIndex);
+			string	name;
+			if	(	child->getPropertyByName("class", name)
+				&&	strupr(name)==childName	)
+				break;
+		}
+		if	(childIndex>=cursor->getNumChildren())
+			return	NULL;
+		
+		cursor=child;
+	}
+	return	cursor;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.12 2004/06/03 08:46:40 boucher Exp $
+ * $Id: primitive_class.cpp,v 1.13 2004/06/18 15:18:21 ledorze Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -420,7 +420,8 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 								{
 									// Read the path to search
 									string path;
-									if (config.getPropertyString (path, filename, comboValueNode, "PATH"))
+									if	(CIXml::getPropertyString (path, comboValueNode, "PATH"))
+//									if	(config.getPropertyString (path, filename, comboValueNode, "PATH"))
 									{
 										// Look for files in the path
 										std::vector<std::string> files;
@@ -454,11 +455,34 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 													// Add the value for lookup
 													contextFilesLookup.insert (map<string, string>::value_type (nameWithoutExt, files[i]));
 												}
+
 											}
+
 										}
+
 									}
 									else
-										goto failed;
+									{
+										string	primpath;
+										if	(config.getPropertyString (primpath, filename, comboValueNode, "PRIM_PATH"))
+										{
+
+											// Add this context
+											contextStrings.insert (type);
+
+											// Add a combo value
+											pair<std::map<std::string, CParameter::CConstStringValue>::iterator, bool> insertResult =
+												parameter.ComboValues.insert (std::map<std::string, CParameter::CConstStringValue>::value_type (type, CParameter::CConstStringValue ()));
+											
+											// The combo value ref
+											CParameter::CConstStringValue &comboValue = insertResult.first->second;
+
+											comboValue.PrimitivePath.push_back(primpath);																					
+										}
+										else
+											goto failed;
+									}
+
 								}
 								else
 									goto failed;
@@ -623,6 +647,50 @@ bool CPrimitiveClass::CParameter::CConstStringValue::operator== (const CConstStr
 bool CPrimitiveClass::CParameter::CConstStringValue::operator< (const CConstStringValue &other) const
 {
 	return Values < other.Values;
+}
+
+
+void	CPrimitiveClass::CParameter::CConstStringValue::appendFilePath(std::vector<std::string> &pathList)	const
+{
+	pathList.insert(pathList.end(), Values.begin(), Values.end());
+}
+
+void	CPrimitiveClass::CParameter::CConstStringValue::appendPrimPath(std::vector<std::string> &pathList, const	std::vector<const IPrimitive*>	&relativePrimPaths)	const
+{
+	std::set<std::string>	relativePrimPathString;
+	for	(std::vector<const IPrimitive*>::const_iterator it=relativePrimPaths.begin(), itEnd=relativePrimPaths.end(); it!=itEnd;++it)
+	{
+		const	uint	nbChilds=(*it)->getNumChildren();
+		for (uint childIndex=0;childIndex<nbChilds;childIndex++)
+		{
+			const	IPrimitive*child=NULL;
+			if	(	!(*it)->getChild(child,childIndex)
+				||	!child	)
+				continue;
+			std::string	str;
+			if	(child->getPropertyByName("name", str))
+				relativePrimPathString.insert(str);
+		}
+		
+	}
+	pathList.insert(pathList.end(), relativePrimPathString.begin(), relativePrimPathString.end());
+}
+
+void	CPrimitiveClass::CParameter::CConstStringValue::getPrimitivesForPrimPath	(std::vector<const IPrimitive*>	&relativePrimPaths, const	std::vector<const IPrimitive*>	&startPrimPath)	const
+{
+	for	(uint i=0; i<PrimitivePath.size (); i++)
+	{
+		set<const IPrimitive*>	relativePrimPath;
+		for (uint locIndex=0;locIndex<startPrimPath.size();locIndex++)
+		{
+			const	IPrimitive *const	cursor=startPrimPath[locIndex]->getPrimitive(PrimitivePath[i]);
+			if	(cursor)
+				relativePrimPath.insert(cursor);
+		}
+		if	(relativePrimPath.size()==1)
+			relativePrimPaths.push_back(*relativePrimPath.begin());
+	}
+	
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.16 2000/11/23 11:04:08 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.17 2000/11/23 11:18:52 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -404,36 +404,45 @@ IDriver::TMessageBoxId	CDriverGL::systemMessageBox (const char* message, const c
 	{
 		printf ("\n%s", messages[type]);
 		int c=getchar();
+		if (type==okType)
+			return okId;
 		switch (c)
 		{
 		case 'O':
 		case 'o':
 			if ((type==okType)||(type==okCancelType))
 				return okId;
+			break;
 		case 'C':
 		case 'c':
 			if ((type==yesNoCancelType)||(type==okCancelType)||(type==retryCancelType))
 				return cancelId;
+			break;
 		case 'Y':
 		case 'y':
 			if ((type==yesNoCancelType)||(type==yesNoType))
 				return yesId;
+			break;
 		case 'N':
 		case 'n':
 			if ((type==yesNoCancelType)||(type==yesNoType))
 				return noId;
+			break;
 		case 'A':
 		case 'a':
 			if (type==abortRetryIgnoreType)
 				return abortId;
+			break;
 		case 'R':
 		case 'r':
 			if (type==abortRetryIgnoreType)
 				return retryId;
+			break;
 		case 'I':
 		case 'i':
 			if (type==abortRetryIgnoreType)
 				return ignoreId;
+			break;
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.93 2003/11/25 14:45:33 besson Exp $
+ * $Id: path.cpp,v 1.94 2003/11/25 16:10:46 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -294,7 +294,7 @@ void CPath::loadRemappedFiles (const std::string &file)
 {
 	NL_ALLOC_CONTEXT (MiPath);
 	CPath *inst = CPath::getInstance();
-	string fullName = lookup(file, true, true, true);
+	string fullName = lookup(file, false, true, true);
 	CIFile f;
 	f.setCacheFileOnOpen (true);
 

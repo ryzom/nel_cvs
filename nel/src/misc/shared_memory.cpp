@@ -1,7 +1,7 @@
 /** \file shared_memory.cpp
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.cpp,v 1.3 2002/08/08 14:41:33 cado Exp $
+ * $Id: shared_memory.cpp,v 1.4 2003/03/06 09:27:26 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -59,11 +59,18 @@ void			*CSharedMemory::createSharedMemory( TSharedMemId sharedMemId, uint32 size
 	// Create a file mapping backed by the virtual memory swap file (not a data file)
 	HANDLE hMapFile = CreateFileMapping( INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, size, sharedMemId );
 	if ( (hMapFile == NULL) || (GetLastError() == ERROR_ALREADY_EXISTS) )
+	{
+		nlwarning( "SHDMEM: Cannot create file mapping: error %u, mapFile %p", GetLastError(), hMapFile );
 		return NULL;
+	}
 
 	// Map the file into memory address space
 	void *accessAddress = MapViewOfFile( hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0 );
 	AccessAddressesToHandles.insert( make_pair( accessAddress, hMapFile ) );
+	/*if ( accessAddress == NULL )
+	{
+		nlwarning( "SHDMEM: Cannot map view of file: error %u", GetLastError() );
+	}*/
 	return accessAddress;
 
 #else

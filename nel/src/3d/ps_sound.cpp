@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.26 2004/01/23 14:51:58 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.27 2004/02/11 14:08:53 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -405,6 +405,7 @@ void	CPSSound::deleteElement(uint32 index)
 	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->deleteElement(index);
 	if (_Sounds[index])
 	{
+		_Sounds[index]->setLooping(false);
 		_Sounds[index]->release();
 	}
 	_Sounds.remove(index);

@@ -1,7 +1,7 @@
 /** \file bezier_patch.h
  * <File description>
  *
- * $Id: bezier_patch.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: bezier_patch.h,v 1.2 2002/04/02 15:58:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,22 +45,26 @@ using NLMISC::CMatrix;
 /**
  * A standard bezier patch of float.  (quadpatch only).
  * QuadPatch layout (same notations as 3ds Max SDK).
- * 
- *   A---> ad ---- da <---D
- *   |                    |
- *   |                    |
- *   v                    v
- *   ab    ia      id     dc
  *
- *   |                    |
- *   |                    |
  *
- *   ba    ib      ic     cd
- *   ^                    ^
- *   |                    |
- *   |                    |
- *   B---> bc ---- cb <---C
  *
+ *  0      ---s--->          3
+ *
+ *    A---> ad ---- da <---D
+ *    |                    |
+ *  | |                    |
+ *  | v                    v
+ *  | ab    ia      id     dc
+ *  t
+ *  | |                    |
+ *  | |                    |
+ *  v
+ *    ba    ib      ic     cd
+ *    ^                    ^
+ *    |                    |
+ *    |                    |
+ *    B---> bc ---- cb <---C
+ *  1                         2
  * 
  * \author Lionel Berenguier
  * \author Nevrax France

@@ -1,4 +1,4 @@
-#include "nel/ai/agent/goal_stack.h"
+#include "nel/ai/logic/goal_stack.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/agent/agent_digital.h"
 

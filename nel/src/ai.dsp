@@ -727,7 +727,7 @@ SOURCE=.\ai\logic\goal_path.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\agent\goal_stack.cpp
+SOURCE=.\ai\logic\goal_stack.cpp
 # End Source File
 # Begin Source File
 
@@ -823,7 +823,7 @@ SOURCE=..\include\nel\ai\logic\goal_path.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\ai\agent\goal_stack.h
+SOURCE=..\include\nel\ai\logic\goal_stack.h
 # End Source File
 # Begin Source File
 

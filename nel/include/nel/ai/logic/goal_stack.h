@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal_stack.h,v 1.3 2002/08/21 14:52:44 portier Exp $
+ * $Id: goal_stack.h,v 1.4 2002/10/07 12:49:02 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.39 2003/05/26 09:04:01 berenguier Exp $
+ * $Id: transform.h,v 1.40 2003/06/20 14:53:02 puzin Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -293,6 +293,13 @@ public:
 	 */
 	const CMatrix&	getWorldMatrix() const {return _WorldMatrix;}
 
+
+	/** tells if the transform has been determined as visible in the hrc traversal
+	 */
+	bool	isHrcVisible() const
+	{
+		return _WorldVis;
+	}
 
 	/** tells if the transform has been clipped in the clip traversal. 
 	 */

@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.17 2003/04/08 23:10:59 corvazier Exp $
+ * $Id: u_transform.h,v 1.18 2003/06/20 14:53:02 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,6 +165,9 @@ public:
 	 */
 	virtual void			setLogicInfo(ILogicInfo *logicInfo) =0;
 
+
+	/// Return true if the object was determined as Visible in Hrc during the last Scene->rendere(). NB: interesting only if Herit. else can use getVisibility()
+	virtual bool			getLastWorldVisState() const = 0;
 
 	/// Return true if the object was rendered during the last Scene->rendere(). return false else (ie clipped)
 	virtual bool			getLastClippedState() const = 0;

@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.20 2003/04/08 23:10:59 corvazier Exp $
+ * $Id: transform_user.h,v 1.21 2003/06/20 14:53:02 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -213,6 +213,12 @@ public:
 		_Transform->setLogicInfo(logicInfo);
 	}
 
+
+	virtual bool	getLastWorldVisState() const
+	{
+		NL3D_MEM_TRANSFORM
+		return _Transform->isHrcVisible();
+	}
 
 	virtual bool	getLastClippedState() const 
 	{

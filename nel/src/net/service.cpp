@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.58 2001/05/25 08:53:03 lecroart Exp $
+ * $Id: service.cpp,v 1.59 2001/05/31 16:43:44 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -73,6 +73,7 @@ namespace NLNET
 
 string IService::_ShortName = "";
 string IService::_LongName = "";
+string IService::_AliasName= "";
 uint16 IService::_DefaultPort = 0;
 
 uint32 IService::_UpdateTimeout = 1;
@@ -175,11 +176,26 @@ IService::IService()
 
 
 /*
- * Process command line arguments for port and timeout
+ * Process command line arguments for port and timeout (commented till the new argument param management)
  */
 void IService::getCustomParams()
 {
-	// At the moment we don't have a processing system yet
+	for (uint32 i = 0; i < _Args.size(); i++)
+	{
+		if (_Args[i][0] == '-')
+		{
+			if (_Args[i][1] == 'n')
+			{
+				_AliasName = _Args[i].substr (2);
+			}
+			else
+			{
+				nlwarning ("Unknown parameter: %s", _Args[i].c_str());
+			}
+		}
+	}
+
+/*	// At the moment we don't have a processing system yet
 	if ( _Args.size() > 1 )
 	{
 		stringstream ss( _Args[1] );
@@ -197,7 +213,7 @@ void IService::getCustomParams()
 			return;
 		}
 	}
-
+*/
 }
 
 
@@ -217,7 +233,7 @@ void AESConnection (const string &serviceName, TSockId from, void *arg)
 	// established a connection to the AES, identify myself
 		
 	CMessage msgout (CNetManager::getSIDA ("AES"), "SID");
-	msgout.serial (IService::_ShortName, IService::_LongName);
+	msgout.serial (IService::_AliasName, IService::_ShortName, IService::_LongName);
 	CNetManager::send ("AES", msgout);
 
 	if (IService::Instance->_Initialized)
@@ -379,6 +395,7 @@ sint IService::main (int argc, char **argv)
 		//
 
 		_Port = IService::_DefaultPort;
+
 		getCustomParams();
 
 		//

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.23 2001/05/18 16:52:30 lecroart Exp $
+ * $Id: service.h,v 1.24 2001/05/31 16:43:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,6 +163,7 @@ protected:
 	/// Current service name. Is set by the actual service when declaring NLNET_SERVICE_MAIN
 	static std::string			_ShortName;	// ex: "NS"
 	static std::string			_LongName;	// ex: "naming_service"
+	static std::string			_AliasName;	// this name is initialized by the admin executor service via the arg list
 
 	/// Current service default port. Must be set by the deriver class
 	static uint16				_DefaultPort;

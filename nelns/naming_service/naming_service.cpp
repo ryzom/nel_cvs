@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.30 2003/06/30 09:50:56 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.31 2004/05/10 15:47:24 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1027,7 +1027,6 @@ public:
 		CallbackServer->addCallbackArray(CallbackArray, sizeof(CallbackArray)/sizeof(CallbackArray[0]));
 		CallbackServer->setConnectionCallback(cbConnect, NULL);
 		CallbackServer->setDisconnectionCallback(cbDisconnect, NULL);
-		CallbackServer->ignoreAllUnknownId (true);
 	}
 
 	/**

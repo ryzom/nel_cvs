@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.41 2002/08/28 15:15:39 lecroart Exp $
+ * $Id: inet_address.cpp,v 1.42 2002/12/30 15:22:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -473,17 +473,22 @@ std::vector<CInetAddress> CInetAddress::localAddresses()
 	}
 
 	// 2. Get address list
-    hostent *phostent = gethostbyname( localhost );
-    if ( phostent == NULL )
-	{
-		throw ESocket( (string("Hostname resolution failed for ")+string(localhost)).c_str() );
-	}
-	uint i;
 	vector<CInetAddress> vect;
-    for ( i=0; phostent->h_addr_list[i]!=0; ++i )
+
+	uint i = 0;
+	do
 	{
+		hostent *phostent = gethostbyname( localhost );
+		if ( phostent == NULL )
+			throw ESocket( (string("Hostname resolution failed for ")+string(localhost)).c_str() );
+
+		if (phostent->h_addr_list[i] == 0)
+			break;
+
 		vect.push_back( CInetAddress( (const in_addr*)(phostent->h_addr_list[i]) ) );
-    } 
+		i++;
+	}
+	while (true);
 
 	if(vect.empty())
 	{

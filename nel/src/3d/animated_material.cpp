@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
  * <File description>
  *
- * $Id: animated_material.cpp,v 1.1 2001/03/13 17:07:53 corvazier Exp $
+ * $Id: animated_material.cpp,v 1.2 2001/03/26 14:57:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,16 +24,253 @@
  */
 
 #include "nel/3d/animated_material.h"
+#include "nel/misc/common.h"
 
+using namespace NLMISC;
 
-namespace NL3D {
-
-
-/*
- * Constructor
- */
-CAnimatedMaterial::CAnimatedMaterial()
+namespace NL3D
 {
+
+
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+void	CMaterialBase::CAnimatedTexture::serial(NLMISC::IStream &f)
+{
+	ITexture	*text= NULL;
+	if(f.isReading())
+	{
+		f.serialPolyPtr(text);
+		Texture= text;
+	}
+	else
+	{
+		text= Texture;
+		f.serialPolyPtr(text);
+	}
+}
+
+
+
+// ***************************************************************************
+CMaterialBase::CMaterialBase()
+{
+	DefaultAmbient.setValue(CRGBA(64,64,64));
+	DefaultDiffuse.setValue(CRGBA(128,128,128));
+	DefaultSpecular.setValue(CRGBA(0,0,0));
+	DefaultShininess.setValue(10);
+	DefaultEmissive.setValue(1);
+	DefaultOpacity.setValue(1);
+	DefaultTexture.setValue(0x7FFFFFFF);
+
+
+	EmissiveFactor.set(0,0,0,0);
+}
+
+
+// ***************************************************************************
+void	CMaterialBase::serial(NLMISC::IStream &f)
+{
+	sint	ver= f.serialVersion(0);
+
+	f.serial(DefaultAmbient, DefaultDiffuse, DefaultSpecular);
+	f.serial(DefaultShininess, DefaultEmissive, DefaultOpacity, DefaultTexture);
+	f.serial(EmissiveFactor);
+
+	f.serialMap(_AnimatedTextures);
+}
+
+
+// ***************************************************************************
+void	CMaterialBase::copyFromMaterial(CMaterial *pMat)
+{
+	DefaultAmbient.setValue(pMat->getAmbient());
+	DefaultDiffuse.setValue(pMat->getDiffuse());
+	DefaultSpecular.setValue(pMat->getSpecular());
+	DefaultShininess.setValue(pMat->getShininess());
+	DefaultEmissive.setValue(1);
+	DefaultOpacity.setValue(pMat->getDiffuse().A/255.f);
+
+	EmissiveFactor= pMat->getEmissive();
+}
+
+
+// ***************************************************************************
+void			CMaterialBase::setAnimatedTexture(uint32 id, CSmartPtr<ITexture>  pText)
+{
+	// add or replace the texture.
+	_AnimatedTextures[id].Texture= pText;
+}
+// ***************************************************************************
+bool			CMaterialBase::validAnimatedTexture(uint32 id)
+{
+	TAnimatedTextureMap::iterator	it;
+	it= _AnimatedTextures.find(id);
+	return it!=_AnimatedTextures.end();
+}
+// ***************************************************************************
+ITexture*		CMaterialBase::getAnimatedTexture(uint32 id)
+{
+	TAnimatedTextureMap::iterator	it;
+	it= _AnimatedTextures.find(id);
+	if( it!=_AnimatedTextures.end() )
+		return it->second.Texture;
+	else
+		return NULL;
+}
+
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+CAnimatedMaterial::CAnimatedMaterial(CMaterialBase *baseMat)
+{
+	nlassert(baseMat);
+	_MaterialBase= baseMat;
+
+	_EmissiveFactor= _MaterialBase->EmissiveFactor;
+
+	_Ambient.affect(_MaterialBase->DefaultAmbient.getValue());
+	_Diffuse.affect(_MaterialBase->DefaultDiffuse.getValue());
+	_Specular.affect(_MaterialBase->DefaultSpecular.getValue());
+	_Shininess.affect(_MaterialBase->DefaultShininess.getValue());
+	_Emissive.affect(_MaterialBase->DefaultEmissive.getValue());
+	_Opacity.affect(_MaterialBase->DefaultOpacity.getValue());
+}
+
+
+// ***************************************************************************
+void	CAnimatedMaterial::setMaterial(CMaterial *pMat)
+{
+	_Material= pMat;
+}
+
+// ***************************************************************************
+void	CAnimatedMaterial::update()
+{
+	if(isTouched() && _Material!=NULL && _Material->isLighted())
+	{
+		// well, just update all...  :)
+
+		// em part.
+		CRGBA	em= _EmissiveFactor;
+		sint	c= (sint)(_Emissive.Value*255);
+		clamp(c, 0, 255);
+		em.blendFromui(CRGBA(0,0,0,0), em, c);
+
+		// diffuse part.
+		CRGBA	diff= _Diffuse.Value;
+		c= (sint)(_Opacity.Value*255);
+		clamp(c, 0, 255);
+		diff.A= c;
+
+		// setup material.
+		_Material->setLighting(true, false, em, _Ambient.Value, diff, _Specular.Value, _Shininess.Value);
+
+		// clear flags.
+		clearFlag(AmbientValue);
+		clearFlag(DiffuseValue);
+		clearFlag(SpecularValue);
+		clearFlag(ShininessValue);
+		clearFlag(EmissiveValue);
+		clearFlag(OpacityValue);
+
+
+		// Texture Anim.
+		if(isTouched(TextureValue))
+		{
+			nlassert(_MaterialBase);
+
+			uint32	id= _Texture.Value;
+			if(_MaterialBase->validAnimatedTexture(id))
+			{
+				_Material->setTexture(0, _MaterialBase->getAnimatedTexture(id) );
+			}
+			clearFlag(TextureValue);
+		}
+	}
+}
+
+
+// ***************************************************************************
+IAnimatedValue* CAnimatedMaterial::getValue (uint valueId)
+{
+	switch(valueId)
+	{
+	case AmbientValue: return &_Ambient;
+	case DiffuseValue: return &_Diffuse;
+	case SpecularValue: return &_Specular;
+	case ShininessValue: return &_Shininess;
+	case EmissiveValue: return &_Emissive;
+	case OpacityValue: return &_Opacity;
+	case TextureValue: return &_Texture;
+	};
+
+	// shoudl not be here!!
+	nlstop;
+	return NULL;
+}
+// ***************************************************************************
+const char *CAnimatedMaterial::getValueName (uint valueId) const
+{
+	switch(valueId)
+	{
+	case AmbientValue: return getAmbientValueName();
+	case DiffuseValue: return getDiffuseValueName();
+	case SpecularValue: return getSpecularValueName();
+	case ShininessValue: return getShininessValueName();
+	case EmissiveValue: return getEmissiveValueName();
+	case OpacityValue: return getOpacityValueName();
+	case TextureValue: return getTextureValueName();
+	};
+
+	// shoudl not be here!!
+	nlstop;
+	return "";
+}
+// ***************************************************************************
+ITrack*	CAnimatedMaterial::getDefaultTrack (uint valueId)
+{
+	nlassert(_MaterialBase);
+
+	switch(valueId)
+	{
+	case AmbientValue: return	&_MaterialBase->DefaultAmbient;
+	case DiffuseValue: return	&_MaterialBase->DefaultDiffuse;
+	case SpecularValue: return	&_MaterialBase->DefaultSpecular;
+	case ShininessValue: return	&_MaterialBase->DefaultShininess;
+	case EmissiveValue: return	&_MaterialBase->DefaultEmissive;
+	case OpacityValue: return	&_MaterialBase->DefaultOpacity;
+	case TextureValue: return	&_MaterialBase->DefaultTexture;
+	};
+
+	// shoudl not be here!!
+	nlstop;
+	return NULL;
+}
+// ***************************************************************************
+void	CAnimatedMaterial::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix)
+{
+	// For CAnimatedMaterial, channels are detailled (material rendered after clip)!
+	addValue(chanMixer, AmbientValue, prefix, true);
+	addValue(chanMixer, DiffuseValue, prefix, true);
+	addValue(chanMixer, SpecularValue, prefix, true);
+	addValue(chanMixer, ShininessValue, prefix, true);
+	addValue(chanMixer, EmissiveValue, prefix, true);
+	addValue(chanMixer, OpacityValue, prefix, true);
+	addValue(chanMixer, TextureValue, prefix, true);
+
 }
 
 

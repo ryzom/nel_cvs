@@ -1,7 +1,7 @@
 /** \file animated_material.h
  * <File description>
  *
- * $Id: animated_material.h,v 1.1 2001/03/13 17:07:53 corvazier Exp $
+ * $Id: animated_material.h,v 1.2 2001/03/26 14:57:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,33 +26,194 @@
 #ifndef NL_ANIMATED_MATERIAL_H
 #define NL_ANIMATED_MATERIAL_H
 
+
 #include "nel/misc/types_nl.h"
+#include "nel/misc/smart_ptr.h"
+#include "nel/3d/animatable.h"
+#include "nel/3d/material.h"
+#include "nel/3d/track.h"
+#include <map>
 
 
 namespace NL3D 
 {
 
 
+
+// ***************************************************************************
 /**
- * <Class description>
+ * An material Reference for Animated reference. This object is stored in the mesh, and is serialised.
+ * NB: formated for 3ds Max :). Emissive anim is a float, with a constant RGB factor.
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
  * \date 2001
  */
-class CAnimatedMaterial
+class CMaterialBase : public NLMISC::CRefCount
 {
 public:
 
-	/// Constructor
-	CAnimatedMaterial();
+	CMaterialBase();
+
+	/** setup the default tracks from a material
+	 * This method:
+	 *	- copy the material contents into the Defaults tracks values.
+	 *
+	 * NB: for emissive part, emissive defaut track value is set to 1, and emissive factor is set to the 
+	 * RGB emissive value stored into pMat.
+	 */
+	void			copyFromMaterial(CMaterial *pMat);
+
+
+	// Default tracks.
+	CTrackDefaultRGBA		DefaultAmbient;
+	CTrackDefaultRGBA		DefaultDiffuse;
+	CTrackDefaultRGBA		DefaultSpecular;
+	CTrackDefaultFloat		DefaultShininess;
+	CTrackDefaultFloat		DefaultEmissive;
+	CTrackDefaultFloat		DefaultOpacity;
+	CTrackDefaultInt		DefaultTexture;
+
+	// RGB emissive factor.
+	NLMISC::CRGBA			EmissiveFactor;
+
+
+	/// save/load.
+	void			serial(NLMISC::IStream &f);
+
+
+	/// \name Texture Animation mgt.
+	/** Animated materials support Texture animation. This is the place where you define your list of texture.
+	 * This list of animated texture is serialised. AnimatedMaterial animate texture with sint32 Tracks. If the id is not
+	 * found in CMaterialBase, then the CMaterial texture is left as before.
+	 *
+	 * NB: id 0x7FFFFFFF is a reserved id, used as default to indicate no valid Animated texture.
+	 */
+	// @{
+	/// assign a specific texture for an id (a uint32). It is a valid to give a NULL ptr (=> un textured). Sotred as a SmartPtr.
+	void			setAnimatedTexture(uint32 id, CSmartPtr<ITexture>  pText);
+	/// is this Id valid?
+	bool			validAnimatedTexture(uint32 id);
+	/// return the texture for this Id. return NULL either if NULL texture for this id or if(!validAnimatedTexture()).
+	ITexture*		getAnimatedTexture(uint32 id);
+
+	// @}
+
+// *********************
+private:
+
+	struct	CAnimatedTexture
+	{
+		CSmartPtr<ITexture>			Texture;
+
+		// serial.
+		void	serial(NLMISC::IStream &f);
+	};
+
+	typedef	std::map<uint32, CAnimatedTexture>	TAnimatedTextureMap;
+	TAnimatedTextureMap			_AnimatedTextures;
+
+};
+
+
+
+// ***************************************************************************
+/**
+ * An animated material Instance of CMaterialBase
+ * NB: formated for 3ds Max :). Emissive anim is a float, with a constant RGB factor.
+ * Texture animation: see update().
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CAnimatedMaterial : public IAnimatable
+{
+public:
+
+	/** Constructor.
+	 * This ctor:
+	 *	- store a RefPtr on the BaseMaterial for getDefaultTracks() method).
+	 *	- copy the material default track value into Animated Values.
+	 */
+	CAnimatedMaterial(CMaterialBase *baseMat);
+
+
+	/** setup the material context for this animated material.
+	 * This method:
+	 *	- store a RefPtr on the material, for future anim update.
+	 */
+	void	setMaterial(CMaterial *pMat);
+	/** Check if The animated material is touched, and if necessary update the stored material (if any).
+	 * Texture animation: for now, texture animation is possible only on stage 0. If TextureValue flag is touched (ie
+	 * a texture anim track is linked to the animated value), update() look into the CMaterialBase what texture to set.
+	 * If the track gives a bad Id for the texture, no-op.
+	 */
+	void	update();
+
 
 	/// \name Get some track name
-
-	/// Return the name of the pos track
+	// @{
 	static const char *getAmbientValueName() {return "ambient";}
 	static const char *getDiffuseValueName() {return "diffuse";}
 	static const char *getSpecularValueName() {return "specular";}
+	static const char *getShininessValueName() {return "shininess";}
+	static const char *getEmissiveValueName() {return "emissive";}
 	static const char *getOpacityValueName() {return "opacity";}
+	static const char *getTextureValueName() {return "texture";}
+	// @}
+
+
+	/// \name Herited from IAnimatable
+	// @{
+	/// Added values.
+	enum	TAnimValues
+	{
+		AmbientValue= IAnimatable::AnimValueLast,
+		DiffuseValue,
+		SpecularValue,
+		ShininessValue,
+		EmissiveValue,
+		OpacityValue,
+		TextureValue,
+
+		AnimValueLast
+	};
+
+	/// From IAnimatable
+	virtual IAnimatedValue* getValue (uint valueId);
+
+	/// From IAnimatable
+	virtual const char *getValueName (uint valueId) const;
+
+	/// From IAnimatable.
+	virtual ITrack* getDefaultTrack (uint valueId);
+
+	/// From IAnimatable.
+	virtual	void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix);
+
+	// @}
+
+
+// ********************
+private:
+
+	// The material instantiator.
+	CRefPtr<CMaterialBase>	_MaterialBase;
+	// The material.
+	CRefPtr<CMaterial>		_Material;
+
+	// RGB emissive factor.
+	NLMISC::CRGBA			_EmissiveFactor;
+
+	// AnimValues.
+	CAnimatedValueRGBA		_Ambient;
+	CAnimatedValueRGBA		_Diffuse;
+	CAnimatedValueRGBA		_Specular;
+	CAnimatedValueFloat		_Shininess;
+	CAnimatedValueFloat		_Emissive;
+	CAnimatedValueFloat		_Opacity;
+	CAnimatedValueInt		_Texture;
+
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file uv.h
  * <File description>
  *
- * $Id: uv.h,v 1.1 2001/02/28 14:31:21 berenguier Exp $
+ * $Id: uv.h,v 1.2 2001/11/30 09:45:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,8 @@ public:
 public:
 	CUV() {}
 	CUV(float u, float v) : U(u), V(v) {}
+	// modify uv's
+	void set(float u, float v) { U = u; V = v; }
 	// bin operators.
 	CUV	operator+(const CUV &v) const
 		{ return CUV(U+v.U, V+v.V);}

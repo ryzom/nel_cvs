@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.2 2002/02/15 15:22:47 lecroart Exp $
+ * $Id: transport_class.h,v 1.3 2002/02/15 15:26:37 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -186,8 +186,9 @@ public:
 		}
 		else if (Mode == 4)	// display
 		{
+			typedef typename T::iterator __iterator;
 			std::string val;
-			for (T::iterator it = value.begin (); it != value.end(); it++)
+			for (__iterator it = value.begin (); it != value.end(); it++)
 			{
 				val += NLMISC::toString (*it);
 				val += " ";

@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.2 2002/02/15 15:22:53 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.3 2002/02/15 15:23:29 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -101,7 +101,7 @@ void CTransportClass::registerOtherSideClass (uint16 sid, TOtherSideRegisteredCl
 				{
 					if ((*it).second[j].Type != (*res).second.Instance->Prop[k]->Type)
 					{
-						nlwarning ("Property '%s' of the class '%s' have not the same type in the 2 sides (%d %d)", (*it).second[j].Name.c_str(), (*it).first, (*it).second[j].Type, (*res).second.Instance->Prop[k]->Type);
+						nlwarning ("Property '%s' of the class '%s' have not the same type in the 2 sides (%d %d)", (*it).second[j].Name.c_str(), (*it).first.c_str(), (*it).second[j].Type, (*res).second.Instance->Prop[k]->Type);
 					}
 					break;
 				}

@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.26 2004/04/28 18:48:42 boucher Exp $
+ * $Id: primitive.cpp,v 1.27 2004/05/27 17:33:12 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -502,6 +502,8 @@ uint CPrimPath::getNumVector () const
 
 const CPrimVector *CPrimPath::getPrimVector () const
 {
+	if (VPoints.empty())
+		return NULL;
 	return &(VPoints[0]);
 }
 
@@ -516,6 +518,8 @@ NLLIGO::IPrimitive *CPrimPath::copy () const
 
 CPrimVector	*CPrimPath::getPrimVector ()
 {
+	if (VPoints.empty())
+		return NULL;
 	return &(VPoints[0]);
 }
 
@@ -569,6 +573,8 @@ uint CPrimZone::getNumVector () const
 
 const CPrimVector *CPrimZone::getPrimVector () const
 {
+	if (VPoints.empty())
+		return NULL;
 	return &(VPoints[0]);
 }
 

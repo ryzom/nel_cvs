@@ -1,7 +1,7 @@
 /** \file zone_template.cpp
  * Ligo zone template implementation
  *
- * $Id: zone_template.cpp,v 1.3 2002/03/07 08:26:37 corvazier Exp $
+ * $Id: zone_template.cpp,v 1.4 2002/03/28 15:19:24 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -461,6 +461,17 @@ bool CZoneTemplate::build (const std::vector<NLMISC::CVector> &vertices, const s
 					sint32 startY = getSnappedIndex (vertices[edge[0]].y, config.CellSize, config.Snap);
 					sint32 endX = getSnappedIndex (vertices[edge[edge.size()-1]].x, config.CellSize, config.Snap);
 					sint32 endY = getSnappedIndex (vertices[edge[edge.size()-1]].y, config.CellSize, config.Snap);
+
+					// Same point ?
+					if ((startX==endX) && (startY==endY))
+					{
+						// Error, two times the same vertex
+						errors.MainError = CLigoError::TwoCornerVertices;
+						errors.pushVertexError (CLigoError::TwoCornerVertices, edge[0], 0);
+						errors.pushVertexError (CLigoError::TwoCornerVertices, edge[edge.size()-1], 0);
+
+						return false;
+					}
 
 					// Get rotation
 					uint rotation = 4;

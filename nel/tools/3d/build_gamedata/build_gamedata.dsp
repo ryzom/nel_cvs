@@ -998,6 +998,10 @@ SOURCE=.\processes\ligo\export_build_all_data.bat
 
 SOURCE=.\processes\ligo\export_build_data.bat
 # End Source File
+# Begin Source File
+
+SOURCE=.\processes\ligo\maxscript\nel_ligo_export.ms
+# End Source File
 # End Group
 # Begin Group "Font"
 

@@ -1,7 +1,7 @@
 /** \file ligo_error.h
  * Error handling interface
  *
- * $Id: ligo_error.h,v 1.3 2002/03/07 08:26:37 corvazier Exp $
+ * $Id: ligo_error.h,v 1.4 2002/03/28 15:19:24 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -83,6 +83,9 @@ public:
 
 		/// No corner found
 		NoCornerFound,
+
+		/// Two corner vertices
+		TwoCornerVertices,
 
 		/// Unkown error
 		UnknownError,

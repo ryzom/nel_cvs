@@ -41,6 +41,6 @@ namespace NLAILINK
 	void setMainManager(NLAIAGENT::IMainAgent *manager)
 	{
 		NLAIAGENT::CProxyAgentMail::MainAgent = manager;
-		NLAIAGENT::CProxyAgentMail::MainAgent->incRef();
+		//NLAIAGENT::CProxyAgentMail::MainAgent->incRef();
 	}
 }

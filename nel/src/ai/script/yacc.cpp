@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.16 2001/02/12 09:55:17 robert Exp $
+ * $Id: yacc.cpp,v 1.17 2001/02/21 11:36:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -876,21 +876,35 @@ namespace NLAISCRIPT
 			p->incRef();
 			paramRun->push(p);
 
-			const NLAIC::CIdentType *id = ((IOpType *)(*_Param.back())[0])->getConstraintTypeOf();
-			if(id == NULL || !(((const NLAIC::CTypeOfObject &)*id) & NLAIC::CTypeOfObject::tPerformative) )
-			{								
-				yyerror("argument 1 of send is not an performatif");	
-				return false;
+			const NLAIC::CIdentType *id = NULL;
+			if(_Param.back()->size() == 2)
+			{
+				id = ((IOpType *)(*_Param.back())[0])->getConstraintTypeOf();
+				if(id == NULL || !(((const NLAIC::CTypeOfObject &)*id) & NLAIC::CTypeOfObject::tPerformative) )
+				{								
+						yyerror("argument 1 of send is not an performatif");	
+						return false;
+				}
 			}
 			else
 			{
-			
-				NLAIAGENT::IPerformative *perf = (NLAIAGENT::IPerformative *)id->getFactory()->getClass();
-				char runName[1024*4]; 
-				sprintf(runName,"%s%s",_RUN_,perf->getName());
-				nameRun->cpy(NLAIAGENT::CStringType ((NLAIAGENT::CStringVarName(runName))));
-				nameRun->incRef();
+				if(_Param.back()->size() == 3)
+				{
+					id = ((IOpType *)(*_Param.back())[1])->getConstraintTypeOf();
+					if(id == NULL || !(((const NLAIC::CTypeOfObject &)*id) & NLAIC::CTypeOfObject::tPerformative) )
+					{								
+							yyerror("argument 2 of send is not an performatif");	
+							return false;
+					}
+				}
 			}
+			
+						
+			NLAIAGENT::IPerformative *perf = (NLAIAGENT::IPerformative *)id->getFactory()->getClass();
+			char runName[1024*4]; 
+			sprintf(runName,"%s%s",_RUN_,perf->getName());
+			nameRun->cpy(NLAIAGENT::CStringType ((NLAIAGENT::CStringVarName(runName))));
+			nameRun->incRef();			
 
 #ifdef NL_DEBUG	
 	nameRun->getDebugString(mName);

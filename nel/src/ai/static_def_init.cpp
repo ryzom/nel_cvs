@@ -17,6 +17,7 @@
 #include "nel/ai/agent/actor_script.h"
 #include "nel/ai/script/interpret_actor.h"
 #include "nel/ai/agent/performative.h"
+#include "nel/ai/agent/object_ident.h"
 
 #include "nel/ai/c/registry_class.h"
 #include "nel/ai/agent/msg_notify.h"
@@ -41,6 +42,10 @@
 	CIndexedVarName::tMapName *CIndexedVarName::_Map = new CIndexedVarName::tMapName;
 	std::list<CIndexedVarName::CNameStruc *> *CIndexedVarName::_Empty = new std::list<CIndexedVarName::CNameStruc *>;
 
+
+	const NLAIC::CIdentType CObjectIdent::IdObjectIdent("ObjectIdent",NLAIC::CSelfClassCFactory(CObjectIdent("0:0:0")),
+																		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
+																		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	static CNumericIndex staticId;
 	static const IAgent staticAgent(NULL);
@@ -417,6 +422,11 @@
 
 	const NLAIC::CIdentType CPError::IdPError = NLAIC::CIdentType( "Error",
 		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPError()), 
+		NLAIC::CTypeOfObject::tPerformative,
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
+
+	const NLAIC::CIdentType CPEven::IdEven = NLAIC::CIdentType( "Even",
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPEven()), 
 		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 

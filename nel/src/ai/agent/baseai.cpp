@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.13 2001/02/13 10:43:30 chafik Exp $
+ * $Id: baseai.cpp,v 1.14 2001/02/21 11:36:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -239,31 +239,25 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult IObjectIA::runMethodeMember(sint32 id,IObjectIA *a)
 	{
+		
 		switch(id)
 		{
 		case 0:
 			{
 				IMessageBase *msg;
-				if(((IBaseGroupType *)a)->size() == 3)
-				{
-					IObjectIA *o = (INombreDefine *)((IBaseGroupType *)a)->pop();
-					msg = (IMessageBase *)((IBaseGroupType *)a)->pop();
-					this->incRef();
-					msg->setReceiver(this);
-					IPerformative *p = (IPerformative *)((IBaseGroupType *)a)->pop();
-					msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());
-					p->release();
-					o->incRef();
-					msg->setContinuation(o);									
-				}
-				else
-				{
-					msg = (IMessageBase *)((IBaseGroupType *)a)->pop();
-					this->incRef();
-					msg->setReceiver(this);
-					IPerformative *p = (IPerformative *)((IBaseGroupType *)a)->pop();
-					msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());
-					p->release();					
+				IPerformative *p;
+
+				msg = (IMessageBase *)((IBaseGroupType *)a)->pop();
+				this->incRef();
+				msg->setReceiver(this);
+				p = (IPerformative *)((IBaseGroupType *)a)->pop();
+				msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());
+				p->release();
+				if(((IBaseGroupType *)a)->size())
+				{					
+					CStringType *name = (CStringType *)((IBaseGroupType *)a)->pop();
+					return sendMessage(name->getStr(),msg);
+					
 				}				
 				return sendMessage(msg);
 			}			
@@ -272,7 +266,15 @@ namespace NLAIAGENT
 			break;
 		}
 		return CProcessResult();
-	}	
+	}
+
+	IObjectIA::CProcessResult IObjectIA::sendMessage(const IVarName &name,IObjectIA *)
+	{
+		char text[2048*8];
+		sprintf(text,"method 'sendMessage(%s,const IObjectIA &)' '%s' interface",name.getString(), (const char *)getType());
+		throw NLAIE::CExceptionNotImplemented(text);
+		return CProcessResult();
+	}
 
 	IObjectIA::CProcessResult IObjectIA::sendMessage(IObjectIA *)
 	{

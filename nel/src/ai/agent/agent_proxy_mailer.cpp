@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.6 2001/02/13 10:43:30 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.7 2001/02/21 11:36:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,14 +40,16 @@ namespace NLAIAGENT
 	IMainAgent *CProxyAgentMail::MainAgent = NULL;
 
 	CProxyAgentMail::CMethodCall **CProxyAgentMail::StaticMethod = NULL;
+	NLAISCRIPT::CParam *Param;
 
 	void CProxyAgentMail::initClass()
 	{
 		CProxyAgentMail::StaticMethod =  new CProxyAgentMail::CMethodCall *[CProxyAgentMail::TLast];
+		Param = new NLAISCRIPT::CParam(1,new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CStringType::IdStringType)));
 		CProxyAgentMail::StaticMethod[TConstructor]= new CProxyAgentMail::CMethodCall(
 			_CONSTRUCTOR_,					
 			CProxyAgentMail::TConstructor,			
-			new NLAISCRIPT::CParam(1,new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CStringType::IdStringType))),
+			Param,
 			CProxyAgentMail::CheckAll,
 			1,
 			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid));
@@ -56,6 +58,7 @@ namespace NLAIAGENT
 	void CProxyAgentMail::releaseClass()
 	{
 		sint i;
+		Param->release();
 		for(i = 0; i < CProxyAgentMail::TLast; i ++)
 		{
 			delete CProxyAgentMail::StaticMethod[i];

@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.15 2001/02/12 09:55:09 robert Exp $
+ * $Id: var_control.cpp,v 1.16 2001/02/21 11:36:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -413,6 +413,9 @@ namespace NLAISCRIPT
 			break;
 		case NLAIAGENT::IMessageBase::PError:
 			_LastFact.Value = new NLAIAGENT::CPError();
+			break;
+		case NLAIAGENT::IMessageBase::PEven:
+			_LastFact.Value = new NLAIAGENT::CPEven();
 			break;
 		}		
 		_LastFact.VarType = varTypeImediate;

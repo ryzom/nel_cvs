@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.22 2001/02/13 10:43:30 chafik Exp $
+ * $Id: agents.cpp,v 1.23 2001/02/21 11:36:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/agent/msg_notify.h"
+#include "nel/ai/agent/object_ident.h"
 
 namespace NLAIAGENT
 {
@@ -240,7 +241,7 @@ namespace NLAIAGENT
 		NLAIC::CIdentTypeAlloc id;			
 	}
 
-	void IBasicAgent::addMsgGroup(IBasicMessageGroup &grp)
+	/*void IBasicAgent::addMsgGroup(IBasicMessageGroup &grp)
 	{
 		getMail()->addGroup( grp );
 	}
@@ -248,7 +249,7 @@ namespace NLAIAGENT
 	void IBasicAgent::removeMsgGroup(IBasicMessageGroup &grp)
 	{
 		getMail()->removeGroup( grp );
-	}
+	}*/
 
 	IObjectIA *IBasicAgent::run(const IMessageBase &msg)
 	{
@@ -303,7 +304,13 @@ namespace NLAIAGENT
 		case IMessageBase::PError:
 			returnMsg = runError(msg);
 			break;
+
+		case IMessageBase::PEven:
+			returnMsg = runEven(msg);
+			((IMessageBase &)msg).setDispatch();
+			break;
 		}
+		
 		if(returnMsg) returnMsg->release();
 		return NULL;
 	}
@@ -412,11 +419,9 @@ namespace NLAIAGENT
 			break;
 
 		case _GetNumId:		
-			{
-				char text[256];
-				IObjectIA::CProcessResult a;
-				((const IWordNumRef &)*this).getNumIdent().getDebugString(text);
-				a.Result = new CStringType(CStringVarName(text));
+			{				
+				IObjectIA::CProcessResult a;				
+				a.Result = new CObjectIdent(((const IWordNumRef &)*this).getNumIdent());
 				return a;
 			}
 			break;

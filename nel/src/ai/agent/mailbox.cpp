@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.11 2001/02/08 17:27:53 chafik Exp $
+ * $Id: mailbox.cpp,v 1.12 2001/02/21 11:36:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,7 +104,7 @@ namespace NLAIAGENT
 		return _ListMessage.size();
 	}
 
-	std::list<const IMessageBase *> *CSimpleLocalMailBox::pumpMessages(IBasicMessageGroup &) const
+	std::list<const IMessageBase *> *CSimpleLocalMailBox::pumpMessages(/*IBasicMessageGroup &*/) const
 	{
 		std::list<const IMessageBase *> *result = new std::list<const IMessageBase *>;
 
@@ -116,7 +116,7 @@ namespace NLAIAGENT
 		return result;
 	}
 
-	void CSimpleLocalMailBox::addGroup(IBasicMessageGroup &)
+	/*void CSimpleLocalMailBox::addGroup(IBasicMessageGroup &)
 	{
 
 	}
@@ -129,7 +129,7 @@ namespace NLAIAGENT
 	std::list<IBasicMessageGroup *> &CSimpleLocalMailBox::getGroups()
 	{
 		return _Msg_grps;
-	}
+	}*/
 
 	const IObjectIA::CProcessResult &CSimpleLocalMailBox::getState() const 
 	{
@@ -257,14 +257,31 @@ namespace NLAIAGENT
 	{
 	}
 				
+	void CLocalMailBox::shareMessage()
+	{
+		IMessageBase *msg = (IMessageBase *)_ListMessageIn.back();
+		msg->incRef();
+		_ListSharedMessage.push_back(msg);
+	}
+
 	const IMessageBase &CLocalMailBox::getMessage()
 	{				
-		return *_ListMessageIn.getMessage();
+		return *_ListMessageIn.back();
 	}
 
 	void CLocalMailBox::popMessage()
 	{	
-		_ListMessageIn.popMessage();
+
+		IMessageBase *msg = (IMessageBase *)_ListMessageIn.back();
+		if(msg->getDispatch())
+		{
+			_ListSharedMessage.push_back(msg);
+		}
+		else
+		{
+			_ListMessageIn.pop_back();
+			msg->release();
+		}
 	}
 
 	sint32 CLocalMailBox::getMessageCount() const
@@ -272,10 +289,9 @@ namespace NLAIAGENT
 		return _ListMessageIn.size();
 	}
 	
-	void CLocalMailBox::sendMessage(const IBasicAgent &,const IBaseGroupType &)
-	{			
-		//_listMessageOut.push_back((const IMessageBase *)IMessageBase(msg,a).clone());
-	}
+	/*void CLocalMailBox::sendMessage(const IBasicAgent &,const IBaseGroupType &)
+	{					
+	}*/
 
 	IObjectIA::CProcessResult CLocalMailBox::sendMessage(IMessageBase *)
 	{
@@ -285,22 +301,21 @@ namespace NLAIAGENT
 
 	void CLocalMailBox::addMessage(IMessageBase *msg)
 	{
-		_ListMessageIn.addMessage(msg);
+		_ListMessageIn.push_back(msg);
 	}
 	
 	// Ajoute une boite aux lettre dans la liste des boites aux lettres "source" (les bals à consulter).
 	void CLocalMailBox::addMailBox(IMailBox *mail)
 	{
 		connect( mail );
-
 		_ListMailBox.push_back((IMailBox *)mail);
 
-		std::list<IBasicMessageGroup *>::const_iterator it_grp = mail->getGroups().begin();
+		/*std::list<IBasicMessageGroup *>::const_iterator it_grp = mail->getGroups().begin();
 		while ( it_grp != mail->getGroups().end() )
 		{
 			_Msg_grps.push_back( *it_grp );
 			it_grp++;
-		}
+		}*/
 
 	}
 
@@ -356,10 +371,29 @@ namespace NLAIAGENT
 		while(k != _ListMailBox.end())
 		{
 			IMailBox *mail = *k++;					
-			((IWordNumRef *)mail)->save(os);
+			((IWordNumRef *)(const NLAIAGENT::IWordNumRef *)*mail)->save(os);
 		}
-		
-		_ListMessageIn.save(os);
+
+		size = _ListMessageIn.size();
+		os.serial( size );
+		tListMessageIter msgItr = _ListMessageIn.begin();
+		while(msgItr != _ListMessageIn.end())
+		{
+			IMessageBase *msg = (IMessageBase *)*msgItr++;
+			os.serial( (NLAIC::CIdentType &) (msg->getType()) );
+			msg->save(os);
+		}
+
+		size = _ListSharedMessage.size();
+		os.serial( size );
+		msgItr = _ListSharedMessage.begin();
+		while(msgItr != _ListSharedMessage.end())
+		{
+			IMessageBase *msg = (IMessageBase *)*msgItr++;
+			os.serial( (NLAIC::CIdentType &) (msg->getType()) );
+			msg->save(os);
+		}
+		//_ListMessageIn.save(os);
 	}
 
 	void CLocalMailBox::load(NLMISC::IStream &is)
@@ -367,19 +401,20 @@ namespace NLAIAGENT
 		IMailBox::load(is);
 		sint32 i;				
 		NLAIC::CIdentTypeAlloc id;			
-		is.serial(i);				
+		is.serial(i);
 		if(i)
 		{
 			while(i --)
 			{
-				is.serial(id);						
+				is.serial(id);
 				IWordNumRef *num = (IWordNumRef *)id.allocClass();
 				num->load(is);
 				_ListMailBox.push_back((IMailBox *)((const IRefrence *)*num));
 				delete num;
 			}
 		}
-		_ListMessageIn.load(is);
+
+		//_ListMessageIn.load(is);
 	}					
 
 	const IObjectIA::CProcessResult &CLocalMailBox::getState() const 
@@ -393,15 +428,31 @@ namespace NLAIAGENT
 		_RunState.Result = result;
 	}
 
-	std::list<const IMessageBase *> *CLocalMailBox::pumpMessages(IBasicMessageGroup &grp) const
+	std::list<const IMessageBase *> *CLocalMailBox::pumpMessages(/*IBasicMessageGroup &grp*/) const
 	{
-//		return _ListMessageIn.pumpMessages( grp );
+		//return _ListMessageIn.pumpMessages( grp );
+		if(_ListSharedMessage.size())
+		{
+			std::list<const IMessageBase *> *l = new tListMessage;
+			tListMessageCstIter msgItr = _ListSharedMessage.begin();
+			while(msgItr != _ListSharedMessage.end())
+			{	
+				const IMessageBase *msg = *msgItr++;
+				l->push_back((const IMessageBase *)msg->clone());								
+			}
+			return l;
+		}
 		return NULL;
 	}
 
 	const IObjectIA::CProcessResult &CLocalMailBox::run()
 	{
 		setState(processBuzzy,NULL);	
+		while(_ListSharedMessage.size())
+		{
+			((IMessageBase *)_ListSharedMessage.back())->release();
+			_ListSharedMessage.pop_back();
+		}
 		tListMailBoxIter j;
 		fillMailBox();
 		setState(processIdle,NULL);
@@ -413,63 +464,23 @@ namespace NLAIAGENT
 		sprintf(t,"class CLocalMailBox");
 	}
 
-	void CLocalMailBox::addGroup(IBasicMessageGroup &grp)
-	{
-		std::list<IBasicMessageGroup *>::iterator it_grp = _Msg_grps.begin();
-		while ( it_grp != _Msg_grps.end() )
-		{
-			if ( ( **it_grp ) == grp )
-				return;
-			it_grp++;
-		}
-		_Msg_grps.push_back(&grp);
-	}
-
-	std::list<IBasicMessageGroup *> &CLocalMailBox::getGroups() 
-	{
-		return _Msg_grps;
-	}
-
-
-	void CLocalMailBox::removeGroup(IBasicMessageGroup &grp)
-	{
-		std::list<IBasicMessageGroup *>::iterator it_grp = _Msg_grps.begin();
-		while ( it_grp != _Msg_grps.end() )
-		{
-			if ( *it_grp == &grp ) 
-			{
-				_Msg_grps.erase( it_grp );
-				return;
-			}
-			it_grp ++;
-		}
-	}
-
 	void CLocalMailBox::fillMailBox()
-	{
-		// Récupère les messages dans chaque boite aux lettres "source"...
+	{		
 		tListMailBoxIter i_mbox = _ListMailBox.begin();
 
 		while ( i_mbox != _ListMailBox.end() )
-		{					
-			// ... pour chaque groupe.
-			std::list<IBasicMessageGroup *>::iterator it_grp = _Msg_grps.begin();
-			while ( it_grp != _Msg_grps.end() )
+		{
+			std::list<const IMessageBase *> *msg_lst = (*i_mbox)->pumpMessages();
+			if ( msg_lst != NULL)
 			{
-				std::list<const IMessageBase *> *msg_lst = (*i_mbox)->pumpMessages( **it_grp );
-
-				if ( msg_lst->size() )
+				while ( msg_lst->size() )
 				{
-					while ( !msg_lst->empty() )
-					{
-						IMessageBase *m = (IMessageBase *) msg_lst->front();
-						_ListMessageIn.addMessage(m);
-						m->release();
-						msg_lst->pop_front();
-					}
+					IMessageBase *m = (IMessageBase *) msg_lst->front();
+					m->incRef();
+					_ListMessageIn.push_back(m);
+					m->release();
+					msg_lst->pop_front();
 				}
-				it_grp++;
-
 				delete msg_lst;
 			}
 			i_mbox++;
@@ -518,46 +529,7 @@ namespace NLAIAGENT
 
 	/// Gets messages from its father
 	void CScriptMailBox::fillMailBox()
-	{
-		/*NLAIAGENT::IRefrence *father =  getParent();
-		if ( father )
-		{
-			father = father->getParent();
-
-#ifdef _DEBUG
-				const char *dbg_this_type = 	(const char *) getType();
-				const char *dbg_father_type = 	(const char *) getParent()->getType();
-#endif
-			
-			if ( father != NULL )	
-			{
-				const NLAIC::CIdentType &f_type = father->getType();
-
-#ifdef _DEBUG
-				const char *dbg_ffather_type = 	(const char *) father->getType();
-#endif
-
-
-				if( ((const NLAIC::CTypeOfObject &) f_type) & NLAIC::CTypeOfObject::tAgentInterpret )	// Le père est il un agent scripté?
-				{
-					const CScriptMailBox *father_mail = (const CScriptMailBox *) ( (NLAIAGENT::CAgentScript *) father )->getLocalMailBox();
-
-					if ( father_mail != NULL )
-					{
-						CMessageGroup my_grp(0);
-						std::list<const IMessageBase *> *f_mail = father_mail->pumpMessages( my_grp );
-						while ( f_mail->size() )
-						{
-							const IMessageBase *translated_msg = translateMsg( f_mail->front() );
-							if ( translated_msg )
-								_ListMessage.push_back( translated_msg );
-							f_mail->pop_front();
-						}
-						delete f_mail;
-					}
-				}
-			}
-		}*/
+	{		
 	}
 
 	void CScriptMailBox::setIndex(sint32 i)

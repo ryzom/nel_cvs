@@ -23,7 +23,7 @@ using  namespace NLAIFUZZY;
 %token	NON_BIN		OR_BIN		AND_BIN		XOR_BIN		SCOP
 %token	PLUS		MOINS		FOIS		DIV			POWER
 %token	POINT_VI	LEPOINT		POINT_DEUX	INTERROGATION CHAINE NILL 
-%token	EXEC ACHIEVE ASK BREAK TELL KILL ERROR
+%token	EXEC ACHIEVE ASK BREAK TELL KILL PERROR EVEN
 
 %token  BEGIN_GRAMMAR
 %token	FROM 
@@ -837,7 +837,7 @@ using  namespace NLAIFUZZY;
 								_IsFacteurIsExpression = false;
 								setPerformative(NLAIAGENT::IMessageBase::PBreak);
 							}
-						|	ERROR
+						|	PERROR
 							{
 								_IsFacteurIsExpression = false;
 								setPerformative(NLAIAGENT::IMessageBase::PError);
@@ -851,6 +851,11 @@ using  namespace NLAIFUZZY;
 							{
 								_IsFacteurIsExpression = false;
 								setPerformative(NLAIAGENT::IMessageBase::PKill);
+							}
+						|	EVEN
+							{
+								_IsFacteurIsExpression = false;
+								setPerformative(NLAIAGENT::IMessageBase::PEven);
 							}
 						|	NILL
 							{

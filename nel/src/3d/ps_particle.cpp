@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.49 2001/09/17 15:48:50 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.50 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,8 @@
 	#define PARTICLES_CHECK_MEM
 #endif
 
-
+// display a vector using nlinfo
+#define DUMP_VECT(v) nlinfo(#v "= %f, %f, %f", v.x, v.y, v.z);
 
 namespace NL3D {
 

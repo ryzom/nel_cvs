@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.18 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: ps_force.cpp,v 1.19 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,12 +45,30 @@ CPSForce::CPSForce()
 {
 }
 
+
+
 void CPSForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	
 		f.serialVersion(1);	
 		CPSTargetLocatedBindable::serial(f);	
-		CPSLocatedBindable::serial(f);			
+		CPSLocatedBindable::serial(f);
+
+		if (f.isReading())
+		{
+		
+			for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+			{
+				if (this->isIntegrable())
+				{						
+					(*it)->registerIntegrableForce(this);
+				}
+				else
+				{
+					(*it)->addNonIntegrableForceRef();
+				}
+			}
+		}
 }
 
 
@@ -60,14 +78,85 @@ void CPSForce::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {
 	switch(pass)
 	{
-		case PSMotion:
-			performMotion(ellapsedTime);
+		case PSDynamic:
+			performDynamic(ellapsedTime);
 		break;
 		case PSToolRender:
 			show(ellapsedTime);
 		break;
 	}
 }
+
+
+
+void	CPSForce::attachTarget(CPSLocated *ptr)
+{
+	nlassert(_Owner);	
+	CPSTargetLocatedBindable::attachTarget(ptr);
+	// check wether we are integrable, and if so, add us to the list
+	if (this->isIntegrable())
+	{
+		ptr->registerIntegrableForce(this);
+	}
+	else
+	{
+		ptr->addNonIntegrableForceRef();
+	}
+}
+
+void	CPSForce::releaseTargetRsc(CPSLocated *target)
+{
+	if (this->isIntegrable())
+	{
+		target->unregisterIntegrableForce(this);
+	}
+	else
+	{
+		target->releaseNonIntegrableForceRef();
+	}	
+}
+
+
+
+void	CPSForce::basisChanged(bool systemBasis)
+{
+	if (!this->isIntegrable()) return;
+	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+	{	
+		(*it)->integrableForceBasisChanged(systemBasis);
+	}		
+}
+
+
+void	CPSForce::cancelIntegrable(void)
+{
+	nlassert(_Owner);
+	bool useSystemBasis = _Owner->isInSystemBasis();
+	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+	{
+		if ((*it)->isInSystemBasis() == useSystemBasis)
+		{
+			(*it)->unregisterIntegrableForce(this);
+			(*it)->addNonIntegrableForceRef();
+		}
+	}
+}
+
+
+void	CPSForce::renewIntegrable(void)
+{
+	nlassert(_Owner);
+	bool useSystemBasis = _Owner->isInSystemBasis();
+	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+	{
+		if ((*it)->isInSystemBasis() == useSystemBasis)
+		{
+			(*it)->registerIntegrableForce(this);
+			(*it)->releaseNonIntegrableForceRef();
+		}
+	}
+}
+
 
 
 ///////////////////////////////////////
@@ -82,6 +171,7 @@ void CPSForceIntensity::setIntensity(float value)
 		_IntensityScheme = NULL;
 	}
 	_K = value;
+	
 }
 
 CPSForceIntensity::~CPSForceIntensity()
@@ -137,7 +227,7 @@ void CPSForceIntensity::serialForceIntensity(NLMISC::IStream &f) throw(NLMISC::E
 ////////////////////////////////////////
 
 
-void CPSDirectionnalForce::performMotion(CAnimationTime ellapsedTime)
+void CPSDirectionnalForce::performDynamic(CAnimationTime ellapsedTime)
 {
 	// perform the operation on each target
 
@@ -206,7 +296,7 @@ void CPSDirectionnalForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 ////////////////////////////
 
 
-void CPSGravity::performMotion(CAnimationTime ellapsedTime)
+void CPSGravity::performDynamic(CAnimationTime ellapsedTime)
 {	
 	
 	// perform the operation on each target
@@ -328,12 +418,162 @@ void CPSGravity::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 
+bool	CPSGravity::isIntegrable(void) const
+{
+	return _IntensityScheme == NULL;
+}
+
+void CPSGravity::integrate(float date, CPSLocated *src, uint32 startIndex, uint32 numObjects, NLMISC::CVector *destPos, NLMISC::CVector *destSpeed,
+							bool accumulate,
+							uint posStride, uint speedStride
+							)
+{
+	#define NEXT_SPEED destSpeed = (NLMISC::CVector *) ((uint8 *) destSpeed + speedStride);
+	#define NEXT_POS   destPos   = (NLMISC::CVector *) ((uint8 *) destPos   + posStride);
+
+	float deltaT;
+
+	if (!destPos && !destSpeed) return;
+
+	CPSLocated::TPSAttribParametricInfo::const_iterator it = src->_PInfo.begin() + startIndex,
+														endIt = src->_PInfo.begin() + startIndex + numObjects;	
+	if (!accumulate) // compute coords from initial condition, and applying this force
+	{
+		if (destPos && !destSpeed) // fills dest pos only
+		{
+			while (it != endIt)
+			{
+				deltaT = date - it->Date;				
+				destPos->x = it->Pos.x + deltaT * it->Speed.x;				
+				destPos->y = it->Pos.y + deltaT * it->Speed.y;
+				destPos->z = it->Pos.z + deltaT * it->Speed.z - 0.5f * deltaT * deltaT * _K;
+				++it;
+				NEXT_POS;	
+			}
+		}
+		else if (!destPos && destSpeed) // fills dest speed only
+		{
+			while (it != endIt)
+			{
+				deltaT = date - it->Date;				
+				destSpeed->x = it->Speed.x;				
+				destSpeed->y = it->Speed.y;
+				destSpeed->z = it->Speed.z - deltaT * _K;
+				++it;
+				NEXT_SPEED;	
+			}
+		}
+		else // fills both speed and pos
+		{
+			while (it != endIt)
+			{
+				deltaT = date - it->Date;				
+				destPos->x = it->Pos.x + deltaT * it->Speed.x;				
+				destPos->y = it->Pos.y + deltaT * it->Speed.y;
+				destPos->z = it->Pos.z + deltaT * it->Speed.z - 0.5f * deltaT * deltaT * _K;
+
+				destSpeed->x = it->Speed.x;				
+				destSpeed->y = it->Speed.y;
+				destSpeed->z = it->Speed.z - deltaT * _K;
+
+				++it;
+				NEXT_POS;
+				NEXT_SPEED;
+			}
+		}
+	}
+	else // accumulate datas
+	{
+		if (destPos && !destSpeed) // fills dest pos only
+		{
+			while (it != endIt)
+			{
+				deltaT = date - it->Date;								
+				destPos->z -= 0.5f * deltaT * deltaT * _K;				
+				++it;
+				NEXT_POS;	
+			}
+		}
+		else if (!destPos && destSpeed) // fills dest speed only
+		{
+			while (it != endIt)
+			{
+				deltaT = date - it->Date;								
+				destSpeed->z -= deltaT * _K;				
+				++it;
+				NEXT_SPEED;	
+			}
+		}
+		else // fills both speed and pos
+		{
+			while (it != endIt)
+			{
+				deltaT = date - it->Date;								
+				destPos->z -= 0.5f * deltaT * deltaT * _K;
+				destSpeed->z -= deltaT * _K;
+				++it;
+				NEXT_POS;
+				NEXT_SPEED;
+			}
+		}
+	}
+	
+}
+
+
+
+
+void CPSGravity::integrateSingle(float startDate, float deltaT, uint numStep,
+								 const NLMISC::CMatrix &mat,
+								 CPSLocated *src, uint32 indexInLocated,
+								 NLMISC::CVector *destPos,
+								 bool accumulate /*= false*/,
+								 uint posStride/* = sizeof(NLMISC::CVector)*/)
+{	
+	const CPSAttrib<CPSLocated::CParametricInfo> &pi = src->_PInfo;
+	if (!accumulate)
+	{
+		// fills uncomputed datas if needed
+
+
+
+	}
+	
+
+
+
+}
+
+
+void CPSGravity::setIntensity(float value)
+{
+	if (_IntensityScheme)
+	{
+		CPSForceIntensityHelper::setIntensity(value);
+		renewIntegrable(); // integrable again
+	}
+	else
+	{
+		CPSForceIntensityHelper::setIntensity(value);
+	}
+}
+	
+void CPSGravity::setIntensityScheme(CPSAttribMaker<float> *scheme)
+{
+	if (!_IntensityScheme)
+	{
+		cancelIntegrable(); // not integrable anymore
+	}			
+	CPSForceIntensityHelper::setIntensityScheme(scheme);	
+}
+
+
 /////////////////////////////////////////
 // CPSCentralGravity  implementation   //
 /////////////////////////////////////////
 
 
-void CPSCentralGravity::performMotion(CAnimationTime ellapsedTime)
+void CPSCentralGravity::performDynamic(CAnimationTime ellapsedTime)
 {
 	// for each central gravity, and each target, we check if they are in the same basis
 	// if not, we need to transform the central gravity attachment pos into the target basis
@@ -408,7 +648,7 @@ void CPSCentralGravity::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 
-void CPSSpring::performMotion(CAnimationTime ellapsedTime)
+void CPSSpring::performDynamic(CAnimationTime ellapsedTime)
 {
 	// for each spring, and each target, we check if they are in the same basis
 	// if not, we need to transform the spring attachment pos into the target basis
@@ -475,7 +715,7 @@ void CPSSpring::show(CAnimationTime ellapsedTime)
 //  CPSCylindricVortex implementation  //
 /////////////////////////////////////////
 
-void CPSCylindricVortex::performMotion(CAnimationTime ellapsedTime)
+void CPSCylindricVortex::performDynamic(CAnimationTime ellapsedTime)
 {
 		uint32 size = _Owner->getSize();
 		

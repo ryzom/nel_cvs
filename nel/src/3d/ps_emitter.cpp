@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.28 2001/09/07 11:59:23 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.29 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -260,7 +260,7 @@ if (pass == PSToolRender)
 	showTool();
 	return;
 }
-if (pass != PSMotion) return;
+if (pass != PSEmit) return;
 const uint32 size = _Owner->getSize();
 if (!size) return;
 

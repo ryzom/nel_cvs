@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.34 2001/09/14 15:07:28 lecroart Exp $
+ * $Id: ps_located.cpp,v 1.35 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,10 +36,11 @@
 #include "3d/dru.h"
 #include "3d/ps_located.h"
 #include "3d/ps_particle.h"
+#include "3d/ps_force.h"
 
 #include "nel/misc/line.h"
 #include "nel/misc/cpu_info.h"
-#include "nel/misc/mem_stream.h"
+#include "nel/misc/common.h"
 
 namespace NL3D {
 
@@ -59,10 +60,152 @@ namespace NL3D {
 						 , _Name(std::string("located"))
 						 , _LODDegradation(false)
 						 , _MaxNumFaces(0)
+						 , _NonIntegrableForceNbRefs(0)
+						 , _NumIntegrableForceWithDifferentBasis(0)
+						 , _ParametricMotion(false)
 {		
 }
 
 
+
+
+void CPSLocated::notifyMotionTypeChanged(void)
+{
+	for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+	{
+		(*it)->motionTypeChanged(_ParametricMotion);
+	}
+}
+
+void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,
+								const NLMISC::CMatrix &mat,
+								uint32 indexInLocated,
+								NLMISC::CVector *destPos,						
+								uint posStride /*= sizeof(NLMISC::CVector)*/)
+{
+	nlassert(supportParametricMotion() && _ParametricMotion);
+	if (_IntegrableForces.size() != 0)
+	{
+		bool accumulate = false;
+		for (TForceVect::iterator it = _IntegrableForces.begin(); it != _IntegrableForces.end(); ++it)
+		{
+			nlassert((*it)->isIntegrable());
+			(*it)->integrateSingle(startDate, deltaT, numStep, mat, this, indexInLocated, destPos, accumulate, posStride);
+			accumulate = true;
+		}
+	}
+	else // no forces applied, just deduce position from date, initial pos and speed
+	{
+		nlassert(0); // TODO
+	}
+}
+
+void CPSLocated::performParametricMotion(CAnimationTime date, CAnimationTime ellapsedTime)
+{
+	if (!_Size) return;	
+	nlassert(supportParametricMotion() && _ParametricMotion);
+
+	if (_IntegrableForces.size() != 0)
+	{
+		bool accumulate = false;
+		for (TForceVect::iterator it = _IntegrableForces.begin(); it != _IntegrableForces.end(); ++it)
+		{
+			nlassert((*it)->isIntegrable());
+			(*it)->integrate(date, this, 0, _Size, &_Pos[0], &_Speed[0], accumulate);
+			accumulate = true;
+		}
+	}
+	else
+	{
+		CPSLocated::TPSAttribParametricInfo::const_iterator it = _PInfo.begin(),
+											endIt = _PInfo.end();
+		TPSAttribVector::iterator posIt = _Pos.begin();
+		float deltaT;
+		do
+		{
+			deltaT = date - it->Date;
+			posIt->x = it->Pos.x + deltaT * it->Speed.x;
+			posIt->y = it->Pos.y + deltaT * it->Speed.y;
+			posIt->z = it->Pos.z + deltaT * it->Speed.z;
+			++posIt;
+			++it;
+		}
+		while (it != endIt);
+	}
+	step(PSEmit, ellapsedTime);
+	updateLife(ellapsedTime);
+}
+
+/// allocate parametric infos
+void  CPSLocated::allocateParametricInfos(void)
+{
+	if (_ParametricMotion) return;
+	nlassert(supportParametricMotion());
+	nlassert(_Owner);
+	const float date = _Owner->getSystemDate();
+	_PInfo.resize(_MaxSize);
+	// copy back infos from current position and speeds
+	TPSAttribVector::const_iterator posIt = _Pos.begin(), endPosIt = _Pos.end();
+	TPSAttribVector::const_iterator speedIt = _Speed.begin();
+	while (posIt != endPosIt)
+	{
+		_PInfo.insert( CParametricInfo(*posIt, *speedIt, date) );
+		++posIt;
+	}
+	_ParametricMotion = true;
+	notifyMotionTypeChanged();
+}
+
+/// release parametric infos
+void  CPSLocated::releaseParametricInfos(void)
+{
+	if (!_ParametricMotion) return;
+	NLMISC::contReset(_PInfo);
+	_ParametricMotion = false;
+	notifyMotionTypeChanged();
+}
+
+
+/// Test wether this located support parametric motion
+bool      CPSLocated::supportParametricMotion(void) const
+{
+	return _NonIntegrableForceNbRefs == 0 && _NumIntegrableForceWithDifferentBasis == 0;
+}
+
+/** When set to true, this tells the system to use parametric motion. This is needed in a few case only,
+  * and can only work if all the forces that apply to the system are integrable
+  */
+void	CPSLocated::enableParametricMotion(bool enable /*= true*/)
+{
+	nlassert(supportParametricMotion());
+	if (enable)
+	{
+		allocateParametricInfos();
+	}
+	else
+	{
+		releaseParametricInfos();
+	}
+}
+
+
+void CPSLocated::setSystemBasis(bool sysBasis)
+{			
+	if (sysBasis != isInSystemBasis())
+	{		
+		for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+		{
+			(*it)->basisChanged(sysBasis);
+		}
+
+		CParticleSystemProcess::setSystemBasis(sysBasis);
+
+		for (TForceVect::iterator fIt = _IntegrableForces.begin(); fIt != _IntegrableForces.end(); ++fIt)
+		{			
+			integrableForceBasisChanged( (*fIt)->getOwner()->isInSystemBasis() );
+		}				
+	}			
+}
 
 void CPSLocated::notifyMaxNumFacesChanged(void)
 {
@@ -261,12 +404,15 @@ CPSLocated::~CPSLocated()
 										 // If this happen, you can register with the registerDTorObserver
 										 // (observer pattern)
 										 // and override notifyTargetRemove to call releaseCollisionInfo
+	nlassert(_IntegrableForces.size() == 0);
+	nlassert(_NonIntegrableForceNbRefs == 0);
 	nlassert(!_CollisionInfo);
 
 	// delete all bindable
 
 	for (TLocatedBoundCont::iterator it2 = _LocatedBoundCont.begin(); it2 != _LocatedBoundCont.end(); ++it2)
 	{
+		(*it2)->finalize();
 		delete *it2;
 	}
 
@@ -294,7 +440,7 @@ void CPSLocated::bind(CPSLocatedBindable *lb)
 	lb->resize(_MaxSize);
 
 	// any located bindable that is bound to us should have no element in it for now !!
-	// we reisze the boundable, so that it has ne same number of elements as us
+	// we resize it anyway...
 
 	uint32 initialSize  = _Size;
 	for (uint32 k = 0; k < initialSize; ++k)
@@ -314,6 +460,7 @@ void CPSLocated::remove(const CPSLocatedBindable *p)
 {
 	TLocatedBoundCont::iterator it = std::find(_LocatedBoundCont.begin(), _LocatedBoundCont.end(), p);
 	nlassert(it != _LocatedBoundCont.end());	
+	(*it)->finalize();
 	delete *it;
 	_LocatedBoundCont.erase(it);
 }
@@ -380,9 +527,16 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 	const float lifeTime = (_LifeScheme && emitter) ?  _LifeScheme->get(emitter, indexInEmitter) : _InitialLife ;
 	_TimeIncrement.insert( lifeTime ? 1.f / lifeTime : 10E6f);
 
-	// generate datas for all bound objects
-	
-	
+	// test wether parametric motion is used, and generate the infos that are needed then
+	if (_ParametricMotion)
+	{
+		_PInfo.insert( CParametricInfo(_Pos[creationIndex], _Speed[creationIndex], _Owner->getSystemDate() ) );
+	}
+
+
+	///////////////////////////////////////////
+	// generate datas for all bound objects  //
+	///////////////////////////////////////////
 	_UpdateLock = true;	
 
 	
@@ -392,12 +546,12 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 	}
 
 	
-	_UpdateLock = false;
-	
-
+	_UpdateLock = false;	
 	++_Size;	// if this is modified, you must also modify the getNewElementIndex in this class
 				// because that method give the index of the element being created for overrider of the newElement method
 				// of the CPSLocatedClass (which is called just above)
+
+	
 
 	return creationIndex;
 }
@@ -443,6 +597,11 @@ void CPSLocated::deleteElement(uint32 index)
 		_CollisionInfo->remove(index);
 	}
 
+	if (_ParametricMotion)
+	{
+		_PInfo.remove(index);
+	}
+
 	--_Size;
 }
 
@@ -471,11 +630,15 @@ void CPSLocated::resize(uint32 newSize)
 	_Time.resize(newSize);
 	_TimeIncrement.resize(newSize);
 
+	if (_ParametricMotion)
+	{
+		_PInfo.resize(newSize);
+	}	
+
 	if (_CollisionInfo)
 	{
 		_CollisionInfo->resizeNFill(newSize);
 	}
-
 
 	
 
@@ -493,7 +656,7 @@ void CPSLocated::resize(uint32 newSize)
 
 void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(2);
+	sint ver = f.serialVersion(3);
 	CParticleSystemProcess::serial(f);
 	
 	f.serial(_Name);
@@ -623,12 +786,20 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_LODDegradation);
 	}
 
-
+	if (ver > 2)
+	{
+		f.serial(_ParametricMotion);
+	}
 
 	if (f.isReading())
 	{
 		// evaluate our max number of faces
 		notifyMaxNumFacesChanged();
+
+		if (_ParametricMotion)
+		{
+			allocateParametricInfos();			
+		}
 	}
 }
 
@@ -847,33 +1018,7 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 			}
 
 
-			if (! _LastForever)
-			{
-				TPSAttribTime::iterator itTime = _Time.begin(), itTimeInc = _TimeIncrement.begin();
-				for (uint32 k = 0; k < _Size;)
-				{
-					*itTime += ellapsedTime * *itTimeInc;
-					if (*itTime >= 1.0f)
-					{
-						deleteElement(k);
-					}
-					else
-					{
-						++k;
-						++itTime;
-						++itTimeInc;
-					}
-				}
-			}
-			else
-			{
-				// the time attribute gives the life in seconds
-				TPSAttribTime::iterator itTime = _Time.begin(), endItTime = _Time.end();
-				for (; itTime != endItTime; ++itTime)
-				{
-					*itTime += ellapsedTime;
-				}
-			}
+			updateLife(ellapsedTime);			
 		}
 		else
 		{
@@ -887,6 +1032,37 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 		if ((*it)->getLOD() == PSLod1n2 || _Owner->getLOD() == (*it)->getLOD()) // has this object the right LOD ?
 		{
 			(*it)->step(pass, ellapsedTime);
+		}
+	}
+}
+
+void CPSLocated::updateLife(CAnimationTime ellapsedTime)
+{
+	if (! _LastForever)
+	{
+		TPSAttribTime::iterator itTime = _Time.begin(), itTimeInc = _TimeIncrement.begin();
+		for (uint32 k = 0; k < _Size;)
+		{
+			*itTime += ellapsedTime * *itTimeInc;
+			if (*itTime >= 1.0f)
+			{
+				deleteElement(k);
+			}
+			else
+			{
+				++k;
+				++itTime;
+				++itTimeInc;
+			}
+		}
+	}
+	else
+	{
+		// the time attribute gives the life in seconds
+		TPSAttribTime::iterator itTime = _Time.begin(), endItTime = _Time.end();
+		for (; itTime != endItTime; ++itTime)
+		{
+			*itTime += ellapsedTime;
 		}
 	}
 }
@@ -1015,6 +1191,57 @@ void CPSLocated::resetCollisionInfo(void)
 		it->reset();
 	}
 }
+
+void CPSLocated::registerIntegrableForce(CPSForce *f)
+{	
+	nlassert(std::find(_IntegrableForces.begin(), _IntegrableForces.end(), f) == _IntegrableForces.end()); // force registered twice
+	_IntegrableForces.push_back(f);
+	if (_SystemBasisEnabled != f->getOwner()->isInSystemBasis())
+	{
+		++_NumIntegrableForceWithDifferentBasis;
+		releaseParametricInfos();
+	}
+}
+
+
+void CPSLocated::unregisterIntegrableForce(CPSForce *f)
+{
+	nlassert(f->getOwner()); // f must be attached to a located
+	std::vector<CPSForce *>::iterator it = std::find(_IntegrableForces.begin(), _IntegrableForces.end(), f);
+	nlassert(it != _IntegrableForces.end() );	
+	_IntegrableForces.erase(it);
+	if (_SystemBasisEnabled != f->getOwner()->isInSystemBasis())
+	{
+		--_NumIntegrableForceWithDifferentBasis;
+	}
+}
+
+void CPSLocated::addNonIntegrableForceRef(void)
+{
+	++_NonIntegrableForceNbRefs;
+	releaseParametricInfos();
+}
+
+void CPSLocated::releaseNonIntegrableForceRef(void)
+{
+	nlassert(_NonIntegrableForceNbRefs != 0);
+	--_NonIntegrableForceNbRefs;
+}
+
+
+void CPSLocated::integrableForceBasisChanged(bool basis)
+{	
+	if (_SystemBasisEnabled != basis)
+	{
+		++_NumIntegrableForceWithDifferentBasis;
+		releaseParametricInfos();
+	}
+	else
+	{
+		--_NumIntegrableForceWithDifferentBasis;
+	}
+}
+
 
 ///////////////////////////////////////
 // CPSLocatedBindable implementation //
@@ -1211,6 +1438,10 @@ void	CPSLocatedBindable::setExternID(uint32 id)
 	}	
 }
 
+	 
+
+
+
 /////////////////////////////////////////////
 // CPSTargetLocatedBindable implementation //
 /////////////////////////////////////////////
@@ -1262,6 +1493,20 @@ void CPSTargetLocatedBindable::notifyTargetRemoved(CPSLocated *ptr)
 
 	CPSLocatedBindable::notifyTargetRemoved(ptr);	
 }
+
+
+
+// dtor
+
+void CPSTargetLocatedBindable::finalize(void)
+{	
+	// release the collisionInfos we've querried. We can't do it in the dtor, as calls to releaseTargetRsc wouldn't be polymorphics for derived class!
+	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+	{		
+		releaseTargetRsc(*it);
+	}
+}
+
 
 
 CPSTargetLocatedBindable::~CPSTargetLocatedBindable()

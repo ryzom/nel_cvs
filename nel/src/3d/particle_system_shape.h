@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.13 2001/09/07 11:57:05 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.14 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,10 +135,12 @@ protected:
 	friend class CParticleSystemClipObs;
 	friend class CParticleSystem;
 
+public:
 	/** Instanciate a particle system from this shape.
 	  * A particle system may need to call this when a system is back in the frustum
 	  */
 	CParticleSystem *instanciatePS(CScene &scene);
+protected:
 		
 	/** A memory stream containing a particle system. Each system is instanciated from this prototype
 	  * Nevrtheless, we store some more system infos which are needed for its lifecycle

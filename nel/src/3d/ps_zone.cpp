@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.16 2001/09/05 15:40:24 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.17 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,22 +40,25 @@ namespace NL3D {
 /*
  * Constructor
  */
-	CPSZone::CPSZone() : _BounceFactor(1.f), _CollisionBehaviour(bounce)
+CPSZone::CPSZone() : _BounceFactor(1.f), _CollisionBehaviour(bounce)
 {
 }
 
-// dtor
-
-CPSZone::~CPSZone()
-{	
-	// release the collisionInfos we've querried
-	
-	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+void CPSZone::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{ 
+	f.serialVersion(1);
+	CPSTargetLocatedBindable::serial(f); 
+	f.serialEnum(_CollisionBehaviour);
+	f.serial(_BounceFactor);
+	if (f.isReading())
 	{		
-		releaseTargetRsc(*it);
+		for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+		{
+			// though this is not a force, this prevent parametric motion
+			(*it)->addNonIntegrableForceRef();
+		}	
 	}
 }
-
 
 /** Add a new type of located for this zone to apply on. 
 * We override this to queery the target to allocate the CollisionInfo attribute
@@ -65,7 +68,9 @@ void CPSZone::attachTarget(CPSLocated *ptr)
 		
 	CPSTargetLocatedBindable::attachTarget(ptr);
 	ptr->queryCollisionInfo();
+	ptr->addNonIntegrableForceRef();
 }
+
 
 
 
@@ -75,6 +80,7 @@ void CPSZone::releaseTargetRsc(CPSLocated *target)
 {
 	// tell the target that we were using collision infos and that we won't use them anymore
 	target->releaseCollisionInfo();
+	target->releaseNonIntegrableForceRef();
 }
 
 
@@ -303,7 +309,7 @@ void CPSZonePlane::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1);		
 	CPSZone::serial(f);	
-	f.serial(_Normal);
+	f.serial(_Normal);	
 }
 
 

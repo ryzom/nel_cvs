@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.24 2001/08/29 17:07:35 berenguier Exp $
+ * $Id: particle_system_shape.cpp,v 1.25 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -227,11 +227,11 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	PARTICLES_CHECK_MEM;
 	if (passOpaque)
 	{
-		ps->step(PSSolidRender, delay);
+		ps->step(CParticleSystem::SolidRender, delay);
 	}
 	else
 	{
-		ps->step(PSBlendRender, delay);
+		ps->step(CParticleSystem::BlendRender, delay);
 	}
 
 	PARTICLES_CHECK_MEM;
@@ -239,7 +239,7 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 
 	if (psm->isToolDisplayEnabled())
 	{
-		ps->step(PSToolRender, delay);
+		ps->step(CParticleSystem::ToolRender, delay);
 		PARTICLES_CHECK_MEM;
 	}
 }

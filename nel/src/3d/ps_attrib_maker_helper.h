@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.6 2001/09/14 18:04:24 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.7 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D {
 /** This template generate an attrib maker by defining the methods of the CPSCAttribMaker class. You can derive your own class 
  * but it is a shortcut to do the job
  *  \param T : the type to produce
- *  \param F : a class that override the () operator, the input is the age of the particle (CAnimationTime) 
+ *  \param F : a class that override the () operator, the input is chosen by the user (age, speed ...) 
  *             , and the output is the same type as T.
  *             Inline is preferable, as it will be called a lot 
  *             It can stores info that indicate how to build it

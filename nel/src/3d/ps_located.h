@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.10 2001/09/06 10:14:14 vizerie Exp $
+ * $Id: ps_located.h,v 1.11 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,6 +57,7 @@ template <class T> class CPSAttribMaker;
 class CPSLocatedBindable;
 class CPSTargetLocatedBindable;
 class CPSZone;
+class CPSForce;
 class IDriver;
 class CFontManager;
 class CFontGenerator;
@@ -200,7 +201,9 @@ public:
 	void getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis);
 
 
-	/// shorcut to increase the particle counter (number of particle drawn, for benchmark purpose )
+	/**  Shorcut to increase the particle counter (number of particle drawn, for benchmark purpose )
+	  *  should be called only by bound object that display particles
+	  */
 	void incrementNbDrawnParticles(uint num);
 
 
@@ -457,8 +460,44 @@ public:
 
 	/// ask for the max number of faces the located wants (for LOD balancing)
 	virtual uint querryMaxWantedNumFaces(void);
-	
-protected:	
+
+	/** Inherited from CParticlesystemProcess. Tells us that the basis may have changed. We notify the bound objects
+	  * of it.
+	  */
+	virtual void setSystemBasis(bool sysBasis = true);
+
+	/// Test wether this located support parametric motion
+	bool         supportParametricMotion(void) const;
+
+	/** When set to true, this tells the system to use parametric motion. This is needed in a few case only,
+	  * and can only work if all the forces that apply to the system are integrable. An assertion happens otherwise
+	  */
+	void		 enableParametricMotion(bool enable = true);
+
+	/// test wether parametric motion is enabled
+	bool		 isParametricMotionEnabled(void) const { return _ParametricMotion;}
+
+	/// inherited from CParticlesystemProcess perform parametric motion for this located to reach the given date
+	virtual void performParametricMotion(CAnimationTime date, CAnimationTime ellapsedTime);
+
+	/// make the particle older of the given amount. Should not be called directly, as it is called by the system during its step method
+	void updateLife(CAnimationTime ellapsedTime);
+
+	/** Compute the trajectory of the given located. A additionnal matrix can be applied.
+	  * NB : only works with object that have parametric trajectories
+	  */
+	void integrateSingle(float startDate, float deltaT, uint numStep,
+						 const NLMISC::CMatrix &mat,
+						 uint32 indexInLocated,
+						 NLMISC::CVector *destPos,						
+						uint posStride = sizeof(NLMISC::CVector));
+protected:
+
+
+
+
+	friend class CPSForce; // this is intended only for integrable forces that want to use
+						   // registerIntegrableForce, and removeIntegrableForce
 
 	/// cache the max number of faces this located may want
 	uint32 _MaxNumFaces;
@@ -489,11 +528,40 @@ protected:
 	// needed atributes for a located
 
 	// a container of masses. the inverse for mass are used in order to speed up forces computation
-	TPSAttribFloat _InvMass; 
-	TPSAttribVector  _Pos ;
-	TPSAttribVector  _Speed;
-	TPSAttribTime  _Time ;
-	TPSAttribTime  _TimeIncrement ;
+	TPSAttribFloat		_InvMass; 
+	TPSAttribVector		_Pos ;
+	TPSAttribVector		_Speed;
+	TPSAttribTime		_Time ;
+	TPSAttribTime		_TimeIncrement ;
+
+
+	public:;
+
+	/** WARNING : private use by forces only. This struct is used for parametric trajectory. These kind of trajectory can only be computed in a few case,
+	  * but are useful in some cases.
+	  */
+	struct CParametricInfo
+	{
+		CParametricInfo() {}
+		CParametricInfo(NLMISC::CVector pos, NLMISC::CVector speed, float date)
+			: Pos(pos), Speed(speed), Date(date)
+		{
+		}
+		NLMISC::CVector	Pos;   // the inital pos of emission
+		NLMISC::CVector	Speed; // the inital direction of emission
+		CAnimationTime  Date;  // the initial date of emission
+	};
+
+	/// WARNING : private use by forces only
+	typedef CPSAttrib<CParametricInfo> TPSAttribParametricInfo;
+
+	/** WARNING : private use by forces only. this vector is only used if parametric motion is achievable and enabled, because of the extra storage space
+	  *
+	  */
+	CPSAttrib<CParametricInfo>  _PInfo;
+
+	protected:
+
 	/** Used to solve collision detection
 	 *  it is not always instanciated
 	 */
@@ -568,6 +636,43 @@ protected:
 
 	 /// true when LOD degradation apply to this located
 	 bool _LODDegradation;
+
+	 /** number of force, and zones etc. that are not integrable over time. If this is not 0, then the trajectory
+	   * cannot be computed at any time. A force that is integrable must be in the same basis than the located.
+	   */
+	 uint16 _NonIntegrableForceNbRefs;
+	 /// number of forces that apply on that located that have the same basis that this one (required for parametric animation)
+	 uint16 _NumIntegrableForceWithDifferentBasis;
+	 /// a vector of integrable forces that apply on this located
+	 typedef std::vector<CPSForce *> TForceVect;
+	 TForceVect						 _IntegrableForces;
+
+	 /// When set to true, this tells the system to use parametric motion. Only parametric forces must have been applied.
+	 bool _ParametricMotion;
+
+	 /// allocate parametric infos
+	 void allocateParametricInfos(void);
+
+	 /// release paametric infos
+	 void releaseParametricInfos(void);
+
+	 /// notify the attached object that we have switch between parametric / incremental motion
+	 void notifyMotionTypeChanged(void);
+public:
+	 /// PRIVATE USE: register a force that is integrable on this located. It must have been registered only once
+	 void registerIntegrableForce(CPSForce *f);
+
+	 /// PRIVATE USE: unregister a force that is integrable with this located
+	 void unregisterIntegrableForce(CPSForce *f);
+
+	 /// PRIVATE USE: says that an integrable force basis has changed, and says which is the right basis
+	 void integrableForceBasisChanged(bool basis);
+
+	 /// PRIVATE USE: add a reference count that says that non-integrable forces have been added
+	 void addNonIntegrableForceRef(void);
+
+	 /// PRIVATE USE: decrease the reference count to say that a non-integrable force has been removed.
+	 void releaseNonIntegrableForceRef(void);
 };
 
 
@@ -629,6 +734,14 @@ public:
 	
 	/// ctor	
 	CPSLocatedBindable();	
+
+
+	/** this should be called before to delete any bindable inserted in a system, but this is done
+	  * by the system, so you should never need it. This ha been introduced beacuse calls in dtor are not polymorphic
+	  * to derived class, and some infos are needed in some dtor. The default behaviour does nothing
+	  */
+	virtual void finalize(void) {}
+
 
 	/// dtor
 	virtual ~CPSLocatedBindable();	
@@ -769,22 +882,27 @@ public:
 	TPSLod getLOD(void) const { return _LOD; }
 
 	/// tells wether there are alive entities / particles
-	virtual bool hasParticles(void) const { return false; }
+	virtual bool		hasParticles(void) const { return false; }
 
 	/// tells wether there are alive emitters
-	virtual bool hasEmitters(void) const { return false; }
+	virtual bool		hasEmitters(void) const { return false; }
 
 	/** set the extern ID of this located bindable. 0 means no extern access. The map of ID-locatedBindable. Is in th
 	  * particle system, so this located bindable must have been attached to a particle system, otherwise an assertion is raised
 	  */
-	void		setExternID(uint32 id);
+	void				setExternID(uint32 id);
 
 	/// get the extern ID of this located bindable
-	uint32		getExternID(void) const { return _ExternID; }
+	uint32				getExternID(void) const { return _ExternID; }
 
 
+	/** Called when the basis of the owner changed. the default behaviour does nothing
+	  * \param newBasis : True if in the system basis, false for the world basis.
+	  */
+	virtual void		basisChanged(bool systemBasis) {}
 
-
+	/// called when a located has switch between incrmental / parametric motion. The default does nothing
+	virtual	void	    motionTypeChanged(bool parametric) {}
 protected:    
 
 	/// tells when this object must be dealt with
@@ -867,9 +985,10 @@ class CPSTargetLocatedBindable : public CPSLocatedBindable
 {
 	public:
 
-		/** Add a new type of located for this to apply on. nlassert if present
+		/** Add a new type of located for this to apply on. nlassert if already present.
+		 *  You should only call this if this object and the target are already inserted in a system.
 		 *  By overriding this and calling the CPSTargetLocatedBindable version,
-		 *  you can also send some notificiation to the object that's being attached
+		 *  you can also send some notificiation to the object that's being attached.
 		 */
 		virtual void attachTarget(CPSLocated *ptr);
 
@@ -902,16 +1021,18 @@ class CPSTargetLocatedBindable : public CPSLocatedBindable
 		
 		/** it is called when a target is destroyed or detached
 		 *  Override this if you allocated resources from the target (to release them)
-		 *  IMPORTANT : as objects are no polymorphic while being destroyed, this class
-		 *  can't call your releaseTargetRsc override in its destructor. You must
-		 *  must redefine the destructor and call this method yourself for all target
-		 *  see ps_zone.cpp for an example
+		 *  NOTE : as objects are no polymorphic while being destroyed, this class
+		 *  can't call your releaseTargetRsc override in its destructor, it does it in its finalize method,
+		 *  which is called by the particle system
 		 */
 		virtual void releaseTargetRsc(CPSLocated *target) {};
 
 
 		/// Seralization, must be called by derivers
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+
+		/// Finalize this object : the default is to call releaseTargetRsc on targets
+		virtual void finalize(void);
 
 		virtual ~CPSTargetLocatedBindable();
 
@@ -923,7 +1044,7 @@ class CPSTargetLocatedBindable : public CPSLocatedBindable
 		 */		
 		virtual void notifyTargetRemoved(CPSLocated *ptr);
 
-		typedef std::vector< CPSLocated *> TTargetCont;
+		typedef std::vector<CPSLocated *> TTargetCont;
 		TTargetCont _Targets;	
 
 };

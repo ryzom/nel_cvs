@@ -1,7 +1,7 @@
 /** \file ps_size.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.8 2001/09/14 17:37:05 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.9 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,8 +121,9 @@ float CPSFloatCurveFunctor::getValue(float date) const
 	}
 	else // hermite interpolation
 	{
+		float width = it->Date - precIt->Date;
 		uint index = precIt - _CtrlPoints.begin();
-		float t1 = getSlope(index), t2 = getSlope(index + 1);
+		float t1 = getSlope(index) * width, t2 = getSlope(index + 1) * width;
 		const float lambda2 = NLMISC::sqr(lambda);
 		const float lambda3 = lambda2 * lambda;
 		const float h1 = 2 * lambda3 - 3 * lambda2 + 1; 
@@ -161,7 +162,7 @@ float CPSFloatCurveFunctor::getSlope(uint index) const
 	if (index == 0)
 	{
 		return _CtrlPoints[1].Date != _CtrlPoints[0].Date ? (_CtrlPoints[1].Value - _CtrlPoints[0].Value) 
-															/* / (_CtrlPoints[1].Date - _CtrlPoints[0].Date)*/
+															 / (_CtrlPoints[1].Date - _CtrlPoints[0].Date)
 														  : 1e6f;
 	}
 
@@ -169,13 +170,13 @@ float CPSFloatCurveFunctor::getSlope(uint index) const
 	if (index == _CtrlPoints.size() - 1)
 	{
 		return _CtrlPoints[index].Date != _CtrlPoints[index - 1].Date ? (_CtrlPoints[index].Value - _CtrlPoints[index - 1].Value) 
-																	/*	/ (_CtrlPoints[index].Date - _CtrlPoints[index - 1].Date)*/
+																		/ (_CtrlPoints[index].Date - _CtrlPoints[index - 1].Date)
 																	  : 1e6f;
 	}
 
 	// tangent for other points
-	return _CtrlPoints[index + 1].Date != _CtrlPoints[index - 1].Date ? (_CtrlPoints[index + 1].Value - _CtrlPoints[index - 1].Value) / 2 
-																	/*	/ (_CtrlPoints[index + 1].Date - _CtrlPoints[index - 1].Date)*/
+	return _CtrlPoints[index + 1].Date != _CtrlPoints[index - 1].Date ? (_CtrlPoints[index + 1].Value - _CtrlPoints[index - 1].Value)
+																		/ (_CtrlPoints[index + 1].Date - _CtrlPoints[index - 1].Date)
 																	  : 1e6f;	
 }
 

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.27 2001/09/14 17:37:05 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.28 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,7 @@
 #include "3d/ps_emitter.h"
 #include "3d/ps_located.h"
 #include "3d/ps_particle.h"
+#include "3d/ps_particle2.h"
 #include "3d/ps_force.h"
 #include "3d/ps_zone.h"
 #include "3d/ps_color.h"
@@ -142,6 +143,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSFanLight);
 		NLMISC_REGISTER_CLASS(CPSTailDot);
 		NLMISC_REGISTER_CLASS(CPSRibbon);
+		NLMISC_REGISTER_CLASS(CPSRibbonLookAt);
 		NLMISC_REGISTER_CLASS(CPSShockWave);
 		NLMISC_REGISTER_CLASS(CPSFace);
 		NLMISC_REGISTER_CLASS(CPSMesh);

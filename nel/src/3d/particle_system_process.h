@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.4 2001/08/06 10:21:37 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.5 2001/09/26 17:44:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,8 @@ class CFontManager ;
  *  PSBlendRender : render transparency (no z-buffer write)
  *  PSToolRender  : for edition purpose, show representations for forces, emitters...
  */
-enum TPSProcessPass { PSCollision, PSMotion, PSSolidRender, PSBlendRender, PSToolRender } ;
+enum TPSProcessPass 
+{ PSEmit, PSCollision, PSMotion, PSDynamic, PSPostdynamic, PSSolidRender, PSBlendRender, PSToolRender } ;
 
 
 
@@ -126,8 +127,7 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		 *  By default, all process are expressed in the world basis
 		 *  \param sysBasis truer if particles are in the system basis
 		 */
-
-		void					setSystemBasis(bool sysBasis = true) { _SystemBasisEnabled = sysBasis ; }
+		virtual void			setSystemBasis(bool sysBasis = true) { _SystemBasisEnabled = sysBasis ; }
 	
 		/// tells wether there are alive entities / particles in the system
 		virtual bool			hasParticles(void) const { return false ; }
@@ -138,8 +138,15 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 
 		/// max number of faces wanted by this process (for load balancing)
 		virtual uint			querryMaxWantedNumFaces(void) = 0 ;
-	
+
+
 		
+		/// test wether parametric motion is enabled
+		virtual bool		 isParametricMotionEnabled(void) const { return false;}
+
+		/// perform parametric motion if enabled
+			virtual void performParametricMotion(CAnimationTime date, CAnimationTime ellapsedTime) { nlassert(0);}
+			
 	protected:
 		CParticleSystem *_Owner ;
 

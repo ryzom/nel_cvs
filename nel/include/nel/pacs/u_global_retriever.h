@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.11 2001/08/23 13:58:33 legros Exp $
+ * $Id: u_global_retriever.h,v 1.12 2001/09/06 08:53:33 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,15 @@ public:
 	virtual UGlobalPosition			retrievePosition(const NLMISC::CVectorD &estimated) const =0;
 
 	/**
+	  * Retrieves the position of an estimated point in the global retriever. Uses a snapping threshold.
+	  */
+	virtual UGlobalPosition			retrievePosition(const NLMISC::CVector &estimated, float threshold) const =0;
+
+	/**
+	  * Retrieves the position of an estimated point in the global retriever (double instead.) with a snapping threshold
+	  */
+	virtual UGlobalPosition			retrievePosition(const NLMISC::CVectorD &estimated, double threshold) const =0;
+	/**
 	  * Tests if the global position is a interior position
 	  */
 	virtual bool					isInterior(const UGlobalPosition &pos) const =0;
@@ -94,7 +103,7 @@ public:
 	/**
 	  * For interior position only, snap the position to the ground.
 	  */
-	virtual void					snapToInteriorGround(UGlobalPosition &pos) const = 0;
+//	virtual void					snapToInteriorGround(UGlobalPosition &pos) const = 0;
 
 	/**
 	  * Converts a global position object into a 'human-readable' CVector.

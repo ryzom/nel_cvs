@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: unix_event_emitter.cpp,v 1.4 2001/04/11 13:45:30 derikson_at_montana.com Exp $
+ * $Id: unix_event_emitter.cpp,v 1.5 2001/12/13 18:03:26 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,6 +264,7 @@ void CUnixEventEmitter::processMessage (XEvent &event, CEventServer &server)
 	XGetWindowAttributes (_dpy, _win, &xwa);
 	float fX = (float) event.xbutton.x / (float) xwa.width;
 	float fY = 1.0f - (float) event.xbutton.y / (float) xwa.height;
+	if ((fX == 0.5f) && (fY == 0.5f)) break;
 	TMouseButton button=getMouseButton (event.xbutton.state);
 	server.postEvent (new CEventMouseMove (fX, fY, button, this));
 	break;

@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.22 2001/08/30 17:11:56 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.23 2001/08/31 13:57:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,10 +105,10 @@ namespace NLAIAGENT
 				accessor.value() = h;
 			}
 			CAgentManagerTimer::RunTimer = new CAgentManagerTimer::CRunTimer();
-			CAgentManagerTimer::TimerManagerRun =  NLMISC::IThread::create(CAgentManagerTimer::RunTimer);
+			/*CAgentManagerTimer::TimerManagerRun =  NLMISC::IThread::create(CAgentManagerTimer::RunTimer);
 			CAgentManagerTimer::TimerManagerRun->start();
-			CAgentManagerTimer::IsRunning = true;
-			//CAgentManagerTimer::IsRunning = false;
+			CAgentManagerTimer::IsRunning = true;*/
+			CAgentManagerTimer::IsRunning = false;
 		}
 	}
 

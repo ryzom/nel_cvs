@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.82 2001/08/30 08:30:19 chafik Exp $
+ * $Id: agent_script.cpp,v 1.83 2001/08/30 17:11:00 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1466,65 +1466,6 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 		const char *dgb_meth_name = methodName->getString();
 #endif
-		/*sint i;
-		CAgentScript::TMethodNumDef index = CAgentScript::TLastM;
-		for(i = 0; i < CAgentScript::TLastM; i ++)
-		{
-			if(CAgentScript::StaticMethod[i]->MethodName == *methodName)
-			{
-				index = (CAgentScript::TMethodNumDef)CAgentScript::StaticMethod[i]->Index;
-				switch(CAgentScript::StaticMethod[i]->CheckArgType)
-				{
-				case CAgentScript::CheckAll:
-					{
-						double d = ((NLAISCRIPT::CParam &)*CAgentScript::StaticMethod[i]->ArgType).eval((NLAISCRIPT::CParam &)param);
-						if(d >= 0.0)
-						{								
-							tQueue r;
-							CAgentScript::StaticMethod[i]->ReturnValue->incRef();
-							r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i]->Index),
-												0.0,
-												NULL,
-												CAgentScript::StaticMethod[i]->ReturnValue));
-							return r;
-						}
-					}	
-					index = CAgentScript::TLastM;
-					break;
-				
-
-				case CAgentScript::CheckCount:
-					{
-						if(((NLAISCRIPT::CParam &)param).size() == CAgentScript::StaticMethod[i]->ArgCount)
-						{								
-							tQueue r;
-							CAgentScript::StaticMethod[i]->ReturnValue->incRef();
-							r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i]->Index),
-												0.0,
-												NULL,
-												CAgentScript::StaticMethod[i]->ReturnValue ));
-							return r;
-						}
-					}
-					index = CAgentScript::TLastM;
-					break;
-
-				case CAgentScript::DoNotCheck:
-					{							
-						tQueue r;
-						CAgentScript::StaticMethod[i]->ReturnValue->incRef();
-						r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i]->Index),
-											0.0,
-											NULL,
-											CAgentScript::StaticMethod[i]->ReturnValue));
-						return r;						
-					}
-					index = CAgentScript::TLastM;
-					break;
-				}
-			}			
-		}
-		return tQueue();*/
 		return isTemplateMember(CAgentScript::StaticMethod,CAgentScript::TLastM,IAgent::getMethodIndexSize(),className,methodName,param);		
 	}
 

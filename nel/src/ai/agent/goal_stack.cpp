@@ -53,10 +53,16 @@ namespace NLAILOGIC
 		std::vector<CGoal *>::iterator it_g = _Goals.begin();
 		while ( ( it_g != _Goals.end() ) )
 		{
-			if ( ( i < _MaxGoals || !(*it_g)->isExclusive() ) && ( (*it_g)->priority() > 0 ) )
+			if (  (*it_g)->priority() > 0 )
 			{		
-				_Goals[i]->select();
-				i++;
+				if ( i < _MaxGoals && !(*it_g)->isExclusive() )		// Exclusive operators
+				{
+					_Goals[i]->select();
+					i++;
+				}
+
+				if ( (*it_g)->isExclusive() )		// B&ackground operator
+					_Goals[i]->select();
 			}
 			else
 				_Goals[i]->unSelect();

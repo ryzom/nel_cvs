@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: test_method.cpp,v 1.11 2001/07/16 09:02:12 chafik Exp $
+ * $Id: test_method.cpp,v 1.12 2001/08/30 17:11:00 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -273,6 +273,49 @@ namespace NLAISCRIPT
 				r.Result = new NLAIAGENT::UInt32Type(dRand((sint)p1->getNumber(), (sint)p2->getNumber()));
 				return r;
 			}
+/*
+		case TIdle:
+			{
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAIAGENT::DigitalType( CEntityState::Idle );
+			}
+			break;
+
+		case TWalk:
+			{
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAIAGENT::DigitalType( CEntityState::Idle );
+			}
+			break;
+
+		case TYes:
+			{
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAIAGENT::DigitalType( CEntityState::Idle );
+			}
+			break;
+
+		case TNo:
+			{
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAIAGENT::DigitalType( CEntityState::Idle );
+			}
+			break;
+
+		case TWave:
+			{
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAIAGENT::DigitalType( CEntityState::Idle );
+			}
+			break;
+
+		case TBow:
+			{
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAIAGENT::DigitalType( CEntityState::Idle );
+			}
+			break;
+			*/
 		}
 		return r;
 	}

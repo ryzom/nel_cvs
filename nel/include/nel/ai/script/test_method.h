@@ -1,7 +1,7 @@
 /** \file test_method.h
  * Library class exemple for the binary test.
  *
- * $Id: test_method.h,v 1.6 2001/07/12 09:47:40 chafik Exp $
+ * $Id: test_method.h,v 1.7 2001/08/30 17:10:50 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,12 @@ namespace NLAISCRIPT
 			TRand2,
 			TDiscretRand,
 			TConst,
+/*			TIdle,
+			TWalk,
+			TYes,
+			TNo,
+			TWave,
+			TBow, */
 			TLastM ///The count of export method.
 		};
 

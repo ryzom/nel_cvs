@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: matrix.cpp,v 1.8 2000/10/06 10:27:36 lecroart Exp $
+ * $Id: matrix.cpp,v 1.9 2000/10/06 10:42:03 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -326,25 +326,25 @@ void		CMatrix::rotateX(float a)
 	{
 		float	b12=a12, b22=a22, b32=a32;
 		float	b13=a13, b23=a23, b33=a33;
-		a12= b12*ca + b13*sa;
-		a22= b22*ca + b23*sa;
-		a32= b32*ca + b33*sa;
-		a13= b13*ca - b12*sa;
-		a23= b23*ca - b22*sa;
-		a33= b33*ca - b32*sa;
+		a12= (float)(b12*ca + b13*sa);
+		a22= (float)(b22*ca + b23*sa);
+		a32= (float)(b32*ca + b33*sa);
+		a13= (float)(b13*ca - b12*sa);
+		a23= (float)(b23*ca - b22*sa);
+		a33= (float)(b33*ca - b32*sa);
 	}
 	else
 	{
-		a12= 0; a22=ca; a32=sa;
-		a13= 0; a23=-sa; a33=ca;
+		a12= 0.0f; a22= (float)ca; a32= (float)sa;
+		a13= 0.0f; a23= (float)-sa; a33= (float)ca;
 	}
 
 	// SetProj.
 	if( StateBit & MAT_PROJ)
 	{
 		float	b42=a42, b43=a43;
-		a42= b42*ca + b43*sa;
-		a43= b43*ca - b42*sa;
+		a42= (float)(b42*ca + b43*sa);
+		a43= (float)(b43*ca - b42*sa);
 	}
 
 	// set Rot.
@@ -366,25 +366,25 @@ void		CMatrix::rotateY(float a)
 	{
 		float	b11=a11, b21=a21, b31=a31;
 		float	b13=a13, b23=a23, b33=a33;
-		a11= b11*ca - b13*sa;
-		a21= b21*ca - b23*sa;
-		a31= b31*ca - b33*sa;
-		a13= b13*ca + b11*sa;
-		a23= b23*ca + b21*sa;
-		a33= b33*ca + b31*sa;
+		a11= (float)(b11*ca - b13*sa);
+		a21= (float)(b21*ca - b23*sa);
+		a31= (float)(b31*ca - b33*sa);
+		a13= (float)(b13*ca + b11*sa);
+		a23= (float)(b23*ca + b21*sa);
+		a33= (float)(b33*ca + b31*sa);
 	}
 	else
 	{
-		a11= ca; a21=0; a31=-sa;
-		a13= sa; a23=0; a33=ca;
+		a11= (float)ca; a21=0.0f; a31= (float)-sa;
+		a13= (float)sa; a23=0.0f; a33= (float)ca;
 	}
 
 	// SetProj.
 	if( StateBit & MAT_PROJ)
 	{
 		float	b41=a41, b43=a43;
-		a41= b41*ca - b43*sa;
-		a43= b43*ca + b41*sa;
+		a41= (float)(b41*ca - b43*sa);
+		a43= (float)(b43*ca + b41*sa);
 	}
 
 	// set Rot.
@@ -406,25 +406,25 @@ void		CMatrix::rotateZ(float a)
 	{
 		float	b11=a11, b21=a21, b31=a31;
 		float	b12=a12, b22=a22, b32=a32;
-		a11= b11*ca + b12*sa;
-		a21= b21*ca + b22*sa;
-		a31= b31*ca + b32*sa;
-		a12= b12*ca - b11*sa;
-		a22= b22*ca - b21*sa;
-		a32= b32*ca - b31*sa;
+		a11= (float)(b11*ca + b12*sa);
+		a21= (float)(b21*ca + b22*sa);
+		a31= (float)(b31*ca + b32*sa);
+		a12= (float)(b12*ca - b11*sa);
+		a22= (float)(b22*ca - b21*sa);
+		a32= (float)(b32*ca - b31*sa);
 	}
 	else
 	{
-		a11= ca; a21=sa; a31=0;
-		a12= -sa; a22=ca; a32=0;
+		a11= (float)ca; a21= (float)sa; a31=0.0f;
+		a12= (float)-sa; a22= (float)ca; a32=0.0f;
 	}
 
 	// SetProj.
 	if( StateBit & MAT_PROJ)
 	{
 		float	b41=a41, b42=a42;
-		a41= b41*ca + b42*sa;
-		a42= b42*ca - b41*sa;
+		a41= (float)(b41*ca + b42*sa);
+		a42= (float)(b42*ca - b41*sa);
 	}
 
 	// set Rot.
@@ -691,12 +691,12 @@ void	CMatrix::fastInvert33(CMatrix &ret) const
 		double	s,S;	// important for precision.
 		// Must divide the matrix by 1/Scale 2 times, to set unit, and to have a Scale=1/Scale.
 		S=1.0/Scale33;
-		ret.Scale33=(float)S;
+		ret.Scale33= (float)S;
 		s=S*S;
 		// The matrix is a base, so just transpose it.
-		ret.a11= (float)a11*s; ret.a12= (float)a21*s; ret.a13= (float)a31*s;
-		ret.a21= (float)a12*s; ret.a22= (float)a22*s; ret.a23= (float)a32*s;
-		ret.a31= (float)a13*s; ret.a32= (float)a23*s; ret.a33= (float)a33*s;
+		ret.a11= (float)(a11*s); ret.a12= (float)(a21*s); ret.a13= (float)(a31*s);
+		ret.a21= (float)(a12*s); ret.a22= (float)(a22*s); ret.a23= (float)(a32*s);
+		ret.a31= (float)(a13*s); ret.a32= (float)(a23*s); ret.a33= (float)(a33*s);
 	}
 	else
 	{
@@ -736,9 +736,9 @@ bool	CMatrix::slowInvert33(CMatrix &ret) const
 		return false;
 	// Transpose the Comatrice, and divide by determinant.
 	s=1.0/s;
-	ret.a11= invi.x*s; ret.a12= invi.y*s; ret.a13= invi.z*s;
-	ret.a21= invj.x*s; ret.a22= invj.y*s; ret.a23= invj.z*s;
-	ret.a31= invk.x*s; ret.a32= invk.y*s; ret.a33= invk.z*s;
+	ret.a11= (float)(invi.x*s); ret.a12= (float)(invi.y*s); ret.a13= (float)(invi.z*s);
+	ret.a21= (float)(invj.x*s); ret.a22= (float)(invj.y*s); ret.a23= (float)(invj.z*s);
+	ret.a31= (float)(invk.x*s); ret.a32= (float)(invk.y*s); ret.a33= (float)(invk.z*s);
 
 	return true;
 	// Roundly 82 cycles. (1Div=10 cycles).
@@ -786,7 +786,7 @@ bool	CMatrix::slowInvert44(CMatrix &ret) const
 	for(i=0;i<=3;i++)
 	{
 		for(j=0;j<=3;j++)
-			ret.mat(i,j)*= s;
+			ret.mat(i,j)= (float)(ret.mat(i,j)*s);
 	}
 
 	// Transpose the comatrice.

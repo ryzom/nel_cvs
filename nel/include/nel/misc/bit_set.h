@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: bit_set.h,v 1.1 2000/10/02 12:55:43 berenguier Exp $
+ * $Id: bit_set.h,v 1.2 2000/10/06 10:41:08 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -48,7 +48,7 @@ public:
 	//@{
 	/// Resize the bit array. All Bits are reseted.
 	void	resize(uint numBits);
-	/// Clear the bitarray so soze() return 0.
+	/// Clear the bitarray so size() return 0.
 	void	clear();
 	/// Return size of the bit array.
 	uint	size() const;
@@ -58,6 +58,10 @@ public:
 	bool	get(sint bitNumber) const;
 	/// Get the value of a bit.
 	bool	operator[](sint bitNumber) const;
+	/// Set a bit to 1.
+	void	set(sint bitNumber) {set(bitNumber, true);}
+	/// Set a bit to 0.
+	void	clear(sint bitNumber) {set(bitNumber, false);}
 	/// Set all bits to 1.
 	void	setAll();
 	/// Set all bits to 0.

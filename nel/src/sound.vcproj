@@ -12,35 +12,26 @@
 	<Configurations>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/ReleaseDebug/sound"
+			IntermediateDirectory=".\../obj7/ReleaseDebug/sound"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="stdsound.h"
+				PrecompiledHeaderFile=".\../obj7/ReleaseDebug/sound/sound.pch"
+				AssemblerListingLocation=".\../obj7/ReleaseDebug/sound/"
+				ObjectFile=".\../obj7/ReleaseDebug/sound/"
+				ProgramDataBaseFileName=".\../obj7/ReleaseDebug/sound/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -48,7 +39,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlsound_rd.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -67,42 +58,33 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/Release/sound"
+			IntermediateDirectory=".\../obj7/Release/sound"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="stdsound.h"
+				PrecompiledHeaderFile=".\../obj7/Release/sound/sound.pch"
+				AssemblerListingLocation=".\../obj7/Release/sound/"
+				ObjectFile=".\../obj7/Release/sound/"
+				ProgramDataBaseFileName=".\../obj7/Release/sound/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlsound_r.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -121,8 +103,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/Debug/sound"
+			IntermediateDirectory=".\../obj7/Debug/sound"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -132,28 +114,23 @@
 				Optimization="0"
 				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="stdsound.h"
+				PrecompiledHeaderFile=".\../obj7/Debug/sound/sound.pch"
+				AssemblerListingLocation=".\../obj7/Debug/sound/"
+				ObjectFile=".\../obj7/Debug/sound/"
+				ProgramDataBaseFileName=".\../obj7/Debug/sound/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlsound_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -172,8 +149,8 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/DebugFast/sound"
+			IntermediateDirectory=".\../obj7/DebugFast/sound"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -184,20 +161,15 @@
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_LIB,WIN32,_DEBUG,NL_DEBUG_FAST"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="stdsound.h"
+				PrecompiledHeaderFile=".\../obj7/DebugFast/sound/sound.pch"
+				AssemblerListingLocation=".\../obj7/DebugFast/sound/"
+				ObjectFile=".\../obj7/DebugFast/sound/"
+				ProgramDataBaseFileName=".\../obj7/DebugFast/sound/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -205,7 +177,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlsound_df.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -275,6 +247,12 @@
 			RelativePath=".\sound\ambiant_source.h">
 		</File>
 		<File
+			RelativePath=".\sound\background_sound_manager.cpp">
+		</File>
+		<File
+			RelativePath=".\sound\background_sound_manager.h">
+		</File>
+		<File
 			RelativePath=".\sound\bounding_box.cpp">
 		</File>
 		<File
@@ -302,13 +280,127 @@
 			RelativePath=".\sound\mixing_track.h">
 		</File>
 		<File
+			RelativePath="..\obj\Debug\sound_lowlevel\nlsound_lowlevel_d.lib">
+			<FileConfiguration
+				Name="ReleaseDebug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\obj\DebugFast\sound_lowlevel\nlsound_lowlevel_df.lib">
+			<FileConfiguration
+				Name="ReleaseDebug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\obj\Release\sound_lowlevel\nlsound_lowlevel_r.lib">
+			<FileConfiguration
+				Name="ReleaseDebug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\obj\ReleaseDebug\sound_lowlevel\nlsound_lowlevel_rd.lib">
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="DebugFast|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
+		</File>
+		<File
 			RelativePath=".\sound\playable.h">
+		</File>
+		<File
+			RelativePath=".\sound\sample_bank.cpp">
+		</File>
+		<File
+			RelativePath=".\sound\sample_bank.h">
 		</File>
 		<File
 			RelativePath=".\sound\sound.cpp">
 		</File>
 		<File
 			RelativePath=".\sound\sound.h">
+		</File>
+		<File
+			RelativePath=".\sound\sound_anim_manager.cpp">
+		</File>
+		<File
+			RelativePath="..\include\nel\sound\sound_anim_manager.h">
+		</File>
+		<File
+			RelativePath=".\sound\sound_anim_marker.cpp">
+		</File>
+		<File
+			RelativePath="..\include\nel\sound\sound_anim_marker.h">
+		</File>
+		<File
+			RelativePath=".\sound\sound_animation.cpp">
+		</File>
+		<File
+			RelativePath="..\include\nel\sound\sound_animation.h">
+		</File>
+		<File
+			RelativePath=".\sound\sound_bank.cpp">
+		</File>
+		<File
+			RelativePath=".\sound\sound_bank.h">
 		</File>
 		<File
 			RelativePath=".\sound\stdsound.cpp">

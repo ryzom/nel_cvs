@@ -3,7 +3,6 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="georges"
-	ProjectGUID="{B94DBB3E-2AE0-4E4D-9BA8-7EB4D9AD1421}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -13,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/DebugFast/georges"
+			IntermediateDirectory=".\../obj7/DebugFast/georges"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -23,21 +22,15 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,NL_DEBUG_FAST"
-				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="stdgeorges.h"
+				PrecompiledHeaderFile=".\../obj7/DebugFast/georges/georges.pch"
+				AssemblerListingLocation=".\../obj7/DebugFast/georges/"
+				ObjectFile=".\../obj7/DebugFast/georges/"
+				ProgramDataBaseFileName=".\../obj7/DebugFast/georges/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -45,7 +38,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlgeorges_df.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -64,35 +57,26 @@
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/ReleaseDebug/georges"
+			IntermediateDirectory=".\../obj7/ReleaseDebug/georges"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="stdgeorges.h"
+				PrecompiledHeaderFile=".\../obj7/ReleaseDebug/georges/georges.pch"
+				AssemblerListingLocation=".\../obj7/ReleaseDebug/georges/"
+				ObjectFile=".\../obj7/ReleaseDebug/georges/"
+				ProgramDataBaseFileName=".\../obj7/ReleaseDebug/georges/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -100,7 +84,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlgeorges_rd.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -119,8 +103,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/Debug/georges"
+			IntermediateDirectory=".\../obj7/Debug/georges"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -129,29 +113,23 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
-				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="stdgeorges.h"
+				PrecompiledHeaderFile=".\../obj7/Debug/georges/georges.pch"
+				AssemblerListingLocation=".\../obj7/Debug/georges/"
+				ObjectFile=".\../obj7/Debug/georges/"
+				ProgramDataBaseFileName=".\../obj7/Debug/georges/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlgeorges_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -170,42 +148,33 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/Release/georges"
+			IntermediateDirectory=".\../obj7/Release/georges"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="stdgeorges.h"
+				PrecompiledHeaderFile=".\../obj7/Release/georges/georges.pch"
+				AssemblerListingLocation=".\../obj7/Release/georges/"
+				ObjectFile=".\../obj7/Release/georges/"
+				ProgramDataBaseFileName=".\../obj7/Release/georges/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlgeorges_r.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -225,133 +194,40 @@
 	</Configurations>
 	<Files>
 		<File
-			RelativePath=".\georges\Form.cpp">
+			RelativePath=".\georges\form.cpp">
 		</File>
 		<File
-			RelativePath="..\include\nel\georges\Form.h">
+			RelativePath=".\georges\form.h">
 		</File>
 		<File
-			RelativePath=".\georges\Item.cpp">
+			RelativePath=".\georges\form_dfn.cpp">
 		</File>
 		<File
-			RelativePath="..\include\nel\georges\Item.h">
+			RelativePath=".\georges\form_dfn.h">
 		</File>
 		<File
-			RelativePath="..\include\nel\georges\common.h">
+			RelativePath=".\georges\form_elm.cpp">
 		</File>
 		<File
-			RelativePath=".\georges\form_body_elt.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\form_body_elt.h">
-		</File>
-		<File
-			RelativePath=".\georges\form_body_elt_atom.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\form_body_elt_atom.h">
-		</File>
-		<File
-			RelativePath=".\georges\form_body_elt_list.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\form_body_elt_list.h">
-		</File>
-		<File
-			RelativePath=".\georges\form_body_elt_struct.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\form_body_elt_struct.h">
-		</File>
-		<File
-			RelativePath=".\georges\form_file.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\form_file.h">
-		</File>
-		<File
-			RelativePath=".\georges\form_head.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\form_head.h">
+			RelativePath=".\georges\form_elm.h">
 		</File>
 		<File
 			RelativePath=".\georges\form_loader.cpp">
 		</File>
 		<File
-			RelativePath="..\include\nel\georges\form_loader.h">
+			RelativePath=".\georges\form_loader.h">
 		</File>
 		<File
-			RelativePath=".\georges\georges_loader.cpp">
+			RelativePath=".\georges\header.cpp">
 		</File>
 		<File
-			RelativePath="..\include\nel\georges\georges_loader.h">
+			RelativePath=".\georges\header.h">
 		</File>
 		<File
-			RelativePath=".\georges\item_elt.cpp">
+			RelativePath=".\georges\load_form.cpp">
 		</File>
 		<File
-			RelativePath="..\include\nel\georges\item_elt.h">
-		</File>
-		<File
-			RelativePath=".\georges\item_elt_atom.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\item_elt_atom.h">
-		</File>
-		<File
-			RelativePath=".\georges\item_elt_list.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\item_elt_list.h">
-		</File>
-		<File
-			RelativePath=".\georges\item_elt_struct.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\item_elt_struct.h">
-		</File>
-		<File
-			RelativePath=".\georges\item_loader.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\item_loader.h">
-		</File>
-		<File
-			RelativePath=".\georges\mold_elt.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\mold_elt.h">
-		</File>
-		<File
-			RelativePath=".\georges\mold_elt_define.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\mold_elt_define.h">
-		</File>
-		<File
-			RelativePath=".\georges\mold_elt_define_list.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\mold_elt_define_list.h">
-		</File>
-		<File
-			RelativePath=".\georges\mold_elt_type.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\mold_elt_type.h">
-		</File>
-		<File
-			RelativePath=".\georges\mold_elt_type_list.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\mold_elt_type_list.h">
-		</File>
-		<File
-			RelativePath=".\georges\mold_loader.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\mold_loader.h">
+			RelativePath="..\include\nel\georges\load_form.h">
 		</File>
 		<File
 			RelativePath=".\georges\stdgeorges.cpp">
@@ -384,46 +260,25 @@
 			RelativePath=".\georges\stdgeorges.h">
 		</File>
 		<File
-			RelativePath=".\georges\string_ex.cpp">
+			RelativePath=".\georges\type.cpp">
 		</File>
 		<File
-			RelativePath="..\include\nel\georges\string_ex.h">
+			RelativePath=".\georges\type.h">
 		</File>
 		<File
-			RelativePath=".\georges\type_unit.cpp">
+			RelativePath="..\include\nel\georges\u_form.h">
 		</File>
 		<File
-			RelativePath="..\include\nel\georges\type_unit.h">
+			RelativePath="..\include\nel\georges\u_form_dfn.h">
 		</File>
 		<File
-			RelativePath=".\georges\type_unit_double.cpp">
+			RelativePath="..\include\nel\georges\u_form_elm.h">
 		</File>
 		<File
-			RelativePath="..\include\nel\georges\type_unit_double.h">
+			RelativePath="..\include\nel\georges\u_form_loader.h">
 		</File>
 		<File
-			RelativePath=".\georges\type_unit_file_name.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\type_unit_file_name.h">
-		</File>
-		<File
-			RelativePath=".\georges\type_unit_int_signed.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\type_unit_int_signed.h">
-		</File>
-		<File
-			RelativePath=".\georges\type_unit_int_unsigned.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\type_unit_int_unsigned.h">
-		</File>
-		<File
-			RelativePath=".\georges\type_unit_string.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\georges\type_unit_string.h">
+			RelativePath="..\include\nel\georges\u_type.h">
 		</File>
 	</Files>
 	<Globals>

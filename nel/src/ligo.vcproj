@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/Debug/ligo"
+			IntermediateDirectory=".\../obj7/Debug/ligo"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -22,28 +22,21 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
-				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderFile=".\../obj7/Debug/ligo/ligo.pch"
+				AssemblerListingLocation=".\../obj7/Debug/ligo/"
+				ObjectFile=".\../obj7/Debug/ligo/"
+				ProgramDataBaseFileName=".\../obj7/Debug/ligo/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlligo_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -62,34 +55,24 @@
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/ReleaseDebug/ligo"
+			IntermediateDirectory=".\../obj7/ReleaseDebug/ligo"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_LIB,WIN32,NDEBUG,NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderFile=".\../obj7/ReleaseDebug/ligo/ligo.pch"
+				AssemblerListingLocation=".\../obj7/ReleaseDebug/ligo/"
+				ObjectFile=".\../obj7/ReleaseDebug/ligo/"
+				ProgramDataBaseFileName=".\../obj7/ReleaseDebug/ligo/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -97,7 +80,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlligo_rd.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -116,41 +99,31 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/Release/ligo"
+			IntermediateDirectory=".\../obj7/Release/ligo"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_LIB,WIN32,NDEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderFile=".\../obj7/Release/ligo/ligo.pch"
+				AssemblerListingLocation=".\../obj7/Release/ligo/"
+				ObjectFile=".\../obj7/Release/ligo/"
+				ProgramDataBaseFileName=".\../obj7/Release/ligo/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlligo_r.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -169,8 +142,8 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/DebugFast/ligo"
+			IntermediateDirectory=".\../obj7/DebugFast/ligo"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -180,20 +153,13 @@
 				Optimization="0"
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,NL_DEBUG_FAST"
-				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderFile=".\../obj7/DebugFast/ligo/ligo.pch"
+				AssemblerListingLocation=".\../obj7/DebugFast/ligo/"
+				ObjectFile=".\../obj7/DebugFast/ligo/"
+				ProgramDataBaseFileName=".\../obj7/DebugFast/ligo/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -201,7 +167,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlligo_df.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -240,6 +206,9 @@
 		</File>
 		<File
 			RelativePath=".\ligo\primitive.cpp">
+		</File>
+		<File
+			RelativePath="..\include\nel\ligo\primitive.h">
 		</File>
 		<File
 			RelativePath=".\ligo\transition.cpp">

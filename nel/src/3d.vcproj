@@ -3,7 +3,6 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="3d"
-	ProjectGUID="{6BF307AA-0995-43BE-81FF-C747ADBBF08C}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -13,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/Release/3d"
+			IntermediateDirectory=".\../obj7/Release/3d"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -22,34 +21,25 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_LIB,WIN32,NDEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="std3d.h"
+				PrecompiledHeaderFile=".\../obj7/Release/3d/3d.pch"
+				AssemblerListingLocation=".\../obj7/Release/3d/"
+				ObjectFile=".\../obj7/Release/3d/"
+				ProgramDataBaseFileName=".\../obj7/Release/3d/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nl3d_r.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -68,8 +58,8 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/DebugFast/3d"
+			IntermediateDirectory=".\../obj7/DebugFast/3d"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -81,20 +71,15 @@
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_LIB,WIN32,_DEBUG,NL_DEBUG_FAST"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="std3d.h"
+				PrecompiledHeaderFile=".\../obj7/DebugFast/3d/3d.pch"
+				AssemblerListingLocation=".\../obj7/DebugFast/3d/"
+				ObjectFile=".\../obj7/DebugFast/3d/"
+				ProgramDataBaseFileName=".\../obj7/DebugFast/3d/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -102,7 +87,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nl3d_df.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -121,8 +106,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/Debug/3d"
+			IntermediateDirectory=".\../obj7/Debug/3d"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -133,28 +118,23 @@
 				Optimization="0"
 				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="std3d.h"
+				PrecompiledHeaderFile=".\../obj7/Debug/3d/3d.pch"
+				AssemblerListingLocation=".\../obj7/Debug/3d/"
+				ObjectFile=".\../obj7/Debug/3d/"
+				ProgramDataBaseFileName=".\../obj7/Debug/3d/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nl3d_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -173,8 +153,8 @@
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/ReleaseDebug/3d"
+			IntermediateDirectory=".\../obj7/ReleaseDebug/3d"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -182,27 +162,18 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_LIB,WIN32,NDEBUG,NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="std3d.h"
+				PrecompiledHeaderFile=".\../obj7/ReleaseDebug/3d/3d.pch"
+				AssemblerListingLocation=".\../obj7/ReleaseDebug/3d/"
+				ObjectFile=".\../obj7/ReleaseDebug/3d/"
+				ProgramDataBaseFileName=".\../obj7/ReleaseDebug/3d/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -210,7 +181,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nl3d_rd.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -237,6 +208,30 @@
 			</File>
 			<File
 				RelativePath=".\3d\anim_detail_trav.h">
+			</File>
+			<File
+				RelativePath=".\3d\base_anim_detail_obs.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\base_anim_detail_obs.h">
+			</File>
+			<File
+				RelativePath=".\3d\base_clip_obs.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\base_clip_obs.h">
+			</File>
+			<File
+				RelativePath=".\3d\base_light_obs.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\base_light_obs.h">
+			</File>
+			<File
+				RelativePath=".\3d\base_render_obs.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\base_render_obs.h">
 			</File>
 			<File
 				RelativePath=".\3d\clip_trav.cpp">
@@ -269,7 +264,7 @@
 				RelativePath=".\3d\render_trav.h">
 			</File>
 			<File
-				RelativePath="3d\trav_scene.cpp">
+				RelativePath=".\3d\trav_scene.cpp">
 			</File>
 			<File
 				RelativePath=".\3d\trav_scene.h">
@@ -343,6 +338,12 @@
 			</File>
 			<File
 				RelativePath=".\3d\root_model.h">
+			</File>
+			<File
+				RelativePath=".\3d\seg_remanence.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\seg_remanence.h">
 			</File>
 			<File
 				RelativePath=".\3d\skeleton_model.cpp">
@@ -451,6 +452,12 @@
 				RelativePath=".\3d\patch_vegetable.cpp">
 			</File>
 			<File
+				RelativePath=".\3d\patchdlm_context.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\patchdlm_context.h">
+			</File>
+			<File
 				RelativePath=".\3d\patchuv_locator.cpp">
 			</File>
 			<File
@@ -479,6 +486,12 @@
 			</File>
 			<File
 				RelativePath=".\3d\tessellation.h">
+			</File>
+			<File
+				RelativePath=".\3d\texture_dlm.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\texture_dlm.h">
 			</File>
 			<File
 				RelativePath=".\3d\texture_far.cpp">
@@ -752,6 +765,18 @@
 				RelativePath=".\3d\mesh_base.h">
 			</File>
 			<File
+				RelativePath=".\3d\mesh_blender.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\mesh_blender.h">
+			</File>
+			<File
+				RelativePath=".\3d\mesh_block_manager.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\mesh_block_manager.h">
+			</File>
+			<File
 				RelativePath=".\3d\mesh_geom.cpp">
 			</File>
 			<File
@@ -806,6 +831,12 @@
 				RelativePath=".\3d\mesh_multi_lod.h">
 			</File>
 			<File
+				RelativePath=".\3d\mesh_skin_manager.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\mesh_skin_manager.h">
+			</File>
+			<File
 				RelativePath=".\3d\mesh_vertex_program.cpp">
 			</File>
 			<File
@@ -824,10 +855,22 @@
 				RelativePath=".\3d\meshvp_wind_tree.h">
 			</File>
 			<File
+				RelativePath=".\3d\mrm_level_detail.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\mrm_level_detail.h">
+			</File>
+			<File
 				RelativePath=".\3d\particle_system_shape.cpp">
 			</File>
 			<File
 				RelativePath=".\3d\particle_system_shape.h">
+			</File>
+			<File
+				RelativePath=".\3d\seg_remanence_shape.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\seg_remanence_shape.h">
 			</File>
 			<File
 				RelativePath=".\3d\shape.cpp">
@@ -892,12 +935,6 @@
 			</File>
 			<File
 				RelativePath=".\3d\texture_cube.h">
-			</File>
-			<File
-				RelativePath="3d\texture_dlm.cpp">
-			</File>
-			<File
-				RelativePath="3d\texture_dlm.h">
 			</File>
 			<File
 				RelativePath=".\3d\texture_file.cpp">
@@ -998,6 +1035,12 @@
 				RelativePath=".\3d\animation.h">
 			</File>
 			<File
+				RelativePath=".\3d\animation_optimizer.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\animation_optimizer.h">
+			</File>
+			<File
 				RelativePath=".\3d\animation_playlist.cpp">
 			</File>
 			<File
@@ -1056,6 +1099,24 @@
 			</File>
 			<File
 				RelativePath=".\3d\track_keyframer.h">
+			</File>
+			<File
+				RelativePath=".\3d\track_sampled_common.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\track_sampled_common.h">
+			</File>
+			<File
+				RelativePath=".\3d\track_sampled_quat.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\track_sampled_quat.h">
+			</File>
+			<File
+				RelativePath=".\3d\track_sampled_vector.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\track_sampled_vector.h">
 			</File>
 			<File
 				RelativePath=".\3d\track_tcb.h">
@@ -1423,18 +1484,6 @@
 					Filter="">
 					<File
 						RelativePath=".\3d\ps_dot.cpp">
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								AssemblerOutput="4"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="ReleaseDebug|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								AssemblerOutput="4"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath=".\3d\ps_dot.h">
@@ -1468,12 +1517,6 @@
 					</File>
 					<File
 						RelativePath=".\3d\ps_particle.cpp">
-						<FileConfiguration
-							Name="ReleaseDebug|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								AssemblerOutput="2"/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath=".\3d\ps_particle.h">
@@ -1828,6 +1871,12 @@
 				RelativePath=".\3d\vegetable_sort_block.h">
 			</File>
 			<File
+				RelativePath=".\3d\vegetable_uv8.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\vegetable_uv8.h">
+			</File>
+			<File
 				RelativePath=".\3d\vegetablevb_allocator.cpp">
 			</File>
 			<File
@@ -1844,10 +1893,10 @@
 				RelativePath=".\3d\fast_floor.h">
 			</File>
 			<File
-				RelativePath=".\3d\fast_mem.cpp">
+				RelativePath=".\3d\matrix_3x4.cpp">
 			</File>
 			<File
-				RelativePath=".\3d\fast_mem.h">
+				RelativePath=".\3d\matrix_3x4.h">
 			</File>
 			<File
 				RelativePath=".\3d\radix_sort.cpp">
@@ -1914,17 +1963,45 @@
 				RelativePath=".\3d\surface_light_grid.h">
 			</File>
 		</Filter>
+		<Filter
+			Name="LodSystems"
+			Filter="">
+			<File
+				RelativePath=".\3d\coarse_mesh_build.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\coarse_mesh_build.h">
+			</File>
+			<File
+				RelativePath=".\3d\lod_character_builder.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\lod_character_builder.h">
+			</File>
+			<File
+				RelativePath=".\3d\lod_character_manager.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\lod_character_manager.h">
+			</File>
+			<File
+				RelativePath=".\3d\lod_character_shape.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\lod_character_shape.h">
+			</File>
+			<File
+				RelativePath=".\3d\lod_character_shape_bank.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\lod_character_shape_bank.h">
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\3d\async_file_manager.cpp">
 		</File>
 		<File
 			RelativePath=".\3d\async_file_manager.h">
-		</File>
-		<File
-			RelativePath=".\3d\coarse_mesh_build.cpp">
-		</File>
-		<File
-			RelativePath=".\3d\coarse_mesh_build.h">
 		</File>
 		<File
 			RelativePath=".\3d\event_mouse_listener.cpp">
@@ -1955,12 +2032,6 @@
 		</File>
 		<File
 			RelativePath=".\3d\nelu.h">
-		</File>
-		<File
-			RelativePath="3d\patchdlm_context.cpp">
-		</File>
-		<File
-			RelativePath="3d\patchdlm_context.h">
 		</File>
 		<File
 			RelativePath=".\3d\register_3d.cpp">

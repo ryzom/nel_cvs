@@ -3,7 +3,6 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="misc"
-	ProjectGUID="{5D9C3FB3-5193-4F71-9732-A809EB7EED21}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -13,41 +12,33 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/Release/misc"
+			IntermediateDirectory=".\../obj7/Release/misc"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_LIB,WIN32,NDEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
-				WarningLevel="3"/>
+				PrecompiledHeaderThrough="stdmisc.h"
+				PrecompiledHeaderFile=".\../obj7/Release/misc/misc.pch"
+				AssemblerListingLocation=".\../obj7/Release/misc/"
+				ObjectFile=".\../obj7/Release/misc/"
+				ProgramDataBaseFileName=".\../obj7/Release/misc/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlmisc_r.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -66,43 +57,34 @@
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/ReleaseDebug/misc"
+			IntermediateDirectory=".\../obj7/ReleaseDebug/misc"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2"
-			DeleteExtensionsOnClean="*.obj;*.ilk;*.pdb;*.tlb;*.tli;*.tlh;*.tmp;*.rsp;*.bat;$(TargetPath)">
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_LIB,WIN32,NDEBUG,NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="stdmisc.h"
+				PrecompiledHeaderFile=".\../obj7/ReleaseDebug/misc/misc.pch"
+				AssemblerListingLocation=".\../obj7/ReleaseDebug/misc/"
+				ObjectFile=".\../obj7/ReleaseDebug/misc/"
+				ProgramDataBaseFileName=".\../obj7/ReleaseDebug/misc/"
 				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlmisc_rd.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -121,8 +103,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/Debug/misc"
+			IntermediateDirectory=".\../obj7/Debug/misc"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -132,27 +114,23 @@
 				Optimization="0"
 				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="stdmisc.h"
+				PrecompiledHeaderFile=".\../obj7/Debug/misc/misc.pch"
+				AssemblerListingLocation=".\../obj7/Debug/misc/"
+				ObjectFile=".\../obj7/Debug/misc/"
+				ProgramDataBaseFileName=".\../obj7/Debug/misc/"
 				WarningLevel="3"
-				DebugInformationFormat="4"/>
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlmisc_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -171,8 +149,8 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory="..\lib7\"
-			IntermediateDirectory="..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../obj7/DebugFast/misc"
+			IntermediateDirectory=".\../obj7/DebugFast/misc"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -183,27 +161,23 @@
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_LIB,WIN32,_DEBUG,NL_DEBUG_FAST"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="std$(ProjectName).h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderThrough="stdmisc.h"
+				PrecompiledHeaderFile=".\../obj7/DebugFast/misc/misc.pch"
+				AssemblerListingLocation=".\../obj7/DebugFast/misc/"
+				ObjectFile=".\../obj7/DebugFast/misc/"
+				ProgramDataBaseFileName=".\../obj7/DebugFast/misc/"
 				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).lib"
+				OutputFile="../lib7/nlmisc_df.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -225,6 +199,12 @@
 		<Filter
 			Name="Stream"
 			Filter="">
+			<File
+				RelativePath=".\misc\big_file.cpp">
+			</File>
+			<File
+				RelativePath="..\include\nel\misc\big_file.h">
+			</File>
 			<File
 				RelativePath=".\misc\bit_mem_stream.cpp">
 			</File>
@@ -672,6 +652,12 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath=".\misc\algo.cpp">
+		</File>
+		<File
+			RelativePath="..\include\nel\misc\algo.h">
+		</File>
+		<File
 			RelativePath=".\misc\bit_set.cpp">
 		</File>
 		<File
@@ -708,12 +694,6 @@
 			RelativePath="..\include\nel\misc\common.h">
 		</File>
 		<File
-			RelativePath=".\misc\cpu_info.cpp">
-		</File>
-		<File
-			RelativePath="..\include\nel\misc\cpu_info.h">
-		</File>
-		<File
 			RelativePath=".\misc\debug.cpp">
 		</File>
 		<File
@@ -724,6 +704,18 @@
 		</File>
 		<File
 			RelativePath="..\include\nel\misc\entity_id.h">
+		</File>
+		<File
+			RelativePath=".\misc\eval_num_expr.cpp">
+		</File>
+		<File
+			RelativePath="..\include\nel\misc\eval_num_expr.h">
+		</File>
+		<File
+			RelativePath=".\misc\fast_mem.cpp">
+		</File>
+		<File
+			RelativePath="..\include\nel\misc\fast_mem.h">
 		</File>
 		<File
 			RelativePath=".\misc\hierarchical_timer.cpp">
@@ -772,6 +764,12 @@
 		</File>
 		<File
 			RelativePath="..\include\nel\misc\rgba.h">
+		</File>
+		<File
+			RelativePath=".\misc\sheet_id.cpp">
+		</File>
+		<File
+			RelativePath="..\include\nel\misc\sheet_id.h">
 		</File>
 		<File
 			RelativePath=".\misc\smart_ptr.cpp">

@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="driver_openal"
+	ProjectGUID="{BB62E7E2-97BB-4C4D-A7BE-2511C15831C9}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -12,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\..\..\lib7\"
-			IntermediateDirectory="..\..\..\..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../../../../obj7/Debug/driver_openal"
+			IntermediateDirectory=".\../../../../obj7/Debug/driver_openal"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -23,43 +24,38 @@
 				Optimization="0"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENAL_EXPORTS;WIN32;_DEBUG;__STL_DEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdopenal.h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderFile=".\../../../../obj7/Debug/driver_openal/driver_openal.pch"
+				AssemblerListingLocation=".\../../../../obj7/Debug/driver_openal/"
+				ObjectFile=".\../../../../obj7/Debug/driver_openal/"
+				ProgramDataBaseFileName=".\../../../../obj7/Debug/driver_openal/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"/>
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).dll"
-				LinkIncremental="2"
+				OutputFile="../../../../lib7/nldriver_openal_d.dll"
+				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ModuleDefinitionFile=".\$(InputName).def"
+				ModuleDefinitionFile=".\driver_openal.def"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).pdb"
-				ImportLibrary="$(IntDir)nl$(ProjectName)_$(ConfigurationName).lib"/>
+				ProgramDatabaseFile=".\../../../../obj7/Debug/driver_openal/nldriver_openal_d.pdb"
+				ImportLibrary=".\../../../../obj7/Debug/driver_openal/nldriver_openal_d.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj/Debug/driver_openal.tlb"/>
+				TypeLibraryName=".\../../../../obj7/Debug/driver_openal/driver_openal.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -77,8 +73,8 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory="..\..\..\..\lib7\"
-			IntermediateDirectory="..\..\..\..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../../../../obj7/DebugFast/driver_openal"
+			IntermediateDirectory=".\../../../../obj7/DebugFast/driver_openal"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -89,20 +85,15 @@
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENAL_EXPORTS;WIN32;_DEBUG;NL_DEBUG_FAST"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdopenal.h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderFile=".\../../../../obj7/DebugFast/driver_openal/driver_openal.pch"
+				AssemblerListingLocation=".\../../../../obj7/DebugFast/driver_openal/"
+				ObjectFile=".\../../../../obj7/DebugFast/driver_openal/"
+				ProgramDataBaseFileName=".\../../../../obj7/DebugFast/driver_openal/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -112,20 +103,20 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).dll"
-				LinkIncremental="2"
+				OutputFile="../../../../lib7/nldriver_openal_df.dll"
+				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				ModuleDefinitionFile=".\$(InputName).def"
+				ModuleDefinitionFile=".\driver_openal.def"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).pdb"
-				ImportLibrary="$(IntDir)nl$(ProjectName)_$(ConfigurationName).lib"/>
+				ProgramDatabaseFile=".\../../../../obj7/DebugFast/driver_openal/nldriver_openal_df.pdb"
+				ImportLibrary=".\../../../../obj7/DebugFast/driver_openal/nldriver_openal_df.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj/DebugFast/driver_openal.tlb"/>
+				TypeLibraryName=".\../../../../obj7/DebugFast/driver_openal/driver_openal.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -143,35 +134,26 @@
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory="..\..\..\..\lib7\"
-			IntermediateDirectory="..\..\..\..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../../../../obj7/ReleaseDebug/driver_openal"
+			IntermediateDirectory=".\../../../../obj7/ReleaseDebug/driver_openal"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENAL_EXPORTS;NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdopenal.h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderFile=".\../../../../obj7/ReleaseDebug/driver_openal/driver_openal.pch"
+				AssemblerListingLocation=".\../../../../obj7/ReleaseDebug/driver_openal/"
+				ObjectFile=".\../../../../obj7/ReleaseDebug/driver_openal/"
+				ProgramDataBaseFileName=".\../../../../obj7/ReleaseDebug/driver_openal/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -181,21 +163,21 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).dll"
-				LinkIncremental="2"
+				OutputFile="../../../../lib7/nldriver_openal_rd.dll"
+				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="C:\Netshare\openal\win\alut\release,C:\Netshare\openal\win\openal32\release"
-				ModuleDefinitionFile=".\$(InputName).def"
+				ModuleDefinitionFile=".\driver_openal.def"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).pdb"
-				ImportLibrary="$(IntDir)nl$(ProjectName)_$(ConfigurationName).lib"/>
+				ProgramDatabaseFile=".\../../../../obj7/ReleaseDebug/driver_openal/nldriver_openal_rd.pdb"
+				ImportLibrary=".\../../../../obj7/ReleaseDebug/driver_openal/nldriver_openal_rd.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj/ReleaseDebug/driver_openal.tlb"/>
+				TypeLibraryName=".\../../../../obj7/ReleaseDebug/driver_openal/driver_openal.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -213,35 +195,26 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\..\..\lib7\"
-			IntermediateDirectory="..\..\..\..\obj7\$(ConfigurationName)\$(ProjectName)\"
+			OutputDirectory=".\../../../../obj7/Release/driver_openal"
+			IntermediateDirectory=".\../../../../obj7/Release/driver_openal"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				ImproveFloatingPointConsistency="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENAL_EXPORTS"
 				StringPooling="TRUE"
-				MinimalRebuild="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdopenal.h"
-				PrecompiledHeaderFile="$(IntDir)$(ProjectName).pch"
-				AssemblerListingLocation="$(IntDir)"
-				ObjectFile="$(IntDir)"
-				ProgramDataBaseFileName="$(OutDir)nl$(ProjectName)_$(ConfigurationName)"
-				BrowseInformation="0"
+				PrecompiledHeaderFile=".\../../../../obj7/Release/driver_openal/driver_openal.pch"
+				AssemblerListingLocation=".\../../../../obj7/Release/driver_openal/"
+				ObjectFile=".\../../../../obj7/Release/driver_openal/"
+				ProgramDataBaseFileName=".\../../../../obj7/Release/driver_openal/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
@@ -250,20 +223,19 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ALut.lib OpenAL32.lib eax.lib eaxguid.lib"
-				OutputFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).dll"
-				LinkIncremental="2"
+				OutputFile="../../../../lib7/nldriver_openal_r.dll"
+				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="C:\Netshare\openal\win\alut\release,C:\Netshare\openal\win\openal32\release"
-				ModuleDefinitionFile=".\$(InputName).def"
-				ProgramDatabaseFile="$(OutDir)nl$(ProjectName)_$(ConfigurationName).pdb"
-				ImportLibrary="$(IntDir)nl$(ProjectName)_$(ConfigurationName).lib"/>
+				ModuleDefinitionFile=".\driver_openal.def"
+				ImportLibrary=".\../../../../obj7/Release/driver_openal/nldriver_openal_r.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj/Release/driver_openal.tlb"/>
+				TypeLibraryName=".\../../../../obj7/Release/driver_openal/driver_openal.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool

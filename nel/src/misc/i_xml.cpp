@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.9 2002/05/21 16:41:31 lecroart Exp $
+ * $Id: i_xml.cpp,v 1.10 2002/06/28 20:01:41 hanappe Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

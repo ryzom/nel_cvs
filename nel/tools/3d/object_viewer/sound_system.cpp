@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.10 2002/06/20 08:39:54 hanappe Exp $
+ * $Id: sound_system.cpp,v 1.11 2002/06/28 20:01:41 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,6 @@
 #include "nel/sound/u_listener.h"
 #include "nel/sound/sound_anim_manager.h"
 #include "nel/sound/sound_animation.h"
-#include "nel/sound/sound_anim_player.h"
 #include "nel/misc/path.h"
 #include "edit_ps_sound.h"
 
@@ -44,11 +43,11 @@ set<string>				CSoundSystem::_SoundBanksFileName;
 set<string>				CSoundSystem::_SampleBanksFileName;
 static CVector			SoundListenerPos = CVector::Null;
 CSoundAnimManager		*CSoundSystem::_AnimManager = NULL;
-TSoundAnimId			CSoundSystem::_CurrentAnimation = CSoundAnimation::NoId;
-sint32					CSoundSystem::_CurrentPlayback = -1;
+//TSoundAnimId			CSoundSystem::_CurrentAnimation = CSoundAnimation::NoId;
+//sint32					CSoundSystem::_CurrentPlayback = -1;
 CVector					CSoundSystem::_Zero = CVector::Null;
 string					CSoundSystem::_SamplePath;
-sint					CSoundSystem::_AnimIndex = -1;
+//sint					CSoundSystem::_AnimIndex = -1;
 
 void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
 {
@@ -162,7 +161,7 @@ void CSoundSystem::play(const string &soundName)
 	}
 }
 
-void CSoundSystem::playAnimation(string& name, sint index, float start, float lastTime, float curTime)
+void CSoundSystem::playAnimation(string& name, float lastTime, float curTime)
 {
 	if (_AnimManager == NULL)
 	{
@@ -171,26 +170,8 @@ void CSoundSystem::playAnimation(string& name, sint index, float start, float la
 
 	TSoundAnimId id = _AnimManager->getAnimationFromName(name);
 
-	if ((id != _CurrentAnimation) || (_AnimIndex != index))
+	if (id != CSoundAnimationNoId)
 	{
-		if (_CurrentPlayback != -1)
-		{
-			_AnimManager->stopAnimation(_CurrentPlayback);
-		}
-		_CurrentAnimation = CSoundAnimation::NoId;
-		_CurrentPlayback = -1;
-		_AnimIndex = index;
-
-		if (id != CSoundAnimation::NoId)
-		{
-			_CurrentAnimation = id;
-			_CurrentPlayback = _AnimManager->playAnimation(id, start, &_Zero);
-		}
+		_AnimManager->playAnimation(id, lastTime, curTime, _Zero);
 	}
-	else if (!_AnimManager->isPlaying(_CurrentPlayback))
-	{
-		_CurrentPlayback = _AnimManager->playAnimation(_CurrentAnimation, start, &_Zero);
-	}
-
-	_AnimManager->update(lastTime, curTime);
 }

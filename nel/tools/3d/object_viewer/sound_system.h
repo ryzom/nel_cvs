@@ -1,7 +1,7 @@
 /** \file sound_system.h
  * This initilize the sound system
  *
- * $Id: sound_system.h,v 1.5 2002/06/20 08:39:54 hanappe Exp $
+ * $Id: sound_system.h,v 1.6 2002/06/28 20:01:42 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,10 +88,10 @@ public:
 	static void loadAnimation(std::string& name)		{ _AnimManager->loadAnimation(name); }
 
 	/// Start playing a sound animation. 
-	static void playAnimation(std::string& name, sint index, float start, float lastTime, float curTime);
+	static void playAnimation(std::string& name, float lastTime, float curTime);
 
 	/// Update the sound animations. 
-	static void updateAnimations(float lastTime, float curTime)	{ _AnimManager->update(lastTime, curTime); };
+	//static void updateAnimations(float lastTime, float curTime)	{ _AnimManager->update(lastTime, curTime); };
 
 
 	/// Returns a reference to the animation manager
@@ -102,9 +102,9 @@ private:
 	static std::set<std::string>		_SoundBanksFileName;
 	static std::set<std::string>		_SampleBanksFileName;
 	static NLSOUND::CSoundAnimManager	*_AnimManager;
-	static sint							_AnimIndex;
-	static NLSOUND::TSoundAnimId		_CurrentAnimation;
-	static NLSOUND::TSoundAnimPlayId	_CurrentPlayback;
+	//static sint							_AnimIndex;
+	//static NLSOUND::TSoundAnimId		_CurrentAnimation;
+	//static NLSOUND::TSoundAnimPlayId	_CurrentPlayback;
 	static NLMISC::CVector				_Zero;
 	static std::string					_SamplePath;
 

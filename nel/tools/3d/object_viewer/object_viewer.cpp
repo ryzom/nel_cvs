@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.69 2002/06/24 17:20:04 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.70 2002/06/28 20:01:41 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -293,8 +293,8 @@ CObjectViewer::CObjectViewer ()
 			for (uint i=0; i<(uint)var.size(); i++)
 			{
 				string dir = soundPath;
-				soundPath.append("/").append(var.asString(i).c_str());
-				CSoundSystem::addSoundBank(soundPath);
+				dir.append("/").append(var.asString(i).c_str());
+				CSoundSystem::addSoundBank(dir);
 			}
 
 			var = cf.getVar("sample_path");
@@ -2072,7 +2072,7 @@ void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 
 				if ((startTime <= currentTime) && (currentTime < endTime))
 				{
-					CSoundSystem::playAnimation(name, (sint) index, startTime, lastTime, currentTime);
+					CSoundSystem::playAnimation(name, lastTime - startTime, currentTime - startTime);
 				}
 			}
 		}

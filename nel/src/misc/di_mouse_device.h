@@ -1,7 +1,7 @@
 /** \file di_mouse_device.h
  * <File description>
  *
- * $Id: di_mouse_device.h,v 1.4 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: di_mouse_device.h,v 1.5 2004/01/05 16:44:59 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -142,6 +142,8 @@ private:
 	CDIEventEmitter				*_DIEventEmitter;
 	// The windows emitter to enable / disble win32 mouse messages
 	NLMISC::CRefPtr<CWinEventEmitter>	_WE;
+	// Does the button left and right are swapped ?
+	bool						_SwapButton;
 private:
 	/// ctor
 	CDIMouse();

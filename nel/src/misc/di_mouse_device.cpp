@@ -1,7 +1,7 @@
 /** \file di_mouse.cpp
  * <File description>
  *
- * $Id: di_mouse_device.cpp,v 1.5 2003/04/28 12:34:07 vizerie Exp $
+ * $Id: di_mouse_device.cpp,v 1.6 2004/01/05 16:44:59 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -41,9 +41,6 @@
 namespace NLMISC
 {
 
-
-
-
 //======================================================
 CDIMouse::CDIMouse() : _MessageMode(RawMode),
 					   _MouseSpeed(1.0f),
@@ -61,7 +58,8 @@ CDIMouse::CDIMouse() : _MessageMode(RawMode),
 					   OldDIYPos(0),
 					   OldDIZPos(0),
 					   _FirstX(true),
-   					   _FirstY(true)
+   					   _FirstY(true),
+					   _SwapButton(false)
 
 {
 	std::fill(_MouseButtons, _MouseButtons + MaxNumMouseButtons, 0);
@@ -177,6 +175,8 @@ CDIMouse *CDIMouse::createMouseDevice(IDirectInput8 *di8, HWND hwnd, CDIEventEmi
 	if (mouse->_WE)
 		mouse->_WE->enableMouseEvents(mouse->_Hardware && (mouse->_MessageMode == IMouseDevice::NormalMode));
 
+	mouse->_SwapButton = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+
 	return mouse.release();
 }
 
@@ -237,11 +237,19 @@ void CDIMouse::poll(CInputDeviceServer *dev)
 //======================================================================
 TMouseButton CDIMouse::buildMouseButtonFlags() const
 {
-	return (TMouseButton) (
+	if (_SwapButton)
+		return (TMouseButton) (
 						   _DIEventEmitter->buildKeyboardButtonFlags()
-						   | (_MouseButtons[0] ? leftButton   : 0)
-						   | (_MouseButtons[1] ? rightButton  : 0)
-						   | (_MouseButtons[2] ? middleButton : 0)
+						   | (_MouseButtons[0] ? rightButton	: 0)
+						   | (_MouseButtons[1] ? leftButton		: 0)
+						   | (_MouseButtons[2] ? middleButton	: 0)
+						  );
+	else
+		return (TMouseButton) (
+						   _DIEventEmitter->buildKeyboardButtonFlags()
+						   | (_MouseButtons[0] ? leftButton		: 0)
+						   | (_MouseButtons[1] ? rightButton	: 0)
+						   | (_MouseButtons[2] ? middleButton	: 0)
 						  );
 }
 
@@ -249,8 +257,12 @@ TMouseButton CDIMouse::buildMouseButtonFlags() const
 TMouseButton CDIMouse::buildMouseSingleButtonFlags(uint button)
 {
 	static const TMouseButton mb[] = { leftButton, rightButton, middleButton };
+	static const TMouseButton mbswap[] = { rightButton, leftButton, middleButton };
 	nlassert(button < MaxNumMouseButtons);
-	return (TMouseButton) (_DIEventEmitter->buildKeyboardButtonFlags() | mb[button]);						   						  
+	if (_SwapButton)
+		return (TMouseButton) (_DIEventEmitter->buildKeyboardButtonFlags() | mbswap[button]);
+	else
+		return (TMouseButton) (_DIEventEmitter->buildKeyboardButtonFlags() | mb[button]);
 }
 
 //======================================================

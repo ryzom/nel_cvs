@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.19.4.1 2004/09/14 15:33:43 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.19.4.2 2004/09/15 18:30:29 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -241,13 +241,14 @@ CDriverD3D::CDriverD3D()
 	_VolatileIndexBufferRAM[1]= new CVolatileIndexBuffer;
 	_VolatileIndexBufferAGP[0]= new CVolatileIndexBuffer;
 	_VolatileIndexBufferAGP[1]= new CVolatileIndexBuffer;	
-	_StateBlockCategory = 0;
 	_MustRestoreLight = false;	
 	_VertexStreamStride = 0;
 	_VertexDeclStride = 0;
 	_Lost = false;
 	_SceneBegun = false;
 }
+
+
 
 // ***************************************************************************
 
@@ -1887,6 +1888,29 @@ bool CDriverD3D::reset (const GfxMode& mode)
 {
 	//DUMP_AUTO(reset);
 	H_AUTO_D3D(CDriverD3D_reset);
+	if (_DeviceInterface->TestCooperativeLevel() == D3DERR_DEVICELOST) return false;
+	
+	// Choose an adapter
+	UINT adapter = (_Adapter==0xffffffff)?D3DADAPTER_DEFAULT:(UINT)_Adapter;
+
+	// Get adapter format
+	D3DDISPLAYMODE adapterMode;
+	if (_D3D->GetAdapterDisplayMode (adapter, &adapterMode) != D3D_OK)
+	{
+		nlwarning ("CDriverD3D::reset: GetAdapterDisplayMode failed");
+		release();
+		return false;
+	}
+		
+	// Do the reset
+	// Increment the IDriver reset counter
+
+	D3DPRESENT_PARAMETERS parameters;
+	D3DFORMAT adapterFormat;
+	if (!fillPresentParameter (parameters, adapterFormat, mode, adapterMode))
+		return false;
+
+
 	// Current mode
 	_CurrentMode = mode;
 	_CurrentMaterial = NULL;
@@ -1970,62 +1994,44 @@ bool CDriverD3D::reset (const GfxMode& mode)
 	}
 
 	// Release internal shaders
-	releaseInternalShaders();
+	//releaseInternalShaders();
 
 
+	notifyAllShaderDrvOfLostDevice();
+	
+	
 
-	// Choose an adapter
-	UINT adapter = (_Adapter==0xffffffff)?D3DADAPTER_DEFAULT:(UINT)_Adapter;
-
-	// Get adapter format
-	D3DDISPLAYMODE adapterMode;
-	if (_D3D->GetAdapterDisplayMode (adapter, &adapterMode) != D3D_OK)
+	/* Do not reset if reset will fail */		
+	_ResetCounter++;
+	bool sceneBegun = hasSceneBegun();
+	if (sceneBegun)
 	{
-		nlwarning ("CDriverD3D::reset: GetAdapterDisplayMode failed");
-		release();
+		//nldebug("EndScene");
+		endScene();			
+	}
+	if (_DeviceInterface->Reset (&parameters) != D3D_OK)
+	{
+		// tmp
+		nlassert(0); // Fatal ...
+		nlwarning ("CDriverD3D::reset: Reset on _DeviceInterface");
 		return false;
 	}
-
-	// Do the reset
-
-	// Increment the IDriver reset counter
-
-	D3DPRESENT_PARAMETERS parameters;
-	D3DFORMAT adapterFormat;
-	if (!fillPresentParameter (parameters, adapterFormat, mode, adapterMode))
-		return false;
-
-	/* Do not reset if reset will fail */
-	if (_DeviceInterface->TestCooperativeLevel() != D3DERR_DEVICELOST)
+	_Lost = false;
+	// BeginScene now
+	if (sceneBegun)
 	{
-		_ResetCounter++;
-		bool sceneBegun = hasSceneBegun();
-		if (sceneBegun)
-		{
-			//nldebug("EndScene");
-			endScene();			
-		}
-		if (_DeviceInterface->Reset (&parameters) != D3D_OK)
-		{
-			// tmp
-			nlassert(0);
-			nlwarning ("CDriverD3D::reset: Reset on _DeviceInterface");
-			return false;
-		}
-		_Lost = false;
-		// BeginScene now
-		if (sceneBegun)
-		{
-			//nldebug("BeginScene");
-			beginScene();
-		}
-	}
+		//nldebug("BeginScene");
+		beginScene();
+	}	
+
+
+	notifyAllShaderDrvOfResetDevice();
 
 	// Reset internal caches
 	resetRenderVariables();
 
 	// Init shaders
-	initInternalShaders();
+	//initInternalShaders();
 
 	// reallocate occlusion queries
 	for(TOcclusionQueryList::iterator it = _OcclusionQueryList.begin(); it != _OcclusionQueryList.end(); ++it)

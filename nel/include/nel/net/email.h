@@ -1,7 +1,7 @@
 /** \file email.h
  * send email
  *
- * $Id: email.h,v 1.1 2002/08/23 12:18:07 lecroart Exp $
+ * $Id: email.h,v 1.2 2002/11/29 09:10:46 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -34,15 +34,16 @@
 namespace NLNET {
 
 /** Send an email
- * \param smtpServer must be a smtp email server
+ * \param smtpServer must be a smtp email server.
  * \param from must be a valid email address. If empty, create a fake email address with anonymous@<ipaddress>.com
  * \param to must be a valid email address.
- * \param subject subject of the email. Can be empty
- * \param body body of the email. Can be empty
- * \param onlyCheck If true, It'll not send the mail but only check if it could be send
+ * \param subject subject of the email. Can be empty.
+ * \param body body of the email. Can be empty.
+ * \param attachedFile a filename that will be send with the email. Can be empty.
+ * \param onlyCheck If true, It'll not send the mail but only check if it could be send.
  */
 
-bool sendEmail (const std::string &smtpServer, const std::string &from, const std::string &to, const std::string &subject, const std::string &body, bool onlyCheck = false);
+bool sendEmail (const std::string &smtpServer, const std::string &from, const std::string &to, const std::string &subject, const std::string &body, const std::string &attachedFile = "", bool onlyCheck = false);
 
 /**  If you call this function, the default from (when from is "") used in the sendEmail will be the one
  * you set by this function

@@ -1,7 +1,7 @@
 /** \file email.cpp
  * send email
  *
- * $Id: email.cpp,v 1.1 2002/08/23 12:17:47 lecroart Exp $
+ * $Id: email.cpp,v 1.2 2002/11/29 09:10:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdnet.h"
 
 #include "nel/misc/report.h"
+#include "nel/misc/path.h"
 
 #include "nel/net/tcp_sock.h"
 #include "nel/net/email.h"
@@ -38,22 +39,103 @@ namespace NLNET {
 
 static string DefaultSMTPServer, DefaultFrom, DefaultTo;
 
-bool sendEmail (const string &smtpServer, const string &from, const string &to, const string &subject, const string &body, bool onlyCheck)
-{	
+/* Conversion table.  for base 64 */
+static char tbl[65] = {
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+	'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+	'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+	'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+	'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+	'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+	'w', 'x', 'y', 'z', '0', '1', '2', '3',
+	'4', '5', '6', '7', '8', '9', '+', '/',
+	'=' /* termination character */
+};
+
+/*
+ * Encode the string S of length LENGTH to base64 format and place it
+ * to STORE.  STORE will be 0-terminated, and must point to a writable
+ * buffer of at least 1+BASE64_LENGTH(length) bytes.
+ * where BASE64_LENGTH(len) = (4 * ((LENGTH + 2) / 3))
+ */
+static void uuencode (const char *s, const char *store, const int length)
+{
+	int i;
+	unsigned char *p = (unsigned char *)store;
+	unsigned char *us = (unsigned char *)s;
+	
+	/* Transform the 3x8 bits to 4x6 bits, as required by base64.  */
+	for (i = 0; i < length; i += 3) {
+		*p++ = tbl[us[0] >> 2];
+		*p++ = tbl[((us[0] & 3) << 4) + (us[1] >> 4)];
+		*p++ = tbl[((us[1] & 0xf) << 2) + (us[2] >> 6)];
+		*p++ = tbl[us[2] & 0x3f];
+		us += 3;
+	}
+	/* Pad the result if necessary...  */
+	if (i == length + 1) {
+		*(p - 1) = tbl[64];
+	}
+	else if (i == length + 2) {
+		*(p - 1) = *(p - 2) = tbl[64];
+	}
+	/* ...and zero-terminate it.  */
+	*p = '\0';
+}
+
+bool sendEMailCommand (CTcpSock &sock, const std::string &command, uint32 code = 250)
+{
+	string buffer = command + "\r\n";
+	uint32 size = buffer.size();
+	if(!command.empty())
+	{
+		if (sock.send ((uint8 *)buffer.c_str(), size) != CSock::Ok)
+		{
+			nlwarning ("Can't send data to the server");
+			return false;
+		}
+	}
+
+	string res;
+	char c;
+	while (true)
+	{
+		size = 1;
+		
+		if (sock.receive((uint8*)&c, size, false) == CSock::Ok)
+		{
+			res += c;
+			if (c == '\n')
+			{
+				uint32 c = atoi (res.c_str());
+				if (c != code)
+				{
+					nlwarning ("EMail command '%s' returned '%s' instead of code %d", command.substr(0, 20).c_str(), res.substr(0, res.size()-2).c_str(), code);
+					return false;
+				}
+				return true;
+			}
+		}
+		else
+		{
+			nlwarning ("EMail connection closed before end of line, command '%s' returned '%s'", command.substr(0, 20).c_str(), res.c_str());
+			return false;
+		}
+	}
+}
+
+
+bool sendEmail (const string &smtpServer, const string &from, const string &to, const string &subject, const string &body, const string &attachedFile, bool onlyCheck)
+{
 	bool ok  = false;
 	CTcpSock sock;
-	string buffer;
+	uint i;
 
 	string formatedBody;
 	string formatedFrom;
 	string formatedTo;
-
-	sint pos, nb250=0;
-	string res;
-	bool end = false;
-	uint32 size, i;
-
 	string formatedSMTPServer;
+	
 	if (smtpServer.empty())
 	{
 		if(DefaultSMTPServer.empty())
@@ -108,6 +190,13 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 			formatedFrom = DefaultFrom;
 		}
 	}
+	else
+	{
+		formatedFrom = from;
+	}
+
+	// we must skip the first line
+	formatedBody = "\r\n";
 
 	// replace \n with \r\n
 	for (i = 0; i < body.size(); i++)
@@ -119,70 +208,97 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 		formatedBody += body[i];
 	}
 
-	if(onlyCheck)
+	// add attachment if any
+	if (!attachedFile.empty())
 	{
-		buffer =
-			"HELO localhost\r\n"
-			"MAIL FROM: " + formatedFrom + "\r\n"
-			"RCPT TO: " + formatedTo + "\r\n"
-			"QUIT\r\n";
-	}
-	else
-	{
-		buffer =
-			"HELO localhost\r\n"
-			"MAIL FROM: " + formatedFrom + "\r\n"
-			"RCPT TO: " + formatedTo + "\r\n"
-			"DATA\r\n"
-			"From: " + formatedFrom + "\r\n"
-			"To: " + formatedTo + "\r\n"
-			"Subject: " + subject + "\r\n"
-			"\r\n"
-			+ formatedBody + "\r\n"
-			".\r\n"
-			"QUIT\r\n";
-	}
+		
+		string mimepart;
+		mimepart += "Mime-Version: 1.0\r\n";
+		mimepart += "Content-Type: multipart/mixed;\r\n";
+		mimepart += " boundary=\"Multipart_nel\"\r\n";
+		mimepart += "\r\n";
+		mimepart += "This is a multi-part message in MIME format.\r\n";
+		mimepart += "\r\n";
+		mimepart += "--Multipart_nel\r\n";
+		mimepart += "Content-Type: text/plain; charset=US-ASCII\r\n";
+		mimepart += "Content-Transfer-Encoding: 7bit\r\n";
+			
+		formatedBody = mimepart + formatedBody;
 
-	size = buffer.size();
-	if (sock.send ((uint8 *)buffer.c_str(), size) != CSock::Ok)
-	{
-		nlwarning ("Can't send data to the server");
-		goto end;
-	}
-	
-	while (!end)
-	{
-		char c;
-		uint32 size = 1;
+		formatedBody += "--Multipart_nel\r\n";
+		formatedBody += "Content-Disposition: attachment;\r\n";
+		formatedBody += " filename=\""+CFile::getFilename(attachedFile)+"\"\r\n";
+		formatedBody += "Content-Transfer-Encoding: base64\r\n\r\n";
 
-		if (sock.receive((uint8*)&c, size, false) == CSock::Ok)
+		static const int src_buf_size = 45;// This *MUST* be a multiple of 3
+		static const int dst_buf_size = 4 * ((src_buf_size + 2) / 3);
+		int write_size = dst_buf_size;
+		char src_buf[src_buf_size + 1];
+		char dst_buf[dst_buf_size + 1];
+		size_t size;
+
+		FILE *src_stream = fopen (attachedFile.c_str(), "rb");
+		if (src_stream == NULL)
 		{
-			res += c;
+			nlwarning ("Can't attach file '%s' to the email because the file can't be open", attachedFile.c_str());
 		}
 		else
 		{
-			end = true;
+			while ((size = fread(src_buf, 1, src_buf_size, src_stream)) > 0)
+			{
+				if (size != src_buf_size)
+				{
+					/* write_size is always 60 until the last line */
+					write_size=(4 * ((size + 2) / 3));
+					/* pad with 0s so we can just encode extra bits */
+					memset(&src_buf[size], 0, src_buf_size - size);
+				}
+				/* Encode the buffer we just read in */
+				uuencode(src_buf, dst_buf, size);
+				
+				formatedBody += dst_buf;
+				formatedBody += "\r\n";
+			}
+			formatedBody += "--Multipart_nel--";
+
+			fclose (src_stream);
 		}
-	}
+	}	
 
-	pos = 0;
-	do
+	// debug, display what we send into a file
+	//	{	FILE *fp = fopen (CFile::findNewFile("mail.txt").c_str(), "wb");
+	//	fwrite (formatedBody.c_str(), 1, formatedBody.size(), fp);
+	//	fclose (fp); }
+	
+	if(!sendEMailCommand (sock, "", 220)) goto end;
+
+	if(onlyCheck)
 	{
-		pos = res.find ("250", pos+1);
-		if (pos == string::npos)
-			break;
-		nb250++;
-	}
-	while (true);
+		if(!sendEMailCommand (sock, "HELO localhost")) goto end;
+		if(!sendEMailCommand (sock, "MAIL FROM: " + formatedFrom)) goto end;
+		if(!sendEMailCommand (sock, "RCPT TO: " + formatedTo)) goto end;
+		if(!sendEMailCommand (sock, "QUIT", 221)) goto end;
 
-	if (!onlyCheck && nb250 != 4 || onlyCheck && nb250 != 3)
+		ok = true;
+	}
+	else
 	{
-		nlwarning("Not enough 250 ok code, send mail failed.\nSent------------------\n%s\nReceived------------------\n%s\n", buffer.c_str(), res.c_str());
-		goto end;
-	}
-	nldebug ("%s", res.c_str());
+		if(!sendEMailCommand (sock, "HELO localhost")) goto end;
+		if(!sendEMailCommand (sock, "MAIL FROM: " + formatedFrom)) goto end;
+		if(!sendEMailCommand (sock, "RCPT TO: " + formatedTo)) goto end;
+		if(!sendEMailCommand (sock, "DATA", 354)) goto end;
+		
+		string buffer =
+			"From: " + formatedFrom + "\r\n"
+			"To: " + formatedTo + "\r\n"
+			"Subject: " + subject + "\r\n"
+			+ formatedBody + "\r\n.";
+		
+		if(!sendEMailCommand (sock, buffer)) goto end;
+		if(!sendEMailCommand (sock, "QUIT", 221)) goto end;
 
-	ok = true;
+		ok = true;
+	}
 
 end:
 	if (sock.connected())

@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.24 2002/05/13 16:49:00 berenguier Exp $
+ * $Id: export_lod.h,v 1.25 2002/05/24 14:15:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,6 +130,9 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 /// Lod for skeleton / Character shape
 #define NEL3D_APPDATA_CHARACTER_LOD					(1423062618)
 
+/// skeleton scale
+#define NEL3D_APPDATA_EXPORT_BONE_SCALE				(1423062619)
+#define NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT	(1423062620)
 
 // ***************************************************************************
 

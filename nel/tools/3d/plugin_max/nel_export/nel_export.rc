@@ -234,7 +234,7 @@ BEGIN
     PUSHBUTTON      "Reset name",IDC_RESET_NAME,280,65,60,15
 END
 
-IDD_MISC DIALOG DISCARDABLE  0, 0, 360, 200
+IDD_MISC DIALOG DISCARDABLE  0, 0, 360, 221
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -273,6 +273,13 @@ BEGIN
     LTEXT           "Interface weld threshold",IDC_STATIC,141,140,77,15,
                     SS_CENTERIMAGE
     EDITTEXT        IDC_EDIT_INTERFACE_THRESHOLD,221,140,110,14,
+                    ES_AUTOHSCROLL
+    GROUPBOX        "Bone Scale",IDC_STATIC,5,150,120,60
+    CONTROL         "Enable",IDC_EXPORT_BONE_SCALE,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,10,160,38,10
+    LTEXT           "Bone Reference Name extension:",IDC_STATIC,10,175,110,
+                    13,SS_CENTERIMAGE
+    EDITTEXT        IDC_EXPORT_BONE_SCALE_NAME_EXT,10,190,75,14,
                     ES_AUTOHSCROLL
 END
 
@@ -419,7 +426,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 353
         TOPMARGIN, 7
-        BOTTOMMARGIN, 193
+        BOTTOMMARGIN, 214
     END
 
     IDD_VEGETABLE, DIALOG

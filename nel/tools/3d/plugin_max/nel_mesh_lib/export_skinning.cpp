@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.15 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.16 2002/05/24 14:15:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,16 +146,59 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 		bone.UnheritScale=(flags&(INHERIT_SCL_X|INHERIT_SCL_Y|INHERIT_SCL_Z))!=0;
 	}
 
-	// ** Set default tracks
+	// **** Set default tracks
 
 	// Get the local matrix for the default pos
 	Matrix3 localTM (TRUE);
 
+
+	// To get the correct local Scale, we use an other bone as reference (if present)
+	INode	*referenceNode= NULL;
+	bool	exportScale= getScriptAppData (&node, NEL3D_APPDATA_EXPORT_BONE_SCALE, BST_UNCHECKED)==BST_CHECKED;
+	// Get the reference node
+	if(exportScale)
+	{
+		std::string	boneScaleNameExt= getScriptAppData (&node, NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT, "");
+		if(!boneScaleNameExt.empty())
+		{
+			std::string	boneScaleName= getName(node) + boneScaleNameExt;
+			// Get the reference node
+			referenceNode= _Ip->GetINodeByName(boneScaleName.c_str());
+		}
+	}
+
+	// Get the local matrix for the default pos.
 	// Root must be exported with Identity because path are setuped interactively in the root of the skeleton
-	if (id!=0)
-		getLocalMatrix (localTM, node, time);
+	if(id!=0)
+	{
+		// take it from reference if exist. 
+		if (referenceNode)
+		{
+			/* This is important To have correct NEL position default pos.
+				Let me explain: 
+					- Biped bones NodeTM have correct World Position, but NodeTM.Scale == 1,1,1.
+						We can get the bone scale from OffsetScale, this why we need a Reference Node, to perform the 
+						difference (because the Reference Node ofsset scale is not a 1,1,1 scale)
+					- Nel bones Pos are the LOCAL pos, and they INHERIT parent scale (like in Maya).
+						Nel UnheritScale is used to unherit the scale from father to the rotation/scale part of the son.
+				The problem is that if we export Position default pos from the current scaled "node", we will have the 
+				"already scaled from father Local Pos" from Biped. Instead we want the "not scaled from father Local Pos"
+				because NEL will do the "scaled from father" job in RealTime.
+				
+				So to get the correct local Position, an easy method is to get it from reference node, since this one suit 
+				our needs here.
+			*/
+			getLocalMatrix (localTM, *referenceNode, time);
+		}
+		else
+		{
+			getLocalMatrix (localTM, node, time);
+		}
+	}
 	else
+	{
 		int thisIsABodyControl=0;
+	}
 
 	// Decomp the matrix to get default animations tracks
 	NLMISC::CVector		nelScale;
@@ -163,13 +206,39 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 	NLMISC::CVector		nelPos;
 	decompMatrix (nelScale, nelRot, nelPos, localTM);
 
+	// Replace scale with ratio from reference value, if possible
+	if (referenceNode)
+	{
+
+		ScaleValue	scaleValue;
+		// get my Offset scale.
+		CVector		myScale;
+		scaleValue = node.GetObjOffsetScale();
+		myScale.x= scaleValue.s.x;
+		myScale.y= scaleValue.s.y;
+		myScale.z= scaleValue.s.z;
+
+		// get its Offset scale.
+		CVector		refScale;
+		scaleValue = referenceNode->GetObjOffsetScale();
+		refScale.x= scaleValue.s.x;
+		refScale.y= scaleValue.s.y;
+		refScale.z= scaleValue.s.z;
+
+		// Get The ratio as the result
+		nelScale.x= myScale.x / refScale.x;
+		nelScale.y= myScale.y / refScale.y;
+		nelScale.z= myScale.z / refScale.z;
+	}
+
 	// Set the default tracks
 	bone.DefaultScale=nelScale;
 	bone.DefaultRotQuat=nelRot;
 	bone.DefaultRotEuler=CVector (0,0,0);
 	bone.DefaultPos=nelPos;
 
-		// Get node bindpos matrix
+
+	// **** Get node bindpos matrix
 	Matrix3 worldTM;
 	bool matrixComputed=false;
 	if (mapBindPos)
@@ -191,7 +260,16 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 	// Compute the matrix the normal way ?
 	if (!matrixComputed)
 	{
-		worldTM=node.GetNodeTM (time);
+		// if we have a reference node, ie the one with the good original scale used for bindPos, must use it.
+		if (referenceNode)
+		{
+			worldTM= referenceNode->GetNodeTM (time);
+		}
+		// else use mine.
+		else
+		{
+			worldTM= node.GetNodeTM (time);
+		}
 	}
 
 	// Set the bind pos of the bone, it is invNodeTM;

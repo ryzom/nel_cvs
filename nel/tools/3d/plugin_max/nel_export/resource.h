@@ -183,8 +183,10 @@
 #define IDC_EXPORT_LIGHTMAP_NAME        1120
 #define IDC_SWT_WEIGHT                  1121
 #define IDC_EXPORT_LIGHTMAP_ANIMATED    1122
+#define IDC_EXPORT_BONE_SCALE_NAME_EXT  1122
 #define IDC_SWT                         1123
 #define IDC_SET_GLOBAL_LIGHT            1124
+#define IDC_EXPORT_BONE_SCALE           1124
 #define IDC_RESET_NAME                  1125
 #define IDC_CHECK_COLLISION             1126
 #define IDC_CHECK_COLLISION_EXTERIOR    1127

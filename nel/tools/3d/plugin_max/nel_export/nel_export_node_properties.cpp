@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.37 2002/05/13 16:49:21 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.38 2002/05/24 14:15:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -193,6 +193,9 @@ public:
 	// Radial normals
 	std::string				RadialNormals[NEL3D_RADIAL_NORMAL_COUNT];
 
+	// Skeleton Scale
+	int						ExportBoneScale;
+	std::string				ExportBoneScaleNameExt;
 
 	// Dialog
 	HWND					SubDlg[TAB_COUNT];
@@ -1589,6 +1592,10 @@ int CALLBACK MiscDialogCallback (
 							currentParam->InterfaceThreshold != -1.f ? toString(currentParam->InterfaceThreshold).c_str()
 																	 : ""
 						  );
+
+			// Skeleton Scale
+			SendMessage( GetDlgItem(hwndDlg, IDC_EXPORT_BONE_SCALE), BM_SETCHECK, currentParam->ExportBoneScale, 0);
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_BONE_SCALE_NAME_EXT), currentParam->ExportBoneScaleNameExt.c_str());
 		}
 		break;
 
@@ -1635,12 +1642,18 @@ int CALLBACK MiscDialogCallback (
 							{
 								currentParam->InterfaceThreshold = threshold;
 							}							
+
+							// Skeleton Scale
+							currentParam->ExportBoneScale= SendMessage( GetDlgItem(hwndDlg, IDC_EXPORT_BONE_SCALE), BM_GETCHECK, 0, 0);
+							GetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_BONE_SCALE_NAME_EXT), tmp, 512);
+							currentParam->ExportBoneScaleNameExt= tmp;
 						}
 					break;
 					case IDC_EXPORT_NOTE_TRACK:
 					case IDC_FLOATING_OBJECT:
 					case IDC_EXPORT_ANIMATED_MATERIALS:
 					case IDC_SWT:
+					case IDC_EXPORT_BONE_SCALE:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 						break;
@@ -2321,6 +2334,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		// ExportLodCharacter
 		param.ExportLodCharacter= CExportNel::getScriptAppData (node, NEL3D_APPDATA_CHARACTER_LOD, BST_UNCHECKED);
 
+		// Bone Scale
+		param.ExportBoneScale= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE, BST_UNCHECKED);
+		param.ExportBoneScaleNameExt= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT, "");
+
 
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
@@ -2494,6 +2511,13 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			// ExportLodCharacter
 			if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_CHARACTER_LOD, BST_UNCHECKED) != param.ExportLodCharacter)
 				param.ExportLodCharacter= BST_INDETERMINATE;
+
+			// Bone Scale
+			if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE, BST_UNCHECKED) != param.ExportBoneScale)
+				param.ExportBoneScale= BST_INDETERMINATE;
+			if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT, "") != param.ExportBoneScaleNameExt)
+				param.ExportBoneScaleNameExt= "";
+
 
 			// Next sel
 			ite++;
@@ -2680,6 +2704,13 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				// ExportLodCharacter
 				if(param.ExportLodCharacter!= BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_CHARACTER_LOD, param.ExportLodCharacter);
+
+				// Bone Scale
+				if(param.ExportBoneScale!= BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE, param.ExportBoneScale);
+				if ( (param.ExportBoneScaleNameExt != "") || (listNode.size()==1) )
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT, param.ExportBoneScaleNameExt);
+
 
 				// Next node
 				ite++;

@@ -531,6 +531,14 @@ SOURCE=..\include\nel\3d\shape.h
 # End Source File
 # Begin Source File
 
+SOURCE=R:\code\nel\src\3d\shape_bank.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\3d\shape_bank.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\skeleton_shape.cpp
 # End Source File
 # Begin Source File

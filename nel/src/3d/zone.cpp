@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.46 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: zone.cpp,v 1.47 2001/08/23 12:32:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -323,6 +323,7 @@ void			CPatchInfo::CBindInfo::serial(NLMISC::IStream &f)
 	int		i;
 	uint	ver= f.serialVersion(0);
 	f.serial(NPatchs);
+	nlassert ( (NPatchs==0) | (NPatchs==1) | (NPatchs==2) | (NPatchs==4) | (NPatchs==5) );
 	f.serial(ZoneId);
 	for(i=0;i<4;i++)
 		f.serial(Next[i]);

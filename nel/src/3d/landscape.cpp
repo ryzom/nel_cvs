@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.71 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: landscape.cpp,v 1.72 2001/08/23 12:32:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2403,8 +2403,9 @@ CTileNoiseMap	*CLandscape::getTileNoiseMap(uint16 tileId, uint tileSubNoise)
 		return &test;
 	else
 		return &testFull;*/
-	return &testEmpty;
+	//return &testEmpty;
 	//return &testFull;
+	return &test;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.1 2001/08/22 14:44:02 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.2 2001/08/23 12:32:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,8 +58,6 @@ void CZoneLighter::init ()
 		// Precalc sinP and cosP
 		float sinP=(float)(sin((Pi/4)*(i+0.5))-sin((Pi/4)*(i-0.5)));
 		float cosP=(float)(cos((Pi/4)*(i-0.5))-cos((Pi/4)*(i+0.5)));
-		/*float sinP=(float)(sin((Pi/4)*(i+1))-sin((Pi/4)*(i)));
-		float cosP=(float)(cos((Pi/4)*(i))-cos((Pi/4)*(i+1)));*/
 
 		for (uint phi=0; phi<256; phi++)
 		{
@@ -451,26 +449,11 @@ void CZoneLighter::processCalc (uint process, uint firstPatch, uint lastPatch, c
 
 			// Resize shadow array
 			_ShadowArray[patch].resize (lumelCount);
-			//_ShadowArray[patch].clearAll();
 
 			// For each lumel
 			for (uint lumel=0; lumel<lumelCount; lumel++)
 			{
 				float factor=0;
-				// Ray trace this lumel
-				/*if (rayTrace (lumels[lumel].Position, lumels[lumel].Normal, lumels[lumel].S, lumels[lumel].T, patch, factor))
-				{
-					// Shadowed
-					_ShadowArray[patch].set (lumel);
-
-					// Shadowed
-					patchInfo.Lumels[lumel]=(uint)(factor*255);
-				}
-				else
-				{
-					// Not shadowed
-					patchInfo.Lumels[lumel]=255;
-				}*/
 				rayTrace (lumels[lumel].Position, lumels[lumel].Normal, lumels[lumel].S, lumels[lumel].T, patch, factor, *shapeArray, *shapeArrayTmp, process);
 				patchInfo.Lumels[lumel]=(uint)(factor*255);
 			}
@@ -532,7 +515,6 @@ void CZoneLighter::processCalc (uint process, uint firstPatch, uint lastPatch, c
 			std::vector<CLumelDescriptor> &lumels=_Lumels[patch];
 
 			// Shadow array
-			//CBitSet &shadowPatch=_ShadowArray[patch];
 			vector<uint8> &shadowPatch=_ShadowArray[patch];
 
 			// Go for each lumel
@@ -815,7 +797,7 @@ void CZoneLighter::testRaytrace (const CVector& position, const CVector& normal,
 				break;
 			}
 		}
-		else // if (((*it)->Plane.getNormal()*(-_LightDirection))>0)
+		else
 		{
 			// Triangle clippable ?
 			const NLMISC::CTriangle &triangle=(*it)->Triangle;
@@ -1164,7 +1146,7 @@ sint16 CZoneLighter::_GetNormalDeltaT[4]={ 0, 1, 0, -1 };
 
 void CZoneLighter::getNormal (const CPatch *pPatch, sint16 lumelS, sint16 lumelT, vector<CPatchUVLocator> &locator, 
 								 const vector<CPatch::CBindInfo> &bindInfo, const vector<bool> &binded, set<uint64>& visited, 
-								 sint deltaS, sint deltaT, uint rotation, const CBezierPatch &bezierPatch, uint lastEdge)
+								 float deltaS, float deltaT, uint rotation, const CBezierPatch &bezierPatch, uint lastEdge)
 {
 	// Build a desc srructure
 	uint64 id=(uint64)lumelS|(((uint64)lumelT)<<16)|(((uint64)pPatch->getPatchId())<<32)|(((uint64)pPatch->getZone()->getZoneId())<<48);
@@ -1173,8 +1155,8 @@ void CZoneLighter::getNormal (const CPatch *pPatch, sint16 lumelS, sint16 lumelT
 	if (visited.insert (id).second)
 	{
 		// Clip
-		sint sqDist=deltaS*deltaS+deltaT*deltaT;
-		if ( sqDist < (sint)_GetNormalSqRadius )
+		float sqDist=deltaS*deltaS+deltaT*deltaT;
+		if ( sqDist < 1 )
 		{
 			// Continue...
 
@@ -1186,20 +1168,8 @@ void CZoneLighter::getNormal (const CPatch *pPatch, sint16 lumelS, sint16 lumelT
 			_GetNormalBorderS[2]=orderSx4-1;
 			_GetNormalBorderT[1]=orderTx4-1;
 
-			if (1) //pPatch!=_GetNormalPatch)
-			{
-				// Eval normal
-				CVector normal=bezierPatch.evalNormal ( ((float)lumelS+0.5f)/(float)orderSx4, ((float)lumelT+0.5f)/(float)orderTx4 );
-
-				// Calc factor
-				/*float factor=(float)(_GetNormalRadius-(float)sqrt (sqDist))/(float)_GetNormalRadius;
-				nlassert (factor>=0.f);
-				nlassert (factor<=1.f);
-				normal*=easineasout (factor);*/
-
-				// Add normal
-				_GetNormalNormal+=normal;
-			}
+			// Add normal
+			_GetNormalNormal+=bezierPatch.evalNormal ( ((float)lumelS+0.5f)/(float)orderSx4, ((float)lumelT+0.5f)/(float)orderTx4 );
 
 			// For the four neighbors
 			for (uint edge=0; edge<4; edge++)
@@ -1219,10 +1189,8 @@ void CZoneLighter::getNormal (const CPatch *pPatch, sint16 lumelS, sint16 lumelT
 						if (bind&&smooth)
 						{
 							// Lumel coord
-							/*CVector2f lumelCoord ( ((float)(lumelS+_GetNormalDeltaS[edge])+0.5f)/4, 
-								((float)(lumelT+_GetNormalDeltaT[edge])+0.5f)/4 );*/
-							CVector2f lumelCoord ( ((float)lumelS+0.5f)/4, 
-								((float)lumelT+0.5f)/4 );
+							CVector2f lumelCoord ( ((float)(lumelS+_GetNormalDeltaS[edge])+0.5f)/4, 
+								((float)(lumelT+_GetNormalDeltaT[edge])+0.5f)/4 );
 
 							// Get neighbor pixel
 							uint otherPatch=locator[edge].selectPatch(lumelCoord);
@@ -1264,8 +1232,8 @@ void CZoneLighter::getNormal (const CPatch *pPatch, sint16 lumelS, sint16 lumelT
 
 							// Next lumel
 							getNormal (patchOut, newLumelS, newLumelT, _Locator[zoneId][patchId], _BindInfo[zoneId][patchId], 
-								_Binded[zoneId][patchId], visited, deltaS/*+_GetNormalDeltaS[globalDirection]*/, 
-								deltaT/*+_GetNormalDeltaT[globalDirection]*/, newRotation, NewBezierPatch, newEdge);
+								_Binded[zoneId][patchId], visited, deltaS+_GetNormalDeltaS[globalDirection], 
+								deltaT+_GetNormalDeltaT[globalDirection], newRotation, NewBezierPatch, newEdge);
 						}
 					}
 					else
@@ -1279,121 +1247,6 @@ void CZoneLighter::getNormal (const CPatch *pPatch, sint16 lumelS, sint16 lumelT
 		}
 	}
 }
-
-// ***************************************************************************
-/*
-CVector CZoneLighter::getNormal (uint edge, float s, float t, const vector<bool> &binded, 
-								 vector<CPatchUVLocator> &locator, vector<CPatch::CBindInfo> &bindInfo, 
-								 const CPatch *pPatch, set<const CPatch*> &visited)
-{
-	// Binded and smoothed ?
-	bool bind=binded[edge];
-	bool smooth=pPatch->getSmoothFlag (edge);
-	if (bind&&smooth)
-	{
-		// Lumel coord
-		CVector2f lumelCoord (s*(float)pPatch->getOrderS(), t*(float)pPatch->getOrderT());
-		uint otherPatch=locator[edge].selectPatch(lumelCoord);
-
-		// Get uv
-		CVector2f neighborUV;
-		const CPatch *patchOut;
-		locator[edge].locateUV (lumelCoord, otherPatch, patchOut, neighborUV);
-
-		// Already visited ?
-		if (visited.insert (patchOut).second)
-		{
-			// Unpack output patch
-			CBezierPatch *bezierPatch=patchOut->unpackIntoCache ();
-
-			// Eval normal
-			CVector normal=bezierPatch->evalNormal (neighborUV.x/(float)patchOut->getOrderS(), neighborUV.y/(float)patchOut->getOrderT());
-
-			// Get following edge
-			uint nextEdge;
-			for (uint i=0; i<=(uint)bindInfo[edge].NPatchs; i++)
-			{
-				// Good patch ?
-				if (bindInfo[edge].Next[i]==patchOut)
-				{
-					// Get its edge
-					nextEdge=bindInfo[edge].Edge[i];
-					break;
-				}
-			}
-			
-			// Must found it
-			nlassert (i!=(uint)bindInfo[edge].NPatchs);
-
-			// Order of the new patch
-			uint outOrderS=patchOut->getOrderS();
-			uint outOrderT=patchOut->getOrderT();
-
-			// Is this a corner ?
-			bool cornerFlag[4]={ false, false, false, false};
-
-			if (fabs (neighborUV.x)<0.001)
-			{
-				neighborUV.x=0;
-				cornerFlag[0]=true;
-			}
-			if (fabs (neighborUV.y-(float)outOrderT)<0.001)
-			{
-				neighborUV.y=(float)outOrderT;
-				cornerFlag[1]=true;
-			}
-			if (fabs (neighborUV.x-(float)outOrderS)<0.001)
-			{
-				neighborUV.x=(float)outOrderS;
-				cornerFlag[2]=true;
-			}
-			if (fabs (neighborUV.y)<0.001)
-			{
-				neighborUV.y=0;
-				cornerFlag[3]=true;
-			}
-
-			// look for corner number
-			uint corner;
-			for (corner=0; corner<4; corner++)
-			{
-				// This corner and the next ?
-				if (cornerFlag[corner]&&cornerFlag[(corner-1)&0x3])
-					break;
-			}
-
-			// This is a corner ?
-			if (corner<4)
-			{
-				// Find other edge
-				if (corner==nextEdge)
-				{
-					// Previous edge
-					nextEdge=(nextEdge-1)&0x3;
-				}
-				else
-				{
-					if (corner==((nextEdge+1)&0x3))
-						// Next edge
-						nextEdge=(nextEdge+1)&0x3;
-				}
-
-				// Next patch Id
-				uint patchOutId=patchOut->getPatchId ();
-				uint zoneOutId=_ZoneId[patchOut->getZone()->getZoneId ()];
-
-				// Add next normal
-				normal+=getNormal (nextEdge, neighborUV.x/(float)outOrderS, neighborUV.y/(float)outOrderT, _Binded[zoneOutId][patchOutId], 
-									 _Locator[zoneOutId][patchOutId], _BindInfo[zoneOutId][patchOutId], 
-									 patchOut, visited);
-
-			}
-			// Return the result
-			return normal;
-		}
-	}
-	return CVector (0,0,0);
-}*/
 
 // ***************************************************************************
 
@@ -1478,123 +1331,6 @@ void CZoneLighter::excludeAllPatchFromRefineAll (CLandscape &landscape, vector<u
 		}
 	}
 }
-
-// ***************************************************************************
-
-/*void CZoneLighter::getNormal (sint lumelS, sint lumelT, sint orderLumelS, sint orderLumelT, const std::vector<CPatch::CBindInfo>& bindInfo, 
-							  const std::vector<CPatchUVLocator>& locator, sint smoothRadius)
-{
-	// Clipped flags
-	bool clipped[4] = { (lumelS>smoothRadius),  (lumelT<orderLumelT-smoothRadius), (lumelS<orderLumelS-smoothRadius), (lumelT>smoothRadius) };
-
-	// For each edge
-	for (uint edge=0; edge<4; edge++)
-	{
-		// If edge not clipped
-		if (!clipped[edge])
-		{
-			// For each sub edge
-			uint subEdgeCount=bindInfo[edge].NPatchs;
-			for (uint subEdge=0; subEdge<subEdgeCount; subEdge++)
-			{
-				// S and lumelT to evaluate
-				sint sSub=lumelS;
-				sint tSub=lumelT;
-
-				// Wrap coordinates
-				switch (subEdgeCount)
-				{
-				case 1:
-					{
-						// One sub edge, no wrapping
-						minS=0;
-						maxS=orderLumelS;
-						minT=0;
-						maxT=orderLumelT;
-					}
-					break;
-				case 2:
-				case 4:
-					{
-						// Two sub edges, clamping
-						switch (edge)
-						{
-						// Left and right
-						case 0:
-						case 2:
-							{
-								// Size of a part
-								sint partEdge;
-								if (subEdgeCount==2)
-									partEdge=orderLumelT>>1;
-								else
-									partEdge=orderLumelT>>2;
-
-								// no clamping on T
-								minS=0;
-								maxS=orderLumelS;
-								if (edge==0)
-								{
-									// Left
-									minT=partEdge*subEdge;
-								}
-								else
-								{
-									// Right
-									minT=halfZone*(subEdgeCount-subEdge-1);
-								}
-								maxT=minT+partEdge;
-							}
-							break;
-						// Top and bottom
-						case 1:
-						case 3:
-							{
-								// Size of a part
-								sint partEdge;
-								if (subEdgeCount==2)
-									partEdge=orderLumelS>>1;
-								else
-									partEdge=orderLumelS>>2;
-
-								// no clamping on S
-								minT=0;
-								maxT=orderLumelT;
-								if (edge==1)
-								{
-									// Bottom
-									minS=partEdge*subEdge;
-								}
-								else
-								{
-									// Top
-									minS=halfZone*(subEdgeCount-subEdge-1);
-								}
-								maxS=minS+partEdge;
-							}
-							break;
-						}
-					}
-					break;
-				}
-
-				// Clamp the coordinates
-				clamp (sSub, minS, maxS);
-				clamp (tSub, minT, maxT);
-
-				// Last clip for this point
-				sint deltaS=lumelS-sSub;
-				sint deltaT=lumelT-tSub;
-				if ((deltaS*deltaS+deltaT*deltaT)<smoothRadius*smoothRadius)
-				{
-					// Eval the normal at this point
-
-				}
-			}
-		}
-		
-	}
-}*/
 
 // ***************************************************************************
 
@@ -1933,7 +1669,7 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 		}
 	}
 
-	// *** Now, finalise patch informations for shaodw source positions
+	// *** Now, finalise patch informations for shadow source positions
 
 	// For each patches
 	uint patchCount=landscape.getZone(_ZoneToLight)->getNumPatchs();
@@ -2083,73 +1819,6 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 		vector<CPatch::CBindInfo> &bindInfo=_BindInfo[zoneNumber][patch];
 		CBezierPatch &bezierPatch=_BezierPatch[zoneNumber][patch];
 
-		// Sample 16 normales over the patch
-/*		CVector sampledAndSmoothedNormals[4][4];
-		for (uint t=0; t<4; t++)
-		{
-			// Float t
-			float fT=(float)t/3.f;
-			for (uint s=0; s<4; s++)
-			{
-				// Float s
-				float fS=(float)s/3.f;
-				
-				// Reset the normal
-				sampledAndSmoothedNormals[s][t].set (0,0,0);
-
-				set<const CPatch*> setPatch;
-				setPatch.insert (pPatch);
-				// Top ?
-				if (t==0)
-				{
-					// Neighbor normal
-					if (s==0)
-						sampledAndSmoothedNormals[s][t]+=getNormal (3, 0, 0, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-					else if (s==3)
-						sampledAndSmoothedNormals[s][t]+=getNormal (3, 1, 0, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-					else
-						sampledAndSmoothedNormals[s][t]+=getNormal (3, fS, 0, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-				}
-				// Bottom ?
-				else if (t==3)
-				{
-					if (s==0)
-						sampledAndSmoothedNormals[s][t]+=getNormal (1, 0, 1, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-					else if (s==3)
-						sampledAndSmoothedNormals[s][t]+=getNormal (1, 1, 1, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-					else
-						sampledAndSmoothedNormals[s][t]+=getNormal (1, fS, 1, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-				}
-
-				// Left ?
-				if (s==0)
-				{
-					if (t==0)
-						sampledAndSmoothedNormals[s][t]+=getNormal (0, 0, 0, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-					else if (t==3)
-						sampledAndSmoothedNormals[s][t]+=getNormal (0, 0, 1, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-					else
-						sampledAndSmoothedNormals[s][t]+=getNormal (0, 0, fT, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-				}
-				// Right ?
-				else if (s==3)
-				{
-					if (t==0)
-						sampledAndSmoothedNormals[s][t]+=getNormal (2, 1, 0, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-					else if (t==3)
-						sampledAndSmoothedNormals[s][t]+=getNormal (2, 1, 1, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-					else
-						sampledAndSmoothedNormals[s][t]+=getNormal (2, 1, fT, binded, locator, bindInfo, pPatch, setPatch, CVector::Null, 0);
-				}
-
-				// Evaluate normal
-				sampledAndSmoothedNormals[s][t]+=copy.evalNormal (fS, fT);
-
-				// Normalise it
-				sampledAndSmoothedNormals[s][t].normalize ();
-			}
-		}*/
-
 		// Renormalize
 		nlassert (isPowerOf2 (orderS));
 		nlassert (isPowerOf2 (orderT));
@@ -2157,140 +1826,171 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 		uint powerT=getPowerOf2 (orderT);
 		uint lumelS=4<<powerS;
 		uint lumelT=4<<powerT;
+
+		// Sample edge normal
+		CVector normals[NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1][4];
+		uint sFixed[4] = { 0, -1, lumelS-1, -1 };
+		uint tFixed[4] = { -1, lumelT-1, -1, 0 };
+		float sOri[4] = { 0, -1, (float)lumelS, -1 };
+		float tOri[4] = { -1, (float)lumelT, -1, 0 };
+		for (uint edge=0; edge<4; edge++)
+		{
+			// s and t
+			uint count=(edge&1)?lumelS:lumelT;
+			for (uint lumel=0; lumel<=count; lumel++)
+			{
+				// Start coordinates
+				float origineS;
+				float origineT;
+				uint startS;
+				uint startT;
+				if (edge&1)
+				{
+					if (lumel==count)
+						startS=count-1;
+					else
+						startS=lumel;
+					startT=tFixed[edge];
+					origineS=(float)lumel;
+					origineT=tOri[edge];
+				}
+				else
+				{
+					if (lumel==count)
+						startT=count-1;
+					else
+						startT=lumel;
+					startS=sFixed[edge];
+					origineT=(float)lumel;
+					origineS=sOri[edge];
+				}
+				_GetNormalNormal=CVector::Null;
+				set<uint64> visitedLumels;
+				getNormal (pPatch, startS, startT, locator, bindInfo, binded, visitedLumels, 
+					startS+0.5f-origineS, startT+0.5f-origineT, 0, bezierPatch);
+				_GetNormalNormal.normalize ();
+				normals[lumel][edge]=_GetNormalNormal;
+			}
+
+			// Smooth the corners
+#define BLUR_SIZE 4
+			for (uint i=1; i<BLUR_SIZE; i++)
+			{
+				float value=(float)i/BLUR_SIZE;
+				value=easineasout(value);
+				normals[i][edge]=normals[0][edge]*(1-value)+normals[i][edge]*value;
+				normals[i][edge].normalize();
+				normals[count-i][edge]=normals[count][edge]*(1-value)+normals[count-i][edge]*value;
+				normals[count-i][edge].normalize();
+			}
+		}
+		
 		for (uint t=0; t<lumelT; t++)
 		for (uint s=0; s<lumelS; s++)
 		{
 			// Lumel index
 			uint lumelIndex=s+t*lumelS;
 
-			// *** Calc the normal
-
-			// Normalise the normal
-//			lumels[lumelIndex].Normal.normalize();
-
-			// Normal index
-
-/*			
-			float ffS=(float)(s*3)/lumelS;
-			float ffT=(float)(t*3)/lumelT;
-
-			uint nS=(uint)ffS;
-			uint nT=(uint)ffT;
-			float intNS=ffS-(float)nS;
-			float intNT=ffT-(float)nT;
-			intNS=easineasout(intNS);
-			intNT=easineasout(intNT);
-			nlassert (nS<3);
-			nlassert (nT<3);
-			nlassert (intNS<1);
-			nlassert (intNT<1);
-			nlassert (intNS>=0);
-			nlassert (intNT>=0);
-
-			// Get the noise free normal
-			CVector realNormal=copy.evalNormal ((float)s+0.5f/(float)lumelS, (float)t+0.5f/(float)lumelT);
-
-			// Compute difference between tesseleted normal and noise free normal
-			CVector deltaNormal=lumels[lumelIndex].Normal-realNormal;
-
-			// Compute an interpolated normal from the 4x4 normal array
+			// *** Calc the smoothed normal
 			
-		
-			CVector interpolatedNormal=
-				(
-				(sampledAndSmoothedNormals[nS][nT]*(1-intNS)+sampledAndSmoothedNormals[nS+1][nT]*intNS)*(1-intNT)+
-				(sampledAndSmoothedNormals[nS][nT+1]*(1-intNS)+sampledAndSmoothedNormals[nS+1][nT+1]*intNS)*intNT
-				);
-			interpolatedNormal.normalize ();
-*/
-
-
-
-/*
-				// Float s
-				float fS=(float)s/(float)lumelS;
-				float fT=(float)t/(float)lumelT;
-				
-				// Reset the normal
-				interpolatedNormal.set (0,0,0);
-
-				set<const CPatch*> setPatch;
-				setPatch.insert (pPatch);
-				// Top ?
-				if (t==0)
-				{
-					// Neighbor normal
-					if (s==0)
-						interpolatedNormal+=getNormal (3, 0, 0, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-					else if (s==lumelS)
-						interpolatedNormal+=getNormal (3, 1, 0, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-					else
-						interpolatedNormal+=getNormal (3, fS, 0, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-				}
-				// Bottom ?
-				else if (t==lumelT)
-				{
-					if (s==0)
-						interpolatedNormal+=getNormal (1, 0, 1, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-					else if (s==lumelS)
-						interpolatedNormal+=getNormal (1, 1, 1, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-					else
-						interpolatedNormal+=getNormal (1, fS, 1, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-				}
-
-				// Left ?
-				if (s==0)
-				{
-					if (t==0)
-						interpolatedNormal+=getNormal (0, 0, 0, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-					else if (t==lumelT)
-						interpolatedNormal+=getNormal (0, 0, 1, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-					else
-						interpolatedNormal+=getNormal (0, 0, fT, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-				}
-				// Right ?
-				else if (s==lumelS)
-				{
-					if (t==0)
-						interpolatedNormal+=getNormal (2, 1, 0, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-					else if (t==lumelT)
-						interpolatedNormal+=getNormal (2, 1, 1, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-					else
-						interpolatedNormal+=getNormal (2, 1, fT, binded, locator, bindInfo, pPatch, setPatch, lumels[lumelIndex].Position);
-				}
-
-				interpolatedNormal+=copy.evalNormal (fS, fT);
-
-				// Normalise it
-				interpolatedNormal.normalize ();
-*/
-				// Add difference to the interpolated normal
-				/*interpolatedNormal+=deltaNormal;
-				interpolatedNormal.normalize ();*/
-
-			uint blurSize=4;
-			if (0) //(s<blurSize)||(t<blurSize)||(s>lumelS-blurSize)||(t>lumelT-blurSize))
+			// For each edge
+			CVector normalS=bezierPatch.evalNormal (((float)s+0.5f)/(float)lumelS, ((float)t+0.5f)/(float)lumelT);
+			float sFactor=0;
+			CVector normalT=normalS;
+			float tFactor=0;
+			bool sGood=false, tGood=false;
+			if (s<BLUR_SIZE)
 			{
-				// Init get normal
-				_GetNormalNormal=CVector::Null;
-				_GetNormalRadius=blurSize;
-				_GetNormalSqRadius=blurSize*blurSize;
-				_GetNormalPatch=pPatch;
+				sGood=true;
+				// Average the two normals
+				CVector average=normals[t][0];
+				average+=normals[t+1][0];
+				average/=2;
 
-				// Get the normal
-				set<uint64> visitedLumels;
-				getNormal (pPatch, s, t, locator, bindInfo, binded, visitedLumels, 0, 0, 0, bezierPatch);
-
-				// Final normal
-				// toremove
-				//_GetNormalNormal+=bezierPatch.evalNormal (((float)s+0.5f)/(float)lumelS, ((float)t+0.5f)/(float)lumelT);
-				_GetNormalNormal.normalize ();
-				lumels[lumelIndex].Normal=_GetNormalNormal;
+				// Blend
+				float value=s+0.5f;
+				sFactor=BLUR_SIZE-value;
+				value/=BLUR_SIZE;
+				value=easineasout(value);
+				normalS=(normalS*value+average*(1-value));
+				normalS.normalize();
 			}
+			if (s>=lumelS-BLUR_SIZE)
+			{
+				sGood=true;
+				// Average the two normals
+				CVector average=normals[t][2];
+				average+=normals[t+1][2];
+				average/=2;
+
+				// Blend
+				float value=s+0.5f;
+				sFactor=BLUR_SIZE-(lumelS-value);
+				value=(lumelS-value)/BLUR_SIZE;
+				value=easineasout(value);
+				normalS=(normalS*value+average*(1-value));
+				normalS.normalize();
+			}
+			if (t<BLUR_SIZE)
+			{
+				tGood=true;
+				// Average the two normals
+				CVector average=normals[s][3];
+				average+=normals[s+1][3];
+				average/=2;
+
+				// Blend
+				float value=t+0.5f;
+				tFactor=BLUR_SIZE-value;
+				value/=BLUR_SIZE;
+				value=easineasout(value);
+				normalT=(normalT*value+average*(1-value));
+				normalT.normalize();
+			}
+			if (t>=lumelT-BLUR_SIZE)
+			{
+				tGood=true;
+				// Average the two normals
+				CVector average=normals[s][1];
+				average+=normals[s+1][1];
+				average/=2;
+
+				// Blend
+				float value=t+0.5f;
+				tFactor=BLUR_SIZE-(lumelT-value);
+				value=((lumelT)-value)/BLUR_SIZE;
+				value=easineasout(value);
+				normalT=(normalT*value+average*(1-value));
+				normalT.normalize();
+			}
+
+			// The smooth normal
+			CVector smoothNormal;
+
+			if ((sGood)&&(tGood))
+			{
+				if ((sFactor!=BLUR_SIZE)||(tFactor!=BLUR_SIZE))
+					smoothNormal=normalS*(BLUR_SIZE-tFactor)+normalT*(BLUR_SIZE-sFactor);
+				else
+					smoothNormal=normalS+normalT;
+			}
+			else if (sGood)
+				smoothNormal=normalS;
 			else
-			{
-				lumels[lumelIndex].Normal=bezierPatch.evalNormal (((float)s+0.5f)/(float)lumelS, ((float)t+0.5f)/(float)lumelT);
-			}
+				smoothNormal=normalT;
+
+			// Normalize it
+			smoothNormal.normalize();
+
+			// The pure normal
+			CVector purNormal=bezierPatch.evalNormal (((float)s+0.5f)/(float)lumelS, ((float)t+0.5f)/(float)lumelT);
+
+			// Normalize the noisy normal
+			lumels[lumelIndex].Normal.normalize();
+
+			// Final normal
+			lumels[lumelIndex].Normal=lumels[lumelIndex].Normal-purNormal+smoothNormal;
+			lumels[lumelIndex].Normal.normalize ();
 
 			// *** Number of visit
 			uint visitedCount=visited[patch][lumelIndex];

@@ -1,7 +1,7 @@
 /** \file zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.1 2001/08/22 14:44:02 corvazier Exp $
+ * $Id: zone_lighter.h,v 1.2 2001/08/23 12:32:08 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -284,17 +284,11 @@ private:
 
 	// Ray trace a position
 	void rayTrace (const CVector& position, const CVector& normal, float s, float t, uint patchId, float &factor, CMultiShape &shape, CMultiShape &shapeTmp, uint cpu);
-
-	// Eval a normal in the neighborhood
-	/*CVector getNormal (uint edge, float s, float t, const std::vector<bool> &binded, 
-						std::vector<CPatchUVLocator> &locator, std::vector<CPatch::CBindInfo> &bindInfo, 
-						const CPatch *pPatch, std::set<const CPatch*> &visited, const CVector& positon, float dist);*/
 		
 	// Eval a normal in the neighborhood
 	void getNormal (const NL3D::CPatch *pPatch, sint16 lumelS, sint16 lumelT, std::vector<NL3D::CPatchUVLocator> &locator, 
-								 const std::vector<NL3D::CPatch::CBindInfo> &bindInfo, const std::vector<bool> &binded, 
-								 std::set<uint64>& visited, sint deltaS, sint deltaT, uint rotation, 
-								 const NL3D::CBezierPatch &bezierPatch, uint lastEdge=5);
+					const std::vector<NL3D::CPatch::CBindInfo> &bindInfo, const std::vector<bool> &binded, std::set<uint64>& visited, 
+					float deltaS, float deltaT, uint rotation, const NL3D::CBezierPatch &bezierPatch, uint lastEdge=5);
 
 	// Raytrace a triangle
 	void rayTraceTriangle (const NLMISC::CTriangle& toOverSample, NLMISC::CVector& normal, uint order, float s, float t, float &factor, uint &tested, uint patchId);

@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * <File description>
  *
- * $Id: win_displayer.cpp,v 1.7 2001/08/27 12:55:31 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.8 2001/08/29 12:47:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static vector<string> History;
 	static vector<string> CommandsToExecute;
-	static int	PosInHistory;
+	static uint	PosInHistory;
 
 	static MSGFILTER *pmf;
 	switch (message) 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.h,v 1.10 2000/10/12 13:55:34 lecroart Exp $
+ * $Id: debug.h,v 1.11 2000/10/23 17:06:31 lecroart Exp $
  *
  * This file contains all features that help us to debug applications/
  */
@@ -335,7 +335,7 @@ NULL
 #ifdef assert
 #undef assert
 #endif
-#define assert(a) you_must_not_use_assert__use_rk_assert__read_debug_h_file
+#define assert(a) you_must_not_use_assert__use_nl_assert__read_debug_h_file
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.4 2001/07/11 15:55:27 lecroart Exp $
+ * $Id: client.cpp,v 1.5 2001/07/11 16:09:03 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,8 @@
 #include "nel/misc/path.h"
 #include "nel/misc/i18n.h"
 
+#include "nel/misc/config_file.h"
+
 #include <string>
 #include <deque>
 
@@ -50,6 +52,9 @@
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
 
+
+#include "landscape.h"
+
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
@@ -59,6 +64,9 @@ using namespace NL3D;
 //
 
 CConfigFile ConfigFile;
+
+UDriver		*Driver;
+UScene		*Scene;
 
 //
 // Main
@@ -82,43 +90,51 @@ int main(int argc, char **argv)
 	if (dataPath[dataPath.size()-1] != '/') dataPath += '/';
 	CPath::addSearchPath (dataPath);
 //	CPath::addSearchPath (dataPath + "zones/");
-		
+
 	// Create a driver
-	UDriver	*pDriver=UDriver::createDriver();
+	Driver=UDriver::createDriver();
 
 	// Text context
-	pDriver->setDisplay (UDriver::CMode(640, 480, 0));
-	pDriver->setFontManagerMaxMemory (2000000);
+	Driver->setDisplay (UDriver::CMode(640, 480, 0));
+	Driver->setFontManagerMaxMemory (2000000);
 
-	UTextContext *textContext=pDriver->createTextContext (ConfigFile.getVar("FontName").asString ());
+	UTextContext *textContext=Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
 	textContext->setHotSpot (UTextContext::TopLeft);
 	textContext->setColor (CRGBA (255,255,255));
 	textContext->setFontSize (12);
 
 	// Create a scene
-	UScene *pScene=pDriver->createScene();
+	Scene=Driver->createScene();
+
+	// Init the landscape using the previously created UScene
+	initLandscape();
 
 
-	while (pDriver->isActive() && (!pDriver->AsyncListener.isKeyPushed (KeyESCAPE)))
+	while (Driver->isActive() && (!Driver->AsyncListener.isKeyPushed (KeyESCAPE)))
 	{
 		// Clear
-		pDriver->clearBuffers (CRGBA (64,64,64,0));
+		Driver->clearBuffers (CRGBA (64,64,64,0));
+
+		// Update the landscape
+		updateLandscape();
 
 		// Render
-		pScene->render ();
+		Scene->render ();
 
 		// Output text
 		textContext->printfAt (0,1,"flub");
 
 		// Swap
-		pDriver->swapBuffers ();
+		Driver->swapBuffers ();
 
 		// Pump messages
-		pDriver->EventServer.pump();
+		Driver->EventServer.pump();
 
 	}
 
-	delete pDriver;
+	releaseLandscape();
+
+	delete Driver;
 
 	return EXIT_SUCCESS;
 }

@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.3 2002/04/26 16:07:45 besson Exp $
+ * $Id: shape_bank.h,v 1.4 2002/05/02 12:41:40 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,17 @@ class CShapeBank
 {
 public:
 
-	enum TShapeState { NotPresent, Present, ErrorInAsyncLoading };
+	/// \name State of a shape
+	//@{
+	/** NotPresent : Not present in the bank
+	  * Present : Present in the bank and ready to be used
+	  * AsyncLoad_Error : Asynchronous loading failed
+	  * AsyncLoad_Shape : Asynchronous loading is currently loading the .shape file, textures and lightmaps
+	  * AsyncLoad_Texture : Asynchronous loading is currently uploading textures and lightmaps to VRAM
+	  */
+	enum TShapeState {	NotPresent, Present, 
+						AsyncLoad_Error, AsyncLoad_Shape, AsyncLoad_Texture, AsyncLoad_Ready, AsyncLoad_Delete };
+	//@}
 
 	CShapeBank();
 	~CShapeBank();
@@ -81,9 +91,11 @@ public:
 	/** Load the corresponding file from disk asynchronously and add it to the bank.
 	 * The driver passed to this function is used to know if we have to load the textures.
 	 */
-	void			loadAsync (const std::string &shapeName, IDriver *pDriver);
+	void			loadAsync (const std::string &shapeName, IDriver *pDriver, bool *bSignal=NULL);
 	void			cancelLoadAsync (const std::string &shapeName);
 	bool			isShapeWaiting ();
+	/// processWaitingShapes must be done one time per frame
+	void			processWaitingShapes ();
 
 	/// Add directly a shape to the bank. If the shape name is already used do nothing.
 	void			add (const std::string &shapeName, IShape* shape);
@@ -119,8 +131,24 @@ private:
 	typedef		std::map<std::string, PShape>	TShapeMap;
 	TShapeMap	ShapeMap;
 
-	typedef		std::multimap< std::string, std::pair<IShape*, uint32> > TWaitingShapesMMap;
-	TWaitingShapesMMap	WaitingShapes;
+	struct CWaitingShape
+	{
+		IShape *ShapePtr; // Do not work with this value that is shared between threads
+		uint32 RefCnt;
+		TShapeState State;
+		bool *Signal;// To signal when all is done
+		uint32 UpTextProgress; // Upload Texture progress
+		CWaitingShape (bool *bSignal = NULL)
+		{
+			State = AsyncLoad_Shape;
+			RefCnt = 1;
+			ShapePtr = NULL;
+			Signal = bSignal;
+			UpTextProgress = 0;
+		}
+	};
+	typedef		std::map< std::string, CWaitingShape > TWaitingShapesMap;
+	TWaitingShapesMap	WaitingShapes;
 
 	IDriver *_pDriver;
 	//@}

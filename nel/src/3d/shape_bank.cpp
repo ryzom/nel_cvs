@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.12 2002/04/26 16:07:45 besson Exp $
+ * $Id: shape_bank.cpp,v 1.13 2002/05/02 12:41:40 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,89 +125,181 @@ void CShapeBank::release(IShape* pShp)
 
 // ***************************************************************************
 
-CShapeBank::TShapeState CShapeBank::isPresent(const string &shapeName)
+void CShapeBank::processWaitingShapes ()
 {
-	bool bError = false;
-	// Process the waiting shapes
-	TWaitingShapesMMap::iterator wsmmIt = WaitingShapes.begin();
+	const uint32 MaxUploadPerFrame = 64*1024;
+	uint32 nTotalUploaded = 0;
+	TWaitingShapesMap::iterator wsmmIt = WaitingShapes.begin();
 	while( wsmmIt != WaitingShapes.end() )
 	{
-		IShape *pShp = wsmmIt->second.first;
+		const string &shapeName = wsmmIt->first;
+		CWaitingShape &rWS = wsmmIt->second;
+		IShape *pShp = rWS.ShapePtr; // Take care this value is shared between thread so copy it in a local variable first
 
-		if( pShp != NULL )
+		switch (rWS.State)
 		{
-			// Is an error during async loading ?
-			if (pShp == (IShape*)-1)
-			{
-				// Delete the waiting shape
-				TWaitingShapesMMap::iterator delIt = wsmmIt;
-				++wsmmIt;
-				WaitingShapes.erase (delIt);				
-				bError = true;
-				continue;
-			}
-
-			add(wsmmIt->first, pShp);
-
-			// Setup all textures of the shape
-			CMesh *pMesh = dynamic_cast<CMesh*>(pShp);
-			if( pMesh != NULL )
-			{
-				uint i,j;
-				uint nNbMat = pMesh->getNbMaterial();
-
-				for(i = 0; i < nNbMat; ++i)
+			case AsyncLoad_Shape: // Check if we can pass to the AsyncLoad_Texture state
+				if (pShp != NULL)
 				{
-					const CMaterial &rMat = pMesh->getMaterial(i);
-					// Parse all textures from this material and setup
-					for(j = 0; j < IDRV_MAT_MAXTEXTURES; ++j)
-					if( rMat.texturePresent(j) )
-					{
-						_pDriver->setupTexture(*rMat.getTexture(j));
-					}
+					if (pShp == (IShape*)-1)
+						rWS.State = AsyncLoad_Error;
+					else
+						rWS.State = AsyncLoad_Texture;
+				}
+			break;
 
-					// Do the same with lightmaps
-					if (rMat.getShader() == CMaterial::LightMap)
+			case AsyncLoad_Texture:
+			{
+				// Setup all textures and lightmaps of the shape
+				if (nTotalUploaded > MaxUploadPerFrame)
+					break;
+
+				CMesh *pMesh = dynamic_cast<CMesh*>(pShp);
+				if( pMesh != NULL )
+				{
+					uint8 j;
+					uint32 i, CurrentProgress = 0;
+					uint32 nNbMat = pMesh->getNbMaterial();
+
+					for (i = 0; i < nNbMat; ++i)
 					{
-						uint j = 0; ITexture *pText = rMat.getLightMap (j);
-						while (pText != NULL)
+						const CMaterial &rMat = pMesh->getMaterial(i);
+						// Parse all textures from this material and setup
+						for (j = 0; j < IDRV_MAT_MAXTEXTURES; ++j)
 						{
-							_pDriver->setupTexture (*pText);
-							++j; pText = rMat.getLightMap (j);
+							if (CurrentProgress >= rWS.UpTextProgress)
+							{
+								if (rMat.texturePresent(j))
+								{
+									if (!_pDriver->isTextureExist(*rMat.getTexture(j)))
+									{
+										nTotalUploaded += rMat.getTexture(j)->getSize()*2;
+										_pDriver->setupTexture (*rMat.getTexture(j));
+									}
+								}
+								++rWS.UpTextProgress;
+							}
+							++CurrentProgress;
+							if (nTotalUploaded > MaxUploadPerFrame)
+								break;
 						}
+
+						if (nTotalUploaded > MaxUploadPerFrame)
+							break;
+
+						// Do the same with lightmaps
+						if (rMat.getShader() == CMaterial::LightMap)
+						{
+							uint j = 0; ITexture *pText = rMat.getLightMap (j);
+							while (pText != NULL)
+							{
+								if (CurrentProgress >= rWS.UpTextProgress)
+								{
+									if (!_pDriver->isTextureExist(*pText))
+									{
+										nTotalUploaded += pText->getSize()*2;
+										_pDriver->setupTexture (*pText);
+									}
+									++rWS.UpTextProgress;
+								}
+								++CurrentProgress;
+								++j; pText = rMat.getLightMap (j);
+								if (nTotalUploaded > MaxUploadPerFrame)
+									break;
+							}
+						}
+						if (nTotalUploaded > MaxUploadPerFrame)
+							break;
 					}
 				}
-			}
-			
-			// Delete the waiting shape
-			TWaitingShapesMMap::iterator delIt = wsmmIt;
-			++wsmmIt;
-			WaitingShapes.erase(delIt);
+				if (nTotalUploaded > MaxUploadPerFrame)
+					break;
+
+				rWS.State = AsyncLoad_Ready;
+			}				
+			break;
+
+			case AsyncLoad_Ready:
+				add (wsmmIt->first, pShp);
+				rWS.State = AsyncLoad_Delete;
+			break;
+
+			// The delete operation can take several frames to complete but this is not a problem
+
+			// For error do the same as delete but let the flag to error if a shape is asked just after 
+			// the error was found
+
+			case AsyncLoad_Error:
+			case AsyncLoad_Delete:
+				rWS.RefCnt -= 1;
+				if (rWS.RefCnt == 0)
+				{
+					// We have to signal if we are the last
+					bool *bSignal = rWS.Signal;
+					if (bSignal != NULL)
+					{
+						bool bFound = false;
+						TWaitingShapesMap::iterator wsmmIt2 = WaitingShapes.begin();
+						while (wsmmIt2 != WaitingShapes.end())
+						{
+							const string &shapeName2 = wsmmIt2->first;
+							if ((wsmmIt2->second.Signal == bSignal) && (shapeName2 != shapeName))
+							{
+								bFound = true;
+								break;
+							}
+							++wsmmIt2;
+						}
+						if (!bFound)
+							*bSignal = true;
+					}
+					TWaitingShapesMap::iterator delIt = wsmmIt;
+					++wsmmIt;
+					WaitingShapes.erase (delIt);
+				}
+				else
+				{
+					++wsmmIt;
+				}
+			break;
+
+			default:
+				nlstop; // This must never happen
+			break;
 		}
-		else
+
+		// The increment is done in the AsyncLoad_Delete and error processes
+		if ((rWS.State != AsyncLoad_Delete) && (rWS.State != AsyncLoad_Error))
 		{
 			++wsmmIt;
 		}
 	}
-	if (bError)
-		return ErrorInAsyncLoading;
-	// Is the shape is found so return Present
-	TShapeMap::iterator smIt = ShapeMap.find( shapeName );
-	if( smIt == ShapeMap.end() )
-		return NotPresent;
-	else
-		return Present;
 }
 
 // ***************************************************************************
 
-void CShapeBank::load(const string &shapeName)
+CShapeBank::TShapeState CShapeBank::isPresent (const string &shapeName)
+{
+	// Is the shape is found in the shape map so return Present
+	TShapeMap::iterator smIt = ShapeMap.find (shapeName);
+	if( smIt != ShapeMap.end() )
+		return Present;
+	// Look in the waiting shapes
+	TWaitingShapesMap::iterator wsmmIt = WaitingShapes.find (shapeName);
+	if (wsmmIt != WaitingShapes.end())
+		return wsmmIt->second.State; // AsyncLoad_*
+	return NotPresent;
+}
+
+// ***************************************************************************
+
+void CShapeBank::load (const string &shapeName)
 {
 	TShapeMap::iterator smIt = ShapeMap.find(shapeName);
 	if( smIt == ShapeMap.end() )
 	{
 		// If we are loading it asynchronously so we do not have to try to load it in sync mode
-		TWaitingShapesMMap::iterator wsmmIt = WaitingShapes.find (shapeName);
+		TWaitingShapesMap::iterator wsmmIt = WaitingShapes.find (shapeName);
 		if (wsmmIt != WaitingShapes.end())
 			return;
 		try
@@ -229,37 +321,38 @@ void CShapeBank::load(const string &shapeName)
 
 // ***************************************************************************
 
-void CShapeBank::loadAsync(const std::string &shapeName,IDriver *pDriver)
+void CShapeBank::loadAsync (const std::string &shapeName, IDriver *pDriver, bool *bSignal)
 {
 	TShapeMap::iterator smIt = ShapeMap.find(shapeName);
 	if (smIt != ShapeMap.end())
 		return;
 	_pDriver = pDriver; // Backup the pointer to the driver for later use
-	TWaitingShapesMMap::iterator wsmmIt = WaitingShapes.find(shapeName);
+	TWaitingShapesMap::iterator wsmmIt = WaitingShapes.find (shapeName);
 	if (wsmmIt != WaitingShapes.end())
 	{
 		// Add a reference to it
-		wsmmIt->second.second += 1;
+		CWaitingShape &rWS = wsmmIt->second;
+		rWS.RefCnt += 1;
 		return; // Do not load 2 shapes with the same names
 	}
-	//	nlinfo("loadasync %s", shapeName);
-	wsmmIt = WaitingShapes.insert (TWaitingShapesMMap::value_type(shapeName,make_pair((IShape*)NULL, 1)));
-	CAsyncFileManager::getInstance().loadMesh (shapeName, &(wsmmIt->second.first), pDriver);
+	wsmmIt = WaitingShapes.insert (TWaitingShapesMap::value_type(shapeName, CWaitingShape(bSignal))).first;
+	CAsyncFileManager::getInstance().loadMesh (shapeName, &(wsmmIt->second.ShapePtr), pDriver);
 }
 
 // ***************************************************************************
 
 void CShapeBank::cancelLoadAsync (const std::string &shapeName)
 {
-	TWaitingShapesMMap::iterator wsmmIt = WaitingShapes.find(shapeName);
+	TWaitingShapesMap::iterator wsmmIt = WaitingShapes.find(shapeName);
 	if (wsmmIt != WaitingShapes.end())
 	{
-		wsmmIt->second.second -= 1;
-		if (wsmmIt->second.second == 0)
+		wsmmIt->second.RefCnt -= 1;
+		if (wsmmIt->second.RefCnt == 0)
 		{
 			// nlinfo("unloadasync %s", shapeName);
-			if (CAsyncFileManager::getInstance().cancelLoadMesh (shapeName))
-				WaitingShapes.erase (wsmmIt); // Delete the waiting shape
+			CAsyncFileManager::getInstance().cancelLoadMesh (shapeName);
+			// TODO : Cancel the texture upload
+			WaitingShapes.erase (wsmmIt); // Delete the waiting shape
 		}
 	}
 }
@@ -276,7 +369,7 @@ bool CShapeBank::isShapeWaiting ()
 
 // ***************************************************************************
 
-void CShapeBank::add(const string &shapeName, IShape* pShp)
+void CShapeBank::add (const string &shapeName, IShape* pShp)
 {
 	// Is the shape name already used ?
 	TShapeMap::iterator smIt = ShapeMap.find( shapeName );

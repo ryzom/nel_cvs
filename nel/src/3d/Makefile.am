@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.94 2002/11/04 15:40:43 boucher Exp $
+# $Id: Makefile.am,v 1.95 2002/11/15 16:01:37 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -171,12 +171,16 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        load_balancing_trav.h \
                        lod_character_builder.cpp \
                        lod_character_builder.h \
+		       lod_character_instance.cpp \
+                       lod_character_instance.h \
                        lod_character_manager.cpp \
                        lod_character_manager.h \
                        lod_character_shape_bank.cpp \
                        lod_character_shape_bank.h \
                        lod_character_shape.cpp \
                        lod_character_shape.h \
+		       lod_character_texture.cpp \
+                       lod_character_texture.h \
                        logic_info.cpp \
                        material.cpp \
                        material.h \

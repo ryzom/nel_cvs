@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.18 2003/04/18 15:14:46 corvazier Exp $
+ * $Id: object_viewer_interface.h,v 1.19 2003/07/11 16:50:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,7 +92,7 @@ public:
 	virtual void setSingleAnimation (NL3D::CAnimation* pAnim, const char* name, uint instance)=0;
 
 	// Set automatic animation
-	virtual void setAutoAnimation (NL3D::CAnimation* pAnim)=0;
+	virtual void setAutoAnimation (NL3D::CAnimationSet* pAnimSet)=0;
 
 	// Set ambient color
 	virtual void setAmbientColor (const NLMISC::CRGBA& color)=0;

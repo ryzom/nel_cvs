@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.99 2003/07/03 08:54:24 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.100 2003/07/11 16:50:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2193,9 +2193,9 @@ void CObjectViewer::setSingleAnimation (NL3D::CAnimation* pAnim, const char* nam
 
 // ***************************************************************************
 
-void CObjectViewer::setAutoAnimation (NL3D::CAnimation* pAnim)
+void CObjectViewer::setAutoAnimation (NL3D::CAnimationSet* pAnimSet)
 {
-	CNELU::Scene.setAutoAnim (pAnim);
+	CNELU::Scene.setAutomaticAnimationSet (pAnimSet);
 }
 
 // ***************************************************************************

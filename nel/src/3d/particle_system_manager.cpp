@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.9 2003/07/10 16:51:10 vizerie Exp $
+ * $Id: particle_system_manager.cpp,v 1.10 2003/07/11 16:50:16 corvazier Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -33,22 +33,32 @@
 namespace NL3D {
 
 
-CParticleSystemManager::TManagerList CParticleSystemManager::_ManagerList;
+CParticleSystemManager::TManagerList     &CParticleSystemManager::getManagerList()
+{	
+	static TManagerList *manager = NULL;
+	if (manager == NULL)
+	{
+		manager = new TManagerList;		
+	}
+	return *manager;
+}
+
+
 
 
 ///=========================================================	
 CParticleSystemManager::CParticleSystemManager() : _NumModels(0)
 {
 	_CurrListIterator = _ModelList.end();
-	_ManagerList.push_front(this);
-	_GlobalListHandle = _ManagerList.begin();
+	getManagerList().push_front(this);
+	_GlobalListHandle = getManagerList().begin();	
 }
 
 ///=========================================================	
 CParticleSystemManager::~CParticleSystemManager()
 {
 	// remove from global list
-	_ManagerList.erase(_GlobalListHandle);
+	getManagerList().erase(_GlobalListHandle);	
 }
 
 ///=========================================================	
@@ -215,7 +225,7 @@ void CParticleSystemManager::reactivateSound()
 ///=========================================================	
 void CParticleSystemManager::stopSoundForAllManagers()
 {
-	for(TManagerList::iterator it = _ManagerList.begin(); it != _ManagerList.end(); ++it)
+	for(TManagerList::iterator it = getManagerList().begin(); it != getManagerList().end(); ++it)
 	{
 		nlassert(*it);
 		(*it)->stopSound();
@@ -225,7 +235,7 @@ void CParticleSystemManager::stopSoundForAllManagers()
 ///=========================================================	
 void CParticleSystemManager::reactivateSoundForAllManagers()
 {
-	for(TManagerList::iterator it = _ManagerList.begin(); it != _ManagerList.end(); ++it)
+	for(TManagerList::iterator it = getManagerList().begin(); it != getManagerList().end(); ++it)
 	{
 		nlassert(*it);
 		(*it)->reactivateSound();

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.104 2003/07/11 12:47:33 corvazier Exp $
+ * $Id: scene.cpp,v 1.105 2003/07/11 16:50:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -953,6 +953,10 @@ void CScene::setAutomaticAnimationSet(CAnimationSet *as)
 
 	// Delete all auto lightmap animations
 	_LMAnimsAuto.deleteAll();
+	_AnimatedLightNameToIndex.clear();
+	_AnimatedLight.clear();
+	_AnimatedLightPtr.clear();
+	_LightGroupColor.clear();		
 	
 	// Register each animation as lightmap
 	const uint count = _AutomaticAnimationSet->getNumAnimation();

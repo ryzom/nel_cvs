@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.44 2003/06/18 14:38:57 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.45 2003/07/11 16:50:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -323,7 +323,7 @@ void CNelExport::viewMesh (TimeValue time)
 			}
 		}
 
-		view->setAutoAnimation (NULL);
+		CAnimationSet *animationSet = new CAnimationSet;
 		for (nNode=0; nNode<nNumSelNode; nNode++)
 		{
 			// Get the node
@@ -333,8 +333,12 @@ void CNelExport::viewMesh (TimeValue time)
 			int bAnimated = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_LM_ANIMATED, 0);
 			if (bAnimated)
 				_ExportNel->addAnimation( *autoAnim, *pNode, "", true);
-		}
-		view->setAutoAnimation (autoAnim);
+
+				
+		} 
+		animationSet->addAnimation ("Automatic", autoAnim);
+		animationSet->build();
+		view->setAutoAnimation (animationSet);
 
 		// *******************
 		// * Then, build Mesh shapes

@@ -1,7 +1,7 @@
 /** \file particle_system_manager.h
  * <File description>
  *
- * $Id: particle_system_manager.h,v 1.4 2003/07/10 16:51:10 vizerie Exp $
+ * $Id: particle_system_manager.h,v 1.5 2003/07/11 16:50:16 corvazier Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -118,11 +118,11 @@ private:
 	TModelList::iterator	_CurrListIterator; /// the current element being processed
 	TModelList				_ModelList;
 	TModelList				_PermanentlyAnimatedModelList;
-	uint					_NumModels;
-	// list of currently all instanciated managers
-	static TManagerList		_ManagerList;
+	uint					_NumModels;	
+	// access to list of currently instanciated managers
+	static TManagerList     &getManagerList();
 	// link into the global manager list for that manager
-	TManagerList::iterator	_GlobalListHandle;
+	TManagerList::iterator	_GlobalListHandle;	
 };
 
 

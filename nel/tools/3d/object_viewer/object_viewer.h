@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.46 2003/07/03 08:54:03 vizerie Exp $
+ * $Id: object_viewer.h,v 1.47 2003/07/11 16:50:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -236,7 +236,7 @@ public:
 	void setSingleAnimation (NL3D::CAnimation*	pAnim, const char* name, uint instance);
 
 	// Set automatic animation
-	void setAutoAnimation (NL3D::CAnimation* pAnim);
+	void setAutoAnimation (NL3D::CAnimationSet* pAnimSet);
 
 	// Add a mesh
 	uint addMesh (NL3D::IShape* pMeshShape, const char* meshName, uint skelIndex, const char* bindSkelName = NULL, bool createInstance = true);

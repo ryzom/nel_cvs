@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.56 2003/07/04 10:19:15 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.57 2003/07/11 16:50:16 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -976,7 +976,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		}
 	}
 
-	CHECK_PS_INTEGRITY	
+	//CHECK_PS_INTEGRITY	
 
 	
 	if (f.isReading())

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.58 2002/03/04 14:54:09 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.59 2002/03/04 17:04:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 
 #include <3d/nelu.h>
 #include <3d/mesh.h>
+#include <3d/mesh_mrm.h>
 #include <3d/transform_shape.h>
 #include <3d/mesh_instance.h>
 #include <3d/text_context.h>
@@ -1574,7 +1575,8 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 
 			// It is a skinned mesh ?
 			CMesh *mesh = dynamic_cast<CMesh *>(pMeshShape);
-			if (mesh && mesh->getMeshGeom().isSkinned())
+			CMeshMRM *meshMrm = dynamic_cast<CMeshMRM *>(pMeshShape);
+			if ( (mesh && mesh->getMeshGeom().isSkinned()) || (meshMrm && meshMrm->getMeshGeom().isSkinned()) )
 			{
 				// Bind to skeleton
 				transformSkel->bindSkin (meshInstance);
@@ -1842,8 +1844,11 @@ void CObjectViewer::removeAllInstancesFromScene()
 	_ListIG.clear();
 
 	// Invalidate dialogs
-	_AnimationSetDlg->refresh (TRUE);
-	_SlotDlg->refresh (TRUE);
+	if (CNELU::Driver->isActive())
+	{
+		_AnimationSetDlg->refresh (TRUE);
+		_SlotDlg->refresh (TRUE);
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file stream_inline.h
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  *
- * $Id: stream_inline.h,v 1.13 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: stream_inline.h,v 1.14 2000/11/28 11:17:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -308,27 +308,9 @@ inline	void		IStream::serial(std::string &b) throw(EStream)
 		serial(b[i]);
 }
 
-/* ACE: already defined in uint16
-// ======================================================================================================
-inline	void		IStream::serial(wchar &b) throw(EStream)
-{
-	uint16	v;
-	if(isReading())
-	{
-		serial(v);
-		b=*((wchar*)&v);
-	}
-	else
-	{
-		v=*((uint16*)&b);
-		serial(v);
-	}
-}
-*/
 
-/* ACE: already defined in uint16
 // ======================================================================================================
-inline	void		IStream::serial(std::wstring &b) throw(EStream)
+inline	void		IStream::serial(ucstring &b) throw(EStream)
 {
 	sint32	len=0;
 	// Read/Write the length.
@@ -346,7 +328,6 @@ inline	void		IStream::serial(std::wstring &b) throw(EStream)
 	for(sint i=0;i<len;i++)
 		serial(b[i]);
 }
-*/
 
 }
 

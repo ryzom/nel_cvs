@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.28 2000/11/21 11:22:26 corvazier Exp $
+ * $Id: stream.h,v 1.29 2000/11/28 11:17:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -210,8 +210,7 @@ public:
 	void			serial(bool &b) throw(EStream);
 	void			serial(char &b) throw(EStream);
 	void			serial(std::string &b) throw(EStream);
-//	void			serial(wchar &b) throw(EStream);
-//	void			serial(std::wstring &b) throw(EStream);
+	void			serial(ucstring &b) throw(EStream);
 	//@}
 
 

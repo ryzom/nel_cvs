@@ -1,48 +1,16 @@
--- This script rename textures in max projects
+-- This script rename texture files in material
 
-global countRenamed
-global countTotalRenamed
+-- Include some NeL stuff
 
-fn lowercase instring =
-(  
-	local upper, lower, outstring
-	upper="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	lower="abcdefghijklmnopqrstuvwxyz" 
-
-	outstring = copy instring 
-
-	for iii = 1 to outstring.count do 
-	(  
-		jjj = findString upper outstring[iii]
-		if (jjj != undefined) then
-			outstring[iii] = lower[jjj] 
-		else
-			outstring[iii] = instring[iii]
-	)
-	return outstring     -- value of outstring will be returned as function result 
-)
+include "nel_utility.ms"
 
 rollout rename_rollout "Properties"
 (
-	Label			Warning0					"Warning!"		align:#left
-	Label			Warning1					"In \"All Projects in a folder\" mode, this script will overwrite .max files in the specified folder." 		align:#left
-	Label			Warning3					"It is greatly recommanded to backup your projects before running this script."		align:#left
-
 	group "Global settings"
 	(
 		RadioButtons	Mode					"Mode"							labels:#("Replace", "Prefix") align:#left
-		RadioButtons	SourceFiles				"Source projects"				labels:#("Current project", "All Projects in a folder") align:#left
-
 		Label			RemplaceWithLabel		"Remplace with / Prefix with:"							align:#left
 		EditText		RemplaceWith			""								width:500	align:#left
-	)
-
-	group "All Projects in a folder"
-	(
-		Label			DirectoryLabel			"Source directory"							align:#left
-		EditText		Directory				""								width:500	align:#left enabled:false
-
-		CheckBox		Test					"Test only, do not save"		checked:true enabled:false
 	)
 
 	group "Replace"
@@ -51,12 +19,29 @@ rollout rename_rollout "Properties"
 		EditText		FindWhat				""								width:500	align:#left
 		CheckBox		MatchWholeWordOnly		"Match whole word only"			checked:true
 	)
-	Label			ProgressText											width:500	align:#left
-	ProgressBar		Progress												width:500	align:#left
-	Button 			Go						"Go"							width:500	align:#left
+
+	on Mode changed state do
+	(
+		if state == 1 then
+		(
+			MatchWholeWordOnly.enabled = true
+			FindWhat.enabled = true
+			RemplaceWith.enabled = true
+		)
+		else if state == 2 then
+		(
+			MatchWholeWordOnly.enabled = false
+			FindWhat.enabled = false
+		)
+	)
+
+	local countRenamed
 
 	fn renameMaterial material =
 	(
+		local find_what_lower, map, filename, init_filename, result, position, mat
+
+		-- Text to find in lower case
 		find_what_lower = lowercase FindWhat.text
 
 		-- Std material
@@ -74,6 +59,7 @@ rollout rename_rollout "Properties"
 						-- Get the bitmap file
 						filename = lowercase map.filename
 						init_filename = filename
+						-- messagebox filename
 
 						-- Mode ?
 
@@ -101,6 +87,7 @@ rollout rename_rollout "Properties"
 								while (filename != "") do
 								(
 									-- Find the pattern in the string ?
+									-- messagebox ("Find string : " + find_what_lower + " in " + filename)
 									position = findString filename find_what_lower
 									if position != undefined then
 									(
@@ -155,112 +142,35 @@ rollout rename_rollout "Properties"
 		)
 	)
 
-	on Mode changed state do
-	(
-		if state == 1 then
-		(
-			MatchWholeWordOnly.enabled = true
-			FindWhat.enabled = true
-			RemplaceWith.enabled = true
-		)
-		else if state == 2 then
-		(
-			MatchWholeWordOnly.enabled = false
-			FindWhat.enabled = false
-		)
-	)
-
-	on SourceFiles changed state do
-	(
-		if state == 1 then
-		(
-			Directory.enabled = false
-			Test.enabled = false
-		)
-		else if state == 2 then
-		(
-			Directory.enabled = true
-			Test.enabled = true
-		)
-	)
-
-	fn rename =
+	fn do_it =
 	(
 		-- Reset count
 		countRenamed = 0
 
 		-- For each node in the project
-		for node in objects do
+		local mat
+		for mat in sceneMaterials do
 		(
 			-- Rename its material
-			if node.material != undefined then
-			(
-				renameMaterial node.material
-			)
+			-- messagebox mat.name
+			renameMaterial mat
 		)
 
 		-- Add to total sum
-		countTotalRenamed = countTotalRenamed + countRenamed
+		return countRenamed
 	)
 
-	on Go pressed do
-	(
-		-- Arg ?
-		if (FindWhat.text != "") or (Mode.state != 1) then
-		(
-			-- Count renamed
-			countTotalRenamed = 0
-
-			-- Get files in the shape_source_directory
-			if SourceFiles.state == 2 then
-			(
-				files = getFiles (Directory.text+"/*.max")
-
-				-- For each files
-				for i = 1 to files.count do
-				(
-					-- File name
-					file = files[i]
-
-					-- Progress bar
-					ProgressText.text  = "Rename bitmaps in file \"" + (getFilenameFile file) + "\""
-					Progress.value = i*100/files.count
-
-					-- Open the max project
-					if loadMaxFile file == true then
-					(
-						rename ()
-
-						-- Save the max project ?
-						if (Test.checked == false) and (countRenamed != 0) then
-						(
-							-- Save the max project ?
-							saveMaxFile file
-						)
-					)
-				)
-			)
-			else
-			(
-				-- Just rename current project
-				rename ()
-			)
-
-			-- End
-			ProgressText.text  = (countTotalRenamed as string) + " bitmap(s) renamed."
-			Progress.value = 100
-		)
-	)
+	include "nel_batched_script.ms"	
 )
 
 --
 
 gc ()
 
-if rename_building_floater != undefined do
+if rename_floater != undefined do
 (
-	closerolloutfloater rename_building_floater
+	closerolloutfloater rename_floater
 )
 
-rename_building_floater = newRolloutFloater "NeL rename bitmap" 550 874
-addrollout rename_rollout rename_building_floater rolledUp:false
+rename_floater = newRolloutFloater "NeL rename bitmap" 550 874
+addrollout rename_rollout rename_floater rolledUp:false

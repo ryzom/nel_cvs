@@ -244,6 +244,6 @@ Group "Running properties"
 		)
 
 		-- Show errors
-		ProgressText.text  = (fileParsed as string) + " project(s) opened, " + (countModifications as string) + " project(s) modified, " + (fileModified as string) + " project(s) saved, " + (countErrors as string) + " error(s)."
+		ProgressText.text  = (fileParsed as string) + " project(s) opened, " + (countModifications as string) + " project modification(s), " + (fileModified as string) + " project(s) saved, " + (countErrors as string) + " error(s)."
 		Progress.value = 100
 	)

@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.19 2002/10/14 15:52:28 besson Exp $
+ * $Id: material.h,v 1.20 2003/03/31 10:27:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,6 +163,7 @@ public:
 							  PerPixelLighting,
 							  PerPixelLightingNoSpec,
 							  Cloud,
+							  Water,
 							  shaderCount};
 
 	/// \name Texture Env Modes.
@@ -559,11 +560,11 @@ private:
 	{
 		NLMISC::CMatrix		TexMat[IDRV_MAT_MAXTEXTURES];		
 	};
-	std::auto_ptr<CUserTexMat>	_TexUserMat;		 // user texture matrix
-	CSmartPtr<ITexture>		_Textures[IDRV_MAT_MAXTEXTURES];
+	std::auto_ptr<CUserTexMat>	_TexUserMat;		 // user texture matrix	
 
 public:
 	// Private. For Driver only.
+	CSmartPtr<ITexture>		_Textures[IDRV_MAT_MAXTEXTURES];
 	uint8				    _TexAddrMode[IDRV_MAT_MAXTEXTURES]; // texture addressing enum packed as bytes
 	CTexEnv					_TexEnvs[IDRV_MAT_MAXTEXTURES];
 	CRefPtr<IShader>		pShader;

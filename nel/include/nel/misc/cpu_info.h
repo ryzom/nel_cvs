@@ -1,7 +1,7 @@
 /** \file cpu_info.h
  * <File description>
  *
- * $Id: cpu_info.h,v 1.1 2001/07/24 09:12:11 vizerie Exp $
+ * $Id: cpu_info.h,v 1.2 2001/10/26 08:31:33 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -43,19 +43,19 @@ struct CCpuInfo
 	/** test wether the cpuid instruction is supported
 	  * (always false on non intel architectures)
 	  */
-	static bool hasCPUID(void) ;
+	static bool hasCPUID(void);
 
 	/** helps to know wether the processor features mmx instruction set 
 	  * This is initialized at started, so its fast
 	  * (always false on not 0x86 architecture ...)
 	  */	  
-	static bool hasMMX(void) ;
+	static bool hasMMX(void);
 
 	/** helps to know wether the processor has streaming SIMD instructions (the OS must supports it)
 	  * This is initialized at started, so its fast
 	  * (always false on not 0x86 architecture ...)
 	  */
-	static bool hasSSE(void) ;
+	static bool hasSSE(void);
 };
 
 

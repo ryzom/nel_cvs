@@ -1,7 +1,7 @@
 /** \file flare_shape.h
  * <File description>
  *
- * $Id: flare_shape.h,v 1.7 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: flare_shape.h,v 1.8 2001/10/26 08:32:15 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -39,10 +39,10 @@ namespace NL3D {
 
 
 // class id for flares
-const NLMISC::CClassId FlareModelClassId =  NLMISC::CClassId(0x6d674c32, 0x53b961a0) ;
+const NLMISC::CClassId FlareModelClassId =  NLMISC::CClassId(0x6d674c32, 0x53b961a0);
 
 // max number of flares
-const uint MaxFlareNum= 10 ;
+const uint MaxFlareNum= 10;
 
 /**
  * shape for a flare
@@ -53,7 +53,7 @@ const uint MaxFlareNum= 10 ;
 class CFlareShape : public IShape
 {
 public:
-	NLMISC_DECLARE_CLASS(CFlareShape) ;
+	NLMISC_DECLARE_CLASS(CFlareShape);
 
 	///\name Object
 		//@{
@@ -61,25 +61,25 @@ public:
 		CFlareShape();
 
 		/// serial this shape
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 		//@}
 
 
 	/// inherited from IShape
-	virtual	CTransformShape		*createInstance(CScene &scene) ;
+	virtual	CTransformShape		*createInstance(CScene &scene);
 
 	/// inherited from IShape
-	virtual bool				clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
+	virtual bool				clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix);
 
 
 	/// inherited from IShape. Does nothing. A new observer was set for that
 	virtual void				render(IDriver *drv, CTransformShape *trans, bool opaquePass) {}
 
 	/// inherited from IShape
-	virtual	void				getAABBox(NLMISC::CAABBox &bbox) const ;
+	virtual	void				getAABBox(NLMISC::CAABBox &bbox) const;
 
 	/// inherited from ishape
-	virtual float				getNumTriangles (float distance) ;
+	virtual float				getNumTriangles (float distance);
 
 	/// inherited from ishape
 	virtual void				flushTextures (IDriver &driver);
@@ -90,8 +90,8 @@ public:
 	  */
 	void						setTexture(uint index, ITexture *tex) 
 	{ 
-		nlassert(index < MaxFlareNum) ;
-		_Tex[index] = tex ; 
+		nlassert(index < MaxFlareNum);
+		_Tex[index] = tex; 
 	}
 
 	/** get the nth texture used by the flare.
@@ -99,15 +99,15 @@ public:
 	  */
 	ITexture					*getTexture(uint index) 
 	{ 
-		nlassert(index < MaxFlareNum) ;
-		return _Tex[index] ;
+		nlassert(index < MaxFlareNum);
+		return _Tex[index];
 	}
 
 	/// get the texture used by the flare (const version)
 	const ITexture				*getTexture(uint index) const 
 	{ 
-		nlassert(index < MaxFlareNum) ;
-		return _Tex[index] ; 
+		nlassert(index < MaxFlareNum);
+		return _Tex[index]; 
 	}
 
 	/** set the size of the nth flare flare
@@ -115,8 +115,8 @@ public:
 	  */
 	void						setSize(uint index, float size) 
 	{ 
-		nlassert(index < MaxFlareNum) ;
-		_Size[index]  = size ; 
+		nlassert(index < MaxFlareNum);
+		_Size[index]  = size; 
 	}
 
 	/** get the size of the nth flare
@@ -124,7 +124,7 @@ public:
 	  */
 	float						getSize(uint index) const 
 	{ 
-		return _Size[index] ; 
+		return _Size[index]; 
 	}
 
 	/** set the relative position of the nth flares. The default goes linearly from 0 (which appear at the position of the flare) 
@@ -133,33 +133,33 @@ public:
 	  */
 	void						setRelativePos(uint index, float pos)
 	{
-		nlassert(index < MaxFlareNum) ;
-		_Pos[index] = pos ;
+		nlassert(index < MaxFlareNum);
+		_Pos[index] = pos;
 	}
 
 	/// get the relative pos of the nth flare
 	float						getRelativePos(uint index) const
 	{
-		nlassert(index < MaxFlareNum) ;
-		return _Pos[index] ;
+		nlassert(index < MaxFlareNum);
+		return _Pos[index];
 	}
 
 	/// set the color of flares
 	void						setColor(NLMISC::CRGBA col) 
 	{ 		
-		_Color = col ; 
+		_Color = col; 
 	}
 
 	/// get the color of flares
 	NLMISC::CRGBA				getColor(void) const 
 	{ 
-		return _Color ; 
+		return _Color; 
 	}
 
 	/// set the flares spacing 
 	void						setFlareSpacing(float spacing)
 	{
-		_Spacing = spacing ;
+		_Spacing = spacing;
 	}
 
 	/** Get the flares spacing : A spacing of 1.f means thta the last flare will reach the center of the screen
@@ -167,13 +167,13 @@ public:
 	  */
 	float						getFlareSpacing(void) const
 	{
-		return _Spacing ;
+		return _Spacing;
 	}
 
 	/// set the persistence of this shape, in second (the time it takes to fade from white to black)
 	void						setPersistence(CAnimationTime persistence) 
 	{ 	
-		_Persistence = persistence ; 
+		_Persistence = persistence; 
 	}
 
 	/** get the persistence of this shape
@@ -181,79 +181,79 @@ public:
 	  */
 	CAnimationTime				getPersistence(void) const 
 	{ 
-		return _Persistence ; 
+		return _Persistence; 
 	}
 
 
 	/// force radial attenuation of the flares
-	void						setAttenuable(bool enable = true)	{ _Attenuable = enable ; }
+	void						setAttenuable(bool enable = true)	{ _Attenuable = enable; }
 
 	/// check wether radial :attenuation is on
-	bool						getAttenuable(void) const			{ return _Attenuable ;   }
+	bool						getAttenuable(void) const			{ return _Attenuable;   }
 
 	/// set the range for attenuation
-	void						setAttenuationRange(float range)    { _AttenuationRange = range ; }
+	void						setAttenuationRange(float range)    { _AttenuationRange = range; }
 
 	/// get the attenuation range
-	float						getAttenuationRange(void) const		{ return _AttenuationRange ; }
+	float						getAttenuationRange(void) const		{ return _AttenuationRange; }
 
 
 	/// force the first flare to keep its real size (e.g the isze on screen doesn't remains constant)
-	void						setFirstFlareKeepSize(bool enable = true) { _FirstFlareKeepSize = enable ; }
+	void						setFirstFlareKeepSize(bool enable = true) { _FirstFlareKeepSize = enable; }
 
 	/// test wether the first flare keep its real size
-	bool						getFirstFlareKeepSize(void) const		  { return _FirstFlareKeepSize ; }
+	bool						getFirstFlareKeepSize(void) const		  { return _FirstFlareKeepSize; }
 
 	/// enable dazzle when the flare is near the center of the screen
-	void						enableDazzle(bool enable = true)		  { _DazzleEnabled = enable ; }
+	void						enableDazzle(bool enable = true)		  { _DazzleEnabled = enable; }
 	
 	/// check wether dazzle is enabled
-	bool						hasDazzle(void) const	{  return _DazzleEnabled ; }
+	bool						hasDazzle(void) const	{  return _DazzleEnabled; }
 
 	/** set Dazzle color
 	  * \see enableDazzle()
 	  */
-	void						setDazzleColor(NLMISC::CRGBA col) { _DazzleColor = col ; }
+	void						setDazzleColor(NLMISC::CRGBA col) { _DazzleColor = col; }
 
 	/** get Dazzle color
 	  * \see enableDazzle()
 	  */
-	NLMISC::CRGBA				getDazzleColor(void) const { return _DazzleColor ; }
+	NLMISC::CRGBA				getDazzleColor(void) const { return _DazzleColor; }
 
 	/** Set Dazzle attenuation range. It is the same than with attenuationRange. 1 mean that the dazzle stops when the flare
 	  *  is at the border of screen. 0.5, for the half way between center and border etc .
 	  *  \see enableDazzle()
 	  */
-	void						setDazzleAttenuationRange(float range) { _DazzleAttenuationRange = range ; }
+	void						setDazzleAttenuationRange(float range) { _DazzleAttenuationRange = range; }
 
 	/// get the attenuation range of Dazzle
-	float						getDazzleAttenuationRange(void) const { return _DazzleAttenuationRange ; }
+	float						getDazzleAttenuationRange(void) const { return _DazzleAttenuationRange; }
 
 	/** set the maxViewDist for the flares
       * The default is 1000
 	  */
-	void						setMaxViewDist(float dist) { _MaxViewDist = dist ; }
+	void						setMaxViewDist(float dist) { _MaxViewDist = dist; }
 
 
 	/// get the max view dist
-	float						getMaxViewDist(void) const { return _MaxViewDist ; }
+	float						getMaxViewDist(void) const { return _MaxViewDist; }
 
 	/** set a distance ratio. when dist / maxViewDist is above this ratio, the flares will start to fade
 	  * The default is 0.9
 	  */
-	void						setMaxViewDistRatio(float ratio) { _MaxViewDistRatio = ratio ; }
+	void						setMaxViewDistRatio(float ratio) { _MaxViewDistRatio = ratio; }
 
 	/// get the max view dist ratio
-	float						getMaxViewDistRatio(void) const  { return  _MaxViewDistRatio ; }
+	float						getMaxViewDistRatio(void) const  { return  _MaxViewDistRatio; }
 
 	/** The flare is considered to be at the infinite. This mean that it is always drawn
 	  * And that there's no attenuation with dist. The real flare must be created far from the camera
 	  * for this to work. The defualt is false
 	  */
-	void						setFlareAtInfiniteDist(bool enabled = true) { _InfiniteDist = enabled ; }
+	void						setFlareAtInfiniteDist(bool enabled = true) { _InfiniteDist = enabled; }
 
 	/// test wether the flare is at the infinite
-	bool						getFlareAtInfiniteDist(void) const			{ return _InfiniteDist ; }
+	bool						getFlareAtInfiniteDist(void) const			{ return _InfiniteDist; }
 
 	/// Transform default tracks.
 	CTrackDefaultVector			_DefaultPos;
@@ -266,22 +266,22 @@ public:
 
 
 protected:
-	friend class CFlareModel ;	
-	NLMISC::CSmartPtr<ITexture> _Tex[MaxFlareNum] ;
-	NLMISC::CRGBA				_Color ;
-	NLMISC::CRGBA				_DazzleColor ;
-	float						_Size[MaxFlareNum] ;
-	float						_Pos[MaxFlareNum] ;
-	CAnimationTime				_Persistence ;
-	float						_Spacing ;
-	bool					    _Attenuable ;
-	float					    _AttenuationRange ;
-	bool						_FirstFlareKeepSize ;
-	bool						_DazzleEnabled ;
-	float						_DazzleAttenuationRange ;
-	float						_MaxViewDist ;
-	float						_MaxViewDistRatio ;				
-	bool						_InfiniteDist ;
+	friend class CFlareModel;	
+	NLMISC::CSmartPtr<ITexture> _Tex[MaxFlareNum];
+	NLMISC::CRGBA				_Color;
+	NLMISC::CRGBA				_DazzleColor;
+	float						_Size[MaxFlareNum];
+	float						_Pos[MaxFlareNum];
+	CAnimationTime				_Persistence;
+	float						_Spacing;
+	bool					    _Attenuable;
+	float					    _AttenuationRange;
+	bool						_FirstFlareKeepSize;
+	bool						_DazzleEnabled;
+	float						_DazzleAttenuationRange;
+	float						_MaxViewDist;
+	float						_MaxViewDistRatio;				
+	bool						_InfiniteDist;
 };
 
 

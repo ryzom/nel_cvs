@@ -1,7 +1,7 @@
 /** \file cpu_info.cpp
  * <File description>
  *
- * $Id: cpu_info.cpp,v 1.1 2001/07/24 08:51:35 vizerie Exp $
+ * $Id: cpu_info.cpp,v 1.2 2001/10/26 08:33:07 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -34,9 +34,9 @@ namespace NLMISC
 static bool DetectMMX(void)
 {		
 	#ifdef NL_OS_WINDOWS		
-		if (!CCpuInfo::hasCPUID()) return false ; // cpuid not supported ...
+		if (!CCpuInfo::hasCPUID()) return false; // cpuid not supported ...
 
-		uint32 result = 0 ;
+		uint32 result = 0;
 		__asm
 		{
 			 mov  eax,1
@@ -47,13 +47,13 @@ static bool DetectMMX(void)
 			noMMX:
 		}
 
-		return result == 1 ;
+		return result == 1;
  
 
-		printf("mmx detected\n") ;
+		printf("mmx detected\n");
 
 	#else
-		return false ;
+		return false;
 	#endif
 }
 
@@ -62,9 +62,9 @@ static bool DetectSSE(void)
 {	
 	#if 0 // not activated for now ...
 		#ifdef NL_OS_WINDOWS
-			if (!CCpuInfo::hasCPUID()) return false ; // cpuid not supported ...
+			if (!CCpuInfo::hasCPUID()) return false; // cpuid not supported ...
 
-			uint32 result = 0 ;
+			uint32 result = 0;
 			__asm
 			{			
 				mov eax, 1   // request for feature flags
@@ -88,31 +88,31 @@ static bool DetectSSE(void)
 				}
 				catch(...)
 				{
-					return false ;
+					return false;
 				}
 			
-				return true ;
+				return true;
 			}
 			else
 			{
-				return false ;
+				return false;
 			}
 		#else
-			printf("sse not detected\n") ;
+			printf("sse not detected\n");
 			return false
 		#endif
 	#else
-		return false ;
+		return false;
 	#endif
 }
 
-bool HasMMX = DetectMMX() ;
-bool HasSSE = DetectSSE() ;
+bool HasMMX = DetectMMX();
+bool HasSSE = DetectSSE();
 
 bool CCpuInfo::hasCPUID(void)
 {
 	#ifdef NL_OS_WINDOWS
-		 uint32 result ;
+		 uint32 result;
 		 __asm
 		 {
 			 pushad
@@ -140,12 +140,12 @@ bool CCpuInfo::hasCPUID(void)
 			 mov result, 0
 			CPUIDPresent:	 
 		 }
-		 return result == 1 ;
+		 return result == 1;
 	#else
-		 return false ;
+		 return false;
 	#endif
 }
-bool CCpuInfo::hasMMX(void) { return HasMMX ; }
-bool CCpuInfo::hasSSE(void) { return HasSSE ; }
+bool CCpuInfo::hasMMX(void) { return HasMMX; }
+bool CCpuInfo::hasSSE(void) { return HasSSE; }
 
 } // NLMISC

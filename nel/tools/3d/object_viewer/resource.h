@@ -131,6 +131,7 @@
 #define IDC_SYSTEM_BASIS                1055
 #define IDC_TAIL_PERSIST_AFTER_DEATH    1055
 #define IDR_MOVE_ELEMENT                1055
+#define IDC_ACCURATE_INTEGRATION        1055
 #define IDR_LOCATED_INSTANCE_MENU       1056
 #define IDC_LIFE_MIN_VALUE              1057
 #define IDD_TEXTURE_ANIM                1057
@@ -147,11 +148,16 @@
 #define IDC_LOWER_BOUND                 1064
 #define IDB_WEIGHT                      1064
 #define IDC_UPPER_BOUND                 1065
+#define IDD_EDIT_USER_PARAM             1065
+#define IDD_EDIT_PARTICLE_SYSTEM        1067
+#define IDD_BIN_OP                      1068
 #define IDC_COMBO1                      1070
 #define IDC_USE_SCHEME                  1070
 #define IDC_TYPE_OF_EMISSION            1070
 #define IDC_TAIL_SHAPE                  1070
 #define IDC_COLLISION_BEHAVIOUR         1070
+#define IDC_USER_PARAM_INDEX            1070
+#define IDC_BIN_OP                      1070
 #define IDC_START_PICTURE               1071
 #define IDC_STOP_PICTURE                1072
 #define IDC_SCHEME                      1073
@@ -218,6 +224,14 @@
 #define IDC_BLENDING_MODE               1142
 #define IDC_BLENDING_MODE_STATIC        1143
 #define IDC_BG_COLOR                    1144
+#define IDC_EDIT_INPUT                  1147
+#define IDC_ENABLE_SLOW_DOWN            1148
+#define IDC_CHECK1                      1152
+#define IDC_EDIT1                       1153
+#define IDC_EDIT2                       1154
+#define IDC_EDIT3                       1155
+#define IDC_BUTTON2                     1156
+#define IDC_PRECOMPUTE_BBOX             1157
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -262,14 +276,17 @@
 #define IDM_DIRECTIONNAL_FORCE          32820
 #define IDM_CENTRAL_GRAVITY             32821
 #define IDM_BROWNIAN_MOVE               32822
+#define IDM_LB_LOD1N2                   32823
+#define IDM_LB_LOD1                     32824
+#define IDM_LB_LOD2                     32825
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1065
-#define _APS_NEXT_COMMAND_VALUE         32823
-#define _APS_NEXT_CONTROL_VALUE         1146
+#define _APS_NEXT_RESOURCE_VALUE        1069
+#define _APS_NEXT_COMMAND_VALUE         32826
+#define _APS_NEXT_CONTROL_VALUE         1158
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

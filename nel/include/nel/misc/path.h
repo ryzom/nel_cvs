@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.16 2002/02/19 09:13:44 lecroart Exp $
+ * $Id: path.h,v 1.17 2002/02/19 13:55:02 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -93,9 +93,10 @@ public:
 	 * \param filename the file name you are seeking. (ex: "test.txt")
 	 * \param throwException used for backward compatibility, set to true to generate an EPathNotFound.
 	 * \param displayWarning set to false if you don't want the function displays a warning if the file is not found
+	 * \param lookupInLocalDirectory if true, the lookup() will first try to open the file without path.
 	 * \return empty string if file is not found or the full path + file name (ex: "c:/temp/test.txt");
 	 */
-	static std::string	lookup (const std::string &filename, bool throwException = true, bool displayWarning = true);
+	static std::string	lookup (const std::string &filename, bool throwException = true, bool displayWarning = true, bool lookupInLocalDirectory = true);
 
 	/** Clears the map that contains all cached files (Use this function to take into account new files).
 	 */

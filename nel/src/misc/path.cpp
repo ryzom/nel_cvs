@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.21 2002/02/19 09:13:52 lecroart Exp $
+ * $Id: path.cpp,v 1.22 2002/02/19 13:55:07 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -173,16 +173,15 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 	}
 }
 
-string CPath::lookup (const string &filename, bool throwException, bool displayWarning)
+string CPath::lookup (const string &filename, bool throwException, bool displayWarning, bool lookupInLocalDirectory)
 {
-/* ace: remove the local dir for georges
 	// Try to find in the current directory
-	if ( CFile::fileExists(filename) )
+	if ( lookupInLocalDirectory && CFile::fileExists(filename) )
 	{
 		NL_DISPLAY_PATH("CPath::lookup(%s): found in the current directory: '%s'", filename.c_str(), filename.c_str());
 		return filename;
 	}
-*/
+
 	// Try to find in the map directories
 	CPath *inst = CPath::getInstance();
 	string str = strlwr (filename);

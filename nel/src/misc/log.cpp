@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.10 2000/11/08 14:59:33 lecroart Exp $
+ * $Id: log.cpp,v 1.11 2000/11/21 14:01:24 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,7 +88,7 @@ char *getFilename( char *lfilename )
 #ifdef NL_OS_WINDOWS
 	char *slash = strrchr( lfilename, '\\' );
 #else
-	char *slash = sttrchr( lfilename, '/' );
+	char *slash = strrchr( lfilename, '/' );
 #endif
 	if ( slash == NULL )
 	{
@@ -222,3 +222,4 @@ string CLog::priorityStr() const
 
 
 } // NLMISC
+

@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.31 2002/04/16 15:42:00 lecroart Exp $
+ * $Id: naming_client.h,v 1.32 2002/05/27 16:50:55 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,10 @@ public:
 	 */
 	static bool			registerServiceWithSId (const std::string &name, const CInetAddress &addr, TServiceId sid);
 
+	/** If the NS is down and goes up, we have to send it again the registration. But in this case, the NS
+	 * must not send a registration broadcast, so we have a special message
+	 */
+	static void			resendRegisteration (const std::string &name, const CInetAddress &addr, TServiceId sid);
 
 	/// Unregister a service from the naming service, service identifier.
 	static void			unregisterService (TServiceId sid);
@@ -172,6 +176,7 @@ private:
 	/// Type of map of registered services
 	typedef std::map<TServiceId, std::string> TRegServices;
 
+	// this container contains the server that *this* service have registered (often, there's only one)
 	static TRegServices _RegisteredServices;
 
 	/// Constructor
@@ -182,8 +187,7 @@ private:
 
 	static void doReceiveLookupAnswer (const std::string &name, std::vector<CInetAddress> &addrs);
 
-
-
+	// This container contains the list of other registered services on the shard
 	static std::list<CServiceEntry>	RegisteredServices;
 	static NLMISC::CMutex RegisteredServicesMutex;
 
@@ -195,7 +199,7 @@ private:
 		{
 			nldebug (" > %s-%hu '%s'", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str());
 		}
-		nldebug ("End ot the list");
+		nldebug ("End of the list");
 		RegisteredServicesMutex.leave ();
 	}
 

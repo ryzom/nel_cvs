@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.44 2002/05/21 16:37:38 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.45 2002/05/27 16:50:50 lecroart Exp $
  *
  */
 
@@ -123,14 +123,39 @@ void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netba
 
 		// add it in the list
 
-		CNamingClient::RegisteredServicesMutex.enter ();
-		CNamingClient::RegisteredServices.push_back (CNamingClient::CServiceEntry (name, sid, addr));
-		CNamingClient::RegisteredServicesMutex.leave ();
+		std::vector<CInetAddress> addrs;
+		CNamingClient::find (sid, addrs);
 
-		nlinfo ("Registration Broadcast of the service %s-%hu '%s'", name.c_str(), (uint16)sid, addr.asString().c_str());
+		if (addrs.size() == 0)
+		{
+			CNamingClient::RegisteredServicesMutex.enter ();
+			CNamingClient::RegisteredServices.push_back (CNamingClient::CServiceEntry (name, sid, addr));
+			CNamingClient::RegisteredServicesMutex.leave ();
 
-		if (_RegistrationBroadcastCallback != NULL)
-			_RegistrationBroadcastCallback (name, sid, addr);
+			nlinfo ("Registration Broadcast of the service %s-%hu '%s'", name.c_str(), (uint16)sid, addr.asString().c_str());
+
+			if (_RegistrationBroadcastCallback != NULL)
+				_RegistrationBroadcastCallback (name, sid, addr);
+		}
+		else if (addrs.size() == 1)
+		{
+			CNamingClient::RegisteredServicesMutex.enter ();
+			for (std::list<CNamingClient::CServiceEntry>::iterator it = CNamingClient::RegisteredServices.begin(); it != CNamingClient::RegisteredServices.end (); it++)
+			{
+				if (sid == (*it).SId)
+				{
+					(*it).Name = name;
+					(*it).Addr = addr;
+					break;
+				}
+			}
+			CNamingClient::RegisteredServicesMutex.leave ();
+			nlinfo ("Registration Broadcast (update) of the service %s-%hu '%s'", name.c_str(), (uint16)sid, addr.asString().c_str());
+		}
+		else
+		{
+			nlstop;
+		}
 	}
 
 	FirstRegisteredBroadcast = true;
@@ -158,8 +183,8 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 		if ((*it).SId == sid)
 		{
 			// check the structure
-			nlassert ((*it).Name == name);
-			nlassert ((*it).Addr == addr);
+			nlassertex ((*it).Name == name, ("%s %s",(*it).Name, name));
+			nlassertex ((*it).Addr == addr, ("%d %d",(*it).Addr, addr));
 
 			CNamingClient::RegisteredServices.erase (it);
 			break;
@@ -168,6 +193,12 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 	CNamingClient::RegisteredServicesMutex.leave ();
 
 	nlinfo ("Unregistration Broadcast of the service %s-%hu", name.c_str(), (uint16)sid);
+
+	// send the ACK to the NS
+
+	CMessage msgout (CNamingClient::_Connection->getSIDA(), "ACK_UNI");
+	msgout.serial (sid);
+	CNamingClient::_Connection->send (msgout);
 
 	if (_UnregistrationBroadcastCallback != NULL)
 		_UnregistrationBroadcastCallback (name, sid, addr);
@@ -200,11 +231,11 @@ void CNamingClient::connect( const CInetAddress &addr, CCallbackNetBase::TRecord
 	_Connection->connect (addr);
 
 	// now we are connected, clear the old registered service table
-
+/*
 	CNamingClient::RegisteredServicesMutex.enter ();
 	CNamingClient::RegisteredServices.clear ();
 	CNamingClient::RegisteredServicesMutex.leave ();
-
+*/
 	// wait the message that contains all already connected services
 
 	FirstRegisteredBroadcast = false;
@@ -229,8 +260,6 @@ void CNamingClient::disconnect ()
 		delete _Connection;
 		_Connection = NULL;
 	}
-
-	_RegisteredServices.clear ();
 
 	// we don't call unregisterAllServices because when the naming service will see the disconnection,
 	// it'll automatically unregister all services registered by this client.
@@ -318,6 +347,17 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const CInet
 	return RegisteredSuccess == 1;
 }
 
+void CNamingClient::resendRegisteration (const std::string &name, const CInetAddress &addr, TServiceId sid)
+{
+	checkThreadId ();
+	nlassert (_Connection != NULL && _Connection->connected ());
+
+	CMessage msgout (_Connection->getSIDA(), "RRG");
+	msgout.serial (const_cast<std::string&>(name));
+	msgout.serial (const_cast<CInetAddress&>(addr));
+	msgout.serial (sid);
+	_Connection->send (msgout);
+}
 
 void CNamingClient::unregisterService (TServiceId sid)
 {

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.36 2002/03/28 17:45:07 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.37 2002/05/27 16:50:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,24 +64,119 @@ inline void	CUnifiedNetwork::leaveReentrant()
 // when a service registers
 void	uNetRegistrationBroadcast(const string &name, TServiceId sid, const CInetAddress &addr)
 {
+	nlinfo ("L5UN: + naming %s %d", name.c_str(), sid);
 }
 
 // when a service unregisters
 void	uNetUnregistrationBroadcast(const string &name, TServiceId sid, const CInetAddress &addr)
 {
+	nlinfo ("L5UN: - naming %s %d", name.c_str(), sid);
+
+	// get the service connection
+	CUnifiedNetwork						*instance = CUnifiedNetwork::getInstance();
+
+	// get an access to the value
+	CRWSynchronized<std::vector<CUnifiedNetwork::CUnifiedConnection> >::CReadAccessor	access(&(instance->_IdCnx));
+
+	// check if we already have a connection that we didn't process already
+	uint i;
+	for (i=0; i<instance->_ConnectionStack.size(); ++i)
+	{
+		// check with incoming sid, cause connection table might not be initialised
+		if (instance->_ConnectionStack[i].SId == sid)
+		{
+			// we found a connection not processed
+			break;
+		}
+	}
+
+	if (i < instance->_ConnectionStack.size())
+	{
+		// remove it from the table
+		instance->_ConnectionStack.erase (instance->_ConnectionStack.begin()+i);
+	}
+	else
+	{
+		// now, you have a thread safe access until the end of the scope, so you can do whatever you want. for example, change the value
+
+		// if the service is not in the array, it means that we are not interested by this service, do nothing
+		if (sid >= access.value().size() || !access.value ()[sid].EntryUsed)
+			return;
+
+		// adds the connection to the disconnection stack
+		instance->_DisconnectionStack.push_back(access.value ()[sid].ServiceId);
+	}
+
+	const CUnifiedNetwork::CUnifiedConnection	&cnx = access.value ()[sid];
+
+	// set the service disconnected (avoid sending message to a disconnected service)
+	if (instance->_TempDisconnectionTable.size() <= cnx.ServiceId)
+		instance->_TempDisconnectionTable.resize(cnx.ServiceId+1, false);
+	instance->_TempDisconnectionTable[cnx.ServiceId] = true;
+
+
+	// get the deconnection callback
+	CUnifiedNetwork::TNameMappedCallback::iterator	it = instance->_DownCallbacks.find(cnx.ServiceName);
+
+	if (it != instance->_DownCallbacks.end())
+	{
+		// call it
+		TUnifiedNetCallback	cb = (*it).second.first;
+		cb(cnx.ServiceName, cnx.ServiceId, (*it).second.second);
+	}
+
+	// call the generic callback
+	for (uint c = 0; c < instance->_DownUniCallback.size (); c++)
+	{
+		if (instance->_DownUniCallback[c].first != NULL)
+			instance->_DownUniCallback[c].first(cnx.ServiceName, cnx.ServiceId, instance->_DownUniCallback[c].second);
+	}
+
+	nldebug("Received disconnection signal from service %s %d (appId=%d) from naming service", cnx.ServiceName.c_str(), cnx.ServiceId, sid);
 }
 
 // Service up/down callbacks
 
 void	uncbConnection(TSockId from, void *arg)
 {
+	nlinfo ("L5UN: + connec %s", from->asString().c_str());
 	// set the service id to an unknown value, besause we don't know yet
 	// which service is connecting at this moment.
 	from->setAppId (0xFFFFFF);
+
+	nldebug("Received Connection signal from %s connection", from->asString().c_str());
 }
 
 void	uncbDisconnection(TSockId from, void *arg)
 {
+	if (from->appId() == 0xFFFFFF)
+	{
+		nlinfo ("L5UN: - connec UKN");
+		return;
+	}
+
+	CUnifiedNetwork						*instance = CUnifiedNetwork::getInstance();
+	uint16								sid = (uint16)from->appId();
+	// get an access to the value
+	CRWSynchronized<std::vector<CUnifiedNetwork::CUnifiedConnection> >::CReadAccessor	access(&(instance->_IdCnx));
+
+	// now, you have a thread safe access until the end of the scope, so you can do whatever you want. for example, change the value
+	const CUnifiedNetwork::CUnifiedConnection	&cnx = access.value ()[sid];
+
+	nlinfo ("L5UN: - connec %s %s %d", from->asString().c_str(), cnx.ServiceName.c_str(), sid);
+
+	if (instance->_TempDisconnectionTable.size() <= cnx.ServiceId)
+		instance->_TempDisconnectionTable.resize(cnx.ServiceId+1, false);
+	instance->_TempDisconnectionTable[cnx.ServiceId] = true;
+
+	nldebug("Received disconnection signal from service %s %d (appId=%d) connection", cnx.ServiceName.c_str(), cnx.ServiceId, sid);
+	
+	return;
+
+////////////////////
+////////////////////
+////////////////////
+
 	if (from->appId() == 0xFFFFFF)
 	{
 		// the service didn't identified before disconnection
@@ -175,6 +270,8 @@ void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &
 	msgin.serial(inSName);
 	msgin.serial(inSid);
 
+	nlinfo ("L5UN: + connec ident %s %s %d", from->asString().c_str(), inSName.c_str(), inSid);
+	
 	nlinfo("Received identification from service %s %u", inSName.c_str(), inSid);
 
 	// setup the sock with the sid.
@@ -208,7 +305,7 @@ void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &
 	else
 	{
 		// assume no previous disconnection
-		nlassert(instance->_TempDisconnectionTable.size() <= inSid || !instance->_TempDisconnectionTable[inSid]);
+		//nlassert(instance->_TempDisconnectionTable.size() <= inSid || !instance->_TempDisconnectionTable[inSid]);
 		instance->_ConnectionStack.push_back(CUnifiedNetwork::CConnectionId(inSName, inSid, from, true));
 	}
 
@@ -301,6 +398,11 @@ TCallbackItem	unServerCbArray[] =
 void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordingState rec,
 							  const string &shortName, uint16 port, TServiceId &sid)
 {
+//	InfoLog->addPositiveFilter ("L5UN");
+//	DebugLog->addNegativeFilter (" ");
+
+	DebugLog->addNegativeFilter ("L5UN");
+
 	_RecordingState = rec;
 	_Name = shortName;
 	_SId = sid;
@@ -387,7 +489,8 @@ void	CUnifiedNetwork::connect()
 
 void	CUnifiedNetwork::release()
 {
-	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::release() whereas it is not initialised yet"));
+	if (!_Initialised)
+		return;
 
 	CRWSynchronized< std::vector<CUnifiedConnection> >::CWriteAccessor	idAccess(&_IdCnx);
 	CRWSynchronized<TNameMappedConnection>::CWriteAccessor				nameAccess(&_NamedCnx);
@@ -557,6 +660,11 @@ void	CUnifiedNetwork::update(TTime timeout)
 		if ((enableRetry = (t0-_LastRetry > 5000)))
 			_LastRetry = t0;
 
+		_ConnectionRetriesStack.clear();
+		_ConnectionStack.clear();
+		_DisconnectionStack.clear();
+
+
 		// Try to reconnect to the naming service if connection lost
 		if (_NamingServiceAddr.isValid ())
 		{
@@ -572,7 +680,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 					// re-register the service
 					CInetAddress laddr = CInetAddress::localHost ();
 					laddr.setPort(_ServerPort);
-					CNamingClient::registerServiceWithSId (_Name, laddr, _SId);
+					CNamingClient::resendRegisteration (_Name, laddr, _SId);
 				}
 				catch (ESocketConnectionFailed &)
 				{
@@ -584,10 +692,6 @@ void	CUnifiedNetwork::update(TTime timeout)
 		// lock read access to the connections
 		CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
 		const vector<CUnifiedConnection>									&connections = idAccess.value();
-
-		_ConnectionRetriesStack.clear();
-		_ConnectionStack.clear();
-		_DisconnectionStack.clear();
 
 		while (true)
 		{
@@ -631,6 +735,8 @@ void	CUnifiedNetwork::update(TTime timeout)
 
 	leaveReentrant();
 //	nldebug("Out CUnifiedNetwork::update()");
+
+	nldebug ("L5UN:   update --------------------------------------------");
 }
 
 
@@ -698,6 +804,8 @@ void	CUnifiedNetwork::updateConnectionTable()
 				for (it=range.first; it!=range.second && (*it).second!=cnx.ServiceId; ++it)
 					;
 
+				nlinfo ("L5UN: - update %s %d", cnx.ServiceName.c_str(), cnx.ServiceId);
+
 				// assume id exists
 				nlassert(it != range.second);
 				// remove service for map
@@ -722,6 +830,8 @@ void	CUnifiedNetwork::updateConnectionTable()
 				cnx = CUnifiedConnection(_ConnectionStack[i].SName, _ConnectionStack[i].SId, _ConnectionStack[i].SHost);
 				cnx.IsConnected = true;
 				nameAccess.value().insert(make_pair(_ConnectionStack[i].SName, _ConnectionStack[i].SId));
+
+				nlinfo ("L5UN: + update %s %d", _ConnectionStack[i].SName.c_str(), _ConnectionStack[i].SId);
 			}
 			else
 			{
@@ -733,6 +843,8 @@ void	CUnifiedNetwork::updateConnectionTable()
 					delete cnx.Connection.CbClient;
 				cnx.IsServerConnection = true;
 				cnx.Connection.HostId = _ConnectionStack[i].SHost;
+
+				nlinfo ("L5UN: # update %s %d", _ConnectionStack[i].SName.c_str(), _ConnectionStack[i].SId);
 			}
 
 			nldebug("HNETL5: Updated table with connection to %s %d", cnx.ServiceName.c_str(), cnx.ServiceId);
@@ -1172,6 +1284,9 @@ void	CUnifiedNetwork::autoCheck()
 				stillConnected = false;
 				break;
 			}
+
+		if (i < _TempDisconnectionTable.size() && _TempDisconnectionTable[i])
+			continue;
 
 		if (!stillConnected || !idAccess.value()[i].IsConnected)
 			continue;

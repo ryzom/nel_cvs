@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.20 2002/03/25 09:26:02 lecroart Exp $
+ * $Id: unified_network.h,v 1.21 2002/05/27 16:50:55 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,6 +75,7 @@ class CUnifiedNetwork
 	friend void	uncbDisconnection(TSockId from, void *arg);
 	friend void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
 	friend void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
+	friend void	uNetUnregistrationBroadcast(const std::string &name, TServiceId sid, const CInetAddress &addr);
 
 public:
 

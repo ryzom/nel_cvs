@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.141 2002/08/27 10:13:13 lecroart Exp $
+ * $Id: service.cpp,v 1.142 2002/08/29 11:39:53 coutelas Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -443,7 +443,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	bool resyncEvenly = false;
 	CConfigFile::CVar *var = NULL;
 
-	setReportEmailFunction (sendEmail);
+	setReportEmailFunction ((void*)sendEmail);
 	setDefaultEmailParams ("gw.nevrax.com", "", "lecroart@nevrax.com");
 	
 	try

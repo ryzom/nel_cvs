@@ -1,7 +1,7 @@
 /** \file ig_lighter_lib.cpp
  * <File description>
  *
- * $Id: ig_lighter_lib.cpp,v 1.2 2003/04/22 16:17:37 corvazier Exp $
+ * $Id: ig_lighter_lib.cpp,v 1.3 2003/05/19 13:25:02 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -283,117 +283,121 @@ void	CIgLighterLib::lightIg(CInstanceLighter &instanceLighter,
 					// check CRetrieverLightGrid not already present
 					CIGSurfaceLightBuild::ItRetrieverGridMap	itRgm;
 					itRgm= igSurfaceLightBuild->RetrieverGridMap.find(retIdent);
-					nlassert( itRgm == igSurfaceLightBuild->RetrieverGridMap.end() );
-
-					// Append CRetrieverLightGrid.
-					itRgm= igSurfaceLightBuild->RetrieverGridMap.insert(
-						make_pair(retIdent, CIGSurfaceLightBuild::CRetrieverLightGrid() ) ).first;
-					CIGSurfaceLightBuild::CRetrieverLightGrid	&rlg= itRgm->second;
-
-					// Resize Grids.
-					uint	numSurfaces= localRetriever.getSurfaces().size();
-					rlg.Grids.resize( numSurfaces );
-
-					// Compute the bbox for all surfaces. (NB: local to the localRetriever).
-					vector<CAABBox>		surfaceBBoxes;
-					localRetriever.buildInteriorSurfaceBBoxes(surfaceBBoxes);
-
-					// For each surface, compute it.
-					for(uint surfaceId=0; surfaceId<numSurfaces; surfaceId++)
+					if( itRgm != igSurfaceLightBuild->RetrieverGridMap.end() )
 					{
-						// Progress.
-						char	stmp[256];
-						sprintf(stmp, "Sample surfaces of %s", retIdent.c_str());
-						instanceLighter.progress(stmp, surfaceId / float(numSurfaces));
+						nlwarning ("ERROR Found 2 different collision retriever with same identifier: '%s'. The 2nd is discared\n", retIdent.c_str());
+					}
+					else
+					{
+						// Append CRetrieverLightGrid.
+						itRgm= igSurfaceLightBuild->RetrieverGridMap.insert(
+							make_pair(retIdent, CIGSurfaceLightBuild::CRetrieverLightGrid() ) ).first;
+						CIGSurfaceLightBuild::CRetrieverLightGrid	&rlg= itRgm->second;
 
-						// Compute surface and size of the grid.
-						CIGSurfaceLightBuild::CSurface		&surfDst= rlg.Grids[surfaceId];
+						// Resize Grids.
+						uint	numSurfaces= localRetriever.getSurfaces().size();
+						rlg.Grids.resize( numSurfaces );
 
-						// Snap Origin on cellSize
-						surfDst.Origin= surfaceBBoxes[surfaceId].getMin();
-						surfDst.Origin.x= floorf(surfDst.Origin.x/cellSurfaceLightSize) * cellSurfaceLightSize;
-						surfDst.Origin.y= floorf(surfDst.Origin.y/cellSurfaceLightSize) * cellSurfaceLightSize;
+						// Compute the bbox for all surfaces. (NB: local to the localRetriever).
+						vector<CAABBox>		surfaceBBoxes;
+						localRetriever.buildInteriorSurfaceBBoxes(surfaceBBoxes);
 
-						// Snap Width / Height on cellSize.
-						float	sizex= surfaceBBoxes[surfaceId].getMax().x - surfDst.Origin.x;
-						float	sizey= surfaceBBoxes[surfaceId].getMax().y - surfDst.Origin.y;
-						surfDst.Width= (uint)floorf(sizex/cellSurfaceLightSize) + 2;
-						surfDst.Height= (uint)floorf(sizey/cellSurfaceLightSize) + 2;
-						// Get Zcenter.
-						float	zCenter= surfaceBBoxes[surfaceId].getCenter().z;
-
-						// Allocate elements.
-						surfDst.Cells.resize(surfDst.Width * surfDst.Height);
-
-						// For all elements
-						for(sint yCell=0; yCell<(sint)surfDst.Height; yCell++)
+						// For each surface, compute it.
+						for(uint surfaceId=0; surfaceId<numSurfaces; surfaceId++)
 						{
-							for(sint xCell=0; xCell<(sint)surfDst.Width; xCell++)
+							// Progress.
+							char	stmp[256];
+							sprintf(stmp, "Sample surfaces of %s", retIdent.c_str());
+							instanceLighter.progress(stmp, surfaceId / float(numSurfaces));
+
+							// Compute surface and size of the grid.
+							CIGSurfaceLightBuild::CSurface		&surfDst= rlg.Grids[surfaceId];
+
+							// Snap Origin on cellSize
+							surfDst.Origin= surfaceBBoxes[surfaceId].getMin();
+							surfDst.Origin.x= floorf(surfDst.Origin.x/cellSurfaceLightSize) * cellSurfaceLightSize;
+							surfDst.Origin.y= floorf(surfDst.Origin.y/cellSurfaceLightSize) * cellSurfaceLightSize;
+
+							// Snap Width / Height on cellSize.
+							float	sizex= surfaceBBoxes[surfaceId].getMax().x - surfDst.Origin.x;
+							float	sizey= surfaceBBoxes[surfaceId].getMax().y - surfDst.Origin.y;
+							surfDst.Width= (uint)floorf(sizex/cellSurfaceLightSize) + 2;
+							surfDst.Height= (uint)floorf(sizey/cellSurfaceLightSize) + 2;
+							// Get Zcenter.
+							float	zCenter= surfaceBBoxes[surfaceId].getCenter().z;
+
+							// Allocate elements.
+							surfDst.Cells.resize(surfDst.Width * surfDst.Height);
+
+							// For all elements
+							for(sint yCell=0; yCell<(sint)surfDst.Height; yCell++)
 							{
-								// compute pos of the cell.
-								ULocalPosition	localPos;
-								localPos.Estimation.x= surfDst.Origin.x + xCell*cellSurfaceLightSize;
-								localPos.Estimation.y= surfDst.Origin.y + yCell*cellSurfaceLightSize;
-								localPos.Estimation.z= zCenter;
-
-								// snap the pos to the surface.
-								localPos.Surface= surfaceId;
-								bool	snapped;
-								localRetriever.snapToInteriorGround(localPos, snapped);
-
-								// if snapped then this point is IN the surface.
-								CIGSurfaceLightBuild::CCellCorner	&cell= 
-									surfDst.Cells[yCell * surfDst.Width + xCell];
-								cell.InSurface= snapped;
-
-								// If ok, retrieve the global (ie world) position
-								if(snapped)
+								for(sint xCell=0; xCell<(sint)surfDst.Width; xCell++)
 								{
-									// build a valid globalPosition.
-									UGlobalPosition	globalPos;
-									globalPos.InstanceId= instanceId;
-									globalPos.LocalPosition= localPos;
-									// retrieve from globalRetriever.
-									cell.CenterPos= globalRetriever->getGlobalPosition(globalPos);
-									// Add a delta to simulate entity center
-									cell.CenterPos.z+= slInfo.CellRaytraceDeltaZ;
+									// compute pos of the cell.
+									ULocalPosition	localPos;
+									localPos.Estimation.x= surfDst.Origin.x + xCell*cellSurfaceLightSize;
+									localPos.Estimation.y= surfDst.Origin.y + yCell*cellSurfaceLightSize;
+									localPos.Estimation.z= zCenter;
 
-									// OverSample
-									if(lightDesc.OverSampling==0)
+									// snap the pos to the surface.
+									localPos.Surface= surfaceId;
+									bool	snapped;
+									localRetriever.snapToInteriorGround(localPos, snapped);
+
+									// if snapped then this point is IN the surface.
+									CIGSurfaceLightBuild::CCellCorner	&cell= 
+										surfDst.Cells[yCell * surfDst.Width + xCell];
+									cell.InSurface= snapped;
+
+									// If ok, retrieve the global (ie world) position
+									if(snapped)
 									{
-										// No OverSample, just add CenterPos to the samples.
-										cell.NumOverSamples= 1;
-										cell.OverSamples[0]= cell.CenterPos;
-									}
-									else
-									{
-										// OverSample.
-										overSampleCell(cell, lightDesc.OverSampling, localRetriever, 
-											*globalRetriever, instanceId, localPos, cellSurfaceLightSize, 
-											slInfo.CellRaytraceDeltaZ);
-										// it is possible that no samples lies in surfaces (small surface).
-										// In this case, just copy CenterPos into samples.
-										if(cell.NumOverSamples==0)
+										// build a valid globalPosition.
+										UGlobalPosition	globalPos;
+										globalPos.InstanceId= instanceId;
+										globalPos.LocalPosition= localPos;
+										// retrieve from globalRetriever.
+										cell.CenterPos= globalRetriever->getGlobalPosition(globalPos);
+										// Add a delta to simulate entity center
+										cell.CenterPos.z+= slInfo.CellRaytraceDeltaZ;
+
+										// OverSample
+										if(lightDesc.OverSampling==0)
 										{
+											// No OverSample, just add CenterPos to the samples.
 											cell.NumOverSamples= 1;
 											cell.OverSamples[0]= cell.CenterPos;
 										}
+										else
+										{
+											// OverSample.
+											overSampleCell(cell, lightDesc.OverSampling, localRetriever, 
+												*globalRetriever, instanceId, localPos, cellSurfaceLightSize, 
+												slInfo.CellRaytraceDeltaZ);
+											// it is possible that no samples lies in surfaces (small surface).
+											// In this case, just copy CenterPos into samples.
+											if(cell.NumOverSamples==0)
+											{
+												cell.NumOverSamples= 1;
+												cell.OverSamples[0]= cell.CenterPos;
+											}
+										}
 									}
-								}
-								else
-								{
-									// For debug mesh only, get an approximate pos.
-									cell.CenterPos= localPos.Estimation + instance.getOrigin();
-									cell.CenterPos.z+= slInfo.CellRaytraceDeltaZ;
-								}
+									else
+									{
+										// For debug mesh only, get an approximate pos.
+										cell.CenterPos= localPos.Estimation + instance.getOrigin();
+										cell.CenterPos.z+= slInfo.CellRaytraceDeltaZ;
+									}
 
-								// Init cell defaults
-								cell.Dilated= false;
-								cell.SunContribution= 0;
+									// Init cell defaults
+									cell.Dilated= false;
+									cell.SunContribution= 0;
+								}
 							}
 						}
 					}
-					
 				}
 			}
 		}

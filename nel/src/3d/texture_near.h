@@ -1,7 +1,7 @@
 /** \file texture_near.h
  * <File description>
  *
- * $Id: texture_near.h,v 1.2 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: texture_near.h,v 1.3 2002/04/03 17:00:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,12 @@ public:
 	 * The texture is invalidate (on this part only...)
 	 */
 	uint			getTileAndFillRect(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE]);
+
+	/** given id of the tile, refill the texture.
+	 * The texture is invalidate (on this part only...)
+	 */
+	void			refillRect(uint id, CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE]);
+
 	/// Set a tile lightmap as free for use. It is an error to free a not allocated tile. (nlassert!!)
 	void			releaseTile(uint id);
 	// @}

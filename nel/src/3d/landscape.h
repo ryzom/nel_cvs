@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.33 2002/03/18 14:45:29 berenguier Exp $
+ * $Id: landscape.h,v 1.34 2002/04/03 17:00:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,6 +62,7 @@ class	CVegetableManager;
 class	CVegetable;
 class	CTileVegetableDesc;
 class	CScene;
+class	CTextureFar;
 
 using NLMISC::Exception;
 using NLMISC::CTriangle;
@@ -499,6 +500,24 @@ public:
 	// @}
 
 
+	/// \name UpdateLighting management
+	// @{
+
+	/** update the lighting of Igs, within a certain amount of time.
+	 *	called by CLandscapeModel
+	 */
+	void			updateLighting(double time);
+
+	/** set the frequency of lighting update. If freq==1, ALL patchs are updated each second.
+	 *	e.g: if 1/20, then every 20 seconds, all patchs are updated.
+	 *	If you set 0, no update will be done at all (this is the default setup!!).
+	 */
+	void			setUpdateLightingFrequency(float freq);
+
+	// @}
+
+
+
 // ********************************
 private:
 	// Private part used by CTessFace / CPatch / CZone.
@@ -542,7 +561,7 @@ private:
 	// Return the render pass for a far texture here.
 	CPatchRdrPass	*getFarRenderPass(CPatch* pPatch, uint farIndex, float& far1UScale, float& far1VScale, float& far1UBias, float& far1VBias, bool& bRot);
 	// Free the render pass for a far texture here.
-	void freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint farIndex);
+	void			freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint farIndex);
 	// Return the render pass for a tile Id, and a patch Lightmap.
 	CPatchRdrPass	*getTileRenderPass(uint16 tileId, bool additiveRdrPass);
 	// Return the UvScaleBias for a tile Id. uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
@@ -562,6 +581,11 @@ private:
 	void unlockBuffers ();
 	// update TheFaceVector for which the faces may have been modified during refine(), refineAll() etc....
 	void updateTessBlocksFaceVector();
+
+
+	// System: update UL links, and call _FarRdrPassSet.erase()
+	void eraseFarRenderPassFromSet (CPatchRdrPass* pass);
+
 
 
 private:
@@ -690,6 +714,10 @@ private:
 	void		getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBias);
 	// tileLightMapId must be the id returned  by getTileLightMap().
 	void		releaseTileLightMap(uint tileLightMapId);
+
+	// refill a lightmap already computed. tileLightMapId must be the id returned  by getTileLightMap().
+	void		refillTileLightMap(uint tileLightMapId, CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE]);
+
 	// @}
 
 
@@ -800,6 +828,49 @@ private:
 	// @{
 	/// \see setPZBModelPosition()
 	CVector						_PZBModelPosition;
+	// @}
+
+
+	/// \name UpdateLighting management
+	// @{
+	// Last update time.
+	double						_ULPrecTime;
+	bool						_ULPrecTimeInit;
+	double						_ULTime;
+	/// Frequency of update.
+	float						_ULFrequency;
+
+
+	/// Far UpdateLighting.
+	sint						_ULTotalFarPixels;
+	/// Current number of far pixels to update. If negative, I have some advance.
+	float						_ULFarPixelsToUpdate;
+	/// The current TextureFar rendered.
+	CTextureFar					*_ULRootTextureFar;
+	/// Current patch id in the current TextureFar processed
+	uint						_ULFarCurrentPatchId;
+
+
+	/// Near UpdateLighting.
+	sint						_ULTotalNearPixels;
+	/// Current number of near pixels to update. If negative, I have some advance.
+	float						_ULNearPixelsToUpdate;
+	/// The current patch rendered.
+	CPatch						*_ULRootNearPatch;
+	/// Current tessBlock id in the current patch processed
+	uint						_ULNearCurrentTessBlockId;
+
+	/// Used by Patch to link/unlink from _ULRootNearPatch
+	void			linkPatchToNearUL(CPatch *patch);
+	void			unlinkPatchFromNearUL(CPatch *patch);
+
+
+	/// Update All Far texture, given a ratio along total lumels
+	void			updateLightingTextureFar(float ratio);
+	/// Update All Near texture, given a ratio along total lumels
+	void			updateLightingTextureNear(float ratio);
+
+
 	// @}
 
 };

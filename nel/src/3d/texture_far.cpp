@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.15 2002/03/14 17:50:38 berenguier Exp $
+ * $Id: texture_far.cpp,v 1.16 2002/04/03 17:00:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,48 @@ namespace NL3D {
 CRGBA CTextureFar::_LightmapExpanded[NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_MAX_TILES_BY_PATCH_EDGE*NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_MAX_TILES_BY_PATCH_EDGE];
 uint8 CTextureFar::_LumelExpanded[(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)*(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)];
 CRGBA CTextureFar::_TileTLIColors[(NL_MAX_TILES_BY_PATCH_EDGE+1)*(NL_MAX_TILES_BY_PATCH_EDGE+1)];
+
+CTextureFar::CTextureFar()
+{
+	// This texture is releasable. It doesn't stays in standard memory after been uploaded into video memory.
+	setReleasable (true);
+
+	_ULPrec= this;
+	_ULNext= this;
+}
+
+CTextureFar::~CTextureFar()
+{
+	// verify the textureFar is correctly unlinked from any ciruclar list.
+	nlassert(_ULPrec==this && _ULNext==this);
+}
+
+
+void CTextureFar::linkBeforeUL(CTextureFar *textNext)
+{
+	nlassert(textNext);
+
+	// first, unlink others from me. NB: works even if _ULPrec==_ULNext==this.
+	_ULNext->_ULPrec= _ULPrec;
+	_ULPrec->_ULNext= _ULNext;
+	// link to igNext.
+	_ULNext= textNext;
+	_ULPrec= textNext->_ULPrec;
+	// link others to me.
+	_ULNext->_ULPrec= this;
+	_ULPrec->_ULNext= this;
+}
+
+void CTextureFar::unlinkUL()
+{
+	// first, unlink others from me. NB: works even if _ULPrec==_ULNext==this.
+	_ULNext->_ULPrec= _ULPrec;
+	_ULPrec->_ULNext= _ULNext;
+	// reset
+	_ULPrec= this;
+	_ULNext= this;
+}
+
 
 void CTextureFar::setSizeOfFarPatch (sint width, sint height)
 {
@@ -151,6 +193,32 @@ bool CTextureFar::removePatch (CPatch *pPatch)
 	return (_PatchCount == 0);
 }
 
+uint CTextureFar::touchPatch(uint p)
+{
+	// Check param
+	nlassert (p<NL_NUM_FAR_PATCHES_BY_TEXTURE);
+
+	// if there is still a patch here
+	if( _Patches[p].Patch!=NULL )
+	{
+		// Position of the invalide rectangle
+		int x = ((p & NL_NUM_FAR_PATCHES_BY_EDGE_MASK) * _OriginalWidth) >> NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT;
+		int y = ((p >> NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT) * _OriginalHeight) >> NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT;
+
+		// Invalidate the associated rectangle
+		CRect rect (x, y, _OriginalWidth>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT, _OriginalHeight>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT);
+		ITexture::touchRect (rect);
+
+		// return number of pixels touched
+		return (_OriginalWidth>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT) * (_OriginalHeight>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT);
+	}
+	else
+	{
+		// no touch
+		return 0;
+	}
+}
+
 // Generate the texture. See ITexture::doGenerate().
 void CTextureFar::doGenerate ()
 {
@@ -176,8 +244,9 @@ void CTextureFar::doGenerate ()
 			nlassert (y>=0);
 			nlassert (y<NL_NUM_FAR_PATCHES_BY_EDGE);
 
-			// Build the rectangle
-			rebuildRectangle (x, y);
+			// ReBuild the rectangle. verify first patch still exist.
+			if (_Patches[x+(y<<NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)].Patch)
+				rebuildRectangle (x, y);
 
 			// Next rectangle
 			ite++;

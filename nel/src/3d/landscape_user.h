@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.11 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: landscape_user.h,v 1.12 2002/04/03 17:00:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,6 +103,8 @@ public:
 	virtual	void	setupStaticLight (const CRGBA &diffuse, const CRGBA &ambiant, float multiply);
 
 	virtual	void	setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
+
+	virtual	void	setUpdateLightingFrequency(float freq);
 
 	// @}
 

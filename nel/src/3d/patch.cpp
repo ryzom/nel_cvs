@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.80 2002/03/14 11:21:07 berenguier Exp $
+ * $Id: patch.cpp,v 1.81 2002/04/03 17:00:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,6 +87,9 @@ CPatch::CPatch()
 	// MasterBlock never clipped.
 	MasterBlock.resetClip();
 
+	// Init UL circular list to NULL (not compiled)
+	_ULNearPrec= NULL;
+	_ULNearNext= NULL;
 }
 // ***************************************************************************
 CPatch::~CPatch()
@@ -140,8 +143,18 @@ void			CPatch::release()
 	OldRenderClipped= true;
 
 	// the pathc is uncompiled. must do it after clearTessBlocks(), because may use it 
-	// for vegetable manager
+	// for vegetable manager, and for updateLighting
 	Zone= NULL;
+
+	// uncompile: reset circular list ot NULL.
+	if(_ULNearPrec!= NULL)
+	{
+		// verify the patch is correctly unlinked from any ciruclar list.
+		nlassert(_ULNearPrec==this && _ULNearNext==this);
+	}
+	_ULNearPrec= NULL;
+	_ULNearNext= NULL;
+
 }
 
 
@@ -601,6 +614,11 @@ void			CPatch::addRefTessBlocks()
 			VegetableClipBlocks[i]= vegetableManager->createClipBlock();
 		}
 
+
+		// updateLighting management.
+		//==========
+		// append patch for Near updateLighting, since TessBlock lightmap may/will exist.
+		getLandscape()->linkPatchToNearUL(this);
 	}
 }
 
@@ -636,6 +654,15 @@ void			CPatch::clearTessBlocks()
 			vegetableManager->deleteClipBlock(VegetableClipBlocks[i]);
 		}
 		contReset(VegetableClipBlocks);
+	}
+
+
+	// updateLighting management.
+	//==========
+	if(Zone)
+	{
+		// remove patch from Near updateLighting, since no more TessBlock lightmap can exist.
+		getLandscape()->unlinkPatchFromNearUL(this);
 	}
 
 
@@ -1171,6 +1198,12 @@ void			CPatch::compile(CZone *z, uint patchId, uint8 orderS, uint8 orderT, CTess
 {
 	nlassert(z);
 	Zone= z;
+
+	// For updateLighting, get the correct pointer now.
+	// Init UL circular list to me
+	_ULNearPrec= this;
+	_ULNearNext= this;
+
 
 	// Once the patch is inserted and compiled in a zone, it is ready to be rendered.
 	// So now fill the Patch info in render pass.

@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.12 2002/02/06 16:53:13 berenguier Exp $
+ * $Id: u_landscape.h,v 1.13 2002/04/03 17:00:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,6 +108,12 @@ public:
 	 */
 	virtual	void	setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor) =0;
 
+
+	/** Set the frequency of lighting update. If freq==1, ALL patchs are updated each second.
+	 *	e.g: if 1/20, then every 20 seconds, all patchs are updated.
+	 *	If you set 0, no update will be done at all (this is the default setup!!).
+	 */
+	virtual	void	setUpdateLightingFrequency(float freq) =0;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.3 2002/03/14 17:50:38 berenguier Exp $
+ * $Id: texture_far.h,v 1.4 2002/04/03 17:00:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,11 +86,8 @@ public:
 	};
 
 	/// Constructor
-	CTextureFar()
-	{
-		// This texture is releasable. It doesn't stays in standard memory after been uploaded into video memory.
-		setReleasable (true);
-	}
+	CTextureFar();
+	virtual ~CTextureFar();
 
 	/**
 	  *  Set the size of the patch stored in this texture far. Note that width must be larger than height.
@@ -126,6 +123,23 @@ public:
 	 */
 	virtual void				doGenerate();
 
+	/**
+	 *	Touch a patch by its id in texture (call touchRect()).
+	 *	\param patchId a value beetween 0 and NL_NUM_FAR_PATCHES_BY_TEXTURE-1, which gives the id of the patch 
+	 *	in the texture
+	 *	\return number of pixels touched. 0 if Patch==NULL (empty).
+	 */
+	uint						touchPatch(uint patchId);
+
+
+	/// For lighting update, insert this before textNext (CiruclarList). textNext must be !NULL
+	void						linkBeforeUL(CTextureFar *textNext);
+	/// For lighting update, unlink (CiruclarList)
+	void						unlinkUL();
+	/// For lighting update, get Next (CiruclarList). If ==this, then list is empty
+	CTextureFar					*getNextUL() const {return _ULNext;}
+
+
 	// Data
 
 	/**
@@ -159,6 +173,10 @@ private:
 	static NLMISC::CRGBA	_TileTLIColors[];
 
 	NLMISC_DECLARE_CLASS(CTextureFar);
+
+	/// UpdateLighting. CiruclarList
+	CTextureFar					*_ULPrec;
+	CTextureFar					*_ULNext;
 };
 
 } // NL3D

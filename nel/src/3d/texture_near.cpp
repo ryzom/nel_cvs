@@ -1,7 +1,7 @@
 /** \file texture_near.cpp
  * <File description>
  *
- * $Id: texture_near.cpp,v 1.3 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_near.cpp,v 1.4 2002/04/03 17:00:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,15 @@ uint			CTextureNear::getTileAndFillRect(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE
 	_AvailableTiles[id]= false;
 	_FreeTiles.pop_back();
 
+	// Fill the texture
+	refillRect(id, map);
+
+	return id;
+}
+
+// ***************************************************************************
+void			CTextureNear::refillRect(uint id, CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE])
+{
 	// Copy the map into the texture
 	uint	nbTilesByLine= getWidth()/NL_TILE_LIGHTMAP_SIZE;
 	uint	s= id% nbTilesByLine;
@@ -91,9 +100,8 @@ uint			CTextureNear::getTileAndFillRect(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE
 
 	// Invalidate the rectangle.
 	ITexture::touchRect(CRect(s, t, NL_TILE_LIGHTMAP_SIZE, NL_TILE_LIGHTMAP_SIZE));
-
-	return id;
 }
+
 // ***************************************************************************
 void			CTextureNear::releaseTile(uint id)
 {

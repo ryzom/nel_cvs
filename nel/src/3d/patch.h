@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.23 2002/04/02 16:03:03 vizerie Exp $
+ * $Id: patch.h,v 1.24 2002/04/03 17:00:40 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -728,6 +728,30 @@ public:
 	// @}
 
 
+	/// \name UpdateLighting Management
+	// @{
+
+	/// For lighting update, insert this before patchNext (CiruclarList). textNext must be !NULL
+	void		linkBeforeNearUL(CPatch *patchNext);
+	/// For lighting update, unlink (CiruclarList)
+	void		unlinkNearUL();
+	/// For lighting update, get Next (CiruclarList). If ==this, then list is empty
+	CPatch		*getNextNearUL() const {return _ULNearNext;}
+
+	/// get the number of Near TessBlocks. Actually OrderS/2*OrderT/2.
+	uint		getNumNearTessBlocks() const {return TessBlocks.size();}
+
+	/**
+	 *	recompute the near lightmap of tessBlock "numTb".
+	 *	return the number of pixels updated by computing of this tessBlock.
+	 *	Actually 0 if the tessBlock lightmap is not computed, or 100 
+	 *	(NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE) pixels.
+	 */
+	uint		updateTessBlockLighting(uint numTb);
+
+	// @}
+
+
 // Private part.
 private:
 /*********************************/
@@ -1114,6 +1138,13 @@ private:
 	 */
 	void		getTileLumelmapPixelPrecomputed(uint ts, uint tt, uint s, uint t, uint8 &dest) const;
 
+	// @}
+
+
+	/// \name UpdateLighting Management
+	// @{
+	CPatch		*_ULNearPrec;
+	CPatch		*_ULNearNext;
 	// @}
 
 

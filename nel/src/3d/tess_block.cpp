@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * <File description>
  *
- * $Id: tess_block.cpp,v 1.9 2002/02/28 12:59:51 besson Exp $
+ * $Id: tess_block.cpp,v 1.10 2002/04/03 17:00:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,9 @@ CTessBlock::~CTessBlock()
 	{
 		removeFromModifyList();
 	}
+
+	// LightMap should be released
+	nlassert(LightMapRefCount==0);
 }
 
 // ***************************************************************************

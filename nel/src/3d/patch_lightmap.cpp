@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.2 2002/03/14 17:50:38 berenguier Exp $
+ * $Id: patch_lightmap.cpp,v 1.3 2002/04/03 17:00:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1941,6 +1941,80 @@ void		CPatch::computeCurrentTLILightmap(NLMISC::CRGBA *array) const
 
 
 }
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// UpdateLighting.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void CPatch::linkBeforeNearUL(CPatch *patchNext)
+{
+	nlassert(patchNext);
+
+	// first, unlink others from me. NB: works even if _ULNearPrec==_ULNearNext==this.
+	_ULNearNext->_ULNearPrec= _ULNearPrec;
+	_ULNearPrec->_ULNearNext= _ULNearNext;
+	// link to igNext.
+	_ULNearNext= patchNext;
+	_ULNearPrec= patchNext->_ULNearPrec;
+	// link others to me.
+	_ULNearNext->_ULNearPrec= this;
+	_ULNearPrec->_ULNearNext= this;
+}
+
+
+// ***************************************************************************
+void CPatch::unlinkNearUL()
+{
+	// first, unlink others from me. NB: works even if _ULNearPrec==_ULNearNext==this.
+	_ULNearNext->_ULNearPrec= _ULNearPrec;
+	_ULNearPrec->_ULNearNext= _ULNearNext;
+	// reset
+	_ULNearPrec= this;
+	_ULNearNext= this;
+}
+
+
+// ***************************************************************************
+uint CPatch::updateTessBlockLighting(uint numTb)
+{
+	// TessBlocks must have been allocated and tessBlockId must be ok.
+	nlassert(numTb<TessBlocks.size());
+
+	// compute tessBlock coordinate
+	uint tbWidth= OrderS>>1;
+	uint ts= numTb&(tbWidth-1);
+	uint tt= numTb/tbWidth;
+	// expand to tile coordinate.
+	ts*= 2;
+	tt*= 2;
+
+	// get what tessBlock to use.
+	CTessBlock	&tessBlock= TessBlocks[numTb];
+
+	// If the lightmap Id has not been computed, quit
+	if(tessBlock.LightMapRefCount==0)
+		return 0;
+	else
+	{
+		// Recompute the lightmap texture, with help of TileColors, with neighboring info etc...
+		CRGBA	lightText[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE];
+		computeNearBlockLightmap(ts&(~1), tt&(~1), lightText);
+
+		// donlod this texture to Driver etc...
+		Zone->Landscape->refillTileLightMap(tessBlock.LightMapId, lightText);
+
+		// return number of pixels computed.
+		return	NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE;
+	}
+}
+
+
 
 
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.105 2002/03/18 14:45:29 berenguier Exp $
+ * $Id: landscape.cpp,v 1.106 2002/04/03 17:00:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,6 +224,22 @@ CLandscape::CLandscape() :
 	_DriverOkForVegetable= false;
 
 	_PZBModelPosition= CVector::Null;
+
+
+	// Default: no updateLighting.
+	_ULFrequency= 0;
+	_ULPrecTimeInit= false;
+	// Default: no textureFar created.
+	_ULTotalFarPixels= 0;
+	_ULFarPixelsToUpdate= 0;
+	_ULRootTextureFar= NULL;
+	_ULFarCurrentPatchId= 0;
+	// Default: no patch created
+	_ULTotalNearPixels= 0;
+	_ULNearPixelsToUpdate= 0;
+	_ULRootNearPatch= NULL;
+	_ULNearCurrentTessBlockId= 0;
+
 }
 // ***************************************************************************
 CLandscape::~CLandscape()
@@ -434,7 +450,8 @@ void			CLandscape::clear()
 	}
 
 	// Remove each zone one by one.
-	for(sint i=0;i<(sint)zoneIds.size();i++)
+	sint i;
+	for(i=0;i<(sint)zoneIds.size();i++)
 	{
 		nlverify(removeZone(zoneIds[i]));
 	}
@@ -447,6 +464,23 @@ void			CLandscape::clear()
 	_Far0VB.clear();
 	_Far1VB.clear();
 	_TileVB.clear();
+
+
+	// Reset All Far Texture and unlink _ULRootTextureFar ciruclarList.
+	// First "free" the Free list. 
+	for(i=0;i<(sint)_FarRdrPassSetVectorFree.size();i++)
+	{
+		_FarRdrPassSetVectorFree[i].clear();
+	}
+	// Then free all Far RdrPass.
+	ItSPRenderPassSet	itFar;
+	// unitl set is empty
+	while( (itFar= _FarRdrPassSet.begin()) != _FarRdrPassSet.end())
+	{
+		// erase with link update.
+		eraseFarRenderPassFromSet(*itFar);
+	}
+
 
 	// reset driver.
 	_Driver= NULL;
@@ -1625,6 +1659,13 @@ uint		CLandscape::getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHT
 	// Compute the Id.
 	lightMapId= textNum*NbTileLightMapByTexture + lightMapId;
 
+
+	// 3. updateLighting
+	//===================================================
+	// Increment number of pixels to update for near.
+	_ULTotalNearPixels+= NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE;
+
+
 	// Result:
 	lightmapRdrPass= nearRdrPass;
 	return lightMapId;
@@ -1667,6 +1708,29 @@ void		CLandscape::releaseTileLightMap(uint tileLightMapId)
 	CTextureNear	*nearText= (CTextureNear*)(ITexture*)nearRdrPass->TextureDiffuse;
 	nearText->releaseTile(id);
 	_NFreeLightMaps++;
+
+	// updateLighting
+	// Decrement number of pixels to update for near.
+	_ULTotalNearPixels-= NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE;
+}
+
+
+// ***************************************************************************
+void		CLandscape::refillTileLightMap(uint tileLightMapId, CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE])
+{
+	uint	id, textNum;
+
+	// Get the id local in the texture.
+	textNum= tileLightMapId / NbTileLightMapByTexture;
+	id= tileLightMapId % NbTileLightMapByTexture;
+	nlassert(textNum>=0 && textNum<_TextureNears.size());
+
+	// get a ptr on the texture.
+	CPatchRdrPass	*nearRdrPass= _TextureNears[textNum];
+	CTextureNear	*nearText= (CTextureNear*)(ITexture*)nearRdrPass->TextureDiffuse;
+
+	// refill this tile
+	nearText->refillRect(id, map);
 }
 
 
@@ -1688,6 +1752,9 @@ CPatchRdrPass*	CLandscape::getFarRenderPass(CPatch* pPatch, uint farIndex, float
 	uint width=(pPatch->getOrderS ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
 	uint height=(pPatch->getOrderT ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
 
+	// For updateLighting: increment total of pixels to update.
+	_ULTotalFarPixels+= width*height;
+
 	// Render pass index
 	uint passIndex=getRdrPassIndexWithSize (width, height);
 
@@ -1699,6 +1766,12 @@ CPatchRdrPass*	CLandscape::getFarRenderPass(CPatch* pPatch, uint farIndex, float
 
 		// Fill the render pass
 		CTextureFar *pTextureFar=new CTextureFar;
+
+		// Append this textureFar to the list of TextureFar to updateLighting.
+		if(_ULRootTextureFar==NULL)
+			_ULRootTextureFar= pTextureFar;
+		else
+			pTextureFar->linkBeforeUL(_ULRootTextureFar);
 
 		// Set the bank
 		pTextureFar->_Bank=&TileFarBank;
@@ -1739,6 +1812,10 @@ void		CLandscape::freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint f
 	uint width=(pPatch->getOrderS ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
 	uint height=(pPatch->getOrderT ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
 
+	// For updateLighting: decrement total of pixels to update.
+	_ULTotalFarPixels-= width*height;
+	nlassert(_ULTotalFarPixels>=0);
+
 	// Render pass index
 	uint passIndex=getRdrPassIndexWithSize (width, height);
 
@@ -1759,8 +1836,8 @@ void		CLandscape::freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint f
 			// Release for good
 			_FarRdrPassSetVectorFree[passIndex].erase (pass);
 
-			// Remove from draw list
-			_FarRdrPassSet.erase (pass);
+			// update UL links, and Remove from draw list
+			eraseFarRenderPassFromSet (pass);
 		}
 	}
 	else
@@ -1768,6 +1845,35 @@ void		CLandscape::freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint f
 		// Insert in the free list
 		_FarRdrPassSetVectorFree[passIndex].insert (pass);
 	}
+}
+
+
+// ***************************************************************************
+void		CLandscape::eraseFarRenderPassFromSet (CPatchRdrPass* pass)
+{
+	// Before deleting, must remove TextureFar from UpdateLighting list.
+
+	// Get a pointer on the diffuse far texture
+	CTextureFar *pTextureFar=(CTextureFar*)(&*(pass->TextureDiffuse));
+
+	// If I delete the textureFar which is the current root
+	if(_ULRootTextureFar==pTextureFar)
+	{
+		// switch to next
+		_ULRootTextureFar= pTextureFar->getNextUL();
+		// if still the same, it means that the circular list is now empty
+		if(_ULRootTextureFar==pTextureFar)
+			_ULRootTextureFar= NULL;
+		// reset patch counter.
+		_ULFarCurrentPatchId= 0;
+	}
+
+	// unlink the texture from list
+	pTextureFar->unlinkUL();
+
+
+	// Remove from draw list
+	_FarRdrPassSet.erase (pass);
 }
 
 
@@ -2863,6 +2969,138 @@ void			CLandscape::setPointLightFactor(const std::string &lightGroupName, NLMISC
 		(*it).second->_PointLightArray.setPointLightFactor(lightGroupName, nFactor);
 	}
 }
+
+
+// ***************************************************************************
+void			CLandscape::updateLighting(double time)
+{
+	_ULTime= time;
+
+	// first time in this method??
+	if(!_ULPrecTimeInit)
+	{
+		_ULPrecTimeInit= true;
+		_ULPrecTime= _ULTime;
+	}
+	// compute delta time from last update.
+	float dt= float(_ULTime - _ULPrecTime);
+	_ULPrecTime= _ULTime;
+
+
+	// If not disabled
+	if(_ULFrequency)
+	{
+		// Do it for near and far in 2 distinct ways.
+		updateLightingTextureFar(dt * _ULFrequency);
+		updateLightingTextureNear(dt * _ULFrequency);
+	}
+
+}
+
+// ***************************************************************************
+void			CLandscape::setUpdateLightingFrequency(float freq)
+{
+	freq= max(freq, 0.f);
+	_ULFrequency= freq;
+}
+
+
+// ***************************************************************************
+void			CLandscape::linkPatchToNearUL(CPatch *patch)
+{
+	// Append this patch to the list of patch to updateLighting.
+	if(_ULRootNearPatch==NULL)
+		_ULRootNearPatch= patch;
+	else
+		patch->linkBeforeNearUL(_ULRootNearPatch);
+}
+
+// ***************************************************************************
+void			CLandscape::unlinkPatchFromNearUL(CPatch *patch)
+{
+	// If I unlink the patch which is the current root
+	if(_ULRootNearPatch==patch)
+	{
+		// switch to next
+		_ULRootNearPatch= patch->getNextNearUL();
+		// if still the same, it means that the circular list is now empty
+		if(_ULRootNearPatch==patch)
+			_ULRootNearPatch= NULL;
+		// reset tessBlock counter.
+		_ULNearCurrentTessBlockId= 0;
+	}
+
+	// unlink the patch from list
+	patch->unlinkNearUL();
+}
+
+
+// ***************************************************************************
+void			CLandscape::updateLightingTextureFar(float ratio)
+{
+	// compute number of pixels to update.
+	_ULFarPixelsToUpdate+= ratio * _ULTotalFarPixels;
+	// maximize, so at max, it computes all patchs, just one time.
+	_ULFarPixelsToUpdate= min(_ULFarPixelsToUpdate, (float)_ULTotalFarPixels);
+
+	// Test Profile Yoyo
+	/*extern bool YOYO_LandULTest;
+	if(YOYO_LandULTest)
+	{
+		nlinfo("YOYO_UL Far: %dK, %dK", (sint)_ULFarPixelsToUpdate/1024, (sint)_ULTotalFarPixels/1024);
+	}*/
+
+	// while there is still some pixels to update.
+	while(_ULFarPixelsToUpdate > 0 && _ULRootTextureFar)
+	{
+		// update patch (if not null) in the textureFar.
+		_ULFarPixelsToUpdate-= _ULRootTextureFar->touchPatch(_ULFarCurrentPatchId);
+		// Next patch to process.
+		_ULFarCurrentPatchId++;
+
+		// last patch in the texture??
+		if(_ULFarCurrentPatchId>=NL_NUM_FAR_PATCHES_BY_TEXTURE)
+		{
+			// yes, go to next texture.
+			_ULRootTextureFar= _ULRootTextureFar->getNextUL();
+			// reset to 0th patch.
+			_ULFarCurrentPatchId=0;
+		}
+	}
+
+	// Now, _ULFarPixelsToUpdate should be <=0. (most of the time < 0)
+}
+
+
+// ***************************************************************************
+void			CLandscape::updateLightingTextureNear(float ratio)
+{
+	// compute number of pixels to update.
+	_ULNearPixelsToUpdate+= ratio * _ULTotalNearPixels;
+	// maximize, so at max, it computes all patchs, just one time.
+	_ULNearPixelsToUpdate= min(_ULNearPixelsToUpdate, (float)_ULTotalNearPixels);
+
+
+	// while there is still some pixels to update.
+	while(_ULNearPixelsToUpdate > 0 && _ULRootNearPatch)
+	{
+		// update tessBlock (if lightmap exist for this tessBlock) in the patch.
+		_ULNearPixelsToUpdate-= _ULRootNearPatch->updateTessBlockLighting(_ULNearCurrentTessBlockId);
+		// Next tessBlock to process.
+		_ULNearCurrentTessBlockId++;
+
+		// last tessBlock in the patch??
+		if(_ULNearCurrentTessBlockId>=_ULRootNearPatch->getNumNearTessBlocks())
+		{
+			// yes, go to next patch.
+			_ULRootNearPatch= _ULRootNearPatch->getNextNearUL();
+			// reset to 0th tessBlock.
+			_ULNearCurrentTessBlockId=0;
+		}
+	}
+
+}
+
 
 
 } // NL3D

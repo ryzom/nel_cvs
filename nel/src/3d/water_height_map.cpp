@@ -15,7 +15,11 @@ namespace NL3D
 CWaterHeightMap::CWaterHeightMap() : _X(0), _Y(0), _Size(0),
 									 _CurrMap(0), Date(-1),
 									 _Damping(0.97f), _FilterWeight(4), _UnitSize(0.6f),
-									 _WaveIntensity(0), _WavePeriod(0)
+									 _WaveIntensity(0), _WavePeriod(0),
+									 _WavesEnabled(false),
+									 _WaveImpulsionRadius(3),
+									 _BorderWaves(true),
+									 _EllapsedTime(0)
 {		
 }
 
@@ -34,10 +38,10 @@ void		CWaterHeightMap::setSize(uint size)
 void		CWaterHeightMap::makeCpy(uint buffer, uint dX, uint dY, uint sX, uint sY, uint width, uint height)
 {	
 	if (width == 0 || height == 0) return;
-	nlassert(dX >= 0 && dX <= (2 * _Size));
-	nlassert(dY >= 0 && dY <= (2 * _Size));
-	nlassert(sX >= 0 && sX <= (2 * _Size));
-	nlassert(sY >= 0 && sY <= (2 * _Size));
+	nlassert(dX <= (2 * _Size));
+	nlassert(dY <= (2 * _Size));
+	nlassert(sX <= (2 * _Size));
+	nlassert(sY <= (2 * _Size));
 	nlassert(dX + width <= 2 * _Size);
 	nlassert(sX + width <= 2 * _Size);
 	nlassert(dY + height <= 2 * _Size);
@@ -114,7 +118,7 @@ void		CWaterHeightMap::setUserPos(sint x, sint y)
 
 	
 
-		// different zone -> must decal dats
+		// different zone -> must decal datas
 		if (xDivSize != XDivSize || yDivSize != YDivSize)
 		{
 			sint left   = std::max(x, (sint) _X);
@@ -331,12 +335,68 @@ void	CWaterHeightMap::filterNStoreGradient()
 	while (--y);	
 }
 
-void CWaterHeightMap::swapBuffers(void)
+void CWaterHeightMap::swapBuffers(float deltaT)
 {
-	// generate automatic waves
-	if (_WaveIntensity != 0)
+	if (_WavesEnabled)
 	{
-		perturbate(_X + rand() % _Size, _Y + rand() % _Size, 3, _WaveIntensity);
+		uint numWaves;
+		if (_WavePeriod == 0)
+		{
+			numWaves = 1;
+		}
+		else
+		{
+			_EllapsedTime += deltaT;
+			if (_EllapsedTime > _WavePeriod)
+			{
+				numWaves = (uint) (_EllapsedTime / _WavePeriod);
+				_EllapsedTime -= numWaves * _WavePeriod;
+			}
+		}
+		
+		uint k;
+		// generate automatic waves
+		if (!_BorderWaves)
+		{
+			if (_WaveIntensity != 0)
+			{
+				for (k = 0; k < numWaves; ++k)
+				{
+					perturbate(_X + rand() % _Size, _Y + rand() % _Size, _WaveImpulsionRadius, _WaveIntensity);
+				}
+			}
+		}
+		else
+		{
+			switch(rand() & 3) // choose a random border
+			{
+				case 0: // top border
+					for (k = 0; k < numWaves; ++k)
+					{
+						perturbate(_X + (uint) rand() % _Size, _Y, _WaveImpulsionRadius, _WaveIntensity);
+					}
+				break;
+				case 1: // bottom border
+					for (k = 0; k < numWaves; ++k)
+					{
+						perturbate(_X + (uint) rand() % _Size, _Y + _Size - 1, _WaveImpulsionRadius, _WaveIntensity);
+					}
+				break;
+				case 2: // right border
+					for (k = 0; k < numWaves; ++k)
+					{
+						perturbate(_X + _Size - 1, _Y + (uint) rand() % _Size, _WaveImpulsionRadius, _WaveIntensity);
+					}
+				break;
+				case 3: // left border
+					for (k = 0; k < numWaves; ++k)
+					{
+						perturbate(_X, _Y + (uint) rand() % _Size, _WaveImpulsionRadius, _WaveIntensity);
+					}
+				break;
+			}
+	
+		}
 	}
 	_CurrMap ^= 1;
 }
@@ -463,10 +523,12 @@ while (curr != endLeft);
 }
 
 
-void	CWaterHeightMap::setWaves(float intensity, float period)
+void CWaterHeightMap::setWaves(float intensity, float period, uint radius, bool border)
 {
-	_WaveIntensity = intensity;
-	_WavePeriod    = 0;
+	_WaveIntensity		  = intensity;
+	_WavePeriod			  = period;
+	_WaveImpulsionRadius  = radius;
+	_BorderWaves		  = border;
 
 }
 

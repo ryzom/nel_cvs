@@ -80,20 +80,34 @@ public:
 	NLMISC::CVector2f		*getGradPointer(void) { return &_Grad[0]; }
 
 	/// swap the height maps. It must be called once propagation and filtering have been performed
-	void					swapBuffers(void);
+	void					swapBuffers(float deltaT);
 
-	/** Tells this height map to automatically generate waves. They are generated as perturbation on the border
+	/// enable automatic waves generation
+	void					enableWaves(bool enabled = true) { _WavesEnabled = enabled; }
+
+	/// test wheter automatic waves generation is enabled
+	bool					areWavesEnabled() const { return _WavesEnabled; }
+
+	/** Tells this height map the params to automatically generate waves. They are generated as perturbation on the border
 	  * of the field
 	  * \param   intensity The intensity of the waves. 0 disable waves
 	  * \period  the time ellapsed between each waves
+	  * \radius  the radius od the impulsion of the waves to be created
+	  * \border  true if waves should only be generated on the border of height map, (actually, where waves can't be seen because of distance, this avoid to see the impulsion)
 	  */
-	void					setWaves(float intensity, float period);
+	void setWaves(float intensity, float period, uint radius, bool border);
 
 	/// get the intensity of waves
 	float					getWaveIntensity() const { return _WaveIntensity; }
 
 	/// get the period of waves
 	float					getWavePeriod() const { return _WavePeriod; }
+
+	/// radius of impulsion for the waves
+	uint					getWaveImpulsionRadius() const { return _WaveImpulsionRadius; }
+
+	/// Test whether waves are enabled on the border
+	bool  getBorderWaves() const { return _BorderWaves; }
 
 	/// damping
 	void  setDamping(float damping) { _Damping = damping; }
@@ -107,20 +121,23 @@ public:
 	void  setUnitSize(float unitSize) { _UnitSize = unitSize; }
 	float getUnitSize() const { return _UnitSize; }
 
-	
-
-
+	/// the last update date
 	sint64					Date;
+
 private:
 	friend class CWaterPoolManager;
 	// ctor
 	CWaterHeightMap();
 
+	bool					   _WavesEnabled;
 	float					   _Damping;
 	float					   _FilterWeight;
 	float					   _UnitSize;
 	float					   _WaveIntensity;
 	float					   _WavePeriod;
+	uint					   _WaveImpulsionRadius;
+	bool					   _BorderWaves;
+	float					   _EllapsedTime;
 
 
 	uint					   _X, _Y;	

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.10 2001/07/11 17:13:57 legros Exp $
+ * $Id: client.cpp,v 1.11 2001/07/11 17:39:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 	TextContext = Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
 	TextContext->setHotSpot (UTextContext::TopLeft);
 	TextContext->setColor (CRGBA (255,255,255));
-	TextContext->setFontSize (12);
+	TextContext->setFontSize (16);
 
 	// Create a scene
 	Scene = Driver->createScene();

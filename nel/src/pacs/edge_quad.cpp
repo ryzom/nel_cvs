@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.10 2002/03/01 10:45:23 legros Exp $
+ * $Id: edge_quad.cpp,v 1.11 2002/04/03 13:23:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -296,7 +296,7 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 				// if this entry didn't exist before create a new one...
 				if (entry == _EdgeEntries.size())
 				{
-					_EdgeEntries.push_back();
+					_EdgeEntries.push_back(CExteriorEdgeEntry());
 					_EdgeEntries.back().EdgeId = edgeId;
 					_EdgeEntries.back().ChainId = chainId;
 					_EdgeEntries.back().Interior = interior;

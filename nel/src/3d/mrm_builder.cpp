@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.25 2002/03/14 18:13:47 vizerie Exp $
+ * $Id: mrm_builder.cpp,v 1.26 2002/04/03 13:22:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1980,7 +1980,7 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 				sint	idRdrPass= destLod.RdrPass.size();
 				rdrPassIndex[j]= idRdrPass;
 				// create a rdrPass.
-				destLod.RdrPass.push_back();
+				destLod.RdrPass.push_back(CMeshMRMGeom::CRdrPass());
 				// assign the good materialId to this rdrPass.
 				destLod.RdrPass[idRdrPass].MaterialId= j;
 				// reserve the array of faces of this rdrPass.

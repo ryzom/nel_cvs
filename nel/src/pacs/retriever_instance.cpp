@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.33 2002/01/21 13:48:36 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.34 2002/04/03 13:23:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -622,7 +622,7 @@ void	NLPACS::CRetrieverInstance::testExteriorCollision(NLPACS::CCollisionSurface
 		{
 			// add a new CCollisionChain.
 			ccId= cst.CollisionChains.size();
-			cst.CollisionChains.push_back();
+			cst.CollisionChains.push_back(CCollisionChain());
 			// Fill it with default.
 			cst.CollisionChains[ccId].Tested= false;
 			cst.CollisionChains[ccId].ExteriorEdge = true;

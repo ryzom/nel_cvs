@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.49 2002/03/26 15:25:01 corvazier Exp $
+ * $Id: mesh.cpp,v 1.50 2002/04/03 13:22:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -889,7 +889,7 @@ void	CMeshGeom::buildSkin(CMesh::CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces)
 	while(!remainingFaces.empty())
 	{
 		// create a new matrix block.
-		_MatrixBlocks.push_back();
+		_MatrixBlocks.push_back(CMatrixBlock());
 		CMatrixBlock	&matrixBlock= _MatrixBlocks[_MatrixBlocks.size()-1];
 		matrixBlock.NumMatrix=0;
 
@@ -1600,3 +1600,6 @@ void	CMesh::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 
 
 } // NL3D
+
+
+

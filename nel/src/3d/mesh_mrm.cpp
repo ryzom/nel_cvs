@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.32 2002/03/29 14:19:55 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.33 2002/04/03 13:22:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,7 +134,7 @@ void		CMeshMRMGeom::CLod::buildSkinVertexBlocks()
 			else
 			{
 				// no, append a new one.
-				SkinVertexBlocks.push_back();
+				SkinVertexBlocks.push_back(CVertexBlock());
 				vBlock= &SkinVertexBlocks[SkinVertexBlocks.size()-1];
 				vBlock->VertexStart= i;
 				vBlock->NVertices= 1;

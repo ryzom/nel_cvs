@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.46 2002/04/02 15:35:10 legros Exp $
+ * $Id: local_retriever.cpp,v 1.47 2002/04/03 13:23:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -926,7 +926,7 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<
 {
 	CAABBox			box;
 	const double	BorderThreshold = 2.0e-2f;
-	box.setMinMax(CVector(estimated.x-BorderThreshold, _BBox.getMin().y, 0.0f), CVector(estimated.x+BorderThreshold, _BBox.getMax().y, 0.0f));
+	box.setMinMax(CVector(estimated.x-(float)BorderThreshold, _BBox.getMin().y, 0.0f), CVector(estimated.x+(float)BorderThreshold, _BBox.getMax().y, 0.0f));
 	uint			numEdges = _ChainQuad.selectEdges(box, cst);
 
 	uint			ochain, i;
@@ -1252,6 +1252,7 @@ float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position)
 
 
 
+#pragma optimize( "", off )
 void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosition &A, 
 										  const NLPACS::CLocalRetriever::CLocalPosition &B, 
 										  std::vector<NLPACS::CVector2s> &path, 
@@ -1464,7 +1465,7 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 
 	path.push_back(CVector2s(B.Estimation));
 }
-
+#pragma optimize( "", on ) 
 
 // ***************************************************************************
 // ***************************************************************************
@@ -1517,7 +1518,7 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 		{
 			// add a new CCollisionChain.
 			ccId= cst.CollisionChains.size();
-			cst.CollisionChains.push_back();
+			cst.CollisionChains.push_back(CCollisionChain());
 			// Fill it with default.
 			cst.CollisionChains[ccId].Tested= false;
 			cst.CollisionChains[ccId].ExteriorEdge = false;

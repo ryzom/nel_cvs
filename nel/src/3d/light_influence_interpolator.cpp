@@ -1,7 +1,7 @@
 /** \file light_influence_interpolator.cpp
  * <File description>
  *
- * $Id: light_influence_interpolator.cpp,v 1.2 2002/02/28 12:59:49 besson Exp $
+ * $Id: light_influence_interpolator.cpp,v 1.3 2002/04/03 13:22:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ void		CLightInfluenceInterpolator::interpolate(std::vector<CPointLightInfluence>
 			if(corner.Lights[0]->_IdInInfluenceList==-1)
 			{
 				// append a PointLightInfluence
-				pointLightList.push_back();
+				pointLightList.push_back(CPointLightInfluence());
 				sint	id= pointLightList.size()-1;
 				// setup the PointLightInfluence
 				corner.Lights[0]->_IdInInfluenceList= id;
@@ -90,7 +90,7 @@ void		CLightInfluenceInterpolator::interpolate(std::vector<CPointLightInfluence>
 			if(corner.Lights[1]->_IdInInfluenceList==-1)
 			{
 				// append a PointLightInfluence
-				pointLightList.push_back();
+				pointLightList.push_back(CPointLightInfluence());
 				sint	id= pointLightList.size()-1;
 				// setup the PointLightInfluence
 				corner.Lights[1]->_IdInInfluenceList= id;

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.57 2002/03/01 10:45:23 legros Exp $
+ * $Id: global_retriever.cpp,v 1.58 2002/04/03 13:23:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,7 +256,7 @@ void	NLPACS::CGlobalRetriever::getBorders(const UGlobalPosition &pos, std::vecto
 		uint	edge;
 		for (edge=entry.EdgeStart; edge+1<entry.EdgeEnd; ++edge)
 		{
-			edges.push_back();
+			edges.push_back(CLine());
 			edges.back().V0 = ochain[edge].unpack3f() + origin;
 			edges.back().V0.z = zp;
 			edges.back().V1 = ochain[edge+1].unpack3f() + origin;

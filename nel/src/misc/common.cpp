@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.55 2004/04/26 18:30:30 cado Exp $
+ * $Id: common.cpp,v 1.56 2004/05/07 18:22:23 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,7 +87,7 @@ void nlSleep( uint32 ms )
 
 	timespec ts;
 	ts.tv_sec = ms/1000;
-	ts.tv_nsec = (ms%1000)*1000;
+	ts.tv_nsec = (ms%1000)*1000000;
 	int res;
 	do
 	{

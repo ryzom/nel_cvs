@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.20 2003/03/06 09:26:52 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.21 2003/03/18 17:10:55 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,7 +36,9 @@ namespace NLMISC {
 /* In debugging stage, should be defined. In stable stage, undefine it!
  * Works along with the verboseAllTraffic command
  */
+#ifndef NL_RELEASE
 #define LOG_ALL_TRAFFIC
+#endif
 
 #ifdef LOG_ALL_TRAFFIC
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.29 2001/04/18 10:53:46 berenguier Exp $
+# $Id: Makefile.am,v 1.30 2001/04/19 15:37:21 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -26,17 +26,23 @@ libnel3d_la_SOURCES  = bezier_patch.cpp \
                        mrm_mesh.cpp tile_lumel.cpp texture_near.cpp \
                        zone_smoother.cpp zone_tgt_smoother.cpp \
                        landscape_profile.cpp tess_block.cpp tess_list.cpp \
-					   zone_manager.cpp zone_search.cpp \
-					   camera_user.cpp driver_user.cpp instance_user.cpp landscape_user.cpp material_user.cpp \
-					   scene_user.cpp text_context_user.cpp texture_user.cpp transform_user.cpp \
-					   driver_user2.cpp skeleton_weight.cpp animated_material.cpp animation_playlist.cpp \
-					   play_list_manager.cpp anim_detail_trav.cpp channel_mixer.cpp animatable.cpp \
-					   animated_value.cpp animation.cpp animation_set.cpp animation_time.cpp \
-					   key.cpp track.cpp track_keyframer.cpp transformable.cpp mesh_instance.cpp \
-					   scene_group.cpp skeleton_model.cpp bone.cpp skeleton_shape.cpp instance_group_user.cpp \
-			transformable_user.cpp skeleton_user.cpp bone_user.cpp instance_material_user.cpp
-
-
+                       zone_manager.cpp zone_search.cpp \
+                       camera_user.cpp driver_user.cpp instance_user.cpp \
+                       landscape_user.cpp material_user.cpp scene_user.cpp \
+                       text_context_user.cpp texture_user.cpp \
+                       transform_user.cpp driver_user2.cpp \
+                       skeleton_weight.cpp animated_material.cpp \
+                       animation_playlist.cpp play_list_manager.cpp \
+                       anim_detail_trav.cpp channel_mixer.cpp \
+                       animatable.cpp animated_value.cpp animation.cpp \
+                       animation_set.cpp animation_time.cpp \
+                       key.cpp track.cpp track_keyframer.cpp \
+                       transformable.cpp mesh_instance.cpp \
+                       scene_group.cpp skeleton_model.cpp bone.cpp \
+                       skeleton_shape.cpp instance_group_user.cpp \
+                       transformable_user.cpp skeleton_user.cpp \
+                       bone_user.cpp instance_material_user.cpp \
+                       shape_bank_user.cpp shape_bank.cpp 
 
 
 AM_CXXFLAGS          = @FREETYPE_CFLAGS@

@@ -1,7 +1,7 @@
 /** \file light_trav.h
  * <File description>
  *
- * $Id: light_trav.h,v 1.6 2003/03/27 16:51:45 berenguier Exp $
+ * $Id: light_trav.h,v 1.7 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,8 +76,11 @@ public:
 	/// Add a model to the list of lighted models. \b DOESN'T \b CHECK if already inserted.
 	void				addLightedModel(CTransform *m)
 	{
-		_LightedList.push_back(m);
+		_LightedList[_CurrentNumVisibleModels]= m;
+		_CurrentNumVisibleModels++;
 	}
+	// for createModel().
+	void				reserveLightedList(uint numModels);
 	//@}
 
 	/// \name LightingList. Add a PointLightModel to the list.
@@ -99,6 +102,7 @@ private:
 
 	// A grow only list of models to be lighted.
 	std::vector<CTransform*>		_LightedList;
+	uint32							_CurrentNumVisibleModels;
 
 	// A fast linked list of models to be lighted.
 	CFastPtrList<CPointLightModel>	_DynamicLightList;

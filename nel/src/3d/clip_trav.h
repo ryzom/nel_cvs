@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.18 2003/03/27 16:51:45 berenguier Exp $
+ * $Id: clip_trav.h,v 1.19 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,9 +104,12 @@ public:
 	// NB: list is cleared at begining of traverse().
 	void				addVisibleModel(CTransform *model)
 	{
-		model->_IndexInVisibleList= _VisibleList.size();
-		_VisibleList.push_back(model);
+		model->_IndexInVisibleList= _CurrentNumVisibleModels;
+		_VisibleList[_CurrentNumVisibleModels]= model;
+		_CurrentNumVisibleModels++;
 	}
+	// for createModel().
+	void				reserveVisibleList(uint numModels);
 	//@}
 
 
@@ -162,6 +165,7 @@ public:
 private:
 	friend	class	CTransform;
 	std::vector<CTransform*>	_VisibleList;
+	uint32						_CurrentNumVisibleModels;
 
 	CQuadGridClipManager		*_QuadGridClipManager;
 

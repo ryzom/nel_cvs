@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.h
  * <File description>
  *
- * $Id: vegetable_blend_layer_model.h,v 1.4 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: vegetable_blend_layer_model.h,v 1.5 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,7 +82,7 @@ public:
 
 	/// \name CTransform traverse specialisation
 	// @{
-	virtual	bool	clip(CTransform *caller)
+	virtual	bool	clip()
 	{
 		return true;
 	}

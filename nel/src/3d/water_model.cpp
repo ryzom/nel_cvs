@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.30 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: water_model.cpp,v 1.31 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1092,9 +1092,9 @@ ITrack* CWaveMakerModel::getDefaultTrack (uint valueId)
 
 //================================================
 
-void	CWaveMakerModel::traverseAnimDetail(CTransform *caller)
+void	CWaveMakerModel::traverseAnimDetail()
 {
-	CTransformShape::traverseAnimDetail(caller);
+	CTransformShape::traverseAnimDetail();
 	nlassert(getOwnerScene());
 	/// get the shape
 	CWaveMakerShape *wms = NLMISC::safe_cast<CWaveMakerShape *>((IShape *) Shape);

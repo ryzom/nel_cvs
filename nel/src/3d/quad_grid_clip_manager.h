@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.h
  * <File description>
  *
- * $Id: quad_grid_clip_manager.h,v 1.3 2003/03/26 16:45:29 berenguier Exp $
+ * $Id: quad_grid_clip_manager.h,v 1.4 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,10 +97,10 @@ public:
 
 	/// \name CTransform traverse specialisation. Only clip is special
 	// @{
-	virtual void	traverseHrc(CTransform *caller) {}
-	virtual void	traverseClip(CTransform *caller);
-	virtual void	traverseAnimDetail(CTransform *caller) {}
-	virtual void	traverseLoadBalancing(CTransform *caller) {}
+	virtual void	traverseHrc() {}
+	virtual void	traverseClip();
+	virtual void	traverseAnimDetail() {}
+	virtual void	traverseLoadBalancing() {}
 	virtual void	traverseLigth(CTransform *caller) {}
 	virtual void	traverseRender() {}
 	virtual	void	profileRender() {}

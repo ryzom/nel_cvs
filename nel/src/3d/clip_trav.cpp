@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.32 2003/03/27 16:51:45 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.33 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,8 @@ namespace	NL3D
 // ***************************************************************************
 CClipTrav::CClipTrav() : ViewPyramid(6), WorldPyramid(6)
 {
-	_VisibleList.reserve(1024);
+	_VisibleList.resize(1024);
+	_CurrentNumVisibleModels= 0;
 	CurrentDate = 0;
 	Accel.create (64, 16.0f);
 
@@ -186,7 +187,7 @@ void CClipTrav::traverse()
 		And somes models read this _Visible state. eg: Skins/StickedObjects test the Visible state of 
 		their _AncestorSkeletonModel.
 	*/
-	for (i=0;i<_VisibleList.size();i++)
+	for (i=0;i<_CurrentNumVisibleModels;i++)
 	{
 		// if the model still exists (see ~CTransform())
 		if( _VisibleList[i] )
@@ -198,7 +199,7 @@ void CClipTrav::traverse()
 		}
 	}
 	// Clear The visible List.
-	_VisibleList.clear();
+	_CurrentNumVisibleModels= 0;
 	// Clear the visible cluster list.
 	_VisibleClusters.clear();
 
@@ -342,7 +343,7 @@ void CClipTrav::traverse()
 
 
 	// Traverse the graph.
-	sceneRoot->traverseClip(NULL);
+	sceneRoot->traverseClip();
 
 
 	// Unlink the cluster where we are
@@ -369,7 +370,7 @@ void CClipTrav::traverse()
 	// =========================
 	// those are linked to the SonsOfAncestorSkeletonModelGroup, so traverse it now.
 	if (Scene->SonsOfAncestorSkeletonModelGroup)
-		Scene->SonsOfAncestorSkeletonModelGroup->traverseClip(NULL);
+		Scene->SonsOfAncestorSkeletonModelGroup->traverseClip();
 
 	// Update Here the Skin render Lists of All visible Skeletons
 	// =========================
@@ -472,6 +473,15 @@ void CClipTrav::loadBalanceSkeletonCLod()
 		_TmpSortSkeletons[i].SkeletonModel->setDisplayLodCharacterFlag(true);
 	}
 
+}
+
+
+// ***************************************************************************
+void CClipTrav::reserveVisibleList(uint numModels)
+{
+	// enlarge only.
+	if(numModels>_VisibleList.size())
+		_VisibleList.resize(numModels);
 }
 
 

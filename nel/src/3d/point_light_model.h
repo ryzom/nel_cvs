@@ -1,7 +1,7 @@
 /** \file point_light_model.h
  * <File description>
  *
- * $Id: point_light_model.h,v 1.4 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: point_light_model.h,v 1.5 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,7 +97,7 @@ public:
 	/** The traverse() method is called to update the worldPosition of the light, resetLightedModels(), and 
 	 *	re-insert the light in the lightingManager.
 	 */
-	virtual void	traverseLight(CTransform *caller);
+	virtual void	traverseLight();
 
 
 protected:

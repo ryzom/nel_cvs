@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.34 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: transform.h,v 1.35 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,7 +125,7 @@ public:
 	virtual void	initModel();
 
 	/// Each method is called in its associated traversal
-	virtual void	traverseHrc(CTransform *caller);
+	virtual void	traverseHrc();
 	/** The base traverseClip method.
 	 * The behavior is to:
 	 *	- test if _WorldVis is visible.
@@ -135,18 +135,18 @@ public:
 	 *	- if _Visible==true, and renderable, add it to the RenderTraversal: \c RenderTrav->addRenderModel(model);
 	 *	- always traverseSons(), to clip the sons.
 	 */
-	virtual void	traverseClip(CTransform *caller);
+	virtual void	traverseClip();
 	/// call updateWorldMatrixFromFather(), then traverseAnimDetailWithoutUpdateWorldMatrix()
-	virtual void	traverseAnimDetail(CTransform *caller);
+	virtual void	traverseAnimDetail();
 	/// no-op by default
-	virtual void	traverseLoadBalancing(CTransform *caller);
+	virtual void	traverseLoadBalancing();
 	/// traverse the lightedModel per default: recompute LightContribution is isLightable()
-	virtual void	traverseLight(CTransform *caller);
+	virtual void	traverseLight();
 	/// no-op by default
 	virtual void	traverseRender();
 
 	/// clip method called by traverseClip(). deafult is always visible
-	virtual	bool	clip(CTransform *caller) 
+	virtual	bool	clip() 
 	{
 		return true;
 	}
@@ -203,7 +203,7 @@ public:
 	// get the Hrc parent if any (else NULL)
 	CTransform		*hrcGetParent() const {return _HrcParent;}
 	// get Sons links. NB: indices are no more valid after an hrcUnlink()
-	uint			hrcGetNumChildren() const;
+	uint			hrcGetNumChildren() const {return _HrcSons.size();}
 	CTransform		*hrcGetChild(uint index) const;
 	// @}
 
@@ -217,10 +217,10 @@ public:
 	// unlink from all parent clip
 	void			clipUnlinkFromAll();
 	// get Parents links. NB: indices are no more valid after a clipDelChild()
-	uint			clipGetNumParents() const;
+	uint			clipGetNumParents() const {return _ClipParents.size();}
 	CTransform		*clipGetParent(uint index) const;
 	// get Sons links. NB: indices are no more valid after a clipDelChild()
-	uint			clipGetNumChildren() const;
+	uint			clipGetNumChildren() const {return _ClipSons.size();}
 	CTransform		*clipGetChild(uint index) const;
 	// @}
 
@@ -693,7 +693,7 @@ protected:
 	CSkeletonModel	*_AncestorSkeletonModel;
 
 	/// Update the world state according to the parent world state and the local states.
-	void		updateWorld(CTransform *caller);
+	void		updateWorld();
 	// according to _AncestorSkeletonModel, link clipTrav.
 	void		updateClipTravForAncestorSkeleton();
 
@@ -726,7 +726,7 @@ protected:
 	/** traverse without updatin WorldMatrixFromFather:
 	 *	- animdetail if the model channelmixer is not NULL, and if model not clipped
 	 */
-	void			traverseAnimDetailWithoutUpdateWorldMatrix(CTransform *caller);
+	void			traverseAnimDetailWithoutUpdateWorldMatrix();
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.37 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.38 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,7 +138,7 @@ void	CTransformShape::unlinkFromQuadCluster()
 
 
 // ***************************************************************************
-bool	CTransformShape::clip(CTransform *caller) 
+bool	CTransformShape::clip() 
 {
 	H_AUTO( NL3D_TrShape_Clip );
 
@@ -259,7 +259,7 @@ void	CTransformShape::profileRender()
 
 
 // ***************************************************************************
-void	CTransformShape::traverseLoadBalancing(CTransform *caller)
+void	CTransformShape::traverseLoadBalancing()
 {
 	CLoadBalancingTrav		&loadTrav= getOwnerScene()->getLoadBalancingTrav();
 	if(loadTrav.getLoadPass()==0)

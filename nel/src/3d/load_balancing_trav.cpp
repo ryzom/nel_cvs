@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.16 2003/03/27 16:51:45 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.17 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,14 +149,15 @@ CLoadBalancingTrav::CLoadBalancingTrav()
 	_DefaultGroup= &_GroupMap["Default"];
 
 	// prepare some space
-	_VisibleList.reserve(1024);
+	_VisibleList.resize(1024);
+	_CurrentNumVisibleModels= 0;
 }
 
 
 // ***************************************************************************
 void				CLoadBalancingTrav::clearVisibleList()
 {
-	_VisibleList.clear();
+	_CurrentNumVisibleModels= 0;
 }
 
 
@@ -211,11 +212,10 @@ void				CLoadBalancingTrav::traverse()
 void				CLoadBalancingTrav::traverseVisibilityList()
 {
 	// Traverse all nodes of the visibility list.
-	uint	nModels= _VisibleList.size();
-	for(uint i=0; i<nModels; i++)
+	for(uint i=0; i<_CurrentNumVisibleModels; i++)
 	{
 		CTransform	*model= _VisibleList[i];
-		model->traverseLoadBalancing(NULL);
+		model->traverseLoadBalancing();
 	}
 }
 
@@ -269,6 +269,14 @@ float				CLoadBalancingTrav::getGroupNbFaceAsked (const std::string &group) cons
 		return it->second.getNbFaceAsked();
 }
 
+
+// ***************************************************************************
+void				CLoadBalancingTrav::reserveVisibleList(uint numModels)
+{
+	// enlarge only.
+	if(numModels>_VisibleList.size())
+		_VisibleList.resize(numModels);
+}
 
 
 } // NL3D

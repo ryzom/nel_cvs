@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.h
  * <File description>
  *
- * $Id: anim_detail_trav.h,v 1.8 2003/03/27 16:51:45 berenguier Exp $
+ * $Id: anim_detail_trav.h,v 1.9 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,8 +83,12 @@ public:
 	// For ClipTrav only. NB: list is cleared at begining of traverse(). NB: only CTransform are supported
 	void				addVisibleModel(CTransform *model)
 	{
-		_VisibleList.push_back(model);
+		_VisibleList[_CurrentNumVisibleModels]= model;
+		_CurrentNumVisibleModels++;
 	}
+
+	// for createModel().
+	void				reserveVisibleList(uint numModels);
 
 
 // ********************
@@ -94,6 +98,7 @@ private:
 
 	// traverse list of model visible and usefull to animDetail.
 	std::vector<CTransform*>	_VisibleList;
+	uint32						_CurrentNumVisibleModels;
 
 };
 

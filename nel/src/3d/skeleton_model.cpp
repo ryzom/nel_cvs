@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.40 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.41 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -544,7 +544,7 @@ float		CSkeletonModel::getInterpolationDistance() const
 
 
 // ***************************************************************************
-void	CSkeletonModel::traverseAnimDetail(CTransform *caller)
+void	CSkeletonModel::traverseAnimDetail()
 {
 	CSkeletonShape	*skeShape= ((CSkeletonShape*)(IShape*)Shape);
 
@@ -575,7 +575,7 @@ void	CSkeletonModel::traverseAnimDetail(CTransform *caller)
 	updateBoneToCompute();
 
 	// Animate skeleton.
-	CTransformShape::traverseAnimDetailWithoutUpdateWorldMatrix(caller);
+	CTransformShape::traverseAnimDetailWithoutUpdateWorldMatrix();
 
 
 	// Prepare Lod Bone interpolation.
@@ -652,7 +652,7 @@ void	CSkeletonModel::traverseAnimDetail(CTransform *caller)
 	for(uint i=0;i<_AnimDetailSkins.size();i++)
 	{
 		// traverse it. NB: updateWorldMatrixFromFather() is called but no-op because isSkinned()
-		_AnimDetailSkins[i]->traverseAnimDetail(NULL);
+		_AnimDetailSkins[i]->traverseAnimDetail();
 	}
 
 }

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.21 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.22 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,7 +201,7 @@ public:
 	 *  - call CTransformShape::traverseAnimDetail()
 	 *  - update animated materials.
 	 */
-	virtual void	traverseAnimDetail(CTransform *caller);
+	virtual void	traverseAnimDetail();
 	// @}
 
 

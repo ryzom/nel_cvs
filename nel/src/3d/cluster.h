@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.10 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: cluster.h,v 1.11 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,10 +145,13 @@ public:
 
 	/// \name CTransform Specialisation
 	// @{
-	virtual void	traverseHrc(CTransform *caller);
-	virtual void	traverseClip(CTransform *caller);
-	virtual	bool	clip(CTransform *caller);
+	virtual void	traverseHrc();
+	virtual void	traverseClip();
+	virtual	bool	clip();
 	// @}
+
+	// clusters to clusters calls
+	void	recursTraverseClip(CTransform *caller);
 
 
 private:

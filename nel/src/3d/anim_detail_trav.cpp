@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * <File description>
  *
- * $Id: anim_detail_trav.cpp,v 1.12 2003/03/27 16:51:45 berenguier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.13 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,13 +45,14 @@ CAnimDetailTrav::CAnimDetailTrav()
 {
 	CurrentDate=0;
 	// prepare some space
-	_VisibleList.reserve(1024);
+	_VisibleList.resize(1024);
+	_CurrentNumVisibleModels= 0;
 }
 
 // ***************************************************************************
 void				CAnimDetailTrav::clearVisibleList()
 {
-	_VisibleList.clear();
+	_CurrentNumVisibleModels= 0;
 }
 
 
@@ -64,8 +65,7 @@ void				CAnimDetailTrav::traverse()
 	CurrentDate++;
 
 	// Traverse all nodes of the visibility list.
-	uint	nModels= _VisibleList.size();
-	for(uint i=0; i<nModels; i++)
+	for(uint i=0; i<_CurrentNumVisibleModels; i++)
 	{
 		CTransform		*model= _VisibleList[i];
 		// If this object has an ancestorSkeletonModel
@@ -88,7 +88,7 @@ void				CAnimDetailTrav::traverse()
 			else
 			{
 				// else, just traverse AnimDetail, an do nothing for Hrc sons
-				model->traverseAnimDetail(NULL);
+				model->traverseAnimDetail();
 			}
 		}
 	}
@@ -99,13 +99,22 @@ void				CAnimDetailTrav::traverse()
 void	CAnimDetailTrav::traverseHrcRecurs(CTransform *model)
 {
 	// first, just doIt me
-	model->traverseAnimDetail(NULL);
+	model->traverseAnimDetail();
 
 
 	// then doIt my sons in Hrc.
 	uint	num= model->hrcGetNumChildren();
 	for(uint i=0;i<num;i++)
 		traverseHrcRecurs(model->hrcGetChild(i));
+}
+
+
+// ***************************************************************************
+void	CAnimDetailTrav::reserveVisibleList(uint numModels)
+{
+	// enlarge only.
+	if(numModels>_VisibleList.size())
+		_VisibleList.resize(numModels);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.59 2003/03/27 16:51:45 berenguier Exp $
+ * $Id: transform.cpp,v 1.60 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,7 +181,7 @@ CTransform::~CTransform()
 	if(_IndexInVisibleList>=0)
 	{
 		CClipTrav	&clipTrav= getOwnerScene()->getClipTrav();
-		nlassert(_IndexInVisibleList < (sint)clipTrav._VisibleList.size() );
+		nlassert(_IndexInVisibleList < (sint)clipTrav._CurrentNumVisibleModels );
 		// Mark NULL. NB: faster than a CRefPtr.
 		clipTrav._VisibleList[_IndexInVisibleList]= NULL;
 		_IndexInVisibleList= -1;
@@ -624,26 +624,26 @@ void		CTransform::unlinkFromUpdateList()
 
 
 // ***************************************************************************
-void	CTransform::updateWorld(CTransform *caller)
+void	CTransform::updateWorld()
 {
 	const	CMatrix		*pFatherWM;
 	bool				visFather;
 
-	// If not root case, link to caller.
-	if(caller)
+	// If not root case, link to Fahter.
+	if(_HrcParent)
 	{
-		pFatherWM= &(caller->_WorldMatrix);
-		visFather= caller->_WorldVis;
+		pFatherWM= &(_HrcParent->_WorldMatrix);
+		visFather= _HrcParent->_WorldVis;
 
-		// if caller is not frozen (for any reason), disable us!
+		// if _HrcParent is not frozen (for any reason), disable us!
 
-		if (caller && !caller->_Frozen && !caller->_DontUnfreezeChildren)
+		if (!_HrcParent->_Frozen && !_HrcParent->_DontUnfreezeChildren)
 			_Frozen= false;
 
 		// herit _AncestorSkeletonModel
-		if (caller->_AncestorSkeletonModel)
+		if (_HrcParent->_AncestorSkeletonModel)
 			// If my father has an _AncestorSkeletonModel, get it.
-			_AncestorSkeletonModel= caller->_AncestorSkeletonModel;
+			_AncestorSkeletonModel= _HrcParent->_AncestorSkeletonModel;
 		else
 			// else I have an ancestor skel model if I am sticked/binded directly to a skeleton model.
 			_AncestorSkeletonModel= _FatherSkeletonModel;
@@ -661,7 +661,7 @@ void	CTransform::updateWorld(CTransform *caller)
 	}
 
 	// Combine matrix
-	if(_LocalDate>_WorldDate || (caller && caller->_WorldDate>_WorldDate) )
+	if(_LocalDate>_WorldDate || (_HrcParent && _HrcParent->_WorldDate>_WorldDate) )
 	{
 		// Must recompute the world matrix.  ONLY IF I AM NOT SKINNED/STICKED TO A SKELETON in the hierarchy!
 		if( _AncestorSkeletonModel==NULL )
@@ -747,15 +747,15 @@ void	CTransform::updateClipTravForAncestorSkeleton()
 
 
 // ***************************************************************************
-void	CTransform::traverseHrc(CTransform *caller)
+void	CTransform::traverseHrc()
 {
-	// Recompute the matrix, according to caller matrix mode, and local matrix.
-	updateWorld(caller);
+	// Recompute the matrix, according to _HrcParent matrix mode, and local matrix.
+	updateWorld();
 
 	// Traverse the Hrc sons.
 	uint	num= hrcGetNumChildren();
 	for(uint i=0;i<num;i++)
-		hrcGetChild(i)->traverseHrc(this);
+		hrcGetChild(i)->traverseHrc();
 }
 
 
@@ -767,9 +767,10 @@ void	CTransform::traverseHrc(CTransform *caller)
 
 
 // ***************************************************************************
-void	CTransform::traverseClip(CTransform *caller)
+void	CTransform::traverseClip()
 {
-	H_AUTO( NL3D_TransformClip );
+	// disable H_AUTO, because slowdown when lot of models (eg 1000-2000 tested in forest)
+	//H_AUTO( NL3D_TransformClip );
 
 	CScene			*scene= getOwnerScene();
 	CClipTrav		&clipTrav= scene->getClipTrav();
@@ -808,7 +809,7 @@ void	CTransform::traverseClip(CTransform *caller)
 		{
 			// If the instance is not filtered
 			if(scene->getFilterRenderFlags() & _RenderFilterType)
-				_Visible= clip(caller);
+				_Visible= clip();
 		}
 	}
 
@@ -846,7 +847,7 @@ void	CTransform::traverseClip(CTransform *caller)
 	// Traverse the Clip sons.
 	uint	num= clipGetNumChildren();
 	for(uint i=0;i<num;i++)
-		clipGetChild(i)->traverseClip(this);
+		clipGetChild(i)->traverseClip();
 }
 
 
@@ -892,7 +893,7 @@ void			CTransform::updateWorldMatrixFromFather()
 
 
 // ***************************************************************************
-void			CTransform::traverseAnimDetailWithoutUpdateWorldMatrix(CTransform *caller)
+void			CTransform::traverseAnimDetailWithoutUpdateWorldMatrix()
 {
 	// AnimDetail behavior: animate only if not clipped.
 	// NB: no need to test because of VisibilityList use.
@@ -907,13 +908,13 @@ void			CTransform::traverseAnimDetailWithoutUpdateWorldMatrix(CTransform *caller
 }
 
 // ***************************************************************************
-void			CTransform::traverseAnimDetail(CTransform *caller)
+void			CTransform::traverseAnimDetail()
 {
 	// First, test if I must update my worldMatrix because of the ancestorSkeleton scheme
 	updateWorldMatrixFromFather();
 
 	// eval channelMixer.
-	traverseAnimDetailWithoutUpdateWorldMatrix(caller);
+	traverseAnimDetailWithoutUpdateWorldMatrix();
 
 	// NB: if want to add something, do it in traverseAnimDetailWithoutUpdateWorldMatrix(), because
 	// CSkeletonModel doesn't call CTransform::traverseAnimDetail()
@@ -928,7 +929,7 @@ void			CTransform::traverseAnimDetail(CTransform *caller)
 
 
 // ***************************************************************************
-void		CTransform::traverseLoadBalancing(CTransform *caller)
+void		CTransform::traverseLoadBalancing()
 {
 	// noop
 }
@@ -1034,7 +1035,7 @@ void			CTransform::unfreezeStaticLightSetup()
 
 
 // ***************************************************************************
-void	CTransform::traverseLight(CTransform *caller)
+void	CTransform::traverseLight()
 {
 	// if the model do not need to update his lighting, just skip.
 	if(!isNeedUpdateLighting())
@@ -1145,12 +1146,6 @@ void			CTransform::hrcUnlink()
 }
 
 // ***************************************************************************
-uint			CTransform::hrcGetNumChildren() const
-{
-	return _HrcSons.size();
-}
-
-// ***************************************************************************
 CTransform		*CTransform::hrcGetChild(uint index) const
 {
 	nlassert(index < _HrcSons.size());
@@ -1207,22 +1202,10 @@ void			CTransform::clipUnlinkFromAll()
 }
 
 // ***************************************************************************
-uint			CTransform::clipGetNumParents() const
-{
-	return _ClipParents.size();
-}
-
-// ***************************************************************************
 CTransform		*CTransform::clipGetParent(uint index) const
 {
 	nlassert(index < _ClipParents.size());
 	return _ClipParents[index]->Parent;
-}
-
-// ***************************************************************************
-uint			CTransform::clipGetNumChildren() const
-{
-	return _ClipSons.size();
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file root_model.h
  * <File description>
  *
- * $Id: root_model.h,v 1.3 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: root_model.h,v 1.4 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,11 +54,11 @@ public:
 
 	/// \name CTransform traverse specialisation
 	// @{
-	virtual void	traverseHrc(CTransform *caller);
-	virtual void	traverseClip(CTransform *caller);
-	virtual void	traverseAnimDetail(CTransform *caller);
-	virtual void	traverseLoadBalancing(CTransform *caller);
-	virtual void	traverseLight(CTransform *caller);
+	virtual void	traverseHrc();
+	virtual void	traverseClip();
+	virtual void	traverseAnimDetail();
+	virtual void	traverseLoadBalancing();
+	virtual void	traverseLight();
 	virtual void	traverseRender();
 	// @}
 

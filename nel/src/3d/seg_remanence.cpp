@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.9 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: seg_remanence.cpp,v 1.10 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -318,9 +318,9 @@ void CSegRemanence::samplePos(float date)
 
 //===============================================================
 /*
-void CSegRemanence::traverseHrc(CTransform *caller)
+void CSegRemanence::traverseHrc()
 {
-	CTransformShape::traverseHrc (caller);
+	CTransformShape::traverseHrc ();
 	if (isStarted())
 	{	
 		CScene *scene = getOwnerScene();
@@ -409,9 +409,9 @@ void CSegRemanence::registerToChannelMixer(CChannelMixer *chanMixer, const std::
 }
 
 //===============================================================
-void CSegRemanence::traverseAnimDetail(CTransform *caller)
+void CSegRemanence::traverseAnimDetail()
 {
-	CTransformShape::traverseAnimDetail(caller);
+	CTransformShape::traverseAnimDetail();
 	if (isStarted())
 	{	
 		/////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.43 2003/03/27 16:51:45 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.44 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,9 @@ namespace	NL3D
 // ***************************************************************************
 CRenderTrav::CRenderTrav()
 {
-	RenderList.reserve(1024);
+	RenderList.resize(1024);
+	_CurrentNumVisibleModels= 0;
+
 	OrderOpaqueList.init(1024);
 	OrderTransparentList.init(1024);
 	Driver = NULL;
@@ -117,12 +119,12 @@ void		CRenderTrav::traverse()
 	// the transparency flag (multi lod for instance)
 
 	// clear the OTs, and prepare to allocate max element space
-	OrderOpaqueList.reset(RenderList.size());
-	OrderTransparentList.reset(RenderList.size());
+	OrderOpaqueList.reset(_CurrentNumVisibleModels);
+	OrderTransparentList.reset(_CurrentNumVisibleModels);
 
 	// fill the OTs.
 	CTransform			**itRdrModel= NULL;
-	uint32				nNbModels = RenderList.size();
+	uint32				nNbModels = _CurrentNumVisibleModels;
 	if(nNbModels)	
 		itRdrModel= &RenderList[0];
 	float	rPseudoZ, rPseudoZ2;
@@ -256,7 +258,7 @@ void		CRenderTrav::traverse()
 // ***************************************************************************
 void		CRenderTrav::clearRenderList()
 {
-	RenderList.clear();
+	_CurrentNumVisibleModels= 0;
 }
 
 
@@ -272,6 +274,15 @@ void		CRenderTrav::setSunDirection(const CVector &dir)
 void		CRenderTrav::setMeshSkinManager(CMeshSkinManager *msm)
 {
 	_MeshSkinManager= msm;
+}
+
+
+// ***************************************************************************
+void		CRenderTrav::reserveRenderList(uint numModels)
+{
+	// enlarge only.
+	if(numModels>RenderList.size())
+		RenderList.resize(numModels);
 }
 
 

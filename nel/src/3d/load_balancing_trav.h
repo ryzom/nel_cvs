@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.h
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.h,v 1.9 2003/03/27 16:51:45 berenguier Exp $
+ * $Id: load_balancing_trav.h,v 1.10 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -177,8 +177,12 @@ public:
 	// For ClipTrav only. NB: list is cleared at begining of traverse().
 	void				addVisibleModel(CTransform *model)
 	{
-		_VisibleList.push_back(model);
+		_VisibleList[_CurrentNumVisibleModels]= model;
+		_CurrentNumVisibleModels++;
 	}
+
+	// for createModel().
+	void				reserveVisibleList(uint numModels);
 
 // **************
 private:
@@ -200,6 +204,7 @@ private:
 
 	// traverse list of model visible and usefull to loadBalance.
 	std::vector<CTransform*>	_VisibleList;
+	uint32						_CurrentNumVisibleModels;
 
 };
 

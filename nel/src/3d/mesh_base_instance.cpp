@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.18 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.19 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,7 +180,7 @@ void CMeshBaseInstance::setBlendShapeFactor (const std::string &BlendShapeName, 
 
 
 // ***************************************************************************
-void CMeshBaseInstance::traverseAnimDetail(CTransform *caller)
+void CMeshBaseInstance::traverseAnimDetail()
 {
 	CMeshBase			*mb = NLMISC::safe_cast<CMeshBase *>((IShape *) Shape);
 
@@ -219,7 +219,7 @@ void CMeshBaseInstance::traverseAnimDetail(CTransform *caller)
 		}
 	}
 
-	CTransformShape::traverseAnimDetail(caller);
+	CTransformShape::traverseAnimDetail();
 
 	
 	// update animated materials.

@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.30 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.31 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,7 +80,7 @@ void	CLandscapeModel::initModel()
 
 
 // ***************************************************************************
-bool	CLandscapeModel::clip(CTransform *caller)
+bool	CLandscapeModel::clip()
 {
 	H_AUTO( NL3D_Landscape_Clip );
 

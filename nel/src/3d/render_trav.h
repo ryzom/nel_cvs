@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.18 2003/03/27 16:51:45 berenguier Exp $
+ * $Id: render_trav.h,v 1.19 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,8 +104,11 @@ public:
 	 */
 	void			addRenderModel(CTransform *m)
 	{
-		RenderList.push_back(m);
+		RenderList[_CurrentNumVisibleModels]= m;
+		_CurrentNumVisibleModels++;
 	}
+	// for createModel().
+	void				reserveRenderList(uint numModels);
 	//@}
 
 
@@ -282,6 +285,8 @@ private:
 	
 	// A grow only list of models to be rendered.
 	std::vector<CTransform*>	RenderList;
+	uint32						_CurrentNumVisibleModels;
+
 	// Ordering Table to sort transparent objects
 	COrderingTable<CTransform>			OrderOpaqueList;
 	CLayeredOrderingTable<CTransform>	OrderTransparentList;

@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.28 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.29 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -284,7 +284,7 @@ public:
 	 *  - call CTransformShape::traverseAnimDetail()
 	 *  - update animated bones.
 	 */
-	virtual void	traverseAnimDetail(CTransform *caller);
+	virtual void	traverseAnimDetail();
 	/**	If displayed as a CLod, render it, else render the skins binded to this skeleton
 	 */
 	virtual	void	traverseRender();

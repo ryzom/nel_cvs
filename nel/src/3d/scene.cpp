@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.96 2003/03/26 16:45:29 berenguier Exp $
+ * $Id: scene.cpp,v 1.97 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -944,6 +944,13 @@ CTransform	*CScene::createModel(const CClassId &idModel)
 
 		// Once the model is correclty created, finish init him.
 		m->initModel();
+
+		// Ensure all the Traversals has enough space for visible list.
+		ClipTrav.reserveVisibleList(_Models.size());
+		AnimDetailTrav.reserveVisibleList(_Models.size());
+		LoadBalancingTrav.reserveVisibleList(_Models.size());
+		LightTrav.reserveLightedList(_Models.size());
+		RenderTrav.reserveRenderList(_Models.size());
 
 		return m;
 	}

@@ -1,7 +1,7 @@
 /** \file light_trav.cpp
  * <File description>
  *
- * $Id: light_trav.cpp,v 1.11 2003/03/27 16:51:45 berenguier Exp $
+ * $Id: light_trav.cpp,v 1.12 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,8 @@ using namespace	NLMISC;
 // ***************************************************************************
 CLightTrav::CLightTrav()
 {
-	_LightedList.reserve(1024);
+	_LightedList.resize(1024);
+	_CurrentNumVisibleModels= 0;
 
 	LightingSystemEnabled= false;
 }
@@ -52,7 +53,7 @@ CLightTrav::CLightTrav()
 // ***************************************************************************
 void		CLightTrav::clearLightedList()
 {
-	_LightedList.clear();
+	_CurrentNumVisibleModels= 0;
 }
 
 
@@ -84,16 +85,25 @@ void		CLightTrav::traverse()
 	uint	numPls= _DynamicLightList.size();
 	for(;numPls>0;numPls--, pLight++)
 	{
-		(*pLight)->traverseLight(NULL);
+		(*pLight)->traverseLight();
 	}
 
 	// for each visible lightable transform
-	for(i=0; i<_LightedList.size(); i++ )
+	for(i=0; i<_CurrentNumVisibleModels; i++ )
 	{
 		// traverse(), to recompute light contribution (if needed).
-		_LightedList[i]->traverseLight(NULL);
+		_LightedList[i]->traverseLight();
 	}
 
+}
+
+
+// ***************************************************************************
+void		CLightTrav::reserveLightedList(uint numModels)
+{
+	// enlarge only.
+	if(numModels>_LightedList.size())
+		_LightedList.resize(numModels);
 }
 
 

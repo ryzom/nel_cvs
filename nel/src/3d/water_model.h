@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.8 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: water_model.h,v 1.9 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -112,7 +112,7 @@ class CWaveMakerModel : public CTransformShape
 	 *  - call CTransformShape::traverseAnimDetail()
 	 *  - perform perturbation
 	 */
-	virtual void	traverseAnimDetail(CTransform *caller);
+	virtual void	traverseAnimDetail();
 	// @}
 
 protected:	

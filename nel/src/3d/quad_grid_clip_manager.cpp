@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.12 2003/03/26 16:45:29 berenguier Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.13 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -340,7 +340,7 @@ void				CQuadGridClipManager::newCaseModels(CQuadGridClusterCase &clusterCase)
 
 
 // ***************************************************************************
-void				CQuadGridClipManager::traverseClip(CTransform *caller)
+void				CQuadGridClipManager::traverseClip()
 {
 	CClipTrav *pClipTrav= &getOwnerScene()->getClipTrav();
 

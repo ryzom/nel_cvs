@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.15 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.16 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,10 +83,10 @@ CRGBA		CMeshMultiLodInstance::getCoarseMeshLighting()
 
 // ***************************************************************************
 
-void		CMeshMultiLodInstance::traverseLoadBalancing(CTransform *caller)
+void		CMeshMultiLodInstance::traverseLoadBalancing()
 {
 	// Call previous
-	CMeshBaseInstance::traverseLoadBalancing (caller);
+	CMeshBaseInstance::traverseLoadBalancing ();
 
 	// If this is the second pass of LoadBalancing, choose the Lods, according to getNumTrianglesAfterLoadBalancing()
 	CLoadBalancingTrav		&loadTrav= getOwnerScene()->getLoadBalancingTrav();

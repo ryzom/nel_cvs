@@ -1,7 +1,7 @@
 /** \file root_model.cpp
  * <File description>
  *
- * $Id: root_model.cpp,v 1.3 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: root_model.cpp,v 1.4 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,37 +40,37 @@ void	CRootModel::registerBasic()
 
 
 // ***************************************************************************
-void	CRootModel::traverseHrc(CTransform *caller)
+void	CRootModel::traverseHrc()
 {
 	// Traverse the Hrc sons.
 	uint	num= hrcGetNumChildren();
 	for(uint i=0;i<num;i++)
-		hrcGetChild(i)->traverseHrc(this);
+		hrcGetChild(i)->traverseHrc();
 }
 
 // ***************************************************************************
-void	CRootModel::traverseClip(CTransform *caller)
+void	CRootModel::traverseClip()
 {
 	// Traverse the Clip sons.
 	uint	num= clipGetNumChildren();
 	for(uint i=0;i<num;i++)
-		clipGetChild(i)->traverseClip(this);
+		clipGetChild(i)->traverseClip();
 }
 
 // ***************************************************************************
-void	CRootModel::traverseAnimDetail(CTransform *caller)
+void	CRootModel::traverseAnimDetail()
 {	
 	// no-op
 }
 
 // ***************************************************************************
-void	CRootModel::traverseLoadBalancing(CTransform *caller)
+void	CRootModel::traverseLoadBalancing()
 {
 	// no-op
 }
 
 // ***************************************************************************
-void	CRootModel::traverseLight(CTransform *caller)
+void	CRootModel::traverseLight()
 {
 	// no-op
 }

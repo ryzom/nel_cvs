@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.15 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: cluster.cpp,v 1.16 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -351,9 +351,9 @@ void CCluster::setWorldMatrix (const CMatrix &WM)
 }
 
 // ***************************************************************************
-void CCluster::traverseHrc (CTransform *caller)
+void CCluster::traverseHrc ()
 {
-	CTransform::traverseHrc (caller);
+	CTransform::traverseHrc ();
 
 	setWorldMatrix (_WorldMatrix);
 
@@ -372,13 +372,22 @@ void CCluster::traverseHrc (CTransform *caller)
 }
 
 // ***************************************************************************
-bool CCluster::clip (CTransform *caller)
+bool CCluster::clip ()
 {
 	return true;
 }
 
+
 // ***************************************************************************
-void CCluster::traverseClip (CTransform *caller)
+void CCluster::traverseClip ()
+{
+	// This is the root call called by the SceneRoot
+	recursTraverseClip(NULL);
+}
+
+
+// ***************************************************************************
+void CCluster::recursTraverseClip(CTransform *caller)
 {
 	if (_Visited)
 		return;
@@ -389,7 +398,7 @@ void CCluster::traverseClip (CTransform *caller)
 	uint	num= clipGetNumChildren();
 	uint32	i;
 	for(i=0;i<num;i++)
-		clipGetChild(i)->traverseClip(this);
+		clipGetChild(i)->traverseClip();
 
 	// Debug visible clusters
 	CClipTrav &clipTrav = getOwnerScene()->getClipTrav();
@@ -420,7 +429,7 @@ void CCluster::traverseClip (CTransform *caller)
 		if (!backfaceclipped)
 		if (pPortal->clipPyramid (clipTrav.CamPos, clipTrav.WorldPyramid))
 		{
-			pOtherSideCluster->traverseClip(this);
+			pOtherSideCluster->recursTraverseClip(this);
 		}
 
 		clipTrav.WorldPyramid = WorldPyrTemp;
@@ -429,14 +438,14 @@ void CCluster::traverseClip (CTransform *caller)
 	// Link up in hierarchy
 	if ((FatherVisible)&&(Father != NULL))
 	{
-		Father->traverseClip(this);
+		Father->recursTraverseClip(this);
 	}
 
 	// Link down in hierarchy
 	for (i = 0; i < Children.size(); ++i)
 	if (Children[i]->VisibleFromFather)
 	{
-		Children[i]->traverseClip(this);
+		Children[i]->recursTraverseClip(this);
 	}
 
 	_Visited = false;

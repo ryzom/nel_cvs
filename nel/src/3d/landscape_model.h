@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.7 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: landscape_model.h,v 1.8 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,7 +98,7 @@ public:
 	 */
 	virtual void	initModel();
 	/// special clip() and traverseRender()
-	virtual bool	clip(CTransform *caller);
+	virtual bool	clip();
 	virtual void	traverseRender();
 
 

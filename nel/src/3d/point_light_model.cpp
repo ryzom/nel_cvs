@@ -1,7 +1,7 @@
 /** \file point_light_model.cpp
  * <File description>
  *
- * $Id: point_light_model.cpp,v 1.4 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: point_light_model.cpp,v 1.5 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,7 @@ const CVector	&CPointLightModel::getDeltaPosToSkeletonWhenOutOfFrustum() const
 
 
 // ***************************************************************************
-void	CPointLightModel::traverseLight(CTransform *caller)
+void	CPointLightModel::traverseLight()
 {
 	CLightTrav			&lightTrav= getOwnerScene()->getLightTrav();
 

@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.31 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: particle_system_model.h,v 1.32 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -237,15 +237,15 @@ public:
 	// @{
 	/** Very special clip for Particle System (because of the complexity of not rendered, but still detail-animated...)
 	 */
-	virtual void	traverseClip(CTransform *caller);
+	virtual void	traverseClip();
 	// no-op clip() because all done in special traverse()
-	virtual	bool	clip(CTransform *caller);
+	virtual	bool	clip();
 	/**
 	 *	 - call CTransformShape::traverseAnimDetail()
 	 *	 - Detail animation for a particle system. It perform motion of the particles
 	 *		(so, motion occurs only when the system has not be clipped)
      */
-	virtual void	traverseAnimDetail(CTransform *caller);
+	virtual void	traverseAnimDetail();
 	virtual void	traverseRender();
 	// @}
 

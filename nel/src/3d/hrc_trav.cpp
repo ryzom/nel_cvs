@@ -1,7 +1,7 @@
 /** \file hrc_trav.cpp
  * <File description>
  *
- * $Id: hrc_trav.cpp,v 1.11 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: hrc_trav.cpp,v 1.12 2003/03/28 15:53:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ void				CHrcTrav::traverse()
 
 	// Traverse the graph.
 	if(Scene->getRoot())
-		Scene->getRoot()->traverseHrc(NULL);
+		Scene->getRoot()->traverseHrc();
 
 	// Inc the date.
 	// NB: Now, models update is done before ALL traversals.

@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_cluster.cpp,v 1.6 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: quad_grid_clip_cluster.cpp,v 1.7 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,7 +159,7 @@ void		CQuadGridClipCluster::clipSons()
 	uint	nSons= _Models.size();
 	for(;nSons>0;nSons--, pModel++)
 	{
-		(*pModel)->traverseClip(NULL);
+		(*pModel)->traverseClip();
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.50 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: particle_system_model.cpp,v 1.51 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -402,9 +402,9 @@ bool CParticleSystemModel::checkAgainstPyramid(const std::vector<CPlane>	&pyrami
 //////////////////////////////////////////////
 
 ///=====================================================================================
-void	CParticleSystemModel::traverseAnimDetail(CTransform *caller)
+void	CParticleSystemModel::traverseAnimDetail()
 {    
-	CTransformShape::traverseAnimDetail(caller);	
+	CTransformShape::traverseAnimDetail();	
 	CParticleSystem *ps = getPS();
 	if (_Invalidated) return;
 	if (getVisibility() == CHrcTrav::Hide) return;
@@ -544,15 +544,16 @@ void	CParticleSystemModel::traverseRender()
  * as long as in cluster, but not visible. 
  */
 	
-void	CParticleSystemModel::traverseClip(CTransform *caller)
+void	CParticleSystemModel::traverseClip()
 {
-	H_AUTO ( NL3D_Particles_Clip );
+	// disable H_AUTO, because slowdown when lot of models (eg 1000-2000 tested in forest)
+	//H_AUTO ( NL3D_Particles_Clip );
 
-//	    CTransformShape::traverseClip(caller);
+//	    CTransformShape::traverseClip();
 		// Traverse the Clip sons.
 		uint	numClipChildren= clipGetNumChildren();
 		for(uint i=0;i<numClipChildren;i++)
-			clipGetChild(i)->traverseClip(this);
+			clipGetChild(i)->traverseClip();
 
 		if (_Invalidated) return;		
 		CClipTrav			&clipTrav= getOwnerScene()->getClipTrav();
@@ -777,7 +778,7 @@ void	CParticleSystemModel::traverseClip(CTransform *caller)
 
 
 //===================================================================
-bool	CParticleSystemModel::clip(CTransform *caller)
+bool	CParticleSystemModel::clip()
 {
 	// no-op clip() because all done in special traverse()
 	return true;

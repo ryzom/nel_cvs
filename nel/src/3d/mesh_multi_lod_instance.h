@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.16 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.17 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,7 +97,7 @@ public:
 	// @{
 	/** Additionally to std loadBalancing, it compues Lod related states
 	 */
-	virtual void	traverseLoadBalancing(CTransform *caller);
+	virtual void	traverseLoadBalancing();
 	// @}
 
 private:

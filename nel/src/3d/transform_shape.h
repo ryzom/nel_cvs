@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.22 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: transform_shape.h,v 1.23 2003/03/28 15:53:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,8 +143,8 @@ public:
 
 	/// \name CTransform traverse specialisation
 	// @{
-	virtual	bool	clip(CTransform *caller);
-	virtual void	traverseLoadBalancing(CTransform *caller);
+	virtual	bool	clip();
+	virtual void	traverseLoadBalancing();
 	virtual void	traverseRender();
 	virtual	void	profileRender();
 	// @}

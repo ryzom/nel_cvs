@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.9 2002/12/13 11:13:31 berenguier Exp $
+ * $Id: text_context.h,v 1.10 2002/12/30 16:18:24 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,8 +45,11 @@ class CTextContext
 {
 public:
 
-	/// Constructor 
-	/// defaults : fontsize=12, color=black, hotspot=bottomleft, scale=1, shaded=false, 800x600ratio=true
+	/** 
+	 * Constructor 
+	 * defaults : fontsize=12, color=(0,0,0,255), hotspot=bottomleft, scale=1, shaded=false, shadeExtent=0.001f
+	 *			  shadecolor=(0,0,0,255), 800x600ratio=true
+	 */
 	CTextContext ();
 
 	/// Destructor
@@ -84,8 +87,9 @@ public:
 
 	void setShaded (bool b) { _Shaded = b; }
 
-	 /// Set the shadow's size
-	void setShadeExtent(float shext) { _ShadeExtent = shext; }
+	void setShadeExtent (float shext) { _ShadeExtent = shext; }
+
+	void setShadeColor (NLMISC::CRGBA color) { _ShadeColor = color; }
 
 	/// If true the CFontManager look at Driver window size, and resize fontSize to keep the same
 	/// size than if it was in 800x600...
@@ -108,6 +112,8 @@ public:
 	bool						getShaded() const  { return _Shaded; }
 
 	bool						getKeep800x600Ratio() const {return _Keep800x600Ratio;}
+
+	NLMISC::CRGBA				getShadeColor () const { return _ShadeColor; }
 
 	/**
 	 * Cache methods
@@ -136,8 +142,9 @@ public:
 		CComputedString &rCS = _CacheStrings[index];
 		if(_Shaded)
 		{
-			CRGBA	bkup= rCS.Color;
-			rCS.Color= CRGBA::Black;
+			CRGBA	bkup = rCS.Color;
+			rCS.Color = _ShadeColor;
+			rCS.Color.A = bkup.A;
 			rCS.render2D (*_Driver, x+_ShadeExtent, z-_ShadeExtent, _HotSpot, _ScaleX, _ScaleZ);
 			rCS.Color= bkup;
 		}
@@ -151,8 +158,9 @@ public:
 		CComputedString &rCS = _CacheStrings[index];
 		if(_Shaded)
 		{
-			CRGBA	bkup= rCS.Color;
-			rCS.Color= CRGBA::Black;
+			CRGBA	bkup = rCS.Color;
+			rCS.Color= _ShadeColor;
+			rCS.Color.A = bkup.A;
 			rCS.render2DClip(*_Driver, x+_ShadeExtent, z-_ShadeExtent, xmin, ymin, xmax, ymax);
 			rCS.Color= bkup;
 		}
@@ -170,8 +178,9 @@ public:
 		// draw shaded
 		if(_Shaded)
 		{
-			CRGBA	bkup= _TempString.Color;
-			_TempString.Color= CRGBA::Black;
+			CRGBA	bkup = _TempString.Color;
+			_TempString.Color= _ShadeColor;
+			_TempString.Color.A = bkup.A;
 			_TempString.render2D (*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
 			_TempString.Color= bkup;
 		}
@@ -193,8 +202,9 @@ public:
 		// draw shaded
 		if(_Shaded)
 		{
-			CRGBA	bkup= _TempString.Color;
-			_TempString.Color= CRGBA::Black;
+			CRGBA	bkup = _TempString.Color;
+			_TempString.Color = _ShadeColor;
+			_TempString.Color.A = bkup.A;
 			_TempString.render2D (*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
 			_TempString.Color= bkup;
 		}
@@ -283,13 +293,16 @@ private:
 	float						_ScaleZ;
 
 	/// true if text is shaded
-	bool _Shaded;
+	bool						_Shaded;
 
-	/// shade's extent
-	float _ShadeExtent;
+	/// shade's extent (shadow size)
+	float						_ShadeExtent;
+
+	/// Shade color (default is black)
+	NLMISC::CRGBA				_ShadeColor;
 
 	/// resize the font to keep the same aspect ratio than in 800x600
-	bool _Keep800x600Ratio;
+	bool						_Keep800x600Ratio;
 
 	/**
 	 * Strings Caches
@@ -299,7 +312,7 @@ private:
 	std::vector<CComputedString>	_CacheStrings;
 	std::vector<uint32>				_CacheFreePlaces;
 	uint32							_CacheNbFreePlaces;
-	
+
 
 	/// Cache for for printAt() and printfAt().
 	/// This prevents from creating VBdrvinfos each time they are called (N*each frame!!).

@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.12 2002/12/18 16:27:02 berenguier Exp $
+ * $Id: text_context_user.cpp,v 1.13 2002/12/30 16:18:24 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -181,6 +181,20 @@ void CTextContextUser::setShadeExtent(float shext)
 	NL3D_HAUTO_UI_TEXTCONTEXT;
 
 	_TextContext.setShadeExtent(shext);
+}
+void CTextContextUser::setShadeColor (NLMISC::CRGBA sc)
+{
+	NL3D_MEM_TEXT_CONTEXT
+	NL3D_HAUTO_UI_TEXTCONTEXT;
+
+	_TextContext.setShadeColor (sc);
+}
+NLMISC::CRGBA CTextContextUser::getShadeColor () const
+{
+	NL3D_MEM_TEXT_CONTEXT
+	NL3D_HAUTO_UI_TEXTCONTEXT;
+
+	return _TextContext.getShadeColor();
 }
 void			CTextContextUser::setKeep800x600Ratio(bool keep)
 {

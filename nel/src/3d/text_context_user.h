@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.11 2002/12/18 16:27:02 berenguier Exp $
+ * $Id: text_context_user.h,v 1.12 2002/12/30 16:18:23 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,10 +85,12 @@ public:
 	float getScaleX() const ;
 	float getScaleY() const ;
 	void setShaded(bool b) ;
-	bool getShaded() const  ;
-	void setShadeExtent(float shext) ;
-	virtual	void			setKeep800x600Ratio(bool keep);
-	virtual	bool			getKeep800x600Ratio() const;
+	bool			getShaded() const  ;
+	void			setShadeExtent(float shext) ;
+	void			setShadeColor (NLMISC::CRGBA sc);
+	NLMISC::CRGBA	getShadeColor () const;
+	void setKeep800x600Ratio(bool keep);
+	bool getKeep800x600Ratio() const;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.9 2002/12/18 16:27:23 berenguier Exp $
+ * $Id: u_text_context.h,v 1.10 2002/12/30 16:18:38 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -162,6 +162,16 @@ public:
 	 * \param the shade extent
 	 */
 	virtual	void			setShadeExtent (float shext) = 0;
+	/**
+	 * set the shadow's color
+	 * \param the shadow color
+	 */
+	virtual	void			setShadeColor (NLMISC::CRGBA sc) = 0;
+	/**
+	 * get the shadow's color
+	 * \returb the shadow color
+	 */
+	virtual	NLMISC::CRGBA	getShadeColor () const = 0;
 	/** set to true if you want that the font manager look at Driver window size, and resize 
 	 * fontSize so it keeps same size than if it was in 800x600...
 	 */

@@ -1,7 +1,7 @@
 /** \file text_context.cpp
  * <File description>
  *
- * $Id: text_context.cpp,v 1.6 2002/09/11 13:51:26 besson Exp $
+ * $Id: text_context.cpp,v 1.7 2002/12/30 16:18:24 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,6 @@ CTextContext::CTextContext()
 {
 	_Driver = NULL;
 	_FontManager = NULL;
-
 	_FontGen = NULL;
 
 	_FontSize = 12;
@@ -47,11 +46,11 @@ CTextContext::CTextContext()
 	_HotSpot = CComputedString::BottomLeft;
 
 	_ScaleX = 1.0f;
-
 	_ScaleZ = 1.0f;
 
 	_Shaded = false;
-	_ShadeExtent = 0.001f;
+	_ShadeExtent = 0.001f;	
+	_ShadeColor = NLMISC::CRGBA(0,0,0);
 
 	_Keep800x600Ratio= true;
 

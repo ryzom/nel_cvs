@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.31 2004/04/22 15:28:47 cado Exp $
+ * $Id: welcome_service.cpp,v 1.32 2004/06/29 15:27:13 lecroart Exp $
  *
  */
 
@@ -477,7 +477,7 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	{
 		// answer the LS that we can't accept the user
 		CMessage msgout ("SCS");
-		string reason = "The server is full";
+		string reason = "The shard is currently full, please try again in 5 minutes.";
 		msgout.serial (reason);
 		msgout.serial (cookie);
 		CUnifiedNetwork::getInstance()->send(sid, msgout);

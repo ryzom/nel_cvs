@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager_3d.h,v 1.1 2002/11/04 15:40:43 boucher Exp $
+ * $Id: async_file_manager_3d.h,v 1.2 2002/11/05 13:14:41 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,7 +126,7 @@ private:
 		bool			*Signal;
 	public:
 		CTextureLoad(CTextureFile *textureFile, bool *psgn)
-			: TextureFile(TextureFile), Signal(psgn)
+			: TextureFile(textureFile), Signal(psgn)
 		{}
 
 		virtual	void	run();

@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.2 2001/07/13 09:46:36 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.3 2001/07/13 13:27:53 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,12 +132,12 @@ void CEnvSoundUser::init( CListenerUser *listener )
 	// Initialize ambiant sound channels
 	if ( _AmbiantSounds.size() >= 2 )
 	{
-		_StereoChannels[AMBIANT_CH1].setParentSource( &_CenterSource );
+		_StereoChannels[AMBIANT_CH1].set3DPositionVector( _CenterSource.getPositionP() );
 		_StereoChannels[AMBIANT_CH1].setSound( getRandomSound( _AmbiantSounds ) );
 		_StereoChannels[AMBIANT_CH1].setGain( 0.0f );
 		_StereoChannels[AMBIANT_CH1].setPriority( LowPri, false );
 
-		_StereoChannels[AMBIANT_CH2].setParentSource( &_CenterSource );
+		_StereoChannels[AMBIANT_CH2].set3DPositionVector( _CenterSource.getPositionP() );
 		_StereoChannels[AMBIANT_CH2].setSound( getRandomSound( _AmbiantSounds ) );
 		_StereoChannels[AMBIANT_CH2].setGain( 0.0f );
 		_StereoChannels[AMBIANT_CH2].setPriority( LowPri, false );
@@ -151,7 +151,7 @@ void CEnvSoundUser::init( CListenerUser *listener )
 	// Initialize sparse sounds channel
 	if ( ! _SparseSounds.empty() )
 	{
-		_StereoChannels[SPARSE_CH].setParentSource( &_CenterSource );
+		_StereoChannels[SPARSE_CH].set3DPositionVector( _CenterSource.getPositionP() );
 		_StereoChannels[SPARSE_CH].setPriority( LowPri );
 		_StereoChannels[SPARSE_CH].setSound( getRandomSound( _SparseSounds ) );
 		CAudioMixerUser::instance()->addSource( &_StereoChannels[SPARSE_CH] );

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.2 2001/07/13 09:47:42 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.3 2001/07/13 13:27:53 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,6 +143,9 @@ private:
 
 	/// The listener instance
 	CListenerUser				_Listener;
+
+	/// Listener position vector
+	NLMISC::CVector				_ListenPosition;
 
 	/// Environment sounds
 	std::vector<CEnvSoundUser*>	_EnvSounds;

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.2 2001/07/13 09:47:11 cado Exp $
+ * $Id: source_user.cpp,v 1.3 2001/07/13 13:27:53 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ CSourceUser::CSourceUser( TSoundId id ) :
 	_Priority(MidPri), _Playing(false),
 	_Position(CVector::Null), _Velocity(CVector::Null), _Direction(CVector::Null),
 	_Gain(1.0f), _RelativeMode(false), _Looping(false),
-	_Track(NULL), _ParentSource(NULL)
+	_Track(NULL), _3DPosition(NULL)
 {
 	setSound( id );
 }
@@ -183,17 +183,17 @@ void					CSourceUser::setPosition( const NLMISC::CVector& pos )
 
 
 /* Get the position vector.
- * If the parent source is not null, return its position.
+ * If the source is stereo, return the position vector which reference was passed to set3DPositionVector()
  */
 void					CSourceUser::getPosition( NLMISC::CVector& pos ) const
 {
-	if ( _ParentSource == NULL )
+	if ( _3DPosition == NULL )
 	{
 		pos = _Position;
 	}
 	else
 	{
-		_ParentSource->getPosition( pos );
+		pos = *_3DPosition;
 	}
 	
 }

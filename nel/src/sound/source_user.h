@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.2 2001/07/13 09:47:11 cado Exp $
+ * $Id: source_user.h,v 1.3 2001/07/13 13:27:53 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,7 +88,7 @@ public:
 	 */
 	virtual void					setPosition( const NLMISC::CVector& pos );
 	/** Get the position vector.
-	 * If the parent source is not null, return its position.
+	 * If the source is stereo, return the position vector which reference was passed to set3DPositionVector()
 	 */
 	virtual void					getPosition( NLMISC::CVector& pos ) const;
 	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
@@ -120,8 +120,10 @@ public:
 	virtual bool					getSourceRelativeMode() const				{ return _RelativeMode; }
 
 
-	/// Set the parent source (see getPosition()) (default: NULL)
-	void							setParentSource( CSourceUser *src )			{ _ParentSource = src; }
+	/// Set the position vector to return for a stereo source (default: NULL)
+	void							set3DPositionVector( const NLMISC::CVector *pos )	{ _3DPosition = pos; }
+	/// Return a pointer to the position vector (3D mode only)
+	const NLMISC::CVector			*getPositionP() const						{ return &_Position; }
 	/** Set the corresponding track	(NULL allowed, sets no track)
 	 * Don't set a non-null track if getSound() is null.
 	 */
@@ -154,8 +156,8 @@ private:
 	// Corresponding track (if selected for playing)
 	CTrack							*_Track;
 
-	// Parent source (see getPosition())
-	CSourceUser						*_ParentSource;
+	// Position to return, for a stereo source
+	const NLMISC::CVector			*_3DPosition;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.2 2001/07/13 09:47:42 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.3 2001/07/13 13:27:53 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "env_sound_user.h"
 #include "env_effect.h"
 #include "sound.h"
+#include "driver/buffer.h"
 
 #include "nel/misc/file.h"
 using namespace NLMISC;
@@ -54,7 +55,7 @@ UAudioMixer	*UAudioMixer::createAudioMixer()
 /*
  * Constructor
  */
-CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL), _NbTracks(0), _CurEnvEffect(NULL), _BalancePeriod(0)
+CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL), _NbTracks(0), _CurEnvEffect(NULL), _BalancePeriod(0), _ListenPosition(CVector::Null)
 {
 	if ( _Instance == NULL )
 	{
@@ -274,6 +275,9 @@ void				CAudioMixerUser::getFreeTracks( uint nb, CTrack **tracks )
  */
 void				CAudioMixerUser::applyListenerMove( const NLMISC::CVector& listenerpos )
 {
+	// Store position
+	_ListenPosition = listenerpos;
+
 	// Environmental effect
 	computeEnvEffect( listenerpos );
 
@@ -359,6 +363,12 @@ USource				*CAudioMixerUser::createSource( TSoundId id )
 	// Create source
 	CSourceUser *source = new CSourceUser( id );
 	_Sources.insert( source );
+
+	// Link the position to the listener position if it'a stereo source
+	if ( id->getBuffer()->isStereo() )
+	{
+		source->set3DPositionVector( &_ListenPosition );
+	}
 
 	// Give it a free track
 	if ( source->getSound() != NULL )

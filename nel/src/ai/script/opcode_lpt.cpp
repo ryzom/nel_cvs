@@ -1,6 +1,6 @@
 /** \file opcode_lpt.cpp
  *
- * $Id: opcode_lpt.cpp,v 1.7 2001/02/27 13:16:19 chafik Exp $
+ * $Id: opcode_lpt.cpp,v 1.8 2001/02/27 14:01:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,7 +132,7 @@ namespace NLAISCRIPT
 		}			
 					
 		sprintf(str,"Lpt la referance du membre <%d> member de la class '%s'",j,(const char *)obj->getType());		
-	}*/
+	}
 
 	NLAIAGENT::TProcessStatement CLptRefOpCode::runOpCode(CCodeContext &context)
 	{
@@ -148,5 +148,5 @@ namespace NLAISCRIPT
 		char X[1024*8];	
 		context.Heap[_B]->getDebugString(X);
 		sprintf(str,"Lpt<%d>",_B);		
-	}
+	}*/
 }

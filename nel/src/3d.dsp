@@ -379,6 +379,14 @@ SOURCE=..\include\nel\3d\dru.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\light.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\light.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\material.cpp
 # End Source File
 # Begin Source File

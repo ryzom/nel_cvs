@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.51 2002/03/20 11:13:59 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.52 2002/04/04 09:19:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -291,9 +291,9 @@ bool CDriverGL::setupTexture(ITexture& tex)
 
 
 		// To avoid any delete/new ptr problem, disable all texturing.
-		/* If an old texture is deleted, _CurrentTexture[*] is invalid. But this is grave only if a new 
-			texture is created, with the same pointer (bad luck). Since an newly allocated texture always 
-			pass here before use, we are sure to avoid any problems.
+		/* If an old texture is deleted, _CurrentTexture[*] and _CurrentTextureInfoGL[*] are invalid. 
+			But this is grave only if a new texture is created, with the same pointer (bad luck). 
+			Since an newly allocated texture always pass here before use, we are sure to avoid any problems.
 		*/
 		for(sint stage=0 ; stage<getNbTextureStages() ; stage++)
 		{
@@ -641,6 +641,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 
 			// Disable texture 0
 			_CurrentTexture[0]= NULL;
+			_CurrentTextureInfoGL[0]= NULL;
 			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
 		}
 
@@ -671,20 +672,29 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 					//======================
 					CTextureDrvInfosGL*	gltext;
 					gltext= getTextureGl(*tex);
-					glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, getTextureGl(*tex)->ID);
-					
 
-					// Change parameters of texture, if necessary.
-					//============================================
-					if(gltext->MagFilter!= tex->getMagFilter())
+					// If the shared texture is the same than before, no op.
+					if(_CurrentTextureInfoGL[stage] != gltext)
 					{
-						gltext->MagFilter= tex->getMagFilter();
-						glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
-					}
-					if(gltext->MinFilter!= tex->getMinFilter())
-					{
-						gltext->MinFilter= tex->getMinFilter();
-						glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+						// Cache setup.
+						_CurrentTextureInfoGL[stage]= gltext;
+
+						// setup this texture
+						glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, gltext->ID);
+						
+
+						// Change parameters of texture, if necessary.
+						//============================================
+						if(gltext->MagFilter!= tex->getMagFilter())
+						{
+							gltext->MagFilter= tex->getMagFilter();
+							glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
+						}
+						if(gltext->MinFilter!= tex->getMinFilter())
+						{
+							gltext->MinFilter= tex->getMinFilter();
+							glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+						}
 					}
 				}
 			}
@@ -698,36 +708,45 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 				CTextureDrvInfosGL*	gltext;
 				gltext= getTextureGl(*tex);
 
+				// If the shared texture is the same than before, no op.
+				if(_CurrentTextureInfoGL[stage] != gltext)
+				{
+					// Cache setup.
+					_CurrentTextureInfoGL[stage]= gltext;
 
-				
-				glBindTexture(GL_TEXTURE_2D, getTextureGl(*tex)->ID);								
+					// setup this texture
+					glBindTexture(GL_TEXTURE_2D, gltext->ID);								
 
-				// Change parameters of texture, if necessary.
-				//============================================
-				if(gltext->WrapS!= tex->getWrapS())
-				{
-					gltext->WrapS= tex->getWrapS();
-					glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
-				}
-				if(gltext->WrapT!= tex->getWrapT())
-				{
-					gltext->WrapT= tex->getWrapT();
-					glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
-				}
-				if(gltext->MagFilter!= tex->getMagFilter())
-				{
-					gltext->MagFilter= tex->getMagFilter();
-					glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
-				}
-				if(gltext->MinFilter!= tex->getMinFilter())
-				{
-					gltext->MinFilter= tex->getMinFilter();					
-					glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+
+					// Change parameters of texture, if necessary.
+					//============================================
+					if(gltext->WrapS!= tex->getWrapS())
+					{
+						gltext->WrapS= tex->getWrapS();
+						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
+					}
+					if(gltext->WrapT!= tex->getWrapT())
+					{
+						gltext->WrapT= tex->getWrapT();
+						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
+					}
+					if(gltext->MagFilter!= tex->getMagFilter())
+					{
+						gltext->MagFilter= tex->getMagFilter();
+						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
+					}
+					if(gltext->MinFilter!= tex->getMinFilter())
+					{
+						gltext->MinFilter= tex->getMinFilter();					
+						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+					}
 				}
 			}
 		}
 		else
 		{
+			// Force no texturing for this stage.
+			_CurrentTextureInfoGL[stage]= NULL;
 			// setup texture mode, after activeTextureARB()
 			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);			
 		}

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.141 2002/03/28 10:49:19 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.142 2002/04/04 09:19:18 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -889,6 +889,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	{
 		// init no texture.
 		_CurrentTexture[stage]= NULL;
+		_CurrentTextureInfoGL[stage]= NULL;
 		// texture are disabled in DriverGLStates.forceDefaults().
 		
 		// init default env.
@@ -1091,6 +1092,7 @@ bool CDriverGL::swapBuffers()
 	{
 		// init no texture.
 		_CurrentTexture[stage]= NULL;
+		_CurrentTextureInfoGL[stage]= NULL;
 		// texture are disabled in DriverGLStates.forceDefaults().
 		
 		// init default env.
@@ -1626,6 +1628,8 @@ void CDriverGL::copyFrameBufferToTexture(ITexture *tex, uint32 level
 
 	// disable texturing.
 	_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
+	_CurrentTexture[0]= NULL;
+	_CurrentTextureInfoGL[0]= NULL;
 
 
 }

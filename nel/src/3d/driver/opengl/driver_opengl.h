@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.99 2001/11/07 13:08:51 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.100 2001/11/14 15:48:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -678,6 +678,8 @@ private:
 	CTexEnvSpecial			_CurrentTexEnvSpecial[IDRV_MAT_MAXTEXTURES];
 	// Texture addressing mode
 	GLenum					_CurrentTexAddrMode[IDRV_MAT_MAXTEXTURES];
+	// activation of texture shaders
+	bool					_NVTextureShaderEnabled;
 
 	// Prec settings for material.
 	CDriverGLStates			_DriverGLStates;
@@ -699,6 +701,10 @@ private:
 	void					forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env);
 	void					forceActivateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env);
 
+	/// nv texture shaders. Should be used only if this caps is present!
+	void					enableNVTextureShader(bool enabled);
+	// check nv texture shader consistency
+	void			verifyNVTextureShaderConfig();
 
 	// Called by activeVertexBuffer when _ViewMatrixSetupDirty is true to clean the view matrix.
 	// set _ViewMatrixSetupDirty to false;

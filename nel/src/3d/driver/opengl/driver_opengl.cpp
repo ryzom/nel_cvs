@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.126 2001/11/07 10:50:25 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.127 2001/11/14 15:48:21 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -198,6 +198,8 @@ CDriverGL::CDriverGL()
 	_ForceDXTCCompression= false;
 
 	_SumTextureMemoryUsed = false;
+
+	_NVTextureShaderEnabled = false;
 
 
 	// Compute the Flag which say if one texture has been changed in CMaterial.
@@ -624,6 +626,12 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	// Setup defaults for blend, lighting ...
 	_DriverGLStates.forceDefaults(getNbTextureStages());
 
+	if (_NVTextureShaderEnabled)
+	{
+		glDisable(GL_TEXTURE_SHADER_NV);
+		_NVTextureShaderEnabled = false;
+	}
+
 	// Be always in EXTSeparateSpecularColor.
 	if(_Extensions.EXTSeparateSpecularColor)
 	{
@@ -826,6 +834,11 @@ bool CDriverGL::swapBuffers()
 	//===========================================================
 	// Same reasoning as textures :)
 	_DriverGLStates.forceDefaults(getNbTextureStages());
+	if (_NVTextureShaderEnabled)
+	{
+		glDisable(GL_TEXTURE_SHADER_NV);
+		_NVTextureShaderEnabled = false;
+	}
 	_CurrentMaterial= NULL;
 
 
@@ -1486,7 +1499,7 @@ uint32			CDriverGL::getUsedTextureMemory() const
 {
 	// Sum memory used
 	uint32 memory=0;
-
+	
 	// For each texture used
 	set<ITexture*>::iterator ite=_TextureUsed.begin();
 	while (ite!=_TextureUsed.end())
@@ -1531,10 +1544,43 @@ bool CDriverGL::isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) c
 // ***************************************************************************
 void CDriverGL::setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4])
 {
-	nlassert(supportTextureShaders());
+	if (!supportTextureShaders()) return;
+	//nlassert(supportTextureShaders());
 	nlassert(stage < (uint) getNbTextureStages() )
 	_DriverGLStates.activeTextureARB(stage);
 	glTexEnvfv(GL_TEXTURE_SHADER_NV, GL_OFFSET_TEXTURE_MATRIX_NV, mat);
+}
+
+
+// ***************************************************************************
+void      CDriverGL::enableNVTextureShader(bool enabled)
+{		
+	if (enabled != _NVTextureShaderEnabled)
+	{		
+
+		if (enabled)
+		{			
+			glEnable(GL_TEXTURE_SHADER_NV);			
+		}
+		else
+		{			
+			glDisable(GL_TEXTURE_SHADER_NV);			
+		}
+		_NVTextureShaderEnabled = enabled;						
+	}
+}
+
+
+// ****************************************************************************
+void CDriverGL::verifyNVTextureShaderConfig()
+{
+	int consistent;
+	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+	{
+		_DriverGLStates.activeTextureARB(k);
+		glGetTexEnviv(GL_TEXTURE_SHADER_NV, GL_SHADER_CONSISTENT_NV, & consistent);
+		if(consistent == GL_FALSE) nlassert(0);
+	}
 }
 
 

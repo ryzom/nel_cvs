@@ -395,6 +395,23 @@ void CSource_sounds_builderDlg::OnSave()
 
 		try
 		{
+			// Check for blank waves
+			string blanksounds;
+			vector<CSound*>::iterator ips;
+			for ( ips=_Sounds.begin(); ips!=_Sounds.end(); ++ips )
+			{
+				if ( (*ips)->getFilename() == "" )
+				{
+					blanksounds += (*ips)->getName() + " ";
+				}
+			}
+			if ( blanksounds != "" )
+			{
+				CString s;
+				s.Format( "Warning: the following sounds have no wave file specified:\n%s", blanksounds.c_str() );
+				AfxMessageBox( s, MB_ICONWARNING );
+			}
+
 			// Save
 			COFile file;
 			file.open( string( savedlg.GetPathName() ), false );

@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.14 2001/09/10 17:14:57 cado Exp $
+ * $Id: sound.cpp,v 1.15 2001/09/10 17:26:39 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,12 +156,12 @@ void				CSound::serial( NLMISC::IStream& s )
 	}
 	else
 	{
-		// Prevent from writing a blank filename
-		if ( _Filename == "" )
+		// Prevent from writing a blank filename (disabled)
+		/*if ( _Filename == "" )
 		{
 			string reason = "Invalid sound filename for " + _Name;
 			throw EStream( reason );
-		}
+		}*/
 	}
 }
 

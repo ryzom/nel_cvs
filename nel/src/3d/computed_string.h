@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: computed_string.h,v 1.2 2001/09/06 15:20:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,13 +59,16 @@ struct CFontDescriptor;
 struct CComputedString
 {
 public:
-	typedef NLMISC::CSmartPtr<NL3D::CMaterial>	PMaterial;
-	typedef std::vector<PMaterial>	TMaterialVec;
+	//typedef NLMISC::CSmartPtr<NL3D::CMaterial>	PMaterial;
+	//typedef std::vector<PMaterial>	TMaterialVec;
+	//typedef std::vector<CMaterial*>	TMaterialVec;
 
 public:
 	CVertexBuffer Vertices;
-	std::vector<CPrimitiveBlock>	Primitives;
-	TMaterialVec					Materials;
+	//std::vector<CPrimitiveBlock>	Primitives;
+	//TMaterialVec					Materials;
+	CMaterial	*Material;
+	CRGBA Color;
 	float StringWidth;
 	float StringHeight;
 
@@ -94,6 +97,7 @@ public:
 	{
 		StringWidth = 0;
 		StringHeight = 0;
+		Vertices.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	}
 
 	/**

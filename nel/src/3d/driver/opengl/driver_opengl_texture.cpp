@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.32 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.33 2001/09/06 15:20:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,6 +133,20 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 	}
 }
 
+
+// ***************************************************************************
+static GLint	getGlSrcTextureFormat(ITexture &tex)
+{
+	switch(tex.getPixelFormat())
+	{
+	case CBitmap::Alpha:	return GL_ALPHA;
+	case CBitmap::AlphaLuminance:	return GL_LUMINANCE_ALPHA;
+	case CBitmap::Luminance:	return GL_LUMINANCE;
+	}
+
+	// Else, not a Src format for upload, or RGBA.
+	return GL_RGBA;
+}
 
 
 // ***************************************************************************
@@ -393,9 +407,11 @@ bool CDriverGL::setupTexture(ITexture& tex)
 						ITexture *pTInTC = pTC->getTexture((CTextureCube::TFace)nText);
 						// Get the correct texture format from texture...
 						GLint	glfmt= getGlTextureFormat(*pTInTC, gltext->Compressed);
+						GLint	glSrcFmt= getGlSrcTextureFormat(*pTInTC);
 
 						sint	nMipMaps;
-						pTInTC->convertToType(CBitmap::RGBA);
+						if(glSrcFmt==GL_RGBA && pTInTC->getPixelFormat()!=CBitmap::RGBA )
+							pTInTC->convertToType(CBitmap::RGBA);
 						if(pTC->mipMapOn())
 						{
 							pTInTC->buildMipMaps();
@@ -410,7 +426,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 							void	*ptr= &(*pTInTC->getPixels(i).begin());
 							uint	w= pTInTC->getWidth(i);
 							uint	h= pTInTC->getHeight(i);
-							glTexImage2D(face_map[nText],i,glfmt, w, h, 0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+							glTexImage2D(face_map[nText],i,glfmt, w, h, 0,glSrcFmt,GL_UNSIGNED_BYTE, ptr );
 
 							// profiling: count TextureMemory usage.
 							gltext->TextureMemory+= computeMipMapMemoryUsage(w, h, glfmt);
@@ -426,6 +442,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 					{
 						// Get the correct texture format from texture...
 						GLint	glfmt= getGlTextureFormat(tex, gltext->Compressed);
+						GLint	glSrcFmt= getGlSrcTextureFormat(tex);
 
 						// DXTC: if same format, and same mipmapOn/Off, use glTexCompressedImage*.
 						// We cannot build the mipmaps if they are not here.
@@ -453,7 +470,8 @@ bool CDriverGL::setupTexture(ITexture& tex)
 						else
 						{
 							sint	nMipMaps;
-							tex.convertToType(CBitmap::RGBA);
+							if(glSrcFmt==GL_RGBA && tex.getPixelFormat()!=CBitmap::RGBA )
+								tex.convertToType(CBitmap::RGBA);
 							if(tex.mipMapOn())
 							{
 								tex.buildMipMaps();
@@ -468,7 +486,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 								void	*ptr= &(*tex.getPixels(i).begin());
 								uint	w= tex.getWidth(i);
 								uint	h= tex.getHeight(i);
-								glTexImage2D(GL_TEXTURE_2D,i,glfmt, w, h, 0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+								glTexImage2D(GL_TEXTURE_2D,i,glfmt, w, h, 0,glSrcFmt,GL_UNSIGNED_BYTE, ptr );
 
 								// profiling: count TextureMemory usage.
 								gltext->TextureMemory+= computeMipMapMemoryUsage(w, h, glfmt);
@@ -497,9 +515,11 @@ bool CDriverGL::setupTexture(ITexture& tex)
 					//===============================================
 					bool	dummy;
 					GLint	glfmt= getGlTextureFormat(tex, dummy);
+					GLint	glSrcFmt= getGlSrcTextureFormat(tex);
 
 					sint	nMipMaps;
-					tex.convertToType(CBitmap::RGBA);
+					if(glSrcFmt==GL_RGBA && tex.getPixelFormat()!=CBitmap::RGBA )
+						tex.convertToType(CBitmap::RGBA);
 					if(tex.mipMapOn())
 					{
 						bool	hadMipMap= tex.getMipMapCount()>1;
@@ -539,7 +559,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 							glPixelStorei(GL_UNPACK_ROW_LENGTH, w);
 							glPixelStorei(GL_UNPACK_SKIP_ROWS, y0);
 							glPixelStorei(GL_UNPACK_SKIP_PIXELS, x0);
-							glTexSubImage2D(GL_TEXTURE_2D,i, x0, y0, x1-x0, y1-y0, GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+							glTexSubImage2D(GL_TEXTURE_2D,i, x0, y0, x1-x0, y1-y0, glSrcFmt,GL_UNSIGNED_BYTE, ptr );
 
 							// Next mipmap!!
 							// floor .

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.37 2001/09/06 08:43:03 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.38 2001/09/06 15:20:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -411,6 +411,7 @@ void CObjectViewer::go ()
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	// Text context to show infos
+	/*
 	CTextContext topInfo;
 	topInfo.init (CNELU::Driver, &_FontManager);
 	topInfo.setKeep800x600Ratio(false);
@@ -418,7 +419,7 @@ void CObjectViewer::go ()
 	topInfo.setHotSpot (CComputedString::TopLeft);
 	topInfo.setColor (CRGBA (255,255,255));
 	topInfo.setFontSize (12);
-	
+	*/
 
 	do
 	{

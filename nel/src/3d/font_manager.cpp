@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.27 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: font_manager.cpp,v 1.28 2001/09/06 15:20:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,94 +46,25 @@ namespace NL3D {
 /*------------------------------------------------------------------*\
 							getFontMaterial()
 \*------------------------------------------------------------------*/
-NLMISC::CSmartPtr<CMaterial> CFontManager::getFontMaterial(CFontDescriptor desc)
+CMaterial* CFontManager::getFontMaterial()
 {
-	NLMISC::CSmartPtr<CMaterial>	pMatFont;
-	NLMISC::CSmartPtr<CTextureFont> pTexFont;
-
-	mapFontDec::iterator ifont = _Letters.find(desc);
-	
-	if (ifont != _Letters.end())
+	if (_TexFont == NULL)
 	{
-		// if the letter is already in the list
-
-		// moving the CMaterial to the begining of the list
-		pMatFont = *(ifont->second.first);
-		_MaterialFontList.erase(ifont->second.first);
-
-		// put at the begining of the priority list
-		_MaterialFontList.push_front(pMatFont);
-
-		// and updating iterator in the map
-		ifont->second.first = _MaterialFontList.begin();
-	}
-	else
-	{
-		// the letter isn't yet in the list
-
-		// creating new CMaterial and adding it at the begining of the list
-		pTexFont = new CTextureFont(desc);
-
-		// yoyo: may do this sometimes...
-		//pTexFont->setFilterMode(ITexture::Nearest, ITexture::NearestMipMapOff);
-
-		// generating texture
-		pTexFont->generate();
-		
-		// Eval mem Size (alpha only).
-		int nMemSize = pTexFont->getWidth()*pTexFont->getHeight(); 
-			
-		// adding TexTure to list
-		pMatFont= new CMaterial;
-		pMatFont->initUnlit();
-		pMatFont->setSrcBlend(CMaterial::srcalpha);
-		pMatFont->setDstBlend(CMaterial::invsrcalpha);
-		pMatFont->setBlend(true);
-		pMatFont->setTexture(0, pTexFont);
-		pMatFont->texEnvOpRGB(0, CMaterial::Replace);
-		pMatFont->texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
-
-		_MaterialFontList.push_front(pMatFont);
-
-		// Add to global mem size
-		_MemSize += nMemSize;
-
-		// add a char
-		_NbChar++;
-
-		// updating iterator in the map
-		_Letters.insert ( mapFontDec::value_type (desc, pairRefPtrInt(_MaterialFontList.begin(), nMemSize)));
-
+		_TexFont = new CTextureFont;
 	}
 
-
-	// while memory used is too high, we pop the back of the list
-	while(_MemSize>_MaxMemory && _MaterialFontList.size()!=0)
+	if (_MatFont == NULL)
 	{
-		NLMISC::CSmartPtr<CMaterial> pMatFontBack = _MaterialFontList.back();
-		pTexFont= (CTextureFont*)(pMatFontBack->getTexture(0));
-		CFontDescriptor descBack = 	pTexFont->getDescriptor();
-		
-		// Find the desc to kill in the map
-		mapFontDec::iterator ite=_Letters.find (descBack);
-		
-		// must exist!!
-		nlassert (ite!=_Letters.end());
-
-		// Free mem
-		_MemSize -= ite->second.second;
-
-		// sub a char
-		_NbChar--;
-
-		// Erase it
-		_Letters.erase (ite);
-
-		// Unstack
-		_MaterialFontList.pop_back();
+		_MatFont= new CMaterial;
+		_MatFont->initUnlit();
+		_MatFont->setSrcBlend(CMaterial::srcalpha);
+		_MatFont->setDstBlend(CMaterial::invsrcalpha);
+		_MatFont->setBlend(true);
+		_MatFont->setTexture(0, _TexFont);
+		_MatFont->texEnvOpRGB(0, CMaterial::Replace);
+		_MatFont->texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
 	}
-
-	return pMatFont;
+	return _MatFont;
 }
 
 
@@ -150,13 +81,16 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 				CComputedString &output,
 				bool	keep800x600Ratio)
 {
+
 	float FontRatio = 1.0;
 	uint32 width, height;
 
+	output.Color = color;
 	driver->getWindowSize (width, height);
-
+	FontRatio = FontRatio / height;
+	
 	// resize fontSize if window not of 800x600.
-	if(keep800x600Ratio)
+	if (keep800x600Ratio)
 	{
 		// keep the 800*600 ratio
 		fontSize = (uint32)floor(fontSize*height/600.f);
@@ -164,81 +98,72 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 	}
 	
 	// Setting vertices format
-	output.Vertices.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
-	output.Vertices.setNumVertices(4 * s.size());
-	
-	output.Primitives.resize(s.size());
-	output.Materials.resize(s.size());
+	output.Vertices.setNumVertices (4 * s.size());
 	
 	// 1 character <-> 1 primitive block
-	sint32 penx = 0;
-	sint32 penz = 0;
-	float x, z;
+	sint32 penx = 0, dx;
+	sint32 penz = 0, dz;
+	float x1, z1, x2, z2;
+	float u1, v1, u2, v2;
+	CMaterial		*pMatFont = fm->getFontMaterial();
+	CTextureFont	*pTexFont = (CTextureFont*)(pMatFont->getTexture (0));
+	float hlfW = 0.5f / pTexFont->getWidth();
+	float hlfH = 0.5f / pTexFont->getHeight();
+	float hlfPix = 0.5f / height;
+	CTextureFont::SLetterKey k;
+
 	output.StringHeight = 0;
-	for(uint i=0; i<s.size(); i++)
+	uint j = 0;
+	for (uint i = 0; i < s.size(); i++)
 	{
 		// Creating font
-		CSmartPtr<CMaterial> pMatFont = fm->getFontMaterial(CFontDescriptor(fontGen,s[i],fontSize));
-		CTextureFont		*pTexFont = (CTextureFont*)(pMatFont->getTexture(0));
-		
-		// Creating vertices
-		sint32 dx = pTexFont->Left;
-		sint32 dz = -((sint32)pTexFont->getCharHeight()-(sint32)(pTexFont->Top));
-		float	um= (float)pTexFont->getCharWidth()/pTexFont->getWidth();
-		float	vm= (float)pTexFont->getCharHeight()/pTexFont->getHeight();
-		float	hlfW= 0.5f/pTexFont->getWidth();
-		float	hlfH= 0.5f/pTexFont->getHeight();
-		float	hlfPix= 0.5f/ height;
+		k.Char = s[i];
+		k.FontGenerator = fontGen;
+		k.Size = fontSize;
+		CTextureFont::SLetterInfo *pLI = pTexFont->getLetterInfo (k);
 
-		if (pTexFont->getWidth() > 0 && pTexFont->getHeight() > 0)
+		if ((pLI->CharWidth > 0) && (pLI->CharHeight > 0))
 		{
-			x = (penx + dx) * FontRatio;
-			z = (penz + dz) * FontRatio;
-			x/= height;
-			z/= height;
-			output.Vertices.setVertexCoord(4*i, x-hlfPix, 0, z-hlfPix);
-			output.Vertices.setTexCoord(4*i,0,0-hlfW,vm+hlfH);
-			output.Vertices.setColor(4*i, color);
+			// Creating vertices
+			dx = pLI->Left;
+			dz = -((sint32)pLI->CharHeight-(sint32)(pLI->Top));
+			u1 = pLI->U - hlfW;
+			v1 = pLI->V - hlfH;
+			u2 = pLI->U + ((float)pLI->CharWidth) / pTexFont->getWidth() + hlfW;
+			v2 = pLI->V + ((float)pLI->CharHeight) / pTexFont->getHeight() + hlfH;
 
-			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * FontRatio;
-			z = (penz + dz) * FontRatio;
-			x/= height;
-			z/= height;
-			output.Vertices.setVertexCoord(4*i+1, x+hlfPix, 0, z-hlfPix);
-			output.Vertices.setTexCoord(4*i+1,0,um+hlfW,vm+hlfH);
-			output.Vertices.setColor(4*i+1, color);
+			x1 = (penx + dx) * FontRatio - hlfPix;
+			z1 = (penz + dz) * FontRatio - hlfPix;
+			x2 = (penx + dx + (sint32)pLI->CharWidth)  * FontRatio + hlfPix;
+			z2 = (penz + dz + (sint32)pLI->CharHeight) * FontRatio + hlfPix;
 
-			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * FontRatio;
-			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * FontRatio;
-			x/= height;
-			z/= height;
-			output.Vertices.setVertexCoord(4*i+2, x+hlfPix, 0, z+hlfPix); 
-			output.Vertices.setTexCoord(4*i+2,0,um+hlfW,0-hlfH);
-			output.Vertices.setColor(4*i+2, color);
+			output.Vertices.setVertexCoord	(j, x1, 0, z1);
+			output.Vertices.setTexCoord		(j, 0, u1, v2);
+			++j;
 
-			x = (penx + dx) * FontRatio;
-			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * FontRatio;
-			x/= height;
-			z/= height;
-			output.Vertices.setVertexCoord(4*i+3, x-hlfPix, 0, z+hlfPix); 
-			output.Vertices.setTexCoord(4*i+3,0,0-hlfW,0-hlfH);
-			output.Vertices.setColor(4*i+3, color);
+			output.Vertices.setVertexCoord	(j, x2, 0, z1);
+			output.Vertices.setTexCoord		(j, 0, u2, v2);
+			++j;
+
+			output.Vertices.setVertexCoord	(j, x2, 0, z2); 
+			output.Vertices.setTexCoord		(j, 0, u2, v1);
+			++j;
+
+			output.Vertices.setVertexCoord	(j, x1, 0, z2); 
+			output.Vertices.setTexCoord		(j, 0, u1, v1);
+			++j;
 			
-			if(z>output.StringHeight) output.StringHeight = z;
+			if (z2 > output.StringHeight) 
+				output.StringHeight = z2;
 		}
-		penx += pTexFont->AdvX;
-		
-		// Building primitive block
-		output.Primitives[i].setNumQuad(1);
-		output.Primitives[i].setQuad(0, 4*i, 4*i+1, 4*i+2, 4*i+3);
+		penx += pLI->AdvX;
 
 		// Building Material
-		output.Materials[i]= pMatFont;
-		
+		output.Material = pMatFont;
 	}
+	output.Vertices.setNumVertices (j);
 
 	output.StringWidth = penx * FontRatio;
-	output.StringWidth /= height;
 }
 
 

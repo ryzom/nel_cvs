@@ -1,7 +1,7 @@
 /** \file texture_font.h
  * <File description>
  *
- * $Id: texture_font.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: texture_font.h,v 1.2 2001/09/06 15:20:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,21 +34,79 @@
 namespace NL3D
 {
 
+#define TEXTUREFONT_NBCATEGORY	4
 
 //****************************************************************************
 /**
  * CTextureFont
- *
- * Rq : _Width and _Height are duplicated from CBitmap because the texture
- *      can be released by the driver, which sets these values to zero.
- *		But these values are necessary to compute strings.
- *
- * \author Stephane Coutelas
- * \author Nevrax France
- * \date 2000
  */
 class CTextureFont : public ITexture
 {
+
+public:
+
+	struct SLetterInfo
+	{	
+		// To generate the letter
+		ucchar Char;
+		CFontGenerator *FontGenerator;
+		sint Size;
+		
+
+		// The less recently used infos
+		SLetterInfo *Next, *Prev;
+
+		uint Cat; // 8x8, 16x16, 24x24, 32x32
+
+		//////////////////////////////////////////////////////////////////////
+
+		float U ,V;
+		uint32 CharWidth;
+		uint32 CharHeight;
+		uint32 GlyphIndex;	// number of the character in the this font
+		sint32 Top;			// Distance between origin and top of the texture
+		sint32 Left;		// Distance between origin and left of the texture
+		sint32 AdvX;		// Advance to the next caracter
+	};
+
+	struct SLetterKey
+	{
+		ucchar Char;
+		CFontGenerator *FontGenerator;
+		sint Size;
+
+		uint32 getVal();
+		//bool operator < (const SLetterKey&k) const;
+		//bool operator == (const SLetterKey&k) const;
+	};
+
+public:
+
+	/** 
+	 * Default constructor
+	 */	
+	CTextureFont();
+	virtual ~CTextureFont();
+
+	// Generate the texture
+	void doGenerate ();
+
+	// This function manage the cache if the letter wanted does not exist
+	SLetterInfo* getLetterInfo (SLetterKey& k);
+
+private:
+
+	// To find a letter in the texture
+	std::map<uint32, SLetterInfo*> Accel;
+
+	std::vector<SLetterInfo> Letters[TEXTUREFONT_NBCATEGORY];
+	SLetterInfo *Front[TEXTUREFONT_NBCATEGORY], *Back[TEXTUREFONT_NBCATEGORY];
+
+	void rebuildLetter (sint cat, sint x, sint y);
+
+
+
+/*
 	uint32 _CharWidth;
 	uint32 _CharHeight;
 	uint32 _Width;
@@ -57,11 +115,7 @@ class CTextureFont : public ITexture
 	uint32 _Size;
 	CFontGenerator *_FontGen;
 public:
-
-	/** Default constructor
-	 * 
-	 */	
-	CTextureFont() 
+	CTextureFont()
 	{ 
 		// Default char. This ctor is usefull for polymorphic serialisation only.
 		Char = ' ';
@@ -78,11 +132,7 @@ public:
 		// Font are always Alpha only.
 		setUploadFormat(Alpha);
 	}
-
 	
-	/** Default constructor
-	 * 
-	 */	
 	CTextureFont(const CFontDescriptor& desc) 
 	{ 
 		Char = desc.C;
@@ -100,9 +150,6 @@ public:
 		setUploadFormat(Alpha);
 	}
 
-	/** constructor
-	 * 
-	 */	
 	CTextureFont(CFontGenerator *fg, ucchar c, uint32 size) 
 	{ 
 		Char = c;
@@ -126,9 +173,6 @@ public:
 	uint32	getWidth() const {return _Width;}
 	uint32	getHeight() const {return _Height;}
 
-	/** return the descriptor of this letter
-	 * /return CFontDescriptor letter descriptor
-	 */
 	CFontDescriptor getDescriptor() const
 	{
 		return CFontDescriptor(_FontGen, Char, _Size);
@@ -147,9 +191,10 @@ public:
 	sint32 Left;
 	/// Advance to the next caracter
 	sint32 AdvX;
-
+*/
 
 	/// Todo: serialize a font texture.
+public:
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream) {nlstop;}
 	NLMISC_DECLARE_CLASS(CTextureFont);
 

@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.16 2001/07/04 11:57:35 corvazier Exp $
+ * $Id: computed_string.cpp,v 1.17 2001/09/06 15:20:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,6 +111,12 @@ void CComputedString::render2D (IDriver& driver,
 	driver.activeVertexBuffer(Vertices);
 
 	// rendering each primitives 
+	Material->setZFunc (CMaterial::always);
+	Material->setZWrite (false);
+	Material->setColor (Color);
+	driver.renderQuads (*Material,0,Vertices.getNumVertices()/4);
+	
+	/*
 	for(uint32 i=0; i<Primitives.size(); i++)
 	{
 		// Disactive zbuffer
@@ -119,6 +125,7 @@ void CComputedString::render2D (IDriver& driver,
 
 		driver.render(Primitives[i], *Materials[i]);
 	}
+	*/
 }
 
 
@@ -135,6 +142,12 @@ void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
 	driver.activeVertexBuffer(Vertices);
 
 	// Rendering each primitive blocks
+	Material->setZFunc (CMaterial::lessequal);
+	Material->setZWrite (true);
+	Material->setColor (Color);
+	driver.renderQuads (*Material,0,Vertices.getNumVertices()/4);
+
+	/*
 	vector<CPrimitiveBlock>::iterator itpb = Primitives.begin();
 	int i = 0;
 	for(itpb = Primitives.begin(); itpb<Primitives.end(); itpb++)
@@ -145,7 +158,7 @@ void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
 
 		driver.render((*itpb), *Materials[i]);
 		i++;
-	}	
+	}*/	
 }
 
 

@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: font_manager.h,v 1.2 2001/09/06 15:20:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,7 +78,11 @@ class CFontManager
 	uint32 _MemSize;
 	uint32 _MaxMemory;
 	uint32 _NbChar;
-	mapFontDec _Letters;
+
+	//mapFontDec _Letters;
+	CMaterial		*_MatFont;
+	CTextureFont	*_TexFont;
+
 	std::list<NLMISC::CSmartPtr<CMaterial> > _MaterialFontList;
 
 public:
@@ -91,6 +95,8 @@ public:
 		_MemSize = 0;
 		_MaxMemory = 1000000;
 		_NbChar = 0;
+		_MatFont = NULL;
+		_TexFont = NULL;
 	}
 
 
@@ -112,7 +118,7 @@ public:
 	 * \param character descriptor
 	 * \return CSmartPtr to a font texture
 	 */	
-	NLMISC::CSmartPtr<CMaterial> getFontMaterial(CFontDescriptor desc);
+	CMaterial* getFontMaterial();
 
 
 	/** 

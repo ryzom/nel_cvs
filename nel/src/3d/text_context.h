@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: text_context.h,v 1.2 2001/09/06 15:20:54 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -320,7 +320,7 @@ public:
 	/**
 	 * compute and print a ucstring at the location
 	 */
-	void printAt(float x, float z, ucstring ucstr)
+	void printAt(float x, float z, const ucstring &ucstr)
 	{
 		if(_Shaded)
 		{

@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: text_context_user.h,v 1.2 2001/09/06 15:20:54 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ public:
 
 		_Driver= drv->getDriver();
 		_TextContext.init(_Driver, fmg);
-		_TextContext.setFontGenerator(fontFileName, fontExFileName);
+//		_TextContext.setFontGenerator(fontFileName, fontExFileName);
 	}
 	virtual ~CTextContextUser() {}
 

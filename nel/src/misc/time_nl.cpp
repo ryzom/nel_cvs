@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.12 2001/11/27 14:11:35 cado Exp $
+ * $Id: time_nl.cpp,v 1.13 2001/11/27 14:11:55 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,8 +167,6 @@ double CTime::ticksToSecond (TTicks ticks)
 			benchFrequency = false;
 		}
 
-		nlinfo ("freq = %f", (double)freq);
-		
 		return (double)(sint64)ticks/(double)freq;
 	}
 }

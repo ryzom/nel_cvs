@@ -1,6 +1,6 @@
 /** \file character.h
  *
- * $Id: character.h,v 1.3 2001/03/27 11:58:33 chafik Exp $
+ * $Id: character.h,v 1.4 2001/03/27 12:19:57 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,8 @@ namespace NLAICHARACTER
 		}
 		virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 		virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
+	public:
+		static void initClass();
 		
 	};
 
@@ -121,6 +123,8 @@ namespace NLAICHARACTER
 			return *IDCharacterChild;
 		}
 		virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
+	public:
+		static void initClass();
 
 	};	
 }

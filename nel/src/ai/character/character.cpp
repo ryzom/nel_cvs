@@ -1,6 +1,6 @@
 /** \file character.cpp
  *
- * $Id: character.cpp,v 1.4 2001/03/27 12:20:09 chafik Exp $
+ * $Id: character.cpp,v 1.5 2001/03/27 12:22:17 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,7 +128,8 @@ namespace NLAICHARACTER
 
 	void CCharacterChild::initClass()
 	{
-		IDCharacterChild = new NLAIC::CIdentType("CharacterChild",NLAIC::CSelfClassFactory(CCharacterChild("Truc")),
+		CCharacterChild n("TrucNoeud");
+		IDCharacterChild = new NLAIC::CIdentType("CharacterChild",NLAIC::CSelfClassFactory(n),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 	}
@@ -228,7 +229,8 @@ namespace NLAICHARACTER
 
 	void CCharacterNoeud::initClass()
 	{
-		IDCharacterNoeud = new NLAIC::CIdentType("CharacterNoeud",NLAIC::CSelfClassFactory(CCharacterChild("Truc")),
+		CCharacterNoeud n("TrucNoeud");
+		IDCharacterNoeud = new NLAIC::CIdentType("CharacterNoeud",NLAIC::CSelfClassFactory(n),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 	}

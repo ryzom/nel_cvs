@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.20 2002/02/26 17:30:23 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.21 2002/02/28 13:42:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,11 @@ using namespace NLMISC;
 
 // ***************************************************************************
 
-#define TAB_COUNT 6
+#define TAB_COUNT	7
+#define VP_COUNT	1
+// Which dialog tab is the VerytexProgram one?
+#define TAB_VP_ID	5
+
 
 // ***************************************************************************
 
@@ -91,8 +95,11 @@ class CLodDialogBoxParam
 public:
 	CLodDialogBoxParam ()
 	{
-		for (uint i=0; i<TAB_COUNT; i++)
+		uint i;
+		for (i=0; i<TAB_COUNT; i++)
 			SubDlg[i] = NULL;
+		for (i=0; i<VP_COUNT; i++)
+			SubVPDlg[i] = NULL;
 	}
 
 	bool					ListActived;
@@ -127,6 +134,15 @@ public:
 	std::string				LumelSizeMul;
 	std::string				SoftShadowRadius;
 	std::string				SoftShadowConeLength;
+
+
+	// VertexProgram.
+	int						VertexProgramId;
+	// WindTree VertexProgram.
+	CVPWindTreeAppData		VertexProgramWindTree;
+
+
+	// misc
 	int						ExportRealTimeLight;
 	int						ExportLightMapLight;
 	int						ExportAsSunLight;
@@ -155,6 +171,9 @@ public:
 
 	// Dialog
 	HWND					SubDlg[TAB_COUNT];
+
+	// Dialog
+	HWND					SubVPDlg[VP_COUNT];
 };
 
 int CALLBACK MRMDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -163,10 +182,17 @@ int CALLBACK InstanceDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 int CALLBACK LightmapDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK VegetableDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK MiscDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK VertexProgramDialogCallBack (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-const char				*SubText[TAB_COUNT]	= {"LOD & MRM", "Accelerator", "Instance", "Lighting", "Vegetable", "Misc"};
-const int				SubTab[TAB_COUNT]	= {IDD_LOD, IDD_ACCEL, IDD_INSTANCE, IDD_LIGHTMAP, IDD_VEGETABLE, IDD_MISC};
-DLGPROC					SubProc[TAB_COUNT]	= {MRMDialogCallback, AccelDialogCallback, InstanceDialogCallback, LightmapDialogCallback, VegetableDialogCallback, MiscDialogCallback};
+const char				*SubText[TAB_COUNT]	= {"LOD & MRM", "Accelerator", "Instance", "Lighting", "Vegetable", "VertexProgram", "Misc"};
+const int				SubTab[TAB_COUNT]	= {IDD_LOD, IDD_ACCEL, IDD_INSTANCE, IDD_LIGHTMAP, IDD_VEGETABLE, IDD_VERTEX_PROGRAM, IDD_MISC};
+DLGPROC					SubProc[TAB_COUNT]	= {MRMDialogCallback, AccelDialogCallback, InstanceDialogCallback, LightmapDialogCallback, VegetableDialogCallback, VertexProgramDialogCallBack, MiscDialogCallback};
+
+// VertexPrograms.
+int CALLBACK VPWindTreeCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+const int				SubVPTab[VP_COUNT]	= {IDD_VP_WINDTREE};
+DLGPROC					SubVPProc[VP_COUNT]	= {VPWindTreeCallback};
+
 
 // ***************************************************************************
 
@@ -369,6 +395,7 @@ int CALLBACK AccelDialogCallback (
 }
 
 
+// ***************************************************************************
 int CALLBACK MRMDialogCallback (
   HWND hwndDlg,  // handle to dialog box
   UINT uMsg,     // message
@@ -627,7 +654,7 @@ int CALLBACK MRMDialogCallback (
 
 
 
-
+// ***************************************************************************
 int CALLBACK InstanceDialogCallback (
   HWND hwndDlg,  // handle to dialog box
   UINT uMsg,     // message
@@ -692,8 +719,7 @@ int CALLBACK InstanceDialogCallback (
 
 
 
-
-
+// ***************************************************************************
 int CALLBACK LightmapDialogCallback (
   HWND hwndDlg,  // handle to dialog box
   UINT uMsg,     // message
@@ -817,8 +843,7 @@ int CALLBACK LightmapDialogCallback (
 
 
 
-
-
+// ***************************************************************************
 int CALLBACK VegetableDialogCallback (
   HWND hwndDlg,  // handle to dialog box
   UINT uMsg,     // message
@@ -925,10 +950,8 @@ int CALLBACK VegetableDialogCallback (
 	return TRUE;
 }
 
-
-
-
-int CALLBACK MiscDialogCallback (
+// ***************************************************************************
+int CALLBACK VertexProgramDialogCallBack (
   HWND hwndDlg,  // handle to dialog box
   UINT uMsg,     // message
   WPARAM wParam, // first message parameter
@@ -941,6 +964,497 @@ int CALLBACK MiscDialogCallback (
 	{
 		case WM_INITDIALOG:
 		{
+			// Param pointers
+			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
+			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+			if(currentParam->VertexProgramId>=0)
+			{
+				// Init DropList.
+				SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_ADDSTRING, 0, (LPARAM)"Disable");
+				SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_ADDSTRING, 0, (LPARAM)"Wind Tree");
+				SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_SETCURSEL, currentParam->VertexProgramId, 0);
+				EnableWindow( GetDlgItem(hwndDlg, IDC_COMBO_VP), TRUE);
+			}
+			else
+			{
+				SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_SETCURSEL, -1, 0);
+				EnableWindow( GetDlgItem(hwndDlg, IDC_COMBO_VP), FALSE);
+			}
+
+			// Get the tab client rect in screen
+			RECT tabRect;
+			GetClientRect (hwndDlg, &tabRect);
+			// Remove VP choose combo box
+			tabRect.top += 25;
+			tabRect.left += 2;
+			tabRect.right -= 2;
+			tabRect.bottom -= 2;
+			ClientToScreen (hwndDlg, (POINT*)&tabRect.left);
+			ClientToScreen (hwndDlg, (POINT*)&tabRect.right);
+
+			// For each VP Dlg to init.
+			for (uint vpId=0; vpId<VP_COUNT; vpId++)
+			{
+				// Create the dialog
+				currentParam->SubVPDlg[vpId] = CreateDialogParam (hInstance, MAKEINTRESOURCE(SubVPTab[vpId]), hwndDlg, SubVPProc[vpId], (LONG)lParam);
+
+				// To client coord
+				RECT client = tabRect;
+				ScreenToClient (currentParam->SubVPDlg[vpId], (POINT*)&client.left);
+				ScreenToClient (currentParam->SubVPDlg[vpId], (POINT*)&client.right);
+
+				// Resize and pos it
+				SetWindowPos (currentParam->SubVPDlg[vpId], NULL, client.left, client.top, client.right-client.left, client.bottom-client.top, SWP_NOOWNERZORDER|SWP_NOZORDER);
+			}
+
+			// Show the prop window
+			if(currentParam->VertexProgramId>0)
+			{
+				int	vpWind= currentParam->VertexProgramId-1;
+				ShowWindow(currentParam->SubVPDlg[vpWind], SW_SHOW);
+			}
+		}
+		break;
+
+		case WM_COMMAND:
+			if( HIWORD(wParam) == BN_CLICKED )
+			{
+				HWND hwndButton = (HWND) lParam;
+				switch (LOWORD(wParam)) 
+				{
+					case IDCANCEL:
+						EndDialog(hwndDlg, IDCANCEL);
+					break;
+					case IDOK:
+						{
+							// Validate chosen VertexProgram.
+							currentParam->VertexProgramId= SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_GETCURSEL, 0, 0);
+							if(currentParam->VertexProgramId==CB_ERR)
+								currentParam->VertexProgramId= -1;
+
+							// Advice VP windows
+							for (uint vpId=0; vpId<VP_COUNT; vpId++)
+							{
+								// Send back an ok message
+								SendMessage (currentParam->SubVPDlg[vpId], uMsg, wParam, lParam);
+							}
+
+						}
+					break;
+				}
+			}
+			else if( HIWORD(wParam) == CBN_SELCHANGE )
+			{
+				if(LOWORD(wParam) == IDC_COMBO_VP)
+				{
+					// Validate chosen VertexProgram.
+					currentParam->VertexProgramId= SendDlgItemMessage(hwndDlg, IDC_COMBO_VP, CB_GETCURSEL, 0, 0);
+					if(currentParam->VertexProgramId==CB_ERR)
+						currentParam->VertexProgramId= -1;
+
+					// Show the appropriate window (if VP enabled)
+					for(int vpId=0; vpId<VP_COUNT;vpId++)
+					{
+						int		vpWindow= currentParam->VertexProgramId - 1;
+						if(vpId==vpWindow)
+							ShowWindow (currentParam->SubVPDlg[vpId], SW_SHOW);
+						else
+							ShowWindow (currentParam->SubVPDlg[vpId], SW_HIDE);
+					}
+
+				}
+			}
+		break;
+
+		default:
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
+// ***************************************************************************
+
+
+// Slider Control Ids.
+static	int	VPWTFreqSliderId[CVPWindTreeAppData::HrcDepth]=
+	{IDC_SLIDER_VPWT_FREQ_L0, IDC_SLIDER_VPWT_FREQ_L1, IDC_SLIDER_VPWT_FREQ_L2};
+static	int	VPWTFreqWDSliderId[CVPWindTreeAppData::HrcDepth]=
+	{IDC_SLIDER_VPWT_FREQWD_L0, IDC_SLIDER_VPWT_FREQWD_L1, IDC_SLIDER_VPWT_FREQWD_L2};
+static	int	VPWTDistXYSliderId[CVPWindTreeAppData::HrcDepth]=
+	{IDC_SLIDER_VPWT_DISTXY_L0, IDC_SLIDER_VPWT_DISTXY_L1, IDC_SLIDER_VPWT_DISTXY_L2};
+static	int	VPWTDistZSliderId[CVPWindTreeAppData::HrcDepth]=
+	{IDC_SLIDER_VPWT_DISTZ_L0, IDC_SLIDER_VPWT_DISTZ_L1, IDC_SLIDER_VPWT_DISTZ_L2};
+static	int	VPWTBiasSliderId[CVPWindTreeAppData::HrcDepth]=
+	{IDC_SLIDER_VPWT_BIAS_L0, IDC_SLIDER_VPWT_BIAS_L1, IDC_SLIDER_VPWT_BIAS_L2};
+// Static Control Ids.
+static	int	VPWTFreqStaticId[CVPWindTreeAppData::HrcDepth]=
+	{IDC_STATIC_VPWT_FREQ_L0, IDC_STATIC_VPWT_FREQ_L1, IDC_STATIC_VPWT_FREQ_L2};
+static	int	VPWTFreqWDStaticId[CVPWindTreeAppData::HrcDepth]=
+	{IDC_STATIC_VPWT_FREQWD_L0, IDC_STATIC_VPWT_FREQWD_L1, IDC_STATIC_VPWT_FREQWD_L2};
+static	int	VPWTDistXYStaticId[CVPWindTreeAppData::HrcDepth]=
+	{IDC_STATIC_VPWT_DISTXY_L0, IDC_STATIC_VPWT_DISTXY_L1, IDC_STATIC_VPWT_DISTXY_L2};
+static	int	VPWTDistZStaticId[CVPWindTreeAppData::HrcDepth]=
+	{IDC_STATIC_VPWT_DISTZ_L0, IDC_STATIC_VPWT_DISTZ_L1, IDC_STATIC_VPWT_DISTZ_L2};
+static	int	VPWTBiasStaticId[CVPWindTreeAppData::HrcDepth]=
+	{IDC_STATIC_VPWT_BIAS_L0, IDC_STATIC_VPWT_BIAS_L1, IDC_STATIC_VPWT_BIAS_L2};
+
+
+void	updateVPWTStatic(HWND hwndDlg, uint type, uint depth, const CVPWindTreeAppData &vpwt)
+{
+	int		sliderValue;
+	char	stmp[256];
+	float	nticks= CVPWindTreeAppData::NumTicks;
+	float	scale;
+	
+	// which scale??
+	switch(type)
+	{
+	case 0:
+	case 1:
+		scale= vpwt.FreqScale;
+		break;
+	case 2:
+	case 3:
+		scale= vpwt.DistScale;
+		break;
+	// case 4: special code from -2 to 2 ...
+	}
+
+	// update static according to type.
+	switch(type)
+	{
+	case 0:	
+		sliderValue= SendDlgItemMessage(hwndDlg, VPWTFreqSliderId[depth], TBM_GETPOS, 0, 0);
+		sprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
+		SetWindowText( GetDlgItem(hwndDlg, VPWTFreqStaticId[depth]), stmp );
+		break;
+	case 1:	
+		sliderValue= SendDlgItemMessage(hwndDlg, VPWTFreqWDSliderId[depth], TBM_GETPOS, 0, 0);
+		sprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
+		SetWindowText( GetDlgItem(hwndDlg, VPWTFreqWDStaticId[depth]), stmp );
+		break;
+	case 2:	
+		sliderValue= SendDlgItemMessage(hwndDlg, VPWTDistXYSliderId[depth], TBM_GETPOS, 0, 0);
+		sprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
+		SetWindowText( GetDlgItem(hwndDlg, VPWTDistXYStaticId[depth]), stmp );
+		break;
+	case 3:	
+		sliderValue= SendDlgItemMessage(hwndDlg, VPWTDistZSliderId[depth], TBM_GETPOS, 0, 0);
+		sprintf(stmp, "%.2f", scale * float(sliderValue)/nticks);
+		SetWindowText( GetDlgItem(hwndDlg, VPWTDistZStaticId[depth]), stmp );
+		break;
+	case 4:	
+		sliderValue= SendDlgItemMessage(hwndDlg, VPWTBiasSliderId[depth], TBM_GETPOS, 0, 0);
+		// expand to -2 to 2.
+		float	biasVal= 4 * float(sliderValue)/nticks - 2;
+		sprintf(stmp, "%.2f", biasVal);
+		SetWindowText( GetDlgItem(hwndDlg, VPWTBiasStaticId[depth]), stmp );
+		break;
+	}
+}
+
+
+static	void concatEdit2Lines(HWND edit)
+{
+	const	uint lineLen= 1000;
+	uint	n;
+	// retrieve the 2 lines.
+	char	tmp0[2*lineLen];
+	char	tmp1[lineLen];
+	*(WORD*)tmp0= lineLen;
+	*(WORD*)tmp1= lineLen;
+	n= SendMessage(edit, EM_GETLINE, 0, (LONG)tmp0); tmp0[n]= 0;
+	n= SendMessage(edit, EM_GETLINE, 1, (LONG)tmp1); tmp1[n]= 0;
+	// concat and update the CEdit.
+	SetWindowText(edit, strcat(tmp0, tmp1));
+}
+
+
+static	void updateVPWTStaticForControl(HWND hwndDlg, HWND ctrlWnd, CVPWindTreeAppData &vpwt, int sliderValue )
+{
+	// What ctrlWnd is modified??
+	int		sliderType=-1;
+	int		depth;
+	for(depth =0;depth<CVPWindTreeAppData::HrcDepth;depth ++)
+	{
+		if(ctrlWnd== GetDlgItem(hwndDlg, VPWTFreqSliderId[depth]))
+		{sliderType= 0; break;}
+		if(ctrlWnd==GetDlgItem(hwndDlg, VPWTFreqWDSliderId[depth]))
+		{sliderType= 1; break;}
+		if(ctrlWnd==GetDlgItem(hwndDlg, VPWTDistXYSliderId[depth]))
+		{sliderType= 2; break;}
+		if(ctrlWnd==GetDlgItem(hwndDlg, VPWTDistZSliderId[depth]))
+		{sliderType= 3; break;}
+		if(ctrlWnd==GetDlgItem(hwndDlg, VPWTBiasSliderId[depth]))
+		{sliderType= 4; break;}
+	}
+
+	// Set to value, and update static.
+	if(sliderType>=0)
+	{
+		// update value.
+		if(sliderType==0)	vpwt.Frequency[depth]= sliderValue;
+		if(sliderType==1)	vpwt.FrequencyWindFactor[depth]= sliderValue;
+		if(sliderType==2)	vpwt.DistXY[depth]= sliderValue;
+		if(sliderType==3)	vpwt.DistZ[depth]= sliderValue;
+		if(sliderType==4)	vpwt.Bias[depth]= sliderValue;
+		// update text.
+		updateVPWTStatic(hwndDlg, sliderType, depth, vpwt);
+	}
+}
+
+
+int CALLBACK VPWindTreeCallback (
+  HWND hwndDlg,  // handle to dialog box
+  UINT uMsg,     // message
+  WPARAM wParam, // first message parameter
+  LPARAM lParam  // second message parameter
+)
+{
+	CLodDialogBoxParam *currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+	switch (uMsg) 
+	{
+		case WM_INITDIALOG:
+		{ 
+			// Param pointers
+			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
+			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+			// Init controls
+			CVPWindTreeAppData		&vpwt= currentParam->VertexProgramWindTree;
+			int	nticks= CVPWindTreeAppData::NumTicks;
+
+			// Init Global. editBox
+			char		stmp[256];
+			sprintf(stmp, "%.2f", vpwt.FreqScale);
+			SetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_FREQ_SCALE), stmp );
+			sprintf(stmp, "%.2f", vpwt.DistScale);
+			SetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_DIST_SCALE), stmp );
+			SendDlgItemMessage(hwndDlg, IDC_CHECK_VP_SPECLIGHT, BM_SETCHECK, vpwt.SpecularLighting, 0);
+
+			// Init sliders for each level.
+			nlassert(CVPWindTreeAppData::HrcDepth==3);
+			for(uint i=0;i<CVPWindTreeAppData::HrcDepth;i++)
+			{
+				// Init ranges.
+				SendDlgItemMessage(hwndDlg, VPWTFreqSliderId[i], TBM_SETSEL, TRUE, MAKELONG(0, nticks));
+				SendDlgItemMessage(hwndDlg, VPWTFreqWDSliderId[i], TBM_SETSEL, TRUE, MAKELONG(0, nticks));
+				SendDlgItemMessage(hwndDlg, VPWTDistXYSliderId[i], TBM_SETSEL, TRUE, MAKELONG(0, nticks));
+				SendDlgItemMessage(hwndDlg, VPWTDistZSliderId[i], TBM_SETSEL, TRUE, MAKELONG(0, nticks));
+				SendDlgItemMessage(hwndDlg, VPWTBiasSliderId[i], TBM_SETSEL, TRUE, MAKELONG(0, nticks));
+
+				// Clamp values to range.
+				clamp(vpwt.Frequency[i], 0, nticks);
+				clamp(vpwt.FrequencyWindFactor[i], 0, nticks);
+				clamp(vpwt.DistXY[i], 0, nticks);
+				clamp(vpwt.DistZ[i], 0, nticks);
+				clamp(vpwt.Bias[i], 0, nticks);
+
+				// Init current selection.
+				SendDlgItemMessage(hwndDlg, VPWTFreqSliderId[i], TBM_SETPOS, TRUE, vpwt.Frequency[i]);
+				SendDlgItemMessage(hwndDlg, VPWTFreqWDSliderId[i], TBM_SETPOS, TRUE, vpwt.FrequencyWindFactor[i]);
+				SendDlgItemMessage(hwndDlg, VPWTDistXYSliderId[i], TBM_SETPOS, TRUE, vpwt.DistXY[i]);
+				SendDlgItemMessage(hwndDlg, VPWTDistZSliderId[i], TBM_SETPOS, TRUE, vpwt.DistZ[i]);
+				SendDlgItemMessage(hwndDlg, VPWTBiasSliderId[i], TBM_SETPOS, TRUE, vpwt.Bias[i]);
+
+				// Init current Static selection.
+				updateVPWTStatic(hwndDlg, 0, i, vpwt);	// FreqStatic
+				updateVPWTStatic(hwndDlg, 1, i, vpwt);	// FreqWDStatic
+				updateVPWTStatic(hwndDlg, 2, i, vpwt);	// DistXYStatic
+				updateVPWTStatic(hwndDlg, 3, i, vpwt);	// DistZStatic
+				updateVPWTStatic(hwndDlg, 4, i, vpwt);	// BiasStatic
+			}
+		}
+		break;
+
+		case WM_COMMAND:
+		{
+			CVPWindTreeAppData		&vpwt= currentParam->VertexProgramWindTree;
+			int	nticks= CVPWindTreeAppData::NumTicks;
+			char		stmp[256];
+			float		val;
+
+			if( HIWORD(wParam) == BN_CLICKED )
+			{
+				HWND hwndButton = (HWND) lParam;
+				switch (LOWORD(wParam)) 
+				{
+					case IDCANCEL:
+						EndDialog(hwndDlg, IDCANCEL);
+					break;
+					case IDOK:
+					{
+						// Read FreqScale
+						GetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_FREQ_SCALE), stmp, 256 );
+						val= float(atof(stmp));
+						if(val>0)
+							vpwt.FreqScale= val;
+						// Read DistScale
+						GetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_DIST_SCALE), stmp, 256 );
+						val= float(atof(stmp));
+						if(val>0)
+							vpwt.DistScale= val;
+						// Read SpecularLighting.
+						vpwt.SpecularLighting= SendDlgItemMessage(hwndDlg, IDC_CHECK_VP_SPECLIGHT, BM_GETCHECK, 0, 0);
+
+						// Read slider for each level.
+						nlassert(CVPWindTreeAppData::HrcDepth==3);
+						for(uint i=0;i<CVPWindTreeAppData::HrcDepth;i++)
+						{
+							// Read current selection.
+							vpwt.Frequency[i]= SendDlgItemMessage(hwndDlg, VPWTFreqSliderId[i], TBM_GETPOS, 0, 0);
+							vpwt.FrequencyWindFactor[i]= SendDlgItemMessage(hwndDlg, VPWTFreqWDSliderId[i], TBM_GETPOS, 0, 0);
+							vpwt.DistXY[i]= SendDlgItemMessage(hwndDlg, VPWTDistXYSliderId[i], TBM_GETPOS, 0, 0);
+							vpwt.DistZ[i]= SendDlgItemMessage(hwndDlg, VPWTDistZSliderId[i], TBM_GETPOS, 0, 0);
+							vpwt.Bias[i]= SendDlgItemMessage(hwndDlg, VPWTBiasSliderId[i], TBM_GETPOS, 0, 0);
+
+							// Clamp values to range.
+							clamp(vpwt.Frequency[i], 0, nticks);
+							clamp(vpwt.FrequencyWindFactor[i], 0, nticks);
+							clamp(vpwt.DistXY[i], 0, nticks);
+							clamp(vpwt.DistZ[i], 0, nticks);
+							clamp(vpwt.Bias[i], 0, nticks);
+						}
+					}
+					break;
+				}
+			}
+			// Aware EditBox: selectAll on setFocus
+			if( HIWORD(wParam) == EN_SETFOCUS )
+			{
+				// Select All.
+				PostMessage(GetDlgItem(hwndDlg, LOWORD(wParam)), EM_SETSEL, 0, -1);
+				InvalidateRect(GetDlgItem(hwndDlg, LOWORD(wParam)), NULL, TRUE);
+			}
+
+			// Aware EditBox: Update and killFocus on enter!!
+			bool	EnChangeReturn= false;
+			if( HIWORD(wParam) == EN_CHANGE )
+			{
+				// Trick to track "Enter" keypress: CEdit are multiline. If GetLineCount()>1, then
+				// user has press enter.
+				if( SendMessage(GetDlgItem(hwndDlg, LOWORD(wParam)), EM_GETLINECOUNT, 0, 0) > 1)
+				{
+					// Concat the 2 lines.
+					concatEdit2Lines( GetDlgItem(hwndDlg, LOWORD(wParam)) );
+					// Must update value next.
+					EnChangeReturn= true;
+				}
+			}
+
+			// EditBox change: ...
+			if( HIWORD(wParam) == EN_KILLFOCUS || EnChangeReturn)
+			{
+				switch (LOWORD(wParam)) 
+				{
+					case IDC_EDIT_VPWT_FREQ_SCALE:
+					{
+						// Read FreqScale
+						GetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_FREQ_SCALE), stmp, 256 );
+						val= float(atof(stmp));
+						if(val>0)
+						{
+							// update
+							vpwt.FreqScale= val;
+							// update All Statics
+							for(uint i=0;i<CVPWindTreeAppData::HrcDepth;i++)
+							{
+								updateVPWTStatic(hwndDlg, 0, i, vpwt);	// FreqStatic
+								updateVPWTStatic(hwndDlg, 1, i, vpwt);	// FreqWDStatic
+							}
+						}
+						// Update Scale Edit text.
+						sprintf(stmp, "%.2f", vpwt.FreqScale);
+						SetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_FREQ_SCALE), stmp );
+					}
+					break;
+					case IDC_EDIT_VPWT_DIST_SCALE:
+					{
+						// Read DistScale
+						GetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_DIST_SCALE), stmp, 256 );
+						val= float(atof(stmp));
+						if(val>0)
+						{
+							// update
+							vpwt.DistScale= val;
+							// update All Statics
+							for(uint i=0;i<CVPWindTreeAppData::HrcDepth;i++)
+							{
+								updateVPWTStatic(hwndDlg, 2, i, vpwt);	// DistXYStatic
+								updateVPWTStatic(hwndDlg, 3, i, vpwt);	// DistZStatic
+							}
+						}
+						// Update Scale Edit text.
+						sprintf(stmp, "%.2f", vpwt.DistScale);
+						SetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_DIST_SCALE), stmp );
+					}
+					break;
+				}
+			}
+		}
+		break;
+
+		// Handle dynamic scroll updating static
+		case WM_HSCROLL:
+		{
+			HWND	ctrlWnd= (HWND)lParam;
+			UINT	nSBCode= LOWORD(wParam);
+			CVPWindTreeAppData		&vpwt= currentParam->VertexProgramWindTree;
+			int		nticks= CVPWindTreeAppData::NumTicks;
+
+			if( nSBCode==SB_THUMBPOSITION || nSBCode==SB_THUMBTRACK)
+			{
+				int		sliderValue= HIWORD(wParam);
+				clamp(sliderValue, 0, nticks);
+
+				updateVPWTStaticForControl( hwndDlg, ctrlWnd, vpwt, sliderValue );
+			}
+		}
+		break;
+
+		// update static on release
+		case WM_NOTIFY:
+		{
+			LPNMHDR pnmh = (LPNMHDR) lParam;
+			HWND	ctrlWnd= pnmh->hwndFrom;
+			CVPWindTreeAppData		&vpwt= currentParam->VertexProgramWindTree;
+			int		nticks= CVPWindTreeAppData::NumTicks;
+
+			if( pnmh->code == NM_RELEASEDCAPTURE )
+			{
+				int sliderValue= SendMessage (ctrlWnd, TBM_GETPOS, 0, 0);
+				clamp(sliderValue, 0, nticks);
+
+				updateVPWTStaticForControl( hwndDlg, ctrlWnd, vpwt, sliderValue );
+			}
+		}
+		break;
+
+		default:
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
+
+// ***************************************************************************
+int CALLBACK MiscDialogCallback (
+  HWND hwndDlg,  // handle to dialog box
+  UINT uMsg,     // message
+  WPARAM wParam, // first message parameter
+  LPARAM lParam  // second message parameter
+)
+{
+	CLodDialogBoxParam *currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+	switch (uMsg) 
+	{
+		case WM_INITDIALOG:
+		{ 
 			// Param pointers
 			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -1007,6 +1521,7 @@ int CALLBACK MiscDialogCallback (
 
 
 
+// ***************************************************************************
 int CALLBACK LodDialogCallback (
   HWND hwndDlg,  // handle to dialog box
   UINT uMsg,     // message
@@ -1110,6 +1625,7 @@ int CALLBACK LodDialogCallback (
 								// Send back an ok message
 								SendMessage (currentParam->SubDlg[tab], uMsg, wParam, lParam);
 							}
+
 							// Quit
 							EndDialog(hwndDlg, IDOK);
 						}
@@ -1627,6 +2143,12 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		// UseLightingLocalAttenuation
 		param.UseLightingLocalAttenuation= CExportNel::getScriptAppData (node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, BST_UNCHECKED);
 
+		// VertexProgram
+		param.VertexProgramId= CExportNel::getScriptAppData (node, NEL3D_APPDATA_VERTEXPROGRAM_ID, 0);
+		// VertexProgramWindTree
+		CExportNel::getScriptAppDataVPWT(node, param.VertexProgramWindTree);
+
+
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
 		ite++;
@@ -1682,7 +2204,6 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, BST_UNCHECKED)!=param.FloatingObject)
 				param.FloatingObject = BST_INDETERMINATE;
 
-			
 			// Vegetable
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE, BST_UNCHECKED)!=param.Vegetable)
 				param.Vegetable = BST_INDETERMINATE;
@@ -1765,7 +2286,12 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			// UseLightingLocalAttenuation
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, BST_UNCHECKED) != param.UseLightingLocalAttenuation)
 				param.UseLightingLocalAttenuation= BST_INDETERMINATE;
+
 			
+			// VertexProgram
+			// simply disable VertexProgram edition of multiple selection... 
+			param.VertexProgramId= -1;
+
 
 			// Next sel
 			ite++;
@@ -1905,6 +2431,17 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				// UseLightingLocalAttenuation
 				if (param.UseLightingLocalAttenuation != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, param.UseLightingLocalAttenuation);
+
+				// VertexProgram
+				if (param.VertexProgramId!=-1)
+				{
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_VERTEXPROGRAM_ID, param.VertexProgramId);
+					// according to VertexProgram, change setup 
+					if(param.VertexProgramId==1)
+					{
+						CExportNel::setScriptAppDataVPWT(node, param.VertexProgramWindTree);
+					}
+				}
 
 				// Next node
 				ite++;

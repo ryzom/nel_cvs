@@ -496,6 +496,97 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,327,240,50,15
 END
 
+IDD_VERTEX_PROGRAM DIALOG DISCARDABLE  0, 0, 361, 211
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "VertexProgram :",IDC_STATIC,5,5,70,10
+    COMBOBOX        IDC_COMBO_VP,80,0,105,55,CBS_DROPDOWNLIST | WS_TABSTOP
+END
+
+IDD_VP_WINDTREE DIALOG DISCARDABLE  0, 0, 356, 191
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Use VP SpecularLighting",IDC_CHECK_VP_SPECLIGHT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,5,105,10
+    LTEXT           "Frequency Scale :",IDC_STATIC,120,5,60,10
+    LTEXT           "Distance Scale :",IDC_STATIC,245,5,60,10
+    EDITTEXT        IDC_EDIT_VPWT_FREQ_SCALE,190,5,35,12,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    EDITTEXT        IDC_EDIT_VPWT_DIST_SCALE,305,5,35,12,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    GROUPBOX        "Level 0 (eg: Tree Trunk)",IDC_STATIC,0,20,355,50
+    GROUPBOX        "Level 1 (eg: branch)",IDC_STATIC,0,75,355,55
+    GROUPBOX        "Level 2 (eg: leaves)",IDC_STATIC,0,135,355,55
+    LTEXT           "Frequency :",IDC_STATIC,5,31,50,10
+    LTEXT           "DistanceXY :",IDC_STATIC,5,41,50,10
+    LTEXT           "Distance Bias :",IDC_STATIC,5,51,50,10
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_FREQ_L0,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,55,30,100,11
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_DISTXY_L0,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,55,41,100,11
+    LTEXT           "FreqWindDep :",IDC_STATIC,180,31,50,10
+    LTEXT           "DistanceZ :",IDC_STATIC,180,40,50,10
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_FREQWD_L0,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,230,30,100,11
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_DISTZ_L0,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,230,40,100,11
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_BIAS_L0,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,55,51,100,11
+    LTEXT           "Frequency :",IDC_STATIC,5,90,50,10
+    LTEXT           "DistanceXY :",IDC_STATIC,5,101,50,10
+    LTEXT           "Distance Bias :",IDC_STATIC,5,112,50,10
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_FREQ_L1,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,55,91,100,11
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_DISTXY_L1,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,55,101,100,11
+    LTEXT           "FreqWindDep :",IDC_STATIC,180,92,50,10
+    LTEXT           "DistanceZ :",IDC_STATIC,180,100,50,10
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_FREQWD_L1,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,230,90,100,11
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_DISTZ_L1,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,230,100,100,11
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_BIAS_L1,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,55,112,100,11
+    LTEXT           "Frequency :",IDC_STATIC,5,150,50,10
+    LTEXT           "DistanceXY :",IDC_STATIC,5,160,50,10
+    LTEXT           "Distance Bias :",IDC_STATIC,5,170,50,10
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_FREQ_L2,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,55,150,100,11
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_DISTXY_L2,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,55,160,100,11
+    LTEXT           "FreqWindDep :",IDC_STATIC,180,153,50,10
+    LTEXT           "DistanceZ :",IDC_STATIC,180,162,50,10
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_FREQWD_L2,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,230,151,100,11
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_DISTZ_L2,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,230,162,100,11
+    CONTROL         "Slider1",IDC_SLIDER_VPWT_BIAS_L2,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,55,170,100,11
+    LTEXT           "-0.12",IDC_STATIC_VPWT_FREQ_L0,155,31,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_DISTXY_L0,155,41,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_BIAS_L0,155,51,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_FREQWD_L0,330,30,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_DISTZ_L0,330,40,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_FREQ_L1,155,91,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_DISTXY_L1,155,101,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_BIAS_L1,155,111,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_FREQWD_L1,330,90,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_DISTZ_L1,330,100,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_FREQ_L2,155,151,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_DISTXY_L2,155,161,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_BIAS_L2,155,171,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_FREQWD_L2,330,150,20,10,SS_SUNKEN
+    LTEXT           "0.12",IDC_STATIC_VPWT_DISTZ_L2,330,160,20,10,SS_SUNKEN
+    LTEXT           "-2",IDC_STATIC,55,60,10,8
+    LTEXT           "+2",IDC_STATIC,145,60,10,8
+    LTEXT           "-2",IDC_STATIC,55,120,10,8
+    LTEXT           "+2",IDC_STATIC,145,120,10,8
+    LTEXT           "-2",IDC_STATIC,55,180,10,8
+    LTEXT           "+2",IDC_STATIC,145,180,10,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -511,6 +602,22 @@ BEGIN
         RIGHTMARGIN, 377
         TOPMARGIN, 7
         BOTTOMMARGIN, 254
+    END
+
+    IDD_VERTEX_PROGRAM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 354
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 204
+    END
+
+    IDD_VP_WINDTREE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 349
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 184
     END
 END
 #endif    // APSTUDIO_INVOKED

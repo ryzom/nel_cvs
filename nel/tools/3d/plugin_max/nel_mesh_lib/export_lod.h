@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.16 2002/02/26 17:30:25 corvazier Exp $
+ * $Id: export_lod.h,v 1.17 2002/02/28 13:42:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,9 +86,28 @@
 /// Export As Sun Light
 #define NEL3D_APPDATA_EXPORT_AS_SUN_LIGHT			(1423062591)
 
+/// Choose a vertexProgram
+#define NEL3D_APPDATA_VERTEXPROGRAM_ID				(1423062592)
+
+/// WindTree VertexProgram.
+#define NEL3D_APPDATA_VPWT_LEVELMAX					3
+const uint32	NEL3D_AppDataVPWTFreq[NEL3D_APPDATA_VPWT_LEVELMAX]= 
+	{1423062593, 1423062594, 1423062595};
+const uint32	NEL3D_AppDataVPWTFreqWD[NEL3D_APPDATA_VPWT_LEVELMAX]= 
+	{1423062596, 1423062597, 1423062598};
+const uint32	NEL3D_AppDataVPWTDistXY[NEL3D_APPDATA_VPWT_LEVELMAX]= 
+	{1423062599, 1423062600, 1423062601};
+const uint32	NEL3D_AppDataVPWTDistZ[NEL3D_APPDATA_VPWT_LEVELMAX]= 
+	{1423062602, 1423062603, 1423062604};
+const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]= 
+	{1423062605, 1423062606, 1423062607};
+#define NEL3D_APPDATA_VPWT_USE_SPEC					(1423062608)
+#define NEL3D_APPDATA_VPWT_FREQ_SCALE				(1423062609)
+#define NEL3D_APPDATA_VPWT_DIST_SCALE				(1423062610)
+
 /// SWT weight for bones
-#define NEL3D_APPDATA_EXPORT_SWT					(1423062600)
-#define NEL3D_APPDATA_EXPORT_SWT_WEIGHT				(1423062601)
+#define NEL3D_APPDATA_EXPORT_SWT					(1423062611)
+#define NEL3D_APPDATA_EXPORT_SWT_WEIGHT				(1423062612)
 
 // ***************************************************************************
 

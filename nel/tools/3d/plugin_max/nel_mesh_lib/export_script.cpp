@@ -1,7 +1,7 @@
 /** \file export_script.cpp
  * Export script utility from 3dsmax
  *
- * $Id: export_script.cpp,v 1.4 2001/12/14 17:55:48 corvazier Exp $
+ * $Id: export_script.cpp,v 1.5 2002/02/28 13:42:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
+#include "export_lod.h"
 
 // ***************************************************************************
 
@@ -182,4 +183,52 @@ void CExportNel::setScriptAppData (Animatable *node, uint32 id, const std::strin
 }
 
 // ***************************************************************************
+
+
+
+// ***************************************************************************
+void CExportNel::getScriptAppDataVPWT (Animatable *node, CVPWindTreeAppData &apd)
+{
+	nlassert(NEL3D_APPDATA_VPWT_LEVELMAX == CVPWindTreeAppData::HrcDepth);
+
+	apd.FreqScale= getScriptAppData(node, NEL3D_APPDATA_VPWT_FREQ_SCALE, 2.f);
+	apd.DistScale= getScriptAppData(node, NEL3D_APPDATA_VPWT_DIST_SCALE, 2.f);
+	apd.SpecularLighting= getScriptAppData(node, NEL3D_APPDATA_VPWT_USE_SPEC, BST_UNCHECKED);
+
+	for(uint i=0; i<CVPWindTreeAppData::HrcDepth; i++)
+	{
+		// Default frequence of 2*0.1= 0.2f; Level0 only
+		int		defFreq= i==0?(CVPWindTreeAppData::NumTicks)/10:0;
+		// Default Amplitude of 2*0.5= 1.f; Level0 only
+		int		defDistXY= i==0?(CVPWindTreeAppData::NumTicks)/2:0;
+		// get appData.
+		apd.Frequency[i]= getScriptAppData(node, NEL3D_AppDataVPWTFreq[i], defFreq);
+		apd.FrequencyWindFactor[i]= getScriptAppData(node, NEL3D_AppDataVPWTFreqWD[i], 0);
+		apd.DistXY[i]= getScriptAppData(node, NEL3D_AppDataVPWTDistXY[i], defDistXY);
+		apd.DistZ[i]= getScriptAppData(node, NEL3D_AppDataVPWTDistZ[i], 0);
+		apd.Bias[i]= getScriptAppData(node, NEL3D_AppDataVPWTBias[i], CVPWindTreeAppData::NumTicks/2);
+	}
+}
+
+// ***************************************************************************
+void CExportNel::setScriptAppDataVPWT (Animatable *node, const CVPWindTreeAppData &apd)
+{
+	nlassert(NEL3D_APPDATA_VPWT_LEVELMAX == CVPWindTreeAppData::HrcDepth);
+
+	setScriptAppData(node, NEL3D_APPDATA_VPWT_FREQ_SCALE, apd.FreqScale);
+	setScriptAppData(node, NEL3D_APPDATA_VPWT_DIST_SCALE, apd.DistScale);
+	setScriptAppData(node, NEL3D_APPDATA_VPWT_USE_SPEC, apd.SpecularLighting);
+
+	for(uint i=0; i<CVPWindTreeAppData::HrcDepth; i++)
+	{
+		// set appData.
+		setScriptAppData(node, NEL3D_AppDataVPWTFreq[i], apd.Frequency[i]);
+		setScriptAppData(node, NEL3D_AppDataVPWTFreqWD[i], apd.FrequencyWindFactor[i]);
+		setScriptAppData(node, NEL3D_AppDataVPWTDistXY[i], apd.DistXY[i]);
+		setScriptAppData(node, NEL3D_AppDataVPWTDistZ[i], apd.DistZ[i]);
+		setScriptAppData(node, NEL3D_AppDataVPWTBias[i], apd.Bias[i]);
+	}
+}
+
+
 

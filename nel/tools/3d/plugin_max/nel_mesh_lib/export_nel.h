@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.41 2002/02/26 17:30:25 corvazier Exp $
+ * $Id: export_nel.h,v 1.42 2002/02/28 13:42:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -158,6 +158,35 @@ class CExportDesc;
 // ***************************************************************************
 
 typedef std::map<INode*, sint32> TInodePtrInt;
+
+
+// ***************************************************************************
+/**	Descriptor of a WindTree VertexProgram AppData
+ */
+class	CVPWindTreeAppData
+{
+public:
+	enum	{HrcDepth= 3, NumTicks=100};
+
+	/// Scale value for sliders
+	float		FreqScale;
+	float		DistScale;
+
+	/// Frequency of the wind for 3 Hierachy levels. Slider Value
+	int			Frequency[HrcDepth];
+	/// Additional frequency, multiplied by the globalWindPower. Slider Value
+	int			FrequencyWindFactor[HrcDepth];
+	/// Power of the wind on XY. Mul by globalWindPower. Slider Value
+	int			DistXY[HrcDepth];
+	/// Power of the wind on Z. Mul by globalWindPower. Slider Value
+	int			DistZ[HrcDepth];
+	/// Bias result of the cosinus: f= cos(time)+bias. Slider Value
+	int			Bias[HrcDepth];
+
+	/// BST_CHECKED if want Specular Lighting.
+	int			SpecularLighting;
+};
+
 
 // ***************************************************************************
 
@@ -450,6 +479,14 @@ public:
 
 	// Output error message
 	static void						outputErrorMessage (Interface *ip, const char *message, const char *title, bool dialog);
+
+
+	// Get an appData VertexProgram WindTree (ensure same default values for all retrieve).
+	static void						getScriptAppDataVPWT (Animatable *node, CVPWindTreeAppData &apd);
+
+	// Set an appData VertexProgram WindTree.
+	static void						setScriptAppDataVPWT (Animatable *node, const CVPWindTreeAppData &apd);
+
 
 	// ********************
 	// *** Export Vegetable

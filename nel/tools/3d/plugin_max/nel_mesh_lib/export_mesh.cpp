@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.33 2002/02/26 17:30:25 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.34 2002/02/28 13:42:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include <3d/coarse_mesh_manager.h>
 #include <3d/flare_shape.h>
 #include <3d/water_shape.h>
+#include <3d/meshvp_wind_tree.h>
 
 
 #include <nel/misc/polygon.h>
@@ -1055,6 +1056,55 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			buildMesh.VertexFlags|=CVertexBuffer::PaletteSkinFlag;
 		}
 	}
+
+	// *** ***************************
+	// *** Export VertexProgram.
+	// *** ***************************
+
+	// What Vertexprogram is used??
+	int	vpId= CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VERTEXPROGRAM_ID, 0);
+	// Setup vertexProgram
+	switch(vpId)
+	{
+		case 0: 
+			buildMesh.MeshVertexProgram= NULL;
+			break;
+		case 1: 
+		{
+			// smartPtr set it.
+			buildMesh.MeshVertexProgram= new CMeshVPWindTree;
+			CMeshVPWindTree		&vpwt= *(CMeshVPWindTree*)(IMeshVertexProgram*)buildMesh.MeshVertexProgram;
+
+			// Read the AppData
+			CVPWindTreeAppData	apd;
+			getScriptAppDataVPWT (&node, apd);
+
+			// transform it to the vpwt.
+			nlassert(CVPWindTreeAppData::HrcDepth == CMeshVPWindTree::HrcDepth);
+			vpwt.SpecularLighting= apd.SpecularLighting == BST_CHECKED;
+			// read all levels.
+			float	nticks= CVPWindTreeAppData::NumTicks;
+			for(uint i=0; i<CVPWindTreeAppData::HrcDepth;i++)
+			{
+				float	scale;
+				// read frequency
+				scale= apd.FreqScale;
+				vpwt.Frequency[i]= float(apd.Frequency[i])/nticks * scale;
+				vpwt.FrequencyWindFactor[i]= float(apd.FrequencyWindFactor[i])/nticks * scale;
+				// read Distance
+				scale= apd.DistScale;
+				vpwt.PowerXY[i]= float(apd.DistXY[i])/nticks * scale;
+				vpwt.PowerZ[i]= float(apd.DistZ[i])/nticks * scale;
+				// read Bias. expand to -2,2
+				vpwt.Bias[i]= float(apd.Bias[i])/nticks*4 -2;
+			}
+
+			break;
+		}
+		default:
+			nlstop;
+	}
+
 
 	// Ok, done.
 }

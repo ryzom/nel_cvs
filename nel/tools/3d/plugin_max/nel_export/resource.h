@@ -24,6 +24,8 @@
 #define IDD_MISC                        119
 #define IDD_VEGETABLE                   120
 #define IDD_INSTANCE                    121
+#define IDD_VERTEX_PROGRAM              122
+#define IDD_VP_WINDTREE                 123
 #define IDC_CLOSEBUTTON                 1000
 #define IDC_DOSTUFF                     1000
 #define ID_SAVEAS                       1001
@@ -128,13 +130,47 @@
 #define IDC_USE_LIGHT_LOCAL_ATTENUATION 1082
 #define IDC_EXPORT_LIGHTMAP_LIGHT       1083
 #define IDC_EXPORT_AS_SUN_LIGHT         1084
-#define IDC_EXPORT_LIGHTMAP_DYNAMIC     1085
-#define IDC_EXPORT_LIGHTMAP_NAME        1086
-#define IDC_SWT_WEIGHT                  1086
-#define IDC_EXPORT_LIGHTMAP_ANIMATED    1087
-#define IDC_SWT                         1087
-#define IDC_SET_GLOBAL_LIGHT            1089
-#define IDC_RESET_NAME                  1089
+#define IDC_COMBO_VP                    1085
+#define IDC_CHECK_VP_SPECLIGHT          1086
+#define IDC_EDIT_VPWT_FREQ_SCALE        1087
+#define IDC_EDIT_VPWT_DIST_SCALE        1088
+#define IDC_SLIDER_VPWT_FREQ_L0         1089
+#define IDC_SLIDER_VPWT_FREQ_L1         1090
+#define IDC_SLIDER_VPWT_FREQ_L2         1091
+#define IDC_SLIDER_VPWT_DISTXY_L0       1092
+#define IDC_SLIDER_VPWT_FREQWD_L0       1093
+#define IDC_SLIDER_VPWT_DISTZ_L0        1094
+#define IDC_SLIDER_VPWT_BIAS_L0         1095
+#define IDC_SLIDER_VPWT_DISTXY_L1       1096
+#define IDC_SLIDER_VPWT_FREQWD_L1       1097
+#define IDC_SLIDER_VPWT_DISTZ_L1        1098
+#define IDC_SLIDER_VPWT_BIAS_L1         1099
+#define IDC_SLIDER_VPWT_DISTXY_L2       1100
+#define IDC_SLIDER_VPWT_FREQWD_L2       1101
+#define IDC_SLIDER_VPWT_DISTZ_L2        1102
+#define IDC_SLIDER_VPWT_BIAS_L2         1103
+#define IDC_STATIC_VPWT_FREQ_L0         1104
+#define IDC_STATIC_VPWT_DISTXY_L0       1105
+#define IDC_STATIC_VPWT_BIAS_L0         1106
+#define IDC_STATIC_VPWT_FREQWD_L0       1107
+#define IDC_STATIC_VPWT_DISTZ_L0        1108
+#define IDC_STATIC_VPWT_FREQ_L1         1109
+#define IDC_STATIC_VPWT_DISTXY_L1       1110
+#define IDC_STATIC_VPWT_BIAS_L1         1111
+#define IDC_STATIC_VPWT_FREQWD_L1       1112
+#define IDC_STATIC_VPWT_DISTZ_L1        1113
+#define IDC_STATIC_VPWT_FREQ_L2         1114
+#define IDC_STATIC_VPWT_DISTXY_L2       1115
+#define IDC_STATIC_VPWT_BIAS_L2         1116
+#define IDC_STATIC_VPWT_FREQWD_L2       1117
+#define IDC_STATIC_VPWT_DISTZ_L2        1118
+#define IDC_EXPORT_LIGHTMAP_DYNAMIC     1119
+#define IDC_EXPORT_LIGHTMAP_NAME        1120
+#define IDC_SWT_WEIGHT                  1121
+#define IDC_EXPORT_LIGHTMAP_ANIMATED    1122
+#define IDC_SWT                         1123
+#define IDC_SET_GLOBAL_LIGHT            1124
+#define IDC_RESET_NAME                  1125
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -143,9 +179,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        122
+#define _APS_NEXT_RESOURCE_VALUE        124
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1090
+#define _APS_NEXT_CONTROL_VALUE         1126
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.99 2001/11/27 14:12:48 lecroart Exp $
+ * $Id: service.cpp,v 1.100 2001/11/27 17:34:24 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -908,8 +908,9 @@ sint IService::main ()
 			ErrorLog->removeDisplayer (wd);
 			AssertLog->removeDisplayer (wd);
 
-			delete wd;
-			wd = NULL;
+			// Never delete the windows displayer because another thread could use it
+			//delete wd;
+			//wd = NULL;
 		}
 
 		nlinfo ("Service released succesfuly");

@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.10 2001/11/27 14:12:48 lecroart Exp $
+ * $Id: service_5.cpp,v 1.11 2001/11/27 17:34:24 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -923,14 +923,17 @@ sint IService5::main ()
 		if (userInitCalled)
 			release ();
 
-
 		//
-		// Disconnect from the Naming Service, if necessary
+		// Delete all network connection (naming client also)
 		//
 
 		CUnifiedNetwork::getInstance()->release ();
 
 		CSock::releaseNetwork ();
+
+		//
+		// Remove the window displayer
+		//
 
 		if (wd != NULL)
 		{
@@ -940,11 +943,8 @@ sint IService5::main ()
 			ErrorLog->removeDisplayer (wd);
 			AssertLog->removeDisplayer (wd);
 
-			nlinfo ("Window displayer removed");
-
 			delete wd;
-
-			nlinfo ("Window displayer deleted");
+			wd = NULL;
 		}
 
 		nlinfo ("Service released succesfuly");

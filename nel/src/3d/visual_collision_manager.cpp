@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.cpp
  * <File description>
  *
- * $Id: visual_collision_manager.cpp,v 1.11 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: visual_collision_manager.cpp,v 1.12 2004/08/03 16:17:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -223,6 +223,7 @@ uint					CVisualCollisionManager::addMeshInstanceCollision(CVisualCollisionMesh 
 	meshInst.WorldBBox= mesh->computeWorldBBox(instanceMatrix);
 	meshInst.AvoidCollisionWhenPlayerInside= avoidCollisionWhenInside;
 	meshInst.AvoidCollisionWhenPlayerOutside= avoidCollisionWhenOutside;
+	meshInst.ID = id;
 	
 	// insert in quadGrid
 	meshInst.QuadGridIt= _MeshQuadGrid.insert(meshInst.WorldBBox.getMin(), meshInst.WorldBBox.getMax(), &meshInst);
@@ -323,6 +324,29 @@ void		CVisualCollisionManager::CMeshInstanceCol::receiveShadowMap(const CVisualC
 		Mesh->receiveShadowMap(WorldMatrix, shadowContext);
 	}
 }
+
+// ***************************************************************************
+void CVisualCollisionManager::getMeshs(const NLMISC::CAABBox &aabbox, std::vector<CMeshInstanceColInfo> &dest)
+{
+	_MeshQuadGrid.select(aabbox.getMin(), aabbox.getMax());
+	dest.clear();
+	CQuadGrid<CMeshInstanceCol*>::CIterator it = _MeshQuadGrid.begin();
+	CQuadGrid<CMeshInstanceCol*>::CIterator endIt = _MeshQuadGrid.end();
+	while (it != endIt)
+	{
+		if ((*it)->WorldBBox.intersect(aabbox))
+		{
+			CMeshInstanceColInfo infos;
+			infos.Mesh = (*it)->Mesh;
+			infos.ID = (*it)->ID;
+			infos.WorldBBox = &((*it)->WorldBBox);
+			infos.WorldMatrix = &((*it)->WorldMatrix);			
+			dest.push_back(infos);
+		}
+		++ it;	
+	}
+}
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file visual_collision_manager_user.h
  * UVisualCollisionManager implementation.
  *
- * $Id: visual_collision_manager_user.h,v 1.8 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: visual_collision_manager_user.h,v 1.9 2004/08/03 16:16:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,7 @@ public:
 		NL3D_MEM_CAMERA_COLLISION
 		_Manager.removeMeshCollision(id);
 	}
+	virtual	void					getMeshs(const NLMISC::CAABBox &aabbox, std::vector<CMeshInstanceColInfo> &dest);	
 
 
 public:

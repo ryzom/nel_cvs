@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.h
  * <File description>
  *
- * $Id: visual_collision_manager.h,v 1.8 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: visual_collision_manager.h,v 1.9 2004/08/03 16:17:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,6 +79,14 @@ public:
 class CVisualCollisionManager
 {
 public:
+	class CMeshInstanceColInfo
+	{
+	public:
+		CVisualCollisionMesh  *Mesh;
+		const NLMISC::CMatrix *WorldMatrix;		
+		const NLMISC::CAABBox *WorldBBox;
+		uint ID;
+	};
 
 	/// Constructor
 	CVisualCollisionManager();
@@ -157,6 +165,8 @@ public:
 	 */
 	void						receiveShadowMap(IDriver *drv, CShadowMap *shadowMap, const CVector &casterPos, CMaterial &shadowMat, CShadowMapProjector &smp);
 
+	// Get collision meshs instances that are inside the given box
+	void						getMeshs(const NLMISC::CAABBox &aabbox, std::vector<CMeshInstanceColInfo> &dest);
 
 // ***************************
 private:
@@ -182,7 +192,7 @@ private:
 		// see addMeshInstanceCollision for those special flags
 		bool								AvoidCollisionWhenPlayerInside;
 		bool								AvoidCollisionWhenPlayerOutside;
-		
+		uint								ID;
 	public:
 		/// get collision with camera. [0,1] value
 		float		getCameraCollision(class CCameraCol &camCol);

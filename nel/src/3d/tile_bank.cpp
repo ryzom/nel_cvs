@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.8 2000/11/21 18:03:40 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.9 2000/11/21 18:11:11 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "nel/3d/tile_bank.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/common.h"
 
 using namespace NLMISC;
 
@@ -177,7 +178,8 @@ void CTileBank::freeTile (int tileIndex)
 	_tileVector[tileIndex].Free();
 
 	// Resize tile table
-	for (int i=(sint)_tileVector.size()-1; i>=0; i--)
+	int i;
+	for (i=(sint)_tileVector.size()-1; i>=0; i--)
 	{
 		if (!_tileVector[i].isFree ())
 			break;

@@ -563,7 +563,7 @@ namespace NLAISCRIPT
 				it_var++;
 			}
 			addPostcondition( pattern );
-		}
+		}		
 	}
 
 	void COperatorClass::setGoal(NLAIAGENT::CStringVarName &g)

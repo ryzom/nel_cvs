@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.12 2001/04/10 12:35:08 chafik Exp $
+ * $Id: main_agent_script.h,v 1.13 2001/04/12 08:26:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #ifndef NL_MAIN_AGENTS_SCRIPT_H
 #define NL_MAIN_AGENTS_SCRIPT_H
 
+#include "nel/ai/script/codage.h"
+#include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/agent/agent_manager.h"
 
 

@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.7 2001/04/03 13:58:01 chafik Exp $
+ * $Id: compilateur.cpp,v 1.8 2001/04/12 08:26:41 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -210,8 +210,9 @@ namespace NLAISCRIPT
 				method.MethodNum = -1;
 				
 			}
-
-		}		
+			baseName->release();
+		}	
+		
 		return method;
 	}
 

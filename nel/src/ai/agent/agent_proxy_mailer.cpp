@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.7 2001/02/21 11:36:38 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.8 2001/04/12 08:26:41 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,27 +39,26 @@ namespace NLAIAGENT
 {
 	IMainAgent *CProxyAgentMail::MainAgent = NULL;
 
-	CProxyAgentMail::CMethodCall **CProxyAgentMail::StaticMethod = NULL;
+	CAgentScript::CMethodCall **CProxyAgentMail::StaticMethod = NULL;
 	NLAISCRIPT::CParam *Param;
 
 	void CProxyAgentMail::initClass()
 	{
-		CProxyAgentMail::StaticMethod =  new CProxyAgentMail::CMethodCall *[CProxyAgentMail::TLast];
+		CProxyAgentMail::StaticMethod =  new CAgentScript::CMethodCall *[CAgentScript::TLastM];
 		Param = new NLAISCRIPT::CParam(1,new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CStringType::IdStringType)));
-		CProxyAgentMail::StaticMethod[TConstructor]= new CProxyAgentMail::CMethodCall(
+		CProxyAgentMail::StaticMethod[TConstructor]= new CAgentScript::CMethodCall(
 			_CONSTRUCTOR_,					
 			CProxyAgentMail::TConstructor,			
 			Param,
-			CProxyAgentMail::CheckAll,
+			CAgentScript::CheckAll,
 			1,
 			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid));
 	}
 
 	void CProxyAgentMail::releaseClass()
 	{
-		sint i;
-		Param->release();
-		for(i = 0; i < CProxyAgentMail::TLast; i ++)
+		sint i;		
+		for(i = 0; i < CProxyAgentMail::TLastM; i ++)
 		{
 			delete CProxyAgentMail::StaticMethod[i];
 		}
@@ -125,13 +124,13 @@ namespace NLAIAGENT
 	tQueue CProxyAgentMail::isMember(const IVarName *h,const IVarName *m,const IObjectIA &param) const
 	{
 
-		tQueue a;
+		/*tQueue a;
 		sint i;
-		CProxyAgentMail::TMethodNumDef index = CProxyAgentMail::TLast;
+		CProxyAgentMail::TMethodNumDef index = CProxyAgentMail::TLastM;
 
 		if(h == NULL)
 		{
-			for( i = 0; i< CProxyAgentMail::TLast; i++)
+			for( i = 0; i< CProxyAgentMail::TLastM; i++)
 			{
 				if(CProxyAgentMail::StaticMethod[i]->MethodName == *m)
 				{
@@ -182,9 +181,13 @@ namespace NLAIAGENT
 					}
 				}
 			}
-		}
+		}*/
 
-		return IBasicAgent::isMember(h,m,param);
+		NLAIAGENT::tQueue r = isTemplateMember(CProxyAgentMail::StaticMethod,CProxyAgentMail::TLastM,getMethodIndexSize(),h,m,param);
+		if(r.size()) return r;
+		else return IBasicAgent::isMember(h,m,param);
+
+		//return IBasicAgent::isMember(h,m,param);
 	}
 
 	IObjectIA::CProcessResult CProxyAgentMail::runMethodeMember(sint32 h, sint32 m, IObjectIA *p)

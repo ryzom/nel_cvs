@@ -1,7 +1,7 @@
 /** \file agent_server_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_proxy_mailer.h,v 1.9 2001/02/13 10:43:18 chafik Exp $
+ * $Id: agent_proxy_mailer.h,v 1.10 2001/04/12 08:26:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 #ifndef NL_AGENT_SERVER_MAILER_H
 #define NL_AGENT_SERVER_MAILER_H
-#include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent_script.h"
 
 namespace NLAIAGENT
 {	
@@ -40,44 +40,10 @@ namespace NLAIAGENT
 
 		enum  TMethodNumDef {
 			TConstructor,
-			TLast
-		};
-
-		enum TTypeCheck{
-				CheckAll,
-				CheckCount,
-				DoNotCheck
-			};
-		///Structure to define the name, id and argument type of hard coded mathod.
-		struct CMethodCall
-		{			
-
-			CMethodCall(const char *name, int i,const IObjectIA *a,TTypeCheck checkArg,int argCount,IObjectIA *r): 
-					MethodName (name),ArgType(a),ReturnValue(r)
-			{
-				Index = i;
-				CheckArgType = checkArg;
-				ArgCount = argCount;
-			}
-
-			~CMethodCall()
-			{
-				if(ReturnValue) ReturnValue->release();				
-			}
-			///Name of the method.
-			CStringVarName MethodName;
-			///Type of the method argument.
-			const IObjectIA *ArgType;
-			///Return value type.
-			IObjectIA *ReturnValue;
-			///CheckArg is for force the method argument test. If its true we test juste the name coherence.
-			TTypeCheck CheckArgType;			
-			///Count neaded when the CheckCount it set.
-			sint ArgCount;
-			///Index of the method in the class.
-			sint32 Index;				
-		};
-		static CMethodCall **StaticMethod;
+			TLastM
+		};		
+		
+		static CAgentScript::CMethodCall **StaticMethod;
 
 		static void initClass();
 		static void releaseClass();

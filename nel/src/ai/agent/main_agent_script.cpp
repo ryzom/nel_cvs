@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.14 2001/04/10 16:18:45 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.15 2001/04/12 08:26:41 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,8 +22,6 @@
  * MA 02111-1307, USA.
  */
 #include "nel/ai/agent/agent.h"
-#include "nel/ai/script/codage.h"
-#include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/agent/main_agent_script.h"
 #include "nel/ai/e/ai_exception.h"
 

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.52 2001/04/10 16:18:45 chafik Exp $
+ * $Id: agent_script.cpp,v 1.53 2001/04/12 08:26:41 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1338,7 +1338,7 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 		const char *dgb_meth_name = methodName->getString();
 #endif
-		sint i;
+		/*sint i;
 		CAgentScript::TMethodNumDef index = CAgentScript::TLastM;
 		for(i = 0; i < CAgentScript::TLastM; i ++)
 		{
@@ -1396,7 +1396,8 @@ namespace NLAIAGENT
 				}
 			}			
 		}
-		return tQueue();
+		return tQueue();*/
+		return isTemplateMember(CAgentScript::StaticMethod,CAgentScript::TLastM,IAgent::getMethodIndexSize(),className,methodName,param);		
 	}
 
 	tQueue CAgentScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
@@ -1551,4 +1552,72 @@ namespace NLAIAGENT
 		return _FactBase;
 	}
 	////////////////////////////////////////////////////////////////////////
+
+
+
+	NLAIAGENT::tQueue isTemplateMember(	CAgentScript::CMethodCall **StaticMethod,int count,int shift,
+												const NLAIAGENT::IVarName *className,
+												const NLAIAGENT::IVarName *methodName,
+												const NLAIAGENT::IObjectIA &param)
+	{
+		int index = count;
+		int i;
+		for(i = 0; i < count; i ++)
+		{
+			if(StaticMethod[i]->MethodName == *methodName)
+			{
+				index = StaticMethod[i]->Index;
+				switch(StaticMethod[i]->CheckArgType)
+				{
+				case CAgentScript::CheckAll:
+					{
+						double d = ((NLAISCRIPT::CParam &)*StaticMethod[i]->ArgType).eval((NLAISCRIPT::CParam &)param);
+						if(d >= 0.0)
+						{								
+							NLAIAGENT::tQueue r;
+							StaticMethod[i]->ReturnValue->incRef();
+							r.push(NLAIAGENT::CIdMethod(	(shift + StaticMethod[i]->Index),
+															0.0,
+															NULL,
+															StaticMethod[i]->ReturnValue));
+							return r;
+						}
+					}	
+					index = count;
+					break;
+				
+
+				case CAgentScript::CheckCount:
+					{
+						if(((NLAISCRIPT::CParam &)param).size() == StaticMethod[i]->ArgCount)
+						{								
+							NLAIAGENT::tQueue r;
+							StaticMethod[i]->ReturnValue->incRef();
+							r.push(NLAIAGENT::CIdMethod(	(shift + StaticMethod[i]->Index),
+															0.0,
+															NULL,
+															StaticMethod[i]->ReturnValue ));
+							return r;
+						}
+					}
+					index = count;
+					break;
+
+				case CAgentScript::DoNotCheck:
+					{							
+						NLAIAGENT::tQueue r;
+						StaticMethod[i]->ReturnValue->incRef();
+						r.push(NLAIAGENT::CIdMethod(	(shift + StaticMethod[i]->Index),
+														0.0,
+														NULL,
+														StaticMethod[i]->ReturnValue));
+						return r;						
+					}
+					index = count;
+					break;
+				}
+			}
+		}		
+		return NLAIAGENT::tQueue();
+	}
 }

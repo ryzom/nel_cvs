@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.24 2001/04/05 15:29:15 chafik Exp $
+ * $Id: agent_script.h,v 1.25 2001/04/12 08:26:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -310,5 +310,11 @@ namespace NLAIAGENT
 		}
 	////////////////////////////////////////////////////////////////////////
 	};
+
+	
+	NLAIAGENT::tQueue isTemplateMember(	CAgentScript::CMethodCall **StaticMethod,int count,int shift,
+												const NLAIAGENT::IVarName *className,
+												const NLAIAGENT::IVarName *methodName,
+												const NLAIAGENT::IObjectIA &param);	
 }
 #endif

@@ -1014,7 +1014,8 @@ rollout material_rollout "Material Template"
 group "Check, debug and export"
 	(
 
-	Button		ExportAllMaterial		"Export all material non-ok"	width:140 align:#center
+	Button		ExportAllMaterial		"Export all material"			width:140 align:#center
+	Button		ExportAllMaterialNonOk	"Export all material non-ok"	width:140 align:#center
 	Button		ExportMaterial			"Export material template"		width:140 align:#center
 	Button		ShowHelpZones			"Show help zones"				width:140 align:#center
 	Button		DeleteDebugMarkers		"Delete debug markers"			width:140 align:#center
@@ -1080,6 +1081,26 @@ group "Projects management"
 		refresh_list ()
 		for curMat in MaterialProject.items do
 		(
+			curFileName = ligo_root_path + ligo_material_prefix + (substring curMat 5 100) + ".max"
+			loadMaxFile curFileName
+			max select all
+			export_and_check_and_debug_material false false false
+			refresh_list ()
+		)
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		Messagebox "Export All Material Template End" title:title_msgbox beep:true
+	)
+
+	on ExportAllMaterialNonOk pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+		
+		refresh_list ()
+		for curMat in MaterialProject.items do
+		(
 			if (substring curMat 1 4) == "[..]" then
 			(
 				curFileName = ligo_root_path + ligo_material_prefix + (substring curMat 5 100) + ".max"
@@ -1092,7 +1113,7 @@ group "Projects management"
 
 		if (project_cur_file != "") then
 			loadMaxFile project_cur_file
-		Messagebox "Export All End" title:title_msgbox beep:true
+		Messagebox "Export All Material Template Non-Ok End" title:title_msgbox beep:true
 	)
 
 	on ExportMaterial pressed do 
@@ -1249,7 +1270,8 @@ rollout transition_rollout "Transition Template"
 group "Check, debug and export"
 	(
 
-	Button		ExportAllTransition		"Export all transition non-ok"	width:140 align:#center
+	Button		ExportAllTransition		"Export all transition"			width:140 align:#center
+	Button		ExportAllTransNonOk		"Export all transition non-ok"	width:140 align:#center
 	Button		ExportTransition		"Export transition template"	width:140 align:#center
 	Button		HideOtherZones			"Hide other zones"				width:140 align:#center
 	Button		UnhideOtherZones		"Unhide other zones"			width:140 align:#center
@@ -1330,6 +1352,26 @@ group "Projects management"
 		refresh_list ()
 		for curTrans in TransitionProject.items do
 		(
+			curFileName = ligo_root_path + ligo_transition_prefix + (substring curtrans 5 100) + ".max"
+			loadMaxFile curFileName
+			max select all
+			export_and_check_and_debug_transition_template false false false
+			refresh_list ()
+		)
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		Messagebox "Export All Transition Template End" title:title_msgbox beep:true
+	)
+
+	on ExportAllTransNonOk pressed do 
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		refresh_list ()
+		for curTrans in TransitionProject.items do
+		(
 			if (substring curTrans 1 4) == "[..]" then
 			(
 				curFileName = ligo_root_path + ligo_transition_prefix + (substring curtrans 5 100) + ".max"
@@ -1342,7 +1384,7 @@ group "Projects management"
 
 		if (project_cur_file != "") then
 			loadMaxFile project_cur_file
-		Messagebox "Export All End" title:title_msgbox beep:true
+		Messagebox "Export All Transition Template Non-Ok End" title:title_msgbox beep:true
 	)
 
 	on ExportTransition pressed do 
@@ -1714,7 +1756,8 @@ rollout material_zone_rollout "Material Zone"
 group "Check, debug and export"
 	(
 
-	Button		ExportAllZone			"Export all zone non-ok"		width:140 align:#center
+	Button		ExportAllZone			"Export all zone"				width:140 align:#center
+	Button		ExportAllZoneNonOk		"Export all zone non-ok"		width:140 align:#center
 	Button		ExportZone				"Export zone"					width:140 align:#center
 	Button		ShowHelpZones			"Show help zones"				width:140 align:#center
 	Button		DeleteDebugMarkers		"Delete debug markers"			width:140 align:#center
@@ -1806,6 +1849,29 @@ group "Projects management"
 		refresh_zone_list MaterialDDL.selected
 		for curZone in ZoneProject.items do
 		(
+			curFileName = ligo_root_path + ligo_zonematerial_prefix
+			if (MaterialDDL.selected != "-- ALL --") then
+				curFileName = curFileName + MaterialDDL.selected + "-" 
+			curFileName = curFileName + (substring curZone 5 100) + ".max"
+			loadMaxFile curFileName
+			max select all
+			export_and_check_and_debug_zone false false false
+			refresh_zone_list MaterialDDL.selected
+		)
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		Messagebox "Export All Zone End" title:title_msgbox beep:true
+	)
+
+	on ExportAllZoneNonOk pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		refresh_zone_list MaterialDDL.selected
+		for curZone in ZoneProject.items do
+		(
 			if (substring curZone 1 4) == "[..]" then
 			(
 				curFileName = ligo_root_path + ligo_zonematerial_prefix
@@ -1821,7 +1887,7 @@ group "Projects management"
 
 		if (project_cur_file != "") then
 			loadMaxFile project_cur_file
-		Messagebox "Export All End" title:title_msgbox beep:true
+		Messagebox "Export All Zone Non-Ok End" title:title_msgbox beep:true
 	)
 
 	on ExportZone pressed do 
@@ -2109,7 +2175,8 @@ rollout transition_zone_rollout "Transition Zone"
 group "Check, debug and export"
 	(
 
-	Button		ExportAllTransition		"Export all transZone non-ok"	width:140 align:#center
+	Button		ExportAllTransZone		"Export all transZone"			width:140 align:#center
+	Button		ExportAllTransZoneNonOk	"Export all transZone non-ok"	width:140 align:#center
 	Button		ExportZone				"Export zone"					width:140 align:#center
 	Button		HideOtherZones			"Hide other zones"				width:140 align:#center
 	Button		UnhideOtherZones		"Unhide other zones"			width:140 align:#center
@@ -2196,7 +2263,30 @@ group "Projects management"
 		ZoneProject.items = tmpArray
 	)
 
-	on ExportAllTransition pressed do
+	on ExportAllTransZone pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		refresh_list TransitionDDL.selected
+		for curTrans in ZoneProject.items do
+		(
+			curFileName = ligo_root_path + ligo_zonetransition_prefix
+			if (TransitionDDL.selected != "-- ALL --") then
+				curFileName = curFileName + TransitionDDL.selected + "-" 
+			curFileName = curFileName + (substring curTrans 5 100) + ".max"
+			loadMaxFile curFileName
+			max select all
+			export_and_check_and_debug_transition_zone false false false
+			refresh_list TransitionDDL.selected
+		)
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		Messagebox "Export All TransZone End" title:title_msgbox beep:true
+	)
+
+	on ExportAllTransZoneNonOk pressed do
 	(
 		if (project_cur_file != "") then
 			saveMaxFile project_cur_file
@@ -2212,14 +2302,14 @@ group "Projects management"
 				curFileName = curFileName + (substring curTrans 5 100) + ".max"
 				loadMaxFile curFileName
 				max select all
-				export_and_check_and_debug_transition_zone false false true
+				export_and_check_and_debug_transition_zone false false false
 				refresh_list TransitionDDL.selected
 			)
 		)
 
 		if (project_cur_file != "") then
 			loadMaxFile project_cur_file
-		Messagebox "Export All End" title:title_msgbox beep:true
+		Messagebox "Export All TransZone Non-Ok End" title:title_msgbox beep:true
 	)
 
 	on ExportZone pressed do 
@@ -2750,6 +2840,146 @@ group "Directories"
 
 )
 
+rollout exporter_rollout "Exporter"
+(
+	Button			ExpAll				"Export All"					width:140 align:#center
+	Button			ExpAllMaterialTemp	"Export Material Template"		width:140 align:#center
+	Button			ExpAllTransTemp		"Export Transition Template"	width:140 align:#center
+	Button			ExpAllZone			"Export Zone"					width:140 align:#center
+	Button			ExpAllTransZone		"Export TransZone"				width:140 align:#center
+
+	fn expMatTemp =
+	(
+		for curFileName in project_file_list do
+		(
+			if (isMaterial curFileName) == true then
+			(
+				loadMaxFile curFileName
+				max select all
+				print ("Exporting "+ (getFilenameFile curFileName))
+				export_and_check_and_debug_material false false false
+			)
+		)
+	)
+
+	fn expTransTemp =
+	(
+		for curFileName in project_file_list do
+		(
+			if (isTransition curFileName) == true then
+			(
+				loadMaxFile curFileName
+				max select all
+				print ("Exporting "+ (getFilenameFile curFileName))
+				export_and_check_and_debug_transition_template false false false
+			)
+		)
+	)
+
+	fn expZone =
+	(
+		for curFileName in project_file_list do
+		(
+			tokenArray = filterString (getFilenameFile curFileName) "-"
+			if (tokenArray.count == 3) and (tokenArray[1] == "zonematerial")  then
+			(
+				loadMaxFile curFileName
+				max select all
+				print ("Exporting "+ (getFilenameFile curFileName))
+				export_and_check_and_debug_zone false false false
+			)
+		)
+	)
+
+	fn expTransZone =
+	(
+		for curFileName in project_file_list do
+		(
+			tokenArray = filterString (getFilenameFile curFileName) "-"
+			if (tokenArray.count == 4) and (tokenArray[1] == "zonetransition") then
+			(
+				loadMaxFile curFileName
+				max select all
+				print ("Exporting "+ (getFilenameFile curFileName))
+				export_and_check_and_debug_transition_zone false false false
+			)
+		)
+	)
+
+	on ExpAll pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		expMatTemp ()
+		expTransTemp ()
+		expZone ()
+		expTransZone ()
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		print "Export Finished"
+		Messagebox "Export All End" title:title_msgbox beep:true
+		refresh_project_list ()
+	)
+
+	on ExpAllMaterialTemp pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		expMatTemp ()
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		print "Export Finished"
+		Messagebox "Export All Material Template End" title:title_msgbox beep:true
+		refresh_project_list ()
+	)
+
+	on ExpAllTransTemp pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		expTransTemp ()
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		print "Export Finished"
+		Messagebox "Export All Transition Template End" title:title_msgbox beep:true
+		refresh_project_list ()
+	)
+
+	on ExpAllZone pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		expZone ()
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		print "Export Finished"
+		Messagebox "Export All Zone End" title:title_msgbox beep:true
+		refresh_project_list ()
+	)
+	
+	on ExpAllTransZone pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		expTransZone ()
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		print "Export Finished"
+		Messagebox "Export All TransZone End" title:title_msgbox beep:true
+		refresh_project_list ()
+	)
+)
+
 -- ========== --
 -- Main entry --
 -- ========== --
@@ -2775,6 +3005,7 @@ addrollout material_zone_rollout ligoscape_tools_floater rolledUp:true
 addrollout transition_zone_rollout ligoscape_tools_floater rolledUp:true
 addrollout properties_rollout ligoscape_tools_floater rolledUp:true
 addrollout options_rollout ligoscape_tools_floater rolledUp:true
+addrollout exporter_rollout ligoscape_tools_floater rolledUp:true
 
 
 fn updataCallBack =

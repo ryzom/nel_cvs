@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.43 2003/02/07 16:08:25 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.44 2003/12/16 18:02:59 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -327,7 +327,7 @@ void CCallbackNetBase::processOneMessage ()
  */
 void CCallbackNetBase::baseUpdate (sint32 timeout)
 {
-	H_BEFORE(L3UpdateCallbackNetBase); // Not tick-wise
+	H_AUTO(L3UpdateCallbackNetBase);
 
 	checkThreadId ();
 
@@ -437,7 +437,6 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 	_MR_UpdateCounter++;
 #endif
 
-	H_AFTER(L3UpdateCallbackNetBase); // Not tick-wise
 }
 
 

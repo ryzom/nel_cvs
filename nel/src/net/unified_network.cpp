@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.71 2003/11/03 10:09:56 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.72 2003/12/16 18:02:59 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -436,9 +436,7 @@ void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 			return;
 		}
 
-		H_BEFORE(L5UserCallback); // Not tick-wise
-		(*itcb).second (msgin, uc->ServiceName, sid);
-		H_AFTER(L5UserCallback); // Not tick-wise
+		H_TIME(L5UserCallback, (*itcb).second (msgin, uc->ServiceName, sid););
 
 		uc->TotalCallbackCalled++;
 		TotalCallbackCalled++;
@@ -924,7 +922,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 				}
 				else if (enableRetry && uc.AutoRetry)
 				{
-					H_BEFORE(L5AutoReconnect); // Not tick-wise
+					H_AUTO(L5AutoReconnect);
 					try
 					{
 						CCallbackClient *cbc = (CCallbackClient *)uc.Connection[j].CbNetBase;
@@ -984,7 +982,6 @@ void	CUnifiedNetwork::update(TTime timeout)
 					{
 						nlinfo ("HNETL5: can't connect to %s-%hu now (%s)", uc.ServiceName.c_str(), uc.ServiceId, e.what ());
 					}
-					H_AFTER(L5AutoReconnect); // Not tick-wise
 				}
 			}
 		}
@@ -995,10 +992,8 @@ void	CUnifiedNetwork::update(TTime timeout)
 		if (CTime::getLocalTime() - t0 > timeout)
 			break;
 		
-		H_BEFORE(L5UpdateSleep); // Not tick-wise
 		// Enable windows multithreading before rescanning all connections
-		nlSleep (1);
-		H_AFTER(L5UpdateSleep); // Not tick-wise
+		H_TIME(L5UpdateSleep, nlSleep(1););
 	}
 
 	autoCheck();
@@ -1496,7 +1491,7 @@ CUnifiedNetwork::CUnifiedConnection	*CUnifiedNetwork::getUnifiedConnection (uint
 
 void	CUnifiedNetwork::autoCheck()
 {
-	H_BEFORE(L5UpdateAutoCheck); // Not tick-wise
+	H_AUTO(L5UpdateAutoCheck);
 	uint i, j;
 
 	for (i = 0; i < _IdCnx.size (); i++)
@@ -1573,7 +1568,6 @@ void	CUnifiedNetwork::autoCheck()
 			}
 		}
 	}
-	H_AFTER(L5UpdateAutoCheck); // Not tick-wise
 }
 
 

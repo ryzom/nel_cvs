@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.198 2003/11/18 15:19:05 legros Exp $
+ * $Id: service.cpp,v 1.199 2003/12/16 18:02:59 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1046,21 +1046,22 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			TTime bbefore = CTime::getLocalTime ();
 
 			// call the user update and exit if the user update asks it
-			H_BEFORE(NLNETServiceUpdate);
-			if (!update ())
 			{
-				H_AFTER(NLNETServiceUpdate);
-				CHTimer::endBench();
-				break;
+				H_AUTO(NLNETServiceUpdate);
+				if (!update ())
+				{
+					CHTimer::endBench();
+					break;
+				}
 			}
+			
 			// if the launching mode is 'quit after the first update' we set the exit signal
 			if (haveArg('Q'))
 			{
 				ExitSignalAsked = 1;
 			}
 			NbUserUpdate++;
-			H_AFTER(NLNETServiceUpdate);
-			
+
 			// count the amount of time to manage internal system
 			TTime before = CTime::getLocalTime ();
 
@@ -1087,10 +1088,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			CFile::checkFileChange();
 
-			H_BEFORE(NLNETManageMessages); // Not tick-wise
 			// get and manage layer 5 messages
-			CUnifiedNetwork::getInstance()->update (_UpdateTimeout);
-			H_AFTER(NLNETManageMessages); // Not tick-wise
+			H_TIME(NLNETManageMessages, CUnifiedNetwork::getInstance()->update (_UpdateTimeout););
 			
 			// resync the clock every hours
 //			if (resyncEvenly)

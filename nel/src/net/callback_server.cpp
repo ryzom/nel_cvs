@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.24 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.25 2003/12/16 18:02:59 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -174,7 +174,7 @@ void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
  */
 void CCallbackServer::update ( sint32 timeout )
 {
-	H_BEFORE(L3UpdateCallbackServer); // Not tick-wise
+	H_AUTO(L3UpdateCallbackServer);
 
 	checkThreadId ();
 	nlassert (connected ());
@@ -194,7 +194,6 @@ void CCallbackServer::update ( sint32 timeout )
 	}
 #endif
 
-	H_AFTER(L3UpdateCallbackServer); // Not tick-wise
 }
 
 

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.6 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: export_nel.h,v 1.7 2001/06/19 15:00:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,10 +172,15 @@ public:
 
 	// Build a NeL track with a 3dsmax node and a controller.
 	static NL3D::ITrack*			buildATrack (NL3D::CAnimation& animation, Control& c, TNelValueType type, Animatable& node, const CExportDesc& desc, 
-												Interface *ip);
+												Interface *ip, std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled);
 
 	// Add tracks for the bone and its children (recursive)
 	static void						addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+
+	// Add biped tracks
+	static void						addBipedNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+	static void						addBipedNodeTrack (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip,
+										std::set<TimeValue>& previousKeys, std::set<TimeValue>& previousKeysSampled);
 
 	// Convert keyframe methods
 	static void						buildNelKey (NL3D::CKeyFloat& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
@@ -201,7 +206,8 @@ public:
 	// Create the transform matrix tracks
 	static void						createBipedKeyFramer (NL3D::ITrack *&nelRot, NL3D::ITrack *&nelPos, bool isRot, bool isPos, 
 														float ticksPerSecond, const Interval& range, int oRT, const CExportDesc& desc, 
-														INode& node, const std::map<TimeValue, bool>& ikeys, Interface *ip);
+														INode& node, Interface *ip, std::set<TimeValue>* previousKeys, 
+														std::set<TimeValue>* previousKeysSampled);
 
 	// convert to nel time value
 	static NL3D::CAnimationTime		convertTime (TimeValue time);
@@ -380,7 +386,8 @@ private:
 	// *********************
 
 	// Add tracks for the node
-	static void						addNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+	static void						addNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip,
+													std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled);
 
 	// Add tracks for the node's bones 
 	static void						addBonesTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
@@ -395,8 +402,8 @@ private:
 	static void						addTexTracks (NL3D::CAnimation& animation, Texmap& tex, const char* parentName);
 
 	// Add controller key time in the set
-	static void						addBipedKeyTime (Control& c, std::map<TimeValue, bool>& keySet, bool subKeys, Interface *ip, 
-													const char *nodeName);
+	static void						addBipedKeyTime (Control& c, std::set<TimeValue>& keys, std::set<TimeValue>& keysSampled, bool subKeys, 
+													Interface *ip, const char *nodeName);
 	
 
 	// Get a biped key parameter using script

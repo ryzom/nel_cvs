@@ -148,11 +148,28 @@ LINK32=link.exe
 # Name "nel_patch_converter - Win32 ReleaseDebug"
 # Begin Source File
 
-SOURCE=..\nel_patch_edit\checkversion.cpp
+SOURCE=..\nel_export\checkversion.cpp
+
+!IF  "$(CFG)" == "nel_patch_converter - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "nel_patch_converter - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "nel_patch_converter - Win32 Hybrid"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "nel_patch_converter - Win32 ReleaseDebug"
+
+# SUBTRACT CPP /YX
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=..\nel_patch_edit\checkversion.h
+SOURCE=..\nel_export\checkversion.h
 # End Source File
 # Begin Source File
 

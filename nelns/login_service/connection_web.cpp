@@ -1,7 +1,7 @@
 /** \file connection_web.cpp
  * 
  *
- * $Id: connection_web.cpp,v 1.1 2002/09/16 14:50:07 lecroart Exp $
+ * $Id: connection_web.cpp,v 1.2 2002/10/07 08:02:47 lecroart Exp $
  *
  */
 
@@ -104,17 +104,11 @@ static const TCallbackItem WSCallbackArray[] =
 	{ "SCS", cbWSShardChooseShard },
 };
 
-void cb( TSockId from, void *arg )
+/*void cb( TSockId from, void *arg )
 {
 	nlinfo ("cool");
-/*	CMemStream msgout(false);
-	uint32 fake = 0;
-	msgout.serial(fake);
-	string reason = "ACE";
-	msgout.serial(reason);
-	WebServer->send (msgout, from);
-*/}
-
+}
+*/
 void connectionWebInit ()
 {
 	nlassert(WebServer == NULL);
@@ -123,12 +117,102 @@ void connectionWebInit ()
 	nlassert(WebServer != NULL);
 
 	WebServer->init (49990);
-	WebServer->setConnectionCallback (cb, NULL);
+	//WebServer->setConnectionCallback (cb, NULL);
 
 	CNetManager::addCallbackArray ("WSLS", WSCallbackArray, sizeof(WSCallbackArray)/sizeof(WSCallbackArray[0]));
 
 	nlinfo ("Set the server connection for web to port %hu", 49990);
 }
+
+
+
+
+
+void cbAskClientConnection (CMemStream &msgin, TSockId host)
+{
+	sint32 shardId;
+	uint32 userId;
+	msgin.serial (shardId);
+	msgin.serial (userId);
+
+	nlinfo ("Web wants to add userid %d to the shardid %d, send request to the shard", userId, shardId);
+
+	uint32 i;
+	for (i = 0; i < Shards.size (); i++)
+	{
+		if (Shards[i].ShardId == shardId)
+		{
+			// generate a cookie
+			CLoginCookie Cookie ((uint32)host, userId);
+
+			// send message to the welcome service to see if it s ok and know the front end ip
+			CMessage msgout (CNetManager::getNetBase("WSLS")->getSIDA (), "CS");
+			msgout.serial (Cookie);
+			CNetManager::send("WSLS", msgout, Shards[i].SockId);
+			beep (1000, 1, 100, 100);
+
+			// add the connection in temp cookie
+			TempCookies.insert(make_pair(Cookie.getUserAddr(), Cookie));
+			return;
+		}
+	}
+
+	// the shard is not available, denied the user
+	nlwarning("ShardId %d is not available, can't add the userid %d", shardId, userId);
+
+	CMemStream msgout;
+	uint32 fake = 0;
+	msgout.serial(fake);
+	string reason = "Selected shard is not available";
+	msgout.serial (reason);
+	WebServer->send (msgout, host);
+}
+
+void cbDisconnectClient (CMemStream &msgin, TSockId host)
+{
+	uint32 shardId;
+	sint32 userId;
+	msgin.serial (shardId);
+	msgin.serial (userId);
+
+	nlinfo ("Web wants to disconnect userid %d, send request to the shard %d", userId, shardId);
+
+	for (uint i = 0; i < Shards.size (); i++)
+	{
+		if (Shards[i].ShardId == shardId)
+		{
+			// ask the WS to disconnect the player from the shard
+			CMessage msgout (CNetManager::getNetBase("WSLS")->getSIDA (), "DC");
+			msgout.serial (userId);
+			CNetManager::send("WSLS", msgout, Shards[i].SockId);
+
+			// send answer to the web
+			CMemStream msgout2;
+			uint32 fake = 0;
+			msgout2.serial(fake);
+			string reason = "";
+			msgout2.serial (reason);
+			WebServer->send (msgout2, host);
+			return;
+		}
+	}
+
+	nlwarning("ShardId %d is not available, can't disconnect the userid %d", shardId, userId);
+
+	CMemStream msgout;
+	uint32 fake = 0;
+	msgout.serial(fake);
+	string reason = "ShardId "+toString(shardId)+"is not available, can't disconnect the userid"+toString(userId);
+	msgout.serial (reason);
+	WebServer->send (msgout, host);
+}
+
+typedef void (*WebCallback)(CMemStream &msgin, TSockId host);
+
+WebCallback WebCallbackArray[] = {
+	cbAskClientConnection,
+	cbDisconnectClient
+};
 
 void connectionWebUpdate ()
 {
@@ -143,54 +227,28 @@ void connectionWebUpdate ()
 			// create a string mem stream to easily communicate with web server
 			NLMISC::CMemStream msgin (true);
 			TSockId host;
+			sint8 messageType = 0;
+
 			try
 			{
 				WebServer->receive (msgin, &host);
 				uint32 fake = 0;
 				msgin.serial(fake);
+
+				msgin.serial (messageType);
 			}
 			catch (Exception &e)
 			{
 				nlwarning ("Error during receiving: '%s'", e.what ());
 			}
 
-			sint32 shardId;
-			sint32 userId;
-			msgin.serial (shardId);
-			msgin.serial (userId);
-
-			nlinfo ("Web wants to add userid %d to the shardid %d, send request to the shard", userId, shardId);
-
-			uint32 i;
-			for (i = 0; i < Shards.size (); i++)
+			if(messageType>=0 && messageType<sizeof(WebCallbackArray)/sizeof(WebCallbackArray[0]))
 			{
-				if (Shards[i].ShardId == shardId)
-				{
-					// generate a cookie
-					CLoginCookie Cookie ((uint32)host, userId);
-
-					// send message to the welcome service to see if it s ok and know the front end ip
-					CMessage msgout (CNetManager::getNetBase("WSLS")->getSIDA (), "CS");
-					msgout.serial (Cookie);
-					CNetManager::send("WSLS", msgout, Shards[i].SockId);
-					beep (1000, 1, 100, 100);
-
-					// add the connection in temp cookie
-					TempCookies.insert(make_pair(Cookie.getUserAddr(), Cookie));
-					break;
-				}
+				WebCallbackArray[messageType](msgin, host);
 			}
-			if(i == Shards.size ())
+			else
 			{
-				// the shard is not available, denied the user
-				nlwarning("ShardId %d is not available, can't add the userid %d", shardId, userId);
-
-				CMemStream msgout;
-				uint32 fake = 0;
-				msgout.serial(fake);
-				string reason = "Selected shard is not available";
-				msgout.serial (reason);
-				WebServer->send (msgout, host);
+				nlwarning ("Received an unknown message type %d from web server", messageType);
 			}
 		}
 	}

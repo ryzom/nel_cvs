@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.11 2002/06/24 08:44:09 corvazier Exp $
+ * $Id: panoply_maker.cpp,v 1.12 2002/06/27 13:26:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -386,14 +386,15 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 		{
 			is.open(bi.InputPath + fileNameWithExtension);
 			depth = srcBitmap.load(is);
+			if (depth == 0 || srcBitmap.getPixels().empty())
+			{
+				throw NLMISC::Exception(std::string("Failed to load bitmap ") + bi.InputPath + fileNameWithExtension);
+			}
 			if (srcBitmap.PixelFormat != NLMISC::CBitmap::RGBA)
 			{
 				srcBitmap.convertToType(NLMISC::CBitmap::RGBA);
 			}
-			if (srcBitmap.getPixels().empty())
-			{
-				throw NLMISC::Exception(std::string("Failed to load bitmap ") + bi.InputPath + fileNameWithExtension);
-			}
+			
 		}
 		catch (NLMISC::Exception &)
 		{
@@ -426,7 +427,10 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 			try
 			{
 				is.open(maskFileName);
-				li.Mask.load(is);
+				if (li.Mask.load(is) == 0)
+				{
+					throw NLMISC::Exception(std::string("Failed to load mask ") + maskFileName);
+				}
 				if (li.Mask.getPixels().empty())
 				{
 					throw NLMISC::Exception(std::string("Failed to load mask ") + maskFileName);

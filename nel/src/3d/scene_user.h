@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.24 2002/04/29 13:12:10 berenguier Exp $
+ * $Id: scene_user.h,v 1.25 2002/04/30 09:48:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,6 +76,19 @@ protected:
 
 	std::map<UInstance**,CTransformShape*> _WaitingInstances;
 
+	// IG that wait to be created and added to that scene
+	struct CWaitingIG
+	{
+		UInstanceGroup	*IGToLoad;
+		UInstanceGroup	**CallerPtr;
+		NLMISC::CVector Offset;
+		CWaitingIG(UInstanceGroup **callerPtr, const NLMISC::CVector &offset)	: IGToLoad(NULL), CallerPtr(callerPtr), Offset(offset)
+		{}
+	};	
+	//
+	typedef std::list<CWaitingIG> TWaitingIGList;
+	TWaitingIGList		  _WaitingIGs;
+
 public:
 
 	/// \name Object
@@ -123,6 +136,9 @@ public:
 	//@{
 	virtual	void			render()
 	{
+		// update waiting instances groups;
+		updateWaitingIG();
+
 		if(_CurrentCamera==NULL)
 			nlerror("render(): try to render with no camera linked (may have been deleted)");
 		_Scene.render();
@@ -144,6 +160,7 @@ public:
 				++it;
 			}
 		}
+		
 
 		// Must restore the matrix context, so 2D/3D interface not disturbed.
 		_DriverUser->restoreMatrixContext();
@@ -223,6 +240,50 @@ public:
 			return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );
 		}
 	}
+
+	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset)
+	{
+		_WaitingIGs.push_front(CWaitingIG(pIG, offset));
+		UInstanceGroup::createInstanceGroupAsync(instanceGroup, &(_WaitingIGs.begin()->IGToLoad));
+		// this list updat will be performed at each render, see updateWaitingIG
+	}
+
+	virtual	void stopCreatingAndAddingIG(UInstanceGroup **pIG)
+	{
+		for(TWaitingIGList::iterator it = _WaitingIGs.begin(); it != _WaitingIGs.end(); ++it)
+		{
+			if (it->CallerPtr == pIG)
+			{
+				if (!it->IGToLoad)
+				{
+					UInstanceGroup::stopCreateInstanceGroupAsync(pIG);										
+				}
+				else
+				{
+					switch(it->IGToLoad->getAddToSceneState())
+					{
+						case UInstanceGroup::StateAdding:
+							it->IGToLoad->stopAddToSceneAsync();
+						break;
+						case UInstanceGroup::StateAdded:
+							it->IGToLoad->removeFromScene(*this);
+							delete it->IGToLoad;
+						break;
+						case UInstanceGroup::StateNotAdded:
+							delete it->IGToLoad;
+						break;
+					}
+				}
+				_WaitingIGs.erase(it);
+				return;
+			}
+		}		
+	}
+
+
+	/// should be called at each render
+	virtual void	updateWaitingIG();
+
 
 	virtual	void createInstanceAsync(const std::string &shapeName, UInstance**ppInstance)
 	{

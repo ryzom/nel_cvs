@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.15 2002/04/29 13:12:10 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.16 2002/04/30 09:48:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -279,6 +279,32 @@ const CVector	&CSceneUser::getGlobalWindDirection() const
 	return _Scene.getGlobalWindDirection();
 }
 
+// ***************************************************************************
+void CSceneUser::updateWaitingIG()
+{
+	for(TWaitingIGList::iterator it = _WaitingIGs.begin(); it != _WaitingIGs.end(); ++it)
+	{
+		if (it->IGToLoad != NULL) // ig loaded ?
+		{
+			switch (it->IGToLoad->getAddToSceneState())
+			{
+				case UInstanceGroup::StateNotAdded:
+					// start loading										
+					it->IGToLoad->addToSceneAsync(*this, _DriverUser);
+				break;
+				case UInstanceGroup::StateAdded:
+					it->IGToLoad->setPos(it->Offset);
+					this->setToGlobalInstanceGroup(it->IGToLoad);
+					*it->CallerPtr = it->IGToLoad;
+					// remove from list
+					it = _WaitingIGs.erase(it);
+				break;			
+				default:
+				break;
+			}			
+		}
+	}
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.18 2002/04/29 13:13:11 berenguier Exp $
+ * $Id: u_scene.h,v 1.19 2002/04/30 09:46:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,6 +128,26 @@ public:
 	 * You must poll to know if the instance if created by calling render()
 	 */
 	virtual	void			createInstanceAsync(const std::string &shapeName,UInstance**ppInstance)=0;
+
+	/** create an instance group asynchronously, and add it to a scene asynchronously once it has been 
+	  * loaded. The instance groups that must be added to the scene are checked at each render.
+	  * The pIG pointer is filled once the instance group has been loaded and add to the scene
+	  */
+	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup,														
+													    UInstanceGroup **pIG,
+														const NLMISC::CVector &offset
+													   ) = 0;
+	/** Update the waiting ig from a call to createInstanceGroupAndAddToSceneAsync.
+	  * This allow to check which instance group are loaded and allow to add them to scene.
+	  * This is called at each render, so you don't usually need to call it.
+	  */ 
+	virtual void	updateWaitingIG() = 0;
+
+	/**	Stop loading and adding an ig to the scene
+	  */
+	virtual	void stopCreatingAndAddingIG(UInstanceGroup **pIG) = 0;
+	
+
 	/** Create a dummy object
 	 */
 	virtual	UTransform		*createTransform()=0;

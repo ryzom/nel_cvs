@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.27 2003/05/28 12:40:01 cado Exp $
+ * $Id: entity_id.h,v 1.28 2003/06/30 09:49:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,6 +153,11 @@ public :
 		*/
 	}
 
+	explicit CEntityId (const std::string &str)
+	{
+		fromString(str.c_str());
+	}
+		
 	explicit CEntityId (const char *str)
 	{
 		CEntityId ();

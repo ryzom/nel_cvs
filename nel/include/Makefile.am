@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.8 2001/03/05 18:08:49 valignat Exp $
+# $Id: Makefile.am,v 1.9 2001/03/05 18:16:32 valignat Exp $
 #
 
 install-exec-local:
@@ -21,7 +21,7 @@ install-exec-local:
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/sys
 	$(INSTALL_DATA) -m a=r `echo nel/*.h`             $(includedir)/nel
 	$(INSTALL_DATA) -m a=r `echo nel/3d/*.h`          $(includedir)/nel/3d
-	$(INSTALL_DATA) -m a=r `echo nel/3d/tmp/*.h`      $(includedir)/nel/3d
+	$(INSTALL_DATA) -m a=r `echo nel/3d/tmp/*.h`      $(includedir)/nel/3d/tmp
 	$(INSTALL_DATA) -m a=r `echo nel/misc/*.h`        $(includedir)/nel/misc
 	$(INSTALL_DATA) -m a=r `echo nel/net/*.h`         $(includedir)/nel/net
 	$(INSTALL_DATA) -m a=r `echo nel/ai/*.h`          $(includedir)/nel/ai/

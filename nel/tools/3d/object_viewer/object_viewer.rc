@@ -534,10 +534,18 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Use emitter speed basis",IDC_USE_SPEED_BASIS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,186,7,176,14
-    LTEXT           "Speed inheritance factor :",IDC_STATIC,5,35,86,9
+    LTEXT           "Speed inheritance factor :",IDC_STATIC,5,37,57,17
     CONTROL         "Convert speed vector from emitter basis",
                     IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,187,20,174,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,186,20,174,9
+    LTEXT           "Delayed emission :",IDC_DELAYED_EMISSION,5,64,60,10
+    LTEXT           "Max Emission Count :",IDC_MAX_EMISSION_COUNT,5,89,68,11
+    GROUPBOX        "",IDC_SPEED_INHERITANCE_FACTOR_FRAME,81,32,225,25,NOT 
+                    WS_VISIBLE
+    GROUPBOX        "",IDC_DELAYED_EMISSION_FRAME,81,55,225,25,NOT 
+                    WS_VISIBLE
+    GROUPBOX        "",IDC_MAX_EMISSION_COUNT_FRAME,81,77,225,25,NOT 
+                    WS_VISIBLE
 END
 
 IDD_TEXTURE_CHOOSER DIALOG DISCARDABLE  0, 0, 226, 24
@@ -636,7 +644,7 @@ END
 
 IDD_CHOOSE_MESH DIALOGEX 0, 0, 238, 19
 STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "Static",IDC_SHAPE_NAME,29,3,69,15,WS_DISABLED,
                     WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
@@ -729,14 +737,14 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,9,11,81,11
     LTEXT           "Time threshold :",IDC_STATIC,16,46,38,18
     LTEXT           "Max num integrations :",IDC_STATIC,16,73,42,19
-    LTEXT           "User param1 :",IDC_STATIC,9,103,46,11
-    LTEXT           "User param2 :",IDC_STATIC,9,124,46,11
-    LTEXT           "User param3 :",IDC_STATIC,9,147,46,11
-    LTEXT           "User param4 :",IDC_STATIC,9,168,46,11
+    LTEXT           "User param1 :",IDC_STATIC,7,108,46,11
+    LTEXT           "User param2 :",IDC_STATIC,7,129,46,11
+    LTEXT           "User param3 :",IDC_STATIC,7,152,46,11
+    LTEXT           "User param4 :",IDC_STATIC,7,173,46,11
     GROUPBOX        "",IDC_STATIC,5,94,297,99
     GROUPBOX        "LOD",IDC_STATIC,5,194,297,51
     LTEXT           "Max view dist :",IDC_STATIC,9,206,56,11
-    LTEXT           "LOD Ratio :",IDC_STATIC,10,226,56,11
+    LTEXT           "LOD Ratio :",IDC_STATIC,10,229,56,11
     CONTROL         "Use Precomputed Bounding Box",IDC_PRECOMPUTE_BBOX,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,249,121,12
     GROUPBOX        "",IDC_STATIC,4,258,267,38
@@ -749,27 +757,27 @@ BEGIN
     PUSHBUTTON      "Update",IDC_UPDATE_BBOX,156,266,43,16
     PUSHBUTTON      "+ 10 %",IDC_INC_BBOX,201,266,31,16
     PUSHBUTTON      "- 10 %",IDC_DEC_BBOX,235,266,31,16
-    GROUPBOX        "System life",IDC_STATIC,4,294,295,78
+    GROUPBOX        "System life",IDC_STATIC,4,298,295,78
     CONTROL         "Model removed when out of range",
                     IDC_DIE_WHEN_OUT_OF_RANGE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,307,124,11
-    LTEXT           "Die on event :",IDC_STATIC,7,356,46,9
-    COMBOBOX        IDC_PS_DIE_ON_EVENT,55,354,106,45,CBS_DROPDOWNLIST | 
+                    WS_TABSTOP,7,311,124,11
+    LTEXT           "Die on event :",IDC_STATIC,7,360,46,9
+    COMBOBOX        IDC_PS_DIE_ON_EVENT,55,358,106,45,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Apply after delay :",IDC_STATIC,169,355,58,11
-    EDITTEXT        IDC_APPLY_AFTRE_DELAY,231,353,29,13,ES_AUTOHSCROLL
-    LTEXT           "s",IDC_STATIC,265,355,8,9
+    LTEXT           "Apply after delay :",IDC_STATIC,169,359,58,11
+    EDITTEXT        IDC_APPLY_AFTRE_DELAY,231,357,29,13,ES_AUTOHSCROLL
+    LTEXT           "s",IDC_STATIC,265,359,8,9
     CONTROL         "PS resource removed when out of frustum ",
                     IDC_DIE_WHEN_OUT_OF_FRUSTRUM,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,138,307,150,10
+                    WS_TABSTOP,138,311,150,10
     CONTROL         "perform motion when out of frustum",
                     IDC_PERFORM_MOTION_WHEN_OUT_OF_FRUSTUM,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,320,122,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,324,122,8
     LTEXT           "(But not the object (model) that hold it, unless",
-                    IDC_STATIC,148,318,125,10
+                    IDC_STATIC,148,322,125,10
     LTEXT           ", unless ""Model removed when o.o.r "" is checked)",
-                    IDC_STATIC,150,327,136,17
-    GROUPBOX        "",IDC_STATIC,135,300,157,47
+                    IDC_STATIC,150,331,136,17
+    GROUPBOX        "",IDC_STATIC,135,304,157,47
 END
 
 IDD_BIN_OP DIALOG DISCARDABLE  0, 0, 390, 174
@@ -1284,8 +1292,8 @@ BEGIN
     EDITTEXT        IDC_U_SCALE_ACCEL,125,64,32,11,ES_AUTOHSCROLL
     EDITTEXT        IDC_V_SCALE_ACCEL,125,76,32,11,ES_AUTOHSCROLL
     GROUPBOX        "Scale",IDC_STATIC,83,1,77,92
-    LTEXT           "U Speed :",IDC_U_SCALE_START_TEXT,87,12,34,9
-    LTEXT           "V Speed :",IDC_V_SCALE_START_TEXT,87,24,31,9
+    LTEXT           "U Start :",IDC_U_SCALE_START_TEXT,87,12,34,9
+    LTEXT           "V Start :",IDC_V_SCALE_START_TEXT,87,24,31,9
     EDITTEXT        IDC_U_SCALE_START,125,10,32,11,ES_AUTOHSCROLL
     EDITTEXT        IDC_V_SCALE_START,125,24,32,11,ES_AUTOHSCROLL
     LTEXT           "Speed :",IDC_WROT_SPEED_TEXT,169,12,34,9
@@ -1306,6 +1314,9 @@ BEGIN
     PUSHBUTTON      "Remove",IDC_REMOVE,90,17,42,13
     PUSHBUTTON      "Change",IDC_CHANGE,90,32,42,13
     GROUPBOX        "",IDC_MORPH_SCHEME,2,102,346,71
+    PUSHBUTTON      "Insert",IDC_INSERT,90,47,42,13
+    PUSHBUTTON      "Up",IDC_UP,90,61,42,13
+    PUSHBUTTON      "Down",IDC_DOWN,90,75,42,13
 END
 
 
@@ -1837,7 +1848,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,91
+ FILEVERSION 1,0,0,92
  PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -1856,7 +1867,7 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "object_viewer DLL\0"
-            VALUE "FileVersion", "1, 0, 0, 91\0"
+            VALUE "FileVersion", "1, 0, 0, 92\0"
             VALUE "InternalName", "object_viewer\0"
             VALUE "LegalCopyright", "Copyright (C) 2001\0"
             VALUE "LegalTrademarks", "\0"

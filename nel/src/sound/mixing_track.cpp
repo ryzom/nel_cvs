@@ -1,7 +1,7 @@
 /** \file track.cpp
  * CTrack: a source selected for playing
  *
- * $Id: mixing_track.cpp,v 1.1 2001/08/23 14:22:08 vizerie Exp $
+ * $Id: mixing_track.cpp,v 1.2 2001/08/23 14:38:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "track.h"
+#include "mixing_track.h"
 
 
 namespace NLSOUND {

@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.30 2002/04/17 07:23:34 lecroart Exp $
+ * $Id: types_nl.h,v 1.31 2002/06/10 14:29:02 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -50,6 +50,7 @@
 #  define NL_CPU_INTEL
 #  ifdef _DEBUG
 #    define NL_DEBUG
+#    define _STLP_USE_DEBUG_LIB		// we have to put this to include the stlport_debug.lib instead of stlport.lib
 #  else
 #    define NL_RELEASE
 #  endif

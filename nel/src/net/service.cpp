@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.211 2004/07/12 13:59:21 miller Exp $
+ * $Id: service.cpp,v 1.212 2004/08/17 16:42:07 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -504,8 +504,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		changeLogDirectory (LogDirectory);
 
-		// we create the log with service name filename ("test_service.log" for example)
-		fd.setParam (LogDirectory.c_str() + _LongName + ".log", false);
+		// we create the log with service name filename ("test_service_ALIAS.log" for example)
+		string logname = LogDirectory.toString() + _LongName;
+		if (haveArg('N'))
+			logname += "_" + toLower(getArg('N'));
+		logname += ".log";
+		fd.setParam (logname, false);
 
 		DebugLog->addDisplayer (&fd);
 		InfoLog->addDisplayer (&fd);

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.7 2000/11/21 18:02:26 valignat Exp $
+ * $Id: render_trav.cpp,v 1.8 2000/12/01 10:10:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,6 +62,7 @@ void		CRenderTrav::traverse()
 	// Bind to Driver.
 	getDriver()->setFrustum(Left, Right, Bottom, Top, Near, Far, Perspective);
 	getDriver()->setupViewMatrix(ViewMatrix);
+	getDriver()->setupViewport(_Viewport);
 
 	// Don't Clear screen, leave it to caller.
 

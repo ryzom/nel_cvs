@@ -1,7 +1,7 @@
 /** \file scene_ut.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.3 2000/11/22 13:15:39 berenguier Exp $
+ * $Id: nelu.cpp,v 1.4 2000/12/01 10:10:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ NLMISC::CSmartPtr<CCamera>	CSceneUt::Camera;
 IDriver			*CSceneUt::Driver;
 
 
-void			CSceneUt::init3d(CScene &scene, uint w, uint h, uint bpp, bool windowed )
+void			CSceneUt::init3d(CScene &scene, uint w, uint h, const CViewport& viewport, uint bpp, bool windowed )
 {
 	// Init debug system
 	NLMISC::InitDebug();
@@ -56,11 +56,16 @@ void			CSceneUt::init3d(CScene &scene, uint w, uint h, uint bpp, bool windowed )
 
 	// Init scene.
 	scene.initDefaultTravs();
+
 	// Don't add any user trav.
 	// init default Roots.
 	scene.initDefaultRoots();
+	
 	// Set driver.
 	scene.setDriver(CSceneUt::Driver);
+
+	// Set viewport
+	scene.setViewport (viewport);
 
 	// Create/link a camera.
 	CSceneUt::Camera= (CCamera*)scene.createModel(CameraId);

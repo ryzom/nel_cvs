@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.7 2000/11/07 17:25:06 berenguier Exp $
+ * $Id: scene.cpp,v 1.8 2000/12/01 10:10:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -137,8 +137,9 @@ void	CScene::render(bool	doHrcPass)
 	ClipTrav->setFrustum(left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
 	ClipTrav->setCamMatrix(CurrentCamera->getMatrix());
 
-	RenderTrav->setFrustum(left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
-	RenderTrav->setCamMatrix(CurrentCamera->getMatrix());
+	RenderTrav->setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+	RenderTrav->setCamMatrix (CurrentCamera->getMatrix());
+	RenderTrav->setViewport (_Viewport);
 
 	// Set the renderTrav for cliptrav.
 	ClipTrav->setRenderTrav(RenderTrav);

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.53 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.54 2004/08/03 16:22:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,8 @@
 #include "3d/scene.h"
 #include "3d/coarse_mesh_manager.h"
 #include "3d/lod_character_manager.h"
+#include "3d/water_model.h"
+#include "3d/water_shape.h"
 #include "nel/misc/hierarchical_timer.h"
 
 #include "3d/transform.h"
@@ -84,7 +86,7 @@ CRenderTrav::CRenderTrav()
 	_ShadowMeshSkinManager= NULL;
 
 	_LayersRenderingOrder= true;		
-	
+	_FirstWaterModel = NULL;		
 }
 // ***************************************************************************
 void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
@@ -282,6 +284,42 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 		}
 	}
 
+
+	if (renderPart & UScene::RenderTransparent)
+	{
+		// setup water models
+		CWaterModel *curr = _FirstWaterModel;
+		uint numWantedVertices = 0;
+		while (curr)
+		{
+			numWantedVertices += curr->getNumWantedVertices();
+			curr = curr->_Next;
+		}
+		CWaterModel::setupVertexBuffer(numWantedVertices, getDriver());
+		//
+		{		
+
+			CVertexBufferReadWrite vbrw;
+			CWaterModel::VB.lock(vbrw);
+			CWaterModel *curr = _FirstWaterModel;
+			void *datas = vbrw.getVertexCoordPointer(0);			
+			//
+			uint tri = 0;
+			while (curr)
+			{
+				tri = curr->fillVB(datas, tri, *getDriver());
+				nlassert(tri <= numWantedVertices);
+				curr = curr->_Next;
+			}	
+			nlassert(tri * 3 == numWantedVertices);
+		}
+		// Unlink all water model
+		while (_FirstWaterModel)
+		{
+			_FirstWaterModel->unlink();
+		}
+	}
+
 	if ((renderPart & UScene::RenderTransparent) && 
 		(renderPart & UScene::RenderFlare)
 	   )
@@ -384,6 +422,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 			}
 		}
 	}
+
 
 	// END!
 	// =============================
@@ -1176,4 +1215,25 @@ void CRenderTrav::setupTransparencySorting(uint8 maxPriority /*=0*/,uint NbDista
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

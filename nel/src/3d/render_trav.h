@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.25 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: render_trav.h,v 1.26 2004/08/03 16:22:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ class	CTransform;
 class	CLandscapeModel;
 
 class	CVertexStreamManager;
-
+class   CWaterModel;
 
 // ***************************************************************************
 /* Skin Manager setup
@@ -429,7 +429,8 @@ private:
 	std::vector<CLandscapeModel*>	_LandscapeRenderList;
 
 	// @}
-		
+public:
+	CWaterModel *_FirstWaterModel;		
 };
 
 

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.30 2001/08/06 10:02:25 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.31 2001/08/07 14:09:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,19 +77,19 @@ using NLMISC::CQuat ;
 ///////////////////////////
 
 
-const uint dotBufSize = 1024 ; // size used for point particles batching
+static const uint dotBufSize = 1024 ; // size used for point particles batching
 
-const uint quadBufSize = 800 ; // size used for quad particles batching. 
+static const uint quadBufSize = 800 ; // size used for quad particles batching. 
 							   // If this is too high, the cache may be broken
 							   // too small values will result in too much driver calls
 
 
-const uint shockWaveBufSize = 64 ; // number of shockwave to be processed at once
+static const uint shockWaveBufSize = 64 ; // number of shockwave to be processed at once
 
 
-const uint meshBufSize = 16 ; // number of meshs to be processed at once...
+static const uint meshBufSize = 16 ; // number of meshs to be processed at once...
 
-const uint constraintMeshBufSize = 64 ; // number of meshs to be processed at once...
+static const uint constraintMeshBufSize = 64 ; // number of meshs to be processed at once...
 
 
 /////////////////////////////////

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * TODO: File description
  *
- * $Id: landscape.cpp,v 1.152 2004/11/15 10:24:35 lecroart Exp $
+ * $Id: landscape.cpp,v 1.153 2004/12/14 13:02:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3834,14 +3834,20 @@ void			CLandscape::removeFromShadowPolyReceiver(CTessFace *face)
 // ***************************************************************************
 void			CLandscape::receiveShadowMap(IDriver *drv, CShadowMap *shadowMap, const CVector &casterPos, const CMaterial &shadowMat, const CVector &pzb)
 {
-	/*  substract the PZB from all coordinates. Must add a small Height value because 
+	/*  substract the PZB from all coordinates. 
+	
+		Must add a small zbias because 
 		The rendered Triangles may be computed with VertexProgram, but _ShadowPolyReceiver 
 		does not. => there is a small float difference at the end
 		Even if same vertex is produced in theory, VertexProgram may cause 2 precision problems:
 		1/ On NVidia, even with a simple matrix mul VP, the precision result is not the same
 		2/ Our Landscape VP is not a simple matrix mul. Lot of vertex mul/add are done fpr geomorphs
 	*/
-	_ShadowPolyReceiver.render(drv, const_cast<CMaterial&>(shadowMat), shadowMap, casterPos, CVector(0,0,0.02f)-pzb);
+	CMaterial	&sm= const_cast<CMaterial&>(shadowMat);
+	float	oldZBias= sm.getZBias();
+	sm.setZBias(-0.02f);
+	_ShadowPolyReceiver.render(drv, sm, shadowMap, casterPos, -pzb);
+	sm.setZBias(oldZBias);
 }
 
 // ***************************************************************************

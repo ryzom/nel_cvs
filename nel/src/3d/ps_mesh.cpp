@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.9 2002/01/04 11:17:03 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.10 2002/01/16 11:11:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -744,6 +744,7 @@ bool CPSConstraintMesh::update(void)
 	_ModelBank = sb;	
 	_GlobalAnimDate = _Owner->getOwner()->getSystemDate();
 	_Touched = 0;
+	nlassert(_Shapes.size() > 0);
 	return ok;
 	
 }
@@ -1203,8 +1204,14 @@ void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer 
 //====================================================================================
 void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
 {
+	/// patch (temporary)
+	if (_Shapes.size() == 0) return;
+	if (!dynamic_cast<CMesh *>(_Shapes[0])) return;	
+
 	// get the vb from the original mesh
 	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_Shapes[0]);
+
+	
 	const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
 
 	/// precompute rotation in a VB from the src mesh
@@ -1292,7 +1299,13 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
 			if (prerotVb.getVertexFormat() & CVertexBuffer::NormalFlag) // has it a normal ?
 			{
 				do
-				{					
+				{
+					CHECK_VERTEX_BUFFER(outVb, outVertex);
+					CHECK_VERTEX_BUFFER(prerotVb, inVertex);
+					CHECK_VERTEX_BUFFER(outVb, outVertex + normalOff);
+					CHECK_VERTEX_BUFFER(prerotVb, inVertex + pNormalOff);
+
+
 					// translate and resize the vertex (relatively to the mesh origin)
 					*(CVector *)  outVertex						 = *posIt + *ptCurrSize * *(CVector *) inVertex;
 					// copy the normal
@@ -1307,6 +1320,8 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
 				do
 				{					
 					// translate and resize the vertex (relatively to the mesh origin)
+					CHECK_VERTEX_BUFFER(outVb, outVertex);
+					CHECK_VERTEX_BUFFER(prerotVb, inVertex);
 					*(CVector *)  outVertex = *posIt + *ptCurrSize * *(CVector *) inVertex;													
 					inVertex  += inVSize;
 					outVertex += outVSize;
@@ -1516,26 +1531,31 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 				const uint8 *m0, *m1;
 				float lambda;
 				float opLambda;
+				const CVertexBuffer *inVB0, *inVB1;
 				if (*currMorphValue >= numShapes - 1)
 				{
 					lambda = 0.f;
 					opLambda = 1.f;
-					m0 = m1 = (uint8 *) (NLMISC::safe_cast<CMesh *>(_Shapes[numShapes - 1])->getVertexBuffer().getVertexCoordPointer());
+					inVB0 = inVB1 = &NLMISC::safe_cast<CMesh *>(_Shapes[numShapes - 1])->getVertexBuffer();
 				}
 				else if (*currMorphValue <= 0)
 				{
 					lambda = 0.f;
 					opLambda = 1.f;
-					m0 = m1 = (uint8 *) (NLMISC::safe_cast<CMesh *>(_Shapes[0])->getVertexBuffer().getVertexCoordPointer());
+					inVB0 = inVB1 = &NLMISC::safe_cast<CMesh *>(_Shapes[0])->getVertexBuffer();
 				}
 				else
 				{
 					uint iMeshIndex = (uint) *currMorphValue;
 					lambda = *currMorphValue - iMeshIndex;
 					opLambda = 1.f - lambda;
-					m0 = (uint8 *) NLMISC::safe_cast<CMesh *>(_Shapes[iMeshIndex])->getVertexBuffer().getVertexCoordPointer();
-					m1 = (uint8 *) NLMISC::safe_cast<CMesh *>(_Shapes[iMeshIndex + 1])->getVertexBuffer().getVertexCoordPointer();
+					inVB0 = &NLMISC::safe_cast<CMesh *>(_Shapes[iMeshIndex])->getVertexBuffer();
+					inVB1 = &NLMISC::safe_cast<CMesh *>(_Shapes[iMeshIndex + 1])->getVertexBuffer();
 				}
+
+				m0 = (uint8 *) inVB0->getVertexCoordPointer();
+				m1 = (uint8 *) inVB1->getVertexCoordPointer();
+
 						
 				uint k = nbVerticesInSource;
 				// do we need a normal ?
@@ -1549,7 +1569,10 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 					// offset of normals in the prerotated mesh				
 					do
 					{
-						// todo : add address  for in vertex
+						CHECK_VERTEX_BUFFER((*inVB0),	  m0);							
+						CHECK_VERTEX_BUFFER((*inVB1),	  m1);	
+						CHECK_VERTEX_BUFFER((*inVB0),	  m0 + inNormalOff);			
+						CHECK_VERTEX_BUFFER((*inVB1),	  m1 + inNormalOff);
 						CHECK_VERTEX_BUFFER(outVb,	  outVertex);							
 						CHECK_VERTEX_BUFFER(outVb,	  outVertex + outNormalOff);	
 
@@ -1575,7 +1598,8 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 
 					do
 					{			
-						// todo : add address  for in vertex
+						CHECK_VERTEX_BUFFER((*inVB0),	  m0);							
+						CHECK_VERTEX_BUFFER((*inVB1),	  m1);		
 						CHECK_VERTEX_BUFFER(outVb, outVertex);
 						// morph, and transform the vertex
 						*(CVector *) outVertex = *posIt + sM * (opLambda * *(CVector *) m0 + opLambda * *(CVector *) m1);

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.h,v 1.5 2000/10/09 14:36:06 corvazier Exp $
+ * $Id: debug.h,v 1.6 2000/10/09 14:39:47 corvazier Exp $
  *
  * This file contains all features that help us to debug applications/
  */
@@ -308,6 +308,8 @@ void NLMISC_InitDebug ();
 #define nlstop ;
 #define nlstoponce(exp) ;
 #define nlstopex(str) ;
+
+#endif // NL_DEBUG
 
 } // NLMISC
 

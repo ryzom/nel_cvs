@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.7 2001/04/30 16:58:31 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.8 2001/05/04 13:30:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -664,7 +664,7 @@ CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, NL3D::IShape*
 	// Get a mesh instance
 	CMeshInstance  *meshInstance=dynamic_cast<CMeshInstance*>(pTrShape);
 
-	if (meshInstance)
+	if (meshInstance&&pSkelShape)
 	{
 		// Store the shape pointer
 		CNELU::ShapeBank->add (skelName, CSmartPtr<IShape> (pSkelShape));

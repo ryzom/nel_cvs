@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.h,v 1.26 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: base_socket.h,v 1.27 2001/02/16 16:58:39 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ struct ESocket : public NLMISC::Exception
 /// Exception raised when connect() fails
 struct ESocketConnectionFailed : public ESocket
 {
-	ESocketConnectionFailed() : ESocket( "Connection failed" ) {}
+	ESocketConnectionFailed( CInetAddress addr ) : ESocket( (std::string("Connection to ")+ addr.asString() + std::string(" failed")).c_str() ) {}
 };
 
 

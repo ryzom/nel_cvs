@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.42 2001/02/16 16:45:06 cado Exp $
+ * $Id: base_socket.cpp,v 1.43 2001/02/16 16:58:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ ESocket::ESocket( const char *reason, bool systemerror )
 		}
 
 #elif defined NL_OS_UNIX
-		_Reason += ": " + ERROR_MSG;
+		_Reason += ": " + string(ERROR_MSG);
 #endif
 		_Reason += ")";
 	}
@@ -284,7 +284,7 @@ void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocketConnectionFa
 			nldebug( "Impossible to connect socket %d to %s %s (%d:%s)", _Sock, addr.hostName().c_str(), addr.asIPString().c_str(), ERROR_NUM, strerror(ERROR_NUM) );
 #endif*/
 		}
-		throw ESocketConnectionFailed();
+		throw ESocketConnectionFailed( addr );
 	}
 	if ( _Logging )
 	{

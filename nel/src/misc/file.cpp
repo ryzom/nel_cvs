@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.17 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: file.cpp,v 1.18 2002/04/24 08:14:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,23 +27,35 @@
 
 #include "nel/misc/file.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/big_file.h"
 
 using namespace std;
 
 namespace NLMISC
 {
 
-
 // ======================================================================================================
 CIFile::CIFile() : IStream(true, true)
 {
-	_F=NULL;
+	_F = NULL;
+	_Cache = NULL;
+	_ReadPos = NULL;
+	_FileSize = 0;
+	_BigFileOffset = 0;
+	_IsInBigFile = false;
+	_CacheFileOnOpen = false;
 }
 
 // ======================================================================================================
 CIFile::CIFile(const std::string &path, bool text) : IStream(true, true)
 {
 	_F=NULL;
+	_Cache = NULL;
+	_ReadPos = NULL;
+	_FileSize = 0;
+	_BigFileOffset = 0;
+	_IsInBigFile = false;
+	_CacheFileOnOpen = false;
 	open(path, text);
 }
 
@@ -52,8 +64,9 @@ CIFile::~CIFile()
 {
 	close();
 }
+
 // ======================================================================================================
-bool	CIFile::open(const std::string &path, bool text)
+bool		CIFile::open(const std::string &path, bool text)
 {
 	close();
 
@@ -62,37 +75,159 @@ bool	CIFile::open(const std::string &path, bool text)
 	mode[1] = (text)?'\0':'b';
 	mode[2] = '\0';
 
-	_F=fopen(path.c_str(), mode);
 	_FileName = path;
+	_ReadPos = 0;
 
-	return _F!=NULL;
-}
-// ======================================================================================================
-void	CIFile::close()
-{
-	if(_F)
+	// Bigfile access requested ?
+	if (path.find('@') != string::npos)
 	{
-		fclose(_F);
-		_F=NULL;
+		_IsInBigFile = true;
+		_F = CBigFile::getInstance().getFile (path, _FileSize, _BigFileOffset, _CacheFileOnOpen, _AlwaysOpened);
+		if ((_CacheFileOnOpen) && (_F != NULL))
+		{
+			fseek (_F, _BigFileOffset, SEEK_SET);
+			_Cache = new uint8[_FileSize];
+			//fread (_Cache, _FileSize, 1, _F);
+			for (uint32 i = 0; i < _FileSize; i += 100*1024)
+			{
+				if ((i+100*1024) > _FileSize)
+					fread (_Cache+i, _FileSize-i, 1, _F);
+				else
+					fread (_Cache+i, 100*1024, 1, _F);
+				nlSleep (5);
+			}
+			if (!_AlwaysOpened)
+			{
+				fclose (_F);
+				_F = NULL;
+			}
+			return (_Cache != NULL);
+		}
+	}
+	else
+	{
+		_IsInBigFile = false;
+		_BigFileOffset = 0;
+		_AlwaysOpened = false;
+		_F = fopen (path.c_str(), mode);
+		if (_F != NULL)
+		{
+			fseek (_F, 0, SEEK_END);
+			_FileSize = ftell(_F);
+			fseek (_F, 0, SEEK_SET);
+		}
+		else
+		{
+			_FileSize = 0;
+		}
+		
+		if ((_CacheFileOnOpen) && (_F != NULL))
+		{
+			_Cache = new uint8[_FileSize];
+			//fread (_Cache, _FileSize, 1, _F);
+			for (uint32 i = 0; i < _FileSize; i += 100*1024)
+			{
+				if ((i+100*1024) > _FileSize)
+					fread (_Cache+i, _FileSize-i, 1, _F);
+				else
+					fread (_Cache+i, 100*1024, 1, _F);
+				nlSleep (5);
+			}
+			fclose (_F);
+			_F = NULL;
+			return (_Cache != NULL);
+		}
+	}
+
+	return (_F != NULL);
+}
+
+// ======================================================================================================
+void		CIFile::setCacheFileOnOpen (bool newState)
+{
+	_CacheFileOnOpen = newState;
+}
+
+// ======================================================================================================
+void		CIFile::close()
+{
+	if (_CacheFileOnOpen)
+	{
+		delete _Cache;
+		_Cache = NULL;
+	}
+	else
+	{
+		if (_IsInBigFile)
+		{
+			if (!_AlwaysOpened)
+			{
+				if (_F)
+				{
+					fclose (_F);
+					_F = NULL;
+				}
+			}
+		}
+		else
+		{
+			if (_F)
+			{
+				fclose (_F);
+				_F = NULL;
+			}
+		}
 	}
 	resetPtrTable();
 }
+
 // ======================================================================================================
-void	CIFile::flush()
+void		CIFile::flush()
 {
-	if(_F)
+	if (_CacheFileOnOpen)
 	{
-		fflush(_F);
+	}
+	else
+	{
+		if (_F)
+		{
+			fflush (_F);
+		}
 	}
 }
+
 // ======================================================================================================
 void		CIFile::serialBuffer(uint8 *buf, uint len) throw(EReadError)
 {
-	if(!_F)
-		throw	EFileNotOpened(_FileName);
-	if(fread(buf, 1, len, _F) < len)
-		throw	EReadError(_FileName);
+	// Check the read pos
+	if ((_ReadPos < 0) || ((_ReadPos+len) > _FileSize))
+		throw EReadError (_FileName);
+	if ((_CacheFileOnOpen) && (_Cache == NULL))
+		throw EFileNotOpened (_FileName);
+	if ((!_CacheFileOnOpen) && (_F == NULL))
+		throw EFileNotOpened (_FileName);
+
+	static int tam = 0;
+	tam += len;
+	if (tam > 100*1024)
+	{
+		nlSleep(5);
+		tam = 0;
+	}
+
+	if (_CacheFileOnOpen)
+	{
+		memcpy (buf, _Cache + _ReadPos, len);
+		_ReadPos += len;
+	}
+	else
+	{
+		if (fread(buf, 1, len, _F) < len)
+			throw EReadError(_FileName);
+		_ReadPos += len;
+	}
 }
+
 // ======================================================================================================
 void		CIFile::serialBit(bool &bit) throw(EReadError)
 {
@@ -101,46 +236,47 @@ void		CIFile::serialBit(bool &bit) throw(EReadError)
 	serialBuffer(&v, 1);
 	bit=(v!=0);
 }
+
 // ======================================================================================================
 bool		CIFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
 {
-	if (_F)
+	if ((_CacheFileOnOpen) && (_Cache == NULL))
+		return false;
+	if ((!_CacheFileOnOpen) && (_F == NULL))
+		return false;
+
+	switch (origin)
 	{
-		int origin_c;
-		switch (origin)
-		{
 		case IStream::begin:
-			origin_c=SEEK_SET;
-			break;
+			_ReadPos = offset;
+		break;
 		case IStream::current:
-			origin_c=SEEK_CUR;
-			break;
+			_ReadPos = _ReadPos + offset;
+		break;
 		case IStream::end:
-			origin_c=SEEK_END;
-			break;
+			_ReadPos = _FileSize + offset; 
+		break;
 		default:
 			nlstop;
-		}
-
-		if (fseek (_F, offset, origin_c)!=0)
-			return false;
-		return true;
 	}
-	return false;
+
+	if (_CacheFileOnOpen)
+		return true;
+
+	if (fseek(_F, offset, SEEK_SET) != 0)
+		return false;
+	return true;
 }
+
 // ======================================================================================================
 sint32		CIFile::getPos () throw(EStream)
 {
-	if (_F)
-	{
-		return ftell (_F);
-	}
-	return 0;
+	return _ReadPos;
 }
 
 
 // ======================================================================================================
-std::string		CIFile::getStreamName() const
+std::string	CIFile::getStreamName() const
 {
 	return _FileName;
 }

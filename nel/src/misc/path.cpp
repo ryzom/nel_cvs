@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.28 2002/04/23 15:54:52 lecroart Exp $
+ * $Id: path.cpp,v 1.29 2002/04/24 08:14:14 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -619,11 +619,86 @@ void CPath::addSearchListFile (const string &filename, bool recurse, bool altern
 
 }
 
-
-void CPath::addSearchBigFile (const string &filename, bool recurse, bool alternative)
+// WARNING : recurse is not used
+void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alternative)
 {
-	// TODO & CHECK
-	nlwarning ("CPath::addSearchBigFile(): not impremented");
+	// Check if filename is not empty
+	if (sBigFilename.empty())
+	{
+		nlwarning ("CPath::addSearchBigFile(%s, %d, %d): can't add empty file, skip it", sBigFilename.c_str(), recurse, alternative);
+		return;
+	}
+	// Check if the file exists
+	if (!CFile::isExists (sBigFilename))
+	{
+		nlwarning ("CPath::addSearchBigFile(%s, %d, %d): '%s' is not found, skip it", sBigFilename.c_str(), recurse, alternative, sBigFilename.c_str());
+		return;
+	}
+	// Check if it s a file
+	if (CFile::isDirectory (sBigFilename))
+	{
+		nlwarning ("CPath::addSearchBigFile(%s, %d, %d): '%s' is not a file, skip it", sBigFilename.c_str(), recurse, alternative, sBigFilename.c_str());
+		return;
+	}
+	// Open and read the big file header
+	CPath *inst = CPath::getInstance();
+
+	FILE *Handle = fopen (sBigFilename.c_str(), "rb");
+	if (Handle == NULL)
+	{
+		nlwarning ("CPath::addSearchBigFile(%s, %d, %d): can't open file, skip it", sBigFilename.c_str(), recurse, alternative);
+		return;
+	}
+	fseek (Handle, 0, SEEK_END);
+	uint32 nFileSize = ftell (Handle);
+	fseek (Handle, nFileSize-4, SEEK_SET);
+	uint32 nOffsetFromBegining;
+	fread (&nOffsetFromBegining, sizeof(uint32), 1, Handle);
+	fseek (Handle, nOffsetFromBegining, SEEK_SET);
+	uint32 nNbFile;
+	fread (&nNbFile, sizeof(uint32), 1, Handle);
+	for (uint32 i = 0; i < nNbFile; ++i)
+	{
+		char FileName[256];
+		uint8 nStringSize;
+		fread (&nStringSize, 1, 1, Handle);
+		fread (FileName, 1, nStringSize, Handle);
+		FileName[nStringSize] = 0;
+		uint32 nFileSize;
+		fread (&nFileSize, sizeof(uint32), 1, Handle);
+		uint32 nFilePos;
+		fread (&nFilePos, sizeof(uint32), 1, Handle);
+		string sTmp = strlwr(string(FileName));
+		if (sTmp.empty())
+		{
+			nlwarning ("CPath::addSearchBigFile(%s, %d, %d): can't add empty file, skip it", sBigFilename.c_str(), recurse, alternative);
+			continue;
+		}
+		string bigfilenamealone = CFile::getFilename (sBigFilename);
+		string filenamewoext = CFile::getFilenameWithoutExtension (sTmp);
+		string ext = strlwr(CFile::getExtension(sTmp));
+
+		map<string, CFileEntry>::iterator it = inst->_Files.find (sTmp);
+		if (it == inst->_Files.end ())
+		{
+			// ok, the room is empty, let s add it
+			insertFileInMap (sTmp, bigfilenamealone + "@" + sTmp, false, ext);
+		}
+
+		for (uint j = 0; j < inst->_Extensions.size (); j++)
+		{
+			if (inst->_Extensions[j].first == ext)
+			{
+				// need to remap
+				insertFileInMap (filenamewoext+"."+inst->_Extensions[j].second, 
+								bigfilenamealone + "@" + sTmp, 
+								true, 
+								inst->_Extensions[j].second);
+			}
+		}
+
+	}
+	fclose (Handle);
 }
 
 void CPath::insertFileInMap (const string &filename, const string &filepath, bool remap, const string &extension)

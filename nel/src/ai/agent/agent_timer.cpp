@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.24 2001/09/17 13:29:16 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.25 2001/10/02 09:00:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,7 +99,7 @@ namespace NLAIAGENT
 																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
 																NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-			CAgentManagerTimer::TimerManager = new NLMISC::CSynchronized<CAgentScript *>;
+			CAgentManagerTimer::TimerManager = new NLMISC::CSynchronized<CAgentScript *>( "CAgentManagerTimer::TimerManager" );
 			{
 				NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
 				accessor.value() = h;

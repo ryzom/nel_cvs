@@ -36,6 +36,7 @@ protected: // create from serialization only
 	DECLARE_DYNCREATE (CDfnDoc)
 
 	CStringEx	DocumentName;
+	bool		DocumentIsNew;
 
 	CStringEx	DirLevel;
 	CStringEx	DirPrototype;
@@ -79,6 +80,8 @@ public:
 	virtual void DeleteContents ();
 
 	virtual BOOL OnOpenDocument (LPCTSTR lpszPathName);
+	void FileSave ();
+	void FileSaveAs ();
 	virtual BOOL OnSaveDocument (LPCTSTR lpszPathName);
 	virtual void OnCloseDocument ();
 

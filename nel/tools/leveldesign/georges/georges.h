@@ -52,7 +52,7 @@ public:
 
 	afx_msg void NewDfn ();
 	afx_msg void NewInstance ();
-
+	
 
 	void SaveAllDocument();
 	void CloseAllDocument();

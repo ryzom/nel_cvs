@@ -138,18 +138,13 @@ void CGeorgesImpl::go()
 		}
 	}
 	while (!_MainFrame->Exit);
-
-	_MainFrame->DoClose();
-	_MainFrame->m_hWnd = NULL;
 }
 
 // ---------------------------------------------------------------------------
 void CGeorgesImpl::releaseUI()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	if (_MainFrame->m_hWnd != NULL)
-		_MainFrame->DestroyWindow();
-	_MainFrame = NULL;
+	_MainFrame->DoClose();
 }
 
 // ---------------------------------------------------------------------------

@@ -42,7 +42,7 @@ SEnvironnement::SEnvironnement()
 	DirDfnTyp = sCurDir;
 	DirDfnTyp += "\\";
 	DirPrototype = DirDfnTyp;
-	DirLevel = DirDfnTyp;
+	DirLevel = "_";
 }
 
 // ---------------------------------------------------------------------------
@@ -64,8 +64,8 @@ BEGIN_MESSAGE_MAP (CGeorgesApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
 	ON_COMMAND (ID_FILE_OPEN_DFN, OpenDfn)
 	ON_COMMAND (ID_FILE_NEW_DFN, NewDfn)
-	ON_COMMAND (ID_FILE_NEW_INSTANCE, NewInstance)
 	ON_COMMAND (ID_FILE_OPEN_INSTANCE, OpenInstance)
+	ON_COMMAND (ID_FILE_NEW_INSTANCE, NewInstance)
 END_MESSAGE_MAP ()
 
 // ---------------------------------------------------------------------------
@@ -91,9 +91,9 @@ BOOL CGeorgesApp::initInstance(int x, int y, int cx, int cy)
 		// Change the registry key under which our settings are stored.
 		// TODO: You should modify this string to be something appropriate
 		// such as the name of your company or organization.
-		SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+		SetRegistryKey (_T("Local AppWizard-Generated Applications"));
 
-		LoadStdProfileSettings(16);  // Load standard INI file options (including MRU)
+		LoadStdProfileSettings (16);  // Load standard INI file options (including MRU)
 
 		// Register the application's document templates.  Document templates
 		//  serve as the connection between documents, frame windows and views.
@@ -305,7 +305,7 @@ void CGeorgesApp::OpenDfn ()
 	int s = Dlg.m_ofn.Flags;
 	Dlg.m_ofn.Flags |= OFN_NOCHANGEDIR | OFN_FILEMUSTEXIST | OFN_NONETWORKBUTTON;
 	Dlg.m_ofn.lpstrTitle  = "Opening a DFN file";
-	Dlg.m_ofn.lpstrFilter = "Define files (*.typ;*.dfn)|*.typ;*.dfn";
+	Dlg.m_ofn.lpstrFilter = "Define files (*.typ;*.dfn)\0*.typ;*.dfn";
 	Dlg.m_ofn.lpstrInitialDir = Env.DirDfnTyp.c_str ();
 
 	if (Dlg.DoModal() != IDOK )

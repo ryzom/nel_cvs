@@ -156,10 +156,6 @@ PostBuild_Cmds=copy ..\master\georges_release_debug.dll ..\georges_exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\ChildFrm.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ComboInListView.cpp
 # End Source File
 # Begin Source File
@@ -169,6 +165,10 @@ SOURCE=.\DfnDoc.cpp
 # Begin Source File
 
 SOURCE=.\DfnFrame.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\DfnGrid.cpp
 # End Source File
 # Begin Source File
 
@@ -188,6 +188,14 @@ SOURCE=.\georgesDoc.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\georgesFrame.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\georgesGrid.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\georgesView.cpp
 # End Source File
 # Begin Source File
@@ -197,10 +205,6 @@ SOURCE=.\listeditctrl.cpp
 # Begin Source File
 
 SOURCE=.\MainFrm.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\MySuperGrid.cpp
 # End Source File
 # Begin Source File
 
@@ -215,18 +219,10 @@ SOURCE=.\StdAfx.cpp
 
 SOURCE=.\supergridctrl.cpp
 # End Source File
-# Begin Source File
-
-SOURCE=.\testtreedlg.cpp
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
-# Begin Source File
-
-SOURCE=.\ChildFrm.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\ComboInListView.h
@@ -238,6 +234,10 @@ SOURCE=.\DfnDoc.h
 # Begin Source File
 
 SOURCE=.\DfnFrame.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DfnGrid.h
 # End Source File
 # Begin Source File
 
@@ -261,6 +261,14 @@ SOURCE=.\georgesDoc.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\georgesFrame.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\georgesGrid.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\georgesView.h
 # End Source File
 # Begin Source File
@@ -270,10 +278,6 @@ SOURCE=.\listeditctrl.h
 # Begin Source File
 
 SOURCE=.\MainFrm.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\MySuperGrid.h
 # End Source File
 # Begin Source File
 
@@ -290,10 +294,6 @@ SOURCE=.\StdAfx.h
 # Begin Source File
 
 SOURCE=.\supergridctrl.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\testtreedlg.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

@@ -33,6 +33,7 @@ protected:
 
 	FILE		*FileLock;
 
+	bool		DocumentIsNew;
 	CStringEx	DocumentName;
 
 	CStringEx	DirDfnTyp;
@@ -134,6 +135,8 @@ public:
 	virtual BOOL OnNewDocument ();
 	void NewDocument (const CStringEx _sxfilename);
 	virtual BOOL OnOpenDocument (LPCTSTR lpszPathName);
+	void FileSave ();
+	void FileSaveAs ();
 	virtual BOOL OnSaveDocument (LPCTSTR lpszPathName);
 	virtual void OnCloseDocument();
 	virtual void DeleteContents();

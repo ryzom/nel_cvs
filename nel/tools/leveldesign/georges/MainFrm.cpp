@@ -70,9 +70,9 @@ int CMainFrame::OnCreate (LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
-	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
-	EnableDocking(CBRS_ALIGN_ANY);
-	DockControlBar(&m_wndToolBar);
+	m_wndToolBar.EnableDocking (CBRS_ALIGN_ANY);
+	EnableDocking (CBRS_ALIGN_ANY);
+	DockControlBar (&m_wndToolBar);
 
 	return 0;
 }
@@ -174,6 +174,49 @@ void CMainFrame::OnEditRedo()
 	}
 }
 
+// ---------------------------------------------------------------------------
+void CMainFrame::OnFileSave ()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	CMDIChildWnd *pChild = MDIGetActive();
+	if (pChild == NULL)
+		return;
+	CGeorgesDoc *pGeorgesDoc = dynamic_cast<CGeorgesDoc*>(pChild->GetActiveDocument());
+	if (pGeorgesDoc != NULL)
+	{
+		pGeorgesDoc->FileSave ();
+		return;
+	}
+
+	CDfnDoc *pDfnDoc = dynamic_cast<CDfnDoc*>(pChild->GetActiveDocument());
+	if (pDfnDoc != NULL)
+	{
+		pDfnDoc->FileSave ();
+		return;
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnFileSaveAs ()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	CMDIChildWnd *pChild = MDIGetActive();
+	if (pChild == NULL)
+		return;
+	CGeorgesDoc *pGeorgesDoc = dynamic_cast<CGeorgesDoc*>(pChild->GetActiveDocument());
+	if (pGeorgesDoc != NULL)
+	{
+		pGeorgesDoc->FileSaveAs ();
+		return;
+	}
+
+	CDfnDoc *pDfnDoc = dynamic_cast<CDfnDoc*>(pChild->GetActiveDocument());
+	if (pDfnDoc != NULL)
+	{
+		pDfnDoc->FileSaveAs ();
+		return;
+	}
+}
 
 // ---------------------------------------------------------------------------
 // This is just a function to process the initialisation event of the directoryBrowser
@@ -191,7 +234,7 @@ int CALLBACK dataDirBrowseCallbackProc (HWND hwnd,UINT uMsg,LPARAM lp, LPARAM pD
 }
 
 // ---------------------------------------------------------------------------
-void CMainFrame::OnFileDirDfnTyp()
+void CMainFrame::OnFileDirDfnTyp ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	BROWSEINFO	bi;
@@ -202,13 +245,13 @@ void CMainFrame::OnFileDirDfnTyp()
 	bi.hwndOwner = this->m_hWnd;
 	bi.pidlRoot = NULL;
 	bi.pszDisplayName = sTemp;;
-	bi.lpszTitle = "Choose the path";
+	bi.lpszTitle = "Choose the path for DFN";
 	bi.ulFlags = 0;
 	bi.lpfn = dataDirBrowseCallbackProc;
 
 	// Keep an instance of the dfntyp directory locally
 	char sDir[512];
-	strcpy(sDir, ((CGeorgesApp*)AfxGetApp())->GetDirDfnTyp().c_str());
+	strcpy (sDir, ((CGeorgesApp*)AfxGetApp())->GetDirDfnTyp().c_str());
 	bi.lParam = (LPARAM)sDir;
 
 	bi.iImage = 0;
@@ -222,15 +265,15 @@ void CMainFrame::OnFileDirDfnTyp()
 	}
 	catch(exception &e)
 	{
-		MessageBox(e.what(),"Error",MB_ICONERROR|MB_OK);
+		MessageBox (e.what(), "Error",MB_ICONERROR|MB_OK);
 		return;
 	}
-	((CGeorgesApp*)AfxGetApp())->SetDirDfnTyp(str);
-	((CGeorgesApp*)AfxGetApp())->SaveCfg();
+	((CGeorgesApp*)AfxGetApp())->SetDirDfnTyp (str);
+	((CGeorgesApp*)AfxGetApp())->SaveCfg ();
 }
 
 // ---------------------------------------------------------------------------
-void CMainFrame::OnFileDirPrototype()
+void CMainFrame::OnFileDirPrototype ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	BROWSEINFO	bi;
@@ -241,12 +284,12 @@ void CMainFrame::OnFileDirPrototype()
 	bi.hwndOwner = this->m_hWnd;
 	bi.pidlRoot = NULL;
 	bi.pszDisplayName = sTemp;;
-	bi.lpszTitle = "Choose the path";
+	bi.lpszTitle = "Choose the path for Prototypes";
 	bi.ulFlags = 0;
 	bi.lpfn = dataDirBrowseCallbackProc;
 	
 	char sDir[512];
-	strcpy(sDir, ((CGeorgesApp*)AfxGetApp())->GetDirDfnTyp().c_str());
+	strcpy (sDir, ((CGeorgesApp*)AfxGetApp())->GetDirPrototype().c_str());
 	bi.lParam = (LPARAM)sDir;
 	
 	bi.iImage = 0;
@@ -260,9 +303,9 @@ void CMainFrame::OnFileDirPrototype()
 	}
 	catch(exception &e)
 	{
-		MessageBox(e.what(),"Error",MB_ICONERROR|MB_OK);
+		MessageBox (e.what(), "Error",MB_ICONERROR|MB_OK);
 		return;
 	}
-	((CGeorgesApp*)AfxGetApp())->SetDirPrototype(str);
-	((CGeorgesApp*)AfxGetApp())->SaveCfg();
+	((CGeorgesApp*)AfxGetApp())->SetDirPrototype (str);
+	((CGeorgesApp*)AfxGetApp())->SaveCfg ();
 }

@@ -368,6 +368,15 @@ BOOL CGeorgesDoc::OnNewDocument()
 	fn.ReleaseBuffer();
 
 	NewDocument (sxdfn);
+
+	sint32 nPos = sxdfn.reverse_find('.');
+	if (nPos == -1)
+		return TRUE;
+	
+	sxdfn = CStringEx("new.") + sxdfn.get_left(nPos);
+	SetTitle (sxdfn.c_str());
+	DocumentIsNew = true;
+	
 	return TRUE;
 }
 
@@ -421,8 +430,39 @@ BOOL CGeorgesDoc::OnOpenDocument (LPCTSTR lpszPathName)
 
 	// Put a lock onto the file
 	FileLock = _fsopen (lpszPathName, "r", _SH_DENYRW);
+	DocumentIsNew = false;
 
 	return TRUE;
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::FileSave ()
+{
+	if (DocumentIsNew)
+		FileSaveAs ();
+	OnSaveDocument (DocumentName.c_str());
+}
+
+// ---------------------------------------------------------------------------
+void CGeorgesDoc::FileSaveAs ()
+{
+	CFileDialog Dlg (false);
+	Dlg.m_ofn.lpstrTitle  = "Saving a GEORGES file";
+	Dlg.m_ofn.lpstrFilter = "Georges files (*.*)|*.*";
+	CGeorgesApp *pApp = (CGeorgesApp*)AfxGetApp();
+	Dlg.m_ofn.lpstrInitialDir =  pApp->GetDirPrototype().c_str();
+
+	if (Dlg.DoModal() != IDOK )
+		return;
+
+	try
+	{
+		OnSaveDocument (Dlg.GetPathName());
+	}
+	catch (NLMISC::Exception &)
+	{
+		// Not succeeded
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -434,6 +474,15 @@ BOOL CGeorgesDoc::OnSaveDocument (LPCTSTR lpszPathName)
 	pApp->SetDirPrototype (GetDirPrototype());
 	pApp->SetDirDfnTyp (GetDirDfnTyp());
 
+	CStringEx sxName = CStringEx(lpszPathName);
+	if ((sxName.reverse_find('.') == -1) || 
+		(sxName.reverse_find('\\') > sxName.reverse_find('.')) || 
+		(sxName.reverse_find('/') > sxName.reverse_find('.')))
+	{
+		CStringEx title((LPCSTR)GetTitle());
+		sxName += title.get_mid(title.reverse_find('.'));
+	}
+
 	// Unlock
 	if (FileLock != NULL)
 		fclose (FileLock);
@@ -441,11 +490,11 @@ BOOL CGeorgesDoc::OnSaveDocument (LPCTSTR lpszPathName)
 	// Save
 	try
 	{
-		CurItem.Save (CStringEx(lpszPathName));
+		CurItem.Save (sxName);
 		SetModifiedFlag (FALSE);
-		if (CStringEx(lpszPathName) != DocumentName)
+		if (sxName != DocumentName)
 		{
-			DocumentName = CStringEx (lpszPathName);
+			DocumentName = sxName;
 			DeleteContents ();
 			CurItem.Load (DocumentName);
 			UpdateAllViews (NULL);
@@ -460,8 +509,9 @@ BOOL CGeorgesDoc::OnSaveDocument (LPCTSTR lpszPathName)
 	ResetUndoRedo ();
 
 	// Relock file
-	FileLock = _fsopen (lpszPathName, "r", _SH_DENYRW);
+	FileLock = _fsopen (sxName.c_str(), "r", _SH_DENYRW);
 
+	DocumentIsNew = false;
 	return TRUE;
 }
 

@@ -110,7 +110,7 @@ IDR_MAINFRAME MENU PRELOAD DISCARDABLE
 BEGIN
     POPUP "&Fichier"
     BEGIN
-        MENUITEM "Nouveau Dfn/Typ",             ID_FILE_NEW_DFN
+        MENUITEM "Nouveau Dfn",                 ID_FILE_NEW_DFN
         MENUITEM "Ouvrir Dfn/Typ",              ID_FILE_OPEN_DFN
         MENUITEM SEPARATOR
         MENUITEM "&Nouvelle Instance",          ID_FILE_NEW_INSTANCE

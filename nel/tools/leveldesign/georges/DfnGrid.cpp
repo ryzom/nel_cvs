@@ -59,15 +59,17 @@ void CDfnGrid::OnRButtonDown (UINT nFlags, CPoint pt)
 {
 	_ItemSelected = -1;
 	CSuperGridCtrl::OnRButtonDown (nFlags, pt);
-	if (_ItemSelected == -1)
+
+	CMenu *pMenu = new CMenu;
+	pMenu->CreatePopupMenu ();
+	pMenu->AppendMenu (MF_STRING, ID_MENU_ADD, "Add");
+	if (_ItemSelected != -1)
 	{
-		CMenu *pMenu = new CMenu;
-		pMenu->CreatePopupMenu ();
-		pMenu->AppendMenu (MF_STRING, ID_MENU_ADD, "Add");
-		CRect r;
-		this->GetWindowRect (r);
-		pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, r.left+pt.x, r.top+pt.y, this);
+		pMenu->AppendMenu (MF_STRING, ID_MENU_DEL, "Delete");
 	}
+	CRect r;
+	this->GetWindowRect (r);
+	pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, r.left+pt.x, r.top+pt.y, this);
 }
 
 // ---------------------------------------------------------------------------
@@ -124,12 +126,15 @@ void CDfnGrid::OnControlRButtonDown(UINT nFlags, CPoint pt, LVHITTESTINFO& ht)
 
 	if (GetTreeItem(ht.iItem) == NULL)
 		return;
+	_ItemSelected = ht.iItem;
+	/*
 	pMenu->AppendMenu (MF_STRING, ID_MENU_DEL, "Delete");
 	_ItemSelected = ht.iItem;
 	pMenu->AppendMenu (MF_STRING, ID_MENU_ADD, "Add");
 	CRect r;
 	this->GetWindowRect (r);
 	pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, r.left+pt.x, r.top+pt.y, this);
+	*/
 }
 
 // ---------------------------------------------------------------------------
@@ -140,7 +145,6 @@ void CDfnGrid::OnAdd ()
 	CItemInfo *pII = new CItemInfo(_NbItems);
 	++_NbItems;
 
-	SetRedraw (false);
 	string tmp = NLMISC::toString("Unknown") + NLMISC::toString(_NbItems);
 	pII->SetItemText (tmp.c_str());
 	pII->SetControlType (CItemInfo::edit, -1);
@@ -161,7 +165,26 @@ void CDfnGrid::OnAdd ()
 // ---------------------------------------------------------------------------
 void CDfnGrid::OnDel ()
 {
-	((CDfnView*)GetParent ())->GetDocument()->Push();
+	if (_ItemSelected != -1)
+	{
+		SetRedraw (FALSE);
+
+		CTreeItem* pSelItem = GetTreeItem(_ItemSelected);
+		if(pSelItem != NULL)
+		{
+			if(OnDeleteItem(pSelItem, _ItemSelected))
+				DeleteItemEx(pSelItem, _ItemSelected);
+		}	
+
+///		DeleteRootItem (GetRootItem(_ItemSelected));
+///		SelectNode (GetRootItem(_ItemSelected-1));
+		
+		SetRedraw (TRUE);
+		InvalidateRect (NULL);
+		UpdateWindow ();
+
+		((CDfnView*)GetParent ())->GetDocument()->Push();
+	}
 }
 
 // ---------------------------------------------------------------------------

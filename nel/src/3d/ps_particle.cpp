@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.26 2001/07/03 08:34:25 corvazier Exp $
+ * $Id: ps_particle.cpp,v 1.27 2001/07/04 12:29:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,6 +149,7 @@ void CPSColoredParticle::setColorScheme(CPSAttribMaker<CRGBA> *col)
 	}
 
 	_ColorScheme = col ;
+	if (getColorOwner() && col->hasMemory()) col->resize(getColorOwner()->getMaxSize(), getColorOwner()->getSize()) ;
 
 	updateMatAndVbForColor() ;
 }
@@ -228,6 +229,7 @@ void CPSSizedParticle::setSizeScheme(CPSAttribMaker<float> *size)
 	}
 
 	_SizeScheme = size ;
+	if (getSizeOwner() && size->hasMemory()) size->resize(getSizeOwner()->getMaxSize(), getSizeOwner()->getSize()) ;
 }
 
 
@@ -308,6 +310,7 @@ void CPSRotated2DParticle::setAngle2DScheme(CPSAttribMaker<float> *angle2DScheme
 	}
 
 	_Angle2DScheme = angle2DScheme ;
+	if (getAngle2DOwner() && angle2DScheme->hasMemory()) angle2DScheme->resize(getAngle2DOwner()->getMaxSize(), getAngle2DOwner()->getSize()) ;
 }
 
 
@@ -412,6 +415,7 @@ void CPSTexturedParticle::setTextureIndexScheme(CPSAttribMaker<sint32> *animOrde
 	}
 
 	_TextureIndexScheme = animOrder ;
+	if (getTextureIndexOwner() && animOrder->hasMemory()) animOrder->resize(getTextureIndexOwner()->getMaxSize(), getTextureIndexOwner()->getSize()) ;
 
 
 	updateMatAndVbForTexture() ;
@@ -571,6 +575,7 @@ void CPSRotated3DPlaneParticle::setPlaneBasisScheme(CPSAttribMaker<CPlaneBasis> 
 		_UsePlaneBasisScheme = true ;
 	}
 	_PlaneBasisScheme = basisMaker ;
+	if (getPlaneBasisOwner() && basisMaker->hasMemory()) basisMaker->resize(getPlaneBasisOwner()->getMaxSize(), getPlaneBasisOwner()->getSize()) ;
 }
 
 void CPSRotated3DPlaneParticle::setPlaneBasis(const CPlaneBasis &basis)
@@ -616,8 +621,84 @@ void CPSRotated3DPlaneParticle::serialPlaneBasisScheme(NLMISC::IStream &f) throw
 	}
 }
 
+////////////////////////////////
+// CPSMaterial implemantation //
+////////////////////////////////
 
 
+CPSMaterial::CPSMaterial()
+{
+	_Mat.setBlend(true) ;
+	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
+	_Mat.setZWrite(false) ;	
+
+}
+
+
+void CPSMaterial::serialMaterial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1) ;
+	if (f.isReading())
+	{
+		TBlendingMode m ;
+		f.serialEnum(m) ;
+		setBlendingMode(m) ;
+	}
+	else
+	{
+		TBlendingMode m = getBlendingMode() ;
+		f.serialEnum(m) ;
+	}
+}
+
+
+void CPSMaterial::setBlendingMode(CPSMaterial::TBlendingMode mode)
+{
+	switch (mode)
+	{		
+		case add:
+			_Mat.setBlend(true) ;
+			_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
+			_Mat.setZWrite(false) ;
+		break ;
+		case modulate:
+			_Mat.setBlend(true) ;
+			_Mat.setBlendFunc(CMaterial::zero, CMaterial::srccolor) ;
+			_Mat.setZWrite(false) ;
+		break ;
+		case alphaBlend:
+			_Mat.setBlend(true) ;
+			_Mat.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha) ;
+			_Mat.setZWrite(false) ;
+		break ;
+		case alphaTest:
+			_Mat.setBlend(false) ;
+			_Mat.setZWrite(true) ;
+			///\TODO add alpha test here
+		break ;
+	}
+}
+
+
+CPSMaterial::TBlendingMode CPSMaterial::getBlendingMode(void) const
+{
+	if (_Mat.getBlend())
+	{
+		CMaterial::TBlend srcBlend = _Mat.getSrcBlend() ;	
+		CMaterial::TBlend destBlend = _Mat.getDstBlend() ;
+
+		if (srcBlend == CMaterial::one && destBlend == CMaterial::one) return add ;
+		if (srcBlend == CMaterial::zero && destBlend == CMaterial::srccolor) return modulate ;
+		if (srcBlend == CMaterial::srcalpha && destBlend == CMaterial::invsrcalpha) return alphaBlend ;
+
+		// unrecognized mode
+		nlassert(0) ;
+	}
+	else
+	{
+		return alphaTest ;
+	}
+}
 
 
 
@@ -627,17 +708,22 @@ void CPSRotated3DPlaneParticle::serialPlaneBasisScheme(NLMISC::IStream &f) throw
 ///////////////////////////
 
 void CPSDot::init(void)
-{	
-	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
-	_Mat.setZWrite(false) ;
-	_Mat.setLighting(false) ;
-	_Mat.setBlend(true) ;
+{		
+	_Mat.setLighting(false) ;	
 	_Mat.setZFunc(CMaterial::less) ;
 	
 	updateMatAndVbForColor() ;
 }
 
 
+void CPSDot::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+{
+	newColorElement(emitterLocated, emitterIndex) ;
+}
+void CPSDot::deleteElement(uint32 index)
+{
+	deleteColorElement(index) ;
+}
 
 
 void CPSDot::updateMatAndVbForColor(void)
@@ -663,6 +749,7 @@ void CPSDot::updateMatAndVbForColor(void)
 void CPSDot::resize(uint32 size)
 {
 	_Vb.setNumVertices(size < dotBufSize ? size : dotBufSize) ;
+	resizeColor(size) ;
 }
 
 void CPSDot::draw(void)
@@ -738,6 +825,7 @@ void CPSDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	CPSParticle::serial(f) ;
 	CPSColoredParticle::serialColorScheme(f) ;
+	serialMaterial(f) ;
 	if (f.isReading())
 	{
 		init() ;		
@@ -765,12 +853,10 @@ CPSQuad::~CPSQuad()
 
 
 
+
 void CPSQuad::init(void)
 {	
-	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
-	_Mat.setZWrite(false) ;
 	_Mat.setLighting(false) ;	
-	_Mat.setBlend(true) ;
 	_Mat.setZFunc(CMaterial::less) ;
 	_Mat.setDoubleSided(true) ;
 
@@ -802,7 +888,11 @@ bool CPSQuad::completeBBox(NLMISC::CAABBox &box) const
 void CPSQuad::resize(uint32 aSize)
 {
 
-	// the size used for buffer can't be hiher that quad buf size
+	resizeSize(aSize) ;
+	resizeColor(aSize) ;
+	resizeTextureIndex(aSize) ;
+
+	// the size used for buffer can't be higher that quad buf size
 	// to have too large buffer will broke the cache
 
 	const uint32 size = aSize > quadBufSize ? quadBufSize : aSize ;
@@ -857,10 +947,11 @@ void CPSQuad::updateMatAndVbForColor(void)
 void CPSQuad::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;		
-	CPSParticle::serial(f) ;
+	CPSParticle::serial(f) ;	
 	CPSSizedParticle::serialSizeScheme(f) ;
 	CPSColoredParticle::serialColorScheme(f) ;
 	CPSTexturedParticle::serialTextureScheme(f) ;
+	serialMaterial(f) ;
 }
 
 
@@ -889,9 +980,8 @@ if (_TexGroup) // if it has a constant texture we are sure it has been setupped 
 
 	if (_UseTextureIndexScheme)
 	{
-		_TextureIndexScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size) ;	
-		 currIndex = &textureIndex[0] ;
-		 currIndexIncr = 1 ;
+		currIndex = (sint32 *) _TextureIndexScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size, true) ;			
+		currIndexIncr = 1 ;
 	}
 	else
 	{
@@ -927,6 +1017,25 @@ CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex), _MotionBlu
 														, _Threshold(0.5f)
 {	
 	_Name = std::string("LookAt") ;
+}
+
+
+void CPSFaceLookAt::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+{
+	CPSQuad::newElement(emitterLocated, emitterIndex) ;
+	newAngle2DElement(emitterLocated, emitterIndex) ;
+}
+	
+void CPSFaceLookAt::deleteElement(uint32 index)
+{
+	CPSQuad::deleteElement(index) ;
+	deleteAngle2DElement(index) ;
+}
+
+void CPSFaceLookAt::resize(uint32 capacity)
+{
+	CPSQuad::resize(capacity) ;
+	resizeAngle2D(capacity) ;
 }
 
 void CPSFaceLookAt::draw(void)
@@ -987,8 +1096,8 @@ void CPSFaceLookAt::draw(void)
 		// constant rotation case
 
 		const uint32 tabIndex = (((uint32) _Angle2D) & 0xff) << 2 ;
-		const CVector v1 = _ParticleSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
-		const CVector v2 = _ParticleSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ;
+		const CVector v1 = rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K ;
+		const CVector v2 = rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K ;
 
 		do
 		{
@@ -1000,8 +1109,7 @@ void CPSFaceLookAt::draw(void)
 
 				if (_UseSizeScheme)
 				{
-					_SizeScheme->make(_Owner, size- leftToDo, pSizes, sizeof(float), toProcess) ;				
-					currentSize = &pSizes[0] ;		
+					currentSize = (float *) _SizeScheme->make(_Owner, size- leftToDo, pSizes, sizeof(float), toProcess, true) ;									
 				}
 				else
 				{
@@ -1210,8 +1318,7 @@ void CPSFaceLookAt::draw(void)
 
 				if (_UseSizeScheme)
 				{
-					_SizeScheme->make(_Owner, size - leftToDo, pSizes, sizeof(float), toProcess) ;									
-					currentSize = &pSizes[0] ;						
+					currentSize = (float *) _SizeScheme->make(_Owner, size - leftToDo, pSizes, sizeof(float), toProcess, true) ;														
 				}
 				else
 				{
@@ -1219,8 +1326,7 @@ void CPSFaceLookAt::draw(void)
 				}
 
 
-				_Angle2DScheme->make(_Owner, size - leftToDo, pAngles, sizeof(float), toProcess) ;	
-				currentAngle = &pAngles[0] ;
+				currentAngle = (float *) _Angle2DScheme->make(_Owner, size - leftToDo, pAngles, sizeof(float), toProcess, true) ;					
 
 				//
 				updateVbColNUVForRender(size - leftToDo, toProcess) ;
@@ -1317,6 +1423,21 @@ void CPSFanLight::initFanLightPrecalc(void)
 
 
 
+void CPSFanLight::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+{
+	newColorElement(emitterLocated, emitterIndex) ;
+	newSizeElement(emitterLocated, emitterIndex) ;
+	newAngle2DElement(emitterLocated, emitterIndex) ;
+}
+void CPSFanLight::deleteElement(uint32 index)
+{
+	deleteColorElement(index) ;
+	deleteSizeElement(index) ;
+	deleteAngle2DElement(index) ;
+}
+
+
+
 void CPSFanLight::setPhaseSpeed(float multiplier)
 {
 	_PhaseSpeed = 256.0f * multiplier ;
@@ -1400,8 +1521,7 @@ void CPSFanLight::draw(void)
 
 				if (_UseSizeScheme)
 				{
-					_SizeScheme->make(_Owner, size - leftToGo, pSizes, sizeof(float), particleBunchSize) ;
-					currentSizePt = pSizes ;
+					currentSizePt  = (float *) _SizeScheme->make(_Owner, size - leftToGo, pSizes, sizeof(float), particleBunchSize, true) ;					
 				}
 				else
 				{
@@ -1410,8 +1530,7 @@ void CPSFanLight::draw(void)
 
 				if (_UseAngle2DScheme)
 				{
-					_Angle2DScheme->make(_Owner, size - leftToGo, pAngles, sizeof(float), particleBunchSize) ;
-					currentAnglePt = pAngles ;
+					currentAnglePt  = (float *) _Angle2DScheme->make(_Owner, size - leftToGo, pAngles, sizeof(float), particleBunchSize, true) ;					
 				}
 				else
 				{
@@ -1426,7 +1545,7 @@ void CPSFanLight::draw(void)
 
 				if (_UseSizeScheme)
 				{
-					_SizeScheme->make(_Owner, size - leftToGo, pSizes, sizeof(float), leftToGo) ;
+					currentSizePt  = (float *) (_SizeScheme->make(_Owner, size - leftToGo, pSizes, sizeof(float), leftToGo, true)) ;
 					currentSizePt = pSizes ;
 				}
 				else
@@ -1436,8 +1555,7 @@ void CPSFanLight::draw(void)
 
 				if (_UseAngle2DScheme)
 				{
-					_Angle2DScheme->make(_Owner, size - leftToGo, pAngles, sizeof(float), leftToGo) ;
-					currentAnglePt = pAngles ;
+					currentAnglePt = (float *) (_Angle2DScheme->make(_Owner, size - leftToGo, pAngles, sizeof(float), leftToGo, true)) ;					
 				}
 				else
 				{
@@ -1508,6 +1626,7 @@ void CPSFanLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	CPSSizedParticle::serialSizeScheme(f) ;	
 	CPSRotated2DParticle::serialAngle2DScheme(f) ;
 	f.serial(_NbFans) ;
+	serialMaterial(f) ;
 	if (f.isReading())
 	{
 		init() ;		
@@ -1551,6 +1670,9 @@ void CPSFanLight::setNbFans(uint32 nbFans)
 
 void CPSFanLight::resize(uint32 size)
 {	
+	resizeColor(size) ;
+	resizeAngle2D(size) ;
+	resizeSize(size) ;
 	_Vb.setNumVertices(size * (1 + _NbFans)) ;
 		
 	delete _IndexBuffer ;		
@@ -1606,12 +1728,9 @@ void CPSFanLight::resize(uint32 size)
 
 void CPSFanLight::init(void)
 {
-	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
-	_Mat.setZWrite(false) ;
 	_Mat.setLighting(false) ;	
-	_Mat.setBlend(true) ;
 	_Mat.setZFunc(CMaterial::less) ;
-
+	_Mat.setDoubleSided(true) ;
 
 	updateMatAndVbForColor() ;
 }
@@ -1646,12 +1765,9 @@ CPSTailDot::CPSTailDot(uint32 nbSegmentInTail) : _TailNbSeg(nbSegmentInTail), _C
 
 void CPSTailDot::init(void)
 {
-	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
-	_Mat.setZWrite(false) ;
-	_Mat.setLighting(false) ;
-	_Mat.setBlend(true) ;
+	_Mat.setLighting(false) ;	
 	_Mat.setZFunc(CMaterial::less) ;
-
+	_Mat.setDoubleSided(true) ;
 
 	_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR ) ;	
 }
@@ -1821,6 +1937,7 @@ void CPSTailDot::draw(void)
 
 void CPSTailDot::resize(uint32 size)
 {	
+	resizeColor(size) ;
 	resizeVb(_TailNbSeg, size) ;	
 }
 
@@ -1952,10 +2069,10 @@ void CPSTailDot::setupColor(void)
 }
 
 
-void CPSTailDot::newElement(void)
+void CPSTailDot::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
 	
-
+		newColorElement(emitterLocated, emitterIndex) ;
 
 	// if we got a constant color, everything has been setupped before
 
@@ -2032,6 +2149,8 @@ void CPSTailDot::newElement(void)
 
 void CPSTailDot::deleteElement(uint32 index)
 {
+
+	deleteColorElement(index) ;
 	// we copy the last element datas to this one data
 	
 	// vertex size
@@ -2076,6 +2195,8 @@ void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	CPSParticle::serial(f) ;
 	CPSColoredParticle::serialColorScheme(f) ;	
 	f.serial(_TailNbSeg, _ColorFading, _SystemBasisEnabled) ;
+
+	serialMaterial(f) ;
 
 	// In this version we don't save the vb state, as we probably won't need it
 	// we just rebuild the vb
@@ -2261,11 +2382,8 @@ void CPSRibbon::getShape(CVector *shape) const
 
 void CPSRibbon::init(void)
 {
-	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
-	_Mat.setZWrite(false) ;
-	_Mat.setLighting(false) ;
-	_Mat.setBlend(true) ;
-	_Mat.setZFunc(CMaterial::less) ;	
+	_Mat.setLighting(false) ;	
+	_Mat.setZFunc(CMaterial::less) ;
 	_Mat.setDoubleSided(true) ;
 	
 	init(_AliveRibbons) ;
@@ -2685,6 +2803,9 @@ void CPSRibbon::draw(void)
 
 void CPSRibbon::resize(uint32 size)
 {		
+	resizeAngle2D(size) ;
+	resizeSize(size) ;
+	resizeColor(size) ;
 	resizeVb(_AliveRibbons) ;	
 	if (_DyingRibbons)
 	{
@@ -2911,18 +3032,26 @@ void CPSRibbon::setupColor(CRibbonsDesc &rb)
 }
 
 
-void CPSRibbon::newElement(void)
+void CPSRibbon::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {	
 	
 	const uint32 index = _Owner->getNewElementIndex() ; 
 
 	initRibbonPos(_AliveRibbons, index, _Owner->getPos()[index] ) ; 
+	newColorElement(emitterLocated, emitterIndex) ;
+	newSizeElement(emitterLocated, emitterIndex) ;
+	newAngle2DElement(emitterLocated, emitterIndex) ;
+
 }
 		
 
 
 void CPSRibbon::deleteElement(uint32 index)
 {
+	deleteColorElement(index) ;
+	deleteSizeElement(index) ;
+	deleteAngle2DElement(index) ;
+
 		// if the light must persist after death, we must copy it in the dying ribbon tab
 	if (_DyingRibbons)
 	{
@@ -3035,6 +3164,7 @@ void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	CPSSizedParticle::serialSizeScheme(f) ;
 	CPSRotated2DParticle::serialAngle2DScheme(f) ;
 	f.serial( _ColorFading, _SystemBasisEnabled) ;
+	serialMaterial(f) ;
 
 
 	// we don't save dying ribbon pos in this version
@@ -3248,8 +3378,7 @@ void CPSFace::draw(void)
 
 			if (_UseSizeScheme)
 			{				
-				_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess) ;				
-				ptSize = &sizeBuf[0] ;
+				ptSize = (float *) (_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess, true)) ;								
 			}
 			else
 			{	
@@ -3356,8 +3485,7 @@ void CPSFace::draw(void)
 
 			if (_UseSizeScheme)
 			{				
-				_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess) ;				
-				ptSize = &sizeBuf[0] ;
+				ptSize  = (float *) (_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess, true)) ;								
 			}
 			else
 			{	
@@ -3366,8 +3494,7 @@ void CPSFace::draw(void)
 
 			if (_UsePlaneBasisScheme)
 			{
-				_PlaneBasisScheme->make(_Owner, size - leftFaces, planeBasis, sizeof(CPlaneBasis), toProcess) ;
-				currBasis = &planeBasis[0] ;
+				currBasis = (CPlaneBasis *) (_PlaneBasisScheme->make(_Owner, size - leftFaces, planeBasis, sizeof(CPlaneBasis), toProcess, true)) ;				
 			}
 			else
 			{
@@ -3535,8 +3662,10 @@ void CPSFace::fillIndexesInPrecompBasis(void)
 
 
 
-void CPSFace::newElement(void)
+void CPSFace::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
+	CPSQuad::newElement(emitterLocated, emitterIndex) ;
+	newPlaneBasisElement(emitterLocated, emitterIndex) ;
 	const uint32 nbConf = _PrecompBasis.size() ;
 	if (nbConf) // do we use precomputed basis ?
 	{
@@ -3547,6 +3676,8 @@ void CPSFace::newElement(void)
 	
 void CPSFace::deleteElement(uint32 index)
 {
+	CPSQuad::deleteElement(index) ;
+	deletePlaneBasisElement(index) ;
 	if (_PrecompBasis.size()) // do we use precomputed basis ?
 	{
 		// replace ourself by the last element...
@@ -3556,6 +3687,7 @@ void CPSFace::deleteElement(uint32 index)
 	
 void CPSFace::resize(uint32 size)
 {
+	resizePlaneBasis(size) ;
 	if (_PrecompBasis.size()) // do we use precomputed basis ?
 	{
 		_IndexInPrecompBasis.resize(size) ;
@@ -3617,9 +3749,11 @@ void CPSShockWave::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialVersion(1) ;
 	CPSParticle::serial(f) ;
 	CPSColoredParticle::serialColorScheme(f) ;
+	CPSSizedParticle::serialSizeScheme(f) ;
 	CPSTexturedParticle::serialTextureScheme(f) ;
 	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f) ;
 	CPSRotated2DParticle::serialAngle2DScheme(f) ;
+	serialMaterial(f) ;
 	f.serial(_NbSeg, _RadiusCut) ;
 	init() ;
 
@@ -3682,8 +3816,7 @@ void CPSShockWave::draw(void)
 
 		if (_UseSizeScheme)
 		{
-			_SizeScheme->make(_Owner, size - leftToDo, (void *) sizes, sizeof(float), toProcess) ;
-			ptCurrSize = &sizes[0] ;
+			ptCurrSize  = (float *) (_SizeScheme->make(_Owner, size - leftToDo, (void *) sizes, sizeof(float), toProcess, true)) ;			
 		}
 		else
 		{
@@ -3692,8 +3825,7 @@ void CPSShockWave::draw(void)
 
 		if (_UsePlaneBasisScheme)
 		{
-			_PlaneBasisScheme->make(_Owner, size - leftToDo, (void *) planeBasis, sizeof(CPlaneBasis), toProcess) ;
-			ptCurrBasis = &planeBasis[0] ;
+			ptCurrBasis  = (CPlaneBasis *) (_PlaneBasisScheme->make(_Owner, size - leftToDo, (void *) planeBasis, sizeof(CPlaneBasis), toProcess, true)) ;			
 		}
 		else
 		{
@@ -3702,8 +3834,7 @@ void CPSShockWave::draw(void)
 
 		if (_UseAngle2DScheme)
 		{
-			_Angle2DScheme->make(_Owner, size - leftToDo, (void *) angles, sizeof(float), toProcess) ;
-			ptCurrAngle = &angles[0] ;
+			ptCurrAngle  = (float *) (_Angle2DScheme->make(_Owner, size - leftToDo, (void *) angles, sizeof(float), toProcess, true)) ;			
 		}
 		else
 		{
@@ -3771,13 +3902,9 @@ bool CPSShockWave::completeBBox(NLMISC::CAABBox &box) const
 	
 void CPSShockWave::init(void)
 {
-	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
-	_Mat.setZWrite(false) ;
 	_Mat.setLighting(false) ;	
-	_Mat.setBlend(true) ;
 	_Mat.setZFunc(CMaterial::less) ;
 	_Mat.setDoubleSided(true) ;
-
 
 	updateMatAndVbForColor() ;
 	updateMatAndVbForTexture() ;
@@ -3810,8 +3937,7 @@ void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size)
 
 		if (_UseTextureIndexScheme)
 		{
-			_TextureIndexScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size) ;
-			currIndex = currIndex = &textureIndex[0] ; 
+			currIndex  = (sint32 *) (_TextureIndexScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size, true)) ;			
 			currIndexIncr = 1 ;
 		}
 		else
@@ -3872,20 +3998,30 @@ void CPSShockWave::updateMatAndVbForTexture(void)
 
 
 
-void CPSShockWave::newElement(void)
+void CPSShockWave::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
-
+	newColorElement(emitterLocated, emitterIndex) ;
+	newTextureIndexElement(emitterLocated, emitterIndex) ;
+	newSizeElement(emitterLocated, emitterIndex) ;
+	newAngle2DElement(emitterLocated, emitterIndex) ;
 }
 	
 void CPSShockWave::deleteElement(uint32 index)
 {
-
+	deleteColorElement(index) ;
+	deleteTextureIndexElement(index) ;
+	deleteSizeElement(index) ;
+	deleteAngle2DElement(index) ;
 }
 
 
 void CPSShockWave::resize(uint32 aSize)
 {
-		
+	resizeColor(aSize) ;
+	resizeTextureIndex(aSize) ;
+	resizeSize(aSize) ;
+	resizeAngle2D(aSize) ;
+
 	const uint32 size = aSize > shockWaveBufSize ? shockWaveBufSize : aSize ;
 
 	_Vb.setNumVertices((size * (_NbSeg + 1)) << 1 ) ;
@@ -4015,8 +4151,11 @@ void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 
-void CPSMesh::newElement(void)
+void CPSMesh::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
+	newPlaneBasisElement(emitterLocated, emitterIndex) ;
+	newAngle2DElement(emitterLocated, emitterIndex) ;
+	newSizeElement(emitterLocated, emitterIndex) ;
 
 	nlassert(_Owner) ;
 	nlassert(_Owner->getOwner()) ;
@@ -4048,6 +4187,10 @@ void CPSMesh::newElement(void)
 	
 void CPSMesh::deleteElement(uint32 index)
 {	
+	deleteSizeElement(index) ;
+	deleteAngle2DElement(index) ;
+	deletePlaneBasisElement(index) ;
+
 	// check wether CTransformShape have been instanciated
 	if (_Invalidated) return ;
 
@@ -4123,8 +4266,7 @@ void CPSMesh::draw(void)
 
 		if (_UseSizeScheme)
 		{
-			_SizeScheme->make(_Owner, size - leftToDo, &sizes[0], sizeof(float), toProcess) ;
-			ptCurrSize = sizes ;
+			ptCurrSize  = (float *) (_SizeScheme->make(_Owner, size - leftToDo, &sizes[0], sizeof(float), toProcess, true)) ;			
 		}
 		else
 		{
@@ -4133,8 +4275,7 @@ void CPSMesh::draw(void)
 
 		if (_UseAngle2DScheme)
 		{
-			_Angle2DScheme->make(_Owner, size - leftToDo, &angles[0], sizeof(float), toProcess) ;
-			ptCurrAngle = angles ;
+			ptCurrAngle  = (float *) (_Angle2DScheme->make(_Owner, size - leftToDo, &angles[0], sizeof(float), toProcess, true)) ;			
 		}
 		else
 		{
@@ -4144,8 +4285,7 @@ void CPSMesh::draw(void)
 
 		if (_UsePlaneBasisScheme)
 		{
-			_PlaneBasisScheme->make(_Owner, size - leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess) ;
-			ptBasis = planeBasis ;
+			ptBasis  = (CPlaneBasis *) (_PlaneBasisScheme->make(_Owner, size - leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess, true)) ;			
 		}
 		else
 		{
@@ -4201,6 +4341,9 @@ void CPSMesh::draw(void)
 
 void CPSMesh::resize(uint32 size)
 {
+	resizeSize(size) ;
+	resizeAngle2D(size) ;
+	resizePlaneBasis(size) ;
 	_Instances.resize(size) ;
 }
 
@@ -4734,8 +4877,7 @@ void CPSConstraintMesh::draw(void)
 
 			if (_UseSizeScheme)
 			{
-				_SizeScheme->make(_Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess) ;
-				ptCurrSize = sizes ;
+				ptCurrSize = (float *) (_SizeScheme->make(_Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess, true)) ;				
 			}
 			else
 			{
@@ -4842,8 +4984,7 @@ void CPSConstraintMesh::draw(void)
 
 			if (_UseSizeScheme)
 			{
-				_SizeScheme->make(_Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess) ;
-				ptCurrSize = sizes ;
+				ptCurrSize  = (float *) (_SizeScheme->make(_Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess, true)) ;				
 			}
 			else
 			{
@@ -4852,8 +4993,7 @@ void CPSConstraintMesh::draw(void)
 
 			if (_UsePlaneBasisScheme)
 			{
-				_PlaneBasisScheme->make(_Owner, size -leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess) ;
-				ptBasis = planeBasis ;
+				ptBasis = (CPlaneBasis *) (_PlaneBasisScheme->make(_Owner, size -leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess, true)) ;				
 			}
 			else
 			{
@@ -4957,8 +5097,10 @@ void CPSConstraintMesh::draw(void)
 }
 
 
-void CPSConstraintMesh::newElement(void)
+void CPSConstraintMesh::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
+	newSizeElement(emitterLocated, emitterIndex) ;
+	newPlaneBasisElement(emitterLocated, emitterIndex) ;
 	// TODO : avoid code cuplication with CPSFace ...
 	const uint32 nbConf = _PrecompBasis.size() ;
 	if (nbConf) // do we use precomputed basis ?
@@ -4970,6 +5112,8 @@ void CPSConstraintMesh::newElement(void)
 	
 void CPSConstraintMesh::deleteElement(uint32 index)
 {
+	deleteSizeElement(index) ;
+	deletePlaneBasisElement(index) ;
 	// TODO : avoid code cuplication with CPSFace ...
 	if (_PrecompBasis.size()) // do we use precomputed basis ?
 	{
@@ -4980,6 +5124,8 @@ void CPSConstraintMesh::deleteElement(uint32 index)
 	
 void CPSConstraintMesh::resize(uint32 size)
 {
+	resizeSize(size) ;
+	resizePlaneBasis(size) ;
 	// TODO : avoid code cuplication with CPSFace ...
 	if (_PrecompBasis.size()) // do we use precomputed basis ?
 	{

@@ -18,13 +18,14 @@
  */
 
 /*
- * $Id: base_socket.cpp,v 1.2 2000/09/21 14:12:10 cado Exp $
+ * $Id: base_socket.cpp,v 1.3 2000/09/25 11:14:23 cado Exp $
  *
  * Implementation of CBaseSocket
  */
 
 #include "nel/net/base_socket.h"
-
+#include "nel/misc/log.h"
+extern NLMISC::CLog Log;
 
 #ifdef NL_OS_WINDOWS
 	#include <winsock2.h>
@@ -107,12 +108,14 @@ void CBaseSocket::close()
 {
 	if ( _Sock != INVALID_SOCKET )
 	{
+		shutdown( _Sock, SD_BOTH ); // SD_BOTH defined as 2 on Unix ?
+		
 		#ifdef NL_OS_WINDOWS
 			closesocket( _Sock );
 		#elif defined NL_OS_LINUX
 			::close( _Sock );
 		#endif
-	_Log.display( "Socket %d closed at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
+	Log.display( "Socket %d closed at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
 	_Sock = INVALID_SOCKET;
 	}
 }
@@ -124,25 +127,20 @@ void CBaseSocket::close()
 bool CBaseSocket::dataAvailable() throw (ESocket)
 {
 	fd_set fdset;
-	fdset.fd_count = 1; // FD_ZERO
-	fdset.fd_array[0] = _Sock; //FD_SET
-	timeval tv = {0,0};
+	FD_ZERO( &fdset );
+	FD_SET( _Sock, &fdset );
+	timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
 
-	// Test for message received. Note: 1st argument of select ignored on Windows, I don't know on Unix.
-	// libsock++ says _Sock+1
-	int res;
-	res = select( 0, &fdset, NULL, NULL, &tv );
-	if ( res > 0 ) {
-		return true;
-	}
-	else
+	// Test for message received.
+	int res = select( _Sock+1, &fdset, NULL, NULL, &tv );
+	switch ( res  )
 	{
-		if ( res == -1 )
-		{
-			throw ESocket("dataAvailable(): select failed");
-		}
+		case  0 : return false;
+		case -1 : throw ESocket("dataAvailable(): select failed"); return false;
 	}
-	return false;
+	return true;
 }
 
 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: displayer.h,v 1.1 2000/09/21 12:31:16 lecroart Exp $
+ * $Id: displayer.h,v 1.2 2000/09/25 11:14:23 cado Exp $
  *
  * Some easy displayers
  */
@@ -34,8 +34,11 @@ public:
 	/// Constructor
 	IDisplayer() {}
 
+	/// Destructor
+	virtual ~IDisplayer() {}
+
 	/// Display the string where it does.
-	virtual void display (const std::string str) = 0;
+	virtual void display (const std::string& str) = 0;
 };
 
 
@@ -54,7 +57,7 @@ public:
 	CStdDisplayer() {}
 
 	/// Display the string to stdout and OutputDebugString on Windows
-	virtual void display (const std::string str);
+	virtual void display (const std::string& str);
 };
 
 
@@ -69,10 +72,10 @@ class CFileDisplayer : virtual public IDisplayer
 public:
 
 	/// Constructor
-	CFileDisplayer(const std::string fileName) { _FileName = fileName; }
+	CFileDisplayer(const std::string& fileName) { _FileName = fileName; }
 
 	/// Put the string into the file.
-	virtual void display (const std::string str);
+	virtual void display (const std::string& str);
 
 private:
 	std::string _FileName;
@@ -92,7 +95,7 @@ public:
 	CMsgBoxDisplayer() {}
 
 	/// Put the string into the file.
-	virtual void display (const std::string str);
+	virtual void display (const std::string& str);
 };
 
 

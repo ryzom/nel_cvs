@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.cpp,v 1.5 2000/09/21 09:45:09 cado Exp $
+ * $Id: message.cpp,v 1.6 2000/09/25 11:14:23 cado Exp $
  *
  * Implementation of CMessage
  */
@@ -202,7 +202,10 @@ void CMessage::decode( CMessage& alldata )
 		msgname[msgnamelen] = '\0';
 	}
 	setHeader( msgtype, std::string( msgname!=NULL ? msgname : "" ) );
-	delete [] msgname;
+	if ( msgname != NULL )
+	{
+		delete [] msgname;
+	}
 
 	// 3. Read message payload size
 	uint32 msgsize;

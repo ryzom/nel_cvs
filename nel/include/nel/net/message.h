@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.h,v 1.4 2000/09/21 09:45:09 cado Exp $
+ * $Id: message.h,v 1.5 2000/09/25 11:14:23 cado Exp $
  *
  * Interface of CMessage
  */
@@ -42,7 +42,7 @@ class EStreamOverflow : public NLMISC::EStream
 
 
 /// Iterator on vector<uint8>
-typedef std::vector<uint8>::iterator it8;
+typedef std::vector<uint8>::iterator It8;
 
 
 /**
@@ -182,7 +182,7 @@ private:
 	static uint32		_MaxHeaderLength;
 
 	std::vector<uint8>	_Buffer;
-	it8					_BufPos;
+	It8					_BufPos;
 	sint16				_MsgType;
 	std::string			_MsgName;
 

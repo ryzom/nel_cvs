@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.5 2000/09/21 09:45:09 cado Exp $
+ * $Id: inet_address.cpp,v 1.6 2000/09/25 11:14:23 cado Exp $
  *
  * Implementation for CInetAddress.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -100,6 +100,7 @@ CInetAddress& CInetAddress::operator=( const CInetAddress& other )
  */
 void CInetAddress::init()
 {
+	CBaseSocket::init();
 	_SockAddr = new sockaddr_in;
 	_SockAddr->sin_family = AF_INET;
 	_SockAddr->sin_port = 0; // same as htons(0)

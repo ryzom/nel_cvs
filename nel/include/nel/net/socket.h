@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.6 2000/09/21 12:31:54 cado Exp $
+ * $Id: socket.h,v 1.7 2000/09/25 11:14:23 cado Exp $
  *
  * Interface for CSocket
  */
@@ -38,7 +38,14 @@ class CMessage;
 
 /**
  * Client socket (for TCP connected streams). Allows to send/receive CMessage objects.
- * \todo Advanced error handling
+ * Note: there are two methods for receiving : receive() which is blocking, and
+ * received() which is non-blocking.
+ *
+ * The "logging" boolean value is necessary because in this implementation we always log
+ * to one single global CLog object : there is not one CLog object per socket. Therefore
+ * we must prevent the socket used in CNetDisplayer from logging itself... otherwise we
+ * would have an infinite recursion.
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -47,8 +54,8 @@ class CSocket : public CBaseSocket
 {
 public:
 
-	/// Constructor
-	CSocket();
+	/// Constructor. Disable logging if the server socket object is used by the logging system.
+	CSocket( bool logging = true );
 
 	/// Construct a CSocket object using an already connected socket and its associated address
 	CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket);
@@ -62,14 +69,24 @@ public:
 	/// Connection
 	void	connect( const CInetAddress& addr ) throw (ESocket);
 
+	/// Returns if the socket is connected
+	bool	connected() const
+	{
+		return _Connected;
+	}
+
 	/// Sends a message
 	void	send( const CMessage& message ) throw(ESocket);
 
 	/// Checks if there are some data to receive
 	bool	dataAvailable() throw (ESocket);
 
-	/// Receives data (returns false if !dataAvailable() and does not block).
+	/// Receives data, or blocks if !dataAvailable()). Returns false if !connected().
 	bool	receive( CMessage& message ) throw (ESocket);
+
+	/// Receives data (returns false if !dataAvailable() and does not block).
+	bool	received( CMessage& message ) throw (ESocket);
+
 
 	/// Returns the address of the remote host
 	const CInetAddress& remoteAddr() const
@@ -77,10 +94,16 @@ public:
 		return _RemoteAddr;
 	}
 
+protected:
+
+	/// Helper method for receive() and received()
+	void	doReceive( CMessage& message ) throw (ESocket);
+
 private:
 
 	CInetAddress	_RemoteAddr;
 	bool			_Connected;
+	bool			_Logging;
 
 };
 

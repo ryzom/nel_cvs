@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.h,v 1.4 2000/09/21 09:45:09 cado Exp $
+ * $Id: inet_address.h,v 1.5 2000/09/25 11:14:23 cado Exp $
  *
  * Interface for CInetAddress
  */
@@ -99,7 +99,7 @@ public:
 
 private:
 
-	// Constructor contents
+	// Called in all constructors. Calls CBaseSocket::init().
 	void				init();
 
 	std::string	_HostName;

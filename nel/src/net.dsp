@@ -106,11 +106,27 @@ SOURCE=..\include\nel\net\inet_address.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\log_service.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\log_service.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\message.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\net\message.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\net_displayer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\net_displayer.h
 # End Source File
 # Begin Source File
 

@@ -18,14 +18,19 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.5 2000/09/21 14:12:10 cado Exp $
+ * $Id: msg_socket.cpp,v 1.6 2000/09/25 11:14:23 cado Exp $
  *
  * Implementation of CServerSocket.
- * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
- * from which I took some ideas
+ * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
+ * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  */
 
 #include "nel/net/server_socket.h"
+#include "nel/net/message.h"
+#include "nel/misc/log.h"
+extern NLMISC::CLog Log;
+
+using namespace std;
 
 
 #ifdef NL_OS_WINDOWS
@@ -50,7 +55,10 @@ using namespace std;
 namespace NLNET
 {
 
-	
+
+long CServerSocket::NiceLevel = 1;
+
+
 /*
  * Constructor
  */
@@ -105,7 +113,7 @@ void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
 	{
 		throw ESocket("Server socket creation failed");
 	}
-	_Log.display( "Socket %d open as a server socket\n", _Sock );
+	Log.display( "Socket %d open as a server socket\n", _Sock );
 
 	// Bind socket to port	
 	if ( ::bind( _Sock, (const sockaddr *)addr.sockAddr(), sizeof(sockaddr_in) ) != 0 )
@@ -124,18 +132,76 @@ void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
 	}
 
 	// Listen
-	const int backlog = 5; // maximum length of the queue of pending connections
-	if ( ::listen( _Sock, backlog ) != 0 )
+	if ( ::listen( _Sock, SOMAXCONN ) != 0 ) // SOMAXCONN = maximum length of the queue of pending connections
 	{
 		throw ESocket("Unable to listen on specified port");
 	}
-	_Log.display( "Socket %d listening at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
+	Log.display( "Socket %d listening at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
 }
 
 
-/* Wait for a client to connect, and returns a reference on a socket connected to the client.
- * The CSocket object is maintained by the CServerObject.
+	/** Tests if a client requests/closes connection or a message is received from a connected client.
+	 *
+	 * \li If a new client requests a connection, the server calls accept() (i.e. it creates a new client socket, which
+	 * is added to the list of connections). It then calls the callback function. Its argument "message" is NULL.
+	 * \li If a connected client closes connection, it calls the callback function. Its argument "message" is NULL.
+	 * Then the client socket is removed from the list of connections and deleted.
+	 * \li If a message is received from a connected client, it puts it in the input message that is passed,
+	 * as a pointer, in argument of the callback function. The callback function needs not delete it.
+	 *
+	 * \param cbProcessReceivedMsg Callback function to provide. Example: see header file.
+	 */
+void CServerSocket::receive( void* caller, TCbProcessReceivedMsg cbProcessReceivedMsg )
+{
+	// Check data available on all sockets, including the server socket
+	vector<bool> available;
+	bool ringing;
+	if ( getDataAvailableStatus( ringing, available ) )
+	{
+
+		if ( ringing )
+		{
+			// Accept connection request
+			cbProcessReceivedMsg( caller, accept(), NULL );
+		}
+
+		// Iterate on the sockets where data are available
+		// PROBLEM: Erasing a member of the vector !
+		uint32 i; // an iterator is not preferable here
+		uint32 availsize = available.size();
+		for ( i=0; i!=availsize; i++ )
+		{
+			if ( available[i] )
+			{
+				CSocket *sock = _Connections[i];
+				try
+				{
+					// Receive message from a connected client
+					CMessage msg( true );
+					sock->receive( msg );
+					cbProcessReceivedMsg( caller, *sock, &msg );
+				}
+				catch ( ESocket& )
+				{
+					// Handle a connection closure (gracefull or not), when
+					// receive() has thrown an exception. Note: this could be done by boolean result
+					sock->close();
+					cbProcessReceivedMsg( caller, *sock, NULL );
+					_Connections.erase( _Connections.begin() + i );
+					delete sock;
+					availsize--;
+					i--; // ok, not very smart
+				}
+			}
+		}
+	}
+}
+
+
+/* Wait for a client to connect, then creates a new socket connected to the client, and adds it to the list of connections.
+ * It returns a reference on this socket object, which is maintained by the CServerSocket object.
  * Usage : \code CSocket& sock = servsock.accept(); \endcode
+ * If you don't want the server thread to block, use receive() instead.
  */
 CSocket& CServerSocket::accept() throw (ESocket)
 {
@@ -153,8 +219,58 @@ CSocket& CServerSocket::accept() throw (ESocket)
 	addr.setSockAddr( &saddr );
 	CSocket *connection = new CSocket( newsock, addr );
 	_Connections.push_back( connection );
-	_Log.display( "Socket %d accepted an incoming connection from %s/%hu and opened socket %d\n", _Sock, addr.ipAddress().c_str(), addr.port(), newsock );
+	Log.display( "Socket %d accepted an incoming connection from %s/%hu and opened socket %d\n", _Sock, addr.ipAddress().c_str(), addr.port(), newsock );
 	return *connection;
+}
+
+
+/* Returns if the listening socket of the server and the connection sockets have incoming data available.
+ * \param ringing [out] True if the listening socket has data (e.g. a connection request)
+ * \param ringing [out] Vector of bool telling which connections have incoming data.
+ * You don't need to initialize "available".
+ */
+bool CServerSocket::getDataAvailableStatus( bool& ringing, std::vector<bool>& available )
+{
+	ringing = false;
+	available.assign( _Connections.size(), false );
+
+	// Put all socket descriptors in select list and find maximum descriptor number
+	SOCKET descmax = _Sock;
+	fd_set readers, writers;
+	FD_ZERO (&readers);
+	FD_ZERO (&writers);
+	FD_SET ( _Sock, &readers );
+	vector<CSocket*>::iterator itps;
+	for ( itps=_Connections.begin(); itps!=_Connections.end(); itps++ )
+	{
+		FD_SET( (*itps)->descriptor(), &readers );
+		if ( (*itps)->descriptor() > descmax )
+		{
+			descmax = (*itps)->descriptor();
+		}
+	}
+
+	// Do select
+	timeval tv;
+	tv.tv_sec = CServerSocket::NiceLevel;
+	tv.tv_usec = 0; ;
+	int res = select( descmax+1, &readers, NULL, NULL, &tv );
+	switch ( res  )
+	{
+		case  0 : return false;
+		case -1 : throw ESocket("getDataAvailableStatus(): select failed"); return false;
+	}
+	
+	// Get results
+	ringing = (FD_ISSET( _Sock, &readers ) != 0);
+	for ( itps = _Connections.begin(); itps!=_Connections.end(); itps++ )
+	{
+		if ( FD_ISSET( (*itps)->descriptor(), &readers ) !=0 )
+		{
+			available[itps-_Connections.begin()] = true;
+		}
+	}
+	return true;
 }
 
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.7 2000/09/21 14:12:10 cado Exp $
+ * $Id: socket.cpp,v 1.8 2000/09/25 11:14:23 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -27,6 +27,8 @@
 
 #include "nel/net/socket.h"
 #include "nel/net/message.h"
+#include "nel/misc/log.h"
+extern NLMISC::CLog Log;
 
 /*#include <iostream> //debug
 using namespace std;*/
@@ -55,9 +57,10 @@ namespace NLNET
 /*
  * Constructor
  */
-CSocket::CSocket() :
+CSocket::CSocket( bool logging ) :
 	CBaseSocket(),
-	_Connected( false )
+	_Connected( false ),
+	_Logging( logging )
 {
 }
 
@@ -122,7 +125,10 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 	{
 		throw ESocket("Socket creation failed");
 	}
-	_Log.display( "Socket %d open\n", _Sock );
+	if ( _Logging )
+	{
+		Log.display( "Socket %d open\n", _Sock );
+	}
 
 	// Connection
 	// log( "Trying TCP connection on " + addr.ipAddress() );
@@ -130,7 +136,10 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 	{
 		throw ESocket("Connection failed");
 	}
-	_Log.display( "Socket %d connected to %s/%hu\n", _Sock, addr.ipAddress().c_str(), addr.port() );
+	if ( _Logging )
+	{
+		Log.display( "Socket %d connected to %s/%hu\n", _Sock, addr.ipAddress().c_str(), addr.port() );
+	}
 
 	// Get local socket name
 	sockaddr saddr;
@@ -140,7 +149,10 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 		// log( "Network error: getsockname() failed (CSocket::connect)" );
 	}
 	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
-	_Log.display( "Socket %d is at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
+	if ( _Logging )
+	{
+		Log.display( "Socket %d is at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
+	}
 	_RemoteAddr = addr;
 	_Connected = true;
 }
@@ -157,7 +169,10 @@ void CSocket::send( const CMessage& message ) throw(ESocket)
 	{
 		throw ESocket("Unable to send message");
 	}
-	_Log.display( "Socket %d sent %d bytes\n", _Sock, alldata.length() );
+	if ( _Logging )
+	{
+		Log.display( "Socket %d sent %d bytes\n", _Sock, alldata.length() );
+	}
 
 	/*// Old code
 
@@ -214,22 +229,54 @@ bool CSocket::dataAvailable() throw (ESocket)
 
 
 /*
- * Receives data (returns false if !dataAvailable()).
+ * Receives data, or blocks if !dataAvailable()). Returns false if !connected().
  */
 bool CSocket::receive( CMessage& message ) throw (ESocket)
+{
+	if ( ! _Connected )
+	{
+		return false;
+	}
+
+	// Receive incoming message
+	doReceive( message );
+
+	return true;
+}
+
+
+/*
+ * Receives data (returns false if !dataAvailable() and does not block).
+ */
+bool CSocket::received( CMessage& message ) throw (ESocket)
 {
 	if ( ! dataAvailable() )
 	{
 		return false;
 	}
 
-	// Receive incoming message (this is not done by CMessage::decode())
+	// Receive incoming message
+	doReceive( message );
 
+	return true;
+}
+
+  
+/*
+ * Helper method for receive() and received()
+ */
+void CSocket::doReceive( CMessage& message ) throw (ESocket)
+{
+	// Note : this is not done by CMessage::decode()
+	
 	// 1. Read message type
 	sint16 msgtype;
-	if ( ::recv( _Sock, (char*)&msgtype, sizeof(msgtype), 0 ) == SOCKET_ERROR )
+	uint32 brecvd;
+	brecvd = ::recv( _Sock, (char*)&msgtype, sizeof(msgtype), 0 );
+	switch ( brecvd )
 	{
-		throw ESocket("Cannot receive msgtype");
+		case 0 :			throw ESocket("Connection closed"); // could be return false if function returned a boolean
+		case SOCKET_ERROR :	throw ESocket("Cannot receive msgtype");
 	}
 	NLMISC_BSWAP16(msgtype);
 	//cout << msgtype << " ";
@@ -257,14 +304,18 @@ bool CSocket::receive( CMessage& message ) throw (ESocket)
 
 	// 4. Read all buffer and dismiss
 	message.setHeader( msgtype, std::string( msgname!=NULL ? msgname : "" ) );
-	delete [] msgname;
+	if ( msgname != NULL )
+	{
+		delete [] msgname;
+	}
 	if ( ::recv( _Sock, (char*)(message.bufferToFill(msgsize)), msgsize, 0 ) == SOCKET_ERROR )
 	{
 		throw ESocket("Cannot receive message");
 	}
-	_Log.display( "Socket %d received %d bytes\n", _Sock, sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
-
-	return true;
+	if ( _Logging )
+	{
+		Log.display( "Socket %d received %d bytes\n", _Sock, sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
+	}
 }
 
 

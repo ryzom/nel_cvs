@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: displayer.cpp,v 1.1 2000/09/21 12:30:15 lecroart Exp $
+ * $Id: displayer.cpp,v 1.2 2000/09/25 11:14:23 cado Exp $
  *
  * Little easy displayers implementation
  */
@@ -26,7 +26,7 @@
 namespace NLMISC
 {
 
-void CStdDisplayer::display (const std::string str)
+void CStdDisplayer::display (const std::string& str)
 {
 	printf("%s", str.c_str ());
 	
@@ -37,7 +37,7 @@ void CStdDisplayer::display (const std::string str)
 
 //****************************************************************************
 
-void CFileDisplayer::display (const std::string str)
+void CFileDisplayer::display (const std::string& str)
 {
 	if (_FileName.size () == 0) return;
 
@@ -52,7 +52,7 @@ void CFileDisplayer::display (const std::string str)
 
 //****************************************************************************
 
-void CMsgBoxDisplayer::display (const std::string str)
+void CMsgBoxDisplayer::display (const std::string& str)
 {
 	MessageBox (NULL, str.c_str (), "", MB_OK | MB_ICONEXCLAMATION);
 }

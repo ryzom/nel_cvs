@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: datagram_socket.h,v 1.1 2000/09/21 09:45:09 cado Exp $
+ * $Id: datagram_socket.h,v 1.2 2000/09/25 11:14:23 cado Exp $
  *
  * Interface for CDatagramSocket
  */
@@ -74,7 +74,7 @@ public:
 	void	sendTo( const CMessage& message, const CInetAddress& addr ) throw (ESocket);
 
 	/// Receives data (returns false if !dataAvailable()).
-	bool	receiveFrom( CMessage& message, CInetAddress& addr ) throw (ESocket);
+	bool	receivedFrom( CMessage& message, CInetAddress& addr ) throw (ESocket);
 
 private:
 

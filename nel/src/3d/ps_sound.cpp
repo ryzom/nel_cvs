@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.10 2001/11/29 14:34:05 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.11 2001/11/29 15:17:18 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -159,8 +159,7 @@ void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 			do
 			{
 				if (*it) // was this sound instanciated?
-				{			
-					(*it)->play();
+				{							
 					(*it)->setSoundParams(*currVol
 										  , *posIt
 										  , *speedIt
@@ -246,18 +245,7 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{		
 		f.serial(nbSounds); // we are very unlikely to save a system with sounds being played in it,
 							// but we need to keep datas coherency.
-		_Sounds.resizeNFill(nbSounds);
-		for (sint k = 0; k < nbSounds; ++k)
-		{
-			if (CParticleSystem::getSoundServer())
-			{
-				_Sounds[k] = CParticleSystem::getSoundServer()->createSound(_SoundName);				
-			}
-			else
-			{
-				_Sounds[k] = NULL;
-			}
-		}		
+		_Sounds.resize(nbSounds);		
 	}
 	else
 	{
@@ -305,6 +293,14 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		f.serial(_EmissionPercent);
 		f.serial(_SpawnSounds);
+	}
+
+	if (f.isReading())
+	{
+		for (sint k = 0; k < nbSounds; ++k)
+		{
+			newElement(NULL, 0);			
+		}		
 	}
 }
 	

@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.34 2004/01/15 17:28:23 lecroart Exp $
+ * $Id: mem_stream.h,v 1.35 2004/02/19 09:57:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -827,7 +827,34 @@ inline	void		CMemStream::serial(std::string &b)
 	}
 	else
 	{
-		IStream::serial( b );
+		if (isReading())
+		{
+			if (sizeof(char) == 1 && !isXML())
+			{			
+				sint32	len=0;			
+				fastSerial(len);
+				//		nlassert( len<1000000 ); // limiting string size
+				if (len>1000000)
+				{
+					nlwarning("Trying to serialize a string of %u character !", len);
+					throw NLMISC::EStreamOverflow();
+				}
+				b.resize(len);
+				if (len > 0)
+				{				
+					// can serial all in a single call to serialBuffer, since sizeof(char) == 1
+					serialBuffer((uint8 *) &b[0], len);
+				}
+			}
+			else
+			{
+				IStream::serial( b );
+			}
+		}
+		else
+		{		
+			IStream::serial( b );
+		}
 	}
 }
 
@@ -930,3 +957,24 @@ inline	void	CMemStream::serialHex(uint32 &b)
 #endif // NL_MEM_STREAM_H
 
 /* End of mem_stream.h */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

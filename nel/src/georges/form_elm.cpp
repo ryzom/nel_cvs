@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.10 2002/05/29 14:52:25 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.11 2002/05/30 19:42:56 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1600,7 +1600,8 @@ bool CFormElmStruct::setParent (CFormElm *parent)
 
 void CFormElmStruct::unlink (CFormElm *child)
 {
-	for (uint i=0; i<Elements.size (); i++)
+  uint i;
+	for (i=0; i<Elements.size (); i++)
 	{
 		if (Elements[i].Element == child)
 		{
@@ -2092,7 +2093,8 @@ bool CFormElmArray::setParent (CFormElm *parent)
 
 void CFormElmArray::unlink (CFormElm *child)
 {
-	for (uint i=0; i<Elements.size (); i++)
+  uint i;
+	for (i=0; i<Elements.size (); i++)
 	{
 		if (Elements[i] == child)
 		{

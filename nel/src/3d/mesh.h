@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.33 2002/11/13 17:02:48 berenguier Exp $
+ * $Id: mesh.h,v 1.34 2002/11/20 10:20:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,6 +142,32 @@ public:
 		}
 	};
 
+	/** Mesh Interface System for MRM
+	 */
+	struct	CInterfaceVertex
+	{
+		CVector					Pos;
+		CVector					Normal;
+	};
+	struct	CInterface
+	{
+		// The polygon describing the interface between 2 meshs.
+		std::vector<CInterfaceVertex>	Vertices;
+	}; 
+	/// For each vertex
+	struct	CInterfaceLink
+	{
+		// to which interface this vertex is welded. -1 if none
+		sint	InterfaceId;
+		// to which vertex of the interface this vertex is welded
+		uint	InterfaceVertexId;
+
+		CInterfaceLink()
+		{
+			InterfaceId= -1;
+		}
+	};
+
 	/// A mesh information.
 	struct	CMeshBuild
 	{
@@ -172,6 +198,11 @@ public:
 
 		// MeshVertexProgram to copy to meshGeom.
 		NLMISC::CSmartPtr<IMeshVertexProgram>	MeshVertexProgram;
+
+		// Mesh Interface System for MRM building
+		std::vector<CInterface>		Interfaces;
+		// must be same size as Vertices, else Mesh Interface system disabled
+		std::vector<CInterfaceLink>	InterfaceLinks;
 
 
 		CMeshBuild();

@@ -1,7 +1,7 @@
 /** \file mrm_internal.h
  * Internal Classes for CMRMBuilder.
  *
- * $Id: mrm_internal.h,v 1.4 2001/10/10 15:38:09 besson Exp $
+ * $Id: mrm_internal.h,v 1.5 2002/11/20 10:20:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,14 +93,17 @@ struct	CMRMVertex
 {
 public:
 	// Original / Dest position.
-	CVector				Current,Original;
-	std::vector<CVector>		BSCurrent;
+	CVector					Current,Original;
+	std::vector<CVector>	BSCurrent;
 	// For Skinning.
-	CMesh::CSkinWeight	CurrentSW, OriginalSW;
-	std::vector<sint>	SharedFaces;
-	sint				CollapsedTo;
+	CMesh::CSkinWeight		CurrentSW, OriginalSW;
+	std::vector<sint>		SharedFaces;
+	sint					CollapsedTo;
 	// Final index in the coarser mesh.
-	sint				CoarserIndex;
+	sint					CoarserIndex;
+
+	// The link to the current meshInterface vertex.
+	CMesh::CInterfaceLink	InterfaceLink;
 
 public:
 	CMRMVertex() {CollapsedTo=-1;}
@@ -314,6 +317,38 @@ public:
 		if(Corner[2].Vertex==numvertex)	return Corner[2].Attributes[attribId];
 		return -1;
 	}
+};
+
+
+// ***************************************************************************
+/**
+ * An internal polygon with LOD information for Interface system
+ */
+class	CMRMSewingMesh
+{
+	struct	CLod
+	{
+		// A list of edge that must be collapsed for this Lod. NB: sorted from first to collapse to last to collapse
+		std::vector<CMRMEdge>	EdgeToCollapse;
+	};
+
+	// A list of Lods.
+	std::vector<CLod>	_Lods;
+
+public:
+
+	/** Build a MRM sewing mesh from a CMeshBuild interface.
+	 */
+	void	build(const CMesh::CInterface &meshInt, uint nWantedLods, uint divisor);
+
+	/** >=0 if the lod has this edge to collapse. -1 else. NB: order of collapse is returned.
+	 *	\param vertToCollapse is the vertex id which must be collapsed to the other (ie the one which moves/dissapear)
+	 */
+	sint	mustCollapseEdge(uint lod, const CMRMEdge &edge, uint &vertToCollapse) const;
+
+	/// get the number of edge to collapse for a lod
+	sint	getNumCollapseEdge(uint lod) const;
+
 };
 
 

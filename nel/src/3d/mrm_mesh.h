@@ -1,7 +1,7 @@
 /** \file mrm_mesh.h
  * Internal mesh for CMRMBuilder.
  *
- * $Id: mrm_mesh.h,v 1.7 2002/03/14 18:14:15 vizerie Exp $
+ * $Id: mrm_mesh.h,v 1.8 2002/11/20 10:20:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,9 +116,11 @@ class CMRMMesh
 {
 public:
 	// The vertices of the MRMMesh.
-	std::vector<CVector>		Vertices;
+	std::vector<CVector>				Vertices;
 	// The skinWeights of the MRMMesh. same size than Vertices.
 	std::vector<CMesh::CSkinWeight>		SkinWeights;
+	// The link to the original meshInterface vertex. same size than Vertices.
+	std::vector<CMesh::CInterfaceLink>	InterfaceLinks;
 	// The attributes of the MRMMesh.
 	std::vector<CVectorH>		Attributes[NL3D_MRM_MAX_ATTRIB];
 	// The number of used attributes of the MRMMesh.

@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * A Builder of MRM.
  *
- * $Id: mrm_builder.h,v 1.9 2002/03/14 18:13:48 vizerie Exp $
+ * $Id: mrm_builder.h,v 1.10 2002/11/20 10:20:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,6 +131,20 @@ private:
 
 	void	computeBsVerticesAttributes(std::vector<CMRMMesh> &srcBsMeshs, std::vector<CMRMMesh> &srcBsMeshsMod);
 	void	makeCoarserBS (std::vector<CMRMBlendShape> &csBsMeshs);
+
+
+	/// \name Mesh Interfaces computing
+	// @{
+	bool						_HasMeshInterfaces;
+	// the sewing meshes
+	std::vector<CMRMSewingMesh>	_SewingMeshes;
+	// The current Lod
+	uint						_CurrentLodComputed;
+
+	// true if the build has some Mesh sewing interface setup.
+	bool	buildMRMSewingMeshes(const CMesh::CMeshBuild &mbuild, uint nWantedLods, uint divisor);
+
+	// @}
 
 
 private:

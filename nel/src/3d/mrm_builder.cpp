@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.28 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.29 2002/11/20 10:20:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -247,6 +247,9 @@ float	CMRMBuilder::computeEdgeCost(const CMRMEdge &edge)
 	sint	v2= edge.v1;
 	// more expensive is the edge, later it will collapse.
 
+
+	// **** standard cost
+
 	// compute size of the edge.
 	float	cost=(TmpVertices[v1].Current-TmpVertices[v2].Current).norm();
 
@@ -265,6 +268,37 @@ float	CMRMBuilder::computeEdgeCost(const CMRMEdge &edge)
 		// Nb: don't do this on discontinuities edges, unless the unique material face will collapse (pffiou!!).
 		if( edgeContinue(edge) || edgeNearUniqueMatFace(edge) )
 			cost*=4;
+	}
+
+	// **** Interface Sewing cost
+	if(_HasMeshInterfaces)
+	{
+		// if the 2 vertices comes from the same Sewing Interface mesh (must be a real interface id)
+		sint	meshSewingId= TmpVertices[v1].InterfaceLink.InterfaceId;
+		if( meshSewingId>=0 && meshSewingId == TmpVertices[v2].InterfaceLink.InterfaceId)
+		{
+			// Then the edge is one of the sewing interface mesh. must do special things for it
+			CMRMSewingMesh	&sewingMesh= _SewingMeshes[meshSewingId];
+			uint	dummy;
+
+			// get the sewing edge id
+			CMRMEdge	sewingEdge;
+			sewingEdge.v0= TmpVertices[v1].InterfaceLink.InterfaceVertexId;
+			sewingEdge.v1= TmpVertices[v2].InterfaceLink.InterfaceVertexId;
+			// if the current sewing lod want to collapse this edge
+			sint collapseId= sewingMesh.mustCollapseEdge(_CurrentLodComputed, sewingEdge, dummy);
+			if(collapseId>=0)
+			{
+				// Then set a negative priority (ie will collapse as soon as possible). from -N to -1.
+				// NB: sort them according to collapseId
+				cost= (float)(-sewingMesh.getNumCollapseEdge(_CurrentLodComputed) + collapseId);
+			}
+			else
+			{
+				// This edge must not collapse at this Lod, set an infinite priority (hope will never collapse).
+				cost= FLT_MAX;
+			}
+		}
 	}
 
 	return cost;
@@ -454,6 +488,7 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 	sint	edgeV1=edge.v0;
 	sint	edgeV2=edge.v1;
 
+
 	// 0. collapse the vertices.
 	//==========================
 
@@ -465,21 +500,73 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 	// Default is to interpolate vertex 0 to the middle of the edge.
 	InterValue=0.5;
 	//InterValue=1;
-	// But on special cases, it is much more efficient to interpolate at start or at end of edge.
-	// If one vertex is "open", ie his shared faces do not represent a closed Fan, then interpolate to this one, 
-	// so the mesh has the same silhouette.
-	bool	vc1= vertexClosed(edgeV1);
-	bool	vc2= vertexClosed(edgeV2);
-	if(!vc1 && vc2) InterValue=0;
-	else if(vc1 && !vc2) InterValue=1;
+	// **** If at least one vertex of the edge is on a mesh sewing interface, must change InterValue
+	if( _HasMeshInterfaces && (Vertex1.InterfaceLink.InterfaceId>=0 || Vertex2.InterfaceLink.InterfaceId>=0) )
+	{
+		// If this is an edge of a mesh sewing interface
+		if(Vertex1.InterfaceLink.InterfaceId==Vertex2.InterfaceLink.InterfaceId)
+		{
+			// Then the edge is one of the sewing interface mesh. must do special things for it
+			CMRMSewingMesh	&sewingMesh= _SewingMeshes[Vertex1.InterfaceLink.InterfaceId];
+
+			// get the sewing edge id
+			CMRMEdge	sewingEdge;
+			sewingEdge.v0= Vertex1.InterfaceLink.InterfaceVertexId;
+			sewingEdge.v1= Vertex2.InterfaceLink.InterfaceVertexId;
+
+			// Get the edge in the sewing mesh which is said to be collapsed
+			uint	vertToCollapse;
+			sint collapseId= sewingMesh.mustCollapseEdge(_CurrentLodComputed, sewingEdge, vertToCollapse);
+			// if exist
+			if(collapseId>=0)
+			{
+				// if it is v0 which must collapse, then InterValue=1
+				if(vertToCollapse==(uint)sewingEdge.v0)
+					InterValue= 1;
+				else
+					InterValue= 0;
+
+			}
+			else
+			{
+				// This should not happens. But it is still possible if this edge don't want to collapse but if their
+				// is no more choice. Take a default value
+				InterValue= 0;
+			}
+		}
+		else
+		{
+			// must collapse to the vertex on the sewing interface (as if it was open)
+			if(Vertex1.InterfaceLink.InterfaceId>=0)
+			{
+				// NB: it is possible that both vertices are on a different sewing interface... still collapse (must have to)
+				InterValue= 0;
+			}
+			else
+			{
+				// Then Vertex2 is on a sewing interface, collapse to it
+				InterValue= 1;
+			}
+		}
+	}
+	// **** Else, on special cases, it is much more efficient to interpolate at start or at end of edge.
 	else
 	{
-		// Do the same test but with vertex continue: it is preferable to not move the boundaries 
-		// of a material, or a mapping.
-		bool	vc1= vertexContinue(edgeV1);
-		bool	vc2= vertexContinue(edgeV2);
+		// If one vertex is "open", ie his shared faces do not represent a closed Fan, then interpolate to this one, 
+		// so the mesh has the same silhouette.
+		bool	vc1= vertexClosed(edgeV1);
+		bool	vc2= vertexClosed(edgeV2);
 		if(!vc1 && vc2) InterValue=0;
-		if(vc1 && !vc2) InterValue=1;
+		else if(vc1 && !vc2) InterValue=1;
+		else
+		{
+			// Do the same test but with vertex continue: it is preferable to not move the boundaries 
+			// of a material, or a mapping.
+			bool	vc1= vertexContinue(edgeV1);
+			bool	vc2= vertexContinue(edgeV2);
+			if(!vc1 && vc2) InterValue=0;
+			if(vc1 && !vc2) InterValue=1;
+		}
 	}
 	/*BENCH_TotalCollapses++;
 	if(InterValue==0.5)
@@ -493,7 +580,8 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 	Vertex2.CollapsedTo= edgeV1;
 	if(_Skinned)
 		Vertex1.CurrentSW= collapseSkinWeight(Vertex1.CurrentSW, Vertex2.CurrentSW, InterValue);
-
+	if( _HasMeshInterfaces )
+		Vertex1.InterfaceLink= InterValue<0.5f? Vertex1.InterfaceLink : Vertex2.InterfaceLink;
 
 	// \todo yoyo: TODO_BUG: Don't know why, but vertices may point on deleted faces.
 	// Temp: we destroy here thoses face from SharedFaces...
@@ -757,6 +845,7 @@ CMRMBuilder::CMRMBuilder()
 {
 	NumAttributes= 0;
 	_Skinned= false;
+	_HasMeshInterfaces= false;
 }
 
 // ***************************************************************************
@@ -794,6 +883,8 @@ void	CMRMBuilder::init(const CMRMMesh &baseMesh)
 			TmpVertices[i].BSCurrent[j]= baseMesh.BlendShapes[j].Vertices[i];
 		if(_Skinned)
 			TmpVertices[i].CurrentSW= TmpVertices[i].OriginalSW= baseMesh.SkinWeights[i];
+		if(_HasMeshInterfaces)
+			TmpVertices[i].InterfaceLink= baseMesh.InterfaceLinks[i];
 	}
 	for(attId=0;attId<NumAttributes;attId++)
 	{
@@ -906,6 +997,8 @@ void	CMRMBuilder::saveCoarserMesh(CMRMMesh &coarserMesh)
 	sint	i,attId,index;
 	// First clear ALL.
 	coarserMesh.Vertices.clear();
+	coarserMesh.SkinWeights.clear();
+	coarserMesh.InterfaceLinks.clear();
 	for(attId=0;attId<NL3D_MRM_MAX_ATTRIB;attId++)
 	{
 		coarserMesh.Attributes[attId].clear();
@@ -925,6 +1018,9 @@ void	CMRMBuilder::saveCoarserMesh(CMRMMesh &coarserMesh)
 			coarserMesh.Vertices.push_back(vert.Current);
 			if(_Skinned)
 				coarserMesh.SkinWeights.push_back(vert.CurrentSW);
+			if(_HasMeshInterfaces)
+				coarserMesh.InterfaceLinks.push_back(vert.InterfaceLink);
+
 			index++;
 		}
 		else
@@ -1191,12 +1287,18 @@ void	CMRMBuilder::buildAllLods(const CMRMMesh &baseMesh, std::vector<CMRMMeshGeo
 
 	// If only one lod asked, must init some Tmp Global values (like NumAttributes)
 	if(nWantedLods==1)
+	{
+		_CurrentLodComputed= 0;
 		init(baseMesh);
+	}
 
 	// must fill all LODs, from end to start. do not proces last lod since it will be the coarsest mesh.
 	for(i=nWantedLods-1;i>0;i--)
 	{
 		sint	nbWantedFaces;
+
+		// for sewing computing
+		_CurrentLodComputed= i;
 
 		// Linear.
 		nbWantedFaces= nBaseFaces + (nFaces-nBaseFaces) * (i-1)/(nWantedLods-1);
@@ -1667,6 +1769,9 @@ uint32			CMRMBuilder::buildMrmBaseMesh(const CMesh::CMeshBuild &mbuild, CMRMMesh
 	// Just copy SkinWeights.
 	if(_Skinned)
 		baseMesh.SkinWeights= mbuild.SkinWeights;
+	// Just copy InterfaceLinks
+	if(_HasMeshInterfaces)
+		baseMesh.InterfaceLinks= mbuild.InterfaceLinks;
 	// Resize faces.
 	nFaces= mbuild.Faces.size();
 	baseMesh.Faces.resize(nFaces);
@@ -2392,6 +2497,8 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, std::vector<CMesh:
 	// Skinning is OK only if SkinWeights are of same size as vertices.
 	_Skinned= _Skinned && ( mbuild.Vertices.size()==mbuild.SkinWeights.size() );
 	
+	// MeshInterface setuped ?
+	_HasMeshInterfaces= buildMRMSewingMeshes(mbuild, params.NLods, params.Divisor);
 
 	// from mbuild, build an internal MRM mesh representation.
 	// vbFlags returned is the VBuffer format supported by CMRMBuilder.
@@ -2420,6 +2527,35 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, std::vector<CMesh:
 	mrmMesh.DistanceFinest= params.DistanceFinest;
 	mrmMesh.DistanceMiddle= params.DistanceMiddle;
 	mrmMesh.DistanceCoarsest= params.DistanceCoarsest;
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// MRM Interface system
+// ***************************************************************************
+// ***************************************************************************
+
+// ***************************************************************************
+bool	CMRMBuilder::buildMRMSewingMeshes(const CMesh::CMeshBuild &mbuild, uint nWantedLods, uint divisor)
+{
+	nlassert(nWantedLods>=1);
+	nlassert(divisor>=1);
+	if(mbuild.Interfaces.size()==0)
+		return false;
+	// must have same size
+	if(mbuild.InterfaceLinks.size()!=mbuild.Vertices.size())
+		return false;
+
+	// **** For each interface, MRM-ize it and store.
+	_SewingMeshes.resize(mbuild.Interfaces.size());
+	for(uint i=0;i<mbuild.Interfaces.size();i++)
+	{
+		_SewingMeshes[i].build(mbuild.Interfaces[i], nWantedLods, divisor);
+	}
+
+
+	return true;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.8 2001/07/05 09:38:49 besson Exp $
+ * $Id: mesh.h,v 1.9 2001/07/09 17:17:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -257,7 +257,7 @@ public:
 	virtual bool	clip(const std::vector<CPlane>	&pyramid);
 
 	/// render() this mesh in a driver.
-	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque);
+	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha=1);
 
 	// get an approximation of the number of triangles this instance will render for a fixed distance.
 	virtual float	getNumTriangles (float distance);

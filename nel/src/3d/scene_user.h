@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.5 2001/06/29 09:48:57 berenguier Exp $
+ * $Id: scene_user.h,v 1.6 2001/07/09 17:17:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -346,6 +346,11 @@ public:
 	virtual	uint				getLoadMaxPolygon() const;
 	//@}
 
+	/// \name Coarse meshes mgt.
+	//@{
+	virtual void setStaticCoarseMeshManagerTexture (const char *sPath);
+	virtual void setDynamicCoarseMeshManagerTexture (const char *sPath);
+	//@}
 
 public:
 	/// \name Accessor for CSeneUser.

@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.3 2001/07/05 09:38:49 besson Exp $
+ * $Id: mesh_geom.h,v 1.4 2001/07/09 17:17:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,11 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/plane.h"
 
+
+namespace NLMISC
+{
+	class CAABBoxExt;
+}
 
 namespace NL3D 
 {
@@ -67,7 +72,7 @@ public:
 
 	/** render() this meshGeom in a driver, with the specified TransformShape instance information.
 	 */
-	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque) =0;
+	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha=1) =0;
 
 	/// \name Load balancing methods
 	// @{
@@ -80,6 +85,10 @@ public:
 	  * have to be continus.
 	  */
 	virtual float	getNumTriangles (float distance) =0;
+
+	/** get the extended axis aligned bounding box of the mesh
+	  */
+	virtual const NLMISC::CAABBoxExt& getBoundingBox() const =0;
 
 	// @}
 };

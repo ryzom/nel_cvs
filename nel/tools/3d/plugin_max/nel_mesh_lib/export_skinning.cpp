@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.5 2001/06/26 14:58:36 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.6 2001/07/09 17:17:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,7 +202,7 @@ bool CExportNel::isSkin (INode& node)
 	if (skin)
 	{
 		// Modifier enabled ?
-		if (skin->IsEnabled())
+		//if (skin->IsEnabled())
 		{
 			// Get a com_skin2 interface
 			ISkin *comSkinInterface=(ISkin*)skin->GetInterface (SKIN_INTERFACE);
@@ -236,7 +236,7 @@ bool CExportNel::isSkin (INode& node)
 		if (skin)
 		{
 			// Modifier enabled ?
-			if (skin->IsEnabled())
+			//if (skin->IsEnabled())
 			{
 				// Get a com_skin2 interface
 				IPhysiqueExport *physiqueInterface=(IPhysiqueExport *)skin->GetInterface (I_PHYINTERFACE);

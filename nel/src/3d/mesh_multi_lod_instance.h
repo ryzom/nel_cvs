@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.3 2001/07/06 12:51:23 corvazier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.4 2001/07/09 17:17:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,8 +61,79 @@ public:
 	uint64			_LastLodMatrixDate;
 
 private:
+
+	/// Computed first lod to display for this distance
+	uint	Lod0;
+	uint	Lod1;
+
+	/// Active blending on lod 0
+	bool	BlendLod0;
+
+	/// Computed polygon count for the load balancing result
+	float	PolygonCountLod0;
+	float	PolygonCountLod1;
+
+	/// Alpha blending to use
+	float	BlendFactor;
+
 	static IModel	*creator() {return new CMeshMultiLodInstance;}
 	friend	class CMeshMultiLod;
+	friend	class CMeshMultiLodBalancingObs;
+	friend	class CMeshMultiLodClipObs;
+};
+
+
+// ***************************************************************************
+/**
+ * This observer:
+ * - leave the notification system to DO NOTHING.
+ * - implement the traverse method.
+ *
+ * \sa CHrcTrav IBaseHrcObs
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	CMeshMultiLodBalancingObs : public CTransformShapeLoadBalancingObs
+{
+public:
+
+	/** this do all the good things:
+	 *	- LoadBalancing: get the position of the transform (or the skeleton), and use it as center.
+	 *	- traverseSons().
+	 */
+	virtual	void	traverse(IObs *caller);
+
+	static IObs	*creator() {return new CMeshMultiLodBalancingObs;}
+
+
+protected:
+};
+
+
+// ***************************************************************************
+/**
+ * This observer:
+ * - Call the previous clip observer.
+ * - Check if the lod is not in this far clip limite.
+ *
+ * \sa CHrcTrav IBaseHrcObs
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	CMeshMultiLodClipObs : public CTransformShapeClipObs
+{
+public:
+
+	/// clip the shape, and set renderable.
+	virtual	bool	clip(IBaseClipObs *caller);
+	virtual	bool	isRenderable() const {return true;}
+
+	static IObs	*creator() {return new CMeshMultiLodClipObs;}
+
+
+protected:
 };
 
 

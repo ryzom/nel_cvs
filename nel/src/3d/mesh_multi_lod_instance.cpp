@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.1 2001/07/03 08:35:55 corvazier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.2 2001/07/09 17:17:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,11 @@
  */
 
 #include "3d/mesh_multi_lod_instance.h"
+#include "3d/mesh_multi_lod.h"
 
+#include "nel/misc/debug.h"
+
+using namespace NLMISC;
 
 namespace NL3D 
 {
@@ -34,6 +38,156 @@ namespace NL3D
 void		CMeshMultiLodInstance::registerBasic()
 {
 	CMOT::registerModel (MeshMultiLodInstanceId, MeshBaseInstanceId, CMeshMultiLodInstance::creator);
+	CMOT::registerObs (LoadBalancingTravId, MeshMultiLodInstanceId, CMeshMultiLodBalancingObs::creator);
+	CMOT::registerObs (ClipTravId, MeshMultiLodInstanceId, CMeshMultiLodClipObs::creator);
+}
+
+// ***************************************************************************
+
+void		CMeshMultiLodBalancingObs::traverse(IObs *caller)
+{
+	// Call previous
+	CTransformShapeLoadBalancingObs::traverse (caller);
+
+	// Get a pointer on the model
+	CMeshMultiLodInstance *model=safe_cast<CMeshMultiLodInstance*> (Model);
+
+	// Get a pointer on the shape
+	CMeshMultiLod *shape=safe_cast<CMeshMultiLod*> ((IShape*)model->Shape);
+
+	// Reset render pass
+	model->setTransparency(false);
+	model->setOpacity(false);
+
+	// Get the wanted number of polygons
+	float polygonCount=model->getNumTrianglesAfterLoadBalancing ();
+
+	// Look for the good slot
+	uint meshCount=shape->_MeshVector.size();
+	model->Lod0=0;
+	if (meshCount>1)
+	{
+		// Look for good i
+		while ( polygonCount < shape->_MeshVector[model->Lod0].EndPolygonCount )
+		{
+			model->Lod0++;
+			if (model->Lod0==meshCount-1)
+				break;
+		}
+	}
+	
+	// The slot
+	CMeshMultiLod::CMeshSlot	&slot=shape->_MeshVector[model->Lod0];
+
+	// Get the distance with polygon count
+	float distance=(polygonCount-slot.B)/slot.A;
+
+	// Get the final polygon count
+	model->PolygonCountLod0;
+	if (slot.MeshGeom)
+		model->PolygonCountLod0=slot.MeshGeom->getNumTriangles (distance);
+
+	// Second slot in use ?
+	model->Lod1=0xffffffff;
+
+	// The next slot
+	CMeshMultiLod::CMeshSlot	*nextSlot=NULL;
+
+	// Next slot exist ?
+	if (model->Lod0!=meshCount-1)
+	{
+		nextSlot=&(shape->_MeshVector[model->Lod0+1]);
+	}
+
+	// Max dist before blend
+	float startBlend;
+	if (nextSlot)
+		startBlend=slot.DistMax-nextSlot->BlendLength;
+	else
+		startBlend=slot.DistMax-slot.BlendLength;
+
+	// In blend zone ?
+	if ( startBlend < distance )
+	{
+		// Alpha factor for main Lod
+		model->BlendFactor = (slot.DistMax-distance)/(slot.DistMax-startBlend);
+		if (model->BlendFactor<0)
+			model->BlendFactor=0;
+		nlassert (model->BlendFactor<=1);
+
+		// Render this mesh
+		if (slot.MeshGeom)
+		{
+			if (slot.Flags&CMeshMultiLod::CMeshSlot::BlendOut)
+			{
+				// Render the geom mesh with alpha blending with goodPolyCount
+				model->setTransparency(true);
+				model->BlendLod0=true;
+			}
+			else
+			{
+				// Render the geom mesh without alpha blending with goodPolyCount
+				model->setTransparency (slot.isTransparent());
+				model->setOpacity (slot.isOpaque());
+				model->BlendLod0=false;
+			}
+		}
+		else
+			model->Lod0=0xffffffff;
+
+		// Next mesh, BlendIn actived ?
+		if (nextSlot && shape->_MeshVector[model->Lod0+1].MeshGeom && (nextSlot->Flags&CMeshMultiLod::CMeshSlot::BlendIn))
+		{
+			// Render the geom mesh with alpha blending with nextSlot->BeginPolygonCount
+			model->PolygonCountLod1=nextSlot->MeshGeom->getNumTriangles (distance);
+			model->Lod1=model->Lod0+1;
+			model->setTransparency(true);
+		}
+	}
+	else
+	{
+		if (slot.MeshGeom)
+		{
+			// Render without blend with goodPolyCount
+			model->setTransparency (slot.isTransparent());
+			model->setOpacity (slot.isOpaque());
+			model->BlendLod0=false;
+		}
+		else
+			model->Lod0=0xffffffff;
+	}
+}
+
+// ***************************************************************************
+
+bool CMeshMultiLodClipObs::clip(IBaseClipObs *caller)
+{
+	// Call previous
+	bool show=CTransformShapeClipObs::clip(caller);
+
+	// Clipped ?
+	if (show)
+	{
+		// Cast
+		CClipTrav *trav = safe_cast<CClipTrav*> (Trav);
+		CMeshMultiLodInstance *m = safe_cast<CMeshMultiLodInstance*> (Model);
+		CMeshMultiLod *shape = safe_cast <CMeshMultiLod*> ((IShape*)m->Shape);
+
+		// Calc the distance
+		float sqrDist = (trav->CamPos - m->getMatrix ().getPos()).sqrnorm ();
+		float maxDist = shape->getDistMax();
+		maxDist*=maxDist;
+		
+		// Good distance
+		if (sqrDist < maxDist)
+		{
+			// Ok, shown
+			return true;
+		}
+	}
+
+	// Not shown
+	return false;
 }
 
 // ***************************************************************************

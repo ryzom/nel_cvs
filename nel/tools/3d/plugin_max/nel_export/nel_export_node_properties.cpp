@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.2 2001/07/06 12:51:23 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.3 2001/07/09 17:17:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,7 +106,8 @@ public:
 
 void MRMStateChanged (HWND hwndDlg)
 {
-	bool enable=SendMessage (GetDlgItem (hwndDlg, IDC_ACTIVE_MRM), BM_GETCHECK, 0, 0)!=BST_UNCHECKED;
+	bool enable = ( SendMessage (GetDlgItem (hwndDlg, IDC_ACTIVE_MRM), BM_GETCHECK, 0, 0)!=BST_UNCHECKED ) &&
+		( SendMessage (GetDlgItem (hwndDlg, IDC_COARSE_MESH), BM_GETCHECK, 0, 0)==BST_UNCHECKED );
 	EnableWindow (GetDlgItem (hwndDlg, IDC_SKIN_REDUCTION_MIN), enable);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_SKIN_REDUCTION_MAX), enable);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_SKIN_REDUCTION_BEST), enable);
@@ -115,6 +116,18 @@ void MRMStateChanged (HWND hwndDlg)
 	EnableWindow (GetDlgItem (hwndDlg, IDC_DIST_FINEST), enable);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_DIST_MIDDLE), enable);
 	EnableWindow (GetDlgItem (hwndDlg, IDC_DIST_COARSEST), enable);
+}
+
+// ***************************************************************************
+
+void CoarseStateChanged (HWND hwndDlg)
+{
+	// Like if MRM button was clicked
+	MRMStateChanged (hwndDlg);
+
+	// Bouton enabled ?
+	bool enable = SendMessage (GetDlgItem (hwndDlg, IDC_COARSE_MESH), BM_GETCHECK, 0, 0)==BST_UNCHECKED;
+	EnableWindow (GetDlgItem (hwndDlg, IDC_ACTIVE_MRM), enable);
 }
 
 // ***************************************************************************
@@ -158,7 +171,7 @@ int CALLBACK LodDialogCallback (
 			SetWindowText (GetDlgItem (hwndDlg, IDC_BLEND_LENGTH), currentParam->BlendLength.c_str());
 
 			SendMessage (GetDlgItem (hwndDlg, IDC_ACTIVE_MRM), BM_SETCHECK, currentParam->MRM, 0);
-			MRMStateChanged (hwndDlg);
+			CoarseStateChanged (hwndDlg);
 
 			if (currentParam->SkinReduction!=-1)
 				CheckRadioButton (hwndDlg, IDC_SKIN_REDUCTION_MIN, IDC_SKIN_REDUCTION_BEST, IDC_SKIN_REDUCTION_MIN+currentParam->SkinReduction);
@@ -330,6 +343,13 @@ int CALLBACK LodDialogCallback (
 						}
 					break;
 					// 3 states management
+					case IDC_COARSE_MESH:
+						{
+							if (SendMessage (hwndButton, BM_GETCHECK, 0, 0)==BST_INDETERMINATE)
+								SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+							CoarseStateChanged (hwndDlg);
+						}
+						break;
 					case IDC_ACTIVE_MRM:
 						{
 							if (SendMessage (hwndButton, BM_GETCHECK, 0, 0)==BST_INDETERMINATE)
@@ -339,7 +359,6 @@ int CALLBACK LodDialogCallback (
 						break;
 					case IDC_BLEND_IN:
 					case IDC_BLEND_OUT:
-					case IDC_COARSE_MESH:
 					case IDC_DYNAMIC_MESH:
 						{
 							if (SendMessage (hwndButton, BM_GETCHECK, 0, 0)==BST_INDETERMINATE)

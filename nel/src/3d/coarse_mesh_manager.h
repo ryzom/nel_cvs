@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.2 2001/07/04 16:24:41 corvazier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.3 2001/07/09 17:17:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,7 @@ namespace NL3D
 
 class CMeshGeom;
 class CTransformShape;
+class CTextureFile;
 
 // ***************************************************************************
 
@@ -99,6 +100,9 @@ public:
 	
 	/// Constructor
 	CCoarseMeshManager ();
+
+	/// Set texture file to use with this coarse mesh
+	void setTextureFile (const char* file);
 
 	/**
 	  * Add a coarse mesh in the manager. If an error occured, it returns CantAddCoarseMesh.
@@ -283,8 +287,11 @@ private:
 	typedef std::map< uint, CRenderPass >	TRenderingPassMap;
 	TRenderingPassMap						_RenderPass;
 
+	// The unique texture used by all the coarse object inserted in the container.
+	CSmartPtr<CTextureFile>					_Texture;
+
 	// The unique material used by all the coarse object inserted in the container.
-	CMaterial	_Material;
+	CMaterial								_Material;
 
 	static IModel	*creator() {return new CCoarseMeshManager;}
 };
@@ -296,7 +303,7 @@ private:
  * - leave the notification system to DO NOTHING.
  * - implement the traverse() method.
  */
-class	CCoarseMeshManagerRenderObs : public IBaseRenderObs
+class	CCoarseMeshManagerRenderObs : public CTransformRenderObs
 {
 public:
 
@@ -304,6 +311,25 @@ public:
 	virtual	void	traverse(IObs *caller);
 	
 	static IObs	*creator() {return new CCoarseMeshManagerRenderObs;}
+};
+
+/**
+ * This observer:
+ * - return true at isRenderable.
+ * - return true at clip.
+ */
+class	CCoarseMeshClipObs : public CTransformClipObs
+{
+public:
+
+	/// From CTransformClipObs
+	// @{
+	virtual	bool	isRenderable() const;
+	virtual	bool	clip(IBaseClipObs *caller);
+	// @}
+
+	// The creator.
+	static IObs	*creator() {return new CCoarseMeshClipObs;}
 };
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.2 2001/07/04 16:24:41 corvazier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.3 2001/07/09 17:17:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "3d/coarse_mesh_manager.h"
 #include "3d/mesh.h"
+#include "3d/texture_file.h"
 
 
 namespace NL3D 
@@ -36,12 +37,35 @@ void	CCoarseMeshManager::registerBasic()
 {
 	CMOT::registerModel (CoarseMeshManagerId, TransformId, CCoarseMeshManager::creator);
 	CMOT::registerObs (RenderTravId, CoarseMeshManagerId, CCoarseMeshManagerRenderObs::creator);
+	CMOT::registerObs (ClipTravId, CoarseMeshManagerId, CCoarseMeshClipObs::creator);
 }
 
 // ***************************************************************************
 
 CCoarseMeshManager::CCoarseMeshManager()
 {
+	// Set as opaque
+	setTransparency (false);
+	setOpacity (true);
+
+	// ** Init texture
+
+	_Texture=new CTextureFile ();
+
+	// ** Init material
+
+	// Double sided
+	_Material.setDoubleSided (true);
+
+	// Texture
+	_Material.setTexture (0, _Texture);
+}
+
+// ***************************************************************************
+
+void CCoarseMeshManager::setTextureFile (const char* file)
+{
+	_Texture->setFileName (file);
 }
 
 // ***************************************************************************
@@ -143,6 +167,9 @@ void CCoarseMeshManager::render (IDriver *drv)
 	{
 		// Render the rendering pass
 		ite->second.render (drv, _Material);
+
+		// Next render pass
+		ite++;
 	}
 }
 
@@ -505,6 +532,20 @@ void	CCoarseMeshManagerRenderObs::traverse(IObs *caller)
 
 	// render the container.
 	model->render (drv);
+}
+
+// ***************************************************************************
+
+bool	CCoarseMeshClipObs::isRenderable() const
+{
+	return true;
+}
+
+// ***************************************************************************
+
+bool	CCoarseMeshClipObs::clip(IBaseClipObs *caller)
+{
+	return true;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.6 2001/07/06 12:51:23 corvazier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.7 2001/07/09 17:17:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,9 @@
 #include "3d/scene.h"
 #include "3d/coarse_mesh_manager.h"
 
+#include "nel/misc/debug.h"
 
+using namespace NLMISC;
 
 namespace NL3D 
 {
@@ -68,21 +70,29 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 
 		// Blend in ?
 		if (mbuild.LodMeshes[slot].Flags & CMeshMultiLodBuild::CBuildSlot::BlendIn)
-			_MeshVector[slot].Flags|=BlendIn;
+			_MeshVector[slot].Flags|=CMeshSlot::BlendIn;
 
 		// Blend out ?
 		if (mbuild.LodMeshes[slot].Flags & CMeshMultiLodBuild::CBuildSlot::BlendOut)
-			_MeshVector[slot].Flags|=BlendOut;
+			_MeshVector[slot].Flags|=CMeshSlot::BlendOut;
 
 		// Coarse mesh ?
 		if (mbuild.LodMeshes[slot].Flags & CMeshMultiLodBuild::CBuildSlot::CoarseMesh)
-			_MeshVector[slot].Flags|=CoarseMesh;
+			_MeshVector[slot].Flags|=CMeshSlot::CoarseMesh;
+
+		// Is opaque
+		if (mbuild.LodMeshes[slot].Flags & CMeshMultiLodBuild::CBuildSlot::IsOpaque)
+			_MeshVector[slot].Flags|=CMeshSlot::IsOpaque;
+
+		// Is transparent
+		if (mbuild.LodMeshes[slot].Flags & CMeshMultiLodBuild::CBuildSlot::IsTransparent)
+			_MeshVector[slot].Flags|=CMeshSlot::IsTransparent;
 
 		// MeshGeom
 		nlassert (mbuild.LodMeshes[slot].MeshGeom);
 
 		// Valid pointer ?
-		if (_MeshVector[slot].Flags&CoarseMesh)
+		if (_MeshVector[slot].Flags&CMeshSlot::CoarseMesh)
 		{
 			// If it is a coarse mesh, it must be a CMeshGeom.
 			if (dynamic_cast<CMeshGeom*>(mbuild.LodMeshes[slot].MeshGeom)==NULL)
@@ -101,31 +111,23 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 	}
 
 	// Sort the slot by the distance...
-	for (int i=mbuild.LodMeshes.size()-2; i>0; i--)
+	for (int i=mbuild.LodMeshes.size()-1; i>0; i--)
 	for (int j=0; j<i; j++)
 	{
 		// Bad sort ?
-		if (_MeshVector[i].DistMax>_MeshVector[i+1].DistMax)
+		if (_MeshVector[j].DistMax>_MeshVector[j+1].DistMax)
 		{
 			// Exchange slots
-			CMeshSlot tmp=_MeshVector[i];
-			_MeshVector[i]=_MeshVector[i+1];
-			_MeshVector[i+1]=tmp;
+			CMeshSlot tmp=_MeshVector[j];
+			_MeshVector[j]=_MeshVector[j+1];
+			_MeshVector[j+1]=tmp;
+			tmp.MeshGeom=NULL;
 		}
 	}
 
 	// Calc start and end polygon count
 	for (uint k=0; k<mbuild.LodMeshes.size(); k++)
 	{
-		// Get end distance
-		float endDist=_MeshVector[k].DistMax;
-
-		// Get end poly count
-		if (k==mbuild.LodMeshes.size()-1)
-			_MeshVector[k].EndPolygonCount=_MeshVector[k].MeshGeom->getNumTriangles (endDist);
-		else 
-			_MeshVector[k].EndPolygonCount=_MeshVector[k+1].MeshGeom->getNumTriangles (endDist);
-
 		// Get start distance
 		float startDist;
 		if (k==0)
@@ -135,7 +137,20 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 
 		// Get start poly count
 		float startPolyCount;
-		startPolyCount=_MeshVector[0].MeshGeom->getNumTriangles (startDist);
+		startPolyCount=_MeshVector[k].MeshGeom->getNumTriangles (startDist);
+
+		// Get end distance
+		float endDist=_MeshVector[k].DistMax;
+
+		// Get end poly count
+		if (k==mbuild.LodMeshes.size()-1)
+		{
+			_MeshVector[k].EndPolygonCount=_MeshVector[k].MeshGeom->getNumTriangles (endDist);
+			if (startPolyCount==_MeshVector[k].EndPolygonCount)
+				_MeshVector[k].EndPolygonCount=startPolyCount/2;
+		}
+		else 
+			_MeshVector[k].EndPolygonCount=_MeshVector[k+1].MeshGeom->getNumTriangles (endDist);
 
 		// Calc A
 		_MeshVector[k].A=(_MeshVector[k].EndPolygonCount-startPolyCount)/(endDist-startDist);
@@ -187,115 +202,64 @@ bool CMeshMultiLod::clip(const std::vector<CPlane>	&pyramid)
 void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
 	// Render good meshes
-	nlassert (dynamic_cast<CMeshMultiLodInstance*>(trans));
-	CMeshMultiLodInstance *instance=static_cast<CMeshMultiLodInstance*>(trans);
+	CMeshMultiLodInstance *instance=safe_cast<CMeshMultiLodInstance*>(trans);
 
-	// Look in the table for good distances..
-	uint meshCount=_MeshVector.size();
-
-	// At least on mesh
-	if (meshCount>0)
+	// Second lod ?
+	if ( (instance->Lod1!=0xffffffff) && (passOpaque==false) )
 	{
-		uint i=0;
+		// Render second lod in blend mode
+		render (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, _StaticLod, true);
+		render (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, _StaticLod, false);
+	}
 
-		// Get the wanted number of polygons
-		float polygonCount=trans->getNumTrianglesAfterLoadBalancing ();
+	// Have an opaque pass ?
+	if (!instance->BlendLod0)
+	{
+		// Only render the normal way the first lod
+		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, 1, _StaticLod, passOpaque);
+	}
+	else
+	{
+		// Should not be in opaque
+		nlassert (passOpaque==false);
 
-		if (meshCount>1)
+		// Render first lod in blend mode
+		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, _StaticLod, true);
+
+		// Then render transparent 
+		render (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, _StaticLod, false);
+	}
+
+	// *** Remove unused coarse meshes
+	uint meshCount=_MeshVector.size();
+	for (uint j=0; j<meshCount; j++)
+	{
+		// Not a slot used and coarse mesh loaded ?
+		if ( (j!=instance->Lod0)&&(j!=instance->Lod1)&&( (_MeshVector[j].Flags&CMeshSlot::CoarseMeshLoaded) != 0) )
 		{
-			// Look for good i
-			while ( polygonCount < _MeshVector[i].EndPolygonCount )
+			// Yes, remove it..
+
+			// Static or dynamic coarse mesh ?
+			CCoarseMeshManager *manager;
+			if (_StaticLod)
 			{
-				i++;
-				if (i==meshCount-1)
-					break;
+				// Get the static coarse mesh manager
+				manager=instance->Scene->getStaticCoarseMeshManager();
 			}
-		}
-
-		// The slot
-		CMeshSlot	&slot=_MeshVector[i];
-
-		// Get the distance with polygon count
-		float distance=(polygonCount-slot.B)/slot.A;
-
-		// Get the final polygon count
-		float goodPolyCount = getNumTriangles (distance);
-
-		// Check count interval
-/*		nlassert (slot.BeginPolygonCount>=goodPolyCount);
-		nlassert (goodPolyCount>=slot.EndPolygonCount);
-		nlassert (slot.BeginPolygonCount>=slot.StartBlendPolygonCount);
-		nlassert (slot.StartBlendPolygonCount>=slot.EndPolygonCount);*/
-
-		// Slot in use...
-		uint slot0=i;
-		uint slot1=0xffffffff;
-
-		// Blend with other ?
-/*		float blendFactor = (slot.EndPolygonCount-goodPolyCount) / (slot.EndPolygonCount-slot.StartBlendPolygonCount);
-		if ( ( goodPolyCount <= slot.StartBlendPolygonCount ) && ( goodPolyCount >= slot.EndPolygonCount ) )
-		{
-			// Render next mesh
-			if ( (i<meshCount-1) && _MeshVector[i+1].MeshGeom )
+			else
 			{
-				// The next slot
-				CMeshSlot	&nextSlot=_MeshVector[i+1];
-
-				if (nextSlot.Flags&BlendIn)
-				{
-					// Render the geom mesh with alpha blending with nextSlot.BeginPolygonCount
-					render (i+1, drv, instance, nextSlot.BeginPolygonCount, 1.f-blendFactor, _StaticLod);
-					slot1=i+1;
-				}
+				// Get the dynamic coarse mesh manager
+				manager=instance->Scene->getDynamicCoarseMeshManager();
 			}
 
-			// Render this mesh
-			if (slot.MeshGeom)
-			{
-				if (slot.Flags&BlendOut)
-					// Render the geom mesh with alpha blending with goodPolyCount
-					render (i, drv, instance, goodPolyCount, blendFactor, _StaticLod);
-				else
-					// Render the geom mesh without alpha blending with goodPolyCount
-					render (i, drv, instance, goodPolyCount, 1, _StaticLod);
-			}
-		}
-		else*/
-		{
-			// Render without blend with goodPolyCount
-			render (i, drv, instance, goodPolyCount, 1, _StaticLod);
-		}
+			// Manager must exist beacuse a mesh has been loaded...
+			nlassert (manager);
 
-		// *** Remove unused coarse meshes
-		for (uint j=0; j<meshCount; j++)
-		{
-			// Not a slot used and coarse mesh loaded ?
-			if ( (j!=slot0)&&(j!=slot1)&&( (_MeshVector[j].Flags&CoarseMeshLoaded) != 0) )
-			{
-				// Yes, remove it..
+			// Remove the lod
+			manager->removeMesh (_MeshVector[j].CoarseMeshId);
 
-				// Static or dynamic coarse mesh ?
-				CCoarseMeshManager *manager;
-				if (_StaticLod)
-				{
-					// Get the static coarse mesh manager
-					manager=instance->Scene->getStaticCoarseMeshManager();
-				}
-				else
-				{
-					// Get the dynamic coarse mesh manager
-					manager=instance->Scene->getDynamicCoarseMeshManager();
-				}
-
-				// Manager must exist beacuse a mesh has been loaded...
-				nlassert (manager);
-
-				// Remove the lod
-				manager->removeMesh (_MeshVector[j].CoarseMeshId);
-
-				// Clear the flag
-				_MeshVector[j].Flags&=~CoarseMeshLoaded;
-			}
+			// Clear the flag
+			_MeshVector[j].Flags&=~CMeshSlot::CoarseMeshLoaded;
 		}
 	}
 }
@@ -309,6 +273,9 @@ void CMeshMultiLod::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// serial Materials infos contained in CMeshBase.
 	CMeshBase::serialMeshBase(f);
+
+	// Static lod flag
+	f.serial (_StaticLod);
 
 	// Serial the values
 	f.serialCont (_MeshVector);
@@ -370,6 +337,26 @@ float CMeshMultiLod::getNumTriangles (float distance)
 
 // ***************************************************************************
 
+void CMeshMultiLod::getAABBox(NLMISC::CAABBox &bbox) const
+{
+	// Get count
+	uint count=_MeshVector.size();
+	for (uint slot=0; slot<count; slot++)
+	{
+		// Shape ?
+		if (_MeshVector[slot].MeshGeom)
+		{
+			// Get the bounding box
+			bbox=_MeshVector[slot].MeshGeom->getBoundingBox().getAABBox();
+
+			// ok
+			break;
+		}
+	}
+}
+
+// ***************************************************************************
+
 void CMeshMultiLod::clear ()
 {
 	_MeshVector.clear ();
@@ -383,9 +370,18 @@ void CMeshMultiLod::CMeshSlot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	sint ver=f.serialVersion (0);
 
 	f.serialPolyPtr (MeshGeom);
+	f.serial (A);
+	f.serial (B);
 	f.serial (DistMax);
+	f.serial (EndPolygonCount);
 	f.serial (BlendLength);
 	f.serial (Flags);
+
+	if (f.isReading())
+	{
+		// Coarse mesh not loaded
+		Flags&=~CoarseMeshLoaded;
+	}
 }
 
 // ***************************************************************************
@@ -405,60 +401,64 @@ CMeshMultiLod::CMeshSlot::~CMeshSlot ()
 
 // ***************************************************************************
 
-void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool staticLod)
+void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool staticLod, bool passOpaque)
 {
 	// Ref
 	CMeshSlot &slotRef=_MeshVector[slot];
 
 	// Coarse mesh ?
-	if (slotRef.Flags&CoarseMesh)
+	if (slotRef.Flags&CMeshSlot::CoarseMesh)
 	{
-		// Static or dynamic coarse mesh ?
-		CCoarseMeshManager *manager;
-		if (staticLod)
+		// Only in opaque pass
+		if (passOpaque)
 		{
-			// Get the static coarse mesh manager
-			manager=trans->Scene->getStaticCoarseMeshManager();
-		}
-		else
-		{
-			// Get the dynamic coarse mesh manager
-			manager=trans->Scene->getDynamicCoarseMeshManager();
-		}
-
-		// Manager  exist?
-		if (manager)
-		{
-			// Get a pointer on the geom mesh
-			nlassert (dynamic_cast<CMeshGeom*>(slotRef.MeshGeom));
-			CMeshGeom *meshGeom=(CMeshGeom*)slotRef.MeshGeom;
-
-			// Added in the manager ?
-			if ( (slotRef.Flags&CoarseMeshLoaded) == 0)
+			// Static or dynamic coarse mesh ?
+			CCoarseMeshManager *manager;
+			if (staticLod)
 			{
-				// Add to the manager
-				slotRef.CoarseMeshId=manager->addMesh (*meshGeom);
-					
-				// Added ?
-				if (slotRef.CoarseMeshId!=CCoarseMeshManager::CantAddCoarseMesh)
-					// Flag it
-					slotRef.Flags|=CoarseMeshLoaded;
-
-				// Dirt the matrix
-				trans->_LastLodMatrixDate=0;
+				// Get the static coarse mesh manager
+				manager=trans->Scene->getStaticCoarseMeshManager();
+			}
+			else
+			{
+				// Get the dynamic coarse mesh manager
+				manager=trans->Scene->getDynamicCoarseMeshManager();
 			}
 
-			// Finally loaded ?
-			if (slotRef.Flags&CoarseMeshLoaded)
+			// Manager  exist?
+			if (manager)
 			{
-				// Matrix has changed ?
-				if ( trans->ITransformable::compareMatrixDate (trans->_LastLodMatrixDate) )
-				{
-					// Get date
-					trans->_LastLodMatrixDate = trans->ITransformable::getMatrixDate();
+				// Get a pointer on the geom mesh
+				nlassert (dynamic_cast<CMeshGeom*>(slotRef.MeshGeom));
+				CMeshGeom *meshGeom=(CMeshGeom*)slotRef.MeshGeom;
 
-					// Set matrix
-					manager->setMatrixMesh ( slotRef.CoarseMeshId, *meshGeom, trans->getMatrix() );
+				// Added in the manager ?
+				if ( (slotRef.Flags&CMeshSlot::CoarseMeshLoaded) == 0)
+				{
+					// Add to the manager
+					slotRef.CoarseMeshId=manager->addMesh (*meshGeom);
+						
+					// Added ?
+					if (slotRef.CoarseMeshId!=CCoarseMeshManager::CantAddCoarseMesh)
+						// Flag it
+						slotRef.Flags|=CMeshSlot::CoarseMeshLoaded;
+
+					// Dirt the matrix
+					trans->_LastLodMatrixDate=0;
+				}
+
+				// Finally loaded ?
+				if (slotRef.Flags&CMeshSlot::CoarseMeshLoaded)
+				{
+					// Matrix has changed ?
+					if ( trans->ITransformable::compareMatrixDate (trans->_LastLodMatrixDate) )
+					{
+						// Get date
+						trans->_LastLodMatrixDate = trans->ITransformable::getMatrixDate();
+
+						// Set matrix
+						manager->setMatrixMesh ( slotRef.CoarseMeshId, *meshGeom, trans->getMatrix() );
+					}
 				}
 			}
 		}
@@ -468,8 +468,8 @@ void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *tran
 		// Here
 		if (slotRef.MeshGeom)
 		{
-			/// \todo hulud: manage alpha blending and polygon count here..
-			slotRef.MeshGeom->render (drv, trans, true);
+			/// Render the geom mesh
+			slotRef.MeshGeom->render (drv, trans, passOpaque, numPoylgons, alpha);
 		}
 	}
 }

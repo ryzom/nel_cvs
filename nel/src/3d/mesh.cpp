@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.30 2001/07/05 09:38:49 besson Exp $
+ * $Id: mesh.cpp,v 1.31 2001/07/09 17:17:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -349,7 +349,7 @@ void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
 
 
 // ***************************************************************************
-void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass)
+void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, float polygonCount, float globalAlpha)
 {
 	nlassert(drv);
 	// get the mesh instance.
@@ -373,6 +373,9 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass)
 	// update the VBufferHard (create/delete), to maybe render in AGP memory.
 	updateVertexBufferHard(drv);
 
+	// Global alpha used ?
+	bool globalAlphaUsed=globalAlpha!=1;
+	uint8 globalAlphaInt=(uint8)(globalAlpha*255);
 
 	// For all _MatrixBlocks
 	for(uint mb=0;mb<_MatrixBlocks.size();mb++)
@@ -419,14 +422,61 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass)
 		}
 
 
-		// Render all pass.
-		for(uint i=0;i<mBlock.RdrPass.size();i++)
+		// Global alpha ?
+		if (globalAlphaUsed)
 		{
-			CRdrPass	&rdrPass= mBlock.RdrPass[i];
-			// Render with the Materials of the MeshInstance.
-			if( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (opaquePass == true) ) ||
-				( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (opaquePass == false) )		)
-			drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+			// Render all pass.
+			for (uint i=0;i<mBlock.RdrPass.size();i++)
+			{
+				CRdrPass	&rdrPass= mBlock.RdrPass[i];
+				// Render with the Materials of the MeshInstance.
+				if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (opaquePass == true) ) ||
+					 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (opaquePass == false) ) )
+				{
+					// CMaterial Ref
+					CMaterial &material=mi->Materials[rdrPass.MaterialId];
+
+					// Backup opacity
+					uint8 opacity=material.getOpacity ();
+
+					// New opacity
+					material.setOpacity (globalAlphaInt);
+
+					// Backup the zwrite
+					bool zwrite=material.getZWrite ();
+
+					// New zwrite
+					material.setZWrite (false);
+
+					// Backup blend
+					bool blend=material.getBlend ();
+					material.setBlend (true);
+
+					// Render
+					drv->render(rdrPass.PBlock, material);
+
+					// Resetup backuped opacity
+					material.setOpacity (opacity);
+
+					// Resetup backuped zwrite
+					material.setZWrite (zwrite);
+
+					// Resetup backuped blend
+					material.setBlend (blend);
+				}
+			}
+		}
+		else
+		{
+			// Render all pass.
+			for(uint i=0;i<mBlock.RdrPass.size();i++)
+			{
+				CRdrPass	&rdrPass= mBlock.RdrPass[i];
+				// Render with the Materials of the MeshInstance.
+				if( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (opaquePass == true) ) ||
+					( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (opaquePass == false) )		)
+					drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+			}
 		}
 	}
 
@@ -984,7 +1034,7 @@ bool	CMesh::clip(const std::vector<CPlane>	&pyramid)
 // ***************************************************************************
 void	CMesh::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
-	_MeshGeom->render(drv, trans, passOpaque);
+	_MeshGeom->render(drv, trans, passOpaque, 0);
 }
 
 

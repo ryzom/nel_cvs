@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.4 2001/06/29 09:48:57 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.5 2001/07/09 17:17:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "3d/scene_user.h"
+#include "3d/coarse_mesh_manager.h"
 
 
 namespace NL3D 
@@ -59,9 +60,8 @@ void			CSceneUser::deletePlayListManager(UPlayListManager	*playListManager)
 	_PlayListManagers.erase((CPlayListManagerUser*)playListManager, "deletePlayListManager(): Bad PlayListManager ptr");
 }
 
-
-
 // ***************************************************************************
+
 void			CSceneUser::setPolygonBalancingMode(CSceneUser::TPolygonBalancingMode polBalMode)
 {
 	nlassert( (uint)CScene::CountPolygonBalancing == (uint)CSceneUser::CountPolygonBalancing );
@@ -69,6 +69,7 @@ void			CSceneUser::setPolygonBalancingMode(CSceneUser::TPolygonBalancingMode pol
 }
 
 // ***************************************************************************
+
 CSceneUser::TPolygonBalancingMode	CSceneUser::getPolygonBalancingMode() const
 {
 	nlassert( (uint)CScene::CountPolygonBalancing == (uint)CSceneUser::CountPolygonBalancing );
@@ -76,15 +77,33 @@ CSceneUser::TPolygonBalancingMode	CSceneUser::getPolygonBalancingMode() const
 }
 
 // ***************************************************************************
+
 void				CSceneUser::setLoadMaxPolygon(uint nFaces)
 {
 	_Scene.setLoadMaxPolygon(nFaces);
 }
+
 // ***************************************************************************
+
 uint				CSceneUser::getLoadMaxPolygon() const
 {
 	return _Scene.getLoadMaxPolygon();
 }
 
+// ***************************************************************************
+
+void CSceneUser::setStaticCoarseMeshManagerTexture (const char *sPath)
+{
+	_Scene.getStaticCoarseMeshManager ()->setTextureFile (sPath);
+}
+
+// ***************************************************************************
+
+void CSceneUser::setDynamicCoarseMeshManagerTexture (const char *sPath)
+{
+	_Scene.getDynamicCoarseMeshManager ()->setTextureFile (sPath);
+}
+
+// ***************************************************************************
 
 } // NL3D

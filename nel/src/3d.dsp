@@ -175,6 +175,14 @@ SOURCE=.\3d\camera.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\coarse_mesh_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\coarse_mesh_manager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\landscape_model.cpp
 # End Source File
 # Begin Source File
@@ -1336,14 +1344,6 @@ SOURCE=.\3d\async_file_manager.cpp
 # Begin Source File
 
 SOURCE=.\3d\async_file_manager.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\coarse_mesh_manager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\coarse_mesh_manager.h
 # End Source File
 # Begin Source File
 

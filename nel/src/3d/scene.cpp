@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.40 2001/07/04 16:24:41 corvazier Exp $
+ * $Id: scene.cpp,v 1.41 2001/07/09 17:17:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,8 @@
 using namespace std;
 using namespace NLMISC;
 
+#define NL3D_SCENE_STATIC_COARSE_MANAGER_TEXTURE	"nel_coarse_texture.tga"
+#define NL3D_SCENE_DYNAMIC_COARSE_MANAGER_TEXTURE	NL3D_SCENE_STATIC_COARSE_MANAGER_TEXTURE
 
 namespace NL3D
 {
@@ -198,6 +200,10 @@ void	CScene::initCoarseMeshManager ()
 {
 	_StaticCoarseMeshManager=(CCoarseMeshManager*)createModel (CoarseMeshManagerId);
 	_DynamicCoarseMeshManager=(CCoarseMeshManager*)createModel (CoarseMeshManagerId);
+
+	// Init default texture files
+	_StaticCoarseMeshManager->setTextureFile (NL3D_SCENE_STATIC_COARSE_MANAGER_TEXTURE);
+	_DynamicCoarseMeshManager->setTextureFile (NL3D_SCENE_DYNAMIC_COARSE_MANAGER_TEXTURE);
 }
 // ***************************************************************************
 void	CScene::addTrav(ITrav *v)

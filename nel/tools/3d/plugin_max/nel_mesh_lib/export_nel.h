@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.11 2001/07/06 12:51:23 corvazier Exp $
+ * $Id: export_nel.h,v 1.12 2001/07/09 17:17:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -425,7 +425,8 @@ private:
 	  * if skeletonShape is NULL, no skinning is exported.
 	  */
 	static void						buildMeshInterface (TriObject &tri, NL3D::CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild,
-														INode& node, TimeValue time, const NL3D::CSkeletonShape* skeletonShape, bool absolutePath);
+														INode& node, TimeValue time, const NL3D::CSkeletonShape* skeletonShape, bool absolutePath, 
+														const NLMISC::CMatrix& newBasis=NLMISC::CMatrix::Identity);
 
 	/**
 	  * Build a NeL mrm parameters block
@@ -436,7 +437,8 @@ private:
 	  * Build a mesh geom with a node
 	  */
 	static NL3D::IMeshGeom			*buildMeshGeom (INode& node, Interface& ip, TimeValue time, const NL3D::CSkeletonShape* skeletonShape, bool absolutePath,
-													CExportNelOptions &opt, NL3D::CMeshBase::CMeshBaseBuild &buildBaseMesh, std::vector<std::string>& listMaterialName);
+													CExportNelOptions &opt, NL3D::CMeshBase::CMeshBaseBuild &buildBaseMesh, std::vector<std::string>& listMaterialName,
+													bool& isTransparent, bool& isOpaque, const NLMISC::CMatrix& WorldToparentMatrix);
 
 	// Get the normal of a face for a given corner in localSpace
 	static Point3					getLocalNormal (int face, int corner, Mesh& mesh);

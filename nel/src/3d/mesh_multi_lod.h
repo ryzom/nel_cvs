@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.5 2001/07/06 12:51:23 corvazier Exp $
+ * $Id: mesh_multi_lod.h,v 1.6 2001/07/09 17:17:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,8 @@ public:
 				BlendIn				=	0x01,
 				BlendOut			=	0x02,
 				CoarseMesh			=	0x04,
+				IsOpaque			=	0x08,
+				IsTransparent		=	0x10,
 			};
 
 			/**
@@ -124,6 +126,9 @@ public:
 	/// get an approximation of the number of triangles this instance will render for a fixed distance.
 	virtual float	getNumTriangles (float distance);
 
+	/// Get bbox.
+	virtual void	getAABBox(NLMISC::CAABBox &bbox) const;
+
 	/// serial this mesh.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
@@ -132,17 +137,20 @@ public:
 
 	// @}
 
+	/// Return the global max dist for this lod
+	float getDistMax () const
+	{
+		// Last element
+		std::vector<CMeshSlot>::const_iterator ite=_MeshVector.end();
+		ite--;
+		if (ite!=_MeshVector.end())
+			return ite->DistMax;
+		else
+			return 0;
+	}
+
 private:
 
-	/// Flags of CMeshSlot
-	enum
-	{
-		BlendIn				=	0x01,
-		BlendOut			=	0x02,
-		CoarseMesh			=	0x04,
-		CoarseMeshLoaded	=	0x08,
-	};
-	
 	/** 
 	  * This is a slot of the mesh base list
 	  * 
@@ -153,6 +161,18 @@ private:
 	class CMeshSlot
 	{
 	public:
+		/// Flags of CMeshSlot
+		enum
+		{
+			BlendIn				=	0x01,
+			BlendOut			=	0x02,
+			CoarseMesh			=	0x04,
+			IsOpaque			=	0x08,
+			IsTransparent		=	0x10,
+			CoarseMeshLoaded	=	0x20,
+		};
+
+		/// Ctor
 		CMeshSlot ();
 		~CMeshSlot ();
 
@@ -191,6 +211,12 @@ private:
 
 		/// Serial
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+
+		///  Is Opaque ?
+		bool isOpaque() { return (Flags&IsOpaque)!=0; }
+
+		///  Is Transparent ?
+		bool isTransparent() { return (Flags&IsTransparent)!=0; }
 	};
 
 	/// Static or dynamic load ?
@@ -203,7 +229,9 @@ private:
 	void	clear ();
 
 	/// Render a slot
-	void	render (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool staticLod);
+	void	render (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool staticLod, bool passOpaque);
+
+	friend class CMeshMultiLodBalancingObs;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.15 2001/07/05 09:38:49 besson Exp $
+ * $Id: mesh_mrm.cpp,v 1.16 2001/07/09 17:17:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -380,15 +380,14 @@ bool	CMeshMRMGeom::clip(const std::vector<CPlane>	&pyramid)
 
 
 // ***************************************************************************
-void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
+void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha)
 {
 	nlassert(drv);
 	if(_Lods.size()==0)
 		return;
 
 	// get the meshMRM instance.
-	nlassert(dynamic_cast<CMeshMRMInstance*>(trans));
-	CMeshMRMInstance	*mi= (CMeshMRMInstance*)trans;
+	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
 
 
 	// get the result of the Load Balancing.
@@ -396,7 +395,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 	if(_MaxFaceUsed > _MinFaceUsed)
 	{
 		// compute the level of detail we want.
-		alphaMRM= (trans->getNumTrianglesAfterLoadBalancing() - _MinFaceUsed) / (_MaxFaceUsed - _MinFaceUsed);
+		alphaMRM= (polygonCount - _MinFaceUsed) / (_MaxFaceUsed - _MinFaceUsed);
 		clamp(alphaMRM, 0, 1);
 	}
 	else
@@ -431,7 +430,6 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 	CLod	&lod= _Lods[numLod];
 	if(lod.RdrPass.size()==0)
 		return;
-
 
 	// Skinning.
 	//===========
@@ -475,12 +473,57 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 	// active VB.
 	drv->activeVertexBuffer(_VBuffer);
 
+	// Global alpha used ?
+	bool globalAlphaUsed=globalAlpha!=1;
+	uint8 globalAlphaInt=(uint8)(globalAlpha*255);
+
 	// Render all pass.
-	for(uint i=0;i<lod.RdrPass.size();i++)
+	if (globalAlphaUsed)
 	{
-		CRdrPass	&rdrPass= lod.RdrPass[i];
-		// Render with the Materials of the MeshInstance.
-		drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+		for(uint i=0;i<lod.RdrPass.size();i++)
+		{
+			CRdrPass	&rdrPass= lod.RdrPass[i];
+
+			// CMaterial Ref
+			CMaterial &material=mi->Materials[rdrPass.MaterialId];
+
+			// Backup opacity
+			uint8 opacity=material.getOpacity ();
+
+			// Backup blend
+			bool blend=material.getBlend ();
+			material.setBlend (true);
+
+			// New opacity
+			material.setOpacity (globalAlphaInt);
+
+			// Backup the zwrite
+			bool zwrite=material.getZWrite ();
+
+			// New zwrite
+			material.setZWrite (false);
+
+			// Render
+			drv->render(rdrPass.PBlock, material);
+
+			// Resetup backuped opacity
+			material.setOpacity (opacity);
+
+			// Resetup backuped zwrite
+			material.setZWrite (zwrite);
+
+			// Resetup backuped blend
+			material.setBlend (blend);
+		}
+	}
+	else
+	{
+		for(uint i=0;i<lod.RdrPass.size();i++)
+		{
+			CRdrPass	&rdrPass= lod.RdrPass[i];
+			// Render with the Materials of the MeshInstance.
+			drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+		}
 	}
 
 
@@ -1250,7 +1293,7 @@ bool	CMeshMRM::clip(const std::vector<CPlane>	&pyramid)
 // ***************************************************************************
 void	CMeshMRM::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
-	_MeshMRMGeom.render(drv, trans, passOpaque);
+	_MeshMRMGeom.render(drv, trans, passOpaque, trans->getNumTrianglesAfterLoadBalancing());
 }
 
 

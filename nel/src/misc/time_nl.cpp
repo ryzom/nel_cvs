@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.15 2002/04/15 12:58:16 lecroart Exp $
+ * $Id: time_nl.cpp,v 1.16 2003/02/03 15:55:09 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ TTicks CTime::getPerformanceTime ()
 	unsigned long long int x;
 	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
 	return x;
-#else HAVE_X86
+#else // HAVE_X86
 	static bool firstWarn = true;
 	if (firstWarn)
 	{

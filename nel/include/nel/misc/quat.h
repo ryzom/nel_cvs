@@ -1,7 +1,7 @@
 /** \file quat.h
  * CQuat class
  *
- * $Id: quat.h,v 1.6 2002/02/20 18:05:44 lecroart Exp $
+ * $Id: quat.h,v 1.7 2003/07/28 17:29:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,7 +97,7 @@ public:
 
 	/// \name Comparison
 	// @{
-	bool	operator==(const CQuatT& a) const		{return (x==0 && y==0 && z==0 && w==1.0f);}
+	bool	operator==(const CQuatT& a) const		{return (x==a.x && y==a.y && z==a.z && w==a.w);}
 	bool	equal(const CQuatT& a, float epsilon = 1E-6f) const;
 	void	identity()						{x = y = z = 0.0f ;	w = 1.0f; }
 	bool	isIdentity() const				{return (x==0.0f && y==0.0f && z==0.0f && w==1.0f);}

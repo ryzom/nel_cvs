@@ -357,6 +357,7 @@ echo Merge = 1\; >> build_indoor_rbank.cfg
 echo MergePath = \"$rbank_temp_path"smooth/"\"\; >> build_indoor_rbank.cfg
 echo MergeInputPrefix  = \"temp\"\; >> build_indoor_rbank.cfg
 echo MergeOutputPrefix  = \"tempMerged\"\; >> build_indoor_rbank.cfg
+echo AddToRetriever = \"1\"\; >> build_indoor_rbank.cfg
 
 # Log error
 echo >> log.log

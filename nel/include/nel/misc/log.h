@@ -1,7 +1,7 @@
 /** \file log.h
  * CLog class
  *
- * $Id: log.h,v 1.15 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: log.h,v 1.16 2001/02/13 16:49:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,7 @@ public:
 	void removeDisplayer (IDisplayer *displayer);
 
 	/// Returns true if the specified displayer is attached to the log object
-	bool attached(IDisplayer *displayer) const ;
+	bool attached(IDisplayer *displayer) const;
 
 	/// Set the name of the process
 	static void setProcessName (const std::string &processName);

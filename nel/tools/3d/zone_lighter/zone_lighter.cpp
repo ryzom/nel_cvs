@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.15 2002/02/15 15:22:58 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.16 2002/02/15 17:29:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,7 +165,10 @@ int main(int argc, char* argv[])
 				inputFile.close();
 
 				// Load ig of the zone
-				string igName=CPath::lookup (getName (argv[1])+".ig", false, false);
+				string igName = getName (argv[1])+".ig";
+				string igNameLookup = CPath::lookup (igName, false, false);
+				if (!igNameLookup.empty())
+					igName = igNameLookup;
 
 				bool zoneIgLoaded;
 
@@ -194,7 +197,11 @@ int main(int argc, char* argv[])
 				CConfigFile::CVar &bank_name = parameter.getVar ("bank_name");
 
 				// Load the bank
-				if (inputFile.open (CPath::lookup (bank_name.asString(), false, false)))
+				string bankName = bank_name.asString();
+				string bankNameLookup = CPath::lookup (bankName, false, false);
+				if (!bankNameLookup.empty())
+					bankName = bankNameLookup;
+				if (inputFile.open (bankName))
 				{
 					try
 					{
@@ -205,13 +212,13 @@ int main(int argc, char* argv[])
 					catch (Exception &e)
 					{
 						// Error
-						nlwarning ("ERROR error loading tile bank %s\n%s\n", bank_name.asString().c_str(), e.what());
+						nlwarning ("ERROR error loading tile bank %s\n%s\n", bankName.c_str(), e.what());
 					}
 				}
 				else
 				{
 					// Error
-					nlwarning ("ERROR can't load tile bank %s\n", bank_name.asString().c_str());
+					nlwarning ("ERROR can't load tile bank %s\n", bankName.c_str());
 				}
 
 				// Add the zone
@@ -238,7 +245,10 @@ int main(int argc, char* argv[])
 							CIFile inputFile;
 
 							// Name of the instance group
-							string name=CPath::lookup (additionnal_ig.asString(add), false, false);
+							string name = additionnal_ig.asString(add);
+							string nameLookup = CPath::lookup (name, false, false);
+							if (!nameLookup.empty())
+								name = nameLookup;
 
 							// Try to open the file
 							if (inputFile.open (name))
@@ -299,7 +309,10 @@ int main(int argc, char* argv[])
 					// Try to load an instance group.
 					if (loadInstanceGroup)
 					{
-						string name = CPath::lookup (zoneName+".ig", false, false);
+						string name = zoneName+".ig";
+						string nameLookup = CPath::lookup (name, false, false);
+						if (!nameLookup.empty())
+							name = nameLookup;
 
 						// Name of the instance group
 						if (inputFile.open (name))
@@ -479,7 +492,9 @@ int main(int argc, char* argv[])
 							name += ".shape";
 
 						// Add path
-						name = CPath::lookup (name, false, false);
+						string nameLookup = CPath::lookup (name, false, false);
+						if (!nameLookup.empty())
+							name = nameLookup;
 
 						// Find the shape in the bank
 						std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);

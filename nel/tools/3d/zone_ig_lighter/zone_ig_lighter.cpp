@@ -2,7 +2,7 @@
  * zone_ig_lighter.cpp : instance lighter for ig in landscape zones
  * greatly copied from ../zone_lighter/zone_lighter.cpp
  *
- * $Id: zone_ig_lighter.cpp,v 1.2 2002/02/15 15:22:58 corvazier Exp $
+ * $Id: zone_ig_lighter.cpp,v 1.3 2002/02/15 17:29:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,7 +165,10 @@ int main(int argc, char* argv[])
 				inputFile.close();
 
 				// Load ig of the zone
-				string igName=CPath::lookup (getName (argv[1])+".ig", false, false);
+				string igName = getName (argv[1])+".ig";
+				string igNameLookup = CPath::lookup (igName, false, false);
+				if (!igNameLookup.empty())
+					igName = igNameLookup;
 
 				bool zoneIgLoaded;
 
@@ -243,7 +246,10 @@ int main(int argc, char* argv[])
 							CIFile inputFile;
 
 							// Name of the instance group
-							string name=CPath::lookup (additionnal_ig.asString(add), false, false);
+							string name = additionnal_ig.asString(add);
+							string nameLookup = CPath::lookup (name, false, false);
+							if (!nameLookup.empty())
+								name = nameLookup;
 
 							// Try to open the file
 							if (inputFile.open (name))
@@ -304,7 +310,10 @@ int main(int argc, char* argv[])
 					// Try to load an instance group.
 					if (loadInstanceGroup)
 					{
-						string name = CPath::lookup (zoneName+".ig", false, false);
+						string name = zoneName+".ig";
+						string nameLookup = CPath::lookup (name, false, false);
+						if (!nameLookup.empty())
+							name = nameLookup;
 
 						// Name of the instance group
 						if (inputFile.open (name))
@@ -402,7 +411,9 @@ int main(int argc, char* argv[])
 							name += ".shape";
 
 						// Find the file
-						name = CPath::lookup (name, false, false);
+						string nameLookup = CPath::lookup (name, false, false);
+						if (!nameLookup.empty())
+							name = nameLookup;
 
 						// Find the shape in the bank
 						std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);

@@ -1,7 +1,7 @@
 /** \file ig_lighter.cpp
  * ig_lighter.cpp : Instance lighter
  *
- * $Id: ig_lighter.cpp,v 1.4 2002/02/15 15:22:58 corvazier Exp $
+ * $Id: ig_lighter.cpp,v 1.5 2002/02/15 17:29:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,7 +260,9 @@ void	lightIg(const CInstanceGroup &igIn, CInstanceGroup &igOut, CInstanceLighter
 				name += ".shape";
 
 			// Lookup the file
-			name = CPath::lookup (name);
+			string nameLookup = CPath::lookup (name, false, false);
+			if (!nameLookup.empty())
+				name = nameLookup;
 
 			// Find the shape in the bank
 			std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);

@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.5 2001/11/16 16:46:27 vizerie Exp $
+ * $Id: water_model.h,v 1.6 2001/11/21 16:03:22 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/transform_shape.h"
+#include "nel/3d/u_water.h"
 
 namespace MISC
 {
@@ -48,7 +49,7 @@ class CScene;
  * \author Nevrax France
  * \date 2001
  */
-class CWaterModel : public CTransformShape
+class CWaterModel : public CTransformShape, public UWaterInstance
 {
 public:
 	/// ctor
@@ -60,6 +61,22 @@ public:
 
 	// get default tracks
 	virtual ITrack* getDefaultTrack (uint valueId);
+
+	/// inherited from UWaterInstance	
+	virtual uint32	getWaterHeightMapID() const;
+
+	/// inherited from UWaterInstance	
+	virtual float	getHeightFactor() const;
+
+	/// inherited from UWaterInstance	
+	virtual float   getHeight(const NLMISC::CVector2f &pos);
+
+	/// inherited from UWaterInstance	
+	virtual float   getAttenuatedHeight(const NLMISC::CVector2f &pos, const NLMISC::CVector &viewer);
+
+
+
+
 protected:
 	friend class CWaterRenderObs;
 	friend class CWaterShape;

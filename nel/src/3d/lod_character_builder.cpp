@@ -1,7 +1,7 @@
 /** \file lod_character_builder.cpp
  * <File description>
  *
- * $Id: lod_character_builder.cpp,v 1.4 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: lod_character_builder.cpp,v 1.5 2003/11/07 14:27:14 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -95,7 +95,7 @@ void			CLodCharacterBuilder::setShape(const std::string &name, CSkeletonShape *s
 	// Build a scene, for addAnim purpose
 	if(!_TmpScene)
 	{
-		_TmpScene= new CScene;
+		_TmpScene= new CScene(false);
 		// Must init Statics for scene (because use it in addAnim). NB: never mind if done twice.
 		CScene::registerBasics();
 		// init default Roots.

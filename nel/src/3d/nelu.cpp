@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.31 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: nelu.cpp,v 1.32 2003/11/07 14:27:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,8 +47,8 @@ const float		CNELU::DefLzNear=0.15f;
 const float		CNELU::DefLzFar=1000.0f;
 
 IDriver				*CNELU::Driver=NULL;
-CScene				CNELU::Scene;
-CShapeBank			*CNELU::ShapeBank;
+CScene				*CNELU::Scene=NULL;
+CShapeBank			*CNELU::ShapeBank=NULL;
 CRefPtr<CCamera>	CNELU::Camera;
 CEventServer		CNELU::EventServer;
 CEventListenerAsync	CNELU::AsyncListener;
@@ -86,25 +86,28 @@ void			CNELU::initScene(CViewport viewport)
 	// Register basic csene.
 	CScene::registerBasics();
 
+	if (CNELU::Scene == NULL)
+		CNELU::Scene = new CScene(false);
+
 	// init default Roots.
-	CNELU::Scene.initDefaultRoots();
+	CNELU::Scene->initDefaultRoots();
 	
 	// Set driver.
-	CNELU::Scene.setDriver(CNELU::Driver);
+	CNELU::Scene->setDriver(CNELU::Driver);
 
 	// Set viewport
-	CNELU::Scene.setViewport (viewport);
+	CNELU::Scene->setViewport (viewport);
 
 	// init QuadGridClipManager
-	CNELU::Scene.initQuadGridClipManager ();
+	CNELU::Scene->initQuadGridClipManager ();
 
 	// Create/link a camera.
-	CNELU::Camera= (CCamera*)Scene.createModel(NL3D::CameraId);
-	CNELU::Scene.setCam(CNELU::Camera);
+	CNELU::Camera= (CCamera*)CNELU::Scene->createModel(NL3D::CameraId);
+	CNELU::Scene->setCam(CNELU::Camera);
 	CNELU::Camera->setFrustum(DefLx, DefLy, DefLzNear, DefLzFar);
 
 	// Link to the shape bank
-	CNELU::Scene.setShapeBank(CNELU::ShapeBank);
+	CNELU::Scene->setShapeBank(CNELU::ShapeBank);
 }
 
 
@@ -132,8 +135,8 @@ void			CNELU::releaseScene()
 	CNELU::Camera= NULL;
 
 	// "Release" the Scene.
-	CNELU::Scene.setDriver(NULL);
-	CNELU::Scene.release();
+	CNELU::Scene->setDriver(NULL);
+	CNELU::Scene->release();
 }
 
 

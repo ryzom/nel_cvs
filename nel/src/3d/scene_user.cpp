@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.53 2003/10/22 13:40:39 besson Exp $
+ * $Id: scene_user.cpp,v 1.54 2003/11/07 14:27:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -924,7 +924,7 @@ void						CSceneUser::deleteVisualCollisionManager(UVisualCollisionManager *mgr)
 
 
 // ***************************************************************************
-CSceneUser::CSceneUser(CDriverUser *drv)
+CSceneUser::CSceneUser(CDriverUser *drv, bool bSmallScene) : _Scene(bSmallScene)
 {
 	NL3D_MEM_SCENE_INIT
 	nlassert(drv);

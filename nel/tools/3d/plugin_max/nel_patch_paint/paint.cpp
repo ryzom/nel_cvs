@@ -4088,7 +4088,7 @@ DWORD WINAPI myThread (LPVOID vData)
 			CNELU::init(MAIN_Width, MAIN_Height, viewport);
 
 			// Create a Landscape.
-			CLandscapeModel	*TheLand= (CLandscapeModel*)CNELU::Scene.createModel(LandscapeModelId);
+			CLandscapeModel	*TheLand= (CLandscapeModel*)CNELU::Scene->createModel(LandscapeModelId);
 			TheLand->Landscape.setTileNear (1000.f);
 			TheLand->Landscape.TileBank=bank;
 
@@ -4133,7 +4133,7 @@ DWORD WINAPI myThread (LPVOID vData)
 							CNELU::ShapeBank->add (CExportNel::getName (*pNode), pShape);
 
 							// Create an instance
-							CTransformShape *tShape=CNELU::Scene.createInstance (CExportNel::getName (*pNode));
+							CTransformShape *tShape=CNELU::Scene->createInstance (CExportNel::getName (*pNode));
 
 							// Big hack to sort
 							TheLand->clipAddChild(tShape);
@@ -4280,22 +4280,22 @@ DWORD WINAPI myThread (LPVOID vData)
 					// Flush all its 128x128 tiles
 					sint tl;
 					for (tl=0; tl<tileSet->getNumTile128(); tl++)
-						TheLand->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTile128(tl), 1);
+						TheLand->Landscape.flushTiles (CNELU::Scene->getDriver(), (uint16)tileSet->getTile128(tl), 1);
 
 					// Flush all its 256x256 tiles
 					for (tl=0; tl<tileSet->getNumTile256(); tl++)
-						TheLand->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTile256(tl), 1);
+						TheLand->Landscape.flushTiles (CNELU::Scene->getDriver(), (uint16)tileSet->getTile256(tl), 1);
 
 					// Flush all its transisitons tiles
 					for (tl=0; tl<CTileSet::count; tl++)
-						TheLand->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTransition(tl)->getTile (), 1);
+						TheLand->Landscape.flushTiles (CNELU::Scene->getDriver(), (uint16)tileSet->getTransition(tl)->getTile (), 1);
 				}
 			}
 
 			// Setup lights
 			CPaintLight lights;
 			lights.build (*pData->eproc->ip);
-			lights.setup (TheLand->Landscape, CNELU::Scene);
+			lights.setup (TheLand->Landscape, *CNELU::Scene);
 
 			// MAIN LOOP
 			do
@@ -4304,14 +4304,14 @@ DWORD WINAPI myThread (LPVOID vData)
 				CNELU::EventServer.pump();
 
 				// Call the proc
-				mainproc(CNELU::Scene, CNELU::AsyncListener, mouseListener, *TheLand, *CNELU::Scene.getDriver(), pData, listener.PaintColor);
+				mainproc(*CNELU::Scene, CNELU::AsyncListener, mouseListener, *TheLand, *CNELU::Scene->getDriver(), pData, listener.PaintColor);
 			}
 			while (!CNELU::AsyncListener.isKeyPushed(KeyESCAPE)&&listener.WindowActive);
 
 			// Release the emitter from the server
 			mouseListener.removeFromServer (CNELU::EventServer);
 
-			CNELU::Scene.getDriver()->release ();
+			CNELU::Scene->getDriver()->release ();
 
 			// Mouse listener
 			CNELU::EventServer.removeListener (EventMouseMoveId, &listener);

@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * <File description>
  *
- * $Id: lighting_manager.cpp,v 1.12 2003/07/30 15:59:34 vizerie Exp $
+ * $Id: lighting_manager.cpp,v 1.13 2003/11/07 14:27:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,13 +61,19 @@ namespace NL3D {
 
 
 // ***************************************************************************
-CLightingManager::CLightingManager()
+CLightingManager::CLightingManager(bool bSmallScene)
 {
 	// Init the lightQuadGrids and StaticLightedModelQuadGrid
 	// finer level.
 	uint	qgSize= NL3D_LIGHT_QUAD_GRID_SIZE;
 	float	eltSize= NL3D_LIGHT_QUAD_GRID_ELTSIZE;
 	float	radiusLimit= NL3D_LIGHT_QUAD_GRID_RADIUS_LIMIT;
+
+	if (bSmallScene)
+	{
+		qgSize = 4;
+	}
+
 	// for all levels
 	for(uint i=0;i<NL3D_QUADGRID_LIGHT_NUM_LEVEL;i++)
 	{

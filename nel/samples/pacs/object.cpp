@@ -1,7 +1,7 @@
 /** \file net_layer5/object.cpp
  * Objects for the sample. Link between 3d instance and collision primitives.
  *
- * $Id: object.cpp,v 1.3 2003/10/10 10:08:49 corvazier Exp $
+ * $Id: object.cpp,v 1.4 2003/11/07 14:30:15 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,13 +29,14 @@
 #include <nel/pacs/u_move_container.h>
 #include <nel/pacs/u_move_primitive.h>
 
+// Misc includes
+#include <nel/misc/vectord.h>
+#include <nel/misc/quat.h>
+
 // 3d includes
 #include <nel/3d/u_scene.h>
 #include <nel/3d/u_instance.h>
 #include <nel/3d/u_instance_material.h>
-
-// Misc includes
-#include <nel/misc/vectord.h>
 
 #define BRAKE_FORCE (-0.1) // (m.s-2)
 #define GRAVITY_FORCE (-15.0)

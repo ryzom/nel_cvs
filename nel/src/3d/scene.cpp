@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.112 2003/10/22 13:40:39 besson Exp $
+ * $Id: scene.cpp,v 1.113 2003/11/07 14:27:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,7 +127,7 @@ void	CScene::registerBasics()
 // ***************************************************************************
 
 // ***************************************************************************
-CScene::CScene()
+CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
 {
 	HrcTrav.Scene= this;
 	ClipTrav.Scene= this;

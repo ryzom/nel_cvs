@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.25 2003/08/01 13:11:23 corvazier Exp $
+ * $Id: script.cpp,v 1.26 2003/11/07 14:29:32 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1732,12 +1732,12 @@ bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, c
 			CNELU::Camera->setMatrix (view);
 
 			// Create a Landscape.
-			CLandscapeModel	*theLand= (CLandscapeModel*)CNELU::Scene.createModel(LandscapeModelId);
+			CLandscapeModel	*theLand= (CLandscapeModel*)CNELU::Scene->createModel(LandscapeModelId);
 
 			// Build the scene
 			CExportNelOptions options;
 			CExportNel export (errorInDialog, false, true, MAXScript_interface, "Snapshot ligozone", &options);
-			export.buildScene (CNELU::Scene, *CNELU::ShapeBank, *CNELU::Driver, 0, &theLand->Landscape, NULL, false, false, false);
+			export.buildScene (*CNELU::Scene, *CNELU::ShapeBank, *CNELU::Driver, 0, &theLand->Landscape, NULL, false, false, false);
 
 			theLand->Landscape.setTileNear (50.f);
 			theLand->Landscape.TileBank=tileBank;
@@ -1758,38 +1758,38 @@ bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, c
 			CNELU::clearBuffers(CRGBA(255,0,255,0));
 
 			// Render the scene
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
-			CNELU::Scene.render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
+			CNELU::Scene->render();
 
 			// Snapshot
 			CNELU::Driver->getBuffer (snapshot);

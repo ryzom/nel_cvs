@@ -75,7 +75,7 @@ void CLightGroupFactor::handle ()
 	UpdateData ();
 
 	// Set the light factors
-	CNELU::Scene.setLightGroupColor (0, CRGBA (LightGroup1, LightGroup1, LightGroup1));
-	CNELU::Scene.setLightGroupColor (1, CRGBA (LightGroup2, LightGroup2, LightGroup2));
-	CNELU::Scene.setLightGroupColor (2, CRGBA (LightGroup3, LightGroup3, LightGroup3));
+	CNELU::Scene->setLightGroupColor (0, CRGBA (LightGroup1, LightGroup1, LightGroup1));
+	CNELU::Scene->setLightGroupColor (1, CRGBA (LightGroup2, LightGroup2, LightGroup2));
+	CNELU::Scene->setLightGroupColor (2, CRGBA (LightGroup3, LightGroup3, LightGroup3));
 }

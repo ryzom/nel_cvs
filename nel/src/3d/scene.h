@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.48 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: scene.h,v 1.49 2003/11/07 14:27:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,7 @@ public:
 	/// \name Construction / destruction.
 	//@{
 	/// Constructor.
-	CScene();
+	CScene(bool bSmallScene);
 	/// Destructor. release().
 	~CScene();
 	/// Create/setRoot the defaults models roots: a CTransform and a CLightGroup.

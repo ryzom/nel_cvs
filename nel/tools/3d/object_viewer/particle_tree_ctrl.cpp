@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.48 2003/10/07 12:33:01 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.49 2003/11/07 14:29:32 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ using NL3D::CParticleSystem;
 using NL3D::CParticleSystemModel;
 using NL3D::CPSLocated;
 using NL3D::CPSLocatedBindable;
-
+using NL3D::CNELU;
 
 
 
@@ -822,12 +822,12 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			
 				_ParticleDlg->unstickPSFromSkeleton();
 				NL3D::IShape *sh = nt->PSModel->Shape;																			
-				NL3D::CNELU::Scene.deleteInstance(nt->PSModel);
-				NL3D::CNELU::Scene.getShapeBank()->reset();						
+				CNELU::Scene->deleteInstance(nt->PSModel);
+				CNELU::Scene->getShapeBank()->reset();						
 			
 				DeleteItem(TVI_ROOT);				
 			
-				NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName())));
+				NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(CNELU::Scene->createInstance(std::string((LPCTSTR) fd.GetFileName())));
 
 				if (newModel)
 				{		
@@ -907,7 +907,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 					_makepath (path, drive, dir, NULL, NULL);
 					NLMISC::CPath::addSearchPath (path);
 																																				
-					NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName())));
+					NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(CNELU::Scene->createInstance(std::string((LPCTSTR) fd.GetFileName())));
 
 					if (newModel)
 					{									
@@ -923,8 +923,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 							MessageBox((LPCTSTR) mess, (LPCTSTR) errorStr, MB_ICONEXCLAMATION);
 						}
 					}
-					NL3D::CNELU::Scene.deleteInstance(newModel);
-					NL3D::CNELU::Scene.getShapeBank()->reset();
+					CNELU::Scene->deleteInstance(newModel);
+					CNELU::Scene->getShapeBank()->reset();
 
 					DeleteItem(TVI_ROOT);
 					buildTreeFromPS(nt->PS, nt->PSModel);
@@ -1017,8 +1017,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				
 				_ParticleDlg->StartStopDlg->stop();																						
 				NL3D::IShape *sh = nt->PSModel->Shape;																			
-				NL3D::CNELU::Scene.deleteInstance(nt->PSModel);
-				NL3D::CNELU::Scene.getShapeBank()->reset();										
+				CNELU::Scene->deleteInstance(nt->PSModel);
+				CNELU::Scene->getShapeBank()->reset();										
 				DeleteItem(TVI_ROOT);				
 								
 				// create a blank system

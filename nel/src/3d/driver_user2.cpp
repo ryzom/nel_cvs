@@ -1,7 +1,7 @@
 /** \file driver_user2.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.18 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: driver_user2.cpp,v 1.19 2003/11/07 14:27:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,11 +60,12 @@ namespace NL3D
 
 
 // ***************************************************************************
-UScene			*CDriverUser::createScene() 
+UScene			*CDriverUser::createScene(bool bSmallScene) 
 {
 	NL3D_MEM_DRIVER
 
-	CSceneUser *pSU = new CSceneUser(this);
+	CSceneUser *pSU = new CSceneUser(this, bSmallScene);
+
 	// set the shape bank
 	pSU->getScene().setShapeBank( &_ShapeBank._ShapeBank );
 	// set the MeshSkinManagers
@@ -83,11 +84,6 @@ void			CDriverUser::deleteScene(UScene	*scene)
 
 	_Scenes.erase((CSceneUser*)scene, "deleteScene(): Bad scene ptr");
 }
-
-
-
-
-
 
 // ***************************************************************************
 UTextContext	*CDriverUser::createTextContext(const std::string fontFileName, const std::string fontExFileName) 
@@ -117,8 +113,6 @@ std::string		CDriverUser::getFontManagerCacheInformation() const
 
 	return _FontManager.getCacheInformation();
 }
-
-
 
 // ***************************************************************************
 UTextureFile	*CDriverUser::createTextureFile(const std::string &file) 

@@ -1,7 +1,7 @@
 /** \file light_trav.h
  * <File description>
  *
- * $Id: light_trav.h,v 1.7 2003/03/28 15:53:01 berenguier Exp $
+ * $Id: light_trav.h,v 1.8 2003/11/07 14:27:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,7 +62,7 @@ class CLightTrav : public CTraversal
 public:
 
 	/// Constructor
-	CLightTrav();
+	CLightTrav(bool bSmallScene);
 
 	/// ITrav/ITravScene Implementation.
 	//@{

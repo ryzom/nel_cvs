@@ -1,7 +1,7 @@
 /** \file view_cs.cpp
  * viewer of cluster system
  *
- * $Id: view_cs.cpp,v 1.2 2003/03/26 10:25:07 berenguier Exp $
+ * $Id: view_cs.cpp,v 1.3 2003/11/07 14:29:32 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -243,7 +243,7 @@ int CALLBACK WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	CNELU::Camera->setClusterSystem ((CInstanceGroup*)-1); 
 
 
-	CClipTrav *pClipTrav = &CNELU::Scene.getClipTrav();
+	CClipTrav *pClipTrav = &CNELU::Scene->getClipTrav();
 	dcsTemp.Name = "Root";
 	dcsTemp.pIG = NULL;
 	DispCS.push_back (dcsTemp);
@@ -254,7 +254,7 @@ int CALLBACK WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	// Begining of script reading
 	CVector CameraStart;
 
-	LoadSceneScript ("view_cs.txt", &CNELU::Scene, DispCS, CameraStart);
+	LoadSceneScript ("view_cs.txt", CNELU::Scene, DispCS, CameraStart);
 
 	CMatrix m = MouseListener.getViewMatrix();
 	m.setPos (CameraStart);
@@ -269,13 +269,13 @@ int CALLBACK WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		rOldGlobalTime = rGlobalTime;
 
 
-		CNELU::Scene.animate ((float)rGlobalTime);
+		CNELU::Scene->animate ((float)rGlobalTime);
 
 		CNELU::EventServer.pump();
 
 		CNELU::clearBuffers (CRGBA(0,0,0));
 
-		CNELU::Scene.render ();
+		CNELU::Scene->render ();
 
 		// -----------------------------------------------------
 		// -----------------------------------------------------

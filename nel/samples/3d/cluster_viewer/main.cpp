@@ -1,7 +1,7 @@
 /** \file main.cpp
  * viewer of cluster system
  *
- * $Id: main.cpp,v 1.3 2003/08/18 10:12:33 besson Exp $
+ * $Id: main.cpp,v 1.4 2003/11/07 14:30:15 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -251,7 +251,7 @@ int WINAPI WinMain(
 	CNELU::Camera->setClusterSystem ((CInstanceGroup*)-1); 
 
 
-	CClipTrav *pClipTrav = (CClipTrav*)&(CNELU::Scene.getClipTrav());
+	CClipTrav *pClipTrav = (CClipTrav*)&(CNELU::Scene->getClipTrav());
 	dcsTemp.Name = "Root";
 	dcsTemp.pIG = NULL;
 	DispCS.push_back (dcsTemp);
@@ -262,7 +262,7 @@ int WINAPI WinMain(
 	// Begining of script reading
 	CVector CameraStart;
 
-	LoadSceneScript ("main.cvs", &CNELU::Scene, DispCS, CameraStart, vAllIGs);
+	LoadSceneScript ("main.cvs", CNELU::Scene, DispCS, CameraStart, vAllIGs);
 
 	CMatrix m = MouseListener.getViewMatrix();
 	m.setPos (CameraStart);
@@ -270,10 +270,10 @@ int WINAPI WinMain(
 	// End of script reading
 
 	// Put a dynamic object in the root
-	pDynObj_InRoot = CNELU::Scene.createInstance ("Sphere01.shape");
+	pDynObj_InRoot = CNELU::Scene->createInstance ("Sphere01.shape");
 	pDynObj_InRoot->setPos (0.0f, 0.0f, 0.0f);
 	// Put a dynamic object inside
-	pDynObj_InCS = CNELU::Scene.createInstance ("Sphere01.shape");
+	pDynObj_InCS = CNELU::Scene->createInstance ("Sphere01.shape");
 	pDynObj_InCS->setPos (50.0f, 50.0f, 25.0f);
 	// No automatic detection for moving objects - setup in street
 	pDynObj_InCS->setClusterSystem (vAllIGs[0]);
@@ -295,13 +295,13 @@ int WINAPI WinMain(
 								25.0f+2.0f*sinf((float)rGlobalTime*1.2f+0.7f));
 
 
-		CNELU::Scene.animate ((float)rGlobalTime);
+		CNELU::Scene->animate ((float)rGlobalTime);
 
 		CNELU::EventServer.pump();
 
 		CNELU::clearBuffers (CRGBA(0,0,0));
 
-		CNELU::Scene.render ();
+		CNELU::Scene->render ();
 
 		// -----------------------------------------------------
 		// -----------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file pacs/main.cpp
  * Pacs sample using user interface.
  *
- * $Id: main.cpp,v 1.4 2003/10/10 10:08:49 corvazier Exp $
+ * $Id: main.cpp,v 1.5 2003/11/07 14:30:15 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,7 +148,7 @@ int main ()
 		pDriver->setDisplay (UDriver::CMode(640, 480, 0));
 
 		// Create a scene
-		UScene *pScene=pDriver->createScene();
+		UScene *pScene = pDriver->createScene(false);
 
 		// Create a container
 		// This container has 31 world images. The first is a static world image, the others are dynamic.

@@ -1,7 +1,7 @@
 /** \file lighting_manager.h
  * <File description>
  *
- * $Id: lighting_manager.h,v 1.3 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: lighting_manager.h,v 1.4 2003/11/07 14:27:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,8 +70,8 @@ public:
 
 public:
 
-	/// Constructor
-	CLightingManager();
+	/// Constructor (bSmallScene is used to setup size of the grids)
+	CLightingManager(bool bSmallScene);
 
 
 	/// \name Parameters

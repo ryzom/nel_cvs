@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.107 2003/10/10 16:45:22 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.108 2003/11/07 14:29:32 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,7 +208,7 @@ void animateCNELUScene (uint64 deltaTime = 0)
 		deltaTime = NLMISC::CTime::getLocalTime() - lastTime;
 	}
 	lastTime += deltaTime;
-	CNELU::Scene.animate ( 0.001f * (float) (lastTime - firstTime));
+	CNELU::Scene->animate ( 0.001f * (float) (lastTime - firstTime));
 }
 
 // ***************************************************************************
@@ -452,7 +452,7 @@ CObjectViewer::CObjectViewer ()
 				//::MessageBox(NULL, "Warning : Unable to load all automatic animation", "Error", MB_OK | MB_ICONEXCLAMATION);
 				nlwarning("Unable to load all automatic animation");
 			}
-			CNELU::Scene.setAutomaticAnimationSet(as.release());
+			CNELU::Scene->setAutomaticAnimationSet(as.release());
 		}
 		catch (EUnknownVar &)
 		{
@@ -619,7 +619,7 @@ void CObjectViewer::initUI (HWND parent)
 	//CNELU::init (640, 480, viewport, 32, true, _MainFrame->m_hWnd);
 
 	// Create a root.
-	_SceneRoot= (CTransform*)CNELU::Scene.createModel(NL3D::TransformId);
+	_SceneRoot= (CTransform*)CNELU::Scene->createModel(NL3D::TransformId);
 
 	// Init default lighting seutp.
 	setupSceneLightingSystem(_SceneLightEnabled, _SceneLightSunDir, _SceneLightSunAmbiant, _SceneLightSunDiffuse, _SceneLightSunSpecular);
@@ -697,7 +697,7 @@ void CObjectViewer::initUI (HWND parent)
 	getRegisterWindowState (_ChooseBGColorDlg, REGKEY_CHOOSE_BG_COLOR_DLG, false);
 
 	// Create bg color window (must create after the background color has been set)
-	_ChooseSunColorDlg = new CChooseSunColorDlg(&CNELU::Scene, _MainFrame);
+	_ChooseSunColorDlg = new CChooseSunColorDlg(CNELU::Scene, _MainFrame);
 	_ChooseSunColorDlg->Create(IDD_CHOOSE_SUN_COLOR, _MainFrame);
 	getRegisterWindowState (_ChooseSunColorDlg, REGKEY_CHOOSE_SUN_COLOR_DLG, false);
 
@@ -1063,7 +1063,7 @@ void CObjectViewer::go ()
 			evalSoundTrack (_AnimationDlg->getLastTime(), _AnimationDlg->getTime());
 
 			// Animate the automatic animation in the scene
-			//CNELU::Scene.animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
+			//CNELU::Scene->animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
 
 			animateCNELUScene ();
 
@@ -1077,7 +1077,7 @@ void CObjectViewer::go ()
 			CNELU::clearBuffers(_BackGroundColor);			
 
 			// Draw the scene		
-			CNELU::Scene.render();		
+			CNELU::Scene->render();		
 			
 			// call of callback list
 			{
@@ -1207,12 +1207,12 @@ void CObjectViewer::go ()
 				{
 					CInstanceInfo *info = getInstance(getCameraInstance (cameraId));
 					nlassert (info->Camera);
-					CNELU::Scene.setCam (info->Camera);
+					CNELU::Scene->setCam (info->Camera);
 				}
 			}
 			else
 			{
-				CNELU::Scene.setCam (CNELU::Camera);
+				CNELU::Scene->setCam (CNELU::Camera);
 			}
 
 			if (_MainFrame->MoveMode == CMainFrame::ObjectMode)
@@ -1395,7 +1395,7 @@ void CObjectViewer::releaseUI ()
 	// delete Landscape
 	if(_VegetableLandscape)
 	{
-		CNELU::Scene.deleteModel(_VegetableLandscape);
+		CNELU::Scene->deleteModel(_VegetableLandscape);
 		_VegetableLandscape= NULL;
 	}
 
@@ -1403,7 +1403,7 @@ void CObjectViewer::releaseUI ()
 	removeAllInstancesFromScene();
 
 	// release Root
-	CNELU::Scene.deleteModel(_SceneRoot);
+	CNELU::Scene->deleteModel(_SceneRoot);
 	_SceneRoot= NULL;
 
 	// release other 3D.
@@ -1955,7 +1955,7 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 	if(createInstance)
 	{
 		// Create a model and add it to the scene
-		CTransformShape	*pTrShape=CNELU::Scene.createInstance (meshName);
+		CTransformShape	*pTrShape=CNELU::Scene->createInstance (meshName);
 		nlassert (pTrShape);
 
 		// link to the root for manipulation
@@ -2115,7 +2115,7 @@ uint CObjectViewer::addCamera (const NL3D::CCameraInfo &cameraInfo, const char* 
 	// *** Add the shape
 
 	// link to the root for manipulation
-	CCamera *pCamera = (CCamera*)CNELU::Scene.createModel (CameraId);
+	CCamera *pCamera = (CCamera*)CNELU::Scene->createModel (CameraId);
 	_SceneRoot->hrcLinkSon(pCamera);
 
 	// Build the camera
@@ -2158,7 +2158,7 @@ uint CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName)
 		CNELU::ShapeBank->add (skelName, CSmartPtr<IShape> (pSkelShape));
 
 	// Create a model and add it to the scene
-	CTransformShape	*pTrShape=CNELU::Scene.createInstance (skelName);
+	CTransformShape	*pTrShape=CNELU::Scene->createInstance (skelName);
 	nlassert (pTrShape);
 
 	// link to the root for manipulation
@@ -2266,7 +2266,7 @@ void CObjectViewer::setSingleAnimation (NL3D::CAnimation* pAnim, const char* nam
 
 void CObjectViewer::setAutoAnimation (NL3D::CAnimationSet* pAnimSet)
 {
-	CNELU::Scene.setAutomaticAnimationSet (pAnimSet);
+	CNELU::Scene->setAutomaticAnimationSet (pAnimSet);
 }
 
 // ***************************************************************************
@@ -2276,7 +2276,7 @@ void CObjectViewer::setAmbientColor (const NLMISC::CRGBA& color)
 	CNELU::Driver->setAmbientColor (color);
 
 	// Setup also Scene lighting system here, even if not used.
-	CNELU::Scene.setAmbientGlobal(color);
+	CNELU::Scene->setAmbientGlobal(color);
 }
 
 // ***************************************************************************
@@ -2362,7 +2362,7 @@ void CObjectViewer::removeAllInstancesFromScene()
 	for(uint igId=0; igId<_ListIG.size(); igId++)
 	{
 		// remove instances.
-		_ListIG[igId]->removeFromScene(CNELU::Scene);
+		_ListIG[igId]->removeFromScene(*CNELU::Scene);
 		// free up the ig.
 		delete _ListIG[igId];
 	}
@@ -2370,7 +2370,7 @@ void CObjectViewer::removeAllInstancesFromScene()
 
 	// clear dynamic lighting test
 	_GlobalRetriever= NULL;
-	CNELU::Scene.deleteInstance(_ObjectLightTest);
+	CNELU::Scene->deleteInstance(_ObjectLightTest);
 	_ObjectLightTest= NULL;
 
 	// Reset mesh cache
@@ -2610,12 +2610,12 @@ uint CObjectViewer::addInstanceGroup(NL3D::CInstanceGroup *ig)
 	uint first = _ListInstance.size();
 
 	// Add all models to the scene		
-	ig->addToScene(CNELU::Scene, CNELU::Driver);
+	ig->addToScene(*CNELU::Scene, CNELU::Driver);
 	// Unfreeze all objects from HRC.
 	ig->unfreezeHRC();
 
 	// link the root of the IG to our root, for scene rotation
-	ig->linkRoot(CNELU::Scene, _SceneRoot);
+	ig->linkRoot(*CNELU::Scene, _SceneRoot);
 
 	// Keep a reference on them, but they'll be destroyed by IG.
 	for (uint k = 0; k < ig->getNumInstance(); ++k)
@@ -2637,13 +2637,13 @@ uint CObjectViewer::addInstanceGroup(NL3D::CInstanceGroup *ig)
 // ***************************************************************************
 void CObjectViewer::setupSceneLightingSystem(bool enable, const NLMISC::CVector &sunDir, NLMISC::CRGBA sunAmbiant, NLMISC::CRGBA sunDiffuse, NLMISC::CRGBA sunSpecular)
 {
-	CNELU::Scene.enableLightingSystem(enable);
+	CNELU::Scene->enableLightingSystem(enable);
 
 	// Setup sun.
-	CNELU::Scene.setSunAmbient(sunAmbiant);
-	CNELU::Scene.setSunDiffuse(sunDiffuse);
-	CNELU::Scene.setSunSpecular(sunSpecular);
-	CNELU::Scene.setSunDirection(sunDir);
+	CNELU::Scene->setSunAmbient(sunAmbiant);
+	CNELU::Scene->setSunDiffuse(sunDiffuse);
+	CNELU::Scene->setSunSpecular(sunSpecular);
+	CNELU::Scene->setSunDirection(sunDir);
 }
 
 
@@ -2655,7 +2655,7 @@ void CObjectViewer::enableDynamicObjectLightingTest(NLPACS::CGlobalRetriever *gl
 	// first delete the instance
 	if(_ObjectLightTest)
 	{
-		CNELU::Scene.deleteInstance(_ObjectLightTest);
+		CNELU::Scene->deleteInstance(_ObjectLightTest);
 		_ObjectLightTest= NULL;
 	}
 
@@ -2667,7 +2667,7 @@ void CObjectViewer::enableDynamicObjectLightingTest(NLPACS::CGlobalRetriever *gl
 		nlassert(ig);
 
 		// this mesh is the dynamic one to move around.
-		_ObjectLightTest= CNELU::Scene.createInstance(_ObjectLightTestShape);
+		_ObjectLightTest= CNELU::Scene->createInstance(_ObjectLightTestShape);
 		if(_ObjectLightTest!=NULL)
 		{
 			// link to the root for manipulation
@@ -2917,7 +2917,7 @@ bool		CObjectViewer::createVegetableLandscape()
 	if(!_VegetableLandscape)
 	{
 		// create the landscape.
-		_VegetableLandscape= static_cast<CLandscapeModel*>(CNELU::Scene.createModel(LandscapeModelId));
+		_VegetableLandscape= static_cast<CLandscapeModel*>(CNELU::Scene->createModel(LandscapeModelId));
 
 		// Create a Progress Dialog.
 		CDialogProgress		dlgProgress;
@@ -3077,7 +3077,7 @@ bool		CObjectViewer::createVegetableLandscape()
 			}
 
 			// remove the landscape
-			CNELU::Scene.deleteModel(_VegetableLandscape);
+			CNELU::Scene->deleteModel(_VegetableLandscape);
 			_VegetableLandscape= NULL;
 
 			return false;
@@ -3191,9 +3191,9 @@ CInstanceInfo::~CInstanceInfo ()
 	if (MustDelete)
 	{
 		if (TransformShape)
-			CNELU::Scene.deleteInstance (TransformShape);
+			CNELU::Scene->deleteInstance (TransformShape);
 		if (Camera)
-			CNELU::Scene.deleteModel (Camera);
+			CNELU::Scene->deleteModel (Camera);
 	}
 }
 
@@ -3488,7 +3488,7 @@ void		CObjectViewer::setGlobalWindPower(float w)
 	{
 		clamp(w, 0.f, 1.f);
 		_MainFrame->GlobalWindPower= w;
-		CNELU::Scene.setGlobalWindPower(w);
+		CNELU::Scene->setGlobalWindPower(w);
 	}
 }
 
@@ -3561,7 +3561,7 @@ void		CObjectViewer::shootScene()
 				CNELU::clearBuffers (_BackGroundColor);
 
 				// Draw the scene		
-				CNELU::Scene.render ();
+				CNELU::Scene->render ();
 
 				// Swap the buffers
 				CNELU::swapBuffers();

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.34 2003/09/25 12:13:13 corvazier Exp $
+ * $Id: u_driver.h,v 1.35 2003/11/07 14:27:32 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -230,7 +230,7 @@ public:
 	/// \name Scene gestion.
 	// @{
 	/// Create a new scene.
-	virtual	UScene			*createScene() =0;
+	virtual	UScene			*createScene(bool bSmallScene) =0;
 	/// Delete a scene.
 	virtual	void			deleteScene(UScene	*scene) =0;
 	// @}

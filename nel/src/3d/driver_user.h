@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.31 2003/10/13 09:40:53 berenguier Exp $
+ * $Id: driver_user.h,v 1.32 2003/11/07 14:27:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,7 +196,7 @@ public:
 	/// \name Scene gestion.
 	// @{
 	/// Create a new scene.
-	virtual	UScene			*createScene() ;
+	virtual	UScene			*createScene(bool bSmallScene);
 	/// Delete a scene.
 	virtual	void			deleteScene(UScene	*scene) ;
 	// @}

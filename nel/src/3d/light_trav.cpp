@@ -1,7 +1,7 @@
 /** \file light_trav.cpp
  * <File description>
  *
- * $Id: light_trav.cpp,v 1.13 2003/05/22 12:51:03 berenguier Exp $
+ * $Id: light_trav.cpp,v 1.14 2003/11/07 14:27:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace	NL3D
 using namespace	NLMISC;
 
 // ***************************************************************************
-CLightTrav::CLightTrav()
+CLightTrav::CLightTrav(bool bSmallScene) : LightingManager(bSmallScene)
 {
 	_LightedList.resize(1024);
 	_CurrentNumVisibleModels= 0;

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.48 2003/10/17 15:01:54 corvazier Exp $
+ * $Id: scene_user.h,v 1.49 2003/11/07 14:27:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,7 +111,7 @@ public:
 
 	/// \name Object
 	// @{
-	CSceneUser(CDriverUser *drv);
+	CSceneUser(CDriverUser *drv, bool bSmallScene);
 	virtual	~CSceneUser();
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file bone.h
  * <File description>
  *
- * $Id: bone.h,v 1.8 2003/11/06 14:48:43 vizerie Exp $
+ * $Id: bone.h,v 1.9 2003/11/07 14:27:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/transformable.h"
+#include "3d/channel_mixer.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/bsphere.h"
 

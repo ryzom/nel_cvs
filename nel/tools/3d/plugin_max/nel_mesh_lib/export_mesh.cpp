@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.49 2002/08/27 14:36:25 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.50 2002/09/10 13:56:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -931,7 +931,8 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			// *** ************
 
 			// Export alpha vertex ?
-			if (maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].AlphaVertex)
+			if ( (maxBaseBuild.MaterialInfo[nMaterialID-maxBaseBuild.FirstMaterial].AlphaVertex) &&
+				(buildMesh.VertexFlags&CVertexBuffer::PrimaryColorFlag) )
 			{
 				// Must have vertex color in the vertex buffer
 				nlassert (buildMesh.VertexFlags&CVertexBuffer::PrimaryColorFlag);

@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.15 2001/04/26 15:07:54 vizerie Exp $
+ * $Id: stream.cpp,v 1.16 2001/05/11 14:04:15 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,7 @@ void	IStream::getVersionException(bool &throwOnOlder, bool &throwOnNewer)
 
 
 // ======================================================================================================
-void			IStream::serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream)
+void			IStream::serialIStreamable(IStreamable* &ptr)
 {
 	uint64	node=0;
 
@@ -147,7 +147,7 @@ void			IStream::resetPtrTable()
 
 
 // ======================================================================================================
-uint IStream::serialVersion(uint currentVersion) throw(EStream)
+uint IStream::serialVersion(uint currentVersion) 
 {
 	uint8	b=0;
 	uint32	v=0;
@@ -194,7 +194,7 @@ uint IStream::serialVersion(uint currentVersion) throw(EStream)
 
 
 // ======================================================================================================
-void			IStream::serialCont(vector<uint8> &cont) throw(EStream)
+void			IStream::serialCont(vector<uint8> &cont) 
 {
 	sint32	len=0;
 	if(isReading())
@@ -211,7 +211,7 @@ void			IStream::serialCont(vector<uint8> &cont) throw(EStream)
 	}
 }
 // ======================================================================================================
-void			IStream::serialCont(vector<sint8> &cont) throw(EStream)
+void			IStream::serialCont(vector<sint8> &cont) 
 {
 	sint32	len=0;
 	if(isReading())
@@ -228,7 +228,7 @@ void			IStream::serialCont(vector<sint8> &cont) throw(EStream)
 	}
 }
 // ======================================================================================================
-void			IStream::serialCont(vector<bool> &cont) throw(EStream)
+void			IStream::serialCont(vector<bool> &cont) 
 {
 	sint32	len=0;
 	vector<uint8>	vec;
@@ -267,13 +267,13 @@ void			IStream::serialCont(vector<bool> &cont) throw(EStream)
 
 }
 // ======================================================================================================
-bool			IStream::seek (sint32 offset, TSeekOrigin origin) throw(EStream)
+bool			IStream::seek (sint32 offset, TSeekOrigin origin) 
 {
 	throw ESeekNotSupported();
 	return false;
 }
 // ======================================================================================================
-sint32			IStream::getPos () throw(EStream)
+sint32			IStream::getPos () 
 {
 	throw ESeekNotSupported();
 }

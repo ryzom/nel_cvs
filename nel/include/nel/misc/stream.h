@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.39 2001/05/10 12:45:05 berenguier Exp $
+ * $Id: stream.h,v 1.40 2001/05/11 14:03:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -194,7 +194,7 @@ public:
 	 * do this, since those type have unspecified length.
 	 */
     template<class T>
-	void			serial(T &obj) throw(EStream) { obj.serial(*this); }
+	void			serial(T &obj)  { obj.serial(*this); }
 
 
 	/** \name Base type serialisation.
@@ -202,28 +202,28 @@ public:
 	 */
 	//@{
 
-	virtual void	serial(uint8 &b) throw(EStream);
-	virtual void	serial(sint8 &b) throw(EStream);
-	virtual void	serial(uint16 &b) throw(EStream);
-	virtual void	serial(sint16 &b) throw(EStream);
-	virtual void	serial(uint32 &b) throw(EStream);
-	virtual void	serial(sint32 &b) throw(EStream);
-	virtual void	serial(uint64 &b) throw(EStream);
-	virtual void	serial(sint64 &b) throw(EStream);
-	virtual void	serial(float &b) throw(EStream);
-	virtual void	serial(double &b) throw(EStream);
-	virtual void	serial(bool &b) throw(EStream);
+	virtual void	serial(uint8 &b) ;
+	virtual void	serial(sint8 &b) ;
+	virtual void	serial(uint16 &b) ;
+	virtual void	serial(sint16 &b) ;
+	virtual void	serial(uint32 &b) ;
+	virtual void	serial(sint32 &b) ;
+	virtual void	serial(uint64 &b) ;
+	virtual void	serial(sint64 &b) ;
+	virtual void	serial(float &b) ;
+	virtual void	serial(double &b) ;
+	virtual void	serial(bool &b) ;
 #ifndef NL_OS_CYGWIN
-	virtual void	serial(char &b) throw(EStream);
+	virtual void	serial(char &b) ;
 #endif
-	virtual void	serial(std::string &b) throw(EStream);
-	virtual void	serial(ucstring &b) throw(EStream);
+	virtual void	serial(std::string &b) ;
+	virtual void	serial(ucstring &b) ;
 	//@}
 
 
 	/// Template enum serialisation. Serialized as a sint32.
     template<class T>
-	void			serialEnum(T &em) throw(EStream)
+	void			serialEnum(T &em) 
 	{
 		sint32	i;
 		if(isReading())
@@ -261,19 +261,19 @@ public:
 	 */
 	//@{
 	template<class T0,class T1>
-	void			serial(T0 &a, T1 &b) throw(EStream)
+	void			serial(T0 &a, T1 &b) 
 	{ serial(a); serial(b);}
 	template<class T0,class T1,class T2>
-	void			serial(T0 &a, T1 &b, T2 &c) throw(EStream)
+	void			serial(T0 &a, T1 &b, T2 &c) 
 	{ serial(a); serial(b); serial(c);}
 	template<class T0,class T1,class T2,class T3>
-	void			serial(T0 &a, T1 &b, T2 &c, T3 &d) throw(EStream)
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d) 
 	{ serial(a); serial(b); serial(c); serial(d);}
 	template<class T0,class T1,class T2,class T3,class T4>
-	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e) throw(EStream)
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e) 
 	{ serial(a); serial(b); serial(c); serial(d); serial(e);}
 	template<class T0,class T1,class T2,class T3,class T4,class T5>
-	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e, T5 &f) throw(EStream)
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e, T5 &f) 
 	{ serial(a); serial(b); serial(c); serial(d); serial(e); serial(f);}
 	//@}
 
@@ -284,27 +284,27 @@ public:
 	 * \see serialContPtr() serialContPolyPtr()
 	 */
 	template<class T>
-	void			serialCont(std::vector<T> &cont) throw(EStream)	{serialVector(cont);}
+	void			serialCont(std::vector<T> &cont) 	{serialVector(cont);}
 	template<class T>
-	void			serialCont(std::list<T> &cont) throw(EStream)	{serialSTLCont(cont);}
+	void			serialCont(std::list<T> &cont) 	{serialSTLCont(cont);}
 	template<class T>
-	void			serialCont(std::deque<T> &cont) throw(EStream)	{serialSTLCont(cont);}
+	void			serialCont(std::deque<T> &cont) 	{serialSTLCont(cont);}
 	template<class T>
-	void			serialCont(std::set<T> &cont) throw(EStream)		{serialSTLCont(cont);}
+	void			serialCont(std::set<T> &cont) 		{serialSTLCont(cont);}
 	template<class T>
-	void			serialCont(std::multiset<T> &cont) throw(EStream)	{serialSTLCont(cont);}
+	void			serialCont(std::multiset<T> &cont) 	{serialSTLCont(cont);}
 	template<class K, class T>
-	void			serialCont(std::map<K, T> &cont) throw(EStream)			{serialMap(cont);}
+	void			serialCont(std::map<K, T> &cont) 			{serialMap(cont);}
 	template<class K, class T>
-	void			serialCont(std::multimap<K, T> &cont) throw(EStream)	{serialMap(cont);}
+	void			serialCont(std::multimap<K, T> &cont) 	{serialMap(cont);}
 
 
 	/// Specialisation of serialCont() for vector<uint8>
-	void			serialCont(std::vector<uint8> &cont) throw(EStream);
+	void			serialCont(std::vector<uint8> &cont) ;
 	/// Specialisation of serialCont() for vector<sint8>
-	void			serialCont(std::vector<sint8> &cont) throw(EStream);
+	void			serialCont(std::vector<sint8> &cont) ;
 	/// Specialisation of serialCont() for vector<bool>
-	void			serialCont(std::vector<bool> &cont) throw(EStream);
+	void			serialCont(std::vector<bool> &cont) ;
 
 
 	/** \name standard STL containers serialisation. Elements must be pointers on a base type (uint...) or on a 
@@ -314,15 +314,15 @@ public:
 	 * \see serialCont() serialContPolyPtr()
 	 */
 	template<class T>
-	void			serialContPtr(std::vector<T> &cont) throw(EStream)	{serialVectorPtr(cont);}
+	void			serialContPtr(std::vector<T> &cont) 	{serialVectorPtr(cont);}
 	template<class T>
-	void			serialContPtr(std::list<T> &cont) throw(EStream)	{serialSTLContPtr(cont);}
+	void			serialContPtr(std::list<T> &cont) 	{serialSTLContPtr(cont);}
 	template<class T>
-	void			serialContPtr(std::deque<T> &cont) throw(EStream)	{serialSTLContPtr(cont);}
+	void			serialContPtr(std::deque<T> &cont) 	{serialSTLContPtr(cont);}
 	template<class T>
-	void			serialContPtr(std::set<T> &cont) throw(EStream)			{serialSTLContPtr(cont);}
+	void			serialContPtr(std::set<T> &cont) 			{serialSTLContPtr(cont);}
 	template<class T>
-	void			serialContPtr(std::multiset<T> &cont) throw(EStream)	{serialSTLContPtr(cont);}
+	void			serialContPtr(std::multiset<T> &cont) 	{serialSTLContPtr(cont);}
 
 
 	/** \name standard STL containers serialisation. Elements must be pointers on a IStreamable object.
@@ -331,15 +331,15 @@ public:
 	 * \see serialCont() serialContPtr()
 	 */
 	template<class T>
-	void			serialContPolyPtr(std::vector<T> &cont) throw(EStream)	{serialVectorPolyPtr(cont);}
+	void			serialContPolyPtr(std::vector<T> &cont) 	{serialVectorPolyPtr(cont);}
 	template<class T>
-	void			serialContPolyPtr(std::list<T> &cont) throw(EStream)	{serialSTLContPolyPtr(cont);}
+	void			serialContPolyPtr(std::list<T> &cont) 	{serialSTLContPolyPtr(cont);}
 	template<class T>
-	void			serialContPolyPtr(std::deque<T> &cont) throw(EStream)	{serialSTLContPolyPtr(cont);}
+	void			serialContPolyPtr(std::deque<T> &cont) 	{serialSTLContPolyPtr(cont);}
 	template<class T>
-	void			serialContPolyPtr(std::set<T> &cont) throw(EStream)			{serialSTLContPolyPtr(cont);}
+	void			serialContPolyPtr(std::set<T> &cont) 			{serialSTLContPolyPtr(cont);}
 	template<class T>
-	void			serialContPolyPtr(std::multiset<T> &cont) throw(EStream)	{serialSTLContPolyPtr(cont);}
+	void			serialContPolyPtr(std::multiset<T> &cont) 	{serialSTLContPolyPtr(cont);}
 
 
 	/** 
@@ -350,7 +350,7 @@ public:
 	 * \see resetPtrTable()
 	 */
 	template<class T>
-	void			serialPtr(T* &ptr) throw(EStream)
+	void			serialPtr(T* &ptr) 
 	{
 		uint64	node;
 
@@ -416,7 +416,7 @@ public:
 	 * \see resetPtrTable()
 	 */
 	template<class T>
-	void			serialPolyPtr(T* &ptr) throw(ERegistry, EStream)
+	void			serialPolyPtr(T* &ptr) 
 	{ IStreamable *p=ptr; serialIStreamable(p); ptr= static_cast<T*>(p);}
 
 
@@ -430,7 +430,7 @@ public:
 	 * \return the version of the stream. If the stream is an Output stream, currentVersion is returned.
 	 * \see setVersionException() getVersionException()
 	 */
-	uint			serialVersion(uint currentVersion) throw(EStream);
+	uint			serialVersion(uint currentVersion) ;
 
 
 	/** 
@@ -444,7 +444,7 @@ public:
 	 * \see EInvalidDataStream
 	 */
 	template<class T>
-	void			serialCheck(const T& value) throw(EStream)
+	void			serialCheck(const T& value) 
 	{
 		if (isReading()) 
 		{ 
@@ -480,7 +480,7 @@ public:
 	 * \return true if seek sucessfull.
 	 * \see ESeekNotSupported SeekOrigin getPos
 	 */
-	virtual bool		seek (sint32 offset, TSeekOrigin origin) throw(EStream);
+	virtual bool		seek (sint32 offset, TSeekOrigin origin) ;
 
 
 	/** 
@@ -494,7 +494,7 @@ public:
 	 * \return the new offset regarding from the origin.
 	 * \see ESeekNotSupported SeekOrigin seek
 	 */
-	virtual sint32		getPos () throw(EStream);
+	virtual sint32		getPos () ;
 
 
 protected:
@@ -520,8 +520,8 @@ public:
 	 * \warning Do not call these methods from outside, unless you really know what you are doing.
 	 * Using them instead of serial() can lead to communication problems between different platforms !
 	 */
-	virtual void		serialBuffer(uint8 *buf, uint len) throw(EStream)=0;
-	virtual void		serialBit(bool &bit) throw(EStream)=0;
+	virtual void		serialBuffer(uint8 *buf, uint len) =0;
+	virtual void		serialBit(bool &bit) =0;
 	//@}
 
 private:
@@ -536,7 +536,7 @@ private:
 	typedef std::map<uint64, void*>::value_type	ValueIdMap;
 
 	// Ptr serialisation.
-	void			serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream);
+	void			serialIStreamable(IStreamable* &ptr) ;
 
 
 
@@ -546,7 +546,7 @@ private:
 	 * Support up to sint32 length containers. serialize just len  element of the container.
 	 */
 	template<class T>
-	void			serialSTLContLen(T &cont, sint32 len) throw(EStream)
+	void			serialSTLContLen(T &cont, sint32 len) 
 	{
 		typedef typename T::value_type __value_type;
 		typedef typename T::iterator __iterator;
@@ -588,7 +588,7 @@ private:
 	 * \param cont a STL container (vector<>, set<> ...).
 	 */
 	template<class T>
-	void			serialSTLCont(T &cont) throw(EStream)
+	void			serialSTLCont(T &cont) 
 	{
 		sint32	len=0;
 		if(isReading())
@@ -611,7 +611,7 @@ private:
 	 * Support up to sint32 length containers.
 	 */
 	template<class T>
-	void			serialVector(T &cont) throw(EStream)
+	void			serialVector(T &cont) 
 	{
 		typedef typename T::value_type __value_type;
 		typedef typename T::iterator __iterator;
@@ -640,7 +640,7 @@ private:
 	 * Support up to sint32 length containers. serialize just len  element of the container.
 	 */
 	template<class T>
-	void			serialSTLContLenPtr(T &cont, sint32 len) throw(EStream)
+	void			serialSTLContLenPtr(T &cont, sint32 len) 
 	{
 		typedef typename T::value_type __value_type;
 		typedef typename T::iterator __iterator;
@@ -670,7 +670,7 @@ private:
 	 * Support up to sint32 length containers.
 	 */
 	template<class T>
-	void			serialSTLContPtr(T &cont) throw(EStream)
+	void			serialSTLContPtr(T &cont) 
 	{
 		sint32	len=0;
 		if(isReading())
@@ -693,7 +693,7 @@ private:
 	 * Support up to sint32 length containers.
 	 */
 	template<class T>
-	void			serialVectorPtr(T &cont) throw(EStream)
+	void			serialVectorPtr(T &cont) 
 	{
 		typedef typename T::value_type __value_type;
 		typedef typename T::iterator __iterator;
@@ -722,7 +722,7 @@ private:
 	 * Support up to sint32 length containers. serialize just len  element of the container.
 	 */
 	template<class T>
-	void			serialSTLContLenPolyPtr(T &cont, sint32 len) throw(EStream)
+	void			serialSTLContLenPolyPtr(T &cont, sint32 len) 
 	{
 		typedef typename T::value_type __value_type;
 		typedef typename T::iterator __iterator;
@@ -752,7 +752,7 @@ private:
 	 * Support up to sint32 length containers.
 	 */
 	template<class T>
-	void			serialSTLContPolyPtr(T &cont) throw(EStream)
+	void			serialSTLContPolyPtr(T &cont) 
 	{
 		sint32	len=0;
 		if(isReading())
@@ -775,7 +775,7 @@ private:
 	 * Support up to sint32 length containers.
 	 */
 	template<class T>
-	void			serialVectorPolyPtr(T &cont) throw(EStream)
+	void			serialVectorPolyPtr(T &cont) 
 	{
 		typedef typename T::value_type __value_type;
 		typedef typename T::iterator __iterator;
@@ -819,7 +819,7 @@ private:
 	 * \param cont a STL map<> or multimap<> container.
 	 */
 	template<class T>
-	void			serialMap(T &cont) throw(EStream)
+	void			serialMap(T &cont) 
 	{
 		typedef typename T::value_type __value_type;
 		typedef typename T::key_type __key_type;
@@ -873,7 +873,7 @@ private:
 class IStreamable : public IClassable
 {
 public:
-	virtual void		serial(IStream	&f) throw(EStream)=0;
+	virtual void		serial(IStream	&f) =0;
 };
 
 

@@ -6,7 +6,7 @@
  * Pkoi? : pour optimiser la lecture/ecriture (plus de if du tout). Plus rapide pour olivier de faire des copies
  * de messages (brut) que de se taper un if dans le CMessage.
  *
- * $Id: stream_inline.h,v 1.18 2001/01/09 10:31:50 berenguier Exp $
+ * $Id: stream_inline.h,v 1.19 2001/05/11 14:03:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,19 +73,19 @@ inline	bool		IStream::isReading() const
 // ======================================================================================================
 
 // ======================================================================================================
-inline	void		IStream::serial(uint8 &b) throw(EStream)
+inline	void		IStream::serial(uint8 &b) 
 {
 	serialBuffer((uint8 *)&b, 1);
 }
 
 // ======================================================================================================
-inline	void		IStream::serial(sint8 &b) throw(EStream)
+inline	void		IStream::serial(sint8 &b) 
 {
 	serialBuffer((uint8 *)&b, 1);
 }
 
 // ======================================================================================================
-inline	void		IStream::serial(uint16 &b) throw(EStream)
+inline	void		IStream::serial(uint16 &b) 
 {
 	if(!_NeedSwap)
 	{
@@ -110,7 +110,7 @@ inline	void		IStream::serial(uint16 &b) throw(EStream)
 }
 
 // ======================================================================================================
-inline	void		IStream::serial(sint16 &b) throw(EStream)
+inline	void		IStream::serial(sint16 &b) 
 {
 	if(!_NeedSwap)
 	{
@@ -135,7 +135,7 @@ inline	void		IStream::serial(sint16 &b) throw(EStream)
 }
 
 // ======================================================================================================
-inline	void		IStream::serial(uint32 &b) throw(EStream)
+inline	void		IStream::serial(uint32 &b) 
 {
 	if(!_NeedSwap)
 	{
@@ -160,7 +160,7 @@ inline	void		IStream::serial(uint32 &b) throw(EStream)
 }
 
 // ======================================================================================================
-inline	void		IStream::serial(sint32 &b) throw(EStream)
+inline	void		IStream::serial(sint32 &b) 
 {
 	if(!_NeedSwap)
 	{
@@ -185,7 +185,7 @@ inline	void		IStream::serial(sint32 &b) throw(EStream)
 }
 
 // ======================================================================================================
-inline	void		IStream::serial(uint64 &b) throw(EStream)
+inline	void		IStream::serial(uint64 &b) 
 {
 	if(!_NeedSwap)
 	{
@@ -210,7 +210,7 @@ inline	void		IStream::serial(uint64 &b) throw(EStream)
 }
 
 // ======================================================================================================
-inline	void		IStream::serial(sint64 &b) throw(EStream)
+inline	void		IStream::serial(sint64 &b) 
 {
 	if(!_NeedSwap)
 	{
@@ -235,7 +235,7 @@ inline	void		IStream::serial(sint64 &b) throw(EStream)
 }
 
 // ======================================================================================================
-inline	void		IStream::serial(float &b) throw(EStream)
+inline	void		IStream::serial(float &b) 
 {
 	if(!_NeedSwap)
 	{
@@ -260,7 +260,7 @@ inline	void		IStream::serial(float &b) throw(EStream)
 }
 
 // ======================================================================================================
-inline	void		IStream::serial(double &b) throw(EStream)
+inline	void		IStream::serial(double &b) 
 {
 	if(!_NeedSwap)
 	{
@@ -285,21 +285,21 @@ inline	void		IStream::serial(double &b) throw(EStream)
 }
 
 // ======================================================================================================
-inline	void		IStream::serial(bool &b) throw(EStream)
+inline	void		IStream::serial(bool &b) 
 {
 	serialBit(b);
 }
 
 #ifndef NL_OS_CYGWIN
 // ======================================================================================================
-inline	void		IStream::serial(char &b) throw(EStream)
+inline	void		IStream::serial(char &b) 
 {
 	serialBuffer((uint8 *)&b, 1);
 }
 #endif
 
 // ======================================================================================================
-inline	void		IStream::serial(std::string &b) throw(EStream)
+inline	void		IStream::serial(std::string &b) 
 {
 	sint32	len=0;
 	// Read/Write the length.
@@ -321,7 +321,7 @@ inline	void		IStream::serial(std::string &b) throw(EStream)
 
 
 // ======================================================================================================
-inline	void		IStream::serial(ucstring &b) throw(EStream)
+inline	void		IStream::serial(ucstring &b) 
 {
 	sint32	len=0;
 	// Read/Write the length.

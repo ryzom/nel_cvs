@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.10 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: export_material.cpp,v 1.11 2001/07/05 09:40:20 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,7 +205,13 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 			material.setTexture(0, pTexture);
 
 			// Active blend if texture in opacity
-			material.setBlend (pOpaTexmap!=NULL);
+			if( pOpaTexmap!=NULL )
+			{
+				material.setBlend( true );
+				// \todo mb disable the z write only if we are not in alpha test mode
+				material.setZWrite( false );
+			}
+			
 
 			// Export mapping channel 2 if lightmap asked.
 			if( bLightMap ) // lightmap enabled ?
@@ -331,7 +337,11 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 
 		// Set the blend mode on if opacity is not 1.f
 		if (fOp<0.99f)
+		{
 			material.setBlend (true);
+			// \todo mb disable the z write only if we are not in alpha test mode
+			material.setZWrite( false );
+		}
 
 		// Get colors of 3dsmax material
 		CRGBA nelEmissive;

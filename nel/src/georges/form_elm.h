@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.17 2002/12/30 13:56:56 corvazier Exp $
+ * $Id: form_elm.h,v 1.18 2003/09/22 14:59:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,10 @@ public:
 	CFormElm (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
 
 	// Destructor
-	virtual ~CFormElm ();
+	~CFormElm ();
+
+	/// Reset contents
+	virtual void	clean() {};
 
 	// Get the form pointer
 	CForm			*getForm () const;

@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.40 2003/08/27 16:16:25 distrib Exp $
+ * $Id: form_elm.cpp,v 1.41 2003/09/22 14:59:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -340,6 +340,7 @@ CFormElm::CFormElm (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn
 
 CFormElm::~CFormElm ()
 {
+	clean(); // it's virtual
 }
 
 // ***************************************************************************
@@ -1735,7 +1736,7 @@ CFormElmStruct::CFormElmStruct (CForm *form, CFormElm *parentNode, const CFormDf
 
 CFormElmStruct::~CFormElmStruct ()
 {
-	clean ();
+	// Job done in clean()
 }
 
 // ***************************************************************************
@@ -2291,7 +2292,7 @@ CFormElmArray::CFormElmArray (CForm *form, const CFormDfn *formDfn, const CType 
 
 CFormElmArray::~CFormElmArray ()
 {
-	clean ();
+	// Job done in clean()
 }
 
 // ***************************************************************************

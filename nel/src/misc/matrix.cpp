@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.33 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: matrix.cpp,v 1.34 2003/12/05 13:45:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,7 +101,7 @@ bool		CMatrix::hasProjectionPart() const
 
 bool		CMatrix::hasScaleUniform() const
 {
-	return (StateBit&MAT_SCALEUNI)!=0 && (StateBit&MAT_SCALEANY)==0;
+	return (StateBit & (MAT_SCALEUNI|MAT_SCALEANY))== MAT_SCALEUNI;
 }
 float		CMatrix::getScaleUniform() const
 {
@@ -251,8 +251,8 @@ void		CMatrix::setRot(const CMatrix &matrix)
 		a11= matrix.a11; a12= matrix.a12; a13= matrix.a13;
 		a21= matrix.a21; a22= matrix.a22; a23= matrix.a23;
 		a31= matrix.a31; a32= matrix.a32; a33= matrix.a33;
-		// if has scale, copy from matrix.
-		if(StateBit & MAT_SCALEUNI)
+		// if has scale uniform, copy from matrix.
+		if(hasScaleUniform())
 			Scale33= matrix.Scale33;
 	}
 	else
@@ -701,119 +701,42 @@ void		CMatrix::scale(const CVector &v)
 // ***************************************************************************
 void		CMatrix::setMulMatrixNoProj(const CMatrix &m1, const CMatrix &m2)
 {
-	// Do *this= m1*m2
-	identity();
-	StateBit= (m1.StateBit | m2.StateBit) & (~MAT_PROJ);
-	StateBit&= ~MAT_VALIDALL;
+	/*
+	For a fast MulMatrix, it appears to be better to not take State bits into account (no test/if() overhead)
+	Just do heavy mul all the time (common case, and not so slow)
+	*/
 
+	// Ensure the src matrix have correct values in rot part
+	m1.testExpandRot();
+	m2.testExpandRot();
 
-	// Build Rot part.
-	//===============
-	bool	M1Identity= ! m1.hasRot();
-	bool	M2Identity= ! m2.hasRot();
-	bool	M1ScaleOnly= ! (m1.StateBit & MAT_ROT);
-	bool	M2ScaleOnly= ! (m2.StateBit & MAT_ROT);
-	bool	MGeneralCase= !M1Identity && !M2Identity && !M1ScaleOnly && !M2ScaleOnly;
+	// Rot Mul
+	a11= m1.a11*m2.a11 + m1.a12*m2.a21 + m1.a13*m2.a31;
+	a12= m1.a11*m2.a12 + m1.a12*m2.a22 + m1.a13*m2.a32;
+	a13= m1.a11*m2.a13 + m1.a12*m2.a23 + m1.a13*m2.a33;
 
+	a21= m1.a21*m2.a11 + m1.a22*m2.a21 + m1.a23*m2.a31;
+	a22= m1.a21*m2.a12 + m1.a22*m2.a22 + m1.a23*m2.a32;
+	a23= m1.a21*m2.a13 + m1.a22*m2.a23 + m1.a23*m2.a33;
 
-	// Manage the most common general case first (optim the if ): blending of two rotations.
-	if( MGeneralCase )
-	{
-		a11= m1.a11*m2.a11 + m1.a12*m2.a21 + m1.a13*m2.a31;
-		a12= m1.a11*m2.a12 + m1.a12*m2.a22 + m1.a13*m2.a32;
-		a13= m1.a11*m2.a13 + m1.a12*m2.a23 + m1.a13*m2.a33;
+	a31= m1.a31*m2.a11 + m1.a32*m2.a21 + m1.a33*m2.a31;
+	a32= m1.a31*m2.a12 + m1.a32*m2.a22 + m1.a33*m2.a32;
+	a33= m1.a31*m2.a13 + m1.a32*m2.a23 + m1.a33*m2.a33;
 
-		a21= m1.a21*m2.a11 + m1.a22*m2.a21 + m1.a23*m2.a31;
-		a22= m1.a21*m2.a12 + m1.a22*m2.a22 + m1.a23*m2.a32;
-		a23= m1.a21*m2.a13 + m1.a22*m2.a23 + m1.a23*m2.a33;
+	// Trans mul
+	a14= m1.a11*m2.a14 + m1.a12*m2.a24 + m1.a13*m2.a34 + m1.a14;
+	a24= m1.a21*m2.a14 + m1.a22*m2.a24 + m1.a23*m2.a34 + m1.a24;
+	a34= m1.a31*m2.a14 + m1.a32*m2.a24 + m1.a33*m2.a34 + m1.a34;
 
-		a31= m1.a31*m2.a11 + m1.a32*m2.a21 + m1.a33*m2.a31;
-		a32= m1.a31*m2.a12 + m1.a32*m2.a22 + m1.a33*m2.a32;
-		a33= m1.a31*m2.a13 + m1.a32*m2.a23 + m1.a33*m2.a33;
-	}
-	// If one of the 3x3 matrix is an identity, just do a copy
-	else if( M1Identity || M2Identity )
-	{
-		// If both identity, then me too.
-		if( M1Identity && M2Identity )
-		{
-			// just expand me (important because validated below)
-			testExpandRot();
-		}
-		else
-		{
-			// Copy the non identity matrix.
-			const CMatrix	*c= M2Identity? &m1 : &m2;
-			a11= c->a11; a12= c->a12; a13= c->a13;
-			a21= c->a21; a22= c->a22; a23= c->a23;
-			a31= c->a31; a32= c->a32; a33= c->a33;
-		}
-	}
-	// If two 3x3 matrix are just scaleOnly matrix, do a scaleFact.
-	else if( M1ScaleOnly && M2ScaleOnly )
-	{
-		// same process for scaleUni or scaleAny.
-		a11= m1.a11*m2.a11; a12= 0; a13= 0; 
-		a21= 0; a22= m1.a22*m2.a22; a23= 0; 
-		a31= 0; a32= 0; a33= m1.a33*m2.a33;
-	}
-	// If one of the matrix is a scaleOnly matrix, do a scale*Rot.
-	else if( M1ScaleOnly && !M2ScaleOnly )
-	{
-		a11= m1.a11*m2.a11; a12= m1.a11*m2.a12; a13= m1.a11*m2.a13;
-		a21= m1.a22*m2.a21; a22= m1.a22*m2.a22; a23= m1.a22*m2.a23;
-		a31= m1.a33*m2.a31; a32= m1.a33*m2.a32; a33= m1.a33*m2.a33;
-	}
-	else
-	{
-		// This must be this case
-		nlassert(!M1ScaleOnly && M2ScaleOnly);
-		a11= m1.a11*m2.a11; a12= m1.a12*m2.a22; a13= m1.a13*m2.a33;
-		a21= m1.a21*m2.a11; a22= m1.a22*m2.a22; a23= m1.a23*m2.a33;
-		a31= m1.a31*m2.a11; a32= m1.a32*m2.a22; a33= m1.a33*m2.a33;
-	}
-
-	// Modify Scale.
-	if( (StateBit & MAT_SCALEUNI) && !(StateBit & MAT_SCALEANY) )
-	{
-		// Must have correct Scale33
-		m1.testExpandRot();
-		m2.testExpandRot();
+	// Setup no proj at all, and force valid rot (still may be identity, but 0/1 are filled)
+	StateBit= (m1.StateBit | m2.StateBit | MAT_VALIDROT) & ~(MAT_PROJ|MAT_VALIDPROJ);
+	
+	// Modify Scale. This test is important because Scale33 may be a #NAN if SCALEANY => avoid very slow mul.
+	if( hasScaleUniform() )
 		Scale33= m1.Scale33*m2.Scale33;
-	}
 	else
 		Scale33=1;
-
-	// In every case, I am valid now!
-	StateBit|=MAT_VALIDROT;
-
-
-	// Build Trans part.
-	//=================
-	if( StateBit & MAT_TRANS )
-	{
-		// Compose M2 part. NB: always suppose MAT_TRANS, for optim consideration.
-		// NB: the translation part is always valid, even if identity()
-		if( M1Identity )
-		{
-			a14= m2.a14 + m1.a14;
-			a24= m2.a24 + m1.a24;
-			a34= m2.a34 + m1.a34;
-		}
-		else if (M1ScaleOnly )
-		{
-			a14= m1.a11*m2.a14 + m1.a14;
-			a24= m1.a22*m2.a24 + m1.a24;
-			a34= m1.a33*m2.a34 + m1.a34;
-		}
-		else
-		{
-			a14= m1.a11*m2.a14 + m1.a12*m2.a24 + m1.a13*m2.a34 + m1.a14;
-			a24= m1.a21*m2.a14 + m1.a22*m2.a24 + m1.a23*m2.a34 + m1.a24;
-			a34= m1.a31*m2.a14 + m1.a32*m2.a24 + m1.a33*m2.a34 + m1.a34;
-		}
-	}
-
+	
 }
 
 
@@ -1524,6 +1447,47 @@ void		CMatrix::getRot(CQuat &quat) const
 		quat.w = q[3];
 	}
 
+}
+
+
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
+
+
+// ======================================================================================================
+inline	void	CMatrix::setScaleUni(float scale)
+{
+	// A Scale matrix do not have rotation.
+	StateBit&= ~(MAT_ROT | MAT_SCALEANY | MAT_SCALEUNI);
+	StateBit|= MAT_SCALEUNI | MAT_VALIDROT;
+	Scale33= scale;
+	a11= scale; a12= 0; a13= 0; 
+	a21= 0; a22= scale; a23= 0; 
+	a31= 0; a32= 0; a33= scale; 
+}
+
+// ======================================================================================================
+void		CMatrix::setScale(float scale)
+{
+	setScaleUni(scale);
+}
+
+
+// ======================================================================================================
+void		CMatrix::setScale(const CVector &v)
+{
+	// actually a scale uniform?
+	if(v.x==v.y && v.x==v.z)
+		setScaleUni(v.x);
+
+	// A Scale matrix do not have rotation.
+	StateBit&= ~(MAT_ROT | MAT_SCALEANY | MAT_SCALEUNI);
+	StateBit|= MAT_SCALEANY | MAT_VALIDROT;
+	a11= v.x; a12= 0; a13= 0; 
+	a21= 0; a22= v.y; a23= 0; 
+	a31= 0; a32= 0; a33= v.z; 
+	
 }
 
 

@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.20 2002/07/09 13:13:45 berenguier Exp $
+ * $Id: matrix.h,v 1.21 2003/12/05 13:43:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,6 +134,16 @@ public:
 	 * \param matrix the matrix to copy rot part.
 	 */
 	void		setRot(const CMatrix &matrix);
+	/** Explicit setup the Rotation/Scale matrix (base) with a scale (=> matrix has no Rotation).
+	 *	1 is tested to update bits accordingly
+	 * \param scale the scale to set
+	 */
+	void		setScale(float scale);
+	/** Explicit setup the Rotation/Scale matrix (base) with a scale (=> matrix has no Rotation).
+	 *	case where v.x==v.y==v.z is tested to set a uniform scale
+	 * \param scale the scale to set
+	 */
+	void		setScale(const CVector &v);
 	/** Explicit setup the Translation component.
 	 * v==Null is tested to see if the matrix now have a translation component.
 	 * \param v the translation vector.
@@ -387,6 +397,8 @@ private:
 	void	testExpandRot() const;
 	void	testExpandProj() const;
 
+	// inline
+	void	setScaleUni(float scale);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.14 2001/12/13 13:30:01 lecroart Exp $
+ * $Id: path.cpp,v 1.15 2001/12/20 17:36:04 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -412,6 +412,14 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 	for (uint i = 0; i < recursPath.size (); i++)
 		getPathContent (recursPath[i], recurse, wantDir, wantFile, result);
 }
+
+void CPath::removeAllAternativeSearchPath ()
+{
+	CPath *inst = CPath::getInstance();
+	inst->_AlternativePaths.clear ();
+	NL_DISPLAY_PATH("CPath::RemoveAllAternativeSearchPath(): removed");
+}
+
 
 void CPath::addSearchPath (const string &path, bool recurse, bool alternative)
 {

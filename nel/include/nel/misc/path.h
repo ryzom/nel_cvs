@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.10 2001/12/13 13:30:06 lecroart Exp $
+ * $Id: path.h,v 1.11 2001/12/20 17:36:08 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -80,6 +80,9 @@ public:
 	/** Same as AddSearchPath but with a big file "c:/test.nbf" all files name contain in the big file will be included  (the extention (Nel Big File) is used to know that it's a big file) */
 	static void			addSearchBigFile (const std::string &filename, bool recurse, bool alternative);
 
+	/** Remove all search path contains in the alternative directories */
+	static void			removeAllAternativeSearchPath ();
+
 	/** Returns the long name (path + filename) for the specified file.
 	 * The directory separator is always '/'.
 	 * First, the lookup() will scan in the current directory (We do that for backward compatibility).
@@ -113,8 +116,6 @@ private:
 	static CPath *getInstance ();
 
 	static CPath *_Instance;
-
-	std::vector<std::string> _Paths;
 
 	// All path in this vector must have a terminated '/'
 	std::vector<std::string> _AlternativePaths;

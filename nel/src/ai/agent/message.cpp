@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: message.cpp,v 1.6 2001/01/19 11:11:45 chafik Exp $
+ * $Id: message.cpp,v 1.7 2001/01/23 14:26:24 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,11 +22,25 @@
  * MA 02111-1307, USA.
  */
 #include "nel/ai/agent/agent.h"
+#include "nel/ai/agent/agent_mailer.h"
 #include "nel/ai/logic/boolval.h"
+#include "nel/ai/agent/object_type.h"
+#include "nel/ai/agent/agent_method_def.h"
 #include "nel/ai/agent/agent_digital.h"
 
 namespace NLAIAGENT
 {
+	const static sint32 _TSender = 0;
+	const static sint32 _TReceiver = 1;
+	const static sint32 _TContinuation = 2;
+	const static sint32 _MLastM = 3;
+
+	IMessageBase::CMethodCall IMessageBase::_Method[] = 
+	{
+		IMessageBase::CMethodCall(_SENDER_,_TSender),		
+		IMessageBase::CMethodCall(_RECEIVER_,_TReceiver),		
+		IMessageBase::CMethodCall(_CONTINUATION_,_TContinuation)		
+	};
 
 	/*IntegerType IMessageBase::IdExec = IntegerType(IMessageBase::PExec);
 	IntegerType IMessageBase::IdAchieve = IntegerType(IMessageBase::PAchieve);
@@ -215,6 +229,84 @@ namespace NLAIAGENT
 	{
 		_Message->clear();
 	}
+
+
+	sint32 IMessageBase::getMethodIndexSize() const
+	{
+		return IBaseGroupType::getMethodIndexSize() + _MLastM;
+	}	
+
+	tQueue IMessageBase::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
+	{			
+		if(className == NULL)
+		{
+			tQueue a;
+			for(int i = 0; i < _MLastM; i++)
+			{
+				if( *methodName == IMessageBase::_Method[i].MethodName )
+				{					
+					CObjectType *c = new CObjectType(new NLAIC::CIdentType(CLocalAgentMail::LocalAgentMail));
+					a.push( CIdMethod( IMessageBase::_Method[i].Index + IBaseGroupType::getMethodIndexSize(), 0.0, NULL, c) );					
+					break;
+				}
+			}
+
+			if ( a.size() )
+				return a;
+			else 
+				return IBaseGroupType::isMember( className, methodName, p);
+		}
+		return IBaseGroupType::isMember(className,methodName,p);
+	}
+
+	IObjectIA::CProcessResult IMessageBase::runMethodeMember(sint32 h, sint32 index,IObjectIA *p)
+	{
+		return IBaseGroupType::runMethodeMember(h,index,p);
+	}
+
+	IObjectIA::CProcessResult IMessageBase::runMethodeMember(sint32 index,IObjectIA *p)
+	{
+		IBaseGroupType *param = (IBaseGroupType *)p;
+
+		switch(index - IBaseGroupType::getMethodIndexSize())
+		{
+			case _TSender		:
+				{
+					IObjectIA::CProcessResult a;		
+					if ( _Sender != NULL )
+						a.Result = new CLocalAgentMail( (IBasicAgent *) _Sender );				
+					else
+						a.Result = NULL;
+					return a;
+				}			
+				break;
+
+			case _TReceiver		:
+				{
+					IObjectIA::CProcessResult a;				
+					if ( _Receiver != NULL )
+						a.Result = new CLocalAgentMail( (IBasicAgent *) _Receiver );				
+					else
+						a.Result = NULL;
+					return a;
+				}	
+				break;
+
+			case _TContinuation	:
+				{
+					IObjectIA::CProcessResult a;				
+					if ( _Continuation != NULL )
+						a.Result = new CLocalAgentMail( (IBasicAgent *) _Continuation );				
+					else
+						a.Result = NULL;
+
+					return a;
+				}			
+				break;
+			}
+		return IBaseGroupType::runMethodeMember(index,p);
+	}
+
 
 	const NLAIC::CIdentType &CMessage::getType() const
 	{

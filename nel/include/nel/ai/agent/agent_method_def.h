@@ -1,7 +1,7 @@
 /** \file agent_method_def.h
  * Sevral define name method manipulation.
  *
- * $Id: agent_method_def.h,v 1.5 2001/01/18 15:04:46 portier Exp $
+ * $Id: agent_method_def.h,v 1.6 2001/01/23 14:27:28 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,4 +50,8 @@
 #define _ADDSUBSET_		"addSubset"
 #define _UNFUZIFY_		"unfuzify"
 #define _FATHER_		"father"
+#define _SENDER_		"sender"
+#define _RECEIVER_		"receiver"
+#define _CONTINUATION_	"continuation"
+
 #endif

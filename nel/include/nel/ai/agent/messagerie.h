@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: messagerie.h,v 1.11 2001/01/19 14:34:46 chafik Exp $
+ * $Id: messagerie.h,v 1.12 2001/01/23 14:26:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,6 @@ namespace NLAIAGENT
 	class CIdentType;
 	class IBasicAgent;
 	
-
 	/**		
 		Abstract Base class for message, all message tansited by agent have this class as base class.
 
@@ -60,15 +59,23 @@ namespace NLAIAGENT
 			PKill
 		};
 
-		/*static IntegerType IdExec;
-		static IntegerType IdAchieve;
-		static IntegerType IdAsk;
-		static IntegerType IdBreak;
-		static IntegerType IdTell;
-		static IntegerType IdKill;*/
+	private:
 
+		struct CMethodCall
+		{
+			CMethodCall(const char *name, int i): MethodName (name)
+			{				
+				Index = i;
+			}
+			CStringVarName MethodName;
+			sint32 Index;
+		};
+
+
+		static CMethodCall _Method[];
 
 	private:
+
 		///Who send the message.
 		IObjectIA *_Sender;
 		///witch Agent the message have to be achieve.
@@ -269,15 +276,11 @@ namespace NLAIAGENT
 		virtual void clear();
 
 		virtual const CProcessResult &run();
-		virtual	IObjectIA::CProcessResult runMethodeMember(sint32, sint32, IObjectIA *)
-		{
-			return IObjectIA::CProcessResult();
-		}
-		virtual	IObjectIA::CProcessResult runMethodeMember(sint32 ,IObjectIA *)
-		{
-			return IObjectIA::CProcessResult();
-		}
 
+		sint32 getMethodIndexSize() const;
+		tQueue isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const;
+		IObjectIA::CProcessResult runMethodeMember(sint32, sint32,IObjectIA *);
+		IObjectIA::CProcessResult runMethodeMember(sint32,IObjectIA *);
 		virtual bool isEqual(const IBasicObjectIA &a) const;
 		
 		virtual void save(NLMISC::IStream &os);

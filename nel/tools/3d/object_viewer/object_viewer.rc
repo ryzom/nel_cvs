@@ -500,6 +500,9 @@ BEGIN
     CONTROL         "Use emitter speed basis",IDC_USE_SPEED_BASIS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,186,7,176,14
     LTEXT           "Speed inheritance factor :",IDC_STATIC,5,35,86,9
+    CONTROL         "Convert speed vector from emitter basis",
+                    IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,187,20,174,9
 END
 
 IDD_TEXTURE_CHOOSER DIALOG DISCARDABLE  0, 0, 226, 24
@@ -1139,7 +1142,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,30 
+ FILEVERSION 1,0,0,30
  PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -1158,11 +1161,7 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "object_viewer DLL\0"
-<<<<<<< object_viewer.rc
             VALUE "FileVersion", "1, 0, 0, 30\0"
-=======
-            VALUE "FileVersion", "1, 0, 0, 23\0"
->>>>>>> 1.32
             VALUE "InternalName", "object_viewer\0"
             VALUE "LegalCopyright", "Copyright (C) 2001\0"
             VALUE "LegalTrademarks", "\0"

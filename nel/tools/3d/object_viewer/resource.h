@@ -265,6 +265,7 @@
 #define IDC_MUTE                        1171
 #define IDC_PLAY_SOUND                  1171
 #define IDC_LAG                         1172
+#define IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS 1173
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -323,7 +324,7 @@
 #define ID_VIEW_SETMOVESPEED            32832
 #define ID_WINDOW_ANIMATIONSET          32836
 #define ID_WINDOW_MIXERSSLOTS           32837
-#define ID_WINDOW_PARTICLES              32838
+#define ID_WINDOW_PARTICLES             32838
 #define ID_EDIT_MOVEELEMENT             32839
 #define ID_EDIT_X                       32840
 #define ID_EDIT_Y                       32841
@@ -347,7 +348,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1083
 #define _APS_NEXT_COMMAND_VALUE         32864
-#define _APS_NEXT_CONTROL_VALUE         1173
+#define _APS_NEXT_CONTROL_VALUE         1174
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

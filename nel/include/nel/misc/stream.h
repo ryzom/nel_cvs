@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.34 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: stream.h,v 1.35 2001/03/08 11:18:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -409,7 +409,7 @@ public:
 			serial(len);
 			for(sint i=0;i<len;i++)
 			{
-				__value_type	v;
+				__value_type	v=NULL;
 				serialPolyPtr(v);
 				cont.insert(cont.end(), v);
 			}

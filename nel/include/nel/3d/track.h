@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.5 2001/03/08 11:02:52 corvazier Exp $
+ * $Id: track.h,v 1.6 2001/03/08 11:16:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,7 +172,7 @@ public:
 			for (uint e=0; e<(uint)size; e++)
 			{
 				CAnimationTime time;
-				CKeyT* keyPointer;
+				CKeyT* keyPointer=NULL;
 
 				// Serial element of the map
 				f.serial (time);

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.71 2003/01/30 17:56:43 legros Exp $
+ * $Id: global_retriever.cpp,v 1.72 2003/02/04 11:11:56 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1379,9 +1379,9 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 					if (colChain.ExteriorEdge && currentSurface == colChain.LeftSurface)
 					{
 						CVector2f		p = startCol + deltaCol*tMin;
-						CVector			or = getInstance(startSurface.RetrieverInstanceId).getOrigin();
-						or.z = 0.0f;
-						CVectorD		zp = CVectorD(p.x, p.y, getRetriever(getInstance(currentSurface.RetrieverInstanceId).getRetrieverId()).getSurface(currentSurface.SurfaceId).getMeanHeight()) + CVectorD(or);
+						CVector			ori = getInstance(startSurface.RetrieverInstanceId).getOrigin();
+						ori.z = 0.0f;
+						CVectorD		zp = CVectorD(p.x, p.y, getRetriever(getInstance(currentSurface.RetrieverInstanceId).getRetrieverId()).getSurface(currentSurface.SurfaceId).getMeanHeight()) + CVectorD(ori);
 						_ForbiddenInstances.clear();
 						_ForbiddenInstances.push_back(currentSurface.RetrieverInstanceId);
 						UGlobalPosition	gp = retrievePosition(zp);
@@ -1655,9 +1655,9 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 				{
 					float			ctime = (float)((double)(msd.ContactTime.Numerator)/(double)(msd.ContactTime.Denominator));
 					CVector2f		p = startCol*(1.0f-ctime) + endCol*ctime;
-					CVector			or = getInstance(startSurface.RetrieverInstanceId).getOrigin();
-					or.z = 0.0f;
-					CVectorD		zp = CVectorD(p.x, p.y, getRetriever(getInstance(currentSurface.RetrieverInstanceId).getRetrieverId()).getSurface(currentSurface.SurfaceId).getMeanHeight()) + CVectorD(or);
+					CVector			ori = getInstance(startSurface.RetrieverInstanceId).getOrigin();
+					ori.z = 0.0f;
+					CVectorD		zp = CVectorD(p.x, p.y, getRetriever(getInstance(currentSurface.RetrieverInstanceId).getRetrieverId()).getSurface(currentSurface.SurfaceId).getMeanHeight()) + CVectorD(ori);
 					_ForbiddenInstances.clear();
 					_ForbiddenInstances.push_back(currentSurface.RetrieverInstanceId);
 

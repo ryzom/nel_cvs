@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.10 2001/08/09 15:18:59 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.11 2001/09/12 13:29:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@
 #include "particle_tree_ctrl.h"
 #include "attrib_dlg.h"
 
-using NL3D::CPSLocated ;
+using NL3D::CPSLocated;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -65,23 +65,23 @@ CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdl
 
 	
 
-	_MaxNbParticles = new CEditableRangeUInt("MAX_NB_PARTICLES", 1, 501) ;
+	_MaxNbParticles = new CEditableRangeUInt("MAX_NB_PARTICLES", 1, 501);
 
-	_SkipFramesDlg = new CEditableRangeUInt("LOCATED SKIP FRAME RATE", 0, 4) ;
+	_SkipFramesDlg = new CEditableRangeUInt("LOCATED SKIP FRAME RATE", 0, 4);
 	
 }
 
 CLocatedProperties::~CLocatedProperties()
 {
-	_MassDialog->DestroyWindow() ;
-	_LifeDialog->DestroyWindow() ;
-	_MaxNbParticles->DestroyWindow() ;
-	_SkipFramesDlg->DestroyWindow() ;
+	_MassDialog->DestroyWindow();
+	_LifeDialog->DestroyWindow();
+	_MaxNbParticles->DestroyWindow();
+	_SkipFramesDlg->DestroyWindow();
 
-	delete _LifeDialog ;
-	delete _MassDialog ;
-	delete _MaxNbParticles ;
-	delete _SkipFramesDlg ;
+	delete _LifeDialog;
+	delete _MassDialog;
+	delete _MaxNbParticles;
+	delete _SkipFramesDlg;
 	
 }
 
@@ -123,75 +123,76 @@ BOOL CLocatedProperties::OnInitDialog()
 void CLocatedProperties::init(uint32 x, uint32 y)
 {
 
-	Create(IDD_LOCATED_PROPERTIES, (CWnd *) _ParticleDlg) ;
-	RECT r, pr  ;
-	GetClientRect(&r) ;
-	MoveWindow(x, y, r.right, r.bottom) ;	
+	Create(IDD_LOCATED_PROPERTIES, (CWnd *) _ParticleDlg);
+	RECT r, pr;
+	GetClientRect(&r);
+	MoveWindow(x, y, r.right, r.bottom);	
 
-	GetWindowRect(&pr) ;
-
-
-	const sint xPos = 0 ;
-	sint yPos = 100 ;
-
-	_LifeDialog = new CAttribDlgFloat("LIFETIME") ;
-	_LifeDialog->enableMemoryScheme(false) ;
-
-	_LifeWrapper.Located = _Located ;
-
-	_LifeDialog->setWrapper(&_LifeWrapper) ;			
-
-	_LifeDialog->setSchemeWrapper(&_LifeWrapper) ;
-
-	HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_LIFE_TIME)) ;
-
-	_LifeDialog->init(bmh, xPos, yPos, this) ;
+	GetWindowRect(&pr);
 
 
-	_LifeDialog->GetClientRect(&r) ;	
-	yPos += r.bottom + 3 ;
+	const sint xPos = 0;
+	sint yPos = 100;
+
+	_LifeDialog = new CAttribDlgFloat("LIFETIME");
+	_LifeDialog->enableMemoryScheme(false);
+
+	_LifeWrapper.Located = _Located;
+
+	_LifeDialog->setWrapper(&_LifeWrapper);			
+
+	_LifeDialog->setSchemeWrapper(&_LifeWrapper);
+
+	HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_LIFE_TIME));
+
+	_LifeDialog->init(bmh, xPos, yPos, this);
+
+
+	_LifeDialog->GetClientRect(&r);	
+	yPos += r.bottom + 3;
 
 	if (_Located->getLastForever())
 	{
-		_LifeDialog->EnableWindow(FALSE) ;
+		_LifeDialog->EnableWindow(FALSE);
 	}	
 
 
-	_MassDialog = new CAttribDlgFloat("MASS") ;
-	_MassDialog->enableMemoryScheme(false) ;
-	_MassWrapper.Located = _Located ;
-	_MassDialog->setWrapper(&_MassWrapper) ;			
-	_MassDialog->setSchemeWrapper(&_MassWrapper) ;
-	bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_WEIGHT)) ;
-	_MassDialog->init(bmh, xPos, yPos, this) ;
-	_MassDialog->GetClientRect(&r) ;
-	yPos += r.bottom + 3 ;
+	_MassDialog = new CAttribDlgFloat("PARTICLE_MASS", 0.001f, 10);	
+	_MassDialog->enableLowerBound(0, true); // 0 is disallowed
+	_MassDialog->enableMemoryScheme(false);
+	_MassWrapper.Located = _Located;
+	_MassDialog->setWrapper(&_MassWrapper);			
+	_MassDialog->setSchemeWrapper(&_MassWrapper);
+	bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_WEIGHT));
+	_MassDialog->init(bmh, xPos, yPos, this);
+	_MassDialog->GetClientRect(&r);	
+	yPos += r.bottom + 3;
 	
 
 
-	m_MaxNbParticles.GetWindowRect(&r) ;
-	_MaxNbParticlesWrapper.TreeCtrl = _ParticleDlg->ParticleTreeCtrl ;
-	_MaxNbParticlesWrapper.Located = _Located ;
-	_MaxNbParticles->setWrapper(&_MaxNbParticlesWrapper) ;	
-	_MaxNbParticles->init(r.left - pr.left, r.top - pr.top, this) ;
+	m_MaxNbParticles.GetWindowRect(&r);
+	_MaxNbParticlesWrapper.TreeCtrl = _ParticleDlg->ParticleTreeCtrl;
+	_MaxNbParticlesWrapper.Located = _Located;
+	_MaxNbParticles->setWrapper(&_MaxNbParticlesWrapper);	
+	_MaxNbParticles->init(r.left - pr.left, r.top - pr.top, this);
 
 	
-	m_SystemBasis = _Located->isInSystemBasis() ;
-	m_LimitedLifeTime = _Located->getLastForever() ? FALSE : TRUE ;
+	m_SystemBasis = _Located->isInSystemBasis();
+	m_LimitedLifeTime = _Located->getLastForever() ? FALSE : TRUE;
 
 
 
-	_SkipFrameRateWrapper.Located = _Located ;
-	_SkipFramesDlg->setWrapper(&_SkipFrameRateWrapper) ;
-	_SkipFramesDlg->init(99, 339, this) ;
+	_SkipFrameRateWrapper.Located = _Located;
+	_SkipFramesDlg->setWrapper(&_SkipFrameRateWrapper);
+	_SkipFramesDlg->init(99, 339, this);
 
-	UpdateData(FALSE) ;
+	UpdateData(FALSE);
 
-	m_DisgradeWithLOD = _Located->hasLODDegradation() ;
+	m_DisgradeWithLOD = _Located->hasLODDegradation();
 
 
 
-	ShowWindow(SW_SHOW) ;
+	ShowWindow(SW_SHOW);
 
 
 }
@@ -199,30 +200,30 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 void CLocatedProperties::OnLimitedLifeTime() 
 {
 	
-	UpdateData() ;
+	UpdateData();
 	
 
 	if (!m_LimitedLifeTime)
 	{
-		_Located->setLastForever() ;
-		_LifeDialog->EnableWindow(FALSE) ;
+		_Located->setLastForever();
+		_LifeDialog->EnableWindow(FALSE);
 	}
 	else
 	{
-		_Located->setInitialLife(_Located->getInitialLife()) ;
-		_LifeDialog->EnableWindow(TRUE) ;
+		_Located->setInitialLife(_Located->getInitialLife());
+		_LifeDialog->EnableWindow(TRUE);
 	}
 }
 
 void CLocatedProperties::OnSystemBasis() 
 {
-	UpdateData() ;
-	_Located->setSystemBasis(m_SystemBasis ? true : false) ;
+	UpdateData();
+	_Located->setSystemBasis(m_SystemBasis ? true : false);
 }
 
 void CLocatedProperties::OnDisgradeWithLod() 
 {
-	UpdateData() ;
-	_Located->forceLODDegradation(m_DisgradeWithLOD ? true : false /* to avoid warning from MSVC */) ;
+	UpdateData();
+	_Located->forceLODDegradation(m_DisgradeWithLOD ? true : false /* to avoid warning from MSVC */);
 	
 }

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.143 2003/04/02 16:20:29 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.144 2003/04/15 15:58:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,7 @@
 #include "driver_opengl_states.h"
 #include "3d/texture_cube.h"
 #include "3d/vertex_program_parse.h"
+#include "nel/3d/viewport.h"
 
 
 #ifdef NL_OS_WINDOWS
@@ -354,6 +355,9 @@ public:
 
 	virtual void			setupViewport (const class CViewport& viewport);
 
+	virtual	void			getViewport(CViewport &viewport);
+
+
 	virtual uint32			getImplementationVersion () const
 	{
 		return ReleaseVersion;
@@ -573,6 +577,9 @@ private:
 	bool					_FogEnabled;
 	float					_FogEnd, _FogStart;
 	GLfloat					_CurrentFogColor[4];
+
+	// current viewport
+	CViewport				_CurrViewport;
 
 
 	// Num lights return by GL_MAX_LIGHTS

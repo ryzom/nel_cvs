@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.181 2003/04/02 16:20:29 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.182 2003/04/15 15:58:31 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -95,7 +95,7 @@ uint CDriverGL::_Registered=0;
 const uint32		CDriverGL::ReleaseVersion = 0xa;
 
 // Number of register to allocate for the EXTVertexShader extension
-const uint CDriverGL::_EVSNumConstant = 96;
+const uint CDriverGL::_EVSNumConstant = 97;
 
 #ifdef NL_OS_WINDOWS
 
@@ -1075,6 +1075,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_NORMALIZE);
+	_CurrViewport.init(0.f, 0.f, 1.f, 1.f);
 	_CurrentGlNormalize= false;
 	_ForceNormalize= false;
 	// Setup defaults for blend, lighting ...
@@ -1677,6 +1678,16 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 	int iheight=(int)((float)clientHeight*height);
 	clamp (iheight, 0, clientHeight-iy);
 	glViewport (ix, iy, iwidth, iheight);
+
+	_CurrViewport.init(ix / (float) clientWidth, iy / (float) clientHeight,
+					   iwidth / (float) clientWidth, iheight / (float) clientHeight);
+		
+}
+
+// --------------------------------------------------
+void CDriverGL::getViewport(CViewport &viewport)
+{
+	viewport = _CurrViewport;	
 }
 
 

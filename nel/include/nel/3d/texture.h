@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.18 2000/12/22 13:30:25 berenguier Exp $
+ * $Id: texture.h,v 1.19 2001/01/04 11:01:49 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,13 +64,11 @@ public:
  * Interface for textures
  * Sharing System note: The deriver may implement sharing system by implement supportSharing() and getShareName().
  * Such a texture may return a Unique Name for sharing. If the driver already has this texture, it will reuse it.
- *
- * *** IMPORTANT ********************
+ * 
+ */
+/* *** IMPORTANT ********************
  * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
  * **********************************
- * \author Stephane Coutelas
- * \author Nevrax France
- * \date 2000
  */
 class ITexture : public CBitmap, public NLMISC::CRefCount, public NLMISC::IStreamable
 {
@@ -186,8 +184,6 @@ public:
 	 *
 	 * \return true if texture can be released, false else
 	 * \see setReleasable(), generate()
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	bool getReleasable() const { return _Releasable; }
 
@@ -199,8 +195,6 @@ public:
      *
 	 * \see getReleasable(), generate()
 	 * \param true if texture can be released, false else
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void setReleasable(bool r) { _Releasable = r; }
 
@@ -223,38 +217,28 @@ public:
 	 *
 	 * \see isAllInvalidated(), touch(), touched(), touchRect(), clearTouched(), _ListInvalidRect
 	 * \see getReleasable(), setReleasable()
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	virtual void generate() = 0;
 
 
 	/** 
 	 * Release the texure (free memory)
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void release() { reset(); }
 
 	/** 
 	 * Does this texture support sharing system.
-	 * \author Lionel Berenguier
-	 * \date 2000
 	 */	
 	virtual bool			supportSharing() const {return false;}
 
 	/** 
 	 * Return the Unique ident/name of the texture, used for Driver sharing caps.
 	 * Deriver should add a prefix for their texture type. eg "file::pipoland", "noise::4-4-2" etc....
-	 * \author Lionel Berenguier
-	 * \date 2000
 	 */	
 	virtual std::string		getShareName() const {return std::string();}
 
 	/** 
 	 * Tells if the texture has been setuped by the driver.
-	 * \author Lionel Berenguier
-	 * \date 2000
 	 */	
 	bool	loadedIntoDriver() const 
 	{
@@ -264,8 +248,6 @@ public:
 protected:
 	/** 
 	 * Return true if ALL the texture is invalidate, else return false.
-	 * \author Cyril Corvazier
-	 * \date 2000
 	 */	
 	bool					isAllInvalidated () const
 	{

@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.17 2001/07/06 08:25:37 chafik Exp $
+ * $Id: agent_object.h,v 1.18 2001/10/12 16:00:50 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -239,7 +239,7 @@ namespace NLAIAGENT
 		virtual bool isEqual(const IBasicObjectIA &a) const
 		{
 			const CPaireType &t = (const CPaireType &)a;
-			if(((IObjectIA &)t._First) == ((IObjectIA &)_First)) return t._Second == _Second;
+			if((t._First) == (_First)) return t._Second == _Second;
 			return false;
 		}
 

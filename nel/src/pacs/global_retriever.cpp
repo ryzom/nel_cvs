@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.4 2001/05/16 15:58:14 legros Exp $
+ * $Id: global_retriever.cpp,v 1.5 2001/05/16 16:26:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -411,24 +411,28 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 				sint	neighborInstanceId= retrieverInstance.getNeighbor(edgeChain);
 				// store in the current collisionChain Right.
 				cc.RightSurface.RetrieverInstanceId= neighborInstanceId;
-				// TODODO: mgt "NULL" neighbors.
 
+				// If no instance near us, this is a WALL.
+				if(neighborInstanceId<0)
+				{
+					// mark as a Wall.
+					cc.RightSurface.SurfaceId= -1;
+				}
+				else
+				{
+					// Get the good neighbor surfaceId.
+					//================
+					// get the chainId of the neighborInstance 's localRetriever.
+					sint	neighborChainId= retrieverInstance.getEdgeChainLink(edgeChain, 
+						CChain::convertEdgeId(cc.RightSurface.SurfaceId));
 
-				// Get the good neighbor surfaceId.
-				//================
-				// get the neighbor instance.
-				const CRetrieverInstance	&neighborInstance= getInstance(neighborInstanceId);
-				// Get the mirror edge chain id. (1<->3,  0<->2).
-				sint	neighborEdgeChain= (edgeChain+2)%4;
+					// get the chain of the neighborInstance 's localRetriever.
+					const CRetrieverInstance	&neighborInstance= getInstance(neighborInstanceId);
+					const CChain		&neighborChain= (_RetrieverBank->getRetriever(neighborInstance.getRetrieverId())).getChain(neighborChainId);
 
-				// get the chainId of the neighborInstance 's localRetriever.
-				sint	neighborChainId= neighborInstance.getEdgeChainLink(neighborEdgeChain, 
-					CChain::convertEdgeId(cc.RightSurface.SurfaceId));
-				// get the chain of the neighborInstance 's localRetriever.
-				const	CChain		&neighborChain= (_RetrieverBank->getRetriever(neighborInstance.getRetrieverId())).getChain(neighborChainId);
-
-				// Now we have this chain, we are sure that Chain.Left is our SurfaceId of cc.Right.
-				cc.RightSurface.SurfaceId= neighborChain.getRight();
+					// Now we have this chain, we are sure that chain.Left is our SurfaceId of cc.Right.
+					cc.RightSurface.SurfaceId= neighborChain.getLeft();
+				}
 			}
 		}
 

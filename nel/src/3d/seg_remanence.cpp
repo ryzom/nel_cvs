@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.13 2004/03/04 14:30:37 vizerie Exp $
+ * $Id: seg_remanence.cpp,v 1.14 2004/03/17 17:09:34 cado Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -500,8 +500,11 @@ void CSegRemanence::traverseAnimDetail()
 //===============================================================
 void CSegRemanence::setSliceTime(float duration)
 {
-	stopNoUnroll();
-	_SliceTime = duration;
+	if ( duration != _SliceTime )
+	{
+		stopNoUnroll();
+		_SliceTime = duration;
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.22 2001/05/15 14:45:13 cado Exp $
+ * $Id: service.h,v 1.23 2001/05/18 16:52:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,6 +144,8 @@ public:
 
 	void setCallbackArray (TCallbackItem *callbackArray, uint16 callbackArraySize) { _CallbackArray=callbackArray; _CallbackArraySize=callbackArraySize; }
 
+	static NLMISC::CConfigFile	ConfigFile;
+
 	/// Returns a pointer to the CCallbackServer object
 	static CCallbackServer *getServer();
 
@@ -176,8 +178,6 @@ protected:
 
 	/// Singleton
 	static IService				*Instance;
-
-	static NLMISC::CConfigFile	_ConfigFile;
 
 	friend void AESConnection (const std::string &serviceName, TSockId from, void *arg);
 

@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.4 2000/11/10 11:09:00 berenguier Exp $
+ * $Id: dru.cpp,v 1.5 2000/11/21 17:04:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,15 +42,25 @@ IDriver		*CDRU::createGlDriver()
 	HINSTANCE			hInst;
 	IDRV_CREATE_PROC	createDriver;
 
-	hInst=LoadLibrary("r:\\code\\nel\\lib\\driver_opengl.dll");
+	hInst=LoadLibrary("driver_opengl.dll");
 	if (!hInst)
-		return	NULL;
+	{
+		nlerror("Can't load driver_opengl.dll");
+	}
 
 	createDriver=(IDRV_CREATE_PROC)GetProcAddress(hInst,"NL3D_createIDriverInstance");
 	if (!createDriver)
-		return	NULL;
+	{
+		nlerror("Can't get NL3D_createIDriverInstance from driver_opengl.dll (bad dll?)");
+	}
 
-	return createDriver();
+	IDriver		*ret= createDriver();
+	if (!ret)
+	{
+		nlerror("Can't create IDriver Instance from driver_opengl.dll (bad dll?)");
+	}
+
+	return ret;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.22 2001/05/23 08:41:31 cado Exp $
+ * $Id: message.h,v 1.23 2001/05/24 14:17:35 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
  * Warning: if you choose plain_text, all the interdependant programs
  * of your system must have the same encoding.
  */
-#undef MESSAGES_PLAIN_TEXT
+#define MESSAGES_PLAIN_TEXT
 
 
 #include <sstream>

@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.5 2001/05/11 09:29:19 cado Exp $
+ * $Id: buf_sock.cpp,v 1.6 2001/05/24 14:17:51 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,6 +82,7 @@ CBufSock::~CBufSock()
 
 /*
  * Force to send all data pending in the send queue
+ * Precond: the send queue should not contain an empty block
  */
 bool CBufSock::flush()
 {
@@ -96,6 +97,7 @@ bool CBufSock::flush()
 	{
 		// Extract a temporary buffer from the send queue
 		SendFifo.front( tmpbuffer );
+		nlassert( ! tmpbuffer.empty() );
 
 		// Compute the size and add it into the beginning of the buffer
 		netlen = htons( (TBlockSize)(tmpbuffer.size()) );
@@ -243,9 +245,11 @@ bool CBufSock::update()
 
 /*
  * Connects to the specified addr; set connectedstate to true if no connection advertising is needed
+ * Precond: not connected
  */
 void CBufSock::connect( const CInetAddress& addr, bool nodelay, bool connectedstate )
 {
+	nlassert( ! Sock->connected() );
 	Sock->connect( addr );
 	_ConnectedState = connectedstate;
 	_KnowConnected = connectedstate;
@@ -273,10 +277,11 @@ void CBufSock::disconnect( bool connectedstate )
 string CBufSock::asString() const
 {
 	stringstream ss;
-	if (this == NULL)
+	if (this == NULL) // tricky
 		ss << "<Null>";
 	else
-	{
+	{ 
+		ss << typeStr();
 		ss << hex << this << dec << " (socket ";
 		
 		if (Sock == NULL)
@@ -323,9 +328,16 @@ bool CServerBufSock::receivePart()
 		_BytesRead += actuallen;
 		if ( _BytesRead == sizeof(_Length ) )
 		{
-			_Length = ntohs( _Length );
-			_NowReadingBuffer = true;
-			_ReceiveBuffer.resize( _Length );
+			if ( _Length != 0 )
+			{
+				_Length = ntohs( _Length );
+				_NowReadingBuffer = true;
+				_ReceiveBuffer.resize( _Length );
+			}
+			else
+			{
+				nlwarning( "L1: Socket %s received null length in block header", asString().c_str() );
+			}
 			_BytesRead = 0;
 		}
 	}

@@ -2,7 +2,7 @@
 /** \file string_stream.h
  * <File description>
  *
- * $Id: string_stream.h,v 1.1 2001/05/21 17:01:51 cado Exp $
+ * $Id: string_stream.h,v 1.2 2001/05/24 14:17:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 	uint			serialSeparatedBufferIn( uint8 *buf, uint len );
 
 	/// Output: writes len bytes from buf into the stream
-	uint			serialSeparatedBufferOut( uint8 *buf, uint len );
+	void			serialSeparatedBufferOut( uint8 *buf, uint len );
 
 	/// Method inherited from IStream
 	virtual void	serialBit(bool &bit);

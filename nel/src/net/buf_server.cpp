@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.5 2001/05/18 14:32:23 cado Exp $
+ * $Id: buf_server.cpp,v 1.6 2001/05/24 14:17:51 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -276,11 +276,12 @@ void CBufServer::disconnect( TSockId hostid, bool quick )
 
 /*
  * Send a message to the specified host
- * The max length of the buffer is 65535 bytes.
+ * Precond: The length of the buffer is between 1 and 65535 bytes.
  */
 void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 {
 	nlnettrace( "CBufServer::send" );
+	nlassert( ! buffer.empty() );
 	nlassert( buffer.size() < 0x10000 ); // size check in debug mode
 
 	if ( hostid != NULL )
@@ -344,7 +345,7 @@ bool CBufServer::dataAvailable()
 					
 				// Normal message available
 				case CBufNetBase::User:
-					return true;
+					return true; // return immediatly, do not extract the message
 
 				// Process disconnection event
 				case CBufNetBase::Disconnection:
@@ -402,10 +403,12 @@ bool CBufServer::dataAvailable()
  
 /*
  * Receives next block of data in the specified. The length and hostid are output arguments.
+ * Precond: dataAvailable() has returned true, phostid not null
  */
 void CBufServer::receive( std::vector<uint8>& buffer, TSockId* phostid )
 {
 	nlnettrace( "CBufServer::receive" );
+	//nlassert( dataAvailable() );
 	nlassert( phostid != NULL );
 	{
 		CFifoAccessor recvfifo( &receiveQueue() );
@@ -431,7 +434,7 @@ void CBufServer::receive( std::vector<uint8>& buffer, TSockId* phostid )
  */
 void CBufServer::update()
 {
-  //nlnettrace( "CBufServer::update-BEGIN" );
+	//nlnettrace( "CBufServer::update-BEGIN" );
 
 	_NbConnections = 0;
 	_ConnectionsCopy.clear();
@@ -463,20 +466,20 @@ void CBufServer::update()
 	    // For each socket of the thread, update sending
 	    if ( ! ((*ipb)->Sock->connected() && (*ipb)->update()) )
 	    {
-	      // Update did not work or the socket is not connected anymore
+			// Update did not work or the socket is not connected anymore
 	        nldebug( "L1: Socket %s is disconnected", (*ipb)->asString().c_str() );
-		// Disconnection event if disconnected (known either from flush (in update) or when receiving data)
-		(*ipb)->advertiseDisconnection( this, *ipb );
+			// Disconnection event if disconnected (known either from flush (in update) or when receiving data)
+			(*ipb)->advertiseDisconnection( this, *ipb );
 		
-		/*if ( (*ipb)->advertiseDisconnection( this, *ipb ) )
-		  {
-		  // Now the connection removal is in dataAvailable()
-		  // POLL6
-		  }*/
+			/*if ( (*ipb)->advertiseDisconnection( this, *ipb ) )
+			{
+				// Now the connection removal is in dataAvailable()
+				// POLL6
+			}*/
 	    }
 	    else
 	    {
-		_NbConnections++;
+			_NbConnections++;
 	    }
 	}
 	//nlnettrace( "CBufServer::update-END" );
@@ -679,6 +682,7 @@ void CBufServer::dispatchNewSocket( CServerBufSock *bufsock )
 
 /*
  * Creates a new task and run a new thread for it
+ * Precond: bufsock not null
  */
 void CBufServer::addNewThread( CThreadPool& threadpool, CServerBufSock *bufsock )
 {

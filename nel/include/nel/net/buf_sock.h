@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.4 2001/05/18 13:58:00 cado Exp $
+ * $Id: buf_sock.h,v 1.5 2001/05/24 14:17:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,17 +54,17 @@ public:
 	virtual ~CBufSock();
 
 	/// Sets the application identifier
-	void	setAppId( uint64 id ) { _AppId = id; }
+	void					setAppId( uint64 id ) { _AppId = id; }
 
 	/// Returns the application identifier
-	uint64	appId() const { return _AppId; }
+	uint64					appId() const { return _AppId; }
 
 	/// Returns a string with the characteristics of the object
-	std::string		asString() const;
+	std::string				asString() const;
 
 	/// Little tricky but this string is used by Layer4 to know which callback is authorized.
 	/// This is empty when all callback are authorized.
-	std::string	AuthorizedCallback;
+	std::string				AuthorizedCallback;
 
 protected:
 
@@ -100,6 +100,8 @@ protected:
 
 	//@}
 
+	/// Returns "CLT " (client)
+	virtual std::string typeStr() const { return "CLT "; }
 
 	/** Pushes a disconnection message into bnb's receive queue, if it has not already been done
 	 * (returns true in this case). You can either specify a sockid (for server) or NULL (for client)
@@ -252,6 +254,9 @@ protected:
 	{
 		return advertiseSystemEvent( (CBufNetBase*)bnb, this, _KnowConnected, false, CBufNetBase::Connection );
 	}
+
+	/// Returns "SRV " (server)
+	virtual std::string			typeStr() const { return "SRV "; }
 
 private:
 

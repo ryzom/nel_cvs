@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.6 2001/05/21 17:02:45 cado Exp $
+ * $Id: buf_client.cpp,v 1.7 2001/05/24 14:17:51 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,10 +66,12 @@ CBufClient::CBufClient( bool nodelay ) :
 
 /*
  * Connects to the specified host
+ * Precond: not connected
  */
 void CBufClient::connect( const CInetAddress& addr )
 {
 	nlnettrace( "CBufClient::connect" );
+	nlassert( ! _BufSock->Sock->connected() );
 	_BufSock->connect( addr, _NoDelay, true );
 	_PrevBytesDownloaded = 0;
 	_PrevBytesUploaded = 0;
@@ -93,11 +95,12 @@ void CBufClient::connect( const CInetAddress& addr )
 
 /*
  * Sends a message to the remote host
- * The max length of the buffer is 65535 bytes.
+ * Precond: the length of the buffer is between 1 and 65535 bytes.
  */
 void CBufClient::send( const std::vector<uint8>& buffer )
 {
 	nlnettrace( "CBufClient::send" );
+	nlassert( ! buffer.empty() );
 	nlassert( buffer.size() < 0x10000 ); // size check in debug mode
 
 	if ( ! _BufSock->pushBuffer( buffer ) )
@@ -133,7 +136,7 @@ bool CBufClient::dataAvailable()
 					
 				// Normal message available
 				case CBufNetBase::User:
-					return true;
+					return true; // return immediatly, do not extract the message
 
 				// Process disconnection event
 				case CBufNetBase::Disconnection:
@@ -170,10 +173,12 @@ bool CBufClient::dataAvailable()
   
 /*
  * Receives next block of data in the specified buffer (resizes the vector)
+ * Precond: dataAvailbable() has returned true
  */
 void CBufClient::receive( std::vector<uint8>& buffer )
 {
 	nlnettrace( "CBufClient::receive" );
+	//nlassert( dataAvailable() );
 
 	// Extract buffer from the receive queue
 	{
@@ -332,17 +337,24 @@ void CClientReceiveTask::run()
 			sock()->receive( (uint8*)&len16, lenoflen );
 			uint len = (uint)ntohs( len16 );
 
-			// Receive message payload (in blocking mode)
-			vector<uint8> buffer ( len );
-			sock()->receive( &*buffer.begin(), len );
+			if ( len != 0 )
+			{
+				// Receive message payload (in blocking mode)
+				vector<uint8> buffer ( len );
+				sock()->receive( &*buffer.begin(), len );
 #ifdef NL_DEBUG
-			nldebug( "L1: Client %s received buffer (%d B): [%s]", _SockId->asString().c_str(), buffer.size(), stringFromVector(buffer).c_str() );
+				nldebug( "L1: Client %s received buffer (%d B): [%s]", _SockId->asString().c_str(), buffer.size(), stringFromVector(buffer).c_str() );
 #endif
-			// Add event type
-			buffer.push_back( CBufNetBase::User );
+				// Add event type
+				buffer.push_back( CBufNetBase::User );
 
-			// Push message into receive queue
-			_Client->pushMessageIntoReceiveQueue( buffer );
+				// Push message into receive queue
+				_Client->pushMessageIntoReceiveQueue( buffer );
+			}
+			else
+			{
+				nlwarning( "L1: Socket %s received null length in block header", _SockId->asString().c_str() );
+			}
 		}
 		catch ( ESocketConnectionClosed& )
 		{

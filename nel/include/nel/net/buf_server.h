@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.4 2001/05/18 13:58:00 cado Exp $
+ * $Id: buf_server.h,v 1.5 2001/05/24 14:17:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -405,11 +405,12 @@ public:
 
 	/** Add connection to the remove set (mutexed on _RemoveSet)
 	 * Note: you must not call this method within a mutual exclusion on _Connections, or
-	 * their will be a deadlock (see clearClosedConnection())
+	 * there will be a deadlock (see clearClosedConnection())
 	 */
 	void	addToRemoveSet( TSockId sockid )
 	{
 		nlnettrace( "CServerReceiveTask::addToRemoveSet" );
+		nlassert( sockid != NULL );
 		{
 			// Three possibilities :
 			// - The value is inserted into the set.

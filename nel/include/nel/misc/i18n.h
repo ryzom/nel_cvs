@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.5 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: i18n.h,v 1.6 2001/08/23 14:30:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@ namespace NLMISC {
  * load the language file with \c load(). Now, you can get a localised string with his association with \c get().
  *
  *\code
-	// get all language names
+	// get all language names (you must call this before calling load())
 	CI18N::getLanguageNames ();
 	// load the language 1 (french)
 	CI18N::load (1);
@@ -67,6 +67,7 @@ public:
 
 	/// Return a vector with all language available. The vector contains the name of the language.
 	/// The index in the vector is used in \c load() function
+	/// \warning you *must* call this function before calling load()
 	static const std::vector<ucstring> &getLanguageNames();
 
 	/// Load a language file depending of the language
@@ -80,10 +81,10 @@ public:
 
 private:
 
-	typedef std::map<std::string, ucstring>::iterator		 ItStrMap;
-	typedef std::map<std::string, ucstring>::value_type		 ValueStrMap;
+	typedef std::map<std::string, ucstring>::iterator			 ItStrMap;
+	typedef std::map<std::string, ucstring>::value_type			 ValueStrMap;
 
-	static std::map<std::string, ucstring>					 _StrMap;
+	static std::map<std::string, ucstring>						 _StrMap;
 	static bool													 _StrMapLoaded;
 
 	static std::string											 _Path;
@@ -93,14 +94,14 @@ private:
 	static std::vector<ucstring>								 _LanguageNames;
 	static bool													 _LanguagesNamesLoaded;
 
-	static ucchar eatChar(IStream &is);
-	static void checkASCII7B (ucchar c);
+	static ucchar	eatChar				(IStream &is);
+	static void		checkASCII7B		(ucchar c);
 
-	static void	createLanguageFile	(uint32 lid);
-	static void createLanguageEntry (const std::string &lval, const std::string &rval);
+	static void		createLanguageFile	(uint32 lid);
+	static void		createLanguageEntry (const std::string &lval, const std::string &rval);
 
-	static void skipComment			(IStream &is, int &line);
-	static ucchar skipWS			(IStream &is, int &line);
+	static void		skipComment			(IStream &is, int &line);
+	static ucchar	skipWS				(IStream &is, int &line);
 };
 
 

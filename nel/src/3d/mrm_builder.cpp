@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.22 2001/10/10 15:38:09 besson Exp $
+ * $Id: mrm_builder.cpp,v 1.23 2001/10/10 15:52:57 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -486,7 +486,7 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 	// Collapse the Vertex.
 	//========================
 	Vertex1.Current= Vertex1.Current*(1-InterValue) + Vertex2.Current*InterValue;
-	for (i = 0; i < Vertex1.BSCurrent.size(); ++i)
+	for (i = 0; i < (sint)Vertex1.BSCurrent.size(); ++i)
 		Vertex1.BSCurrent[i] = Vertex1.BSCurrent[i]*(1-InterValue) + Vertex2.BSCurrent[i]*InterValue;
 	Vertex2.CollapsedTo= edgeV1;
 	if(_Skinned)
@@ -556,7 +556,7 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 			itp.z= w0.z*(1-InterValue) + w1.z*InterValue;
 			itp.w= w0.w*(1-InterValue) + w1.w*InterValue;
 
-			for (j = 0; j < face.BSInterpolated.size(); ++j)
+			for (j = 0; j < (sint)face.BSInterpolated.size(); ++j)
 			{
 				CVectorH &w0 = TmpAttributes[attId][face.getAssociatedWedge(attId, edgeV1)].BSCurrent[j];
 				CVectorH &w1 = TmpAttributes[attId][face.getAssociatedWedge(attId, edgeV2)].BSCurrent[j];

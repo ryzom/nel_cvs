@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.23 2001/08/31 13:57:49 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.24 2001/09/17 13:29:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -282,9 +282,9 @@ namespace NLAIAGENT
 	}
 
 	IObjectIA::CProcessResult CAgentWatchTimer::runActivity()
-	{
-		_Clock -= CAgentManagerTimer::ClockTick;
-		if(_Clock <= 0)
+	{				
+		NLMISC::TTicks time = NLMISC::CTime::getLocalTime () - _DTime;
+		if((sint) (time) >= _Clock)
 		{					
 			tellBroker();
 			setState(processToKill,NULL);			
@@ -405,8 +405,11 @@ namespace NLAIAGENT
 		g.set(0,new CStringType(CStringVarName(t.c_str())));
 		this->incRef();
 		g.set(1,this);
-		NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
-		accessor.value()->addDynamicAgent(&g);
+		{
+			NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
+			accessor.value()->addDynamicAgent(&g);
+		}
+		_DTime = NLMISC::CTime::getLocalTime ();
 	}
 
 	int CAgentWatchTimer::getBaseMethodCount() const
@@ -631,10 +634,11 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentClockTimer::runActivity()
 	{
-		_Clock -= CAgentManagerTimer::ClockTick;
-		if(_Clock <= 0)
+		//_Clock -= CAgentManagerTimer::ClockTick;
+		NLMISC::TTicks time = NLMISC::CTime::getLocalTime () - _DTime;
+		if((sint) (time) >= _Clock)
 		{			
-			if(tellBroker())
+			tellBroker();
 			{
 				_Clock = _TimeCount;
 			}

@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.30 2000/11/24 11:22:13 cado Exp $
+ * $Id: msg_socket.cpp,v 1.31 2000/11/27 10:06:48 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -724,6 +724,25 @@ const CInetAddress *CMsgSocket::listenAddress()
 		return NULL;
 	}
 }
+
+
+/*
+ *Returns the address of a connected host
+ */
+const CInetAddress *CMsgSocket::addressFromId( TSenderId id )
+{
+	CSocket *sock = CMsgSocket::socketFromId( id );
+	if ( sock == NULL )
+	{
+		return NULL;
+	}
+	else
+	{
+		return &(sock->remoteAddr());
+	}
+}
+
+
 
 
 /*

@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.23 2000/11/23 16:53:29 cado Exp $
+ * $Id: msg_socket.h,v 1.24 2000/11/27 10:06:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,6 +186,9 @@ public:
 
 	/// Returns the internet address of the listening socket (server mode only)
 	static const CInetAddress	*listenAddress();
+
+	/// Returns the address of a connected host
+	static const CInetAddress	*addressFromId( TSenderId id );
 
 protected:
 

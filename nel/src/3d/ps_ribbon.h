@@ -1,7 +1,7 @@
 /** \file ps_ribbon.h
  * Ribbons particles.
  *
- * $Id: ps_ribbon.h,v 1.12 2004/07/16 07:29:59 vizerie Exp $
+ * $Id: ps_ribbon.h,v 1.13 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -231,10 +231,17 @@ private:
 			  * The number of vertices per slices is encoded in the lower word
 			  * \todo: primitive blocks can be shared for several vbs...
 			  */
-			struct CVBnPB
+			class CVBnPB
 			{
+			public:
 				CVertexBuffer		VB;
-				CIndexBuffer		PB;				
+				CIndexBuffer		PB;
+			public:
+				CVBnPB()
+				{
+					NL_SET_IB_NAME(PB, "CPSRibbon::CVBnPB::PB");
+					VB.setName("CPSRibbon::CVBnPB::VB");
+				}
 			};
 			typedef std::hash_map<uint, CVBnPB> TVBMap;
 			//

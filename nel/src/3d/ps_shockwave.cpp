@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.12 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.13 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,7 +85,7 @@ public:
 		s._Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
 		s.setupDriverModelMatrix();
 		const uint numShockWaveToDealWith = std::min(ShockWaveBufSize, s.getNumShockWavesInVB());
-		driver->activeVertexBuffer(*vb);	
+		
 
 		static CPlaneBasis planeBasis[ShockWaveBufSize];
 		float       sizes[ShockWaveBufSize];
@@ -114,12 +114,12 @@ public:
 
 		do
 		{
+			toProcess = leftToDo > numShockWaveToDealWith ? numShockWaveToDealWith : leftToDo;
+			vb->setNumVertices((toProcess * (s._NbSeg + 1)) << 1);
 			{
 				CVertexBufferReadWrite vba;
 				vb->lock (vba);
-
 				currVertex = (uint8 *) vba.getVertexCoordPointer();
-				toProcess = leftToDo > numShockWaveToDealWith ? numShockWaveToDealWith : leftToDo;
 				endIt = posIt + toProcess;
 				if (s._SizeScheme)
 				{
@@ -186,6 +186,7 @@ public:
 			const uint numTri = 2 * toProcess * s._NbSeg;
 			pb->setNumIndexes(3 * numTri);
 			driver->activeIndexBuffer(*pb);
+			driver->activeVertexBuffer(*vb);
 			driver->renderTriangles(s._Mat, 0, numTri);
 			leftToDo -= toProcess;		
 		}
@@ -515,7 +516,8 @@ void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CIndexBuffer *&retPb)
 						   CVertexBuffer::TexCoord0Flag |
 						   (_ColorScheme != NULL ?  CVertexBuffer::PrimaryColorFlag : 0) 
 						  );	
-		vb.setNumVertices((size * (_NbSeg + 1)) << 1 );		
+		vb.setNumVertices((size * (_NbSeg + 1)) << 1 );
+		vb.setPreferredMemory(CVertexBuffer::AGPVolatile, true);
 		CVertexBufferReadWrite vba;
 		vb.lock (vba);
 		pb.reserve(2 * 3 * size * _NbSeg);
@@ -540,7 +542,9 @@ void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CIndexBuffer *&retPb)
 		}
 		retVb = &vb;
 		retPb = &pb;
-	}
+		vb.setName("CPSShockWave");
+		NL_SET_IB_NAME(pb, "CPSShockWave");
+	}	
 }
 
 ///=================================================================================

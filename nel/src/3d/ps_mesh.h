@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.22 2004/06/01 16:24:38 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.23 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -404,13 +404,11 @@ protected:
 	void				releaseShapes();
 
 
-	/** Compute (optionnal) mesh colors.
-	  * \param outVB		The destination VB.
-	  * \param inVB			the vb of the current shape
+	/** Compute (optionnal) mesh colors.	  
 	  * \param startIndex   Index of the mesh being processed
 	  * \param toProcess    Number of meshs to process
 	  */
-	void	computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess, uint32 srcStep, IDriver &drv);
+	void	computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess, uint32 srcStep, IDriver &drv, CVertexBufferReadWrite &vba, CVertexBufferRead &vbaIn);
 
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
@@ -429,22 +427,35 @@ protected:
 	/** A rendering pass. The primitive block contains several duplication of the primitives of the original mesh, in order
       * to draw several of them at once
 	  */
-	struct CRdrPass
+	class CRdrPass
 	{
+	public:
 		CMaterial			Mat;
 		CMaterial			SourceMat;
 		CIndexBuffer		PbLine;
 		CIndexBuffer		PbTri;
+	public:
+		CRdrPass()
+		{
+			NL_SET_IB_NAME(PbLine, "CPSMesh::CRdrPass::PbLine");
+			NL_SET_IB_NAME(PbLine, "CPSMesh::CRdrPass::PbTri");
+		}
 	};
 
 	/// A set of rendering pass.	
 	typedef std::vector<CRdrPass> TRdrPassSet;
 
 	/// a set of rendering pass, and the associated vertex buffer
-	struct CMeshDisplay
+	class CMeshDisplay
 	{
+	public:
 		TRdrPassSet   RdrPasses;
 		CVertexBuffer VB;
+	public:
+		CMeshDisplay()
+		{
+			VB.setName("CPSConstraintMesh::CMeshDisplay");
+		}
 	};
 	
 	void restoreMaterials();

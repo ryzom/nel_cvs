@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.13 2004/07/20 12:24:18 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.14 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,7 +102,7 @@ public:
 		
 		la._Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
 		la.setupDriverModelMatrix();
-		driver->activeVertexBuffer(vb);	
+		//driver->activeVertexBuffer(vb);	
 		const CVector I = la.computeI();		
 		const CVector K = la.computeK();		
 		const float *rotTable = CPSRotated2DParticle::getRotTable();	
@@ -123,13 +123,13 @@ public:
 		{
 			// constant rotation case
 			do
-			{			
+			{	
+				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;
 				vb.lock (vba);
-				ptPos = (uint8 *) vba.getVertexCoordPointer();
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
-
+				ptPos = (uint8 *) vba.getVertexCoordPointer();				
 				if (la._SizeScheme)
 				{
 					currentSize = (float *) la._SizeScheme->make(la._Owner, size- leftToDo, pSizes, sizeof(float), toProcess, true, srcStep);
@@ -237,6 +237,7 @@ public:
 				}				
 				// uint64 startTick = NLMISC::CTime::getPerformanceTime();				
 				vba.unlock();
+				driver->activeVertexBuffer(vb);
 				driver->renderRawQuads(la._Mat, 0, toProcess);				
 				// PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				leftToDo -= toProcess;				
@@ -249,11 +250,12 @@ public:
 			float *currentAngle;		
 			do
 			{			
+				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;
 				vb.lock (vba);
-				ptPos = (uint8 *) vba.getVertexCoordPointer();
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+				ptPos = (uint8 *) vba.getVertexCoordPointer();				
 				if (la._SizeScheme)
 				{
 					currentSize = (float *) la._SizeScheme->make(la._Owner, size - leftToDo, pSizes, sizeof(float), toProcess, true, srcStep);
@@ -375,6 +377,7 @@ public:
 				//tmp
 				// uint64 startTick = NLMISC::CTime::getPerformanceTime();				
 				vba.unlock();
+				driver->activeVertexBuffer(vb);
 				driver->renderRawQuads(la._Mat, 0, toProcess);				
 				// PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				leftToDo -= toProcess;
@@ -404,7 +407,7 @@ public:
 		
 		la._Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
 		la.setupDriverModelMatrix();
-		driver->activeVertexBuffer(vb);	
+		//driver->activeVertexBuffer(vb);	
 		CVector I;
 		CVector J;
 		CVector K;
@@ -438,12 +441,12 @@ public:
 			// constant rotation case
 			do
 			{			
+				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;
 				vb.lock (vba);
-				ptPos = (uint8 *) vba.getVertexCoordPointer();
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
-
+				ptPos = (uint8 *) vba.getVertexCoordPointer();				
 				if (la._SizeScheme)
 				{
 					currentSize = (float *) la._SizeScheme->make(la._Owner, size- leftToDo, pSizes, sizeof(float), toProcess, true, srcStep);
@@ -583,6 +586,7 @@ public:
 					//tmp
 					//uint64 startTick = NLMISC::CTime::getPerformanceTime();					
 					vba.unlock();
+					driver->activeVertexBuffer(vb);
 					driver->renderRawQuads(la._Mat, 0, toProcess);					
 					//PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				}
@@ -725,6 +729,7 @@ public:
 					}
 					//uint64 startTick = NLMISC::CTime::getPerformanceTime();					
 					vba.unlock();
+					driver->activeVertexBuffer(vb);
 					driver->renderRawQuads(la._Mat, 0, toProcess);
 					//PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;
 				}							
@@ -738,11 +743,12 @@ public:
 			float *currentAngle;		
 			do
 			{			
+				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;
 				vb.lock (vba);
-				ptPos = (uint8 *) vba.getVertexCoordPointer();
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+				ptPos = (uint8 *) vba.getVertexCoordPointer();				
 				if (la._SizeScheme)
 				{
 					currentSize = (float *) la._SizeScheme->make(la._Owner, size - leftToDo, pSizes, sizeof(float), toProcess, true, srcStep);
@@ -753,6 +759,26 @@ public:
 				}
 				currentAngle = (float *) la._Angle2DScheme->make(la._Owner, size - leftToDo, pAngles, sizeof(float), toProcess, true, srcStep);
 				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep, *driver);	
+				/*
+				static bool fakeColors = false;
+				if (fakeColors)
+				{
+					uint8 *col = (uint8 *) vba.getColorPointer();
+					uint left = toProcess;
+					while(left--)
+					{
+						* (CRGBA *) col = CRGBA::Red;
+						col += stride;
+						* (CRGBA *) col = CRGBA::Red;
+						col += stride;
+						* (CRGBA *) col = CRGBA::Red;
+						col += stride;
+						* (CRGBA *) col = CRGBA::Red;
+						col += stride;
+					}
+				}		
+				*/
+				//nlinfo("======= %s", la._Name.c_str());
 				T endIt = it + toProcess;
 				CVector v1, v2;
 				NLMISC::OptFastFloorBegin();
@@ -778,21 +804,27 @@ public:
 						((CVector *) ptPos)->x  = (*it).x  + v1.x;		
 						((CVector *) ptPos)->y  = (*it).y  + v1.y;
 						((CVector *) ptPos)->z = (*it).z  + v1.z;  			
+						//nlinfo("** %f, %f, %f", ((CVector *) ptPos)->x, ((CVector *) ptPos)->y, ((CVector *) ptPos)->z);
 						ptPos += stride;
+
+						
 
 						((CVector *) ptPos)->x  = (*it).x  + v2.x;		
 						((CVector *) ptPos)->y  = (*it).y  + v2.y;
-						((CVector *) ptPos)->z = (*it).z  + v2.z;  			
+						((CVector *) ptPos)->z = (*it).z  + v2.z;  
+						//nlinfo("%f, %f, %f", ((CVector *) ptPos)->x, ((CVector *) ptPos)->y, ((CVector *) ptPos)->z);
 						ptPos += stride;
 
 						((CVector *) ptPos)->x  = (*it).x  - v1.x;		
 						((CVector *) ptPos)->y  = (*it).y  - v1.y;
-						((CVector *) ptPos)->z = (*it).z  - v1.z;  			
+						((CVector *) ptPos)->z = (*it).z  - v1.z; 
+						//nlinfo("%f, %f, %f", ((CVector *) ptPos)->x, ((CVector *) ptPos)->y, ((CVector *) ptPos)->z);
 						ptPos += stride;
 
 						((CVector *) ptPos)->x  = (*it).x  - v2.x;		
 						((CVector *) ptPos)->y  = (*it).y  - v2.y;
-						((CVector *) ptPos)->z = (*it).z  - v2.z;  					
+						((CVector *) ptPos)->z = (*it).z  - v2.z; 
+						//nlinfo("%f, %f, %f", ((CVector *) ptPos)->x, ((CVector *) ptPos)->y, ((CVector *) ptPos)->z);
 						ptPos += stride;
 						
 						++it;
@@ -859,6 +891,7 @@ public:
 				//tmp
 				// uint64 startTick = NLMISC::CTime::getPerformanceTime();				
 				vba.unlock();
+				driver->activeVertexBuffer(vb);
 				driver->renderRawQuads(la._Mat, 0, toProcess);				
 				//PSLookAtRenderTime += NLMISC::CTime::getPerformanceTime() - startTick;*/
 				leftToDo -= toProcess;

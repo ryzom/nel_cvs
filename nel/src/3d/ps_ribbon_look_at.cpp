@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.20 2004/07/23 13:33:30 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.21 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -349,8 +349,7 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	#ifdef NL_DEBUG
 		nlassert(drv);
 	#endif
-	drv->setupModelMatrix(localToWorldMatrix);	
-	drv->activeVertexBuffer(VB);
+	drv->setupModelMatrix(localToWorldMatrix);		
 	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose			
 	const uint numRibbonBatch = getNumRibbonsInVB(); // number of ribbons to process at once	
 	static TRibbonVect				   currRibbon;
@@ -398,8 +397,6 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	do
 	{
 		toProcess = std::min((uint) (nbRibbons - ribbonIndex) /* = left to do */, numRibbonBatch);
-	
-
 		/// setup sizes
 		const float	*ptCurrSize;
 		uint32  ptCurrSizeIncrement;
@@ -422,102 +419,101 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 			colors.resize(nbRibbons);
 			ptCurrColor = (NLMISC::CRGBA *) _ColorScheme->make(this->_Owner, ribbonIndex, &colors[0], sizeof(NLMISC::CRGBA), toProcess, true, srcStep);			
 		}	
-		
-		
-		CVertexBufferReadWrite vba;
-		VB.lock (vba);
-		currVert = (uint8 *) vba.getVertexCoordPointer();
-		for (uint k = ribbonIndex; k < ribbonIndex + toProcess; ++k)
-		{			
+		VB.setNumVertices(2 * (_UsedNbSegs + 1) * toProcess);
+		{		
+			CVertexBufferReadWrite vba;
+			VB.lock (vba);
+			currVert = (uint8 *) vba.getVertexCoordPointer();
+			for (uint k = ribbonIndex; k < ribbonIndex + toProcess; ++k)
+			{			
+				
+				TRibbonVect::iterator rIt = currRibbon.begin(), rItEnd = currRibbon.end(), rItEndMinusOne = rItEnd - 1;
+
+				////////////////////////////////////
+				// interpolate and project points //
+				////////////////////////////////////
 			
-			TRibbonVect::iterator rIt = currRibbon.begin(), rItEnd = currRibbon.end(), rItEndMinusOne = rItEnd - 1;
-
-			////////////////////////////////////
-			// interpolate and project points //
-			////////////////////////////////////
-		
-				if (!_Parametric)
-				{
-
-					//////////////////////
-					// INCREMENTAL CASE //
-					//////////////////////
-
-					// the parent class has a method to get the ribbons positions
-					computeRibbon((uint) (fpRibbonIndex >> 16), &rIt->Interp, sizeof(CVectInfo));				
-					do
-					{					
-						MakeProj(rIt->Proj, mat * rIt->Interp);
-						++rIt;				
-					}
-					while (rIt != rItEnd);								
-				}
-				else
-				{
-					//////////////////////
-					// PARAMETRIC  CASE //
-					//////////////////////
-					// we compute each pos thanks to the parametric curve				
-					_Owner->integrateSingle(date - _UsedSegDuration * (_UsedNbSegs + 1), _UsedSegDuration, _UsedNbSegs + 1, (uint) (fpRibbonIndex >> 16),
-											 &rIt->Interp, sizeof(CVectInfo) );				
-					// project each position now
-					do
-					{					
-						MakeProj(rIt->Proj, mat * rIt->Interp); 
-						++rIt;				
-					}
-					while (rIt != rItEnd);			
-				}
-
-				rIt = currRibbon.begin();
-
-		
-				// setup colors
-				if (_ColorScheme)
-				{
-					uint8 *currColVertex = currVert + colorOffset;
-					uint colCount = (_UsedNbSegs + 1) << 1;
-					do
+					if (!_Parametric)
 					{
-						* (CRGBA *) currColVertex = *ptCurrColor;
-						currColVertex += vertexSize;
+
+						//////////////////////
+						// INCREMENTAL CASE //
+						//////////////////////
+
+						// the parent class has a method to get the ribbons positions
+						computeRibbon((uint) (fpRibbonIndex >> 16), &rIt->Interp, sizeof(CVectInfo));				
+						do
+						{					
+							MakeProj(rIt->Proj, mat * rIt->Interp);
+							++rIt;				
+						}
+						while (rIt != rItEnd);								
 					}
-					while (--colCount);
+					else
+					{
+						//////////////////////
+						// PARAMETRIC  CASE //
+						//////////////////////
+						// we compute each pos thanks to the parametric curve				
+						_Owner->integrateSingle(date - _UsedSegDuration * (_UsedNbSegs + 1), _UsedSegDuration, _UsedNbSegs + 1, (uint) (fpRibbonIndex >> 16),
+												 &rIt->Interp, sizeof(CVectInfo) );				
+						// project each position now
+						do
+						{					
+							MakeProj(rIt->Proj, mat * rIt->Interp); 
+							++rIt;				
+						}
+						while (rIt != rItEnd);			
+					}
 
-					++ptCurrColor;			
-				}
+					rIt = currRibbon.begin();
 
-				/// build the ribbon in vb				
-				// deals with first point				
-				BuildSlice(mat, VB, currVert, vertexSize, I, K, rIt, rIt, rIt + 1, *ptCurrSize);				
-				currVert += vertexSizeX2;		
-				++rIt;
+			
+					// setup colors
+					if (_ColorScheme)
+					{
+						uint8 *currColVertex = currVert + colorOffset;
+						uint colCount = (_UsedNbSegs + 1) << 1;
+						do
+						{
+							* (CRGBA *) currColVertex = *ptCurrColor;
+							currColVertex += vertexSize;
+						}
+						while (--colCount);
 
-				
-				// deals with other points				
-				for (;;) // we assume at least 2 segments, so we must have a middle point		
-				{						
-					// build 2 vertices with the right tangent. /* to project 2 */ is old projected point
-					BuildSlice(mat, VB, currVert, vertexSize, I, K, rIt, rIt - 1, rIt + 1, *ptCurrSize); 
-					// next position		
-					++rIt;
-					if (rIt == rItEndMinusOne) break;					
-					// next vertex			
+						++ptCurrColor;			
+					}
+
+					/// build the ribbon in vb				
+					// deals with first point				
+					BuildSlice(mat, VB, currVert, vertexSize, I, K, rIt, rIt, rIt + 1, *ptCurrSize);				
 					currVert += vertexSizeX2;		
-				}
-				currVert += vertexSizeX2;
-				// last point.
-				BuildSlice(mat, VB, currVert, vertexSize, I, K, rIt , rIt - 1, rIt, *ptCurrSize);										
-				ptCurrSize += ptCurrSizeIncrement;
-				currVert += vertexSizeX2;
+					++rIt;
 
-				fpRibbonIndex += srcStep;
-				
-		}
-		
+					
+					// deals with other points				
+					for (;;) // we assume at least 2 segments, so we must have a middle point		
+					{						
+						// build 2 vertices with the right tangent. /* to project 2 */ is old projected point
+						BuildSlice(mat, VB, currVert, vertexSize, I, K, rIt, rIt - 1, rIt + 1, *ptCurrSize); 
+						// next position		
+						++rIt;
+						if (rIt == rItEndMinusOne) break;					
+						// next vertex			
+						currVert += vertexSizeX2;		
+					}
+					currVert += vertexSizeX2;
+					// last point.
+					BuildSlice(mat, VB, currVert, vertexSize, I, K, rIt , rIt - 1, rIt, *ptCurrSize);										
+					ptCurrSize += ptCurrSizeIncrement;
+					currVert += vertexSizeX2;
 
-		vba.unlock();
+					fpRibbonIndex += srcStep;
+					
+			}
+		}		
 		PB.setNumIndexes((_UsedNbSegs << 1) * toProcess * 3);
+		drv->activeVertexBuffer(VB);
 		// display the result
 		drv->activeIndexBuffer (PB);
 		drv->renderTriangles (_Mat, 0, PB.getNumIndexes()/3);
@@ -569,6 +565,7 @@ CPSRibbonLookAt::CVBnPB &CPSRibbonLookAt::getVBnPB()
 						   CVertexBuffer::TexCoord0Flag | 
 						   (_ColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 		vb.setNumVertices(2 * (_UsedNbSegs + 1) * numRibbonInVB );
+		vb.setPreferredMemory(CVertexBuffer::AGPVolatile, true);
 		CVertexBufferReadWrite vba;
 		vb.lock (vba);
 

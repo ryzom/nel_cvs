@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.h
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.h,v 1.12 2004/05/19 10:19:55 vizerie Exp $
+ * $Id: ps_ribbon_look_at.h,v 1.13 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,10 +149,17 @@ private:
 			/** a struct containing a vertex buffer and a primitive block
 			  * \todo: primitive blocks can be shared for several vbs...
 			  */
-			struct CVBnPB
+			class CVBnPB
 			{
+			public:
 				CVertexBuffer		VB;
 				CIndexBuffer		PB;
+			public:
+				CVBnPB()
+				{
+					NL_SET_IB_NAME(PB, "CPSRibbonLookAt::CVBnPB::PB");
+					VB.setName("CPSRibbonLookAt::CVBnPB::VB");
+				}
 			};
 			typedef std::hash_map<uint, CVBnPB> TVBMap;
 

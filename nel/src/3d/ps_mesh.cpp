@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.39 2004/06/01 16:24:38 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.40 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -554,7 +554,7 @@ public:
 		CVertexBuffer &outVb = md.VB;
 		const uint outVSize = outVb.getVertexSize();
 		
-		driver->activeVertexBuffer(outVb);	
+		
 
 		// we don't have precomputed mesh there ... so each mesh must be transformed, which is the worst case	
 		CPlaneBasis planeBasis[ConstraintMeshBufSize];
@@ -578,16 +578,17 @@ public:
 			{
 				const_cast<CVertexBuffer &>(modelVb).setVertexColorFormat(vtc);
 			}
-		}		
+		}	
+		CVertexBufferRead vbaRead;
+		modelVb.lock (vbaRead);
 		do
 		{
+			toProcess = std::min(leftToDo, ConstraintMeshBufSize);			
+			outVb.setNumVertices(toProcess * nbVerticesInSource);
 			{
 				CVertexBufferReadWrite vba;
-				outVb.lock (vba);
+				outVb.lock(vba);					
 				uint8 *outVertex = (uint8 *) vba.getVertexCoordPointer();		
-
-				toProcess = std::min(leftToDo, ConstraintMeshBufSize);
-
 				if (m._SizeScheme)
 				{
 					ptCurrSize  = (float *) (m._SizeScheme->make(m._Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess, true, srcStep));				
@@ -616,9 +617,7 @@ public:
 				{
 					/// unmorphed case
 					do
-					{
-						CVertexBufferRead vbaRead;
-						modelVb.lock (vbaRead);
+					{						
 						const uint8 *inVertex = (const uint8 *) vbaRead.getVertexCoordPointer();
 						uint k = nbVerticesInSource;
 
@@ -799,11 +798,12 @@ public:
 				// compute colors if needed
 				if (m._ColorScheme)
 				{
-					m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep, *driver);
+					m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep, *driver, vba, vbaRead);
 				}
 			}
 			
 			// render meshs
+			driver->activeVertexBuffer(outVb);
 			m.doRenderPasses(driver, toProcess, md.RdrPasses, opaque);
 			leftToDo -= toProcess;
 
@@ -858,8 +858,7 @@ public:
 		m.setupRenderPasses((float) m._Owner->getOwner()->getSystemDate() - m._GlobalAnimDate, md.RdrPasses, opaque);
 
 		CVertexBuffer &outVb = md.VB;
-
-		driver->activeVertexBuffer(outVb);
+		
 
 
 		// size of vertices in prerotated model
@@ -887,15 +886,16 @@ public:
 			}
 		}
 					
+		CVertexBufferRead PrerotVba;
+		prerotVb.lock(PrerotVba);
 		do
-		{			
+		{		
+			toProcess = std::min(leftToDo, ConstraintMeshBufSize);			
+			outVb.setNumVertices(toProcess * nbVerticesInSource);
 			{
 				CVertexBufferReadWrite vba;
-				outVb.lock (vba);
-				CVertexBufferRead PrerotVba;
-				prerotVb.lock (PrerotVba);
+				outVb.lock(vba);				
 
-				toProcess = std::min(leftToDo, ConstraintMeshBufSize);
 
 				if (m._SizeScheme)
 				{
@@ -958,11 +958,12 @@ public:
 				// compute colors if needed
 				if (m._ColorScheme)
 				{
-					m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep, *driver);
+					m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep, *driver, vba, PrerotVba);
 				}
 			}
 
 			/// render the result
+			driver->activeVertexBuffer(outVb);
 			m.doRenderPasses(driver, toProcess, md.RdrPasses, opaque);
 			leftToDo -= toProcess;
 
@@ -1857,7 +1858,7 @@ void	CPSConstraintMesh::doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet
 			rdrPassIt->PbLine.setNumIndexes(((rdrPassIt->PbLine.capacity()/2) * numObj / ConstraintMeshBufSize) * 2);
 
 			/// render the primitives
-			driver->activeIndexBuffer (rdrPassIt->PbTri);
+			driver->activeIndexBuffer (rdrPassIt->PbTri);			
 			driver->renderTriangles(rdrPassIt->Mat, 0, rdrPassIt->PbTri.getNumIndexes()/3);
 			if (rdrPassIt->PbLine.getNumIndexes() != 0)
 			{			
@@ -1871,16 +1872,15 @@ void	CPSConstraintMesh::doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet
 
 
 //====================================================================================
-void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess, uint32 srcStep, IDriver &drv)
+void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess, uint32 srcStep, IDriver &drv,
+										 CVertexBufferReadWrite &vba,
+										 CVertexBufferRead &vbaIn									 
+										)
 {	
 	nlassert(_ColorScheme);
 	// there are 2 case : 1 - the source mesh has colors, which are modulated with the current color
 	//					  2 - the source mesh has no colors : colors are directly copied into the dest vb
-
-	CVertexBufferReadWrite vba;
-	outVB.lock (vba);
-	CVertexBufferRead vbaIn;
-	inVB.lock (vbaIn);	
+	
 	if (inVB.getVertexFormat() & CVertexBuffer::PrimaryColorFlag) // case 1
 	{
 		// TODO: optimisation : avoid to duplicate colors...		
@@ -2039,10 +2039,12 @@ void CPSConstraintMesh::initPrerotVB()
 	// position, no normals
 	_PreRotatedMeshVB.setVertexFormat(CVertexBuffer::PositionFlag);
 	_PreRotatedMeshVB.setNumVertices(ConstraintMeshMaxNumPrerotatedModels * ConstraintMeshMaxNumVerts);
+	_PreRotatedMeshVB.setName("CPSConstraintMesh::_PreRotatedMeshVB");
 
 	// position & normals
 	_PreRotatedMeshVBWithNormal.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag);
 	_PreRotatedMeshVBWithNormal.setNumVertices(ConstraintMeshMaxNumPrerotatedModels * ConstraintMeshMaxNumVerts);
+	_PreRotatedMeshVB.setName("CPSConstraintMesh::_PreRotatedMeshVBWithNormal");
 }
 
 //====================================================================================
@@ -2069,6 +2071,7 @@ CPSConstraintMesh::CMeshDisplay &CPSConstraintMesh::CMeshDisplayShare::getMeshDi
 	_Cache.front().Mesh = mesh;
 	_Cache.front().Format = format;
 	buildRdrPassSet(_Cache.front().MD.RdrPasses, *mesh);
+	_Cache.front().MD.VB.setName("CPSConstraintMesh::CMeshDisplay");
 	buildVB(_Cache.front().MD.VB, *mesh, format);
 	++ _NumMD;
 	/*NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
@@ -2099,7 +2102,8 @@ void CPSConstraintMesh::CMeshDisplayShare::buildVB(CVertexBuffer &dest, const CM
 	/// we duplicate the original mesh data's 'ConstraintMeshBufSize' times, eventually adding a color	
 	const CVertexBuffer &meshVb = mesh.getVertexBuffer();	
 	nlassert(destFormat == meshVb.getVertexFormat() || destFormat == (meshVb.getVertexFormat() | (uint32) CVertexBuffer::PrimaryColorFlag) );
-	dest.setVertexFormat(destFormat);	
+	dest.setVertexFormat(destFormat);
+	dest.setPreferredMemory(CVertexBuffer::AGPVolatile, true);
 	dest.setNumVertices(ConstraintMeshBufSize * meshVb.getNumVertices());
 	for(uint k = 0; k < CVertexBuffer::MaxStage; ++k)
 	{

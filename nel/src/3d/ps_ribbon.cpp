@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.19 2004/08/03 16:23:54 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.20 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -680,8 +680,7 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	#ifdef NL_DEBUG
 		nlassert(drv);
 	#endif
-	drv->setupModelMatrix(getLocalToWorldTrailMatrix());	
-	drv->activeVertexBuffer(VB);
+	drv->setupModelMatrix(getLocalToWorldTrailMatrix());		
 	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose		
 	const uint numRibbonBatch = getNumRibbonsInVB(); // number of ribons to process at once		
 	if (_UsedNbSegs == 0) return;	
@@ -732,14 +731,13 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 			_ColorScheme->setColorType(drv->getVertexColorFormat());
 		}
 		do
-		{
+		{			
+			toProcess = std::min((uint) (nbRibbons - ribbonIndex) , numRibbonBatch);			
+			VB.setNumVertices((_UsedNbSegs + 1) * toProcess * numVerticesInShape);
 			{
 				CVertexBufferReadWrite vba;
-				VB.lock (vba);
-				
-				toProcess = std::min((uint) (nbRibbons - ribbonIndex) , numRibbonBatch);
-				currVert = (uint8 *) vba.getVertexCoordPointer();
-					
+				VB.lock(vba);				
+				currVert = (uint8 *) vba.getVertexCoordPointer();					
 				/// setup sizes
 				const float	*ptCurrSize;
 				uint32  ptCurrSizeIncrement;
@@ -876,6 +874,7 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 			const uint numTri = (numVerticesInShape * _UsedNbSegs * toProcess) << 1;
 			PB.setNumIndexes(3 * numTri);
 			drv->activeIndexBuffer(PB);
+			drv->activeVertexBuffer(VB);
 			drv->renderTriangles(_Mat, 0, numTri);
 			ribbonIndex += toProcess;		
 		}
@@ -933,7 +932,8 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 		const uint numRibbonInVB = getNumRibbonsInVB();
 		CVBnPB &VBnPB = map[VBnPDIndex]; // make an entry
 		CIndexBuffer &pb = VBnPB.PB;
-		CVertexBuffer &vb = VBnPB.VB;		
+		CVertexBuffer &vb = VBnPB.VB;
+		vb.setPreferredMemory(CVertexBuffer::AGPVolatile, true); // keep local memory because of interleaved format
 		/// set the vb format & size
 		/// In the case of a ribbon with color and fading, we encode the fading in a texture
 		/// If the ribbon has fading, but only a global color, we encode it in the primary color		
@@ -956,7 +956,7 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 		CIndexBufferReadWrite ibaWrite;
 		pb.lock (ibaWrite);
 		CVertexBufferReadWrite vba;
-		vb.lock (vba);
+		vb.lock(vba);
 		/// Setup the pb and vb parts. Not very fast but executed only once
 		uint vbIndex = 0;
 		uint pbIndex = 0; 

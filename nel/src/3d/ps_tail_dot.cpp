@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.15 2004/07/16 07:29:59 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.16 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -257,8 +257,7 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	#ifdef NL_DEBUG
 		nlassert(drv);
 	#endif
-	drv->setupModelMatrix(getLocalToWorldTrailMatrix());
-	drv->activeVertexBuffer(VB);
+	drv->setupModelMatrix(getLocalToWorldTrailMatrix());	
 	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose		
 	const uint numRibbonBatch = getNumRibbonsInVB(); // number of ribons to process at once		
 	if (_UsedNbSegs == 0) return;
@@ -304,10 +303,11 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	}			
 	do
 	{
+		toProcess = std::min((uint) (nbRibbons - ribbonIndex) /* = left to do */, numRibbonBatch);
+		VB.setNumVertices((_UsedNbSegs + 1) * toProcess);
 		{
 			CVertexBufferReadWrite vba;
 			VB.lock (vba);
-			toProcess = std::min((uint) (nbRibbons - ribbonIndex) /* = left to do */, numRibbonBatch);
 			currVert = (uint8 *) vba.getVertexCoordPointer();
 				
 			/// compute colors
@@ -355,6 +355,7 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		PB.setNumIndexes(2 * numLine);
 		// display the result
 		drv->activeIndexBuffer(PB);
+		drv->activeVertexBuffer(VB);
 		drv->renderLines (_Mat, 0, numLine);
 		ribbonIndex += toProcess;		
 	}
@@ -404,6 +405,7 @@ CPSTailDot::CVBnPB &CPSTailDot::getVBnPB()
 		/// In the case of a ribbon with color and fading, we encode the fading in a texture
 		/// If the ribbon has fading, but only a global color, we encode it in the primary color
 		CVertexBuffer &vb = VBnPB.VB;
+		vb.setPreferredMemory(CVertexBuffer::AGPVolatile, true);
 		vb.setVertexFormat(CVertexBuffer::PositionFlag	
 						   |(_ColorScheme || _ColorFading ? CVertexBuffer::PrimaryColorFlag : 0)
 						   | (_ColorScheme && _ColorFading ? CVertexBuffer::TexCoord0Flag : 0));
@@ -445,6 +447,8 @@ CPSTailDot::CVBnPB &CPSTailDot::getVBnPB()
 				++vbIndex;
 			}
 		}
+		vb.setName("CPSTailDot");
+		NL_SET_IB_NAME(pb, "CPSTailDot");
 		return VBnPB;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.h
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.h,v 1.11 2004/05/19 10:19:55 vizerie Exp $
+ * $Id: ps_tail_dot.h,v 1.12 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,10 +144,17 @@ private:
 			/** a struct containing a vertex buffer and the matching a primitive block
 			  * \todo: primitive blocks can be shared for several vbs...
 			  */
-			struct CVBnPB
+			class CVBnPB
 			{
+			public:
 				CVertexBuffer		VB;
 				CIndexBuffer		PB;
+			public:
+				CVBnPB()
+				{
+					NL_SET_IB_NAME(PB, "CPSTailDot");
+					VB.setName("CPSTailDot");
+				}
 			};
 
 			typedef std::hash_map<uint, CVBnPB> TVBMap;

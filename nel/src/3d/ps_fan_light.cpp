@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.13 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_fan_light.cpp,v 1.14 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,8 +82,7 @@ public:
 		CIndexBuffer  *ib;
 		// get (and build if necessary) the vb and the ib
 		f.getVBnIB(vb, ib);
-		IDriver *driver = f.getDriver();
-		driver->activeVertexBuffer(*vb);
+		IDriver *driver = f.getDriver();		
 		const uint maxNumFanLightToDealWith = std::min(FanLightBufSize, f.getNumFanlightsInVB());	
 		uint8 *randomPhaseTab = &f._RandomPhaseTab[f._PhaseSmoothness][0];
 		f._Owner->incrementNbDrawnParticles(size); // for benchmark purpose			
@@ -118,6 +117,7 @@ public:
 		do
 		{				
 			uint toProcess = std::min(leftToDo, maxNumFanLightToDealWith);
+			vb->setNumVertices(toProcess * f._NbFans * 3);			
 			{
 				CVertexBufferReadWrite vba;
 				vb->lock (vba);
@@ -201,6 +201,7 @@ public:
 				}			
 			}
 			driver->activeIndexBuffer(*ib);
+			driver->activeVertexBuffer(*vb);			
 			driver->renderTriangles(f._Mat, 0, toProcess * f._NbFans);
 			leftToDo -= toProcess;
 		}		
@@ -472,12 +473,19 @@ void CPSFanLight::getVBnIB(CVertexBuffer *&retVb, CIndexBuffer *&retIb)
 {
 	TVBMap &vbMap = _ColorScheme ? (_Tex == NULL  ? _ColoredVBMap : _ColoredTexVBMap)
 								 : (_Tex == NULL  ? _VBMap : _TexVBMap);
+	#ifdef NL_NAMED_INDEX_BUFFER
+		const char *ibName = _ColorScheme ? (_Tex == NULL  ? "_ColoredVBMap" : "_ColoredTexVBMap")
+					                    : (_Tex == NULL  ? "_VBMap" : "_TexVBMap");
+	#endif
 	TVBMap::iterator vbIt = vbMap.find(_NbFans);
 	if (vbIt != vbMap.end())
 	{
 		retVb = &(vbIt->second);
 		TIBMap::iterator pbIt = _IBMap.find(_NbFans);
 		nlassert(pbIt != _IBMap.end());
+		#ifdef NL_NAMED_INDEX_BUFFER
+			if (pbIt->second.getName().empty()) NL_SET_IB_NAME(pbIt->second, ibName);
+		#endif
 		retIb = &(pbIt->second);
 	}
 	else // we need to create the vb
@@ -490,7 +498,9 @@ void CPSFanLight::getVBnIB(CVertexBuffer *&retVb, CIndexBuffer *&retIb)
 						   CVertexBuffer::PrimaryColorFlag |
 						   (_Tex != NULL ?  CVertexBuffer::TexCoord0Flag : 0) 
 						  );
-		vb.setNumVertices(size * (2 + _NbFans));			
+		vb.setNumVertices(size * (2 + _NbFans));
+		vb.setPreferredMemory(CVertexBuffer::AGPVolatile, true); // keep local memory because of interleaved format
+		vb.setName("CPSFanLight");
 		ib.setNumIndexes(size * _NbFans * 3);		
 		// pointer on the current index to fill
 		CIndexBufferReadWrite iba;

@@ -1,7 +1,7 @@
 /** \file ps_dot.cpp
  * Dot particles
  *
- * $Id: ps_dot.cpp,v 1.9 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_dot.cpp,v 1.10 2004/08/13 15:40:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "3d/ps_iterator.h"
 #include "3d/driver.h"
 #include "3d/particle_system.h"
-
+#include "nel/misc/fast_mem.h"
 
 namespace NL3D 
 {
@@ -58,10 +58,7 @@ inline void DrawDot(T it,
 					IDriver *driver,
 					uint32 srcStep
 				   )
-{	
-	CVertexBufferReadWrite vba;
-	vb.lock (vba);
-
+{		
 	nlassert(leftToDo != 0);
 	const uint total = leftToDo;
 	T itEnd;
@@ -72,52 +69,56 @@ inline void DrawDot(T it,
 	}
 	do
 	{		
-		uint toProcess = leftToDo < dotBufSize ? leftToDo : dotBufSize;
-
-		if (colorScheme)
-		{			
-			// compute the colors			
-			colorScheme->make(owner,
-							  total - leftToDo,
-							  vba.getColorPointer(),
-							  vb.getVertexSize(),
-							  toProcess,
-							  false,
-							  srcStep
-							 );
-
-			itEnd = it + toProcess;			
-			uint8    *currPos = (uint8 *) vba.getVertexCoordPointer();	
-			uint32 stride = vb.getVertexSize();
-			do
-			{
-				CHECK_VERTEX_BUFFER(vb, currPos);
-				*((CVector *) currPos) =  *it;	
-				++it ;
-				currPos += stride;
-			}
-			while (it != itEnd);
-		}
-		else if (srcStep == (1 << 16)) // make sure we haven't got auto-lod and that the step is 1.0
+		uint toProcess = leftToDo < dotBufSize ? leftToDo : dotBufSize;		
+		vb.setNumVertices(toProcess); // because of volatile vb copy, indicate the numebr of vertices to copy
 		{
-			// there's no color information in the buffer, so we can copy it directly
-			::memcpy(vba.getVertexCoordPointer(), &(*it), sizeof(NLMISC::CVector) * toProcess);
-			it += toProcess;
-		}
-		else
-		{
-			itEnd = it + toProcess;			
-			uint8    *currPos = (uint8 *) vba.getVertexCoordPointer();				
-			do
-			{
-				CHECK_VERTEX_BUFFER(vb, currPos);
-				*((CVector *) currPos) =  *it;				
-				++it ;
-				currPos += sizeof(float[3]);
+			CVertexBufferReadWrite vba;
+			vb.lock (vba);
+			if (colorScheme)
+			{			
+				// compute the colors			
+				colorScheme->make(owner,
+								  total - leftToDo,
+								  vba.getColorPointer(),
+								  vb.getVertexSize(),
+								  toProcess,
+								  false,
+								  srcStep
+								 );
+
+				itEnd = it + toProcess;			
+				uint8    *currPos = (uint8 *) vba.getVertexCoordPointer();	
+				uint32 stride = vb.getVertexSize();
+				do
+				{
+					CHECK_VERTEX_BUFFER(vb, currPos);
+					*((CVector *) currPos) =  *it;	
+					++it ;
+					currPos += stride;
+				}
+				while (it != itEnd);
 			}
-			while (it != itEnd);
+			else if (srcStep == (1 << 16)) // make sure we haven't got auto-lod and that the step is 1.0
+			{
+				// there's no color information in the buffer, so we can copy it directly
+				NLMISC::CFastMem::memcpy(vba.getVertexCoordPointer(), &(*it), sizeof(NLMISC::CVector) * toProcess);
+				it += toProcess;
+			}
+			else
+			{
+				itEnd = it + toProcess;			
+				uint8    *currPos = (uint8 *) vba.getVertexCoordPointer();				
+				do
+				{
+					CHECK_VERTEX_BUFFER(vb, currPos);
+					*((CVector *) currPos) =  *it;				
+					++it ;
+					currPos += sizeof(float[3]);
+				}
+				while (it != itEnd);
+			}
 		}
-				
+		driver->activeVertexBuffer(vb);				
 		driver->renderRawPoints(mat, 0, toProcess);
 
 		leftToDo -= toProcess;
@@ -141,7 +142,7 @@ void CPSDot::draw(bool opaque)
 	setupDriverModelMatrix();	
 	IDriver *driver = getDriver();
 	CVertexBuffer &vb = _ColorScheme ? _DotVbColor : _DotVb;
-	driver->activeVertexBuffer(vb);
+	
 
 
 	/// update the material if the global color of the system is variable
@@ -215,10 +216,15 @@ void CPSDot::draw(bool opaque)
 /// init the vertex buffers
 void CPSDot::initVertexBuffers()
 {
+	_DotVb.setName("CPSDot::_DotVb");
+	_DotVb.setPreferredMemory(CVertexBuffer::AGPVolatile, false);
 	_DotVb.setVertexFormat(CVertexBuffer::PositionFlag);
+	_DotVb.setNumVertices(dotBufSize);	
 	_DotVbColor.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag);
-	_DotVb.setNumVertices(dotBufSize);
+	_DotVbColor.setPreferredMemory(CVertexBuffer::AGPVolatile, true); // keep local mem because of interleaved fill
 	_DotVbColor.setNumVertices(dotBufSize);
+	_DotVbColor.setName("CPSDot::_DotVbColor");
+	
 }
 
 ///===================================================================

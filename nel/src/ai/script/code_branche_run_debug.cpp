@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.16 2001/03/23 09:57:48 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.17 2001/03/29 10:26:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,7 +169,7 @@ namespace NLAISCRIPT
 #ifdef NL_DEBUG
 		if(NL_AI_DEBUG_SERVER)
 		{
-			char chaine[1024*8];
+			char chaine[1024*32];
 			op.getDebugResult(chaine,p);
 #ifdef NL_OS_WINDOWS
 			OutputDebugString(chaine);

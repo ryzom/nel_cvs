@@ -8,6 +8,7 @@
 #include "nel/ai/c/registry_class.h"
 #include "nel/ai/agent/main_agent_script.h"
 #include "nel/ai/agent/agent_proxy_mailer.h"
+//#include "static_init.h"
 
 using namespace NLAIAGENT;
 
@@ -16,6 +17,7 @@ namespace NLAILINK
 	//using namespace NLAIAGENT;
 	void initIALib()
 	{
+		staticInitAgent();
 		registerLibClass();
 		NLAIC::initRegistry();
 		NLAISCRIPT::initExternalLib();		

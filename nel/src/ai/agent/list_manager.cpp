@@ -1,6 +1,6 @@
 /** \file list_manager.cpp
  *
- * $Id: list_manager.cpp,v 1.3 2001/03/06 14:10:47 robert Exp $
+ * $Id: list_manager.cpp,v 1.4 2001/03/29 10:26:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -210,6 +210,7 @@ namespace NLAIAGENT
 
 	IListManager::IListManager(const IListManager &l):IListBasicManager(l._List)
 	{		
+		l._List->incRef();
 	}
 
 	IListManager::~IListManager()

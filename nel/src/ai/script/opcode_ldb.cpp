@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.8 2001/02/13 10:43:30 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.9 2001/03/29 10:26:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -158,8 +158,8 @@ namespace NLAISCRIPT
 
 	void CLdbRefOpCode::getDebugResult(char *str,CCodeContext &context) const
 	{
-		char X[1024*8];	
+		char X[1024*16];	
 		context.Heap[_B]->getDebugString(X);
-		sprintf(str,"ldb<%d>",_B);		
+		sprintf(str,"ldb<%d>: %s",_B,X);
 	}
 }

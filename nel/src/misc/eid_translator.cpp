@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.4 2003/04/15 08:54:16 coutelas Exp $
+ * $Id: eid_translator.cpp,v 1.5 2003/04/16 18:51:23 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -124,13 +124,24 @@ bool CEntityIdTranslator::entityNameExists (const ucstring &entityName)
 
 void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const string &userName)
 {
-	reit it = RegisteredEntities.find (eid);
-
-	nlassert(it == RegisteredEntities.end ());
-
+	nlassert(RegisteredEntities.find (eid) == RegisteredEntities.end ());
+	nlassert(!entityNameExists(entityName));
+	
 	RegisteredEntities.insert (make_pair(eid, CEntityIdTranslator::CEntity(entityName, uid, userName)));
 	nlinfo ("Registered %s with %s %d %s", eid.toString().c_str(), entityName.c_str(), uid, userName.c_str());
 
+	save ();
+}
+
+void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
+{
+	reit it = RegisteredEntities.find (eid);
+	
+	nlassert(it != RegisteredEntities.end ());
+	
+	nlinfo ("Unregister %s with %s %d %s", eid.toString().c_str(), (*it).second.EntityName.c_str(), (*it).second.UId, (*it).second.UserName.c_str());
+	RegisteredEntities.erase (eid);
+	
 	save ();
 }
 

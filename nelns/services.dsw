@@ -3,24 +3,6 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "admin"=..\nel\tools\net\admin\admin.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name misc
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name net
-    End Project Dependency
-}}}
-
-###############################################################################
-
 Project: "admin_executor_service"=.\admin_executor_service\admin_executor_service.dsp - Package Owner=<4>
 
 Package=<5>

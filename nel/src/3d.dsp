@@ -643,6 +643,10 @@ SOURCE=..\include\nel\3d\driver_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\driver_user2.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\frustum.cpp
 # End Source File
 # Begin Source File
@@ -752,6 +756,14 @@ SOURCE=..\include\nel\3d\tmp\u_transform.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\tmp\viewport.h
+# End Source File
+# End Group
+# Begin Group "Makefile"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\Makefile.am
 # End Source File
 # End Group
 # Begin Source File

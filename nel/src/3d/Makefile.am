@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.19 2001/02/28 16:46:24 berenguier Exp $
+# $Id: Makefile.am,v 1.20 2001/03/08 11:04:58 corvazier Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -28,8 +28,8 @@ libnel3d_la_SOURCES  = bezier_patch.cpp \
                        landscape_profile.cpp tess_block.cpp tess_list.cpp \
 					   zone_manager.cpp zone_search.cpp \
 					   camera_user.cpp driver_user.cpp instance_user.cpp landscape_user.cpp material_user.cpp \
-					   scene_user.cpp text_context_user.cpp texture_user.cpp transform_user.cpp
-						
+					   scene_user.cpp text_context_user.cpp texture_user.cpp transform_user.cpp \
+					   driver_user2.cpp skeleton_weight.cpp
 
 
 AM_CXXFLAGS          = @FREETYPE_CFLAGS@

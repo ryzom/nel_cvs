@@ -1,3 +1,3 @@
 @echo off
 
-mkdir vegetset
+mkdir vegetset 2> null

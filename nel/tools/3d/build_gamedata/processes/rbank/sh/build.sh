@@ -53,14 +53,14 @@ rbank_shape_pathes=`cat ../../cfg/config.cfg | grep "rbank_shape_path" | sed -e 
 rbank_temp_path=`echo $rbank_scratch_path$rbank_rbank_name`/
 
 # Make some directories
-mkdir $rbank_scratch_path
-mkdir $rbank_temp_path
-mkdir $rbank_temp_path"retrievers"
-mkdir $rbank_temp_path"tesselation"
-mkdir $rbank_temp_path"smooth"
-mkdir $rbank_temp_path"smooth/preproc"
-mkdir $rbank_temp_path"raw"
-mkdir $rbank_temp_path"raw/preproc"
+mkdir $rbank_scratch_path 2> null
+mkdir $rbank_temp_path 2> null
+mkdir $rbank_temp_path"retrievers" 2> null
+mkdir $rbank_temp_path"tesselation" 2> null
+mkdir $rbank_temp_path"smooth" 2> null
+mkdir $rbank_temp_path"smooth/preproc" 2> null
+mkdir $rbank_temp_path"raw" 2> null
+mkdir $rbank_temp_path"raw/preproc" 2> null
 
 # Global options
 build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`

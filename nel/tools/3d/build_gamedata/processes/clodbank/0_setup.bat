@@ -1,7 +1,7 @@
 @echo off
 
-mkdir tag
-mkdir clod
-mkdir clodbank
+mkdir tag 2> null
+mkdir clod 2> null
+mkdir clodbank 2> null
 
 

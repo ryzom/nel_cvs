@@ -1,5 +1,5 @@
 @echo off
 
-mkdir farbank
+mkdir farbank 2> null
 
 

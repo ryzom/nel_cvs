@@ -1,3 +1,3 @@
 @echo off
 
-mkdir skel
+mkdir skel 2> null

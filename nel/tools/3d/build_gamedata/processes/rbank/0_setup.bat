@@ -1,6 +1,6 @@
 @echo off
 
-mkdir tag
-mkdir output
-mkdir cmb
-mkdir bbox
+mkdir tag 2> null
+mkdir output 2> null
+mkdir cmb 2> null
+mkdir bbox 2> null

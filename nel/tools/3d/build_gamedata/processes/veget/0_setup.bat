@@ -1,4 +1,4 @@
 @echo off
 
-mkdir tag
-mkdir veget
+mkdir tag 2> null
+mkdir veget 2> null

@@ -1,3 +1,3 @@
 @echo off
 
-mkdir swt
+mkdir swt 2> null

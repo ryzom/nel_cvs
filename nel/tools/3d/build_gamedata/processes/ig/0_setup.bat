@@ -1,12 +1,12 @@
 @echo off
 
-mkdir tag
-mkdir ig_land
-mkdir ig_land_ld
-mkdir ig_land_max
-mkdir ig_land_max_elev
-mkdir ig_land_ligo
-mkdir ig_land_ligo_elev
-mkdir ig_other
-mkdir ig_merge_tmp
+mkdir tag 2> null
+mkdir ig_land 2> null
+mkdir ig_land_ld 2> null
+mkdir ig_land_max 2> null
+mkdir ig_land_max_elev 2> null
+mkdir ig_land_ligo 2> null
+mkdir ig_land_ligo_elev 2> null
+mkdir ig_other 2> null
+mkdir ig_merge_tmp 2> null
 

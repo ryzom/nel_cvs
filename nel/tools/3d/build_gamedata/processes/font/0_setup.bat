@@ -1,3 +1,3 @@
 @echo off
 
-mkdir fonts
+mkdir fonts 2> null

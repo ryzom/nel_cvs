@@ -1,3 +1,3 @@
 @echo off
 
-mkdir ps
+mkdir ps 2> null

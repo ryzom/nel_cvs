@@ -1,7 +1,7 @@
 @echo off
 
-mkdir dds
-mkdir tga
-mkdir panoply
+mkdir dds 2> null
+mkdir tga 2> null
+mkdir panoply 2> null
 
 

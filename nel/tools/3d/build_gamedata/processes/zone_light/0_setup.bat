@@ -1,5 +1,5 @@
 @echo off
 
-mkdir zone_lighted
-mkdir water_shapes_lighted
-mkdir ig_land_lighted
+mkdir zone_lighted 2> null
+mkdir water_shapes_lighted 2> null
+mkdir ig_land_lighted 2> null

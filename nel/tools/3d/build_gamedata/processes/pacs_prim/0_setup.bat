@@ -1,3 +1,3 @@
 @echo off
 
-mkdir pacs_prim
+mkdir pacs_prim 2> null

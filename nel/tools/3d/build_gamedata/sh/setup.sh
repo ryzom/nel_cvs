@@ -14,7 +14,7 @@ date >> log.log
 date
 
 # Create a bin dir
-mkdir bin
+mkdir bin 2> null
 
 # For each process
 for i in $process_to_complete ; do

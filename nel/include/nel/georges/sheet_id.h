@@ -163,6 +163,11 @@ private :
 	static bool _initialised;
 };
 
+inline std::stringstream &operator << (std::stringstream &__os, const CSheetId &__t)
+{
+	__os << __t.toString ();
+	return __os;
+}
 
 #endif // NL_SHEET_ID_H
 

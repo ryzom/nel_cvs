@@ -20,8 +20,10 @@ date
 #*** Build panoply files (.tga / .dds), and copy the result in the tga directory
 
 mkdir panoply
+mkdir hlsinfo
 
 # Copy panoply containt into cache if the process as been stopped before the end of build.
+echo Copy panoply into cache 
 cp -u -p -R panoply/. cache 2>> log.log
 
 # Bin
@@ -118,9 +120,15 @@ fi
 
 
 # Put old panoply in cache
-rm -r cache/* 2>> log.log
-rmdir cache 2>> log.log
+
+echo Remove the panoply cache
+rm -r cache 2>> log.log
+
+echo Rename panoply as cache
 mv panoply cache 2>> log.log
+
+echo Move hlsinfo into cache
 mv hlsinfo/* cache 2>> log.log
-rm -r hlsinfo/* 2>> log.log
-mkdir panoply 2>> log.log
+
+echo Remove the hlsinfo
+rm -r hlsinfo 2>> log.log

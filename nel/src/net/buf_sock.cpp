@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.6 2001/05/24 14:17:51 cado Exp $
+ * $Id: buf_sock.cpp,v 1.7 2001/05/31 14:07:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,7 +54,8 @@ CBufSock::CBufSock( CTcpSock *sock ) :
 	_LastFlushTime( 0 ),
 	_KnowConnected( false ),
 	_ConnectedState( false ),
-	_AppId (0)
+	_RTSBIndex( 0 ),
+	_AppId( 0 )
 {
 	nlnettrace( "CBufSock::CBufSock" ); // don't define a global object
 
@@ -81,7 +82,37 @@ CBufSock::~CBufSock()
 
 
 /*
+ * Returns a readable string from a vector of bytes, beginning from pos, limited to 'len' characters. '\0' are replaced by ' '
+ */
+string stringFromVectorPart( const vector<uint8>& v, uint32 pos, uint32 len )
+{
+	string s;
+
+	if ( ! v.empty() )
+	{
+		// Copy contents
+		s.resize( len );
+		memcpy( &*s.begin(), &*v.begin()+pos, len );
+
+		// Replace '\0' characters
+		string::iterator is;
+		for ( is=s.begin(); is!=s.end(); ++is )
+		{
+			if ( ! isprint((*is)) )
+			{
+				(*is) = '?';
+			}
+		}
+	}
+
+	return s;
+}
+
+
+/*
  * Force to send all data pending in the send queue
+ * Note: this method is used by clients (blocking sockets) and servers (non-blocking sockets)
+ * so it works in both cases.
  * Precond: the send queue should not contain an empty block
  */
 bool CBufSock::flush()
@@ -114,7 +145,8 @@ bool CBufSock::flush()
 	{
 		// Send
 		CSock::TSockResult res;
-		if ( ( res = Sock->send( &*_ReadyToSendBuffer.begin(), _ReadyToSendBuffer.size(), false )) == CSock::Ok )
+		uint len = _ReadyToSendBuffer.size() - _RTSBIndex;
+		if ( ( res = Sock->send( &*_ReadyToSendBuffer.begin()+_RTSBIndex, len, false )) == CSock::Ok )
 		{
 #ifdef NL_DEBUG
 			// Debug display
@@ -124,24 +156,36 @@ bool CBufSock::flush()
 			case FTSize : nldebug( "L1: Size triggered flush for %s:", asString().c_str() ); break;
 			default:	  nldebug( "L1: Manual flush for %s:", asString().c_str() );
 			}
-			nldebug( "L1: %s sent effectively a buffer (%d B): [%s]", asString().c_str(), _ReadyToSendBuffer.size(), stringFromVector(_ReadyToSendBuffer).c_str() );
+			nldebug( "L1: %s sent effectively a buffer (%d on %d B): [%s]", asString().c_str(), len, _ReadyToSendBuffer.size(), stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str() );
 			_FlushTrigger = FTManual;
 #else
-			nldebug( "L1: %s sent effectively a buffer (%d B)", asString().c_str(), _ReadyToSendBuffer.size() );
+			nldebug( "L1: %s sent effectively a buffer (%d on %d B)", asString().c_str(), len, _ReadyToSendBuffer.size() );
 #endif
-			// If sending is ok, clear the global buffer
-			_ReadyToSendBuffer.clear();
+			if ( len == _ReadyToSendBuffer.size() ) // for non-blocking mode (server)
+			{
+				// If sending is ok, clear the global buffer
+				_ReadyToSendBuffer.clear();
+				_RTSBIndex = 0;
+			}
+			else
+			{
+				// Or clear only the data that was actually sent
+				//_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+len ); // TODO: Test efficiency
+				_RTSBIndex += len;
+				if ( _ReadyToSendBuffer.size() > 20480 )
+				{
+					nlassert( len <= _ReadyToSendBuffer.size() );
+					_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+len );
+					_RTSBIndex = 0;
+				}
+			}
 		}
 		else
 		{
 #ifdef NL_DEBUG
-			if ( res == CSock::Error )
-			{
-				nldebug( "L1: %s failed to send effectively a buffer of %d bytes", asString().c_str(), _ReadyToSendBuffer.size() );
-			}
+			nldebug( "L1: %s failed to send effectively a buffer of %d bytes", asString().c_str(), _ReadyToSendBuffer.size() );
 #endif
-			// Stop sending (no error if "would block" (note: only the server uses non-blocking sockets))
-			return ( res == CSock::WouldBlock );
+			return false;
 		}
 	}
 	return true;

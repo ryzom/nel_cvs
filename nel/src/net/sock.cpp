@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.3 2001/05/30 08:53:50 cado Exp $
+ * $Id: sock.cpp,v 1.4 2001/05/31 14:07:13 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -393,13 +393,15 @@ void CSock::setLocalAddress()
 /*
  * Sends data, or returns false if it would block
  */
-CSock::TSockResult CSock::send( const uint8 *buffer, uint len, bool throw_exception )
+CSock::TSockResult CSock::send( const uint8 *buffer, uint& len, bool throw_exception )
 {
-	if ( ::send( _Sock, (const char*)buffer, len, 0 ) == SOCKET_ERROR )
+	len = ::send( _Sock, (const char*)buffer, len, 0 );
+	if ( len == SOCKET_ERROR )
 	{
 		if ( ERROR_NUM == ERROR_WOULDBLOCK )
 		{
-			return WouldBlock;
+			len = 0;
+			return Ok;
 		}
 		if ( throw_exception )
 		{

@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.6 2001/03/27 12:10:17 berenguier Exp $
+ * $Id: text_context_user.h,v 1.7 2001/04/23 13:16:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,6 +116,14 @@ public:
 	void setShadeExtent(float shext) 
 	{
 		_TextContext.setShadeExtent(shext);
+	}
+	virtual	void			setKeep800x600Ratio(bool keep)
+	{
+		_TextContext.setKeep800x600Ratio(keep);
+	}
+	virtual	bool			getKeep800x600Ratio() const
+	{
+		return _TextContext.getKeep800x600Ratio();
 	}
 	// @}
 

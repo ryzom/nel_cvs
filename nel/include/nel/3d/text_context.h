@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.21 2001/03/27 12:10:17 berenguier Exp $
+ * $Id: text_context.h,v 1.22 2001/04/23 13:16:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,9 @@ class CTextContext
 	/// shade's extent
 	float _ShadeExtent;
 
+	/// resize fontSize???
+	bool	_Keep800x600Ratio;
+
 
 public:
 
@@ -112,6 +115,8 @@ public:
 
 		_Shaded = false;
 		_ShadeExtent = 0.001f;
+
+		_Keep800x600Ratio= true;
 	}
 
 	/// set the driver.
@@ -250,7 +255,7 @@ public:
 		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
 		NL3D::CComputedString cptdstr;
-		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr);
+		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr, _Keep800x600Ratio);
 		_MaxIndex++;
 		_StringList.insert(std::make_pair(_MaxIndex,cptdstr));
 		return _MaxIndex;
@@ -266,7 +271,7 @@ public:
 		nlassert(_FontGen);
 
 		NL3D::CComputedString cptdstr;
-		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr);
+		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr, _Keep800x600Ratio);
 		_MaxIndex++;
 		_StringList.insert(std::make_pair(_MaxIndex,cptdstr));
 		return _MaxIndex;
@@ -317,11 +322,11 @@ public:
 		if(_Shaded)
 		{
 			NL3D::CComputedString cptdstr1;
-			_FontManager->computeString(ucstr,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,cptdstr1);
+			_FontManager->computeString(ucstr,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,cptdstr1, _Keep800x600Ratio);
 			cptdstr1.render2D(*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
 		}
 
-		_FontManager->computeString(ucstr,_FontGen,_Color,_FontSize,_Driver,cptdstr);
+		_FontManager->computeString(ucstr,_FontGen,_Color,_FontSize,_Driver,cptdstr, _Keep800x600Ratio);
 		cptdstr.render2D(*_Driver,
 							x,z,
 							_HotSpot,
@@ -343,12 +348,12 @@ public:
 		if(_Shaded)
 		{
 			NL3D::CComputedString cptdstr1;
-			_FontManager->computeString(str,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,cptdstr1);
+			_FontManager->computeString(str,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,cptdstr1, _Keep800x600Ratio);
 			cptdstr1.render2D(*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
 		}
 
 		NL3D::CComputedString cptdstr2;
-		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr2);
+		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr2, _Keep800x600Ratio);
 		cptdstr2.render2D(*_Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
 
 		_XBound = x + cptdstr2.StringWidth;
@@ -390,7 +395,7 @@ public:
 	 */
 	void computeString(const std::string& s, CComputedString& output)
 	{
-		_FontManager->computeString(s,_FontGen,_Color,_FontSize,_Driver,output);
+		_FontManager->computeString(s,_FontGen,_Color,_FontSize,_Driver,output, _Keep800x600Ratio);
 	}
 
 	/**
@@ -401,7 +406,7 @@ public:
 	 */
 	void computeString(const ucstring& s, CComputedString& output)
 	{
-		_FontManager->computeString(s,_FontGen,_Color,_FontSize,_Driver,output);
+		_FontManager->computeString(s,_FontGen,_Color,_FontSize,_Driver,output, _Keep800x600Ratio);
 	}
 
 	/**
@@ -414,6 +419,17 @@ public:
 	{
 		return _XBound;
 	}
+
+
+	/** set to true if you want that CFontManager look at Driver window size, and resize 
+	 * fontSize so it keeps same size than if it was in 800x600...
+	 */
+	void	setKeep800x600Ratio(bool keep) {_Keep800x600Ratio= keep;}
+
+
+	/** return keep800x600Ratio state.
+	 */
+	bool	getKeep800x600Ratio() const {return _Keep800x600Ratio;}
 
 
 	/// destructor

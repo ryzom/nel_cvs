@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.12 2001/01/15 15:18:40 lecroart Exp $
+ * $Id: font_manager.h,v 1.13 2001/04/23 13:16:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,13 +124,15 @@ public:
 	 * \param fontSize font size
 	 * \param desc display descriptor (screen size, font ratio)
 	 * \param output computed string
+	 * \param keep800x600Ratio true if you want that CFontManager look at Driver window size, and resize fontSize so it keeps same size...
 	 */	
 	void computeString (const std::string& s,
 						CFontGenerator *fontGen, 
 						const NLMISC::CRGBA &color,
 						uint32 fontSize, 
 					    IDriver *driver,
-						CComputedString& output);
+						CComputedString& output,
+						bool	keep800x600Ratio= true);
 
 	/** 
 	 * Same as computeString but works with a unicode string (ucstring)
@@ -140,7 +142,8 @@ public:
 						const NLMISC::CRGBA &color,
 						uint32 fontSize, 
 					    IDriver *driver,
-						CComputedString &output);
+						CComputedString &output,
+						bool	keep800x600Ratio= true);
 
 
 	/** 

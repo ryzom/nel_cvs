@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.4 2001/03/27 12:10:17 berenguier Exp $
+ * $Id: u_text_context.h,v 1.5 2001/04/23 13:16:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,6 +148,13 @@ public:
 	 * \param the shade extent
 	 */
 	virtual	void			setShadeExtent(float shext) =0;
+	/** set to true if you want that the font manager look at Driver window size, and resize 
+	 * fontSize so it keeps same size than if it was in 800x600...
+	 */
+	virtual	void			setKeep800x600Ratio(bool keep) =0;
+	/** return keep800x600Ratio state.
+	 */
+	virtual	bool			getKeep800x600Ratio() const  =0;
 	// @}
 
 

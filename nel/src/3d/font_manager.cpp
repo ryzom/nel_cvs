@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.23 2001/03/27 13:58:04 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.24 2001/04/23 13:16:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,15 +147,21 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 				const NLMISC::CRGBA &color,
 				uint32 fontSize,
 				IDriver *driver,
-				CComputedString &output)
+				CComputedString &output,
+				bool	keep800x600Ratio)
 {
-	uint32 width, height;
-	driver->getWindowSize (width, height);
 	float FontRatio = 1.0;
+	uint32 width, height;
 
-	// keep the 800*600 ratio
-	fontSize = (uint32)floor(fontSize*height/600.f);
-	fontSize = max(fontSize, (uint32)2);
+	// resize fontSize if window not of 800x600.
+	if(keep800x600Ratio)
+	{
+		driver->getWindowSize (width, height);
+
+		// keep the 800*600 ratio
+		fontSize = (uint32)floor(fontSize*height/600.f);
+		fontSize = max(fontSize, (uint32)2);
+	}
 	
 	// Setting vertices format
 	output.Vertices.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]);
@@ -245,9 +251,10 @@ void CFontManager::computeString (const std::string &s,
 								  const NLMISC::CRGBA &color,
 								  uint32 fontSize,
 								  IDriver *driver,
-								  CComputedString &output)
+								  CComputedString &output,
+								  bool	keep800x600Ratio)
 {
-	NL3DcomputeString (this, s, fontGen, color, fontSize, driver, output);
+	NL3DcomputeString (this, s, fontGen, color, fontSize, driver, output,keep800x600Ratio);
 }
 
 
@@ -259,9 +266,10 @@ void CFontManager::computeString (const ucstring &s,
 								  const NLMISC::CRGBA &color,
 								  uint32 fontSize,
 								  IDriver *driver,
-								  CComputedString &output)
+								  CComputedString &output,
+								  bool	keep800x600Ratio)
 {
-	NL3DcomputeString (this, s, fontGen, color, fontSize, driver, output);
+	NL3DcomputeString (this, s, fontGen, color, fontSize, driver, output,keep800x600Ratio);
 }
 
 

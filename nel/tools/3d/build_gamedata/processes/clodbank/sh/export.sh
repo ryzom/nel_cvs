@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# *** Export shape files (.shape) from Max
+
+# *** Export character lod shape files (.clod) from Max
 
 exec_timeout='../../bin/exec_timeout.exe'
 
@@ -17,34 +18,29 @@ database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 
 build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the shape directories
-shape_source_directories=`cat ../../cfg/directories.cfg | grep "shape_source_directory" | sed -e 's/shape_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-
-# Get the options
-seoel=`cat ../../cfg/config.cfg | grep "shape_export_opt_export_lighting" | sed -e 's/shape_export_opt_export_lighting//' | sed -e 's/ //g' | sed -e 's/=//g'`
-seos=`cat ../../cfg/config.cfg | grep "shape_export_opt_shadow" | sed -e 's/shape_export_opt_shadow//' | sed -e 's/ //g' | sed -e 's/=//g'`
-seoll=`cat ../../cfg/config.cfg | grep "shape_export_opt_lighting_limit" | sed -e 's/shape_export_opt_lighting_limit//' | sed -e 's/ //g' | sed -e 's/=//g'`
-seols=`cat ../../cfg/config.cfg | grep "shape_export_opt_lumel_size" | sed -e 's/shape_export_opt_lumel_size//' | sed -e 's/ //g' | sed -e 's/=//g'`
-seoo=`cat ../../cfg/config.cfg | grep "shape_export_opt_oversampling" | sed -e 's/shape_export_opt_oversampling//' | sed -e 's/ //g' | sed -e 's/=//g'`
+clod_source_directories=`cat ../../cfg/directories.cfg | grep "clod_source_directory" | sed -e 's/clod_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Log error
 echo ------- > log.log
-echo --- Export shape >> log.log
+echo --- Export clod >> log.log
 echo ------- >> log.log
 echo ------- 
-echo --- Export shape 
+echo --- Export clod
 echo ------- 
 date >> log.log
 date
 
 # For each directoy
 
-for i in $shape_source_directories ; do
+for i in $clod_source_directories ; do
 	# Copy the script
-	cat maxscript/shape_export.ms | sed -e "s&shape_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_without_coarse_mesh&$build_gamedata_directory/processes/shape/shape&g" | sed -e "s&output_directory_with_coarse_mesh&$build_gamedata_directory/processes/shape/shape_with_coarse_mesh&g" | sed -e "s&shape_export_opt_export_lighting&$seoel&g" | sed -e "s&shape_export_opt_shadow&$seos&g" | sed -e "s&shape_export_opt_lighting_limit&$seoll&g" | sed -e "s&shape_export_opt_lumel_size&$seols&g" | sed -e "s&shape_export_opt_oversampling&$seoo&g" | sed -e "s&shape_lightmap_path&$build_gamedata_directory/processes/shape/lightmap&g" > $max_directory/scripts/shape_export.ms
+	cat maxscript/clod_export.ms | sed -e "s&shape_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/clodbank/clod&g" > $max_directory/scripts/clod_export.ms
 
 	# Start max
-	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript shape_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log
 done
+
+

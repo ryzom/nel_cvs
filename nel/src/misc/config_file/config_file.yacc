@@ -78,7 +78,7 @@ int yyerror (const char *);
 
 %%
 
-ROOT:		{ cf_CurrentLine = 1; cf_Ignore = false; } instlist
+ROOT:		{ cf_CurrentLine = 1; cf_Ignore = false; } instlist | { }
 			;
 
 instlist:	instlist inst { }

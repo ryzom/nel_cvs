@@ -47,6 +47,7 @@ num1		{digit}+\.([eE][-+]?{digit}+)?
 num2		{digit}*\.{digit}+([eE][-+]?{digit}+)?
 real		{num1}|{num2}
 int			{digit}+
+hex			0x[0-9a-fA-F]+
 string		\"[^\"]*\"
 
 %%
@@ -110,6 +111,16 @@ string		\"[^\"]*\"
 					cflval.Val.Type = T_INT;
 					cflval.Val.Int = atoi (yytext);
 					DEBUG_PRINTF("lex: int '%s' '%d'\n", yytext, cflval.Val.Int);
+					return INT;
+				}
+			}
+
+{hex}		{ /* An hex int */
+				if (!cf_Ignore)
+				{
+					cflval.Val.Type = T_INT;
+					sscanf (yytext, "%x", &(cflval.Val.Int));
+					DEBUG_PRINTF("lex: hexa '%s' '0x%x' '%d'\n", yytext, cflval.Val.Int, cflval.Val.Int);
 					return INT;
 				}
 			}

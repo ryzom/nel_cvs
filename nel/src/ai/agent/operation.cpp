@@ -1,7 +1,7 @@
 /** \file operation.cpp
  * <File description>
  *
- * $Id: operation.cpp,v 1.8 2003/01/21 11:24:39 chafik Exp $
+ * $Id: operation.cpp,v 1.9 2003/01/27 16:55:01 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,13 +113,7 @@ namespace NLAIAGENT
 		{
 			std::list < IConnectIA * >::iterator it = _Connection.begin();
 			while(it != _Connection.end())
-			{
-				/*NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)CAgentOperation::MsgOnChangeMsg->clone();				
-				msg->push(_Op);
-				msg->setPerformatif(IMessageBase::PTell);
-				msg->setSender((NLAIAGENT::IObjectIA *)((CAgentScript *)this));
-				_Op->incRef();
-				(*it)->sendMessage(((NLAIAGENT::IObjectIA *)msg));*/
+			{				
 				update(*it);
 				it ++;
 			}

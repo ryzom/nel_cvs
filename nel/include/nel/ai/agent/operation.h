@@ -1,7 +1,7 @@
 /** \file operation.h
  * <File description>
- *
- * $Id: operation.h,v 1.5 2003/01/21 11:24:25 chafik Exp $
+ * File contain class to transform an agent script to an IObjectOp
+ * $Id: operation.h,v 1.6 2003/01/27 16:54:43 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,11 @@
 namespace NLAIAGENT
 {	
 
+	/**
+	Class CAgentOperation this class allow user to transform an agent script to an IObjectOp, in partuicular, user have an subscribe
+	list, that allow to have automatically a send of modification content.
+
+	*/
 	class CAgentOperation: public CAgentScript, public virtual IObjetOp
 	{
 	public:
@@ -138,6 +143,9 @@ namespace NLAIAGENT
 			return _Change;
 		}		
 
+		/**
+		Subscribe to a mirror systeme affter call, when change hapend this agent send tell caller the change.
+		*/
 		virtual void connectOnChange(IConnectIA *ref);		
 
 		virtual void changeIsDone()
@@ -151,7 +159,8 @@ namespace NLAIAGENT
 		virtual CProcessResult runMethodBase(int, int, IObjectIA *);
 		virtual CProcessResult runMethodBase(int, IObjectIA *);
 
-	protected:		
+	protected:
+		///manage the update of tha attribute.
 		void update(IObjectIA *obj);
 
 	public:

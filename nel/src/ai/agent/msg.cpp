@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.25 2003/01/23 15:41:08 chafik Exp $
+ * $Id: msg.cpp,v 1.26 2003/01/27 16:55:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -450,7 +450,7 @@ namespace NLAIAGENT
 				
 			case _TProtcetSender:
 				{
-					setProtcetSender();					
+					protectSender();					
 					return IObjectIA::CProcessResult();				
 				}
 

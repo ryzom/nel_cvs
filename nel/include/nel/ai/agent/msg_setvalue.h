@@ -1,6 +1,6 @@
 /** \file msg_action.h
  *
- * $Id: msg_setvalue.h,v 1.2 2003/01/21 11:24:25 chafik Exp $
+ * $Id: msg_setvalue.h,v 1.3 2003/01/27 16:54:43 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,9 @@
 
 namespace NLAIAGENT
 {
+	/**
+	Message to allow user to set the value of an agent attribut.
+	*/
 	class CSetValueMsg : public CMessageScript 
 	{
 	public:
@@ -38,7 +41,6 @@ namespace NLAIAGENT
 		CSetValueMsg(NLAISCRIPT::CMessageClass *b = NULL);
 		CSetValueMsg(IBasicAgent *);
 		virtual ~CSetValueMsg();
-
 
 		/// \name NLAIC::IBasicInterface member class. 
 		//@{		

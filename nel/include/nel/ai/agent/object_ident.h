@@ -1,7 +1,7 @@
 /** \file object_ident.h
  * class for identification an objects fonctionality.
  *
- * $Id: object_ident.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
+ * $Id: object_ident.h,v 1.6 2003/01/27 16:54:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,9 @@
 
 namespace NLAIAGENT
 {
+	/**
+	This class store an CNumericIndex, it allow user to use the ident CNumericIndex as an agnet object.
+	*/
 	class CObjectIdent : public IObjectIA
 	{
 	public:
@@ -65,6 +68,9 @@ namespace NLAIAGENT
 		{
 		}
 
+		/**
+		Get the CNumericIndex ident of an agent.
+		*/
 		const CNumericIndex &getId() const
 		{
 			return _Id;

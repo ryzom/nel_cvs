@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.16 2003/01/24 15:51:45 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.17 2003/01/27 16:55:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@ namespace NLAISCRIPT
 		}
 		className = (const char *)r->getType();
 		r = r->getStaticMember(_B);
-					
+		
 		str += NLAIC::stringGetBuild("ldb le composant membre %d named: '%s' de la class '%s'",_B, name.c_str(),className.c_str());
 	}
 

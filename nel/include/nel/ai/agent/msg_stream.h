@@ -1,6 +1,8 @@
 /** \file msg_stream.h
+ * 
+ *	Using a NLAIAGENT::IMessageBase or in general NLAIAGENT::IBaseGroupType as a NLMISC::IStream
  *
- * $Id: msg_stream.h,v 1.3 2002/05/23 13:46:02 chafik Exp $
+ * $Id: msg_stream.h,v 1.4 2003/01/27 16:54:43 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +32,9 @@
 
 namespace NLAIAGENT
 {
+	/**
+	Input Stream.
+	*/
 	class CMsgIStream: public NLMISC::IStream
 	{
 	private:
@@ -89,6 +94,9 @@ namespace NLAIAGENT
 		}
 	};
 
+	/**
+	Output Stream.
+	*/
 	class CMsgOStream: public NLMISC::IStream
 	{
 	private:
@@ -135,7 +143,6 @@ namespace NLAIAGENT
 			throw NLMISC::EReadError((const char *)_List.getType());
 		}
 	};
-
 }
 
 #endif

@@ -1,7 +1,8 @@
 /** \file msg_on_change.h
- *
- *
- * $Id: msg_on_change.h,v 1.3 2002/06/06 09:12:02 chafik Exp $
+ *	
+ *	On change message.
+ *	
+ * $Id: msg_on_change.h,v 1.4 2003/01/27 16:54:43 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +30,9 @@
 
 namespace NLAIAGENT
 {
+	/**
+	This method is use when an agent attribute have a change.
+	*/
 	class COnChangeMsg : public CMessageScript 
 	{
 	public:

@@ -1,6 +1,6 @@
 /** \file msg_notify.h
- *
- * $Id: msg_notify.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
+ * Notify parent messages.
+ * $Id: msg_notify.h,v 1.7 2003/01/27 16:54:43 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

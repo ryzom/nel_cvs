@@ -26,7 +26,6 @@
 #include "nel/ai/agent/performative.h"
 #include "nel/ai/agent/object_ident.h"
 #include "nel/ai/logic/goal_stack.h"
-
 #include "nel/ai/c/registry_class.h"
 #include "nel/ai/agent/msg_notify.h"
 #include "nel/ai/agent/msg_goal.h"
@@ -39,6 +38,7 @@
 #include "nel/ai/logic/goal_path.h"
 #include "nel/ai/script/goal_path_class.h"
 #include "nel/ai/agent/agent_3dvector.h"
+
 	using namespace NLAIAGENT;
 	using namespace NLAILOGIC;
 	using namespace NLAIFUZZY;

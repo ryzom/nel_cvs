@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.h
  * <File description>
  *
- * $Id: visual_collision_entity.h,v 1.4 2001/12/27 11:17:48 berenguier Exp $
+ * $Id: visual_collision_entity.h,v 1.5 2002/01/02 12:34:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,15 @@ public:
 	bool	getSnapToRenderedTesselation() const {return _SnapToRenderedTesselation;}
 
 
+	/// \name Parameters.
+	// @{
+	/// This is the radius of the bbox around the entity where we have correct collisions: 10m.
+	static const float					BBoxRadius;
+	/// Same as BBoxRadius, but for z value. This later should be greater because of NLPACS surface quadtree imprecision. 20m
+	static const float					BBoxRadiusZ;
+	// @}
+
+
 // ***********************
 private:
 	CVisualCollisionManager		*_Owner;
@@ -105,10 +114,6 @@ private:
 
 	/// \name Landscape part.
 	// @{
-	/// This is the radius of the bbox around the entity where we have correct collisions.
-	static const float					_BBoxRadius;
-	/// Same as _BBoxRadius, but for z value. This later should be greater because of NLPACS surface quadtree imprecision.
-	static const float					_BBoxRadiusZ;
 	/// Default capacity of _PatchQuadBlocks.
 	static const uint32					_StartPatchQuadBlockSize;
 	/// This is the temp array of BlockIds filled by landscape search.

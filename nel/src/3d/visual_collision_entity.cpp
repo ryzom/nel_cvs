@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.9 2001/12/27 11:17:48 berenguier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.10 2002/01/02 12:34:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,8 +37,8 @@ namespace NL3D
 
 // ***************************************************************************
 // should be at least 2 meters.
-const	float	CVisualCollisionEntity::_BBoxRadius= 10;
-const	float	CVisualCollisionEntity::_BBoxRadiusZ= 20;
+const	float	CVisualCollisionEntity::BBoxRadius= 10;
+const	float	CVisualCollisionEntity::BBoxRadiusZ= 20;
 const	uint32	CVisualCollisionEntity::_StartPatchQuadBlockSize= 64;	// 256 octets per entity minimum.
 vector<CPatchBlockIdent>		CVisualCollisionEntity::_TmpBlockIds;
 vector<CPatchQuadBlock*>		CVisualCollisionEntity::_TmpPatchQuadBlocks;
@@ -320,7 +320,7 @@ void		CVisualCollisionEntity::doComputeLandscape(const CVector &pos)
 	// setup new bbox.
 	//==================
 	_CurrentBBox.setCenter(pos);
-	_CurrentBBox.setHalfSize(CVector(_BBoxRadius, _BBoxRadius, _BBoxRadiusZ));
+	_CurrentBBox.setHalfSize(CVector(BBoxRadius, BBoxRadius, BBoxRadiusZ));
 
 	// Search landscape blocks which are in the bbox.
 	//==================
@@ -407,7 +407,7 @@ void		CVisualCollisionEntity::doComputeLandscape(const CVector &pos)
 	delta.y= (float)floor(-pos.y);
 	delta.z= 0;
 	// We must always have positive values for patchBlocks vertices.
-	float	val= (float)ceil(_BBoxRadius + 256);
+	float	val= (float)ceil(BBoxRadius + 256);
 	// NB: 256 is a security. Because of size of patchs, a value of 32 at max should be sufficient (64 for bigger patch (gfx))
 	// we are large because doesn't matter, the CLandscapeCollisionGrid tiles.
 	delta.x+= val;

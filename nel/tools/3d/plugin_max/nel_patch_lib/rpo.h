@@ -1,7 +1,7 @@
 /** \file rpo.h
  * <File description>
  *
- * $Id: rpo.h,v 1.4 2002/08/08 11:42:49 lecroart Exp $
+ * $Id: rpo.h,v 1.5 2002/08/08 11:50:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -281,11 +281,14 @@ class RPO : public PatchObject
 		  */
 		static bool						isZone (INode& node, TimeValue time);
 
+#if MAX_RELEASE >= 4000
 		// ace: These functions are needed in max 4 but there s no easy way to know which version we use,
 		// so we always implemente these function. On max < 4, they should never be call.
 		// NS: New SubObjType API
 		int NumSubObjTypes() { return 0; }
 		ISubObjType *GetSubObjType(int i) { return NULL; }
+#endif
+
 };
 
 #endif // __RYKOL_PATCH_OBJ_H

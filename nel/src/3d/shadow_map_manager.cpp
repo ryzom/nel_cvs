@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.13 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.14 2004/08/13 15:42:41 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -76,6 +76,7 @@ CShadowMapManager::CShadowMapManager()
 	_FillMaterial.setZWrite(false);
 	_FillMaterial.setZFunc(CMaterial::always);
 	_FillMaterial.setDoubleSided(true);
+	_FillQuads.setPreferredMemory(CVertexBuffer::RAMVolatile, true);
 
 	// **** Setup Blur
 	_BlurQuads.setVertexFormat(CVertexBuffer::PositionFlag |
@@ -83,6 +84,7 @@ CShadowMapManager::CShadowMapManager()
 		CVertexBuffer::TexCoord1Flag |
 		CVertexBuffer::TexCoord2Flag |
 		CVertexBuffer::TexCoord3Flag);
+	_BlurQuads.setPreferredMemory(CVertexBuffer::RAMVolatile, true);
 
 	// Only 2 quads are used to blur
 	_BlurQuads.setNumVertices(8);
@@ -117,6 +119,7 @@ CShadowMapManager::CShadowMapManager()
 	// *** Setup copy
 	_CopyQuads.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	_CopyQuads.setNumVertices(4);
+	_CopyQuads.setPreferredMemory(CVertexBuffer::RAMVolatile, true);
 	CVertexBufferReadWrite vba;
 	_CopyQuads.lock (vba);
 	vba.setVertexCoord (0, CVector (0, 0, 0));
@@ -214,6 +217,10 @@ CShadowMapManager::CShadowMapManager()
 	// Alpha Polygon coverage accumulate, for polygon smoothing
 	_CasterShadowMaterial.setBlend(true);
 	_CasterShadowMaterial.setBlendFunc(CMaterial::one, CMaterial::one);
+
+	_BlurQuads.setName("CShadowMapManager::_BlurQuads");
+	_FillQuads.setName("CShadowMapManager::_FillQuads");
+	_CopyQuads.setName("CShadowMapManager::_CopyQuads");
 }
 
 // ***************************************************************************

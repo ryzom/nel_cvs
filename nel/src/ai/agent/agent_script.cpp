@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.9 2001/01/15 17:58:29 chafik Exp $
+ * $Id: agent_script.cpp,v 1.10 2001/01/17 10:29:05 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,7 +129,7 @@ namespace NLAIAGENT
 			it_c++;
 			id_c++;
 		}		
-		_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
+		_ScriptMail = new CScriptMailBox( (const IWordNumRef *) *this);
 		_ScriptMail->incRef();
 	}	
 

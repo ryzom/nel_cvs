@@ -1,6 +1,6 @@
 /** \file msg_contenair.cpp
  *
- * $Id: msg_container.cpp,v 1.6 2001/01/12 11:49:58 portier Exp $
+ * $Id: msg_container.cpp,v 1.7 2001/01/17 10:29:05 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,7 +218,7 @@ namespace NLAIAGENT
 		std::list<const IBasicMessageGroup *>::const_iterator it_grp = _MsgIndex.begin();
 		while ( it_grp != _MsgIndex.end() )
 		{
-			os .serial( (NLAIC::CIdentType &) (*it_grp)->getType() );
+			os.serial( (NLAIC::CIdentType &) (*it_grp)->getType() );
 			((IBasicMessageGroup *)(*it_grp))->save( os );
 			it_grp++;
 		}

@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.6 2001/01/12 16:17:57 portier Exp $
+ * $Id: actor_script.h,v 1.7 2001/01/17 10:28:33 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NLAIAGENT
 
 	class CComponentHandle/* : public IObjectIA */{
 		private:
-			CStringVarName	*_CompName;
+			IVarName		*_CompName;
 			const IObjectIA	*_Comp;
 			IAgent			*_CompFather;
 
@@ -57,9 +57,9 @@ namespace NLAIAGENT
 			}
 
 
-			CComponentHandle(CStringVarName &comp_name, IAgent *comp_father , bool get = false)
+			CComponentHandle(const IVarName &comp_name, IAgent *comp_father , bool get = false)
 			{
-				_CompName = (CStringVarName *) comp_name.clone();
+				_CompName = (IVarName *) comp_name.clone();
 				_CompFather = comp_father;
 				if ( get )
 					getComponent();
@@ -75,6 +75,8 @@ namespace NLAIAGENT
 #ifdef _DEBUG
 					const char *dbg_father_type = (const char *) _CompFather->getType();
 					const char *dbg_comp_name = (const char *) _CompName->getType();
+					char buffer[1024 * 8];
+					_CompName->getDebugString(buffer);
 #endif
 
 					// Looks in static components
@@ -84,14 +86,19 @@ namespace NLAIAGENT
 					else
 						_Comp = NULL;
 
-					// Looks in dynamic component
-					CGroupType *param = new CGroupType();
-					param->push( (IObjectIA *) _CompName );
-					IObjectIA::CProcessResult comp = ( (CAgentScript *) _CompFather)->getDynamicAgent(param);
-					param->pop();
-					delete param;
-					if ( comp.Result )
-						_Comp = comp.Result;
+					if ( _Comp == NULL )
+					{
+						// Looks in dynamic component
+						CGroupType *param = new CGroupType();
+						param->push( (IObjectIA *) _CompName );
+						IObjectIA::CProcessResult comp = ( (CAgentScript *) _CompFather)->getDynamicAgent(param);
+						param->pop();
+						delete param;
+						if ( comp.Result )
+							_Comp = comp.Result;
+						else
+							_Comp = NULL;
+					}
 				}
 			}
 

@@ -18,10 +18,12 @@ namespace NLAIAGENT
 							   NLAISCRIPT::CActorClass *actor_class )
 	: CAgentScript(manager, father, components, actor_class )
 	{	
+		_IsActivated = false;
 	}	
 
 	CActorScript::CActorScript(IAgentManager *manager, bool stay_alive) : CAgentScript( manager )
 	{
+		_IsActivated = false;
 	}
 
 	CActorScript::~CActorScript()
@@ -238,19 +240,20 @@ namespace NLAIAGENT
 
 		if ( index == fid_switch )
 		{
-			std::vector<CStringVarName *> handles;
+			std::vector<CStringType *> handles;
 			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 			{
 				IBaseGroupType *fw = (IBaseGroupType *) ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
 				( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
 				while ( fw->size() )
 				{
-					handles.push_back( (CStringVarName *) fw->getFront() );
+					handles.push_back( (CStringType *) fw->getFront() );
 					fw->popFront();
 				}
 				std::vector<CComponentHandle *> switched;
 				for ( int i = 0; i < (int) handles.size(); i++)
-					switched.push_back( new CComponentHandle( *handles[ i ], (IAgent *) getParent() ) );
+					switched.push_back( new CComponentHandle(  handles[ i ]->getStr() , (IAgent *) getParent() ) );
+
 				forwardActivity( switched, false );
 			}
 			IObjectIA::CProcessResult r;
@@ -312,31 +315,29 @@ namespace NLAIAGENT
 
 		if ( index == fid_switch )
 		{
-			std::vector<CStringVarName *> handles;
+			std::vector<CStringType *> handles;
 			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 			{
 #ifdef _DEBUG
 				const char *dbg_param_type = (const char *) params->getType();
 				char dbg_param_string[1024 * 8];
 				params->getDebugString(dbg_param_string);
-
 #endif
 				const IObjectIA *fw = ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
 #ifdef _DEBUG
 				const char *dbg_param_front_type = (const char *) fw->getType();
 #endif
 
-
 				( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
 //				while ( fw->size() )
 //				{
-					handles.push_back( (CStringVarName *) fw);
+					handles.push_back( (CStringType *) fw);
 //					fw->popFront();
 //				}
 
 				std::vector<CComponentHandle *> switched;
 				for ( int i = 0; i < (int) handles.size(); i++)
-					switched.push_back( new CComponentHandle( *handles[ i ], (IAgent *) getParent() ) );
+					switched.push_back( new CComponentHandle( handles[ i ]->getStr(), (IAgent *) getParent() ) );
 				forwardActivity( switched, false );
 			}
 			IObjectIA::CProcessResult r;

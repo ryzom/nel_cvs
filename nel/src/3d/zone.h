@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.13 2002/01/28 14:43:17 vizerie Exp $
+ * $Id: zone.h,v 1.14 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "3d/tessellation.h"
 #include "3d/patch.h"
 #include "3d/bezier_patch.h"
+#include "3d/point_light_named.h"
+#include "3d/point_light_named_array.h"
 #include <stdio.h>
 #include <vector>
 #include <map>
@@ -155,6 +157,16 @@ public:
 	 */
 	std::vector<uint8>			Lumels;
 
+	/** There is (OrderS/2+1) * (OrderT/2+1) tiles light influence.
+	 *	It indicates which static pointLight influence each corner of a TessBlock (block of 2*2 tiles).
+	 *
+	 *	If size()==0, suppose no light influence. but CZone::retrieve() always return a 
+	 *	size() == (OrderS/2+1) * (OrderT/2+1).
+	 *
+	 * They are stored in line first order, from S=0 to 1, and T=0 to 1.
+	 */
+	std::vector<CTileLightInfluence>		TileLightInfluences;
+
 	// @}
 
 	/// \name Smooth flags methods
@@ -212,9 +224,20 @@ private:
  */
 struct	CZoneInfo
 {
+	/// zoneId the Unique ID of this zone.
 	uint16						ZoneId;
+	/// patchs the PatchInfo of this zone.
 	std::vector<CPatchInfo>		Patchs;
+	/** borderVertices vertices connectivity for this zone. NB: borderVertices must contains the connectivity 
+	 *	across zones. It is VERY IMPORTANT to setup zone corner connectivity too. A "corner borderVertex" may appear 
+	 *	3 times here. One for each other zone of the corner.
+	 */
 	std::vector<CBorderVertex>	BorderVertices;
+
+	/** List of PointLights that may influences Patchs and objects walking on them.
+	 *	Must be of good size regarding to Patchs[i].TileLightInfluences data
+	 */
+	std::vector<CPointLightNamed>	PointLights;
 };
 
 
@@ -260,15 +283,18 @@ public:
 	 * This method do:
 	 *	- compress the patchs coordinates.
 	 *	- build the patchs of the zone, but doesn't compile() them.
+	 *	- compress Lumels.
+	 *	- sort PointLights by name, and hence remap TileLightInfluences coordinates.
 	 *
 	 * NB: cannot build on a compiled zone. must release the zone before....
 	 *
-	 * \param zoneId the Unique ID of this zone.
-	 * \param patchs the PatchInfo of this zone.
-	 * \param borderVertices vertices connectivity for this zone. NB: borderVertices must contains the connectivity 
-	 *		across zones. It is VERY IMPORTANT to setup zone corner connectivity too. A "corner borderVertex" may appear 
-	 *		3 times here. One for each other zone of the corner.
 	 * \param numVertices maximize the numgber of vertices used by this zone with this value.
+	 */
+	void			build(const CZoneInfo &zoneInfo, uint32 numVertices=0);
+
+
+	/** Build a zone. Deprecated. 
+	 *	Should use build(CZoneInfo &) instead. see this method
 	 */
 	void			build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const std::vector<CBorderVertex> &borderVertices, uint32 numVertices=0);
 
@@ -284,11 +310,17 @@ public:
 	/** Retrieve zone patchinfo.
 	 * This method uncompress the patchs coordinates and all info into the patch info/borderVertices.
 	 * Warning!!! Due to compression, data won't be the same as those given in build().
+	 * Same remark for TileLightInfluences, due to light sorting.
 	 *
-	 * \param patchs the PatchInfo of this zone.
-	 * \param borderVertices vertices connectivity for this zone.
+	 */
+	void			retrieve(CZoneInfo &zoneInfo);
+
+
+	/** Retrieve zone patchinfo. Deprecated.
+	 *	Should use retrieve(CZoneInfo &) instead. see this method.
 	 */
 	void			retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVertex> &borderVertices);
+
 
 
 	/** Debug a zone, print binds in display.
@@ -487,6 +519,10 @@ private:
 	// The patchs.
 	std::vector<CPatch>			Patchs;
 	std::vector<CPatchConnect>	PatchConnects;
+
+	/** List of PointLights that may influences Patchs and objects walking on them.
+	 */
+	CPointLightNamedArray			_PointLightArray;
 
 	
 private:

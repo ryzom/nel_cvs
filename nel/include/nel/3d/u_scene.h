@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.13 2002/01/07 10:24:12 vizerie Exp $
+ * $Id: u_scene.h,v 1.14 2002/02/06 16:53:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 namespace NLMISC
 {
 class CRGBA;
+class CVector;
 };
 
 namespace NL3D
@@ -48,6 +49,7 @@ class UTransform;
 class UVisualCollisionManager;
 class UAnimationSet;
 class UPlayListManager;
+class UPointLight;
 
 
 //****************************************************************************
@@ -80,6 +82,8 @@ public:
 	 * NB: no Driver clear buffers (color or ZBuffer) are done.... \n
 	 * NB: The UDriver Matrix/Viewport context for 2D/3D interface is restored after this render.
 	 * NB: nlerror if the current camera has been deleted.
+	 * NB: the UDriver Light setup (see UDriver::setLight() / UDriver::setAmbientColor()) is modified.
+	 *	At the exit of render(), all UDriver lights are disabled.
 	 */
 	virtual	void			render()=0;
 
@@ -152,6 +156,14 @@ public:
 	//virtual	UInstanceGroup	*createInstanceGroup(const std::string &instanceGroup) =0;
 	/// Delete an instance group from this scene.
 	//virtual	void			deleteInstanceGroup(UInstanceGroup	*group) =0;
+
+
+	/// Create a dynamic PointLight. Usefull for this scene only.
+	virtual	UPointLight		*createPointLight()=0;
+	/// Delete a dynamic PointLight.
+	virtual	void			deletePointLight(UPointLight *light)=0;
+
+
 	//@}
 
 	/// \name Animation gestion.
@@ -223,6 +235,62 @@ public:
 	//@}
 
 
+	/// \name Global light setup.
+	//@{
+
+	/** Enable Scene Lighting system. For backward compatibility, false by default.
+	 *	If false, all objects will take last driver 's light setup
+	 */
+	virtual	void				enableLightingSystem(bool enable) =0;
+
+
+	/// set the global Ambient used for the scene. Default to (50, 50, 50).
+	virtual	void				setAmbientGlobal(NLMISC::CRGBA ambient) =0;
+	/// set the Ambient of the Sun used for the scene.
+	virtual	void				setSunAmbient(NLMISC::CRGBA ambient) =0;
+	/// set the Diffuse of the Sun used for the scene.
+	virtual	void				setSunDiffuse(NLMISC::CRGBA diffuse) =0;
+	/// set the Specular of the Sun used for the scene.
+	virtual	void				setSunSpecular(NLMISC::CRGBA specular) =0;
+	/// set the Direction of the Sun used for the scene.
+	virtual	void				setSunDirection(const NLMISC::CVector &direction) =0;
+
+
+	/// get the global Ambient used for the scene. Default to (50, 50, 50).
+	virtual	NLMISC::CRGBA		getAmbientGlobal() const =0;
+	/// get the Ambient of the Sun used for the scene.
+	virtual	NLMISC::CRGBA		getSunAmbient() const =0;
+	/// get the Diffuse of the Sun used for the scene.
+	virtual	NLMISC::CRGBA		getSunDiffuse() const =0;
+	/// get the Specular of the Sun used for the scene.
+	virtual	NLMISC::CRGBA		getSunSpecular() const =0;
+	/// get the Direction of the Sun used for the scene.
+	virtual	NLMISC::CVector		getSunDirection() const =0;
+
+	/** setup the max number of point light that can influence a model. NB: clamped by NL3D_MAX_LIGHT_CONTRIBUTION
+	 *	Default is 3.
+	 *	NB: the sun contribution is not taken into account
+	 */
+	virtual	void				setMaxLightContribution(uint nlights) =0;
+	/// \see setMaxLightContribution()
+	virtual	uint				getMaxLightContribution() const =0;
+
+	/** Advanced. When a model is influenced by more light than allowed, or when it reach the limits 
+	 *	of the light (attenuationEnd), the light can be darkened according to some threshold.
+	 *	The resultLightColor begin to fade when distModelToLight== attEnd- threshold*(attEnd-attBegin).
+	 *	when distModelToLight== 0, resultLightColor==Black.
+	 *	By default, this value is 0.1f. Setting higher values will smooth transition but will 
+	 *	generally darken the global effects of lights.
+	 *	NB: clamp(value, 0, 1);
+	 */
+	virtual	void				setLightTransitionThreshold(float lightTransitionThreshold) =0;
+	/// \see getLightTransitionThreshold()
+	virtual	float				getLightTransitionThreshold() const =0;
+
+
+	//@}
+
+
 	/// \name transparent Layers mgt
 	//@{
 		/** Set the order or rendering of layers containing transparent objects.
@@ -234,6 +302,7 @@ public:
 		virtual void  setLayersRenderingOrder(bool directOrder = true) = 0;
 		virtual bool  getLayersRenderingOrder() const = 0;
 	//@}
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.11 2002/01/16 12:16:25 berenguier Exp $
+ * $Id: u_landscape.h,v 1.12 2002/02/06 16:53:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,16 @@ public:
 	  *  \param multiply is the multiply factor. Final color is (diffuse*multiply*shading+ambiant*(1.0-shading))
 	  */
 	virtual	void	setupStaticLight (const CRGBA &diffuse, const CRGBA &ambiant, float multiply) =0;
+
+
+	/** 
+	 *	set the Light factor for all pointLights in All zones with LightGroupName= "lightGroupName".
+	 *	Additionaly, it stores a map<lightGroupName, NLMISC::CRGBA nFactor>, so each added zone will
+	 *	be correclty assigned.
+	 */
+	virtual	void	setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor) =0;
+
+
 	// @}
 
 

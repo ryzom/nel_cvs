@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.7 2001/10/10 15:38:09 besson Exp $
+ * $Id: mesh_base.h,v 1.8 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,6 +151,11 @@ public:
 	/// Flush textures
 	void	flushTextures (IDriver &driver);
 
+
+	/// Is this mesh lightable? true if one of his materials is not a lightmap. NB: result stored in file.
+	bool	isLightable() const {return _IsLightable;}
+
+
 // ************************
 protected:
 	/// The Materials.
@@ -177,6 +182,9 @@ protected:
 	
 	std::vector<CMorphBase>		_AnimatedMorph;
 
+	/// Is this mesh lightable??
+	bool						_IsLightable;
+
 protected:
 	/// Just copy informations from a CMeshBaseBuild.
 	void	buildMeshBase(CMeshBaseBuild &m);
@@ -184,6 +192,10 @@ protected:
 	/// instanciate MeshBase part to an instance (a CMeshBaseInstance).
 	void	instanciateMeshBase(CMeshBaseInstance *mi);
 
+private:
+
+	/// compute _Lightable.
+	void	computeIsLightable();
 };
 
 

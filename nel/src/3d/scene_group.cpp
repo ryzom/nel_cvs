@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.21 2001/10/10 15:38:09 besson Exp $
+ * $Id: scene_group.cpp,v 1.22 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,13 +43,42 @@ namespace NL3D
 CInstanceGroup::CInstance::CInstance ()
 {
 	DontAddToScene = false;
+	AvoidStaticLightPreCompute= false;
+	StaticLightEnabled= false;
+	DontCastShadow= false;
 }
 
 // ***************************************************************************
 void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
 {
+	/*
+	Version 3:
+		- StaticLight.
+	Version 2:
+		- gameDev data.
+	Version 1:
+		- Clusters
+	*/
 	// Serial a version number
-	sint version=f.serialVersion (2);
+	sint version=f.serialVersion (3);
+
+	// Serial the StaticLight
+	if (version >= 3)
+	{
+		f.serial (AvoidStaticLightPreCompute);
+		f.serial (DontCastShadow);
+		f.serial (StaticLightEnabled);
+		f.serial (SunContribution);
+		nlassert(CInstanceGroup::NumStaticLightPerInstance==2);
+		f.serial (Light[0]);
+		f.serial (Light[1]);
+	}
+	else if(f.isReading())
+	{
+		AvoidStaticLightPreCompute= false;
+		StaticLightEnabled= false;
+		DontCastShadow= false;
+	}
 
 	// Serial the gamedev data
 	if (version >= 2)
@@ -137,9 +166,17 @@ const sint32 CInstanceGroup::getInstanceParent (uint instanceNb) const
 	return _InstancesInfos[instanceNb].nParent;
 }
 
+
+// ***************************************************************************
+const CInstanceGroup::CInstance		&CInstanceGroup::getInstance(uint instanceNb) const
+{
+	return _InstancesInfos[instanceNb];
+}
+
 // ***************************************************************************
 CInstanceGroup::CInstanceGroup()
 {
+	_IGSurfaceLight.setOwner(this);
 	_GlobalPos = CVector(0,0,0);
 	_Root = NULL;
 	_ClusterSystem = NULL;
@@ -153,8 +190,10 @@ CInstanceGroup::~CInstanceGroup()
 // ***************************************************************************
 void CInstanceGroup::build (CVector &vGlobalPos, const TInstanceArray& array, 
 							const std::vector<CCluster>& Clusters, 
-							const std::vector<CPortal>& Portals)
-
+							const std::vector<CPortal>& Portals,
+							const std::vector<CPointLightNamed> &pointLightList,
+							const CIGSurfaceLight::TRetrieverGridMap *retrieverGridMap, 
+							float igSurfaceLightCellSize)
 {
 	_GlobalPos = vGlobalPos;
 	// Copy the array
@@ -207,7 +246,58 @@ void CInstanceGroup::build (CVector &vGlobalPos, const TInstanceArray& array,
 			pMetaCluster->link(&_Portals[i]);
 		}
 	}*/
+
+
+	// Build the list of light. NB: sort by LightGroupName the array.
+	std::vector<uint>	plRemap;
+	buildPointLightList(pointLightList, plRemap);
+
+	// Build IgSurfaceLight
+	// clear
+	_IGSurfaceLight.clear();
+	if(retrieverGridMap)
+	{
+		//build
+		_IGSurfaceLight.build(*retrieverGridMap, igSurfaceLightCellSize, plRemap);
+	}
 }
+
+
+// ***************************************************************************
+void CInstanceGroup::build (CVector &vGlobalPos, const TInstanceArray& array, 
+							const std::vector<CCluster>& Clusters, 
+							const std::vector<CPortal>& Portals)
+{
+	// empty pointLightList
+	std::vector<CPointLightNamed> pointLightList;
+
+	build(vGlobalPos, array, Clusters, Portals, pointLightList);
+}
+
+
+// ***************************************************************************
+void CInstanceGroup::retrieve (CVector &vGlobalPos, TInstanceArray& array, 
+				std::vector<CCluster>& Clusters, 
+				std::vector<CPortal>& Portals,
+				std::vector<CPointLightNamed> &pointLightList) const
+{
+	// Just copy infos. NB: light information order have change but is still valid
+	vGlobalPos= _GlobalPos;
+	array= _InstancesInfos;
+
+	Portals= _Portals;
+	Clusters= _ClusterInfos;
+	// Must reset links to all portals and clusters.
+	uint	i;
+	for(i=0; i<Portals.size(); i++)
+		Portals[i].resetClusterLinks();
+	for(i=0; i<Clusters.size(); i++)
+		Clusters[i].resetPortalLinks();
+
+
+	pointLightList= getPointLightList();
+}
+
 
 // ***************************************************************************
 
@@ -216,8 +306,37 @@ void CInstanceGroup::serial (NLMISC::IStream& f)
 	// Serial a header
 	f.serialCheck ((uint32)'TPRG');
 
+	/*
+	Version 4:
+		_ IGSurfaceLight
+	Version 3:
+		- PointLights
+	*/
 	// Serial a version number
-	sint version=f.serialVersion (2);
+	sint version=f.serialVersion (4);
+
+
+	// Serial the IGSurfaceLight
+	if (version >= 4)
+	{
+		f.serial(_IGSurfaceLight);
+	}
+	else if(f.isReading())
+	{
+		_IGSurfaceLight.clear();
+	}
+
+
+	// Serial the PointLights info
+	if (version >= 3)
+	{
+		f.serial(_PointLightArray);
+	}
+	else if(f.isReading())
+	{
+		_PointLightArray.clear();
+	}
+
 
 	if (version >= 2)
 		f.serial(_GlobalPos);
@@ -321,6 +440,31 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 				_Instances[i]->setRotQuat (rInstanceInfo.Rot);
 				_Instances[i]->setScale (rInstanceInfo.Scale);
 				_Instances[i]->setPivot (CVector::Null);
+
+				// Static Light Setup
+				if( rInstanceInfo.StaticLightEnabled )
+				{
+					// Count lights.
+					uint numPointLights;
+					for(numPointLights= 0; numPointLights<CInstanceGroup::NumStaticLightPerInstance; numPointLights++)
+					{
+						if(rInstanceInfo.Light[numPointLights]==0xFF)
+							break;
+					}
+					// Max allowed.
+					numPointLights= min(numPointLights, (uint)NL3D_MAX_LIGHT_CONTRIBUTION);
+
+					// Get pl ptrs.
+					CPointLight		*pls[CInstanceGroup::NumStaticLightPerInstance];
+					for(uint j=0; j<numPointLights;j++)
+					{
+						uint	plId= rInstanceInfo.Light[j];
+						pls[j]= (CPointLight*)(&_PointLightArray.getPointLights()[plId]);
+					}
+
+					// Setup the instance.
+					_Instances[i]->freezeStaticLightSetup(pls, numPointLights, rInstanceInfo.SunContribution);
+				}
 
 				// Driver not NULL ?
 				if (driver)
@@ -492,7 +636,13 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
 	{
 		CTransformShape *pTShape = *it;
-		scene.deleteInstance (pTShape);
+		if(pTShape)
+		{
+			// For security, unfreeze any StaticLightSetup setuped.
+			pTShape->unfreezeStaticLightSetup();
+			// delete the instance
+			scene.deleteInstance (pTShape);
+		}
 	}
 
 	// Relink portals with old clusters
@@ -691,6 +841,51 @@ void		CInstanceGroup::unfreezeHRC()
 	}
 	// and for root.
 	_Root->unfreezeHRC();
+}
+
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CInstanceGroup::buildPointLightList(const std::vector<CPointLightNamed> &pointLightList,
+	std::vector<uint>	&plRemap)
+{
+	// build.
+	_PointLightArray.build(pointLightList, plRemap);
+
+	// remap Instance precalc lighted.
+	for(uint i=0; i<_InstancesInfos.size(); i++)
+	{
+		CInstance	&inst= _InstancesInfos[i];
+		// If the instance has no precomputed lighting, skip
+		if(!inst.StaticLightEnabled)
+			continue;
+
+		for(uint l=0; l<CInstanceGroup::NumStaticLightPerInstance; l++)
+		{
+			// If NULL light, break and continue to next instance
+			if(inst.Light[l]== 0xFF)
+				break;
+			else
+			{
+				// Check good index.
+				nlassert(inst.Light[l] < _PointLightArray.getPointLights().size());
+				// Remap index, because of light sorting.
+				inst.Light[l]= plRemap[inst.Light[l]];
+			}
+
+		}
+	}
+
+}
+
+// ***************************************************************************
+void			CInstanceGroup::setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor)
+{
+	_PointLightArray.setPointLightFactor(lightGroupName, nFactor);
 }
 
 

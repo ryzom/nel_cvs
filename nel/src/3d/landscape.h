@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.30 2002/01/28 14:46:01 vizerie Exp $
+ * $Id: landscape.h,v 1.31 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@
 #include "3d/landscapevb_allocator.h"
 #include "3d/landscape_face_vector_manager.h"
 #include "3d/tess_face_priority_list.h"
+#include "nel/3d/point_light_influence.h"
 
 #include <map>
 
@@ -365,6 +366,20 @@ public:
 	/// return the light direction setuped in enableAutomaticLighting().
 	const CVector &getAutomaticLightDir() const {return _AutomaticLightDir;}
 
+
+	/** This method remove all PointLights in all Zones, and hence reset TileLightInfluences.
+	 */
+	void	removeAllPointLights();
+
+
+	/** 
+	 *	set the Light factor for all pointLights in All zones with LightGroupName= "lightGroupName".
+	 *	Additionaly, it stores a map<lightGroupName, NLMISC::CRGBA nFactor>, so each added zone will
+	 *	be correclty assigned.
+	 */
+	void			setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
+
+
 	// @}
 
 
@@ -448,6 +463,19 @@ public:
 	  * color 3 = vegetable disabled
 	  */
 	void setupColorsFromTileFlags(const NLMISC::CRGBA colors[4]);
+
+	// @}
+
+
+	/// \name Lightmap get interface.
+	// @{
+
+	/// Get the lumel under the position. return 255 if invalid patchId.
+	uint8		getLumel(const CPatchIdent &patchId, const CUV &uv) const;
+
+	/// Append lights under the position to pointLightList. Do nothing if invalid patchId.
+	void		appendTileLightInfluences(const CPatchIdent &patchId, const CUV &uv, 
+		std::vector<CPointLightInfluence> &pointLightList) const;
 
 	// @}
 
@@ -620,6 +648,12 @@ private:
 
 	bool			_AutomaticLighting;
 	CVector			_AutomaticLightDir;
+
+	// The map LightGroupName -> Color.
+	typedef	std::map<std::string, NLMISC::CRGBA>	TLightGroupColorMap;
+	typedef	TLightGroupColorMap::iterator			ItLightGroupColorMap;
+	TLightGroupColorMap		_LightGroupColorMap;
+
 
 private:
 	// Internal only. Force load of the tile (with TileBank).

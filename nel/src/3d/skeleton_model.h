@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.6 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.7 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,6 +110,12 @@ public:
 	/// return, from skeleton shape, the BoneIdByName. -1 if not here.
 	sint32		getBoneIdByName(const std::string &name) const;
 	// @}
+
+
+	/** Lighting behavior. return true because skins/stickedObjects may surely need its LightContribution
+	 *	Actually return getUserLightable();
+	 */
+	virtual bool		isLightable() const {return getUserLightable();}
 
 
 // ***********************

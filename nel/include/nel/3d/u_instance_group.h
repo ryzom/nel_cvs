@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.11 2001/10/10 15:36:45 besson Exp $
+ * $Id: u_instance_group.h,v 1.12 2002/02/06 16:53:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
+#include "nel/3d/point_light_influence.h"
 
 #include <vector>
 #include <string>
@@ -203,6 +204,23 @@ public:
 
 	/// see UTransform::unfreezeHRC(). Do it for all instances (not clusters), and for the root of the IG.
 	virtual void			unfreezeHRC()=0;
+
+
+	/// \name PointLight part
+	// @{
+
+	/// set the Light factor for all pointLights of "lightGroupName".
+	virtual void			setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor) =0;
+
+	/** get the StaticLightSetup for a model at position localPos/retrieverIdentifier/surfaceId.
+	 *	NB: all are get with help of UGlobalPosition. localPos= gp.LocalPosition.Estimated
+	 */
+	virtual	bool			getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const NLMISC::CVector &localPos, 
+		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution) =0;
+
+	// @}
+
+
 
 };
 

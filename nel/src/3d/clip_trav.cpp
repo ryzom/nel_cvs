@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.19 2002/01/11 17:27:26 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.20 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,8 +141,7 @@ void CClipTrav::traverse()
 	}
 
 	// Clear the render/lighted list.
-	// TempYoyo
-	//LightTrav->clearLightedList();
+	LightTrav->clearLightedList();
 	RenderTrav->clearRenderList();
 
 
@@ -325,11 +324,10 @@ void CClipTrav::setHrcTrav (CHrcTrav* trav)
 }
 
 // ***************************************************************************
-// TempYoyo
-/*void CClipTrav::setLightTrav (CLightTrav* trav)
+void CClipTrav::setLightTrav (CLightTrav* trav)
 {
 	LightTrav = trav;
-}*/
+}
 
 // ***************************************************************************
 void CClipTrav::setQuadGridClipManager(CQuadGridClipManager *mgr)

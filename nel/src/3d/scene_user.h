@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.18 2001/12/20 16:54:38 vizerie Exp $
+ * $Id: scene_user.h,v 1.19 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -327,6 +327,9 @@ public:
 		pIGU->_InstanceGroup.setClusterSystem (_Scene.getGlobalInstanceGroup());
 	}
 
+	virtual	UPointLight		*createPointLight();
+	virtual	void			deletePointLight(UPointLight *light);
+
 	//@}
 
 	/// \name Animation.
@@ -384,6 +387,32 @@ public:
 	virtual void  setLayersRenderingOrder(bool directOrder = true) { _Scene.setLayersRenderingOrder(directOrder); }
 	virtual bool  getLayersRenderingOrder() const { return _Scene.getLayersRenderingOrder(); }
 	//@}
+
+	/// \name Global light setup.
+	//@{
+
+	virtual	void				enableLightingSystem(bool enable);
+
+	virtual	void				setAmbientGlobal(NLMISC::CRGBA ambient);
+	virtual	void				setSunAmbient(NLMISC::CRGBA ambient);
+	virtual	void				setSunDiffuse(NLMISC::CRGBA diffuse);
+	virtual	void				setSunSpecular(NLMISC::CRGBA specular);
+	virtual	void				setSunDirection(const NLMISC::CVector &direction);
+
+	virtual	NLMISC::CRGBA		getAmbientGlobal() const;
+	virtual	NLMISC::CRGBA		getSunAmbient() const;
+	virtual	NLMISC::CRGBA		getSunDiffuse() const;
+	virtual	NLMISC::CRGBA		getSunSpecular() const;
+	virtual	NLMISC::CVector		getSunDirection() const;
+
+	virtual	void				setMaxLightContribution(uint nlights);
+	virtual	uint				getMaxLightContribution() const;
+
+	virtual	void				setLightTransitionThreshold(float lightTransitionThreshold);
+	virtual	float				getLightTransitionThreshold() const;
+
+	//@}
+
 
 public:
 	/// \name Accessor for CSceneUser.

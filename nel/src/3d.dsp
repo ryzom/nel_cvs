@@ -266,6 +266,14 @@ SOURCE=.\3d\particle_system_model.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\point_light_model.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\point_light_model.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\root_model.cpp
 # End Source File
 # Begin Source File
@@ -352,6 +360,14 @@ SOURCE=.\3d\zone_search.h
 # Begin Group "Tools"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\instance_lighter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\instance_lighter.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\3d\zone_corner_smoother.cpp
@@ -551,6 +567,14 @@ SOURCE=.\3d\tile_element.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\tile_light_influence.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tile_light_influence.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\tile_lumel.cpp
 # End Source File
 # Begin Source File
@@ -699,6 +723,14 @@ SOURCE=.\3d\bsp_tree.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\cube_grid.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\cube_grid.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\layered_ordering_table.h
 # End Source File
 # Begin Source File
@@ -716,6 +748,14 @@ SOURCE=.\3d\ptr_set.h
 # Begin Source File
 
 SOURCE=.\3d\quad_grid.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\static_quad_grid.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\static_quad_grid.h
 # End Source File
 # End Group
 # Begin Group "Tiles"
@@ -1211,6 +1251,10 @@ SOURCE=.\3d\light_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\logic_info.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\material_user.cpp
 # End Source File
 # Begin Source File
@@ -1244,6 +1288,14 @@ SOURCE=.\3d\play_list_user.cpp
 # Begin Source File
 
 SOURCE=.\3d\play_list_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\point_light_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\point_light_user.h
 # End Source File
 # Begin Source File
 
@@ -1359,6 +1411,14 @@ SOURCE=..\include\nel\3d\landscapeig_manager.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\3d\logic_info.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\point_light_influence.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\3d\primitive_profile.h
 # End Source File
 # Begin Source File
@@ -1428,6 +1488,10 @@ SOURCE=..\include\nel\3d\u_play_list.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\u_play_list_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\u_point_light.h
 # End Source File
 # Begin Source File
 
@@ -1941,6 +2005,82 @@ SOURCE=.\3d\radix_sort.cpp
 # Begin Source File
 
 SOURCE=.\3d\radix_sort.h
+# End Source File
+# End Group
+# Begin Group "Lighting"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\ig_surface_light.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ig_surface_light.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ig_surface_light_build.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ig_surface_light_build.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\light_contribution.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\light_contribution.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\light_influence_interpolator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\light_influence_interpolator.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lighting_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lighting_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\point_light.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\point_light.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\point_light_named.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\point_light_named.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\point_light_named_array.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\point_light_named_array.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\surface_light_grid.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\surface_light_grid.h
 # End Source File
 # End Group
 # Begin Source File

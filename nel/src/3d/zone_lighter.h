@@ -1,7 +1,7 @@
 /** \file zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.6 2002/01/28 18:18:01 vizerie Exp $
+ * $Id: zone_lighter.h,v 1.7 2002/02/06 16:55:16 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -34,7 +34,9 @@
 
 #include "3d/zone.h"
 #include "3d/quad_grid.h"
+#include "3d/cube_grid.h"
 #include "3d/patchuv_locator.h"
+#include "3d/tile_light_influence.h"
 
 #include <list>
 
@@ -180,6 +182,10 @@ public:
 		float				EndS;
 		float				StartT;
 		float				EndT;
+
+		// Other info
+		const CPlane		&getPlane() const {return Plane;}
+
 	private:
 		NLMISC::CPlane		Plane;
 
@@ -296,6 +302,15 @@ public:
 
 	// Progress callback
 	virtual void progress (const char *message, float progress) {};
+
+
+	/// \name Static PointLights mgt.
+	//@{
+
+	/// Append a static point light to compute. call at setup stage (before light() ).
+	void			addStaticPointLight(const CPointLightNamed &pln);
+
+	//@}
 
 private:
 	friend class CCalcLightableShapeRunnable;
@@ -452,6 +467,76 @@ private:
 
 	// Precalc
 	NLMISC::CVector								_K[256][8];
+
+
+	/// \name Static PointLights mgt.
+	//@{
+
+	/// A PointLight struct to test raytracing.
+	struct	CPointLightRT
+	{
+		CPointLightNamed		PointLight;
+		float					OODeltaAttenuation;
+		// BBox of the pointLight
+		NLMISC::CBSphere		BSphere;
+
+		// Faces that may occlude the light. Only Back Faces (from the light pov) are inserted
+		CCubeGrid<const CTriangle*>		FaceCubeGrid;
+		// Number of TileLightInfluences which use this PointLight.
+		uint					RefCount;
+		// Final id of the pointLight in the Zone.
+		uint					DstId;
+
+		CPointLightRT();
+
+		/** Tells if a point is visible from this light. NB: test first if in BSphere.
+		 *	If occluded or out of radius, return false, else return true.
+		 */
+		bool		testRaytrace(const CVector &v);
+	};
+
+
+	/// For sort()
+	struct		CPredPointLightToPoint
+	{
+		CVector		Point;
+
+		bool	operator() (CPointLightRT *pla, CPointLightRT *plb) const;
+	};
+
+
+	/// An UnCompressed TileLightInfluence.
+	struct	CTileLightInfUnpack
+	{
+		CPointLightRT	*Light[CTileLightInfluence::NumLightPerCorner];
+		float			LightFactor[CTileLightInfluence::NumLightPerCorner];
+	};
+
+	/// A patch with UnCompressed TileInfluences.
+	struct	CPatchForPL
+	{
+		uint	OrderS, OrderT;
+		uint	WidthTLI, HeightTLI;
+		std::vector<CTileLightInfUnpack>		TileLightInfluences;
+	};
+
+	/// List of PointLights
+	std::vector<CPointLightRT>		_StaticPointLights;
+	/// QuadGrid of PointLights. Builded from _StaticPointLights
+	CQuadGrid<CPointLightRT*>		_StaticPointLightQuadGrid;
+
+
+	/// Fill CubeGrid, and set PointLightRT in _StaticPointLightQuadGrid.
+	void			compilePointLightRT(uint gridSize, float gridCellSize, std::vector<CTriangle>& obstacles, bool doShadow);
+
+	/** Process the zone, ie process _PatchInfo. 
+	 *	MultiCPU: not done for now. Be aware of CPointLightRT::RefCount!!!!
+	 */
+	void			processZonePointLightRT(std::vector<CPointLightNamed> &listPointLight);
+
+	//@}
+
+
 
 	/// lightable shapes
 	TShapeVect									_LightableShapes;

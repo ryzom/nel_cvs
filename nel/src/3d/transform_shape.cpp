@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.17 2001/09/21 13:39:24 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.18 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,6 +102,27 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 	CRenderTrav			*trav= (CRenderTrav*)Trav;
 	CTransformShape		*m= (CTransformShape*)Model;
 	IDriver				*drv= trav->getDriver();
+
+
+	// if the transform is lightable (ie not a fully lightmaped model), setup lighting
+	if(m->isLightable())
+	{
+		CTransformHrcObs	*hrcObs= (CTransformHrcObs*)HrcObs;
+
+		// the std case is to take my model lightContribution
+		if(hrcObs->_AncestorSkeletonModel==NULL)
+			trav->changeLightSetup(&m->getLightContribution());
+		// but if skinned/sticked (directly or not) to a skeleton, take its.
+		else
+			trav->changeLightSetup(&hrcObs->_AncestorSkeletonModel->getLightContribution());
+	}
+	// else must disable the lightSetup
+	else
+	{
+		// setting NULL will disable all lights
+		trav->changeLightSetup(NULL);
+	}
+
 
 	// render the shape.
 	if(m->Shape)

@@ -1,7 +1,7 @@
 /** \file quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.2 2001/07/30 14:40:14 besson Exp $
+ * $Id: quad_grid.h,v 1.3 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,8 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/matrix.h"
-#include <list>
+#include "nel/misc/stl_block_list.h"
+#include "nel/misc/common.h"
 #include <vector>
 
 
@@ -39,6 +40,10 @@ namespace NL3D
 
 
 using NLMISC::CVector;
+
+// ***************************************************************************
+// Default Size of a block for allocation of elements and elements node list in the grid.
+#define	NL3D_QUAD_GRID_ALLOC_BLOCKSIZE	16
 
 
 // ***************************************************************************
@@ -57,6 +62,13 @@ using NLMISC::CVector;
  * Also, for memory optimisation, no bbox is stored in the quadgrid. Hence no particular selection is made on the Z 
  * components...
  *
+ * For maximum allocation speed Efficiency, it uses a CBlockMemory<CNode> to allocate elements at insert().
+ * DefaultBlockSize is 16, but you can change it at construction.
+ *
+ * because elements may lies in multiples squares, QuadGrid use lists per square which points on elements.
+ * For faster allocation, it uses a CSTLBlockList<>. The entire quadGrid has its own CBlockMemory for the 
+ * CSTLBlockLists. memoryBlockSize is the same than the blockSize for allocation of nodes.
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -71,7 +83,7 @@ public:
 public:
 
 	/// Default constructor, use axes XY!!!, has a size of 16, and EltSize is 1.
-	CQuadGrid();
+	CQuadGrid(uint memoryBlockSize= NL3D_QUAD_GRID_ALLOC_BLOCKSIZE);
 
 	/// dtor.
 	~CQuadGrid();
@@ -102,14 +114,22 @@ public:
 	  *	\param eltSize is the width and height of an element. Must be >0. Notice that the quadgrid MUST be square!!
 	  */
 	void			create(uint size, float eltSize);
+
+	// Get creation parameters.
+	const NLMISC::CMatrix	&getBasis() const {return _ChangeBasis;}
+	uint					getSize() const {return _Size;}
+	float					getEltSize() const {return _EltSize;}
 	//@}
 
 	/// \name Container operation
 	//@{
-	/// Clear the container. Elements are deleted, but the quadgrid is not erased.
+	/** Clear the container. Elements are deleted, but the quadgrid is not erased.
+	 *	Speed is in O(Nelts)
+	 */
 	void			clear();
 
 	/** Erase an interator from the container
+	  *	Speed is in O(1 * L*H) where L*H is the number of squares surrounded by the element
 	  *
 	  * \param it is the iterator to erase.
 	  * \return if element is currently selected, the next selected element is returned, (or end()).
@@ -118,6 +138,25 @@ public:
 	CIterator		erase(CIterator it);
 
 	/** Insert a new element in the container.
+	  *	Speed is in O(1 * L*H) where L*H is the number of squares surrounded by the element
+	  *
+	  *	Warning! : bboxmin and bboxmax are multiplied by matrix setuped by changeBase. This work for any
+	  *	matrix with 90° rotations (min and max are recomputed internally), but not with any rotation (43° ...)
+	  *	because of the nature of AABBox. To do this correclty you should compute the bbox min and max in the 
+	  *	basis given in changeBase, and insert() with multiplying min and max with inverse of this basis.
+	  *	eg:
+	  *		CMatrix					base= getSomeBase();
+	  *		CMatrix					invBase= base.inverted();
+	  *		// create quadGrid.
+	  *		CQuadGrid<CTriangle>	quadGrid;
+	  *		quadGrid.changeBase(base);
+	  *		quadGrid.create(...);
+	  *		// Insert a triangle tri correctly
+	  *		CAABBox					bbox;
+	  *		bbox.setCenter(base * tri.V0);
+	  *		bbox.extend(base * tri.V1);
+	  *		bbox.extend(base * tri.V2);
+	  *		quadGrid.insert(invBase*bbox.getMin(), invBase*bbox.getMax(), tri);
 	  *
 	  * \param bboxmin is the corner of the bounding box of the element to insert with minimal coordinates.
 	  * \param bboxmax is the corner of the bounding box of the element to insert with maximal coordinates.
@@ -130,14 +169,17 @@ public:
 	/// \name Selection
 	//@{
 	/** Clear the selection list
+	  *	Speed is in O(Nelts)
 	  */
 	void			clearSelection();
 
-	/** Select all the container
+	/** Select all the container.
+	  *	Speed is in O(Nelts)
 	  */
 	void			selectAll();
 
 	/** Select element intersecting a bounding box. Clear the selection first.
+	  *	Speed is in O(Nelts * L*H), where L*H is the number of squares surrounded by the selection
 	  *
 	  * \param bboxmin is the corner of the bounding box used to select
 	  * \param bboxmax is the corner of the bounding box used to select
@@ -146,10 +188,12 @@ public:
 
 
 	/** Return the first iterator of the selected element list. begin and end are valid till the next insert.
+	  *	Speed is in O(1)
 	  */
 	CIterator		begin();
 
 	/** Return the end iterator of the selected element list. begin and end are valid till the next insert.
+	  *	Speed is in O(1)
 	  */
 	CIterator		end();
 	//@}
@@ -166,6 +210,7 @@ private:// Classes.
 	{
 	public:
 		CBaseNode	*Prev,*Next;	// For selection.
+		bool		Selected;		// true if owned by _SelectedList, or by _UnSelectedList.
 		CBaseNode() {Prev= Next= NULL;}
 	};
 
@@ -180,7 +225,9 @@ private:// Classes.
 	class	CQuadNode
 	{
 	public:
-		std::list<CNode*>	Nodes;
+		NLMISC::CSTLBlockList<CNode*>	Nodes;
+
+		CQuadNode(NLMISC::CBlockMemory<CNode*, false> *bm) : Nodes(bm) {}
 	};
 
 private:// Atttributes.
@@ -189,11 +236,26 @@ private:// Atttributes.
 	sint				_SizePower;
 	float				_EltSize;
 	NLMISC::CMatrix		_ChangeBasis;
-	// Selection.
-	CBaseNode			_Selection;
+	// Selection. Elements are either in _SelectedList or in _UnSelectedList
+	CBaseNode			_SelectedList;		// list of elements selected.
+	CBaseNode			_UnSelectedList;	// circular list of elements not selected
+	// The memory for nodes
+	NLMISC::CBlockMemory<CNode>					_NodeBlockMemory;
+	// The memory for node list
+	NLMISC::CBlockMemory<CNode*, false>			_NodeListBlockMemory;
 
 
 private:// Methods.
+
+	// link a node to a root: Selected or UnSelected list
+	void		linkToRoot(CBaseNode &root, CBaseNode *ptr)
+	{
+		ptr->Prev= &root;
+		ptr->Next= root.Next;
+		ptr->Prev->Next= ptr;
+		if(ptr->Next)
+			ptr->Next->Prev= ptr;
+	}
 
 	// return the coordinates on the grid of what include the bbox.
 	void		selectQuads(CVector bmin, CVector bmax, sint &x0, sint &x1, sint &y0, sint &y1)
@@ -240,21 +302,26 @@ private:// Methods.
 	// If not done, add the node to the selection.
 	void		addToSelection(CNode	*ptr)
 	{
-		if(ptr->Prev==NULL)
+		// if not selected
+		if(!ptr->Selected)
 		{
-			// Append to front of the list.
-			ptr->Prev= &_Selection;
-			ptr->Next= _Selection.Next;
-			if(_Selection.Next)
-				_Selection.Next->Prev= ptr;
-			_Selection.Next= ptr;
+			// remove from the unselected list.
+			ptr->Prev->Next= ptr->Next;
+			if(ptr->Next)
+				ptr->Next->Prev= ptr->Prev;
+
+			// Append to front of the _Selected list.
+			linkToRoot(_SelectedList, ptr);
+
+			// mark it
+			ptr->Selected= true;
 		}
 	}
 
 	// Try to add each node of the quad node list.
 	void		addQuadNodeToSelection(CQuadNode	&quad)
 	{
-		std::list<CNode*>::iterator	itNode;
+		NLMISC::CSTLBlockList<CNode*>::iterator	itNode;
 		for(itNode= quad.Nodes.begin();itNode!=quad.Nodes.end();itNode++)
 		{
 			addToSelection(*itNode);
@@ -342,7 +409,8 @@ public:
 
 
 // ***************************************************************************
-template<class T>	CQuadGrid<T>::CQuadGrid()
+template<class T>	CQuadGrid<T>::CQuadGrid(uint memoryBlockSize) : 
+	_NodeBlockMemory(memoryBlockSize), _NodeListBlockMemory(memoryBlockSize)
 {
 	_SizePower=4;
 	_Size=1<<_SizePower;
@@ -353,6 +421,8 @@ template<class T>	CQuadGrid<T>::CQuadGrid()
 template<class T>	CQuadGrid<T>::~CQuadGrid()
 {
 	clear();
+	// must clear the array, before _NodeListBlockMemory.purge() is called.
+	_Grid.clear();
 }
 // ***************************************************************************
 template<class T>	void		CQuadGrid<T>::changeBase(const NLMISC::CMatrix& base)
@@ -364,11 +434,11 @@ template<class T>	void		CQuadGrid<T>::create(uint size, float eltSize)
 {
 	clear();
 
-	nlassert(isPowerOf2(size));
+	nlassert(NLMISC::isPowerOf2(size));
 	nlassert(size<=32768);
-	_SizePower= getPowerOf2(size);
+	_SizePower= NLMISC::getPowerOf2(size);
 	_Size=1<<_SizePower;
-	_Grid.resize(_Size*_Size);
+	_Grid.resize(_Size*_Size, CQuadNode(&_NodeListBlockMemory));
 
 	nlassert(eltSize>0);
 	_EltSize= eltSize;
@@ -390,8 +460,9 @@ template<class T>	void		CQuadGrid<T>::clear()
 		erase(it);
 	}
 
-	// Clear the selection...
-	_Selection.Next= NULL;
+	// Clear the 2 selection...
+	_SelectedList.Next= NULL;
+	_UnSelectedList.Next= NULL;
 }
 // ***************************************************************************
 template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::erase(CQuadGrid<T>::CIterator it)
@@ -412,7 +483,7 @@ template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::erase(CQuadGrid<T>::CIte
 		{
 			xe= x &(_Size-1);
 			CQuadNode	&quad= _Grid[(ye<<_SizePower)+xe];
-			std::list<CNode*>::iterator	itNode;
+			NLMISC::CSTLBlockList<CNode*>::iterator	itNode;
 			for(itNode= quad.Nodes.begin();itNode!=quad.Nodes.end();itNode++)
 			{
 				if((*itNode)==ptr)
@@ -426,16 +497,17 @@ template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::erase(CQuadGrid<T>::CIte
 
 	// Then delete it..., and update selection linked list.
 	//=====================================================
-	// if selected.
+	// remove it from _SelectedList or _UnSelectedList
 	CBaseNode	*next= NULL;
-	if(ptr->Prev)
-	{
-		next= ptr->Next;
-		if(next)
-			next->Prev=ptr->Prev;
-		ptr->Prev->Next= next;
-	}
-	delete ptr;
+	next= ptr->Next;
+	if(next)
+		next->Prev=ptr->Prev;
+	ptr->Prev->Next= next;
+	// if not selected, then must return NULL
+	if(!ptr->Selected)
+		next= NULL;
+	// delete the object.
+	_NodeBlockMemory.free(ptr);
 
 
 	return CIterator((CNode*)next);
@@ -447,8 +519,14 @@ template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::insert(const NLMISC::CVe
 	bmin= _ChangeBasis*bboxmin;
 	bmax= _ChangeBasis*bboxmax;
 
-	CNode	*ptr= new CNode;
+	// init the object.
+	CNode	*ptr= _NodeBlockMemory.allocate();
 	ptr->Elt= val;
+	// Link to _Unselected list.
+	linkToRoot(_UnSelectedList, ptr);
+	// mark as not selected.
+	ptr->Selected= false;
+
 
 	// Find which quad include the object.
 	//===================================
@@ -488,26 +566,48 @@ template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::insert(const NLMISC::CVe
 // ***************************************************************************
 template<class T>	void			CQuadGrid<T>::clearSelection()
 {
-	CBaseNode	*ptr= _Selection.Next;
+	CBaseNode	*ptr= _SelectedList.Next;
 	while(ptr)
 	{
-		ptr->Prev= NULL;
-		CBaseNode	*next= ptr->Next;
-		ptr->Next= NULL;
-		ptr= next;
+		// next selected.
+		CBaseNode	*nextSelected= ptr->Next;
+
+		// Link to _Unselected list.
+		linkToRoot(_UnSelectedList, ptr);
+
+		// mark as not selected.
+		ptr->Selected= false;
+
+		// next.
+		ptr= nextSelected;
 	}
 
-	_Selection.Next= NULL;
+	// the selected list is now empty.
+	_SelectedList.Next= NULL;
 }
 // ***************************************************************************
 template<class T>	void			CQuadGrid<T>::selectAll()
 {
-	clearSelection();
-	for(sint i=0;i<(sint)_Grid.size();i++)
+	// This is the opposite of clearSelection(). get all that are in _UnSelectedList,
+	// and put them in _SelectedList
+	CBaseNode	*ptr= _UnSelectedList.Next;
+	while(ptr)
 	{
-		CQuadNode	&quad= _Grid[i];
-		addQuadNodeToSelection(quad);
+		// next selected.
+		CBaseNode	*nextUnSelected= ptr->Next;
+
+		// Link to _Selected list.
+		linkToRoot(_SelectedList, ptr);
+
+		// mark as selected.
+		ptr->Selected= true;
+
+		// next.
+		ptr= nextUnSelected;
 	}
+
+	// the Unselected list is now empty.
+	_UnSelectedList.Next= NULL;
 }
 // ***************************************************************************
 template<class T>	void			CQuadGrid<T>::select(const NLMISC::CVector &bboxmin, const NLMISC::CVector &bboxmax)
@@ -540,7 +640,7 @@ template<class T>	void			CQuadGrid<T>::select(const NLMISC::CVector &bboxmin, co
 // ***************************************************************************
 template<class T>	CQuadGrid<T>::CIterator		CQuadGrid<T>::begin()
 {
-	return CIterator((CNode*)(_Selection.Next));
+	return CIterator((CNode*)(_SelectedList.Next));
 }
 // ***************************************************************************
 template<class T>	CQuadGrid<T>::CIterator		CQuadGrid<T>::end()

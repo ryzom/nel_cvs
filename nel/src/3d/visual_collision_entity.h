@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.h
  * <File description>
  *
- * $Id: visual_collision_entity.h,v 1.6 2002/01/08 09:39:27 berenguier Exp $
+ * $Id: visual_collision_entity.h,v 1.7 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_VISUAL_COLLISION_ENTITY_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/3d/point_light_influence.h"
 #include "3d/patch.h"
 #include "3d/landscape_collision_grid.h"
 
@@ -110,6 +111,19 @@ public:
 	// @}
 
 
+	/// \name Static Lighting
+	// @{
+	/** Get the static Light Setup, using landscape under us. append lights to pointLightList.
+	 *	NB: if find no landscape faces, don't modify pointLightList, set sunContribution=255, and return false
+	 *	Else, use CPatch::TileLightInfluences to get lights, and use CPatch::Lumels to get sunContribution.
+	 *	NB: because CPatch::Lumels encode the gouraud shading on the surface, returning lumelValue will
+	 *	darken the object too much. To avoid this, the sunContribution is raised to a power (0..1).
+	 *	See CVisualCollisionManager::setSunContributionPower(). Default is 0.5
+	 */
+	bool		getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution);
+	// @}
+
+
 // ***********************
 private:
 	CVisualCollisionManager		*_Owner;
@@ -137,6 +151,11 @@ private:
 	CLandscapeCollisionGrid				_LandscapeQuadGrid;
 	/// The current BBox where we don't need to recompute the patchQuadBlocks if the entity is in
 	CAABBox								_CurrentBBoxValidity;
+	/// Cache for getPatchTriangleUnderUs().
+	bool								_LastGPTValid;
+	CVector								_LastGPTPosInput;
+	CVector								_LastGPTPosOutput;
+	CTrianglePatch						_LastGPTTrianglePatch;
 
 
 	/// Fast "2D" test of a triangle against ray P0 P1.
@@ -153,6 +172,15 @@ private:
 
 	/// snap to current rendered tesselation.
 	void		snapToLandscapeCurrentTesselation(CVector &pos, const CTrianglePatch &tri);
+
+	/// given a CTrianglePatch, compute Patch uv according to position.
+	static void	computeUvForPos(const CTrianglePatch &tri, const CVector &pos, CUV &uv);
+
+	/** return the best trianglePatch under what we are. NULL if not found.
+	 *	Ptr is valid until next call to getPatchTriangleUnderUs()
+	 *	Actually return NULL or &_LastTrianglePatch;
+	 */
+	CTrianglePatch		*getPatchTriangleUnderUs(const CVector &pos, CVector &res);
 
 	// @}
 

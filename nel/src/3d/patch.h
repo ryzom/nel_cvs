@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.19 2002/01/28 14:26:57 vizerie Exp $
+ * $Id: patch.h,v 1.20 2002/02/06 16:54:56 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -41,6 +41,8 @@
 #include "3d/tile_element.h"
 #include "3d/tile_color.h"
 #include "3d/tess_block.h"
+#include "3d/tile_light_influence.h"
+#include "nel/3d/point_light_influence.h"
 
 
 namespace NL3D {
@@ -334,6 +336,9 @@ public:
 	// There is OrderS*OrderT tiles color. CZone build it at build() time.
 	std::vector<CTileColor>		TileColors;
 
+	// There is OrderS/2+1 * OrderT/2+1 tiles light influence. CZone build it at build() time.
+	std::vector<CTileLightInfluence>		TileLightInfluences;
+
 
 	/// Noise Data.
 	// @{
@@ -611,6 +616,21 @@ public:
 
 	// @}
 
+
+	/// \name Lightmap get interface.
+	// @{
+
+	/// Get the lumel under the position.
+	uint8		getLumel(const CUV &uv) const;
+
+	/// Append lights under the position to pointLightList.
+	void		appendTileLightInfluences(const CUV &uv, 
+		std::vector<CPointLightInfluence> &pointLightList) const;
+
+	// @}
+
+
+
 public:
 
 	// only usefull for CZone refine.
@@ -688,6 +708,15 @@ public:
 	/// Recreate any vegetable block (as possible) in this patch. (usefull for edition)
 	void		recreateAllVegetableIgs();
 
+	// @}
+
+
+	/// \name TileLightInfluences
+	// @{
+	/** make a valid empty array of TileLightInfluences (ie resized to good size, but with empty 
+	 *	light influences
+	 */
+	void		resetTileLightInfluences();
 	// @}
 
 
@@ -1056,6 +1085,10 @@ private:
 
 	// same as computeTileLightmapPrecomputed(), but brut result, not modified by colorTable.
 	void		getTileLumelmapPrecomputed(uint ts, uint tt, uint8 *dest, uint stride);
+	/** same as computeTileLightmapPixelPrecomputed, but brut result, not modified by colorTable.
+	 *	Actually used for Lightmap get interface.
+	 */
+	void		getTileLumelmapPixelPrecomputed(uint ts, uint tt, uint s, uint t, uint8 &dest) const;
 
 	// @}
 

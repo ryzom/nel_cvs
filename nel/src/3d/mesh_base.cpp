@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.14 2001/12/12 10:25:53 vizerie Exp $
+ * $Id: mesh_base.cpp,v 1.15 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -127,6 +127,8 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 3:
+		- _IsLightable
 	Version 2:
 		- Added Blend Shapes factors
 	Version 1:
@@ -135,7 +137,7 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- 1st version.
 	*/
-	sint ver = f.serialVersion(2);
+	sint ver = f.serialVersion(3);
 
 	if (ver >= 2)
 	{
@@ -154,6 +156,14 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialCont(_Materials);
 	f.serialCont(_AnimatedMaterials);
 	f.serialCont(_LightInfos);
+
+	if(ver>=3)
+		// read/write _IsLightable flag.
+		f.serial(_IsLightable);
+	else if( f.isReading() )
+		// update _IsLightable flag.
+		computeIsLightable();
+
 }
 
 
@@ -182,6 +192,9 @@ void	CMeshBase::buildMeshBase(CMeshBaseBuild &m)
 		_AnimatedMorph[i].DefaultFactor.setValue (m.DefaultBSFactors[i]);
 		_AnimatedMorph[i].Name = m.BSNames[i];
 	}
+
+	// update _IsLightable flag.
+	computeIsLightable();
 }
 
 
@@ -254,6 +267,28 @@ void	CMeshBase::flushTextures(IDriver &driver)
 	{
 		/// Flush material textures
 		_Materials[mat].flushTextures (driver);
+	}
+}
+
+
+// ***************************************************************************
+void	CMeshBase::computeIsLightable()
+{
+	// by default the mesh is not lightable
+	_IsLightable= false;
+
+	// Mat count
+	uint matCount=_Materials.size();
+
+	// for each material 
+	for (uint mat=0; mat<matCount; mat++)
+	{
+		// if this one is not a lightmap, then OK, the mesh is lightable
+		if( _Materials[mat].getShader()!=CMaterial::LightMap )
+		{
+			_IsLightable= true;
+			break;
+		}
 	}
 }
 

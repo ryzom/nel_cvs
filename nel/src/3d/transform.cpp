@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.30 2002/01/23 17:49:54 berenguier Exp $
+ * $Id: transform.cpp,v 1.31 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@ void	CTransform::registerBasic()
 	CMOT::registerObs( HrcTravId,			TransformId, CTransformHrcObs::creator			);
 	CMOT::registerObs( ClipTravId,			TransformId, CTransformClipObs::creator			);
 	CMOT::registerObs( AnimDetailTravId,	TransformId, CTransformAnimDetailObs::creator	);
+	CMOT::registerObs( LightTravId,			TransformId, CTransformLightObs::creator		);
 	CMOT::registerObs( RenderTravId,		TransformId, CTransformRenderObs::creator		);
 }
 
@@ -53,6 +54,7 @@ CTransform::CTransform()
 {
 	_HrcObs= NULL;
 	_ClipObs= NULL;
+	_LightObs=NULL;
 
 	TouchObs.resize(Last);
 
@@ -72,6 +74,14 @@ CTransform::CTransform()
 	_QuadGridClipManagerEnabled= false;
 
 	_OrderingLayer = 0;
+
+	_NeedUpdateLighting= false;
+
+	// default, the model may be lighted.
+	_UserLightable= true;
+
+	// No logicInfo by default
+	_LogicInfo= NULL;
 }
 
 
@@ -82,6 +92,7 @@ void	CTransform::initModel()
 
 	_HrcObs= (CTransformHrcObs*)getObs(HrcTravId);
 	_ClipObs= (CTransformClipObs*)getObs(ClipTravId);
+	_LightObs= (CTransformLightObs*)getObs(LightTravId);
 }
 
 
@@ -95,6 +106,19 @@ CTransform::~CTransform()
 		_FatherSkeletonModel->detachSkeletonSon(this);
 		_FatherSkeletonModel= NULL;
 	}
+
+	// resetLighting, removing me from PointLight Transform list.
+	// NB: not done for FrozenStaticLightSetup, because those lights don't owns me.
+	resetLighting();
+
+	// Must also remove me from the lightingManager.
+	// must test _LightObs because of CCluster usage out of mot (thanks to mat!! :) )
+	if(_LightObs)
+	{
+		CLightTrav	*lightTrav= (CLightTrav*)_LightObs->Trav;
+		_LightedModelIt= lightTrav->LightingManager.eraseStaticLightedModel(_LightedModelIt);
+	}
+
 }
 
 // ***************************************************************************
@@ -270,6 +294,16 @@ void		CTransform::unfreezeHRC()
 
 			// Link this object to the validateList.
 			linkToValidateList();
+
+			// if lightable()
+			if( isLightable() )
+			{
+				CLightTrav	*lightTrav= static_cast<CLightTrav*>(_LightObs->Trav);
+				// Lighting: must remove the object from the quadGrid.
+				// NB: works if _LightedModelIt==NULL. result is that _LightedModelIt= NULL.
+				_LightedModelIt= lightTrav->LightingManager.eraseStaticLightedModel(_LightedModelIt);
+			}
+
 		}
 
 		_FreezeHRCState= FreezeHRCStateDisabled;
@@ -297,6 +331,7 @@ void		CTransform::update()
 		if(_FreezeHRCState == CTransform::FreezeHRCStateRequest )
 		{
 			// Wait for next Hrc traversal to compute good WorldMatrix for this model and his sons.
+			// Also, next Hrc traversal will insert the model in the LightingManager quadGrid (if lightable)
 			_FreezeHRCState = CTransform::FreezeHRCStateReady;
 		}
 		// if the model is ready to be frozen in HRC, then do it!!
@@ -310,6 +345,18 @@ void		CTransform::update()
 
 			// unLink this object from the validateList. NB: the list will still be correclty parsed.
 			unlinkFromValidateList();
+
+			// if lightable, the model is inserted in a quadgrid to update his lighting only when
+			// dynamicLights touch him (since himself is static).
+			if( isLightable() )
+			{
+				CLightTrav	*lightTrav= static_cast<CLightTrav*>(_LightObs->Trav);
+				// Lighting: must reinsert the object from the quadGrid.
+				// NB: works if _LightedModelIt==NULL. result is that _LightedModelIt= NULL.
+				_LightedModelIt= lightTrav->LightingManager.eraseStaticLightedModel(_LightedModelIt);
+				// insert in the quadgrid.
+				_LightedModelIt= lightTrav->LightingManager.insertStaticLightedModel(this);
+			}
 
 			// Now this model won't be tested for validation nor for worldMatrix update. End!!
 			_FreezeHRCState = CTransform::FreezeHRCStateEnabled;
@@ -351,6 +398,7 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 	const	CMatrix		*pFatherWM;
 	bool				visFather;
 	CTransform			*transModel= (CTransform*)Model;
+	CLightTrav			*lightTrav= (CLightTrav*)transModel->_LightObs->Trav;
 
 
 	// If not root case, link to caller.
@@ -376,6 +424,7 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 		else
 			// else I have an ancestor skel model if I am sticked/binded directly to a skeleton model.
 			_AncestorSkeletonModel= transModel->_FatherSkeletonModel;
+
 	}
 	// else, default!!
 	else
@@ -401,6 +450,16 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 			// Add the model to the moving object list
 			if (!Frozen)
 				static_cast<CHrcTrav*>(Trav)->_MovingObjects.push_back (Model);
+
+			// if lightable, resetLighting()
+			if( transModel->isLightable() )
+			{
+				// Must resetLighting() because the objects has move. So it must computes new contribution with
+				// staticLights or dynamicLights.
+				// NB: not done if _AncestorSkeletonModel!=NULL. no need because  in this case, 
+				// result is driven by the _LightContribution of the _AncestorSkeletonModel.
+				transModel->resetLighting();
+			}
 		}
 	}
 
@@ -482,6 +541,7 @@ void	CTransformClipObs::traverse(IObs *caller)
 
 	CClipTrav		*clipTrav= safe_cast<CClipTrav*>(Trav);
 	IBaseClipObs	*callerClipObs= static_cast<IBaseClipObs*>(caller);
+	CTransform		*transform= (CTransform*)Model;
 
 	if ((Date == clipTrav->CurrentDate) && Visible)
 		return;
@@ -520,6 +580,16 @@ void	CTransformClipObs::traverse(IObs *caller)
 		{
 			clipTrav->RenderTrav->addRenderObs(RenderObs);
 		}
+
+		// If needed, insert the model in the lighted list.
+		if( transform->isLightable() &&
+			// don't insert if has an ancestorSkeletonModel, because in this case, result is driven by 
+			// the _LightContribution of the _AncestorSkeletonModel.
+			((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel==NULL )
+		{
+			clipTrav->LightTrav->addLightedObs(transform->_LightObs);
+		}
+
 	}
 
 	// DoIt the sons.
@@ -553,6 +623,113 @@ void	CTransformAnimDetailObs::traverse(IObs *caller)
 	}
 
 	// no need to traverseSons. No graph here.
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Lighting.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CTransform::resetLighting()
+{
+	// if the model is already _NeedUpdateLighting, his light setup is reseted.
+	// so no need to reset again
+	if(_NeedUpdateLighting)
+		return;
+
+
+	// For all light not in FrozenStaticLightSetup, remove me from their list
+	uint	startLight= 0;
+	if(_LightContribution.FrozenStaticLightSetup)
+	{
+		startLight= _LightContribution.NumFrozenStaticLight;
+	}
+
+	// for all light in the list, remove me from their list.
+	for(uint i=startLight; i<NL3D_MAX_LIGHT_CONTRIBUTION; i++)
+	{
+		CPointLight		*pl= _LightContribution.PointLight[i];
+		// if end of list, break.
+		if(!pl)
+			break;
+		else
+		{
+			// remove me from this light.
+			pl->removeLightedModel(_LightContribution.TransformIterator[i]);
+		}
+	}
+	// empty the list.
+	if(startLight<NL3D_MAX_LIGHT_CONTRIBUTION)
+		_LightContribution.PointLight[startLight]= NULL;
+
+
+	// the model needs to update his lighting.
+	_NeedUpdateLighting= true;
+
+	
+}
+
+
+// ***************************************************************************
+void			CTransform::freezeStaticLightSetup(CPointLight *pointLight[NL3D_MAX_LIGHT_CONTRIBUTION], 
+		uint numPointLights, uint8 sunContribution)
+{
+	nlassert(numPointLights <= NL3D_MAX_LIGHT_CONTRIBUTION);
+
+	// resetLighting() first.
+	resetLighting();
+
+	// Enable StaticLightSetup.
+	_LightContribution.FrozenStaticLightSetup= true;
+	_LightContribution.NumFrozenStaticLight= numPointLights;
+	_LightContribution.SunContribution= sunContribution;
+	for(uint i=0;i<numPointLights;i++)
+	{
+		// set the light
+		_LightContribution.PointLight[i]= pointLight[i];
+		// Enable at max.
+		_LightContribution.Factor[i]= 255;
+		// Do NOT set the iterator, because it is a staticLight.
+	}
+	// End the list
+	if(i<NL3D_MAX_LIGHT_CONTRIBUTION)
+		_LightContribution.PointLight[i]= NULL;
+}
+
+// ***************************************************************************
+void			CTransform::unfreezeStaticLightSetup()
+{
+	// resetLighting() first.
+	resetLighting();
+
+	// Disable StaticLightSetup.
+	_LightContribution.FrozenStaticLightSetup= false;
+	_LightContribution.NumFrozenStaticLight= 0;
+	// End the list
+	_LightContribution.PointLight[0]= NULL;
+}
+
+
+// ***************************************************************************
+void	CTransformLightObs::traverse(IObs *caller)
+{
+	CTransform		*transform= (CTransform*)Model;
+
+	// if the model do not need to update his lighting, just skip.
+	if(!transform->_NeedUpdateLighting)
+		return;
+
+	// see CTransformClipObs::clip(), here I am Lightable(), and I have no _AncestorSkeletonModel
+	// So I am sure that I really need to recompute my ModelLightContributions.
+	((CLightTrav*)Trav)->LightingManager.computeModelLightContributions(transform,
+		transform->_LightContribution, transform->_LogicInfo);
+
+	// done!
+	transform->_NeedUpdateLighting= false;
 }
 
 

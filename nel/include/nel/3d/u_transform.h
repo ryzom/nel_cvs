@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.6 2002/01/23 17:49:03 berenguier Exp $
+ * $Id: u_transform.h,v 1.7 2002/02/06 16:53:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,8 @@ namespace NL3D
 using NLMISC::CVector;
 using NLMISC::CMatrix;
 using NLMISC::CQuat;
+
+class	ILogicInfo;
 
 // ***************************************************************************
 /**
@@ -121,6 +123,21 @@ public:
 	// @}
 
 
+	/// name Lighting Behavior.
+	// @{
+	/** Set the UserLightable flag. if false, isLightable() will always return false.
+	 *	Doing this, user can disable lighting on a model which may be interesting for speed.
+	 *	NB: most of models don't need it. For example models with LightMaps are by default Lighing-disabled.
+	 *	Default behavior is UserLightable==true.
+	 */
+	virtual	void			setUserLightable(bool enable) =0;
+
+	/** Get the UserLightable flag.
+	 */
+	virtual	bool			getUserLightable() const  =0;
+	// @}
+
+
 	/** Set the current ordering layer for this transform.
 	  * Typically, this is used to sort transparent objects. Isn't used with solid objects.
 	  * For now :
@@ -132,6 +149,12 @@ public:
 
 	/// Get the ordering layer
 	virtual uint getOrderingLayer() const = 0;
+
+
+	/** Set the LogicInfo for this transfrom, eg to retrieve statc light information, see ILogicInfo.
+	 *	Ptr is kept in UTransfrom, so should call setLogicInfo(NULL) before to clean up.
+	 */
+	virtual void			setLogicInfo(ILogicInfo *logicInfo) =0;
 
 
 	/// Return true if the object was rendered during the last Scene->rendere(). return false else (ie clipped)

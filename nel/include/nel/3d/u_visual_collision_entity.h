@@ -1,7 +1,7 @@
 /** \file u_visual_collision_entity.h
  * <File description>
  *
- * $Id: u_visual_collision_entity.h,v 1.5 2002/01/08 09:40:06 berenguier Exp $
+ * $Id: u_visual_collision_entity.h,v 1.6 2002/02/06 16:53:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/3d/point_light_influence.h"
 
 
 namespace NL3D 
@@ -91,6 +92,19 @@ public:
 	 */
 	virtual void	setSnapToRenderedTesselation(bool snapMode) =0;
 	virtual bool	getSnapToRenderedTesselation() const =0;
+
+
+	/// \name Static Lighting
+	// @{
+	/** Get the static Light Setup, using landscape under us. append lights to pointLightList.
+	 *	NB: if find no landscape faces, don't modify pointLightList, set sunContribution=255, and return false
+	 *	Else, use CPatch::TileLightInfluences to get lights, and use CPatch::Lumels to get sunContribution.
+	 *	NB: because CPatch::Lumels encode the gouraud shading on the surface, return lumelValue*2 so
+	 *	the object won't be too darken.
+	 */
+	virtual bool	getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution) =0;
+	// @}
+
 
 };
 

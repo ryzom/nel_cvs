@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.10 2001/10/10 15:38:09 besson Exp $
+ * $Id: instance_group_user.h,v 1.11 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,10 @@ private:
 
 	void setPos (const NLMISC::CVector &pos);
 	void setRotQuat (const NLMISC::CQuat &q);
+
+	void setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
+	bool getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const NLMISC::CVector &localPos, 
+		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution);
 
 	NLMISC::CVector getPos ();
 	NLMISC::CQuat	getRotQuat ();

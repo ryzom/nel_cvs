@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.4 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.5 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,7 +173,10 @@ public:
 	IBaseHrcObs()
 	{
 		LocalVis= CHrcTrav::Herit; LocalMatrix.identity(); LocalDate=0;
-		WorldVis= true; WorldMatrix.identity(); WorldDate=0;
+		WorldVis= true; WorldMatrix.identity(); 
+		// Init the WorldDate to -1 so at first pass, LocalDate>WorldDate, and so
+		// the model will be processed and so it'll may be inserted in LightingManager (for example)
+		WorldDate=-1;
 	}
 	/// Build shortcut to observers.
 	virtual	void	init();
@@ -185,6 +188,12 @@ public:
 	virtual	void	traverse(IObs *caller) =0;
 	//@}
 
+
+	/// \name Graph methods. USED ONLY BY ITrav*.
+	// @{
+	/// Call IObs::addParent(), and dirt WorldDate to 0, so the worldMatrix will be recomputed next time.
+	virtual	void	addParent(IObs *father);
+	// @}
 
 };
 

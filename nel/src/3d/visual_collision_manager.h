@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.h
  * <File description>
  *
- * $Id: visual_collision_manager.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: visual_collision_manager.h,v 1.2 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,13 @@ public:
 	void						deleteEntity(CVisualCollisionEntity	*entity);
 
 
+	/** for CVisualCollisionEntity::getStaticLightSetup(). SunContribution comming from 
+	 *	landscape is raised to this power (0..1). \see CVisualCollisionEntity::getStaticLightSetup()
+	 *	Default is 0.5 (=> sqrt).
+	 */
+	void						setSunContributionPower(float power);
+
+
 // ***************************
 private:
 	/// The landscape used to generate tiles, and to snap position to tesselated ground.
@@ -111,6 +118,11 @@ private:
 
 	CPatchQuadBlock				*newPatchQuadBlock();
 	void						deletePatchQuadBlock(CPatchQuadBlock *ptr);
+
+
+	// setSunContributionPower Table.
+	uint8						_SunContributionLUT[256];
+
 };
 
 

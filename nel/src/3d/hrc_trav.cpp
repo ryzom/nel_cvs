@@ -1,7 +1,7 @@
 /** \file hrc_trav.cpp
  * <File description>
  *
- * $Id: hrc_trav.cpp,v 1.6 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: hrc_trav.cpp,v 1.7 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,24 @@ void IBaseHrcObs::init()
 	ClipObs= safe_cast<IBaseClipObs*> (getObs(ClipTravId));
 	AnimDetailObs= safe_cast<IBaseAnimDetailObs*> (getObs(AnimDetailTravId));
 
+}
+
+
+// ***************************************************************************
+void	IBaseHrcObs::addParent(IObs *father)
+{
+	IObs	*oldFather= getFirstParent();
+
+	// Default bheavior.
+	IObs::addParent(father);
+
+	// Our parent has changed ??
+	IObs	*newFather= getFirstParent();
+	if( oldFather != newFather )
+	{
+		// Since our parent has changed, must recompute WM.
+		WorldDate=-1;
+	}
 }
 
 

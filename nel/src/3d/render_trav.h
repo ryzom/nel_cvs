@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.3 2001/12/20 16:54:38 vizerie Exp $
+ * $Id: render_trav.h,v 1.4 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,9 @@
 #include "3d/trav_scene.h"
 #include "3d/ordering_table.h"
 #include "3d/layered_ordering_table.h"
+#include "nel/misc/rgba.h"
 #include "nel/3d/viewport.h"
+#include "3d/light_contribution.h"
 #include <vector>
 
 
@@ -126,6 +128,46 @@ public:
 
 
 
+	/// \name Render Lighting Setup.
+	// @{
+
+	// False by default. setuped by CScene
+	bool						LightingSystemEnabled;
+
+	// Global ambient. Default is (50,50,50).
+	NLMISC::CRGBA				AmbientGlobal;
+	// The Sun Setup.
+	NLMISC::CRGBA				SunAmbient, SunDiffuse, SunSpecular;
+	// set the direction of the sun. dir is normalized.
+	void						setSunDirection(const CVector &dir);
+	const CVector				getSunDirection() const {return _SunDirection;}
+
+	// @}
+
+
+// ******************
+public:
+
+	/// \name Render Lighting Setup. FOR OBSERVERS ONLY.
+	// @{
+
+	/** reset the lighting setup in the driver (all lights are disabled).
+	 *	called at begining of traverse(). Must be called by any model (before and after rendering)
+	 *	that wish to use CDriver::setLight() instead of the standard behavior with changeLightSetup()
+	 */
+	void		resetLightSetup();
+
+	/** setup the driver to the given lightContribution.
+	 *	if lightContribution==NULL, then all currently enabled lights are disabled.
+	 *	NB: lightContribution is cached, so if same than preceding, no-op.
+	 *	cache cleared at each frame with resetLightSetup().
+	 *	NB: models which are sticked or skinned on a skeleton have same lightContribution 
+	 *	because lightSetup is made on the skeleton only. Hence the interest of this cache.
+	 */
+	void		changeLightSetup(CLightContribution	*lightContribution);
+
+	// @}
+
 private:
 	
 	// A grow only list of observers to be rendered.
@@ -140,6 +182,24 @@ private:
 	// Temporary for the render
 	bool			_CurrentPassOpaque;	
 	bool			_LayersRenderingOrder;
+
+
+	/// \name Render Lighting Setup.
+	// @{
+	// The last setup.
+	CLightContribution			*_CacheLightContribution;
+	// The number of light enabled
+	uint						_NumLightEnabled;
+
+	// More precise setup
+	uint						_LastSunFactor;
+	CPointLight					*_LastPointLight[NL3D_MAX_LIGHT_CONTRIBUTION];
+	uint8						_LastPointLightFactor[NL3D_MAX_LIGHT_CONTRIBUTION];
+
+	CVector						_SunDirection;
+
+	// @}
+
 };
 
 

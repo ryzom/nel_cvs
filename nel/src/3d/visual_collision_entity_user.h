@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.h
  * UVisualCollisionEntity implementation.
  *
- * $Id: visual_collision_entity_user.h,v 1.4 2001/12/27 11:17:48 berenguier Exp $
+ * $Id: visual_collision_entity_user.h,v 1.5 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,12 @@ public:
 	virtual bool	getSnapToRenderedTesselation() const
 	{
 		return _Entity->getSnapToRenderedTesselation();
+	}
+
+
+	virtual bool	getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution)
+	{
+		return _Entity->getStaticLightSetup(pos, pointLightList, sunContribution);
 	}
 
 

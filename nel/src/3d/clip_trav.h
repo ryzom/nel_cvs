@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.8 2002/01/11 17:27:26 berenguier Exp $
+ * $Id: clip_trav.h,v 1.9 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,8 +48,7 @@ class	IBaseAnimDetailObs;
 class	IBaseLoadBalancingObs;
 class	CRenderTrav;
 class	CHrcTrav;
-// TempYoyo
-//class	CLightTrav;
+class	CLightTrav;
 class	CCluster;
 class	CInstanceGroup;
 class	CCamera;
@@ -112,8 +111,7 @@ public:
 	/// Setup the render traversal (else traverse() won't work)
 	void setRenderTrav (CRenderTrav* trav);
 	void setHrcTrav (CHrcTrav* trav);
-	// TempYoyo
-	//void setLightTrav (CLightTrav* trav);
+	void setLightTrav (CLightTrav* trav);
 	void setQuadGridClipManager(CQuadGridClipManager *mgr);
 
 
@@ -146,8 +144,7 @@ public:
 	/// Shortcut to the Rdr Traversals (to add the models rdr observers).
 	CRenderTrav		*RenderTrav;
 	CHrcTrav		*HrcTrav;
-	// TempYoyo
-	//CLightTrav		*LightTrav;
+	CLightTrav		*LightTrav;
 	//@}
 	sint64 CurrentDate;
 

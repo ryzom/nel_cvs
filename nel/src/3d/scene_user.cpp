@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.9 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.10 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #include "3d/scene_user.h"
 #include "3d/coarse_mesh_manager.h"
+#include "3d/point_light_user.h"
+#include "3d/point_light_model.h"
 
 using namespace NLMISC;
 
@@ -157,5 +159,97 @@ void CSceneUser::setDynamicCoarseMeshManagerColor (const CRGBA& color)
 		manager->setColor (color);
 	}
 }
+
+
+// ***************************************************************************
+void				CSceneUser::enableLightingSystem(bool enable)
+{
+	_Scene.enableLightingSystem(enable);
+}
+
+// ***************************************************************************
+void				CSceneUser::setAmbientGlobal(NLMISC::CRGBA ambient)
+{
+	_Scene.setAmbientGlobal(ambient);
+}
+void				CSceneUser::setSunAmbient(NLMISC::CRGBA ambient)
+{
+	_Scene.setSunAmbient(ambient);
+}
+void				CSceneUser::setSunDiffuse(NLMISC::CRGBA diffuse)
+{
+	_Scene.setSunDiffuse(diffuse);
+}
+void				CSceneUser::setSunSpecular(NLMISC::CRGBA specular)
+{
+	_Scene.setSunSpecular(specular);
+}
+void				CSceneUser::setSunDirection(const NLMISC::CVector &direction)
+{
+	_Scene.setSunDirection(direction);
+}
+
+
+// ***************************************************************************
+NLMISC::CRGBA		CSceneUser::getAmbientGlobal() const
+{
+	return _Scene.getAmbientGlobal();
+}
+NLMISC::CRGBA		CSceneUser::getSunAmbient() const
+{
+	return _Scene.getSunAmbient();
+}
+NLMISC::CRGBA		CSceneUser::getSunDiffuse() const
+{
+	return _Scene.getSunDiffuse();
+}
+NLMISC::CRGBA		CSceneUser::getSunSpecular() const
+{
+	return _Scene.getSunSpecular();
+}
+NLMISC::CVector		CSceneUser::getSunDirection() const
+{
+	return _Scene.getSunDirection();
+}
+
+
+// ***************************************************************************
+void				CSceneUser::setMaxLightContribution(uint nlights)
+{
+	_Scene.setMaxLightContribution(nlights);
+}
+uint				CSceneUser::getMaxLightContribution() const
+{
+	return _Scene.getMaxLightContribution();
+}
+
+void				CSceneUser::setLightTransitionThreshold(float lightTransitionThreshold)
+{
+	_Scene.setLightTransitionThreshold(lightTransitionThreshold);
+}
+float				CSceneUser::getLightTransitionThreshold() const
+{
+	return _Scene.getLightTransitionThreshold();
+}
+
+
+// ***************************************************************************
+UPointLight		*CSceneUser::createPointLight()
+{
+	IModel	*model= _Scene.createModel(PointLightModelId);
+	// If not found, return NULL.
+	if(model==NULL)
+		return NULL;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	return dynamic_cast<UPointLight*>( _Transforms.insert(new CPointLightUser(&_Scene, model)) );
+}
+// ***************************************************************************
+void			CSceneUser::deletePointLight(UPointLight *light)
+{
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	_Transforms.erase(dynamic_cast<CTransformUser*>(light));
+}
+
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.13 2002/01/28 18:18:01 vizerie Exp $
+ * $Id: zone_lighter.cpp,v 1.14 2002/02/06 16:55:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,6 +79,11 @@ UDriver *drv=NULL;
 
 #endif // HARDWARE_SOFT_SHADOWS
 	
+
+// Bad coded: don't set too big else it allocates too much memory.
+#define NL3D_ZONE_LIGHTER_CUBE_GRID_SIZE 16
+
+
 // ***************************************************************************
 
 
@@ -338,13 +343,13 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 	if (pZone)
 	{
 		// Change the quadGrid basis
-		CMatrix tmp=_RayBasis;
-		tmp.invert ();
+		CMatrix invRayBasis=_RayBasis;
+		invRayBasis.invert ();
 
 		uint cpu;
 		for (cpu=0; cpu<_ProcessCount; cpu++)
 		{
-			_QuadGrid[cpu].changeBase (tmp);
+			_QuadGrid[cpu].changeBase (invRayBasis);
 
 			// Init the quadGrid
 			_QuadGrid[cpu].create (description.GridSize, description.GridCellSize);
@@ -398,19 +403,35 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 				triangle.ClippingPlanes[edge].make (edgeDirection[edge], point[edge]);
 			}
 
-			// Look for the min coordinate
+			// Look for the min coordinate, in the RayBasis
+			CVector irbMinv;
+			CVector		irbV0= invRayBasis * triangle.Triangle.V0;
+			CVector		irbV1= invRayBasis * triangle.Triangle.V1;
+			CVector		irbV2= invRayBasis * triangle.Triangle.V2;
+			irbMinv.minof (irbV0, irbV1);
+			irbMinv.minof (irbMinv, irbV2);
+
+			// Look for the max coordinate, in the RayBasis
+			CVector irbMaxv;
+			irbMaxv.maxof (irbV0, irbV1);
+			irbMaxv.maxof (irbMaxv, irbV2);
+
+			// Insert in the quad grid
+			for (cpu=0; cpu<_ProcessCount; cpu++)
+				// Set the coord in World Basis.
+				_QuadGrid[cpu].insert (_RayBasis * irbMinv, _RayBasis * irbMaxv, &triangle);
+
+
+			// Look for the min coordinate, in World Basis
 			CVector minv;
 			minv.minof (triangle.Triangle.V0, triangle.Triangle.V1);
 			minv.minof (minv, triangle.Triangle.V2);
 
-			// Look for the max coordinate
+			// Look for the max coordinate, in World Basis
 			CVector maxv;
 			maxv.maxof (triangle.Triangle.V0, triangle.Triangle.V1);
 			maxv.maxof (maxv, triangle.Triangle.V2);
 
-			// Insert in the quad grid
-			for (cpu=0; cpu<_ProcessCount; cpu++)
-				_QuadGrid[cpu].insert (minv, maxv, &triangle);
 
 			// Lanscape tri ?
 			if (triangle.ZoneId!=0xffffffff)
@@ -500,12 +521,31 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 		nlSleep (10);
 	}
 
+
+	// Progress bar
+	progress ("Compute Influences of PointLights", 0.f);
+
+	// Compute PointLight influences on zone.
+	// Some precalc.
+	compilePointLightRT(description.GridSize, description.GridCellSize, obstacles, 
+		description.Shadow || description.Softshadow );
+	// Influence patchs and get light list of interest
+	std::vector<CPointLightNamed>	listPointLight;
+	processZonePointLightRT(listPointLight);
+
+
 	// Rebuild the zone
 
 	// Progress bar
-	progress ("Compress the lightmap", 0.5);
+	progress ("Compress the lightmap", 0.6f);
 
-	output.build (_ZoneToLight, _PatchInfo, _BorderVertices);
+	// Build, with list of lights.
+	CZoneInfo	zinfo;
+	zinfo.ZoneId= _ZoneToLight;
+	zinfo.Patchs= _PatchInfo;
+	zinfo.BorderVertices= _BorderVertices;
+	zinfo.PointLights= listPointLight;
+	output.build (zinfo);
 
 	/// copy the tiles flags from the zone to light to the output zone
 	copyTileFlags(output, *(landscape.getZone(zoneToLight)));
@@ -2723,6 +2763,401 @@ struct CTileOfPatch
 	{		
 	}	
 };
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Static point lights.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+CZoneLighter::CPointLightRT::CPointLightRT()
+{
+	RefCount= 0;
+}
+
+
+// ***************************************************************************
+bool	CZoneLighter::CPointLightRT::testRaytrace(const CVector &v)
+{
+	CVector	dummy;
+
+	if(!BSphere.include(v))
+		return false;
+
+	// Select in the cubeGrid
+	FaceCubeGrid.select(v);
+	// For all faces selected
+	while(!FaceCubeGrid.isEndSel())
+	{
+		const CTriangle	*tri= FaceCubeGrid.getSel();
+
+		// If intersect, the point is occluded.
+		if( tri->Triangle.intersect(BSphere.Center, v, dummy, tri->getPlane()) )
+			return false;
+
+		// next
+		FaceCubeGrid.nextSel();
+	}
+
+	// Ok the point is visilbe from the light
+	return true;
+}
+
+
+// ***************************************************************************
+void			CZoneLighter::addStaticPointLight(const CPointLightNamed &pln)
+{
+	// build the plRT.
+	CPointLightRT	plRT;
+	plRT.PointLight= pln;
+	// compute plRT.OODeltaAttenuation
+	plRT.OODeltaAttenuation= pln.getAttenuationEnd() - pln.getAttenuationBegin();
+	if(plRT.OODeltaAttenuation <=0 )
+		plRT.OODeltaAttenuation= 0;
+	else
+		plRT.OODeltaAttenuation= 1.0f / plRT.OODeltaAttenuation;
+	// compute plRT.BSphere
+	plRT.BSphere.Center= pln.getPosition();
+	plRT.BSphere.Radius= pln.getAttenuationEnd();
+	// NB: FaceCubeGrid will be computed during light()
+
+	// add the plRT
+	_StaticPointLights.push_back(plRT);
+
+}
+
+
+// ***************************************************************************
+void			CZoneLighter::compilePointLightRT(uint gridSize, float gridCellSize, std::vector<CTriangle>& obstacles, bool doShadow)
+{
+	uint	i;
+
+	// Fill the quadGrid of Lights.
+	// ===========
+	_StaticPointLightQuadGrid.create(gridSize, gridCellSize);
+	for(i=0; i<_StaticPointLights.size();i++)
+	{
+		CPointLightRT	&plRT= _StaticPointLights[i];
+
+		// Compute the bbox of the light
+		CAABBox		bbox;
+		bbox.setCenter(plRT.BSphere.Center);
+		float	hl= plRT.BSphere.Radius;
+		bbox.setHalfSize(CVector(hl,hl,hl));
+
+		// Insert the pointLight in the quadGrid.
+		_StaticPointLightQuadGrid.insert(bbox.getMin(), bbox.getMax(), &plRT);
+	}
+
+
+	// Append triangles to cubeGrid ??
+	if(doShadow)
+	{
+		// For all obstacles, Fill a quadGrid.
+		// ===========
+		CQuadGrid<CTriangle*>	obstacleGrid;
+		obstacleGrid.create(gridSize, gridCellSize);
+		uint	size= obstacles.size();
+		for(i=0; i<size; i++)
+		{
+			// bbox of triangle
+			CAABBox	bbox;
+			bbox.setCenter(obstacles[i].Triangle.V0);
+			bbox.extend(obstacles[i].Triangle.V1);
+			bbox.extend(obstacles[i].Triangle.V2);
+			// insert triangle in quadGrid.
+			obstacleGrid.insert(bbox.getMin(), bbox.getMax(), &obstacles[i]);
+		}
+
+
+		// For all PointLights, fill his CubeGrid
+		// ===========
+		for(i=0; i<_StaticPointLights.size();i++)
+		{
+			// progress
+			progress ("Compute Influences of PointLights", 0.5f*i / (float)(_StaticPointLights.size()-1));
+
+			CPointLightRT	&plRT= _StaticPointLights[i];
+			// Create the cubeGrid
+			plRT.FaceCubeGrid.create(plRT.PointLight.getPosition(), NL3D_ZONE_LIGHTER_CUBE_GRID_SIZE);
+
+			// Select only obstacle Faces around the light. Other are not usefull
+			CAABBox	bbox;
+			bbox.setCenter(plRT.PointLight.getPosition());
+			float	hl= plRT.PointLight.getAttenuationEnd();
+			bbox.setHalfSize(CVector(hl,hl,hl));
+			obstacleGrid.select(bbox.getMin(), bbox.getMax());
+
+			// For all faces, fill the cubeGrid.
+			CQuadGrid<CTriangle*>::CIterator	itObstacle;
+			itObstacle= obstacleGrid.begin();
+			while( itObstacle!=obstacleGrid.end() )
+			{
+				CTriangle	&tri= *(*itObstacle);
+				// Test BackFace culling. Only faces which are BackFace the point light are inserted.
+				// This is to avoid AutoOccluding problems
+				if( tri.getPlane() * plRT.BSphere.Center < 0)
+				{
+					// Insert the triangle in the CubeGrid
+					plRT.FaceCubeGrid.insert( tri.Triangle, &tri);
+				}
+
+				itObstacle++;
+			}
+
+			// Compile the CubeGrid.
+			plRT.FaceCubeGrid.compile();
+
+			// And Reset RefCount.
+			plRT.RefCount= 0;
+		}
+	}
+	// else, just build empty grid
+	else
+	{
+		for(i=0; i<_StaticPointLights.size();i++)
+		{
+			// progress
+			progress ("Compute Influences of PointLights", 0.5f*i / (float)(_StaticPointLights.size()-1));
+
+			CPointLightRT	&plRT= _StaticPointLights[i];
+			// Create a dummy empty cubeGrid => no rayTrace :)
+			plRT.FaceCubeGrid.create(plRT.PointLight.getPosition(), 4);
+
+			// Compile the CubeGrid.
+			plRT.FaceCubeGrid.compile();
+
+			// And Reset RefCount.
+			plRT.RefCount= 0;
+		}
+	}
+
+}
+
+
+// ***************************************************************************
+bool	CZoneLighter::CPredPointLightToPoint::operator() (CPointLightRT *pla, CPointLightRT *plb) const
+{
+	float	ra= (pla->BSphere.Center - Point).norm();
+	float	rb= (plb->BSphere.Center - Point).norm();
+	float	infA= (pla->PointLight.getAttenuationEnd() - ra) * pla->OODeltaAttenuation;
+	float	infB= (plb->PointLight.getAttenuationEnd() - rb) * plb->OODeltaAttenuation;
+	// return which light impact the most.
+	// If same impact
+	if(infA==infB)
+		// return nearest
+		return ra < rb;
+	else
+		// return better impact
+		return  infA > infB;
+}
+
+// ***************************************************************************
+void			CZoneLighter::processZonePointLightRT(vector<CPointLightNamed> &listPointLight)
+{
+	uint	i;
+	vector<CPointLightRT*>		lightInfs;
+	lightInfs.reserve(1024);
+
+	// clear result list
+	listPointLight.clear();
+
+	// zoneToLight
+	CZone	*zoneToLight= _Landscape->getZone(_ZoneToLight);
+	if(!zoneToLight)
+		return;
+
+	// Build patchForPLs
+	//===========
+	vector<CPatchForPL>		patchForPLs;
+	patchForPLs.resize(_PatchInfo.size());
+	for(i=0; i<patchForPLs.size(); i++)
+	{
+		// Get OrderS/OrderT
+		patchForPLs[i].OrderS= _PatchInfo[i].OrderS;
+		patchForPLs[i].OrderT= _PatchInfo[i].OrderT;
+		// resize TileLightInfluences
+		uint	w= patchForPLs[i].WidthTLI= patchForPLs[i].OrderS/2 +1 ;
+		uint	h= patchForPLs[i].HeightTLI= patchForPLs[i].OrderT/2 +1;
+		patchForPLs[i].TileLightInfluences.resize(w*h);
+	}
+
+
+	// compute each TileLightInfluence
+	//===========
+	for(i=0; i<patchForPLs.size(); i++)
+	{
+		// progress
+		progress ("Compute Influences of PointLights", 0.5f + 0.5f*i / (float)patchForPLs.size());
+
+		CPatchForPL		&pfpl= patchForPLs[i];
+		const CPatch	*patch= const_cast<const CZone*>(zoneToLight)->getPatch(i);
+
+		uint	x, y;
+		for(y= 0; y<pfpl.HeightTLI; y++)
+		{
+			for(x= 0; x<pfpl.WidthTLI; x++)
+			{
+				// compute the point and normal (normalized) where the TLI lies.
+				//---------
+				CVector		pos, normal;
+				float		s, t;
+				s= (float)x / (pfpl.WidthTLI-1);
+				t= (float)y / (pfpl.HeightTLI-1);
+				// Compute the Vertex, with Noise information (important for accurate raytracing).
+				pos= patch->computeVertex(s, t);
+				// Use UnNoised normal from BezierPatch, because the lighting does not need to be so precise.
+				CBezierPatch	*bp= patch->unpackIntoCache();
+				normal= bp->evalNormal(s, t);
+				
+
+				// Compute Which light influences him.
+				//---------
+				lightInfs.clear();
+				// Search possible lights around the position.
+				_StaticPointLightQuadGrid.select(pos, pos);
+				// For all of them, get the ones which touch this point.
+				CQuadGrid<CPointLightRT*>::CIterator	it= _StaticPointLightQuadGrid.begin();
+				while(it != _StaticPointLightQuadGrid.end())
+				{
+					CPointLightRT	*pl= *it;
+
+					// a light influence a TLI only if this one is FrontFaced to the light !!
+					if( ( pl->BSphere.Center - pos ) * normal > 0)
+					{
+						// Add 5cm else it fails in some case where ( pl->BSphere.Center - pos ) * normal is 
+						// nearly 0 and the point should be occluded.
+						const float	deltaY= 0.05f;
+						CVector	posToRT= pos + normal * deltaY;
+						// Test if really in the radius of the light or if no occlusion
+						if( pl->testRaytrace(posToRT) )
+						{
+							// Ok, add the light to the lights which influence the TLI 
+							lightInfs.push_back(pl);
+						}
+					}
+
+					// next
+					it++;
+				}
+
+				// Choose the Best ones.
+				//---------
+				CPredPointLightToPoint	predPLTP;
+				predPLTP.Point= pos;
+				// sort.
+				sort(lightInfs.begin(), lightInfs.end(), predPLTP);
+				// truncate.
+				lightInfs.resize( min(lightInfs.size(), (uint)CTileLightInfluence::NumLightPerCorner) );
+
+
+				// For each of them, fill TLI
+				//---------
+				CTileLightInfUnpack		tli;
+				uint					lightInfId;
+				for(lightInfId=0; lightInfId<lightInfs.size(); lightInfId++)
+				{
+					CPointLightRT	*pl= lightInfs[lightInfId];
+
+					// copy light.
+					tli.Light[lightInfId]= pl;
+					// Compute light Diffuse factor.
+					CVector		dir= pl->BSphere.Center - pos;
+					dir.normalize();
+					tli.LightFactor[lightInfId]= dir * normal;
+					clamp(tli.LightFactor[lightInfId], 0.f, 1.f);
+
+					// Inc RefCount of the light.
+					pl->RefCount++;
+				}
+				// Reset any empty slot to NULL.
+				for(; lightInfId<CTileLightInfluence::NumLightPerCorner; lightInfId++)
+				{
+					tli.Light[lightInfId]= NULL;
+				}
+
+
+				// Set TLI in patch.
+				//---------
+				pfpl.TileLightInfluences[y*pfpl.WidthTLI + x]= tli;
+			}
+		}
+	}
+
+
+	// compress and setup _PatchInfo with compressed data.
+	//===========
+	uint	plId= 0;
+	// Process each pointLights
+	for(i=0; i<_StaticPointLights.size(); i++)
+	{
+		CPointLightRT	&plRT= _StaticPointLights[i];
+		// If this light is used.
+		if(plRT.RefCount > 0)
+		{
+			// Must Copy it into Zone.
+			listPointLight.push_back(plRT.PointLight);
+			plRT.DstId= plId++;
+			// If index >= 255, too many lights (NB: => because 255 is a NULL code).
+			if(plId>=0xFF)
+			{
+				throw Exception("Too many Static Point Lights influence the zone!!");
+			}
+		}
+	}
+
+	// For each patch, compress TLI in PatchInfo.
+	for(i=0; i<patchForPLs.size(); i++)
+	{
+		CPatchForPL		&pfpl= patchForPLs[i];
+		CPatchInfo		&pInfo= _PatchInfo[i];
+
+		uint	w= pfpl.WidthTLI;
+		uint	h= pfpl.HeightTLI;
+
+		// Fill  pInfo.TileLightInfluences
+		pInfo.TileLightInfluences.resize(w*h);
+		uint	x, y;
+		for(y= 0; y<h; y++)
+		{
+			for(x= 0; x<w; x++)
+			{
+				uint	tliId= y*w + x;
+				// For all light slot
+				for(uint lightId= 0; lightId<CTileLightInfluence::NumLightPerCorner; lightId++)
+				{
+					CTileLightInfUnpack		&tliSrc= pfpl.TileLightInfluences[tliId];
+					CTileLightInfluence		&tliDst= pInfo.TileLightInfluences[tliId];
+					if(tliSrc.Light[lightId] == NULL)
+					{
+						// Mark as unused.
+						tliDst.Light[lightId]= 0xFF;
+					}
+					else
+					{
+						// Get index.
+						tliDst.Light[lightId]= tliSrc.Light[lightId]->DstId;
+						// Get Diffuse Factor.
+						tliDst.setDiffuseLightFactor(lightId, (uint8)(tliSrc.LightFactor[lightId]*255));
+					}
+				}
+			}
+		}
+
+	}
+
+}
+
+///***********************************************************
+///***********************************************************
+// TileFlagsForPositionTowardWater
+///***********************************************************
+///***********************************************************
+
 
 //==================================================================
 /// for map insertion of CTileOfPatch structs

@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.5 2001/08/16 15:50:00 besson Exp $
+ * $Id: cluster.cpp,v 1.6 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,6 +123,12 @@ bool CCluster::isIn (NLMISC::CVector& center, float size)
 		if (_Volume[i]*center > size)
 			return false;
 	return true;
+}
+
+// ***************************************************************************
+void CCluster::resetPortalLinks ()
+{
+	_Portals.clear();
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.12 2002/01/23 17:49:54 berenguier Exp $
+ * $Id: transform.h,v 1.13 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,9 @@
 #include "3d/anim_detail_trav.h"
 #include "3d/channel_mixer.h"
 #include "nel/misc/matrix.h"
+#include "3d/light_trav.h"
+#include "3d/light_contribution.h"
+#include "3d/lighting_manager.h"
 
 
 namespace	NL3D
@@ -49,9 +52,11 @@ using NLMISC::CMatrix;
 
 class	CTransformHrcObs;
 class	CTransformClipObs;
+class	CTransformLightObs;
 class	CSkeletonModel;
 class	CSkeletonModelAnimDetailObs;
 class	CInstanceGroup;
+class	ILogicInfo;
 
 // ***************************************************************************
 // ClassIds.
@@ -67,7 +72,7 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
  *
  * CTransform Default tracks are identity (derived class may change this).
  *
- * No observer is provided for LightTrav and RenderTrav (not lightable, nor renderable => use default).
+ * No observer is provided for RenderTrav (not renderable => use default).
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -173,6 +178,53 @@ public:
 	CInstanceGroup*			getClusterSystem () { return _ClusterSystem; }
 
 
+	/// name Lighting Behavior.
+	// @{
+	/** reset lights which influence this models. NB: the model is removed from all lights's list (except
+	 *	FrozenStaticLightSetup). Called by light rendering.
+	 *
+	 *	NB: the model is NOT removed from LightingManager (with eraseStaticLightedModel()). 
+	 */
+	void				resetLighting();
+
+	/** override this method if the model can be lighted (such as CMeshBaseInstance)
+	 *	Default behavior is false.
+	 *	Derived MUST take into account _UserLightable, and return false if _UserLightable==false.
+	 */
+	virtual bool		isLightable() const {return false;}
+
+	/** Set the UserLightable flag. if false, isLightable() will always return false.
+	 *	Doing this, user can disable lighting on a model which may be interesting for speed.
+	 *	Default behavior is UserLightable==true.
+	 */
+	void				setUserLightable(bool enable) {_UserLightable= enable;}
+
+	/** Get the UserLightable flag.
+	 */
+	bool				getUserLightable() const {return _UserLightable;}
+
+	/** Freeze and set the Static Light Setup. Called by CInstanceGroup::addToScene()
+	 *	NB: it calls resetLighting() first.
+	 *	NB: nlassert(numPointLights<=NL3D_MAX_LIGHT_CONTRIBUTION)
+	 */
+	void				freezeStaticLightSetup(CPointLight *pointLight[NL3D_MAX_LIGHT_CONTRIBUTION], 
+		uint numPointLights, uint8 sunContribution);
+
+	/** unFreeze the Static Light Setup. Must be called if static pointLights are deleted.
+	 *	NB: it calls resetLighting() first.
+	 *	NB: do not need to call it if pointLights and this transform are deleted at same time.
+	 */
+	void				unfreezeStaticLightSetup();
+
+	// @}
+
+
+	/** Set the LogicInfo for this transfrom, eg to retrieve statc light information, see ILogicInfo.
+	 *	Ptr is kept in CTransfrom, so should call setLogicInfo(NULL) before to clean up.
+	 */
+	void				setLogicInfo(ILogicInfo *logicInfo) {_LogicInfo= logicInfo;}
+
+
 // ********
 private:
 	// Add our own dirty states.
@@ -226,11 +278,30 @@ protected:
 
 	// @}
 
+	/// name Lighting Behavior.
+	// @{
+
+	/// The contribution of all lights. This enlarge the struct only of approx 15%
+	CLightContribution		_LightContribution;
+
+	/// true if the object needs to updatelighting.
+	bool					_NeedUpdateLighting;
+
+
+	/// true (default) if the user agree that the object is lightable.
+	bool					_UserLightable;
+
+
+	/// each transform may be in a quadGird of lighted models (see CLightingManager)
+	CLightingManager::CQGItLightedModel		_LightedModelIt;
+
+	// @}
 
 private:
 	static IModel	*creator() {return new CTransform;}
 	friend class	CTransformHrcObs;
 	friend class	CTransformClipObs;
+	friend class	CTransformLightObs;
 	friend class	CTransformAnimDetailObs;
 	friend class	CSkeletonModel;
 	friend class	CSkeletonModelAnimDetailObs;
@@ -262,12 +333,21 @@ private:
 	// For fast clip.
 	bool			_QuadGridClipManagerEnabled;
 
+	uint8				_OrderingLayer;
+
+
+	/// See ILogicInfo. Used for lighting.	default is NULL.
+	ILogicInfo			*_LogicInfo;
+
+
+protected:
 	// shortcut to the HrcObs.
 	CTransformHrcObs	*_HrcObs;
 	// shortcut to the ClipObs.
 	CTransformClipObs	*_ClipObs;
+	// shortcut to the LightObs.
+	CTransformLightObs	*_LightObs;
 
-	uint8				_OrderingLayer;
 };
 
 
@@ -424,6 +504,33 @@ public:
 	static IObs	*creator() {return new CTransformRenderObs;}
 
 };
+
+
+// ***************************************************************************
+/**
+ * \sa CTransformLightObs
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CTransformLightObs : public IBaseLightObs
+{
+public:
+
+	/** 
+	 * The base light method. This do all the good thing and should not be derived.
+	 * traverse() is called only on visible objects with no _AncestorSkeletonModel, 
+	 * It test if transform->_NeedUpdateLighting==true.
+	 *
+	 * The observers should not traverseSons(), for speed improvement.
+	 */
+	virtual	void	traverse(IObs *caller);
+
+
+	static IObs	*creator() {return new CTransformLightObs;}
+
+};
+
 
 } // namespace NL3D
 

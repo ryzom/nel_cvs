@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.5 2002/02/04 10:34:30 vizerie Exp $
+ * $Id: mesh_base_instance.cpp,v 1.6 2002/02/06 16:55:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,10 @@
 
 #include "3d/mesh_base_instance.h"
 #include "3d/mesh_base.h"
+#include "nel/misc/debug.h"
 
+
+using namespace NLMISC;
 
 namespace NL3D 
 {
@@ -147,6 +150,21 @@ void CMeshBaseInstance::setBlendShapeFactor (const std::string &BlendShapeName, 
 
 
 // ***************************************************************************
+bool		CMeshBaseInstance::isLightable() const
+{
+	// if shape is NULL, or if !getUserLightable(), then the model is not lightable
+	if(Shape==NULL || !getUserLightable())
+		return false;
+	else
+	{
+		CMeshBase	*mesh= safe_cast<CMeshBase*>((IShape*)Shape);
+		// lightable if the mesh is (ie have a material with no lightmap)
+		return mesh->isLightable();
+	}
+}
+
+
+// ***************************************************************************
 void CMeshBaseInstance::selectTextureSet(uint index)
 {
 	for (std::vector<CMaterial>::iterator it = Materials.begin(); it != Materials.end(); ++it)
@@ -155,7 +173,6 @@ void CMeshBaseInstance::selectTextureSet(uint index)
 	}
 }
 
-// ***************************************************************************
 // ***************************************************************************
 
 void CMeshBaseInstanceAnimDetailObs::traverse(IObs *caller)

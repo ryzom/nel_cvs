@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.8 2001/10/10 15:38:09 besson Exp $
+ * $Id: scene_group.h,v 1.9 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,9 @@
 #include "3d/portal.h"
 #include "3d/cluster.h"
 #include "3d/transform.h"
+#include "3d/point_light_named.h"
+#include "3d/point_light_named_array.h"
+#include "3d/ig_surface_light.h"
 
 #include <vector>
 
@@ -62,6 +65,10 @@ class CTransformShape;
   */
 class CInstanceGroup
 {
+public:
+
+	/// Should Never be changed
+	enum	{NumStaticLightPerInstance= 2};
 
 public:
 
@@ -90,6 +97,18 @@ public:
 		// Name of the instance
 		std::string InstanceName;
 		bool DontAddToScene;
+
+		/// Precomputed Lighting. 
+		// If true (false by default), then the instance don't cast shadow (used by ig_lighter.exe).
+		bool	DontCastShadow;
+		// If true (false by default), then the instance's lighting will not be precomputed.
+		bool	AvoidStaticLightPreCompute;
+		// This part is precomputed.
+		bool	StaticLightEnabled;		// If false, then the instance 's lighting is not pre-computed.
+		uint8 	SunContribution;		// Contribution of the Sun.
+		// Ids of the lights. FF == disabled. if Lights[i]==FF, then all lights >=i are considered disabled.
+		uint8	Light[NumStaticLightPerInstance];
+
 
 		/// Constructor
 		CInstance ();
@@ -124,6 +143,9 @@ public:
 	// Get the instance father (-1 if this is a root)
 	const sint32 getInstanceParent (uint instanceNb) const;
 
+	// Get a const ref on the instance
+	const CInstance		&getInstance(uint instanceNb) const;
+
 
 	/**
 	 * Construct, serialize and link to scene
@@ -132,10 +154,30 @@ public:
 	CInstanceGroup();
 	~CInstanceGroup();
 
-	/// Build the group
+	/** Build the group
+	 *	Build with an empty list of light
+	 */
 	void build (CVector &vGlobalPos, const TInstanceArray& array, 
 				const std::vector<CCluster>& Portals, 
 				const std::vector<CPortal>& Clusters);
+
+	/** Build the group
+	 *	Build also the list of light. NB: sort by LightGroupName the array.
+	 *	Give also a ptr on a retrieverGridMap to build surfaces (if not NULL).
+	 */
+	void build (CVector &vGlobalPos, const TInstanceArray& array, 
+				const std::vector<CCluster>& Portals, 
+				const std::vector<CPortal>& Clusters,
+				const std::vector<CPointLightNamed> &pointLightList,
+				const CIGSurfaceLight::TRetrieverGridMap *retrieverGridMap= NULL, 
+				float igSurfaceLightCellSize= 0);
+
+	/** Retreive group information. NB: data may have changed, eg: order of lights.
+	 */
+	void retrieve (CVector &vGlobalPos, TInstanceArray& array, 
+				std::vector<CCluster>& Portals, 
+				std::vector<CPortal>& Clusters,
+				std::vector<CPointLightNamed> &pointLightList) const;
 
 	/// Serial the group
 	void serial (NLMISC::IStream& f);
@@ -222,6 +264,28 @@ public:
 	void		unfreezeHRC();
 
 
+public:
+
+	/// \name PointLight part
+	// @{
+
+	/// get the list of light. NB: the array is sorted by LightGroupName.
+	const std::vector<CPointLightNamed> &getPointLightList() const {return _PointLightArray.getPointLights();}
+
+	/// set the Light factor for all pointLights "lightGroupName".
+	void			setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
+
+	/// See CIGSurfaceLight::getStaticLightSetup()
+	bool			getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const CVector &localPos,
+		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution)
+	{
+		return _IGSurfaceLight.getStaticLightSetup(retrieverIdentifier, surfaceId, localPos,
+			pointLightList, sunContribution);
+	}
+
+	// @}
+
+
 private:
 
 	/// Look through all hierarchy our clusters that must be linked to our parent
@@ -242,6 +306,25 @@ public:
 	CInstanceGroup *_ClusterSystem;
 
 	NLMISC::CVector _GlobalPos;
+
+
+private:
+	/// \name PointLight part
+	// @{
+
+	/// Array of pointLights
+	CPointLightNamedArray			_PointLightArray;
+
+	/// Build the list of light. NB: sort by LightGroupName the array, and return index remap.
+	void			buildPointLightList(const std::vector<CPointLightNamed> &pointLightList,
+		std::vector<uint>	&plRemap);
+
+	/**	The object used to light dynamic models in town and buildings
+	 */
+	CIGSurfaceLight		_IGSurfaceLight;
+
+	// @}
+
 };
 
 

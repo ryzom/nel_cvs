@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.8 2001/09/21 13:39:24 berenguier Exp $
+ * $Id: transform_shape.h,v 1.9 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,10 +109,15 @@ protected:
 private:
 	static IModel	*creator() {return new CTransformShape;}
 	friend class	CTransformShapeClipObs;
-	friend class	CTransformShapeRdrObs;
+	friend class	CTransformShapeRenderObs;
 	friend class	CTransformShapeLoadBalancingObs;
 
 	float			_NumTrianglesAfterLoadBalancing;
+
+
+	// return the contribution of lights (for redner Observer).
+	CLightContribution	&getLightContribution() {return _LightContribution;}
+
 };
 
 
@@ -163,7 +168,7 @@ class	CTransformShapeRenderObs : public CTransformRenderObs
 {
 public:
 
-	/// render the instance and Don't traverseSons().
+	/// setup lighting if lightable, render the instance and Don't traverseSons().
 	virtual	void	traverse(IObs *caller);
 	
 	static IObs	*creator() {return new CTransformShapeRenderObs;}

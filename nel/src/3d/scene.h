@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.17 2002/01/28 14:38:48 vizerie Exp $
+ * $Id: scene.h,v 1.18 2002/02/06 16:55:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -291,6 +291,62 @@ public:
 		bool  getLayersRenderingOrder() const;
 	//@}
 
+
+	/// \name Sun Light mgt
+	//@{
+
+	/** Enable Scene Lighting system. For backward compatibility, false by default.
+	 *	If false, all objects will take last driver 's light setup
+	 */
+	void			enableLightingSystem(bool enable);
+
+	/// set the global Ambient used for the scene. Default to (50, 50, 50).
+	void			setAmbientGlobal(NLMISC::CRGBA ambient);
+	/// set the Ambient of the Sun used for the scene.
+	void			setSunAmbient(NLMISC::CRGBA ambient);
+	/// set the Diffuse of the Sun used for the scene.
+	void			setSunDiffuse(NLMISC::CRGBA diffuse);
+	/// set the Specular of the Sun used for the scene.
+	void			setSunSpecular(NLMISC::CRGBA specular);
+	/// set the Direction of the Sun used for the scene.
+	void			setSunDirection(const NLMISC::CVector &direction);
+
+
+	/// get the global Ambient used for the scene. Default to (50, 50, 50).
+	NLMISC::CRGBA	getAmbientGlobal() const;
+	/// get the Ambient of the Sun used for the scene.
+	NLMISC::CRGBA	getSunAmbient() const;
+	/// get the Diffuse of the Sun used for the scene.
+	NLMISC::CRGBA	getSunDiffuse() const;
+	/// get the Specular of the Sun used for the scene.
+	NLMISC::CRGBA	getSunSpecular() const;
+	/// get the Direction of the Sun used for the scene.
+	NLMISC::CVector	getSunDirection() const;
+
+
+	/** setup the max number of point light that can influence a model. NB: clamped by NL3D_MAX_LIGHT_CONTRIBUTION
+	 *	Default is 3.
+	 *	NB: the sun contribution is not taken into account
+	 */
+	void		setMaxLightContribution(uint nlights);
+	/// \see setMaxLightContribution()
+	uint		getMaxLightContribution() const;
+
+	/** Advanced. When a model is influenced by more light than allowed, or when it reach the limits 
+	 *	of the light (attenuationEnd), the light can be darkened according to some threshold.
+	 *	The resultLightColor begin to fade when distModelToLight== attEnd- threshold*(attEnd-attBegin).
+	 *	when distModelToLight== 0, resultLightColor==Black.
+	 *	By default, this value is 0.1f. Setting higher values will smooth transition but will 
+	 *	generally darken the global effects of lights.
+	 *	NB: clamp(value, 0, 1);
+	 */
+	void		setLightTransitionThreshold(float lightTransitionThreshold);
+	/// \see getLightTransitionThreshold()
+	float		getLightTransitionThreshold() const;
+
+
+	//@}
+
 	/// Get a ref. to the particle system manager. You shouldn't call this (has methods for private processing)
 	CParticleSystemManager &getParticleSystemManager();
 
@@ -330,6 +386,8 @@ private:
 	CSkipModel		*SkipModelRoot;
 	// This model is used to clip any model which has a Skeleton ancestor
 	CRootModel		*SonsOfAncestorSkeletonModelGroup;
+	// This model is used for LightTrav to know its dynamic pointLights
+	CRootModel		*LightModelRoot;
 
 
 	// The Ligths automatic movements
@@ -359,10 +417,15 @@ private:
 	CQuadGridClipManager		_QuadGridClipManager;
 	//@}
 
+
+	// Lighting.
+	bool						_LightingSystemEnabled;
+
 	/// \name Particle systems specific
 	//@{		
 		CParticleSystemManager	_ParticleSystemManager;
 	//@}
+
 
 };
 

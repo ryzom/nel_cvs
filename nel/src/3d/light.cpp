@@ -1,7 +1,7 @@
 /** \file light.cpp
  * CLight definition
  *
- * $Id: light.cpp,v 1.3 2001/09/13 12:43:46 besson Exp $
+ * $Id: light.cpp,v 1.4 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,7 +66,7 @@ void CLight::setupPointLight (const CRGBA& ambiant, const CRGBA& diffuse, const 
 	setSpecular (specular);
 
 	// Set the position and direction
-	setDirection (position);
+	setPosition (position);
 	setDirection (direction);
 
 	// Set attenuation
@@ -89,7 +89,7 @@ void CLight::setupSpotLight (const CRGBA& ambiant, const CRGBA& diffuse, const C
 	setSpecular (specular);
 
 	// Set the position and direction
-	setDirection (position);
+	setPosition (position);
 	setDirection (direction);
 
 	// Set spotlight parameters

@@ -1,7 +1,7 @@
 /** \file portal.h
  * Definition of a cluster/portal visibility
  *
- * $Id: portal.h,v 1.1 2001/07/30 14:40:14 besson Exp $
+ * $Id: portal.h,v 1.2 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,6 +69,9 @@ public:
 
 	/// Accessors
 	/// ---------
+
+	/// set all link to clusters to NULL.
+	void resetClusterLinks();
 	
 	/// return false if more than 2 clusters added
 	bool setCluster (CCluster *cluster);

@@ -1,7 +1,7 @@
 /** \file portal.cpp
  * Implementation of a portal
  *
- * $Id: portal.cpp,v 1.3 2001/08/10 14:27:12 besson Exp $
+ * $Id: portal.cpp,v 1.4 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,13 @@ bool CPortal::isInFront (CVector &v)
 	CVector n = v1^v2;
 	CVector pv = v - _Poly[0];
 	return ((n*pv) > 0.0f);
+}
+
+
+// ***************************************************************************
+void CPortal::resetClusterLinks()
+{
+	_Clusters[0] = _Clusters[1] = NULL;
 }
 
 // ***************************************************************************

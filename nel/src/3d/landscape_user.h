@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.10 2002/01/16 10:56:43 berenguier Exp $
+ * $Id: landscape_user.h,v 1.11 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,6 +101,9 @@ public:
 	  *  \param multiply is the multiply factor. Final color is (diffuse*multiply*shading+ambiant*(1.0-shading))
 	  */
 	virtual	void	setupStaticLight (const CRGBA &diffuse, const CRGBA &ambiant, float multiply);
+
+	virtual	void	setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
+
 	// @}
 
 

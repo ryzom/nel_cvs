@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.102 2002/01/28 17:28:10 besson Exp $
+ * $Id: landscape.cpp,v 1.103 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -335,6 +335,15 @@ bool			CLandscape::addZone(const CZone	&newZone)
 
 	// copy zone.
 	zone->build(newZone);
+
+	// Affect the current lighting of pointLight to the zone.
+	ItLightGroupColorMap	itLGC= _LightGroupColorMap.begin();
+	while( itLGC != _LightGroupColorMap.end() )
+	{
+		zone->_PointLightArray.setPointLightFactor(itLGC->first, itLGC->second);
+		itLGC++;
+	}
+
 
 	// apply the landscape heightField, modifying BBoxes.
 	zone->applyHeightField(*this);
@@ -2754,5 +2763,91 @@ void		CLandscape::setupColorsFromTileFlags(const NLMISC::CRGBA colors[4])
 		it->second->setupColorsFromTileFlags(colors);
 	}
 }
+
+// ***************************************************************************
+// ***************************************************************************
+// Lightmap Get interface.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+uint8		CLandscape::getLumel(const CPatchIdent &patchId, const CUV &uv) const
+{
+	// \todo yoyo: TODO_ZONEID: change ZoneId in 32 bits...
+	std::map<uint16, CZone*>::const_iterator	it= Zones.find((uint16)patchId.ZoneId);
+	if(it!=Zones.end())
+	{
+		sint	N= (*it).second->getNumPatchs();
+		// patch must exist in the zone.
+		nlassert(patchId.PatchId<N);
+		const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(patchId.PatchId);
+
+		return pa->getLumel(uv);
+	}
+	else
+		// Return full sun contribution as default
+		return 255;
+}
+
+// ***************************************************************************
+void		CLandscape::appendTileLightInfluences(const CPatchIdent &patchId, const CUV &uv, 
+	std::vector<CPointLightInfluence> &pointLightList) const
+{
+	// \todo yoyo: TODO_ZONEID: change ZoneId in 32 bits...
+	std::map<uint16, CZone*>::const_iterator	it= Zones.find((uint16)patchId.ZoneId);
+	if(it!=Zones.end())
+	{
+		sint	N= (*it).second->getNumPatchs();
+		// patch must exist in the zone.
+		nlassert(patchId.PatchId<N);
+		const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(patchId.PatchId);
+
+		pa->appendTileLightInfluences(uv, pointLightList);
+	}
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Lighting
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CLandscape::removeAllPointLights()
+{
+	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	{
+		// for all patch.
+		sint	N= (*it).second->getNumPatchs();
+		for(sint i=0;i<N;i++)
+		{
+			// Clear TileLightInfluences
+			CPatch	*pa= ((*it).second)->getPatch(i);
+			pa->resetTileLightInfluences();
+		}
+
+		// Remove all PointLights.
+		(*it).second->_PointLightArray.clear();
+	}
+
+}
+
+
+// ***************************************************************************
+void			CLandscape::setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor)
+{
+	// Store the result in the map for addZone().
+	_LightGroupColorMap[lightGroupName]= nFactor;
+
+	// Affect currently added zones.
+	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	{
+		(*it).second->_PointLightArray.setPointLightFactor(lightGroupName, nFactor);
+	}
+}
+
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.8 2002/02/04 10:34:30 vizerie Exp $
+ * $Id: mesh_base_instance.h,v 1.9 2002/02/06 16:55:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,6 @@ class CMesh;
 class CMeshMRM;
 class CMeshBaseInstanceAnimDetailObs;
 class CAnimatedLightmap;
-
 
 // ***************************************************************************
 // ClassIds.
@@ -127,6 +126,11 @@ public:
 	{
 		return _ApplySkinOk;
 	}
+
+
+	/// Lighting behavior. return true if mesh!=NULL and if not all lightMapped.
+	virtual bool		isLightable() const;
+
 
 	/// Select a texture set for this mesh (if available)
 	void selectTextureSet(uint index);

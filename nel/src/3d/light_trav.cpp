@@ -1,7 +1,7 @@
 /** \file light_trav.cpp
  * <File description>
  *
- * $Id: light_trav.cpp,v 1.5 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: light_trav.cpp,v 1.6 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "3d/light_trav.h"
 #include "3d/hrc_trav.h"
 #include "3d/clip_trav.h"
+#include "3d/root_model.h"
 using namespace std;
 using namespace NLMISC;
 
@@ -38,12 +39,62 @@ using namespace	NLMISC;
 // ***************************************************************************
 CLightTrav::CLightTrav()
 {
+	_LightedList.reserve(1024);
+
+	LightModelRoot= NULL;
+	LightingSystemEnabled= false;
 }
+
+// ***************************************************************************
+void	CLightTrav::setLightModelRoot(CRootModel *lightModelRoot)
+{
+	nlassert(lightModelRoot);
+	LightModelRoot= lightModelRoot;
+}
+
 
 // ***************************************************************************
 IObs		*CLightTrav::createDefaultObs() const
 {
 	return	new CDefaultLightObs;
+}
+
+
+// ***************************************************************************
+void		CLightTrav::clearLightedList()
+{
+	_LightedList.clear();
+}
+// ***************************************************************************
+void		CLightTrav::addLightedObs(IBaseLightObs *o)
+{
+	_LightedList.push_back(o);
+}
+
+
+// ***************************************************************************
+void		CLightTrav::traverse()
+{
+	// If lighting System disabled, skip
+	if(!LightingSystemEnabled)
+		return;
+
+
+	nlassert(LightModelRoot);
+
+	// clear the quadGrid of dynamicLights
+	LightingManager.clearDynamicLights();
+
+	// for each lightModel, process her: recompute position, resetLightedModels(), and append to the quadGrid.
+	LightModelRoot->getObs(LightTravId)->traverse(NULL);
+
+	// for each visible lightable transform
+	for(uint i=0; i<_LightedList.size(); i++ )
+	{
+		// traverse(), to recompute light contribution (if needed).
+		_LightedList[i]->traverse(NULL);
+	}
+
 }
 
 
@@ -57,6 +108,8 @@ void		IBaseLightObs::init()
 	nlassert( dynamic_cast<IBaseClipObs*> (getObs(ClipTravId)) );
 	ClipObs= static_cast<IBaseClipObs*> (getObs(ClipTravId));
 }
+
+
 
 
 }

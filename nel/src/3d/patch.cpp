@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.74 2002/01/28 14:26:57 vizerie Exp $
+ * $Id: patch.cpp,v 1.75 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "nel/misc/common.h"
 #include "3d/patchuv_locator.h"
 #include "3d/vegetable_manager.h"
+#include "3d/fast_floor.h"
+#include "3d/light_influence_interpolator.h"
 using	namespace	std;
 using	namespace	NLMISC;
 
@@ -44,7 +46,7 @@ namespace NL3D
 // ***************************************************************************
 CBezierPatch	CPatch::CachePatch;
 const CPatch	*CPatch::LastPatch= NULL;
-uint32			CPatch::_Version=4;
+uint32			CPatch::_Version=5;
 
 
 // ***************************************************************************
@@ -1349,6 +1351,8 @@ void			CPatch::resetRenderFar()
 void			CPatch::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 5:
+		- TileLightInfluences serialized.
 	Version 4:
 		- Smooth flag serialized
 	Version 3:
@@ -1362,6 +1366,13 @@ void			CPatch::serial(NLMISC::IStream &f)
 		- base verison.
 	*/
 	uint	ver= f.serialVersion(_Version);
+
+	// No more compatibility before version 2, because OrderS / OrderT not serialized in preceding version
+	// Doens't matter since CZone::serial() do not support it too.
+	if (ver<2)
+	{
+		throw EOlderStream(f);
+	}
 
 	f.xmlSerial (Vertices[0], Vertices[1], Vertices[2], Vertices[3], "VERTICIES");
 
@@ -1409,6 +1420,23 @@ void			CPatch::serial(NLMISC::IStream &f)
 	{
 		Flags=NL_PATCH_SMOOTH_FLAG_MASK;
 	}
+
+	// Serialize TileLightInfluences
+	if(ver>=5)
+	{
+		f.xmlPush ("TILE_LIGHT_INFLUENCES");
+		f.serialCont(TileLightInfluences);
+		f.xmlPop ();
+	}
+	else
+	{
+		if(f.isReading())
+		{
+			// Fill default.
+			resetTileLightInfluences();
+		}
+	}
+
 }
 
 
@@ -2326,6 +2354,23 @@ void		CPatch::getTileLumelmapPrecomputed(uint ts, uint tt, uint8 *dest, uint str
 				dest[y*stride + x]= UncompressedLumels[offset + x + (y<<NL_LUMEL_BY_TILE_SHIFT)];
 			}
 		}
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::getTileLumelmapPixelPrecomputed(uint ts, uint tt, uint s, uint t, uint8 &dest) const
+{
+	// Uncompressed ?
+	if (UncompressedLumels.empty())
+	{
+		// Return the lumel
+		dest= getUnpackLumelBlock (&(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]), s+(t<<2));
+	}
+	else
+	{
+		// Return the lumel
+		dest= UncompressedLumels[ts+tt*(OrderS<<NL_LUMEL_BY_TILE_SHIFT)+s+(t*OrderS<<2)];
 	}
 }
 
@@ -3251,6 +3296,20 @@ uint8			CPatch::getOrderForEdge(sint8 edge) const
 
 
 // ***************************************************************************
+void		CPatch::resetTileLightInfluences()
+{
+	// Fill default.
+	TileLightInfluences.resize((OrderS/2 +1) * (OrderT/2 +1));
+	// Disable All light influence on all points
+	for(uint i=0;i <TileLightInfluences.size(); i++)
+	{
+		// Disable all light influence on this point.
+		TileLightInfluences[i].Light[0]= 0xFF;
+	}
+}
+
+
+// ***************************************************************************
 // ***************************************************************************
 // Realtime Bind info.
 // ***************************************************************************
@@ -3300,6 +3359,109 @@ void CPatch::copyTileFlagsFromPatch(const CPatch *src)
 		Tiles[k].copyFlagsFromOther(src->Tiles[k]);
 	}
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Lightmap get interface.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+uint8		CPatch::getLumel(const CUV &uv) const
+{
+	// compute tile coord and lumel coord.
+	sint	ts, tt;
+	// get in lumel coord.
+	sint	w= (OrderS<<NL_LUMEL_BY_TILE_SHIFT);
+	sint	h= (OrderT<<NL_LUMEL_BY_TILE_SHIFT);
+	// fastFloor: use a precision of 256 to avoid doing OptFastFloorBegin.
+	// add 128, to round and get cneter of lumel.
+	ts= OptFastFloor(uv.U* (w<<8) + 128);	ts>>=8;
+	tt= OptFastFloor(uv.V* (h<<8) + 128);	tt>>=8;
+	clamp(ts, 0, w-1);
+	clamp(tt, 0, h-1);
+	// get the lumel
+	uint8	ret;
+	getTileLumelmapPixelPrecomputed(ts>>NL_LUMEL_BY_TILE_SHIFT, tt>>NL_LUMEL_BY_TILE_SHIFT, 
+		ts&(NL_LUMEL_BY_TILE-1), tt&(NL_LUMEL_BY_TILE-1), ret);
+
+	return ret;
+}
+
+// ***************************************************************************
+void		CPatch::appendTileLightInfluences(const CUV &uv, 
+	std::vector<CPointLightInfluence> &pointLightList) const
+{
+	// Compute TLI coord for BiLinear.
+	sint	x,y;
+	// There is (OrderS/2+1) * (OrderT/2+1) tileLightInfluences (TLI).
+	sint	w= (OrderS>>1);
+	sint	h= (OrderT>>1);
+	sint	wTLI= w+1;
+	sint	hTLI= h+1;
+	// fastFloor: use a precision of 256 to avoid doing OptFastFloorBegin.
+	x= OptFastFloor(uv.U * (w<<8));
+	y= OptFastFloor(uv.V * (h<<8));
+	clamp(x, 0, w<<8);
+	clamp(y, 0, h<<8);
+	// compute the TLI coord, and the subCoord for bilinear.
+	sint	xTLI,yTLI, xSub, ySub;
+	xTLI= x>>8; clamp(xTLI, 0, w-1);
+	yTLI= y>>8; clamp(yTLI, 0, h-1);
+	// Hence, xSub and ySub range is [0, 256].
+	xSub= x - (xTLI<<8);
+	ySub= y - (yTLI<<8);
+
+
+	// Use a CLightInfluenceInterpolator to biLinear light influence
+	CLightInfluenceInterpolator		interp;
+	// Must support only 2 light per TLI.
+	nlassert(CTileLightInfluence::NumLightPerCorner==2);
+	nlassert(CLightInfluenceInterpolator::NumLightPerCorner==2);
+	// Get ref on array of PointLightNamed.
+	CPointLightNamed	*zonePointLights= NULL;
+	if( getZone()->_PointLightArray.getPointLights().size() >0 )
+	{
+		// const_cast, because will only change _IdInfluence, and 
+		// also because CLightingManager will call appendLightedModel()
+		zonePointLights= const_cast<CPointLightNamed*>(&(getZone()->_PointLightArray.getPointLights()[0]));
+	}
+	// For 4 corners.
+	for(y=0;y<2;y++)
+	{
+		for(x=0;x<2;x++)
+		{
+			// get ref on TLI, and on corner.
+			const CTileLightInfluence				&tli= TileLightInfluences[ (yTLI+y)*wTLI + xTLI+x ];
+			CLightInfluenceInterpolator::CCorner	&corner= interp.Corners[y*2 + x];
+			// For all lights
+			for(uint lid= 0; lid<CTileLightInfluence::NumLightPerCorner; lid++)
+			{
+				// get the id of the light in the zone
+				uint	tliLightId= tli.Light[lid];
+				// If empty id, stop
+				if(tliLightId==0xFF)
+					break;
+				else
+				{
+					// Set pointer of the light in the corner
+					corner.Lights[lid]= zonePointLights + tliLightId;
+				}
+			}
+			// Reset Empty slots.
+			for(; lid<CTileLightInfluence::NumLightPerCorner; lid++)
+			{
+				// set to NULL
+				corner.Lights[lid]= NULL;
+			}
+		}
+	}
+	// interpolate.
+	interp.interpolate(pointLightList, xSub/256.f, ySub/256.f);
+}
+
 
 
 } // NL3D

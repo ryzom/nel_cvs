@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.2 2001/08/16 15:50:00 besson Exp $
+ * $Id: cluster.h,v 1.3 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,9 @@ public:
 	NLMISC::CAABBox& getBBox() { return _BBox; }
 	
 	/// Linking
+
+	// reset all links to portals.
+	void resetPortalLinks ();
 
 	void link (CPortal* portal);
 	void unlink (CPortal* portal);

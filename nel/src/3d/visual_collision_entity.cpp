@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.11 2002/01/08 09:39:27 berenguier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.12 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,7 @@ CVisualCollisionEntity::CVisualCollisionEntity(CVisualCollisionManager *owner) :
 	_CeilMode= false;
 	_SnapToRenderedTesselation= true;
 
+	_LastGPTValid= false;
 }
 
 
@@ -84,14 +85,31 @@ bool		CVisualCollisionEntity::snapToGround(CVector &pos)
 
 
 // ***************************************************************************
-bool		CVisualCollisionEntity::snapToGround(CVector &pos, CVector &normal)
+CTrianglePatch		*CVisualCollisionEntity::getPatchTriangleUnderUs(const CVector &pos, CVector &res)
 {
 	// verify if landscape (refptr) is here.
 	if(_Owner->_Landscape==NULL)
-		return false;
+	{
+		_LastGPTValid= false;
+		return NULL;
+	}
 
 
-	// update the cahe of tile info near this position.
+	// Test GPT cache.
+	//==================
+	// If last call was valid, and if same pos (input or output), return cached information
+	if(_LastGPTValid && (pos==_LastGPTPosInput || pos==_LastGPTPosOutput) )
+	{
+		// copy from cache.
+		res= _LastGPTPosOutput;
+		// copy into cache
+		_LastGPTPosInput= pos;
+		// and return ptr on cache.
+		return &_LastGPTTrianglePatch;
+	}
+
+
+	// update the cache of tile info near this position.
 	// =================
 	testComputeLandscape(pos);
 
@@ -104,7 +122,7 @@ bool		CVisualCollisionEntity::snapToGround(CVector &pos, CVector &normal)
 	// find the better face under the entity.
 	// =================
 	float	sqrBestDist= sqr(1000.f);
-	CVector	res, hit;
+	CVector	hit;
 	// build the vertical ray.
 	CVector		segP0= pos - CVector(0,0,100);
 	CVector		segP1= pos + CVector(0,0,100);
@@ -154,8 +172,36 @@ bool		CVisualCollisionEntity::snapToGround(CVector &pos, CVector &normal)
 		ptr= ptr->Next;
 	}
 
-	// result. NB: if not found, dot not modify.
+
+	// found ??
 	if(sqrBestDist<sqr(1000))
+	{
+		// copy into cache
+		_LastGPTValid= true;
+		_LastGPTTrianglePatch= testTriangles[bestTriangle];
+		_LastGPTPosInput= pos;
+		_LastGPTPosOutput= res;
+		// and return ptr on cache.
+		return &_LastGPTTrianglePatch;
+	}
+	else
+	{
+		_LastGPTValid= false;
+		return NULL;
+	}
+
+}
+
+
+// ***************************************************************************
+bool		CVisualCollisionEntity::snapToGround(CVector &pos, CVector &normal)
+{
+	// Get Patch Triangle Under Us
+	CVector		res;
+	CTrianglePatch	*tri= getPatchTriangleUnderUs(pos, res);
+
+	// result. NB: if not found, dot not modify.
+	if( tri )
 	{
 		if(_SnapToRenderedTesselation)
 		{
@@ -163,18 +209,17 @@ bool		CVisualCollisionEntity::snapToGround(CVector &pos, CVector &normal)
 			pos= res;
 
 			// snap the position to the current rendered tesselation.
-			CTrianglePatch	&tri= testTriangles[bestTriangle];
-			snapToLandscapeCurrentTesselation(pos, tri);
-
-			// compute the normal.
-			normal= (tri.V1-tri.V0)^(tri.V2-tri.V0);
-			normal.normalize();
+			snapToLandscapeCurrentTesselation(pos, *tri);
 		}
 		else
 		{
 			// just snap to the accurate tile tesselation.
 			pos= res;
 		}
+
+		// compute the normal.
+		normal= (tri->V1-tri->V0)^(tri->V2-tri->V0);
+		normal.normalize();
 
 		return true;
 	}
@@ -184,18 +229,25 @@ bool		CVisualCollisionEntity::snapToGround(CVector &pos, CVector &normal)
 
 
 // ***************************************************************************
-void		CVisualCollisionEntity::snapToLandscapeCurrentTesselation(CVector &pos, const CTrianglePatch &tri)
+void		CVisualCollisionEntity::computeUvForPos(const CTrianglePatch &tri, const CVector &pos, CUV &uv)
 {
-	// Must find the Uv under the position.
 	// compute UV gradients.
 	CVector		Gu;
 	CVector		Gv;
 	tri.computeGradient(tri.Uv0.U, tri.Uv1.U, tri.Uv2.U, Gu);
 	tri.computeGradient(tri.Uv0.V, tri.Uv1.V, tri.Uv2.V, Gv);
-	// compute UV for position.
-	CUV		uv;
+	// interpolate
 	uv.U= tri.Uv0.U + Gu*(pos-tri.V0);
 	uv.V= tri.Uv0.V + Gv*(pos-tri.V0);
+}
+
+
+// ***************************************************************************
+void		CVisualCollisionEntity::snapToLandscapeCurrentTesselation(CVector &pos, const CTrianglePatch &tri)
+{
+	// compute UV for position.
+	CUV		uv;
+	computeUvForPos(tri, pos, uv);
 
 	// Ask pos to landscape.
 	CVector		posLand;
@@ -423,6 +475,42 @@ void		CVisualCollisionEntity::doComputeLandscape(const CVector &pos)
 	_LandscapeQuadGrid.build(_PatchQuadBlocks, delta);
 
 }
+
+
+// ***************************************************************************
+bool		CVisualCollisionEntity::getStaticLightSetup(const CVector &pos, 
+	std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution)
+{
+	// Get Patch Triangle Under Us
+	CVector		res;
+	CTrianglePatch	*tri= getPatchTriangleUnderUs(pos, res);
+
+	// result. NB: if not found, dot not modify.
+	if( tri )
+	{
+		// compute UV for position.
+		CUV		uv;
+		computeUvForPos(*tri, pos, uv);
+
+		// get the sunContribution
+		sunContribution= _Owner->_Landscape->getLumel(tri->PatchId, uv);
+		// see getStaticLightSetup.
+		sunContribution= _Owner->_SunContributionLUT[sunContribution];
+
+		// append any lights of interest.
+		_Owner->_Landscape->appendTileLightInfluences(tri->PatchId, uv, pointLightList);
+
+		return true;
+	}
+	else
+	{
+		// Suppose full Sun Contribution, and don't add any pointLight
+		sunContribution= 255;
+
+		return false;
+	}
+}
+
 
 
 } // NL3D

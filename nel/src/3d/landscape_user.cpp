@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.16 2002/01/16 12:14:38 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.17 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,7 +90,7 @@ void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius, std::v
 	zonesAdded.clear();
 
 	_ZoneManager.loadAllZonesAround((uint)pos.x, (uint)(-pos.y), (uint)radius, true);
-	while(_ZoneManager.getTaskListSize() != 0)
+	while(_ZoneManager.getTaskListSize() != 0 || !_ZoneManager.ZoneAdded)
 	{
 		// Must do it at init only.
 		nlassert(_ZoneManager.ZoneRemoved);
@@ -134,7 +134,7 @@ void	CLandscapeUser::refreshAllZonesAround(const CVector &pos, float radius, std
 		if(zr != "")
 			zonesRemoved.push_back(zr);
 	}
-	while(_ZoneManager.getTaskListSize() != 0);
+	while(_ZoneManager.getTaskListSize() != 0 || !_ZoneManager.ZoneAdded || !_ZoneManager.ZoneRemoved );
 
 }
 
@@ -273,6 +273,13 @@ void		CLandscapeUser::setVegetableWind(const CVector &windDir, float windFreq, f
 void		CLandscapeUser::setVegetableUpdateLightingFrequency(float freq)
 {
 	_Landscape->Landscape.setVegetableUpdateLightingFrequency(freq);
+}
+
+
+//****************************************************************************
+void		CLandscapeUser::setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor)
+{
+	_Landscape->Landscape.setPointLightFactor(lightGroupName, nFactor);
 }
 
 

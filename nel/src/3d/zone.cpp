@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.57 2002/01/28 14:43:17 vizerie Exp $
+ * $Id: zone.cpp,v 1.58 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,8 +107,24 @@ void			CZone::computeBBScaleBias(const CAABBox	&bb)
 // ***************************************************************************
 void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const std::vector<CBorderVertex> &borderVertices, uint32 numVertices)
 {
+	CZoneInfo	zinfo;
+	zinfo.ZoneId= zoneId;
+	zinfo.Patchs= patchs;
+	zinfo.BorderVertices= borderVertices;
+
+	build(zinfo, numVertices);
+}
+// ***************************************************************************
+void			CZone::build(const CZoneInfo &zoneInfo, uint32 numVertices)
+{
 	sint	i,j;
 	nlassert(!Compiled);
+
+	// Ref inupt
+	uint16		zoneId= zoneInfo.ZoneId;
+	const std::vector<CPatchInfo> &patchs= zoneInfo.Patchs;
+	const std::vector<CBorderVertex> &borderVertices= zoneInfo.BorderVertices;
+	
 
 	ZoneId= zoneId;
 	BorderVertices= borderVertices;
@@ -169,6 +185,16 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 			pa.Interiors[i].pack(p.Interiors[i], PatchBias, PatchScale);
 		pa.Tiles= pi.Tiles;
 		pa.TileColors= pi.TileColors;
+		// Copy TileLightInfluences
+		if(pi.TileLightInfluences.size()==0)
+		{
+			pa.resetTileLightInfluences();
+		}
+		else
+		{
+			nlassert(pi.TileLightInfluences.size()== (uint)(pi.OrderS/2+1)*(pi.OrderT/2+1));
+			pa.TileLightInfluences= pi.TileLightInfluences;
+		}
 
 		// Copy order of the patch
 		pa.OrderS= pi.OrderS;
@@ -205,13 +231,60 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 
 	NumVertices= maxVertex+1;
 	NumVertices= max((uint32)NumVertices, numVertices);
-}
 
+
+	// Copy PointLights.
+	//=========================
+	// build array, lights are sorted
+	std::vector<uint>	plRemap;
+	_PointLightArray.build(zoneInfo.PointLights, plRemap);
+	// Check TileLightInfluences integrity, and remap PointLight Indices.
+	for(j=0;j<(sint)patchs.size();j++)
+	{
+		CPatch				&pa= Patchs[j];
+		for(uint k= 0; k<pa.TileLightInfluences.size(); k++)
+		{
+			CTileLightInfluence		&tli= pa.TileLightInfluences[k];
+			for(uint l=0; l<CTileLightInfluence::NumLightPerCorner; l++)
+			{
+				// If NULL light, break and continue to next TileLightInfluence.
+				if(tli.Light[l]== 0xFF)
+					break;
+				else
+				{
+					// Check good index.
+					nlassert(tli.Light[l] < _PointLightArray.getPointLights().size());
+					// Remap index, because of light sorting.
+					tli.Light[l]= plRemap[tli.Light[l]];
+				}
+
+			}
+		}
+	}
+}
 
 // ***************************************************************************
 void			CZone::retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVertex> &borderVertices)
 {
+	CZoneInfo	zinfo;
+
+	retrieve(zinfo);
+
+	patchs= zinfo.Patchs;
+	borderVertices= zinfo.BorderVertices;
+}
+
+// ***************************************************************************
+void			CZone::retrieve(CZoneInfo &zoneInfo)
+{
 	sint i,j;
+
+	// Ref on input.
+	std::vector<CPatchInfo> &patchs= zoneInfo.Patchs;
+	std::vector<CBorderVertex> &borderVertices= zoneInfo.BorderVertices;
+	// Copy zoneId.
+	zoneInfo.ZoneId= getZoneId();
+
 
 	// uncompress Patchs.
 	//=========================
@@ -247,6 +320,7 @@ void			CZone::retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVerte
 			pa.Interiors[i].unpack(p.Interiors[i], PatchBias, PatchScale);
 		pi.Tiles= pa.Tiles;
 		pi.TileColors= pa.TileColors;
+		pi.TileLightInfluences= pa.TileLightInfluences;
 		pi.Lumels.resize ((pa.OrderS*4)*(pa.OrderT*4));
 		pi.Flags=(pa.Flags&NL_PATCH_SMOOTH_FLAG_MASK)>>NL_PATCH_SMOOTH_FLAG_SHIFT;
 
@@ -268,6 +342,11 @@ void			CZone::retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVerte
 	// retrieve bordervertices.
 	//=========================
 	borderVertices= BorderVertices;
+
+	// retrieve PointLights.
+	//=========================
+	zoneInfo.PointLights= _PointLightArray.getPointLights();
+
 }
 
 
@@ -290,6 +369,10 @@ void			CZone::build(const CZone &zone)
 	//=========================
 	Patchs= zone.Patchs;
 	PatchConnects= zone.PatchConnects;
+
+	// copy pointLights.
+	//=========================
+	_PointLightArray= zone._PointLightArray;
 
 
 	NumVertices= zone.NumVertices;
@@ -331,6 +414,8 @@ void			CPatchInfo::CBindInfo::serial(NLMISC::IStream &f)
 void			CZone::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 4:
+		- PointLights
 	Version 3:
 		- Lumels compression version 2.
 	Version 2:
@@ -340,7 +425,7 @@ void			CZone::serial(NLMISC::IStream &f)
 	Version 0:
 		- base verison.
 	*/
-	uint	ver= f.serialVersion(3);
+	uint	ver= f.serialVersion(4);
 
 	// No more compatibility before version 3
 	if (ver<3)
@@ -368,42 +453,17 @@ void			CZone::serial(NLMISC::IStream &f)
 	f.serialCont(PatchConnects);
 	f.xmlPop ();
 
+	if (ver>=4)
+	{
+		f.xmlPush ("POINT_LIGHTS");
+		f.serial(_PointLightArray);
+		f.xmlPop ();
+	}
+
 	// If read and version 0, must init default TileColors of patchs.
 	//===============================================================
-	if(f.isReading() && ver<2)
-	{
-		for(sint j=0;j<(sint)Patchs.size();j++)
-		{
-			CPatch				&pa= Patchs[j];
-			CPatchConnect		&pc= PatchConnects[j];
-
-			// Force Order of the patch
-			pa.OrderS=pc.OldOrderS;
-			pa.OrderT=pc.OldOrderT;
-
-			// Tile colors exist ?
-			if (ver<1)
-			{
-				// Leave it as default behavior: Must init the color as pure white...
-				// We must fo it with help of patchconnects OrderS and OrderT.
-				pa.TileColors.resize( (pc.OldOrderS+1)*(pc.OldOrderT+1) );
-				for(sint i=0;i<(sint)pa.TileColors.size();i++)
-				{
-					pa.TileColors[i].Color565= 0xFFFF;
-					pa.TileColors[i].LightX= 0xFF;
-					pa.TileColors[i].LightY= 0x00;
-					pa.TileColors[i].LightZ= 0x00;
-				}
-			}
-
-			// Lumels compressed exist ?
-			if (ver<3)
-			{
-				// Reset shadows
-				pa.resetCompressedLumels ();
-			}
-		}
-	}
+	// if(f.isReading() && ver<2) ... 
+	// Deprecated, because ver<3 not supported
 }
 
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.61 2002/01/28 14:38:48 vizerie Exp $
+ * $Id: scene.cpp,v 1.62 2002/02/06 16:54:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@
 #include "3d/water_model.h"
 #include "3d/vegetable_blend_layer_model.h"
 #include "3d/root_model.h"
+#include "3d/point_light_model.h"
 
 
 #include "nel/misc/file.h"
@@ -99,6 +100,7 @@ void	CScene::registerBasics()
 	CWaveMakerModel::registerBasic();
 	CVegetableBlendLayerModel::registerBasic();
 	CRootModel::registerBasic();
+	CPointLightModel::registerBasic();
 }
 
 	
@@ -124,15 +126,14 @@ CScene::CScene()
 	Root= NULL;
 	SkipModelRoot= NULL;
 	SonsOfAncestorSkeletonModelGroup= NULL;
+	LightModelRoot= NULL;
 
 	_CurrentTime = 0 ;
 	_EllapsedTime = 0 ;
 	_RealTime = 0 ;
 	_FirstAnimateCall = true ;
-	// TODO: init NULL ligthgroup root.
 
-	// \todo yoyo: init NULL ligthgroup root.
-
+	_LightingSystemEnabled= false;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -187,6 +188,7 @@ void	CScene::release()
 	Root= NULL;
 	SkipModelRoot= NULL;
 	SonsOfAncestorSkeletonModelGroup= NULL;
+	LightModelRoot= NULL;
 	CurrentCamera= NULL;
 }
 // ***************************************************************************
@@ -221,16 +223,16 @@ void	CScene::initDefaultRoots()
 	HrcTrav->setRoot(Root);
 	ClipTrav->setRoot(Root);
 
-	// need no root for AnimDetailTrav and LoadBalancingTrav.
+	// need no root for AnimDetailTrav, LoadBalancingTrav, LightTrav and RenderTrav
+	// because all of them use either the ClipVisibilityList or their own list.
 	// AnimDetailTrav->setRoot(Root);
 	// LoadBalancingTrav->setRoot(Root);
+	// LightTrav->setRoot(Root);
+	// RenderTrav->setRoot(Root);
 
 
 	// The root is always freezed (never move).
 	Root->freeze();
-
-
-	// \todo yoyo: create / setRoot the lightgroup.
 
 
 	// Create a SkipModelRoot, for CTransform::freezeHRC().
@@ -246,8 +248,23 @@ void	CScene::initDefaultRoots()
 	ClipTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
 	AnimDetailTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
 	LoadBalancingTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
+	LightTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
+	RenderTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
 	// inform the clipTrav of this model.
 	ClipTrav->setSonsOfAncestorSkeletonModelGroup(SonsOfAncestorSkeletonModelGroup);
+
+
+	// init root for Lighting.
+	LightModelRoot= static_cast<CRootModel*>(createModel(RootModelId));
+	// unlink it from all traversals, because special, only used in CLightTrav::traverse()
+	HrcTrav->unlink(NULL, LightModelRoot);
+	ClipTrav->unlink(NULL, LightModelRoot);
+	AnimDetailTrav->unlink(NULL, LightModelRoot);
+	LoadBalancingTrav->unlink(NULL, LightModelRoot);
+	LightTrav->unlink(NULL, LightModelRoot);
+	RenderTrav->unlink(NULL, LightModelRoot);
+	// inform the LightTrav of this model.
+	LightTrav->setLightModelRoot(LightModelRoot);
 }
 
 // ***************************************************************************
@@ -338,6 +355,7 @@ void	CScene::render(bool	doHrcPass)
 	// Set the renderTrav for cliptrav.
 	ClipTrav->setRenderTrav (RenderTrav);
 	ClipTrav->setHrcTrav (HrcTrav);
+	ClipTrav->setLightTrav (LightTrav);
 	ClipTrav->Camera = CurrentCamera;
 	ClipTrav->setQuadGridClipManager (&_QuadGridClipManager);
 
@@ -668,6 +686,90 @@ bool  CScene::getLayersRenderingOrder() const
 CParticleSystemManager &CScene::getParticleSystemManager()
 {
 	return _ParticleSystemManager;
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Lighting Mgt.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CScene::enableLightingSystem(bool enable)
+{
+	_LightingSystemEnabled= enable;
+
+	// Set to RenderTrav and LightTrav
+	RenderTrav->LightingSystemEnabled= _LightingSystemEnabled;
+	LightTrav->LightingSystemEnabled= _LightingSystemEnabled;
+}
+
+
+// ***************************************************************************
+void			CScene::setAmbientGlobal(NLMISC::CRGBA ambient)
+{
+	RenderTrav->AmbientGlobal= ambient;
+}
+void			CScene::setSunAmbient(NLMISC::CRGBA ambient)
+{
+	RenderTrav->SunAmbient= ambient;
+}
+void			CScene::setSunDiffuse(NLMISC::CRGBA diffuse)
+{
+	RenderTrav->SunDiffuse= diffuse;
+}
+void			CScene::setSunSpecular(NLMISC::CRGBA specular)
+{
+	RenderTrav->SunSpecular= specular;
+}
+void			CScene::setSunDirection(const NLMISC::CVector &direction)
+{
+	RenderTrav->setSunDirection(direction);
+}
+
+
+// ***************************************************************************
+NLMISC::CRGBA	CScene::getAmbientGlobal() const
+{
+	return RenderTrav->AmbientGlobal;
+}
+NLMISC::CRGBA	CScene::getSunAmbient() const
+{
+	return RenderTrav->SunAmbient;
+}
+NLMISC::CRGBA	CScene::getSunDiffuse() const
+{
+	return RenderTrav->SunDiffuse;
+}
+NLMISC::CRGBA	CScene::getSunSpecular() const
+{
+	return RenderTrav->SunSpecular;
+}
+NLMISC::CVector	CScene::getSunDirection() const
+{
+	return RenderTrav->getSunDirection();
+}
+
+
+// ***************************************************************************
+void		CScene::setMaxLightContribution(uint nlights)
+{
+	LightTrav->LightingManager.setMaxLightContribution(nlights);
+}
+uint		CScene::getMaxLightContribution() const
+{
+	return LightTrav->LightingManager.getMaxLightContribution();
+}
+
+void		CScene::setLightTransitionThreshold(float lightTransitionThreshold)
+{
+	LightTrav->LightingManager.setLightTransitionThreshold(lightTransitionThreshold);
+}
+float		CScene::getLightTransitionThreshold() const
+{
+	return LightTrav->LightingManager.getLightTransitionThreshold();
 }
 
 

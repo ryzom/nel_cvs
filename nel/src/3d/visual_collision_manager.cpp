@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.cpp
  * <File description>
  *
- * $Id: visual_collision_manager.cpp,v 1.3 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: visual_collision_manager.cpp,v 1.4 2002/02/06 16:54:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "3d/visual_collision_manager.h"
 #include "3d/visual_collision_entity.h"
 #include "3d/landscape.h"
+#include "nel/misc/common.h"
 
 
 namespace NL3D 
@@ -44,6 +45,9 @@ CVisualCollisionManager::CVisualCollisionManager() :
 	_PatchQuadBlockAllocator(PatchQuadBlockAllocatorBlockSize)
 {
 	_Landscape= NULL;
+
+	// Default.
+	setSunContributionPower(0.5f);
 }
 // ***************************************************************************
 CVisualCollisionManager::~CVisualCollisionManager()
@@ -95,6 +99,23 @@ CPatchQuadBlock			*CVisualCollisionManager::newPatchQuadBlock()
 void					CVisualCollisionManager::deletePatchQuadBlock(CPatchQuadBlock *ptr)
 {
 	_PatchQuadBlockAllocator.free(ptr);
+}
+
+
+// ***************************************************************************
+void					CVisualCollisionManager::setSunContributionPower(float power)
+{
+	NLMISC::clamp(power, 0.f, 1.f);
+
+	for(uint i=0; i<256; i++)
+	{
+		float	f= i/255.f;
+		f= powf(f, power);
+		sint	uf= (sint)floor(255*f);
+		NLMISC::clamp(uf, 0, 255);
+		_SunContributionLUT[i]= uf;
+	}
+
 }
 
 

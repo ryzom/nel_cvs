@@ -1,7 +1,7 @@
 /** \file surface_quad.cpp
  *
  *
- * $Id: surface_quad.cpp,v 1.9 2002/01/29 10:32:40 legros Exp $
+ * $Id: surface_quad.cpp,v 1.10 2002/07/01 18:23:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,10 @@
 
 #include "pacs/surface_quad.h"
 
+#include <vector>
+
 using namespace NLMISC;
+using namespace std;
 
 NLPACS::CSurfaceQuadTree::CSurfaceQuadTree()
 {
@@ -375,4 +378,124 @@ void	NLPACS::CSurfaceQuadTree::serial(NLMISC::IStream &f)
 			_Root->serial(f);
 		}
 	}
+}
+
+//
+float	NLPACS::CSurfaceQuadTree::getInterpZ(const CVector &v) const
+{
+	// first get final leaf for position
+	CVector	pos = CVector(v.x, v.y, 0.0f);
+	if (_Root == NULL || !_BBox.include(pos))
+		return v.z;	// return unmodified z
+
+	const IQuadNode				*node = _Root;
+	vector<uint>				children;
+	vector<const IQuadNode*>	nodes;
+
+	while (node != NULL && !node->isLeaf())
+	{
+		nodes.push_back(node);
+
+		nlassert(node->getBBox().include(pos));
+		uint	child;
+
+		if (pos.x > node->_XCenter)
+			child = ((pos.y > node->_YCenter) ? 2 : 1);
+		else
+			child = ((pos.y > node->_YCenter) ? 3 : 0);
+
+		children.push_back(child);
+
+		node = node->getChild(child);
+	}
+
+	if (node == NULL)
+		return v.z;	// return unmodified z
+
+	nodes.push_back(node);
+
+	vector<const CQuadLeaf*>	leaves;
+	vector<const IQuadNode*>	explore;
+
+	leaves.push_back((const CQuadLeaf*)node);
+
+	// for each side of the leaf, find neighbor leaves
+	uint	side;
+	for (side=0; side<4; ++side)
+	{
+		static const sint	ct[4][4] = { {-1, 1, 3,-1}, {-1,-1, 2, 0}, { 1,-1,-1, 3}, { 0, 2,-1,-1} };	// child table
+		static const sint	nt[4][4] = { { 3, 1, 3, 1}, { 2, 0, 2, 0}, { 1, 3, 1, 3}, { 0, 2, 0, 2} };	// neighbor table
+
+		sint	nlev = nodes.size()-1;
+		sint	child = -1;
+
+		while (nlev > 0)
+		{
+			child = ct[children[nlev-1]][side];
+
+			if (child >= 0)
+				break;
+
+			--nlev;
+		}
+
+		// neighbor not found in root, leave
+		if (nlev == 0)
+			continue;
+
+		// get father
+		node = nodes[nlev-1];
+
+		while (nlev < (sint)nodes.size() && node!=NULL && !node->isLeaf())
+		{
+			child = nt[children[nlev-1]][side];
+			node = node->getChild(child);
+
+			++nlev;
+		}
+
+		if (node == NULL)
+			continue;
+
+		if (node->isLeaf())
+		{
+			leaves.push_back((const CQuadLeaf*)node);
+		}
+		else
+		{
+			explore.push_back(node);
+
+			while (!explore.empty())
+			{
+				node = explore.back();
+				explore.pop_back();
+
+				if (node == NULL)
+					continue;
+
+				if (node->isLeaf())
+					leaves.push_back((const CQuadLeaf*)node);
+				else
+				{
+					explore.push_back(node->getChild((side+2)&3));
+					explore.push_back(node->getChild((side+3)&3));
+				}
+			}
+		}
+	}
+
+	uint			i;
+	float			di, wi;
+	float			sum = 0.0;
+	float			interpZ = 0.0;
+
+	for (i=0; i<leaves.size(); ++i)
+	{
+		di = (float)sqrt(sqr(v.x-leaves[i]->_XCenter)+sqr(v.y-leaves[i]->_YCenter))*(float)pow(1.5, leaves[i]->_Level);
+		wi = 1.0f/di;
+		sum += wi;
+		interpZ += (leaves[i]->getMinHeight()+leaves[i]->getMaxHeight())*0.5f*wi;
+	}
+
+	return interpZ / sum;
 }

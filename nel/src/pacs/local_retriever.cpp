@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.49 2002/06/06 15:29:20 legros Exp $
+ * $Id: local_retriever.cpp,v 1.50 2002/07/01 18:23:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1233,6 +1233,7 @@ float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position)
 	}
 	else
 	{
+
 		// find quad leaf.
 		const CQuadLeaf	*leaf = _Surfaces[position.Surface].getQuadTree().getLeaf(position.Estimation);
 
@@ -1248,6 +1249,8 @@ float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position)
 			float	meanHeight = (leaf->getMinHeight()+leaf->getMaxHeight())*0.5f;
 			return meanHeight;
 		}
+
+//		return _Surfaces[position.Surface].getQuadTree().getInterpZ(position.Estimation);
 	}
 }
 

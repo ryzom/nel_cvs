@@ -1,7 +1,7 @@
 /** \file surface_quad.h
  * 
  *
- * $Id: surface_quad.h,v 1.3 2002/01/29 10:32:40 legros Exp $
+ * $Id: surface_quad.h,v 1.4 2002/07/01 18:23:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -178,6 +178,8 @@ public:
 
 	bool						check() const;
 	const CQuadLeaf				*getLeaf(const NLMISC::CVector &v) const;
+
+	float						getInterpZ(const NLMISC::CVector &v) const;
 
 	void						translate(const NLMISC::CVector &translation)
 	{

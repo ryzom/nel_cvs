@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.14 2002/06/13 14:38:47 legros Exp $
+ * $Id: move_container.h,v 1.15 2002/07/01 18:23:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,7 +111,8 @@ public:
 	bool						evalNCPrimitiveCollision (double deltaTime, UMovePrimitive *primitive, uint8 worldImage);
 
 	/// Make a move test
-	bool						testMove (UMovePrimitive* primitive, const NLMISC::CVectorD& speed, double deltaTime, uint8 worldImage);
+	bool						testMove (UMovePrimitive* primitive, const NLMISC::CVectorD& speed, double deltaTime, uint8 worldImage,
+											NLMISC::CVectorD *contactNormal);
 
 	/// Allocate a move element
 	CMoveElement				*allocateMoveElement ();
@@ -223,18 +224,21 @@ private:
 
 	// Eval one terrain collision
 	bool						evalOneTerrainCollision (double beginTime, CMovePrimitive *primitive, uint8 primitiveWorldImage, 
-														bool testMove, bool &testMoveValid, CCollisionOTStaticInfo *staticColInfo);
+															bool testMove, bool &testMoveValid, CCollisionOTStaticInfo *staticColInfo, 
+															NLMISC::CVectorD *contactNormal);
 
 	// Eval one primitive collision
 	bool						evalOnePrimitiveCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, 
 													uint8 primitiveWorldImage, bool testMove, bool secondIsStatic, 
-													bool &testMoveValid, CCollisionOTDynamicInfo *dynamicColInfo);
+													bool &testMoveValid, CCollisionOTDynamicInfo *dynamicColInfo,
+													NLMISC::CVectorD *contactNormal);
 
 	// Eval final step
 	bool						evalPrimAgainstPrimCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 
 													CPrimitiveWorldImage *wI, CPrimitiveWorldImage *otherWI, bool testMove,
 													uint8 firstWorldImage, uint8 secondWorldImage, bool secondIsStatic, 
-													CCollisionOTDynamicInfo *dynamicColInfo);
+													CCollisionOTDynamicInfo *dynamicColInfo,
+													NLMISC::CVectorD *contactNormal);
 
 	// Eval all collision for modified primitives
 	void						evalAllCollisions (double beginTime, uint8 worldImage);

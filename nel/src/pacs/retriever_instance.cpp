@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.35 2002/06/07 12:34:37 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.36 2002/07/01 18:23:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -401,6 +401,7 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estima
 				if (leaf != NULL)
 				{
 					meanHeight = leaf->getMaxHeight();
+					//meanHeight = retriever.getSurfaces()[surf].getQuadTree().getInterpZ(localEstimated);
 
 					// if it is closer to the estimation than the previous remembered...
 					found = true;
@@ -472,6 +473,8 @@ void	NLPACS::CRetrieverInstance::snap(NLPACS::ULocalPosition &position, const NL
 	if (_Type == CLocalRetriever::Landscape)
 	{
 		// search in the surface's quad tree for the actual height
+//		position.Estimation.z = retriever.getSurfaces()[position.Surface].getQuadTree().getInterpZ(position.Estimation);
+
 		const CQuadLeaf	*leaf = retriever.getSurfaces()[position.Surface].getQuadTree().getLeaf(position.Estimation);
 		// if there is no acceptable leaf, just give up
 		if (leaf != NULL)
@@ -482,6 +485,7 @@ void	NLPACS::CRetrieverInstance::snap(NLPACS::ULocalPosition &position, const NL
 		{
 			nlwarning("PACS: couldn't snap position (%f,%f,%f) on surface %d instance %d", position.Estimation.x, position.Estimation.y, position.Estimation.z, position.Surface, _InstanceId);
 		}
+
 	}
 	else if (_Type == CLocalRetriever::Interior)
 	{

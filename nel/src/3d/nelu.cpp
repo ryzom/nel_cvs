@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.8 2000/12/05 17:30:53 berenguier Exp $
+ * $Id: nelu.cpp,v 1.9 2000/12/06 12:51:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,7 @@ void			CNELU::initScene(CViewport viewport)
 
 void			CNELU::initEventServer()
 {
+	CNELU::AsyncListener.reset ();
 	CNELU::EventServer.addEmitter(CNELU::Driver->getEventEmitter());
 	CNELU::AsyncListener.addToServer(CNELU::EventServer);
 }

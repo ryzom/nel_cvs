@@ -1,7 +1,7 @@
 /** \file u_material.h
  * <File description>
  *
- * $Id: u_material.h,v 1.6 2004/04/26 17:15:43 corvazier Exp $
+ * $Id: u_material.h,v 1.7 2004/04/27 11:52:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -185,7 +185,7 @@ public:
 	virtual void			initUnlit() =0;
 
 	// test if the given driver will support rendering of that material
-	virtual	bool			isSupportedByDriver(UDriver &drv) = 0;
+	virtual	bool			isSupportedByDriver(UDriver &drv, bool forceBaseCaps = false) = 0;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.15 2004/03/23 10:11:57 vizerie Exp $
+ * $Id: u_instance.h,v 1.16 2004/04/27 11:53:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -183,8 +183,10 @@ public:
 	virtual float		getSliceTime() const = 0;
 	// @}
 
-	// Test if driver support rendering of all textures of that shape.
-	virtual	bool		supportMaterialRendering(UDriver &drv) = 0;
+	/** Test if driver support rendering of all material of that shape.
+	  * \param  forceBaseCaps When true, the driver is considered to have the most basic required caps (2 stages hardwares, no pixelShader), so that any fancy material will fail the test.
+	  */
+	virtual	bool		supportMaterialRendering(UDriver &drv, bool forceBaseCaps) = 0;
 
 };
 

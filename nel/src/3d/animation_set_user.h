@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.9 2002/04/12 16:17:53 vizerie Exp $
+ * $Id: animation_set_user.h,v 1.10 2002/05/13 10:13:33 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,7 +93,10 @@ public:
 
 		// Read it
 		NLMISC::CIFile file;
-		if (file.open ( NLMISC::CPath::lookup( fileName ) ) )
+		std::string path = NLMISC::CPath::lookup (fileName, false, true);
+		if (path.empty())
+			path = fileName;
+		if ( file.open ( path ) )
 		{
 			// Serial the animation
 			file.serial (*anim);

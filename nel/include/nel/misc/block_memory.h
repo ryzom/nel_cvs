@@ -1,7 +1,7 @@
 /** \file block_memory.h
  * Block memory allocation
  *
- * $Id: block_memory.h,v 1.4 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: block_memory.h,v 1.4.8.1 2003/08/19 09:08:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include <list>
 #include <vector>
 #include "nel/misc/debug.h"
+#include "nel/misc/mutex.h"
 
 
 namespace NLMISC 
@@ -95,6 +96,8 @@ public:
 	/// allocate an element. ctor is called.
 	T*				allocate()
 	{
+		_Mutex.enter();
+
 		// if not enough memory, aloc a block.
 		if(!_NextFreeElt)
 		{
@@ -134,6 +137,9 @@ public:
 #endif
 
 		_NAllocatedElts++;
+
+		_Mutex.leave();
+
 		return ret;
 	}
 
@@ -142,6 +148,9 @@ public:
 	{
 		if(!ptr)
 			return;
+
+		_Mutex.enter();
+
 		// some simple Check.
 		nlassert(_NAllocatedElts>0);
 #ifdef NL_DEBUG
@@ -163,6 +172,8 @@ public:
 		_NextFreeElt= (void*) ptr;
 
 		_NAllocatedElts--;
+
+		_Mutex.leave();
 	}
 
 
@@ -173,6 +184,8 @@ public:
 	 */
 	void	purge ()
 	{
+		_Mutex.enter();
+
 		if(NL3D_BlockMemoryAssertOnPurge)
 			nlassert(_NAllocatedElts==0);
 
@@ -184,6 +197,8 @@ public:
 
 		_NextFreeElt= NULL;
 		_NAllocatedElts= 0;
+
+		_Mutex.leave();
 	}
 
 
@@ -193,6 +208,8 @@ public:
 	// This is to be used with CSTLBlockAllocator only!!! It change the size of an element!!
 	void		__stl_alloc_changeEltSize(uint eltSize)
 	{
+		_Mutex.enter();
+
 		// must not be used with object ctor/dtor behavior.
 		nlassert(__ctor_dtor__ == false);
 		// format size.
@@ -205,6 +222,8 @@ public:
 			// change the size.
 			_EltSize= eltSize;
 		}
+
+		_Mutex.leave();
 	};
 	// This is to be used with CSTLBlockAllocator only!!!
 	uint		__stl_alloc_getEltSize() const
@@ -222,6 +241,8 @@ private:
 	sint		_NAllocatedElts;
 	/// next free element.
 	void		*_NextFreeElt;
+	/// Must be ThreadSafe (eg: important for 3D PointLight and list of transform)
+	CFastMutex	_Mutex;
 
 
 	/// a block.

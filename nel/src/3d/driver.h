@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.25 2001/11/21 18:10:35 vizerie Exp $
+ * $Id: driver.h,v 1.26 2001/12/05 09:54:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,7 @@ class CViewport;
 class GfxMode 
 {
 public:
+	bool				OffScreen;
 	bool				Windowed;
 	uint16				Width;
 	uint16				Height;
@@ -83,12 +84,13 @@ public:
 
 						GfxMode(void) 
 						{ 
+							OffScreen=false;
 							Windowed=false;
 							Width=0;
 							Height=0;
 							Depth=0;
 						}
-						GfxMode(uint16 w, uint16 h, uint8 d, bool windowed= true);
+						GfxMode(uint16 w, uint16 h, uint8 d, bool windowed= true, bool offscreen=false);
 };
 
 typedef std::vector<GfxMode> ModeList;

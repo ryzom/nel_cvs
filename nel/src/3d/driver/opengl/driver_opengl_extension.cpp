@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.21 2001/10/31 10:13:36 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.22 2001/12/05 09:54:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,6 +197,26 @@ PFNGLSECONDARYCOLOR3UIVEXTPROC		glSecondaryColor3uivEXT;
 PFNGLSECONDARYCOLOR3USEXTPROC		glSecondaryColor3usEXT;
 PFNGLSECONDARYCOLOR3USVEXTPROC		glSecondaryColor3usvEXT;
 PFNGLSECONDARYCOLORPOINTEREXTPROC	glSecondaryColorPointerEXT;
+
+
+// Pbuffer extension
+//==================
+PFNWGLCREATEPBUFFERARBPROC			wglCreatePbufferARB;
+PFNWGLGETPUFFERDCARBPROC			wglGetPbufferDCARB;
+PFNWGLRELEASEPUFFERDCARBPROC		wglReleasePbufferDCARB;
+PFNWGLDESTROYPUFFERARBPROC			wglDestroyPbufferARB;
+PFNWGLQUERYPBUFFERARBPROC			wglQueryPbufferARB;
+
+
+// Get Pixel format extension
+//===========================
+PFNWGLGETPIXELFORMATATTRIBIVARBPROC	wglGetPixelFormatAttribivARB;
+PFNWGLGETPIXELFORMATATTRIBFVARBPROC	wglGetPixelFormatAttribfvARB;
+PFNWGLCHOOSEPIXELFORMATARBPROC		wglChoosePixelFormatARB;
+
+
+// WGL_ARB_extensions_string
+PFNWGFGETEXTENSIONSSTRINGARB		wglGetExtensionsStringARB;
 
 
 #endif // NL_OS_WINDOWS
@@ -474,8 +494,6 @@ static bool	setupEXTSecondaryColor(const char	*glext)
 		return false;
 
 #ifdef NL_OS_WINDOWS
-	if(!(glAreProgramsResidentNV= (PFNGLAREPROGRAMSRESIDENTNVPROC)wglGetProcAddress("glAreProgramsResidentNV"))) return false;
-
 	if(!(glSecondaryColor3bEXT= (PFNGLSECONDARYCOLOR3BEXTPROC)wglGetProcAddress("glSecondaryColor3bEXT"))) return false;
 	if(!(glSecondaryColor3bvEXT= (PFNGLSECONDARYCOLOR3BVEXTPROC)wglGetProcAddress("glSecondaryColor3bvEXT"))) return false;
 	if(!(glSecondaryColor3dEXT= (PFNGLSECONDARYCOLOR3DEXTPROC)wglGetProcAddress("glSecondaryColor3dEXT"))) return false;
@@ -496,7 +514,39 @@ static bool	setupEXTSecondaryColor(const char	*glext)
 
 #endif
 
-	return false;
+	return true;
+}
+
+// *********************************
+static bool	setupWGLARBPBuffer(const char	*glext)
+{
+	if(strstr(glext, "WGL_ARB_pbuffer")==NULL)
+		return false;
+
+#ifdef NL_OS_WINDOWS
+	if(!(wglCreatePbufferARB= (PFNWGLCREATEPBUFFERARBPROC)wglGetProcAddress("wglCreatePbufferARB"))) return false;
+	if(!(wglGetPbufferDCARB= (PFNWGLGETPUFFERDCARBPROC)wglGetProcAddress("wglGetPbufferDCARB"))) return false;
+	if(!(wglReleasePbufferDCARB= (PFNWGLRELEASEPUFFERDCARBPROC)wglGetProcAddress("wglReleasePbufferDCARB"))) return false;
+	if(!(wglDestroyPbufferARB= (PFNWGLDESTROYPUFFERARBPROC)wglGetProcAddress("wglDestroyPbufferARB"))) return false;
+	if(!(wglQueryPbufferARB= (PFNWGLQUERYPBUFFERARBPROC)wglGetProcAddress("wglQueryPbufferARB"))) return false;
+#endif
+
+	return true;
+}
+
+// *********************************
+static bool	setupWGLARBPixelFormat (const char	*glext)
+{
+	if(strstr(glext, "WGL_ARB_pixel_format")==NULL)
+		return false;
+
+#ifdef NL_OS_WINDOWS
+	if(!(wglGetPixelFormatAttribivARB= (PFNWGLGETPIXELFORMATATTRIBIVARBPROC)wglGetProcAddress("wglGetPixelFormatAttribivARB"))) return false;
+	if(!(wglGetPixelFormatAttribfvARB= (PFNWGLGETPIXELFORMATATTRIBFVARBPROC)wglGetProcAddress("wglGetPixelFormatAttribfvARB"))) return false;
+	if(!(wglChoosePixelFormatARB= (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB"))) return false;
+#endif
+
+	return true;
 }
 
 // *********************************
@@ -581,6 +631,38 @@ void	registerGlExtensions(CGlExtensions &ext)
 }
 
 
+#ifdef NL_OS_WINDOWS
+// ***************************************************************************
+void	registerWGlExtensions(CGlExtensions &ext, HDC hDC)
+{
+	// Get proc adress
+	if(!(wglGetExtensionsStringARB=(PFNWGFGETEXTENSIONSSTRINGARB)wglGetProcAddress("wglGetExtensionsStringARB")))
+	{
+		nlwarning ("wglGetExtensionsStringARB not supported");
+		return;
+	}
+
+	// Get extension string
+	const char *glext = wglGetExtensionsStringARB (hDC);
+	if (glext == NULL)
+	{
+		nlwarning ("wglGetExtensionsStringARB failed");
+		return;
+	}
+
+	nldebug("WGLExt: %s", glext);
+
+	// Check for pbuffer
+	ext.WGLARBPBuffer= setupWGLARBPBuffer(glext);
+
+	// Check for pixel format
+	ext.WGLARBPixelFormat= setupWGLARBPixelFormat(glext);
 }
+#endif // NL_OS_WINDOWS
+
+
+}
+
+
 
 

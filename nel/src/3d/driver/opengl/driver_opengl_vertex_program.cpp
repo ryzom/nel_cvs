@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertx_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.6 2001/11/21 18:10:55 vizerie Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.7 2001/12/05 09:54:38 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -34,7 +34,7 @@
 using namespace std;
 using namespace NLMISC;
 
-
+ 
 namespace NL3D
 {
 

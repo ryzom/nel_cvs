@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.129 2001/11/21 16:07:51 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.130 2001/12/05 09:54:38 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -152,8 +152,10 @@ CDriverGL::CDriverGL()
 {	
 	_AGPVertexArrayRange.init(this);
 	_VRAMVertexArrayRange.init(this);
+	_OffScreen = false;
 
 #ifdef NL_OS_WINDOWS
+	_PBuffer = NULL;
 	_hWnd = NULL;
 	_hRC = NULL;
 	_hDC = NULL;
@@ -275,63 +277,42 @@ ModeList CDriverGL::enumModes()
 bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 {
 #ifdef NL_OS_WINDOWS
+	
+	// Driver caps.
+	//=============
+	// Retrieve the WGL extensions before init the driver.
 	int						pf;
 
-	_FullScreen= false;
-	if (wnd)
+	_OffScreen = mode.OffScreen;
+
+	// Offscreen mode ?
+	if (_OffScreen)
 	{
-		_hWnd=(HWND)wnd;
-		_DestroyWindow=false;
-	}
-	else
-	{
-		ULONG	WndFlags;
+		// Get a hdc
+
+		ULONG WndFlags=WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS;
+		WndFlags&=~WS_VISIBLE;
 		RECT	WndRect;
-
-		// Must destroy this window
-		_DestroyWindow=true;
-
-		if(mode.Windowed)
-			WndFlags=WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS;
-		else
-		{
-			WndFlags=WS_POPUP;
-
-			_FullScreen= true;
-			DEVMODE		devMode;
-			_OldScreenMode.dmSize= sizeof(DEVMODE);
-			_OldScreenMode.dmDriverExtra= 0;
-			EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &_OldScreenMode);
-			_OldScreenMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY ;
-
-			devMode.dmSize= sizeof(DEVMODE);
-			devMode.dmDriverExtra= 0;
-			devMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-			devMode.dmPelsWidth= mode.Width;
-			devMode.dmPelsHeight= mode.Height;
-			devMode.dmBitsPerPel= mode.Depth;
-			ChangeDisplaySettings(&devMode, CDS_FULLSCREEN);
-		}
 		WndRect.left=0;
 		WndRect.top=0;
 		WndRect.right=mode.Width;
 		WndRect.bottom=mode.Height;
 		AdjustWindowRect(&WndRect,WndFlags,FALSE);
-		_hWnd = CreateWindow(	"NLClass",
-								"",
-								WndFlags,
-								CW_USEDEFAULT,CW_USEDEFAULT,
-								WndRect.right,WndRect.bottom,
-								NULL,
-								NULL,
-								GetModuleHandle(NULL),
-								NULL);
-		if (!_hWnd) 
+		HWND tmpHWND = CreateWindow(	"NLClass",
+									"",
+									WndFlags,
+									CW_USEDEFAULT,CW_USEDEFAULT,
+									WndRect.right,WndRect.bottom,
+									NULL,
+									NULL,
+									GetModuleHandle(NULL),
+									NULL);
+		if (!tmpHWND) 
 		{
+			nlwarning ("CreateWindow failed");
 			return false;
 		}
 
-		SetWindowLong (_hWnd, GWL_USERDATA, (LONG)this);
 
 		// resize the window
 		RECT rc;
@@ -339,32 +320,217 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		AdjustWindowRectEx (&rc, GetWindowStyle (_hWnd), GetMenu (_hWnd) != NULL, GetWindowExStyle (_hWnd));
 		SetWindowPos (_hWnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
 
-		ShowWindow(_hWnd,SW_SHOW);
-	}
+		// Get the temporary HDC
+		HDC tempHDC = GetDC(tmpHWND);
+		wglMakeCurrent(tempHDC,NULL);
+		_Depth=GetDeviceCaps(tempHDC,BITSPIXEL);
+		// ---
+		memset(&_pfd,0,sizeof(_pfd));
+		_pfd.nSize        = sizeof(_pfd);
+		_pfd.nVersion     = 1;
+		_pfd.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+		_pfd.iPixelType   = PFD_TYPE_RGBA;
+		_pfd.cColorBits   = (char)_Depth;
+		_pfd.cDepthBits   = 16;
+		_pfd.iLayerType	  = PFD_MAIN_PLANE;
+		pf=ChoosePixelFormat(tempHDC,&_pfd);
+		if (!pf) 
+		{
+			return false;
+		} 
+		if ( !SetPixelFormat(tempHDC,pf,&_pfd) ) 
+		{
+			return false;
+		} 
 
-	_hDC=GetDC(_hWnd);
-    wglMakeCurrent(_hDC,NULL);
-	_Depth=GetDeviceCaps(_hDC,BITSPIXEL);
-	// ---
-	memset(&_pfd,0,sizeof(_pfd));
-	_pfd.nSize        = sizeof(_pfd);
-	_pfd.nVersion     = 1;
-	_pfd.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-	_pfd.iPixelType   = PFD_TYPE_RGBA;
-	_pfd.cColorBits   = (char)_Depth;
-	_pfd.cDepthBits   = 16;
-	_pfd.iLayerType	  = PFD_MAIN_PLANE;
-	pf=ChoosePixelFormat(_hDC,&_pfd);
-	if (!pf) 
+		// Create gl context
+		HGLRC tempGLRC = wglCreateContext(tempHDC);
+		if (tempGLRC == NULL)
+		{
+			nlwarning ("wglCreateContext failed");
+			DestroyWindow (tmpHWND);
+			return false;
+		}
+
+		// Make the context current
+		if (!wglMakeCurrent(tempHDC,tempGLRC))
+		{
+			nlwarning ("wglMakeCurrent failed");
+			DestroyWindow (tmpHWND);
+			return false;
+		}
+
+		// Register WGL functions
+		registerWGlExtensions (_Extensions, tempHDC);
+		
+		// Have some pbuffer ?
+		if ((!_Extensions.WGLARBPBuffer) || (!_Extensions.WGLARBPixelFormat))
+		{
+			nlwarning ("Extension for off-screen rendering not supported");
+			DestroyWindow (tmpHWND);
+			return false;
+		}
+
+		// No window
+		_hWnd = NULL;
+		_PBuffer = NULL;
+		_DestroyWindow = false;
+		_FullScreen = false;
+
+		// Create a pixel format
+		int   iattributes[8] = 
+		{
+			WGL_DRAW_TO_PBUFFER_ARB,	true, 
+			WGL_PIXEL_TYPE_ARB,			WGL_TYPE_RGBA_ARB,
+			WGL_DEPTH_BITS_ARB,			1,
+			WGL_SUPPORT_OPENGL_ARB,		true,
+		};		
+		float fattributes[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+		int pformat[4];
+		unsigned int nformats;
+		if ( !wglChoosePixelFormatARB( tempHDC, iattributes, fattributes, 4, pformat, &nformats ) )
+		{
+			nlwarning ("wglChoosePixelFormatARB failed");
+			DestroyWindow (tmpHWND);
+			return false;
+		}
+
+		// Create pbuffer
+		iattributes[0] = 0;
+	    _PBuffer = wglCreatePbufferARB( tempHDC, pformat[0], mode.Width, mode.Height, iattributes );
+		if (_PBuffer == NULL)
+		{
+			nlwarning ("wglCreatePbufferARB failed");
+			DestroyWindow (tmpHWND);
+			return false;
+		}
+
+		// Get the device context
+		_hDC = wglGetPbufferDCARB( _PBuffer );
+		if ( _hDC == NULL )
+		{
+			nlwarning ("wglGetPbufferDCARB failed");
+			DestroyWindow (tmpHWND);
+			return false;
+		}
+
+		// Create a gl context for the p-buffer
+		_hRC = wglCreateContext( _hDC );
+		if ( _hRC == NULL )
+		{
+			nlwarning ("wglCreateContext failed");
+			DestroyWindow (tmpHWND);
+			return false;
+		}
+
+		// Make the context current
+		if (!wglMakeCurrent(_hDC,_hRC))
+		{
+			nlwarning ("wglMakeCurrent failed");
+			DestroyWindow (tmpHWND);
+			return false;
+		}
+
+		// Get the depth
+		_Depth = GetDeviceCaps (_hDC, BITSPIXEL);
+
+		// Destroy temporary window
+		if (!wglDeleteContext (tempGLRC))
+			nlwarning ("wglDeleteContext failed");
+		if (!DestroyWindow (tmpHWND))
+			nlwarning ("DestroyWindow failed");
+ 	}
+	else
 	{
-		return false;
-	} 
-	if ( !SetPixelFormat(_hDC,pf,&_pfd) ) 
-	{
-		return false;
-	} 
-    _hRC=wglCreateContext(_hDC);
-    wglMakeCurrent(_hDC,_hRC);
+		_FullScreen= false;
+		if (wnd)
+		{
+			_hWnd=(HWND)wnd;
+			_DestroyWindow=false;
+		}
+		else
+		{
+			ULONG	WndFlags;
+			RECT	WndRect;
+
+			// Must destroy this window
+			_DestroyWindow=true;
+
+			if(mode.Windowed)
+				WndFlags=WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS;
+			else
+			{
+				WndFlags=WS_POPUP;
+
+				_FullScreen= true;
+				DEVMODE		devMode;
+				_OldScreenMode.dmSize= sizeof(DEVMODE);
+				_OldScreenMode.dmDriverExtra= 0;
+				EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &_OldScreenMode);
+				_OldScreenMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY ;
+
+				devMode.dmSize= sizeof(DEVMODE);
+				devMode.dmDriverExtra= 0;
+				devMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+				devMode.dmPelsWidth= mode.Width;
+				devMode.dmPelsHeight= mode.Height;
+				devMode.dmBitsPerPel= mode.Depth;
+				ChangeDisplaySettings(&devMode, CDS_FULLSCREEN);
+			}
+			WndRect.left=0;
+			WndRect.top=0;
+			WndRect.right=mode.Width;
+			WndRect.bottom=mode.Height;
+			AdjustWindowRect(&WndRect,WndFlags,FALSE);
+			_hWnd = CreateWindow(	"NLClass",
+									"",
+									WndFlags,
+									CW_USEDEFAULT,CW_USEDEFAULT,
+									WndRect.right,WndRect.bottom,
+									NULL,
+									NULL,
+									GetModuleHandle(NULL),
+									NULL);
+			if (!_hWnd) 
+			{
+				return false;
+			}
+
+			SetWindowLong (_hWnd, GWL_USERDATA, (LONG)this);
+
+			// resize the window
+			RECT rc;
+			SetRect (&rc, 0, 0, mode.Width, mode.Height);
+			AdjustWindowRectEx (&rc, GetWindowStyle (_hWnd), GetMenu (_hWnd) != NULL, GetWindowExStyle (_hWnd));
+			SetWindowPos (_hWnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
+
+			ShowWindow(_hWnd,SW_SHOW);
+		}
+
+		_hDC=GetDC(_hWnd);
+		wglMakeCurrent(_hDC,NULL);
+		_Depth=GetDeviceCaps(_hDC,BITSPIXEL);
+		// ---
+		memset(&_pfd,0,sizeof(_pfd));
+		_pfd.nSize        = sizeof(_pfd);
+		_pfd.nVersion     = 1;
+		_pfd.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+		_pfd.iPixelType   = PFD_TYPE_RGBA;
+		_pfd.cColorBits   = (char)_Depth;
+		_pfd.cDepthBits   = 16;
+		_pfd.iLayerType	  = PFD_MAIN_PLANE;
+		pf=ChoosePixelFormat(_hDC,&_pfd);
+		if (!pf) 
+		{
+			return false;
+		} 
+		if ( !SetPixelFormat(_hDC,pf,&_pfd) ) 
+		{
+			return false;
+		} 
+		_hRC=wglCreateContext(_hDC);
+		wglMakeCurrent(_hDC,_hRC);
+	}
 
 
 #elif defined(NL_OS_UNIX) // NL_OS_WINDOWS
@@ -581,9 +747,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	// Driver caps.
 	//=============
-
 	// Retrieve the extensions for the current context.
-	NL3D::registerGlExtensions(_Extensions);
+	NL3D::registerGlExtensions (_Extensions);
+	NL3D::registerWGlExtensions (_Extensions, _hDC);
+
 	// Check required extensions!!
 	// ARBMultiTexture is a opengl 1.2 required extension.
 	if(!_Extensions.ARBMultiTexture)
@@ -913,24 +1080,39 @@ bool CDriverGL::release()
 #ifdef NL_OS_WINDOWS
 	// Then delete.
 	wglMakeCurrent(NULL,NULL);
-	if (_hRC)
-		wglDeleteContext(_hRC);
-	if (_hWnd&&_hDC)
-	{
-		ReleaseDC(_hWnd,_hDC);
-		if (_DestroyWindow)
-			DestroyWindow (_hWnd);
-	}
 
-	if(_FullScreen)
+	// Off-screen rendering ?
+	if (_OffScreen)
 	{
-		ChangeDisplaySettings(&_OldScreenMode, 0);
-		_FullScreen= false;
+		if (_PBuffer)
+		{
+			wglDeleteContext( _hRC );
+			wglReleasePbufferDCARB( _PBuffer, _hDC );
+			wglDestroyPbufferARB( _PBuffer );
+		}
+	}
+	else
+	{
+		if (_hRC)
+			wglDeleteContext(_hRC);
+		if (_hWnd&&_hDC)
+		{
+			ReleaseDC(_hWnd,_hDC);
+			if (_DestroyWindow)
+				DestroyWindow (_hWnd);
+		}
+
+		if(_FullScreen)
+		{
+			ChangeDisplaySettings(&_OldScreenMode, 0);
+			_FullScreen= false;
+		}
 	}
 
 	_hRC=NULL;
 	_hDC=NULL;
 	_hWnd=NULL;
+	_PBuffer = NULL;
 
 #elif defined (NL_OS_UNIX)// NL_OS_WINDOWS
  
@@ -1128,14 +1310,17 @@ void CDriverGL::showCursor(bool b)
 void CDriverGL::setMousePos(float x, float y)
 {
 #ifdef NL_OS_WINDOWS
-	// NeL window coordinate to MSWindows coordinates
-	RECT client;
-	GetClientRect (_hWnd, &client);
-	POINT pt;
-	pt.x = (int)((float)(client.right-client.left)*x);
-	pt.y = (int)((float)(client.bottom-client.top)*(1.0f-y));
-	ClientToScreen (_hWnd, &pt);
-	SetCursorPos(pt.x, pt.y);
+	if (_hWnd)
+	{
+		// NeL window coordinate to MSWindows coordinates
+		RECT client;
+		GetClientRect (_hWnd, &client);
+		POINT pt;
+		pt.x = (int)((float)(client.right-client.left)*x);
+		pt.y = (int)((float)(client.bottom-client.top)*(1.0f-y));
+		ClientToScreen (_hWnd, &pt);
+		SetCursorPos(pt.x, pt.y);
+	}
 #elif defined (NL_OS_UNIX)
 	XWindowAttributes xwa;
 	XGetWindowAttributes (dpy, win, &xwa);
@@ -1149,10 +1334,25 @@ void CDriverGL::setMousePos(float x, float y)
 void CDriverGL::getWindowSize(uint32 &width, uint32 &height)
 {
 #ifdef NL_OS_WINDOWS
-	RECT client;
-	GetClientRect (_hWnd, &client);
-	width = (uint32)(client.right-client.left);
-	height = (uint32)(client.bottom-client.top);
+	// Off-srceen rendering ?
+	if (_OffScreen)
+	{
+		if (_PBuffer)
+		{
+			wglQueryPbufferARB( _PBuffer, WGL_PBUFFER_WIDTH_ARB, (int*)&width );
+			wglQueryPbufferARB( _PBuffer, WGL_PBUFFER_HEIGHT_ARB, (int*)&height );
+		}
+	}
+	else
+	{
+		if (_hWnd)
+		{
+			RECT client;
+			GetClientRect (_hWnd, &client);
+			width = (uint32)(client.right-client.left);
+			height = (uint32)(client.bottom-client.top);
+		}
+	}
 #elif defined (NL_OS_UNIX)
 	XWindowAttributes xwa;
 	XGetWindowAttributes (dpy, win, &xwa);

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.103 2001/11/22 08:48:11 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.104 2001/12/05 09:54:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -573,6 +573,13 @@ private:
 	DEVMODE						_OldScreenMode;
 	NLMISC::CWinEventEmitter	_EventEmitter;
 	bool						_DestroyWindow;
+
+	// Off-screen rendering in Dib section
+	bool						_OffScreen;
+#ifdef NL_OS_WINDOWS
+	HPBUFFERARB					_PBuffer;
+#endif // NL_OS_WINDOWS
+
 
 #elif defined (NL_OS_UNIX)
 

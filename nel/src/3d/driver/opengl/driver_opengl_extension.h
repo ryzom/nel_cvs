@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.18 2001/10/31 10:13:36 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.19 2001/12/05 09:54:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,6 +87,10 @@ struct	CGlExtensions
 	bool	NVVertexProgramEmulated;
 	bool	EXTSecondaryColor;
 
+	// WGL ARB extensions, true if supported
+	bool	WGLARBPBuffer;
+	bool	WGLARBPixelFormat;
+
 public:
 	CGlExtensions()
 	{
@@ -107,11 +111,19 @@ public:
 		NVVertexProgram= false;
 		NVVertexProgramEmulated= false;
 		EXTSecondaryColor= false;
+		WGLARBPBuffer= false;
+		WGLARBPixelFormat= false;
 	};
 };
 
 
 // ***************************************************************************
+
+#ifdef NL_OS_WINDOWS
+/// This function will test and register WGL functions before than the gl context is created
+void	registerWGlExtensions(CGlExtensions &ext, HDC hDC);
+#endif // NL_OS_WINDOWS
+
 /// This function test and register the extensions for the current GL context.
 void	registerGlExtensions(CGlExtensions &ext);
 
@@ -290,6 +302,25 @@ extern PFNGLSECONDARYCOLOR3USEXTPROC		glSecondaryColor3usEXT;
 extern PFNGLSECONDARYCOLOR3USVEXTPROC		glSecondaryColor3usvEXT;
 extern PFNGLSECONDARYCOLORPOINTEREXTPROC	glSecondaryColorPointerEXT;
 
+
+// Pbuffer extension
+//==================
+extern PFNWGLCREATEPBUFFERARBPROC			wglCreatePbufferARB;
+extern PFNWGLGETPUFFERDCARBPROC				wglGetPbufferDCARB;
+extern PFNWGLRELEASEPUFFERDCARBPROC			wglReleasePbufferDCARB;
+extern PFNWGLDESTROYPUFFERARBPROC			wglDestroyPbufferARB;
+extern PFNWGLQUERYPBUFFERARBPROC			wglQueryPbufferARB;
+
+
+// Get Pixel format extension
+//===========================
+extern PFNWGLGETPIXELFORMATATTRIBIVARBPROC	wglGetPixelFormatAttribivARB;
+extern PFNWGLGETPIXELFORMATATTRIBFVARBPROC	wglGetPixelFormatAttribfvARB;
+extern PFNWGLCHOOSEPIXELFORMATARBPROC		wglChoosePixelFormatARB;
+
+
+// WGL_ARB_extensions_string
+extern PFNWGFGETEXTENSIONSSTRINGARB			wglGetExtensionsStringARB;
 
 #endif
 

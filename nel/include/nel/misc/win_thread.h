@@ -1,7 +1,7 @@
 /** \file win_thread.h
  * class CWinThread
  *
- * $Id: win_thread.h,v 1.2 2000/12/18 18:14:56 saffray Exp $
+ * $Id: win_thread.h,v 1.3 2001/01/23 13:42:51 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,10 @@ public:
 	virtual void start();
 	virtual void terminate();
 	virtual void wait();
-	virtual void sleep() { Sleep(0); }
+	virtual void sleep(sint ms = 0) 
+	{ 
+		Sleep(ms); 
+	}
 
 	/// private use
 	IRunnable	*Runnable;

@@ -1,7 +1,7 @@
 /** \file thread.h
  * thread interface
  *
- * $Id: thread.h,v 1.7 2001/01/15 17:58:20 chafik Exp $
+ * $Id: thread.h,v 1.8 2001/01/23 13:42:51 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,7 +97,7 @@ public:
 	virtual void wait()=0;
 
 	// Sleep the thread
-	virtual void sleep()=0;
+	virtual void sleep(sint ms = 0) =0;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.30 2003/07/03 19:13:29 lecroart Exp $
+ * $Id: login_server.cpp,v 1.31 2003/07/09 18:00:27 lecroart Exp $
  *
  */
 
@@ -489,5 +489,6 @@ NLMISC_DYNVARIABLE(string, LSListenAddress, "the listen address sended to the cl
 	}
 }
 
+NLMISC_VARIABLE(string, DefaultUserPriv, "Default User priv for people who don't use the login system");
 
 } // NLNET

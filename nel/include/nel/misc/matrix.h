@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: matrix.h,v 1.3 2000/09/21 08:14:39 berenguier Exp $
+ * $Id: matrix.h,v 1.4 2000/09/21 10:40:10 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -276,10 +276,10 @@ private:
 	{
 		switch(i)
 		{
-			case 1: l1=1; l2=2; l3=3; break;
-			case 2: l1=0; l2=2; l3=3; break;
-			case 3: l1=0; l2=1; l3=3; break;
-			case 4: l1=0; l2=1; l3=2; break;
+			case 0: l1=1; l2=2; l3=3; break;
+			case 1: l1=0; l2=2; l3=3; break;
+			case 2: l1=0; l2=1; l3=3; break;
+			case 3: l1=0; l2=1; l3=2; break;
 		}
 	}
 };

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: matrix.cpp,v 1.3 2000/09/21 08:14:50 berenguier Exp $
+ * $Id: matrix.cpp,v 1.4 2000/09/21 10:40:17 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -435,6 +435,7 @@ void		CMatrix::rotate(const CVector &v, TRotOrder ro)
 {
 	CHECK_VALID();
 	CMatrix		rot;
+	rot.identity();
 	switch(ro)
 	{
 		case XYZ: rot.rotateX(v.x); rot.rotateY(v.y); rot.rotateZ(v.z); break;
@@ -589,6 +590,8 @@ CMatrix		CMatrix::operator*(const CMatrix &m) const
 	// Modify Scale.
 	if( (StateBit & MAT_SCALEUNI) && !(StateBit & MAT_SCALEANY) )
 		ret.Scale33= Scale33*m.Scale33;
+	else
+		ret.Scale33=1;
 
 
 	// Build Trans part.
@@ -642,6 +645,13 @@ CMatrix		CMatrix::operator*(const CMatrix &m) const
 		ret.a42= a41*m.a12 + a42*m.a22 + a43*m.a32 + a44*m.a42;
 		ret.a43= a41*m.a13 + a42*m.a23 + a43*m.a33 + a44*m.a43;
 		ret.a44= a41*m.a14 + a42*m.a24 + a43*m.a34 + a44*m.a44;
+	}
+	else
+	{
+		ret.a41= 0;
+		ret.a42= 0;
+		ret.a43= 0;
+		ret.a44= 1;
 	}
 
 
@@ -777,7 +787,7 @@ bool	CMatrix::slowInvert44(CMatrix &ret) const
 	//=========================
 	for(i=0;i<=3;i++)
 	{
-		for(j=0;j<=3;j++)
+		for(j=i+1;j<=3;j++)
 		{
 			swap(ret.mat(i,j), ret.mat(j,i));
 		}

@@ -43,7 +43,6 @@ namespace NLAILINK
 		if(NLAIAGENT::CProxyAgentMail::MainAgent != NULL) NLAIAGENT::CProxyAgentMail::MainAgent->release();
 		NLAIAGENT::CProxyAgentMail::releaseClass();
 		NLAISCRIPT::CLibTest::releaseClass();
-
 		NLAICHARACTER::CCharacterNoeud::releaseClass();
 		NLAICHARACTER::CCharacterChild::releaseClass();
 

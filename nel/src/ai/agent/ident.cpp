@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.10 2001/03/26 14:50:01 chafik Exp $
+ * $Id: ident.cpp,v 1.11 2001/04/09 08:49:41 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,8 @@ namespace NLAIAGENT
 
 		while(*ident != 0)
 		{
+			if(*ident == ':') break;
+
 			switch(*(ident++))
 			{
 			case '0':
@@ -123,11 +125,9 @@ namespace NLAIAGENT
 		id = ident;
 
 		sint n = 0;
-		while(*(ident++) != ':');
-		*(ident - 1) = 0;		
+		while(*(ident++) != ':');		
 		creator = ident;
-		while(*(ident++) != ':');
-		*(ident - 1) = 0;		
+		while(*(ident++) != ':');		
 		dyn = ident;	
 
 		AgentNumber = atoiInt64(id);

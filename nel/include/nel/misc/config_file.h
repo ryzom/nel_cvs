@@ -1,7 +1,7 @@
 /** \file config_file.h
  * CConfigFile class
  *
- * $Id: config_file.h,v 1.17 2001/02/16 14:53:43 lecroart Exp $
+ * $Id: config_file.h,v 1.18 2001/04/23 09:24:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -256,10 +256,10 @@ struct EBadSize : public EConfigFile
 
 struct EUnknownVar : public EConfigFile
 {
-	EUnknownVar (const std::string &varName)
+	EUnknownVar (const std::string &filename, const std::string &varName)
 	{
 		static char str[NLMISC::MaxCStringSize];
-		smprintf (str, NLMISC::MaxCStringSize, "Unknown variable \"%s\"", varName.c_str ());
+		smprintf (str, NLMISC::MaxCStringSize, "variable \"%s\" not found in file \"%s\"", varName.c_str (), filename.c_str());
 		_Reason = str;
 	}
 };

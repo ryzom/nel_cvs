@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.20 2001/03/15 16:58:44 cado Exp $
+ * $Id: config_file.cpp,v 1.21 2001/04/23 09:24:35 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,7 +221,7 @@ CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
 			break;
 		}
 	}
-	throw EUnknownVar (varName);
+	throw EUnknownVar (_FileName, varName);
 }
 
 

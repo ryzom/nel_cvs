@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.18 2001/08/29 09:33:38 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.19 2001/09/20 13:45:43 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,10 @@
 #include "3d/scene.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
+
+
+#include "cluster.h" // ask trap
+
 
 
 
@@ -103,6 +107,19 @@ void CParticleSystemModel::updateOpacityInfos(void)
 	setTransparency(_ParticleSystem->hasTransparentObjects());
 	_TransparencyStateTouched = false;
 }
+
+void CParticleSystemModel::getAABBox(NLMISC::CAABBox &bbox) const
+{
+	if (_ParticleSystem)
+	{
+		_ParticleSystem->computeBBox(bbox);
+	}
+	else
+	{
+		NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape)->getAABBox(bbox);
+	}
+}
+
 
 CParticleSystemModel::~CParticleSystemModel()
 {	
@@ -273,13 +290,20 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 void	CParticleSystemRenderObs::traverse(IObs *caller)
 {
 	const CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(Model);
+
+#ifdef NL_DEBUG
+	if (psm->NameForDebug == "FireWorkQ.shape")
+	{
+		int to;
+		to++;
+	}
+#endif
+
 	if (!psm->_OutOfFrustum)
 	{
 		CTransformShapeRenderObs::traverse(caller);
 	}
 }
-
-
 
 
 ////////////////////////////////////////////
@@ -291,16 +315,34 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
 		CClipTrav			*trav= (CClipTrav*)Trav;
 		CParticleSystemModel		*m= (CParticleSystemModel*)Model;	
+		
+#ifdef NL_DEBUG
+		if (m->NameForDebug == "FireWorkQ.shape")
+		{
+			int to;
+			to++;
 
+			if(dynamic_cast<CClusterClipObs*>(caller))
+			{
+				CCluster *pCluster = static_cast<CCluster*>(caller->Model);
+				if (pCluster->Name == "RootCluster")
+				{
+					--to;
+				}
+			}
+		}
+#endif
 
 		// Test if already visited.
-		if ((Date == trav->CurrentDate) && Visible)
+		if ((Date == trav->CurrentDate) && !m->_OutOfFrustum)
 			return;
 		Date = trav->CurrentDate;
 
 
 		const std::vector<CPlane>	&pyramid= trav->WorldPyramid;
 		
+
+
 		/** traverse the sons
 		  * we must do this before us, because this object may delete himself from the scene
 		  */
@@ -353,9 +395,9 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 					if ( (pyramid[i]   *  mat  ) * pos > 0.f ) 
 					{
 						m->_OutOfFrustum = true;
+						Visible = false;
 						if (pss->_DestroyWhenOutOfFrustum && pss->_DestroyModelWhenOutOfRange)
-						{
-							Visible = false;
+						{							
 							// this system will never be instanciated, so we invalidate it
 							m->invalidate();
 							return;		
@@ -395,9 +437,9 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 					if ( !pss->_PrecomputedBBox.clipBack(pyramid[i]  * mat  ) ) 
 					{
 						m->_OutOfFrustum = true;
+						Visible = false;
 						if (pss->_DestroyWhenOutOfFrustum && pss->_DestroyModelWhenOutOfRange)
 						{
-							Visible = false;
 							// this system will never be instanciated, so we invalidate it
 							m->invalidate();
 							return;		

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.4 2001/08/16 17:05:56 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.5 2001/09/20 13:45:43 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -56,10 +56,10 @@ public:
 
 
 	// \name inherited from uinstance
-	// @{				
-		virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const ;
+	// @{						
 		virtual	uint				getNumMaterials() const ;	
 		virtual	UInstanceMaterial	&getMaterial(uint materialId) ;
+		virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const;
 	// @}
 
 	// \name inherited from UParticleSystemInstance

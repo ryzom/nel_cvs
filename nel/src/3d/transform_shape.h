@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.6 2001/08/16 17:16:02 vizerie Exp $
+ * $Id: transform_shape.h,v 1.7 2001/09/20 13:45:43 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,10 +70,18 @@ public:
 	/// The shape, the object instancied.
 	CSmartPtr<IShape>		Shape;
 
+#ifdef NL_DEBUG
+	std::string NameForDebug; // \todo traptemp
+#endif
+
 
 	/** Get the untransformed AABBox of the mesh. NULL (gtSize()==0) if no mesh.	 
 	 */
-	void					getShapeAABBox(NLMISC::CAABBox &bbox) const;
+	// ask trap void					getShapeAABBox(NLMISC::CAABBox &bbox) const;
+
+	/** Get the untransformed AABBox of the mesh. NULL (gtSize()==0) if no mesh.	 
+	 */
+	virtual void					getAABBox(NLMISC::CAABBox &bbox) const;
 
 
 	/// \name Load balancing methods

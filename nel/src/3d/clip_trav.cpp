@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.15 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.16 2001/09/20 13:45:43 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -189,6 +189,7 @@ void CClipTrav::traverse()
 		CTransformShape *pTfmShp = dynamic_cast<CTransformShape*>(HrcTrav->_MovingObjects[i]);
 		if (pTfmShp == NULL)
 			continue;
+
 		static vector<IModel*> vModels;
 		vModels.clear();
 		IModel *pFather = getFirstParent (HrcTrav->_MovingObjects[i]);
@@ -214,9 +215,11 @@ void CClipTrav::traverse()
 		CTransformShape *pTfmShp = dynamic_cast<CTransformShape*>(HrcTrav->_MovingObjects[i]);
 		if (pTfmShp == NULL)
 			continue;
+
 		bool bInWorld = true;
 		CAABBox box;
-		pTfmShp->getShapeAABBox (box);
+		// ask trap pTfmShp->getShapeAABBox (box);
+		pTfmShp->getAABBox (box);
 		// Transform the box in the world
 		CVector c = box.getCenter();
 		CVector p = box.getCenter()+box.getHalfSize();

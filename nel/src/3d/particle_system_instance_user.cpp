@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.4 2001/08/16 17:05:56 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.5 2001/09/20 13:45:43 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,6 +37,11 @@ CParticleSystemInstanceUser::CParticleSystemInstanceUser(CScene *scene, IModel *
 	psm->registerPSModelObserver(this) ;
 }
 
+void				CParticleSystemInstanceUser::getShapeAABBox(NLMISC::CAABBox &bbox) const
+{
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
+	psm->getAABBox(bbox);
+}
 
 CParticleSystemInstanceUser::~CParticleSystemInstanceUser()
 {	
@@ -112,11 +117,6 @@ void		CParticleSystemInstanceUser::invalidPS(CParticleSystemModel *psm)
 }
 
 
-void				CParticleSystemInstanceUser::getShapeAABBox(NLMISC::CAABBox &bbox) const
-{
-	bbox.setCenter(CVector::Null) ;
-	bbox.setHalfSize(CVector::Null) ;
-}
 
 uint				CParticleSystemInstanceUser::getNumMaterials() const
 {

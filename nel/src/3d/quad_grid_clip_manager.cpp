@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.2 2001/08/29 12:49:29 berenguier Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.3 2001/09/20 13:45:43 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -198,18 +198,37 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pCl
 {
 	// use the position to get the cluster to use.
 	CAABBox box;
-	pTfmShp->getShapeAABBox (box);
+	// ask trap pTfmShp->getShapeAABBox (box);
+	pTfmShp->getAABBox (box);
 	float	distModelMax= pTfmShp->Shape->getDistMax();
 
 	// Transform the box in the world
-	CVector c = box.getCenter();
-	CVector p = c+box.getHalfSize();
 	const CMatrix &wm = pTfmShp->getWorldMatrix();
+	// compute center in world.
+	CVector c  = box.getCenter();
 	c = wm * c;
-	p = wm * p;
+	// prepare bbox.
 	CAABBox worldBBox;
 	worldBBox.setCenter(c);
-	worldBBox.setHalfSize(c-p);
+	CVector hs = box.getHalfSize();
+
+	// For 8 corners.
+	for(uint i=0;i<8;i++)
+	{
+		CVector		corner;
+		// compute the corner of the bbox.
+		corner= c;
+		if(i&1)		corner.x+=hs.x;
+		else		corner.x-=hs.x;
+		if((i/2)&1)	corner.y+=hs.y;
+		else		corner.y-=hs.y;
+		if((i/4)&1)	corner.z+=hs.z;
+		else		corner.z-=hs.z;
+		// Transform the corner in world.
+		corner = wm * corner;
+		// Extend the bbox with it.
+		worldBBox.extend(corner);
+	}
 
 
 	// Position in the grid.

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.52 2001/09/10 15:26:51 corvazier Exp $
+ * $Id: scene.cpp,v 1.53 2001/09/20 13:45:43 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -414,6 +414,9 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 	}
 	// Then create a reference to the shape
 	CTransformShape *pTShp = _ShapeBank->addRef( shapeName )->createInstance(*this);
+#ifdef NL_DEBUG
+	pTShp->NameForDebug = shapeName; // \todo traptemp
+#endif
 
 	// Look if this instance get lightmap information
 	CMeshBase *pMB = dynamic_cast<CMeshBase*>( (IShape*)(pTShp->Shape) );

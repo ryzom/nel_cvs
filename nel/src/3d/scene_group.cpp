@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.19 2001/09/06 08:41:00 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.20 2001/09/20 13:45:43 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -401,6 +401,7 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 				pClipTrav->link (_ClusterInstances[_InstancesInfos[i].Clusters[j]], _Instances[i]);
 			// For the first time we have to set all the instances to NOT move (and not be rebinded)
 			_Instances[i]->freeze();
+			_Instances[i]->setClusterSystem (this);
 		}
 		else
 		{

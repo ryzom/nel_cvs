@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.16 2001/08/23 10:13:13 berenguier Exp $
+ * $Id: particle_system_model.h,v 1.17 2001/09/20 13:45:43 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -230,6 +230,9 @@ class CParticleSystemModel : public CTransformShape
 			IBaseHrcObs *bobs= (IBaseHrcObs *) getObs(HrcTravId);
 			return bobs->WorldMatrix;
 		}		
+
+		virtual void				getAABBox(NLMISC::CAABBox &bbox) const;
+
 
 		/// inherited from CTransformShape. Returns the number of triangles wanted depeneding on the distance
 		virtual float				getNumTriangles (float distance);

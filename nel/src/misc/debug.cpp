@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.52 2002/06/13 15:08:54 lecroart Exp $
+ * $Id: debug.cpp,v 1.53 2002/06/14 14:44:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,7 +66,11 @@ using namespace std;
 
 #define LOG_IN_FILE NEL_LOG_IN_FILE
 
-namespace NLMISC {
+namespace NLMISC 
+{
+
+// Need an assert in the macro
+bool DebugNeedAssert = false;
 
 CLog *ErrorLog = NULL;
 CLog *WarningLog = NULL;
@@ -158,9 +162,8 @@ void initDebug2 (bool logInFile)
 
 		// put the message box only in release for error
 
-#ifdef NL_RELEASE
 		ErrorLog->addDisplayer (mbd);
-#endif // NL_RELEASE
+		AssertLog->addDisplayer (mbd);
 
 #endif // DEFAULT_DISPLAYER
 		alreadyInit = true;

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.40 2002/06/13 09:41:56 lecroart Exp $
+ * $Id: debug.h,v 1.41 2002/06/14 14:44:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,12 @@ void nlError (const char *format, ...);
 
 // internal use only
 void createDebug (const char *logPath = NULL, bool logInFile = true);
+
+// internal breakpoint window
+void enterBreakpoint (const char *message);
+
+// Need a breakpoint in the assert / verify macro
+extern bool DebugNeedAssert;
 
 // Macros
 
@@ -247,11 +253,13 @@ void createDebug (const char *logPath = NULL, bool logInFile = true);
 #define nlassert(exp) \
 { \
 	if (!(exp)) { \
+		NLMISC::DebugNeedAssert = false; \
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		NLMISC::DefaultMemDisplayer->write (); \
-		NLMISC_BREAKPOINT \
+		if (NLMISC::DebugNeedAssert) \
+			NLMISC_BREAKPOINT; \
 	} \
 }
 
@@ -259,12 +267,14 @@ void createDebug (const char *logPath = NULL, bool logInFile = true);
 { \
 	static bool ignoreAlways = false; \
 	if (!ignoreAlways && !(exp)) { \
+		NLMISC::DebugNeedAssert = false; \
 		ignoreAlways=true; \
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		NLMISC::DefaultMemDisplayer->write (); \
-		NLMISC_BREAKPOINT \
+		if (NLMISC::DebugNeedAssert) \
+			NLMISC_BREAKPOINT; \
 	} \
 }
 
@@ -272,23 +282,27 @@ void createDebug (const char *logPath = NULL, bool logInFile = true);
 { \
 	if (!(exp)) \
 	{ \
+		NLMISC::DebugNeedAssert = false; \
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
 		NLMISC::DefaultMemDisplayer->write (); \
-		NLMISC_BREAKPOINT \
+		if (NLMISC::DebugNeedAssert) \
+			NLMISC_BREAKPOINT; \
 	} \
 }
 
 #define nlverify(exp) \
 { \
 	if (!(exp)) { \
+		NLMISC::DebugNeedAssert = false; \
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		NLMISC::DefaultMemDisplayer->write (); \
-		NLMISC_BREAKPOINT \
+		if (NLMISC::DebugNeedAssert) \
+			NLMISC_BREAKPOINT; \
 	} \
 }
 
@@ -296,12 +310,14 @@ void createDebug (const char *logPath = NULL, bool logInFile = true);
 { \
 	static bool ignoreAlways = false; \
 	if (!ignoreAlways && !(exp)) { \
+		NLMISC::DebugNeedAssert = false; \
 		ignoreAlways=true; \
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		NLMISC::DefaultMemDisplayer->write (); \
-		NLMISC_BREAKPOINT \
+		if (NLMISC::DebugNeedAssert) \
+			NLMISC_BREAKPOINT; \
 	} \
 }
 
@@ -309,45 +325,53 @@ void createDebug (const char *logPath = NULL, bool logInFile = true);
 { \
 	if (!(exp)) \
 	{ \
+		NLMISC::DebugNeedAssert = false; \
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
 		NLMISC::DefaultMemDisplayer->write (); \
-		NLMISC_BREAKPOINT \
+		if (NLMISC::DebugNeedAssert) \
+			NLMISC_BREAKPOINT; \
 	} \
 }
 
 #define nlstop \
 { \
+	NLMISC::DebugNeedAssert = false; \
 	NLMISC::createDebug (); \
 	NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 	NLMISC::AssertLog->displayNL ("STOP "); \
 	NLMISC::DefaultMemDisplayer->write (); \
-	NLMISC_BREAKPOINT \
+	if (NLMISC::DebugNeedAssert) \
+		NLMISC_BREAKPOINT; \
 }
 
 #define nlstoponce \
 { \
 	static bool ignoreAlways = false; \
 	if (!ignoreAlways) { \
+		NLMISC::DebugNeedAssert = false; \
 		ignoreAlways=true; \
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog->displayNL ("STOP "); \
 		NLMISC::DefaultMemDisplayer->write (); \
-		NLMISC_BREAKPOINT \
+		if (NLMISC::DebugNeedAssert) \
+			NLMISC_BREAKPOINT; \
 	} \
 }
 
 #define nlstopex(str) \
 { \
+	NLMISC::DebugNeedAssert = false; \
 	NLMISC::createDebug (); \
 	NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
 	NLMISC::AssertLog->display ("STOP "); \
 	NLMISC::AssertLog->displayRawNL str; \
 	NLMISC::DefaultMemDisplayer->write (); \
-	NLMISC_BREAKPOINT \
+	if (NLMISC::DebugNeedAssert) \
+		NLMISC_BREAKPOINT; \
 }
 
 /* removed because we always check assert (even in release mode) 

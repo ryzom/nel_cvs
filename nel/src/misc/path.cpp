@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.38 2002/06/13 15:08:56 lecroart Exp $
+ * $Id: path.cpp,v 1.39 2002/06/14 14:44:55 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -335,6 +335,7 @@ DIR *opendir (const char *path)
 	if (GetCurrentDirectory (512, sDirBackup) == 0)
 	{
 		// failed
+		sDirBackup[0] = 0;
 		return NULL;
 	}
 
@@ -342,6 +343,7 @@ DIR *opendir (const char *path)
 	if (!CFile::isDirectory(path))
 	{
 		// failed
+		sDirBackup[0] = 0;
 		return NULL;
 	}
 	

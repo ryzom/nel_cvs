@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.32 2002/06/06 15:48:42 lecroart Exp $
+ * $Id: displayer.cpp,v 1.33 2002/06/14 14:44:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,8 @@
 #define _WIN32_WINDOWS	0x0410
 #define WINVER			0x0400
 #include <windows.h>
+#else
+#define IsDebuggerPresent() false
 #endif
 
 #include "nel/misc/displayer.h"
@@ -453,7 +455,31 @@ void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message
 
 	ss2 << message;
 	ss2 << endl << endl << "(this message was copied in the clipboard)";
-	MessageBox (NULL, ss2.str().c_str (), logTypeToString(args.LogType, true), MB_OK | MB_ICONEXCLAMATION);
+
+	if (IsDebuggerPresent ())
+	{
+		// Must break in assert call
+		DebugNeedAssert = true;
+	}
+	else
+	{
+		// Ask the user to continue, debug or ignore
+		int result = MessageBox (NULL, ss2.str().c_str (), logTypeToString(args.LogType, true), MB_ABORTRETRYIGNORE | MB_ICONSTOP);
+		if (result == IDABORT)
+		{
+			// Exit the program now
+			exit (-1);
+		}
+		else if (result == IDRETRY)
+		{
+			// Give the debugger a try
+			DebugNeedAssert = true;
+ 		}
+		else if (result == IDIGNORE)
+		{
+			// Continue, do nothing
+		}
+	}
 
 #endif
 }

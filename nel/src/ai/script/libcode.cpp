@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.17 2001/10/02 14:53:41 chafik Exp $
+ * $Id: libcode.cpp,v 1.18 2001/10/25 12:14:24 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,6 @@
 #include "nel/ai/script/test_method.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
-#include "nel/ai/script/gd_agent_class.h"
 
 
 namespace NLAISCRIPT

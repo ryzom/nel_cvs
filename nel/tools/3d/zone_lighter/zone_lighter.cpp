@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.13 2002/01/29 15:37:58 vizerie Exp $
+ * $Id: zone_lighter.cpp,v 1.14 2002/02/06 16:58:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,9 +81,9 @@ class CMyZoneLighter : public CZoneLighter
 	{
 		// Progress bar
 		char msg[512];
-		uint mess = (uint) (progress * (float)BAR_LENGTH);
-		
-		sprintf (msg, "\r%s: %s", message, progressbar[std::min((uint) (BAR_LENGTH - 1), mess)]);
+		uint	pgId= (uint)(progress*(float)BAR_LENGTH);
+		pgId= min(pgId, (uint)(BAR_LENGTH-1));
+		sprintf (msg, "\r%s: %s", message, progressbar[pgId]);
 		for (uint i=strlen(msg); i<79; i++)
 			msg[i]=' ';
 		msg[i]=0;
@@ -480,6 +480,11 @@ int main(int argc, char* argv[])
 						// Get the instance shape name
 						string name=shapes_path+group->getShapeName (instance);
 
+						// Skip it??
+						if(group->getInstance(instance).DontCastShadow)
+							continue;
+
+
 						// Add a .shape at the end ?
 						if (name.find('.') == std::string::npos)
 							name += ".shape";
@@ -546,6 +551,14 @@ int main(int argc, char* argv[])
 								lighter.addWaterShape(static_cast<NL3D::CWaterShape *>(shape), mt);
 							}
 						}
+					}
+
+					// For each point light of the ig
+					const std::vector<CPointLightNamed>	&pointLightList= group->getPointLightList();
+					for (uint plId=0; plId<pointLightList.size(); plId++)
+					{
+						// Add it to the Ig.
+						lighter.addStaticPointLight(pointLightList[plId]);
 					}
 
 					// Next instance group
@@ -616,6 +629,11 @@ int main(int argc, char* argv[])
 
 	}
 	
+
+	// Landscape is not deleted, nor the instanceGroups, for faster quit.
+	// Must disalbe BlockMemory checks (for pointLights).
+	NL3D_BlockMemoryAssertOnPurge= false;
+
 	// exit.
 	return 0;
 }

@@ -1,7 +1,7 @@
 /** \file tile_vegetable_desc.h
  * <File description>
  *
- * $Id: tile_vegetable_desc.h,v 1.1 2001/11/07 16:41:53 berenguier Exp $
+ * $Id: tile_vegetable_desc.h,v 1.2 2001/11/12 14:00:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/stream.h"
 #include "3d/landscape_def.h"
 #include "3d/vegetable.h"
+#include "3d/vegetable_def.h"
 #include <vector>
 
 namespace NL3D 
@@ -37,29 +38,6 @@ namespace NL3D
 
 
 class	CVegetableManager;
-
-
-// ***************************************************************************
-/**
- * A descriptor of vegetables for landscape: just a vegetable and a Distance Type.
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2001
- */
-class	CLandscapeVegetable
-{
-public:
-
-	/// The vegetable descriptor to store in the tiel information
-	CVegetable		Vegetable;
-	/// At which distance this vegetable will be rendered.
-	uint32			DistType;
-
-	CLandscapeVegetable();
-	CLandscapeVegetable(const CVegetable &veget, uint distType) :
-		Vegetable(veget), DistType(distType) {}
-	void		serial(NLMISC::IStream &f);
-};
 
 
 // ***************************************************************************
@@ -80,7 +58,7 @@ public:
 	void		clear();
 
 	/// Build the CTileVegetableDesc.
-	void		build(const std::vector<CLandscapeVegetable> &vegetables);
+	void		build(const std::vector<CVegetable> &vegetables);
 
 	/// register all Vegetables in this to the manager.
 	void		registerToManager(CVegetableManager *vegetableManager);
@@ -100,9 +78,9 @@ private:
 	/** List of vegetable to instanciate for a specific tile
 	 *	Grouped by distance Type.
 	 */
-	std::vector<CVegetable>		_VegetableList[NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST];
+	std::vector<CVegetable>		_VegetableList[NL3D_VEGETABLE_BLOCK_NUMDIST];
 
-	uint32						_VegetableSeed[NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST];
+	uint32						_VegetableSeed[NL3D_VEGETABLE_BLOCK_NUMDIST];
 
 
 };

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.91 2001/11/08 09:51:21 berenguier Exp $
+ * $Id: landscape.cpp,v 1.92 2001/11/12 14:00:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -213,7 +213,7 @@ CLandscape::CLandscape() :
 	_MergePriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD);
 
 	// create / Init the vegetable manager.
-	_VegetableManager= new CVegetableManager;
+	_VegetableManager= new CVegetableManager(NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_UNLIT, NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_LIGHTED);
 
 	// Init vegetable  setup.
 	_VegetableManagerEnabled= false;
@@ -454,7 +454,7 @@ void			CLandscape::setDriver(IDriver *drv)
 
 		// Does the driver has sufficient requirements for Vegetable???
 		// only if VP supported by GPU, and Only if max vertices allowed.
-		_DriverOkForVegetable= _VertexShaderOk && (_Driver->getMaxVerticesByVertexBufferHard()>=NL3D_VEGETABLE_VERTEX_MAX_VERTEX_VBHARD);
+		_DriverOkForVegetable= _VertexShaderOk && (_Driver->getMaxVerticesByVertexBufferHard()>=(uint)NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_MAX);
 
 	}
 }
@@ -2641,10 +2641,10 @@ void		CLandscape::setupVegetableLighting(const CRGBA &ambient, const CRGBA &diff
 }
 
 // ***************************************************************************
-void		CLandscape::setVegetableWind(const CVector &windDir, float windFreq, float windPower)
+void		CLandscape::setVegetableWind(const CVector &windDir, float windFreq, float windPower, float windBendMin)
 {
 	// setup vegetable manager
-	_VegetableManager->setWind(windDir, windFreq, windPower);
+	_VegetableManager->setWind(windDir, windFreq, windPower, windBendMin);
 }
 
 

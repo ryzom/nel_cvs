@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.4 2001/11/07 16:41:53 berenguier Exp $
+ * $Id: landscape_def.h,v 1.5 2001/11/12 14:00:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,9 +61,11 @@ class	IDriver;
 
 
 // ***************************************************************************
-/// For Landscape Vegetable: Distance Types are: 10m, 20m, 30m, 40m, 50m.
-#define	NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST	5
-#define	NL3D_LANDSCAPE_VEGETABLE_BLOCK_ELTDIST	10.0f
+/// For Landscape Vegetable: Maximum AGP load (in number of vertices allowed )
+#define	NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_UNLIT		60000
+#define	NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_LIGHTED		15000
+#define	NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_MAX	\
+	(max(NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_UNLIT, NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_LIGHTED))
 
 
 // ***************************************************************************

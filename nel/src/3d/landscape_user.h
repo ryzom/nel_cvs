@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.7 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: landscape_user.h,v 1.8 2001/11/12 14:00:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,7 +147,7 @@ public:
 	virtual	void		enableVegetable(bool enable);
 	virtual	void		loadVegetableTexture(const std::string &textureFileName);
 	virtual	void		setupVegetableLighting(const CRGBA &ambient, const CRGBA &diffuse, const CVector &directionalLight);
-	virtual	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower);
+	virtual	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower, float windBendMin);
 	// @}
 
 public:

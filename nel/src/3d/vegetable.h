@@ -1,7 +1,7 @@
 /** \file vegetable.h
  * <File description>
  *
- * $Id: vegetable.h,v 1.4 2001/11/09 14:21:31 berenguier Exp $
+ * $Id: vegetable.h,v 1.5 2001/11/12 14:00:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,8 @@ public:
 	std::string			ShapeName;
 	/// Density== Number of instance to create / m².
 	CNoiseValue			Density;	// floor(Density*surface)== nbShape to create.
+	/// the maximum density computed. if <0, no maximum. -1 by default.
+	float				MaxDensity;
 	/// Random Scale.
 	CNoiseValue			Sxy, Sz;
 	/// Random Orientation.
@@ -66,6 +68,10 @@ public:
 	CNoiseValue			BendPhase;
 	/// The color to modulate the instance.
 	CNoiseColorGradient	Color;
+	/** At which distance this vegetable will be rendered.
+	 *	NB: DistType is not managed by CVegetableManager, but by user (eg CLandscape).
+	 */
+	uint32				DistType;
 
 
 public:

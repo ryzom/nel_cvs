@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.h
  * <File description>
  *
- * $Id: vegetablevb_allocator.h,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: vegetablevb_allocator.h,v 1.2 2001/11/12 14:00:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,9 +33,6 @@
 namespace NL3D 
 {
 
-class	CVertexProgram;
-
-
 
 // ***************************************************************************
 // Vegetable VertexProgram: Position of vertices in VertexBuffer.
@@ -53,6 +50,7 @@ class	CVertexProgram;
  * A VB allocator (landscape like).
  *	Big difference is that here, we do not really matter about reallocation because both software
  *	and hardware VB are present. Also, VertexProgram MUST be supported by driver here.
+ *	NB: unlike Landscape VBAllocator, the VertexProgram is not managed by this class.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -61,17 +59,20 @@ class CVegetableVBAllocator
 {
 public:
 
+	enum	TVBType	{VBTypeLighted=0, VBTypeUnlit, VBTypeCount};
+
 	/// Constructor
 	CVegetableVBAllocator();
 	~CVegetableVBAllocator();
-	/// init the VB allocator, with the good type. must do it first. type must be one of NL3D_VEGETABLE_RDRPASS_*.
-	void			init(uint type);
+	/** init the VB allocator, with the good type. must do it first.
+	 *	maxVertexInBufferHard is the maximum vertex allowed to reside in AGP mem.
+	 *	if More are allocated, then VBHard is disabled, and replaced with software VB (slower!), for ever.
+	 */
+	void			init(TVBType vbType, uint maxVertexInBufferHard);
 
 
 	/** setup driver, and test for possible VBHard reallocation. if reallocation, refill the VBHard
 	 *	to do anytime you're not sure of change of the driver/vbHard state.
-	 *
-	 *	Note: the vertexProgram is created/changed here, according to driver, and TType.
 	 *
 	 *	\param driver must not be NULL.
 	 */
@@ -84,6 +85,14 @@ public:
 
 	/// \name Allocation.
 	// @{
+
+	/**	if I add numAddVerts vertices, will it overide _MaxVertexInBufferHard ??
+	 */
+	bool			exceedMaxVertexInBufferHard(uint numAddVerts) const;
+	/** return number of vertices allocated with allocateVertex() (NB: do not return the actual number of
+	 *	vertices allocated in VBuffer, but the number of vertices asked to be allocated).
+	 */
+	uint			getNumUserVerticesAllocated() const;
 
 	/** Allocate free vertices in VB. (RAM and AGP if possible). work with locked or unlocked buffer.
 	 *	if VBHard reallocation occurs, VB is unlocked, destroyed, reallocated, and refilled.
@@ -111,7 +120,6 @@ public:
 	bool			bufferLocked() const {return _BufferLocked;}
 
 	/** activate the VB or the VBHard in Driver setuped. nlassert if driver is NULL or if buffer is locked.
-	 * activate the vertexProgram too.
 	 */
 	void			activate();
 	// @}
@@ -127,7 +135,7 @@ private:
 	};
 
 private:
-	uint						_Type;
+	TVBType						_Type;
 	
 	// List of vertices free.
 	std::vector<uint>			_VertexFreeMemory;
@@ -148,6 +156,9 @@ private:
 	NLMISC::CRefPtr<IVertexBufferHard>	_VBHard;
 	bool								_BufferLocked;
 	uint8								*_AGPBufferPtr;
+	/// Maximum vertices in BufferHard allowed for this VBAllocator
+	uint								_MaxVertexInBufferHard;
+
 
 	/// delete only the Vertexbuffer hard.
 	void				deleteVertexBufferHard();
@@ -156,16 +167,12 @@ private:
 		if VBHard allocation, copy from soft.
 	*/
 	void				allocateVertexBufferAndFillVBHard(uint32 numVertices);
+
+	// init VB according to type. called in cons() only.
+	void				setupVBFormat();
+
 	// @}
 
-
-	/// \name Vertex Program mgt .
-	// @{
-	// Vertex Program.
-	CVertexProgram		*_VertexProgram;
-	// create _VertexProgram and init VB according to type. called in cons() only.
-	void				setupVBFormatAndVertexProgram();
-	// @}
 
 };
 

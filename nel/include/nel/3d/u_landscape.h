@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.7 2001/10/31 10:20:08 berenguier Exp $
+ * $Id: u_landscape.h,v 1.8 2001/11/12 14:00:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,8 +164,10 @@ public:
 	 *	\param windDir is the direction of the wind. NB: only XY direction is kept.
 	 *	\param windFreq is the frequency for the animation (speed)
 	 *	\param windPower is the power of the wind, and is a factor (0..1) of Bend
+	 *	\param windBendMin is a value in (0..1) which indicate how much the vegetables are bended at minimum 
+	 *	(for very powerfull wind)
 	 */
-	virtual	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower) =0;
+	virtual	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower, float windBendMin) =0;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file landscape_vegetable_block.cpp
  * <File description>
  *
- * $Id: landscape_vegetable_block.cpp,v 1.1 2001/11/05 16:26:44 berenguier Exp $
+ * $Id: landscape_vegetable_block.cpp,v 1.2 2001/11/12 14:00:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,14 +46,14 @@ namespace NL3D
 class	CLVBSqrDistLUT
 {
 public:
-	static	float		Array[NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST+1];
+	static	float		Array[NL3D_VEGETABLE_BLOCK_NUMDIST+1];
 
 	CLVBSqrDistLUT()
 	{
 		// 0, 10, 20, 30, 40, 50
-		for(uint i=0;i<NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST+1;i++)
+		for(uint i=0;i<NL3D_VEGETABLE_BLOCK_NUMDIST+1;i++)
 		{
-			Array[i]= i*NL3D_LANDSCAPE_VEGETABLE_BLOCK_ELTDIST;
+			Array[i]= i*NL3D_VEGETABLE_BLOCK_ELTDIST;
 			Array[i]= sqr(Array[i]);
 		}
 	}
@@ -62,16 +62,16 @@ public:
 
 
 CLVBSqrDistLUT	NL3D_InitSqrDistLUT;
-float		CLVBSqrDistLUT::Array[NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST+1];
+float		CLVBSqrDistLUT::Array[NL3D_VEGETABLE_BLOCK_NUMDIST+1];
 
 
 // ***************************************************************************
 CLandscapeVegetableBlock::CLandscapeVegetableBlock()
 {
 	_VegetableClipBlock= NULL;
-	_CurDistType= NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST;
+	_CurDistType= NL3D_VEGETABLE_BLOCK_NUMDIST;
 
-	for(uint i=0;i<NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST;i++)
+	for(uint i=0;i<NL3D_VEGETABLE_BLOCK_NUMDIST;i++)
 	{
 		_VegetableIG[i]= NULL;
 	}
@@ -99,7 +99,7 @@ void			CLandscapeVegetableBlock::init(const CVector &center, CVegetableClipBlock
 void			CLandscapeVegetableBlock::release(CVegetableManager *vegeManager, CTessList<CLandscapeVegetableBlock> &vblist)
 {
 	// release all Igs.
-	for(uint i=0;i<NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST;i++)
+	for(uint i=0;i<NL3D_VEGETABLE_BLOCK_NUMDIST;i++)
 	{
 		if(_VegetableIG[i])
 		{
@@ -109,7 +109,7 @@ void			CLandscapeVegetableBlock::release(CVegetableManager *vegeManager, CTessLi
 	}
 
 	// reset state.
-	_CurDistType= NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST;
+	_CurDistType= NL3D_VEGETABLE_BLOCK_NUMDIST;
 
 	// remove from list.
 	vblist.remove(this);
@@ -126,13 +126,13 @@ void			CLandscapeVegetableBlock::update(const CVector &viewCenter, CVegetableMan
 	{
 		newDistType--;
 	}
-	while(newDistType<NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST && sqrDist>CLVBSqrDistLUT::Array[newDistType+1])
+	while(newDistType<NL3D_VEGETABLE_BLOCK_NUMDIST && sqrDist>CLVBSqrDistLUT::Array[newDistType+1])
 	{
 		newDistType++;
 	}
 	/*
 		NB: to test but may be better than 
-			newDistType= floor()(delta.norm() / NL3D_LANDSCAPE_VEGETABLE_BLOCK_ELTDIST);
+			newDistType= floor()(delta.norm() / NL3D_VEGETABLE_BLOCK_ELTDIST);
 	*/
 
 

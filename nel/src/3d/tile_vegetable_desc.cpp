@@ -1,7 +1,7 @@
 /** \file tile_vegetable_desc.cpp
  * <File description>
  *
- * $Id: tile_vegetable_desc.cpp,v 1.1 2001/11/07 16:41:53 berenguier Exp $
+ * $Id: tile_vegetable_desc.cpp,v 1.2 2001/11/12 14:00:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,22 +38,6 @@ namespace NL3D
 
 
 // ***************************************************************************
-CLandscapeVegetable::CLandscapeVegetable()
-{
-	DistType= 0;
-}
-
-// ***************************************************************************
-void		CLandscapeVegetable::serial(NLMISC::IStream &f)
-{
-	sint	ver= f.serialVersion(0);
-
-	f.serial(Vegetable);
-	f.serial(DistType);
-}
-
-
-// ***************************************************************************
 CTileVegetableDesc::CTileVegetableDesc()
 {
 }
@@ -61,14 +45,14 @@ CTileVegetableDesc::CTileVegetableDesc()
 // ***************************************************************************
 void		CTileVegetableDesc::clear()
 {
-	for(sint i=0; i<NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST; i++)
+	for(sint i=0; i<NL3D_VEGETABLE_BLOCK_NUMDIST; i++)
 	{
 		_VegetableList[i].clear();
 	}
 }
 
 // ***************************************************************************
-void		CTileVegetableDesc::build(const std::vector<CLandscapeVegetable> &vegetables)
+void		CTileVegetableDesc::build(const std::vector<CVegetable> &vegetables)
 {
 	uint	i;
 
@@ -79,13 +63,13 @@ void		CTileVegetableDesc::build(const std::vector<CLandscapeVegetable> &vegetabl
 	for(i=0;i<vegetables.size();i++)
 	{
 		uint	distType= vegetables[i].DistType;
-		distType= min(distType, (uint)(NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST-1));
-		_VegetableList[distType].push_back(vegetables[i].Vegetable);
+		distType= min(distType, (uint)(NL3D_VEGETABLE_BLOCK_NUMDIST-1));
+		_VegetableList[distType].push_back(vegetables[i]);
 	}
 
 	// Compute Seed such that creation of one vegetable for a tile will never receive same seed.
 	uint	sumVeget= 0;
-	for(i=0; i<NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST; i++)
+	for(i=0; i<NL3D_VEGETABLE_BLOCK_NUMDIST; i++)
 	{
 		_VegetableSeed[i]= sumVeget;
 		// add number of vegetable for next seed.
@@ -98,7 +82,7 @@ void		CTileVegetableDesc::build(const std::vector<CLandscapeVegetable> &vegetabl
 void		CTileVegetableDesc::registerToManager(CVegetableManager *vegetableManager)
 {
 	// Pasre all distanceType.
-	for(uint i=0; i<NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST; i++)
+	for(uint i=0; i<NL3D_VEGETABLE_BLOCK_NUMDIST; i++)
 	{
 		// Parse all vegetables of the list.
 		for(uint j=0; j<_VegetableList[i].size(); j++)
@@ -114,8 +98,8 @@ void		CTileVegetableDesc::serial(NLMISC::IStream &f)
 {
 	sint	ver= f.serialVersion(0);
 
-	nlassert(NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST==5);
-	for(uint i=0; i<NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST; i++)
+	nlassert(NL3D_VEGETABLE_BLOCK_NUMDIST==5);
+	for(uint i=0; i<NL3D_VEGETABLE_BLOCK_NUMDIST; i++)
 	{
 		f.serialCont(_VegetableList[i]);
 		f.serial(_VegetableSeed[i]);
@@ -125,7 +109,7 @@ void		CTileVegetableDesc::serial(NLMISC::IStream &f)
 // ***************************************************************************
 const	std::vector<CVegetable>		&CTileVegetableDesc::getVegetableList(uint distType) const
 {
-	nlassert(distType < NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST);
+	nlassert(distType < NL3D_VEGETABLE_BLOCK_NUMDIST);
 
 	return _VegetableList[distType];
 }
@@ -133,7 +117,7 @@ const	std::vector<CVegetable>		&CTileVegetableDesc::getVegetableList(uint distTy
 // ***************************************************************************
 uint		CTileVegetableDesc::getVegetableSeed(uint distType) const
 {
-	nlassert(distType < NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST);
+	nlassert(distType < NL3D_VEGETABLE_BLOCK_NUMDIST);
 
 	return _VegetableSeed[distType];
 }

@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * <File description>
  *
- * $Id: vegetable_instance_group.h,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: vegetable_instance_group.h,v 1.2 2001/11/12 14:00:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,7 +79,9 @@ private:
 
 
 	// For now, there is only 4 render pass: Lighted and Unlit combined with 2Sided or not
-	CVegetableRdrPass			_RdrPass[NL3D_VEGETABLE_NRDRPASS];
+	CVegetableRdrPass			_HardRdrPass[NL3D_VEGETABLE_NRDRPASS];
+	// The same, but which use soft VertexBuffer.
+	CVegetableRdrPass			_SoftRdrPass[NL3D_VEGETABLE_NRDRPASS];
 
 };
 

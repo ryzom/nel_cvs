@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.22 2001/11/07 16:41:53 berenguier Exp $
+ * $Id: landscape.h,v 1.23 2001/11/12 14:00:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -404,8 +404,10 @@ public:
 	 *	\param windDir is the direction of the wind. NB: only XY direction is kept.
 	 *	\param windFreq is the frequency for the animation (speed)
 	 *	\param windPower is the power of the wind, and is a factor (0..1) of Bend
+	 *	\param windBendMin is a value in (0..1) which indicate how much the vegetables are bended at minimum 
+	 *	(for very powerfull wind)
 	 */
-	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower);
+	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower, float windBendMin);
 
 
 	/** set the vegetable Wind animation Time (in seconds) (NB: setuped in MOT)

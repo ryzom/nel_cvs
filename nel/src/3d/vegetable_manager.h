@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.2 2001/11/07 13:11:39 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.3 2001/11/12 14:00:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,8 +56,12 @@ class CVegetableManager
 {
 public:
 
-	/// Constructor
-	CVegetableManager();
+	/**	
+	 * \param maxVertexVbHardUnlit maximum VertexCount in VBHard for Unlit (or precomputed lighted) vegetables
+	 * \param maxVertexVbHardLighted maximum VertexCount in VBHard for Lighted vegetables
+	 */
+	CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVbHardLighted);
+	~CVegetableManager();
 
 
 	/// \name Shape management
@@ -134,8 +138,10 @@ public:
 	 *	\param windDir is the direction of the wind. NB: only XY direction is kept.
 	 *	\param windFreq is the frequency for the animation (speed)
 	 *	\param windPower is the power of the wind, and is a factor (0..1) of Bend
+	 *	\param windBendMin is a value in (0..1) which indicate how much the vegetables are bended at minimum 
+	 *	(for very powerfull wind)
 	 */
-	void		setWind(const CVector &windDir, float windFreq, float windPower);
+	void		setWind(const CVector &windDir, float windFreq, float windPower, float windBendMin);
 
 	/** set the Wind animation Time (in seconds)
 	 */
@@ -160,8 +166,14 @@ private:
 	typedef	TShapeMap::iterator						ItShapeMap;
 	TShapeMap										_ShapeMap;
 
-	// Vertex Buffers for display. One allocator for each renderPass.
-	CVegetableVBAllocator							_VBAllocator[NL3D_VEGETABLE_NRDRPASS];
+
+	// Vertex Buffers for display. One allocator for Lighted and Unlit mode.
+	CVegetableVBAllocator							_VBHardAllocator[CVegetableVBAllocator::VBTypeCount];
+	// The same, but no VBHard.
+	CVegetableVBAllocator							_VBSoftAllocator[CVegetableVBAllocator::VBTypeCount];
+	// Vertex Program. One VertexProgram for each rdrPass
+	CVertexProgram									*_VertexProgram[NL3D_VEGETABLE_NRDRPASS];
+
 
 	// Material. Usefull for texture and alphaTest
 	CMaterial										_VegetableMaterial;
@@ -172,11 +184,20 @@ private:
 	static	bool	doubleSidedRdrPass(uint rdrPass);
 
 
+	/// Get the good allocator for the appropriate rdr pass.
+	CVegetableVBAllocator	&getVBAllocatorForRdrPassAndVBHardMode(uint rdrPass, uint vbHardMode);
+
+
+	/// init the ith vertexProgram.
+	void					initVertexProgram(uint vpType);
+
+
 	/// \name Wind animation
 	// @{
 	CVector											_WindDirection;
 	float											_WindFrequency;
 	float											_WindPower;
+	float											_WindBendMin;
 	double											_WindTime;
 	double											_WindPrecRenderTime;
 	// updated at each render().

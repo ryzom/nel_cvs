@@ -1,7 +1,7 @@
 /** \file vegetable_def.h
  * Some global definitions for CVegetable*
  *
- * $Id: vegetable_def.h,v 1.2 2001/11/07 13:11:39 berenguier Exp $
+ * $Id: vegetable_def.h,v 1.3 2001/11/12 14:00:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,12 +41,13 @@ namespace NL3D
 #define	NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED		3
 
 
-// 65000 is a maximum because of GeForce limitations. But allow Vegetable only for GeForce3 and better
-#define	NL3D_VEGETABLE_VERTEX_MAX_VERTEX_VBHARD		100000
-
-
 // 64 LUT entries in constant of VertexProgram.
 #define	NL3D_VEGETABLE_VP_LUT_SIZE			64
+
+
+/// For Landscape Vegetable: Distance Types are: 10m, 20m, 30m, 40m, 50m.
+#define	NL3D_VEGETABLE_BLOCK_NUMDIST	5
+#define	NL3D_VEGETABLE_BLOCK_ELTDIST	10.0f
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.5 2001/11/09 14:21:31 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.6 2001/11/12 14:00:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,9 @@ CVegetable::CVegetable()
 	// Ground style density.
 	setAngleGround(0);
 
+	// Density not maximised.
+	MaxDensity= -1;
+
 	// No scale.
 	Sxy.Abs= Sz.Abs= 1;
 	Sxy.Rand= Sz.Rand= 0;
@@ -57,6 +60,9 @@ CVegetable::CVegetable()
 	// No BendFactor.
 	BendFactor.Abs= 1;
 	BendFactor.Rand= 0;
+
+	// Appear at 0.
+	DistType= 0;
 
 	_Manager= NULL;
 }
@@ -155,7 +161,10 @@ void	CVegetable::generateGroupEx(float nbInst, const CVector &posInWorld, const 
 void	CVegetable::generateGroup(const CVector &posInWorld, const CVector &surfaceNormal, float area, uint vegetSeed, std::vector<CVector2f> &instances) const
 {
 	// number of instances to generate
-	float	nbInst= area * Density.eval(posInWorld);
+	float	dens= Density.eval(posInWorld);
+	if(MaxDensity >= 0)
+		dens= min(dens, MaxDensity);
+	float	nbInst= area * dens;
 
 	// modulate by normal and generate them.
 	generateGroupEx(nbInst, posInWorld, surfaceNormal, vegetSeed, instances);
@@ -175,6 +184,8 @@ void	CVegetable::generateGroupBiLinear(const CVector &posInWorld, const CVector 
 	{
 		// Get number of instances generated on edges
 		edgeDensity[i]= area * Density.eval(posInWorldBorder[i]);
+		if(MaxDensity >= 0)
+			edgeDensity[i]= min(edgeDensity[i], area * MaxDensity);
 		edgeDensity[i]= max(0.f, edgeDensity[i]);
 	}
 	// Average on center of the patch for each direction.
@@ -327,12 +338,14 @@ void	CVegetable::serial(NLMISC::IStream &f)
 
 	f.serial(ShapeName);
 	f.serial(Density);
+	f.serial(MaxDensity);
 	f.serial(_CosAngleMin, _CosAngleMax, _CosAngleMiddle, _OOCosAngleDist);
 	f.serial(Sxy, Sz);
 	f.serial(Rx, Ry, Rz);
 	f.serial(BendFactor);
 	f.serial(BendPhase);
 	f.serial(Color);
+	f.serial(DistType);
 }
 
 

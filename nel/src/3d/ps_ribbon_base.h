@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.h
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.h,v 1.10 2004/07/16 07:29:59 vizerie Exp $
+ * $Id: ps_ribbon_base.h,v 1.11 2004/08/03 16:23:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NL3D
 {
 
 /** Base class for ribbons. If can be used to compute ribbons trajectory. 
-  * It can perform lagrange or linear interpolation.
+  * It can perform hermitte or linear interpolation.
   * to get the ribbon shape. It can also be used to have fixed size ribbons.
   * NB : Ribbons that don't herit from this are deprecated but may be kept for compatibility.
   * \author Nicolas Vizerie

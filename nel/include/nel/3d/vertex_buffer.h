@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.3 2001/01/08 17:58:29 corvazier Exp $
+ * $Id: vertex_buffer.h,v 1.4 2001/02/05 10:09:35 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,7 +140,7 @@ public:
 	// NB: The Vertex offset is always 0.
 	sint					getNormalOff() const {nlassert(_Flags & IDRV_VF_NORMAL); return _NormalOff;}
 	sint					getTexCoordOff(uint8 stage=0) const  {nlassert(_Flags & IDRV_VF_UV[stage]); return _UVOff[stage];}
-	sint					getColorOff() const {nlassert(_Flags & IDRV_VF_COLOR); return _RGBAOff;}
+  	sint					getColorOff() const {nlassert(_Flags & IDRV_VF_COLOR); return _RGBAOff;}
 	sint					getSpecularOff() const {nlassert(_Flags & IDRV_VF_SPECULAR); return _SpecularOff;}
 	sint					getWeightOff(sint wgt) const {nlassert(_Flags & IDRV_VF_W[wgt]); return _WOff[wgt];}
 

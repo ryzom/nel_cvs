@@ -1,7 +1,7 @@
 /** \file frustum.cpp
  * <File description>
  *
- * $Id: frustum.cpp,v 1.2 2001/01/31 11:27:33 berenguier Exp $
+ * $Id: frustum.cpp,v 1.3 2001/02/05 10:10:09 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,7 +93,7 @@ CVector			CFrustum::project(const CVector &vec) const
 	{
 		ret.x= (2*Near*pt.x + decalX*pt.z)*OOw;
 		ret.x/= pt.z;
-		ret.y= (2*Near*pt.y + decalY*pt.z)*OOw;
+		ret.y= (2*Near*pt.y + decalY*pt.z)*OOh;
 		ret.y/= pt.z;
 	}
 	else

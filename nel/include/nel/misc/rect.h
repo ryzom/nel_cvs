@@ -1,7 +1,7 @@
 /** \file rect.h
  * <File description>
  *
- * $Id: rect.h,v 1.2 2000/12/22 10:42:05 corvazier Exp $
+ * $Id: rect.h,v 1.3 2001/02/05 10:09:07 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,7 @@ public:
 	/// Return the higher X coordinate of the box + 1
 	sint32		right()
 	{
-		return X+Width;
+		return X+(sint32)Width;
 	}
 
 	/// Return the lower Y coordinate of the box
@@ -83,7 +83,7 @@ public:
 	/// Return the higher Y coordinate of the box + 1
 	sint32		bottom()
 	{
-		return Y+Height;
+		return Y+(sint32)Height;
 	}
 
 	/// Compute the x center of the rectangle

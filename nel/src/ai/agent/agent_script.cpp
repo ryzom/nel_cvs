@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.59 2001/04/26 17:13:50 robert Exp $
+ * $Id: agent_script.cpp,v 1.60 2001/04/27 07:59:46 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -291,12 +291,12 @@ namespace NLAIAGENT
 		_AgentManager = a._AgentManager;
 		//if(_AgentManager) _AgentManager->incRef();
 
-		std::vector<NLAILOGIC::IBaseOperator *>::const_iterator it_o = a._Operators.begin();
+/*		std::vector<NLAILOGIC::IBaseOperator *>::const_iterator it_o = a._Operators.begin();
 		while ( it_o != a._Operators.end() )
 		{
 			addOperator( *it_o );
 			it_o++;
-		}
+		}*/
 	}
 	
 	CAgentScript::CAgentScript(IAgentManager *manager) : IAgentManager( NULL ), _AgentClass( NULL )
@@ -1052,12 +1052,12 @@ namespace NLAIAGENT
 
 	void CAgentScript::addOperator(NLAILOGIC::IBaseOperator *op)
 	{
-		_Operators.push_back(op);
+//		_Operators.push_back(op);
 	}
 
 	void CAgentScript::remOperator(NLAILOGIC::IBaseOperator *op)
 	{
-		std::vector<NLAILOGIC::IBaseOperator *>::iterator it_o = _Operators.begin();
+/*		std::vector<NLAILOGIC::IBaseOperator *>::iterator it_o = _Operators.begin();
 		while ( it_o != _Operators.end() )
 		{
 			if ( op == *it_o )
@@ -1070,6 +1070,7 @@ namespace NLAIAGENT
 		char buf[2048];
 		op->getDebugString(buf);
 		throw NLAIE::CExceptionObjectNotFoundError(buf);
+		*/
 	}	
 
 	const NLAIC::CIdentType &CAgentScript::getType() const

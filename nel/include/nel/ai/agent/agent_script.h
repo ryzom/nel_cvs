@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.28 2001/04/19 08:11:57 chafik Exp $
+ * $Id: agent_script.h,v 1.29 2001/04/27 08:00:07 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,13 +133,13 @@ namespace NLAIAGENT
 		///Type def for the map witch store the name of dynamic agent store in the agent.		
 		typedef std::multiset<CKeyAgent> tsetDefNameAgent;
 		
-	private:			
+	protected:			
 		///Table of static compoments.
 		IObjectIA **_Components;
 		///Nomber of static compoment.
 		int _NbComponents;
 		///Vector for store agent operator.
-		std::vector<NLAILOGIC::IBaseOperator *> _Operators;
+//		std::vector<NLAILOGIC::IBaseOperator *> _Operators;
 		///The manager where the agent is run this manager have the agent script context.
 		IAgentManager *_AgentManager;		
 		/**

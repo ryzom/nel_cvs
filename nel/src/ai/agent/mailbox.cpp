@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.18 2001/04/24 09:06:56 chafik Exp $
+ * $Id: mailbox.cpp,v 1.19 2001/04/27 07:59:46 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -522,8 +522,6 @@ namespace NLAIAGENT
 			_ListMessage.pop_back();				
 		}
 	}
-
-
 
 	const IObjectIA::CProcessResult &CScriptMailBox::run()
 	{

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.56 2002/08/22 12:10:04 lecroart Exp $
+ * $Id: service.h,v 1.57 2002/09/09 12:01:40 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -330,6 +330,8 @@ public:
 	/// Directory where to store files that the services will write (for example, packet_sheets)
 	std::string							WriteFilesDirectory;
 
+	void								setVersion (const std::string &version) { _Version = version; }
+
 private:
 
 	/// \name methods. These methods are used by internal system.
@@ -387,6 +389,8 @@ private:
 
 	/// true if the service use layer5
 	bool								_IsService5;
+
+	std::string							_Version;
 
 	TUnifiedCallbackItem				*_CallbackArray5;
 	TCallbackItem						*_CallbackArray;

@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.45 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: zone.cpp,v 1.46 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -179,7 +179,7 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 		pa.OrderT= pi.OrderT;
 
 		// Number of lumels in this patch
-		uint lumelCount=(pi.OrderS*NL_LUMEL_BY_TILE+1)*(pi.OrderT*NL_LUMEL_BY_TILE+1);
+		uint lumelCount=(pi.OrderS*NL_LUMEL_BY_TILE)*(pi.OrderT*NL_LUMEL_BY_TILE);
 
 		// Lumel empty ?
 		if (pi.Lumels.size ()==lumelCount)
@@ -251,7 +251,8 @@ void			CZone::retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVerte
 			pa.Interiors[i].unpack(p.Interiors[i], PatchBias, PatchScale);
 		pi.Tiles= pa.Tiles;
 		pi.TileColors= pa.TileColors;
-		pi.Lumels.resize ((pa.OrderS*4+1)*(pa.OrderT*4+1));
+		pi.Lumels.resize ((pa.OrderS*4)*(pa.OrderT*4));
+		pi.Flags=(pa.Flags&NL_PATCH_SMOOTH_FLAG_MASK)>>NL_PATCH_SMOOTH_FLAG_SHIFT;
 
 		// Unpack the lumel map
 		pa.unpackShadowMap (&pi.Lumels[0]);
@@ -333,6 +334,8 @@ void			CPatchInfo::CBindInfo::serial(NLMISC::IStream &f)
 void			CZone::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 3:
+		- Lumels compression version 2.
 	Version 2:
 		- Lumels.
 	Version 1:
@@ -340,7 +343,13 @@ void			CZone::serial(NLMISC::IStream &f)
 	Version 0:
 		- base verison.
 	*/
-	uint	ver= f.serialVersion(2);
+	uint	ver= f.serialVersion(3);
+
+	// No more compatibility before version 3
+	if (ver<3)
+	{
+		throw EOlderStream();
+	}
 
 	f.serialCheck((uint32)'ENOZ');
 	f.serial(ZoneId, ZoneBB, PatchBias, PatchScale, NumVertices);
@@ -370,15 +379,14 @@ void			CZone::serial(NLMISC::IStream &f)
 				for(sint i=0;i<(sint)pa.TileColors.size();i++)
 				{
 					pa.TileColors[i].Color565= 0xFFFF;
-					pa.TileColors[i].Shade= 0xFF;
 					pa.TileColors[i].LightX= 0xFF;
 					pa.TileColors[i].LightY= 0x00;
 					pa.TileColors[i].LightZ= 0x00;
 				}
 			}
 
-			// Lumels exist ?
-			if (ver<2)
+			// Lumels compressed exist ?
+			if (ver<3)
 			{
 				// Reset shadows
 				pa.resetCompressedLumels ();

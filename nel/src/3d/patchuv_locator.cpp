@@ -1,7 +1,7 @@
 /** \file patchuv_locator.cpp
  * <File description>
  *
- * $Id: patchuv_locator.cpp,v 1.3 2001/07/27 13:22:27 berenguier Exp $
+ * $Id: patchuv_locator.cpp,v 1.4 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "3d/patchuv_locator.h"
 
 using namespace std;
+using namespace NLMISC;
 
 namespace NL3D 
 {

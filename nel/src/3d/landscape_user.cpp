@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.5 2001/06/26 15:22:31 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.6 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 
+using namespace NLMISC;
 
 namespace NL3D
 {

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.70 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: landscape.cpp,v 1.71 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,6 +180,7 @@ CLandscape::CLandscape() :
 	_TileVBHard= NULL;
 
 	// By default Automatic light comes from up.
+	_AutomaticLighting = false;
 	_AutomaticLightDir= -CVector::K;
 
 	// By default, noise is enabled.

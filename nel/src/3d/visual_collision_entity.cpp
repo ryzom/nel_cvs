@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.7 2001/07/16 10:11:07 berenguier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.8 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 
 using namespace std;
+using namespace NLMISC;
+
 
 namespace NL3D 
 {

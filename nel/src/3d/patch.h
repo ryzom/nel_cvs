@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.9 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: patch.h,v 1.10 2001/08/21 16:18:55 corvazier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -40,7 +40,6 @@
 #include "nel/misc/geom_ext.h"
 #include "3d/tile_element.h"
 #include "3d/tile_color.h"
-#include "3d/tile_lumel.h"
 #include "3d/tess_block.h"
 
 
@@ -50,11 +49,12 @@ namespace NL3D {
 #define NL_MAX_TILES_BY_PATCH_EDGE (1<<NL_MAX_TILES_BY_PATCH_EDGE_SHIFT)		// max 16x16 tiles by patch
 #define NL_PATCH_FAR0_ROTATED 0x1												// Flags far0 rotated
 #define NL_PATCH_FAR1_ROTATED 0x2												// Flags far1 rotated
-#define NL_PATCH_SMOOTH_FLAG_SHIFT 0x3											// Smooth flags shift
+#define NL_PATCH_SMOOTH_FLAG_SHIFT 0x2											// Smooth flags shift
 #define NL_PATCH_SMOOTH_FLAG_MASK 0x3c											// Smooth flags mask
 
 #define NL_LUMEL_BY_TILE_SHIFT 2												// 4 lumels by tile
 #define NL_LUMEL_BY_TILE (1<<NL_LUMEL_BY_TILE_SHIFT)							// 4 lumels by tile
+#define NL_BLOCK_LUMEL_COMPRESSED_SIZE 8										// Compressed block size 8 bytes
 
 
 #define NL_PATCH_BLOCK_MAX_QUAD 4												// Max quad per CPatchQuadBlock.
@@ -62,6 +62,9 @@ namespace NL3D {
 
 
 using NLMISC::CVector;
+using NLMISC::CPlane;
+using NLMISC::CAABBox;
+using NLMISC::CBSphere;
 
 
 class	CLandscape;
@@ -306,10 +309,10 @@ public:
 	*/
 
 	// Lumel array compressed.
-	std::vector<uint8>	CompressedLumels;
+	std::vector<uint8>			CompressedLumels;
 
 	// Lumel array uncompressed.
-	std::vector<CTileLumel>	UncompressedLumels;
+	std::vector<uint8>			UncompressedLumels;
 
 	// There is OrderS*OrderT tiles. CZone build it at build() time.
 	std::vector<CTileElement>	Tiles;
@@ -367,6 +370,7 @@ public:
 	float			getErrorSize() const {return ErrorSize;}
 	sint			getFar0() const {return Far0;}
 	sint			getFar1() const {return Far1;}
+	uint16			getPatchId () const {return PatchId;}
 	/// return neighborhood information.
 	void			getBindNeighbor(uint edge, CBindInfo &neighborEdge) const;
 
@@ -441,24 +445,15 @@ public:
 	/// \name Lumels methods
 
 	/**
-	  *  Expand the shading part of the patch in bilinear. Array must have a size of ((OrderS*4/ratio)+1)*((OrderT*4/ratio)+1)
-	  *
-	  *  \param Shading is a pointer on the destination shading buffer. Size must be ((OrderS*4/ratio)+1)*((OrderT*4/ratio)+1).
-	  *  \param ratio is the one over the ratio of the texture destination. Must be 1 or 2.
-	  *  \see unpackShadowMap(), packShadowMap(), resetCompressedLumels(), clearUncompressedLumels()
-	  */
-	void			expandShading (uint8 * Shading, uint ratio=1);
-
-	/**
 	  *  Unpack the lumels of the patches. Lumels are classes that describe the lighting environnement at a given texel
 	  *  of the lightmap. It is used to compute the shadow map of the patch, compress it and uncompress it.
 	  *  This method uncompress the lumels stored in its Lumels member.
 	  *
 	  *  \param pShadow is a pointer on the destination lumel buffer. Size must be ((OrderS*4/ratio)+1)*((OrderT*4/ratio)+1).
 	  *  \param ratio is the one over the ratio of the texture destination. Must be 1 or 2.
-	  *  \see expandShading(), packShadowMap(), resetCompressedLumels(), clearUncompressedLumels()
+	  *  \see packShadowMap(), resetCompressedLumels(), clearUncompressedLumels()
 	  */
-	void			unpackShadowMap (class CTileLumel *pShadow, uint ratio=1);
+	void			unpackShadowMap (uint8 *pShadow);
 
 	/**
 	  *  Pack the lumels of the patches. Lumels are classes that describe the lighting environnement at a given texel
@@ -466,23 +461,49 @@ public:
 	  *  This method compress the lumels passed in parameter and stored them in its Lumels member.
 	  *
 	  *  \param pShadow is a pointer on the destination lumel buffer. Size must be (OrderS*4+1)*(OrderS*4+1).
-	  *  \see expandShading(), unpackShadowMap(), resetCompressedLumels(), clearUncompressedLumels()
+	  *  \see unpackShadowMap(), resetCompressedLumels(), clearUncompressedLumels()
 	  */
-	void			packShadowMap (const class CTileLumel *pLumel);
+	void			packShadowMap (const uint8 *pLumel);
 
 	/**
 	  *  Rebuild the packed lumels without shadow. Only the interpolated color will be used.
 	  *
-	  *  \see expandShading(), packShadowMap(), unpackShadowMap(), clearUncompressedLumels()
+	  *  \see packShadowMap(), unpackShadowMap(), clearUncompressedLumels()
 	  */
 	void			resetCompressedLumels ();
 
 	/**
 	  *  Clear the uncompressed lumel of the patch.
 	  *
-	  *  \see expandShading(), packShadowMap(), unpackShadowMap()
+	  *  \see packShadowMap(), unpackShadowMap()
 	  */
 	void			clearUncompressedLumels ();
+private:
+
+	// Methods used internaly to compute shadowmaps
+
+	/**
+	  *	Pack a 4x4 lumel block
+	  *
+	  *  \see packShadowMap(), unpackShadowMap()
+	  */
+	void			packLumelBlock (uint8 *dest, const uint8 *source, uint8 alpha0, uint8 alpha1);
+
+	/**
+	  * Eval an uncompressed 4x4 block against the original
+	  *
+	  *  \see packShadowMap(), unpackShadowMap()
+	  */
+	uint			evalLumelBlock (const uint8 *original, const uint8 *unCompressed, uint width, uint height);
+
+	/**
+	  *	Unpack a 4x4 lumel block
+	  *
+	  *  \see packShadowMap(), unpackShadowMap()
+	  */
+	void			unpackLumelBlock (uint8 *dest, const uint8 *src);
+
+public:
 
 	/// \name Smooth flags methods
 
@@ -544,7 +565,6 @@ public:
 
 
 	// @}
-
 
 public:
 
@@ -645,12 +665,6 @@ private:
 
 
 	/**
-	  *  Static buffer used to expand shading in expandShading. Its size is 
-	  *  (NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)*(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)
-	  */
-	static uint8	_ShadingBuffer[];
-
-	/**
 	  *  Stream version of the class. 
 	  */
 	static uint32	_Version;
@@ -737,32 +751,32 @@ private:
 	void		releaseTileLightMap(uint ts, uint tt);
 
 	// Compute the Lightmap for 2x2 tiles. => 10x10 pixels. ts, tt is in [0,OrderS], [0, OrderT].
-	void		computeNearBlockLightmap(uint ts, uint tt, CRGBA	*lightText);
-	void		computeTileLightmapPixelAroundCorner(const NLMISC::CVector2f &stIn, CRGBA *dest, bool lookAround);
+	void		computeNearBlockLightmap(uint ts, uint tt, NLMISC::CRGBA	*lightText);
+	void		computeTileLightmapPixelAroundCorner(const NLMISC::CVector2f &stIn, NLMISC::CRGBA *dest, bool lookAround);
 
 	// Compute a lightmap for a tile (ts,tt). 4x4 lumels are processed. NB: result= lumel*userColor.
-	void		computeTileLightmap(uint ts, uint tt, CRGBA *dest, uint stride);
+	void		computeTileLightmap(uint ts, uint tt, NLMISC::CRGBA *dest, uint stride);
 	// Compute a lightmap for an edge of a tile. 1x4 lumels. "edge" say what edge of the tile to compute.
 	// pixels will be written in (dest+i*stride), where i vary from 0 to 3 or 3 to 0 (according to "inverse").
-	void		computeTileLightmapEdge(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse);
+	void		computeTileLightmapEdge(uint ts, uint tt, uint edge, NLMISC::CRGBA *dest, uint stride, bool inverse);
 	// Compute a lightmap just for a pixel (s,t) of a tile (ts,tt). (s,t) E [0;3], [0;3].
-	void		computeTileLightmapPixel(uint ts, uint tt, uint s, uint t, CRGBA *dest);
+	void		computeTileLightmapPixel(uint ts, uint tt, uint s, uint t, NLMISC::CRGBA *dest);
 
 
 	// Methods for automatic Lighting. NB: result= lumel only (no TileColors).
-	void		computeTileLightmapAutomatic(uint ts, uint tt, CRGBA *dest, uint stride);
-	void		computeTileLightmapEdgeAutomatic(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse);
-	void		computeTileLightmapPixelAutomatic(uint ts, uint tt, uint s, uint t, CRGBA *dest);
+	void		computeTileLightmapAutomatic(uint ts, uint tt, NLMISC::CRGBA *dest, uint stride);
+	void		computeTileLightmapEdgeAutomatic(uint ts, uint tt, uint edge, NLMISC::CRGBA *dest, uint stride, bool inverse);
+	void		computeTileLightmapPixelAutomatic(uint ts, uint tt, uint s, uint t, NLMISC::CRGBA *dest);
 	// Methods for Precomputed Lighting. NB: result= lumel only (no TileColors).
-	void		computeTileLightmapPrecomputed(uint ts, uint tt, CRGBA *dest, uint stride);
-	void		computeTileLightmapEdgePrecomputed(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse);
-	void		computeTileLightmapPixelPrecomputed(uint ts, uint tt, uint s, uint t, CRGBA *dest);
+	void		computeTileLightmapPrecomputed(uint ts, uint tt, NLMISC::CRGBA *dest, uint stride);
+	void		computeTileLightmapEdgePrecomputed(uint ts, uint tt, uint edge, NLMISC::CRGBA *dest, uint stride, bool inverse);
+	void		computeTileLightmapPixelPrecomputed(uint ts, uint tt, uint s, uint t, NLMISC::CRGBA *dest);
 	// Methods to modulate dest with TileColors. NB: A unmodified.
-	void		modulateTileLightmapWithTileColors(uint ts, uint tt, CRGBA *dest, uint stride);
-	void		modulateTileLightmapEdgeWithTileColors(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse);
-	void		modulateTileLightmapPixelWithTileColors(uint ts, uint tt, uint s, uint t, CRGBA *dest);
+	void		modulateTileLightmapWithTileColors(uint ts, uint tt, NLMISC::CRGBA *dest, uint stride);
+	void		modulateTileLightmapEdgeWithTileColors(uint ts, uint tt, uint edge, NLMISC::CRGBA *dest, uint stride, bool inverse);
+	void		modulateTileLightmapPixelWithTileColors(uint ts, uint tt, uint s, uint t, NLMISC::CRGBA *dest);
 	// get the tileColors at the corners of the tile. corner order: 0,0; 1,0; 0,1; 1,1. NB: A undefined.
-	void		getTileTileColors(uint ts, uint tt, CRGBA corners[4]);
+	void		getTileTileColors(uint ts, uint tt, NLMISC::CRGBA corners[4]);
 
 	// @}
 
@@ -872,6 +886,7 @@ private:
 	// For cahcing.
 	static	const CPatch	*LastPatch;
 
+public:
 	// unpack the patch into the cache.
 	CBezierPatch	*unpackIntoCache() const;
 

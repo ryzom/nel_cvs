@@ -290,6 +290,14 @@ SOURCE=.\3d\zone_search.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\3d\zone_lighter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\zone_lighter.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\zone_corner_smoother.cpp
 # End Source File
 # Begin Source File

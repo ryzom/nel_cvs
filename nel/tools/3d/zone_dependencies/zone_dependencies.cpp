@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.1 2001/08/20 16:06:22 corvazier Exp $
+ * $Id: zone_dependencies.cpp,v 1.2 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,6 +106,12 @@ int main (int argc, char* argv[])
 
 			// Get the file directory
 			string dir=getDir (argv[2]);
+
+			// Get output extension
+			string outExt=getExt (argv[4]);
+
+			// Get output directory
+			string outDir=getDir (argv[4]);
 
 			// Get the first and last name
 			string firstName=getName (argv[2]);
@@ -302,32 +308,34 @@ int main (int argc, char* argv[])
 						}
 					}
 
-					// Write the dependencies file
-					FILE *outputFile;
-					if (outputFile=fopen (argv[4], "w"))
+					// For each zone
+					for (y=firstY; y<=lastY; y++)
+					for (x=firstX; x<=lastX; x++)
 					{
-						// For each zone
-						for (y=firstY; y<=lastY; y++)
-						for (x=firstX; x<=lastX; x++)
+						// Index 
+						uint index=(x-firstX)+(y-firstY)*(lastX-firstX+1);
+
+						// Loaded ?
+						if (dependencies[index].Loaded)
 						{
-							// Index 
-							uint index=(x-firstX)+(y-firstY)*(lastX-firstX+1);
+							// Make a file name
+							string outputFileName;
+							getZoneNameByCoord(x, y, outputFileName);
+							outputFileName=outDir+outputFileName+outExt;
 
-							// Loaded ?
-							if (dependencies[index].Loaded)
+							// Write the dependencies file
+							FILE *outputFile;
+							if (outputFile=fopen (strlwr (outputFileName).c_str(), "w"))
 							{
-								// Name of the zone
-								std::string zoneName;
-								getZoneNameByCoord(x, y, zoneName);
-
 								// Add a dependency entry
-								fprintf (outputFile, (strlwr ("zone_"+zoneName+" =\n{\n")).c_str());
+								fprintf (outputFile, "dependencies =\n{\n");
 
 								// Add dependent zones
 								set<CZoneDependenciesValue>::iterator ite=dependencies[index].Dependences.begin();
 								while (ite!=dependencies[index].Dependences.end())
 								{
 									// Name of the dependent zone
+									std::string zoneName;
 									getZoneNameByCoord(ite->first, ite->second, zoneName);
 
 									// Write it
@@ -342,14 +350,14 @@ int main (int argc, char* argv[])
 								// Close the variable
 								fprintf (outputFile, "\n};\n\n");
 							}
-						}
+							else
+							{
+								printf ("ERROR: can't open %s for writing.\n", outputFileName.c_str());
+							}
 
-						// Close the file
-						fclose (outputFile);
-					}
-					else
-					{
-						printf ("ERROR: can't open %s for writing.\n", argv[4]);
+							// Close the file
+							fclose (outputFile);
+						}
 					}
 
 				}

@@ -1,7 +1,7 @@
 /** \file patchuv_locator.h
  * <File description>
  *
- * $Id: patchuv_locator.h,v 1.3 2001/07/27 13:22:27 berenguier Exp $
+ * $Id: patchuv_locator.h,v 1.4 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,12 +51,12 @@ public:
 
 
 	// for an uv given in src patch basis, find the associate patch.
-	uint	selectPatch(const CVector2f &uvIn);
+	uint	selectPatch(const NLMISC::CVector2f &uvIn);
 
 
 	// for an uv given in src patch basis, and the number of patch we want (for bind 1/X, see selectPatch),
 	// find the neighbor UV, and the neighbor patch.
-	void	locateUV(const CVector2f &uvIn, uint patch, CPatch *&patchOut, CVector2f &uvOut);
+	void	locateUV(const NLMISC::CVector2f &uvIn, uint patch, CPatch *&patchOut, NLMISC::CVector2f &uvOut);
 
 
 	/** return true only if the 2 edges have same number of tiles.
@@ -70,9 +70,9 @@ private:
 
 	struct	CUVBasis
 	{
-		CVector2f	UvI, UvJ, UvP;
+		NLMISC::CVector2f	UvI, UvJ, UvP;
 
-		void	mulPoint(const CVector2f &uvIn, CVector2f &uvOut)
+		void	mulPoint(const NLMISC::CVector2f &uvIn, NLMISC::CVector2f &uvOut)
 		{
 			uvOut= UvP + uvIn.x * UvI + uvIn.y * UvJ;
 		}

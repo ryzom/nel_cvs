@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.9 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: landscape.h,v 1.10 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,10 @@ namespace NL3D
 
 class	CHeightMap;
 class	CTileNoiseMap;
+
+using NLMISC::Exception;
+using NLMISC::CTriangle;
+using NLMISC::CBlockMemory;
 
 // ***************************************************************************
 // The maximum amount of different tiles in world.

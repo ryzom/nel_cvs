@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.7 2001/07/12 14:36:53 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.8 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "3d/scene_user.h"
 #include "3d/coarse_mesh_manager.h"
 
+using namespace NLMISC;
 
 namespace NL3D 
 {

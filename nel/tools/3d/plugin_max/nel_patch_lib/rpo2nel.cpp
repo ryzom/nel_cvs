@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.2 2001/06/15 16:24:46 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.3 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/zone.h"
 
 using namespace NL3D;
+using namespace NLMISC;
 
 static int getCommonEdge(PatchMesh* pPM, int edge, Patch& patch2)
 {
@@ -219,9 +220,6 @@ void RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 
 			// Store it in the tile info
 			pi.TileColors[u+v*(pi.OrderS+1)].Color565=rgba.get565();
-
-			// Set a default vertex shading
-			pi.TileColors[u+v*(pi.OrderS+1)].Shade=0xff;
 		}
 
 		/*// ** Export tile shading

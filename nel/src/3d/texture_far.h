@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: texture_far.h,v 1.2 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,6 @@ namespace NL3D
 class CPatch;
 class CTileFarBank;
 class CTileColor;
-class CTileLumel;
 
 /**
  * A CTextureFar is a set of NL_NUM_FAR_PATCHES_BY_TEXTURE texture used to map a whole patch when it is in far Mode. (ie not in tile mode).
@@ -156,7 +155,7 @@ private:
 
 	// Some static buffers
 	static NLMISC::CRGBA _LightmapExpanded[];
-	static CTileLumel _LumelExpanded[];
+	static uint8		_LumelExpanded[];
 
 	NLMISC_DECLARE_CLASS(CTextureFar);
 };
@@ -205,8 +204,8 @@ public:
 	// CTileColor array.
 	const NL3D::CTileColor*		ColorTile;
 
-	// CTileLumel array. Same resolution than destination buffer
-	const NL3D::CTileLumel*		LumelTile;
+	// Lumel array. 4x4 lumels by tile.
+	const uint8*				LumelTile;
 
 	// Width of the array
 	uint32						Width;

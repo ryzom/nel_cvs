@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.7 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: zone.h,v 1.8 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,8 @@ namespace NL3D
 
 class CZone;
 class CLandscape;
+
+using NLMISC::CAABBoxExt;
 
 
 // ***************************************************************************
@@ -151,7 +153,7 @@ public:
 	 *  in tiles. There is 4x4 lumels by tiles plus last lumels.
 	 *  They are stored in line first order, from S=0 to 1, and T=0 to 1.
 	 */
-	std::vector<CTileLumel>		Lumels;
+	std::vector<uint8>			Lumels;
 
 	// @}
 

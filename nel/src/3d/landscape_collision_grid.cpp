@@ -1,7 +1,7 @@
 /** \file landscape_collision_grid.cpp
  * <File description>
  *
- * $Id: landscape_collision_grid.cpp,v 1.4 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: landscape_collision_grid.cpp,v 1.5 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 
 using namespace std;
+using namespace NLMISC;
 
 namespace NL3D 
 {

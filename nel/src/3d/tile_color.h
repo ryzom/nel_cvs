@@ -1,7 +1,7 @@
 /** \file tile_color.h
  * <File description>
  *
- * $Id: tile_color.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: tile_color.h,v 1.2 2001/08/21 16:18:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,8 +46,6 @@ class CTileColor
 public:
 	/// The RGB user color.
 	uint16			Color565;
-	/// The light information.
-	uint8			Shade;
 	/// For Bump: The Light Vector in Patch Tangent Space.
 	uint8			LightX,LightY,LightZ;
 
@@ -59,7 +57,6 @@ public:
 	void	serial(NLMISC::IStream &f)
 	{
 		f.serial(Color565);
-		f.serial(Shade);
 		f.serial(LightX,LightY,LightZ);
 	}
 };

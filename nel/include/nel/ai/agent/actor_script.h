@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.29 2002/05/14 13:31:54 robert Exp $
+ * $Id: actor_script.h,v 1.30 2002/08/21 14:52:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,8 +132,6 @@ namespace NLAIAGENT
 			/// Callback called when the agent is unactivated
 			virtual void onUnActivate();
 			
-			virtual int getBaseMethodCount() const;
-
 			/// Inherited functions
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
@@ -142,7 +140,6 @@ namespace NLAIAGENT
 			virtual void processMessages();
 			virtual const CProcessResult &run();
 
-//			virtual IObjectIA *run(const IMessageBase &msg);
 			virtual	CProcessResult sendMessage(IObjectIA *);
 			virtual const NLAIC::CIdentType &getType() const;
 
@@ -151,16 +148,12 @@ namespace NLAIAGENT
 			virtual void save(NLMISC::IStream &os);		
 			virtual void load(NLMISC::IStream &is);		
 
+			// Script functions
+			virtual int getBaseMethodCount() const;
+			virtual sint32 getMethodIndexSize() const;
+			virtual tQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 			virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
 			virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
-
-//			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
-			virtual tQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
-//			virtual IObjectIA::CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
-//			virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
-			virtual sint32 getMethodIndexSize() const;
-
-//			void getFatherComponent(IVarName &);
 
 			virtual void cancel();
 
@@ -194,6 +187,8 @@ namespace NLAIAGENT
 		public:
 			static void initClass();
 			static void releaseClass();
+
+			virtual void Launch( std::string &name, NLAIAGENT::IBasicAgent *);
 	};
 }
 #endif

@@ -1,7 +1,7 @@
 /** \file interpret_object_agent.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.24 2002/05/17 13:46:24 chafik Exp $
+ * $Id: interpret_object_agent.h,v 1.25 2002/08/21 14:52:44 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -160,9 +160,10 @@ namespace NLAISCRIPT
 		std::vector<sint32 *>				_MsgIndirectTable;
 		sint32 _lastRef;		
 		sint32 _RunIndex;
-		sint32 _ConstructorIndex;
-		const IClassInterpret						*_Base_class;
-//		sint32 _NbScriptedComponents;		// Number of static components which are interpreted object (which means derived from CAgentScript)
+		const IClassInterpret				*_Base_class;
+
+		sint32								_ConstructorIndex;
+
 	private:			
 		NLAIAGENT::IVarName *_Inheritance;		
 
@@ -273,6 +274,8 @@ namespace NLAISCRIPT
 			uint b = NLAIC::CTypeOfObject::tObject | NLAIC::CTypeOfObject::tAgent;
 			return NLAIC::CTypeOfObject((uint)IClassInterpret::getTypeClass() | b);
 		}
+
+		sint32 getConstructorIndex();
 	};
 }
 #endif

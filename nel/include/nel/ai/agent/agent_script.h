@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.56 2002/08/13 13:21:35 portier Exp $
+ * $Id: agent_script.h,v 1.57 2002/08/21 14:52:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,6 +207,8 @@ namespace NLAIAGENT
 		The CStringType is the name of the agent. The IObjectIA pointer memory is the agent.
 		*/
 		virtual IObjectIA::CProcessResult addDynamicAgent(NLAIAGENT::IBaseGroupType *g);
+		virtual IObjectIA::CProcessResult addDynamicAgent(CStringType &, IBasicAgent *);
+
 		/**
 		Get agent from the dynamic agent child.
 		Method have an IBaseGroupType argument where he must store an CStringType representative of the name of the agent.

@@ -1,7 +1,7 @@
 /** \file fact.h
  *	First order logic facts
  *
- * $Id: goal_path.h,v 1.1 2002/08/02 14:37:23 portier Exp $
+ * $Id: goal_path.h,v 1.2 2002/08/21 14:52:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,11 @@ class CGoalPath : public NLAIAGENT::CActorScript
 		NLAILOGIC::CGoalStack		*_GoalStack;
 
 	public:
+		static const NLAIC::CIdentType IdGoalPath;
+
+	public:
 		CGoalPath(NLAIAGENT::IAgentManager *);
+		CGoalPath(NLAIAGENT::IAgentManager *, NLAIAGENT::IBasicAgent *, std::list<NLAIAGENT::IObjectIA *> &, NLAISCRIPT::CAgentClass *);
 
 		void setGoalStack(NLAILOGIC::CGoalStack * );
 		void addGoal(CGoal *, bool action = true, int on_succes = 0 , int on_failure = 0);
@@ -53,10 +57,20 @@ class CGoalPath : public NLAIAGENT::CActorScript
 		/// Own success and failure functions
 		/// These function tell other operators and goals that might be waiting for 
 		/// the execution of this one.
-		virtual void processSuccess(NLAIAGENT::IObjectIA *);
-		virtual void processFailure(NLAIAGENT::IObjectIA *);
 		virtual void success();
 		virtual void failure();
+
+		// Script hardcoded functions
+		virtual int getBaseMethodCount() const;
+		sint32 getMethodIndexSize() const;
+		virtual NLAIAGENT::tQueue getPrivateMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+		virtual NLAIAGENT::IObjectIA::CProcessResult runMethodBase(int heritance, int index, NLAIAGENT::IObjectIA *);
+		virtual NLAIAGENT::IObjectIA::CProcessResult runMethodBase(int index, NLAIAGENT::IObjectIA *);
+
+
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
+		virtual const NLAIC::CIdentType &getType() const;
 };
 
 } // NLAILOGIC

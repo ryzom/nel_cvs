@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.5 2002/04/12 16:18:17 vizerie Exp $
+ * $Id: channel_mixer.h,v 1.6 2002/05/13 15:53:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,6 +86,9 @@ private:
 		{
 			// Not modified
 			_Dirt=false;
+
+			// default is 1.
+			_Weight= 1.f;
 
 			// Set it empty
 			empty ();
@@ -338,8 +341,8 @@ public:
 	  * This weight will be used to eval the animation set in this slot.
 	  * Each slot can have different weight. Calling this method won't dirt the mixer.
 	  *
-	  * NB: this function works only for existing channels. any channels added after will have a 1.0f weight for this slot.
-	  * 
+	  *	By default the weight of the slot is 1.0f.
+	  *
 	  * \param slot is the slot number to change the weight.
 	  * \param weight is the new weight to use in the slot. No range for this weight. If the weight == 0.f, 
 	  * the slot have no effect on the final mix.

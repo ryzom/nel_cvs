@@ -18,12 +18,12 @@
  */
 
 /*
- * $Id: config_file.h,v 1.3 2000/10/04 15:09:30 lecroart Exp $
+ * $Id: config_file.h,v 1.4 2000/10/04 15:37:17 lecroart Exp $
  *
  * Manage a configuration files
  */
 
-/// \todo kan on reload, ca capte les exceptions en cas particulier pour pas tout troncher mais juste un nlwarning()
+/// \todo mettre des rkshit et doc les callbacks
 
 #ifndef NL_CONFIG_FILE_H
 #define NL_CONFIG_FILE_H
@@ -168,7 +168,7 @@ public:
 	/// reload and reparse the file
 	void reparse ();
 
-	/// 
+	/// display all variables
 	void print ();
 
 	void setCallback (void (*cb)());

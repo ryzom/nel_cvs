@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.17 2001/01/11 15:29:28 berenguier Exp $
+ * $Id: scene.cpp,v 1.18 2001/02/14 17:49:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,15 +81,30 @@ void	CScene::release()
 	RenderTraversals.clear();
 
 	// Delete only the 4 default Traversals (owned by CScene), and the 4 default Root.
-	delete	HrcTrav;
-	delete	ClipTrav;
-	delete	LightTrav;
-	delete	RenderTrav;
+	if (HrcTrav != NULL)
+	{
+		delete	HrcTrav;
+		HrcTrav= NULL;
+	}
 
-	HrcTrav= NULL;
-	ClipTrav= NULL;
-	LightTrav= NULL;
-	RenderTrav= NULL;
+	if (ClipTrav != NULL)
+	{
+		delete	ClipTrav;
+		ClipTrav= NULL;
+	}
+
+	if (LightTrav != NULL)
+	{
+		delete	LightTrav;
+		LightTrav= NULL;
+	}
+
+	if (RenderTrav != NULL)
+	{
+		delete	RenderTrav;
+		RenderTrav= NULL;
+	}
+
 	Root= NULL;
 	CurrentCamera= NULL;
 }
@@ -178,13 +193,17 @@ void	CScene::render(bool	doHrcPass)
 // ***************************************************************************
 void	CScene::setDriver(IDriver *drv)
 {
-	RenderTrav->setDriver(drv);
+	if (RenderTrav != NULL)
+		RenderTrav->setDriver(drv);
 }
 
 // ***************************************************************************
 IDriver	*CScene::getDriver() const
 {
-	return RenderTrav->getDriver();
+	if (RenderTrav != NULL)
+		return RenderTrav->getDriver();
+	else
+		return NULL;
 }
 
 

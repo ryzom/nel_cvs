@@ -1,7 +1,7 @@
 /** \file command.h
  * <File description>
  *
- * $Id: command.h,v 1.3 2001/02/14 15:42:36 lecroart Exp $
+ * $Id: command.h,v 1.4 2001/02/14 17:49:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -241,7 +241,8 @@ private:
  * So we can use stringstream operator << and >> with all NeL simple types (except for ucchar and ucstring)
  */
 
-#if 0
+#ifdef NL_OS_WINDOWS
+
 #define NLMISC_ADD_BASIC_ISTREAM_OPERATOR(__type,__casttype) \
 template <class _CharT, class _Traits> \
 std::basic_istream<_CharT, _Traits>& __STL_CALL \
@@ -408,7 +409,9 @@ operator<<(std::basic_ostream<_CharT, _Traits>& __os, const sint64& __z)
 
 	return __os << __tmp.str();
 }
-#endif
+
+#endif // NL_OS_WINDOWS
+
 
 } // NLMISC
 

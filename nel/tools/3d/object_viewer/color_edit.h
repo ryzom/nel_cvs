@@ -1,7 +1,7 @@
 /** \file color_edit.h
  * a dialog to edit a color (or call the windows color dialog)
  *
- * $Id: color_edit.h,v 1.7 2001/09/13 14:27:07 vizerie Exp $
+ * $Id: color_edit.h,v 1.8 2001/12/19 17:51:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,10 +38,9 @@
 using NLMISC::CRGBA ;
 
 #include "edit_attrib_dlg.h"
-
 #include "color_button.h"
-
 #include "ps_wrapper.h"
+#include "edit_ex.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CColorEdit dialog
@@ -49,7 +48,7 @@ using NLMISC::CRGBA ;
 
 class CColorButton ;
 
-class CColorEdit : public CEditAttribDlg
+class CColorEdit : public CEditAttribDlg, CEditEx::IListener
 {
 // Construction
 public:
@@ -63,6 +62,10 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CColorEdit)
 	enum { IDD = IDD_COLOR_EDIT };
+	CEditEx	m_BlueEditCtrl;
+	CEditEx	m_AlphaEditCtrl;
+	CEditEx	m_GreenEditCtrl;
+	CEditEx	m_RedEditCtrl;
 	CScrollBar	m_AlphaCtrl;
 	CScrollBar	m_GreenCtrl;
 	CScrollBar	m_BlueCtrl;
@@ -87,14 +90,16 @@ public:
 	
 
 protected:
-
+	/// inherited from CEditEx::IListener
+	virtual void editExValueChanged(CEditEx *ctrl);
 	CColorButton &getColorCtrl(void) { return  * (CColorButton *) GetDlgItem(IDC_PARTICLE_COLOR) ; }
+	void updateEdits();
 	
 	// wrapper to the datas
 	IPSWrapperRGBA *_Wrapper ;
 
 	// once the xrapper has been set, this display the basis
-	void CColorEdit::updateColorFromReader(void) ;
+	void updateColorFromReader(void) ;
 
 	// Generated message map functions
 	//{{AFX_MSG(CColorEdit)

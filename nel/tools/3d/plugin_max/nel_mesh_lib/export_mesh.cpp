@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.16 2001/08/09 15:21:23 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.17 2001/08/23 14:29:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -255,7 +255,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 					{
 						char fName[_MAX_FNAME];
 						// get file name only
-						::_splitpath(NULL, NULL, NULL, fName, NULL) ;
+						::_splitpath(fileName.c_str(), NULL, NULL, fName, NULL) ;
 						fs->setTexture(k, new NL3D::CTextureFile(fName)) ;
 					}
 				}

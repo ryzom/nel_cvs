@@ -1,7 +1,7 @@
 /** \file ps_dot.h
  * Dot particles
  *
- * $Id: ps_dot.h,v 1.3 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_dot.h,v 1.4 2003/08/08 16:55:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,13 +58,16 @@ public:
 	virtual bool hasOpaqueFaces(void);
 
 	/// from CPSParticle : return true if there are lightable faces in the object
-	virtual bool hasLightableFaces() { 	return false; }
+	virtual bool hasLightableFaces() { 	return false; }	
 
 	/// return the max number of faces needed for display. This is needed for LOD balancing
 	virtual uint32 getMaxNumFaces(void) const;
 
 	/// init the vertex buffers
 	static void initVertexBuffers();
+
+	// from CPSParticle
+	virtual bool supportGlobalColorLighting() const { return true; }
 
 protected:	
 	virtual void draw(bool opaque);
@@ -85,6 +88,8 @@ protected:
 
 	/// we don't save datas so it does nothing for now
 	void deleteElement(uint32);
+
+
 };
 
 

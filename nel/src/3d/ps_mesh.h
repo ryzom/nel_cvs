@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.13 2003/07/31 13:41:16 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.14 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ const uint ConstraintMeshMaxNumPrerotatedModels = 32;  // maximum number of mesh
  *  and compute K ( K =  I ^ J)
  */
 
-class CPSMesh : public  CPSParticle,
+class CPSMesh : public CPSParticle,
 			    public CPSSizedParticle,
 				public CPSRotated3DPlaneParticle,
 				public CPSRotated2DParticle,
@@ -119,6 +119,8 @@ public:
 	/// return the max number of faces needed for display. This is needed for LOD balancing
 	virtual uint32 getMaxNumFaces(void) const;
 
+	// from CPSParticle
+	virtual bool supportGlobalColorLighting() const { return false; }
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
@@ -156,6 +158,9 @@ protected:
 	virtual CPSLocated *getSizeOwner(void) { return _Owner; }
 	virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }
 	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
+
+	void releaseAllRef();
+
 }; 
 
 
@@ -362,6 +367,8 @@ public:
 	  */
 	void getShapeNumVerts(std::vector<sint> &numVerts);
 
+	// from CPSParticle
+	virtual bool supportGlobalColorLighting() const { return false; }
 
 protected:
 	friend class CPSConstraintMeshHelper;
@@ -540,6 +547,7 @@ protected:
 	/** Setup material so that global or per mesh color is taken in account. Useful if material hasn't been setup correctly in the export
 	  */
 	void setupMaterialColor(CMaterial &destMat, CMaterial &srcMat);
+
 
 	/// A 'bitfield' to force some stage to be modulated with the primary color
 	uint8   _ModulatedStages;

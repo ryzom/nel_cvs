@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.61 2003/08/04 13:28:37 boucher Exp $
+ * $Id: particle_system.cpp,v 1.62 2003/08/08 16:55:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,8 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _AutoLODDegradationExponent(1),																		 
 									 _ColorAttenuationScheme(NULL),
 									 _GlobalColor(NLMISC::CRGBA::White),
+									 _GlobalColorLighted(NLMISC::CRGBA::White),
+									 _LightingColor(NLMISC::CRGBA::White),
 									 _ComputeBBox(true),
 									 _BBoxTouched(true),
 									 _AccurateIntegration(true),
@@ -108,6 +110,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _EnableLoadBalancing(true),
 									 _EmitThreshold(true),
 									 _BypassIntegrationStepLimit(false),
+									 _ForceGlobalColorLighting(false),
 									 _InverseEllapsedTime(0.f),
 									 _CurrentDeltaPos(NLMISC::CVector::Null),
 									 _DeltaPos(NLMISC::CVector::Null)
@@ -298,6 +301,11 @@ inline void CParticleSystem::updateColor()
 		float ratio = 1.00f - _OneMinusCurrentLODRatio;
 		_GlobalColor = 	_ColorAttenuationScheme->get(ratio > 0.f ? ratio : 0.f);
 	}
+	else
+	{
+		_GlobalColor = NLMISC::CRGBA::White;
+	}
+	_GlobalColorLighted.modulateFromColor(_GlobalColor, _LightingColor);
 }
 
 
@@ -467,8 +475,9 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 ///=======================================================================================
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {		
-	sint version =  f.serialVersion(16);
+	sint version =  f.serialVersion(17);
 
+	// version 17: _BypassIntegrationStepLimit flag
 	// version 16: _BypassIntegrationStepLimit flag
 	// version 14: emit threshold
 	// version 13: max dist lod bias for auto-LOD
@@ -652,6 +661,11 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_BypassIntegrationStepLimit);
 	}
 
+	if (version >= 17)
+	{
+		f.serial(_ForceGlobalColorLighting);
+	}
+
 	if (f.isReading())
 	{
 		notifyMaxNumFacesChanged();
@@ -795,6 +809,7 @@ bool CParticleSystem::hasTransparentObjects(void) const
 ///=======================================================================================
 bool CParticleSystem::hasLightableObjects() const
 {
+	if (_ForceGlobalColorLighting) return true;
 	/// for each process
 	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
@@ -807,6 +822,7 @@ bool CParticleSystem::hasLightableObjects() const
 				if (lb->getType() == PSParticle)
 				{
 					if (((CPSParticle *) lb)->hasLightableFaces()) return true;
+					if (((CPSParticle *) lb)->usesGlobalColorLighting()) return true;
 				}
 			}
 		}

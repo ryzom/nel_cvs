@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * FanLight particles
  *
- * $Id: ps_fan_light.h,v 1.4 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_fan_light.h,v 1.5 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,7 +117,6 @@ public:
 	void setTexture(CSmartPtr<ITexture> tex)
 	{
 		_Tex = tex;		
-		touch();
 	}
 	
 	/// get the texture used
@@ -132,6 +131,9 @@ public:
 
 	/// from CPSParticle : return true if there are lightable faces in the object
 	virtual bool hasLightableFaces() { 	return false; }
+
+	// from CPSParticle
+	virtual bool supportGlobalColorLighting() const { return true; }
 	
 protected:
 	void				newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
@@ -150,9 +152,7 @@ private:
 	uint32						_PhaseSmoothness;	
 	float						_MoveIntensity;		
 	NLMISC::CSmartPtr<ITexture> _Tex;
-	float						_PhaseSpeed;
-	bool						_Touched : 1;
-	bool						_UseGlobalColor : 1;
+	float						_PhaseSpeed;	
 	//
 	static uint8				_RandomPhaseTab[32][128];
 
@@ -171,7 +171,7 @@ private:
 	void getVBnIB(CVertexBuffer *&vb, TIndexBuffer *&ib);
 	uint getNumFanlightsInVB() const;
 	void setupMaterial();
-	void touch() { _Touched = true; }
+
 };
 
 

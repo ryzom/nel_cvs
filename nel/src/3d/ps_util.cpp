@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.38 2002/08/06 14:59:24 berenguier Exp $
+ * $Id: ps_util.cpp,v 1.39 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,8 @@
 #include "3d/dru.h"
 #include "3d/ps_located.h"
 #include "3d/ps_sound.h"
+#include "3d/ps_light.h"
+
 
 #include "3d/particle_system_shape.h"
 
@@ -97,6 +99,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSLocated); 										
 		NLMISC_REGISTER_CLASS(CParticleSystemShape);		
 		NLMISC_REGISTER_CLASS(CPSSound);
+		NLMISC_REGISTER_CLASS(CPSLight);
 
 
 		registerParticles();

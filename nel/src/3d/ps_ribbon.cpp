@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.7 2003/04/10 16:39:23 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.8 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -222,7 +222,10 @@ void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			f.serial(_UFactor, _VFactor) ;
 		}
 	}
-
+	if (f.isReading())
+	{
+		touch();
+	}
 }
 
 
@@ -231,7 +234,9 @@ CPSRibbon::CPSRibbon() : _UFactor(1.f),
 						 _VFactor(1.f),
 						 _ColorFading(true),
 						 _GlobalColor(false),
-						 _Touch(true)
+						 _Touch(true),
+						 _Lighted(false),
+						 _ForceLighted(false)
 {
 	setInterpolationMode(Linear);
 	setSegDuration(0.06f);
@@ -279,8 +284,15 @@ void CPSRibbon::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimatio
 		if (!numToProcess) return;
 		
 		/// update the material color
-		CParticleSystem &ps = *(_Owner->getOwner());	
-		_Mat.setColor(ps.getGlobalColor());
+		CParticleSystem &ps = *(_Owner->getOwner());
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{
+			_Mat.setColor(ps.getGlobalColorLighted());			
+		}
+		else
+		{
+			_Mat.setColor(ps.getGlobalColor());
+		}
 		
 		/** We support Auto-LOD for ribbons, although there is a built-in LOD (that change the geometry rather than the number of ribbons)
 		  * that gives better result (both can be used simultaneously)
@@ -483,6 +495,17 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		bool useGlobalColor = ps.getColorAttenuationScheme() != NULL;
 		if (useGlobalColor != _GlobalColor)
 		{
+			_GlobalColor = useGlobalColor; 
+			touch();
+		}							
+		if (usesGlobalColorLighting() != _Lighted)
+		{
+			_Lighted = usesGlobalColorLighting();
+			touch();
+		}
+		if (ps.getForceGlobalColorLightingFlag() != _ForceLighted)
+		{
+			_ForceLighted = ps.getForceGlobalColorLightingFlag();
 			touch();
 		}
 		updateMaterial();
@@ -809,7 +832,7 @@ inline void	CPSRibbon::updateUntexturedMaterial()
 	CParticleSystem &ps = *(_Owner->getOwner());
 	if (_ColorScheme)
 	{	// PER RIBBON COLOR
-		if (ps.getColorAttenuationScheme())
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting() || ps.getColorAttenuationScheme())		
 		{
 			if (_ColorFading) // global color + fading + per ribbon color
 			{
@@ -874,7 +897,7 @@ inline void	CPSRibbon::updateTexturedMaterial()
 	CParticleSystem &ps = *(_Owner->getOwner());
 	if (_ColorScheme)
 	{	// PER RIBBON COLOR
-		if (ps.getColorAttenuationScheme())
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting() || ps.getColorAttenuationScheme())
 		{
 			if (_ColorFading) // global color + fading + per ribbon color
 			{				
@@ -964,34 +987,38 @@ inline void	CPSRibbon::setupUntexturedGlobalColor()
 	CParticleSystem &ps = *(_Owner->getOwner());	
 	if (_ColorScheme)
 	{	
-		_Mat.texConstantColor(0, ps.getGlobalColor());					
-	}
-	else // GLOBAL COLOR with / without fading
-	{
-		if (ps.getColorAttenuationScheme())
-		{			
-			NLMISC::CRGBA col;
-			col.modulateFromColor(ps.getGlobalColor(), _Color);
-			if (_ColorFading)
-			{								
-				_Mat.texConstantColor(0, col);				
-			}
-			else // color attenuation, no fading : 
-			{							
-				_Mat.setColor(col);
-			}
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{
+			_Mat.texConstantColor(0, ps.getGlobalColorLighted());
 		}
 		else
 		{
-			if (_ColorFading)
-			{
-				_Mat.texConstantColor(0, _Color);				
-			}
-			else // constant color
-			{
-				_Mat.setColor(_Color);
-			}
+			_Mat.texConstantColor(0, ps.getGlobalColor());
 		}
+	}
+	else // GLOBAL COLOR with / without fading
+	{					
+		NLMISC::CRGBA col;
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{
+			col.modulateFromColor(ps.getGlobalColorLighted(), _Color);
+		}
+		else if (ps.getColorAttenuationScheme())
+		{
+			col.modulateFromColor(ps.getGlobalColor(), _Color);
+		}
+		else
+		{
+			col = _Color;
+		}		
+		if (_ColorFading)
+		{								
+			_Mat.texConstantColor(0, col);				
+		}
+		else // color attenuation, no fading : 
+		{							
+			_Mat.setColor(col);
+		}		
 	}
 }
 
@@ -1002,17 +1029,45 @@ inline void	CPSRibbon::setupTexturedGlobalColor()
 	CParticleSystem &ps = *(_Owner->getOwner());	
 	if (_ColorScheme)
 	{	
-		if (ps.getColorAttenuationScheme() && _ColorFading)
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
 		{
-			_Mat.texConstantColor(2, ps.getGlobalColor());
+			if (_ColorFading)
+			{
+				_Mat.texConstantColor(2, ps.getGlobalColorLighted());
+			}
+			else
+			{
+				_Mat.texConstantColor(1, ps.getGlobalColorLighted());
+			}
 		}
-		else
+		else 
 		{
-			_Mat.texConstantColor(1, ps.getGlobalColor());
-		}				
+			if (_ColorFading)
+			{
+				_Mat.texConstantColor(2, ps.getGlobalColor());
+			}
+			else
+			{
+				_Mat.texConstantColor(1, ps.getGlobalColor());
+			}
+		}			
 	}
 	else // GLOBAL COLOR with / without fading
 	{
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{
+			NLMISC::CRGBA col;
+			col.modulateFromColor(ps.getGlobalColorLighted(), _Color);
+			if (_ColorFading)
+			{								
+				_Mat.texConstantColor(1, col);				
+			}
+			else // color attenuation, no fading : 
+			{							
+				_Mat.setColor(col);
+			}
+		}
+		else
 		if (ps.getColorAttenuationScheme())
 		{			
 			NLMISC::CRGBA col;

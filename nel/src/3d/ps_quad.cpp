@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.3 2003/04/09 15:59:15 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.4 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -518,29 +518,52 @@ void CPSQuad::updateMatBeforeRendering(IDriver *drv)
 	CParticleSystem &ps = *(_Owner->getOwner());
 	if (isMultiTextureEnabled())
 	{			
-			setupMaterial(_Tex, drv, _Mat);
-			_Mat.setColor(ps.getGlobalColor());			
+		setupMaterial(_Tex, drv, _Mat);			
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{				
+			_Mat.setColor(ps.getGlobalColorLighted());
+		}
+		else
+		{
+			_Mat.setColor(ps.getGlobalColor());
+		}
 	}
 	else
 	{
 		/// update the material if the global color of the system is variable		
-		if (_ColorScheme != NULL && ps.getColorAttenuationScheme() != NULL)
-		{		
-			CPSMaterial::forceModulateConstantColor(true, ps.getGlobalColor());		
+		if (_ColorScheme != NULL && 
+			(ps.getColorAttenuationScheme() != NULL ||
+			 ps.getForceGlobalColorLightingFlag() ||
+			 usesGlobalColorLighting()
+			)
+		   )
+		{					
+			if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+			{			
+				CPSMaterial::forceModulateConstantColor(true, ps.getGlobalColorLighted());
+			}
+			else
+			{
+				CPSMaterial::forceModulateConstantColor(true, ps.getGlobalColor());
+			}
 		}
 		else
 		{
 			forceModulateConstantColor(false);
-			if (!ps.getColorAttenuationScheme())
+			NLMISC::CRGBA col;
+			if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
 			{
-				_Mat.setColor(_Color);
+				col.modulateFromColor(ps.getGlobalColorLighted(), _Color);
 			}
+			else if (ps.getColorAttenuationScheme() != NULL)
+			{
+				col.modulateFromColor(ps.getGlobalColor(), _Color);
+			}	
 			else
 			{
-				NLMISC::CRGBA col;
-				col.modulateFromColor(ps.getGlobalColor(), _Color);
-				_Mat.setColor(col);
-			}
+				col = _Color;
+			}			
+			_Mat.setColor(col);			
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.10 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.11 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,8 +92,18 @@ public:
 	/// return true if there are Opaque faces in the object
 	virtual bool hasOpaqueFaces(void)  = 0;
 
-	/// return true if there are lightable faces in the object
+	/** Returns true if there are lightable faces in the object	  
+	  */
 	virtual bool hasLightableFaces() = 0;
+
+	/** Returns true if the object can use global lighting color. (example : 'lookat' particle do not have 
+	  * normals, so they use global lighting color instead
+	  */
+	bool usesGlobalColorLighting() { return _UsesGlobalColorLighting; }
+	// active / deactive global color lighting
+	void enableGlobalColorLighting(bool enabled) { _UsesGlobalColorLighting = enabled; } 	
+	// is global color lighting supported ?
+	virtual bool supportGlobalColorLighting() const = 0;
 
 	/// derivers draw the particles here
 	virtual void draw(bool opaque) {}
@@ -106,10 +116,15 @@ public:
 	
 	/// serialisation. Derivers must override this, and call their parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-	{ 		
+	{ 	
+		/// version 3 : global color lighting
 		/// version 2 : auto-lod saved
-		sint ver = f.serialVersion(2);
+		sint ver = f.serialVersion(3);
 		CPSLocatedBindable::serial(f);
+		if (ver >= 3)
+		{
+			f.serial(_UsesGlobalColorLighting);
+		}
 		if (ver >= 2)
 		{
 			f.serial(_DisableAutoLOD);
@@ -162,6 +177,7 @@ protected:
 private:
 	 /// Disable Auto-LOD flag
 	 bool	_DisableAutoLOD;
+	 bool   _UsesGlobalColorLighting;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -833,3 +849,24 @@ inline void SetupModulatedStage(CMaterial &m, uint stage, CMaterial::TTexSource 
 #endif // NL_PS_PARTICLE_BASIC_H
 
 /* End of ps_particle_basic.h */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

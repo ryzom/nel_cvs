@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.5 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_fan_light.cpp,v 1.6 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -286,56 +286,49 @@ void CPSFanLight::setPhaseSpeed(float multiplier)
 inline void CPSFanLight::setupMaterial()
 {
 	CParticleSystem &ps = *(_Owner->getOwner());
-	bool useGlobalColor = (ps.getColorAttenuationScheme() != NULL);
-	if (useGlobalColor != _UseGlobalColor)
-	{
-		touch();
-		_UseGlobalColor = useGlobalColor;
+	/// update material color		
+	if (_Tex == NULL)
+	{				
+		forceTexturedMaterialStages(1);
+		SetupModulatedStage(_Mat, 0, CMaterial::Diffuse, CMaterial::Constant);
 	}
-	if (_Touched)
-	{		
-		/// update material color		
-		if (_Tex == NULL)
-		{				
-			forceTexturedMaterialStages(1);
-			SetupModulatedStage(_Mat, 0, CMaterial::Diffuse, CMaterial::Constant);
+	else
+	{
+		_Mat.setTexture(0, _Tex);
+		forceTexturedMaterialStages(2);				
+		SetupModulatedStage(_Mat, 0, CMaterial::Texture, CMaterial::Constant);
+		SetupModulatedStage(_Mat, 1, CMaterial::Diffuse, CMaterial::Previous);		
+	}
+	
+	// always setup global colors 					
+	if (_ColorScheme)
+	{
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{		
+			_Mat.texConstantColor(0, ps.getGlobalColorLighted());
 		}
 		else
-		{
-			_Mat.setTexture(0, _Tex);
-			forceTexturedMaterialStages(2);				
-			SetupModulatedStage(_Mat, 0, CMaterial::Texture, CMaterial::Constant);
-			SetupModulatedStage(_Mat, 1, CMaterial::Diffuse, CMaterial::Previous);		
-		}
-
-		if (!useGlobalColor)
-		{
-			if (!_ColorScheme)
-			{
-				_Mat.texConstantColor(0, _Color);
-			}
-			else
-			{
-				_Mat.texConstantColor(0, NLMISC::CRGBA::White);
-			}
-		}
-		_Touched = false;
-	}	
-
-	// always setup global colors 
-	if (useGlobalColor)
-	{				
-		if (_ColorScheme)
 		{
 			_Mat.texConstantColor(0, ps.getGlobalColor());
+		}		
+	}
+	else
+	{
+		NLMISC::CRGBA col;		
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{		
+			col.modulateFromColor(ps.getGlobalColorLighted(), _Color);
+		}
+		else if (ps.getColorAttenuationScheme() != NULL)
+		{
+			col.modulateFromColor(ps.getGlobalColor(), _Color);			
 		}
 		else
 		{
-			NLMISC::CRGBA col;
-			col.modulateFromColor(ps.getGlobalColor(), _Color);
-			_Mat.texConstantColor(0, col);
+			col = _Color;			
 		}
-	}
+		_Mat.texConstantColor(0, col);
+	}	
 }
 
 ///====================================================================================
@@ -409,10 +402,7 @@ CPSFanLight::CPSFanLight(uint32 nbFans) : _NbFans(nbFans),
 										  _PhaseSmoothness(0),
 										  _MoveIntensity(1.5f),
 										  _Tex(NULL),
-										  _PhaseSpeed(256),
-										  _Touched(true),
-										  _UseGlobalColor(false)
-
+										  _PhaseSpeed(256)
 {
 	nlassert(nbFans >= 3);
 
@@ -462,7 +452,7 @@ void CPSFanLight::init(void)
 ///====================================================================================
 void CPSFanLight::updateMatAndVbForColor(void)
 {	
-	touch();
+	//touch();
 }
 
 ///====================================================================================

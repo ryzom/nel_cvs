@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.7 2003/04/10 16:38:32 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.8 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,8 +138,14 @@ void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAn
 		
 		/// update the material color
 		CParticleSystem &ps = *(_Owner->getOwner());	
-		_Mat.setColor(ps.getGlobalColor());
-		
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{
+			_Mat.setColor(ps.getGlobalColorLighted());
+		}
+		else
+		{		
+			_Mat.setColor(ps.getGlobalColor());
+		}
 		/** We support Auto-LOD for ribbons, although there is a built-in LOD (that change the geometry rather than the number of ribbons)
 		  * that gives better result (both can be used simultaneously)
 		  */
@@ -360,6 +366,11 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 
 	/// update material color
 	CParticleSystem &ps = *(_Owner->getOwner());
+	if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+	{
+		CPSMaterial::forceModulateConstantColor(true, ps.getGlobalColorLighted());
+	}
+	else
 	if (ps.getColorAttenuationScheme() != NULL)
 	{		
 		CPSMaterial::forceModulateConstantColor(true, ps.getGlobalColor());		

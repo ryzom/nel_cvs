@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.7 2003/04/10 16:38:13 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.8 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,7 +63,11 @@ CPSTailDot::TVBMap			CPSTailDot::_ColoredVBMap;    // index / vertex buffer + co
 CPSTailDot::TVBMap			CPSTailDot::_FadedColoredVBMap;    // index / vertex buffer + faded colors
 
 //=======================================================	
-CPSTailDot::CPSTailDot() : _ColorFading(false), _GlobalColor(false), _Touch(true)
+CPSTailDot::CPSTailDot() : _ColorFading(false),
+						   _GlobalColor(false),
+						   _Lighted(false),
+						   _ForceLighted(false),
+						   _Touch(true)
 {
 	setInterpolationMode(Linear);
 	setSegDuration(0.06f);
@@ -179,8 +183,15 @@ void CPSTailDot::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 		if (!numToProcess) return;
 		
 		/// update the material color
-		CParticleSystem &ps = *(_Owner->getOwner());	
-		_Mat.setColor(ps.getGlobalColor());
+		CParticleSystem &ps = *(_Owner->getOwner());
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{
+			_Mat.setColor(ps.getGlobalColorLighted());
+		}
+		else
+		{
+			_Mat.setColor(ps.getGlobalColor());
+		}
 		
 		/** We support Auto-LOD for ribbons, although there is a built-in LOD (that change the geometry rather than the number of ribbons)
 		  * that gives better result (both can be used simultaneously)
@@ -256,6 +267,17 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		bool useGlobalColor = ps.getColorAttenuationScheme() != NULL;
 		if (useGlobalColor != _GlobalColor)
 		{
+			_GlobalColor = useGlobalColor; 
+			touch();
+		}
+		if (usesGlobalColorLighting() != _Lighted)
+		{
+			_Lighted = usesGlobalColorLighting();
+			touch();
+		}
+		if (ps.getForceGlobalColorLightingFlag() != _ForceLighted)
+		{
+			_ForceLighted = ps.getForceGlobalColorLightingFlag();
 			touch();
 		}
 		updateMaterial();
@@ -427,7 +449,7 @@ void	CPSTailDot::updateMaterial()
 	CParticleSystem &ps = *(_Owner->getOwner());
 	if (_ColorScheme)
 	{	// PER RIBBON COLOR
-		if (ps.getColorAttenuationScheme())
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting() || ps.getColorAttenuationScheme())		
 		{
 			if (_ColorFading) // global color + fading + per ribbon color
 			{
@@ -489,10 +511,31 @@ void	CPSTailDot::setupGlobalColor()
 	CParticleSystem &ps = *(_Owner->getOwner());	
 	if (_ColorScheme)
 	{	
-		_Mat.texConstantColor(0, ps.getGlobalColor());					
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{
+			_Mat.texConstantColor(0, ps.getGlobalColorLighted());
+		}
+		else
+		{
+			_Mat.texConstantColor(0, ps.getGlobalColor());
+		}
 	}
 	else // GLOBAL COLOR with / without fading
 	{
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{
+			NLMISC::CRGBA col;
+			col.modulateFromColor(ps.getGlobalColorLighted(), _Color);
+			if (_ColorFading)
+			{								
+				_Mat.texConstantColor(0, col);				
+			}
+			else // color attenuation, no fading : 
+			{							
+				_Mat.setColor(col);
+			}
+		}
+		else
 		if (ps.getColorAttenuationScheme())
 		{			
 			NLMISC::CRGBA col;

@@ -1,7 +1,7 @@
 /** \file ps_ribbon.h
  * Ribbons particles.
  *
- * $Id: ps_ribbon.h,v 1.4 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_ribbon.h,v 1.5 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,6 +172,8 @@ public:
 	/// from CPSParticle : return true if there are lightable faces in the object
 	virtual bool hasLightableFaces() { 	return false; }
 
+	// from CPSParticle
+	virtual bool supportGlobalColorLighting() const { return true; }
 protected:		
 /// interface to derived classes
 	
@@ -190,7 +192,9 @@ protected:
 	virtual CPSLocated				*getSizeOwner(void) { return _Owner; }
 	/// From CPSColoredParticle
 	virtual CPSLocated				*getColorOwner(void) { return _Owner; }	
+
 private:		
+	
 
 	/// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
 	virtual void					updateMatAndVbForColor(void);	
@@ -240,9 +244,11 @@ private:
 	float _UFactor, _VFactor;
 			
 
-	bool _ColorFading : 1;
-	bool _GlobalColor : 1; // to see wether the system uses global color
-	bool _Touch		  : 1; // we use this to see if we must setup the material again
+	bool _ColorFading           : 1;
+	bool _GlobalColor		    : 1; // to see wether the system uses global color
+	bool _Lighted	            : 1;
+	bool _ForceLighted	        : 1;
+	bool _Touch		            : 1; // we use this to see if we must setup the material again
 
 	void touch() { _Touch = true; }
 

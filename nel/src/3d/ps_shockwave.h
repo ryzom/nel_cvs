@@ -1,7 +1,7 @@
 /** \file ps_shockwave.h
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.h,v 1.3 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_shockwave.h,v 1.4 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,6 +88,9 @@ public:
 
 	/// from CPSParticle : return true if there are lightable faces in the object
 	virtual bool hasLightableFaces() { 	return false; }
+
+	// from CPSParticle
+	virtual bool supportGlobalColorLighting() const { return true; }
 
 protected:
 

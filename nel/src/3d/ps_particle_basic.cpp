@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.6 2003/04/07 12:34:45 vizerie Exp $
+ * $Id: ps_particle_basic.cpp,v 1.7 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,8 @@ namespace NL3D
 /////////////////////////////////
 
 //=======================================
-	CPSParticle::CPSParticle() : _DisableAutoLOD(false)
+CPSParticle::CPSParticle() : _DisableAutoLOD(false),
+							 _UsesGlobalColorLighting(false)
 {
 
 }

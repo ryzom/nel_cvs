@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.3 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_shockwave.cpp,v 1.4 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -298,13 +298,32 @@ void CPSShockWave::draw(bool opaque)
 	/// update the material if the global color of the system is variable
 	CParticleSystem &ps = *(_Owner->getOwner());
 	/// update the material if the global color of the system is variable		
-	if (_ColorScheme != NULL && ps.getColorAttenuationScheme() != NULL)
+	if (_ColorScheme != NULL && 
+		(ps.getColorAttenuationScheme() != NULL ||
+		 ps.getForceGlobalColorLightingFlag()   || 
+		 usesGlobalColorLighting()
+		)
+	   )
 	{		
-		CPSMaterial::forceModulateConstantColor(true, ps.getGlobalColor());		
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{
+			CPSMaterial::forceModulateConstantColor(true, ps.getGlobalColorLighted());
+		}
+		else
+		{
+			CPSMaterial::forceModulateConstantColor(true, ps.getGlobalColor());
+		}
 	}
 	else
 	{
 		forceModulateConstantColor(false);
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{
+			NLMISC::CRGBA col;
+			col.modulateFromColor(ps.getGlobalColorLighted(), _Color);
+			_Mat.setColor(col);
+		}
+		else
 		if (!ps.getColorAttenuationScheme())
 		{
 			_Mat.setColor(_Color);

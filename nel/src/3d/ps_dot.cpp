@@ -1,7 +1,7 @@
 /** \file ps_dot.cpp
  * Dot particles
  *
- * $Id: ps_dot.cpp,v 1.3 2002/02/28 12:59:50 besson Exp $
+ * $Id: ps_dot.cpp,v 1.4 2003/08/08 16:55:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,24 +138,35 @@ void CPSDot::draw(bool opaque)
 
 	/// update the material if the global color of the system is variable
 	CParticleSystem &ps = *(_Owner->getOwner());
-	if (!_ColorScheme)
-	{
-		if (ps.getColorAttenuationScheme() == NULL)
+	if (_ColorScheme == NULL)
+	{					
+		NLMISC::CRGBA col;
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
 		{
-			_Mat.setColor(_Color);
+			col.modulateFromColor(ps.getGlobalColorLighted(), _Color);
+		}
+		else if (ps.getColorAttenuationScheme() != NULL)
+		{			
+			col.modulateFromColor(ps.getGlobalColor(), _Color);
 		}
 		else
-		{			
-			NLMISC::CRGBA col;
-			col.modulateFromColor(ps.getGlobalColor(), _Color);
-			_Mat.setColor(col);
+		{
+			col = _Color;
 		}
+		_Mat.setColor(col);		
 		forceTexturedMaterialStages(0);
 	}
 	else
 	{			
 		forceTexturedMaterialStages(1);
-		_Mat.texConstantColor(0, ps.getGlobalColor());
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
+		{
+			_Mat.texConstantColor(0, ps.getGlobalColorLighted());
+		}
+		else
+		{
+			_Mat.texConstantColor(0, ps.getGlobalColor());
+		}
 		SetupModulatedStage(_Mat, 0, CMaterial::Diffuse, CMaterial::Constant);
 	}
 	//////

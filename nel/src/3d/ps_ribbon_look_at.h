@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.h
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.h,v 1.5 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_ribbon_look_at.h,v 1.6 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,7 +107,8 @@ public:
 
 	/// from CPSParticle : return true if there are lightable faces in the object
 	virtual bool hasLightableFaces() { 	return false; }
-
+	//
+	virtual bool					supportGlobalColorLighting() const { return true; }	
 protected:		
 
 	CSmartPtr<ITexture>				_Tex;
@@ -124,8 +125,6 @@ protected:
 	virtual void					resize(uint32 size);
 	virtual CPSLocated				*getSizeOwner(void) { return _Owner; }
 	virtual CPSLocated				*getColorOwner(void) { return _Owner; }	
-
-
 private:	
 
 	/// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.h
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.h,v 1.5 2003/04/14 15:25:53 vizerie Exp $
+ * $Id: ps_ribbon_base.h,v 1.6 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,7 +129,7 @@ protected:
 	// get index of the ribbons head in the sampling vect
 	uint32							getRibbonIndex() const { return _RibbonIndex; }
 	// get sampling date for each pos of the ribbon
-	const TFloatVect				&getSamplingDate() const { return _SamplingDate; }
+	const TFloatVect				&getSamplingDate() const { return _SamplingDate; }	
 	
 	/// value to use after lod computation
 	uint32							  _UsedNbSegs;

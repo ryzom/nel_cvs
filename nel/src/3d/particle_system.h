@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.35 2003/08/04 13:04:38 vizerie Exp $
+ * $Id: particle_system.h,v 1.36 2003/08/08 16:55:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -616,9 +616,17 @@ public:
 		  /** Get the current global color of the system. (It is updated just before drawing...). It there's
 		    * no color attenuation scheme it can be assumed to be white
 			*/
-		  const NLMISC::CRGBA &getGlobalColor() const {	return _GlobalColor; }
-		
-
+		  NLMISC::CRGBA		getGlobalColor() const { return _GlobalColor; }
+		  /** Get the current global color of the system with lighting included.
+			*/
+		  NLMISC::CRGBA		getGlobalColorLighted() const { return _GlobalColorLighted; }
+		  // test if all objects should use global color lighting
+		  bool				getForceGlobalColorLightingFlag() { return _ForceGlobalColorLighting; }
+		  // force global color lighting 
+		  void				setForceGlobalColorLightingFlag(bool enable) { _ForceGlobalColorLighting = enable; }
+		  // set lighting color (used by look at, and object that don't have normals)
+		  void				setLightingColor(NLMISC::CRGBA col) { _LightingColor = col; }
+		  NLMISC::CRGBA		getLightingColor() const { return _LightingColor; }
 		// @}
 
 	//*****************************************************************************************************
@@ -996,10 +1004,11 @@ private:
 
 	CPSAttribMaker<NLMISC::CRGBA>				*_ColorAttenuationScheme;
 	NLMISC::CRGBA								_GlobalColor;
+	NLMISC::CRGBA								_GlobalColorLighted;
+	NLMISC::CRGBA								_LightingColor;
 
-	/// \TODO nico replace this with a bitfield (and change serialisation accordingly)
-	/// when set to true, the system will compute his BBox every time computeBBox is called
-	bool										_ComputeBBox;
+	/// \TODO nico replace this with a bitfield (and change serialisation accordingly)	
+	bool										_ComputeBBox;	/// when set to true, the system will compute his BBox every time computeBBox is called
 	bool										_BBoxTouched;
 	bool										_AccurateIntegration;		
 	bool										_CanSlowDown;
@@ -1012,6 +1021,7 @@ private:
 	bool										_EnableLoadBalancing;
 	bool										_EmitThreshold;	
 	bool										_BypassIntegrationStepLimit;
+	bool										_ForceGlobalColorLighting;
 
 	/// Inverse of the ellapsed time (call to step, valid only for motion pass)
 	float										_InverseEllapsedTime;	

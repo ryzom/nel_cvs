@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.h
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.h,v 1.5 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_tail_dot.h,v 1.6 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,8 +102,9 @@ public:
 	virtual uint32			getMaxNumFaces(void) const;
 
 	/// from CPSParticle : return true if there are lightable faces in the object
-	virtual bool hasLightableFaces() { 	return false; }
+	virtual bool			hasLightableFaces() { 	return false; }
 
+	virtual bool			supportGlobalColorLighting() const { return true; }
 protected:		
 /// interface to derived classes
 	
@@ -119,7 +120,7 @@ protected:
 	/// inherited from CPSLocatedBindable	
 	virtual void					resize(uint32 size);
 	virtual CPSLocated				*getSizeOwner(void) { return _Owner; }
-	virtual CPSLocated				*getColorOwner(void) { return _Owner; }	
+	virtual CPSLocated				*getColorOwner(void) { return _Owner; }		
 
 
 private:		
@@ -159,9 +160,11 @@ private:
 	//@}	
 			
 
-	bool _ColorFading : 1;
-	bool _GlobalColor : 1; // to see wether the system uses global color
-	bool _Touch		  : 1; // we use this to see if we must setup the material again
+	bool _ColorFading  : 1;
+	bool _GlobalColor  : 1; // to see wether the system uses global color
+	bool _Lighted      : 1;
+	bool _ForceLighted : 1;
+	bool _Touch		   : 1; // we use this to see if we must setup the material again
 
 	void touch() { _Touch = true; }
 

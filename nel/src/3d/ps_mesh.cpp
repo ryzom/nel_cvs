@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.27 2003/07/31 14:56:14 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.28 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -204,6 +204,21 @@ bool CPSMesh::hasLightableFaces()
 {
 	/// we don't draw any tri ! (the meshs are drawn by the scene)
 	return false;
+}
+
+//====================================================================================
+void CPSMesh::releaseAllRef()
+{
+	CPSParticle::releaseAllRef();
+	nlassert(_Owner && _Owner->getScene());
+	for(uint k = 0; k < _Instances.getSize(); ++k)
+	{
+		if (_Instances[k])
+		{
+			_Owner->getScene()->deleteInstance(_Instances[k]);
+			_Instances[k] = NULL;
+		}
+	}
 }
 
 //====================================================================================
@@ -425,8 +440,17 @@ CPSMesh::~CPSMesh()
 
 		for (TInstanceCont::iterator it = _Instances.begin(); it != _Instances.end(); ++it)
 		{
-			scene->deleteInstance(*it);
+			if (*it) scene->deleteInstance(*it);
 		}
+	}
+	else
+	{
+		#ifdef NL_DEBUG
+			for (TInstanceCont::iterator it = _Instances.begin(); it != _Instances.end(); ++it)
+			{
+				nlassert(*it == NULL); // there's a leak..:(
+			}
+		#endif
 	}
 }
 

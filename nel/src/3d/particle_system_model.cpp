@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.54 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.55 2003/08/08 16:55:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -391,7 +391,7 @@ bool CParticleSystemModel::checkAgainstPyramid(const std::vector<CPlane>	&pyrami
 	nlassert(_ParticleSystem);
 	NLMISC::CAABBox bbox;
 	_ParticleSystem->computeBBox(bbox);		
-	const CMatrix		&mat = getMatrix();
+	const CMatrix		&mat = getWorldMatrix();
 		
 	// Transform the pyramid in Object space.	
 	for(sint i=0; i < (sint) pyramid.size(); i++)
@@ -543,7 +543,35 @@ void	CParticleSystemModel::traverseRender()
 /*
 	if (!_OutOfFrustum)
 	{*/
+	if (_ParticleSystem)
+	{		
+		if (CTransform::isLightable())
+		{
+			// affect global lighting color
+			const CLightContribution &lc = getLightContribution();
+			NLMISC::CRGBA lighting(0, 0, 0, 255);
+			for(uint k = 0; k < NL3D_MAX_LIGHT_CONTRIBUTION; ++k)
+			{
+				if (lc.PointLight[k] == NULL) break;
+				NLMISC::CRGBA currLightContrib;
+				currLightContrib.modulateFromui(lc.PointLight[k]->getDiffuse(), lc.AttFactor[k]);
+				lighting.add(lighting, currLightContrib);
+			}
+			// add local ambient
+			//lighting.add(lighting, lc.LocalAmbient);
+			//lighting.add(lighting,lc.MergedPointLight);
+			// add sun diffuse
+			nlassert(_Scene);
+			NLMISC::CRGBA sunDiffuse;			
+			sunDiffuse.modulateFromui(_Scene->getSunDiffuse(), lc.SunContribution);
+			lighting.add(lighting, sunDiffuse);
+			NLMISC::CRGBA sunAmbient;			
+			sunAmbient.modulateFromui(_Scene->getSunAmbient(), lc.SunContribution);
+			lighting.add(lighting, sunAmbient);
+			_ParticleSystem->setLightingColor(lighting);
+		}		
 		CTransformShape::traverseRender();
+	}
 	//}
 }
 

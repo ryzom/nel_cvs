@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.25 2003/07/04 10:19:15 vizerie Exp $
+ * $Id: ps_located.h,v 1.26 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -776,8 +776,7 @@ inline void CPSLocated::collisionUpdate(const CPSCollisionInfo &ci, uint32 index
 
 
 
-// bindable types are not encoded as an enum in order to provide
-// easy extensibility
+// kind of bindable objects
 
 const uint32 PSForce = 0   ;
 const uint32 PSParticle = 1;

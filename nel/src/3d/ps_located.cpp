@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.57 2003/07/11 16:50:16 corvazier Exp $
+ * $Id: ps_located.cpp,v 1.58 2003/08/08 16:54:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -958,7 +958,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_CollisionInfoNbRef);
 
 	if (_CollisionInfo)
-	{	
+	{	  
 		if (ver <= 5) // should be corrected with version 5
 		{		
 			if (f.isReading())

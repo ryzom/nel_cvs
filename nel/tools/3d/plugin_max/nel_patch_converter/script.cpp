@@ -1,7 +1,7 @@
 /** \file script.cpp
  * <File description>
  *
- * $Id: script.cpp,v 1.5 2001/09/06 07:25:38 corvazier Exp $
+ * $Id: script.cpp,v 1.6 2001/11/14 15:17:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@
 
 using namespace NLMISC;
 using namespace NL3D;
+using namespace std;
 
 #include "MAXScrpt.h"
 #include "3dmath.h"
@@ -48,6 +49,7 @@ using namespace NL3D;
 #include "MSTime.h"
 #include "MAXObj.h"
 #include "Parser.h"
+#include "modstack.h"
 
 #include "max.h"
 #include "stdmat.h"
@@ -81,6 +83,8 @@ def_visible_primitive( set_tile_mode,			"SetRykolTileMode");
 def_visible_primitive( get_selected_vertex,		"GetRykolSelVertex");
 def_visible_primitive( get_selected_patch,		"GetRykolSelPatch");
 def_visible_primitive( get_selected_tile,		"GetRykolSelTile");
+def_visible_primitive( get_patch_vertex,		"NeLGetPatchVertex");
+
 
 def_visible_primitive( get_tile_tile_number,	"NelGetTileTileNumber");
 def_visible_primitive( get_tile_noise_number,	"NelGetTileNoiseNumber");
@@ -90,6 +94,7 @@ def_visible_primitive( load_bank,				"NelLoadBank");
 def_visible_primitive( get_tile_set,			"NelGetTileSet");
 
 def_visible_primitive( export_zone,				"ExportRykolZone");
+def_visible_primitive( import_zone,				"NeLImportZone");
 
 /* permettre l'acces à auto/manual intrior edges
 faire une methode pour interfacer la fonction compute interior edge
@@ -112,6 +117,21 @@ def_visible_primitive( get_vertex_pos,			"GetRykolVertexPos");
 def_visible_primitive( set_vertex_pos,			"SetRykolVertexPos");
 def_visible_primitive( get_vector_pos,			"GetRykolVectorPos");
 def_visible_primitive( set_vector_pos,			"SetRykolVectorPos");*/
+
+void errorMessage (const char *msg, const char *title, Interface& it, bool dialog)
+{
+	// Text or dialog ?
+	if (dialog)
+	{
+		// Dialog message
+		MessageBox (it.GetMAXHWnd(), msg, title, MB_OK|MB_ICONEXCLAMATION);
+	}
+	else
+	{
+		// Text message
+		mprintf ((string(msg) + "\n").c_str());
+	}
+}
 
 Value*
 export_zone_cf (Value** arg_list, int count)
@@ -161,6 +181,75 @@ export_zone_cf (Value** arg_list, int count)
 				}
 			}
 		}
+	}
+
+	return ret;
+}
+
+Value* import_zone_cf (Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (2)
+	check_arg_count (export_zone, 2, count);
+
+	// Check to see if the arguments match up to what we expect
+	// We want to use 'TurnAllTexturesOn <object to use>'
+	char *help = "NeLImportZone filename dialogError";
+	type_check (arg_list[0], String, help);
+	type_check (arg_list[1], Boolean, help);
+
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	// Get the filename
+	string filename = arg_list[0]->to_string();
+
+	// Get the flip
+	bool dialog = arg_list[1]->to_bool ()!=FALSE;
+
+	// Return value
+	Value *ret = &undefined;
+		
+	// Load the zone
+	CIFile input;
+	if (input.open (filename))
+	{
+		try
+		{
+			// The zone
+			CZone zone;
+			input.serial (zone);
+
+			// Create an instance of NeL path mesh
+			RPO* rpo = (RPO*) CreateInstance (GEOMOBJECT_CLASS_ID, RYKOLPATCHOBJ_CLASS_ID);
+			rpo->rpatch = new RPatchMesh ();
+			rpo->rpatch->rTess.TileTesselLevel = -5;
+
+			// Convert the zone
+			int zoneId;
+			rpo->rpatch->importZone (&rpo->patch, zone, zoneId);
+
+			// Create a derived object that references the rpo
+			IDerivedObject *dobj = CreateDerivedObject(rpo);
+
+			// Create a node in the scene that references the derived object
+			INode *node = ip->CreateObjectNode (dobj);
+
+    		// Return the result
+			ret = new MAXNode (node);
+
+			// Redraw the viewports
+			ip->RedrawViews(ip->GetTime());
+       	}
+		catch (Exception& e)
+		{
+			// Error message
+			errorMessage (("Error when loading file "+filename+": "+e.what()).c_str(), "NeL import zone", *ip, dialog);
+		}
+	}
+	else
+	{
+		// Error message
+		errorMessage (("Can't open the file "+filename+" for reading.").c_str(), "NeL import zone", *ip, dialog);
 	}
 
 	return ret;
@@ -1037,7 +1126,6 @@ set_tile_steps_cf(Value** arg_list, int count)
 	return bRet?&true_value:&false_value;
 }
 
-
 Value*
 get_tile_count_cf(Value** arg_list, int count)
 {
@@ -1090,6 +1178,74 @@ get_tile_count_cf(Value** arg_list, int count)
 			// redraw and update
 			node->NotifyDependents(FOREVER, PART_ALL, REFMSG_CHANGE); 
 			ip->RedrawViews(ip->GetTime());
+		}
+	}
+
+	return Integer::intern(nRet);
+}
+
+Value* get_patch_vertex_cf (Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (3)
+	check_arg_count(get_tile_count, 3, count);
+
+	// Check to see if the arguments match up to what we expect
+	// We want to use 'TurnAllTexturesOn <object to use>'
+	char *message="NeLGetPatchVertex [NeLPatchMesh] [PatchId] [VertexId]";
+	type_check(arg_list[0], MAXNode, message);
+	type_check(arg_list[1], Integer, message);
+	type_check(arg_list[2], Integer, message);
+
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	// Get a INode pointer from the argument passed to us
+	INode *node = arg_list[0]->to_node();
+	nlassert (node);
+
+	// ok ?
+	int nRet=-1;
+
+	// Get the patch id
+	int patchId = arg_list[1]->to_int() - 1;
+
+	// Get the vertex id
+	int vertId = arg_list[2]->to_int() - 1;
+
+	// Valid vertex id ?
+	if ((vertId>=0) && (vertId<4))
+	{
+		// Get a Object pointer
+		ObjectState os=node->EvalWorldState(ip->GetTime()); 
+
+		if (os.obj)
+		{
+			// Get class id
+			Class_ID classId=os.obj->ClassID();
+			RPO *tri = (RPO *) os.obj->ConvertToType(ip->GetTime(), 
+				RYKOLPATCHOBJ_CLASS_ID);
+			if (tri)
+			{
+				if ((patchId<(int)tri->patch.numPatches)&&(patchId>=0))
+				{
+					// Get the vertex id
+					nRet = tri->patch.patches[patchId].v[vertId] + 1;
+				}
+
+				// Note that the TriObject should only be deleted
+				// if the pointer to it is not equal to the object
+				// pointer that called ConvertToType()
+				if (os.obj != tri)
+					delete tri;
+			}
+
+
+			if (nRet!=-1)
+			{
+				// redraw and update
+				node->NotifyDependents(FOREVER, PART_ALL, REFMSG_CHANGE); 
+				ip->RedrawViews(ip->GetTime());
+			}
 		}
 	}
 

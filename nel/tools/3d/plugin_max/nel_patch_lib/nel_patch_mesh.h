@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * <File description>
  *
- * $Id: nel_patch_mesh.h,v 1.5 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: nel_patch_mesh.h,v 1.6 2001/11/14 15:17:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -740,12 +740,18 @@ public:
 	// Tile access
 	void setTileDesc (int nTile, const tileDesc& desc);
 
+	// Rotate tiles
+	void RotateTiles (PatchMesh *patch, int rot);
+
 	// Turn selected patch
 	void TurnPatch(PatchMesh *patch);
 
 	// Export a zone to NeL format
 	bool exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int zoneId);
 
+	// Export a zone to NeL format
+	void importZone (PatchMesh* pPM, NL3D::CZone& zone, int &zoneId);
+	
 	// *** Vertex color Methods
 
 	// Get the vertex color of a patch

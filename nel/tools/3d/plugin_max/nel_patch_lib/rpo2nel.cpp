@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.9 2001/10/16 14:57:07 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.10 2001/11/14 15:17:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -445,7 +445,8 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 				{
 					patchinfo[i].BindEdges[e].Next[0]=edge.patch1;
 					patchinfo[i].BindEdges[e].Edge[0]=getCommonEdge(pPM, pPatch->edge[e], pPM->patches[edge.patch1]);
-				}				
+				}
+			}
 #else // (MAX_RELEASE < 4000)
 			if (edge.patches[1]>=0)
 			{		
@@ -462,11 +463,146 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 					patchinfo[i].BindEdges[e].Next[0]=edge.patches[0];
 					patchinfo[i].BindEdges[e].Edge[0]=getCommonEdge(pPM, pPatch->edge[e], pPM->patches[edge.patches[0]]);
 				}				
-#endif // (MAX_RELEASE < 4000)
 			}
+#endif // (MAX_RELEASE < 4000)
 		}
 	}
 
 	zone.build(zoneId, patchinfo, std::vector<CBorderVertex>());
 	return true;
+}
+
+void RPatchMesh::importZone (PatchMesh* pPM, NL3D::CZone& zone, int &zoneId)
+{
+	// Patch info
+	std::vector<CPatchInfo> patchs;
+	std::vector<CBorderVertex> borderVertices;
+
+	// Retrieve the geometry
+	zone.retrieve (patchs, borderVertices);
+
+	// Get the zone id
+	zoneId = zone.getZoneId ();
+
+	// Vertex number
+	int vertexNum = 0;
+
+	// Vertex map
+	map<pair<uint, uint>, uint> mapEdgeVertex;
+
+	// Number of vertices
+	pPM->setNumVerts (4*patchs.size());
+	SetNumVerts (4*patchs.size());
+
+	// Number of patches
+	pPM->setNumPatches (patchs.size());
+	SetNumPatches (patchs.size());
+
+	// Number of tangents
+	// Number of interiors
+	pPM->setNumVecs (12*patchs.size());
+
+	// Number of edges
+	pPM->setNumEdges (4*patchs.size());
+
+	// Fill the vertices and tangents
+	for (uint patch=0; patch<patchs.size(); patch++)
+	{
+		// The vector
+		for (uint vert=0; vert<4; vert++)
+		{
+			// Pos ref
+			CVector &pos = patchs[patch].Patch.Vertices[vert];
+			CVector &inter = patchs[patch].Patch.Interiors[vert];
+
+			// Dest ref
+			PatchVert &destVert = pPM->verts[patch*4+vert];
+			PatchVec &destVect = pPM->vecs[patch*12+vert];
+
+			// Set the position
+			destVert.p = Point3 (pos.x, pos.y, pos.z);
+			destVect.p = Point3 (inter.x, inter.y, inter.z);
+
+			// Set the flag
+			destVert.flags = PVERT_CORNER;
+			destVect.flags = PVEC_INTERIOR;
+		}
+
+		// The tan
+		for (uint tang=0; tang<8; tang++)
+		{
+			// Pos ref
+			CVector &pos = patchs[patch].Patch.Tangents[tang];
+
+			// Dest ref
+			PatchVec &destVect = pPM->vecs[patch*12+4+tang];
+
+			// Set the position
+			destVect.p = Point3 (pos.x, pos.y, pos.z);
+
+			// Set the flag
+			destVect.flags = 0;
+		}
+
+		// The indexes
+		Patch &patchRef = pPM->patches[patch];
+		for (uint i=0; i<4; i++)
+		{
+			patchRef.v[i] = patch*4 + i;
+			patchRef.vec[2*i] = patch*12 + 4 + 2*i;
+			patchRef.vec[2*i+1] = patch*12 + 4 + 2*i + 1;
+			patchRef.interior[i] = patch*12 + i;
+			patchRef.edge[i] = patch*4 + i;
+			patchRef.smGroup = 1;
+			patchRef.flags = 0;
+			patchRef.type = PATCH_QUAD;
+		}
+
+		// Get the userinfo patch
+		UI_PATCH &uiRef = getUIPatch (patch);
+		uiRef.Init (getPowerOf2 (patchs[patch].OrderS), getPowerOf2 (patchs[patch].OrderT));
+
+		// Copy tiles
+		uint u, v;
+		for (v=0; v<patchs[patch].OrderT; v++)
+		for (u=0; u<patchs[patch].OrderS; u++)
+		{
+			// Tile index 
+			uint tileindex = u+v*patchs[patch].OrderS;
+
+			// Get the tile des
+			tileDesc& desc = uiRef.getTileDesc (tileindex);
+			int numLayer = (patchs[patch].Tiles[tileindex].Tile[1]==NL_TILE_ELM_LAYER_EMPTY)?1:(patchs[patch].Tiles[tileindex].Tile[2]==NL_TILE_ELM_LAYER_EMPTY)?2:3;
+
+			// Case info
+			bool is256x256;
+			uint8 uvOff;
+			CTileElement &tileElement = patchs[patch].Tiles[tileindex];
+			tileElement.getTile256Info(is256x256, uvOff);
+
+			// Set the tile
+			desc.setTile (numLayer, is256x256?uvOff+1:0, tileElement.getTileSubNoise(), 
+				tileIndex (false, tileElement.Tile[0], tileElement.getTileOrient (0)), 
+				tileIndex (false, tileElement.Tile[1], tileElement.getTileOrient (1)), 
+				tileIndex (false, tileElement.Tile[2], tileElement.getTileOrient (2)));
+		}
+
+		// Tile colors
+		for (v=0; v<(uint)(patchs[patch].OrderT+1); v++)
+		for (u=0; u<(uint)(patchs[patch].OrderS+1); u++)
+		{
+			CRGBA color;
+			color.set565 (patchs[patch].TileColors[u+v*(patchs[patch].OrderS+1)].Color565);
+			uiRef.setColor (u+v*(patchs[patch].OrderS+1), (color.R<<16)|(color.G<<8)|(color.B));
+		}
+
+		// Edge flags
+		for (uint edge=0; edge<4; edge++)
+		{
+			uiRef.setEdgeFlag (edge, (patchs[patch].Flags&(1<<edge))==0);
+		}
+	}
+
+	// Rebuild the patch mesh
+	nlverify (pPM->buildLinkages ()==TRUE);
 }

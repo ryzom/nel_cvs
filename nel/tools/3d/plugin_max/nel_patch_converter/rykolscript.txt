@@ -4,6 +4,15 @@ rykolscript.txt
 RykolPatchObject script fonctions:
 
 **********************************************
+NeLGetPatchVertex node patch vertex
+
+Return the id the vertex of a patch. 
+
+"node" must be a RykolPatchObject.
+"patch" is the id of the patch. First patch is 1.
+"vertex" is the id of the vertex (1 ~ 4).
+
+**********************************************
 SetRykolPatchSteps node step
 
 Like SetPatchSteps but works with rykolpatch. 
@@ -15,6 +24,8 @@ Set the tile step of a RykolPatchObject.
 
 "node" must be a RykolPatchObject.
 "step" an integer in range [-4;4].
+
+return -1 if error else the id of the vertex.
 
 **********************************************
 GetRykolTileCount node patchId

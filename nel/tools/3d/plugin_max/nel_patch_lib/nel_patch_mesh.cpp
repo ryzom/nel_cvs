@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * <File description>
  *
- * $Id: nel_patch_mesh.cpp,v 1.5 2001/10/08 15:02:51 corvazier Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.6 2001/11/14 15:17:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3063,6 +3063,50 @@ void RPatchMesh::TurnPatch(PatchMesh *patch)
 		}
 	}
 }
+
+// Turn selected patch
+void RPatchMesh::RotateTiles (PatchMesh *patch, int rot)
+{
+	// For each patch
+	for (int p=0; p<patch->numPatches; p++)
+	{
+		// Tessel U and V
+		int	nU=1<<(getUIPatch (p).NbTilesU);
+		int	nV=1<<(getUIPatch (p).NbTilesV);
+
+		// Turn tile array
+		for (int v=0; v<nV; v++)
+		for (int u=0; u<nU; u++)
+		{
+			// Rotate each layer
+			getUIPatch (p).getTileDesc (u+v*nU).rotate (rot);
+		}
+	}
+}
+
+// Turn selected patch
+/*void RPatchMesh::flipTilesUpDown (PatchMesh *patch)
+{
+	// For each patch
+	for (int p=0; p<patch->numPatches; p++)
+	{
+		// Tessel U and V
+		int	nU=1<<(getUIPatch (p).NbTilesU);
+		int	nV=1<<(getUIPatch (p).NbTilesV);
+
+		// Copy old array
+		UI_PATCH				old=getUIPatch (p);
+
+		// Turn tile array
+		for (int v=0; v<nV; v++)
+		for (int u=0; u<nU; u++)
+		{
+			// Rotate each layer
+			getUIPatch (p).getTileDesc (u+v*nU) = old.getTileDesc (u+(nV-1-v)*nU);
+			getUIPatch (p).getTileDesc (u+v*nU).flipUpDown ();
+		}
+	}
+}*/
 
 // Copy operator
 #ifdef USE_CACHE

@@ -1022,6 +1022,14 @@ SOURCE=..\include\nel\misc\class_id.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\resource_ptr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\resource_ptr_inline.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\singleton.h
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.17 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_mesh.cpp,v 1.18 2002/03/14 18:14:45 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -124,26 +124,26 @@ static CMesh *CreateDummyShape(void)
 	{
 		CMesh::CFace f;
 		f.Corner[0].Vertex = tab[6 * k];
-		f.Corner[0].Uvs[0] = CUV(0, 0);
+		f.Corner[0].Uvws[0] = NLMISC::CUVW(0, 0, 0);
 
 		f.Corner[1].Vertex = tab[6 * k + 1];
-		f.Corner[1].Uvs[0] = CUV(1, 1);
+		f.Corner[1].Uvws[0] = NLMISC::CUVW(1, 1, 0);
 
 		f.Corner[2].Vertex = tab[6 * k + 2];
-		f.Corner[2].Uvs[0] = CUV(0, 1);
+		f.Corner[2].Uvws[0] = NLMISC::CUVW(0, 1, 0);
 
 		f.MaterialId = 0;
 
 		mb.Faces.push_back(f);
 
 		f.Corner[0].Vertex = tab[6 * k + 3];
-		f.Corner[0].Uvs[0] = CUV(0, 0);
+		f.Corner[0].Uvws[0] = NLMISC::CUVW(0, 0, 0);
 
 		f.Corner[1].Vertex = tab[6 * k + 4];
-		f.Corner[1].Uvs[0] = CUV(1, 0);
+		f.Corner[1].Uvws[0] = NLMISC::CUVW(1, 0, 0);
 
 		f.Corner[2].Vertex = tab[6 * k + 5];
-		f.Corner[2].Uvs[0] = CUV(1, 1);
+		f.Corner[2].Uvws[0] = NLMISC::CUVW(1, 1, 0);
 
 		f.MaterialId = 0;
 		mb.Faces.push_back(f);		

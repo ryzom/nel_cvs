@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * A Builder of MRM.
  *
- * $Id: mrm_builder.h,v 1.8 2002/03/06 10:24:47 corvazier Exp $
+ * $Id: mrm_builder.h,v 1.9 2002/03/14 18:13:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_MRM_BUILDER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/uv.h"
 #include "3d/mrm_mesh.h"
 #include "3d/mrm_internal.h"
 #include "3d/mrm_parameters.h"
@@ -203,9 +204,9 @@ private:
 	sint			findInsertAttributeInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const CVectorH &att);
 	sint			findInsertNormalInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const CVector &normal);
 	sint			findInsertColorInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, CRGBA col);
-	sint			findInsertUvInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const CUV &uv);
+	sint			findInsertUvwInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const NLMISC::CUVW &uvw);
 	CRGBA			attToColor(const CVectorH &att) const;
-	CUV				attToUv(const CVectorH &att) const;
+	NLMISC::CUVW	attToUvw(const CVectorH &att) const;
 
 
 	/** from a meshBuild, compute a CMRMMesh. This is the first stage of the algo.
@@ -217,7 +218,7 @@ private:
 	 *	\param vbFlags the vertex format returned by earlier call too buildMrmBaseMesh().
 	 *	\param nbMats the number of materials of original MeshBuild.
 	 */
-	void			buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeom::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats);
+	void			buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeom::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats, const CMesh::CMeshBuild &mb);
 
 
 	void			normalizeBaseMeshSkin(CMRMMesh &baseMesh) const;

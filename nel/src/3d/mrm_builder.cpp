@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.24 2002/02/28 12:59:50 besson Exp $
+ * $Id: mrm_builder.cpp,v 1.25 2002/03/14 18:13:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1573,12 +1573,12 @@ sint			CMRMBuilder::findInsertColorInBaseMesh(CMRMMesh &baseMesh, sint attId, si
 
 
 // ***************************************************************************
-sint			CMRMBuilder::findInsertUvInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const CUV &uv)
+sint			CMRMBuilder::findInsertUvwInBaseMesh(CMRMMesh &baseMesh, sint attId, sint vertexId, const NLMISC::CUVW &uvw)
 {
 	CVectorH	att;
-	att.x= uv.U;
-	att.y= uv.V;
-	att.z= 0;
+	att.x= uvw.U;
+	att.y= uvw.V;
+	att.z= uvw.W;
 	att.w= 0;
 	return findInsertAttributeInBaseMesh(baseMesh, attId, vertexId, att);
 }
@@ -1603,9 +1603,9 @@ CRGBA			CMRMBuilder::attToColor(const CVectorH &att) const
 
 
 // ***************************************************************************
-CUV				CMRMBuilder::attToUv(const CVectorH &att) const
+NLMISC::CUVW			CMRMBuilder::attToUvw(const CVectorH &att) const
 {
-	return CUV(att.x, att.y);
+	return CUVW(att.x, att.y, att.z);
 }
 
 
@@ -1710,7 +1710,7 @@ uint32			CMRMBuilder::buildMrmBaseMesh(const CMesh::CMeshBuild &mbuild, CMRMMesh
 			{
 				if(mbuild.VertexFlags & (CVertexBuffer::TexCoord0Flag<<k))
 				{
-					destCorner.Attributes[attId]= findInsertUvInBaseMesh(baseMesh, attId, destCorner.Vertex, srcCorner.Uvs[k]);
+					destCorner.Attributes[attId]= findInsertUvwInBaseMesh(baseMesh, attId, destCorner.Vertex, srcCorner.Uvws[k]);
 					attId++;
 				}
 			}
@@ -1791,7 +1791,7 @@ void			CMRMBuilder::normalizeBaseMeshSkin(CMRMMesh &baseMesh) const
 
 
 // ***************************************************************************
-void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeom::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats)
+void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeom::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats, const CMesh::CMeshBuild &mb)
 {
 	sint	i,j,k;
 	sint	attId;
@@ -1799,7 +1799,69 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 	// reset the mbuild.
 	mbuild= CMeshMRMGeom::CMeshBuildMRM();
 	// Setup VB.
-	mbuild.VBuffer.setVertexFormat(vbFlags);
+
+	bool useFormatExt = false;
+	// Check wether there are texture coordinates with more than 2 compnents, which force us to use an extended vertex format
+	for (k = 0; k < CVertexBuffer::MaxStage; ++k)
+	{
+		if (
+			(vbFlags & (CVertexBuffer::TexCoord0Flag << k))
+			&& mb.NumCoords[k] != 2)
+		{
+			useFormatExt = true;
+			break;
+		}
+	}
+
+	uint numTexCoordUsed = 0;
+
+
+	for (k = 0; k < CVertexBuffer::MaxStage; ++k)
+	{
+		if (vbFlags & (CVertexBuffer::TexCoord0Flag << k))
+		{
+			numTexCoordUsed = k;
+		}
+	}
+
+	if (!useFormatExt)
+	{
+		// setup standard format
+		mbuild.VBuffer.setVertexFormat(vbFlags);
+	}
+	else // setup extended format
+	{
+		mbuild.VBuffer.clearValueEx();
+		if (vbFlags & CVertexBuffer::PositionFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::Position, CVertexBuffer::Float3);
+		if (vbFlags & CVertexBuffer::NormalFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::Normal, CVertexBuffer::Float3);
+		if (vbFlags & CVertexBuffer::PrimaryColorFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::PrimaryColor, CVertexBuffer::UChar4);
+		if (vbFlags & CVertexBuffer::SecondaryColorFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::SecondaryColor, CVertexBuffer::UChar4);
+		if (vbFlags & CVertexBuffer::WeightFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::Weight, CVertexBuffer::Float4);
+		if (vbFlags & CVertexBuffer::PaletteSkinFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::PaletteSkin, CVertexBuffer::UChar4);
+		if (vbFlags & CVertexBuffer::FogFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::Fog, CVertexBuffer::Float1);
+
+		for (k = 0; k < CVertexBuffer::MaxStage; ++k)
+		{
+			if (vbFlags & (CVertexBuffer::TexCoord0Flag << k))
+			{
+				switch(mb.NumCoords[k])
+				{	
+					case 2:
+						mbuild.VBuffer.addValueEx((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), CVertexBuffer::Float2);
+					break;
+					case 3:
+						mbuild.VBuffer.addValueEx((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), CVertexBuffer::Float3);
+					break;
+					default:
+						nlassert(0);
+					break;
+				}
+			}
+		}
+		mbuild.VBuffer.initEx();
+	}
+
+	
 
 
 	// Setup the VertexBuffer.
@@ -1841,7 +1903,21 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 		{
 			if(vbFlags & (CVertexBuffer::TexCoord0Flag<<k))
 			{
-				mbuild.VBuffer.setTexCoord(i, k, attToUv(wedge.Attributes[attId]) );
+				switch(mb.NumCoords[k])
+				{
+					case 2:				
+						mbuild.VBuffer.setTexCoord(i, k, (CUV) attToUvw(wedge.Attributes[attId]) );
+					break;
+					case 3:
+					{
+						CUVW uvw = attToUvw(wedge.Attributes[attId]);
+						mbuild.VBuffer.setValueFloat3Ex((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), i, uvw.U, uvw.V, uvw.W);
+					}
+					break;
+					default:
+						nlassert(0);
+					break;
+				}
 				attId++;
 			}
 		}
@@ -2032,6 +2108,10 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 	// Indicate Skinning.
 	mbuild.Skinned= _Skinned;
 
+
+
+	bool useTgSpace = mb.MeshVertexProgram != NULL ? mb.MeshVertexProgram->needTangentSpace() : false;
+
 	// Construct Blend Shapes
 	//// mbuild <- finalMRM
 	mbuild.BlendShapes.resize (finalMRM.MRMBlendShapesFinals.size());
@@ -2047,6 +2127,11 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 		rBS.deltaUV.resize (nNbVertVB, CUV(0.0f,0.0f));
 		bool bIsDeltaCol = false;
 		rBS.deltaCol.resize (nNbVertVB, CRGBAF(0.0f,0.0f,0.0f,0.0f));
+		bool bIsDeltaTgSpace = false;
+		if (useTgSpace)
+		{
+			rBS.deltaTgSpace.resize(nNbVertVB, CVector::Null);
+		}
 
 		rBS.VertRefs.resize (nNbVertVB, 0xffffffff);
 
@@ -2080,7 +2165,7 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 					bIsDeltaNorm = true;
 				}
 				attId++;
-			}
+			}		
 
 			if (vbFlags & CVertexBuffer::PrimaryColorFlag)
 			{
@@ -2120,6 +2205,22 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 				}
 				attId++;
 			}
+
+			if (useTgSpace)
+			{
+				attr = rWedgeRef.Attributes[attId];
+				CVector TgSpaceRef = CVector(attr.x, attr.y, attr.z);
+				attr = rWedgeTar.Attributes[attId];
+				CVector TgSpaceTar = CVector(attr.x, attr.y, attr.z);
+				delta = TgSpaceTar - TgSpaceRef;
+				if (delta.norm() > 0.001f)
+				{
+					rBS.deltaTgSpace[i] = delta;
+					rBS.VertRefs[i] = i;
+					bIsDeltaTgSpace = true;
+				}
+				attId++;
+			}
 			
 		} // End of all vertices added in blend shape
 
@@ -2142,6 +2243,10 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 					rBS.deltaNorm[nDstPos]	= rBS.deltaNorm[j];
 					rBS.deltaUV[nDstPos]	= rBS.deltaUV[j];
 					rBS.deltaCol[nDstPos]	= rBS.deltaCol[j];
+					if (useTgSpace)
+					{
+						rBS.deltaTgSpace[nDstPos]	= rBS.deltaTgSpace[j];
+					}
 				}
 				++nDstPos;
 			}
@@ -2166,6 +2271,12 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 			rBS.deltaCol.resize (nNbVertUsed);
 		else
 			rBS.deltaCol.resize (0);
+
+		if (bIsDeltaTgSpace)
+			rBS.deltaTgSpace.resize (nNbVertUsed);
+		else
+			rBS.deltaTgSpace.resize (0);
+
 
 		rBS.VertRefs.resize (nNbVertUsed);
 
@@ -2238,9 +2349,9 @@ void CMRMBuilder::buildBlendShapes (CMRMMesh& baseMesh,
 				if (VertexFlags & (CVertexBuffer::TexCoord0Flag<<m))
 				{
 					destIndex = neutralCorner.Attributes[attId];
-					vh.x = srcCorner.Uvs[m].U;
-					vh.y = srcCorner.Uvs[m].V;
-					vh.z = 0.0f;
+					vh.x = srcCorner.Uvws[m].U;
+					vh.y = srcCorner.Uvws[m].V;
+					vh.z = srcCorner.Uvws[m].W;
 					vh.w = 0.0f;
 					bsMeshes[i].Attributes[attId].operator[](destIndex) = vh;
 					attId++;
@@ -2299,7 +2410,7 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, std::vector<CMesh:
 	buildFinalMRM(lodMeshs, finalMRM);
 
 	// From this finalMRM, build output: a CMeshBuildMRM.
-	buildMeshBuildMrm(finalMRM, mrmMesh, vbFlags, numMaxMaterial);
+	buildMeshBuildMrm(finalMRM, mrmMesh, vbFlags, numMaxMaterial, mbuild);
 
 	// Copy degradation control params.
 	mrmMesh.DistanceFinest= params.DistanceFinest;

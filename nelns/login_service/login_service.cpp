@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.21 2002/09/16 14:50:07 lecroart Exp $
+ * $Id: login_service.cpp,v 1.22 2002/09/16 17:17:32 lecroart Exp $
  *
  * \todo check must say who are the master LS to know who set the shard online/offline etc... (USE an int instead of bool for Online)
  *
@@ -342,8 +342,6 @@ public:
 
 		ConfigFile.setCallback ("ServerVersion", cbVar);
 		cbVar (ConfigFile.getVar ("ServerVersion"));
-		ConfigFile.setCallback ("CryptPassword", cbVar);
-		cbVar (ConfigFile.getVar ("CryptPassword"));
 
 		// Initialize the database access
 		

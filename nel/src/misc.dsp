@@ -19,6 +19,7 @@ CFG=misc - Win32 Debug
 !MESSAGE 
 !MESSAGE "misc - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "misc - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "misc - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -74,12 +75,36 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nlmisc_debug.lib"
 
+!ELSEIF  "$(CFG)" == "misc - Win32 ReleaseDebug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "misc___Win32_ReleaseDebug"
+# PROP BASE Intermediate_Dir "misc___Win32_ReleaseDebug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ReleaseDebug"
+# PROP Intermediate_Dir "ReleaseDebug"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /ZI /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# ADD RSC /l 0x40c /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"../lib/nlmisc.lib"
+# ADD LIB32 /nologo /out:"../lib/nlmisc.lib"
+
 !ENDIF 
 
 # Begin Target
 
 # Name "misc - Win32 Release"
 # Name "misc - Win32 Debug"
+# Name "misc - Win32 ReleaseDebug"
 # Begin Group "stream"
 
 # PROP Default_Filter ""
@@ -190,7 +215,22 @@ SOURCE=.\misc\config_file\config_file.lex.cpp
 # Begin Source File
 
 SOURCE=.\misc\config_file\config_file.yacc
+
+!IF  "$(CFG)" == "misc - Win32 Release"
+
 # PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 ReleaseDebug"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

@@ -19,6 +19,7 @@ CFG=3d - Win32 Debug
 !MESSAGE 
 !MESSAGE "3d - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "3d - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "3d - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -74,12 +75,36 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "3d___Win32_ReleaseDebug"
+# PROP BASE Intermediate_Dir "3d___Win32_ReleaseDebug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ReleaseDebug"
+# PROP Intermediate_Dir "ReleaseDebug"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /ZI /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# ADD RSC /l 0x40c /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"../lib/nl3d.lib"
+# ADD LIB32 /nologo /out:"../lib/nl3d.lib"
+
 !ENDIF 
 
 # Begin Target
 
 # Name "3d - Win32 Release"
 # Name "3d - Win32 Debug"
+# Name "3d - Win32 ReleaseDebug"
 # Begin Group "Traversals"
 
 # PROP Default_Filter ""
@@ -281,6 +306,11 @@ SOURCE=.\3d\mot.cpp
 # ADD CPP /YX
 
 !ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+# ADD BASE CPP /YX
+# ADD CPP /YX
 
 !ENDIF 
 

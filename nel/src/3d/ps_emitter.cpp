@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.58 2004/06/01 16:25:16 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.59 2004/06/03 09:23:26 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2686,39 +2686,38 @@ void CPSEmitter::doEmitOnce(uint firstInstanceIndex)
 		const uint BATCH_SIZE = 1024;
 		uint32 numToEmit[BATCH_SIZE];
 		uint k = firstInstanceIndex;
-		nlassert(firstInstanceIndex < _Owner->getSize())
+		nlassert(firstInstanceIndex < _Owner->getSize());
 		uint leftToDo = _Owner->getSize() - firstInstanceIndex;
-		{		
-			while (leftToDo)
-			{
-				uint toProcess = std::min((uint) BATCH_SIZE, leftToDo);
-				uint32 *numToEmitPtr = (uint32 *) _GenNbScheme->make(_Owner, k, numToEmit, sizeof(uint32), true);
-				leftToDo -= toProcess;
-				while (toProcess)
-				{				
-					CVector startPos;
-					if (!_Owner->isParametricMotionEnabled())
-					{					
-						startPos = _Owner->getPos()[k] - _Owner->getSpeed()[k] * CParticleSystem::EllapsedTime;
-					}
-					else
-					{
-						startPos = _Owner->getParametricInfos()[k].Pos;
-					}
-					float currTime = _Owner->getTime()[k];
-					_Owner->getTime()[k] = 0.f; // when emit occured, time was 0				
-					sint32 nbToGenerate = (sint32) (emitLOD * *numToEmitPtr);
-					if (nbToGenerate > 0)
-					{	
-						nbToGenerate = std::min(nbToGenerate, (sint32) _EmittedType->getMaxSize());
-						processEmitConsistent(startPos, k, nbToGenerate, _Owner->getAgeInSeconds(k) / CParticleSystem::RealEllapsedTimeRatio);
-					}
-					// restore time & pos
-					_Owner->getTime()[k] = currTime;				
-					++ k;
-					++ numToEmitPtr;
-					-- toProcess;
-				}								
+
+		while (leftToDo)
+		{
+			uint toProcess = std::min((uint) BATCH_SIZE, leftToDo);
+			uint32 *numToEmitPtr = (uint32 *) _GenNbScheme->make(_Owner, k, numToEmit, sizeof(uint32), true);
+			leftToDo -= toProcess;
+			while (toProcess)
+			{				
+				CVector startPos;
+				if (!_Owner->isParametricMotionEnabled())
+				{					
+					startPos = _Owner->getPos()[k] - _Owner->getSpeed()[k] * CParticleSystem::EllapsedTime;
+				}
+				else
+				{
+					startPos = _Owner->getParametricInfos()[k].Pos;
+				}
+				float currTime = _Owner->getTime()[k];
+				_Owner->getTime()[k] = 0.f; // when emit occured, time was 0				
+				sint32 nbToGenerate = (sint32) (emitLOD * *numToEmitPtr);
+				if (nbToGenerate > 0)
+				{	
+					nbToGenerate = std::min(nbToGenerate, (sint32) _EmittedType->getMaxSize());
+					processEmitConsistent(startPos, k, nbToGenerate, _Owner->getAgeInSeconds(k) / CParticleSystem::RealEllapsedTimeRatio);
+				}
+				// restore time & pos
+				_Owner->getTime()[k] = currTime;				
+				++ k;
+				++ numToEmitPtr;
+				-- toProcess;
 			}
 		}		
 	}

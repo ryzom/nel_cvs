@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.69 2004/05/18 16:08:21 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.70 2004/06/03 09:23:26 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,7 +145,7 @@ void CPSLocated::checkIntegrity() const
 	if (hasCollisionInfos())
 	{
 		nlassert(_CollisionNextPos->getSize() == _Pos.getSize());
-		nlassert(_CollisionNextPos->getMaxSize() == _Pos.getMaxSize())
+		nlassert(_CollisionNextPos->getMaxSize() == _Pos.getMaxSize());
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.4 2001/06/21 12:57:43 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.5 2001/07/18 10:23:21 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,9 @@ void		CSkeletonModel::bindSkin(CMeshBaseInstance *mi)
 	// link correctly Hrc and Clip.
 	cacheTravs();
 	HrcTrav->link(this, mi);
+
+	// ClipTrav is no more a Tree (it is a graph now), so must unlink form old.
+	ClipTrav->unlink(NULL, mi);
 	ClipTrav->link(this, mi);
 
 }
@@ -119,6 +122,9 @@ void		CSkeletonModel::stickObject(CTransform *mi, uint boneId)
 	// link correctly Hrc and Clip.
 	cacheTravs();
 	HrcTrav->link(this, mi);
+
+	// ClipTrav is no more a Tree (it is a graph now), so must unlink form old.
+	ClipTrav->unlink(NULL, mi);
 	ClipTrav->link(this, mi);
 
 }
@@ -145,6 +151,9 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 	// link correctly Hrc and Clip: link to Roots!
 	cacheTravs();
 	HrcTrav->link(NULL, tr);
+
+	// ClipTrav is no more a Tree (it is a graph now), so must unlink form old.
+	ClipTrav->unlink(this, tr);
 	ClipTrav->link(NULL, tr);
 
 }

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.20 2001/07/05 09:38:49 besson Exp $
+ * $Id: transform.cpp,v 1.21 2001/07/18 10:23:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -159,6 +159,20 @@ void			CTransform::updateWorldMatrixFromSkeleton(const CMatrix &parentWM)
 }
 
 
+// ***************************************************************************
+void			CTransform::freeze()
+{
+	// First, validate the model, and all his observers.
+	// Frozen state is disabled here (in CTransformHrcObs::update()).
+	validate();
+
+	// Then flag the frozen state.
+	// Get the HrcObs.
+	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)getObs(HrcTravId);
+	hrcObs->Frozen= true;
+}
+
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -179,6 +193,9 @@ void	CTransformHrcObs::update()
 		IBaseHrcObs::LocalVis= static_cast<CTransform*>(Model)->Visibility;
 		// update the date of the local matrix.
 		LocalDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
+
+		// The transform has been modified. Hence, it is no more frozen.
+		Frozen= false;
 	}
 }
 
@@ -195,12 +212,21 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 	{
 		pFatherWM= &(caller->WorldMatrix);
 		visFather= caller->WorldVis;
+
+		// If father is not Frozen, so do I.
+		CTransformHrcObs	*hrcTransCaller= dynamic_cast<CTransformHrcObs*>(caller);
+		// if caller is not a CTransformHrcObs (what is it??? :) ),
+		//  or if father is not frozen (for any reason), disable us!
+		if(!hrcTransCaller || !hrcTransCaller->Frozen)
+			Frozen= false;
 	}
 	// else, default!!
 	else
 	{
 		pFatherWM= &(CMatrix::Identity);
 		visFather= true;
+
+		// NB: Root is Frozen by essence :), so don't modify the frozen state here.
 	}
 
 	// Combine matrix

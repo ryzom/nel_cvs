@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.3 2001/07/05 09:38:49 besson Exp $
+ * $Id: transform.h,v 1.4 2001/07/18 10:23:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,6 +106,15 @@ public:
 	// @}
 
 
+	/** freeze the preceding position of the model. Do not use, special code for cluster.
+	 *	This inform the scene that preceding position setuped by user is "frozen". ie at next render(), this
+	 *	object won't be added to the "object moving list" (usefull for cluster mgt).
+	 *	The "frozen" state is disabled (at render() time) if:
+	 *	- change in position (directly or indireclty, such as animation) is performed after the freeze().
+	 *	- the "frozen" state of a father is not enabled (or disabled by a change in position of him :) ).
+	 */
+	void		freeze();
+
 
 // ********
 private:
@@ -191,6 +200,10 @@ private:
 class	CTransformHrcObs : public IBaseHrcObs
 {
 public:
+	CTransformHrcObs()
+	{
+		Frozen= false;
+	}
 
 	virtual	void	update();
 
@@ -207,6 +220,11 @@ public:
 	virtual	void	traverse(IObs *caller);
 	//@}
 	static IObs	*creator() {return new CTransformHrcObs;}
+
+
+public:
+	bool	Frozen;
+
 };
 
 

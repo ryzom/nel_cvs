@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.46 2004/02/19 09:45:27 vizerie Exp $
+ * $Id: u_scene.h,v 1.47 2004/03/04 14:36:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ class IWaterSurfaceAddedCallback
 {
 public:
 	// A water surface with the given height has been added. 	 
-	virtual void waterSurfaceAdded(float height, const NLMISC::CPolygon2D &shape, const NLMISC::CMatrix &worldMatrix) = 0;
+	virtual void waterSurfaceAdded(const NLMISC::CPolygon2D &shape, const NLMISC::CMatrix &worldMatrix) = 0;
 	
 };
 

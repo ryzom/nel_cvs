@@ -274,7 +274,8 @@ namespace NLAILOGIC
 					std::list<const NLAIAGENT::IObjectIA *> args;
 					while ( param->size() )
 					{
-						_Args.push_back( (NLAIAGENT::IObjectIA *) param->getFront() );
+						_Args.push_back( (NLAIAGENT::IObjectIA *) param->getFront()->clone() );
+//						param->getFront()->incRef();
 						param->popFront();
 					}
 					return IObjectIA::CProcessResult();		

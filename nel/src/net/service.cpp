@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.116 2002/04/23 07:50:02 lecroart Exp $
+ * $Id: service.cpp,v 1.117 2002/04/25 09:36:56 legros Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -63,6 +63,8 @@
 #include "nel/net/unified_network.h"
 #include "nel/net/net_manager.h"
 #include "nel/net/net_displayer.h"
+
+#include "nel/misc/hierarchical_timer.h"
 
 
 //
@@ -830,6 +832,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		userInitCalled = true; // the bool must be put *before* the call to init()
 		init ();
 
+		//
+		CHTimer::bench();
+		CHTimer::clear();
 
 		//
 		// Connects to the present services
@@ -1004,7 +1009,13 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			TTime bbefore = CTime::getLocalTime ();
 
 			// call the user update and exit if the user update asks it
-			if (!update ()) break;
+			//H_BEFORE(ServiceUpdate);
+			if (!update ())
+			{
+				H_AFTER(ServiceUpdate);
+				break;
+			}
+			//H_AFTER(ServiceUpdate);
 			
 			// count the amount of time to manage internal system
 			TTime before = CTime::getLocalTime ();
@@ -1017,10 +1028,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 
 			// stop the loop if the exit signal asked
-			if (ExitSignalAsked) break;
+			if (ExitSignalAsked)
+			{
+				break;
+			}
 	
 			CConfigFile::checkConfigFiles ();
 
+			//H_BEFORE(NetworkUpdate);
 			if (isService5())
 			{
 				// get and manage layer 5 messages
@@ -1031,6 +1046,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				// get and manage layer 4 messages
 				CNetManager::update (_UpdateTimeout);
 			}
+			//H_AFTER(NetworkUpdate);
 			
 			// resync the clock every hours
 			if (resyncEvenly)
@@ -1102,7 +1118,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
-
 		}
 		while (true);
 	}
@@ -1197,6 +1212,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 #endif
 
 	nlinfo ("Service ends");
+
+	CHTimer::adjust();
+	CHTimer::display();
 
 	return ExitSignalAsked?100+ExitSignalAsked:getStatus ();
 }
@@ -1347,5 +1365,18 @@ NLMISC_COMMAND (time, "displays the universal time", "")
 	return true;
 }
 */
+
+NLMISC_COMMAND(reset_measures, "reset hierarchical timer", "")
+{
+	CHTimer::clear();
+	return true;
+}
+
+NLMISC_COMMAND(display_measures, "display hierarchical timer", "")
+{
+	CHTimer::adjust();
+	CHTimer::display();
+	return true;
+}
 
 } //NLNET

@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.3 2003/08/20 15:51:34 corvazier Exp $
+ * $Id: primitive_class.cpp,v 1.4 2003/10/13 08:48:40 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -588,24 +588,42 @@ bool CPrimitiveClass::CParameter::translateAutoname (std::string &result, const 
 						{
 							// Get its string value
 							string str;
-							if (primitive.getPropertyByName (keyWord.c_str(), str))
+							const IProperty *prop;
+							if (primitive.getPropertyByName (keyWord.c_str(), prop))
 							{
-								if (!str.empty())
+								// The property has been found ?
+								if (prop)
 								{
-									result += str;
-									break;
+									// Array or string ?
+									const CPropertyString *_string = dynamic_cast<const CPropertyString *>(prop);									
+							
+									// Is a string ?
+									if (_string)
+									{
+										if (!(_string->String.empty()))
+										{
+											result += _string->String;
+											break;
+										}
+									}
+									else
+									{
+										// Try an array
+										const CPropertyStringArray *array = dynamic_cast<const CPropertyStringArray *>(prop);
+										
+										// Is an array ?
+										if (array)
+										{
+											if (!(array->StringArray.empty()))
+											{
+												result += array->StringArray[0];
+												break;
+											}
+										}
+									}
 								}
 							}
-							// Get its string array value
-							const vector<string> *strArray;
-							if (primitive.getPropertyByName (keyWord.c_str(), strArray))
-							{
-								if (!strArray->empty())
-								{
-									result += (*strArray)[0];
-									break;
-								}
-							}
+
 							// Get its default value
 							std::string result2;
 							if (primitiveClass.Parameters[i].getDefaultValue (result2, primitive, primitiveClass))

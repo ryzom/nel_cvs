@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.13 2001/05/09 10:10:06 vizerie Exp $
+ * $Id: rgba.h,v 1.14 2001/05/09 12:35:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,6 +192,17 @@ public:
 	uint8	B;
 	/// Alpha componant.
 	uint8	A;
+
+
+	/// some colors
+	static const CRGBA Black ;
+	static const CRGBA Red ;
+	static const CRGBA Green ;
+	static const CRGBA Yellow ;
+	static const CRGBA Blue ;
+	static const CRGBA Magenta ;
+	static const CRGBA Cyan ;
+	static const CRGBA White ;
 };
 
 

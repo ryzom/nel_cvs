@@ -1,7 +1,7 @@
 /** \file rgba.cpp
  * ARGB pixel format
  *
- * $Id: rgba.cpp,v 1.10 2001/05/09 10:10:06 vizerie Exp $
+ * $Id: rgba.cpp,v 1.11 2001/05/09 12:35:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,17 @@ namespace NLMISC {
 // ***************************************************************************
 // ***************************************************************************
 
+// predifined colors
+
+/// some colors
+    const CRGBA CRGBA::Black(0, 0, 0) ;
+	const CRGBA CRGBA::Red(255, 0, 0) ;
+	const CRGBA CRGBA::Green(0, 255, 0) ;
+	const CRGBA CRGBA::Yellow(255, 255, 0) ;
+	const CRGBA CRGBA::Blue(0, 0, 255) ;
+	const CRGBA CRGBA::Magenta(255, 0, 255) ;
+	const CRGBA CRGBA::Cyan(0, 255, 255) ;
+	const CRGBA CRGBA::White(255, 255, 255) ;
 
 // ***************************************************************************
 void CRGBA::serial(class NLMISC::IStream &f)

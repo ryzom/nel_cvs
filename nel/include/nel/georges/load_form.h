@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.17 2002/10/25 16:34:03 lecroart Exp $
+ * $Id: load_form.h,v 1.18 2002/11/25 14:03:15 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -290,6 +290,214 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	filenames.clear ();
 }
 
+
+/** This function is used to load values from georges sheet in a quick way.
+ * \param sheetFilter a string to filter the sheet (ie: ".item")
+ * \param packedFilename the name of the file that this function will generate (extension must be "packed_sheets")
+ * \param container the map that will be filled by this function
+ */
+template <class T>
+void loadForm (const std::string &sheetFilter, const std::string &packedFilename, std::map<std::string, T> &container, bool updatePackedSheet=true)
+{
+	std::vector<std::string> vs;
+	vs.push_back(sheetFilter);
+	loadForm(vs, packedFilename, container, updatePackedSheet);
+}
+
+
+/** This function is used to load values from georges sheet in a quick way.
+ * \param sheetFilter a vector of string to filter the sheet in the case you need more than one filter
+ * \param packedFilename the name of the file that this function will generate (extension must be "packed_sheets")
+ * \param container the map that will be filled by this function
+ */
+template <class T>
+void loadForm (const std::vector<std::string> &sheetFilters, const std::string &packedFilename, std::map<std::string, T> &container, bool updatePackedSheet=true)
+{
+	// check the extension (i know that file like "foo.packed_sheetsbar" will be accepted but this check is enough...)
+	nlassert (packedFilename.find (".packed_sheets") != std::string::npos);
+
+	std::string packedFilenamePath = NLMISC::CPath::lookup(packedFilename, false);
+	if (packedFilenamePath.empty())
+	{
+		packedFilenamePath = packedFilename;
+	}
+
+	// make sure the CSheetId singleton has been properly initialised
+//	NLMISC::CSheetId::init(updatePackedSheet);
+
+	bool olde, newe;
+	NLMISC::CIFile::getVersionException(olde, newe);
+	// load the packed sheet if exists
+	try
+	{
+		NLMISC::CIFile ifile;
+		ifile.setCacheFileOnOpen(true);
+		ifile.open (packedFilenamePath);
+		// an exception will be launch if the file is not the good version or if the file is not found
+
+		nlinfo ("loadForm(): Loading packed file '%s'", packedFilename.c_str());
+		
+		uint32 nbEntries;
+		ifile.serial (nbEntries);
+		ifile.setVersionException (true, true);
+		uint ver = T::getVersion ();
+		ifile.serialVersion(ver);
+		ifile.serialCont (container);
+		ifile.close ();
+	}
+	catch (NLMISC::Exception &e)
+	{
+		nlinfo ("loadForm(): Exception during reading the packed file, I'll reconstruct it (%s)", e.what());
+		// clear the container because it can contains partially loaded sheet so we must clean it before continue
+		container.clear ();
+	}
+	NLMISC::CIFile::setVersionException(olde, newe);
+
+	// if we don't want to update packed sheet, we nothing more to do
+	if (!updatePackedSheet)
+	{
+		nlinfo ("Don't update the packed sheet with real sheet");
+		return;
+	}
+
+	// build a vector of the sheetFilters sheet ids (ie: "item")
+//	std::vector<std::string> sheetNames;
+	std::vector<std::string> sheetNames;
+//	for (uint i = 0; i < sheetFilters.size(); i++)
+//		NLMISC::CSheetId::buildIdVector(sheetIds, filenames, sheetFilters[i]);
+	{
+		std::vector<std::string>::const_iterator first(sheetFilters.begin()), last(sheetFilters.end());
+		for (; first != last; ++first)
+			CPath::getFileList(*first, sheetNames);
+
+	}
+
+	// if there s no file, nothing to do
+	if (sheetNames.empty())
+		return;
+
+	// set up the current sheet in container to remove sheet that are in the container and not in the directory anymore
+	std::map<std::string, bool> sheetToRemove;
+	for (typename std::map<std::string, T>::iterator it = container.begin(); it != container.end(); ++it)
+	{
+		sheetToRemove.insert (make_pair((*it).first, true));
+	}
+
+	// check if we need to create a new .pitems or just read it
+	uint32 packedFiledate = NLMISC::CFile::getFileModificationDate(packedFilenamePath);
+
+	bool containerChanged = false;
+
+	NLGEORGES::UFormLoader *formLoader = NULL;
+
+	std::vector<uint> NeededToRecompute;
+
+	for (uint k = 0; k < sheetNames.size(); k++)
+	{
+		std::string p = NLMISC::CPath::lookup (sheetNames[k], false, false);
+		if (p.empty()) continue;
+		uint32 d = NLMISC::CFile::getFileModificationDate(p);
+
+		// no need to remove this sheet
+		sheetToRemove[sheetNames[k]] = false;
+
+		if( d > packedFiledate || container.find (sheetNames[k]) == container.end())
+		{
+			NeededToRecompute.push_back(k);
+		}
+	}
+
+	nlinfo ("%d sheets checked, %d need to be recomputed", sheetNames.size(), NeededToRecompute.size());
+
+	NLMISC::TTime last = NLMISC::CTime::getLocalTime ();
+	NLMISC::TTime start = NLMISC::CTime::getLocalTime ();
+
+	NLMISC::CSmartPtr<NLGEORGES::UForm> form;
+
+	for (uint j = 0; j < NeededToRecompute.size(); j++)
+	{
+		if(NLMISC::CTime::getLocalTime () > last + 5000)
+		{
+			last = NLMISC::CTime::getLocalTime ();
+			if(j>0)
+				nlinfo ("%.0f%% completed (%d/%d), %d seconds remaining", (float)j*100.0/NeededToRecompute.size(),j,NeededToRecompute.size(), (NeededToRecompute.size()-j)*(last-start)/j/1000);
+		}
+
+		// create the georges loader if necessary
+		if (formLoader == NULL)
+		{
+			WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
+			formLoader = NLGEORGES::UFormLoader::createLoader ();
+		}
+
+		// Load the form with given sheet id
+		form = formLoader->loadForm (sheetNames[NeededToRecompute[j]].c_str ());
+		if (form)
+		{
+/*			if (packedFiledate > 0)
+			{
+				if (d > packedFiledate)
+					nlinfo ("loadForm(): the sheet '%s' is newer than the packed one, I reload it", p.c_str());
+				else
+					nlinfo ("loadForm(): the sheet '%s' is not in the packed sheets, I load it", p.c_str());
+			}*/
+			
+			// add the new creature, it could be already loaded by the packed sheets but will be overwrite with the new one
+			typedef typename std::map<std::string, T>::iterator TType1;
+            typedef typename std::pair<TType1, bool> TType2;
+			TType2 res = container.insert(std::make_pair(sheetNames[NeededToRecompute[j]],T()));
+
+			(*res.first).second.readGeorges (form, sheetNames[NeededToRecompute[j]]);
+			containerChanged = true;
+		}
+	}
+
+	nlinfo ("%d seconds to recompute %d sheets", (uint32)(NLMISC::CTime::getLocalTime()-start)/1000, NeededToRecompute.size());
+
+	// free the georges loader if necessary
+	if (formLoader != NULL)
+	{
+		NLGEORGES::UFormLoader::releaseLoader (formLoader);
+		WarningLog->removeFilter ("CFormLoader: Can't open the form file");
+	}
+
+	// we have now to remove sheet that are in the container and not exist anymore in the sheet directories
+	for (std::map<std::string, bool>::iterator it2 = sheetToRemove.begin(); it2 != sheetToRemove.end(); it2++)
+	{
+		if((*it2).second)
+		{
+			nlinfo ("the sheet '%s' is not in the directory, remove it from container", (*it2).first.c_str());
+			// informe the contained object that it is no more needed.
+			container.find((*it2).first)->second.removed();
+			container.erase((*it2).first);
+			containerChanged = true;
+		}
+	}
+
+	// now, save the new container in the packedfile
+	try
+	{
+		if(containerChanged)
+		{
+			NLMISC::COFile ofile;
+			ofile.open(packedFilenamePath);
+			uint ver = T::getVersion ();
+			uint32 nbEntries = sheetNames.size();
+			ofile.serial (nbEntries);
+			ofile.serialVersion(ver);
+			ofile.serialCont(container);
+			ofile.close ();
+		}
+	}
+	catch (NLMISC::Exception &e)
+	{
+		nlinfo ("loadForm(): Exception during saving the packed file, it will be recreated next launch (%s)", e.what());
+	}
+
+	// housekeeping
+//	sheetIds.clear ();
+	sheetNames.clear ();
+}
 #endif // NL_LOAD_FORM_H
 
 /* End of load_form.h */

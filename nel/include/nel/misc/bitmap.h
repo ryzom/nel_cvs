@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.25 2004/07/13 14:41:00 cardouat Exp $
+ * $Id: bitmap.h,v 1.26 2004/08/23 18:05:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -578,8 +578,9 @@ public:
 };
 
 
-
-static void readPNGData(png_struct *png_ptr,char *data, uint lenght );
+#ifdef NL_OS_WINDOWS
+void readPNGData(png_struct *png_ptr,char *data, uint length );
+#endif
 
 
 /*-------------------------------------------------------------------*\

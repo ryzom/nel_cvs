@@ -1,7 +1,7 @@
 /** \file bitmap_png.cpp
  * Class managing bitmaps (complementary file in order to keep bitmap.cpp as clean as possible
  *
- * $Id: bitmap_png.cpp,v 1.1 2004/07/13 15:16:10 cardouat Exp $
+ * $Id: bitmap_png.cpp,v 1.2 2004/08/23 18:05:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -533,7 +533,7 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 								readPNGData		
 \*-------------------------------------------------------------------*/
 
-static void readPNGData(png_struct *png_ptr, char *data, uint length)
+void readPNGData(png_struct *png_ptr, char *data, uint length)
 {
 	((IStream*) png_ptr->io_ptr)->serialBuffer((uint8*)data,length);
 

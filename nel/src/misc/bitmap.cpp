@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.53 2004/07/13 14:41:51 cardouat Exp $
+ * $Id: bitmap.cpp,v 1.54 2004/08/23 18:05:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,7 +122,12 @@ uint8 CBitmap::load(NLMISC::IStream &f, uint mipMapSkip)
 	}
 	else if (fileType == PNG) 
 	{
+#ifdef NL_OS_WINDOWS
 		return readPNG(f);
+#else
+		nlwarning("png loader is not implemented");
+		return 0;
+#endif
 	}
 
 	// assuming it's TGA

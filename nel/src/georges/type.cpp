@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.4 2002/06/11 17:38:58 corvazier Exp $
+ * $Id: type.cpp,v 1.5 2002/08/02 13:47:03 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -362,8 +362,13 @@ public:
 					i++;
 					// Set the result
 					result = atof (filename.c_str () + i);
-					return CEvalNumExpr::NoError;
 				}
+				else
+				{
+					// If the filename doesn't contain a number, returns 0
+					result = 0;
+				}
+				return CEvalNumExpr::NoError;
 			}
 			else
 			{

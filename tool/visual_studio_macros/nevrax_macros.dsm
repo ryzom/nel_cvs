@@ -8,7 +8,7 @@
 '
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
-' $Id: nevrax_macros.dsm,v 1.8 2000/10/17 15:14:09 cado Exp $
+' $Id: nevrax_macros.dsm,v 1.9 2000/10/24 14:55:43 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -24,7 +24,7 @@ Sub NevraxInsertFileHeader( filename, productname )
 		"/** \file " + filename + vbLf + _
 		" * <File description>" + vbLf + _
 		" *" + vbLf + _
-		" * $Id: nevrax_macros.dsm,v 1.8 2000/10/17 15:14:09 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros.dsm,v 1.9 2000/10/24 14:55:43 cado Exp $" + vbLf + _
 		" */" + vbLf + vbLf
 	ActiveDocument.Selection = _
 		"/* Copyright, 2000 Nevrax Ltd." + vbLf + _
@@ -157,7 +157,7 @@ Sub NevraxNewClass()
 		ProdName = "NEL"
 		ShortIncDir = "nel/" + CurrentDirectoryName + "/"
 	else
-		ProdName = "RYZOM"
+		ProdName = "D.T.C. SYSTEM" ' Distributed Toolkit Components
 	end if
 
 	' ** Check for file existence

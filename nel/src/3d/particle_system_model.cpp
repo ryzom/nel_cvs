@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.13 2001/08/09 08:01:21 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.14 2001/08/09 15:20:26 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@ CParticleSystemModel::CParticleSystemModel() : _ParticleSystem(NULL), _EllapsedT
 	setOpacity(false);
 	setTransparency(true);
 	IAnimatable::resize(AnimValueLast);
+	_TriggerAnimatedValue.Value = true;
 }
 
 
@@ -197,16 +198,19 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 
 		CParticleSystem *ps = psm->getPS();
 		// check for trigger. If the trigger is false, and there is a system instanciated, we delete it.
-		if (!psm->_TriggerAnimatedValue.Value)
-		{			
-			// system is off, or hasn't been instanciated now...
-			if (ps)
-			{
-				delete ps;
-				psm->_ParticleSystem = NULL;			
+		if (!psm->getEditionMode())
+		{
+			if (!psm->_TriggerAnimatedValue.Value)
+			{					
+				// system is off, or hasn't been instanciated now...
+				if (ps)
+				{
+					delete ps;
+					psm->_ParticleSystem = NULL;			
+				}
+				return;
 			}
-			return;
-		}									
+		}
 		
 
 		// the system or its center is in the view frustum, but it may not have been instanciated from its shape now

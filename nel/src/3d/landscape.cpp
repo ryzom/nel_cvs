@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.99 2001/12/20 10:12:39 berenguier Exp $
+ * $Id: landscape.cpp,v 1.100 2001/12/26 14:15:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -253,6 +253,7 @@ void			CLandscape::init()
 // ***************************************************************************
 void			CLandscape::setThreshold (float thre)
 {
+	thre= max(thre, 0.f);
 	if(thre != _Threshold)
 	{
 		_Threshold= thre;

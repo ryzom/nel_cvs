@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.34 2001/06/18 09:09:20 cado Exp $
+ * $Id: naming_client.cpp,v 1.35 2001/06/20 16:50:45 lecroart Exp $
  *
  */
 
@@ -59,6 +59,7 @@ void CNamingClient::setUnregistrationBroadcastCallback (TBroadcastCallback cb)
 	_UnregistrationBroadcastCallback = cb;	
 }
 
+//
 
 //
 
@@ -93,6 +94,8 @@ static void cbQueryPort (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 
 //
 
+static bool FirstRegisteredBroadcast;
+
 void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	TServiceId size;
@@ -119,6 +122,8 @@ void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netba
 		if (_RegistrationBroadcastCallback != NULL)
 			_RegistrationBroadcastCallback (name, sid, addr);
 	}
+
+	FirstRegisteredBroadcast = true;
 
 	CNamingClient::displayRegisteredServices ();
 }
@@ -184,6 +189,14 @@ void CNamingClient::connect( const CInetAddress &addr, CCallbackNetBase::TRecord
 	}
 
 	_Connection->connect (addr);
+
+	// wait the message that contains all already connected services
+
+	FirstRegisteredBroadcast = false;
+	while (!FirstRegisteredBroadcast && _Connection->connected ())
+	{
+		_Connection->update (-1);
+	}
 }
 
 

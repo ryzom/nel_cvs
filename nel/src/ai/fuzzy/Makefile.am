@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.3 2001/10/04 09:56:10 chafik Exp $
+# $Id: Makefile.am,v 1.4 2002/10/07 10:14:40 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -13,8 +13,7 @@ libfuzzy_la_SOURCES     = fuzzy_script.cpp \
                           fuzzyruleset.cpp \
                           fuzzytype.cpp \
                           fuzzyvar.cpp \
-                          interpret_fuzzy_controler.cpp \
-                          fuzzyset.cpp
+                          interpret_fuzzy_controler.cpp
 
 
 # End of Makefile.am

@@ -1,15 +1,15 @@
 #
-# $Id: Makefile.am,v 1.2 2001/10/04 09:56:10 chafik Exp $
+# $Id: Makefile.am,v 1.3 2002/10/07 10:14:40 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
 
 noinst_LTLIBRARIES      = libcommon.la
 
-libcommon_la_SOURCES    = registry_class.cpp \
-                          registry_type.cpp \
-                          ident_type.cpp \
-                          registry.cpp
+libcommon_la_SOURCES    = ident_type.cpp \
+						  registry.cpp \
+						  registry_class.cpp \
+                          registry_type.cpp
 
 
 # End of Makefile.am

@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.21 2001/05/17 15:39:38 cado Exp $
+ * $Id: naming_client.h,v 1.22 2001/06/12 15:39:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #ifndef NL_NAMING_CLIENT_H
 #define NL_NAMING_CLIENT_H
+
+#include "nel/misc/mutex.h"
 
 #include "nel/net/inet_address.h"
 #include "nel/net/callback_client.h"
@@ -161,8 +163,63 @@ private:
 
 	static void doReceiveLookupAnswer (const std::string &name, std::vector<CInetAddress> &addrs);
 
+
+
+	struct CServiceEntry
+	{
+		CServiceEntry (std::string n, TServiceId s, CInetAddress a) : Addr(a), Name(n), SId (s) { }
+
+		// name of the service
+		std::string		Name;
+		// id of the service
+		TServiceId		SId;
+		// address to send to the service who wants to lookup this service
+		CInetAddress	Addr;
+	};
+
+	static std::list<CServiceEntry>	RegisteredServices;
+	static NLMISC::CMutex RegisteredServicesMutex;
+
+	static void displayRegisteredServices ()
+	{
+		RegisteredServicesMutex.enter ();
+		nldebug ("Display the %d registered services :", RegisteredServices.size());
+		for (std::list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+		{
+			nldebug (" > %s-%hu '%s'", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str());
+		}
+		nldebug ("End ot the list");
+		RegisteredServicesMutex.leave ();
+	}
+
+	static void find (const std::string &name, std::vector<CInetAddress> &addrs)
+	{
+		RegisteredServicesMutex.enter ();
+		for (std::list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+			if (name == (*it).Name)
+				addrs.push_back ((*it).Addr);
+		RegisteredServicesMutex.leave ();
+	}
+
+	static void find (TServiceId sid, std::vector<CInetAddress> &addrs)
+	{
+		RegisteredServicesMutex.enter ();
+		for (std::list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+			if (sid == (*it).SId)
+				addrs.push_back ((*it).Addr);
+		RegisteredServicesMutex.leave ();
+	}
+
+
+	friend void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
+	friend void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
+
+
+
+
+
 //////////////////////
-////////////////////// OLD OLIVIER VERSION
+////////////////////// OLD NAMING CLIENT
 //////////////////////
 
 	/// Finalization. Unregisters all services registered by registerService() and not unregistered yet.

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.125 2002/08/21 09:37:12 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.126 2002/08/28 12:11:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -652,6 +652,8 @@ private:
 
 	// Fog.
 	bool					_FogEnabled;
+	GLfloat					_CurrentFogColor[4];
+
 
 	// Num lights return by GL_MAX_LIGHTS
 	uint						_MaxDriverLight;

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.65 2002/08/19 09:51:38 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.66 2002/08/28 12:11:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -770,6 +770,16 @@ void			CDriverGL::setupLightMapPass(uint pass)
 
 	// setup blend / lighting.
 	//=========================
+
+	/* If multi-pass, then must setup a black Fog color for 1+ pass (just do it for the pass 1).
+		This is because Transparency ONE/ONE is used.
+	*/
+	if(pass==1 && _FogEnabled)
+	{
+		static	GLfloat		blackFog[4]= {0,0,0,0};
+		glFogfv(GL_FOG_COLOR, blackFog);
+	}
+
 	// Blend is different if the material is blended or not
 	if( !mat.getBlend() )
 	{
@@ -822,6 +832,12 @@ void			CDriverGL::endLightMapMultiPass()
 {
 	// Cache it. reseted in setupGLArrays(), and setupMaterial()
 	_LastVertexSetupIsLightMap= true;
+
+	// If multi-pass, then must reset the fog color
+	if(_NLightMapPass>=2 && _FogEnabled)
+	{
+		glFogfv(GL_FOG_COLOR, _CurrentFogColor);
+	}
 
 	// nothing to do with blending/lighting, since always setuped in activeMaterial().
 	// If material is the same, then it is still a lightmap material (if changed => touched => different!)

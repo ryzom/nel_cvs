@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.153 2002/08/21 14:01:54 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.154 2002/08/28 12:11:21 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -180,6 +180,10 @@ CDriverGL::CDriverGL()
 	_Initialized = false;
 
 	_FogEnabled= false;
+	_CurrentFogColor[0]= 0;
+	_CurrentFogColor[1]= 0;
+	_CurrentFogColor[2]= 0;
+	_CurrentFogColor[3]= 0;
 
 
 	_LightSetupDirty= false;
@@ -1723,13 +1727,12 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 	glFogf(GL_FOG_START, start);
 	glFogf(GL_FOG_END, end);
 
-	GLfloat		col[4];
-	col[0]= color.R/255.0f;
-	col[1]= color.G/255.0f;
-	col[2]= color.B/255.0f;
-	col[3]= color.A/255.0f;
+	_CurrentFogColor[0]= color.R/255.0f;
+	_CurrentFogColor[1]= color.G/255.0f;
+	_CurrentFogColor[2]= color.B/255.0f;
+	_CurrentFogColor[3]= color.A/255.0f;
 
-	glFogfv(GL_FOG_COLOR, col);
+	glFogfv(GL_FOG_COLOR, _CurrentFogColor);
 }
 
 

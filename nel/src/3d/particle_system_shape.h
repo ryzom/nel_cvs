@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.23 2004/05/28 16:49:14 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.24 2004/06/17 08:07:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ const NLMISC::CClassId		ParticleSystemModelId=NLMISC::CClassId(0x3a9b1dc3, 0x496
 
 
 class CParticleSystem;
-class CParticlesystemModel;
+class CParticleSystemModel;
 class CParticleSystemDetailObs;
 
 

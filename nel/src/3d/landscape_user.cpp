@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.3 2001/04/24 09:36:52 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.4 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/landscape_user.h"
+#include "3d/landscape_user.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 

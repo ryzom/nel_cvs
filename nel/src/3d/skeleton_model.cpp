@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.2 2001/04/13 16:38:33 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.3 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,11 +23,11 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/skeleton_model.h"
-#include "nel/3d/mesh_instance.h"
-#include "nel/3d/hrc_trav.h"
-#include "nel/3d/clip_trav.h"
-#include "nel/3d/skeleton_shape.h"
+#include "3d/skeleton_model.h"
+#include "3d/mesh_instance.h"
+#include "3d/hrc_trav.h"
+#include "3d/clip_trav.h"
+#include "3d/skeleton_shape.h"
 
 
 namespace NL3D

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.50 2001/06/11 13:35:01 berenguier Exp $
+ * $Id: patch.cpp,v 1.51 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,11 +24,11 @@
  */
 
 
-#include "nel/3d/patch.h"
-#include "nel/3d/tessellation.h"
-#include "nel/3d/bezier_patch.h"
-#include "nel/3d/zone.h"
-#include "nel/3d/landscape.h"
+#include "3d/patch.h"
+#include "3d/tessellation.h"
+#include "3d/bezier_patch.h"
+#include "3d/zone.h"
+#include "3d/landscape.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
 using	namespace	std;

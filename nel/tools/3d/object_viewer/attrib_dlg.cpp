@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * <File description>
  *
- * $Id: attrib_dlg.cpp,v 1.3 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,11 +38,11 @@
 
 
 
-#include "nel/3d/ps_attrib_maker.h"
-#include "nel/3d/ps_float.h"
-#include "nel/3d/ps_int.h"
-#include "nel/3d/ps_color.h"
-#include "nel/3d/ps_plane_basis.h"
+#include "3d/ps_attrib_maker.h"
+#include "3d/ps_float.h"
+#include "3d/ps_int.h"
+#include "3d/ps_color.h"
+#include "3d/ps_plane_basis.h"
 
 
 

@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.3 2001/06/12 11:49:40 berenguier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/visual_collision_entity.h"
-#include "nel/3d/landscape.h"
+#include "3d/visual_collision_entity.h"
+#include "3d/landscape.h"
 
 
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.1 2001/06/15 14:34:56 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.2 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/mesh_mrm.h"
-#include "nel/3d/mrm_builder.h"
-#include "nel/3d/mrm_parameters.h"
+#include "3d/mesh_mrm.h"
+#include "3d/mrm_builder.h"
+#include "3d/mrm_parameters.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file transformable.cpp
  * <File description>
  *
- * $Id: transformable.cpp,v 1.11 2001/04/09 16:07:49 berenguier Exp $
+ * $Id: transformable.cpp,v 1.12 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/transformable.h"
-#include "nel/3d/channel_mixer.h"
+#include "3d/transformable.h"
+#include "3d/channel_mixer.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file nel_export_scene.cpp
  * <File description>
  *
- * $Id: nel_export_lightmap_v1.cpp,v 1.1 2001/06/11 14:53:13 besson Exp $
+ * $Id: nel_export_lightmap_v1.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,10 +37,10 @@
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_patch_lib/rpo.h"
 #include "nel/misc/file.h"
-#include "nel/3d/scene_group.h"
-#include "nel/3d/skeleton_shape.h"
-#include "nel/3d/texture_file.h"
-#include "nel/3d/light.h"
+#include "3d/scene_group.h"
+#include "3d/skeleton_shape.h"
+#include "3d/texture_file.h"
+#include "3d/light.h"
 
 #include "nel_export_scene.h"
 

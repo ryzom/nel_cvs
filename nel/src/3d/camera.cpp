@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.11 2001/04/24 14:59:20 corvazier Exp $
+ * $Id: camera.cpp,v 1.12 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/camera.h"
+#include "3d/camera.h"
 
 
 namespace	NL3D

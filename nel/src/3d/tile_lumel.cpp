@@ -1,7 +1,7 @@
 /** \file tile_lumel.cpp
  * <File description>
  *
- * $Id: tile_lumel.cpp,v 1.1 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: tile_lumel.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/tile_lumel.h"
+#include "3d/tile_lumel.h"
 
 using namespace NLMISC;
 

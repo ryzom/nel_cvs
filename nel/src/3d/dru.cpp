@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.31 2001/02/28 14:28:57 berenguier Exp $
+ * $Id: dru.cpp,v 1.32 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,11 +25,11 @@
 
 #include "nel/misc/types_nl.h"
 
-#include "nel/3d/dru.h"
-#include "nel/3d/driver.h"
-#include "nel/3d/material.h"
-#include "nel/3d/vertex_buffer.h"
-#include "nel/3d/primitive_block.h"
+#include "3d/dru.h"
+#include "3d/driver.h"
+#include "3d/material.h"
+#include "3d/vertex_buffer.h"
+#include "3d/primitive_block.h"
 
 
 #ifdef NL_OS_WINDOWS

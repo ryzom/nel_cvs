@@ -1,7 +1,7 @@
 /** \file mrm_parameters.cpp
  * <File description>
  *
- * $Id: mrm_parameters.cpp,v 1.1 2001/06/15 14:34:56 berenguier Exp $
+ * $Id: mrm_parameters.cpp,v 1.2 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/mrm_parameters.h"
+#include "3d/mrm_parameters.h"
 
 
 namespace NL3D

@@ -10,15 +10,15 @@
 #include "nel/misc/file.h"
 #include "nel/misc/triangle.h"
 #include "nel/misc/bsphere.h"
-#include "nel/3d/quad_tree.h"
-#include "nel/3d/skeleton_shape.h"
-#include "nel/3d/texture_file.h"
-#include "nel/3d/light.h"
+#include "3d/quad_tree.h"
+#include "3d/skeleton_shape.h"
+#include "3d/texture_file.h"
+#include "3d/light.h"
 
 #include "nel_export_scene.h"
 
-#include "nel/3d/bsp_tree.h"
-#include "nel/3d/quad_grid.h"
+#include "3d/bsp_tree.h"
+#include "3d/quad_grid.h"
 // TOOLS
 // *****
 

@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.8 2001/04/09 14:23:57 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.9 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/landscape_model.h"
-#include "nel/3d/landscape.h"
+#include "3d/landscape_model.h"
+#include "3d/landscape.h"
 #include <vector>
 using namespace std;
 using namespace NLMISC;

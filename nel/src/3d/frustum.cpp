@@ -1,7 +1,7 @@
 /** \file frustum.cpp
  * <File description>
  *
- * $Id: frustum.cpp,v 1.7 2001/02/28 16:24:23 berenguier Exp $
+ * $Id: frustum.cpp,v 1.8 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/tmp/frustum.h"
+#include "nel/3d/frustum.h"
 #include "nel/misc/matrix.h"
 #include <math.h>
 

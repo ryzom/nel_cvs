@@ -4,8 +4,8 @@
 #include "std_afx.h"
 
 
-#include <nel/3d/register_3d.h>
-#include <nel/3d/scene.h>
+#include <3d/register_3d.h>
+#include <3d/scene.h>
 #include "../object_viewer/object_viewer_interface.h"
 
 using namespace NL3D;

@@ -1,7 +1,7 @@
 /** \file texture_near.cpp
  * <File description>
  *
- * $Id: texture_near.cpp,v 1.1 2001/01/11 13:55:23 berenguier Exp $
+ * $Id: texture_near.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 
-#include "nel/3d/texture_near.h"
+#include "3d/texture_near.h"
 using namespace NLMISC;
 
 namespace NL3D 

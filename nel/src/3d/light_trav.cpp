@@ -1,7 +1,7 @@
 /** \file light_trav.cpp
  * <File description>
  *
- * $Id: light_trav.cpp,v 1.4 2000/11/21 18:01:35 valignat Exp $
+ * $Id: light_trav.cpp,v 1.5 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/light_trav.h"
-#include "nel/3d/hrc_trav.h"
-#include "nel/3d/clip_trav.h"
+#include "3d/light_trav.h"
+#include "3d/hrc_trav.h"
+#include "3d/clip_trav.h"
 using namespace std;
 using namespace NLMISC;
 

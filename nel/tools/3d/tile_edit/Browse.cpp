@@ -7,7 +7,7 @@
 #include "Browse.h"
 #include "custom.h"
 #include "getval.h"
-#include <nel/3d/tile_bank.h>
+#include <3d/tile_bank.h>
 
 using namespace NL3D;
 

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.18 2001/06/15 16:00:35 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.19 2001/06/15 16:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,12 +23,12 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/ps_particle.h"
-#include "nel/3d/driver.h"
-#include "nel/3d/ps_attrib_maker.h"
-#include "nel/3d/texture_grouped.h"
-#include "nel/3d/scene.h"
-#include "nel/3d/transform_shape.h"
+#include "3d/ps_particle.h"
+#include "3d/driver.h"
+#include "3d/ps_attrib_maker.h"
+#include "3d/texture_grouped.h"
+#include "3d/scene.h"
+#include "3d/transform_shape.h"
 
 
 #include "nel/misc/common.h"

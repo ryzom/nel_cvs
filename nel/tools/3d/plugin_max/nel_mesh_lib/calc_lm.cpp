@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * <File description>
  *
- * $Id: calc_lm.cpp,v 1.4 2001/06/15 13:19:19 besson Exp $
+ * $Id: calc_lm.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,16 +32,16 @@
 #include "nel/misc/file.h"
 #include "nel/misc/triangle.h"
 #include "nel/misc/bsphere.h"
-#include "nel/3d/quad_tree.h"
-#include "nel/3d/scene_group.h"
-#include "nel/3d/skeleton_shape.h"
-#include "nel/3d/texture_file.h"
-#include "nel/3d/light.h"
+#include "3d/quad_tree.h"
+#include "3d/scene_group.h"
+#include "3d/skeleton_shape.h"
+#include "3d/texture_file.h"
+#include "3d/light.h"
 
 //#include "nel_export_scene.h"
 
-#include "nel/3d/bsp_tree.h"
-#include "nel/3d/quad_grid.h"
+#include "3d/bsp_tree.h"
+#include "3d/quad_grid.h"
 
 #include <vector>
 

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.8 2000/12/01 10:10:18 corvazier Exp $
+ * $Id: render_trav.cpp,v 1.9 2001/06/15 16:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,11 +23,11 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/render_trav.h"
-#include "nel/3d/hrc_trav.h"
-#include "nel/3d/clip_trav.h"
-#include "nel/3d/light_trav.h"
-#include "nel/3d/driver.h"
+#include "3d/render_trav.h"
+#include "3d/hrc_trav.h"
+#include "3d/clip_trav.h"
+#include "3d/light_trav.h"
+#include "3d/driver.h"
 using namespace std;
 using namespace NLMISC;
 

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.20 2001/06/12 08:23:34 vizerie Exp $
+ * $Id: vertex_buffer.cpp,v 1.21 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/vertex_buffer.h"
+#include "3d/vertex_buffer.h"
 #include "nel/misc/vector.h"
-#include "nel/3d/driver.h"
+#include "3d/driver.h"
 using namespace NLMISC;
 
 

@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.12 2001/04/24 10:22:22 berenguier Exp $
+ * $Id: mot.cpp,v 1.13 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/mot.h"
+#include "3d/mot.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/stream.h"
 #include <algorithm>

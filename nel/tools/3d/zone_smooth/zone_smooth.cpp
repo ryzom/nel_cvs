@@ -1,7 +1,7 @@
 /** \file zone_smooth.cpp
  * zone_smooth.cpp : Very simple zone smoother after light
  *
- * $Id: zone_smooth.cpp,v 1.1 2001/02/15 09:02:59 corvazier Exp $
+ * $Id: zone_smooth.cpp,v 1.2 2001/06/15 16:24:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/file.h"
 #include "nel/misc/vector.h"
-#include "nel/3d/zone.h"
-#include "nel/3d/landscape.h"
-#include "nel/3d/triangle.h"
+#include "3d/zone.h"
+#include "3d/landscape.h"
+#include "3d/triangle.h"
 #include "../zone_welder/zone_utility.h"	// load a header file from zone_welder project
 
 #include <stdio.h>

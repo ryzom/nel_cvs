@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.5 2001/06/15 13:19:20 besson Exp $
+ * $Id: export_nel.h,v 1.6 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,11 +27,11 @@
 #define NL_EXPORT_NEL_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/mesh.h"
-#include <nel/3d/key.h>
-#include <nel/3d/track_keyframer.h>
-#include <nel/3d/bone.h>
-#include <nel/3d/tmp/animation_time.h>
+#include "3d/mesh.h"
+#include <3d/key.h>
+#include <3d/track_keyframer.h>
+#include <3d/bone.h>
+#include <nel/3d/animation_time.h>
 
 #define UVGEN_MISSING (-1)
 #define UVGEN_OBJXYZ (MAX_MESHMAPS+1)

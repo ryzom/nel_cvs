@@ -1,7 +1,7 @@
 /** \file tess_list.cpp
  * <File description>
  *
- * $Id: tess_list.cpp,v 1.1 2001/02/20 11:05:06 berenguier Exp $
+ * $Id: tess_list.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/tess_list.h"
+#include "3d/tess_list.h"
 
 
 namespace NL3D 

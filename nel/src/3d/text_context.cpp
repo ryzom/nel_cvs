@@ -1,7 +1,7 @@
 /** \file text_context.cpp
  * <File description>
  *
- * $Id: text_context.cpp,v 1.1 2000/12/15 17:39:45 coutelas Exp $
+ * $Id: text_context.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/text_context.h"
+#include "3d/text_context.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file rpo.h
  * <File description>
  *
- * $Id: rpo.h,v 1.1 2001/04/26 16:37:32 corvazier Exp $
+ * $Id: rpo.h,v 1.2 2001/06/15 16:24:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include <set>
 #include <string>
 #include <nel/misc/debug.h>
-#include <nel/3d/tile_bank.h>
+#include <3d/tile_bank.h>
 #include <nel/misc/file.h>
 #include "nel_patch_mesh.h"
 

@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * <File description>
  *
- * $Id: skeleton_shape.cpp,v 1.3 2001/05/09 17:08:27 berenguier Exp $
+ * $Id: skeleton_shape.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/skeleton_shape.h"
-#include "nel/3d/skeleton_model.h"
-#include "nel/3d/scene.h"
+#include "3d/skeleton_shape.h"
+#include "3d/skeleton_model.h"
+#include "3d/scene.h"
 
 
 namespace NL3D

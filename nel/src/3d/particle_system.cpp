@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.15 2001/06/15 16:00:35 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.16 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,14 +23,14 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/particle_system.h"
-#include "nel/3d/driver.h"
-#include "nel/3d/vertex_buffer.h"
-#include "nel/3d/material.h"
-#include "nel/3d/primitive_block.h"
+#include "3d/particle_system.h"
+#include "3d/driver.h"
+#include "3d/vertex_buffer.h"
+#include "3d/material.h"
+#include "3d/primitive_block.h"
 #include "nel/misc/aabbox.h"
-#include "nel/3d/nelu.h"
-#include "nel/3d/ps_util.h"
+#include "3d/nelu.h"
+#include "3d/ps_util.h"
 #include "nel/misc/file.h"
 
 

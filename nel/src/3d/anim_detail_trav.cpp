@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * <File description>
  *
- * $Id: anim_detail_trav.cpp,v 1.2 2001/04/09 14:23:57 berenguier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.3 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/anim_detail_trav.h"
-#include "nel/3d/hrc_trav.h"
-#include "nel/3d/clip_trav.h"
+#include "3d/anim_detail_trav.h"
+#include "3d/hrc_trav.h"
+#include "3d/clip_trav.h"
 
 
 namespace NL3D 

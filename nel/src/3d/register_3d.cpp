@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.12 2001/05/08 13:35:50 vizerie Exp $
+ * $Id: register_3d.cpp,v 1.13 2001/06/15 16:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,15 +24,15 @@
  */
 
 
-#include "nel/3d/register_3d.h"
-#include "nel/3d/texture_font.h"
-#include "nel/3d/texture_file.h"
-#include "nel/3d/texture_mem.h"
-#include "nel/3d/texture_grouped.h"
-#include "nel/3d/mesh.h"
-#include "nel/3d/skeleton_shape.h"
-#include "nel/3d/track_keyframer.h"
-#include "nel/3d/ps_util.h"
+#include "3d/register_3d.h"
+#include "3d/texture_font.h"
+#include "3d/texture_file.h"
+#include "3d/texture_mem.h"
+#include "3d/texture_grouped.h"
+#include "3d/mesh.h"
+#include "3d/skeleton_shape.h"
+#include "3d/track_keyframer.h"
+#include "3d/ps_util.h"
 
 
 namespace NL3D 

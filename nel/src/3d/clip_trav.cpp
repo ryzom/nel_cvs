@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.8 2001/04/09 14:23:57 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.9 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,9 +24,9 @@
  */
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/clip_trav.h"
-#include "nel/3d/hrc_trav.h"
-#include "nel/3d/render_trav.h"
+#include "3d/clip_trav.h"
+#include "3d/hrc_trav.h"
+#include "3d/render_trav.h"
 using namespace std;
 using namespace NLMISC;
 

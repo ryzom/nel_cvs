@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.12 2001/05/31 13:37:05 corvazier Exp $
+ * $Id: font_generator.cpp,v 1.13 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ const char*  err_msg;
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 
-#include "nel/3d/font_generator.h"
+#include "3d/font_generator.h"
 
 using namespace NLMISC;
 

@@ -1,7 +1,7 @@
 /** \file ptr_set.cpp
  * <File description>
  *
- * $Id: ptr_set.cpp,v 1.1 2001/02/28 14:43:19 berenguier Exp $
+ * $Id: ptr_set.cpp,v 1.2 2001/06/15 16:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/ptr_set.h"
+#include "3d/ptr_set.h"
 
 
 namespace NL3D

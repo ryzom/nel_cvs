@@ -1,7 +1,7 @@
 /** \file viewport.cpp
  * <File description>
  *
- * $Id: viewport.cpp,v 1.4 2001/02/28 16:24:23 berenguier Exp $
+ * $Id: viewport.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/tmp/viewport.h"
+#include "nel/3d/viewport.h"
 #include "nel/misc/common.h"
 
 using namespace NLMISC;

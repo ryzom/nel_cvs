@@ -1,7 +1,7 @@
 /** \file tile_color.cpp
  * <File description>
  *
- * $Id: tile_color.cpp,v 1.1 2001/01/09 15:25:29 berenguier Exp $
+ * $Id: tile_color.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/tile_color.h"
+#include "3d/tile_color.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file particle_dlg.cpp
  * <File description>
  *
- * $Id: particle_dlg.cpp,v 1.2 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.3 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,23 +35,23 @@
 
 
 // TODO : remove these include when the test system will be removed
-#include "nel/3d/particle_system.h"
-#include "nel/3d/ps_force.h"
-#include "nel/3d/ps_emitter.h"
-#include "nel/3d/ps_particle.h"
-#include "nel/3d/ps_util.h"
-#include "nel/3d/ps_zone.h"
-#include "nel/3d/ps_color.h"
-#include "nel/3d/ps_float.h"
-#include "nel/3d/ps_int.h"
-#include "nel/3d/ps_plane_basis_maker.h"
-#include "nel/3d/particle_system_model.h"
-#include "nel/3d/particle_system_shape.h"
-#include "nel/3d/texture_file.h"
-#include "nel/3d/texture_grouped.h"
-#include "nel/3d/nelu.h"
-#include "nel/3d/font_manager.h"
-#include "nel/3d/font_generator.h"
+#include "3d/particle_system.h"
+#include "3d/ps_force.h"
+#include "3d/ps_emitter.h"
+#include "3d/ps_particle.h"
+#include "3d/ps_util.h"
+#include "3d/ps_zone.h"
+#include "3d/ps_color.h"
+#include "3d/ps_float.h"
+#include "3d/ps_int.h"
+#include "3d/ps_plane_basis_maker.h"
+#include "3d/particle_system_model.h"
+#include "3d/particle_system_shape.h"
+#include "3d/texture_file.h"
+#include "3d/texture_grouped.h"
+#include "3d/nelu.h"
+#include "3d/font_manager.h"
+#include "3d/font_generator.h"
 
 #include "nel/misc/file.h"
 

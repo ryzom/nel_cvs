@@ -1,7 +1,7 @@
 /** \file animated_value.cpp
  * <File description>
  *
- * $Id: animated_value.cpp,v 1.4 2001/03/13 17:02:20 corvazier Exp $
+ * $Id: animated_value.cpp,v 1.5 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/animated_value.h"
+#include "3d/animated_value.h"
 
 
 namespace NL3D 

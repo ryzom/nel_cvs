@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.2 2001/04/24 14:59:20 corvazier Exp $
+ * $Id: bone.cpp,v 1.3 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/bone.h"
+#include "3d/bone.h"
 
 
 namespace NL3D

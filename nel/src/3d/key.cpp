@@ -1,7 +1,7 @@
 /** \file key.cpp
  * <File description>
  *
- * $Id: key.cpp,v 1.5 2001/03/26 14:54:59 berenguier Exp $
+ * $Id: key.cpp,v 1.6 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/key.h"
+#include "3d/key.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.6 2001/06/15 16:06:17 vizerie Exp $
+ * $Id: event_mouse_listener.cpp,v 1.7 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/event_mouse_listener.h"
+#include "3d/event_mouse_listener.h"
 #include "nel/misc/event_server.h"
-#include "nel/3d/camera.h"
+#include "3d/camera.h"
 #include "nel/misc/time_nl.h"
 
 using namespace NLMISC;

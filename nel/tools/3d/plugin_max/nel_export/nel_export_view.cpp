@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.3 2001/06/11 09:21:53 besson Exp $
+ * $Id: nel_export_view.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,12 +25,12 @@
 
 #include "std_afx.h"
 
-#include "nel/3d/scene.h"
-#include "nel/3d/register_3d.h"
-#include "nel/3d/skeleton_shape.h"
-#include "nel/3d/skeleton_model.h"
-#include "nel/3d/mesh_instance.h"
-#include "nel/3d/light.h"
+#include "3d/scene.h"
+#include "3d/register_3d.h"
+#include "3d/skeleton_shape.h"
+#include "3d/skeleton_model.h"
+#include "3d/mesh_instance.h"
+#include "3d/light.h"
 #include "r:/code/nel/tools/3d/object_viewer/object_viewer_interface.h"
 
 #include "../nel_mesh_lib/export_nel.h"

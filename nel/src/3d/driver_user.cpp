@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.9 2001/04/19 12:49:28 puzin Exp $
+ * $Id: driver_user.cpp,v 1.10 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,15 +28,15 @@
 // fatal error C1076: compiler limit : internal heap limit reached; use /Zm to specify a higher limit
 // ***************************************************************************
 
-#include "nel/3d/driver_user.h"
-#include "nel/3d/tmp/u_driver.h"
-#include "nel/3d/dru.h"
-#include "nel/3d/scene.h"
-#include "nel/3d/text_context_user.h"
-#include "nel/3d/texture_user.h"
-#include "nel/3d/material_user.h"
-#include "nel/3d/scene_user.h"
-#include "nel/3d/tmp/u_camera.h"
+#include "3d/driver_user.h"
+#include "nel/3d/u_driver.h"
+#include "3d/dru.h"
+#include "3d/scene.h"
+#include "3d/text_context_user.h"
+#include "3d/texture_user.h"
+#include "3d/material_user.h"
+#include "3d/scene_user.h"
+#include "nel/3d/u_camera.h"
 
 
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.7 2001/05/23 15:18:01 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.8 2001/06/15 16:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,16 +23,16 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/ps_force.h"
-#include "nel/3d/driver.h"
-#include "nel/3d/primitive_block.h"
-#include "nel/3d/material.h"
-#include "nel/3d/vertex_buffer.h"
-#include "nel/3d/computed_string.h"
-#include "nel/3d/font_generator.h"
-#include "nel/3d/font_manager.h"
+#include "3d/ps_force.h"
+#include "3d/driver.h"
+#include "3d/primitive_block.h"
+#include "3d/material.h"
+#include "3d/vertex_buffer.h"
+#include "3d/computed_string.h"
+#include "3d/font_generator.h"
+#include "3d/font_manager.h"
 #include "nel/misc/common.h"
-#include "nel/3d/ps_util.h"
+#include "3d/ps_util.h"
 
 namespace NL3D {
 

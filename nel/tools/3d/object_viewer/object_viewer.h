@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.8 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: object_viewer.h,v 1.9 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,11 +50,11 @@
 #include "animation_dlg.h"
 #include "scene_dlg.h"
 #include "particle_dlg.h"
-#include <nel/3d/animation_set.h>
-#include <nel/3d/channel_mixer.h>
-#include <nel/3d/shape.h>
-#include <nel/3d/event_mouse_listener.h>
-#include <nel/3d/light.h>
+#include <3d/animation_set.h>
+#include <3d/channel_mixer.h>
+#include <3d/shape.h>
+#include <3d/event_mouse_listener.h>
+#include <3d/light.h>
 #include <nel/misc/event_listener.h>
 #include <nel/misc/stream.h>
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.101 2001/05/30 16:40:53 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.102 2001/06/15 16:24:45 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -46,10 +46,10 @@
 #include <GL/gl.h>
 
 #include "driver_opengl.h"
-#include "nel/3d/tmp/viewport.h"
-#include "nel/3d/vertex_buffer.h"
-#include "nel/3d/light.h"
-#include "nel/3d/primitive_block.h"
+#include "nel/3d/viewport.h"
+#include "3d/vertex_buffer.h"
+#include "3d/light.h"
+#include "3d/primitive_block.h"
 #include "nel/misc/rect.h"
 
 using namespace std;

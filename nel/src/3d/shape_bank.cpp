@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.6 2001/06/11 09:25:58 besson Exp $
+ * $Id: shape_bank.cpp,v 1.7 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/shape_bank.h"
-#include "nel/3d/mesh.h"
+#include "3d/shape_bank.h"
+#include "3d/mesh.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 

@@ -1,7 +1,7 @@
 /** \file hrc_trav.cpp
  * <File description>
  *
- * $Id: hrc_trav.cpp,v 1.3 2000/11/21 18:01:12 valignat Exp $
+ * $Id: hrc_trav.cpp,v 1.4 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/hrc_trav.h"
+#include "3d/hrc_trav.h"
 using namespace std;
 using namespace NLMISC;
 

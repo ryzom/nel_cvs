@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.1 2001/05/11 17:18:21 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.2 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/particle_system_model.h"
-#include "nel/3d/particle_system_shape.h"
-#include "nel/3d/particle_system.h"
+#include "3d/particle_system_model.h"
+#include "3d/particle_system_shape.h"
+#include "3d/particle_system.h"
 
 
 namespace NL3D {

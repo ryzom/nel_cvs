@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.3 2001/05/09 13:52:41 vizerie Exp $
+ * $Id: texture_grouped.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/texture_grouped.h"
+#include "3d/texture_grouped.h"
 #include "nel/misc/common.h"
 #include <algorithm>
 

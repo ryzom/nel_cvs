@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.20 2001/06/15 14:34:56 berenguier Exp $
+ * $Id: mesh.cpp,v 1.21 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,10 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/mesh.h"
-#include "nel/3d/mesh_instance.h"
-#include "nel/3d/scene.h"
-#include "nel/3d/skeleton_model.h"
+#include "3d/mesh.h"
+#include "3d/mesh_instance.h"
+#include "3d/scene.h"
+#include "3d/skeleton_model.h"
 
 
 using namespace std;

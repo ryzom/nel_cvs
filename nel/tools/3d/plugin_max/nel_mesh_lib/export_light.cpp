@@ -1,7 +1,7 @@
 /** \file export_light.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_light.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: export_light.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
-#include "nel/3d/light.h"
+#include "3d/light.h"
 #include "nel/misc/common.h"
 
 using namespace NLMISC;

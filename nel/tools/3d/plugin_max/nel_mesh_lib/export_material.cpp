@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.4 2001/06/15 13:19:19 besson Exp $
+ * $Id: export_material.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
-#include <nel/3d/texture_file.h>
+#include <3d/texture_file.h>
 
 using namespace NLMISC;
 using namespace NL3D;

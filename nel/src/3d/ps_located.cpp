@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.13 2001/06/15 16:00:35 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.14 2001/06/15 16:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,10 +26,10 @@
 
 
 #include <algorithm>
-#include "nel/3d/ps_located.h"
+#include "3d/ps_located.h"
 #include "nel/misc/aabbox.h"
-#include "nel/3d/ps_util.h"
-#include "nel/3d/ps_zone.h"
+#include "3d/ps_util.h"
+#include "3d/ps_zone.h"
 
 
 

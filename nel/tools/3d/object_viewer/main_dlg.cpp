@@ -1,7 +1,7 @@
 /** \file main_dlg.cpp
  * <File description>
  *
- * $Id: main_dlg.cpp,v 1.4 2001/04/30 16:58:31 corvazier Exp $
+ * $Id: main_dlg.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "main_dlg.h"
-#include <nel/3d/channel_mixer.h>
+#include <3d/channel_mixer.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

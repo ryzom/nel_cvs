@@ -8,7 +8,7 @@
 //
 #include <vector>
 #include <string>
-#include <nel/3d/tile_bank.h>
+#include <3d/tile_bank.h>
 #include <nel/misc/rgba.h>
 #include <list>
 #define TILE_BPP 24

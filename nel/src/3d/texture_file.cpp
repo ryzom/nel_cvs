@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.5 2001/04/19 11:10:06 berenguier Exp $
+ * $Id: texture_file.cpp,v 1.6 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/texture_file.h"
+#include "3d/texture_file.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/debug.h"

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.17 2001/04/09 14:23:57 berenguier Exp $
+ * $Id: transform.cpp,v 1.18 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/transform.h"
-#include "nel/3d/skeleton_model.h"
+#include "3d/transform.h"
+#include "3d/skeleton_model.h"
 
 
 namespace	NL3D

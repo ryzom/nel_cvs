@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.36 2001/04/24 14:57:32 corvazier Exp $
+ * $Id: zone.cpp,v 1.37 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/zone.h"
-#include "nel/3d/landscape.h"
+#include "3d/zone.h"
+#include "3d/landscape.h"
 #include "nel/misc/common.h"
 
 

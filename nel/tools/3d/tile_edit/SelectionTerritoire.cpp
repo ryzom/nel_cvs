@@ -8,7 +8,7 @@
 #include "SelectionTerritoire.h"
 #include "GetVal.h"
 #include "Browse.h"
-#include "nel/3d/tile_bank.h"
+#include "3d/tile_bank.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/file.h"
 #include <shlobj.h>

@@ -1,7 +1,7 @@
 /** \file instance_material_user.cpp
  * <File description>
  *
- * $Id: instance_material_user.cpp,v 1.1 2001/04/18 09:19:16 berenguier Exp $
+ * $Id: instance_material_user.cpp,v 1.2 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/instance_material_user.h"
+#include "3d/instance_material_user.h"
 
 
 namespace NL3D

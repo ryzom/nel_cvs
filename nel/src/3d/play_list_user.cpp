@@ -1,7 +1,7 @@
 /** \file play_list_user.cpp
  * <File description>
  *
- * $Id: play_list_user.cpp,v 1.1 2001/03/29 09:55:11 berenguier Exp $
+ * $Id: play_list_user.cpp,v 1.2 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/play_list_user.h"
+#include "3d/play_list_user.h"
 
 
 namespace NL3D {

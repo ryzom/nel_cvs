@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx2.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: std_afx2.h,v 1.2 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,12 +64,12 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/matrix.h"
 
-#include "nel/3d/particle_system.h"
-#include "nel/3d/ps_located.h"
-#include "nel/3d/ps_particle.h"
-#include "nel/3d/ps_force.h"
-#include "nel/3d/ps_emitter.h"
-#include "nel/3d/ps_zone.h"
+#include "3d/particle_system.h"
+#include "3d/ps_located.h"
+#include "3d/ps_particle.h"
+#include "3d/ps_force.h"
+#include "3d/ps_emitter.h"
+#include "3d/ps_zone.h"
 
 
 #include <vector>

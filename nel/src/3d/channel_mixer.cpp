@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.14 2001/04/24 14:55:08 corvazier Exp $
+ * $Id: channel_mixer.cpp,v 1.15 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,10 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/channel_mixer.h"
-#include "nel/3d/track.h"
-#include "nel/3d/animatable.h"
-#include "nel/3d/skeleton_weight.h"
+#include "3d/channel_mixer.h"
+#include "3d/track.h"
+#include "3d/animatable.h"
+#include "3d/skeleton_weight.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 

@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.9 2001/04/19 11:10:06 berenguier Exp $
+ * $Id: texture_far.cpp,v 1.10 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,13 +23,13 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/texture_far.h"
-#include "nel/3d/tile_far_bank.h"
-#include "nel/3d/patch.h"
-#include "nel/3d/tile_color.h"
-#include "nel/3d/tile_lumel.h"
-#include "nel/3d/zone.h"
-#include "nel/3d/landscape.h"
+#include "3d/texture_far.h"
+#include "3d/tile_far_bank.h"
+#include "3d/patch.h"
+#include "3d/tile_color.h"
+#include "3d/tile_lumel.h"
+#include "3d/zone.h"
+#include "3d/landscape.h"
 
 using namespace NLMISC;
 using namespace NL3D;

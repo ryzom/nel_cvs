@@ -10,7 +10,7 @@
 #include "popup.h"
 #include <direct.h>
 //#include "ListGroup.h"
-#include <nel/3d/tile_bank.h>
+#include <3d/tile_bank.h>
 //#include "ViewPopup.h"
 #include "pic\readpic.h"
 

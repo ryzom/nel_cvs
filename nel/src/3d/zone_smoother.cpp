@@ -1,7 +1,7 @@
 /** \file zone_smoother.cpp
  * <File description>
  *
- * $Id: zone_smoother.cpp,v 1.1 2001/01/12 13:26:40 berenguier Exp $
+ * $Id: zone_smoother.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/zone_smoother.h"
+#include "3d/zone_smoother.h"
 
 
 namespace NL3D 

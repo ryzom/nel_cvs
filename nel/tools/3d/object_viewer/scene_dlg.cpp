@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.9 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: scene_dlg.cpp,v 1.10 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,11 +27,11 @@
 #include "object_viewer.h"
 #include "scene_dlg.h"
 #include <nel/misc/file.h>
-#include <nel/3d/nelu.h>
-#include <nel/3d/mesh.h>
-#include <nel/3d/transform_shape.h>
-#include <nel/3d/mesh_instance.h>
-#include <nel/3d/skeleton_model.h>
+#include <3d/nelu.h>
+#include <3d/mesh.h>
+#include <3d/transform_shape.h>
+#include <3d/mesh_instance.h>
+#include <3d/skeleton_model.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -9,7 +9,7 @@
 
 
 #include "nel/misc/smart_ptr.h"
-#include "nel/3d/texture.h"
+#include "3d/texture.h"
 
 #include "ps_wrapper.h"
 

@@ -1,7 +1,7 @@
 /** \file bezier_patch.cpp
  * <File description>
  *
- * $Id: bezier_patch.cpp,v 1.8 2001/06/05 13:49:23 berenguier Exp $
+ * $Id: bezier_patch.cpp,v 1.9 2001/06/15 16:24:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/bezier_patch.h"
+#include "3d/bezier_patch.h"
 using namespace NLMISC;
 
 

@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * <File description>
  *
- * $Id: start_stop_particle_system.cpp,v 1.2 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.3 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,9 +31,9 @@
 #include "object_viewer.h"
 #include "start_stop_particle_system.h"
 
-#include "nel/3d/particle_system.h"
-#include "nel/3d/ps_located.h"
-#include "nel/3d/particle_system_model.h"
+#include "3d/particle_system.h"
+#include "3d/ps_located.h"
+#include "3d/particle_system_model.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

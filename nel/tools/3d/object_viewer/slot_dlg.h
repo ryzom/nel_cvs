@@ -1,7 +1,7 @@
 /** \file slot_dlg.h
  * <File description>
  *
- * $Id: slot_dlg.h,v 1.5 2001/04/30 16:58:31 corvazier Exp $
+ * $Id: slot_dlg.h,v 1.6 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 //
 
 #include "blend_wnd.h"
-#include <nel/3d/animation_set.h>
+#include <3d/animation_set.h>
 #include <nel/misc/debug.h>
 
 /////////////////////////////////////////////////////////////////////////////

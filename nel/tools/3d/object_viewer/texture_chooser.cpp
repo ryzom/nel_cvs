@@ -5,7 +5,7 @@
 #include "object_viewer.h"
 #include "texture_chooser.h"
 
-#include "nel/3d/texture_file.h"
+#include "3d/texture_file.h"
 #include "nel/misc/path.h"
 
 #ifdef _DEBUG

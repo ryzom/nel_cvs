@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.30 2001/06/15 16:00:35 vizerie Exp $
+ * $Id: scene.cpp,v 1.31 2001/06/15 16:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,21 +23,21 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/scene.h"
-#include "nel/3d/hrc_trav.h"
-#include "nel/3d/clip_trav.h"
-#include "nel/3d/light_trav.h"
-#include "nel/3d/anim_detail_trav.h"
-#include "nel/3d/render_trav.h"
-#include "nel/3d/transform.h"
-#include "nel/3d/camera.h"
-#include "nel/3d/landscape_model.h"
-#include "nel/3d/driver.h"
-#include "nel/3d/transform_shape.h"
-#include "nel/3d/mesh_instance.h"
-#include "nel/3d/shape_bank.h"
-#include "nel/3d/skeleton_model.h"
-#include "nel/3d/particle_system_model.h"
+#include "3d/scene.h"
+#include "3d/hrc_trav.h"
+#include "3d/clip_trav.h"
+#include "3d/light_trav.h"
+#include "3d/anim_detail_trav.h"
+#include "3d/render_trav.h"
+#include "3d/transform.h"
+#include "3d/camera.h"
+#include "3d/landscape_model.h"
+#include "3d/driver.h"
+#include "3d/transform_shape.h"
+#include "3d/mesh_instance.h"
+#include "3d/shape_bank.h"
+#include "3d/skeleton_model.h"
+#include "3d/particle_system_model.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.19 2001/04/25 13:49:56 besson Exp $
+ * $Id: nelu.cpp,v 1.20 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 
-#include "nel/3d/nelu.h"
-#include "nel/3d/dru.h"
-#include "nel/3d/camera.h"
-#include "nel/3d/register_3d.h"
+#include "3d/nelu.h"
+#include "3d/dru.h"
+#include "3d/camera.h"
+#include "3d/register_3d.h"
 #include "nel/misc/debug.h"
 using namespace std;
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.5 2001/03/16 16:17:36 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.6 2001/06/15 16:24:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #include "nel/misc/file.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/time_nl.h"
-#include "nel/3d/zone.h"
-#include "nel/3d/quad_grid.h"
-#include "nel/3d/landscape.h"
+#include "3d/zone.h"
+#include "3d/quad_grid.h"
+#include "3d/landscape.h"
 #include "nel/misc/triangle.h"
 #include "../zone_welder/zone_utility.h"	// load a header file from zone_welder project
 

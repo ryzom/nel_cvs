@@ -3,8 +3,8 @@
  */
 
 #include <nel/misc/file.h>
-#include <nel/3d/tile_bank.h>
-#include <nel/3d/tile_far_bank.h>
+#include <3d/tile_bank.h>
+#include <3d/tile_far_bank.h>
 #include <nel/misc/bitmap.h>
 
 #include <sys/types.h>

@@ -1,7 +1,7 @@
 /** \file mrm_mesh.cpp
  * Internal mesh for CMRMBuilder.
  *
- * $Id: mrm_mesh.cpp,v 1.3 2001/06/15 14:34:56 berenguier Exp $
+ * $Id: mrm_mesh.cpp,v 1.4 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/mrm_mesh.h"
+#include "3d/mrm_mesh.h"
 #include <algorithm>
 
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.14 2001/06/15 16:00:35 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.15 2001/06/15 16:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,33 +23,33 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/ps_util.h"
-#include "nel/3d/driver.h"
+#include "3d/ps_util.h"
+#include "3d/driver.h"
 #include "nel/misc/aabbox.h"
-#include "nel/3d/vertex_buffer.h"
-#include "nel/3d/primitive_block.h"
-#include "nel/3d/material.h"
-#include "nel/3d/nelu.h"
+#include "3d/vertex_buffer.h"
+#include "3d/primitive_block.h"
+#include "3d/material.h"
+#include "3d/nelu.h"
 
-#include "nel/3d/font_generator.h"
-#include "nel/3d/font_manager.h"
-#include "nel/3d/computed_string.h"
+#include "3d/font_generator.h"
+#include "3d/font_manager.h"
+#include "3d/computed_string.h"
 
 #include "nel/misc/matrix.h"
 
-#include "nel/3d/dru.h"
+#include "3d/dru.h"
 
-#include "nel/3d/ps_emitter.h"
-#include "nel/3d/ps_located.h"
-#include "nel/3d/ps_particle.h"
-#include "nel/3d/ps_force.h"
-#include "nel/3d/ps_zone.h"
-#include "nel/3d/ps_color.h"
-#include "nel/3d/ps_float.h"
-#include "nel/3d/ps_int.h"
-#include "nel/3d/ps_plane_basis_maker.h"
+#include "3d/ps_emitter.h"
+#include "3d/ps_located.h"
+#include "3d/ps_particle.h"
+#include "3d/ps_force.h"
+#include "3d/ps_zone.h"
+#include "3d/ps_color.h"
+#include "3d/ps_float.h"
+#include "3d/ps_int.h"
+#include "3d/ps_plane_basis_maker.h"
 
-#include "nel/3d/particle_system_shape.h"
+#include "3d/particle_system_shape.h"
 
 
 

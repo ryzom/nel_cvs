@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * <File description>
  *
- * $Id: located_bindable_dialog.h,v 1.3 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.4 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NL3D
 
 #include "ps_wrapper.h"
 #include "nel/misc/rgba.h"
-#include "nel/3d/texture.h"
+#include "3d/texture.h"
 
 
 using NLMISC::CRGBA ;

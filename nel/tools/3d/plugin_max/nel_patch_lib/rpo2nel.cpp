@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.1 2001/04/26 16:37:32 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.2 2001/06/15 16:24:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "rpo.h"
-#include "nel/3d/zone.h"
+#include "3d/zone.h"
 
 using namespace NL3D;
 

@@ -33,8 +33,8 @@
 
 
 
-#include <nel/3d/register_3d.h>
-#include <nel/3d/scene.h>
+#include <3d/register_3d.h>
+#include <3d/scene.h>
 #include "../object_viewer/object_viewer_interface.h"
 
 

@@ -1,7 +1,7 @@
 /** \file play_list_manager.cpp
  * <File description>
  *
- * $Id: play_list_manager.cpp,v 1.1 2001/03/19 14:08:44 berenguier Exp $
+ * $Id: play_list_manager.cpp,v 1.2 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/play_list_manager.h"
+#include "3d/play_list_manager.h"
 
 
 namespace NL3D 

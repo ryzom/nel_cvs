@@ -1,7 +1,7 @@
 /** \file tile_element.cpp
  * <File description>
  *
- * $Id: tile_element.cpp,v 1.5 2000/12/12 10:04:48 berenguier Exp $
+ * $Id: tile_element.cpp,v 1.6 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/tile_element.h"
+#include "3d/tile_element.h"
 #include "nel/misc/debug.h"
 
 

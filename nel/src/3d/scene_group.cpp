@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.4 2001/06/11 09:25:58 besson Exp $
+ * $Id: scene_group.cpp,v 1.5 2001/06/15 16:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,11 +23,11 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/scene_group.h"
+#include "3d/scene_group.h"
 #include "nel/misc/stream.h"
-#include "nel/3d/scene.h"
-#include "nel/3d/transform_shape.h"
-#include "nel/3d/mesh_instance.h"
+#include "3d/scene.h"
+#include "3d/transform_shape.h"
+#include "3d/mesh_instance.h"
 
 using namespace NLMISC;
 using namespace std;

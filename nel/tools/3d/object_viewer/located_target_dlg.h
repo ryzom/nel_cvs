@@ -7,7 +7,7 @@
 // located_target_dlg.h : header file
 //
 
-#include "nel/3d/ps_located.h"
+#include "3d/ps_located.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedTargetDlg dialog

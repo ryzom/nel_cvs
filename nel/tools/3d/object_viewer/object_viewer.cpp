@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.10 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.11 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,11 +28,11 @@
 #define OBJECT_VIEWER_EXPORT __declspec( dllexport ) 
 
 #include "object_viewer.h"
-#include <nel/3d/nelu.h>
-#include <nel/3d/mesh.h>
-#include <nel/3d/transform_shape.h>
-#include <nel/3d/mesh_instance.h>
-#include <nel/3d/skeleton_model.h>
+#include <3d/nelu.h>
+#include <3d/mesh.h>
+#include <3d/transform_shape.h>
+#include <3d/mesh_instance.h>
+#include <3d/skeleton_model.h>
 #include <nel/misc/file.h>
 #include <nel/misc/path.h>
 

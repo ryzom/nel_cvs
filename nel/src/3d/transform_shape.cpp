@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.5 2001/04/09 14:23:57 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.6 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/transform_shape.h"
-#include "nel/3d/driver.h"
+#include "3d/transform_shape.h"
+#include "3d/driver.h"
 
 
 namespace NL3D 

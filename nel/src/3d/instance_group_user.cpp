@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.3 2001/06/13 08:54:09 besson Exp $
+ * $Id: instance_group_user.cpp,v 1.4 2001/06/15 16:24:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/instance_group_user.h"
-#include "nel/3d/scene_user.h"
+#include "3d/instance_group_user.h"
+#include "3d/scene_user.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 

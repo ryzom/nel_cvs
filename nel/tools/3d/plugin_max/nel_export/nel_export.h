@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.4 2001/06/12 12:30:58 besson Exp $
+ * $Id: nel_export.h,v 1.5 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "resource.h"
 #include "../nel_mesh_lib/export_nel.h"
-#include "nel/3d/mesh.h"
+#include "3d/mesh.h"
 
 #include <vector>
 #include <string>

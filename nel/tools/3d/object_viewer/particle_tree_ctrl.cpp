@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * <File description>
  *
- * $Id: particle_tree_ctrl.cpp,v 1.3 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,15 +41,15 @@ static char THIS_FILE[] = __FILE__;
  
 
 
-#include "nel/3d/particle_system.h"
-#include "nel/3d/particle_system_model.h"
-#include "nel/3d/particle_system_shape.h"
-#include "nel/3d/ps_located.h"
-#include "nel/3d/ps_particle.h"
-#include "nel/3d/ps_force.h"
-#include "nel/3d/ps_zone.h"
-#include "nel/3d/ps_emitter.h"
-#include "nel/3d/nelu.h"
+#include "3d/particle_system.h"
+#include "3d/particle_system_model.h"
+#include "3d/particle_system_shape.h"
+#include "3d/ps_located.h"
+#include "3d/ps_particle.h"
+#include "3d/ps_force.h"
+#include "3d/ps_zone.h"
+#include "3d/ps_emitter.h"
+#include "3d/nelu.h"
 
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"

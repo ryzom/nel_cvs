@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.25 2001/04/24 15:00:02 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.26 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/tile_bank.h"
+#include "3d/tile_bank.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/common.h"
 #include <string>

@@ -1,7 +1,7 @@
 /** \file tile_far_bank.cpp
  * <File description>
  *
- * $Id: tile_far_bank.cpp,v 1.5 2001/03/07 17:36:52 corvazier Exp $
+ * $Id: tile_far_bank.cpp,v 1.6 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/tile_far_bank.h"
+#include "3d/tile_far_bank.h"
 
 using namespace NLMISC;
 

@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.13 2001/03/27 15:33:00 berenguier Exp $
+ * $Id: track.cpp,v 1.14 2001/06/15 16:24:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/track.h"
+#include "3d/track.h"
 
 
 namespace NL3D 

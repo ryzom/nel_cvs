@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.7 2001/06/15 16:00:35 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.8 2001/06/15 16:24:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/ps_emitter.h"
+#include "3d/ps_emitter.h"
 
 
 namespace NL3D {

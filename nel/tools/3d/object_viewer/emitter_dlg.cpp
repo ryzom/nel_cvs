@@ -5,7 +5,7 @@
 #include "object_viewer.h"
 #include "emitter_dlg.h"
 
-#include "nel/3d/particle_system.h"
+#include "3d/particle_system.h"
 
 
 

@@ -1,7 +1,7 @@
 /** \file shader.cpp
  * <File description>
  *
- * $Id: shader.cpp,v 1.2 2001/05/07 14:41:57 berenguier Exp $
+ * $Id: shader.cpp,v 1.3 2001/06/15 16:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/shader.h"
-#include "nel/3d/driver.h"
+#include "3d/shader.h"
+#include "3d/driver.h"
 
 
 namespace NL3D 

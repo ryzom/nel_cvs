@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.48 2002/04/17 09:56:04 portier Exp $
+ * $Id: agent_script.h,v 1.49 2002/04/30 15:11:17 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -229,6 +229,7 @@ namespace NLAIAGENT
 		IObjectIA::CProcessResult runTellSetValue(IBaseGroupType *);
 
 		virtual IObjectIA::CProcessResult runInitComponent(IBaseGroupType *);
+		virtual IObjectIA::CProcessResult runInitClass(IBaseGroupType *);
 		
 		/**
 		This function process the message CNotifyParentScript for the runTell.
@@ -367,7 +368,7 @@ namespace NLAIAGENT
 			return IObjectIA::CProcessResult();
 		}
 
-		virtual void removeGoal( NLAILOGIC::CGoal *)
+		virtual void removeGoal( NLAILOGIC::IGoal *)
 		{
 		}
 

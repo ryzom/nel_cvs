@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.44 2002/01/17 12:16:08 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.45 2002/04/30 15:11:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1115,7 +1115,7 @@ namespace NLAISCRIPT
 #endif
 
 		if(component->StaticValue != obj ) component->StaticValue = obj;
-																return false;
+			return false;
 		return true;
 	}
 

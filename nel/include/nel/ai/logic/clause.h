@@ -1,7 +1,7 @@
 /** \file clause.h
  *	First order logic condition
  *
- * $Id: clause.h,v 1.6 2002/02/20 18:05:10 lecroart Exp $
+ * $Id: clause.h,v 1.7 2002/04/30 15:11:17 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,12 +36,12 @@ namespace NLAILOGIC {
 
 	class CClause : public CVarSet {
 		protected:
-			std::list<CBoolAssert *>		_SimpleConds;	
-			std::vector<IBaseBoolType *>	_Conds;
+			std::list<CBoolAssert *>			_SimpleConds;	
+			std::vector<IBaseBoolType *>		_Conds;
 			std::vector< std::vector<sint32> >	_PosVarsCond;
-			std::list< CValueSet *>			_Liaisons;
-			std::list< CValueSet *>			_BufLiaisons;
-			std::list< CValueSet *>			_Conflits;
+			std::list< CValueSet *>				_Liaisons;
+			std::list< CValueSet *>				_BufLiaisons;
+			std::list< CValueSet *>				_Conflits;
 			sint32 _NbValid;
 			
 		protected:

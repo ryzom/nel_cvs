@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.110 2002/04/17 09:56:21 portier Exp $
+ * $Id: agent_script.cpp,v 1.111 2002/04/30 15:11:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -920,6 +920,56 @@ namespace NLAIAGENT
 		r.Result = &msg_result;
 		return r;
 	}
+
+	IObjectIA::CProcessResult CAgentScript::runInitClass(IBaseGroupType *g)
+	{
+		const char * class_name = ((NLAIAGENT::CStringVarName *)g->get())->getString();
+		NLAIC::CIdentType id_class( class_name );	
+
+		
+
+		/*
+		NLAIAGENT::IMessageBase &msg_result = (NLAIAGENT::IMessageBase &)*g->get();
+		msg_result.incRef();
+
+
+		// Cleans previous components
+		if ( _Components != NULL )
+		{
+			for ( int i = 0; i < _NbComponents; i++ )
+				_Components[i]->release();
+		}
+
+		// Creates a new component array
+		_NbComponents = (sint32) msg_result.size() / 3;
+		_Components = new IObjectIA *[ _NbComponents ];
+
+		int test = 0;
+
+		for ( int i = 0; i < msg_result.size() ; i += 3 )
+		{
+			CStringType *comp_name = (CStringType *) msg_result[ (sint32) i ];
+			CStringType *comp_type = (CStringType *) msg_result[ (sint32) (i + 1) ];
+			IObjectIA *comp_val = (IObjectIA *) msg_result[ (sint32) (i + 2) ];
+			
+			sint32 index = getStaticMemberIndex( comp_name->getStr() ); //_AgentClass->getInheritedStaticMemberIndex(  comp_name->getStr()  );
+			if ( index != -1 )
+			{
+				// Sets the component to the new value
+				setStaticMember( index, comp_val );		
+			}
+			else
+			{
+				setStaticMember( (sint32) (i / 3) , comp_val );
+			}
+			test++;
+		}
+		*/
+		IObjectIA::CProcessResult r;
+		r.Result = NULL;
+		return r;
+	}
+
 
 
 

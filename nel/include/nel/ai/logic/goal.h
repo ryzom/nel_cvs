@@ -1,7 +1,7 @@
 /** \file goal.h
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.21 2002/02/20 18:05:10 lecroart Exp $
+ * $Id: goal.h,v 1.22 2002/04/30 15:11:17 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,8 +39,10 @@ namespace NLAILOGIC
 {
 	class IBaseOperator;
 
-	class CGoal : public IBaseBoolType
+
+	class IGoal : public IBaseBoolType
 	{
+
 		public:
 			enum TTypeOfGoal
 			{
@@ -49,7 +51,7 @@ namespace NLAILOGIC
 			};
 
 
-		private:
+		protected:
 			NLAIAGENT::IVarName *_Name;
 			std::vector<NLAIAGENT::IObjectIA *>		_Args;
 			std::vector<NLAIAGENT::IBasicAgent *>	_Predecessors;
@@ -63,64 +65,16 @@ namespace NLAILOGIC
 			NLAIAGENT::IBasicAgent *_Receiver;
 
 		public:
-
-			CGoal();
-			CGoal(const NLAIAGENT::IVarName &, TTypeOfGoal mode = achieveOnce);
-			CGoal(const NLAIAGENT::IVarName &, std::list<const NLAIAGENT::IObjectIA *> &,TTypeOfGoal mode = achieveOnce);
-			CGoal(const CGoal &);
-			virtual ~CGoal();
-
-			void setArgs(std::list<NLAIAGENT::IObjectIA *> &);
-			const std::vector<NLAIAGENT::IObjectIA *> &getArgs();
-
-			static const NLAIC::CIdentType IdGoal;
-
-			void addSuccessor(NLAIAGENT::IBasicAgent *);
-			void addPredecessor(NLAIAGENT::IBasicAgent *);
-
-			virtual void failure();
-			virtual void success();
-
-			virtual void operatorSuccess(NLAIAGENT::IBasicAgent *);
-			virtual void operatorFailure(NLAIAGENT::IBasicAgent *);
-
-			const std::vector<IBaseOperator *> getOperators();
-
-			const NLAIC::IBasicType *clone() const;
-			const NLAIC::IBasicType *newInstance() const;
-			void save(NLMISC::IStream &os);
-			void load(NLMISC::IStream &is);
-			virtual void getDebugString(std::string &) const;
-			bool isTrue() const;
-			float truthValue() const;
-			const IObjectIA::CProcessResult &run();
-			bool isEqual(const CGoal &a) const;
-			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
-			const NLAIC::CIdentType &getType() const;
-
-			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
-			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
-			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p);
-			sint32 getMethodIndexSize() const;
+			IGoal();
+			IGoal(const NLAIAGENT::IVarName &, TTypeOfGoal mode = achieveOnce);
+			IGoal(const NLAIAGENT::IVarName &, std::list<const NLAIAGENT::IObjectIA *> &,TTypeOfGoal mode = achieveOnce);
+			IGoal(const IGoal &);
+			virtual ~IGoal();
 
 			const NLAIAGENT::IVarName &getName() const
 			{
 				return *_Name;
 			}
-
-			virtual bool operator==(const CGoal &);
-
-			void setSender(NLAIAGENT::IBasicAgent *);
-			void setReceiver(NLAIAGENT::IBasicAgent *);
-
-			NLAIAGENT::IBasicAgent *getSender();
-			NLAIAGENT::IBasicAgent *getReceiver();
-
-			virtual void cancel();
-			virtual float priority() const;
-
-/*			virtual void setTopLevel(NLAIAGENT::CAgentScript *);
-			const NALAIGENT::CAgentScript *getTOpLevel() const;*/
 
 			void setMode(TTypeOfGoal mode)
 			{
@@ -147,7 +101,74 @@ namespace NLAILOGIC
 				return ( !_Successors.empty() );
 			}
 
+			virtual void failure();
+			virtual void success();
+
+			virtual void operatorSuccess(NLAIAGENT::IBasicAgent *);
+			virtual void operatorFailure(NLAIAGENT::IBasicAgent *);
+
 			bool isExclusive();
+
+	};
+
+	class CGoal : public IGoal
+	{
+		public:
+
+			CGoal();
+			CGoal(const NLAIAGENT::IVarName &, TTypeOfGoal mode = achieveOnce);
+			CGoal(const NLAIAGENT::IVarName &, std::list<const NLAIAGENT::IObjectIA *> &,TTypeOfGoal mode = achieveOnce);
+			CGoal(const CGoal &);
+			virtual ~CGoal();
+
+			void setArgs(std::list<NLAIAGENT::IObjectIA *> &);
+			const std::vector<NLAIAGENT::IObjectIA *> &getArgs();
+
+			static const NLAIC::CIdentType IdGoal;
+
+			void addSuccessor(NLAIAGENT::IBasicAgent *);
+			void addPredecessor(NLAIAGENT::IBasicAgent *);
+
+//			virtual void failure();
+//			virtual void success();
+
+			virtual void operatorSuccess(NLAIAGENT::IBasicAgent *);
+			virtual void operatorFailure(NLAIAGENT::IBasicAgent *);
+
+			const std::vector<IBaseOperator *> getOperators();
+
+			const NLAIC::IBasicType *clone() const;
+			const NLAIC::IBasicType *newInstance() const;
+			void save(NLMISC::IStream &os);
+			void load(NLMISC::IStream &is);
+			virtual void getDebugString(std::string &) const;
+			bool isTrue() const;
+			float truthValue() const;
+			const IObjectIA::CProcessResult &run();
+			bool isEqual(const CGoal &a) const;
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
+			const NLAIC::CIdentType &getType() const;
+
+			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
+			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p);
+			sint32 getMethodIndexSize() const;
+
+
+			virtual bool operator==(const CGoal &);
+
+			void setSender(NLAIAGENT::IBasicAgent *);
+			void setReceiver(NLAIAGENT::IBasicAgent *);
+
+			NLAIAGENT::IBasicAgent *getSender();
+			NLAIAGENT::IBasicAgent *getReceiver();
+
+			virtual void cancel();
+			virtual float priority() const;
+
+/*			virtual void setTopLevel(NLAIAGENT::CAgentScript *);
+			const NALAIGENT::CAgentScript *getTOpLevel() const;*/
+
 	};
 }
 

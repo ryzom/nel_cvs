@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.112 2002/05/03 14:34:57 portier Exp $
+ * $Id: agent_script.cpp,v 1.113 2002/05/03 15:49:00 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1578,9 +1578,13 @@ namespace NLAIAGENT
 		case TGetClass:
 			{
 				IObjectIA::CProcessResult r;
-				NLAIC::CIdentType &idtype = (NLAIC::CIdentType &) getType();
-				std::string classname = idtype.getClassName();
-				r.Result = new CStringType( CStringVarName( classname.c_str() ) );
+				if ( _AgentClass != NULL )
+				{
+					const NLAIAGENT::IVarName *classname = _AgentClass->getClassName();
+					r.Result = new CStringType( *classname );
+				}
+				else
+					r.Result = new CStringType( CStringVarName("<unknown>"));
 				return r;
 			}
 
@@ -1700,12 +1704,15 @@ namespace NLAIAGENT
 		case TGetClass:
 			{
 				IObjectIA::CProcessResult r;
-				NLAIC::CIdentType &idtype = (NLAIC::CIdentType &) getType();
-				std::string classname = idtype.getClassName();
-				r.Result = new CStringType( CStringVarName( classname.c_str() ) );
+				if ( _AgentClass != NULL )
+				{
+					const NLAIAGENT::IVarName *classname = _AgentClass->getClassName();
+					r.Result = new CStringType( *classname );
+				}
+				else
+					r.Result = new CStringType( CStringVarName("<unknown>"));
 				return r;
 			}
-
 
 		case TRunAskParentNotify:
 			{				

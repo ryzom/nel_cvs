@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.20 2000/12/01 17:19:06 berenguier Exp $
+ * $Id: patch.cpp,v 1.21 2000/12/06 10:17:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -839,7 +839,7 @@ CPatchRdrPass	*CPatch::getTileRenderPass(sint tileId, sint pass)
 }
 
 // ***************************************************************************
-void			CPatch::getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvScaleBias)
+void			CPatch::getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvScaleBias, bool &is256x256, uint8 &uvOff)
 {
 	bool	additive= (pass&1)!=0;
 	sint	passNum= pass>>1;
@@ -856,6 +856,7 @@ void			CPatch::getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvS
 	else
 	{
 		orient= Tiles[tileId].getTileOrient(passNum);
+		Tiles[tileId].getTile256Info(is256x256, uvOff);
 		CTile::TBitmap type;
 		if(additive)
 			type= CTile::additive;

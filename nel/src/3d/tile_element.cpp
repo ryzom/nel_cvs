@@ -1,7 +1,7 @@
 /** \file tile_element.cpp
  * <File description>
  *
- * $Id: tile_element.cpp,v 1.3 2000/12/05 18:13:42 berenguier Exp $
+ * $Id: tile_element.cpp,v 1.4 2000/12/06 10:17:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ uint8	CTileElement::getTileOrient(sint i) const
 }
 
 
-void	CTileElement::setTileUvInfo(bool is256x256, uint8 uvOff)
+void	CTileElement::setTile256Info(bool is256x256, uint8 uvOff)
 {
 	nlassert(uvOff>=0 && uvOff<=3);
 	sint	where= NL_TILE_ELM_OFFSET_UVINFO;
@@ -59,7 +59,7 @@ void	CTileElement::setTileUvInfo(bool is256x256, uint8 uvOff)
 }
 
 
-void	CTileElement::getTileUvInfo(bool &is256x256, uint8 &uvOff) const
+void	CTileElement::getTile256Info(bool &is256x256, uint8 &uvOff) const
 {
 	sint	where= NL_TILE_ELM_OFFSET_UVINFO;
 	sint	info= ((Flags>>where) & NL_TILE_ELM_MASK_UVINFO);

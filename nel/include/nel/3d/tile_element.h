@@ -1,7 +1,7 @@
 /** \file tile_element.h
  * <File description>
  *
- * $Id: tile_element.h,v 1.3 2000/12/05 18:13:34 berenguier Exp $
+ * $Id: tile_element.h,v 1.4 2000/12/06 10:16:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,11 +83,11 @@ public:
 	 *	  ---------
 	 *
 	 */
-	void	setTileUvInfo(bool is256x256, uint8 uvOff=0);
+	void	setTile256Info(bool is256x256, uint8 uvOff=0);
 	
 	/** Get the tile 256x256 information.
 	 */
-	void	getTileUvInfo(bool &is256x256, uint8 &uvOff) const;
+	void	getTile256Info(bool &is256x256, uint8 &uvOff) const;
 
 
 	void	serial(NLMISC::IStream &f);

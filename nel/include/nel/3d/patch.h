@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.15 2000/11/30 10:57:13 berenguier Exp $
+ * $Id: patch.h,v 1.16 2000/12/06 10:16:51 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -266,7 +266,7 @@ private:
 	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass);
 	// For CTessFace::computeMaterial(). Return the orient/scalebias for the tile in the patchtexture, and the
 	// desired pass.
-	void			getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvScaleBias);
+	void			getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvScaleBias, bool &is256x256, uint8 &uvOff);
 	// For Render
 	sint			getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc);
 	sint			getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc);

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.16 2000/11/30 10:57:13 berenguier Exp $
+ * $Id: tessellation.h,v 1.17 2000/12/06 10:16:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,12 +83,20 @@ public:
 public:
 	CUV() {}
 	CUV(float u, float v) : U(u), V(v) {}
+	// bin operators.
 	CUV	operator+(const CUV &v) const
 		{ return CUV(U+v.U, V+v.V);}
 	CUV	operator-(const CUV &v) const
 		{ return CUV(U-v.U, V-v.V);}
 	CUV	operator*(float f) const
 		{ return CUV(U*f, V*f);}
+	// = operators.
+	CUV	&operator*=(float f)
+		{ U*=f;V*=f; return *this;}
+	CUV	&operator+=(const CUV &v)
+		{ U+=v.U;V+=v.V; return *this;}
+	CUV	&operator-=(const CUV &v)
+		{ U-=v.U;V-=v.V; return *this;}
 };
 
 
@@ -100,12 +108,20 @@ public:
 public:
 	CUVW() {}
 	CUVW(float u, float v, float w) : U(u), V(v), W(w) {}
+	// bin operators.
 	CUVW	operator+(const CUVW &v) const
 		{ return CUVW(U+v.U, V+v.V, W+v.W);}
 	CUVW	operator-(const CUVW &v) const
 		{ return CUVW(U-v.U, V-v.V, W-v.W);}
 	CUVW	operator*(float f) const
 		{ return CUVW(U*f, V*f, W*f);}
+	// = operators.
+	CUVW	&operator*=(float f)
+		{ U*=f;V*=f; W*=f; return *this;}
+	CUVW	&operator+=(const CUVW &v)
+		{ U+=v.U;V+=v.V; W+=v.W; return *this;}
+	CUVW	&operator-=(const CUVW &v)
+		{ U-=v.U;V-=v.V; W-=v.W; return *this;}
 };
 
 

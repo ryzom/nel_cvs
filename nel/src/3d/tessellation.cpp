@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.21 2000/12/05 18:13:42 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.22 2000/12/06 10:17:31 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -285,7 +285,9 @@ void		CTessFace::initTileUv(sint pass, CParamCoord pointCoord, CParamCoord middl
 	// Get Tile Uv info: orientation and scale.
 	uint8		orient;
 	CVector		uvScaleBias;
-	Patch->getTileUvInfo(TileId, pass, orient, uvScaleBias);
+	bool		is256;
+	uint8		uvOff;
+	Patch->getTileUvInfo(TileId, pass, orient, uvScaleBias, is256, uvOff);
 
 	// Orient the UV.
 	float	u= uv.U;
@@ -309,6 +311,16 @@ void		CTessFace::initTileUv(sint pass, CParamCoord pointCoord, CParamCoord middl
 			uv.U= v;
 			uv.V= 1-u;
 			break;
+	}
+
+	// Do the 256x256.
+	if(is256)
+	{
+		uv*= 0.5;
+		if(uvOff==2 || uvOff==3)
+			uv.U+= 0.5;
+		if(uvOff==1 || uvOff==2)
+			uv.V+= 0.5;
 	}
 
 
@@ -1321,7 +1333,6 @@ void		CTessFace::unbind(CPatch *except[4])
 			SonLeft->VLeft= VLeft;
 			SonRight->VBase= VBase;
 			SonRight->VRight= VRight;
-			// TODODODO: test.
 		}
 
 		// unbind the sons.

@@ -1,7 +1,7 @@
 /** \file bit_set.h
  * CBitSet class
  *
- * $Id: bit_set.h,v 1.5 2001/08/01 09:41:12 berenguier Exp $
+ * $Id: bit_set.h,v 1.6 2003/01/20 14:18:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,10 @@ public:
 	/// Clear the bitarray so size() return 0.
 	void	clear();
 	/// Return size of the bit array.
-	uint	size() const;
+	uint	size() const
+	{
+		return NumBits;
+	}
 	/// Set a bit to 0 or 1.
 	void	set(sint bitNumber, bool value)
 	{
@@ -163,12 +166,19 @@ public:
 	//@}
 
 
+	/// Serialize
 	void	serial(NLMISC::IStream &f);
+
+	/// Return the raw vector
+	const std::vector<uint32>& getVector() const { return Array; }
+
+	/// Write an uint32 into the bit set (use with caution, no check)
+	void	setUint( uint32 srcValue, uint i ) { Array[i] = srcValue; }
 
 private:
 	std::vector<uint32>	Array;
-	sint			NumBits;
-	uint32			MaskLast;	// Mask for the last uint32.
+	sint				NumBits;
+	uint32				MaskLast;	// Mask for the last uint32.
 };
 
 

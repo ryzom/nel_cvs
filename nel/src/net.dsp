@@ -98,11 +98,35 @@ SOURCE=..\include\nel\net\inet_address.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\local_area.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\local_area.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\local_entity.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\local_entity.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\message.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\net\message.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\moving_entity.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\moving_entity.h
 # End Source File
 # Begin Source File
 
@@ -135,6 +159,14 @@ SOURCE=.\net\pt_callback_item.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\net\pt_callback_item.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\remote_entity.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\remote_entity.h
 # End Source File
 # Begin Source File
 

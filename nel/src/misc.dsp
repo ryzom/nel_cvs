@@ -85,7 +85,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/DebugFast/misc"
 # PROP Target_Dir ""
 # ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "NL_DEBUG_FAST" /D "LIBXML_STATIC" /D "_DEBUG" /D "WIN32" /D "_MBCS" /Yu"stdmisc.h" /FD /GZ /c
-# SUBTRACT CPP /Gf /Gy /FA<none> /Fr
+# SUBTRACT CPP /Gf /Gy /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -552,6 +552,14 @@ SOURCE=..\include\nel\misc\string_mapper.h
 
 SOURCE=..\include\nel\misc\ucstring.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\misc\words_dictionary.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\words_dictionary.h
+# End Source File
 # End Group
 # Begin Group "Threads"
 
@@ -1009,14 +1017,6 @@ SOURCE=.\misc\stdmisc.h
 # Begin Source File
 
 SOURCE=..\include\nel\misc\types_nl.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\words_dictionary.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\words_dictionary.h
 # End Source File
 # End Target
 # End Project

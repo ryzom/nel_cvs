@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.27 2002/04/12 16:37:05 vizerie Exp $
+ * $Id: path.cpp,v 1.28 2002/04/23 15:54:52 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -718,7 +718,7 @@ string CFile::getPath (const string &filename)
 	if (pos != string::npos)
 		return filename.substr (0, pos + 1);
 	else
-		return filename;
+		return "";
 }
 
 bool CFile::isDirectory (const string &filename)

@@ -5,7 +5,7 @@
  * The class can also (but not in an optimized manner) return the
  * string associated with an id.
  *
- * $Id: string_mapper.cpp,v 1.9 2004/01/07 18:31:31 lecroart Exp $
+ * $Id: string_mapper.cpp,v 1.10 2004/10/22 09:14:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,6 +60,8 @@ TStringId CStringMapper::localMap(const std::string &str)
 	if (str.size() == 0)
 		return 0;
 
+	CAutoFastMutex	automutex(&_Mutex);
+
 	string *pStr = new string;
 	*pStr = str;
 
@@ -80,6 +82,8 @@ TStringId CStringMapper::localMap(const std::string &str)
 // ****************************************************************************
 void CStringMapper::localClear()
 {
+	CAutoFastMutex	automutex(&_Mutex);
+	
 	std::set<string*,CCharComp>::iterator it = _StringTable.begin();
 	while (it != _StringTable.end())
 	{

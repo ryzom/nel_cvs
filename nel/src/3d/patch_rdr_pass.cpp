@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.cpp
  * <File description>
  *
- * $Id: patch_rdr_pass.cpp,v 1.11 2002/08/26 13:01:42 berenguier Exp $
+ * $Id: patch_rdr_pass.cpp,v 1.12 2003/04/23 10:12:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,15 +31,6 @@
 
 namespace NL3D 
 {
-
-
-// ***************************************************************************
-CRdrPatchId::CRdrPatchId()
-{
-	PatchRdrPass= NULL;
-	Patch= NULL;
-	_Next= NULL;
-}
 
 
 // ***************************************************************************

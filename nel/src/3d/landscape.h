@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.44 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: landscape.h,v 1.45 2003/04/23 10:11:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,6 +248,8 @@ public:
 	 */
 	void			averageTesselationVertices();
 
+	// Profile at Current landscape state (nlinfos)
+	void			profileRender();
 
 	// @}
 

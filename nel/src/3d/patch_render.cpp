@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.15 2003/04/15 09:29:51 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.16 2003/04/23 10:16:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,11 +51,11 @@ namespace NL3D
 
 
 // ***************************************************************************
-void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
+void			CPatch::computeNewFar(const NLMISC::CBSphere &patchSphere, sint &newFar0, sint &newFar1)
 {
 	// Classify the patch.
 	//========================
-	float	r= (CLandscapeGlobals::RefineCenter-BSphere.Center).norm() - BSphere.Radius;
+	float	r= (CLandscapeGlobals::RefineCenter-patchSphere.Center).norm() - patchSphere.Radius;
 	float	rr=0.0;
 	if(r<CLandscapeGlobals::TileDistNear)
 		rr= r-CLandscapeGlobals::TileDistNear, newFar0= 0;
@@ -67,7 +67,7 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 		newFar0= 3;
 	// Transition with the next level.
 	newFar1=0;
-	if(newFar0<3 && rr>-(CLandscapeGlobals::FarTransition+2*BSphere.Radius))
+	if(newFar0<3 && rr>-(CLandscapeGlobals::FarTransition+2*patchSphere.Radius))
 	{
 		newFar1= newFar0+1;
 	}
@@ -78,8 +78,8 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 	if(newFar0!=Far0 || newFar1!=Far1)
 	{
 		// Backup old pass0
-		CPatchRdrPass	*oldPass0=Pass0.PatchRdrPass;
-		CPatchRdrPass	*oldPass1=Pass1.PatchRdrPass;
+		CPatchRdrPass	*oldPass0=_PatchRdrPassFar0;
+		CPatchRdrPass	*oldPass1=_PatchRdrPassFar1;
 
 		// Checks
 		if (oldPass0==NULL)
@@ -96,11 +96,11 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 
 		// Don't delete the pass0 if the new newFar1 will use it
 		if ((newFar1==Far0)&&(Far0>0))
-			Pass0.PatchRdrPass=NULL;
+			_PatchRdrPassFar0=NULL;
 
 		// Don't delete the pass1 if the new newFar0 will use it
 		if ((newFar0==Far1)&&(Far1>0))
-			Pass1.PatchRdrPass=NULL;
+			_PatchRdrPassFar1=NULL;
 
 		// Pass0 have changed ?
 		if (newFar0!=Far0)
@@ -109,14 +109,14 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 			if(newFar0>0)
 			{
 				// Free the old pass, don't used any more
-				if (Pass0.PatchRdrPass)
-					Zone->Landscape->freeFarRenderPass (this, Pass0.PatchRdrPass, Far0);
+				if (_PatchRdrPassFar0)
+					Zone->Landscape->freeFarRenderPass (this, _PatchRdrPassFar0, Far0);
 
 				// Can we use the old pass1 ?
 				if (newFar0==Far1)
 				{
 					// Yes, recycle it!
-					Pass0.PatchRdrPass=oldPass1;
+					_PatchRdrPassFar0=oldPass1;
 
 					// Copy uv coordinates
 					Far0UScale=Far1UScale;
@@ -133,7 +133,7 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 				{
 					// Rotation boolean
 					bool bRot;
-					Pass0.PatchRdrPass=Zone->Landscape->getFarRenderPass(this, newFar0, Far0UScale, Far0VScale, Far0UBias, Far0VBias, bRot);
+					_PatchRdrPassFar0=Zone->Landscape->getFarRenderPass(this, newFar0, Far0UScale, Far0VScale, Far0UBias, Far0VBias, bRot);
 
 					// Flags is set if the far texture is rotated of 90° to the left
 					if (bRot)
@@ -144,10 +144,10 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 			}
 			else	// no more far pass0
 			{
-				if (Pass0.PatchRdrPass)
+				if (_PatchRdrPassFar0)
 				{
-					Zone->Landscape->freeFarRenderPass (this, Pass0.PatchRdrPass, Far0);
-					Pass0.PatchRdrPass=NULL;
+					Zone->Landscape->freeFarRenderPass (this, _PatchRdrPassFar0, Far0);
+					_PatchRdrPassFar0=NULL;
 				}
 			}
 		}
@@ -159,15 +159,15 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 			if(newFar1>0)
 			{
 				// Delete the pass1 if not used any more
-				if (Pass1.PatchRdrPass)
-					Zone->Landscape->freeFarRenderPass (this, Pass1.PatchRdrPass, Far1);
+				if (_PatchRdrPassFar1)
+					Zone->Landscape->freeFarRenderPass (this, _PatchRdrPassFar1, Far1);
 
 				// Can we use the old pass1 ?
 				if (newFar1==Far0)
 				{
 					// Yes, recycle it!
-					Pass1.PatchRdrPass= oldPass0;
-					nlassert (Pass1.PatchRdrPass);
+					_PatchRdrPassFar1= oldPass0;
+					nlassert (_PatchRdrPassFar1);
 
 					// Copy uv coordinates
 					Far1UScale=oldFar0UScale;
@@ -184,8 +184,8 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 				{
 					// Rotation boolean
 					bool bRot;
-					Pass1.PatchRdrPass=Zone->Landscape->getFarRenderPass(this, newFar1, Far1UScale, Far1VScale, Far1UBias, Far1VBias, bRot);
-					nlassert (Pass1.PatchRdrPass);
+					_PatchRdrPassFar1=Zone->Landscape->getFarRenderPass(this, newFar1, Far1UScale, Far1VScale, Far1UBias, Far1VBias, bRot);
+					nlassert (_PatchRdrPassFar1);
 
 					// Flags is set if the far texture is rotated of 90° to the left
 					if (bRot)
@@ -208,10 +208,10 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 			}
 			else	// no more far pass1
 			{
-				if (Pass1.PatchRdrPass)
+				if (_PatchRdrPassFar1)
 				{
-					Zone->Landscape->freeFarRenderPass (this, Pass1.PatchRdrPass, Far1);
-					Pass1.PatchRdrPass=NULL;
+					Zone->Landscape->freeFarRenderPass (this, _PatchRdrPassFar1, Far1);
+					_PatchRdrPassFar1=NULL;
 				}
 			}
 		}
@@ -223,15 +223,11 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 
 
 // ***************************************************************************
-void			CPatch::updateTextureFarOnly()
+void			CPatch::updateTextureFarOnly(const NLMISC::CBSphere &patchSphere)
 {
-	// If visible, don't change Far, because VB must be changed too. preRender() should have been called isntead.
-	if(!RenderClipped)
-		return;
-
 	sint	newFar0,newFar1;
 	// compute new Far0 and new Far1.
-	computeNewFar(newFar0, newFar1);
+	computeNewFar(patchSphere, newFar0, newFar1);
 
 	// Far change.
 	//------------------
@@ -250,18 +246,13 @@ void			CPatch::updateTextureFarOnly()
 
 
 // ***************************************************************************
-void			CPatch::preRender()
+void			CPatch::preRender(const NLMISC::CBSphere &patchSphere)
 {
-	// If not visible, do nothing.
-	if(RenderClipped)
-		return;
-
-
 	// 0. Classify the patch, and update TextureInfo.
 	//=======================
 	sint	newFar0,newFar1;
 	// compute new Far0 and new Far1.
-	computeNewFar(newFar0, newFar1);
+	computeNewFar(patchSphere, newFar0, newFar1);
 
 
 	// 2. Update vertices in VB
@@ -280,7 +271,7 @@ void			CPatch::preRender()
 	// In this case, major change: delete all VB, then recreate after.
 	if(changeTileMode)
 	{
-		// delete the old VB (NB: RenderClipped==false here). 
+		// delete the old VB (NB: isRenderClipped()==false here). 
 		// NB: Far0 and Far1 are still unmodified, so deleteVB() will do the good job.
 		deleteVBAndFaceVector();
 	}
@@ -339,12 +330,12 @@ void			CPatch::preRender()
 	// This patch is visible. So if good far, append.
 	if(Far0>0)
 	{
-		Pass0.PatchRdrPass->appendRdrPatchFar0(&Pass0, NumRenderableFaces);
+		_PatchRdrPassFar0->appendRdrPatchFar0(this);
 	}
 	// Same for Far1.
 	if(Far1>0)
 	{
-		Pass1.PatchRdrPass->appendRdrPatchFar1(&Pass1, NumRenderableFaces);
+		_PatchRdrPassFar1->appendRdrPatchFar1(this);
 	}
 
 
@@ -458,7 +449,7 @@ void			CPatch::preRender()
 #define	NL3D_PROFILE_LAND_ADD_FACE_VECTOR(_x, _fv)		\
 	if(_fv)											\
 	{												\
-		NL3D_PROFILE_LAND_ADD(_x, _fv->NumTri);		\
+		NL3D_PROFILE_LAND_ADD(_x, *_fv);		\
 	}
 #else
 #define	NL3D_PROFILE_LAND_ADD_FACE_VECTOR(_x, _fv)
@@ -466,8 +457,19 @@ void			CPatch::preRender()
 
 
 // ***************************************************************************
-static	inline	void	renderFaceVector(CLandscapeFaceVector *fv)
+static	inline	void	renderFaceVector(uint32 *fv)
 {
+	/*
+		Remind that structure of fv is:
+			uint32 NumTri
+			uint32 index0Tri0
+			uint32 index1Tri0
+			uint32 index2Tri0
+			uint32 index0Tri1
+			uint32 index1Tri1
+			.....
+	*/
+
 	// If not NULL (ie not empty).
 	if(fv)
 	{
@@ -478,14 +480,14 @@ static	inline	void	renderFaceVector(CLandscapeFaceVector *fv)
 		extern	float	TEMP_NRFVMeanTri;
 		extern	float	TEMP_NRFVDeltaTri;
 		TEMP_NRFV++;
-		TEMP_NRFVTri+= fv->NumTri;
-		TEMP_NRFVDeltaTri+= sqr(fv->NumTri-TEMP_NRFVMeanTri);
+		TEMP_NRFVTri+= *fv;
+		TEMP_NRFVDeltaTri+= sqr(*fv-TEMP_NRFVMeanTri);
 		*/
 
 		// here we have NumTri>0, because fv!=NULL.
 
 		// making lot of render() is slower than copy a block, and render it.
-		//CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(fv->TriPtr, fv->NumTri);
+		//CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(fv+1, *fv);
 
 #ifdef	NL_OS_WINDOWS
 		__asm
@@ -496,8 +498,8 @@ static	inline	void	renderFaceVector(CLandscapeFaceVector *fv)
 			mov		edx, NL3D_LandscapeGlobals_PassNTri
 			xor		eax, eax		// Avoid AGI stall.
 
-			mov		ecx, [ebx]fv.NumTri
-			mov		esi, [ebx]fv.TriPtr
+			mov		ecx, [ebx]
+			lea		esi, [ebx+4]
 
 			mov		eax, ecx				// eax= bkup NumTris
 			lea		ecx, [ecx + ecx*2]		// ecx= nTriIndex= NumTris*3
@@ -505,18 +507,18 @@ static	inline	void	renderFaceVector(CLandscapeFaceVector *fv)
 			// copy tri indices
 			rep		movsd
 
-			add		edx, eax				// edx= NL3D_LandscapeGlobals_PassNTri + fv->NumTri;
+			add		edx, eax				// edx= NL3D_LandscapeGlobals_PassNTri + NumTri;
 
 			// NL3D_LandscapeGlobals_PassTriCurPtr= edi= new ptr after copy
 			mov		NL3D_LandscapeGlobals_PassTriCurPtr, edi
 			mov		NL3D_LandscapeGlobals_PassNTri, edx
 		}
 #else
-		uint	nTriIndex= fv->NumTri*3;
+		uint	nTriIndex= *fv*3;
 		// Fill and increment the array.
-		memcpy( NL3D_LandscapeGlobals_PassTriCurPtr, fv->TriPtr, nTriIndex * sizeof(uint32) );
+		memcpy( NL3D_LandscapeGlobals_PassTriCurPtr, fv+1, nTriIndex * sizeof(uint32) );
 		NL3D_LandscapeGlobals_PassTriCurPtr+= nTriIndex;
-		NL3D_LandscapeGlobals_PassNTri+= fv->NumTri;
+		NL3D_LandscapeGlobals_PassNTri+= *fv;
 #endif
 	}
 }
@@ -527,8 +529,10 @@ void			CPatch::renderFar0()
 {
 	NL3D_PROFILE_LAND_ADD(ProfNPatchRdrFar0, 1);
 
+#ifdef NL_DEBUG
 	// Must be visible, and must be called only if the RdrPass is enabled.
-	nlassert(!RenderClipped && Pass0.PatchRdrPass);
+	nlassert(!isRenderClipped() && _PatchRdrPassFar0);
+#endif
 
 	// Render tris of MasterBlock.
 	renderFaceVector(MasterBlock.Far0FaceVector);
@@ -550,18 +554,19 @@ void			CPatch::renderFar0()
 		}
 	}
 
+
 	// Check the pass is in the set
 #ifdef NL_DEBUG
-	if (Pass0.PatchRdrPass)
+	if (_PatchRdrPassFar0)
 	{
-		nlassert (Zone->Landscape->_FarRdrPassSet.find (Pass0.PatchRdrPass)!=Zone->Landscape->_FarRdrPassSet.end());
-		if (Zone->Landscape->_FarRdrPassSet.find (Pass0.PatchRdrPass)==Zone->Landscape->_FarRdrPassSet.end())
+		nlassert (Zone->Landscape->_FarRdrPassSet.find (_PatchRdrPassFar0)!=Zone->Landscape->_FarRdrPassSet.end());
+		if (Zone->Landscape->_FarRdrPassSet.find (_PatchRdrPassFar0)==Zone->Landscape->_FarRdrPassSet.end())
 		{
 			bool bFound=false;
 			{
 				for (sint t=0; t<(sint)Zone->Landscape->_FarRdrPassSetVectorFree.size(); t++)
 				{
-					if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (Pass0.PatchRdrPass)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
+					if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (_PatchRdrPassFar0)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
 					{
 						bFound=true;
 						break;
@@ -580,8 +585,10 @@ void			CPatch::renderFar1()
 {
 	NL3D_PROFILE_LAND_ADD(ProfNPatchRdrFar1, 1);
 
+#ifdef NL_DEBUG
 	// Must be visible, and must be called only if the RdrPass is enabled.
-	nlassert(!RenderClipped && Pass1.PatchRdrPass);
+	nlassert(!isRenderClipped() && _PatchRdrPassFar1);
+#endif
 
 	// Render tris of MasterBlock.
 	renderFaceVector(MasterBlock.Far1FaceVector);
@@ -605,16 +612,16 @@ void			CPatch::renderFar1()
 
 	// Check the pass is in the set
 #ifdef NL_DEBUG
-	if (Pass1.PatchRdrPass)
+	if (_PatchRdrPassFar1)
 	{
-		nlassert (Zone->Landscape->_FarRdrPassSet.find (Pass1.PatchRdrPass)!=Zone->Landscape->_FarRdrPassSet.end());
-		if (Zone->Landscape->_FarRdrPassSet.find (Pass1.PatchRdrPass)==Zone->Landscape->_FarRdrPassSet.end())
+		nlassert (Zone->Landscape->_FarRdrPassSet.find (_PatchRdrPassFar1)!=Zone->Landscape->_FarRdrPassSet.end());
+		if (Zone->Landscape->_FarRdrPassSet.find (_PatchRdrPassFar1)==Zone->Landscape->_FarRdrPassSet.end())
 		{
 			bool bFound=false;
 			{
 				for (sint t=0; t<(sint)Zone->Landscape->_FarRdrPassSetVectorFree.size(); t++)
 				{
-					if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (Pass1.PatchRdrPass)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
+					if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (_PatchRdrPassFar1)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
 					{
 						bFound=true;
 						break;
@@ -745,7 +752,7 @@ void		CPatch::deleteFaceVectorFar0OrTile()
 void		CPatch::recreateTessBlockFaceVector(CTessBlock &block)
 {
 	// Do it Only if patch is visible.
-	if(!RenderClipped)
+	if(!isRenderClipped())
 	{
 		// Far0.
 		// If Far Mode.
@@ -1287,7 +1294,7 @@ void			CPatch::fillVB()
 // ***************************************************************************
 void		CPatch::fillVBIfVisible()
 {
-	if(RenderClipped==false)
+	if(isRenderClipped()==false)
 		fillVB();
 }
 
@@ -1417,7 +1424,7 @@ void		CPatch::computeGeomorphTileVertexListVB(CTessList<CTessNearVertex>  &vertL
 // ***************************************************************************
 void		CPatch::computeSoftwareGeomorphAndAlpha()
 {
-	if(RenderClipped)
+	if(isRenderClipped())
 		return;
 
 	// Compute Geomorph.
@@ -1501,38 +1508,31 @@ void		CPatch::computeSoftwareGeomorphAndAlpha()
 		
 
 // ***************************************************************************
-void		CPatch::updateClipPatchVB()
+void		CPatch::updateClipPatchVB(bool renderClipped)
 {
-	// If there is a change in the clip state of this patch.
-	if( OldRenderClipped != RenderClipped )
+	// If now the patch is invisible
+	if(renderClipped)
 	{
-		// bkup this state for next time.
-		OldRenderClipped = RenderClipped;
+		// Then delete vertices.
+		deleteVBAndFaceVector();
 
-		// If now the patch is invisible
-		if(RenderClipped)
+		// Now, all vertices in VB are deleted.
+		// Force clip state of all TessBlocks, so no allocation will be done on Vertices in VB.
+		if(!TessBlocks.empty())
 		{
-			// Then delete vertices.
-			deleteVBAndFaceVector();
-
-			// Now, all vertices in VB are deleted.
-			// Force clip state of all TessBlocks, so no allocation will be done on Vertices in VB.
-			if(!TessBlocks.empty())
+			for(uint i=0; i<TessBlocks.size();i++)
 			{
-				for(uint i=0; i<TessBlocks.size();i++)
-				{
-					CTessBlock	&tblock= TessBlocks[i];
-					tblock.forceClip();
-				}
+				CTessBlock	&tblock= TessBlocks[i];
+				tblock.forceClip();
 			}
 		}
-		else
-		{
-			// else allocate / fill them.
-			allocateVBAndFaceVector();
-			// NB: fillVB() test if any reallocation occurs.
-			fillVB();
-		}
+	}
+	else
+	{
+		// else allocate / fill them.
+		allocateVBAndFaceVector();
+		// NB: fillVB() test if any reallocation occurs.
+		fillVB();
 	}
 }
 
@@ -1551,13 +1551,13 @@ void		CPatch::checkCreateVertexVBFar(CTessFarVertex *pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in !Tile Mode, allocate.
 	// NB: must test Far0>0 because vertices are reallocated in preRender() if a change of Far occurs.
-	if(!RenderClipped && Far0>0 && pVert->OwnerBlock->visibleFar0() )
+	if(!isRenderClipped() && Far0>0 && pVert->OwnerBlock->visibleFar0() )
 	{
 		pVert->Index0= CLandscapeGlobals::CurrentFar0VBAllocator->allocateVertex();
 	}
 
 	// Idem for Far1
-	if(!RenderClipped && Far1>0 && pVert->OwnerBlock->visibleFar1())
+	if(!isRenderClipped() && Far1>0 && pVert->OwnerBlock->visibleFar1())
 	{
 		pVert->Index1= CLandscapeGlobals::CurrentFar1VBAllocator->allocateVertex();
 	}
@@ -1571,14 +1571,14 @@ void		CPatch::checkFillVertexVBFar(CTessFarVertex *pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in !Tile Mode, try to fill.
 	// NB: must test Far0>0 because vertices are reallocated in preRender() if a change of Far occurs.
-	if(!RenderClipped && Far0>0 && pVert->OwnerBlock->visibleFar0())
+	if(!isRenderClipped() && Far0>0 && pVert->OwnerBlock->visibleFar0())
 	{
 		if( !CLandscapeGlobals::CurrentFar0VBAllocator->reallocationOccurs() )
 			fillFar0VertexVB(pVert);
 	}
 
 	// Idem for Far1
-	if(!RenderClipped && Far1>0 && pVert->OwnerBlock->visibleFar1())
+	if(!isRenderClipped() && Far1>0 && pVert->OwnerBlock->visibleFar1())
 	{
 		if( !CLandscapeGlobals::CurrentFar1VBAllocator->reallocationOccurs() )
 			fillFar1VertexVB(pVert);
@@ -1592,7 +1592,7 @@ void		CPatch::checkCreateVertexVBNear(CTessNearVertex	*pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in Tile Mode, allocate.
 	// NB: must test Far0==0 because vertices are reallocated in preRender() if a change of Far occurs.
-	if(!RenderClipped && Far0==0 && pVert->OwnerBlock->visibleTile())
+	if(!isRenderClipped() && Far0==0 && pVert->OwnerBlock->visibleTile())
 	{
 		pVert->Index= CLandscapeGlobals::CurrentTileVBAllocator->allocateVertex();
 	}
@@ -1605,7 +1605,7 @@ void		CPatch::checkFillVertexVBNear(CTessNearVertex	*pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in Tile Mode, try to fill.
 	// NB: must test Far0==0 because vertices are reallocated in preRender() if a change of Far occurs.
-	if(!RenderClipped&& Far0==0 && pVert->OwnerBlock->visibleTile() )
+	if(!isRenderClipped()&& Far0==0 && pVert->OwnerBlock->visibleTile() )
 	{
 		// try to fill.
 		if( !CLandscapeGlobals::CurrentTileVBAllocator->reallocationOccurs() )
@@ -1620,13 +1620,13 @@ void		CPatch::checkDeleteVertexVBFar(CTessFarVertex *pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in !Tile Mode, ok, the vertex exist in VB, so delete.
 	// NB: must test Far0>0 because vertices are deleted in preRender() if a change of Far occurs.
-	if(!RenderClipped && Far0>0 && pVert->OwnerBlock->visibleFar0() )
+	if(!isRenderClipped() && Far0>0 && pVert->OwnerBlock->visibleFar0() )
 	{
 		CLandscapeGlobals::CurrentFar0VBAllocator->deleteVertex(pVert->Index0);
 	}
 
 	// Idem for Far1
-	if(!RenderClipped && Far1>0  && pVert->OwnerBlock->visibleFar1() )
+	if(!isRenderClipped() && Far1>0  && pVert->OwnerBlock->visibleFar1() )
 	{
 		CLandscapeGlobals::CurrentFar1VBAllocator->deleteVertex(pVert->Index1);
 	}
@@ -1638,7 +1638,7 @@ void		CPatch::checkDeleteVertexVBNear(CTessNearVertex	*pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in Tile Mode, ok, the vertex exist in VB, so delete.
 	// NB: must test Far0==0 because vertices are deleted in preRender() if a change of Far occurs.
-	if(!RenderClipped && Far0==0 && pVert->OwnerBlock->visibleTile() )
+	if(!isRenderClipped() && Far0==0 && pVert->OwnerBlock->visibleTile() )
 	{
 		CLandscapeGlobals::CurrentTileVBAllocator->deleteVertex(pVert->Index);
 	}

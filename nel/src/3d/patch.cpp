@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.92 2003/04/03 14:34:50 berenguier Exp $
+ * $Id: patch.cpp,v 1.93 2003/04/23 10:14:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,9 +65,6 @@ CPatch::CPatch()
 	Son0=NULL;
 	Son1=NULL;
 	TessBlockRefCount=0;
-	Clipped=false;
-	RenderClipped= true;
-	OldRenderClipped= true;
 	NumRenderableFaces= 0;
 
 	// for Pacs process. By default, false.
@@ -100,6 +97,12 @@ CPatch::CPatch()
 	// Dynamic LightMap
 	_DLMContext= NULL;
 	_DLMContextRefCount= 0;
+
+	// Render Passes
+	_PatchRdrPassFar0= NULL;
+	_NextRdrFar0= NULL;
+	_PatchRdrPassFar1= NULL;
+	_NextRdrFar1= NULL;
 }
 // ***************************************************************************
 CPatch::~CPatch()
@@ -113,13 +116,12 @@ void			CPatch::release()
 	if(Zone)
 	{
 		// First, delete the VB if the zone was removed while the patch is visible.
-		if(!RenderClipped)
+		if(!isRenderClipped())
 		{
 			// release VertexBuffer.
 			deleteVBAndFaceVector();
-
-			// Flag.
-			RenderClipped= true;
+			// Flag RenderClipped in Zone
+			Zone->_PatchRenderClipped.set(PatchId, true);
 		}
 
 		// THIS PATCH MSUT BE UNBOUND FIRST!!!!!
@@ -140,17 +142,18 @@ void			CPatch::release()
 	}
 
 	// Flag the fact that this patch can't be rendered.
-	Pass0.Patch= NULL;
-	Pass1.Patch= NULL;
 	OrderS=0;
 	OrderT=0;
 	Son0=NULL;
 	Son1=NULL;
 	clearTessBlocks();
 	resetMasterBlock();
-	Clipped=false;
-	RenderClipped= true;
-	OldRenderClipped= true;
+	// Flag RenderClipped in Zone
+	if(Zone)
+	{
+		Zone->_PatchRenderClipped.set( PatchId, true);
+		Zone->_PatchOldRenderClipped.set( PatchId, true);
+	}
 
 	// the pathc is uncompiled. must do it after clearTessBlocks(), because may use it 
 	// for vegetable manager, and for updateLighting
@@ -587,6 +590,16 @@ CVector		CPatch::getTesselatedPos(CUV uv) const
 
 
 // ***************************************************************************
+bool		CPatch::isRenderClipped() const
+{
+	if(Zone)
+		return Zone->isPatchRenderClipped(PatchId);
+	else
+		return true;
+}
+
+
+// ***************************************************************************
 // ***************************************************************************
 // RENDER LIST.
 // ***************************************************************************
@@ -695,7 +708,7 @@ void			CPatch::clearTessBlocks()
 void			CPatch::resetMasterBlock()
 {
 	// We should be not visible so FaceVector no more exist.
-	nlassert(RenderClipped);
+	nlassert(isRenderClipped());
 
 	MasterBlock.FarVertexList.clear();
 	MasterBlock.FarFaceList.clear();
@@ -769,7 +782,7 @@ void			CPatch::extendTessBlockWithEndPos(CTessFace *face)
 void			CPatch::dirtTessBlockFaceVector(CTessBlock &tb)
 {
 	// If patch is visible, block's faceVector should exist, but are no more valid.
-	if(!RenderClipped)
+	if(!isRenderClipped())
 	{
 		// If this tessBlock not already notified to modification.
 		if(!tb.isInModifyList())
@@ -1108,7 +1121,7 @@ void			CPatch::makeRoots()
 
 	// We don't have to fill the Far vertices VB here, because this patch is still not visible.
 	// NB: we can't because we don't have any driver here.
-	nlassert(RenderClipped==true);
+	nlassert(isRenderClipped()==true);
 
 
 	// Make Roots.
@@ -1250,11 +1263,7 @@ void			CPatch::compile(CZone *z, uint patchId, uint8 orderS, uint8 orderT, CTess
 
 
 	// Once the patch is inserted and compiled in a zone, it is ready to be rendered.
-	// So now fill the Patch info in render pass.
-	Pass0.Patch= this;
-	Pass1.Patch= this;
-
-	// init also the MasterBlock.
+	// init the MasterBlock.
 	MasterBlock.init(this);
 
 	// only 65536 patch per zone allowed.
@@ -1286,11 +1295,6 @@ void			CPatch::compile(CZone *z, uint patchId, uint8 orderS, uint8 orderT, CTess
 	// which has a strange fxxxxxg split.
 	// If patch is square, then SquareLimitLevel=0 (ok!!).
 	SquareLimitLevel= pmax-pmin;
-
-	// Buil the BSPhere.
-	CAABBox	bb= buildBBox();
-	BSphere.Center= bb.getCenter();
-	BSphere.Radius= bb.getRadius();
 
 	// Bind vertices, to zone base vertices.
 	BaseVertices[0]= baseVertices[0];
@@ -1518,40 +1522,20 @@ void			CPatch::refreshTesselationGeometry()
 }
 
 
-
-// ***************************************************************************
-void			CPatch::clip(const std::vector<CPlane>	&pyramid)
-{
-	Clipped= false;
-	for(sint i=0;i<(sint)pyramid.size();i++)
-	{
-		// If entirely out.
-		if(!BSphere.clipBack(pyramid[i]))
-		{
-			Clipped= true;
-			break;
-		}
-	}
-
-	// A patch clipped is clipped to render too.
-	RenderClipped= Clipped;
-}
-
-
 // ***************************************************************************
 void			CPatch::resetRenderFar()
 {
-	if (Pass0.PatchRdrPass)
+	if (_PatchRdrPassFar0)
 	{
 		// free the render pass.
-		Zone->Landscape->freeFarRenderPass (this, Pass0.PatchRdrPass, Far0);
-		Pass0.PatchRdrPass= NULL;
+		Zone->Landscape->freeFarRenderPass (this, _PatchRdrPassFar0, Far0);
+		_PatchRdrPassFar0= NULL;
 	}
-	if (Pass1.PatchRdrPass)
+	if (_PatchRdrPassFar1)
 	{
 		// free the render pass.
-		Zone->Landscape->freeFarRenderPass (this, Pass1.PatchRdrPass, Far1);
-		Pass1.PatchRdrPass= NULL;
+		Zone->Landscape->freeFarRenderPass (this, _PatchRdrPassFar1, Far1);
+		_PatchRdrPassFar1= NULL;
 	}
 
 	Far0= -1;

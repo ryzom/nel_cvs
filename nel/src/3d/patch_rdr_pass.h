@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.h
  * <File description>
  *
- * $Id: patch_rdr_pass.h,v 1.4 2002/08/26 13:01:42 berenguier Exp $
+ * $Id: patch_rdr_pass.h,v 1.5 2003/04/23 10:12:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,51 +30,12 @@
 #include "nel/misc/debug.h"
 #include "3d/driver.h"
 #include "3d/landscape_def.h"
+#include "3d/patch.h"
 #include <vector>
 
 
 namespace NL3D 
 {
-
-
-class	CPatchRdrPass;
-class	CPatch;
-struct	CTileMaterial;
-
-
-// ***************************************************************************
-class	CRdrPatchId
-{
-public:
-	CPatchRdrPass	*PatchRdrPass;
-	CPatch			*Patch;
-
-	CRdrPatchId();
-
-	// For list reading.
-	CRdrPatchId		*getNext() {return _Next;}
-
-private:
-	friend	class	CPatchRdrPass;
-	CRdrPatchId		*_Next;
-};
-
-// ***************************************************************************
-class	CRdrTileId
-{
-public:
-	CPatchRdrPass	*PatchRdrPass;
-	CTileMaterial	*TileMaterial;
-
-	CRdrTileId();
-
-	// For list reading.
-	CRdrTileId		*getNext() {return _Next;}
-
-private:
-	friend	class	CPatchRdrPass;
-	CRdrTileId		*_Next;
-};
 
 
 // ***************************************************************************
@@ -105,16 +66,16 @@ public:
 	 */
 	// @{
 	void		clearAllRenderList();
-	void		appendRdrPatchFar0(CRdrPatchId *rdrPatch, uint maxRenderedFaces)
+	void		appendRdrPatchFar0(CPatch *rdrPatch)
 	{
-		_MaxRenderedFaces+= maxRenderedFaces;
-		rdrPatch->_Next= _Far0ListRoot;
+		_MaxRenderedFaces+= rdrPatch->NumRenderableFaces;
+		rdrPatch->_NextRdrFar0= _Far0ListRoot;
 		_Far0ListRoot= rdrPatch;
 	}
-	void		appendRdrPatchFar1(CRdrPatchId *rdrPatch, uint maxRenderedFaces)
+	void		appendRdrPatchFar1(CPatch *rdrPatch)
 	{
-		_MaxRenderedFaces+= maxRenderedFaces;
-		rdrPatch->_Next= _Far1ListRoot;
+		_MaxRenderedFaces+= rdrPatch->NumRenderableFaces;
+		rdrPatch->_NextRdrFar1= _Far1ListRoot;
 		_Far1ListRoot= rdrPatch;
 	}
 	void		appendRdrPatchTile(uint pass, CRdrTileId *rdrTile, uint maxRenderedFaces)
@@ -123,8 +84,8 @@ public:
 		rdrTile->_Next= _TileListRoot[pass];
 		_TileListRoot[pass]= rdrTile;
 	}
-	CRdrPatchId *getRdrPatchFar0() {return _Far0ListRoot;}
-	CRdrPatchId *getRdrPatchFar1() {return _Far1ListRoot;}
+	CPatch		*getRdrPatchFar0() {return _Far0ListRoot;}
+	CPatch		*getRdrPatchFar1() {return _Far1ListRoot;}
 	CRdrTileId  *getRdrTileRoot(uint pass) {return _TileListRoot[pass];}
 	uint		getMaxRenderedFaces() const {return _MaxRenderedFaces;}
 	// @}
@@ -144,10 +105,13 @@ public:
 	}
 
 private:
+	/* NB: for faster Cache Access during preRender(), you must leave those variables packed like this 
+		_MaxRenderedFaces, _Far0ListRoot, _Far1ListRoot, _TileListRoot
+	*/
 	uint				_MaxRenderedFaces;
 	// The list for Far0 and Far1 to render.
-	CRdrPatchId			*_Far0ListRoot;
-	CRdrPatchId			*_Far1ListRoot;
+	CPatch				*_Far0ListRoot;
+	CPatch				*_Far1ListRoot;
 	// The list for each pass of Tiles to render.
 	CRdrTileId			*_TileListRoot[NL3D_MAX_TILE_PASS];
 

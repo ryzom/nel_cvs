@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.32 2002/08/26 13:01:42 berenguier Exp $
+ * $Id: patch.h,v 1.33 2003/04/23 10:13:38 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -33,11 +33,13 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/vector_2f.h"
+#include "nel/misc/rgba.h"
 #include "3d/tessellation.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/bsphere.h"
 #include "nel/misc/triangle.h"
 #include "nel/misc/geom_ext.h"
+#include "nel/misc/object_vector.h"
 #include "3d/tile_element.h"
 #include "3d/tile_color.h"
 #include "3d/tess_block.h"
@@ -67,6 +69,7 @@ using NLMISC::CVector;
 using NLMISC::CPlane;
 using NLMISC::CAABBox;
 using NLMISC::CBSphere;
+using NLMISC::CRGBA;
 
 
 class	CLandscape;
@@ -399,9 +402,6 @@ public:
 	/// Build the bbox of the patch, according to ctrl points, and displacement map max value.
 	CAABBox			buildBBox() const;
 
-	/// Return the bounding sphere. Work only when zone compiled.
-	const CBSphere	&getBSphere() const {return BSphere;}
-
 	/** Compute a vertex.
 	 * Compute a vertex according to:
 	 *	- s,t
@@ -439,16 +439,6 @@ public:
 	 */
 	void			averageTesselationVertices();
 
-	/// Classify this patch as UnClipped.
-	void			forceNoClip() {Clipped= false;}
-	/// Classify this patch as Clipped.
-	void			forceClip() {Clipped= true;}
-	/// Classify this patch as Render UnClipped.
-	void			forceNoRenderClip() {RenderClipped= false;}
-	/// Classify this patch as RenderClipped.
-	void			forceRenderClip() {RenderClipped= true;}
-	/// Classify this patch.
-	void			clip(const std::vector<CPlane>	&pyramid);
 	/// Refine this patch. Even if clipped. Refine all nodes.
 	void			refineAll();
 
@@ -456,10 +446,10 @@ public:
 	/// \name Render
 	//@{
 
-	/// preRender this patch. no-op if(RenderClipped). Build Max faces / pass etc...
-	void			preRender();
-	// like preRender(), but update TextureFar only. no-op if(!RenderClipped). (you should call preRender() in this case).
-	void			updateTextureFarOnly();
+	/// preRender this patch. Build Max faces / pass etc...
+	void			preRender(const NLMISC::CBSphere &patchSphere);
+	// like preRender(), but update TextureFar only. (you should call preRender() in this case).
+	void			updateTextureFarOnly(const NLMISC::CBSphere &patchSphere);
 	/// Render this patch, if not clipped. Call PatchCurrentDriver->renderSimpleTriangles().
 	// Global Setup setup it in CLandscape::render().
 	void			renderFar0();
@@ -467,6 +457,15 @@ public:
 	// NB: renderTile() is now in CTileMaterial.
 	// For All Far0/Far1/Tile etc..., compute Geomorph and Alpha in software (no VertexShader).
 	void			computeSoftwareGeomorphAndAlpha();
+
+	// update VB according to new clip state.
+	void			updateClipPatchVB(bool renderClipped);
+
+	// get the next patch to render in the same RenderPass for Far0.
+	CPatch			*getNextFar0ToRdr() const {return _NextRdrFar0;}
+	// get the next patch to render in the same RenderPass for Far1.
+	CPatch			*getNextFar1ToRdr() const {return _NextRdrFar1;}
+
 	//@}
 
 
@@ -650,10 +649,8 @@ public:
 
 public:
 
-	// only usefull for CZone refine.
-	bool			isClipped() const {return Clipped;}
-	// only usefull for CZone preRender.
-	bool			isRenderClipped() const {return RenderClipped;}
+	// Is the patch clipped? true if not yte compiled
+	bool			isRenderClipped() const;
 
 
 	// get the according vertex for a corner. use wisely
@@ -668,30 +665,30 @@ public:
 	/// \name VB Allocator mgt.
 	// @{
 
-	// delete all VB allocated in VertexBuffers, according to Far0 and Far1. Do not Test RenderClipped state.
+	// delete all VB allocated in VertexBuffers, according to Far0 and Far1. Do not Test isRenderClipped() state.
 	// With VB, allocate to he faces array.
 	void		deleteVBAndFaceVector();
 
-	// allocate all VB, according to Far0 and Far1. Do not Test RenderClipped state.
+	// allocate all VB, according to Far0 and Far1. Do not Test isRenderClipped() state.
 	// With VB, allocate to he faces array.
 	void		allocateVBAndFaceVector();
 
-	// fill all VB, according to Far0, Far1 and CTessFace VBInfos. Do not Test RenderClipped state.
+	// fill all VB, according to Far0, Far1 and CTessFace VBInfos. Do not Test isRenderClipped() state.
 	// Do not fill a VB if reallocationOccurs().
 	void		fillVB();
 
-	// if RenderClipped==false, fillVB().
+	// if isRenderClipped()==false, fillVB().
 	void		fillVBIfVisible();
 
-	// delete Far1 VB allocated in VertexBuffers. do it only if Far1==true. Do not Test RenderClipped state.
+	// delete Far1 VB allocated in VertexBuffers. do it only if Far1==true. Do not Test isRenderClipped() state.
 	// With VB, allocate to he faces array.
 	void		deleteVBAndFaceVectorFar1Only();
 
-	// allocate Far1 VB, . do it only if Far1==true. Do not Test RenderClipped state.
+	// allocate Far1 VB, . do it only if Far1==true. Do not Test isRenderClipped() state.
 	// With VB, allocate to he faces array.
 	void		allocateVBAndFaceVectorFar1Only();
 
-	// fill Far0 VB according CTessFace VBInfos and Far0 (do not fill if !Far0). Do not Test RenderClipped state.
+	// fill Far0 VB according CTessFace VBInfos and Far0 (do not fill if !Far0). Do not Test isRenderClipped() state.
 	// Do not fill a VB if reallocationOccurs().
 	void		fillVBFar0Only();
 	// same for Far1
@@ -699,21 +696,17 @@ public:
 
 
 	// fill DLM Uv (ie UV1) for Far0 and Far1 VB only. NB: do not fill Far0 if !Far0 (idem fro Far1). 
-	// Do not Test RenderClipped state. Do not fill a VB if reallocationOccurs().
+	// Do not Test isRenderClipped() state. Do not fill a VB if reallocationOccurs().
 	void		fillVBFarsDLMUvOnly();
 	void		fillFar0DLMUvOnlyVertexListVB(CTessList<CTessFarVertex>  &vertList);
 	void		fillFar1DLMUvOnlyVertexListVB(CTessList<CTessFarVertex>  &vertList);
-
-
-	// Test Old anc Current RenderClipped test, and fill VBuffer/face/renderPass according to.
-	void		updateClipPatchVB();
 
 
 	// For Debug only.
 	void		debugAllocationMarkIndices(uint marker);
 
 
-	// Because of refine... tessBlock FaceVector may have been deleted, this method do nothing if RenderClipped.
+	// Because of refine... tessBlock FaceVector may have been deleted, this method do nothing if isRenderClipped().
 	// If not, recreate FaceVector for this tessBlock only, according to Far0 and Far1.
 	void		recreateTessBlockFaceVector(CTessBlock &block);
 
@@ -799,6 +792,7 @@ private:
 	friend	class CTessFace;
 	friend	class CZone;
 	friend	class CLandscapeVegetableBlock;
+	friend	class CPatchRdrPass;
 
 	CZone			*Zone;
 
@@ -824,19 +818,13 @@ private:
 	CTessVertex		*BaseVertices[4];
 	// The base Far vertices (always here!!).
 	CTessFarVertex	BaseFarVertices[4];
-	// BSphere.
-	CBSphere		BSphere;
 
 
 	// Local info for CTessFace tiles. CPatch must setup them at the begining at refine()/render().
 	// For Far Texture coordinates.
-	sint			Far0;			// The level of First Far: 0,1,2 or 3. 0 means Tile.
-	sint			Far1;			// The level of second Far, for transition: 1,2 or 3. 0 means none.
 	float			Far0UScale, Far0VScale, Far0UBias, Far0VBias;
 	float			Far1UScale, Far1VScale, Far1UBias, Far1VBias;
 
-	// Pack 4 bytes
-	// {
 	/**
 	  * Flags NL_PATCH_FAR0_ROTATED and NL_PATCH_FAR1_ROTATED
 	  *		NL_PATCH_FAR0_ROTATED for Far0, NL_PATCH_FAR1_ROTATED for Far1
@@ -848,33 +836,52 @@ private:
 	  *		See CPatchInfo::CBindInfo::Flags for details. 
 	  */
 	uint8			Flags;
-								
-	// are we cliped?
-	bool			Clipped;
-	// are we cliped in Render? Yes by default.
-	bool			RenderClipped;
-	// are we cliped in prec Render? Yes by default. updated by updateClipPatchVB().
-	bool			OldRenderClipped;
-
-	// }
+						
 	
-	// The render Pass of Far0 and Far1.
-	CRdrPatchId		Pass0, Pass1;
 	// Info for alpha transition with Far1.
 	float			TransitionSqrMin;
 	float			OOTransitionSqrDelta;
 
+	/*
+		Cache Optim Note:
+		NB: for faster Cache Access during preRender(), you must leave those variables packed like this 
+
+		Far0
+		Far1
+		_PatchRdrPassFar0
+		_NextRdrFar0
+		_PatchRdrPassFar1
+		_NextRdrFar1
+		NumRenderableFaces
+		TessBlocks (for size() )
+		MasterBlock.Far0FaceVector
+		MasterBlock.Far1FaceVector
+
+		NB: Far0FaceVector and Far1FaceVector are accessed during renderFar*() (not preRender()) but they must be near
+		to TessBlocks (for size() )
+	*/
+
+	// Current Far Level computed in preRender()
+	sint			Far0;			// The level of First Far: 0,1,2 or 3. 0 means Tile.
+	sint			Far1;			// The level of second Far, for transition: 1,2 or 3. 0 means none.
+
+	// The render Pass of Far0 and Far1.
+	CPatchRdrPass	*_PatchRdrPassFar0;
+	CPatch			*_NextRdrFar0;
+	CPatchRdrPass	*_PatchRdrPassFar1;
+	CPatch			*_NextRdrFar1;
+
 	/// \name Block renders.
 	// @{
-	// The block render of far only. Only Far faces bigger than a block are inserted here.
-	CTessBlock					MasterBlock;
-	// The 2*2 block render. For memory optimisation, none is allocated when no faces need it.
-	// There is (OrderT/2)*(OrderS/2) TessBlocks.
-	std::vector<CTessBlock>		TessBlocks;
-	// The counter of faces which need TessBlocks (FarFaces, TileMaterial and FarVertices). When 0, the vector is contReset()-ed.
-	sint						TessBlockRefCount;
 	// Tells how many Renderable Face this Patch has. updated in append/remove/FaceToRenderList()
 	sint						NumRenderableFaces;
+	// The 2*2 block render. For memory optimisation, none is allocated when no faces need it.
+	// There is (OrderT/2)*(OrderS/2) TessBlocks.
+	NLMISC::CObjectVector<CTessBlock>	TessBlocks;
+	// The block render of far only. Only Far faces bigger than a block are inserted here.
+	CTessBlock					MasterBlock;
+	// The counter of faces which need TessBlocks (FarFaces, TileMaterial and FarVertices). When 0, the vector is contReset()-ed.
+	sint						TessBlockRefCount;
 	// @}
 
 
@@ -1019,7 +1026,7 @@ private:
 
 
 	// Recompute of new Far Values, according to globals. Don't erase Far0 and Far1.
-	void		computeNewFar(sint &newFar0, sint &newFar1);
+	void		computeNewFar(const NLMISC::CBSphere &patchSphere, sint &newFar0, sint &newFar1);
 
 
 	// For Render. Those methods compute the vertices for Driver (in CTessFace::Current*VB).

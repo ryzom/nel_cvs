@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.127 2003/04/15 09:29:51 berenguier Exp $
+ * $Id: landscape.cpp,v 1.128 2003/04/23 10:11:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1469,12 +1469,12 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 			driver->setupTexture(*pass.TextureDiffuse);
 
 		// Add triangles to array
-		CRdrPatchId		*patchToRdr= pass.getRdrPatchFar0();
+		CPatch		*patchToRdr= pass.getRdrPatchFar0();
 		while(patchToRdr)
 		{
 			// renderSimpleTriangles() with the material setuped.
-			patchToRdr->Patch->renderFar0();
-			patchToRdr= (CRdrPatchId*)patchToRdr->getNext();
+			patchToRdr->renderFar0();
+			patchToRdr= patchToRdr->getNextFar0ToRdr();
 		}
 		// Render triangles.
 		drawPassTriArray(FarMaterial);
@@ -1527,12 +1527,12 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 			driver->setupTexture(*pass.TextureDiffuse);
 
 		// Add triangles to array
-		CRdrPatchId		*patchToRdr= pass.getRdrPatchFar1();
+		CPatch		*patchToRdr= pass.getRdrPatchFar1();
 		while(patchToRdr)
 		{
 			// renderSimpleTriangles() with the material setuped.
-			patchToRdr->Patch->renderFar1();
-			patchToRdr= (CRdrPatchId*)patchToRdr->getNext();
+			patchToRdr->renderFar1();
+			patchToRdr= patchToRdr->getNextFar1ToRdr();
 		}
 		// Render triangles.
 		drawPassTriArray(FarMaterial);
@@ -2418,7 +2418,7 @@ void			CLandscape::buildCollideFaces(const CAABBoxExt &bbox, vector<CTriangle>	&
 
 				// If patch in wanted area....
 				//============================
-				if(bsWanted.intersect(pa->getBSphere()))
+				if(bsWanted.intersect((*it).second->getPatchBSphere(i)))
 				{
 					// 0. Build the faces.
 					//====================
@@ -2968,6 +2968,78 @@ void		CLandscape::setPZBModelPosition(const CVector &pos)
 }
 
 
+// ***************************************************************************
+class	CTextureFarLevelInfo
+{
+public:
+	uint	NumUsedPatchs;
+	uint	NumTextures;
+	CTextureFarLevelInfo()
+	{
+		NumUsedPatchs= 0;
+		NumTextures= 0;
+	}
+};
+
+void		CLandscape::profileRender()
+{
+	std::map<CVector2f, CTextureFarLevelInfo >	levelFarMap;
+
+	nlinfo("***** Landscape TextureFar Profile. NumTextureFar= %d", _FarRdrPassSet.size());
+	// Profile Texture Allocate
+	ItSPRenderPassSet	itFar;
+	uint	totalMemUsage= 0;
+	for(itFar= _FarRdrPassSet.begin(); itFar!= _FarRdrPassSet.end(); itFar++)
+	{
+		CPatchRdrPass	&pass= **itFar;
+		CTextureFar *textureFar= safe_cast<CTextureFar*>((ITexture*)pass.TextureDiffuse);
+
+		// Info
+		uint	memUsage= textureFar->getPatchWidth()*textureFar->getPatchHeight()*NL_NUM_FAR_PATCHES_BY_TEXTURE*2;
+		nlinfo("  * Patch Texture Size: (%d,%d) => :%d bytes for %d patchs", 
+			textureFar->getPatchWidth(), textureFar->getPatchHeight(), 
+			memUsage, NL_NUM_FAR_PATCHES_BY_TEXTURE);
+		totalMemUsage+= memUsage;
+
+		// Profile Texture Far Allocated
+		nlinfo("  * NumberOf Patch in the texture:%d", textureFar->getPatchCount());
+
+		// Profile currently used Patchs
+		uint	numRdrPatch= 0;
+		CPatch	*pa= pass.getRdrPatchFar0();
+		while(pa)
+		{
+			numRdrPatch++;
+			pa= pa->getNextFar0ToRdr();
+		}
+		pa= pass.getRdrPatchFar1();
+		while(pa)
+		{
+			numRdrPatch++;
+			pa= pa->getNextFar1ToRdr();
+		}
+		nlinfo("  * NumberOf Patch in frustum for this texture (Far0+Far1):%d", numRdrPatch);
+
+		// regroup by level
+		CVector2f	sizeLevel;
+		sizeLevel.x= (float)textureFar->getPatchWidth();
+		sizeLevel.y= (float)textureFar->getPatchHeight();
+		levelFarMap[sizeLevel].NumUsedPatchs+= textureFar->getPatchCount();
+		levelFarMap[sizeLevel].NumTextures++;
+	}
+
+	nlinfo("***** Landscape TextureFar Level Profile. TotalVideoMemory= %d", totalMemUsage);
+	std::map<CVector2f, CTextureFarLevelInfo >::iterator	itLevelFar= levelFarMap.begin();
+	while(itLevelFar!=levelFarMap.end())
+	{
+		nlinfo("  * Level PatchSize: (%d, %d). Total NumberOf Patch: %d. Use Percentage: %d %%", 
+			(uint)itLevelFar->first.x, (uint)itLevelFar->first.y, itLevelFar->second.NumUsedPatchs, 
+			100*itLevelFar->second.NumUsedPatchs/(itLevelFar->second.NumTextures*NL_NUM_FAR_PATCHES_BY_TEXTURE) );
+		
+		itLevelFar++;
+	}
+}
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -3510,7 +3582,7 @@ void			CLandscape::computeDynamicLighting(const std::vector<CPointLight*>	&pls)
 			const CPatch	*pa= (*it).Patch;
 
 			// More precise clipping: 
-			if( pa->getBSphere().intersect( pl.BSphere ) )
+			if( pa->getZone()->getPatchBSphere(pa->getPatchId()).intersect( pl.BSphere ) )
 			{
 				// Ok, light the patch with this spotLight
 				const_cast<CPatch*>(pa)->processDLMLight(pl);

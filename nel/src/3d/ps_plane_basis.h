@@ -1,7 +1,7 @@
 /** \file ps_plane_basis.h
  * <File description>
  *
- * $Id: ps_plane_basis.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_plane_basis.h,v 1.2 2001/07/12 15:42:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,8 +34,6 @@
 
 namespace NL3D {
 
-using NLMISC::CVector ;
-using NLMISC::CMatrix ;
 
 
 
@@ -46,8 +44,8 @@ using NLMISC::CMatrix ;
 
 struct CPlaneBasis
 {	
-	CVector X ;
-	CVector Y ;
+	NLMISC::CVector X ;
+	NLMISC::CVector Y ;
 
 
 	// default ctor
@@ -55,15 +53,15 @@ struct CPlaneBasis
 
 	
 	// construct this basis by giving a normal to the plane that contains it
-	CPlaneBasis(const CVector &normal)
+	CPlaneBasis(const NLMISC::CVector &normal)
 	{
-		CMatrix mat = CPSUtil::buildSchmidtBasis(normal) ;
+		NLMISC::CMatrix mat = CPSUtil::buildSchmidtBasis(normal) ;
 		X = mat.getI() ;
 		Y = mat.getJ() ;
 	}
 
 	/// compute the normal of the plane basis
-	CVector getNormal(void) const
+	NLMISC::CVector getNormal(void) const
 	{
 		return X ^ Y ;
 	}

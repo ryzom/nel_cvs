@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.3 2001/07/04 12:27:55 vizerie Exp $
+ * $Id: ps_util.h,v 1.4 2001/07/12 15:40:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@
 namespace NLMISC
 {
 	class CMatrix ;
-	class CVector ;
+	class NLMISC::CVector ;
 } ;
 
 namespace NL3D 
@@ -48,9 +48,6 @@ namespace NL3D
 	class IDriver ;
 
 
-	using NLMISC::CMatrix ;
-	using NLMISC::CVector ;
-	using NLMISC::CRGBA ;
 /**
  * This struct contains utility functions used by the particle system.
  * \author Nicolas Vizerie
@@ -65,33 +62,33 @@ struct CPSUtil
 
 	/// this draw a bounding box		
 
-	static void displayBBox(IDriver *driver, const NLMISC::CAABBox &box) ;
+	static void displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box) ;
 
 	/// draw a sphere
-	static void displaySphere(IDriver &driver, float radius, const CVector &center, uint nbSubdiv = 4, CRGBA color = CRGBA::White) ;
+	static void displaySphere(NL3D::IDriver &driver, float radius, const NLMISC::CVector &center, uint nbSubdiv = 4, NLMISC::CRGBA color = NLMISC::CRGBA::White) ;
 
 
 	/** draw a disc (not filled)
 	 *  \param mat : a matrix, whose K vector is normal to the plane containing the disc
 	 */
-	static void displayDisc(IDriver &driver, float radius, const CVector &center, const CMatrix &mat, uint nbSubdiv = 32, CRGBA color = CRGBA::White) ;
+	static void displayDisc(NL3D::IDriver &driver, float radius, const NLMISC::CVector &center, const NLMISC::CMatrix &mat, uint nbSubdiv = 32, NLMISC::CRGBA color = NLMISC::CRGBA::White) ;
 
 
 	/** draw a cylinder (not filled)	 
 	 *  \param dim dimension of the cylinder along each axis, packed in a vector
 	 */
-	static void displayCylinder(IDriver &driver, const CVector &center, const CMatrix &mat, const CVector &dim, uint nbSubdiv = 32, CRGBA color = CRGBA::White) ;
+	static void displayCylinder(NL3D::IDriver &driver, const NLMISC::CVector &center, const NLMISC::CMatrix &mat, const NLMISC::CVector &dim, uint nbSubdiv = 32, NLMISC::CRGBA color = NLMISC::CRGBA::White) ;
 
 	/// display a 3d quad in wireline, by using the 4 gicen corners
-	static void display3DQuad(IDriver &driver, const CVector &c1, const CVector &c2
-								,const CVector &c3,  const CVector &c4, CRGBA color = CRGBA::White) ;
+	static void display3DQuad(NL3D::IDriver &driver, const NLMISC::CVector &c1, const NLMISC::CVector &c2
+								,const NLMISC::CVector &c3,  const NLMISC::CVector &c4, NLMISC::CRGBA color = NLMISC::CRGBA::White) ;
 							
 
 	/// enlarge a bounding box by the specified radius	 
 	inline static void addRadiusToAABBox(NLMISC::CAABBox &box, float radius) ;
 	 
 	/// display a basis using the given matrix. The model matrix must be restored after this call
-	static void displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm) ;
+	static void displayBasis(NL3D::IDriver *driver, const NLMISC::CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm) ;
 
 
 	/** display an arrow (the same that is used with displayBasis)
@@ -104,10 +101,10 @@ struct CPSUtil
 	  * \param col2 color of the arrow end
 	  */
 
-	static void displayArrow(IDriver *driver, const CVector &start, const CVector &v, float size, CRGBA col1, CRGBA col2) ;
+	static void displayArrow(NL3D::IDriver *driver, const NLMISC::CVector &start, const NLMISC::CVector &v, float size, NLMISC::CRGBA col1, NLMISC::CRGBA col2) ;
 
 	/// display a string at the given position. The model matrix must be restored after this call
-	static void print(IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const NLMISC::CVector &pos, float size) ;
+	static void print(NL3D::IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const NLMISC::CVector &pos, float size) ;
 
 
 	
@@ -129,7 +126,7 @@ struct CPSUtil
 	/** build a basis from a vector using Schmidt orthogonalization method
 	 *  \param v : K axis in the resulting basis
 	 */
-	static CMatrix buildSchmidtBasis(const CVector &v) ;	 
+	static NLMISC::CMatrix buildSchmidtBasis(const NLMISC::CVector &v) ;	 
 
 
 	/** get a cosine from the fast cosine table (which must be have initialised with initFastCosNSinTable).
@@ -160,7 +157,7 @@ struct CPSUtil
 	 *  The first octave has the unit size
 	 *  \see initPerlinNoiseTable()
 	 */
-	static inline float buildPerlinNoise(CVector &pos, uint nbOctaves) ;
+	static inline float buildPerlinNoise(NLMISC::CVector &pos, uint nbOctaves) ;
 
 	/** init the table used by perlin noise.
 	 *  This must be used before any call to  buildPerlinNoise
@@ -187,7 +184,7 @@ struct CPSUtil
 
 
 		// used by perlin noise to compute each octave		
-		static float getInterpolatedNoise(const CVector &pos) ;
+		static float getInterpolatedNoise(const NLMISC::CVector &pos) ;
 
 		// get non interpolated noise 
 		static float getPerlinNoise(uint x, uint y, uint z) ;
@@ -213,7 +210,7 @@ inline float CPSUtil::getPerlinNoise(uint x, uint y, uint z)
 }
 
 
-inline float CPSUtil::getInterpolatedNoise(const CVector &pos)
+inline float CPSUtil::getInterpolatedNoise(const NLMISC::CVector &pos)
 {
 	uint x = (uint) pos.x
 		, y = (uint) pos.y
@@ -259,7 +256,7 @@ inline float CPSUtil::getInterpolatedNoise(const CVector &pos)
 }
 
 
-inline float CPSUtil::buildPerlinNoise(CVector &pos, uint numOctaves)
+inline float CPSUtil::buildPerlinNoise(NLMISC::CVector &pos, uint numOctaves)
 {
 	nlassert(_PerlinNoiseTableInitialized) ;
 

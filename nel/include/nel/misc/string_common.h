@@ -1,7 +1,7 @@
 /** \file misc/string_common.h
  * common algorithms on string like toString() and fromString()
  *
- * $Id: string_common.h,v 1.1 2003/12/29 13:34:26 lecroart Exp $
+ * $Id: string_common.h,v 1.2 2003/12/30 09:27:17 distrib Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -184,14 +184,16 @@ inline std::string toString(const uint16 &val) { return toString("%hu", val); }
 inline std::string toString(const sint16 &val) { return toString("%hd", val); }
 inline std::string toString(const uint32 &val) { return toString("%u", val); }
 inline std::string toString(const sint32 &val) { return toString("%d", val); }
-inline std::string toString(const uint &val) { return toString("%u", val); }
-inline std::string toString(const sint &val) { return toString("%d", val); }
 inline std::string toString(const uint64 &val) { return toString("%"NL_I64"u", val); }
 inline std::string toString(const sint64 &val) { return toString("%"NL_I64"d", val); }
 inline std::string toString(const float &val) { return toString("%f", val); }
-inline std::string toString(const double &val) { return toString("%f", val); }
+inline std::string toString(const double &val) { return toString("%lf", val); }
 inline std::string toString(const bool &val) { return toString("%u", val?1:0); }
 inline std::string toString(const std::string &val) { return val; }
+#ifdef NL_OS_WINDOWS
+inline std::string toString(const uint &val) { return toString("%u", val); }
+inline std::string toString(const sint &val) { return toString("%d", val); }
+#endif // NL_OS_WINDOWS
 
 inline void fromString(const std::string &str, uint32 &val) { sscanf(str.c_str(), "%u", &val); }
 inline void fromString(const std::string &str, sint32 &val) { sscanf(str.c_str(), "%d", &val); }
@@ -199,14 +201,16 @@ inline void fromString(const std::string &str, uint8 &val) { uint32 v; fromStrin
 inline void fromString(const std::string &str, sint8 &val) { sint32 v; fromString(str, v); val = (sint8)v; }
 inline void fromString(const std::string &str, uint16 &val) { uint32 v; fromString(str, v); val = (uint16)v; }
 inline void fromString(const std::string &str, sint16 &val) { uint32 v; fromString(str, v); val = (sint16)v; }
-inline void fromString(const std::string &str, uint &val) { sscanf(str.c_str(), "%u", &val); }
-inline void fromString(const std::string &str, sint &val) { sscanf(str.c_str(), "%d", &val); }
 inline void fromString(const std::string &str, uint64 &val) { sscanf(str.c_str(), "%"NL_I64"u", &val); }
 inline void fromString(const std::string &str, sint64 &val) { sscanf(str.c_str(), "%"NL_I64"d", &val); }
 inline void fromString(const std::string &str, float &val) { sscanf(str.c_str(), "%f", &val); }
-inline void fromString(const std::string &str, double &val) { sscanf(str.c_str(), "%f", &val); }
+inline void fromString(const std::string &str, double &val) { sscanf(str.c_str(), "%lf", &val); }
 inline void fromString(const std::string &str, bool &val) { uint32 v; fromString(str, v); val = (v==1); }
 inline void fromString(const std::string &str, std::string &val) { val = str; }
+#ifdef NL_OS_WINDOWS
+inline void fromString(const std::string &str, uint &val) { sscanf(str.c_str(), "%u", &val); }
+inline void fromString(const std::string &str, sint &val) { sscanf(str.c_str(), "%d", &val); }
+#endif // NL_OS_WINDOWS
 
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.10 2001/06/08 15:38:28 legros Exp $
+ * $Id: edge_collide.cpp,v 1.11 2001/06/12 14:15:19 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,11 @@ CRational64	CEdgeCollide::testPointMove(const CVector2f &start, const CVector2f 
 
 
 	// *this must be a correct edge.
-	nlassert(P0!=P1);
+	if(P0==P1)
+	{
+		moveBug= EdgeNull;
+		return -1;
+	}
 
 	// if no movement, no collision.
 	if(start==end)

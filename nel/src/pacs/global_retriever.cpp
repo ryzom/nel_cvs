@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.28 2001/06/11 13:35:01 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.29 2001/06/12 14:15:19 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -496,7 +496,7 @@ void	NLPACS::CGlobalRetriever::getInstanceBounds(sint32 &x0, sint32 &y0, sint32 
 
 
 // ***************************************************************************
-const NLPACS::CRetrievableSurface	*NLPACS::CGlobalRetriever::getSurfaceById(const NLPACS::CSurfaceIdent &surfId)
+const NLPACS::CRetrievableSurface	*NLPACS::CGlobalRetriever::getSurfaceById(const NLPACS::CSurfaceIdent &surfId) const
 {
 	if(surfId.RetrieverInstanceId>=0 && surfId.SurfaceId>=0)
 	{
@@ -838,6 +838,32 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 
 
 // ***************************************************************************
+bool			NLPACS::CGlobalRetriever::verticalChain(const CCollisionChain &colChain) const
+{
+	// retrieve surfaces.
+	const CRetrievableSurface	*left= getSurfaceById(colChain.LeftSurface);
+	const CRetrievableSurface	*right= getSurfaceById(colChain.RightSurface);
+
+	// test if left surface is a wall.
+	bool						leftWall;
+	if(!left)
+		leftWall= true;
+	else
+		leftWall= !(left->isFloor() || left->isCeiling());
+
+	// test if right surface is a wall.
+	bool						rightWall;
+	if(!right)
+		rightWall= true;
+	else
+		rightWall= !(right->isFloor() || right->isCeiling());
+
+	// true if both are a wall.
+	return leftWall && rightWall;
+}
+
+
+// ***************************************************************************
 NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &endCol,
 		CSurfaceIdent startSurface) const
 {
@@ -883,12 +909,35 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 			// manage multiple problems of precision.
 			if(t== -1)
 			{
-				string	errs[CEdgeCollide::PointMoveProblemCount]= {
-					"ParallelEdges", "StartOnEdge", "StopOnEdge", "TraverseEndPoint"};
-				nlinfo("COL: Precision Problem: %s", errs[pmpb]);
-				// return a "Precision Problem" ident. movement is invalid. BUT if startOnEdge, which should never arrive.
+				static const string	errs[CEdgeCollide::PointMoveProblemCount]= {
+					"ParallelEdges", "StartOnEdge", "StopOnEdge", "TraverseEndPoint", "EdgeNull"};
+				// return a "Precision Problem" ident. movement is invalid. 
+				// BUT if startOnEdge, which should never arrive.
 				if(pmpb==CEdgeCollide::StartOnEdge)
+				{
+					nlinfo("COL: Precision Problem: %s", errs[pmpb]);
 					return CSurfaceIdent(-1, -1);	// so in this case, block....
+				}
+				else if(pmpb==CEdgeCollide::EdgeNull)
+				{
+					/*
+					// verify if it is an edge which separate 2 walls. in this case, ignore it. else, error.
+					if(verticalChain(colChain))
+					{
+						t=1;	// no collision with this edge.
+					}
+					else
+					{
+						nlinfo("COL: Precision Problem: %s", errs[pmpb]);
+						nlstop;		// this should not append.
+						return CSurfaceIdent(-1, -1);
+					}*/
+					/* Actually, this is never a problem: we never get through this edge.
+						Instead, we'll get through the neighbors edge.
+						So just disable this edge.
+					*/
+					t= 1;
+				}
 				else
 					return	CSurfaceIdent(-2, -2);
 			}

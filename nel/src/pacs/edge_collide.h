@@ -1,7 +1,7 @@
 /** \file edge_collide.h
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.h,v 1.1 2001/06/08 15:10:18 legros Exp $
+ * $Id: edge_collide.h,v 1.2 2001/06/12 14:15:19 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,7 +180,7 @@ public:
 class	CEdgeCollide
 {
 public:
-	enum	TPointMoveProblem {ParallelEdges=0, StartOnEdge, StopOnEdge, TraverseEndPoint, PointMoveProblemCount};
+	enum	TPointMoveProblem {ParallelEdges=0, StartOnEdge, StopOnEdge, TraverseEndPoint, EdgeNull, PointMoveProblemCount};
 
 
 public:

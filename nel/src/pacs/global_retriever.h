@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: global_retriever.h,v 1.3 2001/06/12 14:15:19 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -316,7 +316,7 @@ public:
 	CGlobalPosition		doMove(const CGlobalPosition &start, const NLMISC::CVector &delta, float t, CCollisionSurfaceTemp &cst, bool rebuildChains=false) const;
 	/** retrieve a surface by its Id. NULL if not found or if -1.
 	 */
-	const CRetrievableSurface	*getSurfaceById(const CSurfaceIdent &surfId);
+	const CRetrievableSurface	*getSurfaceById(const CSurfaceIdent &surfId) const;
 	/** Test a rotation of a BBox against the surfaces.
 	 * NB: this function is not perfect because a ContactSurface may appears 2+ times in the returned array.
 	 * \param start is the center of the bbox.
@@ -386,6 +386,8 @@ private:
 	 * result: new collisionDescs in cst.
 	 */
 	void	testRotCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, CSurfaceIdent startSurface, const CVector2f bbox[4])  const;
+	/// test if a collisionChain separate 2 walls.
+	bool			verticalChain(const CCollisionChain &colChain) const;
 	// @}
 
 

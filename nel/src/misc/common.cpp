@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.35 2003/01/20 13:50:50 lecroart Exp $
+ * $Id: common.cpp,v 1.36 2003/03/03 16:07:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -623,8 +623,15 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 {
 
 #ifdef NL_OS_WINDOWS
-
-	SECURITY_ATTRIBUTES sa;
+	STARTUPINFO         si;
+    PROCESS_INFORMATION pi;
+	
+    memset(&si, 0, sizeof(si));
+    memset(&pi, 0, sizeof(pi));
+	
+    si.cb = sizeof(si);
+	
+/*	SECURITY_ATTRIBUTES sa;
 	sa.nLength = sizeof (sa);
 	sa.lpSecurityDescriptor = NULL;
 	sa.bInheritHandle = FALSE;
@@ -640,8 +647,9 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 	si.lpReserved2 = NULL;
 
 	PROCESS_INFORMATION pi;
-
-	BOOL res = CreateProcess(programName.c_str(), (char*)arguments.c_str(), &sa, &sa, FALSE, 0, NULL, NULL, &si, &pi);
+*/
+	string arg = " " + arguments;
+	BOOL res = CreateProcess(programName.c_str(), (char*)arg.c_str(), 0, 0, FALSE, CREATE_DEFAULT_ERROR_MODE, 0, 0, &si, &pi);
 
 	if (res)
 	{

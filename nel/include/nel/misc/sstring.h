@@ -3,15 +3,16 @@
  * This file contains a string class derived from the STL string
  * The string compare functions of the class are case insensitive 
  *
- * The coding style is not CPU efficent - the routines are not designed for performance
+ * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.26 2005/03/07 10:20:57 miller Exp $
+ * $Id: sstring.h,v 1.27 2005/03/17 10:52:33 boucher Exp $
  */
 
 
 #ifndef NL_SSTRING_H
 #define NL_SSTRING_H
 
+//#include "types_nl.h"
 #include <string>
 #include <vector>
 #include <cstdio>
@@ -60,6 +61,16 @@ public:
 	std::string::const_reference operator[](std::string::size_type idx) const;
 	/// Non-Const [] operator
 	std::string::reference operator[](std::string::size_type idx);
+
+	// cast to std::string
+	operator std::string& ()
+	{ 
+		return reinterpret_cast<std::string&>(*this); 
+	}
+	operator const std::string& () const
+	{ 
+		return reinterpret_cast<const std::string&>(*this); 
+	}
 
 	/// Return the first character, or '\\0' is the string is empty
 	char operator*();
@@ -406,8 +417,19 @@ class CVectorSString : public std::vector<CSString>
 {
 public:
 	// cast to and convert from std::vector<std::string>
-	operator std::vector<std::string>& () { return reinterpret_cast<std::vector<std::string>&>(*this); }
-	CVectorSString&	operator= ( const std::vector<std::string>& v ) { *this = reinterpret_cast<const CVectorSString&>(v); return *this; }
+	operator std::vector<std::string>& ()
+	{ 
+		return reinterpret_cast<std::vector<std::string>&>(*this); 
+	}
+	operator const std::vector<std::string>& () const
+	{ 
+		return reinterpret_cast<const std::vector<std::string>&>(*this); 
+	}
+	CVectorSString&	operator= ( const std::vector<std::string>& v ) 
+	{
+		*this = reinterpret_cast<const CVectorSString&>(v); 
+		return *this; 
+	}
 
 	// simple ctors
 	CVectorSString()							{}

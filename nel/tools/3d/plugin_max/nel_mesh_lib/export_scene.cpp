@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.3 2001/08/15 12:13:18 vizerie Exp $
+ * $Id: export_scene.cpp,v 1.4 2001/08/15 16:50:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,7 +166,10 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 					ad = obj->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA);
 					if (ad&&ad->data)
 					{
-						aIGArray[nNumIG].Name=(const char*)ad->data;
+						// get file name only
+						char fName[_MAX_FNAME];												
+						::_splitpath((const char*)ad->data, NULL, NULL, fName, NULL) ;
+						aIGArray[nNumIG].Name=fName;
 					}
 					else
 					{

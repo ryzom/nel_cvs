@@ -524,41 +524,44 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 
 	vector<bool> activeFields( fields.size(), true );
 
-	// Load DFN
-	formDfn = formLoader->loadFormDfn( (sheetType + ".dfn").c_str() );
-	if ( ! formDfn )
-		nlerror( "Can't find DFN for %s", sheetType.c_str() );
+	// Load DFN (generation only)
 	set<string> dfnFields;
-	fillFromDFN( formLoader, dfnFields, formDfn, "", sheetType );
-
-	// Display missing fields and check fields against DFN
-	uint i;
-	for ( i=1; i!=fields.size(); ++i )
+	if ( generate )
 	{
-		eraseCarriageReturnsAndMakeBlankNonAsciiChars( fields[i] );
-		if ( fields[i].empty() )
+		formDfn = formLoader->loadFormDfn( (sheetType + ".dfn").c_str() );
+		if ( ! formDfn )
+			nlerror( "Can't find DFN for %s", sheetType.c_str() );
+		fillFromDFN( formLoader, dfnFields, formDfn, "", sheetType );
+
+		// Display missing fields and check fields against DFN
+		uint i;
+		for ( i=1; i!=fields.size(); ++i )
 		{
-			nlinfo( "Skipping field #%u (empty)", i );
-			activeFields[i] = false;
-		}
-		else if ( nlstricmp( fields[i], "parent" ) == 0 )
-		{
-			strlwr( fields[i] ); // non-const version
-		}
-		else
-		{
-			set<string>::iterator ist = dfnFields.find( fields[i] );
-			if ( ist == dfnFields.end() )
+			eraseCarriageReturnsAndMakeBlankNonAsciiChars( fields[i] );
+			if ( fields[i].empty() )
 			{
-				nlinfo( "Skipping field #%u (%s, not found in %s DFN)", i, fields[i].c_str(), sheetType.c_str() );
+				nlinfo( "Skipping field #%u (empty)", i );
 				activeFields[i] = false;
 			}
+			else if ( nlstricmp( fields[i], "parent" ) == 0 )
+			{
+				strlwr( fields[i] ); // non-const version
+			}
+			else
+			{
+				set<string>::iterator ist = dfnFields.find( fields[i] );
+				if ( ist == dfnFields.end() )
+				{
+					nlinfo( "Skipping field #%u (%s, not found in %s DFN)", i, fields[i].c_str(), sheetType.c_str() );
+					activeFields[i] = false;
+				}
+			}
 		}
-	}
-	for ( i=1; i!=fields.size(); ++i )
-	{
-		if ( activeFields[i] )
-			nlinfo( "Selected field: %s", fields[i].c_str() );
+		for ( i=1; i!=fields.size(); ++i )
+		{
+			if ( activeFields[i] )
+				nlinfo( "Selected field: %s", fields[i].c_str() );
+		}
 	}
 
 	uint dirmapLetterIndex = ~0;

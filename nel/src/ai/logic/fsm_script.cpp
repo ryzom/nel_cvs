@@ -15,20 +15,20 @@ namespace NLAIAGENT
 	/////////////////////////////////////////////////////////////
 	// Succes and failure messages declaration
 
-	static NLAISCRIPT::COperandSimpleListOr *ParamIdSuccessMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+	NLAISCRIPT::COperandSimpleListOr *CFsmScript::ParamIdSuccessMsg = new NLAISCRIPT::COperandSimpleListOr(2,
 															  new NLAIC::CIdentType(NLAIAGENT::CSuccessMsg::IdSuccessMsg),
 															  new NLAIC::CIdentType(NLAISCRIPT::CSuccessMsgClass::IdSuccessMsgClass)	);
 
-	static NLAISCRIPT::CParam *ParamSuccessMsg = new NLAISCRIPT::CParam(1,ParamIdSuccessMsg);
+	NLAISCRIPT::CParam *CFsmScript::ParamSuccessMsg = new NLAISCRIPT::CParam(1,ParamIdSuccessMsg);
 
 	
 	
 
-	static NLAISCRIPT::COperandSimpleListOr *ParamIdFailureMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+	NLAISCRIPT::COperandSimpleListOr *CFsmScript::ParamIdFailureMsg = new NLAISCRIPT::COperandSimpleListOr(2,
 															  new NLAIC::CIdentType(NLAIAGENT::CFailureMsg::IdFailureMsg),
 															  new NLAIC::CIdentType(NLAISCRIPT::CFailureMsgClass::IdFailureMsgClass)	);
 
-	static NLAISCRIPT::CParam *ParamFailureMsg = new NLAISCRIPT::CParam(1,ParamIdFailureMsg);
+	NLAISCRIPT::CParam *CFsmScript::ParamFailureMsg = new NLAISCRIPT::CParam(1,ParamIdFailureMsg);
 
 
 	/////////////////////////////////////////////////////////////
@@ -59,6 +59,11 @@ namespace NLAIAGENT
 
 	CFsmScript::~CFsmScript()
 	{
+/*		ParamIdSuccessMsg->release();
+		ParamSuccessMsg->release();
+		ParamIdFailureMsg->release();
+		ParamFailureMsg->release();
+		*/
 	}
 
 	const NLAIC::IBasicType *CFsmScript::clone() const
@@ -212,19 +217,6 @@ namespace NLAIAGENT
 		return result;
 	}
 
-/*	void CFsmScript::setParent(const IWordNumRef *parent)
-	{
-		// Gets the father's factbase
-		const IRefrence *father = (const IRefrence *) *parent;
-		NLAILOGIC::CFactBase &fact_base = ( (CAgentScript *)father )->getFactBase();
-		
-		// Adds the needed asserts to the factbase
-		((NLAISCRIPT::COperatorClass *) _AgentClass)->initialiseFactBase( &fact_base );
-				
-		// Sets the parent
-		IRefrence::setParent(parent);		
-	}
-*/
 	const IObjectIA::CProcessResult &CFsmScript::run()
 	{
 		return CAgentScript::run();
@@ -271,11 +263,11 @@ namespace NLAIAGENT
 
 	void CFsmScript::onSuccess( IObjectIA *)
 	{
-		int i = 10;
+		// Envoi d'un message succès au père
 	}
 
 	void CFsmScript::onFailure( IObjectIA *)
 	{
-		int i = 10;
+		// Envoi d'un message echec au père
 	}
 }

@@ -101,14 +101,29 @@ namespace NLAIAGENT
 	{		
 		IObjectIA::CProcessResult r;
 
-/*		if ( index == fid_activate )
+		if ( index == 1 )
 		{
-			activate();
+			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
+			{
+#ifdef _DEBUG
+				const char *dbg_param_type = (const char *) params->getType();
+				char dbg_param_string[1024 * 8];
+				params->getDebugString(dbg_param_string);
+#endif
+				const IObjectIA *child = ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
+				( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
+#ifdef _DEBUG
+				const char *dbg_param_front_type = (const char *) child->getType();
+#endif
+				IAgent *new_child = (IAgent *) child->newInstance();
+				_Launched.push_back( new_child );
+				addChild(new_child);
+			}
 			IObjectIA::CProcessResult r;
 			r.ResultState =  NLAIAGENT::processIdle;
 			r.Result = NULL;
+			return r;
 		}
-*/
 		return CAgentScript::runMethodBase(index, heritance, params);
 	}
 
@@ -117,20 +132,31 @@ namespace NLAIAGENT
 	IObjectIA::CProcessResult COperatorScript::runMethodBase(int index,IObjectIA *params)
 	{	
 
-		int i = index - IAgent::getMethodIndexSize();
-
-
-		if ( i < getBaseMethodCount() )
-			return CAgentScript::runMethodBase(index, params);
-
-		IObjectIA::CProcessResult r;
-
 #ifdef NL_DEBUG
 		char buf[1024];
 		getDebugString(buf);
 #endif
+		int i = index - IAgent::getMethodIndexSize();
 
-		return r;
+		if ( i == 1 )
+		{
+			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
+			{
+#ifdef _DEBUG
+				const char *dbg_param_type = (const char *) params->getType();
+				char dbg_param_string[1024 * 8];
+				params->getDebugString(dbg_param_string);
+#endif
+				IAgent *new_child = (IAgent *) ((NLAIAGENT::IBaseGroupType *) params)->get();
+				_Launched.push_back( new_child );
+				addDynamicAgent( (IBaseGroupType *) params);
+			}
+			IObjectIA::CProcessResult r;
+			r.ResultState =  NLAIAGENT::processIdle;
+			r.Result = NULL;
+			return r;
+		}
+		return CAgentScript::runMethodBase(index, params);
 	}
 
 	int COperatorScript::getBaseMethodCount() const
@@ -141,19 +167,27 @@ namespace NLAIAGENT
 
 	tQueue COperatorScript::isMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
 	{		
-
-		const char *txt = name->getString();
+#ifdef NL_DEBUG
+		const char *dbg_func_name = name->getString();
+#endif
 
 		tQueue result = CAgentScript::isMember( className, name, param);
 
 		if ( result.size() )
 			return result;
-/*
-		if ( *name == CStringVarName("post") )
+
+		// Processes succes and failure functions
+		if ( *name == CStringVarName("Launch") )
 		{
+/*			double d;
+			d = ((NLAISCRIPT::CParam &)*ParamSuccessMsg).eval((NLAISCRIPT::CParam &)param);
+			
+			if ( d >= 0.0 )
+			{*/
 			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod(  IAgent::getMethodIndexSize() + fid_activate, 0.0,NULL, r_type ) );
-		}*/
+			result.push( NLAIAGENT::CIdMethod(  IAgent::getMethodIndexSize() + 1, 0.0,NULL, r_type ) );
+			//}
+		}
 		return result;
 	}
 
@@ -237,5 +271,10 @@ namespace NLAIAGENT
 
 	void COperatorScript::cancel()
 	{
+		while (  _Launched.size() )
+		{
+			_Launched.front()->Kill();
+			_Launched.pop_front();
+		}
 	}
 }

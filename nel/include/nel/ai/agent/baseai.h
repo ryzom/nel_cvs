@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.12 2001/03/28 12:15:27 portier Exp $
+ * $Id: baseai.h,v 1.13 2001/04/05 16:29:41 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -440,6 +440,9 @@ namespace NLAIAGENT
 		///To release a connection.
 		void removeConnection(IConnectIA &Agent);
 
+		///this method define wat agent have to whene he die.
+		virtual void Kill(); 
+
 		virtual ~IConnectIA();
 
 	protected:		
@@ -451,8 +454,7 @@ namespace NLAIAGENT
 		void addInConnectedList(const IConnectIA *a);
 		void removeInConnectedList(const IConnectIA *a);
 		//@}
-		///this method define wat agent have to whene he die.
-		void Kill();
+
 	};
 }
 #endif

@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.15 2001/03/26 14:49:56 chafik Exp $
+ * $Id: agent.h,v 1.16 2001/04/05 16:29:41 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -337,6 +337,10 @@ namespace NLAIAGENT
 
 		///Implementation of the isEqual of the IBasicObjectIA 
 		virtual bool isEqual(const IBasicObjectIA &a) const;
+
+		/// Call this function to destroy an agent including its referneces in other agents and its childs
+		virtual void Kill();
+
 		/// Called by an agent who's destroyed te remove its references
 		virtual void onKill(IConnectIA *A);
 

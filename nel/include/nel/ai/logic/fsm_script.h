@@ -2,7 +2,7 @@
  *	
  *	Instances of finite state machines
  *
- * $Id: fsm_script.h,v 1.1 2001/03/28 12:48:54 portier Exp $
+ * $Id: fsm_script.h,v 1.2 2001/04/05 16:29:41 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,13 @@ namespace NLAIAGENT
 {
 	class CFsmScript  : public CAgentScript
 	{
+
+		public:
+			static NLAISCRIPT::COperandSimpleListOr *ParamIdSuccessMsg;
+			static NLAISCRIPT::CParam *ParamSuccessMsg;
+			static NLAISCRIPT::COperandSimpleListOr *ParamIdFailureMsg;
+			static NLAISCRIPT::CParam *ParamFailureMsg;
+
 		private:
 			std::vector<NLAIAGENT::IObjectIA *> _VarValues;		// Values of the vars for the instanciated operator
 			NLAILOGIC::CFactBase				*_FactBase;		// The father's factbase

@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.9 2001/04/03 10:04:58 portier Exp $
+ * $Id: operator_script.h,v 1.10 2001/04/05 16:29:41 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,8 @@ namespace NLAIAGENT
 			NLAILOGIC::CFactBase				*_FactBase;		// The father's factbase
 			bool _Activated;
 			NLAILOGIC::CGoal					*_CurrentGoal;
+
+			std::list<IBasicAgent *>			_Launched;
 
 		public:
 			// Builds and actor with its father

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.19 2001/04/03 08:45:28 chafik Exp $
+ * $Id: baseai.cpp,v 1.20 2001/04/05 16:29:50 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -20,7 +20,7 @@
  * along with NEVRAX NEL; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
- */
+ */ 
 #include "nel/ai/agent/agentexport.h"
 #include "nel/ai/agent/agent_object.h"
 #include "nel/ai/agent/baseai.h"

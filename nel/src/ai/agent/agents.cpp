@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.26 2001/03/30 15:55:23 chafik Exp $
+ * $Id: agents.cpp,v 1.27 2001/04/05 16:29:50 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,18 @@ namespace NLAIAGENT
 /*	const IObjectIA::CProcessResult &IAgent::run();
 	IObjectIA *IAgent::run(const IMessageBase &);*/
 		
+
+	void IAgent::Kill()
+	{
+		std::list<IBasicAgent *>::iterator i_agl = _AgentList.begin();
+		while ( i_agl != _AgentList.end() )
+		{					
+			IBasicAgent *c = *i_agl;
+			c->Kill();
+			i_agl++;
+		}
+	}
+
 	void IAgent::onKill(IConnectIA *a)
 	{
 		eraseFromList<IBasicAgent *>(&_AgentList,(IBasicAgent *)a);

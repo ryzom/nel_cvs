@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.1 2000/11/09 17:42:21 lecroart Exp $
+ * $Id: font_generator.cpp,v 1.2 2000/11/14 14:55:08 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,7 @@ const char *CFontGenerator::getFT2Error(FT_Error fte)
 /*
  * Constructor
  */
-CFontGenerator::CFontGenerator(const char *fontFileName)
+CFontGenerator::CFontGenerator (const std::string fontFileName, const std::string fontExFileName)
 {
 	FT_Error error;
 
@@ -79,17 +79,26 @@ CFontGenerator::CFontGenerator(const char *fontFileName)
 		{
 			nlerror ("FT_Init_FreeType() failed: %s", getFT2Error(error));
 		}
-		else		_LibraryInit = true;
+		_LibraryInit = true;
 	}
 
-	error = FT_New_Face (_Library, fontFileName, 0, &_Face);
+	error = FT_New_Face (_Library, fontFileName.c_str (), 0, &_Face);
 	if (error)
 	{
 		nlerror ("FT_New_Face() failed: %s", getFT2Error(error));
 	}
+
+	if (fontExFileName != "")
+	{
+		error = FT_Attach_File (_Face, fontExFileName.c_str ());
+		if (error)
+		{
+			nlerror ("FT_Attach_File() failed: %s", getFT2Error(error));
+		}
+	}
 }
 
-uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &height, uint32 &pitch)
+uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &height, uint32 &pitch, sint32 &left, sint32 &top, sint32 &advx, uint32 &glyphIndex)
 {
 	FT_Error error;
 
@@ -99,17 +108,65 @@ uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &
 		nlerror ("FT_Set_Pixel_Sizes() failed: %s", getFT2Error(error));
 	}
 
+	// retrieve glyph index from character code
+	FT_UInt glyph_index = FT_Get_Char_Index (_Face, c);
+
+	// load glyph image into the slot (erase previous one)
+	error = FT_Load_Glyph (_Face, glyph_index, FT_LOAD_DEFAULT);
+	if (error)
+	{
+		nlerror ("FT_Load_Glyph() failed: %s", getFT2Error(error));
+	}
+
+	// convert to an anti-aliased bitmap
+	error = FT_Render_Glyph (_Face->glyph, ft_render_mode_normal);
+	if (error)
+	{
+		nlerror ("FT_Render_Glyph() failed: %s", getFT2Error(error));
+	}
+       
+/*
 	error = FT_Load_Char (_Face, c, FT_LOAD_RENDER);
 	if (error)
 	{
 		nlerror ("FT_Load_Char() failed: %s", getFT2Error(error));
 	}
-
+*/
 	width = _Face->glyph->bitmap.width;
 	height = _Face->glyph->bitmap.rows;
 	pitch = _Face->glyph->bitmap.pitch;
 
+	left = _Face->glyph->bitmap_left;
+	top = _Face->glyph->bitmap_top;
+
+	advx = _Face->glyph->advance.x >> 6;
+
+	glyphIndex = glyph_index;
+
 	return (uint8 *) _Face->glyph->bitmap.buffer;
+}
+
+void CFontGenerator::getKerning (ucchar left, ucchar right, sint32 &kernx)
+{
+	if (!FT_HAS_KERNING(_Face))
+	{
+		kernx = 0;
+	}
+	else
+	{
+		FT_Vector  kerning;
+		FT_Error error = FT_Get_Kerning (_Face, left, right, ft_kerning_default, &kerning);
+		if (error)
+		{
+			nlerror ("FT_Get_Kerning() failed: %s", getFT2Error(error));
+		}
+		kernx = kerning.x;
+	}
+}
+
+uint32	 CFontGenerator::getCharIndex (ucchar c)
+{
+	return FT_Get_Char_Index (_Face, c);
 }
 
 

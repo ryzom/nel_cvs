@@ -1,7 +1,7 @@
 /** \file font_generator.h
  * CFontGenerator class
  *
- * $Id: font_generator.h,v 1.2 2000/11/10 15:20:13 coutelas Exp $
+ * $Id: font_generator.h,v 1.3 2000/11/14 14:55:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,29 +34,6 @@
 namespace NL3D {
 
 
-struct CFontDescriptor 
-{
-	std::string FontFileName;
-	ucchar C;
-	uint32 Size;
-	
-	CFontDescriptor(std::string s, ucchar c, uint32 sz): FontFileName(s),C(c),Size(sz) { }
-	bool operator< (const CFontDescriptor& desc) const
-	{
-		if (FontFileName<desc.FontFileName)
-			return true;
-		if (FontFileName>desc.FontFileName)
-			return false;
-		if (C<desc.C)
-			return true;
-		if (C>desc.C)
-			return false;
-		return Size<desc.Size;
-	}
-};
-
-
-
 /**
  * Generate bitmap based on a true type font (using freetype2)
  * \author Vianney Lecroart
@@ -70,7 +47,7 @@ public:
 	/** Constructor
 	 * \param fontFileName path+filename (ex: "c:\winnt\fonts\arial.ttf")
 	 */
-	CFontGenerator(const char *fontFileName);
+	CFontGenerator (const std::string fontFileName, const std::string fontExFileName = "");
 
 	/** generate and return a bitmap
 	 * \param c the unicode char
@@ -79,16 +56,43 @@ public:
 	 * \param height height of the generated bitmap, this value is set by this function
 	 * \param pitch pitch of the generated bitmap (+ or - the number of bytes per row), this value is set by this function
 	 */
-	uint8 *getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &height, uint32 &pitch);
+	uint8	*getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &height, uint32 &pitch, sint32 &left, sint32 &top, sint32 &advx, uint32 &glyphIndex);
 
+	void	 getKerning (ucchar left, ucchar right, sint32 &kernx);
+
+	uint32	 getCharIndex (ucchar c);
+
+	std::string	FontFileName;
 private:
 
-	const char *getFT2Error(FT_Error fte);
+	const char			*getFT2Error(FT_Error fte);
 
 	static FT_Library	_Library;
 	static bool			_LibraryInit;
 
-	FT_Face		_Face;
+	FT_Face				_Face;
+};
+
+
+struct CFontDescriptor 
+{
+	CFontGenerator *FontGen;
+	ucchar C;
+	uint32 Size;
+	
+	CFontDescriptor(CFontGenerator *fg, ucchar c, uint32 sz): FontGen(fg),C(c),Size(sz) { }
+	bool operator< (const CFontDescriptor& desc) const
+	{
+		if (FontGen->FontFileName<desc.FontGen->FontFileName)
+			return true;
+		if (FontGen->FontFileName>desc.FontGen->FontFileName)
+			return false;
+		if (C<desc.C)
+			return true;
+		if (C>desc.C)
+			return false;
+		return Size<desc.Size;
+	}
 };
 
 

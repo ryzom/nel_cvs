@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.4 2000/11/14 13:25:28 berenguier Exp $
+ * $Id: texture.h,v 1.5 2000/11/14 14:55:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,8 @@ namespace NL3D
 {
 
 
-/*===================================================================*/
+//****************************************************************************
+
 class ITextureDrvInfos : public NLMISC::CRefCount
 {
 private:
@@ -48,7 +49,6 @@ public:
 };
 
 
-/*===================================================================*/
 /**
  * Interface for textures
  * \author Stephane Coutelas
@@ -115,7 +115,8 @@ public:
 };
 
 
-/*===================================================================*/
+//****************************************************************************
+
 
 /**
  * CTextureFile
@@ -174,7 +175,7 @@ public:
 };
 
 
-/*===================================================================*/
+//****************************************************************************
 
 
 /**
@@ -185,24 +186,20 @@ public:
  */
 class CTextureFont : public ITexture
 {
-	ucchar _Char;
 	uint32 _CharWidth;
 	uint32 _CharHeight;
 	uint32 _Size;
-	std::string _FontFileName;
-
+	CFontGenerator *_FontGen;
 public:
 
-	/** Default constructor
-	 * 
-	 */	
+	// Default constructor
 	CTextureFont(CFontDescriptor desc) 
 	{ 
-		_Char = desc.C;
+		Char = desc.C;
 		_Size = desc.Size;
 		_CharWidth = 0;
 		_CharHeight = 0;
-		_FontFileName = desc.FontFileName;
+		_FontGen = desc.FontGen;
 	}
 
 	/** return the descriptor of this letter
@@ -210,18 +207,26 @@ public:
 	 */
 	CFontDescriptor getDescriptor() const
 	{
-		return CFontDescriptor(_FontFileName, _Char, _Size);
+		return CFontDescriptor(_FontGen, Char, _Size);
 	}
 
-	/** Generate the texture
-	 * 
-	 */	
+	// Generate the texture
 	void generate();
 
+	/// the unicode character
+	ucchar Char;
+	/// number of the character in the this font
+	uint32 GlyphIndex;
+	/// Distance between origin and top of the texture
+	sint32 Top;
+	/// Distance between origin and left of the texture
+	sint32 Left;
+	/// Advance to the next caracter
+	sint32 AdvX;
 };
 
 
-/*===================================================================*/
+//****************************************************************************
 
 
 } // NL3D

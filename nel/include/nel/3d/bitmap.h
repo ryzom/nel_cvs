@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.6 2000/11/14 13:25:28 berenguier Exp $
+ * $Id: bitmap.h,v 1.7 2000/11/14 14:55:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -275,7 +275,6 @@ public:
 	std::vector<uint8>& getPixels(uint32 numMipMap = 0) 
 	{ 
 		//nlassert (numMipMap<=_MipMapCount);
-		nlinfo("%d %d %d %d",_Data[0][0],_Data[0][1],_Data[0][2],_Data[0][3]);
 		return _Data[numMipMap];
 	}
 	const std::vector<uint8>& getPixels(uint32 numMipMap = 0) const

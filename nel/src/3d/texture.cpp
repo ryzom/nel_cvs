@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.3 2000/11/10 15:19:47 coutelas Exp $
+ * $Id: texture.cpp,v 1.4 2000/11/14 14:55:08 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,12 +64,9 @@ void CTextureFile::generate()
 \*------------------------------------------------------------------*/
 void CTextureFont::generate()
 {
-	// constructing generator
-	CFontGenerator generator(_FontFileName.c_str());
-	
 	// getting bitmap infos
 	uint32 pitch;
-	uint8 * bitmap = generator.getBitmap(_Char, _Size, _CharWidth, _CharHeight, pitch);
+	uint8 *bitmap = _FontGen->getBitmap(Char, _Size, _CharWidth, _CharHeight, pitch, Left, Top, AdvX, GlyphIndex);
 
 	// computing new width and height as powers of 2
 	if(!isPowerOf2(_CharWidth))
@@ -93,24 +90,44 @@ void CTextureFont::generate()
 		{
 			if(j<_CharWidth && i<_CharHeight)
 			{
-				_Data[0][(i*_Width + j)*4] = bitmap[i*pitch + j];
-				_Data[0][(i*_Width + j)*4 + 1] = bitmap[i*pitch + j];
-				_Data[0][(i*_Width + j)*4 + 2] = bitmap[i*pitch + j];
-				_Data[0][(i*_Width + j)*4 + 3] = 255;
+				_Data[0][(i*_Width + j)*4] = 255;
+				_Data[0][(i*_Width + j)*4 + 1] = 255;
+				_Data[0][(i*_Width + j)*4 + 2] = 255;
+				_Data[0][(i*_Width + j)*4 + 3] = bitmap[i*pitch + j];
 			}
 			else
 			{
 				_Data[0][(i*_Width + j)*4] = 0;
 				_Data[0][(i*_Width + j)*4 + 1] = 0;
 				_Data[0][(i*_Width + j)*4 + 2] = 0;
-				_Data[0][(i*_Width + j)*4 + 3] = 255;
-
+				_Data[0][(i*_Width + j)*4 + 3] = 0;
 			}
-			
-		}
+/*			if(j<_CharWidth && i<_CharHeight)
+			{
+				if (bitmap[i*pitch + j] == 0)
+				{
+					_Data[0][(i*_Width + j)*4] = 64;
+					_Data[0][(i*_Width + j)*4 + 1] = 64;
+					_Data[0][(i*_Width + j)*4 + 2] = 255;
+					_Data[0][(i*_Width + j)*4 + 3] = 64;
+				}
+				else
+				{
+					_Data[0][(i*_Width + j)*4] = 255;
+					_Data[0][(i*_Width + j)*4 + 1] = 255;
+					_Data[0][(i*_Width + j)*4 + 2] = 255;
+					_Data[0][(i*_Width + j)*4 + 3] = bitmap[i*pitch + j];
+				}
+			}
+			else
+			{
+				_Data[0][(i*_Width + j)*4] = 255;
+				_Data[0][(i*_Width + j)*4 + 1] = 0;
+				_Data[0][(i*_Width + j)*4 + 2] = 0;
+				_Data[0][(i*_Width + j)*4 + 3] = 64;
+			}
+*/		}
 	}
-
-
 }
 
 

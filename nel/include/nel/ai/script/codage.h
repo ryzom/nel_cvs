@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.20 2002/02/20 18:05:16 lecroart Exp $
+ * $Id: codage.h,v 1.21 2002/08/20 15:22:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,8 +103,9 @@ namespace NLAISCRIPT
 		///Get the last mark pushed in the list.
 		virtual int popMark()
 		{
-			int i = _Marque.back();
-			_Marque.pop_back();
+			int i = 0;			
+			i = _Marque.back();
+			_Marque.pop_back();		
 			return i;
 		}
 

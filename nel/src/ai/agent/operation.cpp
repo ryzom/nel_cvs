@@ -1,7 +1,7 @@
 /** \file operation.cpp
  * <File description>
  *
- * $Id: operation.cpp,v 1.6 2002/08/02 09:57:02 chafik Exp $
+ * $Id: operation.cpp,v 1.7 2002/08/20 15:21:58 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,9 @@ namespace NLAIAGENT
 	CAgentOperation::~CAgentOperation()
 	{
 		if(_Op != NULL) 
-				_Op->release();		
+				_Op->release();
+		if(_Name != NULL) 
+				_Name->release();
 	}
 
 	void CAgentOperation::onKill(IConnectIA *A)

@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.23 2001/07/24 08:40:02 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.24 2001/07/24 15:16:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -371,9 +371,9 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 	nlassert(creationIndex != -1) ; // all attributs must contains the same number of elements
 	_Speed.insert(convMat.mulVector(speed)) ;
 			
-	_InvMass.insert(1.f / (_MassScheme ? _MassScheme->get(emitter, indexInEmitter) : _InitialMass ) ) ;
+	_InvMass.insert(1.f / ((_MassScheme && emitter) ? _MassScheme->get(emitter, indexInEmitter) : _InitialMass ) ) ;
 	_Time.insert(0.0f) ;	
-	_TimeIncrement.insert( 1.f / (_LifeScheme ? _LifeScheme->get(emitter, indexInEmitter) : _InitialLife ) ) ;
+	_TimeIncrement.insert( 1.f / ((_LifeScheme && emitter) ?  _LifeScheme->get(emitter, indexInEmitter) : _InitialLife ) ) ;
 
 	// generate datas for all bound objects
 	

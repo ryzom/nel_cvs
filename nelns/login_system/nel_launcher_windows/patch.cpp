@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.7 2003/02/13 18:27:15 lecroart Exp $
+ * $Id: patch.cpp,v 1.8 2003/04/08 12:43:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -398,15 +398,49 @@ private:
 		uint8 buffer[bufferSize];
 
 		if (RootInternet == NULL)
+		{
 			RootInternet = InternetOpen("nel_launcher", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+			if (RootInternet == NULL)
+			{
+				// error
+				LPVOID lpMsgBuf;
+				string errorstr;
+				DWORD errcode = GetLastError ();
+				if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+					errcode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+					(LPTSTR) &lpMsgBuf, 0, NULL) == 0)
+				{
+					errorstr = (LPCTSTR)lpMsgBuf;
+				}
+				LocalFree(lpMsgBuf);
+				
+				throw Exception ("InternetOpen() failed: %s (ec %d)", errorstr.c_str(), errcode);
+			}
+		}
 
 		HINTERNET hUrlDump = InternetOpenUrl(RootInternet, source.c_str(), NULL, NULL, INTERNET_FLAG_NO_AUTO_REDIRECT | INTERNET_FLAG_RAW_DATA, 0);
+		if (hUrlDump == NULL)
+		{
+			// error
+			LPVOID lpMsgBuf;
+			string errorstr;
+			DWORD errcode = GetLastError ();
+			if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+				errcode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+				(LPTSTR) &lpMsgBuf, 0, NULL) == 0)
+			{
+				errorstr = (LPCTSTR)lpMsgBuf;
+			}
+			LocalFree(lpMsgBuf);
+
+			throw Exception ("InternetOpenUrl() failed on file '%s': %s (ec %d)", source.c_str (), errorstr.c_str(), errcode);
+		}
 
 		setRWAccess(dest);
 		FILE *fp = fopen (dest.c_str(), "wb");
 		if (fp == NULL)
 		{
-			throw Exception ("Can't open file '%s' : code=%d %s", dest.c_str (), errno, strerror(errno));
+			throw Exception ("Can't open file '%s' for writing: code=%d %s", dest.c_str (), errno, strerror(errno));
 		}
 
 		CurrentFilesToGet++;
@@ -419,20 +453,18 @@ private:
 
 			if(!InternetReadFile(hUrlDump,(LPVOID)buffer, bufferSize, &realSize))
 			{
-				  // error
 				LPVOID lpMsgBuf;
-				FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
-					GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-					(LPTSTR) &lpMsgBuf, 0, NULL);
-				string error = (LPCTSTR)lpMsgBuf;
+				string errorstr;
+				DWORD errcode = GetLastError ();
+				if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+					errcode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+					(LPTSTR) &lpMsgBuf, 0, NULL) == 0)
+				{
+					errorstr = (LPCTSTR)lpMsgBuf;
+				}
 				LocalFree(lpMsgBuf);
 				
-				fclose (fp);
-				InternetCloseHandle(hUrlDump);
-
-				throw Exception ("InternetReadFile() failed on file '%s': %s", source.c_str (), error.c_str());
-				
-				break;
+				throw Exception ("InternetOpenUrl() failed on file '%s': %s (ec %d)", source.c_str (), errorstr.c_str(), errcode);
 			}
 			else
 			{
@@ -464,7 +496,21 @@ private:
 		while (true);
 
 		fclose (fp);
-		InternetCloseHandle(hUrlDump);
+		if (!InternetCloseHandle(hUrlDump))
+		{
+			LPVOID lpMsgBuf;
+			string errorstr;
+			DWORD errcode = GetLastError ();
+			if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+				errcode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+				(LPTSTR) &lpMsgBuf, 0, NULL) == 0)
+			{
+				errorstr = (LPCTSTR)lpMsgBuf;
+			}
+			LocalFree(lpMsgBuf);
+			
+			throw Exception ("InternetCloseHandle() failed on file '%s': %s (ec %d)", source.c_str (), errorstr.c_str(), errcode);
+		}
 	}
 
 

@@ -476,8 +476,6 @@ void CNel_launcherDlg::patch (const string &str)
 
 void CNel_launcherDlg::OnTimer(UINT nIDEvent) 
 {
-	nlinfo ("check");
-
 	string state, log;
 	if (patchState(state, log))
 	{

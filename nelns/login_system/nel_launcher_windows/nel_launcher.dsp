@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=nel_launcher - Win32 Debug
+CFG=nel_launcher - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,14 @@ CFG=nel_launcher - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "nel_launcher.mak" CFG="nel_launcher - Win32 Debug"
+!MESSAGE NMAKE /f "nel_launcher.mak" CFG="nel_launcher - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "nel_launcher - Win32 Release" (based on "Win32 (x86) Application")
 !MESSAGE "nel_launcher - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "nel_launcher - Win32 DebugFast" (based on "Win32 (x86) Application")
+!MESSAGE "nel_launcher - Win32 ReleaseDebug" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -81,12 +83,68 @@ LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 DebugFast"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "nel_launcher___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "nel_launcher___Win32_DebugFast"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 6
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "DebugFast"
+# PROP Intermediate_Dir "DebugFast"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+
+!ELSEIF  "$(CFG)" == "nel_launcher - Win32 ReleaseDebug"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "nel_launcher___Win32_ReleaseDebug"
+# PROP BASE Intermediate_Dir "nel_launcher___Win32_ReleaseDebug"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 6
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "nel_launcher___Win32_ReleaseDebug"
+# PROP Intermediate_Dir "nel_launcher___Win32_ReleaseDebug"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdafx.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /debug /machine:I386
+
 !ENDIF 
 
 # Begin Target
 
 # Name "nel_launcher - Win32 Release"
 # Name "nel_launcher - Win32 Debug"
+# Name "nel_launcher - Win32 DebugFast"
+# Name "nel_launcher - Win32 ReleaseDebug"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -162,12 +220,12 @@ SOURCE=.\nel_launcher.cfg
 # End Source File
 # End Target
 # End Project
-# Section nel_launcher : {8856F961-340A-11D0-A96B-00C04FD705A2}
-# 	2:21:DefaultSinkHeaderFile:webbrowser2.h
-# 	2:16:DefaultSinkClass:CWebBrowser2
-# End Section
 # Section nel_launcher : {D30C1661-CDAF-11D0-8A3E-00C04FC9E26E}
 # 	2:5:Class:CWebBrowser2
 # 	2:10:HeaderFile:webbrowser2.h
 # 	2:8:ImplFile:webbrowser2.cpp
+# End Section
+# Section nel_launcher : {8856F961-340A-11D0-A96B-00C04FD705A2}
+# 	2:21:DefaultSinkHeaderFile:webbrowser2.h
+# 	2:16:DefaultSinkClass:CWebBrowser2
 # End Section

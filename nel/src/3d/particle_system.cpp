@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.70 2003/11/28 16:20:52 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.71 2003/12/08 15:00:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -348,6 +348,7 @@ static void displaySysPos(IDriver *drv, const CVector &pos, CRGBA col)
 }
 */
 
+
 ///=======================================================================================
 void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 {	
@@ -462,10 +463,10 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 					}
 					_AutoLODEmitRatio = (1.f - _MaxDistLODBias) * finalValue + _MaxDistLODBias;
 				}
-			}
-
-			// set start position. Used by emitters that emit from Local basis to world
-			if (!(_HiddenAtPreviousFrame && !_HiddenAtCurrentFrame))
+			}			
+			nlinfo("system %s is %s", _Name.c_str(), _HiddenAtCurrentFrame ? "hidden" : "showed");
+			// set start position. Used by emitters that emit from Local basis to world			
+			if (!_HiddenAtPreviousFrame && !_HiddenAtCurrentFrame)
 			{			
 				_CoordSystemInfo.CurrentDeltaPos = _CoordSystemInfo.OldPos - _CoordSystemInfo.Matrix->getPos();						
 				if (_UserCoordSystemInfo)
@@ -477,16 +478,22 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			else
 			{
 				_CoordSystemInfo.CurrentDeltaPos = NLMISC::CVector::Null;
+				_CoordSystemInfo.OldPos = _CoordSystemInfo.Matrix->getPos();
 				if (_UserCoordSystemInfo)
 				{
 					CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
 					csi.CurrentDeltaPos = NLMISC::CVector::Null;
+					csi.OldPos = csi.Matrix->getPos();
 				}
 			}
 			//displaySysPos(_Driver, _CurrentDeltaPos + _OldSysMat.getPos(), CRGBA::Red);
 			// process passes
 			float realEt = _KeepEllapsedTimeForLifeUpdate ? (ellapsedTime / nbPass)
-														  : et;			
+														  : et;						
+
+			nlinfo("Delta pos = (%f, %f, %f)", _CoordSystemInfo.Matrix->getPos().x - _CoordSystemInfo.OldPos.x,
+				                               _CoordSystemInfo.Matrix->getPos().y - _CoordSystemInfo.OldPos.y,
+											   _CoordSystemInfo.Matrix->getPos().y - _CoordSystemInfo.OldPos.y);
 			do
 			{					
 				// position of the system at the end of the integration
@@ -507,6 +514,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 				}
 				_SystemDate += realEt;
 				stepLocated(PSEmit, et,  realEt);
+								
 
 				if (_BypassIntegrationStepLimit)
 				{
@@ -538,7 +546,6 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 	}	
 	CHECK_INTEGRITY
 }
-
 
 
 ///=======================================================================================

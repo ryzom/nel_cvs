@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.28 2004/07/09 09:44:33 lecroart Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.29 2004/08/30 12:45:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -833,13 +833,6 @@ void CSoundDriverDSound::removeBuffer(IBuffer *buffer)
 }
 
 // ******************************************************************
-/*
-bool CSoundDriverDSound::loadWavFile(IBuffer *destbuffer, const char *filename)
-{
-	return ((CBufferDSound*) destbuffer)->loadWavFile(filename);
-}
-*/
-
 bool CSoundDriverDSound::readWavBuffer( IBuffer *destbuffer, const std::string &name, uint8 *wavData, uint dataSize)
 {
 	return ((CBufferDSound*) destbuffer)->readWavBuffer(name, wavData, dataSize);

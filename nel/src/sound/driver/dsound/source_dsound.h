@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.13 2003/07/03 15:17:25 boucher Exp $
+ * $Id: source_dsound.h,v 1.14 2004/08/30 12:44:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -251,17 +251,7 @@ public:
 	/// It takes the current position of the listener as argument.
 	void					updateVolume( const NLMISC::CVector& listener );
 
-	/** Set the alpha value for the volume-distance curve
-	 * 
-	 *  alpha = 0.0: the volume will decrease linearly between 0dB and -100 dB
-	 *  alpha = 1.0: the volume will decrease linearly between 1.0 and 0.0 (linear scale)
-	 *  alpha = -1.0: the volume will decrease inversely with the distance (1/dist). This
-	 *                is the default used by DirectSound/OpenAL
-	 * 
-	 *  For any other value of alpha, an interpolation is be done between the two
-	 *  adjacent curves. For example, if alpha equals 0.5, the volume will be halfway between
-	 *  the linear dB curve and the linear amplitude curve.
-	 */
+	/// Set the alpha value for the volume-distance curve
 	virtual void			setAlpha(double a) { _Alpha = a; }
 
 private:
@@ -457,6 +447,7 @@ private:
 	float					_Gain;
 	double					_Alpha;
 	NLMISC::CVector			_Pos;
+	bool					_PosRelative;
 
 #if EAX_AVAILABLE == 1
 	LPKSPROPERTYSET			_EAXSource;

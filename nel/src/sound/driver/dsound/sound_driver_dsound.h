@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.13 2004/05/10 14:43:09 corvazier Exp $
+ * $Id: sound_driver_dsound.h,v 1.14 2004/08/30 12:45:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,8 +63,6 @@ public:
 	/// Create a sound buffer
 	virtual	IBuffer *createBuffer();
 
-	/// Load a wave file in to the buffer
-//	virtual bool loadWavFile(IBuffer *destbuffer, const char *filename);
 	virtual bool readWavBuffer( IBuffer *destbuffer, const std::string &name, uint8 *wavData, uint dataSize);
 
 	virtual bool readRawBuffer( IBuffer *destbuffer, const std::string &name, uint8 *rawData, uint dataSize, TSampleFormat format, uint32 frequency);

@@ -1,7 +1,7 @@
 /** \file bezier_patch.cpp
  * <File description>
  *
- * $Id: bezier_patch.cpp,v 1.11 2002/02/28 12:59:49 besson Exp $
+ * $Id: bezier_patch.cpp,v 1.12 2002/06/24 13:08:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -266,6 +266,105 @@ CVector		CBezierPatch::evalNormal(float ps, float pt) const
 	return norm;
 }
 
+
+// ***************************************************************************
+CVector		CBezierPatch::evalTangentS(float ps, float pt) const
+{
+	CVector	tgtS;
+
+	float s0,s1,s2,s3;
+	float t0,t1,t2,t3;
+	float ps2 = ps * ps;
+	float ps1 = 1.0f - ps;
+	float ps12 = ps1 * ps1;
+	float pt2 = pt * pt;
+	float pt1 = 1.0f - pt;
+	float pt12 = pt1 * pt1;
+
+	// Compute tangentS
+	//=================
+	// s/ds.
+	s0 = -3* ps12;
+	s1 = 9*ps2 + 3 -12*ps;
+	s2 =-9*ps2 + 6*ps ;
+	s3 = 3* ps2;
+	// t/dt.
+	t0 = pt12 * pt1;
+	t1 = 3.0f * pt * pt12;
+	t2 = 3.0f * pt2 * pt1;
+	t3 = pt2 * pt;
+
+	tgtS.set(0,0,0);
+	mulAdd(tgtS, Vertices[0] , s0 * t0);
+	mulAdd(tgtS, Tangents[7] , s1 * t0);
+	mulAdd(tgtS, Tangents[6] , s2 * t0);
+	mulAdd(tgtS, Vertices[3] , s3 * t0);
+	mulAdd(tgtS, Tangents[0] , s0 * t1);
+	mulAdd(tgtS, Interiors[0], s1 * t1);
+	mulAdd(tgtS, Interiors[3], s2 * t1);
+	mulAdd(tgtS, Tangents[5] , s3 * t1);
+	mulAdd(tgtS, Tangents[1] , s0 * t2);
+	mulAdd(tgtS, Interiors[1], s1 * t2);
+	mulAdd(tgtS, Interiors[2], s2 * t2);
+	mulAdd(tgtS, Tangents[4] , s3 * t2);
+	mulAdd(tgtS, Vertices[1] , s0 * t3);
+	mulAdd(tgtS, Tangents[2] , s1 * t3);
+	mulAdd(tgtS, Tangents[3] , s2 * t3);
+	mulAdd(tgtS, Vertices[2] , s3 * t3);
+
+	// Return the tgt normalized
+	return tgtS.normed();
+}
+
+
+// ***************************************************************************
+CVector		CBezierPatch::evalTangentT(float ps, float pt) const
+{
+	CVector	tgtT;
+
+	float s0,s1,s2,s3;
+	float t0,t1,t2,t3;
+	float ps2 = ps * ps;
+	float ps1 = 1.0f - ps;
+	float ps12 = ps1 * ps1;
+	float pt2 = pt * pt;
+	float pt1 = 1.0f - pt;
+	float pt12 = pt1 * pt1;
+
+	// Compute tangentT
+	//=================
+	// s/ds.
+	s0 = ps12 * ps1;
+	s1 = 3.0f * ps * ps12;
+	s2 = 3.0f * ps2 * ps1;
+	s3 = ps2 * ps;
+	// t/dt.
+	t0 = -3* pt12;
+	t1 = 9*pt2 + 3 -12*pt;
+	t2 =-9*pt2 + 6*pt ;
+	t3 = 3* pt2;
+
+	tgtT.set(0,0,0);
+	mulAdd(tgtT, Vertices[0] , s0 * t0);
+	mulAdd(tgtT, Tangents[7] , s1 * t0);
+	mulAdd(tgtT, Tangents[6] , s2 * t0);
+	mulAdd(tgtT, Vertices[3] , s3 * t0);
+	mulAdd(tgtT, Tangents[0] , s0 * t1);
+	mulAdd(tgtT, Interiors[0], s1 * t1);
+	mulAdd(tgtT, Interiors[3], s2 * t1);
+	mulAdd(tgtT, Tangents[5] , s3 * t1);
+	mulAdd(tgtT, Tangents[1] , s0 * t2);
+	mulAdd(tgtT, Interiors[1], s1 * t2);
+	mulAdd(tgtT, Interiors[2], s2 * t2);
+	mulAdd(tgtT, Tangents[4] , s3 * t2);
+	mulAdd(tgtT, Vertices[1] , s0 * t3);
+	mulAdd(tgtT, Tangents[2] , s1 * t3);
+	mulAdd(tgtT, Tangents[3] , s2 * t3);
+	mulAdd(tgtT, Vertices[2] , s3 * t3);
+
+	// Return the tgt normalized
+	return tgtT.normed();
+}
 
 
 // ***************************************************************************

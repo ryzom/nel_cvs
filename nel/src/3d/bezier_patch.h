@@ -1,7 +1,7 @@
 /** \file bezier_patch.h
  * <File description>
  *
- * $Id: bezier_patch.h,v 1.2 2002/04/02 15:58:25 vizerie Exp $
+ * $Id: bezier_patch.h,v 1.3 2002/06/24 13:08:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,6 +98,10 @@ public:
 	CVectorD	evalDouble(double s, double t) const;	// s,t coordinates for quad.
 	/// Evaluate the normal at (s,t). returned vector is normalized.
 	CVector		evalNormal(float s, float t) const;		// s,t coordinates for quad.
+	/// Evaluate the tangentS at (s,t). returned vector is normalized.
+	CVector		evalTangentS(float s, float t) const;	// s,t coordinates for quad.
+	/// Evaluate the tangentT at (s,t). returned vector is normalized.
+	CVector		evalTangentT(float s, float t) const;	// s,t coordinates for quad.
 
 
 	/// \name Subdivision.

@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.11 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_force.h,v 1.12 2001/12/12 10:26:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -748,7 +748,7 @@ public:
 	CPSCylindricVortex(float intensity = 1.f) : _RadialViscosity(.1f), _TangentialViscosity(.1f) 
 	{
 		setIntensity(intensity);
-		_Name = std::string("Fluid friction"); 
+		_Name = std::string("Cylindric Vortex"); 
 	}
 
 	// inherited from IPSMover

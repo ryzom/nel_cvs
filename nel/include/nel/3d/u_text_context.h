@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.12 2003/01/27 10:24:46 coutelas Exp $
+ * $Id: u_text_context.h,v 1.13 2003/02/24 13:05:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -216,7 +216,7 @@ public:
 	/**
 	 * set the color of a string.
 	 */
-	virtual	void			setStringColor(uint32 i, CRGBA newCol)= 0;
+	virtual	void			setStringColor(uint32 i, NLMISC::CRGBA newCol)= 0;
 	/**
 	 * set the letter selection of a string. Only letters in the range given are displayed. Default is 0/0xFFFFFFFF
 	 */

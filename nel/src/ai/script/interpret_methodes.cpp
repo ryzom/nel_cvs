@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.5 2001/01/08 14:42:11 valignat Exp $
+ * $Id: interpret_methodes.cpp,v 1.6 2001/01/10 11:55:26 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -241,8 +241,9 @@ namespace NLAISCRIPT
 	{
 		strcpy(txt,"(");
 		if(size())
-		{							
-			for(sint32 i = 0; i < size() - 1; i++)
+		{		
+			int i;
+			for( i = 0; i < size() - 1; i++)
 			{
 				const NLAIC::CIdentType *id = _Param[i]->getConstraintTypeOf();
 				if(id) strcat(txt,(const char *)*id);

@@ -3199,7 +3199,7 @@ group "Directories"
 	(
 		ligo_root_path = newPath
 		lastChar = ligo_root_path[ligo_root_path.count]
-		if (lastChar != '\') and (lastChar != '/') then
+		if (lastChar != "\\") and (lastChar != "/") then
 			ligo_root_path += "\\"
 		setINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoPath" ligo_root_path
 	)
@@ -3208,7 +3208,7 @@ group "Directories"
 	(
 		ligo_export_path = newPath
 		lastChar = ligo_export_path[ligo_export_path.count]
-		if (lastChar != '\') and (lastChar != '/') then
+		if (lastChar != "\\") and (lastChar != "/") then
 			ligo_export_path += "\\"
 		setINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoExportPath" ligo_export_path
 	)
@@ -3217,7 +3217,7 @@ group "Directories"
 	(
 		old_zone_path = newPath
 		lastChar = old_zone_path[old_zone_path.count]
-		if (lastChar != '\') and (lastChar != '/') then
+		if (lastChar != "\\") and (lastChar != "/") then
 			old_zone_path += "\\"
 		setINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoOldZonePath" old_zone_path
 	)

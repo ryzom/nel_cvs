@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * <File description>
  *
- * $Id: object_vector.h,v 1.1 2001/12/05 15:13:33 berenguier Exp $
+ * $Id: object_vector.h,v 1.2 2002/02/06 16:51:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
+#include "nel/misc/stream.h"
 #include "nel/misc/debug.h"
 
 
@@ -207,6 +208,91 @@ public:
 				_Ptr[i]= *srcPtr;
 			}
 		}
+	}
+
+
+	/** fill elements with a value, beetween dstFirst element (included) and dstLast element (not included).
+	 */
+	void		fill(uint32 dstFirst, uint32 dstLast, const T &value)
+	{
+		// test if something to copy.
+		if(dstFirst>=dstLast)
+			return;
+		nlassert(dstLast<=_Size);
+		// call ope= for all elements.
+		for(uint i=dstFirst; i<dstLast; i++)
+		{
+			_Ptr[i]= value;
+		}
+	}
+
+	/** fill all elements with a value
+	 */
+	void		fill(const T &value)
+	{
+		// call ope= for all elements.
+		for(uint i=0; i<_Size; i++)
+		{
+			_Ptr[i]= value;
+		}
+	}
+
+
+
+	/** Serial this ObjectVector.
+	 *	NB: actually, the serial of a vector<> and the serial of a CObjectVector is the same in the stream.
+	 */
+	void		serial(NLMISC::IStream &f)
+	{
+		// Open a node header
+		f.xmlPushBegin ("VECTOR");
+
+		// Attrib size
+		f.xmlSetAttrib ("size");
+
+		sint32	len=0;
+		if(f.isReading())
+		{
+			f.serial(len);
+
+			// Open a node header
+			f.xmlPushEnd ();
+
+			// special version for vector: adjut good size.
+			contReset(*this);
+			resize (len);
+
+			// Read the vector
+			for(sint i=0;i<len;i++)
+			{
+				f.xmlPush ("ELM");
+
+				f.serial(_Ptr[i]);
+
+				f.xmlPop ();
+			}
+		}
+		else
+		{
+			len= size();
+			f.serial(len);
+
+			// Close the node header
+			f.xmlPushEnd ();
+
+			// Write the vector
+			for(sint i=0;i<len;i++)
+			{
+				f.xmlPush ("ELM");
+
+				f.serial(_Ptr[i]);
+
+				f.xmlPop ();
+			}
+		}
+
+		// Close the node
+		f.xmlPop ();
 	}
 
 	// @}

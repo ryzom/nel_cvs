@@ -1,7 +1,7 @@
 /** \file net_log.h
  * <File description>
  *
- * $Id: net_log.h,v 1.2 2000/12/07 15:18:42 cado Exp $
+ * $Id: net_log.h,v 1.3 2000/12/13 10:12:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,11 +50,11 @@ public:
 	void	setServiceName( const char *name );
 
 	/// Log an output transfer (send)
-	void	output( const char *srchost, uint8 msgnum,
-					const char *desthost, const char *msgname, uint32 msgsize );
+	void	output( const char *srchost, uint8 msgnum, const char *desthost,
+					const char *msgname, uint32 msgsize );
 
 	/// Log an input transfer (receive)
-	void	input( const char *srchost, uint8 msgnum );
+	void	input( const char *srchost, uint8 msgnum, const char *desthost );
 
 	/*/// Enables or disable logging.
 	void	setLogging( bool logging )

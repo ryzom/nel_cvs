@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.5 2000/11/10 11:19:21 lecroart Exp $
+ * $Id: clip_trav.cpp,v 1.6 2000/11/21 18:00:09 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

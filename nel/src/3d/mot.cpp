@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.5 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: mot.cpp,v 1.6 2000/11/21 18:02:04 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

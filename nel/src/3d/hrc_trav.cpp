@@ -1,7 +1,7 @@
 /** \file hrc_trav.cpp
  * <File description>
  *
- * $Id: hrc_trav.cpp,v 1.2 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: hrc_trav.cpp,v 1.3 2000/11/21 18:01:12 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

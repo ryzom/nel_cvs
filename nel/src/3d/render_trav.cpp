@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.6 2000/11/07 15:34:45 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.7 2000/11/21 18:02:26 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -38,6 +38,10 @@ public:
 	/// the conditions, map name to object
 	CMapStringToPtr		m_conditions;
 
+	BOOL InitCounterPage;
+	BOOL InitConditionPage;
+	BOOL InitStatePage;
+
 
 // Operations
 public:
@@ -104,6 +108,11 @@ public:
 	 *	Load
 	 */
 	BOOL load( LPCTSTR fileName );
+
+	/**
+	 *	Create a new doc instance
+	 */
+	static CLogic_editorDoc * getNewDoc() { return new CLogic_editorDoc(); }
 	
 
 // Overrides

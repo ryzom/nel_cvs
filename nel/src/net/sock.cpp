@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.9 2001/09/12 16:56:01 cado Exp $
+ * $Id: sock.cpp,v 1.10 2001/09/13 08:09:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -222,7 +222,9 @@ CSock::CSock( SOCKET sock, const CInetAddress& remoteaddr ) :
 	_BytesReceived( 0 ),
 	_BytesSent( 0 ),
 	_RemoteAddr( remoteaddr ),
-	_NonBlocking( false )
+	_NonBlocking( false ),
+	_MaxReceiveTime( 0 ),
+	_MaxSendTime( 0 )
 {
 	nlassert( CSock::_Initialized );
 	/*{
@@ -285,9 +287,8 @@ void CSock::close()
  */
 CSock::~CSock()
 {
-	nlinfo( "Report for %s socket:", _NonBlocking?"non-blocking":"blocking" );
-	nlinfo( "Max send time: %u", _MaxSendTime );
-	nlinfo( "Max recv time: %u", _MaxReceiveTime );
+	nlinfo( "Report for %s socket %s: Max send time: %u Max recv time: %u", _NonBlocking?"non-blocking":"blocking", remoteAddr().asString().c_str(), _MaxSendTime, _MaxReceiveTime );
+	nlinfo( "Max send time: %u", _MaxSendTime);
 	if ( _Sock != INVALID_SOCKET )
 	{
 		if ( _Logging )

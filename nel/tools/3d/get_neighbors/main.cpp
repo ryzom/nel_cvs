@@ -21,7 +21,7 @@ void	nameToXY(const char *str, int &x, int &y)
 
 	++str;
 
-	x = (str[0]-'A')*26+(str[1]-'A');
+	x = (toupper(str[0])-'A')*26+(toupper(str[1])-'A');
 }
 
 void	XYToName(int x, int y, char *str)

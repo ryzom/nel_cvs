@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.41 2002/05/07 09:28:45 berenguier Exp $
+ * $Id: export_mesh.cpp,v 1.42 2002/05/30 15:36:17 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1577,7 +1577,8 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 					bs.deltaNorm[nDstPos]	= bs.deltaNorm[j];
 					bs.deltaUV[nDstPos]		= bs.deltaUV[j];
 					bs.deltaCol[nDstPos]	= bs.deltaCol[j];
-					bs.deltaTgSpace[nDstPos] = bs.deltaTgSpace[j];
+					if (wantTangentSpace) 
+						bs.deltaTgSpace[nDstPos] = bs.deltaTgSpace[j];
 				}
 				++nDstPos;
 			}

@@ -1,7 +1,7 @@
 /** \file basis_edit.cpp
  * a dialog to edit the orientation of a basis
  *
- * $Id: basis_edit.cpp,v 1.6 2004/06/17 08:18:01 vizerie Exp $
+ * $Id: basis_edit.cpp,v 1.7 2004/11/02 16:15:07 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,7 @@ NLMISC::CVector GetEulerAngles(const NLMISC::CMatrix &mat)
 	{
 		a0 = c0 = 1.f;
 	}
-	if (fabs(sb1 > 10E-6))
+	if (fabs(sb1) > 10E-6)
 	{
 		a1 = m[2][0] / sb1;
 		c1 = m[1][2] / sb1;

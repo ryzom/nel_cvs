@@ -1,7 +1,7 @@
 /** \file animated_value.h
  * Class IAnimatedValue
  *
- * $Id: animated_value.h,v 1.1 2001/02/05 16:52:44 corvazier Exp $
+ * $Id: animated_value.h,v 1.2 2001/02/06 10:17:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,7 +117,7 @@ public:
 	}
 	
 	/// Access to the value
-	const T& getValue() const
+	const int& getValue() const
 	{
 		return _Value;
 	}
@@ -144,11 +144,11 @@ public:
 		nlassert (typeid (value)==typeid(*this));
 
 		// TODO: Implemente a slerp here.. But CQuat is not good enought..
-		nlassert (0);
+		stop;
 	}
 
 	/// Access to the value
-	const T& getValue() const
+	const NLMISC::CQuat& getValue() const
 	{
 		return _Value;
 	}

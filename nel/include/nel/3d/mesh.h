@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.12 2001/04/09 14:26:37 berenguier Exp $
+ * $Id: mesh.h,v 1.13 2001/04/11 10:29:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "nel/3d/primitive_block.h"
 #include "nel/3d/animated_material.h"
 #include <set>
+#include <vector>
 
 
 namespace NL3D 
@@ -89,13 +90,25 @@ public:
 	};
 
 
-	/// Skinning: A skin weight for a vertex.
+	/** Skinning: A skin weight for a vertex.
+	 * NB: if you don't use all matrix for this vertex, use at least the 0th matrix, and simply set 0 on Weights you don't use.
+	 */
 	struct	CSkinWeight
 	{
-		// What matrix of the skeleton shape this vertex use.
+		/// What matrix of the skeleton shape this vertex use.
 		uint			MatrixId[NL3D_MESH_SKINNING_MAX_MATRIX];
-		// weight of this matrix (sum of 4 must be 1).
+		/// weight of this matrix (sum of 4 must be 1).
 		float			Weights[NL3D_MESH_SKINNING_MAX_MATRIX];
+
+		/// ctor.
+		CSkinWeight()
+		{
+			for(uint i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
+			{
+				MatrixId[i]=0;
+				Weights[i]=0;
+			}
+		}
 	};
 
 
@@ -135,7 +148,7 @@ public:
 	CMesh();
 
 	/// Build a mesh, replacing old. WARNING: This has a side effect of deleting AnimatedMaterials.
-	void			build(const CMeshBuild &mbuild);
+	void			build(CMeshBuild &mbuild);
 
 
 	/// \name animated material mgt. do it after build().
@@ -206,7 +219,7 @@ private:
 
 
 	/// The V2- Old CRdrPass structure.
-	class	CRdrPassV2
+	class	CRdrPassOldV2
 	{
 	public:
 		CMaterial			Material;
@@ -242,6 +255,10 @@ private:
 			f.serial(NumMatrix);
 			f.serialCont(RdrPass);
 		}
+
+
+		/// return the idx of this bone, in MatrixId. -1 if not found.
+		sint	getMatrixIdLocation(uint32 boneId) const;
 	};
 
 
@@ -291,6 +308,31 @@ private:
 	};
 
 
+	/** Just for build process. A Bone.
+	 */
+	struct	CBoneTmp
+	{
+		// How many ref points on it? (NB: a corner may have multiple (up to 4) on it).
+		uint	RefCount;
+		// Am i inserted into the current matrixblock?
+		bool	Inserted;
+		// If I am inserted into the current matrixblock, to which local bone (0-15) I am linked?
+		uint	MatrixIdInMB;
+
+		CBoneTmp()
+		{
+			RefCount= 0;
+			Inserted=false;
+		}
+	};
+
+
+	/** Just for build process. A map of Bone.
+	 */
+	typedef	std::map<uint, CBoneTmp>	TBoneMap;
+	typedef	TBoneMap::iterator			ItBoneMap;
+
+
 	/** Just for build process. A Triangle face.
 	 */
 	struct	CFaceTmp
@@ -314,8 +356,19 @@ private:
 			return *this;
 		}
 
+
+		void	buildBoneUse(std::vector<uint>	&boneUse, std::vector<CSkinWeight> &skinWeights);
+
 	};
 
+
+	/** Just for build process. A MatrixBlock remap.
+	 */
+	class	CMatrixBlockRemap
+	{
+	public:
+		uint32					Remap[IDriver::MaxModelMatrix];
+	};
 
 
 private:
@@ -398,6 +451,10 @@ private:
 			}
 		}
 	}
+
+	// build skinning.
+	void	buildSkin(CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces);
+
 };
 
 } // NL3D

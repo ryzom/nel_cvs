@@ -114,6 +114,8 @@ enum PainterKeysType
 	SelectColorBrush,
 	ToggleColorBrushMode,
 	LockBorders,
+	ZoomIn,
+	ZoomOut,
 	KeyCounter
 };
 
@@ -125,6 +127,10 @@ extern CVector	LightDirection;
 extern CRGBA	LightDiffuse;
 extern CRGBA	LightAmbiant;
 extern float	LightMultiply;
+extern float	ZoomSpeed;
+
+// Light settings
+
 
 // Keys
 extern const char* PainterKeysName[KeyCounter];
@@ -132,4 +138,4 @@ extern const char* PainterKeysName[KeyCounter];
 // Load ini file
 
 void LoadKeyCfg ();
-void LoadLightCfg ();
+void LoadVarCfg ();

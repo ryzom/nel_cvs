@@ -40,6 +40,8 @@ uint PainterKeys[KeyCounter]=
 	KeyS,
 	KeyQ,
 	KeyL,
+	Key1,
+	Key2,
 };
 
 // Keys
@@ -71,6 +73,8 @@ const char* PainterKeysName[KeyCounter]=
 	"SelectColorBrush",
 	"ToggleColorBrushMode",
 	"LockBorders",
+	"ZoomIn",
+	"ZoomOut",
 };
 
 // Light settings
@@ -78,11 +82,12 @@ CVector		LightDirection (1, 1, -1);
 CRGBA		LightDiffuse (255,255,255);
 CRGBA		LightAmbiant (0,0,0);
 float		LightMultiply = 1;
+float		ZoomSpeed = 300;
 
 // Load ini file
 
 void LoadKeyCfg ();
-void LoadLightCfg ();
+void LoadVarCfg ();
 
 /*-------------------------------------------------------------------*/
 
@@ -417,7 +422,7 @@ void LoadKeyCfg ()
 
 /*-------------------------------------------------------------------*/
 
-void LoadLightCfg ()
+void LoadVarCfg ()
 {
 	// Path of the dll
 	HMODULE hModule = GetModuleHandle("nelpaintpatch.dlm");
@@ -453,7 +458,13 @@ void LoadLightCfg ()
 					LightDirection.y = light_direction.asFloat (1);
 					LightDirection.z = light_direction.asFloat (2);
 				}
+			}
+			catch (EConfigFile &)
+			{
+			}
 
+			try
+			{
 				// Get the light diffuse part
 				CConfigFile::CVar &light_diffuse= cf.getVar ("LightDiffuse");
 				if (light_diffuse.size () == 3)
@@ -462,7 +473,13 @@ void LoadLightCfg ()
 					LightDiffuse.G = light_diffuse.asInt (1);
 					LightDiffuse.B = light_diffuse.asInt (2);
 				}
+			}
+			catch (EConfigFile &)
+			{
+			}
 
+			try
+			{
 				// Get the light ambiant part
 				CConfigFile::CVar &light_ambiant= cf.getVar ("LightAmbiant");
 				if (light_ambiant.size () == 3)
@@ -471,15 +488,29 @@ void LoadLightCfg ()
 					LightAmbiant.G = light_ambiant.asInt (1);
 					LightAmbiant.B = light_ambiant.asInt (2);
 				}
+			}
+			catch (EConfigFile &)
+			{
+			}
 
+			try
+			{
 				// Get the light mulitply part
 				CConfigFile::CVar &light_multiply= cf.getVar ("LightMultiply");
 				LightMultiply = light_multiply.asFloat ();
 			}
-			catch (EConfigFile &e)
+			catch (EConfigFile &)
 			{
-				// Something goes wrong... catch that
-				const char* what=e.what();
+			}
+
+			try
+			{
+				// Get the zoom speed
+				CConfigFile::CVar &zoom_speed= cf.getVar ("ZoomSpeed");
+				ZoomSpeed = zoom_speed.asFloat ();
+			}
+			catch (EConfigFile &)
+			{
 			}
 		}
 	}

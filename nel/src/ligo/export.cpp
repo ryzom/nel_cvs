@@ -1,7 +1,7 @@
 /** \file ligo/export.cpp
  * Implementation of export from leveldesign data to client data
  *
- * $Id: export.cpp,v 1.2 2002/02/20 18:09:06 lecroart Exp $
+ * $Id: export.cpp,v 1.3 2002/02/25 17:58:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -623,7 +623,7 @@ void CExport::transformZone (CZone &zeZone, sint32 nPosX, sint32 nPosY, uint8 nR
 		swap(rPI.BindEdges[0], rPI.BindEdges[2]);
 
 		// Flip bind edge content only if multiple bind
-		for (j = 1; j < 4; j+=2)
+		for (j = 0; j < 4; j++)
 		{
 			if (rPI.BindEdges[j].NPatchs == 2)
 			{

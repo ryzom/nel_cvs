@@ -2769,6 +2769,7 @@ void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseLi
 		dir= mat.mulVector(dir);
 		if(AsyncListener.isKeyDown(KeyUP))		CameraPos+= dir;
 		if(AsyncListener.isKeyDown(KeyDOWN))		CameraPos-= dir;
+
 		/*if(AsyncListener.isKeyDown(KeyR))
 		{
 			CameraPos.set(0,0,0);
@@ -2789,6 +2790,17 @@ void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseLi
 		CMatrix camKey;
 		camKey.identity ();
 		camKey.rotate(CameraRot, CMatrix::ZXY);
+
+		// Zoom distance
+		float zoom = 0;
+		if (AsyncListener.isKeyDown ((TKey)PainterKeys[ZoomIn]))
+			zoom -= ZoomSpeed * dt;
+		if (AsyncListener.isKeyDown ((TKey)PainterKeys[ZoomOut]))
+			zoom += ZoomSpeed * dt;
+
+		// Add zoom
+		CameraPos += (zoom * -camKey.getJ());
+
 		camKey.setPos(CameraPos);
 
 		camKey=mouseListener.getViewMatrix()*camKey;
@@ -3816,7 +3828,7 @@ DWORD WINAPI myThread (LPVOID vData)
 		
 		// Loaf cfg files
 		LoadKeyCfg ();
-		LoadLightCfg ();
+		LoadVarCfg ();
 
 		// Init the scene
 		CViewport viewport;

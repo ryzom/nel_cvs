@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.26 2001/11/26 13:13:37 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.27 2001/12/14 10:12:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -399,7 +399,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 				/// frustum test		
 				for(sint i=0; i < (sint)pyramid.size(); i++)
 				{					
-					if ( (pyramid[i]   *  mat  ) * pos > 0.f ) 
+					if ( (pyramid[i]   *  mat  ).d > 0.0f )  // in its basis, the system is at the center
 
 					{						
 						Visible = true;

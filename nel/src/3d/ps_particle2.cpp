@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle2.cpp,v 1.6 2002/01/28 15:47:37 vizerie Exp $
+ * $Id: ps_particle2.cpp,v 1.7 2002/01/29 10:50:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -617,8 +617,9 @@ void CPSRibbonBase::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void CPSRibbonBase::updateLOD()
 {
 	nlassert(_Owner)
-	float ratio = _Owner->getOwner()->getOneMinusCurrentLODRatio();
-	float lodRatio = _LODDegradation + (1.f - _LODDegradation ) * ratio * ratio;
+	float ratio = _Owner->getOwner()->getOneMinusCurrentLODRatio();	
+	float squaredRatio = ratio * ratio;
+	float lodRatio = _LODDegradation + (1.f - _LODDegradation ) * squaredRatio * squaredRatio * squaredRatio;
 	
 	_UsedNbSegs = (uint) (_NbSegs * lodRatio);
 	NLMISC::clamp(_UsedNbSegs, 0u, _NbSegs);

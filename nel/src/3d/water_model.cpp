@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.44 2004/08/13 15:48:53 vizerie Exp $
+ * $Id: water_model.cpp,v 1.45 2004/09/23 16:15:56 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1063,7 +1063,7 @@ void CWaterModel::setupSimpleRender(CWaterShape *shape, const NLMISC::CVector &o
 	}			
 	// envmap is always present and is in stage 0	
 	CScene *scene = getOwnerScene();
-	if (above && shape->_EnvMap[1])
+	if (!above && shape->_EnvMap[1])
 	{		
 		if (shape->_UsesSceneWaterEnvMap[1])
 		{

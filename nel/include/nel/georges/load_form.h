@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.25 2003/05/28 12:59:17 ledorze Exp $
+ * $Id: load_form.h,v 1.26 2003/06/10 09:41:31 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,10 +34,10 @@
 
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
+#include "nel/misc/sheet_id.h"
 
 #include "nel/georges/u_form_loader.h"
 #include "nel/georges/u_form.h"
-#include "nel/misc/sheet_id.h"
 
 /** This function is used to load values from georges sheet in a quick way.
  * The first time it loads the sheet and parse it with the readGeorges function
@@ -168,7 +168,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		ifile.setCacheFileOnOpen(true);
 		if (!ifile.open (packedFilenamePath))
 		{
-			throw	Exception("can't open PackedSheet %s", packedFilenamePath.c_str());
+			throw	NLMISC::Exception("can't open PackedSheet %s", packedFilenamePath.c_str());
 		}
 		// an exception will be launch if the file is not the good version or if the file is not found
 
@@ -188,7 +188,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 			ifile.serial(depSize);
 			for (uint i=0; i<depSize; ++i)
 			{
-				CSheetId sheetId;
+				NLMISC::CSheetId sheetId;
 				std::vector<uint32> depends;
 
 				ifile.serial(sheetId);
@@ -433,7 +433,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 				std::map<NLMISC::CSheetId, std::vector<uint32> >::iterator first(dependencies.begin()), last(dependencies.end());
 				for (; first != last; ++first)
 				{
-					CSheetId si = first->first;
+					NLMISC::CSheetId si = first->first;
 					ofile.serial(si);
 					ofile.serialCont(first->second);
 				}
@@ -607,7 +607,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	// set up the current sheet in container to remove sheet that are in the container and not in the directory anymore
 	std::map<std::string, bool> sheetToRemove;
 	{
-		std::map<std::string, T>::iterator first(container.begin()), last(container.end());
+		typename std::map<std::string, T>::iterator first(container.begin()), last(container.end());
 		for(; first != last; ++first)
 			sheetToRemove.insert (make_pair(first->first, true));
 	}

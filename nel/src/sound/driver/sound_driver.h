@@ -1,0 +1,208 @@
+/** \file sound_driver.h
+ * ISoundDriver: sound driver interface
+ *
+ * $Id: sound_driver.h,v 1.1 2001/06/26 15:28:10 cado Exp $
+ */
+
+/* Copyright, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#ifndef NL_SOUND_DRIVER_H
+#define NL_SOUND_DRIVER_H
+
+#include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
+
+
+namespace NLSOUND {
+
+
+class IBuffer;
+class IListener;
+class ISource;
+
+
+#ifdef NL_OS_WINDOWS
+#ifdef NL_DEBUG
+#define NLSOUND_DLL_NAME "nel_drv_openal_win_debug.dll"
+#elif defined (NL_RELEASE_DEBUG)
+#define NL3D_DLL_NAME "nel_drv_openal_win_rd.dll"
+#elif defined (NL_RELEASE)
+#define NL3D_DLL_NAME "nel_drv_openal_win.dll"
+#else
+#error "Unknown dll name"
+#endif
+#elif defined (NL_OS_UNIX)
+#define NL3D_DLL_NAME "libnel_drv_openal.so"
+#else
+#error "Unknown system"
+#endif
+
+
+
+/**
+ * Abstract sound driver (implemented in sound driver dynamic library)
+ *
+ * The caller of the create methods is responsible for the deletion of the created objects.
+ * These objects must be deleted before deleting the ISoundDriver instance.
+ *
+ * \author Olivier Cado
+ * \author Nevrax France
+ * \date 2001
+ */
+class ISoundDriver
+{
+public:
+
+	/// Version of the driver interface. To increment when the interface change.
+	static const uint32		InterfaceVersion;
+
+	/// The static method which builds the sound driver instance
+	static	ISoundDriver	*createDriver();
+
+	/// Return the sound driver object
+	static	ISoundDriver	*instance() { return _Instance; }
+
+	/// Create a sound buffer
+	virtual	IBuffer			*createBuffer() = 0;
+
+	/// Create the listener instance
+	virtual	IListener		*createListener() = 0;
+
+	/// Create a source
+	virtual	ISource			*createSource() = 0;
+
+	// Does not create a sound loader
+
+	/// Destructor
+	virtual	~ISoundDriver() { _Instance = NULL; }
+
+protected:
+
+	/// Constructor
+	ISoundDriver();
+
+	/// Remove a buffer (should be called by the friend destructor of the buffer class)
+	virtual void			removeBuffer( IBuffer *buffer ) = 0;
+
+	/// Remove a source (should be called by the friend destructor of the source class)
+	virtual void			removeSource( ISource *source ) = 0;
+
+	// The sound driver instance
+	static ISoundDriver		*_Instance;
+};
+
+
+/*
+ * Sound driver exceptions
+ */
+class ESoundDriver : public NLMISC::Exception
+{
+public:
+	ESoundDriver() : NLMISC::Exception( "Sound driver error" ) {}
+	ESoundDriver( const char *reason ) : NLMISC::Exception( reason ) {}
+};
+
+
+/*
+ * ESoundDriverNotFound
+ */
+class ESoundDriverNotFound : public ESoundDriver
+{
+public:
+	ESoundDriverNotFound() : ESoundDriver( NLSOUND_DLL_NAME " not found" ) {}
+};
+
+
+/*
+ * ESoundDriverCorrupted
+ */
+class ESoundDriverCorrupted : public ESoundDriver
+{
+public:
+	ESoundDriverCorrupted() : ESoundDriver( "Can't get NLSOUND_createISoundDriverInstance from " NLSOUND_DLL_NAME " (Bad dll?)" ) {}
+};
+
+
+/*
+ * ESoundDriverOldVersion
+ */
+class ESoundDriverOldVersion : public ESoundDriver
+{
+public:
+	ESoundDriverOldVersion() : ESoundDriver( NLSOUND_DLL_NAME " is a too old version. Ask for a more recent file" ) {}
+};
+
+
+/*
+ * ESoundDriverUnknownVersion
+ */
+class ESoundDriverUnknownVersion : public ESoundDriver
+{
+public:
+	ESoundDriverUnknownVersion() : ESoundDriver( NLSOUND_DLL_NAME " is more recent than the application" ) {}
+};
+
+
+/*
+ * ESoundDriverCantCreateDriver
+ */
+class ESoundDriverCantCreateDriver : public ESoundDriver
+{
+public:
+	ESoundDriverCantCreateDriver() : ESoundDriver( NLSOUND_DLL_NAME " can't create driver" ) {}
+};
+
+  
+/*
+ * ESoundDriverGenBuf
+ */
+class ESoundDriverGenBuf : public ESoundDriver
+{
+public:
+	ESoundDriverGenBuf() : ESoundDriver( "Unable to generate sound buffers" ) {}
+};
+
+
+/*
+ * ESoundDriverGenBuf
+ */
+class ESoundDriverGenSrc : public ESoundDriver
+{
+public:
+	ESoundDriverGenSrc() : ESoundDriver( "Unable to generate sound sources" ) {}
+};
+
+  
+/*
+ * ESoundDriverNotSupp
+ */
+class ESoundDriverNotSupp : public ESoundDriver
+{
+public:
+	ESoundDriverNotSupp() : ESoundDriver( "Operation not supported by sound driver" ) {}
+};
+
+
+} // NLSOUND
+
+
+#endif // NL_SOUND_DRIVER_H
+
+/* End of sound_driver.h */

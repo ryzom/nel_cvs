@@ -80,6 +80,7 @@ for i in $list_zone ; do
   if ( ! test -e $dest ) || ( test $i -nt $dest )
   then
 	echo $i >> zone_to_weld.txt
+	rm $dest
   fi
 
 	# Idle
@@ -122,6 +123,7 @@ for i in $list_zone ; do
   if ( ! test -e $dest ) || ( test $i -nt $dest )
   then
 	echo $i >> zone_to_weld.txt
+	rm $dest
   fi
 
 	# Idle

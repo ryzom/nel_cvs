@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.39 2002/04/23 13:57:51 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.40 2002/04/25 08:27:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,21 @@ CPSEmitter::~CPSEmitter()
 		_EmittedType->unregisterDtorObserver(this);
 	}
 }
+
+///==========================================================================
+void CPSEmitter::releaseRefTo(const CParticleSystemProcess *other)
+{
+	if (_EmittedType == other)
+	{
+		setEmittedType(NULL);
+	}
+}
+
+void CPSEmitter::releaseAllRef()
+{
+	setEmittedType(NULL);
+}
+
 
 ///==========================================================================
 inline void CPSEmitter::processEmit(uint32 index, sint nbToGenerate)
@@ -299,8 +314,8 @@ void CPSEmitter::setEmittedType(CPSLocated *et)
 ///==========================================================================
 void CPSEmitter::notifyTargetRemoved(CPSLocated *ptr)
 {
-	nlassert(ptr == _EmittedType);
-	_EmittedType = NULL;
+	nlassert(ptr == _EmittedType && _EmittedType);
+	setEmittedType(NULL);	
 }
 
 ///==========================================================================
@@ -948,7 +963,7 @@ void CPSEmitter::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 void CPSEmitter::deleteElement(uint32 index)
 {	
 
-	if (_EmissionType == CPSEmitter::onDeath)
+	if (_EmissionType == CPSEmitter::onDeath && _EmittedType)
 	{
 		const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, index) : _GenNb;		
 		processEmit(index, nbToGenerate);		

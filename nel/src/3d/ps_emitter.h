@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.17 2002/02/20 11:10:03 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.18 2002/04/25 08:27:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -221,6 +221,16 @@ public:
 	void							enableConsistenEmission(bool enable) { _ConsistentEmission = enable; }
 
 	bool						    isConsistentEmissionEnabled() const { return _ConsistentEmission; }
+
+	/** Release any reference this obj may have on the given process.
+	  * For example, this is used when detaching a located bindable from a system.  	 
+	  */
+	virtual	void			 releaseRefTo(const CParticleSystemProcess *other);
+	 
+	/** Release any reference this obj may have to other process of the system
+	  * For example, this is used when detaching a located bindable from a system.	  
+	  */
+	virtual void			 releaseAllRef();
 
 protected:	
 

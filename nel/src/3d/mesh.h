@@ -1,7 +1,7 @@
 /** \file mesh.h
  * TODO: File description
  *
- * $Id: mesh.h,v 1.46 2004/11/15 10:24:42 lecroart Exp $
+ * $Id: mesh.h,v 1.47 2004/12/07 17:57:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -533,7 +533,12 @@ private:
 	/// A block of RdrPasses, sorted by matrix use.
 	class	CMatrixBlock
 	{
-	public:
+	public:	
+		// ctor
+		CMatrixBlock() : NumMatrix(0)
+		{
+			std::fill(MatrixId, MatrixId + IDriver::MaxModelMatrix, 0);
+		}
 		/// Which matrix we use for this block.
 		uint32					MatrixId[IDriver::MaxModelMatrix];
 		/// Number of matrix actually used.
@@ -546,10 +551,12 @@ private:
 			(void)f.serialVersion(0);
 
 			// Code written for IDriver::MaxModelMatrix==16 matrixs.
-			nlassert(IDriver::MaxModelMatrix == 16);
+			nlassert(IDriver::MaxModelMatrix == 16);			
 			for(uint i=0;i<IDriver::MaxModelMatrix;i++)
+			{				
 				f.serial(MatrixId[i]);
-			f.serial(NumMatrix);
+			}
+			f.serial(NumMatrix);			
 			f.serialCont(RdrPass);
 		}
 

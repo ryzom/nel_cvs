@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.45 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.46 2004/12/07 17:57:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -826,7 +826,13 @@ void		CVertexBuffer::serialHeader(NLMISC::IStream &f)
 
 		// Serial type of values
 		for (uint i=0; i<NumValue; i++)
+		{
+			if (!(flags & (1 << i)))
+			{
+				_Type[i] = DefaultValueType[i];
+			}
 			f.serial (_Type[i]);
+		}
 	}
 
 	// Serial nb vertices

@@ -72,9 +72,12 @@ try
 							select $Bip01
 
 						-- Always uncheck triangle pelvis
-						$Bip01.controller.figureMode = true
-						$Bip01.controller.trianglepelvis = false
-						$Bip01.controller.figureMode = false
+						if (classof $Bip01) == Biped_Object then
+						(
+							$Bip01.controller.figureMode = true
+							$Bip01.controller.trianglepelvis = false
+							$Bip01.controller.figureMode = false
+						)
 
 						-- For each node
 						for node in objects do

@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * TODO: File description
  *
- * $Id: render_trav.h,v 1.29 2005/01/20 14:17:10 berenguier Exp $
+ * $Id: render_trav.h,v 1.30 2005/02/15 18:41:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -222,6 +222,7 @@ public:
 	/// \name Temp Debug
 	//@{
 	// Test Memory of water model render list (because someone crash it...)
+	// Yoyo: this crash seems to be fixed, but i leave the code, in case of.....
 	void			debugWaterModelMemory(const char *tag, bool dumpList= false);
 	//@}
 	

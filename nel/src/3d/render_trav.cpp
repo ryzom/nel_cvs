@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * TODO: File description
  *
- * $Id: render_trav.cpp,v 1.63 2005/01/20 14:17:10 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.64 2005/02/15 18:41:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1279,6 +1279,9 @@ void CRenderTrav::clearWaterModelList()
 // ***************************************************************************
 void CRenderTrav::debugWaterModelMemory(const char *tag, bool dumpList)
 {
+	// Test Memory of water model render list (because someone crash it...)
+	// Yoyo: this crash seems to be fixed, but i leave the code, in case of.....
+
 	if(dumpList)
 		_DebugWaterModelList.clear();
 

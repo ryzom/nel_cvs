@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.133 2005/01/20 14:17:10 berenguier Exp $
+ * $Id: scene.cpp,v 1.134 2005/02/15 18:41:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -611,31 +611,20 @@ void	CScene::renderPart(UScene::TRenderPart rp, bool	doHrcPass)
 		
 		// clip
 		ClipTrav.traverse();
-		RenderTrav.debugWaterModelMemory("ClipTrav", true);
 		// animDetail
 		AnimDetailTrav.traverse();
-		RenderTrav.debugWaterModelMemory("AnimDetailTrav");
 		// loadBalance
 		LoadBalancingTrav.traverse();
-		RenderTrav.debugWaterModelMemory("LoadBalanceTrav");
 		//
 		_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems	
-		RenderTrav.debugWaterModelMemory("ProcessAnimate");
 		// Light
 		LightTrav.traverse();
-		RenderTrav.debugWaterModelMemory("LightTrav");
-	}
-	else
-	{
-		RenderTrav.debugWaterModelMemory("FirstPartRendered");
 	}
 
 	// render
 	RenderTrav.traverse(rp, _RenderedPart == UScene::RenderNothing);	
-	RenderTrav.debugWaterModelMemory("RenderTrav");
 	// Always must clear shadow caster (if render did not work because of IDriver::isLost())
 	RenderTrav.getShadowMapManager().clearAllShadowCasters();
-	RenderTrav.debugWaterModelMemory("clearAllShadowCasters");
 
 	// render flare
 	if (rp & UScene::RenderFlare)
@@ -653,7 +642,6 @@ void	CScene::renderPart(UScene::TRenderPart rp, bool	doHrcPass)
 			while(currFlare);
 			CFlareModel::updateOcclusionQueryEnd(drv);
 		}
-		RenderTrav.debugWaterModelMemory("RenderFlare");
 	}
 	_RenderedPart = (UScene::TRenderPart) (_RenderedPart | rp);
 }

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * 
  *
- * $Id: main.cpp,v 1.3 2002/07/18 16:01:43 legros Exp $
+ * $Id: main.cpp,v 1.4 2002/07/19 13:29:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -329,7 +329,7 @@ int main(int argc, char **argv)
 	start = CTime::getLocalTime();
 	createRetriever(translation);
 
-	translation[0] = CVector(-4670.0f, 3579.0f, 0.0f);
+//	translation[0] = CVector(-4670.0f, 3579.0f, 0.0f);
 
 	makeGlobalRetriever(translation);
 	end = CTime::getLocalTime();

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.6 2000/11/14 13:23:21 berenguier Exp $
+ * $Id: landscape.cpp,v 1.7 2000/11/22 13:15:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ void			CLandscape::clear()
 	}
 
 	// Remove each zone one by one.
-	for(int i=0;i<(sint)zoneIds.size();i++)
+	for(sint i=0;i<(sint)zoneIds.size();i++)
 	{
 		nlverify(removeZone(zoneIds[i]));
 	}

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.11 2000/11/20 13:40:27 berenguier Exp $
+ * $Id: patch.h,v 1.12 2000/11/22 13:14:50 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -177,10 +177,10 @@ public:
 	CVector			computeVertex(float s, float t);
 
 
-	/// unbind the patch from All neighbors. Don't modify others links. The tesselation is forcemerged.
-	void			unbindFromAll();
-	/// unbind the patch from One neighbor only. Don't modify other link. The tesselation is NOT forcemerged.
-	void			unbindFrom(CPatch *other);
+	/** unbind the patch from All neighbors. neighbors patchs links are modified too. The tesselation is forcemerged.
+	 * unbind from patchs except those in except (usefull for bind 2/1 or 4/1).
+	 */
+	void			unbind(CPatch *except[4]);
 
 	/** bind the patch to 4 neighbors, given in this patch edge order (0,1,2,3). Tesselation is reseted (patch unbound first).
 	 * NB: this patch and his neighborood must be compiled...
@@ -251,6 +251,8 @@ private:
 	void			makeRoots();
 	// Guess. For bind() reasons.
 	CTessFace		*getRootFaceForEdge(sint edge) const;
+	// Guess. For bind() reasons. return the vertex 0 of edge.
+	CTessVertex		*getRootVertexForEdge(sint edge) const;
 	void			changeEdgeNeighbor(sint edge, CTessFace *to);
 
 	// Texture mgt.

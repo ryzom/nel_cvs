@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.7 2000/11/20 13:40:27 berenguier Exp $
+ * $Id: zone.h,v 1.8 2000/11/22 13:14:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,18 +80,25 @@ struct	CPatchInfo
 {
 public:
 
-	// A bind Info on a edge of a patch.
+	/** A bind Info on a edge of a patch.
+	 * Entry 0 is only usefull for Bind One/One+
+	 * Entry 1 is only usefull for Bind One/Two+
+	 * Entry 2/3 is only usefull for Bind One/Four.
+	 */
 	struct	CBindInfo
 	{
-		uint8			NPatchs;	// The number of patchs on this edge. 0,1, 2 or 4.  0 means no neigbor on this edge.
+		/** The number of patchs on this edge. 0,1, 2 or 4.  0 means no neigbor on this edge. \b 5 is a special code, 
+		 * which means the same thing than NPatchs==1, but "I am one of the little patch connected to the bigger neigbor".
+		 * Like when NPatchs==1, ZoneId, Next[0] and Edge[0] must be valid.
+		 */
+		uint8			NPatchs;
 
-		// Entry 0 is only usefull for Bind One/One+
-		// Entry 1 is only usefull for Bind One/Two+
-		// Entry 2/3 is only usefull for Bind One/Four.
-		
-		uint16			ZoneId;		// The neighbor zone of all neigbor patch. Often the same zone as the patch (but on zone border).
-		uint16			Next[4];	// The neighbor patch i.
-		uint8			Edge[4];	// On which edge of Nexti we are binded.
+		/// The neighbor zone of all neigbor patch. Often the same zone as the patch (but on zone border).
+		uint16			ZoneId;
+		/// The neighbor patch i.
+		uint16			Next[4];
+		/// On which edge of Nexti we are binded.
+		uint8			Edge[4];
 
 	public:
 		void			serial(NLMISC::IStream &f);

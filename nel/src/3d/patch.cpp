@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.12 2000/11/20 13:40:00 berenguier Exp $
+ * $Id: patch.cpp,v 1.13 2000/11/22 13:15:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,8 +72,7 @@ void			CPatch::release()
 		// THIS PATCH MSUT BE UNBOUND FIRST!!!!!
 		nlassert(Son0 && Son1);
 		nlassert(Son0->isLeaf() && Son1->isLeaf());
-		nlassert(Son0->FRight==NULL && Son0->FLeft==NULL);
-		nlassert(Son1->FRight==NULL && Son1->FLeft==NULL);
+		// Can't test if OK, since bind 2/1 or 4/1 are not unbound.
 
 		delete Son0;
 		delete Son1;
@@ -562,32 +561,17 @@ void			CPatch::renderTile(sint pass)
 
 
 // ***************************************************************************
-void			CPatch::unbindFromAll()
+void			CPatch::unbind(CPatch *except[4])
 {
 	nlassert(Son0 && Son1);
 
-	Son0->unbindFromAll();
-	Son1->unbindFromAll();
+	Son0->unbind(except);
+	Son1->unbind(except);
 	Son0->forceMerge();
 	Son1->forceMerge();
+	// Even if I am still binded to a "bigger" neigbhor patch, forcemerge should have be completed.
+	// It is because only bind 1/2 and 1/4 could be done... (make a draw to understand).
 	nlassert(Son0->isLeaf() && Son1->isLeaf());
-	delete	Son0;
-	delete	Son1;
-	Son0= NULL;
-	Son1= NULL;
-
-	// re-build Sons.
-	makeRoots();
-}
-
-
-// ***************************************************************************
-void			CPatch::unbindFrom(CPatch *other)
-{
-	nlassert(Son0 && Son1);
-
-	Son0->unbindFrom(other);
-	Son1->unbindFrom(other);
 }
 
 
@@ -601,6 +585,23 @@ CTessFace		*CPatch::getRootFaceForEdge(sint edge) const
 		return Son0;
 	else
 		return Son1;
+}
+
+// ***************************************************************************
+CTessVertex		*CPatch::getRootVertexForEdge(sint edge) const
+{
+	// Return the vertex which is the start of edge.
+	nlassert(edge>=0 && edge<=3);
+
+	// See tessellation rules.
+	switch(edge)
+	{
+		case 0: return Son0->VRight;
+		case 1: return Son0->VBase;
+		case 2: return Son0->VLeft;
+		case 3: return Son1->VBase;
+		default: return NULL;
+	}
 }
 
 
@@ -622,11 +623,16 @@ void			CPatch::changeEdgeNeighbor(sint edge, CTessFace *to)
 // ***************************************************************************
 void			CPatch::bind(CBindInfo	Edges[4])
 {
-	// THIS PATCH MSUT BE UNBOUND FIRST!!!!!
+	// The multiple Patch Face.
+	// By default, Patch==NULL, so ok!
+	static	CTessFace	bind1_2[4];
+	static	CTessFace	bind1_4[8];
+
+
+	// THIS PATCH MUST BE UNBOUND FIRST!!!!!
 	nlassert(Son0 && Son1);
 	nlassert(Son0->isLeaf() && Son1->isLeaf());
-	nlassert(Son0->FRight==NULL && Son0->FLeft==NULL);
-	nlassert(Son1->FRight==NULL && Son1->FLeft==NULL);
+	// Can't test if OK, since bind 2/1 or 4/1 are not unbound.
 
 	// Just recompute base vertices.
 	// TODO_NOISE. bind the noise info before.
@@ -639,15 +645,18 @@ void			CPatch::bind(CBindInfo	Edges[4])
 	b->Pos= b->StartPos= b->EndPos= computeVertex(0,1);
 	c->Pos= c->StartPos= c->EndPos= computeVertex(1,1);
 	d->Pos= d->StartPos= d->EndPos= computeVertex(1,0);
-	// NB: no propagation problem, since the patch has root only (since unbound!!!)
+	// NB: no propagation problem, since the patch has root only (since has to be unbound!!!)
+	// Recompute centers.
+	Son0->Center= (Son0->VBase->EndPos + Son0->VLeft->EndPos + Son0->VRight->EndPos)/3;
+	Son1->Center= (Son1->VBase->EndPos + Son1->VLeft->EndPos + Son1->VRight->EndPos)/3;
+
 
 	// Bind the roots.
 	for(sint i=0;i<4;i++)
 	{
 		CBindInfo	&bind= Edges[i];
 
-		// Well, take it easy for now....
-		nlassert(bind.NPatchs== 0 || bind.NPatchs== 1);
+		nlassert(bind.NPatchs==0 || bind.NPatchs==1 || bind.NPatchs==2 || bind.NPatchs==4);
 		if(bind.NPatchs==1)
 		{
 			// Bind me on Next.
@@ -655,7 +664,25 @@ void			CPatch::bind(CBindInfo	Edges[4])
 			// Bind Next on me.
 			bind.Next[0]->changeEdgeNeighbor(bind.Edge[0], this->getRootFaceForEdge(i));
 		}
-		// else don't bind!!! :)
+		else if(bind.NPatchs==2)
+		{
+			// Setup multiple bind.
+			this->changeEdgeNeighbor(i, bind1_2+i);
+			bind1_2[i].FBase= this->getRootFaceForEdge(i);
+			// Setup the multiple face.
+			// Follow the conventions!
+			bind1_2[i].SonRight= bind.Next[0]->getRootFaceForEdge(bind.Edge[0]);
+			bind1_2[i].SonLeft= bind.Next[1]->getRootFaceForEdge(bind.Edge[1]);
+			bind1_2[i].VBase= bind.Next[0]->getRootVertexForEdge(bind.Edge[0]);
+			// Bind Nexts on me.
+			bind.Next[0]->changeEdgeNeighbor(bind.Edge[0], &CTessFace::MultipleBindFace);
+			bind.Next[1]->changeEdgeNeighbor(bind.Edge[1], &CTessFace::MultipleBindFace);
+		}
+		else if(bind.NPatchs==4)
+		{
+			// TODODODO: fo ke ca marche avec 1/4...
+			nlstop;
+		}
 	}
 
 	// Propagate the binds to sons.

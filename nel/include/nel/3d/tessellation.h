@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.12 2000/11/20 13:40:27 berenguier Exp $
+ * $Id: tessellation.h,v 1.13 2000/11/22 13:14:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -410,8 +410,7 @@ public:
 
 
 	// Used by CPatch::unbind(). isolate the tesselation from other patchs.
-	void			unbindFrom(CPatch *other);
-	void			unbindFromAll();
+	void			unbind(CPatch *except[4]);
 	// Used by CPatch::unbind(). force the merging of face.
 	void			forceMerge();
 	// Used by CPatch::bind(). Split if necessary, according to neighbors.
@@ -471,10 +470,17 @@ private:
 	// Alloc a tile.
 	static ITileUv	*allocTileUv(uint8 fmt);
 
+	// Usefull for unbind.
+	static bool	exceptPatch(CPatch *p, CPatch *except[4]);
+
+
 private:
 	// The fake face which indicates a "can't merge". Usefull for bind 2/4 or 1/4.
-	// The fake face is the only one which has a NULL patch ptr.
+	// The fake face is the only one which has a NULL patch ptr (with mult face).
 	static	CTessFace	CantMergeFace;
+
+public:
+	static	CTessFace	MultipleBindFace;
 };
 
 

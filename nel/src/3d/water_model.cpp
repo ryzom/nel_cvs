@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.9 2001/11/16 16:46:12 vizerie Exp $
+ * $Id: water_model.cpp,v 1.10 2001/11/21 16:02:48 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,12 +37,15 @@
 namespace NL3D {
 
 
+//=======================================================================
+
 CWaterModel::CWaterModel() : _Scene(NULL)
 {
 	setOpacity(false);
 	setTransparency(true);
 }
 
+//=======================================================================
 
 void CWaterModel::registerBasic()
 {
@@ -50,6 +53,8 @@ void CWaterModel::registerBasic()
 	CMOT::registerObs(RenderTravId, WaterModelClassId, CWaterRenderObs::creator);	
 }
 
+
+//=======================================================================
 
 ITrack* CWaterModel::getDefaultTrack (uint valueId)
 {
@@ -66,12 +71,87 @@ ITrack* CWaterModel::getDefaultTrack (uint valueId)
 	}
 }
 
+//=======================================================================
 
+uint32	CWaterModel::getWaterHeightMapID() const
+{
+	CWaterShape *ws = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
+	return ws->_WaterPoolID;
+}
+
+//=======================================================================
+
+float	CWaterModel::getHeightFactor() const
+{
+	CWaterShape *ws = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);
+	return ws->_WaveHeightFactor;
+}
+
+
+//=======================================================================
+
+float   CWaterModel::getHeight(const NLMISC::CVector2f &pos)
+{
+	CWaterShape *ws		 = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);	
+	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(ws->_WaterPoolID);
+	const float height   = whm.getHeight(pos);
+	return height * ws->_WaveHeightFactor + this->getPos().z;
+}
+
+//=======================================================================
+
+float   CWaterModel::getAttenuatedHeight(const NLMISC::CVector2f &pos, const NLMISC::CVector &viewer)
+{	
+	CWaterShape *ws		 = NLMISC::safe_cast<CWaterShape *>((IShape *) Shape);			
+	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(ws->_WaterPoolID);
+	const float maxDist = whm.getUnitSize() * (whm.getSize() >> 1);	
+	const NLMISC::CVector planePos(pos.x, pos.y, this->getPos().z);
+	const float userDist = (planePos - viewer).norm();
+
+	if (userDist > maxDist)
+	{
+		return this->getPos().z;
+	}
+	else
+	{
+		const float height   = whm.getHeight(pos);
+		return ws->_WaveHeightFactor * height * (1.f - userDist / maxDist) + this->getPos().z;
+	}
+}
+
+
+//=======================================================================
+
+// perform a bilinear on 4 values
+//   0---1
+//   |   |
+//   3---2
+static float inline BilinFilter(float v0, float v1, float v2, float v3, float u, float v)
+{
+	float g = v * v3 + (1.f - v) * v0;
+	float h = v * v2 + (1.f - v) * v1;
+	return u * h + (1.f - u) * g;
+}
+
+
+
+//=======================================================================
+
+/// store a value in a water vertex buffer, and increment the pointer
+static void inline FillWaterVB(uint8 *&vbPointer, float x, float y, float z, float nx, float ny)
+{
+	* (float *) vbPointer = x;
+	((float *) vbPointer)[1] = y;
+	((float *) vbPointer)[2] = z;
+	*((float *) (vbPointer + 3 * sizeof(float))) = nx;
+	*((float *) (vbPointer + 4 * sizeof(float))) = ny;
+	vbPointer += 5 * sizeof(float);
+}
 
 //***************************************************************************************************************
 
 
-/// this inline function setup one water vertex
+/// this inline function setup one WaterPrev vertex
 #ifdef NL_OS_WINDOWS
 	__forceinline
 #endif
@@ -81,12 +161,11 @@ static void SetupWaterVertex(  sint  qLeft,
 							   sint  qDown,
 							   sint  qSubLeft,
 							   sint  qSubDown,
-							   const NLMISC::CVector &inter,
-							   CVertexBuffer &vb,
-							   float invWaterRatio,
-							   uint  vbIndex,
+							   const NLMISC::CVector &inter,							   
+							   float invWaterRatio,							   
 							   sint  doubleWaterHeightMapSize,
-							   CWaterHeightMap &whm
+							   CWaterHeightMap &whm,
+							   uint8 *&vbPointer
 							   )
 {
 	const float wXf = invWaterRatio * inter.x;
@@ -102,8 +181,7 @@ static void SetupWaterVertex(  sint  qLeft,
 	   )
 	{	
 		// no perturbation is visible
-		vb.setValueFloat3Ex (WATER_VB_POS, vbIndex, inter.x, inter.y, 0);
-		vb.setValueFloat2Ex (WATER_VB_DX, vbIndex, 0, 0);
+		FillWaterVB(vbPointer, inter.x, inter.y, 0, 0, 0);		
 	}
 	else
 	{
@@ -116,10 +194,80 @@ static void SetupWaterVertex(  sint  qLeft,
 		const uint xm	  = (uint) (wx - qSubLeft);
 		const uint ym	  = (uint) (wy - qSubDown);
 		const sint offset = xm + stride * ym;
-		float			  *ptWater = whm.getPointer()	  + offset;
-		NLMISC::CVector2f *ptGrad  = whm.getGradPointer() + offset;
+		const float			  *ptWater     = whm.getPointer()	  + offset;
+		const float			  *ptWaterPrev = whm.getPrevPointer()  + offset;
 
-		float dh1 = deltaV * ptWater[stride] + (1.f - deltaV) *  ptWater[0];
+
+
+		float g0x, g1x, g2x, g3x;  // x gradient for current 
+		float g0xp, g1xp, g2xp, g3xp;
+
+		float gradCurrX, gradCurrY;
+
+		float g0y, g1y, g2y, g3y; // y gradient for previous map
+		float g0yp, g1yp, g2yp, g3yp;
+
+		float gradPrevX, gradPrevY;
+
+		/// curr gradient
+
+		g0x = ptWater[ 1] - ptWater[ - 1];
+		g1x = ptWater[ 2] - ptWater[ 0 ];
+		g2x = ptWater[ 2 + stride] - ptWater[ stride];
+		g3x = ptWater[ 1 + stride] - ptWater[ - 1 + stride];
+
+		gradCurrX = BilinFilter(g0x, g1x, g2x, g3x, deltaU, deltaV);
+
+
+		g0y = ptWater[ stride] - ptWater[ - stride];
+		g1y = ptWater[ stride + 1] - ptWater[ - stride + 1];
+		g2y = ptWater[ (stride << 1) + 1] - ptWater[ 1];
+		g3y = ptWater[ (stride << 1)] - ptWater[0];
+
+		gradCurrY = BilinFilter(g0y, g1y, g2y, g3y, deltaU, deltaV);
+
+		/// prev gradient
+
+		g0xp = ptWaterPrev[ 1] - ptWaterPrev[ - 1];
+		g1xp = ptWaterPrev[ 2] - ptWaterPrev[ 0  ];
+		g2xp = ptWaterPrev[ 2 + stride] - ptWaterPrev[ + stride];
+		g3xp = ptWaterPrev[ 1 + stride] - ptWaterPrev[ - 1 + stride];
+
+		gradPrevX = BilinFilter(g0xp, g1xp, g2xp, g3xp, deltaU, deltaV);
+
+
+		g0yp = ptWaterPrev[ stride] - ptWaterPrev[ - stride];
+		g1yp = ptWaterPrev[ stride + 1] - ptWaterPrev[ - stride + 1];
+		g2yp = ptWaterPrev[ (stride << 1) + 1] - ptWaterPrev[ 1 ];
+		g3yp = ptWaterPrev[ (stride << 1)] - ptWaterPrev[ 0 ];
+
+		gradPrevY = BilinFilter(g0yp, g1yp, g2yp, g3yp, deltaU, deltaV);
+
+
+		/// current height
+		float h = BilinFilter(ptWater[ 0 ], ptWater[ + 1], ptWater[ 1 + stride], ptWater[stride], deltaU, deltaV);
+
+		/// previous height
+		float hPrev = BilinFilter(ptWaterPrev[ 0 ], ptWaterPrev[ 1], ptWaterPrev[ 1 + stride], ptWaterPrev[stride], deltaU, deltaV);
+		
+
+		float timeRatio = whm.getBufferRatio();
+
+
+		FillWaterVB(vbPointer, inter.x, inter.y, timeRatio * h + (1.f - timeRatio) * hPrev,
+					4.5f * (timeRatio * gradCurrX + (1.f - timeRatio) * gradPrevX),
+					4.5f * (timeRatio * gradCurrY + (1.f - timeRatio) * gradPrevY)
+				   );
+
+
+
+		//NLMISC::CVector2f *ptGrad  = whm.getGradPointer() + offset;
+
+
+
+
+
+	/*	float dh1 = deltaV * ptWater[stride] + (1.f - deltaV) *  ptWater[0];
 		float dh2 = deltaV * ptWater[stride + 1] + (1.f - deltaV) *  ptWater[1];
 		float h = deltaU * dh2 + (1.f - deltaU ) * dh1;
 
@@ -134,8 +282,9 @@ static void SetupWaterVertex(  sint  qLeft,
 
 		float grV = 4.5f * (deltaU *  gR + (1.f - deltaU) * gL);
 
-		vb.setValueFloat3Ex (WATER_VB_POS, vbIndex, inter.x, inter.y, h);
-		vb.setValueFloat2Ex (WATER_VB_DX, vbIndex, grU, grV);
+		vb.setValueFloat3Ex (Water_VB_POS, vbIndex, inter.x, inter.y, h);
+		vb.setValueFloat2Ex (Water_VB_DX, vbIndex, grU, grV);
+		*/
 	}
 }
 
@@ -379,49 +528,68 @@ void	CWaterRenderObs::traverse(IObs *caller)
 		if (rasters.size())
 		{
 			//===========================//
-			// perform water animation   //
+			// perform Water animation   //
 			//===========================//			
 
-			const float waterRatio = whm.getUnitSize();
-			const float invWaterRatio = 1.f / waterRatio;
-			const uint  waterHeightMapSize = whm.getSize();
-			const uint  doubleWaterHeightMapSize = (waterHeightMapSize << 1);
+			const float WaterRatio = whm.getUnitSize();
+			const float invWaterRatio = 1.f / WaterRatio;
+			const uint  WaterHeightMapSize = whm.getSize();
+			const uint  doubleWaterHeightMapSize = (WaterHeightMapSize << 1);
 						
 
 			sint64 idate = (NLMISC::safe_cast<CHrcTrav *>(HrcObs->Trav))->CurrentDate;
+
+
+			
 			if (idate != whm.Date)
 			{
-				whm.setUserPos((sint) (obsPos.x * invWaterRatio) - (waterHeightMapSize >> 1),
-					   (sint) (obsPos.y * invWaterRatio) - (waterHeightMapSize >> 1)
+				whm.setUserPos((sint) (obsPos.x * invWaterRatio) - (WaterHeightMapSize >> 1),
+					   (sint) (obsPos.y * invWaterRatio) - (WaterHeightMapSize >> 1)
 					  );
 				nlassert(m->_Scene); // this object should have been created from a CWaterShape!
-				whm.swapBuffers((float) (m->_Scene->getEllapsedTime()));
-				whm.propagate();
-				whm.filterNStoreGradient();
+				float startDate = (float) (1000.f * NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime()));
+				whm.animate((float) (m->_Scene->getEllapsedTime()));								
+				//nlinfo("animate: %f ms", (float) (1000.f * NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime()) - startDate));
 				whm.Date = idate;
 			}
+			
+			float startDate = (float) (1000.f * NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime()));
 
 			//=====================================//
 			//	compute heightmap useful area      //
 			//=====================================//
 
-			/** We don't store a heighmap for a complete water area
-			  * we just consider the height of water columns that are near the observer
+			/** We don't store a heighmap for a complete Water area
+			  * we just consider the height of Water columns that are near the observer
 			  */
-			/** Compute a quad in water height field space that contains the useful heights
+			/** Compute a quad in Water height field space that contains the useful heights
 			  * This helps us to decide wether we should do a lookup in the height map
 			  */
-			const sint qRight = (sint) (obsPos.x * invWaterRatio) + (waterHeightMapSize >> 1) - 2;
-				  sint qLeft  = (sint) (obsPos.x * invWaterRatio) - (waterHeightMapSize >> 1);
-			const sint qUp    = (sint) (obsPos.y * invWaterRatio) + (waterHeightMapSize >> 1) - 2;
-				  sint qDown  = (sint) (obsPos.y * invWaterRatio) - (waterHeightMapSize >> 1);
 
-			/// Compute the origin of the area of water covered by the height map. We use this to converted from object space to 2d map space
-			const sint qSubLeft = qLeft - (uint)  qLeft % waterHeightMapSize;
-			const sint qSubDown = qDown - (uint)  qDown % waterHeightMapSize;
+			sint mapPosX, mapPosY;
 
-			qLeft += 2;
-			qDown += 2;
+			/// get the pos used in the height map (may not be the same than our current pos, has it is taken in account
+			/// every 'PropagationTime' second
+ 			whm.getUserPos(mapPosX, mapPosY);
+
+			const uint mapBorder = 3;
+			/*const sint qRight = (sint) mapPosX + (WaterHeightMapSize >> 1) - mapBorder;
+				  sint qLeft  = (sint) mapPosX - (WaterHeightMapSize >> 1);
+			const sint qUp    = (sint) mapPosY + (WaterHeightMapSize >> 1) - mapBorder;
+				  sint qDown  = (sint) mapPosY - (WaterHeightMapSize >> 1); */
+
+
+			const sint qRight = (sint) mapPosX + WaterHeightMapSize - mapBorder;
+				  sint qLeft  = (sint) mapPosX;
+			const sint qUp    = (sint) mapPosY + WaterHeightMapSize - mapBorder;
+				  sint qDown  = (sint) mapPosY;
+
+			/// Compute the origin of the area of Water covered by the height map. We use this to converted from object space to 2d map space
+			const sint qSubLeft = qLeft - (uint)  qLeft % WaterHeightMapSize;
+			const sint qSubDown = qDown - (uint)  qDown % WaterHeightMapSize;
+
+			qLeft += mapBorder;
+			qDown += mapBorder;
 
 		
 
@@ -525,26 +693,18 @@ void	CWaterRenderObs::traverse(IObs *caller)
 					}
 
 					
-					sint index = vIndex + realStartX + rotBorderSize;												
-
+					uint8 *vbPointer = (uint8 *) shape->_VB.getVertexCoordPointer() + shape->_VB.getVertexSize() * (vIndex + realStartX + rotBorderSize);												
 						
 
 					for (sint k = realStartX; k <= realEndX; ++k)
 					{	
-						t =   denom / currV.z;
-						
-		
-						// compute intersection with plane			
-						
-		//				nlassert(t >= 0);
+						t =   denom / currV.z;						
+						// compute intersection with plane											
 						CVector inter = obsPos + t * currV;		
-						SetupWaterVertex(qLeft, qRight, qUp, qDown, qSubLeft, qSubDown, inter, shape->_VB, invWaterRatio, index, doubleWaterHeightMapSize, whm);
-
-					
-								
-						currV += xStep;
-						++index;
+						SetupWaterVertex(qLeft, qRight, qUp, qDown, qSubLeft, qSubDown, inter, invWaterRatio, doubleWaterHeightMapSize, whm, vbPointer);
+						currV += xStep;						
 					}
+
 					if (l != 0) // 2 line of the ib done ?
 					{						
 						sint count = oldEndX - oldStartX;
@@ -592,6 +752,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 				}
 					
 			}
+			//nlinfo("display: %f ms", (float) (1000.f * NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime()) - startDate));
 		}
 	}
 
@@ -623,32 +784,32 @@ void	CWaterRenderObs::traverse(IObs *caller)
 }
 
 //***********************
-// WATER MATERIAL SEUP //
+// Water MATERIAL SETUP //
 //***********************
 
 void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight)
 {
-	CMaterial waterMat;
-		waterMat.setLighting(false);
-		waterMat.setDoubleSided(true);	
-		waterMat.setColor(NLMISC::CRGBA::White);
-	
-		waterMat.setBlend(true);
-		waterMat.setSrcBlend(CMaterial::srcalpha);
-		waterMat.setDstBlend(CMaterial::invsrcalpha);
-		waterMat.setZWrite(false);
-		if (drv->isVertexProgramSupported())
-		{
+	CMaterial WaterMat;
+	WaterMat.setLighting(false);
+	WaterMat.setDoubleSided(true);	
+	WaterMat.setColor(NLMISC::CRGBA::White);
+
+	WaterMat.setBlend(true);
+	WaterMat.setSrcBlend(CMaterial::srcalpha);
+	WaterMat.setDstBlend(CMaterial::invsrcalpha);
+	WaterMat.setZWrite(false);
+	if (drv->isVertexProgramSupported())
+	{
 
 		//=========================//
-		//	setup water material   //
+		//	setup Water material   //
 		//=========================//
 	
 		uint alphaMapStage, envMapStage;	
-		waterMat.setColor(NLMISC::CRGBA::White);				
+		WaterMat.setColor(NLMISC::CRGBA::White);				
 		if (drv->getNbTextureStages() < 4)
 		{						
-			waterMat.texEnvOpRGB(0, CMaterial::Modulate);
+			WaterMat.texEnvOpRGB(0, CMaterial::Modulate);
 			alphaMapStage = 1;
 			envMapStage  = 0;
 		}
@@ -659,16 +820,16 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 			drv->setMatrix2DForTextureOffsetAddrMode(0, idMat);
 			drv->setMatrix2DForTextureOffsetAddrMode(1, idMat);
 
-			waterMat.setTexture(0, shape->_BumpMap[0]);
-			waterMat.setTexture(1, shape->_BumpMap[1]);			
-			waterMat.texEnvOpRGB(2, CMaterial::Replace);
-			/*waterMat.texEnvOpRGB(1, CMaterial::Replace);
-			waterMat.texEnvOpRGB(1, CMaterial::Replace);*/
-			waterMat.enableTexAddrMode();
-			waterMat.setTexAddressingMode(0, CMaterial::FetchTexture);		
-			waterMat.setTexAddressingMode(1, CMaterial::OffsetTexture);
-			waterMat.setTexAddressingMode(2, CMaterial::OffsetTexture);
-			waterMat.setTexAddressingMode(3, shape->_ColorMap ? CMaterial::FetchTexture : CMaterial::TextureOff);
+			WaterMat.setTexture(0, shape->_BumpMap[0]);
+			WaterMat.setTexture(1, shape->_BumpMap[1]);				
+			WaterMat.texEnvOpRGB(2, CMaterial::Replace);
+			/*WaterMat.texEnvOpRGB(1, CMaterial::Replace);
+			WaterMat.texEnvOpRGB(1, CMaterial::Replace);*/
+			WaterMat.enableTexAddrMode();
+			WaterMat.setTexAddressingMode(0, CMaterial::FetchTexture);		
+			WaterMat.setTexAddressingMode(1, CMaterial::OffsetTexture);
+			WaterMat.setTexAddressingMode(2, CMaterial::OffsetTexture);
+			WaterMat.setTexAddressingMode(3, shape->_ColorMap ? CMaterial::FetchTexture : CMaterial::TextureOff);
 			alphaMapStage = 3;
 			envMapStage   = 2;
 		}
@@ -676,25 +837,25 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 
 		if (!above && shape->_EnvMap[1])
 		{
-			waterMat.setTexture(envMapStage, shape->_EnvMap[1]);	
+			WaterMat.setTexture(envMapStage, shape->_EnvMap[1]);	
 		}
 		else
 		{
-			waterMat.setTexture(envMapStage, shape->_EnvMap[0]);
+			WaterMat.setTexture(envMapStage, shape->_EnvMap[0]);
 		}
 		shape->envMapUpdate();
 
 		
 		if (shape->_ColorMap)
 		{			
-			waterMat.setTexture(alphaMapStage, shape->_ColorMap);
+			WaterMat.setTexture(alphaMapStage, shape->_ColorMap);
 
 			// setup 2x3 matrix for lookup in diffuse map
 			drv->setConstant(15, shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn1.x, 0, shape->_ColorMapMatPos.x); 
 			drv->setConstant(16, shape->_ColorMapMatColumn0.y, shape->_ColorMapMatColumn1.y, 0, shape->_ColorMapMatPos.y);
 			drv->setConstant(17, 0.1f, 0.1f, 0.1f, 0.1f); // used to avoid imprecision when performing a RSQ to get distance from the origin
-			waterMat.texEnvOpRGB(alphaMapStage, CMaterial::Modulate);
-			waterMat.texEnvOpAlpha(alphaMapStage, CMaterial::Modulate);
+			WaterMat.texEnvOpRGB(alphaMapStage, CMaterial::Modulate);
+			WaterMat.texEnvOpAlpha(alphaMapStage, CMaterial::Modulate);
 		}
 
 		
@@ -750,36 +911,11 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 	}
 	else
 	{		
-		waterMat.setColor(NLMISC::CRGBA(0, 32, 190, 128));	
+		WaterMat.setColor(NLMISC::CRGBA(0, 32, 190, 128));	
 	}
-	drv->setupMaterial(waterMat);
+
+	drv->setupMaterial(WaterMat);
 }
 
-
-/*
-void CWaterRenderObs::setAttenuationFactor(IDriver *drv, bool reversed, const NLMISC::CVector &obsPos, const NLMISC::CVector &cameraJ, float farDist)
-{
-	
-	CWaterModel		  *m				= NLMISC::safe_cast<CWaterModel *>(Model);
-	const CWaterShape *shape = NLMISC::safe_cast<CWaterShape *>((IShape *) m->Shape);
-	if (!reversed)
-	{
-		/// compute attenuation
-		const float attenSlope = 1.f / (farDist *  (shape->_TransitionStartRatio - shape->_TransitionEndRatio));			
-		drv->setConstant(5, attenSlope * cameraJ.x, attenSlope * cameraJ.y, attenSlope * cameraJ.z, 1.f - farDist * shape->_TransitionStartRatio * attenSlope);
-	}
-	else
-	{
-		/// compute attenuation
-		const float attenSlope = 1.f / (farDist *  (shape->_TransitionEndRatio - shape->_TransitionStartRatio));			
-		drv->setConstant(5, attenSlope * cameraJ.x, attenSlope * cameraJ.y, attenSlope * cameraJ.z, - farDist * shape->_TransitionStartRatio * attenSlope);
-	}		
-}
-
-void CWaterRenderObs::disableAttenuation(IDriver *drv)
-{
-	drv->setConstant(5, 0.f, 0.f, 0.f, 1.f);
-}
-*/
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * TODO: File description
  *
- * $Id: ps_util.cpp,v 1.45 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_util.cpp,v 1.46 2005/03/23 14:32:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -182,6 +182,7 @@ void CPSUtil::displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLM
 //==========================================================================
 void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector &v, float size, CRGBA col1, CRGBA col2)
 {
+	
 	NL_PS_FUNC(CPSUtil_displayArrow)
 
 	const float coneSize = size * 0.1f;
@@ -195,18 +196,21 @@ void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector 
 	  3, 4, 0,
 	  4, 1, 0 };
 	vTab.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	
 	if (vTab.getNumIndexes()==0)
 	{
-		vTab.setNumIndexes (sizeof(vTabIndexes)/sizeof(uint32));
+		vTab.setNumIndexes (sizeofarray(vTabIndexes));
 		CIndexBufferReadWrite iba;
 		vTab.lock(iba);
 		memcpy (iba.getPtr(), vTabIndexes, sizeof(vTabIndexes));
 	}
+	
 
 	CVector end = start + size * v;
 	CDRU::drawLine(start, end, col1, *driver);
 	CMatrix m;
 	buildSchmidtBasis(v, m);
+	
 
 	CVertexBuffer vb;
 	vb.setVertexFormat(CVertexBuffer::PositionFlag);
@@ -222,6 +226,7 @@ void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector 
 		vba.setVertexCoord(3, end + m * CVector(coneSize, coneSize, 0) );
 		vba.setVertexCoord(4, end + m * CVector(-coneSize, coneSize, 0) );
 	}
+	
 
 	CMaterial material;
 
@@ -232,32 +237,42 @@ void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector 
 	material.setBlend(true);
 	material.setDoubleSided(true);
 
+	
+
 	driver->activeVertexBuffer(vb);
 	driver->activeIndexBuffer(vTab);
 	driver->renderTriangles(material, 0, 6);
+
+	
 }
 
 //==========================================================================
 void CPSUtil::displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm)
 {
 	NL_PS_FUNC(CPSUtil_displayBasis)
+	
 	CMaterial material;
 
 	driver->setupModelMatrix(modelMat);
 	
 
 
+	
 	displayArrow(driver, m.getPos(), m.getI(), size, CRGBA(127, 127, 127), CRGBA(0, 0, 80));
+	
 	displayArrow(driver, m.getPos(), m.getJ(), size, CRGBA(127, 127, 127), CRGBA(0, 0, 80));
+	
 	displayArrow(driver, m.getPos(), m.getK(), size, CRGBA(127, 127, 127), CRGBA(200, 0, 80));
-
+	
 	
 	// draw the letters
-
+	
 	CPSUtil::print(driver, std::string("x"), fg, fm, modelMat * m * CVector(1.4f * size, 0, 0), 15.0f * size);
+	
 	CPSUtil::print(driver, std::string("y"), fg, fm, modelMat * m * CVector(0, 1.4f  * size, 0), 15.0f * size);
+	
 	CPSUtil::print(driver, std::string("z"), fg, fm, modelMat * m * CVector(0, 0, 1.4f  * size), 15.0f * size);
-
+	
 };
 
 

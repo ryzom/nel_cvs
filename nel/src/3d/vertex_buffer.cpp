@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.43 2004/05/07 19:29:43 lecroart Exp $
+ * $Id: vertex_buffer.cpp,v 1.44 2004/08/13 15:46:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "3d/vertex_buffer.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/fast_mem.h"
 #include "3d/driver.h"
 using namespace NLMISC;
 
@@ -94,9 +95,10 @@ const CVertexBuffer::TType CVertexBuffer::DefaultValueType[NumValue]=
 	Float1,		// Empty
 };
 
+
 // --------------------------------------------------
 
-CVertexBuffer::CVertexBuffer()
+void CVertexBuffer::construct()
 {
 	_Flags = 0;
 	_Capacity = 0;
@@ -110,12 +112,26 @@ CVertexBuffer::CVertexBuffer()
 	_Location = NotResident;
 	_ResidentSize = 0;
 	_KeepLocalMemory = false;
-
+	
 	// Default routing
 	uint i; 
 	for (i=0; i<MaxStage; i++)
 		_UVRouting[i] = i;
 }
+
+// --------------------------------------------------
+
+CVertexBuffer::CVertexBuffer()
+{	
+	construct();
+}
+
+CVertexBuffer::CVertexBuffer(const char *name)
+{
+	construct();
+	_Name = name;
+}
+
 
 // --------------------------------------------------
 
@@ -1068,8 +1084,8 @@ void CVertexBuffer::fillBuffer ()
 		// Copy the local memory in local memory
 		const uint size = _NbVerts*_VertexSize;
 		nlassert (size<=_NonResidentVertices.size());
-		uint8 *dest = DrvInfos->lock (0, size, false);
-		memcpy (dest, &(_NonResidentVertices[0]), size);
+		uint8 *dest = DrvInfos->lock (0, size, false);		
+		NLMISC::CFastMem::memcpy (dest, &(_NonResidentVertices[0]), size);		
 		DrvInfos->unlock(0, size);
 	}
 }
@@ -1333,3 +1349,24 @@ const CPaletteSkin* CVertexBufferRead::getPaletteSkinPointer(uint idx) const
 // --------------------------------------------------
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

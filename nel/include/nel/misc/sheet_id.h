@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.11 2002/10/21 17:16:40 coutelas Exp $
+ * $Id: sheet_id.h,v 1.12 2003/04/02 09:47:49 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -174,12 +174,17 @@ private :
 	/// associate sheet id and sheet name
 	static std::map<uint32,std::string> _SheetIdToName;
 	static std::map<std::string,uint32> _SheetNameToId;
+
+	static std::map<uint32,std::string> _SheetIdToAlias;
+	static std::map<std::string,uint32> _SheetAliasToId;
+	
 	static std::vector<std::string> _FileExtensions;
 	static bool _Initialised;
 
 	static bool _RemoveUnknownSheet;
 
 	static void loadSheetId ();
+	static void loadSheetAlias ();
 	static void cbFileChange (const std::string &filename);
 };
 

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.36 2001/06/29 08:16:19 portier Exp $
+ * $Id: agent_script.h,v 1.37 2001/07/06 12:31:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,7 @@ namespace NLAIAGENT
 
 		///This enum define ident for hard coded method that we have to import its under the script.
 		enum  TMethodNumDef {
+			TRunTellCompoment, ///transmit Message to an compoment.
 			TSend, ///Index of the send method
 			TSendComponent, ///Index of the send with continuation method.
 			TGetChildTag, ///Index of the getChild method
@@ -75,7 +76,7 @@ namespace NLAIAGENT
 			TSelf, ///Get The self pointer.
 			TGetName, ///Get the name of the agent in the manager child list.
 			TRunAskParentNotify, ///the offest of the runAskParentNotify method.
-			TRunTellParentNotify, ///the offest of the runTellParentNotify method.
+			TRunTellParentNotify, ///the offest of the runTellParentNotify method.			
 			/////////////////////////////////////////////////////////////////////
 			/*TGoal,			// Message to receive goals
 			TCancelGoal,	// Message to cancel goals
@@ -205,6 +206,11 @@ namespace NLAIAGENT
 		This function process the message CNotifyParentScript for the runAsk.
 		*/
 		virtual IObjectIA::CProcessResult runAskParentNotify(IBaseGroupType *);
+		
+		/**
+		This function process the message MsgTellCompoment the result is to transmit a Message to an compoment.
+		*/
+		virtual IObjectIA::CProcessResult runTellCompoment(IBaseGroupType *);
 
 		/**
 		This function process the message CNotifyParentScript for the runTell.

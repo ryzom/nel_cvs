@@ -107,7 +107,7 @@ namespace NLAILOGIC
 
 	const NLAIAGENT::IObjectIA::CProcessResult &CGoalStack::run()
 	{
-		return NLAIAGENT::IObjectIA::CProcessResult();
+		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 
 	bool CGoalStack::isEqual(const CGoal &a) const

@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.15 2001/06/28 15:47:54 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.16 2001/07/06 12:27:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,9 +104,9 @@ namespace NLAIAGENT
 				NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
 				accessor.value() = h;
 			}
-			//CAgentManagerTimer::RunTimer = new CAgentManagerTimer::CRunTimer();
-			//CAgentManagerTimer::TimerManagerRun =  NLMISC::IThread::create(CAgentManagerTimer::RunTimer);
-			//CAgentManagerTimer::TimerManagerRun->start();
+			CAgentManagerTimer::RunTimer = new CAgentManagerTimer::CRunTimer();
+			CAgentManagerTimer::TimerManagerRun =  NLMISC::IThread::create(CAgentManagerTimer::RunTimer);
+			CAgentManagerTimer::TimerManagerRun->start();
 			CAgentManagerTimer::IsRunning = false;
 		}
 	}
@@ -294,8 +294,8 @@ namespace NLAIAGENT
 		{
 			std::pair<IMessageBase *, sint32> p = ((*i).second);//->second->incRef();
 			IMessageBase *msg = (IMessageBase *)p.first;//->clone();
-			msg->incRef();			
-			(*i).first->sendMessage((IObjectIA *)msg);
+			msg->incRef();
+			if((*i).first->getState().ResultState == NLAIAGENT::processIdle) (*i).first->sendMessage((IObjectIA *)msg);
 			i ++;
 		}
 	}

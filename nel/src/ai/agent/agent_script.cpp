@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.73 2001/07/06 08:26:59 chafik Exp $
+ * $Id: agent_script.cpp,v 1.74 2001/07/06 12:27:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,8 @@ namespace NLAIAGENT
 		msgStr += std::string("}\n");
 		NLAILINK::buildScript(msgStr,scriptName);
 
-		
+		NLAIC::CIdentType idMsgTellCompomentType ("MsgTellCompoment");
+
 		msgType = new NLAISCRIPT::COperandSimpleListOr(3,	
 														new NLAIC::CIdentType(CMessageList::IdMessage),
 														new NLAIC::CIdentType(CMessageVector::IdMessageVector),
@@ -117,6 +118,9 @@ namespace NLAIAGENT
 
 		ParamRunParentNotify = new NLAISCRIPT::CParam(1,IdMsgNotifyParent);
 
+		NLAISCRIPT::CParam *ParamTellCompoment = new NLAISCRIPT::CParam(1,IdMsgNotifyParent);
+		NLAISCRIPT::COperandSimple *idMsgTellCompoment = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(idMsgTellCompomentType));
+
 
 
 		StaticMethod = new CAgentScript::CMethodCall *[CAgentScript::TLastM];
@@ -134,6 +138,12 @@ namespace NLAIAGENT
 																						CAgentScript::CheckAll,
 																						1,
 																						new NLAISCRIPT::CObjectUnknown(IdMsgNotifyParentClass));
+				
+		StaticMethod[CAgentScript::TRunTellCompoment] = new CAgentScript::CMethodCall(	_RUNTEL_, 
+																						CAgentScript::TRunTellCompoment, ParamTellCompoment,
+																						CAgentScript::CheckAll,
+																						1,
+																						new NLAISCRIPT::CObjectUnknown(idMsgTellCompoment));
 
 		StaticMethod[CAgentScript::TSend] = new CAgentScript::CMethodCall(	_SEND_, 
 																		CAgentScript::TSend, SendParamMessageScript,
@@ -647,7 +657,24 @@ namespace NLAIAGENT
 		IObjectIA::CProcessResult r;
 		r.Result = m;
 		return r;
-	}	
+	}
+
+	IObjectIA::CProcessResult CAgentScript::runTellCompoment(IBaseGroupType *g)
+	{	
+		NLAIAGENT::IMessageBase &mOriginal = (NLAIAGENT::IMessageBase &)*g->get();
+		CStringType *c = (CStringType *)mOriginal[(sint32)0];
+		NLAIAGENT::IMessageBase *m = (NLAIAGENT::IMessageBase *)mOriginal[(sint32)1];
+		m->incRef();
+		m->setSender((IObjectIA *)mOriginal.getSender());
+		m->setPerformatif(mOriginal.getPerformatif());
+		sendMessage(c->getStr(), (IObjectIA *)m);
+
+		IObjectIA::CProcessResult r;
+
+		m->incRef();
+		r.Result = m;
+		return r;
+	}
 
 	IObjectIA::CProcessResult CAgentScript::getDynamicName(NLAIAGENT::IBaseGroupType *g)
 	{	
@@ -1194,6 +1221,11 @@ namespace NLAIAGENT
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
 
+		case TRunTellCompoment:
+			{				
+				return runTellCompoment((IBaseGroupType *)o);
+			}
+
 		/*case TGoal:
 			{				
 				return runGoalMsg((IBaseGroupType *)o);
@@ -1269,6 +1301,11 @@ namespace NLAIAGENT
 		case TRunTellParentNotify:
 			{				
 				return runTellParentNotify((IBaseGroupType *)o);
+			}
+
+		case TRunTellCompoment:
+			{				
+				return runTellCompoment((IBaseGroupType *)o);
 			}
 
 		default:

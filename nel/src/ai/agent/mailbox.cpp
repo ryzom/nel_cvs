@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.7 2001/01/17 10:42:55 chafik Exp $
+ * $Id: mailbox.cpp,v 1.8 2001/01/22 15:08:00 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -548,7 +548,9 @@ namespace NLAIAGENT
 						std::list<const IMessageBase *> *f_mail = father_mail->pumpMessages( my_grp );
 						while ( f_mail->size() )
 						{
-							_ListMessage.push_back( translateMsg( f_mail->front() ) );
+							const IMessageBase *translated_msg = translateMsg( f_mail->front() );
+							if ( translated_msg )
+								_ListMessage.push_back( translated_msg );
 							f_mail->pop_front();
 						}
 						delete f_mail;
@@ -574,9 +576,13 @@ namespace NLAIAGENT
 
 		sint32 index = father->getChildMessageIndex( msg, _CIndex );
 
-		IMessageBase *translated_msg = (IMessageBase *) msg->clone();
-		translated_msg->setMethodIndex( 0, index + ( (CAgentScript *) getParent())->getBaseMethodCount() );
-		return translated_msg;
+		if ( index != -1 )
+		{
+			IMessageBase *translated_msg = (IMessageBase *) msg->clone();
+			translated_msg->setMethodIndex( 0, index + ( (CAgentScript *) getParent())->getBaseMethodCount() );
+			return translated_msg;
+		}
+		return NULL;
 	}
 
 

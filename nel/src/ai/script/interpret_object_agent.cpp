@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.17 2001/01/18 15:04:57 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.18 2001/01/22 15:08:17 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,7 +184,7 @@ namespace NLAISCRIPT
 		_MsgIndirectTable = new sint32 *[ _Methode.size() ];
 		for (i = 0; i < (int) _Methode.size(); i++ )
 		{
-			_MsgIndirectTable[i] = 0;
+			_MsgIndirectTable[i] =  NULL;
 			l_index.push_back( std::vector<sint32>() );
 		}
 
@@ -245,16 +245,29 @@ namespace NLAISCRIPT
 			}
 		}
 
+		// For each message processing function of the father, 
+		// allocates the table with by default -1, which means the child doesn't process the
+		// message.
+		for ( i = 0; i < (int) _Methode.size(); i++ )
+		{
+			CMethodeName &method = getBrancheCode( (int) i );
+			if ( isMessageFunc( method.getParam() ) )
+			{
+				_MsgIndirectTable[i] = new sint32[ _NbScriptedComponents ];
+				for ( child_index = 0; child_index < _NbScriptedComponents; child_index++ )
+					_MsgIndirectTable[i][child_index] = -1;
+			}
+		}
+
+		// Fills the table with translated indexes for the messages processed by the child
 		for ( father_index = 0; father_index < (int) l_index.size(); father_index++ )
 		{
 			if ( ! l_index[ father_index ].empty() )
 			{
-				sint32 *index = new sint32[ _NbScriptedComponents ];
+				sint32 *index = _MsgIndirectTable[ father_index ];
 				for ( child_index = 0; child_index < (int) l_index[father_index].size(); child_index++ )
 					index[ (int) child_index ] = (l_index[ (int) father_index ])[ (int) child_index ];
-				_MsgIndirectTable[ father_index ] = index;
 			}
-
 		}
 	}
 
@@ -262,7 +275,6 @@ namespace NLAISCRIPT
 	{
 		return _MsgIndirectTable[ msg->getMethodIndex() - getBaseMethodCount() ][child_index];
 	}
-
 	
 	/// Adds a static component to an agent
 	sint32 CAgentClass::registerComponent(const NLAIAGENT::IVarName &type_name)

@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.9 2001/11/07 11:18:57 vizerie Exp $
+ * $Id: bitmap.h,v 1.10 2002/01/28 17:28:53 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,6 +197,12 @@ private :
 							 sint32 nSrcWidth, sint32 nSrcHeight, 
 							 sint32 nDestWidth, sint32 nDestHeight);
 
+
+	/** 
+	 * Quadratic interpolator
+	 * \return the interpolation in (x,y) of the values (xy**)
+	 */
+	float getColorInterp (float x, float y, float xy00, float xy01, float xy10, float xy11);
 
 public:
 
@@ -439,7 +445,7 @@ public:
 	 * The mipmaps must be built. If not just return the bilinear at the given point.
 	 * The input x and y must be clamped between 0 and 1
 	 */
-	CRGBAF getColor(float x,float y);
+	CRGBAF getColor (float x,float y);
 
 
 	/**

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.1 2001/10/05 16:23:21 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.2 2001/10/08 14:03:41 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -49,19 +49,103 @@ public:
 	/// Copy constructor
 	CBitMemStream( const CBitMemStream& other );
 
+	/// Assignment operator
+	CBitMemStream&	operator=( const CBitMemStream& other ) { CMemStream::operator=( other ); _FreeBits = other._FreeBits; return *this; }
+
 	/// Transforms the message from input to output or from output to input
 	virtual void	invert();
 
-	/// Serialize one bit
-	//virtual void	serialBit( bool& bit );
+	/// Serialize a buffer
+	virtual void	serialBuffer(uint8 *buf, uint len);
 
-	/// Serialize only the nbits lower bits of value
+	/// Serialize one bit
+	virtual void	serialBit( bool& bit );
+
+	/** Serialize only the nbits lower bits of value
+	 * When reading a value from a stream, don't forget to reset your value to zero before calling serial().
+	 */
 	virtual void	serial( uint32& value, uint nbits );
 
-	// Serialize a bit vector
-	//virtual void	serial( const std::vector<bool>& bitvect );
+	/// Template serialisation (should take the one from IStream)
+    template<class T>
+	void			serial(T &obj)							{ obj.serial(*this); }
 
-	// TODO: other common types
+	// CMemStream::serialCont() will call CBitMemStream's virtual serialBuffer()
+	template<class T>
+	void			serialCont(std::vector<T> &cont) 		{CMemStream::serialCont(cont);}
+	template<class T>
+	void			serialCont(std::list<T> &cont) 			{CMemStream::serialCont(cont);}
+	template<class T>
+	void			serialCont(std::deque<T> &cont) 		{CMemStream::serialCont(cont);}
+	template<class T>
+	void			serialCont(std::set<T> &cont) 			{CMemStream::serialCont(cont);}
+	template<class T>
+	void			serialCont(std::multiset<T> &cont) 		{CMemStream::serialCont(cont);}
+	template<class K, class T>
+	void			serialCont(std::map<K, T> &cont) 		{CMemStream::serialCont(cont);}
+	template<class K, class T>
+	void			serialCont(std::multimap<K, T> &cont) 	{CMemStream::serialCont(cont);}
+
+	/*template<class T0,class T1>
+	void			serial(T0 &a, T1 &b) 
+	{ serial(a); serial(b);}
+	template<class T0,class T1,class T2>
+	void			serial(T0 &a, T1 &b, T2 &c) 
+	{ serial(a); serial(b); serial(c);}
+	template<class T0,class T1,class T2,class T3>
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d) 
+	{ serial(a); serial(b); serial(c); serial(d);}
+	template<class T0,class T1,class T2,class T3,class T4>
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e) 
+	{ serial(a); serial(b); serial(c); serial(d); serial(e);}
+	template<class T0,class T1,class T2,class T3,class T4,class T5>
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e, T5 &f) 
+	{ serial(a); serial(b); serial(c); serial(d); serial(e); serial(f);}*/
+
+	/** \name Base type serialisation.
+	 * Those method are a specialisation of template method "void serial(T&)".
+	 */
+	//@{
+
+
+#define	serialAdapt( b, type ) \
+	uint32 ub=0; \
+	if ( isReading() ) \
+	{ \
+		serial( ub, sizeof(type)*8 ); \
+		b = (type)ub; \
+	} \
+	else \
+	{ \
+		ub = (uint32)b; \
+		serial( ub, sizeof(type)*8 ); \
+	}
+
+	
+	virtual void	serial(uint8 &b) { serialAdapt( b, uint8 ); }
+	virtual void	serial(sint8 &b) { serialAdapt( b, sint8 ); }
+	virtual void	serial(uint16 &b) { serialAdapt( b, uint16 ); }
+	virtual void	serial(sint16 &b) { serialAdapt( b, sint16 ); }
+	virtual void	serial(uint32 &b) { serialAdapt( b, uint32 ); }
+	virtual void	serial(sint32 &b) { serialAdapt( b, sint32 ); }
+	//virtual void	serial(uint64 &b) ;
+	//virtual void	serial(sint64 &b) ;
+	virtual void	serial(float &b);
+	//virtual void	serial(double &b) ;
+	virtual void	serial(bool &b) { serialBit( b ); }
+#ifndef NL_OS_CYGWIN
+	virtual void	serial(char &b) { serialAdapt( b, char ); }
+#endif
+	virtual void	serial(std::string &b) ;
+	//virtual void	serial(ucstring &b) ;
+	//@}
+
+	/// Specialisation of serialCont() for vector<uint8>
+	virtual void			serialCont(std::vector<uint8> &cont) { serialVector(cont); }
+	/// Specialisation of serialCont() for vector<sint8>
+	virtual void			serialCont(std::vector<sint8> &cont) { serialVector(cont); }
+	/// Specialisation of serialCont() for vector<bool>
+	virtual void			serialCont(std::vector<bool> &cont);
 
 protected:
 

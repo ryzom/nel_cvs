@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.1 2001/10/05 16:23:28 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.2 2001/10/08 14:03:33 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -53,6 +53,33 @@ CBitMemStream::CBitMemStream( const CBitMemStream& other ) :
 
 
 /*
+ * Serialize a buffer
+ */
+void CBitMemStream::serialBuffer( uint8 *buf, uint len )
+{
+	uint i;
+	uint32 v;
+	if ( isReading() )
+	{
+		for ( i=0; i!=len; ++i )
+		{
+			v = 0;
+			serial( v, 8 );
+			buf[i] = (uint8)v;
+		}
+	}
+	else
+	{
+		for ( i=0; i!=len; ++i )
+		{
+			v = (uint32)buf[i];
+			serial( v, 8 );
+		}
+	}
+}
+
+
+/*
  * Transforms the message from input to output or from output to input
  */
 void CBitMemStream::invert()
@@ -65,56 +92,43 @@ void CBitMemStream::invert()
 /*
  * Serialize one bit
  */
-/*void	CBitMemStream::serialBit( bool& bit )
+void	CBitMemStream::serialBit( bool& bit )
 {
-	nlerror ( "Adapt to new bitpos" );
-	// _BufPos/_BitPos are pointing the next bit to read/write
-	
+	uint32 ubit=0;
 	if ( isReading() )
 	{
-		// Input
-
-		// Check that we don't read more than there is to read
-		if ( (_BitPos == 0) && (lengthS() > lengthR()) )
-		{
-			throw EStreamOverflow();
-		}
-
-		// Get bit
-		uint8 b = *_BufPos;
-		bit = (b >> _BitPos) & 1;
-
-		// Increment position
-		if ( _BitPos == 7 )
-		{
-			++_BufPos;
-			_BitPos = 0;
-		}
-		else
-		{
-			++_BitPos;
-		}
+		serial( ubit, 1 );
+		bit = ( ubit!=0 );
 	}
 	else
 	{
-		// Output
-		if ( _BitPos == 0 )
-		{
-			// Add one new byte
-			_Buffer.resize( _Buffer.size() + 1 );
-			_BufPos = _Buffer.end() - 1;
-		}
-
-		// Set bit
-		*_BufPos |= (((uint8)bit) << _BitPos);
-
-		// Increment position
-		_BitPos = (_BitPos + 1) % 8;
+		ubit = bit;
+		serial( ubit, 1 );
 	}
+}
+
+
+#define displayByteBits if ( false ) 
+/*void displayByteBits( uint8 b, uint nbits, sint beginpos )
+{
+	string s1, s2;
+	sint i;
+	for ( i=nbits-1; i!=-1; --i )
+	{
+		s1 += ( (b >> i) & 1 ) ? "1" : "0";
+	}
+	nlinfo( "%s", s1.c_str() );
+	for ( i=nbits; i>beginpos+1; --i )
+	{
+		s2 += " ";
+	}
+	s2 += "^";
+	nlinfo( "%s beginpos=%u", s2.c_str(), beginpos );
 }*/
 
 
-void displayByteBits( uint8 b, uint nbits, sint beginpos )
+#define displayDwordBits if ( false ) 
+/*void displayDwordBits( uint32 b, uint nbits, sint beginpos )
 {
 	string s1, s2;
 	sint i;
@@ -129,25 +143,7 @@ void displayByteBits( uint8 b, uint nbits, sint beginpos )
 	}
 	s2 += "^";
 	nlinfo( "%s beginpos=%u", s2.c_str(), beginpos );
-}
-
-
-void displayDwordBits( uint32 b, uint nbits, sint beginpos )
-{
-	string s1, s2;
-	sint i;
-	for ( i=nbits-1; i!=-1; --i )
-	{
-		s1 += ( (b >> i) & 1 ) ? "1" : "0";
-	}
-	nlinfo( "%s", s1.c_str() );
-	for ( i=nbits; i>beginpos+1; --i )
-	{
-		s2 += " ";
-	}
-	s2 += "^";
-	nlinfo( "%s beginpos=%u", s2.c_str(), beginpos );
-}
+}*/
 
 
 /*
@@ -170,7 +166,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits )
 
 		if ( nbits > _FreeBits )
 		{
-			nldebug( "Reading byte from %u free bits (%u remaining bits)", _FreeBits, nbits );
+			nldebug( "Reading byte %u from %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 			value |= (v << (nbits-_FreeBits));
 			++_BufPos;
 			uint readbits = _FreeBits;
@@ -180,7 +176,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits )
 		}
 		else
 		{
-			nldebug( "Reading last byte from %u free bits (%u remaining bits)", _FreeBits, nbits );
+			nldebug( "Reading last byte %u from %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 			value |= (v >> (_FreeBits-nbits));
 			if ( _FreeBits == nbits )
 			{
@@ -205,14 +201,24 @@ void	CBitMemStream::serial( uint32& value, uint nbits )
 
 		// Clear high-order bits after nbits
 		displayDwordBits( value, 32, nbits-1 );
-		uint32 mask = (-1 >> (32-nbits)); // (-1 << nbits) - 1 would not work because shl's arg ranges frmo 0 to 31
-		uint32 v = value & mask;
+
+		//uint32 mask = (-1 >> (32-nbits)); // does not work
+		uint32 v;
+		if ( nbits != 32 ) // arg of shl/sal/shr/sal ranges from 0 to 31
+		{
+			uint32 mask = (1 << nbits) - 1;
+			v = value & mask;
+		}
+		else
+		{
+			v = value;
+		}
 
 		// Set
 		if ( nbits > _FreeBits )
 		{
 			// Longer than the room in the current byte
-			nldebug( "Writing byte into %u free bits (%u remaining bits)", _FreeBits, nbits );
+			nldebug( "Writing byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 			displayDwordBits( value, 32, nbits-1 );
 			*_BufPos |= (v >> (nbits - _FreeBits));
 			uint filledbits = _FreeBits;
@@ -223,7 +229,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits )
 		else
 		{
 			// Shorter or equal
-			nldebug( "Writing last byte into %u free bits (%u remaining bits)", _FreeBits, nbits );
+			nldebug( "Writing last byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 			displayByteBits( *_BufPos, 8, 7 );
 			*_BufPos |= (v << (_FreeBits-nbits));
 			displayByteBits( *_BufPos, 8, _FreeBits-1 );
@@ -232,97 +238,88 @@ void	CBitMemStream::serial( uint32& value, uint nbits )
 
 	}
 
-#if 0
-	if ( isReading() )
-	{
-		// Input
-		uint totalmodbits = _BitPos + nbits;
-
-		// Check that we don't read more than there is to read
-		if ( lengthS()+totalmodbits/8 > lengthR())
-		{
-			throw EStreamOverflow();
-		}
-
-		// Get first part of value (32-_BitPos low-order bits)
-		bool extended = false;
-		if ( lengthS()+32 > lengthR() )
-		{
-			// First, ensure we can read 32 bits without hitting the vector's boundary
-			_Buffer.resize( _Buffer.size() + sizeof(uint32) );
-			extended = true;
-		}
-		uint32 v;
-		uint32 *p = (uint32*)&*_BufPos;
-		v = (*p >> _BitPos);
-		_BufPos += totalmodbits/8;
-
-		// Get the remaining _BitPos high-order bits
-		if ( totalmodbits > 32 )
-		{
-			v |= (*_BufPos<<(sizeof(uint32)-_BitPos));
-		}
-		_BitPos = totalmodbits % 8;
-
-		if ( extended )
-		{
-			// Set the original size back
-			_Buffer.resize( _Buffer.size() - sizeof(uint32) );
-		}
-
-		value = v;
-	}
-	else
-	{
-		// Output
-		uint totalmodbits = _BitPos + nbits;
-		uint32 bufinitsize = _Buffer.size();
-
-		// 1. Add 4 new bytes (even if nbits is lower than 32, we will reduce the size later, in 4.)
-		if ( (_BitPos == 0) || (totalmodbits > 8) )
-		{
-			_Buffer.resize( bufinitsize + sizeof(uint32) );
-			_BufPos = _Buffer.end() - sizeof(uint32);
-		}
-
-		// 2. Set first part of value (32-_BitPos low-order bits)
-		/* Diagram (-=Unchanged M=Modified, low->high):
-		 *
-		 * _BufPos            _BufPos+1          _BufPos+2          _BufPos+3          _BufPos+4
-		 *           _BitPos
-		 * - - - - - M M M    M M M M M M M M    M M M M M M M M    M M M M M M M M
-		 */
-		uint32 *p = (uint32*)&*_BufPos;
-		*p |= (value << _BitPos);
-
-		// 3. Set the remaining _BitPos high-order bits from value to _BufPos+4 low-order bits
-		/*
-		* _BufPos            _BufPos+1          _BufPos+2          _BufPos+3          _BufPos+4
-		*           _BitPos
-		*                                                                             M M M - - - - -
-		*/
-		if ( totalmodbits > 32 )
-		{
-			_BufPos += sizeof(uint32);
-			*_BufPos |= ( value >> (sizeof(uint32)-_BitPos) );
-		}
-
-		// 4. Resize to only nbits instead of 32
-		_Buffer.resize( (sint)bufinitsize + totalmodbits/8 );
-		_BitPos = totalmodbits % 8;
-		_BufPos = _Buffer.end() - (uint32)(_BitPos != 0); // set to _Buffer.end() if (_BitPos==0)
-	}
-#endif
 }
 
 
 /*
- * Serialize a bit vector
+ * Serial float
  */
-/*void	CBitMemStream::serial( const std::vector<bool>& bitvect )
+void	CBitMemStream::serial(float &b)
 {
+	uint32 uf=0;
+	if ( isReading() )
+	{
+		serial( uf );
+		b = *(float*)&uf;
+	}
+	else
+	{
+		uf = *(uint32*)&b;
+		serial( uf );
+	}
+}
 
-}*/
+
+/*
+ * Serial string
+ */
+void	CBitMemStream::serial(std::string &b) 
+{
+	uint32 length=0;
+
+	// Serialize length
+	if ( isReading() )
+	{
+		serial( length );
+		b.resize( length );
+	}
+	else
+	{
+		length = b.size();
+		serial( length );
+	}
+
+	// Serialize buffer
+	if ( length != 0 )
+	{
+		serialBuffer( (uint8*)(&*b.begin()), length );
+	}
+}
+
+
+/*
+ * Specialisation of serialCont() for vector<bool>
+ */
+void CBitMemStream::serialCont(std::vector<bool> &cont)
+{
+	sint32	len=0;
+	if(isReading())
+	{
+		serial(len);
+		// special version for vector: adjut good size.
+		contReset(cont);
+		cont.reserve(len);
+
+		for(sint i=0;i<len;i++)
+		{
+			bool	v;
+			serialBit(v);
+			cont.insert(cont.end(), v);
+		}
+	}
+	else
+	{
+		len= cont.size();
+		serial(len);
+
+		std::vector<bool>::iterator it= cont.begin();
+		for(sint i=0;i<len;i++, it++)
+		{
+			bool b = *it;
+			serialBit( b );
+		}
+	}
+}
 
 
 

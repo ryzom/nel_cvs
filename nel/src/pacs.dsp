@@ -356,6 +356,10 @@ SOURCE=..\include\nel\pacs\u_move_primitive.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\pacs\u_primitive_block.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\pacs\u_retriever_bank.h
 # End Source File
 # End Group

@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.12 2000/12/15 14:51:53 lecroart Exp $
+ * $Id: dru.cpp,v 1.13 2000/12/18 10:59:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,25 +29,39 @@
 #include "nel/3d/driver.h"
 
 #ifdef NL_OS_WINDOWS
+
 #include <windows.h>
+
+#else // NL_OS_WINDOWS
+
+#include <dlfcn.h>
+#include <sys/fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <iso/stdlib_iso.h> /* EXIT_* */
+
 #endif // NL_OS_WINDOWS
 
 namespace NL3D 
 {
 
 
-typedef uint32 (*IDRV_VERSION_PROC)(void); 
 typedef IDriver* (*IDRV_CREATE_PROC)(void); 
+const char *IDRV_CREATE_PROC_NAME = "NL3D_createIDriverInstance";
+
+typedef uint32 (*IDRV_VERSION_PROC)(void); 
+const char *IDRV_VERSION_PROC_NAME = "NL3D_interfaceVersion";
 
 
 IDriver		*CDRU::createGlDriver() throw (EDru)
 {
+	IDRV_CREATE_PROC	createDriver = NULL;
+	IDRV_VERSION_PROC	versionDriver = NULL;
+
 #ifdef NL_OS_WINDOWS
 
 	// WINDOWS code.
 	HINSTANCE			hInst;
-	IDRV_CREATE_PROC	createDriver;
-	IDRV_VERSION_PROC	versionDriver;
 
 	hInst=LoadLibrary(NL3D_DLL_NAME);
 
@@ -56,14 +70,14 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 		throw EDruOpenglDriverNotFound();
 	}
 
-	createDriver=(IDRV_CREATE_PROC)GetProcAddress(hInst,"NL3D_createIDriverInstance");
-	if (!createDriver)
+	createDriver = (IDRV_CREATE_PROC) GetProcAddress (hInst, IDRV_CREATE_PROC_NAME);
+	if (createDriver == NULL)
 	{
 		throw EDruOpenglDriverCorrupted();
 	}
 
-	versionDriver=(IDRV_VERSION_PROC)GetProcAddress(hInst,"NL3D_interfaceVersion");
-	if (!versionDriver)
+	versionDriver = (IDRV_VERSION_PROC) GetProcAddress (hInst, IDRV_VERSION_PROC_NAME);
+	if (versionDriver == NULL)
 	{
 		throw EDruOpenglDriverOldVersion();
 		if (versionDriver()<IDriver::InterfaceVersion)
@@ -72,19 +86,49 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 			throw EDruOpenglDriverUnknownVersion();
 	}
 
+#elif defined (NL_OS_LINUX)
+
+	int		dlclose_status;
+    int		dummy_status;
+    void*	handle;	/* auch FILE* ? */
+    const char*	dlopen_error_msg;
+
+    char dummy_buf[2];
+
+	void *handle = dlopen("libnel_drv_opengl.so", RTLD_NOW);
+
+	if (handle == NULL)
+	{
+		throw EDruOpenglDriverNotFound();
+	}
+
+	/* Not ANSI. Might produce a warning */
+	createDriver = (IDRV_CREATE_PROC) dlsym (handle, IDRV_CREATE_PROC_NAME);
+	if (createDriver == NULL)
+	{
+		throw EDruOpenglDriverCorrupted();
+	}
+
+	versionDriver = (IDRV_VERSION_PROC) dlsym (handle, IDRV_VERSION_PROC_NAME);
+	if (versionDriver == NULL)
+	{
+		throw EDruOpenglDriverOldVersion();
+		if (versionDriver()<IDriver::InterfaceVersion)
+			throw EDruOpenglDriverOldVersion();
+		else if (versionDriver()>IDriver::InterfaceVersion)
+			throw EDruOpenglDriverUnknownVersion();
+	}
+
+#else // NL_OS_LINUX
+#error "Dynamic DLL loading not implemented!"
+#endif // NL_OS_LINUX
+
 	IDriver		*ret= createDriver();
-	if (!ret)
+	if (ret == NULL)
 	{
 		throw EDruOpenglDriverCantCreateDriver();
 	}
 	return ret;
-
-#else // NL_OS_WINDOWS
-
-	return NULL;	// Not yet implemented..
-
-#endif // NL_OS_WINDOWS
-
 }
 
 void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& texture, IDriver& driver, CViewport viewport)

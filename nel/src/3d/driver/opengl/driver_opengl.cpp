@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.31 2000/12/18 09:30:42 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.32 2000/12/18 10:59:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,15 @@
 #include "nel/misc/types_nl.h"
 
 #ifdef NL_OS_WINDOWS
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
+
+#else // NL_OS_WINDOWS
+
+#include <GL/glx.h>
+
 #endif // NL_OS_WINDOWS
 
 #include <GL/gl.h>
@@ -145,7 +151,7 @@ ModeList CDriverGL::enumModes()
 
 // --------------------------------------------------
 
-bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
+bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 {
 #ifdef NL_OS_WINDOWS
 	uint8					Depth;
@@ -233,7 +239,57 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 	} 
     _hRC=wglCreateContext(_hDC);
     wglMakeCurrent(_hDC,_hRC);
+
+
+#else // NL_OS_WINDOWS
+
+	Display *dpy;
+	GLXContext ctx;
+	Window win;
+
+	dpy = XOpenDisplay(NULL);
+	nlassert (dpy != NULL);
+
+	XVisualInfo *visual_info = glXChooseVisual (dpy, DefaultScreen(dpy), gl_attribs);
+
+	nlassert(visual_info != NULL);
+
+	ctx = glXCreateContext (dpy, visual_info, None, GL_TRUE);
+
+	nlassert(ctx != NULL);
+
+	Colormap cmap = XCreateColormap (dpy, RootWindow(dpy, visual_info->screen), visual_info->visual, AllocNone);
+
+	XSetWindowAttributes attr;
+	attr.colormap = cmap;
+	attr.background_pixel = BlackPixel(dpy, DefaultScreen(dpy));
+	attr.override_redirect = False;
+	int attr_flags = CWOverrideRedirect | CWColormap | CWBackPixel;
+
+	win = XCreateWindow (dpy, RootWindow(dpy, visual_info->screen), 0, 0, mode.Width, mode.Height, 0, mode.Depth, InputOutput, visual_info->visual, attr_flags, &attr);
+	
+	nlassert(win);
+
+	XSizeHints size_hints;
+	size_hints.x = 0;
+	size_hints.y = 0;
+	size_hints.width = mode.Width;
+	size_hints.height = mode.Height;
+	size_hints.flags = PSize | PMinSize | PMaxSize;
+	size_hints.min_width = mode.Width;
+	size_hints.min_height = mode.Height;
+	size_hints.max_width = mode.Width;
+	size_hints.max_height = mode.Height;
+
+	XSetWMProperties (dpy, win, &text_property, &text_property,  0, 0, &size_hints, 0, 0);
+	glXMakeCurrent (dpy, win, ctx);
+	XMapRaised (dpy, win);
+
+	XSelectInput (dpy, win, KeyPressMask|KeyReleaseMask);
+
 #endif // NL_OS_WINDOWS
+
+	
 	glViewport(0,0,mode.Width,mode.Height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -361,6 +417,7 @@ bool CDriverGL::swapBuffers()
 #ifdef NL_OS_WINDOWS
 	return SwapBuffers(_hDC) == TRUE;
 #else // NL_OS_WINDOWS
+	glXSwapBuffers(get_display(), get_window());
 	return true;
 #endif // NL_OS_WINDOWS
 }

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * mini agent exemple
  *
- * $Id: main.cpp,v 1.1 2002/03/04 10:50:32 chafik Exp $
+ * $Id: main.cpp,v 1.2 2002/03/11 16:58:25 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,10 +27,12 @@
 
 //For init lib
 #include "nel/ai/nl_ai.h"
+#include "nel/misc/path.h"
 
 namespace Expl
 {
 	CAgentManager *CAgentService::_Agent = NULL;
+	NLMISC::CPath *CAgentService::Path = NULL;
 
 
 	CAgentService::CAgentService()
@@ -46,11 +48,40 @@ namespace Expl
 		NLAILINK::setMainManager(CAgentService::_Agent);
 		//This time is allow message transfer.
 		setUpdateTimeout(10);
+
+		CAgentService::Path = new NLMISC::CPath;
+
+
+		NLMISC::CConfigFile cf;
+
+		try
+		{
+			//read the special agent var in the ag_s.cfg file.
+			cf.load ("ag_s.cfg");
+			NLMISC::CConfigFile::CVar &ScriptPath = cf.getVar ("ScriptPath");
+			sint i;
+			for(i = 0; i < ScriptPath.size(); i ++)
+			{
+				std::string s = ScriptPath.asString(i);
+				CAgentService::Path->addSearchPath(s, true,true);
+				//_ScriptPath.push_back(new std::string(s));
+			}
+			
+		}
+		catch (NLMISC::EConfigFile &e)
+		{
+			nlerror("%s",e.what());
+		}
 	}
 
 	void CAgentService::release()
 	{
 		_Agent->release();
+		//This lines is to run the agent internal timer.
+		{
+			NLMISC::CSynchronized<NLAIAGENT::CAgentScript *>::CAccessor accessor(NLAIAGENT::CAgentManagerTimer::TimerManager);
+			accessor.value()->run();
+		}
 	}
 
 	bool CAgentService::update()
@@ -94,5 +125,5 @@ NLNET::TUnifiedCallbackItem CallbackArray [] =
 	{ "AGT", Expl::CAgentService::cbProcessAgentMessage }	
 };
 
-NLNET_SERVICE_MAIN( Expl::CAgentService, AgentServiceName, "agent_service", 0, CallbackArray );
+NLNET_SERVICE_MAIN( Expl::CAgentService, AgentServiceName, "ag_s", 0, CallbackArray );
 

@@ -92,6 +92,10 @@ LINK32=link.exe
 
 SOURCE=.\main.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\main_agent.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -99,6 +103,10 @@ SOURCE=.\main.cpp
 # Begin Source File
 
 SOURCE=.\main.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\main_agent.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

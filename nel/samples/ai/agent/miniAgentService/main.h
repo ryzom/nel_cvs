@@ -1,7 +1,7 @@
 /** \file main.h
  * mini agent exemple
  *
- * $Id: main.h,v 1.1 2002/03/04 10:50:32 chafik Exp $
+ * $Id: main.h,v 1.2 2002/03/11 16:58:25 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,11 @@
 
 #define AgentServiceName "AgS"
 
+
+namespace NLMISC
+{	
+	class CPath;
+}
 namespace Expl
 {	
 
@@ -45,6 +50,7 @@ namespace Expl
 	{
 	public:
 		static CAgentManager *_Agent;
+		static NLMISC::CPath *Path;
 	public:
 		
 		CAgentService();

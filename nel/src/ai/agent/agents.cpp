@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.51 2002/04/17 09:57:46 chafik Exp $
+ * $Id: agents.cpp,v 1.52 2002/08/08 09:21:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,10 +86,6 @@ namespace NLAIAGENT
 		}
 		removeConnection(a);		
 		IAgentComposite::onKill(a);		
-		/*while(_Mail->getMessageCount())
-		{
-			_Mail->popMessage();			
-		}*/
 	}
 
 	const NLAIC::IBasicType *IAgent::clone() const

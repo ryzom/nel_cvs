@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.125 2002/07/26 09:32:24 robert Exp $
+ * $Id: agent_script.cpp,v 1.126 2002/08/08 09:21:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -744,7 +744,7 @@ namespace NLAIAGENT
 		const char *type;
 		s.getDebugString(name);
 		type = (const char *)a->getType();
-
+		const char *tname = name.c_str();
 #endif
 		if(!i.isInEnd())
 		{
@@ -1460,6 +1460,7 @@ namespace NLAIAGENT
 		{
 			IMessageBase &msg = (IMessageBase &)mail->getMessage();
 #ifdef NL_DEBUG
+		const char *dbg_this = (const char *) getType();
 		const char *dbg_msg = (const char *) msg.getType();
 #endif
 			

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.13 2004/03/23 16:32:27 corvazier Exp $
+ * $Id: vertex_buffer.h,v 1.14 2004/03/29 11:34:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,39 +64,6 @@ class	IVBDrvInfos;
 class CVertexBuffer;
 typedef	std::list<IVBDrvInfos*>			TVBDrvInfoPtrList;
 typedef	TVBDrvInfoPtrList::iterator		ItVBDrvInfoPtrList;
-
-
-// *** IMPORTANT ********************
-// *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
-// **********************************
-class IVBDrvInfos : public CRefCount
-{
-private:
-	IDriver				*_Driver;
-	ItVBDrvInfoPtrList	_DriverIterator;
-
-public:
-	CRefPtr<CVertexBuffer>	VertexBufferPtr;
-
-	IVBDrvInfos(IDriver	*drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) {_Driver= drv; _DriverIterator= it; VertexBufferPtr=vb;}
-
-	/** Lock method.
-	  * \param first is the first vertex to be accessed. Put 0 to select all the vertices. What ever is this index, 
-	  * the indexices in the vertex buffer remain the same.
-	  * \param last is the last vertex to be accessed + 1. Put 0 to select all the vertices.
-	  */
-	virtual uint8	*lock (uint first, uint last, bool readOnly) =0;
-
-	/** Unlock method.
-	  * \param first is the index of the first vertices to update. 0 to update all the vertices.
-	  * \param last is the index of the last vertices to update + 1. 0 to update all the vertices.
-	  */
-	virtual void	unlock (uint first, uint last) =0;
-
-	/* The virtual dtor is important.
-	 * The driver implementation must call setLocation (NotResident) if VertexBufferPtr!=NULL.*/
-	virtual ~IVBDrvInfos();
-};
 
 
 // ***************************************************************************
@@ -690,6 +657,38 @@ private:
 
 	// Debug string
 	std::string				_Name;
+};
+
+// *** IMPORTANT ********************
+// *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
+// **********************************
+class IVBDrvInfos : public CRefCount
+{
+private:
+	IDriver				*_Driver;
+	ItVBDrvInfoPtrList	_DriverIterator;
+
+public:
+	CRefPtr<CVertexBuffer>	VertexBufferPtr;
+
+	IVBDrvInfos(IDriver	*drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) {_Driver= drv; _DriverIterator= it; VertexBufferPtr=vb;}
+
+	/** Lock method.
+	  * \param first is the first vertex to be accessed. Put 0 to select all the vertices. What ever is this index, 
+	  * the indexices in the vertex buffer remain the same.
+	  * \param last is the last vertex to be accessed + 1. Put 0 to select all the vertices.
+	  */
+	virtual uint8	*lock (uint first, uint last, bool readOnly) =0;
+
+	/** Unlock method.
+	  * \param first is the index of the first vertices to update. 0 to update all the vertices.
+	  * \param last is the index of the last vertices to update + 1. 0 to update all the vertices.
+	  */
+	virtual void	unlock (uint first, uint last) =0;
+
+	/* The virtual dtor is important.
+	 * The driver implementation must call setLocation (NotResident) if VertexBufferPtr!=NULL.*/
+	virtual ~IVBDrvInfos();
 };
 
 /**

@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.2 2002/06/03 14:52:57 lecroart Exp $
+ * $Id: load_form.h,v 1.3 2002/06/06 15:15:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,12 +146,14 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	{
 NeedRebuild:
 		nlinfo ("loadForm(): Packed file '%s' is out of date, reconstruct it", packedFilename.c_str());
+		WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
 		// setup a form loader to read our forms with
 		NLGEORGES::UFormLoader *formLoader = NLGEORGES::UFormLoader::createLoader ();
 
 		// iterate through the vector of sheet ids
 		for(std::vector<NLMISC::CSheetId>::iterator it = sheetIds.begin(); it != sheetIds.end(); ++it)
 		{
+			string s = (*it).toString();
 			// Load the form with given sheet id
 			NLMISC::CSmartPtr<NLGEORGES::UForm> form = formLoader->loadForm ((*it).toString().c_str ());
 			if (form)
@@ -168,6 +170,7 @@ NeedRebuild:
 			}
 		}
 		NLGEORGES::UFormLoader::releaseLoader (formLoader);
+		WarningLog->removeFilter ("CFormLoader: Can't open the form file");
 
 		// now, save the new container in the packedfile
 		std::string path = NLMISC::CPath::lookup (packedFilename, false);
@@ -178,6 +181,8 @@ NeedRebuild:
 		NLMISC::COFile ofile;
 		ofile.open(path);
 		uint ver = T::getVersion ();
+		uint32 nbEntries = sheetIds.size();
+		ofile.serial (nbEntries);
 		ofile.serialVersion(ver);
 		ofile.serialCont(container);
 		ofile.close ();
@@ -193,6 +198,14 @@ NeedRebuild:
 			ifile.setCacheFileOnOpen(true);
 			ifile.open (NLMISC::CPath::lookup(packedFilename));
 			// an exception will be launch if the file is not the good version
+			uint32 nbEntries;
+			ifile.serial (nbEntries);
+			if(nbEntries != sheetIds.size())
+			{
+				ifile.close();
+				nlinfo ("loadForm(): there's %d file in the directory and only %d in the packed file, reconstruct it", sheetIds.size(), nbEntries);
+				goto NeedRebuild;
+			}
 			ifile.setVersionException (true, true);
 			uint ver = T::getVersion ();
 			ifile.serialVersion(ver);

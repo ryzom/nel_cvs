@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.3 2001/11/12 14:00:08 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.4 2001/11/27 15:34:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -190,6 +190,12 @@ private:
 
 	/// init the ith vertexProgram.
 	void					initVertexProgram(uint vpType);
+
+
+	/** swap the RdrPass type (hard or soft) of the rdrPass of an instance group.
+	 *	vertices are allocated in other VBallocator, copied and freed in the old VBallocator.
+	 */
+	void					swapIgRdrPassHardMode(CVegetableInstanceGroup *, uint rdrPass);
 
 
 	/// \name Wind animation

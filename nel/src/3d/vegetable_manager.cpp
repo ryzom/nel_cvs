@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.4 2001/11/12 14:00:08 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.5 2001/11/27 15:34:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -581,24 +581,19 @@ void						CVegetableManager::deleteIg(CVegetableInstanceGroup *ig)
 	// For all render pass of this instance, delete his vertices
 	for(sint rdrPass=0; rdrPass < NL3D_VEGETABLE_NRDRPASS; rdrPass++)
 	{
-		// For both allocators: Hard and Soft
-		for(uint vbHardMode= 0; vbHardMode<2; vbHardMode++)
-		{
-			// which allocator?
-			CVegetableVBAllocator	&vbAllocator= getVBAllocatorForRdrPassAndVBHardMode(rdrPass, vbHardMode);
-			// rdrPass
-			CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= 
-				vbHardMode? ig->_HardRdrPass[rdrPass] : ig->_SoftRdrPass[rdrPass];
+		// rdrPass
+		CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ig->_RdrPass[rdrPass];
+		// which allocator?
+		CVegetableVBAllocator	&vbAllocator= getVBAllocatorForRdrPassAndVBHardMode(rdrPass, vegetRdrPass.HardMode);
 
-			// For all vertices of this rdrPass, delete it
-			sint	numVertices;
-			numVertices= vegetRdrPass.Vertices.size();
-			for(sint i=0; i<numVertices;i++)
-			{
-				vbAllocator.deleteVertex(vegetRdrPass.Vertices[i]);
-			}
-			vegetRdrPass.Vertices.clear();
+		// For all vertices of this rdrPass, delete it
+		sint	numVertices;
+		numVertices= vegetRdrPass.Vertices.size();
+		for(sint i=0; i<numVertices;i++)
+		{
+			vbAllocator.deleteVertex(vegetRdrPass.Vertices[i]);
 		}
+		vegetRdrPass.Vertices.clear();
 	}
 
 
@@ -675,18 +670,29 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			rdrPass= NL3D_VEGETABLE_RDRPASS_UNLIT;
 	}
 
+	// veget rdrPass
+	CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ig->_RdrPass[rdrPass];
+
 	// get correct allocator
 	CVegetableVBAllocator	*allocator;
-	uint					vbHardMode;
-	// Get VB allocator Hard for this rdrPass
-	allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 1);
-	vbHardMode= 1;
-	// Test if the instance don't add too many vertices for this VBHard
-	if(allocator->exceedMaxVertexInBufferHard(shape->VB.getNumVertices()))
+	// if still in Sfot mode, keep it.
+	if(!vegetRdrPass.HardMode)
 	{
-		// yes, then prefer use the software only Allocator.
+		// get the soft allocator.
 		allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 0);
-		vbHardMode= 0;
+	}
+	else
+	{
+		// Get VB allocator Hard for this rdrPass
+		allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 1);
+		// Test if the instance don't add too many vertices for this VBHard
+		if(allocator->exceedMaxVertexInBufferHard(shape->VB.getNumVertices()))
+		{
+			// if exceed, then must pass ALL the IG in software mode. vertices/faces are correclty updated.
+			swapIgRdrPassHardMode(ig, rdrPass);
+			// now, we can use the software only Allocator to append our instance
+			allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 0);
+		}
 	}
 
 
@@ -880,37 +886,90 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	ig->_Owner->updateSphere();
 
 
-	// re-index triangles to manager indices
-	//--------------------
-	sint	numIndices= shape->TriangleIndices.size();
-	// for all indices, get manager index
-	for(i=0; i<numIndices; i++)
-	{
-		// get the index of the vertex in the shape
-		uint	vid= shape->TriangleIndices[i];
-		// re-direction, using InstanceVertices;
-		shape->InstanceTriangleIndices[i]= shape->InstanceVertices[vid];
-	}
-
-
 	// Append list of indices and list of triangles to the IG
 	//--------------------
 
 	// TODO_VEGET_OPTIM: system reallocation of array is very bad...
 
-	// rdrPass
-	CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= 
-		vbHardMode? ig->_HardRdrPass[rdrPass] : ig->_SoftRdrPass[rdrPass];
+	// get the number of vertices actually
+	uint	localVertexOffset= vegetRdrPass.Vertices.size();
 
 	// insert list of vertices to delete in ig vertices.
 	vegetRdrPass.Vertices.insert(vegetRdrPass.Vertices.end(), 
 		shape->InstanceVertices.begin(), shape->InstanceVertices.end());
+
 	// insert array of triangles in ig.
-	vegetRdrPass.TriangleIndices.insert(vegetRdrPass.TriangleIndices.end(), 
-		shape->InstanceTriangleIndices.begin(), shape->InstanceTriangleIndices.end() );
+	sint	numNewIndices= shape->TriangleIndices.size();
+	// resize arrays of triangles.
+	nlassert(vegetRdrPass.TriangleIndices.size() == vegetRdrPass.TriangleLocalIndices.size());
+	uint	triIdxOffset= vegetRdrPass.TriangleIndices.size();
+	vegetRdrPass.TriangleIndices.resize(triIdxOffset + numNewIndices);
+	vegetRdrPass.TriangleLocalIndices.resize(triIdxOffset + numNewIndices);
+	// for all indices, fill IG
+	for(i=0; i<numNewIndices; i++)
+	{
+		// get the index of the vertex in the shape
+		uint	vid= shape->TriangleIndices[i];
+		// re-direction, using InstanceVertices;
+		vegetRdrPass.TriangleIndices[triIdxOffset + i]= shape->InstanceVertices[vid];
+		// local re-direction: adding vertexOffset.
+		vegetRdrPass.TriangleLocalIndices[triIdxOffset + i]= localVertexOffset + vid;
+	}
+
 	// new triangle size.
 	vegetRdrPass.NTriangles= vegetRdrPass.TriangleIndices.size() / 3;
+}
 
+
+// ***************************************************************************
+void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uint rdrPass)
+{
+	CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ig->_RdrPass[rdrPass];
+
+	// the allocator where vertices come from
+	CVegetableVBAllocator	&srcAllocator= getVBAllocatorForRdrPassAndVBHardMode(rdrPass, vegetRdrPass.HardMode);
+	// the allocator where vertices will go
+	CVegetableVBAllocator	&dstAllocator= getVBAllocatorForRdrPassAndVBHardMode(rdrPass, !vegetRdrPass.HardMode);
+
+	// vertex size
+	uint	vbSize= srcAllocator.getSoftwareVertexBuffer().getVertexSize();
+	nlassert(vbSize == dstAllocator.getSoftwareVertexBuffer().getVertexSize());
+
+	// for all vertices of the IG, change of VBAllocator
+	uint i;
+	for(i=0;i<vegetRdrPass.Vertices.size();i++)
+	{
+		// get idx in src allocator.
+		uint	srcId= vegetRdrPass.Vertices[i];
+		// allocate a verex in the dst allocator.
+		uint	dstId= dstAllocator.allocateVertex();
+
+		// copy from VBsoft of src to dst.
+		void	*vbSrc= srcAllocator.getVertexPointer(srcId);
+		void	*vbDst= dstAllocator.getVertexPointer(dstId);
+		memcpy(vbDst, vbSrc, vbSize);
+		// release src vertex.
+		srcAllocator.deleteVertex(srcId);
+
+		// and copy new dest id in Vertices array.
+		vegetRdrPass.Vertices[i]= dstId;
+
+		// and flush this vertex into VBHard (if dst is aVBHard).
+		dstAllocator.flushVertex(dstId);
+	}
+
+	// For all triangles, bind correct triangles.
+	nlassert(vegetRdrPass.TriangleIndices.size() == vegetRdrPass.TriangleLocalIndices.size());
+	for(i=0;i<vegetRdrPass.TriangleIndices.size();i++)
+	{
+		// get the index in Vertices.
+		uint	localVid= vegetRdrPass.TriangleLocalIndices[i];
+		// get the index in new VBufffer (dstAllocator), and copy to TriangleIndices
+		vegetRdrPass.TriangleIndices[i]= vegetRdrPass.Vertices[localVid];
+	}
+
+	// Since change is made, flag the IG rdrpass
+	vegetRdrPass.HardMode= !vegetRdrPass.HardMode;
 }
 
 
@@ -1158,14 +1217,17 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 					while(ptrIg)
 					{
 						// rdrPass
-						CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= 
-							vbHardMode? ptrIg->_HardRdrPass[rdrPass] : ptrIg->_SoftRdrPass[rdrPass];
+						CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ptrIg->_RdrPass[rdrPass];
 
-						// Render the faces of the good renderPass.
-						if(vegetRdrPass.NTriangles)
+						// if this rdrPass is in same HardMode as we process now.
+						if( (vegetRdrPass.HardMode && vbHardMode==1) || (!vegetRdrPass.HardMode && vbHardMode==0) )
 						{
-							driver->renderSimpleTriangles(&vegetRdrPass.TriangleIndices[0], 
-								vegetRdrPass.NTriangles);
+							// Ok, Render the faces.
+							if(vegetRdrPass.NTriangles)
+							{
+								driver->renderSimpleTriangles(&vegetRdrPass.TriangleIndices[0], 
+									vegetRdrPass.NTriangles);
+							}
 						}
 
 						// next ig.

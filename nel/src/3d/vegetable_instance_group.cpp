@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.cpp
  * <File description>
  *
- * $Id: vegetable_instance_group.cpp,v 1.2 2001/11/12 14:00:07 berenguier Exp $
+ * $Id: vegetable_instance_group.cpp,v 1.3 2001/11/27 15:34:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,11 +34,6 @@ namespace NL3D
 CVegetableInstanceGroup::CVegetableInstanceGroup()
 {
 	_Owner= NULL;
-	for(sint i=0; i<NL3D_VEGETABLE_NRDRPASS; i++)
-	{
-		_HardRdrPass[i].NTriangles= 0;
-		_SoftRdrPass[i].NTriangles= 0;
-	}
 }
 
 

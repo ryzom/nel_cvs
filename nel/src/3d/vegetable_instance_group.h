@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * <File description>
  *
- * $Id: vegetable_instance_group.h,v 1.2 2001/11/12 14:00:08 berenguier Exp $
+ * $Id: vegetable_instance_group.h,v 1.3 2001/11/27 15:34:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,19 +69,27 @@ private:
 
 	struct	CVegetableRdrPass
 	{
-		// List of vertices used (used for deletion of the ig).
+		// vertices are in VBSoft or VBHard ??
+		bool					HardMode;
+		// List of vertices used (used for deletion of the ig, and also for change of HardMode).
 		std::vector<uint32>		Vertices;
-		// List of faces indices to render.
+		// List of faces indices to render. They points to vertex in VBuffer.
 		std::vector<uint32>		TriangleIndices;
+		// List of faces indices to render. They points to Vertices in this.
+		std::vector<uint32>		TriangleLocalIndices;
 		// the number of triangles, ie _TriangleIndices.size()/3.
 		uint32					NTriangles;
+
+		CVegetableRdrPass()
+		{
+			HardMode= true;
+			NTriangles= 0;
+		}
 	};
 
 
 	// For now, there is only 4 render pass: Lighted and Unlit combined with 2Sided or not
-	CVegetableRdrPass			_HardRdrPass[NL3D_VEGETABLE_NRDRPASS];
-	// The same, but which use soft VertexBuffer.
-	CVegetableRdrPass			_SoftRdrPass[NL3D_VEGETABLE_NRDRPASS];
+	CVegetableRdrPass			_RdrPass[NL3D_VEGETABLE_NRDRPASS];
 
 };
 

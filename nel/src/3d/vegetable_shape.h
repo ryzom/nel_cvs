@@ -1,7 +1,7 @@
 /** \file vegetable_shape.h
  * <File description>
  *
- * $Id: vegetable_shape.h,v 1.3 2001/11/07 13:11:39 berenguier Exp $
+ * $Id: vegetable_shape.h,v 1.4 2001/11/27 15:34:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,8 +132,6 @@ public:
 	// @{
 	/// For each vertex of the shape, gives the index in the VegetableManager
 	std::vector<uint32>		InstanceVertices;
-	/// Triangles, "transformed" by InstanceVertices.
-	std::vector<uint32>		InstanceTriangleIndices;
 	// @}
 
 

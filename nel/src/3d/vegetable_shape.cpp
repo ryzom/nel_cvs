@@ -1,7 +1,7 @@
 /** \file vegetable_shape.cpp
  * <File description>
  *
- * $Id: vegetable_shape.cpp,v 1.3 2001/11/07 13:11:39 berenguier Exp $
+ * $Id: vegetable_shape.cpp,v 1.4 2001/11/27 15:34:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,7 +160,6 @@ void		CVegetableShape::build(CVegetableShapeBuild &vbuild)
 	//---------
 	// prepare for instanciation
 	InstanceVertices.resize(VB.getNumVertices());
-	InstanceTriangleIndices.resize(TriangleIndices.size());
 
 }
 
@@ -195,7 +194,6 @@ void		CVegetableShape::serial(NLMISC::IStream &f)
 	{
 		// prepare for instanciation
 		InstanceVertices.resize(VB.getNumVertices());
-		InstanceTriangleIndices.resize(TriangleIndices.size());
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file move_primitive.h
  * Description of movables primitives
  *
- * $Id: move_primitive.h,v 1.3 2001/06/15 09:47:01 corvazier Exp $
+ * $Id: move_primitive.h,v 1.4 2001/06/22 15:03:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -347,6 +347,7 @@ public:
 	void					setAbsorbtion (float attenuation);
 	void					setOrientation (double rot, uint8 worldImage);
 	void					setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage);
+	void					setGlobalPosition (const UGlobalPosition& pos, uint8 worldImage);
 	void					move (const NLMISC::CVectorD& speed, uint8 worldImage);
 	NLMISC::CVectorD		getFinalPosition (uint8 worldImage)  const;
 	const NLMISC::CVectorD&	getSpeed (uint8 worldImage) const;

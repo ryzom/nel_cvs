@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.8 2001/06/15 09:47:01 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.9 2001/06/22 15:03:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -216,6 +216,16 @@ void CMovePrimitive::setOrientation (double rot, uint8 worldImage)
 		getWorldImage (0)->setOrientation (rot, _Container, this, worldImage);
 	else
 		getWorldImage (worldImage)->setOrientation (rot, _Container, this, worldImage);
+}
+
+// ***************************************************************************
+
+void CMovePrimitive::setGlobalPosition (const UGlobalPosition& pos, uint8 worldImage)
+{
+	if (isNonCollisionable())
+		getWorldImage (0)->setGlobalPosition (pos, *_Container, *this, worldImage);
+	else
+		getWorldImage (worldImage)->setGlobalPosition (pos, *_Container, *this, worldImage);
 }
 
 // ***************************************************************************

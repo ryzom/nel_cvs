@@ -1,7 +1,7 @@
 /** \file primitive_world_image.h
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.h,v 1.1 2001/06/15 09:48:51 corvazier Exp $
+ * $Id: primitive_world_image.h,v 1.2 2001/06/22 15:03:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,13 @@ public:
 
 	// Copy
 	void copy (const CPrimitiveWorldImage& source);
+
+	/**
+	  * Set the global position of the move primitive.
+	  *
+	  * \param pos is the new global position of the primitive.
+	  */
+	void	setGlobalPosition (const UGlobalPosition& pos, CMoveContainer& container, CMovePrimitive &primitive, uint8 worldImage);
 
 	/**
 	  * Set the global position of the move primitive. Setting the global position 
@@ -195,6 +202,14 @@ public:
 		return _BBYMax;
 	}
 
+	/**
+	  * Return the delta position
+	  */
+	const NLMISC::CVectorD&	getDeltaPosition () const
+	{
+		return _DeltaPosition;
+	}
+
 	/// Return the nieme MoveElement. The primitive can have 4 move elements. Can be NULL if the ineme elment is not in a list
 	CMoveElement	*getMoveElement (uint i)
 	{
@@ -240,7 +255,7 @@ public:
 	void checkSortedList (uint8 worldImage);
 
 	// Return the global position of the primitive
-	const CGlobalRetriever::CGlobalPosition& getGlobalPosition()
+	const UGlobalPosition& getGlobalPosition()
 	{
 		return _Position.getGlobalPos();
 	}
@@ -261,6 +276,12 @@ public:
 		_DynamicFlags|=DirtBBFlag;
 	}
 
+	// Return the init time
+	double	getInitTime() const
+	{
+		return _InitTime;
+	}
+		
 	// Compute precalculated data for the position
 	void precalcPos (CMovePrimitive &primitive);
 
@@ -334,11 +355,10 @@ public:
 	  * \return true if a collision has been detected in the time range, else false.
 	  */
 	const TCollisionSurfaceDescVector *evalCollision (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, 
-													const NLMISC::CVector& delta, uint32 testTime, uint32 maxTestIteration,
-													CMovePrimitive& primitive);
+													uint32 testTime, uint32 maxTestIteration, CMovePrimitive& primitive);
 
 	// Make a move with globalRetriever. Must be call after a free collision evalCollision call.
-	void	doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double timeMax);
+	void	doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double originalMax, double finalMax);
 
 	// Make a move wihtout globalRetriever.
 	void	doMove (double timeMax);
@@ -349,8 +369,9 @@ public:
 					CMovePrimitive &otherPrimitive, CMoveContainer *container, uint8 worldImage, uint8 secondWorldImage);
 
 	// Reaction with a static collision. Return true if one object has been modified.
-	void reaction (const CCollisionSurfaceDesc&	surfaceDesc, const CGlobalRetriever::CGlobalPosition& globalPosition,
-					const CGlobalRetriever& retriever, double deltaTime, CMovePrimitive &primitive);
+	void reaction (	const CCollisionSurfaceDesc&	surfaceDesc, const UGlobalPosition& globalPosition,
+					CGlobalRetriever& retriever, double deltaTime, CMovePrimitive &primitive, CMoveContainer &container,
+					uint8 worldImage);
 
 private:
 	// Some flags
@@ -383,7 +404,7 @@ private:
 		NLMISC::CVectorD					_3dPosition;
 
 		// Global position
-		CGlobalRetriever::CGlobalPosition	_GlobalPosition;
+		UGlobalPosition						_GlobalPosition;
 	public:
 		// Return the 3d position
 		const NLMISC::CVectorD&						getPos () const
@@ -398,18 +419,19 @@ private:
 		}
 
 		// Return the global position
-		const CGlobalRetriever::CGlobalPosition&	getGlobalPos () const
+		const UGlobalPosition&						getGlobalPos () const
 		{
 			return _GlobalPosition;
 		}
 
 		// Set the global position
-		void										setGlobalPos (const CGlobalRetriever::CGlobalPosition& globalPosition,
-																  const CGlobalRetriever& globalRetriver)
+		void										setGlobalPos (const UGlobalPosition& globalPosition,
+																  CGlobalRetriever& globalRetriver)
 		{
 			// Get position with global position
 			_GlobalPosition=globalPosition;
 			_3dPosition=globalRetriver.getDoubleGlobalPosition (globalPosition);
+			_3dPosition.z=(double)globalRetriver.getMeanHeight(globalPosition);
 		}
 	};
 
@@ -421,6 +443,9 @@ private:
 
 	// 3d position at t=0
 	NLMISC::CVectorD	_3dInitPosition;
+
+	// Delta position is : _Speed*Deltatime
+	NLMISC::CVectorD	_DeltaPosition;
 
 	// Current speed
 	NLMISC::CVectorD	_Speed;

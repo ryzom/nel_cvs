@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.3 2001/06/15 09:47:01 corvazier Exp $
+ * $Id: move_container.h,v 1.4 2001/06/22 15:03:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -226,8 +226,7 @@ private:
 												bool collision, bool enter, bool exit, uint firstWorldImage, uint secondWorldImage);
 
 	// Add a collision in the time ordered table
-	void						newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, const CVector& delta, 
-												uint8 worldImage);
+	void						newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, uint8 worldImage, double beginTime);
 
 	// Add a trigger in the trigger array
 	void						newTrigger (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc);

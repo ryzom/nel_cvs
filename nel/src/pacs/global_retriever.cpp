@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.31 2001/06/15 09:47:01 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.32 2001/06/22 15:03:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/vectord.h"
 #include "nel/misc/vector_2f.h"
+#include "nel/misc/path.h"
 
 #include "nel/misc/debug.h"
 
@@ -182,7 +183,7 @@ NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint x, uint 
 
 //
 
-NLPACS::CGlobalRetriever::CGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated) const
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated) const
 {
 	const CRetrieverInstance	&instance = getInstance(estimated);
 	if (instance.getRetrieverId() >= 0)
@@ -198,7 +199,7 @@ NLPACS::CGlobalRetriever::CGlobalPosition	NLPACS::CGlobalRetriever::retrievePosi
 	}
 }
 
-CVector		NLPACS::CGlobalRetriever::getGlobalPosition(const NLPACS::CGlobalRetriever::CGlobalPosition &global) const
+CVector		NLPACS::CGlobalRetriever::getGlobalPosition(const UGlobalPosition &global) const
 {
 	if (global.InstanceId >= 0)
 	{
@@ -211,7 +212,7 @@ CVector		NLPACS::CGlobalRetriever::getGlobalPosition(const NLPACS::CGlobalRetrie
 	}
 }
 
-CVectorD	NLPACS::CGlobalRetriever::getDoubleGlobalPosition(const NLPACS::CGlobalRetriever::CGlobalPosition &global) const
+CVectorD	NLPACS::CGlobalRetriever::getDoubleGlobalPosition(const NLPACS::UGlobalPosition &global) const
 {
 	if (global.InstanceId >= 0)
 	{
@@ -1045,7 +1046,7 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 
 // ***************************************************************************
 const	NLPACS::TCollisionSurfaceDescVector	
-	&NLPACS::CGlobalRetriever::testCylinderMove(const CGlobalPosition &startPos, const NLMISC::CVector &delta, float radius, CCollisionSurfaceTemp &cst) const
+	&NLPACS::CGlobalRetriever::testCylinderMove(const UGlobalPosition &startPos, const NLMISC::CVector &delta, float radius, CCollisionSurfaceTemp &cst) const
 {
 	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
 
@@ -1054,11 +1055,25 @@ const	NLPACS::TCollisionSurfaceDescVector
 	// reset result.
 	cst.CollisionDescs.clear();
 
+	// In a surface ?
+	if (startPos.InstanceId==-1)
+	{
+		// Warning this primitive is not on a surface
+		//nlassertonce (0);
+
+		return cst.CollisionDescs;
+	}
 	// store this request in cst.
 	cst.PrecStartSurface= startSurface;
 	cst.PrecStartPos= startPos.LocalPosition.Estimation;
 	cst.PrecDeltaPos= delta;
 	cst.PrecValid= true;
+
+	// 0.bis
+	//===========
+	// Abort if deltamove is 0,0,0.
+	if (delta.isNull())
+		return cst.CollisionDescs;
 
 	// 1. Choose a local basis.
 	//===========
@@ -1094,7 +1109,6 @@ const	NLPACS::TCollisionSurfaceDescVector
 	CVector2f	obbDummy[4];	// dummy OBB (not obb here so don't bother)
 	testCollisionWithCollisionChains(cst, startCol, deltaCol, startSurface, radius, obbDummy, CGlobalRetriever::Circle);
 
-
 	// result.
 	return cst.CollisionDescs;
 }
@@ -1102,7 +1116,7 @@ const	NLPACS::TCollisionSurfaceDescVector
 
 // ***************************************************************************
 const	NLPACS::TCollisionSurfaceDescVector	
-	&NLPACS::CGlobalRetriever::testBBoxMove(const CGlobalPosition &startPos, const NLMISC::CVector &delta, 
+	&NLPACS::CGlobalRetriever::testBBoxMove(const UGlobalPosition &startPos, const NLMISC::CVector &delta, 
 	const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const
 {
 	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
@@ -1112,12 +1126,26 @@ const	NLPACS::TCollisionSurfaceDescVector
 	// reset result.
 	cst.CollisionDescs.clear();
 
+	// In a surface ?
+	if (startPos.InstanceId==-1)
+	{
+		// Warning this primitive is not on a surface
+		//nlassertonce (0);
+
+		return cst.CollisionDescs;
+	}
+	
 	// store this request in cst.
 	cst.PrecStartSurface= startSurface;
 	cst.PrecStartPos= startPos.LocalPosition.Estimation;
 	cst.PrecDeltaPos= delta;
 	cst.PrecValid= true;
 
+	// 0.bis
+	//===========
+	// Abort if deltamove is 0,0,0.
+	if (delta.isNull())
+		return cst.CollisionDescs;
 
 	// 1. Choose a local basis.
 	//===========
@@ -1168,7 +1196,6 @@ const	NLPACS::TCollisionSurfaceDescVector
 	CVector2f	deltaCol(delta.x, delta.y);
 	testCollisionWithCollisionChains(cst, startCol, deltaCol, startSurface, 0, obbStart, CGlobalRetriever::BBox);
 
-
 	// result.
 	return cst.CollisionDescs;
 }
@@ -1176,8 +1203,8 @@ const	NLPACS::TCollisionSurfaceDescVector
 
 
 // ***************************************************************************
-NLPACS::CGlobalRetriever::CGlobalPosition		
-	NLPACS::CGlobalRetriever::doMove(const NLPACS::CGlobalRetriever::CGlobalPosition &startPos, const NLMISC::CVector &delta, float t, NLPACS::CCollisionSurfaceTemp &cst, bool rebuildChains) const
+NLPACS::UGlobalPosition		
+	NLPACS::CGlobalRetriever::doMove(const NLPACS::UGlobalPosition &startPos, const NLMISC::CVector &delta, float t, NLPACS::CCollisionSurfaceTemp &cst, bool rebuildChains) const
 {
 	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
 
@@ -1189,6 +1216,16 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 	// reset CollisionDescs.
 	cst.CollisionDescs.clear();
 
+	// In a surface ?
+	if (startPos.InstanceId==-1)
+	{
+		// Warining: this primitive is not on a surface
+		//nlassertonce (0);
+
+		// Return startpos
+		return startPos;
+	}
+	
 	if(!rebuildChains)
 	{
 		// same move request than prec testMove() ??.
@@ -1266,7 +1303,7 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 		// If same 2D position, just return startPos (suppose no movement)
 		if(endCol==startCol)
 		{
-			CGlobalPosition		res;
+			UGlobalPosition		res;
 			res= startPos;
 			// keep good z movement.
 			res.LocalPosition.Estimation.z= end.z;
@@ -1495,14 +1532,18 @@ NLPACS::UGlobalRetriever *NLPACS::UGlobalRetriever::createGlobalRetriever (const
 	const NLPACS::CRetrieverBank*	bank=static_cast<const NLPACS::CRetrieverBank*>(retrieverBank);
 
 	CIFile	file;
-	file.open(globalRetriever);
-	CGlobalRetriever	*retriever = new CGlobalRetriever();
-	file.serial(*retriever);
+	if (file.open(CPath::lookup(globalRetriever)))
+	{
+		CGlobalRetriever	*retriever = new CGlobalRetriever();
+		file.serial(*retriever);
 
-	retriever->setRetrieverBank(bank);
-	retriever->initAll();
+		retriever->setRetrieverBank(bank);
+		retriever->initAll();
 
-	return static_cast<UGlobalRetriever *>(retriever);
+		return static_cast<UGlobalRetriever *>(retriever);
+	}
+	else
+		return NULL;
 }
 
 // ***************************************************************************
@@ -1519,8 +1560,11 @@ void NLPACS::UGlobalRetriever::deleteGlobalRetriever (UGlobalRetriever *retrieve
 
 // ***************************************************************************
 
-float			NLPACS::CGlobalRetriever::getMeanHeight(const CGlobalPosition &pos)
+float			NLPACS::CGlobalRetriever::getMeanHeight(const UGlobalPosition &pos)
 {
+	if ((pos.InstanceId==-1)||(pos.LocalPosition.Surface))
+		return 0;
+	
 	// get instance/localretriever.
 	const CRetrieverInstance	&instance = getInstance(pos.InstanceId);
 	const CLocalRetriever		&retriever= _RetrieverBank->getRetriever(instance.getRetrieverId());

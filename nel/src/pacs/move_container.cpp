@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.7 2001/06/15 09:47:01 corvazier Exp $
+ * $Id: move_container.cpp,v 1.8 2001/06/22 15:03:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,6 +139,9 @@ void CMoveContainer::init (CGlobalRetriever* retriever, uint widthCellCount, uin
 
 	// Init
 	init (xmin, ymin, xmax, ymax, widthCellCount, heightCellCount, primitiveMaxSize, numWorldImage, maxIteration, otSize);
+
+	// Init the retriever
+	_Retriever=retriever;
 }
 
 // ***************************************************************************
@@ -162,14 +165,14 @@ void  CMoveContainer::evalCollision (double deltaTime, uint8 worldImage)
 	checkSortedList ();
 #endif // NL_DEBUG
 
+	// Get first collision
+	_PreviousCollisionNode = &_TimeOT[0];
+
 	// Eval all collisions
 	evalAllCollisions (0.f, worldImage);
 
 	// Clear modified list
 	clearModifiedList (worldImage);
-
-	// Get first collision
-	_PreviousCollisionNode = &_TimeOT[0];
 
 	// Modified list is empty at this point
 	nlassert (_ChangedRoot[worldImage]==NULL);
@@ -578,15 +581,15 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 	else
 		wI=primitive->getWorldImage (primitiveWorldImage);
 
+	// Begin time must be the same as beginTime
+	nlassert (wI->getInitTime()==beginTime);
+
 	// Test its static collision
 	if (_Retriever)
 	{
 		// Delta pos..
-		CVector delta=wI->getSpeed ();
-		delta*=(float)(_DeltaTime-beginTime);
-
 		// Test retriever with the primitive
-		const TCollisionSurfaceDescVector *result=wI->evalCollision (*_Retriever, _SurfaceTemp, delta, _TestTime, _MaxTestIteration, *primitive);
+		const TCollisionSurfaceDescVector *result=wI->evalCollision (*_Retriever, _SurfaceTemp, _TestTime, _MaxTestIteration, *primitive);
 		if (result)
 		{
 			// Size of the array
@@ -596,7 +599,8 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 			for (uint c=0; c<size; c++)
 			{
 				// Ref on the collision
-				const CCollisionSurfaceDesc &desc=(*result)[c];
+				CCollisionSurfaceDesc desc=(*result)[c];
+				desc.ContactTime=(_DeltaTime-beginTime)*desc.ContactTime+beginTime;
 
 				// ptr on the surface
 				const CRetrievableSurface *surf= _Retriever->getSurfaceById (desc.ContactSurface);
@@ -611,17 +615,13 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 				// stop on a wall.
 				if(isWall)
 				{
-					// Check time interval
-					nlassert (beginTime<=desc.ContactTime);
-					nlassert (desc.ContactTime<_DeltaTime);
-
 					// Test move ?
 					if (testMove)
 						return true;
 					else
 					{
 						// OK, collision
-						newCollision (primitive, desc, delta, primitiveWorldImage);
+						newCollision (primitive, desc, primitiveWorldImage, beginTime);
 
 						// One collision found
 						found=true;
@@ -629,6 +629,9 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 				}
 			}
 		}
+		else
+			// More than maxtest made, exit
+			return false;
 	}
 
 	// Element table
@@ -749,7 +752,7 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 		if (_Retriever)
 		{
 			// Do move
-			wI->doMove (*_Retriever, _SurfaceTemp, _DeltaTime);
+			wI->doMove (*_Retriever, _SurfaceTemp, _DeltaTime, _DeltaTime);
 		}
 		else
 		{
@@ -880,13 +883,30 @@ void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second
 
 // ***************************************************************************
 
-void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, const CVector& delta, uint8 worldImage)
+void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, uint8 worldImage, double beginTime)
 {
 	// Check
 	nlassert (_Retriever);
 
+	// Get the world image
+	CPrimitiveWorldImage *wI=first->getWorldImage (worldImage);
+
+	// Time
+	double time=desc.ContactTime;
+
+	// Check time interval
+	nlassert (beginTime<=time);
+	nlassert (time<_DeltaTime);
+
+	// Time of the collision.
+	time-=NELPACS_DIST_BACK/wI->getSpeed().norm();
+	time=std::max(time, beginTime);
+	double ratio=(time-beginTime)/(_DeltaTime-beginTime);
+	nlassert (ratio>=0);
+	nlassert (ratio<=1);
+
 	// Get an ordered time index. Always round to the future.
-	int index=(int)(ceil (desc.ContactTime*(double)_OtSize/_DeltaTime) );
+	int index=(int)(ceil (time*(double)_OtSize/_DeltaTime) );
 
 	// Clamp left.
 	if (index<0)
@@ -895,28 +915,18 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 	// If in time
 	if (index<(int)_OtSize)
 	{
-		// Get the world image
-		CPrimitiveWorldImage *wI=first->getWorldImage (worldImage);
-
 		// Rounded time
 		double finalTime=(double)index * _DeltaTime / (double)_OtSize;
 
 		// Build info
 		CCollisionOTStaticInfo *info = allocateOTStaticInfo ();
 
-		// Setup new speed
-		double t=desc.ContactTime;
-
-		// Time of the collision.
-		t-=NELPACS_DIST_BACK/wI->getSpeed().norm();
-		t=std::max(t, 0.0);
-		t/=_DeltaTime;
-
 		// Make a new globalposition
-		CGlobalRetriever::CGlobalPosition endPosition=_Retriever->doMove (wI->getGlobalPosition(), delta, (float)t, _SurfaceTemp, false);
+		UGlobalPosition endPosition=_Retriever->doMove (wI->getGlobalPosition(), wI->getDeltaPosition(), 
+			(float)ratio, _SurfaceTemp, false);
 
 		// Init the info descriptor
-		info->init (first, desc, endPosition, t, worldImage);
+		info->init (first, desc, endPosition, ratio, worldImage);
 
 		// Add in the primitive list
 		first->addCollisionOTInfo (info);
@@ -1229,7 +1239,7 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 
 		// Dynamic collision
 		wI->reaction ( staticInfo->getCollisionDesc (), staticInfo->getGlobalPosition (),
-						*_Retriever, staticInfo->getDeltaTime(), *staticInfo->getPrimitive ());
+						*_Retriever, staticInfo->getDeltaTime(), *staticInfo->getPrimitive (), *this, staticInfo->getWorldImage());
 	}
 	else
 	{

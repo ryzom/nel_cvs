@@ -1,7 +1,7 @@
 /** \file retriever_bank.cpp
  *
  *
- * $Id: retriever_bank.cpp,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: retriever_bank.cpp,v 1.3 2001/06/22 15:03:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/file.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/path.h"
 
 #include "pacs/retriever_bank.h"
 
@@ -41,11 +42,15 @@ using namespace NLMISC;
 NLPACS::URetrieverBank *NLPACS::URetrieverBank::createRetrieverBank (const char *retrieverBank)
 {
 	CIFile	file;
-	file.open(retrieverBank);
-	CRetrieverBank	*bank = new CRetrieverBank();
-	file.serial(*bank);
+	if (file.open( CPath::lookup(retrieverBank) ))
+	{
+		CRetrieverBank	*bank = new CRetrieverBank();
+		file.serial(*bank);
 
-	return static_cast<URetrieverBank *>(bank);
+		return static_cast<URetrieverBank *>(bank);
+	}
+	else
+		return NULL;
 }
 
 

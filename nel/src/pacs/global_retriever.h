@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.5 2001/06/15 09:47:01 corvazier Exp $
+ * $Id: global_retriever.h,v 1.6 2001/06/22 15:03:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,13 +165,13 @@ public:
 	//@{
 
 	/// Retrieves the position of an estimated point in the global retriever.
-	CGlobalPosition					retrievePosition(const NLMISC::CVector &estimated) const;
+	UGlobalPosition					retrievePosition(const NLMISC::CVector &estimated) const;
 
 	/// Converts a global position object into a 'human-readable' CVector.
-	NLMISC::CVector					getGlobalPosition(const CGlobalPosition &global) const;
+	NLMISC::CVector					getGlobalPosition(const UGlobalPosition &global) const;
 
 	/// Converts a global position object into a 'human-readable' CVector (double instead.)
-	NLMISC::CVectorD				getDoubleGlobalPosition(const CGlobalPosition &global) const;
+	NLMISC::CVectorD				getDoubleGlobalPosition(const UGlobalPosition &global) const;
 
 	/// Make a raytrace test. For the time, always return false.
 	bool							testRaytrace (const NLMISC::CVectorD &v0, const NLMISC::CVectorD &v1);
@@ -292,7 +292,7 @@ public:
 	 * \return list of collision against surface, ordered by increasing time. this is a synonym for
 	 * cst.CollisionDescs. NB: this array may be modified by CGlobalRetriever on any collision call.
 	 */
-	const TCollisionSurfaceDescVector	&testCylinderMove(const CGlobalPosition &start, const NLMISC::CVector &delta, 
+	const TCollisionSurfaceDescVector	&testCylinderMove(const UGlobalPosition &start, const NLMISC::CVector &delta, 
 		float radius, CCollisionSurfaceTemp &cst) const;
 	/** Test a movement of a bbox against surface world.
 	 * \param start is the start position of the movement.
@@ -303,7 +303,7 @@ public:
 	 * \return list of collision against surface, ordered by increasing time. this is a synonym for
 	 * cst.CollisionDescs. NB: this array may be modified by CGlobalRetriever on any collision call.
 	 */
-	const TCollisionSurfaceDescVector	&testBBoxMove(const CGlobalPosition &start, const NLMISC::CVector &delta, 
+	const TCollisionSurfaceDescVector	&testBBoxMove(const UGlobalPosition &start, const NLMISC::CVector &delta, 
 		const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const;
 	/** apply a movement of a point against surface world. This should be called after test???Move().
 	 * NB: It's up to you to give good t, relative to result of test???Move(). Else, undefined results...
@@ -318,7 +318,7 @@ public:
 	 *	of the data needed to performing his task.
 	 * \return new position of the entity.
 	 */
-	CGlobalPosition		doMove(const CGlobalPosition &start, const NLMISC::CVector &delta, float t, CCollisionSurfaceTemp &cst, bool rebuildChains=false) const;
+	UGlobalPosition		doMove(const UGlobalPosition &start, const NLMISC::CVector &delta, float t, CCollisionSurfaceTemp &cst, bool rebuildChains=false) const;
 	/** retrieve a surface by its Id. NULL if not found or if -1.
 	 */
 	const CRetrievableSurface	*getSurfaceById(const CSurfaceIdent &surfId) const;
@@ -337,7 +337,7 @@ public:
 	/** return the mean height of the surface under pos..
 	 *
 	 */
-	float				getMeanHeight(const CGlobalPosition &pos);
+	float				getMeanHeight(const UGlobalPosition &pos);
 	// @}
 
 

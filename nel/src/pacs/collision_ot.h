@@ -1,7 +1,7 @@
 /** \file collision_ot.h
  * Collision descriptor for time odered table
  *
- * $Id: collision_ot.h,v 1.3 2001/06/15 09:47:01 corvazier Exp $
+ * $Id: collision_ot.h,v 1.4 2001/06/22 15:03:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -354,7 +354,7 @@ public:
 	}
 
 	// Get the collision descriptor
-	const CGlobalRetriever::CGlobalPosition &getGlobalPosition () const
+	const UGlobalPosition &getGlobalPosition () const
 	{
 		return _GlobalPosition;
 	}
@@ -373,7 +373,7 @@ public:
 
 	// Init the info
 	void				init (CMovePrimitive *primitive, const CCollisionSurfaceDesc& desc, 
-								const CGlobalRetriever::CGlobalPosition& nextGlobalPosition, double delta, uint8 worldImage)
+								const UGlobalPosition& nextGlobalPosition, double delta, uint8 worldImage)
 	{
 		_Primitive=primitive;
 		_StaticDesc=desc;
@@ -399,7 +399,7 @@ public:
 	// Return false for dynamic collision, true for static collision
 	bool				isCollisionAgainstStatic () const
 	{
-		return false;
+		return true;
 	}
 
 	// Return collision time
@@ -423,7 +423,7 @@ private:
 	CCollisionSurfaceDesc	_StaticDesc;
 
 	// The next global position
-	CGlobalRetriever::CGlobalPosition	_GlobalPosition;
+	UGlobalPosition	_GlobalPosition;
 
 	// Delta time for this collid
 	double				_DeltaTime;

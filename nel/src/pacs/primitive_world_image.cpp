@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.1 2001/06/15 09:48:51 corvazier Exp $
+ * $Id: primitive_world_image.cpp,v 1.2 2001/06/22 15:03:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,8 +159,7 @@ bool CPrimitiveWorldImage::evalCollision (CPrimitiveWorldImage& other, CCollisio
 // ***************************************************************************
 
 const TCollisionSurfaceDescVector *CPrimitiveWorldImage::evalCollision (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, 
-																  const CVector& delta, uint32 testTime, uint32 maxTestIteration, 
-																  CMovePrimitive& primitive)
+																  uint32 testTime, uint32 maxTestIteration, CMovePrimitive& primitive)
 {
 	// Test time
 	if (!primitive.checkTestTime (testTime, maxTestIteration))
@@ -176,7 +175,7 @@ const TCollisionSurfaceDescVector *CPrimitiveWorldImage::evalCollision (CGlobalR
 		CVector locJ ((float)(_OBData.EdgeDirectionX[1]*primitive.getLength(0)/2.0), (float)(_OBData.EdgeDirectionY[1]*primitive.getLength(1)/2.0), 0);
 
 		// Test
-		return &retriever.testBBoxMove (_Position.getGlobalPos (), delta, locI, locJ, surfaceTemp);
+		return &retriever.testBBoxMove (_Position.getGlobalPos (), _DeltaPosition, locI, locJ, surfaceTemp);
 	}
 	else
 	{
@@ -184,26 +183,26 @@ const TCollisionSurfaceDescVector *CPrimitiveWorldImage::evalCollision (CGlobalR
 		nlassert (primitive.getPrimitiveType()==UMovePrimitive::_2DOrientedCylinder);
 
 		// Test
-		return &retriever.testCylinderMove (_Position.getGlobalPos (), delta, primitive.getRadius(), surfaceTemp);
+		return &retriever.testCylinderMove (_Position.getGlobalPos (), _DeltaPosition, primitive.getRadius(), surfaceTemp);
 	}
 }
 
 // ***************************************************************************
 
-void CPrimitiveWorldImage::doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double timeMax)
+void CPrimitiveWorldImage::doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double originalMax, double finalMax)
 {
-	// Delta time
-	float deltaTime=(float)(timeMax-_InitTime);
-	
-	// Delta pos..
-	CVector delta=_Speed;
-	delta*=deltaTime;
+	// Time to avance
+	double ratio;
+	if (finalMax!=originalMax)
+		ratio=(finalMax-_InitTime)/(originalMax-_InitTime);
+	else
+		ratio=1;
 
 	// Make the move
-	_Position.setGlobalPos (retriever.doMove(_Position.getGlobalPos(), delta, 1, surfaceTemp, false), retriever);
+	_Position.setGlobalPos (retriever.doMove(_Position.getGlobalPos(), _DeltaPosition, (float)ratio, surfaceTemp, false), retriever);
 
 	// Final position
-	_InitTime=timeMax;
+	_InitTime=finalMax;
 }
 
 // ***************************************************************************
@@ -1031,6 +1030,9 @@ void CPrimitiveWorldImage::precalcBB (double beginTime, double endTime, CMovePri
 		_BBYMin-=primitive.getRadius();
 		_BBYMax+=primitive.getRadius();
 	}
+
+	// Delta position
+	_DeltaPosition=_Speed*(endTime-beginTime);
 }
 
 // ***************************************************************************
@@ -1208,8 +1210,12 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 	if (retriever)
 	{
 		// Make a domove in the Ben data
-		CGlobalRetriever::CGlobalPosition newPosition = retriever->doMove (_Position.getGlobalPos (), 
-			collisionPosition-_Position.getPos (), 1, surfaceTemp, true);
+		double deltaTime=(collisionPosition-_Position.getPos ()).norm()/_DeltaPosition.norm();
+		nlassert (deltaTime>=0);
+		nlassert (deltaTime<=1);
+
+		UGlobalPosition newPosition = retriever->doMove (_Position.getGlobalPos (), _DeltaPosition,
+			(float)deltaTime, surfaceTemp, true);
 
 		// Set the new position
 		_Position.setGlobalPos (newPosition, *retriever);
@@ -1275,8 +1281,11 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 	if (retriever)
 	{
 		// Make a domove in the Ben data
-		CGlobalRetriever::CGlobalPosition newPosition = retriever->doMove (second._Position.getGlobalPos (), 
-			collisionPosition-second._Position.getPos (), 1, surfaceTemp, true);
+		double deltaTime=(collisionPosition-second._Position.getPos ()).norm()/second._DeltaPosition.norm();
+		clamp (deltaTime, 0.0, 1.0);
+
+		UGlobalPosition newPosition = retriever->doMove (second._Position.getGlobalPos (), second._DeltaPosition,
+			(float)deltaTime, surfaceTemp, true);
 
 		// Set the new position
 		second._Position.setGlobalPos (newPosition, *retriever);
@@ -1305,8 +1314,9 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 
 // ***************************************************************************
 
-void CPrimitiveWorldImage::reaction (const CCollisionSurfaceDesc&	surfaceDesc, const CGlobalRetriever::CGlobalPosition& globalPosition,
-							   const CGlobalRetriever& retriever, double deltaTime, CMovePrimitive &primitive)
+void CPrimitiveWorldImage::reaction (const CCollisionSurfaceDesc&	surfaceDesc, const UGlobalPosition& globalPosition,
+							   CGlobalRetriever& retriever, double deltaTime, CMovePrimitive &primitive, CMoveContainer &container,
+							   uint8 worldImage)
 {
 	// Reaction type
 	uint32 type=primitive.getReactionType();
@@ -1343,6 +1353,43 @@ void CPrimitiveWorldImage::reaction (const CCollisionSurfaceDesc&	surfaceDesc, c
 			_Speed.set (0,0,0);
 		}
 	}
+
+	// Contact time
+	double contactTime=surfaceDesc.ContactTime;
+
+	// Init position
+	_3dInitPosition = _Position.getPos() - _Speed * contactTime;
+
+	// Set contactTime
+	_InitTime=contactTime;
+
+	// Dirt pos
+	dirtPos (&container, &primitive, worldImage);
+}
+
+// ***************************************************************************
+
+void CPrimitiveWorldImage::setGlobalPosition (const UGlobalPosition& pos, CMoveContainer& container, CMovePrimitive &primitive, uint8 worldImage)
+{
+	// Cast type
+	nlassert (dynamic_cast<const CMoveContainer*>(&container));
+	const CMoveContainer *cont=(const CMoveContainer*)&container;
+
+	// Use the global retriever ?
+	nlassert (cont->getGlobalRetriever());
+
+	// Get the pos
+	_Position.setGlobalPos (pos, *cont->getGlobalRetriever());
+
+	// Precalc some values
+	_3dInitPosition = _Position.getPos ();
+	_InitTime = 0;
+
+	// Speed NULL
+	_Speed=CVector::Null;
+
+	// Dirt BB
+	dirtPos (&container, &primitive, worldImage);
 }
 
 // ***************************************************************************
@@ -1363,7 +1410,7 @@ void CPrimitiveWorldImage::setGlobalPosition (const NLMISC::CVectorD& pos, CMove
 		CVector vect=pos;
 
 		// Get global position
-		CGlobalRetriever::CGlobalPosition globalPosition=retriever->retrievePosition (vect);
+		UGlobalPosition globalPosition=retriever->retrievePosition (vect);
 
 		// Set global position
 		_Position.setGlobalPos (globalPosition, *retriever);

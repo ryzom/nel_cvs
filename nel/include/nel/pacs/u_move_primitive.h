@@ -1,7 +1,7 @@
 /** \file u_move_primitive.h
  * Description of movables primitives.
  *
- * $Id: u_move_primitive.h,v 1.4 2001/06/15 09:47:01 corvazier Exp $
+ * $Id: u_move_primitive.h,v 1.5 2001/06/22 15:03:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NLPACS
 {
 
 class UMoveContainer;
+class UGlobalPosition;
 
 /**
  * Description of movables primitives.
@@ -246,6 +247,17 @@ public:
 	  * \param pos is the new global position of the primitive.
 	  */
 	virtual void	setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage) =0;
+
+	/**
+	  * Set the global position of the move primitive. This method is fast because 
+	  * you must pass the global position of the primitive.
+	  *
+	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
+	  * image where you have modify it before modify any other dynamic properties in another world image.
+	  *
+	  * \param pos is the new global position of the primitive.
+	  */
+	virtual void	setGlobalPosition (const UGlobalPosition& pos, uint8 worldImage) =0;
 
 	/**
 	  * Move the primitive.

@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.5 2001/06/07 12:42:55 corvazier Exp $
+ * $Id: u_global_retriever.h,v 1.6 2001/06/22 15:03:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,14 +27,19 @@
 #define NL_U_GLOBAL_RETRIEVER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/misc/vectord.h"
 
 #include "nel/pacs/u_retriever_bank.h"
 
+namespace NLMISC
+{
+class CVectorD;
+class CAABBox;
+}
 
 namespace NLPACS 
 {
 
+class UGlobalPosition;
 
 /**
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
@@ -48,22 +53,46 @@ class UGlobalRetriever
 public:
 
 	/// Make a raytrace test. For the time, always return false.
-	virtual bool			testRaytrace (const NLMISC::CVectorD &v0, const NLMISC::CVectorD &v1) =0;
+	virtual bool					testRaytrace (const NLMISC::CVectorD &v0, const NLMISC::CVectorD &v1) =0;
+
+	/**
+	  * Return the bounding box of the global retriever.
+	  */
+	virtual const NLMISC::CAABBox	&getBBox() const=0;
+
+	/**
+	  * Return the average height for a global position
+	  */
+	virtual float					getMeanHeight(const UGlobalPosition &pos) =0;
+
+	/**
+	  * Retrieves the position of an estimated point in the global retriever.
+	  */
+	virtual UGlobalPosition			retrievePosition(const NLMISC::CVector &estimated) const =0;
+
+	/**
+	  * Converts a global position object into a 'human-readable' CVector.
+	  */
+	virtual NLMISC::CVector			getGlobalPosition(const UGlobalPosition &global) const =0;
+
+	/**
+	  * Converts a global position object into a 'human-readable' CVector (double instead.)
+	  */
+	virtual NLMISC::CVectorD		getDoubleGlobalPosition(const UGlobalPosition &global) const =0;
 
 	/**
 	  * Create a global retriever.
 	  *
-	  * \param globalRetriver is the global retriver path file name.
+	  * \param globalRetriver is the global retriver path file name. This method use the CPath to find the file.
 	  * \param retriverBank is the global retriver bank associated to the global retriever.
-	  *
+	  * \return the pointer on the global retriver or NULL if the file is not found.
 	  */
-	static UGlobalRetriever	*createGlobalRetriever (const char* globalRetriever, const URetrieverBank* retrieverBank);
+	static UGlobalRetriever	*		createGlobalRetriever (const char* globalRetriever, const URetrieverBank* retrieverBank);
 
 	/**
 	  * Delete a global retriever.
-	  *
 	  */
-	static void				deleteGlobalRetriever (UGlobalRetriever *retriever);
+	static void						deleteGlobalRetriever (UGlobalRetriever *retriever);
 };
 
 

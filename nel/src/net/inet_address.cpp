@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.39 2002/08/22 12:09:55 lecroart Exp $
+ * $Id: inet_address.cpp,v 1.40 2002/08/22 15:25:04 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ using namespace NLMISC;
 namespace NLNET
 {
 
-bool CInetAddress::RetrieveNames = true;
+bool CInetAddress::RetrieveNames = false;
 
 
 /*

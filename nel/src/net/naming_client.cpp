@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.53 2002/08/22 15:07:38 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.54 2002/08/22 15:25:04 lecroart Exp $
  *
  */
 
@@ -404,7 +404,6 @@ uint16 CNamingClient::queryServicePort ()
 	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
-	TTime before1 = CTime::getLocalTime ();
 	CMessage msgout (_Connection->getSIDA(), "QP");
 	_Connection->send (msgout);
 

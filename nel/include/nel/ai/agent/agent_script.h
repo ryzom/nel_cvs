@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.43 2001/12/11 09:26:49 chafik Exp $
+ * $Id: agent_script.h,v 1.44 2001/12/17 13:07:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -310,6 +310,10 @@ namespace NLAIAGENT
 		virtual const NLAIC::CIdentType &getType() const;
 		//@}
 
+
+
+	protected:
+		virtual	CProcessResult sendBroadCast(IObjectIA *);
 
 
 	public:

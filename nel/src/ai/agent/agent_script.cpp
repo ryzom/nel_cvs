@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.96 2001/12/11 09:27:05 chafik Exp $
+ * $Id: agent_script.cpp,v 1.97 2001/12/17 13:06:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -802,6 +802,32 @@ namespace NLAIAGENT
 		msg->incRef();
 		return sendMessage(n->getStr(),msg);
 	}	
+
+	IObjectIA::CProcessResult CAgentScript::sendBroadCast(IObjectIA *m)
+	{
+		tsetDefNameAgent::iterator i = _DynamicAgentName.begin();
+
+		if(i != _DynamicAgentName.end()) 
+		{
+#ifdef NL_DEBUG	
+	const char *classBase = (const char *)((IObjectIA *)(*(*(i)).Itr))->getType();
+#endif
+			((IObjectIA *)(*(*(i)).Itr))->sendMessage(m);
+			i ++;
+
+			while(i != _DynamicAgentName.end())
+			{
+#ifdef NL_DEBUG	
+	const char *classBase = (const char *)((IObjectIA *)(*(*(i)).Itr))->getType();
+#endif
+				m->incRef();
+				((IObjectIA *)(*(*(i)).Itr))->sendMessage(m);
+				i++;
+			}
+		}
+
+		return IObjectIA::CProcessResult();
+	}
 	
 	IObjectIA::CProcessResult CAgentScript::sendMessageToDynmaicChild(const IVarName &compName,IObjectIA *msg)
 	{

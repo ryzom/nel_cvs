@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.6 2000/11/03 18:07:15 berenguier Exp $
+ * $Id: patch.cpp,v 1.7 2000/11/06 15:04:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/3d/tessellation.h"
 #include "nel/3d/bezier_patch.h"
 #include "nel/3d/zone.h"
+#include "nel/3d/landscape.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
 using	namespace	std;
@@ -647,6 +648,30 @@ void			CPatch::serial(NLMISC::IStream &f)
 	f.serial(Tangents[0], Tangents[1], Tangents[2], Tangents[3]);
 	f.serial(Tangents[4], Tangents[5], Tangents[6], Tangents[7]);
 	f.serial(Interiors[0], Interiors[1], Interiors[2], Interiors[3]);
+}
+
+
+// ***************************************************************************
+CPatchRdrPass	*CPatch::getFarRenderPass(sint FarLevel, float &FarUVScale, float &FarUBias, float &FarVBias)
+{
+	// TODO_TEXTURE.
+	// dummy texture.
+	Far0UVScale= 1;
+	Far0UBias= 0;
+	Far0VBias= 0;
+	return Zone->Landscape->getFarRenderPass();
+}
+
+
+// ***************************************************************************
+CPatchRdrPass	*CPatch::getTileRenderPass(sint tileId, sint pass)
+{
+	// TODO_TEXTURE.
+	// dummy texture.
+	if(pass==0)
+		return Zone->Landscape->getTileRenderPass();
+	else
+		return NULL;
 }
 
 	}

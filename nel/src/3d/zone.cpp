@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.4 2000/11/03 18:07:15 berenguier Exp $
+ * $Id: zone.cpp,v 1.5 2000/11/06 15:04:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,7 @@ CZone::CZone()
 	ComputeTileErrorMetric= false;
 	ZoneId= 0;
 	Compiled= false;
+	Landscape= NULL;
 }
 // ***************************************************************************
 CZone::~CZone()
@@ -123,6 +124,31 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 }
 
 
+// ***************************************************************************
+void			CZone::build(const CZone &zone)
+{
+	nlassert(!Compiled);
+
+	ZoneId= zone.ZoneId;
+	BorderVertices= zone.BorderVertices;
+
+	// Compute the bbox and the bias/scale.
+	//=====================================
+	ZoneBB= zone.ZoneBB;
+	PatchScale= zone.PatchScale;
+	PatchBias= zone.PatchBias;
+
+
+	// Compute/compress Patchs.
+	//=========================
+	Patchs= zone.Patchs;
+	PatchConnects= zone.PatchConnects;
+
+
+	NumVertices= zone.NumVertices;
+}
+
+
 
 // ***************************************************************************
 void			CBorderVertex::serial(NLMISC::IStream &f)
@@ -161,13 +187,14 @@ void			CZone::serial(NLMISC::IStream &f)
 
 
 // ***************************************************************************
-void			CZone::compile(std::map<uint16, CZone*> &loadedZones)
+void			CZone::compile(CLandscape *landscape, TZoneMap &loadedZones)
 {
 	sint	i,j;
-	map<uint16, CZone*>		neighborZones;
+	TZoneMap		neighborZones;
 
 	// Can't compile if compiled.
 	nlassert(!Compiled);
+	Landscape= landscape;
 
 	// Attach this to loadedZones.
 	//============================
@@ -236,7 +263,7 @@ void			CZone::compile(std::map<uint16, CZone*> &loadedZones)
 	
 	// rebindBorder() on neighbor zones.
 	//==================================
-	map<uint16, CZone*>::iterator		zoneIt;
+	ItZoneMap		zoneIt;
 	// Traverse the neighborood.
 	for(zoneIt= neighborZones.begin(); zoneIt!=neighborZones.end(); zoneIt++)
 	{
@@ -248,7 +275,7 @@ void			CZone::compile(std::map<uint16, CZone*> &loadedZones)
 }
 
 // ***************************************************************************
-void			CZone::release(std::map<uint16, CZone*> &loadedZones)
+void			CZone::release(TZoneMap &loadedZones)
 {
 	sint	i,j;
 
@@ -287,7 +314,7 @@ void			CZone::release(std::map<uint16, CZone*> &loadedZones)
 	//==================================
 
 	// Build the nieghborood.
-	map<uint16, CZone*>		neighborZones;
+	TZoneMap		neighborZones;
 	for(i=0;i<(sint)BorderVertices.size();i++)
 	{
 		sint	cur= BorderVertices[i].CurrentVertex;
@@ -305,7 +332,7 @@ void			CZone::release(std::map<uint16, CZone*> &loadedZones)
 	}
 
 	// rebind borders.
-	map<uint16, CZone*>::iterator		zoneIt;
+	ItZoneMap		zoneIt;
 	// Traverse the neighborood.
 	for(zoneIt= neighborZones.begin(); zoneIt!=neighborZones.end(); zoneIt++)
 	{
@@ -315,6 +342,7 @@ void			CZone::release(std::map<uint16, CZone*> &loadedZones)
 
 	// End!!
 	Compiled= false;
+	Landscape= NULL;
 }
 
 
@@ -326,7 +354,7 @@ void			CZone::release(std::map<uint16, CZone*> &loadedZones)
 
 
 // ***************************************************************************
-void			CZone::rebindBorder(map<uint16, CZone*> &loadedZones)
+void			CZone::rebindBorder(TZoneMap &loadedZones)
 {
 	sint	j;
 
@@ -342,7 +370,7 @@ void			CZone::rebindBorder(map<uint16, CZone*> &loadedZones)
 }
 
 // ***************************************************************************
-CPatch		*CZone::getZonePatch(map<uint16, CZone*> &loadedZones, sint zoneId, sint patch)
+CPatch		*CZone::getZonePatch(TZoneMap &loadedZones, sint zoneId, sint patch)
 {
 	if(loadedZones.find(zoneId)==loadedZones.end())
 		return NULL;
@@ -352,7 +380,7 @@ CPatch		*CZone::getZonePatch(map<uint16, CZone*> &loadedZones, sint zoneId, sint
 
 
 // ***************************************************************************
-void		CZone::bindPatch(map<uint16, CZone*> &loadedZones, CPatch &pa, CPatchConnect &pc)
+void		CZone::bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc)
 {
 	CPatch::CBindInfo	edges[4];
 

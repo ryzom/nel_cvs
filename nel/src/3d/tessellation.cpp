@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.5 2000/11/02 13:48:50 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.6 2000/11/06 15:04:03 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -349,6 +349,8 @@ float		CTessFace::updateErrorMetric()
 		}
 	}
 
+	ProjectedSizeDate= CurrentDate;
+	
 	return ProjectedSize;
 }
 

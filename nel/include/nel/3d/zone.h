@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.3 2000/11/03 18:06:54 berenguier Exp $
+ * $Id: zone.h,v 1.4 2000/11/06 15:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,10 +36,13 @@
 #include <map>
 
 
-namespace NL3D {
+namespace NL3D 
+{
 
 
 class CZone;
+class CLandscape;
+
 
 /*
 TODO: à mettre dans zone.h ou dans landscape.h
@@ -54,6 +57,10 @@ TODO: à mettre dans zone.h ou dans landscape.h
 
 */
 #define	NL3D_NOISE_MAX	10
+
+// ***************************************************************************
+typedef	std::map<uint16, CZone*>			TZoneMap;
+typedef	std::map<uint16, CZone*>::iterator	ItZoneMap;
 
 
 // ***************************************************************************
@@ -186,6 +193,14 @@ public:
 	void			build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const std::vector<CBorderVertex> &borderVertices);
 
 
+	/** Build a copy of a zone.
+	 * This method do a copy of zone (should be builded but maybe not compiled).
+	 *
+	 * NB: cannot build on a compiled zone. must release the zone before....
+	 */
+	void			build(const CZone &zone);
+
+
 	/** Compile a zone. Make it usable for clip()/refine()/render().
 	 * This method do:
 	 *	- attach this to loadedZones.
@@ -194,9 +209,11 @@ public:
 	 *	- bind() the patchs.
 	 *	- rebindBorder() on neighbor zones.
 	 *
+	 * A zone must keep a pointer on a landscape, for texture management.
 	 * NB: assert if already compiled.
+	 * assert if zone already exist in loadedZones.
 	 */
-	void			compile(std::map<uint16, CZone*> &loadedZones);
+	void			compile(CLandscape *landscape, TZoneMap &loadedZones);
 
 	/** Release a zone.
 	 * This method do:
@@ -208,7 +225,7 @@ public:
 	 *
 	 * NB: no-op if not compiled.
 	 */
-	void			release(std::map<uint16, CZone*> &loadedZones);
+	void			release(TZoneMap &loadedZones);
 
 
 	/** Load/save a zone.
@@ -234,6 +251,7 @@ public:
 	const CVector	&getPatchBias() const {return PatchBias;}
 	float			getPatchScale() const {return PatchScale;}
 	bool			compiled() const {return Compiled;}
+	uint16			getZoneId() const {return ZoneId;}
 
 
 // Private part.
@@ -264,6 +282,10 @@ private:
 
 
 private:
+	// The lanscape which own this zone. Usefull for texture management.
+	// Filled at compilation only.
+	CLandscape		*Landscape;
+
 	// Misc.
 	uint16			ZoneId;
 	bool			Compiled;
@@ -286,6 +308,8 @@ private:
 	
 private:
 	friend	class CTessFace;
+	// Should do this, for texture mgt.
+	friend	class CPatch;
 
 	// Local info for CTessFace tiles. CZone must setup them at the begining at refine()/render().
 	// Should we compute the error metric part for tile?? Stored by Zone. By patch, it is Too slow, regarding
@@ -301,13 +325,13 @@ private:
 	 * Force border patchs (those who don't bind to current zone) to re bind() them, using new neighborood.
 	 * no-op if zone is not compiled.
 	 */
-	void			rebindBorder(std::map<uint16, CZone*> &loadedZones);
+	void			rebindBorder(TZoneMap &loadedZones);
 
 	PBaseVertex		getBaseVertex(sint vert) const {return BaseVertices[vert];}
 	CPatch			*getPatch(sint patch) {nlassert(patch>=0 && patch<(sint)Patchs.size()); return &(Patchs[patch]);}
-	static CPatch	*getZonePatch(std::map<uint16, CZone*> &loadedZones, sint zoneId, sint patch);
+	static CPatch	*getZonePatch(TZoneMap &loadedZones, sint zoneId, sint patch);
 	// Bind the patch with ones which are loaded...
-	static void		bindPatch(std::map<uint16, CZone*> &loadedZones, CPatch &pa, CPatchConnect &pc);
+	static void		bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc);
 	// Is the patch on a border of this zone???
 	bool			patchOnBorder(const CPatchConnect &pc) const;
 };

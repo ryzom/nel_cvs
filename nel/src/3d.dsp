@@ -153,6 +153,14 @@ SOURCE=..\include\nel\3d\bezier_patch.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\landscape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\landscape.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\patch.cpp
 # End Source File
 # Begin Source File

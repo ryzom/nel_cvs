@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.7 2000/11/03 18:06:54 berenguier Exp $
+ * $Id: patch.h,v 1.8 2000/11/06 15:03:39 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -206,9 +206,7 @@ public:
 	void			renderFar0();
 	void			renderFar1();
 	void			renderTile(sint pass);
-	// For CTessFace::computeMaterial(). Return the render pass for this material, given the number of the tile, and the
-	// desired pass. NULL may be returned if the pass is not present (eg: no alpha for this tile...).
-	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass);
+
 
 	// Serial just the un-compiled part.
 	void			serial(NLMISC::IStream &f);
@@ -260,8 +258,12 @@ private:
 	CTessFace		*getRootFaceForEdge(sint edge) const;
 	void			changeEdgeNeighbor(sint edge, CTessFace *to);
 
+	// Texture mgt.
+	CPatchRdrPass	*getFarRenderPass(sint FarLevel, float &FarUVScale, float &FarUBias, float &FarVBias);
+	// For CTessFace::computeMaterial(). Return the render pass for this material, given the number of the tile, and the
+	// desired pass. NULL may be returned if the pass is not present (eg: no alpha for this tile...).
+	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass);
 	// For Render
-	CPatchRdrPass	*getFarRenderPass(sint FarLevel, float &Far0UVScale, float &Far0UBias, float &Far0VBias);
 	sint			getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc);
 	sint			getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc);
 	sint			getTileIndex(CTessVertex *vert, ITileUv *uv, sint idUv);

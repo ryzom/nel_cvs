@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.5 2000/11/06 14:54:47 viau Exp $
+ * $Id: driver.h,v 1.6 2000/11/06 15:03:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,26 +71,20 @@ private:
 	std::vector<CRGBA>		_Data;
 
 public:
+	CRefPtr<ITextureDrvInfos> DrvInfos;
+
+public:
 							CTexture(void);
 							CTexture(uint16 width, uint16 height);
 
-	CRefPtr<ITextureDrvInfos> DrvInfos;
+	void					resize(uint16 width, uint16 height);
 
-	uint16					getWidth() 
-							{ 
-								return(_Width); 
-							}
-	uint16					getHeight() 
-							{ 
-								return(_Height); 
-							}
+	uint16					getWidth() const { return(_Width); }
+	uint16					getHeight() const { return(_Height); }
 
 	bool					fillData(const void* data);
 	bool					fillData(const std::vector<CRGBA>& data);
-	void*					getDataPointer()
-							{
-								return( &(*_Data.begin()) );
-							}
+	void*					getDataPointer() {return( &(*_Data.begin()) );}
 };
 
 // --------------------------------------------------
@@ -393,9 +387,9 @@ public:
 	// Must be a HWND for Windows (WIN32).
 	virtual bool			setDisplay(void* wnd, const GfxMode& mode)=0;
 
-	virtual bool			activate(void)=0;
-
 	virtual bool			processMessages(void)=0;
+
+	virtual bool			activate(void)=0;
 
 	virtual bool			clear2D(CRGBA& rgba)=0;
 
@@ -418,6 +412,11 @@ public:
 	virtual bool			swapBuffers(void)=0;
 
 	virtual bool			release(void)=0;
+
+
+public:
+	static IDriver			*currentDriver() {return _Current;}
+
 };
 
 // --------------------------------------------------

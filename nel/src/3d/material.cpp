@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.2 2000/10/30 14:51:32 viau Exp $
+ * $Id: material.cpp,v 1.3 2000/11/06 15:04:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,14 @@ CTexture::CTexture(void)
 }
 
 CTexture::CTexture(uint16 width, uint16 height)
+{
+	_Width=0;
+	_Height=0;
+	resize(width, height);
+}
+
+
+void	CTexture::resize(uint16 width, uint16 height)
 {
 	_Width=width;
 	_Height=height;

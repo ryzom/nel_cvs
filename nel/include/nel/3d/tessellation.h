@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.6 2000/11/03 18:06:54 berenguier Exp $
+ * $Id: tessellation.h,v 1.7 2000/11/06 15:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace	NL3D
 {
 
 
+// Odd pass are always additive pass.
 #define	NL3D_MAX_TILE_PASS 6
 
 
@@ -418,7 +419,7 @@ public:
 public:
 
 	// LANDSCAPE RENDERING CONTEXT.  Landscape must setup it at the begining at refine()/render().
-	// The current date of LandScape draw/refine.
+	// The current date of LandScape for refine only.
 	static	sint	CurrentDate;
 	// The center view for refinement.
 	static	CVector RefineCenter;

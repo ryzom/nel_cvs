@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.15 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: mesh_base.h,v 1.16 2003/04/04 14:23:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,7 +105,7 @@ public:
 			f.serialVersion (0);
 			f.serial (LightGroup);
 			f.serial (AnimatedLight);
-			f.serialCont((std::list< CMatStage >&)*this);
+			f.serialCont(StageList);
 		}
 	};
 	typedef std::vector< CLightMapInfoList >	TLightMapInfo;

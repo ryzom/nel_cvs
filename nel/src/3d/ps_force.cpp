@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.11 2001/06/28 07:56:17 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.12 2001/07/04 12:31:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,123 @@ void CPSForce::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 }
 
 
+///////////////////////////////////////
+//  CPSForceIntensity implementation //
+///////////////////////////////////////
+
+void CPSForceIntensity::setIntensity(float value)
+{
+	if (_IntensityScheme)
+	{
+		delete _IntensityScheme ;
+		_IntensityScheme = NULL ;
+	}
+	_K = value ;
+}
+
+CPSForceIntensity::~CPSForceIntensity()
+{
+	delete _IntensityScheme ;
+}
+
+void CPSForceIntensity::setIntensityScheme(CPSAttribMaker<float> *scheme)
+{
+	nlassert(scheme) ;
+	delete _IntensityScheme ;
+	_IntensityScheme = scheme ;
+}
+
+void CPSForceIntensity::serialForceIntensity(NLMISC::IStream &f) throw(NLMISC::EStream)
+{	
+	f.serialVersion(1) ;
+	if (!f.isReading())
+	{
+		if (_IntensityScheme)
+		{
+			bool bFalse = false ;
+			f.serial(bFalse) ;
+			f.serialPolyPtr(_IntensityScheme) ;
+		}
+		else
+		{
+			bool bTrue = true ;
+			f.serial(bTrue) ;
+			f.serial(_K) ;
+		}
+	}
+	else
+	{
+		bool constantIntensity ;
+		f.serial(constantIntensity) ;
+		if (constantIntensity)
+		{
+			f.serial(_K) ;
+		}
+		else
+		{
+			f.serialPolyPtr(_IntensityScheme) ;
+		}
+	}
+}
+
+
+
+////////////////////////////////////////
+// CPSDirectionalForce implementation //
+////////////////////////////////////////
+
+
+void CPSDirectionnalForce::performMotion(CAnimationTime ellapsedTime)
+{
+	// perform the operation on each target
+
+	CVector toAdd ;
+
+
+	for (uint32 k = 0 ; k < _Owner->getSize() ; ++k)
+	{	
+		CVector toAddLocal = ellapsedTime * (_IntensityScheme ? _IntensityScheme->get(_Owner, k) : _K ) * _Dir ;
+		for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
+		{
+
+			toAdd = CPSLocated::getConversionMatrix(*it, this->_Owner).mulVector(toAddLocal) ; // express this in the target basis			
+
+			uint32 size = (*it)->getSize() ;	
+			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2end = (*it)->getSpeed().end() ;
+			TPSAttribFloat::const_iterator invMassIt = (*it)->getInvMass().begin() ;
+			
+			for (; it2 != it2end ; ++it2, ++invMassIt)
+			{
+				(*it2) += *invMassIt * toAdd ;				
+				
+			}
+		}
+	}
+}
+
+
+void CPSDirectionnalForce::show(CAnimationTime ellapsedTime)
+{
+	CPSLocated *loc ;
+	uint32 index ;
+	CPSLocatedBindable *lb ;
+	_Owner->getOwner()->getCurrentEditedElement(loc, index, lb) ;
+
+	setupDriverModelMatrix() ;
+	
+	for (uint k = 0 ; k < _Owner->getSize() ; ++k)
+	{
+		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
+		CPSUtil::displayArrow(getDriver(), _Owner->getPos()[k], _Dir, 1.f, col, CRGBA(80, 80, 0)) ;
+	}
+}
+
+void CPSDirectionnalForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1) ;	
+	CPSForceIntensityHelper::serial(f) ;
+	f.serial(_Dir) ;
+}
 
 ////////////////////////////
 // gravity implementation //
@@ -76,28 +193,41 @@ void CPSForce::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 
 void CPSGravity::performMotion(CAnimationTime ellapsedTime)
 {	
-	CVector toAddLocal = ellapsedTime * CVector(0, 0, -_G) ;
+	
 	// perform the operation on each target
 
 	CVector toAdd ;
 
 
-	
-
 	for (uint32 k = 0 ; k < _Owner->getSize() ; ++k)
 	{	
+		CVector toAddLocal = ellapsedTime * CVector(0, 0, _IntensityScheme ? - _IntensityScheme->get(_Owner, k) : - _K) ;
 		for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
 		{
 
 			toAdd = CPSLocated::getConversionMatrix(*it, this->_Owner).mulVector(toAddLocal) ; // express this in the target basis			
-
 			uint32 size = (*it)->getSize() ;	
+
+			
+
+
 			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2end = (*it)->getSpeed().end() ;
 			
-			for (; it2 != it2end ; ++it2)
+			if (toAdd.x && toAdd.y)
 			{
-				(*it2) += toAdd ;				
-				
+				for (; it2 != it2end ; ++it2)
+				{
+					(*it2) += toAdd ;				
+					
+				}
+			}
+			else // only the z component is not null, which should be the majority of cases ...
+			{
+				for (; it2 != it2end ; ++it2)
+				{
+					it2->z += toAdd.z ;				
+					
+				}
 			}
 		}
 	}
@@ -178,8 +308,82 @@ void CPSGravity::show(CAnimationTime ellapsedTime)
 void CPSGravity::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;
-	CPSForce::serial(f) ;
-	f.serial(_G) ;
+	CPSForceIntensityHelper::serial(f) ;
+	
+}
+
+
+/////////////////////////////////////////
+// CPSCentralGravity  implementation   //
+/////////////////////////////////////////
+
+
+void CPSCentralGravity::performMotion(CAnimationTime ellapsedTime)
+{
+	// for each central gravity, and each target, we check if they are in the same basis
+	// if not, we need to transform the central gravity attachment pos into the target basis
+	
+
+	uint32 size = _Owner->getSize() ;
+
+	// a vector that goes from the gravity to the object
+	CVector centerToObj ;
+	float dist ;
+	
+	for (uint32 k = 0 ; k < size ; ++k)
+	{	
+		const float ellapsedTimexK = ellapsedTime  * (_IntensityScheme ? _IntensityScheme->get(_Owner, k) : _K) ;
+
+		for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
+		{
+			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner) ;
+			const CVector center = m * (_Owner->getPos()[k]) ;
+						
+			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2End = (*it)->getSpeed().end() ;
+			TPSAttribFloat::const_iterator invMassIt = (*it)->getInvMass().begin() ;
+			TPSAttribVector::const_iterator posIt = (*it)->getPos().begin() ;
+			
+			for (; it2 != it2End ; ++it2, ++invMassIt, ++posIt)
+			{
+				// our equation does 1 / r attenuation, which is not realistic, but fast ...
+				centerToObj = center - *posIt ;
+	
+				dist = centerToObj * centerToObj ;
+				if (dist > 10E-6f)
+				{
+					(*it2) += (*invMassIt) * ellapsedTimexK * (1.f / dist) *  centerToObj ;								
+				}
+			}
+		}
+	}
+
+}
+
+
+void CPSCentralGravity::show(CAnimationTime ellapsedTime)
+{
+	CVector I = CVector::I ;
+	CVector J = CVector::J ;
+
+	const CVector tab[] = { -I - J, I - J
+							,-I + J, I + J
+							, I - J, I + J
+							, -I - J, -I + J
+							, I + J, -I - J
+							, I - J, J - I
+							} ;
+	const uint tabSize = sizeof(tab) / (2 * sizeof(CVector)) ;
+
+	const float sSize = 0.08f ;
+	displayIcon2d(tab, tabSize, sSize) ;
+}
+
+	
+
+void CPSCentralGravity::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1) ;
+	CPSForceIntensityHelper::serial(f) ;
 }
 
 
@@ -195,20 +399,18 @@ void CPSSpring::performMotion(CAnimationTime ellapsedTime)
 	// if not, we need to transform the spring attachment pos into the target basis
 	
 
-	const float ellapsedTimexK = ellapsedTime * _K ;
+	uint32 size = _Owner->getSize() ;
 
-	TPSAttribVector::const_iterator springPosIt = _Owner->getPos().begin()
-									, springPosItEnd = _Owner->getPos().end() ;
-	for (; springPosIt  != springPosItEnd ; ++springPosIt)
+	
+	for (uint32 k = 0 ; k < size ; ++k)
 	{	
+		const float ellapsedTimexK = ellapsedTime  * (_IntensityScheme ? _IntensityScheme->get(_Owner, k) : _K) ;
+
 		for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
 		{
 			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner) ;
-			const CVector center = m * (*springPosIt) ;
-
-			
-
-			uint32 size = (*it)->getSize() ;
+			const CVector center = m * (_Owner->getPos()[k]) ;
+						
 			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2End = (*it)->getSpeed().end() ;
 			TPSAttribFloat::const_iterator invMassIt = (*it)->getInvMass().begin() ;
 			TPSAttribVector::const_iterator posIt = (*it)->getPos().begin() ;
@@ -227,8 +429,7 @@ void CPSSpring::performMotion(CAnimationTime ellapsedTime)
 void CPSSpring::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;
-	CPSForce::serial(f) ;
-	f.serial(_K) ;
+	CPSForceIntensityHelper::serial(f) ;
 }
 
 
@@ -255,8 +456,151 @@ void CPSSpring::show(CAnimationTime ellapsedTime)
 }
 
 
+/////////////////////////////////////////
+//  CPSCylindricVortex implementation  //
+/////////////////////////////////////////
+
+void CPSCylindricVortex::performMotion(CAnimationTime ellapsedTime)
+{
+		uint32 size = _Owner->getSize() ;
+		
+	for (uint32 k = 0 ; k < size ; ++k) // for each vortex
+	{					
+		
+		const float invR = 1.f  / _Radius[k] ;
+		const float radius2 = _Radius[k] * _Radius[k] ;
+
+		// intensity for this vortex
+		nlassert(_Owner) ;
+		float intensity =  (_IntensityScheme ? _IntensityScheme->get(_Owner, k) : _K) ;
+
+		for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
+		{
+			// express the vortex position and plane normal in the located basis
+			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner) ;
+			const CVector center = m * (_Owner->getPos()[k]) ;
+			const CVector n = m.mulVector(_Normal[k]) ;
+
+			TPSAttribVector::iterator speedIt = (*it)->getSpeed().begin(), speedItEnd = (*it)->getSpeed().end() ;
+			TPSAttribFloat::const_iterator invMassIt = (*it)->getInvMass().begin() ;
+			TPSAttribVector::const_iterator posIt = (*it)->getPos().begin() ;
+			
+
+			// projection of the current located pos on the vortex axis
+			CVector p ;
+			// a vector that go from the vortex center to the point we're dealing with
+			CVector v2p ;
+
+			// the square of the dist of the projected pos
+			float d2 , d;
+
+			CVector realTangentialSpeed ;
+			CVector tangentialSpeed ;
+
+			
+			CVector radialSpeed ;
 
 
+			for (; speedIt != speedItEnd ; ++speedIt, ++invMassIt, ++posIt)
+			{
+				v2p = *posIt - center ;
+				p = v2p - (v2p * n) * n ;
+
+				d2 = p * p ;
+
+				
+
+				if (d2 < radius2) // not out of range ?
+				{
+					d = sqrtf(d2) ;
+
+					p *= 1.f / d ;
+					// compute the speed vect that we should have (normalized) 
+					realTangentialSpeed = n ^ p ;
+
+					tangentialSpeed = (*speedIt * realTangentialSpeed) * realTangentialSpeed ;
+					radialSpeed =  (p * *speedIt) * p ;
+					
+					// update radial speed ;
+					*speedIt -= _RadialViscosity * ellapsedTime * radialSpeed ;
+					
+					// update tangential speed					
+					*speedIt -= _TangentialViscosity * intensity * ellapsedTime * (tangentialSpeed - (1.f - d * invR) * realTangentialSpeed) ;
+				}				
+			}
+		}
+	}
+}
+
+
+void CPSCylindricVortex::show(CAnimationTime ellapsedTime)
+{
+	
+	CPSLocated *loc ;
+	uint32 index ;
+	CPSLocatedBindable *lb ;
+	_Owner->getOwner()->getCurrentEditedElement(loc, index, lb) ;
+
+
+	// must have set this
+	nlassert(getFontGenerator() && getFontGenerator()) ;
+	setupDriverModelMatrix() ;
+	
+	for (uint k = 0 ; k < _Owner->getSize() ; ++k)
+	{
+		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
+		CMatrix m = CPSUtil::buildSchmidtBasis(_Normal[k]) ;
+		CPSUtil::displayDisc(*getDriver(), _Radius[k], _Owner->getPos()[k], m, 32, col) ;
+		CPSUtil::displayArrow(getDriver(), _Owner->getPos()[k], _Normal[k], 1.f, col, CRGBA(200, 0, 200)) ;
+		// display a V letter at the center
+		CPSUtil::print(getDriver(), std::string("v"), *getFontGenerator(), *getFontManager(), _Owner->getPos()[k], 80.f) ;
+	}
+
+}
+
+void CPSCylindricVortex::setMatrix(uint32 index, const CMatrix &m)
+{
+	nlassert(index < _Normal.getSize()) ;
+	_Normal[index] = m.getK() ;
+	_Owner->getPos()[index] = m.getPos() ;	
+}
+
+CMatrix CPSCylindricVortex::getMatrix(uint32 index) const
+{
+	CMatrix m  = CPSUtil::buildSchmidtBasis(_Normal[index]) ;
+	m.setPos(_Owner->getPos()[index] ) ; 
+	return m ;
+}
+
+
+void CPSCylindricVortex::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1) ;
+	CPSForceIntensityHelper::serial(f) ;
+	f.serial(_Normal) ;
+	f.serial(_Radius) ;
+	f.serial(_RadialViscosity) ;
+	f.serial(_TangentialViscosity) ;
+}
+
+void CPSCylindricVortex::newElement(CPSLocated *emitterLocated, uint32 emitterIndex) 
+{ 
+	CPSForceIntensityHelper::newElement(emitterLocated, emitterIndex) ; 
+	_Normal.insert(CVector::K) ;
+	_Radius.insert(1.f) ; 
+}
+void CPSCylindricVortex::deleteElement(uint32 index) 
+{ 
+	CPSForceIntensityHelper::deleteElement(index) ;
+	_Normal.remove(index) ; 
+	_Radius.remove(index) ;
+}
+void CPSCylindricVortex::resize(uint32 size) 
+{ 
+	CPSForceIntensityHelper::resize(size) ; 
+	_Normal.resize(size) ;
+	_Radius.resize(size) ;
+}
 
 
 } // NL3D

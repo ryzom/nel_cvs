@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.2 2001/06/27 16:57:58 vizerie Exp $
+ * $Id: ps_force.h,v 1.3 2001/07/04 12:31:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,9 @@
 #include "nel/misc/types_nl.h"
 #include "3d/ps_located.h"
 #include "3d/ps_util.h"
+#include "3d/ps_attrib_maker.h"
+#include "3d/ps_edit.h"
+#include "3d/ps_direction.h"
 
 
 namespace NL3D {
@@ -85,7 +88,7 @@ public:
 
 protected:
 
-	virtual void newElement(void) = 0 ;
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) = 0 ;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for of the index given
@@ -102,18 +105,87 @@ protected:
 };
 
 
-/// this is an interface to set force instensity (acceleration for gravity, k coefficient for springs)
-struct CPSForceIntensity
+/// this is a class to set force instensity (acceleration for gravity, k coefficient for springs...)
+class CPSForceIntensity
 {
-	virtual float getIntensity(void) const  = 0 ;
-	virtual void setIntensity(float value) = 0 ;
+public:
 
+	// ctor
+	CPSForceIntensity() : _IntensityScheme(NULL)
+	{
+	}
+
+	~CPSForceIntensity() ;
+	
+
+	/// get the constant intensity that was set for the force
+	float getIntensity(void) const  { return _K ; }
+
+	/// set a constant intensity for the force. this discrad any previous call to setIntensityScheme
+	void setIntensity(float value) ;
+
+	/// set a non-constant intensity
+	void setIntensityScheme(CPSAttribMaker<float> *scheme) ;
+
+	// deriver have here the opportunity to setup the functor object. The default does nothing
+	virtual void setupFunctor(uint32 indexInLocated) { }
+
+	/// get the attribute maker for a non constant intensity
+	CPSAttribMaker<float> *getIntensityScheme(void) { return _IntensityScheme ; }
+	const CPSAttribMaker<float> *getIntensityScheme(void) const { return _IntensityScheme ; }
+	void serialForceIntensity(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+protected:
+
+	/// deriver must return the located that own them here
+	virtual CPSLocated *getForceIntensityOwner(void) = 0 ;
+
+
+	// the intensity ...
+	float _K ;
+	CPSAttribMaker<float> *_IntensityScheme ;
+
+	void newForceIntensityElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+	{
+		if (_IntensityScheme && _IntensityScheme->hasMemory()) _IntensityScheme->newElement(emitterLocated, emitterIndex) ;
+	}	
+	void deleteForceIntensityElement(uint32 index)
+	{
+		if (_IntensityScheme && _IntensityScheme->hasMemory()) _IntensityScheme->deleteElement(index) ;
+	}
+	void resizeForceIntensity(uint32 size)
+	{
+		if (_IntensityScheme && _IntensityScheme->hasMemory()) _IntensityScheme->resize(size, getForceIntensityOwner()->getSize()) ;
+	}
+} ;
+
+
+/**
+  * this class defines the newElement, deleteElement, and resize method of a class that derives from CPSForceIntensity
+  * And that don't add per paerticle attribute
+  */
+class CPSForceIntensityHelper : public CPSForce, public CPSForceIntensity
+{
+public:
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) 
+	{
+		f.serialVersion(1) ;
+		CPSForce::serial(f) ;
+		serialForceIntensity(f) ;
+	}
+protected:
+	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner ; }
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { newForceIntensityElement(emitterLocated, emitterIndex) ; }
+	virtual void deleteElement(uint32 index) { deleteForceIntensityElement(index) ; }
+	virtual void resize(uint32 size) { resizeForceIntensity(size) ; }
+	
 } ;
 
 
 
+
 /** a helper class to create isotropic force : they are independant of the basis, and have no position 
- s*  (fluid friction for example)
+ *  (fluid friction for example)
  *  To use this class you should provide to it a functor class that define the () operator with 3 parameters
  *  param1 = a const reference to the position of the particle
  *  param2 = a reference to the position, that must be updated
@@ -129,7 +201,8 @@ struct CPSForceIntensity
  *			// perform the speed update there
  *		}
  *		
- *      // you must provide a serialization method
+ *      // you can provide a serialization method. Note that that if the functor parameters are set before each use,
+ *      // it useless to serial something ...
  *		void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
  *
  *    protected:
@@ -150,6 +223,9 @@ struct CPSForceIntensity
  *			...
  *
  *  } ;
+ *
+ *
+ *  not that each functor may have its own parameter. the setupFunctor method will be called each time 
  */
 
 template <class T> class CIsotropicForceT : public CPSForce
@@ -160,12 +236,12 @@ public:
 	virtual void performMotion(CAnimationTime ellapsedTime) ;
 
 
-/// serialization
+	/// serialization
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		f.serialVersion(1) ;
 		CPSForce::serial(f) ;
-		f.serial(_F) ;
+		f.serial(_F) ; // serial the functor object 5does nothing most of the time ...)
 	}
 
 	
@@ -175,6 +251,11 @@ public:
 
 	 void show(CAnimationTime ellapsedTime)  {}
 
+
+	 /// setup the functor object. The default does nothing
+
+	 virtual void setupFunctor(uint32 index) {} ;
+
 protected:
 	
 	/// the functor object
@@ -182,7 +263,7 @@ protected:
 
 	
 		
-	virtual void newElement(void) { } ;		
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { } ;		
 	virtual void deleteElement(uint32 index) {} ;	
 	virtual void resize(uint32 size) {} ;
 
@@ -190,7 +271,7 @@ protected:
 } ;
 
 //////////////////////////////////////////////////////////////////////
-// implementation of method of thetemplate class  CHomogenousForceT //
+// implementation of method of the template class  CHomogenousForceT //
 //////////////////////////////////////////////////////////////////////
 
 
@@ -198,6 +279,7 @@ template <class T> void CIsotropicForceT<T>::performMotion(CAnimationTime ellaps
 {
 	for (uint32 k = 0 ; k < _Owner->getSize() ; ++k)
 	{	
+		setupFunctor(k) ;
 		for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
 		{			
 			
@@ -214,9 +296,53 @@ template <class T> void CIsotropicForceT<T>::performMotion(CAnimationTime ellaps
 }
 
 
-/// a gravity class
+/**
+ *  a force that has the same direction everywhere. Mass is also taken in account (which is not the case for gravity)
+ */
 
-class CPSGravity : public CPSForce, public CPSForceIntensity
+class CPSDirectionnalForce : public CPSForceIntensityHelper, public CPSDirection
+{
+	public:
+	/// Compute the force on the targets
+	virtual void performMotion(CAnimationTime ellapsedTime)  ;
+
+	/// Show the force (edition mode)
+	virtual void show(CAnimationTime ellapsedTime)  ;
+
+	
+
+	CPSDirectionnalForce(float i = 1.f) 
+	{ 
+		_Name = std::string("DirectionnalForce") ; 
+		setIntensity(i); 
+		_Dir = CVector(0, 0, -1) ;
+	}
+
+	/// serialization
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+
+	NLMISC_DECLARE_CLASS(CPSDirectionnalForce) ; 
+
+	/// set the direction of the force
+	virtual void setDir(const CVector &dir) { _Dir = dir ; }
+
+	/// get the direction of the force
+	virtual CVector getDir(void) const  { return _Dir ; }
+
+protected:
+
+	CVector _Dir ;	
+} ;
+
+
+
+
+
+
+
+/// a gravity class. Mass isn't taken in account (true with a uniform gravity model, near earth )
+class CPSGravity : public CPSForceIntensityHelper
 {
 public:
 	/// Compute the force on the targets
@@ -225,63 +351,59 @@ public:
 	/// Show the force (edition mode)
 	virtual void show(CAnimationTime ellapsedTime)  ;
 
-	// inherited from CPSForceIntensity
-	virtual float getIntensity(void) const  { return getG() ; }
-	virtual void setIntensity(float value) { setG(value) ; }
+	
 
-	/// set the gravity strenght
-	void setG(float g) { _G = g ; }
-
-	/// get the gravity strenght
-	float getG(void) const { return _G ; } 
-
-	CPSGravity(float g = 9.8f) : _G(g)
-	{ _Name = std::string("Gravity") ; }
+	CPSGravity(float g = 9.8f) 
+	{ 
+		_Name = std::string("Gravity") ; 
+		setIntensity(g); 
+	}
 
 	/// serialization
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 
 	NLMISC_DECLARE_CLASS(CPSGravity) ; 
+} ;
 
-protected:
 
-	float _G ;
+/// a central gravity class. Mass is taken in account here
+class CPSCentralGravity : public CPSForceIntensityHelper
+{
+public:
+	/// Compute the force on the targets
+	virtual void performMotion(CAnimationTime ellapsedTime)  ;
 
-		/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
-	virtual void newElement(void) { } ;	
+	/// Show the force (edition mode)
+	virtual void show(CAnimationTime ellapsedTime)  ;
 
-	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
-	virtual void deleteElement(uint32 index) {} ;	
+	
 
-	/** Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
-	 * should not be called directly. Call CPSLocated::resize instead
-	 */
-	virtual void resize(uint32 size) {} ;
+	CPSCentralGravity(float i = 1.f) 
+	{ 
+		_Name = std::string("CentralGravity") ; 
+		setIntensity(i); 
+	}
 
+	/// serialization
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+
+	NLMISC_DECLARE_CLASS(CPSCentralGravity) ; 
 } ;
 
 
 /// a spring class
-
-class CPSSpring : public CPSForce, public CPSForceIntensity
+class CPSSpring : public CPSForceIntensityHelper
 {
 public:
-
-	// inherited from CPSForceIntensity
-	virtual float getIntensity(void) const  { return getK() ; }
-	virtual void setIntensity(float value) { setK(value) ; }
-
-	/// set the k coefficient of the spring
-	void setK(float k) { _K = k ; } 
-
-	/// get the k coeefficient of the dpring
-	float getK(void) const { return _K ; }
-
+	
 	/// ctor : k is the coefficient of the spring
-
-	CPSSpring(float k = 1.0f) : _K(1.0f)
-	{ _Name = std::string("Spring") ; }
+	CPSSpring(float k = 1.0f)
+	{ 
+		_Name = std::string("Spring") ; 
+		setIntensity(k) ;
+	}
 
 
 	/// serialization
@@ -297,21 +419,6 @@ public:
 
 	NLMISC_DECLARE_CLASS(CPSSpring) ; 
 
-
-protected:
-
-	float _K ;
-
-	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
-	virtual void newElement(void) { } ;	
-
-	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
-	virtual void deleteElement(uint32 index) {} ;	
-
-	/** Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
-	 * should not be called directly. Call CPSLocated::resize instead
-	 */
-	virtual void resize(uint32 size) {} ;
 } ;
 
 
@@ -320,52 +427,140 @@ protected:
 class CPSFluidFrictionFunctor
 {
 public:
-	CPSFluidFrictionFunctor() : _K(.2f) {}
+	CPSFluidFrictionFunctor() : _K(1.f) 
+	{		
+	}
 
 	 void operator() (const CVector &pos, CVector &speed, float invMass , CAnimationTime ellapsedTime)
 	 {
-		speed += (ellapsedTime * _K * invMass * speed)  ;
+		speed -= (ellapsedTime * _K * invMass * speed)  ;
 	 }
 
 	 virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	 {
-		f.serial(_K) ;
+		 f.serialVersion(1) ;
+		 // we don't save intensity info : it is saved by the owning object (and set before each use of this functor)
 	 }
 
 	 // get the friction coefficient
-	 float getK(void) const { return -_K ; }
+	 float getK(void) const { return _K ; }
 
-	 // set the friction coefficient usually, it is < 1
-	 void setK(float coeff) { _K = -coeff ; }
+	 // set the friction coefficient
+	 void setK(float coeff) { _K = coeff ; }
 protected:
 	// the friction coeff
 	float _K ;
 } ;
 
 
-// the fluid friction force
+/** the fluid friction force. We don't derive from CPSForceIntensityHelper (which derives from CPSForce
+  * , because CIsotropicForceT also derives from CPSForce, and we don't want to use virtual inheritance
+  */  
 
-class CPSFluidFriction : public CIsotropicForceT<CPSFluidFrictionFunctor>
+
+class CPSFluidFriction : public CIsotropicForceT<CPSFluidFrictionFunctor>, public CPSForceIntensity
 {
 public:
 	// create the force with a friction coefficient
-	CPSFluidFriction(float frictionCoeff = .1f)
+	CPSFluidFriction(float frictionCoeff = 1.f)
 	{
-		_F.setK(frictionCoeff) ;
+		setIntensity(frictionCoeff) ;
 		_Name = std::string("FluidFriction") ;
 	}
 
-	// get the friction coefficient
-	 float getK(void) const { return _F.getK() ; }
-
-	 // set the friction coefficient usually, it is < 1
-	 float setK(float coeff) { _F.setK(coeff) ; }
-
+	// inherited from CIsotropicForceT
+	virtual void setupFunctor(uint32 index)
+	{
+		_F.setK(_IntensityScheme ? _IntensityScheme->get(_Owner, index) : _K) ;
+	}
+	
 	NLMISC_DECLARE_CLASS(CPSFluidFriction)
+
+
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{
+		f.serialVersion(1) ;
+		CIsotropicForceT<CPSFluidFrictionFunctor>::serial(f) ;
+		serialForceIntensity(f) ;
+	}
+	
+
+protected:
+	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner ; }
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { newForceIntensityElement(emitterLocated, emitterIndex) ; }
+	virtual void deleteElement(uint32 index) { deleteForceIntensityElement(index) ; }
+	virtual void resize(uint32 size) { resizeForceIntensity(size) ; }
 } ;
 
 
-/// a turubulence force functor
+// a brownian force functor
+class CPSBrownianFunctor
+{
+public:
+	CPSBrownianFunctor() : _K(1.f) 
+	{		
+	}
+
+	 void operator() (const CVector &pos, CVector &speed, float invMass , CAnimationTime ellapsedTime)
+	 {
+		speed += ellapsedTime * _K * invMass * CVector (rand() * (2.f / RAND_MAX) - 1.f,
+														rand() * (2.f / RAND_MAX) - 1.f,
+														rand() * (2.f / RAND_MAX) - 1.f) ;
+	 }
+
+	 virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	 {
+		 f.serialVersion(1) ;
+		 // we don't save intensity info : it is saved by the owning object (and set before each use of this functor)
+	 }
+
+	 float getK(void) const { return _K ; }	 
+	 void setK(float coeff) { _K = coeff ; }
+protected:
+	// the friction coeff
+	float _K ;
+} ;
+
+
+/** the fluid friction force. We don't derive from CPSForceIntensityHelper (which derives from CPSForce
+  * , because CIsotropicForceT also derives from CPSForce, and we don't want to use virtual inheritance
+  */  
+
+
+class CPSBrownianForce : public CIsotropicForceT<CPSBrownianFunctor>, public CPSForceIntensity
+{
+public:
+	// create the force with a friction coefficient
+	CPSBrownianForce(float intensity = 1.f)
+	{
+		setIntensity(intensity) ;
+		_Name = std::string("BrownianForce") ;
+	}
+
+	// inherited from CIsotropicForceT
+	virtual void setupFunctor(uint32 index)
+	{
+		_F.setK(_IntensityScheme ? _IntensityScheme->get(_Owner, index) : _K) ;
+	}
+	
+	NLMISC_DECLARE_CLASS(CPSBrownianForce)
+
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{
+		f.serialVersion(1) ;
+		CIsotropicForceT<CPSBrownianFunctor>::serial(f) ;
+		serialForceIntensity(f) ;
+	}
+
+protected:
+	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner ; }
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { newForceIntensityElement(emitterLocated, emitterIndex) ; }
+	virtual void deleteElement(uint32 index) { deleteForceIntensityElement(index) ; }
+	virtual void resize(uint32 size) { resizeForceIntensity(size) ; }
+} ;
+
+
+/// a turbulence force functor
 
 struct CPSTurbulForceFunc
 {	
@@ -389,7 +584,8 @@ struct CPSTurbulForceFunc
 
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	 {
-		f.serial(_Scale, _Intensity, _NumOctaves) ;
+		f.serialVersion(1) ;
+		f.serial(_Scale, _NumOctaves) ;
 	 }
 
 	float _Scale ;
@@ -398,17 +594,17 @@ struct CPSTurbulForceFunc
 } ;
 
 
+
 // the turbulence force
 
-class CPSTurbul : public CIsotropicForceT<CPSTurbulForceFunc>
+class CPSTurbul : public CIsotropicForceT<CPSTurbulForceFunc>, public CPSForceIntensity
 {
 public:
 	// create the force with a friction coefficient
-	CPSTurbul(float intensity = 1.f , float scale = 1.f , uint numOctaves = 4)
+	CPSTurbul(float scale = 1.f , uint numOctaves = 4)
 	{
 		nlassert(numOctaves > 0) ;
-		setScale(scale) ;
-		setIntensity(intensity) ;
+		setScale(scale) ;	
 		setNumOctaves(numOctaves) ;
 		_Name = std::string("Turbulence") ;
 	}
@@ -417,19 +613,108 @@ public:
 	float getScale(void) const { return _F._Scale ; }
 	void setScale(float scale) { _F._Scale = scale ; } 
 
-	float getIntensity(void) const { return _F._Intensity ; }
-	void setIntensity(float intensity) { _F._Intensity = intensity ; } 
-
+	
 	uint getNumOctaves(void) const { return _F._NumOctaves ; }
 	void setNumOctaves(uint numOctaves) { _F._NumOctaves = numOctaves ; } 
 
 
 	NLMISC_DECLARE_CLASS(CPSTurbul)
+
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{
+		f.serialVersion(1) ;
+		CIsotropicForceT<CPSTurbulForceFunc>::serial(f) ;
+		serialForceIntensity(f) ;
+	}
+
+	// inherited from CIsotropicForceT
+	virtual void setupFunctor(uint32 index)
+	{
+		_F._Intensity = (_IntensityScheme ? _IntensityScheme->get(_Owner, index) : _K) ;
+	}
+
+protected:
+	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner ; }
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { newForceIntensityElement(emitterLocated, emitterIndex) ; }
+	virtual void deleteElement(uint32 index) { deleteForceIntensityElement(index) ; }
+	virtual void resize(uint32 size) { resizeForceIntensity(size) ; }
 } ;
 
 
 
 
+/** a cylindric vortex. It has a limited extend 
+  * It has unlimited extension in the z direction
+  * The model is aimed at tunability rather than realism
+  */
+
+class CPSCylindricVortex : public CPSForceIntensityHelper, public IPSMover
+{
+public:
+	/// Compute the force on the targets
+	virtual void performMotion(CAnimationTime ellapsedTime)  ;
+
+	/// Show the force (edition mode)
+	virtual void show(CAnimationTime ellapsedTime)  ;
+
+	
+	CPSCylindricVortex(float intensity = 1.f) : _RadialViscosity(.1f), _TangentialViscosity(.1f) 
+	{
+		setIntensity(intensity) ;
+		_Name = std::string("Fluid friction") ; 
+	}
+
+	// inherited from IPSMover
+	virtual bool supportUniformScaling(void) const { return true ; }
+	virtual bool supportNonUniformScaling(void) const { return false ; }		
+	virtual void setScale(uint32 k, float scale) { _Radius[k] = scale ; }
+	virtual CVector getScale(uint32 k) const { return CVector(_Radius[k], _Radius[k], _Radius[k]) ; }
+	virtual bool onlyStoreNormal(void) const { return true ; }	
+	virtual CVector getNormal(uint32 index) { return _Normal[index] ; }	
+	virtual void setNormal(uint32 index, CVector n) { _Normal[index] = n ; }
+
+	virtual void setMatrix(uint32 index, const CMatrix &m) ;
+	virtual CMatrix getMatrix(uint32 index) const ;
+	
+	
+	void setRadialViscosity(float v) { _RadialViscosity = v ; }
+	float getRadialViscosity(void) const { return _RadialViscosity ; }
+
+	void setTangentialViscosity(float v) { _TangentialViscosity = v ; }
+	float getTangentialViscosity(void) const { return _TangentialViscosity ; }
+
+	NLMISC_DECLARE_CLASS(CPSCylindricVortex) ;
+
+
+
+	// serialization
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+
+
+	
+
+protected:
+
+	/// inherited from CPSForceIntensity
+	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner ; }
+
+	// the normal of the vortex
+	CPSAttrib<CVector> _Normal ;
+	// radius of the vortex
+	TPSAttribFloat _Radius ;
+
+	// radial viscosity : when it is near of 1, if tends to set the radial componenent of speed to 0
+	float _RadialViscosity ;
+
+	// tangential viscosity : when set to 1, the tangential speed immediatly reach what it would be in a real vortex (w = 1 / r2)
+	float _TangentialViscosity ;
+	
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	virtual void deleteElement(uint32 index) ;
+	virtual void resize(uint32 size) ;
+
+} ;
 
 
 

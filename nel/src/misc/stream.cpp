@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.16 2001/05/11 14:04:15 lecroart Exp $
+ * $Id: stream.cpp,v 1.17 2001/05/18 14:41:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,27 @@ void	IStream::getVersionException(bool &throwOnOlder, bool &throwOnNewer)
 {
 	throwOnOlder=_ThrowOnOlder;
 	throwOnNewer=_ThrowOnNewer;
+}
+
+
+
+/*
+ * Copy constructor
+ */
+IStream::IStream( const IStream& other )
+{
+	operator=( other );
+}
+
+
+/*
+ * Assignment operator
+ */
+IStream& IStream::operator=( const IStream& other )
+{
+	_InputStream = other._InputStream;
+	_NeedSwap = other._NeedSwap;
+	return *this;
 }
 
 

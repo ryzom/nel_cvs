@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.7 2001/05/07 09:31:16 chafik Exp $
+ * $Id: mem_stream.cpp,v 1.8 2001/05/18 14:41:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@ CMemStream::CMemStream( bool inputStream, uint32 defaultcapacity ) :
  * Copy constructor
  */
 CMemStream::CMemStream( const CMemStream& other ) :
-	NLMISC::IStream( other.isReading(), true )
+	IStream (other)
 {
 	operator=( other );
 }
@@ -55,6 +55,7 @@ CMemStream::CMemStream( const CMemStream& other ) :
  */
 CMemStream& CMemStream::operator=( const CMemStream& other )
 {
+	IStream::operator= (other);
 	_Buffer = other._Buffer;
 	_BufPos = _Buffer.begin() + other.lengthS();
 	return *this;

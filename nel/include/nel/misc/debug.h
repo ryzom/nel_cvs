@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.31 2001/05/02 10:32:46 cado Exp $
+ * $Id: debug.h,v 1.32 2001/05/18 14:40:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -239,10 +239,10 @@ NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLM
 #define nlassert(exp) \
 { \
 	if (!(exp)) { \
-		NLMISC::createDebug (); \
+		/*NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
-		NLMISC_BREAKPOINT \
+		NLMISC_BREAKPOINT*/ \
 	} \
 }
 

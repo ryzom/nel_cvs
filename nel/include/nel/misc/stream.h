@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.40 2001/05/11 14:03:36 lecroart Exp $
+ * $Id: stream.h,v 1.41 2001/05/18 14:40:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,6 +181,12 @@ public:
 	/// Destructor.
 	virtual ~IStream() {}
 
+	/// Copy constructor
+	IStream( const IStream& other );
+
+	/// Assignment operator
+	IStream&		operator=( const IStream& other );
+	
 	/// Is this stream a Read/Input stream?
 	bool			isReading() const;
 

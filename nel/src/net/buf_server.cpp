@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.47 2004/05/11 08:22:12 cado Exp $
+ * $Id: buf_server.cpp,v 1.48 2004/07/12 13:57:45 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1150,7 +1150,7 @@ void CServerReceiveTask::clearClosedConnections()
 	}
 }
 
-NLMISC_VARIABLE(uint32, NbServerListenTask, "Number of server listen thread");
-NLMISC_VARIABLE(uint32, NbServerReceiveTask, "Number of server receive thread");
+NLMISC_CATEGORISED_VARIABLE(nel, uint32, NbServerListenTask, "Number of server listen thread");
+NLMISC_CATEGORISED_VARIABLE(nel, uint32, NbServerReceiveTask, "Number of server receive thread");
 
 } // NLNET

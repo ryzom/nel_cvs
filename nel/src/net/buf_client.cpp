@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.29 2004/05/11 08:22:12 cado Exp $
+ * $Id: buf_client.cpp,v 1.30 2004/07/12 13:56:54 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -494,7 +494,7 @@ void CClientReceiveTask::run()
 	NbNetworkTask--;
 }
 
-NLMISC_VARIABLE(uint32, NbClientReceiveTask, "Number of client receive thread");
+NLMISC_CATEGORISED_VARIABLE(nel, uint32, NbClientReceiveTask, "Number of client receive thread");
 
 
 

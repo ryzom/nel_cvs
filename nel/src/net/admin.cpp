@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.16 2004/02/13 09:44:13 distrib Exp $
+ * $Id: admin.cpp,v 1.17 2004/07/12 13:56:30 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -872,7 +872,7 @@ void setInformations (const vector<string> &alarms, const vector<string> &graphu
 // Commands
 //
 
-NLMISC_COMMAND (displayInformations, "displays all admin informations", "")
+NLMISC_CATEGORISED_COMMAND(nel, displayInformations, "displays all admin informations", "")
 {
 	uint i;
 
@@ -889,7 +889,7 @@ NLMISC_COMMAND (displayInformations, "displays all admin informations", "")
 	return true;
 }
 
-NLMISC_COMMAND (getView, "send a view and receive an array as result", "<varpath>")
+NLMISC_CATEGORISED_COMMAND(nel, getView, "send a view and receive an array as result", "<varpath>")
 {
 	if(args.size() != 1) return false;
 	

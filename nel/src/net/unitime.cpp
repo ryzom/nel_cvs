@@ -2,7 +2,7 @@
  * _CUniTime class
  * THIS CLASS IS DEPRECATED, DON'T USE IT
  *
- * $Id: unitime.cpp,v 1.35 2004/05/07 12:56:22 cado Exp $
+ * $Id: unitime.cpp,v 1.36 2004/07/12 13:58:34 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -378,7 +378,7 @@ error:
 // Commands
 //
 /*
-NLMISC_COMMAND (time, "displays the universal time", "")
+NLMISC_CATEGORISED_COMMAND(nel, time, "displays the universal time", "")
 {
 	if(args.size() != 0) return false;
 

@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.59 2004/05/07 12:56:22 cado Exp $
+ * $Id: naming_client.cpp,v 1.60 2004/07/12 13:57:45 miller Exp $
  *
  */
 
@@ -554,7 +554,7 @@ void CNamingClient::checkThreadId ()
 // Commands
 //
 
-NLMISC_COMMAND(services, "displays registered services", "")
+NLMISC_CATEGORISED_COMMAND(nel, services, "displays registered services", "")
 {
 	if(args.size() != 0) return false;
 

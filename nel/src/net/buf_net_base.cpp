@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.cpp,v 1.16 2004/05/11 08:22:12 cado Exp $
+ * $Id: buf_net_base.cpp,v 1.17 2004/07/12 13:57:15 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,6 +159,6 @@ void	CBufNetBase::pushMessageIntoReceiveQueue( const uint8 *buffer, uint32 size 
 
 
 
-NLMISC_VARIABLE(uint32, NbNetworkTask, "Number of server and client thread");
+NLMISC_CATEGORISED_VARIABLE(nel, uint32, NbNetworkTask, "Number of server and client thread");
 	
 } // NLNET

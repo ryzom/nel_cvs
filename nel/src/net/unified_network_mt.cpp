@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network_mt.cpp,v 1.3 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: unified_network_mt.cpp,v 1.4 2004/07/12 13:58:12 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1496,7 +1496,7 @@ static bool createMessage (CMessage &msgout, const vector<string> &args, CLog &l
  *
  */
 
-NLMISC_COMMAND(msgin, "Simulate an input message from another service", "<ServiceName>|<ServiceId> <MessageName> [<ParamType> <Param>]*")
+NLMISC_CATEGORISED_COMMAND(nel, msgin, "Simulate an input message from another service", "<ServiceName>|<ServiceId> <MessageName> [<ParamType> <Param>]*")
 {
 	if(args.size() < 2) return false;
 	
@@ -1552,7 +1552,7 @@ NLMISC_COMMAND(msgin, "Simulate an input message from another service", "<Servic
  *
  */
 
-NLMISC_COMMAND(msgout, "Send a message to a specified service", "<ServiceName>|<ServiceId> <MessageName> [<ParamType> <Param>]*")
+NLMISC_CATEGORISED_COMMAND(nel, msgout, "Send a message to a specified service", "<ServiceName>|<ServiceId> <MessageName> [<ParamType> <Param>]*")
 {
 	if(args.size() < 2) return false;
 	

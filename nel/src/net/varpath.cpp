@@ -1,7 +1,7 @@
 /** \file varpath.cpp
  * use to manage variable path (ie: [serv1,serv2].*.*.var)
  *
- * $Id: varpath.cpp,v 1.7 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: varpath.cpp,v 1.8 2004/07/12 13:58:34 miller Exp $
  *
  */
 
@@ -214,7 +214,7 @@ void CVarPath::display ()
 	}
 }
 
-NLMISC_COMMAND (varPath, "Test a varpath (for debug purpose)", "<rawvarpath>")
+NLMISC_CATEGORISED_COMMAND(nel, varPath, "Test a varpath (for debug purpose)", "<rawvarpath>")
 {
 	if(args.size() != 1) return false;
 

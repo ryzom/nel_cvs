@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.84 2004/06/23 14:59:55 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.85 2004/07/12 13:58:12 miller Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -50,17 +50,17 @@ static uint32 TotalCallbackCalled = 0;
 
 #ifdef NL_OS_UNIX
 /// Yield method (Unix only)
-CVariable<uint32> UseYieldMethod( "UseYieldMethod", "0=select 1=usleep 2=nanosleep 3=sched_yield 4=none", 0, 0, true );
+CVariable<uint32> UseYieldMethod("nel", "UseYieldMethod", "0=select 1=usleep 2=nanosleep 3=sched_yield 4=none", 0, 0, true );
 #endif
 
 /// Reduce sending lag
-CVariable<bool> FlushSendsBeforeSleep( "FlushSendsBeforeSleep", "If true, send buffers will be flushed before sleep, not in next update", true, 0, true );
+CVariable<bool> FlushSendsBeforeSleep("nel", "FlushSendsBeforeSleep", "If true, send buffers will be flushed before sleep, not in next update", true, 0, true );
 
 /// Receiving size limit
-CVariablePtr<uint32> DefaultMaxExpectedBlockSize( "DefaultMaxExpectedBlockSize", "If receiving more than this value in bytes, the connection will be dropped", &CBufNetBase::DefaultMaxExpectedBlockSize, true );
+CVariablePtr<uint32> DefaultMaxExpectedBlockSize("nel", "DefaultMaxExpectedBlockSize", "If receiving more than this value in bytes, the connection will be dropped", &CBufNetBase::DefaultMaxExpectedBlockSize, true );
 
 /// Sending size limit
-CVariablePtr<uint32> DefaultMaxSentBlockSize( "DefaultMaxSentBlockSize", "If sending more than this value in bytes, the program may be stopped", &CBufNetBase::DefaultMaxSentBlockSize, true );
+CVariablePtr<uint32> DefaultMaxSentBlockSize("nel", "DefaultMaxSentBlockSize", "If sending more than this value in bytes, the program may be stopped", &CBufNetBase::DefaultMaxSentBlockSize, true );
 
 
 #define AUTOCHECK_DISPLAY nlwarning
@@ -2081,9 +2081,9 @@ bool createMessage (CMessage &msgout, const vector<string> &args, CLog &log)
 // Commands and Variables
 //
 
-NLMISC_VARIABLE(uint32, TotalCallbackCalled, "Total callback called number on layer 5");
+NLMISC_CATEGORISED_VARIABLE(nel, uint32, TotalCallbackCalled, "Total callback called number on layer 5");
 
-NLMISC_DYNVARIABLE(uint64, SendQueueSize, "current size in bytes of all send queues")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, uint64, SendQueueSize, "current size in bytes of all send queues")
 {
 	if (get)
 	{
@@ -2094,7 +2094,7 @@ NLMISC_DYNVARIABLE(uint64, SendQueueSize, "current size in bytes of all send que
 	}
 }
 
-NLMISC_DYNVARIABLE(uint64, ReceiveQueueSize, "current size in bytes of all receive queues")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, uint64, ReceiveQueueSize, "current size in bytes of all receive queues")
 {
 	if (get)
 	{
@@ -2106,7 +2106,7 @@ NLMISC_DYNVARIABLE(uint64, ReceiveQueueSize, "current size in bytes of all recei
 }
 
 
-NLMISC_DYNVARIABLE(uint64, ReceivedBytes, "total of bytes received by this service")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, uint64, ReceivedBytes, "total of bytes received by this service")
 {
 	if (get)
 	{
@@ -2117,7 +2117,7 @@ NLMISC_DYNVARIABLE(uint64, ReceivedBytes, "total of bytes received by this servi
 	}
 }
 
-NLMISC_DYNVARIABLE(uint64, SentBytes, "total of bytes sent by this service")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, uint64, SentBytes, "total of bytes sent by this service")
 {
 	if (get)
 	{
@@ -2142,7 +2142,7 @@ NLMISC_DYNVARIABLE(uint64, SentBytes, "total of bytes sent by this service")
  *
  */
 
-NLMISC_COMMAND(msgin, "Simulate an input message from another service (ex: msgin 128 REGISTER u32 10 b 1 f 1.5)", "<ServiceName>|<ServiceId> <MessageName> [<ParamType> <Param>]*")
+NLMISC_CATEGORISED_COMMAND(nel, msgin, "Simulate an input message from another service (ex: msgin 128 REGISTER u32 10 b 1 f 1.5)", "<ServiceName>|<ServiceId> <MessageName> [<ParamType> <Param>]*")
 {
 	if(args.size() < 2) return false;
 	
@@ -2207,7 +2207,7 @@ NLMISC_COMMAND(msgin, "Simulate an input message from another service (ex: msgin
  *
  */
 
-NLMISC_COMMAND(msgout, "Send a message to a specified service (ex: msgout 128 REGISTER u32 10 b 1 f 1.5)", "<ServiceName>|<ServiceId> <MessageName> [<ParamType> <Param>]*")
+NLMISC_CATEGORISED_COMMAND(nel, msgout, "Send a message to a specified service (ex: msgout 128 REGISTER u32 10 b 1 f 1.5)", "<ServiceName>|<ServiceId> <MessageName> [<ParamType> <Param>]*")
 {
 	if(args.size() < 2) return false;
 
@@ -2257,7 +2257,7 @@ NLMISC_COMMAND(msgout, "Send a message to a specified service (ex: msgout 128 RE
 	return true;
 }
 	
-NLMISC_COMMAND(l5QueuesStats, "Displays queues stats of network layer5", "")
+NLMISC_CATEGORISED_COMMAND(nel, l5QueuesStats, "Displays queues stats of network layer5", "")
 {
 	if(args.size() != 0) return false;
 	
@@ -2280,7 +2280,7 @@ NLMISC_COMMAND(l5QueuesStats, "Displays queues stats of network layer5", "")
 }
 
 	
-NLMISC_COMMAND(l5InternalTables, "Displays internal table of network layer5", "")
+NLMISC_CATEGORISED_COMMAND(nel, l5InternalTables, "Displays internal table of network layer5", "")
 {
 	if(args.size() != 0) return false;
 
@@ -2295,7 +2295,7 @@ NLMISC_COMMAND(l5InternalTables, "Displays internal table of network layer5", ""
 	return true;
 }
 
-NLMISC_COMMAND(l5Callback, "Displays all callback registered in layer5", "")
+NLMISC_CATEGORISED_COMMAND(nel, l5Callback, "Displays all callback registered in layer5", "")
 {
 	if(args.size() != 0) return false;
 
@@ -2315,7 +2315,7 @@ NLMISC_COMMAND(l5Callback, "Displays all callback registered in layer5", "")
 	return true;
 }
 
-NLMISC_COMMAND(isServiceLocal, "Says if a service is local or not compare with this service", "<sid>|<service name>")
+NLMISC_CATEGORISED_COMMAND(nel, isServiceLocal, "Says if a service is local or not compare with this service", "<sid>|<service name>")
 {
 	if(args.size() != 1) return false;
 

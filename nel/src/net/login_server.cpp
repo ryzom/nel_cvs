@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.34 2004/05/07 12:56:22 cado Exp $
+ * $Id: login_server.cpp,v 1.35 2004/07/12 13:57:45 miller Exp $
  *
  */
 
@@ -428,7 +428,7 @@ void CLoginServer::clientDisconnected (uint32 userId)
 // Commands
 //
 
-NLMISC_COMMAND (lsUsers, "displays the list of all connected users", "")
+NLMISC_CATEGORISED_COMMAND(nel, lsUsers, "displays the list of all connected users", "")
 {
 	if(args.size() != 0) return false;
 
@@ -449,7 +449,7 @@ NLMISC_COMMAND (lsUsers, "displays the list of all connected users", "")
 	return true;
 }
 
-NLMISC_COMMAND (lsPending, "displays the list of all pending users", "")
+NLMISC_CATEGORISED_COMMAND(nel, lsPending, "displays the list of all pending users", "")
 {
 	if(args.size() != 0) return false;
 
@@ -464,7 +464,7 @@ NLMISC_COMMAND (lsPending, "displays the list of all pending users", "")
 }
 
 
-NLMISC_DYNVARIABLE(string, LSListenAddress, "the listen address sended to the client to connect on this front_end")
+NLMISC_CATEGORISED_DYNVARIABLE(nel, string, LSListenAddress, "the listen address sended to the client to connect on this front_end")
 {
 	if (get)
 	{
@@ -489,6 +489,6 @@ NLMISC_DYNVARIABLE(string, LSListenAddress, "the listen address sended to the cl
 	}
 }
 
-NLMISC_VARIABLE(string, DefaultUserPriv, "Default User priv for people who don't use the login system");
+NLMISC_CATEGORISED_VARIABLE(nel, string, DefaultUserPriv, "Default User priv for people who don't use the login system");
 
 } // NLNET

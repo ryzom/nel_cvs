@@ -126,6 +126,10 @@ plugin material NelMaterial
 		
 		fWaterHeightFactor	   type:#float default: 1.0   ui:cfWaterHeightFactor
 		iWaterPoolID		   type:#integer default: 0   ui:ciWaterPoolID
+
+		-- new in version 7
+		cbCalcWaterLightmap         	type:#boolean default:false
+		
 	
 		-- New in version 3
 		bColorVertex	type:#boolean default:false ui:cbColorVertex
@@ -294,6 +298,8 @@ plugin material NelMaterial
 			Spinner   cfDisplaceMapUSpeed      ""  range:[-10,10,0.01] type:#float scale:0.001 align:#left width:70
 			Label	lbDisplaceMapVSpeed "DisplaceMap V Speed :" align:#left across:2
 			Spinner   cfDisplaceMapVSpeed      ""  range:[-10,10,0.01] type:#float scale:0.001 align:#left width:70
+
+			CheckBox cbCalcWaterLightmap "Compute water lightmap"
 		)
 		group "Extended"
 		(

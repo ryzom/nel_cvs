@@ -298,6 +298,14 @@ SOURCE=.\3d\transform_shape.cpp
 
 SOURCE=.\3d\transform_shape.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\water_model.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\water_model.h
+# End Source File
 # End Group
 # Begin Group "Landscape"
 
@@ -794,6 +802,14 @@ SOURCE=.\3d\skeleton_shape.cpp
 
 SOURCE=.\3d\skeleton_shape.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\water_shape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\water_shape.h
+# End Source File
 # End Group
 # Begin Group "Textures"
 
@@ -805,6 +821,14 @@ SOURCE=.\3d\texture_blank.cpp
 # Begin Source File
 
 SOURCE=.\3d\texture_blank.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_bump.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_bump.h
 # End Source File
 # Begin Source File
 
@@ -1672,6 +1696,26 @@ SOURCE=.\3d\quad_grid_clip_manager.cpp
 SOURCE=.\3d\quad_grid_clip_manager.h
 # End Source File
 # End Group
+# Begin Group "water"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\water_height_map.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\water_height_map.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\water_pool_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\water_pool_manager.h
+# End Source File
+# End Group
 # Begin Group "Stripifier"
 
 # PROP Default_Filter ""
@@ -1700,6 +1744,7 @@ SOURCE=.\3d\stripifier.cpp
 SOURCE=.\3d\stripifier.h
 # End Source File
 # End Group
+
 # Begin Source File
 
 SOURCE=.\3d\async_file_manager.cpp

@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * _CUniTime class
  *
- * $Id: unitime.cpp,v 1.28 2001/10/16 09:19:35 legros Exp $
+ * $Id: unitime.cpp,v 1.29 2001/11/13 12:00:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -360,7 +360,7 @@ error:
 //
 // Commands
 //
-
+/*
 NLMISC_COMMAND (time, "displays the universal time", "")
 {
 	if(args.size() != 0) return false;
@@ -377,6 +377,6 @@ NLMISC_COMMAND (time, "displays the universal time", "")
 
 	return true;
 }
-
+*/
 
 } // NLNET

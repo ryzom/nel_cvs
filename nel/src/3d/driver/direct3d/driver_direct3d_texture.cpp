@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.9 2004/08/03 16:32:52 vizerie Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.10 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -53,6 +53,7 @@ std::vector<uint8> CDriverD3D::_TempBuffer;
 CTextureDrvInfosD3D::CTextureDrvInfosD3D(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverD3D *drvD3D, bool renderTarget) 
 					: ITextureDrvInfos(drv, it)
 {
+	H_AUTO_D3D(CTextureDrvInfosD3D_CTextureDrvInfosD3D)
 	Texture = NULL;
 	Texture2d = NULL;
 	TextureCube = NULL;
@@ -68,6 +69,7 @@ CTextureDrvInfosD3D::CTextureDrvInfosD3D(IDriver *drv, ItTexDrvInfoPtrMap it, CD
 
 CTextureDrvInfosD3D::~CTextureDrvInfosD3D()
 {
+	H_AUTO_D3D(CTextureDrvInfosD3D_CTextureDrvInfosD3DDtor)	
 	if (Texture)
 	{
 		Texture->Release();
@@ -87,6 +89,7 @@ CTextureDrvInfosD3D::~CTextureDrvInfosD3D()
 
 bool CDriverD3D::setupTexture (ITexture& tex)
 {
+	H_AUTO_D3D(CDriverD3D_setupTexture )
 	bool nTmp;
 	return setupTextureEx (tex, true, nTmp, false);
 }
@@ -177,6 +180,7 @@ const D3DCUBEMAP_FACES RemapCubeFaceTypeNeL2D3D[6]=
 
 D3DFORMAT CDriverD3D::getD3DDestTextureFormat (ITexture& tex)
 {
+	H_AUTO_D3D(CDriverD3D_getD3DDestTextureFormat )
 	ITexture::TUploadFormat texfmt= tex.getUploadFormat();
 
 	// If auto, retrieve the pixel format of the bitmap.
@@ -277,6 +281,7 @@ uint getPixelFormatSize (D3DFORMAT destFormat)
 
 uint32 CDriverD3D::computeTextureMemoryUsage (uint width, uint height, uint levels, D3DFORMAT destFormat, bool cube)
 {
+	H_AUTO_D3D(CDriverD3D_computeTextureMemoryUsage )
 	// Get bit per pixel
 	uint bits = getPixelFormatSize (destFormat);
 	uint32 size = 0;
@@ -296,6 +301,7 @@ uint32 CDriverD3D::computeTextureMemoryUsage (uint width, uint height, uint leve
 
 bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3DFORMAT &destFormat, D3DFORMAT &srcFormat, bool &cube)
 {
+	H_AUTO_D3D(CDriverD3D_generateD3DTexture )
 	// Regenerate all the texture.
 	tex.generate();
 
@@ -458,6 +464,7 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 
 bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded, bool bMustRecreateSharedTexture)
 {
+	H_AUTO_D3D(CDriverD3D_setupTextureEx )
 	bAllUploaded = false;
 	
 	if(tex.isTextureCube() && (!_TextureCubeSupported))
@@ -786,6 +793,7 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 
 bool CDriverD3D::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 {
+	H_AUTO_D3D(CDriverD3D_uploadTexture )
 	if (tex.TextureDrvShare == NULL)
 		return false; // Texture not created
 	if (tex.TextureDrvShare->DrvTexture == NULL)
@@ -833,6 +841,7 @@ bool CDriverD3D::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMipmap, uint8 srcMipmap, 
 										D3DFORMAT destFormat, D3DFORMAT srcFormat)
 {
+	H_AUTO_D3D(CDriverD3D_uploadTextureInternal)
 	// The D3D texture
 	CTextureDrvInfosD3D*	d3dtext = getTextureD3D(tex);
 
@@ -975,6 +984,7 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 
 bool CDriverD3D::isTextureExist(const ITexture&tex)
 {
+	H_AUTO_D3D(CDriverD3D_isTextureExist)
 	bool result;
 
 	// Create the shared Name.
@@ -993,6 +1003,7 @@ bool CDriverD3D::isTextureExist(const ITexture&tex)
 
 void CDriverD3D::swapTextureHandle(ITexture &tex0, ITexture &tex1)
 {
+	H_AUTO_D3D(CDriverD3D_swapTextureHandle)
 	// ensure creation of both texture
 	setupTexture(tex0);
 	setupTexture(tex1);
@@ -1032,6 +1043,7 @@ void CDriverD3D::swapTextureHandle(ITexture &tex0, ITexture &tex1)
 
 uint CDriverD3D::getTextureHandle(const ITexture &tex)
 {
+	H_AUTO_D3D(CDriverD3D_getTextureHandle)
 	// If DrvShare not setuped
 	if(!tex.TextureDrvShare)
 		return 0;
@@ -1049,6 +1061,7 @@ uint CDriverD3D::getTextureHandle(const ITexture &tex)
 
 bool CDriverD3D::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace)
 {
+	H_AUTO_D3D(CDriverD3D_setRenderTarget )
 	// Check the texture is a render target
 	if (tex)
 		nlassertex (tex->getRenderTarget(), ("The texture must be a render target. Call ITexture::setRenderTarget(true)."));
@@ -1129,6 +1142,7 @@ bool CDriverD3D::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 widt
 bool CDriverD3D::copyTargetToTexture (ITexture *tex, uint32 offsetx, uint32 offsety, uint32 x, uint32 y, uint32 width, 
 												uint32 height, uint32 mipmapLevel)
 {
+	H_AUTO_D3D(CDriverD3D_copyTargetToTexture)
 	return false;
 }
 
@@ -1136,6 +1150,7 @@ bool CDriverD3D::copyTargetToTexture (ITexture *tex, uint32 offsetx, uint32 offs
 
 bool CDriverD3D::getRenderTargetSize (uint32 &width, uint32 &height)
 {
+	H_AUTO_D3D(CDriverD3D_getRenderTargetSize)
 	// Target is the frame buffer ?
 	if (_RenderTarget.Texture)
 	{

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_index.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_index.cpp,v 1.6 2004/06/28 14:12:38 berenguier Exp $
+ * $Id: driver_direct3d_index.cpp,v 1.7 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -48,6 +48,7 @@ namespace NL3D
 
 CIBDrvInfosD3D::CIBDrvInfosD3D(IDriver *drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib) : IIBDrvInfos(drv, it, ib)
 {
+	H_AUTO_D3D(CIBDrvInfosD3D_CIBDrvInfosD3D)
 	IndexBuffer = NULL;
 }
 
@@ -57,6 +58,7 @@ extern uint indexCount=0;
 
 CIBDrvInfosD3D::~CIBDrvInfosD3D()
 {
+	H_AUTO_D3D(CIBDrvInfosD3D_CIBDrvInfosD3DDtor);
 	CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
 	// Restaure non resident memory
 	if (IndexBufferPtr)
@@ -77,6 +79,7 @@ CIBDrvInfosD3D::~CIBDrvInfosD3D()
 
 uint32 *CIBDrvInfosD3D::lock (uint first, uint last, bool readOnly)
 {
+	H_AUTO_D3D(CIBDrvInfosD3D_lock);
 	nlassert (first != last);
 	CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
 	
@@ -100,10 +103,22 @@ uint32 *CIBDrvInfosD3D::lock (uint first, uint last, bool readOnly)
 	else
 	{
 		nlassert (IndexBuffer);
-		
+		// Lock Profile?
+		TTicks	beforeLock;
+		if(driver->_IBProfiling /*&& Hardware*/)
+		{
+			beforeLock= CTime::getPerformanceTime();
+		}		
 		void *pbData;
-		if (IndexBuffer->Lock ( first*sizeof(uint32), (last-first)*sizeof(uint32), &pbData, readOnly?D3DLOCK_READONLY:0) == D3D_OK)
-			return (uint32*)pbData;
+		HRESULT result = IndexBuffer->Lock ( first*sizeof(uint32), (last-first)*sizeof(uint32), &pbData, readOnly?D3DLOCK_READONLY:0);
+		// Lock Profile?
+		if(driver->_VBHardProfiling /*&& Hardware*/)
+		{
+			TTicks	afterLock;
+			afterLock= CTime::getPerformanceTime();
+			driver->appendIBLockProfile(afterLock-beforeLock, IndexBufferPtr);
+		}		
+		if (result == D3D_OK) return (uint32*)pbData;
 	}
 	return NULL;
 }
@@ -112,6 +127,7 @@ uint32 *CIBDrvInfosD3D::lock (uint first, uint last, bool readOnly)
 
 void	CIBDrvInfosD3D::unlock (uint first, uint last)
 {
+	H_AUTO_D3D(CIBDrvInfosD3D_unlock)
 	if (Volatile)
 	{
 		CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
@@ -148,6 +164,7 @@ D3DPOOL RemapIndexBufferPool[CIndexBuffer::LocationCount]=
 
 bool CDriverD3D::activeIndexBuffer(CIndexBuffer& IB)
 {
+	H_AUTO_D3D(CDriverD3D_activeIndexBuffer)
 	// Must not be locked
 	nlassert (!IB.isLocked());
 
@@ -266,6 +283,7 @@ bool CDriverD3D::activeIndexBuffer(CIndexBuffer& IB)
 
 bool CDriverD3D::supportIndexBufferHard() const 
 {
+	H_AUTO_D3D(CDriverD3D_supportIndexBufferHard);
 	return !_DisableHardwareIndexArrayAGP;
 }
 
@@ -273,6 +291,7 @@ bool CDriverD3D::supportIndexBufferHard() const
 
 void CDriverD3D::disableHardwareIndexArrayAGP()
 {
+	H_AUTO_D3D(CDriverD3D_disableHardwareIndexArrayAGP)
 	_DisableHardwareIndexArrayAGP = true;
 }
 
@@ -282,6 +301,7 @@ void CDriverD3D::disableHardwareIndexArrayAGP()
 
 CVolatileIndexBuffer::CVolatileIndexBuffer()
 {
+	H_AUTO_D3D(CVolatileIndexBuffer_CVolatileIndexBuffer);
 	IndexBuffer = NULL;
 }
 
@@ -289,6 +309,7 @@ CVolatileIndexBuffer::CVolatileIndexBuffer()
 
 CVolatileIndexBuffer::~CVolatileIndexBuffer()
 {
+	H_AUTO_D3D(CVolatileIndexBuffer_CVolatileIndexBufferDtor);
 	release ();
 }
 
@@ -296,6 +317,7 @@ CVolatileIndexBuffer::~CVolatileIndexBuffer()
 
 void CVolatileIndexBuffer::release ()
 {
+	H_AUTO_D3D(CVolatileIndexBuffer_release);
 	if (IndexBuffer)
 		IndexBuffer->Release();
 	IndexBuffer = NULL;
@@ -305,6 +327,7 @@ void CVolatileIndexBuffer::release ()
 
 void CVolatileIndexBuffer::init (CIndexBuffer::TLocation	location, uint size, CDriverD3D *driver)
 {
+	H_AUTO_D3D(CVolatileIndexBuffer_init);
 	release();
 
 	// Init the buffer
@@ -322,6 +345,7 @@ void CVolatileIndexBuffer::init (CIndexBuffer::TLocation	location, uint size, CD
 		// Allocate in RAM
 		nlverify (Driver->_DeviceInterface->CreateIndexBuffer(size, RemapIndexBufferUsage[CIndexBuffer::RAMResident],
 				D3DFMT_INDEX32, RemapIndexBufferPool[CIndexBuffer::RAMResident], &IndexBuffer, NULL) != D3D_OK);
+		
 	}
 }
 
@@ -329,6 +353,7 @@ void CVolatileIndexBuffer::init (CIndexBuffer::TLocation	location, uint size, CD
 
 void *CVolatileIndexBuffer::lock (uint size, uint &offset)
 {
+	H_AUTO_D3D(CVolatileIndexBuffer_lock);
 	/* If not enough room to allocate this buffer, resise the buffer to Size+Size/2 but do not reset CurrentIndex
 	 * to be sure the buffer will be large enough next pass. */
 
@@ -362,6 +387,7 @@ void *CVolatileIndexBuffer::lock (uint size, uint &offset)
 
 void CVolatileIndexBuffer::unlock ()
 {
+	H_AUTO_D3D(CVolatileIndexBuffer_unlock);
 	nlverify (IndexBuffer->Unlock () == D3D_OK);
 }
 
@@ -369,6 +395,7 @@ void CVolatileIndexBuffer::unlock ()
 
 void CVolatileIndexBuffer::reset ()
 {
+	H_AUTO_D3D(CVolatileIndexBuffer_reset);
 	CurrentIndex = 0;
 }
 

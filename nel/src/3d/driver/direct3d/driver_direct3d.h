@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.18 2004/08/03 16:33:36 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.19 2004/08/09 14:35:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "nel/misc/heap_memory.h"
 #include "nel/misc/event_emitter_multi.h"
 #include "nel/misc/time_nl.h"
+#include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/win_event_emitter.h"
 #include "nel/3d/viewport.h"
 #include "nel/3d/scissor.h"
@@ -73,6 +74,13 @@
 
 // Define this to force the use of pixel shader in the normal shaders (default is undefined)
 // #define NL_FORCE_PIXEL_SHADER_USE_FOR_NORMAL_SHADERS
+
+//#define NL_PROFILE_DRIVER_D3D
+#ifdef NL_PROFILE_DRIVER_D3D
+	#define H_AUTO_D3D(label) H_AUTO(label)
+#else
+	#define H_AUTO_D3D
+#endif
 
 // ***************************************************************************
 
@@ -184,6 +192,7 @@ public:
 
 	CMaterialDrvInfosD3D(IDriver *drv, ItMatDrvInfoPtrList it) : IMaterialDrvInfos(drv, it)
 	{
+		H_AUTO_D3D(CMaterialDrvInfosD3D_CMaterialDrvInfosD3D);
 		PixelShader = NULL;
 		PixelShaderUnlightedNoVertexColor = NULL;
 	}
@@ -233,9 +242,9 @@ public:
 	uint							Offset;				// Index buffer offset
 	bool							Volatile:1; 		// Volatile index buffer
 	bool							VolatileRAM:1;
-	uint							VolatileLockTime;	// Volatile index buffer
+	uint							VolatileLockTime;	// Volatile index buffer	
 
-	CIBDrvInfosD3D(IDriver *drv, ItIBDrvInfoPtrList it, CIndexBuffer *vb);
+	CIBDrvInfosD3D(IDriver *drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib);
 	virtual ~CIBDrvInfosD3D();
 	virtual uint32	*lock (uint first, uint last, bool readOnly);
 	virtual void	unlock (uint first, uint last);
@@ -291,6 +300,7 @@ class CNormalShaderDesc
 public:
 	CNormalShaderDesc ()
 	{
+		H_AUTO_D3D(CNormalShaderDesc_CNormalShaderDesc);
 		memset (this, 0, sizeof(CNormalShaderDesc));
 	}
 	~CNormalShaderDesc ()
@@ -540,6 +550,10 @@ public:
 	virtual	void			startProfileVBHardLock();
 	virtual	void			endProfileVBHardLock(std::vector<std::string> &result);
 	virtual	void			profileVBHardAllocation(std::vector<std::string> &result);
+	virtual	void			startProfileIBLock();
+	virtual	void			endProfileIBLock(std::vector<std::string> &result);
+	virtual	void			profileIBAllocation(std::vector<std::string> &result);
+	//virtual	void			profileIBAllocation(std::vector<std::string> &result);
 
 	// Misc
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
@@ -932,6 +946,7 @@ private:
 	// Access render states
 	inline void setRenderState (D3DRENDERSTATETYPE renderState, DWORD value)
 	{
+		H_AUTO_D3D(CDriverD3D_setRenderState);
 		nlassert (_DeviceInterface);
 		nlassert (renderState<MaxRenderState);
 
@@ -949,6 +964,7 @@ private:
 	// Access texture states
 	inline void setTextureState (DWORD stage, D3DTEXTURESTAGESTATETYPE textureState, DWORD value)
 	{
+		H_AUTO_D3D(CDriverD3D_setTextureState);
 		nlassert (_DeviceInterface);
 		nlassert (stage<MaxTexture);
 		nlassert (textureState<MaxTextureState);
@@ -967,6 +983,7 @@ private:
 	// Access texture index states
 	inline void setTextureIndexMode (DWORD stage, bool texGenEnabled, DWORD value)
 	{
+		H_AUTO_D3D(CDriverD3D_setTextureIndexMode);
 		nlassert (_DeviceInterface);
 		nlassert (stage<MaxTexture);
 
@@ -980,6 +997,7 @@ private:
 	// Access texture index states
 	inline void setTextureIndexUV (DWORD stage, DWORD value)
 	{
+		H_AUTO_D3D(CDriverD3D_setTextureIndexUV);
 		nlassert (_DeviceInterface);
 		nlassert (stage<MaxTexture);
 
@@ -993,6 +1011,7 @@ private:
 	// Access texture states
 	inline void setTexture (DWORD stage, LPDIRECT3DBASETEXTURE9 texture)
 	{
+		H_AUTO_D3D(CDriverD3D_setTexture);
 		nlassert (_DeviceInterface);
 		nlassert (stage<MaxTexture);
 
@@ -1010,6 +1029,7 @@ private:
 	// Set a NeL texture states
 	inline void setTexture (DWORD stage, ITexture *texture)
 	{
+		H_AUTO_D3D(CDriverD3D_setTexture2);
 		nlassert (_DeviceInterface);
 		nlassert (stage<MaxTexture);
 
@@ -1033,6 +1053,7 @@ private:
 	// Access vertex program
 	inline void setVertexProgram (LPDIRECT3DVERTEXSHADER9 vertexProgram)
 	{
+		H_AUTO_D3D(CDriverD3D_setVertexProgram);
 		nlassert (_DeviceInterface);
 
 		// Ref on the state
@@ -1048,6 +1069,7 @@ private:
 	// Access pixel shader
 	inline void setPixelShader (LPDIRECT3DPIXELSHADER9 pixelShader)
 	{
+		H_AUTO_D3D(CDriverD3D_setPixelShader);
 		nlassert (_DeviceInterface);
 
 		// Ref on the state
@@ -1063,6 +1085,7 @@ private:
 	// Access vertex program constant
 	inline void setVertexProgramConstant (uint index, const float *values)
 	{
+		H_AUTO_D3D(CDriverD3D_setVertexProgramConstant);
 		nlassert (_DeviceInterface);
 		nlassert (index<MaxVertexProgramConstantState);
 
@@ -1088,6 +1111,7 @@ private:
 	// Access vertex program constant
 	inline void setVertexProgramConstant (uint index, const int *values)
 	{
+		H_AUTO_D3D(CDriverD3D_setVertexProgramConstant);
 		nlassert (_DeviceInterface);
 		nlassert (index<MaxVertexProgramConstantState);
 
@@ -1113,6 +1137,7 @@ private:
 	// Access vertex program constant
 	inline void setPixelShaderConstant (uint index, const float *values)
 	{
+		H_AUTO_D3D(CDriverD3D_setPixelShaderConstant);
 		nlassert (_DeviceInterface);
 		nlassert (index<MaxPixelShaderConstantState);
 
@@ -1138,6 +1163,7 @@ private:
 	// Access vertex program constant
 	inline void setPixelShaderConstant (uint index, const int *values)
 	{
+		H_AUTO_D3D(CDriverD3D_setPixelShaderConstant);
 		nlassert (_DeviceInterface);
 		nlassert (index<MaxPixelShaderConstantState);
 
@@ -1163,6 +1189,7 @@ private:
 	// Access sampler states
 	inline void setSamplerState (DWORD sampler, D3DSAMPLERSTATETYPE samplerState, DWORD value)
 	{
+		H_AUTO_D3D(CDriverD3D_setSamplerState);
 		nlassert (_DeviceInterface);
 		nlassert (sampler<MaxSampler);
 		nlassert (samplerState<MaxSamplerState);
@@ -1181,6 +1208,7 @@ private:
 	// Set the vertex buffer
 	inline void setVertexBuffer (IDirect3DVertexBuffer9 *vertexBuffer, UINT offset, UINT stride, bool useVertexColor, uint size)
 	{
+		H_AUTO_D3D(CDriverD3D_setVertexBuffer);
 		nlassert (_DeviceInterface);
 
 		// Ref on the state
@@ -1210,6 +1238,7 @@ private:
 	// Set the index buffer
 	inline void setIndexBuffer (IDirect3DIndexBuffer9 *indexBuffer, uint offset)
 	{
+		H_AUTO_D3D(CDriverD3D_setIndexBuffer);
 		nlassert (_DeviceInterface);
 
 		// Ref on the state
@@ -1226,6 +1255,7 @@ private:
 	// Set the vertex declaration
 	inline void setVertexDecl (IDirect3DVertexDeclaration9  *vertexDecl)
 	{
+		H_AUTO_D3D(CDriverD3D_setVertexDecl);
 		nlassert (_DeviceInterface);
 
 		// Ref on the state
@@ -1241,6 +1271,7 @@ private:
 	// Access matrices
 	inline uint remapMatrixIndex (D3DTRANSFORMSTATETYPE type)
 	{
+		H_AUTO_D3D(CDriverD3D_remapMatrixIndex);
 		if (type>=256)
 			return (D3DTRANSFORMSTATETYPE)(MatrixStateRemap + type - 256);
 		else
@@ -1248,6 +1279,7 @@ private:
 	}
 	inline void setMatrix (D3DTRANSFORMSTATETYPE type, const D3DXMATRIX &matrix)
 	{
+		H_AUTO_D3D(CDriverD3D_setMatrix);
 		nlassert (_DeviceInterface);
 
 		// Remap high matrices indexes
@@ -1282,6 +1314,7 @@ private:
 	// Access texture states
 	inline void setRenderTarget (IDirect3DSurface9 *target, ITexture *texture, uint8 level, uint8 cubeFace)
 	{
+		H_AUTO_D3D(CDriverD3D_setRenderTarget);
 		nlassert (_DeviceInterface);
 
 		// Ref on the state
@@ -1295,6 +1328,8 @@ private:
 			_RenderTarget.CubeFace = cubeFace;
 
 			touchRenderVariable (&_RenderTarget);
+
+			_ScissorTouched = true;
 		}
 	}
 
@@ -1305,6 +1340,7 @@ private:
 	// Get the d3dtext mirror of an existing setuped texture.
 	static	inline CTextureDrvInfosD3D*	getTextureD3D(ITexture& tex)
 	{
+		H_AUTO_D3D(CDriverD3D_getTextureD3D);
 		CTextureDrvInfosD3D*	d3dtex;
 		d3dtex= (CTextureDrvInfosD3D*)(ITextureDrvInfos*)(tex.TextureDrvShare->DrvTexture);
 		return d3dtex;
@@ -1313,6 +1349,7 @@ private:
 	// Get the d3dtext mirror of an existing setuped vertex program.
 	static	inline CVertexProgamDrvInfosD3D*	getVertexProgramD3D(CVertexProgram& vertexProgram)
 	{
+		H_AUTO_D3D(CDriverD3D_getVertexProgramD3D);
 		CVertexProgamDrvInfosD3D*	d3dVertexProgram;
 		d3dVertexProgram = (CVertexProgamDrvInfosD3D*)(IVertexProgramDrvInfos*)(vertexProgram._DrvInfo);
 		return d3dVertexProgram;
@@ -1360,6 +1397,7 @@ private:
 
 	void beginMultiPass ()
 	{
+		H_AUTO_D3D(CDriverD3D_beginMultiPass);
 		if (_CurrentShader)
 		{
 			// Does the shader validated ?
@@ -1386,6 +1424,7 @@ private:
 
 	void activePass (uint pass)
 	{
+		H_AUTO_D3D(CDriverD3D_activePass);
 		if (_CurrentShader)
 		{
 			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);
@@ -1398,6 +1437,7 @@ private:
 
 	void endMultiPass ()
 	{
+		H_AUTO_D3D(CDriverD3D_endMultiPass);
 		if (_CurrentShader)
 		{
 			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);
@@ -1534,16 +1574,37 @@ private:
 			Change= false;
 		}
 	};
+
+	// Index buffer lock profiling
+	struct	CIBProfile
+	{
+		NLMISC::CRefPtr<CIndexBuffer>			IB;
+		NLMISC::TTicks							AccumTime;
+		// true if the VBHard was not always the same for the same chronogical place.
+		bool									Change;
+		CIBProfile()
+		{
+			AccumTime= 0;
+			Change= false;
+		}
+	};
 	
-	// The Profiles in chronogical order.
+	// The vb hard Profiles in chronogical order.
 	bool												_VBHardProfiling;
 	std::vector<CVBHardProfile>							_VBHardProfiles;
 	uint												_CurVBHardLockCount;
 	uint												_NumVBHardProfileFrame;
 	void												appendVBHardLockProfile(NLMISC::TTicks time, CVertexBuffer *vb);
 
+	// The index buffer profile in chronogical order.
+	bool												_IBProfiling;
+	std::vector<CIBProfile>								_IBProfiles;
+	uint												_CurIBLockCount;
+	uint												_NumIBProfileFrame;
+	void												appendIBLockProfile(NLMISC::TTicks time, CIndexBuffer *ib);
+
 	// VBHard profile
-	std::set<CVBDrvInfosD3D*>							_VertexBufferHardSet;
+	std::set<CVBDrvInfosD3D*>							_VertexBufferHardSet;	
 
 	// The render variables
 	CRenderState			_RenderStateCache[MaxRenderState];
@@ -1657,6 +1718,8 @@ private:
 	// depth range
 	float						_DepthRangeNear;
 	float						_DepthRangeFar;
+
+	bool						_ScissorTouched;
 public:
 	// private, for access by COcclusionQueryD3D
 	COcclusionQueryD3D			*_CurrentOcclusionQuery;
@@ -1734,6 +1797,7 @@ public:
 // nbPixels is pixel count, not a byte count !
 inline void copyRGBA2BGRA (uint32 *dest, const uint32 *src, uint nbPixels)
 {
+	H_AUTO_D3D(CDriverD3D_copyRGBA2BGRA);
 	while (nbPixels != 0)
 	{
 		register uint32 color = *src;

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex_program.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex_program.cpp,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_direct3d_vertex_program.cpp,v 1.2 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -39,6 +39,7 @@ namespace NL3D
 
 CVertexProgamDrvInfosD3D::CVertexProgamDrvInfosD3D(IDriver *drv, ItVtxPrgDrvInfoPtrList it) : IVertexProgramDrvInfos (drv, it)
 {
+	H_AUTO_D3D(CVertexProgamDrvInfosD3D_CVertexProgamDrvInfosD3D)
 	Shader = NULL;
 }
 
@@ -46,6 +47,7 @@ CVertexProgamDrvInfosD3D::CVertexProgamDrvInfosD3D(IDriver *drv, ItVtxPrgDrvInfo
 
 CVertexProgamDrvInfosD3D::~CVertexProgamDrvInfosD3D()
 {
+	H_AUTO_D3D(CVertexProgamDrvInfosD3D_CVertexProgamDrvInfosD3DDtor)
 	if (Shader)
 		Shader->Release();
 }
@@ -54,6 +56,7 @@ CVertexProgamDrvInfosD3D::~CVertexProgamDrvInfosD3D()
 
 bool CDriverD3D::isVertexProgramSupported () const
 {
+	H_AUTO_D3D(CDriverD3D_isVertexProgramSupported )
 	return _VertexProgram;
 }
 
@@ -61,6 +64,7 @@ bool CDriverD3D::isVertexProgramSupported () const
 
 bool CDriverD3D::isVertexProgramEmulated () const
 {
+	H_AUTO_D3D(CDriverD3D_isVertexProgramEmulated )
 	// Pure HAL driver, no emulation available
 	return false;
 }
@@ -113,6 +117,7 @@ static const char *outputRegisterToName[] =
 
 void dumpWriteMask(uint mask, std::string &out)
 {
+	H_AUTO_D3D(dumpWriteMask)
 	if (mask == 0xf)
 	{
 		out = "";
@@ -129,6 +134,7 @@ void dumpWriteMask(uint mask, std::string &out)
 
 void dumpSwizzle(const CVPSwizzle &swz, std::string &out)
 {
+	H_AUTO_D3D(dumpSwizzle)
 	if (swz.isIdentity())
 	{
 		out = "";
@@ -156,6 +162,7 @@ void dumpSwizzle(const CVPSwizzle &swz, std::string &out)
 
 void dumpOperand(const CVPOperand &op, bool destOperand, std::string &out, set<uint> &inputs)
 {
+	H_AUTO_D3D(dumpOperand)
 	out = op.Negate ? " -" : " ";
 	switch(op.Type)
 	{
@@ -198,6 +205,7 @@ void dumpOperand(const CVPOperand &op, bool destOperand, std::string &out, set<u
 
 void dumpInstr(const CVPInstruction &instr, std::string &out, set<uint> &inputs)
 {
+	H_AUTO_D3D(dumpInstr)
 	nlassert(instr.Opcode < CVPInstruction::OpcodeCount);
 	out = instrToName[instr.Opcode];
 	uint nbOp = instr.getNumUsedSrc();
@@ -240,6 +248,7 @@ static const char *inputToDecl[CVPOperand::InputRegisterCount] =
 
 void dump(const CVPParser::TProgram &prg, std::string &dest)
 {	
+	H_AUTO_D3D(dump)
 	// Set of input registers used
 	set<uint> inputs;
 
@@ -266,6 +275,7 @@ void dump(const CVPParser::TProgram &prg, std::string &dest)
 
 bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 {
+	H_AUTO_D3D(CDriverD3D_activeVertexProgram )
 	if (_DisableHardwareVertexProgram)
 		return false;
 
@@ -361,6 +371,7 @@ bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 
 void CDriverD3D::setConstant (uint index, float f0, float f1, float f2, float f3)
 {
+	H_AUTO_D3D(CDriverD3D_setConstant )
 	const float tabl[4] = {f0, f1, f2, f3};
 	setVertexProgramConstant (index, tabl);
 }
@@ -369,6 +380,7 @@ void CDriverD3D::setConstant (uint index, float f0, float f1, float f2, float f3
 
 void CDriverD3D::setConstant (uint index, double d0, double d1, double d2, double d3)
 {
+	H_AUTO_D3D(CDriverD3D_setConstant )
 	const float tabl[4] = {(float)d0, (float)d1, (float)d2, (float)d3};
 	setVertexProgramConstant (index, tabl);
 }
@@ -377,6 +389,7 @@ void CDriverD3D::setConstant (uint index, double d0, double d1, double d2, doubl
 
 void CDriverD3D::setConstant (uint index, const NLMISC::CVector& value)
 {
+	H_AUTO_D3D(CDriverD3D_setConstant )
 	const float tabl[4] = {value.x, value.y, value.z, 0};
 	setVertexProgramConstant (index, tabl);
 }
@@ -385,6 +398,7 @@ void CDriverD3D::setConstant (uint index, const NLMISC::CVector& value)
 
 void CDriverD3D::setConstant (uint index, const NLMISC::CVectorD& value)
 {
+	H_AUTO_D3D(CDriverD3D_setConstant )
 	const float tabl[4] = {(float)value.x, (float)value.y, (float)value.z, 0};
 	setVertexProgramConstant (index, tabl);
 }
@@ -393,6 +407,7 @@ void CDriverD3D::setConstant (uint index, const NLMISC::CVectorD& value)
 
 void CDriverD3D::setConstant (uint index, uint num, const float *src)
 {
+	H_AUTO_D3D(CDriverD3D_setConstant )
 	uint i;
 	for (i=0; i<num; i++)
 		setVertexProgramConstant (index+i, src+i*4);
@@ -402,6 +417,7 @@ void CDriverD3D::setConstant (uint index, uint num, const float *src)
 
 void CDriverD3D::setConstant (uint index, uint num, const double *src)
 {
+	H_AUTO_D3D(CDriverD3D_setConstant )
 	uint i;
 	for (i=0; i<num; i++)
 	{
@@ -415,6 +431,7 @@ void CDriverD3D::setConstant (uint index, uint num, const double *src)
 
 void CDriverD3D::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform)
 {
+	H_AUTO_D3D(CDriverD3D_setConstantMatrix )
 	D3DXMATRIX mat;
 	D3DXMATRIX *matPtr;
 	switch (matrix)
@@ -459,6 +476,7 @@ void CDriverD3D::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver
 
 void CDriverD3D::setConstantFog (uint index)
 {
+	H_AUTO_D3D(CDriverD3D_setConstantFog )
 	/* "oFog" must always be between [1, 0] what ever you set in D3DRS_FOGSTART and D3DRS_FOGEND (1 for no fog, 0 for full fog).
 	The Geforce4 TI 4200 (drivers 53.03 and 45.23) doesn't accept other values for "oFog". */
 	const float delta = _FogEnd-_FogStart;
@@ -469,12 +487,14 @@ void CDriverD3D::setConstantFog (uint index)
 
 void CDriverD3D::enableVertexProgramDoubleSidedColor(bool doubleSided)
 {
+	H_AUTO_D3D(CDriverD3D_enableVertexProgramDoubleSidedColor)
 }
 
 // ***************************************************************************
 
 bool CDriverD3D::supportVertexProgramDoubleSidedColor() const 
 {
+	H_AUTO_D3D(CDriverD3D_supportVertexProgramDoubleSidedColor)
 	// Not supported under D3D
 	return false;
 }
@@ -483,6 +503,7 @@ bool CDriverD3D::supportVertexProgramDoubleSidedColor() const
 
 void CDriverD3D::disableHardwareVertexProgram()
 {
+	H_AUTO_D3D(CDriverD3D_disableHardwareVertexProgram)
 	_DisableHardwareVertexProgram = true;
 	_VertexProgram = false;
 }

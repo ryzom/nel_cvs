@@ -1,7 +1,7 @@
 /** \file driver_direct3d_matrix.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_matrix.cpp,v 1.4 2004/06/29 13:58:44 vizerie Exp $
+ * $Id: driver_direct3d_matrix.cpp,v 1.5 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -49,6 +49,7 @@ namespace NL3D
 
 void CDriverD3D::updateMatrices ()
 {
+	H_AUTO_D3D(CDriver3D_updateMatrices );
 	// Update view model matrix
 	D3DXMatrixMultiply (&_D3DModelView, &(_MatrixCache[remapMatrixIndex (D3DTS_WORLD)].Matrix), &(_MatrixCache[remapMatrixIndex (D3DTS_VIEW)].Matrix));
 
@@ -67,6 +68,7 @@ void CDriverD3D::updateMatrices ()
 
 void CDriverD3D::updateProjectionMatrix ()
 {
+	H_AUTO_D3D(CDriver3D_updateProjectionMatrix );
 	float left = _FrustumLeft;
 	float right = _FrustumRight;
 	float top = _FrustumTop;
@@ -110,6 +112,7 @@ void CDriverD3D::updateProjectionMatrix ()
 
 void CDriverD3D::setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective)
 {
+	H_AUTO_D3D(CDriverD3D_setFrustum)
 	_FrustumLeft = left;
 	_FrustumRight = right;
 	_FrustumTop = top;
@@ -124,6 +127,7 @@ void CDriverD3D::setFrustum(float left, float right, float bottom, float top, fl
 
 void CDriverD3D::setupViewMatrix(const CMatrix& mtx)
 {
+	H_AUTO_D3D(CDriverD3D_setupViewMatrix)
 	// Remeber the view matrix
 	_UserViewMtx= mtx;
 	_PZBCameraPos= CVector::Null;
@@ -154,6 +158,7 @@ void CDriverD3D::setupViewMatrix(const CMatrix& mtx)
 
 void CDriverD3D::setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)
 {
+	H_AUTO_D3D(CDriverD3D_setupViewMatrixEx)
 	// Remeber the view matrix
 	_UserViewMtx= mtx;
 	_PZBCameraPos= cameraPos;
@@ -200,6 +205,7 @@ void CDriverD3D::setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)
 
 void CDriverD3D::setupModelMatrix(const CMatrix& mtx)
 {
+	H_AUTO_D3D(CDriverD3D_setupModelMatrix)
 	// Stats
 	_NbSetupModelMatrixCall++;
 
@@ -223,6 +229,7 @@ void CDriverD3D::setupModelMatrix(const CMatrix& mtx)
 
 CMatrix CDriverD3D::getViewMatrix() const
 {
+	H_AUTO_D3D(CDriverD3D_getViewMatrix)
 	return _UserViewMtx;
 }
 
@@ -230,6 +237,7 @@ CMatrix CDriverD3D::getViewMatrix() const
 
 void CDriverD3D::forceNormalize(bool normalize)
 {
+	H_AUTO_D3D(CDriverD3D_forceNormalize)
 	_ForceNormalize = normalize;
 	updateMatrices ();
 }
@@ -238,16 +246,27 @@ void CDriverD3D::forceNormalize(bool normalize)
 
 bool CDriverD3D::isForceNormalize() const
 {
+	H_AUTO_D3D(CDriverD3D_isForceNormalize)
 	return _RenderStateCache[D3DRS_NORMALIZENORMALS].Value != FALSE;
 }
+
+
 
 // ***************************************************************************
 
 void CDriverD3D::setupScissor (const class CScissor& scissor)
 {
+	H_AUTO_D3D(CDriverD3D_setupScissor )
+	if (!_ScissorTouched && 
+		_Scissor.X == scissor.X && 
+		_Scissor.Y == scissor.Y && 
+		_Scissor.Width == scissor.Width && 
+		_Scissor.Height == scissor.Height
+		) return;
 	nlassert (_DeviceInterface);
-	
+		
 	// Get viewport
+	_ScissorTouched = false;
 	float x= scissor.X;
 	float width= scissor.Width;
 	float height= scissor.Height;
@@ -286,9 +305,13 @@ void CDriverD3D::setupScissor (const class CScissor& scissor)
 			else
 				rect.bottom=(int)floor((float)clientHeight* (1-y) + 0.5f);
 			clamp (rect.bottom, 0, (int)clientHeight);
-
-			_DeviceInterface->SetScissorRect (&rect);
-			setRenderState (D3DRS_SCISSORTESTENABLE, TRUE);
+			
+			{			
+				H_AUTO_D3D(CDriverD3D_setupScissorDevice )				
+				_DeviceInterface->SetScissorRect (&rect);
+			}
+			setRenderState (D3DRS_SCISSORTESTENABLE, TRUE);						
+			
 		}
 	}
 
@@ -300,6 +323,7 @@ void CDriverD3D::setupScissor (const class CScissor& scissor)
 
 void CDriverD3D::setupViewport (const class CViewport& viewport)
 {
+	H_AUTO_D3D(CDriverD3D_setupViewport )
 	if (_HWnd == NULL) 
 		return;
 
@@ -347,6 +371,7 @@ void CDriverD3D::setupViewport (const class CViewport& viewport)
 // ***************************************************************************
 void CDriverD3D::setDepthRange(float znear, float zfar)
 {
+	H_AUTO_D3D(CDriverD3D_setDepthRange)
 	nlassert(znear != zfar);
 	if (_HWnd == NULL) 
 		return;
@@ -365,6 +390,7 @@ void CDriverD3D::setDepthRange(float znear, float zfar)
 // ***************************************************************************
 void CDriverD3D::getDepthRange(float &znear, float &zfar) const
 {
+	H_AUTO_D3D(CDriverD3D_getDepthRange)
 	znear = _DepthRangeNear;
 	zfar = _DepthRangeFar;
 }
@@ -373,6 +399,7 @@ void CDriverD3D::getDepthRange(float &znear, float &zfar) const
 
 void CDriverD3D::getViewport(CViewport &viewport)
 {
+	H_AUTO_D3D(CDriverD3D_getViewport)
 	viewport = _Viewport;
 }
 
@@ -380,3 +407,24 @@ void CDriverD3D::getViewport(CViewport &viewport)
 
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

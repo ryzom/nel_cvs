@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex.cpp,v 1.5 2004/06/28 16:18:46 berenguier Exp $
+ * $Id: driver_direct3d_vertex.cpp,v 1.6 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -52,6 +52,7 @@ namespace NL3D
 
 CVBDrvInfosD3D::CVBDrvInfosD3D(IDriver *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) : IVBDrvInfos(drv, it, vb)
 {
+	H_AUTO_D3D(CVBDrvInfosD3D_CVBDrvInfosD3D)
 	CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
 	VertexDecl = NULL;
 	VertexBuffer = NULL;
@@ -63,6 +64,7 @@ extern uint vertexCount=0;
 
 CVBDrvInfosD3D::~CVBDrvInfosD3D()
 {
+	H_AUTO_D3D(CVBDrvInfosD3D_CVBDrvInfosD3D)
 	CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
 	// Restaure non resident memory
 	if (VertexBufferPtr)
@@ -87,6 +89,7 @@ CVBDrvInfosD3D::~CVBDrvInfosD3D()
 
 uint8	*CVBDrvInfosD3D::lock (uint begin, uint end, bool readOnly)
 {
+	H_AUTO_D3D(CVBDrvInfosD3D_lock)
 	nlassert (begin != end);
 	CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
 
@@ -112,7 +115,7 @@ uint8	*CVBDrvInfosD3D::lock (uint begin, uint end, bool readOnly)
 		nlassert (VertexBuffer);
 		// Lock Profile?
 		TTicks	beforeLock;
-		if(driver->_VBHardProfiling && Hardware)
+		if(driver->_VBHardProfiling /*&& Hardware*/)
 		{
 			beforeLock= CTime::getPerformanceTime();
 		}
@@ -122,7 +125,7 @@ uint8	*CVBDrvInfosD3D::lock (uint begin, uint end, bool readOnly)
 			return false;
 
 		// Lock Profile?
-		if(driver->_VBHardProfiling && Hardware)
+		if(driver->_VBHardProfiling /*&& Hardware*/)
 		{
 			TTicks	afterLock;
 			afterLock= CTime::getPerformanceTime();
@@ -136,6 +139,7 @@ uint8	*CVBDrvInfosD3D::lock (uint begin, uint end, bool readOnly)
 
 void	CVBDrvInfosD3D::unlock (uint begin, uint end)
 {
+	H_AUTO_D3D(CVBDrvInfosD3D_unlock )
 	if (Volatile)
 	{
 		CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
@@ -233,6 +237,7 @@ D3DPOOL RemapVertexBufferPool[CVertexBuffer::LocationCount]=
 
 bool CDriverD3D::activeVertexBuffer(CVertexBuffer& VB)
 {
+	H_AUTO_D3D(CDriverD3D_activeVertexBuffer)
 	// Must not be locked
 	nlassert (!VB.isLocked());
 
@@ -403,6 +408,7 @@ bool CDriverD3D::createVertexDeclaration (uint16 vertexFormat, const uint8 *type
 										IDirect3DVertexDeclaration9 **vertexDecl, 
 										uint *stride)
 {
+	H_AUTO_D3D(CDriverD3D_createVertexDeclaration)
 	CVertexDeclaration declaration;
 
 	// Set the vertex format
@@ -485,6 +491,7 @@ bool CDriverD3D::createVertexDeclaration (uint16 vertexFormat, const uint8 *type
 
 bool CDriverD3D::supportVertexBufferHard() const 
 {
+	H_AUTO_D3D(CDriverD3D_supportVertexBufferHard)
 	return !_DisableHardwareVertexArrayAGP;
 }
 
@@ -492,6 +499,7 @@ bool CDriverD3D::supportVertexBufferHard() const
 
 void CDriverD3D::disableHardwareVertexArrayAGP()
 {
+	H_AUTO_D3D(CDriverD3D_disableHardwareVertexArrayAGP)
 	_DisableHardwareVertexArrayAGP = true;
 }
 
@@ -499,6 +507,7 @@ void CDriverD3D::disableHardwareVertexArrayAGP()
 
 uint CDriverD3D::getMaxVerticesByVertexBufferHard() const
 {
+	H_AUTO_D3D(CDriverD3D_getMaxVerticesByVertexBufferHard)
 	return _MaxVerticesByVertexBufferHard;
 }
 
@@ -506,6 +515,7 @@ uint CDriverD3D::getMaxVerticesByVertexBufferHard() const
 
 uint32 CDriverD3D::getAvailableVertexAGPMemory ()
 {
+	H_AUTO_D3D(CDriverD3D_getAvailableVertexAGPMemory )
 	return _AGPMemoryAllocated;
 }
 
@@ -513,6 +523,7 @@ uint32 CDriverD3D::getAvailableVertexAGPMemory ()
 
 uint32 CDriverD3D::getAvailableVertexVRAMMemory ()
 {
+	H_AUTO_D3D(CDriverD3D_getAvailableVertexVRAMMemory )
 	return _VRAMMemoryAllocated;
 }
 
@@ -520,6 +531,7 @@ uint32 CDriverD3D::getAvailableVertexVRAMMemory ()
 
 bool CDriverD3D::initVertexBufferHard(uint agpMem, uint vramMem)
 {
+	H_AUTO_D3D(CDriverD3D_initVertexBufferHard)
 	if(!supportVertexBufferHard())
 		return false;
 
@@ -602,6 +614,7 @@ bool CDriverD3D::initVertexBufferHard(uint agpMem, uint vramMem)
 
 void CDriverD3D::mapTextureStageToUV(uint stage, uint uv)
 {
+	H_AUTO_D3D(CDriverD3D_mapTextureStageToUV)
 	setTextureIndexUV (stage, uv);
 }
 
@@ -611,6 +624,7 @@ void CDriverD3D::mapTextureStageToUV(uint stage, uint uv)
 
 CVolatileVertexBuffer::CVolatileVertexBuffer()
 {
+	H_AUTO_D3D(CVolatileVertexBuffer_CVolatileVertexBuffer)
 	VertexBuffer = NULL;
 }
 
@@ -618,6 +632,7 @@ CVolatileVertexBuffer::CVolatileVertexBuffer()
 
 CVolatileVertexBuffer::~CVolatileVertexBuffer()
 {
+	H_AUTO_D3D(CVolatileVertexBuffer_CVolatileVertexBufferDtor)
 	release ();
 }
 
@@ -625,6 +640,7 @@ CVolatileVertexBuffer::~CVolatileVertexBuffer()
 
 void CVolatileVertexBuffer::release ()
 {
+	H_AUTO_D3D(CVolatileVertexBuffer_release )
 	if (VertexBuffer)
 		VertexBuffer->Release();
 	VertexBuffer = NULL;
@@ -634,6 +650,7 @@ void CVolatileVertexBuffer::release ()
 
 void CVolatileVertexBuffer::init (CVertexBuffer::TLocation	location, uint size, CDriverD3D *driver)
 {
+	H_AUTO_D3D(CVolatileVertexBuffer_init )
 	release();
 
 	// Init the buffer
@@ -661,6 +678,7 @@ volatile int callStop = 17700;
 
 void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 {
+	H_AUTO_D3D(CVolatileVertexBuffer_lock)
 	/* If not enough room to allocate this buffer, resise the buffer to Size+Size/2 but do not reset CurrentIndex
 	 * to be sure the buffer will be large enough next pass. */
 
@@ -703,6 +721,7 @@ void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 
 void CVolatileVertexBuffer::unlock ()
 {
+	H_AUTO_D3D(CVolatileVertexBuffer_unlock )
 	nlverify (VertexBuffer->Unlock () == D3D_OK);
 }
 
@@ -710,6 +729,7 @@ void CVolatileVertexBuffer::unlock ()
 
 void CVolatileVertexBuffer::reset ()
 {
+	H_AUTO_D3D(CVolatileVertexBuffer_reset )
 	CurrentIndex = 0;
 	callCount = 0;
 }

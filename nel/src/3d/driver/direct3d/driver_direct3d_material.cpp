@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.12 2004/08/03 16:33:12 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.13 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -179,6 +179,7 @@ const DWORD RemapTexGenCubeTypeNeL2D3D[CMaterial::numTexCoordGenMode]=
 
 void CMaterialDrvInfosD3D::buildTexEnv (uint stage, const CMaterial::CTexEnv &env, bool textured)
 {
+	H_AUTO_D3D(CMaterialDrvInfosD3D_buildTexEnv)
 	if (textured)
 	{
 		// The source operator pointer
@@ -244,6 +245,7 @@ void CMaterialDrvInfosD3D::buildTexEnv (uint stage, const CMaterial::CTexEnv &en
 // ***************************************************************************
 bool CDriverD3D::setupMaterial (CMaterial& mat)
 {
+	H_AUTO_D3D(CDriverD3D_setupMaterial)
 	CMaterialDrvInfosD3D*	pShader;
 
 	// Stats
@@ -1088,6 +1090,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 
 bool CDriverD3D::needsConstants (uint &numConstant, uint &firstConstant, CMaterial &mat, bool needAlpha)
 {
+	H_AUTO_D3D(CDriverD3D_needsConstants)
 	/* Use a pixel shader if more than a stage constant color is used */
 	uint i;
 	numConstant = 0;
@@ -1121,6 +1124,7 @@ bool CDriverD3D::needsConstants (uint &numConstant, uint &firstConstant, CMateri
 
 bool CDriverD3D::needsConstantForDiffuse (CMaterial &mat, bool needAlpha)
 {
+	H_AUTO_D3D(CDriverD3D_needsConstantForDiffuse)
 	// If lighted, don't need the tfactor
 	if (mat.isLighted())
 		return false;
@@ -1158,6 +1162,7 @@ bool CDriverD3D::needsConstantForDiffuse (CMaterial &mat, bool needAlpha)
 
 bool CDriverD3D::needsAlpha (CMaterial &mat)
 {
+	H_AUTO_D3D(CDriverD3D_needsAlpha)
 	// Alpha blend or alpha test
 	if (mat.getBlend() || mat.getAlphaTest())
 		return true;
@@ -1296,6 +1301,7 @@ const char *RemapPSArguments0[CMaterial::TexOperatorCount][2]=
 
 void buildColorOperation (string &dest, const char *prefix, const char *destSizzle, uint stage, CMaterial::TTexOperator &op, CMaterial::TTexSource src0, CMaterial::TTexSource src1, CMaterial::TTexSource src2, CMaterial::TTexOperand &op0, CMaterial::TTexOperand &op1, CMaterial::TTexOperand &op2, bool unlightedNoVertexColor)
 {
+	H_AUTO_D3D(buildColorOperation)
 	// Refix
 	dest += prefix;
 
@@ -1394,6 +1400,7 @@ void buildColorOperation (string &dest, const char *prefix, const char *destSizz
 
 IDirect3DPixelShader9	*CDriverD3D::buildPixelShader (const CNormalShaderDesc &normalShaderDesc, bool unlightedNoVertexColor)
 {
+	H_AUTO_D3D(CDriverD3D_buildPixelShader)
 	static string shaderText;
 	shaderText = "ps_1_1;\n";
 	
@@ -1573,6 +1580,7 @@ bool CDriverD3D::isPolygonSmoothingEnabled() const
 
 sint CDriverD3D::beginMaterialMultiPass()
 { 
+	H_AUTO_D3D(CDriverD3D_beginMaterialMultiPass)
 	beginMultiPass ();
 	return _CurrentShaderPassCount;
 }
@@ -1581,6 +1589,7 @@ sint CDriverD3D::beginMaterialMultiPass()
 
 void CDriverD3D::setupMaterialPass(uint pass)
 { 
+	H_AUTO_D3D(CDriver3D_setupMaterialPass);
 	activePass (pass);
 }
 
@@ -1588,6 +1597,7 @@ void CDriverD3D::setupMaterialPass(uint pass)
 
 void CDriverD3D::endMaterialMultiPass()
 {
+	H_AUTO_D3D(CDriver3D_endMaterialMultiPass);
 	endMultiPass ();
 }
 
@@ -1595,6 +1605,7 @@ void CDriverD3D::endMaterialMultiPass()
 
 bool CDriverD3D::supportCloudRenderSinglePass () const
 {
+	H_AUTO_D3D(CDriver3D_supportCloudRenderSinglePass);
 	return _PixelShader;
 }
 

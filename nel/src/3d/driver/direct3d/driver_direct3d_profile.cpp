@@ -1,7 +1,7 @@
 /** \file driver_direct3d_profile.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_profile.cpp,v 1.1 2004/04/08 12:30:37 corvazier Exp $
+ * $Id: driver_direct3d_profile.cpp,v 1.2 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -101,7 +101,6 @@ uint32 CDriverD3D::getUsedTextureMemory() const
 }
 
 // ***************************************************************************
-
 void CDriverD3D::startProfileVBHardLock() 
 {
 	if(_VBHardProfiling)
@@ -181,7 +180,85 @@ void CDriverD3D::appendVBHardLockProfile(NLMISC::TTicks time, CVertexBuffer *vb)
 }
 
 // ***************************************************************************
+void CDriverD3D::startProfileIBLock() 
+{
+	if(_IBProfiling)
+		return;
+	
+	// start
+	_IBProfiles.clear();
+	_IBProfiles.reserve(50);
+	_IBProfiling= true;
+	_CurIBLockCount= 0;
+	_NumIBProfileFrame= 0;
+}
 
+// ***************************************************************************
+
+void CDriverD3D::endProfileIBLock(std::vector<std::string> &result) 
+{
+	if(!_IBProfiling)
+		return;
+	
+	// Fill infos.
+	result.clear();
+	result.resize(_IBProfiles.size() + 1);
+	float	total= 0;
+	for(uint i=0;i<_IBProfiles.size();i++)
+	{
+		const	uint tmpSize= 256;
+		char	tmp[tmpSize];
+		CIBProfile	&ibProf= _IBProfiles[i];
+		const char	*ibName;
+		if(ibProf.IB && !ibProf.IB->getName().empty())
+		{
+			ibName= ibProf.IB->getName().c_str();
+		}
+		else
+		{
+			ibName= "????";
+		}
+		// Display in ms.
+		float	timeLock= (float)CTime::ticksToSecond(ibProf.AccumTime)*1000 / max(_NumIBProfileFrame,1U);
+		smprintf(tmp, tmpSize, "%16s%c: %2.3f ms", ibName, ibProf.Change?'*':' ', timeLock );
+		total+= timeLock;
+		
+		result[i]= tmp;
+	}
+	result[_IBProfiles.size()]= toString("Total: %2.3f", total);
+	nlwarning("IB lock time = %2.3f", total);
+	
+	// clear.
+	_IBProfiling= false;
+	contReset(_IBProfiles);
+}
+
+// ***************************************************************************
+
+void CDriverD3D::appendIBLockProfile(NLMISC::TTicks time, CIndexBuffer *ib)
+{
+	// must allocate a new place?
+	if(_CurIBLockCount>=_IBProfiles.size())
+	{
+		_IBProfiles.resize(_IBProfiles.size()+1);		
+		_IBProfiles[_CurIBLockCount].IB= ib;
+	}
+	
+	// Accumulate.
+	_IBProfiles[_CurIBLockCount].AccumTime+= time;
+	// if change of VBHard for this chrono place
+	if(_IBProfiles[_CurIBLockCount].IB != ib)
+	{
+		// flag, and set new
+		_IBProfiles[_CurIBLockCount].IB= ib;
+		_IBProfiles[_CurIBLockCount].Change= true;
+	}
+	
+	// next!
+	_CurIBLockCount++;
+}
+
+// ***************************************************************************
 void CDriverD3D::profileVBHardAllocation(std::vector<std::string> &result)
 {
 	result.clear();
@@ -218,6 +295,39 @@ void CDriverD3D::profileVBHardAllocation(std::vector<std::string> &result)
 }
 
 // ***************************************************************************
+void CDriverD3D::profileIBAllocation(std::vector<std::string> &result)
+{
+	result.clear();
+	result.reserve(1000);
+	result.push_back(toString("Memory Allocated: %4d Ko in AGP / %4d Ko in VRAM", 
+		getAvailableVertexAGPMemory()/1000, getAvailableVertexVRAMMemory()/1000 ));
+	result.push_back(toString("Num Index buffers : %d", _IBDrvInfos.size()));
+	
+	uint	totalMemUsed= 0;
+	for(TIBDrvInfoPtrList::iterator it = _IBDrvInfos.begin(); it != _IBDrvInfos.end(); ++it)
+	{
+		CIBDrvInfosD3D	*ib =  NLMISC::safe_cast<CIBDrvInfosD3D	*>(*it);
+		if(ib)
+		{			
+			uint	numIndex= ib->IndexBufferPtr->getNumIndexes();
+			totalMemUsed+= sizeof(uint32)*numIndex;
+		}
+	}
+	result.push_back(toString("Mem Used: %4d Ko", totalMemUsed/1000) );
+	
+	for(TIBDrvInfoPtrList::iterator it = _IBDrvInfos.begin(); it != _IBDrvInfos.end(); ++it)
+	{		
+		CIBDrvInfosD3D	*ib =  NLMISC::safe_cast<CIBDrvInfosD3D	*>(*it);
+		if(ib)		
+		{			
+			uint	numIndex= ib->IndexBufferPtr->getNumIndexes();			
+			result.push_back(toString("  %16s: %4d ko ", 
+				ib->IndexBufferPtr->getName().c_str(), sizeof(uint32) * numIndex));
+		}
+	}
+}
+
+// ***************************************************************************
 
 void CDriverD3D::startBench (bool wantStandardDeviation, bool quick, bool reset)
 {
@@ -240,6 +350,7 @@ void CDriverD3D::displayBench (class NLMISC::CLog *log)
 	CHTimer::displayHierarchical(log, true, 48, 2);
 	CHTimer::displayByExecutionPath(log, CHTimer::TotalTime);
 	CHTimer::display(log, CHTimer::TotalTime);
+	CHTimer::display(log, CHTimer::TotalTimeWithoutSons);
 }
 
 // ***************************************************************************

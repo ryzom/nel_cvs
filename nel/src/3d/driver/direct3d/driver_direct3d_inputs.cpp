@@ -1,7 +1,7 @@
 /** \file driver_direct3d_inputs.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_inputs.cpp,v 1.2 2004/03/23 16:32:27 corvazier Exp $
+ * $Id: driver_direct3d_inputs.cpp,v 1.3 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -42,6 +42,7 @@ namespace NL3D
 
 void CDriverD3D::showCursor (bool b)
 {
+	H_AUTO_D3D(CDriverD3D_showCursor);
 	if (b)
 	{
 		while (ShowCursor(b) < 0) {};
@@ -56,6 +57,7 @@ void CDriverD3D::showCursor (bool b)
 
 void CDriverD3D::setMousePos(float x, float y)
 {
+	H_AUTO_D3D(CDriver3D_setMousePos);
 	if (_HWnd)
 	{
 		// NeL window coordinate to MSWindows coordinates
@@ -96,6 +98,7 @@ void CDriverD3D::setCapture (bool b)
 
 NLMISC::IMouseDevice	*CDriverD3D::enableLowLevelMouse(bool enable, bool exclusive)
 {
+	H_AUTO_D3D(CDriverD3D_enableLowLevelMouse);
 	if (_EventEmitter.getNumEmitters() < 2) 
 		return NULL;
 	NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<CDIEventEmitter *>(_EventEmitter.getEmitter(1));
@@ -122,6 +125,7 @@ NLMISC::IMouseDevice	*CDriverD3D::enableLowLevelMouse(bool enable, bool exclusiv
 
 NLMISC::IKeyboardDevice		*CDriverD3D::enableLowLevelKeyboard(bool enable)
 {
+	H_AUTO_D3D(CDriverD3D_enableLowLevelKeyboard);
 	if (_EventEmitter.getNumEmitters() < 2) return NULL;
 	NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<NLMISC::CDIEventEmitter *>(_EventEmitter.getEmitter(1));
 	if (enable)
@@ -147,6 +151,7 @@ NLMISC::IKeyboardDevice		*CDriverD3D::enableLowLevelKeyboard(bool enable)
 
 NLMISC::IInputDeviceManager		*CDriverD3D::getLowLevelInputDeviceManager()
 {
+	H_AUTO_D3D(CDriverD3D_getLowLevelInputDeviceManager);
 	if (_EventEmitter.getNumEmitters() < 2) return NULL;
 	NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<NLMISC::CDIEventEmitter *>(_EventEmitter.getEmitter(1));
 	return diee;
@@ -156,6 +161,7 @@ NLMISC::IInputDeviceManager		*CDriverD3D::getLowLevelInputDeviceManager()
 
 uint CDriverD3D::getDoubleClickDelay(bool hardwareMouse)
 {
+	H_AUTO_D3D(CDriverD3D_getDoubleClickDelay);
 	NLMISC::IMouseDevice *md = NULL;
 	if (_EventEmitter.getNumEmitters() >= 2)
 	{		

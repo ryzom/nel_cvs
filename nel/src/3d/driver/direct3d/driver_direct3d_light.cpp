@@ -1,7 +1,7 @@
 /** \file driver_direct3d_light.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_light.cpp,v 1.4 2004/06/22 10:05:12 berenguier Exp $
+ * $Id: driver_direct3d_light.cpp,v 1.5 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -57,6 +57,7 @@ const D3DLIGHTTYPE  RemapLightTypeNeL2D3D[3]=
 // ***************************************************************************
 void CDriverD3D::setLight (uint8 index, const CLight &light)
 {
+	H_AUTO_D3D(CDriverD3D_setLight);
 	// bkup real light, for lightmap dynamic lighting purpose
 	if(index==0)
 	{
@@ -72,6 +73,7 @@ void CDriverD3D::setLight (uint8 index, const CLight &light)
 // ***************************************************************************
 void CDriverD3D::enableLight (uint8 index, bool enable)
 {
+	H_AUTO_D3D(CDriverD3D_enableLight);
 	// User call => set the User flag
 	if(index<MaxLight)
 	{
@@ -89,6 +91,7 @@ void CDriverD3D::enableLight (uint8 index, bool enable)
 // ***************************************************************************
 void CDriverD3D::setLightInternal (uint8 index, const CLight &light)
 {
+	H_AUTO_D3D(CDriverD3D_setLightInternal);
 	nlassert (_DeviceInterface);
 	if (index<MaxLight)
 	{
@@ -128,6 +131,7 @@ void CDriverD3D::setLightInternal (uint8 index, const CLight &light)
 // ***************************************************************************
 void CDriverD3D::enableLightInternal (uint8 index, bool enable)
 {
+	H_AUTO_D3D(CDriverD3D_enableLightInternal);
 	nlassert (_DeviceInterface);
 	if (index<MaxLight)
 	{
@@ -143,12 +147,14 @@ void CDriverD3D::enableLightInternal (uint8 index, bool enable)
 // ***************************************************************************
 uint CDriverD3D::getMaxLight () const 
 {
+	H_AUTO_D3D(CDriverD3D_getMaxLight);	
 	return _MaxLight;
 }
 
 // ***************************************************************************
 void CDriverD3D::setAmbientColor (CRGBA color)
 {
+	H_AUTO_D3D(CDriverD3D_setAmbientColor);	
 	setRenderState(D3DRS_AMBIENT, NL_D3DCOLOR_RGBA(color));
 }
 
@@ -156,6 +162,7 @@ void CDriverD3D::setAmbientColor (CRGBA color)
 // ***************************************************************************
 void CDriverD3D::setLightMapDynamicLight (bool enable, const CLight& light)
 {
+	H_AUTO_D3D(CDriverD3D_setLightMapDynamicLight);	
 	// just store, for future setup in lightmap material rendering
 	_LightMapDynamicLightEnabled= enable;
 	_LightMapDynamicLight= light;
@@ -166,6 +173,7 @@ void CDriverD3D::setLightMapDynamicLight (bool enable, const CLight& light)
 // ***************************************************************************
 void			CDriverD3D::setupLightMapDynamicLighting(bool enable)
 {
+ H_AUTO_D3D(CDriverD3D_setupLightMapDynamicLighting);
 	// start lightmap dynamic lighting
 	if(enable)
 	{

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_render.cpp,v 1.4 2004/08/03 15:22:55 vizerie Exp $
+ * $Id: driver_direct3d_render.cpp,v 1.5 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -49,6 +49,7 @@ namespace NL3D
 
 bool CDriverD3D::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 {
+	H_AUTO_D3D(CDriverD3D_renderLines)
 	// Setup material
 	if ( !setupMaterial(mat) )
 		return false;
@@ -82,6 +83,7 @@ bool CDriverD3D::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 
 bool CDriverD3D::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris)
 {
+	H_AUTO_D3D(CDriverD3D_renderTriangles)
 	// Setup material
 	if ( !setupMaterial(mat) )
 		return false;
@@ -115,6 +117,7 @@ bool CDriverD3D::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris
 
 bool CDriverD3D::renderSimpleTriangles(uint32 firstIndex, uint32 ntris)
 {
+	H_AUTO_D3D(CDriverD3D_renderSimpleTriangles)
 	nlassert (ntris != 0);
 	nlassert (_VertexBufferCache.VertexBuffer);
 	nlassert (_IndexBufferCache.IndexBuffer);
@@ -136,6 +139,7 @@ bool CDriverD3D::renderSimpleTriangles(uint32 firstIndex, uint32 ntris)
 
 bool CDriverD3D::renderRawPoints(CMaterial& mat, uint32 firstIndex, uint32 numPoints)
 {
+	H_AUTO_D3D(CDriverD3D_renderRawPoints)
 	// Setup material
 	if ( !setupMaterial(mat) )
 		return false;
@@ -165,6 +169,7 @@ bool CDriverD3D::renderRawPoints(CMaterial& mat, uint32 firstIndex, uint32 numPo
 
 bool CDriverD3D::renderRawLines(CMaterial& mat, uint32 firstIndex, uint32 numLines)
 {
+	H_AUTO_D3D(CDriverD3D_renderRawLines)
 	// Setup material
 	if ( !setupMaterial(mat) )
 		return false;
@@ -194,6 +199,7 @@ bool CDriverD3D::renderRawLines(CMaterial& mat, uint32 firstIndex, uint32 numLin
 
 bool CDriverD3D::renderRawTriangles(CMaterial& mat, uint32 firstIndex, uint32 numTris)
 {
+	H_AUTO_D3D(CDriverD3D_renderRawTriangles)
 	// Setup material
 	if ( !setupMaterial(mat) )
 		return false;
@@ -223,6 +229,7 @@ bool CDriverD3D::renderRawTriangles(CMaterial& mat, uint32 firstIndex, uint32 nu
 
 void fillQuadIndexes (uint32 *indexes, uint first, uint last)
 {
+	H_AUTO_D3D(fillQuadIndexes)
 	uint firstQuad = (first / 6) * 4;
 	for (;first<last; first+=6, firstQuad+=4)
 	{
@@ -239,6 +246,7 @@ void fillQuadIndexes (uint32 *indexes, uint first, uint last)
 
 void CDriverD3D::setDebugMaterial()
 {
+	H_AUTO_D3D(CDriverD3D_setDebugMaterial)
 	_DeviceInterface->SetRenderState (D3DRS_ALPHABLENDENABLE, FALSE);
 	_DeviceInterface->SetRenderState (D3DRS_SRCBLEND, D3DBLEND_ONE);
 	_DeviceInterface->SetRenderState (D3DRS_DESTBLEND, D3DBLEND_ZERO);
@@ -291,6 +299,7 @@ void CDriverD3D::setDebugMaterial()
 
 bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuads)
 {
+	H_AUTO_D3D(CDriverD3D_renderRawQuads)
 	if (numQuads == 0)
 		return false;
 

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.5 2004/07/06 16:51:27 vizerie Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.6 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -42,6 +42,7 @@ namespace NL3D
 
 HRESULT CDriverD3D::QueryInterface(REFIID riid, LPVOID *ppvObj)
 {
+	H_AUTO_D3D(CDriverD3D_QueryInterface)
 	return D3D_OK;
 }
 
@@ -49,6 +50,7 @@ HRESULT CDriverD3D::QueryInterface(REFIID riid, LPVOID *ppvObj)
 
 ULONG CDriverD3D::AddRef(VOID)
 {
+	H_AUTO_D3D(CDriverD3D_AddRef)
 	return 0;
 }
 
@@ -56,6 +58,7 @@ ULONG CDriverD3D::AddRef(VOID)
 
 ULONG CDriverD3D::Release(VOID)
 {
+	H_AUTO_D3D(CDriverD3D_Release)
 	return 0;
 }
 
@@ -63,6 +66,7 @@ ULONG CDriverD3D::Release(VOID)
 
 HRESULT CDriverD3D::LightEnable(DWORD Index, BOOL Enable)
 {
+	H_AUTO_D3D(CDriverD3D_LightEnable)
 	enableLight ((uint8)Index, Enable!=FALSE);
 	return D3D_OK;
 }
@@ -71,6 +75,7 @@ HRESULT CDriverD3D::LightEnable(DWORD Index, BOOL Enable)
 
 HRESULT CDriverD3D::SetFVF(DWORD FVF)
 {
+	H_AUTO_D3D(CDriverD3D_SetFVF)
 	// Not implemented
 	return D3D_OK;
 }
@@ -79,6 +84,7 @@ HRESULT CDriverD3D::SetFVF(DWORD FVF)
 
 HRESULT CDriverD3D::SetLight(DWORD Index, CONST D3DLIGHT9* pLight)
 {
+	H_AUTO_D3D(CDriverD3D_SetLight)
 	_LightCache[Index].Light = *pLight;
 	touchRenderVariable (&_LightCache[Index]);
 	return D3D_OK;
@@ -88,6 +94,7 @@ HRESULT CDriverD3D::SetLight(DWORD Index, CONST D3DLIGHT9* pLight)
 
 HRESULT CDriverD3D::SetMaterial(CONST D3DMATERIAL9* pMaterial)
 {
+	H_AUTO_D3D(CDriverD3D_SetMaterial)
 	_DeviceInterface->SetMaterial( pMaterial );
 	return D3D_OK;
 }
@@ -96,6 +103,7 @@ HRESULT CDriverD3D::SetMaterial(CONST D3DMATERIAL9* pMaterial)
 
 HRESULT CDriverD3D::SetNPatchMode(FLOAT nSegments)
 {
+	H_AUTO_D3D(CDriverD3D_SetNPatchMode)
 	// Not implemented
 	return D3D_OK;
 }
@@ -104,6 +112,7 @@ HRESULT CDriverD3D::SetNPatchMode(FLOAT nSegments)
 
 HRESULT CDriverD3D::SetPixelShader(LPDIRECT3DPIXELSHADER9 pShader)
 {
+	H_AUTO_D3D(CDriverD3D_SetPixelShader)
 	setPixelShader (pShader);
 	return D3D_OK;
 }
@@ -112,6 +121,7 @@ HRESULT CDriverD3D::SetPixelShader(LPDIRECT3DPIXELSHADER9 pShader)
 
 HRESULT CDriverD3D::SetPixelShaderConstantB(UINT StartRegister, CONST BOOL* pConstantData, UINT RegisterCount)
 {
+	H_AUTO_D3D(CDriverD3D_SetPixelShaderConstantB)
 	uint i;
 	for (i=0; i<RegisterCount; i++)
 		setPixelShaderConstant (i+StartRegister, (int*)(pConstantData+i*4));
@@ -122,6 +132,7 @@ HRESULT CDriverD3D::SetPixelShaderConstantB(UINT StartRegister, CONST BOOL* pCon
 
 HRESULT CDriverD3D::SetPixelShaderConstantF(UINT StartRegister, CONST FLOAT* pConstantData, UINT RegisterCount)
 {
+	H_AUTO_D3D(CDriverD3D_SetPixelShaderConstantF)
 	uint i;
 	for (i=0; i<RegisterCount; i++)
 		setPixelShaderConstant (i+StartRegister, pConstantData+i*4);
@@ -132,6 +143,7 @@ HRESULT CDriverD3D::SetPixelShaderConstantF(UINT StartRegister, CONST FLOAT* pCo
 
 HRESULT CDriverD3D::SetPixelShaderConstantI(UINT StartRegister, CONST INT* pConstantData, UINT RegisterCount)
 {
+	H_AUTO_D3D(CDriverD3D_SetPixelShaderConstantI)
 	uint i;
 	for (i=0; i<RegisterCount; i++)
 		setPixelShaderConstant (i+StartRegister, pConstantData+i*4);
@@ -142,6 +154,7 @@ HRESULT CDriverD3D::SetPixelShaderConstantI(UINT StartRegister, CONST INT* pCons
 
 HRESULT CDriverD3D::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
 {
+	H_AUTO_D3D(CDriverD3D_SetRenderState)
 	setRenderState (State, Value);
 	return D3D_OK;
 }
@@ -150,6 +163,7 @@ HRESULT CDriverD3D::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
 
 HRESULT CDriverD3D::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value)
 {
+	H_AUTO_D3D(CDriverD3D_SetSamplerState)
 	setSamplerState (Sampler, Type, Value);
 	return D3D_OK;
 }
@@ -158,6 +172,7 @@ HRESULT CDriverD3D::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWO
 
 HRESULT CDriverD3D::SetTexture (DWORD Stage, LPDIRECT3DBASETEXTURE9 pTexture)
 {
+	H_AUTO_D3D(CDriverD3D_SetTexture )
 	// Look for the current texture
 	uint i;
 	const uint count = _CurrentShaderTextures.size();
@@ -181,6 +196,7 @@ HRESULT CDriverD3D::SetTexture (DWORD Stage, LPDIRECT3DBASETEXTURE9 pTexture)
 
 HRESULT CDriverD3D::SetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value)
 {
+	H_AUTO_D3D(CDriverD3D_SetTextureStageState)
 	if (Type == D3DTSS_TEXCOORDINDEX)
 		setTextureIndexUV (Stage, Value);
 	else
@@ -192,6 +208,7 @@ HRESULT CDriverD3D::SetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE T
 
 HRESULT CDriverD3D::SetTransform(D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX* pMatrix)
 {
+	H_AUTO_D3D(CDriverD3D_SetTransform)
 	setMatrix (State, *pMatrix);
 	return D3D_OK;
 }
@@ -200,6 +217,7 @@ HRESULT CDriverD3D::SetTransform(D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX* p
 
 HRESULT CDriverD3D::SetVertexShader(LPDIRECT3DVERTEXSHADER9 pShader)
 {
+	H_AUTO_D3D(CDriverD3D_SetVertexShader)
 	setVertexProgram (pShader);
 	return D3D_OK;
 }
@@ -208,6 +226,7 @@ HRESULT CDriverD3D::SetVertexShader(LPDIRECT3DVERTEXSHADER9 pShader)
 
 HRESULT CDriverD3D::SetVertexShaderConstantB(UINT StartRegister, CONST BOOL* pConstantData, UINT RegisterCount)
 {
+	H_AUTO_D3D(CDriverD3D_SetVertexShaderConstantB)
 	uint i;
 	for (i=0; i<RegisterCount; i++)
 		setVertexProgramConstant (i+StartRegister, (int*)(pConstantData+i*4));
@@ -218,6 +237,7 @@ HRESULT CDriverD3D::SetVertexShaderConstantB(UINT StartRegister, CONST BOOL* pCo
 
 HRESULT CDriverD3D::SetVertexShaderConstantF(UINT StartRegister, CONST FLOAT* pConstantData, UINT RegisterCount)
 {
+	H_AUTO_D3D(CDriverD3D_SetVertexShaderConstantF)
 	uint i;
 	for (i=0; i<RegisterCount; i++)
 		setVertexProgramConstant (i+StartRegister, pConstantData+i*4);
@@ -228,6 +248,7 @@ HRESULT CDriverD3D::SetVertexShaderConstantF(UINT StartRegister, CONST FLOAT* pC
 
 HRESULT CDriverD3D::SetVertexShaderConstantI(UINT StartRegister, CONST INT* pConstantData, UINT RegisterCount)
 {
+	H_AUTO_D3D(CDriverD3D_SetVertexShaderConstantI)
 	uint i;
 	for (i=0; i<RegisterCount; i++)
 		setVertexProgramConstant (i+StartRegister, pConstantData+i*4);
@@ -238,6 +259,7 @@ HRESULT CDriverD3D::SetVertexShaderConstantI(UINT StartRegister, CONST INT* pCon
 
 CShaderDrvInfosD3D::CShaderDrvInfosD3D(IDriver *drv, ItShaderDrvInfoPtrList it) : IShaderDrvInfos(drv, it)
 {
+	H_AUTO_D3D(CShaderDrvInfosD3D_CShaderDrvInfosD3D)
 	Validated = false;
 }
 
@@ -245,6 +267,7 @@ CShaderDrvInfosD3D::CShaderDrvInfosD3D(IDriver *drv, ItShaderDrvInfoPtrList it) 
 
 CShaderDrvInfosD3D::~CShaderDrvInfosD3D()
 {
+	H_AUTO_D3D(CShaderDrvInfosD3D_CShaderDrvInfosD3DDtor)
 	Effect->Release();
 }
 
@@ -252,6 +275,7 @@ CShaderDrvInfosD3D::~CShaderDrvInfosD3D()
 
 bool CDriverD3D::validateShader(CShader *shader)
 {
+	H_AUTO_D3D(CDriverD3D_validateShader)
 	CShaderDrvInfosD3D *shaderInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)shader->_DrvInfo);
 
 	if (!shaderInfo->Validated)
@@ -313,6 +337,7 @@ bool CDriverD3D::validateShader(CShader *shader)
 
 bool CDriverD3D::activeShader(CShader *shd)
 {
+	H_AUTO_D3D(CDriverD3D_activeShader)
 	if (_DisableHardwarePixelShader)
 		return false;
 
@@ -379,6 +404,7 @@ bool CDriverD3D::activeShader(CShader *shd)
 // tmp for debug
 static void setFX(CShader &s, const char *name, INT rsc, CDriverD3D *drv)
 {
+	H_AUTO_D3D(setFX)
 	HRSRC hrsrc = FindResource(HInstDLL, MAKEINTRESOURCE(rsc), "FX");
 	HGLOBAL hglob = LoadResource(HInstDLL, hrsrc);
 	const char *datas = (const char *) LockResource(hglob);
@@ -392,6 +418,7 @@ static void setFX(CShader &s, const char *name, INT rsc, CDriverD3D *drv)
 
 void CDriverD3D::initInternalShaders()
 {
+	H_AUTO_D3D(CDriverD3D_initInternalShaders)
 	setFx(_ShaderLightmap0,lightmap0);
 	setFx(_ShaderLightmap1,lightmap1);
 	setFx(_ShaderLightmap2,lightmap2);
@@ -422,6 +449,7 @@ void CDriverD3D::initInternalShaders()
 
 void CDriverD3D::releaseInternalShaders()
 {
+	H_AUTO_D3D(CDriverD3D_releaseInternalShaders)
 	_ShaderLightmap0._DrvInfo.kill();
 	_ShaderLightmap1._DrvInfo.kill();
 	_ShaderLightmap2._DrvInfo.kill();
@@ -451,6 +479,7 @@ void CDriverD3D::releaseInternalShaders()
 
 bool CDriverD3D::setShaderTexture (uint textureHandle, ITexture *texture)
 {
+	H_AUTO_D3D(CDriverD3D_setShaderTexture )
 	// Setup the texture
 	if (!setupTexture(*texture))
 		return false;

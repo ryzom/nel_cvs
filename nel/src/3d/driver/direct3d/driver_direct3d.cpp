@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.14 2004/08/03 16:33:36 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.15 2004/08/09 14:35:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -170,6 +170,11 @@ CDriverD3D::CDriverD3D()
 	for(i=0;i<MaxLight;i++)
 		_UserLightEnable[i]= false;	
 	_CullMode = CCW;
+	_ScissorTouched = true;
+	_Scissor.X = -1;
+	_Scissor.Y = -1;
+	_Scissor.Width = -1;
+	_Scissor.Height = -1;
 }
 
 // ***************************************************************************
@@ -189,6 +194,8 @@ CDriverD3D::~CDriverD3D()
 
 void CDriverD3D::resetRenderVariables()
 {
+	H_AUTO_D3D(CDriver3D_resetRenderVariables);
+	
 	uint i;
 	for (i=0; i<MaxRenderState; i++)
 	{
@@ -285,12 +292,15 @@ void CDriverD3D::resetRenderVariables()
 	_VolatileIndexBufferAGP[0].reset ();
 	_VolatileIndexBufferAGP[1].init (CIndexBuffer::AGPResident, _VolatileIndexBufferAGP[1].Size, this);
 	_VolatileIndexBufferAGP[1].reset ();
+
+	_ScissorTouched = true;
 }
 
 // ***************************************************************************
 
 void CDriverD3D::initRenderVariables()
 {
+	H_AUTO_D3D(CDriver3D_initRenderVariables);
 	uint i;
 	for (i=0; i<MaxRenderState; i++)
 	{
@@ -429,6 +439,7 @@ static const D3DTEXTURESTAGESTATETYPE SrcOperators[NL_SRC_OPERATORS_COUNT]=
 
 void CDriverD3D::updateRenderVariables()
 {
+	H_AUTO_D3D(CDriver3D_updateRenderVariables);
 	_CurrentMaterial = NULL;
 	_CurrentMaterialInfo = NULL;
 
@@ -439,6 +450,7 @@ void CDriverD3D::updateRenderVariables()
 
 void CDriverD3D::updateRenderVariablesInternal()
 {
+	H_AUTO_D3D(CDriver3D_updateRenderVariablesInternal);
 	nlassert (_DeviceInterface);
 
 	/* The "unlighted without vertex color" trick */
@@ -655,11 +667,9 @@ void CDriverD3D::updateRenderVariablesInternal()
 		case CRenderVariable::RenderTargetState:
 			{
 				CRenderTargetState *renderTarget = static_cast<CRenderTargetState*>(currentRenderState);
-				_DeviceInterface->SetRenderTarget (0, renderTarget->Target);
-
-				// Reset the viewport and the scissor to fit the new render target
-				setupViewport (_Viewport);
-				setupScissor (_Scissor);
+				_DeviceInterface->SetRenderTarget (0, renderTarget->Target);				
+				setupViewport (_Viewport);				
+				setupScissor (_Scissor);				
 			}
 			break;
 		}
@@ -670,6 +680,7 @@ void CDriverD3D::updateRenderVariablesInternal()
 
 static void D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	H_AUTO_D3D(D3DWndProc);
 	// Check this message in parents
 	if ((message == WM_SIZE) || (message == WM_EXITSIZEMOVE) || (message == WM_MOVE))
 	{
@@ -766,6 +777,7 @@ static void D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wPara
 
 bool CDriverD3D::handlePossibleSizeChange()
 {
+	H_AUTO_D3D(CDriver3D_handlePossibleSizeChange);
 	// If windowed, check if the size as changed
 	if (_CurrentMode.Windowed)
 	{
@@ -792,6 +804,7 @@ bool CDriverD3D::handlePossibleSizeChange()
 
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	H_AUTO_D3D(WndProc);
 	// Get the driver pointer..
 	CDriverD3D *pDriver=(CDriverD3D*)GetWindowLong (hWnd, GWL_USERDATA);
 	if (pDriver != NULL)
@@ -805,6 +818,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 bool CDriverD3D::init (uint windowIcon)
 {
+	H_AUTO_D3D(CDriver3D_init );
 	// Register a window class
 	WNDCLASS		wc;
 
@@ -833,7 +847,7 @@ bool CDriverD3D::isDepthFormatOk(UINT adapter, D3DFORMAT DepthFormat,
                       D3DFORMAT AdapterFormat, 
                       D3DFORMAT BackBufferFormat)
 {
-
+	H_AUTO_D3D(CDriverD3D_isDepthFormatOk);
     // Verify that the depth format exists
     HRESULT hr = _D3D->CheckDeviceFormat(adapter,
                                          RASTERIZER,
@@ -879,6 +893,7 @@ const D3DFORMAT FinalPixelFormat[ITexture::UploadFormatCount][CDriverD3D::FinalP
 
 bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBadDisplay)
 {
+	H_AUTO_D3D(CDriver3D_setDisplay);
 	if (!_D3D)
 		return false;
 	// Release the driver if already setuped
@@ -1086,6 +1101,9 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	_VBHardProfiling= false;
 	_CurVBHardLockCount= 0;
 	_NumVBHardProfileFrame= 0;
+	_IBProfiling= false;
+	_CurIBLockCount= 0;
+	_NumIBProfileFrame= 0;
 
 	// try to allocate 16Mo by default of AGP Ram.
 	initVertexBufferHard(NL3D_DRV_VERTEXARRAY_AGP_INIT_SIZE, 0);
@@ -1125,6 +1143,7 @@ extern uint vertexCount;
 
 bool CDriverD3D::release() 
 {
+	H_AUTO_D3D(CDriver3D_release);
 	// Call IDriver::release() before, to destroy textures, shaders and VBs...
 	IDriver::release();
 
@@ -1249,6 +1268,7 @@ NLMISC::IEventEmitter	*CDriverD3D::getEventEmitter()
 
 void CDriverD3D::getWindowSize (uint32 &width, uint32 &height)
 {
+	H_AUTO_D3D(CDriverD3D_getWindowSize);
 	width = _CurrentMode.Width;
 	height = _CurrentMode.Height;
 }
@@ -1257,6 +1277,7 @@ void CDriverD3D::getWindowSize (uint32 &width, uint32 &height)
 
 void CDriverD3D::getWindowPos (uint32 &x, uint32 &y)
 {
+	H_AUTO_D3D(CDriverD3D_getWindowPos);
 	x = _WindowX;
 	y = _WindowY;
 }
@@ -1265,6 +1286,7 @@ void CDriverD3D::getWindowPos (uint32 &x, uint32 &y)
 
 uint32 CDriverD3D::getImplementationVersion () const
 {
+	H_AUTO_D3D(CDriverD3D_getImplementationVersion);
 	return ReleaseVersion;
 }
 
@@ -1286,6 +1308,7 @@ uint8 CDriverD3D::getBitPerPixel ()
 
 bool CDriverD3D::clear2D(CRGBA rgba) 
 {
+	H_AUTO_D3D(CDriverD3D_clear2D);
 	nlassert (_DeviceInterface);
 	
 	// Backup viewport
@@ -1304,6 +1327,7 @@ bool CDriverD3D::clear2D(CRGBA rgba)
 
 bool CDriverD3D::clearZBuffer(float zval)
 {
+	H_AUTO_D3D(CDriverD3D_clearZBuffer);
 	nlassert (_DeviceInterface);
 
 	// Backup viewport
@@ -1326,6 +1350,7 @@ bool CDriverD3D::clearZBuffer(float zval)
 
 void CDriverD3D::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha) 
 {
+	H_AUTO_D3D(CDriverD3D_setColorMask);
 	setRenderState (D3DRS_COLORWRITEENABLE, 
 		(bAlpha?D3DCOLORWRITEENABLE_ALPHA:0)|
 		(bRed?D3DCOLORWRITEENABLE_RED:0)|
@@ -1338,6 +1363,7 @@ void CDriverD3D::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 
 bool CDriverD3D::swapBuffers() 
 {
+	H_AUTO_D3D(CDriverD3D_swapBuffers);
 	nlassert (_DeviceInterface);
 
 	++ _SwapBufferCounter;
@@ -1397,6 +1423,7 @@ bool CDriverD3D::swapBuffers()
 
 void CDriverD3D::setPolygonMode (TPolygonMode mode)
 {
+	H_AUTO_D3D(CDriverD3D_setPolygonMode);
 	IDriver::setPolygonMode (mode);
 
 	setRenderState (D3DRS_FILLMODE, mode==Point?D3DFILL_POINT:mode==Line?D3DFILL_WIREFRAME:D3DFILL_SOLID);
@@ -1406,6 +1433,7 @@ void CDriverD3D::setPolygonMode (TPolygonMode mode)
 
 bool CDriverD3D::isTextureFormatOk(UINT adapter, D3DFORMAT TextureFormat, D3DFORMAT AdapterFormat)
 {
+	H_AUTO_D3D(CDriverD3D_isTextureFormatOk);
     HRESULT hr = _D3D->CheckDeviceFormat( adapter,
                                           RASTERIZER,
                                           AdapterFormat,
@@ -1420,6 +1448,7 @@ bool CDriverD3D::isTextureFormatOk(UINT adapter, D3DFORMAT TextureFormat, D3DFOR
 
 void CDriverD3D::forceDXTCCompression(bool dxtcComp)
 {
+	H_AUTO_D3D(CDriverD3D_forceDXTCCompression);
 	_ForceDXTCCompression = dxtcComp;
 }
 
@@ -1427,6 +1456,7 @@ void CDriverD3D::forceDXTCCompression(bool dxtcComp)
 
 void CDriverD3D::forceTextureResize(uint divisor)
 {
+	H_AUTO_D3D(CDriverD3D_forceTextureResize);
 	clamp(divisor, 1U, 256U);
 
 	// 16 -> 4.
@@ -1437,6 +1467,7 @@ void CDriverD3D::forceTextureResize(uint divisor)
 
 bool CDriverD3D::fogEnabled()
 {
+	H_AUTO_D3D(CDriverD3D_fogEnabled);
 	return _RenderStateCache[D3DRS_FOGENABLE].Value == TRUE;
 }
 
@@ -1444,6 +1475,7 @@ bool CDriverD3D::fogEnabled()
 
 void CDriverD3D::enableFog(bool enable)
 {
+	H_AUTO_D3D(CDriverD3D_enableFog);
 	_FogEnabled = enable;
 	setRenderState (D3DRS_FOGENABLE, enable?TRUE:FALSE);
 }
@@ -1452,6 +1484,7 @@ void CDriverD3D::enableFog(bool enable)
 
 void CDriverD3D::setupFog(float start, float end, CRGBA color)
 {
+	H_AUTO_D3D(CDriverD3D_setupFog);
 	// Remember fog start and end
 	_FogStart = start;
 	_FogEnd = end;
@@ -1501,6 +1534,7 @@ sint CDriverD3D::getNbTextureStages() const
 
 bool CDriverD3D::getModes(std::vector<GfxMode> &modes)
 {
+	H_AUTO_D3D(CDriverD3D_getModes);
 	static const D3DFORMAT format[]=
 	{
 		D3DFMT_A8R8G8B8,
@@ -1544,6 +1578,7 @@ bool CDriverD3D::getModes(std::vector<GfxMode> &modes)
 // ***************************************************************************
 bool CDriverD3D::getCurrentScreenMode(GfxMode &gfxMode)
 {
+	H_AUTO_D3D(CDriverD3D_getCurrentScreenMode);
 	UINT adapter = (_Adapter==0xffffffff)?D3DADAPTER_DEFAULT:(UINT)_Adapter;
 	D3DDISPLAYMODE mode;
 	_D3D->GetAdapterDisplayMode(adapter, &mode);
@@ -1560,6 +1595,7 @@ bool CDriverD3D::getCurrentScreenMode(GfxMode &gfxMode)
 
 uint CDriverD3D::getNumAdapter() const
 {
+H_AUTO_D3D(CDriverD3D_getNumAdapter);
 	if (_D3D)
 		return _D3D->GetAdapterCount();
 	else
@@ -1570,6 +1606,7 @@ uint CDriverD3D::getNumAdapter() const
 
 bool CDriverD3D::getAdapter(uint adapter, IDriver::CAdapter &desc) const
 {
+	H_AUTO_D3D(CDriverD3D_getAdapter);
 	if (_D3D)
 	{
 		D3DADAPTER_IDENTIFIER9 identifier;
@@ -1594,6 +1631,7 @@ bool CDriverD3D::getAdapter(uint adapter, IDriver::CAdapter &desc) const
 
 bool CDriverD3D::setAdapter(uint adapter)
 {
+	H_AUTO_D3D(CDriverD3D_setAdapter);
 	if (_D3D)
 	{
 		D3DDISPLAYMODE adapterMode;
@@ -1614,6 +1652,7 @@ bool CDriverD3D::setAdapter(uint adapter)
 
 bool CDriverD3D::supportMADOperator() const
 {
+	H_AUTO_D3D(CDriverD3D_supportMADOperator);
 	if (_DeviceInterface)
 	{
 		return _MADOperatorSupported;
@@ -1625,6 +1664,7 @@ bool CDriverD3D::supportMADOperator() const
 
 bool CDriverD3D::setMode (const GfxMode& mode)
 {
+	H_AUTO_D3D(CDriverD3D_setMode);
     if( mode.Windowed )
     {
         // Set windowed-mode style
@@ -1665,6 +1705,7 @@ bool CDriverD3D::setMode (const GfxMode& mode)
 
 bool CDriverD3D::reset (const GfxMode& mode)
 {
+	H_AUTO_D3D(CDriverD3D_reset);
 	// Current mode
 	_CurrentMode = mode;
 
@@ -1708,6 +1749,7 @@ bool CDriverD3D::reset (const GfxMode& mode)
 		}
 
 		iteIb = iteIbNext;
+		
 	}
 
 	// Remove render targets
@@ -1792,6 +1834,7 @@ bool CDriverD3D::reset (const GfxMode& mode)
 
 bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFORMAT &adapterFormat, const GfxMode& mode, UINT adapter, const D3DDISPLAYMODE &adapterMode)
 {
+	H_AUTO_D3D(CDriverD3D_fillPresentParameter);
 	memset (&parameters, 0, sizeof(D3DPRESENT_PARAMETERS));
 	parameters.BackBufferWidth = mode.Width;
 	parameters.BackBufferHeight = mode.Height;
@@ -1912,6 +1955,7 @@ bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFOR
 
 const char *CDriverD3D::getVideocardInformation ()
 {
+	H_AUTO_D3D(CDriverD3D_getVideocardInformation);
 	static char name[1024];
 
 	if (!_DeviceInterface) 
@@ -1935,6 +1979,7 @@ const char *CDriverD3D::getVideocardInformation ()
 
 void CDriverD3D::getBuffer (CBitmap &bitmap)
 {
+	H_AUTO_D3D(CDriverD3D_getBuffer);
 	NLMISC::CRect rect;
 	rect.setWH (0, 0, _CurrentMode.Width, _CurrentMode.Height);
 	getBufferPart (bitmap, rect);
@@ -1944,6 +1989,7 @@ void CDriverD3D::getBuffer (CBitmap &bitmap)
 
 void CDriverD3D::getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect)
 {
+	H_AUTO_D3D(CDriverD3D_getBufferPart);
 	if (_DeviceInterface)
 	{
 		// Resize the bitmap
@@ -2003,6 +2049,7 @@ void CDriverD3D::getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect)
 
 bool CDriverD3D::fillBuffer (NLMISC::CBitmap &bitmap)
 {
+	H_AUTO_D3D(CDriverD3D_fillBuffer);
 	bool result = false;
 	if (_DeviceInterface)
 	{
@@ -2066,6 +2113,7 @@ bool CDriverD3D::fillBuffer (NLMISC::CBitmap &bitmap)
 
 void CDriverD3D::setSwapVBLInterval(uint interval)
 {
+	H_AUTO_D3D(CDriverD3D_setSwapVBLInterval);
 	if (_Interval != interval)
 	{
 		_Interval = interval;
@@ -2080,6 +2128,7 @@ void CDriverD3D::setSwapVBLInterval(uint interval)
 
 uint CDriverD3D::getSwapVBLInterval()
 {
+	H_AUTO_D3D(CDriverD3D_getSwapVBLInterval);	
 	return _Interval;
 }
 
@@ -2087,6 +2136,7 @@ uint CDriverD3D::getSwapVBLInterval()
 
 void CDriverD3D::finish()
 {
+	H_AUTO_D3D(CDriverD3D_finish);	
 	// Flush now
 	_DeviceInterface->EndScene();
 	_DeviceInterface->BeginScene();
@@ -2096,6 +2146,7 @@ void CDriverD3D::finish()
 
 bool CDriverD3D::setMonitorColorProperties (const CMonitorColorProperties &properties)
 {
+	H_AUTO_D3D(CDriverD3D_setMonitorColorProperties);	
 	// The ramp
 	D3DGAMMARAMP ramp;
 
@@ -2131,12 +2182,14 @@ bool CDriverD3D::setMonitorColorProperties (const CMonitorColorProperties &prope
 //****************************************************************************
 bool CDriverD3D::supportEMBM() const
 {
+	H_AUTO_D3D(CDriverD3D_supportEMBM);	
 	return _EMBMSupported;
 }
 
 //****************************************************************************
 bool CDriverD3D::isEMBMSupportedAtStage(uint stage) const
 {
+	H_AUTO_D3D(CDriverD3D_isEMBMSupportedAtStage);	
 	// we assume EMBM is supported at all stages except the last one
 	return stage < (uint) _NbNeLTextureStages - 1;
 }
@@ -2144,6 +2197,7 @@ bool CDriverD3D::isEMBMSupportedAtStage(uint stage) const
 //****************************************************************************
 void CDriverD3D::setEMBMMatrix(const uint stage, const float mat[4])
 {
+	H_AUTO_D3D(CDriverD3D_setEMBMMatrix);
 	nlassert(stage < (uint) _NbNeLTextureStages - 1);
 	SetTextureStageState(stage, D3DTSS_BUMPENVMAT00, (DWORD &) mat[0]);
 	SetTextureStageState(stage, D3DTSS_BUMPENVMAT01, (DWORD &) mat[1]);
@@ -2154,12 +2208,14 @@ void CDriverD3D::setEMBMMatrix(const uint stage, const float mat[4])
 // ***************************************************************************
 bool CDriverD3D::supportOcclusionQuery() const
 {
+	H_AUTO_D3D(CDriverD3D_supportOcclusionQuery);	
 	return _OcclusionQuerySupported;
 }
 
 // ***************************************************************************
 IOcclusionQuery *CDriverD3D::createOcclusionQuery()
 {
+	H_AUTO_D3D(CDriverD3D_createOcclusionQuery);	
 	nlassert(_OcclusionQuerySupported);
 	nlassert(_DeviceInterface);
 	IDirect3DQuery9 *query;
@@ -2177,6 +2233,7 @@ IOcclusionQuery *CDriverD3D::createOcclusionQuery()
 // ***************************************************************************
 void CDriverD3D::deleteOcclusionQuery(IOcclusionQuery *oq)
 {
+	H_AUTO_D3D(CDriverD3D_deleteOcclusionQuery);	
 	if (!oq) return;
 	COcclusionQueryD3D *oqd3d = NLMISC::safe_cast<COcclusionQueryD3D *>(oq);
 	nlassert((CDriverD3D *) oqd3d->Driver == this); // should come from the same driver
@@ -2194,6 +2251,7 @@ void CDriverD3D::deleteOcclusionQuery(IOcclusionQuery *oq)
 // ***************************************************************************
 void COcclusionQueryD3D::begin()
 {	
+	H_AUTO_D3D(COcclusionQueryD3D_begin);	
 	nlassert(Driver);
 	nlassert(Driver->_CurrentOcclusionQuery == NULL); // only one query at a time
 	nlassert(Query);
@@ -2205,6 +2263,7 @@ void COcclusionQueryD3D::begin()
 // ***************************************************************************
 void COcclusionQueryD3D::end()
 {
+	H_AUTO_D3D(COcclusionQueryD3D_end);
 	nlassert(Driver);	
 	nlassert(Driver->_CurrentOcclusionQuery == this); // only one query at a time
 	nlassert(Query);
@@ -2215,6 +2274,7 @@ void COcclusionQueryD3D::end()
 // ***************************************************************************
 IOcclusionQuery::TOcclusionType COcclusionQueryD3D::getOcclusionType()
 {
+	H_AUTO_D3D(COcclusionQueryD3D_getOcclusionType);
 	nlassert(Driver);
 	nlassert(Query);
 	nlassert(Driver->_CurrentOcclusionQuery != this) // can't query result between a begin/end pair!
@@ -2233,6 +2293,7 @@ IOcclusionQuery::TOcclusionType COcclusionQueryD3D::getOcclusionType()
 // ***************************************************************************
 uint COcclusionQueryD3D::getVisibleCount()
 {
+	H_AUTO_D3D(COcclusionQueryD3D_getVisibleCount);	
 	nlassert(Driver);
 	nlassert(Query);
 	nlassert(Driver->_CurrentOcclusionQuery != this) // can't query result between a begin/end pair!
@@ -2243,12 +2304,14 @@ uint COcclusionQueryD3D::getVisibleCount()
 // ***************************************************************************
 bool CDriverD3D::isWaterShaderSupported() const
 {			
+	H_AUTO_D3D(CDriverD3D_isWaterShaderSupported);	
 	return _PixelShaderVersion >= D3DPS_VERSION(1, 1);
 }
 
 // ***************************************************************************
 void CDriverD3D::setCullMode(TCullMode cullMode)
 {
+	H_AUTO_D3D(CDriver3D_cullMode);
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
 	if (cullMode != _CullMode)
 #endif
@@ -2268,9 +2331,9 @@ void CDriverD3D::setCullMode(TCullMode cullMode)
 // ***************************************************************************
 IDriver::TCullMode CDriverD3D::getCullMode() const
 {
+	H_AUTO_D3D(CDriver3D_CDriverD3D);
 	return _CullMode;
 }
-
 
 
 

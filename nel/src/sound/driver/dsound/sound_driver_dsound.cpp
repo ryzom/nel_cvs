@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.16 2003/03/05 15:14:52 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.17 2003/03/06 17:27:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -426,13 +426,14 @@ bool CSoundDriverDSound::init(HWND wnd, bool useEax, IStringMapperProvider *stri
     {
  		nldebug("Primary buffer: Allocating 3D buffer in software");
         desc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_LOCSOFTWARE | DSBCAPS_CTRL3D | DSBCAPS_CTRLVOLUME;
-        desc.guid3DAlgorithm = DS3DALG_NO_VIRTUALIZATION;
+//        desc.guid3DAlgorithm = DS3DALG_NO_VIRTUALIZATION;
     }
 	
 
 
+	HRESULT res = _DirectSound->CreateSoundBuffer(&desc, &_PrimaryBuffer, NULL);
 
-    if (_DirectSound->CreateSoundBuffer(&desc, &_PrimaryBuffer, NULL) != DS_OK) 
+    if (res != DS_OK && res != DS_NO_VIRTUALIZATION)
     {
 
  		nlwarning("Primary buffer: Failed to create a buffer with 3D capabilities.");

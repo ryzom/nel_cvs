@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.20 2001/09/14 09:52:58 cado Exp $
+ * $Id: mutex.cpp,v 1.21 2001/09/14 10:11:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,14 @@
 #endif
 
 using namespace std;
+
+#ifndef MUTEX_DEBUG
+#define debugCreateMutex() ;
+#define debugBeginEnter() ;
+#define debugEndEnter() ;
+#define debugLeave() ;
+#define debugDeleteMutex() ;
+#endif
 
 
 /****************
@@ -123,9 +131,7 @@ CFairMutex::CFairMutex()
 {
 	Name = "unset mutex name";
 
-#ifdef MUTEX_DEBUG
 	debugCreateMutex();
-#endif
 
 	// Check that the CRITICAL_SECTION structure has not changed
 	nlassert( sizeof(TNelRtlCriticalSection)==sizeof(CRITICAL_SECTION) );
@@ -172,9 +178,7 @@ CFairMutex::~CFairMutex()
 {
 	DeleteCriticalSection( (CRITICAL_SECTION*)&_Cs );
 
-#ifdef MUTEX_DEBUG
 	debugDeleteMutex();
-#endif
 }
 
 
@@ -183,13 +187,11 @@ CFairMutex::~CFairMutex()
  */
 void CFairMutex::enter()
 {
-#ifdef MUTEX_DEBUG
 	debugBeginEnter();
-#endif
+
 	EnterCriticalSection( (CRITICAL_SECTION*)&_Cs );
-#ifdef MUTEX_DEBUG
+
 	debugEndEnter();
-#endif
 }
 
 
@@ -199,9 +201,8 @@ void CFairMutex::enter()
 void CFairMutex::leave()
 {
 	LeaveCriticalSection( (CRITICAL_SECTION*)&_Cs );
-#ifdef MUTEX_DEBUG
+
 	debugLeave();
-#endif
 }
 
 

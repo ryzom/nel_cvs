@@ -1,6 +1,6 @@
 NEVRAX NeL Network Services Howto
 23/01/2001 cado@nevrax.com
-$Id: HOWTO,v 1.1 2001/04/18 13:54:25 valignat Exp $
+$Id: HOWTO,v 1.2 2001/10/04 15:49:12 lecroart Exp $
 ----------
 
 The NEVRAX NeL Network Services is made up of one unique login service, one or
@@ -16,7 +16,6 @@ Once you have compiled the servers, you should have the following files
 (shown in Unix naming scheme, for Windows add ".exe") in a single
 directory (let's call it homedir/bin):
 naming_service  -> used to find a specific service by its name
-log_service     -> centralized logger for all services
 time_service    -> centralized time reference manager
 login_service   -> centralized user account manager for all shards
 (admin_executor_service -> collects system stats 
@@ -45,7 +44,6 @@ Here is a sample batch file, where you can find the right ordering :
 
 -- starts --
 nohup ~/bin/naming_service >/dev/null
-nohup ~/bin/log_service >/dev/null
 nohup ~/bin/time_service >/dev/null
 nohup ~/bin/login_service >/dev/null
 echo "Active services:"
@@ -69,8 +67,8 @@ Then launch the client and enjoy :-)
 - ls.log (login_service)
   Every time someone logs in, its configuration information is
   saved into ls.log
-- logs.log (very big especially if you have compiled the servers
-  with NL_DEBUG defined) (log_service)
+- log.log (very big especially if you have compiled the servers
+  with NL_DEBUG defined)
   Contains all debug information sent by the services.
 
 

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.27 2001/09/07 09:16:32 corvazier Exp $
+ * $Id: vertex_buffer.cpp,v 1.28 2001/09/07 09:23:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -653,13 +653,13 @@ void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 	for(sint id=0;id<(sint)_NbVerts;id++)
 	{
 		// XYZ.
-		if(_Flags & Position)
+		if(_Flags & PositionFlag)
 		{
 			CVector		&vert= *(CVector*)getVertexCoordPointer(id);
 			f.serial(vert);
 		}
 		// Normal
-		if(_Flags & Normal)
+		if(_Flags & NormalFlag)
 		{
 			CVector		&norm= *(CVector*)getNormalCoordPointer(id);
 			f.serial(norm);

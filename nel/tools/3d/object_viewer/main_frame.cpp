@@ -156,15 +156,14 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVEELEMENT, OnUpdateEditMoveelement)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)
 	ON_COMMAND(IDM_SET_LAG, OnSetLag)
-	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)
-	ON_COMMAND(IDM_ACTIVATE_TEXTURE_SET_1, OnActivateTextureSet1)
-	ON_COMMAND(IDM_ACTIVATE_TEXTURE_SET_2, OnActivateTextureSet2)
-	ON_COMMAND(IDM_ACTIVATE_TEXTURE_SET_3, OnActivateTextureSet3)
-	ON_COMMAND(IDM_ACTIVATE_TEXTURE_SET_4, OnActivateTextureSet4)
+	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)	
 	ON_COMMAND(ID_WINDOW_VEGETABLE, OnWindowVegetable)
+	ON_COMMAND_RANGE(IDM_ACTIVATE_TEXTURE_SET_1, IDM_ACTIVATE_TEXTURE_SET_8, OnActivateTextureSet)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_VEGETABLE, OnUpdateWindowVegetable)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers
@@ -911,26 +910,10 @@ void CMainFrame::OnRemoveAllInstancesFromScene()
 }
 
 ///===========================================================================================
-void CMainFrame::OnActivateTextureSet1()
-{
-	ObjView->activateTextureSet(0);	
+void CMainFrame::OnActivateTextureSet(UINT nID)
+{	
+	ObjView->activateTextureSet(nID - IDM_ACTIVATE_TEXTURE_SET_1);	
 }
 
-///===========================================================================================
-void CMainFrame::OnActivateTextureSet2()
-{
-	ObjView->activateTextureSet(1);	
-}
 
-///===========================================================================================
-void CMainFrame::OnActivateTextureSet3()
-{
-	ObjView->activateTextureSet(2);	
-}
-
-///===========================================================================================
-void CMainFrame::OnActivateTextureSet4()
-{
-	ObjView->activateTextureSet(3);	
-}
 

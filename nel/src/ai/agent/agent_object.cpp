@@ -1,6 +1,6 @@
 /** \file agent_object.cpp
  *
- * $Id: agent_object.cpp,v 1.7 2001/07/12 08:13:42 chafik Exp $
+ * $Id: agent_object.cpp,v 1.8 2002/05/06 12:55:23 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,6 +83,13 @@ namespace NLAIAGENT
 	{
 		const CStringType &b = (const CStringType &)a;		
 		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!(*_Str == b.getStr()));
+		return x;
+	}
+
+	IObjetOp *CStringType::operator == (IObjetOp &a) const
+	{
+		const CStringType &b = (const CStringType &)a;		
+		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType((*_Str == b.getStr()));
 		return x;
 	}
 

@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.20 2002/03/12 13:45:46 chafik Exp $
+ * $Id: agent_object.h,v 1.21 2002/05/06 12:55:23 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,7 @@ namespace NLAIAGENT
 		virtual IObjetOp *operator <= (IObjetOp &a) const;	
 		virtual IObjetOp *operator >= (IObjetOp &a) const;	
 		virtual IObjetOp *operator != (IObjetOp &a) const;
+		virtual IObjetOp *operator == (IObjetOp &a) const;
 		//@}
 
 

@@ -1,7 +1,7 @@
 /** \file tess_face_priority_list.cpp
  * <File description>
  *
- * $Id: tess_face_priority_list.cpp,v 1.2 2002/02/28 12:59:51 besson Exp $
+ * $Id: tess_face_priority_list.cpp,v 1.3 2002/08/22 14:41:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,9 @@
 #include <math.h>
 #include "3d/tessellation.h"
 
+
+using	namespace NLMISC;
+using	namespace std;
 
 namespace NL3D 
 {
@@ -160,11 +163,10 @@ void		CTessFacePListNode::appendPList(CTessFacePListNode	&root)
 // ***************************************************************************
 CTessFacePriorityList::CTessFacePriorityList()
 {
-	_Remainder= 0;
 	_OODistStep= 1;
 	_NEntries= 0;
 	_EntryModStart= 0;
-	_EntryStart= 0;
+	_NumQuadrant= 0;
 }
 
 // ***************************************************************************
@@ -174,40 +176,81 @@ CTessFacePriorityList::~CTessFacePriorityList()
 }
 
 // ***************************************************************************
-void		CTessFacePriorityList::init(float distStep, float distMax, float distMaxMod)
+void		CTessFacePriorityList::init(float distStep, float distMax, float distMaxMod, uint numQuadrant)
 {
-	// clear the prioriy list before.
-	clear();
-
-	// Allocate the Rolling table.
 	nlassert(distStep>0);
 	nlassert(distMax>0);
 	nlassert(distMaxMod<distMax);
+
+	// clear the prioriy list before.
+	clear();
+
+	// setup
 	_OODistStep= 1.0f / distStep;
 	_NEntries= (uint)ceil(distMax * _OODistStep);
 	_EntryModStart= (uint)ceil(distMaxMod * _OODistStep);
 	NLMISC::clamp(_EntryModStart, 0U, _NEntries-1);
-	_EntryStart= 0;
-	_Entries.resize(_NEntries);
+	_NumQuadrant= numQuadrant;
+
+	// Allocate the Rolling tables.
+	_RollingTables.resize(1+_NumQuadrant);
+	for(uint i=0;i<_RollingTables.size();i++)
+	{
+		_RollingTables[i].init(_NEntries);
+		// setup the quadrant direction. NB: 0 not used since "Direction less rolling table"
+		if(i>=1)
+		{
+			uint	idx= i-1;
+			// split evenly the plane with direction.
+			float	angle= float(2*Pi*idx)/_NumQuadrant;
+			CMatrix	mat;
+			mat.rotateZ(angle);
+			// setup the vector
+			_RollingTables[i].QuadrantDirection= mat.getJ();
+		}
+	}
 }
 
 // ***************************************************************************
 void		CTessFacePriorityList::clear()
 {
-	// just clear all the rolling table.
-	clearRollTable();
-	// For convenience only (not really usefull).
-	_Remainder= 0;
+	// just clear all the rolling tables.
+	_RollingTables.clear();
 }
 
+
 // ***************************************************************************
-void		CTessFacePriorityList::insert(float distance, CTessFace *value)
+uint		CTessFacePriorityList::selectQuadrant(const CVector &direction)
+{
+	// For all quadrant not 0, return the best direction
+	float	bestDirPs= -FLT_MAX;
+	uint	bestQuadrant= 0;
+	// NB: if numQuad=0, still work since return 0 => "direction less rolling table"
+	for(uint i=1;i<_RollingTables.size();i++)
+	{
+		float	ps= direction*_RollingTables[i].QuadrantDirection;
+		if(ps>bestDirPs)
+		{
+			bestDirPs= ps;
+			bestQuadrant= i;
+		}
+	}
+
+	return bestQuadrant;
+}
+
+
+// ***************************************************************************
+void		CTessFacePriorityList::insert(uint quadrantId, float distance, CTessFace *value)
 {
 	// plist must be inited.
-	nlassert(_NEntries>0);
+	nlassert(_NEntries>0 && quadrantId<_RollingTables.size());
 
 	// First, setup in our basis.
 	distance*= _OODistStep;
+
+	// Insert int the good quadrant
+	CRollingTable	&rollTable= _RollingTables[quadrantId];
 
 	// Then, look where we must insert it.
 	sint	idInsert;
@@ -215,7 +258,7 @@ void		CTessFacePriorityList::insert(float distance, CTessFace *value)
 		idInsert= 0;
 	else
 		// Must insert so we can't miss it when a shift occurs (=> floor).
-		idInsert= (sint)floor(distance + _Remainder);
+		idInsert= (sint)floor(distance + rollTable.Remainder);
 	idInsert= std::max(0, idInsert);
 
 	// Manage Mod.
@@ -233,12 +276,173 @@ void		CTessFacePriorityList::insert(float distance, CTessFace *value)
 	}
 
 	// insert in the Roll Table.
-	insertInRollTable(idInsert, value);
+	rollTable.insertInRollTable(idInsert, value);
 }
 
 
 // ***************************************************************************
-void		CTessFacePriorityList::shiftEntries(uint entryShift, CTessFacePListNode	&pulledElements)
+void		CTessFacePriorityList::shift(const CVector &direction, CTessFacePListNode	&pulledElements)
+{
+	// plist must be inited.
+	nlassert(_NEntries>0);
+
+	pulledElements.unlinkInPList();
+
+	// Shift all the rolling tables
+	for(uint i=0;i<_RollingTables.size();i++)
+	{
+		CRollingTable	&rollTable= _RollingTables[i];
+		float	shiftDistance;
+
+		// if quadrant 0, Direction less => get distance with Euler norm.
+		if(i==0)
+		{
+			shiftDistance= direction.norm();
+		}
+		// Else compute the effective distance we run to the plane.
+		else
+		{
+			shiftDistance= direction*rollTable.QuadrantDirection;
+			// For now, just clamp, but may be interesting to shift Back the rolling table !!
+			shiftDistance= max(0.f, shiftDistance);
+		}
+
+		// First, setup in our basis.
+		shiftDistance*= _OODistStep;
+
+		// at least, fill OUT with elements of entry 0.
+		// For all elements of the entry 0 of , pull them, and insert in result list.
+		pulledElements.appendPList(rollTable.getRollTableEntry(0));
+
+		// shift.
+		rollTable.Remainder+= shiftDistance;
+		// If Remainder>=1, it means that we must shift the rolling table, and get elements deleted.
+		uint	entryShift= (uint)floor(rollTable.Remainder);
+		rollTable.Remainder= rollTable.Remainder - entryShift;
+
+		// shift full array??
+		if( entryShift >= _NEntries)
+		{
+			entryShift= _NEntries;
+			// The entire array is pulled, _Remainder should get a good value.
+			rollTable.Remainder= 0;
+		}
+
+		// If some real shift, do it.
+		rollTable.shiftEntries(entryShift, pulledElements);
+	}
+}
+
+
+// ***************************************************************************
+void		CTessFacePriorityList::shiftAll(CTessFacePListNode	&pulledElements)
+{
+	// plist must be inited.
+	nlassert(_NEntries>0);
+
+	pulledElements.unlinkInPList();
+
+	// Do it for all rolling tables.
+	for(uint i=0;i<_RollingTables.size();i++)
+	{
+		// The entire array is pulled, _Remainder should get a good value.
+		uint entryShift= _NEntries;
+		_RollingTables[i].Remainder= 0;
+
+		// shift the entire array.
+		_RollingTables[i].shiftEntries(entryShift, pulledElements);
+	}
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Rolling table.
+// ***************************************************************************
+// ***************************************************************************
+
+// ***************************************************************************
+CTessFacePriorityList::CRollingTable::CRollingTable()
+{
+	_EntryStart= 0;
+	_NEntries= 0;
+	Remainder= 0;
+}
+
+// ***************************************************************************
+CTessFacePriorityList::CRollingTable::~CRollingTable()
+{
+	clearRollTable();
+}
+
+
+// ***************************************************************************
+void		CTessFacePriorityList::CRollingTable::init(uint numEntries)
+{
+	_EntryStart= 0;
+	_NEntries= numEntries;
+	Remainder= 0;
+	_Entries.resize(numEntries);
+}
+
+
+// ***************************************************************************
+void		CTessFacePriorityList::CRollingTable::insertInRollTable(uint entry, CTessFace *value)
+{
+	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart)%_NEntries ];
+
+	// Insert into list.
+	value->linkInPList(root);
+}
+
+// ***************************************************************************
+CTessFacePListNode	&CTessFacePriorityList::CRollingTable::getRollTableEntry(uint entry)
+{
+	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart)%_NEntries ];
+	return root;
+}
+
+// ***************************************************************************
+void		CTessFacePriorityList::CRollingTable::clearRollTableEntry(uint entry)
+{
+	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart)%_NEntries ];
+
+	// clear all the list.
+	while( root.nextInPList() )
+	{
+		// unlink from list
+		CTessFacePListNode	*node= root.nextInPList();
+		node->unlinkInPList();
+	}
+}
+
+// ***************************************************************************
+void		CTessFacePriorityList::CRollingTable::shiftRollTable(uint shiftEntry)
+{
+	// delete all elements shifted.
+	for(uint i=0; i<shiftEntry; i++)
+	{
+		clearRollTableEntry(i);
+	}
+	// shift to right the ptr of entries.
+	_EntryStart+= shiftEntry;
+	_EntryStart= _EntryStart % _NEntries;
+}
+
+// ***************************************************************************
+void		CTessFacePriorityList::CRollingTable::clearRollTable()
+{
+	for(uint i=0; i<_NEntries; i++)
+	{
+		clearRollTableEntry(i);
+	}
+	_EntryStart= 0;
+	// For convenience only (not really usefull).
+	Remainder= 0;
+}
+
+// ***************************************************************************
+void		CTessFacePriorityList::CRollingTable::shiftEntries(uint entryShift, CTessFacePListNode	&pulledElements)
 {
 	if(entryShift>0)
 	{
@@ -254,117 +458,6 @@ void		CTessFacePriorityList::shiftEntries(uint entryShift, CTessFacePListNode	&p
 	}
 }
 
-
-// ***************************************************************************
-void		CTessFacePriorityList::shift(float shiftDistance, CTessFacePListNode	&pulledElements)
-{
-	// plist must be inited.
-	nlassert(_NEntries>0);
-	nlassert(shiftDistance>=0);
-
-	// First, setup in our basis.
-	shiftDistance*= _OODistStep;
-
-	// at least, fill OUT with elements of entry 0.
-	pulledElements.unlinkInPList();
-	// For all elements of the entry 0, pull them, and insert in result list.
-	pulledElements.appendPList(getRollTableEntry(0));
-
-	// shift.
-	_Remainder+= shiftDistance;
-	// If Remainder>=1, it means that we must shift the rolling table, and get elements deleted.
-	uint	entryShift= (uint)floor(_Remainder);
-	_Remainder= _Remainder - entryShift;
-
-	// shift full array??
-	if( entryShift >= _NEntries)
-	{
-		entryShift= _NEntries;
-		// The entire array is pulled, _Remainder should get a good value.
-		_Remainder= 0;
-	}
-
-	// If some real shift, do it.
-	shiftEntries(entryShift, pulledElements);
-}
-
-
-// ***************************************************************************
-void		CTessFacePriorityList::shiftAll(CTessFacePListNode	&pulledElements)
-{
-	// plist must be inited.
-	nlassert(_NEntries>0);
-
-	pulledElements.unlinkInPList();
-
-	// The entire array is pulled, _Remainder should get a good value.
-	uint entryShift= _NEntries;
-	_Remainder= 0;
-
-	// shift the entire array.
-	shiftEntries(entryShift, pulledElements);
-}
-
-
-// ***************************************************************************
-// ***************************************************************************
-// Rolling table.
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-void		CTessFacePriorityList::insertInRollTable(uint entry, CTessFace *value)
-{
-	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart)%_NEntries ];
-
-	// Insert into list.
-	value->linkInPList(root);
-}
-
-// ***************************************************************************
-CTessFacePListNode	&CTessFacePriorityList::getRollTableEntry(uint entry)
-{
-	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart)%_NEntries ];
-	return root;
-}
-
-// ***************************************************************************
-void		CTessFacePriorityList::clearRollTableEntry(uint entry)
-{
-	CTessFacePListNode	&root= _Entries[ (entry + _EntryStart)%_NEntries ];
-
-	// clear all the list.
-	while( root.nextInPList() )
-	{
-		// unlink from list
-		CTessFacePListNode	*node= root.nextInPList();
-		node->unlinkInPList();
-	}
-}
-
-// ***************************************************************************
-void		CTessFacePriorityList::shiftRollTable(uint shiftEntry)
-{
-	// delete all elements shifted.
-	for(uint i=0; i<shiftEntry; i++)
-	{
-		clearRollTableEntry(i);
-	}
-	// shift to right the ptr of entries.
-	_EntryStart+= shiftEntry;
-	_EntryStart= _EntryStart % _NEntries;
-}
-
-// ***************************************************************************
-void		CTessFacePriorityList::clearRollTable()
-{
-	for(uint i=0; i<_NEntries; i++)
-	{
-		clearRollTableEntry(i);
-	}
-	_EntryStart= 0;
-}
 
 
 

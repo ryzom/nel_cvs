@@ -1,7 +1,7 @@
 /** \file tess_face_priority_list.h
  * <File description>
  *
- * $Id: tess_face_priority_list.h,v 1.1 2001/10/10 15:48:39 berenguier Exp $
+ * $Id: tess_face_priority_list.h,v 1.2 2002/08/22 14:41:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,13 @@ private:
  *	because it manages a "Remainder system", which do the good stuff.
  *	How does it works? in essence, it is a Rolling table, with 1+ shift back when necessary (maybe not at each shift()).
  *
+ *	Additionally, it includes a "2D quadrant" notion. If you use this class to know when the "camera" enters
+ *	a specific area, then Quadrants help you because the notion of direction is kept.
+ *	Only the XY plane is used here.
+ *
+ *	Instead, if you use this class to know when the "camera" leaves a specific area, then the quadrant notion
+ *	is not interesting since the camera can leave the area in any direction...
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -92,35 +99,53 @@ public:
 	CTessFacePriorityList();
 	~CTessFacePriorityList();
 
-	/** Clear and Init the priority list. It reserve a Rolling table of ceil(distMax/distStep) entries.
+	/** Clear and Init the priority list. It reserve (numQuadrants+1) Rolling table of ceil(distMax/distStep) entries.
 	 *
-	 *	distMaxMod is important for performance and should be < distMax. eg: distMaxMod= 0.8*distMax.
+	 *	\parm distMaxMod is important for performance and should be < distMax. eg: distMaxMod= 0.8*distMax.
 	 *	It is a trick to avoid the "Too Far Priority problem". Imagine you have set distMax= 1000,
 	 *	and you insert(1100, an element). If we clamp to the max, it may be a bad thing, because ALL elements
 	 *	inserted after 1000 will be poped in one shift(), after 1000 shift(1) for example.
 	 *	To avoid this, if distMaxMod==800, then insert(1050) will really insert at 850, so elements will be poped
 	 *	not as the same time (for the extra cost of some elements get poped too early...).
+	 *
+	 *	\param numQuadrant set 0 if don't want to support quadrant notion
 	 */
-	void		init(float distStep, float distMax, float distMaxMod);
+	void			init(float distStep, float distMax, float distMaxMod, uint numQuadrant);
 	/** Clear the priority list. All elements are removed. NB: for convenience, the remainder is reset.
 	 */
-	void		clear();
+	void			clear();
 
-	/** Insert an element at a given distance.
+	/**	prior to insert an element with a direction notion, select which quadrant according to the direction
+	 *	Camera -> center of interest.
+	 *	\return 0 if no quadrant available, else the quadrant id
+	 */
+	uint			selectQuadrant(const CVector &direction);
+
+	/**	get the quadrant dir associated to the Id. Undefined if 0.
+	 */
+	const CVector	&getQuadrantDirection(uint quadrantId) const {return _RollingTables[quadrantId].QuadrantDirection;}
+
+	/** Insert an element at a given distance, and in a given quadrant.
 	 *	Insert at the closest step. eg insert(1.2, elt) will insert elt at entry 1 (assuming distStep==1 here).
 	 *	Special case: if distance<=0, it is ensured that at each shift(), the element will be pulled.
 	 *	NB: manage correctly the entry where it is inserted, according to the Remainder system.
+	 *
+	 *	\param quadrantId set 0 if you want to insert in the "direction less" rolling table. else set the value
+	 *	returned by selectQuadrant()
+	 *	\param distance if quadrantId==0, distance should be the norm()-SphereSize, else it shoudl be
+	 *	direction*quadrantDirection-SphereSize.
 	 */
-	void		insert(float distance, CTessFace *value);
+	void			insert(uint quadrantId, float distance, CTessFace *value);
 
-	/** Shift the Priority list of shiftDistance. NB: even if shiftDistance==0, all elements in the entry 0 are pulled out.
-	 *	Out: pulledElements is the root of the list which will contains elements pulled from the list.
+	/** Shift the Priority list in a given direction.
+	 *	NB: for each rolling table, even if shiftDistance==0, all elements in the entry 0 are pulled out.
+	 *	\parm pulledElements is the root of the list which will contains elements pulled from the list.
 	 */
-	void		shift(float shiftDistance, CTessFacePListNode	&pulledElements);
+	void			shift(const CVector &direction, CTessFacePListNode	&pulledElements);
 
 	/** Same as shift(), but shift all the array.
 	 */
-	void		shiftAll(CTessFacePListNode	&pulledElements);
+	void			shiftAll(CTessFacePListNode	&pulledElements);
 
 
 // **************************
@@ -134,37 +159,61 @@ private:
 			Then, if, as example, an element must be inserted at dist=0.95, it will be inserted in entry 1, and not entry 0!
 		NB: the "meaning" of entry 0 is always <=0.
 	*/
-	float	_Remainder;
-	float	_OODistStep;
+	float			_Remainder;
+	float			_OODistStep;
+	uint			_NEntries;
+	uint			_EntryModStart;
+	uint			_NumQuadrant;
 
 
-	/// fot shift() and shiftAll()
-	void		shiftEntries(uint entryShift, CTessFacePListNode	&pulledElements);
-
-
-	/// \name The rolling table <=> HTable.
+	/// \name The rolling tables
 	// @{
-	std::vector<CTessFacePListNode>		_Entries;
-	uint					_NEntries;
-	uint					_EntryModStart;
-	// where is the entry 0 in _Entries.
-	uint					_EntryStart;
 
+	/// A single rolling table  <=> HTable.
+	class		CRollingTable
+	{
+	public:
+		// The quadrant Direction for this rolling table.
+		CVector		QuadrantDirection;
 
-	// entry is relative to _EntryStart.
-	void		insertInRollTable(uint entry, CTessFace *value);
+		// computed and decremented by CTessFacePriorityList
+		float		Remainder;
 
-	// get the root of the list at entry. entry is relative to _EntryStart.
-	CTessFacePListNode		&getRollTableEntry(uint entry);
+	public:
+		CRollingTable();
+		~CRollingTable();
 
-	// clear all element of an entry of the roll table. entry is relative to _EntryStart.
-	void		clearRollTableEntry(uint entry);
+		// init the roll table
+		void		init(uint numEntries);
 
-	// shift the rollingTable of shiftEntry. elements in entries shifted are deleted. no-op if 0.
-	void		shiftRollTable(uint shiftEntry);
+		// entry is relative to _EntryStart.
+		void		insertInRollTable(uint entry, CTessFace *value);
 
-	// clear all elements of the roll table.
-	void		clearRollTable();
+		// get the root of the list at entry. entry is relative to _EntryStart.
+		CTessFacePListNode		&getRollTableEntry(uint entry);
+
+		// shift the rollingTable of shiftEntry. elements in entries shifted are deleted. no-op if 0.
+		void		shiftRollTable(uint shiftEntry);
+
+		// clear all elements of the roll table.
+		void		clearRollTable();
+
+		/// append elements shifted and shift
+		void		shiftEntries(uint entryShift, CTessFacePListNode	&pulledElements);
+
+	private:
+		// where is the entry 0 in _Entries.
+		std::vector<CTessFacePListNode>		_Entries;
+		uint					_EntryStart;
+		uint					_NEntries;
+
+		// clear all element of an entry of the roll table. entry is relative to _EntryStart.
+		void		clearRollTableEntry(uint entry);
+
+	};
+
+	// There is 1+NumQuadrant rollingTable.
+	std::vector<CRollingTable>		_RollingTables;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.120 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: landscape.cpp,v 1.121 2002/08/22 14:43:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,16 +74,21 @@ namespace NL3D
 // This value is important for the precision of the priority list
 #define	NL3D_REFINE_PLIST_DIST_STEP		0.0625
 /* This value is important, because faces will be inserted at maximum at this entry in the priority list.
-	If not so big (eg 500 meters), a big bunch of faces may be inserted in this entry, which may cause slow down
+	If not so big (eg 50 meters), a big bunch of faces may be inserted in this entry, which may cause slow down
 	sometimes, when all this bunch comes to 0 in the priority list.
 	To avoid such a thing, see CTessFacePriorityList::init(), and use of NL3D_REFINE_PLIST_DIST_MAX_MOD.
 */
-#define	NL3D_REFINE_PLIST_DIST_MAX		1000
-#define	NL3D_REFINE_PLIST_DIST_MAX_MOD	0.7*NL3D_REFINE_PLIST_DIST_MAX
+#define	NL3D_REFINE_PLIST_DIST_MAX				100
+#define	NL3D_REFINE_PLIST_DIST_MAX_MOD			0.7*NL3D_REFINE_PLIST_DIST_MAX
+// For the Split priority list only, numbers of quadrants. MergeList has 0 quadrants.
+#define	NL3D_REFINE_PLIST_SPLIT_NUMQUADRANT		16
+
 
 /*
-	OverHead size of the priority list is 8 * (NL3D_REFINE_PLIST_DIST_MAX / NL3D_REFINE_PLIST_DIST_STEP).
-	So here, it is "only" 128K.
+	OverHead size of one RollingTable of priority list is 8 * (NL3D_REFINE_PLIST_DIST_MAX / NL3D_REFINE_PLIST_DIST_STEP).
+	So here, it is "only" 12.8K.
+
+	Since we have 2 Priority list and 16 quadrants for the split one, the total overhead is 18*12.8= 230K
 */
 
 
@@ -219,8 +224,9 @@ CLandscape::CLandscape() :
 
 	// priority list.
 	_OldRefineCenterSetuped= false;
-	_SplitPriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD);
-	_MergePriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD);
+	_SplitPriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD, NL3D_REFINE_PLIST_SPLIT_NUMQUADRANT);
+	// See updateRefine* Doc in tesselation.cpp for why the merge list do not need quadrants.
+	_MergePriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD, 0);
 	// just for getTesselatedPos to work properly.
 	_OldRefineCenter= CVector::Null;
 
@@ -627,12 +633,12 @@ void			CLandscape::refine(const CVector &refineCenter)
 	else
 	{
 		// else, compute delta between positions
-		float	dist= (refineCenter - _OldRefineCenter).norm();
+		CVector		diff= refineCenter - _OldRefineCenter;
 		_OldRefineCenter= refineCenter;
 
 		// and shift according to distance of deplacement.
-		_SplitPriorityList.shift(dist, rootSplitTessFaceToUpdate);
-		_MergePriorityList.shift(dist, rootMergeTessFaceToUpdate);
+		_SplitPriorityList.shift(diff, rootSplitTessFaceToUpdate);
+		_MergePriorityList.shift(diff, rootMergeTessFaceToUpdate);
 	}
 
 

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.62 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: tessellation.cpp,v 1.63 2002/08/22 14:43:50 berenguier Exp $
  *
  */
 
@@ -40,6 +40,9 @@ using namespace std;
 namespace NL3D 
 {
 
+
+// ***************************************************************************
+#define	NL3D_TESS_USE_QUADRANT_THRESHOLD		0.1f
 
 
 // ***************************************************************************
@@ -1254,8 +1257,8 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	//------------------------------------------------------
 	// Since we are freshly splitted, unlink from any list, and link to the MergePriorityList, because must look 
 	// now when should merge.
-	Patch->getLandscape()->_MergePriorityList.insert(0, f0);
-	Patch->getLandscape()->_MergePriorityList.insert(0, f1);
+	Patch->getLandscape()->_MergePriorityList.insert(0, 0, f0);
+	Patch->getLandscape()->_MergePriorityList.insert(0, 0, f1);
 
 	// Since we are split, no need to test father for merge, because it cannot!
 	if(f0->Father)
@@ -1528,7 +1531,7 @@ void		CTessFace::split(bool propagateSplit)
 	//------------------------------------------------------
 	// Since we are freshly splitted, unlink from any list, and link to the MergePriorityList, because must look 
 	// now when should merge.
-	Patch->getLandscape()->_MergePriorityList.insert(0, this);
+	Patch->getLandscape()->_MergePriorityList.insert(0, 0, this);
 
 	// Since we are split, no need to test father for merge, because it cannot!
 	if(Father)
@@ -1735,7 +1738,7 @@ void		CTessFace::doMerge()
 	//------------------------------------------------------
 	// Since we are freshly merged, unlink from any list, and link to the SplitPriorityList, because must look 
 	// now when we should split again.
-	Patch->getLandscape()->_SplitPriorityList.insert(0, this);
+	Patch->getLandscape()->_SplitPriorityList.insert(0, 0, this);
 
 	// since we are now merged maybe re-insert father in priority list.
 	if(Father)
@@ -1744,7 +1747,7 @@ void		CTessFace::doMerge()
 		// If sons of father are both leaves (ie this, and the other (complexe case if rectangle) )
 		if( Father->SonLeft->isLeaf() && Father->SonRight->isLeaf() )
 		{
-			Patch->getLandscape()->_MergePriorityList.insert(0, Father);
+			Patch->getLandscape()->_MergePriorityList.insert(0, 0, Father);
 		}
 	}
 
@@ -1872,6 +1875,23 @@ void		CTessFace::refineAll()
 */
 
 
+// Quadrant Selection
+/*
+	Quadrant/Direction is interesting for updateRefineSplit() only.
+	In the 2 most simples cases, the action we want is "Know when we enters in a bounding volume"
+	This fit well for Quadrant notion.
+
+	In the case "TileDistNear to TileDistFar", the rule is too complicated and there is also
+	the notion of "Know when we LEAVE the TileDistFar sphere around the face" which is incompatible
+	with Quadrant behavior (since can go in any direction to leave the sphere).
+
+	updateRefineMerge() are at least all notion of "Know when we LEAVE the SplitSphere around the SplitPoint"
+	which is incompatible with Quadrant behavior.
+	This is why updateRefineMerge() don't bother at all quadrant, and so the _MergePriorityList is inited with 0
+	quadrants.
+
+*/
+
 // ***************************************************************************
 void		CTessFace::updateRefineSplit()
 {
@@ -1911,6 +1931,9 @@ void		CTessFace::updateRefineSplit()
 		}
 	}
 
+
+	// Insert the face in the priority list.
+	//-----------------------
 	// If splitted, then insertion in Landscape->MergePriorityList at 0 has been done. so nothing to update.
 	// Else, must compute when whe should re-test.
 	if(!splitted)
@@ -1918,15 +1941,17 @@ void		CTessFace::updateRefineSplit()
 		// the face is not splitted here.
 		nlassert(isLeaf());
 
-		// Insert the face in the priority list.
-		//-----------------------
 		float	minDeltaDistToUpdate;
 
+		// by default insert in the quadrant-less rolling table.
+		uint	quadrantId= 0;
 
+
+		CVector		dirToSplitPoint= SplitPoint - CLandscapeGlobals::RefineCenter;
 		// The distance of SplitPoint to center.
-		float	distSplitPoint= (SplitPoint - CLandscapeGlobals::RefineCenter).norm();
+		float		distSplitPoint= dirToSplitPoint.norm();
 		// The distance where we should split/merge. see updateRefin() doc.
-		float	distNormalSplitMerge= (float)sqrt(Size*CLandscapeGlobals::OORefineThreshold);
+		float		distNormalSplitMerge= (float)sqrt(Size*CLandscapeGlobals::OORefineThreshold);
 
 
 		// If the face is at its max subdivision
@@ -1941,15 +1966,38 @@ void		CTessFace::updateRefineSplit()
 		{
 			// Always normal ErrorMetric. Because Faces at Tile level decide to split or merge their sons independently 
 			// of "Tile ErrorMetric".
-			// compute distance to split.
+
+			// The test is "when do we enter in the Split area?", so we can use Quadrant PriorityList
+			quadrantId= Patch->getLandscape()->_SplitPriorityList.selectQuadrant(dirToSplitPoint);
+
+			// compute distance to split as default "No Quadrant"
 			minDeltaDistToUpdate= distSplitPoint - distNormalSplitMerge;
+
+			// If a quadrant is  selected, try to use it
+			if(quadrantId>0)
+			{
+				const CVector	&quadrantDir= Patch->getLandscape()->_SplitPriorityList.getQuadrantDirection(quadrantId);
+
+				// We must not approach the SplitPoint at distNormalSplitMerge
+				float	dMin= quadrantDir*dirToSplitPoint - distNormalSplitMerge;
+
+				// If the dist with quadrant is too small then use the std way (without quadrant).
+				if( dMin<NL3D_TESS_USE_QUADRANT_THRESHOLD )
+					quadrantId= 0;
+				// else ok, use quadrant behavior
+				else
+					minDeltaDistToUpdate= dMin;
+			}
 		}
 		else
 		{
 			// Compute Distance of the face from RefineCenter. It is the min of the 3 points, as in computeTileErrorMetric().
-			float	s0= (VBase->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
-			float	s1= (VLeft->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
-			float	s2= (VRight->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
+			CVector	dirToV0= VBase->EndPos - CLandscapeGlobals::RefineCenter;
+			CVector	dirToV1= VLeft->EndPos - CLandscapeGlobals::RefineCenter;
+			CVector	dirToV2= VRight->EndPos - CLandscapeGlobals::RefineCenter;
+			float	s0= dirToV0.sqrnorm();
+			float	s1= dirToV1.sqrnorm();
+			float	s2= dirToV2.sqrnorm();
 			float	distMinFace= (float)sqrt( minof(s0, s1, s2) );
 
 			// compute the delta distance to the normal split point. See above for doc.
@@ -1963,16 +2011,41 @@ void		CTessFace::updateRefineSplit()
 			///	TileDistFar to +oo.
 			if( distMinFace > CLandscapeGlobals::TileDistFar )
 			{
-				// normal geomorph. Any face compute the distance to the SplitPoint, and take min with distance to
-				// the TileDistFar sphere. 
-				minDeltaDistToUpdate= normalEMDeltaDist;
+				// The test is "when do we enter in the Split area OR in TileDistFar area?", so we can use Quadrant PriorityList
+				quadrantId= Patch->getLandscape()->_SplitPriorityList.selectQuadrant(dirToSplitPoint);
 
+				// compute deltaDist as default "Direction less quadrant"
+				minDeltaDistToUpdate= normalEMDeltaDist;
 				// We must know when we enter in TileErrorMetric zone, because the computing is different.
 				minDeltaDistToUpdate= min(minDeltaDistToUpdate, distMinFace - CLandscapeGlobals::TileDistFar);
+
+				// try with quadrant if > 0.
+				if(quadrantId>0)				
+				{
+					const CVector	&quadrantDir= Patch->getLandscape()->_SplitPriorityList.getQuadrantDirection(quadrantId);
+
+					// We must not approach the SplitPoint at distNormalSplitMerge
+					float	dMin= quadrantDir*dirToSplitPoint - distNormalSplitMerge;
+					// and we must not reach one of the 3 sphere (Vi, TileDistFar).
+					float	d0 = quadrantDir*dirToV0 - CLandscapeGlobals::TileDistFar;
+					float	d1 = quadrantDir*dirToV1 - CLandscapeGlobals::TileDistFar;
+					float	d2 = quadrantDir*dirToV2 - CLandscapeGlobals::TileDistFar;
+					// take min dist
+					dMin= minof(dMin, d0, d1, d2);
+
+					// If the dist with quadrant is too small then use the std way (without quadrant).
+					if( dMin<NL3D_TESS_USE_QUADRANT_THRESHOLD )
+						quadrantId= 0;
+					// else ok, use quadrant behavior
+					else
+						minDeltaDistToUpdate= dMin;
+				}
 			}
 			/// TileDistNear to TileDistFar.
 			else if( distMinFace > CLandscapeGlobals::TileDistNear )
 			{
+				// NB: can't use quadrant behavior here. Leave quadrantId at 0.
+
 				// Profile
 				NL3D_PROFILE_LAND_ADD(ProfNRefineInTileTransition, 1);
 
@@ -2022,7 +2095,7 @@ void		CTessFace::updateRefineSplit()
 
 		// insert in the Split priority list.
 		// Until the RefineCenter move under minDeltaDistToUpdate, we don't need to test face.
-		Patch->getLandscape()->_SplitPriorityList.insert(minDeltaDistToUpdate, this);
+		Patch->getLandscape()->_SplitPriorityList.insert(quadrantId, minDeltaDistToUpdate, this);
 	}
 }
 
@@ -2073,6 +2146,9 @@ void		CTessFace::updateRefineMerge()
 		}
 	}
 
+
+	// Insert the face in the priority list.
+	//-----------------------
 	// If merged, then insertion in Landscape->SplitPriorityList at 0 has been done. so nothing to update.
 	// Else, must compute when whe should re-test.
 	if(!merged)
@@ -2080,9 +2156,6 @@ void		CTessFace::updateRefineMerge()
 		// the face is splitted here.
 		nlassert(!isLeaf());
 
-
-		// Insert the face in the priority list.
-		//-----------------------
 		float	minDeltaDistToUpdate;
 
 
@@ -2188,7 +2261,7 @@ void		CTessFace::updateRefineMerge()
 
 		// insert in the Merge priority list.
 		// Until the RefineCenter move under minDeltaDistToUpdate, we don't need to test face.
-		Patch->getLandscape()->_MergePriorityList.insert(minDeltaDistToUpdate, this);
+		Patch->getLandscape()->_MergePriorityList.insert(0, minDeltaDistToUpdate, this);
 	}
 }
 

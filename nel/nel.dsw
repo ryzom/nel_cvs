@@ -54,6 +54,24 @@ Package=<4>
 
 ###############################################################################
 
+Project: "driver_fmod"=.\src\sound\driver\fmod\driver_fmod.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name sound_lowlevel
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "driver_opengl"=.\src\3d\driver\opengl\driver_opengl.dsp - Package Owner=<4>
 
 Package=<5>
@@ -175,6 +193,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name driver_direct3d
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name driver_fmod
     End Project Dependency
 }}}
 

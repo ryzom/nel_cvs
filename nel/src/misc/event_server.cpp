@@ -1,7 +1,7 @@
 /** \file event_server.cpp
  * events server
  *
- * $Id: event_server.cpp,v 1.11 2004/04/09 14:32:31 vizerie Exp $
+ * $Id: event_server.cpp,v 1.12 2004/11/05 18:05:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,14 @@
 namespace NLMISC {
 
 
+/*------------------------------------------------------------------*\
+							CEventServer()
+\*------------------------------------------------------------------*/
+CEventServer::CEventServer()
+{
+	_Pumping= false;
+}
+	
 
 /*------------------------------------------------------------------*\
 							postEvent()
@@ -50,6 +58,11 @@ void CEventServer::postEvent(CEvent * event)
 \*------------------------------------------------------------------*/
 void CEventServer::pump(bool allWindows)
 {
+	// Avoid recurse (can arise if the process of an event decide to pump the server again....)
+	nlassert(!_Pumping);
+	_Pumping= true;
+	
+	// **** submit emitters events
 	std::list<IEventEmitter*>::iterator item = _Emitters.begin();
 	
 	// getting events from emitters
@@ -60,9 +73,8 @@ void CEventServer::pump(bool allWindows)
 		item++;
 	}
 
-	
+	// **** process to listeners
 	std::list<CEvent*>::iterator itev = _Events.begin();
-	
 	while(itev!=_Events.end())
 	{
 		// pump event
@@ -71,6 +83,9 @@ void CEventServer::pump(bool allWindows)
 			delete *itev;
 		itev=_Events.erase (itev);
 	}
+
+	// end of pumping
+	_Pumping= false;
 }
 
 

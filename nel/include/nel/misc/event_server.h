@@ -1,7 +1,7 @@
 /** \file event_server.h
  * events server
  *
- * $Id: event_server.h,v 1.7 2003/06/18 14:38:57 corvazier Exp $
+ * $Id: event_server.h,v 1.8 2004/11/05 18:05:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,8 +54,10 @@ class CEventServer
 	mapListener _Listeners;
 	std::list<IEventEmitter*> _Emitters;
 	std::list<CEvent*> _Events;
+	bool		_Pumping;
 
 public:
+	CEventServer();
 	virtual ~CEventServer() {}
 
 	/** 

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.54 2002/06/05 15:46:04 berenguier Exp $
+ * $Id: export_nel.h,v 1.55 2002/06/06 14:42:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,11 @@ namespace NLPACS
 	class CGlobalRetriever;
 	class CPrimitiveBlock;
 };
+
+namespace NLMISC
+{
+	class CAABBox;
+}
 
 
 // ***************************************************************************
@@ -263,7 +268,7 @@ public:
 	  */
 	NL3D::CMesh::CMeshBuild*		createMeshBuild(INode& node, TimeValue tvTime, NL3D::CMesh::CMeshBaseBuild*& baseBuild, const NLMISC::CMatrix &finalSpace = NLMISC::CMatrix::Identity);
 
-	/** Test wether has app datas specifying interface meshs.
+	/** Test wether the node has app datas specifying interface meshs.
 	  * \see applyInterfaceToMeshBuild
 	  */ 
 	static bool						useInterfaceMesh(INode &node);
@@ -277,10 +282,12 @@ public:
 	  * Note : the name of the max file that contains the name of the interface is stored in an app data attached to this node
 	  * \param node the node from which datas must be retrieved (name of the .max file containing the interfaces)
 	  * \param meshBuildToModify The mesh build whose normal will be modified
-  	  * \param toWorldMat a matrix to put the meshbuild vertices into worldspace
+  	  * \param toWorldMat a matrix to put the meshbuild vertices into worldspace	  
 	  * \param tvTime time aty which evaluate the mesh
 	  */
-	void							applyInterfaceToMeshBuild(INode &node, NL3D::CMesh::CMeshBuild &meshBuildToModify, const NLMISC::CMatrix &toWorldMat, TimeValue tvTime);
+	void							applyInterfaceToMeshBuild(INode &node, NL3D::CMesh::CMeshBuild &meshBuildToModify,
+															  const NLMISC::CMatrix &toWorldMat,															  
+															  TimeValue tvTime);
 
 	/** This takes a max mesh, and select the vertices that match vertices of a mesh interface
 	  * This has no effect if the mesh has no app datas specifying a mesh interface
@@ -305,6 +312,11 @@ public:
 	  */
 	static bool						isMesh (INode& node, TimeValue time, bool excludeCollision= true);
 	static bool						isVegetable (INode& node, TimeValue time);
+
+	/** Compute an  aabbox of a mesh, in world.
+	  * \return true if the conversion succeed.
+	  */ 
+	static bool						buildMeshAABBox(INode &node, NLMISC::CAABBox &dest, TimeValue time);
 
 	/**
 	  * Return true if the node is a mesh and has a Nel_Material attached to it
@@ -523,6 +535,8 @@ public:
 	// Get lights
 	void							getLights (std::vector<NL3D::CLight>& vectLight, TimeValue time, INode* node=NULL);
 
+	// Get the root node of the scene
+	INode						   *getRootNode() const;
 	// Get All node (objects only) of a hierarchy. NULL => all the scene
 	void							getObjectNodes (std::vector<INode*>& vectNode, TimeValue time, INode* node=NULL);
 
@@ -587,8 +601,10 @@ public:
 	// Set an appData VertexProgram WindTree.
 	static void						setScriptAppDataVPWT (Animatable *node, const CVPWindTreeAppData &apd);
 
-	// private func : this convert a polygon expressed as a max mesh into a list of ordered vectors
-	static void						maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVector> &dest);
+	/** private func : this convert a polygon expressed as a max mesh into a list of ordered vectors.
+	  * This also gives an average normal by averaging faces normals.
+	  */
+	static void						maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVector> &dest, NLMISC::CVector *avgNormal = NULL);
 
 
 	// ********************
@@ -959,6 +975,16 @@ private:
 	// Error title
 	std::string						_ErrorTitle;
 };
+
+/** replacment for sprintf scanf (because of localisation in max)
+  */
+float		toFloatMax(const char *src);
+// Same as to float max, but returns true if succeed
+bool		toFloatMax(const char *src, float &dest);
+std::string toStringMax(float value);
+std::string toStringMax(int value);
+
+
 
 
 #endif // NL_EXPORT_NEL_H

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.42 2002/05/30 15:36:17 besson Exp $
+ * $Id: export_mesh.cpp,v 1.43 2002/06/06 14:42:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@
 
 #include <nel/misc/polygon.h>
 #include <nel/misc/path.h>
+#include <nel/misc/aabbox.h>
 
 
 
@@ -850,6 +851,10 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 
 		// Get the material ID
 		buildMesh.Faces[face].MaterialId=nMaterialID;
+
+		// Get the smooth group
+		buildMesh.Faces[face].SmoothGroup = pFace->smGroup;
+		
 
 		// Ref on the material
 		const CMaterial &material = buildBaseMesh.Materials[nMaterialID];
@@ -2003,6 +2008,37 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 	}
 }
 
-
-
+// ***************************************************************************
+bool CExportNel::buildMeshAABBox(INode &node, NLMISC::CAABBox &dest, TimeValue time)
+{
+	Object *obj = node.EvalWorldState(time).obj;		
+	if (!obj) return false;
+	if (!obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0)))  return false;
+	 // Get a triobject from the node
+	TriObject *tri = (TriObject*)obj->ConvertToType(time, Class_ID(TRIOBJ_CLASS_ID, 0));
+	// Note that the TriObject should only be deleted
+	// if the pointer to it is not equal to the object
+	// pointer that called ConvertToType()
+	bool deleteIt = false;
+	if (obj != tri) 
+		deleteIt = true;
+	Mesh &mesh = tri->GetMesh();
+	//
+	Matrix3 toWorld = node.GetObjectTM(time);
+	mesh.buildBoundingBox();
+	Box3 bbox  = mesh.getBoundingBox(&toWorld);
+	Point3 maxMin = bbox.Min();
+	Point3 maxMax = bbox.Max();
+	CVector nelMin, nelMax;
+	convertVector(nelMin, maxMin);
+	convertVector(nelMax, maxMax);
+	//
+	dest.setMinMax(nelMin, nelMax);
+	//
+	if (deleteIt)
+	{
+		delete tri;
+	}
+	return true;
+}
 

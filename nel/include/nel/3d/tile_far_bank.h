@@ -1,7 +1,7 @@
 /** \file tile_far_bank.h
  * <File description>
  *
- * $Id: tile_far_bank.h,v 1.1 2000/12/19 14:25:03 corvazier Exp $
+ * $Id: tile_far_bank.h,v 1.2 2000/12/19 15:17:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,13 +28,13 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/stream.h"
 
 #include <vector>
 
 namespace NLMISC 
 {
 	class IStream;
-	struct EStream;
 }
 
 namespace NL3D 
@@ -63,20 +63,6 @@ public:
 		/// Default constructor
 		CTileFar ()
 		{
-			_Width=0;
-			_Height=0;
-		}
-
-		/// Return the width of the far tile texture. Should be 0, 4 or 8
-		uint16				getWidth () const
-		{
-			return _Width;
-		}
-
-		/// Return the width of the far tile texture. Should be 0, 4 or 8
-		uint16				getHeight () const
-		{
-			return _Height;
 		}
 
 		/// Return the pointer on the pixels data. Call this method only if isFill () returns true. 
@@ -88,19 +74,19 @@ public:
 		/// Return true if pixel value are presents, else return false.
 		bool				isFill () const
 		{
-			return _Width&&_Height;
+			return _Pixels.size()!=0;
+		}
+
+		/// Return the pixel array size. Should be 0 for empty, 64 for a 128x128 tile and 256 for a 256x256 tile.
+		sint				getSize () const
+		{
+			return (sint)_Pixels.size();
 		}
 
 		/// Serial this tile
 		void				serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	private:
-		/// Width of the far tile. Should be 0, 4 or 8
-		uint16				_Width;
-		
-		/// Height of the far tile. Should be 0, 4 or 8
-		uint16				_Height;
-
 		/// RGBA Pixels vector
 		std::vector<NLMISC::CRGBA>	_Pixels;
 

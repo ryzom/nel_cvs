@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.9 2000/12/19 15:13:10 corvazier Exp $
+ * $Id: tile_bank.h,v 1.10 2000/12/19 15:17:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,6 @@
 namespace	NLMISC
 {
 	class	IStream;
-	struct	EStream;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.2 2001/07/25 13:09:45 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.3 2001/08/23 14:12:08 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 
 namespace NLMISC
 {
-	class CAABBox ;
+	class CAABBox;
 }
 
 namespace NL3D {
@@ -61,12 +61,12 @@ public:
 	  * if (mySystem->isSystemPresent())
 	  * {
 	  *   /// perform modification on the system here
-	  *   mySystem->setUserParam(0, 0.5f) ; 
+	  *   mySystem->setUserParam(0, 0.5f); 
 	  * }
 	  *
 	  * \see isValid()	  
 	  */
-	virtual bool		isSystemPresent		(void) const = 0 ;
+	virtual bool		isSystemPresent		(void) const = 0;
 
 	/** Get the bounding box of the system, when it is present.
 	  * You should call this instead of UInstance::getShapeAABBox() because the bbox may change over time, and thusn its shape
@@ -75,7 +75,7 @@ public:
 	  * \return true if the bbox has been filled
 	  * \see isPresent()
 	  */
-	virtual	bool		getSystemBBox(NLMISC::CAABBox &bbox)   = 0 ;
+	virtual	bool		getSystemBBox(NLMISC::CAABBox &bbox)   = 0;
 
 
 	
@@ -88,7 +88,7 @@ public:
 		  * \value the new value of the parameter
 		  * \see isSystemPresent()
 		  */
-		virtual void		setUserParam		(uint index, float value) = 0 ;
+		virtual void		setUserParam		(uint index, float value) = 0;
 
 		/** Get the value of a user param
 		  * The system must be present, otherwise => nlassert
@@ -96,7 +96,7 @@ public:
 		  * \return the value of the user param (>= 0 and < 1)
 		  * \see isSystemPresent()
 		  */
-		virtual float		getUserParam		(uint index) const = 0 ;
+		virtual float		getUserParam		(uint index) const = 0;
 	// @}
 
 	///\name System validity
@@ -109,7 +109,7 @@ public:
 		  * Of course, an invalid system will always return false when isSystemPresent() is called...	  
 		  * \return true if the system has been invalidated. You can remove this object from the scene then...
 		  */
-		virtual bool		isValid				(void) const =  0 ;
+		virtual bool		isValid				(void) const =  0;
 
 		/** This is a struct is used by observers that want to be notified of the invalidation of the system.
 		  * \see isValid()
@@ -120,27 +120,36 @@ public:
 			/** called when the system has been destroyed
 			  * \param system the system that has been destroyed
 			  */
-	  		virtual void	systemDestroyed		(UParticleSystemInstance *system) = 0 ;	    
-		  } ;
+	  		virtual void	systemDestroyed		(UParticleSystemInstance *system) = 0;	    
+		  };
 
 		/** Register an observer that will be notified when the system becomes invalid
-		  * nlassert(!isPSObserver(oberver)) ;
+		  * nlassert(!isPSObserver(oberver));
 		  * \see isPSObserver()
 		  * \see removePSObserver()
 		  */
-		virtual void		registerPSObserver	(IPSObserver *observer) = 0 ;
+		virtual void		registerPSObserver	(IPSObserver *observer) = 0;
 
 		/** test whether 'observer' is an observer of this system
 		  * \see removePSObserver()
 		  * \see registerPSObserver()
 		  */
-		virtual bool		isPSObserver		(IPSObserver *observer) = 0 ;
+		virtual bool		isPSObserver		(IPSObserver *observer) = 0;
 
 		/** remove 'observer' from the observers of this system. Not an observer => nlassert
 		  * \see registerPSObserver()
 		  * \see isPSObserver()
 		  */
-		virtual void		removePSObserver	(IPSObserver *observer) = 0 ;
+		virtual void		removePSObserver	(IPSObserver *observer) = 0;
+	 //@}
+
+	 //@{ System action. All these actions need that the system be present, otherwise an assertion is raised
+			/** All the emitters that have the given ID emit their target.
+			  * An assertion is raised if there is no emitter with the given ID
+			  */
+			virtual void	emit(uint32 id, uint quantity = 1) = 0;
+	 //@}
+
 	 //@}
 };
 

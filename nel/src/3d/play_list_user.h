@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * <File description>
  *
- * $Id: play_list_user.h,v 1.3 2001/08/13 15:48:08 corvazier Exp $
+ * $Id: play_list_user.h,v 1.4 2001/09/05 11:45:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,12 +111,12 @@ public:
 
 	/// \name Animation Time Setup.
 	// @{
-	virtual	void setTimeOrigin (uint8 slot, CAnimationTime timeOrigin)
+	virtual	void setTimeOrigin (uint8 slot, double timeOrigin)
 	{
 		_PlayList.setTimeOrigin (slot, timeOrigin);
 	}
 
-	virtual	CAnimationTime getTimeOrigin (uint8 slot) const
+	virtual	double getTimeOrigin (uint8 slot) const
 	{
 		return _PlayList.getTimeOrigin (slot);
 	}
@@ -146,22 +146,22 @@ public:
 
 	/// \name Animation Weight Setup.
 	// @{
-	virtual	void setStartWeight (uint8 slot, float startWeight, CAnimationTime time)
+	virtual	void setStartWeight (uint8 slot, float startWeight, double time)
 	{
 		_PlayList.setStartWeight (slot, startWeight, time);
 	}
 
-	virtual	float getStartWeight (uint8 slot, CAnimationTime& time) const
+	virtual	float getStartWeight (uint8 slot, double& time) const
 	{
 		return _PlayList.getStartWeight(slot, time);
 	}
 
-	virtual	void setEndWeight (uint8 slot, float endWeight, CAnimationTime time)
+	virtual	void setEndWeight (uint8 slot, float endWeight, double time)
 	{
 		_PlayList.setEndWeight (slot, endWeight, time);
 	}
 
-	virtual	float getEndWeight (uint8 slot, CAnimationTime& time) const
+	virtual	float getEndWeight (uint8 slot, double& time) const
 	{
 		return _PlayList.getEndWeight (slot, time);
 	}

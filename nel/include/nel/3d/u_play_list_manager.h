@@ -1,7 +1,7 @@
 /** \file u_play_list_manager.h
  * <File description>
  *
- * $Id: u_play_list_manager.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_play_list_manager.h,v 1.2 2001/09/05 11:45:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,7 @@ public:
 	 *
 	 * \param time the effective currentTime in second.
 	 */
-	virtual	void		animate(CAnimationTime	time) =0;
+	virtual	void		animate(double time) =0;
 
 };
 

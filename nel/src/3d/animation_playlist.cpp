@@ -1,7 +1,7 @@
 /** \file animation_playlist.cpp
  * <File description>
  *
- * $Id: animation_playlist.cpp,v 1.6 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: animation_playlist.cpp,v 1.7 2001/09/05 11:45:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,14 +94,14 @@ uint CAnimationPlaylist::getSkeletonWeight (uint8 slot, bool &inverted) const
 
 // ***************************************************************************
 
-void CAnimationPlaylist::setTimeOrigin (uint8 slot, CAnimationTime timeOrigin)
+void CAnimationPlaylist::setTimeOrigin (uint8 slot, double timeOrigin)
 {
 	_TimeOrigin[slot]=timeOrigin;
 }
 
 // ***************************************************************************
 
-CAnimationTime CAnimationPlaylist::getTimeOrigin (uint8 slot) const
+double CAnimationPlaylist::getTimeOrigin (uint8 slot) const
 {
 	return _TimeOrigin[slot];
 }
@@ -122,7 +122,7 @@ float CAnimationPlaylist::getSpeedFactor (uint8 slot) const
 
 // ***************************************************************************
 
-void CAnimationPlaylist::setStartWeight (uint8 slot, float startWeight, CAnimationTime time)
+void CAnimationPlaylist::setStartWeight (uint8 slot, float startWeight, double time)
 {
 	_StartWeight[slot]=startWeight;
 	_StartWeightTime[slot]=time;
@@ -130,7 +130,7 @@ void CAnimationPlaylist::setStartWeight (uint8 slot, float startWeight, CAnimati
 
 // ***************************************************************************
 
-float CAnimationPlaylist::getStartWeight (uint8 slot, CAnimationTime& time) const
+float CAnimationPlaylist::getStartWeight (uint8 slot, double& time) const
 {
 	time=_StartWeightTime[slot];
 	return _StartWeight[slot];
@@ -138,7 +138,7 @@ float CAnimationPlaylist::getStartWeight (uint8 slot, CAnimationTime& time) cons
 
 // ***************************************************************************
 
-void CAnimationPlaylist::setEndWeight (uint8 slot, float endWeight, CAnimationTime time)
+void CAnimationPlaylist::setEndWeight (uint8 slot, float endWeight, double time)
 {
 	_EndWeight[slot]=endWeight;
 	_EndWeightTime[slot]=time;
@@ -146,7 +146,7 @@ void CAnimationPlaylist::setEndWeight (uint8 slot, float endWeight, CAnimationTi
 
 // ***************************************************************************
 
-float CAnimationPlaylist::getEndWeight (uint8 slot, CAnimationTime& time) const
+float CAnimationPlaylist::getEndWeight (uint8 slot, double& time) const
 {
 	time=_EndWeightTime[slot];
 	return _EndWeight[slot];
@@ -168,7 +168,7 @@ float CAnimationPlaylist::getWeightSmoothness (uint8 slot) const
 
 // ***************************************************************************
 
-void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, CAnimationTime time) const
+void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, double time) const
 {
 	// For each slot
 	for (uint8 s=0; s<CChannelMixer::NumAnimationSlot; s++)
@@ -193,7 +193,7 @@ void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, CAnimationTime time) 
 				if (pAnimation)
 				{
 					// Compute the non-wrapped time
-					CAnimationTime wrappedTime=pAnimation->getBeginTime ()+(time-_TimeOrigin[s])*_SpeedFactor[s];
+					CAnimationTime wrappedTime=pAnimation->getBeginTime ()+(CAnimationTime)((time-_TimeOrigin[s])*_SpeedFactor[s]);
 
 					// Wrap mode
 					switch (_WrapMode[s])
@@ -261,7 +261,7 @@ void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, CAnimationTime time) 
 
 // ***************************************************************************
 
-float CAnimationPlaylist::getWeightValue (float startWeightTime, float endWeightTime, float time, float startWeight, float endWeight, float smoothness)
+float CAnimationPlaylist::getWeightValue (double startWeightTime, double endWeightTime, double time, float startWeight, float endWeight, float smoothness)
 {
 	// Clamp left
 	if (time<=startWeightTime)
@@ -273,22 +273,22 @@ float CAnimationPlaylist::getWeightValue (float startWeightTime, float endWeight
 	// *** Interpolate
 	
 	// Linear value
-	float linear=startWeight+(endWeight-startWeight)*(time-startWeightTime)/(endWeightTime-startWeightTime);
+	double linear=startWeight+(endWeight-startWeight)*(time-startWeightTime)/(endWeightTime-startWeightTime);
 
 	// Linear ?
 	if (smoothness<0.0001f)
-		return linear;
+		return (float)linear;
 
 	// Quadratic value
-	float a=2.f*startWeight-2.f*endWeight;
-	float b=3.f*endWeight-3.f*startWeight;
-	float x=(time-startWeightTime)/(endWeightTime-startWeightTime);
-	float xSquare=x*x;
-	float xCube=x*xSquare;
-	float quad=a*xCube+b*xSquare+startWeight;
+	double a=2.f*startWeight-2.f*endWeight;
+	double b=3.f*endWeight-3.f*startWeight;
+	double x=(time-startWeightTime)/(endWeightTime-startWeightTime);
+	double xSquare=x*x;
+	double xCube=x*xSquare;
+	double quad=a*xCube+b*xSquare+startWeight;
 
 	// Interpolate between linear and quadratic
-	return smoothness*quad+(1.f-smoothness)*linear;
+	return (float)(smoothness*quad+(1.f-smoothness)*linear);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.9 2001/06/18 14:54:06 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.10 2001/06/27 08:35:13 lecroart Exp $
  *
  */
 
@@ -41,6 +41,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/thread.h"
+#include "nel/misc/command.h"
 
 #include "nel/net/service.h"
 #include "nel/net/net_manager.h"
@@ -67,7 +68,7 @@ struct CService
 	string			ShortName;		/// name of the service in short format ("NS" for example)
 	string			LongName;		/// name of the service in long format ("naming_service")
 	bool			Ready;			/// true if the service is ready
-	vector<string>	Commands;
+	vector<CSerialCommand>	Commands;
 
 private:
 	static	uint32 NextId;
@@ -282,12 +283,14 @@ static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &net
 
 static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
+	CService *s = (CService*) (uint) from->appId();
 	// received an answer for a command, give it to the AS
 
 	// broadcast the message to the admin service
-	CMessage msgout (CNetManager::getSIDA ("AESAS"), "LOG");
+	CMessage msgout (CNetManager::getSIDA ("AESAS"), "XLOG");
 	string log;
 	msgin.serial (log);
+	msgout.serial (s->Id);
 	msgout.serial (log);
 	CNetManager::send ("AESAS", msgout);
 }

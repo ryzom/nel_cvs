@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.22 2002/08/01 16:45:36 vizerie Exp $
+ * $Id: skeleton_model.h,v 1.23 2002/08/05 15:29:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,10 @@
 #include "3d/bone.h"
 #include "3d/mrm_level_detail.h"
 
+namespace NLMISC
+{
+	class	CAABBox;
+}
 
 namespace NL3D
 {
@@ -177,6 +181,21 @@ public:
 	 */
 	void		computeAllBones(const CMatrix &modelWorldMatrix);
 
+	/** Retrieve the current approx BBox around the skeleton, computed in the last CSene::render().
+	 *	for all computed bones, extend the bbox with their pos
+	 *	\param bbox return the bbox of the skinned skeleton, local to the skeleton. If the skeleton was clipped, the bbox
+	 *	is not modified.
+	 *	\return true if the bbox is computed, false otherwise.
+	 */
+	bool		computeRenderedBBox(NLMISC::CAABBox &bbox);
+
+	/** same as computeRenderedBBox() but force animation and compute of all bones => don't need render(), but slower.
+	 *	for all used bones, extend the bbox with their pos
+	 *	\param bbox return the bbox of the skinned skeleton, local to the skeleton. If the skeleton is not skinned/sticked
+	 *	at all, bbox is not modified.
+	 *	\return true if the bbox is computed, false otherwise.
+	 */
+	bool		computeCurrentBBox(NLMISC::CAABBox &bbox);
 
 	// @}
 

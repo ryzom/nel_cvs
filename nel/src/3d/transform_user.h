@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.13 2002/06/28 16:52:10 berenguier Exp $
+ * $Id: transform_user.h,v 1.14 2002/08/05 15:29:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,6 +166,8 @@ public:
 
 
 	virtual bool	getLastClippedState() const {return _Transform->getLastClippedState();}
+
+	virtual	const CMatrix	&getLastWorldMatrixComputed() const;
 
 	/// name Load Balancing Behavior.
 	// @{

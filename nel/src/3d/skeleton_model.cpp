@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.29 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.30 2002/08/05 15:29:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "3d/lod_character_shape.h"
 #include "3d/skip_model.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/aabbox.h"
 
 
 
@@ -1233,6 +1234,98 @@ void			CSkeletonModel::changeMRMDistanceSetup(float distanceFinest, float distan
 
 	// compile 
 	_LevelDetail.compileDistanceSetup();
+}
+
+
+// ***************************************************************************
+bool			CSkeletonModel::computeRenderedBBox(NLMISC::CAABBox &bbox)
+{
+	// reset bbox
+	CAABBox		tmpBBox;
+	tmpBBox.setCenter(CVector::Null);
+	tmpBBox.setHalfSize(CVector::Null);
+	bool	empty= true;
+
+	// Not visible => empty bbox
+	if(!getLastClippedState())
+		return false;
+
+	// For all bones
+	uint	i;
+	for(i=0;i<Bones.size();i++)
+	{
+		if(isBoneComputed(i))
+		{
+			const CVector	&pos= Bones[i].getLocalSkeletonMatrix().getPos();
+			if(empty)
+			{
+				empty= false;
+				tmpBBox.setCenter(pos);
+			}
+			else
+				tmpBBox.extend(pos);
+		}
+	}
+
+	// End!
+	if(!empty)
+	{
+		bbox= tmpBBox;
+		return true;
+	}
+	else
+		return false;
+}
+
+
+// ***************************************************************************
+bool			CSkeletonModel::computeCurrentBBox(NLMISC::CAABBox &bbox)
+{
+	// animate all bones channels (detail only channels). don't bother cur lod state.
+	CChannelMixer	*chanmix= getChannelMixer();
+	// Force detail evaluation.
+	chanmix->resetEvalDetailDate();
+	chanmix->eval(true, 0);
+	chanmix->resetEvalDetailDate();
+
+	// compute all skeleton bones
+	computeAllBones(CMatrix::Identity);
+
+	// reset bbox
+	CAABBox		tmpBBox;
+	tmpBBox.setCenter(CVector::Null);
+	tmpBBox.setHalfSize(CVector::Null);
+	bool	empty= true;
+
+	// For all bones
+	uint	i;
+	for(i=0;i<Bones.size();i++)
+	{
+		// Is the bone used ?? (whatever bone lod, or CLod state)
+		uint8	mustCompute= _BoneUsage[i].Usage | _BoneUsage[i].ForcedUsage | _BoneUsage[i].CLodForcedUsage;
+
+		// If the bone is used.
+		if(mustCompute)
+		{
+			const CVector	&pos= Bones[i].getLocalSkeletonMatrix().getPos();
+			if(empty)
+			{
+				empty= false;
+				tmpBBox.setCenter(pos);
+			}
+			else
+				tmpBBox.extend(pos);
+		}
+	}
+
+	// End!
+	if(!empty)
+	{
+		bbox= tmpBBox;
+		return true;
+	}
+	else
+		return false;
 }
 
 

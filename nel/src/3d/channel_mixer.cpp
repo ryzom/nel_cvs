@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.21 2002/07/09 13:16:14 berenguier Exp $
+ * $Id: channel_mixer.cpp,v 1.22 2002/08/05 15:29:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -688,6 +688,12 @@ void CChannelMixer::refreshListToEval ()
 
 	// done
 	_ListToEvalDirt= false;
+}
+
+// ***************************************************************************
+void CChannelMixer::resetEvalDetailDate()
+{
+	_LastEvalDetailDate= -1;
 }
 
 

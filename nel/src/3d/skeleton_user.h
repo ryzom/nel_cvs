@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.12 2002/07/11 09:26:57 berenguier Exp $
+ * $Id: skeleton_user.h,v 1.13 2002/08/05 15:29:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -127,6 +127,12 @@ public:
 	virtual bool		getLodCharacterWrapMode() const;
 	// @}
 
+
+	/// \name Misc
+	// @{
+	virtual	bool		computeRenderedBBox(NLMISC::CAABBox &bbox);
+	virtual	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0);
+	// @}
 
 public:
 	/// \name Accessor for CSeneUser.

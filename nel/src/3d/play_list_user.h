@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * <File description>
  *
- * $Id: play_list_user.h,v 1.7 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: play_list_user.h,v 1.8 2002/08/05 15:29:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,6 +128,9 @@ public:
 	virtual	bool isChannelEnabled (uint channelId) const;
 	// @}
 
+public:
+	/// Tool function. setup the mixer, and eval global channels
+	void	evalPlayList(double playTime);
 
 };
 

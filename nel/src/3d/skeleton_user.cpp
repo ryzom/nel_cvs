@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.11 2002/07/11 09:26:57 berenguier Exp $
+ * $Id: skeleton_user.cpp,v 1.12 2002/08/05 15:29:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/skeleton_user.h"
+#include "3d/play_list_user.h"
 #include "nel/misc/hierarchical_timer.h"
 
 
@@ -233,5 +234,27 @@ void		CSkeletonUser::changeMRMDistanceSetup(float distanceFinest, float distance
 	NL3D_HAUTO_UI_SKELETON;
 	_Skeleton->changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
 }
+
+
+// ***************************************************************************
+bool		CSkeletonUser::computeRenderedBBox(NLMISC::CAABBox &bbox)
+{
+	NL3D_HAUTO_UI_SKELETON;
+	return _Skeleton->computeRenderedBBox(bbox);
+}
+// ***************************************************************************
+bool		CSkeletonUser::computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime)
+{
+	NL3D_HAUTO_UI_SKELETON;
+
+	if(playList!=NULL)
+	{
+		CPlayListUser	*plUser= static_cast<CPlayListUser*>(playList);
+		plUser->evalPlayList(playTime);
+	}
+
+	return _Skeleton->computeCurrentBBox(bbox);
+}
+
 
 } // NL3D

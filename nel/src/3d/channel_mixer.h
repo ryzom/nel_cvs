@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.7 2002/07/09 13:16:14 berenguier Exp $
+ * $Id: channel_mixer.h,v 1.8 2002/08/05 15:29:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -242,7 +242,8 @@ public:
 	  * Others are initialized with the default channel value.
 	  *
 	  * \param detail true if eval the detail part of animation. (done after clipping).
-	  * \param evalDetailDate chann mixer store the last date of anim detail evaluated. if same, do nothing. ingored if detail is false.
+	  * \param evalDetailDate chann mixer store the last date of anim detail evaluated. if same, do nothing, 
+	  *	else if < or >, compute the anim. ingored if detail is false.
 	  */
 	void eval (bool detail, uint64 evalDetailDate=0);
 
@@ -400,6 +401,9 @@ public:
 	  * \param slot is the slot number to empty. Must be >= 0 and < NumAnimationSlot.
 	  */
 	void resetSkeletonWeight (uint slot);
+
+	/// reset to -1 the evalDetailDate. Hence next eval(true,..) will be forced to compute
+	void resetEvalDetailDate();
 
 private:
 	

@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.9 2002/05/15 16:55:56 berenguier Exp $
+ * $Id: transform_user.cpp,v 1.10 2002/08/05 15:29:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,10 @@ NLMISC::CRGBA	CTransformUser::getMeanColor() const
 	return _Transform->getMeanColor();
 }
 
-
+// ***************************************************************************
+const CMatrix	&CTransformUser::getLastWorldMatrixComputed() const
+{
+	return _Transform->getWorldMatrix();
+}
 
 } // NL3D

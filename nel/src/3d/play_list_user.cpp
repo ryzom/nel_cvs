@@ -1,7 +1,7 @@
 /** \file play_list_user.cpp
  * <File description>
  *
- * $Id: play_list_user.cpp,v 1.6 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: play_list_user.cpp,v 1.7 2002/08/05 15:29:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -234,6 +234,14 @@ bool CPlayListUser::isChannelEnabled (uint channelId) const
 	NL3D_HAUTO_UI_PLAY_LIST;
 
 	return _ChannelMixer.isChannelEnabled (channelId) ;
+}
+
+
+// ***************************************************************************
+void CPlayListUser::evalPlayList(double playTime)
+{
+	_PlayList.setupMixer(_ChannelMixer, playTime);
+	_ChannelMixer.eval(false);
 }
 
 

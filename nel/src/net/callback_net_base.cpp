@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.11 2001/05/29 09:30:08 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.12 2001/05/29 12:14:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -178,7 +178,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 	// Every 1 seconds if we have new unknown association, we ask them to the other side
 	if (_LastUpdateTime + 1000 < CTime::getLocalTime ())
 	{
-		nldebug("L3NB: baseUpdate()");
+//		nldebug("L3NB: baseUpdate()");
 		_LastUpdateTime = CTime::getLocalTime ();
 
 		const set<string> &sa = _InputSIDA.getNeedToAskedStringArray ();

@@ -1,7 +1,7 @@
-/** \file particle_system.cpp
+ /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.51 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: particle_system.cpp,v 1.52 2002/10/10 13:28:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -242,19 +242,19 @@ void CParticleSystem::stepLocated(TPSProcessPass pass, TAnimationTime et, TAnima
 
 
 ///=======================================================================================
-inline void CParticleSystem::updateLODRatio()
+/* inline */ void CParticleSystem::updateLODRatio()
 {
-	const CVector d = _SysMat.getPos() - _ViewMat.getPos();		
+	const CVector d = _SysMat.getPos() - _InvertedViewMat.getPos();		
 	_OneMinusCurrentLODRatio = 1.f - (d.norm() * _InvCurrentViewDist);
-	if (_OneMinusCurrentLODRatio < 0) _OneMinusCurrentLODRatio = 0.f;
+	NLMISC::clamp(_OneMinusCurrentLODRatio, 0.f, 1.f);
 }
 
 ///=======================================================================================
-inline void CParticleSystem::updateColor()
+/* inline */ void CParticleSystem::updateColor()
 {
 	if (_ColorAttenuationScheme)
 	{
-		float ratio = 0.99f - 	_OneMinusCurrentLODRatio;
+		float ratio = 1.00f - _OneMinusCurrentLODRatio;
 		_GlobalColor = 	_ColorAttenuationScheme->get(ratio > 0.f ? ratio : 0.f);
 	}
 }
@@ -479,9 +479,6 @@ void CParticleSystem::remove(CParticleSystemProcess *ptr)
 	TProcessVect::iterator it = std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr);
 	nlassert(it != _ProcessVect.end() );	
 	_ProcessVect.erase(it);
-	
-	
-
 	delete ptr;
 }
 

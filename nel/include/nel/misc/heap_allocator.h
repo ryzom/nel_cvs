@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.h,v 1.1 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: heap_allocator.h,v 1.2 2002/10/30 13:59:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,6 +168,13 @@ public:
 
 	/* Return the amount of memory used by the small block optimisation */
 	uint					getSmallBlockMemory () const;
+
+	/* Return the amount of allocated system memory */
+	static uint				getAllocatedSystemMemory ();
+
+	/* Return the amount of allocated system memory used by the allocator */
+	uint					getAllocatedSystemMemoryByAllocator ();
+
 	float					getFragmentationRatio () const;
 	void					setName (const char* name);
 	void					getName (std::string &result) const;

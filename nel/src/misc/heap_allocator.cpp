@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.2 2002/10/29 17:17:28 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.3 2002/10/30 13:59:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,8 @@
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
 #endif // NL_OS_WINDOWS
+
+#include <set>
 
 namespace NLMISC 
 {
@@ -876,7 +878,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 				buffer = allocateBlock (allocSize+Align);
 
 				// Add the buffer
-				CMainBlock *mainBlock = (CMainBlock*)malloc (sizeof(CMainBlock)); 
+				CMainBlock *mainBlock = (CMainBlock*)allocateBlock (sizeof(CMainBlock)); 
 				mainBlock->Size = allocSize+Align;
 				mainBlock->Ptr = buffer;
 				mainBlock->Next = _MainBlockList;
@@ -1491,6 +1493,14 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 		fprintf (file, "%d, %d, %d\n", debugGetSBDebugInfoSize (), debugGetLBDebugInfoSize (), debugGetDebugInfoSize ());
 
 		// **************************
+
+		// Write the system heap info file
+		uint systemMemory = getAllocatedSystemMemory ();
+		uint nelSystemMemory = getAllocatedSystemMemoryByAllocator ();
+
+		fprintf (file, "\n\nSYSTEM HEAP STATISTICS\n");
+		fprintf (file, "TOTAL ALLOCATED MEMORY, NEL ALLOCATED MEMORY, OTHER ALLOCATED MEMORY\n");
+		fprintf (file, "%d, %d, %d\n", systemMemory, nelSystemMemory, systemMemory-nelSystemMemory);
 
 		// Write the category map file
 		fprintf (file, "\n\n\nCATEGORY STATISTICS\n");
@@ -2223,6 +2233,79 @@ void CHeapAllocator::checkNode (const CNodeBegin *node, uint32 crc) const
 #endif // NL_OS_WINDOWS
 
 #endif // NL_HEAP_ALLOCATION_NDEBUG
+
+// *********************************************************
+
+uint CHeapAllocator::getAllocatedSystemMemory ()
+{
+	uint systemMemory = 0;
+#ifdef NL_OS_WINDOWS
+	// Get system memory informations
+	HANDLE hHeap[100];
+	DWORD heapCount = GetProcessHeaps (100, hHeap);
+
+	uint heap;
+	for (heap = 0; heap < heapCount; heap++)
+	{
+		PROCESS_HEAP_ENTRY entry;
+		entry.lpData = NULL;
+		while (HeapWalk (hHeap[heap], &entry))
+		{
+			if (entry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
+			{
+				systemMemory += entry.cbData + entry.cbOverhead;
+			}
+		}
+	}
+#endif // NL_OS_WINDOWS
+	return systemMemory;
+}
+
+// *********************************************************
+
+uint CHeapAllocator::getAllocatedSystemMemoryByAllocator ()
+{
+	uint nelSystemMemory = 0;
+
+	// Build a set of allocated system memory pointers
+	std::set<void*> ptrInUse;
+
+	// For each main block
+	CMainBlock *currentBlock = _MainBlockList;
+	while (currentBlock)
+	{
+		// Save pointers
+		ptrInUse.insert ((void*)currentBlock);
+		ptrInUse.insert ((void*)(currentBlock->Ptr));
+
+		// Next block
+		currentBlock = currentBlock->Next;
+	}
+
+#ifdef NL_OS_WINDOWS
+	// Get system memory informations
+	HANDLE hHeap[100];
+	DWORD heapCount = GetProcessHeaps (100, hHeap);
+
+	uint heap;
+	for (heap = 0; heap < heapCount; heap++)
+	{
+		PROCESS_HEAP_ENTRY entry;
+		entry.lpData = NULL;
+		while (HeapWalk (hHeap[heap], &entry))
+		{
+			if (entry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
+			{
+				// This pointer is already used ?
+				if ( (ptrInUse.find ((void*)((char*)entry.lpData)) != ptrInUse.end ()) || 
+					(ptrInUse.find ((void*)((char*)entry.lpData+32)) != ptrInUse.end ()) )
+					nelSystemMemory += entry.cbData + entry.cbOverhead;
+			}
+		}
+	}
+#endif // NL_OS_WINDOWS
+	return nelSystemMemory;
+}
 
 // *********************************************************
 

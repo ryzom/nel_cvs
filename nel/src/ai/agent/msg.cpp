@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: message.cpp,v 1.10 2001/01/31 15:46:21 chafik Exp $
+ * $Id: msg.cpp,v 1.1 2001/01/31 16:54:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

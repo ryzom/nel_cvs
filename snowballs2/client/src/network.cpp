@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.16 2001/08/14 12:31:36 lecroart Exp $
+ * $Id: network.cpp,v 1.17 2001/11/28 14:57:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -325,7 +325,7 @@ void	updateNetwork()
 		TextContext->setFontSize (14);
 		TextContext->printfAt (0.5f, 0.99f, "d:%"NL_I64"u u:%"NL_I64"u / d:%"NL_I64"u u:%"NL_I64"u / d:%"NL_I64"u u:%"NL_I64"u",
 			Connection->bytesDownloaded (), Connection->bytesUploaded (),
-			Connection->getBytesReceived (),Connection->getBytesSended (),
+			Connection->getBytesReceived (),Connection->getBytesSent (),
 			newBytesDownloaded, newBytesUploaded);
 
 		DownloadGraph.addValue ((float)newBytesDownloaded);

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.25 2000/12/01 16:45:49 nevrax Exp $
+ * $Id: service.cpp,v 1.26 2000/12/07 15:18:42 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -53,6 +53,8 @@
 #include "nel/net/naming_client.h"
 #include "nel/net/msg_socket.h"
 #include "nel/net/pt_callback_item.h"
+#include "nel/net/net_displayer.h"
+#include "nel/net/net_log.h"
 
 #include <sstream>
 
@@ -229,6 +231,15 @@ sint IService::main (int argc, char **argv)
 		// Register the name to the NS (except for the NS itself)
 		if ( strcmp( IService::_Name, "NS" ) != 0 )
 		{
+
+			// Setup Net Log
+			CNetDisplayer *nd = new CNetDisplayer();
+			if ( nd->connected() )
+			{
+				NetLog.addDisplayer( nd );
+			}
+
+			// Talk with the NS
 			bool registered = false;
 			while ( ! registered )
 			{

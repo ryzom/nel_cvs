@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.15 2000/12/05 11:10:29 cado Exp $
+ * $Id: message.h,v 1.16 2000/12/07 15:18:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,12 +112,15 @@ public:
 		return maxHeaderLength() - sizeof(sint16) - sizeof(uint32);
 	}
 
+	/// Clears the message
+	void			clear();
+
 private:
 
 	static uint32		_MaxLength;
 	static uint32		_MaxHeaderLength;
 
-	TTypeNum	_MsgType;
+	TTypeNum			_MsgType;
 	std::string			_MsgName;
 	bool				_TypeIsNumber;
 

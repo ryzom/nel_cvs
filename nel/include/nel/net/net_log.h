@@ -1,7 +1,7 @@
 /** \file net_log.h
  * <File description>
  *
- * $Id: net_log.h,v 1.1 2000/12/06 13:01:09 cado Exp $
+ * $Id: net_log.h,v 1.2 2000/12/07 15:18:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,19 +46,34 @@ public:
 	/// Constructor
 	CNetLog();
 
+	/// Sets the name of the running service
+	void	setServiceName( const char *name );
+
 	/// Log an output transfer (send)
-	void	output( const char *srchost, const char *desthost,
-					const char *msgname, uint32 msgsize );
+	void	output( const char *srchost, uint8 msgnum,
+					const char *desthost, const char *msgname, uint32 msgsize );
 
 	/// Log an input transfer (receive)
-	void	input( const char *srchost, const char *desthost );
+	void	input( const char *srchost, uint8 msgnum );
 
 	/*/// Enables or disable logging.
 	void	setLogging( bool logging )
 	{
 		_Logging = logging;
 	}*/
+
+private:
+
+	std::string _ProcessId;
+
 };
+
+
+extern CNetLog NetLog;
+
+#define nlsetnet (servicename,displayer)
+#define nlnetoutput NetLog.output
+#define nlnetinput NetLog.input
 
 
 } // NLNET

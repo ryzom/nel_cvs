@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.4 2000/12/06 13:01:09 cado Exp $
+ * $Id: mem_stream.cpp,v 1.5 2000/12/07 15:18:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,7 @@ sint32 CMemStream::getPos () throw(EStream)
  */
 void CMemStream::clear()
 {
+	resetPtrTable();
 	_Buffer.clear();
 	_BufPos = _Buffer.begin();
 }
@@ -213,7 +214,7 @@ void CMemStream::invert()
 		// In->Out: We want to write (serialize out) what we have read (serialized in)
 		resetPtrTable();
 		setInOut( false );
-		_BufPos = _Buffer.begin();
+		_BufPos = _Buffer.end();
 	}
 	else
 	{

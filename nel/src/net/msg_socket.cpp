@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.35 2000/12/05 16:36:56 cado Exp $
+ * $Id: msg_socket.cpp,v 1.36 2000/12/07 15:18:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,8 +83,6 @@ CSearchSet				CMsgSocket::_SearchSet;
 uint32					CMsgSocket::_PrevBytesReceived = 0;
 uint32					CMsgSocket::_PrevBytesSent = 0;
 
-
-class EStreamOverflow;
 
   
 /*
@@ -408,13 +406,21 @@ void CMsgSocket::update()
 				if ( (*ilps)->isListening() )
 				{
 					// Accept connection request
+					/* // Old code
 					CMessage msgout;
 					CSocket& sock = accept( (*ilps)->descriptor() );
 					CInetAddress addr = sock.remoteAddr();
 					msgout.serial( addr );
 					CMessage msgin( "C", true );
 					msgin.fill( msgout.buffer(), msgout.length() );
-					processReceivedMessage( msgin, sock );
+					processReceivedMessage( msgin, sock );*/
+					// New code
+					CMessage msgoutin( "C" );
+					CSocket& sock = accept( (*ilps)->descriptor() );
+					CInetAddress addr = sock.remoteAddr();
+					msgoutin.serial( addr );
+					msgoutin.invert(); // output msg -> input msg
+					processReceivedMessage( msgoutin, sock );						
 				}
 				else
 				{
@@ -448,7 +454,7 @@ void CMsgSocket::update()
 						// Reset flag
 						(*ilps)->setDataAvailableFlag( false );
 					}
-					catch ( EStreamOverflow& )
+					catch ( NLMISC::EStreamOverflow& )
 					{
 						nlwarning( "Callback tried to read more than received" );
 						handleConnectionClosure( ilps );

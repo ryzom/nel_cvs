@@ -1,7 +1,7 @@
 /** \file log.h
  * CLog class
  *
- * $Id: log.h,v 1.10 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: log.h,v 1.11 2000/12/07 15:18:41 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,10 +69,7 @@ public:
 	void removeDisplayer (IDisplayer *displayer);
 
 	/// Sets the local host name, with has to be determined outside
-	static void setLocalHostAndService( const std::string& hostname, const std::string& servicename )
-	{
-		_LocalHostAndService = hostname + " " + servicename + " ";
-	}
+	static void setLocalHostAndService( const std::string& hostname, const std::string& servicename );
 
 	/// Sets longinfo (if true, display() will then write a bigger header)
 	void setLongInfo( bool longinfo )
@@ -101,12 +98,13 @@ public:
 
 protected:
 
-	std::string priorityStr() const;
+	std::string					priorityStr() const;
 
+	static std::string			_LocalHostAndService;
+	
 private:
 
 	TLogPriority				_Priority;
-	static std::string			_LocalHostAndService;
 	bool						_Long;
 
 	uint						_Line;

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.28 2000/12/06 13:01:09 cado Exp $
+ * $Id: socket.cpp,v 1.29 2000/12/07 15:18:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,8 @@
 #include "nel/net/socket.h"
 #include "nel/net/message.h"
 #include "nel/misc/debug.h"
+#include "nel/net/net_log.h"
+
 
 #ifdef NL_OS_WINDOWS
 
@@ -62,7 +64,8 @@ CSocket::CSocket( bool reliable, bool logging ) :
 	_DataAvailable( false ),
 	_SenderId( 0 ),
 	_IsListening( false ),
-	_OwnerClient( NULL )
+	_OwnerClient( NULL ),
+	_CurrentMsgNumberSend( 0 )
 {
 }
 
@@ -75,7 +78,8 @@ CSocket::CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket) 
 	_DataAvailable( false ),
 	_SenderId( 0 ),
 	_IsListening( false ),
-	_OwnerClient( NULL )
+	_OwnerClient( NULL ),
+	_CurrentMsgNumberSend( 0 )
 {
 }
 
@@ -94,15 +98,15 @@ void CSocket::close()
  */
 void CSocket::send( CMessage& message ) throw(ESocket)
 {
-#ifdef NL_DEBUG
+//#ifdef NL_DEBUG
 	uint len = message.length();
 	//std::string name = message.typeAsString();
-#endif
+//#endif
 	CMessage alldata = encode( message );
 
 	nlassert( alldata.length() < 100000 ); // debug check
 	CBaseSocket::send( alldata.buffer(), alldata.length() );
-#ifdef NL_DEBUG
+//#ifdef NL_DEBUG
 	if ( _Logging )
 	{
 		if ( message.typeIsNumber() )
@@ -115,9 +119,9 @@ void CSocket::send( CMessage& message ) throw(ESocket)
 			nldebug( "Socket %d sent message %s (%d bytes +%d)",
 				_Sock, message.typeAsString().c_str(), len, alldata.length()-len );
 		}
-		nlnetoutput( localAddr().asString().c_str(), remoteAddr().asString().c_str(), message.typeAsString().c_str(), message.length() );
+		nlnetoutput( localAddr().asString().c_str(), _CurrentMsgNumberSend, remoteAddr().asString().c_str(), message.typeAsString().c_str(), message.length() );
 	}
-#endif
+//#endif
 }
 
 
@@ -203,7 +207,11 @@ CMessage CSocket::encode( CMessage& msg ) throw (ESocket)
 	uint32 msgsize = msg.length();
 	alldata.serial( msgsize );
 
-	// 4. Write message payload
+	// 4. Write message number
+	alldata.serial( _CurrentMsgNumberSend );
+	_CurrentMsgNumberSend++;
+
+	// 5. Write message payload
 	if ( msgsize != 0 )
 	{
 		alldata.serialBuffer( const_cast<uint8*>(msg.buffer()), msg.length() );
@@ -250,7 +258,12 @@ CMessage CSocket::decode( CMessage& alldata ) throw (ESocket)
 	{
 		delete [] msgname;
 	}
-	// Read buffer
+
+	// 4. Read message number
+	uint8 recvd_msg_number;
+	alldata.serial( recvd_msg_number );
+
+	// 5. Read buffer
 	if ( msgsize > 0 )
 	{
 		if ( msgsize > 100000 ) // debug check
@@ -343,7 +356,12 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	{
 		delete [] msgname;
 	}
-	// 4. Read all buffer and dismiss
+
+	// 4. Read message number
+	uint8 recvd_msg_number;
+	CBaseSocket::doReceive( (uint8*)&recvd_msg_number, sizeof(recvd_msg_number) );
+
+	// 5. Read all buffer
 	if ( msgsize > 0 )
 	{
 		if ( msgsize > 100000 ) // debug check
@@ -366,7 +384,7 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 			nldebug( "Socket %d received message %s (%d bytes +%d)",
 				_Sock, message.typeAsString().c_str(), message.length(), sizeof(msgtype)+msgnamelen+sizeof(msgsize) );
 		}*/
-		nlnetinput( remoteAddr().asString().c_str(), localAddr().asString().c_str() );
+		nlnetinput( remoteAddr().asString().c_str(), recvd_msg_number );
 	}
 }
 

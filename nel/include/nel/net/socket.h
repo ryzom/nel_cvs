@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.h,v 1.20 2000/11/27 10:07:07 cado Exp $
+ * $Id: socket.h,v 1.21 2000/12/07 15:18:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,6 +164,7 @@ protected:
 private:
 
 	CMsgMap			_MsgMap;
+	uint8			_CurrentMsgNumberSend;
 
 	bool			_DataAvailable; // can be modified only by CMsgSocket
 	TSenderId		_SenderId;		// the same

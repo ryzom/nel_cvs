@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * CMemStream class
  *
- * $Id: mem_stream.h,v 1.4 2000/12/06 13:01:09 cado Exp $
+ * $Id: mem_stream.h,v 1.5 2000/12/07 15:18:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ public:
 	virtual sint32	getPos () throw(EStream);
 
 	/// Clears the message
-	void			clear();
+	virtual void	clear();
 
 	/** Returns the length (size) of the message, in bytes.
 	 * If isReading(), it is the number of bytes that can be read,

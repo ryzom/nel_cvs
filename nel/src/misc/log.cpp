@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.14 2000/12/06 13:01:09 cado Exp $
+ * $Id: log.cpp,v 1.15 2000/12/07 15:18:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,15 +34,38 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <string>
 #include <sstream>
+
+#ifdef NL_OS_WINDOWS
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
 using namespace std;
 
-#include <string>
 
 namespace NLMISC
 {
 
 string CLog::_LocalHostAndService = "<UnknownHost> <UnknownService> ";
+
+
+/*
+ * Sets the local host name, with has to be determined outside
+ */
+void CLog::setLocalHostAndService( const std::string& hostname, const std::string& servicename )
+{
+	stringstream ss;
+#ifdef NL_OS_WINDOWS
+	ss << servicename.c_str() << "/" << hostname.c_str() << "/" << _getpid()/*GetCurrentProcessId()*/;
+#else
+	ss << servicename.c_str() << "/" << hostname.c_str() << "/" << getpid();
+#endif
+	_LocalHostAndService = ss.str();
+}
+
 
 CLog::CLog( TLogPriority priority, bool longinfo ) :
 	_Priority( priority ),

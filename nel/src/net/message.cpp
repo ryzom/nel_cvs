@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.14 2000/12/05 11:10:29 cado Exp $
+ * $Id: message.cpp,v 1.15 2000/12/07 15:18:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,12 +36,15 @@ uint32	CMessage::_MaxHeaderLength = 64;
  * Constructor
  */
 CMessage::CMessage( std::string name, bool inputStream, uint32 defaultcapacity ) :
-	CMemStream( inputStream, defaultcapacity ),
-	_MsgType( 0 )
+	CMemStream( inputStream, defaultcapacity )
 {
 	if ( name != "" )
 	{
 		setType( name );
+	}
+	else
+	{
+		setType( 0 );
 	}
 }
 
@@ -66,6 +69,17 @@ CMessage& CMessage::operator=( const CMessage& other )
 	_MsgName = other._MsgName;
 	_TypeIsNumber = other._TypeIsNumber;
 	return *this;
+}
+
+
+/*
+ * Clears the message
+ */
+void CMessage::clear()
+{
+	CMemStream::clear();
+	setType( 0 );
+	_MsgName = "";
 }
 
 

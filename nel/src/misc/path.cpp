@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.77 2003/06/10 09:40:05 distrib Exp $
+ * $Id: path.cpp,v 1.77.4.1 2003/08/11 16:30:57 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -875,6 +875,10 @@ void CPath::addSearchListFile (const string &filename, bool recurse, bool altern
 // WARNING : recurse is not used
 void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alternative, NLMISC::IProgressCallback *progressCallBack)
 {
+#ifndef NL_OS_WINDOWS
+	nlerror( "BNP currently not supported on Unix" ); // test of BNP failed on Linux
+#endif
+
 	// Check if filename is not empty
 	if (sBigFilename.empty())
 	{

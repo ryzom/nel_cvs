@@ -1,7 +1,7 @@
 /** \file zone_check_bind.cpp
  * This tool check that each patch of a zone to see wether they are bound correctly.
  *
- * $Id: zone_check_bind.cpp,v 1.2 2002/04/02 16:09:04 vizerie Exp $
+ * $Id: zone_check_bind.cpp,v 1.3 2002/04/02 17:05:36 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -170,7 +170,9 @@ static sint GetWeldableVertex(const CBezierPatch &bp, const CVector &pos, float 
 
 
 //=========================================================================================================================
-static void CheckZone(std::string middleZoneName, float weldThreshold, float middleEdgeWeldThreshold)
+/**  Check a zone and report the total number of errors
+  */
+static uint CheckZone(std::string middleZoneFile, float weldThreshold, float middleEdgeWeldThreshold)
 {
 	uint numErrors = 0;
 	uint k, l, m, n, p, q;	// some loop counters	
@@ -186,15 +188,17 @@ static void CheckZone(std::string middleZoneName, float weldThreshold, float mid
 		CZoneInfo					zoneInfos[9];				
 		uint16  xPos, yPos;
 		const sint16 posOffs[][2] = { {0, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1} };
+
+		std::string middleZoneName = CFile::getFilenameWithoutExtension(middleZoneFile);
 		::getZoneCoordByName(middleZoneName.c_str(), xPos, yPos);
 		try
 		{
-			std::string ext = CFile::getExtension(middleZoneName);
+			std::string ext = CFile::getExtension(middleZoneFile);
 			zones[0].reset(::LoadZone(xPos, yPos, ext.empty() ? "" : "." + ext));
 			if (zones[0].get() == NULL)
 			{
-				nlwarning("Can't load zone %s", middleZoneName.c_str());
-				return;
+				nlwarning("Can't load zone  %s", middleZoneName.c_str());
+				return 0;
 			}
 			for (uint k = 1; k < 9; ++k)
 			{
@@ -204,7 +208,7 @@ static void CheckZone(std::string middleZoneName, float weldThreshold, float mid
 		catch (NLMISC::Exception &e)
 		{
 			nlinfo("Zones loading failed : %d", e.what());
-			return;
+			return 0;
 		}
 	
 	///////////////////////////////
@@ -406,6 +410,7 @@ static void CheckZone(std::string middleZoneName, float weldThreshold, float mid
 	{
 		nlinfo("%d errors found", numErrors);
 	}
+	return numErrors;
 }
 
 //=========================================================================================================================
@@ -440,13 +445,17 @@ int main(int argc, char* argv[])
 	
 	CPath::getPathContent(zonePaths, true, false, true, zoneNames);
 
+	uint numErrors = 0;
 	// check'em
 	for (uint k = 0; k < zoneNames.size(); ++k)
 	{
 		nlinfo("============================================================================");
 		nlinfo("Checking : %s", zoneNames[k].c_str());
-		::CheckZone(zoneNames[k], weldThreshold, middleEdgeWeldThreshold);
+		numErrors += ::CheckZone(zoneNames[k], weldThreshold, middleEdgeWeldThreshold);
 	}
+	nlinfo("=======================");
+	nlinfo("=======================");
+	nlinfo("%d errors were found", numErrors);
 }
 
 	

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.17 2000/11/23 11:18:52 coutelas Exp $
+ * $Id: driver_opengl.cpp,v 1.18 2000/11/23 11:37:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -378,74 +378,8 @@ IDriver::TMessageBoxId	CDriverGL::systemMessageBox (const char* message, const c
 										}
 	nlassert (0);		// no!
 #else
-	static const char* icons[iconCount]=
-	{
-		"",
-		"WAIT:\n",
-		"QUESTION:\n",
-		"HEY!\n",
-		"",
-		"WARNING!\n",
-		"ERROR!\n",
-		"INFORMATION:\n",
-		"STOP:\n"
-	};
-	static const char* messages[typeCount]=
-	{
-		"Press any key...",
-		"(O)k or (C)ancel ?",
-		"(Y)es or (N)o ?",
-		"(A)bort (R)etry (I)gnore ?",
-		"(Y)es (N)o (C)ancel ?",
-		"(R)etry (C)ancel ?"
-	};
-	printf ("%s%s\n%s", icons[icon], title, message);
-	while (1)
-	{
-		printf ("\n%s", messages[type]);
-		int c=getchar();
-		if (type==okType)
-			return okId;
-		switch (c)
-		{
-		case 'O':
-		case 'o':
-			if ((type==okType)||(type==okCancelType))
-				return okId;
-			break;
-		case 'C':
-		case 'c':
-			if ((type==yesNoCancelType)||(type==okCancelType)||(type==retryCancelType))
-				return cancelId;
-			break;
-		case 'Y':
-		case 'y':
-			if ((type==yesNoCancelType)||(type==yesNoType))
-				return yesId;
-			break;
-		case 'N':
-		case 'n':
-			if ((type==yesNoCancelType)||(type==yesNoType))
-				return noId;
-			break;
-		case 'A':
-		case 'a':
-			if (type==abortRetryIgnoreType)
-				return abortId;
-			break;
-		case 'R':
-		case 'r':
-			if (type==abortRetryIgnoreType)
-				return retryId;
-			break;
-		case 'I':
-		case 'i':
-			if (type==abortRetryIgnoreType)
-				return ignoreId;
-			break;
-		}
-	}
-
+	// Call the console version!
+	IDriver::systemMessageBox (message, title, type, icon);
 #endif
 	return okId;
 }

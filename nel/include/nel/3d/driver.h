@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.22 2000/11/23 11:03:55 corvazier Exp $
+ * $Id: driver.h,v 1.23 2000/11/23 11:37:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -391,7 +391,16 @@ public:
 
 	virtual bool			release(void)=0;
 
-	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon)=0;
+	/** Output a system message box and print a message with an icon. This method can be call even if the driver is not initialized.
+	  * This method is used to return internal driver problem when string can't be displayed in the driver window.
+	  * If the driver can't open a messageBox, it should not override this method and let the IDriver class manage it with the ASCII console.
+	  *
+	  * \param message This is the message to display in the message box.
+	  * \param title This is the title of the message box.
+	  * \param type This is the type of the message box, ie number of button and label of buttons.
+	  * \param icon This is the icon of the message box should use like warning, error etc...
+	  */
+	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
 };
 
 // --------------------------------------------------

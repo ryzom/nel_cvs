@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.214 2004/04/21 12:04:03 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.215 2004/04/27 12:12:00 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -190,6 +190,7 @@ static Bool WndProc(Display *d, XEvent *e, char *arg)
 #endif // NL_OS_UNIX
 
 
+
 // ***************************************************************************
 CDriverGL::CDriverGL()
 {	
@@ -303,6 +304,7 @@ CDriverGL::CDriverGL()
 	_CurVBHardLockCount= 0;
 	_NumVBHardProfileFrame= 0;
 	_Interval = 1;
+	SwapBufferCounter = 0;
 }
 
 
@@ -1143,6 +1145,28 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 		_VRAMVertexArrayRange= new CVertexArrayRangeNVidia(this);
 		_SupportVBHard= true;
 		_MaxVerticesByVBHard= _Extensions.NVVertexArrayRangeMaxVertex;
+	}			
+	else if(_Extensions.ATITextureEnvCombine3 &&  !_Extensions.IsATI9500OrAbove && _Extensions.ATIVertexArrayObject)
+	{		
+		// NB
+		// on Radeon 9200 and below : ATI_vertex_array_object is better (no direct access to AGP with ARB_vertex_buffer_object -> slow unlock)
+		// on Radeon 9500 and above : ARB_vertex_buffer_object is better 
+		if (!_Extensions.ATIMapObjectBuffer)
+		{	
+			_AGPVertexArrayRange= new CVertexArrayRangeATI(this);
+			_VRAMVertexArrayRange= new CVertexArrayRangeATI(this);			
+			// BAD ATI extension scheme.
+			_SlowUnlockVBHard= true;
+		}
+		else
+		{
+			_AGPVertexArrayRange= new CVertexArrayRangeMapObjectATI(this);
+			_VRAMVertexArrayRange= new CVertexArrayRangeMapObjectATI(this);			
+		}
+		_SupportVBHard= true;
+		// _MaxVerticesByVBHard= 65535; // should always work with recent drivers.		
+		// tmp fix for ati
+		_MaxVerticesByVBHard= 16777216;
 	}
 	// Else, try with ARB ext
 	else if (_Extensions.ARBVertexBufferObject)
@@ -1151,21 +1175,6 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 		_VRAMVertexArrayRange= new CVertexArrayRangeARB(this);
 		_SupportVBHard= true;
 		_MaxVerticesByVBHard = ~0; // cant' know the value..
-	}
-	// Else, try with ATI ext
-	else if(_Extensions.ATIVertexArrayObject)
-	{
-		_AGPVertexArrayRange= new CVertexArrayRangeATI(this);
-		_VRAMVertexArrayRange= new CVertexArrayRangeATI(this);			
-		if (!_Extensions.ATIMapObjectBuffer)
-		{						
-			// BAD ATI extension scheme.
-			_SlowUnlockVBHard= true;
-		}		
-		_SupportVBHard= true;
-		// _MaxVerticesByVBHard= 65535; // should always work with recent drivers.		
-		// tmp fix for ati
-		_MaxVerticesByVBHard= 32267;
 	}
 
 	// Reset VertexArrayRange.
@@ -1599,7 +1608,7 @@ void CDriverGL::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 
 // --------------------------------------------------
 bool CDriverGL::swapBuffers()
-{		
+{			
 	// Reset texture shaders
 	//resetTextureShaders();
 
@@ -1630,9 +1639,9 @@ bool CDriverGL::swapBuffers()
 		activeVertexBuffer(dummyVB);
 		nlassert(_CurrentVertexBufferHard==NULL);
 	}
-	else if (_Extensions.ARBVertexBufferObject)
-	{
-		/*
+	/*
+	else if (_Extensions.ARBVertexBufferObject || _Extensions.ATIVertexArrayObject)
+	{		
 		static	CVertexBuffer	dummyVB;
 		static	bool			dummyVBinit= false; 
 		if(!dummyVBinit)
@@ -1648,12 +1657,11 @@ bool CDriverGL::swapBuffers()
 			dummyVB.setNumVertices(10);
 			dummyVB.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
 		}
-		// must setup a vbhard each frame on ati, else rendering with a ram vb fails (happens only when there's some lock pattern in previous frame when a landscape zone is loaded ... :-|??)
-		// maybe it's a driver bug..
+		// setup a vb hard to clean streams		
 		activeVertexBuffer(dummyVB);
-		nlassert(_CurrentVertexBufferHard!=NULL);
-		*/
+		nlassert(_CurrentVertexBufferHard!=NULL);		
 	}
+	*/
 	
 
 
@@ -1759,6 +1767,8 @@ bool CDriverGL::swapBuffers()
 		_CurVBHardLockCount= 0;
 		_NumVBHardProfileFrame++;
 	}	
+
+	++ SwapBufferCounter;
 
 	return true;
 }
@@ -2336,6 +2346,8 @@ bool CDriverGL::fillBuffer (CBitmap &bitmap)
 }
 
 
+
+
 void CDriverGL::copyFrameBufferToTexture(ITexture *tex,
 										 uint32 level,
 										 uint32 offsetx,
@@ -2345,7 +2357,7 @@ void CDriverGL::copyFrameBufferToTexture(ITexture *tex,
 										 uint32 width,
 										 uint32 height														
 										)
-{
+{	
 	nlassert(!tex->isTextureCube());
 	bool compressed = false;
 	getGlTextureFormat(*tex, compressed);
@@ -2856,40 +2868,48 @@ void CDriverGL::setEMBMMatrix(const uint stage,const float mat[4])
 void CDriverGL::initEMBM()
 {
 	if (supportEMBM())
-	{	
+	{			
 		std::fill(_StageSupportEMBM, _StageSupportEMBM + IDRV_MAT_MAXTEXTURES, false);
 		if (_Extensions.ATIEnvMapBumpMap)
 		{		
 			// Test which stage support EMBM
 			GLint numEMBMUnits;
-			nglGetTexBumpParameterivATI(GL_BUMP_NUM_TEX_UNITS_ATI, &numEMBMUnits);
+			nglGetTexBumpParameterivATI(GL_BUMP_NUM_TEX_UNITS_ATI, &numEMBMUnits);			
 			
 				
 			std::vector<GLint> EMBMUnits(numEMBMUnits);
 			// get array of units that supports EMBM
 			nglGetTexBumpParameterivATI(GL_BUMP_TEX_UNITS_ATI, &EMBMUnits[0]);
-			
+
+			numEMBMUnits = std::min(numEMBMUnits, (GLint) _Extensions.NbTextureStages);			
+
+			EMBMUnits.resize(numEMBMUnits);
 				
 			uint k;
-			for(k = 0; k < (EMBMUnits.size() - 1); ++k)
+			for(k = 0; k < EMBMUnits.size(); ++k)
 			{
 				uint stage = EMBMUnits[k] - GL_TEXTURE0_ARB;
 				if (stage < (IDRV_MAT_MAXTEXTURES - 1))
 				{
-					_StageSupportEMBM[k] = true;
+					_StageSupportEMBM[stage] = true;
 				}		
 			} 
-			// setup each stage to apply the bump map to the next stage
-			for(k = 0; k < IDRV_MAT_MAXTEXTURES - 1; ++k)
+			// setup each stage to apply the bump map to the next stage (or previous if there's an unit at the last stage)
+			for(k = 0; k < _Extensions.NbTextureStages; ++k)
 			{
 				if (_StageSupportEMBM[k])
 				{	
 					// setup each stage so that it apply EMBM on the next stage
 					_DriverGLStates.activeTextureARB(k);
 					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);	  
-					glTexEnvi(GL_TEXTURE_ENV, GL_BUMP_TARGET_ATI, GL_TEXTURE0_ARB + k + 1);				
-					
-						
+					if (k != (_Extensions.NbTextureStages - 1))
+					{					
+						glTexEnvi(GL_TEXTURE_ENV, GL_BUMP_TARGET_ATI, GL_TEXTURE0_ARB + k + 1);
+					}
+					else
+					{													
+						glTexEnvi(GL_TEXTURE_ENV, GL_BUMP_TARGET_ATI, GL_TEXTURE0_ARB);						
+					}
 				}
 			}
 			_DriverGLStates.activeTextureARB(0);
@@ -3429,8 +3449,9 @@ void	CDriverGL::profileVBHardAllocation(std::vector<std::string> &result)
 // ***************************************************************************
 bool CDriverGL::supportCloudRenderSinglePass() const
 {
-	// return _Extensions.NVTextureEnvCombine4 || (_Extensions.ATIXTextureEnvRoute && _Extensions.EXTTextureEnvCombine);
-	return _Extensions.NVTextureEnvCombine4 /* || _Extensions.ATIFragmentShader*/;
+	 //return _Extensions.NVTextureEnvCombine4 || (_Extensions.ATIXTextureEnvRoute && _Extensions.EXTTextureEnvCombine);
+	// there are slowdown for now with ati fragment shader... don't know why
+	return _Extensions.NVTextureEnvCombine4 || _Extensions.ATIFragmentShader;
 }
 
 // ***************************************************************************

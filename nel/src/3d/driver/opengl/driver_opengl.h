@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.169 2004/04/21 08:49:08 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.170 2004/04/27 12:12:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1156,6 +1156,9 @@ private:
 	uint32					_TextureTargetHeight;
 	bool					_TextureTargetUpdload;
 	// @}
+public:
+	void incrementResetCounter() { ++_ResetCounter; }
+	uint					SwapBufferCounter;
 };
 
 

@@ -9,6 +9,9 @@ uint64
 sint
 uint
 string
-wstring
-wchar
+ucstring
+ucchar
 hulud
+ace
+yoyo
+boz

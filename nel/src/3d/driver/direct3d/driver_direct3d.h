@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.8 2004/04/26 13:48:23 corvazier Exp $
+ * $Id: driver_direct3d.h,v 1.9 2004/05/03 15:05:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@
 // *** DEBUG MACRO
 
 // Define this to activate the debug mode (default is undefined)
-#define NL_DEBUG_D3D
+//#define NL_DEBUG_D3D
 
 // Define this to enable the render state caching (default is defined)
 #define NL_D3D_USE_RENDER_STATE_CACHE

@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.6 2004/01/13 18:34:44 cado Exp $
+ * $Id: ps_quad.cpp,v 1.7 2004/02/12 16:54:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,8 +154,11 @@ CVertexBuffer &CPSQuad::getNeededVB()
 	else if (_Tex)
 	{
 
-		flags |= VBTex;
-		
+		flags |= VBTex;				
+	}
+
+	if (flags & VBTex)
+	{	
 		/// check is multitexturing is enabled, and which texture are enabled and / or animated
 		if (CPSMultiTexturedParticle::isMultiTextureEnabled())
 		{
@@ -191,6 +194,7 @@ CVertexBuffer &CPSQuad::getNeededVB()
 			}
 		}
 	}
+
 	nlassert((flags & ~VBFullMask) == 0); // check for overflow
 	nlassert(_VbTab[flags] != NULL);
 	return *(_VbTab[flags]); // get the vb
@@ -413,8 +417,9 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 			currIndex = &_TextureIndex;
 			currIndexIncr  = 0;
 		}
-
-		while (size--)
+		
+		uint32 left = size;
+		while (left--)
 		{
 			// for now, we don't make texture index wrapping
 			const CTextureGrouped::TFourUV &uvGroup = _TexGroup->getUVQuad((uint32) *currIndex);

@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.16 2001/06/25 13:41:33 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.17 2001/06/25 16:09:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,8 +31,10 @@
 #include "3d/ps_util.h"
 #include "3d/ps_zone.h"
 #include "3d/driver.h"
+#include "3d/material.h"
+#include "3d/dru.h"
 
-
+#include "nel/misc/line.h"
 
 namespace NL3D {
 
@@ -665,6 +667,59 @@ void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialPtr(_Owner) ;
 }
 
+void CPSLocatedBindable::displayIcon2d(const CVector tab[], uint nbSegs, float scale)
+{
+	uint32 size = _Owner->getSize() ;
+	if (!size) return ;		
+	setupDriverModelMatrix() ;	
+
+	const CVector I = computeI() ;
+	const CVector K = computeK() ;
+
+	static std::vector<NLMISC::CLine> lines ;
+	
+	lines.clear() ;
+
+	// ugly slow code, but not for runtime
+	for (uint  k = 0 ; k < size ; ++k)
+	{
+		// center of the current particle
+		const CVector p = _Owner->getPos()[k]  ;
+		
+		
+
+		for (uint l = 0 ; l < nbSegs ; ++l)
+		{
+			NLMISC::CLine li ;
+			li.V0 = p + scale * (tab[l << 1].x * I + tab[l << 1].y * K) ;
+			li.V1 = p + scale * (tab[(l << 1) + 1].x * I + tab[(l << 1) + 1].y * K) ;
+			lines.push_back(li) ;
+		}
+	
+		CMaterial mat ;
+
+		mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
+		mat.setZWrite(false) ;
+		mat.setLighting(false) ;
+		mat.setBlend(true) ;
+		mat.setZFunc(CMaterial::less) ;
+		
+	
+
+		CPSLocated *loc ;
+		uint32 index ;		
+		CPSLocatedBindable *lb ;
+		_Owner->getOwner()->getCurrentEditedElement(loc, index, lb) ;
+	
+		mat.setColor((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
+		
+
+		CDRU::drawLinesUnlit(lines, mat, *getDriver() ) ;
+	}
+
+}
+
+
 
 /////////////////////////////////////////////
 // CPSTargetLocatedBindable implementation //
@@ -727,6 +782,8 @@ CPSTargetLocatedBindable::~CPSTargetLocatedBindable()
 		(*it)->unregisterDtorObserver(this) ;
 	}
 }
+
+
 
 
 } // NL3D

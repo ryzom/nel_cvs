@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.22 2001/06/25 13:39:39 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.23 2001/06/25 16:09:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,62 +99,24 @@ void CPSParticle::showTool()
 {
 	PARTICLES_CHECK_MEM ;
 
-	uint32 size = _Owner->getSize() ;
-	if (!size) return ;		
-	setupDriverModelMatrix() ;	
+	CVector I = CVector::I ;
+	CVector J = CVector::J ;
 
-	const CVector I = computeI() ;
-	const CVector K = computeK() ;
+	const CVector tab[] = { 2 * J, I + J
+							, I + J, 2 * I + J
+							, 2 * I + J, I
+							, I,  2 * I - J
+							, 2 * I - J, - .5f * J
+							, - .5f * J, -2 * I - J
+							, -2 * I - J, - I
+							, - I, -2 * I + J
+							, -2 * I + J, - I + J
+							, - I + J, 2 * J
+						} ;
+	const uint tabSize = sizeof(tab) / (2 * sizeof(CVector)) ;
 
-	// ugly slow code, but not for runtime
-	for (uint  k = 0 ; k < size ; ++k)
-	{
-		// center of the current particle
-		const CVector p = _Owner->getPos()[k]  ;
-		const float sSize =0.1f ;	
-		const CVector tab[] = { p + sSize * 2 * K
-								, p + sSize * (I + K)
-								, p + sSize * (2 * I + K)
-								, p + sSize * I
-								, p + sSize * (2 * I - K)
-								, p - sSize * (.5f * K) 
-								, p + sSize * (-2 * I - K)
-								, p - sSize * I
-								, p + sSize * (-2 * I + K)
-								, p + sSize * (- I + K)
-								, p + sSize * 2 * K
-							} ;
-		const uint tabSize = sizeof(tab) / sizeof(CVector) ;
-		std::vector<NLMISC::CLine> lines ;
-
-		for (uint l = 0 ; l < tabSize ; ++l)
-		{
-			NLMISC::CLine li ;
-			li.V0 = tab[l] ;
-			li.V1 = tab[(l + 1) % tabSize] ;
-			lines.push_back(li) ;
-		}
-	
-		CMaterial mat ;
-
-		mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
-		mat.setZWrite(false) ;
-		mat.setLighting(false) ;
-		mat.setBlend(true) ;
-		mat.setZFunc(CMaterial::less) ;
-		
-	
-
-		CPSLocated *loc ;
-		uint32 index ;		
-		CPSLocatedBindable *lb ;
-		_Owner->getOwner()->getCurrentEditedElement(loc, index, lb) ;
-	
-		mat.setColor((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
-		
-
-		CDRU::drawLinesUnlit(lines, mat, *getDriver() ) ;
-	}
+	const float sSize = 0.1f ;
+	displayIcon2d(tab, tabSize, sSize) ;
 
 	PARTICLES_CHECK_MEM ;
 }

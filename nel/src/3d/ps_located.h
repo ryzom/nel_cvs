@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.2 2001/06/25 13:41:33 vizerie Exp $
+ * $Id: ps_located.h,v 1.3 2001/06/25 16:09:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -856,6 +856,14 @@ protected:
 	 *  \param index the index of the element that bounced
 	 */
 	virtual void bounceOccured(uint32 index) {}
+
+	/** show an drawing to represent the object, and in red if it is selected
+	 *  \param tab : a table of 2 * nbSeg vector. only the x and y coordinates are used
+	 *  \param nbSeg : the number of segment 
+	 *  \param scale  : the scale to use for drawing
+	 */
+
+	void displayIcon2d(const CVector tab[], uint nbSegs, float scale) ;
 
 
 	/// set the located that hold this located bindable

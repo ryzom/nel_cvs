@@ -143,6 +143,11 @@ bool CFormBodyEltStruct::Empty() const
 	return( vpbodyelt.empty() );
 }
 
+uint32 CFormBodyEltStruct::GetNbElt () const
+{
+	return vpbodyelt.size();
+}
+
 CFormBodyElt* CFormBodyEltStruct::GetElt( const unsigned int _index ) const
 {
 	if( _index >= vpbodyelt.size() )

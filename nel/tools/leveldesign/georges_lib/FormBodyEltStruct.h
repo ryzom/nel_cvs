@@ -45,6 +45,7 @@ public:
 	CStringEx GetParent( unsigned int _index ) const;
 	CStringEx GetActivity( unsigned int _index ) const;
 
+	uint32 GetNbElt () const;
 	virtual CFormBodyElt* GetElt( const unsigned int _index ) const;
 	virtual CFormBodyElt* GetElt( const CStringEx _sxname ) const;
 

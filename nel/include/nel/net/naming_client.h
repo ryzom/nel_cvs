@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.17 2001/02/23 10:27:44 cado Exp $
+ * $Id: naming_client.h,v 1.18 2001/03/29 09:36:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,7 +146,7 @@ public:
 	 * \param sock [out] The connected socket.
 	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
 	 * before sending a message to the service
-	 * \return True if the service was not found
+	 * \return false if the service was not found
 	 */
 	static bool			lookupAndConnect( const std::string& name, CSocket& sock, uint16& validitytime );
 

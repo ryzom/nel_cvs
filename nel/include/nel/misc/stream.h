@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.63 2004/02/20 11:34:54 distrib Exp $
+ * $Id: stream.h,v 1.64 2004/02/23 10:27:32 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ class	IStream;
 class	CMemStream;
 
 struct nelhash {
-  size_t operator()(const uint64 &x) const { return x; }
+  size_t operator()(const uint64 &x) const { return (size_t)x; }
 };
 
 

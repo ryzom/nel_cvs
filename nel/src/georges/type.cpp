@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.16 2002/12/04 14:22:59 coutelas Exp $
+ * $Id: type.cpp,v 1.17 2002/12/06 17:22:09 brigand Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -374,11 +374,11 @@ public:
 				// check if the value is a label defined in the ".typ" file
 				for (uint i =0; i < Type->Definitions.size(); i++)
 				{
-					if ( !strcmp( Type->Definitions[i].Label.c_str(),value ) )
+					if ( !stricmp( Type->Definitions[i].Label.c_str(),value ) )
 					{
 						CMyEvalNumExpr expr(Form, Type);
-						int index;
-						return expr.evalExpression (Type->Definitions[i].Value.c_str(), result, &index );
+						sint index;
+						return expr.evalExpression (Type->Definitions[i].Value.c_str(), result,&index,round+1);
 					}
 				}
 

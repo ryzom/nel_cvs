@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.8 2001/10/03 09:13:24 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.9 2001/12/06 16:49:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -737,7 +737,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 									pt += stride;
 								}
 								while (--k);
-								
+								pt += stride;
 								++it;
 							}
 						}
@@ -755,6 +755,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 									pt += stride;
 								}
 								while (--k);
+								pt += stride;
 								++it;
 							}
 						}
@@ -781,7 +782,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 									pt += stride;
 								}
 								while (--k);
-								
+								pt += stride;
 								++it;
 							}
 						}
@@ -803,6 +804,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 									pt += stride;
 								}
 								while (--k);
+								pt += stride;
 								++it;
 							}
 						}
@@ -825,6 +827,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 								pt += stride;
 							}
 							while (--k);
+							pt += stride;
 							++it;
 						}
 					}
@@ -843,6 +846,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 								pt += stride;
 							}
 							while (--k);
+							pt += stride;
 							++it;
 						}
 					}

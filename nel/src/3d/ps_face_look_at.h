@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.h
  * Face look at particles.
  *
- * $Id: ps_face_look_at.h,v 1.3 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_face_look_at.h,v 1.4 2003/08/22 08:57:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,12 +41,8 @@ class CPSFaceLookAt;
  * A FaceLookAt particle
  *  These particles can have 2 different size (width and height) when activated
  */
-
-
-class CPSFaceLookAt :   public CPSQuad
-					  , public CPSRotated2DParticle
-					
-{
+class CPSFaceLookAt :   public CPSQuad, public CPSRotated2DParticle
+					{
 public:
 	/** create the face look at by giving a texture. This can't be a CTextureGrouped (for animation)
      * animation must be set later by using setTextureScheme
@@ -109,7 +105,11 @@ public:
 	}
 
 	/// from CPSParticle : return true if there are lightable faces in the object
-	virtual bool hasLightableFaces() { 	return false; }
+	virtual bool			hasLightableFaces() { 	return false; }
+
+	// Force faces to be aligned on motion. This bypass motion blur
+	void					setAlignOnMotion(bool align) { _AlignOnMotion = align; }
+	bool					getAlignOnMotion() const { return _AlignOnMotion; }
 	
 protected:
 	friend class			CPSFaceLookAtHelper;	/// used for implementation only
@@ -121,7 +121,8 @@ protected:
 		CPSFaceLookAt *Owner;
 		virtual CPSLocated *getSizeOwner(void) { return Owner->getOwner(); }
 	} _SecondSize;
-	bool					_IndependantSizes;		
+	bool					_IndependantSizes;
+	bool                    _AlignOnMotion;
 	virtual void			draw(bool opaque);
 	void					newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
 	void					deleteElement(uint32);

@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.4 2003/07/30 16:04:01 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.5 2003/08/22 08:57:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,13 @@ namespace NL3D
 {
 
 
+/** vector giving the orientation of look at
+  */ 
+struct CLookAtAlign
+{
+	CVector I;
+	CVector K;
+};
 
 //////////////////////////////////
 // CPSFaceLookAt implementation //
@@ -50,6 +57,315 @@ namespace NL3D
 class CPSFaceLookAtHelper
 {
 public:
+	/** compute orientation vectors depending on speed
+      */
+	template <class T>
+	static void computeOrientationVectors(T speedIt, const CVector &I, const CVector &K, CLookAtAlign *dest, uint size)
+	{
+		nlassert(size > 0);
+		const CLookAtAlign *endDest = dest + size;
+		do 
+		{
+			// tmp unoptimized slow version
+			CVector normedSpeed = (*speedIt).normed();
+			float iProj = normedSpeed * I;
+			float kProj = normedSpeed * K;
+			dest->I = iProj * I + kProj * K;
+			dest->K = (- kProj * I + iProj * K).normed();
+			++ speedIt;
+			++ dest;
+		} 
+		while(dest != endDest);
+	}
+
+	/** Draw look at and align them on motion
+	  */
+	template <class T>	
+	static void drawLookAtAlignOnMotion(T it, T speedIt, CPSFaceLookAt &la, uint size, uint32 srcStep)
+	{
+		PARTICLES_CHECK_MEM;	
+		nlassert(la._Owner);			
+		IDriver *driver = la.getDriver();
+
+		la.updateMatBeforeRendering(driver);
+		
+		CVertexBuffer &vb = la.getNeededVB();
+		la._Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
+		la.setupDriverModelMatrix();
+		driver->activeVertexBuffer(vb);	
+		const CVector I = la.computeI();		
+		const CVector K = la.computeK();		
+		const float *rotTable = CPSRotated2DParticle::getRotTable();	
+		// for each the particle can be constantly rotated or have an independant rotation for each particle
+		// number of face left, and number of face to process at once
+		uint32 leftToDo = size, toProcess;
+		float pSizes[CPSQuad::quadBufSize]; // the sizes to use	
+		float pSecondSizes[CPSQuad::quadBufSize]; // the second sizes to use
+		uint8 laAlignRaw[sizeof(CLookAtAlign) * CPSQuad::quadBufSize]; // orienation computed from motion for each particle
+		CLookAtAlign *laAlign = (CLookAtAlign *) laAlignRaw; // cast to avoid unilined ctor calls
+		float *currentSize; 
+		uint32 currentSizeStep = la._SizeScheme ? 1 : 0;
+		// point the vector part in the current vertex
+		uint8 *ptPos;
+		// strides to go from one vertex to another one
+		const uint32 stride = vb.getVertexSize(), stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride << 2;	
+		if (!la._Angle2DScheme)
+		{
+			// constant rotation case
+			do
+			{			
+				// restart at the beginning of the vertex buffer
+				ptPos = (uint8 *) vb.getVertexCoordPointer();
+				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+
+				if (la._SizeScheme)
+				{
+					currentSize = (float *) la._SizeScheme->make(la._Owner, size- leftToDo, pSizes, sizeof(float), toProcess, true, srcStep);
+				}
+				else
+				{
+					currentSize = &la._ParticleSize;
+				}
+				computeOrientationVectors(speedIt, I, K, laAlign, toProcess);
+				speedIt = speedIt + toProcess;
+				const CLookAtAlign *currAlign = laAlign;
+
+				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep);					
+				T endIt = it + toProcess;				
+				if (!la._IndependantSizes)
+				{						
+					const uint32 tabIndex = (((uint32) la._Angle2D) & 0xff) << 2;
+					CVector v1; 
+					CVector v2;
+					// TODO : optimize if necessary
+					while (it != endIt)
+					{
+						v1 = rotTable[tabIndex] * currAlign->I + rotTable[tabIndex + 1] * currAlign->K;
+						v2 = rotTable[tabIndex + 2] * currAlign->I + rotTable[tabIndex + 3] * currAlign->K;
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  + *currentSize * v1.x;  			
+						((CVector *) ptPos)->y = (*it).y  + *currentSize * v1.y;  			
+						((CVector *) ptPos)->z = (*it).z  + *currentSize * v1.z;  			
+						ptPos += stride;
+
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  + *currentSize * v2.x;  			
+						((CVector *) ptPos)->y = (*it).y  + *currentSize * v2.y;  			
+						((CVector *) ptPos)->z = (*it).z  + *currentSize * v2.z;  			
+						ptPos += stride;
+
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  - *currentSize * v1.x;  			
+						((CVector *) ptPos)->y = (*it).y  - *currentSize * v1.y;  			
+						((CVector *) ptPos)->z = (*it).z  - *currentSize * v1.z;  			
+						ptPos += stride;
+
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  - *currentSize * v2.x;  			
+						((CVector *) ptPos)->y = (*it).y  - *currentSize * v2.y;  			
+						((CVector *) ptPos)->z = (*it).z  - *currentSize * v2.z;  			
+						ptPos += stride;							
+
+						++it;
+						++currAlign;
+						currentSize += currentSizeStep;					
+					}					
+				}
+				else // independant sizes
+				{								
+					float *currentSize2;
+					float secondSize;
+					uint32 currentSizeStep2;
+					if (la._SecondSize.getSizeScheme())
+					{
+						currentSize2 = (float *) la._SecondSize.getSizeScheme()->make(la._Owner, size- leftToDo, pSecondSizes, sizeof(float), toProcess, true, srcStep);
+						currentSizeStep2 = 1;
+					}
+					else
+					{	
+						secondSize = la._SecondSize.getSize();
+						currentSize2 = &secondSize;
+						currentSizeStep2 = 0;
+					}	
+					CVector v1;
+					CVector v2;
+					// TODO : optimize if necessary
+					while (it != endIt)
+					{
+						v1 = CPSUtil::getCos((sint32) la._Angle2D) * currAlign->I  + CPSUtil::getSin((sint32) la._Angle2D) * currAlign->K;
+						v2 = - CPSUtil::getSin((sint32) la._Angle2D) * currAlign->I + CPSUtil::getCos((sint32) la._Angle2D) * currAlign->K;
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  - *currentSize * v1.x + *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = (*it).y  - *currentSize * v1.y + *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = (*it).z  - *currentSize * v1.z + *currentSize2 * v2.z;
+						ptPos += stride;
+
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  + *currentSize * v1.x + *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = (*it).y  + *currentSize * v1.y + *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = (*it).z  + *currentSize * v1.z + *currentSize2 * v2.z;
+						ptPos += stride;
+
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  + *currentSize * v1.x - *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = (*it).y  + *currentSize * v1.y - *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = (*it).z  + *currentSize * v1.z - *currentSize2 * v2.z;
+						ptPos += stride;
+
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  - *currentSize * v1.x - *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = (*it).y  - *currentSize * v1.y - *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = (*it).z  - *currentSize * v1.z - *currentSize2 * v2.z;
+						ptPos += stride;
+						++it;
+						++currAlign;
+						currentSize += currentSizeStep;
+						currentSize2 += currentSizeStep2;
+					}					
+				}
+											
+				driver->renderQuads(la._Mat, 0, toProcess);			
+				leftToDo -= toProcess;				
+			}
+			while (leftToDo);
+		}
+		else
+		{		
+			float pAngles[CPSQuad::quadBufSize]; // the angles to use
+			float *currentAngle;		
+			do
+			{			
+				// restart at the beginning of the vertex buffer
+				ptPos = (uint8 *) vb.getVertexCoordPointer();
+				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+				if (la._SizeScheme)
+				{
+					currentSize = (float *) la._SizeScheme->make(la._Owner, size - leftToDo, pSizes, sizeof(float), toProcess, true, srcStep);
+				}
+				else
+				{
+					currentSize = &la._ParticleSize;
+				}
+				computeOrientationVectors(speedIt, I, K, laAlign, toProcess);
+				speedIt = speedIt + toProcess;
+				const CLookAtAlign *currAlign = laAlign;
+				currentAngle = (float *) la._Angle2DScheme->make(la._Owner, size - leftToDo, pAngles, sizeof(float), toProcess, true, srcStep);
+				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep);					
+				T endIt = it + toProcess;
+				CVector v1, v2;
+				NLMISC::OptFastFloorBegin();
+				if (!la._IndependantSizes)
+				{				
+					while (it != endIt)
+					{
+						const uint32 tabIndex = ((NLMISC::OptFastFloor(*currentAngle)) & 0xff) << 2;			
+						// lets avoid some ctor calls
+						v1.x = *currentSize * (rotTable[tabIndex] * currAlign->I.x + rotTable[tabIndex + 1] * currAlign->K.x);
+						v1.y = *currentSize * (rotTable[tabIndex] * currAlign->I.y + rotTable[tabIndex + 1] * currAlign->K.y);
+						v1.z = *currentSize * (rotTable[tabIndex] * currAlign->I.z + rotTable[tabIndex + 1] * currAlign->K.z);
+
+						v2.x = *currentSize * (rotTable[tabIndex + 2] * currAlign->I.x + rotTable[tabIndex + 3] * currAlign->K.x);
+						v2.y = *currentSize * (rotTable[tabIndex + 2] * currAlign->I.y + rotTable[tabIndex + 3] * currAlign->K.y);
+						v2.z = *currentSize * (rotTable[tabIndex + 2] * currAlign->I.z + rotTable[tabIndex + 3] * currAlign->K.z);
+						
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						CHECK_VERTEX_BUFFER(vb, ptPos + stride);
+						CHECK_VERTEX_BUFFER(vb, ptPos + stride2);
+						CHECK_VERTEX_BUFFER(vb, ptPos + stride3);				
+					
+						((CVector *) ptPos)->x  = (*it).x  + v1.x;		
+						((CVector *) ptPos)->y  = (*it).y  + v1.y;
+						((CVector *) ptPos)->z = (*it).z  + v1.z;  			
+						ptPos += stride;
+
+						((CVector *) ptPos)->x  = (*it).x  + v2.x;		
+						((CVector *) ptPos)->y  = (*it).y  + v2.y;
+						((CVector *) ptPos)->z = (*it).z  + v2.z;  			
+						ptPos += stride;
+
+						((CVector *) ptPos)->x  = (*it).x  - v1.x;		
+						((CVector *) ptPos)->y  = (*it).y  - v1.y;
+						((CVector *) ptPos)->z = (*it).z  - v1.z;  			
+						ptPos += stride;
+
+						((CVector *) ptPos)->x  = (*it).x  - v2.x;		
+						((CVector *) ptPos)->y  = (*it).y  - v2.y;
+						((CVector *) ptPos)->z = (*it).z  - v2.z;  					
+						ptPos += stride;
+						
+						++it;
+						++ currAlign;
+						currentSize += currentSizeStep;
+						++currentAngle;					
+					}
+				}
+				else // independant size, and non-constant rotation
+				{
+					
+					float *currentSize2;
+					float secondSize;
+					uint32 currentSizeStep2;
+					if (la._SecondSize.getSizeScheme())
+					{
+						currentSize2 = (float *) la._SecondSize.getSizeScheme()->make(la._Owner, size- leftToDo, pSecondSizes, sizeof(float), toProcess, true, srcStep);
+						currentSizeStep2 = 1;
+					}
+					else
+					{	
+						secondSize = la._SecondSize.getSize();
+						currentSize2 = &secondSize;
+						currentSizeStep2 = 0;
+					}
+
+					float cosAngle, sinAngle;
+					while (it != endIt)
+					{
+						cosAngle = CPSUtil::getCos((sint32) *currentAngle);
+						sinAngle = CPSUtil::getSin((sint32) *currentAngle);
+						v1 = cosAngle * currAlign->I  + sinAngle * currAlign->K;
+						v2 = - sinAngle * currAlign->I + cosAngle * currAlign->K;
+
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  - *currentSize * v1.x + *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = (*it).y  - *currentSize * v1.y + *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = (*it).z  - *currentSize * v1.z + *currentSize2 * v2.z;
+						ptPos += stride;
+
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  + *currentSize * v1.x + *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = (*it).y  + *currentSize * v1.y + *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = (*it).z  + *currentSize * v1.z + *currentSize2 * v2.z;
+						ptPos += stride;
+
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  + *currentSize * v1.x - *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = (*it).y  + *currentSize * v1.y - *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = (*it).z  + *currentSize * v1.z - *currentSize2 * v2.z;
+						ptPos += stride;
+
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						((CVector *) ptPos)->x = (*it).x  - *currentSize * v1.x - *currentSize2 * v2.x;  			
+						((CVector *) ptPos)->y = (*it).y  - *currentSize * v1.y - *currentSize2 * v2.y;  			
+						((CVector *) ptPos)->z = (*it).z  - *currentSize * v1.z - *currentSize2 * v2.z;
+						ptPos += stride;
+						++it;
+						++currentAngle;
+						++ currAlign;
+						currentSize  += currentSizeStep;
+						currentSize2 += currentSizeStep2;			
+					}
+				}				
+				NLMISC::OptFastFloorEnd();							
+				driver->renderQuads(la._Mat, 0, toProcess);			
+				leftToDo -= toProcess;
+			}
+			while (leftToDo);
+		}
+		PARTICLES_CHECK_MEM;
+	}
+
+	/** render look at, but dont align on motion
+	  */	
 	template <class T>	
 	static void drawLookAt(T it, T speedIt, CPSFaceLookAt &la, uint size, uint32 srcStep)
 	{
@@ -514,29 +830,56 @@ void CPSFaceLookAt::draw(bool opaque)
 
 	if (step == (1 << 16))
 	{
-		CPSFaceLookAtHelper::drawLookAt(_Owner->getPos().begin(),
-				   _Owner->getSpeed().begin(),
-				   *this,
-				    numToProcess,
-					step
-			   );
+		if (!_AlignOnMotion)
+		{		
+			CPSFaceLookAtHelper::drawLookAt(_Owner->getPos().begin(),
+											_Owner->getSpeed().begin(),
+											*this,
+											numToProcess,
+											step
+										   );
+		}
+		else
+		{
+			CPSFaceLookAtHelper::drawLookAtAlignOnMotion(_Owner->getPos().begin(),
+											             _Owner->getSpeed().begin(),
+											             *this,
+											             numToProcess,
+											             step
+										                );
+		}
 	}
 	else
-	{		
-		CPSFaceLookAtHelper::drawLookAt(TIteratorVectStep1616(_Owner->getPos().begin(), 0, step),
-				   TIteratorVectStep1616(_Owner->getSpeed().begin(), 0, step),
-				   *this,
-				   numToProcess,
-				   step				
-				  );
+	{	
+		if (!_AlignOnMotion)
+		{
+			CPSFaceLookAtHelper::drawLookAt(TIteratorVectStep1616(_Owner->getPos().begin(), 0, step),
+											TIteratorVectStep1616(_Owner->getSpeed().begin(), 0, step),
+											*this,
+											numToProcess,
+											step				
+										   );
+		}
+		else
+		{
+			CPSFaceLookAtHelper::drawLookAtAlignOnMotion(TIteratorVectStep1616(_Owner->getPos().begin(), 0, step),
+													     TIteratorVectStep1616(_Owner->getSpeed().begin(), 0, step),
+											             *this,
+											             numToProcess,
+											             step				
+										                );
+		}
 	}
 	
 	PARTICLES_CHECK_MEM;
 }
 
 ///===========================================================================================
-CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex), _MotionBlurCoeff(0.f)
-														, _Threshold(0.5f), _IndependantSizes(false)
+CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex),
+                                                        _MotionBlurCoeff(0.f),
+														_Threshold(0.5f),
+														_IndependantSizes(false),
+														_AlignOnMotion(false)
 {	
 	_SecondSize.Owner = this;
 	_Name = std::string("LookAt");
@@ -568,7 +911,8 @@ void CPSFaceLookAt::resize(uint32 capacity)
 ///===========================================================================================
 void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(2);
+	// version 3 : added 'align on motion' flag
+	sint ver = f.serialVersion(3);
 	CPSQuad::serial(f);
 	CPSRotated2DParticle::serialAngle2DScheme(f);	
 	f.serial(_MotionBlurCoeff);
@@ -583,6 +927,10 @@ void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			_SecondSize.serialSizeScheme(f);
 		}
+	}
+	if (ver >= 3)
+	{
+		f.serial(_AlignOnMotion);
 	}
 	if (f.isReading())
 	{

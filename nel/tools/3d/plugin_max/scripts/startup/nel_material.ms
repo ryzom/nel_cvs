@@ -94,7 +94,7 @@ plugin material NelMaterial
     classID:#(0x64c75fec, 0x222b9eb9)
     extends:standard 
 	replaceUI:false 
-	version:6.0
+	version:7.0
 (
 	local loadShader
 	local globalUpdateUI

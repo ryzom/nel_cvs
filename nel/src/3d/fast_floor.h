@@ -1,7 +1,7 @@
 /** \file fast_floor.h
  * <File description>
  *
- * $Id: fast_floor.h,v 1.1 2001/07/24 08:46:24 vizerie Exp $
+ * $Id: fast_floor.h,v 1.2 2001/07/24 09:43:15 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_FAST_FLOOR_H
 
 #include "nel/misc/types_nl.h"
+#include <math.h>
 
 namespace NL3D
 {					  

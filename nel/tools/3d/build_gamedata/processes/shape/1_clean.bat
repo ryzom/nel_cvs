@@ -10,3 +10,4 @@ del lightmap_16_bits\*.* /Q
 del shape_with_coarse_mesh_builded\*.* /Q
 del clod\*.* /Q
 del cfg\config_generated.cfg
+del anim\*.* /Q

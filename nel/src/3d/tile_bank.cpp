@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.6 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: tile_bank.cpp,v 1.7 2000/11/10 11:19:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,7 +97,7 @@ void    CTileBank::serial(IStream &f)
 sint CTileBank::addLand (const std::string& name)
 {
 	sint last=_landVector.size();
-	_landVector.push_back();
+	_landVector.push_back(CTileLand());
 	_landVector[last].setName (name);
 	return last;
 }
@@ -114,7 +114,7 @@ void CTileBank::removeLand (sint landIndex)
 sint CTileBank::addTileSet (const std::string& name)
 {
 	sint last=_tileSetVector.size();
-	_tileSetVector.push_back();
+	_tileSetVector.push_back(CTileSet());
 	_tileSetVector[last].setName (name);
 	for (int i=0; i<CTileSet::count; i++)
 	{

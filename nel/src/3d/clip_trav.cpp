@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.4 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: clip_trav.cpp,v 1.5 2000/11/10 11:19:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,7 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/types_nl.h"
 #include "nel/3d/clip_trav.h"
 #include "nel/3d/hrc_trav.h"
 #include "nel/3d/render_trav.h"

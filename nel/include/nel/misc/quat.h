@@ -1,7 +1,7 @@
 /** \file quaternion.h
- * 
+ * CQuat class
  *
- * $Id: quaternion.h,v 1.2 2000/11/09 13:25:12 viau Exp $
+ * $Id: quat.h,v 1.1 2000/11/10 11:19:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,57 +23,58 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef _QUAT_H 
-#define _QUAT_H 
+#ifndef NL_QUAT_H 
+#define NL_QUAT_H 
 
 #include "nel/misc/types_nl.h"
 
-// ---------------------------------------------
+namespace	NLMISC
+{
 
-class Quat 
+class CQuat 
 {
 	public:
 		float x,y,z,w;
 	// --- Constructors
-	Quat() : x(0.0f),y(0.0f),z(0.0f),w(1.0f) {}
-	Quat(float X, float Y, float Z, float W);
-	Quat(double X, double Y, double Z, double W);
-	Quat(const Quat& a);
-	Quat(float af[4]);
+	CQuat() : x(0.0f),y(0.0f),z(0.0f),w(1.0f) {}
+	CQuat(float X, float Y, float Z, float W);
+	CQuat(double X, double Y, double Z, double W);
+	CQuat(const CQuat& a);
+	CQuat(float af[4]);
 	// --- Accessors
 	float& operator[](uint i);
 	const float& operator[](uint i) const;
 	float Scalar();
-	// --- Quat address
+	// --- CQuat address
 	operator float*();
 	// --- Unary operators
-	Quat operator-() const;
-	Quat operator+() const; 
+	CQuat operator-() const;
+	CQuat operator+() const; 
     
 	// --- Assignment operators
-	Quat& operator-=(const Quat&);
-	Quat& operator+=(const Quat&);
-	Quat& operator*=(const Quat&);
-	Quat& operator*=(float);
-	Quat& operator/=(float);
-	Quat& Set(float X, float Y, float Z, float W);
-	Quat& Set(double X, double Y, double Z, double W);
+	CQuat& operator-=(const CQuat&);
+	CQuat& operator+=(const CQuat&);
+	CQuat& operator*=(const CQuat&);
+	CQuat& operator*=(float);
+	CQuat& operator/=(float);
+	CQuat& Set(float X, float Y, float Z, float W);
+	CQuat& Set(double X, double Y, double Z, double W);
 
 	// --- Comparison
-	bool operator==(const Quat& a) const;
-	bool Equals(const Quat& a, float epsilon) const;
+	bool operator==(const CQuat& a) const;
+	bool Equals(const CQuat& a, float epsilon) const;
 
 	// --- Misc stuff
 	void Identity();
 	bool IsIdentity() const;
 
 	// --- Binary operators
-	Quat operator-(const Quat&) const; 
-	Quat operator+(const Quat&) const; 
-	Quat operator*(const Quat&) const; 
+	CQuat operator-(const CQuat&) const; 
+	CQuat operator+(const CQuat&) const; 
+	CQuat operator*(const CQuat&) const; 
 };
 
-// ---------------------------------------------
+} // NLMISC
 
-#endif _QUAT_H 
+#endif // NL_QUAT_H 
 

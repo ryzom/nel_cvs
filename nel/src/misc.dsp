@@ -94,7 +94,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nlmisc.lib"
 # ADD LIB32 /nologo /out:"../lib/nlmisc.lib"
 
@@ -162,11 +162,11 @@ SOURCE=..\include\nel\misc\plane_inline.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\misc\quaternion.cpp
+SOURCE=.\misc\quat.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\misc\quaternion.h
+SOURCE=..\include\nel\misc\quat.h
 # End Source File
 # Begin Source File
 

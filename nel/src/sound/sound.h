@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.3 2001/07/18 17:15:09 cado Exp $
+ * $Id: sound.h,v 1.4 2001/07/19 12:48:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,12 @@ public:
 	static void			init( ISoundDriver *sd )		{ _SoundDriver = sd; }
 	/// Serialize
 	void				serial( NLMISC::IStream& s );
+	/** Load the buffer (automatically done by serial()).
+	 *
+	 * The filename is searched in the global path (see CPath).
+	 * Can throw EPathNotFound or ESoundFileNotFound (check Exception)
+	 */
+	void				loadBuffer( const std::string& filename );
 	/// Serialize file header
 	static void			serialFileHeader( NLMISC::IStream& s, uint32& nb );
 	/// Load several sounds and return the number of sounds loaded

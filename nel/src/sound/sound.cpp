@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.3 2001/07/18 17:15:09 cado Exp $
+ * $Id: sound.cpp,v 1.4 2001/07/19 12:48:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "sound.h"
 #include "driver/sound_driver.h"
 #include "driver/buffer.h"
+#include "nel/misc/path.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -99,12 +100,10 @@ void				CSound::serial( NLMISC::IStream& s )
 	if ( s.isReading() )
 	{
 		// Load file (input only)
-		nlassert( _SoundDriver != NULL );
-		nlassert ( _Filename != "" );
-		_Buffer = _SoundDriver->createBuffer();
-		if ( ! _SoundDriver->loadWavFile( _Buffer, const_cast<char*>(_Filename.c_str()) ) )
+		if ( _SoundDriver != NULL )
 		{
-			throw ESoundFileNotFound( _Filename );
+			nlassert ( _Filename != "" );
+			loadBuffer( _Filename );
 		}
 	}
 	else
@@ -114,6 +113,19 @@ void				CSound::serial( NLMISC::IStream& s )
 		{
 			throw EStream( "AM: Invalid sound filename" );
 		}
+	}
+}
+
+
+/*
+ * Load the buffer (automatically done by serial())
+ */
+void				CSound::loadBuffer( const std::string& filename )
+{
+	_Buffer = _SoundDriver->createBuffer();
+	if ( ! _SoundDriver->loadWavFile( _Buffer, CPath::lookup( _Filename ).c_str() ) )
+	{
+		throw ESoundFileNotFound( _Filename );
 	}
 }
 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.h,v 1.4 2000/10/04 12:15:37 cado Exp $
+ * $Id: service.h,v 1.5 2000/10/04 13:58:15 lecroart Exp $
  *
  * Base class for all network services
  */
@@ -34,39 +34,36 @@ class IService
 {
 public:
 
-	/// Constructor. Use argc/argv old style format to generate _Args, vector of string new format easy to use
-	IService(int argc, char **argv);
-
 	/// Initializes the service (must be called before run())
-	virtual void	init() {};
+	virtual void		init () {}
 
-	/// Runs the service (you must call init() before)
-	virtual void	run()
-	{
-		assert( _Name != "" );
-	};
+	/// This function is call every "frame" (you must call init() before)
+	virtual bool		update () { return false; }
 
 	/// Should close the service (to close the service, kill the process).
-	virtual void	release() {};
+	virtual void		release () {}
 
 	/// Returns the current service name
-	static std::string serviceName()
+	static std::string	serviceName ()
 	{
 		return IService::_Name;
 	};
 
 	/// Returns the status
-	sint	getStatus () { return _Status; }
+	sint				getStatus () { return _Status; }
 
 	/// Set the status of the service, this status is return to the application. EXIT_SUCCESS is the default status
 	/// You can set it to EXIT_FAILURE or any value you want. It's useful when you use the service in a script and you
 	/// want to know the return value of the application to do the appropriate things.
-	void	setStatus (sint status) { _Status = status; }
+	void				setStatus (sint status) { _Status = status; }
+
+	/// User must just call this function in the main
+	sint				main (int argc, char **argv);
 
 protected:
 
 	/// Current service name. Must be set by the deriver class
-	static const char			_Name [];
+	static const  char			_Name [];
 
 	/// Array of arguments
 	std::vector<std::string>	_Args;

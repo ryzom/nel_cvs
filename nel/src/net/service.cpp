@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.cpp,v 1.3 2000/10/04 09:38:41 lecroart Exp $
+ * $Id: service.cpp,v 1.4 2000/10/04 13:58:22 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -16,16 +16,16 @@
 #include <stdlib.h>
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/config_file.h"
 
 #include "nel/net/service.h"
+
+using namespace NLMISC;
 
 namespace NLNET
 {
 
-/*
- * Constructor
- */
-IService::IService(int argc, char **argv)
+sint IService::main (int argc, char **argv)
 {
 	for (sint i = 0; i < argc; i++)
 	{
@@ -33,6 +33,14 @@ IService::IService(int argc, char **argv)
 	}
 
 	setStatus (EXIT_SUCCESS);
+
+	init ();
+	while (update())
+	{
+		CConfigFile::checkConfigFiles ();
+	}
+	release ();
+	return getStatus ();
 }
 
 } //NLNET

@@ -1,7 +1,7 @@
 /** \file u_play_list.h
  * <File description>
  *
- * $Id: u_play_list.h,v 1.3 2001/03/29 12:09:28 berenguier Exp $
+ * $Id: u_play_list.h,v 1.4 2001/03/29 14:57:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -249,6 +249,18 @@ public:
 	  * \return the smoothness value.
 	  */
 	virtual	float getWeightSmoothness (uint8 slot) const=0;
+
+	/**
+	  * Setup a constant animation weight. 
+	  * NB: this is equivalent as following code:
+	  *		- setStartWeight(slot, weight, 0);
+	  *		- setEndWeight(slot, weight, 0);
+	  *
+	  * \param slot is the id of the slot to set.
+	  * \param weight is the factor to use in this slot.
+	  */
+	virtual	void setWeight (uint8 slot, float weight)=0;
+
 	// @}
 
 

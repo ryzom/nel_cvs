@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * <File description>
  *
- * $Id: play_list_user.h,v 1.2 2001/03/29 12:09:28 berenguier Exp $
+ * $Id: play_list_user.h,v 1.3 2001/03/29 14:57:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,6 +175,13 @@ public:
 	{
 		return _PlayList.getWeightSmoothness (slot);
 	}
+
+	virtual	void setWeight (uint8 slot, float weight)
+	{
+		_PlayList.setStartWeight (slot, weight, 0);
+		_PlayList.setEndWeight (slot, weight, 0);
+	}
+
 	// @}
 
 

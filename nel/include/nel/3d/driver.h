@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.15 2000/11/13 11:26:42 corvazier Exp $
+ * $Id: driver.h,v 1.16 2000/11/14 11:01:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,10 +31,14 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/matrix.h"
-#include "nel/misc/event_emitter.h"
 
 #include <vector>
 #include <list>
+
+namespace NLMISC
+{
+class IEventEmitter;
+};
 
 namespace NL3D
 {
@@ -320,13 +324,6 @@ public:
 };
 
 typedef std::vector<GfxMode> ModeList;
-
-// --------------------------------------------------
-
-class IEventEmitter
-{
-};
-
 
 // --------------------------------------------------
 

@@ -23,3 +23,5 @@
 	var11 = { "str1", "str2", "str3" }; // var11 type:stringarray, values:{"str1", "str2", "str3"}
 
 	var12 = { 133, -1 };	// var12 type:intarray, values:{133,-1}
+
+	var13 = { 1, 0.5, -1 };

@@ -30,6 +30,7 @@ using namespace NLMISC;
 #define DEBUG_PRINTF	// InfoLog->displayRaw
 #endif // __GNUC__
 
+
 //#define DEBUG_PRINT(a)	InfoLog->displayRaw(a)
 #define DEBUG_PRINT(a)
 
@@ -153,6 +154,7 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 				cf_CurrentVar.RealValues.clear ();
 				cf_CurrentVar.StrValues.clear ();
 				cf_CurrentVar.Comp = false;
+				cf_CurrentVar.Type = NLMISC::CConfigFile::CVar::T_UNKNOWN;
 			}
 			;
 
@@ -200,6 +202,7 @@ inst:		VARIABLE ADD_ASSIGN expression SEMICOLON
 				cf_CurrentVar.RealValues.clear ();
 				cf_CurrentVar.StrValues.clear ();
 				cf_CurrentVar.Comp = false;
+				cf_CurrentVar.Type = NLMISC::CConfigFile::CVar::T_UNKNOWN;
 			}
 			;
 
@@ -207,8 +210,8 @@ expression:	expr2 { $$ = $1; cf_CurrentVar.Comp = false; DEBUG_PRINT("false\n");
 			| LBRACE exprbrace RBRACE { $$ = $2; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); }
 			;
 
-exprbrace:	expr2 { $$ =  $1; cf_CurrentVar.Type = $1.Type; cf_setVar (cf_CurrentVar, $1); }
-			| expr2 { $$ = $1; cf_CurrentVar.Type = $1.Type; cf_setVar (cf_CurrentVar, $1); } COMMA exprbrace
+exprbrace:	expr2 { $$ =  $1; /*cf_CurrentVar.Type = $1.Type;*/ cf_setVar (cf_CurrentVar, $1); }
+			| expr2 { $$ = $1; /*cf_CurrentVar.Type = $1.Type;*/ cf_setVar (cf_CurrentVar, $1); } COMMA exprbrace
 			| { }
 			;
 
@@ -445,15 +448,60 @@ void cf_print (cf_value Val)
 /* put a value into a var */
 void cf_setVar (NLMISC::CConfigFile::CVar &Var, cf_value Val)
 {
-	DEBUG_PRINTF("push %d ", Val.Type);
+	DEBUG_PRINTF("push type %d in var name '%s' type %d with value : ", Val.Type, Var.Name.c_str(), Var.Type);
 	cf_print(Val);
-	Var.Type = Val.Type;
-	switch (Val.Type)
+	DEBUG_PRINTF("\n");
+	if (Var.Type == NLMISC::CConfigFile::CVar::T_UNKNOWN || Var.Type == Val.Type)
 	{
-	case NLMISC::CConfigFile::CVar::T_INT: Var.IntValues.push_back (Val.Int); break;
-	case NLMISC::CConfigFile::CVar::T_REAL: Var.RealValues.push_back (Val.Real); break;
-	case NLMISC::CConfigFile::CVar::T_STRING: Var.StrValues.push_back(Val.String); break;
-	default: break;
+		if (Var.Type == NLMISC::CConfigFile::CVar::T_UNKNOWN)
+		{
+			DEBUG_PRINTF("val type is unknown, set to the var type\n");
+		}
+		else
+		{
+			DEBUG_PRINTF("val type is same var type, just add\n");
+		}
+
+		Var.Type = Val.Type;
+		switch (Val.Type)
+		{
+		case NLMISC::CConfigFile::CVar::T_INT: Var.IntValues.push_back (Val.Int); break;
+		case NLMISC::CConfigFile::CVar::T_REAL: Var.RealValues.push_back (Val.Real); break;
+		case NLMISC::CConfigFile::CVar::T_STRING: Var.StrValues.push_back(Val.String); break;
+		default: break;
+		}
+	}
+	else
+	{
+		// need to convert the type
+		switch (Var.Type)
+		{
+		case NLMISC::CConfigFile::CVar::T_INT:
+			switch (Val.Type)
+			{
+			case NLMISC::CConfigFile::CVar::T_REAL:		Var.IntValues.push_back ((int)Val.Real); break;
+			case NLMISC::CConfigFile::CVar::T_STRING:	Var.IntValues.push_back (atoi(Val.String)); break;
+			default: break;
+			}
+			break;
+		case NLMISC::CConfigFile::CVar::T_REAL:
+			switch (Val.Type)
+			{
+			case NLMISC::CConfigFile::CVar::T_INT:		Var.RealValues.push_back ((double)Val.Int); break;
+			case NLMISC::CConfigFile::CVar::T_STRING:	Var.RealValues.push_back (atof(Val.String)); break;
+			default: break;
+			}
+			break;
+		case NLMISC::CConfigFile::CVar::T_STRING:
+			switch (Val.Type)
+			{
+			case NLMISC::CConfigFile::CVar::T_INT:	Var.StrValues.push_back(toString(Val.Int)); break;
+			case NLMISC::CConfigFile::CVar::T_REAL:	Var.StrValues.push_back(toString(Val.Real)); break;
+			default: break;
+			}
+			break;
+		default: break;
+		}
 	}
 }
 

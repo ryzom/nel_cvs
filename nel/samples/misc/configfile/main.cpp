@@ -1,7 +1,7 @@
 /** \file configfile/main.cpp
  * example of the CConfigfile class
  *
- * $Id: main.cpp,v 1.1 2002/04/17 08:08:31 lecroart Exp $
+ * $Id: main.cpp,v 1.2 2002/11/29 10:01:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,6 +116,10 @@ int main (int argc, char **argv)
 		nlinfo("something goes wrong with configfile: %s", e.what());
 	}
 
+	cf.getVar ("var13").asInt (0);
+	cf.getVar ("var13").asInt (1);
+	cf.getVar ("var13").asInt (2);
+	
 	printf("Try to modify the var12 in the configfile or any other variable.\n\nPress CTRL-C to exit\n");
 
 	while(true)

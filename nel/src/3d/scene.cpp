@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.111 2003/09/25 12:13:12 corvazier Exp $
+ * $Id: scene.cpp,v 1.112 2003/10/22 13:40:39 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,7 @@ using namespace NLMISC;
 
 #define NL3D_SCENE_COARSE_MANAGER_TEXTURE	"nel_coarse_texture.tga"
 
-#define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dInst )
+#define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dIns )
 #define NL3D_MEM_MOT						NL_ALLOC_CONTEXT( 3dMot )
 
 // The manager is limited to a square of 3000m*3000m around the camera. Beyond, models are clipped individually (bad!!).

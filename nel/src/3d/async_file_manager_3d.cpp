@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager_3d.cpp,v 1.6 2003/09/16 13:51:54 besson Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.7 2003/10/22 13:40:39 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@
 using namespace std;
 using namespace NLMISC;
 
-#define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dInst )
+#define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dIns )
 #define NL3D_MEM_IG							NL_ALLOC_CONTEXT( 3dIg )
 
 namespace NL3D
@@ -274,6 +274,7 @@ void CAsyncFileManager3D::CMeshLoad::run()
 			delete this;
 			return;
 		}
+
 		// Here we are sure that the shape is a mesh and the driver is not null
 		// Parse all materials of the mesh
 		uint i, j;

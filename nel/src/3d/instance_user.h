@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.17 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: instance_user.h,v 1.18 2003/10/22 13:40:39 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include "3d/mesh_base_instance.h"
 #include "3d/instance_material_user.h"
 
-#define NL3D_MEM_INSTANCE						NL_ALLOC_CONTEXT( 3dInst )
+#define NL3D_MEM_INSTANCE						NL_ALLOC_CONTEXT( 3dIns )
 
 namespace NL3D {
 

@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.40 2003/05/26 13:10:59 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.41 2003/10/22 13:40:39 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@
 #include "3d/quad_grid_clip_cluster.h"
 #include "3d/scene.h"
 
-#define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dInst )
+#define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dIns )
 
 using namespace NLMISC;
 

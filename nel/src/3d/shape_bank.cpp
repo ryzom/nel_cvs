@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.23 2003/07/17 14:47:33 corvazier Exp $
+ * $Id: shape_bank.cpp,v 1.24 2003/10/22 13:40:39 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -383,6 +383,10 @@ bool CShapeBank::processWSUploadTexture (CWaitingShape &rWS, uint32 &nTotalUploa
 		if (nTotalUploaded > _MaxUploadPerFrame)
 			return false;
 	}
+
+	if (pText->getReleasable())
+		pText->release();
+
 	rWS.UpTextMipMap = 0;
 	rWS.UpTextLine = 0;
 	return true;

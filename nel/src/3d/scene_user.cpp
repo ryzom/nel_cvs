@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.52 2003/10/17 15:01:53 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.53 2003/10/22 13:40:39 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ H_AUTO_DECL( NL3D_Render_Animate_Scene )
 #define NL3D_MEM_IG							NL_ALLOC_CONTEXT( 3dIg )
 #define NL3D_MEM_LOD						NL_ALLOC_CONTEXT( 3dLod )
 #define NL3D_MEM_SCENE_RENDER				NL_ALLOC_CONTEXT( 3dScRdr )
-#define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dInst )
+#define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dIns )
 #define NL3D_MEM_LANDSCAPE					NL_ALLOC_CONTEXT( 3dLand )
 #define NL3D_MEM_CLOUDS						NL_ALLOC_CONTEXT( 3dCloud )
 #define NL3D_MEM_VISUAL_COLLISION			NL_ALLOC_CONTEXT( 3dVsCol )

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.26 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: particle_system_shape.cpp,v 1.27 2002/02/15 17:00:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,18 +44,18 @@ using NLMISC::CIFile;
 // private usage : macro to check the memory integrity
 #if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)
 	#include <crtdbg.h>
-//	#define PARTICLES_CHECK_MEM nlassert(_CrtCheckMemory());
+	//#define PARTICLES_CHECK_MEM nlassert(_CrtCheckMemory());
 	#define PARTICLES_CHECK_MEM 
 #else
 	#define PARTICLES_CHECK_MEM
 #endif
 
-
-
-
-CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f), _DestroyWhenOutOfFrustum(false)												
-												, _DestroyModelWhenOutOfRange(false)
-												, _UsePrecomputedBBox(false)
+///===========================================================================
+CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f),
+											   _DestroyWhenOutOfFrustum(false),
+											   _DestroyModelWhenOutOfRange(false),
+											   _UsePrecomputedBBox(false),
+											   _Sharing(false)
 {
 	for (uint k = 0; k < 4; ++k)
 	{
@@ -68,10 +68,11 @@ CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f), _DestroyWhen
 
 }
 
-
+///===========================================================================
 void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(5);
+	sint ver = f.serialVersion(6);
+	/// version 6 : added sharing flag
 	NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector();
 	f.serialCont(buf);
 	if (ver > 1)
@@ -94,7 +95,6 @@ void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_DestroyWhenOutOfFrustum);		
 		f.serial(_DestroyModelWhenOutOfRange);
 	}
-
 	if ( ver > 4)
 	{
 		f.serial(_UsePrecomputedBBox);
@@ -103,10 +103,13 @@ void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			f.serial(_PrecomputedBBox);
 		}
 	}
+	if ( ver > 5)
+	{
+		f.serial(_Sharing);
+	}
 }
 
-
-
+///===========================================================================
 void CParticleSystemShape::buildFromPS(const CParticleSystem &ps)
 {
 	// must be sure that we are writting in the stream
@@ -134,9 +137,10 @@ void CParticleSystemShape::buildFromPS(const CParticleSystem &ps)
 	{
 		_UsePrecomputedBBox = false;
 	}
+	_Sharing = myPs->isSharingEnabled();
 }
 
-
+///===========================================================================
 void	CParticleSystemShape::getAABBox(NLMISC::CAABBox &bbox) const
 {
 	if (!_UsePrecomputedBBox)
@@ -150,10 +154,14 @@ void	CParticleSystemShape::getAABBox(NLMISC::CAABBox &bbox) const
 	}
 }
 
-
-
+///===========================================================================
 CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
 {
+	if (_Sharing && _SharedSystem != NULL) // is sharing enabled, and is a system already instanciated
+	{
+		return _SharedSystem;
+	}
+
 	// copy the datas
 	CParticleSystem *myInstance = NULL;
 
@@ -165,22 +173,25 @@ CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
 
 	_ParticleSystemProto.resetPtrTable();
 	_ParticleSystemProto.seek(0, IStream::begin);
-	
 	_ParticleSystemProto.serialPtr(myInstance); // instanciate the system	
 
-	myInstance->setScene(&scene);		
+
+	myInstance->setScene(&scene);
+
+	if (_Sharing)
+	{
+		_SharedSystem = myInstance; // set this as the first shared instance
+	}
 
 	return myInstance;
 }
 
+///===========================================================================
 CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 {
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(scene.createModel(NL3D::ParticleSystemModelId) );
 	psm->Shape = this;
-	psm->_Scene = &scene; // the model needs the scene to recreate the particle system he holds
-		
-
-	
+	psm->_Scene = &scene; // the model needs the scene to recreate the particle system he holds			
 	// by default, we don't instanciate the system. It will be instanciated only if visible and triggered
 	// psm->_ParticleSystem = instanciatePS(scene);	
 
@@ -188,41 +199,37 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 	psm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
 	psm->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );	
 	psm->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
-	
-
 	return psm;
 }
 
-
-
+///===========================================================================
 void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
-
 	nlassert(dynamic_cast<CParticleSystemModel *>(trans));
 	nlassert(drv);
-
 	CParticleSystemModel *psm = (CParticleSystemModel *) trans;
-
-
 	if (psm->_Invalidated) return;
-
 	CParticleSystem *ps = psm->getPS();
-
-
-	/// has the systme been triggered yet ?
+	/// has the system been triggered yet ?
 	if (!ps) return;
 	
 	TAnimationTime delay = psm->getEllapsedTime();
 	nlassert(ps->getScene());	
 
+	///////////////////////
+	// render particles  //
+	///////////////////////
 
-	// render particles
+	/// if sharing is enabled,  we should resetup the system matrix
+	if (ps->isSharingEnabled())
+	{
+		ps->setSysMat(trans->getWorldMatrix());
+	}
 	
 	// Setup the matrix.
-	drv->setupModelMatrix(trans->getWorldMatrix());
+	/// drv->setupModelMatrix(trans->getWorldMatrix());
 
 	ps->setDriver(drv);
-
 	// draw particle
 	PARTICLES_CHECK_MEM;
 	if (passOpaque)
@@ -233,10 +240,7 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	{
 		ps->step(CParticleSystem::BlendRender, delay);
 	}
-
 	PARTICLES_CHECK_MEM;
-
-
 	if (psm->isToolDisplayEnabled())
 	{
 		ps->step(CParticleSystem::ToolRender, delay);

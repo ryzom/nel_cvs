@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.14 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.15 2002/02/15 17:00:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/class_id.h"
 #include "nel/misc/mem_stream.h"
+#include "nel/misc/smart_ptr.h"
 #include "3d/shape.h"
 #include "3d/track.h"
 
@@ -78,16 +79,12 @@ public:
 	 */
 	virtual	CTransformShape		*createInstance(NL3D::CScene &scene);
 
-	/// \name From IShape
+	/// \name Inherited from IShape.
 	// @{
-
-
 	/** render() a particle system in a driver, with the specified TransformShape information.
 	 * CTransfromShape call this method in the render traversal.
 	 */
 	virtual void				render(NL3D::IDriver *drv, CTransformShape *trans, bool passOpaque);
-
-	
 	// @}
 
 	/// serial the shape
@@ -141,22 +138,20 @@ public:
 	  */
 	CParticleSystem *instanciatePS(CScene &scene);
 protected:
-		
+	/// inherited from ishape
+	virtual void				flushTextures (IDriver &driver) {}		
+
+protected:
+
 	/** A memory stream containing a particle system. Each system is instanciated from this prototype
-	  * Nevrtheless, we store some more system infos which are needed for its lifecycle
+	  * Nevertheless, we store some more system infos which are needed for its lifecycle mgt.
 	  */
 	NLMISC::CMemStream  _ParticleSystemProto;
-	float				_MaxViewDist;							// the max view distance of the system, mirror the PS value
-	bool                _DestroyWhenOutOfFrustum;				// mirror the ps value	
-	bool				_DestroyModelWhenOutOfRange;			// mirror the ps value
-	bool				_UsePrecomputedBBox;					// mirror the ps value
+	float				_MaxViewDist;							// the max view distance of the system, mirror the PS value	
 	NLMISC::CAABBox     _PrecomputedBBox;						// mirror the ps value
-
 	
-
 	/// the default track for animation of user parameters
 	CTrackDefaultFloat _UserParamDefaultTrack[4];
-
 
 	/// Transform default tracks.
 	CTrackDefaultVector			_DefaultPos;
@@ -164,12 +159,15 @@ protected:
 	CTrackDefaultQuat			_DefaultRotQuat;
 
 	/// Trigger default track
-	CTrackDefaultBool			_DefaultTriggerTrack;
+	CTrackDefaultBool			_DefaultTriggerTrack;	
 
-	/// inherited from ishape
-	/// todo Nicolas: flush texture of the particule system
-	virtual void				flushTextures (IDriver &driver) {};
+	/// For sharing, this tells us if there's a system already instanciated that we could use for sharing
+	NLMISC::CRefPtr<CParticleSystem> _SharedSystem; 
 
+	bool                _DestroyWhenOutOfFrustum;				// mirror the ps value	
+	bool				_DestroyModelWhenOutOfRange;			// mirror the ps value
+	bool				_UsePrecomputedBBox;					// mirror the ps value
+	bool				_Sharing;								// mirror the ps value
 };
 
 } // NL3D

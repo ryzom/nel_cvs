@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.32 2000/12/08 17:20:27 cado Exp $
+ * $Id: service.cpp,v 1.33 2000/12/08 18:11:43 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -232,6 +232,22 @@ sint IService::main (int argc, char **argv)
 		// Register the name to the NS (except for the NS itself)
 		if ( strcmp( IService::_Name, "NS" ) != 0 )
 		{
+			// Setup Net Displayer
+			CNetDisplayer *nd = new CNetDisplayer();
+			if ( nd->connected() )
+			{
+				NetLog.addDisplayer( nd );
+
+				// Add the net displayer for all debug information
+				ErrorLog.addDisplayer (nd);
+				WarningLog.addDisplayer (nd);
+				InfoLog.addDisplayer (nd);
+#ifdef NL_DEBUG
+				DebugLog.addDisplayer (nd);
+				AssertLog.addDisplayer (nd);
+#endif
+			}
+
 
 			// Get the universal time (useful for debugging)
 			if ( strcmp( IService::_Name, "TS" ) !=0 )
@@ -240,12 +256,6 @@ sint IService::main (int argc, char **argv)
 				CUniTime::syncUniTimeFromService ();
 			}
 
-			// Setup Net Log
-			CNetDisplayer *nd = new CNetDisplayer();
-			if ( nd->connected() )
-			{
-				NetLog.addDisplayer( nd );
-			}
 
 			// Talk with the NS
 			bool registered = false;

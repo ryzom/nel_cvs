@@ -1,7 +1,7 @@
 /** \file network_viewer.cpp
  * network_viewer prototype
  *
- * $Id: network_viewer.cpp,v 1.1 2000/12/08 13:09:41 lecroart Exp $
+ * $Id: network_viewer.cpp,v 1.2 2000/12/08 18:11:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -332,6 +332,7 @@ void CMsg::drawArrow()
 
 	sint32 viewsrc, viewdst;
 
+	// manage if some info needed (when the @ and # are not receive)
 	switch (SelectedView)
 	{
 	case 0: viewsrc = cnxsrc; viewdst = cnxdst; break;
@@ -348,13 +349,17 @@ void CMsg::drawArrow()
 		v0.x = (float)(vx2sx((*View)[viewdst].pos+0.3)*1.33);
 	}
 
+	TTime ut = CUniTime::getUniTime ();
 	if (timesrc != 0)
 	{
 		v0.y = (float)vy2sy(timesrc);
 	}
 	else
 	{
-		v0.y = (float)vy2sy(timedst);
+		if (ut > timedst + 2000)
+			v0.y = (float)vy2sy(timedst);
+		else
+			v0.y = (float)vy2sy(ut);
 	}
 
 	if (viewdst != -1)
@@ -372,16 +377,21 @@ void CMsg::drawArrow()
 	}
 	else
 	{
-		v1.y = (float)vy2sy(timesrc);
+		if (ut > timesrc + 2000)
+			v1.y = (float)vy2sy(timesrc);
+		else
+			v1.y = (float)vy2sy(ut);
 	}
 
 	v0.z = v1.z = 0.0f;
 
+
+	// clip on the window
 	double minx = (v0.x < v1.x) ? v0.x : v1.x;
 	double maxx = (v0.x > v1.x) ? v0.x : v1.x;
 	double miny = (v0.y < v1.y) ? v0.y : v1.y;
 	double maxy = (v0.y > v1.y) ? v0.y : v1.y;
-	if (maxx<0.0 || minx>1.0 || maxy<0.0 || miny>1.0) return;
+	if (maxx<0.0 || minx>1.33 || maxy<0.0 || miny>1.0) return;
 
 	CVector dv = v1 - v0;
 	CVector v2, v3, dv1, dv2;
@@ -412,7 +422,7 @@ void CMsg::drawArrow()
 	CDRU::drawLine (v2.x, v2.y, v1.x, v1.y, *CNELU::Driver, col);
 	CDRU::drawLine (v3.x, v3.y, v1.x, v1.y, *CNELU::Driver, col);
 
-	v2= (v0+v1)/2;
+	v2= v0+(v1-v0)/5;
 	if (!cs)
 	{
 		CDisplayDescriptor displayDesc;
@@ -494,12 +504,6 @@ class CKCallback : public IEventListener
 	{
 		CEventKeyDown &ec = (CEventKeyDown &) event;
 
-/*
-@@DATE@HOTE_SRC(IP/PORT)@NUM@PROCESS(SERVICE/PID)@HOTE_DEST(IP/PORT)@NOM_MESSAGE@TAILLE_MSG@
-
-Réception:
-##DATE#HOTE_SRC(IP/PORT)@NUM@PROCESS(SERVICE/PID)@
-*/
 		static int nums=0, numr=0;
 		static int nums2=100, numr2=100;
 
@@ -705,18 +709,10 @@ void cbProcessReceivedMsg( CMessage& message, TSenderId from )
 		res++;
 
 		sint64 timesrc = str2sint64 (timesrcname);
-		if (timesrc != 0 && name != "")
-		{
-			setMessage (timesrc, cnxsrcname, atoi(numname.c_str()), procsrcname, cnxdstname, name, atoi(sizename.c_str()));
-/*
-			uint32 h, m;
-			findOrAddMessage (srchost, dsthost, date, true, h, m);
-			CMsg &msg = Hosts[h].Msgs[m];
-			msg.Name = msgname;
-			msg.Computed = false;
-			msg.Size = atoi(msgsize.c_str ());
-			findAndMerge (h, m);
-*/		}
+
+		if (name == "") name = "<Empty>";
+		if (timesrc == 0) timesrc = CUniTime::getUniTime ();
+		setMessage (timesrc, cnxsrcname, atoi(numname.c_str()), procsrcname, cnxdstname, name, atoi(sizename.c_str()));
 	}
 
 	string tok2 = "##";
@@ -742,14 +738,9 @@ void cbProcessReceivedMsg( CMessage& message, TSenderId from )
 		res++;
 
 		sint64 timedst = str2sint64 (timedstname);
-		if (timedst != 0)
-		{
-			setMessage (timedst, cnxsrcname, atoi(numname.c_str()), procdstname);
-/*			uint32 h, m;
-			findOrAddMessage (srchost, dsthost, date, false, h, m);
-			CMsg &msg = Hosts[h].Msgs[m];
-			findAndMerge (h, m);
-*/		}
+
+		if (timedst == 0) timedst = CUniTime::getUniTime ();
+		setMessage (timedst, cnxsrcname, atoi(numname.c_str()), procdstname);
 	}
 }
 

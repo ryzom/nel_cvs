@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.11 2000/12/08 17:20:27 cado Exp $
+ * $Id: unitime.cpp,v 1.12 2000/12/08 18:11:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,7 +92,7 @@ void CUniTime::syncUniTimeFromService ()
 	}
 	else
 	{
-		nlerror ("TS not found, can't synchronize universal time");
+		nlwarning ("TS not found, can't synchronize universal time");
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.11 2002/06/21 12:59:52 miller Exp $
+ * $Id: transport_class.cpp,v 1.12 2002/07/02 17:27:30 miller Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -317,7 +317,8 @@ static TUnifiedCallbackItem CallbackArray[] =
 void cbTCUpService (const std::string &serviceName, uint16 sid, void *arg)
 {
 	nldebug ("NETTC: CTransportClass Service %s %d is up", serviceName.c_str(), sid);
-	nlassert (sid < 256);
+	if (sid >= 256)
+		return;
 	CTransportClass::sendLocalRegisteredClass ((uint8)sid);
 }
 

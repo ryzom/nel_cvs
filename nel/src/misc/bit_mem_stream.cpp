@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.21 2002/10/29 10:45:14 legros Exp $
+ * $Id: bit_mem_stream.cpp,v 1.22 2002/10/30 16:24:49 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -145,7 +145,9 @@ void CBitMemStream::serialBit( bool& bit )
  */
 void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 {
-	nlassert( (nbits <= 32) && (nbits != 0) );
+	//nlassert( (nbits <= 32) && (nbits != 0) );
+	if (nbits>32 || nbits==0)
+		throw EMemStream (string("trying to serial ")+toString(nbits)+string(" %d bits"));
 
 	if ( isReading() )
 	{

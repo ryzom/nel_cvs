@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.7 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_located.h,v 1.8 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,7 @@ typedef CPSAttrib<CPSCollisionInfo> TPSAttribCollisionInfo ;
  * a force and so on.
  * It is important to remember that a located holds all instance of object of
  * one type (force, emitter, particles or both...), not only one.
+ * Not sharable accross systems
  */
  
 class CPSLocated : public CParticleSystemProcess

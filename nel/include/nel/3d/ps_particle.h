@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.8 2001/05/10 09:18:27 vizerie Exp $
+ * $Id: ps_particle.h,v 1.9 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@ class CTextureGrouped ;
 /**
  * This is the base class for all particle
  * A deriver must provide a drawing method for his particle
+ * Not sharable.
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001

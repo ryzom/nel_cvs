@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.10 2001/05/10 09:18:27 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.11 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/aabbox.h"
 #include "nel/3d/nelu.h"
 #include "nel/3d/ps_util.h"
+#include "nel/misc/file.h"
 
 
 
@@ -96,44 +97,6 @@ void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 {
 }
-
-
-
-// clonage
-CParticleSystem *CParticleSystem::clone(CPSCopyHelper *ch)
-{
-
-/*	if (!ch)
-	{
-		ch = new CPSCopyHelper ;		
-		CParticleSystem *result =  ch->clone(*this) ;
-		delete ch ;
-		return result ;
-	}
-	else
-	{
-		CParticleSystem *copy = NULL ;
-		
-	
-		copy = new CParticleSystem ;
-	
-		for (TProcessVect::const_iterator it = ps._ProcessVect.begin() ; it != ps._ProcessVect.end() ; ++it)
-		{
-			copy->_ProcessVect.push_back(*ch.clone(*it)) ;
-		}
-	// copy the attributes
-
-		copy->_FontGenerator = ps._FontGenerator ;
-		copy->_FontManager = ps._FontManager ;
-		copy->_ViewMat = ps._ViewMat ;
-		copy->_SysMat = ps._SysMat ;
-		copy->_InvSysMat = ps._InvSysMat ;
-
-		return copy ;
-	} */
-	return NULL ;
-}
-
 
 
 /// dtor
@@ -249,24 +212,5 @@ void CParticleSystem::setSysMat(const CMatrix &m)
 	_InvSysMat = _SysMat.inverted() ;
 }
 
-
-
-
-
-
-
-/*
-CTransformShape *CParticleSystemShape::createInstance(CScene &scene)
-{
-	return new CParticleSystemTransformShape(_ParticleSystem) ; // make a copy of the system
-}
-
-
-void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans)
-{
-	nlassert(drv);
-	// get the particle system instance
-	nlassert(dynamic_cast<CMeshInstance*>(trans));
-}*/
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.4 2001/05/10 09:18:27 vizerie Exp $
+ * $Id: ps_color.h,v 1.5 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,7 +147,7 @@ class CPSColorGradient : public CPSAttribMakerT<CRGBA, CPSColorGradientFunc>
 public:
 		NLMISC_DECLARE_CLASS(CPSColorGradient) ;
 
-		CPSColorGradient(CRGBA *tab = CPSColorGradient::_DefaultGradient, uint32 numCol = 2
+		CPSColorGradient(const CRGBA *tab = CPSColorGradient::_DefaultGradient, uint32 numCol = 2
 						 ,float nbCycles = 1.0f) : CPSAttribMakerT<CRGBA, CPSColorGradientFunc>(nbCycles) 
 		{
 			_F.setColors(tab, numCol) ;

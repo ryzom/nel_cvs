@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.10 2001/05/10 09:18:27 vizerie Exp $
+ * $Id: particle_system.h,v 1.11 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #include "nel/3d/tmp/animation_time.h" 
 #include "nel/3d/particle_system.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/mem_stream.h"
+
 
 
 namespace NLMISC
@@ -40,9 +42,6 @@ namespace NLMISC
 }
 
 namespace NL3D {
-
-
-
 using NLMISC::CMatrix ;
 class CParticleSystem ;
 class CFontGenerator ;
@@ -50,17 +49,27 @@ class CFontManager ;
 class CPSCopyHelper ;
 
 
+/** Particles system classes. They can be used as it. If you want to use a particle system in 
+ *  a scene (M.O.T model), see particle_system_shape.h and particle_system_instance.h
+ *  TODO : give example of use here...
+ */
 
-// rendering and process passes for a particle system
+
+
+
+
+/** rendering and process passes for a particle system.
+ *  PSCollision : collisions with collision zones (see CPSZone)
+ *  PSMotion    : motion computation
+ *  PSSolidRender : render particle that can modify z-buffer
+ *  PSBlendRender : render transparency (no z-buffer write)
+ *  PSToolRender  : for edition purpose, show representations for forces, emitters...
+ */
 enum TPSProcessPass { PSCollision, PSMotion, PSSolidRender, PSBlendRender, PSToolRender } ;
 
 
-
-
-
-
 /**
- *	A system particle process; A process is anything that can be called at each update 
+ *	A system particle process; A process is anything that can be called at each update of the system
  */
 
 class CParticleSystemProcess : public NLMISC::IStreamable
@@ -166,10 +175,10 @@ public:
 	CParticleSystem();
 
 
-	/*** duplication method
+	/*** duplication method NOT SUPPORTED
 	 * \param ch for private use, set to null by default
 	 */
-	CParticleSystem *clone(CPSCopyHelper *ch = NULL)  ;
+	//	CParticleSystem *clone(CPSCopyHelper *ch = NULL)  ;
 
 	/// dtor
 	~CParticleSystem() ;
@@ -211,6 +220,7 @@ public:
 	}
 
 	/** Compute the aabbox of this located, (expressed in world basis
+	*  TODO : express it in system basis ...
 	*  \return true if there is any aabbox
 	*  \param aabbox a ref to the result box
 	*/
@@ -218,7 +228,11 @@ public:
 	bool computeBBox(NLMISC::CAABBox &aabbox) const ;
 
 
-	/// Set the matrix for the system. This only affect elements that are in the same basis
+	/** Set the matrix for the system. This only affect elements that are in the same basis
+	 * you don't need to call this if it is used in a CPaticleSystemModel : Call ITransformable method. In this case
+	 * , setSysMat will be called automatically when needed to mirror the ITransformable matrix
+	 */
+	 
 	void setSysMat(const CMatrix &m) ;
 	
 	/// return the matrix of the system
@@ -273,6 +287,10 @@ protected:
 };
 
 
+
+
+
+// NOT USED FOR NOW
 /**
  *	This class holds infos needed to duplicate a particle system
  *  Because of cross referencement, an object of the system may need referencment before it is created
@@ -280,8 +298,8 @@ protected:
  *  for now it is for PRIVATE USE... 
  *  may be useful in NLMISC later as it could be used with other kind of objects ...
  */ 
-
-/*class CPSCopyHelper
+/*
+class CPSCopyHelper
 {
 	public:
 		// duplicate an object using the copy ctor, if it has not been before
@@ -330,59 +348,6 @@ protected:
 		TAlreadyCopied _AlreadyCopied ;
 } ;
 
-*/
-
-/** this class helps to instanciate a particle system from its shape
- *
- *
- */
-/*
-class CParticleSystemShape : public IShape
-{
-public:
-
-/// Constructor
-IShape() {}
-/// Dtor.
-virtual ~IShape() {}
-
-/** create a particle system instance
- * \param scene the scene used to createModel().
- * \return the specialized instance for this shape.
- */
-/*virtual	CTransformShape		*createInstance(CScene &scene);
-*/
-
-
-/** render() a particle system in a driver, with the specified TransformShape information.
- * CTransfromShape call this method in the render traversal.
- */
-/*virtual void				render(IDriver *drv, CTransformShape *trans)=0;
-
-protected:
-	// all particles system instances instances are duplicated from this one
-	CParticleSystem _ParticleSystem ; 
-} ;
-
-
-*/
-
-
-/** a particle system transform shape : it is build using a CParticleSystemShape
- *
- */
-/*
-class CParticleSystemTransformShape : public CTransformShape
-{
-public:
-*/
-	/**
-	* build this transform shape by copying a particle system
-	*/
-/*	CParticleSystemTransformShape(const CParticleSystem ps) : _ParticleSystem(ps) {}
-protected:
-	CParticleSystem _ParticleSystem ;
-} ;
 */
 
 

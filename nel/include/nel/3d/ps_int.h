@@ -1,7 +1,7 @@
 /** \file ps_int.h
  * <File description>
  *
- * $Id: ps_int.h,v 1.1 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: ps_int.h,v 1.2 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,7 +63,7 @@ public:
 	 * \param nbCycles : The nb of time the pattern is repeated during particle life. see ps_attrib_maker.h
 	 */
 
-	CPSIntGradient(sint32 *intTab = CPSIntGradient::_DefaultGradient
+	CPSIntGradient(const sint32 *intTab = CPSIntGradient::_DefaultGradient
 						, uint32 nbValues = 2, uint32 nbStages = 10, float nbCycles = 1.0f) ;
 
 

@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.4 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_zone.h,v 1.5 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,7 @@ const float PSCollideEpsilon = 10E-5f ;
 /**
  * This class hold any entity that has an effect over located : a sink, a bouncing zone etc
  * This is a kind a specialized force, and it has an attached list of the targets
+ * Not sharable.
  * 
  * \author Nicolas Vizerie
  * \author Nevrax France

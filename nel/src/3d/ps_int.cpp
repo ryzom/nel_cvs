@@ -1,7 +1,7 @@
 /** \file ps_int.cpp
  * <File description>
  *
- * $Id: ps_int.cpp,v 1.1 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: ps_int.cpp,v 1.2 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@ namespace NL3D {
 sint32 CPSIntGradient::_DefaultGradient[] = { 0, 10 } ;
 
 
-CPSIntGradient::CPSIntGradient(sint32 *intTab, uint32 nbValues, uint32 nbStages, float nbCycles) 
+CPSIntGradient::CPSIntGradient(const sint32 *intTab, uint32 nbValues, uint32 nbStages, float nbCycles) 
 				: CPSValueGradient<sint32>(nbCycles)
 {
 	_F.setValues(intTab, nbValues, nbStages) ;

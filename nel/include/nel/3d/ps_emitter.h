@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.4 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.5 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,8 @@ struct CPSFrequency
 
 /**
  * base class for all emitters in a particle system
- * Derivers should at least define the emit method which is called each time an emission is needed (and the getClassName method)
+ * Derivers should at least define the emit method which is called each time an emission is needed
+ * Not sharable.
  * 
  * \author Nicolas Vizerie
  * \author Nevrax France

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.8 2001/05/10 09:18:27 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.9 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -410,6 +410,7 @@ void CPSDot::init(void)
 	_Mat.setZWrite(false) ;
 	_Mat.setLighting(false) ;
 	_Mat.setBlend(true) ;
+	_Mat.setZFunc(CMaterial::less) ;
 	
 	updateMatAndVbForColor() ;
 }
@@ -561,6 +562,9 @@ void CPSFaceLookAt::init(void)
 	_Mat.setZWrite(false) ;
 	_Mat.setLighting(false) ;	
 	_Mat.setBlend(true) ;
+	_Mat.setZFunc(CMaterial::less) ;
+
+
 	updateMatAndVbForColor() ;
 	updateMatAndVbForTexture() ;
 }
@@ -1257,6 +1261,9 @@ void CPSFanLight::init(void)
 	_Mat.setZWrite(false) ;
 	_Mat.setLighting(false) ;	
 	_Mat.setBlend(true) ;
+	_Mat.setZFunc(CMaterial::less) ;
+
+
 	updateMatAndVbForColor() ;
 }
 
@@ -1292,6 +1299,9 @@ void CPSTailDot::init(void)
 	_Mat.setZWrite(false) ;
 	_Mat.setLighting(false) ;
 	_Mat.setBlend(true) ;
+	_Mat.setZFunc(CMaterial::less) ;
+
+
 	_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR ) ;	
 }
 	

@@ -1,7 +1,7 @@
 /** \file ps_size.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.2 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.3 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ float CPSFloatGradient::_DefaultGradient[] = { 0.0f, 1.0f } ;
 
 
 
-CPSFloatGradient::CPSFloatGradient(float *floatTab, uint32 nbValues, uint32 nbStages, float nbCycles) 
+CPSFloatGradient::CPSFloatGradient(const float *floatTab, uint32 nbValues, uint32 nbStages, float nbCycles) 
 				: CPSValueGradient<float>(nbCycles)
 {
 	_F.setValues(floatTab, nbValues, nbStages) ;

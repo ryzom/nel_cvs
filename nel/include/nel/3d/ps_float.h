@@ -1,7 +1,7 @@
 /** \file ps_size.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.2 2001/05/08 13:37:08 vizerie Exp $
+ * $Id: ps_float.h,v 1.3 2001/05/11 17:17:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ public:
 	 * \param nbCycles : The nb of time the pattern is repeated during particle life. see ps_attrib_maker.h
 	 */
 
-	CPSFloatGradient(float *floatTab = CPSFloatGradient::_DefaultGradient
+	CPSFloatGradient(const float *floatTab = CPSFloatGradient::_DefaultGradient
 						, uint32 nbValues = 2, uint32 nbStages = 16, float nbCycles = 1.0f) ;
 
 

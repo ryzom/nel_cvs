@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.37 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: zone.cpp,v 1.38 2001/07/04 10:06:32 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,7 +74,7 @@ void			CZone::computeBBScaleBias(const CAABBox	&bb)
 
 
 // ***************************************************************************
-void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const std::vector<CBorderVertex> &borderVertices)
+void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const std::vector<CBorderVertex> &borderVertices, uint32 numVertices)
 {
 	sint	i,j;
 	nlassert(!Compiled);
@@ -162,6 +162,7 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 	}
 
 	NumVertices= maxVertex+1;
+	NumVertices= max((uint32)NumVertices, numVertices);
 }
 
 

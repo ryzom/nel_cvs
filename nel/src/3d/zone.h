@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: zone.h,v 1.2 2001/07/04 10:06:32 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -249,8 +249,9 @@ public:
 	 * \param borderVertices vertices connectivity for this zone. NB: borderVertices must contains the connectivity 
 	 *		across zones. It is VERY IMPORTANT to setup zone corner connectivity too. A "corner borderVertex" may appear 
 	 *		3 times here. One for each other zone of the corner.
+	 * \param numVertices maximize the numgber of vertices used by this zone with this value.
 	 */
-	void			build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const std::vector<CBorderVertex> &borderVertices);
+	void			build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const std::vector<CBorderVertex> &borderVertices, uint32 numVertices=0);
 
 
 	/** Build a copy of a zone.

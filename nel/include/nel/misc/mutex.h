@@ -1,7 +1,7 @@
 /** \file mutex.h
  * class CMutex
  *
- * $Id: mutex.h,v 1.4 2001/04/19 12:07:31 cado Exp $
+ * $Id: mutex.h,v 1.5 2001/04/20 13:36:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,8 +74,16 @@ private:
 
 
 // DEBUG
+struct TMutexLocks
+{
+	TMutexLocks( bool locked=false ) : Time(0), Nb(0), Locked(locked) {}
+	
+	uint32	Time;
+	uint32	Nb;
+	bool	Locked;
+};
 void initAcquireTimeMap();
-std::map<CMutex*,uint32>	getNewAcquireTimes();
+std::map<CMutex*,TMutexLocks>	getNewAcquireTimes();
 
 
 /**

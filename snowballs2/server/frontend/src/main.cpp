@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Frontend Service.
  *
- * $Id: main.cpp,v 1.13 2002/09/16 14:54:57 lecroart Exp $
+ * $Id: main.cpp,v 1.14 2002/09/23 17:23:29 lecroart Exp $
  */
 
 /*
@@ -626,7 +626,7 @@ public:
 		CLoginServer::init( *(CCallbackServer*)CNetManager::getNetBase("CLIENT"), onConnectionClient);
 
 		// Set the callbacks for that connection (comming from the Chat service)
-		CNetManager::addCallbackArray( "CHAT",
+		CNetManager::addCallbackArray( "CLIENT",
 									   ClientCallbackArray,
 									   sizeof(ClientCallbackArray)/sizeof(ClientCallbackArray[0]) );
 
@@ -700,7 +700,7 @@ public:
  *    - based on the "CFrontEndService" class
  *    - having the short name "FS"
  *    - having the long name "frontend_service"
- *    - listening on the port "37000"
+ *    - listening on the port "0"
  *    - and callback actions set to "ClientCallbackArray"
  *
  ****************************************************************************/
@@ -708,7 +708,7 @@ NLNET_OLD_SERVICE_MAIN( CFrontEndService,
 					"FS",
 					"frontend_service",
 					0,
-					EmptyCallbackArray,
+					OldEmptyCallbackArray,
 					SNOWBALLS_CONFIG,
 					SNOWBALLS_LOGS )
 

@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.6 2000/11/24 10:13:58 lecroart Exp $
+ * $Id: unitime.cpp,v 1.7 2000/11/24 10:43:53 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,7 +128,7 @@ const char *CUniTime::getStringUniTime ()
 
 	uint  year =  (uint32) ut;	// time in years
 
-	sprintf (str, "%02d/%02d/%04d (week %d) %02d:%02d:%02d.%d", day+1, month+1, year, week, h, m, s, ms);
+	sprintf (str, "%02d/%02d/%04d (week %d) %02d:%02d:%02d.%03d", day+1, month+1, year, week, h, m, s, ms);
 	return str;
 }
 

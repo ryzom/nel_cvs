@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.8 2001/07/13 07:26:19 legros Exp $
+ * $Id: entities.cpp,v 1.9 2001/07/13 08:14:39 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,8 +132,6 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 		entity.MovePrimitive->setObstacle(true);
 		entity.MovePrimitive->setRadius(0.5f);
 		entity.MovePrimitive->setHeight(1.8f);
-		entity.MovePrimitive->insertInWorldImage(0);
-		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
 		entity.Instance = Scene->createInstance("barman.shape");
 		break;
 	case CEntity::Other:
@@ -159,6 +157,9 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 		entity.Instance = Scene->createInstance("barman.shape");
 		break;
 	}
+	entity.MovePrimitive->insertInWorldImage(0);
+//	entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
+	entity.MovePrimitive->setGlobalPosition(GlobalRetriever->retrievePosition(CVectorD(startPosition.x, startPosition.y, startPosition.z)), 0);
 
 	entity.Instance->setPos (startPosition);
 }
@@ -221,6 +222,7 @@ void updateEntities ()
 		{
 			// automatic speed
 			/// \todo compute new entity position
+			newPos = oldPos;
 		}
 
 		entity.MovePrimitive->move((newPos-oldPos)/(float)dt, 0);

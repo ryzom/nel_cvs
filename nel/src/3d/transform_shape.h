@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.26 2003/08/08 16:55:32 vizerie Exp $
+ * $Id: transform_shape.h,v 1.27 2004/07/27 16:55:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,10 +70,6 @@ public:
 public:
 	/// The shape, the object instancied.
 	CSmartPtr<IShape>		Shape;
-
-#ifdef NL_DEBUG
-	std::string NameForDebug; // \todo traptemp
-#endif
 
 
 	/** Get the untransformed AABBox of the mesh. NULL (gtSize()==0) if no mesh.	 

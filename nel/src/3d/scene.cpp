@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.126 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: scene.cpp,v 1.127 2004/07/27 16:55:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -690,9 +690,6 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 	// Then create a reference to the shape
 	CTransformShape *pTShp = _ShapeBank->addRef( shapeName )->createInstance(*this);
 	if (pTShp) pTShp->setDistMax(pTShp->Shape->getDistMax());
-#ifdef NL_DEBUG
-	//pTShp->NameForDebug = shapeName; // \todo traptemp
-#endif
 
 	// Look if this instance get lightmap information
 #if defined(__GNUC__) && __GNUC__ < 3

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.22 2002/06/10 17:01:41 cado Exp $
+ * $Id: common.cpp,v 1.23 2002/06/11 09:51:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -448,7 +448,7 @@ char *strupr ( char *str )
 	return (str);
 }
 
-uint nlstricmp(const char *lhs,const char *rhs)
+sint nlstricmp(const char *lhs,const char *rhs)
 {
 	nlassert(lhs);
 	nlassert(rhs);	
@@ -466,7 +466,7 @@ uint nlstricmp(const char *lhs,const char *rhs)
 	return 0;
 }
 
-uint nlstricmp(const std::string &lhs,const std::string &rhs)
+sint nlstricmp(const std::string &lhs,const std::string &rhs)
 {
 	return nlstricmp(lhs.c_str(), rhs.c_str());
 }

@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.40 2002/06/03 12:23:10 vizerie Exp $
+ * $Id: common.h,v 1.41 2002/06/11 09:51:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -231,11 +231,11 @@ char			*strupr ( char *str );
 /** Compare 2 C-Style strings without regard to case
   * \return 0 if strings are equal, < 0 if lhs < rhs, > 0 if lhs > rhs
   */
-uint			nlstricmp(const char *lhs, const char *rhs);
+sint			nlstricmp(const char *lhs, const char *rhs);
 
 /** Compare 2 strings without regard to case
   */
-uint			nlstricmp(const std::string &lhs, const std::string &rhs);
+sint			nlstricmp(const std::string &lhs, const std::string &rhs);
 
 
 

@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.1 2001/08/07 14:14:32 legros Exp $
+ * $Id: edge_quad.cpp,v 1.2 2001/08/31 08:26:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,6 +110,7 @@ void			CEdgeQuad::getGridBounds(sint32 &x0, sint32 &y0, sint32 &x1, sint32 &y1, 
 }
 
 
+
 // ***************************************************************************
 void			CEdgeQuad::build(const CExteriorMesh &em,
 								 const CGlobalRetriever &global,
@@ -127,6 +128,7 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 	_QuadData= NULL;
 	_QuadDataLen= 0;
 
+	// don't care about the origin of the instance
 	CVector	origin = global.getInstance(thisInstance).getOrigin();
 
 	// 0. Find BBox of the grid. Allocate grid.
@@ -138,9 +140,9 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 	{
 		// enlarge bbox.
 		if (first)
-			first= false, chainquadBBox.setCenter(edges[i].Start+origin);
+			first= false, chainquadBBox.setCenter(edges[i].Start);
 		else
-			chainquadBBox.extend(edges[i].Start+origin);
+			chainquadBBox.extend(edges[i].Start);
 	}
 
 	// compute X,Y,Width, Height.
@@ -160,6 +162,8 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 	{
 		CVector		p0 = edges[i].Start+origin,
 					p1 = edges[i+1].Start+origin;
+		CVector		op0 = edges[i].Start,
+					op1 = edges[i+1].Start;
 		CVector		s0, s1,
 					mins, maxs;
 
@@ -206,8 +210,8 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 
 		for (j=0; j<(sint)cd.size()-1; ++j)
 		{
-			s0 = p0*(float)(1.0-cd[j].ContactTime) + p1*(float)(cd[j].ContactTime);
-			s1 = p0*(float)(1.0-cd[j+1].ContactTime) + p1*(float)(cd[j+1].ContactTime);
+			s0 = op0*(float)(1.0-cd[j].ContactTime) + op1*(float)(cd[j].ContactTime);
+			s1 = op0*(float)(1.0-cd[j+1].ContactTime) + op1*(float)(cd[j+1].ContactTime);
 
 			mins.minof(s0, s1);
 			maxs.maxof(s0, s1);
@@ -225,38 +229,38 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 
 			CSurfaceIdent	exterior = cd[j].ContactSurface;
 
-			// add this edge to all the quadnode it touch.
+			uint	entry;
+			for (entry=0; entry<_EdgeEntries.size(); ++entry)
+			{
+				if (_EdgeEntries[entry].EdgeId == edgeId &&
+					_EdgeEntries[entry].Exterior == exterior)
+				{
+					if (_EdgeEntries[entry].ChainId != chainId ||
+						_EdgeEntries[entry].Interior != interior)
+					{
+						nlwarning("In NLPACS::CEdgeQuad::build()");
+						nlerror("exterior edge %d has different interior linkage", edgeId);
+					}
+
+					break;
+				}
+			}
+
+			// if this entry didn't exist before create a new one...
+			if (entry == _EdgeEntries.size())
+			{
+				_EdgeEntries.resize(_EdgeEntries.size()+1);
+				_EdgeEntries.back().EdgeId = edgeId;
+				_EdgeEntries.back().ChainId = chainId;
+				_EdgeEntries.back().Interior = interior;
+				_EdgeEntries.back().Exterior = exterior;
+			}
+
+			// add this edge to all the quadnode it touches.
 			for(y=y0; y<y1; y++)
 			{
 				for(x=x0; x<x1; x++)
 				{
-					uint	entry;
-					for (entry=0; entry<_EdgeEntries.size(); ++entry)
-					{
-						if (_EdgeEntries[entry].EdgeId == edgeId &&
-							_EdgeEntries[entry].Exterior == exterior)
-						{
-							if (_EdgeEntries[entry].ChainId != chainId ||
-								_EdgeEntries[entry].Interior != interior)
-							{
-								nlwarning("In NLPACS::CEdgeQuad::build()");
-								nlerror("exterior edge %d has different interior linkage", edgeId);
-							}
-
-							break;
-						}
-					}
-
-					// if this entry didn't exist before create a new one...
-					if (entry == _EdgeEntries.size())
-					{
-						_EdgeEntries.resize(_EdgeEntries.size()+1);
-						_EdgeEntries.back().EdgeId = edgeId;
-						_EdgeEntries.back().ChainId = chainId;
-						_EdgeEntries.back().Interior = interior;
-						_EdgeEntries.back().Exterior = exterior;
-					}
-
 					tempQuad[y*_Width+x].push_back(entry);
 				}
 			}
@@ -489,7 +493,7 @@ void		CEdgeQuad::serial(NLMISC::IStream &f)
 
 	// serial basics.
 	f.serial(_X, _Y, _Width, _Height, _QuadDataLen);
-
+	f.serialCont(_EdgeEntries);
 
 	// serial _QuadData.
 	if(f.isReading())

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.47 2001/08/29 14:55:50 legros Exp $
+ * $Id: global_retriever.cpp,v 1.48 2001/08/31 08:26:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -829,10 +829,9 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 		localRetriever.testCollision(cst, bboxMoveLocal, transBase);
 		// if an interior, also test for external collisions
 		/// \todo yoyo/ben: TODO_INTERIOR: activate this and modify code below
-/*
 		if (retrieverInstance.getType() == CLocalRetriever::Interior)
 			retrieverInstance.testExteriorCollision(cst, bboxMoveLocal, transBase, localRetriever);
-*/
+
 		// how many collision chains added?  : nCollisionChain-firstCollisionChain.
 		sint		nCollisionChain= cst.CollisionChains.size();
 
@@ -842,6 +841,11 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 		for(j=firstCollisionChain; j<nCollisionChain; j++)
 		{
 			CCollisionChain		&cc= cst.CollisionChains[j];
+
+			// info are already filled for exterior chains.
+			if (cc.ExteriorEdge)
+				continue;
+
 			// LeftSurface retrieverInstance is always curInstance.
 			cc.LeftSurface.RetrieverInstanceId= curInstance;
 
@@ -888,11 +892,15 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 		// \todo yoyo: TODO_OPTIMIZE: this is a N² complexity.
 		for(j=firstCollisionChain; j<nCollisionChain; j++)
 		{
+			const CCollisionChain	&cj = cst.CollisionChains[j];
+
+			if (cj.ExteriorEdge && cj.LeftSurface.RetrieverInstanceId!=-1)
+				continue;
+
 			// test for all collisionChain inserted before.
 			for(sint k=0; k<firstCollisionChain; k++)
 			{
-				const CCollisionChain	&cj = cst.CollisionChains[j],
-										&ck = cst.CollisionChains[k];
+				const CCollisionChain	&ck = cst.CollisionChains[k];
 
 				if (cj.LeftSurface.RetrieverInstanceId != cj.RightSurface.RetrieverInstanceId &&
 					cj.LeftSurface == ck.RightSurface && cj.RightSurface == ck.LeftSurface)

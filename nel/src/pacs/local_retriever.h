@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.13 2001/08/29 14:55:50 legros Exp $
+ * $Id: local_retriever.h,v 1.14 2001/08/31 08:26:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -411,7 +411,7 @@ protected:
 	///
 	void								unify();
 
-private:
+public:
 	const NLMISC::CVector				&getStartVector(uint32 chain) const;
 	const NLMISC::CVector				&getStopVector(uint32 chain) const;
 

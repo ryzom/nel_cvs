@@ -1,7 +1,7 @@
 /** \file collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: collision_desc.h,v 1.1 2001/06/08 15:10:18 legros Exp $
+ * $Id: collision_desc.h,v 1.2 2001/08/31 08:26:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_COLLISION_DESC_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/file.h"
 #include "nel/misc/vector.h"
 #include "nel/pacs/u_collision_desc.h"
 #include <vector>
@@ -83,6 +84,8 @@ public:
 public:
 	CSurfaceIdent() {}
 	CSurfaceIdent(sint32 retInstance, sint32 surfId) : RetrieverInstanceId(retInstance), SurfaceId(surfId) {}
+
+	void				serial(NLMISC::IStream &f)	{ f.serial(RetrieverInstanceId, SurfaceId); }
 };
 
 

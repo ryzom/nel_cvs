@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.4 2001/08/29 12:21:41 legros Exp $
+ * $Id: collision_surface_temp.h,v 1.5 2001/08/31 08:26:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,6 +145,8 @@ public:
 	uint16			ChainId;
 	/// The interior and exterior surfaces along this edge
 	CSurfaceIdent	Interior, Exterior;
+
+	void			serial(NLMISC::IStream &f)	{ f.serial(EdgeId, ChainId, Interior, Exterior); }
 };
 
 

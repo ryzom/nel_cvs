@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.25 2001/08/27 08:46:26 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.26 2001/08/31 08:26:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -538,6 +538,10 @@ void	NLPACS::CRetrieverInstance::testExteriorCollision(NLPACS::CCollisionSurface
 		uint16						eei = cst.ExteriorEdgeIndexes[i];
 		const CExteriorEdgeEntry	&eee = _ExteriorEdgeQuad.getEdgeEntry(eei);
 
+		// don't bother about doors
+		if (eee.Interior.RetrieverInstanceId != -1)
+			continue;
+
 		// add/retrieve the id in cst.CollisionChains.
 		//=================================
 		uint				ccId;
@@ -608,15 +612,16 @@ void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
 	/*
 	Version 0:
 		- base version.
+	Version 1:
+		- added type and _EdgeQuad
 	*/
-	sint	ver= f.serialVersion(0);
+	sint	ver= f.serialVersion(1);
 
 	uint	i;
 	f.serial(_InstanceId, _RetrieverId, _Orientation, _Origin);
 	f.serialCont(_Neighbors);
 	f.serialCont(_BorderChainLinks);
 	f.serial(_BBox);
-//	f.serial(_Type);
 
 	// serialises the number of nodes
 	uint16	totalNodes = _RetrieveTable.size();
@@ -628,5 +633,11 @@ void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
 		_NodesInformation.resize(totalNodes);
 		for (i=0; i<_RetrieveTable.size(); ++i)
 			_RetrieveTable[i] = 0;
+	}
+
+	if (ver >= 1)
+	{
+		f.serialEnum(_Type);
+		f.serial(_ExteriorEdgeQuad);
 	}
 }

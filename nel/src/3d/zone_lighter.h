@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.14 2003/03/24 18:09:02 corvazier Exp $
+ * $Id: zone_lighter.h,v 1.13 2003/02/17 16:27:12 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -444,7 +444,7 @@ private:
 	static void copyTileFlags(CZone &destZone, const CZone &srcZone);
 
 	// Get texture from a material for alpha test
-	bool getTexture (const CMaterial &material, NLMISC::CBitmap *&result, bool &clampU, bool &clampV, uint8 &alphaTestThreshold, bool &doubleSided);
+	void getTexture (const CMaterial &material, NLMISC::CBitmap *&result, bool &clampU, bool &clampV, uint8 &alphaTestThreshold, bool &doubleSided);
 
 	// Give a thread a patch to compute
 	uint getAPatch (uint process);

@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.3 2001/06/26 09:48:32 corvazier Exp $
+ * $Id: primitive_world_image.cpp,v 1.4 2001/06/27 15:15:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1150,7 +1150,8 @@ void CPrimitiveWorldImage::checkSortedList (uint8 worldImage)
 
 void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollisionDesc& desc, CGlobalRetriever* retriever,
 							   CCollisionSurfaceTemp& surfaceTemp, bool collision, CMovePrimitive &primitive, 
-							   CMovePrimitive &otherPrimitive, CMoveContainer *container, uint8 worldImage, uint8 secondWorldImage)
+							   CMovePrimitive &otherPrimitive, CMoveContainer *container, uint8 worldImage, uint8 secondWorldImage,
+							   bool secondConst)
 {
 	// TODO: reaction for no collision must be made on the full deltaTime not only to CollisionTime
 
@@ -1243,74 +1244,78 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 	dirtPos (container, &primitive, worldImage);
 
 	// ****** Second object
-
-	// Old position
-	collisionPosition=second._3dInitPosition;
-	collisionPosition+=second._Speed * desc.ContactTime;
 	
-	// Obstacle ?
-	if ( (!collision) || (secondReaction==UMovePrimitive::DoNothing) )
-		newSpeed=second._Speed;
-	else
+	// Is second object in a static world ?
+	if (!secondConst)
 	{
-		switch (secondReaction)
+		// Old position
+		collisionPosition=second._3dInitPosition;
+		collisionPosition+=second._Speed * desc.ContactTime;
+		
+		// Obstacle ?
+		if ( (!collision) || (secondReaction==UMovePrimitive::DoNothing) )
+			newSpeed=second._Speed;
+		else
 		{
-		case UMovePrimitive::Slide:
-			// Remove projected speed
-			newSpeed=second._Speed - projSpeed1 * desc.ContactNormal0;
+			switch (secondReaction)
+			{
+			case UMovePrimitive::Slide:
+				// Remove projected speed
+				newSpeed=second._Speed - projSpeed1 * desc.ContactNormal0;
 
-			// Reflexion speed
-			newSpeed+=( otherPrimitive.getAttenuation()*energySum / mass1 ) * desc.ContactNormal1;
-			break;
-		case UMovePrimitive::Reflexion:
-			// Remove projected speed
-			newSpeed=second._Speed - projSpeed1 * desc.ContactNormal0;
+				// Reflexion speed
+				newSpeed+=( otherPrimitive.getAttenuation()*energySum / mass1 ) * desc.ContactNormal1;
+				break;
+			case UMovePrimitive::Reflexion:
+				// Remove projected speed
+				newSpeed=second._Speed - projSpeed1 * desc.ContactNormal0;
 
-			// Reflexion speed
-			newSpeed+=( otherPrimitive.getAttenuation()*energySum / mass1 ) * desc.ContactNormal0;
-			break;
-		case UMovePrimitive::Stop:
-			newSpeed.set (0,0,0);
-			break;
+				// Reflexion speed
+				newSpeed+=( otherPrimitive.getAttenuation()*energySum / mass1 ) * desc.ContactNormal0;
+				break;
+			case UMovePrimitive::Stop:
+				newSpeed.set (0,0,0);
+				break;
+			}
 		}
+
+		// Set new speed
+		second.setSpeed (newSpeed, container, &otherPrimitive, secondWorldImage);
+
+		// New position at t=0
+		if (retriever)
+		{
+			// Make a domove in the Ben data
+			double deltaTime=(collisionPosition-second._Position.getPos ()).norm()/second._DeltaPosition.norm();
+			clamp (deltaTime, 0.0, 1.0);
+
+			UGlobalPosition newPosition = retriever->doMove (second._Position.getGlobalPos (), second._DeltaPosition,
+				(float)deltaTime, surfaceTemp, true);
+
+			// Set the new position
+			second._Position.setGlobalPos (newPosition, *retriever);
+
+			// Position at t=0
+			second._3dInitPosition = second._Position.getPos() - newSpeed * desc.ContactTime;
+
+			// New init time
+			second._InitTime = desc.ContactTime;
+		}
+		else
+		{
+			// No retriever used
+			second._Position.setPos (collisionPosition);
+
+			// Position at t=0
+			second._3dInitPosition = collisionPosition - newSpeed * desc.ContactTime;
+
+			// New init time
+			second._InitTime = desc.ContactTime;
+		}
+
+		// Dirt pos
+		second.dirtPos (container, &otherPrimitive, secondWorldImage);
 	}
-
-	// Set new speed
-	second.setSpeed (newSpeed, container, &otherPrimitive, secondWorldImage);
-
-	// New position at t=0
-	if (retriever)
-	{
-		// Make a domove in the Ben data
-		double deltaTime=(collisionPosition-second._Position.getPos ()).norm()/second._DeltaPosition.norm();
-		clamp (deltaTime, 0.0, 1.0);
-
-		UGlobalPosition newPosition = retriever->doMove (second._Position.getGlobalPos (), second._DeltaPosition,
-			(float)deltaTime, surfaceTemp, true);
-
-		// Set the new position
-		second._Position.setGlobalPos (newPosition, *retriever);
-
-		// Position at t=0
-		second._3dInitPosition = second._Position.getPos() - newSpeed * desc.ContactTime;
-
-		// New init time
-		second._InitTime = desc.ContactTime;
-	}
-	else
-	{
-		// No retriever used
-		second._Position.setPos (collisionPosition);
-
-		// Position at t=0
-		second._3dInitPosition = collisionPosition - newSpeed * desc.ContactTime;
-
-		// New init time
-		second._InitTime = desc.ContactTime;
-	}
-
-	// Dirt pos
-	second.dirtPos (container, &otherPrimitive, secondWorldImage);
 }
 
 // ***************************************************************************

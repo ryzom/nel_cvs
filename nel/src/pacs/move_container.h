@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.4 2001/06/22 15:03:05 corvazier Exp $
+ * $Id: move_container.h,v 1.5 2001/06/27 15:15:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -211,19 +211,20 @@ private:
 
 	// Eval one collision
 	bool						evalOneCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, 
-													uint8 primitiveWorldImage, bool testMove);
+													uint8 primitiveWorldImage, bool testMove, bool secondIsStatic);
 
 	// Eval final step
 	bool						evalFinalCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 
 													CPrimitiveWorldImage *wI, CPrimitiveWorldImage *otherWI, bool testMove,
-													uint8 firstWorldImage, uint8 secondWorldImage);
+													uint8 firstWorldImage, uint8 secondWorldImage, bool secondIsStatic);
 
 	// Eval all collision for modified primitives
 	void						evalAllCollisions (double beginTime, uint8 worldImage);
 
 	// Add a collision in the time ordered table
 	void						newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, 
-												bool collision, bool enter, bool exit, uint firstWorldImage, uint secondWorldImage);
+												bool collision, bool enter, bool exit, uint firstWorldImage, uint secondWorldImage, 
+												bool secondIsStatic);
 
 	// Add a collision in the time ordered table
 	void						newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, uint8 worldImage, double beginTime);

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.8 2001/06/22 15:03:05 corvazier Exp $
+ * $Id: move_container.cpp,v 1.9 2001/06/27 15:15:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -284,7 +284,7 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 	while (ite!=_StaticWorldImage.end())
 	{
 		// Eval in this world image
-		result=evalOneCollision (0, prim, *ite, primitiveWorldImage, true);
+		result=evalOneCollision (0, prim, *ite, primitiveWorldImage, true, true);
 
 		// If found, abort
 		if (result)
@@ -296,7 +296,7 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 
 	// Eval collisions if not found and not tested
 	if ((!result) && (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end()))
-		result=evalOneCollision (0, prim, worldImage, primitiveWorldImage, true);
+		result=evalOneCollision (0, prim, worldImage, primitiveWorldImage, true, false);
 
 	// Backup speed only if the primitive is inserted in the world image
 	if (prim->isInserted (primitiveWorldImage))
@@ -569,7 +569,8 @@ void CMoveContainer::checkSortedList ()
 
 // ***************************************************************************
 
-bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, uint8 primitiveWorldImage, bool testMove)
+bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, uint8 primitiveWorldImage, 
+									   bool testMove, bool secondIsStatic)
 {
 	// Find its collisions
 	bool found=false;
@@ -699,7 +700,7 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 						if ( (wI->getBBYMin() < otherWI->getBBYMax()) && (otherWI->getBBYMin() < wI->getBBYMax()) )
 						{
 							if (evalFinalCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
-								primitiveWorldImage, worldImage))
+								primitiveWorldImage, worldImage, secondIsStatic))
 							{
 								if (testMove)
 									return true;
@@ -731,7 +732,7 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 					if ( (wI->getBBYMin() < otherWI->getBBYMax()) && (otherWI->getBBYMin() < wI->getBBYMax()) )
 					{
 						if (evalFinalCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
-							primitiveWorldImage, worldImage))
+							primitiveWorldImage, worldImage, secondIsStatic))
 						{
 							if (testMove)
 								return true;
@@ -746,21 +747,6 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 		}
 	}
 
-	// No collision ?
-	if ( (!found) && (!testMove) )
-	{
-		if (_Retriever)
-		{
-			// Do move
-			wI->doMove (*_Retriever, _SurfaceTemp, _DeltaTime, _DeltaTime);
-		}
-		else
-		{
-			// Do move
-			wI->doMove (_DeltaTime);
-		}
-	}
-
 	return found;
 }
 
@@ -768,7 +754,7 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 
 bool CMoveContainer::evalFinalCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 
 											CPrimitiveWorldImage *wI, CPrimitiveWorldImage *otherWI, bool testMove,
-											uint8 firstWorldImage, uint8 secondWorldImage)
+											uint8 firstWorldImage, uint8 secondWorldImage, bool secondIsStatic)
 {
 	// Test the primitive
 	CCollisionDesc desc;
@@ -792,7 +778,7 @@ bool CMoveContainer::evalFinalCollision (double beginTime, CMovePrimitive *primi
 			{
 				// TODO: make new collision when collision==false to raise triggers
 				// OK, collision
-				newCollision (primitive, otherPrimitive, desc, collision, enter, exit, firstWorldImage, secondWorldImage);
+				newCollision (primitive, otherPrimitive, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic);
 
 				// Collision
 				return true;
@@ -826,12 +812,15 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 			primitiveWorldImage=worldImage;
 		}
 
+		// Find a collision
+		bool found=false;
+
 		// Eval collision in each static world image
 		std::set<uint8>::iterator ite=_StaticWorldImage.begin();
 		while (ite!=_StaticWorldImage.end())
 		{
 			// Eval in this world image
-			evalOneCollision (beginTime, primitive, *ite, primitiveWorldImage, false);
+			found=evalOneCollision (beginTime, primitive, *ite, primitiveWorldImage, false, true);
 
 			// Next world image
 			ite++;
@@ -839,7 +828,22 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 
 		// Eval collision in the world image if not already tested
 		if (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end())
-			evalOneCollision (beginTime, primitive, worldImage, primitiveWorldImage, false);
+			found|=evalOneCollision (beginTime, primitive, worldImage, primitiveWorldImage, false, false);
+
+		// No collision ?
+		if (!found)
+		{
+			if (_Retriever)
+			{
+				// Do move
+				wI->doMove (*_Retriever, _SurfaceTemp, _DeltaTime, _DeltaTime);
+			}
+			else
+			{
+				// Do move
+				wI->doMove (_DeltaTime);
+			}
+		}
 
 		// Next primitive
 		primitive=wI->getNextModified ();
@@ -849,7 +853,7 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 // ***************************************************************************
 
 void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, bool collision, bool enter, bool exit,
-								   uint firstWorldImage, uint secondWorldImage)
+								   uint firstWorldImage, uint secondWorldImage, bool secondIsStatic)
 {
 	// Get an ordered time index. Always round to the future.
 	int index=(int)(ceil (desc.ContactTime*(double)_OtSize/_DeltaTime) );
@@ -866,7 +870,7 @@ void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second
 
 		// Build info
 		CCollisionOTDynamicInfo *info = allocateOTDynamicInfo ();
-		info->init (first, second, desc, collision, enter, exit, firstWorldImage, secondWorldImage);
+		info->init (first, second, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic);
 
 		// Add in the primitive list
 		first->addCollisionOTInfo (info);
@@ -1265,7 +1269,7 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 		// Dynamic collision
 		firstWI->reaction ( *secondWI, dynInfo->getCollisionDesc (), _Retriever, _SurfaceTemp, dynInfo->isCollision(), 
 							*dynInfo->getFirstPrimitive (), *dynInfo->getSecondPrimitive (), this, dynInfo->getFirstWorldImage(),
-							dynInfo->getSecondWorldImage() );
+							dynInfo->getSecondWorldImage(), dynInfo->isSecondStatic());
 
 		// Trigger ?
 		if (dynInfo->getFirstPrimitive ()->isTriggered (*dynInfo->getSecondPrimitive (), dynInfo->isEnter(), dynInfo->isExit()))

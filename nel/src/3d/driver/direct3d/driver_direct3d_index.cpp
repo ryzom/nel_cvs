@@ -1,7 +1,7 @@
 /** \file driver_direct3d_index.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_index.cpp,v 1.8.4.1 2004/09/14 15:33:43 vizerie Exp $
+ * $Id: driver_direct3d_index.cpp,v 1.8.4.2 2004/09/14 17:20:49 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -133,6 +133,7 @@ uint32 *CIBDrvInfosD3D::lock (uint first, uint last, bool readOnly)
 		}		
 		void *pbData;
 		HRESULT result = IndexBuffer->Lock ( first*sizeof(uint32), (last-first)*sizeof(uint32), &pbData, readOnly?D3DLOCK_READONLY:0);
+		nlassert(result == D3D_OK);
 		// Lock Profile?
 		if(driver->_IBProfiling /*&& Hardware*/)
 		{

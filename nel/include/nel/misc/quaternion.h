@@ -1,7 +1,7 @@
 /** \file quaternion.h
  * 
  *
- * $Id: quaternion.h,v 1.1 2000/11/09 10:32:03 viau Exp $
+ * $Id: quaternion.h,v 1.2 2000/11/09 13:25:12 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #ifndef _QUAT_H 
 #define _QUAT_H 
+
+#include "nel/misc/types_nl.h"
 
 // ---------------------------------------------
 

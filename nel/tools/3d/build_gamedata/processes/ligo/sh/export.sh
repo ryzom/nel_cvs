@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo > log.log
+
 # *** Export ligo zone files from Max ***
 # *** ******************************* ***
 
@@ -21,7 +23,7 @@ timeout=`cat ../../cfg/config.cfg | grep "ligo_export_timeout" | sed -e 's/ligo_
 
 max_directory=`cat ../../cfg/site.cfg | grep "max_directory" | sed -e 's/max_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 rm $max_directory/plugcfg/nelligo.ini
-echo "$max_directory/plugcfg/nelligo.ini" > log.log
+echo "$max_directory/plugcfg/nelligo.ini" >> log.log
 
 # create the ini file
 

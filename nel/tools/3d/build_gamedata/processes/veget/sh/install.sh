@@ -6,7 +6,7 @@
 veget_install_directory=`cat ../../cfg/directories.cfg | grep "veget_install_directory" | sed -e 's/veget_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the maps install directory
-map_install_directory=`cat ../../cfg/directories.cfg | grep "map_install_directory" | sed -e 's/map_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+bitmap_install_directory=`cat ../../cfg/directories.cfg | grep "bitmap_install_directory" | sed -e 's/bitmap_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the client directory
 client_directory=`cat ../../cfg/site.cfg | grep "client_directory" | sed -e 's/client_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`

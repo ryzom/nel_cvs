@@ -6,7 +6,7 @@
 shape_install_directory=`cat ../../cfg/directories.cfg | grep "shape_install_directory" | sed -e 's/shape_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the maps install directory
-map_install_directory=`cat ../../cfg/directories.cfg | grep "map_install_directory" | sed -e 's/map_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+bitmap_install_directory=`cat ../../cfg/directories.cfg | grep "bitmap_install_directory" | sed -e 's/bitmap_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the lightmaps install directory
 lightmap_install_directory=`cat ../../cfg/directories.cfg | grep "lightmap_install_directory" | sed -e 's/lightmap_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -26,5 +26,5 @@ date
 
 cp -u shape/*.shape $client_directory/$shape_install_directory  2>> log.log
 cp -u shape_with_coarse_mesh_builded/*.shape $client_directory/$shape_install_directory  2>> log.log
-cp -u shape_with_coarse_mesh_builded/*.dds $client_directory/$map_install_directory  2>> log.log
+cp -u shape_with_coarse_mesh_builded/*.dds $client_directory/$bitmap_install_directory  2>> log.log
 cp -u lightmap_16_bits/*.tga $client_directory/$lightmap_install_directory  2>> log.log

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo > log.log
 
 # ********************
 # Make the config file

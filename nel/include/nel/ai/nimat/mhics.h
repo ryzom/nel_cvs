@@ -1,7 +1,7 @@
 /** \file mhics.h
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.h,v 1.3 2003/06/19 17:14:34 robert Exp $
+ * $Id: mhics.h,v 1.4 2003/07/03 12:15:21 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -36,6 +36,8 @@
 
 namespace NLAINIMAT
 {
+	extern const TTargetId NullTargetId;
+
 /**
   * A Class for manage witch source motivate a CS or an action
   * \author Gabriel ROBERT
@@ -156,6 +158,8 @@ public :
 	/// Load classifiers from a file. Return false if thereis a probleme
 	bool loadClassifierFromFile(std::string fileName);
 	
+	CActionResources*	pActionResources;	// Used to select compatible actions.
+
 private :
 	std::map<TMotivation, CClassifierSystem>	_MotivationClassifierSystems;		// <motivationName, classeur> CS by motivation name.
 	std::map<TAction, CClassifierSystem>		_VirtualActionClassifierSystems;	// <virtualActionName, classeur> CS by motivation name.
@@ -195,7 +199,7 @@ public :
 	double getExecutionIntensity(TAction action) const;
 
 	/// Return the Behavior that must be active
-	std::pair<TAction, TTargetId> selectBehavior();
+	const std::map<TAction, TTargetId>* selectBehavior();
 
 	/// Inform the MHiCSAgent that an action ended
 	void behaviorTerminate(TBehaviorTerminate how_does_it_terminate);

@@ -1,7 +1,7 @@
 /** \file mhics.cpp
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.cpp,v 1.4 2003/06/19 17:14:45 robert Exp $
+ * $Id: mhics.cpp,v 1.5 2003/07/03 12:15:23 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -231,10 +231,12 @@ void CMotivationEnergy::getDebugString(std::string &t) const
 
 CMHiCSbase::CMHiCSbase()
 {
+	pActionResources = new CActionResources();
 }
 
 CMHiCSbase::~CMHiCSbase()
 {
+	delete pActionResources;
 }
 
 void CMHiCSbase::addVirtualActionCS(const CActionClassifiers &action)
@@ -721,6 +723,7 @@ void CMHiCSagent::spreadMotivationReckon(TMotivation CS)
 			if (energy <= 0)
 			{
 				_ActionsExecutionIntensity.erase(lastActionName);
+				_IdByActions.erase(lastActionName);
 				// we check if it was the current action
 				if ((*_ItCurrentAction).first == lastActionName)
 				{
@@ -774,6 +777,7 @@ void CMHiCSagent::spreadMotivationReckon(TAction CS)
 			if (energy <= 0)
 			{
 				_ActionsExecutionIntensity.erase(lastActionName);
+				_IdByActions.erase(lastActionName);
 				// we check if it was the current action
 				if ((*_ItCurrentAction).first == lastActionName)
 				{
@@ -871,6 +875,7 @@ void CMHiCSagent::motivationCompute()
 					if (energy <= 0)
 					{
 						_ActionsExecutionIntensity.erase(lastActionName);
+						_IdByActions.erase(lastActionName);
 						// we check if it was the current action
 						if ((*_ItCurrentAction).first == lastActionName)
 						{
@@ -995,6 +1000,7 @@ void CMHiCSagent::virtualActionCompute()
 					if (energy <= 0)
 					{
 						_ActionsExecutionIntensity.erase(lastActionName);
+						_IdByActions.erase(lastActionName);
 						// we check if it was the current action
 						if ((*_ItCurrentAction).first == lastActionName)
 						{
@@ -1057,32 +1063,60 @@ void CMHiCSagent::setSensors(CCSPerception* psensorMap)
 }
 
 
-std::pair<TAction, TTargetId>CMHiCSagent::selectBehavior()
+const std::map<TAction, TTargetId>* CMHiCSagent::selectBehavior()
 {
-	// On prend le max
-	nlassert (_ItCurrentAction != _IdByActions.end());
-	TAction retAction = (*_ItCurrentAction).first;
-	std::map<TAction, CMotivationEnergy>::iterator itActionsExecutionIntensity = _ActionsExecutionIntensity.find(retAction);
-	nlassert(itActionsExecutionIntensity != _ActionsExecutionIntensity.end());
-	//***G*** For the moment I give a double importance to the current action. Heu... back to a simple value.
-	double executionIntensity = (*itActionsExecutionIntensity).second.getSumValue()*1;
+//	// On prend le max
+//	nlassert (_ItCurrentAction != _IdByActions.end());
+//	TAction retAction = (*_ItCurrentAction).first;
+//	std::map<TAction, CMotivationEnergy>::iterator itActionsExecutionIntensity = _ActionsExecutionIntensity.find(retAction);
+//	nlassert(itActionsExecutionIntensity != _ActionsExecutionIntensity.end());
+//	//***G*** For the moment I give a double importance to the current action. Heu... back to a simple value.
+//	double executionIntensity = (*itActionsExecutionIntensity).second.getSumValue()*1;
+//
+//	for (itActionsExecutionIntensity = _ActionsExecutionIntensity.begin();
+//		itActionsExecutionIntensity != _ActionsExecutionIntensity.end();
+//		itActionsExecutionIntensity++)
+//	{
+//		double value = (*itActionsExecutionIntensity).second.getSumValue();
+//		if (value > executionIntensity)
+//		{
+//			executionIntensity = value;
+//			retAction = (*itActionsExecutionIntensity).first;
+//		}
+//	}
+//	std::map<TAction, TTargetId>::iterator itIdByActions = _IdByActions.find(retAction);
+//	nlassert (itIdByActions != _IdByActions.end()); // There's no activable action
+//	_ItCurrentAction = itIdByActions;
+//
+//	return (*_ItCurrentAction);
 
-	for (itActionsExecutionIntensity = _ActionsExecutionIntensity.begin();
-		itActionsExecutionIntensity != _ActionsExecutionIntensity.end();
-		itActionsExecutionIntensity++)
+	//We sort actions by priority
+	std::multimap<double, TAction> actionsToRemove;
+
+	std::map<TAction, CMotivationEnergy>::iterator itActionsExecutionIntensity;
+	for (itActionsExecutionIntensity= _ActionsExecutionIntensity.begin();
+		 itActionsExecutionIntensity != _ActionsExecutionIntensity.end();
+		 itActionsExecutionIntensity++)
 	{
-		double value = (*itActionsExecutionIntensity).second.getSumValue();
-		if (value > executionIntensity)
-		{
-			executionIntensity = value;
-			retAction = (*itActionsExecutionIntensity).first;
-		}
-	}
-	std::map<TAction, TTargetId>::iterator itIdByActions = _IdByActions.find(retAction);
-	nlassert (itIdByActions != _IdByActions.end()); // There's no activable action
-	_ItCurrentAction = itIdByActions;
+		double priority = (*itActionsExecutionIntensity).second.getSumValue();
+		TAction action = (*itActionsExecutionIntensity).first;
 
-	return (*_ItCurrentAction);
+		actionsToRemove.insert(std::pair<double, TAction>(priority,  action));
+	}
+
+	_pMHiCSbase->pActionResources->filterMyActions(actionsToRemove);
+
+	std::multimap<double, TAction>::iterator itActionsToRemove;
+	for (itActionsToRemove = actionsToRemove.begin();
+		 itActionsToRemove != actionsToRemove.end();
+		 itActionsToRemove++)
+	{
+		TAction action = (*itActionsToRemove).second;
+		_ActionsExecutionIntensity.erase(action);
+		_IdByActions.erase(action);
+	}
+
+	return &_IdByActions;
 }
 
 /// Inform the MHiCSAgent that an action ended
@@ -1109,6 +1143,7 @@ void CMHiCSagent::behaviorTerminate(TBehaviorTerminate how_does_it_terminate)
 
 				// Removing from the actionExecutionIntensity
 				_ActionsExecutionIntensity.erase(theAction);
+				_IdByActions.erase(theAction);
 			}
 		}
 

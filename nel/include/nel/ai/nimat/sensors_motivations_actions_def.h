@@ -1,7 +1,7 @@
 /** \file sensors_motivations_actions_def.h
  * Sensors, motivations and actions list of enums.
  *
- * $Id: sensors_motivations_actions_def.h,v 1.4 2003/06/19 17:14:34 robert Exp $
+ * $Id: sensors_motivations_actions_def.h,v 1.5 2003/07/03 12:15:19 robert Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/string_conversion.h"
+#include "set"
+#include "map"
 
 namespace NLAINIMAT
 {
@@ -53,6 +55,8 @@ enum TAction
 	Action_MoveToTargetFlag,
 	Action_MoveToTargetFlagStart,
 	Action_MoveToTargetFlagGoal,
+	Action_LookAround,
+	
 	
 	//////////////////////////////////////////////////////////////////////////
 	// Then we have all the virtual action that are high level action
@@ -74,7 +78,8 @@ static const NLMISC::CStringConversion<TAction>::CPair stringTableAction [] =
 	{ "Waypoint_MoveTo",		Action_Waypoint_MoveTo },
 	{ "MoveToTargetFlag",		Action_MoveToTargetFlag },
 	{ "MoveToTargetFlagStart",	Action_MoveToTargetFlagStart },
-	{ "MoveToTargetFlagGoal",	Action_MoveToTargetFlagGoal }
+	{ "MoveToTargetFlagGoal",	Action_MoveToTargetFlagGoal },
+	{ "LookAround",				Action_LookAround }
 };
 
 static NLMISC::CStringConversion<TAction> conversionAction
@@ -120,6 +125,8 @@ enum TSensor
 	Sensor_BotHasTarget,		//(T)rue (F)alse
 	Sensor_GroupHasFlag,		//(T)rue (F)alse
 	Sensor_EnnemyGroupHasFlag,	//(T)rue (F)alse
+	Sensor_DamageTaken,			//(T)rue (F)alse
+	
 
 	//////////////////////////////////////////////////////////////////////////
 	// Then we have all sensors that need a target to compute
@@ -152,7 +159,8 @@ static const NLMISC::CStringConversion<TSensor>::CPair stringTableSensor [] =
 	{"BotHasTarget",			Sensor_BotHasTarget },
 	{"GroupHasFlag",			Sensor_GroupHasFlag },
 	{"EnnemyGroupHasFlag",		Sensor_EnnemyGroupHasFlag },
-
+	{"DamageTaken",				Sensor_DamageTaken	},
+	
 	{"TARGET_SENSORS",			Sensor_TARGET_SENSORS },
 	{"TargetLife",				Sensor_TargetLife },
 	{"TargetHasFlag",			Sensor_TargetHasFlag },
@@ -176,6 +184,48 @@ static NLMISC::CStringConversion<TSensor> conversionSensor
 	sizeof(stringTableSensor) / sizeof(stringTableSensor[0]),
 	Sensor_Unknown
 );
+
+/// This type give all the action resources of an Agent.
+enum TActionResources
+{
+	ActionResources_pitch = 0,
+	ActionResources_yaw,
+	ActionResources_forwardMove,
+	ActionResources_sideMove,
+	ActionResources_button_attack,
+	ActionResources_button_attack2,
+	ActionResources_button_jump,
+	ActionResources_button_duck,
+	ActionResources_button_forward, // Used for ladders
+	ActionResources_button_use,
+	ActionResources_button_reload,
+	ActionResources_currentWeapon,
+	ActionResources_callForHealth,
+	ActionResources_grenade1,
+	ActionResources_grenade2,
+
+	ActionResources_Unknown
+};
+
+/*
+ *	Définition : Je dois pouvoir associer à une action un ensemble de ressources d'actions.
+ *	Utilisation : Je donne un certain nombre d'actions avec des priorités, il me répond par une liste des actions activables.
+ *	L'algo : Je parcour ma liste d'action de la plus forte à la plus faible. 
+ *	Si les ressources d'action sont libre, je les notes comme occupées, puis je note l'action comme activable.
+ */
+
+class CActionResources
+{
+public:
+	CActionResources();
+	virtual ~CActionResources();
+
+	/// Let in the map myActionsByPriority all actions with no more actions Resources (thoses actions shouldn't be executed)
+	void filterMyActions (std::multimap<double, TAction>& myActionsByPriority);
+
+private:
+	std::multimap<TAction, TActionResources>	_ActionsResources;
+};
 
 } // NLAINIMAT
 

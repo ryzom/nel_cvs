@@ -1,7 +1,7 @@
 /** \file sensors_motivations_actions_def.cpp
  * Sensors, motivations and actions list of enums.
  *
- * $Id: sensors_motivations_actions_def.cpp,v 1.2 2003/06/17 12:15:48 robert Exp $
+ * $Id: sensors_motivations_actions_def.cpp,v 1.3 2003/07/03 12:15:22 robert Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -24,4 +24,121 @@
  */
 
 #include "nel/ai/nimat/sensors_motivations_actions_def.h"
+
+namespace NLAINIMAT
+{
+	
+CActionResources::CActionResources()
+{
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Idle,  ActionResources_forwardMove));
+
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_MoveAway,  ActionResources_forwardMove));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_MoveAway,  ActionResources_yaw));
+
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_ShootTo,  ActionResources_pitch));
+//	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_ShootTo,  ActionResources_yaw));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_ShootTo,  ActionResources_button_attack));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_ShootTo,  ActionResources_button_attack2));
+	
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_Approach,  ActionResources_forwardMove));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Target_Approach,  ActionResources_yaw));
+	
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Item_Approach,  ActionResources_forwardMove));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Item_Approach,  ActionResources_yaw));
+	
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Waypoint_MoveTo,  ActionResources_forwardMove));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Waypoint_MoveTo,  ActionResources_yaw));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_Waypoint_MoveTo,  ActionResources_button_jump));
+	
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlag,  ActionResources_forwardMove));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlag,  ActionResources_yaw));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlag,  ActionResources_button_jump));
+	
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlagStart,  ActionResources_forwardMove));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlagStart,  ActionResources_yaw));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlagStart,  ActionResources_button_jump));
+	
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlagGoal,  ActionResources_forwardMove));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlagGoal,  ActionResources_yaw));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_MoveToTargetFlagGoal,  ActionResources_button_jump));
+	
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_LookAround,  ActionResources_forwardMove));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_LookAround,  ActionResources_yaw));
+	_ActionsResources.insert(std::pair<TAction, TActionResources>(Action_LookAround,  ActionResources_button_jump));
+}
+
+CActionResources::~CActionResources()
+{
+	;
+}
+
+/// Let in the map myActionsByPriority all actions with no more actions Resources (thoses actions shouldn't be executed).
+void CActionResources::filterMyActions (std::multimap<double, TAction>& myActionsByPriority)
+{
+	// We build a set of used resources.
+	std::set<TActionResources> usedActionsResources;
+
+	// For each wanted action in from the highest priority to the lowest
+	std::map<double, TAction>::reverse_iterator itMyActionsByPriority( myActionsByPriority.end());
+	std::map<double, TAction>::reverse_iterator itLast(myActionsByPriority.begin());
+	std::set<TActionResources>::iterator	itUsedActionsResources;
+	std::multimap<TAction, TActionResources>::iterator	itActionsResources, itActionsResources_begin, itActionsResources_last;
+	bool actionIsOK = false;
+	std::map<double, TAction>::iterator itMyActionsByPriority2Remove;
+	
+	while (itMyActionsByPriority != itLast )
+	{
+		double priority = (*itMyActionsByPriority).first;
+		TAction action =  (*itMyActionsByPriority).second;
+		itMyActionsByPriority++;
+		
+		// if none of the resources are used, the action may be executed and resources are stored as used.
+		if (actionIsOK)
+		{
+			for (itActionsResources = itActionsResources_begin;
+			itActionsResources != itActionsResources_last;
+			itActionsResources++)
+			{
+				TActionResources ar = (*itActionsResources).second;
+				usedActionsResources.insert(ar);
+			}
+			myActionsByPriority.erase(itMyActionsByPriority2Remove);
+		}
+
+		// We look for all needed action resources.
+		itActionsResources_begin = _ActionsResources.lower_bound(action);
+		itActionsResources_last = _ActionsResources.upper_bound(action);
+		actionIsOK = true;
+
+		// For each of thoses resources we look if it's already used.
+		for (itActionsResources = itActionsResources_begin;
+			 itActionsResources != itActionsResources_last;
+			 itActionsResources++)
+		{
+			TActionResources ar = (*itActionsResources).second;
+			itUsedActionsResources = usedActionsResources.find(ar);
+			if( itUsedActionsResources != usedActionsResources.end())
+			{
+				actionIsOK = false;
+				break;
+			}
+		}
+
+		 itMyActionsByPriority2Remove = itMyActionsByPriority.base();
+	}
+
+	if (actionIsOK)
+	{
+		for (itActionsResources = itActionsResources_begin;
+		itActionsResources != itActionsResources_last;
+		itActionsResources++)
+		{
+			TActionResources ar = (*itActionsResources).second;
+			usedActionsResources.insert(ar);
+		}
+		myActionsByPriority.erase(itMyActionsByPriority2Remove);
+	}
+}
+
+} // NLAINIMAT
 

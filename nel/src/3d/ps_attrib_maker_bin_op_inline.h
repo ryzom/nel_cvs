@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.h
  * implementation of binary operator in particle systems
  *
- * $Id: ps_attrib_maker_bin_op_inline.h,v 1.1 2001/12/06 16:49:07 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op_inline.h,v 1.2 2001/12/13 13:25:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -434,8 +434,7 @@ void MakeNPrivate(uint8 * dest, const T *src1, const T *src2, uint32 stride, uin
 //=================================================================================================================
 template <class T>
 inline void	CPSAttribMakerBinOp<T>::makeNPrivate	  (T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const
-{
-		const uint stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride2 << 1; 
+{		
 	uint8 *dest = (uint8 *) tab;
 	uint leftToDo = numAttrib, toProcess;
 	nlassert(_Arg[0] && _Arg[1]);	

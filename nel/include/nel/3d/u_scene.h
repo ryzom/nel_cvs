@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.55 2004/06/24 17:34:06 berenguier Exp $
+ * $Id: u_scene.h,v 1.56 2004/06/29 13:33:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,15 @@ protected:
 	// @}
 
 public:
+	enum TRenderPart
+	{ 
+		RenderNothing     = 0,
+		RenderOpaque	  = 0x01,
+		RenderTransparent = 0x02,
+		RenderFlare		  = 0x04,
+		RenderAll = RenderOpaque | RenderTransparent | RenderFlare
+	};
+
 
 	/// \name Render
 	//@{
@@ -108,8 +117,9 @@ public:
 	 * NB: nlerror if the current camera has been deleted.
 	 * NB: the UDriver Light setup (see UDriver::setLight() / UDriver::setAmbientColor()) is modified.
 	 *	At the exit of render(), all UDriver lights are disabled.
+	 * \param renderPart a combination of TRenderPart flags, allow to choose which part of the scene must be rendered	 
 	 */
-	virtual	void			render()=0;
+	virtual	void			render(TRenderPart renderPart = RenderAll, bool updateWaitingInstances = true, bool restoreMatrixContextAfterRender = true)=0;
 
 	/** Update waiting instances and igs that are loaded asynchronously
 	  * NB: this is called by render()

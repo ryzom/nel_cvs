@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.57 2001/05/18 16:52:09 lecroart Exp $
+ * $Id: service.cpp,v 1.58 2001/05/25 08:53:03 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -272,6 +272,8 @@ CCallbackServer *IService::getServer()
 sint IService::main (int argc, char **argv)
 {
 	bool userInitCalled = false;
+	bool resyncEvenly = false;
+
 
 	try
 	{
@@ -491,6 +493,7 @@ sint IService::main (int argc, char **argv)
 			{
 				// Don't call the sync if it's the Time Service and Naming Service
 				CUniTime::syncUniTimeFromService ();
+				resyncEvenly = true;
 			}
 
 			//
@@ -594,6 +597,18 @@ sint IService::main (int argc, char **argv)
 
 			// get and manage layer 4 messages
 			CNetManager::update ();
+			
+			// resync the clock every hours
+			if (resyncEvenly)
+			{
+				static TTime LastSyncTime = CTime::getLocalTime ();
+				if (CTime::getLocalTime () - LastSyncTime > 60*60*1000)
+				{
+					CUniTime::syncUniTimeFromService ();
+					LastSyncTime = CTime::getLocalTime ();
+				}
+			}
+
 			
 			uint32 delta = (uint32)(CTime::getLocalTime () - before);
 

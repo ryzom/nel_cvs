@@ -348,6 +348,10 @@ SOURCE=..\include\nel\misc\smart_ptr.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\smart_ptr_inline.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\time_nl.cpp
 # End Source File
 # Begin Source File

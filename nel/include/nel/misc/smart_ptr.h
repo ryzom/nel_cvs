@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.10 2000/11/15 11:08:07 coutelas Exp $
+ * $Id: smart_ptr.h,v 1.11 2000/12/04 11:52:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,9 +52,12 @@ public:
 	{
 		void	*Ptr;			// to know if the instance is valid.
 		sint	RefCount;		// RefCount of ptrinfo (!= instance)
-		CPtrInfo(void *p) {Ptr=p; RefCount=0;}
+		// For fu... dll problems, must use a flag to mark NullPtrInfo.
+		bool	IsNullPtrInfo;
+
+		CPtrInfo(void *p) {Ptr=p; RefCount=0; IsNullPtrInfo=false;}
 		// Just for internal use, to mark our Null pointer.
-		CPtrInfo(char ) {Ptr=NULL; RefCount=0x7FFFFFFF;}
+		CPtrInfo(char ) {Ptr=NULL; RefCount=0x7FFFFFFF; IsNullPtrInfo=true;}
 	};
 
 	// OWN null for ref ptr. (Optimisations!!!)
@@ -68,6 +71,8 @@ public:
     mutable	sint		crefs;	// The ref counter for SmartPtr use.
 	mutable	CPtrInfo	*pinfo;	// The ref ptr for RefPtr use.
 	
+	/// Destructor which release pinfo if necessary.
+	~CRefCount();
 	/// Default constructor init crefs to 0.
     CRefCount() { crefs = 0; pinfo=&NullPtrInfo; }
 	/// operator= must NOT copy crefs/pinfo!!
@@ -143,7 +148,8 @@ public:
 	}
  *\endcode
  *
- * SmartPtr are NOT compatible with RefPtr. A ptr may be link to a CRefPtr OR a CSmartPtr, but not two at the same time.
+ * SmartPtr are compatible with RefPtr. A ptr may be link to a CRefPtr and a CSmartPtr. As example, when the CSmartPtr
+ * will destroy him, CRefPtr will be informed...
  * Sample:
  *\code
 	void	foo()
@@ -154,7 +160,9 @@ public:
 
 		p= new A;
 		sp= p;		// OK. p is now owned by sp and will be deleted by sp.
-		rp= p;		// Error!!! (compile but will lead too funny crashs).
+		rp= p;		// OK. rp handle p.
+		sp= NULL;	// Destruction. p deleted. rp automatically informed.
+		p= rp;		// result: p==NULL.
 	}
  \endcode
  *
@@ -200,12 +208,12 @@ public:
 
 // ***************************************************************************
 /**
- * CRefPtr: an Advanced SmartPtr class. T Must derive from CRefCount.
- * CRefPtr works like a CSmartPtr (see SmartPtr for infos) and provide the same behavior, except for the kill() method.
- * If you use CRefPtr, you can use the kill() method do delete the object. All other CRefPtr which point 
- * to it can know if it has been deleted.
+ * CRefPtr: an handle on a ptr. T Must derive from CRefCount.
+ * If you use CRefPtr, you can kill the object simply by calling delete (T*)RefPtr, or the kill() method. All other CRefPtr which 
+ * point to it can know if it has been deleted. (but you must be sure that this ptr is not handle by a SmartPtr, of course...)
  *
- * SmartPtr are NOT compatible with RefPtr. A ptr may be link to a CRefPtr OR a CSmartPtr, but not two at the same time.
+ * SmartPtr are compatible with RefPtr. A ptr may be link to a CRefPtr and a CSmartPtr. As example, when the CSmartPtr
+ * will destroy him, CRefPtr will be informed...
  * Sample:
  *\code
 	void	foo()
@@ -216,12 +224,15 @@ public:
 
 		p= new A;
 		sp= p;		// OK. p is now owned by sp and will be deleted by sp.
-		rp= p;		// Error!!! (compile but will lead too funny crashs).
+		rp= p;		// OK. rp handle p.
+		sp= NULL;	// Destruction. p deleted. rp automatically informed.
+		if(rp==NULL)
+			thisIsGood();	// rp==NULL.
 	}
  \endcode
  *
  * \b PERFORMANCE \b WARNING! operator=() are about 10 times slower than normal pointers. So use them wisely.
- * For local use, prefer cast the smartptr to a normal Ptr.
+ * For local use, prefer cast the refptr to a normal Ptr.
  * Also, an object used with a CRefPtr will allocate a small PtrInfo (one only per object, not per ptr).
  * \sa CSmartPtr
  */
@@ -262,17 +273,20 @@ public:
 
 	/**
 	 * kill/delete the object pointed by the pointer, and inform the other RefPtr of this.
+	 * "rp.kill()" and "delete (T*)rp" do the same thing, except that rp NULLity is updated with kill().
 	 * RefPtr which point to the same object could know if the object is valid, by just testing it (
 	 * by an implicit call to the cast operator to T*). But any calls to operator->() or operator*() will have 
 	 * unpredictible effects (may crash... :) ).
 	 */
 	void	kill();
 
+
 	// No need to do any operator==. Leave the work to cast  operator T*(void).
 };
 
 
 
+}
 
 
 // ***************************************************************************
@@ -282,217 +296,10 @@ public:
 // ***************************************************************************
 
 
-// ***************************************************************************
-#ifdef NL_OS_WINDOWS
-#define	SMART_INLINE __forceinline
-#else
-#define	SMART_INLINE inline 
-#endif
-
-
-// ***************************************************************************
-template<class T>
-inline CSmartPtr<T>::~CSmartPtr(void) 
-{ 
-	SMART_TRACE("dtor()");
-
-    if(Ptr)
-	{
-		if (--(Ptr->crefs) == 0)
-			delete Ptr;
-		Ptr=NULL;
-	}
-}
-template<class T>    
-SMART_INLINE CSmartPtr<T>& CSmartPtr<T>::operator=(T* p)
-{
-	SMART_TRACE("ope=(T*)Start");
-
-	// Implicit manage auto-assignation.
-    if(p)
-		p->crefs++;
-    if(Ptr)
-	{
-		if (--(Ptr->crefs) == 0)
-			delete Ptr;
-	}
-	Ptr = p;
-
-	SMART_TRACE("ope=(T*)End");
-
-	return *this;
-}
-template<class T>    
-SMART_INLINE CSmartPtr<T>& CSmartPtr<T>::operator=(const CSmartPtr &p)
-{
-	return operator=(p.Ptr);
-}
-
-
-
-// ***************************************************************************
-
-
-//===========================================================
-template<class T>    
-SMART_INLINE void	CRefPtr<T>::unRef() const
-{
-	pinfo->RefCount--;
-	if(pinfo->RefCount==0)
-	{
-		if(pinfo->Ptr)
-			delete (T*)pinfo->Ptr;
-
-		// We may be in the case that this==NullPtrInfo, and our NullPtrInfo has done a total round. Test it.
-		if(pinfo!=&CRefCount::NullPtrInfo)
-			delete pinfo;
-		else
-		{
-			// Reset it to a middle round.
-			pinfo->RefCount= 0x7FFFFFFF;
-		}
-	}
-}
-
-
-//===========================================================
-// Cons - dest.
-template <class T> inline CRefPtr<T>::CRefPtr() 
-{ 
-	pinfo= &CRefCount::NullPtrInfo;
-	Ptr= NULL;
-
-	REF_TRACE("Smart()");
-}
-template <class T> inline CRefPtr<T>::CRefPtr(T *v)
-{
-	Ptr= v;
-    if(v)
-	{
-		if(v->pinfo==&CRefCount::NullPtrInfo) v->pinfo=new CRefCount::CPtrInfo(v);
-		pinfo=v->pinfo;
-		// v is now used by this.
-		pinfo->RefCount++;
-	}
-	else
-		pinfo= &CRefCount::NullPtrInfo;
-
-	REF_TRACE("Smart(T*)");
-}
-template <class T> inline CRefPtr<T>::CRefPtr(const CRefPtr &copy)
-{
-	pinfo=copy.pinfo;
-	pinfo->RefCount++;
-	Ptr= (T*)pinfo->Ptr;
-
-	REF_TRACE("SmartCopy()");
-}
-template <class T> inline CRefPtr<T>::~CRefPtr(void)
-{
-	REF_TRACE("~Smart()");
-
-	unRef();
-	pinfo= &CRefCount::NullPtrInfo;
-	Ptr= NULL;
-}
-
-//===========================================================
-// Operators=.
-template <class T> CRefPtr<T> &CRefPtr<T>::operator=(T *v) 
-{
-	REF_TRACE("ope=(T*)Start");
-
-
-	Ptr= v;
-	if(v)
-	{
-		// First, ensure that we work with a valid Ptr (ie, create his pinfo, if never done).
-		if(v->pinfo==&CRefCount::NullPtrInfo) v->pinfo=new CRefCount::CPtrInfo(v);
-		// The auto equality test is implicitly done by upcounting first "v", then downcounting "this".
-		v->pinfo->RefCount++;
-		unRef();
-		pinfo= v->pinfo;
-	}
-	else
-	{
-		unRef();
-		pinfo= &CRefCount::NullPtrInfo;
-	}
-
-
-	REF_TRACE("ope=(T*)End");
-
-	return *this;
-}
-template <class T> CRefPtr<T> &CRefPtr<T>::operator=(const CRefPtr &copy) 
-{
-	REF_TRACE("ope=(Smart)Start");
-
-	// The auto equality test is implicitly done by upcounting first "copy", then downcounting "this".
-	copy.pinfo->RefCount++;
-	unRef();
-	pinfo=copy.pinfo;
-	Ptr= (T*)pinfo->Ptr;
-
-	REF_TRACE("ope=(Smart)End");
-	return *this;
-}
-
-
-//===========================================================
-// Operations.
-template <class T> void	CRefPtr<T>::kill()
-{
-	REF_TRACE("SmartKill");
-
-	// If pinfo is not NullPtrInfo, or if p exist yet, delete him.
-	if(pinfo->Ptr)
-	{
-		delete (T*)pinfo->Ptr;
-		pinfo->Ptr=NULL;
-	}
-
-	unRef();
-	pinfo= &CRefCount::NullPtrInfo;
-	Ptr= NULL;
-}
-
-
-//===========================================================
-// Cast.
-template <class T> inline CRefPtr<T>::operator T*()	const 
-{
-	REF_TRACE("SmartCast T*()");
-
-	// Refresh Ptr.
-	Ptr= (T*)pinfo->Ptr;
-	return Ptr;
-}
-
-
-//===========================================================
-// Operators.
-template <class T> inline T& CRefPtr<T>::operator*(void)  const
-{ 
-	REF_TRACE("Smart *()");
-	return *Ptr; 
-}
-template <class T> inline T* CRefPtr<T>::operator->(void) const
-{ 
-	REF_TRACE("Smart ->()");
-	return Ptr;  
-}
-
-
-
-// ***************************************************************************
-#undef	SMART_INLINE
+#include "smart_ptr_inline.h"
 #undef	SMART_TRACE
 #undef	REF_TRACE
 
-
-
-}
 
 
 #endif // NL_SMART_PTR_H

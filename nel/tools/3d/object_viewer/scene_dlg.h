@@ -1,7 +1,7 @@
 /** \file scene_dlg.h
  * <File description>
  *
- * $Id: scene_dlg.h,v 1.7 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: scene_dlg.h,v 1.8 2001/06/25 12:52:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,9 +28,29 @@
 
 #if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// scene_dlg.h : header file
-//
+#endif 
+
+
+#include "nel/misc/event_listener.h"
+
+
+
+/// this class is used to catch events from the mouse, and too display a popup menu when mouse is clicked on the view
+
+class CSceneDlgMouseListener : public NLMISC::IEventListener
+{
+public:
+	class CObjectViewer	*ObjViewerDlg ;	
+	class CSceneDlg *SceneDlg ;
+	/** 
+	  * Register the listener to the server.
+	  */
+	void addToServer (NLMISC::CEventServer& server);
+
+protected:
+	virtual void operator ()(const class NLMISC::CEvent& event) ;
+
+} ;
 
 /////////////////////////////////////////////////////////////////////////////
 // CSceneDlg dialog
@@ -90,8 +110,17 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg void OnViewParticles();
 	afx_msg void OnMoveElement();
+	afx_msg void OnEnableX();
+	afx_msg void OnEnableY();
+	afx_msg void OnEnableZ();
+	afx_msg void OnEnableElementXrotate();
+	afx_msg void OnEnableElementYrotate();
+	afx_msg void OnEnableElementZrotate();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+
+	CSceneDlgMouseListener _RightButtonMouseListener ;
 };
 
 //{{AFX_INSERT_LOCATION}}

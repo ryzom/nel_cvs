@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.11 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: scene_dlg.cpp,v 1.12 2001/06/25 12:52:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,58 @@ static char THIS_FILE[] = __FILE__;
 using namespace NLMISC;
 using namespace NL3D;
 
+#include "nel/misc/events.h"
+
+void CSceneDlgMouseListener::addToServer (NLMISC::CEventServer& server)
+{
+	server.addListener (EventMouseDownId, this);
+}
+
+void CSceneDlgMouseListener::operator ()(const CEvent& event)
+{	
+	if (event == EventMouseDownId)
+	{
+		CEventMouse* mouseEvent=(CEventMouse*)&event;
+		if (mouseEvent->Button == rightButton)
+		{
+			const CEvent3dMouseListener &ml = ObjViewerDlg->getMouseListener() ;
+
+			CMenu  menu ;
+			CMenu* subMenu ;
+	
+			menu.LoadMenu(IDR_MOVE_ELEMENT) ;
+
+			
+
+			menu.CheckMenuItem(ID_ENABLE_ELEMENT_XROTATE, ml.getModelMatrixRotationAxis() == CEvent3dMouseListener::xAxis 
+															? MF_CHECKED : MF_UNCHECKED ) ;
+			menu.CheckMenuItem(ID_ENABLE_ELEMENT_YROTATE, ml.getModelMatrixRotationAxis() == CEvent3dMouseListener::yAxis 
+															? MF_CHECKED : MF_UNCHECKED ) ;
+			menu.CheckMenuItem(ID_ENABLE_ELEMENT_ZROTATE, ml.getModelMatrixRotationAxis() == CEvent3dMouseListener::zAxis 
+															? MF_CHECKED : MF_UNCHECKED ) ;
+
+
+			subMenu = menu.GetSubMenu(0);    
+			nlassert(subMenu) ;
+
+			// compute the screen coordinate from the main window
+
+			HWND wnd = (HWND) CNELU::Driver->getDisplay() ;
+			nlassert(::IsWindow(wnd)) ;
+			RECT r ;
+			::GetWindowRect(wnd, &r) ;						
+
+			sint x = r.left + (sint) (mouseEvent->X * (r.right - r.left)) ;
+			sint y = r.top + (sint) ((1.f - mouseEvent->Y) * (r.bottom - r.top)) ;
+			
+			::TrackPopupMenu(subMenu->m_hMenu, TPM_LEFTALIGN | TPM_RIGHTBUTTON, x, y, 0, SceneDlg->m_hWnd, NULL) ;
+		}
+	}
+}
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CSceneDlg dialog
 
@@ -80,6 +132,12 @@ CSceneDlg::CSceneDlg(CObjectViewer *objView, CWnd* pParent /*=NULL*/)
 		len=sizeof (BOOL);
 		RegQueryValueEx (hKey, "ObjectMode", 0, &type, (LPBYTE)&ObjectMode, &len);
 	}
+
+
+	_RightButtonMouseListener.ObjViewerDlg = ObjView ;
+	_RightButtonMouseListener.SceneDlg = this ;
+	_RightButtonMouseListener.addToServer(CNELU::EventServer) ;
+	
 }
 
 CSceneDlg::~CSceneDlg()
@@ -132,6 +190,12 @@ BEGIN_MESSAGE_MAP(CSceneDlg, CDialog)
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_VIEW_PARTICLE, OnViewParticles)
 	ON_BN_CLICKED(IDC_MOVE_ELEMENT, OnMoveElement)
+	ON_BN_CLICKED(IDC_ENABLE_X, OnEnableX)
+	ON_BN_CLICKED(IDC_ENABLE_Y, OnEnableY)
+	ON_BN_CLICKED(IDC_ENABLE_Z, OnEnableZ)
+	ON_COMMAND(ID_ENABLE_ELEMENT_XROTATE, OnEnableElementXrotate)
+	ON_COMMAND(ID_ENABLE_ELEMENT_YROTATE, OnEnableElementYrotate)
+	ON_COMMAND(ID_ENABLE_ELEMENT_ZROTATE, OnEnableElementZrotate)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -310,6 +374,13 @@ BOOL CSceneDlg::OnInitDialog()
 
 	OnResetCamera();
 
+	EnableX = TRUE ;
+	EnableY = TRUE ;
+	EnableZ = TRUE ;
+
+	UpdateData(FALSE) ;
+
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -474,4 +545,37 @@ void CSceneDlg::OnMoveElement()
 	EnableXCtrl.EnableWindow(MoveElement) ;
 	EnableYCtrl.EnableWindow(MoveElement) ;
 	EnableZCtrl.EnableWindow(MoveElement) ;
+}
+
+void CSceneDlg::OnEnableX() 
+{
+	UpdateData() ;
+	ObjView->getMouseListener().enableModelTranslationAxis(CEvent3dMouseListener::xAxis, EnableX ? true : false) ;	
+}
+
+void CSceneDlg::OnEnableY() 
+{
+	UpdateData() ;
+	ObjView->getMouseListener().enableModelTranslationAxis(CEvent3dMouseListener::yAxis, EnableY ? true : false) ;		
+}
+
+void CSceneDlg::OnEnableZ() 
+{
+	UpdateData() ;
+	ObjView->getMouseListener().enableModelTranslationAxis(CEvent3dMouseListener::zAxis, EnableZ ? true : false) ;	
+}
+
+void CSceneDlg::OnEnableElementXrotate() 
+{
+		ObjView->getMouseListener().setModelMatrixRotationAxis(CEvent3dMouseListener::xAxis) ;			
+}
+
+void CSceneDlg::OnEnableElementYrotate() 
+{
+	ObjView->getMouseListener().setModelMatrixRotationAxis(CEvent3dMouseListener::yAxis) ;			
+}
+
+void CSceneDlg::OnEnableElementZrotate() 
+{
+	ObjView->getMouseListener().setModelMatrixRotationAxis(CEvent3dMouseListener::zAxis) ;	
 }

@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.11 2001/01/11 08:54:59 coutelas Exp $
+ * $Id: dru.h,v 1.12 2001/01/18 14:13:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/3d/driver.h"
 #include "nel/3d/viewport.h"
+#include "nel/3d/triangle_ext.h"
 
 #ifdef NL_OS_WINDOWS
 #ifdef NL_DEBUG
@@ -84,23 +85,35 @@ class	CDRU
 {
 public:
 	
-	/// Draw a bitmap 2D. Warning: this is slow...
-	static void			drawBitmap (float x, float y, float width, float height, class ITexture& texture, IDriver& driver, CViewport viewport=CViewport());
-
-	/// Draw a line in 2D. Warning: this is slow...
-	static void			drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col= CRGBA(255,255,255,255), CViewport viewport=CViewport());
-
-	/// Draw a Triangle in 2D. Warning: this is slow...
-	static void			drawTriangle (float x0, float y0, float x1, float y1, float x2, float y2, IDriver& driver, CRGBA col, CViewport viewport);
-	
-	/// Draw a Quad in 2D. Warning: this is slow...
-	static void			drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport);
-	
-	/// Draw a Quad in 2D. Warning: this is slow...
-	static void			drawQuad (float xcenter, float ycenter, float radius, IDriver& driver, CRGBA col, CViewport viewport);
-
 	/// Portable Function which create a GL Driver (using gl dll...).
 	static IDriver		*createGlDriver() throw(EDru);
+
+	/// \name 2D render.
+	// @{
+	/// Draw a bitmap 2D. Warning: this is slow...
+	static void			drawBitmap (float x, float y, float width, float height, class ITexture& texture, IDriver& driver, CViewport viewport=CViewport());
+	/// Draw a line in 2D. Warning: this is slow...
+	static void			drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col= CRGBA(255,255,255,255), CViewport viewport=CViewport());
+	/// Draw a Triangle in 2D. Warning: this is slow...
+	static void			drawTriangle (float x0, float y0, float x1, float y1, float x2, float y2, IDriver& driver, CRGBA col, CViewport viewport);
+	/// Draw a Quad in 2D. Warning: this is slow...
+	static void			drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport);
+	/// Draw a Quad in 2D. Warning: this is slow...
+	static void			drawQuad (float xcenter, float ycenter, float radius, IDriver& driver, CRGBA col, CViewport viewport);
+	// @}
+
+	/// \name Easy render (2D or 3D).
+	/** Those render methods work in the current driver viewport/frustum/matrixes.
+	 * Since no vertex sharing is performed, their use may be slower than direct use of VBuffer/PBlock etc...
+	 * Also, A VBuffer and a PBlock is created, and copies are made from the list of primitives to the driver...
+	 */
+	// @{
+	/// Draw the triangles, with Vertex and 1 UV. "mat" should not be a lighted material since no normal is computed.
+	static void			drawTrianglesUnlit(const CTriangleUV	*trilist, sint ntris, CMaterial &mat, IDriver& driver);
+	/// Draw the triangles, with Vertex and 1 UV. "mat" should not be a lighted material since no normal is computed.
+	static void			drawTrianglesUnlit(const std::vector<CTriangleUV> &trilist, CMaterial &mat, IDriver& driver);
+	// @}
+
 };
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file mini_col.h
  * <File description>
  *
- * $Id: mini_col.h,v 1.5 2001/01/12 17:02:39 coutelas Exp $
+ * $Id: mini_col.h,v 1.6 2001/01/18 14:13:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,6 +87,11 @@ public:
 	 * hbot and hup are the margin where face can be taken.
 	 */
 	bool			getGroundNormal(const CVector &pos, CVector &normal, float hup=0.5, float hbot=1000);
+
+
+	/** This function get the faces which intersect a bbox..
+	 */
+	void			getFaces(std::vector<CTriangle>	&triresult, const CAABBox &bbox);
 
 
 

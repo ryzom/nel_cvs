@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.8 2002/04/11 15:46:36 corvazier Exp $
+ * $Id: polygon.h,v 1.9 2002/04/23 16:23:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,6 +102,15 @@ public:
 	  */
 	bool			chain (const std::vector<CPolygon> &other, const CMatrix& basis);
 
+	/// get the best triplet from this poly (the one that has the highest area)
+	void		getBestTriplet(uint &index0, uint &index1, uint &index2);	
+
+	/** Takes the best triplet from this poly to build a normal.
+	  * From this normal and a points, build a basis (the normal is the K vector of the basis)
+	  * This can be used to transform the poly in 2D after it has been inverted
+	  */
+	void		buildBasis(CMatrix &dest);
+
 	// Used by the method toConvexPolygons and chain
 	void			toConvexPolygonsLocalAndBSP (std::vector<CVector> &localVertices, CBSPNode2v &root, const CMatrix &basis) const;
 	static bool		toConvexPolygonsEdgeIntersect (const CVector2f& a0, const CVector2f& a1, const CVector2f& b0, const CVector2f& b1);
@@ -116,6 +125,9 @@ public:
   */
 class CPolygon2D
 {
+public:
+	typedef std::vector<CVector2f> TVec2fVect;
+	TVec2fVect Vertices;
 public:
 	/// default ctor
 	CPolygon2D() {}
@@ -160,11 +172,15 @@ public:
 	/// Check wether a point is contained by this poly
 	bool		contains(const CVector2f &p) const;
 
-public:
-	typedef std::vector<CVector2f> TVec2fVect;
-	TVec2fVect Vertices;
+	/** Get the index of a segment of this poly that is a non null segment.
+	  * \return true if such a segment was found
+	  */
+	bool  getNonNullSeg(uint &seg) const;
 
-protected:
+	/// Get a line equation of the seg starting at the given index
+	void  getLineEquation(uint index, float &a, float &b, float &c) const;
+
+private:
 	/// Sum the dot product of this poly vertices against a line equation a*x + b*y + c
 	float sumDPAgainstLine(float a, float b, float c) const;
 
@@ -182,13 +198,7 @@ protected:
 	}
 
 
-	/** Get the index of a segment of this poly that is a non null segment.
-	  * \return true if such a segment was found
-	  */
-	bool  getNonNullSeg(uint &seg) const;
-
-	/// Get a line equation of the given seg
-	void  getLineEquation(uint index, float &a, float &b, float &c) const;
+	
 };
 
 

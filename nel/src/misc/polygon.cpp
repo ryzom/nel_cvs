@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.13 2002/04/11 15:46:36 corvazier Exp $
+ * $Id: polygon.cpp,v 1.14 2002/04/23 16:25:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@ namespace NLMISC
 // ***************************************************************************
 CPolygon::CPolygon(const CVector &a, const CVector &b, const CVector &c)
 {
+	Vertices.reserve(3);
 	Vertices.push_back(a);
 	Vertices.push_back(b);
 	Vertices.push_back(c);
@@ -101,7 +102,55 @@ void CPolygon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialCont(Vertices);
 }
 
+// ***************************************************************************
+void CPolygon::getBestTriplet(uint &index0,uint &index1,uint &index2)
+{
+	nlassert(Vertices.size() >= 3);
+	uint i, j, k;
+	float bestArea = 0.f;
+	const uint numVerts = Vertices.size();
+	for (i = 0; i < numVerts; ++i)
+	{
+		for (j = 0; j < numVerts; ++j)
+		{
+			if (i != j)
+			{
+				for (k = 0; k < numVerts; ++k)
+				{
+					if (k != i && k != j)
+					{
+						CVector v0 = Vertices[j] - Vertices[i];
+						CVector v1 = Vertices[k] - Vertices[i];						
+						float area = (v0 ^ v1).norm();
+						if (area > bestArea)
+						{
+							bestArea = area;
+							index0 = i;
+							index1 = j;
+							index2 = k;
+						}
+					}
+				}
+			}
+		}
+	}
 
+}
+
+// ***************************************************************************
+void CPolygon::buildBasis(CMatrix &dest)
+{
+	nlassert(Vertices.size() > 3);
+	uint i1, i2, i3;
+	getBestTriplet(i1, i2, i3);
+	CVector v1 = (Vertices[i2] - Vertices[i1]).normed();
+	CVector v2 = (Vertices[i3] - Vertices[i1]).normed();
+	CVector K = v2 ^ v1;
+	CVector I = v1 - (v1 * K) * v1;
+	CVector J = K ^ I;
+	dest.setRot(I, J, K);
+	dest.setPos(Vertices[i1]);
+}
 
 // ***************************************************************************
 
@@ -255,7 +304,7 @@ public:
 
 		if (p0Front != p1Front)
 			if ( (v0 != V0) && (v0 != V1) && (v1 != V0) && (v1 != V1) )
-				if (CPolygon::toConvexPolygonsEdgeIntersect (P0, P1, p0, p1))
+				if (CPolygon::toConvexPolygonsEdgeIntersect ((CVector2f) P0, (CVector2f) P1, (CVector2f) p0, (CVector2f) p1))
 					return true;
 
 		if (p0Front || p1Front)
@@ -1171,7 +1220,7 @@ void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
 		}
 		while (currV != pLowest) ;
 
-		// compute right edge from bottom to bottom
+		// compute right edge from bottom to top
 		do
 		{
 			nextV = Next(currV, V);

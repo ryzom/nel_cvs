@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.17 2001/01/29 10:54:37 lecroart Exp $
+ * $Id: config_file.cpp,v 1.18 2001/02/16 14:36:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,11 +161,18 @@ int CConfigFile::CVar::size () const
 
 CConfigFile::~CConfigFile ()
 {
-	if (_ConfigFiles.size () == 0) return;
-	vector<CConfigFile *>::iterator it = find (_ConfigFiles.begin (), _ConfigFiles.end (), this);
-	if (it != _ConfigFiles.end ())
+	if (_ConfigFiles == NULL || (*_ConfigFiles).empty () == 0) return;
+
+	vector<CConfigFile *>::iterator it = find ((*_ConfigFiles).begin (), (*_ConfigFiles).end (), this);
+	if (it != (*_ConfigFiles).end ())
 	{
-		_ConfigFiles.erase (it);
+		(*_ConfigFiles).erase (it);
+	}
+
+	if ((*_ConfigFiles).empty())
+	{
+		delete _ConfigFiles;
+		_ConfigFiles = NULL;
 	}
 }
 
@@ -173,7 +180,12 @@ void CConfigFile::load (const string &fileName)
 {
  	_FileName = fileName;
 	_Callback = NULL;
-	CConfigFile::_ConfigFiles.push_back (this);
+
+	if (_ConfigFiles == NULL)
+	{
+		_ConfigFiles = new std::vector<CConfigFile *>;
+	}
+	(*CConfigFile::_ConfigFiles).push_back (this);
 	reparse ();
 }
 
@@ -373,7 +385,8 @@ void CConfigFile::setLastModifiedNow ()
 // ***************************************************************************
 
 
-vector<CConfigFile *> CConfigFile::_ConfigFiles;
+vector<CConfigFile *> *CConfigFile::_ConfigFiles = NULL;
+
 uint32	CConfigFile::_Timeout = 1000;
 
 uint32 CConfigFile::getLastModified ()
@@ -393,12 +406,14 @@ uint32 CConfigFile::getLastModified ()
 
 void CConfigFile::checkConfigFiles ()
 {
+	if (_ConfigFiles == NULL) return;
+
 	static time_t LastCheckTime = time (NULL);
 	if (_Timeout > 0 && (float)(time (NULL) - LastCheckTime)*1000.0f < (float)_Timeout) return;
 
 	LastCheckTime = time (NULL);
 
-	for (vector<CConfigFile *>::iterator it = _ConfigFiles.begin (); it != _ConfigFiles.end (); it++)
+	for (vector<CConfigFile *>::iterator it = (*_ConfigFiles).begin (); it != (*_ConfigFiles).end (); it++)
 	{
 		if ((*it)->_LastModified != (*it)->getLastModified ())
 		{

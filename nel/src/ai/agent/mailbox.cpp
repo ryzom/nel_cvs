@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.28 2002/01/15 09:25:27 chafik Exp $
+ * $Id: mailbox.cpp,v 1.29 2002/07/23 15:37:47 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -398,7 +398,7 @@ namespace NLAIAGENT
 		{
 			IMessageBase *msg = (IMessageBase *)*msgItr;
 
-			if(msg->getSender() == a || msg->getContinuation() == a)
+			if(msg->getSender() == a || msg->getContinuation() == a || msg->getReceiver() == a)
 			{
 				tListMessageIter iTmp = msgItr++;
 				_ListMessageIn.erase(iTmp);

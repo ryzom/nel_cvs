@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.20 2002/01/22 09:13:37 chafik Exp $
+ * $Id: libcode.cpp,v 1.21 2002/07/23 15:37:47 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -137,7 +137,7 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA::CProcessResult r;
 		NLAIC::Out("%s\n",str.c_str());		
 
-		nlinfo("%s",str.c_str());
+		//nlinfo("%s",str.c_str());
 
 		r.ResultState =  NLAIAGENT::processIdle;
 		r.Result =  NULL;

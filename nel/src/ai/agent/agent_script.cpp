@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.123 2002/07/02 08:50:12 portier Exp $
+ * $Id: agent_script.cpp,v 1.124 2002/07/23 15:37:47 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -671,10 +671,10 @@ namespace NLAIAGENT
 			t += NLAIC::stringGetBuild("<%s> (scripted)  -StaticComponents:\n",(const char *)_AgentClass->getType());
 		else
 			t += "<undefined_class> (scripted) -StaticComponents:\n";
-
-			std::string buf;
+			
 		for (int i = 0; i < _NbComponents; i++ )
 		{
+			std::string buf;
 			t += "\t\t";
 			if ( _AgentClass->getComponentName(i) )
 			{
@@ -1144,6 +1144,7 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 	const char *txt = (const char *)msg->getType();
 	const char *compNameDb = (const char *)compName.getString();
+	//nlinfo("MSG %s %4x", txt, this);
 #endif
 		if(_AgentClass != NULL)
 		{
@@ -1177,6 +1178,7 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 	const char *txt = (const char *)m->getType();
 	const char *classBase = (const char *)getType();
+	//nlinfo("MSG %s %4x", txt, m);
 #endif
 		IMessageBase *msg = (IMessageBase *)m;
 		//this->incRef();

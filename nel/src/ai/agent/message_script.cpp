@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.20 2002/06/06 09:12:14 chafik Exp $
+ * $Id: message_script.cpp,v 1.21 2002/07/23 15:37:47 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,9 @@ namespace NLAIAGENT
 
 	CMessageScript::~CMessageScript()
 	{
+/*#ifdef NL_DEBUG
+		const char *name = (const char *)getType();
+#endif*/
 		/*if ( _MessageClass )
 			_MessageClass->release();		*/
 	}

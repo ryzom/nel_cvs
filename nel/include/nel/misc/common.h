@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.61 2003/11/14 09:10:34 lecroart Exp $
+ * $Id: common.h,v 1.62 2003/11/17 10:25:59 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <float.h>
 
 #ifdef NL_OS_WINDOWS
 #	include <process.h>

@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.16 2004/08/13 15:37:35 vizerie Exp $
+ * $Id: lod_character_manager.cpp,v 1.16.4.1 2004/09/09 11:51:19 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -705,20 +705,24 @@ bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instan
 		// get number of tri indexes
 		uint	numTriIdxs= clod->getNumTriangles() * 3;
 
-		// realloc tris if needed.
-		if(_CurrentTriId+numTriIdxs > _Triangles.getNumIndexes())
+		// Yoyo: there is an assert with getPtr(). Not sure, but maybe arise if numTriIdxs==0
+		if(numTriIdxs)
 		{
-			_Triangles.setNumIndexes(_CurrentTriId+numTriIdxs);
-		}
+			// realloc tris if needed.
+			if(_CurrentTriId+numTriIdxs > _Triangles.getNumIndexes())
+			{
+				_Triangles.setNumIndexes(_CurrentTriId+numTriIdxs);
+			}
 
-		// reindex and copy tris
-		CIndexBufferReadWrite iba;
-		_Triangles.lock(iba);
-		const uint32	*srcIdx= clod->getTriangleArray();
-		uint32			*dstIdx= iba.getPtr()+_CurrentTriId;
-		for(;numTriIdxs>0;numTriIdxs--, srcIdx++, dstIdx++)
-		{
-			*dstIdx= *srcIdx + _CurrentVertexId;
+			// reindex and copy tris
+			CIndexBufferReadWrite iba;
+			_Triangles.lock(iba);
+			const uint32	*srcIdx= clod->getTriangleArray();
+			uint32			*dstIdx= iba.getPtr()+_CurrentTriId;
+			for(;numTriIdxs>0;numTriIdxs--, srcIdx++, dstIdx++)
+			{
+				*dstIdx= *srcIdx + _CurrentVertexId;
+			}
 		}
 	}
 

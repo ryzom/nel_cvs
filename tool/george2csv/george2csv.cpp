@@ -57,8 +57,9 @@ class CField
 {
 public:
 	std::string _name;
-	bool _evaluated;
-	CField(std::string name,bool eval) { _name=name; _evaluated=eval; }
+//	bool _evaluated;
+	UFormElm::TEval	_evaluated;
+	CField(std::string name,UFormElm::TEval eval) { _name=name; _evaluated=eval; }
 };
 std::vector<CField> fields;
 std::vector<std::string> files;
@@ -68,6 +69,8 @@ vector<string>		inputCsvFiles;
 string				inputSheetPath;
 bool				inputSheetPathLoaded = false;
 map<string, string>	inputSheetPathContent;
+
+const char				*SEPARATOR = ";";
 
 
 /*
@@ -82,12 +85,14 @@ void setOutputFile(char *filename)
 
 void addField(char *name)
 {
-	fields.push_back(CField(name,true));
+//	fields.push_back(CField(name,true));
+	fields.push_back(CField(name,UFormElm::Eval));
 }
 
 void addSource(char *name)
 {
-	fields.push_back(CField(name,false));
+//	fields.push_back(CField(name,false));
+	fields.push_back(CField(name,UFormElm::NoEval));
 }
 
 void buildFileVector(std::vector<std::string> &filenames,std::string filespec)
@@ -162,7 +167,7 @@ void scanFiles(std::string filespec)
 	// display the table header line
 	fprintf(Outf,"FILE");
 	for (unsigned i=0;i<fields.size();i++)
-		fprintf(Outf,",%s",fields[i]);
+		fprintf(Outf,"%s%s",SEPARATOR, fields[i]._name.c_str());
 	fprintf(Outf,"\n");
 
 	NLGEORGES::UFormLoader *formLoader = NULL;
@@ -232,7 +237,7 @@ void scanFiles(std::string filespec)
 					}
 					s+='\"';
 				}
-				fprintf(Outf,",%s",s);
+				fprintf(Outf,"%s%s", SEPARATOR, s);
 			}
 			fprintf(Outf,"\n");
 
@@ -359,7 +364,7 @@ void executeScriptFile(const char *filename)
 	free(buf);
 }
 //
-
+/*
 void	explode(const string &input, const string &separators, vector<string> &fields)
 {
 	fields.clear();
@@ -380,7 +385,7 @@ void	explode(const string &input, const string &separators, vector<string> &fiel
 			return;
 	}
 }
-
+*/
 void	loadSheetPath()
 {
 	if (inputSheetPathLoaded)
@@ -423,14 +428,14 @@ void	convertCsvFile(const string &file)
 
 
 	fgets(lineBuffer, 2048, s);
-	explode(lineBuffer, ",", fields);
+	explode(lineBuffer, SEPARATOR, fields);
 
 	nldebug("Updating modifications (only modified fields are updated)");
 
 	while (!feof(s))
 	{
 		fgets(lineBuffer, 2048, s);
-		explode(lineBuffer, ",", args);
+		explode(lineBuffer, SEPARATOR, args);
 
 		if (args.size() < 1)
 			continue;
@@ -492,7 +497,7 @@ void	convertCsvFile(const string &file)
 void	usage(char *argv0, FILE *out)
 {
 	fprintf(out, "\n");
-	fprintf(out, "Syntax: %s [-p <sheet path>] [<script file name> | <csv file name>]", argv0);
+	fprintf(out, "Syntax: %s [-p <sheet path>] [-s <field_separator>] [<script file name> | <csv file name>]", argv0);
 	fprintf(out, "\n");
 	fprintf(out, "Script commands:\n");
 	fprintf(out, "\tDFNPATH\t\t<search path for george dfn files>\n");
@@ -525,6 +530,16 @@ int main(int argc, char* argv[])
 					exit(0);
 				}
 				inputSheetPath = argv[i];
+				break;
+			case 's':
+				++i;
+				if ((sint)i == argc)
+				{
+					fprintf(stderr, "Missing <field_separator> after -s option\n");
+					usage(argv[0], stderr);
+					exit(0);
+				}
+				SEPARATOR = arg;
 				break;
 			default:
 				fprintf(stderr, "Unrecognized option '%c'\n", arg[1]);

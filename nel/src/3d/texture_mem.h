@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.2 2001/10/26 08:21:33 vizerie Exp $
+ * $Id: texture_mem.h,v 1.3 2002/01/28 14:39:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,12 +74,12 @@ public:
 	 *        as the raw datas of the texture, so the format and size of the texture must also have been set to match
 	 *        the raw datas 
 	 */	
-	CTextureMem(uint8 *data, uint32 lenght, bool _delete, bool isFile = true) 
+	CTextureMem(uint8 *data, uint32 length, bool _delete, bool isFile = true) 
 	{ 
 		_Data=NULL;
 		_Delete=false;
 		_IsFile = isFile;
-		setPointer(data, lenght, _delete); 
+		setPointer(data, length, _delete); 
 	}
 
 

@@ -2232,6 +2232,7 @@ BEGIN
         MENUITEM "Water pool editor",           ID_WINDOW_WATER_POOL
         MENUITEM "Vegetable",                   ID_WINDOW_VEGETABLE
         MENUITEM "Global Wind",                 ID_WINDOW_GLOBALWIND
+        MENUITEM "S&ound",                      ID_WINDOW_ANIMSOUND
     END
     POPUP "&Help"
     BEGIN
@@ -2483,6 +2484,61 @@ BEGIN
 END
 
 #endif    // French (France) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// French (Belgium) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRB)
+#ifdef _WIN32
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH_BELGIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SOUND_ANIM_DLG DIALOG DISCARDABLE  0, 0, 452, 57
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_SOUND_ANIM_LIST,2,2,93,41,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add",IDC_ANIM_SOUND_ADD,4,44,43,11
+    PUSHBUTTON      "Remove",IDC_ANIM_SOUND_REMOVE,51,44,43,11
+    LTEXT           "",IDC_SOUNDANIMINFO,335,44,114,11,SS_CENTERIMAGE
+    PUSHBUTTON      "Save",IDC_ANIM_SOUND_SAVE,101,44,43,11
+    PUSHBUTTON      "Delete",IDC_ANIM_SOUND_DELETE,242,44,43,11
+    PUSHBUTTON      "ZoomIn",IDC_ANIM_SOUND_ZOOMIN,148,44,43,11
+    PUSHBUTTON      "ZoomOut",IDC_ANIM_SOUND_ZOOMOUT,195,44,43,11
+    SCROLLBAR       IDC_SOUND_ANIM_SCROLLBAR,99,34,350,8
+    PUSHBUTTON      "Mark",IDC_ANIM_SOUND_MARK,288,44,43,11
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_SOUND_ANIM_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 449
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 55
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // French (Belgium) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

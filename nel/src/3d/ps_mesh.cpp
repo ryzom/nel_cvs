@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.34 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: ps_mesh.cpp,v 1.35 2004/03/22 18:21:05 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1299,6 +1299,10 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 	/// update the number of faces
 	_NumFaces = getMeshNumTri(m);
 	notifyOwnerMaxNumFacesChanged();
+	if (_Owner && _Owner->getOwner())
+	{
+		_Owner->getOwner()->notifyMaxNumFacesChanged();
+	}
 	
 	/// update opacity / transparency state
 	bool hasTransparentFaces, hasOpaqueFaces;

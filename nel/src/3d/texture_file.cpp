@@ -1,7 +1,7 @@
-/** \file register_3d.cpp
+/** \file texture_file.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.4 2000/12/15 18:20:22 berenguier Exp $
+ * $Id: texture_file.cpp,v 1.1 2000/12/15 18:20:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,35 +23,32 @@
  * MA 02111-1307, USA.
  */
 
-
-#include "nel/3d/register_3d.h"
-#include "nel/3d/texture_font.h"
 #include "nel/3d/texture_file.h"
-#include "nel/3d/texture_mem.h"
-#include "nel/3d/mesh.h"
+#include "nel/misc/file.h"
 
 
-namespace NL3D 
+namespace NL3D
 {
 
+/*==================================================================*\
+							CTEXTUREFILE
+\*==================================================================*/
 
-//****************************************************************************
-void	registerSerial3d()
+/*------------------------------------------------------------------*\
+							generate()
+\*------------------------------------------------------------------*/
+void CTextureFile::generate()
 {
-	static bool bInitialized=false;
-	if (!bInitialized)
+	NLMISC::CIFile f;
+	if(f.open(_FileName))
 	{
-		// Textures.
-		NLMISC_REGISTER_CLASS(CTextureFile);
-		NLMISC_REGISTER_CLASS(CTextureMem);
-		NLMISC_REGISTER_CLASS(CTextureFont);
-
-		// Don't register CTextureCroos,, since local, and not designed to be serialised.
-
-		// Shapes.
-		NLMISC_REGISTER_CLASS(CMesh);
-		bInitialized=true;
+		load(f);
 	}
+	else
+	{
+		makeDummy();
+	}
+	
 }
 
 

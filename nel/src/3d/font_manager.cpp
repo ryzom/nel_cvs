@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.9 2000/12/11 15:53:04 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.10 2000/12/15 18:20:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "nel/3d/font_manager.h"
 #include "nel/3d/font_generator.h"
-#include "nel/3d/texture.h"
+#include "nel/3d/texture_font.h"
 #include "nel/3d/computed_string.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/debug.h"

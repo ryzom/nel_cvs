@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.11 2000/12/08 10:32:48 berenguier Exp $
+ * $Id: texture.cpp,v 1.12 2000/12/15 18:20:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,10 +24,6 @@
  */
 
 #include "nel/3d/texture.h"
-#include "nel/3d/font_generator.h"
-#include "nel/misc/file.h"
-#include "nel/misc/common.h"
-#include "nel/misc/mem_stream.h"
 #include <vector>
 
 
@@ -55,146 +51,6 @@ ITexture::~ITexture()
 	TextureDrvShare.kill();
 }
 
-
-
-
-/*==================================================================*\
-							CTEXTUREFILE
-\*==================================================================*/
-
-/*------------------------------------------------------------------*\
-							generate()
-\*------------------------------------------------------------------*/
-void CTextureFile::generate()
-{
-	NLMISC::CIFile f;
-	if(f.open(_FileName))
-	{
-		load(f);
-	}
-	else
-	{
-		makeDummy();
-	}
-	
-}
-
-
-
-/*==================================================================*\
-							CTEXTUREMEM
-\*==================================================================*/
-
-/*------------------------------------------------------------------*\
-							generate()
-\*------------------------------------------------------------------*/
-void CTextureMem::generate()
-{
-	NLMISC::CMemStream m (true);
-	if (_Data)
-	{
-		m.fill (_Data, _Length);
-		load (m);
-	}
-	else
-	{
-		makeDummy();
-	}
-}
-
-
-
-
-
-
-/*==================================================================*\
-							CTEXTUREFONT
-\*==================================================================*/
-
-/*------------------------------------------------------------------*\
-							generate()
-\*------------------------------------------------------------------*/
-void CTextureFont::generate()
-{
-	// getting bitmap infos
-	uint32 pitch = 0;
-	uint8 *bitmap = _FontGen->getBitmap(Char, _Size, _CharWidth, _CharHeight, pitch, Left, Top, AdvX, GlyphIndex);
-
-	// computing new width and height as powers of 2
-	if(!NLMISC::isPowerOf2(_CharWidth))
-	{
-		_Width = NLMISC::raiseToNextPowerOf2(_CharWidth);
-		CBitmap::_Width = _Width;
-	}
-	else
-	{
-		_Width = _CharWidth;
-		CBitmap::_Width = _Width;
-	}
-	if(!NLMISC::isPowerOf2(_CharHeight))
-	{
-		_Height = NLMISC::raiseToNextPowerOf2(_CharHeight);
-		CBitmap::_Height = _Height;
-	}
-	else
-	{
-		_Height = _CharHeight;
-		CBitmap::_Height = _Height;
-	}
-	
-
-	// calculating memory size taken by the bitmap
-	uint32 bitmapSize = _Width*_Height*4;
-	_Data[0].resize(bitmapSize);
-
-	// filling CBitmap buffer
-	for(uint i=0; i<_Height; i++)
-	{
-		for(uint j=0; j<_Width; j++)
-		{
-			if(j<_CharWidth && i<_CharHeight)
-			{
-				_Data[0][(i*_Width + j)*4] = 255;
-				_Data[0][(i*_Width + j)*4 + 1] = 255;
-				_Data[0][(i*_Width + j)*4 + 2] = 255;
-				_Data[0][(i*_Width + j)*4 + 3] = bitmap[i*pitch + j];
-			}
-			else
-			{
-				_Data[0][(i*_Width + j)*4] = 255;
-				_Data[0][(i*_Width + j)*4 + 1] = 255;
-				_Data[0][(i*_Width + j)*4 + 2] = 255;
-				_Data[0][(i*_Width + j)*4 + 3] = 0;
-			}
-			/*
-			if(j<_CharWidth && i<_CharHeight)
-			{
-				if (bitmap[i*pitch + j] == 0)
-				{
-					_Data[0][(i*_Width + j)*4] = 64;
-					_Data[0][(i*_Width + j)*4 + 1] = 64;
-					_Data[0][(i*_Width + j)*4 + 2] = 255;
-					_Data[0][(i*_Width + j)*4 + 3] = 64;
-				}
-				else
-				{
-					_Data[0][(i*_Width + j)*4] = 255;
-					_Data[0][(i*_Width + j)*4 + 1] = 255;
-					_Data[0][(i*_Width + j)*4 + 2] = 255;
-					_Data[0][(i*_Width + j)*4 + 3] = bitmap[i*pitch + j];
-				}
-			}
-			else
-			{
-				_Data[0][(i*_Width + j)*4] = 255;
-				_Data[0][(i*_Width + j)*4 + 1] = 0;
-				_Data[0][(i*_Width + j)*4 + 2] = 0;
-				_Data[0][(i*_Width + j)*4 + 3] = 64;
-			}
-			*/
-		}
-	}
-}
 
 
 

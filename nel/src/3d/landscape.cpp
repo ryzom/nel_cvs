@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.23 2000/12/15 15:10:56 berenguier Exp $
+ * $Id: landscape.cpp,v 1.24 2000/12/15 18:20:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 
 #include "nel/3d/landscape.h"
 #include "nel/3d/bsphere.h"
+#include "nel/3d/texture_file.h"
 using namespace NLMISC;
 using namespace std;
 

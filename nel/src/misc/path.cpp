@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.23 2002/03/12 18:05:41 lecroart Exp $
+ * $Id: path.cpp,v 1.24 2002/04/02 16:48:08 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -406,7 +406,11 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 		}
 		if (wantFile && isfile(de))
 		{
-			string stdName = path + getname(de);
+			#ifdef NL_OS_WINDOWS
+				string stdName = path + "\\" + getname(de);
+			#else
+				string stdName = path + "/" + getname(de);
+			#endif
 			NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): adding file '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());
 			result.push_back (stdName);
 		}

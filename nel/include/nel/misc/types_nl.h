@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.46 2004/06/23 14:59:54 lecroart Exp $
+ * $Id: types_nl.h,v 1.47 2004/06/24 14:23:56 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -42,12 +42,19 @@
 #endif // HAVE_NELCONFIG_H
 
 #ifdef FINAL_VERSION
-#error "You must not define the FINAL_VERSION out of the sources"
+
+// If the FINAL_VERSION is defined externaly, check that the value is 0 or 1
+#if FINAL_VERSION != 1 && FINAL_VERSION != 0
+#error "Bad value for FINAL_VERSION, it must be 0 or 1"
 #endif
+
+#else
+
 // If you want to compile in final version just put 1 instead of 0
 // WARNING: never comment this #define
 #define FINAL_VERSION 0
 
+#endif
 
 // Operating systems definition
 

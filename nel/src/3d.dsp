@@ -2141,24 +2141,19 @@ SOURCE=.\3d\particle_system_process.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\ps_allocator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_allocator.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_edit.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\3d\ps_iterator.h
-
-!IF  "$(CFG)" == "3d - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file ps_quad.h
  * Base quads particles.
  *
- * $Id: ps_quad.h,v 1.10 2004/05/19 10:19:55 vizerie Exp $
+ * $Id: ps_quad.h,v 1.11 2004/06/02 16:30:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -157,20 +157,20 @@ protected:
 	static CVertexBuffer _VBPosTex1AnimColTex2Anim;
 
 	/// get the vertex buffer that is needed for drawing
-	CVertexBuffer &getNeededVB();
+	CVertexBuffer &getNeededVB(IDriver &drv);
 	
 
 	/// used to get a pointer on the right vb dependant on its type (cf. values of VBType)
 	static CVertexBuffer    * const CPSQuad::_VbTab[];
-
-	// update wrap mode for all textures
-	void updateTexWrapMode();
+	
 
 	// from CPSTexturedParticle / CPSMultiTexturedParticle  : gives us the opportunity to update wrap mode for quad particles
 	virtual void		 setTexture(CSmartPtr<ITexture> tex);
 	virtual void		 setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup);
 	virtual void		 setTexture2(ITexture *tex);	
 	virtual void		 setTexture2Alternate(ITexture *tex);		
+	virtual void		 updateTexWrapMode(IDriver &drv);
+
 
 public:
 	/// The number of quad to batche for each driver call.

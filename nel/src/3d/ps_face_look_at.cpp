@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.11 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.12 2004/06/02 16:30:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,7 +97,7 @@ public:
 			la._ColorScheme->setColorType(driver->getVertexColorFormat());
 		}
 
-		CVertexBuffer &vb = la.getNeededVB();		
+		CVertexBuffer &vb = la.getNeededVB(*driver);
 		la.updateMatBeforeRendering(driver, vb);
 		
 		la._Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
@@ -399,7 +399,7 @@ public:
 			la._ColorScheme->setColorType(driver->getVertexColorFormat());
 		}
 
-		CVertexBuffer &vb = la.getNeededVB();		
+		CVertexBuffer &vb = la.getNeededVB(*driver);
 		la.updateMatBeforeRendering(driver, vb);
 		
 		la._Owner->incrementNbDrawnParticles(size); // for benchmark purpose	

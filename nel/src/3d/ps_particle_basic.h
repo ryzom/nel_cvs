@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.18 2004/05/19 10:19:55 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.19 2004/06/02 16:30:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -632,12 +632,15 @@ protected:
 	uint8   _MultiTexState;
 
 	/// test wether the alternate texture is used
-	bool	isAlternateTextureUsed() const { return (_MultiTexState & AlternateTextureUsed) != 0; }
+	bool	isAlternateTextureUsed(IDriver &driver) const;	
 	bool	isEnvBumpMapUsed() const { return (_MultiTexState & EnvBumpMapUsed) != 0; }
 
+
+	// update wrap mode for all textures
+	virtual void updateTexWrapMode(IDriver &drv) = 0;
 	void touch()		{ _MultiTexState |= (uint8) TouchFlag; }
 	void unTouch()		{ _MultiTexState &= ~ (uint8) TouchFlag; }
-	bool isTouched()	{ return (_MultiTexState & TouchFlag) != 0; }	
+	bool isTouched()	const { return (_MultiTexState & TouchFlag) != 0; }	
 	bool areBasicCapsForcedLocal() const { return (_MultiTexState & BasicCapsForced) != 0; }
 	void forceBasicCapsLocal(bool force) 
 	{ 

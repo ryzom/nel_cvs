@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.10 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_face.cpp,v 1.11 2004/06/02 16:30:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,7 @@ public:
 		nlassert(f._Owner);		
 		IDriver *driver = f.getDriver();
 
-		CVertexBuffer &vb = f.getNeededVB();		
+		CVertexBuffer &vb = f.getNeededVB(*driver);
 		f.updateMatBeforeRendering(driver, vb);
 
 		uint8 *currVertex; 	

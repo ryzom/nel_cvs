@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.15 2004/05/19 10:19:55 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.16 2004/06/02 16:30:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -215,7 +215,7 @@ void CPSQuad::initVertexBuffers()
 
 ///==================================================================================
 /// choose the vertex buffex that we need
-CVertexBuffer &CPSQuad::getNeededVB()
+CVertexBuffer &CPSQuad::getNeededVB(IDriver &drv)
 {
 	uint flags = 0;
 	if (_ColorScheme) flags |= (uint) VBCol;
@@ -234,7 +234,7 @@ CVertexBuffer &CPSQuad::getNeededVB()
 		/// check is multitexturing is enabled, and which texture are enabled and / or animated
 		if (CPSMultiTexturedParticle::isMultiTextureEnabled())
 		{
-			if (!isAlternateTextureUsed())
+			if (!isAlternateTextureUsed(drv))
 			{
 				if ((flags & VBTex) && (_TexScroll[0].x != 0 || _TexScroll[0].y	!= 0)) flags |= VBTexAnimated;
 				if (_Texture2)
@@ -388,10 +388,6 @@ void CPSQuad::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		CPSMultiTexturedParticle::serialMultiTex(f);
 	}
-	if (f.isReading())
-	{
-		updateTexWrapMode();
-	}
 }
 
 //==============================================================
@@ -535,7 +531,7 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 		// perform tex1 animation if needed
 		if (!_TexGroup) // doesn't work with texGroup enabled
 		{
-			if (!isAlternateTextureUsed())
+			if (!isAlternateTextureUsed(drv))
 			{
 				if (_Tex && (_TexScroll[0].x != 0 || _TexScroll[0].y != 0))
 				{
@@ -568,7 +564,7 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 		}
 
 		// perform tex2 animation if needed
-		if (!isAlternateTextureUsed())
+		if (!isAlternateTextureUsed(drv))
 		{
 			if (_Texture2 && (_TexScroll[1].x != 0 || _TexScroll[1].y != 0))
 			{
@@ -677,18 +673,51 @@ void CPSQuad::setZBias(float value)
 }
 
 
+//*****************************************************************************************************
+void CPSQuad::setTexture(CSmartPtr<ITexture> tex)
+{
+	CPSTexturedParticle::setTexture(tex);
+	CPSMultiTexturedParticle::touch();
+}
 
 //*****************************************************************************************************
-void CPSQuad::updateTexWrapMode()
+void CPSQuad::setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup)
+{
+	CPSTexturedParticle::setTextureGroup(texGroup);
+	CPSMultiTexturedParticle::touch();
+}
+
+//*****************************************************************************************************
+void CPSQuad::setTexture2(ITexture *tex)
+{
+	CPSMultiTexturedParticle::setTexture2(tex);
+}
+
+//*****************************************************************************************************
+void CPSQuad::setTexture2Alternate(ITexture *tex)
+{
+	CPSMultiTexturedParticle::setTexture2Alternate(tex);	
+}
+
+//*****************************************************************************************************
+void CPSQuad::updateTexWrapMode(IDriver &drv)
 {	
 	if (isMultiTextureEnabled())
 	{
 		if (_Tex)
 		{
-			_Tex->setWrapS(_TexScroll[0].x == 0 ? ITexture::Clamp : ITexture::Repeat);
-			_Tex->setWrapT(_TexScroll[0].y == 0 ? ITexture::Clamp : ITexture::Repeat);
+			if (isAlternateTextureUsed(drv))
+			{			
+				_Tex->setWrapS(_TexScroll[0].x == 0 ? ITexture::Clamp : ITexture::Repeat);
+				_Tex->setWrapT(_TexScroll[0].y == 0 ? ITexture::Clamp : ITexture::Repeat);
+			}
+			else
+			{
+				_Tex->setWrapS(_TexScrollAlternate[0].x == 0 ? ITexture::Clamp : ITexture::Repeat);
+				_Tex->setWrapT(_TexScrollAlternate[0].y == 0 ? ITexture::Clamp : ITexture::Repeat);								
+			}
 		}
-		ITexture *tex2 = isAlternateTextureUsed() ? getTexture2Alternate() : getTexture2();
+		ITexture *tex2 = isAlternateTextureUsed(drv) ? getTexture2Alternate() : getTexture2();
 		if (tex2)
 		{
 			tex2->setWrapS(_TexScroll[1].x == 0 ? ITexture::Clamp : ITexture::Repeat);
@@ -703,37 +732,8 @@ void CPSQuad::updateTexWrapMode()
 			_Tex->setWrapT(ITexture::Clamp);
 		}
 		// nb for grouped texture we assume that no mipmapping is used, and that the border is black (or white for modulate material mode)
-	}	
+	}
 }
-
-//*****************************************************************************************************
-void CPSQuad::setTexture(CSmartPtr<ITexture> tex)
-{
-	CPSTexturedParticle::setTexture(tex);
-	updateTexWrapMode();
-}
-
-//*****************************************************************************************************
-void CPSQuad::setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup)
-{
-	CPSTexturedParticle::setTextureGroup(texGroup);
-	updateTexWrapMode();
-}
-
-//*****************************************************************************************************
-void CPSQuad::setTexture2(ITexture *tex)
-{
-	CPSMultiTexturedParticle::setTexture2(tex);
-	updateTexWrapMode();
-}
-
-//*****************************************************************************************************
-void CPSQuad::setTexture2Alternate(ITexture *tex)
-{
-	CPSMultiTexturedParticle::setTexture2Alternate(tex);
-	updateTexWrapMode();
-}
-
 
 
 

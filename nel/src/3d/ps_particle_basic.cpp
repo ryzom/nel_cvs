@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.12 2004/05/19 10:19:55 vizerie Exp $
+ * $Id: ps_particle_basic.cpp,v 1.13 2004/06/02 16:30:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -750,7 +750,7 @@ void	CPSMultiTexturedParticle::serialMultiTex(NLMISC::IStream &f) throw(NLMISC::
 void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver, CMaterial &mat, CVertexBuffer &vb)
 {
 	/// if bump is used, the matrix must be setupped each time (not a material field)
-	if (isMultiTextureEnabled() && _MainOp  == EnvBumpMap)
+	if (!_ForceBasicCaps && isMultiTextureEnabled() && _MainOp  == EnvBumpMap)
 	{
 		if (driver->isTextureAddrModeSupported(CMaterial::OffsetTexture))
 		{		
@@ -807,6 +807,7 @@ void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver,
 	}
 
 	if (!isTouched() && areBasicCapsForcedLocal() == areBasicCapsForced()) return;
+	forceBasicCapsLocal(areBasicCapsForced());
 	if (!isMultiTextureEnabled())		
 	{		
 		mat.setTexture(0, primary);
@@ -858,6 +859,7 @@ void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver,
 			}
 		}
 	}		
+	updateTexWrapMode(*driver);
 	unTouch();
 }
 
@@ -904,6 +906,7 @@ void	CPSMultiTexturedParticle::setupMultiTexEnv(TOperator op, ITexture *tex1, IT
 						{
 							mat.setTexture(k, tex2);
 							mat.texEnvOpRGB(k, CMaterial::EMBM);
+							mat.texEnvOpAlpha(k, CMaterial::EMBM);
 							mat.setTexture(0, tex1);
 							mat.texEnvOpRGB(0, CMaterial::Modulate);
 						}
@@ -944,6 +947,7 @@ static void ConvertToBumpMap(NLMISC::CSmartPtr<ITexture> &ptr)
 		CTextureBump *tb = new CTextureBump;
 		tb->setAbsoluteOffsets();
 		tb->setHeightMap((ITexture *) ptr);
+		tb->enableSharing(true);
 		ptr = tb;
 	}	
 }
@@ -1056,7 +1060,7 @@ void CPSTexturedParticle::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &de
 //==========================================
 void CPSMultiTexturedParticle::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
 {	
-	if (_MainOp  == EnvBumpMap)
+	if (_MainOp  == EnvBumpMap && !_ForceBasicCaps)
 	{
 		if (drv.isTextureAddrModeSupported(CMaterial::OffsetTexture) || drv.supportEMBM())
 		{
@@ -1071,6 +1075,13 @@ void CPSMultiTexturedParticle::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> 
 	if (_Texture2) dest.push_back(_Texture2);	
 }
 
+//*****************************************************************************************************
+bool CPSMultiTexturedParticle::isAlternateTextureUsed(IDriver &driver) const
+{ 
+	if (!isTouched() && areBasicCapsForcedLocal() == areBasicCapsForced()) return (_MultiTexState & AlternateTextureUsed) != 0; 		
+	if (_MainOp  != EnvBumpMap) return false;
+	return _ForceBasicCaps || (!driver.isTextureAddrModeSupported(CMaterial::OffsetTexture) && !driver.supportEMBM());
+}
 
 
 } // NL3D

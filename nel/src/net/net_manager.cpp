@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.5 2001/05/17 15:36:45 cado Exp $
+ * $Id: net_manager.cpp,v 1.6 2001/05/18 14:40:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -169,6 +169,14 @@ void CNetManager::release ()
 	if (CNamingClient::connected ())
 		CNamingClient::disconnect ();
 
+	for (ItBaseMap itbm = _BaseMap.begin (); itbm != _BaseMap.end (); itbm++)
+	{
+		for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)
+		{
+			(*itbm).second.NetBase[i]->disconnect ();
+			delete (*itbm).second.NetBase[i];
+		}
+	}
 	_BaseMap.clear ();
 }
 

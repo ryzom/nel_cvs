@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.46 2001/01/31 11:27:59 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.47 2001/02/08 10:02:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,11 +30,16 @@
 #include "nel/misc/types_nl.h"
 
 #ifdef NL_OS_WINDOWS
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#else
+
+#else // NL_OS_UNIX
+
+#define	GL_GLEXT_PROTOTYPES
 #include <GL/glx.h>
-#endif // NL_OS_WINDOWS
+
+#endif // NL_OS_UNIX
 
 #include <GL/gl.h>
 #include "driver_opengl_extension.h"

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.6 2001/01/24 14:12:05 corvazier Exp $
+ * $Id: driver_opengl_extension.h,v 1.7 2001/02/08 10:02:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,17 +30,19 @@
 #include "nel/misc/types_nl.h"
 
 #ifdef NL_OS_WINDOWS
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#else
+
+#else // NL_OS_UNIX
+
+#define	GL_GLEXT_PROTOTYPES
 #include <GL/glx.h>
-#endif // NL_OS_WINDOWS
+
+#endif // NL_OS_UNIX
 
 
 #include <GL/gl.h>
-#ifdef NL_OS_UNIX
-#define	GL_GLEXT_PROTOTYPES
-#endif
 #include <GL/glext.h>	// Please download it from http://oss.sgi.com/projects/ogl-sample/ABI/"
 
 #ifndef GL_GLEXT_VERSION

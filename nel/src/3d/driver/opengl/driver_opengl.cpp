@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.70 2001/02/06 16:55:37 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.71 2001/02/08 10:02:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,11 +33,12 @@
 
 #include <string>
 
-#else // NL_OS_WINDOWS
+#else // NL_OS_UNIX
 
+#define	GL_GLEXT_PROTOTYPES
 #include <GL/glx.h>
 
-#endif // NL_OS_WINDOWS
+#endif // NL_OS_UNIX
 
 #include <vector>
 #include <GL/gl.h>

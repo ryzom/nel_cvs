@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.145 2002/09/16 14:58:01 lecroart Exp $
+ * $Id: service.cpp,v 1.146 2002/10/04 12:27:39 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -947,6 +947,15 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 		}
 
+		if ((var = ConfigFile.getVarPtr ("PathsNoRecurse")) != NULL)
+		{
+			for (sint i = 0; i < var->size(); i++)
+			{
+				CPath::addSearchPath (var->asString(i), false, false);
+			}
+		}
+
+
 		// if we can, try to setup where to write files
 		if ((var = ConfigFile.getVarPtr ("WriteFilesDirectory")) != NULL)
 		{
@@ -1037,11 +1046,15 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 		}
 
+		string str;
+		CLog logDisplayVars;
+		CMemDisplayer mdDisplayVars;
+		logDisplayVars.addDisplayer (&mdDisplayVars);
+
 		nlinfo ("Service ready");
 
 		if (WindowDisplayer != NULL)
 			WindowDisplayer->setTitleBar (_ShortName + " " + _LongName + " " + _Version);
-
 
 		//
 		// Call the user service update each loop and check files and network activity
@@ -1049,20 +1062,19 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		do
 		{
-			H_BEFORE(NLNETServiceLoop);
-
+			//H_BEFORE(NLNETServiceLoop); // Not tick-wise
 			// count the amount of time to manage internal system
 			TTime bbefore = CTime::getLocalTime ();
 
 			// call the user update and exit if the user update asks it
-			H_BEFORE(NLNETServiceUpdate);
+			//H_BEFORE(NLNETServiceUpdate);
 			if (!update ())
 			{
-				H_AFTER(NLNETServiceUpdate);
-				H_AFTER(NLNETServiceLoop);
+				//H_AFTER(NLNETServiceLoop); // Not tick-wise
+				//H_AFTER(NLNETServiceUpdate);
 				break;
 			}
-			H_AFTER(NLNETServiceUpdate);
+			//H_AFTER(NLNETServiceUpdate);
 			
 			// count the amount of time to manage internal system
 			TTime before = CTime::getLocalTime ();
@@ -1080,7 +1092,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// stop the loop if the exit signal asked
 			if (ExitSignalAsked > 0)
 			{
-				H_AFTER(NLNETServiceLoop);
+				//H_AFTER(NLNETServiceLoop) // Not tick-wise
 				break;
 			}
 	
@@ -1088,7 +1100,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			CFile::checkFileChange();
 
-			H_BEFORE(NLNETServiceManageMessages);
+			//H_BEFORE(NLNETManageMessages); // Not tick-wise
 			if (isService5())
 			{
 				// get and manage layer 5 messages
@@ -1099,7 +1111,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				// get and manage layer 4 messages
 				CNetManager::update (_UpdateTimeout);
 			}
-			H_AFTER(NLNETServiceManageMessages);
+			//H_AFTER(NLNETManageMessages); // Not tick-wise
 			
 			// resync the clock every hours
 			if (resyncEvenly)
@@ -1143,11 +1155,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 					sndq = CNetManager::getSendQueueSize ();
 				}
 
-				string str;
-				CLog log;
-				CMemDisplayer md;
-				log.addDisplayer (&md);
-
 				for (uint i = 0; i < displayedVariables.size(); i++)
 				{
 					// it s a separator, do nothing
@@ -1172,9 +1179,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 					else
 						str = dispName + ": ";
 					
-					md.clear ();
-					ICommand::execute(varName, log, true);
-					const std::deque<std::string>	&strs = md.lockStrings();
+					mdDisplayVars.clear ();
+					ICommand::execute(varName, logDisplayVars, true);
+					const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
 					if (strs.size()>0)
 					{
 						uint32 pos = strs[0].find("=");
@@ -1191,14 +1198,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 							str += "???";
 						}
 					}
-					md.unlockStrings();
+					mdDisplayVars.unlockStrings();
 					WindowDisplayer->setLabel (displayedVariables[i].second, str);
 				}
 
 			}
 
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
-			H_AFTER(NLNETServiceLoop);
+			//H_AFTER(NLNETServiceLoop); // Not tick-wise
 
 			// Resetting the hierarchical timer must be done outside the top-level timer
 			if ( _ResetMeasures )
@@ -1206,6 +1213,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				CHTimer::clear();
 				_ResetMeasures = false;
 			}
+			//H_AFTER(NLNETServiceLoop);
 		}
 		while (true);
 	}

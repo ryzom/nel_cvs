@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * <File description>
  *
- * $Id: string_id_array.h,v 1.2 2001/03/05 09:29:54 lecroart Exp $
+ * $Id: string_id_array.h,v 1.3 2001/03/05 11:07:09 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,8 +94,6 @@ public:
 	}
 
 private:
-	std::vector<std::string>	_StringArray;
-
 	// todo: liste des string demande qui ont pas d assoc => a l update prochain, il faudra les demander
 	std::vector<std::string>	_StringArray;
 };

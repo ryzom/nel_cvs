@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.13 2001/07/11 15:15:10 cado Exp $
+ * $Id: buf_sock.cpp,v 1.14 2001/08/23 17:21:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,9 @@ CBufSock::CBufSock( CTcpSock *sock ) :
 	_KnowConnected( false ),
 	_ConnectedState( false ),
 	_RTSBIndex( 0 ),
-	_AppId( 0 )
+	_AppId( 0 ),
+	SendNextValue(0),
+	ReceiveNextValue(0)
 {
 	nlnettrace( "CBufSock::CBufSock" ); // don't define a global object
 

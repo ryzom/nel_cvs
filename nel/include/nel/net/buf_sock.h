@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.9 2001/06/21 12:33:00 lecroart Exp $
+ * $Id: buf_sock.h,v 1.10 2001/08/23 17:21:55 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,10 @@ public:
 	/// Little tricky but this string is used by Layer4 to know which callback is authorized.
 	/// This is empty when all callback are authorized.
 	std::string				AuthorizedCallback;
+
+	// debug features, we number all packet to be sure that they are all sent and received
+	// \todo remove this debug feature when ok
+	uint32					SendNextValue, ReceiveNextValue;
 
 protected:
 

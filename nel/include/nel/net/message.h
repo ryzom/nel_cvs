@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.27 2001/07/10 08:22:23 portier Exp $
+ * $Id: message.h,v 1.28 2001/08/23 17:21:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,6 +164,13 @@ public:
 			nlassert (length () == 0);
 
 			uint8 LongFormat = false;
+
+			// debug features, we number all packet to be sure that they are all sent and received
+			// \todo remove this debug feature when ok
+			// this value will be fill after in the callback function
+			uint32 zeroValue = 1234;
+			serial (zeroValue);
+
 			serial (LongFormat);
 			serial (id);
 			_HeaderSize = getPos ();
@@ -204,6 +211,12 @@ public:
 			// PATCH: always send in full text
 			NLMISC::CStringIdArray::TStringId id = -1;
 
+			// debug features, we number all packet to be sure that they are all sent and received
+			// \todo remove this debug feature when ok
+			// this value will be fill after in the callback function
+			uint32 zeroValue = 1234;
+			serial (zeroValue);
+
 			if (id == -1)
 			{
 				uint8 LongFormat = true;
@@ -237,6 +250,11 @@ public:
 	void readType ()
 	{
 		nlassert (isReading ());
+
+		// debug features, we number all packet to be sure that they are all sent and received
+		// \todo remove this debug feature when ok
+		uint32 zeroValue;
+		serial (zeroValue);
 
 		uint8 LongFormat;
 		serial (LongFormat);

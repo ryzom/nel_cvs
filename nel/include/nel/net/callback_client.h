@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.9 2001/07/18 16:13:22 lecroart Exp $
+ * $Id: callback_client.h,v 1.10 2001/08/23 17:21:55 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,10 @@ private:
 	virtual bool replaySystemCallbacks();
 #endif
 	
+
+	// debug features, we number all packet to be sure that they are all sent and received
+	// \todo remove this debug feature when ok
+	uint32 SendNextValue, ReceiveNextValue;
 };
 
 

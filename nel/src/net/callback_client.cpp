@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.11 2001/06/27 08:29:42 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.12 2001/08/23 17:21:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,7 @@ static TCallbackItem ClientMessageAssociationArray[] =
  * Constructor
  */
 CCallbackClient::CCallbackClient( TRecordingState rec, const std::string& recfilename, bool recordall ) :
-	CCallbackNetBase( rec, recfilename, recordall ), CStreamClient( true, rec==Replay )
+	CCallbackNetBase( rec, recfilename, recordall ), CStreamClient( true, rec==Replay ), SendNextValue(0), ReceiveNextValue(0)
 {
 	CBufClient::setDisconnectionCallback (_NewDisconnectionCallback, this);
 
@@ -87,7 +87,14 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 //	if (log)
 	{
 		nldebug ("L3C: Client: send(%s)", buffer.toString().c_str());
+		nlinfo ("send message number %u", SendNextValue);
 	}
+
+	// debug features, we number all packet to be sure that they are all sent and received
+	// \todo remove this debug feature when ok
+	// fill the number
+	uint32 *val = (uint32*)buffer.buffer ();
+	*val = SendNextValue++;
 
 #ifdef USE_MESSAGE_RECORDER
 	if ( _MR_RecordingState != Replay )
@@ -212,6 +219,14 @@ void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 		
 		// Receive
 		CStreamClient::receive (buffer);
+
+		// debug features, we number all packet to be sure that they are all sent and received
+		// \todo remove this debug feature when ok
+		uint32 val = *(uint32*)buffer.buffer ();
+		nlinfo ("receive message number %u", val);
+		if (ReceiveNextValue != val)
+			nlerror ("stop in the buffer %u and should be %u", val, ReceiveNextValue);
+		ReceiveNextValue++;
 
 #ifdef USE_MESSAGE_RECORDER
 		if ( _MR_RecordingState == Record )

@@ -1,7 +1,7 @@
 /** \file login_cookie.h
  * container used by the login process to identify a user
  *
- * $Id: login_cookie.h,v 1.4 2002/09/16 14:58:36 lecroart Exp $
+ * $Id: login_cookie.h,v 1.5 2002/09/18 16:06:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,7 @@ public:
 	std::string toString () const
 	{
 		if (_Valid)
-			return "'" + NLMISC::toString((unsigned int)_UserAddr) + "|" + NLMISC::toString((unsigned int)_UserKey) + "|" + NLMISC::toString((unsigned int)_UserId) + "'";
+			return "'" + NLMISC::toString("%08X", (unsigned int)_UserAddr) + "|" + NLMISC::toString("%08X", (unsigned int)_UserKey) + "|" + NLMISC::toString("%08X", (unsigned int)_UserId) + "'";
 		else
 			return "<InvalidCookie>";
 	}

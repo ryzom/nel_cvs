@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.131 2003/07/30 15:59:18 vizerie Exp $
+ * $Id: landscape.cpp,v 1.132 2003/07/31 16:40:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,7 +188,7 @@ CLandscape::CLandscape() :
 {
 	OwnerModel = NULL;
 
-	TileInfos.resize(NL3D::NbTilesMax);
+	initTileBank();
 
 	// Far texture not initialized till initTileBanks is not called
 	_FarInitialized=false;
@@ -197,9 +197,6 @@ CLandscape::CLandscape() :
 	setupStaticLight (CRGBA(255,255,255), CRGBA(0,0,0), 1.f);
 	// Default material for pointLights
 	_PointLightDiffuseMaterial= CRGBA::White;
-
-
-	fill(TileInfos.begin(), TileInfos.end(), (CTileInfo*)NULL);
 
 	_FarTransition= 10;		// 10 meters.
 	_TileDistNear=100.f;
@@ -3623,6 +3620,16 @@ void			CLandscape::initAnimatedLightIndex(const CScene &scene)
 	{
 		(*it).second->_PointLightArray.initAnimatedLightIndex(scene);
 	}
+}
+
+// ***************************************************************************
+void			CLandscape::initTileBank()
+{
+	// Release the tiles
+	releaseTiles (0, TileInfos.size());
+	TileInfos.clear();
+	TileInfos.resize(NL3D::NbTilesMax);
+	fill(TileInfos.begin(), TileInfos.end(), (CTileInfo*)NULL);
 }
 
 

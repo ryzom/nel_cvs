@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.34 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: landscape_user.cpp,v 1.35 2003/07/31 16:40:11 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,9 @@ void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::s
 	NL3D_MEM_LANDSCAPE
 	NL3D_HAUTO_LOAD_LANDSCAPE;
 
+	// Clear the bank
+	_Landscape->Landscape.TileBank.clear ();
+
 	// First, load the banks.
 	//=======================
 	CIFile bankFile(CPath::lookup(tileBankFile));
@@ -73,6 +76,9 @@ void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::s
 	_Landscape->Landscape.TileFarBank.serial(farbankFile);
 	bankFile.close();
 	farbankFile.close();
+
+	// Init tiles
+	_Landscape->Landscape.initTileBank();
 }
 
 //****************************************************************************

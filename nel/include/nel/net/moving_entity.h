@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.2 2000/10/24 16:39:42 cado Exp $
+ * $Id: moving_entity.h,v 1.3 2000/10/27 15:45:06 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,9 @@ typedef TPosUnit TVelocity;
 /// Angle type. Unit: radian
 typedef float TAngle;
 
+/// Angular velocity type. Unit: radian per second
+typedef TAngle TAngVelocity;
+
 
 /**
  * Base class for all moving entities.
@@ -65,7 +68,8 @@ public:
 	/// Alt. constructor
 	IMovingEntity( const NLMISC::CVector pos,
 				   const NLMISC::CVector hdg,
-				   const NLMISC::CVector vec );
+				   const NLMISC::CVector vec,
+				   const TAngVelocity av );
 
 	/// Copy constructor
 	IMovingEntity( const IMovingEntity& other );
@@ -89,8 +93,18 @@ public:
 	/// Returns trajectory vector
 	const NLMISC::CVector&	trajVector() const	{ return _Vector; }
 
+	/// Returns angular velocity
+	const TAngVelocity		angularVelocity() const	{ return _AngVel; }
+
 	//@}
 
+
+	/// Angle around z axis from x axis
+	TAngle					angleAroundZ();
+	/// Angle around x axis from y axis
+	TAngle					angleAroundX();
+	/// Angle around y axis from z axis
+	TAngle					angleAroundY();
 
 	/// Assignment operator
 	IMovingEntity&			operator= ( const IMovingEntity& other )
@@ -99,6 +113,7 @@ public:
 		_Pos = other._Pos;
 		_BodyHdg = other._BodyHdg;
 		_Vector = other._Vector;
+		_AngVel = other._AngVel;
 		return *this;
 	}
 
@@ -107,13 +122,14 @@ public:
 	{
 		return ( e1._Pos == e2._Pos
 			  && e1._BodyHdg == e2._BodyHdg
-			  && e1._Vector == e2._Vector );
+			  && e1._Vector == e2._Vector
+			  && e1._AngVel == e2._AngVel );
 	}
 
 	/// Serialization
 	void					serial ( NLMISC::IStream &s );
 
-	/// Sets id
+	/// Sets id from outside
 	void					setId( TEntityId id )
 	{
 		_Id = id;
@@ -149,6 +165,9 @@ protected:
 	void					setBodyHeading ( TPosUnit x, TPosUnit y, TPosUnit z )	{ _BodyHdg.set( x, y, z ); }
 	//@}
 
+	/// Sets angular velocity
+	void					setAngularVelocity ( TAngVelocity av )			{ _AngVel = av; }
+
 	/// Computes position using heading and velocity
 	void					computeNextPos()
 	{
@@ -156,10 +175,7 @@ protected:
 	}
 
 	/// Computes position using heading and velocity
-	void					computePosAfterDuration( TDuration d )
-	{
-		_Pos += _Vector * d;
-	}
+	void					computePosAfterDuration( TDuration d );
 
 private:
 
@@ -177,6 +193,8 @@ private:
 	/// Trajectory vector
 	NLMISC::CVector			_Vector;
 
+	/// Angular velocity
+	TAngVelocity			_AngVel;
 
 	// Highest Id
 	static TEntityId		_MaxId;

@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.3 2000/10/24 16:39:42 cado Exp $
+ * $Id: local_entity.cpp,v 1.4 2000/10/27 15:45:06 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,11 @@ namespace NLNET {
  */
 CLocalEntity::CLocalEntity() :
 	IMovingEntity(),
-	_Threshold( 0.05 )
+	_DRThresholdPos( 0.05 ),
+	_FrontVel( 0.0 ),
+	_StrafeVel( 0.0 ),
+	_VertVel( 0.0 ),
+	_DRReplica( *this )
 {
 }
 
@@ -54,14 +58,47 @@ CLocalEntity::CLocalEntity() :
 void CLocalEntity::update( TDuration deltatime )
 {
 	computePosAfterDuration( deltatime );
-	_Replica.update( deltatime );
+	_DRReplica.update( deltatime );
 
 	// Compare the entity and its replica
-	if ( (pos()-_Replica.pos()).norm() > _Threshold )
+	if ( drDivergeTest() )
 	{
-		nlinfo( "Pos: %f", (pos()-_Replica.pos()).norm() );
+		nlinfo( "Pos: %f", (pos()-_DRReplica.pos()).norm() );
 		propagateState();
 	}
+}
+
+
+
+/*
+ * Dead Reckoning divergence test: returns true if the replica needs to converge
+ */
+bool CLocalEntity::drDivergeTest()
+{
+	bool bh = false;
+	if ( _DRTestBodyHeading )
+	{
+		// At the moment, test heading (orientation) divergence computing vector difference.
+		// Because bodyHeading() is normed(), i.e. its norm is 1.0, if _DRThresholdHeading
+		// equals 1.0, the corresponding angle is PI/3.
+		// At the moment, the divergence test returns true if the orientation changes in
+		// any direction, not only horizontally (for avatars such as persons, which are
+		// always vertical, the appearance may not change when looking up/down).
+
+		bh = ( (bodyHeading()-_DRReplica.bodyHeading()).norm() > _DRThresholdHeading );
+	}
+
+	// Position divergence test
+	return bh || ( (pos()-_DRReplica.pos()).norm() > _DRThresholdPos );
+}
+
+
+/*
+ * Sets dead reckoning threshold for heading divergence test (angle in radian)
+ */
+void CLocalEntity::setThresholdForHeading( TAngle a )
+{
+	_DRThresholdHeading = a * 3.0 / PI; // see drDivergenceTest()
 }
 
 
@@ -70,17 +107,36 @@ void CLocalEntity::update( TDuration deltatime )
  */
 void CLocalEntity::computeVector()
 {
+#define SQUARE_ANGLE PI/2.0
+	CVector strafevect, vertvect;
+	CMatrix m;
+
+	// Lateral axis
 	if ( _StrafeVel == 0.0 ) // TODO: Check float comparison
 	{
-		setTrajVector( bodyHeading() * _FrontVel );
+		strafevect = CVector(0,0,0);
 	}
 	else
 	{
-		CMatrix m;
 		m.identity();
-		m.rotateY( PI/2.0 ); // Y for the test, should be Z for NeL
-		setTrajVector( (bodyHeading() * _FrontVel) + ((m * bodyHeading()) * _StrafeVel) );
+		m.rotateY( SQUARE_ANGLE ); // Y for the test, will be Z in NeL
+		strafevect = (m * bodyHeading()) * _StrafeVel;
 	}
+
+	// Vertical axis
+	if ( _VertVel == 0.0 )
+	{
+		vertvect = CVector(0,0,0);
+	}
+	else
+	{
+		m.identity();
+		m.rotateX( SQUARE_ANGLE );
+		vertvect = (m * bodyHeading()) * _VertVel;
+	}
+
+	// Add all three axis
+	setTrajVector( (bodyHeading() * _FrontVel) + strafevect + vertvect );
 }
 
 
@@ -96,7 +152,7 @@ void CLocalEntity::propagateState()
 	nlinfo( "Entity State sent, with id %u", id() );
 
 	// Update local replica
-	_Replica.changeStateTo( *this );
+	_DRReplica.changeStateTo( *this );
 }
 
 
@@ -120,14 +176,33 @@ void CLocalEntity::setStrafeVelocity( TVelocity v )
 }
 
 
+/*
+ * Sets the vertical velocity. Positive value for up motion; negative for down motion.
+ */
+void CLocalEntity::setVerticalVelocity( TVelocity v )
+{
+	_VertVel = v;
+	computeVector();
+}
+
+
+/*
+ * Sets the angular velocity (yaw). A positive value means left turn, in radian per second.
+ */
+void CLocalEntity::setAngularVelocity( TAngVelocity v )
+{
+	setAngularVelocity( v );
+}
+
+
 //
 void CLocalEntity::yaw( TAngle delta )
 {
 	CMatrix m;
 	m.identity();
-	m.rotateZ( delta );
+	m.rotateZ( delta ); // ? Y for the test, will be Z in NeL
 	setBodyHeading( m * bodyHeading() );
-	setTrajVector( m * trajVector() ); // no need for a call to computerVector()
+	computeVector();
 }
 
 
@@ -136,9 +211,9 @@ void CLocalEntity::roll( TAngle delta )
 {
 	CMatrix m;
 	m.identity();
-	m.rotateY( delta );
+	m.rotateY( delta ); // -Z for the test, will be Y in NeL
 	setBodyHeading( m * bodyHeading() );
-	setTrajVector( m * trajVector() ); // no need for a call to computerVector()
+	computeVector();
 }
 
 
@@ -149,7 +224,7 @@ void CLocalEntity::pitch( TAngle delta )
 	m.identity();
 	m.rotateX( delta );
 	setBodyHeading( m * bodyHeading() );
-	setTrajVector( m * trajVector() ); // no need for a call to computerVector()
+	computeVector();
 }
 
 

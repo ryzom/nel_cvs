@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.3 2000/10/24 16:39:42 cado Exp $
+ * $Id: moving_entity.cpp,v 1.4 2000/10/27 15:45:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,9 @@
  */
 
 #include "nel/net/moving_entity.h"
+#include "nel/misc/matrix.h"
+
+using namespace NLMISC;
 
 
 namespace NLNET {
@@ -35,7 +38,8 @@ TEntityId IMovingEntity::_MaxId = 1; //	avoid 0
 /*
  * Constructor
  */
-IMovingEntity::IMovingEntity()
+IMovingEntity::IMovingEntity() :
+	_AngVel( 0.0f )
 {
 	_Id = 0; //getNewId();
 }
@@ -46,12 +50,14 @@ IMovingEntity::IMovingEntity()
  */
 IMovingEntity::IMovingEntity( const NLMISC::CVector pos,
 							  const NLMISC::CVector hdg,
-							  const NLMISC::CVector vec )
+							  const NLMISC::CVector vec,
+							  const TAngVelocity av )
 {
 	_Id = 0; //getNewId();
 	_Pos = pos;
 	_BodyHdg = hdg;
 	_Vector = vec;
+	_AngVel = av;
 }
 
 
@@ -62,6 +68,56 @@ IMovingEntity::IMovingEntity( const IMovingEntity& other )
 {
 	operator=( other );
 }
+
+
+/*
+ * Angle around z axis from x axis
+ */
+TAngle IMovingEntity::angleAroundZ()
+{
+	return atan2( _BodyHdg.y, _BodyHdg.x );
+}
+
+
+
+/*
+ * Angle around x axis from y axis
+ */
+TAngle IMovingEntity::angleAroundX()
+{
+	return atan2( _BodyHdg.z, _BodyHdg.y );
+}
+
+
+
+/*
+ * Angle around y axis from z axis
+ */
+TAngle IMovingEntity::angleAroundY()
+{
+	return atan2( _BodyHdg.x, _BodyHdg.z );
+}
+
+
+/*
+ * Computes position using heading and velocity
+ */
+void IMovingEntity::computePosAfterDuration( TDuration d )
+{
+	// Compute position
+	_Pos += _Vector * d;
+
+	// Compute body heading if angular velocity used
+	if ( _AngVel != 0.0 ) // check float comparison to zero
+	{
+		CMatrix m;
+		m.identity();
+		m.rotateZ( _AngVel * d ); // ? Y for the test, will be Z in NeL
+		setBodyHeading( m * bodyHeading() );
+	}
+}
+
+
 
 
 /*

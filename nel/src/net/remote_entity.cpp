@@ -1,7 +1,7 @@
 /** \file remote_entity.cpp
  * Remote-controlled entities
  *
- * $Id: remote_entity.cpp,v 1.2 2000/10/24 16:39:42 cado Exp $
+ * $Id: remote_entity.cpp,v 1.3 2000/10/27 15:45:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,8 +33,9 @@ namespace NLNET {
  */
 CRemoteEntity::CRemoteEntity( const NLMISC::CVector pos,
 							  const NLMISC::CVector hdg,
-							  const NLMISC::CVector vec ) :
-	IMovingEntity( pos, hdg, vec )
+							  const NLMISC::CVector vec,
+							  const TAngVelocity av ) :
+	IMovingEntity( pos, hdg, vec, av )
 {
 }
 

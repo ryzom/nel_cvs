@@ -1,7 +1,7 @@
 /** \file remote_entity.h
  * Remote-controlled entities
  *
- * $Id: remote_entity.h,v 1.2 2000/10/24 16:39:42 cado Exp $
+ * $Id: remote_entity.h,v 1.3 2000/10/27 15:45:06 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@ namespace NLNET {
 
 /**
  * A moving entity that is controlled from elsewhere
+ * \warning This class is test code and is highly subject to change.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -49,7 +50,8 @@ public:
 	/// Alt. constructor
 	CRemoteEntity( const NLMISC::CVector pos,
 				   const NLMISC::CVector hdg,
-				   const NLMISC::CVector vec );
+				   const NLMISC::CVector vec,
+				   const TAngVelocity av );
 
 	/// Alt. constructor with entity state
 	CRemoteEntity( const IMovingEntity& es );

@@ -1,7 +1,7 @@
 /** \file common.h
  * <File description>
  *
- * $Id: common.h,v 1.5 2000/10/25 10:09:57 berenguier Exp $
+ * $Id: common.h,v 1.6 2000/10/27 15:45:06 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,7 @@ inline float	frand(float mod)
 
 
 // ============================================================================================
+// Force v to be inside the interval [min,max]
 template<class T, class U, class V>	inline void clamp(T &v, const U &min, const V &max)
 {
 	v= v<min? min: v;

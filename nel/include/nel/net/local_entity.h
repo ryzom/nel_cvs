@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.2 2000/10/23 14:57:08 cado Exp $
+ * $Id: local_entity.h,v 1.3 2000/10/27 15:45:06 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_LOCAL_ENTITY_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 #include "nel/net/moving_entity.h"
 #include "nel/net/remote_entity.h"
 
@@ -36,6 +37,9 @@ namespace NLNET {
 
 /**
  * A moving entity that is locally controlled
+ * 
+ * Motion (e.g. vertical motion) does not work properly yet
+ * \warning This class is test code and is highly subject to change.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -64,11 +68,20 @@ public:
 		setBodyHeading( hdg );
 	}
 
-	/// Sets dead reckoning threshold
-	void			setThreshold( TPosUnit th )
+	/// Sets dead reckoning threshold for position divergence test
+	void			setThresholdForPos( TPosUnit th )
 	{
-		_Threshold = th;
+		_DRThresholdPos = th;
 	}
+
+	/// Sets if heading must be included in dead reckoning divergence test
+	void			setTestBodyHeading( bool t )
+	{
+		_DRTestBodyHeading = t;
+	}
+
+	/// Sets dead reckoning threshold for heading divergence test (angle in radian)
+	void			setThresholdForHeading( TAngle a );
 
 	/// @name Input controls.
 	//@{
@@ -78,6 +91,13 @@ public:
 
 	/// Sets the lateral velocity. Positive value for left motion; negative for right motion.
 	void			setStrafeVelocity( TVelocity v );
+
+	/// Sets the vertical velocity. Positive value for up motion; negative for down motion.
+	void			setVerticalVelocity( TVelocity v );
+
+	/// Sets the angular velocity (yaw). A positive value means left turn, in radian per second.
+	/// You can use either this method or yaw(), whether the rotation is atomic or not.
+	void			setAngularVelocity( TAngVelocity v );
 
 	/// Yaws. Positive value for left rotation; negative for right rotation.
 	void			yaw( TAngle delta );
@@ -92,11 +112,20 @@ public:
 
 protected:
 
-	/// Computes trajectory vector. \todo Cado: rotateZ() for NeL instead of rotateY() for GLTest.
+	/// Computes trajectory vector. \todo Cado: rotateZ() for NeL instead of rotateY() for GLTest (also in yaw() and roll())
 	void			computeVector();
 
 	/// Sends update to all replicas, including local replica
 	void			propagateState();
+
+	/// Dead reckoning divergence test: returns true if the replica needs to converge
+	bool			drDivergeTest();
+
+	/// R/W Access to dead reckoning replica
+	CRemoteEntity	drReplica()
+	{
+		return _DRReplica;
+	}
 
 private:
 
@@ -106,16 +135,30 @@ private:
 	/// Strafe velocity
 	TVelocity		_StrafeVel;
 
-	// Dead reckoning replica
-	CRemoteEntity	_Replica;
+	/// Vertical velocity;
+	TVelocity		_VertVel;
 
-	// Threshold for dead reckoning divergence test
-	TPosUnit		_Threshold;
+///@name Dead Reckoning properties
+//@{
+
+	// Dead reckoning replica
+	CRemoteEntity	_DRReplica;
+
+	// Threshold for dead reckoning divergence test on position
+	TPosUnit		_DRThresholdPos;
+
+	// True if the body heading must be included in divergence test
+	bool			_DRTestBodyHeading;
+
+	// Threshold for dead reckoning divergence test on heading (see also drDivergenceTest())
+	TPosUnit		_DRThresholdHeading;
+
+//@}
 
 };
 
 
-} // NLNET
+}// NLNET
 
 
 #endif // NL_LOCAL_ENTITY_H

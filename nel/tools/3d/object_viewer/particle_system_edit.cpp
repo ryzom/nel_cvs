@@ -1,7 +1,7 @@
 /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.6 2001/12/18 18:39:20 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.7 2001/12/19 15:49:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,7 +78,7 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 
 
 	const sint xPos = 80;
-	sint yPos = 157;
+	sint yPos = 162;
 
 	_MaxViewDistDlg = new CEditableRangeFloat (std::string("MAX VIEW DIST"), 0, 100.f);
 	_MaxViewDistWrapper.PS = _PS;
@@ -91,7 +91,7 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	_LODRatioDlg->enableLowerBound(0, true);
 	_LODRatioDlg->enableUpperBound(1, true);
 	_LODRatioDlg->setWrapper(&_LODRatioWrapper);
-	_LODRatioDlg->init(87, 350, this);
+	_LODRatioDlg->init(87, 357, this);
 
 
 	_TimeThresholdDlg = new CEditableRangeFloat (std::string("TIME THRESHOLD"), 0, 0.5f);

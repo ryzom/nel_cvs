@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.27.2.1 2003/06/11 15:24:15 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.27.2.2 2003/06/12 14:29:07 lecroart Exp $
  *
  */
 
@@ -385,26 +385,9 @@ static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint
 		AESIT aesit = findAES (sid);
 		
 		string shard, server;
+		shard = (*aesit).Shard;
+		server = (*aesit).Name;
 		
-		if (service == "AES")
-		{
-			shard = (*aesit).Shard;
-			server = (*aesit).Name;
-		}
-		else
-		{
-			MYSQL_ROW row = sqlQuery ("select shard, server from service where name='%s'", service.c_str());
-			if (row != NULL)
-			{
-				shard = row[0];
-				server = row[1];
-			}
-			else
-			{
-				nlwarning ("GraphUpdate from unknown service '%s", service.c_str());
-			}
-		}
-
 		if (!shard.empty() && !server.empty() && !service.empty() && !var.empty())
 		{
 			string path = CPath::standardizePath (IService::getInstance()->ConfigFile.getVar("RRDVarPath").asString());
@@ -1054,8 +1037,26 @@ void sendAESInformations (uint16 sid)
 	row = sqlQuery ("select path, graph_update from variable where graph_update!=0");
 	while (row != NULL)
 	{
-		informations.push_back (row[0]);
-		informations.push_back (row[1]);
+		CVarPath varpath (row[0]);
+
+		for(uint i = 0; i < varpath.Destination.size(); i++)
+		{
+			string a  = varpath.Destination[i].first, b = (*aesit).Shard;
+			if(varpath.Destination[i].first == "*" || varpath.Destination[i].first == (*aesit).Shard)
+			{
+				CVarPath varpath2 (varpath.Destination[i].second);
+
+				for(uint j = 0; j < varpath2.Destination.size(); j++)
+				{
+					string c  = varpath2.Destination[j].first, d = (*aesit).Name;
+					if(varpath2.Destination[j].first == "*" || varpath2.Destination[j].first == (*aesit).Name)
+					{
+						informations.push_back (row[0]);
+						informations.push_back (row[1]);
+					}
+				}
+			}
+		}
 		row = sqlNextRow ();
 	}
 	msgout.serialCont (informations);

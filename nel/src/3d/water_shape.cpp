@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.24 2002/11/07 16:35:44 coutelas Exp $
+ * $Id: water_shape.cpp,v 1.25 2003/03/04 13:14:41 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ const char *WaterVPStartCode =
 "!!VP1.0\n\
 	ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
 	DP3 R2, R1, R1;				    #r1 = eye - vertex, r2 = (eye - vertex)²	\n\
-	MAX R2, R2, c[16];              # avoid imprecision around 0				\n\
+	MAX R2, R2, c[16];            # avoid imprecision around 0				\n\
 	RSQ R2, R2.x;					#r1 = eye - vertex, r2 = 1/d(eye, vertex)	\n\
 	RCP R3, R2.x;																\n\
 	MAD R3, c[6].xxxx, -R3, c[6].yyyy;											\n\
@@ -79,6 +79,8 @@ const char *WaterVPStartCode =
 	DP4 o[HPOS].z, c[2], R4;												    \n\
 	DP4 o[HPOS].w, c[3], R4;												    \n\
 	MUL R1, R1, R2.x;		        #normalize r1, r1 = (eye - vertex).normed   \n\
+	DP3 R2.x, R1.xyww, R1.xyww;                                                 \n\
+	# MUL R1, R2.x, R1;                                                         \n\
 	DP4 o[FOGC].x, c[2], R4;	    #setup fog								    \n\
 ";
 

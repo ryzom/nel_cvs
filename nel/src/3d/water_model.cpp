@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.26 2002/09/24 15:04:08 vizerie Exp $
+ * $Id: water_model.cpp,v 1.27 2003/03/04 13:14:41 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -974,7 +974,7 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 
 
 		cst[4  - cstOffset].set(1.f, 1.f, 1.f, 1.f); // use with min man, and to get the 1 constant		
-		cst[7  - cstOffset].set(0, 0, obsPos.z - zHeight, 0.f);
+		cst[7  - cstOffset].set(0, 0, obsPos.z - zHeight, 1.f);
 		cst[8  - cstOffset].set(0.5f, 0.5f, 0.f, 0.f); // used to scale reflected ray into the envmap
 
 	

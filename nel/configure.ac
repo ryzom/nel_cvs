@@ -2,7 +2,7 @@
 # Configuration script for NeL
 # ====================================================================
 #
-# $Id: configure.ac,v 1.5 2004/08/04 08:56:51 weeklyserver Exp $
+# $Id: configure.ac,v 1.6 2005/03/23 09:54:11 cado Exp $
 # 
 
 # ====================================================================
@@ -64,7 +64,7 @@ CXXFLAGS="$CXXFLAGS -ftemplate-depth-24"
 
 
 # ====================================================================
-# Checks NeL modules (net, 3d, ai) to install / Disable
+# Checks NeL modules (net, 3d) to install / Disable
 # ====================================================================
 
 # The misc is mandatory, it is use by the other modules.
@@ -172,27 +172,10 @@ then
    NEL_SUBDIRS="$NEL_SUBDIRS sound"
 fi
 
-# AI library
-AC_ARG_ENABLE([ai],
-              AC_HELP_STRING([--enable-ai],
-                             [enable compilation and install of NeL AI]),
-              [],
-              [enable_ai=no])
-
-if test $enable_ai = "yes"
-then
-   AC_MSG_RESULT([enable
- NeL AI])
-   NEL_SUBDIRS="$NEL_SUBDIRS ai"
-fi
-
-
-
 AC_SUBST([enable_net])
 AC_SUBST([enable_3d])
 AC_SUBST([enable_pacs])
 AC_SUBST([enable_sound])
-AC_SUBST([enable_ai])
 AC_SUBST([enable_georges])
 AC_SUBST([enable_ligo])
 AC_SUBST([enable_memory])
@@ -333,12 +316,6 @@ else
 fi
 
 # ====================================================================
-# Python
-
-AM_PATH_PYTHON(1.5, $enable_ai)
-
-
-# ====================================================================
 # LibXML
 
 # Use C compiler as a default for the libxml tests.
@@ -415,17 +392,6 @@ AC_CONFIG_FILES([Makefile                                        \
            include/nel/pacs/Makefile                       \
            include/nel/sound/Makefile                      \
            include/nel/memory/Makefile                     \
-           include/nel/ai/Makefile                         \
-           include/nel/ai/agent/Makefile                   \
-           include/nel/ai/c/Makefile                       \
-           include/nel/ai/character/Makefile               \
-           include/nel/ai/e/Makefile                       \
-           include/nel/ai/fuzzy/Makefile                   \
-           include/nel/ai/logic/Makefile                   \
-           include/nel/ai/nimat/Makefile                   \
-           include/nel/ai/pyserver/Makefile                \
-           include/nel/ai/script/Makefile                  \
-           include/nel/ai/tools/Makefile                   \
            include/nel/georges/Makefile                    \
            src/Makefile                                    \
            src/misc/Makefile                               \
@@ -439,16 +405,6 @@ AC_CONFIG_FILES([Makefile                                        \
            src/sound/Makefile                              \
            src/sound/driver/Makefile                       \
            src/sound/driver/openal/Makefile                \
-           src/ai/Makefile                                 \
-           src/ai/agent/Makefile                           \
-           src/ai/c/Makefile                               \
-           src/ai/character/Makefile                       \
-           src/ai/fuzzy/Makefile                           \
-           src/ai/logic/Makefile                           \
-           src/ai/nimat/Makefile                           \
-           src/ai/pyserver/Makefile                        \
-           src/ai/script/Makefile                          \
-           src/ai/tools/Makefile                           \
            src/georges/Makefile                            \
            src/ligo/Makefile                               \
            tools/Makefile                                  \

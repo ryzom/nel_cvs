@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.69 2004/06/01 16:26:41 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.70 2004/08/13 13:36:50 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1118,7 +1118,7 @@ void CParticleSystemModel::reactivateSound()
 {
 	if (_SoundActive) return;
 	if (_ParticleSystem) _ParticleSystem->reactivateSound();
-	_SoundActive = false;
+	_SoundActive = true;
 }
 
  

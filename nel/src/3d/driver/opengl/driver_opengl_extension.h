@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.21 2002/02/07 18:08:50 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.22 2002/02/07 18:33:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,8 +148,7 @@ void	registerGlExtensions(CGlExtensions &ext);
 
 
 // ***************************************************************************
-// The exported function names for the windows platform.
-#ifdef NL_OS_WINDOWS
+// The exported function names
 
 
 // ARB_multitexture
@@ -208,8 +207,10 @@ extern PFNGLGETCOMPRESSEDTEXIMAGEARBPROC	glGetCompressedTexImageARB;
 //====================
 extern PFNGLFLUSHVERTEXARRAYRANGENVPROC		glFlushVertexArrayRangeNV;
 extern PFNGLVERTEXARRAYRANGENVPROC			glVertexArrayRangeNV;
+#ifdef NL_OS_WINDOWS
 extern PFNWGLALLOCATEMEMORYNVPROC			wglAllocateMemoryNV;
 extern PFNWGLFREEMEMORYNVPROC				wglFreeMemoryNV;
+#endif
 
 
 // FenceNV.
@@ -317,6 +318,8 @@ extern PFNGLSECONDARYCOLOR3USEXTPROC		glSecondaryColor3usEXT;
 extern PFNGLSECONDARYCOLOR3USVEXTPROC		glSecondaryColor3usvEXT;
 extern PFNGLSECONDARYCOLORPOINTEREXTPROC	glSecondaryColorPointerEXT;
 
+
+#ifdef NL_OS_WINDOWS
 
 // Pbuffer extension
 //==================

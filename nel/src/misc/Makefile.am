@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.68 2003/10/15 17:26:58 distrib Exp $
+# $Id: Makefile.am,v 1.69 2003/11/13 09:34:00 distrib Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -86,7 +86,8 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         sheet_id.cpp                       \
                         eval_num_expr.cpp                  \
                         report.cpp                         \
-                        async_file_manager.cpp
+                        async_file_manager.cpp             \
+						words_dictionary.cpp
 
 noinst_HEADERS        = di_game_device.h                   \
                         di_keyboard_device.h               \

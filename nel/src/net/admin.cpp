@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.6 2003/06/12 15:16:02 lecroart Exp $
+ * $Id: admin.cpp,v 1.7 2003/06/13 18:01:56 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,8 +133,18 @@ void updateAdmin()
 				// have to send a new update for this var
 				ICommand::execute(GraphUpdates[j].Name, logDisplayVars, true, false);
 				const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
-				nlassert (strs.size() == 1);
-				sint32 val = atoi(strs[0].c_str());
+				sint32 val;
+				if (strs.size() != 1)
+				  {
+					nlwarning ("the graph update command execution not return exactly 1 line but %d", strs.size());
+					for (uint i = 0; i < strs.size(); i++)
+					  nlwarning ("line %d: '%s'", i, strs[i].c_str());
+					val = 0;
+				  }
+				else
+				  {
+					val = atoi(strs[0].c_str());
+				  }
 				mdDisplayVars.unlockStrings ();
 				mdDisplayVars.clear ();
 				

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.149 2004/08/13 15:36:16 vizerie Exp $
+ * $Id: landscape.cpp,v 1.150 2004/09/02 17:01:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,8 +52,6 @@ using namespace NLMISC;
 using namespace std;
 
 
-// copy index rather than counting them twice
-//#define NL_LANDSCAPE_COPY_INDEX
 
 namespace NL3D 
 {
@@ -269,7 +267,7 @@ CLandscape::CLandscape() :
 		CLandscapeGlobals::PassTriArray.setNumIndexes( 1000 );
 
 	// set volatile index buffer to avoid stalls
-	CLandscapeGlobals::PassTriArray.setPreferredMemory(CIndexBuffer::AGPVolatile, false);
+	CLandscapeGlobals::PassTriArray.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
 
 	_LockCount = 0;
 
@@ -931,29 +929,22 @@ void			CLandscape::updateTessBlocksFaceVector()
 }
 
 
-#ifdef NL_LANDSCAPE_COPY_INDEX
-	static std::vector<uint32> LandscapeIndices;
-#endif
+
 
 // ***************************************************************************
 static inline void	initPassTriArray(CPatchRdrPass &pass, uint32 numIndex)
 {
-	#ifndef NL_LANDSCAPE_COPY_INDEX
-		//uint	numIndices= pass.getMaxRenderedFaces()*3;	
-		// realloc if necessary
-		// We use 	
-		/*if( CLandscapeGlobals::PassTriArray.getNumIndexes() < numIndices )
-			CLandscapeGlobals::PassTriArray.setNumIndexes( numIndices );*/
-		CLandscapeGlobals::PassTriArray.setNumIndexes(numIndex);
-		// reset ptr.
-		nlassert (!CLandscapeGlobals::PassTriArray.isLocked());
-		CLandscapeGlobals::PassTriArray.lock (CLandscapeGlobals::PassTriArrayIBA);
-		NL3D_LandscapeGlobals_PassTriCurPtr= CLandscapeGlobals::PassTriArrayIBA.getPtr();
-	#else
-		LandscapeIndices.resize(pass.getMaxRenderedFaces()*3);		
-		NL3D_LandscapeGlobals_PassTriCurPtr = &LandscapeIndices[0];
-
-	#endif
+	
+	//uint	numIndices= pass.getMaxRenderedFaces()*3;	
+	// realloc if necessary
+	// We use 	
+	/*if( CLandscapeGlobals::PassTriArray.getNumIndexes() < numIndices )
+		CLandscapeGlobals::PassTriArray.setNumIndexes( numIndices );*/			
+	CLandscapeGlobals::PassTriArray.setNumIndexes(numIndex);	
+	// reset ptr.
+	nlassert (!CLandscapeGlobals::PassTriArray.isLocked());
+	CLandscapeGlobals::PassTriArray.lock (CLandscapeGlobals::PassTriArrayIBA);
+	NL3D_LandscapeGlobals_PassTriCurPtr= CLandscapeGlobals::PassTriArrayIBA.getPtr();	
 }
 
 
@@ -963,17 +954,8 @@ static
 	inline 
 #endif
 void	drawPassTriArray(CMaterial &mat)
-{
-	#ifndef NL_LANDSCAPE_COPY_INDEX
-		nlassert (CLandscapeGlobals::PassTriArray.isLocked());
-	#else
-		if (!NL3D_LandscapeGlobals_PassNTri) return;
-		// do copy now
-		CLandscapeGlobals::PassTriArray.setNumIndexes(NL3D_LandscapeGlobals_PassNTri * 3);				
-		CLandscapeGlobals::PassTriArray.lock (CLandscapeGlobals::PassTriArrayIBA);
-		NL3D_LandscapeGlobals_PassTriCurPtr= CLandscapeGlobals::PassTriArrayIBA.getPtr();
-		memcpy(NL3D_LandscapeGlobals_PassTriCurPtr, &LandscapeIndices[0], NL3D_LandscapeGlobals_PassNTri * 3 * sizeof(uint32));		
-	#endif
+{	
+	nlassert (CLandscapeGlobals::PassTriArray.isLocked());	
 	CLandscapeGlobals::PassTriArrayIBA.unlock();
 	if(NL3D_LandscapeGlobals_PassNTri>0)
 	{
@@ -1030,7 +1012,7 @@ static inline uint32 countNumWantedIndexFar1(CPatch	*patch)
 
 // ***************************************************************************
 void			CLandscape::render(const CVector &refineCenter, const CVector &frontVector, const CPlane	pyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE], bool doTileAddPass)
-{
+{	
 	IDriver *driver= _Driver;
 	nlassert(driver);
 
@@ -1387,12 +1369,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 				// that don't affect the operator< of this class
 				CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
 				// Enlarge PassTriArray as needed
-				CRdrTileId	*tileToRdr= pass.getRdrTileRoot(passOrder);								
-				#ifndef NL_LANDSCAPE_COPY_INDEX
-					uint32 numWantedIndex = countNumWantedIndex(tileToRdr, NL3D_TILE_PASS_RGB0); 
-				#else
-					uint32 numWantedIndex = 1;								
-				#endif
+				CRdrTileId	*tileToRdr= pass.getRdrTileRoot(passOrder);												
+				uint32 numWantedIndex =  countNumWantedIndex(tileToRdr, NL3D_TILE_PASS_RGB0);								
 				if (numWantedIndex)
 				{
 					initPassTriArray(pass, numWantedIndex);
@@ -1440,12 +1418,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 				CPatchRdrPass	&pass= *_TextureNears[lightRdrPass];
 
 				// Enlarge PassTriArray as needed
-				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);	
-				#ifndef NL_LANDSCAPE_COPY_INDEX
-					uint32 numWantedIndex = countNumWantedIndex(tileToRdr, NL3D_TILE_PASS_RGB0);
-				#else
-					uint32 numWantedIndex = 1;
-				#endif
+				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);					
+				uint32 numWantedIndex = countNumWantedIndex(tileToRdr, NL3D_TILE_PASS_RGB0);								
 				if (numWantedIndex)
 				{				
 					initPassTriArray(pass, numWantedIndex);
@@ -1490,12 +1464,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 				CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
 
 				// Enlarge PassTriArray as needed
-				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);
-				#ifndef NL_LANDSCAPE_COPY_INDEX
-					uint32 numWantedIndex = countNumWantedIndex(tileToRdr, passOrder);
-				#else
-					uint32 numWantedIndex = 1;
-				#endif
+				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);				
+				uint32 numWantedIndex = countNumWantedIndex(tileToRdr, passOrder);								
 				if (numWantedIndex)
 				{				
 					initPassTriArray(pass, numWantedIndex);
@@ -1586,12 +1556,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		// Enlarge PassTriArray as needed
 		CPatch		*patchToRdr= pass.getRdrPatchFar0();
 		if (patchToRdr)
-		{				
-			#ifndef NL_LANDSCAPE_COPY_INDEX
-				uint32 numWantedIndex =  countNumWantedIndexFar0(patchToRdr); 			
-			#else
-				uint32 numWantedIndex = 1;
-			#endif
+		{							
+			uint32 numWantedIndex = countNumWantedIndexFar0(patchToRdr);						
 			if (numWantedIndex)
 			{		
 				initPassTriArray(pass, numWantedIndex);
@@ -1653,12 +1619,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		CPatch		*patchToRdr= pass.getRdrPatchFar1();		
 		if (patchToRdr)
 		{		
-			//uint32 numWantedIndex = countNumWantedIndexFar1(patchToRdr);
-			#ifndef NL_LANDSCAPE_COPY_INDEX
-				uint32 numWantedIndex = countNumWantedIndexFar1(patchToRdr);
-			#else
-				uint32 numWantedIndex = 0;
-			#endif
+			//uint32 numWantedIndex = countNumWantedIndexFar1(patchToRdr);			
+			uint32 numWantedIndex = countNumWantedIndexFar1(patchToRdr);						
 			if (numWantedIndex)
 			{		
 				initPassTriArray(pass, numWantedIndex);
@@ -3930,3 +3892,24 @@ void CLandscape::removeTileCallback(ULandscapeTileCallback *cb)
 
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

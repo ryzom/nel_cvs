@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.5 2000/12/15 17:40:16 coutelas Exp $
+ * $Id: computed_string.h,v 1.6 2000/12/21 10:56:18 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,12 +122,15 @@ struct CComputedString
 	 * \param hotspot position of string origine
 	 * \param transformation matrix
 	 */	
+	//@{
 	void render2D (IDriver& driver, 
 					float x, float z,
 					THotSpot hotspot = BottomLeft,
 					float scaleX = 1, float scaleZ = 1,
 					float rotateY = 0);
 
+	void render3D (CVector pos);
+	//@}
 
 };
 

@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.3 2000/12/20 10:43:14 coutelas Exp $
+ * $Id: text_context.h,v 1.4 2000/12/21 10:56:18 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,6 +168,45 @@ public:
 	}
 
 	/**
+	 *	setScaleX
+	 * set the X scale
+	 * \param scaleX the X scale
+	 */
+	void setScaleX(float scaleX)
+	{
+		_ScaleX = scaleX;
+	}
+
+	/**
+	 *	setScaleZ
+	 * set the Z scale
+	 * \param scaleZ the Z scale
+	 */
+	void setScaleZ(float scaleZ)
+	{
+		_ScaleZ = scaleZ;
+	}
+
+	/**
+	 *	getScaleX
+	 * \return the X scale
+	 */
+	float getScaleX() const
+	{
+		return _ScaleX;
+	}
+
+	/**
+	 *	getScaleZ
+	 * \return the Z scale
+	 */
+	float getScaleZ() const
+	{
+		 return _ScaleZ;
+	}
+
+
+	/**
 	 *	getHotSpot
 	 * get the hot spot
 	 * \return the hot spot
@@ -234,45 +273,53 @@ public:
 	 *	printAt
 	 * print a string of the list
 	 * (rq : it leaves the string in the stack)
-	 * \param x (between 0 and 1)
-	 * \param y (between 0 and 1)
-	 * \param i index in list
 	 */
-	void printAt(float x, float y, uint32 i)
+	//@{
+	void printAt(float x, float z, uint32 i)
 	{
 		nlassert(i<_StringList.size());
 
 		_StringList[i].render2D(*NL3D::CNELU::Driver,
-								x,y,
+								x,z,
 								_HotSpot,
 								_ScaleX,_ScaleZ);
 	}
+	void printAt(float x, float y, float z, uint32 i)
+	{
+		nlassert(i<_StringList.size());
+
+		_StringList[i].render3D(CVector(x,y,z));
+	}
+	//@}
 
 	/**
 	 *	printAt
 	 * compute and print a ucstring at the location
-	 * \param x (between 0 and 1)
-	 * \param y (between 0 and 1)
-	 * \param ucstr the ucstring
 	 */
-	void printAt(float x, float y, ucstring ucstr)
+	//@{
+	void printAt(float x, float z, ucstring ucstr)
 	{
 		NL3D::CComputedString cptdstr;
 		_FontManager.computeString(ucstr,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
 		cptdstr.render2D(*NL3D::CNELU::Driver,
-							x,y,
+							x,z,
 							_HotSpot,
 							_ScaleX,_ScaleZ);
 	}
+	void printAt(float x, float y, float z, ucstring ucstr)
+	{
+		NL3D::CComputedString cptdstr;
+		_FontManager.computeString(ucstr,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
+		cptdstr.render3D(CVector(x,y,z));
+	}
+	//@}
 
 	/**
 	 *	printfAt
 	 * compute and print a string at the location
-	 * \param x (between 0 and 1)
-	 * \param y (between 0 and 1)
-	 * \param a string
 	 */
-	void printfAt(float x, float y, const char * format, ...)
+	//@{
+	void printfAt(float x, float z, const char * format, ...)
 	{
 		nlassert(_FontGen);
 
@@ -284,8 +331,23 @@ public:
 
 		NL3D::CComputedString cptdstr;
 		_FontManager.computeString(str,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
-		cptdstr.render2D(*NL3D::CNELU::Driver,x,y,_HotSpot,_ScaleX,_ScaleZ);
+		cptdstr.render2D(*NL3D::CNELU::Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
 	}
+	void printfAt(float x, float y, float z, const char * format, ...)
+	{
+		nlassert(_FontGen);
+
+		char str[1024];
+		va_list args;
+		va_start(args, format);
+		vsprintf(str, format, args);
+		va_end(args);
+
+		NL3D::CComputedString cptdstr;
+		_FontManager.computeString(str,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
+		cptdstr.render3D(CVector(x,y,z));
+	}
+	//@}
 
 	/**
 	 *	getStringListSize
@@ -306,6 +368,16 @@ public:
 		return _StringList[i];
 	}
 	
+	/**
+	 *	operator[]
+	 * \return the computed string
+	 */
+	CComputedString& operator[](uint32 i)
+	{
+		nlassert(i<_StringList.size());
+		return _StringList[i];
+	}
+
 	/// destructor
 	~CTextContext()
 	{

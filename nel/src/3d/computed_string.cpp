@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.5 2000/12/15 17:39:11 coutelas Exp $
+ * $Id: computed_string.cpp,v 1.6 2000/12/21 10:55:54 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #include "nel/3d/computed_string.h"
 #include "nel/3d/font_generator.h"
 #include "nel/3d/texture.h"
+#include "nel/3d/nelu.h"
+
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/debug.h"
 
@@ -100,12 +102,25 @@ void CComputedString::render2D (IDriver& driver,
 	{
 		driver.render(Primitives[i], Materials[i]);
 	}
-
-
 }
 
 
-
+/*------------------------------------------------------------------*\
+							render3D()
+\*------------------------------------------------------------------*/
+void CComputedString::render3D (CVector pos)
+{
+	CMatrix matrix;
+	matrix.translate(pos);
+	CNELU::Driver->setupModelMatrix(matrix);
+	CNELU::Driver->activeVertexBuffer(Vertices);
+	
+	// rendering each primitives 
+	for(uint32 i=0; i<Primitives.size(); i++)
+	{
+		CNELU::Driver->render(Primitives[i], Materials[i]);
+	}
+}
 
 
 

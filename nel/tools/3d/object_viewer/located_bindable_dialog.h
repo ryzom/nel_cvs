@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.10 2001/09/07 12:04:29 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.11 2001/09/12 13:29:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,9 @@ public:
 	// create this dialog to edit the given bindable
 	CLocatedBindableDialog(NL3D::CPSLocatedBindable *bindable);   // standard constructor
 
+	/// dtor
+	~CLocatedBindableDialog();
+
 
 	// init the dialog as a child of the given wnd
 	void init(CParticleDlg* pParent);
@@ -68,6 +71,7 @@ public:
 	//{{AFX_DATA(CLocatedBindableDialog)
 	enum { IDD = IDD_LOCATED_BINDABLE };
 	CComboBox	m_BlendingMode;
+	BOOL	m_IndependantSizes;
 	//}}AFX_DATA
 
 
@@ -84,13 +88,27 @@ public:
 // Implementation
 protected:
 
-	NL3D::CPSLocatedBindable *_Bindable;
-	CParticleDlg* _ParticleDlg;
+	// enables or disabled controls for independant sizes
+	void updateIndependantSizes(void);
+
+
+	/// create the size control, or update it if it has been created. It returns the heivht of the control
+	uint updateSizeControl();
+
+	NL3D::CPSLocatedBindable		*_Bindable;		// the bindable being edited
+	CParticleDlg					*_ParticleDlg; // the dialog that owns us
+	class CAttribDlgFloat			*_SizeCtrl;	// the control used for size
+	sint							_SizeCtrlX;	// x position of the control used for size
+	sint							_SizeCtrlY;	// x position of the control used for size
+
 
 
 	// Generated message map functions
 	//{{AFX_MSG(CLocatedBindableDialog)
 	afx_msg void OnSelchangeBlendingMode();
+	afx_msg void OnIndeSizes();
+	afx_msg void OnSizeWidth();
+	afx_msg void OnSizeHeight();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.201 2004/01/29 17:14:44 lecroart Exp $
+ * $Id: service.cpp,v 1.202 2004/02/04 14:31:58 distrib Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -863,7 +863,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				if (haveArg('B'))
 				{
 					// if the naming service address is set on the command line, get it (overwrite the cfg)
-					LSAddr = CPath::standardizePath(getArg('B'));
+					LSAddr = getArg('B');
 				}
 				else
 				{

@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.7 2002/04/15 14:30:42 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.8 2002/04/15 14:49:34 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -65,7 +65,7 @@ NLNET::CMessage	CTransportClass::TempMessage;
 
 vector<CTransportClass::CRegisteredBaseProp *> CTransportClass::DummyProp;
 
-bool CTRansportClass::Init = false;
+bool CTransportClass::Init = false;
 
 
 //

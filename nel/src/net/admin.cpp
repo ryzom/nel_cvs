@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.1 2003/03/20 16:19:17 lecroart Exp $
+ * $Id: admin.cpp,v 1.2 2003/03/26 14:29:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,19 +180,7 @@ void updateAdmin()
 
 			if (strs.size()>0)
 			{
-				uint32 pos = strs[0].find("=");
-				if(pos != string::npos && pos + 2 < strs[0].size())
-				{
-					uint32 pos2 = string::npos;
-					if(strs[0][strs[0].size()-1] == '\n')
-						pos2 = strs[0].size() - pos - 2 - 1;
-					
-					str = strs[0].substr (pos+2, pos2);
-				}
-				else
-				{
-					str = "???";
-				}
+				str = strs[0].substr(0,strs[0].size()-1);
 			}
 			else
 			{

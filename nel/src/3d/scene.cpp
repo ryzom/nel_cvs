@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.21 2001/03/27 14:41:45 berenguier Exp $
+ * $Id: scene.cpp,v 1.22 2001/03/27 14:45:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/3d/landscape_model.h"
 #include "nel/3d/driver.h"
 #include "nel/3d/transform_shape.h"
+#include "nel/3d/mesh_instance.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 using namespace std;

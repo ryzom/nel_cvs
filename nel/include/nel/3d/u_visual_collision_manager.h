@@ -1,7 +1,7 @@
 /** \file u_visual_collision_manager.h
  * Interface to visual collision manager.
  *
- * $Id: u_visual_collision_manager.h,v 1.4 2004/03/12 16:24:49 berenguier Exp $
+ * $Id: u_visual_collision_manager.h,v 1.5 2004/03/19 10:02:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,9 @@
 
 #include "nel/misc/types_nl.h"
 
+#include <vector>
+
+#include "nel/misc/vector.h"
 
 namespace NL3D
 {
@@ -87,7 +90,7 @@ public:
 	 *	\param radius is the radius of the 'cylinder'
 	 *	\param cone if true, the object tested is a cone (radius goes to end)
 	 */
-	virtual float					getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone) =0;
+	virtual float					getCameraCollision(const NLMISC::CVector &start, const NLMISC::CVector &end, float radius, bool cone) =0;
 
 
 	/** Add a Mesh to the collision manager. For now it is used only for Camera Collision

@@ -39,6 +39,10 @@ static UINT indicators[] =
 CMainFrame::CMainFrame()
 {
 	// TODO: add member initialization code here
+	createX = 0;
+	createY = 0;
+	createCX = 0;
+	createCY = 0;
 	
 }
 

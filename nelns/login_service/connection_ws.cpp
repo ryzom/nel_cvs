@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.13 2002/09/30 14:37:20 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.14 2002/09/30 16:31:30 lecroart Exp $
  *
  */
 
@@ -269,7 +269,7 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 		if(IService::getInstance ()->ConfigFile.getVar("AcceptExternalShards").asInt () == 1)
 		{
 			// we accept new shard, add it
-			query = "insert into shard (ShardId, WsAddr, Online) values ("+toString(shardId)+", '"+ia.ipAddress ()+"', 1)";
+			query = "insert into shard (ShardId, WsAddr, Online, Name) values ("+toString(shardId)+", '"+ia.ipAddress ()+"', 1, '"+ia.ipAddress ()+"')";
 			int ret = mysql_query (DatabaseConnection, query.c_str ());
 			if (ret != 0)
 			{
@@ -278,7 +278,9 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 			else
 			{
 				nlinfo("The ShardId %d with ip '%s' was inserted in the database and is online!", shardId, ia.ipAddress ().c_str ());
+				Shards.push_back (CShard (shardId, from));
 			}
+
 			return;
 		}
 		else
@@ -288,10 +290,6 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 			CNetManager::getNetBase("WSLS")->disconnect(from);
 			return;
 		}
-
-// BUG
-bug ici, faut ajouter a la liste Shards si ca a ete ajouter!
-
 	}
 	else if (nbrow == 1)
 	{

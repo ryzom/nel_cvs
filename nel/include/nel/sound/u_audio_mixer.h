@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.1 2001/07/10 16:51:20 cado Exp $
+ * $Id: u_audio_mixer.h,v 1.2 2001/07/13 09:37:34 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,10 +38,24 @@ class UEnvSound;
 class UListener;
 
 
+#define AUTOBALANCE_DEFAULT_PERIOD 20
+
+
 /**
  * Game interface for audio
  *
- * Removing does not mean deleting. The user is responsible for deleting the sources and envsounds
+ * The logical sources represent all entities in the world, from the client's point of view.
+ * Their number can be higher than the number of simultaneous playable sound on the soundcard.
+ *
+ * When there are more sources than tracks, the process of choosing which sources go into
+ * the tracks is called "balancing". The source are auto-balanced according to the
+ * argument passed to init(). The sources are also balanced when
+ * - Adding a new source
+ * - Removing a new source
+ * - Entering/Exiting from an envsound area
+ *
+ * Removing does not mean deleting. The user is responsible for deleting the sources
+ * that have been allocated by createSource().
  *
  * \author Olivier Cado
  * \author Nevrax France
@@ -53,8 +67,11 @@ public:
 
 	/// Create the audio mixer singleton and return a pointer to its instance
 	static UAudioMixer	*createAudioMixer();
-	/// Initialization
-	virtual void		init() = 0;
+	/** Initialization
+	 * The sources will be auto-balanced every "balance_period" calls to update()
+	 * (set 0 for "never auto-balance")
+	 */
+	virtual void		init( uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD ) = 0;
 
 
 	/// Load environment effects
@@ -69,8 +86,6 @@ public:
 	virtual USource		*createSource( TSoundId id ) = 0;
 	/// Remove logical sound source
 	virtual void		removeSource( USource *source ) = 0;
-	// Remove environment sound
-	//*virtual void		removeEnvSound( UEnvSound *envsound ) = 0;
 	/// Return the listener interface
 	virtual UListener	*getListener() = 0;
 

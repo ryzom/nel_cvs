@@ -1,7 +1,7 @@
 /** \file u_source.h
- * USource: Game interface for sound sources (2D or 3D sound instances)
+ * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.1 2001/07/10 16:51:20 cado Exp $
+ * $Id: u_source.h,v 1.2 2001/07/13 09:37:34 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,12 +44,16 @@ class CSound;
 /// Sound sample identifiers
 typedef CSound* TSoundId;
 
-// Priority of the sources
+// Priority of the sources (p1<p2 means p1 has higher priority than p2)
 enum TSoundPriority { HighPri, MidPri, LowPri };
 
 
 /**
- * Game interface for sound sources (2D or 3D sound instances)
+ * Game interface for sound sources (stereo or 3D sound instances)
+ *
+ * The mode is 3D if the sound buffer (specified by its Sound Id) is mono,
+ * otherwise it is stereo.
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001
@@ -63,7 +67,7 @@ public:
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound() = 0;
 	/// Change the priority of the source
-	virtual void					setPriority( TSoundPriority pr ) = 0;
+	virtual void					setPriority( TSoundPriority pr, bool redispatch=true ) = 0;
 
 
 	/// \name Playback control

@@ -1,7 +1,7 @@
 /** \file track_tcb.h
  * ITrack TCB implementation
  *
- * $Id: track_tcb.h,v 1.3 2003/02/03 15:54:20 coutelas Exp $
+ * $Id: track_tcb.h,v 1.4 2004/01/15 17:33:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #ifndef NL_TRACK_H
 #error "internal file included from track.h"
 #endif
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -262,9 +263,9 @@ protected:
 		if(nKeys<=1)
 			return;
 
-		typename TMapTimeCKey::iterator	it= _MapKey.begin();				// first key.
-		typename TMapTimeCKey::iterator	itNext= it; itNext++;				// second key.
-		typename TMapTimeCKey::iterator	itPrev= _MapKey.end(); itPrev--;	// last key.
+		typename std::map<TAnimationTime, CKeyT>::iterator	it= _MapKey.begin();				// first key.
+		typename std::map<TAnimationTime, CKeyT>::iterator	itNext= it; itNext++;				// second key.
+		typename std::map<TAnimationTime, CKeyT>::iterator	itPrev= _MapKey.end(); itPrev--;	// last key.
 
 		if(nKeys==2 && !getLoopMode())
 		{
@@ -302,10 +303,10 @@ protected:
 			// In not loop mode, compute first and last key, AFTER middle keys computed.
 			if(!getLoopMode())
 			{
-				typename TMapTimeCKey::iterator	it0= _MapKey.begin();				// first key.
-				typename TMapTimeCKey::iterator	it1= it0; it1++;					// second key.
-				typename TMapTimeCKey::iterator	itLast= _MapKey.end();itLast--;		// last key.
-				typename TMapTimeCKey::iterator	itLastPrev= itLast;itLastPrev--;	// prev of last key.
+				typename std::map<TAnimationTime, CKeyT>::iterator	it0= _MapKey.begin();				// first key.
+				typename std::map<TAnimationTime, CKeyT>::iterator	it1= it0; it1++;					// second key.
+				typename std::map<TAnimationTime, CKeyT>::iterator	itLast= _MapKey.end();itLast--;		// last key.
+				typename std::map<TAnimationTime, CKeyT>::iterator	itLastPrev= itLast;itLastPrev--;	// prev of last key.
 
 				computeFirstKey(it0->second, it1->second);
 				computeLastKey(itLast->second, itLastPrev->second);

@@ -272,7 +272,7 @@
 															NLAIC::CTypeOfOperator::opNot |
 															NLAIC::CTypeOfOperator::opDiff));
 
-	const NLAIC::CIdentType CPaireType::IdPaireType("Pair",	NLAIC::CSelfClassFactory(CPaireType(new CharType,new CharType)),
+	const NLAIC::CIdentType CPairType::IdPaireType("Pair",	NLAIC::CSelfClassFactory(CPairType(new CharType,new CharType)),
 																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 																NLAIC::CTypeOfOperator::opEq );
 	

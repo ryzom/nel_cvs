@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.21 2002/05/06 12:55:23 robert Exp $
+ * $Id: agent_object.h,v 1.22 2002/11/15 09:20:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NLAIAGENT
 {			
 
 	/**	
-	  This class is an IObjetOp string type .
+	  This class is an IObjetOp string type.
 		  
 	  * \author Chafik sameh
 	  * \author Nevrax France
@@ -142,8 +142,13 @@ namespace NLAIAGENT
 
 		
 
-	
-	class CPaireType: public IObjetOp
+	/**	
+	  This class is a IObjetOp pair type.		  
+	  * \author Chafik sameh
+	  * \author Nevrax France
+	  * \date 2000
+	*/	
+	class CPairType: public IObjetOp
 	{
 	public:
 		struct CMethodCall
@@ -165,12 +170,12 @@ namespace NLAIAGENT
 		static const NLAIC::CIdentType IdPaireType;
 		
 	public:
-		CPaireType(IObjectIA *first,IObjectIA *second): 
+		CPairType(IObjectIA *first,IObjectIA *second): 
 		  _First(first),_Second(second)
 		{			
 		}
 
-		CPaireType(const CPaireType &a): _First(a._First),_Second(a._Second)
+		CPairType(const CPairType &a): _First(a._First),_Second(a._Second)
 		{
 			_First->incRef();
 			_Second->incRef();
@@ -178,7 +183,7 @@ namespace NLAIAGENT
 
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicInterface *m = new CPaireType(*this);
+			NLAIC::IBasicInterface *m = new CPairType(*this);
 			return m;
 		}
 
@@ -235,7 +240,7 @@ namespace NLAIAGENT
 			return _Second;
 		}
 		
-		virtual ~CPaireType()
+		virtual ~CPairType()
 		{			
 			_First->release();
 			_Second->release();
@@ -243,7 +248,7 @@ namespace NLAIAGENT
 
 		virtual bool isEqual(const IBasicObjectIA &a) const
 		{
-			const CPaireType &t = (const CPaireType &)a;
+			const CPairType &t = (const CPairType &)a;
 			if((t._First) == (_First)) return t._Second == _Second;
 			return false;
 		}

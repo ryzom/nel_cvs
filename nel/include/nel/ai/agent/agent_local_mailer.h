@@ -1,7 +1,7 @@
 /** \file agent_local_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_local_mailer.h,v 1.6 2002/06/06 09:12:02 chafik Exp $
+ * $Id: agent_local_mailer.h,v 1.7 2002/11/15 09:20:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NLAIAGENT
 	public:
 		static const NLAIC::CIdentType LocalAgentMail;
 	private:
-		IBasicAgent *_HostAgent;
+		IBasicAgent *_HostAgent; ///host agent where we have to establish communication.
 
 	public:
 		CLocalAgentMail():IAgent(NULL),_HostAgent(NULL)
@@ -106,11 +106,14 @@ namespace NLAIAGENT
 
 		/// \name IObjectIA method.
 		//@{
+		///Have no run to do
 		virtual const CProcessResult &run()
 		{
 			return IObjectIA::ProcessRun;
 		}
 
+		//@{
+		///Member are th host member attribut.
 		virtual sint32 getStaticMemberSize() const
 		{
 			return _HostAgent->getStaticMemberSize();
@@ -135,6 +138,7 @@ namespace NLAIAGENT
 		{
 			return _HostAgent->getMethodIndexSize();
 		}
+		//@}
 
 		virtual tQueue isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const;
 		
@@ -161,6 +165,7 @@ namespace NLAIAGENT
 
 		/// \name IBasicObjectIA method.
 		//@{
+		//Note that is equal if the hosts agents is equal.
 		virtual bool isEqual(const IBasicObjectIA &a) const
 		{
 			const CLocalAgentMail &l = (const CLocalAgentMail &)a;

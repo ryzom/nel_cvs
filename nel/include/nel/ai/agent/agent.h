@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.21 2002/02/01 12:23:59 chafik Exp $
+ * $Id: agent.h,v 1.22 2002/11/15 09:20:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -305,16 +305,7 @@ namespace NLAIAGENT
 		/**
 		Run all child.
 		*/
-		virtual void runChildren() = 0;
-
-		/**
-		Add a message acount in the mail box.
-		*/
-		//virtual void addMsgGroup(IBasicMessageGroup &grp);
-		/**
-		Remove a message acount from the mail box.
-		*/
-		//virtual void removeMsgGroup(IBasicMessageGroup &grp);
+		virtual void runChildren() = 0;		
 
 		/**
 		The processMessages method, process the loop/Run message.
@@ -380,6 +371,12 @@ namespace NLAIAGENT
 			virtual ~IAgentComposite();
 	};
 
+	/**
+	Base class for minimum agent working. This class manage a child list, message & run of proccess.
+	* \author Portier Pierre
+	* \author Nevrax France
+	* \date 2000	
+	*/
 	class IAgent:public IAgentComposite
 	{	
 	public:	
@@ -393,8 +390,8 @@ namespace NLAIAGENT
 		
 		/// \name Some IBasicAgent method.
 		//@{
-		virtual void runChildren();		// Activates the child agents
-		virtual bool runChildrenStepByStep();		// Activates the child agents
+		virtual void runChildren();		/// Activates the child agents
+		virtual bool runChildrenStepByStep();/// Activates the child agents
 		//@}
 	
 	public:		

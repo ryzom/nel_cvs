@@ -1,6 +1,6 @@
 /** \file volatil_memory.cpp
  *
- * $Id: volatil_memory.cpp,v 1.5 2001/12/04 12:53:21 chafik Exp $
+ * $Id: volatil_memory.cpp,v 1.6 2002/11/15 09:21:07 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,14 +91,14 @@ namespace NLAIAGENT
 
 	void CVolatilMemmory::pushFront(uint time,IObjectIA *p)
 	{
-		CPaireType *pr = new CPaireType(new IntegerType((sint32)(time + _Time)), p);
+		CPairType *pr = new CPairType(new IntegerType((sint32)(time + _Time)), p);
 		testIfBest(pr);
 		_List->pushFront(pr);
 	}
 
 	void CVolatilMemmory::pushBack(uint time,IObjectIA *p)
 	{		
-		CPaireType *pr = new CPaireType(new IntegerType((sint32)(time + _Time)), p);
+		CPairType *pr = new CPairType(new IntegerType((sint32)(time + _Time)), p);
 		testIfBest(pr);
 		_List->push( pr );
 	}
@@ -116,15 +116,15 @@ namespace NLAIAGENT
 
 	IObjectIA *CVolatilMemmory::Front() const
 	{
-		return ((const CPaireType *)_List->getFront())->second();
+		return ((const CPairType *)_List->getFront())->second();
 	}
 
 	IObjectIA *CVolatilMemmory::Back() const
 	{
-		return ((const CPaireType *)_List->get())->second();
+		return ((const CPairType *)_List->get())->second();
 	}
 
-	void CVolatilMemmory::testIfBest(const CPaireType *p)
+	void CVolatilMemmory::testIfBest(const CPairType *p)
 	{
 		if(_PairToDelete == NULL)
 		{
@@ -145,7 +145,7 @@ namespace NLAIAGENT
 		CConstIteratorContener r = _List->getConstIterator();
 		while(!r.isInEnd())
 		{
-			const CPaireType *p = (const CPaireType *)((const IObjetOp*)r++);
+			const CPairType *p = (const CPairType *)((const IObjetOp*)r++);
 			IntegerType *n = (IntegerType *)p->first();
 			IObjetOp *x = *u > *n;
 			if(_PairToDelete == NULL || x->isTrue ())
@@ -226,14 +226,14 @@ namespace NLAIAGENT
 		IntegerType maximum(_Time + 360000);
 		IntegerType *max = &maximum;
 
-		const CPaireType *oldPair = _PairToDelete, *newPair = NULL;
+		const CPairType *oldPair = _PairToDelete, *newPair = NULL;
 
 		if(_Time >= t)
 		{
 			CIteratorContener it = _List->getIterator();
 			while(!it.isInEnd())
 			{
-				CPaireType *p = (CPaireType *)((const IObjetOp*)it);
+				CPairType *p = (CPairType *)((const IObjetOp*)it);
 				if(p == _PairToDelete)
 				{
 					it.erase();

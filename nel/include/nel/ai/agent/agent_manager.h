@@ -1,7 +1,7 @@
 /** \file agent_manager.h
  * class for mange agent.
  *
- * $Id: agent_manager.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: agent_manager.h,v 1.3 2002/11/15 09:20:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,16 +26,15 @@
 #ifndef NL_AGENTS_MANAGER_H
 #define NL_AGENTS_MANAGER_H
 
-
 namespace NLAIAGENT
 {
 	/**
 	Base class for manage agent.
 	
-	We know that at tis moment we have two kind of agent, agent that it define with the c++ class and script agent.
-	The script need a context, the context for a script is the stack, the heap, the debbug,...
-	The c++ agent can neead a context, it coud be the server where he work or ather think define by a programmer.
-	Well this class define this idea of an agent manger.
+	We know that at this moment we have two kind of agent, agent that it define with the c++ and the script agent.
+	The script need a context, the context for a script is the stack, the heap, the debug parametre ,...
+	The c++ agent can neead a context, it coud be the server where he work or ather think define by any programmer.
+	Well this class define this ideas and resolve ours problmem by the introduction of an agent manger.
 
 	* \author Chafik sameh	 	
 	* \author Nevrax France
@@ -49,6 +48,7 @@ namespace NLAIAGENT
 		IAgentManager(IBasicAgent *parent):IAgent(parent)
 		{
 		}
+
 		///Construct manager with a parent and a mail box.
 		IAgentManager(IBasicAgent *parent,IMailBox *m):IAgent(parent,m)
 		{
@@ -56,13 +56,12 @@ namespace NLAIAGENT
 
 		///Copy constructor.
 		IAgentManager(const IAgentManager &a):IAgent(a)
-		{			
+		{
 		}
-
 		/** 
 			Get the context for an agent.
-			At prestent if the context is an CCodeContext.
-			Programmer have to test the type of the IObjectIA returned by method to know how type of context is.
+			At present if the context is an CCodeContext.
+			Programmers have to test the type of the IObjectIA returned by method to know how type of context is.
 		*/
 		virtual const IObjectIA *getAgentContext() const = 0;
 
@@ -78,4 +77,5 @@ namespace NLAIAGENT
 
 	};	
 }
+
 #endif

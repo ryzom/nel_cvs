@@ -1,7 +1,7 @@
 /** \file agent_operator.h
  * Includes class operator for IObjectIA objects.
  *
- * $Id: agent_operator.h,v 1.13 2002/03/12 13:45:46 chafik Exp $
+ * $Id: agent_operator.h,v 1.14 2002/11/15 09:20:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,7 +76,10 @@ namespace NLAIAGENT
 		{			
 		}		
 
-		///throw (NLAIE::CExceptionNotImplemented)
+		///We do'nt make a pure virtual for this methods because we didn't wont to make development too many long, 
+		///we prefer to put an exception to warn developer when this method is'nt define in the derivation class.
+		//@{
+		///add the operater by anather.
 		virtual IObjetOp &operator += (const IObjetOp &)
 		{			
 			std::string text;
@@ -85,6 +88,7 @@ namespace NLAIAGENT
 			return *this;
 		}
 
+		///sub the operater by anather.
 		virtual IObjetOp &operator -= (const IObjetOp &)/// throw (NLAIE::CExceptionNotImplemented)
 		{
 			std::string text;
@@ -93,21 +97,16 @@ namespace NLAIAGENT
 			return *this;
 		}
 
+		///inverse the operater.
 		virtual IObjetOp &neg()/// throw (NLAIE::CExceptionNotImplemented)
 		{
 			std::string text;
 			text = NLAIC::stringGetBuild("opertor <IObjectIA &neg()> note implemented for the '%s' interface",(const char *)getType());
 			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return *this;
-		}
+		}		
 
-		virtual IObjetOp *getNeg() const
-		{
-			IObjetOp *o = (IObjetOp *)clone();			
-			o->neg();
-			return o;
-		}
-
+		///multiply the operater by anather.
 		virtual IObjetOp &operator *= (const IObjetOp &)/// throw (NLAIE::CExceptionNotImplemented)
 		{
 			std::string text;
@@ -115,6 +114,8 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return *this;
 		}
+
+		///divide the operater by anather.
 		virtual IObjetOp &operator /= (const IObjetOp &)/// throw (NLAIE::CExceptionNotImplemented)
 		{
 			std::string text;
@@ -123,6 +124,10 @@ namespace NLAIAGENT
 			return *this;
 		}	
 
+
+		///All this methods must return a IObjetOp* pointer, any application must delete (or decrise the reference) the object returned.
+		//@{
+		///divide the operater by anather.
 		virtual IObjetOp *operator + (const IObjetOp &) /// throw (NLAIE::CExceptionNotImplemented) 
 		{
 			std::string text;
@@ -154,8 +159,17 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
+		//@}
+		//@}
 
+		virtual IObjetOp *getNeg() const
+		{
+			IObjetOp *o = (IObjetOp *)clone();			
+			o->neg();
+			return o;
+		}
 
+		
 		virtual IObjetOp &operator += (IObjetOp *a) /// throw (NLAIE::CExceptionNotImplemented) 
 		{
 			return *this += *a;
@@ -176,7 +190,6 @@ namespace NLAIAGENT
 
 		}
 		
-
 		virtual IObjetOp *operator + (IObjetOp *a) /// throw (NLAIE::CExceptionNotImplemented) 
 		{
 			return *this + *a;
@@ -204,6 +217,7 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
+
 		virtual IObjetOp *operator > (IObjetOp &)  const ///throw (NLAIE::CExceptionNotImplemented)
 		{
 			std::string text;

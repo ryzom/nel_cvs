@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.17 2002/08/21 13:58:17 lecroart Exp $
+ * $Id: agent_nombre.h,v 1.18 2002/11/15 09:20:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,8 @@ namespace NLAIAGENT
 		//@}
 
 
-		///All number can be read as a bouble, user ave to make the good cast to retreive the type of the number.
+		///In general number can be read as a bouble.
+		///Be careful, this generalisation don't work with 64Bits numbrer, in this case make a test of object before, or make th good cast if the type is known
 		virtual double getNumber() const = 0;
 		virtual ~INombreDefine()
 		{
@@ -121,9 +122,7 @@ namespace NLAIAGENT
 
 		virtual ~INombre()
 		{
-		}
-
-		virtual double getNumber() const = 0;		
+		}		
 
 		///\name Some IObjectIA method definition.
 		//@{		

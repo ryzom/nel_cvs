@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.17 2002/09/10 08:26:11 chafik Exp $
+ * $Id: agent_digital.h,v 1.18 2002/11/15 09:20:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -251,7 +251,7 @@ namespace NLAIAGENT
 	* \date 2001
 	*/
 	class BorneDDigitalType: public IBornNombre<double>
-	{			
+	{
 
 	public:
 		static const NLAIC::CIdentType IdBorneDDigitalType;
@@ -501,6 +501,16 @@ namespace NLAIAGENT
 		virtual const CProcessResult &run();
 	};
 
+	
+	/**	
+	This class store a uint8 char in an IObjectIA.
+
+	* \author Chafik sameh	 
+	* \author Portier Pierre
+	* \author Saffray Alain
+	* \author Nevrax France
+	* \date 2001
+	*/
 	class UInt8Type: public IDigital<uint8>
 	{
 	public:
@@ -553,6 +563,15 @@ namespace NLAIAGENT
 		}
 	};
 
+	/**	
+	This class store a sint16 char in an IObjectIA.
+
+	* \author Chafik sameh	 
+	* \author Portier Pierre
+	* \author Saffray Alain
+	* \author Nevrax France
+	* \date 2001
+	*/
 	class UInt16Type: public IDigital<uint16>
 	{
 	public:
@@ -605,6 +624,13 @@ namespace NLAIAGENT
 
 	};
 
+	/**	
+	This class store a uint32 char in an IObjectIA.
+
+	* \author Chafik sameh	 
+	* \author Portier Pierre	
+	* \date 2001
+	*/
 	class UInt32Type: public IDigital<uint32>
 	{
 	public:
@@ -657,6 +683,13 @@ namespace NLAIAGENT
 
 	};
 
+	/**	
+	This class store a uint64 char in an IObjectIA.
+
+	* \author Chafik sameh	 
+	* \author Portier Pierre	
+	* \date 2001
+	*/
 	class UInt64Type: public INombre<uint64>
 	{
 	public:

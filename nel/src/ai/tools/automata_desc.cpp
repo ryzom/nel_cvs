@@ -1,7 +1,7 @@
 /** \file automata_desc.cpp
  * A class which describe a simple success/fail automat.
  *
- * $Id: automata_desc.cpp,v 1.6 2001/03/30 15:09:16 portier Exp $
+ * $Id: automata_desc.cpp,v 1.7 2001/04/03 15:30:41 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,15 +154,16 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 */
 
 		tmp_script << "// " << getAutomatName() << " FSM definition generated script" << endl << endl;
-
+		std::string name;
 		// Generates states
 		std::map<sint32,CState>::const_iterator it_m = _States.begin();
 		while ( it_m != _States.end() )
 		{
 			sint32 state_id = (*it_m).first;
 			
+			name = getStateName( state_id );
 			// State name
-			std::string state_name = removeSpaces( getStateName( state_id ) );
+			std::string state_name = removeSpaces( name );
 
 			tmp_script << "From Actor : Define " << "Actor" << state_name << endl << "{" << endl;
 
@@ -179,7 +180,8 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 				std::list<sint32>::const_iterator it_s = getSuccessStates( state_id ).begin();
 				while ( it_s != getSuccessStates( state_id ).end() )
 				{
-					state_name = removeSpaces( getStateName( *it_s ) );
+					name = getStateName( *it_s );
+					state_name = removeSpaces( name );
 					tmp_script << "\t\tswitch('" << state_name << "');" << endl;
 					it_s++;
 				}
@@ -191,7 +193,8 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 				std::list<sint32>::const_iterator it_f = getFailStates( state_id ).begin();
 				while ( it_f != getFailStates( state_id ).end() )
 				{
-					state_name = removeSpaces( getStateName( *it_f ) );
+					name = getStateName( *it_f );
+					state_name = removeSpaces( name );
 					tmp_script << "\t\tswitch('" << state_name << "');" << endl;
 					it_f++;
 				}
@@ -215,7 +218,8 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 		}
 
 		// Generates FSM
-		std::string fsm_name = removeSpaces( getAutomatName() );
+		std::string automateName = getAutomatName();
+		std::string fsm_name = removeSpaces( automateName );
 		tmp_script << "From Fsm : Define " << fsm_name << endl << "{" << endl;
 
 		// Generates states as static components of the FSM
@@ -225,7 +229,8 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 		while ( it_m != _States.end() )
 		{
 			// State name
-			std::string state_name = removeSpaces( getStateName( (*it_m).first ) );
+			name = getStateName( (*it_m).first );
+			std::string state_name = removeSpaces( name );
 			tmp_script << "\t\tActor" << state_name << "<'" << state_name << "'>;" << endl;
 			it_m++;
 		}
@@ -236,7 +241,8 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 		std::list<sint32>::const_iterator it_e = getEntryStates().begin();
 		while ( it_e != getEntryStates().end() )
 		{
-			std::string state_name = removeSpaces( getStateName( *it_e ) );
+			name = getStateName( *it_e );
+			std::string state_name = removeSpaces( name );
 			tmp_script << "\t\t" << state_name << ".activate();" << endl;
 			it_e++;
 		}

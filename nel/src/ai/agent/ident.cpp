@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.14 2001/12/04 12:53:21 chafik Exp $
+ * $Id: ident.cpp,v 1.15 2001/12/17 16:44:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,7 @@
 
 namespace NLAIAGENT
 {	
-
-	uint8 CAgentNumber::ServerID = 0;
+	const uint8 CAgentNumber::AgentType = 0xff;
 
 	uint64 atoiInt64(const char *ident)
 	{
@@ -116,58 +115,8 @@ namespace NLAIAGENT
 		}
 
 		return k;
-	}
-
-	CAgentNumber::CAgentNumber(const char *i)
-	{
-		char *ident = (char*)i;
-		char *id;
-		char *creator;
-		char *dyn;
-		id = ident;
-
-		sint n = 0;
-		while(*(ident++) != ':');		
-		creator = ident;
-		while(*(ident++) != ':');		
-		dyn = ident;	
-
-		AgentNumber = atoiInt64(id);
-		CreatorId = atoiInt64(creator);
-		DynamicId = atoiInt64(dyn);
-	}
-	
-
-	void CAgentNumber::getDebugString(std::string &str) const 
-	{											
-		char b[256];
-		memset(b,0,255);
-		memset(b,'0',18);
-		sint n;
-		uint64 x = AgentNumber;
-		char baseTable[] = "0123456789abcdef";
-		for(n = 7; n < 18; n ++)
-		{
-			b[18 - n] = baseTable[(x & 15)];
-			x >>= 4;
-		}
-		b[18 - 6] = ':';
-		x = CreatorId;
-		for(n = 4; n < 6; n ++)
-		{				
-			b[18 - n] = baseTable[(x & 15)];
-			x >>= 4;
-		}
-		b[18 - 3] = ':';
-
-		x = DynamicId;
-		for(n = 1; n < 3; n ++)
-		{							
-			b[18 - n] = baseTable[(x & 15)];
-			x >>= 4;
-		}
-		str += std::string(b);
-	}
+	}	
+		
 
 	CLocWordNumRef::~CLocWordNumRef()
 	{

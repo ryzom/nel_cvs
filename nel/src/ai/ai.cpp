@@ -68,14 +68,14 @@ namespace NLAILINK
 
 	void setLocalServerID(uint8 u)
 	{
-		NLAIAGENT::CAgentNumber::ServerID = u;
+		NLAIAGENT::CAgentNumber::ServerId = u;
 		NLAIAGENT::CNumericIndex::_I.CreatorId = (uint64)u;
 		NLAIAGENT::CNumericIndex::_I.DynamicId = (uint64)u;
 	}
 
 	uint8 getLocalServerID()
 	{
-		return NLAIAGENT::CAgentNumber::ServerID;
+		return NLAIAGENT::CAgentNumber::ServerId;
 	}
 
 	void setMainManager(NLAIAGENT::IMainAgent *manager)

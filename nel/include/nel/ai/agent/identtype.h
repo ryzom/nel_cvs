@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.19 2001/05/22 16:08:01 chafik Exp $
+ * $Id: identtype.h,v 1.20 2001/12/17 16:43:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #define NL_IDENTTYPE_H
 #include <stdlib.h>
 #include "nel/misc/file.h"
+#include "nel/misc/entity_id.h"
 #include "nel/ai/e/ai_exception.h"
 #include "nel/ai/agent/agent_string.h"
 
@@ -43,7 +44,38 @@ namespace NLAIAGENT
 		extern const uint64 maxResolutionNumer;
 #endif
 
-	struct CAgentNumber: public NLMISC::IStreamable
+	struct CAgentNumber: public NLMISC::CEntityId
+	{
+		static const uint8 AgentType;
+
+		CAgentNumber()
+		{
+			Type = CAgentNumber::AgentType;
+		}
+		CAgentNumber(uint64 id,uint8 creator,uint8 dyn):NLMISC::CEntityId(id,creator,dyn)
+		{
+			Type = CAgentNumber::AgentType;
+		}
+
+		CAgentNumber(uint64 p):NLMISC::CEntityId(p)
+		{
+		}
+
+		CAgentNumber(const CAgentNumber &a):NLMISC::CEntityId(a)
+		{
+		}
+
+		CAgentNumber(NLMISC::IStream &is):NLMISC::CEntityId(is)
+		{
+		}
+
+		CAgentNumber(const char *id):NLMISC::CEntityId(id)
+		{
+		}
+
+	};
+
+	/*struct CAgentNumber: public NLMISC::IStreamable
 	{
 		static uint8 ServerID;
 
@@ -176,13 +208,7 @@ namespace NLAIAGENT
 			p |= (uint64)CreatorId;
 			p <<= 8;
 			p |= (uint64)DynamicId;
-			os.serial(p);
-			/*uint64 p = (uint64)CreatorId;
-			os.serial(p);
-			p = DynamicId;
-			os.serial(p);
-			uint64 x = AgentNumber;
-			os.serial(x);*/
+			os.serial(p);			
 		}
 
 		///loading the nomber from an input stream.
@@ -195,16 +221,7 @@ namespace NLAIAGENT
 			p >>= 8;
 			CreatorId = (uint64)(p & 0xff);
 			p >>= 8;
-			AgentNumber = (uint64)(p);
-
-			/*uint64 p;
-			is.serial(p);
-			CreatorId = (uint64)p;
-			is.serial(p);
-			DynamicId = (uint64)p;
-			uint64 x;
-			is.serial(x);
-			AgentNumber = x;*/
+			AgentNumber = (uint64)(p);			
 
 		}
 
@@ -233,7 +250,7 @@ namespace NLAIAGENT
 		}
 		//@}
 
-	};	
+	};	*/
 
 	/**
 	Complete reference of an agent. 
@@ -247,7 +264,7 @@ namespace NLAIAGENT
 		{			
 		}		
 
-		CIdent(const std::string &typeName,uint64 id,uint64 creator = ServerID,uint64 dyn = ServerID):CAgentNumber(id,creator,dyn),TypeName(typeName)
+		CIdent(const std::string &typeName,uint64 id,uint8 creator = ServerId,uint8 dyn = ServerId):CAgentNumber(id,creator,dyn),TypeName(typeName)
 		{			
 		}
 

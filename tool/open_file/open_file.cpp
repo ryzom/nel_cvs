@@ -69,9 +69,16 @@ int APIENTRY WinMain(HINSTANCE hInstance,
                      int       nCmdShow)
 {
  	// TODO: Place code here.
-	char ext[512];
-	_splitpath (lpCmdLine, NULL, NULL, NULL, ext);
-	OpenFile(lpCmdLine, ext, SW_SHOW);
+	if (strcmp (lpCmdLine, "")==0)
+	{
+		MessageBox (NULL, "Open a file with the default application.\nUsage: open_file [filepath]", "Open file", MB_OK|MB_ICONINFORMATION);
+	}
+	else
+	{
+		char ext[512];
+		_splitpath (lpCmdLine, NULL, NULL, NULL, ext);
+		OpenFile(lpCmdLine, ext, SW_SHOW);
+	}
 
 	return 0;
 }

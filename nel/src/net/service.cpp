@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.64 2001/06/07 16:17:31 lecroart Exp $
+ * $Id: service.cpp,v 1.65 2001/06/07 16:41:03 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -625,6 +625,9 @@ sint IService::main (int argc, char **argv)
 			// get and manage layer 4 messages
 			CNetManager::update (_UpdateTimeout);
 			
+			// TEMP: always sleep one millisecond for multitasking
+			nlSleep (1);
+
 			// resync the clock every hours
 			if (resyncEvenly)
 			{

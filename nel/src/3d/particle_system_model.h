@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.13 2001/08/07 14:12:24 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.14 2001/08/09 08:01:21 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/transform_shape.h"
+#include "3d/particle_system.h"
 
 
 namespace NL3D {
@@ -171,14 +172,14 @@ class CParticleSystemModel : public CTransformShape
 				return _ToolDisplayEnabled; 
 			}			
 
-			/** force the edition mode : this will prevent the system from being removed when it is out of range
+			/** force the edition mode : this will prevent the system from being removed when it is out of range.
+			 * When the model is first allocated, the system resource are not allocated until it becomes visible.
+			 * This also forces the resources to be allocated.
 			 * when there are no more particles in it etc. (this also mean that you can safely keep a pointer on it)
 			 * This flag is not saved.
 			 */
-			void						setEditionMode(bool enable = true) 
-			{ 
-				_EditionMode = true; 
-			}
+			void						setEditionMode(bool enable = true) ;
+			
 
 			/// test if edition mode is activated
 			bool						getEditionMode(void) const 
@@ -202,13 +203,14 @@ class CParticleSystemModel : public CTransformShape
 				PSParam1,
 				PSParam2,
 				PSParam3,
+				PSTrigger, // trigger the instanciation of the system
 				AnimValueLast,
 			};
 
 	
 			virtual IAnimatedValue		*getValue (uint valueId);
 			virtual const char			*getValueName (uint valueId) const; 
-			static const char			*getPSParamName (uint valueId);
+			static const char			*getPSParamName (uint valueId);			
 			virtual ITrack				*getDefaultTrack (uint valueId);		
 			virtual	void				registerToChannelMixer(CChannelMixer *chanMixer
 															   , const std::string &prefix=std::string());
@@ -257,8 +259,11 @@ class CParticleSystemModel : public CTransformShape
 		bool									_EditionMode;
 		bool									_Invalidated;
 		bool									_OutOfFrustum;
-		std::vector<IPSModelObserver *>			_Observers;
-		float									_MaxViewDist;		
+		std::vector<IPSModelObserver *>			_Observers;		
+
+		CAnimatedValueBool						_TriggerAnimatedValue;
+		/// user params of the system
+		CAnimatedValueFloat						_UserParam[MaxPSUserParam];
 };
 
 

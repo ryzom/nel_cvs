@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.12 2001/08/07 14:12:24 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.13 2001/08/09 08:01:21 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,11 +35,28 @@ namespace NL3D {
 /// ctor
 CParticleSystemModel::CParticleSystemModel() : _ParticleSystem(NULL), _EllapsedTime(0.01f), _ToolDisplayEnabled(false)
 						, _AutoGetEllapsedTime(true), _TransparencyStateTouched(true), _Scene(NULL), _EditionMode(false)
-						, _Invalidated(false), _MaxViewDist(0)
+						, _Invalidated(false)
 {
 	setOpacity(false);
 	setTransparency(true);
 	IAnimatable::resize(AnimValueLast);
+}
+
+
+
+void CParticleSystemModel::setEditionMode(bool enable /*= true*/)
+{ 
+	if (enable)
+	{
+		/// we need to have the system resources instanciated if we want to work with it
+		if (!_ParticleSystem)
+		{
+			nlassert(_Scene);
+			nlassert(Shape);
+			_ParticleSystem = (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape))->instanciatePS(*_Scene);				
+		}
+	}
+	_EditionMode = enable; 
 }
 
 
@@ -90,9 +107,10 @@ CParticleSystemModel::~CParticleSystemModel()
 }
 
 
+
+
 void CParticleSystemModel::invalidate(void)
 {
-	_MaxViewDist = _ParticleSystem->getMaxViewDist();	
 	delete _ParticleSystem;
 	_ParticleSystem = NULL;
 	_Invalidated = true;
@@ -106,9 +124,13 @@ void CParticleSystemModel::invalidate(void)
 IAnimatedValue* CParticleSystemModel::getValue (uint valueId)
 {
 	nlassert(valueId < AnimValueLast);
-	if (valueId < OwnerBit) return CTransformShape::getValue(valueId);
-	nlassert(_ParticleSystem);
-	return _ParticleSystem->getUserParamAnimatedValue(valueId - (uint)  PSParam0);	
+	if (valueId < OwnerBit) return CTransformShape::getValue(valueId);	
+	if (valueId < PSTrigger)
+	{
+	
+		return &_UserParam[valueId - (uint)  PSParam0];
+	}
+	return &_TriggerAnimatedValue;
 }
 
 const char *CParticleSystemModel::getPSParamName (uint valueId)
@@ -122,7 +144,8 @@ const char *CParticleSystemModel::getValueName (uint valueId) const
 { 
 	nlassert(valueId < AnimValueLast);
 	if (valueId < OwnerBit) return CTransformShape::getValueName(valueId);
-	return getPSParamName(valueId); 
+	if (valueId < PSTrigger) return getPSParamName(valueId); 
+	return "PSTrigger";
 }
 
 ITrack* CParticleSystemModel::getDefaultTrack (uint valueId)
@@ -130,7 +153,11 @@ ITrack* CParticleSystemModel::getDefaultTrack (uint valueId)
 	nlassert(valueId < AnimValueLast);
 	nlassert(Shape);
 	if (valueId < OwnerBit) return CTransformShape::getDefaultTrack(valueId);
-	return (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape)->getUserParamDefaultTrack(valueId - (uint) PSParam0));
+	if (valueId < PSTrigger) 
+	{
+		return (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape)->getUserParamDefaultTrack(valueId - (uint) PSParam0));
+	}
+	return NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape)->getDefaultTriggerTrack();
 }
 
 	
@@ -141,6 +168,7 @@ void CParticleSystemModel::registerToChannelMixer(CChannelMixer *chanMixer, cons
 	addValue(chanMixer, PSParam1, OwnerBit, prefix, true);
 	addValue(chanMixer, PSParam2, OwnerBit, prefix, true);
 	addValue(chanMixer, PSParam3, OwnerBit, prefix, true);	
+	addValue(chanMixer, PSTrigger, OwnerBit, prefix, true);	
 }
 
 
@@ -162,24 +190,31 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 
 	if (ClipObs->Visible)
 	{
-		
+				
 		nlassert(dynamic_cast<CParticleSystemModel *>(Model));
 		CParticleSystemModel *psm= (CParticleSystemModel *)Model;
 		if (psm->_Invalidated) return;
 
-		
-		
-		
-			
 		CParticleSystem *ps = psm->getPS();
+		// check for trigger. If the trigger is false, and there is a system instanciated, we delete it.
+		if (!psm->_TriggerAnimatedValue.Value)
+		{			
+			// system is off, or hasn't been instanciated now...
+			if (ps)
+			{
+				delete ps;
+				psm->_ParticleSystem = NULL;			
+			}
+			return;
+		}									
+		
 
 		// the system or its center is in the view frustum, but it may not have been instanciated from its shape now
 		if (!ps)
 		{
 			nlassert(psm->_Scene);
 			nlassert(psm->Shape);
-			ps = psm->_ParticleSystem = (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) psm->Shape))->instanciatePS(*psm->_Scene);		
-			psm->_MaxViewDist = ps->getMaxViewDist();			
+			ps = psm->_ParticleSystem = (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) psm->Shape))->instanciatePS(*psm->_Scene);								
 		}
 
 		if (psm->isAutoGetEllapsedTimeEnabled())
@@ -196,6 +231,16 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 
 		// setup the number of faces we allow
 		ps->setNumTris((uint) psm->getNumTrianglesAfterLoadBalancing());
+
+		// setup system user parameters for parameters that have been touched
+		for (uint k = 0; k < MaxPSUserParam; ++k)
+		{
+			if (psm->isTouched((uint)CParticleSystemModel::PSParam0 + k))
+			{
+				ps->setUserParam(k, psm->_UserParam[k].Value);
+				psm->clearFlag((uint)CParticleSystemModel::PSParam0 + k);
+			}
+		}
 
 		// animate particles
 		ps->step(PSCollision, delay);
@@ -228,7 +273,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 {
 	nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
 	CClipTrav			*trav= (CClipTrav*)Trav;
-	CParticleSystemModel		*m= (CParticleSystemModel*)Model;
+	CParticleSystemModel		*m= (CParticleSystemModel*)Model;	
 
 
 	const std::vector<CPlane>	&pyramid= trav->WorldPyramid;
@@ -249,7 +294,11 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 	
 	if(!ps)
 	{
-		// the system wasn't present the last time, we use its center to see if its back in the view frustum.
+		CParticleSystemShape		*pss= NLMISC::safe_cast<CParticleSystemShape *>((IShape *)m->Shape);
+		nlassert(pss);
+
+		// the system wasn't present the last time, we use its center to see if it's back in the view frustum,
+		// or if it is near enough.
 		// if this is the case, we say it isn't clipped, so it will be reinstanciated from the shape
 		// during the DetailAnimTraversal
 
@@ -257,29 +306,40 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 	
 		const CVector d = pos - trav->CamPos;
 		// check wether system not too far		
-		if (d * d > m->_MaxViewDist * m->_MaxViewDist) 
+		if (d * d > pss->_MaxViewDist * pss->_MaxViewDist) 
 		{
 			Visible = false;
+			m->_OutOfFrustum = true;
+			if (pss->_DestroyModelWhenOutOfRange)
+			{
+				m->invalidate();
+			}			
 			return;
 		}		
 
-		for(sint i=0;i<(sint)pyramid.size();i++)
+
+		m->_OutOfFrustum = false;
+		/// frustum test		
+		for(sint i=0; i < (sint)pyramid.size(); i++)
 		{					
 			if ( (pyramid[i]   *  mat  ) * pos > 0.f ) 
 			{
-				Visible = false;
-				return;		
+				m->_OutOfFrustum = true;
+				if (pss->_DestroyWhenOutOfFrustum && pss->_DestroyModelWhenOutOfRange)
+				{
+					Visible = false;
+					// this system will never be instanciated, so we invalidate it
+					m->invalidate();
+					return;		
+				}
+				break;					
 			}
-		}
-
-
-	
+		}			
 
 		nlassert(dynamic_cast<CClipTrav*>(Trav));
 		static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
 
-		Visible = true;
-		m->_OutOfFrustum = false;
+		Visible = true;		
 		return;
 	}
 	
@@ -327,10 +387,17 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 	{			
        	
 		if (!m->_EditionMode)
-		{
-			m->_MaxViewDist = ps->getMaxViewDist();
-			delete ps;
-			m->_ParticleSystem = NULL;			
+		{						
+			if (ps->getDestroyModelWhenOutOfRange())
+			{ 
+				m->invalidate();
+				return;
+			}
+			else
+			{
+				delete ps;
+				m->_ParticleSystem = NULL;	
+			}
 		}
 
 		Visible = false;
@@ -359,16 +426,14 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 				{
 					/// the system has gone out of the scope
 					/// for now, we just delete the system
-				
-					
+									
 					if (m->_ParticleSystem->getDestroyModelWhenOutOfRange())
 					{
 						m->invalidate();
 						return;
 					}
 					else
-					{	
-						m->_MaxViewDist = ps->getMaxViewDist();
+					{							
 						delete ps;
 						m->_ParticleSystem = NULL;					
 					}

@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.15 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: transform_user.h,v 1.16 2002/11/14 17:36:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -213,6 +213,30 @@ public:
 	virtual	NLMISC::CRGBA	getMeanColor() const;
 	// @}
 
+	/// name Accessors for opacity/transparency
+	// @{	
+	virtual void			setTransparency(bool v)
+	{
+		NL3D_MEM_TRANSFORM
+		_Transform->setTransparency(v);
+	}
+	virtual void			setOpacity(bool v)
+	{
+		NL3D_MEM_TRANSFORM
+		_Transform->setOpacity(true);
+	}
+	virtual uint32			isOpaque()
+	{
+		NL3D_MEM_TRANSFORM
+		return _Transform->isOpaque();
+	}
+	virtual uint32			isTransparent()
+	{
+		NL3D_MEM_TRANSFORM
+		return _Transform->isTransparent();
+	}
+	// @}
+
 public:
 	/// \name Accessor for CSeneUser / Other.
 	// @{
@@ -228,6 +252,8 @@ public:
 	}
 
 	// @}
+
+
 
 };
 

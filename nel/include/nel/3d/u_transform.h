@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.14 2002/11/08 18:39:35 berenguier Exp $
+ * $Id: u_transform.h,v 1.15 2002/11/14 17:38:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,8 +203,14 @@ public:
 
 	// @}
 
-
-
+	/// name Accessors for opacity/transparency
+	// @{	
+	virtual void			setTransparency(bool v) = 0;
+	virtual void			setOpacity(bool v) = 0;
+	// return a non-zero value if true
+	virtual uint32			isOpaque() = 0;
+	virtual uint32			isTransparent() = 0;
+	// @}
 };
 
 

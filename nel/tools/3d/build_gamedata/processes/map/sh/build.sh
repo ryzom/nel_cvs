@@ -13,8 +13,26 @@ echo -------
 echo --- Build map 
 .log
 
-# For each directoy
 
+
+#*** Build panoply files (.tga / .dds), and copy the result in the tga directory
+
+# Bin
+panoply_maker='../../bin/panoply_maker.exe'
+
+# Log error
+echo ------- > log.log
+echo --- Build panoply >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Build panoply
+.log
+
+#make the panoplies. This will copy the results in the tga file
+$panoply_maker ../../cfg/panoply.cfg
+
+
+# For each directoy
 for i in tga/*.tga ; do
 
 	# Destination file

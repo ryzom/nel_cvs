@@ -10,10 +10,11 @@ client_directory=`cat ../../cfg/config.cfg | grep "client_directory" | sed -e 's
 
 # Log error
 echo ------- > log.log
-echo --- Install skeleton >> log.log
+echo --- Install maps >> log.log
 echo ------- >> log.log
 echo ------- 
-echo --- Install skeleton 
+echo --- Install maps
 echo ------- 
 
+echo install directory = $client_directory /$map_install_directory
 cp -u dds/*.dds $client_directory/$map_install_directory  2>> log.log

@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.7 2000/12/01 10:08:07 corvazier Exp $
+ * $Id: render_trav.h,v 1.8 2001/02/28 16:24:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_RENDER_TRAV_H
 
 #include "nel/3d/trav_scene.h"
-#include "nel/3d/viewport.h"
+#include "nel/3d/tmp/viewport.h"
 #include <vector>
 
 

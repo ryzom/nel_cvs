@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.1 2001/02/28 16:19:35 berenguier Exp $
+ * $Id: u_driver.h,v 1.2 2001/02/28 16:24:23 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_U_DRIVER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/viewport.h"
-#include "nel/3d/frustum.h"
+#include "nel/3d/tmp/viewport.h"
+#include "nel/3d/tmp/frustum.h"
 #include "nel/misc/geom_ext.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/rgba.h"

@@ -702,47 +702,47 @@ SOURCE=.\3d\viewport.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\user\nel\3d\frustum.h
+SOURCE=..\include\nel\3d\tmp\frustum.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\user\nel\3d\u_camera.h
+SOURCE=..\include\nel\3d\tmp\u_camera.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\user\nel\3d\u_driver.h
+SOURCE=..\include\nel\3d\tmp\u_driver.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\user\nel\3d\u_instance.h
+SOURCE=..\include\nel\3d\tmp\u_instance.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\user\nel\3d\u_landscape.h
+SOURCE=..\include\nel\3d\tmp\u_landscape.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\user\nel\3d\u_material.h
+SOURCE=..\include\nel\3d\tmp\u_material.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\user\nel\3d\u_scene.h
+SOURCE=..\include\nel\3d\tmp\u_scene.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\user\nel\3d\u_text_context.h
+SOURCE=..\include\nel\3d\tmp\u_text_context.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\user\nel\3d\u_texture.h
+SOURCE=..\include\nel\3d\tmp\u_texture.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\user\nel\3d\u_transform.h
+SOURCE=..\include\nel\3d\tmp\u_transform.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\user\nel\3d\viewport.h
+SOURCE=..\include\nel\3d\tmp\viewport.h
 # End Source File
 # End Group
 # Begin Source File

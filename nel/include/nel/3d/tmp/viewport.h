@@ -1,7 +1,7 @@
 /** \file viewport.h
  * <File description>
  *
- * $Id: viewport.h,v 1.1 2001/02/28 16:19:35 berenguier Exp $
+ * $Id: viewport.h,v 1.2 2001/02/28 16:24:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/matrix.h"
-#include "nel/3d/frustum.h"
+#include "nel/3d/tmp/frustum.h"
 
 
 namespace NL3D

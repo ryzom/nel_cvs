@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.14 2001/01/11 15:29:01 berenguier Exp $
+ * $Id: scene.h,v 1.15 2001/02/28 16:24:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/3d/mot.h"
 #include "nel/3d/camera.h"
 #include "nel/3d/trav_scene.h"
-#include "nel/3d/viewport.h"
+#include "nel/3d/tmp/viewport.h"
 #include "nel/3d/shape.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/smart_ptr.h"

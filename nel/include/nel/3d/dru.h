@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.18 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: dru.h,v 1.19 2001/02/28 16:24:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
 #include "nel/3d/driver.h"
-#include "nel/3d/viewport.h"
+#include "nel/3d/tmp/viewport.h"
 #include "nel/misc/geom_ext.h"
 #include "nel/misc/line.h"
 

@@ -1,7 +1,7 @@
 /** \file camera.h
  * <File description>
  *
- * $Id: camera.h,v 1.10 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: camera.h,v 1.11 2001/02/28 16:24:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_CAMERA_H
 #define NL_CAMERA_H
 
-#include "nel/3d/frustum.h"
+#include "nel/3d/tmp/frustum.h"
 #include "nel/3d/transform.h"
 
 

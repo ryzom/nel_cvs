@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.3 2000/12/13 14:59:25 corvazier Exp $
+ * $Id: event_mouse_listener.h,v 1.4 2001/02/28 16:24:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,8 +29,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/event_listener.h"
 #include "nel/misc/matrix.h"
-#include "nel/3d/viewport.h"
-#include "nel/3d/frustum.h"
+#include "nel/3d/tmp/viewport.h"
+#include "nel/3d/tmp/frustum.h"
 
 
 namespace NL3D 

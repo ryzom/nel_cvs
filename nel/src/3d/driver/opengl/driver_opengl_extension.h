@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.39 2004/06/29 13:53:03 vizerie Exp $
+ * $Id: driver_opengl_extension.h,v 1.40 2004/09/09 18:04:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,9 @@ struct	CGlExtensions
 
 	// hint : is it an ATI 9500 or above ?
 	bool	IsATI9500OrAbove;
+	// hint : is it a GeForce FX or above ?
+	bool	IsGeforceFXOrAbove;
+
 
 public:
 

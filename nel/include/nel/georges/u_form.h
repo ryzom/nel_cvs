@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form interface class
  *
- * $Id: u_form.h,v 1.6 2003/01/08 15:35:18 boucher Exp $
+ * $Id: u_form.h,v 1.7 2003/10/08 17:10:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,16 @@ public:
 	  */
 	virtual void			write (NLMISC::IStream &stream, bool georges4CVS) = 0;
 
+	/**
+	  * Access form parents
+	  */
+	
+	/// Get a mutable pointer on the root element of the form. It is a struct node.
+	virtual uint			getNumParent () const = 0;
+	
+	/// Get a mutable pointer on the root element of the form. It is a struct node.
+	virtual UForm			*getParentForm (uint parent) const = 0;
+	
 	/**
 	  * Get the comment
 	  */

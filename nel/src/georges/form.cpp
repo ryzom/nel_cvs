@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.16 2003/08/29 16:29:08 lecroart Exp $
+ * $Id: form.cpp,v 1.17 2003/10/08 17:10:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -386,6 +386,21 @@ void CForm::getDependencies (std::set<std::string> &dependencies) const
 		// Add elements
 		Elements.getDependencies (dependencies);
 	}
+}
+
+// ***************************************************************************
+
+uint CForm::getNumParent () const
+{
+	return getParentCount();
+}
+
+// ***************************************************************************
+
+UForm *CForm::getParentForm (uint parent) const
+{
+	CForm *form = getParent (parent);
+	return form;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.13 2003/08/27 16:16:25 distrib Exp $
+ * $Id: form.h,v 1.14 2003/10/08 17:10:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,9 @@ public:
 	const std::string &getComment () const;
 	void			write (class NLMISC::IStream &stream, bool georges4CVS);
 	void			getDependencies (std::set<std::string> &dependencies) const;
-
+	uint			getNumParent () const;
+	UForm			*getParentForm (uint parent) const;
+	
 #ifdef NL_OS_WINDOWS
 #  pragma warning (disable : 4355)
 #endif

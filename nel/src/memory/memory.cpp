@@ -2,7 +2,9 @@
 //
 
 #include <new>
+#ifdef WIN32
 #include <crtdbg.h>
+#endif
 #include "heap_allocator.h"
 
 namespace NLMEMORY
@@ -37,8 +39,6 @@ int MemoryHook( int allocType, void *userData, size_t size, int blockType,
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 #endif // NL_USE_DEFAULT_MEMORY_MANAGER
 #endif // _DEBUG
-#endif // WIN32
-
 
 BOOL APIENTRY DllMain( HANDLE hModule, 
                        DWORD  ul_reason_for_call, 
@@ -69,3 +69,8 @@ BOOL APIENTRY DllMain( HANDLE hModule,
     }
     return TRUE;
 }
+#else
+
+// not implemented
+
+#endif // WIN32

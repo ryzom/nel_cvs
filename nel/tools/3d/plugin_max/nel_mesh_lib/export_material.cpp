@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.21 2001/12/06 09:28:02 corvazier Exp $
+ * $Id: export_material.cpp,v 1.22 2001/12/12 10:37:53 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -377,6 +377,12 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 
 		// *** Textures
 
+
+		/// test wether texture matrix animation should be exported
+		int bExportTexMatAnim;
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bExportTextureMatrix", (ParamType2)TYPE_BOOL, &bExportTexMatAnim, 0);
+		materialInfo.TextureMatrixEnabled = (bExportTexMatAnim != 0);
+
 		// Reset info
 		materialInfo.RemapChannel.clear ();
 
@@ -436,6 +442,17 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 
 					// Envmap gen ?
 					material.setTexCoordGen (i, materialDesc._IndexInMaxMaterial<0);
+
+					/// texture matrix animation ?
+					if (bExportTexMatAnim != 0)
+					{										
+						/// and activate flag
+						material.enableUserTexMat(i);
+						/// setup the uv matrix
+						CMatrix uvMat;
+						CExportNel::uvMatrix2NelUVMatrix(materialDesc.getUVMatrix(), uvMat);
+						material.setUserTexMat(i, uvMat);
+					}
 				}
 			}
 		}
@@ -545,6 +562,10 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 				}
 			}
 		}
+
+		// Set material name		
+		TSTR name=mtl.GetName();
+		materialInfo.MaterialName = (const char*)name;
 	}
 	else
 	{
@@ -936,8 +957,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 			material.setLightedVertexColor (material.isLighted());
 		}
 
-		// Set material name
-		
+		// Set material name		
 		TSTR name=mtl.GetName();
 		materialInfo.MaterialName = (const char*)name;
 	}

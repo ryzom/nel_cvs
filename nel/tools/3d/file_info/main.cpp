@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.7 2003/07/15 09:42:42 berenguier Exp $
+ * $Id: main.cpp,v 1.8 2003/07/23 16:34:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,7 +209,7 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 				uint k;
 				for(k = 0; k < ig._InstancesInfos.size(); ++k)
 				{
-					fprintf(logStream, "    Instance %3d: %s : x = %.1f, y = %.1f, z = %.1f, sx = %.1f, sy = %.1f, sz = %.1f\n", k, ig._InstancesInfos[k].Name.c_str(), ig._InstancesInfos[k].Pos.x + gpos.x, ig._InstancesInfos[k].Pos.y + gpos.y, ig._InstancesInfos[k].Pos.z + gpos.z, ig._InstancesInfos[k].Scale.x, ig._InstancesInfos[k].Scale.y, ig._InstancesInfos[k].Scale.z);
+					fprintf(logStream, "    Instance %3d: shape = %s, name = %s, x = %.1f, y = %.1f, z = %.1f, sx = %.1f, sy = %.1f, sz = %.1f\n", k, ig._InstancesInfos[k].Name.c_str(), ig._InstancesInfos[k].InstanceName.c_str(), ig._InstancesInfos[k].Pos.x + gpos.x, ig._InstancesInfos[k].Pos.y + gpos.y, ig._InstancesInfos[k].Pos.z + gpos.z, ig._InstancesInfos[k].Scale.x, ig._InstancesInfos[k].Scale.y, ig._InstancesInfos[k].Scale.z);
 				}
 			}
 			if (vl)

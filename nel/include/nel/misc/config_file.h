@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.37 2003/10/27 11:18:36 lecroart Exp $
+ * $Id: config_file.h,v 1.38 2004/01/15 17:27:15 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -259,7 +259,7 @@ public:
 
 	/// set the time between 2 file checking (default value is 1 second)
 	/// \param timeout time in millisecond, if timeout=0, the check will be made each "frame"
-	static void CConfigFile::setTimeout (uint32 timeout);
+	static void setTimeout (uint32 timeout);
 
 	/// Internal use only
 	static void checkConfigFiles ();

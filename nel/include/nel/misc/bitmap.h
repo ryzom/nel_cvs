@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.20 2003/04/25 13:45:27 berenguier Exp $
+ * $Id: bitmap.h,v 1.21 2004/01/15 17:26:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,7 +224,7 @@ private :
 	//@}
 
 
-	CRGBA CBitmap::getRGBAPixel(sint x, sint y, uint32 numMipMap /*=0*/) const;
+	CRGBA getRGBAPixel(sint x, sint y, uint32 numMipMap /*=0*/) const;
 
 
 

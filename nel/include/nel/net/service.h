@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.70 2003/11/18 15:19:05 legros Exp $
+ * $Id: service.h,v 1.71 2004/01/15 17:30:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -196,7 +196,7 @@ public:
 	// @{
 
 	/// Returns the instance of the service to access to methods/variables class
-	static IService					*IService::getInstance () { nlassert (_Instance != NULL); return _Instance; }
+	static IService					*getInstance () { nlassert (_Instance != NULL); return _Instance; }
 
 	/// Returns the current service short name (ie: TS)
 	const std::string				&getServiceShortName () const { return _ShortName; };

@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.16 2003/10/22 16:36:42 berenguier Exp $
+ * $Id: i18n.h,v 1.17 2004/01/15 17:27:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,7 +145,7 @@ public:
 
 	/** Encode a unicode string into a string using UTF-8 encoding.
 	*/
-	static std::string CI18N::encodeUTF8(const ucstring &str);
+	static std::string encodeUTF8(const ucstring &str);
 
 	/** Write a unicode text file using unicode 16 or UTF-8 encoding.
 	 */

@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.20 2003/05/30 17:07:49 cado Exp $
+ * $Id: displayer.h,v 1.21 2004/01/15 17:27:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ protected:
 public:
 
 	/// Convert the current date to human string
-	static const char *IDisplayer::dateToHumanString ();
+	static const char *dateToHumanString ();
 
 	/// Convert date to "2000/01/14 10:05:17" string
 	static const char *dateToHumanString (time_t date);

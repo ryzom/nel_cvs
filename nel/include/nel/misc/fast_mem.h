@@ -1,7 +1,7 @@
 /** \file fast_mem.h
  * Fast memory copy and precache
  *
- * $Id: fast_mem.h,v 1.2 2002/05/21 16:35:11 lecroart Exp $
+ * $Id: fast_mem.h,v 1.3 2004/01/15 17:27:40 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -50,7 +50,7 @@ public:
 	 *  In the best case, it will use memcpySSE(), and in worst case, it'll use the libc memcpy()
 	 *  Simply use it this way: CFastMem::memcpy(dst, src, size);
 	 */
-	static void  *(*CFastMem::memcpy)(void *dts, const void *src, size_t nbytes);
+	static void  *(*memcpy)(void *dts, const void *src, size_t nbytes);
 
 	/**
 	 *	Fast precaching of memory in L1 cache using SSE or MMX where available 

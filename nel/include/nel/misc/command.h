@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.27 2003/12/29 13:32:53 lecroart Exp $
+ * $Id: command.h,v 1.28 2004/01/15 17:27:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,7 @@ public:
 	/// Constructor
 	ICommand(const char *commandName, const char *commandHelp, const char *commandArgs);
 
-	virtual ICommand::~ICommand();
+	virtual ~ICommand();
 
 	// quiet means that we don't display anything else than the value
 	// human means that we want the value in a human readable if possible

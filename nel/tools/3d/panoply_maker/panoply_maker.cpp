@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.17 2002/07/11 13:46:38 vizerie Exp $
+ * $Id: panoply_maker.cpp,v 1.18 2002/07/16 14:16:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -55,6 +55,7 @@ struct CBuildInfo
 {
 	std::string					 InputPath;
 	std::string					 OutputPath;
+	std::string					 CachePath;
 	std::vector<std::string>     BitmapExtensions; // the supported extension for bitmaps
 	std::string					 DefaultSeparator;
 	TColorMaskVect				 ColorMasks;	
@@ -73,6 +74,9 @@ static void BuildColoredVersions(const CBuildInfo &bi);
 
 ///
 static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::string &fileNameWithExtension);
+/** Check if building if reneeded by looking in the cache directory.
+  * If the texture is found in the cache it is just copied
+  */
 static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::string &fileNameWithExtension);
 
 											
@@ -153,6 +157,15 @@ int main(int argc, char* argv[])
 			{
 			}
 
+			/// output
+			try
+			{
+				bi.CachePath = NLMISC::CPath::standardizePath(cf.getVar ("cache_path").asString());
+			}
+			catch (NLMISC::EUnknownVar &)
+			{
+			}
+
 			/// default ascii character for unused masks
 			try
 			{
@@ -165,12 +178,15 @@ int main(int argc, char* argv[])
 			/// extension for bitmaps
 			try
 			{
-				NLMISC::CConfigFile::CVar &bitmap_extensions = cf.getVar ("bitmap_extensions");
-				bi.BitmapExtensions.resize(bitmap_extensions.size());
+				NLMISC::CConfigFile::CVar &bitmap_extensions = cf.getVar ("bitmap_extensions");				
 				for (uint k = 0; k < (uint) bitmap_extensions.size(); ++k)
 				{
-					bi.BitmapExtensions[k] =  "." + bitmap_extensions.asString(k);					
-					bi.BitmapExtensions[k] = NLMISC::strupr(bi.BitmapExtensions[k]);
+					std::string ext = "." + bitmap_extensions.asString(k);
+					ext = NLMISC::strupr(ext);
+					if (std::find(bi.BitmapExtensions.begin(), bi.BitmapExtensions.end(), ext) == bi.BitmapExtensions.end())
+					{
+						bi.BitmapExtensions.push_back(ext);
+					}					
 				}				
 			}
 			catch (NLMISC::EUnknownVar &)
@@ -302,6 +318,7 @@ struct CLoopInfo
 ///======================================================
 static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::string &fileNameWithExtension)
 {		
+	if (bi.CachePath.empty()) return true;
 	uint32 srcDate = (uint32) NLMISC::CFile::getFileModificationDate(replaceSlashes(bi.InputPath + fileNameWithExtension));		
 	static std::vector<CLoopInfo> masks;
 	/// check the needed masks
@@ -334,7 +351,7 @@ static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, c
 		nlwarning("(%s) no masks found, processing next", fileNameWithExtension.c_str ());
 		return false;
 	}
-	/// check is each genarated texture has the same date or is more recent
+	/// check is each generated texture has the same date or is more recent
 	for(;;)
 	{			
 		uint l;
@@ -349,12 +366,22 @@ static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, c
 			outputFileName += bi.DefaultSeparator + bi.ColorMasks[maskID].CMs[colorID].ColID;
 		}
 
-					
-		if ((uint32) NLMISC::CFile::getFileModificationDate(replaceSlashes(bi.OutputPath + outputFileName + ".tga")) < srcDate) 
+							
+		std::string searchName = replaceSlashes(bi.CachePath + outputFileName + ".tga");
+		if ((uint32) NLMISC::CFile::getFileModificationDate(searchName) < srcDate) 
 		{					
 			return true; // not found or more old => need rebuild			
 		}
 
+
+		// get version that is in the cache
+		std::string cacheCopy = bi.OutputPath + outputFileName + ".tga";
+		if (!NLMISC::CFile::moveFile(cacheCopy.c_str(), searchName.c_str()))
+		{
+			nlwarning(("Couldn't copy " + searchName + " to " + cacheCopy).c_str());
+			return true;
+		}		
+		
 		/// increment counters		
 		for (l  = 0; l < (uint) masks.size(); ++l)
 		{

@@ -1,9 +1,6 @@
 <?php
 
-	// Variables
-
-	$LSHost = "localhost";
-	$LSPort = 49998;
+	include_once('config.inc');
 
 	// Functions
 

@@ -4,45 +4,31 @@
 
 	include_once('service_connection.inc');
 
-// ---------------------------------------------------------------------------------------- 
-// Variables
-// ---------------------------------------------------------------------------------------- 
-
-	// where we can find the mysql database
-	$DBHost		= "localhost";
-	$DBUserName	= "";
-	$DBPassword	= "";
-	$DBName		= "nel";
-
-	// where we can find the dir.gz and other files
-	// you can use a secure access using .htaccess and .htpasswd, in this case, set the url like this:
-	// "http://login:password@localhost/patch"
-	$PatchURL = "http://localhost/patch";
+	include_once('config.inc');
 
 // ---------------------------------------------------------------------------------------- 
 // Functions
 // ---------------------------------------------------------------------------------------- 
 
-	// $state is the state that should be good when checking the login password
-	// $reason contains the reason why the check failed
+	// $reason contains the reason why the check failed or success
 	// return true if the check is ok
-	function checkLoginPassword ($login, $password, &$id, &$reason)
+	function checkUserValidity ($login, $password, $clientApplication, &$id, &$reason)
 	{
 		global $DBHost, $DBUserName, $DBPassword, $DBName;
 
 		$link = mysql_connect($DBHost, $DBUserName, $DBPassword) or die ("Can't connect to database host:$DBHost user:$DBUserName");
 		mysql_select_db ($DBName) or die ("Can't access to the table dbname:$DBName");
-		$query = "SELECT * FROM user where Login='".$login."'";
+		$query = "SELECT * FROM user where Login='$login'";
 		$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
-		
+
 		if (mysql_num_rows ($result) == 0)
 		{
 			// login doesn't exist, create it
-
-			$query = "INSERT INTO user (Login, Password) VALUES ('".$login."', '".$password."')";
+			$query = "INSERT INTO user (Login, Password) VALUES ('$login', '$password')";
 			$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 
-			$query = "SELECT * FROM user WHERE Login='".$login."'";
+			// get the user to have his UId
+			$query = "SELECT * FROM user WHERE Login='$login'";
 			$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 
 			if (mysql_num_rows ($result) == 1)
@@ -50,12 +36,17 @@
 				$reason = "Login '".$login."' was created because it was not found in database";
 				$row = mysql_fetch_row ($result);
 				$id = $row[0];
-				$res = 1;
+
+				// add the default permission
+				$query = "INSERT INTO permission (UId) VALUES ('$id')";
+				$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
+
+				$res = true;
 			}
 			else
 			{
 				$reason = "Can't fetch the login '".$login."'";
-				$res = 0;
+				$res = false;
 			}
 		}
 		else
@@ -63,45 +54,60 @@
 			$row = mysql_fetch_row ($result);
 			if ($row[2] == $password)
 			{
-				if ($row[4] != "Offline")
-				{
-					$reason = "$login is already online and ";
-					// ask the LS to remove the client
-					if (disconnectClient ($row[3], $row[0], $tempres))
-					{
-						$reason =  $reason."was just disconnected. Now you can retry the identification.";
+				// check if the user can use this application
 
-						$query = "update user set ShardId=-1, State='Offline' where UId=$row[0]";
-						$result = mysql_query ($query) or die ("Can't execute the query: '$query' errno:".mysql_errno().": ".mysql_error());
-					}
-					else
-					{
-						$reason = $reason."can't be disconnected: $tempres.";
-					}
-					$res = 0;
+				$query = "SELECT * FROM permission WHERE UId='$row[0]' and ClientApplication='$clientApplication'";
+				$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
+				if (mysql_num_rows ($result) == 0)
+				{
+					// no permission
+					$reason = "You can't use the client application '$clientApplication'";
+					$res = false;
 				}
 				else
 				{
-					$id = $row[0];
-					$res = 1;
+					// check if the user not already online
+
+					if ($row[4] != "Offline")
+					{
+						$reason = "$login is already online and ";
+						// ask the LS to remove the client
+						if (disconnectClient ($row[3], $row[0], $tempres))
+						{
+							$reason =  $reason."was just disconnected. Now you can retry the identification.";
+
+							$query = "update user set ShardId=-1, State='Offline' where UId=$row[0]";
+							$result = mysql_query ($query) or die ("Can't execute the query: '$query' errno:".mysql_errno().": ".mysql_error());
+						}
+						else
+						{
+							$reason = $reason."can't be disconnected: $tempres.";
+						}
+						$res = false;
+					}
+					else
+					{
+						$id = $row[0];
+						$res = true;
+					}
 				}
 			}
 			else
 			{
 				$reason = "Bad password";
-				$res = 0;
+				$res = false;
 			}
 		}
 		mysql_close($link);
 		return $res;
 	}
 
-	function logged($login, $password, &$id, $add)
+	function logged($login, $password, $clientApplication, &$id, $add)
 	{
-		if (isset($login) && isset($password))
+		if (isset($login) && isset($password) && isset($clientApplication))
 		{
 			// mean that the user just enterer the login and password
-			if (checkLoginPassword($login, $password, $id, $reason))
+			if (checkUserValidity($login, $password, $clientApplication, $id, $reason))
 			{
 				if ($add)
 				{
@@ -122,14 +128,18 @@
 		}
 		else
 		{
-			echo "Authentification failed: login r$login and pass not set r$password<br>\n";
+			if (!isset($login)) $str = "login ";
+			if (!isset($password)) $str .= "password ";
+			if (!isset($clientApplication)) $str .= "clientApplication";
+			echo "Authentification failed: $str not set<br>\n";
 			return 0;
 		}
 	}
 
 	function patchForm($shardid, $clientApplication, $clientVersion, $serverVersion)
 	{
-		global $PHP_SELF;
+		global $PHP_SELF, $PatchURL;
+
 		echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n";
 		echo "<html><head><title>patch form</title></head><body>\n";
 		echo "<h1>Please wait while patching $clientApplication version $clientVersion to version $serverVersion </h1>\n";
@@ -277,7 +287,7 @@
 		$add = true;
 	}
 
-	if(!logged($login, $password, $id, $add))
+	if(!logged($login, $password, $clientApplication, $id, $add))
 	{
 		loginForm();
 	}

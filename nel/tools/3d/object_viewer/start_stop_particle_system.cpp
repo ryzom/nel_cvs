@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.14 2002/11/04 15:40:45 boucher Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.15 2003/04/10 09:27:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/particle_system.h"
 #include "3d/ps_located.h"
 #include "3d/ps_sound.h"
+#include "3d/ps_emitter.h"
 #include "3d/particle_system_model.h"
 #include "particle_dlg.h"
 
@@ -351,7 +352,7 @@ void CPSInitialPos::restoreSystem()
 
 
 	// delete all the instance of the system
-
+	NL3D::CPSEmitter::setBypassEmitOnDeath(true);
 	for (uint k = 0; k < _PS->getNbProcess(); ++k)
 	{
 		NL3D::CPSLocated *loc = dynamic_cast<NL3D::CPSLocated *>(_PS->getProcess(k));
@@ -365,6 +366,7 @@ void CPSInitialPos::restoreSystem()
 			nlassert(loc->getSize() == 0);
 		}
 	}
+	NL3D::CPSEmitter::setBypassEmitOnDeath(false);
 
 	// recreate the initial number of instances
 

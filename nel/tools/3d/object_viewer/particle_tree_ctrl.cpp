@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.39 2003/03/26 10:28:30 berenguier Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.40 2003/04/10 09:27:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -651,8 +651,10 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			nlassert(nt->Type == CNodeType::locatedInstance);		
 			DeleteItem(GetSelectedItem());			
 			_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt));			
-			suppressLocatedInstanceNbItem(0);			
+			suppressLocatedInstanceNbItem(0);
+			NL3D::CPSEmitter::setBypassEmitOnDeath(true);
 			nt->Loc->deleteElement(nt->LocatedInstanceIndex);					
+			NL3D::CPSEmitter::setBypassEmitOnDeath(false);
 			delete nt;
 			rebuildLocatedInstance();			
 		}

@@ -1,7 +1,7 @@
 /** \file zone_region.cpp
  * <File description>
  *
- * $Id: zone_region.cpp,v 1.2 2002/03/14 15:37:35 besson Exp $
+ * $Id: zone_region.cpp,v 1.3 2002/11/28 16:19:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,7 +180,7 @@ void CZoneRegion::serial (NLMISC::IStream &f)
 }
 
 // ---------------------------------------------------------------------------
-const string &CZoneRegion::getName (sint32 x, sint32 y)
+const string &CZoneRegion::getName (sint32 x, sint32 y) const
 {
 	if ((x < _MinX) || (x > _MaxX) ||
 		(y < _MinY) || (y > _MaxY))
@@ -194,7 +194,7 @@ const string &CZoneRegion::getName (sint32 x, sint32 y)
 }
 
 // ---------------------------------------------------------------------------
-uint8 CZoneRegion::getPosX (sint32 x, sint32 y)
+uint8 CZoneRegion::getPosX (sint32 x, sint32 y) const
 {
 	if ((x < _MinX) || (x > _MaxX) ||
 		(y < _MinY) || (y > _MaxY))
@@ -208,7 +208,7 @@ uint8 CZoneRegion::getPosX (sint32 x, sint32 y)
 }
 
 // ---------------------------------------------------------------------------
-uint8 CZoneRegion::getPosY (sint32 x, sint32 y)
+uint8 CZoneRegion::getPosY (sint32 x, sint32 y) const
 {
 	if ((x < _MinX) || (x > _MaxX) ||
 		(y < _MinY) || (y > _MaxY))
@@ -222,7 +222,7 @@ uint8 CZoneRegion::getPosY (sint32 x, sint32 y)
 }
 
 // ---------------------------------------------------------------------------
-uint8 CZoneRegion::getRot (sint32 x, sint32 y)
+uint8 CZoneRegion::getRot (sint32 x, sint32 y) const
 {
 	if ((x < _MinX) || (x > _MaxX) ||
 		(y < _MinY) || (y > _MaxY))
@@ -236,7 +236,7 @@ uint8 CZoneRegion::getRot (sint32 x, sint32 y)
 }
 
 // ---------------------------------------------------------------------------
-uint8 CZoneRegion::getFlip (sint32 x, sint32 y)
+uint8 CZoneRegion::getFlip (sint32 x, sint32 y) const
 {
 	if ((x < _MinX) || (x > _MaxX) ||
 		(y < _MinY) || (y > _MaxY))
@@ -250,7 +250,7 @@ uint8 CZoneRegion::getFlip (sint32 x, sint32 y)
 }
 
 // ---------------------------------------------------------------------------
-uint8 CZoneRegion::getCutEdge (sint32 x, sint32 y, uint8 pos)
+uint8 CZoneRegion::getCutEdge (sint32 x, sint32 y, uint8 pos) const
 {
 	if ((x < _MinX) || (x > _MaxX) ||
 		(y < _MinY) || (y > _MaxY))
@@ -264,7 +264,7 @@ uint8 CZoneRegion::getCutEdge (sint32 x, sint32 y, uint8 pos)
 }
 
 // ---------------------------------------------------------------------------
-uint32 CZoneRegion::getDate (sint32 x, sint32 y, uint8 lowOrHigh) // lowOrHigh == 0 -> low
+uint32 CZoneRegion::getDate (sint32 x, sint32 y, uint8 lowOrHigh) const // lowOrHigh == 0 -> low
 {
 	if ((x < _MinX) || (x > _MaxX) ||
 		(y < _MinY) || (y > _MaxY))
@@ -390,6 +390,150 @@ void SPiece::rotFlip (uint8 rot, uint8 flip)
 		h = i;
 	}
 }
+
+// ***************************************************************************
+
+std::string	CZoneRegion::getSharingMatNames (sint32 x, sint32 y, uint edge)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return _StringOutOfBound;
+	}
+	else
+	{
+		return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].SharingMatNames[edge];
+	}
+}
+
+// ***************************************************************************
+
+uint8 CZoneRegion::getSharingCutEdges (sint32 x, sint32 y, uint edge)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return 0xff;
+	}
+	else
+	{
+		return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].SharingCutEdges[edge];
+	}
+}
+
+// ***************************************************************************
+
+bool CZoneRegion::setName (sint32 x, sint32 y, const std::string &newValue)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return false;
+	}
+	else
+	{
+		_Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].ZoneName = newValue;
+		return true;
+	}
+}
+
+// ***************************************************************************
+
+bool CZoneRegion::setPosX (sint32 x, sint32 y, uint8 newValue)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return false;
+	}
+	else
+	{
+		_Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].PosX = newValue;
+		return true;
+	}
+}
+
+// ***************************************************************************
+
+bool CZoneRegion::setPosY (sint32 x, sint32 y, uint8 newValue)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return false;
+	}
+	else
+	{
+		_Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].PosY = newValue;
+		return true;
+	}
+}
+
+// ***************************************************************************
+
+bool CZoneRegion::setRot (sint32 x, sint32 y, uint8 newValue)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return false;
+	}
+	else
+	{
+		_Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].Rot = newValue;
+		return true;
+	}
+}
+
+// ***************************************************************************
+
+bool CZoneRegion::setFlip (sint32 x, sint32 y, uint8 newValue)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return false;
+	}
+	else
+	{
+		_Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].Flip = newValue;
+		return true;
+	}
+}
+
+// ***************************************************************************
+
+bool CZoneRegion::setSharingMatNames (sint32 x, sint32 y, uint edge, const std::string &newValue)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return false;
+	}
+	else
+	{
+		_Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].SharingMatNames[edge] = newValue;
+		return true;
+	}
+}
+
+// ***************************************************************************
+
+bool CZoneRegion::setSharingCutEdges (sint32 x, sint32 y, uint edge, uint8 newValue)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return false;
+	}
+	else
+	{
+		_Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].SharingCutEdges[edge] = newValue;
+		return true;
+	}
+}
+
+// ***************************************************************************
 
 
 } // namespace NLLIGO

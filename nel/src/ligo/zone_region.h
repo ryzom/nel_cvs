@@ -1,7 +1,7 @@
 /** \file zone_region.h
  * <File description>
  *
- * $Id: zone_region.h,v 1.2 2002/03/14 15:37:35 besson Exp $
+ * $Id: zone_region.h,v 1.3 2002/11/28 16:19:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,18 +65,34 @@ public:
 
 
 	// Accessors
-	const std::string	&getName (sint32 x, sint32 y);
-	uint8				getPosX (sint32 x, sint32 y);
-	uint8				getPosY (sint32 x, sint32 y);
-	uint8				getRot (sint32 x, sint32 y);
-	uint8				getFlip (sint32 x, sint32 y);
-	uint8				getCutEdge (sint32 x, sint32 y, uint8 pos); // pos==0 -> getUpCE, pos==1 -> getDownCE, ...
-	uint32				getDate (sint32 x, sint32 y, uint8 lowOrHigh); // lowOrHigh == 0 -> low
+	const std::string	&getName (sint32 x, sint32 y) const;
+	uint8				getPosX (sint32 x, sint32 y) const;
+	uint8				getPosY (sint32 x, sint32 y) const;
+	uint8				getRot (sint32 x, sint32 y) const;
+	uint8				getFlip (sint32 x, sint32 y) const;
+	uint8				getCutEdge (sint32 x, sint32 y, uint8 pos) const; // pos==0 -> getUpCE, pos==1 -> getDownCE, ...
+	uint32				getDate (sint32 x, sint32 y, uint8 lowOrHigh) const; // lowOrHigh == 0 -> low
+	std::string			getSharingMatNames (sint32 x, sint32 y, uint edge);
+	uint8				getSharingCutEdges (sint32 x, sint32 y, uint edge);
 
-	sint32				getMinX () { return _MinX; }
-	sint32				getMaxX () { return _MaxX; }
-	sint32				getMinY () { return _MinY; }
-	sint32				getMaxY () { return _MaxY; }
+	// Accessors
+	bool				setName (sint32 x, sint32 y, const std::string &newValue);
+	bool				setPosX (sint32 x, sint32 y, uint8 newValue);
+	bool				setPosY (sint32 x, sint32 y, uint8 newValue);
+	bool				setRot (sint32 x, sint32 y, uint8 newValue);
+	bool				setFlip (sint32 x, sint32 y, uint8 newValue);
+	bool				setSharingMatNames (sint32 x, sint32 y, uint edge, const std::string &newValue);
+	bool				setSharingCutEdges (sint32 x, sint32 y, uint edge, uint8 newValue);
+
+	sint32				getMinX () const { return _MinX; };
+	sint32				getMaxX () const { return _MaxX; };
+	sint32				getMinY () const { return _MinY; };
+	sint32				getMaxY () const { return _MaxY; };
+
+	void				setMinX (sint32 newValue) { _MinX = newValue; };
+	void				setMaxX (sint32 newValue) { _MaxX = newValue; };
+	void				setMinY (sint32 newValue) { _MinY = newValue; };
+	void				setMaxY (sint32 newValue) { _MaxY = newValue; };
 
 protected:
 

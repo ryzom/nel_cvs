@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.2 2001/05/10 08:17:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,7 +149,7 @@ bool CBufClient::dataAvailable()
 					// Call callback if needed
 					if ( disconnectionCallback() != NULL )
 					{
-						disconnectionCallback()( *((TSockId*)(&*buffer.begin())), argOfDisconnectionCallback() );
+						disconnectionCallback()( id(), argOfDisconnectionCallback() );
 					}
 
 					// Unlike the server version, we do not delete the CBufSock object here,

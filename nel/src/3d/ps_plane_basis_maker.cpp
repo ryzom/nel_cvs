@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.cpp,v 1.11 2002/08/07 08:37:40 vizerie Exp $
+ * $Id: ps_plane_basis_maker.cpp,v 1.12 2003/07/01 14:06:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,13 +60,60 @@ void *CPSPlaneBasisFollowSpeed::make(CPSLocated *loc,
 		TPSAttribVector::const_iterator speedIt = loc->getSpeed().begin() + startIndex
 										, endSpeedIt = loc->getSpeed().begin() + startIndex + numAttrib;
 		uint8 *ptDat  = (uint8 *) tab; 
-		do
-		{
-			*(CPlaneBasis *) ptDat = CPlaneBasis(*speedIt);
-			++ speedIt;
-			ptDat += stride;
+		switch(_ProjectionPlane)
+		{	
+			case NoProjection:
+				do
+				{
+					*(CPlaneBasis *) ptDat = CPlaneBasis(*speedIt);
+					++ speedIt;
+					ptDat += stride;
+				}
+				while (speedIt != endSpeedIt);
+			break;
+			case XY:
+				do
+				{
+					float norm = sqrtf(speedIt->x * speedIt->x + speedIt->y * speedIt->y);
+					float invNorm = (norm != 0.f) ? 1.f / norm : 0.f;
+					CPlaneBasis &pb = *(CPlaneBasis *) ptDat;
+					pb.X.set(invNorm * speedIt->x, invNorm * speedIt->y, 0.f);
+					pb.Y.set(- pb.X.y, pb.X.x, 0.f);
+					++ speedIt;
+					ptDat += stride;
+				}
+				while (speedIt != endSpeedIt);			
+			break;
+			case XZ:			
+				do
+				{
+					float norm = sqrtf(speedIt->x * speedIt->x + speedIt->z * speedIt->z);
+					float invNorm = (norm != 0.f) ? 1.f / norm : 0.f;
+					CPlaneBasis &pb = *(CPlaneBasis *) ptDat;
+					pb.X.set(invNorm * speedIt->x, 0.f, invNorm * speedIt->z);
+					pb.Y.set(- pb.X.z, 0.f, pb.X.x);
+					++ speedIt;
+					ptDat += stride;
+				}
+				while (speedIt != endSpeedIt);			
+			break;
+			case YZ:			
+				do
+				{
+					float norm = sqrtf(speedIt->y * speedIt->y + speedIt->z * speedIt->z);
+					float invNorm = (norm != 0.f) ? 1.f / norm : 0.f;
+					CPlaneBasis &pb = *(CPlaneBasis *) ptDat;
+					pb.X.set(0.f, invNorm * speedIt->y, invNorm * speedIt->z);
+					pb.Y.set(0.f, - pb.X.z, pb.X.y);
+					++ speedIt;
+					ptDat += stride;
+				}
+				while (speedIt != endSpeedIt);			
+			break;
+			default:
+				nlassert(0); // unknow projection mode
+			break;
 		}
-		while (speedIt != endSpeedIt);
 		return tab;
 	}
 	else
@@ -74,12 +121,59 @@ void *CPSPlaneBasisFollowSpeed::make(CPSLocated *loc,
 		uint32 fpIndex = startIndex * srcStep;
 		const TPSAttribVector::const_iterator speedIt = loc->getSpeed().begin();										
 		uint8 *ptDat  = (uint8 *) tab; 
-		while (numAttrib --)
-		{
-			*(CPlaneBasis *) ptDat = CPlaneBasis(*(speedIt + (fpIndex >> 16)));			
-			ptDat += stride;
-			fpIndex += srcStep;
-		}		
+		switch(_ProjectionPlane)
+		{	
+			case NoProjection:
+				while (numAttrib --)
+				{					
+					*(CPlaneBasis *) ptDat = CPlaneBasis(*(speedIt + (fpIndex >> 16)));			
+					ptDat += stride;
+					fpIndex += srcStep;
+				}
+			break;
+			case XY:				
+				while (numAttrib --)
+				{
+					const CVector *speedVect = &(*(speedIt + (fpIndex >> 16)));
+					float norm = sqrtf(speedVect->x * speedVect->x + speedVect->y * speedVect->y);
+					float invNorm = (norm != 0.f) ? 1.f / norm : 0.f;
+					CPlaneBasis &pb = *(CPlaneBasis *) ptDat;
+					pb.X.set(invNorm * speedVect->x, invNorm * speedVect->y, 0.f);
+					pb.Y.set(- pb.X.y, pb.X.x, 0.f);					
+					ptDat += stride;
+					fpIndex += srcStep;
+				}				
+			break;
+			case XZ:				
+				while (numAttrib --);
+				{
+					const CVector *speedVect = &(*(speedIt + (fpIndex >> 16)));
+					float norm = sqrtf(speedVect->x * speedVect->x + speedVect->z * speedVect->z);
+					float invNorm = (norm != 0.f) ? 1.f / norm : 0.f;
+					CPlaneBasis &pb = *(CPlaneBasis *) ptDat;
+					pb.X.set(invNorm * speedVect->x, 0.f, invNorm * speedVect->z);
+					pb.Y.set(- pb.X.z, 0.f, pb.X.x);					
+					ptDat += stride;
+					fpIndex += srcStep;
+				}				
+			break;
+			case YZ:				
+				while (numAttrib --);
+				{
+					const CVector *speedVect = &(*(speedIt + (fpIndex >> 16)));
+					float norm = sqrtf(speedVect->y * speedVect->y + speedVect->z * speedVect->z);
+					float invNorm = (norm != 0.f) ? 1.f / norm : 0.f;
+					CPlaneBasis &pb = *(CPlaneBasis *) ptDat;
+					pb.X.set(0.f, invNorm * speedVect->y, invNorm * speedVect->z);
+					pb.Y.set(0.f, - pb.X.z, pb.X.y);					
+					ptDat += stride;
+					fpIndex += srcStep;
+				}				
+			break;
+			default:
+				nlassert(0); // unknow projection mode
+			break;
+		}				
 		return tab;	
 	}
 }

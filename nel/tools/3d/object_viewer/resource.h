@@ -180,6 +180,7 @@
 #define IDC_CURRENT_STAGE               1070
 #define IDC_DEGRADATION_EXPONENT        1070
 #define IDC_EDITED_OBJECT               1070
+#define IDC_PROJECTION_MODE             1070
 #define IDC_START_PICTURE               1071
 #define IDD_SET_VALUE                   1071
 #define IDC_ALTERNATE_OP                1071
@@ -281,6 +282,7 @@
 #define IDC_UPDATE_MAX_ROT_SPEED        1126
 #define IDC_TAIL_IN_SYSTEM_BASIS        1126
 #define IDC_BROWSE_SHAPE                1126
+#define IDD_FOLLOWPATH                  1126
 #define IDC_NB_MODELS                   1127
 #define IDC_SHAPE_NAME                  1127
 #define IDC_UPDATE_NB_MODELS            1128
@@ -728,7 +730,6 @@
 #define ID_SHOOT_SCENE                  32911
 #define ID_SCENE_SETLIGHTGROUPFACTOR    32912
 #define ID_SCENE_CAMERA_FIRST           32914
-#define ID_SCENE_CAMERA_LAST            32921
 #define ID_SCENE_CAMERA_0               32914
 #define ID_SCENE_CAMERA_1               32915
 #define ID_SCENE_CAMERA_2               32916
@@ -736,13 +737,14 @@
 #define ID_SCENE_CAMERA_4               32918
 #define ID_SCENE_CAMERA_5               32919
 #define ID_SCENE_CAMERA_6               32920
+#define ID_SCENE_CAMERA_LAST            32921
 #define ID_SCENE_CAMERA_7               32921
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1126
+#define _APS_NEXT_RESOURCE_VALUE        1128
 #define _APS_NEXT_COMMAND_VALUE         32955
 #define _APS_NEXT_CONTROL_VALUE         1367
 #define _APS_NEXT_SYMED_VALUE           1000

@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.h,v 1.8 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.9 2003/07/01 14:06:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,8 +85,9 @@ public:
 class CPSPlaneBasisFollowSpeed : public CPSAttribMaker<CPlaneBasis>
 {
 	public:
-
-		CPSPlaneBasisFollowSpeed() : CPSAttribMaker<CPlaneBasis>(1) {}
+		enum TProjectionPlane { NoProjection = 0, XY, XZ, YZ, ProjectionPlaneLast /* enum counter */ };
+	public:
+		CPSPlaneBasisFollowSpeed() : CPSAttribMaker<CPlaneBasis>(1), _ProjectionPlane(NoProjection) {}
 
 		/// compute one value of the attribute for the given index
 		virtual CPlaneBasis get(CPSLocated *loc, uint32 index);
@@ -134,10 +135,24 @@ class CPSPlaneBasisFollowSpeed : public CPSAttribMaker<CPlaneBasis>
 		/// serialization
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
-			// nothing to save here
-			f.serialVersion(1);
+			// version 2 : added projection plane
+			// version 1 : nothing to save here
+			sint ver = f.serialVersion(2);
+			if (ver >= 2)
+			{
+				f.serialEnum(_ProjectionPlane);
+			}
+			else
+			{
+				_ProjectionPlane = NoProjection;
+			}
 		}
 		CPSAttribMakerBase *clone() const { return new CPSPlaneBasisFollowSpeed(*this); }
+		//
+		TProjectionPlane getProjectionPlane() const { return _ProjectionPlane; }
+		void			 setProjectionPlane(TProjectionPlane pp) { _ProjectionPlane = pp; }
+	private:
+		TProjectionPlane _ProjectionPlane;
 };
 
 

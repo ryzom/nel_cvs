@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.22 2002/11/04 15:40:44 boucher Exp $
+ * $Id: attrib_dlg.cpp,v 1.23 2003/07/01 14:07:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include "bin_op_dlg.h"
 #include "edit_user_param.h"
 #include "edit_spinner.h"
+#include "edit_follow_path.h"
 #include "scheme_bank_dlg.h"
 #include "scheme_manager.h"
 #include "choose_name.h"
@@ -243,9 +244,17 @@ protected:
 // CAttribDlg dialog
 
 
+//*************************************************************************************************************
 CAttribDlg::CAttribDlg(const std::string &valueID, bool enableConstantValue /* = true*/)
-	 : _CstValueDlg(NULL), _FirstDrawing(true), _EnableConstantValue(enableConstantValue), _DisableMemoryScheme(false)
-	   , _SchemeEditionDlg(NULL), _NbCycleEnabled(true), _NbCyclesDlg(NULL), _ValueID(valueID), _SrcInputEnabled(true)
+	 : _CstValueDlg(NULL),
+	   _FirstDrawing(true),
+	   _EnableConstantValue(enableConstantValue),
+	   _DisableMemoryScheme(false),
+	   _SchemeEditionDlg(NULL), 
+	   _NbCycleEnabled(true), 
+	   _NbCyclesDlg(NULL), 
+	   _ValueID(valueID), 
+	   _SrcInputEnabled(true)
 {
 	//{{AFX_DATA_INIT(CAttribDlg)
 	m_AttribName = _T("");
@@ -254,6 +263,7 @@ CAttribDlg::CAttribDlg(const std::string &valueID, bool enableConstantValue /* =
 }
 
 
+//*************************************************************************************************************
 BOOL CAttribDlg::EnableWindow( BOOL bEnable)
 {
 	if (_CstValueDlg)
@@ -287,6 +297,7 @@ BOOL CAttribDlg::EnableWindow( BOOL bEnable)
 	return CDialog::EnableWindow(bEnable);
 }
 
+//*************************************************************************************************************
 CAttribDlg::~CAttribDlg()	
 {
 	if (_NbCyclesDlg)
@@ -301,6 +312,7 @@ CAttribDlg::~CAttribDlg()
 	}
 }
 
+//*************************************************************************************************************
 void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 {
 
@@ -361,14 +373,11 @@ void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 		GetDlgItem(IDC_EDIT_INPUT)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_SCHEME_INPUT)->ShowWindow(SW_HIDE);
 	}
-
 	inputValueUpdate();
-
-
-
 	ShowWindow(SW_SHOW);
 }
 
+//*************************************************************************************************************
 void CAttribDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -388,6 +397,7 @@ void CAttribDlg::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
+//*************************************************************************************************************
 void CAttribDlg::inputValueUpdate(void)
 {
 	if (useScheme() && getSchemeInput().InputType == NL3D::CPSInputType::attrUserParam)
@@ -400,7 +410,7 @@ void CAttribDlg::inputValueUpdate(void)
 	}
 }
 
-
+//*************************************************************************************************************
 void CAttribDlg::cstValueUpdate()
 {
 	if (!_FirstDrawing && !useScheme()) return;	
@@ -439,6 +449,7 @@ void CAttribDlg::cstValueUpdate()
 	_FirstDrawing = false;
 }
 
+//*************************************************************************************************************
 void CAttribDlg::schemeValueUpdate()
 {
 	if (!_FirstDrawing && useScheme()) return;		
@@ -499,7 +510,7 @@ void CAttribDlg::schemeValueUpdate()
 	_FirstDrawing = false;
 }
 
-
+//*************************************************************************************************************
 void CAttribDlg::OnSelchangeUseScheme() 
 {
 	if (m_UseScheme.GetCurSel() == 0)
@@ -514,13 +525,14 @@ void CAttribDlg::OnSelchangeUseScheme()
 
 
 
+//*************************************************************************************************************
 void CAttribDlg::OnSelchangeScheme() 
 {
 	UpdateData();
 	setCurrentScheme(m_Scheme.GetCurSel());	
 }
 
-
+//*************************************************************************************************************
 void CAttribDlg::OnEditScheme() 
 {
 	_SchemeEditionDlg  = editScheme();
@@ -530,7 +542,7 @@ void CAttribDlg::OnEditScheme()
 	}
 }
 
-
+//*************************************************************************************************************
 void CAttribDlg::childPopupClosed(CWnd *child)
 {
 	EnableWindow(TRUE);
@@ -540,20 +552,19 @@ void CAttribDlg::childPopupClosed(CWnd *child)
 	_SchemeEditionDlg = NULL;	
 }
 
-
-
-
+//*************************************************************************************************************
 void CAttribDlg::OnGetScheme() 
 {
-CSchemeBankDlg sbd(getCurrentSchemePtr()->getType(), this);
-if (sbd.DoModal() == IDOK && sbd.getSelectedScheme())
-{
-	setCurrentSchemePtr(sbd.getSelectedScheme()->clone());	
-	_FirstDrawing = true;
-	schemeValueUpdate();
-}
+	CSchemeBankDlg sbd(getCurrentSchemePtr()->getType(), this);
+	if (sbd.DoModal() == IDOK && sbd.getSelectedScheme())
+	{
+		setCurrentSchemePtr(sbd.getSelectedScheme()->clone());	
+		_FirstDrawing = true;
+		schemeValueUpdate();
+	}
 }
 
+//*************************************************************************************************************
 void CAttribDlg::OnPutScheme() 
 {
 	CChooseName cn("new scheme", this);
@@ -563,9 +574,7 @@ void CAttribDlg::OnPutScheme()
 	}
 }
 
-
-
-
+//*************************************************************************************************************
 void CAttribDlg::OnSelchangeSchemeInput() 
 {
 	UpdateData();
@@ -579,14 +588,14 @@ void CAttribDlg::OnSelchangeSchemeInput()
 	inputValueUpdate();
 }
 
-
+//*************************************************************************************************************
 void CAttribDlg::OnClampAttrib() 
 {
 	UpdateData();
 	clampScheme(m_Clamp ? true : false /* avoid performance warning */);
 }
 
-
+//*************************************************************************************************************
 void CAttribDlg::OnEditInput() 
 {
 	switch (getSchemeInput().InputType)
@@ -650,6 +659,7 @@ END_MESSAGE_MAP()
 	// FLOAT GRADIENT EDITION INTERFACE						//
 	//////////////////////////////////////////////////////////
 
+	//*************************************************************************************************************
 	class CFloatGradientDlgWrapper : public CValueGradientDlgClientT<float>
 	{
 	public:	
@@ -674,12 +684,14 @@ END_MESSAGE_MAP()
 
 
 
+	//*************************************************************************************************************
 	CAttribDlgFloat::CAttribDlgFloat(const std::string &valueID, float minRange, float maxRange)
 				:  CAttribDlgT<float>(valueID), _MinRange(minRange), _MaxRange(maxRange)			  
 	{
 		_CstValueId = valueID;			
 	}
 
+	//*************************************************************************************************************
 	CEditAttribDlg *CAttribDlgFloat::createConstantValueDlg()
 	{
 		CEditableRangeFloat *erf = new CEditableRangeFloat(_CstValueId, _MinRange, _MaxRange);
@@ -688,16 +700,21 @@ END_MESSAGE_MAP()
 		return erf;
 	}
 
+	//*************************************************************************************************************
 	uint CAttribDlgFloat::getNumScheme(void) const
 	{	
 		return _DisableMemoryScheme ? 3 : 5;		
 	}
+
+	//*************************************************************************************************************
 	std::string CAttribDlgFloat::getSchemeName(uint index) const
 	{
 		const char *types[] = { "value blender", "values gradient", "curve", "value computed from emitter", "binary operator"};
 		nlassert(index < 5);
 		return std::string(types[index]);		
 	}
+
+	//*************************************************************************************************************
 	CWnd *CAttribDlgFloat::editScheme(void)
 	{
 		NL3D::CPSAttribMaker<float> *scheme = _SchemeWrapper->getScheme();	
@@ -767,6 +784,7 @@ END_MESSAGE_MAP()
 		return NULL;
 	}
 
+	//*************************************************************************************************************
 	sint CAttribDlgFloat::getCurrentScheme(void) const
 	{
 
@@ -781,6 +799,7 @@ END_MESSAGE_MAP()
 	}
 
 
+	//*************************************************************************************************************
 	void CAttribDlgFloat::setCurrentScheme(uint index)
 	{
 		nlassert(index < 5);
@@ -844,6 +863,7 @@ END_MESSAGE_MAP()
 	//////////////////////////////////////////////////////////
 
 
+	//*************************************************************************************************************
 	class CUIntGradientDlgWrapper : public CValueGradientDlgClientT<uint32>
 	{
 	public:	
@@ -867,13 +887,14 @@ END_MESSAGE_MAP()
 	};
 
 
-
+	//*************************************************************************************************************
 	CAttribDlgUInt::CAttribDlgUInt(const std::string &valueID, uint32 minRange, uint32 maxRange)
 				:  CAttribDlgT<uint32>(valueID), _MinRange(minRange), _MaxRange(maxRange)			  
 	{
 		_CstValueId = valueID;			
 	}
 
+	//*************************************************************************************************************
 	CEditAttribDlg *CAttribDlgUInt::createConstantValueDlg()
 	{
 		CEditableRangeUInt *erf = new CEditableRangeUInt(_CstValueId, _MinRange, _MaxRange);
@@ -882,17 +903,22 @@ END_MESSAGE_MAP()
 		return erf;
 	}
 
+	//*************************************************************************************************************
 	uint CAttribDlgUInt::getNumScheme(void) const
 	{
 
 		return _DisableMemoryScheme ? 2 : 4;
 	}
+
+	//*************************************************************************************************************
 	std::string CAttribDlgUInt::getSchemeName(uint index) const
 	{
 		const char *types[] = { "value blender", "values gradient", "values computed from emitter", "binary operator" };
 		nlassert(index < 4);
 		return std::string(types[index]);		
 	}
+
+	//*************************************************************************************************************
 	CWnd *CAttribDlgUInt::editScheme(void)
 	{
 		const NL3D::CPSAttribMaker<uint32> *scheme = _SchemeWrapper->getScheme();	
@@ -954,6 +980,7 @@ END_MESSAGE_MAP()
 		return NULL;
 	}
 
+	//*************************************************************************************************************
 	sint CAttribDlgUInt::getCurrentScheme(void) const
 	{
 		const NL3D::CPSAttribMaker<uint32> *scheme = _SchemeWrapper->getScheme();	
@@ -965,7 +992,7 @@ END_MESSAGE_MAP()
 		return -1;
 	}
 
-
+	//*************************************************************************************************************
 	void CAttribDlgUInt::setCurrentScheme(uint index)
 	{
 		nlassert(index < 4);
@@ -1025,6 +1052,7 @@ END_MESSAGE_MAP()
 	//////////////////////////////////////////////////////////
 
 
+	//*************************************************************************************************************
 	class CIntGradientDlgWrapper : public CValueGradientDlgClientT<sint32>
 	{
 	public:	
@@ -1048,13 +1076,14 @@ END_MESSAGE_MAP()
 	};
 
 
-
+	//*************************************************************************************************************
 	CAttribDlgInt::CAttribDlgInt(const std::string &valueID, sint32 minRange, sint32 maxRange)
 				:  CAttribDlgT<sint32>(valueID), _MinRange(minRange), _MaxRange(maxRange)			  
 	{
 		_CstValueId = valueID;		
 	}
 
+	//*************************************************************************************************************
 	CEditAttribDlg *CAttribDlgInt::createConstantValueDlg()
 	{
 		CEditableRangeInt *erf = new CEditableRangeInt(_CstValueId, _MinRange, _MaxRange);
@@ -1063,10 +1092,13 @@ END_MESSAGE_MAP()
 		return erf;
 	}
 
+	//*************************************************************************************************************
 	uint CAttribDlgInt::getNumScheme(void) const
 	{
 		return _DisableMemoryScheme ? 2 : 4;
 	}
+
+	//*************************************************************************************************************
 	std::string CAttribDlgInt::getSchemeName(uint index) const
 	{
 
@@ -1074,6 +1106,8 @@ END_MESSAGE_MAP()
 		nlassert(index < 4);
 		return std::string(types[index]);
 	}
+
+	//*************************************************************************************************************
 	CWnd *CAttribDlgInt::editScheme(void)
 	{
 		const NL3D::CPSAttribMaker<sint32> *scheme = _SchemeWrapper->getScheme();	
@@ -1139,6 +1173,7 @@ END_MESSAGE_MAP()
 		return NULL;
 	}
 
+	//*************************************************************************************************************
 	sint CAttribDlgInt::getCurrentScheme(void) const
 	{
 		const NL3D::CPSAttribMaker<sint32> *scheme = _SchemeWrapper->getScheme();	
@@ -1151,6 +1186,7 @@ END_MESSAGE_MAP()
 	}
 
 
+	//*************************************************************************************************************
 	void CAttribDlgInt::setCurrentScheme(uint index)
 	{
 		nlassert(index < 4);
@@ -1209,6 +1245,7 @@ END_MESSAGE_MAP()
 	//////////////////////////////////////////////////////////
 
 
+	//*************************************************************************************************************
 	class CColorGradientDlgWrapper : public CValueGradientDlgClientT<CRGBA>
 	{
 	public:	
@@ -1249,15 +1286,18 @@ END_MESSAGE_MAP()
 
 	////////////////////////////
 
+	//*************************************************************************************************************
 	CAttribDlgRGBA::CAttribDlgRGBA(const std::string &valueID)  : CAttribDlgT<CRGBA>(valueID)
 	{
 	}
 
+	//*************************************************************************************************************
 	uint CAttribDlgRGBA::getNumScheme(void) const
 	{
 		return _DisableMemoryScheme ? 3 : 5;
 	}
 
+	//*************************************************************************************************************
 	std::string CAttribDlgRGBA::getSchemeName(uint index) const
 	{
 		const char *types[] = { "color sampled blender", "color gradient", "color exact blender", "values computed from emitter", "binary operator" };
@@ -1266,7 +1306,7 @@ END_MESSAGE_MAP()
 	}
 
 
-
+	//*************************************************************************************************************
 	CWnd *CAttribDlgRGBA::editScheme(void)
 	{	
 		const NL3D::CPSAttribMaker<CRGBA> *scheme = _SchemeWrapper->getScheme();	
@@ -1324,6 +1364,7 @@ END_MESSAGE_MAP()
 		return NULL;
 	}
 
+	//*************************************************************************************************************
 	void CAttribDlgRGBA::setCurrentScheme(uint index)
 	{
 		nlassert(index < 5);
@@ -1360,6 +1401,7 @@ END_MESSAGE_MAP()
 		}
 	}
 
+	//*************************************************************************************************************
 	sint CAttribDlgRGBA::getCurrentScheme(void) const
 	{
 		const NL3D::CPSAttribMaker<CRGBA> *scheme = _SchemeWrapper->getScheme();	
@@ -1372,6 +1414,7 @@ END_MESSAGE_MAP()
 		return -1;
 	}
 
+	//*************************************************************************************************************
 	CEditAttribDlg *CAttribDlgRGBA::createConstantValueDlg()
 	{
 		CColorEdit *ce = new CColorEdit;
@@ -1419,12 +1462,8 @@ END_MESSAGE_MAP()
 			return be;
 		}
 	};
-
-
 	
-
-
-
+	//*************************************************************************************************************
 	CAttribDlgPlaneBasis::CAttribDlgPlaneBasis(const std::string &valueID)  : CAttribDlgT<NL3D::CPlaneBasis>(valueID)
 	{
 	}
@@ -1441,8 +1480,7 @@ END_MESSAGE_MAP()
 		return std::string(types[index]);		
 	}
 
-
-
+	//*************************************************************************************************************
 	CWnd *CAttribDlgPlaneBasis::editScheme(void)
 	{	
 		NL3D::CPSAttribMaker<NL3D::CPlaneBasis> *scheme = _SchemeWrapper->getScheme();	
@@ -1460,8 +1498,9 @@ END_MESSAGE_MAP()
 
 		if (dynamic_cast<NL3D::CPSPlaneBasisFollowSpeed *>(scheme)) 
 		{
-			MessageBox("NO properties available", "edition", MB_OK);
-			return NULL;
+			CEditFollowPath *efp = new CEditFollowPath((NL3D::CPSPlaneBasisFollowSpeed *) scheme, this, this);
+			efp->init(this);
+			return efp;
 		}
 
 		if (dynamic_cast<NL3D::CPSPlaneBasisMemory *>(scheme)) 
@@ -1500,6 +1539,7 @@ END_MESSAGE_MAP()
 		return NULL;
 	}
 
+	//*************************************************************************************************************
 	void CAttribDlgPlaneBasis::setCurrentScheme(uint index)
 	{
 		nlassert(index < 5);
@@ -1536,6 +1576,7 @@ END_MESSAGE_MAP()
 		}
 	}
 
+	//*************************************************************************************************************
 	sint CAttribDlgPlaneBasis::getCurrentScheme(void) const
 	{
 		const NL3D::CPSAttribMaker<NL3D::CPlaneBasis> *scheme = _SchemeWrapper->getScheme();	
@@ -1549,6 +1590,7 @@ END_MESSAGE_MAP()
 		return -1;
 	}
 
+	//*************************************************************************************************************
 	CEditAttribDlg *CAttribDlgPlaneBasis::createConstantValueDlg()
 	{
 		CBasisEdit *ce = new CBasisEdit;
@@ -1556,21 +1598,22 @@ END_MESSAGE_MAP()
 		return ce;
 	}
 
-
-void CAttribDlg::OnDestroy() 
-{
-	if (_SchemeEditionDlg)
+	//*************************************************************************************************************
+	void CAttribDlg::OnDestroy() 
 	{
-		CWnd *wnd = _SchemeEditionDlg;
-		_SchemeEditionDlg = NULL;
-		wnd ->DestroyWindow();
-		delete wnd ;		
+		if (_SchemeEditionDlg)
+		{
+			CWnd *wnd = _SchemeEditionDlg;
+			_SchemeEditionDlg = NULL;
+			wnd ->DestroyWindow();
+			delete wnd ;		
+		}
+		CDialog::OnDestroy();
+			
 	}
-	CDialog::OnDestroy();
-		
-}
 
-void CAttribDlg::OnClose() 
-{	
-	CDialog::OnClose();
-}
+	//*************************************************************************************************************
+	void CAttribDlg::OnClose() 
+	{	
+		CDialog::OnClose();
+	}

@@ -133,7 +133,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"std_afx.h" /FD /D /GZ /Zm200 /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_DEBUG_FAST" /D "_STLP_USE_DEBUG_LIB" /FR /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_DEBUG_FAST" /D "_STLP_USE_DEBUG_LIB" /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
+# SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
@@ -144,7 +145,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none /incremental:no
-# ADD LINK32 freetype.lib mfcs42d.lib version.lib libxml2_debug.lib  nlligo_df.lib nlgeorges_df.lib freetype_debug.lib mfcs42d.lib msvcrtd.lib version.lib libxml2_debug.lib  nlligo_df.lib nlgeorges_df.lib freetype_debug.lib mfcs42d.lib msvcrtd.lib libxml2_debug.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
+# ADD LINK32 freetype.lib mfcs42d.lib version.lib libxml2_debug.lib nlligo_df.lib nlgeorges_df.lib freetype_debug.lib mfcs42d.lib msvcrtd.lib version.lib libxml2_debug.lib nlligo_df.lib nlgeorges_df.lib freetype_debug.lib mfcs42d.lib msvcrtd.lib libxml2_debug.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
@@ -659,6 +660,14 @@ SOURCE=.\dup_ps.h
 # Begin Source File
 
 SOURCE=.\edit_attrib_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_follow_path.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_follow_path.h
 # End Source File
 # Begin Source File
 

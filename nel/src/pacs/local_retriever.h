@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.14 2001/08/31 08:26:10 legros Exp $
+ * $Id: local_retriever.h,v 1.15 2001/09/06 08:54:27 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -403,6 +403,9 @@ protected:
 
 	/// Snaps on the ground
 	void								snapToInteriorGround(ULocalPosition &position) const;
+
+	///
+	float								getHeight(const ULocalPosition &position) const;
 
 	/// Finds a path in a given surface, from the point A to the point B.
 	void								findPath(const CLocalPosition &A, const CLocalPosition &B, std::vector<CVector2s> &path, NLPACS::CCollisionSurfaceTemp &cst) const;

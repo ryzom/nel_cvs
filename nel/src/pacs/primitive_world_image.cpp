@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.8 2001/09/04 15:09:58 saffray Exp $
+ * $Id: primitive_world_image.cpp,v 1.9 2001/09/06 08:54:27 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1354,7 +1354,13 @@ void CPrimitiveWorldImage::reaction (const CCollisionSurfaceDesc&	surfaceDesc, c
 		if (type==UMovePrimitive::Slide)
 		{
 			// Project last delta on plane of collision.
+
+			double	nspeed = surfaceDesc.ContactNormal*_Speed;
+			double	nnspeed = surfaceDesc.ContactNormal*_Speed-NELPACS_DIST_BACK;
+
 			_Speed-= surfaceDesc.ContactNormal*(surfaceDesc.ContactNormal*_Speed-NELPACS_DIST_BACK);
+
+			double	residual = _Speed * surfaceDesc.ContactNormal;
 		}
 
 		// Reflexion ?

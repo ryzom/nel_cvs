@@ -1,7 +1,7 @@
 /** \file primitive_world_image.h
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.h,v 1.4 2001/06/27 15:15:35 corvazier Exp $
+ * $Id: primitive_world_image.h,v 1.5 2001/09/06 08:54:27 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -437,8 +437,9 @@ private:
 		{
 			// Get position with global position
 			_GlobalPosition=globalPosition;
+			_GlobalPosition.LocalPosition.Estimation.z = globalRetriver.getMeanHeight(globalPosition);
 			_3dPosition=globalRetriver.getDoubleGlobalPosition (globalPosition);
-			_3dPosition.z=(double)globalRetriver.getMeanHeight(globalPosition);
+//			_3dPosition.z=(double)globalRetriver.getMeanHeight(globalPosition);
 		}
 	};
 

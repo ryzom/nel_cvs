@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.30 2001/08/27 09:06:02 legros Exp $
+ * $Id: local_retriever.cpp,v 1.31 2001/09/06 08:54:27 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -955,6 +955,85 @@ void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &posit
 		position.Estimation = best;
 }
 
+float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position) const
+{
+	if (_Type == Interior)
+	{
+		// first preselect faces around the (x, y) position (CQuadGrid ?)
+		vector<uint32>	selection;
+		_FaceGrid.select(position.Estimation, selection);
+
+		// from the preselect faces, look for the only face that belongs to the surface
+		// and that contains the position
+		CVector	pos = position.Estimation;
+		CVector	posh = pos+CVector(0.0f, 0.0f, 1.0f);
+		float	bestDist = 1.0e10f;
+		CVector	best;
+		vector<uint32>::iterator	it;
+		for (it=selection.begin(); it!=selection.end(); ++it)
+		{
+			const CInteriorFace	&f = _InteriorFaces[*it];
+			if (f.Surface == (uint32)position.Surface)
+			{
+				CVector	v[3];
+				v[0] = _InteriorVertices[f.Verts[0]];
+				v[1] = _InteriorVertices[f.Verts[1]];
+				v[2] = _InteriorVertices[f.Verts[2]];
+
+				float		a,b,c;		// 2D cartesian coefficients of line in plane X/Y.
+				// Line p0-p1.
+				a = -(v[1].y-v[0].y);
+				b =  (v[1].x-v[0].x);
+				c = -(v[0].x*a + v[0].y*b);
+				if (a*pos.x + b*pos.y + c < 0)	continue;
+				// Line p1-p2.
+				a = -(v[2].y-v[1].y);
+				b =  (v[2].x-v[1].x);
+				c = -(v[1].x*a + v[1].y*b);
+				if (a*pos.x + b*pos.y + c < 0)	continue;
+				//  Line p2-p0.
+				a = -(v[0].y-v[2].y);
+				b =  (v[0].x-v[2].x);
+				c = -(v[2].x*a + v[2].y*b);
+				if (a*pos.x + b*pos.y + c < 0)	continue;
+
+				CPlane	p;
+				p.make(v[0], v[1], v[2]);
+
+				CVector i = p.intersect(pos, posh);
+
+				float	d = (float)fabs(pos.z-i.z);
+
+				if (d < bestDist)
+				{
+					bestDist = d;
+					best = i;
+				}
+			}
+		}
+
+		// and computes the real position on this face
+		return (bestDist < 50.0f) ?	best.z : position.Estimation.z;
+	}
+	else
+	{
+		// find quad leaf.
+		const CQuadLeaf	*leaf = _Surfaces[position.Surface].getQuadTree().getLeaf(position.Estimation);
+
+		// if there is no acceptable leaf, just give up
+		if (leaf == NULL)
+		{
+			//nlinfo("COL: quadtree: don't find the quadLeaf!");
+			return position.Estimation.z;
+		}
+		else
+		{
+			// else return mean height.
+			float	meanHeight = (leaf->getMinHeight()+leaf->getMaxHeight())*0.5f;
+			return meanHeight;
+		}
+	}
+}
 
 
 

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.49 2001/09/04 15:09:58 saffray Exp $
+ * $Id: global_retriever.cpp,v 1.50 2001/09/06 08:54:27 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -333,7 +333,7 @@ const NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint32 
 
 //
 
-NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated) const
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated, float threshold) const
 {
 	// the retrieved position
 	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
@@ -348,7 +348,7 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 	selectInstances(bbpos, _InternalCST);
 
 	uint	i;
-	float	bestDist = 1.0e10f;
+	float	bestDist = threshold;
 
 	// for each instance, try to retrieve the position
 	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
@@ -357,8 +357,9 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		// if the retrieved position is on a surface and it best match the estimated position
 		// remember it
 		CLocalRetriever::CLocalPosition	ret = _Instances[id].retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()), _InternalCST);
-		float	d = (float)fabs(estimated.z-ret.Estimation.z);
-		if (d < bestDist && ret.Surface != -1)
+		// go preferably on interior instances
+		float	d = (float)fabs(estimated.z-ret.Estimation.z) * (_Instances[id].getType() == CLocalRetriever::Interior ? 0.5f : 1.0f);
+		if (ret.Surface != -1 && d < bestDist)
 		{
 			bestDist = d;
 			result.LocalPosition = ret;
@@ -369,7 +370,7 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 	return result;
 }
 
-NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated) const
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated, double threshold) const
 {
 	// the retrieved position
 	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
@@ -385,7 +386,7 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 	selectInstances(bbpos, _InternalCST);
 
 	uint	i;
-	float	bestDist = 1.0e10f;
+	double	bestDist = threshold;
 
 	// for each instance, try to retrieve the position
 	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
@@ -394,8 +395,8 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		// if the retrieved position is on a surface and it best match the estimated position
 		// remember it
 		CLocalRetriever::CLocalPosition	ret = _Instances[id].retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()), _InternalCST);
-		float	d = (float)fabs(estimated.z-ret.Estimation.z);
-		if (d < bestDist && ret.Surface != -1)
+		double	d = fabs(estimated.z-ret.Estimation.z) * (_Instances[id].getType() == CLocalRetriever::Interior ? 0.5 : 1.0);
+		if (ret.Surface != -1 && d < bestDist)
 		{
 			bestDist = d;
 			result.LocalPosition = ret;
@@ -404,6 +405,16 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 	}
 
 	return result;
+}
+
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated) const
+{
+	return retrievePosition(estimated, 1.0e10f);
+}
+
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated) const
+{
+	return retrievePosition(estimated, 1.0e10);
 }
 
 //
@@ -419,6 +430,7 @@ const string	&NLPACS::CGlobalRetriever::getIdentifier(const NLPACS::UGlobalPosit
 }
 
 //
+/*
 void		NLPACS::CGlobalRetriever::snapToInteriorGround(UGlobalPosition &position) const
 {
 	const CRetrieverInstance	&instance = _Instances[position.InstanceId];
@@ -428,6 +440,7 @@ void		NLPACS::CGlobalRetriever::snapToInteriorGround(UGlobalPosition &position) 
 	const CLocalRetriever		&retriever = getRetriever(instance.getRetrieverId());
 	instance.snapToInteriorGround(position.LocalPosition, retriever);
 }
+*/
 
 //
 CVector		NLPACS::CGlobalRetriever::getGlobalPosition(const UGlobalPosition &global) const
@@ -1822,28 +1835,16 @@ void NLPACS::UGlobalRetriever::deleteGlobalRetriever (UGlobalRetriever *retrieve
 
 float			NLPACS::CGlobalRetriever::getMeanHeight(const UGlobalPosition &pos) const
 {
+	// for wrong positions, leave it unchanged
 	if ((pos.InstanceId==-1)||(pos.LocalPosition.Surface==-1))
-		return 0;
+		return pos.LocalPosition.Estimation.z;
 	
 	// get instance/localretriever.
 	const CRetrieverInstance	&instance = getInstance(pos.InstanceId);
 	const CLocalRetriever		&retriever= _RetrieverBank->getRetriever(instance.getRetrieverId());
 
-	// find quad leaf.
-	const CQuadLeaf	*leaf = retriever.getSurfaces()[pos.LocalPosition.Surface].getQuadTree().getLeaf(pos.LocalPosition.Estimation);
-
-	// if there is no acceptable leaf, just give up
-	if (leaf == NULL)
-	{
-		//nlinfo("COL: quadtree: don't find the quadLeaf!");
-		return pos.LocalPosition.Estimation.z;
-	}
-	else
-	{
-		// else return mean height.
-		float	meanHeight = (leaf->getMinHeight()+leaf->getMaxHeight())*0.5f;
-		return meanHeight;
-	}
+	// return height from local retriever
+	return retriever.getHeight(pos.LocalPosition);
 }
 
 // ***************************************************************************

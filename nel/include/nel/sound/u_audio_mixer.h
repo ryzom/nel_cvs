@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.2 2001/07/13 09:37:34 cado Exp $
+ * $Id: u_audio_mixer.h,v 1.3 2001/07/17 14:30:14 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,8 +54,8 @@ class UListener;
  * - Removing a new source
  * - Entering/Exiting from an envsound area
  *
- * Removing does not mean deleting. The user is responsible for deleting the sources
- * that have been allocated by createSource().
+ * Important: The user is responsible for deleting the sources that have been allocated by
+ * createSource(), before deleting the audio mixer object.
  *
  * \author Olivier Cado
  * \author Nevrax France
@@ -79,13 +79,11 @@ public:
 	/// Load buffers
 	virtual	void		loadSoundBuffers( const char *filename,
 										  const std::vector<TSoundId> **idvec ) = 0;
-	/// Load environment sounds ; idvec can be null if you don't want an access to the envsounds
+	/// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
 	virtual	void		loadEnvSounds( const char *filename,
-									   const std::vector<UEnvSound*> **esvec=NULL ) = 0;
-	/// Add logical sound source
+									   UEnvSound **treeRoot=NULL ) = 0;
+	/// Add logical sound source (to remove a source, delete it)
 	virtual USource		*createSource( TSoundId id ) = 0;
-	/// Remove logical sound source
-	virtual void		removeSource( USource *source ) = 0;
 	/// Return the listener interface
 	virtual UListener	*getListener() = 0;
 

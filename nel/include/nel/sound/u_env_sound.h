@@ -1,7 +1,7 @@
 /** \file u_env_sound.h
  * UEnvSound: Game interface for localized environment sounds
  *
- * $Id: u_env_sound.h,v 1.1 2001/07/10 16:51:20 cado Exp $
+ * $Id: u_env_sound.h,v 1.2 2001/07/17 14:30:14 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_U_ENV_SOUND_H
 
 #include "nel/misc/types_nl.h"
-
+#include "nel/misc/vector.h"
 
 namespace NLSOUND {
 
@@ -37,6 +37,9 @@ class USource;
 
 /**
  * Game interface for localized environment sounds
+ *
+ * 
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001
@@ -45,17 +48,19 @@ class UEnvSound
 {
 public:
 
-	/// Return the corresponding localized 3D sound source
-	virtual USource			*get3DSource() = 0;
+	/// Return the position
+	virtual void					getPos( NLMISC::CVector& pos ) const = 0;
+	/// Moves the envsound (and its transition envsound if it has one)
+	virtual void					setPos( const NLMISC::CVector& pos ) = 0;
+	/// Return the children envsounds
+	virtual std::vector<UEnvSound*>& getChildren() = 0;
 
-	/// Recompute the EnvSound. Call this method after having moved the 3D source.
-	virtual void			recompute() = 0;
 
 	/// Play
-	virtual void			play() = 0;
-
+	virtual void					play() = 0;
 	/// Stop playing
-	virtual void			stop() = 0;
+	virtual void					stop() = 0;
+
 
 	/// Destructor
 	virtual					~UEnvSound() {}

@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.8 2001/01/05 13:39:36 coutelas Exp $
+ * $Id: text_context.h,v 1.9 2001/01/05 13:48:11 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -364,7 +364,7 @@ public:
 
 	/**
 	 * Return max x coordinate of last string printed. Useful to know if a string
-	 * goes out of the screen.
+	 * goes out of the screen (screen limit is at x==4/3).
 	 *	\return x coordinate
 	 */
 	float getLastXBound() const

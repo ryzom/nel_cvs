@@ -1,6 +1,6 @@
 /** \file texture_chooser.cpp
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.cpp,v 1.10 2002/11/04 15:40:45 boucher Exp $
+ * $Id: texture_chooser.cpp,v 1.11 2004/04/09 14:43:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,6 +134,7 @@ void CTextureChooser::textureToBitmap()
 	// for a bumpmap, show its heightmap
 	NL3D::CTextureBump *tb = dynamic_cast<NL3D::CTextureBump *>( (NL3D::ITexture *) _Texture);
 	NL3D::ITexture *tex = tb ? tb->getHeightMap()  : _Texture;
+	if (!tex) tex = _Texture;
 	tex->generate();
 	// make copy of the texture
 	NLMISC::CBitmap cb(* ((NL3D::ITexture *) tex));

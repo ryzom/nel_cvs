@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.13 2004/02/03 15:25:34 legros Exp $
+ * $Id: build_surf.h,v 1.14 2004/06/21 15:33:06 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,10 +169,12 @@ public:
 
 	uint32							ForceMerge;
 	
+	bool							ForceInvalid;
 	bool							IsBorder;
 	bool							IsValid;
 	bool							IsMergable;
 	bool							ClusterHint;
+	bool							IsUnderWater;
 
 	enum
 	{
@@ -216,6 +218,8 @@ public:
 		IsValid = false;
 		IsMergable = true;
 		ClusterHint = false;
+		ForceInvalid = false;
+		IsUnderWater = false;
 		WaterShape = 255;
 		QuantHeight = 0;
 		ForceMerge = 0;
@@ -407,7 +411,7 @@ public:
 		QuantHeight = first->QuantHeight;
 		uint	waterShape = first->WaterShape;
 
-		IsUnderWater = (first->WaterShape != 255);
+		IsUnderWater = first->IsUnderWater;
 
 		//WaterHeight = IsUnderWater ? zoneTessel->WaterShapes[first->WaterShape].Vertices[0].z : 123456.0f;
 		bool	tamere;
@@ -614,7 +618,8 @@ public:
 
 	bool	equal(const CSurfElement *a, const CSurfElement *b) const
 	{
-		return	a->IsValid == b->IsValid;
+		return	a->IsValid == b->IsValid &&
+				a->ForceInvalid == b->ForceInvalid;
 	}
 };
 
@@ -627,6 +632,7 @@ public:
 		return	b->IsValid &&
 				a->ClusterHint == b->ClusterHint &&
 				a->ZoneId == b->ZoneId &&
+				a->IsUnderWater == b->IsUnderWater &&
 				a->WaterShape == b->WaterShape &&
 				a->QuantHeight == b->QuantHeight;
 	}

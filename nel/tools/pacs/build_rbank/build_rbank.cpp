@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.17 2004/02/13 16:16:39 legros Exp $
+ * $Id: build_rbank.cpp,v 1.18 2004/06/21 15:33:06 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,6 +174,11 @@ void processAllPasses(string &zoneName)
 									 tessellation.Surfaces[j].Center,
 									 tessellation.Surfaces[j].HeightQuad,
 									 tessellation.Surfaces[j].QuantHeight);
+
+				if (Verbose)
+				{
+					nlinfo("Added surface %d: water=%d", j, (tessellation.Surfaces[j].IsUnderWater ? 1 : 0));
+				}
 			}
 
 			for (j=0; j<(sint)tessellation.Borders.size(); ++j)

@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.23 2004/03/02 17:01:45 corvazier Exp $
+ * $Id: build_surf.cpp,v 1.24 2004/06/21 15:33:06 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -316,8 +316,6 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 
 	uint8	bits = bits0|bits1|bits2;
 
-	bool	forceExclude = false;
-
 	if (bits & CPrimChecker::Include)
 	{
 		IsValid = true;
@@ -325,8 +323,8 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 
 	if (bits & CPrimChecker::Exclude)
 	{
+		ForceInvalid = true;
 		IsValid = false;
-		forceExclude = true;
 	}
 
 	if (bits & CPrimChecker::ClusterHint && IsValid)
@@ -337,13 +335,18 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 //	if ((bits & CPrimChecker::Cliff) && (bits & CPrimChecker::Water))
 //		IsValid = false;
 
-	if (bits & CPrimChecker::Water && (Normal.z > 0.3f) && !forceExclude)
+	if (Normal.z <= 0.30f)
+	{
+		ForceInvalid = true;
+		IsValid = false;
+	}
+	else if ((bits & CPrimChecker::Water) != 0 && !ForceInvalid)
 	{
 		bool	w0 = ((bits0&CPrimChecker::Water) != 0);
 		bool	w1 = ((bits1&CPrimChecker::Water) != 0);
 		bool	w2 = ((bits2&CPrimChecker::Water) != 0);
 
-		uint	ws;
+		uint	ws = 0xff;
 
 		if ((w0 && w1 && ws0 == ws1) || (w0 && w2 && ws0 == ws2))
 			ws = ws0;
@@ -355,6 +358,12 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 			ws = ws1;
 		else if (w2)
 			ws = ws2;
+		else
+		{
+			nlwarning("No WaterShape found for element %d, whereas water detected...", ElemId);
+		}
+
+		WaterShape = ws;
 
 		bool	exists;
 		float	wh = PrimChecker.waterHeight(ws, exists);
@@ -362,14 +371,24 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 		{
 			if (bits & CPrimChecker::Cliff)
 			{
+				ForceInvalid = true;
 				IsValid = false;
 				return;
 			}
 
 			IsValid = true;
 			WaterShape = ws;
+			IsUnderWater = true;
+		}
+		else
+		{
+			ForceInvalid = true;
+			IsValid = false;
 		}
 	}
+
+	if (ForceInvalid)
+		IsValid = false;
 }
 
 CAABBox	NLPACS::CSurfElement::getBBox() const
@@ -587,7 +606,7 @@ void	NLPACS::CComputableSurface::buildBorders(CZoneTessellation *zoneTessel)
 	sint	elem, edge;
 
 	if (Verbose)
-		nlinfo("generate borders for the surface %d", SurfaceId);
+		nlinfo("generate borders for the surface %d (%d elements) - water=%d", SurfaceId, Elements.size(), (IsUnderWater ? 1 : 0));
 
 	for (elem=0; elem<(sint)Elements.size(); ++elem)
 	{
@@ -1127,8 +1146,9 @@ void	NLPACS::CZoneTessellation::compile()
 	for (el=0; el<(sint)Elements.size(); ++el)
 	{
 		CSurfElement	&element = *(Elements[el]);
-		element.computeQuantas(this);
+
 		element.ElemId = el;
+		element.computeQuantas(this);
 	}
 
 	if (ReduceSurfaces)
@@ -1154,7 +1174,8 @@ void	NLPACS::CZoneTessellation::compile()
 				if (e.IsMergable && &e0 != NULL && &e1 != NULL && &e2 != NULL &&
 					e.ZoneId == e0.ZoneId &&
 					e.ZoneId == e1.ZoneId &&
-					e.ZoneId == e2.ZoneId)
+					e.ZoneId == e2.ZoneId &&
+					!e.ForceInvalid)
 				{
 					// Strong optimization
 					// merge the element quantas to the neighbors' quantas which are the most numerous
@@ -1166,11 +1187,27 @@ void	NLPACS::CZoneTessellation::compile()
 					if (e0.QuantHeight == e1.QuantHeight)				e.QuantHeight = e0.QuantHeight;
 					if (e1.QuantHeight == e2.QuantHeight)				e.QuantHeight = e1.QuantHeight;
 					if (e0.QuantHeight == e2.QuantHeight)				e.QuantHeight = e2.QuantHeight;
-
-					if (e0.WaterShape == e1.WaterShape)					e.WaterShape = e0.WaterShape;
-					if (e1.WaterShape == e2.WaterShape)					e.WaterShape = e1.WaterShape;
-					if (e0.WaterShape == e2.WaterShape)					e.WaterShape = e2.WaterShape;
+/*
+					if (e0.WaterShape == e1.WaterShape && e0.IsValid && e1.IsValid)	e.WaterShape = e0.WaterShape;
+					if (e1.WaterShape == e2.WaterShape && e1.IsValid && e2.IsValid)	e.WaterShape = e1.WaterShape;
+					if (e0.WaterShape == e2.WaterShape && e0.IsValid && e2.IsValid)	e.WaterShape = e2.WaterShape;
+*/
 				}
+			}
+		}
+
+		for (p=0; p<(sint)Elements.size(); ++p)
+		{
+			CSurfElement	&e = *(Elements[p]);
+			CSurfElement	&e0 = *e.EdgeLinks[0],
+							&e1 = *e.EdgeLinks[1],
+							&e2 = *e.EdgeLinks[2];
+
+			if (&e != NULL && &e0 != NULL && &e1 != NULL && &e2 != NULL &&
+				e.IsValid && e0.IsValid && e1.IsValid && e2.IsValid &&
+				!e.IsUnderWater && e0.IsUnderWater && e1.IsUnderWater && e2.IsUnderWater)
+			{
+				nlwarning("isolated submerged element '%d' !", p);
 			}
 		}
 	}
@@ -1233,14 +1270,14 @@ void	NLPACS::CZoneTessellation::compile()
 					}
 
 					// swap all suface elements validity
-					if (aabbox.getHalfSize().z < 1.5f)
+					if (!surf.Elements[0]->ForceInvalid && aabbox.getHalfSize().z < 1.5f)
 					{
 						for (i=0; i<surf.Elements.size(); ++i)
 						{
 							surf.Elements[i]->IsValid = !surf.Elements[i]->IsValid;
 						}
 						if (Verbose)
-							nlinfo("Reverted surface %d", surfId-1);
+							nlinfo("Reverted surface %d (%d elements, water=%d)", surfId-1, surf.Elements.size(), (surf.IsUnderWater ? 1 : 0));
 					}
 				}
 			}
@@ -1297,7 +1334,19 @@ void	NLPACS::CZoneTessellation::compile()
 		}
 
 		if (Verbose)
+		{
 			nlinfo("%d surfaces generated", totalSurf);
+
+			for (p=0; p<Surfaces.size(); ++p)
+			{
+				nlinfo("surf %d: %d elements", p, Surfaces[p].Elements.size());
+
+				if (Surfaces[p].Elements.size() == 1)
+				{
+					nlinfo("elm: %d", Surfaces[p].Elements[0]->ElemId);
+				}
+			}
+		}
 	}
 
 	// flag vertices that are pointed by more than 2 surfaces

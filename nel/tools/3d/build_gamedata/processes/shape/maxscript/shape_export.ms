@@ -273,7 +273,7 @@ try
 										-- Select a node
 										try
 										(
-											execute ("$'"+lod+"'")
+											nd = execute ("$'"+lod+"'")
 										)
 										catch
 										(

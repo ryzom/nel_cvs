@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.40 2002/04/25 08:27:08 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.41 2002/05/31 17:13:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -652,8 +652,8 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 							/// compute the number of emissions
 							uint numEmissions = (uint) ::floorf(*phaseIt / *currEmitPeriod);
 							*phaseIt -= *currEmitPeriod * numEmissions;
-							float deltaT = *phaseIt;
-							nlassert(deltaT >= 0.f);
+							float deltaT = std::max(0.f, *phaseIt);
+							//nlassert(deltaT >= 0.f);
 							uint emitterIndex = phaseIt - _Phase.begin();
 
 							/// compute the position of the emitter for the needed dates
@@ -710,8 +710,8 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 							//
 							uint numEmissions = (uint) ::floorf((*phaseIt - _EmitDelay) / *currEmitPeriod);
 							*phaseIt -= *currEmitPeriod * numEmissions;
-							float deltaT = *phaseIt - _EmitDelay;
-							nlassert(deltaT >= 0.f);
+							float deltaT = std::max(*phaseIt - _EmitDelay, 0.f);
+							//nlassert(deltaT >= 0.f);
 
 							uint emitterIndex = phaseIt - _Phase.begin();
 							/// compute the position of the emitter for the needed date
@@ -774,8 +774,8 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 								uint numEmissions = (uint) ::floorf(*phaseIt / *currEmitPeriod);
 								*numEmitIt +=  numEmissions;								
 								*phaseIt -= *currEmitPeriod * numEmissions;
-								float deltaT = *phaseIt;
-								nlassert(deltaT >= 0.f);
+								float deltaT = std::max(*phaseIt, 0.f);
+								//nlassert(deltaT >= 0.f);
 								uint emitterIndex = phaseIt - _Phase.begin();
 								if (*numEmitIt > _MaxEmissionCount) // make sure we don't go over the emission limit
 								{
@@ -840,8 +840,8 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 								uint numEmissions = (uint) ::floorf((*phaseIt - _EmitDelay) / *currEmitPeriod);
 								*numEmitIt +=  numEmissions;								
 								*phaseIt -= *currEmitPeriod * numEmissions;
-								float deltaT = *phaseIt - _EmitDelay;
-								nlassert(deltaT >= 0.f);
+								float deltaT = std::max(*phaseIt - _EmitDelay, 0.f);
+								//nlassert(deltaT >= 0.f);
 								uint emitterIndex = phaseIt - _Phase.begin();
 								if (*numEmitIt > _MaxEmissionCount) // make sure we don't go over the emission limit
 								{

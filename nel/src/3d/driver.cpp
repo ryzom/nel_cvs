@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.cpp,v 1.19 2001/01/11 17:29:03 corvazier Exp $
+ * $Id: driver.cpp,v 1.20 2001/01/16 15:24:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@ const uint32 IDriver::InterfaceVersion = 0x10;
 // ***************************************************************************
 IDriver::IDriver()
 {
+	_PolygonMode= Filled;
 }
 
 // ***************************************************************************

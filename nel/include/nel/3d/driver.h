@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.49 2001/01/11 17:29:11 corvazier Exp $
+ * $Id: driver.h,v 1.50 2001/01/16 15:24:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,6 +181,14 @@ public:
 	virtual bool			render(CPrimitiveBlock& PB, CMaterial& Mat)=0;
 
 	virtual bool			swapBuffers(void)=0;
+
+	/// \name Fog support.
+	// @{
+	virtual	bool			fogEnabled()=0;
+	virtual	void			enableFog(bool enable)=0;
+	/// setup fog parameters. fog must enabled to see result. start and end are in [0,1] range.
+	virtual	void			setupFog(float start, float end, CRGBA color)=0;
+	// @}
 
 	/// Deriver should calls IDriver::release() first, to destroy all driver components (textures, shaders, VBuffers).
 	virtual bool			release(void);

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.56 2001/01/12 13:21:16 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.57 2001/01/16 15:24:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,6 +126,8 @@ CDriverGL::CDriverGL()
 
 	_CurrentMaterial=NULL;
 	_Initialized = false;
+
+	_FogEnabled= false;
 }
 
 
@@ -789,6 +791,36 @@ void CDriverGL::setPolygonMode (TPolygonMode mode)
 		glPolygonMode (GL_FRONT, GL_POINT);
 		break;
 	}
+}
+
+
+bool			CDriverGL::fogEnabled()
+{
+	return _FogEnabled;
+}
+
+void			CDriverGL::enableFog(bool enable)
+{
+	_FogEnabled= enable;
+	if(enable)
+		glEnable(GL_FOG);
+	else
+		glDisable(GL_FOG);
+}
+
+void			CDriverGL::setupFog(float start, float end, CRGBA color)
+{
+	glFogf(GL_FOG_MODE, GL_LINEAR);
+	glFogf(GL_FOG_START, start);
+	glFogf(GL_FOG_END, end);
+
+	GLfloat		col[4];
+	col[0]= color.R/255.0f;
+	col[1]= color.G/255.0f;
+	col[2]= color.B/255.0f;
+	col[3]= color.A/255.0f;
+
+	glFogfv(GL_FOG_COLOR, col);
 }
 
 

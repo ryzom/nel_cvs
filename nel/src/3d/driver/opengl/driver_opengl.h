@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.42 2001/01/16 14:46:56 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.43 2001/01/16 15:24:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -185,6 +185,15 @@ public:
 
 	virtual void			setPolygonMode (TPolygonMode mode);
 
+	/// \name Fog support.
+	// @{
+	virtual	bool			fogEnabled();
+	virtual	void			enableFog(bool enable);
+	/// setup fog parameters. fog must enabled to see result. start and end are in [0,1] range.
+	virtual	void			setupFog(float start, float end, CRGBA color);
+	// @}
+
+
 private:
 	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
 	static const uint32		ReleaseVersion;
@@ -220,6 +229,8 @@ private:
 	// Current View matrix.
 	CMatrix					_ViewMtx;
 
+	// Fog.
+	bool					_FogEnabled;
 
 	// Prec settings, for optimisation.
 	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];

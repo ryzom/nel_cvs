@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: message.cpp,v 1.9 2001/01/31 14:01:09 chafik Exp $
+ * $Id: message.cpp,v 1.10 2001/01/31 15:46:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,7 +22,7 @@
  * MA 02111-1307, USA.
  */
 #include "nel/ai/agent/agent.h"
-#include "nel/ai/agent/agent_mailer.h"
+#include "nel/ai/agent/agent_local_mailer.h"
 #include "nel/ai/logic/boolval.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/agent/agent_method_def.h"

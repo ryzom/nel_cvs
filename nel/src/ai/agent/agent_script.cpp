@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.23 2001/01/31 14:01:09 chafik Exp $
+ * $Id: agent_script.cpp,v 1.24 2001/01/31 15:46:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  */
 #include "nel/ai/agent/agent_script.h"
 #include "nel/ai/agent/agent_manager.h"
-#include "nel/ai/agent/agent_mailer.h"
+#include "nel/ai/agent/agent_local_mailer.h"
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/script/codage.h"
 #include "nel/ai/script/type_def.h"

@@ -1,6 +1,6 @@
 /** \file agent_local_mailer.cpp
  *
- * $Id: agent_local_mailer.cpp,v 1.1 2001/01/31 15:38:52 chafik Exp $
+ * $Id: agent_local_mailer.cpp,v 1.2 2001/01/31 15:42:50 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,7 +22,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/ai/agent/agent_mailer.h"
+#include "nel/ai/agent/agent_local_mailer.h"
 
 namespace NLAIAGENT
 {

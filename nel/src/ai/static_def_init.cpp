@@ -9,7 +9,7 @@
 #include "nel/ai/agent/main_agent_script.h"
 #include "nel/ai/agent/agent_digital.h"
 #include "nel/ai/agent/msg_group.h"
-#include "nel/ai/agent/agent_mailer.h"
+#include "nel/ai/agent/agent_local_mailer.h"
 #include "nel/ai/logic/logic.h"
 #include "nel/ai/fuzzy/fuzzy.h"
 #include "nel/ai/agent/actor.h"
@@ -31,7 +31,7 @@
 	using namespace NLAIFUZZY;
 
 	CLocWordNumRef::tMapRef *CLocWordNumRef::_LocRefence = new CLocWordNumRef::tMapRef;
-	CIndexVariant<uint64,maxIndex>	CNumericIndex::_I = CIndexVariant<uint64,maxIndex>((uint64)0);
+	CIndexVariant<uint64,maxIndex>	CNumericIndex::_I = CIndexVariant<uint64,maxIndex,maxResolutionNumer>((uint64)0);
 	CIndexVariant<uint64,maxIndex,maxResolutionNumer> CNumericIndex::LocalServerID = CIndexVariant<uint64,maxIndex,maxResolutionNumer>((uint64)0);
 	sint CNumericIndex::ShiftLocalServerMask = 16;
 

@@ -1,6 +1,6 @@
 /** \file msg_group.h
  *
- * $Id: msg_notify.h,v 1.1 2001/01/31 14:36:46 chafik Exp $
+ * $Id: msg_notify.h,v 1.2 2001/01/31 15:42:42 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  */
 #ifndef NL_MSG_NOTIFY_H
 #define NL_MSG_NOTIFY_H
-#include "nel/ai/agent/agent_mailer.h"
+#include "nel/ai/agent/agent_local_mailer.h"
 #include "nel/ai/agent/message_script.h"
 
 namespace NLAIAGENT

@@ -1496,7 +1496,7 @@ plugin material NelMaterial
 			iAlphaOperation_2 = OptorModulate
 			iAlphaArg0_2 = Src0Texture
 			iAlphaArg1_2 = Src1Diffuse
-			iAlphaArg0Operand_2	= OprdInvAlpha
+			iAlphaArg0Operand_2	= OprdAlpha
 			iAlphaArg1Operand_2	= OprdAlpha
 			iTextureShader_2 = TextureShaderDisable
 		)

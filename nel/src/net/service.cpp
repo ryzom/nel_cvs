@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.cpp,v 1.5 2000/10/04 14:34:10 cado Exp $
+ * $Id: service.cpp,v 1.6 2000/10/04 15:09:30 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -46,15 +46,15 @@ sint IService::main (int argc, char **argv)
 		}
 		release ();
 	}
-	catch ( Exception& e )
+	catch (Exception &e)
 	{
 		cout << e.what() << endl;
-		setStatus( EXIT_FAILURE );
+		setStatus (EXIT_FAILURE);
 		try
 		{
-			release();
+			release ();
 		}
-		catch ( Exception& e )
+		catch (Exception& e)
 		{
 			cout << "Error releasing service : " << e.what() << endl;
 		}

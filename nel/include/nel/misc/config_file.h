@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: config_file.h,v 1.2 2000/10/04 13:58:58 lecroart Exp $
+ * $Id: config_file.h,v 1.3 2000/10/04 15:09:30 lecroart Exp $
  *
  * Manage a configuration files
  */
@@ -134,6 +134,9 @@ public:
 		std::string	&asString	(int index=0);
 		//@}
 
+		bool		operator==	(const CVar& var) const;
+		bool		operator!=	(const CVar& var) const;
+		
 		// Get the size of the variable. It's the number of element of the array or 1 if it's not an array.
 		int			 size ();
 
@@ -149,6 +152,7 @@ public:
 		std::vector<int>			IntValues;
 		std::vector<double>			RealValues;
 		std::vector<std::string>	StrValues;
+		void						(*Callback)(CVar &var);
 		//@}
 	};
 
@@ -167,9 +171,14 @@ public:
 	/// 
 	void print ();
 
+	void setCallback (void (*cb)());
+	void setCallback (const std::string VarName, void (*cb)(CConfigFile::CVar &var));
+
 	static void checkConfigFiles ();
 
 private:
+
+	void (*Callback)();
 
 	/// Get the content of the variable as a STL string
 	std::vector<CVar>	Vars;

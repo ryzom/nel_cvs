@@ -174,17 +174,7 @@ SOURCE=..\include\nel\misc\config_file.h
 # Begin Source File
 
 SOURCE=.\misc\config_file\config_file.lex
-
-!IF  "$(CFG)" == "misc - Win32 Release"
-
 # PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -193,17 +183,7 @@ SOURCE=.\misc\config_file\config_file.lex.cpp
 # Begin Source File
 
 SOURCE=.\misc\config_file\config_file.yacc
-
-!IF  "$(CFG)" == "misc - Win32 Release"
-
 # PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

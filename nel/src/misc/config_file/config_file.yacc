@@ -10,7 +10,7 @@
 
 using namespace std;
 
-#include "config_file.h"
+#include "nel/misc/config_file.h"
 
 /* Constantes */
 
@@ -104,6 +104,7 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 				}
 				NLMISC::CConfigFile::CVar Var;
 				Var.Comp = false;
+				Var.Callback = NULL;
 				if (cf_CurrentVar.Comp) Var = cf_CurrentVar;
 				else cf_setVar (Var, $3);
 				Var.Name = $1.String;
@@ -116,7 +117,10 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 				else
 				{
 					// reaffectation d'une variable
+					Var.Callback = (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Callback;
 					DEBUG_PRINTF ("yacc: reassign var '%s'\n", $1.String);
+					if (Var != (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] && Var.Callback != NULL)
+						(Var.Callback)(Var);
 					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] = Var;
 				}
 

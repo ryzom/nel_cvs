@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: config_file.cpp,v 1.2 2000/10/04 13:59:03 lecroart Exp $
+ * $Id: config_file.cpp,v 1.3 2000/10/04 15:09:30 lecroart Exp $
  *
  * Implementation of CConfigFile.
  */
@@ -74,6 +74,25 @@ std::string &CConfigFile::CVar::asString (int index)
 	else return StrValues[index];
 }
 
+bool CConfigFile::CVar::operator==	(const CVar& var) const
+{
+	if (Type == var.Type)
+	{
+		switch (Type)
+		{
+		case T_INT: return IntValues == var.IntValues; break;
+		case T_REAL: return RealValues == var.RealValues; break;
+		case T_STRING: return StrValues == var.StrValues; break;
+		}
+	}
+	return false;
+}
+
+bool CConfigFile::CVar::operator!=	(const CVar& var) const
+{
+	return !(*this==var);
+}
+
 int CConfigFile::CVar::size ()
 {
 	switch (Type)
@@ -98,7 +117,6 @@ CConfigFile::~CConfigFile ()
 void CConfigFile::parse (const string fileName)
 {
 	FileName = fileName;
-	LastModified = getLastModified ();
 	CConfigFile::ConfigFiles.push_back (this);
 	printf("add %s\n", FileName.c_str ());
 	reparse ();
@@ -106,10 +124,10 @@ void CConfigFile::parse (const string fileName)
 
 void CConfigFile::reparse ()
 {
+	LastModified = getLastModified ();
 	cfin = fopen (FileName.c_str (), "r");
 	if (cfin != NULL)
 	{
-		Vars.clear ();
 		bool parsingOK = (cfparse (&(Vars)) == 0);
 		fclose (cfin);
 		if (!parsingOK) throw EParseError (FileName, cf_CurrentLine);
@@ -135,6 +153,7 @@ void CConfigFile::print ()
 	printf("%d results:\n-------------------------------------\n", Vars.size());
 	for(int i = 0; i < Vars.size(); i++)
 	{
+		printf((Vars[i].Callback==NULL)?"   ":"CB ");
 		if (Vars[i].Comp)
 		{
 			switch (Vars[i].Type)
@@ -189,6 +208,32 @@ void CConfigFile::print ()
 	}
 }
 
+void CConfigFile::setCallback (void (*cb)())
+{
+	Callback = cb;
+}
+
+void CConfigFile::setCallback (const string VarName, void (*cb)(CConfigFile::CVar &var))
+{
+	for (vector<CVar>::iterator it = Vars.begin (); it != Vars.end (); it++)
+	{
+		if (VarName == (*it).Name)
+		{
+			(*it).Callback = cb;
+			return;
+		}
+	}
+	// VarName doesn't exist, add it now for the futur
+	CVar Var;
+	Var.Name = VarName;
+	Var.Callback = cb;
+	Vars.push_back (Var);
+}
+
+
+// ***************************************************************************
+
+
 vector<CConfigFile *> CConfigFile::ConfigFiles;
 
 uint32 CConfigFile::getLastModified ()
@@ -217,7 +262,15 @@ void CConfigFile::checkConfigFiles ()
 	{
 		if ((*it)->LastModified != (*it)->getLastModified ())
 		{
-			(*it)->reparse ();
+			if ((*it)->Callback != NULL) (*it)->Callback();
+			try
+			{
+				(*it)->reparse ();
+			}
+			catch (EConfigFile &ee)
+			{
+				printf("warning: %s\n", ee.what ());
+			}
 		}
 	}
 }

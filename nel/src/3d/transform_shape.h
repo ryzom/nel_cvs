@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.15 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: transform_shape.h,v 1.16 2002/07/03 09:11:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,6 +107,14 @@ public:
 	void				changeLightSetup(CRenderTrav *rdrTrav);
 	// @}
 
+	/// Test if there is a start/stop caps in the objects (some fxs such as remanence)
+	virtual bool		canStartStop() { return false; }
+	// For instance that have a start/stop caps
+	virtual void		start() {};
+	// For instance that have a start/stop caps
+	virtual void		stop()  {};
+	// For instance that have a start/stop caps
+	virtual bool		isStarted() const { return false; }
 
 protected:
 	/// Constructor

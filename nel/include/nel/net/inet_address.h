@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.h,v 1.6 2000/09/25 15:01:47 cado Exp $
+ * $Id: inet_address.h,v 1.7 2000/10/02 16:42:23 cado Exp $
  *
  * Interface for CInetAddress
  */
@@ -32,6 +32,12 @@
 
 
 struct sockaddr_in;
+
+
+namespace NLMISC
+{
+	class IStream;
+}
 
 
 namespace NLNET
@@ -90,6 +96,15 @@ public:
 
 	/// Returns port
 	uint16				port() const;
+
+	/// Returns hostname and port as a string
+	std::string			asString() const;
+
+	/// Returns IP address and port as a string
+	std::string			asIPString() const;
+
+	/// Serialize
+	void serial( NLMISC::IStream& s );
 
 	/// Creates a CInetAddress object with local host address, port=0
 	static CInetAddress	localHost() throw(ESocket);

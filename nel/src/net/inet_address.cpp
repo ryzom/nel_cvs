@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.7 2000/09/25 15:01:47 cado Exp $
+ * $Id: inet_address.cpp,v 1.8 2000/10/02 16:42:23 cado Exp $
  *
  * Implementation for CInetAddress.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -27,7 +27,8 @@
 
 #include "nel/net/inet_address.h"
 #include "nel/net/socket.h"
-
+#include "nel/misc/stream.h"
+#include <sstream>
 
 #ifdef NL_OS_WINDOWS
 	#include <winsock2.h>
@@ -44,7 +45,7 @@ using namespace std;
 namespace NLNET
 {
 
-/** \todo Choose to keep or suppress CInetAddress::RetrieveNames
+/** \todo cado Choose to keep or suppress CInetAddress::RetrieveNames
  * \sa setSockAddr
  */
 bool CInetAddress::RetrieveNames = true;
@@ -229,6 +230,39 @@ string CInetAddress::hostName() const
 uint16 CInetAddress::port() const
 {
 	return ntohs( _SockAddr->sin_port );
+}
+
+
+/*
+ * Returns hostname and port as a string
+ */
+std::string CInetAddress::asString() const
+{
+	stringstream ss;
+	ss << hostName() << "/" << port();
+	return ss.str();
+}
+
+
+/*
+ * Returns IP address and port as a string
+ */
+std::string CInetAddress::asIPString() const
+{
+	stringstream ss;
+	ss << ipAddress() << "/" << port();
+	return ss.str();
+}
+
+
+/*
+ * Serialize
+ */
+void CInetAddress::serial( NLMISC::IStream& s )
+{
+	s.serial( _HostName );
+	s.serialBuffer( (uint8*)_SockAddr, sizeof(_SockAddr) );
+	// This is possible only because the contents of _SockAddr is platform-independant !
 }
 
 

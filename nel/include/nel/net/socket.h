@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.9 2000/09/25 16:07:27 cado Exp $
+ * $Id: socket.h,v 1.10 2000/10/02 16:42:23 cado Exp $
  *
  * Interface for CSocket
  */
@@ -28,12 +28,24 @@
 
 
 #include "nel/net/base_socket.h"
+#include "nel/net/message.h"
+#include <map>
+#include <string>
 
 namespace NLNET
 {
 
 
-class CMessage;
+/// Sender identifier
+typedef uint32 TSenderId;
+
+
+// Map for msg name and msg type number association
+typedef std::map<std::string,TTypeNum> CMsgMap;
+
+
+/// Elements of CMsgMap
+typedef std::pair<std::string,TTypeNum> TMsgMapItem;
 
 
 /**
@@ -77,7 +89,7 @@ public:
 	}
 
 	/// Sends a message
-	void	send( const CMessage& message ) throw(ESocket);
+	void	send( CMessage& message ) throw(ESocket);
 
 	/// Checks if there are some data to receive
 	bool	dataAvailable() throw (ESocket);
@@ -95,15 +107,33 @@ public:
 		return _RemoteAddr;
 	}
 
+	/// Process an incoming bind message
+	void	processBindMessage( CMessage& message );
+
+	/// Transforms a message replacing its string type by the corresponding num type if it is bound
+	void	packMessage( CMessage& message );
+
+	
+	friend class CServerSocket;
+
 protected:
 
+	/// Returns an output message with header encoded in the payload buffer
+	CMessage	encode( CMessage& msg );
+
 	/// Helper method for receive() and received()
-	void	doReceive( CMessage& message ) throw (ESocket);
+	void		doReceive( CMessage& message ) throw (ESocket);
 
 private:
 
 	CInetAddress	_RemoteAddr;
 	bool			_Connected;
+
+	CMsgMap			_MsgMap;
+
+	bool			_DataAvailable; // can be modified only by CServerSocket
+	TSenderId		_SenderId;		// the same
+	bool			_IsListening;	// the same
 
 };
 

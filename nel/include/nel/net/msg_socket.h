@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.7 2000/09/25 16:07:27 cado Exp $
+ * $Id: msg_socket.h,v 1.8 2000/10/02 16:42:23 cado Exp $
  *
  * Interface for CServerSocket
  */
@@ -28,7 +28,9 @@
 
 #include "nel/net/base_socket.h"
 #include "nel/net/socket.h"
-#include <vector>
+#include "nel/net/pt_callback_item.h"
+#include <list>
+#include <set>
 
 
 namespace NLNET
@@ -38,104 +40,111 @@ class CInetAddress;
 class CMessage;
 
 
-/**
- * Type of callbacks for processing incoming messages, passed to CServerSocket::receive().
- * The callback function must process a connection/disconnection (if message==NULL), or a received input message (otherwise).
- * When message!=NULL, it does not need to deallocate it.
- * When the socket is closed, it will be deleted by the caller of the callback.
- *
- * The first argument is a pointer to the caller object.
- *
- * \sa For an example of usage: CLogService::run
- */
+/// List of connections
+typedef std::list<CSocket*> CConnections;
 
-typedef void (*TCbProcessReceivedMsg)( void*, CSocket&, CMessage*);
 
+/// Set of "special pointers to callback items"
+typedef std::set<CPtCallbackItem> CSearchSet;
 
 
 /**
- * A server socket object allows to listen on a port and to accept incoming connections. It returns
- * then a CSocket object.
+ * A server socket object allows to receive messages from connected sockets.
+ * It has two modes, depending on the constructor called: client and server.
+ *
  * \test Test program is /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
  */
-class CServerSocket : public CBaseSocket
+class CServerSocket
 {
 public:
 
-	/// Constructor.
-	CServerSocket();
+	/// Constructs a server object, listening on specified port 
+	CServerSocket( TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port );
+
+	/// Constructs a client object, that connects to servaddr.
+	CServerSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr );
 
 	/// Destructor. It closes all sockets (connections) that have been created by this CServerSocket object
 	~CServerSocket();
 
+	/// Send a message (client mode only)
+	void			send( CMessage& outmsg );
+
+	/// Send a message to the specified host id
+	static void		send( CMessage& outmsg, TSenderId id );
+
+	/** Updates the connected sockets and accept new connections.
+	 * - When a new connection incomes (server mode only), the callback of name "C" is called if it exists. Its message contains hostname and port.
+	 * - When a message is received, the callback of name the msgName() is called. An exception is raised it doesn't exist.
+	 * - When a connection is closed, the callback of name "D" is called if it exists. The message is empty.
+	 */
+	static void		receive();
+
+	/// Sets timeout for receive() in milliseconds
+	static void		setTimeout( uint32 ms );
+
+protected:
+
+	/// Part of constructor contents
+	void			init( TCallbackItem *callbackarray, TTypeNum arraysize );
+
 	/// Prepares to receive connections on a specified port
-	void		listen( uint16 port ) throw (ESocket);
+	void			listen( CSocket *listensock, uint16 port ) throw (ESocket);
 
 	/// Prepares to receive connections on a specified address/port (useful when the host has several addresses)
-	void		listen( const CInetAddress& addr ) throw (ESocket);
-
-	/** Tests if a client requests/closes connection or a message is received from a connected client.
-	 *
-	 * \li If a new client requests a connection, the server calls accept() (i.e. it creates a new client socket, which
-	 * is added to the list of connections). It then calls the callback function. Its argument "message" is NULL.
-	 * \li If a connected client closes connection, it calls the callback function. Its argument "message" is NULL.
-	 * Then the client socket is removed from the list of connections and deleted.
-	 * \li If a message is received from a connected client, it puts it in the input message that is passed,
-	 * as a pointer, in argument of the callback function. The callback function needs not delete it.
-	 *
-	 * \param caller A pointer to the caller of receive (use "this"). It is passed to the callback function.
-	 * \param cbProcessReceivedMsg Callback function to provide. Example:
-	 *
-	 * \code 
-		void cbProcessReceivedMsg( void* caller, CSocket& sock, CMessage *message )
-		{
-			if ( message == NULL )
-			{
-				if ( sock.connected() )
-				{
-					// Process connection request
-				}
-				else
-				{
-					// Some stuff in reaction to disconnection of the client
-				}
-			}
-			else
-			{
-				// Process (*message) that was received
-			}
-		}
-		\encode
-	 */
-	void		receive( void* caller, TCbProcessReceivedMsg cbProcessReceivedMsg );
+	void			listen( CSocket *listensock, const CInetAddress& addr ) throw (ESocket);
 
 	/** Wait for a client to connect, then creates a new socket connected to the client, and adds it to the list of connections.
 	 * It returns a reference on this socket object, which is maintained by the CServerSocket object.
 	 * Usage : \code CSocket& sock = servsock.accept(); \endcode
 	 * If you don't want the server thread to block, use receive() instead.
 	 */
-	CSocket&	accept() throw (ESocket);
+	static CSocket&	accept( SOCKET listen_descr ) throw (ESocket);
 
-	/** Number of seconds to wait in receive(). The higher, the nicer for the speed of the rest of the system.
+	/// Add a new connection socket
+	static void		addNewConnection( CSocket *connection );
+
+	/// Returns if the listening socket of the server and the connection sockets have incoming data available.
+	static bool		getDataAvailableStatus();
+
+	/// Returns true if msg is a binding message
+	static bool		msgIsBinding( const CMessage& msg );
+
+	/** Calls the good callback, and send a binding message if needed
+	 * \param msg [in] An input message to pass to the callback
+	 * \param sock [in] The socket from which the message was received
 	 */
-	static long	NiceLevel;
+	static void		processReceivedMessage( CMessage& msg, CSocket& sock );
 
-protected:
+	/// Returns a pointer to the socket object having the specified sender id
+	static CSocket	*socketFromId( TSenderId id );
 
-	/** Returns if the listening socket of the server and the connection sockets have incoming data available.
-	 * \param ringing [out] True if the listening socket has data (e.g. a connection request)
-	 * \param ringing [out] Vector of bool telling which connections have incoming data.
-	 * You don't need to initialize "available".
-	 */
-	bool getDataAvailableStatus( bool& ringing, std::vector<bool>& available );
+	// Gets new sender id
+	static TSenderId newSenderId()
+	{
+		TSenderId sid = _SenderIdNb;
+		_SenderIdNb++;
+		return sid;
+	}
 
 private:
 
-	bool					_Binded;
-	std::vector<CSocket*>	_Connections;
+	CSocket						*_ClientSock;
+
+	static bool					_Binded;
+	static CConnections			_Connections;
+	static TSenderId			_SenderIdNb;
+
+	/// Number of milliseconds to wait in receive(). The higher, the nicer for the speed of the rest of the system.
+	static long					_TimeoutS, _TimeoutM;
+
+
+	static TCallbackItem		*_CallbackArray;
+	static TTypeNum				_CbaSize;
+	static CSearchSet			_SearchSet;
 
 };
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.cpp,v 1.7 2000/09/25 15:01:47 cado Exp $
+ * $Id: message.cpp,v 1.8 2000/10/02 16:42:23 cado Exp $
  *
  * Implementation of CMessage
  */
@@ -64,6 +64,7 @@ CMessage& CMessage::operator=( const CMessage& other )
 	_BufPos = _Buffer.begin() + other.lengthS();
 	_MsgType = other._MsgType;
 	_MsgName = other._MsgName;
+	_TypeIsNumber = other._TypeIsNumber;
 	return *this;
 }
 
@@ -139,55 +140,13 @@ void CMessage::clear()
 }
 
 
-/*
- * Returns message type code or length of message name
- */
-uint16 CMessage::encodedMsgType() const
-{
-	if ( msgName() != "" )
-	{
-		return msgName().length() | 0x8000; // bit15 is 1 when msgtype is msgnamelen
-	}
-	else
-	{
-		return msgType();
-	}
-}
-
-
-/*
- * Returns an output message with header encoded in the payload buffer
- */
-CMessage CMessage::encode() const
-{
-	CMessage alldata( false, length()+CMessage::maxHeaderLength() );
-
-	// 1. Write message type
-	sint16 msgtype = encodedMsgType();
-	alldata.serial( msgtype );
-
-	// 2. Write message name (optional)
-	if ( msgName().length() != 0 )
-	{
-		alldata.serial( msgName() );
-	}
-
-	// 3. Write message size
-	uint32 msgsize = length();
-	alldata.serial( msgsize );
-
-	// 4. Write message payload
-	alldata.serialBuffer( const_cast<uint8*>(buffer()), length() );
-
-	return alldata;
-}
-
-
 /* Sets the message using an encoded input message.
  * @param alldata An input message in which the header is in the payload buffer
  */
 void CMessage::decode( CMessage& alldata )
 {
+	/* // DEPRECATED
+	//TODO: take CSocket::doReceive and update decode
 	// 1. Read message type
 	sint16 msgtype;
 	alldata.serial( msgtype );
@@ -213,20 +172,7 @@ void CMessage::decode( CMessage& alldata )
 
 	// 4. Read payload buffer
 	alldata.serialBuffer( bufferToFill( msgsize ), msgsize );
-}
-
-
-/*
- * Returns true if msgtype contains the length of a message name, and, if so, puts it into msgnamelen
- */
-bool CMessage::decodeLenInMsgType( uint16 msgtype, uint16 *msgnamelen )
-{
-	if ( msgtype < 0 )
-	{
-		*msgnamelen = msgtype & 0x7FFF; // msgtype when bit 15 is 1 is length of msgname
-		return true;
-	}
-	return false;
+	*/
 }
 
 
@@ -238,16 +184,6 @@ void CMessage::fill( const uint8 *srcbuf, uint32 len )
 	_Buffer.resize( len );
 	_BufPos = _Buffer.begin();
 	memcpy( &(*_BufPos), srcbuf, len );
-}
-
-
-/*
- * Sets the message header values
- */
-void CMessage::setHeader( sint16 msgtype, const std::string& msgname )
-{
-	_MsgType = msgtype;
-	_MsgName = msgname;
 }
 
 

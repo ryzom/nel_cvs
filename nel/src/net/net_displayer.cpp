@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.cpp,v 1.1 2000/09/25 11:14:23 cado Exp $
+ * $Id: net_displayer.cpp,v 1.2 2000/10/02 16:42:23 cado Exp $
  *
  * Implementation of CNetDisplayer
  */
@@ -78,6 +78,7 @@ void CNetDisplayer::display( const std::string& str )
 			}
 		}
 		CMessage msg( false );
+		msg.setType( 0 ); // we don't listen for incoming replies, therefore we must not use a type as string
 		msg.serial( const_cast<std::string&>(str) );
 		_Server.send( msg );
 	}
@@ -90,26 +91,10 @@ void CNetDisplayer::display( const std::string& str )
 
 /*
  * Handshake between us and the server. Returns true if the connected server is a logging server.
- * At the moment, it only sends "LOG" and returns true.
+ * At the moment, it does nothing and always returns true.
  */
 bool CNetDisplayer::handshake()
 {
-	// This is highly subject to change
-	std::string keyword = "LOG";
-	CMessage msgout;
-	msgout.setHeader( 0, "" );
-	msgout.serial( keyword );
-	_Server.send( msgout );
-
-	/*CMessage msgin( true );
-	_Server.receive( msgin ); // pb: this is blocking...
-	if ( msgin.msgName() != "LOG" )
-	{
-		return false;
-	}
-	msgin.serial( keyword );
-	return ( keyword == "Logging" );*/
-	
 	return true;
 }
 

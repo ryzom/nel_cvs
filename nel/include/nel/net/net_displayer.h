@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.h,v 1.2 2000/09/25 15:01:47 cado Exp $
+ * $Id: net_displayer.h,v 1.3 2000/10/02 16:42:23 cado Exp $
  *
  * Interface for CNetDisplayer
  */
@@ -49,14 +49,15 @@ public:
 	/// Destructor
 	virtual ~CNetDisplayer();
 		
-	/// Sends the string to the logging server
+	/** Sends the string to the logging server
+	 * \warning If not connected, tries to connect to the logging server each call. It can slow down your program a lot.
+	 */
 	virtual void display (const std::string& str);
 
 protected:
 
 	/** Handshake between us and the server. Returns true if the connected server is a logging server.
-	 * At the moment, it only sends "LOG" and returns true.
-	 * \todo Add: Check if the server is a logging server
+	 * At the moment, it does nothing and always return true.
 	 */
 	bool	handshake();
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.cpp,v 1.5 2000/09/25 16:07:27 cado Exp $
+ * $Id: base_socket.cpp,v 1.6 2000/10/02 16:42:23 cado Exp $
  *
  * Implementation of CBaseSocket
  */
@@ -26,7 +26,7 @@
 #include "nel/net/base_socket.h"
 #include "nel/misc/log.h"
 
-/// \todo Debug logging class instead
+/// \todo cado Debug logging class instead
 extern NLMISC::CLog Log;
 
 #ifdef NL_OS_WINDOWS
@@ -120,7 +120,7 @@ void CBaseSocket::close()
 		#endif
 	if ( _Logging )
 	{
-		Log.display( "Socket %d closed at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
+		Log.display( "Socket %d closed at %s\n", _Sock, _LocalAddr.asIPString().c_str() );
 	}
 	_Sock = INVALID_SOCKET;
 	}

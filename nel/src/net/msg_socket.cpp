@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.7 2000/09/25 15:01:47 cado Exp $
+ * $Id: msg_socket.cpp,v 1.8 2000/10/02 16:42:23 cado Exp $
  *
  * Implementation of CServerSocket.
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
@@ -55,17 +55,60 @@ using namespace std;
 namespace NLNET
 {
 
-/// \todo Choose a default value and how to use CServerSocket::NiceLevel
-long CServerSocket::NiceLevel = 1;
+bool				CServerSocket::_Binded;
+CConnections		CServerSocket::_Connections;
+TSenderId			CServerSocket::_SenderIdNb;
+long				CServerSocket::_TimeoutS = 0;
+long				CServerSocket::_TimeoutM = 0;
+
+TCallbackItem		*CServerSocket::_CallbackArray;
+TTypeNum			CServerSocket::_CbaSize;
+CSearchSet			CServerSocket::_SearchSet;
+
+  
+/*
+ * Constructs a server object, listening on specified port
+ */
+CServerSocket::CServerSocket( TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port ) :
+	_ClientSock( NULL )
+{
+	init( callbackarray, arraysize );
+	CSocket *listensock = new CSocket();
+	listensock->_IsListening = true;
+	addNewConnection( listensock );
+	listen( listensock, port );
+}
 
 
 /*
- * Constructor
+ * Constructs a client object, that connects to servaddr.
  */
-CServerSocket::CServerSocket() :
-	CBaseSocket(),
-	_Binded( false )
-{}
+CServerSocket::CServerSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr )
+{
+	init( callbackarray, arraysize );
+	_ClientSock = new CSocket();
+	_ClientSock->_IsListening = false;
+	_ClientSock->connect( servaddr );
+	addNewConnection( _ClientSock );
+}
+
+
+/*
+ * Part of constructor contents
+ */
+void CServerSocket::init( TCallbackItem *callbackarray, TTypeNum arraysize )
+{
+	_Binded = false;
+	_SenderIdNb = 0;
+	_CallbackArray = callbackarray;
+	_CbaSize = arraysize;
+	
+	TCallbackItem *pt;
+	for ( pt=callbackarray; pt<callbackarray+arraysize; pt++ )
+	{
+		_SearchSet.insert( CPtCallbackItem(pt) );
+	}
+}
 
 
 /*
@@ -73,7 +116,7 @@ CServerSocket::CServerSocket() :
  */
 CServerSocket::~CServerSocket()
 {
-	vector<CSocket*>::iterator its;
+	CConnections::iterator its;
 	for ( its=_Connections.begin(); its!=_Connections.end(); its++ )
 	{
 		delete *its;
@@ -84,18 +127,18 @@ CServerSocket::~CServerSocket()
 /*
  * Prepares to receive connections on a specified port
  */
-void CServerSocket::listen( uint16 port ) throw (ESocket)
+void CServerSocket::listen( CSocket *listensock, uint16 port ) throw (ESocket)
 {
 	CInetAddress localaddr = CInetAddress::localHost();
 	localaddr.setPort( port );
-	listen( localaddr ); // throw (ESocket)
+	listen( listensock, localaddr ); // throw (ESocket)
 }
 
 
 /*
  * Prepares to receive connections on a specified address/port (useful when the host has several addresses)
  */
-void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
+void CServerSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (ESocket)
 {
 	if ( _Binded )
 	{
@@ -105,18 +148,17 @@ void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
 	{
 		throw ESocket("Invalid address for listening");
 	}
-	_LocalAddr = addr;
 
 	// Create a socket
-	_Sock = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ); // IPPROTO_TCP or IPPROTO_IP (=0) ?
-	if ( _Sock == INVALID_SOCKET )
+	listensock->_Sock = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ); // IPPROTO_TCP or IPPROTO_IP (=0) ?
+	if ( listensock->_Sock == INVALID_SOCKET )
 	{
 		throw ESocket("Server socket creation failed");
 	}
-	Log.display( "Socket %d open as a server socket\n", _Sock );
+	Log.display( "Socket %d open as a server socket\n", listensock->_Sock );
 
 	// Bind socket to port	
-	if ( ::bind( _Sock, (const sockaddr *)addr.sockAddr(), sizeof(sockaddr_in) ) != 0 )
+	if ( ::bind( listensock->_Sock, (const sockaddr *)addr.sockAddr(), sizeof(sockaddr_in) ) != 0 )
 	{
 		throw ESocket("Unable to bind server socket to port");
 	}
@@ -125,76 +167,116 @@ void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
 	// Retrieve socket error code (is this really necessary ?)
 	int errcode=0;
 	int errlen=sizeof(errcode);
-	getsockopt( _Sock, SOL_SOCKET, SO_ERROR, (char*)&errcode, &errlen );
+	getsockopt( listensock->_Sock, SOL_SOCKET, SO_ERROR, (char*)&errcode, &errlen );
 	if ( errcode != 0 )
 	{
 		throw ESocket("Server socket raised an error after binding");
 	}
 
 	// Listen
-	if ( ::listen( _Sock, SOMAXCONN ) != 0 ) // SOMAXCONN = maximum length of the queue of pending connections
+	if ( ::listen( listensock->_Sock, SOMAXCONN ) != 0 ) // SOMAXCONN = maximum length of the queue of pending connections
 	{
 		throw ESocket("Unable to listen on specified port");
 	}
-	Log.display( "Socket %d listening at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
+	Log.display( "Socket %d listening at %s\n", listensock->_Sock, addr.asIPString().c_str() );
 }
 
 
-/* Tests if a client requests/closes connection or a message is received from a connected client.
- *
- * \li If a new client requests a connection, the server calls accept() (i.e. it creates a new client socket, which
- * is added to the list of connections). It then calls the callback function. Its argument "message" is NULL.
- * \li If a connected client closes connection, it calls the callback function. Its argument "message" is NULL.
- * Then the client socket is removed from the list of connections and deleted.
- * \li If a message is received from a connected client, it puts it in the input message that is passed,
- * as a pointer, in argument of the callback function. The callback function needs not delete it.
- *
- * \param cbProcessReceivedMsg Callback function to provide. Example: see header file.
+/*
+ * Send a message (client mode only)
  */
-void CServerSocket::receive( void* caller, TCbProcessReceivedMsg cbProcessReceivedMsg )
+void CServerSocket::send( CMessage& outmsg )
+{
+	if ( _ClientSock != NULL )
+	{
+		_ClientSock->send( outmsg );
+	}
+}
+
+
+/*
+ * Send a message to the specified host id
+ */
+void CServerSocket::send( CMessage& outmsg, TSenderId id )
+{
+	CSocket *sock = socketFromId( id );
+	if ( sock != NULL )
+	{
+		sock->send( outmsg );
+	}
+	else
+	{
+		throw ESocket("Invalid host id");
+	}
+}
+
+
+/*
+ *
+ */
+void CServerSocket::receive()
 {
 	// Check data available on all sockets, including the server socket
-	vector<bool> available;
-	bool ringing;
-	if ( getDataAvailableStatus( ringing, available ) )
+	if ( getDataAvailableStatus() )
 	{
-
-		if ( ringing )
-		{
-			// Accept connection request
-			cbProcessReceivedMsg( caller, accept(), NULL );
-		}
-
 		// Iterate on the sockets where data are available
-		uint32 i; // an iterator is not preferable here
-		uint32 availsize = available.size();
-		for ( i=0; i!=availsize; i++ )
+		bool erased = false;
+		CConnections::iterator ilps;
+		for ( ilps=_Connections.begin(); ilps!=_Connections.end(); )
 		{
-			if ( available[i] )
+			if ( (*ilps)->_DataAvailable )
 			{
-				CSocket *sock = _Connections[i];
-				try
+				if ( (*ilps)->_IsListening )
 				{
-					// Receive message from a connected client
-					CMessage msg( true );
-					sock->receive( msg );
-					cbProcessReceivedMsg( caller, *sock, &msg );
+					// Accept connection request
+					CMessage msg;
+					CSocket& sock = accept( (*ilps)->descriptor() );
+					msg.setType( "C" );
+					msg.serial( sock.remoteAddr().hostName() ); // add serial() to CInetAddress ?
+					uint16 port = sock.remoteAddr().port();
+					msg.serial( port );
+					processReceivedMessage( msg, sock );
 				}
-				catch ( ESocket& )
+				else
 				{
-					// Handle a connection closure (gracefull or not), when
-					// receive() has thrown an exception. Note: this could be done by boolean result
-					sock->close();
-					cbProcessReceivedMsg( caller, *sock, NULL );
-					_Connections.erase( _Connections.begin() + i );
-					delete sock;
-					availsize--;
-					i--; // ok, not very smart
+					try
+					{
+						// Receive message from a connected client
+						CMessage msg( true );
+						(*ilps)->receive( msg );
+						if ( msgIsBinding( msg ) )
+						{
+							(*ilps)->processBindMessage( msg );
+						}
+						else 
+						{
+							processReceivedMessage( msg, **ilps );
+						}
+						// Reset flag
+						(*ilps)->_DataAvailable = false;
+					}
+					catch ( ESocket& )
+					{
+						// Handle a connection closure (gracefull or not), when
+						// receive() has thrown an exception. Note: this could be done by boolean result
+						(*ilps)->close();
+						CMessage msg;
+						msg.setType( "D" );
+						processReceivedMessage( msg, **ilps );
+						delete (*ilps);
+						ilps = _Connections.erase( ilps );
+						erased = true;
+					}
 				}
+			}
+			if ( !erased )
+			{
+				ilps++;
 			}
 		}
 	}
 }
+
 
 
 /* Wait for a client to connect, then creates a new socket connected to the client, and adds it to the list of connections.
@@ -202,12 +284,12 @@ void CServerSocket::receive( void* caller, TCbProcessReceivedMsg cbProcessReceiv
  * Usage : \code CSocket& sock = servsock.accept(); \endcode
  * If you don't want the server thread to block, use receive() instead.
  */
-CSocket& CServerSocket::accept() throw (ESocket)
+CSocket& CServerSocket::accept( SOCKET listen_descr ) throw (ESocket)
 {
 	// Accept connection
 	sockaddr_in saddr;
 	sint saddrlen = sizeof(saddr);
-	SOCKET newsock = ::accept( _Sock, (sockaddr*)&saddr, &saddrlen );
+	SOCKET newsock = ::accept( listen_descr, (sockaddr*)&saddr, &saddrlen );
 	if ( newsock == INVALID_SOCKET )
 	{
 		throw ESocket( "accept return an invalid socket");
@@ -217,59 +299,156 @@ CSocket& CServerSocket::accept() throw (ESocket)
 	CInetAddress addr;
 	addr.setSockAddr( &saddr );
 	CSocket *connection = new CSocket( newsock, addr );
-	_Connections.push_back( connection );
-	Log.display( "Socket %d accepted an incoming connection from %s/%hu and opened socket %d\n", _Sock, addr.ipAddress().c_str(), addr.port(), newsock );
+	addNewConnection( connection );
+	Log.display( "Socket %d accepted an incoming connection from %s and opened socket %d\n", listen_descr, addr.asIPString().c_str(), newsock );
 	return *connection;
 }
 
 
-/* Returns if the listening socket of the server and the connection sockets have incoming data available.
- * \param ringing [out] True if the listening socket has data (e.g. a connection request)
- * \param ringing [out] Vector of bool telling which connections have incoming data.
- * You don't need to initialize "available".
+/*
+ * Add a new connection socket
  */
-bool CServerSocket::getDataAvailableStatus( bool& ringing, std::vector<bool>& available )
+void CServerSocket::addNewConnection( CSocket *connection )
 {
-	ringing = false;
-	available.assign( _Connections.size(), false );
+	connection->_SenderId = newSenderId();
+	_Connections.push_back( connection );
+}
 
+
+/* Returns if the connection sockets have incoming data available.
+ */
+bool CServerSocket::getDataAvailableStatus()
+{
 	// Put all socket descriptors in select list and find maximum descriptor number
-	SOCKET descmax = _Sock;
-	fd_set readers, writers;
-	FD_ZERO (&readers);
-	FD_ZERO (&writers);
-	FD_SET ( _Sock, &readers );
-	vector<CSocket*>::iterator itps;
+	if ( _Connections.empty() )
+	{
+		return false;
+	}
+	else
+	{
+		SOCKET descmax;
+		fd_set readers, writers;
+		FD_ZERO (&readers);
+		FD_ZERO (&writers);
+		CConnections::iterator itps;
+		for ( itps=_Connections.begin(); itps!=_Connections.end(); itps++ )
+		{
+			FD_SET( (*itps)->descriptor(), &readers );
+			if ( (*itps)->descriptor() > descmax )
+			{
+				descmax = (*itps)->descriptor();
+			}
+		}
+
+		// Do select
+		timeval tv;
+		tv.tv_sec = _TimeoutS;
+		tv.tv_usec = _TimeoutM;
+		int res = select( descmax+1, &readers, NULL, NULL, &tv );
+		switch ( res  )
+		{
+			case  0 : return false;
+			case -1 : throw ESocket("getDataAvailableStatus(): select failed"); return false;
+		}
+		
+		// Get results
+		for ( itps = _Connections.begin(); itps!=_Connections.end(); itps++ )
+		{
+			(*itps)->_DataAvailable = (FD_ISSET( (*itps)->descriptor(), &readers ) != 0);
+		}
+		return true;
+	}
+}
+
+
+/*
+ * Sets timeout for receive() in milliseconds
+ */
+void CServerSocket::setTimeout( uint32 ms )
+{
+	_TimeoutS = ms/1000;
+	_TimeoutM = (_TimeoutS%1000)*1000;
+}
+
+
+/*
+ * Returns true if msg is a binding message
+ */
+bool CServerSocket::msgIsBinding( const CMessage& msg )
+{
+	return ( msg.typeAsString() == "B" );
+}
+
+
+/* Calls the good callback, and send a binding message if needed
+ * \param msg [in] An input message to pass to the callback
+ * \param sock [in] The socket from which the message was received
+ */
+void CServerSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
+{
+	if ( msg.typeIsNumber() )
+	{
+		TTypeNum num = msg.typeAsNumber();
+		if ( num < _CbaSize )
+		{
+			// Call the callback by index
+			_CallbackArray[num].Callback( msg, sock._SenderId );
+		}
+		else
+		{
+			throw EMessageTypeNbr();
+		}
+	}
+	else
+	{
+		// Get the callback by key string
+		TMsgCallback callback;
+		string s = msg.typeAsString();
+		CSearchSet::iterator its = _SearchSet.find( CPtCallbackItem( s.c_str() ) );
+		if ( its != _SearchSet.end() )
+		{
+			callback = (*its).pt()->Callback;
+		}
+		else
+		{
+			if ( (s=="C") || (s=="D") ) // the user does not have to write callback for connection/disconnection
+			{
+				return;
+			}
+			else
+			{
+				throw EMessageTypeStr();
+			}
+		}
+
+		// Send a binding message
+		CMessage bindmsg;
+		TTypeNum num = (*its).pt() - _CallbackArray;
+		bindmsg.setType( "B" );
+		bindmsg.serial( s );
+		bindmsg.serial( num );
+		sock.send( bindmsg );
+
+		// Call the callback funtion
+		callback( msg, sock._SenderId );
+	}
+}
+
+
+/*
+ * Returns a pointer to the socket object having the specified sender id
+ */
+CSocket *CServerSocket::socketFromId( TSenderId id )
+{
+	CConnections::iterator itps;
 	for ( itps=_Connections.begin(); itps!=_Connections.end(); itps++ )
 	{
-		FD_SET( (*itps)->descriptor(), &readers );
-		if ( (*itps)->descriptor() > descmax )
+		if ( (*itps)->_SenderId == id )
 		{
-			descmax = (*itps)->descriptor();
+			return *itps;
 		}
 	}
-
-	// Do select
-	timeval tv;
-	tv.tv_sec = CServerSocket::NiceLevel;
-	tv.tv_usec = 0; ;
-	int res = select( descmax+1, &readers, NULL, NULL, &tv );
-	switch ( res  )
-	{
-		case  0 : return false;
-		case -1 : throw ESocket("getDataAvailableStatus(): select failed"); return false;
-	}
-	
-	// Get results
-	ringing = (FD_ISSET( _Sock, &readers ) != 0);
-	for ( itps = _Connections.begin(); itps!=_Connections.end(); itps++ )
-	{
-		if ( FD_ISSET( (*itps)->descriptor(), &readers ) !=0 )
-		{
-			available[itps-_Connections.begin()] = true;
-		}
-	}
-	return true;
+	return NULL;
 }
 
 

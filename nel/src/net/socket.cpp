@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.10 2000/09/25 16:07:27 cado Exp $
+ * $Id: socket.cpp,v 1.11 2000/10/02 16:42:23 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -59,7 +59,10 @@ namespace NLNET
  */
 CSocket::CSocket( bool logging ) :
 	CBaseSocket( logging ),
-	_Connected( false )
+	_Connected( false ),
+	_DataAvailable( false ),
+	_SenderId( true ),
+	_IsListening( false )
 {
 }
 
@@ -70,7 +73,8 @@ CSocket::CSocket( bool logging ) :
 CSocket::CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket) :
 	CBaseSocket( sock ),
 	_Connected( false ),
-	_RemoteAddr( remoteaddr )
+	_RemoteAddr( remoteaddr ),
+	_IsListening( false )
 {
 	// Check remote address
 	if ( ! _RemoteAddr.isValid() )
@@ -137,7 +141,7 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 	}
 	if ( _Logging )
 	{
-		Log.display( "Socket %d connected to %s/%hu\n", _Sock, addr.ipAddress().c_str(), addr.port() );
+		Log.display( "Socket %d connected to %s\n", _Sock, addr.asIPString() );
 	}
 
 	// Get local socket name
@@ -152,7 +156,7 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
 	if ( _Logging )
 	{
-		Log.display( "Socket %d is at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
+		Log.display( "Socket %d is at %s\n", _Sock, _LocalAddr.asIPString().c_str() );
 	}
 	_RemoteAddr = addr;
 	_Connected = true;
@@ -162,9 +166,9 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 /*
  * Sends a message
  */
-void CSocket::send( const CMessage& message ) throw(ESocket)
+void CSocket::send( CMessage& message ) throw(ESocket)
 {
-	CMessage alldata = message.encode();
+	CMessage alldata = encode( message );
 
 	if ( ::send( _Sock, (const char*)alldata.buffer(), alldata.length(), 0) == SOCKET_ERROR )
 	{
@@ -172,47 +176,17 @@ void CSocket::send( const CMessage& message ) throw(ESocket)
 	}
 	if ( _Logging )
 	{
-		Log.display( "Socket %d sent %d bytes\n", _Sock, alldata.length() );
-	}
-
-	/*// Old code
-
-	// 1. Write message type
-	sint16 msgtype = message.encodedMsgType();
-	NLMISC_BSWAP16(msgtype);
-	int bsent = ::send( _Sock, (char*)&msgtype, sizeof(msgtype), 0 );
-	if ( bsent == SOCKET_ERROR )
-	{
-		throw ESocket("Unable to send msgtype");
-	}
-
-	// 2. Write message name (optional)
-	uint16 msgnamelen = message.msgName().length();
-	if ( msgnamelen != 0 )
-	{
-		bsent = ::send( _Sock, message.msgName().c_str(), msgnamelen, 0 );
-		if ( bsent == SOCKET_ERROR )
+		if ( message.typeIsNumber() )
 		{
-			throw ESocket("Unable to send msgname");
+			Log.display( "Socket %d sent message %hd (%s) of %d bytes\n",
+				_Sock, message.typeAsNumber(), message.typeAsString().c_str(), alldata.length() );
+		}
+		else
+		{
+			Log.display( "Socket %d sent message %s of %d bytes\n",
+				_Sock, message.typeAsString().c_str(), alldata.length() );
 		}
 	}
-
-	// 3. Write message size
-	int msgsize = message.length();
-	int enmsgsize = msgsize;
-	NLMISC_BSWAP32(enmsgsize);
-	bsent = ::send( _Sock, (char*)&enmsgsize, sizeof(enmsgsize), 0 );
-	if ( bsent == SOCKET_ERROR )
-	{
-		throw ESocket("Unable to send msgsize");
-	}
-
-	// 4. Write message payload
-	bsent = ::send( _Sock, (const char*)message.buffer(), msgsize, 0 );
-	if ( bsent == SOCKET_ERROR )
-	{
-		throw ESocket("Unable to send message");
-	}*/
 }
 
 
@@ -224,6 +198,10 @@ bool CSocket::dataAvailable() throw (ESocket)
 	if ( ! _Connected )
 	{
 		return false;
+	}
+	if ( _DataAvailable ) // true if a CServerSocket object has just tested positively the socket
+	{
+		return true;
 	}
 	return CBaseSocket::dataAvailable();
 }
@@ -262,16 +240,87 @@ bool CSocket::received( CMessage& message ) throw (ESocket)
 	return true;
 }
 
-  
+
+/*
+ * Process an incoming bind message
+ */
+void CSocket::processBindMessage( CMessage& message )
+{
+	std::string key;
+	TTypeNum num;
+	message.serial( key );
+	message.serial( num );
+	_MsgMap.insert( TMsgMapItem(key,num) );
+	if ( _Logging )
+	{
+		Log.display( "Socket %d : %s is now known as %hu for received messages\n", _Sock, key.c_str(), num );
+	}
+}
+
+
+/*
+ * Transforms a message replacing its string type by the corresponding num type if it is bound
+ */
+void CSocket::packMessage( CMessage& message )
+{
+	if ( ! message.typeIsNumber() )
+	{
+		CMsgMap::iterator im = _MsgMap.find( message.typeAsString() );
+		if ( im != _MsgMap.end() )
+		{
+			message.setType( (*im).second );
+		}
+	}
+}
+
+
+/*
+ * Returns an output message with header encoded in the payload buffer
+ */
+CMessage CSocket::encode( CMessage& msg )
+{
+	CMessage alldata( false, msg.length()+CMessage::maxHeaderLength() );
+
+	// 1. Write message type
+	packMessage( msg );
+	TTypeNum code;
+	TTypeNum namelen = msg.typeAsString().length();
+	if ( msg.typeIsNumber() )
+	{
+		// Message type number
+		code = msg.typeAsNumber();
+	}
+	else
+	{
+		// Encoded length of message type string
+		code = namelen | 0x8000;
+	}
+	alldata.serial( code );
+
+	// 2. Write message name (optional)
+	if ( ! msg.typeIsNumber() )
+	{
+		alldata.serialBuffer( (uint8*)const_cast<char*>(msg.typeAsString().c_str()), namelen );
+	}
+
+	// 3. Write message size
+	uint32 msgsize = msg.length();
+	alldata.serial( msgsize );
+
+	// 4. Write message payload
+	alldata.serialBuffer( const_cast<uint8*>(msg.buffer()), msg.length() );
+
+	return alldata;
+}
+
+
 /*
  * Helper method for receive() and received()
  */
 void CSocket::doReceive( CMessage& message ) throw (ESocket)
 {
-	// Note : this is not done by CMessage::decode()
-	
 	// 1. Read message type
-	sint16 msgtype;
+	TTypeNum msgtype;
 	uint32 brecvd;
 	brecvd = ::recv( _Sock, (char*)&msgtype, sizeof(msgtype), 0 );
 	switch ( brecvd )
@@ -283,10 +332,11 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	//cout << msgtype << " ";
 
 	// 2. Read message name (optional)
-	uint16 msgnamelen = 0;
+	TTypeNum msgnamelen = 0;
 	char *msgname = NULL;
-	if ( CMessage::decodeLenInMsgType( msgtype, &msgnamelen ) )
+	if ( msgtype < 0 )
 	{
+		msgnamelen = msgtype & 0x7FFF;
 		msgname = new char[msgnamelen+1];
 		if ( ::recv( _Sock, msgname, msgnamelen, 0 ) == SOCKET_ERROR )
 		{
@@ -303,19 +353,36 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	NLMISC_BSWAP32(msgsize);
 	//cout << (int)msgsize << endl;
 
-	// 4. Read all buffer and dismiss
-	message.setHeader( msgtype, std::string( msgname!=NULL ? msgname : "" ) );
+	// Set message type
+	if ( msgtype < 0 )
+	{
+		message.setType( std::string(msgname) );
+	}
+	else
+	{
+		message.setType( msgtype );
+	}
 	if ( msgname != NULL )
 	{
 		delete [] msgname;
 	}
+	// 4. Read all buffer and dismiss
 	if ( ::recv( _Sock, (char*)(message.bufferToFill(msgsize)), msgsize, 0 ) == SOCKET_ERROR )
 	{
 		throw ESocket("Cannot receive message");
 	}
 	if ( _Logging )
 	{
-		Log.display( "Socket %d received %d bytes\n", _Sock, sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
+		if ( message.typeIsNumber() )
+		{
+			Log.display( "Socket %d received message %hd of %d bytes\n",
+				_Sock, message.typeAsNumber(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
+		}
+		else
+		{
+			Log.display( "Socket %d received message %s of %d bytes\n",
+				_Sock, message.typeAsString().c_str(), sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
+		}
 	}
 }
 

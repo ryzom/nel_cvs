@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.h,v 1.5 2000/09/25 16:07:27 cado Exp $
+ * $Id: base_socket.h,v 1.6 2000/10/02 16:42:23 cado Exp $
  *
  * Interface of CBaseSocket
  */
@@ -26,7 +26,7 @@
 #ifndef NL_BASE_SOCKET_H
 #define NL_BASE_SOCKET_H
 
-/// \todo Compile on Linux
+/// \todo cado Compile on Linux
 
 #include "nel/net/inet_address.h"
 

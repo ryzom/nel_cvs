@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: datagram_socket.cpp,v 1.4 2000/09/25 15:01:47 cado Exp $
+ * $Id: datagram_socket.cpp,v 1.5 2000/10/02 16:42:23 cado Exp $
  *
  * Implementation for CDatagramSocket
  */
@@ -26,7 +26,7 @@
 #include "nel/net/datagram_socket.h"
 #include "nel/net/message.h"
 #include "nel/misc/log.h"
-/// \todo Debug logging class instead
+
 extern NLMISC::CLog Log;
 
 #ifdef NL_OS_WINDOWS
@@ -95,7 +95,7 @@ void CDatagramSocket::bind( uint16 port ) throw (ESocket)
 		#endif
 	}
 	_Bound = true;
-	Log.display( "Socket %d bound at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
+	Log.display( "Socket %d bound at %s\n", _Sock, _LocalAddr.asIPString().c_str() );
 }
 
 
@@ -104,14 +104,15 @@ void CDatagramSocket::bind( uint16 port ) throw (ESocket)
  */
 void CDatagramSocket::sendTo( const CMessage& message, const CInetAddress& addr ) throw (ESocket)
 {
-	CMessage alldata = message.encode();
+	//TODO: change all this.
+	CMessage alldata;// = message.encode();
 
 	// 5. Send!
 	if ( ::sendto( _Sock, (const char*)alldata.buffer(), alldata.length(), 0, (sockaddr*)(addr.sockAddr()), sizeof(sockaddr) ) != (sint32)(alldata.length()) )
 	{
 		throw ESocket("Unable to send datagram");
 	}
-	Log.display( "Socket %d sent %d bytes to %s/%hu\n", _Sock, alldata.length(), addr.ipAddress().c_str(), addr.port() );
+	Log.display( "Socket %d sent %d bytes to %s\n", _Sock, alldata.length(), addr.asIPString().c_str() );
 
 	// 5bis. If socket is unbound, retrieve local address
 	if ( ! _Bound )
@@ -151,9 +152,10 @@ bool CDatagramSocket::receivedFrom( CMessage& message, CInetAddress& addr ) thro
 	addr.setSockAddr( &saddr );
 
 	// Decode message
-	message.decode( alldata );
+	// TODO: change this
+	//message.decode( alldata );
 
-	Log.display( "Socket %d received %d bytes from %s/%hu\n", _Sock, alldata.length(), addr.ipAddress().c_str(), addr.port() );
+	Log.display( "Socket %d received %d bytes from %s\n", _Sock, alldata.length(), addr.asIPString().c_str() );
 
 	return true;
 }

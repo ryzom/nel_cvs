@@ -130,6 +130,14 @@ SOURCE=..\include\nel\net\net_displayer.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\pt_callback_item.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\pt_callback_item.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\server_socket.cpp
 # End Source File
 # Begin Source File

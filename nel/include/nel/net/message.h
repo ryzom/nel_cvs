@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.h,v 1.7 2000/09/25 16:07:27 cado Exp $
+ * $Id: message.h,v 1.8 2000/10/02 16:42:23 cado Exp $
  *
  * Interface of CMessage
  */
@@ -32,17 +32,39 @@
 namespace NLNET
 {
 
+/// Exception class for CMessage
+class EMessage : public NLMISC::EStream
+{};
+
+class EMessageTypeNbr : public EMessage
+{
+	/// Returns the exception name
+	virtual const char	*what() const throw() {return "Bad message type code";}
+};
+
+class EMessageTypeStr : public EMessage
+{
+	/// Returns the exception name
+	virtual const char	*what() const throw() {return "Bad message type name";}
+};
+
 /// This exception is raised when someone tries to serialize in more than there is.
-class EStreamOverflow : public NLMISC::EStream
+class EStreamOverflow : public EMessage
 {
 	/// Returns the exception name
 	virtual const char	*what() const throw() {return "Stream Overflow Error";}
-
 };
 
 
-/// Iterator on vector<uint8>
-typedef std::vector<uint8>::iterator It8;
+/// Type of message as a number
+typedef sint16 TTypeNum;
+
+
+/// Vector of uint8
+typedef std::vector<uint8> CVector8;
+
+/// Iterator on CVector8
+typedef CVector8::iterator It8;
 
 
 /**
@@ -97,28 +119,29 @@ public:
 		return &(*_Buffer.begin());
 	}
 
-	/// Returns message type code
-	uint16			msgType() const
+	/// Returns if the message type is a number (and not a string)
+	bool			typeIsNumber() const
+	{
+		return _TypeIsNumber;
+	}
+
+	/// Returns message type code. Valid if typeIsNumber()
+	uint16			typeAsNumber() const
 	{
 		return _MsgType;
 	}
 
-	/// Returns message type code or length of message name
-	uint16			encodedMsgType() const;
-
-	/// Returns an output message with header encoded in the payload buffer
-	CMessage		encode() const;
-
 	/** Sets the message using an encoded input message.
-	 * @param alldata An input message in which the header is in the payload buffer
+	 * \todo cado Now this is empty... It is used by CDatagramSocket so don't use CDatagramSocket
+	 * \param alldata An input message in which the header is in the payload buffer
 	 */
 	void			decode( CMessage& alldata );
 
 	/// Returns true if msgtype contains the length of a message name, and, if so, puts it into msgnamelen
 	static bool		decodeLenInMsgType( uint16 msgtype, uint16 *msgnamelen );
 
-	/// Returns message name
-	std::string		msgName() const
+	/// Returns message name. Valid if !typeIsNumber()
+	std::string		typeAsString() const
 	{
 		return _MsgName;
 	}
@@ -126,16 +149,24 @@ public:
 	/// Fills the message buffer, for reading
 	void			fill( const uint8 *srcbuf, uint32 len );
 
-	/** Sets the message header values
-	 * @param msgtype Message type code, in range 0..32767
-	 * @param msgname Message name
-	 */
-	void			setHeader( sint16 msgtype, const std::string& msgname );
+	/// Sets the message type as a number (in range 0..32767)
+	void			setType( const TTypeNum msgtype )
+	{
+		_MsgType = msgtype;
+		_TypeIsNumber = true;
+	}
+
+	/// Sets the message type as a string
+	void			setType( const std::string& msgname )
+	{
+		_MsgName = msgname;
+		_TypeIsNumber = false;
+	}
 
 	/** EXPERIMENTAL: Returns a pointer to the message buffer for filling by an external function (use at your own risk,
 	 * you MUST fill the number of bytes you specify in "msgsize").
 	 * This method prevents from doing one useless buffer copy, using fill().
-	 * \todo Perhaps choose a safe solution
+	 * \todo cado Perhaps choose a safe solution
 	 */
 	uint8			*bufferToFill( uint32 msgsize );
 
@@ -180,13 +211,15 @@ protected:
 
 private:
 
-	static uint32		_MaxLength;
-	static uint32		_MaxHeaderLength;
+	static uint32	_MaxLength;
+	static uint32	_MaxHeaderLength;
 
-	std::vector<uint8>	_Buffer;
-	It8					_BufPos;
-	sint16				_MsgType;
-	std::string			_MsgName;
+	CVector8		_Buffer;
+	It8				_BufPos;
+	
+	TTypeNum		_MsgType;
+	std::string		_MsgName;
+	bool			_TypeIsNumber;
 
 };
 

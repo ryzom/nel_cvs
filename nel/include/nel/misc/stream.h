@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.14 2000/09/21 09:45:09 cado Exp $
+ * $Id: stream.h,v 1.15 2000/10/02 16:42:23 cado Exp $
  *
  * This File handles IStream 
  */
@@ -509,8 +509,12 @@ protected:
 	 */
 	void				resetPtrTable();
 
+public:
 	//@{
-	/// Method to be specified by the Deriver.
+	/** Method to be specified by the Deriver.
+	 * \warning Do not call these methods from outside, unless you really know what you are doing.
+	 * Using them instead of serial() can lead to communication problems between different platforms !
+	 */
 	virtual void		serialBuffer(uint8 *buf, uint len) throw(EStream)=0;
 	virtual void		serialBit(bool &bit) throw(EStream)=0;
 	//@}

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.7 2001/07/24 08:42:17 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.8 2001/08/06 10:16:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,15 @@ public:
 	  */
 	virtual float				getNumTriangles (float distance) { return 0 ; }
 
+
+	/// \name access default tracks.
+	// @{
+		CTrackDefaultVector*	getDefaultPos ()		{return &_DefaultPos;}
+		CTrackDefaultVector*	getDefaultScale ()		{return &_DefaultScale;}
+		CTrackDefaultQuat*		getDefaultRotQuat ()	{return &_DefaultRotQuat;}
+	// @}
+
+
 protected:
 
 	friend class CParticleSystemModel ; 
@@ -127,6 +136,13 @@ protected:
 
 	/// the default track for animation of user parameters
 	CTrackDefaultFloat _UserParamDefaultTrack[4] ;
+
+
+	/// Transform default tracks.
+	CTrackDefaultVector			_DefaultPos;
+	CTrackDefaultVector			_DefaultScale;	
+	CTrackDefaultQuat			_DefaultRotQuat;
+	
 
 } ;
 

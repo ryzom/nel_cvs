@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.18 2001/07/26 17:16:12 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.19 2001/08/06 10:17:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,12 +61,16 @@ CParticleSystemShape::CParticleSystemShape()
 	{
 		_UserParamDefaultTrack[k].setValue(0) ;
 	}
+
+	_DefaultPos.setValue(CVector::Null) ;
+	_DefaultScale.setValue( CVector(1, 1, 1) ) ;	
+	_DefaultRotQuat.setValue(CQuat()) ;
 }
 
 
 void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(2) ;
+	sint ver = f.serialVersion(3) ;
 	NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector() ;
 	f.serialCont(buf) ;
 	if (ver > 1)
@@ -76,6 +80,12 @@ void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			f.serial(_UserParamDefaultTrack[k]) ;
 		}
+	}
+	if ( ver > 2)
+	{
+		f.serial (_DefaultPos);
+		f.serial (_DefaultScale);		
+		f.serial (_DefaultRotQuat);
 	}
 }
 
@@ -123,6 +133,8 @@ CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
 
 	myInstance->setScene(&scene) ;		
 
+
+
 	return myInstance ;
 }
 
@@ -133,6 +145,12 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 	psm->_Scene = &scene ; // the model needs the scene to recreate the particle system he holds
 	psm->setParticleSystem(instanciatePS(scene)) ;	
 	psm->_MaxViewDist = psm->getPS()->getMaxViewDist() ;
+
+	// Setup position with the default value
+	psm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
+	psm->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );	
+	psm->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
+
 	return psm ;
 }
 

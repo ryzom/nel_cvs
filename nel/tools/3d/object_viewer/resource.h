@@ -618,13 +618,17 @@
 #define ID_WINDOW_DAYNIGHT              32871
 #define ID_WINDOW_VEGETABLE             32872
 #define ID_WINDOW_WATER_POOL            32873
+#define IDM_ACTIVATE_TEXTURE_SET_1      32875
+#define IDM_ACTIVATE_TEXTURE_SET_4      32876
+#define IDM_ACTIVATE_TEXTURE_SET_2      32877
+#define IDM_ACTIVATE_TEXTURE_SET_3      32878
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1113
-#define _APS_NEXT_COMMAND_VALUE         32873
+#define _APS_NEXT_COMMAND_VALUE         32879
 #define _APS_NEXT_CONTROL_VALUE         1325
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

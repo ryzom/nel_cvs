@@ -368,6 +368,10 @@ SOURCE=..\include\nel\misc\smart_ptr_inline.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\thread.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\time_nl.cpp
 # End Source File
 # Begin Source File
@@ -385,6 +389,14 @@ SOURCE=.\misc\vector_h.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\vector_h.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\win_thread.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\win_thread.h
 # End Source File
 # End Target
 # End Project

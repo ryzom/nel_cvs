@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.5 2002/06/10 09:30:09 berenguier Exp $
+ * $Id: text_context_user.cpp,v 1.6 2002/07/05 14:46:08 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -192,9 +192,9 @@ UTextContext::CStringInfo		CTextContextUser::getStringInfo(uint32 i)
 
 	CComputedString		*cstr= _TextContext.getComputedString(i);
 	if(!cstr)
-		return CStringInfo(0,0);
+		return CStringInfo(0, 0, 0);
 	else
-		return	CStringInfo(cstr->StringWidth, cstr->StringHeight);
+		return	CStringInfo(cstr->StringWidth, cstr->StringHeight, cstr->StringLine);
 }
 void CTextContextUser::clear()  
 {

@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.3 2001/09/21 14:24:14 berenguier Exp $
+ * $Id: u_text_context.h,v 1.4 2002/07/05 14:46:08 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,9 +74,10 @@ public:
 	{
 		float StringWidth;
 		float StringHeight;
+		float StringLine;
 
-		CStringInfo() {StringWidth= StringHeight= 0;}
-		CStringInfo(float w, float h)  {StringWidth= w; StringHeight= h;}
+		CStringInfo() {StringWidth= StringHeight= StringLine= 0;}
+		CStringInfo(float w, float h, float l)  {StringWidth= w; StringHeight= h; StringLine = l;}
 
 		/**
 		 *	Get the string's origin

@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.3 2001/09/06 16:24:01 besson Exp $
+ * $Id: computed_string.h,v 1.4 2002/07/05 14:46:08 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,8 +66,16 @@ public:
 	float StringWidth;
 	float StringHeight;
 
+	// StringLine is the size from bottom of the whole string image to the hotspot
+	// for instance if the hotspot is bottomLeft the imaginary line of the string "bpc"
+	// is under the b, under the loop of the p but over the leg of the p. So StringLine
+	// is a positive value.
+	float StringLine; 
+
 	/**
 	 * Hotspot positions (origine for the string placement)
+	 * You should take care that for vertical hotspot, an imaginary line is defined under
+	 * letters with no leg (like m,b,c etc..) between the leg of p and the loop of the p.
 	 */
 	enum THotSpot 
 	{

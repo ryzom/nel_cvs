@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.33 2002/02/28 12:59:49 besson Exp $
+ * $Id: font_manager.cpp,v 1.34 2002/07/05 14:46:08 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -261,8 +261,8 @@ static void NL3DcomputeStringChar (CFontManager *fm, const std::basic_string<cha
 				output.Vertices.setTexCoord		(j, 0, u1, v1);
 				++j;
 				
-				if (z2 > output.StringHeight) 
-					output.StringHeight = z2;
+				if (fabsf(z1-z2) > output.StringHeight) 
+					output.StringHeight = fabsf(z1-z2);
 			}
 			penx += pLI->AdvX;
 		}
@@ -308,6 +308,7 @@ static void NL3DcomputeStringUC (CFontManager *fm, const std::basic_string<uccha
 	sint32 penz = 0, dz;
 	float x1, z1, x2, z2;
 	float u1, v1, u2, v2;
+	float maxZ=-1.0f, minZ=1.0f;
 	CMaterial		*pMatFont = fm->getFontMaterial();
 	CTextureFont	*pTexFont = (CTextureFont*)(pMatFont->getTexture (0));
 	float hlfW = 0.5f / pTexFont->getWidth();
@@ -359,8 +360,8 @@ static void NL3DcomputeStringUC (CFontManager *fm, const std::basic_string<uccha
 				output.Vertices.setTexCoord		(j, 0, u1, v1);
 				++j;
 				
-				if (z2 > output.StringHeight) 
-					output.StringHeight = z2;
+				if (z1 < minZ) minZ = z1;
+				if (z2 > maxZ) maxZ = z2;
 			}
 			penx += pLI->AdvX;
 		}
@@ -371,6 +372,8 @@ static void NL3DcomputeStringUC (CFontManager *fm, const std::basic_string<uccha
 	output.Vertices.setNumVertices (j);
 
 	output.StringWidth = penx * FontRatio;
+	output.StringHeight = maxZ - minZ;
+	output.StringLine = fabsf(minZ);
 }
 
 

@@ -732,6 +732,10 @@ SOURCE=.\ai\script\opcode_register.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\script\script_debug_source.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\script\type_def.cpp
 # End Source File
 # Begin Source File
@@ -857,6 +861,10 @@ SOURCE=..\include\nel\ai\script\opcode_ldb.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\script\opcode_lpt.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\script\script_debug_source.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.4 2001/05/02 11:48:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,8 @@
 #include "nel/3d/ps_particle.h"
 #include "nel/3d/ps_force.h"
 #include "nel/3d/ps_zone.h"
+#include "nel/3d/ps_color.h"
+#include "nel/3d/ps_float.h"
 
 
 
@@ -62,6 +64,10 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSDot) ;
 		NLMISC_REGISTER_CLASS(CPSFaceLookAt) ;
 		NLMISC_REGISTER_CLASS(CPSZonePlane) ;
+		NLMISC_REGISTER_CLASS(CPSColorFader) ;
+		NLMISC_REGISTER_CLASS(CPSColorGradient) ;
+		NLMISC_REGISTER_CLASS(CPSFloatBlender) ;
+		NLMISC_REGISTER_CLASS(CPSSpring) ;
 }
 
 

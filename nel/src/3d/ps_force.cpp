@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.4 2001/05/02 11:48:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,14 +70,14 @@ void CPSForce::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 
 
 
-/////////////
-// gravity //
-/////////////
+////////////////////////////
+// gravity implementation //
+////////////////////////////
 
 
 void CPSGravity::performMotion(CAnimationTime ellapsedTime)
 {	
-	CVector toAddLocal = ellapsedTime * CVector(0, 0, -9.8f) ;
+	CVector toAddLocal = ellapsedTime * CVector(0, 0, -_G) ;
 	// perform the operation on each target
 
 	CVector toAdd ;
@@ -175,6 +175,73 @@ void CPSGravity::show(CAnimationTime ellapsedTime)
 
 	
 }
+
+void CPSGravity::serial(NLMISC::IStream &f)
+{
+	CPSForce::serial(f) ;
+	f.serialVersion(1) ;
+	f.serial(_G) ;
+}
+
+
+/////////////////////////////////
+// CPSSpring  implementation   //
+/////////////////////////////////
+
+
+
+void CPSSpring::performMotion(CAnimationTime ellapsedTime)
+{
+	// for each spring, and each target, we check if they are in the same basis
+	// if not, we need to transform the spring attachment pos into the target basis
+	
+
+	const float ellapsedTimexK = ellapsedTime * _K ;
+
+	TPSAttribVector::const_iterator springPosIt = _Owner->getPos().begin()
+									, springPosItEnd = _Owner->getPos().end() ;
+	for (; springPosIt  != springPosItEnd ; ++springPosIt)
+	{	
+		for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
+		{
+			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner) ;
+			const CVector center = m * (*springPosIt) ;
+
+			
+
+			uint32 size = (*it)->getSize() ;	
+			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2End = (*it)->getSpeed().end() ;
+			TPSAttribFloat::const_iterator invMassIt = (*it)->getInvMass().begin() ;
+			TPSAttribVector::const_iterator posIt = (*it)->getPos().begin() ;
+			
+			for (; it2 != it2End ; ++it2, ++invMassIt, ++posIt)
+			{
+				// apply the spring equation
+
+				(*it2) += (*invMassIt) * ellapsedTimexK * (center - *posIt) ;								
+			}
+		}
+	}
+}
+
+
+void CPSSpring::serial(NLMISC::IStream &f)
+{
+	CPSForce::serial(f) ;
+	f.serialVersion(1) ;
+	f.serial(_K) ;
+}
+
+
+
+void CPSSpring::show(CAnimationTime ellapsedTime)
+{
+	// TODO
+}
+
+
+
+
 
 
 } // NL3D

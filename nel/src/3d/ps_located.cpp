@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.4 2001/04/27 14:27:16 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.5 2001/05/02 11:48:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,10 +53,12 @@ CPSLocated::CPSLocated() : _MinMass(1), _MaxMass(1), _LastForever(true)
 
 CPSLocated::~CPSLocated()
 {
+	// we must do a copy, because the subsequent call can modify this vector
+	TDtorObserversVect copyVect(_DtorObserversVect.begin(), _DtorObserversVect.end()) ;
 	// call all the dtor observers
-	for (TDtorObserversVect::iterator it = _DtorObserversVect.begin() ; it != _DtorObserversVect.end() ; ++it)
+	for (TDtorObserversVect::iterator it = copyVect.begin() ; it != copyVect.end() ; ++it)
 	{
-		(*it)->releaseTargetRsc(this) ;
+		(*it)->detachTarget(this) ;
 	}
 
 	nlassert(_CollisionInfoNbRef == 0) ; //If this is not = 0, then someone didnt call releaseCollisionInfo
@@ -242,7 +244,7 @@ void CPSLocated::resize(uint32 newSize)
 
 	if (_CollisionInfo)
 	{
-		_CollisionInfo->resize(newSize) ;
+		_CollisionInfo->resizeNFill(newSize) ;
 	}
 
 	// resize attributes for all bound objects
@@ -386,6 +388,7 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 		{
 			// integration with collisions
 
+			nlassert(_CollisionInfo) ;
 			TPSAttribCollisionInfo::const_iterator itc = _CollisionInfo->begin() ;
 			TPSAttribVector::iterator itSpeed = _Speed.begin() ;		
 			for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed, ++itc)
@@ -532,7 +535,7 @@ void CPSLocated::queryCollisionInfo(void)
 	{
 		_CollisionInfo = new TPSAttribCollisionInfo ;
 		_CollisionInfoNbRef = 1 ;
-		_CollisionInfo->resize(_Size) ;
+		_CollisionInfo->resizeNFill(_MaxSize) ;
 		resetCollisionInfo() ;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.4 2001/04/27 14:27:16 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.5 2001/05/02 11:48:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "nel/3d/ps_particle.h"
 #include "nel/3d/driver.h"
-#include "nel/3d/vertex_buffer.h"
+#include "nel/3d/ps_attrib_maker.h"
 
 
 namespace NL3D {
@@ -39,83 +39,182 @@ CPSParticle::CPSParticle()
 }
 
 
-CPSDot::CPSDot(const CRGBA &c) : _Color(c)
+
+//////////////////////////////////////
+// coloured particle implementation //
+//////////////////////////////////////
+
+
+
+void CPSColoredParticle::setColorScheme(CPSAttribMaker<CRGBA> *col)
 {
-	init() ;
+	if (_UseColorScheme)
+	{
+		delete _ColorScheme ;
+	}
+	else
+	{
+		_UseColorScheme = true ;
+	}
+
+	_ColorScheme = col ;
+
+	updateMatAndVb() ;
 }
 
-void CPSDot::init(void)
+
+		
+void CPSColoredParticle::setColor(NLMISC::CRGBA col)
 {
+	if (_UseColorScheme)
+	{
+		delete _ColorScheme ;
+		_UseColorScheme = false ;
+	}
+	_Color = col ;
+
+	updateMatAndVb() ;
+}
+
+		
+CPSColoredParticle::CPSColoredParticle() : _UseColorScheme(false), _Color(CRGBA(255, 255, 255))
+{	
+}
+
+
+
+/// dtor
+
+CPSColoredParticle::~CPSColoredParticle()
+{
+	if (_UseColorScheme)
+	{
+		delete _ColorScheme ;
+	}
+}
+
+
+/// serialization
+
+void CPSColoredParticle::serialColorScheme(NLMISC::IStream &f)
+{	
+	f.serial(_UseColorScheme) ;
+
+	if (_UseColorScheme)
+	{
+		f.serialPolyPtr(_ColorScheme) ;
+	}
+	else
+	{
+		f.serial(_Color) ;
+	}
+}
+
+
+///////////////////////////////////
+// sized particle implementation //
+///////////////////////////////////
+
+void CPSSizedParticle::setSizeScheme(CPSAttribMaker<float> *size)
+{
+	if (_UseSizeScheme)
+	{
+		delete _SizeScheme ;
+	}
+	else
+	{
+		_UseSizeScheme = true ;
+	}
+
+	_SizeScheme = size ;
+}
+
+
+		
+void CPSSizedParticle::setSize(float size)
+{
+	if (_UseSizeScheme)
+	{
+		delete _SizeScheme ;
+		_UseSizeScheme = false ;
+	}
+	_ParticleSize = size ;
+}
+
+
+
+/// ctor : default are 0.3 sized particles
+CPSSizedParticle::CPSSizedParticle() : _UseSizeScheme(false), _ParticleSize(0.3f)
+{
+}
+	
+CPSSizedParticle::~CPSSizedParticle()
+{
+	if (_UseSizeScheme)
+	{
+		delete _SizeScheme ;
+	}
+}
+
+
+		/// serialization
+void CPSSizedParticle::serialSizeScheme(NLMISC::IStream &f)
+{
+	f.serial(_UseSizeScheme) ;
+
+	if (_UseSizeScheme)
+	{
+		f.serialPolyPtr(_SizeScheme) ;
+	}
+	else
+	{
+		f.serial(_ParticleSize) ;
+	}	
+} ;
+
+
+
+///////////////////////////
+// CPSDot implementation //
+///////////////////////////
+
+void CPSDot::init(void)
+{	
 	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
 	_Mat.setZWrite(false) ;
 	_Mat.setLighting(false) ;
 	_Mat.setBlend(true) ;
+	
+	updateMatAndVb() ;
 }
 
-/*
-void CPSDot::step(TPSProcessPass pass, CAnimationTime)
+
+
+
+void CPSDot::updateMatAndVb(void)
 {
-	if (pass != PSBlendRender) return  ;
-
-	// we create a vertex buffer that contains all the particles before to show them
-	uint32 size = _Owner->getSize() ;
-
-
-	if (!size) return ;
-
-
-	setupDriverModelMatrix() ;
-
-	CVertexBuffer vb ;
-	vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR) ;
-	vb.setNumVertices(size) ;
-
-	uint32 k = 0 ;
-	TPSAttribVector::iterator it = _Owner->getPos().begin() ;
-	TPSAttribFloat::iterator it2 = _Owner->getTime().begin() ;
-
-	IDriver *driver = getDriver() ;
-
-	uint32 *tab = new uint32[3 * size] ;
-
-	float intensity ;
-
-	CRGBA result ;
-
-
-	// pas du tout opimise mais c pour tester ...
-
-	while (k != size)
+	if (!_UseColorScheme)
 	{
-		intensity = 1.0f - *it2 ;
-		vb.setVertexCoord(k, *it) ;	
-		result.blendFromui(CRGBA(0,0,0), _Color, (uint8) (255.0f * intensity)) ;
-		vb.setColor(k,  result) ;
-		
-
-		tab[3 * k] = k ;
-		tab[3 * k + 1] = k ;
-		tab[3 * k + 2] = k ;
-		++k ;
-		++it ; ++it2 ;
+		_Vb.setVertexFormat(IDRV_VF_XYZ) ;		
+		_Mat.setColor(_Color) ;
+	}
+	else
+	{
+		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR) ;
+		_Mat.setColor(CRGBA(255, 255, 255)) ;
 	}
 
-	driver->activeVertexBuffer(vb) ;
-	driver->setPolygonMode(IDriver::Point) ;
-	
-	driver->renderTriangles(_Mat, tab, size) ;
-
-
-	driver->setPolygonMode(IDriver::Filled) ;
-
-	delete[] tab ;
+	if (_Owner)
+	{
+		resize(_Owner->getMaxSize()) ;
+	}
 }
-*/
+
+
 
 void CPSDot::draw(void)
 {
 	
-
 	// we create a vertex buffer that contains all the particles before to show them
 	uint32 size = _Owner->getSize() ;
 
@@ -123,54 +222,52 @@ void CPSDot::draw(void)
 	if (!size) return ;
 
 
+	CParticleSystem::_NbParticlesDrawn += size ;
+	
 	setupDriverModelMatrix() ;
-
-	CVertexBuffer vb ;
-	vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR) ;
-	vb.setNumVertices(size) ;
-
+	
+	
+	if (_UseColorScheme)
+	{
+		// compute the colors
+		_ColorScheme->make(_Owner->getTime().begin(), _Vb.getColorPointer(), _Vb.getVertexSize(), size) ;
+	}
 	
 	TPSAttribVector::iterator it = _Owner->getPos().begin() ;
-	TPSAttribFloat::iterator it2 = _Owner->getTime().begin() ;
-
-	IDriver *driver = getDriver() ;
+	TPSAttribVector::iterator itEnd = _Owner->getPos().end() ;
 	
-
-	uint32 k = 0 ;
-
-	float intensity ;
-
-	CRGBA result ;
-
-
-	// pas du tout optimise mais c pour tester ...
-
+	
+	
+	uint8    *currPos = (uint8 *) _Vb.getVertexCoordPointer() ;	
+	uint32 stride = _Vb.getVertexSize() ;
 	do
 	{
-		intensity = 1.0f - *it2 ;
-		vb.setVertexCoord(k, *it) ;	
-		result.blendFromui(CRGBA(0,0,0), _Color, (uint8) (255.0f * intensity)) ;
-		vb.setColor(k,  result) ;		
-		++it ; ++it2 ; ++k ;
-	}
-	while (k != size) ;
 
-	driver->activeVertexBuffer(vb) ;		
+		*((CVector *) currPos) =  *it ;	
+		++it  ;
+		currPos += stride ;
+	}
+	while (it != itEnd) ;
+
+	
+	IDriver *driver = getDriver() ;
+	driver->activeVertexBuffer(_Vb) ;		
 	driver->renderPoints(_Mat, size) ;
+
 }
 
 
 
 void CPSDot::serial(NLMISC::IStream &f)
 {
+	f.serialVersion(1) ;	
 	f.serialCheck((uint32) 'PSDO') ;
-	CPSParticle::serial(f) ;
-	f.serialVersion(1) ;
-	f.serial(_Color) ;
 
+	CPSParticle::serial(f) ;
+	CPSColoredParticle::serialColorScheme(f) ;
 	if (f.isReading())
 	{
-		init() ;
+		init() ;		
 	}
 }
 
@@ -184,19 +281,84 @@ void CPSDot::serial(NLMISC::IStream &f)
 
 
 	/// create the face look at by giving a texture and an optionnal color
-CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex, const CRGBA &c) : CPSDot(c), _Tex(tex)
+CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : _Tex(tex), _IndexBuffer(NULL)
 {
 	init() ;
+
+	// we don't init the _IndexBuffer for now, as it will be when resize is called
 }
 
-void CPSFaceLookAt::init(void)
+CPSFaceLookAt::CPSFaceLookAt() : _IndexBuffer(NULL)
 {
+}
+
+
+CPSFaceLookAt::~CPSFaceLookAt()
+{
+	delete(_IndexBuffer) ;
+}
+
+void CPSFaceLookAt::resize(uint32 size)
+{
+	_Vb.setNumVertices(size << 2) ;
+	
+	delete _IndexBuffer ;		
+
+	_IndexBuffer = new uint32[ size * 6] ;
+	
+	for (uint32 k = 0 ; k < size ; ++k)
+	{
+		_IndexBuffer[6 * k] = 4 * k + 2 ;
+		_IndexBuffer[6 * k + 1] = 4 * k + 1 ;
+		_IndexBuffer[6 * k + 2] = 4 * k ;		
+		_IndexBuffer[6 * k + 3] = 4 * k  ;
+		_IndexBuffer[6 * k + 4] = 4 * k + 3 ;
+		_IndexBuffer[6 * k + 5] = 4 * k + 2;			
+
+		_Vb.setTexCoord(k * 4, 0, CUV(0,0)) ;
+		_Vb.setTexCoord(k * 4 + 1, 0, CUV(1,0)) ;
+		_Vb.setTexCoord(k * 4 + 2, 0, CUV(1,1)) ;
+		_Vb.setTexCoord(k * 4 + 3, 0, CUV(0,1)) ;	
+	}
+
+		
+}
+
+
+
+void CPSFaceLookAt::init(void)
+{	
 	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
 	_Mat.setZWrite(false) ;
 	_Mat.setLighting(false) ;
 	_Mat.setTexture(0, _Tex) ;
 	_Mat.setBlend(true) ;
+	updateMatAndVb() ;
 }
+
+
+void CPSFaceLookAt::updateMatAndVb(void)
+{
+	if (!_UseColorScheme)
+	{
+		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0]) ;		
+		_Mat.setColor(_Color) ;
+	}
+	else
+	{
+		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]) ;
+		_Mat.setColor(CRGBA(255, 255, 255)) ;
+	}
+
+	if (_Owner)
+	{
+		resize(_Owner->getMaxSize()) ;
+	}
+
+		
+}
+
+
 
 
 void CPSFaceLookAt::draw(void)
@@ -207,91 +369,143 @@ void CPSFaceLookAt::draw(void)
 	CVector I = computeI() ;
 	CVector K = computeK() ;
 
-	// we create a vertex buffer that contains all the particles before to show them
-	uint32 size = _Owner->getSize() ;
+	const uint32 size = _Owner->getSize() ;
 
 	if (!size) return ;
 
-	CVertexBuffer vb ;
-	vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]) ;
-	vb.setNumVertices(4 * size) ;
+	CParticleSystem::_NbParticlesDrawn += size ;
+
+	if (_UseColorScheme)
+	{
+		// compute the colors, each color is replicated 4 times
+		_ColorScheme->make4(_Owner->getTime().begin(), _Vb.getColorPointer(), _Vb.getVertexSize(), size) ;
+	}
+
 
 	uint32 k = 0 ;
 	TPSAttribVector::iterator it = _Owner->getPos().begin() ;
-	TPSAttribFloat::iterator it2 = _Owner->getTime().begin() ;
 
 	IDriver *driver = getDriver() ;
 
-	uint32 *tab = new uint32[6 * size] ;
 
-	float intensity ;
-
-	CRGBA result ;
-
-
+	// we have 2 drawing version : one with fixed size, and the other, with variable size
 	
-	// pas du tout opimise mais c pour tester ...
-
-	while (k != size)
+	if (!_UseSizeScheme)
 	{
-	//	intensity = 1.0f - *it2 ;
-		intensity = 1.0f ;
-		vb.setVertexCoord(k * 4 , *it  -FaceLookAtSize * I + FaceLookAtSize * K) ;	
-		vb.setVertexCoord(k * 4 + 1, *it + FaceLookAtSize * I + FaceLookAtSize * K) ;	
-		vb.setVertexCoord(k * 4 + 2, *it + FaceLookAtSize * I -FaceLookAtSize * K) ;	
-		vb.setVertexCoord(k * 4 + 3, *it -FaceLookAtSize * I -FaceLookAtSize * K) ;	
-		vb.setTexCoord(k * 4, 0, CUV(0,0)) ;
-		vb.setTexCoord(k * 4 + 1, 0, CUV(1,0)) ;
-		vb.setTexCoord(k * 4 + 2, 0, CUV(1,1)) ;
-		vb.setTexCoord(k * 4 + 3, 0, CUV(0,1)) ;
+		const CVector v1 = - _ParticleSize * I + _ParticleSize * K ;
+		const CVector v2 = + _ParticleSize * I + _ParticleSize * K ;
+		const CVector v3 = + _ParticleSize * I - _ParticleSize * K ;
+		const CVector v4 = -_ParticleSize * I - _ParticleSize * K ;
 
-		result.blendFromui(CRGBA(0,0,0), _Color, (uint8) (255.0f * intensity)) ;
-		vb.setColor(4 * k,  result) ;
-		vb.setColor(4 * k + 1,  result) ;
-		vb.setColor(4 * k + 2,  result) ;
-		vb.setColor(4 * k + 3,  result) ;
+		while (k != size)
+		{
+			_Vb.setVertexCoord(k * 4 , *it  + v1) ;
+			_Vb.setVertexCoord(k * 4 + 1, *it + v2) ;	
+			_Vb.setVertexCoord(k * 4 + 2, *it + v3) ;	
+			_Vb.setVertexCoord(k * 4 + 3, *it + v4) ;					
+			++k ;
+			++it ;
+		}
+	}
+	else
+	{
+		const CVector v1 = - I + K ;
+		const CVector v2 = I + K ;
+		const CVector v3 = I - K ;
+		const CVector v4 = - I - K ;	
 
-		tab[6 * k] = 4 * k + 2 ;
-		tab[6 * k + 1] = 4 * k + 1 ;
-		tab[6 * k + 2] = 4 * k ;		
+		uint32 leftToDo = size ;
 
-		tab[6 * k + 3] = 4 * k  ;
-		tab[6 * k + 4] = 4 * k + 3 ;
-		tab[6 * k + 5] = 4 * k + 2;
-		
+		float pSizes[1024] ; // the sizes to use
 
-		++k ;
-		++it ; ++it2 ;
+		float *currentSize ;
+
+		TPSAttribTime::const_iterator itTime = _Owner->getTime().begin() ;
+		uint32 l ;
+
+		for (;;)
+		{
+			if (leftToDo < 1024)
+			{
+				_SizeScheme->make(itTime, pSizes, sizeof(float), leftToDo) ;				
+
+				currentSize = &pSizes[0] ;				
+				for (; k < size ; ++k)
+				{
+					_Vb.setVertexCoord(k * 4 , *it  + *currentSize * v1) ;
+					_Vb.setVertexCoord(k * 4 + 1, *it + *currentSize * v2) ;	
+					_Vb.setVertexCoord(k * 4 + 2, *it + *currentSize * v3) ;	
+					_Vb.setVertexCoord(k * 4 + 3, *it + *currentSize * v4) ;										
+					++it ;
+					++currentSize ;
+				}				
+				break ;
+			}
+			else
+			{
+				// we compute 1024 new size at a time
+
+				_SizeScheme->make(itTime, pSizes, sizeof(float), 1024) ;				
+
+				currentSize = &pSizes[0] ;
+				for (l = 0 ; l < 1024 ; ++l)
+				{
+					_Vb.setVertexCoord(k * 4 , *it  + *currentSize * v1) ;
+					_Vb.setVertexCoord(k * 4 + 1, *it + *currentSize * v2) ;	
+					_Vb.setVertexCoord(k * 4 + 2, *it + *currentSize * v3) ;	
+					_Vb.setVertexCoord(k * 4 + 3, *it + *currentSize * v4) ;					
+					++k ;
+					++it ;
+					++currentSize ;
+				}				
+				itTime = itTime + 1024 ;				
+				leftToDo -= 1024 ;
+			}
+		}
 	}
 
-	driver->activeVertexBuffer(vb) ;
-
-	
-	driver->renderTriangles(_Mat, tab, size * 2) ;
-
-
-
-
-	delete[] tab ;
+	driver->activeVertexBuffer(_Vb) ;	
+	driver->renderTriangles(_Mat, _IndexBuffer, size * 2) ;
 
 }
+
+
 void CPSFaceLookAt::serial(NLMISC::IStream &f)
 {
-	f.serialCheck((uint32) 'PFLA') ;
-	CPSDot::serial(f) ;
 
+	f.serialCheck((uint32) 'PFLA') ;	
 	ITexture *ptTex = _Tex ;
-
 	f.serialPolyPtr(ptTex) ;
-	
-
 	if (f.isReading())
 	{	
-		_Tex = ptTex ;
-		init() ;
+		_Tex = ptTex ;				
+	}	
+			
+	CPSParticle::serial(f) ;
+	CPSSizedParticle::serialSizeScheme(f) ;
+	CPSColoredParticle::serialColorScheme(f) ;
+	if (f.isReading())
+	{
+		init() ;		
 	}
-	
 }
+
+
+bool CPSFaceLookAt::completeBBox(NLMISC::CAABBox &box) const  
+{ 
+	if (_UseColorScheme)
+	{
+		CPSUtil::addRadiusToAABBox(box, _ParticleSize) ;
+	}
+	else
+	{
+		CPSUtil::addRadiusToAABBox(box, _SizeScheme->getMaxValue()) ;
+	}
+
+
+	return true  ;	
+}
+
 	
 
 

@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * <File description>
  *
- * $Id: ps_mesh.h,v 1.2 2001/12/12 10:27:22 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.3 2001/12/17 13:19:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -59,9 +59,9 @@ class CMesh;
 
 
 
-const uint ConstraintMeshMaxNumVerts = 512; // the maximum number of vertices for a constraint mesh
-const uint ConstraintMeshBufSize = 64; // number of meshs to be processed at once...
-const uint ConstraintMeshMaxNumPrerotatedModels = 32; // maximum number of meshs that can be prerotated
+const uint ConstraintMeshMaxNumVerts			= 512; // the maximum number of vertices for a constraint mesh
+const uint ConstraintMeshBufSize				= 64;  // number of meshs to be processed at once...
+const uint ConstraintMeshMaxNumPrerotatedModels = 32;  // maximum number of meshs that can be prerotated
 
 /** This class is for mesh handling. It operates with any mesh, but it must insert them in the scene...
  *  It is not very adapted for lots of little meshs..
@@ -69,9 +69,11 @@ const uint ConstraintMeshMaxNumPrerotatedModels = 32; // maximum number of meshs
  *  and compute K ( K =  I ^ J)
  */
 
-class CPSMesh : public  CPSParticle, public CPSSizedParticle
-				, public CPSRotated3DPlaneParticle, public CPSRotated2DParticle
-				, public CPSShapeParticle
+class CPSMesh : public  CPSParticle,
+			    public CPSSizedParticle,
+				public CPSRotated3DPlaneParticle,
+				public CPSRotated2DParticle,
+				public CPSShapeParticle
 {
 public:
 	/// construct the system by using the given shape for mesh
@@ -156,30 +158,67 @@ protected:
  *  They got a hint for constant rotation scheme. With little meshs, this is the best to draw a maximum of them
  */
 
-class CPSConstraintMesh : public  CPSParticle, public CPSSizedParticle,
+class CPSConstraintMesh : public  CPSParticle,
+						  public CPSSizedParticle,
 						  public CPSRotated3DPlaneParticle,
 						  public CPSHintParticleRotateTheSame,
 						  public CPSShapeParticle,
 						  public CPSColoredParticle
 {
 public:	
-	CPSConstraintMesh() : _ModelShape(NULL), _ModelBank(NULL), _Touched(true), _RdrPasses(0),
-						  _ModulatedStages(0), _VertexColorLightingForced(false)
-	{		
-		_Name = std::string("ConstraintMesh");
-	}
+	/// ctor
+	CPSConstraintMesh();
 
 	virtual ~CPSConstraintMesh();
 
 	/** Construct the mesh by using the given mesh shape file.
-	  * Doesn't work with skinned meshs
+	  * No morphing is applied. The mesh is used 'as it'.
+	  * Any previous call to setShapes (for morphing) is discarded.
 	  */
 	void				setShape(const std::string &meshFileName);
 
-
-
 	/// get the shape used for those particles	
 	std::string			getShape(void) const { return _MeshShapeFileName; }
+
+
+
+	/** Setup the mesh for morphing use. There are several restrictions : 	 
+	  * - All meshs must have the same number of vertices
+	  * - All meshes must have the same vertex format
+	  * If these conditions are not met, a 'dummy' mesh will be used instead.
+	  * If there's only one mesh, no morphing is performed.	  
+	  * \param shapesNames A tab of string containing the names of the shapes
+	  * \param numShapes 
+	  */
+///	void						setShapes(const std::string *shapesNames, uint numShapes);
+
+
+	/// Get the number of shapes used
+	uint						getNumShapes() const;
+
+	/** Retrieve the names of the shapes
+	  * \param shapesNames :A tab of shapes with enough spaces to store the names
+	  */
+///	void						getShapesNames(std::string *shapesNames) const;
+
+	/// Use a constant value for morphing. This discard any scheme for the morph value. The value must range from 0 to 1
+////	void						setMorphValue(float value);
+
+	/// Get the value used for morphing
+///	float						getMorphValue() const;
+
+	/// Set a morphing scheme. The scheme is then owned by this object
+///	void						setMorphScheme(CPSAttribMaker<float> *scheme);
+
+	/// Get the current morphing scheme or NULL if no one was set
+///	CPSAttribMaker<float>		*getMorphScheme();
+
+	/// Get the current morphing scheme or NULL if no one was set. Const version
+///	const CPSAttribMaker<float>	*getMorphScheme() const;
+	  
+
+	
+	
 
 	/** Tells that all meshs are turning in the same manner, and only have a rotationnal bias
 	 *  This is a lot faster then other method. Any previous set scheme for 3d rotation is kept.
@@ -191,10 +230,10 @@ public:
 	 *  \param  maxAngularVelocity : the maximum angular velocity for particle rotation	 
 	 *  \see    CPSRotated3dPlaneParticle
 	 */
-	void				hintRotateTheSame(uint32 nbConfiguration
-											, float minAngularVelocity = NLMISC::Pi
-											, float maxAngularVelocity = NLMISC::Pi
-										  );
+	void				hintRotateTheSame(uint32 nbConfiguration,
+										  float minAngularVelocity = NLMISC::Pi,
+										  float maxAngularVelocity = NLMISC::Pi
+										 );
 
 	/** disable the hint 'hintRotateTheSame'
 	 *  The previous set scheme for roation is used
@@ -253,6 +292,51 @@ public:
 	/// Setup the buffers used with prerotated meshs. Must be called during initialization.
 	static	void		initPrerotVB();
 
+	//\name Texture animation
+	//@{
+		/// The type of animation that is used with meshs textures. 
+		enum TTexAnimType { NoAnim = 0, GlobalAnim, /*Local, */ Last};
+
+		/// Set the type of texture animation to use. None is the default. Setting a new value discard the previous change.
+		void	setTexAnimType(TTexAnimType type);
+
+		/// Get the the type of texture animation
+		TTexAnimType getTexAnimType() const;
+
+		//\name Global texture animation. Calls to these method are only valid if texture animation is global.
+		//@{
+			/// Properties of global texture animation
+			struct CGlobalTexAnim
+			{
+				NLMISC::CVector2f TransSpeed; /* = (0, 0) */
+				NLMISC::CVector2f TransAccel; /* = (0, 0) */
+				NLMISC::CVector2f ScaleStart; /* = (1, 1) */
+				NLMISC::CVector2f ScaleSpeed; /* = (0, 0) */
+				NLMISC::CVector2f ScaleAccel; /* = (0, 0) */
+				float			  WRotSpeed;  /* = 0 */
+				float			  WRotAccel;  /* = 0 */
+				CGlobalTexAnim();
+				void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+				/// Build a texture matrix from a date and this obj.
+				void    buildMatrix(TAnimationTime &date, NLMISC::CMatrix &dest);
+			};
+
+			/// Set the properties of texture animation for a texture stage. Global animation should have been activated.
+			void			setGlobalTexAnim(uint stage, const CGlobalTexAnim &properties);
+
+			/// Get the properties of texture animation.Global animation should have been activated.
+			const CGlobalTexAnim &getGlobalTexAnim(uint stage) const;
+
+			/// Force the time counter for global anim to be reseted when a new mesh is created.
+			void  forceGlobalAnimTimeResetOnNewElement(bool force = true) { _ReinitGlobalAnimTimeOnNewElement = force; }
+			bool  isGlobalAnimTimeResetOnNewElementForced()  const { return _ReinitGlobalAnimTimeOnNewElement != 0; }
+
+		//@}
+	//@}
+
+
+	
+
 protected:
 	// inherited from CPSColoredParticle
 	virtual CPSLocated *getColorOwner(void) { return _Owner; }
@@ -306,9 +390,9 @@ protected:
 	  */
 	struct CRdrPass
 	{
-		CMaterial	  Mat;
-		CMaterial	  SourceMat;
-		CPrimitiveBlock Pb;		
+		CMaterial			Mat;
+		CMaterial			SourceMat;
+		CPrimitiveBlock		Pb;		
 	};
 
 	/// A set of rendering pass.	
@@ -320,29 +404,26 @@ protected:
 		TRdrPassSet   RdrPasses;
 		CVertexBuffer VB;
 	};
-			
+	
+	void restoreMaterials();
+
+	/// Setup a set of rendering passes.
+	void	CPSConstraintMesh::setupRenderPasses(float date, TRdrPassSet &rdrPasses, bool opaque);
+
 	/// Perform a set of rendering passes. The VB must have been activated in the driver before to call this
 	void				doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet &rdrPasses, bool opaque);	
 
-
-
-	TRdrPassSet  *_RdrPasses; // The current primitive block. 
 	
-	// name of the mesh shape  it was generated from
+/*	typedef std::vector<std::string> TShapeNameVect;
+
+	// name of the shapes
+	TShapeNameVect std::string _MeshShapeFileName;*/
+
 	std::string _MeshShapeFileName;
-
-	// A new mesh has been set, so we must reconstruct it when needed	
-	bool	_Touched;	
-
-	// flags that indicate wether the object has transparent faces. When the 'touch' flag is set, it is undefined, until the next update() call.
-	bool _HasTransparentFaces;
-
-	// flags that indicate wether the object has opaques faces. When the 'touch' flag is set, it is undefined, until the next update() call.
-	bool _HasOpaqueFaces;
+	
 
 	// caches the number of faces (for load balacing)
 	uint _NumFaces;
-
 
 	// the shape bank containing the shape
 	CShapeBank  *_ModelBank;
@@ -379,7 +460,7 @@ protected:
 				uint32 Format;
 				bool operator == (const CKey &key) const { return Shape == key.Shape && Format == key.Format; }
 				bool operator != (const CKey &key) const { return ! (*this == key); }
-				bool operator < (const CKey &key) const { return Shape < key.Shape || (Shape == key.Shape && Format < key.Format); }
+				bool operator <  (const CKey &key) const { return Shape < key.Shape || (Shape == key.Shape && Format < key.Format); }
 			};				
 			typedef std::map<CKey, CMeshDisplay *> TMDMap; // vb  sorted by their formats
 			typedef std::queue<CKey> TMDQueue; // vb sorted by creation date
@@ -411,8 +492,8 @@ protected:
 	struct CPlaneBasisPair
 	{		
 		CPlaneBasis Basis;
-		CVector Axis; // an axis for rotation
-		float AngularVelocity; // an angular velocity
+		CVector		Axis; // an axis for rotation
+		float		AngularVelocity; // an angular velocity
 	};
 
 	/// a set of precomp basis, before and after transfomation in world space, used if the hint 'RotateTheSame' has been called
@@ -430,9 +511,40 @@ protected:
 	virtual CPSLocated *getSizeOwner(void) { return _Owner; }	
 	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
 
-	/// A bitfield to force some stage to be modulated with the primary color
+	/// A 'bitfield' to force some stage to be modulated with the primary color
 	uint8   _ModulatedStages;
-	bool    _VertexColorLightingForced;	
+
+	// A new mesh has been set, so we must reconstruct it when needed	
+	uint8	_Touched : 1;	
+	// flags that indicate wether the object has transparent faces. When the 'touch' flag is set, it is undefined, until the next update() call.
+	uint8	_HasTransparentFaces : 1;
+	// flags that indicate wether the object has opaques faces. When the 'touch' flag is set, it is undefined, until the next update() call.
+	uint8	_HasOpaqueFaces : 1;
+	uint8   _VertexColorLightingForced : 1;
+	uint8   _GlobalAnimationEnabled : 1;
+	uint8   _ReinitGlobalAnimTimeOnNewElement : 1;
+
+	
+	/// Infos for global texture animation
+	struct CGlobalTexAnims
+	{
+		CGlobalTexAnim		Anims[IDRV_MAT_MAXTEXTURES];		
+		void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);		
+	};
+
+	typedef std::auto_ptr<CGlobalTexAnims> PGlobalTexAnims;
+	PGlobalTexAnims						   _GlobalTexAnims;
+	float								   _GlobalAnimDate;
+
+
+	/// \name morphing
+	//@{
+	///	float					_MorphValue;
+	///	CPSAttribMaker<float>	*_MorphScheme;
+	//@}
+private:
+	CPSConstraintMesh(const CPSConstraintMesh &) { nlassert(0); /* not supported */ }
+	CPSConstraintMesh &operator = (const CPSConstraintMesh &other) { nlassert(0); return *this; /* not supported */ }
 }; 
 
 

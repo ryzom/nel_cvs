@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.3 2001/12/13 10:03:00 valignat Exp $
+ * $Id: ps_mesh.cpp,v 1.4 2001/12/17 13:19:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/texture_mem.h"
 #include "3d/scene.h"
 #include "3d/ps_located.h"
+#include "3d/particle_system.h"
 
 #include "nel/misc/stream.h"
 #include "nel/misc/path.h"
@@ -175,14 +176,12 @@ static CMesh *CreateDummyShape(void)
 //====================================================================================
 void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	f.serialVersion(2);	
+	sint ver = f.serialVersion(3);	
 	CPSParticle::serial(f);
 	CPSSizedParticle::serialSizeScheme(f);
 	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f);
 	CPSRotated2DParticle::serialAngle2DScheme(f);
-
 	f.serial(_Shape);
-
 	if (f.isReading())
 	{
 		invalidate();
@@ -200,14 +199,14 @@ uint32 CPSMesh::getMaxNumFaces(void) const
 //====================================================================================
 bool CPSMesh::hasTransparentFaces(void)
 {
-	/// we don't draw any face ! (the meshs are drawn by the scene)
+	/// we don't draw any tri ! (the meshs are drawn by the scene)
 	return false;
 }
 
 //====================================================================================
 bool CPSMesh::hasOpaqueFaces(void)
 {
-	/// we don't draw any face ! (the meshs are drawn by the scene)
+	/// we don't draw any tri ! (the meshs are drawn by the scene)
 	return false;
 }
 
@@ -470,6 +469,19 @@ static void CheckForOpaqueAndTransparentFacesInMesh(const CMesh &m, bool &hasTra
 	}	 
 }
 
+
+CPSConstraintMesh::CPSConstraintMesh() : _ModelShape(NULL), 
+						  _ModelBank(NULL),
+						  _Touched(1),
+						  _ReinitGlobalAnimTimeOnNewElement(0),						  
+						  _ModulatedStages(0),
+						  _VertexColorLightingForced(false) /*,
+						  _MorphScheme(NULL),
+						  _MorphValue(0)*/
+{		
+	_Name = std::string("ConstraintMesh");
+}
+
 //====================================================================================
 uint32 CPSConstraintMesh::getMaxNumFaces(void) const
 {
@@ -482,26 +494,78 @@ uint32 CPSConstraintMesh::getMaxNumFaces(void) const
 //====================================================================================
 bool CPSConstraintMesh::hasTransparentFaces(void)
 {
-	if (!_Touched) return _HasTransparentFaces;
+	if (!_Touched) return _HasTransparentFaces != 0;
 	/// we must update the mesh to know wether it has transparent faces
 	update();
-	return _HasTransparentFaces;
+	return _HasTransparentFaces != 0;
 }
 
 //====================================================================================
 bool CPSConstraintMesh::hasOpaqueFaces(void)
 {
-	if (!_Touched) return _HasOpaqueFaces;	
+	if (!_Touched) return _HasOpaqueFaces != 0;	
 	update();
-	return _HasOpaqueFaces;
+	return _HasOpaqueFaces != 0;
 }
 
 //====================================================================================
 void CPSConstraintMesh::setShape(const std::string &meshFileName)
 {
 	_MeshShapeFileName = meshFileName;
-	_Touched = true;
+	_Touched = 1;
 }
+
+/*
+//====================================================================================
+void		CPSConstraintMesh::setShapes(const std::string *shapesNames, uint numShapes)
+{
+	
+
+}
+
+//====================================================================================
+uint	    CPSConstraintMesh::getNumShapes() const
+{
+
+
+}
+
+//====================================================================================
+void	CPSConstraintMesh::getShapesNames(std::string *shapesNames) const
+{
+
+
+}
+
+
+//====================================================================================
+void	CPSConstraintMesh::setMorphValue(float value)
+{
+
+}
+
+
+//====================================================================================
+float	CPSConstraintMesh::getMorphValue() const
+{
+
+}
+
+//====================================================================================
+void	CPSConstraintMesh::setMorphScheme(CPSAttribMaker<float> *scheme)
+{
+
+}
+
+//====================================================================================
+CPSAttribMaker<float>		*CPSConstraintMesh::getMorphScheme()
+{
+
+}
+
+//====================================================================================
+const CPSAttribMaker<float>	*getMorphScheme() const;
+*/
 
 //====================================================================================
 static IShape *GetDummyShapeFromBank(CShapeBank &sb)
@@ -587,11 +651,19 @@ bool CPSConstraintMesh::update(void)
 	notifyOwnerMaxNumFacesChanged();
 	
 	/// update opacity / transparency state
-	CheckForOpaqueAndTransparentFacesInMesh(m, _HasTransparentFaces, _HasOpaqueFaces);	
+	bool hasTransparentFaces, hasOpaqueFaces;
+	CheckForOpaqueAndTransparentFacesInMesh(m, hasTransparentFaces, hasOpaqueFaces);
+
+	_HasTransparentFaces = hasTransparentFaces;	
+	_HasOpaqueFaces = hasOpaqueFaces;
 
 	_ModelBank = sb;
 	_ModelShape = is;
-	_Touched = false;
+
+
+	_GlobalAnimDate = _Owner->getOwner()->getSystemDate();
+
+	_Touched = 0;
 
 	return ok;
 	
@@ -654,12 +726,11 @@ void CPSConstraintMesh::fillIndexesInPrecompBasis(void)
 void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 
-	sint ver = f.serialVersion(2);
+	sint ver = f.serialVersion(3);
 	if (f.isReading())
 	{
 		clean();
 	}
-
 
 	CPSParticle::serial(f);
 	CPSSizedParticle::serialSizeScheme(f);
@@ -709,7 +780,50 @@ void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if (ver > 1)
 	{
 		CPSColoredParticle::serialColorScheme(f);
-		f.serial(_ModulatedStages, _VertexColorLightingForced);
+		f.serial(_ModulatedStages);
+		if (f.isReading())
+		{
+			bool vcEnabled;
+			f.serial(vcEnabled);
+			_VertexColorLightingForced = vcEnabled;
+		}
+		else
+		{
+			bool vcEnabled = (_VertexColorLightingForced != 0);
+			f.serial(vcEnabled);
+		}						
+	}
+
+	if (ver > 2)
+	{
+		if (f.isReading())
+		{
+			bool gaEnabled;
+			f.serial(gaEnabled);
+			_GlobalAnimationEnabled = gaEnabled;
+			if (gaEnabled)
+			{
+				PGlobalTexAnims newPtr(new CGlobalTexAnims); // create new
+				std::swap(_GlobalTexAnims, newPtr);			 // replace old
+				f.serial(*_GlobalTexAnims);
+			}
+
+			bool rgt;
+			f.serial(rgt);
+			_ReinitGlobalAnimTimeOnNewElement = rgt;
+		}
+		else
+		{
+			bool gaEnabled = (_GlobalAnimationEnabled != 0);
+			f.serial(gaEnabled);
+			if (gaEnabled)
+			{
+				f.serial(*_GlobalTexAnims);
+			}
+
+			bool rgt = _ReinitGlobalAnimTimeOnNewElement != 0;
+			f.serial(rgt);			
+		}
 	}
 }
 
@@ -731,6 +845,9 @@ void CPSConstraintMesh::clean(void)
 		_ModelBank = NULL;
 		_ModelShape = NULL;
 	}
+	_GlobalAnimationEnabled = 0;
+	_ReinitGlobalAnimTimeOnNewElement = 0;
+	_GlobalTexAnims.reset();
 }
 
 
@@ -861,40 +978,78 @@ static inline void ForceMaterialModulation(CMaterial &destMat, CMaterial &srcMat
 
 
 //====================================================================================
+void	CPSConstraintMesh::setupRenderPasses(float date, TRdrPassSet &rdrPasses, bool opaque)
+{
+	// render meshs : we process each rendering pass
+	for (TRdrPassSet::iterator rdrPassIt = rdrPasses.begin() 
+		; rdrPassIt != rdrPasses.end(); ++rdrPassIt)
+	{
+
+		CMaterial &Mat = rdrPassIt->Mat;
+		CMaterial &SourceMat = rdrPassIt->SourceMat;
+
+
+		/// check wether this material has to be rendered
+		if ((opaque && Mat.getZWrite()) || (!opaque && ! Mat.getZWrite()))
+		{				
+			// has to setup material constant color ?
+			if (!_UseColorScheme) 
+			{				
+				NLMISC::CRGBA col;
+				col.modulateFromColor(SourceMat.getColor(), _Color);
+				if (col != Mat.getColor()) // avoid to 'touch' the material if the color hasn't changed
+				{
+					Mat.setColor(col);
+				}
+			}
+
+			/// force modulation for some stages
+			ForceMaterialModulation(Mat, SourceMat, _ModulatedStages);
+
+			/// force vertex lighting
+			bool forceVertexcolorLighting = _VertexColorLightingForced != 0 ? true : SourceMat.getLightedVertexColor();
+			if (forceVertexcolorLighting != Mat.getLightedVertexColor()) // avoid to touch mat if not needed
+			{
+				Mat.setLightedVertexColor(forceVertexcolorLighting);
+			}
+
+			///global texture animation
+			if (_GlobalAnimationEnabled != 0)
+			{
+				for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+				{
+					if (Mat.getTexture(k) != NULL)
+					{
+						Mat.enableUserTexMat(k, true);
+						CMatrix mat;
+						_GlobalTexAnims->Anims[k].buildMatrix(date, mat);
+						Mat.setUserTexMat(k ,mat);
+					}
+				}
+			}		
+		}			
+	}
+
+}
+
+//====================================================================================
 void	CPSConstraintMesh::doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet &rdrPasses, bool opaque)
 {		
 	// render meshs : we process each rendering pass
 	for (TRdrPassSet::iterator rdrPassIt = rdrPasses.begin() 
 		; rdrPassIt != rdrPasses.end(); ++rdrPassIt)
-	{
-		// TODO : update this when new primitive will be added
-
-		/// check wether this material has to be rendered
-		if ((opaque && rdrPassIt->Mat.getZWrite()) || (!opaque && !rdrPassIt->Mat.getZWrite()))
-		{				
-			if (!_UseColorScheme) // has to setup material constant color ?
-			{				
-				NLMISC::CRGBA col;
-				col.modulateFromColor(rdrPassIt->SourceMat.getColor(), _Color);
-				if (col != rdrPassIt->Mat.getColor()) // avoid to 'touch' the material if the color hasn't changed
-				{
-					rdrPassIt->Mat.setColor(col);
-				}
-			}
-			/// force modulation for some stages
-			ForceMaterialModulation(rdrPassIt->Mat, rdrPassIt->SourceMat, _ModulatedStages);
-
-			/// force vertex lighting
-			bool forceVertexcolorLighting = _VertexColorLightingForced ? true : rdrPassIt->SourceMat.getLightedVertexColor();
-			if (forceVertexcolorLighting != rdrPassIt->Mat.getLightedVertexColor()) // avoid to touch mat if not needed
-			{
-				rdrPassIt->Mat.setLightedVertexColor(forceVertexcolorLighting);
-			}
+	{	
+		CMaterial &Mat = rdrPassIt->Mat;
+		if ((opaque && Mat.getZWrite()) || (!opaque && ! Mat.getZWrite()))
+		{
+			/// setup number of primitives to be rendered
 			rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri()   * numObj / ConstraintMeshBufSize);
 			rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * numObj / ConstraintMeshBufSize);
 			rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * numObj / ConstraintMeshBufSize);
+
+			/// render the primitives
 			driver->render(rdrPassIt->Pb, rdrPassIt->Mat);
-		}			
+		}
 	}
 
 }
@@ -948,6 +1103,9 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
 	IDriver *driver = getDriver();
 	setupDriverModelMatrix();	
 
+	// renderPasses setup
+	nlassert(_Owner)	
+
 	// storage for sizes of meshs
 	float sizes[ConstraintMeshBufSize];
 	
@@ -967,6 +1125,10 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
 	/// get a mesh display struct on this shape, with eventually a primary color added.
 	CMeshDisplay  &md    = _MeshDisplayShare.getMeshDisplay(_ModelShape, modelVb.getVertexFormat() 
 															| (_UseColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
+
+
+	setupRenderPasses((float) _Owner->getOwner()->getSystemDate() - _GlobalAnimDate, md.RdrPasses, opaque);
+
 	CVertexBuffer &outVb = md.VB;
 
 	driver->activeVertexBuffer(outVb);
@@ -1092,6 +1254,9 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 	/// get a vb in which to write. It has the same format than the input mesh, but can also have a color flag added
 	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_ModelShape, modelVb.getVertexFormat() 
 															| (_UseColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
+
+	setupRenderPasses((float) _Owner->getOwner()->getSystemDate() - _GlobalAnimDate, md.RdrPasses, opaque);
+
 	CVertexBuffer &outVb = md.VB;
 	const uint outVSize = outVb.getVertexSize();
 	
@@ -1234,6 +1399,10 @@ void CPSConstraintMesh::newElement(CPSLocated *emitterLocated, uint32 emitterInd
 		_IndexInPrecompBasis[_Owner->getNewElementIndex()] = rand() % nbConf;
 	}
 	newColorElement(emitterLocated, emitterIndex);
+	if (_GlobalAnimationEnabled && _ReinitGlobalAnimTimeOnNewElement)
+	{		
+		_GlobalAnimDate = _Owner->getOwner()->getSystemDate();
+	}
 }
 	
 //====================================================================================	
@@ -1499,5 +1668,128 @@ CPSConstraintMesh::CMeshDisplayShare::CKey::~CKey()
 {
 }
 
+//=====================================================================================	
+CPSConstraintMesh::CGlobalTexAnim::CGlobalTexAnim() : TransSpeed(NLMISC::CVector2f::Null),
+							 TransAccel(NLMISC::CVector2f::Null),
+							 ScaleStart(1 ,1),
+							 ScaleSpeed(NLMISC::CVector2f::Null),
+							 ScaleAccel(NLMISC::CVector2f::Null),
+							 WRotSpeed(0),
+							 WRotAccel(0)
+{
+}
+
+//=====================================================================================
+void	CPSConstraintMesh::CGlobalTexAnim::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(0);
+	f.serial(TransSpeed, TransAccel, ScaleStart, ScaleSpeed, ScaleAccel);
+	f.serial(WRotSpeed, WRotAccel);
+}
+
+//=====================================================================================
+void CPSConstraintMesh::CGlobalTexAnim::buildMatrix(float &date, NLMISC::CMatrix &dest)
+{
+	float fDate = (float) date;
+	float halfDateSquared   = 0.5f * fDate * fDate;
+	NLMISC::CVector2f pos   = fDate * TransSpeed + halfDateSquared * fDate * TransAccel;
+	NLMISC::CVector2f scale = ScaleStart + fDate * ScaleSpeed + halfDateSquared * fDate * ScaleAccel;
+	float rot = fDate * WRotSpeed + halfDateSquared * WRotAccel;
+	
+			
+	float fCos, fSin;
+	if (rot != 0.f)
+	{
+		fCos = ::cosf(- rot);
+		fSin = ::sinf(- rot);
+	}
+	else
+	{
+		fCos = 1.f;
+		fSin = 0.f;
+	}
+
+	NLMISC::CVector I(fCos, fSin, 0);
+	NLMISC::CVector J(-fSin, fCos, 0);				
+	dest.setRot(scale.x * I, scale.y * J, NLMISC::CVector::K);	
+	NLMISC::CVector center(-0.5f, -0.5f, 0.f);
+	NLMISC::CVector t(pos.x, pos.y, 0);
+	dest.setPos(t + dest.mulVector(center) - center);	
+}
+
+//=====================================================================================
+void	CPSConstraintMesh::setGlobalTexAnim(uint stage, const CGlobalTexAnim &properties)
+{
+	nlassert(_GlobalAnimationEnabled != 0);
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	nlassert(_GlobalTexAnims.get());
+	_GlobalTexAnims->Anims[stage] = properties;
+}
+
+//=====================================================================================
+const CPSConstraintMesh::CGlobalTexAnim &CPSConstraintMesh::getGlobalTexAnim(uint stage) const
+{
+	nlassert(_GlobalAnimationEnabled != 0);
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	nlassert(_GlobalTexAnims.get());
+	return _GlobalTexAnims->Anims[stage];
+}
+
+
+//=====================================================================================
+CPSConstraintMesh::TTexAnimType CPSConstraintMesh::getTexAnimType() const
+{
+	return (TTexAnimType) (_GlobalAnimationEnabled != 0 ? GlobalAnim : NoAnim);	
+}
+
+//=====================================================================================
+void  CPSConstraintMesh::setTexAnimType(TTexAnimType type)
+{
+	nlassert(type < Last);
+	if (type == getTexAnimType()) return; // does the type of animation change ?
+	switch (type)
+	{
+		case NoAnim:
+			_GlobalTexAnims.reset();
+			restoreMaterials();
+			_GlobalAnimationEnabled = 0;
+		break;
+		case GlobalAnim:
+		{
+			PGlobalTexAnims newPtr(new CGlobalTexAnims);
+			std::swap(_GlobalTexAnims, newPtr);			
+			_GlobalAnimationEnabled = 1;
+		}
+		break;
+	}
+}
+
+//=====================================================================================
+void	CPSConstraintMesh::CGlobalTexAnims::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(0);
+	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
+	{
+		f.serial(Anims[k]);
+	}
+}
+
+//=====================================================================================
+void CPSConstraintMesh::restoreMaterials()
+{
+	update();
+	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_ModelShape);
+	const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
+	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_ModelShape, modelVb.getVertexFormat() 
+															| (_UseColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
+
+	TRdrPassSet rdrPasses = md.RdrPasses;
+		// render meshs : we process each rendering pass
+	for (TRdrPassSet::iterator rdrPassIt = rdrPasses.begin() 
+		; rdrPassIt != rdrPasses.end(); ++rdrPassIt)
+	{	
+		rdrPassIt->Mat = rdrPassIt->SourceMat;		
+	}
+}
 
 } // NL3D

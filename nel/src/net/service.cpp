@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.170 2003/03/20 16:19:26 lecroart Exp $
+ * $Id: service.cpp,v 1.171 2003/03/21 10:34:42 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1357,7 +1357,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 					const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
 					if (strs.size()>0)
 					{
-						
+						str += strs[0].substr(0,strs[0].size()-1);
+						/*
 						string s_ = strs[0];
 
 						uint32 pos = strs[0].find("=");
@@ -1372,7 +1373,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 						else
 						{
 							str += "???";
-						}
+						}*/
 					}
 					else
 					{

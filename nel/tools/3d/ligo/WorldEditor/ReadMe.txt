@@ -2,7 +2,17 @@
 *WorldEditor*
 *************
 
-REMARKS:
+Keys
+----
+
+Crtl-Z / Ctrl-Y : Undo / Redo the last action on the current mode (Prim or Land)
+Space Or Middle Button + MouseMove : Move the current view window
+Left Button : put ligozone or add/move primitive vertices
+Right Button : delete
+Middle Button Roll : zoom in/out
+
+Remarks
+-------
 
 RootDirectory is the directory where the WorldEditor is executed.
 The LigoZone files must be stored in the subdirectory named "ZoneLigos" just under 

@@ -122,7 +122,8 @@ fn haveCoarseMesh node =
 	if (nodeCount != undefined) then
 	(
 		-- For each lod
-		for lod = 1 to nodeCount.count do
+		nodeCountNum = nodeCount as Integer
+		for lod = 1 to nodeCountNum do
 		(
 			-- Get the lod
 			lod = getappdata node (NEL3D_APPDATA_LOD_NAME+lod-1)
@@ -188,7 +189,8 @@ try
 						if (nodeCount != undefined) then
 						(
 							-- For each lod
-							for lod = 1 to nodeCount.count do
+							nodeCountNum = nodeCount as Integer
+							for lod = 1 to nodeCountNum do
 							(
 								-- Get the lod
 								lod = getappdata node (NEL3D_APPDATA_LOD_NAME+lod-1)
@@ -197,7 +199,15 @@ try
 								if (lod != undefined) then
 								(
 									-- Select a node
-									nd = execute ("$"+lod)
+									try
+									(
+										nd = execute ("$"+lod)
+									)
+									catch
+									(
+										nlerror ("Error in Execute $"+lod+" from node "+node.name)
+										nd = undefined
+									)
 
 									-- Node exist ?
 									if (nd != undefined) then 

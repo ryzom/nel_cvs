@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: instance_material_user.h,v 1.2 2002/02/06 17:14:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_instance_material.h"
 #include "3d/material.h"
-
+#include "3d/texture_file.h"
 
 namespace NL3D
 {
@@ -155,6 +155,33 @@ public:
 			return CRGBA(0,0,0,0);
 	}
 	// @}
+
+
+	/// \name Texture files specific
+	// @{	
+	virtual bool				isTextureFile(uint stage = 0) const
+	{
+		return dynamic_cast<CTextureFile *>(_Material->getTexture(stage)) != NULL;
+	}
+	
+	virtual std::string getTextureFileName(uint stage = 0) const
+	{
+		
+		return NLMISC::safe_cast<CTextureFile *>(_Material->getTexture(stage))->getFileName();
+	}
+	
+	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0)
+	{
+		NLMISC::safe_cast<CTextureFile *>(_Material->getTexture(stage))->setFileName(fileName);
+	}
+
+	// @}
+
+	/// Multiple textures sets mgt
+	virtual void			selectTextureSet(uint id)
+	{
+		_Material->selectTextureSet(id);
+	}
 
 
 private:

@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.14 2002/07/02 12:05:24 corvazier Exp $
+ * $Id: panoply_maker.cpp,v 1.15 2002/07/03 08:45:50 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -96,6 +96,7 @@ static std::string replaceSlashes(const std::string &src)
 int main(int argc, char* argv[])
 {	
 	// Filter addSearchPath
+	NLMISC::createDebug();
 	NLMISC::InfoLog->addNegativeFilter ("adding the path");
 
 	if (argc != 2)

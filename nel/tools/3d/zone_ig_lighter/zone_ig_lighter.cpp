@@ -2,7 +2,7 @@
  * zone_ig_lighter.cpp : instance lighter for ig in landscape zones
  * greatly copied from ../zone_lighter/zone_lighter.cpp
  *
- * $Id: zone_ig_lighter.cpp,v 1.10 2002/07/02 13:26:58 corvazier Exp $
+ * $Id: zone_ig_lighter.cpp,v 1.11 2002/07/03 08:45:50 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,6 +99,7 @@ class CMyIgZoneLighter : public CInstanceLighter
 int main(int argc, char* argv[])
 {
 	// Filter addSearchPath
+	NLMISC::createDebug();
 	InfoLog->addNegativeFilter ("adding the path");
 
 	// Register 3d

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.44 2002/07/02 13:26:27 corvazier Exp $
+ * $Id: path.cpp,v 1.45 2002/07/03 08:45:50 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -197,7 +197,7 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 	string str = strlwr (filename);
 
 	// Remove end spaces
-	while (str.size() && (str[str.size()-1] == ' '))
+	while ((!str.empty()) && (str[str.size()-1] == ' '))
 	{
 		str.resize (str.size()-1);
 	}

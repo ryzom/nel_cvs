@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.23 2002/07/02 12:05:24 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.24 2002/07/03 08:45:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -266,6 +266,7 @@ static void loadIGFromContinent(NLMISC::CConfigFile &parameter, std::list<CInsta
 int main(int argc, char* argv[])
 {
 	// Filter addSearchPath
+	NLMISC::createDebug();
 	InfoLog->addNegativeFilter ("adding the path");
 
 	// Register 3d

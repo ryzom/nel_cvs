@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.8 2002/07/02 12:05:24 corvazier Exp $
+ * $Id: main.cpp,v 1.9 2002/07/03 08:45:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -273,6 +273,7 @@ CFileDisplayer fd("evallog.log", true);
 int main(int argc, char **argv)
 {
 	// Filter addSearchPath
+	NLMISC::createDebug();
 	InfoLog->addNegativeFilter ("adding the path");
 
 #ifdef LOG_ALL_INFO_TO_FILE

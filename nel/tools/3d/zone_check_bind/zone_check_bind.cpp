@@ -1,7 +1,7 @@
 /** \file zone_check_bind.cpp
  * This tool check that each patch of a zone to see wether they are bound correctly.
  *
- * $Id: zone_check_bind.cpp,v 1.5 2002/07/02 12:05:24 corvazier Exp $
+ * $Id: zone_check_bind.cpp,v 1.6 2002/07/03 08:45:50 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -416,6 +416,7 @@ static uint CheckZone(std::string middleZoneFile, float weldThreshold, float mid
 //=========================================================================================================================
 int main(int argc, char* argv[])
 {		
+	NLMISC::createDebug();
 	InfoLog->addNegativeFilter("adding the path");
 
 	if (argc < 4)

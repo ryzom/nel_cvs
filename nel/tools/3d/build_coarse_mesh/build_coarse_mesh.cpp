@@ -1,7 +1,7 @@
 /** \file build_coarse_mesh.cpp
  * Precalc coarse mesh objets to build a single texture
  *
- * $Id: build_coarse_mesh.cpp,v 1.5 2002/07/02 12:05:23 corvazier Exp $
+ * $Id: build_coarse_mesh.cpp,v 1.6 2002/07/03 08:45:50 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,7 @@ public:
 int main(int argc, char* argv[])
 {
 	// Filter addSearchPath
+	NLMISC::createDebug();
 	InfoLog->addNegativeFilter ("adding the path");
 
 	// Register 3d

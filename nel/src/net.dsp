@@ -288,6 +288,14 @@ SOURCE=..\include\nel\net\unitime.h
 # End Group
 # Begin Source File
 
+SOURCE=.\net\new_service.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\new_service.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\service.cpp
 # End Source File
 # Begin Source File

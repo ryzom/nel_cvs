@@ -320,6 +320,14 @@ SOURCE=..\include\nel\misc\bit_set.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\buf_fifo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\buf_fifo.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\class_id.cpp
 # End Source File
 # Begin Source File

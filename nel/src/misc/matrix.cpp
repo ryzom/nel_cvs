@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: matrix.cpp,v 1.4 2000/09/21 10:40:17 berenguier Exp $
+ * $Id: matrix.cpp,v 1.5 2000/09/21 10:59:53 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -882,12 +882,12 @@ bool		CMatrix::normalize(TRotOrder ro)
 	CVector	*t0, *t1, *t2;
 	switch(ro)
 	{
-		case XYZ: t0=&ti; t1=&tj; t2=&tk; break;
-		case XZY: t0=&ti; t1=&tk; t2=&tj; break;
-		case YXZ: t0=&tj; t1=&ti; t2=&tk; break;
-		case YZX: t0=&tj; t1=&tk; t2=&ti; break;
-		case ZXY: t0=&tk; t1=&ti; t2=&tj; break;
-		case ZYX: t0=&tk; t1=&tj; t2=&ti; break;
+		case XYZ: t2=&ti; t1=&tj; t0=&tk; break;
+		case XZY: t2=&ti; t1=&tk; t0=&tj; break;
+		case YXZ: t2=&tj; t1=&ti; t0=&tk; break;
+		case YZX: t2=&tj; t1=&tk; t0=&ti; break;
+		case ZXY: t2=&tk; t1=&ti; t0=&tj; break;
+		case ZYX: t2=&tk; t1=&tj; t0=&ti; break;
 	}
 	t2->normalize();
 	*t0= *t1^*t2;

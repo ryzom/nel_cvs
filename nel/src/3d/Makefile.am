@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.70 2002/03/04 10:07:10 lecroart Exp $
+# $Id: Makefile.am,v 1.71 2002/03/14 18:32:02 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -167,7 +167,9 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        mesh_multi_lod_instance.cpp                     \
                        mesh_multi_lod_instance.h                       \
                        meshvp_wind_tree.cpp                            \
-                       mini_col.cpp                                    \
+                       meshvp_per_pixel_light.cpp                      \
+                       meshvp_per_pixel_light.h                        \
+					   mini_col.cpp                                    \
                        mini_col.h                                      \
                        mot.cpp                                         \
                        mot.h                                           \
@@ -353,6 +355,8 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        stripifier.h                                    \
                        surface_light_grid.cpp                          \
                        surface_light_grid.h                            \
+                       tangent_space_build.cpp                         \
+                       tangent_space_build.h                           \
                        tessellation.cpp                                \
                        tessellation.h                                  \
                        tess_block.cpp                                  \

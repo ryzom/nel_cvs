@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.25 2004/09/03 09:03:40 besson Exp $
+ * $Id: driver_direct3d.h,v 1.26 2004/09/07 15:22:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,11 +117,13 @@ typedef std::list<COcclusionQueryD3D *> TOcclusionQueryList;
 class COcclusionQueryD3D : public IOcclusionQuery
 {
 public:
-	IDirect3DQuery9					*Query;
+	IDirect3DQuery9					*Query;         // NULL is the query has been lost
 	NLMISC::CRefPtr<CDriverD3D>		Driver;			// owner driver
 	TOcclusionQueryList::iterator   Iterator;		// iterator in owner driver list of queries
 	TOcclusionType					OcclusionType;  // current type of occlusion
-	uint							VisibleCount;	// number of samples that passed the test
+	uint							VisibleCount;	// number of samples that passed the test	
+	bool							QueryIssued;
+	bool							WasLost; // tells that query was lost, so calls to end() will have not effects (there's no matching begin)
 	// From IOcclusionQuery
 	virtual void begin();	
 	virtual void end();	
@@ -247,13 +249,14 @@ public:
 	uint							VolatileLockTime;	// Volatile vertex buffer
 	DWORD							Usage;
 	CVolatileVertexBuffer			*VolatileVertexBuffer;
+	CDriverD3D						*Driver;
 	
 	#ifdef NL_DEBUG
 	bool Locked;
 	#endif
 
 
-	CVBDrvInfosD3D(IDriver *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb);
+	CVBDrvInfosD3D(CDriverD3D *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb);
 	virtual ~CVBDrvInfosD3D();
 	virtual uint8	*lock (uint first, uint last, bool readOnly);
 	virtual void	unlock (uint first, uint last);
@@ -270,8 +273,9 @@ public:
 	bool							VolatileRAM:1;
 	uint							VolatileLockTime;	// Volatile index buffer	
 	CVolatileIndexBuffer			*VolatileIndexBuffer;
+	CDriverD3D						*Driver;
 
-	CIBDrvInfosD3D(IDriver *drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib);
+	CIBDrvInfosD3D(CDriverD3D *drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib);
 	virtual ~CIBDrvInfosD3D();
 	virtual uint32	*lock (uint first, uint last, bool readOnly);
 	virtual void	unlock (uint first, uint last);
@@ -349,6 +353,60 @@ public:
 
 	IDirect3DPixelShader9	*PixelShader;
 };
+
+/*
+
+// base class for recorded state in an effect
+class CStateRecord
+{
+public:
+	// apply record in a driver
+	virtual void apply(class CDriverD3D &drv) = 0;
+	virtual ~CStateRecord() {}
+};
+
+
+class CFXPassRecord
+{
+public:
+	~CFXPassRecord();
+	std::vector<CStateRecord *> States;
+
+};
+
+
+// optimisation of an effect pass 
+class CFXPassRecorder : public ID3DXEffectStateManager
+{
+public:
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID *ppvObj);
+	ULONG STDMETHODCALLTYPE AddRef(VOID);
+	ULONG STDMETHODCALLTYPE Release(VOID);
+	HRESULT STDMETHODCALLTYPE LightEnable(DWORD Index, BOOL Enable);
+	HRESULT STDMETHODCALLTYPE SetFVF(DWORD FVF);
+	HRESULT STDMETHODCALLTYPE SetLight(DWORD Index, CONST D3DLIGHT9* pLight);
+	HRESULT STDMETHODCALLTYPE SetMaterial(CONST D3DMATERIAL9* pMaterial);
+	HRESULT STDMETHODCALLTYPE SetNPatchMode(FLOAT nSegments);
+	HRESULT STDMETHODCALLTYPE SetPixelShader(LPDIRECT3DPIXELSHADER9 pShader);
+	HRESULT STDMETHODCALLTYPE SetPixelShaderConstantB(UINT StartRegister, CONST BOOL* pConstantData, UINT RegisterCount);
+	HRESULT STDMETHODCALLTYPE SetPixelShaderConstantF(UINT StartRegister, CONST FLOAT* pConstantData, UINT RegisterCount);
+	HRESULT STDMETHODCALLTYPE SetPixelShaderConstantI(UINT StartRegister, CONST INT* pConstantData, UINT RegisterCount);
+	HRESULT STDMETHODCALLTYPE SetRenderState(D3DRENDERSTATETYPE State, DWORD Value);
+	HRESULT STDMETHODCALLTYPE SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value);
+	HRESULT STDMETHODCALLTYPE SetTexture (DWORD Stage, LPDIRECT3DBASETEXTURE9 pTexture);
+	HRESULT STDMETHODCALLTYPE SetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value);
+	HRESULT STDMETHODCALLTYPE SetTransform(D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX* pMatrix);
+	HRESULT STDMETHODCALLTYPE SetVertexShader(LPDIRECT3DVERTEXSHADER9 pShader);
+	HRESULT STDMETHODCALLTYPE SetVertexShaderConstantB(UINT StartRegister, CONST BOOL* pConstantData, UINT RegisterCount);
+	HRESULT STDMETHODCALLTYPE SetVertexShaderConstantF(UINT StartRegister, CONST FLOAT* pConstantData, UINT RegisterCount);
+	HRESULT STDMETHODCALLTYPE SetVertexShaderConstantI(UINT StartRegister, CONST INT* pConstantData, UINT RegisterCount);
+#error finir ça
+};
+*/
+
+
+
+//
 
 // ***************************************************************************
 
@@ -901,6 +959,7 @@ private:
 			Decl = NULL;
 		}
 		IDirect3DVertexDeclaration9		*Decl;
+		uint							 Stride;
 		virtual void apply(CDriverD3D *driver);
 	};
 
@@ -1293,7 +1352,7 @@ private:
 
 		// Ref on the state
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if ((_VertexBufferCache.VertexBuffer != vertexBuffer) || (_VertexBufferCache.Offset != offset))
+		if ((_VertexBufferCache.VertexBuffer != vertexBuffer) || (_VertexBufferCache.Offset != offset) || (stride != _VertexBufferCache.Stride))
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_VertexBufferCache.VertexBuffer = vertexBuffer;
@@ -1335,19 +1394,20 @@ private:
 	}
 
 	// Set the vertex declaration
-	inline void setVertexDecl (IDirect3DVertexDeclaration9  *vertexDecl)
+	inline void setVertexDecl (IDirect3DVertexDeclaration9  *vertexDecl, uint stride)
 	{
 		H_AUTO_D3D(CDriverD3D_setVertexDecl);
 		nlassert (_DeviceInterface);
 
 		// Ref on the state
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_VertexDeclCache.Decl != vertexDecl)
+		if (_VertexDeclCache.Decl != vertexDecl || stride != _VertexDeclCache.Stride)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_VertexDeclCache.Decl = vertexDecl;
+			_VertexDeclCache.Stride = stride;
 			touchRenderVariable (&_VertexDeclCache);
-		}
+		}		
 	}
 
 	// Access matrices
@@ -1840,7 +1900,12 @@ private:
 	bool						_ScissorTouched;
 	uint8						_CurrentUVRouting[MaxTexture];
 	bool						_MustRestoreLight;	
-public:
+
+	public:
+	// tmp for debug
+	uint						_VertexStreamStride;
+	uint						_VertexDeclStride;	
+
 	// private, for access by COcclusionQueryD3D
 	COcclusionQueryD3D			*_CurrentOcclusionQuery;
 

@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.38 2003/10/20 16:23:19 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.39 2005/03/03 15:06:25 legros Exp $
  *
  */
 
@@ -67,6 +67,9 @@ using namespace NLNET;
 //
 // Structures
 //
+
+
+
 
 struct CRequest
 {
@@ -300,6 +303,15 @@ MYSQL_ROW sqlNextRow ()
 	return mysql_fetch_row(sqlCurrentQueryResult);
 }
 
+void	sqlFlushResult()
+{
+	if (sqlCurrentQueryResult == NULL)
+		return;
+
+	mysql_free_result(sqlCurrentQueryResult);
+	sqlCurrentQueryResult = NULL;
+}
+
 //
 // Admin functions
 //
@@ -433,6 +445,7 @@ static void cbGraphUpdate (CMessage &msgin, const std::string &serviceName, uint
 				{
 					nlwarning ("Can't create the rrd because no graph_update in database");
 				}
+				sqlFlushResult();
 			}
 
 			arg = "update " + rrdfilename + " " + toString (CurrentTime) + ":" + toString(val);
@@ -1068,6 +1081,7 @@ void sendAESInformations (uint16 sid)
 		informations.push_back (service);
 		row = sqlNextRow ();
 	}
+	sqlFlushResult();
 	msgout.serialCont (informations);
 
 	//
@@ -1083,6 +1097,7 @@ void sendAESInformations (uint16 sid)
 		informations.push_back (row[2]);
 		row = sqlNextRow ();
 	}
+	sqlFlushResult();
 	msgout.serialCont (informations);
 	
 	//
@@ -1115,6 +1130,7 @@ void sendAESInformations (uint16 sid)
 		}
 		row = sqlNextRow ();
 	}
+	sqlFlushResult();
 	msgout.serialCont (informations);
 	
 	nlinfo ("Sending all informations about %s AES-%hu (hostedservices, alarms,grapupdate)", (*aesit).Name.c_str(), (*aesit).SId);
@@ -1145,27 +1161,26 @@ static void cbNewAESConnection (const std::string &serviceName, uint16 sid, void
 	}
 
 	MYSQL_ROW row = sqlQuery ("select name from server where address='%s'", ia.ipAddress().c_str());
-
 	if (row == NULL)
 	{
 		nlwarning ("Connection of an AES that is not in database server list (%s)", ia.asString ().c_str ());
 		rejectAES (sid, "This AES is not registered in the database");
+		sqlFlushResult();
 		return;
 	}
-
 	string server = row[0];
+	sqlFlushResult();
 
 	row = sqlQuery ("select shard from service where server='%s'", server.c_str());
-	
 	if (row == NULL)
 	{
 		nlwarning ("Connection of an AES that is not in database server list (%s)", ia.asString ().c_str ());
 		rejectAES (sid, "This AES is not registered in the database");
+		sqlFlushResult();
 		return;
 	}
-	
 	string shard = row[0];
-	
+	sqlFlushResult();
 	
 	AdminExecutorServices.push_back (CAdminExecutorService(shard, server, sid));
 
@@ -1347,6 +1362,7 @@ static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 		}
 		addRequestAnswer (rid, vara, vala);
 	}
+	sqlFlushResult();
 
 	// inc the NbReceived counter
 	addRequestReceived (rid);
@@ -1738,6 +1754,7 @@ void addRequest (const string &rawvarpath, TSockId from)
 					}
 					row = sqlNextRow ();
 				}
+				sqlFlushResult();
 			}
 			else if (server == "*" || server == "#")
 			{
@@ -1782,6 +1799,8 @@ void addRequest (const string &rawvarpath, TSockId from)
 					}
 					row = sqlNextRow ();
 				}
+
+				sqlFlushResult();
 			}
 			else
 			{

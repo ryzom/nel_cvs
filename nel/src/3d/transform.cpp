@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.39 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: transform.cpp,v 1.40 2002/04/12 16:22:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,8 @@ CTransform::CTransform()
 
 	// No logicInfo by default
 	_LogicInfo= NULL;
+
+	_DeleteChannelMixer = false;
 }
 
 
@@ -121,6 +123,7 @@ CTransform::~CTransform()
 		_LightedModelIt= lightTrav->LightingManager.eraseStaticLightedModel(_LightedModelIt);
 	}
 
+	if (_DeleteChannelMixer) delete (CChannelMixer *) _ChannelMixer;
 }
 
 // ***************************************************************************
@@ -187,6 +190,12 @@ ITrack* CTransform::getDefaultTrack (uint valueId)
 // ***************************************************************************
 void	CTransform::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix)
 {
+	if (_DeleteChannelMixer && chanMixer != _ChannelMixer)
+	{
+		delete _ChannelMixer;
+		_DeleteChannelMixer = false;
+	}
+
 	// Hey!! we are animated!!
 	_ChannelMixer= chanMixer;
 

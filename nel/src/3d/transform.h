@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.18 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: transform.h,v 1.19 2002/04/12 16:22:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,10 +126,19 @@ public:
 	// @{
 	/// Default Track Values are identity (pos,pivot= 0, scale= 1, rots=0).
 	virtual ITrack* getDefaultTrack (uint valueId);
-	/// register transform channels (in global anim mode).
+	/** register transform channels (in global anim mode).
+	  * \see	setChannelMixerOwnerShip
+	  */
 	virtual void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix);
 	// @}
 
+	/** This force gives this object ownership of the channel mixer it is registered to, so it will delete it when the dtor is called.
+	  * It should be called AFTER this object has been registered to a channel mixer, because a new registration will broke the ownership.
+	  * This is useful for automatic animations, when there's no owner of the channel mixer that could delete it.
+	  */
+	void		setChannelMixerOwnerShip(bool enable = true)	{ _DeleteChannelMixer  = enable; }
+	bool		getChannelMixerOwnerShip() const { return _DeleteChannelMixer; }
+	  
 
 	/** freeze the preceding position of the model. Do not use, special code for cluster.
 	 *	This inform the scene that preceding position setuped by user is "frozen". ie at next render(), this
@@ -360,6 +369,9 @@ private:
 
 	// For anim detail.
 	NLMISC::CRefPtr<CChannelMixer>		_ChannelMixer;
+
+	// ownership of the channel mixer ?
+	bool								_DeleteChannelMixer;
 
 	// Last date of ITransformable matrix.
 	uint64			_LastTransformableMatrixDate;

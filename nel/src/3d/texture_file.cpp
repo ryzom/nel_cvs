@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.7 2001/06/26 10:09:25 berenguier Exp $
+ * $Id: texture_file.cpp,v 1.8 2001/08/23 10:09:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,14 +65,32 @@ void CTextureFile::doGenerate()
 // ***************************************************************************
 void	CTextureFile::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint	ver= f.serialVersion(0);
+	/*
+	Version 1:
+		- AllowDegradation.
+	Version 0:
+		- base version.
+	*/
+	sint	ver= f.serialVersion(1);
 
 	// serial the base part of ITexture.
 	ITexture::serial(f);
 
 	f.serial(_FileName);
+	if(ver>=1)
+		f.serial(_AllowDegradation);
+	else if(f.isReading())
+		_AllowDegradation= true;
+
 	if(f.isReading())
 		touch();
+}
+
+
+// ***************************************************************************
+void	CTextureFile::setAllowDegradation(bool allow)
+{
+	_AllowDegradation= allow;
 }
 
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.10 2001/08/07 14:19:51 vizerie Exp $
+ * $Id: driver.h,v 1.11 2001/08/23 10:09:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -193,6 +193,13 @@ public:
 	virtual bool			clearZBuffer(float zval=1)=0;
 
 	virtual bool			setupTexture(ITexture& tex)=0;
+
+	/** if true force all the uncompressed RGBA 32 bits and RGBA 24 bits texture to be DXTC5 compressed.
+	 *	Do this only during upload if ITexture::allowDegradation() is true and if ITexture::UploadFormat is "Automatic"
+	 *	and if bitmap format is RGBA.
+	 */
+	virtual void			forceDXTCCompression(bool dxtcComp)=0;
+
 
 	virtual bool			setupMaterial(CMaterial& mat)=0;
 

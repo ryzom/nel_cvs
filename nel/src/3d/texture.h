@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.3 2001/06/27 17:41:12 besson Exp $
+ * $Id: texture.h,v 1.4 2001/08/23 10:09:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -328,6 +328,9 @@ public:
 
 	/// Does this texture is a cube texture
 	virtual bool isTextureCube() const { return false; }
+
+	/// Does this texture allow the driver to degrade 
+	virtual bool allowDegradation() const { return false; }
 
 	/// serial ITexture basic infos (clamp ...).
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);

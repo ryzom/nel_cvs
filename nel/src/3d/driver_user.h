@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.5 2001/07/19 17:31:29 lecroart Exp $
+ * $Id: driver_user.h,v 1.6 2001/08/23 10:09:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -535,6 +535,11 @@ public:
 		};
 
 		return umode;
+	}
+
+	virtual void			forceDXTCCompression(bool dxtcComp)
+	{
+		_Driver->forceDXTCCompression(dxtcComp);
 	}
 
 	// @}

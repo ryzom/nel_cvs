@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.2 2001/06/26 10:09:25 berenguier Exp $
+ * $Id: texture_file.h,v 1.3 2001/08/23 10:09:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@ namespace NL3D
 class CTextureFile : public ITexture
 {
 	std::string _FileName;
+	bool		_AllowDegradation;	// Default is true.
 
 public:
 
@@ -52,7 +53,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	CTextureFile() { }
+	CTextureFile() { _AllowDegradation=true; }
 
 
 	/** 
@@ -60,7 +61,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	CTextureFile(std::string s) { touch(); _FileName = s; } 
+	CTextureFile(std::string s) { touch(); _FileName = s; _AllowDegradation=true; } 
 
 
 	/** 
@@ -79,6 +80,12 @@ public:
 	 * \date 2000
 	 */	
 	std::string getFileName() const { return _FileName; } 
+
+
+	/// texture file may allow the driver to degrade (default is true).
+	virtual bool	allowDegradation() const { return _AllowDegradation; }
+	/// Change the degradation mode. NB: this does not touch() the ITexture... This state is serialized.
+	void			setAllowDegradation(bool allow);
 
 
 	/** 

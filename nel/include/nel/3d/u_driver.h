@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.5 2001/07/19 17:31:25 lecroart Exp $
+ * $Id: u_driver.h,v 1.6 2001/08/23 10:09:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -450,6 +450,12 @@ public:
 	  * \param listener a 3d mouse listener.
 	  */
 	virtual void delete3dMouseListener (U3dMouseListener *listener) =0;
+
+	/** if true force all the uncompressed RGBA 32 bits and RGBA 24 bits texture to be DXTC5 compressed.
+	 *	Default is false.
+	 *	NB: this is done only on TextureFile, with format Automatic
+	 */
+	virtual void			forceDXTCCompression(bool dxtcComp)=0;
 
 	// @}
 

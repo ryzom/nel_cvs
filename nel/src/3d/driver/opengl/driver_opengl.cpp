@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.113 2001/08/07 15:01:47 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.114 2001/08/23 10:09:03 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -192,6 +192,8 @@ CDriverGL::CDriverGL() : _AGPVertexArrayRange(this), _VRAMVertexArrayRange(this)
 	_CurrentVertexBufferHard= NULL;
 
 	_AllocatedTextureMemory= 0;
+
+	_ForceDXTCCompression= false;
 }
 
 
@@ -652,6 +654,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	_Initialized = true;
 
+	_ForceDXTCCompression= false;
 
 	// Reset profiling.
 	_AllocatedTextureMemory= 0;

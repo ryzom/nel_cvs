@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.30 2001/07/31 12:11:50 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.31 2001/08/23 10:09:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,12 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 	{
 		switch(tex.getPixelFormat())
 		{
-			case CBitmap::RGBA: texfmt= ITexture::RGBA8888; break;
+			case CBitmap::RGBA: 
+				if(_ForceDXTCCompression && tex.allowDegradation() )
+					texfmt= ITexture::DXTC5;
+				else
+					texfmt= ITexture::RGBA8888;
+				break;
 			case CBitmap::DXTC1: texfmt= ITexture::DXTC1; break;
 			case CBitmap::DXTC1Alpha: texfmt= ITexture::DXTC1Alpha; break;
 			case CBitmap::DXTC3: texfmt= ITexture::DXTC3; break;
@@ -767,6 +772,13 @@ void		CDriverGL::activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
 	glcol[2]= col.B*OO255;
 	glcol[3]= col.A*OO255;
 	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, glcol);
+}
+
+
+// ***************************************************************************
+void		CDriverGL::forceDXTCCompression(bool dxtcComp)
+{
+	_ForceDXTCCompression= dxtcComp;
 }
 
 

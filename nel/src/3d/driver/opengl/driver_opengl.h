@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.79 2001/08/07 15:01:47 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.80 2001/08/23 10:09:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -333,6 +333,8 @@ public:
 	virtual bool			clearZBuffer(float zval=1);
 
 	virtual bool			setupTexture(ITexture& tex);
+
+	virtual void			forceDXTCCompression(bool dxtcComp);
 
 	virtual bool			setupMaterial(CMaterial& mat);
 
@@ -698,6 +700,9 @@ private:
 	uint32							_AllocatedTextureMemory;
 	uint							computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const;
 	// @}
+
+
+	bool							_ForceDXTCCompression;
 
 };
 

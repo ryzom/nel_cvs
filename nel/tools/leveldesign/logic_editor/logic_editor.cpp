@@ -121,7 +121,12 @@ BOOL CLogic_editorApp::initInstance(int x, int y, int cx, int cy)
 	return TRUE;
 }
 
+//-----------------------------------------------
 
+void CLogic_editorApp::newDoc()
+{
+	CWinApp::OnFileNew ();
+}
 
 
 //-----------------------------------------------
@@ -318,6 +323,10 @@ void CLogicEditor::go()
 //---------------------------------------------
 void CLogicEditor::loadFile( const char * fileName )
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	
+	theApp.newDoc();
+
 	static_cast<CMainFrame*>(theApp.m_pMainWnd)->load( fileName );
 	
 } // loadFile //

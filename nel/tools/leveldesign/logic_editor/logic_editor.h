@@ -27,6 +27,8 @@ class CLogic_editorApp : public CWinApp
 
 public:
 	CLogic_editorApp();
+	void newDoc ();
+
 
 // Overrides
 	// ClassWizard generated virtual function overrides

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.45 2001/02/05 16:27:04 cado Exp $
+ * $Id: service.cpp,v 1.46 2001/02/07 13:45:22 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -34,6 +34,7 @@
 #include <signal.h>
 
 #ifdef NL_OS_WINDOWS
+
 // these defines is for IsDebuggerPresent(). it'll not compile on windows 95
 // just comment this and the IsDebuggerPresent to compile on windows 95
 #define _WIN32_WINDOWS	0x0410
@@ -41,6 +42,7 @@
 #include <windows.h>
 
 #elif defined NL_OS_UNIX
+
 #include <unistd.h>
 
 #endif
@@ -391,8 +393,29 @@ sint IService::main (int argc, char **argv)
 
 		init ();
 
-		nlinfo( "Service ready" );
+		//
+		// On unix system, the service fork itself to give back the hand to the shell
+		//
 
+#ifdef NL_OS_UNIX
+
+		nlinfo( "Forking the service" );
+
+		int pid = fork();
+
+		if (pid == -1)
+		{
+			nlerror ("Couldn't fork the service");
+		}
+		else if (pid != 0)
+		{
+			// It's the father, return the hand to the shell.
+			exit(EXIT_SUCCESS);
+		}
+
+#endif // NL_OS_UNIX
+
+		nlinfo( "Service ready" );
 		//
 		// Call the user service update each loop and check files and network activity
 		//

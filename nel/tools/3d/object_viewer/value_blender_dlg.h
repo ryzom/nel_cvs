@@ -1,7 +1,7 @@
 /** \file value_blender_dlg.h
- * <File description>
+ * a dialog to choose 2 values that are linearly blended in a particle system
  *
- * $Id: value_blender_dlg.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: value_blender_dlg.h,v 1.3 2001/06/25 12:54:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

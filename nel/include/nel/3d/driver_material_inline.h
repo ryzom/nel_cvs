@@ -2,7 +2,7 @@
  * 
  * 
  *
- * $Id: driver_material_inline.h,v 1.10 2001/01/08 18:20:02 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.11 2001/01/09 14:55:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ inline ITexture*		CMaterial::getTexture(uint8 n)
 	return(_Textures[n]); 
 }
 
-inline void CMaterial::setTexture(ITexture* ptex, uint8 n)
+inline void CMaterial::setTexture(uint8 n, ITexture* ptex)
 {
 	nlassert(n<IDRV_MAT_MAXTEXTURES);
 	_Textures[n]=ptex;

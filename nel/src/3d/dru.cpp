@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.20 2001/01/05 18:44:10 coutelas Exp $
+ * $Id: dru.cpp,v 1.21 2001/01/09 14:55:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,7 +136,7 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 
 	static CMaterial mat;
 	mat.initUnlit ();
-	mat.setTexture (&texture);
+	mat.setTexture (0, &texture);
 
 	static CVertexBuffer vb;
 	vb.setVertexFormat (IDRV_VF_XYZ|IDRV_VF_UV[0]);

@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.8 2001/01/09 10:31:00 berenguier Exp $
+ * $Id: material.h,v 1.9 2001/01/09 14:55:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,10 +142,10 @@ public:
 
 	/// \name Texture.
 	// @{
-	void 					setTexture(ITexture* ptex, uint8 n=0);
+	void 					setTexture(uint8 stage, ITexture* ptex);
 
-	ITexture*				getTexture(uint8 n);
-	bool					texturePresent(uint8 n);
+	ITexture*				getTexture(uint8 stage);
+	bool					texturePresent(uint8 stage);
 	// @}
 
 

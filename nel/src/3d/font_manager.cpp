@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.15 2001/01/03 09:14:57 lecroart Exp $
+ * $Id: font_manager.cpp,v 1.16 2001/01/09 14:55:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,7 @@ NLMISC::CSmartPtr<CMaterial> CFontManager::getFontMaterial(CFontDescriptor desc)
 		pMatFont->setSrcBlend(CMaterial::srcalpha);
 		pMatFont->setDstBlend(CMaterial::invsrcalpha);
 		pMatFont->setBlend(true);
-		pMatFont->setTexture(pTexFont);
+		pMatFont->setTexture(0, pTexFont);
 
 		_MaterialFontList.push_front(pMatFont);
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.28 2001/01/08 17:58:30 corvazier Exp $
+ * $Id: landscape.cpp,v 1.29 2001/01/09 14:55:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -315,7 +315,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 					TileMaterial.setBlendFunc(CMaterial::invsrcalpha, CMaterial::srcalpha);
 			}
 			// Setup texture.
-			TileMaterial.setTexture(pass.TextureDiffuse);
+			TileMaterial.setTexture(0, pass.TextureDiffuse);
 
 			// Render!
 			driver->render(PBlock, TileMaterial);
@@ -354,7 +354,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 		
 		// must resetTriList at each end of each material process.
 		pass.resetTriList();
-		FarMaterial.setTexture(pass.TextureDiffuse);
+		FarMaterial.setTexture(0, pass.TextureDiffuse);
 		driver->render(PBlock, FarMaterial);
 
 		// Next render pass
@@ -393,7 +393,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 		
 		// must resetTriList at each end of each material process.
 		pass.resetTriList();
-		FarMaterial.setTexture(pass.TextureDiffuse);
+		FarMaterial.setTexture(0, pass.TextureDiffuse);
 		driver->render(PBlock, FarMaterial);
 
 		// Next render pass
@@ -403,14 +403,14 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 
 	// 4. "Release" texture materials.
 	//================================
-	FarMaterial.setTexture(NULL, 0);
-	FarMaterial.setTexture(NULL, 1);
-	FarMaterial.setTexture(NULL, 2);
-	FarMaterial.setTexture(NULL, 3);
-	TileMaterial.setTexture(NULL, 0);
-	TileMaterial.setTexture(NULL, 1);
-	TileMaterial.setTexture(NULL, 2);
-	TileMaterial.setTexture(NULL, 3);
+	FarMaterial.setTexture(0, NULL);
+	FarMaterial.setTexture(1, NULL);
+	FarMaterial.setTexture(2, NULL);
+	FarMaterial.setTexture(3, NULL);
+	TileMaterial.setTexture(0, NULL);
+	TileMaterial.setTexture(1, NULL);
+	TileMaterial.setTexture(2, NULL);
+	TileMaterial.setTexture(3, NULL);
 
 }
 

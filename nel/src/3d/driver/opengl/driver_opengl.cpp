@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.46 2001/01/08 18:20:47 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.47 2001/01/09 14:55:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -474,14 +474,19 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 	else
 		glDisableClientState(GL_NORMAL_ARRAY);
 
-	// TODO: ARB_multitexture.
-	if (flags & IDRV_VF_UV[0])
+
+	// Active UVs.
+	for(sint i=0; i<IDRV_VF_MAXSTAGES; i++)
 	{
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2,GL_FLOAT,VB.getVertexSize(),VB.getTexCoordPointer(0,0));
+		glClientActiveTextureARB(GL_TEXTURE0_ARB+i);
+		if (flags & IDRV_VF_UV[i])
+		{
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			glTexCoordPointer(2,GL_FLOAT,VB.getVertexSize(),VB.getTexCoordPointer(0,i));
+		}
+		else
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
-	else
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.26 2002/10/02 15:52:51 lecroart Exp $
+ * $Id: sock.cpp,v 1.27 2002/10/09 13:49:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ ESocket::ESocket( const char *reason, bool systemerror, CInetAddress *addr )
 	}
 	_Reason = ss.str();
   */
-  /*	_Reason = "Socket error: ";
+  	_Reason = "Socket error: ";
 	uint errornum = CSock::getLastError();
 	char str[256];
 	if ( addr != NULL )
@@ -116,7 +116,7 @@ ESocket::ESocket( const char *reason, bool systemerror, CInetAddress *addr )
 		_Reason += ")";
 	}
 	nlinfo( "Exception will be launched: %s", _Reason.c_str() );
-*/
+
 }
 
 

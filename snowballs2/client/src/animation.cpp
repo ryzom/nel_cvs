@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.13 2001/07/27 14:35:08 lecroart Exp $
+ * $Id: animation.cpp,v 1.14 2001/09/06 09:30:29 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,14 +117,14 @@ void	computeAnimation (CEntity &entity, EAnim anim)
 	entity.PlayList->setWeightSmoothness	(newSlot, 1.0f);
 	entity.PlayList->setWrapMode			(newSlot, wrapMode);
 
-	CAnimationTime OldStartTime, OldEndTime;
-	CAnimationTime NewStartTime, NewEndTime;
+	double OldStartTime, OldEndTime;
+	double NewStartTime, NewEndTime;
 
 	// Get the starting time of the old animation slot
 	entity.PlayList->getStartWeight	(oldSlot, OldStartTime);
 	
 	// Compute the time delta between start of the old animation and now
-	CAnimationTime dt = currentTime - OldStartTime;
+	double dt = currentTime - OldStartTime;
 
 	// Compute the new transition value depending of the current time
 

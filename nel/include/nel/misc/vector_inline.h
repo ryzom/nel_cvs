@@ -1,7 +1,7 @@
 /** \file vector_inline.h
  * CVector class inline definitions
  *
- * $Id: vector_inline.h,v 1.8 2000/11/20 13:42:42 berenguier Exp $
+ * $Id: vector_inline.h,v 1.9 2000/11/21 18:19:43 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -196,3 +196,4 @@ inline	void	CVector::serial(IStream &f)
 
 
 #endif
+

@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.10 2000/11/13 13:41:44 corvazier Exp $
+ * $Id: events.h,v 1.11 2000/11/21 18:18:00 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

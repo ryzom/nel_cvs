@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.h,v 1.8 2000/10/11 16:25:25 cado Exp $
+ * $Id: net_displayer.h,v 1.9 2000/10/12 10:43:11 cado Exp $
  *
  * Interface for CNetDisplayer
  */
@@ -36,6 +36,7 @@ namespace NLNET {
 /**
  * Net Displayer. Sends the strings to a logger server (LOGS).
  * \ref log_howto
+ * \bug When nlerror is called in a catch block, a connected NetDisplayer becomes an IDisplayer => pure virtual call
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

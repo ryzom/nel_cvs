@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.cpp,v 1.15 2000/10/12 10:13:52 cado Exp $
+ * $Id: service.cpp,v 1.16 2000/10/12 10:43:11 cado Exp $
  *
  * implementation of all debug functions
  *
@@ -109,6 +109,8 @@ static void ExitFunc ()
 			// release only one time
 			IService *is = Service;
 			Service = NULL;
+
+			CNamingClient::finalize();
 
 			nldebug("** ExitFunc Release **");
 			is->release ();

@@ -35,6 +35,14 @@ Requirements
    you should download the last version of the glext.h on SGI's website :
    <URL:http://oss.sgi.com/projects/ogl-sample/ABI/glext.h>.
 
+   Most of our documentation is done using Doxygen, so you might need it
+   to read our prose and our code documentation. If you want have nice
+   graphs like dependency graphs, collaboration diagrams, or graphical
+   class hierarchy graphs you will need Graphviz :
+
+      - Doxygen        <URL:http://www.stack.nl/~dimitri/doxygen/>
+      - Graphviz       <URL:http://www.research.att.com/sw/tools/graphviz/>
+   
    Most of these softwares should be already installed on your system or
    provided on your installation disk. 
 

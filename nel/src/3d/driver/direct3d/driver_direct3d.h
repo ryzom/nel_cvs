@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.38 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_direct3d.h,v 1.39 2005/03/15 18:09:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1353,6 +1353,11 @@ public:
 
 	
 public:
+
+	// compute wrap mode flag in D3D format for that texture
+	// texture must have been setuped already
+	void				setupTextureWrapMode(ITexture& tex);
+
 	// Access texture states
 	inline void setTextureState (DWORD stage, D3DTEXTURESTAGESTATETYPE textureState, DWORD value)
 	{

@@ -9,6 +9,7 @@
 #define IDOKGROUP                       3
 #define ID_ADD                          3
 #define ID_ROT1                         3
+#define IDRESET                         3
 #define IDS_PARAMS                      4
 #define IDCANCELGROUP                   4
 #define ID_SAVE                         4

@@ -38,6 +38,7 @@ void CChooseVegetSet::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CChooseVegetSet, CDialog)
 	//{{AFX_MSG_MAP(CChooseVegetSet)
 	ON_BN_CLICKED(IDC_BROWSE, OnBrowse)
+	ON_BN_CLICKED(IDRESET, OnReset)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -70,4 +71,10 @@ BOOL CChooseVegetSet::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CChooseVegetSet::OnReset() 
+{
+	FileName = "";
+	Name.SetWindowText ("Browse...");
 }

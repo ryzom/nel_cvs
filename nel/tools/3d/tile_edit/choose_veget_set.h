@@ -44,6 +44,7 @@ protected:
 	//{{AFX_MSG(CChooseVegetSet)
 	afx_msg void OnBrowse();
 	virtual BOOL OnInitDialog();
+	afx_msg void OnReset();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.6 2001/01/08 17:58:29 corvazier Exp $
+ * $Id: material.h,v 1.7 2001/01/08 18:20:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,8 +69,9 @@ const uint32 IDRV_MAT_SPECULAR		=	0x00000020;
 const uint32 IDRV_MAT_DEFMAT		=	0x00000040;
 const uint32 IDRV_MAT_BLEND			=	0x00000080;
 
+// ***************************************************************************
 /**
- * Class CMaterial
+ * A material represent ALL the states relatives to the aspect of a primitive.
  *
  */
 /* *** IMPORTANT ********************
@@ -83,7 +84,40 @@ public:
 
 	enum ZFunc				{ always,never,equal,notequal,less,lessequal,greater,greaterequal };
 	enum TBlend				{ one, zero, srcalpha, invsrcalpha };
-	enum TShader			{ normal, user_color, envmap, bump};
+	enum TShader			{ Normal, Bump};
+
+	/// \name Texture Env Modes.
+	// @{
+	/** Environements operators:
+	 * Replace:			out= arg0
+	 * Modulate:		out= arg0 * arg1
+	 * Add:				out= arg0 + arg1
+	 * AddSigned:		out= arg0 + arg1 -0.5
+	 * Interpolate*:	out= arg0*As + arg1*(1-As),  where As is taken from the SrcAlpha of 
+	 *		Texture/Previous/Diffuse/Constant, respectively if operator is
+	 *		InterpolateTexture/InterpolatePrevious/InterpolateDiffuse/InterpolateConstant.
+	 */
+	enum TTexOperator		{ Replace=0, Modulate, Add, AddSigned, 
+		InterpolateTexture, InterpolatePrevious, InterpolateDiffuse, InterpolateConstant };
+
+	/** Source argument.
+	 * Texture:		the arg is taken from the current texture of the stage.
+	 * Previous:	the arg is taken from the previous enabled stage. If stage 0, Previous==Diffuse.
+	 * Diffuse:		the arg is taken from the primary color vertex.
+	 * Constant:	the arg is taken from the constant color setuped for this texture stage.
+	 */
+	enum TTexSource			{ Texture=0, Previous, Diffuse, Constant };
+
+	/** Operand for the argument.
+	 * For Alpha arguments, only SrcAlpha and InvSrcAlpha are Valid!! \n
+	 * SrcColor:	arg= ColorSource.
+	 * InvSrcColor:	arg= 1-ColorSource.
+	 * SrcAlpha:	arg= AlphaSource.
+	 * InvSrcAlpha:	arg= 1-AlphaSource.
+	 */
+	enum TTexOperand		{ SrcColor=0, InvSrcColor, SrcAlpha, InvSrcAlpha };
+	// @}
+
 
 public:
 	/// \name Object.
@@ -101,7 +135,9 @@ public:
 	CMaterial				&operator=(const CMaterial &mat);
 	// @}
 
-	/// Set the shader for this material.
+	/** Set the shader for this material.
+	 *
+	 */
 	void					setShader(TShader val);
 
 	/// \name Texture.
@@ -156,6 +192,35 @@ public:
 	// @}
 
 
+	/// \name Texture environnement.
+	/** This part is valid for Normal shaders. It maps the EXT_texture_env_combine opengl extension.
+	 * A stage is enabled iff his texture is !=NULL. By default, all stages are setup to Modulate style:
+	 *  AlphaOp=RGBOp= Modulate, RGBArg0= TextureSrcColor, RGBArg1= PreviousSrcColor,
+	 *  AlphaArg0= TextureSrcAlpha, AlphaArg1= PreviousSrcAlpha.  ConstantColor default to White(255,255,255,255).
+	 *
+	 * For compatibility problems:
+	 * - no scaling is allowed (some cards do not implement this well).
+	 * - Texture can be the source only for Arg0 (DirectX restriction). nlassert...
+	 *
+	 * NB: for Alpha Aguments, only operands SrcAlpha and InvSrcAlpha are valid (nlassert..).
+	 */
+	// @{
+	void					texEnvOpRGB(uint stage, TTexOperator ope);
+	void					texEnvArg0RGB(uint stage, TTexSource src, TTexOperand oper);
+	void					texEnvArg1RGB(uint stage, TTexSource src, TTexOperand oper);
+	void					texEnvOpAlpha(uint stage, TTexOperator ope);
+	void					texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper);
+	void					texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper);
+	/// Setup the constant color for a stage. Used for the TTexSource:Constant.
+	void					texConstantColor(uint stage, CRGBA color);
+	/// For push/pop only, get the packed version of the environnment mode.
+	uint32					getTexEnvMode(uint stage);
+	/// For push/pop only, set the packed version of the environnment mode.
+	void					setTexEnvMode(uint stage, uint32 packed);
+	CRGBA					getTexConstantColor(uint stage);
+	// @}
+
+
 	/// \name Tools..
 	// @{
 	/** Init the material as unlit. normal shader, no lighting ....
@@ -176,6 +241,56 @@ public:
 
 // **********************************
 // Private part.
+public:
+	// Private. For Driver only.
+	struct CTexEnv
+	{
+		union
+		{
+			uint32	Packed;
+			struct
+			{
+				uint32		OpRGB:3;
+				uint32		SrcArg0RGB:2;
+				uint32		OpArg0RGB:2;
+				uint32		SrcArg1RGB:2;
+				uint32		OpArg1RGB:2;
+
+				uint32		OpAlpha:3;
+				uint32		SrcArg0Alpha:2;
+				uint32		OpArg0Alpha:2;
+				uint32		SrcArg1Alpha:2;
+				uint32		OpArg1Alpha:2;
+			};
+		}			Env;
+		CRGBA		ConstantColor;
+
+		void		setDefault()
+		{
+			// Don't worry, Visual optimize it quite well...
+			// We cannot do better, because bit fields ordeinrg seems not to be standardized, so we can not 
+			// set Packed directly.
+			Env.OpRGB= Modulate;
+			Env.SrcArg0RGB= Texture;
+			Env.OpArg0RGB= SrcColor;
+			Env.SrcArg1RGB= Previous;
+			Env.OpArg1RGB= SrcColor;
+
+			Env.OpAlpha= Modulate;
+			Env.SrcArg0Alpha= Texture;
+			Env.OpArg0Alpha= SrcAlpha;
+			Env.SrcArg1Alpha= Previous;
+			Env.OpArg1Alpha= SrcAlpha;
+
+			ConstantColor.set(255,255,255,255);
+		}
+
+		CTexEnv()
+		{
+			setDefault();
+		}
+	};
+
 private:
 
 	TShader					_ShaderType;
@@ -191,6 +306,7 @@ private:
 
 public:
 	// Private. For Driver only.
+	CTexEnv					_TexEnvs[IDRV_MAT_MAXTEXTURES];
 	CRefPtr<IShader>		pShader;
 
 	uint32					getFlags() const {return _Flags;}

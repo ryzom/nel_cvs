@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.45 2001/01/08 16:28:13 lecroart Exp $
+ * $Id: driver.h,v 1.46 2001/01/08 18:20:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,9 +62,10 @@ class CMaterial;
 class CVertexBuffer;
 class CPrimitiveBlock;
 
-// --------------------------------------------------
 
 
+//****************************************************************************
+/// A Graphic Mode descriptor.
 class GfxMode 
 {
 public:
@@ -85,7 +86,22 @@ public:
 
 typedef std::vector<GfxMode> ModeList;
 
-// --------------------------------------------------
+
+
+//****************************************************************************
+// Exceptions.
+struct EBadDisplay : public Exception
+{
+	EBadDisplay(const std::string &reason) {_What= "EBadDisplay: " + reason;}
+	virtual const char	*what() const throw() {return _What.c_str();}
+
+private:
+	std::string	_What;
+};
+
+
+
+//****************************************************************************
 // *** IMPORTANT ********************
 // *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
 // **********************************
@@ -128,7 +144,7 @@ public:
 
 	// first param is the associated window. 
 	// Must be a HWND for Windows (WIN32).
-	virtual bool			setDisplay(void* wnd, const GfxMode& mode)=0;
+	virtual bool			setDisplay(void* wnd, const GfxMode& mode) throw(EBadDisplay)=0;
 
 	/// Before rendering via a driver in a thread, must activate() (per thread).
 	virtual bool			activate(void)=0;

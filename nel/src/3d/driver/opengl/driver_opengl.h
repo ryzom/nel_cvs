@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.34 2001/01/08 16:28:13 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.35 2001/01/08 18:20:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #endif // NL_OS_WINDOWS
 
 #include <GL/gl.h>
+#include "driver_opengl_extension.h"
 
 #include "nel/3d/driver.h"
 #include "nel/3d/material.h"
@@ -197,15 +198,25 @@ private:
 	NLMISC::CUnixEventEmitter	_EventEmitter;
 #endif // NL_OS_UNIX
 
-	bool					setupVertexBuffer(CVertexBuffer& VB);
 
+	// OpenGL extensions Extensions.
+	CGlExtensions			_Extensions;
+
+	// Current View matrix.
 	CMatrix					_ViewMtx;
+
 
 	// Prec settings, for optimisation.
 	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
 	CMaterial*				_CurrentMaterial;
+	CMaterial::CTexEnv		_CurrentTexEnv[IDRV_MAT_MAXTEXTURES];
 
+private:
+	bool					setupVertexBuffer(CVertexBuffer& VB);
 	bool					activateTexture(uint stage, ITexture *tex);
+	void					activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env);
+	void					activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env);
+
 
 };
 

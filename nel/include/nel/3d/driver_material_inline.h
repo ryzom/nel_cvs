@@ -2,7 +2,7 @@
  * 
  * 
  *
- * $Id: driver_material_inline.h,v 1.9 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: driver_material_inline.h,v 1.10 2001/01/08 18:20:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,7 +145,87 @@ inline void CMaterial::setLighting(	bool active, bool DefMat,
 }
 
 
-// --------------------------------------------------
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+inline void					CMaterial::texEnvOpRGB(uint stage, TTexOperator ope)
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	_TexEnvs[stage].Env.OpRGB= ope;
+}
+// ***************************************************************************
+inline void					CMaterial::texEnvArg0RGB(uint stage, TTexSource src, TTexOperand oper)
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	_TexEnvs[stage].Env.SrcArg0RGB= src;
+	_TexEnvs[stage].Env.OpArg0RGB= oper;
+}
+// ***************************************************************************
+inline void					CMaterial::texEnvArg1RGB(uint stage, TTexSource src, TTexOperand oper)
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(src!=Texture);
+	_TexEnvs[stage].Env.SrcArg1RGB= src;
+	_TexEnvs[stage].Env.OpArg1RGB= oper;
+}
+
+
+// ***************************************************************************
+inline void					CMaterial::texEnvOpAlpha(uint stage, TTexOperator ope)
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	_TexEnvs[stage].Env.OpAlpha= ope;
+}
+// ***************************************************************************
+inline void					CMaterial::texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper)
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(oper==SrcAlpha || oper==InvSrcAlpha);
+	_TexEnvs[stage].Env.SrcArg0Alpha= src;
+	_TexEnvs[stage].Env.OpArg0Alpha= oper;
+}
+// ***************************************************************************
+inline void					CMaterial::texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper)
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(oper==SrcAlpha || oper==InvSrcAlpha);
+	nlassert(src!=Texture);
+	_TexEnvs[stage].Env.SrcArg1Alpha= src;
+	_TexEnvs[stage].Env.OpArg1Alpha= oper;
+}
+
+
+// ***************************************************************************
+inline void					CMaterial::texConstantColor(uint stage, CRGBA color)
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	_TexEnvs[stage].ConstantColor= color;
+}
+
+
+// ***************************************************************************
+inline uint32				CMaterial::getTexEnvMode(uint stage)
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	return _TexEnvs[stage].Env.Packed;
+}
+// ***************************************************************************
+inline void					CMaterial::setTexEnvMode(uint stage, uint32 packed)
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	_TexEnvs[stage].Env.Packed= packed;
+}
+// ***************************************************************************
+inline CRGBA				CMaterial::getTexConstantColor(uint stage)
+{
+	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	return _TexEnvs[stage].ConstantColor;
+}
+
 
 }
 

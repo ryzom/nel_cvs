@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.45 2001/01/08 16:28:13 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.46 2001/01/08 18:20:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,10 +122,6 @@ CDriverGL::CDriverGL()
 #endif // NL_OS_WINDOWS
 
 	_CurrentMaterial=NULL;
-	_CurrentTexture[0]= NULL;
-	_CurrentTexture[1]= NULL;
-	_CurrentTexture[2]= NULL;
-	_CurrentTexture[3]= NULL;
 }
 
 
@@ -349,6 +345,17 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 
 #endif // NL_OS_WINDOWS
 
+
+	// Retrieve the extensions for the current context.
+	NL3D::registerGlExtensions(_Extensions);
+	// Check required extensions!!
+	if(!_Extensions.ARBMultiTexture)
+		throw EBadDisplay("Missing Required GL extension: GL_ARB_multitexture");
+	if(!_Extensions.EXTTextureEnvCombine)
+		throw EBadDisplay("Missing Required GL extension: GL_EXT_texture_env_combine");
+
+	// Init OpenGL/Driver defaults.
+	//=============================
 	glViewport(0,0,mode.Width,mode.Height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -368,7 +375,24 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	glDepthFunc(GL_LEQUAL);
-	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+
+
+	// Activate the default texture environnments for all stages.
+	//===========================================================
+	for(sint stage=0;stage<IDRV_MAT_MAXTEXTURES; stage++)
+	{
+		// init no texture.
+		_CurrentTexture[stage]= NULL;
+		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+		glDisable(GL_TEXTURE_2D);
+		
+		// init default env.
+		CMaterial::CTexEnv	env;	// envmode init to default.
+		env.ConstantColor.set(255,255,255,255);
+		activateTexEnvMode(stage, env);
+		activateTexEnvColor(stage, env);
+	}
+
 	return true;
 }
 
@@ -450,6 +474,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 	else
 		glDisableClientState(GL_NORMAL_ARRAY);
 
+	// TODO: ARB_multitexture.
 	if (flags & IDRV_VF_UV[0])
 	{
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);

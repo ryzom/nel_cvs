@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.12 2001/01/05 15:07:32 berenguier Exp $
+ * $Id: material.cpp,v 1.13 2001/01/08 18:20:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ CMaterial::CMaterial()
 	_Touched= 0;
 	_Flags= IDRV_MAT_ZWRITE ;
 	// Must init All the flags by default.
-	_ShaderType= normal;
+	_ShaderType= Normal;
 	_SrcBlend= srcalpha;
 	_DstBlend= invsrcalpha;
 	_ZFunction= lessequal;
@@ -52,7 +52,7 @@ CMaterial::CMaterial()
 // ***************************************************************************
 void			CMaterial::initUnlit()
 {
-	setShader(normal);
+	setShader(Normal);
 	setLighting(false);
 	setColor(CRGBA(255,255,255,255));
 	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
@@ -88,7 +88,10 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 	_Specular= mat._Specular;
 
 	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+	{
 		_Textures[i]= mat._Textures[i];
+		_TexEnvs[i]= mat._TexEnvs[i];
+	}
 
 	// Must do not copy drv info.
 
@@ -110,8 +113,15 @@ CMaterial::~CMaterial()
 // ***************************************************************************
 void		CMaterial::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
-	// For the version 0:
+	/*
+	Version 1:
+		- texture environement.
+	Version 0:
+		- base version.
+	*/
+
+	sint	ver= f.serialVersion(1);
+	// For the version <=1:
 	nlassert(IDRV_MAT_MAXTEXTURES==4);
 
 	f.serialEnum(_ShaderType);
@@ -125,6 +135,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 
 	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 	{
+		// Serial texture descriptor.
 		ITexture*	text;
 		if(f.isReading())
 		{
@@ -135,6 +146,19 @@ void		CMaterial::serial(NLMISC::IStream &f)
 		{
 			text= _Textures[i];
 			f.serialPolyPtr(text);
+		}
+
+		// Read texture environnement, or setup them.
+		if(ver>=1)
+		{
+			f.serial(_TexEnvs[i].Env.Packed);
+			f.serial(_TexEnvs[i].ConstantColor);
+		}
+		else
+		{
+			// Else setup as default behavior, like before...
+			if(f.isReading())
+				_TexEnvs[i].setDefault();
 		}
 	}
 

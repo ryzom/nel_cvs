@@ -1,7 +1,11 @@
 /** \file driver_opengl_texture.cpp
  * OpenGL driver implementation : setupTexture
  *
- * $Id: driver_opengl_texture.cpp,v 1.13 2001/01/08 17:58:30 corvazier Exp $
+ * \todo yoyo: BUG with texture parameters. If parameters change are made between two renders, but the texture has not
+ * changed (eg: only one texture in the whole world), those parameters are not bound!!! Also, like the TexEnvMode style,
+ * a PackedParameter format should be done, to limit tests...
+ *
+ * $Id: driver_opengl_texture.cpp,v 1.14 2001/01/08 18:20:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -360,16 +364,20 @@ bool CDriverGL::setupTexture(ITexture& tex)
 // ***************************************************************************
 bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 {
-	/// \todo: yoyo: ARB_multitexture.
-
 	if (this->_CurrentTexture[stage]!=tex)
 	{
+		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
 		if(tex)
 		{
+			// Activate texturing...
+			//======================
 			glEnable(GL_TEXTURE_2D);
 			CTextureDrvInfosGL*	gltext;
 			gltext= getTextureGl(*tex);
 			glBindTexture(GL_TEXTURE_2D, getTextureGl(*tex)->ID);
+
+			// Change parameters of texture, if necessary.
+			//============================================
 			if(gltext->WrapS!= tex->getWrapS())
 			{
 				gltext->WrapS= tex->getWrapS();
@@ -399,6 +407,95 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 		this->_CurrentTexture[stage]= tex;
 	}
 	return true;
+}
+
+// ***************************************************************************
+void		CDriverGL::activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
+{
+	// This maps the CMaterial::TTexOperator
+	static	const	GLenum	operatorLUT[8]= { GL_REPLACE, GL_MODULATE, GL_ADD, GL_ADD_SIGNED_EXT, 
+		GL_INTERPOLATE_EXT, GL_INTERPOLATE_EXT, GL_INTERPOLATE_EXT, GL_INTERPOLATE_EXT };
+
+	// This maps the CMaterial::TTexSource
+	static	const	GLenum	sourceLUT[4]= { GL_TEXTURE, GL_PREVIOUS_EXT, GL_PRIMARY_COLOR_EXT, GL_CONSTANT_EXT };
+
+	// This maps the CMaterial::TTexOperand
+	static	const	GLenum	operandLUT[4]= { GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA };
+
+	// This maps the CMaterial::TTexOperator, used for openGL Arg2 setup.
+	static	const	GLenum	interpolateSrcLUT[8]= { GL_TEXTURE, GL_TEXTURE, GL_TEXTURE, GL_TEXTURE, 
+		GL_TEXTURE, GL_PREVIOUS_EXT, GL_PRIMARY_COLOR_EXT, GL_CONSTANT_EXT };
+
+
+
+	// cache mgt.
+	_CurrentTexEnv[stage].Env.Packed= env.Env.Packed;
+
+	// Setup the gl env mode.
+	glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
+
+
+	// RGB.
+	//=====
+	// Operator.
+	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, operatorLUT[env.Env.OpRGB] );
+	// Arg0.
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, sourceLUT[env.Env.SrcArg0RGB] );
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, operandLUT[env.Env.OpArg0RGB]);
+	// Arg1.
+	if(env.Env.OpRGB > CMaterial::Replace)
+	{
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, sourceLUT[env.Env.SrcArg1RGB] );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, operandLUT[env.Env.OpArg1RGB]);
+		// Arg2.
+		if(env.Env.OpRGB >= CMaterial::InterpolateTexture )
+		{
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, interpolateSrcLUT[env.Env.OpRGB] );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_ALPHA);
+		}
+	}
+
+
+	// Alpha.
+	//=====
+	// Operator.
+	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, operatorLUT[env.Env.OpAlpha] );
+	// Arg0.
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, sourceLUT[env.Env.SrcArg0Alpha] );
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, operandLUT[env.Env.OpArg0Alpha]);
+	// Arg1.
+	if(env.Env.OpAlpha > CMaterial::Replace)
+	{
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, sourceLUT[env.Env.SrcArg1Alpha] );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, operandLUT[env.Env.OpArg1Alpha]);
+		// Arg2.
+		if(env.Env.OpAlpha >= CMaterial::InterpolateTexture )
+		{
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, interpolateSrcLUT[env.Env.OpAlpha] );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_ALPHA);
+		}
+	}
+
+}
+
+// ***************************************************************************
+void		CDriverGL::activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
+{
+	static	const float	OO255= 1.0f/255;
+	const CRGBA		&col= env.ConstantColor;
+
+	// cache mgt.
+	_CurrentTexEnv[stage].ConstantColor= col;
+
+	// Setup the gl cte color.
+	glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+	GLfloat		glcol[4];
+	glcol[0]= col.R*OO255;
+	glcol[1]= col.G*OO255;
+	glcol[2]= col.B*OO255;
+	glcol[3]= col.A*OO255;
+	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, glcol);
 }
 
 

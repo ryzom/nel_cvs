@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.13 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.14 2004/04/09 14:25:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,6 +102,9 @@ void CPSRibbonLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{		
 		f.serialPolyPtr(tex);
 		setTexture(tex);
+		_Tex = tex;
+		_Tex->setWrapS(ITexture::Clamp);
+		_Tex->setWrapT(ITexture::Clamp);
 		setTailNbSeg(_NbSegs); // force to build the vb
 	}	
 }
@@ -111,6 +114,8 @@ void CPSRibbonLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void CPSRibbonLookAt::setTexture(CSmartPtr<ITexture> tex)
 {
 	_Tex = tex;
+	_Tex->setWrapS(ITexture::Clamp);
+	_Tex->setWrapT(ITexture::Clamp);
 	updateMatAndVbForColor();
 }
 

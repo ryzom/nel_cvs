@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.13 2004/03/22 17:57:27 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.14 2004/04/09 14:25:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -875,6 +875,8 @@ inline void	CPSRibbon::updateUntexturedMaterial()
 					ptGradTexture = CreateGradientTexture();
 				}
 				_Mat.setTexture(0, ptGradTexture);
+				ptGradTexture->setWrapS(ITexture::Clamp);
+				ptGradTexture->setWrapT(ITexture::Clamp);
 				CPSMaterial::forceTexturedMaterialStages(1);
 				SetupModulatedStage(_Mat, 0, CMaterial::Texture, CMaterial::Diffuse);
 			}
@@ -905,7 +907,11 @@ inline void	CPSRibbon::updateTexturedMaterial()
 	/////////////////////
 	// TEXTURED RIBBON //
 	/////////////////////
-
+	if (_Tex)
+	{	
+		_Tex->setWrapS(ITexture::Clamp);
+		_Tex->setWrapT(ITexture::Clamp);
+	}
 	static NLMISC::CRefPtr<ITexture> ptGradTexture;
 	CParticleSystem &ps = *(_Owner->getOwner());
 	if (_ColorScheme)
@@ -920,7 +926,9 @@ inline void	CPSRibbon::updateTexturedMaterial()
 				}
 				/// fading is stored in last stage (work only with 3 stages...)
 				_Mat.setTexture(0, ptGradTexture);
-				_Mat.setTexture(1, _Tex);
+				ptGradTexture->setWrapS(ITexture::Clamp);
+				ptGradTexture->setWrapT(ITexture::Clamp);
+				_Mat.setTexture(1, _Tex);				
 				CPSMaterial::forceTexturedMaterialStages(3); // use constant color 0 * diffuse, 1 stage needed				
 				SetupModulatedStage(_Mat, 0, CMaterial::Texture, CMaterial::Diffuse);
 				SetupModulatedStage(_Mat, 1, CMaterial::Texture, CMaterial::Previous);
@@ -929,6 +937,7 @@ inline void	CPSRibbon::updateTexturedMaterial()
 			else // per ribbon color with global color 
 			{
 				_Mat.setTexture(0, _Tex);
+				
 				CPSMaterial::forceTexturedMaterialStages(2); // use constant color 0 * diffuse, 1 stage needed				
 				SetupModulatedStage(_Mat, 0, CMaterial::Texture, CMaterial::Diffuse);
 				SetupModulatedStage(_Mat, 1, CMaterial::Previous, CMaterial::Constant);			
@@ -943,6 +952,8 @@ inline void	CPSRibbon::updateTexturedMaterial()
 					ptGradTexture = CreateGradientTexture(); // create it
 				}
 				_Mat.setTexture(0, ptGradTexture);
+				ptGradTexture->setWrapS(ITexture::Clamp);
+				ptGradTexture->setWrapT(ITexture::Clamp);
 				_Mat.setTexture(1, _Tex);
 				CPSMaterial::forceTexturedMaterialStages(2); 
 				SetupModulatedStage(_Mat, 0, CMaterial::Texture, CMaterial::Diffuse); // texture * ribbon color

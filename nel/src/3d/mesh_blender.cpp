@@ -1,7 +1,7 @@
 /** \file mesh_blender.cpp
  * <File description>
  *
- * $Id: mesh_blender.cpp,v 1.1 2002/06/13 08:44:50 berenguier Exp $
+ * $Id: mesh_blender.cpp,v 1.2 2002/11/19 10:16:25 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -64,7 +64,10 @@ void		CMeshBlender::prepareRenderForGlobalAlpha(CMaterial &material, IDriver *dr
 
 		// Active Blend with Blend Constant Alpha .
 		material.setSrcBlend(CMaterial::blendConstantAlpha);
-		material.setDstBlend(CMaterial::blendConstantInvAlpha);
+
+		// Don't set dest if we are in additive blend mode
+		if ((_BkBlend == false) || (_BkDstBlend != CMaterial::one))
+			material.setDstBlend(CMaterial::blendConstantInvAlpha);
 
 		// if material is Alpha Test, no-op. Keep same threshold, since Use Alpha of the BlendConstantColor
 		// to do the alpha-blending.
@@ -77,7 +80,10 @@ void		CMeshBlender::prepareRenderForGlobalAlpha(CMaterial &material, IDriver *dr
 
 		// must ensure Std Blend.
 		material.setSrcBlend(CMaterial::srcalpha);
-		material.setDstBlend(CMaterial::invsrcalpha);
+
+		// Don't set dest if we are in additive blend mode
+		if ((_BkBlend == false) || (_BkDstBlend != CMaterial::one))
+			material.setDstBlend(CMaterial::invsrcalpha);
 
 		// if material is Alpha Test, must modulate AlphaTest limit to avoid Pop effects
 		if(material.getAlphaTest())

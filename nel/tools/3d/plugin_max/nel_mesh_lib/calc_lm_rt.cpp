@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.cpp
  * Raytrace part of the lightmap calculation
  *
- * $Id: calc_lm_rt.cpp,v 1.9 2004/01/29 10:39:33 besson Exp $
+ * $Id: calc_lm_rt.cpp,v 1.10 2004/06/07 16:16:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -664,9 +664,14 @@ void CRTRay::clip (CTriangle& t)
 	tri[2].U = t.V1.x;	tri[2].V = t.V1.y;
 
 	// Backface clipping
+	/*if (((tri[1].U-tri[0].U) * (tri[2].V-tri[0].V) - (tri[1].V-tri[0].V) * (tri[2].U-tri[0].U)) < 0.0f)
+		return;	*/
+	// Backface swapping
 	if (((tri[1].U-tri[0].U) * (tri[2].V-tri[0].V) - (tri[1].V-tri[0].V) * (tri[2].U-tri[0].U)) < 0.0f)
-		return;	
-
+	{
+		swap(tri[0],tri[1]);
+	}
+	
 	// Resize the triangle if we are in the conic part
 
 	if (zTri > (_DistLightVertex - _DistCyl))

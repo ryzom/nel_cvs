@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.h,v 1.9 2002/04/25 08:31:35 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.10 2002/04/25 10:34:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,12 +138,21 @@ public:
 
 
 	/// return true if a system is being played
-	bool isRunning(void) const { return _Running; }
+	bool isRunning() const { return _Running; }
+
+	/** Return true if a system is paused.
+	  * Must call only if running
+	  */
+	bool isPaused() const 
+	{ 
+		nlassert(isRunning());
+		return _Paused;
+	}
 
 	/// force the system to stop
 	void stop();
 	/// force the system to start
-	void start();
+	void start();	
 	/// toggle between start and stop
 	void toggle();
 
@@ -173,7 +182,7 @@ public:
 	}
 
 	/// This remove any memorized instance from the system
-	void reset() { _SystemInitialPos.reset(); }
+	void reset();
 
 
 
@@ -183,9 +192,11 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CStartStopParticleSystem)
 	enum { IDD = IDD_PARTICLE_SYSTEM_START_STOP };
+	CButton	m_PausePicture;
 	CButton	m_StopPicture;
 	CButton	m_StartPicture;
-	BOOL	m_DisplayBBox;
+	BOOL	m_DisplayBBox;	
+	int		m_SpeedSliderPos;
 	//}}AFX_DATA
 
 
@@ -197,23 +208,31 @@ public:
 	//}}AFX_VIRTUAL
 
 // Implementation
-protected:
+private:
 
 	// Generated message map functions
 	//{{AFX_MSG(CStartStopParticleSystem)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnStartSystem();
 	afx_msg void OnStopSystem();
+	afx_msg void OnPause();
+	afx_msg void OnReleasedcaptureAnimSpeed(NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 	// return true if a system is being played
 	bool _Running;
+	// true if the system is in pause mode
+	bool _Paused;
 
 	// the dialog that own this dialog
 	CParticleDlg *_ParticleDlg;
 
 	CPSInitialPos _SystemInitialPos;
+
+private:
+	void setSpeedSliderValue(float value);
+
 };
 
 //{{AFX_INSERT_LOCATION}}

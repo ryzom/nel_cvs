@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.12 2002/04/25 08:31:35 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.13 2002/04/25 10:34:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,10 +56,11 @@ static char THIS_FILE[] = __FILE__;
 
 
 CStartStopParticleSystem::CStartStopParticleSystem(CParticleDlg *particleDlg)
-	: CDialog(CStartStopParticleSystem::IDD, particleDlg), _ParticleDlg(particleDlg), _Running(FALSE) 
+	: CDialog(CStartStopParticleSystem::IDD, particleDlg), _ParticleDlg(particleDlg), _Running(false) , _Paused(false)
 {
 	//{{AFX_DATA_INIT(CStartStopParticleSystem)
 	m_DisplayBBox = TRUE;
+	m_SpeedSliderPos = 100;	
 	//}}AFX_DATA_INIT
 }
 
@@ -73,9 +74,11 @@ void CStartStopParticleSystem::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CStartStopParticleSystem)
+	DDX_Control(pDX, IDC_PAUSE_PICTURE, m_PausePicture);
 	DDX_Control(pDX, IDC_STOP_PICTURE, m_StopPicture);
 	DDX_Control(pDX, IDC_START_PICTURE, m_StartPicture);
-	DDX_Check(pDX, IDC_DISPLAY_BBOX, m_DisplayBBox);
+	DDX_Check(pDX, IDC_DISPLAY_BBOX, m_DisplayBBox);	
+	DDX_Slider(pDX, IDC_ANIM_SPEED, m_SpeedSliderPos);
 	//}}AFX_DATA_MAP
 
 
@@ -86,6 +89,8 @@ BEGIN_MESSAGE_MAP(CStartStopParticleSystem, CDialog)
 	//{{AFX_MSG_MAP(CStartStopParticleSystem)
 	ON_BN_CLICKED(IDC_START_PICTURE, OnStartSystem)
 	ON_BN_CLICKED(IDC_STOP_PICTURE, OnStopSystem)
+	ON_BN_CLICKED(IDC_PAUSE_PICTURE, OnPause)
+	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_ANIM_SPEED, OnReleasedcaptureAnimSpeed)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -96,17 +101,27 @@ BOOL CStartStopParticleSystem::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-	HBITMAP bm[2];
+	HBITMAP bm[3];
 		
 	bm[0] = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_START_SYSTEM));
 	bm[1] = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_STOP_SYSTEM));
+	bm[2] = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_PAUSE_SYSTEM));
+
 
 	
 	m_StartPicture.SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) bm[0]);
 	m_StopPicture.SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) bm[1]);
+	m_PausePicture.SendMessage(BM_SETIMAGE, IMAGE_BITMAP, (LPARAM) bm[2]);
+
 
 
 	m_StopPicture.EnableWindow(FALSE);
+	m_PausePicture.EnableWindow(FALSE);
+
+	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_ANIM_SPEED);
+	sl->SetRange(0, 100);
+
+	setSpeedSliderValue(1.f);
 
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -116,19 +131,26 @@ BOOL CStartStopParticleSystem::OnInitDialog()
 void CStartStopParticleSystem::OnStartSystem() 
 {
 
+	if (!_Running)
+	{	
+		_Running = true;
+		_SystemInitialPos.copySystemInitialPos(_ParticleDlg->getCurrPS() );	
+		// enable the system to take the right date from the scene	
+		_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true);		
+		_ParticleDlg->getCurrPSModel()->enableDisplayTools(false); 
+	}
 
-	_Running = true;
-	_SystemInitialPos.copySystemInitialPos(_ParticleDlg->getCurrPS() );	
-	// enable the system to take the right date from the scene	
-	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true);		
-	_ParticleDlg->getCurrPSModel()->enableDisplayTools(false); 	
+	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true);
+	_Paused = false;
 
 
 	_ParticleDlg->ParticleTreeCtrl->suppressLocatedInstanceNbItem(0);
 
 
 	m_StartPicture.EnableWindow(FALSE);
-	m_StopPicture.EnableWindow(TRUE);	
+	m_StopPicture.EnableWindow(TRUE);
+	m_PausePicture.EnableWindow(TRUE);
+
 	UpdateData(FALSE);
 
 	NL3D::CParticleSystem *ps = _SystemInitialPos.getPS();
@@ -141,15 +163,18 @@ void CStartStopParticleSystem::OnStartSystem()
 void CStartStopParticleSystem::OnStopSystem() 
 {
 	_Running = false;
+	_Paused = false;
 	_SystemInitialPos.restoreSystem();
 
 	_ParticleDlg->ParticleTreeCtrl->rebuildLocatedInstance();
 	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(false);	
-	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.f); // pause
+	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.f);
 	_ParticleDlg->getCurrPSModel()->enableDisplayTools(true); 
 
 	m_StartPicture.EnableWindow(TRUE);
 	m_StopPicture.EnableWindow(FALSE);
+	m_PausePicture.EnableWindow(FALSE);
+
 	UpdateData(FALSE);
 	// go through all the ps to disable sounds
 	
@@ -159,6 +184,20 @@ void CStartStopParticleSystem::OnStopSystem()
 		ps->stopSound();
 	}
 }
+
+
+void CStartStopParticleSystem::OnPause() 
+{
+	nlassert(_Running);
+	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(false);		
+	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.f); // pause
+	m_StartPicture.EnableWindow(TRUE);
+	m_StopPicture.EnableWindow(TRUE);
+	m_PausePicture.EnableWindow(FALSE);
+	_Paused = true;
+	UpdateData(FALSE);
+}
+
 
 void CStartStopParticleSystem::toggle()
 {
@@ -373,4 +412,27 @@ void CPSInitialPos::restoreSystem()
 			}
 		}
 	}
+}
+
+void CStartStopParticleSystem::setSpeedSliderValue(float value)
+{
+	m_SpeedSliderPos = (int) (value * 100);
+	UpdateData(FALSE);
+}
+
+
+
+void CStartStopParticleSystem::OnReleasedcaptureAnimSpeed(NMHDR* pNMHDR, LRESULT* pResult) 
+{
+	UpdateData();
+	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_ANIM_SPEED);
+	_ParticleDlg->getCurrPSModel()->setEllapsedTimeRatio(m_SpeedSliderPos * 0.01f);
+	*pResult = 0;		
+}
+
+
+void CStartStopParticleSystem::reset()
+{ 
+	_SystemInitialPos.reset(); 
+	setSpeedSliderValue(1.f);
 }

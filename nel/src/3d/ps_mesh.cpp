@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.8 2002/01/03 15:34:51 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.9 2002/01/04 11:17:03 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -581,7 +581,7 @@ void	CPSConstraintMesh::setMorphScheme(CPSAttribMaker<float> *scheme)
 {
 	delete _MorphScheme;
 	_MorphScheme = scheme;
-	_MorphScheme->resize(_Owner->getMaxSize(), _Owner->getSize());
+	if (_MorphScheme->hasMemory()) _MorphScheme->resize(_Owner->getMaxSize(), _Owner->getSize());
 }
 
 //====================================================================================

@@ -1,7 +1,7 @@
 /** \file export_lod_character.cpp
  * Export from 3dsmax a NeL lod character
  *
- * $Id: export_lod_character.cpp,v 1.4 2004/03/19 10:11:37 corvazier Exp $
+ * $Id: export_lod_character.cpp,v 1.5 2005/02/15 18:21:06 berenguier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -152,7 +152,16 @@ bool  CExportNel::buildLodCharacter (NL3D::CLodCharacterShapeBuild& lodBuild, IN
 						pb.lock (iba);
 						nlassert(dstTriIdx+pb.getNumIndexes() <= lodBuild.TriangleIndices.size());
 						// copy the index block
-						memcpy(&lodBuild.TriangleIndices[dstTriIdx], iba.getPtr(), pb.getNumIndexes()*sizeof(uint32));
+						uint32	*dst= &lodBuild.TriangleIndices[dstTriIdx];
+						if(pb.getFormat()==CIndexBuffer::Indices32)
+							memcpy(dst, iba.getPtr(), pb.getNumIndexes()*sizeof(uint32));
+						else
+						{
+							nlassert(pb.getFormat()==CIndexBuffer::Indices16);
+							uint16	*src= (uint16*)iba.getPtr();
+							for(uint n=pb.getNumIndexes();n>0;--n)
+								*(dst++)=*(src++);
+						}
 						// if the material of this pass is the 0th material, flag tris for TextureInfo selection
 						if(meshMRMGeom.getRdrPassMaterial(0,i)==0)
 						{

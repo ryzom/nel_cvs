@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="driver_direct3d"
+	ProjectGUID="{50135DBC-3F39-4E1D-85AB-E2DD3A1E65E4}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -26,6 +27,7 @@
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stddirect3d.h"
@@ -91,7 +93,9 @@
 				Optimization="0"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;driver_direct3d_EXPORTS;__STL_DEBUG;_DEBUG;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
+				SmallerTypeCheck="TRUE"
 				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stddirect3d.h"
@@ -183,6 +187,9 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\driver_direct3d.def"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				ImportLibrary=".\../../../../obj/Release/driver_direct3d/nel_drv_direct3d_win_r.lib"
 				TargetMachine="1"/>
 			<Tool
@@ -256,6 +263,9 @@
 				ModuleDefinitionFile=".\driver_direct3d.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\../../../../obj/ReleaseDebug/driver_direct3d/nel_drv_direct3d_win_rd.pdb"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				ImportLibrary=".\../../../../obj/ReleaseDebug/driver_direct3d/nel_drv_direct3d_win_rd.lib"
 				TargetMachine="1"/>
 			<Tool

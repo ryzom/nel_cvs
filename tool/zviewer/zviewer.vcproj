@@ -23,8 +23,10 @@
 				Optimization="0"
 				InlineFunctionExpansion="1"
 				PreprocessorDefinitions="_CONSOLE;NL_DEBUG_FAST;WIN32;_DEBUG"
+				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile=".\DebugFast/zviewer.pch"
@@ -113,6 +115,9 @@
 				IgnoreDefaultLibraryNames="libcmt.lib"
 				ProgramDatabaseFile=".\Release/zviewer.pdb"
 				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -182,6 +187,9 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\ReleaseDebug/zviewer.pdb"
 				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -223,6 +231,7 @@
 				PreprocessorDefinitions="_CONSOLE;__STL_DEBUG;WIN32;_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile=".\Debug/zviewer.pch"

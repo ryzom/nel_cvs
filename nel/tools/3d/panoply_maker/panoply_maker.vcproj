@@ -2,8 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="sound_lowlevel"
-	ProjectGUID="{8EB8B7A1-D4A3-44F0-9785-1135C79704DC}"
+	Name="panoply_maker"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -12,146 +11,45 @@
 	</Platforms>
 	<Configurations>
 		<Configuration
-			Name="Debug|Win32"
-			OutputDirectory=".\../../../obj/Debug/sound_lowlevel"
-			IntermediateDirectory=".\../../../obj/Debug/sound_lowlevel"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				PreprocessorDefinitions="__STL_DEBUG;_DEBUG;_LIB;_AFXDLL;WIN32;LIBXML_STATIC"
-				StringPooling="FALSE"
-				BasicRuntimeChecks="3"
-				SmallerTypeCheck="TRUE"
-				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../obj/Debug/sound_lowlevel/sound_lowlevel.pch"
-				AssemblerListingLocation=".\../../../obj/Debug/sound_lowlevel/"
-				ObjectFile=".\../../../obj/Debug/sound_lowlevel/"
-				ProgramDataBaseFileName=".\../../../obj/Debug/sound_lowlevel/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="../../../lib/nlsound_lowlevel_d.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
-		</Configuration>
-		<Configuration
-			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../../../obj/ReleaseDebug/sound_lowlevel"
-			IntermediateDirectory=".\../../../obj/ReleaseDebug/sound_lowlevel"
-			ConfigurationType="4"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="1"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				EnableFiberSafeOptimizations="TRUE"
-				OptimizeForWindowsApplication="TRUE"
-				PreprocessorDefinitions="NL_RELEASE_DEBUG;_LIB;_AFXDLL;LIBXML_STATIC;WIN32;NDEBUG"
-				StringPooling="TRUE"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="TRUE"
-				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../obj/ReleaseDebug/sound_lowlevel/sound_lowlevel.pch"
-				AssemblerListingLocation=".\../../../obj/ReleaseDebug/sound_lowlevel/"
-				ObjectFile=".\../../../obj/ReleaseDebug/sound_lowlevel/"
-				ProgramDataBaseFileName=".\../../../obj/ReleaseDebug/sound_lowlevel/"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="../../../lib/nlsound_lowlevel_rd.lib"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
-		</Configuration>
-		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory=".\../../../obj/DebugFast/sound_lowlevel"
-			IntermediateDirectory=".\../../../obj/DebugFast/sound_lowlevel"
-			ConfigurationType="4"
+			OutputDirectory=".\DebugFast"
+			IntermediateDirectory=".\DebugFast"
+			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_LIB;_AFXDLL;WIN32;LIBXML_STATIC"
+				PreprocessorDefinitions="_CONSOLE;NL_DEBUG_FAST;WIN32;_DEBUG"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../obj/DebugFast/sound_lowlevel/sound_lowlevel.pch"
-				AssemblerListingLocation=".\../../../obj/DebugFast/sound_lowlevel/"
-				ObjectFile=".\../../../obj/DebugFast/sound_lowlevel/"
-				ProgramDataBaseFileName=".\../../../obj/DebugFast/sound_lowlevel/"
+				PrecompiledHeaderFile=".\DebugFast/panoply_maker.pch"
+				AssemblerListingLocation=".\DebugFast/"
+				ObjectFile=".\DebugFast/"
+				ProgramDataBaseFileName=".\DebugFast/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="../../../lib/nlsound_lowlevel_df.lib"
-				SuppressStartupBanner="TRUE"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="s3tc.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\DebugFast/panoply_maker.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\DebugFast/panoply_maker.pdb"
+				SubSystem="1"
+				TargetMachine="1"/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCMIDLTool"
+				TypeLibraryName=".\DebugFast/panoply_maker.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -166,6 +64,8 @@
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
 			<Tool
 				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool
@@ -173,9 +73,9 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\../../../obj/Release/sound_lowlevel"
-			IntermediateDirectory=".\../../../obj/Release/sound_lowlevel"
-			ConfigurationType="4"
+			OutputDirectory=".\Release"
+			IntermediateDirectory=".\Release"
+			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
 			CharacterSet="2">
@@ -188,25 +88,37 @@
 				FavorSizeOrSpeed="1"
 				EnableFiberSafeOptimizations="TRUE"
 				OptimizeForWindowsApplication="TRUE"
-				PreprocessorDefinitions="NDEBUG;_LIB;_AFXDLL;WIN32;LIBXML_STATIC"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../obj/Release/sound_lowlevel/sound_lowlevel.pch"
-				AssemblerListingLocation=".\../../../obj/Release/sound_lowlevel/"
-				ObjectFile=".\../../../obj/Release/sound_lowlevel/"
-				ProgramDataBaseFileName=".\../../../obj/Release/sound_lowlevel/"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="stdafx.h"
+				PrecompiledHeaderFile=".\Release/panoply_maker.pch"
+				AssemblerListingLocation=".\Release/"
+				ObjectFile=".\Release/"
+				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="../../../lib/nlsound_lowlevel_r.lib"
-				SuppressStartupBanner="TRUE"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="s3tc.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\Release/panoply_maker.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				ProgramDatabaseFile=".\Release/panoply_maker.pdb"
+				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
+				TargetMachine="1"/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCMIDLTool"
+				TypeLibraryName=".\Release/panoply_maker.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -221,6 +133,141 @@
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="ReleaseDebug|Win32"
+			OutputDirectory=".\ReleaseDebug"
+			IntermediateDirectory=".\ReleaseDebug"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="TRUE"
+				FavorSizeOrSpeed="1"
+				EnableFiberSafeOptimizations="TRUE"
+				OptimizeForWindowsApplication="TRUE"
+				PreprocessorDefinitions="_CONSOLE;WIN32;NDEBUG;NL_RELEASE_DEBUG"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="stdafx.h"
+				PrecompiledHeaderFile=".\ReleaseDebug/panoply_maker.pch"
+				AssemblerListingLocation=".\ReleaseDebug/"
+				ObjectFile=".\ReleaseDebug/"
+				ProgramDataBaseFileName=".\ReleaseDebug/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="s3tc.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\ReleaseDebug/panoply_maker.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\ReleaseDebug/panoply_maker.pdb"
+				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName=".\ReleaseDebug/panoply_maker.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory=".\Debug"
+			IntermediateDirectory=".\Debug"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				GlobalOptimizations="FALSE"
+				PreprocessorDefinitions="_CONSOLE;__STL_DEBUG;WIN32;_DEBUG"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
+				PrecompiledHeaderFile=".\Debug/panoply_maker.pch"
+				AssemblerListingLocation=".\Debug/"
+				ObjectFile=".\Debug/"
+				ProgramDataBaseFileName=".\Debug/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="4"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="s3tc.lib odbc32.lib odbccp32.lib"
+				OutputFile=".\Debug/panoply_maker.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\Debug/panoply_maker.pdb"
+				SubSystem="1"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName=".\Debug/panoply_maker.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
 			<Tool
 				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool
@@ -231,7 +278,34 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="buffer.cpp">
+			RelativePath="color_mask.h">
+		</File>
+		<File
+			RelativePath="color_modifier.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
+					UsePrecompiledHeader="0"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
+					UsePrecompiledHeader="0"/>
+			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|Win32">
 				<Tool
@@ -240,13 +314,12 @@
 					PreprocessorDefinitions=""
 					BasicRuntimeChecks="3"/>
 			</FileConfiguration>
-			<FileConfiguration
-				Name="ReleaseDebug|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""/>
-			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="color_modifier.h">
+		</File>
+		<File
+			RelativePath="hls_bank_texture_info.cpp">
 			<FileConfiguration
 				Name="DebugFast|Win32">
 				<Tool
@@ -262,12 +335,14 @@
 					Optimization="2"
 					PreprocessorDefinitions=""/>
 			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="buffer.h">
-		</File>
-		<File
-			RelativePath="listener.cpp">
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
+					UsePrecompiledHeader="0"/>
+			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|Win32">
 				<Tool
@@ -276,13 +351,15 @@
 					PreprocessorDefinitions=""
 					BasicRuntimeChecks="3"/>
 			</FileConfiguration>
-			<FileConfiguration
-				Name="ReleaseDebug|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""/>
-			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="hls_bank_texture_info.h">
+		</File>
+		<File
+			RelativePath="panoply.cfg">
+		</File>
+		<File
+			RelativePath="panoply_maker.cpp">
 			<FileConfiguration
 				Name="DebugFast|Win32">
 				<Tool
@@ -296,14 +373,17 @@
 				<Tool
 					Name="VCCLCompilerTool"
 					Optimization="2"
-					PreprocessorDefinitions=""/>
+					PreprocessorDefinitions=""
+					UsePrecompiledHeader="0"/>
 			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="listener.h">
-		</File>
-		<File
-			RelativePath="loader.cpp">
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""
+					UsePrecompiledHeader="0"/>
+			</FileConfiguration>
 			<FileConfiguration
 				Name="Debug|Win32">
 				<Tool
@@ -312,103 +392,6 @@
 					PreprocessorDefinitions=""
 					BasicRuntimeChecks="3"/>
 			</FileConfiguration>
-			<FileConfiguration
-				Name="ReleaseDebug|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="DebugFast|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="loader.h">
-		</File>
-		<File
-			RelativePath="sound_driver.cpp">
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="ReleaseDebug|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="DebugFast|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="sound_driver.h">
-		</File>
-		<File
-			RelativePath="source.cpp">
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="ReleaseDebug|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="DebugFast|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					PreprocessorDefinitions=""
-					BasicRuntimeChecks="3"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="2"
-					PreprocessorDefinitions=""/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="source.h">
 		</File>
 	</Files>
 	<Globals>

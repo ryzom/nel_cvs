@@ -1,9 +1,10 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.18 2000/10/12 16:15:31 cado Exp $
+ * $Id: service.cpp,v 1.19 2000/11/08 14:58:39 lecroart Exp $
  *
- * \todo ACE: test the signal redirection on Unix
+ * \todo ace: test the signal redirection on Unix
+ * \todo ace: add parsing command line (with CLAP?)
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +32,14 @@
 #include <stdlib.h>
 #include <signal.h>
 
+#ifdef NL_OS_WINDOWS
+// these defines is for IsDebuggerPresent(). it'll not compile on windows 95
+// just comment this and the IsDebuggerPresent to compile on wiindows 95
+#define _WIN32_WINDOWS	0x0410
+#define WINVER			0x0400
+#include <windows.h>
+#endif
+
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 
@@ -42,7 +51,6 @@
 #include "nel/net/pt_callback_item.h"
 
 #include <sstream>
-
 
 using namespace std;
 using namespace NLMISC;
@@ -60,7 +68,7 @@ const uint32 IService::_DefaultTimeout = 1000;
 
 /* "Constants" */
 
-static const int Signal[] = {
+static const sint Signal[] = {
   SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM
 };
 
@@ -71,17 +79,17 @@ static const char *SignalName[]=
 
 /* Variables */
 
-static IService *Service = NULL;
+static sint ExitSignalAsked = 0;
 
 /* Prototypes */
 
 static void SigHandler (int Sig);
-static void ExitFunc ();
 
 /* Functions */
 
 void InitSignal()
 {
+
 	// redirect all signals
 	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
 		signal(Signal[i], SigHandler);
@@ -98,7 +106,7 @@ static void SigHandler(int Sig)
 	{
 		if (Sig == Signal[i])
 		{
-			nlinfo ("%s received", SignalName[i]);
+			nlinfo ("%s received (%d)", SignalName[i], Sig);
 			switch (Sig)
 			{
 			case SIGABRT :
@@ -108,47 +116,13 @@ static void SigHandler(int Sig)
 			case SIGTERM :
 			// you should not call a function and system function like printf in a SigHandle because
 			// signal-handler routines are usually called asynchronously when an interrupt occurs.
-			ExitFunc ();
-			exit (100+Sig);
-			break;
+				ExitSignalAsked = Sig;
+				return;
+				break;
 			}
 		}
 	}
-	nlwarning ("Signal #%d received", Sig);
-}
-
-
-///////////////////////////////
-
-static void ExitFunc ()
-{
-	nldebug("** ExitFunc **");
-	try
-	{
-		if (Service != NULL)
-		{
-			// Release only once
-			IService *is = Service;
-			Service = NULL;
-
-			// Unregister service
-			CNamingClient::finalize();
-
-			// Close server
-			if ( is->_Server != NULL )
-			{
-				delete is->_Server;
-			}
-
-			is->release ();
-			nlinfo( "Service stopped" );
-		}
-	}
-	catch (Exception &e)
-	{
-		nlerror ("Error releasing service : %s", e.what());
-		if (Service != NULL) Service->setStatus (EXIT_FAILURE);
-	}
+	nlinfo ("unknown signal received (%d)", Sig);
 }
 
 
@@ -187,10 +161,9 @@ sint IService::main (int argc, char **argv)
 	try
 	{
 		_Server = NULL;
-		Service = this;
-		atexit (ExitFunc);
 
-		InitSignal();
+		// Initialize debug stuffs, create displayers for nl* functions
+		InitDebug();
 
 		for (sint i = 0; i < argc; i++)
 		{
@@ -216,8 +189,18 @@ sint IService::main (int argc, char **argv)
 		// Set the localhost name and service name to the logger
 		CLog::setLocalHostAndService ( localhost, _Name );
 
-		// Initialize debug stuffs, create displayers for rk* functions
-		InitDebug();
+#ifdef NL_OS_WINDOWS
+		// don't install signal is the application is started in debug mode
+		if (IsDebuggerPresent ())
+		{
+			nlinfo("Running with the debugger");
+		}
+		else
+		{
+			nlinfo("Running without the debugger");
+			InitSignal();
+		}
+#endif
 
 		// Initialize server parameters
 		_Port = IService::_DefaultPort;
@@ -227,9 +210,6 @@ sint IService::main (int argc, char **argv)
 		// Server start-up
 		_Server = new CMsgSocket( CallbackArray, CallbackArraySize, _Port );
 		CMsgSocket::setTimeout( _Timeout );
-
-		// User service init
-		init ();
 
 		// Register the name to the NS (except for the NS itself)
 		if ( strcmp( IService::_Name, "NS" ) != 0 )
@@ -248,29 +228,64 @@ sint IService::main (int argc, char **argv)
 			}
 		}
 
+		// User service init
+		init ();
+
 		nlinfo( "Service ready" );
 
 		// user service update call each loop
-		while ( update() )
+		while ( update() && !ExitSignalAsked)
 		{
 			CConfigFile::checkConfigFiles ();
 			CMsgSocket::update();
 		}
-		ExitFunc ();
+	}
+	catch (EFatalError &e)
+	{
+		setStatus (EXIT_FAILURE);
+
+		// somebody call nlerror, so we have to quit now, the message already display
+		// so we don't have to to anything
 	}
 	catch (Exception &e)
 	{
-		ExitFunc ();
 		setStatus (EXIT_FAILURE);
-		nlerror ("Error running the service \"%s\": %s", _Name, e.what());
+
+		// we don't use nlerror macro because we don't want to generate an exit exception
+		nlError ("Error running the service \"%s\": %s", _Name, e.what());
 	}
+#ifdef NL_RELEASE
 	catch (...)
 	{
-		ExitFunc ();
+		// in release mode, we catch anything we can to release the system cleanly
 		setStatus (EXIT_FAILURE);
-		nlerror ("Unknown external exception");
+
+		// we don't use nlerror macro because we don't want to generate an exit exception
+		nlError ("Unknown external exception");
 	}
-	return getStatus ();
+#endif
+	try
+	{
+		release ();
+		
+		// Unregister service
+		CNamingClient::finalize();
+
+		// Close server
+		if (_Server != NULL )
+		{
+			delete _Server;
+			_Server = NULL;
+		}
+		nlinfo ("Service stopped");
+	}
+	catch (Exception &e)
+	{
+		nlerror ("Error releasing service : %s", e.what());
+		setStatus (EXIT_FAILURE);
+	}
+
+	return ExitSignalAsked?100+ExitSignalAsked:getStatus ();
 }
 
 } //NLNET

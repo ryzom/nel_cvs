@@ -191,4 +191,3 @@ else
 	echo --- No coarse meshes texture defined 
 
 fi
-

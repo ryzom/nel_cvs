@@ -30,3 +30,7 @@ if test "$lightmap_install_directory"; then
 	mkdir $client_directory/$lightmap_install_directory 2>> log.log 2> /dev/null
 	cp -u -p -R lightmap_16_bits/. $client_directory/$lightmap_install_directory  2>> log.log
 fi
+
+cp -u -p -R anim/. $client_directory/$shape_install_directory  2>> log.log
+
+ls anim | grep ".anim" >> $client_directory/auto_animations_list.txt

@@ -22,6 +22,7 @@ NEL3D_APPDATA_LOD_BLEND_OUT			= NEL3D_APPDATA_LOD_BLEND_IN+1
 NEL3D_APPDATA_LOD_COARSE_MESH		= NEL3D_APPDATA_LOD_BLEND_OUT+1
 NEL3D_APPDATA_COLLISION				= 1423062613
 NEL3D_APPDATA_COLLISION_EXTERIOR	= 1423062614
+NEL3D_APPDATA_AUTOMATIC_ANIMATION	= 1423062617
 
 
 -- Clear the log
@@ -80,6 +81,48 @@ fn isToBeExported node =
 		return false
 
 	if ((classof node) == nel_ps) then
+		return false
+
+	if ((classof node) == nel_pacs_cylinder) then
+		return false
+
+	if ((classof node) == nel_pacs_box) then
+		return false
+
+	doNotExport = getappdata node NEL3D_APPDATA_DONOTEXPORT
+	if (doNotExport != undefined) then
+	(
+		if (doNotExport == "1") then
+			return false
+	)
+
+	doNotExport = getappdata node NEL3D_APPDATA_COLLISION
+	if (doNotExport != undefined) then
+	(
+		if (doNotExport == "1") then
+			return false
+	)
+
+	doNotExport = getappdata node NEL3D_APPDATA_COLLISION_EXTERIOR
+	if (doNotExport != undefined) then
+	(
+		if (doNotExport == "1") then
+			return false
+	)
+
+	return true
+)
+
+-- Must export this node ?
+fn isAnimToBeExported node =
+(
+	automaticAnimation = getappdata node NEL3D_APPDATA_AUTOMATIC_ANIMATION
+	if (automaticAnimation == undefined) then
+		return false
+	if (automaticAnimation == "0") then
+		return false
+
+	if (isAccelerator node) == true then
 		return false
 
 	if ((classof node) == nel_pacs_cylinder) then
@@ -341,6 +384,28 @@ try
 											)
 										)
 									)
+								)
+							)
+						)
+
+						-- Export default animations
+
+						for node in objects do
+						(
+							-- Can export it ?
+							if (isAnimToBeExported node) == true then
+							(
+								-- Anim output directory
+								output = ("output_directory_anim/"+(node.name)+".anim")
+
+								-- Export the animation
+								if (NelExportAnimation #(node) output false) == false then
+								(
+									nlerror ("ERROR exporting animation "+output)
+								)
+								else
+								(
+									nlerror ("OK "+output)
 								)
 							)
 						)

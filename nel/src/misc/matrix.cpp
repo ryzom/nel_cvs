@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.31 2002/07/09 13:13:14 berenguier Exp $
+ * $Id: matrix.cpp,v 1.32 2002/07/11 17:18:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -775,7 +775,12 @@ void		CMatrix::setMulMatrixNoProj(const CMatrix &m1, const CMatrix &m2)
 
 	// Modify Scale.
 	if( (StateBit & MAT_SCALEUNI) && !(StateBit & MAT_SCALEANY) )
+	{
+		// Must have correct Scale33
+		m1.testExpandRot();
+		m2.testExpandRot();
 		Scale33= m1.Scale33*m2.Scale33;
+	}
 	else
 		Scale33=1;
 
@@ -819,7 +824,6 @@ void		CMatrix::setMulMatrix(const CMatrix &m1, const CMatrix &m2)
 	identity();
 	StateBit= m1.StateBit | m2.StateBit;
 	StateBit&= ~MAT_VALIDALL;
-
 
 	// Build Rot part.
 	//===============
@@ -904,9 +908,15 @@ void		CMatrix::setMulMatrix(const CMatrix &m1, const CMatrix &m2)
 		a32+= m1.a34*m2.a42;
 		a33+= m1.a34*m2.a43;
 	}
+
 	// Modify Scale.
 	if( (StateBit & MAT_SCALEUNI) && !(StateBit & MAT_SCALEANY) )
+	{
+		// Must have correct Scale33
+		m1.testExpandRot();
+		m2.testExpandRot();
 		Scale33= m1.Scale33*m2.Scale33;
+	}
 	else
 		Scale33=1;
 

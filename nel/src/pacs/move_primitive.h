@@ -1,7 +1,7 @@
 /** \file move_primitive.h
  * Description of movables primitives
  *
- * $Id: move_primitive.h,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: move_primitive.h,v 1.3 2001/06/15 09:47:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,11 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
-#include "pacs/move_container.h"
+
 #include "nel/pacs/u_move_primitive.h"
+
+#include "pacs/move_container.h"
+#include "pacs/primitive_world_image.h"
 #include "pacs/global_retriever.h"
 
 #define NELPACS_DIST_BACK 0.002
@@ -51,40 +54,97 @@ class CMovePrimitive: public UMovePrimitive
 private:
 
 	// Some flags
-	enum TFlags
+	enum TStaticFlags
 	{
 		// Mask for the primitive type
-		PrimitiveMask=0x0f,
+		PrimitiveMask	=0x000f,
 
 		// Mask for the primitive type
-		ReactionMask=0xf0,
+		ReactionMask	=0x00f0,
 
 		// Mask for the trigger type
-		TriggerMask=0xf00,
-
-		// The dirt flag. Precalculated data for the position must be recomputed.
-		DirtPosFlag=0x10000,
-
-		// The dirt bounding box. Precalculated data for the bounding box must be recomputed.
-		DirtBBFlag=0x20000,
-
-		// In modified list.
-		InModifiedListFlag=0x40000,
+		TriggerMask		=0x0f00,
 
 		// Obstacle flag. This flag tells that this object is an obstacle for others objects.
-		ObstacleFlag=0x80000,
+		ObstacleFlag	=0x1000,
 
-		// Force the size to uint32.
-		ForceSize=0xffffffff
+		// Ghost flag. This flag tells that this object is a ghost object or not.
+		NonCollisionableFlag	=0x2000,
+
+		// Force the size to uint16.
+		ForceSize		=0xffff
 	};
 
 public:
 
 	/// Constructor
-	CMovePrimitive (CMoveContainer* container);
+	CMovePrimitive (CMoveContainer* container, uint8 firstWorldImage, uint8 numWorldImage);
 
 	/// Destructor
 	~CMovePrimitive ();
+
+	// Return true if this primitive is noncollisionable
+	bool isNonCollisionable () const
+	{
+		return (_StaticFlags&NonCollisionableFlag)!=0;
+	}
+
+	// Set noncollisionable
+	void setNonCollisionable (bool nonCollisionable)
+	{
+		if (nonCollisionable)
+			_StaticFlags|=NonCollisionableFlag;
+		else
+			_StaticFlags&=~NonCollisionableFlag;
+	}
+
+	// Get the nieme world image
+	CPrimitiveWorldImage		*getWorldImage (uint i) const
+	{
+		// Checks this primitive belong of the requested world image.
+		nlassert ((i>=(uint)_FirstWorldImage)&&(i<(uint)_FirstWorldImage+(uint)_NumWorldImage));
+
+		// Return the good one
+		return _WorldImages[i-_FirstWorldImage];
+	}
+
+	// is the primitive inserted in the world image
+	bool isInserted (uint i) const
+	{
+		// Checks
+		if ((i>=(uint)_FirstWorldImage)&&(i<(uint)_FirstWorldImage+(uint)_NumWorldImage))
+		{
+			// Get world image
+			return getWorldImage (i)->isInWorldImageFlag ();
+		}
+		else
+			return false;
+	}
+
+	// Get first world image used
+	uint8	getFirstWorldImage () const
+	{
+		return _FirstWorldImage;
+	}
+
+	// Get count of world image used
+	uint8	getNumWorldImage () const
+	{
+		return _NumWorldImage;
+	}
+
+	// Dirt positions of the primitive in all the world images
+	void	dirtAllPos ()
+	{
+		for (uint i=0; i<_NumWorldImage; i++)
+		{
+			// Get world image and check if it exist
+			CPrimitiveWorldImage	*worldImage=_WorldImages[i];
+
+			// Dirt its pos
+			worldImage->dirtPos (_Container, this, i+_FirstWorldImage);
+		}
+	}
 
 	/**
 	  * Set the primitive type.
@@ -94,11 +154,8 @@ public:
 	void	setPrimitiveType (TType type)
 	{
 		// New position
-		_Flags&=~(uint32)PrimitiveMask;
-		_Flags|=type;
-
-		// Something has changed
-		dirtPos ();
+		_StaticFlags&=~(uint32)PrimitiveMask;
+		_StaticFlags|=type;
 	}
 
 	/**
@@ -109,8 +166,8 @@ public:
 	void	setReactionType (TReaction type)
 	{
 		// New position
-		_Flags&=~(uint32)ReactionMask;
-		_Flags|=type;
+		_StaticFlags&=~(uint32)ReactionMask;
+		_StaticFlags|=type;
 	}
 
 	/**
@@ -121,76 +178,8 @@ public:
 	void	setTriggerType (TTrigger type)
 	{
 		// New position
-		_Flags&=~(uint32)TriggerMask;
-		_Flags|=type;
-	}
-
-	/**
-	  * Set the obstacle flag.
-	  *
-	  * \param obstacle is true if this primitive is an obstacle, else false.
-	  */
-	void	setObstacle (bool obstacle)
-	{
-		// New flag
-		if (obstacle)
-			_Flags|=ObstacleFlag;
-		else
-			_Flags&=~(uint32)ObstacleFlag;
-
-		// Something has changed
-		dirtPos ();
-	}
-
-	/**
-	  * Set the global position of the move primitive. Setting the global position 
-	  * can take a long time if you use a UGlobalRetriever. Set the position with
-	  * this method only the first time or for teleporting.
-	  *
-	  * \param pos is the new global position of the primitive.
-	  */
-	void	setGlobalPosition (const NLMISC::CVectorD& pos, const UMoveContainer& container);
-
-	/**
-	  * Set the position of the move primitive. For movable primitives, this is
-	  * the position at the primitive current time.
-	  *
-	  * \param pos is the new position of the primitive.
-	  */
-/*	void	setPosition (const NLMISC::CVectorD& pos)
-	{
-		// New position
-		_Position=pos;
-
-		// Something has changed
-		dirtPos ();
-	}*/
-
-	/**
-	  * Get the position of the move primitive at the end of the movement.
-	  *
-	  * \return the new position of the primitive.
-	  */
-	NLMISC::CVectorD	getFinalPosition () const
-	{
-		return _Position.getPos();
-	}
-
-	/**
-	  * Set the new orientation of the move primitive. Only for the box primitives.
-	  *
-	  * \param rot is the new OZ rotation in radian.
-	  */
-	void	setOrientation (double rot)
-	{
-		// Checks
-		nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
-
-		// New position
-		_OBData.Orientation=rot;
-
-		// Position has changed
-		dirtPos ();
+		_StaticFlags&=~(uint32)TriggerMask;
+		_StaticFlags|=type;
 	}
 
 	/**
@@ -214,16 +203,17 @@ public:
 	}
 
 	/**
-	  * Set the attenuation of collision for this object. Default value is 1. Should be between 0~1.
-	  * 0, all the enrgy is attenuated by the collision. 1, all the energy stay in the object.
-	  * Used only with the flag Reflexion.
+	  * Set the obstacle flag.
 	  *
-	  * \param attenuation is the new attenuation for the primitive.
+	  * \param obstacle is true if this primitive is an obstacle, else false.
 	  */
-	void	setAbsorbtion (float attenuation)
+	void	setObstacle (bool obstacle)
 	{
 		// New flag
-		_Attenuation=attenuation;
+		if (obstacle)
+			_StaticFlags|=ObstacleFlag;
+		else
+			_StaticFlags&=~(uint32)ObstacleFlag;
 	}
 
 	/**
@@ -235,14 +225,11 @@ public:
 	void	setSize (float width, float depth)
 	{
 		// Checks
-		nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedBox);
+		nlassert ((((uint32)_StaticFlags)&PrimitiveMask)==_2DOrientedBox);
 
 		// New position
-		_OBData.Length[0]=width;
-		_OBData.Length[1]=depth;
-
-		// Position has changed
-		dirtPos ();
+		_Length[0]=width;
+		_Length[1]=depth;
 	}
 
 	/**
@@ -254,9 +241,6 @@ public:
 	{
 		// New size
 		_Height=height;
-
-		// Position has changed
-		dirtPos ();
 	}
 
 	/**
@@ -267,160 +251,76 @@ public:
 	void	setRadius (float radius)
 	{
 		// Checks
-		nlassert ((((uint32)_Flags)&PrimitiveMask)==_2DOrientedCylinder);
+		nlassert ((((uint32)_StaticFlags)&PrimitiveMask)==_2DOrientedCylinder);
 
 		// New position
-		_OCData.Radius=radius;
-
-		// Position has changed
-		dirtPos ();
+		_Length[0]=radius;
 	}
 
-	/**
-	  * Set the speed vector for this primitive. Only for movable primitives.
-	  *
-	  * \param speed is the speed of the primitive.
-	  */
-	void	move (const NLMISC::CVectorD& speed);
-
-	/**
-	  * Set the speed vector for this primitive.
-	  *
-	  * \param speed is the new speed vector.
-	  */
-	void	setSpeed (const NLMISC::CVectorD& speed)
+	/// Get primitive type
+	TType	getPrimitiveType () const
 	{
-		// New time
-		_Speed=speed;
-
-		// Speed has changed
-		dirtPos ();
+		// New position
+		return (TType)(_StaticFlags&(uint32)PrimitiveMask);
 	}
 
-	/**
-	  * Get the speed vector for this primitive.
-	  *
-	  * \Return the new speed vector.
-	  */
-	const NLMISC::CVectorD&	getSpeed () const
+	/// Get reaction type
+	TReaction	getReactionType () const
 	{
-		// New time
-		return _Speed;
+		// New position
+		return (TReaction)(_StaticFlags&(uint32)ReactionMask);
 	}
 
-	/**
-	  * Return true if this primitive is an obstacle else false.
-	  */
-	bool	isObstacle () const
+	/// Get reaction type
+	TTrigger	getTriggerType () const
 	{
-		return ((_Flags&(uint32)ObstacleFlag)!=0);
+		// New position
+		return (TTrigger)(_StaticFlags&(uint32)TriggerMask);
 	}
 
-	/// Is in modified list ?
-	bool	isInModifiedListFlag ()
+	/// Get collision mask
+	TCollisionMask	getCollisionMask () const
 	{
-		return (_Flags&InModifiedListFlag) != 0;
+		// New position
+		return _CollisionMask;
 	}
 
-	/// Clear the inModifiedList flag.
-	void	setInModifiedListFlag (bool itis)
+	/// Get occlusion mask
+	TCollisionMask	getOcclusionMask () const
 	{
-		if (itis)
-			_Flags|=InModifiedListFlag;
-		else
-			_Flags&=~InModifiedListFlag;
+		// New position
+		return _OcclusionMask;
 	}
 
-	// Link into modified list
-	void	linkInModifiedList (CMovePrimitive* next)
+	/// Get attenuation
+	float getAttenuation() const
 	{
-		_NextModified=next;
+		return _Attenuation;
 	}
 
-	/// Get next modified primitive
-	CMovePrimitive	*getNextModified () const
+	/// Get length
+	float getLength (uint where) const
 	{
-		return _NextModified;
+		return _Length[where];
 	}
 
-	/**
-	  * Return min of the bounding box in X.
-	  */
-	double	getBBXMin () const
+	/// Get height
+	float getHeight () const
 	{
-		return _BBXMin;
+		return _Height;
 	}
 
-	/**
-	  * Return min of the bounding box in Y.
-	  */
-	double	getBBYMin () const
+	/// Get length
+	float getRadius () const
 	{
-		return _BBYMin;
+		return _Length[0];
 	}
 
-	/**
-	  * Return max of the bounding box in X.
-	  */
-	double	getBBXMax () const
+	/// Is an obstacle ?
+	bool isObstacle () const
 	{
-		return _BBXMax;
+		return (_StaticFlags&ObstacleFlag)!=0;
 	}
-
-	/**
-	  * Return max of the bounding box in Y.
-	  */
-	double	getBBYMax () const
-	{
-		return _BBYMax;
-	}
-
-	/**
-	  * Eval collisions with the other primitive.
-	  *
-	  * \param other is another move primitive to test collisions with.
-	  * \param desc is a collision descriptor filled with information
-	  * about the collision context if the method return true.
-	  * \param timeMin is the time you want to clip collision result in the past.
-	  * \param timeMax is the time you want to clip collision result in the futur.
-	  *
-	  * \return true if a collision has been detected in the time range, else false.
-	  */
-	bool	evalCollision (CMovePrimitive& other, class CCollisionDesc& desc, double timeMin, double timeMax, uint32 testTime, 
-							uint32 maxTestIteration, double &firstContactTime, double &lastContactTime);
-
-	// Check trigger flag
-	bool	isTriggered (CMovePrimitive& second, bool enter, bool exit);
-
-	/**
-	  * Eval collisions with the global retriever.
-	  *
-	  * \param retriever is the global retriever used to test collision
-	  * \param timeMin is the time you want to clip collision result in the past.
-	  * \param timeMax is the time you want to clip collision result in the futur.
-	  *
-	  * \return true if a collision has been detected in the time range, else false.
-	  */
-	const TCollisionSurfaceDescVector *CMovePrimitive::evalCollision (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, 
-																  const NLMISC::CVector& delta, uint32 testTime, uint32 maxTestIteration);
-
-	// Make a move with globalRetriever. Must be call after a free collision evalCollision call.
-	void	doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double timeMax);
-
-	// Make a move wihtout globalRetriever.
-	void	doMove (double timeMax);
-
-	/// Return the nieme MoveElement. The primitive can have 4 move elements. Can be NULL if the ineme elment is not in a list
-	CMoveElement	*getMoveElement (uint i)
-	{
-		return _MoveElement[i];
-	}
-
-	/// Remove the nieme MoveElement.
-	void removeMoveElement (uint i);
-
-	/// Add the primitive in the cell
-	void addMoveElement (CMoveCell& cell, uint16 x, uint16 y, double centerX, double centerY);
 
 	/// Add a collision time ordered table element
 	void addCollisionOTInfo (CCollisionOTInfo *info)
@@ -436,96 +336,22 @@ public:
 	/// Remove all collision time ordered table element.
 	void removeCollisionOTInfo ();
 
-	/// Update precalculated data
-	void update (double beginTime, double endTime)
-	{
-		// Pos dirt ?
-		if (_Flags&DirtPosFlag)
-		{
-			// Compute precalculated data
-			precalcPos ();
-
-			// Clean
-			_Flags&=~DirtPosFlag;
-		}
-
-		// Bounding box dirt ?
-		if (_Flags&DirtBBFlag)
-		{
-			// Compute precalculated data
-			precalcBB (beginTime, endTime);
-
-			// Clean
-			_Flags&=~DirtBBFlag;
-		}
-	}
-
 	/// Check sorted lists
 	void checkSortedList ();
 
-	// Reaction between two primitives. Return true if one object has been modified.
-	void reaction (CMovePrimitive& second, const CCollisionDesc& desc, CGlobalRetriever* retriver,
-					CCollisionSurfaceTemp& surfaceTemp, bool collision);
+	/// Check trigger flag
+	bool isTriggered (CMovePrimitive& second, bool enter, bool exit);
 
-	// Reaction with a static collision. Return true if one object has been modified.
-	void reaction (const CCollisionSurfaceDesc&	surfaceDesc, const CGlobalRetriever::CGlobalPosition& globalPosition,
-					const CGlobalRetriever& retriever, double deltaTime);
+	/// \name From UMovePrimitive
 
-	// Return the global position of the primitive
-	const CGlobalRetriever::CGlobalPosition& getGlobalPosition()
-	{
-		return _Position.getGlobalPos();
-	}
-
-private:
-
-	// Dirt the position flag. Position has changed.
-	void	dirtPos ()
-	{
-		_Flags|=DirtPosFlag;
-		dirtBB ();
-	}
-
-	// Dirt the bounding box flag.
-	void	dirtBB ()
-	{
-		// Warn container that BB has changed
-		_Container->changed (this);
-
-		_Flags|=DirtBBFlag;
-	}
-
-	// Compute precalculated data for the position
-	void precalcPos ();
-
-	// Compute precalculated data for the speed
-	void precalcSpeed ();
-
-	// Compute precalculated bounding box
-	void precalcBB (double beginTime, double endTime);
-
-	// *** Some methods to eval collisions
-	/* * NOTES:		BB for bounding box
-					OB for oriented Box
-					OC for oriented cylinder
-					P for box point
-					S for box segment
-	*/
-
-	// *** Get mass
-	
-	float getMass () const
-	{
-		// Box ?
-		if ( (_Flags&PrimitiveMask) == _2DOrientedBox )
-			return _OBData.Length[0]*_OBData.Length[1]*_Height;
-		// Cylinder ?
-		else
-		{
-			nlassert ( (_Flags&PrimitiveMask) == _2DOrientedCylinder );
-			return _OCData.Radius*(float)NLMISC::Pi*_Height;
-		}
-	}
+	void					setAbsorbtion (float attenuation);
+	void					setOrientation (double rot, uint8 worldImage);
+	void					setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage);
+	void					move (const NLMISC::CVectorD& speed, uint8 worldImage);
+	NLMISC::CVectorD		getFinalPosition (uint8 worldImage)  const;
+	const NLMISC::CVectorD&	getSpeed (uint8 worldImage) const;
+	void					insertInWorldImage (uint8 worldImage);
+	void					removeFromWorldImage (uint8 worldImage);
 
 	// Test time. Return true if tetst can be perform, false if too many test have been computed for this primitive
 	bool checkTestTime (uint32 testTime, uint32 maxTestIteration)
@@ -551,39 +377,42 @@ private:
 		return true;
 	}
 
+	// *** Get mass
+	
+	float getMass () const
+	{
+		// Box ?
+		if ( (_StaticFlags&PrimitiveMask) == _2DOrientedBox )
+			return _Length[0]*_Length[1]*_Height;
+		// Cylinder ?
+		else
+		{
+			nlassert ( (_StaticFlags&PrimitiveMask) == _2DOrientedCylinder );
+			return _Length[0]*(float)NLMISC::Pi*_Height;
+		}
+	}
 
 	// *** Primitive over primitive
 
-	// Box over box
-	bool	evalCollisionOBoverOB (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, 
-									double timeMax, double &firstContactTime, double &lastContactTime);
-
-	// Box over cylinder
-	bool	evalCollisionOBoverOC (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, 
-									double timeMax, double &firstContactTime, double &lastContactTime);
-
-	// Cylinder over cylinder
-	bool	evalCollisionOCoverOC (CMovePrimitive& other, CCollisionDesc& desc, double timeMin, 
-									double timeMax, double &firstContactTime, double &lastContactTime);
-
-	// *** Subprimitive over subprimitive
-
-	// Point over segment in OB/OB test
-	bool	evalCollisionPoverS (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint, uint numSeg);
-
-	// Point over cylinder
-	bool	evalCollisionPoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint, 
-								double &firstContactTime, double &lastContactTime);
-
-	// Segment over cylinder
-	bool	evalCollisionSoverOC (CMovePrimitive& other, CCollisionDesc& desc, uint numPoint);
-	
 private:
-	// Last primitive test time
-	uint32				_LastTestTime;
+	// The length of the 4 edges. The first is the width, the second is the depth
+	// For cylinder, the first is the radius
+	float				_Length[2];
 
-	// Iteration count
-	sint32				_IterationCount;
+	// This is the height of the box or of the cylinder.
+	float				_Height;
+
+	// Attenuation 
+	float				_Attenuation;
+
+	// Flags
+	uint16				_StaticFlags;
+
+	// Num world images
+	uint8				_NumWorldImage;
+
+	// First world images
+	uint8				_FirstWorldImage;
 
 	// Occlusion mask
 	TCollisionMask		_OcclusionMask;
@@ -594,105 +423,17 @@ private:
 	// Container of this primitive
 	CMoveContainer		*_Container;
 
-	// This position is the central bottom position for the box or for the cylinder
-	class CPosition
-	{
-	private:
-		// 3d position
-		NLMISC::CVectorD					_3dPosition;
-
-		// Global position
-		CGlobalRetriever::CGlobalPosition	_GlobalPosition;
-	public:
-		// Return the 3d position
-		const NLMISC::CVectorD&						getPos () const
-		{
-			return _3dPosition;
-		}
-
-		// Set the 3d position
-		void										setPos (const NLMISC::CVectorD& newPos)
-		{
-			_3dPosition=newPos;
-		}
-
-		// Return the global position
-		const CGlobalRetriever::CGlobalPosition&	getGlobalPos () const
-		{
-			return _GlobalPosition;
-		}
-
-		// Set the global position
-		void										setGlobalPos (const CGlobalRetriever::CGlobalPosition& globalPosition,
-																  const CGlobalRetriever& globalRetriver)
-		{
-			// Get position with global position
-			_GlobalPosition=globalPosition;
-			_3dPosition=globalRetriver.getDoubleGlobalPosition (globalPosition);
-		}
-	}					_Position;
-
-	// 3d position at t=0
-	NLMISC::CVectorD	_3dInitPosition;
-
-	// Current speed
-	NLMISC::CVectorD	_Speed;
-
-	// Time for valid getPos () position.  _Position.getPos () == _3dInitPosition + _Speed * _InitTime;
-	double				_InitTime;
-
-	// This is the height of the box or of the cylinder.
-	float				_Height;
-
-	// Attenuation 
-	float				_Attenuation;
-
-	// Flags
-	uint32				_Flags;
-
-	// Movable bounding box
-	double				_BBXMin;
-	double				_BBYMin;
-	double				_BBXMax;
-	double				_BBYMax;
-
-	// Pointer into the 4 possibles sorted lists of movable primitives. Can be NULL if not in the list
-	CMoveElement		*_MoveElement[4];
-
-	// Sorted list of modified primitives. This pointer is managed by CMoveContainer.
-	CMovePrimitive		*_NextModified;
-
 	// List of time ordered table element using this primitive
 	CCollisionOTInfo	*_RootOTInfo;
 
-	// Union for data space shared by primitive type (cylinder or box)
-	union 
-	{
-		// Data for Boxes
-		struct
-		{
-			// 2d position of the 4 points of the box at initial time.
-			double PointPosX[4];
-			double PointPosY[4];
+	// Pointer table of world images for this primitive
+	CPrimitiveWorldImage	**_WorldImages;
 
-			// The normalized direction vector of the 4 edges of the box.
-			double EdgeDirectionX[4];
-			double EdgeDirectionY[4];
+	// Last primitive test time
+	uint32				_LastTestTime;
 
-			// The length of the 4 edges. The first is the width, the second is the depth
-			float Length[2];
-
-			// The box orientation
-			double Orientation;
-		} _OBData;
-
-		// Data for Cylinders
-		struct
-		{
-			// Radius of the cylinder
-			float Radius;
-		} _OCData;
-	};
+	// Iteration count
+	sint32				_IterationCount;
 };
 
 } // NLPACS

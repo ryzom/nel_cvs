@@ -1,7 +1,7 @@
 /** \file move_container_inline.h
  * Inline functions for movable object
  *
- * $Id: move_container_inline.h,v 1.1 2001/06/08 15:10:18 legros Exp $
+ * $Id: move_container_inline.h,v 1.2 2001/06/15 09:47:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,19 +33,29 @@ namespace NLPACS
 
 // ***************************************************************************
 
-inline void CMoveContainer::changed (CMovePrimitive* primitive)
+inline void CMoveContainer::changed (CMovePrimitive* primitive, uint8 worldImage)
 {
+	
+	// Get the world image
+	CPrimitiveWorldImage *wI;
+	
+	// Primitive noncollisionable ?
+	if (primitive->isNonCollisionable())
+		wI=primitive->getWorldImage (0);
+	else
+		wI=primitive->getWorldImage (worldImage);
+
 	// Not yet in the list ?
-	if (!primitive->isInModifiedListFlag ())
+	if (!wI->isInModifiedListFlag ())
 	{
 		// Flag it
-		primitive->setInModifiedListFlag (true);
+		wI->setInModifiedListFlag (true);
 		
 		// Link it
-		primitive->linkInModifiedList (_ChangedRoot);
+		wI->linkInModifiedList (_ChangedRoot[worldImage]);
 
 		// Change root list
-		_ChangedRoot=primitive;
+		_ChangedRoot[worldImage]=primitive;
 	}
 }
 

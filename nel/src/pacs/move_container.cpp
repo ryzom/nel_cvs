@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.6 2001/06/08 15:38:28 legros Exp $
+ * $Id: move_container.cpp,v 1.7 2001/06/15 09:47:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,20 +56,33 @@ void CMoveContainer::clear ()
 	// Clear primitive set
 	_PrimitiveSet.clear ();
 
+	// Clear root changed
+	_ChangedRoot.clear ();
+
+	// Clear static world image set
+	_StaticWorldImage.clear ();
+
 	// Clear cell array
 	_VectorCell.clear ();
+
+	// Clear time ot
+	_TimeOT.clear ();
 }
 
 // ***************************************************************************
 
 void CMoveContainer::init (double xmin, double ymin, double xmax, double ymax, uint widthCellCount, uint heightCellCount, 
-						   double primitiveMaxSize, uint maxIteration, uint otSize)
+						   double primitiveMaxSize, uint8 numWorldImage, uint maxIteration, uint otSize)
 {
 	// Clear arrays
 	clear ();
 
+	// Create world images
+	_ChangedRoot.resize (numWorldImage);
+	for (uint i=0; i<numWorldImage; i++)
+		_ChangedRoot[i]=NULL;
+
 	// Not in test mode
-	_ChangedRoot=NULL;
 	_Retriever=NULL;
 
 	// Element size
@@ -90,7 +103,9 @@ void CMoveContainer::init (double xmin, double ymin, double xmax, double ymax, u
 	_CellHeight=(_Ymax - _Ymin)/(double)_CellCountHeight;
 
 	// Cell array
-	_VectorCell.resize (_CellCountWidth * _CellCountHeight);
+	_VectorCell.resize (numWorldImage);
+	for (uint j=0; j<numWorldImage; j++)
+		_VectorCell[j].resize (_CellCountWidth * _CellCountHeight);
 
 	// resize OT
 	_OtSize=otSize;
@@ -110,7 +125,7 @@ void CMoveContainer::init (double xmin, double ymin, double xmax, double ymax, u
 // ***************************************************************************
 
 void CMoveContainer::init (CGlobalRetriever* retriever, uint widthCellCount, uint heightCellCount, double primitiveMaxSize, 
-		uint maxIteration, uint otSize)
+		uint8 numWorldImage, uint maxIteration, uint otSize)
 {
 	// Get min max of the global retriever BB
 	CVector min=retriever->getBBox().getMin();
@@ -123,12 +138,12 @@ void CMoveContainer::init (CGlobalRetriever* retriever, uint widthCellCount, uin
 	double ymax=max.y;
 
 	// Init
-	init (xmin, ymin, xmax, ymax, widthCellCount, heightCellCount, primitiveMaxSize, maxIteration, otSize);
+	init (xmin, ymin, xmax, ymax, widthCellCount, heightCellCount, primitiveMaxSize, numWorldImage, maxIteration, otSize);
 }
 
 // ***************************************************************************
 
-void  CMoveContainer::evalCollision (double deltaTime)
+void  CMoveContainer::evalCollision (double deltaTime, uint8 worldImage)
 {
 	// New test time
 	_TestTime++;
@@ -140,7 +155,7 @@ void  CMoveContainer::evalCollision (double deltaTime)
 	_Triggers.clear ();
 
 	// Update the bounding box and position of modified primitives
-	updatePrimitives (0.f);
+	updatePrimitives (0.f, worldImage);
 
 #ifdef NL_DEBUG
 	// Check list integrity
@@ -148,16 +163,16 @@ void  CMoveContainer::evalCollision (double deltaTime)
 #endif // NL_DEBUG
 
 	// Eval all collisions
-	evalAllCollisions (0.f);
+	evalAllCollisions (0.f, worldImage);
 
 	// Clear modified list
-	clearModifiedList ();
+	clearModifiedList (worldImage);
 
 	// Get first collision
 	_PreviousCollisionNode = &_TimeOT[0];
 
 	// Modified list is empty at this point
-	nlassert (_ChangedRoot==NULL);
+	nlassert (_ChangedRoot[worldImage]==NULL);
 
 	// Previous node is a 'hard' OT node
 	nlassert (!_PreviousCollisionNode->isInfo());
@@ -181,20 +196,20 @@ void  CMoveContainer::evalCollision (double deltaTime)
 		double newTime=nextCollision->getCollisionTime ();
 
 		// Remove modified objects from the OT
-		removeModifiedFromOT ();
+		removeModifiedFromOT (worldImage);
 
 		// Must have been removed
 		nlassert (nextCollision->getPrevious ()==NULL);
 		nlassert (nextCollision->CCollisionOT::getNext ()==NULL);
 
 		// Update the bounding box and position of modified primitives
-		updatePrimitives (newTime);
+		updatePrimitives (newTime, worldImage);
 
 		// Eval all collisions of modified objects for the new delta t
-		evalAllCollisions (newTime);
+		evalAllCollisions (newTime, worldImage);
 
 		// Clear modified list
-		clearModifiedList ();
+		clearModifiedList (worldImage);
 
 		// Get next collision
 		nextCollision=_PreviousCollisionNode->getNextInfo ();
@@ -214,7 +229,7 @@ void  CMoveContainer::evalCollision (double deltaTime)
 
 // ***************************************************************************
 
-bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed, double deltaTime)
+bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed, double deltaTime, uint8 worldImage)
 {
 	// Cast
 	nlassert (dynamic_cast<CMovePrimitive*>(primitive));
@@ -226,28 +241,63 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 	// Delta time
 	_DeltaTime=deltaTime;
 
+	// Get the world image primitive
+	uint8 primitiveWorldImage;
+	CPrimitiveWorldImage *wI;
+	if (prim->isNonCollisionable ())
+	{
+		wI=prim->getWorldImage (0);
+		primitiveWorldImage=worldImage;
+	}
+	else
+	{
+		wI=prim->getWorldImage (worldImage);
+		primitiveWorldImage=worldImage;
+	}
+
 	// Backup speed
-	CVectorD oldSpeed=prim->getSpeed ();
+	CVectorD oldSpeed=wI->getSpeed ();
 
 	// Set speed
-	prim->move (speed);
+	wI->move (speed, *this, *prim, primitiveWorldImage);
 
 	// Update the bounding box and position of the primitive
-	prim->update (0, _DeltaTime);
+	wI->update (0, _DeltaTime, *prim);
 
 	// Compute cells overlaped by the primitive
-	updateCells (prim);
+	if (!prim->isNonCollisionable ())
+		updateCells (prim, worldImage);
 
 #ifdef NL_DEBUG
 	// Check list integrity
 	checkSortedList ();
 #endif // NL_DEBUG
 
-	// Eval collisions
-	bool result=evalOneCollision (0, prim, true);
+	// Result
+	bool result=false;
 
-	// Backup speed
-	prim->move (oldSpeed);
+	// Eval first each static world images
+	std::set<uint8>::iterator ite=_StaticWorldImage.begin();
+	while (ite!=_StaticWorldImage.end())
+	{
+		// Eval in this world image
+		result=evalOneCollision (0, prim, *ite, primitiveWorldImage, true);
+
+		// If found, abort
+		if (result)
+			break;
+
+		// Next world image
+		ite++;
+	}
+
+	// Eval collisions if not found and not tested
+	if ((!result) && (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end()))
+		result=evalOneCollision (0, prim, worldImage, primitiveWorldImage, true);
+
+	// Backup speed only if the primitive is inserted in the world image
+	if (prim->isInserted (primitiveWorldImage))
+		wI->move (oldSpeed, *this, *prim, primitiveWorldImage);
 
 #ifdef NL_DEBUG
 	// OT must be cleared
@@ -266,38 +316,53 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 
 // ***************************************************************************
 
-void CMoveContainer::updatePrimitives (double beginTime)
+void CMoveContainer::updatePrimitives (double beginTime, uint8 worldImage)
 {
 	// For each changed primitives
-	CMovePrimitive *changed=_ChangedRoot;
+	CMovePrimitive *changed=_ChangedRoot[worldImage];
 	while (changed)
 	{
-		// Force the build of the bounding box
-		changed->update (beginTime, _DeltaTime);
+		// Get the primitive world image
+		CPrimitiveWorldImage *wI;
+		if (changed->isNonCollisionable())
+			wI=changed->getWorldImage (0);
+		else
+			wI=changed->getWorldImage (worldImage);
 
-		// Compute cells overlaped by the primitive
-		updateCells (changed);
+		// Force the build of the bounding box
+		wI->update (beginTime, _DeltaTime, *changed);
+
+		// Is inserted in this world image ?
+		if (changed->isInserted (worldImage))
+		{
+
+			// Compute cells overlaped by the primitive
+			updateCells (changed, worldImage);
+		}
 
 		// Next primitive
-		changed=changed->getNextModified();
+		changed=wI->getNextModified ();
 	}
 }
 
 // ***************************************************************************
 
-void CMoveContainer::updateCells (CMovePrimitive *primitive)
+void CMoveContainer::updateCells (CMovePrimitive *primitive, uint8 worldImage)
 {
+	// Get the primitive world image
+	CPrimitiveWorldImage *wI=primitive->getWorldImage (worldImage);
+
 	// Check BB width not too large
-	nlassertonce (primitive->getBBXMax() - primitive->getBBXMin() < _CellWidth);
+	nlassertonce (wI->getBBXMax() - wI->getBBXMin() < _CellWidth);
 
 	// Check BB height not too large
-	nlassertonce (primitive->getBBYMax() - primitive->getBBYMin() < _CellHeight);
+	nlassertonce (wI->getBBYMax() - wI->getBBYMin() < _CellHeight);
 
 	// Get coordinate in the cell array
-	int minx=(int)floor ((primitive->getBBXMin() - _Xmin) / _CellWidth);
-	int miny=(int)floor ((primitive->getBBYMin() - _Ymin) / _CellHeight);
-	int maxx=(int)floor ((primitive->getBBXMax() - _Xmin) / _CellWidth);
-	int maxy=(int)floor ((primitive->getBBYMax() - _Ymin) / _CellHeight);
+	int minx=(int)floor ((wI->getBBXMin() - _Xmin) / _CellWidth);
+	int miny=(int)floor ((wI->getBBYMin() - _Ymin) / _CellHeight);
+	int maxx=(int)floor ((wI->getBBXMax() - _Xmin) / _CellWidth);
+	int maxy=(int)floor ((wI->getBBYMax() - _Ymin) / _CellHeight);
 
 	// Born
 	if (minx<0)
@@ -320,7 +385,7 @@ void CMoveContainer::updateCells (CMovePrimitive *primitive)
 	for (i=0; i<4; i++)
 	{
 		// Element
-		CMoveElement *elm = primitive->getMoveElement (i);
+		CMoveElement *elm = wI->getMoveElement (i);
 
 		// Old element in this cell ?
 		if ( elm )
@@ -335,7 +400,7 @@ void CMoveContainer::updateCells (CMovePrimitive *primitive)
 			if ( (elm->X < minx) || (elm->X > maxx) || (elm->Y < miny) || (elm->Y > maxy) )
 			{
 				// Yes remove it
-				primitive->removeMoveElement (i);
+				wI->removeMoveElement (i, *this, worldImage);
 			}
 			else
 			{
@@ -345,7 +410,7 @@ void CMoveContainer::updateCells (CMovePrimitive *primitive)
 
 				// Update position
 #ifndef TEST_CELL
-				_VectorCell[elm->X+elm->Y*_CellCountWidth].updateSortedLists (elm);
+				_VectorCell[worldImage][elm->X+elm->Y*_CellCountWidth].updateSortedLists (elm, worldImage);
 #endif TEST_CELL
 
 				// Check found cells
@@ -371,7 +436,7 @@ void CMoveContainer::updateCells (CMovePrimitive *primitive)
 			double cy=((double)y+0.5f)*_CellHeight+_Ymin;
 
 			// Add it in the list
-			primitive->addMoveElement (_VectorCell[x+y*_CellCountWidth], (uint16)x, (uint16)y, cx, cy);
+			wI->addMoveElement (_VectorCell[worldImage][x+y*_CellCountWidth], (uint16)x, (uint16)y, cx, cy, primitive, *this, worldImage);
 		}
 
 		// Next cell
@@ -381,24 +446,107 @@ void CMoveContainer::updateCells (CMovePrimitive *primitive)
 
 // ***************************************************************************
 
-void CMoveContainer::clearModifiedList ()
+void CMoveContainer::getCells (CMovePrimitive *primitive, uint8 worldImage, uint8 primitiveWorldImage, CMoveElement **elementArray)
+{
+	// Get the primitive world image
+	CPrimitiveWorldImage *wI;
+	if (primitive->isNonCollisionable())
+		wI=primitive->getWorldImage (0);	
+	else
+		wI=primitive->getWorldImage (primitiveWorldImage);
+
+	// Check BB width not too large
+	nlassertonce (wI->getBBXMax() - wI->getBBXMin() < _CellWidth);
+
+	// Check BB height not too large
+	nlassertonce (wI->getBBYMax() - wI->getBBYMin() < _CellHeight);
+
+	// Get coordinate in the cell array
+	int minx=(int)floor ((wI->getBBXMin() - _Xmin) / _CellWidth);
+	int miny=(int)floor ((wI->getBBYMin() - _Ymin) / _CellHeight);
+	int maxx=(int)floor ((wI->getBBXMax() - _Xmin) / _CellWidth);
+	int maxy=(int)floor ((wI->getBBYMax() - _Ymin) / _CellHeight);
+
+	// Born
+	if (minx<0)
+		minx=0;
+	if (miny<0)
+		miny=0;
+	if (maxx>=(int)_CellCountWidth)
+		maxx=(int)_CellCountWidth-1;
+	if (maxy>=(int)_CellCountHeight)
+		maxy=(int)_CellCountHeight-1;
+
+	maxx=std::min (minx+1, maxx);
+	maxy=std::min (miny+1, maxy);
+
+	// For each case selected
+	int x, y;
+	int i=0;
+	for (y=miny; y<=(int)maxy; y++)
+	for (x=minx; x<=(int)maxx; x++)
+	{
+		// Check the formula
+		nlassert ((int)i == (x - minx + ((y - miny) << (maxx-minx)) ));
+
+		// Center of the cell
+		double cx=((double)x+0.5f)*_CellWidth+_Xmin;
+
+		// Primitive center
+		double pcx=(wI->getBBXMin()+wI->getBBXMax())/2.f;
+
+		elementArray[i]->Primitive=primitive;
+		elementArray[i]->X=x;
+		elementArray[i]->Y=y;
+		// Insert in left or right ?
+		if (pcx<cx)
+		{
+			// In the left
+			elementArray[i]->NextX=_VectorCell[worldImage][x+y*_CellCountWidth].getFirstX ();
+			elementArray[i]->PreviousX=NULL;
+		}
+		else
+		{
+			// In the right
+			elementArray[i]->PreviousX=_VectorCell[worldImage][x+y*_CellCountWidth].getLastX ();
+			elementArray[i]->NextX=NULL;
+		}
+
+		// Next cell
+		i++;
+	}
+
+	// Erase last array element
+	for (; i<4; i++)
+	{
+		elementArray[i]=NULL;
+	}
+}
+
+// ***************************************************************************
+
+void CMoveContainer::clearModifiedList (uint8 worldImage)
 {
 	// For each changed primitives
-	CMovePrimitive *changed=_ChangedRoot;
+	CMovePrimitive *changed=_ChangedRoot[worldImage];
 	while (changed)
 	{
-		// Copy pointer
-		CMovePrimitive *primitive=changed;
+		// Get the world image primitive
+		CPrimitiveWorldImage *wI;
+		if (changed->isNonCollisionable())
+			wI=changed->getWorldImage (0);
+		else
+			wI=changed->getWorldImage (worldImage);
 		
 		// Next primitive
-		changed=changed->getNextModified ();
+		changed=wI->getNextModified ();
 
 		// Remove it from the list
-		primitive->setInModifiedListFlag (false);
+		wI->setInModifiedListFlag (false);
 	}
 
 	// Empty list
-	_ChangedRoot=NULL;
+	_ChangedRoot[worldImage]=NULL;
 }
 
 // ***************************************************************************
@@ -418,20 +566,27 @@ void CMoveContainer::checkSortedList ()
 
 // ***************************************************************************
 
-bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primitive, bool testMove)
+bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, uint8 primitiveWorldImage, bool testMove)
 {
 	// Find its collisions
 	bool found=false;
+
+	// Get the primitive world image
+	CPrimitiveWorldImage *wI;
+	if (primitive->isNonCollisionable())
+		wI=primitive->getWorldImage (0);
+	else
+		wI=primitive->getWorldImage (primitiveWorldImage);
 
 	// Test its static collision
 	if (_Retriever)
 	{
 		// Delta pos..
-		CVector delta=primitive->getSpeed ();
+		CVector delta=wI->getSpeed ();
 		delta*=(float)(_DeltaTime-beginTime);
 
 		// Test retriever with the primitive
-		const TCollisionSurfaceDescVector *result=primitive->evalCollision (*_Retriever, _SurfaceTemp, delta, _TestTime, _MaxTestIteration);
+		const TCollisionSurfaceDescVector *result=wI->evalCollision (*_Retriever, _SurfaceTemp, delta, _TestTime, _MaxTestIteration, *primitive);
 		if (result)
 		{
 			// Size of the array
@@ -466,7 +621,7 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 					else
 					{
 						// OK, collision
-						newCollision (primitive, desc, delta);
+						newCollision (primitive, desc, delta, primitiveWorldImage);
 
 						// One collision found
 						found=true;
@@ -476,11 +631,42 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 		}
 	}
 
+	// Element table
+	CMoveElement	tableNotInserted[4];
+	CMoveElement	*table[4];
+
+	// Single test ?
+	bool singleTest=testMove;
+	
+	// Is in world image
+	if ((worldImage==primitiveWorldImage) && wI->isInWorldImageFlag())
+	{
+		// Get move element table from the primitive
+		table[0]=wI->getMoveElement (0);
+		table[1]=wI->getMoveElement (1);
+		table[2]=wI->getMoveElement (2);
+		table[3]=wI->getMoveElement (3);
+	}
+	else
+	{
+		// Set table pointers
+		table[0]=tableNotInserted+0;
+		table[1]=tableNotInserted+1;
+		table[2]=tableNotInserted+2;
+		table[3]=tableNotInserted+3;
+
+		// Get cells
+		getCells (primitive, worldImage, primitiveWorldImage, table);
+
+		// Force the test
+		singleTest=true;
+	}
+
 	// For each move element
 	for (uint i=0; i<4; i++)
 	{
 		// Get the element
-		CMoveElement	*elm=primitive->getMoveElement (i);
+		CMoveElement	*elm=table[i];
 
 		// Element valid ?
 		if (elm)
@@ -493,49 +679,28 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 			CMoveElement	*other=elm->PreviousX;
 			nlassert (other!=elm);
 
-			while (other && (primitive->getBBXMin() - other->Primitive->getBBXMin() < _PrimitiveMaxSize) )
+			while (other && (wI->getBBXMin() - other->Primitive->getWorldImage(worldImage)->getBBXMin() < _PrimitiveMaxSize) )
 			{
 				// Other primitive
 				CMovePrimitive	*otherPrimitive=other->Primitive;
+				CPrimitiveWorldImage *otherWI=otherPrimitive->getWorldImage (worldImage);
 				nlassert (otherPrimitive!=primitive);
 
 				// Continue the check if the other primitive is not int the modified list or if its pointer is higher than primitive
-				if ( testMove || ( (!otherPrimitive->isInModifiedListFlag ()) || (primitive<otherPrimitive) ) )
+				if ( singleTest || ( (!otherWI->isInModifiedListFlag ()) || (primitive<otherPrimitive) ) )
 				{
 					// Look if valid in X
-					if (primitive->getBBXMin() < otherPrimitive->getBBXMax())
+					if (wI->getBBXMin() < otherWI->getBBXMax())
 					{
 						// Look if valid in Y
-						if ( (primitive->getBBYMin() < otherPrimitive->getBBYMax()) && (otherPrimitive->getBBYMin() < primitive->getBBYMax()) )
+						if ( (wI->getBBYMin() < otherWI->getBBYMax()) && (otherWI->getBBYMin() < wI->getBBYMax()) )
 						{
-							// Test the primitive
-							CCollisionDesc desc;
-							double firstTime, lastTime;
-
-							// Collision
-							if (primitive->evalCollision (*otherPrimitive, desc, beginTime, _DeltaTime, _TestTime, _MaxTestIteration, 
-														firstTime, lastTime))
+							if (evalFinalCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
+								primitiveWorldImage, worldImage))
 							{
-								// Enter or exit
-								bool enter = (beginTime<=firstTime) && (firstTime<_DeltaTime);
-								bool exit = (beginTime<=lastTime) && (lastTime<_DeltaTime);
-								bool collision = ( beginTime<=((firstTime+lastTime)/2) ) && (firstTime<=_DeltaTime);
-
-								// Test move ?
-								if (collision)
-								{
-									if (testMove) 
-										return true;
-									else
-									{
-										// TODO: make new collision when collision==false to raise triggers
-										// OK, collision
-										newCollision (primitive, otherPrimitive, desc, collision, enter, exit);
-
-										// Collision
-										found=true;
-									}
-								}
+								if (testMove)
+									return true;
+								found=true;
 							}
 						}
 					}
@@ -549,46 +714,25 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 			other=elm->NextX;
 
 			// Primitive to the right
-			while (other && (other->Primitive->getBBXMin() < primitive->getBBXMax()) )
+			while (other && (other->Primitive->getWorldImage(worldImage)->getBBXMin() < wI->getBBXMax()) )
 			{
 				// Other primitive
 				CMovePrimitive	*otherPrimitive=other->Primitive;
+				CPrimitiveWorldImage *otherWI=otherPrimitive->getWorldImage (worldImage);
 				nlassert (otherPrimitive!=primitive);
 
 				// Continue the check if the other primitive is not in the modified list or if its pointer is higher than primitive
-				if ( testMove || ( (!otherPrimitive->isInModifiedListFlag ()) || (primitive<otherPrimitive) ) )
+				if ( singleTest || ( (!otherWI->isInModifiedListFlag ()) || (primitive<otherPrimitive) ) )
 				{
 					// Look if valid in Y
-					if ( (primitive->getBBYMin() < otherPrimitive->getBBYMax()) && (otherPrimitive->getBBYMin() < primitive->getBBYMax()) )
+					if ( (wI->getBBYMin() < otherWI->getBBYMax()) && (otherWI->getBBYMin() < wI->getBBYMax()) )
 					{
-						// Test the primitive
-						CCollisionDesc desc;
-						double firstTime, lastTime;
-
-						// Collision
-						if (primitive->evalCollision (*otherPrimitive, desc, beginTime, _DeltaTime, _TestTime, _MaxTestIteration, 
-													firstTime, lastTime))
+						if (evalFinalCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
+							primitiveWorldImage, worldImage))
 						{
-							// Enter or exit
-							bool enter = (beginTime<=firstTime) && (firstTime<_DeltaTime);
-							bool exit = (beginTime<=lastTime) && (lastTime<_DeltaTime);
-							bool collision = ( beginTime<=((firstTime+lastTime)/2) ) && (firstTime<=_DeltaTime);
-
-							// Test move ?
-							if (collision)
-							{
-								if (testMove) 
-									return true;
-								else
-								{
-									// TODO: make new collision when collision==false to raise triggers
-									// OK, collision
-									newCollision (primitive, otherPrimitive, desc, collision, enter, exit);
-
-									// Collision
-									found=true;
-								}
-							}
+							if (testMove)
+								return true;
+							found=true;
 						}
 					}
 				}
@@ -605,12 +749,12 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 		if (_Retriever)
 		{
 			// Do move
-			primitive->doMove (*_Retriever, _SurfaceTemp, _DeltaTime);
+			wI->doMove (*_Retriever, _SurfaceTemp, _DeltaTime);
 		}
 		else
 		{
 			// Do move
-			primitive->doMove (_DeltaTime);
+			wI->doMove (_DeltaTime);
 		}
 	}
 
@@ -619,25 +763,90 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 
 // ***************************************************************************
 
-void CMoveContainer::evalAllCollisions (double beginTime)
+bool CMoveContainer::evalFinalCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 
+											CPrimitiveWorldImage *wI, CPrimitiveWorldImage *otherWI, bool testMove,
+											uint8 firstWorldImage, uint8 secondWorldImage)
+{
+	// Test the primitive
+	CCollisionDesc desc;
+	double firstTime, lastTime;
+
+	// Collision
+	if (wI->evalCollision (*otherWI, desc, beginTime, _DeltaTime, _TestTime, _MaxTestIteration, 
+								firstTime, lastTime, *primitive, *otherPrimitive))
+	{
+		// Enter or exit
+		bool enter = (beginTime<=firstTime) && (firstTime<_DeltaTime);
+		bool exit = (beginTime<=lastTime) && (lastTime<_DeltaTime);
+		bool collision = ( beginTime<=((firstTime+lastTime)/2) ) && (firstTime<=_DeltaTime);
+
+		// Test move ?
+		if (collision)
+		{
+			if (testMove) 
+				return true;
+			else
+			{
+				// TODO: make new collision when collision==false to raise triggers
+				// OK, collision
+				newCollision (primitive, otherPrimitive, desc, collision, enter, exit, firstWorldImage, secondWorldImage);
+
+				// Collision
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 {
 	// First primitive
-	CMovePrimitive	*primitive=_ChangedRoot;
+	CMovePrimitive	*primitive=_ChangedRoot[worldImage];
 
 	// For each modified primitive
 	while (primitive)
 	{
-		// Eval collision
-		evalOneCollision (beginTime, primitive);
+		// Get the primitive world image
+		uint8 primitiveWorldImage;
+		CPrimitiveWorldImage *wI;
+		if (primitive->isNonCollisionable ())
+		{
+			wI=primitive->getWorldImage (0);
+			primitiveWorldImage=worldImage;
+		}
+		else
+		{
+			wI=primitive->getWorldImage (worldImage);
+			primitiveWorldImage=worldImage;
+		}
+
+		// Eval collision in each static world image
+		std::set<uint8>::iterator ite=_StaticWorldImage.begin();
+		while (ite!=_StaticWorldImage.end())
+		{
+			// Eval in this world image
+			evalOneCollision (beginTime, primitive, *ite, primitiveWorldImage, false);
+
+			// Next world image
+			ite++;
+		}
+
+		// Eval collision in the world image if not already tested
+		if (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end())
+			evalOneCollision (beginTime, primitive, worldImage, primitiveWorldImage, false);
 
 		// Next primitive
-		primitive=primitive->getNextModified ();
+		primitive=wI->getNextModified ();
 	}
 }
 
 // ***************************************************************************
 
-void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, bool collision, bool enter, bool exit)
+void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, bool collision, bool enter, bool exit,
+								   uint firstWorldImage, uint secondWorldImage)
 {
 	// Get an ordered time index. Always round to the future.
 	int index=(int)(ceil (desc.ContactTime*(double)_OtSize/_DeltaTime) );
@@ -654,7 +863,7 @@ void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second
 
 		// Build info
 		CCollisionOTDynamicInfo *info = allocateOTDynamicInfo ();
-		info->init (first, second, desc, collision, enter, exit);
+		info->init (first, second, desc, collision, enter, exit, firstWorldImage, secondWorldImage);
 
 		// Add in the primitive list
 		first->addCollisionOTInfo (info);
@@ -671,7 +880,7 @@ void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second
 
 // ***************************************************************************
 
-void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, const CVector& delta)
+void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, const CVector& delta, uint8 worldImage)
 {
 	// Check
 	nlassert (_Retriever);
@@ -686,6 +895,9 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 	// If in time
 	if (index<(int)_OtSize)
 	{
+		// Get the world image
+		CPrimitiveWorldImage *wI=first->getWorldImage (worldImage);
+
 		// Rounded time
 		double finalTime=(double)index * _DeltaTime / (double)_OtSize;
 
@@ -696,15 +908,15 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 		double t=desc.ContactTime;
 
 		// Time of the collision.
-		t-=NELPACS_DIST_BACK/first->getSpeed().norm();
+		t-=NELPACS_DIST_BACK/wI->getSpeed().norm();
 		t=std::max(t, 0.0);
 		t/=_DeltaTime;
 
 		// Make a new globalposition
-		CGlobalRetriever::CGlobalPosition endPosition=_Retriever->doMove (first->getGlobalPosition(), delta, (float)t, _SurfaceTemp, false);
+		CGlobalRetriever::CGlobalPosition endPosition=_Retriever->doMove (wI->getGlobalPosition(), delta, (float)t, _SurfaceTemp, false);
 
 		// Init the info descriptor
-		info->init (first, desc, endPosition, t);
+		info->init (first, desc, endPosition, t, worldImage);
 
 		// Add in the primitive list
 		first->addCollisionOTInfo (info);
@@ -774,17 +986,24 @@ void CMoveContainer::clearOT ()
 
 // ***************************************************************************
 
-void CMoveContainer::removeModifiedFromOT ()
+void CMoveContainer::removeModifiedFromOT (uint8 worldImage)
 {
 	// For each changed primitives
-	CMovePrimitive *changed=_ChangedRoot;
+	CMovePrimitive *changed=_ChangedRoot[worldImage];
 	while (changed)
 	{
 		// Remove from ot list
 		changed->removeCollisionOTInfo ();
+
+		// Get the primitive world image
+		CPrimitiveWorldImage *wI;
+		if (changed->isNonCollisionable())
+			wI=changed->getWorldImage (0);
+		else
+			wI=changed->getWorldImage (worldImage);
 		
 		// Next primitive
-		changed=changed->getNextModified ();
+		changed=wI->getNextModified ();
 	}
 }
 
@@ -813,10 +1032,10 @@ void CMoveContainer::freeAllOTInfo ()
 
 // ***************************************************************************
 
-CMovePrimitive *CMoveContainer::allocatePrimitive ()
+CMovePrimitive *CMoveContainer::allocatePrimitive (uint8 firstWorldImage, uint8 numWorldImage)
 {
 	// Simply allocate
-	return new CMovePrimitive (this);
+	return new CMovePrimitive (this, firstWorldImage, numWorldImage);
 }
 
 // ***************************************************************************
@@ -825,6 +1044,34 @@ void CMoveContainer::freePrimitive (CMovePrimitive *primitive)
 {
 	// Simply deallocate
 	delete primitive;
+}
+
+// ***************************************************************************
+
+CPrimitiveWorldImage	**CMoveContainer::allocateWorldImagesPtrs (uint numPtrs)
+{
+	return new CPrimitiveWorldImage*[numPtrs];
+}
+
+// ***************************************************************************
+
+void CMoveContainer::freeWorldImagesPtrs (CPrimitiveWorldImage **ptrs)
+{
+		delete [] ptrs;
+}
+
+// ***************************************************************************
+
+CPrimitiveWorldImage	*CMoveContainer::allocateWorldImage ()
+{
+	return new CPrimitiveWorldImage;
+}
+
+// ***************************************************************************
+
+void CMoveContainer::freeWorldImage (CPrimitiveWorldImage *worldImage)
+{
+	delete worldImage;
 }
 
 // ***************************************************************************
@@ -852,16 +1099,30 @@ void	UMoveContainer::deleteMoveContainer (UMoveContainer	*container)
 
 // ***************************************************************************
 
-UMovePrimitive *CMoveContainer::addPrimitive ()
+UMovePrimitive *CMoveContainer::addCollisionablePrimitive (uint8 firstWorldImage, uint8 numWorldImage)
 {
 	// Allocate primitive
-	CMovePrimitive *primitive=allocatePrimitive ();
+	CMovePrimitive *primitive=allocatePrimitive (firstWorldImage, numWorldImage);
 
 	// Add into the set
 	_PrimitiveSet.insert (primitive);
 
-	// Flag it
-	changed (primitive);
+	// Return it
+	return primitive;
+}
+
+// ***************************************************************************
+
+UMovePrimitive *CMoveContainer::addNonCollisionablePrimitive ()
+{
+	// Allocate primitive
+	CMovePrimitive *primitive=allocatePrimitive (0, 1);
+	
+	// Set as noncollisionable
+	primitive->setNonCollisionable (true);
+	
+	// Add into the set
+	_PrimitiveSet.insert (primitive);
 
 	// Return it
 	return primitive;
@@ -874,52 +1135,66 @@ void CMoveContainer::removePrimitive (UMovePrimitive* primitive)
 	// CMovePrimitive pointer
 	CMovePrimitive *prim=(CMovePrimitive*)primitive;
 
-	// In modified list ?
-	if (prim->isInModifiedListFlag ())
-		// Remove from modified list
-		removeFromModifiedList (prim);
+	// Get the primitive world image
+	for (uint8 i=0; i<prim->getNumWorldImage (); i++)
+	{
+		// World image
+		uint8 worldImage=prim->getFirstWorldImage ()+i;
+
+		// Get primitive world image
+		CPrimitiveWorldImage *wI=prim->getWorldImage (worldImage);
+
+		// In modified list ?
+		if (wI->isInModifiedListFlag ())
+			// Remove from modified list
+			removeFromModifiedList (prim, worldImage);
+	}
 
 	// Remove from the set
 	_PrimitiveSet.erase (prim);
 
 	// Erase it
-	delete prim;
+	freePrimitive (prim);
 }
 
 // ***************************************************************************
 
-void CMoveContainer::removeFromModifiedList (CMovePrimitive* primitive)
+void CMoveContainer::removeFromModifiedList (CMovePrimitive* primitive, uint8 worldImage)
 {
 	// For each changed primitives
-	CMovePrimitive *changed=_ChangedRoot;
-	CMovePrimitive *previous=NULL;
+	CMovePrimitive *changed=_ChangedRoot[worldImage];
+	CPrimitiveWorldImage *previous=NULL;
+	CPrimitiveWorldImage *wI=primitive->getWorldImage (worldImage);
 
 	while (changed)
 	{
+		// Get the primitive world image
+		CPrimitiveWorldImage *changedWI=changed->getWorldImage (worldImage);
+
 		// Remove from ot list
 		if (changed==primitive)
 		{
 			// There is a previous primitive ?
 			if (previous)
-				previous->linkInModifiedList (primitive->getNextModified ());
+				previous->linkInModifiedList (wI->getNextModified ());
 			else
-				_ChangedRoot=primitive->getNextModified ();
+				_ChangedRoot[worldImage]=wI->getNextModified ();
 
 			// Unlink
-			primitive->linkInModifiedList (NULL);
-			primitive->setInModifiedListFlag (false);
+			wI->linkInModifiedList (NULL);
+			wI->setInModifiedListFlag (false);
 			break;
 		}
 		
 		// Next primitive
-		previous=changed;
-		changed=changed->getNextModified ();
+		previous=changedWI;
+		changed=changedWI->getNextModified ();
 	}
 }
 
 // ***************************************************************************
-
-void CMoveContainer::unlinkMoveElement  (CMoveElement *element)
+ 
+void CMoveContainer::unlinkMoveElement  (CMoveElement *element, uint8 worldImage)
 {
 	// Some checks
 	nlassert (element->X>=0);
@@ -928,9 +1203,9 @@ void CMoveContainer::unlinkMoveElement  (CMoveElement *element)
 	nlassert (element->Y<_CellCountHeight);
 
 	// Unlink it
-	CMoveCell &cell=_VectorCell[element->X+element->Y*_CellCountWidth];
+	CMoveCell &cell=_VectorCell[worldImage][element->X+element->Y*_CellCountWidth];
 	cell.unlinkX (element);
-	cell.unlinkY (element);
+	//cell.unlinkY (element);
 }
 
 // ***************************************************************************
@@ -949,9 +1224,12 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 		// Cast
 		const CCollisionOTStaticInfo *staticInfo=static_cast<const CCollisionOTStaticInfo*> (&first);
 
+		// Get the primitive world image
+		CPrimitiveWorldImage *wI=staticInfo->getPrimitive ()->getWorldImage (staticInfo->getWorldImage());
+
 		// Dynamic collision
-		staticInfo->getPrimitive ()->reaction ( staticInfo->getCollisionDesc (), staticInfo->getGlobalPosition (),
-														*_Retriever, staticInfo->getDeltaTime() );
+		wI->reaction ( staticInfo->getCollisionDesc (), staticInfo->getGlobalPosition (),
+						*_Retriever, staticInfo->getDeltaTime(), *staticInfo->getPrimitive ());
 	}
 	else
 	{
@@ -961,9 +1239,23 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 		// Cast
 		const CCollisionOTDynamicInfo *dynInfo=static_cast<const CCollisionOTDynamicInfo*> (&first);
 
+		// Get the primitives world image
+		CPrimitiveWorldImage *firstWI;
+		if (dynInfo->getFirstPrimitive ()->isNonCollisionable ())
+			firstWI=dynInfo->getFirstPrimitive ()->getWorldImage (0);
+		else
+			firstWI=dynInfo->getFirstPrimitive ()->getWorldImage (dynInfo->getFirstWorldImage());
+
+		CPrimitiveWorldImage *secondWI;
+		if (dynInfo->getSecondPrimitive ()->isNonCollisionable ())
+			secondWI=dynInfo->getSecondPrimitive ()->getWorldImage (0);
+		else
+			secondWI=dynInfo->getSecondPrimitive ()->getWorldImage (dynInfo->getSecondWorldImage());
+
 		// Dynamic collision
-		dynInfo->getFirstPrimitive ()->reaction ( *(dynInfo->getSecondPrimitive ()), dynInfo->getCollisionDesc (),
-			_Retriever, _SurfaceTemp, dynInfo->isCollision());
+		firstWI->reaction ( *secondWI, dynInfo->getCollisionDesc (), _Retriever, _SurfaceTemp, dynInfo->isCollision(), 
+							*dynInfo->getFirstPrimitive (), *dynInfo->getSecondPrimitive (), this, dynInfo->getFirstWorldImage(),
+							dynInfo->getSecondWorldImage() );
 
 		// Trigger ?
 		if (dynInfo->getFirstPrimitive ()->isTriggered (*dynInfo->getSecondPrimitive (), dynInfo->isEnter(), dynInfo->isExit()))
@@ -973,24 +1265,93 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 
 // ***************************************************************************
 
+void CMoveContainer::setAsStatic (uint8 worldImage)
+{
+	// Add this world image in the static set of world image
+	_StaticWorldImage.insert (worldImage);
+}
+
+// ***************************************************************************
+
+void CMoveContainer::duplicateWorldImage (uint8 source, uint8 dest)
+{
+	// Cell count
+	uint cellCount=_CellCountWidth*_CellCountHeight;
+
+	// Clear dest modified list
+	clearModifiedList (dest);
+
+	// Clear destination cells
+	uint i;
+	for (i=0; i<cellCount; i++)
+	{
+		// Get first X
+		CMoveElement *elm;
+		while (elm=_VectorCell[dest][i].getFirstX ())
+		{
+			// Get primitive world image
+			CPrimitiveWorldImage *wI=elm->Primitive->getWorldImage (dest);
+
+			// Remove the primitive
+			int i;
+			for (i=0; i<4; i++)
+			{
+				if (wI->getMoveElement(i))
+					wI->removeMoveElement (i, *this, dest);
+			}
+		}
+	}
+
+	// Duplicate destination cells
+	for (i=0; i<cellCount; i++)
+	{
+		// Get first X
+		CMoveElement *elm=_VectorCell[source][i].getFirstX ();
+		while (elm)
+		{
+			// Get primitive world image
+			CPrimitiveWorldImage *wISource=elm->Primitive->getWorldImage (source);
+			CPrimitiveWorldImage *wIDest=elm->Primitive->getWorldImage (dest);
+
+			// First time the primitive is visited ?
+			if (wIDest->getMoveElement (0)==NULL)
+			{
+				wIDest->copy (*wISource);
+			}
+		
+			// Add at the end of the list
+			wIDest->addMoveElementendOfList (_VectorCell[dest][i], elm->X, elm->Y, elm->Primitive, *this);
+
+			// Added ?
+			nlassert (wIDest->getMoveElement (0)!=NULL);
+
+			// Next primitive
+			elm=elm->NextX;
+		}
+	}
+}
+
+// ***************************************************************************
+
 UMoveContainer *UMoveContainer::createMoveContainer (double xmin, double ymin, double xmax, double ymax, 
-		uint widthCellCount, uint heightCellCount, double primitiveMaxSize, uint maxIteration, uint otSize)
+		uint widthCellCount, uint heightCellCount, double primitiveMaxSize, uint8 numWorldImage, 
+		uint maxIteration, uint otSize)
 {
 	// Create a CMoveContainer
-	return new CMoveContainer (xmin, ymin, xmax, ymax, widthCellCount, heightCellCount, primitiveMaxSize, maxIteration, otSize);
+	return new CMoveContainer (xmin, ymin, xmax, ymax, widthCellCount, heightCellCount, primitiveMaxSize, numWorldImage, maxIteration, otSize);
 }
 
 // ***************************************************************************
 
 UMoveContainer *UMoveContainer::createMoveContainer (UGlobalRetriever* retriever, uint widthCellCount, 
-	uint heightCellCount, double primitiveMaxSize, uint maxIteration, uint otSize)
+	uint heightCellCount, double primitiveMaxSize, uint8 numWorldImage, uint maxIteration, uint otSize)
 {
 	// Cast
 	nlassert (dynamic_cast<CGlobalRetriever*>(retriever));
 	CGlobalRetriever* r=static_cast<CGlobalRetriever*>(retriever);
 
 	// Create a CMoveContainer
-	return new CMoveContainer (r, widthCellCount, heightCellCount, primitiveMaxSize, maxIteration, otSize);
+	return new CMoveContainer (r, widthCellCount, heightCellCount, primitiveMaxSize, numWorldImage, maxIteration, otSize);
 }
 
 // ***************************************************************************

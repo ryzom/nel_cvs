@@ -1,7 +1,7 @@
 /** \file move_cell.h
  * <File description>
  *
- * $Id: move_cell.h,v 1.1 2001/06/08 15:10:18 legros Exp $
+ * $Id: move_cell.h,v 1.2 2001/06/15 09:47:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,7 @@ public:
 		linkX (_LastX, element, NULL);
 	}
 
-	/// Update sorted lists for an element
+	/*/// Update sorted lists for an element
 	void linkFirstY (CMoveElement *element)
 	{
 		linkY (NULL, element, _FirstY);
@@ -70,34 +70,47 @@ public:
 	void linkLastY (CMoveElement *element)
 	{
 		linkY (_LastY, element, NULL);
-	}
+	}*/
 
 	/// Update sorted lists for an element
-	void updateSortedLists (CMoveElement *element);
+	void updateSortedLists (CMoveElement *element, uint8 worldImage);
 
 	// Link / unlink method
 	void unlinkX (CMoveElement *element);
 
 	// Link / unlink method
-	void unlinkY (CMoveElement *element);
+	//void unlinkY (CMoveElement *element);
+
+	// Get first X
+	CMoveElement	*getFirstX () const
+	{
+		return _FirstX;
+	}
+
+	// Get last X
+	CMoveElement	*getLastX () const
+	{
+		return _LastX;
+	}
 
 	// Get root X
 	CMoveElement		*getRootX ()
 	{
 		return _FirstX;
 	}
+
 private:
 
 	// Link / unlink method
 	void linkX (CMoveElement *previous, CMoveElement *element, CMoveElement *next);
 
 	// Link / unlink method
-	void linkY (CMoveElement *previous, CMoveElement *element, CMoveElement *next);
+	//void linkY (CMoveElement *previous, CMoveElement *element, CMoveElement *next);
 
 	CMoveElement		*_FirstX;
 	CMoveElement		*_LastX;
-	CMoveElement		*_FirstY;
-	CMoveElement		*_LastY;
+	/*CMoveElement		*_FirstY;
+	CMoveElement		*_LastY;*/
 };
 
 

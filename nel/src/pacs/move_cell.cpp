@@ -1,7 +1,7 @@
 /** \file move_cell.cpp
  * <File description>
  *
- * $Id: move_cell.cpp,v 1.3 2001/06/08 15:38:28 legros Exp $
+ * $Id: move_cell.cpp,v 1.4 2001/06/15 09:47:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,8 +36,8 @@ CMoveCell::CMoveCell()
 {
 	_FirstX=NULL;
 	_LastX=NULL;
-	_FirstY=NULL;
-	_LastY=NULL;
+	/*_FirstY=NULL;
+	_LastY=NULL;*/
 }
 
 // ***************************************************************************
@@ -59,7 +59,7 @@ void CMoveCell::unlinkX (CMoveElement *element)
 
 // ***************************************************************************
 
-void CMoveCell::unlinkY (CMoveElement *element)
+/*void CMoveCell::unlinkY (CMoveElement *element)
 {
 	// Linked in list ?
 	// Check first / last
@@ -73,7 +73,7 @@ void CMoveCell::unlinkY (CMoveElement *element)
 		element->NextY->PreviousY=element->PreviousY;
 	if (element->PreviousY)
 		element->PreviousY->NextY=element->NextY;
-}
+}*/
 
 // ***************************************************************************
 
@@ -98,7 +98,7 @@ void CMoveCell::linkX (CMoveElement *previous, CMoveElement *element, CMoveEleme
 
 // ***************************************************************************
 
-void CMoveCell::linkY (CMoveElement *previous, CMoveElement *element, CMoveElement *next)
+/*void CMoveCell::linkY (CMoveElement *previous, CMoveElement *element, CMoveElement *next)
 {
 	// Link the element
 	element->NextY=next;
@@ -115,26 +115,29 @@ void CMoveCell::linkY (CMoveElement *previous, CMoveElement *element, CMoveEleme
 		_FirstY=element;
 	if (next==NULL)
 		_LastY=element;
-}
+}*/
 
 // ***************************************************************************
 
-void CMoveCell::updateSortedLists (CMoveElement *element)
+void CMoveCell::updateSortedLists (CMoveElement *element, uint8 worldImage)
 {
 	// ** Update sorted list on X
 
 	// Primitive pointer
 	CMovePrimitive *primitive=element->Primitive;
 
+	// Get the world image
+	CPrimitiveWorldImage *wI=primitive->getWorldImage (worldImage);
+
 	// Test if we will go to the right
 	CMoveElement *ptr=element->NextX;
-	if (ptr && (primitive->getBBXMin() > ptr->Primitive->getBBXMin()) )
+	if (ptr && (wI->getBBXMin() > ptr->Primitive->getWorldImage (worldImage)->getBBXMin()) )
 	{
 		// Unlink
 		unlinkX (element);
 
 		// Adjust the list localisation
-		while (ptr->NextX && (primitive->getBBXMin() > ptr->NextX->Primitive->getBBXMin()) )
+		while (ptr->NextX && (wI->getBBXMin() > ptr->NextX->Primitive->getWorldImage (worldImage)->getBBXMin()) )
 		{
 			// Next ptr
 			ptr=ptr->NextX;
@@ -147,13 +150,13 @@ void CMoveCell::updateSortedLists (CMoveElement *element)
 	{
 		// Test if we will go to the left
 		ptr=element->PreviousX;
-		if (ptr && (ptr->Primitive->getBBXMin() > primitive->getBBXMin()) )
+		if (ptr && (ptr->Primitive->getWorldImage (worldImage)->getBBXMin() > wI->getBBXMin()) )
 		{
 			// Unlink
 			unlinkX (element);
 
 			// Adjust the list localisation
-			while (ptr->PreviousX && (ptr->PreviousX->Primitive->getBBXMin() > primitive->getBBXMin()) )
+			while (ptr->PreviousX && (ptr->PreviousX->Primitive->getWorldImage (worldImage)->getBBXMin() > wI->getBBXMin()) )
 			{
 				// Next ptr
 				ptr=ptr->PreviousX;

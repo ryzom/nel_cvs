@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.4 2001/06/13 08:46:42 legros Exp $
+ * $Id: global_retriever.h,v 1.5 2001/06/15 09:47:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,14 +68,8 @@ public:
 	 * \author Nevrax France
 	 * \date 2001
 	 */
-	class CGlobalPosition
+	class CGlobalPosition : public UGlobalPosition
 	{
-	public:
-		/// The id of the instance referred by this global position.
-		sint32							InstanceId;
-
-		/// The local position within the CLocalRetriever referred by the instance (cf. InstanceId)
-		CLocalRetriever::CLocalPosition	LocalPosition;
 	public:
 		/**
 		 * Constuctor.
@@ -83,10 +77,13 @@ public:
 		 */
 		CGlobalPosition(sint32 instanceId=-1, 
 					   const CLocalRetriever::CLocalPosition &localPosition=CLocalRetriever::CLocalPosition::CLocalPosition())
-			: InstanceId(instanceId), LocalPosition(localPosition) { }
+		{
+			InstanceId=instanceId;
+			LocalPosition=localPosition;
+		}
 
 		/// Serialises the global position.
-		void							serial(NLMISC::IStream &f) { f.serial(InstanceId, LocalPosition); }
+		//void							serial(NLMISC::IStream &f) { f.serial(InstanceId, LocalPosition); }
 	};
 
 	class CLocalPath

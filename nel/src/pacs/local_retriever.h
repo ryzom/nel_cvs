@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.3 2001/06/13 08:46:42 legros Exp $
+ * $Id: local_retriever.h,v 1.4 2001/06/15 09:47:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,8 @@
 #include "pacs/chain.h"
 #include "pacs/retrievable_surface.h"
 #include "pacs/chain_quad.h"
+
+#include "nel/pacs/u_global_position.h"
 
 
 
@@ -131,20 +133,18 @@ public:
 	 * \author Nevrax France
 	 * \date 2001
 	 */
-	class CLocalPosition
+	class CLocalPosition : public ULocalPosition
 	{
 	public:
-		/// The id of the surface corresponding to the local position.
-		sint32							Surface;
-
-		/// The best position estimation of the point snapped on the surface. This is a CLocalRetriever local axis position.
-		NLMISC::CVector					Estimation;
-	public:
 		/// Constructor.
-		CLocalPosition(sint32 surface=-1, const NLMISC::CVector &estimation=NLMISC::CVector::Null) : Surface(surface), Estimation(estimation) { }
+		CLocalPosition(sint32 surface=-1, const NLMISC::CVector &estimation=NLMISC::CVector::Null) 
+		{
+			Surface=surface;
+			Estimation=estimation;
+		}
 
 		/// Serialises the CLocalPosition.
-		void							serial(NLMISC::IStream &f) { f.serial(Surface, Estimation); }
+		//void							serial(NLMISC::IStream &f) { f.serial(Surface, Estimation); }
 	};
 
 

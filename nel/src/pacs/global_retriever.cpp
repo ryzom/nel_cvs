@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.30 2001/06/13 08:46:42 legros Exp $
+ * $Id: global_retriever.cpp,v 1.31 2001/06/15 09:47:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -461,7 +461,7 @@ void	NLPACS::CGlobalRetriever::findPath(const NLPACS::CGlobalRetriever::CGlobalP
 		if (i == 0)
 		{
 			// if it is the first point, just copy the begin
-			surf.Start = begin.LocalPosition;
+			surf.Start.ULocalPosition::operator= (begin.LocalPosition);
 		}
 		else
 		{
@@ -476,7 +476,7 @@ void	NLPACS::CGlobalRetriever::findPath(const NLPACS::CGlobalRetriever::CGlobalP
 		// computes end point
 		if (i == astarPath.size()-1)
 		{
-			surf.End = end.LocalPosition;
+			surf.End.ULocalPosition::operator= (end.LocalPosition);
 		}
 		else
 		{

@@ -1,7 +1,7 @@
 /** \file u_move_primitive.h
  * Description of movables primitives.
  *
- * $Id: u_move_primitive.h,v 1.3 2001/06/07 12:42:55 corvazier Exp $
+ * $Id: u_move_primitive.h,v 1.4 2001/06/15 09:47:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -127,7 +127,7 @@ public:
 	  */
 	TUserData		UserData;
 
-	/// \name Setup the primitive.
+	/// \name Setup the primitive static parts.
 
 	/**
 	  * Set the primitive type.
@@ -172,13 +172,6 @@ public:
 	virtual void	setObstacle (bool obstacle) =0;
 
 	/**
-	  * Set the new orientation of the move primitive. Only for the box primitives.
-	  *
-	  * \param rot is the new OZ rotation in radian.
-	  */
-	virtual void	setOrientation (double rot) =0;
-
-	/**
 	  * Set the attenuation of collision for this object. Default value is 1. Should be between 0~1.
 	  * 0, all the enrgy is attenuated by the collision. 1, all the energy stay in the object.
 	  * Used only with the flag Reflexion.
@@ -209,24 +202,61 @@ public:
 	  */
 	virtual void	setRadius (float radius) =0;
 
+	/// \name Setup the primitive dynamic parts.
+
+	/**
+	  * Set the new orientation of the move primitive. Only for the box primitives.
+	  *
+	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
+	  * image where you have modify it before modify any other dynamic properties in another world image.
+	  *
+	  * \param rot is the new OZ rotation in radian.
+	  * \param worldImage is the world image in which the primitive must be oriented.
+	  */
+	virtual void	setOrientation (double rot, uint8 worldImage) =0;
+
 	/// \name Move the primitive.
+
+	/**
+	  * Insert the primitive in a world image of the move container.
+	  * 
+	  * This primitive must a collisionable primitive.
+	  *
+	  * \param worldImage is the number of the world image where you want to insert the primitive.
+	  */
+	virtual void	insertInWorldImage (uint8 worldImage) =0;
+
+	/**
+	  * Remove the primitive from a world image of the move container.
+	  *
+	  * This primitive must a collisionable primitive.
+	  *
+	  * \param worldImage is the number of the world image from where you want to remove the primitive.
+	  */
+	virtual void	removeFromWorldImage (uint8 worldImage) =0;
 
 	/**
 	  * Set the global position of the move primitive. Setting the global position 
 	  * can take a long time if you use a UGlobalRetriever. Set the position with
 	  * this method only the first time or for teleporting.
 	  *
+	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
+	  * image where you have modify it before modify any other dynamic properties in another world image.
+	  *
 	  * \param pos is the new global position of the primitive.
 	  */
-	virtual void	setGlobalPosition (const NLMISC::CVectorD& pos, const UMoveContainer& container) =0;
+	virtual void	setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage) =0;
 
 	/**
 	  * Move the primitive.
 	  * This method is fast. Use it to move primitives.
 	  *
+	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
+	  * image where you have modify it before modify any other dynamic properties in another world image.
+	  *
 	  * \param speed is the speed of the primitive.
 	  */
-	virtual void	move (const NLMISC::CVectorD& speed) =0;
+	virtual void	move (const NLMISC::CVectorD& speed, uint8 worldImage) =0;
 
 	/// \name Access the primitive.
 
@@ -234,16 +264,19 @@ public:
 	  * Get the position of the move primitive at the end of the movement.
 	  * This method is slow. Just for initilisation and teleportation.
 	  *
+	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
+	  * image where you have modify it before modify any other dynamic properties in another world image.
+	  *
 	  * \return the new position of the primitive.
 	  */
-	virtual NLMISC::CVectorD	getFinalPosition ()  const=0;
+	virtual NLMISC::CVectorD	getFinalPosition (uint8 worldImage)  const=0;
 
 	/**
 	  * Get the speed vector for this primitive.
 	  *
 	  * \Return the new speed vector.
 	  */
-	virtual const NLMISC::CVectorD&	getSpeed () const =0;
+	virtual const NLMISC::CVectorD&	getSpeed (uint8 worldImage) const =0;
 };
 
 

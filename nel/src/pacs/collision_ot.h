@@ -1,7 +1,7 @@
 /** \file collision_ot.h
  * Collision descriptor for time odered table
  *
- * $Id: collision_ot.h,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: collision_ot.h,v 1.3 2001/06/15 09:47:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -202,9 +202,21 @@ public:
 		return _Exit;
 	}
 
+	// Get the world image
+	uint8 getFirstWorldImage () const
+	{
+		return _FirstWorldImage;
+	}
+
+	// Get the world image
+	uint8 getSecondWorldImage () const
+	{
+		return _SecondWorldImage;
+	}
+
 	// Init the info
 	void				init (CMovePrimitive *firstPrimitive, CMovePrimitive *secondPrimitive, const CCollisionDesc& desc, bool collision,
-								bool enter, bool exit)
+								bool enter, bool exit, uint8 firstWorldImage, uint8 secondWorldImage)
 	{
 		_FirstPrimitive=firstPrimitive;
 		_SecondPrimitive=secondPrimitive;
@@ -212,6 +224,8 @@ public:
 		_Collision=collision;
 		_Enter=enter;
 		_Exit=exit;
+		_FirstWorldImage=firstWorldImage;
+		_SecondWorldImage=secondWorldImage;
 	}
 
 	// Link in the primitive
@@ -301,6 +315,10 @@ private:
 	bool				_Enter;
 	bool				_Exit;
 
+	// World images
+	uint8 _FirstWorldImage;
+	uint8 _SecondWorldImage;
+
 	// First primitive linked list
 	CCollisionOTInfo	*_FirstNext;
 
@@ -347,14 +365,21 @@ public:
 		return _DeltaTime;
 	}
 
+	// Get the world image
+	uint8 getWorldImage () const
+	{
+		return _WorldImage;
+	}
+
 	// Init the info
 	void				init (CMovePrimitive *primitive, const CCollisionSurfaceDesc& desc, 
-								const CGlobalRetriever::CGlobalPosition& nextGlobalPosition, double delta)
+								const CGlobalRetriever::CGlobalPosition& nextGlobalPosition, double delta, uint8 worldImage)
 	{
 		_Primitive=primitive;
 		_StaticDesc=desc;
 		_GlobalPosition=nextGlobalPosition;
 		_DeltaTime=delta;
+		_WorldImage=worldImage;
 	}
 
 	// Link in the primitive
@@ -402,6 +427,9 @@ private:
 
 	// Delta time for this collid
 	double				_DeltaTime;
+
+	// World image
+	uint8				_WorldImage;
 
 	// Next primitive in the linked list
 	CCollisionOTInfo	*_Next;

@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: move_container.h,v 1.3 2001/06/15 09:47:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@ namespace NLPACS
 class CMovePrimitive;
 class CMoveElement;
 class CGlobalRetriever;
+class CPrimitiveWorldImage;
 
 /**
  * A container for movable objects
@@ -55,19 +56,20 @@ class CGlobalRetriever;
 class CMoveContainer: public UMoveContainer
 {
 	friend class CMovePrimitive;
+	friend class CPrimitiveWorldImage;
 public:
 	/// Constructor
 	CMoveContainer (double xmin, double ymin, double xmax, double ymax, uint widthCellCount, uint heightCellCount, double primitiveMaxSize, 
-		uint maxIteration=NELPACS_DEFAULT_MAX_TEST_ITERATION, uint otSize=100)
+		uint8 numWorldImage, uint maxIteration, uint otSize)
 	{
-		init (xmin, ymin, xmax, ymax, widthCellCount, heightCellCount, primitiveMaxSize, maxIteration, otSize);
+		init (xmin, ymin, xmax, ymax, widthCellCount, heightCellCount, primitiveMaxSize, numWorldImage, maxIteration, otSize);
 	}
 
 	/// Init the container with a global retriever
 	CMoveContainer (CGlobalRetriever* retriever, uint widthCellCount, uint heightCellCount, double primitiveMaxSize, 
-		uint maxIteration=NELPACS_DEFAULT_MAX_TEST_ITERATION, uint otSize=100)
+		uint8 numWorldImage, uint maxIteration, uint otSize)
 	{
-		init (retriever, widthCellCount, heightCellCount, primitiveMaxSize, maxIteration, otSize);
+		init (retriever, widthCellCount, heightCellCount, primitiveMaxSize, numWorldImage, maxIteration, otSize);
 	}
 
 	/// Destructor
@@ -75,23 +77,32 @@ public:
 
 	/// Init the container without global retriever
 	void init (double xmin, double ymin, double xmax, double ymax, uint widthCellCount, uint heightCellCount, double primitiveMaxSize, 
-		uint maxIteration=NELPACS_DEFAULT_MAX_TEST_ITERATION, uint otSize=100);
+		uint8 numWorldImage, uint maxIteration, uint otSize);
 
 	/// Init the container with a global retriever
 	void init (CGlobalRetriever* retriever, uint widthCellCount, uint heightCellCount, double primitiveMaxSize, 
-		uint maxIteration=NELPACS_DEFAULT_MAX_TEST_ITERATION, uint otSize=100);
+		uint8 numWorldImage, uint maxIteration, uint otSize);
 
-	/// Add a primitive in the container. Return the pointer on the primitive.
-	UMovePrimitive*				addPrimitive ();
+	/// Add a collisionable primitive in the container. Return the pointer on the primitive.
+	UMovePrimitive*				addCollisionablePrimitive (uint8 firstWorldImage, uint8 numWorldImage);
+
+	/// Add a noncollisionable primitive in the container. Return the pointer on the primitive.
+	UMovePrimitive*				addNonCollisionablePrimitive ();
+
+	/// Set world image as static world image.
+	void						setAsStatic (uint8 worldImage);
+
+	/// Duplicate world image
+	void						duplicateWorldImage (uint8 source, uint8 dest);
 
 	/// Remove a primitive from the container.
 	void						removePrimitive (UMovePrimitive* primitive);
 
 	/// Evaluation of the collision system
-	void						evalCollision (double deltaTime);
+	void						evalCollision (double deltaTime, uint8 worldImage);
 
 	/// Make a move test
-	bool						testMove (UMovePrimitive* primitive, const NLMISC::CVectorD& speed, double deltaTime);
+	bool						testMove (UMovePrimitive* primitive, const NLMISC::CVectorD& speed, double deltaTime, uint8 worldImage);
 
 	/// Allocate a move element
 	CMoveElement				*allocateMoveElement ();
@@ -130,8 +141,11 @@ private:
 	/// Set of primitives
 	std::set<CMovePrimitive*>	_PrimitiveSet;
 
-	/// Root of modified primitive
-	CMovePrimitive				*_ChangedRoot;
+	/// Root of modified primitive for each world image
+	std::vector<CMovePrimitive*>	_ChangedRoot;
+
+	/// Set of primitives
+	std::set<uint8>				_StaticWorldImage;
 
 	/// The time ordered table size
 	uint						_OtSize;
@@ -163,7 +177,7 @@ private:
 	uint						_CellCountHeight;
 
 	/// Cells array
-	std::vector<CMoveCell>		_VectorCell;
+	std::vector<std::vector<CMoveCell> >		_VectorCell;
 
 	/// Retriver pointner
 	CGlobalRetriever			*_Retriever;
@@ -180,10 +194,14 @@ private:
 	void						clear ();
 
 	// Update modified primitives bounding box
-	void						updatePrimitives (double deltaTime);
+	void						updatePrimitives (double deltaTime, uint8 worldImage);
 
 	// Update cells list for this primitive
-	void						updateCells (CMovePrimitive *primitive);
+	void						updateCells (CMovePrimitive *primitive, uint8 worldImage);
+
+	// Fill the elementArray descriptor.
+	void						getCells (CMovePrimitive *primitive, uint8 worldImage, uint8 primitiveWorldImage, CMoveElement **elementArray);
+
 
 	// Clear the time ordered table
 	void						clearOT ();
@@ -192,26 +210,33 @@ private:
 	void						checkOT ();
 
 	// Eval one collision
-	bool						evalOneCollision (double beginTime, CMovePrimitive *primitive, bool testMove=false);
+	bool						evalOneCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, 
+													uint8 primitiveWorldImage, bool testMove);
+
+	// Eval final step
+	bool						evalFinalCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 
+													CPrimitiveWorldImage *wI, CPrimitiveWorldImage *otherWI, bool testMove,
+													uint8 firstWorldImage, uint8 secondWorldImage);
 
 	// Eval all collision for modified primitives
-	void						evalAllCollisions (double beginTime);
+	void						evalAllCollisions (double beginTime, uint8 worldImage);
 
 	// Add a collision in the time ordered table
 	void						newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, 
-												bool collision, bool enter, bool exit);
+												bool collision, bool enter, bool exit, uint firstWorldImage, uint secondWorldImage);
 
 	// Add a collision in the time ordered table
-	void						newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, const CVector& delta);
+	void						newCollision (CMovePrimitive* first, const CCollisionSurfaceDesc& desc, const CVector& delta, 
+												uint8 worldImage);
 
 	// Add a trigger in the trigger array
 	void						newTrigger (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc);
 
 	// Clear modified primitive list
-	void						clearModifiedList ();
+	void						clearModifiedList (uint8 worldImage);
 
 	// Remove modified primitive from time ordered table
-	void						removeModifiedFromOT ();
+	void						removeModifiedFromOT (uint8 worldImage);
 
 	// Check sorted list
 	void						checkSortedList ();
@@ -226,19 +251,31 @@ private:
 	void						freeAllOTInfo ();
 
 	// Allocate a primitive
-	CMovePrimitive				*allocatePrimitive ();
+	CMovePrimitive				*allocatePrimitive (uint8 firstWorldImage, uint8 numWorldImage);
 
 	// Free a primitive
 	void						freePrimitive (CMovePrimitive *primitive);
 
+	// Allocate world image pointers
+	CPrimitiveWorldImage		**allocateWorldImagesPtrs (uint numPtrs);
+
+	// Free world image pointers
+	void						freeWorldImagesPtrs (CPrimitiveWorldImage **ptrs);
+
+	// Allocate a world image
+	CPrimitiveWorldImage		*allocateWorldImage ();
+
+	// Free world image pointers
+	void						freeWorldImage (CPrimitiveWorldImage *worldImage);
+
 	// Called by CMovePrimitive when a change occured on the primitive BB
-	void						changed (CMovePrimitive* primitive);
+	void						changed (CMovePrimitive* primitive, uint8 worldImage);
 
 	// Remove the primitive from the modified list
-	void						removeFromModifiedList (CMovePrimitive* primitive);
+	void						removeFromModifiedList (CMovePrimitive* primitive, uint8 worldImage);
 
 	// Unlink this move element
-	void						unlinkMoveElement  (CMoveElement *element);
+	void						unlinkMoveElement  (CMoveElement *element, uint8 worldImage);
 
 	// Reaction of the collision between two primitives. Return true if one object has been modified.
 	void						reaction (const CCollisionOTInfo& first);

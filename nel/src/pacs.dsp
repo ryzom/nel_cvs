@@ -201,6 +201,14 @@ SOURCE=.\pacs\move_primitive.cpp
 
 SOURCE=.\pacs\move_primitive.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\pacs\primitive_world_image.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\primitive_world_image.h
+# End Source File
 # End Group
 # Begin Group "Pathfinding"
 
@@ -286,6 +294,10 @@ SOURCE=..\include\nel\pacs\u_move_primitive.h
 
 # PROP Default_Filter ""
 # End Group
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\u_global_position.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\pacs\vector_2s.cpp

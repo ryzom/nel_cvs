@@ -6,12 +6,6 @@
 #include "object_viewer.h"
 #include "global_wind_dlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 
 #define	NL_GLOBAL_WIND_SLIDER_RANGE		1000
 

@@ -10,11 +10,6 @@
 #include "attrib_dlg.h"
 #include "particle_dlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditMorphMeshDlg dialog

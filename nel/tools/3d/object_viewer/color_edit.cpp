@@ -1,7 +1,7 @@
 /** \file color_edit.cpp
  * a dialog to edit a color (or call the windows color dialog)
  *
- * $Id: color_edit.cpp,v 1.6 2001/12/19 17:51:32 vizerie Exp $
+ * $Id: color_edit.cpp,v 1.7 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,11 +28,6 @@
 #include "color_edit.h"
 #include "color_button.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 //==================================================================================
 CColorEdit::CColorEdit(CWnd* pParent /*=NULL*/)	

@@ -1,7 +1,7 @@
 /** \file curve_edit.cpp
  * A dialog for editing a curve
  *
- * $Id: curve_edit.cpp,v 1.3 2001/12/18 18:36:12 vizerie Exp $
+ * $Id: curve_edit.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,12 +31,6 @@
 #include "editable_range.h"
 #include <3d/ps_float.h>
 #include <nel/misc/common.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static const uint CtrlPointSize = 3;
 

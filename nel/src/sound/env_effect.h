@@ -1,7 +1,7 @@
 /** \file env_effect.h
  * CEnvEffect: environmental effects and where they are applied
  *
- * $Id: env_effect.h,v 1.4 2001/08/02 13:48:22 cado Exp $
+ * $Id: env_effect.h,v 1.5 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+#error "Deprecated"
 
 #ifndef NL_ENV_EFFECT_H
 #define NL_ENV_EFFECT_H
@@ -89,6 +90,7 @@ struct TEnvEffectRoom
 
 /**
  * Environmental effects and where they are applied
+ * \deprecated
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001

@@ -1,7 +1,7 @@
 /** \file choose_name.cpp
  * A dialog that allow to choose a name
  *
- * $Id: choose_name.cpp,v 1.1 2001/09/12 13:25:55 vizerie Exp $
+ * $Id: choose_name.cpp,v 1.2 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,12 +26,6 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "choose_name.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CChooseName dialog

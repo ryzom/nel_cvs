@@ -1,7 +1,7 @@
 /** \file buffer_dsound.h
  * DSound buffer
  *
- * $Id: buffer_dsound.h,v 1.2 2002/06/11 09:36:09 hanappe Exp $
+ * $Id: buffer_dsound.h,v 1.3 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,6 +51,8 @@ public:
 	/// Destructor
 	virtual	~CBufferDSound();
 
+	virtual void			presetName(const std::string &bufferName);
+
 	/// Set the sample format. Example: freq=44100
 	virtual void			setFormat( TSampleFormat format, uint freq );
 
@@ -93,7 +95,7 @@ public:
     virtual uint8*			getData() const				{ return _Data; }
 
 	/// Return the name of the buffer
-	virtual std::string&	getName()					{ return _Name; }
+	virtual const std::string&	getName()					{ return _Name; }
 
 private:
 

@@ -1,7 +1,7 @@
 /** \file texture_anim_dlg.cpp
  * Dialog used to tune animation of texture on particles
  *
- * $Id: texture_anim_dlg.cpp,v 1.5 2001/12/18 18:40:43 vizerie Exp $
+ * $Id: texture_anim_dlg.cpp,v 1.6 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,12 +38,6 @@
 #include "nel/misc/smart_ptr.h"
 #include "multi_tex_dlg.h"
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CTextureAnimDlg dialog

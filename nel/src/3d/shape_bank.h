@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.5 2002/05/13 07:49:26 besson Exp $
+ * $Id: shape_bank.h,v 1.6 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include <map>
 #include <list>
 
-#include "3d/async_file_manager.h"
+#include "3d/async_file_manager_3d.h"
 
 namespace NL3D
 {

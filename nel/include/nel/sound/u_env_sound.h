@@ -1,7 +1,7 @@
 /** \file u_env_sound.h
  * UEnvSound: Game interface for localized environment sounds
  *
- * $Id: u_env_sound.h,v 1.8 2001/09/10 17:27:39 cado Exp $
+ * $Id: u_env_sound.h,v 1.9 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,8 @@
  * MA 02111-1307, USA.
  */
 
+#error "Deprecated"
+
 #ifndef NL_U_ENV_SOUND_H
 #define NL_U_ENV_SOUND_H
 
@@ -34,9 +36,23 @@ namespace NLSOUND {
 
 class USource;
 
+/** Output a warning message in deprecated function call.
+ *	Put this macro on the first line of each deprecated method to
+ *	output a warning message.
+ */
+#define DEPRECATED_CALL static bool _deprecatedWarningDone##__LINE__ = false;\
+						if (!_deprecatedWarningDone##__LINE__) \
+						{	\
+							_deprecatedWarningDone##__LINE__ = true;	\
+							nlwarning("This method is deprecated, you should update your code.");	\
+						}
+
+
+
 
 /**
  * Game interface for localized environment sounds
+ * \deprecated
  *
  * An envsound object is a node of an envsound tree, the root of which
  * is returned by UAudioMixer::loadEnvSounds(). The root is the world

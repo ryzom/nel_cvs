@@ -1,7 +1,7 @@
 /** \file edit_ps_sound.cpp
  * A dialog for editing sounds in a particle system
  *
- * $Id: edit_ps_sound.cpp,v 1.8 2001/12/18 18:37:05 vizerie Exp $
+ * $Id: edit_ps_sound.cpp,v 1.9 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,13 +35,7 @@
 #include "sound_system.h"
 #include "editable_range.h"
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
+using namespace std;
 
 /// particle system sound system initialisation
 void setPSSoundSystem(NLSOUND::UAudioMixer *am)
@@ -162,7 +156,8 @@ END_MESSAGE_MAP()
 
 void CEditPSSound::OnBrowseSound() 
 {
-	CPickSound::TNameVect names;
+//	CPickSound::TNameVect names;
+	vector<string>	names;
 	
 
 	NLSOUND::UAudioMixer *audioMixer = CSoundSystem::getAudioMixer();

@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.11 2002/08/08 11:00:45 lecroart Exp $
+ * $Id: editable_range.cpp,v 1.12 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,11 +30,6 @@
 #include "object_viewer.h"
 #include "editable_range.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 #include "range_manager.h"

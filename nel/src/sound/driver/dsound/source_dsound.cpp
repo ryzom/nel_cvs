@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.12 2002/07/19 15:07:49 miller Exp $
+ * $Id: source_dsound.cpp,v 1.13 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NLSOUND {
 
 	#define INITTIME(_var)	 TTicks _var = CTime::getPerformanceTime()
 
-	#define DEBUG_POSITIONS  0
+	#define DEBUG_POSITIONS  1
 
 	#if DEBUG_POSITIONS
 	#define DBGPOS(_a) nldebug ## _a
@@ -297,7 +297,7 @@ void CSourceDSound::setStaticBuffer( IBuffer *buffer )
 		_BytesWritten = 0;
 	}
 
-	_SwapBuffer = buffer;
+	_SwapBuffer = _Buffer = buffer;
 
 	LeaveCriticalSection(&_CriticalSection); 
 }
@@ -332,16 +332,27 @@ void CSourceDSound::swap()
 
 // ******************************************************************
 
-void CSourceDSound::play()
+bool CSourceDSound::play()
 {
 	EnterCriticalSection(&_CriticalSection); 
 
+	if (_Buffer == 0 || ((CBufferDSound*) _Buffer)->getData() == 0)
+	{
+		// the sample has been unloaded, can't play!
+
+		LeaveCriticalSection(&_CriticalSection); 
+		return false;
+	}
+
+
+	DBGPOS(("[%p] PLAY: Enter, buffer state = %u", this, _SecondaryBufferState));
 	switch (_SecondaryBufferState)
 	{
 	case NL_DSOUND_FILLING:
 		if (_SwapBuffer != 0)
 		{
 			// crossfade to the new sound 
+			DBGPOS(("[%p] PLAY: XFading 1", this));
 			crossFade();
 		}
 		break;
@@ -352,14 +363,24 @@ void CSourceDSound::play()
 			if ((_Buffer != 0) && (_UserState == NL_DSOUND_PLAYING))
 			{
 				// crossfade to the new sound
+				DBGPOS(("[%p] PLAY: XFading 2", this));
 				crossFade();
 			}
 			else
 			{
+				DBGPOS(("[%p] PLAY: Swap & fadein 1", this));
 				swap();
 				fadeIn();
 			}
 		}
+		else
+		{
+			DBGPOS(("[%p] PLAY: Fadein", this));
+			_BytesWritten = 0;
+			// start the old sound again
+			fadeIn();
+		}
+
 		break;
 
 
@@ -367,11 +388,14 @@ void CSourceDSound::play()
 		if (_SwapBuffer != 0)
 		{
 			// fade in to the new sound
+				DBGPOS(("[%p] PLAY: Swap & fadein 2", this));
 			swap();
 			fadeIn();
 		}
 		else
 		{
+			DBGPOS(("[%p] PLAY: Fadein", this));
+			_BytesWritten = 0;
 			// start the old sound again
 			fadeIn();
 		}
@@ -383,6 +407,8 @@ void CSourceDSound::play()
 	//nldebug ("NLSOUND: %p play", this);
 
 	LeaveCriticalSection(&_CriticalSection); 
+
+	return true;
 }
 
 
@@ -563,6 +589,7 @@ bool CSourceDSound::update2()
 
 void CSourceDSound::setPos( const NLMISC::CVector& pos )
 {
+	_Pos = pos;
 	// Coordinate system: conversion from NeL to OpenAL/GL:
 	if (_3DBuffer != NULL)
 	{
@@ -580,10 +607,11 @@ void CSourceDSound::setPos( const NLMISC::CVector& pos )
 
 // ******************************************************************
 
-void CSourceDSound::getPos( NLMISC::CVector& pos ) const
+const NLMISC::CVector &CSourceDSound::getPos() const
 {
+	return _Pos;
 	// Coordinate system: conversion from NeL to OpenAL/GL:
-	if (_3DBuffer != NULL)
+/*	if (_3DBuffer != NULL)
 	{
 		D3DVECTOR v;
 		HRESULT hr = _3DBuffer->GetPosition(&v);
@@ -602,6 +630,7 @@ void CSourceDSound::getPos( NLMISC::CVector& pos ) const
 	{
 		pos.set(0, 0, 0);	
 	}
+*/
 }
 
 
@@ -737,7 +766,8 @@ void CSourceDSound::setPitch( float coeff )
 
 		if (_SecondaryBuffer->SetFrequency(_SampleRate) != DS_OK)
 		{
-			//nlwarning("SetFrequency failed (buffer freq=%d, NeL freq=%.5f, DSound freq=%d)", freq, coeff, newfreq);
+//			nlwarning("SetFrequency failed (buffer freq=%d, NeL freq=%.5f, DSound freq=%d)", freq, coeff, newfreq);
+			nlwarning("SetFrequency");
 		}
 	}
 }
@@ -827,10 +857,13 @@ void CSourceDSound::setMinMaxDistances( float mindist, float maxdist )
 {
 	if (_3DBuffer != 0)
 	{
-		if ((_3DBuffer->SetMinDistance(mindist, DS3D_DEFERRED) != DS_OK)
-			|| (_3DBuffer->SetMaxDistance(maxdist, DS3D_DEFERRED) != DS_OK))
+		if (_3DBuffer->SetMinDistance(mindist, DS3D_DEFERRED) != DS_OK)
 		{
-			nlwarning("SetMinDistance or SetMaxDistance failed");
+			nlwarning("SetMinDistance (%f) failed", mindist);
+		}
+		if (_3DBuffer->SetMaxDistance(maxdist, DS3D_DEFERRED) != DS_OK)
+		{
+			nlwarning("SetMaxDistance (%f) failed", maxdist);
 		}
 	}
 	else
@@ -871,11 +904,9 @@ void CSourceDSound::getMinMaxDistances( float& mindist, float& maxdist ) const
 
 // ******************************************************************
 
-void CSourceDSound::updateVolume( NLMISC::CVector& listener )
+void CSourceDSound::updateVolume( const NLMISC::CVector& listener )
 {
-	CVector pos;
-	
-	getPos(pos);
+	CVector pos = getPos();
 	pos -= listener;
 
 	float sqrdist = pos.sqrnorm();
@@ -919,6 +950,10 @@ void CSourceDSound::updateVolume( NLMISC::CVector& listener )
 		clamp(db, DSBVOLUME_MIN, DSBVOLUME_MAX);
 
 		_SecondaryBuffer->SetVolume(db);
+
+/*		LONG tmp;
+		_SecondaryBuffer->GetVolume(&tmp);
+*/
 		
 		//nlwarning("VOLUME = %d dB, rolloff = %0.2f", db/100, CListenerDSound::instance()->getRolloffFactor());
 	}
@@ -2054,8 +2089,7 @@ void CSourceDSound::fadeIn()
 
 	// Set the correct volume
 	// FIXME: a bit of a hack
-	CVector pos;
-	CListenerDSound::instance()->getPos(pos);
+	const CVector &pos = CListenerDSound::instance()->getPos();
 	updateVolume(pos);
 
 
@@ -2064,7 +2098,7 @@ void CSourceDSound::fadeIn()
 	uint8* data = ((CBufferDSound*) _Buffer)->getData();
 	uint32 available = (_BytesWritten < _BufferSize) ? _BufferSize - _BytesWritten : 0;
 	uint32 bytes = NLSOUND_MIN(_SwapCopySize, available);
-	uint32 clear = _SwapCopySize - available;
+//	uint32 clear = _SwapCopySize - available;
 
 
 	_SilenceWritten = 0;

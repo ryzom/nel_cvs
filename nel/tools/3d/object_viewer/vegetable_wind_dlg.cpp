@@ -6,12 +6,6 @@
 #include "vegetable_wind_dlg.h"
 #include "object_viewer.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 
 #define	NL_VEGETABLE_EDIT_WIND_SLIDER_RANGE		1000
 #define	NL_VEGETABLE_EDIT_WIND_MAX_POWER		10.f

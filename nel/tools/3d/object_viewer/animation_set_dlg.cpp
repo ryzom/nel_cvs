@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * implementation file
  *
- * $Id: animation_set_dlg.cpp,v 1.12 2002/06/20 08:44:20 hanappe Exp $
+ * $Id: animation_set_dlg.cpp,v 1.13 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,11 +30,6 @@
 #include <nel/misc/file.h>
 #include <3d/track_keyframer.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 using namespace NLMISC;
 using namespace NL3D;

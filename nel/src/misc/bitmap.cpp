@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.30 2002/10/25 15:48:22 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.31 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1526,7 +1526,7 @@ void CBitmap::resizeMipMap (uint32 numMipMap, sint32 nNewWidth, sint32 nNewHeigh
 \*-------------------------------------------------------------------*/
 void CBitmap::setMipMapCount(uint32 mmc)
 {
-	_MipMapCount= mmc;
+	_MipMapCount= uint8(mmc);
 }
 
 

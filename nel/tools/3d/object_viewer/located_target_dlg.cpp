@@ -1,7 +1,7 @@
 /** \file located_target_dlg.cpp
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.cpp,v 1.6 2002/01/28 14:54:46 vizerie Exp $
+ * $Id: located_target_dlg.cpp,v 1.7 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,12 +33,6 @@
 #include "editable_range.h"
 #include "attrib_dlg.h"
 #include "direction_attr.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedTargetDlg dialog

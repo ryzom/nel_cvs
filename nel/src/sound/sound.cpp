@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.22 2002/07/29 17:16:09 lecroart Exp $
+ * $Id: sound.cpp,v 1.23 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,10 +26,11 @@
 #include "stdsound.h"
 
 #include "sound.h"
-#include "driver/sound_driver.h"
-#include "driver/buffer.h"
 #include "nel/misc/path.h"
-#include "sample_bank.h"
+#include "sound_bank.h"
+
+#include "simple_sound.h"
+#include "complex_sound.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -58,146 +59,88 @@ namespace NLSOUND {
 //uint			CSound::FileVersion = 0;
 
 // Allow to load sound files when corresponding wave file is not present ?
-bool			CSound::_AllowMissingWave = true;
+//bool			CSound::_AllowMissingWave = true;
+
+
+
+CSound *CSound::createSound(const std::string &filename, NLGEORGES::UFormElm& formRoot)
+{
+	CSound *ret = NULL;
+	string	soundType;
+
+	NLGEORGES::UFormElm *psoundType;
+
+	formRoot.getNodeByName(&psoundType, ".SoundType");
+	if (psoundType != NULL)
+	{
+		std::string dfnName;
+		psoundType->getDfnName(dfnName);
+
+		if (dfnName == "simple_sound.dfn")
+		{
+			ret = new CSimpleSound();
+			ret->importForm(filename, formRoot);
+		}
+		else if (dfnName == "complex_sound.dfn")
+		{
+			ret = new CComplexSound();
+			ret->importForm(filename, formRoot);
+		}
+		else if (dfnName == "background_sound.dfn")
+		{
+			ret = new CBackgroundSound();
+			ret->importForm(filename, formRoot);
+		}
+		else
+		{
+			nlassertex(false, ("SoundType unsuported : %s", dfnName.c_str()));
+		}
+			
+	}
+/*	formRoot.getValueByName(soundType, ".SoundType.Dfn");
+
+	if (soundType == "SimpleSound")
+	{
+		ret = new CSimpleSound();
+		ret->importForm(filename, formRoot);
+	}
+	else if (soundType == "ComplexSound")
+	{
+		ret = new CComplexSound();
+		ret->importForm(filename, formRoot);
+	}
+	else if (soundType == "BackgroundSound")
+	{
+*//*		ret = new CBackgroundSound();
+		ret->importForm(filename, formRoot);
+*//*	}
+*/
+//	nlassert(ret != NULL);
+
+	return ret;
+	
+}
+
 
 
 /*
  * Constructor
  */
-CSound::CSound() : _Buffer(NULL), _Gain(1.0f), _Pitch(1.0f), _Priority(MidPri), _Looping(false),
-	_Detailed(false), _MinDist(1.0f), _MaxDist(1000000.0f),
-	_ConeInnerAngle(6.283185f), _ConeOuterAngle(6.283185f), _ConeOuterGain( 1.0f ), _NeedContext(false)
+CSound::CSound() : 
+	_Gain(1.0f), 
+	_Pitch(1.0f),
+	_MaxDist(1000000.0f),
+	_Priority(MidPri), 
+	_Looping(false),
+	_ConeInnerAngle(6.283185f), 
+	_ConeOuterAngle(6.283185f), 
+	_ConeOuterGain( 1.0f )
 {
 }
 
-
-/*
- * Destructor
- */
 CSound::~CSound()
-{
-}
+{}
 
-void		CSound::getBuffername(string &buffername, CSoundContext *context)
-{
-	if(_NeedContext)
-	{
-		buffername = "";
-		if (context == 0)
-		{
-			nlwarning ("Can't find the buffer name without a context for '%s'", _Buffername.c_str());
-			return;
-		}
-		for (uint i = 0; i < _Buffername.size(); i++)
-		{
-			if (_Buffername[i] == '%')
-			{
-				i++;
-				if (i == _Buffername.size())
-				{
-					nlwarning ("Can't find the buffer name '%s' contains a %% at the end", _Buffername.c_str());
-					return;
-				}
-
-				if(isdigit(_Buffername[i]))
-				{
-					// arg 0 -> 9
-					sint32 value = context->Args[_Buffername[i]-'0'];
-					if (value == -1)
-					{
-						nlwarning ("Can't find the buffer name '%s' because argument %d is not in the context", _Buffername.c_str(), _Buffername[i]-'0');
-						buffername = "";
-						return;
-					}
-					buffername += toString(value);
-				}
-				else if(_Buffername[i] == 'r')
-				{
-					// random mode
-					i++;
-					if (i == _Buffername.size())
-					{
-						nlwarning ("Can't find the buffer name '%s' contains a %%r at the end without the number", _Buffername.c_str());
-						buffername = "";
-						return;
-					}
-					if(isdigit(_Buffername[i]))
-					{
-						uint32 value = _Buffername[i]-'0';
-						
-						uint32 randomIndex = rand()%value;
-						if( randomIndex == context->PreviousRandom )
-						{
-							randomIndex = (randomIndex+1)%value;
-						}
-						context->PreviousRandom = randomIndex;
-						buffername += toString(randomIndex);
-					}
-				}
-				else
-				{
-					nlwarning ("Can't find the buffer name '%s' contains an unknown code %%%c", _Buffername.c_str(), _Buffername[i]);
-					buffername = "";
-					return;
-				}
-			}
-			else
-			{
-				buffername += _Buffername[i];
-			}
-		}
-		//nlinfo ("sound getbuffer transform '%s' into '%s' with context", _Buffername.c_str(), buffername.c_str());
-	}
-	else
-	{
-		buffername = _Buffername;
-	}
-}
-
-/*
- * Return the sample buffer of this sound
- */
-IBuffer*			CSound::getBuffer(string *buffername)
-{ 
-	if(_NeedContext)
-	{
-		if (buffername == 0 || buffername->empty())
-		{
-			nlwarning ("Can't find the buffer name without a buffername for '%s'", _Buffername.c_str());
-			nlstop;	// temp debug
-			return 0;
-		}
-		// todo ace opti to now find everytime
-		return CSampleBank::get(buffername->c_str());
-	}
-	else
-	{
-		if (_Buffer == 0)
-		{
-			_Buffer = CSampleBank::get(_Buffername.c_str()); 
-		}
-		if (buffername != 0)
-			*buffername = _Buffername;
-	}
-	return _Buffer;
-}
-
-/*
- * Return the length of the sound in ms
- */
-uint32				CSound::getDuration(string *buffername) 
-{
-	IBuffer* buffer = getBuffer(buffername);
-
-	if ( buffer == NULL )
-	{
-		return 0;
-	}
-	else
-	{
-		return (uint32)(buffer->getDuration());
-	}
-}
 
 /*
  * Serialize
@@ -425,9 +368,9 @@ void				CSound::save( const std::vector<CSound*>& container, NLMISC::IStream& s 
 /**
  * 	Load the sound parameters from georges' form
  */
-void				CSound::importForm(std::string& filename, NLGEORGES::UFormElm& root)
+void				CSound::importForm(const std::string& filename, NLGEORGES::UFormElm& root)
 {
-	// Name
+/*	// Name
 	_Filename = filename;
 	_Name = CFile::getFilenameWithoutExtension(filename);	
 
@@ -440,6 +383,9 @@ void				CSound::importForm(std::string& filename, NLGEORGES::UFormElm& root)
 	{
 		_NeedContext = true;
 	}
+*/
+	// Name
+	_Name = CFile::getFilenameWithoutExtension(filename);	
 
 	// InternalConeAngle
 	uint32 inner;
@@ -487,16 +433,19 @@ void				CSound::importForm(std::string& filename, NLGEORGES::UFormElm& root)
 	}
 	_ConeOuterGain = (float) pow(10.0, gain / 20.0); // convert dB to linear gain
 
+	// Direction
+	float x, y, z;
+
+	root.getValueByName(x, ".Direction.X");
+	root.getValueByName(y, ".Direction.Y");
+	root.getValueByName(z, ".Direction.Z");
+	_Direction = CVector(x, y, z);
+
+
 	// Pitch
 	sint32 trans;
 	root.getValueByName(trans, ".Transpose");
 	_Pitch =  (float) pow(Sqrt12_2, trans); // convert semi-tones to playback speed
-
-	// MinDistance
-	root.getValueByName(_MinDist, ".MinDistance");
-
-	// MaxDistance
- 	root.getValueByName(_MaxDist, ".MaxDistance");
 
 	// Priority
 	uint32 prio = 0;

@@ -1,7 +1,7 @@
 /** \file source.h
  * ISource: sound source interface
  *
- * $Id: source.h,v 1.9 2002/06/11 09:38:03 hanappe Exp $
+ * $Id: source.h,v 1.10 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,8 +83,10 @@ public:
 	virtual void					setLooping( bool l ) = 0;
 	/// Return the looping state
 	virtual bool					getLooping() const = 0;
-	/// Play the static buffer (or stream in and play)
-	virtual void					play() = 0;
+	/** Play the static buffer (or stream in and play).
+	 *	This method can return false if the sample for this sound is unloaded.
+	 */
+	virtual bool					play() = 0;
 	/// Stop playing
 	virtual void					stop() = 0;
 	/// Pause. Call play() to resume.
@@ -110,7 +112,7 @@ public:
 	/** Get the position vector.
 	 * See setPos() for details.
 	 */
-	virtual void					getPos( NLMISC::CVector& pos ) const = 0;
+	virtual const NLMISC::CVector	&getPos() const =0;
 	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
 	virtual void					setVelocity( const NLMISC::CVector& vel ) = 0;
 	/// Get the velocity vector

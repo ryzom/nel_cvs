@@ -37,7 +37,7 @@ RSC=rc.exe
 # PROP Output_Dir "../obj/Release/sound"
 # PROP Intermediate_Dir "../obj/Release/sound"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"stdsound.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "NDEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdsound.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
@@ -53,7 +53,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/Debug/sound"
 # PROP Intermediate_Dir "../obj/Debug/sound"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_MBCS" /D "WIN32" /D "_DEBUG" /Yu"stdsound.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdsound.h" /FD /GZ /c
 # SUBTRACT CPP /Gf /Gy /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
@@ -69,7 +69,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/ReleaseDebug/sound"
 # PROP Intermediate_Dir "../obj/ReleaseDebug/sound"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "NL_RELEASE_DEBUG" /Yu"stdsound.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_LIB" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdsound.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
@@ -85,7 +85,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/DebugFast/sound"
 # PROP Intermediate_Dir "../obj/DebugFast/sound"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Yu"stdsound.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdsound.h" /FD /GZ /c
 # SUBTRACT CPP /Gf /Gy /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
@@ -135,11 +135,29 @@ SOURCE=.\sound\audio_mixer_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\sound\background_source.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\background_source.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\complex_source.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\complex_source.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\sound\env_sound_user.cpp
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\sound\env_sound_user.h
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
@@ -151,6 +169,14 @@ SOURCE=.\sound\listener_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\sound\source_common.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\source_common.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\sound\source_user.cpp
 # End Source File
 # Begin Source File
@@ -158,69 +184,40 @@ SOURCE=.\sound\source_user.cpp
 SOURCE=.\sound\source_user.h
 # End Source File
 # End Group
+# Begin Group "Makefile"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\sound\ambiant_source.cpp
+SOURCE=.\sound\Makefile.am
+# End Source File
+# End Group
+# Begin Group "SoundClass"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\sound\background_sound.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\sound\ambiant_source.h
+SOURCE=.\sound\background_sound.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\sound\background_sound_manager.cpp
+SOURCE=.\sound\complex_sound.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\sound\background_sound_manager.h
+SOURCE=.\sound\complex_sound.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\sound\bounding_box.cpp
+SOURCE=.\sound\simple_sound.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\sound\bounding_box.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\bounding_shape.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\bounding_sphere.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\bounding_sphere.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\env_effect.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\env_effect.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\mixing_track.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\mixing_track.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\playable.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\sample_bank.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\sample_bank.h
+SOURCE=.\sound\simple_sound.h
 # End Source File
 # Begin Source File
 
@@ -230,6 +227,10 @@ SOURCE=.\sound\sound.cpp
 
 SOURCE=.\sound\sound.h
 # End Source File
+# End Group
+# Begin Group "Animation"
+
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=.\sound\sound_anim_manager.cpp
@@ -254,6 +255,89 @@ SOURCE=.\sound\sound_animation.cpp
 
 SOURCE=..\include\nel\sound\sound_animation.h
 # End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\sound\ambiant_source.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\ambiant_source.h
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\async_file_manager_sound.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\async_file_manager_sound.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\background_sound_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\background_sound_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\bounding_box.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\bounding_box.h
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\bounding_shape.h
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\bounding_sphere.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\bounding_sphere.h
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\env_effect.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\env_effect.h
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\mixing_track.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\mixing_track.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\playable.h
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sample_bank.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sample_bank.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\sound\sound_bank.cpp
@@ -264,96 +348,26 @@ SOURCE=.\sound\sound_bank.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\sound\sound_controller.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sound_process.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sound_process.h
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=.\sound\stdsound.cpp
 # ADD CPP /Yc"stdsound.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\sound\stdsound.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\obj\Debug\sound_lowlevel\nlsound_lowlevel_d.lib
-
-!IF  "$(CFG)" == "sound - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "sound - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "sound - Win32 ReleaseDebug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\obj\DebugFast\sound_lowlevel\nlsound_lowlevel_df.lib
-
-!IF  "$(CFG)" == "sound - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "sound - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "sound - Win32 ReleaseDebug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\obj\Release\sound_lowlevel\nlsound_lowlevel_r.lib
-
-!IF  "$(CFG)" == "sound - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "sound - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "sound - Win32 ReleaseDebug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\obj\ReleaseDebug\sound_lowlevel\nlsound_lowlevel_rd.lib
-
-!IF  "$(CFG)" == "sound - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "sound - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "sound - Win32 ReleaseDebug"
-
-!ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # End Target
 # End Project

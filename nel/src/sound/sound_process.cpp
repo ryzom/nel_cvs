@@ -2,7 +2,7 @@
  *
  * A sound process plays a sound pattern.
  *
- * $Id: sound_process.cpp,v 1.1 2002/06/28 20:38:54 hanappe Exp $
+ * $Id: sound_process.cpp,v 1.2 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdsound.h"
 
 #include "sound_process.h"
 #include "nel/sound/u_audio_mixer.h"
@@ -40,8 +41,8 @@ namespace NLSOUND
 
 void CSoundProcess::play()
 {
- 	_PatternIterator = _Pattern.beginSoundPattern();
-	_IntervalIterator = _Pattern.beginIntervalPattern();
+ 	_PatternIterator = _Pattern->beginSoundPattern();
+	_IntervalIterator = _Pattern->beginIntervalPattern();
 	_NextTrigger = 0;
 }
 
@@ -50,9 +51,9 @@ void CSoundProcess::play()
 void CSoundProcess::trigger()
 {
 	string& sound = *_PatternIterator;
-	USource* source = _Mixer->createSource(sound.c_str(), true, CSoundProcess::removeSource, this);
+	USource* source = _Mixer->createSource(sound, true, CSoundProcess::removeSource, this);
 	_Sources.push_back(source);
-	_PatternIterator++;
+	++_PatternIterator;
 }
 
 // ********************************************************
@@ -72,11 +73,11 @@ void CSoundProcess::removeSource(USource *source, void *data)
 
 	TSourceVector::iterator iter;
 
-	for (iter = _Sources.begin(); iter != _Sources.end(); iter++)
+	for (iter = self->_Sources.begin(); iter != self->_Sources.end(); iter++)
 	{
 		if (*iter == source) 
 		{
-			_Sources.erase(iter);
+			self->_Sources.erase(iter);
 			return;
 		}
 	}	

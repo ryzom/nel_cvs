@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager.h,v 1.7 2002/10/10 12:55:02 berenguier Exp $
+ * $Id: async_file_manager_3d.h,v 1.1 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,11 +23,12 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_ASYNC_FILE_MANAGER_H
-#define NL_ASYNC_FILE_MANAGER_H
+#ifndef NL_ASYNC_FILE_MANAGER_3D_H
+#define NL_ASYNC_FILE_MANAGER_3D_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/misc/task_manager.h"
+#include "nel/misc/thread.h"
+#include "nel/misc/async_file_manager.h"
 
 
 namespace NL3D
@@ -45,13 +46,13 @@ class CTextureFile;
  * \author Nevrax France
  * \date 2002 
  */
-class CAsyncFileManager : public NLMISC::CTaskManager
+class CAsyncFileManager3D
 {
 
 public:
 
-	static CAsyncFileManager &getInstance (); // Must be called instead of constructing the object
-	static void terminate (); // End all tasks and terminate if any tasks
+	static CAsyncFileManager3D &getInstance (); // Must be called instead of constructing the object
+	static void terminate (); // release singleton
 
 	void loadMesh (const std::string &sMeshName, IShape **ppShp, IDriver *pDriver);
 	bool cancelLoadMesh (const std::string& sMeshName);
@@ -61,6 +62,7 @@ public:
 
 	void loadTexture (CTextureFile *textureFile, bool *pSgn);
 	bool cancelLoadTexture (CTextureFile *textFile);
+
 
 	// Do not use these methods with the bigfile manager
 	void loadFile (const std::string &fileName, uint8 **pPtr);
@@ -72,10 +74,15 @@ public:
 	
 private:
 
-	CAsyncFileManager (); // Singleton mode -> access it with the getInstance function
 
-	static CAsyncFileManager *_Singleton;
+	CAsyncFileManager3D (); // Singleton mode -> access it with the getInstance function
 
+	static CAsyncFileManager3D *_Singleton;
+
+
+	friend class CLoadMeshCancel;
+	friend class CLoadTextureCancel;
+	
 	// All the tasks
 	// -------------
 	
@@ -111,36 +118,6 @@ private:
 		void run (void);
 	};
 
-	// Load a file
-	class CFileLoad : public NLMISC::IRunnable
-	{
-		std::string _FileName;
-		uint8 **_ppFile;
-	public:
-		CFileLoad (const std::string& sFileName, uint8 **ppFile);
-		void run (void);
-	};
-
-	// Load multiple files
-	class CMultipleFileLoad : public NLMISC::IRunnable
-	{
-		std::vector<std::string> _FileNames;
-		std::vector<uint8**> _Ptrs;
-	public:
-		CMultipleFileLoad (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs);
-		void run (void);
-	};
-
-	// Signal
-	class CSignal  : public NLMISC::IRunnable
-	{
-	public:
-		bool *Sgn;
-	public:
-		CSignal (bool *pSgn);
-		void run (void);
-	};
-
 	// Load a texture
 	class CTextureLoad : public NLMISC::IRunnable
 	{
@@ -148,6 +125,10 @@ private:
 		CTextureFile	*TextureFile;
 		bool			*Signal;
 	public:
+		CTextureLoad(CTextureFile *textureFile, bool *psgn)
+			: TextureFile(TextureFile), Signal(psgn)
+		{}
+
 		virtual	void	run();
 	};
 
@@ -157,6 +138,6 @@ private:
 } // NL3D
 
 
-#endif // NL_ASYNC_FILE_MANAGER_H
+#endif // NL_ASYNC_FILE_MANAGER_3D_H
 
 /* End of async_file_manager.h */

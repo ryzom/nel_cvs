@@ -1,7 +1,7 @@
 /** \file fuzzyset.cpp
  * Fuzzy sets: triangle, trapeze...
  *
- * $Id: fuzzyset.cpp,v 1.12 2002/09/05 13:10:57 portier Exp $
+ * $Id: fuzzyset.cpp,v 1.13 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -315,7 +315,7 @@ namespace NLAIFUZZY
 			{
 				NLAIAGENT::IObjectIA::CProcessResult r;
 				const NLAIAGENT::IObjectIA *obj = ( (NLAIAGENT::IBaseGroupType *) p )->get();
-				float val = ( (NLAIAGENT::DDigitalType *) obj)->getNumber();
+				float val = float(( (NLAIAGENT::DDigitalType *) obj)->getNumber());
 				r.Result = new NLAIAGENT::DDigitalType( membership( val ) );
 				return r;
 			}

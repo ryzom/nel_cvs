@@ -9,11 +9,6 @@
 
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 #define	NL_VEGETABLE_EDIT_SLIDER_NVS_SIZE	1000

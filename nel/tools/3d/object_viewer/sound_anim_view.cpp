@@ -1,7 +1,7 @@
 /** \file sound_anim_view.cpp
  * Dialog for the sound animations 
  *
- * $Id: sound_anim_view.cpp,v 1.3 2002/07/08 14:53:54 lecroart Exp $
+ * $Id: sound_anim_view.cpp,v 1.4 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,12 +37,6 @@ using namespace NLMISC;
 using namespace NL3D;
 using namespace NLSOUND;
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNCREATE(CSoundAnimView, CWnd)

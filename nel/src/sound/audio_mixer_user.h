@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.26 2002/09/03 18:16:32 miller Exp $
+ * $Id: audio_mixer_user.h,v 1.27 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include "mixing_track.h"
 #include "sound.h"
 #include <vector>
-#include <set>
+#include <hash_set>
 
 
 namespace NLSOUND {
@@ -55,8 +55,19 @@ class CEnvEffect;
  *     device->MaxNoOfSources = dsCaps.dwMaxHw3DStreamingBuffers;
  * and this value seems to be no more than 32 in DirectX8.
  */
-#define MAX_TRACKS 32
+const uint MAX_TRACKS = 32;
 
+/// Hasher functor for hashed container with pointer key.
+template <class Pointer>
+struct THashPtr : public std::unary_function<const Pointer &, size_t>
+{
+	size_t operator () (const Pointer &ptr) const
+	{
+		std::hash_set<uint>::hasher	h;
+		// transtype the pointer into int then hash it
+		return h.operator()(uint(ptr));
+	}
+};
 
 /**
  * Implementation of UAudioMixer
@@ -106,22 +117,27 @@ public:
 	/// Disables or reenables the sound
 	virtual void				enable( bool b );
 	/// Load environmental effects
-	virtual void				loadEnvEffects( const char *filename );
+//	virtual void				loadEnvEffects( const char *filename );
 	/** Load buffers. Returns the number of buffers successfully loaded.
 	 * If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
 	 * You can call this method several times, to load several sound banks.
 	 */
-	virtual uint32				loadSampleBank( const char *filename, std::vector<std::string> *notfoundfiles=NULL );
+	virtual uint32				loadSampleBank(bool async, const std::string &filename, std::vector<std::string> *notfoundfiles=NULL );
+	/** Unload buffers.
+	*/
+	virtual bool				unloadSampleBank( const std::string &filename);
+	virtual void				reloadSampleBanks(bool async);
+	virtual uint32				getLoadedSampleSize();
+
 
 	/// Load sounds. Returns the number of sounds successfully loaded.
-	virtual void				loadSoundBank( const char *path );
+	virtual void				loadSoundBank( const std::string &path );
 
 	
 	// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
-	virtual	void				loadEnvSounds( const char *filename,
-											   UEnvSound **treeRoot=NULL );
+//	virtual	void				loadEnvSounds( const char *filename, UEnvSound **treeRoot=NULL );
 	/// Get a TSoundId from a name (returns NULL if not found)
-	virtual TSoundId			getSoundId( const char *name );
+	virtual TSoundId			getSoundId( const std::string &name );
 
 
 	/** Add a logical sound source (returns NULL if name not found).
@@ -130,7 +146,7 @@ public:
 	 * pass a callback function that will be called (if not NULL) just before deleting the spawned
 	 * source.
 	 */
-	virtual USource				*createSource( const char *name, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL, CSoundContext *context = 0 );
+	virtual USource				*createSource( const std::string &name, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL, CSoundContext *context = 0 );
 	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
 	virtual USource				*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL, CSoundContext *context = 0 );
 	/// Add a source which was created by an EnvSound
@@ -155,13 +171,13 @@ public:
 
 
 	/// Choose the environmental effect(s) corresponding to tag
-	virtual void				selectEnvEffects( const char *tag );
+	virtual void				selectEnvEffects( const std::string &tag );
 	/// Update audio mixer (call evenly)
 	virtual void				update(); 
 
 
 	/// Return the names of the sounds (call this method after loadSounds())
-	virtual void				getSoundNames( std::vector<const char *>& names ) const;
+	virtual void				getSoundNames( std::vector<std::string>& names ) const;
 	/// Return the number of mixing tracks (voices)
 	virtual uint				getPolyphony() const { return _NbTracks; }
 	/// Return the number of sources (slow)
@@ -178,7 +194,7 @@ public:
 	/// Take a listener's move into account
 	void						applyListenerMove( const NLMISC::CVector& listenerpos );
 	/// Return the root of the envsounds tree
-	CEnvSoundUser				*getEnvSounds()							{ return _EnvSounds; }
+//	CEnvSoundUser				*getEnvSounds()							{ return _EnvSounds; }
 	/// Return the listen pos vector
 	const NLMISC::CVector&		getListenPosVector() const				{ return _ListenPosition; }
 	/** Same as removeSource() but does not delete the object (e.g. when not allocated by new,
@@ -186,36 +202,95 @@ public:
 	 */
 	void						removeMySource( USource *source );
 	/// Add ambiant sound pointer for later deletion
-	void						addAmbiantSound( CSound *sound )		{ _AmbSounds.insert( sound ); }
+//	void						addAmbiantSound( CSound *sound )		{ _AmbSounds.insert( sound ); }
 	// Allow to load sound files (nss) when the corresponding wave file is missing (see CSound)
 	//static void					allowMissingWave( bool b )				{ CSound::allowMissingWave( b ); }	
 
 	/// Set the global path to the sample banks
 	virtual void				setSamplePath(const std::string& path)		{ _SamplePath = path; }
 
+
+	CBackgroundSoundManager		*getBackgroundSoundManager()				{ return _BackgroundSoundManager; }
 	/// Write profiling information about the mixer to the output stream.
 	virtual void				writeProfile(std::ostream& out);
 
-	virtual void				loadBackgroundSound (const std::string &continent) { CBackgroundSoundManager::load (continent); }
-	virtual void				playBackgroundSound () { CBackgroundSoundManager::play (); }
-	virtual void				stopBackgroundSound () { CBackgroundSoundManager::stop (); }
+	virtual void				loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region);
+	virtual void				loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region);
+	virtual void				loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region);
+	virtual void				loadBackgroundSound (const std::string &continent);
+	virtual void				playBackgroundSound ();
+	virtual void				stopBackgroundSound ();
 
-	virtual void				setBackgroundSoundDayNightRatio (float ratio) { CBackgroundSoundManager::setDayNightRatio(ratio); }
+//	virtual void				setBackgroundSoundDayNightRatio (float ratio) { CBackgroundSoundManager::setDayNightRatio(ratio); }
+
+	/// Return the sound driver.
+	ISoundDriver*				getSoundDriver();
+
+	void						registerBufferAssoc(CSound *sound, IBuffer *buffer);
+	void						unregisterBufferAssoc(CSound *sound, IBuffer *buffer);
+
+	void						bufferUnloaded(IBuffer *buffer);
+
+	void						setBackgroundFlags(const TBackgroundFlags &backgroundFlags);
+
+	void						setPlaying(CSourceUser *source);
+	void						unsetPlaying(CSourceUser *source);
+
+
+public:
+	/// Interface for registering object in the mixer update.
+	class IMixerUpdate
+	{
+	public:
+		virtual void onUpdate() =0;
+	};
+
+	/// Register an object in the update list.
+	void						registerUpdate(IMixerUpdate *pmixerUpdate);
+	/// Unregister an object from the update list.
+	void						unregisterUpdate(IMixerUpdate *pmixerUpdate);
+
+	/// Intergace for registering object in the mixer eventlist.
+	class IMixerEvent
+	{
+	public:
+		virtual void onEvent() =0;
+	};
+
+	/// Add an event in the future.
+	void						addEvent(IMixerEvent *pmixerEvent, const NLMISC::TTime &date);
+	/// Remove any event programmed for this object.
+	void						removeEvent(IMixerEvent *pmixerEvent);
+
+private:
+
+	typedef std::hash_set<CSourceUser*, THashPtr<CSourceUser*> >						TSourceContainer;
+	typedef std::hash_set<IMixerUpdate*, THashPtr<IMixerUpdate*> >					TMixerUpdateContainer;
+	typedef std::hash_map<IBuffer*, std::vector<class CSound*>, THashPtr<IBuffer*> >	TBufferToSourceContainer;
+
 
 protected:
+	/// List of object to update.
+	TMixerUpdateContainer							_UpdateList;
+	/// List of update to add.
+	std::vector<IMixerUpdate*>						_UpdateAddList;
+	/// List of update to remove.
+	std::vector<IMixerUpdate*>						_UpdateRemoveList;
+	/// List of event.
+	std::multimap<NLMISC::TTime, IMixerEvent*>		_EventList;
 
 	/// Redispatch the sources into tracks if needed
 	void						balanceSources()						{ if ( moreSourcesThanTracks() ) redispatchSourcesToTrack(); }
 	/// Returns nb available tracks (or NULL)
 	void						getFreeTracks( uint nb, CTrack **tracks );
 	/// Select the appropriate environmental effect
-	void						computeEnvEffect( const NLMISC::CVector& listenerpos, bool force=false );
+//	void						computeEnvEffect( const NLMISC::CVector& listenerpos, bool force=false );
 	/// Return true if the number of user sources is higher than the number of tracks
 	bool						moreSourcesThanTracks() const			{ return _NbTracks < _Sources.size(); }
 	/// Redispatch the sources (call only if moreSourcesThanTracks() returns true)
 	void						redispatchSourcesToTrack();
 	/// See removeSource(USource*) and removeMySource(USource*)
-	void						removeSource( std::set<CSourceUser*>::iterator ips, bool deleteit );
+	void						removeSource( TSourceContainer::iterator ips, bool deleteit );
 
 private:
 
@@ -225,11 +300,14 @@ private:
 	/// The sound driver instance
 	ISoundDriver				*_SoundDriver;
 
+	/// Intance of the background sound manager.
+	CBackgroundSoundManager		*_BackgroundSoundManager;
+
 	/// Sound buffers and static properties
 	//TSoundMap					_Sounds;
 
 	/// Sound buffers used (and allocated but not deleted because shared) by ambiant sources
-	TSoundSet					_AmbSounds;
+//	TSoundSet					_AmbSounds;
 
 	/// The listener instance
 	CListenerUser				_Listener;
@@ -237,8 +315,10 @@ private:
 	/// Listener position vector
 	NLMISC::CVector				_ListenPosition;
 
-	/// Environment sounds tree
-	CEnvSoundUser				*_EnvSounds;
+	/** Environment sounds tree
+	 *	\deprecated
+	 */
+//	CEnvSoundUser				*_EnvSounds;
 
 	/// Auto-Balance period
 	uint32						_BalancePeriod;
@@ -246,13 +326,19 @@ private:
 	/// The path to the sample banks. This should be specified in the config file.
 	std::string					_SamplePath;
 
-public: // Temp (EDIT)
+	/// Assoc between buffer and source. Used when buffers are unloaded.
+	TBufferToSourceContainer	_BufferToSources;
+
+public: 
 
 	/// All Logical sources
-	std::set<CSourceUser*>		_Sources;
+	TSourceContainer		_Sources;
+	/// The source that wanted to play
+	TSourceContainer		_PlayingSources;
+
 
 	/// Environment effects
-	std::vector<CEnvEffect*>	_EnvEffects;
+//	std::vector<CEnvEffect*>	_EnvEffects;
 	
 private:
 

@@ -1,0 +1,259 @@
+/** \file sound.cpp
+ * CSound: a sound buffer and its static properties
+ *
+ * $Id: simple_sound.cpp,v 1.1 2002/11/04 15:40:44 boucher Exp $
+ */
+
+/* Copyright, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#include "stdsound.h"
+
+#include "nel/misc/path.h"
+#include "simple_sound.h"
+#include "sound_bank.h"
+#include "sample_bank.h"
+#include "driver/sound_driver.h"
+#include "driver/buffer.h"
+
+using namespace std;
+using namespace NLMISC;
+
+
+namespace NLSOUND {
+
+
+/*
+ * Constructor
+ */
+CSimpleSound::CSimpleSound() :
+	_Buffer(NULL), 
+	_MinDist(1.0f),
+	_Detailed(false),
+	_Registered(false),
+	_NeedContext(false)
+{
+}
+
+
+/*
+ * Destructor
+ */
+CSimpleSound::~CSimpleSound()
+{
+	if (_Buffer != NULL)
+		CSoundBank::unregisterBufferAssoc(this, _Buffer);
+}
+
+void CSimpleSound::setBuffer(IBuffer *buffer)
+{
+	if (_Buffer != NULL && buffer != NULL && _Buffer->getName() != buffer->getName())
+	{
+		// if buffer name change, update the registration/
+		CSoundBank::unregisterBufferAssoc(this, _Buffer);
+		CSoundBank::registerBufferAssoc(this, buffer);
+	}
+	else if (!_Registered && buffer != NULL)
+	{
+		// creater initial registration.
+		CSoundBank::registerBufferAssoc(this, buffer);
+		_Registered = true;
+	}
+	_Buffer = buffer;
+}
+
+
+void		CSimpleSound::getBuffername(string &buffername, CSoundContext *context)
+{
+	if(_NeedContext)
+	{
+		buffername = "";
+		if (context == 0)
+		{
+			nlwarning ("Can't find the buffer name without a context for '%s'", _Buffername.c_str());
+			return;
+		}
+		for (uint i = 0; i < _Buffername.size(); i++)
+		{
+			if (_Buffername[i] == '%')
+			{
+				i++;
+				if (i == _Buffername.size())
+				{
+					nlwarning ("Can't find the buffer name '%s' contains a %% at the end", _Buffername.c_str());
+					return;
+				}
+
+				if(isdigit(_Buffername[i]))
+				{
+					// arg 0 -> 9
+					sint32 value = context->Args[_Buffername[i]-'0'];
+					if (value == -1)
+					{
+						nlwarning ("Can't find the buffer name '%s' because argument %d is not in the context", _Buffername.c_str(), _Buffername[i]-'0');
+						buffername = "";
+						return;
+					}
+					buffername += toString(value);
+				}
+				else if(_Buffername[i] == 'r')
+				{
+					// random mode
+					i++;
+					if (i == _Buffername.size())
+					{
+						nlwarning ("Can't find the buffer name '%s' contains a %%r at the end without the number", _Buffername.c_str());
+						buffername = "";
+						return;
+					}
+					if(isdigit(_Buffername[i]))
+					{
+						uint32 value = _Buffername[i]-'0';
+						
+						uint32 randomIndex = rand()%value;
+						if( randomIndex == context->PreviousRandom )
+						{
+							randomIndex = (randomIndex+1)%value;
+						}
+						context->PreviousRandom = randomIndex;
+						buffername += toString(randomIndex);
+					}
+				}
+				else
+				{
+					nlwarning ("Can't find the buffer name '%s' contains an unknown code %%%c", _Buffername.c_str(), _Buffername[i]);
+					buffername = "";
+					return;
+				}
+			}
+			else
+			{
+				buffername += _Buffername[i];
+			}
+		}
+		//nlinfo ("sound getbuffer transform '%s' into '%s' with context", _Buffername.c_str(), buffername.c_str());
+	}
+	else
+	{
+		buffername = _Buffername;
+	}
+}
+
+void				CSimpleSound::getSubSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const
+{
+	// A little hack, we use the reference vector to tag unavailable sample.
+	if (const_cast<CSimpleSound*>(this)->getBuffer() == 0)
+		subsounds.push_back(pair<string, CSound*>(_Buffername+" (sample)", 0));
+
+}
+
+
+/*
+ * Return the sample buffer of this sound
+ */
+IBuffer*			CSimpleSound::getBuffer(string *buffername)
+{ 
+	if(_NeedContext)
+	{
+		if (buffername && buffername->empty())
+		{
+			nlwarning ("Can't find the buffer name without a buffername for '%s'", _Buffername.c_str());
+			nlstop;	// temp debug
+			return 0;
+		}
+		// todo ace opti to now find everytime
+		return CSampleBank::get(*buffername);
+	}
+	else
+	{
+		if (_Buffer == 0)
+		{
+			_Buffer = CSampleBank::get(_Buffername); 
+			CSoundBank::registerBufferAssoc(this, _Buffer);
+			_Registered = true;
+		}
+		if (buffername != 0)
+			*buffername = _Buffername;
+	}
+	return _Buffer;
+}
+
+
+/*
+ * Return the length of the sound in ms
+ */
+uint32				CSimpleSound::getDuration(string *buffername) 
+{
+	IBuffer* buffer = getBuffer(buffername);
+
+	if ( buffer == NULL )
+	{
+		return 0;
+	}
+	else
+	{
+		return (uint32)(buffer->getDuration());
+	}
+}
+
+
+/**
+ * 	Load the sound parameters from georges' form
+ */
+void				CSimpleSound::importForm(const std::string& filename, NLGEORGES::UFormElm& root)
+{
+	NLGEORGES::UFormElm *psoundType;
+	std::string dfnName;
+
+	// some basic checking.
+	root.getNodeByName(&psoundType, ".SoundType");
+	nlassert(psoundType != NULL);
+	psoundType->getDfnName(dfnName);
+	nlassert(dfnName == "simple_sound.dfn");
+
+	// Call the base class
+	CSound::importForm(filename, root);
+
+	// Name
+	_Filename = filename;
+
+	// Buffername
+	root.getValueByName(_Buffername, ".SoundType.Filename");
+	_Buffername = CFile::getFilenameWithoutExtension(_Buffername);
+
+	setBuffer(NULL);
+
+	// contain % so it need a context to play
+	if (_Buffername.find ("%") != string::npos)
+	{
+		_NeedContext = true;
+	}
+
+	// MaxDistance
+ 	root.getValueByName(_MaxDist, ".SoundType.MaxDistance");
+
+	// MinDistance
+	root.getValueByName(_MinDist, ".SoundType.MinDistance");
+
+	// Alpha
+	root.getValueByName(_Alpha, ".SoundType.Alpha");
+
+}
+
+} // NLSOUND

@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * implementation file
  *
- * $Id: animation_dlg.cpp,v 1.10 2002/07/03 12:22:49 vizerie Exp $
+ * $Id: animation_dlg.cpp,v 1.11 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,12 +28,6 @@
 #include "animation_dlg.h"
 #include <math.h>
 #include <nel/misc/time_nl.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 using namespace NLMISC;
 using namespace NL3D;

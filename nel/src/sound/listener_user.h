@@ -1,7 +1,7 @@
 /** \file listener_user.h
  * UListenerUser: implementation of UListener
  *
- * $Id: listener_user.h,v 1.7 2002/02/20 18:09:25 lecroart Exp $
+ * $Id: listener_user.h,v 1.8 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ public:
 	/** Get the position vector.
 	 * See setPos() for details.
 	 */
-	virtual void	getPos( NLMISC::CVector& pos ) const		{ _DrvListener->getPos( pos ); }
+	virtual const NLMISC::CVector &getPos() const		{ return _DrvListener->getPos(); }
 	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
 	virtual void	setVelocity( const NLMISC::CVector& vel )	{ _DrvListener->setVelocity( vel ); }
 	/// Get the velocity vector

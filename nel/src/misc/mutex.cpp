@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.34 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: mutex.cpp,v 1.35 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,13 +23,13 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/mutex.h"
 #include "stdmisc.h"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif // _GNU_SOURCE
 
-#include "nel/misc/mutex.h"
 #include "nel/misc/time_nl.h"
 
 #ifdef MUTEX_DEBUG

@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.h,v 1.8 2002/08/06 09:13:57 coutelas Exp $
+ * $Id: sound_anim_manager.h,v 1.9 2002/11/04 15:40:42 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NLSOUND {
 class CSoundAnimation;
 class UAudioMixer;
 
-// Comparision for const char*
+/*// Comparision for const char*
 struct eqsndanim
 {
   bool operator()(const char* s1, const char* s2) const
@@ -48,7 +48,7 @@ struct eqsndanim
     return strcmp(s1, s2) == 0;
   }
 };
-
+*/
 
 /// 
 typedef sint32 TSoundAnimId;
@@ -59,7 +59,7 @@ const TSoundAnimId CSoundAnimationNoId = -1;
 typedef sint32 TSoundAnimPlayId;
 
 /// Animation name-to-id hash map
-typedef std::hash_map<const char*, TSoundAnimId, std::hash<const char*>, eqsndanim> TSoundAnimMap;
+typedef std::hash_map<std::string, TSoundAnimId> TSoundAnimMap;
 
 /// Animation vector
 typedef std::vector<CSoundAnimation*> TSoundAnimVector;

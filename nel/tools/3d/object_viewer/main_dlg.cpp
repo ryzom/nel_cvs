@@ -1,7 +1,7 @@
 /** \file main_dlg.cpp
  * <File description>
  *
- * $Id: main_dlg.cpp,v 1.8 2002/03/04 14:54:09 corvazier Exp $
+ * $Id: main_dlg.cpp,v 1.9 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,12 +27,6 @@
 #include "object_viewer.h"
 #include "main_dlg.h"
 #include <3d/channel_mixer.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 using namespace NLMISC;
 using namespace NL3D;

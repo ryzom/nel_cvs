@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.15 2002/07/26 09:02:37 lecroart Exp $
+ * $Id: source_user.h,v 1.16 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,10 +27,11 @@
 #define NL_SOURCE_USER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/sound/u_source.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/time_nl.h"
-#include "playable.h"
+//#include "playable.h"
+#include "source_common.h"
+#include "simple_sound.h"
 
 
 namespace NLSOUND {
@@ -38,7 +39,7 @@ namespace NLSOUND {
 
 class ISource;
 class CTrack;
-class CSound;
+class CSimpleSound;
 
 
 /**
@@ -47,12 +48,12 @@ class CSound;
  * \author Nevrax France
  * \date 2001
  */
-class CSourceUser : public USource, public IPlayable
+class CSourceUser : public CSourceCommon //, public IPlayable
 {
 public:
 
 	/// Constructor
-	CSourceUser( TSoundId id=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0, CSoundContext *context=0, const std::string &buffername = "" );
+	CSourceUser( CSimpleSound *simpleSound=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0, CSoundContext *context=0, const std::string &buffername = "" );
 	/// Destructor
 	virtual ~CSourceUser();
 
@@ -63,31 +64,33 @@ public:
 	}
 
 	
+	/// Local specialized setSound.
+	void							setSound( CSimpleSound *simpleSound, CSoundContext *context = 0, const std::string &buffername = "");
 	/// Change the sound binded to the source
-	virtual void					setSound( TSoundId id, CSoundContext *context = 0, const std::string &buffername = "" );
+	virtual void					setSound( TSoundId id, CSoundContext *context = 0);
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound()									{ return _Sound; }
+	/// Return the simple sound bound to the source (or NULL). 
+	CSimpleSound					*getSimpleSound();
 	/// Change the priority of the source
-	virtual void					setPriority( TSoundPriority pr, bool redispatch=true );
-	/// Return the priority
-	TSoundPriority					getPriority()								{ return _Priority; }
+//	virtual void					setPriority( TSoundPriority pr, bool redispatch=true );
 
 	/// \name Playback control
 	//@{
 	/// Set looping on/off for future playbacks (default: off)
 	virtual void					setLooping( bool l );
 	/// Return the looping state
-	virtual bool					getLooping() const;
+//	virtual bool					getLooping() const;
 	/// Play
 	virtual void					play();
 	/// Stop playing
 	virtual void					stop();
 	/// Get playing state. Return false even if the source has stopped on its own.
 	virtual bool					isPlaying();
-	/// Tells this source not to call its callbacks when it ends. This is valid for spawned sources only.
-	virtual	void					unregisterSpawnCallBack()					{ _SpawnEndCb = NULL; }
 	///
 	virtual NLMISC::TTicks			getPlayTime()								{ return NLMISC::CTime::getLocalTime() - _PlayStart; }
+	/// Returns the number of milliseconds the source has been playing
+	virtual uint32					getTime();
 	//@}
 
 
@@ -101,15 +104,11 @@ public:
 	/** Get the position vector.
 	 * If the source is stereo, return the position vector which reference was passed to set3DPositionVector()
 	 */
-	virtual void					getPos( NLMISC::CVector& pos ) const;
+//	virtual void					getPos( NLMISC::CVector& pos ) const;
 	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
 	virtual void					setVelocity( const NLMISC::CVector& vel );
-	/// Get the velocity vector
-	virtual void					getVelocity( NLMISC::CVector& vel ) const	{ vel = _Velocity; }
 	/// Set the direction vector (3D mode only, ignored in stereo mode) (default: (0,0,0) as non-directional)
 	virtual void					setDirection( const NLMISC::CVector& dir );
-	/// Get the direction vector
-	virtual void					getDirection( NLMISC::CVector& dir ) const	{ dir = _Direction; }
 	/** Set the gain (volume value inside [0 , 1]). (default: 1)
 	 * 0.0 -> silence
 	 * 0.5 -> -6dB
@@ -117,30 +116,22 @@ public:
 	 * values > 1 (amplification) not supported by most drivers
 	 */
 	virtual void					setGain( float gain );
-	/// Get the gain
-	virtual float					getGain() const								{ return _Gain; }
 	/** Set the gain amount (value inside [0, 1]) to map between 0 and the nominal gain
 	 * (which is getSource()->getGain()). Does nothing if getSource() is null.
 	 */
 	virtual void					setRelativeGain( float gain );
 	/// Return the relative gain (see setRelativeGain()), or the absolute gain if getSource() is null.
-	virtual float					getRelativeGain() const;
+//	virtual float					getRelativeGain() const;
 	/** Shift the frequency. 1.0f equals identity, each reduction of 50% equals a pitch shift
 	 * of one octave. 0 is not a legal value.
 	 */
 	virtual void					setPitch( float pitch );
-	/// Get the pitch
-	virtual float					getPitch() const							{ return _Pitch; }
 	/// Set the source relative mode. If true, positions are interpreted relative to the listener position (default: false)
 	virtual void					setSourceRelativeMode( bool mode );
-	/// Get the source relative mode
-	virtual bool					getSourceRelativeMode() const				{ return _RelativeMode; }
 
 
-	/// Set the position vector to return for a stereo source (default: NULL)
-	void							set3DPositionVector( const NLMISC::CVector *pos )	{ _3DPosition = pos; }
 	/// Return a pointer to the position vector (3D mode only)
-	const NLMISC::CVector			*getPositionP() const						{ return &_Position; }
+//	const NLMISC::CVector			*getPosition() const						{ return &_Position; }
 	/** Set the corresponding track	(NULL allowed, sets no track)
 	 * Don't set a non-null track if getSound() is null.
 	 */
@@ -151,12 +142,8 @@ public:
 	CTrack							*getTrack()									{ return _Track; }
 	/// Return true if playing is finished or stop() has been called.
 	bool							isStopped();
-	/// Return the spawn state
-	bool							isSpawn() const								{ return _Spawn; }
 	/// Return the spawn end callback
 	TSpawnEndCallback				getSpawnEndCallback() const					{ return _SpawnEndCb; }
-	/// return the user param for the user callback
-	void							*getCallbackUserParam(void) const			{ return _CbUserParam; }
 
 	// From IPlayable
 
@@ -178,35 +165,26 @@ protected:
 
 private:
 
-	// These data are copied to a track when the source selected is for playing
+	TSOURCE_TYPE					getType() const								{return SOURCE_SIMPLE;}
 
-	CSound							*_Sound;
+	// These data are copied to a track when the source selected is for playing
+	CSimpleSound					*_Sound;
+	
+	float							_Alpha;
+
 	// name of a buffer get by getBuffer()
 	std::string						_Buffername;
-	TSoundPriority					_Priority;
-	bool							_Playing;
-	bool							_Looping;
-
-	NLMISC::CVector					_Position;
-	NLMISC::CVector					_Velocity;
-	NLMISC::CVector					_Direction;
-	float							_Gain;
-	float							_Pitch;
-	bool							_RelativeMode;
 
 	// Corresponding track (if selected for playing)
 	CTrack							*_Track;
 
-	// Position to return, for a stereo source
-	const NLMISC::CVector			*_3DPosition;
+/*
+	static void storeSource(CSourceUser *psourceUser, const std::string &buffername);
+	static void removeSource(CSourceUser *psourceUser, const std::string &buffername);
 
-	// Playing start time
-	NLMISC::TTime					_PlayStart;
-
-	// Spawn state
-	const bool						_Spawn;
-	TSpawnEndCallback				_SpawnEndCb;
-	void							*_CbUserParam;
+	/// Container for all created sounds, remaind the buffer name assoc. used for sample banks
+	static std::map<std::string, std::set<CSourceUser *> >	_Sources;
+*/
 };
 
 

@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.10 2002/07/19 15:07:49 miller Exp $
+ * $Id: listener_dsound.cpp,v 1.11 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,13 +44,13 @@ CListenerDSound	*CListenerDSound::_Instance = NULL;
  */
 CListenerDSound::CListenerDSound(LPDIRECTSOUND3DLISTENER dsoundListener) //: IListener()
 {
+	_Pos = CVector::Null;
 	if ( _Instance == NULL )
 	{
 		_Instance = this;
         _Listener = dsoundListener;
 
-		// FIXME: VOLUMETEST
-		//setRolloffFactor(DS3D_MINROLLOFFFACTOR);
+		setRolloffFactor(DS3D_MINROLLOFFFACTOR);
 	}
 	else
 	{
@@ -86,6 +86,8 @@ void CListenerDSound::release()
  */
 void CListenerDSound::setPos( const NLMISC::CVector& pos )
 {
+
+	_Pos = pos;
 	// Coordinate system: conversion from NeL to OpenAL/GL:
     if (_Listener != NULL)
     {
@@ -97,15 +99,17 @@ void CListenerDSound::setPos( const NLMISC::CVector& pos )
 		{
 			//nlwarning ("set listener NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", pos.x, pos.y, pos.z, pos.x, pos.z, pos.y);
 		}
-    }
+	}
 }
 
 
 /** Get the position vector.
  * See setPos() for details.
  */
-void CListenerDSound::getPos( NLMISC::CVector& pos ) const
+const NLMISC::CVector &CListenerDSound::getPos() const
 {
+	return _Pos;
+/*	return;
 	// Coordinate system: conversion from NeL to OpenAL/GL:
     if (_Listener != NULL)
 	{
@@ -124,6 +128,7 @@ void CListenerDSound::getPos( NLMISC::CVector& pos ) const
 	{
 		pos.set(0, 0, 0);
 	}
+*/
 }
 
 

@@ -37,7 +37,7 @@ RSC=rc.exe
 # PROP Output_Dir "../obj/Release/pacs"
 # PROP Intermediate_Dir "../obj/Release/pacs"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"stdpacs.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "NDEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdpacs.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
@@ -53,7 +53,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/Debug/pacs"
 # PROP Intermediate_Dir "../obj/Debug/pacs"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_MBCS" /D "WIN32" /D "_DEBUG" /Yu"stdpacs.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdpacs.h" /FD /GZ /c
 # SUBTRACT CPP /Gf /Gy /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
@@ -69,7 +69,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/ReleaseDebug/pacs"
 # PROP Intermediate_Dir "../obj/ReleaseDebug/pacs"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "NL_RELEASE_DEBUG" /Yu"stdpacs.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "NDEBUG" /D "_LIB" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdpacs.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
@@ -85,7 +85,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/DebugFast/pacs"
 # PROP Intermediate_Dir "../obj/DebugFast/pacs"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Yu"stdpacs.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdpacs.h" /FD /GZ /c
 # SUBTRACT CPP /Gf /Gy /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"

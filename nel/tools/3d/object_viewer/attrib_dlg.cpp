@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.21 2002/02/15 17:16:44 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.22 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,12 +54,6 @@
 #include "3d/ps_plane_basis_maker.h"
 
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /*static char trace_buf[200];

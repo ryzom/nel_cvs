@@ -1,7 +1,7 @@
 /** \file constraint_mesh_dlg.cpp
  * A dialog for editing constraint meshs
  *
- * $Id: constraint_mesh_dlg.cpp,v 1.2 2001/12/18 18:34:34 vizerie Exp $
+ * $Id: constraint_mesh_dlg.cpp,v 1.3 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,11 +30,6 @@
 
 #include "3d/ps_mesh.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 //============================================================================================
 CConstraintMeshDlg::CConstraintMeshDlg(NL3D::CPSConstraintMesh *cm, CWnd* pParent /*=NULL*/)

@@ -2,7 +2,7 @@
  * a dialog to choose a direction (normalized vector). It gives several choices, or allow 
  * to call a more complete dialog (CDirectionEdit)
  *
- * $Id: direction_attr.cpp,v 1.3 2001/12/18 18:36:18 vizerie Exp $
+ * $Id: direction_attr.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,12 +29,6 @@
 #include "direction_attr.h"
 #include "direction_edit.h"
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CDirectionAttr dialog

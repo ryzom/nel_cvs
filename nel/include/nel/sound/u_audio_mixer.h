@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.17 2002/07/25 13:33:48 lecroart Exp $
+ * $Id: u_audio_mixer.h,v 1.18 2002/11/04 15:40:42 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/sound/u_source.h"
+#include "nel/ligo/primitive.h"
 #include <vector>
 
 
@@ -38,7 +39,7 @@ class UEnvSound;
 class UListener;
 
 
-#define AUTOBALANCE_DEFAULT_PERIOD 20
+const uint32 AUTOBALANCE_DEFAULT_PERIOD = 20;
 
 
 /**
@@ -65,6 +66,12 @@ class UAudioMixer
 {
 public:
 
+	/** Structure that containg the background flags.*/
+	struct TBackgroundFlags
+	{
+		bool	Flags[16];
+	};
+
 	/// Create the audio mixer singleton and return a pointer to its instance
 	static UAudioMixer	*createAudioMixer();
 	/** Initialization
@@ -81,19 +88,38 @@ public:
 	/// Disables or reenables the sound
 	virtual void		enable( bool b ) = 0;
 
-	/// Load environment effects
-	virtual void		loadEnvEffects( const char *filename ) = 0;
+	/** Load environment effects
+	 *	\deprecated
+	 */
+//	virtual void		loadEnvEffects( const char *filename ) = 0;
 	/** Load buffers. Returns the number of buffers successfully loaded.
 	 *  If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
+	 *	\param async If true, the sample are loaded in a background thread.
+	 *	\param filename Name of the directory that contains the samples to load.
+	 *	\param notfoundfiles An optionnal pointer to a vector that will be filled with the list of not found files.
 	 */
-	virtual uint32		loadSampleBank( const char *filename, std::vector<std::string> *notfoundfiles=NULL ) = 0;
-	/// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
-	virtual	void		loadEnvSounds( const char *filename,
-									   UEnvSound **treeRoot=NULL ) = 0;
+	virtual uint32		loadSampleBank(bool async, const std::string &filename, std::vector<std::string> *notfoundfiles=NULL ) = 0;
+	/** Unload buffers. Return false if the bank can't be unloaded because an async loading is running.
+	*/
+	virtual bool		unloadSampleBank( const std::string &filename) = 0;
+	/** Reload all the sample bank.
+	 *	Thid method use provided for use in a sound editor or sound tool to update the list of available samples.
+	 *	\async If true, the samples are loaded in a background thread.
+	 */
+	virtual void		reloadSampleBanks(bool async) =0;
+	/** Return the total size in byte of loaded samples.
+	 */
+	virtual uint32		getLoadedSampleSize() =0;
+
+
+	/** Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
+	 *	\deprecated
+	 */
+//	virtual	void		loadEnvSounds( const char *filename, UEnvSound **treeRoot=NULL ) = 0;
 	/// Load sounds. Returns the number of sounds successfully loaded.
-	virtual void		loadSoundBank( const char *path ) = 0;
+	virtual void		loadSoundBank( const std::string &path ) = 0;
 	/// Get a TSoundId from a name (returns NULL if not found)
-	virtual TSoundId	getSoundId( const char *name ) = 0;
+	virtual TSoundId	getSoundId( const std::string &name ) = 0;
 
 
 	/** Add a logical sound source (returns NULL if name not found).
@@ -102,7 +128,7 @@ public:
 	 * pass a callback function that will be called (if not NULL) just before deleting the spawned
 	 * source.
 	 */
-	virtual USource		*createSource( const char *name, bool spawn=false, TSpawnEndCallback cb=NULL, void *callbackUserParam = NULL, CSoundContext *context=0) = 0;
+	virtual USource		*createSource( const std::string &name, bool spawn=false, TSpawnEndCallback cb=NULL, void *callbackUserParam = NULL, CSoundContext *context=0) = 0;
 	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
 	virtual USource		*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL, void *callbackUserParam  = NULL, CSoundContext *context=0 ) = 0;
 	/** Delete a logical sound source. If you don't call it, the source will be auto-deleted
@@ -120,14 +146,16 @@ public:
 	virtual UListener	*getListener() = 0;
 
 
-	/// Choose the environmental effect(s) corresponding to tag
-	virtual void		selectEnvEffects( const char *tag ) = 0;
+	/** Choose the environmental effect(s) corresponding to tag
+	 *	\deprecated
+	 */
+	virtual void		selectEnvEffects( const std::string &tag ) = 0;
 	/// Update audio mixer (call evenly)
 	virtual void		update() = 0;
 
 
 	/// Return the names of the sounds (call this method after loadSounds())
-	virtual void		getSoundNames( std::vector<const char *>& names ) const = 0;
+	virtual void		getSoundNames( std::vector<std::string>& names ) const = 0;
 	/// Return the number of mixing tracks (voices)
 	virtual uint		getPolyphony() const = 0;
 	/// Return the number of sources
@@ -147,11 +175,15 @@ public:
 	 */
 	virtual void		writeProfile(std::ostream& out) = 0;
 
+	virtual void		setBackgroundFlags(const TBackgroundFlags &backgroundFlags) = 0;
 
+	virtual void		loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region) = 0;
+	virtual void		loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region) = 0;
+	virtual void		loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region) = 0;
 	virtual void		loadBackgroundSound (const std::string &continent) = 0;
 	virtual void		playBackgroundSound () = 0;
 	virtual void		stopBackgroundSound () = 0;
-	virtual void		setBackgroundSoundDayNightRatio (float ratio) = 0;
+//	virtual void		setBackgroundSoundDayNightRatio (float ratio) = 0;
 
 	/// Destructor
 	virtual				~UAudioMixer() {}

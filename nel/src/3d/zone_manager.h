@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.4 2002/10/14 15:52:50 besson Exp $
+ * $Id: zone_manager.h,v 1.5 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "3d/zone.h"
 //#include "nel/misc/task_manager.h"
 
-#include "3d/async_file_manager.h"
+#include "3d/async_file_manager_3d.h"
 #include "3d/zone_search.h"
 
 

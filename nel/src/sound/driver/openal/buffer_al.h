@@ -1,7 +1,7 @@
 /** \file buffer_al.h
  * OpenAL buffer
  *
- * $Id: buffer_al.h,v 1.5 2002/06/14 12:21:26 hanappe Exp $
+ * $Id: buffer_al.h,v 1.6 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,10 +88,12 @@ public:
 	ALuint				bufferName()							{ return _BufferName; }
 	
 	/// Return the name of the buffer (as a string)
-	virtual std::string&	getName()							{ return _Name; }
+	virtual const std::string&	getName()							{ return _Name; }
 
 	/// Set the name of the buffer
 	virtual void		setName(std::string& name)				{ _Name = name; }
+
+	virtual void		presetName(const std::string &bufferName);
 
 private:
 

@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.8 2002/08/26 09:36:28 lecroart Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.9 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -651,8 +651,7 @@ void CSoundDriverDSound::commit3DChanges()
 	listener->commit3DChanges();
 
 
-	CVector origin;
-	listener->getPos(origin);
+	const CVector &origin = listener->getPos();
 
 	set<CSourceDSound*>::iterator iter;
 

@@ -1,7 +1,7 @@
 /** \file _u_form_elm.h
  * Georges form element interface
  *
- * $Id: u_form_elm.h,v 1.9 2002/10/28 11:08:07 corvazier Exp $
+ * $Id: u_form_elm.h,v 1.10 2002/11/04 15:40:42 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,7 +155,7 @@ public:
 
 	/// Return true if the element is an array
 	virtual bool	isArray () const = 0;
-
+	
 	/// Return true if the element is an array and fill size with the array size
 	virtual bool	getArraySize (uint &size) const = 0;
 

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.22 2002/02/27 15:45:13 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.23 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,15 +51,6 @@
 
 
 using NL3D::CPSLocatedBindable; 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-
 
 
 /////////////////////////////////////////////////////////////////////////////

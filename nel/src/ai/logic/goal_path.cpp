@@ -1,6 +1,6 @@
 /** \file opcode_lpt.cpp
  *
- * $Id: goal_path.cpp,v 1.1 2002/10/07 12:21:51 portier Exp $
+ * $Id: goal_path.cpp,v 1.2 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ namespace NLAILOGIC
 
 	void CGoalPath::success()
 	{
-		if ( _CurrentState < ( _Goals.size() - 1 ) )
+		if ( _CurrentState < ( int(_Goals.size()) - 1 ) )
 		{
 			_CurrentState++;
 			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CGoalMsg((NLAIAGENT::IBasicAgent *)NULL);
@@ -73,7 +73,7 @@ namespace NLAILOGIC
 
 	void CGoalPath::failure()
 	{
-		if ( _CurrentState < ( _Goals.size() - 1 ) )
+		if ( _CurrentState < ( int(_Goals.size()) - 1 ) )
 		{
 			// Relaunches 
 			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CGoalMsg((NLAIAGENT::IBasicAgent *)NULL);

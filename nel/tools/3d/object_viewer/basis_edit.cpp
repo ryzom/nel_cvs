@@ -1,7 +1,7 @@
 /** \file basis_edit.cpp
  * a dialog to edit the orientation of a basis
  *
- * $Id: basis_edit.cpp,v 1.4 2001/09/12 13:23:54 vizerie Exp $
+ * $Id: basis_edit.cpp,v 1.5 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,12 +28,6 @@
 #include "basis_edit.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/vector.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBasisEdit dialog

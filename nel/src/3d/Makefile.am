@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.93 2002/11/04 13:55:05 coutelas Exp $
+# $Id: Makefile.am,v 1.94 2002/11/04 15:40:43 boucher Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -33,8 +33,8 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        animation_time.cpp \
                        anim_detail_trav.cpp \
                        anim_detail_trav.h \
-                       async_file_manager.cpp \
-                       async_file_manager.h \
+                       async_file_manager_3d.cpp \
+                       async_file_manager_3d.h \
                        async_texture_block.cpp \
                        async_texture_block.h \
                        async_texture_manager.cpp \

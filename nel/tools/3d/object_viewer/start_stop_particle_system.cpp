@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.13 2002/04/25 10:34:57 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.14 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,12 +39,6 @@
 
 
 #include  <algorithm>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /*static char trace_buf[200];
 #define NL_TRACE sprintf(trace_buf, "%d", __LINE__); \

@@ -33,24 +33,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "driver_openal"=..\..\..\src\sound\driver\openal\driver_openal.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name sound_lowlevel
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name misc
-    End Project Dependency
-}}}
-
-###############################################################################
-
 Project: "driver_opengl"=..\..\..\src\3d\driver\opengl\driver_opengl.dsp - Package Owner=<4>
 
 Package=<5>
@@ -123,9 +105,6 @@ Package=<4>
     Project_Dep_Name sound
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name driver_openal
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name driver_opengl
     End Project Dependency
     Begin Project Dependency
@@ -133,6 +112,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name ligo
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name georges
     End Project Dependency
 }}}
 
@@ -157,9 +139,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name misc
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name driver_openal
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name sound

@@ -39,7 +39,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "../../../../obj/Release/driver_opengl"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /Yu"stdopengl.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdopengl.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c
@@ -58,7 +58,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../obj/Debug/driver_opengl"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /Yu"stdopengl.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdopengl.h" /FD /GZ /c
 # SUBTRACT CPP /Fr
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c
@@ -77,7 +77,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../obj/ReleaseDebug/driver_opengl"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /Yu"stdopengl.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdopengl.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c
@@ -96,7 +96,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../obj/DebugFast/driver_opengl"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Yu"stdopengl.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdopengl.h" /FD /GZ /c
 # SUBTRACT CPP /Gf /Fr
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c

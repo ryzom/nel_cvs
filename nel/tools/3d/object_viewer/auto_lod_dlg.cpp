@@ -1,7 +1,7 @@
 /** \file auto_lod_dlg.cpp
  * A dialog to tune auto-lod options of particle systems.
  *
- * $Id: auto_lod_dlg.cpp,v 1.1 2002/02/15 17:16:57 vizerie Exp $
+ * $Id: auto_lod_dlg.cpp,v 1.2 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -33,11 +33,6 @@
 #include "editable_range.h"
 #include "popup_notify.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CAutoLODDlg dialog

@@ -55,7 +55,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib libxml2.lib /nologo /subsystem:windows /dll /incremental:yes /machine:I386 /out:"../../../lib/object_viewer.dll"
+# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib libxml2.lib freetype.lib /nologo /subsystem:windows /dll /incremental:yes /machine:I386 /out:"../../../lib/object_viewer.dll"
 # SUBTRACT LINK32 /pdb:none
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
@@ -77,7 +77,7 @@ PreLink_Cmds=buildinc version.ver object_viewer.rc	rc /l 0x40c /fo"Release/objec
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /FR /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /FR /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
@@ -87,8 +87,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 freetype.lib libxml2_debug.lib mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
-# SUBTRACT LINK32 /pdb:none /incremental:no
+# ADD LINK32 libxml2_debug.lib mfcs42d.lib version.lib freetype_debug.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
 
@@ -105,7 +105,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"std_afx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_RELEASE_DEBUG" /Yu"std_afx.h" /FD /Zm400 /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_WINDLL" /D "_USRDLL" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Yu"std_afx.h" /FD /Zm400 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
@@ -115,7 +115,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
-# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib libxml2.lib freetype.lib /nologo /subsystem:windows /dll /incremental:yes /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
+# ADD LINK32 mfcs42.lib version.lib libxml2.lib freetype.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
+# SUBTRACT LINK32 /incremental:yes
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 DebugFast"
 
@@ -132,7 +133,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"std_afx.h" /FD /D /GZ /Zm200 /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_DEBUG_FAST" /FR /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_DEBUG_FAST" /D "_STLP_USE_DEBUG_LIB" /FR /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
@@ -143,8 +144,8 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none /incremental:no
-# ADD LINK32 freetype.lib mfcs42d.lib msvcrtd.lib libc.lib version.lib libxml2_debug.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
-# SUBTRACT LINK32 /pdb:none /incremental:no
+# ADD LINK32 freetype_debug.lib mfcs42d.lib msvcrtd.lib version.lib libxml2_debug.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
 

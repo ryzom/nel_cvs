@@ -1,6 +1,6 @@
 /** \file tail_particle_dlg.cpp
  * A dailog that helps to tune propertie of particle that owns a tail 
- * $Id: tail_particle_dlg.cpp,v 1.3 2002/02/27 15:45:52 vizerie Exp $
+ * $Id: tail_particle_dlg.cpp,v 1.4 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,11 +29,6 @@
 
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CTailParticleDlg dialog

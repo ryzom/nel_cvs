@@ -1,7 +1,7 @@
 /** \file sound_anim_dlg.cpp
  * The main dialog to edit animation sound tracks
  *
- * $Id: sound_anim_dlg.cpp,v 1.2 2002/07/25 13:36:43 lecroart Exp $
+ * $Id: sound_anim_dlg.cpp,v 1.3 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,11 +40,6 @@ using namespace NLMISC;
 using namespace NLSOUND;
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // ********************************************************
 
@@ -167,7 +162,8 @@ void CSoundAnimDlg::OnAddSound()
 {
 	if (_SelectedMarker != 0)
 	{
-		CPickSound::TNameVect names;
+//		CPickSound::TNameVect names;
+		vector<string>	names;
 		
 
 		NLSOUND::UAudioMixer *audioMixer = CSoundSystem::getAudioMixer();

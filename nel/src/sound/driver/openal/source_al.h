@@ -1,7 +1,7 @@
 /** \file source_al.h
  * OpenAL sound source
  *
- * $Id: source_al.h,v 1.9 2001/09/03 14:21:39 cado Exp $
+ * $Id: source_al.h,v 1.10 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,7 @@ public:
 	/** Get the position vector.
 	 * See setPos() for details.
 	 */
-	virtual void			getPos( NLMISC::CVector& pos ) const;
+	virtual const NLMISC::CVector	&getPos() const;
 	/// Set the velocity vector (3D mode only) (default: (0,0,0))
 	virtual void			setVelocity( const NLMISC::CVector& vel );
 	/// Get the velocity vector

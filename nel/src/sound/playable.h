@@ -1,7 +1,7 @@
 /** \file playable.h
  * IPlayable: Playable object interface, typically one sound source or a set of sound sources
  *
- * $Id: playable.h,v 1.3 2002/06/20 08:35:30 hanappe Exp $
+ * $Id: playable.h,v 1.4 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -22,6 +22,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+#error "Deprecated"
 
 #ifndef NL_PLAYABLE_H
 #define NL_PLAYABLE_H
@@ -30,7 +31,7 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/vector.h"
 
-
+#error "deprecated"
 namespace NLSOUND {
 
 

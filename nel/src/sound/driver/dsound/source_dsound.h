@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.5 2002/06/28 19:35:19 hanappe Exp $
+ * $Id: source_dsound.h,v 1.6 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 #include "sound/driver/source.h"
 
+//#include <windows.h>
+#include <dsound.h>
 
 
 namespace NLSOUND {
@@ -43,18 +45,39 @@ class CBufferDSound;
  *   - the buffer still contains samples but silence is being written (silencing),
  *   - the buffer contains no samples but only silence (silenced)
  */
-typedef enum { NL_DSOUND_FILLING, NL_DSOUND_SILENCING, NL_DSOUND_SILENCED } TSourceDSoundBufferState;
+enum TSourceDSoundBufferState 
+{ 
+	/// The buffer is being filled with samples (filling),
+	NL_DSOUND_FILLING, 
+	/// The buffer still contains samples but silence is being written (silencing),
+	NL_DSOUND_SILENCING, 
+	/// The buffer contains no samples but only silence (silenced)
+	NL_DSOUND_SILENCED 
+} ;
 
 
 /** The state of the source as experienced by the user: playing, paused, and stopped. */
-typedef enum { NL_DSOUND_PLAYING, NL_DSOUND_PAUSED, NL_DSOUND_STOPPED } TSourceDSoundUserState;
+enum TSourceDSoundUserState 
+{ 
+	/// The buffer is playing.
+	NL_DSOUND_PLAYING, 
+	/// The buffer is paused.
+	NL_DSOUND_PAUSED, 
+	/// The buffer is stopped.
+	NL_DSOUND_STOPPED 
+};
 
 
 /** To figger out whether the sound device has played all the samples in the buffer,
  *  the position of the play cursor is traced relatively to the position of the last
  *  sample in the buffer.
  */
-typedef enum { NL_DSOUND_TAIL1, NL_DSOUND_TAIL2, NL_DSOUND_ENDED } TSourceDSoundEndState;
+enum TSourceDSoundEndState
+{
+	NL_DSOUND_TAIL1, 
+	NL_DSOUND_TAIL2, 
+	NL_DSOUND_ENDED 
+};
 
 
 /**
@@ -108,7 +131,7 @@ public:
 	virtual bool			getLooping() const;
 
     /// Play the static buffer (or stream in and play)
-	virtual void			play();
+	virtual bool			play();
 
     /// Stop playing
 	virtual void			stop();
@@ -133,7 +156,7 @@ public:
 	virtual bool			update2();
 
 	/// Returns the number of milliseconds the source has been playing
-	virtual uint32			getTime() { return 1000 * _BytesWritten / _SampleRate; }
+	virtual uint32			getTime() { return 1000 * _BytesWritten / (_SampleRate * 2); }
 
 	//@}
 
@@ -150,7 +173,7 @@ public:
     /** Get the position vector.
 	 * See setPos() for details.
 	 */
-	virtual void			getPos( NLMISC::CVector& pos ) const;
+	const NLMISC::CVector	&getPos() const;
 
     /// Set the velocity vector (3D mode only) (default: (0,0,0))
 	virtual void			setVelocity( const NLMISC::CVector& vel );
@@ -217,7 +240,7 @@ public:
 
 	/// Update the source's volume according to its distance and fade out curve. 
 	/// It takes the current position of the listener as argument.
-	void					updateVolume( NLMISC::CVector& listener );
+	void					updateVolume( const NLMISC::CVector& listener );
 
 	/** Set the alpha value for the volume-distance curve
 	 * 
@@ -358,6 +381,8 @@ private:
 	float					_Gain;
 
 	double					_Alpha;
+
+	NLMISC::CVector			_Pos;
 
 #if NLSOUND_PROFILE
 

@@ -1,7 +1,7 @@
 /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.11 2002/10/14 09:50:56 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.12 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,11 +33,6 @@
 #include "auto_lod_dlg.h"
 #include "ps_global_color_dlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CParticleSystemEdit dialog

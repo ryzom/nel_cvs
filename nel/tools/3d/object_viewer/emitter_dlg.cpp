@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.10 2002/02/15 17:17:19 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.11 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,12 +31,6 @@
 #include "3d/particle_system.h"
 
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CEmitterDlg dialog

@@ -1,7 +1,7 @@
 /** \file lb_extern_id_dlg.cpp
  * A dialog for assigning ID to objects in a particle system
  *
- * $Id: lb_extern_id_dlg.cpp,v 1.4 2001/12/18 18:38:00 vizerie Exp $
+ * $Id: lb_extern_id_dlg.cpp,v 1.5 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,12 +29,6 @@
 #include "object_viewer.h"
 #include "lb_extern_id_dlg.h"
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CLBExternIDDlg dialog

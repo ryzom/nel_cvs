@@ -1,7 +1,7 @@
 /** \file value_from_emitter_dlg.cpp
  * Dialog used to tune particle attributes that are computed from their emitter
  *
- * $Id: value_from_emitter_dlg.cpp,v 1.3 2001/12/18 18:41:25 vizerie Exp $
+ * $Id: value_from_emitter_dlg.cpp,v 1.4 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,11 +28,6 @@
 #include "value_from_emitter_dlg.h"
 #include "popup_notify.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CValueFromEmitterDlg dialog

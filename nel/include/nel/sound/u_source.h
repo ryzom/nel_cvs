@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.12 2002/07/26 09:02:27 lecroart Exp $
+ * $Id: u_source.h,v 1.13 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_SOURCE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
 
 namespace NLMISC {
 
@@ -99,8 +100,10 @@ class USource
 {
 public:
 
-	/// Change the sound binded to the source
-	virtual void					setSound( TSoundId id, CSoundContext *context = 0, const std::string &buffername = "" ) = 0;
+	/** Change the sound binded to the source.
+	  * The source must be of the same type as the source (ie simple or complex or background sound).
+	  */
+	virtual void					setSound( TSoundId id, CSoundContext *context = 0) = 0;
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound() = 0;
 	/// Change the priority of the source
@@ -120,6 +123,8 @@ public:
 	virtual bool					isPlaying() = 0;
 	/// Tells this source not to call its callbacks when it ends. This is valid for spawned sources only.
 	virtual	void					unregisterSpawnCallBack() = 0;
+	/// Returns the number of milliseconds the source has been playing
+	virtual uint32					getTime() =0;
 	//@}
 
 	
@@ -131,7 +136,7 @@ public:
 	 */
 	virtual void					setPos( const NLMISC::CVector& pos ) = 0;
 	/// Get the position vector (3D mode only)
-	virtual void					getPos( NLMISC::CVector& pos ) const = 0;
+	virtual const NLMISC::CVector	&getPos() const = 0;
 	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
 	virtual void					setVelocity( const NLMISC::CVector& vel ) = 0;
 	/// Get the velocity vector

@@ -1,7 +1,7 @@
 /** \file buffer.h
  * IBuffer: sound buffer interface
  *
- * $Id: buffer.h,v 1.2 2002/06/11 09:36:46 hanappe Exp $
+ * $Id: buffer.h,v 1.3 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,12 @@ class IBuffer
 {
 public:
 
+	/** Preset the name of the buffer. Used for async loading to give a name
+	 *	before the buffer is effectivly loaded.
+	 *	If the name after loading of the buffer doesn't match the preset name,
+	 *	the load will assert.
+	 */
+	virtual void			presetName(const std::string &bufferName) = 0;
 	/// Set the sample format. Example: freq=44100
 	virtual void			setFormat( TSampleFormat format, uint freq ) = 0;
 	/// Set the buffer size and fill the buffer.  Return true if ok. Call setFormat() first.
@@ -77,7 +83,7 @@ public:
 	virtual bool			fillMore( void *src, uint32 srcsize )	{ throw ESoundDriverNotSupp(); }
 
 	/// Return the name of this buffer
-	virtual std::string&	getName() = 0;
+	virtual const std::string&	getName() = 0;
 
 protected:
 

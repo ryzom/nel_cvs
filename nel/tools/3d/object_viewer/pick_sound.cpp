@@ -1,7 +1,7 @@
 /** \file pick_sound.cpp
  * Dialog used to select a sound in the sound bank.
  *
- * $Id: pick_sound.cpp,v 1.4 2002/07/08 14:53:24 lecroart Exp $
+ * $Id: pick_sound.cpp,v 1.5 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,17 +33,14 @@
 #include "nel/sound/u_listener.h"
 #include "nel/sound/u_source.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+using namespace std;
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CPickSound dialog
 
 
-CPickSound::CPickSound(TNameVect &names, CWnd* pParent /*=NULL*/)
+CPickSound::CPickSound(const std::vector<std::string> &names, CWnd* pParent /*=NULL*/)
 	: CDialog(CPickSound::IDD, pParent), _Names(names)
 {
 	
@@ -79,9 +76,9 @@ BOOL CPickSound::OnInitDialog()
 	CDialog::OnInitDialog();
 	UpdateData();
 	
-	for (TNameVect::const_iterator it = _Names.begin(); it	!= _Names.end(); ++it)
+	for (vector<string>::const_iterator it = _Names.begin(); it	!= _Names.end(); ++it)
 	{
-		m_NameList.AddString(*it);
+		m_NameList.AddString(it->c_str());
 	}
 
 	_Timer = SetTimer (1, 100, NULL);

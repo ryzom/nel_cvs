@@ -1,7 +1,7 @@
 /** \file sound_driver_al.cpp
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.cpp,v 1.10 2002/07/09 08:41:02 lecroart Exp $
+ * $Id: sound_driver_al.cpp,v 1.11 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -254,7 +254,6 @@ void		CSoundDriverAL::generateItems( TGenFunctionAL algenfunc, TTestFunctionAL a
 		}
 	}
 }
-
 
 /*
  * Create a sound buffer

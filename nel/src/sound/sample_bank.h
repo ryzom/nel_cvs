@@ -1,7 +1,7 @@
 /** \file sample_bank.h
  * CSampleBank: a set of samples
  *
- * $Id: sample_bank.h,v 1.2 2002/06/11 09:40:54 hanappe Exp $
+ * $Id: sample_bank.h,v 1.3 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/sound/u_source.h"
+#include "audio_mixer_user.h"
 #include <string>
 #include <hash_map>
 
@@ -39,7 +40,7 @@ class ISoundDriver;
 class IBuffer;
 class CSampleBank;
 
-
+/*
 // Comparision for const char*
 struct eqname
 {
@@ -48,10 +49,10 @@ struct eqname
     return strcmp(s1, s2) == 0;
   }
 };
-
+*/
 
 /// Sound names hash map
-typedef std::hash_map<const char*, IBuffer*, std::hash<const char*>, eqname> TSampleTable;
+typedef std::hash_map<std::string, IBuffer*> TSampleTable;
 
 
 /**
@@ -60,13 +61,22 @@ typedef std::hash_map<const char*, IBuffer*, std::hash<const char*>, eqname> TSa
  * \author Nevrax France
  * \date 2001
  */
-class CSampleBank
+class CSampleBank : public CAudioMixerUser::IMixerUpdate
 {
 public:
 
+	/// Return an existing bank for the given file name, NULL if no bank for this file.
+	static CSampleBank *findSampleBank(const std::string &filename);
+
 	/// Return the name corresponding to a name. The sample is searched
 	// in all the loaded sample banks.
-	static IBuffer*		get(const char* name);
+	static IBuffer*		get(const std::string &name);
+
+	/// Reload all the sample bank.
+	static void				reload(bool async);
+
+	/// Return the total loaded samples size.
+	static uint				getTotalByteSize()				{	return _LoadedSize; };
 
 	/// Constructor
 	CSampleBank(const std::string& path, ISoundDriver *sd);
@@ -77,17 +87,21 @@ public:
 	/** Load all the samples.
 	 *
 	 * Can throw EPathNotFound or ESoundFileNotFound (check Exception)
+	 * \param async If true, the samples are loaded in background.
 	 */
-	void				load();
+	void				load(bool async);
 
-	/// Unload all the samples in this bank.
-	void				unload();
+	/** Unload all the samples in this bank. Return false is unload can't be done (if an async
+	 *	loading is not terminated.
+	 */
+	bool				unload();
+
 
 	/// Returns true if the samples in this bank have been loaded.
 	bool				isLoaded();
 
 	/// Return a samples corresponding to a name.
-	IBuffer				*getSample(const char* name);
+	IBuffer				*getSample(const std::string &name);
 
 	/// Return the number of samples in this bank.
 	uint				countSamples();
@@ -101,12 +115,20 @@ public:
 	/// Return the name (must be unique)
 	const std::string&	getName() const						{ return _Name; }
 
+	/// Delete all the loaded banks.
+	static	void		releaseAll();
 
 
 private:
+	/// The update method. Used when waiting for async sample loading.
+	void onUpdate();
+
+	typedef std::hash_map<std::string, CSampleBank*>				TSampleBankContainer;
 
 	// The map off all loaded sample banks
-	static std::set<CSampleBank*>		_Banks;
+	static TSampleBankContainer			_Banks;
+	// The total size of loaded samples.
+	static	uint								_LoadedSize;
 
 	// Sound driver
 	ISoundDriver		*_SoundDriver;
@@ -120,6 +142,16 @@ private:
 
 	// Did we load the buffers.
 	bool				_Loaded;
+	// Is the async load is done ?
+	bool				_LoadingDone;
+	// The size of the samples in the bank
+	uint				_ByteSize;
+
+	/// Flag for splitted load.
+	bool				_SplitLoadDone;
+
+	/// List of sample that need to be loaded asynchronously.
+	std::list<std::pair<IBuffer *, std::string> >	_LoadList;
 
 };
 

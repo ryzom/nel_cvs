@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.14 2002/08/08 11:00:03 lecroart Exp $
+ * $Id: sound_system.cpp,v 1.15 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,7 +92,7 @@ void CSoundSystem::initSoundSystem ()
 		try
 		{
 			//_AudioMixer->loadSampleBank(NLMISC::CPath::lookup(*it).c_str());
-			_AudioMixer->loadSampleBank((*it1).c_str());
+			_AudioMixer->loadSampleBank(false, (*it1));
 		}
 		catch (NLMISC::Exception &e)
 		{
@@ -153,12 +153,11 @@ void CSoundSystem::play(const string &soundName)
 {
 	if (_AudioMixer)
 	{
-		NLSOUND::USource *src = _AudioMixer->createSource(soundName.c_str(), true);
+		NLSOUND::USource *src = _AudioMixer->createSource(soundName, true);
 		if (src)
 		{
 			src->setLooping(false);
-			CVector pos;
-			_AudioMixer->getListener()->getPos(pos);
+			const CVector &pos = _AudioMixer->getListener()->getPos();
 			src->setPos(pos);
 			src->play();
 		}

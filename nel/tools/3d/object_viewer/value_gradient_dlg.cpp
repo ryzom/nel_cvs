@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.cpp
  * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.cpp,v 1.8 2001/12/19 15:50:15 vizerie Exp $
+ * $Id: value_gradient_dlg.cpp,v 1.9 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,11 +33,6 @@
 
 #include "popup_notify.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CValueGradientDlg dialog

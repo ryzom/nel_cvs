@@ -1,7 +1,7 @@
 /** \file select_string.cpp
  * <File description>
  *
- * $Id: select_string.cpp,v 1.3 2002/03/04 14:54:09 corvazier Exp $
+ * $Id: select_string.cpp,v 1.4 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,11 +27,6 @@
 #include "object_viewer.h"
 #include "select_string.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSelectString dialog

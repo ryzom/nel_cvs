@@ -1,7 +1,7 @@
 /** \file env_sound_user.h
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.h,v 1.9 2002/06/20 08:35:45 hanappe Exp $
+ * $Id: env_sound_user.h,v 1.10 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,7 +99,7 @@ public:
 
 
 	/// Return the position
-	virtual void			getPos( NLMISC::CVector& pos ) const;
+	virtual const NLMISC::CVector	&getPos() const;
 	/// Moves the envsound (and its transition envsound if it has one)
 	virtual void			setPos( const NLMISC::CVector& pos );
 	/// Select the current env for this node, and for all descendants if children_too is true

@@ -1,7 +1,7 @@
 /** \file u_listener.h
  * UListener: game interface for listener control
  *
- * $Id: u_listener.h,v 1.5 2001/08/27 08:51:12 cado Exp $
+ * $Id: u_listener.h,v 1.6 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,7 +63,7 @@ public:
 	/** Get the position vector.
 	 * See setPos() for details.
 	 */
-	virtual void			getPos( NLMISC::CVector& pos ) const = 0;
+	virtual const NLMISC::CVector &	getPos() const = 0;
 	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
 	virtual void			setVelocity( const NLMISC::CVector& vel ) = 0;
 	/// Get the velocity vector

@@ -1,7 +1,7 @@
 /** \file value_blender_dlg.cpp
  * a dialog to choose 2 values that are linearly blended in a particle system
  *
- * $Id: value_blender_dlg.cpp,v 1.5 2001/12/18 18:41:11 vizerie Exp $
+ * $Id: value_blender_dlg.cpp,v 1.6 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,11 +34,6 @@
 #include "edit_attrib_dlg.h"
 #include "popup_notify.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CValueBlenderDlg dialog

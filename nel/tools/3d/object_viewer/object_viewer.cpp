@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.81 2002/10/10 12:58:09 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.82 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,12 +91,6 @@
 #include "global_wind_dlg.h"
 #include "sound_anim_dlg.h"
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 using namespace std;

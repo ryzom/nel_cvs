@@ -1,7 +1,7 @@
 /** \file async_texture_manager.cpp
  * <File description>
  *
- * $Id: async_texture_manager.cpp,v 1.3 2002/10/29 14:40:00 berenguier Exp $
+ * $Id: async_texture_manager.cpp,v 1.4 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std3d.h"
 
 #include "3d/async_texture_manager.h"
-#include "3d/async_file_manager.h"
+#include "3d/async_file_manager_3d.h"
 #include "3d/mesh_base_instance.h"
 #include "3d/driver.h"
 
@@ -183,7 +183,7 @@ uint			CAsyncTextureManager::addTextureRef(const string &textName, CMeshBaseInst
 			// start to load a small DDS version if possible
 			text->Texture->setMipMapSkipAtLoad(_BaseLodLevel);
 			// load it async.
-			CAsyncFileManager::getInstance().loadTexture(text->Texture, &text->Loaded);
+			CAsyncFileManager3D::getInstance().loadTexture(text->Texture, &text->Loaded);
 		}
 		// Add to a list so we can check each frame if it has ended.
 		_WaitingTextures.push_back(i);
@@ -215,7 +215,7 @@ void			CAsyncTextureManager::deleteTexture(uint id)
 	// stop async loading if not ended
 	if(!text->Loaded)
 	{
-		CAsyncFileManager::getInstance().cancelLoadTexture(text->Texture);
+		CAsyncFileManager3D::getInstance().cancelLoadTexture(text->Texture);
 	}
 
 	// remove map entry
@@ -255,7 +255,7 @@ void			CAsyncTextureManager::deleteTexture(uint id)
 		// stop the async loading if not ended.
 		if(!textLod->Loaded)
 		{
-			CAsyncFileManager::getInstance().cancelLoadTexture(textLod->Texture);
+			CAsyncFileManager3D::getInstance().cancelLoadTexture(textLod->Texture);
 		}
 		// stop uploading if was me
 		if(_CurrentUploadTexture==textLod)
@@ -726,7 +726,7 @@ void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
 		// setup async loading
 		_CurrentTextureLodLoaded= textLod;
 		// load it async.
-		CAsyncFileManager::getInstance().loadTexture(textLod->Texture, &textLod->Loaded);
+		CAsyncFileManager3D::getInstance().loadTexture(textLod->Texture, &textLod->Loaded);
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 /** \file collision_zone_dlg.cpp
  * a dialog to edit collision zone properties in a particle system
  *
- * $Id: collision_zone_dlg.cpp,v 1.1 2001/06/25 13:21:10 vizerie Exp $
+ * $Id: collision_zone_dlg.cpp,v 1.2 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,12 +27,6 @@
 #include "object_viewer.h"
 #include "collision_zone_dlg.h"
 #include "editable_range.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CCollisionZoneDlg dialog

@@ -1,7 +1,7 @@
 /** \file edit_spinner.cpp
  * a dialog to edit a spinner
  *
- * $Id: edit_spinner.cpp,v 1.3 2001/12/18 18:37:26 vizerie Exp $
+ * $Id: edit_spinner.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,11 +31,6 @@
 #include "popup_notify.h"
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditSpinner dialog

@@ -37,7 +37,7 @@ RSC=rc.exe
 # PROP Output_Dir "../obj/Release/3d"
 # PROP Intermediate_Dir "../obj/Release/3d"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /Yu"std3d.h" /FD /Zm200 /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_LIB" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"std3d.h" /FD /Zm200 /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
@@ -53,7 +53,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/Debug/3d"
 # PROP Intermediate_Dir "../obj/Debug/3d"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "_MBCS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /Yu"std3d.h" /FD /GZ /Zm200 /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"std3d.h" /FD /GZ /Zm200 /c
 # SUBTRACT CPP /Gf /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
@@ -69,7 +69,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/ReleaseDebug/3d"
 # PROP Intermediate_Dir "../obj/ReleaseDebug/3d"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /Yu"std3d.h" /FD /Zm200 /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_LIB" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"std3d.h" /FD /Zm200 /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
@@ -85,7 +85,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/DebugFast/3d"
 # PROP Intermediate_Dir "../obj/DebugFast/3d"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Yu"std3d.h" /FD /GZ /Zm200 /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "NL_DEBUG_FAST" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"std3d.h" /FD /GZ /Zm200 /c
 # SUBTRACT CPP /Gf /Gy /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
@@ -2559,10 +2559,19 @@ SOURCE=.\3d\noise_3d.h
 # Begin Source File
 
 SOURCE=.\3d\async_file_manager.cpp
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\3d\async_file_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\async_file_manager_3d.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\async_file_manager_3d.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.13 2002/07/25 13:35:10 lecroart Exp $
+ * $Id: sound.h,v 1.14 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,20 +41,8 @@ class IBuffer;
 class CSound;
 
 
-
-// Comparision for const char*
-struct eqstr
-{
-  bool operator()(const char* s1, const char* s2) const
-  {
-	nldebug("eq? %s : %s", s1, s2);
-    return strcmp(s1, s2) == 0;
-  }
-};
-
-
 /// Sound names hash map
-typedef std::hash_map<const char*, CSound*, std::hash<const char*>, eqstr> TSoundMap;
+typedef std::hash_map<std::string, CSound*> TSoundMap;
 
 /// Sound names set (for ambiant sounds)
 typedef std::set<CSound*> TSoundSet;
@@ -62,7 +50,7 @@ typedef std::set<CSound*> TSoundSet;
 const double Sqrt12_2 = 1.0594630943592952645618252949463;  // 2^1/12
 
 /**
- * A sound buffer and its static properties
+ * A sound base class and its static properties
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001
@@ -70,121 +58,85 @@ const double Sqrt12_2 = 1.0594630943592952645618252949463;  // 2^1/12
 class CSound
 {
 public:
+	/// Factory for specialized sound.
+	static CSound *createSound(const std::string &filename, NLGEORGES::UFormElm& formRoot);
+
+	enum TSOUND_TYPE
+	{
+		SOUND_SIMPLE,
+		SOUND_COMPLEX,
+		SOUND_BACKGROUND
+	};
+
 
 	/// Constructor
 	CSound();
 	/// Destructor
 	virtual ~CSound();
-	/// Init with sound driver
-	//static void			init( ISoundDriver *sd )		{ _SoundDriver = sd; }
-	/** Allow to load sound files when corresponding wave file is missing
-	 * (default: false, i.e. an input serial or a load throws an exception ESoundFileNotFound)
-	 */
-	static void			allowMissingWave( bool b )		{ _AllowMissingWave = b; }
+
+	/// Get the type of the sound.
+	virtual TSOUND_TYPE getSoundType() =0;
+
 	/// Serialize
 	void				serial( NLMISC::IStream& s );
-	/** Load the buffer (automatically done by serial()).
-	 *
-	 * The filename is searched in the global path (see CPath).
-	 * Can throw EPathNotFound or ESoundFileNotFound (check Exception)
-	 */
-	//void				loadBuffer( const std::string& filename );
-	/// Serialize file header
-	//static void			serialFileHeader( NLMISC::IStream& s, uint32& nb );
-	/** Load several sounds and return the number of sounds loaded
-	 * If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
-	 */
-	//static uint32		load( TSoundMap& container, NLMISC::IStream& s, std::vector<std::string> *notfoundfiles=NULL );
 
 	/// Load the sound parameters from georges' form
-	virtual void		importForm(std::string& filename, NLGEORGES::UFormElm& formRoot);
+	virtual void		importForm(const std::string& filename, NLGEORGES::UFormElm& formRoot);
 
-	/// Return the name of the buffer, can be depend of a context
-	void				getBuffername(std::string &buffername, CSoundContext *context);
-	/// Return the buffer and the buffername if not null
-	IBuffer*			getBuffer(std::string *buffername = 0);
+	/// Return the looping state
+	bool				getLooping() const				{ return _Looping; }
 	/// Return the gain
 	float				getGain() const					{ return _Gain; }
 	/// Return the pitch
 	float				getPitch() const				{ return _Pitch; }
 	/// Return the initial priority
 	TSoundPriority		getPriority() const				{ return _Priority; }
-	/// Return the looping state
-	bool				getLooping() const				{ return _Looping; }
-	/// Return true if distances and cone are meaningful
-	bool				isDetailed() const				{ return _Detailed; }
-	/// Return the min distance (if detailed())
-	float				getMinDistance() const				{ return _MinDist; }
-	/// Return the max distance (if detailed())
-	float				getMaxDistance() const				{ return _MaxDist; }
+	/// Return true if cone is meaningful
+	virtual bool		isDetailed() const = 0;
 	/// Return the inner angle of the cone
 	float				getConeInnerAngle() const			{ return _ConeInnerAngle; }
 	/// Return the outer angle of the cone
 	float				getConeOuterAngle() const			{ return _ConeOuterAngle; }
 	/// Return the outer gain of the cone
 	float				getConeOuterGain() const			{ return _ConeOuterGain; }
+	/// Return the direction vector.
+	const NLMISC::CVector &getDirectionVector()const		{ return _Direction;}
 	/// Return the length of the sound in ms
-	uint32				getDuration(std::string *buffername = NULL);
-	/// Return the filename
-	const std::string&	getFilename() const					{ return _Filename; }
+	virtual uint32		getDuration(std::string *buffername = NULL) = 0;
 	/// Return the name (must be unique)
 	const std::string&	getName() const						{ return _Name; }
-	/// Return the name of the buffer (must be unique)
-	const std::string&	getBuffername() const				{ return _Buffername; }
+	/// Return the max distance (if detailed())
+	virtual float		getMaxDistance() const				{ return _MaxDist; }
 
-	/// Set properties. Returns false if one or more values are invalid (EDIT)
-	/*
-	bool				setProperties( const std::string& name, const std::string& filename,
-									   float gain=1.0f, float pitch=1.0f, TSoundPriority priority=MidPri, bool looping=false, bool detail=false,
-									   float mindist=1.0f, float maxdist=1000000.0f,
-									   float innerangle=6.283185f, float outerangle=6.283185f, // 360°
-									   float outergain=1.0f );
-									   */
 	/// Set looping
 	void				setLooping( bool looping ) { _Looping = looping; }
-	/// Save (output stream only) (EDIT)
-	//static void			save( const std::vector<CSound*>& container, NLMISC::IStream& s );
 
-	friend bool			operator<( const CSound& s1, const CSound& s2 )
+	/// Used by the george sound plugin to check sound recursion (ie sound 'toto' use sound 'titi' witch also use sound 'toto' ...).
+	virtual void				getSubSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const =0;
+	 
+
+
+	bool				operator<( const CSound& otherSound ) const
 	{
-		return s1._Name < s2._Name;
+		return _Name < otherSound._Name;
 	}
 
-public:
-
-	/// Version (used by backward-compatibility support)
-	//static uint			CurrentVersion;
-
-	/// Version of serialized (in) files
-	//static uint			FileVersion;
-
-private:
-
-	// Sound driver
-	//static ISoundDriver *_SoundDriver;
-
-	// Allow to load sound files when corresponding wave file is missing ?
-	static bool			_AllowMissingWave;
-
-	// Buffer
-	IBuffer				*_Buffer;
+protected:
 
 	// Static properties
 	float				_Gain;	// [0,1]
 	float				_Pitch; // ]0,1]
 	TSoundPriority		_Priority;
-	bool				_Looping;
-	bool				_Detailed;
-	float				_MinDist, _MaxDist;
 	float				_ConeInnerAngle, _ConeOuterAngle, _ConeOuterGain;
+	NLMISC::CVector		_Direction;
 
-	// true if the buffer name contains some %. It means that the buffer name can be know only at runtime
-	bool				_NeedContext;
+	bool				_Looping;
 
-	// Sound name and filename (required for output (EDIT))
-	std::string			_Filename;
+	/// Clipping distance for complex or backgound sound.
+	float				_MaxDist;
+
+	// Sound name.
 	std::string			_Name;
-	std::string			_Buffername;
 
 };
 

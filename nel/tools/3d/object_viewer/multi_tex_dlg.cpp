@@ -1,7 +1,7 @@
 /** \file multi_tex_dlg.cpp
  * A dialog to tune multexturing for particles that support it
  *
- * $Id: multi_tex_dlg.cpp,v 1.3 2002/02/15 17:18:31 vizerie Exp $
+ * $Id: multi_tex_dlg.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,12 +34,6 @@
 
 #include "texture_chooser.h"
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CMultiTexDlg dialog

@@ -1,7 +1,7 @@
 /** \file direction_edit.cpp
  * a dialog to choose a direction (normalized vector).
  *
- * $Id: direction_edit.cpp,v 1.3 2001/12/18 18:36:18 vizerie Exp $
+ * $Id: direction_edit.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,12 +29,6 @@
 #include "popup_notify.h"
 
 #include "nel/misc/vector.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CDirectionEdit dialog

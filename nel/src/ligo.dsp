@@ -37,8 +37,9 @@ RSC=rc.exe
 # PROP Output_Dir "../obj/Release/ligo"
 # PROP Intermediate_Dir "../obj/Release/ligo"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_LIB" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /c
 # SUBTRACT CPP /Fr /YX /Yc /Yu
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
@@ -52,8 +53,9 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/Debug/ligo"
 # PROP Intermediate_Dir "../obj/Debug/ligo"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "_MBCS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /GZ /c
 # SUBTRACT CPP /Fr /YX
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
@@ -67,8 +69,9 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/DebugFast/ligo"
 # PROP Intermediate_Dir "../obj/DebugFast/ligo"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "NL_DEBUG_FAST" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /GZ /c
 # SUBTRACT CPP /Fr /YX
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
@@ -82,8 +85,9 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/ReleaseDebug/ligo"
 # PROP Intermediate_Dir "../obj/ReleaseDebug/ligo"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_LIB" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /c
 # SUBTRACT CPP /Fr /YX
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BSC32 /nologo

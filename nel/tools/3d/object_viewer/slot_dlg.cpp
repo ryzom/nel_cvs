@@ -1,7 +1,7 @@
 /** \file slot_dlg.cpp
  * <File description>
  *
- * $Id: slot_dlg.cpp,v 1.7 2002/03/04 14:54:09 corvazier Exp $
+ * $Id: slot_dlg.cpp,v 1.8 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,11 +29,6 @@
 #include "slot_dlg.h"
 #include <nel/misc/common.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define DELTA_BLEND 0.1f
 #define DELTA_TIME (getTimeIncrement ())

@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.18 2002/10/29 17:17:28 corvazier Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.1 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/async_file_manager.h"
+#include "3d/async_file_manager_3d.h"
 #include "3d/shape.h"
 #include "3d/mesh.h"
 #include "3d/texture_file.h"
@@ -46,28 +46,28 @@ using namespace NLMISC;
 namespace NL3D
 {
 
-CAsyncFileManager *CAsyncFileManager::_Singleton = NULL;
+CAsyncFileManager3D *CAsyncFileManager3D::_Singleton = NULL;
 
 // ***************************************************************************
 
-CAsyncFileManager::CAsyncFileManager()
+CAsyncFileManager3D::CAsyncFileManager3D()
 {
 }
 
 // ***************************************************************************
 
-CAsyncFileManager &CAsyncFileManager::getInstance()
+CAsyncFileManager3D &CAsyncFileManager3D::getInstance()
 {
 	if (_Singleton == NULL)
 	{
-		_Singleton = new CAsyncFileManager();
+		_Singleton = new CAsyncFileManager3D();
 	}
 	return *_Singleton;
 }
 
 // ***************************************************************************
 
-void CAsyncFileManager::terminate ()
+void CAsyncFileManager3D::terminate ()
 {
 	if (_Singleton != NULL)
 	{
@@ -78,148 +78,124 @@ void CAsyncFileManager::terminate ()
 
 // ***************************************************************************
 	
-void CAsyncFileManager::loadMesh(const std::string& meshName, IShape **ppShp, IDriver *pDriver)
+void CAsyncFileManager3D::loadMesh(const std::string& meshName, IShape **ppShp, IDriver *pDriver)
 {
-	addTask (new CMeshLoad(meshName, ppShp, pDriver));
+	CAsyncFileManager::getInstance().addLoadTask(new CMeshLoad(meshName, ppShp, pDriver));
 }
 
 // ***************************************************************************
 
-bool CAsyncFileManager::cancelLoadMesh(const std::string& sMeshName)
+// Callback class for canceling a loadMesh
+class CLoadMeshCancel : public NLMISC::CAsyncFileManager::ICancelCallback
 {
-	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
-	list<IRunnable*> &rTaskQueue = acces.value ();
-	list<IRunnable*>::iterator it = rTaskQueue.begin();
+public:
+	CLoadMeshCancel (const std::string &meshName)
+		: _MeshName(meshName)
+	{}
 
-	while (it != rTaskQueue.end())
+private:	
+	std::string	_MeshName;
+
+	bool callback(const NLMISC::IRunnable *prunnable) const
 	{
-		IRunnable *pR = *it;
-		CMeshLoad *pML = dynamic_cast<CMeshLoad*>(pR);
+		const CAsyncFileManager3D::CMeshLoad *pML = dynamic_cast<const CAsyncFileManager3D::CMeshLoad*>(prunnable);
 		if (pML != NULL)
 		{
-			if (pML->MeshName == sMeshName)
+			if (pML->MeshName == _MeshName)
 			{
-				// Delete mesh load task
-				delete pML;
-				rTaskQueue.erase (it);
 				return true;
 			}
 		}
-		++it;
+		return false;
 	}
+};
 
-	// If not found, the current running task may be the one we want to cancel. Must wait it.
-	waitCurrentTaskToComplete ();
-
-	return false;
+bool CAsyncFileManager3D::cancelLoadMesh(const std::string& sMeshName)
+{
+	return CAsyncFileManager::getInstance().cancelLoadTask(CLoadMeshCancel(sMeshName));
 }
 
 // ***************************************************************************
 	
-void CAsyncFileManager::loadIG (const std::string& IGName, CInstanceGroup **ppIG)
+void CAsyncFileManager3D::loadIG (const std::string& IGName, CInstanceGroup **ppIG)
 {
-	addTask (new CIGLoad(IGName, ppIG));
+	CAsyncFileManager::getInstance().addLoadTask(new CIGLoad(IGName, ppIG));
 }
 
 // ***************************************************************************
 	
-void CAsyncFileManager::loadIGUser (const std::string& IGName, UInstanceGroup **ppIG)
+void CAsyncFileManager3D::loadIGUser (const std::string& IGName, UInstanceGroup **ppIG)
 {
-	addTask (new CIGLoadUser(IGName, ppIG));
+	CAsyncFileManager::getInstance().addLoadTask (new CIGLoadUser(IGName, ppIG));
 }
 
 // ***************************************************************************
-	
-void CAsyncFileManager::loadFile (const std::string& sFileName, uint8 **ppFile)
-{
-	addTask (new CFileLoad (sFileName, ppFile));
-}
-
-// ***************************************************************************
-
-void CAsyncFileManager::loadFiles (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs)
-{
-	addTask (new CMultipleFileLoad (vFileNames, vPtrs));
-}
-
-// ***************************************************************************
-
-void CAsyncFileManager::signal (bool *pSgn)
-{
-	addTask (new CSignal (pSgn));
-}
-
-// ***************************************************************************
-
-void CAsyncFileManager::cancelSignal (bool *pSgn)
-{
-	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
-	list<IRunnable*> &rTaskQueue = acces.value ();
-	list<IRunnable*>::iterator it = rTaskQueue.begin();
-
-	while (it != rTaskQueue.end())
-	{
-		IRunnable *pR = *it;
-		CSignal *pS = dynamic_cast<CSignal*>(pR);
-		if (pS != NULL)
-		{
-			if (pS->Sgn == pSgn)
-			{
-				// Delete signal task
-				delete pS;
-				rTaskQueue.erase (it);
-				return;
-			}
-		}
-		++it;
-	}
-
-	// If not found, the current running task may be the one we want to cancel. Must wait it.
-	waitCurrentTaskToComplete ();
-
-}
-
-// ***************************************************************************
-void CAsyncFileManager::loadTexture (CTextureFile *textureFile, bool *pSgn)
+void CAsyncFileManager3D::loadTexture (CTextureFile *textureFile, bool *pSgn)
 {
 	nlassert(textureFile && pSgn);
-	CTextureLoad	*textLoad= new CTextureLoad;
-	textLoad->TextureFile= textureFile;
-	textLoad->Signal= pSgn;
-
-	addTask(textLoad);
+	CAsyncFileManager::getInstance().addLoadTask(new CTextureLoad(textureFile, pSgn));
 }
 
-// ***************************************************************************
-bool CAsyncFileManager::cancelLoadTexture (CTextureFile *textFile)
+// Callback class for canceling a load texture 
+class CLoadTextureCancel : public NLMISC::CAsyncFileManager::ICancelCallback
 {
-	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
-	list<IRunnable*> &rTaskQueue = acces.value ();
-	list<IRunnable*>::iterator it = rTaskQueue.begin();
+public:
+	CLoadTextureCancel (CTextureFile *ptextureFile)
+		: _TextureFile(ptextureFile)
+	{}
 
-	while (it != rTaskQueue.end())
+private:	
+	CTextureFile	*_TextureFile;
+
+	bool callback(const NLMISC::IRunnable *prunnable) const
 	{
-		IRunnable *pR = *it;
-		CTextureLoad *pT = dynamic_cast<CTextureLoad*>(pR);
-		if (pT != NULL)
+		const CAsyncFileManager3D::CTextureLoad *pTL = dynamic_cast<const CAsyncFileManager3D::CTextureLoad*>(prunnable);
+		if (pTL != NULL)
 		{
-			if (pT->TextureFile == textFile)
+			if (pTL->TextureFile == _TextureFile)
 			{
-				// Delete textureload  task
-				delete pT;
-				rTaskQueue.erase (it);
 				return true;
 			}
 		}
-		++it;
+		return false;
 	}
+};
 
-	// If not found, the current running task may be the one we want to cancel. Must wait it.
-	waitCurrentTaskToComplete ();
 
-	return false;
+// ***************************************************************************
+bool CAsyncFileManager3D::cancelLoadTexture (CTextureFile *textFile)
+{
+	return CAsyncFileManager::getInstance().cancelLoadTask(CLoadTextureCancel(textFile));
 }
 
+
+// ***************************************************************************
+	
+void CAsyncFileManager3D::loadFile (const std::string& sFileName, uint8 **ppFile)
+{
+	CAsyncFileManager::getInstance().loadFile (sFileName, ppFile);
+}
+
+// ***************************************************************************
+
+void CAsyncFileManager3D::loadFiles (const std::vector<std::string> &vFileNames, const std::vector<uint8**> &vPtrs)
+{
+	CAsyncFileManager::getInstance().loadFiles (vFileNames, vPtrs);
+}
+
+// ***************************************************************************
+
+void CAsyncFileManager3D::signal (bool *pSgn)
+{
+	CAsyncFileManager::getInstance().signal(pSgn);
+}
+
+// ***************************************************************************
+
+void CAsyncFileManager3D::cancelSignal (bool *pSgn)
+{
+	CAsyncFileManager::getInstance().cancelSignal(pSgn);
+}
 
 // ***************************************************************************
 // TASKS
@@ -229,7 +205,7 @@ bool CAsyncFileManager::cancelLoadTexture (CTextureFile *textFile)
 // MeshLoad
 // ***************************************************************************
 
-CAsyncFileManager::CMeshLoad::CMeshLoad(const std::string& sMeshName, IShape** ppShp, IDriver *pDriver)
+CAsyncFileManager3D::CMeshLoad::CMeshLoad(const std::string& sMeshName, IShape** ppShp, IDriver *pDriver)
 {
 	_pDriver = pDriver;
 	MeshName = sMeshName;
@@ -238,10 +214,9 @@ CAsyncFileManager::CMeshLoad::CMeshLoad(const std::string& sMeshName, IShape** p
 
 // ***************************************************************************
 
-void CAsyncFileManager::CMeshLoad::run()
+void CAsyncFileManager3D::CMeshLoad::run()
 {
 	NL3D_MEM_INSTANCE
-
 	// This set represent the texture already loaded in memory
 	// We have to have this set because the driver load the textures only on the 
 	// setupTexture, done in CShapeBank::isPresent. This must be done in the main
@@ -368,14 +343,14 @@ void CAsyncFileManager::CMeshLoad::run()
 // ***************************************************************************
 
 // ***************************************************************************
-CAsyncFileManager::CIGLoad::CIGLoad (const std::string &IGName, CInstanceGroup **ppIG)
+CAsyncFileManager3D::CIGLoad::CIGLoad (const std::string &IGName, CInstanceGroup **ppIG)
 {
 	_IGName = IGName;
 	_ppIG = ppIG;
 }
 
 // ***************************************************************************
-void CAsyncFileManager::CIGLoad::run (void)
+void CAsyncFileManager3D::CIGLoad::run (void)
 {
 	try
 	{
@@ -404,14 +379,14 @@ void CAsyncFileManager::CIGLoad::run (void)
 // ***************************************************************************
 
 // ***************************************************************************
-CAsyncFileManager::CIGLoadUser::CIGLoadUser (const std::string &IGName, UInstanceGroup **ppIG)
+CAsyncFileManager3D::CIGLoadUser::CIGLoadUser (const std::string &IGName, UInstanceGroup **ppIG)
 {
 	_IGName = IGName;
 	_ppIG = ppIG;
 }
 
 // ***************************************************************************
-void CAsyncFileManager::CIGLoadUser::run (void)
+void CAsyncFileManager3D::CIGLoadUser::run (void)
 {
 	NL3D_MEM_IG
 	try
@@ -440,103 +415,11 @@ void CAsyncFileManager::CIGLoadUser::run (void)
 }
 
 // ***************************************************************************
-// FileLoad
-// ***************************************************************************
-
-// ***************************************************************************
-CAsyncFileManager::CFileLoad::CFileLoad (const std::string& sFileName, uint8 **ppFile)
-{
-	_FileName = sFileName;
-	_ppFile = ppFile;
-}
-
-// ***************************************************************************
-void CAsyncFileManager::CFileLoad::run (void)
-{
-	FILE *f = fopen (_FileName.c_str(), "rb");
-	if (f != NULL)
-	{
-		uint8 *ptr;
-		fseek (f, 0, SEEK_END);
-		long filesize = ftell (f);
-		nlSleep(5);
-		fseek (f, 0, SEEK_SET);
-		ptr = new uint8[filesize];
-		fread (ptr, filesize, 1, f);
-		fclose (f);
-
-		*_ppFile = ptr;
-	}
-	else
-	{
-		nlwarning ("Couldn't load '%s'", _FileName.c_str());
-		*_ppFile = (uint8*)-1;
-	}
-}
-
-// ***************************************************************************
-// MultipleFileLoad
-// ***************************************************************************
-
-// ***************************************************************************
-CAsyncFileManager::CMultipleFileLoad::CMultipleFileLoad (const std::vector<std::string> &vFileNames, 
-														 const std::vector<uint8**> &vPtrs)
-{
-	_FileNames = vFileNames;
-	_Ptrs = vPtrs;
-}
-
-// ***************************************************************************
-void CAsyncFileManager::CMultipleFileLoad::run (void)
-{
-	for (uint32 i = 0; i < _FileNames.size(); ++i)
-	{
-		FILE *f = fopen (_FileNames[i].c_str(), "rb");
-		if (f != NULL)
-		{
-			uint8 *ptr;
-			fseek (f, 0, SEEK_END);
-			long filesize = ftell (f);
-			nlSleep(5);
-			fseek (f, 0, SEEK_SET);
-			ptr = new uint8[filesize];
-			fread (ptr, filesize, 1, f);
-			fclose (f);
-
-			*_Ptrs[i] = ptr;
-		}
-		else
-		{
-			nlwarning ("Couldn't load '%s'", _FileNames[i].c_str());
-			*_Ptrs[i] = (uint8*)-1;
-		}
-	}
-
-}
-
-// ***************************************************************************
-// Signal
-// ***************************************************************************
-
-// ***************************************************************************
-CAsyncFileManager::CSignal::CSignal (bool *pSgn)
-{
-	Sgn = pSgn;
-	*Sgn = false;
-}
-
-// ***************************************************************************
-void CAsyncFileManager::CSignal::run (void)
-{
-	*Sgn = true;
-}
-
-// ***************************************************************************
 // CTextureLoad
 // ***************************************************************************
 
 // ***************************************************************************
-void	CAsyncFileManager::CTextureLoad::run()
+void	CAsyncFileManager3D::CTextureLoad::run()
 {
 	// Load the texture.
 	TextureFile->setAsyncLoading (true);
@@ -548,7 +431,6 @@ void	CAsyncFileManager::CTextureLoad::run()
 	delete this;
 }
 
-
-}
+} // NL3D
 
 

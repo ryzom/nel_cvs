@@ -1,7 +1,7 @@
 /** \file edit_user_param.cpp
  * A dialog for editing one of the global user params in a particle system
  *
- * $Id: edit_user_param.cpp,v 1.2 2001/12/18 18:37:45 vizerie Exp $
+ * $Id: edit_user_param.cpp,v 1.3 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,11 +28,6 @@
 #include "object_viewer.h"
 #include "edit_user_param.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditUserParam dialog

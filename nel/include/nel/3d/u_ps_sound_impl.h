@@ -1,7 +1,7 @@
 /** \file u_ps_sound_impl.h
  * <File description>
  *
- * $Id: u_ps_sound_impl.h,v 1.8 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: u_ps_sound_impl.h,v 1.9 2002/11/04 15:40:42 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -87,7 +87,7 @@ public:
 		if (pitch < 0.0001f) pitch = 0.0001f;
 		_Source->setPos(pos);
 		_Source->setVelocity(velocity);
-		_Source->setGain(gain);
+		_Source->setRelativeGain(gain);
 		_Source->setPitch(pitch);
 	}
 
@@ -164,7 +164,7 @@ public:
 	{		
 		if (!_AudioMixer) return NULL;
 		CPSSoundInstanceImpl *sound = new CPSSoundInstanceImpl;
-		NLSOUND::USource *source = _AudioMixer->createSource(soundName.c_str(), spawned, SpawnedSourceEndedCallback, sound );
+		NLSOUND::USource *source = _AudioMixer->createSource(soundName, spawned, SpawnedSourceEndedCallback, sound );
 		if (source)
 		{			
 			if (spawned)

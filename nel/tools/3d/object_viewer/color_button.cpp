@@ -1,7 +1,7 @@
 /** \file color_button.cpp
  * display a color box...
  *
- * $Id: color_button.cpp,v 1.3 2001/06/25 13:20:10 vizerie Exp $
+ * $Id: color_button.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,12 +30,6 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "color_button.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 WNDPROC CColorButton::_BasicButtonWndProc = NULL  ;

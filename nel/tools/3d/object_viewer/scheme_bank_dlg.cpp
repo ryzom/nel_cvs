@@ -1,7 +1,7 @@
 /** \file scheme_bank_dlg.cpp
  * Dialog used to manage a bank of attributes makers in a particle system
  *
- * $Id: scheme_bank_dlg.cpp,v 1.3 2001/12/18 18:40:31 vizerie Exp $
+ * $Id: scheme_bank_dlg.cpp,v 1.4 2002/11/04 15:40:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,11 +31,6 @@
 #include "choose_name.h"
 #include <nel/misc/file.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSchemeBankDlg dialog

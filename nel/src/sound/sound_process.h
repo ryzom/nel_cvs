@@ -2,7 +2,7 @@
  *
  * A sound process plays a sound pattern.
  *
- * $Id: sound_process.h,v 1.1 2002/06/28 20:38:54 hanappe Exp $
+ * $Id: sound_process.h,v 1.2 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,10 +24,13 @@
  * MA 02111-1307, USA.
  */
 
+#error "Deprecated"
+
 #ifndef NL_SOUND_PROCESS_H
 #define NL_SOUND_PROCESS_H
 
 #include "sound_pattern.h"
+#include "nel/sound/u_source.h"
 
 namespace NLSOUND
 {
@@ -47,23 +50,23 @@ typedef std::vector<USource*> TSourceVector;
  * spawned and trigger itself according to the pattern's time intervals.
  */
 
-class CSoundProcess /* : public IPlayable */
+class CSoundProcess : public USource
 {
 public:
 
-	CSoundProcess(UAudioMixer* mixer, CSoundPattern* pattern) : _Mixer(mixer), _Pattern(pattern);
+	CSoundProcess(UAudioMixer* mixer, CSoundPattern* pattern) : _Mixer(mixer), _Pattern(pattern){}
 	virtual ~CSoundProcess() {}
 
 	virtual void					play();
 	virtual void					trigger();
 	virtual void					update(float time);
 
-	static void						removeSource(USource *source, void *data)
+	static void						removeSource(USource *source, void *data);
 
 
 protected:
 
-	UAudioMixer*					_Mixer
+	UAudioMixer*					_Mixer;
 	CSoundPattern*					_Pattern;
 	CSoundPattern::PatternIterator	_PatternIterator;
 	CSoundPattern::IntervalIterator	_IntervalIterator;

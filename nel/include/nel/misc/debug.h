@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.45 2002/10/24 08:26:51 lecroart Exp $
+ * $Id: debug.h,v 1.46 2002/11/04 15:40:42 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,6 @@
 
 #ifndef NL_DEBUG_H
 #define NL_DEBUG_H
-
 #include <stdio.h>
 
 #include "nel/misc/common.h"
@@ -33,7 +32,6 @@
 #include "nel/misc/mutex.h"
 #include "nel/misc/mem_displayer.h"
 #include "nel/misc/displayer.h"
-
 
 namespace NLMISC
 {

@@ -1,7 +1,7 @@
 /** \file listener_dsound.h
  * DirectSound sound listener
  *
- * $Id: listener_dsound.h,v 1.3 2002/06/11 09:36:09 hanappe Exp $
+ * $Id: listener_dsound.h,v 1.4 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,9 @@
 
 
 #include "sound/driver/listener.h"
+//#include <windows.h>
+#include <dsound.h>
+
 
 namespace NLSOUND {
 
@@ -66,7 +69,7 @@ public:
     /** Get the position vector.
 	 * See setPos() for details.
 	 */
-	virtual void			getPos( NLMISC::CVector& pos ) const;
+	virtual const NLMISC::CVector	&getPos() const;
 
     /// Set the velocity vector (3D mode only) (default: (0,0,0))
 	virtual void			setVelocity( const NLMISC::CVector& vel );
@@ -125,6 +128,9 @@ private:
 
     /// The DirectSound listener interface
     LPDIRECTSOUND3DLISTENER _Listener;
+
+	// TMP : TEST
+	NLMISC::CVector			_Pos;
 };
 
 

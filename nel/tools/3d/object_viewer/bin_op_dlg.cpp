@@ -1,7 +1,7 @@
 /** \file bin_op_dlg.cpp
  * A dialog that helps editing binary opeartors ofr particle systems attributes.
  *
- * $Id: bin_op_dlg.cpp,v 1.3 2001/12/18 18:33:32 vizerie Exp $
+ * $Id: bin_op_dlg.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,12 +29,6 @@
 #include "object_viewer.h"
 #include "bin_op_dlg.h"
 #include "popup_notify.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBinOpDlg dialog

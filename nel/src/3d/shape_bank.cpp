@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.15 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: shape_bank.cpp,v 1.16 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -434,7 +434,7 @@ void CShapeBank::loadAsync (const std::string &shapeName, IDriver *pDriver, bool
 		return; // Do not load 2 shapes with the same names
 	}
 	wsmmIt = WaitingShapes.insert (TWaitingShapesMap::value_type(shapeName, CWaitingShape(bSignal))).first;
-	CAsyncFileManager::getInstance().loadMesh (shapeName, &(wsmmIt->second.ShapePtr), pDriver);
+	CAsyncFileManager3D::getInstance().loadMesh (shapeName, &(wsmmIt->second.ShapePtr), pDriver);
 }
 
 // ***************************************************************************
@@ -448,7 +448,7 @@ void CShapeBank::cancelLoadAsync (const std::string &shapeName)
 		if (wsmmIt->second.RefCnt == 0)
 		{
 			// nlinfo("unloadasync %s", shapeName);
-			CAsyncFileManager::getInstance().cancelLoadMesh (shapeName);
+			CAsyncFileManager3D::getInstance().cancelLoadMesh (shapeName);
 			// TODO : Cancel the texture upload
 			WaitingShapes.erase (wsmmIt); // Delete the waiting shape
 		}

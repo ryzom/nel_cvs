@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.26 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: instance_group_user.cpp,v 1.27 2002/11/04 15:40:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ UInstanceGroup	*UInstanceGroup::createInstanceGroup (const std::string &instance
 void UInstanceGroup::createInstanceGroupAsync (const std::string &instanceGroup, UInstanceGroup	**pIG)
 {
 	NL3D_MEM_IG
-	CAsyncFileManager::getInstance().loadIGUser (instanceGroup, pIG);
+	CAsyncFileManager3D::getInstance().loadIGUser (instanceGroup, pIG);
 }
 
 // ***************************************************************************

@@ -6,11 +6,6 @@
 #include "vegetable_select_dlg.h"
 #include "vegetable_dlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CVegetableSelectDlg dialog

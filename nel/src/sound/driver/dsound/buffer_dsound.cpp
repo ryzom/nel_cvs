@@ -1,7 +1,7 @@
 /** \file buffer_dsound.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_dsound.cpp,v 1.4 2002/06/11 09:36:09 hanappe Exp $
+ * $Id: buffer_dsound.cpp,v 1.5 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,12 +48,17 @@ CBufferDSound::CBufferDSound()
 
 CBufferDSound::~CBufferDSound()
 {
-	nldebug("Destroying DirectSound buffer");
+	nldebug("Destroying DirectSound buffer %s (%p)", _Name.c_str(), this);
 
     if (_Data != NULL)
     {
         delete[] _Data;
     }
+}
+
+void CBufferDSound::presetName(const std::string &bufferName)
+{
+	_Name = bufferName;
 }
 
 
@@ -268,7 +273,13 @@ bool CBufferDSound::loadWavFile(const char* file)
     mmioClose(hmmio, 0);
 
 
-	_Name = CFile::getFilenameWithoutExtension(file);
+	std::string name = CFile::getFilenameWithoutExtension(file);
+	// if name is preseted, the name must match.
+	if (!_Name.empty())
+	{
+		nlassertex(_Name == name, ("The preseted name and buffer name doen't match !"));
+	}
+	_Name = name;
 
 	return true;
 

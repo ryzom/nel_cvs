@@ -1,7 +1,7 @@
 /** \file driver/loader.h
  * ILoader: sound loader interface
  *
- * $Id: loader.h,v 1.2 2002/02/20 18:09:25 lecroart Exp $
+ * $Id: loader.h,v 1.3 2002/11/04 15:40:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,9 +37,11 @@ class IBuffer;
 
 /**
  * Sound loader interface
+ * \deprecated
  *
  * In order to fill a static buffer, just call fillBuffer().
  * In order to stream into a buffer, call fillBufferPart() several times.
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001

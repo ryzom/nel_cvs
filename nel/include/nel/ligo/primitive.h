@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.5 2002/09/04 12:10:35 coutelas Exp $
+ * $Id: primitive.h,v 1.6 2002/11/04 15:40:42 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,13 +78,18 @@ public:
 	std::string						Name;
 	std::string						LayerName;
 
+	static float getSegmentDist(const NLMISC::CVector v, const NLMISC::CVector &p1, const NLMISC::CVector &p2, NLMISC::CVector &nearPos);
+
 public:
 
 	bool contains (const NLMISC::CVector &v) const { return CPrimZone::contains(v, VPoints); }
+	bool contains(const NLMISC::CVector &v, float &distance, NLMISC::CVector &nearPos, bool isPath) const { return CPrimZone::contains(v, VPoints, distance, nearPos, isPath); }
 	void serial (NLMISC::IStream &f);
 
 	// returns true if the vector v is inside of the patatoid
 	static bool contains (const NLMISC::CVector &v, const std::vector<NLMISC::CVector> &points);
+	// returns true if the vector v is inside of the patatoid and set the distance of the nearest segement and the position of the nearsest point.
+	static bool contains (const NLMISC::CVector &v, const std::vector<NLMISC::CVector> &points, float &distance, NLMISC::CVector &nearPos, bool isPath);
 };
 
 // ***************************************************************************

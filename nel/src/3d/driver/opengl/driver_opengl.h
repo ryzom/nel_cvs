@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.36 2001/01/09 15:23:32 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.37 2001/01/09 15:45:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,8 +202,6 @@ private:
 #endif // NL_OS_UNIX
 
 	bool					_Initialized;
-
-	bool					setupVertexBuffer(CVertexBuffer& VB);
 
 	// OpenGL extensions Extensions.
 	CGlExtensions			_Extensions;

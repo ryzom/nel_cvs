@@ -19,6 +19,9 @@ build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_director
 # Get the collision directories
 pacs_prim_source_directories=`cat ../../cfg/directories.cfg | grep "pacs_prim_source_directories" | sed -e 's/pacs_prim_source_directories//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
+# Get the scratch directory
+scratch_path=`cat ../../cfg/site.cfg | grep "scratch_directory" | sed -e 's/scratch_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`/
+
 # Log error
 echo ------- > log.log
 echo --- Export pacs_prim for pacs_prim >> log.log
@@ -41,3 +44,5 @@ for i in $pacs_prim_source_directories ; do
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log
 done
+
+rm $scratch_path/landscape_col_prim_pacs_list.txt

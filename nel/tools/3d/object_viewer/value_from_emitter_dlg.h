@@ -48,24 +48,23 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
-/** construct a dialog that allow to edit a scheme used for initial attribute generation in a particle
-  *  D is the type of the dialog to be crated for edition : CAttribDlgFloat / Int etc ..  
+/** construct a dialog that allow to edit a scheme used for initial attribute generation in a particle  
   */
-template <class T, class D> class CValueFromEmitterDlgT : public CValueFromEmitterDlg
+template <class T> class CValueFromEmitterDlgT : public CValueFromEmitterDlg
 {
-public:
-	/// ctruct the given dialog from the given scheme that owns memory
-	CValueFromEmitterDlgT(NL3D::CPSAttribMakerMemory<T> *editedScheme, std::string &id, HBITMAP bitmapToDisplay)
-		: _Id(id), _BitmapToDisplay(bitmapToDisplay), _AttrbDlg(NULL)
+public:	
+	
+	CValueFromEmitterDlgT(NL3D::CPSAttribMakerMemory<T> *editedScheme, CAttribDlgT<T> *srcDlg, HBITMAP bitmapToDisplay)
+		: _BitmapToDisplay(bitmapToDisplay), _AttrbDlg(srcDlg)
 	{
+		nlassert(srcDlg);
 		_SchemeWrapper.S = editedScheme ;
 	}
 
 	/// call this before performing DoModal and the like...
 	void init()
 	{
-	//	Create(IDD_MEMORY_VALUE_DLG, pParent) ;
-		_AttrbDlg = new D(_Id) ;
+	//	Create(IDD_MEMORY_VALUE_DLG, pParent) ;		
 		_AttrbDlg->disableConstantValue() ;
 		_AttrbDlg->setWrapper(&_DummyWrapper) ;
 		_AttrbDlg->setSchemeWrapper(&_SchemeWrapper) ;
@@ -78,12 +77,7 @@ public:
 		delete _AttrbDlg ;
 	}	
 
-protected:
-	
-	// id
-	std::string _Id ;
-
-
+protected:	
 	// the bitmap displayed onthe left
 	HBITMAP _BitmapToDisplay ;
 

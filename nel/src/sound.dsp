@@ -233,6 +233,10 @@ SOURCE=.\sound\mixing_track.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\sound\mixing_track.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\sound\playable.h
 # End Source File
 # Begin Source File

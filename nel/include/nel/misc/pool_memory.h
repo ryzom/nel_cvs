@@ -1,7 +1,7 @@
 /** \file pool_memory.h
  * Pool memory allocation
  *
- * $Id: pool_memory.h,v 1.1 2001/05/22 08:33:17 corvazier Exp $
+ * $Id: pool_memory.h,v 1.2 2001/05/31 09:22:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,7 +79,7 @@ public:
 		if (_BlockPointer==_BlockList.end())
 		{
 			// Add a block
-			_BlockList.push_back (std::vector<T>());
+			_BlockList.resize (_BlockList.size()+1);
 
 			// Pointer on the new block
 			_BlockPointer=_BlockList.end ();
@@ -107,8 +107,13 @@ public:
 			// Clear the block
 			ite->clear ();
 
+			// Check size in not zero
+			nlassert (ite->capacity ()>0);
+
 			ite++;
 		}
+		// Pointer at the begining
+		_BlockPointer=_BlockList.begin();
 	}
 
 	/*
@@ -117,6 +122,7 @@ public:
 	void	purge ()
 	{
 		_BlockList.clear();
+		_BlockPointer=_BlockList.end();
 	}
 
 private:

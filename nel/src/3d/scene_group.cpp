@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.37 2002/06/24 17:14:27 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.38 2002/06/25 14:26:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -487,15 +487,18 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 		{
 			string shapeName;
 			
-
+			bool getShapeName = true;
 			
 			// If there is a callback added to this instance group then transform
 			// the name of the shape to load.
 			if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
 			{												
 				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName);								
+				if (!shapeName.empty())
+					getShapeName = false;
 			}
-			else			
+			
+			if (getShapeName)
 			{			
 				if (rInstanceInfo.Name.find('.') == std::string::npos)
 				{
@@ -745,12 +748,17 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 		if (!rInstanceInfo.DontAddToScene)
 		{
 			string shapeName;
+			bool   getShapeName = true;
 
 			if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
 			{												
 				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName);								
+				if (!shapeName.empty())
+					getShapeName = false;
 			}
-			else			
+			
+
+			if (getShapeName)
 			{						
 				if (rInstanceInfo.Name.find('.') == std::string::npos)
 				{
@@ -794,10 +802,25 @@ void CInstanceGroup::stopAddToSceneAsync ()
 		{
 			string shapeName;
 
-			if (rInstanceInfo.Name.find('.') == std::string::npos)
-				shapeName = rInstanceInfo.Name + ".shape";
-			else	// extension has already been added
-				shapeName  = rInstanceInfo.Name;
+
+			bool getShapeName = true;
+
+			if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
+			{												
+				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName);								
+				if (!shapeName.empty())
+					getShapeName = false;
+			}
+
+			
+			if (getShapeName)
+			{			
+				if (rInstanceInfo.Name.find('.') == std::string::npos)
+					shapeName = rInstanceInfo.Name + ".shape";
+				else	// extension has already been added
+					shapeName  = rInstanceInfo.Name;
+			}
+
 			shapeName = strlwr (shapeName);
 			_AddToSceneTempScene->getShapeBank()->cancelLoadAsync (shapeName);
 		}

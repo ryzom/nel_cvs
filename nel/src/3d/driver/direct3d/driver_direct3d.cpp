@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.25 2004/10/19 13:18:57 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.26 2004/10/25 16:26:56 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -816,6 +816,7 @@ void CDriverD3D::setupConstantDiffuseColorFromLightedMaterial(D3DCOLOR color)
 	setRenderState(D3DRS_LIGHTING, TRUE);	
 }
 
+
 // ***************************************************************************
 void CDriverD3D::updateRenderVariablesInternal()
 {
@@ -967,6 +968,8 @@ void CDriverD3D::updateRenderVariablesInternal()
 			_MaterialState.apply(this);
 		}		
 	}	
+	
+	
 }
 
 
@@ -2247,6 +2250,17 @@ bool CDriverD3D::reset (const GfxMode& mode)
 		//nldebug("EndScene");
 		endScene();			
 	}
+
+	// delete all .fx caches
+	for(TMatDrvInfoPtrList::iterator it = _MatDrvInfos.begin(); it != _MatDrvInfos.end(); ++it)
+	{
+		CMaterialDrvInfosD3D *mi = NLMISC::safe_cast<CMaterialDrvInfosD3D *>(*it);
+		if (mi->FXCache)
+		{
+			mi->FXCache->reset();
+		}
+	}
+
 	if (_DeviceInterface->Reset (&parameters) != D3D_OK)
 	{
 		// tmp
@@ -2267,6 +2281,11 @@ bool CDriverD3D::reset (const GfxMode& mode)
 
 	// Reset internal caches
 	resetRenderVariables();
+
+
+	
+
+
 
 	// Init shaders
 	//initInternalShaders();
@@ -3133,7 +3152,6 @@ void CDriverD3D::CMaterialState::apply(CDriverD3D *driver)
 
 
 } // NL3D
-
 
 
 

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.29 2004/10/19 12:43:01 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.30 2004/10/25 16:26:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,9 @@
 #include "3d/occlusion_query.h"
 #include "3d/vertex_program_parse.h"
 #include "3d/light.h"
+//
+#include <algorithm>
+
 
 // *** DEBUG MACRO
 
@@ -91,6 +94,7 @@
 
 // Define this to enable profiling of driver functions (default is undefined).
 //#define NL_PROFILE_DRIVER_D3D
+
 
 
 #ifdef NL_PROFILE_DRIVER_D3D
@@ -204,61 +208,7 @@ public:
 };
 
 
-
 // ***************************************************************************
-struct CMaterialDrvInfosD3D : public IMaterialDrvInfos
-{
-public:
-	D3DMATERIAL9	Material;
-	D3DCOLOR		UnlightedColor;
-	BOOL			SpecularEnabled;
-	D3DBLEND		SrcBlend;
-	D3DBLEND		DstBlend;
-	D3DCMPFUNC		ZComp;
-	DWORD			AlphaRef;
-	D3DTEXTUREOP	ColorOp[IDRV_MAT_MAXTEXTURES];
-	DWORD 			ColorArg0[IDRV_MAT_MAXTEXTURES];
-	DWORD 			ColorArg1[IDRV_MAT_MAXTEXTURES];
-	DWORD 			ColorArg2[IDRV_MAT_MAXTEXTURES];
-	uint			NumColorArg[IDRV_MAT_MAXTEXTURES];
-	uint			NumAlphaArg[IDRV_MAT_MAXTEXTURES];
-	D3DTEXTUREOP	AlphaOp[IDRV_MAT_MAXTEXTURES];
-	DWORD 			AlphaArg0[IDRV_MAT_MAXTEXTURES];
-	DWORD 			AlphaArg1[IDRV_MAT_MAXTEXTURES];		
-	DWORD			AlphaArg2[IDRV_MAT_MAXTEXTURES];
-	D3DCOLOR		ConstantColor[IDRV_MAT_MAXTEXTURES];
-	DWORD			TexGen[IDRV_MAT_MAXTEXTURES];
-	IDirect3DPixelShader9	*PixelShader;
-	IDirect3DPixelShader9	*PixelShaderUnlightedNoVertexColor;
-	bool			ActivateSpecularWorldTexMT[IDRV_MAT_MAXTEXTURES];
-	bool			ActivateInvViewModelTexMT[IDRV_MAT_MAXTEXTURES];
-	bool			VertexColorLighted;
-	bool			NeedsConstantForDiffuse;	    // Must use TFactor if not vertex color in the vertex buffer	
-	bool			MultipleConstantNoPixelShader;  // Multiple constant are possibly needed to setup the material. This flag is set only if the device has no pixel shaders
-	                                                // In this case diffuse color will be emulated by using an unlighted material with ambient
-	bool			MultiplePerStageConstant;       // Are there more than one per-stage constant in the material ?
-	uint8			ConstantIndex;				    // Index of the constant color to use (when only one constant color is needed and NeedsConstantForDiffuse == false);
-	uint8			ConstantIndex2;                 // stage at which the 2nd constant is used (for emulation without pixel shaders)
-
-	CRGBA			Constant2;						// value of the 2nd constant being used (for emulation without pixel shaders)
-
-	// Relevant parts of the pixel pipe for normal shader
-	bool			RGBPipe[IDRV_MAT_MAXTEXTURES];
-	bool			AlphaPipe[IDRV_MAT_MAXTEXTURES];
-
-	CMaterialDrvInfosD3D(IDriver *drv, ItMatDrvInfoPtrList it) : IMaterialDrvInfos(drv, it)
-	{
-		H_AUTO_D3D(CMaterialDrvInfosD3D_CMaterialDrvInfosD3D);
-		PixelShader = NULL;
-		PixelShaderUnlightedNoVertexColor = NULL;
-		std::fill(RGBPipe, RGBPipe + IDRV_MAT_MAXTEXTURES, true);
-		std::fill(AlphaPipe, AlphaPipe + IDRV_MAT_MAXTEXTURES, true);
-	}
-	void buildTexEnv (uint stage, const CMaterial::CTexEnv &env, bool textured);
-};
-
-// ***************************************************************************
-
 class CVertexProgamDrvInfosD3D : public IVertexProgramDrvInfos
 {
 public:
@@ -360,7 +310,7 @@ public:
 	D3DXHANDLE				FactorHandle[MaxShaderTexture];
 
 	// Scalar handles
-	D3DXHANDLE				ScalarFloatHandle[MaxShaderTexture];	
+	D3DXHANDLE				ScalarFloatHandle[MaxShaderTexture];
 
 	CShaderDrvInfosD3D(IDriver *drv, ItShaderDrvInfoPtrList it);
 	virtual ~CShaderDrvInfosD3D();
@@ -398,7 +348,7 @@ public:
 	IDirect3DPixelShader9	*PixelShader;
 };
 
-/*
+
 
 // base class for recorded state in an effect
 class CStateRecord
@@ -407,22 +357,141 @@ public:
 	// apply record in a driver
 	virtual void apply(class CDriverD3D &drv) = 0;
 	virtual ~CStateRecord() {}
+	// use STL allocator for fast alloc. this works because objects are small ( < 128 bytes)
+	void *operator new(size_t size) { return Allocator.allocate(size); }\
+	void operator delete(void *block) { Allocator.deallocate((uint8 *) block); }
+	static std::allocator<uint8> Allocator;
 };
 
 
+// record of a single .fx pass
 class CFXPassRecord
 {
-public:
+public:	
+	void apply(class CDriverD3D &drv);
 	~CFXPassRecord();
 	std::vector<CStateRecord *> States;
-
 };
+
+
+template <class T> 
+class CFXInputValue
+{
+public:
+	T	 Value;
+	bool Set;
+	CFXInputValue() : Set(false) {}
+	void reset();
+	bool operator==(const CFXInputValue &other) 
+	{ 
+		if (!Set) return !(other.Set);
+		return (Value == other.Value) != 0;
+	}
+};
+
+class CFXInputParams
+{
+public:
+	enum { MaxNumParams = CShaderDrvInfosD3D::MaxShaderTexture };
+	CFXInputValue<LPDIRECT3DBASETEXTURE9> Textures[MaxNumParams];	
+	CFXInputValue<DWORD>				  Colors[MaxNumParams];
+	CFXInputValue<D3DXVECTOR4>			  Vectors[MaxNumParams];
+	CFXInputValue<FLOAT>			      Floats[MaxNumParams];
+	bool Touched;
+public:
+	CFXInputParams() { Touched = true; }
+	void setTexture(uint index, LPDIRECT3DBASETEXTURE9 value) 
+	{ 
+		nlassert(index < MaxNumParams);
+		if (!Textures[index].Set || value != Textures[index].Value)
+		{
+			Textures[index].Value = value; 
+			Textures[index].Set = true;
+			Touched = true;
+		}
+	}
+	void setColor(uint index, DWORD value) 
+	{ 
+		nlassert(index < MaxNumParams);
+		if (!Colors[index].Set || value != Colors[index].Value)
+		{
+			Colors[index].Value = value;
+			Colors[index].Set = true;
+			Touched = true;
+		}
+	}
+	void setVector(uint index, const D3DXVECTOR4 &value) 
+	{ 
+		nlassert(index < MaxNumParams);
+		if (!Vectors[index].Set || value != Vectors[index].Value)
+		{
+			Vectors[index].Value = value;
+			Vectors[index].Set = true;
+			Touched = true;
+		}
+	}
+	void setFloat(uint index, FLOAT value) 
+	{ 
+		nlassert(index < MaxNumParams);
+		if (!Floats[index].Set || value != Floats[index].Value)
+		{
+			Floats[index].Value = value;
+			Floats[index].Set = true;
+			Touched = true;
+		}
+	}
+	//
+	/*
+	bool operator==(const CFXInputParams &other)
+	{
+		return std::equal(Textures, Textures + CShaderDrvInfosD3D::MaxShaderTexture, other.Textures) &&
+			   std::equal(Vectors, Vectors + CShaderDrvInfosD3D::MaxShaderTexture, other.Vectors) &&
+			   std::equal(Colors, Colors + CShaderDrvInfosD3D::MaxShaderTexture, other.Colors) &&
+			   std::equal(Floats, Floats + CShaderDrvInfosD3D::MaxShaderTexture, other.Floats);
+	}
+	*/
+	void reset()
+	{
+		for(uint k = 0; k < MaxNumParams; ++k)
+		{
+			Textures[k].Set = false;
+			Colors[k].Set = false;
+			Vectors[k].Set = false;
+			Floats[k].Set = false;
+		}
+		Touched = true;
+	}
+};
+
+// .fx cache based on input parameters
+class CFXCache
+{
+public:	
+	// Input parameters
+	CFXInputParams  Params;	
+	// cache for .fx states
+	std::vector<CFXPassRecord> Passes;
+	uint					   Steadyness;
+	uint					   NumPasses;
+public:
+	CFXCache() : Steadyness(0) {}
+	void begin(CShaderDrvInfosD3D *si, class CDriverD3D *driver);
+	void applyPass(class CDriverD3D &drv, CShaderDrvInfosD3D *si, uint passIndex);
+	void end(CShaderDrvInfosD3D *si);
+	void reset();
+	void setConstants(CShaderDrvInfosD3D *si);
+};
+
 
 
 // optimisation of an effect pass 
 class CFXPassRecorder : public ID3DXEffectStateManager
 {
 public:
+	CFXPassRecord *Target;
+	class CDriverD3D *Driver;
+public:
+	CFXPassRecorder() : Target(NULL), Driver(NULL) {}
 	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID *ppvObj);
 	ULONG STDMETHODCALLTYPE AddRef(VOID);
 	ULONG STDMETHODCALLTYPE Release(VOID);
@@ -443,11 +512,68 @@ public:
 	HRESULT STDMETHODCALLTYPE SetVertexShader(LPDIRECT3DVERTEXSHADER9 pShader);
 	HRESULT STDMETHODCALLTYPE SetVertexShaderConstantB(UINT StartRegister, CONST BOOL* pConstantData, UINT RegisterCount);
 	HRESULT STDMETHODCALLTYPE SetVertexShaderConstantF(UINT StartRegister, CONST FLOAT* pConstantData, UINT RegisterCount);
-	HRESULT STDMETHODCALLTYPE SetVertexShaderConstantI(UINT StartRegister, CONST INT* pConstantData, UINT RegisterCount);
-#error finir ça
+	HRESULT STDMETHODCALLTYPE SetVertexShaderConstantI(UINT StartRegister, CONST INT* pConstantData, UINT RegisterCount);	
 };
-*/
 
+
+// ***************************************************************************
+struct CMaterialDrvInfosD3D : public IMaterialDrvInfos
+{
+public:
+	D3DMATERIAL9	Material;
+	D3DCOLOR		UnlightedColor;
+	BOOL			SpecularEnabled;
+	D3DBLEND		SrcBlend;
+	D3DBLEND		DstBlend;
+	D3DCMPFUNC		ZComp;
+	DWORD			AlphaRef;
+	D3DTEXTUREOP	ColorOp[IDRV_MAT_MAXTEXTURES];
+	DWORD 			ColorArg0[IDRV_MAT_MAXTEXTURES];
+	DWORD 			ColorArg1[IDRV_MAT_MAXTEXTURES];
+	DWORD 			ColorArg2[IDRV_MAT_MAXTEXTURES];
+	uint			NumColorArg[IDRV_MAT_MAXTEXTURES];
+	uint			NumAlphaArg[IDRV_MAT_MAXTEXTURES];
+	D3DTEXTUREOP	AlphaOp[IDRV_MAT_MAXTEXTURES];
+	DWORD 			AlphaArg0[IDRV_MAT_MAXTEXTURES];
+	DWORD 			AlphaArg1[IDRV_MAT_MAXTEXTURES];		
+	DWORD			AlphaArg2[IDRV_MAT_MAXTEXTURES];
+	D3DCOLOR		ConstantColor[IDRV_MAT_MAXTEXTURES];
+	DWORD			TexGen[IDRV_MAT_MAXTEXTURES];
+	IDirect3DPixelShader9	*PixelShader;
+	IDirect3DPixelShader9	*PixelShaderUnlightedNoVertexColor;
+	bool			ActivateSpecularWorldTexMT[IDRV_MAT_MAXTEXTURES];
+	bool			ActivateInvViewModelTexMT[IDRV_MAT_MAXTEXTURES];
+	bool			VertexColorLighted;
+	bool			NeedsConstantForDiffuse;	    // Must use TFactor if not vertex color in the vertex buffer	
+	bool			MultipleConstantNoPixelShader;  // Multiple constant are possibly needed to setup the material. This flag is set only if the device has no pixel shaders
+	                                                // In this case diffuse color will be emulated by using an unlighted material with ambient
+	bool			MultiplePerStageConstant;       // Are there more than one per-stage constant in the material ?
+	uint8			ConstantIndex;				    // Index of the constant color to use (when only one constant color is needed and NeedsConstantForDiffuse == false);
+	uint8			ConstantIndex2;                 // stage at which the 2nd constant is used (for emulation without pixel shaders)
+
+	CRGBA			Constant2;						// value of the 2nd constant being used (for emulation without pixel shaders)
+
+	// Relevant parts of the pixel pipe for normal shader
+	bool			RGBPipe[IDRV_MAT_MAXTEXTURES];
+	bool			AlphaPipe[IDRV_MAT_MAXTEXTURES];
+
+	CFXCache		*FXCache;
+
+	CMaterialDrvInfosD3D(IDriver *drv, ItMatDrvInfoPtrList it) : IMaterialDrvInfos(drv, it)
+	{
+		H_AUTO_D3D(CMaterialDrvInfosD3D_CMaterialDrvInfosD3D);
+		PixelShader = NULL;
+		PixelShaderUnlightedNoVertexColor = NULL;
+		std::fill(RGBPipe, RGBPipe + IDRV_MAT_MAXTEXTURES, true);
+		std::fill(AlphaPipe, AlphaPipe + IDRV_MAT_MAXTEXTURES, true);
+		FXCache = NULL;
+	}
+	~CMaterialDrvInfosD3D()
+	{
+		delete FXCache;
+	}
+	void buildTexEnv (uint stage, const CMaterial::CTexEnv &env, bool textured);
+};
 
 
 //
@@ -524,7 +650,7 @@ public:
 
 // ***************************************************************************
 
-class CDriverD3D : public IDriver, ID3DXEffectStateManager 
+class CDriverD3D : public IDriver, public ID3DXEffectStateManager 
 {
 public:
 
@@ -840,7 +966,8 @@ public:
 		// *** Inline info
 	sint			inlGetNumTextStages() const {return _NbNeLTextureStages;}
 
-private:
+//private:
+public:
 
 	// Hardware render variables, like matrices, render states
 	struct CRenderVariable
@@ -1177,6 +1304,7 @@ private:
 	// Handle window size change
 	bool handlePossibleSizeChange();
 
+public:
 	// Touch a render variable
 	inline void touchRenderVariable (CRenderVariable *renderVariable)
 	{
@@ -1189,7 +1317,8 @@ private:
 			renderVariable->Modified = true;
 		}
 	}
-	
+// TMP
+//private:	
 
 
 	// Access render states	
@@ -1233,7 +1362,9 @@ public:
 			touchRenderVariable (&_textureState);
 		}		
 	}
-private:
+
+// TMP
+//private:
 	
 
 	// Access texture index states
@@ -1478,17 +1609,17 @@ private:
 	}	
 
 	// Set the vertex buffer	
-	inline void CDriverD3D::setVertexBuffer (IDirect3DVertexBuffer9 *vertexBuffer, UINT offset, UINT stride, bool useVertexColor, uint size, CVertexBuffer::TPreferredMemory pm, DWORD usage, uint colorOffset)	
+	inline void setVertexBuffer (IDirect3DVertexBuffer9 *vertexBuffer, UINT offset, UINT stride, bool useVertexColor, uint size, CVertexBuffer::TPreferredMemory pm, DWORD usage, uint colorOffset)
 	{
 		H_AUTO_D3D(CDriverD3D_setVertexBuffer);
 		nlassert (_DeviceInterface);
 
 		// Ref on the state
-#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+	#ifdef NL_D3D_USE_RENDER_STATE_CACHE
 		//NL_D3D_CACHE_TEST(CacheTest_VertexBuffer, (_VertexBufferCache.VertexBuffer != vertexBuffer) || (_VertexBufferCache.Offset != offset) || (stride != _VertexBufferCache.Stride) || (colorOffset != _VertexBufferCache.ColorOffset))
 		NL_D3D_CACHE_TEST(CacheTest_VertexBuffer, (_VertexBufferCache.VertexBuffer != vertexBuffer) || (_VertexBufferCache.Offset != offset) || (stride != _VertexBufferCache.Stride) || (colorOffset != _VertexBufferCache.ColorOffset))
 		
-#endif // NL_D3D_USE_RENDER_STATE_CACHE
+	#endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_VertexBufferCache.VertexBuffer = vertexBuffer;
 			_VertexBufferCache.Offset = 0;
@@ -1502,17 +1633,18 @@ private:
 			 * Sometime, after a lock D3DLOCK_NOOVERWRITE, the D3DTSS_TEXCOORDINDEX state seams to change.
 			 * So, force it at every vertex buffer set.
 			**/
-			touchRenderVariable (&_TextureStateCache[0][D3DTSS_TEXCOORDINDEX]);
-			touchRenderVariable (&_TextureStateCache[1][D3DTSS_TEXCOORDINDEX]);
-			touchRenderVariable (&_TextureStateCache[2][D3DTSS_TEXCOORDINDEX]);
-			touchRenderVariable (&_TextureStateCache[3][D3DTSS_TEXCOORDINDEX]);
+			if (_IsGeforce)
+			{
+				touchRenderVariable (&_TextureStateCache[0][D3DTSS_TEXCOORDINDEX]);
+				touchRenderVariable (&_TextureStateCache[1][D3DTSS_TEXCOORDINDEX]);
+				touchRenderVariable (&_TextureStateCache[2][D3DTSS_TEXCOORDINDEX]);
+				touchRenderVariable (&_TextureStateCache[3][D3DTSS_TEXCOORDINDEX]);
+			}
 		}
 		_UseVertexColor = useVertexColor;
 		_VertexBufferSize = size;
 		_VertexBufferOffset = offset;
-	}
-
-
+	}	
 
 	// Force to alias diffuse color to specular color in the current vertex buffer
 	inline void setAliasDiffuseToSpecular(bool enable)
@@ -1645,6 +1777,8 @@ private:
 		}
 	}
 
+// TMP
+public:
 	void setMaterialState(const D3DMATERIAL9 &material)
 	{
 		H_AUTO_D3D(setMaterialState);	
@@ -1723,7 +1857,7 @@ private:
 
 	void initInternalShaders();
 	void releaseInternalShaders();
-	bool setShaderTexture (uint textureHandle, ITexture *texture);
+	bool setShaderTexture (uint textureHandle, ITexture *texture, CFXCache *cache);
 	
 	bool validateShader(CShader *shader);
 	
@@ -1731,9 +1865,17 @@ private:
 	{
 		H_AUTO_D3D(CDriverD3D_activePass);		
 		if (_CurrentShader)
-		{			
+		{	
 			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);			
-			drvInfo->Effect->Pass (pass);			
+			if (_CurrentMaterialInfo->FXCache)
+			{
+				nlassert(_CurrentMaterialInfo);
+				_CurrentMaterialInfo->FXCache->applyPass(*this, drvInfo, pass);
+			}
+			else
+			{				
+				drvInfo->Effect->Pass (pass);
+			}
 		}
 
 		// Update render states
@@ -1760,7 +1902,15 @@ private:
 			}
 
 			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);			
-			drvInfo->Effect->Begin (&_CurrentShaderPassCount, D3DXFX_DONOTSAVESTATE|D3DXFX_DONOTSAVESHADERSTATE);
+			if (_CurrentMaterialInfo->FXCache)
+			{
+				nlassert(_CurrentMaterialInfo);
+				_CurrentMaterialInfo->FXCache->begin(drvInfo, this);
+			}
+			else
+			{
+				drvInfo->Effect->Begin (&_CurrentShaderPassCount, D3DXFX_DONOTSAVESTATE|D3DXFX_DONOTSAVESHADERSTATE);
+			}
 		}
 		else
 			// No shader setuped
@@ -1771,9 +1921,16 @@ private:
 	{
 		H_AUTO_D3D(CDriverD3D_endMultiPass);
 		if (_CurrentShader)
-		{			
+		{	
 			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);			
-			drvInfo->Effect->End ();
+			if (_CurrentMaterialInfo->FXCache)
+			{
+				_CurrentMaterialInfo->FXCache->end(drvInfo);
+			}
+			else
+			{				
+				drvInfo->Effect->End ();
+			}
 		}
 	}
 
@@ -1808,6 +1965,7 @@ private:
 	void setDebugMaterial();
 
 	// ** From ID3DXEffectStateManager 
+public:
 	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID *ppvObj);
 	ULONG STDMETHODCALLTYPE AddRef(VOID);
 	ULONG STDMETHODCALLTYPE Release(VOID);
@@ -1829,6 +1987,7 @@ private:
 	HRESULT STDMETHODCALLTYPE SetVertexShaderConstantB(UINT StartRegister, CONST BOOL* pConstantData, UINT RegisterCount);
 	HRESULT STDMETHODCALLTYPE SetVertexShaderConstantF(UINT StartRegister, CONST FLOAT* pConstantData, UINT RegisterCount);
 	HRESULT STDMETHODCALLTYPE SetVertexShaderConstantI(UINT StartRegister, CONST INT* pConstantData, UINT RegisterCount);
+private:
 
 	// Windows
 	std::string				_WindowClass;
@@ -2038,17 +2197,20 @@ private:
 	// The last setuped shader
 	CShader					*_CurrentShader;
 	UINT					_CurrentShaderPassCount;
+public:
 	struct CTextureRef
 	{
 		CRefPtr<ITexture>		NeLTexture;
 		LPDIRECT3DBASETEXTURE9	D3DTexture;
-	};
+	};	
+	const std::vector<CTextureRef> &getCurrentShaderTextures() const { return _CurrentShaderTextures; }
+private:
 	std::vector<CTextureRef>	_CurrentShaderTextures;
-
+	
 	// The last material setuped
 	CMaterial				*_CurrentMaterial;	
 public:
-	CMaterialDrvInfosD3D	*_CurrentMaterialInfo;	
+	CMaterialDrvInfosD3D	*_CurrentMaterialInfo;		
 private:
 
 	// Optim: To not test change in Materials states if just texture has changed. Very usefull for landscape.

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.18 2004/10/19 12:44:04 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.19 2004/10/25 16:25:49 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -275,6 +275,42 @@ static inline DWORD replaceDiffuseWithConstant(DWORD value)
 
 
 
+
+// helpers to set shaders parameters
+
+// Set a color in the shader
+static inline void setShaderParam(CMaterialDrvInfosD3D *pShader, uint index, INT value)
+{	
+	nlassert(pShader->FXCache);
+	pShader->FXCache->Params.setColor(index, value);	
+}
+
+// Set a color
+static inline void setShaderParam(CMaterialDrvInfosD3D *pShader, uint index, CRGBA color)
+{	
+	nlassert(pShader->FXCache);
+	float values[4];
+    NL_FLOATS(values, color);    
+    pShader->FXCache->Params.setVector(index, D3DXVECTOR4(values[0], values[1], values[2], values[3]));
+}
+
+
+// Set a float value in the shader
+static inline void setShaderParam(CMaterialDrvInfosD3D *pShader, uint index, FLOAT value)
+{	
+	nlassert(pShader->FXCache);
+	pShader->FXCache->Params.setFloat(index, value);
+}
+
+
+// Set a vector of floats
+static inline void setShaderParam(CMaterialDrvInfosD3D *pShader, uint index, float vector[4])
+{	
+	nlassert(pShader->FXCache); \
+	pShader->FXCache->Params.setVector(index, D3DXVECTOR4(vector[0], vector[1], vector[2], vector[3]));
+}
+
+
 // ***************************************************************************
 bool CDriverD3D::setupMaterial(CMaterial &mat)
 {			
@@ -356,7 +392,17 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 		H_AUTO_D3D(CDriverD3D_setupMaterial_touchupdate)
 		// Something to setup ?
 		if (touched)
-		{					
+		{	
+			if (touched & IDRV_TOUCHED_SHADER)
+			{
+				delete pShader->FXCache;
+				pShader->FXCache = NULL;
+				// See if material actually needs a fx cache
+				if (mat.getShader() != CMaterial::Specular && mat.getShader() != CMaterial::Normal)
+				{
+					pShader->FXCache = new CFXCache;
+				}		
+			}
 			/* Exception: if only Textures are modified in the material, no need to "Bind OpenGL States", or even to test
 				for change, because textures are activated alone, see below.
 				No problem with delete/new problem (see below), because in this case, IDRV_TOUCHED_ALL is set (see above).
@@ -970,7 +1016,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 
 				// Setup the texture
 				ITexture *texture = mat.getTexture(0);
-				if (!setShaderTexture (0, texture))
+				if (!setShaderTexture (0, texture, pShader->FXCache))
 					return false;
 
 				// Get the effect
@@ -1004,12 +1050,10 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 					CRGBA	lmcAmbient((uint8)r,(uint8)g,(uint8)b,255);
 
 					// Set into FX shader
-					effect->SetInt(shaderInfo->ColorHandle[0], NL_D3DCOLOR_RGBA(lmcAmbient));
+					setShaderParam(pShader, 0, (INT) NL_D3DCOLOR_RGBA(lmcAmbient));
 					if (shaderInfo->FactorHandle[0])
-					{
-						float colors[4];
-						NL_FLOATS(colors,lmcAmbient);
-						effect->SetFloatArray (shaderInfo->FactorHandle[0], colors, 4);
+					{						
+						setShaderParam(pShader, 0, lmcAmbient);
 					}
 				}
 				
@@ -1022,7 +1066,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 					{
 						// Set the lightmap texture
 						ITexture	*text= mat._LightMaps[lightmap].Texture;
-						if (text != NULL && !setShaderTexture (lightmapCount+1, text))
+						if (text != NULL && !setShaderTexture (lightmapCount+1, text, pShader->FXCache))
 							return false;
 
 						// Get the lightmap color factor, and mul by lmcDiffuse compression
@@ -1034,12 +1078,10 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 						lmapFactor.A = 255;
 						
 						// Set the lightmap color factor into shader
-						effect->SetInt(shaderInfo->ColorHandle[lightmapCount+1], NL_D3DCOLOR_RGBA(lmapFactor));
+						setShaderParam(pShader, lightmapCount+1, (INT) NL_D3DCOLOR_RGBA(lmapFactor));
 						if (shaderInfo->FactorHandle[lightmapCount+1])
-						{
-							float colors[4];
-							NL_FLOATS(colors,lmapFactor);
-							effect->SetFloatArray (shaderInfo->FactorHandle[lightmapCount+1], colors, 4);
+						{							
+							setShaderParam(pShader, lightmapCount+1, lmapFactor);
 						}
 						lightmapCount++;
 					}
@@ -1098,16 +1140,14 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 
 				// Set the constant
 				ID3DXEffect			*effect = shaderInfo->Effect;
-				float colors[4];
 				CRGBA color = mat.getColor();
 				color.R = 255;
 				color.G = 255;
-				color.B = 255;
-				NL_FLOATS(colors,color);
-				effect->SetFloatArray (shaderInfo->FactorHandle[0], colors, 4);
+				color.B = 255;				
+				setShaderParam(pShader, 0, color);
 
 				// Set the texture
-				if (!setShaderTexture (0, mat.getTexture(0)) || !setShaderTexture (1, mat.getTexture(1)))
+				if (!setShaderTexture (0, mat.getTexture(0), pShader->FXCache) || !setShaderTexture (1, mat.getTexture(1), pShader->FXCache))
 					return false;
 			}
 			break;
@@ -1131,7 +1171,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 							tb->setSignedFormat(false);
 						}						
 						setupTexture(*tex);
-						setShaderTexture (0, tex);
+						setShaderTexture (0, tex, pShader->FXCache);
 					}
 				}
 				ITexture *tex = mat.getTexture(1);		
@@ -1156,20 +1196,20 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 						}
 					}
 					setupTexture(*tex);
-					setShaderTexture (1, tex);
+					setShaderTexture (1, tex, pShader->FXCache);
 				}				
 				//				
 				tex = mat.getTexture(2);
 				if (tex) 
 				{					
 					setupTexture(*tex);
-					setShaderTexture (2, tex);
+					setShaderTexture (2, tex, pShader->FXCache);
 				}
 				tex = mat.getTexture(3);
 				if (tex) 
 				{					
 					setupTexture(*tex);
-					setShaderTexture (3, tex);
+					setShaderTexture (3, tex, pShader->FXCache);
 				}
 				
 				// Set the constants
@@ -1180,12 +1220,12 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 					{
 						if (mat.getTexture(1) && mat.getTexture(1)->isBumpMap())
 						{
-							float factor = NLMISC::safe_cast<CTextureBump *>(mat.getTexture(1))->getNormalizationFactor();
-							effect->SetFloat(shaderInfo->ScalarFloatHandle[0], factor);
+							float factor = NLMISC::safe_cast<CTextureBump *>(mat.getTexture(1))->getNormalizationFactor();							
+							setShaderParam(pShader, 0, factor);
 						}
 						else
-						{
-							effect->SetFloat(shaderInfo->ScalarFloatHandle[0], 1.f);
+						{							
+							setShaderParam(pShader, 0, 1.f);
 						}						
 					}
 					else
@@ -1194,24 +1234,24 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 						{
 							float factor = NLMISC::safe_cast<CTextureBump *>(mat.getTexture(0))->getNormalizationFactor();
 							float cst[4] = { factor, factor, factor, 0.f };
-							effect->SetFloatArray(shaderInfo->FactorHandle[0], cst, 4);
+							setShaderParam(pShader, 0, cst);
 						}
 						else
 						{
 							float cst[4] = { 1.f, 1.f, 1.f, 0.f };
-							effect->SetFloatArray(shaderInfo->FactorHandle[0], cst, 4);
+							setShaderParam(pShader, 0, cst);
 						}
 						//
 						if (mat.getTexture(1) && mat.getTexture(1)->isBumpMap())
 						{
 							float factor = NLMISC::safe_cast<CTextureBump *>(mat.getTexture(1))->getNormalizationFactor();
 							float cst[4] = { factor, factor, factor, 0.f };
-							effect->SetFloatArray(shaderInfo->FactorHandle[1], cst, 4);
+							setShaderParam(pShader, 1, cst);
 						}
 						else
 						{
 							float cst[4] = { 1.f, 1.f, 1.f, 0.f };
-							effect->SetFloatArray(shaderInfo->FactorHandle[1], cst, 4);
+							setShaderParam(pShader, 1, cst);
 						}
 					}
 				}
@@ -1222,24 +1262,24 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 					{
 						float factor = 0.25f * NLMISC::safe_cast<CTextureBump *>(mat.getTexture(0))->getNormalizationFactor();
 						float bmScale[4] = { -1.f * factor, -1.f * factor, 2.f * factor, 0.f };
-						effect->SetFloatArray(shaderInfo->FactorHandle[0], bmScale, 4);
+						setShaderParam(pShader, 0, bmScale);						
 					}
 					else
 					{					
 						float bmScale[4] = { -1.f, -1.f, 2.f, 0.f };
-						effect->SetFloatArray(shaderInfo->FactorHandle[0], bmScale, 4);		
+						setShaderParam(pShader, 0, bmScale);
 					}
 					// setup the constant
 					if (mat.getTexture(1) && mat.getTexture(1)->isBumpMap())
 					{
 						float factor = NLMISC::safe_cast<CTextureBump *>(mat.getTexture(1))->getNormalizationFactor();
 						float bmScale[4] = { -1.f * factor, -1.f * factor, 2.f * factor, 0.f };
-						effect->SetFloatArray(shaderInfo->FactorHandle[1], bmScale, 4);	
+						setShaderParam(pShader, 1, bmScale);
 					}
 					else
 					{
 						float bmScale[4] = { -1.f, -1.f, 2.f, 0.f };
-						effect->SetFloatArray(shaderInfo->FactorHandle[1], bmScale, 4);	
+						setShaderParam(pShader, 1, bmScale);						
 					}
 				}
 			}
@@ -1258,7 +1298,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 
 // ***************************************************************************
 // Add one set to another
-static add(std::set<uint> &dest, const std::set<uint> &toAdd)
+static void add(std::set<uint> &dest, const std::set<uint> &toAdd)
 {
 	for (std::set<uint>::const_iterator it = toAdd.begin(); it != toAdd.end(); ++it)
 	{

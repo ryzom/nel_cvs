@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.11 2001/11/15 15:26:40 legros Exp $
+ * $Id: unified_network.cpp,v 1.12 2001/11/19 14:07:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,18 +37,18 @@ inline void	CUnifiedNetwork::enterReentrant()
 {
 	if (_MThreadId == 0xFFFFFFFF || _MThreadId != NLMISC::getThreadId())
 	{
-		if (_MThreadId != 0xFFFFFFFF)
+/*		if (_MThreadId != 0xFFFFFFFF)
 			nldebug("Waiting for thread %d to leave the mutex", _MThreadId);
-		_Mutex.enter();
+*/		_Mutex.enter();
 		_MThreadId = NLMISC::getThreadId();
 	}
 	++_MutexCount;
-	nldebug("Enter reentrant CS (_MutexCount=%d)", _MutexCount);
+//	nldebug("Enter reentrant CS (_MutexCount=%d)", _MutexCount);
 }
 
 inline void	CUnifiedNetwork::leaveReentrant()
 {
-	nldebug("Leave reentrant CS (_MutexCount=%d)", _MutexCount);
+//	nldebug("Leave reentrant CS (_MutexCount=%d)", _MutexCount);
 	--_MutexCount;
 	if (_MutexCount == 0)
 	{
@@ -365,7 +365,7 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 
 void	CUnifiedNetwork::update(sint32 timeout)
 {
-	nldebug("In CUnifiedNetwork::update()");
+//	nldebug("In CUnifiedNetwork::update()");
 	enterReentrant();
 	{
 		// lock read access to the connections
@@ -399,6 +399,8 @@ void	CUnifiedNetwork::update(sint32 timeout)
 				}
 			}
 
+			enableRetry = false;
+
 			if (CTime::getLocalTime() - newTime > timeout)
 				break;
 
@@ -408,7 +410,7 @@ void	CUnifiedNetwork::update(sint32 timeout)
 
 	updateConnectionTable();
 	leaveReentrant();
-	nldebug("Out CUnifiedNetwork::update()");
+//	nldebug("Out CUnifiedNetwork::update()");
 }
 
 

@@ -4,7 +4,7 @@
 
 \author Olivier Cado
 
-\date July 13, 2001
+\date Updated July 17, 2001
 
 \section sndoverview Overview
 
@@ -26,6 +26,11 @@ The environmental effects are combined to 3D areas. The sound engine
 chooses and applies automatically the good effect depending on the
 listener's position. For example, if the players enters a cathedral,
 an effect with a lot of reverberations will be set.
+
+Both the environment sounds and the environmental effects can be
+dynamically changed, using a tag to select them in a bank. For
+example, you could have a "day" and a "night" configuration for
+a single environmental effect.
 
 \section sndarchi Architecture
 
@@ -52,10 +57,34 @@ sources to a small number (usually 32). The library is able to balance
 the sources to choose which ones have to be heard, depending on their
 priority and their distance from the listener.
 
-The library performs automatically the mix of environment sources channels
-(playing random sounds and crossfading them).
+An environment sound object (envsound) is a node of an envsound tree,
+the root of which is returned by UAudioMixer::loadEnvSounds().
+The root is the world envsound: it has no bounds. The
+areas of children envsounds have bounds and they must be totally
+included in the area of their parent envsound, so that the listener
+is located in one and only one envsound area
 
-If applies automatically the environmental effects.
+Here is an example of an envsound tree, showing a geographical
+view and the tree view:
+
+\image html envsound_tree.png
+
+\verbatim
+                       Root (world envsound)
+                       /                   \
+                Transition               Transition
+                    |                        |
+                  Cave1                    City
+                                           /  \
+                                 Transition    Transition
+                                     |             |
+                                  Building1     Building2
+\endverbatim
+
+The library performs automatically the mix of environment sources channels
+contained in most of the envsounds (playing random sounds and crossfading them).
+
+The library applies automatically the environmental effects as well.
 
 Finally, it handles object allocation, config file and buffer loading, etc.
 
@@ -63,6 +92,7 @@ As a conclusion, all the game developer has to do at the very least is to:
 - Init the system (class UAudioMixer)
 - Move the listener (class UListener)
 - Move the sources (other players, bots, objects...) (class USource)
+- Possibly move the envsounds (class UEnvSound)
 
 \subsection Files
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.75 2004/08/03 16:33:53 vizerie Exp $
+ * $Id: driver.h,v 1.76 2004/08/13 15:24:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/misc/matrix.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/uv.h"
+#include "nel/misc/hierarchical_timer.h"
 #include "3d/texture.h"
 #include "3d/shader.h"
 #include "3d/vertex_buffer.h"
@@ -53,6 +54,7 @@ struct IMouseDevice;
 struct IKeyboardDevice;
 struct IInputDeviceManager;
 class CRect;
+class CLog;
 };
 
 namespace NL3D
@@ -571,6 +573,11 @@ public:
 	/** display VBhards allocated
 	 */
 	virtual	void			profileVBHardAllocation(std::vector<std::string> &result) = 0;
+
+	// Index buffer profiling, same use than with vertex buffers
+	virtual	void			startProfileIBLock() = 0;
+	virtual	void			endProfileIBLock(std::vector<std::string> &result) = 0;
+	virtual	void			profileIBAllocation(std::vector<std::string> &result) = 0;
 
 	/** For each texture setuped in the driver, "print" result: type, shareName, format and size (mipmap included)
 	 */
@@ -1148,6 +1155,7 @@ public:
 	  */
 	virtual void			setCullMode(TCullMode cullMode) = 0;
 	virtual	TCullMode       getCullMode() const = 0;	
+	
 
 protected:
 	friend	class	IVBDrvInfos;

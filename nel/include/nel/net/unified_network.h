@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.16 2002/02/07 17:17:44 lecroart Exp $
+ * $Id: unified_network.h,v 1.17 2002/03/11 11:33:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,7 +93,7 @@ public:
 	 * \param addr address of the naming service (NULL is you don't want to use the naming service)
 	 * \param rec recorging state to know if we have to record or replay messages
 	 */
-	void	init (const CInetAddress *addr, CCallbackNetBase::TRecordingState rec, const std::string &shortName, uint16 port, TServiceId &sid );
+	static CUnifiedNetwork	*init (const CInetAddress *addr, CCallbackNetBase::TRecordingState rec, const std::string &shortName, uint16 port, TServiceId &sid );
 
 	/** Registers to the Naming Service, and connects to the present services
 	 */
@@ -146,7 +146,7 @@ public:
 	 * If you set the same callback for a specific service S and for "*", the callback might be
 	 * call twice (in case the service S is up)
 	 */
-	void	setServiceUpCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg, bool back=true);
+	void	setServiceUpCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg = NULL, bool back=true);
 
 	/** Sets callback for disconnections.
 	 * On a client, the callback will be call each time the connection to the server is lost.
@@ -158,7 +158,7 @@ public:
 	 * If you set the same callback for a specific service S and for "*", the callback might be
 	 * call twice (in case the service S is down)
 	 */
-	void	setServiceDownCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg, bool back=true);
+	void	setServiceDownCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg = NULL, bool back=true);
 
 
 	/// Gets the CCallbackNetBase of the service
@@ -314,6 +314,9 @@ private:
 
 	~CUnifiedNetwork() { }
 
+	//
+	void	initInstance (const CInetAddress *addr, CCallbackNetBase::TRecordingState rec, const std::string &shortName, uint16 port, TServiceId &sid );
+	
 	//
 	void	updateConnectionTable();
 

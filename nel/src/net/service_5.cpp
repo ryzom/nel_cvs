@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.18 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: service_5.cpp,v 1.19 2002/03/11 11:32:57 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -607,7 +607,7 @@ sint IService5::main ()
 		/// Layer5 Startup
 		///
 
-		CUnifiedNetwork	*instance = CUnifiedNetwork::getInstance();
+		CUnifiedNetwork	*instance = NULL;
 
 		// get the sid
 		try
@@ -639,7 +639,7 @@ sint IService5::main ()
 				CInetAddress loc(ConfigFile.getVar("NSHost").asString(), ConfigFile.getVar("NSPort").asInt());
 				try
 				{
-					instance->init(&loc, _RecordingState, _ShortName, _Port, _SId);
+					instance = CUnifiedNetwork::init (&loc, _RecordingState, _ShortName, _Port, _SId);
 					ok = true;
 				}
 				catch (ESocketConnectionFailed &)
@@ -651,7 +651,7 @@ sint IService5::main ()
 		}
 		else
 		{
-			instance->init(NULL, _RecordingState, _ShortName, _Port, _SId);
+			instance = CUnifiedNetwork::init(NULL, _RecordingState, _ShortName, _Port, _SId);
 		}
 
 

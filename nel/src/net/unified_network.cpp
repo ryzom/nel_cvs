@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.30 2002/02/11 17:38:48 legros Exp $
+ * $Id: unified_network.cpp,v 1.31 2002/03/11 11:32:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -299,7 +299,20 @@ TCallbackItem	ServerCbArray[] =
 //
 //
 
-void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordingState rec,
+CUnifiedNetwork	*CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordingState rec,
+							  const string &shortName, uint16 port, TServiceId &sid)
+{
+	nlassert (_Instance == NULL);
+
+	_Instance = new CUnifiedNetwork();
+
+	_Instance->initInstance (addr, rec, shortName, port, sid);
+
+	return _Instance;
+}
+
+
+void	CUnifiedNetwork::initInstance(const CInetAddress *addr, CCallbackNetBase::TRecordingState rec,
 							  const string &shortName, uint16 port, TServiceId &sid)
 {
 	_RecordingState = rec;
@@ -1076,11 +1089,7 @@ CUnifiedNetwork	*CUnifiedNetwork::_Instance = NULL;
 
 CUnifiedNetwork	*CUnifiedNetwork::getInstance ()
 {
-	if (_Instance == NULL)
-	{
-		_Instance = new CUnifiedNetwork();
-	}
-
+	nlassertex (_Instance != NULL, ("Try to CUnifiedNetwork::getInstance() but it was never initialized"));
 	return _Instance;
 }
 
@@ -1136,7 +1145,8 @@ void	CUnifiedNetwork::autoCheck()
 			(uint16)(idAccess.value()[i].Connection.HostId->appId()) :
 			(uint16)(idAccess.value()[i].Connection.CbClient->getSockId()->appId());
 
-		nlassert(i == appId);
+		// ca crash ici des fois kan on quitte violement
+		nlassertex(i == appId, ("%d == %d", i, appId));
 	}
 
 	for (i=0; i<_ConnectionStack.size(); ++i)

@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.19 2002/01/15 13:36:42 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.20 2002/01/22 14:09:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -232,6 +232,7 @@ void CNetManager::addServer (const std::string &serviceName, uint16 servicePort,
 			CNamingClient::registerServiceWithSId (serviceName, addr, sid);
 		}
 	}
+	nlinfo ("HNETL4: Server '%s' added, registered and listen to port %hu", serviceName.c_str (), servicePort);
 }
 
 

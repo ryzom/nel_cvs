@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.20 2003/08/04 13:28:37 boucher Exp $
+ * $Id: cluster.cpp,v 1.21 2003/08/21 09:29:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -297,6 +297,12 @@ void CCluster::serial (IStream&f)
 	{
 		f.serial(AudibleFromFather);
 		f.serial(FatherAudible);
+	}
+	else
+	{
+		// copy the visual property
+		AudibleFromFather = VisibleFromFather;
+		FatherAudible = FatherVisible;
 	}
 }
 

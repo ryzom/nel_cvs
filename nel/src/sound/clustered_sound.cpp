@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.13 2003/07/01 10:14:11 cado Exp $
+ * $Id: clustered_sound.cpp,v 1.14 2003/08/21 09:28:14 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -602,7 +602,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 				}
 				nlassert(otherCluster != cluster);
 
-				if (otherCluster && travContext.PreviousCluster != otherCluster) // && (!travContext.FilterUnvisibleChild || otherCluster->VisibleFromFather))
+				if (otherCluster && travContext.PreviousCluster != otherCluster) // && (!travContext.FilterUnvisibleChild || otherCluster->AudibleFromFather))
 				{
 					const vector<CVector> &poly = portal->getPoly();
 
@@ -781,7 +781,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 								if (addAudibleCluster(otherCluster, css))
 								{
 	//								debugLines.push_back(CLine(travContext.ListenerPos, nearPoint));
-									CSoundTravContext tc(nearPos, travContext.FilterUnvisibleChild, !cluster->VisibleFromFather);
+									CSoundTravContext tc(nearPos, travContext.FilterUnvisibleChild, !cluster->AudibleFromFather);
 									tc.Dist = css.Dist;
 									tc.Gain = css.Gain;
 									tc.Occlusion = css.Occlusion;
@@ -814,7 +814,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 				if (c != travContext.PreviousCluster)
 				{
 					// clip on distance.
-					if (c->VisibleFromFather && c->isIn(travContext.ListenerPos, _MaxEarDistance-travContext.Dist))
+					if (c->AudibleFromFather && c->isIn(travContext.ListenerPos, _MaxEarDistance-travContext.Dist))
 					{
 						float minDist;
 						CVector nearPos;
@@ -864,7 +864,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 			}
 
 			// 3nd, look in father cluster
-			if (cluster->Father && cluster->Father != travContext.PreviousCluster && cluster->FatherVisible)
+			if (cluster->Father && cluster->Father != travContext.PreviousCluster && cluster->FatherAudible)
 			{
 //				if (!travContext.FilterUnvisibleFather || ((1.0f-travContext.Alpha) > travContext.MinGain))
 				{

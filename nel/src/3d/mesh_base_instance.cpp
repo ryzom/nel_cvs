@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.12 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.13 2002/09/05 17:59:54 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,5 +256,25 @@ void CMeshBaseInstance::setAnimatedLightmap (CAnimatedLightmap *alm)
 	CTransform::setIsForceAnimDetail(true);
 }
 
+
+// ***************************************************************************
+uint CMeshBaseInstance::getNumMaterial () const
+{
+	return Materials.size ();
+}
+
+
+// ***************************************************************************
+const CMaterial	*CMeshBaseInstance::getMaterial (uint materialId) const
+{
+	return &(Materials[materialId]);
+}
+
+
+// ***************************************************************************
+CMaterial	*CMeshBaseInstance::getMaterial (uint materialId)
+{
+	return &(Materials[materialId]);
+}
 
 } // NL3D

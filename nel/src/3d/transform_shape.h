@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.17 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: transform_shape.h,v 1.18 2002/09/05 17:59:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@ class	CTransformShapeRenderObs;
 class	CTransformShapeLoadBalancingObs;
 class	CRenderTrav;
 class	CMRMLevelDetail;
+class	CMaterial;
 
 
 // ***************************************************************************
@@ -80,6 +81,17 @@ public:
 	 */
 	virtual void		getAABBox(NLMISC::CAABBox &bbox) const;
 
+	/** Get the count of material in this transform shape
+	 */
+	virtual uint		getNumMaterial () const;
+
+	/** Get a material of the transform shape
+	 */
+	virtual const CMaterial	*getMaterial (uint materialId) const;
+
+	/** Get a material of the transform shape
+	 */
+	virtual CMaterial	*getMaterial (uint materialId);
 
 	/// \name Load balancing methods
 	// @{

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.39 2002/09/04 13:00:53 corvazier Exp $
+ * $Id: driver.h,v 1.40 2002/09/05 17:59:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -229,6 +229,16 @@ public:
 	virtual bool			setupTextureEx (ITexture& tex, bool bUpload, bool& bAllUploaded)=0;
 	virtual bool			uploadTexture (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap)=0;
 	virtual bool			uploadTextureCube (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap, uint8 nNumFace)=0;
+
+	/**
+	  * Invalidate shared texture
+	  */
+	bool					invalidateShareTexture (ITexture &);
+
+	/**
+	  * Get the driver share texture name
+	  */
+	static void				getTextureShareName (const ITexture& tex, std::string &output);
 
 	/** if true force all the uncompressed RGBA 32 bits and RGBA 24 bits texture to be DXTC5 compressed.
 	 *	Do this only during upload if ITexture::allowDegradation() is true and if ITexture::UploadFormat is "Automatic"

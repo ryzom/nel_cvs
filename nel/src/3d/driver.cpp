@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.cpp,v 1.68 2002/08/30 11:58:41 berenguier Exp $
+ * $Id: driver.cpp,v 1.69 2002/09/05 17:59:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NL3D
 {
 
 // ***************************************************************************
-const uint32 IDriver::InterfaceVersion = 0x42;
+const uint32 IDriver::InterfaceVersion = 0x43;
 
 // ***************************************************************************
 IDriver::IDriver() : _SyncTexDrvInfos( "IDriver::_SyncTexDrvInfos" )
@@ -238,5 +238,55 @@ void			IDriver::removeVtxPrgDrvInfoPtr(ItVtxPrgDrvInfoPtrList vtxPrgDrvInfoIt)
 	_VtxPrgDrvInfos.erase(vtxPrgDrvInfoIt);
 }
 
-}
+// ***************************************************************************
+bool			IDriver::invalidateShareTexture (ITexture &texture)
+{
+	// Create the shared Name.
+	std::string	name;
+	getTextureShareName (texture, name);
 
+	// Look for the driver info for this share name
+	CSynchronized<TTexDrvInfoPtrMap>::CAccessor access(&_SyncTexDrvInfos);
+	TTexDrvInfoPtrMap &rTexDrvInfos = access.value();
+	TTexDrvInfoPtrMap::iterator iteDrvInfo = rTexDrvInfos.find (name);
+	if (iteDrvInfo != rTexDrvInfos.end())
+	{
+		// Now parse all shared info
+		TTexDrvSharePtrList::iterator shareIte = _TexDrvShares.begin ();
+		while (shareIte != _TexDrvShares.end ())
+		{
+			// Good one ?
+			if ((*shareIte)->DrvTexture == iteDrvInfo->second)
+			{
+				// Remove this one
+				TTexDrvSharePtrList::iterator toRemove = shareIte;
+				shareIte++;
+				delete (*toRemove);
+			}
+			else 
+				shareIte++;
+		}
+
+		// Ok
+		return true;
+	}
+	return false;
+}
+// ***************************************************************************
+void			IDriver::getTextureShareName (const ITexture& tex, string &output)
+{
+	// Create the shared Name.
+	output= tex.getShareName();
+
+	// append format Id of the texture.
+	static char	fmt[256];
+	smprintf(fmt, 256, "@Fmt:%d", (uint32)tex.getUploadFormat());
+	output+= fmt;
+
+	// append mipmap info
+	if(tex.mipMapOn())
+		output+= "@MMp:On";
+	else
+		output+= "@MMp:Off";
+}
+}

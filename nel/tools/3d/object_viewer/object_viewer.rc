@@ -2250,6 +2250,7 @@ BEGIN
     POPUP "&Scene"
     BEGIN
         MENUITEM "&Clear scene",                ID_CLEAR
+        MENUITEM "&Reload Textures",            IDC_RELOAD_TEXTURES
     END
     POPUP "&Window"
     BEGIN

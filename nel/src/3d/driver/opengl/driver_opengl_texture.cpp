@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.56 2002/08/21 09:37:12 lecroart Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.57 2002/09/05 17:59:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -341,17 +341,8 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 		// Try to get the shared texture.
 
 		// Create the shared Name.
-		std::string	name= tex.getShareName();
-		// append format Id of the texture.
-		static char	fmt[256];
-		smprintf(fmt, 256, "@Fmt:%d", (uint32)tex.getUploadFormat());
-		name+= fmt;
-		// append mipmap info
-		if(tex.mipMapOn())
-			name+= "@MMp:On";
-		else
-			name+= "@MMp:Off";
-
+		std::string	name;
+		getTextureShareName (tex, name);
 
 		// insert or get the texture.
 		{
@@ -715,6 +706,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 	tex.clearTouched();
 	return true;
 }
+
 
 // ***************************************************************************
 bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)

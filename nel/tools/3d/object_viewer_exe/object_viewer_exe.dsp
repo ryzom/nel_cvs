@@ -55,7 +55,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 msvcrt.lib libc.lib freetype.lib /nologo /subsystem:windows /machine:I386 /out:"Release/object_viewer.exe"
+# ADD LINK32 msvcrt.lib libc.lib freetype.lib /nologo /subsystem:windows /incremental:yes /machine:I386 /out:"Release/object_viewer.exe"
 
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 Debug"
 
@@ -110,7 +110,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 msvcrt.lib libc.lib /nologo /subsystem:windows /machine:I386 /out:"Release/object_viewer.exe"
-# ADD LINK32 msvcrt.lib freetype.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"ReleaseDebug/object_viewer.exe"
+# ADD LINK32 msvcrt.lib freetype.lib libc.lib /nologo /subsystem:windows /incremental:yes /debug /machine:I386 /out:"ReleaseDebug/object_viewer.exe"
 
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 DebugFast"
 
@@ -175,26 +175,7 @@ SOURCE=.\object_viewer_exe.cpp
 # Begin Source File
 
 SOURCE=.\std_afx.cpp
-
-!IF  "$(CFG)" == "object_viewer_exe - Win32 Release"
-
 # ADD CPP /Yc"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 Debug"
-
-# ADD CPP /Yc"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 ReleaseDebug"
-
-# ADD CPP /Yc"std_afx.h"
-
-!ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 DebugFast"
-
-# ADD BASE CPP /Yc"std_afx.h"
-# ADD CPP /Yc"std_afx.h"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "Header Files"

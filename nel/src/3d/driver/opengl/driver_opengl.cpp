@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.158 2002/09/04 13:00:53 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.159 2002/09/05 17:59:54 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1133,17 +1133,11 @@ bool CDriverGL::activate()
 bool CDriverGL::isTextureExist(const ITexture&tex)
 {
 	bool result;
+
 	// Create the shared Name.
-	std::string	name= tex.getShareName();
-	// append format Id of the texture.
-	static char	fmt[256];
-	smprintf(fmt, 256, "@Fmt:%d", (uint32)tex.getUploadFormat());
-	name+= fmt;
-	// append mipmap info
-	if(tex.mipMapOn())
-		name+= "@MMp:On";
-	else
-		name+= "@MMp:Off";
+	std::string	name;
+	getTextureShareName (tex, name);
+
 	{
 		CSynchronized<TTexDrvInfoPtrMap>::CAccessor access(&_SyncTexDrvInfos);
 		TTexDrvInfoPtrMap &rTexDrvInfos = access.value();
@@ -1908,12 +1902,15 @@ uint32			CDriverGL::getUsedTextureMemory() const
 	set<NLMISC::CSmartPtr<ITexture> >::iterator ite=_TextureUsed.begin();
 	while (ite!=_TextureUsed.end())
 	{
-		// Get a gl texture
-		CTextureDrvInfosGL*	gltext;
-		gltext= (CTextureDrvInfosGL*)(ITextureDrvInfos*)((*ite)->TextureDrvShare->DrvTexture);
+		if ((*ite)->TextureDrvShare)
+		{
+			// Get a gl texture
+			CTextureDrvInfosGL*	gltext;
+			gltext= (CTextureDrvInfosGL*)(ITextureDrvInfos*)((*ite)->TextureDrvShare->DrvTexture);
 
-		// Sum the memory used by this texture
-		memory+=gltext->TextureMemory;
+			// Sum the memory used by this texture
+			memory+=gltext->TextureMemory;
+		}
 
 		// Next texture
 		ite++;

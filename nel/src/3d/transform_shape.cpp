@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.31 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.32 2002/09/05 17:59:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,27 @@ void		CTransformShape::changeLightSetup(CRenderTrav *rdrTrav)
 {
 	// setup the instance lighting.
 	rdrTrav->changeLightSetup(_CurrentLightContribution, _CurrentUseLocalAttenuation);
+}
+
+
+// ***************************************************************************
+uint		CTransformShape::getNumMaterial () const
+{
+	return 0;
+}
+
+
+// ***************************************************************************
+const CMaterial *CTransformShape::getMaterial (uint materialId) const
+{
+	return NULL;
+}
+
+
+// ***************************************************************************
+CMaterial *CTransformShape::getMaterial (uint materialId)
+{
+	return NULL;
 }
 
 
@@ -279,7 +300,6 @@ void	CTransformShapeLoadBalancingObs::traversePass1()
 	trans->_NumTrianglesAfterLoadBalancing= LoadBalancingGroup->computeModelNbFace(_FaceCount);
 
 }
-
 
 
 } // NL3D

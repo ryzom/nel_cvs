@@ -131,6 +131,7 @@ CMainFrame::~CMainFrame()
 
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	//{{AFX_MSG_MAP(CMainFrame)
+	ON_COMMAND(IDC_RELOAD_TEXTURES, OnReloadTextures)
 	ON_COMMAND(ID_CLEAR, OnClear)
 	ON_COMMAND(ID_EDIT_MOVEELEMENT, OnEditMoveelement)
 	ON_COMMAND(ID_EDIT_X, OnEditX)
@@ -440,6 +441,12 @@ void CMainFrame::OnClear()
 
 	// Remove all the instance
 	ObjView->removeAllInstancesFromScene();
+}
+
+void CMainFrame::OnReloadTextures()
+{
+	// Reload all the textures
+	ObjView->reloadTextures ();
 }
 
 void CMainFrame::OnEditX() 

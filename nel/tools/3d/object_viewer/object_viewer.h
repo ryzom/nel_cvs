@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.40 2002/08/06 15:03:39 berenguier Exp $
+ * $Id: object_viewer.h,v 1.41 2002/09/05 17:59:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -365,6 +365,9 @@ public:
 	void setWaterPoolManager(NL3D::CWaterPoolManager &wpm) { _Wpm = &wpm; }
 
 	NL3D::CWaterPoolManager &getWaterPoolManager() { return *_Wpm; }
+
+	// Reload textures
+	void reloadTextures ();
 
 	/** inherited from CObjectViewerInterface
 	 */

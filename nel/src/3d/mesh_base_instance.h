@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.15 2002/06/27 16:31:40 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.16 2002/09/05 17:59:54 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,13 @@ public:
 
 	virtual	void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix);
 
+	// @}
+
+	/// \name Derived from CTransformShape.
+	// @{
+	virtual uint		getNumMaterial () const;
+	virtual const CMaterial	*getMaterial (uint materialId) const;
+	virtual CMaterial	*getMaterial (uint materialId);
 	// @}
 
 	/// \name Derived from ITransformable.

@@ -92,6 +92,7 @@ protected:
 public:
 	// Generated message map functions
 	//{{AFX_MSG(CMainFrame)
+	afx_msg void OnReloadTextures();
 	afx_msg void OnClear();
 	afx_msg void OnEditMoveelement();
 	afx_msg void OnEditX();

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.77 2002/08/09 09:32:23 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.78 2002/09/05 17:59:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1029,6 +1029,10 @@ void CObjectViewer::go ()
 			_MainFrame->OnWindowGlobalwind(), keyWndOk= true;
 		if (CNELU::AsyncListener.isKeyPushed(Key9))
 			_MainFrame->OnWindowSoundAnim(), keyWndOk= true;
+
+		// Reload texture ?
+		if (CNELU::AsyncListener.isKeyPushed(KeyR))
+			_MainFrame->OnReloadTextures();
 
 		// If some window activated, reset the focus to the main wnd.
 		if(keyWndOk)
@@ -3142,6 +3146,46 @@ CMainDlg *CObjectViewer::getSlotDlg ()
 	return _SlotDlg;
 }
 
+// ***************************************************************************
+void CObjectViewer::reloadTextures ()
+{
+	// For each instances
+	uint numInstance = getNumInstance ();
+	uint instance;
+	for (instance=0; instance<numInstance; instance++)
+	{
+		// Get the info
+		CInstanceInfo *info = getInstance (instance);
+
+		// For each material
+		uint numMaterial = info->TransformShape->getNumMaterial ();
+		uint mat;
+		for (mat=0; mat<numMaterial; mat++)
+		{
+			// Get the material
+			CMaterial *material = info->TransformShape->getMaterial (mat);
+
+			// For each texture
+			int tex;
+			for (tex=0; tex<IDRV_MAT_MAXTEXTURES; tex++)
+			{
+				ITexture *texture = material->getTexture (tex);
+
+				// Touch it!
+				if (texture)
+				{
+					CNELU::Driver->invalidateShareTexture (*texture);
+				}
+			}
+		}
+	}
+
+	// Get the slot dialog
+	CMainDlg *getSlotDlg ();
+
+	// Get number of instances
+	uint  const;
+}
 
 // ***************************************************************************
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.47 2001/01/09 14:55:29 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.48 2001/01/09 15:23:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ uint CDriverGL::_Registered=0;
 #endif // NL_OS_WINDOWS
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverGL::ReleaseVersion = 0x2;
+const uint32		CDriverGL::ReleaseVersion = 0x3;
 
 #ifdef NL_OS_WINDOWS
 
@@ -122,6 +122,7 @@ CDriverGL::CDriverGL()
 #endif // NL_OS_WINDOWS
 
 	_CurrentMaterial=NULL;
+	_Initialized = false;
 }
 
 
@@ -376,7 +377,6 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 	glEnable(GL_TEXTURE_2D);
 	glDepthFunc(GL_LEQUAL);
 
-
 	// Activate the default texture environnments for all stages.
 	//===========================================================
 	for(sint stage=0;stage<IDRV_MAT_MAXTEXTURES; stage++)
@@ -392,6 +392,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 		activateTexEnvMode(stage, env);
 		activateTexEnvColor(stage, env);
 	}
+
+	_Initialized = true;
 
 	return true;
 }
@@ -718,12 +720,29 @@ const char *CDriverGL::getVideocardInformation ()
 {
 	static char name[1024];
 
+	if (!_Initialized) return "OpenGL isn't initialized";
+
 	const char *vendor = (const char *) glGetString (GL_VENDOR);
 	const char *renderer = (const char *) glGetString (GL_RENDERER);
 	const char *version = (const char *) glGetString (GL_VERSION);
 
 	smprintf(name, 1024, "%s / %s / %s", vendor, renderer, version);
 	return name;
+}
+
+
+void CDriverGL::setCapture (bool b)
+{
+#ifdef NL_OS_WINDOWS
+
+	if (b)
+		SetCapture (_hWnd);
+	else
+		ReleaseCapture ();
+
+#elif defined (NL_OS_UNIX)
+
+#endif // NL_OS_UNIX
 }
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.35 2001/01/08 18:20:47 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.36 2001/01/09 15:23:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,14 +165,16 @@ public:
 
 	virtual const char*		getVideocardInformation ();
 
-	virtual bool			isActive();
+	virtual bool			isActive ();
 
-	virtual void showCursor(bool b);
+	virtual void			showCursor (bool b);
 
 	// between 0.0 and 1.0
 	virtual void setMousePos(float x, float y);
 
-	virtual void getWindowSize(uint32 &width, uint32 &height);
+	virtual void			setCapture (bool b);
+
+	virtual void			getWindowSize (uint32 &width, uint32 &height);
 
 private:
 	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
@@ -190,6 +192,7 @@ private:
 	static uint					_Registered;
 	DEVMODE						_OldScreenMode;
 	bool						_FullScreen;
+
 #elif defined (NL_OS_UNIX)
 	Display *dpy;
 	GLXContext ctx;
@@ -198,6 +201,9 @@ private:
 	NLMISC::CUnixEventEmitter	_EventEmitter;
 #endif // NL_OS_UNIX
 
+	bool					_Initialized;
+
+	bool					setupVertexBuffer(CVertexBuffer& VB);
 
 	// OpenGL extensions Extensions.
 	CGlExtensions			_Extensions;

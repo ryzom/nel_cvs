@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.21 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.22 2005/03/31 13:07:28 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1588,7 +1588,9 @@ void CDriverD3D::computeRelevantTexEnv(CMaterial &mat, bool rgbPipe[IDRV_MAT_MAX
 			}			
 			for(uint l = 0; l < OpNumArg[texEnv.Env.OpRGB]; ++l)
 			{
-				if (texEnv.getColorArg(l) == CMaterial::Previous)
+				if (texEnv.getColorArg(l) == CMaterial::Previous || 
+					(currStage != 0 && texEnv.getColorArg(l) == CMaterial::Texture && mat.getTexEnvOpRGB(currStage - 1) == CMaterial::EMBM)
+				   )
 				{
 					if (texEnv.getColorOperand(l) == CMaterial::SrcColor || texEnv.getColorOperand(l) == CMaterial::InvSrcColor)
 					{
@@ -1610,7 +1612,9 @@ void CDriverD3D::computeRelevantTexEnv(CMaterial &mat, bool rgbPipe[IDRV_MAT_MAX
 			}			
 			for(uint l = 0; l < OpNumArg[texEnv.Env.OpAlpha]; ++l)
 			{
-				if (texEnv.getAlphaArg(l) == CMaterial::Previous)
+				if (texEnv.getAlphaArg(l) == CMaterial::Previous || 
+					(currStage != 0 && texEnv.getAlphaArg(l) == CMaterial::Texture && mat.getTexEnvOpRGB(currStage - 1) == CMaterial::EMBM)
+				   )
 				{					
 					if (texEnv.getAlphaOperand(l) == CMaterial::SrcAlpha || texEnv.getAlphaOperand(l) == CMaterial::InvSrcAlpha)
 					{

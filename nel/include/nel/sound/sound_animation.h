@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.h
  * A sound event marer on a sound track
  *
- * $Id: sound_animation.h,v 1.2 2002/06/20 08:18:09 hanappe Exp $
+ * $Id: sound_animation.h,v 1.3 2002/06/28 19:41:27 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@ namespace NLMISC
 namespace NLSOUND {
 
 class CSoundAnimMarker;
+class UAudioMixer;
 
 typedef std::vector<CSoundAnimMarker*> TMarkerVector;
 
@@ -45,62 +46,53 @@ class CSoundAnimation
 {
 public:
 
-	enum 
+	/*enum 
 	{ 
 		NoId = -1
-	};
+	};*/
 
 	CSoundAnimation(std::string& name, TSoundAnimId id) : _Name(name), _Id(id), _Dirty(false) {}
 
 	virtual ~CSoundAnimation() {}
 
-	/** Add a new marker
-	 */
+	/** Add a new marker */
 	virtual void				addMarker(CSoundAnimMarker* marker);
 
-	/** Remove a marker
-	 */
+	/** Remove a marker */
 	virtual void				removeMarker(CSoundAnimMarker* marker);
 
 	/** Return the number of markers in this track
 	 */
 	virtual uint32				countMarkers()							{ return _Markers.size(); }
 
-	/** Return a marker of this track given its index
-	 */
+	/** Return a marker of this track given its index */
 	virtual CSoundAnimMarker*	getMarker(uint32 i)						{ return _Markers[i]; }
 
-	/** Return the name of the animation 
-	 */
+	/** Return the name of the animation  */
 	virtual std::string&		getName()								{ return _Name; }
 
 
-	/** Load from an xml file
-	 */
-	//virtual void				load(NLMISC::CIXml& input, xmlNodePtr node);
+	/** Load from an xml file */
 	virtual void				load();
 
-	/** Save to an xml document
-	 */
-	//virtual void				save(std::string& filname);
+	/** Save to an xml document */
 	virtual void				save();
 
-
-	/** Return the filename of the animation 
-	 */
+	/** Return the filename of the animation */
 	virtual std::string&		getFilename()							{ return _Filename; }
 	
 	/** Set the filename of the animation 
 	 */
 	virtual void				setFilename(std::string& name)			{ _Filename = name; }
 
-	/** Returns whether the sound animation changed since the last save. (Editing support)
-	 */
+	/** Returns whether the sound animation changed since the last save. (Editing support) */
 	virtual bool				isDirty()								{ return _Dirty; }
 
-	/** Set the dirty flag (Editing support)
-	 */
+	/** Set the dirty flag (Editing support) */
 	virtual void				setDirty(bool b)						{ _Dirty = b; }
+
+	/** Play the sounds of the markers that fall within the specified time interval. */
+	virtual void				play(UAudioMixer* mixer, float lastTime, float curTime, NLMISC::CVector& position);
 
 protected:
 

@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.14 2002/06/18 16:02:32 hanappe Exp $
+ * $Id: u_audio_mixer.h,v 1.15 2002/06/28 19:41:27 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,7 +135,12 @@ public:
 	virtual std::string	getSourcesStats() const = 0;
 
 	/// Set the global path to the sample banks
-	virtual void		setSamplePath(std::string& path) = 0;
+	virtual void		setSamplePath(const std::string& path) = 0;
+
+	/** Write profiling information about the mixer to the output stream.
+	 *  \param out The output stream to which to write the information
+	 */
+	virtual void		writeProfile(std::ostream& out) = 0;
 
 	/// Destructor
 	virtual				~UAudioMixer() {}

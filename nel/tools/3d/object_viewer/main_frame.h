@@ -53,6 +53,7 @@ public:
 	bool		    WaterPoolWindow;
 	bool		    VegetableWindow;
 	bool		    GlobalWindWindow;
+	bool		    SoundAnimWindow;
 	bool			MoveElement;
 	bool			MoveObjectLightTest;
 	bool			X;
@@ -110,6 +111,7 @@ public:
 	afx_msg void OnWindowParticles();
 	afx_msg void OnWindowDayNight();
 	afx_msg void OnWindowWaterPool();
+	afx_msg void OnWindowSoundAnim();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnUpdateWindowAnimation(CCmdUI* pCmdUI);
@@ -118,6 +120,7 @@ public:
 	afx_msg void OnUpdateWindowParticles(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowDayNight(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowWaterPool(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateWindowSoundAnim(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewObjectmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewFirstpersonmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditX(CCmdUI* pCmdUI);

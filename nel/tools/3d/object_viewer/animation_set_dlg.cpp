@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * implementation file
  *
- * $Id: animation_set_dlg.cpp,v 1.11 2002/03/04 14:54:09 corvazier Exp $
+ * $Id: animation_set_dlg.cpp,v 1.12 2002/06/20 08:44:20 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -394,6 +394,8 @@ void CAnimationSetDlg::refresh (BOOL update)
 			CDialog::UpdateData (update);
 		}
 	}
+
+	_ObjView->refreshAnimationListeners();
 }
 
 // ***************************************************************************

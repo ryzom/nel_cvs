@@ -220,7 +220,25 @@ SOURCE=.\main_frame.cpp
 # Begin Source File
 
 SOURCE=.\object_viewer.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 DebugFast"
+
+# ADD CPP /Yu
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -984,6 +1002,26 @@ SOURCE=.\vegetable_wind_dlg.cpp
 # Begin Source File
 
 SOURCE=.\vegetable_wind_dlg.h
+# End Source File
+# End Group
+# Begin Group "sound editor"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\sound_anim_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound_anim_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound_anim_view.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound_anim_view.h
 # End Source File
 # End Group
 # Begin Source File

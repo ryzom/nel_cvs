@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.67 2002/06/17 15:06:59 besson Exp $
+ * $Id: object_viewer.cpp,v 1.68 2002/06/20 08:43:33 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,10 +27,11 @@
 
 
 
-#undef OBJECT_VIEWER_EXPORT
-#define OBJECT_VIEWER_EXPORT __declspec( dllexport ) 
 
 #include "std_afx.h"
+
+#undef OBJECT_VIEWER_EXPORT
+#define OBJECT_VIEWER_EXPORT __declspec( dllexport ) 
 
 #include <vector>
 
@@ -86,6 +87,7 @@
 #include "dialog_progress.h"
 #include "select_string.h"
 #include "global_wind_dlg.h"
+#include "sound_anim_dlg.h"
 
 
 
@@ -256,7 +258,7 @@ CObjectViewer::CObjectViewer ()
 		// Load the config file
 		CConfigFile cf;
 		cf.load (sModulePath);
-		
+
 		// Add search pathes
 		CConfigFile::CVar &search_pathes = cf.getVar ("search_pathes");
 		for (uint i=0; i<(uint)search_pathes.size(); i++)
@@ -281,12 +283,27 @@ CObjectViewer::CObjectViewer ()
 		}
 	
 
-		// set the sound file name
+		// set the sound banks and sample banks
 		try
 		{
-			CConfigFile::CVar &sound_file = cf.getVar("sound_file");
-			for (uint i=0; i<(uint)sound_file.size(); i++)
-				CSoundSystem::addSoundBank(sound_file.asString(i).c_str());
+			CConfigFile::CVar &var = cf.getVar("sound_path");
+			string soundPath = var.asString();
+
+			var = cf.getVar("soundbanks");
+			for (uint i=0; i<(uint)var.size(); i++)
+			{
+				string dir = soundPath;
+				soundPath.append("/").append(var.asString(i).c_str());
+				CSoundSystem::addSoundBank(soundPath);
+			}
+
+			var = cf.getVar("sample_path");
+			string samplePath(var.asString());
+			CSoundSystem::setSamplePath(samplePath);
+
+			var = cf.getVar("samplebanks");
+			for (i=0; i<(uint)var.size(); i++)
+				CSoundSystem::addSampleBank(var.asString(i).c_str());
 		}
 		catch (EUnknownVar &)
 		{
@@ -428,6 +445,8 @@ CObjectViewer::~CObjectViewer ()
 		delete _DayNightDlg;
 	if (_WaterPoolDlg)
 		delete _WaterPoolDlg;
+	if (_SoundAnimDlg)
+		delete _SoundAnimDlg;
 	if (_VegetableDlg)
 		delete _VegetableDlg;
 	if (_GlobalWindDlg)
@@ -585,6 +604,11 @@ void CObjectViewer::initUI (HWND parent)
 	_GlobalWindDlg= new CGlobalWindDlg (this, _MainFrame);
 	_GlobalWindDlg->Create(IDD_GLOBAL_WIND);
 	getRegisterWindowState (_GlobalWindDlg, REGKEY_OBJ_GLOBAL_WIND_DLG, false);
+
+	// Create sound animation editor dialog
+	_SoundAnimDlg = new CSoundAnimDlg(this, _AnimationDlg, _MainFrame);
+	_SoundAnimDlg->Create (IDD_SOUND_ANIM_DLG, _MainFrame);
+	getRegisterWindowState (_SoundAnimDlg, REGKEY_OBJ_SOUND_ANIM_DLG, false);
 
 
 	// Set backgroupnd color
@@ -893,6 +917,9 @@ void CObjectViewer::go ()
 
 		// Handle animation
 		_AnimationDlg->handle ();
+
+		// Handle sound animation
+		_SoundAnimDlg->handle ();
 
 		// Setup the channel mixer
 		_AnimationSetDlg->UpdateData ();
@@ -1205,6 +1232,7 @@ void CObjectViewer::setAnimTime (float animStart, float animEnd)
 	// Dispatch the command
 	_SlotDlg->setAnimTime (animStart, animEnd);
 	_AnimationDlg->setAnimTime (animStart, animEnd);
+	_SoundAnimDlg->setAnimTime (animStart, animEnd);
 }
 
 // ***************************************************************************
@@ -1231,6 +1259,7 @@ void CObjectViewer::resetSlots (uint instance)
 	// Update 
 	_AnimationSetDlg->refresh (TRUE);
 	_SlotDlg->refresh (TRUE);
+	_SoundAnimDlg->refresh (TRUE);
 }
 
 // ***************************************************************************
@@ -1404,6 +1433,7 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 			// Invalidate dialogs
 			_AnimationSetDlg->refresh (TRUE);
 			_SlotDlg->refresh (TRUE);
+			_SoundAnimDlg->refresh (TRUE);
 		}
 		else
 		{
@@ -1635,6 +1665,7 @@ bool CObjectViewer::loadMesh (std::vector<std::string> &meshFilename, const char
 	// Update windows
 	_AnimationSetDlg->refresh (TRUE);
 	_SlotDlg->refresh (TRUE);
+	_SoundAnimDlg->refresh (TRUE);
 
 	return true;
 }
@@ -1886,6 +1917,7 @@ void CObjectViewer::setSingleAnimation (NL3D::CAnimation* pAnim, const char* nam
 		// Update dialog box
 		_AnimationSetDlg->refresh (TRUE);
 		_SlotDlg->refresh (TRUE);
+		_SoundAnimDlg->refresh(TRUE);
 
 		// Reinit
 		reinitChannels ();
@@ -1992,11 +2024,48 @@ void CObjectViewer::removeAllInstancesFromScene()
 	{
 		_AnimationSetDlg->refresh (TRUE);
 		_SlotDlg->refresh (TRUE);
+		_SoundAnimDlg->refresh (TRUE);
 	}
 }
 
 
 // ***************************************************************************
+
+void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
+{
+	// Gor each object
+	for (uint i = 0; i < _ListInstance.size(); i++)
+	{
+		// Some animation in the list ?
+		if (_ListInstance[i]->Saved.PlayList.size() > 0)
+		{
+			// Accumul time
+			float startTime = 0;
+			float endTime = 0;
+
+			// Get start time of the animation that starts before the current time
+			for (uint index = 0; index < _ListInstance[i]->Saved.PlayList.size(); index++)
+			{
+				// Pointer on the animation
+				string& name = _ListInstance[i]->Saved.PlayList[index];
+				CAnimation *anim = _ListInstance[i]->AnimationSet.getAnimation (_ListInstance[i]->AnimationSet.getAnimationIdByName(name));
+
+				// Add start time
+				startTime = endTime;
+				endTime = startTime + anim->getEndTime()-anim->getBeginTime();
+
+				if ((startTime <= currentTime) && (currentTime < endTime))
+				{
+					CSoundSystem::playAnimation(name, (sint) index, startTime, lastTime, currentTime);
+				}
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+
+/*
 void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 {
 	if (lastTime!=currentTime)
@@ -2122,7 +2191,7 @@ void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 		}
 	}
 }
-
+*/
 
 
 // ***************************************************************************
@@ -2848,6 +2917,12 @@ void CInstanceSave::serial (NLMISC::IStream &f)
 }
 
 // ***************************************************************************
+void CObjectViewer::refreshAnimationListeners()
+{
+	_SoundAnimDlg->refresh (TRUE);
+}
+
+// ***************************************************************************
 void CObjectViewer::addAnimation (NL3D::CAnimation* anim, const char* filename, const char* name, uint instance)
 {
 	// Add an animation
@@ -2856,6 +2931,8 @@ void CObjectViewer::addAnimation (NL3D::CAnimation* anim, const char* filename, 
 
 	// Rebuild the animationSet
 	_ListInstance[instance]->AnimationSet.build ();
+
+	_SoundAnimDlg->refresh (TRUE);
 }
 
 // ***************************************************************************

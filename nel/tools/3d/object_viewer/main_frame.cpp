@@ -12,6 +12,7 @@
 #include "water_pool_editor.h"
 #include "vegetable_dlg.h"
 #include "global_wind_dlg.h"
+#include "sound_anim_dlg.h"
 #include "fog_dlg.h"
 #include <nel/misc/file.h>
 #include <3d/nelu.h>
@@ -100,6 +101,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	WaterPoolWindow=false;
 	VegetableWindow=false;
 	GlobalWindWindow= false;
+	SoundAnimWindow=false;
 	MoveElement=false;
 	MoveObjectLightTest=false;
 	MoveMode=true;
@@ -151,6 +153,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_WINDOW_PARTICLES, OnWindowParticles)
 	ON_COMMAND(ID_WINDOW_DAYNIGHT, OnWindowDayNight)
 	ON_COMMAND(ID_WINDOW_WATER_POOL, OnWindowWaterPool)
+	ON_COMMAND(ID_WINDOW_ANIMSOUND, OnWindowSoundAnim)
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMATION, OnUpdateWindowAnimation)
@@ -159,6 +162,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_PARTICLES, OnUpdateWindowParticles)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_DAYNIGHT, OnUpdateWindowDayNight)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_WATER_POOL, OnUpdateWindowWaterPool)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMSOUND, OnUpdateWindowSoundAnim)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_OBJECTMODE, OnUpdateViewObjectmode)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTPERSONMODE, OnUpdateViewFirstpersonmode)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_X, OnUpdateEditX)
@@ -204,6 +208,7 @@ void CMainFrame::update ()
 	ObjView->_WaterPoolDlg->ShowWindow (WaterPoolWindow?SW_SHOW:SW_HIDE);
 	ObjView->_VegetableDlg->ShowWindow (VegetableWindow?SW_SHOW:SW_HIDE);
 	ObjView->_GlobalWindDlg->ShowWindow (GlobalWindWindow?SW_SHOW:SW_HIDE);
+	ObjView->_SoundAnimDlg->ShowWindow (SoundAnimWindow?SW_SHOW:SW_HIDE);
 }
 
 // ***************************************************************************
@@ -234,6 +239,8 @@ void CMainFrame::registerValue (bool read)
 			RegQueryValueEx (hKey, "ViewVegetable", 0, &type, (LPBYTE)&VegetableWindow, &len);
 			len=sizeof (BOOL);
 			RegQueryValueEx (hKey, "ViewGlobalWind", 0, &type, (LPBYTE)&GlobalWindWindow, &len);
+			len=sizeof (BOOL);
+			RegQueryValueEx (hKey, "ViewSoundAnimWind", 0, &type, (LPBYTE)&GlobalWindWindow, &len);
 			len=sizeof (float);
 			RegQueryValueEx (hKey, "MoveSpeed", 0, &type, (LPBYTE)&MoveSpeed, &len);
 			len=sizeof (BOOL);
@@ -258,6 +265,7 @@ void CMainFrame::registerValue (bool read)
 			RegSetValueEx(hKey, "ViewDayNight", 0, REG_BINARY, (LPBYTE)&DayNightWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewVegetable", 0, REG_BINARY, (LPBYTE)&VegetableWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewGlobalWind", 0, REG_BINARY, (LPBYTE)&GlobalWindWindow, sizeof(bool));
+			RegSetValueEx(hKey, "ViewSoundAnimWind", 0, REG_BINARY, (LPBYTE)&SoundAnimWindow, sizeof(bool));
 			RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
 			RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&MoveMode, sizeof(BOOL));
 			RegSetValueEx(hKey, "BackGroundColor", 0, REG_BINARY, (LPBYTE)&BgColor, sizeof(NLMISC::CRGBA));
@@ -818,6 +826,11 @@ void CMainFrame::OnWindowGlobalwind()
 	update ();
 }
 
+void CMainFrame::OnWindowSoundAnim() 
+{
+	SoundAnimWindow^= true;
+	update ();
+}
 
 static UINT indicators[] =
 {
@@ -912,6 +925,10 @@ void CMainFrame::OnUpdateWindowGlobalwind(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck (GlobalWindWindow);
 }
 
+void CMainFrame::OnUpdateWindowSoundAnim(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (SoundAnimWindow);
+}
 
 void CMainFrame::OnUpdateViewObjectmode(CCmdUI* pCmdUI) 
 {

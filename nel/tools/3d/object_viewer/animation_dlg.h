@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * <File description>
  *
- * $Id: animation_dlg.h,v 1.9 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: animation_dlg.h,v 1.10 2002/06/20 08:44:34 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,7 @@ public:
 	void updateBar ();
 	NL3D::TAnimationTime getTime ();
 	NL3D::TAnimationTime getLastTime ();
+	float getSpeed() { return Speed; }
 
 // Overrides
 	// ClassWizard generated virtual function overrides

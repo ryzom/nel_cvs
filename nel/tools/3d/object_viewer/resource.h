@@ -265,6 +265,7 @@
 #define IDC_SUB_COMPONENT               1119
 #define IDD_SETUP_FOG                   1120
 #define IDC_PSI_VALUE                   1121
+#define IDD_SOUND_ANIM_DLG              1121
 #define IDR_VEGETABLE_MENU              1121
 #define IDC_THETA_VALUE                 1122
 #define IDC_HINT_PRECOMPUTED_ROTATIONS  1122
@@ -534,6 +535,22 @@
 #define IDC_STATIC_GLOBAL_WIND_POWER    1342
 #define IDC_EDIT1                       1343
 #define IDC_EDIT2                       1344
+#define IDC_ADDANIMSOUND                1344
+#define IDC_ANIM_SOUND_ADD              1344
+#define IDC_RMANIMSOUND                 1345
+#define IDC_ANIM_SOUND_REMOVE           1345
+#define IDC_ANIM_SOUND_SAVE             1346
+#define IDC_SOUNDANIMINFO               1347
+#define IDC_SOUNDANIMSCROLL             1348
+#define IDC_ANIM_SOUND_DELETE           1348
+#define IDC_ANIM_SOUND_ZOOMIN           1349
+#define IDC_SOUNDANIMZOOM               1350
+#define IDC_ANIM_SOUND_MARK             1350
+#define IDC_SOUNDANIMZOOMLABEL          1351
+#define IDC_ANIM_SOUND_ZOOMOUT          1352
+#define IDC_SOUNDANIMTRACK              1354
+#define IDC_SOUND_ANIM_SCROLLBAR        1356
+#define IDC_SOUND_ANIM_LIST             1357
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -673,14 +690,16 @@
 #define ID_MENU_SHOW                    32898
 #define ID_MENU_SHOWONLY                32899
 #define ID_MENU_SHOWALL                 32900
+#define ID_WINDOW_SOUND                 32901
+#define ID_WINDOW_ANIMSOUND             32902
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1122
-#define _APS_NEXT_COMMAND_VALUE         32901
-#define _APS_NEXT_CONTROL_VALUE         1344
+#define _APS_NEXT_COMMAND_VALUE         32903
+#define _APS_NEXT_CONTROL_VALUE         1358
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

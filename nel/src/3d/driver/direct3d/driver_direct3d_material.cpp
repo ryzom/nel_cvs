@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.5 2004/05/07 13:28:06 corvazier Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.6 2004/05/18 16:34:27 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -689,46 +689,55 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 					}
 				}
 
+				// activate the appropriate shader
 				if (mat.getBlend())
 				{
-					switch (lightmapCount)
+					if(mat._LightMapsMulx2)
 					{
-					case 0:
-						activeShader (&_ShaderLightmap0Blend);
-						break;
-					case 1:
-						activeShader (&_ShaderLightmap1Blend);
-						break;
-					case 2:
-						activeShader (&_ShaderLightmap2Blend);
-						break;
-					case 3:
-						activeShader (&_ShaderLightmap3Blend);
-						break;
-					default:
-						activeShader (&_ShaderLightmap4Blend);
-						break;
+						switch (lightmapCount)
+						{
+						case 0:	activeShader (&_ShaderLightmap0BlendX2);	break;
+						case 1:	activeShader (&_ShaderLightmap1BlendX2);	break;
+						case 2:	activeShader (&_ShaderLightmap2BlendX2);	break;
+						case 3:	activeShader (&_ShaderLightmap3BlendX2);	break;
+						default:	activeShader (&_ShaderLightmap4BlendX2);	break;
+						}
+					}
+					else
+					{
+						switch (lightmapCount)
+						{
+						case 0:	activeShader (&_ShaderLightmap0Blend);	break;
+						case 1:	activeShader (&_ShaderLightmap1Blend);	break;
+						case 2:	activeShader (&_ShaderLightmap2Blend);	break;
+						case 3:	activeShader (&_ShaderLightmap3Blend);	break;
+						default:	activeShader (&_ShaderLightmap4Blend);	break;
+						}
 					}
 				}
 				else
 				{
-					switch (lightmapCount)
+					if(mat._LightMapsMulx2)
 					{
-					case 0:
-						activeShader (&_ShaderLightmap0);
-						break;
-					case 1:
-						activeShader (&_ShaderLightmap1);
-						break;
-					case 2:
-						activeShader (&_ShaderLightmap2);
-						break;
-					case 3:
-						activeShader (&_ShaderLightmap3);
-						break;
-					default:
-						activeShader (&_ShaderLightmap4);
-						break;
+						switch (lightmapCount)
+						{
+						case 0:	activeShader (&_ShaderLightmap0X2);	break;
+						case 1:	activeShader (&_ShaderLightmap1X2);	break;
+						case 2:	activeShader (&_ShaderLightmap2X2);	break;
+						case 3:	activeShader (&_ShaderLightmap3X2);	break;
+						default:	activeShader (&_ShaderLightmap4X2);	break;
+						}
+					}
+					else
+					{
+						switch (lightmapCount)
+						{
+						case 0:	activeShader (&_ShaderLightmap0);	break;
+						case 1:	activeShader (&_ShaderLightmap1);	break;
+						case 2:	activeShader (&_ShaderLightmap2);	break;
+						case 3:	activeShader (&_ShaderLightmap3);	break;
+						default:	activeShader (&_ShaderLightmap4);	break;
+						}
 					}
 				}
 
@@ -737,10 +746,46 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 				if (!setShaderTexture (0, texture))
 					return false;
 
-				// Set the main texture
+				// Get the effect
 				nlassert (_CurrentShader);
 				CShaderDrvInfosD3D *shaderInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);
 				ID3DXEffect			*effect = shaderInfo->Effect;
+
+
+				// Set the ambiant for 8Bit Light Compression
+				{
+					// Sum ambiant of all active lightmaps.
+					uint32	r=0;
+					uint32	g=0;
+					uint32	b=0;
+					for(lightmap=0 ; lightmap<(sint)mat._LightMaps.size() ; lightmap++)
+					{
+						if (lightmapMask & (1<<lightmap))
+						{
+							uint	wla= lightmap;
+							// must mul them by their respective mapFactor too
+							CRGBA ambFactor = mat._LightMaps[wla].Factor;
+							CRGBA lmcAmb= mat._LightMaps[wla].LMCAmbient;
+							r+= ((uint32)ambFactor.R  * ((uint32)lmcAmb.R+(lmcAmb.R>>7))) >>8;
+							g+= ((uint32)ambFactor.G  * ((uint32)lmcAmb.G+(lmcAmb.G>>7))) >>8;
+							b+= ((uint32)ambFactor.B  * ((uint32)lmcAmb.B+(lmcAmb.B>>7))) >>8;
+						}
+					}
+					r= std::min(r, (uint32)255);
+					g= std::min(g, (uint32)255);
+					b= std::min(b, (uint32)255);
+					CRGBA	lmcAmbient((uint8)r,(uint8)g,(uint8)b,255);
+
+					// Set into FX shader
+					effect->SetInt(shaderInfo->ColorHandle[0], NL_D3DCOLOR_RGBA(lmcAmbient));
+					if (shaderInfo->FactorHandle[0])
+					{
+						float colors[4];
+						NL_FLOATS(colors,lmcAmbient);
+						effect->SetFloatArray (shaderInfo->FactorHandle[0], colors, 4);
+					}
+				}
+				
 
 				// Set the lightmaps
 				lightmapCount = 0;
@@ -753,11 +798,16 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 						if (text != NULL && !setShaderTexture (lightmapCount+1, text))
 							return false;
 
-						// Set the lightmap color factor
+						// Get the lightmap color factor, and mul by lmcDiffuse compression
 						CRGBA lmapFactor = mat._LightMaps[lightmap].Factor;
+						CRGBA lmcDiff= mat._LightMaps[lightmap].LMCDiffuse;
+						lmapFactor.R = (uint8)(((uint32)lmapFactor.R  * ((uint32)lmcDiff.R+(lmcDiff.R>>7))) >>8);
+						lmapFactor.G = (uint8)(((uint32)lmapFactor.G  * ((uint32)lmcDiff.G+(lmcDiff.G>>7))) >>8);
+						lmapFactor.B = (uint8)(((uint32)lmapFactor.B  * ((uint32)lmcDiff.B+(lmcDiff.B>>7))) >>8);
 						lmapFactor.A = 255;
+						
+						// Set the lightmap color factor into shader
 						effect->SetInt(shaderInfo->ColorHandle[lightmapCount+1], NL_D3DCOLOR_RGBA(lmapFactor));
-
 						if (shaderInfo->FactorHandle[lightmapCount+1])
 						{
 							float colors[4];

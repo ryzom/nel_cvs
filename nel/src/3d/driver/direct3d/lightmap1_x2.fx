@@ -31,7 +31,7 @@ technique two_stages_2
 		ColorArg0[0] = DIFFUSE;
 		ColorArg1[0] = TFACTOR;
 		ColorArg2[0] = TEXTURE;
-		ColorOp[1] = MODULATE;
+		ColorOp[1] = MODULATE2X;
 		ColorArg1[1] = CURRENT;
 		ColorArg2[1] = TEXTURE;
 	}

@@ -28,7 +28,7 @@ pixelshader four_stages_ps = asm
 	mad r0, c1, t1, c0;
 	mad r0, c2, t2, r0;
 	mad r0, c3, t3, r0;
-	mul r0, r0, t0;
+	mul_x2 r0, r0, t0;
 };
 
 technique four_stages_4
@@ -61,7 +61,7 @@ pixelshader three_stages_0_ps = asm
 	// multiply lightmap with factor, and add with LMCAmbient term
 	mad r0, c1, t1, c0;
 	mad r0, c2, t2, r0;
-	mul r0, r0, t0;
+	mul_x2 r0, r0, t0;
 };
 
 technique three_stages_3
@@ -94,7 +94,7 @@ technique three_stages_3
 		ColorOp[0] = MODULATE;
 		ColorArg1[0] = TFACTOR;
 		ColorArg2[0] = TEXTURE;
-		ColorOp[1] = MODULATE;
+		ColorOp[1] = MODULATE2X;
 		ColorArg1[1] = CURRENT;
 		ColorArg2[1] = TEXTURE;
 		ColorOp[2] = DISABLE;
@@ -125,7 +125,7 @@ technique two_stages_2
 		ColorArg0[0] = DIFFUSE;
 		ColorArg1[0] = TFACTOR;
 		ColorArg2[0] = TEXTURE;
-		ColorOp[1] = MODULATE;
+		ColorOp[1] = MODULATE2X;
 		ColorArg1[1] = CURRENT;
 		ColorArg2[1] = TEXTURE;
 	}

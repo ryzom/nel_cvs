@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.9 2004/05/03 15:05:20 lecroart Exp $
+ * $Id: driver_direct3d.h,v 1.10 2004/05/18 16:34:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1582,6 +1582,16 @@ private:
 	CShader					_ShaderLightmap2Blend;
 	CShader					_ShaderLightmap3Blend;
 	CShader					_ShaderLightmap4Blend;
+	CShader					_ShaderLightmap0X2;
+	CShader					_ShaderLightmap1X2;
+	CShader					_ShaderLightmap2X2;
+	CShader					_ShaderLightmap3X2;
+	CShader					_ShaderLightmap4X2;
+	CShader					_ShaderLightmap0BlendX2;
+	CShader					_ShaderLightmap1BlendX2;
+	CShader					_ShaderLightmap2BlendX2;
+	CShader					_ShaderLightmap3BlendX2;
+	CShader					_ShaderLightmap4BlendX2;
 	CShader					_ShaderCloud;
 
 	// Backup frame buffer

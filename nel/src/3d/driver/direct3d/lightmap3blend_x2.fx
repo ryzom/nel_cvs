@@ -25,10 +25,11 @@ pixelshader four_stages_ps = asm
 	tex t2;
 	tex t3;
 	// multiply lightmap with factor, and add with LMCAmbient term
-	mad r0, c1, t1, c0;
-	mad r0, c2, t2, r0;
-	mad r0, c3, t3, r0;
-	mul r0, r0, t0;
+	mad r0.xyz, c1, t1, c0;
+	mad r0.xyz, c2, t2, r0;
+	mad r0.xyz, c3, t3, r0;
+	mul_x2 r0.xyz, r0, t0;
+	mov r0.w, t0;
 };
 
 technique four_stages_4
@@ -38,7 +39,9 @@ technique four_stages_4
 		TexCoordIndex[2] = 1;
 		TexCoordIndex[3] = 1;
 		Lighting = false;
-		AlphaBlendEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = srcalpha;
+		DestBlend = invsrcalpha;
 		Texture[0] = <texture0>;
 		Texture[1] = <texture1>;
 		Texture[2] = <texture2>;
@@ -59,9 +62,10 @@ pixelshader three_stages_0_ps = asm
 	tex t1;
 	tex t2;
 	// multiply lightmap with factor, and add with LMCAmbient term
-	mad r0, c1, t1, c0;
-	mad r0, c2, t2, r0;
-	mul r0, r0, t0;
+	mad r0.xyz, c1, t1, c0;
+	mad r0.xyz, c2, t2, r0;
+	mul_x2 r0.xyz, r0, t0;
+	mov r0.w, t0;
 };
 
 technique three_stages_3
@@ -70,7 +74,9 @@ technique three_stages_3
 	{
 		TexCoordIndex[2] = 1;
 		Lighting = false;
-		AlphaBlendEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = srcalpha;
+		DestBlend = invsrcalpha;
 		Texture[0] = <texture0>;
 		Texture[1] = <texture1>;
 		Texture[2] = <texture2>;
@@ -81,8 +87,6 @@ technique three_stages_3
 	}
 	pass p1
 	{
-		AlphaBlendEnable = true;
-		SrcBlend = one;
 		DestBlend = one;
 
 		// the DiffuseTexture texture0 is in last stage
@@ -94,10 +98,16 @@ technique three_stages_3
 		ColorOp[0] = MODULATE;
 		ColorArg1[0] = TFACTOR;
 		ColorArg2[0] = TEXTURE;
-		ColorOp[1] = MODULATE;
+		ColorOp[1] = MODULATE2X;
 		ColorArg1[1] = CURRENT;
 		ColorArg2[1] = TEXTURE;
 		ColorOp[2] = DISABLE;
+		// Alpha stage 0 unused
+		AlphaOp[0] = SELECTARG1;
+		AlphaArg1[0] = TFACTOR;
+		AlphaOp[1] = SELECTARG1;
+		AlphaArg1[1] = TEXTURE;
+		AlphaOp[2] = DISABLE;
 		PixelShader = (NULL);
 	}
 }
@@ -113,7 +123,9 @@ technique two_stages_2
 		MaterialAmbient= <g_black>;
 		MaterialDiffuse= <g_black>;
 		MaterialSpecular= <g_black>;
-		AlphaBlendEnable = false;
+		AlphaBlendEnable = true;
+		SrcBlend = srcalpha;
+		DestBlend = invsrcalpha;
 
 		// the DiffuseTexture texture0 is in last stage
 		TexCoordIndex[0] = 1;
@@ -125,15 +137,18 @@ technique two_stages_2
 		ColorArg0[0] = DIFFUSE;
 		ColorArg1[0] = TFACTOR;
 		ColorArg2[0] = TEXTURE;
-		ColorOp[1] = MODULATE;
+		ColorOp[1] = MODULATE2X;
 		ColorArg1[1] = CURRENT;
 		ColorArg2[1] = TEXTURE;
+		// Alpha stage 0 unused
+		AlphaOp[0] = SELECTARG1;
+		AlphaArg1[0] = TFACTOR;
+		AlphaOp[1] = SELECTARG1;
+		AlphaArg1[1] = TEXTURE;
 	}
 	pass p1
 	{
 		Lighting = false;
-		AlphaBlendEnable = true;
-		SrcBlend = one;
 		DestBlend = one;
 		Texture[0] = <texture2>;
 		TextureFactor = <color2>;
@@ -145,5 +160,3 @@ technique two_stages_2
 		TextureFactor = <color3>;
 	}
 }
-
-

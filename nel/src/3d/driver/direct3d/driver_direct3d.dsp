@@ -128,7 +128,15 @@ SOURCE=.\lightmap0.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\lightmap0_x2.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\lightmap0blend.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\lightmap0blend_x2.fx
 # End Source File
 # Begin Source File
 
@@ -136,7 +144,15 @@ SOURCE=.\lightmap1.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\lightmap1_x2.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\lightmap1blend.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\lightmap1blend_x2.fx
 # End Source File
 # Begin Source File
 
@@ -144,7 +160,15 @@ SOURCE=.\lightmap2.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\lightmap2_x2.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\lightmap2blend.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\lightmap2blend_x2.fx
 # End Source File
 # Begin Source File
 
@@ -152,7 +176,15 @@ SOURCE=.\lightmap3.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\lightmap3_x2.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\lightmap3blend.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\lightmap3blend_x2.fx
 # End Source File
 # Begin Source File
 
@@ -160,7 +192,15 @@ SOURCE=.\lightmap4.fx
 # End Source File
 # Begin Source File
 
+SOURCE=.\lightmap4_x2.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\lightmap4blend.fx
+# End Source File
+# Begin Source File
+
+SOURCE=.\lightmap4blend_x2.fx
 # End Source File
 # End Group
 # Begin Source File

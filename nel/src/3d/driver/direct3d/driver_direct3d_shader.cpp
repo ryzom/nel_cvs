@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.2 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.3 2004/05/18 16:34:27 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -389,6 +389,16 @@ void CDriverD3D::initInternalShaders()
 	setFx(_ShaderLightmap2Blend,lightmap2blend);
 	setFx(_ShaderLightmap3Blend,lightmap3blend);
 	setFx(_ShaderLightmap4Blend,lightmap4blend);
+	setFx(_ShaderLightmap0X2,lightmap0_x2);
+	setFx(_ShaderLightmap1X2,lightmap1_x2);
+	setFx(_ShaderLightmap2X2,lightmap2_x2);
+	setFx(_ShaderLightmap3X2,lightmap3_x2);
+	setFx(_ShaderLightmap4X2,lightmap4_x2);
+	setFx(_ShaderLightmap0BlendX2,lightmap0blend_x2);
+	setFx(_ShaderLightmap1BlendX2,lightmap1blend_x2);
+	setFx(_ShaderLightmap2BlendX2,lightmap2blend_x2);
+	setFx(_ShaderLightmap3BlendX2,lightmap3blend_x2);
+	setFx(_ShaderLightmap4BlendX2,lightmap4blend_x2);
 	setFx(_ShaderCloud,cloud);
 }
 
@@ -406,6 +416,16 @@ void CDriverD3D::releaseInternalShaders()
 	_ShaderLightmap2Blend._DrvInfo.kill();
 	_ShaderLightmap3Blend._DrvInfo.kill();
 	_ShaderLightmap4Blend._DrvInfo.kill();
+	_ShaderLightmap0X2._DrvInfo.kill();
+	_ShaderLightmap1X2._DrvInfo.kill();
+	_ShaderLightmap2X2._DrvInfo.kill();
+	_ShaderLightmap3X2._DrvInfo.kill();
+	_ShaderLightmap4X2._DrvInfo.kill();
+	_ShaderLightmap0BlendX2._DrvInfo.kill();
+	_ShaderLightmap1BlendX2._DrvInfo.kill();
+	_ShaderLightmap2BlendX2._DrvInfo.kill();
+	_ShaderLightmap3BlendX2._DrvInfo.kill();
+	_ShaderLightmap4BlendX2._DrvInfo.kill();
 	_ShaderCloud._DrvInfo.kill();
 }
 

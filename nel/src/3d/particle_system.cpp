@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.9 2001/05/09 14:56:57 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.10 2001/05/10 09:18:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,47 +163,31 @@ void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 }
 
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{
-	uint32 size ;
+{	
 	f.serialCheck((uint32) 'PSYS') ;
 	f.serialVersion(1) ;	
+	f.serial(_ViewMat) ;
+	f.serial(_SysMat) ;
 	if (f.isReading())
 	{
 		// delete previously attached process
-
 		for (TProcessVect::iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
 		{
 			delete (*it) ;
 		}
 
 		_ProcessVect.clear() ;
-		f.serial(size) ;
-		for (uint32 k = 0 ; k < size ; ++k)
-		{
-			CParticleSystemProcess *pt = NULL  ;
-			f.serialPolyPtr(pt) ;
-			_ProcessVect.push_back(pt) ;
-		}
-		f.serial(_ViewMat) ;
-		f.serial(_SysMat) ;
+
+		f.serialContPolyPtr(_ProcessVect) ;		
+	
 		_InvSysMat = _SysMat.inverted() ;
 		_FontGenerator = NULL ;
 		_FontManager = NULL ;
 	}
 	else
 	{
-		size = _ProcessVect.size() ;
-		f.serial(size) ;
-		for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
-		{
-			CParticleSystemProcess *pt = (*it) ;
-			f.serialPolyPtr(pt) ;
-		}
-		f.serial(_ViewMat) ;
-		f.serial(_SysMat) ;
-	}
-	
-	
+		f.serialContPolyPtr(_ProcessVect) ;	
+	}		
 }
 
 

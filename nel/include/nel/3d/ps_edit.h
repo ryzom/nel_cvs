@@ -1,7 +1,7 @@
 /** \file ps_edit.h
  * <File description>
  *
- * $Id: ps_edit.h,v 1.1 2001/04/26 08:48:52 vizerie Exp $
+ * $Id: ps_edit.h,v 1.2 2001/05/10 09:18:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,14 +29,6 @@
 #include "nel/misc/types_nl.h"
 
 
-/**
- * In this file, we define interfaces to interact more precisely with located in a particle system
- * It allows to manipulate individual elements of a located
- * For example, it allows you to move a collision plane after its creation,
- * or to move a particular particle that you've instancied yourself.
- * This is needed because of the packed format used for data representation
- * (each attribute is packed into its own table)
- */
 
 namespace NLMISC
 {
@@ -46,6 +38,17 @@ namespace NLMISC
 
 
 namespace NL3D {
+
+
+/**
+ * In this file, we define interfaces to interact more precisely with located in a particle system
+ * It allows to manipulate individual elements of a located
+ * For example, it allows you to move a collision plane after its creation,
+ * or to move a particular particle that you've instancied yourself.
+ * This is needed because of the packed format used for data representation
+ * (each attribute is packed into its own table)
+ */
+
 
 
 /**

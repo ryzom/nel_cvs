@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.3 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_color.h,v 1.4 2001/05/10 09:18:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,16 +32,19 @@
 #include "nel/3d/tmp/animation_time.h"
 
 
-/**
- * Here, we got color maker
- * \see ps_attrib_maker.h
- */
+
 
 
 
 namespace NL3D {
 
 using NLMISC::CRGBA ;
+
+/**
+ * Here, we got color maker
+ * \see ps_attrib_maker.h
+ */
+
 
 
 /** this class is a color fader functor

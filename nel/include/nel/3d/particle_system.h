@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.9 2001/05/09 14:33:35 vizerie Exp $
+ * $Id: particle_system.h,v 1.10 2001/05/10 09:18:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,7 +111,10 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		/**	
 		* return true if the process is in the particle system basis, false if it's in the world basis
 		*/
-		bool isInSystemBasis(void) const { return _SystemBasisEnabled ; }
+		bool isInSystemBasis(void) const 
+		{ 
+			return _SystemBasisEnabled ; 
+		}
 
 		/** Choose the basis for this process. Warning : This won't change any existing coordinate
 		 *  By default, all process are expressed in the world basis
@@ -333,8 +336,8 @@ protected:
  *
  *
  */
-
-/*class CParticleSystemShape : public IShape
+/*
+class CParticleSystemShape : public IShape
 {
 public:
 

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.3 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.4 2001/05/10 09:18:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,16 +32,17 @@
 #include "nel/misc/stream.h"
 
 
-/**
- * Here we define attribute maker, that is object that can produce an attribute following some rule.
- * This allow, for example, creation of a color gradient, or color flicker, size strectching and so on...
- * These attributes apply to particles. see paticle_system.h and ps_located.h
- */
 
 
 
 
 namespace NL3D {
+
+/**
+ * Here we define attribute maker, that is object that can produce an attribute following some rule.
+ * This allow, for example, creation of a color gradient, or color flicker, size strectching and so on...
+ * These attributes apply to particles. see paticle_system.h and ps_located.h
+ */
 
 
 /**

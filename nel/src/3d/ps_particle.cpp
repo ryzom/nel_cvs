@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.7 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.8 2001/05/10 09:18:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1334,64 +1334,60 @@ void CPSTailDot::draw(void)
 	
 	// TODO : cache optimization
 
-	if (_ColorFading)
+	if (_UseColorScheme && _ColorFading)
 	{
-		if (_UseColorScheme)
-		{
-			// the first color is set to black
-			// other are modulated by the ratio of the intensity n and the intensity n + 1
-			
-			// the brightness increase between each segment in the tail
-			float lumiStep = 1.f / _TailNbSeg ;
-			float lumi = lumiStep ;
 
-			// set the first vertex to black				
-			currVertex = firstVertex ;
+		// the first color is set to black
+		// other are modulated by the ratio of the intensity n and the intensity n + 1
+		
+		// the brightness increase between each segment in the tail
+		float lumiStep = 1.f / _TailNbSeg ;
+		float lumi = lumiStep ;
+
+		// set the first vertex to black				
+		currVertex = firstVertex ;
+		for (k = 0 ; k < size ; ++k)
+		{
+			*(CRGBA *) (currVertex + colorOff) = CRGBA::Black ;
+			// copy the next vertex pos
+			*(CVector *) currVertex = *(CVector *) (currVertex + vSize) ;
+			currVertex += tailVSize  ;			
+		}
+
+		for (l = 1 ; l < _TailNbSeg ; ++l)
+		{
+			currVertex = firstVertex + l * vSize ;
+			uint8 ratio = (uint8) (255.0f * lumi / (lumi +  lumiStep)) ;
+			lumi += lumiStep ;			
 			for (k = 0 ; k < size ; ++k)
 			{
-				*(CRGBA *) (currVertex + colorOff) = CRGBA::Black ;
+				// get the color of the next vertex and modulate
+				((CRGBA *) (currVertex + colorOff))->modulateFromui(*(CRGBA *) (currVertex + vSize + colorOff), ratio) ;
 				// copy the next vertex pos
 				*(CVector *) currVertex = *(CVector *) (currVertex + vSize) ;
 				currVertex += tailVSize  ;			
 			}
+			
+		}			
+	}
+	else if ( !_UseColorScheme || _ColorFading)
+	{		
+		// we just decal the pos
+		// we copy some extra pos, but we avoid 2 nested loops
+		const uint32 nbVerts = (size * (_TailNbSeg + 1)) - 1 ;
+		const uint8 *lastVert = firstVertex + nbVerts * vSize ;
 
-			for (l = 1 ; l < _TailNbSeg ; ++l)
-			{
-				currVertex = firstVertex + l * vSize ;
-				uint8 ratio = (uint8) (255.0f * lumi / (lumi +  lumiStep)) ;
-				lumi += lumiStep ;			
-				for (k = 0 ; k < size ; ++k)
-				{
-					// get the color of the next vertex and modulate
-					((CRGBA *) (currVertex + colorOff))->modulateFromui(*(CRGBA *) (currVertex + vSize + colorOff), ratio) ;
-					// copy the next vertex pos
-					*(CVector *) currVertex = *(CVector *) (currVertex + vSize) ;
-					currVertex += tailVSize  ;			
-				}
-				
-			}			
-		}
-		else
+		for (currVertex = firstVertex ; currVertex != lastVert ; )
 		{
-			// we just decal the pos
-			// we copy some extra pos, but we avoid 2 nested loops
-			const uint32 nbVerts = (size * (_TailNbSeg + 1)) - 1 ;
-			const uint8 *lastVert = firstVertex + nbVerts * vSize ;
-
-			for (currVertex = firstVertex ; currVertex != lastVert ; currVertex += vSize)
-			{
-				*(CVector *) currVertex = *(CVector *) (currVertex + vSize) ;			
-			}
-		}
+			*(CVector *) currVertex = *(CVector *) (currVertex + vSize) ;			
+			currVertex += vSize ;
+		}	
 	}
 	else
-	{
-		if (_ColorScheme)
-		{
-			// we just copy the colors and the position
-			// memcpy will copy some extra bytes, but it should remains fasters that 2 nested loops
-			memcpy(firstVertex, firstVertex + vSize, size * tailVSize  - vSize) ; 
-		}
+	{		
+		// we just copy the colors and the position
+		// memcpy will copy some extra bytes, but it should remains fasters that 2 nested loops
+		memcpy(firstVertex, firstVertex + vSize, size * tailVSize  - vSize) ; 		
 	}
 
 
@@ -1405,18 +1401,44 @@ void CPSTailDot::draw(void)
 							, tailVSize, _Owner->getSize()) ;		
 	}
 
-	// now, copy the positions from the particle
-		currVertex = firstVertex + headOffset ;
+
+	currVertex = firstVertex + headOffset ;
+	// If we are in the same basis than the located that hold us, we can copy coordinate directly
+	if (_SystemBasisEnabled == _Owner->isInSystemBasis())
+	{	
 		for (posIt = _Owner->getPos().begin() ; posIt != endPosIt ; ++posIt)
 		{
 			*(CVector *) currVertex = *posIt ;
 			currVertex += tailVSize ;
 		}
+	}
+	else
+	{
+		// the tail are not in the same basis, we need a conversion matrix
+		const CMatrix &m = _SystemBasisEnabled ?   _Owner->getOwner()->getInvertedSysMat() 
+												 : _Owner->getOwner()->getSysMat() ;
+		// copy the position after transformation
+		for (posIt = _Owner->getPos().begin() ; posIt != endPosIt ; ++posIt)
+		{
+			*(CVector *) currVertex = m * (*posIt) ;
+			currVertex += tailVSize ;
+		}
+	}
 
-
-	setupDriverModelMatrix() ;
-
+	
 	IDriver *driver = getDriver() ;
+	if (_SystemBasisEnabled)
+	{
+		driver->setupModelMatrix(_Owner->getOwner()->getSysMat()) ;
+	}
+	else
+	{
+		driver->setupModelMatrix(CMatrix::Identity) ;
+	}
+
+
+
+	
 	driver->activeVertexBuffer(_Vb) ;		
 	_Pb.setNumLine(size * _TailNbSeg) ;
 	driver->render(_Pb, _Mat) ;
@@ -1440,12 +1462,14 @@ void CPSTailDot::resizeVb(uint32 oldTailSize, uint32 size)
 	_Pb.reserveLine(_TailNbSeg * size) ;
 
 	uint32 currIndex = 0 ;
+	uint lineIndex = 0 ;
 
 	for (k = 0 ; k < size ; ++k)
 	{
-		for (l = 0 ; l < _TailNbSeg - 1 ; ++l)
+		for (l = 0 ; l < _TailNbSeg ; ++l)
 		{
-			_Pb.addLine(currIndex + l , currIndex + l + 1) ;		
+			_Pb.setLine(lineIndex , currIndex + l, currIndex + l + 1) ;		
+			++lineIndex ;
 		}
 
 		currIndex += _TailNbSeg + 1 ;		
@@ -1462,18 +1486,34 @@ void CPSTailDot::resizeVb(uint32 oldTailSize, uint32 size)
 	// particle that were present before
 	// their old positions are copied
 
+	// if the tail are not in the same basis, we need a conversion matrix
+
+	const CMatrix *m;
+
+	if (_SystemBasisEnabled == _Owner->isInSystemBasis())
+	{
+		m = &CMatrix::Identity ;
+	}
+	else
+	{
+		m = _SystemBasisEnabled ?  & _Owner->getOwner()->getInvertedSysMat() 
+								: &_Owner->getOwner()->getSysMat() ;
+	}
+
 	const TPSAttribVector &oldPos = _Owner->getPos() ;
 	currIndex = 0 ;
+	CVector currPos ;
 
-	for (k = 0 ; k < std::min(oldSize, size) ; ++k)
+	for (k = 0 ; k < _Owner->getSize() ; ++k)
 	{
+		currPos = *m * oldPos[k] ;
 		for (l = 0 ; l <= _TailNbSeg ; ++l)
 		{
-			_Vb.setVertexCoord( currIndex + l , oldPos[k]) ;			
+			_Vb.setVertexCoord( currIndex + l , currPos) ;			
 		}
 		currIndex += _TailNbSeg + 1 ;		
 	}	
-	// we don't need to setup the following vertices coordinates, they will be filled with newElement
+	// we don't need to setup the following vertices coordinates, they will be filled with newElement anyway...
 
 	setupColor() ;
 	
@@ -1553,21 +1593,55 @@ void CPSTailDot::newElement(void)
 		const CVector &pos = _Owner->getPos()[index] ;	
 		if (_UseColorScheme)
 		{
-			for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
+			// check wether the located is in the same basis than the tail
+			// Otherwise, a conversion is required for the pos
+			if (_SystemBasisEnabled == _Owner->isInSystemBasis())
 			{
-				*(CVector *) currVert = pos ;
-				*(CRGBA *) (currVert + _Vb.getColorOff()) = CRGBA::Black ;
+				for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
+				{
+					*(CVector *) currVert = pos ;
+					*(CRGBA *) (currVert + _Vb.getColorOff()) = CRGBA::Black ;
 
-				currVert += vSize ; // go to next vertex
+					currVert += vSize ; // go to next vertex
+				}
 			}
+			else
+			{
+				const CMatrix &m = _SystemBasisEnabled ?   _Owner->getOwner()->getInvertedSysMat() 
+												 : _Owner->getOwner()->getSysMat() ;
+				for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
+				{
+					*(CVector *) currVert = m * pos ;
+					*(CRGBA *) (currVert + _Vb.getColorOff()) = CRGBA::Black ;
+
+					currVert += vSize ; // go to next vertex
+				}
+			}
+
 		}
 		else
 		{
 			// color setup was done during setup color
-			for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
+
+			// check wether the located is in the same basis than the tail
+			// Otherwise, a conversion is required for the pos
+			if (_SystemBasisEnabled == _Owner->isInSystemBasis())
 			{
-				*(CVector *) currVert = pos ;			
-				currVert += vSize ; // go to next vertex
+				for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
+				{
+					*(CVector *) currVert = pos ;			
+					currVert += vSize ; // go to next vertex
+				}
+			}
+			else
+			{
+				const CMatrix &m = _SystemBasisEnabled ?   _Owner->getOwner()->getInvertedSysMat() 
+												 : _Owner->getOwner()->getSysMat() ;
+				for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
+				{
+					*(CVector *) currVert = m * pos ;			
+					currVert += vSize ; // go to next vertex
+				}
 			}
 		}
 }
@@ -1619,7 +1693,7 @@ void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialVersion(1) ;
 	CPSParticle::serial(f) ;
 	CPSColoredParticle::serialColorScheme(f) ;	
-	f.serial(_TailNbSeg, _ColorFading) ;
+	f.serial(_TailNbSeg, _ColorFading, _SystemBasisEnabled) ;
 
 	// In this version we don't save the vb state, as we probably won't need it
 	// we just rebuild the vb

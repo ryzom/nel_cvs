@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.7 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.8 2001/05/10 09:18:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -572,31 +572,18 @@ void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 void CPSTargetLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	uint32 size ;
 	f.serialVersion(1) ;	
+	f.serialPtr(_Owner) ;
 	if (f.isReading())
 	{
-		_Targets.clear() ;
-		f.serial(size) ;
-		for (uint32 k = 0 ; k < size ; ++k)
-		{
-			CPSLocated *pt = NULL ;
-			f.serialPolyPtr(pt) ;
-			_Targets.push_back(pt) ;
-		}
-	}
-	else
-	{
-		size = _Targets.size() ;
-		f.serial(size) ;
+		// delete previous attached bindables...
 		for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
 		{
-			CPSLocated *pt = (*it) ;
-			f.serialPolyPtr(pt) ;
+			delete (*it) ;
 		}
+		_Targets.clear() ;		
 	}
-
-	f.serialPtr(_Owner) ;
+	f.serialContPolyPtr(_Targets) ;
 }
 
 

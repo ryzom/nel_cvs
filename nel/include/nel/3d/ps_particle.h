@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.7 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_particle.h,v 1.8 2001/05/10 09:18:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,7 +79,7 @@ public:
 
 	virtual void draw(void) = 0 ;
 
-	/**	Generate a new element for this bindable. They are generated according to the propertie of the class	
+	/**	Generate a new element for this bindable. They are generated according to the properties of the class	
 	 * \return true if it could be added
 	 */
 	virtual void newElement(void) = 0 ;
@@ -540,7 +540,7 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 
 
 		
-		/// on if the tail color must fade to black
+		/// true if the tail color must fade to black
 		bool _ColorFading ;
 							
 		

@@ -395,6 +395,14 @@ SOURCE=..\include\nel\misc\win_event_emitter.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\misc\block_memory.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\block_memory.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\pool_memory.h
 # End Source File
 # End Group

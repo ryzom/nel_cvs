@@ -1,7 +1,7 @@
 /** \file mrm_mesh.h
  * Internal mesh for CMRMBuilder.
  *
- * $Id: mrm_mesh.h,v 1.6 2001/10/10 15:38:09 besson Exp $
+ * $Id: mrm_mesh.h,v 1.7 2002/03/14 18:14:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,6 +205,7 @@ public:
 	// An wedge value (vertex + all attribs).
 	struct	CWedge
 	{
+		CWedge();		
 		CMesh::CSkinWeight		VertexSkin;
 		// Number of matrix this wedge use.
 		uint		NSkinMatUsed;

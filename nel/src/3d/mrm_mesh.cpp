@@ -1,7 +1,7 @@
 /** \file mrm_mesh.cpp
  * Internal mesh for CMRMBuilder.
  *
- * $Id: mrm_mesh.cpp,v 1.6 2002/02/28 12:59:50 besson Exp $
+ * $Id: mrm_mesh.cpp,v 1.7 2002/03/14 18:14:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,15 @@ sint	CMRMMeshFinal::findInsertWedge(const CWedge &w)
 	return ret;
 }
 
-
-
+// ***************************************************************************
+CMRMMeshFinal::CWedge::CWedge()
+{
+	Vertex = NLMISC::CVector::Null;
+	NSkinMatUsed = 0;
+	for (uint k = 0; k < NL3D_MRM_MAX_ATTRIB; ++k)
+	{
+		Attributes[k].set(0, 0, 0, 0);
+	}
+}
 
 } // NL3D

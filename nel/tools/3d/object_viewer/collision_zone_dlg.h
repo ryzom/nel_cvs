@@ -1,7 +1,7 @@
 /** \file collision_zone_dlg.h
  * a dialog to edit collision zone properties in a particle system
  *
- * $Id: collision_zone_dlg.h,v 1.2 2001/06/25 16:18:11 vizerie Exp $
+ * $Id: collision_zone_dlg.h,v 1.3 2001/06/27 16:52:30 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 	// wrapper to set the bounce factor of a collision zone
-	struct tagBounceFactorWrapper : public IPSWrapperFloat
+	struct CBounceFactorWrapper : public IPSWrapperFloat
 	{
 		// the zone being wrapped
 		NL3D::CPSZone *Z ;

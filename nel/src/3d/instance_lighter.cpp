@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.3 2002/02/12 15:37:51 berenguier Exp $
+ * $Id: instance_lighter.cpp,v 1.4 2002/02/14 15:23:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -399,6 +399,7 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 
 		// Get the instance shape name
 		string name= _Instances[i].Name;
+		bool	shapeFound= true;
 
 		// Try to find the shape in the UseShapeMap.
 		std::map<string, IShape*>::const_iterator iteMap= lightDesc.UserShapeMap.find (name);
@@ -414,6 +415,7 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 				name += ".shape";
 
 			// Find the shape in the bank
+			iteMap= shapeMap.find(name);
 			if (iteMap==shapeMap.end())
 			{
 				// Input file
@@ -432,6 +434,7 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 				{
 					// Error
 					nlwarning ("WARNING can't load shape %s\n", name.c_str());
+					shapeFound= false;
 				}
 			}
 		}
@@ -439,7 +442,7 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 
 		// Last chance to skip it: fully LightMapped ??
 		//-----------
-		if(iteMap!=shapeMap.end())
+		if(shapeFound)
 		{
 			CMeshBase	*mesh= dynamic_cast<CMeshBase*>(iteMap->second);
 			if(mesh)
@@ -463,7 +466,7 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 		{
 			// Compute bbox, or default bbox
 			CAABBox		bbox;
-			if(iteMap==shapeMap.end())
+			if(!shapeFound)
 			{
 				bbox.setCenter(CVector::Null);
 				bbox.setHalfSize(CVector::Null);
@@ -1363,6 +1366,7 @@ void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInsta
 
 			// Get the instance shape name
 			string name= igIn.getShapeName(i);
+			bool	shapeFound= true;
 
 			// Try to find the shape in the UseShapeMap.
 			std::map<string, IShape*>::const_iterator iteMap= lightDesc.UserShapeMap.find (name);
@@ -1378,6 +1382,8 @@ void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInsta
 					name += ".shape";
 
 				// Find the shape in the bank
+				iteMap= shapeMap.find(name);
+
 				if (iteMap==shapeMap.end())
 				{
 					// Input file
@@ -1396,11 +1402,12 @@ void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInsta
 					{
 						// Error
 						nlwarning ("WARNING can't load shape %s\n", name.c_str());
+						shapeFound= false;
 					}
 				}
 			}
-
-			if(iteMap!=shapeMap.end())
+			
+			if(shapeFound)
 			{
 				CMatrix		matInst;
 				matInst.setPos(igIn.getInstancePos(i));

@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.12 2001/10/25 12:14:07 cado Exp $
+ * $Id: mem_stream.cpp,v 1.13 2001/11/12 14:03:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,11 +167,11 @@ bool CMemStream::seek (sint32 offset, TSeekOrigin origin) throw(EStream)
 		_BufPos+=offset;
 		break;
 	case end:
-		if (offset >= (sint)_Buffer.size())
+		if (offset < -(sint)_Buffer.size())
 			return false;
-		if (offset < 0)
+		if (offset > 0)
 			return false;
-		_BufPos=_Buffer.end()-offset;
+		_BufPos=_Buffer.end()+offset;
 		break;
 	}
 	return true;

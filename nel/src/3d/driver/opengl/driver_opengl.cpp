@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.87 2001/04/11 13:03:22 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.88 2001/04/11 15:00:31 cado Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -75,7 +75,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 {
 	if (fdwReason == DLL_PROCESS_ATTACH)
 	{
-		initDebug();
 	}
 	return true;
 }

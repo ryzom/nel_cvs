@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.2 2001/08/29 12:47:07 lecroart Exp $
+ * $Id: dru.h,v 1.3 2001/08/31 14:23:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,14 +35,15 @@
 
 
 #ifdef NL_OS_WINDOWS
-#ifdef NL_DEBUG
+// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
+#ifdef NL_DEBUG_FAST
+#define NL3D_DLL_NAME "nel_drv_opengl_win_debug_fast.dll"
+#elif defined (NL_DEBUG)
 #define NL3D_DLL_NAME "nel_drv_opengl_win_debug.dll"
 #elif defined (NL_RELEASE_DEBUG)
 #define NL3D_DLL_NAME "nel_drv_opengl_win_rd.dll"
 #elif defined (NL_RELEASE)
 #define NL3D_DLL_NAME "nel_drv_opengl_win.dll"
-#elif defined (NL_DEBUG_FAST)
-#define NL3D_DLL_NAME "nel_drv_opengl_win_debug_fast.dll"
 #else
 #error "Unknown dll name"
 #endif

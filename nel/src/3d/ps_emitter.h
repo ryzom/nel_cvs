@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.30 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.31 2004/07/21 11:12:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -260,6 +260,7 @@ public:
 	/** For edition only : avoid that a call to CPSLocated::deleteElement() causes emitters flagged with 'emitOnDeath' to emit
 	  */
 	static void				setBypassEmitOnDeath(bool bypass) { _BypassEmitOnDeath = bypass; }	
+	static bool				getBypassEmitOnDeath() { return _BypassEmitOnDeath; }
 
 	/** check if there's a loop with that e=mitter eg A emit B emit A
 	  * NB : the emitter should be inserted in a system, otherwise -> assert

@@ -1,7 +1,7 @@
 /** \file value_blender_dlg.h
  * a dialog to choose 2 values that are linearly blended in a particle system
  *
- * $Id: value_blender_dlg.h,v 1.4 2001/06/27 16:36:18 vizerie Exp $
+ * $Id: value_blender_dlg.h,v 1.5 2001/09/17 14:04:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,14 +29,13 @@
 
 #if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// ValueBlenderDlg.h : header file
-//
-
-/////////////////////////////////////////////////////////////////////////////
-// CValueBlenderDlg dialog : allow to choose 2 values of a given type
+#endif 
 
 
+
+
+
+struct IPopupNotify;
 class CEditAttribDlg ;
 
 
@@ -47,7 +46,10 @@ struct IValueBlenderDlgClient
 	 *  \param index must be 0 or 1, it says which value is being edited
 	 *  \infoToDelete the callback can set the pointer  to NULL or to something that must be deleted when the dialog is
 	 */
-	virtual CEditAttribDlg *createDialog(uint index) = 0 ;
+	virtual CEditAttribDlg *createDialog(uint index) = 0;
+
+	/// dtor
+	virtual ~IValueBlenderDlgClient() {};
 } ;
 
 class CValueBlenderDlg : public CDialog
@@ -57,13 +59,17 @@ public:
 
 	
 	/** Create the dialog. Then, it will call createFunc (with the user param lParam) to generate the appropriate dialogs
-	 *  If mustDelete is set, then new will be performed on lParam after it has been used
+	 *  If mustDelete is set, then new will be performed on lParam after it has been used. When destroyInterface is set to true,
+	 *  delete is called on 'createInterface'
 	 */
 
-	CValueBlenderDlg(IValueBlenderDlgClient *createInterface, CWnd* pParent = NULL);   // standard constructor
+	CValueBlenderDlg(IValueBlenderDlgClient *createInterface, bool destroyInterface, CWnd* pParent, IPopupNotify *pn);   // standard constructor
 
 	// dtor
 	~CValueBlenderDlg() ;
+
+	// non modal display
+	void init(CWnd *pParent);
 
 // Dialog Data
 	//{{AFX_DATA(CValueBlenderDlg)
@@ -82,16 +88,16 @@ public:
 
 // Implementation
 protected:
-		
+	void childPopupDestroyed(CWnd *child);	
 	IValueBlenderDlgClient *_CreateInterface ;
-
-
 	// the 2 dialog used to choose the blending value
-	CEditAttribDlg *_Dlg1, *_Dlg2 ;
-
+	CEditAttribDlg		   *_Dlg1, *_Dlg2 ;
+	IPopupNotify		   *_PN;
+	bool				   _DestroyInterface;
 	// Generated message map functions
 	//{{AFX_MSG(CValueBlenderDlg)
 	virtual BOOL OnInitDialog();
+	afx_msg void OnClose();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 	

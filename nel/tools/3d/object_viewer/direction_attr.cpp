@@ -2,7 +2,7 @@
  * a dialog to choose a direction (normalized vector). It gives several choices, or allow 
  * to call a more complete dialog (CDirectionEdit)
  *
- * $Id: direction_attr.cpp,v 1.1 2001/06/25 13:17:59 vizerie Exp $
+ * $Id: direction_attr.cpp,v 1.2 2001/09/17 14:01:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,12 +140,12 @@ BOOL CDirectionAttr::EnableWindow( BOOL bEnable)
 void CDirectionAttr::OnCustomDirection() 
 {
 	_DirectionDlg = new CDirectionEdit(_Wrapper) ;
-	_DirectionDlg->init(this) ;
+	_DirectionDlg->init(this, this) ;
 	EnableWindow(FALSE) ;	
 }
 
 
-void CDirectionAttr::directionDialogDestroyed(void)
+void CDirectionAttr::childPopupDestroyed(CWnd *)
 {
 	_DirectionDlg->DestroyWindow() ;
 	delete _DirectionDlg ;

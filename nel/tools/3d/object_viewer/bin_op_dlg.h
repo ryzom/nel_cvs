@@ -12,10 +12,11 @@ class CBinOpDlg : public CDialog
 {
 // Construction
 public:
-	CBinOpDlg(CWnd* pParent = NULL);   // standard constructor
+	CBinOpDlg(IPopupNotify *pn, CWnd* pParent = NULL);   // standard constructor
 
-	virtual void  init(void) = 0 ;
+	virtual void  init(CWnd *pParent) = 0 ;
 
+	void create(CWnd *pParent);
 
 	// called when a new operator has been selected 
 	virtual void newOp(uint32 op) = 0 ;
@@ -36,11 +37,13 @@ public:
 
 // Implementation
 protected:
+	IPopupNotify *_PN;
 
 	// Generated message map functions
 	//{{AFX_MSG(CBinOpDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSelchangeBinOp();
+	afx_msg void OnClose();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -52,8 +55,8 @@ template <class T> class CBinOpDlgT : public CBinOpDlg
 {
 public:
 	/// ctruct the given dialog from the given scheme that owns memory
-	CBinOpDlgT(NL3D::CPSAttribMakerBinOp<T> *editedScheme, CAttribDlgT<T> **attrbDlg, HBITMAP bitmapToDisplay)
-		:  _BitmapToDisplay(bitmapToDisplay), _EditedScheme(editedScheme)
+	CBinOpDlgT(NL3D::CPSAttribMakerBinOp<T> *editedScheme, CAttribDlgT<T> **attrbDlg, IPopupNotify *pn, HBITMAP bitmapToDisplay)
+		:  CBinOpDlg(pn), _BitmapToDisplay(bitmapToDisplay), _EditedScheme(editedScheme)
 	{
 		for (uint k = 0 ; k < 2 ; ++k)
 		{
@@ -65,9 +68,9 @@ public:
 	}
 
 	/// call this before performing DoModal and the like...
-	void init()
+	void init(CWnd *pParent)
 	{
-	
+		CBinOpDlg::create(pParent);
 		uint k ;
 		for (k = 0 ; k < 2 ; ++k)
 		{			

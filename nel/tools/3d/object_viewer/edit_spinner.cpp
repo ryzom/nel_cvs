@@ -1,7 +1,7 @@
 /** \file edit_spinner.cpp
  * a dialog to edit a spinner
  *
- * $Id: edit_spinner.cpp,v 1.1 2001/09/07 12:03:51 vizerie Exp $
+ * $Id: edit_spinner.cpp,v 1.2 2001/09/17 14:02:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "edit_spinner.h"
 #include "direction_attr.h"
 #include "editable_range.h"
+#include "popup_notify.h"
 
 
 #ifdef _DEBUG
@@ -40,9 +41,9 @@ static char THIS_FILE[] = __FILE__;
 // CEditSpinner dialog
 
 
-CEditSpinner::CEditSpinner(NL3D::CPSBasisSpinner *sf, CWnd *pParent)
+CEditSpinner::CEditSpinner(NL3D::CPSBasisSpinner *sf, CWnd *pParent, IPopupNotify *pn)
 	: CDialog(CEditSpinner::IDD, pParent), _DirDlg(NULL), _NbSamplesDlg(NULL)
-	  , _Spinner(sf)
+	  , _Spinner(sf), _PN(pn)
 {
 	//{{AFX_DATA_INIT(CEditSpinner)
 		// NOTE: the ClassWizard will add member initialization here
@@ -53,6 +54,12 @@ CEditSpinner::~CEditSpinner()
 {
 	if (_DirDlg) { _DirDlg->DestroyWindow(); delete _DirDlg; }
 	if (_NbSamplesDlg) { _NbSamplesDlg->DestroyWindow(); delete _NbSamplesDlg; }
+}
+
+void CEditSpinner::init(CWnd *pParent)
+{
+	CDialog::Create(IDD_EDITSPINNER, pParent);	
+	ShowWindow(SW_SHOW);
 }
 
 void CEditSpinner::DoDataExchange(CDataExchange* pDX)
@@ -66,6 +73,7 @@ void CEditSpinner::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CEditSpinner, CDialog)
 	//{{AFX_MSG_MAP(CEditSpinner)
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -89,4 +97,10 @@ BOOL CEditSpinner::OnInitDialog()
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CEditSpinner::OnClose() 
+{		
+	CDialog::OnClose();
+	if (_PN) _PN->childPopupDestroyed(this);
 }

@@ -1,7 +1,7 @@
 /** \file direction_edit.h
  * a dialog to choose a direction (normalized vector).
  *
- * $Id: direction_edit.h,v 1.1 2001/06/25 13:17:59 vizerie Exp $
+ * $Id: direction_edit.h,v 1.2 2001/09/17 14:02:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NLMISC
 
 
 class CDirectionAttr ;
+struct IPopupNotify;
 
 /////////////////////////////////////////////////////////////////////////////
 // CDirectionEdit dialog
@@ -49,7 +50,7 @@ public:
 	
 	CDirectionEdit(IPSWrapper<NLMISC::CVector> *wrapper) ;   // standard constructor
 
-	void init(CDirectionAttr *pParent) ;
+	void init(IPopupNotify *p, CWnd *parent) ;
 
 // Dialog Data
 	//{{AFX_DATA(CDirectionEdit)
@@ -71,7 +72,7 @@ protected:
 	// the mouse state
 	enum State { Wait, Drag } _MouseState ;
 
-	CDirectionAttr *_Parent ;
+	IPopupNotify *_Parent ;
 
 	// select a new vect from a point (must be in the basis)
 	void selectNewVect(const CPoint &pos) ;

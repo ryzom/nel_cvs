@@ -1,7 +1,7 @@
 /** \file edit_spinner.h
  * a dialog to edit a spinner
  *
- * $Id: edit_spinner.h,v 1.1 2001/09/07 12:03:51 vizerie Exp $
+ * $Id: edit_spinner.h,v 1.2 2001/09/17 14:02:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #pragma once
 #endif 
 
+struct IPopupNotify;
 
 #include "ps_wrapper.h"
 #include "3d/ps_plane_basis_maker.h"
@@ -44,10 +45,13 @@ class CEditSpinner : public CDialog
 {
 // Construction
 public:
-	CEditSpinner(NL3D::CPSBasisSpinner *sf, CWnd *pParent);
+	CEditSpinner(NL3D::CPSBasisSpinner *sf, CWnd *pParent, IPopupNotify *pn);
 
 	// dtor
 	~CEditSpinner();
+
+	/// init this dialog
+	void init(CWnd *pParent);
 
 // Dialog Data
 	//{{AFX_DATA(CEditSpinner)
@@ -68,10 +72,12 @@ protected:
 	NL3D::CPSBasisSpinner     *_Spinner; // the spinner being edited
 	CDirectionAttr			  *_DirDlg;
 	CEditableRangeUInt		  *_NbSamplesDlg;
+	IPopupNotify			  *_PN;
 
 	// Generated message map functions
 	//{{AFX_MSG(CEditSpinner)
 	virtual BOOL OnInitDialog();
+	afx_msg void OnClose();
 	//}}AFX_MSG
 
 	// wrapper to set the number of samples in the spinner

@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.cpp
  * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.cpp,v 1.5 2001/07/04 12:11:48 vizerie Exp $
+ * $Id: value_gradient_dlg.cpp,v 1.6 2001/09/17 14:04:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "edit_attrib_dlg.h"
 #include "editable_range.h"
 
+#include "popup_notify.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -41,27 +43,36 @@ static char THIS_FILE[] = __FILE__;
 // CValueGradientDlg dialog
 
 
-CValueGradientDlg::CValueGradientDlg(IValueGradientDlgClient *clientInterface								
-									, CWnd* pParent,  bool canTuneNbStages /* = true*/, uint minSize /*= 2*/)
+CValueGradientDlg::CValueGradientDlg(IValueGradientDlgClient *clientInterface, bool destroyClientInterface,
+									 CWnd* pParent, IPopupNotify *pn,  bool canTuneNbStages /* = true*/, uint minSize /*= 2*/)
 	: CDialog(CValueGradientDlg::IDD, pParent)
 	 , _ClientInterface(clientInterface)	
+	 , _DestroyClientInterface(destroyClientInterface)
 	 , _EditValueDlg(NULL)
 	 , _CanTuneNbStages(canTuneNbStages)
 	 , _MinSize(minSize)
+	 , _PN(pn)
 {
 	//{{AFX_DATA_INIT(CValueGradientDlg)
-	//}}AFX_DATA_INIT
-
+	//}}AFX_DATA_INIT	
 	_NbStepDlg = new CEditableRangeUInt(std::string("GRADIENT NB STEP"), 1, 255) ;
 }
 
 
 CValueGradientDlg::~CValueGradientDlg()
 {	
+	if (_DestroyClientInterface) delete _ClientInterface;
 	delete _EditValueDlg ;
 	_NbStepDlg->DestroyWindow() ;
 	delete _NbStepDlg ;
 }
+
+void CValueGradientDlg::init(CWnd *pParent)
+{	
+	CDialog::Create(IDD_GRADIENT_DLG, pParent);	
+	ShowWindow(SW_SHOW);
+}
+
 
 
 void CValueGradientDlg::DoDataExchange(CDataExchange* pDX)
@@ -84,6 +95,7 @@ BEGIN_MESSAGE_MAP(CValueGradientDlg, CDialog)
 	ON_BN_CLICKED(IDC_VALUE_DOWN, OnValueDown)
 	ON_BN_CLICKED(IDC_VALUE_UP, OnValueUp)
 	ON_LBN_SELCHANGE(IDC_GRADIENT_LIST, OnSelchangeGradientList)
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -227,4 +239,10 @@ void CValueGradientDlg::invalidateGrad(void)
 	UpdateData(TRUE) ;
 		m_GradientList.Invalidate() ;
 	UpdateData(FALSE) ;
+}
+
+void CValueGradientDlg::OnClose() 
+{
+	CDialog::OnClose();
+	if (_PN) _PN->childPopupDestroyed(this);		
 }

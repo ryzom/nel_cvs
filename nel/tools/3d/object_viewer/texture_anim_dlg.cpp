@@ -118,7 +118,7 @@ void CTextureAnimDlg::OnChooseTextures()
 {
 	
 	_GradientInterface.P = _EditedParticle ;	
-	CValueGradientDlg vd(&_GradientInterface , this, false, 1) ;
+	CValueGradientDlg vd(&_GradientInterface , false, this, NULL, false, 1) ;
 	
 	_GradientInterface.Dlg = &vd ;
 	vd.DoModal() ;	

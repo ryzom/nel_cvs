@@ -14,6 +14,9 @@ namespace NL3D
 #include "ps_wrapper.h"
 #include "3d/ps_attrib_maker.h"
 
+
+struct IPopupNotify;
+
 /////////////////////////////////////////////////////////////////////////////
 // CValueFromEmitterDlg dialog
 
@@ -21,9 +24,10 @@ class CValueFromEmitterDlg : public CDialog
 {
 // Construction
 public:
-	CValueFromEmitterDlg(CWnd* pParent = NULL);   // standard constructor
+	CValueFromEmitterDlg(IPopupNotify *pn, CWnd* pParent = NULL);   // standard constructor
 
-	virtual void  init(void) = 0 ;
+	virtual void  init(CWnd *pParent) = 0 ;
+	void		  create(CWnd *parent);
 // Dialog Data
 	//{{AFX_DATA(CValueFromEmitterDlg)
 	enum { IDD = IDD_MEMORY_VALUE_DLG };
@@ -40,10 +44,11 @@ public:
 
 // Implementation
 protected:
-
+	IPopupNotify	*_PN;
 	// Generated message map functions
 	//{{AFX_MSG(CValueFromEmitterDlg)
 	virtual BOOL OnInitDialog();
+	afx_msg void OnClose();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -54,21 +59,21 @@ template <class T> class CValueFromEmitterDlgT : public CValueFromEmitterDlg
 {
 public:	
 	
-	CValueFromEmitterDlgT(NL3D::CPSAttribMakerMemory<T> *editedScheme, CAttribDlgT<T> *srcDlg, HBITMAP bitmapToDisplay)
-		: _BitmapToDisplay(bitmapToDisplay), _AttrbDlg(srcDlg)
+	CValueFromEmitterDlgT(NL3D::CPSAttribMakerMemory<T> *editedScheme, CAttribDlgT<T> *srcDlg, IPopupNotify *pn, HBITMAP bitmapToDisplay)
+		: CValueFromEmitterDlg(pn), _BitmapToDisplay(bitmapToDisplay), _AttrbDlg(srcDlg)
 	{
 		nlassert(srcDlg);
 		_SchemeWrapper.S = editedScheme ;
 	}
-
-	/// call this before performing DoModal and the like...
-	void init()
+	
+	// inherited from CValueFromEmitterDlg
+	void init(CWnd *pParent)
 	{
-	//	Create(IDD_MEMORY_VALUE_DLG, pParent) ;		
+		CValueFromEmitterDlg::create(pParent);				
 		_AttrbDlg->disableConstantValue() ;
 		_AttrbDlg->setWrapper(&_DummyWrapper) ;
 		_AttrbDlg->setSchemeWrapper(&_SchemeWrapper) ;
-		_AttrbDlg->init(_BitmapToDisplay, 10, 10, this) ;
+		_AttrbDlg->init(_BitmapToDisplay, 10, 10, this) ;		
 	}
 
 	~CValueFromEmitterDlgT()

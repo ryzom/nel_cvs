@@ -1,7 +1,7 @@
 /** \file value_blender_dlg.cpp
  * a dialog to choose 2 values that are linearly blended in a particle system
  *
- * $Id: value_blender_dlg.cpp,v 1.3 2001/06/25 12:54:08 vizerie Exp $
+ * $Id: value_blender_dlg.cpp,v 1.4 2001/09/17 14:04:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "object_viewer.h"
 #include "value_blender_dlg.h"
 #include "edit_attrib_dlg.h"
+#include "popup_notify.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -43,8 +44,9 @@ static char THIS_FILE[] = __FILE__;
 // CValueBlenderDlg dialog
 
 
-CValueBlenderDlg::CValueBlenderDlg(IValueBlenderDlgClient *creationInterface, CWnd* pParent)
-	: _CreateInterface(creationInterface) , CDialog(CValueBlenderDlg::IDD, pParent)
+CValueBlenderDlg::CValueBlenderDlg(IValueBlenderDlgClient *creationInterface, bool destroyInterface, CWnd* pParent, IPopupNotify *pn)
+	: _CreateInterface(creationInterface) , CDialog(CValueBlenderDlg::IDD, pParent), _PN(pn)
+	 , _DestroyInterface(destroyInterface)
 	  
 {
 	//{{AFX_DATA_INIT(CValueBlenderDlg)
@@ -53,9 +55,16 @@ CValueBlenderDlg::CValueBlenderDlg(IValueBlenderDlgClient *creationInterface, CW
 
 CValueBlenderDlg::~CValueBlenderDlg()
 {
+	if (_DestroyInterface) delete _CreateInterface;
 	delete _Dlg1 ;
-	delete _Dlg2 ;
-	
+	delete _Dlg2 ;	
+}
+
+
+void CValueBlenderDlg::init(CWnd *pParent)
+{	
+	CDialog::Create(IDD_VALUE_BLENDER, pParent);	
+	ShowWindow(SW_SHOW);
 }
 
 
@@ -71,6 +80,7 @@ void CValueBlenderDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CValueBlenderDlg, CDialog)
 	//{{AFX_MSG_MAP(CValueBlenderDlg)
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -101,4 +111,14 @@ BOOL CValueBlenderDlg::OnInitDialog()
 	UpdateData(FALSE) ;
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+
+
+
+
+void CValueBlenderDlg::OnClose() 
+{	
+	if (_PN) _PN->childPopupDestroyed(this);
+	//CDialog::OnClose();
 }

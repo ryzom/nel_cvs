@@ -2,7 +2,7 @@
  * a dialog to choose a direction (normalized vector). It gives several choices, or allow 
  * to call a more complete dialog (CDirectionEdit)
  *
- * $Id: direction_attr.h,v 1.1 2001/06/25 13:17:59 vizerie Exp $
+ * $Id: direction_attr.h,v 1.2 2001/09/17 14:01:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,11 +33,11 @@
 #endif
 
 #include "edit_attrib_dlg.h"
-
 #include "ps_wrapper.h"
+#include "popup_notify.h"
 
 /// This dialog helps to choose from several preset directions, or to choose a custom one
-class CDirectionAttr : public CEditAttribDlg
+class CDirectionAttr : public CEditAttribDlg, public IPopupNotify
 {
 // Construction
 public:	
@@ -45,9 +45,9 @@ public:
 	CDirectionAttr(const std::string &id);   // standard constructor
 
 	// inherited from CEditAttribDlg
-	virtual void init(uint32 x, uint32 y, CWnd *pParent) ;
+	virtual void init(uint32 x, uint32 y, CWnd *pParent);
 
-	void setWrapper(IPSWrapper<NLMISC::CVector> *wrapper) { _Wrapper = wrapper ; }
+	void setWrapper(IPSWrapper<NLMISC::CVector> *wrapper) { _Wrapper = wrapper; }
 
 
 	BOOL EnableWindow( BOOL bEnable = TRUE );
@@ -72,16 +72,16 @@ public:
 // Implementation
 protected:
 
-	friend class CDirectionEdit ; 
+	friend class CDirectionEdit; 
 
 	// a dialog that we may create for custom direction edition
-	class CDirectionEdit *_DirectionDlg ;
+	class CDirectionEdit *_DirectionDlg;
 
-	// called when _DirectionDlg has been closed
-	void directionDialogDestroyed(void) ;
+	// inherited from IPopupNotify
+	void childPopupDestroyed(CWnd *);
 	
 
-	IPSWrapper<NLMISC::CVector> *_Wrapper ;
+	IPSWrapper<NLMISC::CVector> *_Wrapper;
 
 	// Generated message map functions
 	//{{AFX_MSG(CDirectionAttr)

@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.11 2001/09/12 13:29:49 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.12 2001/09/17 14:02:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,9 +186,8 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	_SkipFramesDlg->setWrapper(&_SkipFrameRateWrapper);
 	_SkipFramesDlg->init(99, 339, this);
 
-	UpdateData(FALSE);
-
 	m_DisgradeWithLOD = _Located->hasLODDegradation();
+	UpdateData(FALSE);
 
 
 

@@ -8,6 +8,7 @@
 #include "ps_wrapper.h"
 #include "value_gradient_dlg.h"
 
+
 namespace NL3D
 {
 	class CPSTexturedParticle ;

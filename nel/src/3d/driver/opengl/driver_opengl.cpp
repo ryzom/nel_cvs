@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.79 2001/03/06 18:24:22 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.80 2001/04/03 07:54:51 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -273,6 +273,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	}
 	_EventEmitter.setHWnd((uint32)_hWnd);
 	_hDC=GetDC(_hWnd);
+    wglMakeCurrent(_hDC,NULL);
 	Depth=GetDeviceCaps(_hDC,BITSPIXEL);
 	// ---
 	memset(&_pfd,0,sizeof(_pfd));

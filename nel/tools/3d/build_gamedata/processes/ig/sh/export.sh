@@ -44,7 +44,15 @@ for i in $ig_land_source_directories ; do
 
 	# Start max
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
+
+	# Concat log.log files
+	cat $max_directory/log.log >> log.log
+
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
+
+	# Concat log.log files
+	cat $max_directory/log.log >> log.log
+
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files
@@ -63,7 +71,15 @@ for i in $ig_other_source_directories ; do
 
 	# Start max
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
+
+	# Concat log.log files
+	cat $max_directory/log.log >> log.log
+
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
+
+	# Concat log.log files
+	cat $max_directory/log.log >> log.log
+
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files

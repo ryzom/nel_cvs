@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.24 2001/01/16 11:23:03 cado Exp $
+ * $Id: local_entity.cpp,v 1.25 2001/01/19 14:17:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -244,7 +244,7 @@ void CLocalEntity::keepAlive( TTime actualtime )
 
 
 /* Corrects the entity position (and updates trajectory vector) using external information
- * such as collision detection. The dead reckoning diverge test and state propagation are then done.
+ * such as collision detection.
  * Usage :
  * -# Update the entity
  * -# Submit the new pos to the landscape (for example)

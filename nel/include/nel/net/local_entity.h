@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.13 2001/01/09 16:54:02 cado Exp $
+ * $Id: local_entity.h,v 1.14 2001/01/19 14:17:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,7 +62,7 @@ public:
 	void			update( TDuration deltatime );
 
 	/** Corrects the entity position (and updates trajectory vector) using external information
-	 * such as collision detection. The dead reckoning diverge test and state propagation are then done.
+	 * such as collision detection.
 	 * Usage :
 	 * -# Update the entity
 	 * -# Submit the new pos to the landscape (for example)

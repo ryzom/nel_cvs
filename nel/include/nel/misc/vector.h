@@ -1,7 +1,7 @@
 /** \file vector.h
  * CVector class
  *
- * $Id: vector.h,v 1.8 2000/12/20 10:19:46 saffray Exp $
+ * $Id: vector.h,v 1.9 2001/01/19 14:17:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include <math.h>
 #include "nel/misc/stream.h"
+#include <string>
 
 namespace	NLMISC
 {
@@ -130,6 +131,9 @@ public:		// Methods.
 	/// serial.
 	void	serial(IStream &f);
 	//@}
+
+	/// Returns the contents as a printable string "x y z"
+	std::string	asString() const;
 
 	// friends.
 	friend	CVector	operator*(float f, const CVector &v0);

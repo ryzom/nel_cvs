@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.12 2001/01/16 11:23:03 cado Exp $
+ * $Id: moving_entity.cpp,v 1.13 2001/01/19 14:17:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,7 +164,6 @@ void IMovingEntity::computePosAfterDuration( TDuration d )
 		setBodyHeading( m * bodyHeading() );
 	}
 }
-
 
 
 

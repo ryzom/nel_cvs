@@ -1,7 +1,7 @@
 /** \file vector.cpp
  * CVector class
  *
- * $Id: vector.cpp,v 1.3 2000/11/21 17:19:54 valignat Exp $
+ * $Id: vector.cpp,v 1.4 2001/01/19 14:17:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,9 @@
  */
 
 #include	"nel/misc/vector.h"
+#include	<sstream>
+
+using namespace std;
 
 
 namespace	NLMISC
@@ -33,6 +36,18 @@ const CVector	CVector::Null(0,0,0);
 const CVector	CVector::I(1,0,0);
 const CVector	CVector::J(0,1,0);
 const CVector	CVector::K(0,0,1);
+
+
+/*
+ * Returns the contents as a printable string "x y z"
+ */
+string CVector::asString() const
+{
+	stringstream ss;
+	ss << x << " " << y << " " << z;
+	return ss.str();
+}
+
 
 }
 

@@ -1,7 +1,7 @@
 /** \file remote_entity.cpp
  * Remote-controlled entities
  *
- * $Id: remote_entity.cpp,v 1.14 2001/01/16 11:23:03 cado Exp $
+ * $Id: remote_entity.cpp,v 1.15 2001/01/19 14:17:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,10 +84,15 @@ void CRemoteEntity::update( TDuration deltatime )
 void CRemoteEntity::convergeTo( const IMovingEntity& dest_es )
 {
 	setFull3d( dest_es.full3d() );
+	if ( full3d() )
+		nlinfo( "FULL3D" );
+	else
+		nlinfo( "2D" );
 	CReplica extrapolated_dest( *this );
 	//extrapolated_dest.setGroundMode( true ); // return to ground mode even when receiving a full entity state
 	extrapolated_dest.changeStateTo( dest_es );
 	extrapolated_dest.update( CRemoteEntity::ConvergeDuration );
+
 	_Interpolator.begin( *this, extrapolated_dest, CRemoteEntity::ConvergeDuration );
 	//changeStateTo( dest_es );
 }

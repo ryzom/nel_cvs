@@ -1,7 +1,7 @@
 /** \file cubic_entity_interpolator.cpp
  * Cubic interpolation of entity
  *
- * $Id: cubic_entity_interpolator.cpp,v 1.9 2001/01/18 16:50:12 cado Exp $
+ * $Id: cubic_entity_interpolator.cpp,v 1.10 2001/01/19 14:17:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 
 using namespace NLMISC;
+
 
 /* // tests
 CVector P1(0,0,0);
@@ -81,10 +82,6 @@ CCubicEntityInterpolator::CCubicEntityInterpolator() :
  */
 void CCubicEntityInterpolator::begin( const IMovingEntity& src, const IMovingEntity& dest, TDuration duration )
 {
-	if ( src.full3d() )
-	{
-		InfoLog.displayRawNL( "Convergence from %f  %f  %f to %f  %f  %f", src.pos().x, src.pos().y, src.pos().z, src.pos().x, src.pos().y, src.pos().z );
-	}
 	_Dest = dest;
 	_Duration = duration;
 	_Elapsed = 0;
@@ -148,7 +145,6 @@ void CCubicEntityInterpolator::getNextState( IMovingEntity& es, TDuration deltat
 	}
 	else
 	{
-		//InfoLog.displayRawNL( "End at %f\n", es.pos().z );
 		es = _Dest; // setting the right pos
 		_Active = false;
 	}

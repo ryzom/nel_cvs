@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: simple_sound.h,v 1.3 2003/03/03 12:58:08 boucher Exp $
+ * $Id: simple_sound.h,v 1.4 2004/08/30 12:32:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,12 @@ public:
 	void				getSubSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const;
 
 	void				serial(NLMISC::IStream &s);
+
+
+	void setAlpha(float alpha)
+	{
+		_Alpha = alpha;
+	}
 
 private:
 	TSOUND_TYPE getSoundType() {return SOUND_SIMPLE;};

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.70 2004/07/12 14:11:10 miller Exp $
+ * $Id: audio_mixer_user.cpp,v 1.71 2004/08/30 12:32:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -353,13 +353,12 @@ void CAudioMixerUser::setSamplePath(const std::string& path)
 
 // ******************************************************************
 
-void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgressCallback *progressCallBack, bool autoLoadSample)
+void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgressCallback *progressCallBack, bool autoLoadSample, TDriver driverType)
 {
 	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 	nldebug( "AM: Init..." );
 
 	_profile(( "AM: ---------------------------------------------------------------" ));
-	_profile(( "AM: DRIVER: %s", NLSOUND_DLL_NAME ));
 
 	_UseEax = useEax;
 	_UseADPCM = useADPCM;
@@ -368,7 +367,21 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 	// Init sound driver
 	try
 	{
-		_SoundDriver = ISoundDriver::createDriver(useEax, this);
+		// create the wanted driver
+		nlctassert(NumDrivers == ISoundDriver::NumDrivers);
+		_SoundDriver = ISoundDriver::createDriver(useEax, this, (ISoundDriver::TDriver)driverType);
+		if(_SoundDriver)
+		{
+			_profile(( "AM: DRIVER: %s", _SoundDriver->getDllName().c_str() ));
+		}
+	}
+	catch(ESoundDriver &e)
+	{
+		nlwarning(e.what());
+		// TODO : is this logic to auto destruct this object in case of failing to create the driver ?
+		delete this;
+		_Instance = NULL;
+		throw;
 	}
 	catch(...)
 	{

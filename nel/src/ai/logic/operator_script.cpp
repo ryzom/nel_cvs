@@ -2,7 +2,6 @@
 #include "nel/ai/agent/agent_script.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/script/codage.h"
-#include "nel/ai/agent/gd_agent_script.h"
 #include "nel/ai/logic/interpret_object_operator.h"
 #include "nel/ai/agent/comp_handle.h"
 #include "nel/ai/fuzzy/fuzzyset.h"
@@ -205,7 +204,6 @@ namespace NLAIAGENT
 		else
 			onActivate();								// Otherwise runs the C++ virtual one (inherited from CActorScript)
 	}
-
 
 	void COperatorScript::checkPause()
 	{

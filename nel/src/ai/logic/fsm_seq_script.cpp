@@ -3,7 +3,6 @@
 #include "nel/ai/agent/agent_script.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/script/codage.h"
-#include "nel/ai/agent/gd_agent_script.h"
 #include "nel/ai/script/interpret_fsm.h"
 #include "nel/ai/agent/agent_method_def.h"
 #include "nel/ai/agent/comp_handle.h"

@@ -4,7 +4,6 @@
 #include "nel/ai/agent/agent_script.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/script/codage.h"
-#include "nel/ai/agent/gd_agent_script.h"
 //#include "nel/ai/logic/interpret_object_operator.h"
 #include "nel/ai/script/interpret_message_action.h"
 

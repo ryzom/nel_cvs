@@ -1,7 +1,7 @@
 /** \file transition.cpp
  * A transition template implementation
  *
- * $Id: transition.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
+ * $Id: transition.cpp,v 1.3 2002/04/12 12:03:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -110,7 +110,8 @@ bool CTransition::build (const CMaterial &mat0, const CMaterial &mat1, const std
 				// This template exist ?
 				if (arrayTemplate[i])
 				{
-					for (uint j=0; j<4; j++)
+					uint j;
+					for (j=0; j<4; j++)
 					{
 						// Get edge
 						sint32 edge = TransitionZoneEdges[i][j];

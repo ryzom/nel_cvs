@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.31 2002/11/12 17:04:09 cado Exp $
+ * $Id: unified_network.h,v 1.32 2003/01/03 16:51:48 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -133,7 +133,7 @@ public:
 	 * \param msg the message you want to send.
 	 * \param nid Network Id specify to which network the message must pass throw (0xFF mean the default network)
 	 */
-	void	send (const CMessage &msg, uint8 nid=0xFF);
+	void	sendAll (const CMessage &msg, uint8 nid=0xFF);
 
 
 	/** Sets callback for incoming connections.

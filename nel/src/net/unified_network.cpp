@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.55 2002/11/12 17:03:51 cado Exp $
+ * $Id: unified_network.cpp,v 1.56 2003/01/03 16:51:38 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1086,7 +1086,7 @@ bool	CUnifiedNetwork::send(uint16 sid, const CMessage &msgout, uint8 nid)
 	return true;
 }
 
-void	CUnifiedNetwork::send(const CMessage &msgout, uint8 nid)
+void	CUnifiedNetwork::sendAll(const CMessage &msgout, uint8 nid)
 {
 	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::send(const CMessage&) whereas it is not initialised yet"));
 

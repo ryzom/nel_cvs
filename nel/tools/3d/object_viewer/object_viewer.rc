@@ -761,27 +761,26 @@ BEGIN
     PUSHBUTTON      "Update",IDC_UPDATE_BBOX,156,266,43,16
     PUSHBUTTON      "+ 10 %",IDC_INC_BBOX,201,266,31,16
     PUSHBUTTON      "- 10 %",IDC_DEC_BBOX,235,266,31,16
-    GROUPBOX        "System life",IDC_STATIC,4,298,295,78
+    GROUPBOX        "",IDC_STATIC,4,298,295,78
     CONTROL         "Model removed when out of range",
                     IDC_DIE_WHEN_OUT_OF_RANGE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,311,124,11
-    LTEXT           "Die on event :",IDC_STATIC,7,360,46,9
-    COMBOBOX        IDC_PS_DIE_ON_EVENT,55,358,106,45,CBS_DROPDOWNLIST | 
+                    WS_TABSTOP,9,327,124,11
+    LTEXT           "Die on event :",IDC_STATIC,13,359,46,9
+    COMBOBOX        IDC_PS_DIE_ON_EVENT,61,357,106,45,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Apply after delay :",IDC_STATIC,169,359,58,11
-    EDITTEXT        IDC_APPLY_AFTRE_DELAY,231,357,29,13,ES_AUTOHSCROLL
-    LTEXT           "s",IDC_STATIC,265,359,8,9
-    CONTROL         "PS resource removed when out of frustum ",
+    LTEXT           "Apply after delay :",IDC_STATIC,173,359,58,11
+    EDITTEXT        IDC_APPLY_AFTRE_DELAY,235,357,29,13,ES_AUTOHSCROLL
+    LTEXT           "s",IDC_STATIC,269,359,8,9
+    CONTROL         "PS resource removed when not visible",
                     IDC_DIE_WHEN_OUT_OF_FRUSTRUM,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,138,311,150,10
-    CONTROL         "perform motion when out of frustum",
-                    IDC_PERFORM_MOTION_WHEN_OUT_OF_FRUSTUM,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,324,122,8
-    LTEXT           "(But not the object (model) that hold it, unless",
-                    IDC_STATIC,148,322,125,10
-    LTEXT           ", unless ""Model removed when o.o.r "" is checked)",
-                    IDC_STATIC,150,331,136,17
-    GROUPBOX        "",IDC_STATIC,135,304,157,47
+                    WS_TABSTOP,150,328,137,10
+    LTEXT           "Anim type :",IDC_ANIM_TYPE,11,343,35,10
+    COMBOBOX        IDC_ANIM_TYPE_CTRL,48,341,119,46,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "",IDC_STATIC,7,322,283,51
+    LTEXT           "Life mgt presets :",IDC_STATIC,7,313,57,10
+    COMBOBOX        IDC_LIFE_MGT_PRESETS,67,310,92,77,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_BIN_OP DIALOG DISCARDABLE  0, 0, 390, 174
@@ -1323,6 +1322,23 @@ BEGIN
     PUSHBUTTON      "Down",IDC_DOWN,90,75,42,13
 END
 
+IDD_RIBBON_DLG DIALOG DISCARDABLE  0, 0, 285, 71
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Use hermitte interpolation",
+                    IDC_USE_HERMITTE_INTERPOLATION,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,6,5,93,10
+    CONTROL         "Force constant length (non parametric anim only)",
+                    IDC_CONSTANT_LENGTH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,103,6,169,8
+    GROUPBOX        "",IDC_RIBBON_LENGTH,51,14,226,24,NOT WS_VISIBLE
+    GROUPBOX        "",IDC_STATIC,1,0,280,68
+    LTEXT           "Length (m) :",IDC_STATIC,4,24,37,9
+    GROUPBOX        "",IDC_LOD_DEGRADATION,51,37,226,24,NOT WS_VISIBLE
+    LTEXT           "LOD Degradation :",IDC_STATIC,4,45,47,21
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1803,6 +1819,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 171
     END
+
+    IDD_RIBBON_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 278
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 64
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2199,6 +2223,27 @@ BEGIN
     IDC_PS_DIE_ON_EVENT, 0x403, 31, 0
 0x6f4e, 0x6d20, 0x726f, 0x2065, 0x6170, 0x7472, 0x6369, 0x656c, 0x2073, 
 0x6e61, 0x2064, 0x6d65, 0x7469, 0x6574, 0x7372, "\000" 
+    IDC_ANIM_TYPE_CTRL, 0x403, 13, 0
+0x6857, 0x6e65, 0x7620, 0x7369, 0x6269, 0x656c, "\000" 
+    IDC_ANIM_TYPE_CTRL, 0x403, 25, 0
+0x6857, 0x6e65, 0x6920, 0x206e, 0x6976, 0x6973, 0x6c62, 0x2065, 0x6c63, 
+0x7375, 0x6574, 0x7372, "\000" 
+    IDC_ANIM_TYPE_CTRL, 0x403, 7, 0
+0x6c41, 0x6177, 0x7379, "\000" 
+    IDC_LIFE_MGT_PRESETS, 0x403, 15, 0
+0x6e45, 0x6976, 0x6f72, 0x6d6e, 0x6e65, 0x2074, 0x5846, "\000" 
+    IDC_LIFE_MGT_PRESETS, 0x403, 23, 0
+0x7552, 0x6e6e, 0x6e69, 0x2067, 0x6e45, 0x6976, 0x6f72, 0x6d6e, 0x6e65, 
+0x2074, 0x5846, "\000" 
+    IDC_LIFE_MGT_PRESETS, 0x403, 9, 0
+0x7053, 0x6c65, 0x206c, 0x5846, "\000" 
+    IDC_LIFE_MGT_PRESETS, 0x403, 17, 0
+0x6f4c, 0x706f, 0x6e69, 0x2067, 0x7053, 0x6c65, 0x206c, 0x5846, "\000" 
+    IDC_LIFE_MGT_PRESETS, 0x403, 20, 0
+0x694d, 0x6f6e, 0x2072, 0x7274, 0x6e61, 0x6973, 0x6f74, 0x7972, 0x4620, 
+0x0058, 
+    IDC_LIFE_MGT_PRESETS, 0x403, 13, 0
+0x7355, 0x7265, 0x6420, 0x6665, 0x6e69, 0x6465, "\000" 
     0
 END
 

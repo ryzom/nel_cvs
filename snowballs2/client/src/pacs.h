@@ -1,7 +1,7 @@
 /** \file pacs.h
  * 
  *
- * $Id: pacs.h,v 1.3 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: pacs.h,v 1.4 2001/07/18 15:24:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,6 @@ extern NLPACS::UMoveContainer			*MoveContainer;
 extern NL3D::UVisualCollisionManager	*VisualCollisionManager;
 
 void	initPACS();
-
 void	releasePACS();
 
 #endif // PACS_H

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape management with user interface
  *
- * $Id: landscape.cpp,v 1.7 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: landscape.cpp,v 1.8 2001/07/18 15:24:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,6 +81,7 @@ void	initLandscape()
 
 void	updateLandscape()
 {
+	// load the zones around the viewpoint
 	Landscape->refreshZonesAround (MouseListener->getViewMatrix().getPos(), 1000.0f);
 }
 
@@ -90,6 +91,7 @@ void	releaseLandscape()
 
 void	initAiming()
 {
+	// Create an aiming entity
 	AimingEntity = VisualCollisionManager->createEntity();
 	AimingEntity->setCeilMode(true);
 }
@@ -106,6 +108,7 @@ CVector	getTarget(const CVector &start, const CVector &step, uint numSteps)
 	uint	i;
 	for (i=0; i<numSteps; ++i)
 	{
+		// For each step, check if the snapped position is backward the normal
 		CVector	snapped = testPos;
 		CVector	normal;
 		// here use normal to check if we have collision

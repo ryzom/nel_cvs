@@ -1,7 +1,7 @@
 /** \file landscape.h
  * 
  *
- * $Id: landscape.h,v 1.4 2001/07/17 13:49:45 legros Exp $
+ * $Id: landscape.h,v 1.5 2001/07/18 15:24:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,15 +28,18 @@
 
 #include <nel/3d/u_landscape.h>
 
-void	initLandscape();
-void	updateLandscape();
-void	releaseLandscape();
+void			initLandscape();
+void			updateLandscape();
+void			releaseLandscape();
 
-void	initAiming();
-void	releaseAiming();
+void			initAiming();
+void			releaseAiming();
+
+// Compute the collision with the landscape from the start position, using the given step,
+// at maximum numSteps steps from the start.
 NLMISC::CVector	getTarget(const NLMISC::CVector &start, const NLMISC::CVector &step, uint numSteps);
 
-extern NL3D::ULandscape	*Landscape;
+extern NL3D::ULandscape		*Landscape;
 
 #endif // LANDSCAPE_H
 

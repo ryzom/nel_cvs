@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.20 2001/07/18 12:16:21 legros Exp $
+ * $Id: entities.cpp,v 1.21 2001/07/18 15:24:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,8 +68,7 @@ using namespace NLMISC;
 using namespace NL3D;
 using namespace NLPACS;
 
-map<uint32, CEntity> Entities;
-
+// The collision bits used by pacs (dynamic collisions)
 enum
 {
 	SelfCollisionBit = 1,
@@ -77,23 +76,34 @@ enum
 	SnowballCollisionBit = 4
 };
 
-float			WorldWidth = 20*160;
-float			WorldHeight = 6*160;
+// A map of entities. All entities are later reffered by their unique id
+map<uint32, CEntity>	Entities;
 
-uint32			NextEID = 0;
-float			PlayerSpeed = 1.8f;		// 6.5 km/h
-float			SnowballSpeed = 10.0f;	// 36 km/h
+CEntity					*Self = NULL;
+
+UInstance				*AimingInstance = NULL;
+TTime					LastAimingUpdate = 0;
+TTime					RefreshRate = 100;
+
+// The size of the world, in meter
+float					WorldWidth = 20*160;
+float					WorldHeight = 6*160;
+
+// Entity Id, only used offline
+uint32					NextEID = 0;
+
+// The speed settings
+float					PlayerSpeed = 1.8f;		// 6.5 km/h
+float					SnowballSpeed = 10.0f;	// 36 km/h
 
 // these variables are set with the config file
 
-float		EntityNameSize;
-CRGBA		EntityNameColor;
+// Setup for the name up the character
+float					EntityNameSize;
+CRGBA					EntityNameColor;
 
-CEntity		*Self = NULL;
-UInstance	*AimingInstance = NULL;
-TTime		LastAimingUpdate = 0;
-TTime		RefreshRate = 100;
 
+// Set the state of the entity (Appear, Normal, Disappear)
 void CEntity::setState (TState state)
 {
 	State = state;
@@ -101,7 +111,7 @@ void CEntity::setState (TState state)
 }
 
 
-
+// Get an map iterator on a entity, specified by its id
 EIT findEntity (uint32 eid, bool needAssert = true)
 {
 	EIT entity = Entities.find (eid);
@@ -113,19 +123,23 @@ EIT findEntity (uint32 eid, bool needAssert = true)
 }
 
 
+// Creates an entity, given its id, its type (Self, Other, Snowball), its start and server positions.
 void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, const CVector &serverPosition)
 {
 	nlinfo ("adding entity %u", eid);
 
+	// Check that the entity doesn't exist yet
 	EIT eit = findEntity (eid, false);
 	if (eit != Entities.end ())
 	{
 		nlerror ("Entity %d already exist", eid);
 	}
 
+	// Create a new entity
 	eit = (Entities.insert (make_pair (eid, CEntity()))).first;
 	CEntity	&entity = (*eit).second;
 
+	// Check that in the case the entity newly created is a Self, ther isn't a Self yet.
 	if (type == CEntity::Self)
 	{
 		if (Self != NULL)
@@ -134,9 +148,10 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		Self = &entity;
 	}
 
+	// Set the entity up
 	entity.Id = eid;
 	entity.Type = type;
-	entity.Name = "Entity"+toString(rand());
+	entity.Name = "Entity"+toString(eid);
 	entity.Position = startPosition;
 	entity.Angle = 0.0f;
 	entity.ServerPosition = serverPosition;
@@ -146,35 +161,46 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 	switch (type)
 	{
 	case CEntity::Self:
+		// create a move primitive associated to the entity
 		entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
+		// it's a cylinder
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
+		// the entity should slide against obstacles
 		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
+		// do not generate event if there is a collision
 		entity.MovePrimitive->setTriggerType(UMovePrimitive::NotATrigger);
+		// which entity should collide against me
 		entity.MovePrimitive->setCollisionMask(OtherCollisionBit+SnowballCollisionBit);
+		// the self collision bit
 		entity.MovePrimitive->setOcclusionMask(SelfCollisionBit);
+		// the self is an obstacle
 		entity.MovePrimitive->setObstacle(true);
+		// the size of the cylinder
 		entity.MovePrimitive->setRadius(0.5f);
 		entity.MovePrimitive->setHeight(1.8f);
+		// only use one world image, so use insert in world image 0
 		entity.MovePrimitive->insertInWorldImage(0);
+		// retreive the start position of the entity
 		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
 
+		// create instance of the mesh character
 		entity.Instance = Scene->createInstance("barman.shape");
 		entity.Skeleton = Scene->createSkeleton ("fy_hom.skel");
+		// use the instance on the skeleton
 		entity.Skeleton->bindSkin (entity.Instance);
 		entity.Instance->hide ();
+
+		// setup final parameters
 		entity.Speed = PlayerSpeed;
-
 		entity.Particule = Scene->createInstance("appear.ps");
-
 		entity.setState (CEntity::Appear);
-
 		playAnimation (entity, IdleAnimId);
 
 		break;
 	case CEntity::Other:
 		entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
-		entity.MovePrimitive->setReactionType(UMovePrimitive::DoNothing);
+		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
 		entity.MovePrimitive->setTriggerType(UMovePrimitive::NotATrigger);
 		entity.MovePrimitive->setCollisionMask(OtherCollisionBit+SelfCollisionBit+SnowballCollisionBit);
 		entity.MovePrimitive->setOcclusionMask(OtherCollisionBit);
@@ -188,36 +214,19 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.Skeleton = Scene->createSkeleton ("fy_hom.skel");
 		entity.Skeleton->bindSkin (entity.Instance);
 		entity.Instance->hide ();
+
 		entity.Speed = PlayerSpeed;
-
 		entity.Particule = Scene->createInstance("appear.ps");
-
 		entity.setState (CEntity::Appear);
-
 		playAnimation (entity, IdleAnimId);
 
 		break;
 	case CEntity::Snowball:
-		// snowballs don't use pacs right now
-/*
-		entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
-		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
-		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
-		entity.MovePrimitive->setTriggerType(UMovePrimitive::EnterTrigger);
-		entity.MovePrimitive->setCollisionMask(SelfCollisionBit+OtherCollisionBit);
-		entity.MovePrimitive->setOcclusionMask(SnowballCollisionBit);
-		entity.MovePrimitive->setObstacle(false);
-		entity.MovePrimitive->setRadius(0.2f);
-		entity.MovePrimitive->setHeight(0.4f);
-		entity.MovePrimitive->insertInWorldImage(0);
-		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
-*/
 		entity.MovePrimitive = NULL;
 
 		// allows collision snapping to the ceiling
 		entity.VisualCollisionEntity->setCeilMode(true);
 
-//		entity.Instance = Scene->createInstance("box.shape");
 		entity.Instance = Scene->createInstance("snowball.ps");
 		entity.Skeleton = NULL;
 		entity.Speed = SnowballSpeed;
@@ -241,13 +250,17 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 
 }
 
+// Remove an entity specified by its id
+// The entity passes into the Disappear state
 void removeEntity (uint32 eid)
 {
 	nlinfo ("removing entity %u", eid);
 
+	// look for the entity
 	EIT eit = findEntity (eid);
 	CEntity	&entity = (*eit).second;
 
+	// if there is a particule system linked, delete it
 	if (entity.Particule != NULL)
 	{
 		Scene->deleteInstance (entity.Particule);
@@ -264,14 +277,18 @@ void removeEntity (uint32 eid)
 	entity.setState (CEntity::Disappear);
 }
 
+// What to do when the entity appears
 void stateAppear (CEntity &entity)
 {
+	// after 1 second, show the instance
 	if (CTime::getLocalTime () > entity.StateStartTime + 1000)
 	{
 		if (entity.Instance->getVisibility () != UTransform::Show)
 			entity.Instance->show ();
 	}
 
+	// after 5 seconds, delete the particle system (if any)
+	// and passe the entity into the Normal state
 	if (CTime::getLocalTime () > entity.StateStartTime + 5000)
 	{
 		if (entity.Particule != NULL)
@@ -287,6 +304,7 @@ void stateAppear (CEntity &entity)
 		entity.MovePrimitive->move(CVector(0,0,0), 0);
 }
 
+// What to do when the entity disappears
 void stateDisappear (CEntity &entity)
 {
 	// after 1 second, remove the mesh and all collision stuff
@@ -394,6 +412,7 @@ void stateNormal (CEntity &entity)
 		entity.Angle = MouseListener->getOrientation();
 
 		// modify the orientation depending on the straff
+		// The straff is determined by the keys that are down simultaneously
 		if (Driver->AsyncListener.isKeyDown (KeyUP))
 		{
 			if (Driver->AsyncListener.isKeyDown (KeyLEFT))
@@ -441,6 +460,8 @@ void stateNormal (CEntity &entity)
 			playAnimation (*Self, IdleAnimId);
 		}
 
+		// Interpolate the character orientation towards the server angle
+		// for smoother movements
 		float	sweepDistance = entity.AuxiliaryAngle-entity.InterpolatedAuxiliaryAngle;
 		if (sweepDistance > (float)Pi)
 		{
@@ -458,22 +479,31 @@ void stateNormal (CEntity &entity)
 			entity.InterpolatedAuxiliaryAngle = entity.AuxiliaryAngle;
 		entity.Angle += entity.InterpolatedAuxiliaryAngle;
 
+		// tell the move container how much the entity should move
 		entity.MovePrimitive->move((newPos-oldPos)/(float)dt, 0);
 
+		// If the player is aiming (left mouse button down), show the target
 		if (MouseListener->getAimingState() && Self != NULL && AimingInstance != NULL)
 		{
+			// We only refresh the target at predefined rate to avoid to much cpu consuming
+			// If it's time to update the target
 			if (CTime::getLocalTime() - LastAimingUpdate > RefreshRate)
 			{
 				LastAimingUpdate = CTime::getLocalTime();
+				// get the start of the snowball
 				CVector start = MouseListener->getPosition()+CVector(0.0f, 0.0f, 1.3f);
+				// get the direction of aiming
 				CVector direction = MouseListener->getViewDirection().normed();
+				// and compute the target
 				CVector	target = getTarget(start, direction, 100);
+				// Eventually, setup the aiming mesh
 				AimingInstance->lookAt(target, Camera->getMatrix().getPos());
 				AimingInstance->show();
 			}
 		}
 		else
 		{
+			// If the player is not aiming, just hide the target
 			LastAimingUpdate = 0;
 			AimingInstance->hide();
 		}
@@ -481,11 +511,10 @@ void stateNormal (CEntity &entity)
 	else if (entity.Type == CEntity::Other && pDelta.norm()>0.1f)
 	{
 		// go to the server position with linear interpolation
-		/// \todo compute the linear interpolation
 
+		// Interpolate orientation for smoother motions
 		// AuxiliaryAngle -> the server imposed angle
 		// InterpolatedAuxiliaryAngle -> the angle showed by the entity
-
 		float	sweepDistance = entity.AuxiliaryAngle-entity.InterpolatedAuxiliaryAngle;
 		if (sweepDistance > (float)Pi)
 		{
@@ -512,7 +541,6 @@ void stateNormal (CEntity &entity)
 	else if (entity.Type == CEntity::Snowball && pDeltaOri.norm()>0.1f)
 	{
 		// go to the server position with linear interpolation
-		/// \todo compute the linear interpolation
 
 		pDelta.normalize();
 		pDeltaOri.normalize();
@@ -527,7 +555,6 @@ void stateNormal (CEntity &entity)
 	else
 	{
 		// automatic speed
-		/// \todo compute new entity position
 		newPos = oldPos;
 	}
 }
@@ -539,7 +566,7 @@ void updateEntities ()
 	EIT		eit, nexteit;
 
 	// move entities
-	for (eit = Entities.begin (); eit != Entities.end ();)
+	for (eit = Entities.begin (); eit != Entities.end (); )
 	{
 		nexteit = eit; nexteit++;
 
@@ -628,7 +655,9 @@ void updateEntities ()
 		}
 
 		if (entity.Source != NULL)
+		{
 			entity.Source->setPosition (entity.Position);
+		}
 
 		if (entity.Particule != NULL)
 		{
@@ -642,12 +671,16 @@ void updateEntities ()
 	}
 }
 
+// Draw entities names up the characters
 void renderEntitiesNames ()
 {
+	// Setup the driver in matrix mode
 	Driver->setMatrixMode3D (*Camera);
+	// Setup the drawing context
 	TextContext->setHotSpot (UTextContext::MiddleTop);
 	TextContext->setColor (EntityNameColor);
 	TextContext->setFontSize ((uint32)EntityNameSize);
+	//
 	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
 	{
 		CEntity	&entity = (*eit).second;
@@ -661,6 +694,8 @@ void renderEntitiesNames ()
 	}
 }
 
+
+// The entities preferences callback
 void cbUpdateEntities (CConfigFile::CVar &var)
 {
 	if (var.Name == "EntityNameColor") EntityNameColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
@@ -687,7 +722,7 @@ void releaseEntities()
 }
 
 
-//
+// Reset the pacs position of an entity, in case pacs went wrong
 void	resetEntityPosition(uint32 eid)
 {
 	uint32 sbid = NextEID++;
@@ -712,48 +747,31 @@ void	resetEntityPosition(uint32 eid)
 		entity.MovePrimitive->setGlobalPosition(CVector(entity.Position.x, entity.Position.y, entity.Position.z), 0);
 }
 
+
 void	shotSnowball(uint32 eid, const CVector &target)
 {
 	uint32 sbid = NextEID++;
 	EIT eit = findEntity (eid);
 
 	CEntity	&launcher = (*eit).second;
+	// get the start point of the snowball
 	CVector	start = launcher.Position;
 	start.z += 1.3f;
+	// and its direction
 	CVector direction = (target-start).normed();
 	start += direction*1.0f;
 
+	// create a new snowball entity
 	addEntity(sbid, CEntity::Snowball, start, target);
 	eit = findEntity (sbid);
 	CEntity	&snowball = (*eit).second;
 	snowball.AutoMove = 1;
 
-
 	if (launcher.Type == CEntity::Self)
 	{
+		/// \todo Ben inform the server the player is shooting a snowball
 		snowball.ServerPosition = getTarget(start, direction, 100);
-/*
-		const uint	numTestStep = 100;
-		CVector	testPos = start;
-		CVector	step = (target-start)/numTestStep;
-
-		uint	i;
-		for (i=0; i<numTestStep; ++i)
-		{
-			CVector	snapped = testPos;
-			CVector	normal;
-			// here use normal to check if we have collision
-			if (snowball.VisualCollisionEntity->snapToGround(snapped, normal) && (testPos.z-snapped.z)*normal.z < 0.0f)
-			{
-				testPos -= step*0.5f;
-				break;
-			}
-			testPos += step;
-		}
-
-		snowball.ServerPosition = testPos;
-*/
-  }
+	}
 }
 
 

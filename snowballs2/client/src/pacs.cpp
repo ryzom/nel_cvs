@@ -1,7 +1,7 @@
 /** \file pacs.cpp
  * pacs management
  *
- * $Id: pacs.cpp,v 1.3 2001/07/12 17:06:58 legros Exp $
+ * $Id: pacs.cpp,v 1.4 2001/07/18 15:24:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,11 +40,14 @@ using namespace NLMISC;
 using namespace NL3D;
 using namespace NLPACS;
 
-
+// The retriever bank used in the world
 URetrieverBank			*RetrieverBank;
+// The global retriever used for pacs
 UGlobalRetriever		*GlobalRetriever;
+// The move container used for dynamic collisions
 UMoveContainer			*MoveContainer;
 
+// The collision manager for ground snappping
 UVisualCollisionManager	*VisualCollisionManager;
 
 

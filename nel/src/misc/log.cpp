@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.15 2000/12/07 15:18:42 cado Exp $
+ * $Id: log.cpp,v 1.16 2000/12/12 14:50:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ using namespace std;
 namespace NLMISC
 {
 
-string CLog::_LocalHostAndService = "<UnknownHost> <UnknownService> ";
+string CLog::_LocalHostAndService;
 
 
 /*
@@ -73,6 +73,7 @@ CLog::CLog( TLogPriority priority, bool longinfo ) :
 	_File( NULL ),
 	_Long( longinfo )
 {
+	setLocalHostAndService( "<Unknown>", "<Unknown>" );
 }
 
 

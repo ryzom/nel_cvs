@@ -1,7 +1,7 @@
 /** \file key.h
  * class CKey
  *
- * $Id: key.h,v 1.5 2001/03/16 16:46:21 berenguier Exp $
+ * $Id: key.h,v 1.6 2001/03/26 14:54:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NL3D
 {
 
 
+// ***************************************************************************
 /**
  * Interface for a key of a keyframer.
  *
@@ -48,6 +49,10 @@ namespace NL3D
 template<class T>
 class CKey
 {
+public:
+	/// synonym for T.
+	typedef	T	TValueType;
+
 public:
 
 	/// Serial
@@ -64,13 +69,16 @@ public:
 	T					Value;
 
 
+// *********************
 public:
-	// Runtime information (used by ITrack)!!! Do not use.
+	// PRIVATE. used by ITrackKeyFramer, not serialised (compiled).
+	// 1/(nextKeyTime-thisKeyTime).
 	float				OODeltaTime;
 
 };
 
 
+// ***************************************************************************
 /**
  * Implementation of CKey for TCB keyframer.
  *
@@ -103,9 +111,21 @@ public:
 	float	Bias;
 	float	EaseTo;
 	float	EaseFrom;
+
+
+// *********************
+public:
+	// PRIVATE. used by ITrackKeyFramer, not serialised (compiled).
+	// computed tangents.
+	T		TanTo, TanFrom;
+	// computed ease parameters, with next key.
+	float	Ease0, Ease1;
+	float	EaseK, EaseKOverEase0, EaseKOverEase1;
+
 };
 
 
+// ***************************************************************************
 /**
  * Implementation of CKey for Bezier keyframer.
  *
@@ -130,34 +150,132 @@ public:
 		f.serial (OutTan);
 	};
 
+	/// \name Tangents.
+	/** Those are NOT the true Bezier control points: they are tangents relative to Value, and relative to keyTime:
+	 *		CPIn= Value + InTan * dt0/3;		\n
+	 *		CPOut= Value + OutTan * dt1/3;		\n
+	 *	where:	dt0= curKey.time - prevKey.time		\n
+	 *			dt1= nextKey.time - curKey.time		\n
+	 *
+	 * and when not possible (first/last key), dt= getRangeDelta() is used.
+	 *
+	 */
+	// @{
 	T		InTan;
 	T		OutTan;
+	// @}
 };
 
-// Predefined types
 
-// ** Linear keys
+// ***************************************************************************
+// Special implementation for Quaternions.
+// ***************************************************************************
+
+
+// ***************************************************************************
+/**
+ * Implementation of CKeyTCB for rotation.
+ * WARNING!!! the value (an angleaxis!!) is a rotation relative to the preceding key!!  (unlike CKeyBezier)
+ *
+ * \author Lionel berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class	CKeyTCB<NLMISC::CAngleAxis> : public CKey<NLMISC::CAngleAxis>
+{
+public:
+
+	/// Serial
+	void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+	{
+		// Version number
+		sint version=f.serialVersion (0);
+
+		// Serial the value
+		f.serial (Value);
+		f.serial (Tension);
+		f.serial (Continuity);
+		f.serial (Bias);
+		f.serial (EaseTo);
+		f.serial (EaseFrom);
+	};
+
+	float	Tension;
+	float	Continuity;
+	float	Bias;
+	float	EaseTo;
+	float	EaseFrom;
+
+
+// *********************
+public:
+	// PRIVATE. used by ITrackKeyFramer, not serialised (compiled).
+	// computed quaternions/tangents.
+	NLMISC::CQuat		Quat, A, B;
+	// computed ease parameters, with next key.
+	float	Ease0, Ease1;
+	float	EaseK, EaseKOverEase0, EaseKOverEase1;
+};
+
+
+// ***************************************************************************
+/**
+ * Implementation of CKeyBezier for rotation. (no tangents for "bezier rotation", it is a "smooth rotation").
+ * WARNING!!! the Value (a Quat!!) is a ABSOLUTE rotation (unlike CKeyTCB)
+ *
+ * \author Lionel berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class	CKeyBezier<NLMISC::CQuat> : public CKey<NLMISC::CQuat>
+{
+public:
+
+	/// Serial
+	void serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+	{
+		// Version number
+		sint version=f.serialVersion (0);
+
+		// Serial the value
+		f.serial (Value);
+	};
+
+
+// *********************
+public:
+	// PRIVATE. used by ITrackKeyFramer, not serialised (compiled).
+	// computed quaternions/tangents.
+	NLMISC::CQuat		A;
+};
+
+
+// ***************************************************************************
+// Predefined types
+// ***************************************************************************
+
+// ** Const - Linear keys
 typedef	CKey<std::string>		CKeyString;
 typedef	CKey<bool>				CKeyBool;
 typedef	CKey<float>				CKeyFloat;
 typedef	CKey<NLMISC::CVector>	CKeyVector;
 typedef	CKey<NLMISC::CQuat>		CKeyQuat;
-typedef	CKey<sint32>			CKeyInt;
 typedef	CKey<NLMISC::CRGBA>		CKeyRGBA;
+typedef	CKey<sint32>			CKeyInt;
+// NB: For precision and optimisation (space/speed), RGBA and sint32 const/linear tracks use CKeyRGBA and CKeyInt keys repsectively.
+
 
 // ** TCB keys
 typedef	CKeyTCB<float>				CKeyTCBFloat;
 typedef	CKeyTCB<NLMISC::CVector>	CKeyTCBVector;
 typedef	CKeyTCB<NLMISC::CAngleAxis>	CKeyTCBQuat;
-typedef	CKeyTCB<sint32>				CKeyTCBInt;
-typedef	CKeyTCB<NLMISC::CRGBA>		CKeyTCBRGBA;
+// NB: RGBA and sint32 TCB tracks use CKeyTCBVector and CKeyTCBFloat respectively.
 
 // ** Bezier keys
 typedef	CKeyBezier<float>			CKeyBezierFloat;
 typedef	CKeyBezier<NLMISC::CVector>	CKeyBezierVector;
 typedef	CKeyBezier<NLMISC::CQuat>	CKeyBezierQuat;
-typedef	CKeyBezier<sint32>			CKeyBezierInt;
-typedef	CKeyBezier<NLMISC::CRGBA>	CKeyBezierRGBA;
+// NB: RGBA and sint32 bezier tracks use CKeyBezierVector and CKeyBezierFloat respectively.
 
 
 

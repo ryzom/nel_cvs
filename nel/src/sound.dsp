@@ -67,7 +67,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /D "_MBCS" /Yu"stdsound.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "__STL_DEBUG" /D "_MBCS" /D "WIN32" /D "_DEBUG" /Yu"stdsound.h" /FD /GZ /c
 # SUBTRACT CPP /Gy /Fr
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
@@ -250,25 +250,7 @@ SOURCE=.\sound\sound.h
 # Begin Source File
 
 SOURCE=.\sound\stdsound.cpp
-
-!IF  "$(CFG)" == "sound - Win32 Release"
-
 # ADD CPP /Yc"stdsound.h"
-
-!ELSEIF  "$(CFG)" == "sound - Win32 Debug"
-
-# ADD CPP /Yc"stdsound.h"
-
-!ELSEIF  "$(CFG)" == "sound - Win32 ReleaseDebug"
-
-# ADD CPP /Yc"stdsound.h"
-
-!ELSEIF  "$(CFG)" == "sound - Win32 DebugFast"
-
-# ADD CPP /Yc"stdsound.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

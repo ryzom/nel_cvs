@@ -56,7 +56,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 msvcrt.lib libc.lib /nologo /subsystem:windows /machine:I386 /out:"Release/object_viewer.exe"
+# ADD LINK32 msvcrt.lib libc.lib freetype.lib /nologo /subsystem:windows /machine:I386 /out:"Release/object_viewer.exe"
 
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 Debug"
 
@@ -72,7 +72,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "__STL_DEBUG" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_WINDOWS" /D "_MBCS" /D "__STL_DEBUG" /D "_AFXDLL" /D "WIN32" /D "_DEBUG" /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
@@ -82,7 +82,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 msvcrtd.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"debug\object_viewer.exe" /pdbtype:sept /libpath:"..\..\..\lib"
+# ADD LINK32 msvcrtd.lib libc.lib freetype.lib /nologo /subsystem:windows /debug /machine:I386 /out:"debug\object_viewer.exe" /pdbtype:sept /libpath:"..\..\..\lib"
 # SUBTRACT LINK32 /incremental:no
 
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 ReleaseDebug"
@@ -112,7 +112,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 msvcrt.lib libc.lib /nologo /subsystem:windows /machine:I386 /out:"Release/object_viewer.exe"
-# ADD LINK32 msvcrt.lib libc.lib freetype.lib /nologo /subsystem:windows /debug /machine:I386 /out:"ReleaseDebug/object_viewer.exe"
+# ADD LINK32 msvcrt.lib freetype.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"ReleaseDebug/object_viewer.exe"
 
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 DebugFast"
 
@@ -140,7 +140,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 msvcrtd.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"debug\object_viewer.exe" /pdbtype:sept /libpath:"..\..\..\lib"
 # SUBTRACT BASE LINK32 /incremental:no
-# ADD LINK32 msvcrtd.lib libc.lib freetype.lib /nologo /subsystem:windows /debug /machine:I386 /out:"DebugFast\object_viewer.exe" /pdbtype:sept /libpath:"..\..\..\lib"
+# ADD LINK32 msvcrtd.lib freetype.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"DebugFast\object_viewer.exe" /pdbtype:sept /libpath:"..\..\..\lib"
 # SUBTRACT LINK32 /incremental:no
 
 !ENDIF 

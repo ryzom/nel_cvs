@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.7 2001/05/29 09:30:08 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.8 2001/06/01 13:42:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,7 +86,8 @@ void CCallbackServer::sendAllMyAssociations (TSockId to)
  */
 void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 {
-	nlassert (buffer.length() > 0 && buffer.length() < 65536);
+	// no limit size anymore
+	nlassert (buffer.length() != 0);
 	nlassert (buffer.typeIsSet());
 
 //	if (log)

@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.12 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: ps_attrib.h,v 1.13 2002/06/18 17:45:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,6 +107,7 @@ public:
 		catch (...)
 		{
 			delete [] newStart;
+			throw;
 		}
 	
 	}

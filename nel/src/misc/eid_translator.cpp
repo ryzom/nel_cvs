@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.28 2004/08/13 18:53:49 brigand Exp $
+ * $Id: eid_translator.cpp,v 1.28.4.1 2004/09/20 22:29:57 saffray Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -268,7 +268,7 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 	nlinfo ("EIT: Register EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 	RegisteredEntities.insert (make_pair(reid, CEntityIdTranslator::CEntity(entityName, uid, userName, entitySlot)));
 
-	save ();
+//	save ();
 }
 
 void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
@@ -290,7 +290,7 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 	nlinfo ("EIT: Unregister EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), (*it).second.EntityName.toString().c_str(), (*it).second.UId, (*it).second.UserName.c_str());
 	RegisteredEntities.erase (reid);
 	
-	save ();
+//	save ();
 }
 
 void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const string &userName)
@@ -345,9 +345,10 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 			}
 		}
 	}
-	
+/*	
 	if (needSave)
 		save ();
+*/
 }
 
 // this callback is call when the file is changed
@@ -429,6 +430,7 @@ void CEntityIdTranslator::load (const string &fileName, const string &invalidEnt
 
 void CEntityIdTranslator::save ()
 {
+/*
 	H_AUTO(EIdTrans_save);
 
 	if (FileName.empty())
@@ -452,6 +454,7 @@ void CEntityIdTranslator::save ()
 	{
 		nlwarning ("EIT: Can't save filename '%s' for EntityIdTranslator", FileName.c_str());
 	}
+*/
 }
 
 uint32 CEntityIdTranslator::getUId (const string &userName)

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.64 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: mesh.cpp,v 1.65 2002/07/02 12:27:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -563,12 +563,11 @@ void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
 
 
 // ***************************************************************************
-void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, float polygonCount, float globalAlpha, bool gaDisableZWrite)
+void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha)
 {
 	nlassert(drv);
 	// get the mesh instance.
-	nlassert(dynamic_cast<CMeshBaseInstance*>(trans));
-	CMeshBaseInstance	*mi= (CMeshBaseInstance*)trans;
+	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
 	// get a ptr on scene
 	CScene			*ownerScene= mi->getScene();
 	// get a ptr on renderTrav
@@ -577,6 +576,11 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 
 	// update the VBufferHard (create/delete), to maybe render in AGP memory.
 	updateVertexBufferHard (drv);
+	/* currentVBHard is NULL if must disable it temporarily
+		For now, never disable it, but switch of VBHard may be VERY EXPENSIVE if NV_vertex_array_range2 is not
+		supported (old drivers).
+	*/
+	IVertexBufferHard		*currentVBHard= _VertexBufferHard;
 
 
 	// get the skeleton model to which I am binded (else NULL).
@@ -613,7 +617,7 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 		{
 			_MeshMorpher->initSkinned(&_VBufferOri,
 								 &_VBuffer,
-								 _VertexBufferHard,
+								 currentVBHard,
 								 useTangentSpace,
 								 &_OriginalSkinVertices,
 								 &_OriginalSkinNormals,
@@ -625,7 +629,7 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 		{
 			_MeshMorpher->init(&_VBufferOri,
 								 &_VBuffer,
-								 _VertexBufferHard,
+								 currentVBHard,
 								 useTangentSpace);
 			_MeshMorpher->update (mi->getBlendShapeFactors());
 		}
@@ -670,29 +674,33 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 
 	// Setup meshVertexProgram
 	//===========
-	CMatrix		invertedObjectMatrix;
-	if (bSkinApplied)
-		invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
-	else
-		invertedObjectMatrix = trans->getWorldMatrix().inverted();
-
 
 	// use MeshVertexProgram effect?
-	bool	useMeshVP= _MeshVertexProgram != NULL ? _MeshVertexProgram->begin(drv, ownerScene, mi, invertedObjectMatrix, renderTrav->CamPos) : false;
+	bool	useMeshVP= _MeshVertexProgram != NULL;
+	if( useMeshVP )
+	{
+		CMatrix		invertedObjectMatrix;
+		if (bSkinApplied)
+			invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
+		else
+			invertedObjectMatrix = trans->getWorldMatrix().inverted();
+		// really ok if success to begin VP
+		useMeshVP= _MeshVertexProgram->begin(drv, ownerScene, mi, invertedObjectMatrix, renderTrav->CamPos);
+	}
 	
 
 	// Render the mesh.
 	//===========
 	// active VB.
-	if(_VertexBufferHard != NULL)
-		drv->activeVertexBufferHard(_VertexBufferHard);
+	if(currentVBHard != NULL)
+		drv->activeVertexBufferHard(currentVBHard);
 	else
 		drv->activeVertexBuffer(_VBuffer);
 
 
 	// Global alpha used ?
-	bool globalAlphaUsed=globalAlpha!=1;
-	uint8 globalAlphaInt=(uint8)OptFastFloor(globalAlpha*255);
+	uint32	globalAlphaUsed= rdrFlags & IMeshGeom::RenderGlobalAlpha;
+	uint8	globalAlphaInt=(uint8)OptFastFloor(globalAlpha*255);
 
 
 	// For all _MatrixBlocks
@@ -705,13 +713,15 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 		// Global alpha ?
 		if (globalAlphaUsed)
 		{
+			bool	gaDisableZWrite= (rdrFlags & IMeshGeom::RenderGADisableZWrite)?true:false;
+
 			// Render all pass.
 			for (uint i=0;i<mBlock.RdrPass.size();i++)
 			{
 				CRdrPass	&rdrPass= mBlock.RdrPass[i];
 				// Render with the Materials of the MeshInstance.
-				if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (opaquePass == true) ) ||
-					 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (opaquePass == false) ) )
+				if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (rdrFlags & IMeshGeom::RenderOpaqueMaterial) ) ||
+					 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (rdrFlags & IMeshGeom::RenderTransparentMaterial) ) )
 				{
 					// CMaterial Ref
 					CMaterial &material=mi->Materials[rdrPass.MaterialId];
@@ -723,7 +733,10 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 					// Setup VP material
 					if (useMeshVP)
 					{
-						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
+						if(currentVBHard)
+							_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
+						else
+							_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
 					}
 
 					// Render
@@ -741,16 +754,23 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 			{
 				CRdrPass	&rdrPass= mBlock.RdrPass[i];
 				// Render with the Materials of the MeshInstance.
-				if( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (opaquePass == true) ) ||
-					( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (opaquePass == false) )		)
-				{					
+				if( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (rdrFlags & IMeshGeom::RenderOpaqueMaterial) ) ||
+					( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (rdrFlags & IMeshGeom::RenderTransparentMaterial) )		)
+				{
+					// CMaterial Ref
+					CMaterial &material=mi->Materials[rdrPass.MaterialId];
+
+					// Setup VP material
 					if (useMeshVP)
 					{
-						_MeshVertexProgram->setupForMaterial(mi->Materials[rdrPass.MaterialId], drv, ownerScene, &_VBuffer);
+						if(currentVBHard)
+							_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
+						else
+							_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
 					}									
 
 					// render primitives
-					drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+					drv->render(rdrPass.PBlock, material);
 				}
 			}
 		}
@@ -895,7 +915,7 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if(ver < 4)
 		buildBoneUsageVer3();
 
-	// TempYoyo
+	// TestYoyo
 	//_MeshVertexProgram= NULL;
 	/*{
 		uint numTris= 0;
@@ -929,10 +949,10 @@ void	CMeshGeom::compileRunTime()
 	// true only if one matrix block, and at least one rdrPass.
 	_SupportMeshBlockRendering= _SupportMeshBlockRendering && _MatrixBlocks.size()==1 && _MatrixBlocks[0].RdrPass.size()>0;
 
-	// TODODO: support later MeshVertexProgram 
+	// \todo yoyo: support later MeshVertexProgram 
 	_SupportMeshBlockRendering= _SupportMeshBlockRendering && _MeshVertexProgram==NULL;
 
-	// TempYoyo
+	// TestYoyo
 	//_SupportMeshBlockRendering= false;
 }
 
@@ -1818,7 +1838,7 @@ void	CMeshGeom::activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance
 	// setupLighting.
 	inst->changeLightSetup(rdrCtx.RenderTrav);
 
-	// TODODO: MeshVertexProgram.
+	// \todo yoyo: MeshVertexProgram.
 }
 // ***************************************************************************
 void	CMeshGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *mi, float polygonCount, uint rdrPassId) 
@@ -1829,7 +1849,7 @@ void	CMeshGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *mi
 	// Render with the Materials of the MeshInstance, only if not blended.
 	if( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) ) )
 	{
-		// TODODO: MeshVertexProgram.
+		// \todo yoyo: MeshVertexProgram.
 		// render primitives
 		rdrCtx.Driver->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
 	}
@@ -1838,7 +1858,7 @@ void	CMeshGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *mi
 void	CMeshGeom::endMesh(CMeshGeomRenderContext &rdrCtx) 
 {
 	// nop.
-	// TODODO: MeshVertexProgram.
+	// \todo yoyo: MeshVertexProgram.
 }
 
 
@@ -2027,7 +2047,14 @@ bool	CMesh::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 // ***************************************************************************
 void	CMesh::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
-	_MeshGeom->render(drv, trans, passOpaque, 0, 1, false);
+	// 0 or 0xFFFFFFFF
+	uint32	mask= (0-(uint32)passOpaque);
+	uint32	rdrFlags;
+	// select rdrFlags, without ifs.
+	rdrFlags=	mask & (IMeshGeom::RenderOpaqueMaterial | IMeshGeom::RenderPassOpaque);
+	rdrFlags|=	~mask & (IMeshGeom::RenderTransparentMaterial);
+	// render the mesh
+	_MeshGeom->render(drv, trans, 0, rdrFlags, 1);
 }
 
 

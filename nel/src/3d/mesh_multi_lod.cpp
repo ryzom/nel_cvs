@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.25 2002/07/01 10:05:08 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.26 2002/07/02 12:30:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -258,10 +258,12 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 	// Second lod ?
 	if ( (instance->Lod1!=0xffffffff) && (passOpaque==false) )
 	{
-		// Render second lod in blend mode. Render and disable ZWrite for Lod1
+		// build rdrFlags to rdr both transparent and opaque materials, 
+		// use globalAlphaBlend, and disable ZWrite for Lod1
+		uint32	rdrFlags= IMeshGeom::RenderOpaqueMaterial | IMeshGeom::RenderTransparentMaterial |
+			IMeshGeom::RenderGlobalAlpha | IMeshGeom::RenderGADisableZWrite;
 		// NB: very important to render Lod1 first, because Lod0 is still rendered with ZWrite enabled.
-		renderMeshGeom (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, true, true, manager);
-		renderMeshGeom (instance->Lod1, drv, instance, instance->PolygonCountLod1, 1.f-instance->BlendFactor, false, true, manager);
+		renderMeshGeom (instance->Lod1, drv, instance, instance->PolygonCountLod1, rdrFlags, 1.f-instance->BlendFactor, manager);
 	}
 
 
@@ -277,8 +279,14 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 		}
 		else
 		{
+			// build rdrFlags the normal way (as CMesh::render() for example)
+			uint32	mask= (0-(uint32)passOpaque);
+			uint32	rdrFlags;
+			// select rdrFlags, without ifs.
+			rdrFlags=	mask & (IMeshGeom::RenderOpaqueMaterial | IMeshGeom::RenderPassOpaque);
+			rdrFlags|=	~mask & (IMeshGeom::RenderTransparentMaterial);
 			// Only render the normal way the first lod
-			renderMeshGeom (instance->Lod0, drv, instance, instance->PolygonCountLod0, 1, passOpaque, false, manager);
+			renderMeshGeom (instance->Lod0, drv, instance, instance->PolygonCountLod0, rdrFlags, 1, manager);
 		}
 	}
 	else
@@ -286,11 +294,13 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 		// Should not be in opaque
 		nlassert (passOpaque==false);
 
-		// Render first lod in blend mode. Don't disable ZWrite for Lod0
-		renderMeshGeom (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, true, false, manager);
+		// build rdrFlags to rdr both transparent and opaque materials, 
+		// use globalAlphaBlend, BUT Don't disable ZWrite for Lod0
+		uint32	rdrFlags= IMeshGeom::RenderOpaqueMaterial | IMeshGeom::RenderTransparentMaterial |
+			IMeshGeom::RenderGlobalAlpha;
 
-		// Then render transparent. Don't disable ZWrite for Lod0
-		renderMeshGeom (instance->Lod0, drv, instance, instance->PolygonCountLod0, instance->BlendFactor, false, false, manager);
+		// Render first lod in blend mode. Don't disable ZWrite for Lod0
+		renderMeshGeom (instance->Lod0, drv, instance, instance->PolygonCountLod0, rdrFlags, instance->BlendFactor, manager);
 	}
 
 	// *** Remove unused coarse meshes.
@@ -472,7 +482,7 @@ CMeshMultiLod::CMeshSlot::~CMeshSlot ()
 
 // ***************************************************************************
 
-void CMeshMultiLod::renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool passOpaque, bool gaDisableZWrite, CCoarseMeshManager *manager)
+void CMeshMultiLod::renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, uint32 rdrFlags, float alpha, CCoarseMeshManager *manager)
 {
 	// Ref
 	CMeshSlot &slotRef=_MeshVector[slot];
@@ -483,9 +493,11 @@ void CMeshMultiLod::renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstan
 		// NB Here, the meshGeom may still be a coarseMesh, but rendered through CMeshGeom
 		if(slotRef.Flags&CMeshSlot::CoarseMesh)
 		{
-			// Render only if in passOpaque (avoid rendering twice for nothing!!)
-			if(manager && passOpaque)
+			// Render only for opaque material
+			if(manager && (rdrFlags & IMeshGeom::RenderOpaqueMaterial) )
 			{
+				bool	gaDisableZWrite= (rdrFlags & IMeshGeom::RenderGADisableZWrite)?true:false;
+
 				// Render the CoarseMesh with the manager material
 				CMaterial	&material= manager->getMaterial();
 
@@ -514,7 +526,7 @@ void CMeshMultiLod::renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstan
 		{
 			// Render the geom mesh
 			// Disable ZWrite only if in transition and for rendering Lod1
-			slotRef.MeshGeom->render (drv, trans, passOpaque, numPoylgons, alpha, gaDisableZWrite);
+			slotRef.MeshGeom->render (drv, trans, numPoylgons, rdrFlags, alpha);
 		}
 	}
 }

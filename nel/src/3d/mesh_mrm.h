@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.31 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.32 2002/07/02 12:27:19 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,7 @@ public:
 	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
 
 	/// render() this mesh in a driver, given an instance and his materials.
-	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha, bool gaDisableZWrite);
+	virtual void	render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha);
 
 	/// get an approximation of the number of triangles this instance will render for a fixed distance.
 	virtual float	getNumTriangles (float distance);
@@ -453,7 +453,8 @@ private:
 	void				updateVertexBufferHard(IDriver *drv, uint32 numVertices);
 	void				deleteVertexBufferHard();
 
-	void				fillAGPSkinPart(CLod &lod);
+	// Fill skin in AGP, if VBhard exist/used
+	void				fillAGPSkinPart(CLod &lod, IVertexBufferHard *currentVBHard);
 	// @}
 
 	// The Mesh Morpher
@@ -470,8 +471,8 @@ private:
 	void	serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint endWedge);
 
 
-	/// Apply the geomorph to the _VBuffer.
-	void	applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod);
+	/// Apply the geomorph to the _VBuffer, or the VBhard, if exist/used
+	void	applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod, IVertexBufferHard *currentVBHard);
 
 	/// Skinning: bkup Vertex/Normal into _OriginalSkin* from VBuffer.
 	void	bkupOriginalSkinVertices();
@@ -502,7 +503,7 @@ private:
 		const CSkeletonModel *skeleton, uint tangentSpaceTexCoord);
 
 	/// Skinning: same as restoreOriginalSkinVertices(), but for one Lod only.
-	void	restoreOriginalSkinPart(CLod &lod);
+	void	restoreOriginalSkinPart(CLod &lod, IVertexBufferHard *currentVBHard);
 
 
 	/// load the header of this mesh. return the version of the header.

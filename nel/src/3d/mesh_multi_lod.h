@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.17 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.18 2002/07/02 12:30:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -246,7 +246,7 @@ private:
 	void	clear ();
 
 	/// Render the MeshGeom of a slot, even if coarseMesh
-	void	renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool passOpaque, bool gaDisableZWrite, CCoarseMeshManager *manager);
+	void	renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, uint32 rdrFlags, float alpha, CCoarseMeshManager *manager);
 
 	/// Render the CoarseMesh of a slot. must be a coarseMesh, and shoudl be called only in passOpaque.
 	void	renderCoarseMesh (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, CCoarseMeshManager *manager);

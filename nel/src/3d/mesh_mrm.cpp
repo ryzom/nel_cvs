@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.45 2002/07/01 08:56:36 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.46 2002/07/02 12:27:19 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "nel/misc/hierarchical_timer.h"
 #include "3d/mesh_blender.h"
 #include "3d/render_trav.h"
+#include "3d/fast_floor.h"
 
 
 using namespace NLMISC;
@@ -475,7 +476,7 @@ float	CMeshMRMGeom::getLevelDetailFromDist(float dist)
 
 
 // ***************************************************************************
-void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod)
+void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod, IVertexBufferHard *currentVBHard)
 {
 	// no geomorphs? quit.
 	if(geoms.size()==0)
@@ -502,11 +503,11 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 
 	// If VBuffer Hard present
 	uint8		*vertexDestPtr;
-	if(_VBHard!=NULL)
+	if(currentVBHard!=NULL)
 	{
 		// must write into it
-		vertexDestPtr= (uint8*)_VBHard->lock();
-		nlassert(vertexSize == _VBHard->getVertexSize());
+		vertexDestPtr= (uint8*)currentVBHard->lock();
+		nlassert(vertexSize == currentVBHard->getVertexSize());
 	}
 	else
 	{
@@ -787,10 +788,10 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 	}
 
 
-	// If _VBHard here, unlock it.
-	if(_VBHard)
+	// If currentVBHard here, unlock it.
+	if(currentVBHard)
 	{
-		_VBHard->unlock();
+		currentVBHard->unlock();
 	}
 
 }
@@ -846,7 +847,7 @@ bool	CMeshMRMGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &world
 
 
 // ***************************************************************************
-void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha, bool gaDisableZWrite)
+void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha)
 {
 	nlassert(drv);
 	if(_Lods.size()==0)
@@ -907,6 +908,12 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	// \toto yoyo: TODO_OPTIMIZE: allocate only what is needed for the current Lod (Max of all instances, like
 	// the loading....) (see loadHeader()).
 	updateVertexBufferHard(drv, _VBufferFinal.getNumVertices());
+	/* currentVBHard is NULL if must disable it temporarily
+		For now, never disable it, but switch of VBHard may be VERY EXPENSIVE if NV_vertex_array_range2 is not
+		supported (old drivers).
+	*/
+	IVertexBufferHard		*currentVBHard= _VBHard;
+
 
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel *skeleton;
@@ -942,7 +949,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 		{
 			_MeshMorpher.initSkinned(&_VBufferOriginal,
 								 &_VBufferFinal,
-								 _VBHard,
+								 currentVBHard,
 								 useTangentSpace,
 								 &_OriginalSkinVertices,
 								 &_OriginalSkinNormals,
@@ -954,7 +961,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 		{
 			_MeshMorpher.init(&_VBufferOriginal,
 								 &_VBufferFinal,
-								 _VBHard,
+								 currentVBHard,
 								 useTangentSpace);
 			_MeshMorpher.update (mi->getBlendShapeFactors());
 		}
@@ -1038,8 +1045,8 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 
 		// endSkin.
 		//--------
-		// Fill the usefull AGP memory (if any one loaded).
-		fillAGPSkinPart(lod);
+		// Fill the usefull AGP memory (if any one loaded/Used).
+		fillAGPSkinPart(lod, currentVBHard);
 		// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
 		lod.OriginalSkinRestored= false;
 	}
@@ -1048,7 +1055,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	{
 		// do it for this Lod only, and if cache say it is necessary.
 		if (!lod.OriginalSkinRestored)
-			restoreOriginalSkinPart(lod);
+			restoreOriginalSkinPart(lod, currentVBHard);
 	}
 
 	// If skinning, Setup the skeleton matrix
@@ -1068,7 +1075,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	// Geomorph the choosen Lod (if not the coarser mesh).
 	if(numLod>0)
 	{
-		applyGeomorph(lod.Geomorphs, alphaLod);
+		applyGeomorph(lod.Geomorphs, alphaLod, currentVBHard);
 	}
 
 
@@ -1097,25 +1104,28 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	// Render the lod.
 	//===========
 	// active VB.
-	if(_VBHard)
-		drv->activeVertexBufferHard(_VBHard);
+	if(currentVBHard)
+		drv->activeVertexBufferHard(currentVBHard);
 	else
 		drv->activeVertexBuffer(_VBufferFinal);
 
 
 	// Global alpha used ?
-	bool globalAlphaUsed=globalAlpha!=1;
-	uint8 globalAlphaInt=(uint8)(globalAlpha*255);
+	uint32	globalAlphaUsed= rdrFlags & IMeshGeom::RenderGlobalAlpha;
+	uint8	globalAlphaInt=(uint8)OptFastFloor(globalAlpha*255);
 
 	// Render all pass.
 	if (globalAlphaUsed)
 	{
+		bool	gaDisableZWrite= (rdrFlags & IMeshGeom::RenderGADisableZWrite)?true:false;
+
+		// for all passes
 		for(uint i=0;i<lod.RdrPass.size();i++)
 		{
 			CRdrPass	&rdrPass= lod.RdrPass[i];
 
-			if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (passOpaque == true) ) ||
-				 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (passOpaque == false) ) )
+			if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (rdrFlags & IMeshGeom::RenderOpaqueMaterial) ) ||
+				 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (rdrFlags & IMeshGeom::RenderTransparentMaterial) ) )
 			{
 				// CMaterial Ref
 				CMaterial &material=mi->Materials[rdrPass.MaterialId];
@@ -1124,17 +1134,13 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 				CMeshBlender	blender;
 				blender.prepareRenderForGlobalAlpha(material, drv, globalAlpha, globalAlphaInt, gaDisableZWrite);
 
-				// If use meshVertexProgram, and use VPLightSetup
+				// Setup VP material
 				if (useMeshVP)
 				{
-					if(_VBHard)
-					{
-						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, _VBHard);
-					}
+					if(currentVBHard)
+						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
 					else
-					{
 						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBufferFinal);
-					}
 				}
 
 				// Render
@@ -1151,23 +1157,23 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 		{
 			CRdrPass	&rdrPass= lod.RdrPass[i];
 
-			if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (passOpaque == true) ) ||
-				 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (passOpaque == false) ) )
+			if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (rdrFlags & IMeshGeom::RenderOpaqueMaterial) ) ||
+				 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (rdrFlags & IMeshGeom::RenderTransparentMaterial) ) )
 			{
+				// CMaterial Ref
+				CMaterial &material=mi->Materials[rdrPass.MaterialId];
+
+				// Setup VP material
 				if (useMeshVP)
 				{
-					if(_VBHard)
-					{
-						_MeshVertexProgram->setupForMaterial(mi->Materials[rdrPass.MaterialId], drv, ownerScene, _VBHard);
-					}
+					if(currentVBHard)
+						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, currentVBHard);
 					else
-					{
-						_MeshVertexProgram->setupForMaterial(mi->Materials[rdrPass.MaterialId], drv, ownerScene, &_VBufferFinal);
-					}
+						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBufferFinal);
 				}	
 
 				// Render with the Materials of the MeshInstance.
-				drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+				drv->render(rdrPass.PBlock, material);
 			}
 		}
 	}
@@ -1687,7 +1693,7 @@ void	CMeshMRMGeom::restoreOriginalSkinVertices()
 
 
 // ***************************************************************************
-void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod)
+void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod, IVertexBufferHard *currentVBHard)
 {
 	nlassert(_Skinned);
 
@@ -1752,7 +1758,7 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod)
 
 
 	// Fill the usefull AGP memory (if any one loaded).
-	fillAGPSkinPart(lod);
+	fillAGPSkinPart(lod, currentVBHard);
 
 
 	// clean this lod part. (NB: this is not optimal, but sufficient :) ).
@@ -2038,7 +2044,7 @@ void	CMeshMRMGeom::compileRunTime()
 // ***************************************************************************
 bool	CMeshMRMGeom::supportMeshBlockRendering () const
 {
-	// TODODO
+	// \todo yoyo: TODO_OPTIMIZE support MeshBlockRendering with MRM
 	return false;
 }
 
@@ -2143,7 +2149,14 @@ bool	CMeshMRM::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatr
 // ***************************************************************************
 void	CMeshMRM::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
-	_MeshMRMGeom.render(drv, trans, passOpaque, trans->getNumTrianglesAfterLoadBalancing(), 1, false);
+	// 0 or 0xFFFFFFFF
+	uint32	mask= (0-(uint32)passOpaque);
+	uint32	rdrFlags;
+	// select rdrFlags, without ifs.
+	rdrFlags=	mask & (IMeshGeom::RenderOpaqueMaterial | IMeshGeom::RenderPassOpaque);
+	rdrFlags|=	~mask & (IMeshGeom::RenderTransparentMaterial);
+	// render the mesh
+	_MeshMRMGeom.render(drv, trans, trans->getNumTrianglesAfterLoadBalancing(), rdrFlags, 1);
 }
 
 

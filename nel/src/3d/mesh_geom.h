@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.11 2002/06/25 12:00:05 corvazier Exp $
+ * $Id: mesh_geom.h,v 1.12 2002/07/02 12:27:19 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,6 +76,18 @@ class IMeshGeom : public NLMISC::IStreamable
 {
 public:
 
+	/// Render Flags, used in render
+	enum	TRenderFlag
+	{
+		RenderOpaqueMaterial= 1,		// set when the mesh geom must render opaque material
+		RenderTransparentMaterial= 2,	// set when the mesh geom must render transparent material
+		RenderPassOpaque=4,				// set when the current traversal rdrPass is the opaque pass
+		RenderGlobalAlpha= 8,			// set when the caller wants to draw material with global alpha
+		RenderGADisableZWrite= 16,		// only when globalAlpha is used. set if must disable ZWrite
+	};
+
+public:
+
 	/// Constructor
 	IMeshGeom();
 	/// dtor
@@ -96,9 +108,8 @@ public:
 	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) {return true;}
 
 	/** render() this meshGeom in a driver, with the specified TransformShape instance information.
-	 *	\param gaDisableZWrite if gloablAlpha is<1, say if ZWrite must be disabled (else no use)
 	 */
-	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha, bool gaDisableZWrite) =0;
+	virtual void	render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha) =0;
 
 	/// \name Load balancing methods
 	// @{

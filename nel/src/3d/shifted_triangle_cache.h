@@ -1,7 +1,7 @@
 /** \file shifted_triangle_cache.h
  * <File description>
  *
- * $Id: shifted_triangle_cache.h,v 1.1 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: shifted_triangle_cache.h,v 1.2 2003/05/13 15:25:12 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -57,8 +57,6 @@ public:
 	NLMISC::CObjectVector<uint32, false>		RawIndices;
 	/// List of triangles, per rdrPass
 	NLMISC::CObjectVector<CRdrPass, false>		RdrPass;
-	/// This tell if the current Lod has Quad or Lines. If yes, then must compute them.
-	bool					HasQuadOrLine;
 
 	/// What MRM lod this cache represent. -1 if NULL
 	sint					LodId;

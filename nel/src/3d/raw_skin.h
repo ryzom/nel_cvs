@@ -1,7 +1,7 @@
 /** \file raw_skin.h
  * Packed struct used for faster Software skinning
  *
- * $Id: raw_skin.h,v 1.1 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: raw_skin.h,v 1.2 2003/05/13 15:25:12 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,8 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/uv.h"
 #include "nel/misc/object_vector.h"
 #include "3d/mesh.h"
+#include "3d/mrm_mesh.h"
 
 
 namespace NL3D 
@@ -37,6 +39,7 @@ namespace NL3D
 
 
 using	NLMISC::CVector;
+using	NLMISC::CUV;
 
 
 /// Vertices influenced by 1 matrix only.
@@ -47,8 +50,7 @@ public:
 	uint32		MatrixId[1];
 	CVector		Vertex;
 	CVector		Normal;
-	// The Dest VertexId
-	uint32		VertexId;
+	CUV			UV;
 };
 
 /// Vertices influenced by 2 matrix only.
@@ -60,19 +62,29 @@ public:
 	float		Weights[2];
 	CVector		Vertex;
 	CVector		Normal;
-	// The Dest VertexId
-	uint32		VertexId;
+	CUV			UV;
 };
 
-/// Vertices influenced by 3 or 4 matrix only. (simpler and rare)
+/// Vertices influenced by 3 matrix only.
+class	CRawVertexNormalSkin3
+{
+public:
+	uint32		MatrixId[3];
+	float		Weights[3];
+	CVector		Vertex;
+	CVector		Normal;
+	CUV			UV;
+};
+
+/// Vertices influenced by 4 matrix only.
 class	CRawVertexNormalSkin4
 {
 public:
-	CMesh::CSkinWeight	SkinWeight;
+	uint32		MatrixId[4];
+	float		Weights[4];
 	CVector		Vertex;
 	CVector		Normal;
-	// The Dest VertexId
-	uint32		VertexId;
+	CUV			UV;
 };
 
 /// The array per lod.
@@ -84,9 +96,21 @@ public:
 	// The vertices influenced by 2 matrix.
 	NLMISC::CObjectVector<CRawVertexNormalSkin2, false>	Vertices2;
 	// The vertices influenced by 3 matrix.
-	NLMISC::CObjectVector<CRawVertexNormalSkin4, false>	Vertices3;
+	NLMISC::CObjectVector<CRawVertexNormalSkin3, false>	Vertices3;
 	// The vertices influenced by 4 matrix.
 	NLMISC::CObjectVector<CRawVertexNormalSkin4, false>	Vertices4;
+
+	// For Each array, set the max number of vertices to copy in VBSoft (not VBHard directly)
+	uint32							SoftVertices[4];
+	uint32							HardVertices[4];
+	// Total Of SoftVertices
+	uint32							TotalSoftVertices;
+	uint32							TotalHardVertices;
+
+	// The RawSkin Geomorphs.
+	std::vector<CMRMWedgeGeom>		Geomorphs;
+	// The Raw Primitives.
+	std::vector<CPrimitiveBlock>	RdrPass;
 
 	/// What RawSkin lod this cache represent. -1 if NULL
 	sint					LodId;

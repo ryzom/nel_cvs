@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.11 2001/03/29 15:14:53 corvazier Exp $
+ * $Id: channel_mixer.cpp,v 1.12 2001/03/29 15:39:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,8 +113,8 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 
 	while (pChannel)
 	{
-		CQuat	tmpQuat;
-		bool	isQuat=(typeid (*(pChannel->_Value))==typeid (CAnimatedValueBlendable<NLMISC::CQuat>))!=0;
+		// For Quat animated value only.
+		CQuat	firstQuat;
 
 		// First slot found
 		bool bFirst=true;
@@ -140,9 +140,12 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 				// First track to be eval ?
 				if (bFirst)
 				{
-					CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
-					if (isQuat)
-					 tmpQuat=pQuatValue->Value;
+					// If channel is a Quaternion animated Value, must store the first Quat.
+					if (pChannel->_IsQuat)
+					{
+						CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
+						firstQuat=pQuatValue->Value;
+					}
 
 					// Copy the interpolated value
 					pChannel->_Value->affect (pChannel->_Tracks[slot]->getValue());
@@ -155,10 +158,11 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 				}
 				else
 				{
-					if (isQuat)
+					// If channel is a Quaternion animated Value, must makeClosest the ith result of the track, from firstQuat.
+					if (pChannel->_IsQuat)
 					{
-						CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue2=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
-						pQuatValue2->Value.makeClosest (tmpQuat);
+						CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
+						pQuatValue->Value.makeClosest (firstQuat);
 					}
 
 					// Blend with this value and the previous sum
@@ -207,6 +211,10 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 
 		// Set the pointer on the value in the object
 		entry._Value=value;
+
+		// Is this a CQuat animated value???
+		entry._IsQuat= (typeid (*(entry._Value))==typeid (CAnimatedValueBlendable<NLMISC::CQuat>))!=0;
+
 
 		// Set the default track pointer
 		entry._DefaultTracks=defaultTrack;

@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.10 2001/03/28 15:17:42 berenguier Exp $
+ * $Id: channel_mixer.h,v 1.11 2001/03/29 15:39:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,6 +152,13 @@ private:
 		/// True if this channel is in the list
 		bool				_InTheList;
 
+		/// the detail mode.
+		bool				_Detail;
+
+		/// Is this Animated Value a CQuat Animated Value???
+		bool				_IsQuat;
+
+
 		/// Name of the channel in the channel mixer. Must be the same than the animated value name.
 		std::string			_ChannelName;
 
@@ -166,10 +173,6 @@ private:
 
 		/// The id of the OwnerBit to touch the IAnimatable object. Usefull for IAnimatable derivation.
 		uint32				_OwnerValueId;
-
-		/// the detail mode.
-		bool				_Detail;
-
 
 		/// The default track pointer used when track are missing in the animation. Can't be NULL.
 		const ITrack*		_DefaultTracks;

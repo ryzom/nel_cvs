@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.1 2001/08/08 09:04:46 legros Exp $
+ * $Id: export_collision.cpp,v 1.2 2001/11/29 14:22:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@ using namespace NLPACS;
 // ***************************************************************************
 
 typedef pair<uint, uint>	TFaceRootMeshInfo;
+typedef pair<uint, bool>	TEdgeInfo;
 
 CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &nodes, TimeValue tvTime)
 {
@@ -128,6 +129,7 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 					sint32	sid = (maxMaterialId == 665) ? -1 : totalSurfaces+maxMaterialId;
 
 					pCollisionMeshBuild->Faces.back().Surface = sid;
+					pCollisionMeshBuild->Faces.back().Material = maxMaterialId;
 				}
 
 				totalVertices = pCollisionMeshBuild->Vertices.size();
@@ -217,14 +219,14 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 			pCollisionMeshBuild->Faces[i].V[j] = remapIds[pCollisionMeshBuild->Faces[i].V[j]];
 
 	// check for errors
-	vector<string>	errors;
+	vector<string>	warnings;
 	for (i=0; i<totalFaces; ++i)
 	{
 		if (pCollisionMeshBuild->Faces[i].V[0] == pCollisionMeshBuild->Faces[i].V[1] ||
 			pCollisionMeshBuild->Faces[i].V[1] == pCollisionMeshBuild->Faces[i].V[2] ||
 			pCollisionMeshBuild->Faces[i].V[2] == pCollisionMeshBuild->Faces[i].V[0])
 		{
-			errors.push_back(string("mesh:") + rootMeshNames[facesRootMeshesInfo[i].first] + string(" face:") + toString(facesRootMeshesInfo[i].second));
+			warnings.push_back(string("mesh:") + rootMeshNames[facesRootMeshesInfo[i].first] + string(" face:") + toString(facesRootMeshesInfo[i].second));
 		}
 	}
 
@@ -261,10 +263,39 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 					"The bounding box of the selection exceeds 512 meters large!", 
 					"NeL export collision", MB_OK|MB_ICONEXCLAMATION);
 
-	// report errors
+	// report warnings
+	if (!warnings.empty())
+	{
+		string	message = "Warning(s) occured during collision export\n(defective links may result)";
+		for (i=0; i<warnings.size(); ++i)
+			message += string("\n")+warnings[i];
+
+		MessageBox (theCNelExport.ip->GetMAXHWnd(), 
+					(message+"\n\n(This message was copied in the clipboard)").c_str(), 
+					"NeL export collision", MB_OK|MB_ICONEXCLAMATION);
+
+		if (OpenClipboard (NULL))
+		{
+			HGLOBAL mem = GlobalAlloc (GHND|GMEM_DDESHARE, message.size()+1);
+			if (mem)
+			{
+				char *pmem = (char *)GlobalLock (mem);
+				strcpy (pmem, message.c_str());
+				GlobalUnlock (mem);
+				EmptyClipboard ();
+				SetClipboardData (CF_TEXT, mem);
+			}
+			CloseClipboard ();
+		}
+	}
+
+	vector<string>	errors;
+	pCollisionMeshBuild->link(false, errors);
+	pCollisionMeshBuild->link(true, errors);
+	// report warnings
 	if (!errors.empty())
 	{
-		string	message = "Error(s) occured during collision export:";
+		string	message = "Error(s) occured during collision export\n(edge issues)";
 		for (i=0; i<errors.size(); ++i)
 			message += string("\n")+errors[i];
 
@@ -285,6 +316,9 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 			}
 			CloseClipboard ();
 		}
+
+		delete pCollisionMeshBuild;
+		pCollisionMeshBuild = NULL;
 	}
 
 	// Return the shape pointer or NULL if an error occured.

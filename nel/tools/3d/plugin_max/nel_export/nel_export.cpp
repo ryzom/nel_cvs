@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.16 2001/11/12 18:12:51 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.17 2001/11/29 14:22:23 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -422,15 +422,15 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					strcpy (sSavePath, "");
 
 					// Choose a file to export
-					if (theCNelExport.SelectFileForSave(hWnd, sNodeMsg, collisionFilter, sSavePath))
+					//	ULONG SelectDir(HWND Parent, char* Title, char* Path);
+//					if (theCNelExport.SelectFileForSave(hWnd, sNodeMsg, collisionFilter, sSavePath))
+					if (theCNelExport.SelectDir(hWnd, sNodeMsg, sSavePath))
 					{
 						// Export the mesh
 						if (!theCNelExport.exportCollision (sSavePath, nodes, *theCNelExport.ip, time, theExportSceneStruct))
 						{
 							// Error message
-							char sErrorMsg[512];
-							sprintf (sErrorMsg, "Error exporting the collision in the file\n%s", sSavePath);
-							MessageBox (hWnd, sErrorMsg, "NeL export", MB_OK|MB_ICONEXCLAMATION);
+							MessageBox (hWnd, "Error during export collision", "NeL export", MB_OK|MB_ICONEXCLAMATION);
 						}
 					}
 

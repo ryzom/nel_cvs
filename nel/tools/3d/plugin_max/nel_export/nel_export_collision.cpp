@@ -1,7 +1,7 @@
 /** \file nel_export_collision.cpp
  * 
  *
- * $Id: nel_export_collision.cpp,v 1.1 2001/08/08 09:04:46 legros Exp $
+ * $Id: nel_export_collision.cpp,v 1.2 2001/11/29 14:22:23 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "pacs/collision_mesh_build.h"
 
 #include "../nel_mesh_lib/export_nel.h"
+#include "../nel_mesh_lib/export_lod.h"
 
 using namespace NLMISC;
 using namespace NLPACS;
@@ -42,7 +43,7 @@ bool CNelExport::exportCollision (const char *sPath, std::vector<INode *> &nodes
 	bool bRet=false;
 
 	// Eval the objects a time
-	uint	i;
+	uint	i, j;
 
 	for (i=0; i<nodes.size(); ++i)
 	{
@@ -51,6 +52,64 @@ bool CNelExport::exportCollision (const char *sPath, std::vector<INode *> &nodes
 			return bRet;
 	}
 
+	std::vector<std::pair<std::string, std::vector<INode *> > >	igs;
+	for (i=0; i<nodes.size(); ++i)
+	{
+		std::string	ig = CExportNel::getScriptAppData(nodes[i], NEL3D_APPDATA_IGNAME, "");
+		if (ig == "")
+			ig = "unknown_ig";
+
+		for (j=0; j<igs.size() && ig!=igs[j].first; ++j)
+			;
+		if (j == igs.size())
+		{
+			igs.push_back();
+			igs[j].first = ig;
+		}
+
+		igs[j].second.push_back(nodes[i]);
+	}
+
+//	ULONG SelectDir(HWND Parent, char* Title, char* Path);
+
+	std::string	path = std::string(sPath);
+	if (path.size() == 0 || path[path.size()-1] != '\\' && path[path.size()-1] != '/')
+		path.insert(path.end(), '/');
+
+	for (i=0; i<igs.size(); ++i)
+	{
+		std::string				igname = igs[i].first;
+		std::vector<INode *>	&ignodes = igs[i].second;
+		std::string				filename = path+igname+".cmb";
+		// Object exist ?
+		CCollisionMeshBuild	*pCmb = CExportNel::createCollisionMeshBuild(ignodes, time);
+
+		// Conversion success ?
+		if (pCmb)
+		{
+			// Open a file
+			COFile file;
+			if (file.open (filename))
+			{
+				try
+				{
+					// Serialise the collision mesh build
+					file.serial(*pCmb);
+
+					// All is good
+					bRet=true;
+				}
+				catch (...)
+				{
+				}
+			}
+
+			// Delete the pointer
+			delete pCmb;
+		}
+	}
+
+/*
 	// Object exist ?
 	CCollisionMeshBuild	*pCmb = CExportNel::createCollisionMeshBuild(nodes, time);
 
@@ -77,7 +136,7 @@ bool CNelExport::exportCollision (const char *sPath, std::vector<INode *> &nodes
 		// Delete the pointer
 		delete pCmb;
 	}
-
+*/
 	return bRet;
 }
 

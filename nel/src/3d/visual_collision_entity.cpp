@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.8 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.9 2001/12/27 11:17:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@ CVisualCollisionEntity::CVisualCollisionEntity(CVisualCollisionManager *owner) :
 
 	_GroundMode= true;
 	_CeilMode= false;
+	_SnapToRenderedTesselation= true;
 
 }
 
@@ -156,16 +157,24 @@ bool		CVisualCollisionEntity::snapToGround(CVector &pos, CVector &normal)
 	// result. NB: if not found, dot not modify.
 	if(sqrBestDist<sqr(1000))
 	{
-		// snap the position to the nearest tesselation.
-		pos= res;
+		if(_SnapToRenderedTesselation)
+		{
+			// snap the position to the nearest tesselation.
+			pos= res;
 
-		// snap the position to the current rendered tesselation.
-		CTrianglePatch	&tri= testTriangles[bestTriangle];
-		snapToLandscapeCurrentTesselation(pos, tri);
+			// snap the position to the current rendered tesselation.
+			CTrianglePatch	&tri= testTriangles[bestTriangle];
+			snapToLandscapeCurrentTesselation(pos, tri);
 
-		// compute the normal.
-		normal= (tri.V1-tri.V0)^(tri.V2-tri.V0);
-		normal.normalize();
+			// compute the normal.
+			normal= (tri.V1-tri.V0)^(tri.V2-tri.V0);
+			normal.normalize();
+		}
+		else
+		{
+			// just snap to the accurate tile tesselation.
+			pos= res;
+		}
 
 		return true;
 	}

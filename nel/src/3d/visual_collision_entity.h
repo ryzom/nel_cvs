@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.h
  * <File description>
  *
- * $Id: visual_collision_entity.h,v 1.3 2001/07/16 10:11:07 berenguier Exp $
+ * $Id: visual_collision_entity.h,v 1.4 2001/12/27 11:17:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@ public:
 
 
 	/** Snap the entity onto the ground. pos.z is modified so that it lies on the ground, according to rendered landscapes
-	 * and meshes.
+	 * and meshes. see setSnapToRenderedTesselation() option
 	 * \return true if pos.z has been modified (sometimes it may not find a solution).
 	 */
 	bool	snapToGround(CVector &pos);
@@ -86,6 +86,13 @@ public:
 	bool	getCeilMode() const {return _CeilMode;}
 
 
+	/** By default, the visual collision entity is snapped on rendered/geomorphed tesselation (true).
+	 *  Use this method to change this behavior. if false, the entity is snapped to the tile level tesselation
+	 *	according to noise etc...
+	 */
+	void	setSnapToRenderedTesselation(bool snapMode) {_SnapToRenderedTesselation= snapMode;}
+	bool	getSnapToRenderedTesselation() const {return _SnapToRenderedTesselation;}
+
 
 // ***********************
 private:
@@ -93,6 +100,7 @@ private:
 
 	bool	_CeilMode;
 	bool	_GroundMode;
+	bool	_SnapToRenderedTesselation;
 
 
 	/// \name Landscape part.

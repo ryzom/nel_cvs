@@ -1,7 +1,7 @@
 /** \file u_visual_collision_entity.h
  * <File description>
  *
- * $Id: u_visual_collision_entity.h,v 1.3 2001/07/16 10:11:07 berenguier Exp $
+ * $Id: u_visual_collision_entity.h,v 1.4 2001/12/27 11:18:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,6 +82,13 @@ public:
 
 	virtual bool	getGroundMode() const =0;
 	virtual bool	getCeilMode() const =0;
+
+	/** By default, the visual collision entity is snapped on rendered/geomorphed tesselation (true).
+	 *  Use this method to change this behavior. if false, the entity is snapped to the tile level tesselation
+	 *	according to noise etc...
+	 */
+	virtual void	setSnapToRenderedTesselation(bool snapMode) =0;
+	virtual bool	getSnapToRenderedTesselation() const =0;
 
 };
 

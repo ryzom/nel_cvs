@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.h
  * UVisualCollisionEntity implementation.
  *
- * $Id: visual_collision_entity_user.h,v 1.3 2001/07/16 10:11:07 berenguier Exp $
+ * $Id: visual_collision_entity_user.h,v 1.4 2001/12/27 11:17:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,15 @@ public:
 		return _Entity->getCeilMode();
 	}
 
+
+	virtual void	setSnapToRenderedTesselation(bool snapMode)
+	{
+		_Entity->setSnapToRenderedTesselation(snapMode);
+	}
+	virtual bool	getSnapToRenderedTesselation() const
+	{
+		return _Entity->getSnapToRenderedTesselation();
+	}
 
 
 private:

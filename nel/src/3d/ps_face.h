@@ -1,7 +1,7 @@
 /** \file ps_face.h
  * Face particles.
  *
- * $Id: ps_face.h,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_face.h,v 1.2 2002/02/20 11:10:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,7 +110,7 @@ protected:
 
 	friend class CPSFaceHelper; /// for private use only
 
-	virtual void	step(TPSProcessPass pass, TAnimationTime ellapsedTime);	
+	virtual void	step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime);	
 	virtual void	newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
 	virtual void	deleteElement(uint32 index);
 	virtual void	resize(uint32 size);
@@ -142,4 +142,4 @@ protected:
 
 #endif // NL_PS_FACE_H
 
-/* End of ps_particle.h */
+/* End of ps_face.h */

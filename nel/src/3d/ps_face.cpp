@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_face.cpp,v 1.2 2002/02/20 11:10:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -206,7 +206,7 @@ CPSFace::CPSFace(CSmartPtr<ITexture> tex) : CPSQuad(tex)
 }
 
 ///======================================================================================
-void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime)
 {
 	if (pass == PSToolRender) // edition mode only
 	{			

@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.41 2002/02/15 17:06:47 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.42 2002/02/20 11:13:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,7 +126,7 @@ void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,
 	}
 }
 
-void CPSLocated::performParametricMotion(TAnimationTime date, TAnimationTime ellapsedTime)
+void CPSLocated::performParametricMotion(TAnimationTime date, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime)
 {
 	if (!_Size) return;	
 	nlassert(supportParametricMotion() && _ParametricMotion);
@@ -158,8 +158,7 @@ void CPSLocated::performParametricMotion(TAnimationTime date, TAnimationTime ell
 		}
 		while (it != endIt);
 	}
-	step(PSEmit, ellapsedTime, ellapsedTime);
-	updateLife(ellapsedTime);
+	step(PSEmit, ellapsedTime, realEllapsedTime);	
 }
 
 /// allocate parametric infos
@@ -242,7 +241,9 @@ void CPSLocated::notifyMaxNumFacesChanged(void)
 	{
 		if ((*it)->getType() == PSParticle)
 		{
-			_MaxNumFaces += ((CPSParticle *) (*it))->getMaxNumFaces();
+			uint maxNumFaces = ((CPSParticle *) (*it))->getMaxNumFaces();
+			///nlassertex(maxNumFaces < ((1 << 16) - 1), ("%s", (*it)->getClassName().c_str()));
+			_MaxNumFaces += maxNumFaces;
 		}
 	}	
 
@@ -531,6 +532,7 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 	if (_UpdateLock)
 	{
 		postNewElement(pos, speed);
+		return -1;
 	}
 	
 
@@ -708,7 +710,7 @@ void CPSLocated::resize(uint32 newSize)
 
 	if (_CollisionInfo)
 	{
-		_CollisionInfo->resizeNFill(newSize);
+		_CollisionInfo->resize(newSize);
 	}
 
 	
@@ -1033,6 +1035,7 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 		// check if we must skip frames
 		if (!_NbFramesToSkip || !( (uint32) _Owner->getDate() % (_NbFramesToSkip + 1)))
 		{
+			
 
 			// update the located creation requests that may have been posted
 			updateNewElementRequestStack();
@@ -1050,7 +1053,7 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 				// integration with collisions
 
 				nlassert(_CollisionInfo);
-				TPSAttribCollisionInfo::const_iterator itc = _CollisionInfo->begin();
+				TPSAttribCollisionInfo::iterator itc = _CollisionInfo->begin();
 				TPSAttribVector::iterator itSpeed = _Speed.begin();		
 				TPSAttribVector::iterator itPos = _Pos.begin();		
 
@@ -1060,40 +1063,35 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 					{
 						(*itPos) = itc->newPos;
 						(*itSpeed) = itc->newSpeed;
-
 						// notify each located bindable that a bounce occured ...
 						for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
 						{	
 							(*it)->bounceOccured(k);
 						}
-
 						switch(itc->collisionZone->getCollisionBehaviour())
 						{
 							case CPSZone::bounce:
+								itc->reset();
 								++k, ++itPos, ++itSpeed, ++itc;
 							break;
 							case CPSZone::destroy:
 								deleteElement(k);
 							break;
 						}
-
-
 					}
 					else
 					{
-						(*itPos) += ellapsedTime * (*itSpeed);
+						(*itPos) += ellapsedTime * (*itSpeed) * itc->TimeSliceRatio;
+						itc->reset();
 						++k, ++itPos, ++itSpeed, ++itc;
 					}
 				}
 
 				
-				// reset collision info for the next time
-
-				resetCollisionInfo();
+				// reset collision info for the next time => done during the traversal
+				/// resetCollisionInfo();
 				
-			}
-
-			updateLife(realEt);			
+			}		
 		}
 		else
 		{
@@ -1108,7 +1106,7 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 		{
 			if ((*it)->getLOD() == PSLod1n2 || _Owner->getLOD() == (*it)->getLOD()) // has this object the right LOD ?
 			{
-				(*it)->step(pass, ellapsedTime);
+				(*it)->step(pass, ellapsedTime, realEt);
 			}
 		}
 	}
@@ -1116,7 +1114,7 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 	{
 		for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
 		{		
-			(*it)->step(pass, ellapsedTime);		
+			(*it)->step(pass, ellapsedTime, realEt);		
 		}
 
 	}
@@ -1124,6 +1122,7 @@ void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 
 void CPSLocated::updateLife(TAnimationTime ellapsedTime)
 {
+	if (!_Size) return;
 	if (! _LastForever)
 	{
 		if (_LifeScheme != NULL)
@@ -1151,7 +1150,7 @@ void CPSLocated::updateLife(TAnimationTime ellapsedTime)
 				nlassert(_Owner);
 				float timeInc = ellapsedTime * 1.f / _InitialLife;
 				if (_Owner->getSystemDate() >= (_InitialLife - ellapsedTime))
-				{					
+				{
 					TPSAttribTime::iterator itTime = _Time.begin();
 					for (uint32 k = 0; k < _Size;)
 					{
@@ -1295,7 +1294,7 @@ void CPSLocated::queryCollisionInfo(void)
 	{
 		_CollisionInfo = new TPSAttribCollisionInfo;
 		_CollisionInfoNbRef = 1;
-		_CollisionInfo->resizeNFill(_MaxSize);
+		_CollisionInfo->resize(_MaxSize);
 		resetCollisionInfo();
 	}
 }

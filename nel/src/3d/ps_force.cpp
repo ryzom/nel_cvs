@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.26 2002/02/15 17:04:24 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.27 2002/02/20 11:11:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,11 +73,11 @@ void CPSForce::registerToTargets(void)
 }
 
 
-void CPSForce::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+void CPSForce::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime)
 {
 	switch(pass)
 	{
-		case PSDynamic:
+		case PSMotion:
 			performDynamic(ellapsedTime);
 		break;
 		case PSToolRender:

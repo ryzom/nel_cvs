@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.14 2002/02/15 17:04:46 vizerie Exp $
+ * $Id: ps_force.h,v 1.15 2002/02/20 11:12:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ public:
 	/**
 	 * process one pass for the force 
 	 */
-	virtual void		step(TPSProcessPass pass, TAnimationTime ellapsedTime);
+	virtual void		step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime);
 
 	
 	/// Compute the force on the targets

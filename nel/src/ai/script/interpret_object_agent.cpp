@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.10 2001/01/12 16:17:49 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.11 2001/01/16 11:39:50 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,7 +171,7 @@ namespace NLAISCRIPT
 	/// it's child equivalent message processing function index.
 	void CAgentClass::buildChildsMessageMap()
 	{
-/*		{
+		{
 			sint32 i, child_index, father_index;
 
 			std::vector< std::vector<sint32> > l_index;
@@ -246,7 +246,6 @@ namespace NLAISCRIPT
 				}
 			}
 		}
-		*/
 	}
 
 	sint32 CAgentClass::getChildMessageIndex(const NLAIAGENT::IMessageBase *msg, sint32 child_index )

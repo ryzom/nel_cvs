@@ -29,7 +29,7 @@ namespace NLAILOGIC
 
 	const TProcessStatement CValueSet::state = processIdle;
 
-	// Construit un CValueSet de taille <size> avec des valeurs initialisées à NULL
+	/// Initialises a CValueSet of size <size> with values to NULL.
 	CValueSet::CValueSet(sint32 size)
 	{
 		_NbValues = size;
@@ -41,7 +41,7 @@ namespace NLAILOGIC
 		}
 	}
 
-	// Constructeur de copie
+	/// Copy constructor
 	CValueSet::CValueSet(const CValueSet &cp)
 	{
 		_NbValues = cp._NbValues;
@@ -57,7 +57,7 @@ namespace NLAILOGIC
 		}
 	}
 
-	// Construit un CValueSet à partir des valeurs d'une liste de variables
+	/// Builds a CValueSet from values taken from a list of variables
 	CValueSet::CValueSet(std::vector<IBaseVar *> &vars)
 	{
 		_NbValues = vars.size();
@@ -75,6 +75,9 @@ namespace NLAILOGIC
 
 	// Construit un valueSet à partir d'un autre en changeant la position des valeurs:
 	// pos = positions dans le nouveau CValueSet des valeurs du premier.
+
+	/// Builds a CValueSet from another one, changing the positions of values
+	/// pos = positiions in the new CValueSet of the existing one's variables
 	CValueSet::CValueSet(CValueSet *vals, std::vector<sint32> &pos)
 	{
 		_NbValues = pos.size();
@@ -96,7 +99,7 @@ namespace NLAILOGIC
 		}
 	}
 
-	// Construit un CValueSet de taille <size> à partir d'une liste de valeurs et de leurs positions
+	/// Builds a CValueSet with size <size> from a list of values and their positions
 	CValueSet::CValueSet(sint32 size, std::list<IObjetOp *> *vals, std::vector<sint32> &pos)
 	{
 		_NbValues = size;
@@ -138,6 +141,11 @@ namespace NLAILOGIC
 	// Unification d'un CValueSet ave un autre.
 	// Renvoie NULL si l'unification échoue, 
 	// Un nouveau CValueSet corrrespondant à la l'unification si réussit
+
+
+	/// Tries tu unify two CValueSets
+	/// Returns NULL if the unification fails.
+	/// Returns a new unified CValueSet if it succeeds.
 	CValueSet *CValueSet::unify(const CValueSet *un) const
 	{
 		CValueSet *result = new CValueSet( _NbValues );
@@ -185,7 +193,7 @@ namespace NLAILOGIC
 		return result;
 	}
 
-	// Unifie un CValueSet avec une liste de valeurs et leurs positions
+	/// Tries to unify a CValueSet with a list of values and their positions
 	CValueSet *CValueSet::unify(std::list<IObjetOp *> *vals, std::vector<sint32> &pos_vals) const
 	{
 		CValueSet *result = new CValueSet( _NbValues );
@@ -309,7 +317,7 @@ namespace NLAILOGIC
 			return NULL;	// TODO: exception!!!!!!!!!!!!
 	}
 
-	// Renvoie le nombre de valeurs à NULL ( considérées comme indéfinies)
+	/// Returns the number of NULL values (considered as undefined).
 	sint32 CValueSet::undefined() const
 	{
 		sint32 nb_undef = _NbValues;
@@ -324,10 +332,10 @@ namespace NLAILOGIC
 		return _NbValues;
 	}
 
-	// Renvoie une liste des valeurs non nulles du CValueSet
+	/// Return a list of the != NULL values of the object
 	std::list<IObjetOp *> *CValueSet::getValues()
 	{
-		// Attenrtion envoie une liste à détruire et sans faire de incRef();
+		// Warning: this list must be deleted after use!!!
 		std::list<IObjetOp *> *result = new std::list<IObjetOp *>;
 		for (sint32 i = 0; i < _NbValues; i++ )
 		{
@@ -386,14 +394,14 @@ namespace NLAILOGIC
 
 	void CValueSet::load(NLMISC::IStream &is)
 	{
-		// Détruit l'ancien tableau
+		// Deletes the old table
 		int i;
 		for ( i = 0; i < _NbValues; i++ )
 			if ( _Values[i] )
 				_Values[i]->release();
 		delete[] _Values;
 		
-		// En créé un nouveau
+		// Creates the new one
 		sint32 nb_Values;
 		is.serial( nb_Values );
 		_NbValues = (sint32) nb_Values;

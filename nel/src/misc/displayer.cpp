@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.40 2002/08/23 12:28:02 lecroart Exp $
+ * $Id: displayer.cpp,v 1.41 2002/09/04 10:42:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -495,6 +495,7 @@ void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message
 		string body;
 
 		body += toString(LogTypeToString[2][args.LogType]) + "\n";
+		body += "ProcName: " + args.ProcessName + "\n";
 		body += "Date: " + string(dateToHumanString(args.Date)) + "\n";
 		if(args.Filename == NULL)
 			body += "File: <???>\n";
@@ -507,7 +508,27 @@ void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message
 
 		string subject;
 
-		subject += args.ProcessName + " NeL " + toString(LogTypeToString[0][args.LogType]) + " " + string(args.Filename) + " " + toString(args.Line);
+		// procname is host/service_name-sid we only want the service_name to avoid redondant mail
+		string procname;
+		sint pos = args.ProcessName.find ("/");
+		if (pos == string::npos)
+		{
+			procname =  args.ProcessName;
+		}
+		else
+		{
+			sint pos2 = args.ProcessName.find ("-", pos+1);
+			if (pos2 == string::npos)
+			{
+				procname =  args.ProcessName.substr (pos+1);
+			}
+			else
+			{
+				procname =  args.ProcessName.substr (pos+1, pos2-pos-1);
+			}
+		}
+
+		subject += procname + " NeL " + toString(LogTypeToString[0][args.LogType]) + " " + string(args.Filename) + " " + toString(args.Line);
 
 		// Check the envvar NEL_IGNORE_ASSERT
 		if (getenv ("NEL_IGNORE_ASSERT") == NULL)

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * TODO: File description
  *
- * $Id: water_model.cpp,v 1.55 2005/02/22 10:19:13 besson Exp $
+ * $Id: water_model.cpp,v 1.56 2005/02/23 17:31:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1258,6 +1258,8 @@ void CWaterModel::link()
 	rt._FirstWaterModel = this;
 }
 
+
+
 //***********************************************************************************************************
 uint CWaterModel::getNumWantedVertices()
 {	
@@ -1291,7 +1293,7 @@ uint CWaterModel::getNumWantedVertices()
 		NLMISC::CVector t = projMat * _ClippedPoly.Vertices[k];
 		float invY = 1.f / t.y;
 		projPoly.Vertices[k].set(xFactor * t.x * invY, yFactor * t.z * invY);			
-	}
+	}	
 	// compute grid cells that are entirely inside		
 	projPoly.computeInnerBorders(_Inside, _MinYInside);
 	// compute grid cells that are touched
@@ -1299,18 +1301,17 @@ uint CWaterModel::getNumWantedVertices()
 	sint minYBorder;
 	projPoly.computeOuterBorders(border, minYBorder);
 	// border - inside -> gives grid cells that must be clipped to fit the shape boundaries
-	// Make sure that rasters  array for inside has the same size that raster array for borders (by inserting NULL rasters)
-	sint bottomYBorder = minYBorder + border.size();
-	sint bottomYInside = _MinYInside + _Inside.size();
-	sint height = border.size();				
+	// Make sure that rasters  array for inside has the same size that raster array for borders (by inserting NULL rasters)	
+	sint height = border.size();			
 	if (_Inside.empty())
 	{
 		_MinYInside = minYBorder;
 	}
+	sint bottomGap = border.size() - _Inside.size();	
 	_Inside.resize(height);
 	nlassert(minYBorder == _MinYInside);
 	
-	sint bottomGap = bottomYBorder - bottomYInside;	
+	nlassert(bottomGap >= 0);
 	if (bottomGap)
 	{	
 		for(sint y = height - bottomGap; y < height; ++y)

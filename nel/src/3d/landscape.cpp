@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.56 2001/06/05 13:50:07 berenguier Exp $
+ * $Id: landscape.cpp,v 1.57 2001/06/08 16:09:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1315,7 +1315,6 @@ void			CLandscape::addTrianglesInBBox(sint zoneId, sint patchId, const CAABBox &
 	std::map<uint16, CZone*>::const_iterator	it= Zones.find(zoneId);
 	if(it!=Zones.end())
 	{
-		// Then trace all patch.
 		sint	N= (*it).second->getNumPatchs();
 		// patch must exist in the zone.
 		nlassert(patchId>=0);
@@ -1331,7 +1330,7 @@ void			CLandscape::addTrianglesInBBox(sint zoneId, sint patchId, const CAABBox &
 
 
 // ***************************************************************************
-void			CLandscape::addTrianglesInBBox(const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel)
+void			CLandscape::buildTrianglesInBBox(const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel)
 {
 	// clear selection.
 	triangles.clear();
@@ -1347,6 +1346,68 @@ void			CLandscape::addTrianglesInBBox(const CAABBox &bbox, std::vector<CTriangle
 		addTrianglesInBBox((*it).ZoneId, (*it).PatchId, bbox, triangles, tileTessLevel);
 	}
 }
+
+
+
+// ***************************************************************************
+void			CLandscape::addPatchBlocksInBBox(sint zoneId, sint patchId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds)
+{
+	// No clear here, just add blocks to the array.
+	std::map<uint16, CZone*>::const_iterator	it= Zones.find(zoneId);
+	if(it!=Zones.end())
+	{
+		sint	N= (*it).second->getNumPatchs();
+		// patch must exist in the zone.
+		nlassert(patchId>=0);
+		nlassert(patchId<N);
+		const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(patchId);
+
+		CPatchIdent		paId;
+		paId.ZoneId= zoneId;
+		paId.PatchId= patchId;
+		pa->addPatchBlocksInBBox(paId, bbox, paBlockIds);
+	}
+}
+
+
+// ***************************************************************************
+void			CLandscape::buildPatchBlocksInBBox(const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds)
+{
+	// clear selection.
+	paBlockIds.clear();
+
+	// search path of interest.
+	_PatchQuadGrid.clearSelection();
+	_PatchQuadGrid.select(bbox.getMin(), bbox.getMax());
+	CQuadGrid<CPatchIdent>::CIterator	it;
+
+	// for each patch, add blocks to the array.
+	for(it= _PatchQuadGrid.begin(); it!= _PatchQuadGrid.end(); it++)
+	{
+		addPatchBlocksInBBox((*it).ZoneId, (*it).PatchId, bbox, paBlockIds);
+	}
+}
+
+
+// ***************************************************************************
+void			CLandscape::fillPatchQuadBlock(CPatchQuadBlock &quadBlock) const
+{
+	sint zoneId=  quadBlock.PatchBlockId.PatchId.ZoneId;
+	sint patchId= quadBlock.PatchBlockId.PatchId.PatchId;
+	std::map<uint16, CZone*>::const_iterator	it= Zones.find(zoneId);
+	if(it!=Zones.end())
+	{
+		sint	N= (*it).second->getNumPatchs();
+		// patch must exist in the zone.
+		nlassert(patchId>=0);
+		nlassert(patchId<N);
+
+		const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(patchId);
+		pa->fillPatchQuadBlock(quadBlock);
+	}
+}
+
+
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.48 2001/06/05 13:50:07 berenguier Exp $
+ * $Id: patch.cpp,v 1.49 2001/06/08 16:09:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,24 +141,38 @@ void			CPatch::computeDefaultErrorSize()
 
 
 // ***************************************************************************
-CAABBox			CPatch::buildBBoxFromBezierPatch(const CBezierPatch &p) const
+void			CPatch::buildBBoxFromBezierPatch(const CBezierPatch &p, CAABBox &ret) const
 {
-	CAABBox		ret;
-	ret.setCenter(p.Vertices[0]);
+	// Because of the structure of CAABBox, extend() is not fast enough for us. first compute bmin, bmax,
+	// then compute the bbox.
+	CVector		bmin= p.Vertices[0];
+	CVector		bmax= bmin; 
+
 	sint			i;
 	for(i=0;i<4;i++)
-		ret.extend(p.Vertices[i]);
+	{
+		bmin.minof(bmin, p.Vertices[i]);
+		bmax.maxof(bmax, p.Vertices[i]);
+	}
 	for(i=0;i<8;i++)
-		ret.extend(p.Tangents[i]);
+	{
+		bmin.minof(bmin, p.Tangents[i]);
+		bmax.maxof(bmax, p.Tangents[i]);
+	}
 	for(i=0;i<4;i++)
-		ret.extend(p.Interiors[i]);
+	{
+		bmin.minof(bmin, p.Interiors[i]);
+		bmax.maxof(bmax, p.Interiors[i]);
+	}
 
 	// Modulate with the maximum displacement map (usefull for patch clipping).
-	ret.setHalfSize(ret.getHalfSize()+CVector(NL3D_NOISE_MAX, NL3D_NOISE_MAX, NL3D_NOISE_MAX));
+	static	CVector		vectorNoiseMax(NL3D_NOISE_MAX, NL3D_NOISE_MAX, NL3D_NOISE_MAX);
+	bmin-= vectorNoiseMax;
+	bmax+= vectorNoiseMax;
 	// NB: this is not very optimal, since the BBox may be very too big. eg: patch 16mx16m => bbox 18mx18m.
 	// But remind that tessblocks do not use this BBox, and are computed with the real geometry.
 
-	return ret;
+	ret.setMinMax(bmin, bmax);
 }
 
 
@@ -169,7 +183,7 @@ CAABBox			CPatch::buildBBox() const
 
 	// Compute Bounding Box. (easiest way...)
 	CAABBox		ret;
-	ret= buildBBoxFromBezierPatch(p);
+	buildBBoxFromBezierPatch(p, ret);
 
 	return ret;
 }
@@ -196,7 +210,8 @@ void		CPatch::addTrianglesInBBoxRecurs(CPatchIdent paId, const CAABBox &bbox, st
 	// compute and compare bbox of the subdivision patch against request bbox.
 	//========================
 	// NB: this compute includes possible noise.
-	CAABBox		paBBox= buildBBoxFromBezierPatch(pa);
+	CAABBox		paBBox;
+	buildBBoxFromBezierPatch(pa, paBBox);
 	// if do not intersect, stop here.
 	if( !paBBox.intersect(bbox) )
 		return;
@@ -247,9 +262,6 @@ void		CPatch::addTileTrianglesInBBox(CPatchIdent paId, const CAABBox &bbox, std:
 	nlassert(tessLevel<=2);
 	uint	tessLen= 1<<tessLevel;
 
-	// compute bezier patch. (NB: because of cache, this cost nothing).
-	CBezierPatch	&bpatch= *unpackIntoCache();
-
 	// some preca.
 	float	startS0= (float)s0 / (float)(OrderS);
 	float	startT0= (float)t0 / (float)(OrderT);
@@ -277,10 +289,11 @@ void		CPatch::addTileTrianglesInBBox(CPatchIdent paId, const CAABBox &bbox, std:
 			uv1.U= fs0; uv1.V= ft1;
 			uv2.U= fs1; uv2.V= ft1;
 			uv3.U= fs1; uv3.V= ft0;
-			p0= bpatch.eval(uv0.U, uv0.V);
-			p1= bpatch.eval(uv1.U, uv1.V);
-			p2= bpatch.eval(uv2.U, uv2.V);
-			p3= bpatch.eval(uv3.U, uv3.V);
+			// evaluate patch (with noise). (NB: because of cache, patch decompression cost nothing).
+			p0= computeVertex(uv0.U, uv0.V);
+			p1= computeVertex(uv1.U, uv1.V);
+			p2= computeVertex(uv2.U, uv2.V);
+			p3= computeVertex(uv3.U, uv3.V);
 
 			// build the bbox of this quad, and test with request bbox.
 			CAABBox		quadBBox;
@@ -313,6 +326,175 @@ void		CPatch::addTileTrianglesInBBox(CPatchIdent paId, const CAABBox &bbox, std:
 	}
 
 }
+
+
+
+// ***************************************************************************
+void		CPatchQuadBlock::buildTileTriangles(uint8 quadId, CTrianglePatch  triangles[2]) const
+{
+	// copute coordinate of the tile we want.
+	uint	sd0= quadId&(NL_PATCH_BLOCK_MAX_QUAD-1);
+	uint	td0= quadId/(NL_PATCH_BLOCK_MAX_QUAD);
+	uint	sd1= sd0+1;
+	uint	td1= td0+1;
+	uint	s= PatchBlockId.S0+sd0;
+	uint	t= PatchBlockId.T0+sd0;
+	nlassert(s<PatchBlockId.S1);
+	nlassert(t<PatchBlockId.T1);
+
+	// Compute UV coord.
+	float	fs0= (float)s / (float)(PatchBlockId.OrderS);
+	float	ft0= (float)t / (float)(PatchBlockId.OrderT);
+	float	fs1= (float)(s+1) / (float)(PatchBlockId.OrderS);
+	float	ft1= (float)(t+1) / (float)(PatchBlockId.OrderT);
+	CUV			uv0, uv1, uv2, uv3;
+	uv0.U= fs0; uv0.V= ft0;
+	uv1.U= fs0; uv1.V= ft1;
+	uv2.U= fs1; uv2.V= ft1;
+	uv3.U= fs1; uv3.V= ft0;
+
+	// get vertex coord.
+	const CVector	&p0= Vertices[sd0 + td0*NL_PATCH_BLOCK_MAX_VERTEX];
+	const CVector	&p1= Vertices[sd0 + td1*NL_PATCH_BLOCK_MAX_VERTEX];
+	const CVector	&p2= Vertices[sd1 + td1*NL_PATCH_BLOCK_MAX_VERTEX];
+	const CVector	&p3= Vertices[sd1 + td0*NL_PATCH_BLOCK_MAX_VERTEX];
+
+	// build triangles.
+	// first tri.
+	{
+		CTrianglePatch &tri= triangles[0];
+		tri.PatchId= PatchBlockId.PatchId;
+		tri.V0= p0; tri.V1= p1; tri.V2= p2;
+		tri.Uv0= uv0; tri.Uv1= uv1; tri.Uv2= uv2;
+	}
+
+	// second tri.
+	{
+		CTrianglePatch &tri= triangles[1];
+		tri.PatchId= PatchBlockId.PatchId;
+		tri.V0= p2; tri.V1= p3; tri.V2= p0;
+		tri.Uv0= uv2; tri.Uv1= uv3; tri.Uv2= uv0;
+	}
+
+}
+
+
+// ***************************************************************************
+void		CPatch::fillPatchQuadBlock(CPatchQuadBlock &quadBlock)  const
+{
+	CPatchBlockIdent	&pbId= quadBlock.PatchBlockId;
+	uint	lenS= pbId.S1-pbId.S0;
+	uint	lenT= pbId.T1-pbId.T0;
+	nlassert( pbId.OrderS==OrderS );
+	nlassert( pbId.OrderT==OrderT );
+	nlassert( pbId.S1<=OrderS );
+	nlassert( pbId.T1<=OrderT );
+	nlassert( pbId.S0<pbId.S1 );
+	nlassert( pbId.T0<pbId.T1 );
+	nlassert( lenS<=NL_PATCH_BLOCK_MAX_QUAD );
+	nlassert( lenT<=NL_PATCH_BLOCK_MAX_QUAD );
+
+	// Fill vertices.
+	uint	s0= pbId.S0;
+	uint	t0= pbId.T0;
+	// some preca.
+	float	startS0= (float)s0 / (float)(OrderS);
+	float	startT0= (float)t0 / (float)(OrderT);
+	float	ds= 1.0f/(float)(OrderS);
+	float	dt= 1.0f/(float)(OrderT);
+
+	// Parse all quads vertices corner.
+	uint	sl,tl;
+	for(tl=0; tl<lenT+1; tl++)
+	{
+		float	fs, ft;
+		// compute t patch coordinates.
+		ft= startT0 + (float)tl * dt ;
+		for(sl=0; sl<lenS+1; sl++)
+		{
+			// compute s patch coordinates.
+			fs= startS0 + (float)sl * ds ;
+			quadBlock.Vertices[sl + tl*NL_PATCH_BLOCK_MAX_VERTEX]= computeVertex(fs, ft);
+		}
+	}
+
+}
+
+
+// ***************************************************************************
+void		CPatch::addPatchBlocksInBBox(CPatchIdent paId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds) const
+{
+	CBezierPatch	&bpatch= *unpackIntoCache();
+
+	// call with the whole root patch.
+	addPatchBlocksInBBoxRecurs(paId, bbox, paBlockIds, bpatch, 0, OrderS, 0, OrderT);
+}
+
+
+// ***************************************************************************
+void		CPatch::addPatchBlocksInBBoxRecurs(CPatchIdent paId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds, 
+		const CBezierPatch &pa, uint8 s0, uint8 s1, uint8 t0, uint8 t1) const
+{
+	uint8	lenS=s1-s0, lenT=t1-t0;
+	nlassert(lenS>0);
+	nlassert(lenT>0);
+
+	// compute and compare bbox of the subdivision patch against request bbox.
+	//========================
+	// NB: this compute includes possible noise.
+	CAABBox		paBBox;
+	buildBBoxFromBezierPatch(pa, paBBox);
+	// if do not intersect, stop here.
+	if( !paBBox.intersect(bbox) )
+		return;
+	// else if at CPatchQuadBlock tile level, then just add this Id.
+	//========================
+	else if( lenS<=NL_PATCH_BLOCK_MAX_QUAD && lenT<=NL_PATCH_BLOCK_MAX_QUAD )
+	{
+		// Add this PatchBlock desctiptor to the list.
+		CPatchBlockIdent	pbId;
+		// Fill struct from this and result of recursion.
+		pbId.PatchId= paId;
+		pbId.OrderS= OrderS;
+		pbId.OrderT= OrderT;
+		pbId.S0= s0;
+		pbId.S1= s1;
+		pbId.T0= t0;
+		pbId.T1= t1;
+		// Add to list.
+		paBlockIds.push_back(pbId);
+	}
+	// else subdiv and reccurs.
+	//========================
+	else
+	{
+		// Subdivide along the bigger side.
+		if(lenS>lenT)
+		{
+			// subdivide.
+			CBezierPatch	left, right;
+			pa.subdivideS(left, right);
+			uint8	sMiddle= (uint8)( ((uint)s0+(uint)s1) /2 );
+			// recurs left.
+			addPatchBlocksInBBoxRecurs(paId, bbox, paBlockIds, left, s0, sMiddle, t0, t1);
+			// recurs right.
+			addPatchBlocksInBBoxRecurs(paId, bbox, paBlockIds, right, sMiddle, s1, t0, t1);
+		}
+		else
+		{
+			// subdivide.
+			CBezierPatch	top, bottom;
+			pa.subdivideT(top, bottom);
+			uint8	tMiddle= (uint8)( ((uint)t0+(uint)t1) /2 );
+			// recurs top.
+			addPatchBlocksInBBoxRecurs(paId, bbox, paBlockIds, top, s0, s1, t0, tMiddle);
+			// recurs bottom.
+			addPatchBlocksInBBoxRecurs(paId, bbox, paBlockIds, bottom, s0, s1, tMiddle, t1);
+		}
+	}
+
+}
+
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.35 2001/06/05 13:50:07 berenguier Exp $
+ * $Id: patch.h,v 1.36 2001/06/08 16:09:23 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -54,6 +54,11 @@ namespace NL3D {
 
 #define NL_LUMEL_BY_TILE_SHIFT 2												// 4 lumels by tile
 #define NL_LUMEL_BY_TILE (1<<NL_LUMEL_BY_TILE_SHIFT)							// 4 lumels by tile
+
+
+#define NL_PATCH_BLOCK_MAX_QUAD 4												// Max quad per CPatchQuadBlock.
+#define NL_PATCH_BLOCK_MAX_VERTEX (NL_PATCH_BLOCK_MAX_QUAD+1)					// Max vertex per CPatchQuadBlock.
+
 
 using NLMISC::CVector;
 
@@ -110,8 +115,25 @@ public:
  */
 struct	CPatchIdent
 {
-	uint16		ZoneId;		// From which zone this patch come from...
+	sint32		ZoneId;		// From which zone this patch come from...
 	uint16		PatchId;	// Id of this patch.
+
+public:
+	bool			operator<(const CPatchIdent &p) const
+	{
+		if(ZoneId!=p.ZoneId) return ZoneId<p.ZoneId;
+		return PatchId<p.PatchId;
+	}
+
+	bool			operator==(const CPatchIdent &p) const
+	{
+		return ZoneId==p.ZoneId && PatchId==p.PatchId;
+	}
+	bool			operator!=(const CPatchIdent &p) const
+	{
+		return !(*this==p);
+	}
+
 };
 
 
@@ -128,6 +150,91 @@ struct	CTrianglePatch : public NLMISC::CTriangleUV
 	/// from which patch this triangle comes from.
 	CPatchIdent		PatchId;
 };
+
+
+// ***************************************************************************
+/**
+ * An descriptor of a group of tiles in a patch.
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	CPatchBlockIdent
+{
+public:
+	/// the patch.
+	CPatchIdent		PatchId;
+	/// size of the patch, in tile coordinates.
+	uint8			OrderS,OrderT;
+	/// coordinate of the SubPart of the patch, in tile coordinates.
+	uint8			S0,S1,T0,T1;
+
+public:
+	/// \name Operators.
+	// @{
+	bool			operator==(const CPatchBlockIdent &pb) const
+	{
+		return PatchId==pb.PatchId &&
+			S0==pb.S0 && S1==pb.S1 &&
+			T0==pb.T0 && T1==pb.T1;
+	}
+	bool			operator!=(const CPatchBlockIdent &pb) const
+	{
+		return !(*this==pb);
+	}
+
+	bool			operator<(const CPatchBlockIdent &pb) const
+	{
+		if(PatchId!=pb.PatchId)
+			return PatchId<pb.PatchId;
+		if(S0!=pb.S0)	return S0<pb.S0;
+		if(S1!=pb.S1)	return S1<pb.S1;
+		if(T0!=pb.T0)	return T0<pb.T0;
+		return T1<pb.T1;
+	}
+	bool			operator<=(const CPatchBlockIdent &pb) const
+	{
+		return (*this<pb) || (*this==pb);
+	}
+	bool			operator>(const CPatchBlockIdent &pb) const
+	{
+		return !(*this<=pb);
+	}
+	bool			operator>=(const CPatchBlockIdent &pb) const
+	{
+		return !(*this<pb);
+	}
+
+	// @}
+};
+
+
+// ***************************************************************************
+/**
+ * A group of tiles faces in a patch. For speed/mem, max size of a CPatchQuadBlock is fixed.
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	CPatchQuadBlock
+{
+public:
+	/// from what subPart of the patch those data comes from.
+	CPatchBlockIdent	PatchBlockId;
+
+	/// evaluated Vertices of this patch.
+	CVector				Vertices[NL_PATCH_BLOCK_MAX_VERTEX*NL_PATCH_BLOCK_MAX_VERTEX];
+
+public:
+
+	/** build the 2 triangles from a quad of the CPatchQuadBlock. 
+	 * quadId is the number of the quad, relatively to the PatchQuadBlock.
+	 */
+	void		buildTileTriangles(uint8 quadId, CTrianglePatch  triangles[2]) const;
+};
+
 
 
 // ***************************************************************************
@@ -356,7 +463,7 @@ public:
 	}
 
 
-	/// \name Subdivision.
+	/// \name Subdivision / ForCollision.
 	// @{
 	/** Add triangles to triangles array which intersect the bbox.
 	 * NB: this method use a convex hull subdivion to search in O(logn) what part of the patch to insert.
@@ -366,6 +473,19 @@ public:
 	 * \param tileTessLevel 0,1 or 2  size of the triangles (2*2m, 1*1m or 0.5*0.5m). Level of subdivision of a tile.
 	 */
 	void		addTrianglesInBBox(CPatchIdent paId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel) const;
+
+	/** Fill a CPatchQuadBlock, from its required PatchId.
+	 * nlassert(PatchId size is less than NL_PATCH_BLOCK_MAX_QUAD)
+	 */
+	void		fillPatchQuadBlock(CPatchQuadBlock &quadBlock) const;
+
+	/** Add CPatchBlockIdent to CPatchBlockIdent array which intersect the bbox.
+	 * NB: this method use a convex hull subdivion to search in O(logn) what part of the patch to insert.
+	 * \param patchId the id of this patch, used to fill PatchBlockIdent.
+	 * \param bbox the bbox to test against.
+	 * \param paBlockIds array to be filled (no clear performed, elements added).
+	 */
+	void		addPatchBlocksInBBox(CPatchIdent paId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds) const;
 	// @}
 
 
@@ -557,7 +677,7 @@ private:
 	/// \name Subdivision private.
 	// @{
 	/// build a bbox from the convex hull of a bezier patch, enlarged with noise.
-	CAABBox		buildBBoxFromBezierPatch(const CBezierPatch &p) const;
+	void		buildBBoxFromBezierPatch(const CBezierPatch &p, CAABBox &ret) const;
 	/** recurse subdivide of the bezierPatch.
 	 * 3 1st parameters are the parameter of addTrianglesInBBox(). \n
 	 * pa is the bezier patch for this subdivision of this patch. \n
@@ -571,6 +691,11 @@ private:
 	 */
 	void		addTileTrianglesInBBox(CPatchIdent paId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tessLevel, 
 		uint8 s0, uint8 t0) const;
+
+	/** recurse method of addPatchBlocksInBBox.
+	 */
+	void		addPatchBlocksInBBoxRecurs(CPatchIdent paId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds, 
+		const CBezierPatch &pa, uint8 s0, uint8 s1, uint8 t0, uint8 t1) const;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.42 2001/06/05 13:50:07 berenguier Exp $
+ * $Id: landscape.h,v 1.43 2001/06/08 16:09:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,7 +227,20 @@ public:
 	 * \param triangles array to be filled (array first cleared, then elements added).
 	 * \param tileTessLevel 0,1 or 2  size of the triangles (2*2m, 1*1m or 0.5*0.5m). Level of subdivision of a tile.
 	 */ 
-	void			addTrianglesInBBox(const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel);
+	void			buildTrianglesInBBox(const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel);
+
+
+	/** Same as buildTrianglesInBBox(), but fill blockId instead of raw triangles.
+	 * NB: this method use first a quadgrid to locate patchs of interest, then for each patch, it uses a 
+	 * convex hull subdivion to search in O(logn) what part of the patch to insert.
+	 * \param bbox the bbox to test against. NB: you should modify your bbox according to heighfield.
+	 * \param paBlockIds array to be filled (no clear performed, elements added).
+	 */ 
+	void			buildPatchBlocksInBBox(const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds);
+	/** Fill a CPatchQuadBlock, from its required PatchId.
+	 * nlassert(PatchId size is less than NL_PATCH_BLOCK_MAX_QUAD)
+	 */
+	void			fillPatchQuadBlock(CPatchQuadBlock &quadBlock) const;
 
 	// @}
 
@@ -472,6 +485,12 @@ private:
 
 	/// \name Visual Collision system.
 	// @{
+
+	/// The QuadGrid of patch.
+	CQuadGrid<CPatchIdent>		_PatchQuadGrid;
+	static	const uint			_PatchQuadGridSize;
+	static	const float			_PatchQuadGridEltSize;
+
 	/** This method search only on the given patch.
 	 * NB: this method use a convex hull subdivion to search in O(logn) what part of the patch to insert.
 	 * \param bbox the bbox to test against.
@@ -479,10 +498,10 @@ private:
 	 * \param tileTessLevel 0,1 or 2  size of the triangles (2*2m, 1*1m or 0.5*0.5m). Level of subdivision of a tile.
 	 */ 
 	void			addTrianglesInBBox(sint zoneId, sint patchId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel) const;
-	/// The QuadGrid of patch.
-	CQuadGrid<CPatchIdent>		_PatchQuadGrid;
-	static	const uint			_PatchQuadGridSize;
-	static	const float			_PatchQuadGridEltSize;
+
+	/** private version of buildPatchBlocksInBBox, searching only for one patch.
+	 */
+	void			addPatchBlocksInBBox(sint zoneId, sint patchId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds);
 	// @}
 
 };

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.125 2004/07/08 16:10:55 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.126 2004/07/16 07:31:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -403,7 +403,7 @@ void CObjectViewer::loadConfigFile()
 		}
 		catch (EUnknownVar &)
 		{
-			::MessageBox(NULL, "warning : 'sample_path' or 'packed_sheet_path' variable not defined.\nSound will not work properly.", "Objectviewer.cfg", MB_OK|MB_ICONEXCLAMATION);
+			//::MessageBox(NULL, "warning : 'sample_path' or 'packed_sheet_path' variable not defined.\nSound will not work properly.", "Objectviewer.cfg", MB_OK|MB_ICONEXCLAMATION);
 		}
 
 		// load the camera focal

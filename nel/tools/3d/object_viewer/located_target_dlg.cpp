@@ -1,7 +1,7 @@
 /** \file located_target_dlg.cpp
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.cpp,v 1.10 2004/06/17 08:11:47 vizerie Exp $
+ * $Id: located_target_dlg.cpp,v 1.11 2004/07/16 07:31:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -234,9 +234,10 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 		_RadialViscosityWrapper.V = dynamic_cast<NL3D::CPSCylindricVortex *>(_LBTarget);
 		rv->setWrapper(&_RadialViscosityWrapper);
 		rv->init(posX + 140, posY, this);
-		CStatic *s = new CStatic;			
+		CStatic *s = new CStatic;
 		pushWnd(s);
 		s->Create("Radial viscosity : ", SS_LEFT, CRect(posX, posY, posX + 139, posY + 32), this);
+		s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));		
 		s->ShowWindow(SW_SHOW);
 
 
@@ -279,9 +280,10 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 		_ParamFactorWrapper.F = static_cast<NL3D::CPSBrownianForce *>(_LBTarget);
 		rv->setWrapper(&_ParamFactorWrapper);
 		rv->init(posX + 140, posY, this);
-		CStatic *s = new CStatic;			
+		CStatic *s = new CStatic;
 		pushWnd(s);
 		s->Create("Parametric factor : ", SS_LEFT, CRect(posX, posY, posX + 139, posY + 40), this);
+		s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));		
 		s->ShowWindow(SW_SHOW);
 
 		rv->GetClientRect(&r);

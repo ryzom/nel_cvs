@@ -69,6 +69,7 @@ BEGIN_MESSAGE_MAP(CRibbonDlg, CDialog)
 	//{{AFX_MSG_MAP(CRibbonDlg)
 	ON_BN_CLICKED(IDC_USE_HERMITTE_INTERPOLATION, OnUseHermitteInterpolation)
 	ON_BN_CLICKED(IDC_CONSTANT_LENGTH, OnConstantLength)
+	ON_CBN_SELCHANGE(IDC_TRAIL_COORD_SYSTEM, OnSelchangeTrailCoordSystem)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -101,7 +102,7 @@ void CRibbonDlg::OnConstantLength()
 BOOL CRibbonDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
-	//===length===========
+	// Length
 	CEditableRangeFloat *erf = new CEditableRangeFloat("RIBBON_LENGTH", _Node, 0.1f, 10.1f);
 	_RibbonLengthDlg = erf;
 	_RibbonLengthWrapper.R = _Ribbon;
@@ -113,7 +114,7 @@ BOOL CRibbonDlg::OnInitDialog()
 	erf->init(r.left, r.top, this);
 
 
-	//=========lod degradation===========
+	// Lod degradation
 	erf = new CEditableRangeFloat("LOD_DEGRADATION", _Node, 0.f, 1.f);
 	_LODDegradationDlg = erf;
 	_LODDegradationWrapper.R = _Ribbon;
@@ -123,6 +124,9 @@ BOOL CRibbonDlg::OnInitDialog()
 	GetDlgItem(IDC_LOD_DEGRADATION)->GetWindowRect(&r);
 	ScreenToClient(&r);	
 	erf->init(r.left, r.top, this);
+
+	// Coord system
+	((CComboBox *) GetDlgItem(IDC_TRAIL_COORD_SYSTEM))->SetCurSel((int) _Ribbon->getMatrixMode());
 
 	updateState();
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -160,3 +164,10 @@ void  CRibbonDlg::CLODDegradationWrapper::set(const float &v)
 	R->setLODDegradation(v); 
 }
 
+
+///=========================================================
+void CRibbonDlg::OnSelchangeTrailCoordSystem() 
+{
+	_Ribbon->setMatrixMode((NL3D::CPSRibbonBase::TMatrixMode) ((CComboBox *) GetDlgItem(IDC_TRAIL_COORD_SYSTEM))->GetCurSel());
+	_Node->setModified(true);
+}

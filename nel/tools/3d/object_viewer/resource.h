@@ -184,6 +184,7 @@
 #define IDC_EDITED_OBJECT               1070
 #define IDC_PROJECTION_MODE             1070
 #define IDC_MATRIX_MODE                 1070
+#define IDC_TRAIL_COORD_SYSTEM          1070
 #define IDC_START_PICTURE               1071
 #define IDD_SET_VALUE                   1071
 #define IDC_ALTERNATE_OP                1071
@@ -673,6 +674,7 @@
 #define IDC_SSD_STATIC_SKIN_SZ          1425
 #define IDC_SSD_BUTTON_REDO             1426
 #define IDC_SSD_BUTTON_MIRROR           1427
+#define IDC_RIBBON_ORIENTATION          1428
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -939,9 +941,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1147
+#define _APS_NEXT_RESOURCE_VALUE        1148
 #define _APS_NEXT_COMMAND_VALUE         32985
-#define _APS_NEXT_CONTROL_VALUE         1428
+#define _APS_NEXT_CONTROL_VALUE         1429
 #define _APS_NEXT_SYMED_VALUE           1001
 #endif
 #endif

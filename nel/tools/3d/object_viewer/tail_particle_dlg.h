@@ -1,6 +1,6 @@
 /** \file tail_particle_dlg.h
  * A dailog that helps to tune propertie of particle that owns a tail 
- * $Id: tail_particle_dlg.h,v 1.2 2001/06/27 16:38:06 vizerie Exp $
+ * $Id: tail_particle_dlg.h,v 1.3 2004/07/16 07:31:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,9 +29,11 @@
 #pragma once
 #endif 
 
+#include "particle_workspace.h"
+
 namespace NL3D
 {
-	struct CPSTailParticle ;
+	struct CPSTailParticle;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -41,16 +43,15 @@ class CTailParticleDlg : public CDialog
 {
 // Construction
 public:
-	CTailParticleDlg(NL3D::CPSTailParticle *tp);   // standard constructor
+	CTailParticleDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSTailParticle *tp);   // standard constructor
 
-	void init(CWnd *pParent, sint x, sint y) ;
+	void init(CWnd *pParent, sint x, sint y);
 // Dialog Data
 	//{{AFX_DATA(CTailParticleDlg)
 	enum { IDD = IDD_TAIL_PARTICLE };
 	CComboBox	m_TailShape;
 	CButton	m_TailPersistAfterDeathCtrl;
-	BOOL	m_TailFade;
-	BOOL	m_TailInSystemBasis;
+	BOOL	m_TailFade;	
 	BOOL	m_TailPersistAfterDeath;
 	//}}AFX_DATA
 
@@ -65,15 +66,16 @@ public:
 // Implementation
 protected:
 	// the particle being edited
-	NL3D::CPSTailParticle *_TailParticle ;
+	NL3D::CPSTailParticle	  *_TailParticle;
+	CParticleWorkspace::CNode *_Node;
 
 	// Generated message map functions
 	//{{AFX_MSG(CTailParticleDlg)
-	afx_msg void OnTailFade();
-	afx_msg void OnTailInSystemBasis();
+	afx_msg void OnTailFade();	
 	afx_msg void OnTailPersistAfterDeath();
 	afx_msg void OnSelchangeTailShape();
 	afx_msg void OnPaint();
+	afx_msg void OnSelchangeRibbonOrientation();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

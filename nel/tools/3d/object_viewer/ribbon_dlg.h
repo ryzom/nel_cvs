@@ -51,6 +51,7 @@ protected:
 	afx_msg void OnUseHermitteInterpolation();
 	afx_msg void OnConstantLength();
 	virtual BOOL OnInitDialog();
+	afx_msg void OnSelchangeTrailCoordSystem();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

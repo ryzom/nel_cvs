@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.20 2004/06/17 08:12:38 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.21 2004/07/16 07:31:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -274,9 +274,10 @@ BOOL CEmitterDlg::OnInitDialog()
 		ecr->setWrapper(&_ConicEmitterRadiusWrapper);
 		ecr->init(posX + 80, posY, this);
 
-		CStatic *s = new CStatic;			
+		CStatic *s = new CStatic;
 		pushWnd(s);
 		s->Create("Radius :", SS_LEFT, CRect(posX, posY + 10 , posX + 70, posY + 32), this);
+		s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));
 		s->ShowWindow(SW_SHOW);
 
 		ecr->GetClientRect(&r);

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.31 2004/06/17 08:12:28 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.32 2004/07/16 07:31:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -222,10 +222,11 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			_MotionBlurCoeffWrapper.P = fla;
 			mbc->setWrapper(&_MotionBlurCoeffWrapper);
 			mbc->init(xPos + 140, yPos, this);
-			CStatic *s = new CStatic;			
+			CStatic *s = new CStatic;
 			pushWnd(s);
 			_MotionBlurWnd.push_back(s);
-			s->Create("Fake motion blur coeff.", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Fake motion blur coeff.", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
+			s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));			
 			s->ShowWindow(SW_SHOW);
 			mbc->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
@@ -238,7 +239,8 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			s = new CStatic;			
 			pushWnd(s);
 			_MotionBlurWnd.push_back(s);
-			s->Create("Fake motion blur threshold.", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Fake motion blur threshold.", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
+			s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));
 			s->ShowWindow(SW_SHOW);
 			mbc->GetClientRect(&rect);
 			yPos += rect.bottom + 3;				
@@ -255,9 +257,10 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			_RadiusCutWrapper.S = sw;
 			rc->setWrapper(&_RadiusCutWrapper);
 			rc->init(xPos + 140, yPos, this);
-			CStatic *s = new CStatic;			
+			CStatic *s = new CStatic;
 			pushWnd(s);
-			s->Create("Radius cut.", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Radius cut.", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
+			s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));			
 			s->ShowWindow(SW_SHOW);
 
 
@@ -273,7 +276,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 
 			s = new CStatic;			
 			pushWnd(s);
-			s->Create("Nb segs", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Nb segs", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
 			s->ShowWindow(SW_SHOW);
 
 			snbs->GetClientRect(&rect);
@@ -287,7 +290,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			uvd->init(xPos + 140, yPos, this);
 			s = new CStatic;			
 			pushWnd(s);
-			s->Create("Texture U factor :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Texture U factor :", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
 			s->ShowWindow(SW_SHOW);
 			uvd->GetClientRect(&rect);
 			yPos += rect.bottom + 3;	
@@ -304,9 +307,10 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			_FanLightWrapper.P = dynamic_cast<NL3D::CPSFanLight *>(_Bindable);
 			nbf->setWrapper(&_FanLightWrapper);
 			nbf->init(xPos + 140, yPos, this);
-			CStatic *s = new CStatic;			
+			CStatic *s = new CStatic;
 			pushWnd(s);
-			s->Create("Nb fan lights :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Nb fan lights :", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
+			s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));			
 			s->ShowWindow(SW_SHOW);
 
 			nbf->GetClientRect(&rect);
@@ -320,7 +324,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			nbf->init(xPos + 140, yPos, this);
 			s = new CStatic;			
 			pushWnd(s);
-			s->Create("Phase smoothnes:", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Phase smoothnes:", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
 			s->ShowWindow(SW_SHOW);
 
 			nbf->GetClientRect(&rect);
@@ -333,7 +337,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			nbfp->init(xPos + 140, yPos, this);
 			s = new CStatic;			
 			pushWnd(s);
-			s->Create("Fan light speed :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Fan light speed :", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
 			s->ShowWindow(SW_SHOW);
 
 			nbf->GetClientRect(&rect);
@@ -346,7 +350,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			nbfp->init(xPos + 140, yPos, this);
 			s = new CStatic;			
 			pushWnd(s);
-			s->Create("Fan light intensity:", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Fan light intensity:", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
 			s->ShowWindow(SW_SHOW);
 
 			nbf->GetClientRect(&rect);
@@ -381,15 +385,16 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			_TailParticleWrapper.P = dynamic_cast<NL3D::CPSTailParticle *>(_Bindable);
 			nbs->setWrapper(&_TailParticleWrapper);
 			nbs->init(xPos + 140, yPos, this);
-			CStatic *s = new CStatic;			
+			CStatic *s = new CStatic;
 			pushWnd(s);
-			s->Create("Nb segs :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Nb segs :", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
+			s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));			
 			s->ShowWindow(SW_SHOW);	
 			
 			nbs->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
 
-			CTailParticleDlg *tpd = new CTailParticleDlg(dynamic_cast<NL3D::CPSTailParticle *>(_Bindable));
+			CTailParticleDlg *tpd = new CTailParticleDlg(_Node, dynamic_cast<NL3D::CPSTailParticle *>(_Bindable));
 			pushWnd(tpd);
 			tpd->init(this, xPos, yPos);
 				
@@ -465,9 +470,10 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			_RibbonUFactorWrapper.R = static_cast<NL3D::CPSRibbon *>(_Bindable);
 			uvd->setWrapper(&_RibbonUFactorWrapper);
 			uvd->init(xPos + 140, yPos, this);
-			CStatic *s = new CStatic;			
+			CStatic *s = new CStatic;
 			pushWnd(s);
-			s->Create("Texture U factor :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Texture U factor :", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
+			s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));			
 			s->ShowWindow(SW_SHOW);
 			uvd->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
@@ -479,7 +485,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			uvd->init(xPos + 140, yPos, this);
 			s = new CStatic;			
 			pushWnd(s);
-			s->Create("Texture V factor :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->Create("Texture V factor :", SS_LEFT, CRect(xPos, yPos + 16, xPos + 139, yPos + 48), this);
 			s->ShowWindow(SW_SHOW);
 			uvd->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
@@ -496,9 +502,10 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			_SegDurationWrapper.R = static_cast<NL3D::CPSRibbonLookAt *>(_Bindable);
 			sd->setWrapper(&_SegDurationWrapper);
 			sd->init(xPos + 140, yPos, this);
-			CStatic *s = new CStatic;			
+			CStatic *s = new CStatic;
 			pushWnd(s);
 			s->Create("Seg Duration :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
+			s->SetFont(CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT)));			
 			s->ShowWindow(SW_SHOW);
 			sd->GetClientRect(&rect);
 			yPos += rect.bottom + 3;

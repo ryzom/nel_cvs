@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.30 2003/01/08 10:45:44 lecroart Exp $
+ * $Id: file.cpp,v 1.31 2003/03/20 17:53:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,7 +184,12 @@ bool		CIFile::open(const std::string &path, bool text)
 			_FileSize=filelength(fileno(_F));
 			*/
 			_FileSize=CFile::getFileSize (_F);
-			nlassert (_FileSize != 0);
+			if (_FileSize == 0)
+			{
+				nlwarning ("Size of file '%s' is 0", path.c_str());
+				fclose (_F);
+				_F = NULL;
+			}
 		}
 		else
 		{

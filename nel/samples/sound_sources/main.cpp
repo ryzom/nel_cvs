@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Simple example of NeL sound engine usage
  *
- * $Id: main.cpp,v 1.1 2001/07/23 15:41:52 cado Exp $
+ * $Id: main.cpp,v 1.2 2001/08/27 09:16:22 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,10 +79,13 @@ void Init()
 		 */
 
 		/*
-		 * 3. Initialize listener's position
+		 * 3. Initialize listener's position and orientation (in NeL coordinate system).
 		 */
 		CVector initpos ( 0.0f, 0.0f, 0.0f );
+		CVector frontvec( 0.0f, 1.0f, 0.0f );
+		CVector upvec( 0.0f, 0.0f, 1.0f );
 		AudioMixer->getListener()->setPos( initpos );
+		AudioMixer->getListener()->setOrientation( frontvec, upvec );
 
 	}
 	catch( Exception& e )
@@ -116,7 +119,7 @@ USource *OnAddSource( const char *name, bool looping, float x, float y, float z 
 
 
 /*
- * Moving the listener
+ * When moving the listener, wait for a short delay
  */
 void OnMove( const CVector& listenerpos )
 {
@@ -131,6 +134,15 @@ void OnMove( const CVector& listenerpos )
 
 /*
  * main
+ *
+ * Note: The NeL vector coordinate system is described as follows:
+ * \verbatim
+ *     (top)
+ *       z    
+ *       |  y (front)
+ *       | /
+ *       -----x (right)
+ * \endverbatim
  */
 void main()
 {
@@ -138,18 +150,18 @@ void main()
 	Init();
 
 	// First step: we create two sources
-	printf( "Press ENTER to start playing\n" );
+	printf( "Press ENTER to start playing the two sources\n" );
+	printf( "One is 20 meters ahead, on the right\n" );
+	printf( "The other is 5 meters ahead, on the left\n" );
 	getchar();
-	USource *src1 = OnAddSource( "Beep", true, 1.0f, 0.0f, -20.0f );  // Beep on the right, 20 meters ahead
-	USource *src2 = OnAddSource( "Tuut", true, -2.0f, 0.0f, -5.0f ); // Tuut on the left, 5 meters ahead
+	USource *src1 = OnAddSource( "Beep", true, 1.0f, 20.0f, 0.0f );  // Beep on the right, 20 meters ahead
+	USource *src2 = OnAddSource( "Tuut", true, -2.0f, 5.0f, 0.0f ); // Tuut on the left, 5 meters ahead
 
 	// Second step: we will move the listener ahead
 	printf( "Press ENTER again to start moving the listener\n" );
 	getchar();
 
-	// Listener orientation is constant in this example
-	CVector listenerfront ( 0.0f, 0.0f, -1.0f ), listenerup ( 0.0f, 1.0f, 0.0f );
-	AudioMixer->getListener()->setOrientation( listenerfront, listenerup );
+	// Listener orientation is constant in this example (see initialization)
 
 	// Move forward, then backward, twice
 	CVector listenervel;
@@ -159,21 +171,23 @@ void main()
 		printf( "%u of 2\n", i+1 );
 
 		// Forward velocity
-		listenervel.set( 0.0f, 0.0f, -0.5f );
+		listenervel.set( 0.0f, 0.5f, 0.0f );
 		AudioMixer->getListener()->setVelocity( listenervel );
 
 		// Move forward: set position every frame
-		for ( listenerpos.z=0.0f; listenerpos.z>-30.0f; listenerpos.z-=0.1f )
+		printf( "Moving forward, going past the sources...\n" );
+		for ( listenerpos.y=0.0f; listenerpos.y<30.0f; listenerpos.y+=0.1f )
 		{
 			OnMove( listenerpos );
 		}
 
 		// Backward velocity
-		listenervel.set( 0.0f, 0.0f, +0.5f );
+		listenervel.set( 0.0f, -0.5f, 0.0f );
 		AudioMixer->getListener()->setVelocity( listenervel );
 
 		// Move backward: set position every frame
-		for ( listenerpos.z=-30.0f; listenerpos.z<0.0f; listenerpos.z+=0.1f )
+		printf( "Moving backward, going back to the start position...\n" );
+		for ( listenerpos.y=30.0f; listenerpos.y>0.0f; listenerpos.y-=0.1f )
 		{
 			OnMove( listenerpos );
 		}

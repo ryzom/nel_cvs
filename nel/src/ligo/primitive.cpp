@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.22 2003/12/04 13:13:43 cado Exp $
+ * $Id: primitive.cpp,v 1.23 2003/12/04 17:50:25 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -864,6 +864,22 @@ float CPrimZone::getSegmentDist(const NLMISC::CVector v, const NLMISC::CVector &
 	}
 
 	return distance;
+}
+
+
+// ***************************************************************************
+NLMISC::CVector CPrimZone::getBarycentre() const
+{
+	CVector sum( CVector::Null );
+	uint n = VPoints.size();
+	if ( n != 0 )
+	{
+		for ( uint i=0; i!=n; ++i )
+			sum += VPoints[i];
+		return sum / (float)n;
+	}
+	else
+		return sum;
 }
 
 

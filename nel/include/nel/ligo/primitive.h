@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.21 2003/11/17 14:26:38 distrib Exp $
+ * $Id: primitive.h,v 1.22 2003/12/04 17:50:25 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -461,6 +461,9 @@ public:
 	static bool contains (const NLMISC::CVector &v, const std::vector<CPrimVector> &points);
 	// Returns true if the vector v is inside of the patatoid and set the distance of the nearest segement and the position of the nearsest point.
 	static bool contains (const NLMISC::CVector &v, const std::vector<CPrimVector> &points, float &distance, NLMISC::CVector &nearPos, bool isPath);
+
+	/// Returns the barycenter of the zone (warning, it may be outside of the zone if it is not convex). Returns CVector::Null if there is no vertex.
+	NLMISC::CVector		getBarycentre() const;
 
 	// \name From IClassable
 	NLMISC_DECLARE_CLASS (CPrimZone);

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.36 2003/03/04 14:01:51 lecroart Exp $
+ * $Id: unified_network.h,v 1.37 2003/03/13 10:29:12 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -191,6 +191,9 @@ public:
 	/// Returns true if the serviceName service is on the same computer than this service
 	bool	isServiceLocal (const std::string &serviceName);
 
+	/// Return the name of the specified service, or "" if not found
+	std::string			getServiceName(uint16 sid);
+
 	/// Return a string identifying the service, using the format "NAME/sid" (or "sid" only if not found)
 	std::string			getServiceNameAndId(uint16 sid);
 
@@ -218,6 +221,9 @@ public:
 
 	/// Find a callback in the array
 	TUnifiedMsgCallback findCallback (const std::string &callbackName);
+
+	/// Return the service ids of the active connections
+	const std::vector<uint16>&	getConnectionList() const { return _UsedConnection; }
 
 	void				displayInternalTables (NLMISC::CLog *log = NLMISC::InfoLog);
 

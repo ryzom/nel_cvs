@@ -7,6 +7,9 @@
  * Exclude mesh from light
  * Cast Shadow on light and cast/receive in object properties
  * Spot texture projector
+ * Ambient only
+ * Multiply factor
+ * Double sided
  * Opacity in texture
  * Stained glass in texture through NeL material
 

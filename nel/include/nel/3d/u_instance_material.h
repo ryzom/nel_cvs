@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * <File description>
  *
- * $Id: u_instance_material.h,v 1.5 2002/06/24 17:10:01 vizerie Exp $
+ * $Id: u_instance_material.h,v 1.6 2002/06/27 15:43:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,12 @@ public:
 	// @{
 	virtual	void				setColor(CRGBA rgba) =0;
 	virtual	CRGBA				getColor(void) const =0;
+	// @}
+
+	/// \name Per stage constant color
+	// @{
+	virtual void				setConstantColor(uint stage, NLMISC::CRGBA color) = 0;
+	virtual NLMISC::CRGBA		getConstantColor(uint stage) const = 0;
 	// @}
 
 

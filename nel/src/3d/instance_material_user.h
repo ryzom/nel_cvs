@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.7 2002/06/24 17:11:13 vizerie Exp $
+ * $Id: instance_material_user.h,v 1.8 2002/06/27 15:43:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,6 +158,28 @@ public:
 	}
 	// @}
 
+	/// \name constantColor
+	// @{
+	virtual void				setConstantColor(uint stage, NLMISC::CRGBA color)
+	{
+		if (stage >= IDRV_MAT_MAXTEXTURES)
+		{
+			nlwarning("UInstanceMaterialUser::setConstantColor : invalid stage");
+			return;
+		}
+		_Material->texConstantColor(stage, color);
+	}
+	virtual NLMISC::CRGBA		getConstantColor(uint stage) const
+	{
+		if (stage >= IDRV_MAT_MAXTEXTURES)
+		{
+			nlwarning("UInstanceMaterialUser::getConstantColor : invalid stage");
+			return NLMISC::CRGBA::Black;
+		}
+		return _Material->getTexConstantColor(stage);
+
+	}
+	// @}
 
 	/// \name Texture files specific
 	// @{	

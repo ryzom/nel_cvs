@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.7 2001/03/16 16:03:26 corvazier Exp $
+ * $Id: animation.h,v 1.8 2001/03/19 13:19:15 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,7 +122,7 @@ public:
 	CAnimationTime getEndTime () const;
 
 	/// Serial the template
-	void serial (NLMISC::IStream& f) throw (NLMISC::EStream);
+	void serial (NLMISC::IStream& f);
 
 private:
 	/// \name Members

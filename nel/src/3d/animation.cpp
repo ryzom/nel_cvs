@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.5 2001/03/16 16:03:26 corvazier Exp $
+ * $Id: animation.cpp,v 1.6 2001/03/19 13:19:15 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,7 +54,7 @@ void CAnimation::addTrack (const std::string& name, ITrack* pChannel)
 
 // ***************************************************************************
 
-void CAnimation::serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+void CAnimation::serial (NLMISC::IStream& f)
 {
 	// Serial a header
 	f.serialCheck ((uint32)'_LEN');

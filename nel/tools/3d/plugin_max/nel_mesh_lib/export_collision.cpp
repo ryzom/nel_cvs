@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.3 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: export_collision.cpp,v 1.4 2002/03/26 10:11:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,8 @@
 #include "pacs/retriever_bank.h"
 #include "pacs/global_retriever.h"
 #include "pacs/build_indoor.h"
+#include "pacs/primitive_block.h"
+
 #include "3d/quad_grid.h"
 
 using namespace std;
@@ -46,7 +48,6 @@ using namespace NL3D;
 using namespace NLPACS;
 
 #define NEL_OBJET_NAME_DATA 1970
-
 
 // ***************************************************************************
 
@@ -469,5 +470,159 @@ void	CExportNel::computeCollisionRetrieverFromScene(Interface& ip, TimeValue tim
 		globalRetriever->makeAllLinks();
 	}
 
+}
+
+// ***************************************************************************
+float	CExportNel::getZRot (const NLMISC::CVector &i)
+{
+	// Assume that tm.getK() is near CVector::K
+
+	// Get vectors
+	CVector _i = i;
+
+	// Normalize I
+	_i.z = 0;
+	_i.normalize ();
+
+	// Get cos a
+	float cosa = _i * CVector::I;
+	float sina = (CVector::I ^ _i) * CVector::K;
+
+	// Get a
+	return (sina>0) ? (float) acos (cosa) : (float)(2*Pi - acos (cosa));
+}
+
+// ***************************************************************************
+bool	CExportNel::buildPrimitiveBlock (Interface& ip, TimeValue time, std::vector<INode*> objects, NLPACS::CPrimitiveBlock &primitiveBlock)
+{
+	// Reserve some memory
+	primitiveBlock.Primitives.clear ();
+	primitiveBlock.Primitives.resize (objects.size());
+
+	// Ok ?
+	bool ok = true;
+
+	// For each object
+	uint o;
+	for (o=0; o<objects.size(); o++)
+	{
+		// Get a ref on the node
+		INode *node = objects[o];
+
+		// Select the node
+		ip.SelectNode (node);
+
+		// Get a pointer on the object's node
+		//Object *obj = node->EvalWorldState(time).obj;
+		Object *obj = node->GetObjectRef ();
+
+		// Check if there is an object
+		if (obj)
+		{
+			// Get the class id
+			Class_ID  clid = obj->ClassID();
+
+			// Is the object a PACS primitive ?
+			if ( ( (clid.PartA() == NEL_PACS_BOX_CLASS_ID_A) && (clid.PartB() == NEL_PACS_BOX_CLASS_ID_B) ) ||
+				 ( (clid.PartA() == NEL_PACS_CYL_CLASS_ID_A) && (clid.PartB() == NEL_PACS_CYL_CLASS_ID_B) ) )
+			{
+				// Retrieve common parameters
+				int reaction;
+				int enterTrigger;
+				int exitTrigger;
+				int overlap;
+				uint collision;
+				uint occlusion;
+				int obstacle;
+				float absorbtion;
+				bool error = 
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "Reaction", (ParamType2)TYPE_INT, &reaction, 0)) ||
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "Obstacle", (ParamType2)TYPE_BOOL, &obstacle, 0)) ||
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "EnterTrigger", (ParamType2)TYPE_BOOL, &enterTrigger, 0)) ||
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "ExitTrigger", (ParamType2)TYPE_BOOL, &exitTrigger, 0)) ||
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "OverlapTrigger", (ParamType2)TYPE_BOOL, &overlap, 0)) ||
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "CollisionMask", (ParamType2)TYPE_INT, &collision, 0)) ||
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "OcclusionMask", (ParamType2)TYPE_INT, &occlusion, 0)) ||
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "Absorbtion", (ParamType2)TYPE_FLOAT, &absorbtion, 0));
+
+				// Get the node matrix
+				CMatrix mt;
+				convertMatrix (mt, node->GetNodeTM (time));
+
+				// Retrieve specific parameters
+				float height;
+				float length[2];
+				float orientation;
+				if ( (clid.PartA() == NEL_PACS_BOX_CLASS_ID_A) && (clid.PartB() == NEL_PACS_BOX_CLASS_ID_B) )
+				{
+					// For boxes
+					nlverify (scriptEvaluate (&ip, "$.box.height", &height, scriptFloat));
+					nlverify (scriptEvaluate (&ip, "$.box.width", &length[0], scriptFloat));
+					nlverify (scriptEvaluate (&ip, "$.box.length", &length[1], scriptFloat));
+					
+					// Get the orientation
+					orientation = getZRot (mt.getI());
+				}
+				else
+				{
+					// For cylinders
+					nlverify (scriptEvaluate (&ip, "$.cylinder.height", &height, scriptFloat));
+					nlverify (scriptEvaluate (&ip, "$.cylinder.radius", &length[0], scriptFloat));
+					length[1] = 0;
+					orientation = 0;
+				}
+
+				// No error?
+				if (!error)
+				{
+					// Fill the structure
+					CPrimitiveDesc &desc = primitiveBlock.Primitives[o];
+					desc.Length[0] = length[0];
+					desc.Length[1] = length[1];
+					desc.Height = height;
+					desc.Attenuation = absorbtion;
+					desc.Type = ( (clid.PartA() == NEL_PACS_BOX_CLASS_ID_A) && (clid.PartB() == NEL_PACS_BOX_CLASS_ID_B) ) ? 
+						UMovePrimitive::_2DOrientedBox : UMovePrimitive::_2DOrientedCylinder;
+					desc.Reaction = (UMovePrimitive::TReaction)(reaction-1);
+					desc.Trigger = (UMovePrimitive::TTrigger)
+						(((enterTrigger!=0)?UMovePrimitive::EnterTrigger:0) |
+						((exitTrigger!=0)?UMovePrimitive::ExitTrigger:0) |
+						((overlap!=0)?UMovePrimitive::OverlapTrigger:0));
+					desc.Obstacle = obstacle != 0;
+					desc.OcclusionMask = occlusion;
+					desc.CollisionMask = collision;
+					desc.Position = mt.getPos ();
+					desc.Orientation = orientation;
+				}
+				else
+				{
+					nlwarning ("Some properties are missing in objects \"%s\"", node->GetName());
+					ok = false;
+				}
+			}
+			else
+			{
+				nlwarning ("\"%s\" is not a PACS primitive", node->GetName());
+				ok = false;
+			}
+		}
+		else
+		{
+			nlwarning ("Can't evaluate object \"%s\"", node->GetName());
+			ok = false;
+		}
+	}
+
+	// Failed
+	if (ok)
+	{
+		ip.ForceCompleteRedraw ();
+	}
+	else
+	{
+		primitiveBlock.Primitives.clear ();
+	}
+
+	return ok;
 }
 

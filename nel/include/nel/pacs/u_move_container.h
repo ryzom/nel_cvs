@@ -1,7 +1,7 @@
 /** \file u_move_container.h
  * A container for movable objects
  *
- * $Id: u_move_container.h,v 1.7 2001/09/28 12:26:23 corvazier Exp $
+ * $Id: u_move_container.h,v 1.8 2002/03/26 10:11:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,6 +84,32 @@ public:
 	  * \return a pointer on the new primitive.
 	  */
 	virtual UMovePrimitive		*addNonCollisionablePrimitive () =0;
+
+	/**
+	  * Load a PACS primitive block. (*.pacs_prim)
+	  *
+	  * Add a set of collisionable primitive in the container. If sucess, fill an array with primitives's pointers.
+	  * The primitive are inserted in the requested world image of the container. Then a setGlobalPosition
+	  * is done to place the primitives in the world image. The world images are not evaluated.
+	  *
+	  * You must specify the ids of each world image where the primitives can be inserted.
+	  * Thoses ids are consecutives. If you choose 5 as first id and 3 as id count,
+	  * those primitives could be inserted in the world image #5, #6 and #7.
+	  *
+	  * Those primtives should be inserted in a world image before use. See UMovePrimitive::insertInWorldImage.
+	  *
+	  * Return false if the world image numbers are not present in the move container.
+	  *
+	  * Can raise unhandled NLMISC::Exception if trouble during serialisation.
+	  *
+	  * \param filename is the file to load.
+	  * \param firstWorldImage is the first world image where the primitive can be inserted.
+	  * \param numWorldImage is the count of world image where the primitive can be inserted.
+	  * \param primitives is a pointer on an array of primitive pointer to fill if success. If NULL, Do return nothing.
+	  * \see addCollisionablePrimitive
+	  * \return true if the file is successfully loaded, else return false.
+	  */
+	virtual bool				loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives) =0;
 
 	/**
 	  * Remove a primitive from the container.

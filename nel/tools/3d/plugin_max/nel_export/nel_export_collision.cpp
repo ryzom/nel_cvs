@@ -1,7 +1,7 @@
 /** \file nel_export_collision.cpp
  * 
  *
- * $Id: nel_export_collision.cpp,v 1.3 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: nel_export_collision.cpp,v 1.4 2002/03/26 10:11:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,10 @@
 #include "std_afx.h"
 #include "nel_export.h"
 #include "nel/misc/file.h"
+#include "nel/misc/o_xml.h"
 
 #include "pacs/collision_mesh_build.h"
+#include "pacs/primitive_block.h"
 
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_mesh_lib/export_lod.h"
@@ -154,3 +156,37 @@ bool CNelExport::exportCollision (const char *sPath, INode& node, Interface& ip,
 */
 // --------------------------------------------------
 
+bool CNelExport::exportPACSPrimitives (const char *sPath, std::vector<INode *> &nodes, Interface& ip, TimeValue time)
+{
+	// Build the primitive block
+	NLPACS::CPrimitiveBlock primitiveBlock;
+	if (CExportNel::buildPrimitiveBlock (ip, time, nodes, primitiveBlock))
+	{
+		// Open the file
+		COFile file;
+		if (file.open (sPath))
+		{
+			// Create the XML stream
+			COXml output;
+
+			// Init
+			if (output.init (&file, "1.0"))
+			{
+				// Serial it
+				primitiveBlock.serial (output);
+
+				// Ok
+				return true;
+			}
+			else
+			{
+				nlwarning ("Can't init XML stream with file %s", sPath);
+			}
+		}
+		else
+		{
+			nlwarning ("Can't open the file %s for writing", sPath);
+		}
+	}
+	return false;
+}

@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.16 2002/03/18 16:30:26 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.17 2002/03/26 10:11:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,11 +227,11 @@ bool RPatchMesh::transformTile (const CTileBank &bank, uint &tile, uint &tileRot
 				// Symmetry ?
 				if (symmetry)
 				{
-					CTileSet::TFlagBorder tmp = oriented[0];
-					oriented[0] = CTileSet::getInvertBorder (oriented[2]);
-					oriented[2] = CTileSet::getInvertBorder (tmp);
-					oriented[1] = CTileSet::getInvertBorder (oriented[1]);
-					oriented[3] = CTileSet::getInvertBorder (oriented[3]);
+					CTileSet::TFlagBorder tmp = oriented[(0+tileRotation)&3];
+					oriented[(0+tileRotation)&3] = CTileSet::getInvertBorder (oriented[(2+tileRotation)&3]);
+					oriented[(2+tileRotation)&3] = CTileSet::getInvertBorder (tmp);
+					oriented[(1+tileRotation)&3] = CTileSet::getInvertBorder (oriented[(1+tileRotation)&3]);
+					oriented[(3+tileRotation)&3] = CTileSet::getInvertBorder (oriented[(3+tileRotation)&3]);
 				}
 
 				// Rotation

@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.17 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: export_misc.cpp,v 1.18 2002/03/26 10:11:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -302,8 +302,7 @@ Control* CExportNel::getControlerByName (Animatable& node, const char* sName)
 
 // --------------------------------------------------
 
-// Return the pointer on the subanim with the name sName of the node. If it doesn't exist, return NULL.
-bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* sName, ParamType2 type, void *pValue, TimeValue tvTime)
+bool getValueByNameUsingParamBlock2Internal (Animatable& node, const char* sName, ParamType2 type, void *pValue, TimeValue tvTime)
 {
 	// for all parameters block in this node
 	for (int nBlock=0; nBlock<node.NumParamBlocks(); nBlock++)
@@ -388,15 +387,33 @@ bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* s
 		// If a sub anim is here, go to visit it.
 		if (node.SubAnim(s))
 		{
+			// Sub anim name
+			TSTR subName = node.SubAnimName(s);
+
 			// Get the ctrl for sub anim
-			if( getValueByNameUsingParamBlock2 (*node.SubAnim(s), sName, type, pValue, tvTime) )
+			if( getValueByNameUsingParamBlock2Internal (*node.SubAnim(s), sName, type, pValue, tvTime) )
 				return true;
 		}
 	}
 
-
 	// not found
 	return false;
+}
+
+// --------------------------------------------------
+
+// Return the pointer on the subanim with the name sName of the node. If it doesn't exist, return NULL.
+bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* sName, ParamType2 type, void *pValue, TimeValue tvTime)
+{
+	if (getValueByNameUsingParamBlock2Internal (node, sName, type, pValue, tvTime))
+	{
+		return true;
+	}
+	else
+	{
+		nlwarning ("Can't found ParamBlock named %s", sName);
+		return false;
+	}
 }
 
 // --------------------------------------------------

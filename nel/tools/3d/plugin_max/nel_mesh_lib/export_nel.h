@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.48 2002/03/14 18:23:46 vizerie Exp $
+ * $Id: export_nel.h,v 1.49 2002/03/26 10:11:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,10 @@
 #define NEL_MTL_B						0x222b9eb9
 #define NEL_LIGHT_CLASS_ID_A			0x36e3181f
 #define NEL_LIGHT_CLASS_ID_B			0x3ac24049
+#define NEL_PACS_BOX_CLASS_ID_A			0x7f374277
+#define NEL_PACS_BOX_CLASS_ID_B			0x5d3971df
+#define NEL_PACS_CYL_CLASS_ID_A			0x62a56810
+#define NEL_PACS_CYL_CLASS_ID_B			0x4b3d601c
 #define NEL_PARTICLE_SYSTEM_CLASS_ID	0x58ce2893
 #define NEL_FLARE_CLASS_ID_A			0x4e913532
 #define NEL_FLARE_CLASS_ID_B			0x3c2f2307
@@ -97,6 +101,7 @@ namespace NLPACS
 {
 	class CRetrieverBank;
 	class CGlobalRetriever;
+	class CPrimitiveBlock;
 };
 
 
@@ -426,6 +431,16 @@ public:
 	static void	computeCollisionRetrieverFromScene(Interface& ip, TimeValue time, 
 					NLPACS::CRetrieverBank *&retrieverBank, NLPACS::CGlobalRetriever *&globalRetriever,
 					const char *igNamePrefix, const char *igNameSuffix, std::string &retIgName);
+
+	/**
+	  * Retrieve the Z rotation in radian of an object with its I matrix vector, assuming that the K matrix vector is near CVector::K
+	  */
+	static float getZRot (const NLMISC::CVector &i);
+
+	/**
+	  * Build a primtive block with an array of inode. Return false if one of the object is not a PACS primitive object.
+	  */
+	static bool buildPrimitiveBlock (Interface& ip, TimeValue time, std::vector<INode*> objects, NLPACS::CPrimitiveBlock &primitiveBlock);
 
 	// *********************
 	// *** Ëxport misc

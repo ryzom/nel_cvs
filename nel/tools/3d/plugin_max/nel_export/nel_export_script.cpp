@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.13 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: nel_export_script.cpp,v 1.14 2002/03/26 10:11:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,11 +56,13 @@ def_visible_primitive ( test_file_date,		"NeLTestFileDate");
 def_visible_primitive ( export_vegetable,	"NelExportVegetable");
 def_visible_primitive ( reload_texture,		"NelReloadTexture" );
 def_visible_primitive ( export_collision,	"NelExportCollision" );
+def_visible_primitive ( export_pacs_primitives,	"NelExportPACSPrimitves" );
 
 char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
 char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel]";
 char *sExportAnimationErrorMsg = "NelExportAnimation [node array] [Filename.anim] [bool_scene_animation]";
 char *sExportCollisionErrorMsg = "NelExportCollision [node array] [output directory]";
+char *sExportPACSPrimitivesErrorMsg = "NelExportPACSPrimitves [node array] [output filename]";
 
 Value* export_shape_cf (Value** arg_list, int count)
 {
@@ -586,6 +588,54 @@ Value* export_collision_cf (Value** arg_list, int count)
 
 		// Export
 		if (CNelExport::exportCollision (sPath.c_str(), nodes, *MAXScript_interface, time, *(CExportNelOptions*)NULL))
+			ret = &true_value;
+	}
+	catch (Exception &e)
+	{
+		nlwarning ("ERROR %s", e.what());
+	}
+	return ret;
+}
+
+Value* export_pacs_primitives_cf (Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (2)
+	check_arg_count(export_shape, 2, count);
+
+	// Check to see if the arguments match up to what we expect
+	type_check (arg_list[0], Array, sExportPACSPrimitivesErrorMsg);
+	type_check (arg_list[1], String, sExportPACSPrimitivesErrorMsg);
+
+	// Export path 
+	string sPath = arg_list[1]->to_string();
+
+	// Get time
+	TimeValue time = MAXScript_interface->GetTime();
+	
+	// Get array
+	Array* array=(Array*)arg_list[0];
+
+	// Array of INode *
+	std::vector<INode *> nodes;
+	nodes.reserve (array->size);
+
+	// Check each value in the array
+	uint i;
+	for (i=0; i<(uint)array->size; i++)
+	{
+		type_check (array->get (i+1), MAXNode, sExportPACSPrimitivesErrorMsg);
+
+		// Add to the array of nodes
+		nodes.push_back (array->get (i+1)->to_node());
+	}
+
+	// Ok ?
+	Boolean *ret = &false_value;
+
+	try
+	{
+		// Export
+		if (CNelExport::exportPACSPrimitives (sPath.c_str(), nodes, *MAXScript_interface, time))
 			ret = &true_value;
 	}
 	catch (Exception &e)

@@ -256,6 +256,14 @@ SOURCE=.\pacs\move_primitive.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\pacs\primitive_block.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\primitive_block_pacs.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\pacs\primitive_world_image.cpp
 # End Source File
 # Begin Source File
@@ -367,6 +375,10 @@ SOURCE=.\pacs\build_indoor.cpp
 SOURCE=.\pacs\build_indoor.h
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\pacs\Makefile.am
+# End Source File
 # Begin Source File
 
 SOURCE=.\pacs\quad_grid.h

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.18 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: move_container.cpp,v 1.19 2002/03/26 10:11:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,9 @@
 
 #include "pacs/move_primitive.h"
 #include "pacs/move_element.h"
+#include "pacs/primitive_block.h"
+
+#include "nel/misc/i_xml.h"
 
 using namespace NLMISC;
 
@@ -1422,6 +1425,109 @@ void UTriggerInfo::serial (NLMISC::IStream& stream)
 	stream.serial (Object0);
 	stream.serial (Object1);
 	stream.serial (CollisionDesc);
+}
+
+// ***************************************************************************
+
+bool CMoveContainer::loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives)
+{
+	// Check world image
+	if ( (uint)(firstWorldImage+numWorldImage) > _ChangedRoot.size() )
+	{
+		nlwarning ("Invalid world image number.");
+		return false;
+	}
+
+	// Try to load the file
+	CIFile file;
+	if (file.open (filename))
+	{
+		// Create the XML stream
+		CIXml input;
+
+		// Init
+		if (input.init (file))
+		{
+			// The primitive block
+			CPrimitiveBlock block;
+
+			// Serial it
+			file.serial (block);
+		
+			// Reserve the pointer array
+			if (primitives)
+				primitives->reserve (block.Primitives.size());
+
+			// For each primitive
+			uint prim;
+			for (prim=0; prim<block.Primitives.size(); prim++)
+			{
+				// Create a collisionable primitive
+				UMovePrimitive *primitive = addCollisionablePrimitive (firstWorldImage, numWorldImage);
+				
+				// Ref on the block descriptor
+				CPrimitiveDesc &desc = block.Primitives[prim];
+
+				// Set its properties
+				primitive->setPrimitiveType (desc.Type);
+				primitive->setReactionType (desc.Reaction);
+				primitive->setTriggerType (desc.Trigger);
+				primitive->setCollisionMask (desc.CollisionMask);
+				primitive->setOcclusionMask (desc.OcclusionMask);
+				primitive->setObstacle (desc.Obstacle);
+				primitive->setAbsorbtion (desc.Attenuation);
+				if (desc.Type == UMovePrimitive::_2DOrientedBox)
+				{
+					primitive->setSize (desc.Length[0], desc.Length[1]);
+				}
+				else
+				{
+					nlassert (desc.Type == UMovePrimitive::_2DOrientedCylinder);
+					primitive->setRadius (desc.Length[0]);
+				}
+				primitive->setHeight (desc.Height);
+
+				// Insert the primitives
+
+				// For each world image
+				uint wI;
+				for (wI=firstWorldImage; wI<(uint)(firstWorldImage+numWorldImage); wI++)
+				{
+					// Insert the primitive
+					primitive->insertInWorldImage (firstWorldImage);
+
+					// Set the primtive orientation
+					primitive->setOrientation (desc.Orientation, wI);
+
+					// Set the primitive global position
+					primitive->setGlobalPosition (desc.Position, wI);
+				}
+
+				// Feedback asked ?
+				if (primitives)
+				{
+					// Add the pointer
+					primitives->push_back (primitive);
+				}
+			}
+
+			return true;
+		}
+		else
+		{
+			// Warning
+			nlwarning ("Can't init XML stream with file %s.", filename);
+
+			return false;
+		}
+	}
+	else
+	{
+		// Warning
+		nlwarning ("Can't load primitive block %s.", filename);
+
+		return false;
+	}
 }
 
 // ***************************************************************************

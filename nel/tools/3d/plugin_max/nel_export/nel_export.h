@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.11 2002/02/26 17:30:23 corvazier Exp $
+ * $Id: nel_export.h,v 1.12 2002/03/26 10:11:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,8 @@ public:
 	static	bool	exportSkeleton	(const char *sPath, INode* pNode, Interface& ip, TimeValue time);
 
 	static	bool	exportCollision	(const char *sPath, std::vector<INode *> &nodes, Interface& ip, TimeValue time, CExportNelOptions &opt);
+
+	static	bool	exportPACSPrimitives (const char *sPath, std::vector<INode *> &nodes, Interface& ip, TimeValue time);
 
 	static	bool	exportVegetable (const char *sPath, INode& node, Interface& ip, TimeValue time, bool errorInDialog);
 

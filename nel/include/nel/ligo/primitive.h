@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.17 2003/01/22 15:46:47 corvazier Exp $
+ * $Id: primitive.h,v 1.18 2003/03/06 18:28:46 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,12 +256,12 @@ public:
 	/** 
 	  * Get a string array property with its name. Return false if the property is not found or is not a string array property.
 	  **/
-	bool				getPropertyByName (const char *property_name, const std::vector<std::string> *&result) const;
+	bool				getPropertyByName (const char *property_name, const std::vector<std::string> *&result);
 
 	/** 
 	  * Get a color property with its name. Return false if the property is not found or is not a string array property.
 	  **/
-	bool				getPropertyByName (const char *property_name, NLMISC::CRGBA &result) const;
+	bool				getPropertyByName (const char *property_name, NLMISC::CRGBA &result);
 
 	/** 
 	  * Remove a property

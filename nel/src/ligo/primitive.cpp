@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.14 2003/02/06 09:17:20 boucher Exp $
+ * $Id: primitive.cpp,v 1.15 2003/03/06 18:31:06 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1135,7 +1135,7 @@ bool IPrimitive::getPropertyByName (const char *property_name, std::vector<std::
 
 // ***************************************************************************
 
-bool IPrimitive::getPropertyByName (const char *property_name, const std::vector<std::string> *&result) const
+bool IPrimitive::getPropertyByName (const char *property_name, const std::vector<std::string> *&result)
 {
 	// Get the property
 	IProperty *prop;
@@ -1157,7 +1157,7 @@ bool IPrimitive::getPropertyByName (const char *property_name, const std::vector
 
 // ***************************************************************************
 
-bool IPrimitive::getPropertyByName (const char *property_name, NLMISC::CRGBA &result) const
+bool IPrimitive::getPropertyByName (const char *property_name, NLMISC::CRGBA &result)
 {
 	// Get the property
 	IProperty *prop;

@@ -5,7 +5,7 @@
  * The class can also (but not in an optimized manner) return the
  * string associated with an id.
  *
- * $Id: string_mapper.cpp,v 1.3 2003/03/04 13:13:10 corvazier Exp $
+ * $Id: string_mapper.cpp,v 1.4 2003/03/06 18:32:22 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ NLMISC::TStringId CStringMapper::localMap(const std::string &str)
 		uint id = _StringTable.size();
 		_StringTable.push_back(CStringRef(new std::string(str)));
 		_StringMap.insert(std::make_pair(_StringTable.back(), id));
-#if defined(_DEBUG)
+#if defined(NL_DEBUG)
 		return TStringId(id, this);
 #else
 		return id;
@@ -82,7 +82,7 @@ NLMISC::TStringId CStringMapper::localMap(const std::string &str)
 	}
 	else
 	{
-#if defined(_DEBUG)
+#if defined(NL_DEBUG)
 		return TStringId(it->second, *(it->first.String));
 #else
 		return it->second;		
@@ -108,7 +108,7 @@ const std::string	&CStringMapper::localUnmap(const NLMISC::TStringId &stringId)
 	}
 }
 
-#if defined(_DEBUG)
+#if defined(NL_DEBUG)
 const std::string &CStringMapper::unmap(uint stringId)
 {
 	return _GlobalMapper.localUnmap(stringId);

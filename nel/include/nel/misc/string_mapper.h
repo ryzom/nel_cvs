@@ -1,6 +1,6 @@
 /** \file string_mapper.cpp
  *
- * $Id: string_mapper.h,v 1.3 2003/03/04 13:12:54 corvazier Exp $
+ * $Id: string_mapper.h,v 1.4 2003/03/06 18:28:46 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -218,3 +218,4 @@ TStringId::TStringId(uint stringId, CStringMapper *mapper)
 } //namespace NLMISC
 
 #endif // STRING_MAPPER_H
+

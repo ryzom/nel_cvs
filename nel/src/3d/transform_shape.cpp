@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.21 2002/02/28 12:59:52 besson Exp $
+ * $Id: transform_shape.cpp,v 1.22 2002/03/14 18:35:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,9 +192,7 @@ void	CTransformShapeLoadBalancingObs::traversePass0()
 
 
 	// Get the number of triangles this model use now.
-	_FaceCount= trans->getNumTriangles(_ModelDist);
-
-
+	_FaceCount= trans->getNumTriangles(_ModelDist);	
 	loadTrav->NbFacePass0+= _FaceCount;
 }
 

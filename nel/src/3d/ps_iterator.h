@@ -1,7 +1,7 @@
 /** \file ps_iterator.h
  * Iterator that have a integral or fixed-point step. They are used to managed LOD
  *
- * $Id: ps_iterator.h,v 1.1 2002/02/15 17:05:47 vizerie Exp $
+ * $Id: ps_iterator.h,v 1.2 2002/03/14 18:32:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

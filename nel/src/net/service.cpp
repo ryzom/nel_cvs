@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.185 2003/08/26 14:52:22 lecroart Exp $
+ * $Id: service.cpp,v 1.186 2003/08/29 15:35:31 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -256,20 +256,20 @@ static void initSignal()
 
 // Ctor
 IService::IService() :
-	WindowDisplayer(NULL),
+	WindowDisplayer(0),
 	_Port(0),
 	_RecordingState(CCallbackNetBase::Off),
 	_UpdateTimeout(100),
 	_SId(0),
 	_Status(0),
 	_Initialized(false),
-	_ResetMeasures(false),
 	_CallbackArray (0),
-	_CallbackArraySize (0)
+	_CallbackArraySize (0),
+	_DontUseNS(false),
+	_DontUseAES(false),
+	_ResetMeasures(false)
 {
 	// Singleton
-	nlassert( _Instance == NULL );
-
 	_Instance = this;
 }
 
@@ -1083,9 +1083,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			H_AFTER(NLNETManageMessages); // Not tick-wise
 			
 			// resync the clock every hours
-			if (resyncEvenly)
-			{
-				static TTime LastSyncTime = CTime::getLocalTime ();
+//			if (resyncEvenly)
+//			{
+//				static TTime LastSyncTime = CTime::getLocalTime ();
 
 				//---------------------------------------
 				// To simulate Ctrl-C in the debugger... Exit after 1 min !
@@ -1101,7 +1101,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 					LastSyncTime = CTime::getLocalTime ();
 				}
 */
-			}
+//			}
 
 			NetSpeedLoop = (sint32) (CTime::getLocalTime () - before);
 			UserSpeedLoop = (sint32) (before - bbefore);

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.24 2004/06/29 13:53:03 vizerie Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.25 2004/06/29 15:53:52 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1498,6 +1498,11 @@ typedef GLboolean (APIENTRY *NEL_PFNGLISPROGRAMARBPROC)(GLuint program);
 #define GL_CURRENT_OCCLUSION_QUERY_ID_NV   0x8865
 #define GL_PIXEL_COUNT_NV                  0x8866
 #define GL_PIXEL_COUNT_AVAILABLE_NV        0x8867
+
+#endif
+
+#ifndef NL_GL_NV_occlusion_query
+#define NL_GL_NV_occlusion_query              1
 
 typedef GLvoid    (APIENTRY * NEL_PFNGLGENOCCLUSIONQUERIESNVPROC) (GLsizei n, GLuint *ids);
 typedef GLvoid    (APIENTRY * NEL_PFNGLDELETEOCCLUSIONQUERIESNVPROC) (GLsizei n, const GLuint *ids);

@@ -1,7 +1,7 @@
 /** \file uv.h
  * <File description>
  *
- * $Id: uv.h,v 1.2 2001/11/30 09:45:21 vizerie Exp $
+ * $Id: uv.h,v 1.3 2002/03/14 18:27:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,6 +123,9 @@ public:
 	bool	operator!=(const CUVW &c) const {return !(*this==c);}
 
 	void	serial(NLMISC::IStream &f)	{f.serial(U,V,W);}
+
+	// Convert to a standard UV. The W coordinate is lost of course..
+	operator CUV() const { return CUV(U, V); }
 };
 
 

@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.6 2000/12/04 13:22:00 berenguier Exp $
+ * $Id: nelu.cpp,v 1.7 2000/12/04 14:29:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #include "nel/3d/dru.h"
 #include "nel/3d/camera.h"
 #include "nel/misc/debug.h"
+using namespace std;
+using namespace NLMISC;
 
 
 namespace NL3D 
@@ -36,11 +38,15 @@ const float		CNELU::DefLx=0.26f;
 const float		CNELU::DefLy=0.2f;
 const float		CNELU::DefLzNear=0.15f;
 const float		CNELU::DefLzFar=1000.0f;
-NLMISC::CSmartPtr<CCamera>	CNELU::Camera;
-IDriver			*CNELU::Driver;
+
+IDriver				*CNELU::Driver=NULL;
+CScene				CNELU::Scene;
+CSmartPtr<CCamera>	CNELU::Camera;
+CEventServer		CNELU::EventServer;
+CEventListenerAsync	CNELU::AsyncListener;
 
 
-void			CNELU::init3d(CScene &scene, uint w, uint h, const CViewport& viewport, uint bpp, bool windowed ) throw(EDru)
+void			CNELU::initDriver(uint w, uint h, uint bpp, bool windowed ) throw(EDru)
 {
 	// Init debug system
 	NLMISC::InitDebug();
@@ -50,43 +56,78 @@ void			CNELU::init3d(CScene &scene, uint w, uint h, const CViewport& viewport, u
 	nlverify(CNELU::Driver->init());
 	nlverify(CNELU::Driver->setDisplay(NULL, GfxMode(w, h, bpp, windowed)));
 	nlverify(CNELU::Driver->activate());
-
-	// Register basic csene.
-	CScene::registerBasics();
-
-	// Init scene.
-	scene.initDefaultTravs();
-
-	// Don't add any user trav.
-	// init default Roots.
-	scene.initDefaultRoots();
-	
-	// Set driver.
-	scene.setDriver(CNELU::Driver);
-
-	// Set viewport
-	scene.setViewport (viewport);
-
-	// Create/link a camera.
-	CNELU::Camera= (CCamera*)scene.createModel(CameraId);
-	scene.CurrentCamera= CNELU::Camera;
-	CNELU::Camera->setFrustum(DefLx, DefLy, DefLzNear, DefLzFar);
-
 }
 
 
-void			CNELU::release3d(CScene &scene)
+void			CNELU::initScene(CViewport viewport)
+{
+	// Register basic csene.
+	CScene::registerBasics();
+
+	// Init Scene.
+	CNELU::Scene.initDefaultTravs();
+
+	// Don't add any user trav.
+	// init default Roots.
+	CNELU::Scene.initDefaultRoots();
+	
+	// Set driver.
+	CNELU::Scene.setDriver(CNELU::Driver);
+
+	// Set viewport
+	CNELU::Scene.setViewport (viewport);
+
+	// Create/link a camera.
+	CNELU::Camera= (CCamera*)Scene.createModel(NL3D::CameraId);
+	CNELU::Scene.CurrentCamera= CNELU::Camera;
+	CNELU::Camera->setFrustum(DefLx, DefLy, DefLzNear, DefLzFar);
+}
+
+
+void			CNELU::initEventServer()
+{
+	CNELU::EventServer.addEmitter(CNELU::Driver->getEventEmitter());
+	CNELU::AsyncListener.addToServer(CNELU::EventServer);
+}
+
+
+void			CNELU::releaseEventServer()
+{
+	CNELU::AsyncListener.removeFromServer(CNELU::EventServer);
+	CNELU::EventServer.removeEmitter(CNELU::Driver->getEventEmitter());
+}
+
+	
+void			CNELU::releaseScene()
 {
 	// Release the camera.
 	CNELU::Camera= NULL;
 
-	// "Release" the scene.
-	scene.setDriver(NULL);
+	// "Release" the Scene.
+	CNELU::Scene.setDriver(NULL);
+}
 
+
+void			CNELU::releaseDriver()
+{
 	// "Release" the driver.
 	CNELU::Driver->release();
 	delete CNELU::Driver;
 	CNELU::Driver= NULL;
+}
+
+
+void			CNELU::init(uint w, uint h, CViewport viewport, uint bpp, bool windowed) throw(EDru)
+{
+	initDriver(w,h,bpp,windowed);
+	initScene(viewport);
+	initEventServer();
+}
+void			CNELU::release()
+{
+	releaseEventServer();
+	releaseScene();
+	releaseDriver();
 }
 
 

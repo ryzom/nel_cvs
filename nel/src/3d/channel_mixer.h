@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: channel_mixer.h,v 1.2 2001/08/01 09:38:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,6 +147,8 @@ private:
 		{
 			// not in the list
 			_InTheList=false;
+			// enabled by default.
+			_Enabled= true;
 		}
 	private:
 		/// True if this channel is in the list
@@ -154,6 +156,9 @@ private:
 
 		/// the detail mode.
 		bool				_Detail;
+
+		/// Is this enabled???
+		bool				_Enabled;
 
 		/// Is this Animated Value a CQuat Animated Value???
 		bool				_IsQuat;
@@ -255,6 +260,19 @@ public:
 
 	/// Reset the channel list if the mixer. All channels are removed from the mixer.
 	void resetChannels ();
+
+	/** disabling a channel means it is no more modified during animation. Default is enabled. 
+	 *	NB: this channel must have been added (via addChannel()....).
+	 *	\param channelId channelId get from CAnimationSet::getChannelIdByName().
+	 */
+	void enableChannel (uint channelId, bool enable);
+
+	/** see enableChannel(). return false if channel do not exist...
+	 *	NB: this channel must have been added (via addChannel()....).
+	 *	\param channelId channelId get from CAnimationSet::getChannelIdByName().
+	 */
+	bool isChannelEnabled (uint channelId) const;
+
 
 	/// \name Slots acces
 

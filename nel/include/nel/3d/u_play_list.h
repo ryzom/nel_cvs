@@ -1,7 +1,7 @@
 /** \file u_play_list.h
  * <File description>
  *
- * $Id: u_play_list.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_play_list.h,v 1.2 2001/08/01 09:38:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -284,6 +284,24 @@ public:
 	  * \return the skeleton weight number in use in this slot. Return UPlayList::empty if the slot is empty.
 	  */
 	virtual	uint getSkeletonWeight (uint8 slot, bool &inverted) const=0;
+	// @}
+
+
+	/// \name Special channel operation.
+	// @{
+
+	/** disabling a channel means it is no more modified during animation. Default is enabled. 
+	 *	NB: this channel must have been added (via registerTransform()....).
+	 *	\param channelId channelId get from UAnimationSet::getChannelIdByName().
+	 */
+	virtual	void enableChannel (uint channelId, bool enable) =0;
+
+	/** see enableChannel(). return false if channel do not exist...
+	 *	NB: this channel must have been added (via registerTransform()....).
+	 *	\param channelId channelId get from UAnimationSet::getChannelIdByName().
+	 */
+	virtual	bool isChannelEnabled (uint channelId) const =0;
+
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.15 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: channel_mixer.cpp,v 1.16 2001/08/01 09:38:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,72 +113,76 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 
 	while (pChannel)
 	{
-		// For Quat animated value only.
-		CQuat	firstQuat;
-
-		// First slot found
-		bool bFirst=true;
-
-		// Last blend factor
-		float lastBlend;
-
-		// Eval each slot
-		for (uint a=0; a<numActive; a++)
+		// if the channel is enabled, eval all active slot.
+		if(pChannel->_Enabled)
 		{
-			// Slot number
-			uint slot=activeSlot[a];
+			// For Quat animated value only.
+			CQuat	firstQuat;
 
-			// Is this an active slot ?
-			if (_SlotArray[slot]._Animation!=NULL)
+			// First slot found
+			bool bFirst=true;
+
+			// Last blend factor
+			float lastBlend;
+
+			// Eval each slot
+			for (uint a=0; a<numActive; a++)
 			{
-				// Current blend factor
-				float blend=pChannel->_Weights[slot]*_SlotArray[slot]._Weight;
+				// Slot number
+				uint slot=activeSlot[a];
 
-				if(blend!=0.0f)
+				// Is this an active slot ?
+				if (_SlotArray[slot]._Animation!=NULL)
 				{
-					// Eval the track at this time
-					((ITrack*)pChannel->_Tracks[slot])->eval (_SlotArray[slot]._Time);
+					// Current blend factor
+					float blend=pChannel->_Weights[slot]*_SlotArray[slot]._Weight;
 
-					// First track to be eval ?
-					if (bFirst)
+					if(blend!=0.0f)
 					{
-						// If channel is a Quaternion animated Value, must store the first Quat.
-						if (pChannel->_IsQuat)
+						// Eval the track at this time
+						((ITrack*)pChannel->_Tracks[slot])->eval (_SlotArray[slot]._Time);
+
+						// First track to be eval ?
+						if (bFirst)
 						{
-							CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
-							firstQuat=pQuatValue->Value;
+							// If channel is a Quaternion animated Value, must store the first Quat.
+							if (pChannel->_IsQuat)
+							{
+								CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
+								firstQuat=pQuatValue->Value;
+							}
+
+							// Copy the interpolated value
+							pChannel->_Value->affect (pChannel->_Tracks[slot]->getValue());
+
+							// First blend factor
+							lastBlend=blend;
+
+							// Not first anymore
+							bFirst=false;
 						}
-
-						// Copy the interpolated value
-						pChannel->_Value->affect (pChannel->_Tracks[slot]->getValue());
-
-						// First blend factor
-						lastBlend=blend;
-
-						// Not first anymore
-						bFirst=false;
-					}
-					else
-					{
-						// If channel is a Quaternion animated Value, must makeClosest the ith result of the track, from firstQuat.
-						if (pChannel->_IsQuat)
+						else
 						{
-							CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
-							pQuatValue->Value.makeClosest (firstQuat);
+							// If channel is a Quaternion animated Value, must makeClosest the ith result of the track, from firstQuat.
+							if (pChannel->_IsQuat)
+							{
+								CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
+								pQuatValue->Value.makeClosest (firstQuat);
+							}
+
+							// Blend with this value and the previous sum
+							pChannel->_Value->blend (pChannel->_Tracks[slot]->getValue(), lastBlend/(lastBlend+blend));
+
+							// last blend update
+							lastBlend+=blend;
 						}
-
-						// Blend with this value and the previous sum
-						pChannel->_Value->blend (pChannel->_Tracks[slot]->getValue(), lastBlend/(lastBlend+blend));
-
-						// last blend update
-						lastBlend+=blend;
 					}
+
+					// NB: if all weights are 0, the AnimatedValue is not modified...
+
+					// Touch the animated value and its owner to recompute them later.
+					pChannel->_Object->touch (pChannel->_ValueId, pChannel->_OwnerValueId);
 				}
-
-				// NB: if all weights are 0, the AnimatedValue is not modified...
-
-				// Touch the animated value and its owner to recompute them later.
-				pChannel->_Object->touch (pChannel->_ValueId, pChannel->_OwnerValueId);
 			}
 		}
 
@@ -261,6 +265,31 @@ void CChannelMixer::resetChannels ()
 	_Channels.clear();
 	dirtAll ();
 }
+
+
+// ***************************************************************************
+void CChannelMixer::enableChannel (uint channelId, bool enable)
+{
+	std::map<uint, CChannel>::iterator	it= _Channels.find(channelId);
+	if(it!=_Channels.end())
+	{
+		it->second._Enabled= enable;
+	}
+}
+
+
+// ***************************************************************************
+bool CChannelMixer::isChannelEnabled (uint channelId) const
+{
+	std::map<uint, CChannel>::const_iterator	it= _Channels.find(channelId);
+	if(it!=_Channels.end())
+	{
+		return it->second._Enabled;
+	}
+	else
+		return false;
+}
+
 
 // ***************************************************************************
 

@@ -1,7 +1,7 @@
 /** \file u_animation_set.h
  * <File description>
  *
- * $Id: u_animation_set.h,v 1.4 2001/07/20 15:09:18 corvazier Exp $
+ * $Id: u_animation_set.h,v 1.5 2001/08/01 09:38:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,6 +131,16 @@ public:
 	virtual	const std::string& getSkeletonWeightName (uint skeletonId) const =0;
 	// @}
 
+
+	/// \name Channel mgt.
+	// @{
+
+	/**
+	  * Get a channel ID with its name. If no channel is found, method returns NotFound.
+	  */
+	virtual	uint getChannelIdByName (const std::string& name) const =0;
+
+	// @}
 
 
 };

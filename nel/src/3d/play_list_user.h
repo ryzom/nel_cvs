@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * <File description>
  *
- * $Id: play_list_user.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: play_list_user.h,v 1.2 2001/08/01 09:38:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,6 +199,21 @@ public:
 	}
 	// @}
 
+
+	/// \name Special channel operation.
+	// @{
+
+	virtual	void enableChannel (uint channelId, bool enable)
+	{
+		_ChannelMixer.enableChannel(channelId, enable);
+	}
+
+	virtual	bool isChannelEnabled (uint channelId) const
+	{
+		return _ChannelMixer.isChannelEnabled (channelId) ;
+	}
+
+	// @}
 
 
 };

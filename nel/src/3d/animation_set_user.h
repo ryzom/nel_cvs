@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.6 2001/07/20 15:09:18 corvazier Exp $
+ * $Id: animation_set_user.h,v 1.7 2001/08/01 09:38:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -208,6 +208,17 @@ public:
 		if(skeletonId>=getNumSkeletonWeight())
 			nlerror("getSkeletonWeight*(): bad SkeletonWeight Id");
 		return _AnimationSet->getSkeletonWeightName(skeletonId);
+	}
+
+	// @}
+
+
+	/// \name Channel mgt.
+	// @{
+
+	virtual	uint getChannelIdByName (const std::string& name) const
+	{
+		return _AnimationSet->getChannelIdByName(name);
 	}
 
 	// @}

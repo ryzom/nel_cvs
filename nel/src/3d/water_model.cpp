@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.32 2003/03/31 10:26:43 vizerie Exp $
+ * $Id: water_model.cpp,v 1.33 2003/03/31 16:23:57 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1150,7 +1150,7 @@ void CWaterModel::computeClippedPoly()
 }
 
 //================================================
-bool CWaterModel::clip(CTransform *caller)
+bool CWaterModel::clip()
 {
 	H_AUTO( NL3D_Water_Render );
 	CClipTrav			&clipTrav= getOwnerScene()->getClipTrav();

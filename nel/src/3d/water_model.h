@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.10 2003/03/31 10:31:39 vizerie Exp $
+ * $Id: water_model.h,v 1.11 2003/03/31 16:23:57 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -78,7 +78,7 @@ public:
 	/// \name CTransform traverse specialisation
 	// @{
 	virtual void	traverseRender();
-	virtual	bool	clip(CTransform *caller);
+	virtual	bool	clip();
 	// @}
 
 protected:

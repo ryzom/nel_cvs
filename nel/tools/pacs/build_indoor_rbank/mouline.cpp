@@ -1,7 +1,7 @@
 /** \file mouline.cpp
  * 
  *
- * $Id: mouline.cpp,v 1.2 2002/07/19 13:29:29 legros Exp $
+ * $Id: mouline.cpp,v 1.3 2003/04/07 15:02:05 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,31 +141,10 @@ void	linkMesh(CCollisionMeshBuild &cmb, bool linkInterior)
 
 void	buildExteriorMesh(CCollisionMeshBuild &cmb, CExteriorMesh &em)
 {
-	// find the first non interior face
-	uint	i, edge;
-	bool	found = false;
-	for (i=0; i<cmb.Faces.size() && !found; ++i)
-	{
-		if (cmb.Faces[i].Surface != CCollisionFace::ExteriorSurface)
-			continue;
+	uint							startFace = 0;
+	vector<CExteriorMesh::CEdge>	edges;
 
-		for (edge=0; edge<3 && !found; ++edge)
-			if (cmb.Faces[i].Edge[edge] == -1)
-			{
-				found = true;
-				break;
-			}
-
-		if (found)
-			break;
-	}
-
-	//
-	if (!found)
-		return;
-
-	sint32				current = i;
-	sint32				next = cmb.Faces[current].Edge[edge];
+	uint	i;
 	for (i=0; i<cmb.Faces.size(); ++i)
 	{
 		cmb.Faces[i].EdgeFlags[0] = false;
@@ -173,44 +152,80 @@ void	buildExteriorMesh(CCollisionMeshBuild &cmb, CExteriorMesh &em)
 		cmb.Faces[i].EdgeFlags[2] = false;
 	}
 	
-	sint			oedge;
-	sint			pivot = (edge+1)%3;
-	sint			nextEdge = edge;
-
-	bool			allowThis = true;
-
-	vector<CExteriorMesh::CEdge>	edges;
-	uint							numLink = 0;
-
 	while (true)
 	{
-		if (cmb.Faces[current].EdgeFlags[nextEdge])
+		// find the first non interior face
+		uint	i, edge;
+		bool	found = false;
+		for (i=startFace; i<cmb.Faces.size() && !found; ++i)
 		{
-			// if reaches the end of the border, then quits.
+			if (cmb.Faces[i].Surface != CCollisionFace::ExteriorSurface)
+				continue;
+
+			for (edge=0; edge<3 && !found; ++edge)
+				if (cmb.Faces[i].Edge[edge] == -1 && !cmb.Faces[i].EdgeFlags[edge])
+				{
+//					nlassert(cmb.Faces[i].Material != 0xdeadbeef);
+					found = true;
+					break;
+				}
+
+			if (found)
+				break;
+		}
+
+		//
+		if (!found)
 			break;
-		}
-		else if (next == -1)
+
+//		cmb.Faces[i].Material = 0xdeadbeef;
+
+		startFace = i+1;
+
+		sint32		current = i;
+		sint32		next = cmb.Faces[current].Edge[edge];
+
+		sint		oedge;
+		sint		pivot = (edge+1)%3;
+		sint		nextEdge = edge;
+		bool		allowThis = true;
+
+		uint		numLink = 0;
+		uint		firstEdge = edges.size();
+
+		while (true)
 		{
-			// if the next edge belongs to the border, then go on the same element
-			cmb.Faces[current].EdgeFlags[nextEdge] = true;
-			/// \todo get the real edge link
-			sint	link = (cmb.Faces[current].Visibility[nextEdge]) ? -1 : 0;	//(numLink++);
-			edges.push_back(CExteriorMesh::CEdge(cmb.Vertices[cmb.Faces[current].V[pivot]], link));
-			pivot = (pivot+1)%3;
-			nextEdge = (nextEdge+1)%3;
-			next = cmb.Faces[current].Edge[nextEdge];
+			if (cmb.Faces[current].EdgeFlags[nextEdge])
+			{
+				// if reaches the end of the border, then quits.
+				break;
+			}
+			else if (next == -1)
+			{
+				// if the next edge belongs to the border, then go on the same element
+				cmb.Faces[current].EdgeFlags[nextEdge] = true;
+				/// \todo get the real edge link
+				sint	link = (cmb.Faces[current].Visibility[nextEdge]) ? -1 : 0;	//(numLink++);
+				edges.push_back(CExteriorMesh::CEdge(cmb.Vertices[cmb.Faces[current].V[pivot]], link));
+				pivot = (pivot+1)%3;
+				nextEdge = (nextEdge+1)%3;
+				next = cmb.Faces[current].Edge[nextEdge];
+			}
+			else
+			{
+				// if the next element is inside the surface, then go to the next element
+				for (oedge=0; oedge<3 && cmb.Faces[next].Edge[oedge]!=current; ++oedge)
+					;
+				nlassert(oedge != 3);
+				current = next;
+				pivot = (oedge+2)%3;
+				nextEdge = (oedge+1)%3;
+				next = cmb.Faces[current].Edge[nextEdge];
+			}
 		}
-		else
-		{
-			// if the next element is inside the surface, then go to the next element
-			for (oedge=0; oedge<3 && cmb.Faces[next].Edge[oedge]!=current; ++oedge)
-				;
-			nlassert(oedge != 3);
-			current = next;
-			pivot = (oedge+2)%3;
-			nextEdge = (oedge+1)%3;
-			next = cmb.Faces[current].Edge[nextEdge];
-		}
+
+		edges.push_back(edges[firstEdge]);
+		edges.back().Link = -1;
 	}
 
 	bool	previousWasLink = false;
@@ -230,10 +245,6 @@ void	buildExteriorMesh(CCollisionMeshBuild &cmb, CExteriorMesh &em)
 			previousWasLink = false;
 		}
 	}
-
-
-	edges.push_back(edges.front());
-	edges.back().Link = -1;
 
 	em.setEdges(edges);
 }
@@ -346,7 +357,7 @@ void	linkExteriorToInterior(CLocalRetriever &lr)
 		links[edges[startedge].Link] = link;
 	}
 
-	em.setEdges(edges);
+//	em.setEdges(edges);
 	em.setLinks(links);
 	lr.setExteriorMesh(em);
 }

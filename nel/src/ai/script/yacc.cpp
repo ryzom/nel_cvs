@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.13 2001/01/23 16:39:32 chafik Exp $
+ * $Id: yacc.cpp,v 1.14 2001/01/24 15:35:58 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -671,7 +671,18 @@ namespace NLAISCRIPT
 			}
 		}
 		
-		sint32 indexMethod = ((IClassInterpret *)_SelfClass.get())->addBrancheCode(_MethodName.back(),*_Param.back());
+		sint32 indexMethod;
+		try
+		{
+			indexMethod = ((IClassInterpret *)_SelfClass.get())->addBrancheCode(_MethodName.back(),*_Param.back());
+		}
+		catch(NLAIE::IException &err)
+		{
+			yyerror((char *)err.what());
+
+			return false;
+		}
+
 		if(runProcces)
 		{
 			if( ((IClassInterpret *)_SelfClass.get())->getRunMethod() >=0 )

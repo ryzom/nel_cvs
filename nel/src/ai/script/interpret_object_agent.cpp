@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.22 2001/01/24 09:27:32 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.23 2001/01/24 15:35:58 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,7 +106,7 @@ namespace NLAISCRIPT
 			if(c->RegisterName) c->RegisterName->release();
 			delete c;
 		}
-
+/*
 		if(_Methode.size())
 		{		
 #ifdef NL_DEBUG
@@ -116,7 +116,7 @@ namespace NLAISCRIPT
 			sint32 j;
 			for(j =  0; j < (sint32)_Methode.size(); j++)
 			{				
-				CMethodeName *c = _Methode[j];
+				CMethodeName *c = _Methode[j].Method;
 #ifdef NL_DEBUG
 	char txt[2048*8];
 	c->getDebugString(txt);
@@ -127,7 +127,7 @@ namespace NLAISCRIPT
 			clearIndirectMsgTable();
 
 		}
-
+*/
 		if(_Inheritance != NULL) 
 			_Inheritance->release();
 
@@ -227,8 +227,8 @@ namespace NLAISCRIPT
 						{
 							// Ajoute la méthode chez le père
 							father_index = addBrancheCode( method.getName(), method.getParam() );
-							_Methode[ father_index ]->setCode((IOpCode *)NULL);
-							_Methode[ father_index ]->setTypeOfMethode( new NLAISCRIPT::COperandVoid() );
+							_Methode[ father_index ].Method->setCode((IOpCode *)NULL);
+							_Methode[ father_index ].Method->setTypeOfMethode( new NLAISCRIPT::COperandVoid() );
 
 						
 							// Créée le tableau
@@ -459,7 +459,7 @@ namespace NLAISCRIPT
 
 	CMethodeName &CAgentClass::getBrancheCode(sint32 i) const
 	{
-		CMethodeName *a = _Methode[i];
+		CMethodeName *a = _Methode[i].Method;
 		return 	*a;
 	}
 
@@ -476,7 +476,7 @@ namespace NLAISCRIPT
 	CMethodeName &CAgentClass::getBrancheCode() const
 	{
 		if(_lastRef < 0) throw NLAIE::CExceptionUnReference("you try to access to an unrefrence index");
-		return *_Methode[_lastRef];
+		return *_Methode[_lastRef].Method;
 	}
 	
 	sint32 CAgentClass::getMethodIndexSize() const
@@ -493,21 +493,35 @@ namespace NLAISCRIPT
 	sprintf(txt,"%s%s",name.getString(),txtClass);
 	sprintf(txtClass,getClassName()->getString());			
 #endif
-		sint32 i = findMethod(name,param);
-		CMethodeName *m = new CMethodeName(name);
+		sint32 i = findMethod(name,param);		
 		if(i >= 0) 
 		{			
-			CMethodeName *oldM = _Methode[ i ];
-			oldM->release();
-			_Methode[i] = m;
-			_Methode[i]->setParam( param ) ;
-			_lastRef = i;
+			CMethodeName *oldM = _Methode[ i ].Method;
+			if(_Methode[ i ].isBasedOnBaseClass())
+			{
+				CMethodeName *m = new CMethodeName(name);
+				_Methode[ i ].setMethodBasedOnBaseClassState(false);
+				oldM->release();
+				_Methode[i] = m;
+				m->setParam( param ) ;
+				_lastRef = i;
+			}
+			else
+			{				
+				char txtP[2048*8];
+				char txt[2048*8];
+				param.getDebugString(txtP);
+				sprintf(txt,"%s%s is all ready defined in '%s'",name.getString(),txtP,getClassName()->getString());				
+				throw NLAIE::CExceptionAllReadyExist(txt);
+			}
 		}
 		else
 		{
-			_Methode.push_back( m );
-			_Methode.back()->setParam( param );
+			CMethodeName *m = new CMethodeName(name);
+			_Methode.push_back( CMethodType( m ));
+			m->setParam( param );
 			_lastRef = _Methode.size() - 1;
+			_Methode.back().setMethodBasedOnBaseClassState(false);
 		}
 		return _lastRef;
 	}
@@ -576,7 +590,7 @@ namespace NLAISCRIPT
 	{						
 		for(sint32 i = 0 ; i < (sint32)_Methode.size(); i ++)
 		{			
-			CMethodeName *m = _Methode[i];
+			CMethodeName *m = _Methode[i].Method;
 			const CParam &p = (const CParam &)m->getParam();
 			if(m->getName() == name && p == param) return i;
 		}
@@ -744,8 +758,8 @@ namespace NLAISCRIPT
 		os.serial( size );
 		for ( i = 0; i < (sint32) _Methode.size(); i++)
 		{
-			os.serial( (NLAIC::CIdentType &)_Methode[i]->getType() );
-			_Methode[i]->save( os );
+			os.serial( (NLAIC::CIdentType &)_Methode[i].Method->getType() );
+			_Methode[i].Method->save( os );
 		}
 		os.serial( (NLAIC::CIdentType &) _Inheritance->getType() );
 		_Inheritance->save( os );
@@ -768,7 +782,7 @@ namespace NLAISCRIPT
 
 		for ( i = 0; i < (sint32) _Methode.size(); i++)
 		{
-			delete _Methode[i];
+			_Methode[i].Method->release();
 		}
 		_Methode.clear();
 
@@ -782,7 +796,7 @@ namespace NLAISCRIPT
 			CMethodeName *methode = (CMethodeName *)id.allocClass();
 			methode->load(is);
 			methode->incRef();
-			_Methode.push_back( methode );
+			_Methode.push_back( CMethodType(methode));
 		}
 
 		NLAIC::CIdentTypeAlloc id;

@@ -1,7 +1,7 @@
 /** \file agent_operator.h
  * Includes class operator for IObjectIA objects.
  *
- * $Id: agent_operator.h,v 1.8 2001/01/17 16:53:18 chafik Exp $
+ * $Id: agent_operator.h,v 1.9 2001/01/24 15:35:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,8 @@ namespace NLAIAGENT
 	class IObjetOp: public IObjectIA
 	{
 	public:		
-		enum TOpId {
+		enum TOpId 
+		{
 			op_add ,
 			op_sub ,
 			op_mul ,
@@ -55,7 +56,9 @@ namespace NLAIAGENT
 			op_sup_eq ,
 			op_not ,
 			op_diff ,			
-			op_neg };	
+			op_neg,
+			op_last
+		};	
 	public:		
 
 		/// \name IObjectIA base class method;

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.19 2001/01/24 09:54:31 portier Exp $
+ * $Id: agent_script.cpp,v 1.20 2001/01/24 15:35:58 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -495,10 +495,17 @@ namespace NLAIAGENT
 
 	void CAgentScript::processMessages()
 	{		
+#ifdef _DEBUG
+		const char *dbg_class_name = (const char *) getType();
+		const NLAIAGENT::IRefrence *dbg_mail_parent = _ScriptMail->getParent();
+#endif
 		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*_AgentManager->getAgentContext();
 		while(_ScriptMail->getMessageCount())
 		{
 			IMessageBase &msg = (IMessageBase &)_ScriptMail->getMessage();
+#ifdef _DEBUG
+		const char *dbg_msg_name = (const char *) msg.getType();		
+#endif
 			IBaseGroupType *param = new CGroupType();
 			msg.incRef();
 			param->push(&msg);

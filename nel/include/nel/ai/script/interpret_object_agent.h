@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.8 2001/01/24 09:08:36 portier Exp $
+ * $Id: interpret_object_agent.h,v 1.9 2001/01/24 15:35:53 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -97,11 +97,59 @@ namespace NLAISCRIPT
 	class CAgentClass: public IAgentMultiClass
 	{
 	public:
+		struct CMethodType
+		{
+			CMethodeName	*Method;
+			bool			DefineInBaseClass;
+			
+			CMethodType()
+			{
+				Method = NULL;
+				DefineInBaseClass = true;
+			}
+
+			CMethodType(const CMethodType &m)
+			{
+				Method = m.Method;
+				if(Method != NULL) Method->incRef();
+				DefineInBaseClass = m.DefineInBaseClass;
+			}
+
+			CMethodType &operator = (const CMethodType &m)
+			{
+				Method = m.Method;
+				if(Method != NULL) Method->incRef();
+				DefineInBaseClass = m.DefineInBaseClass;
+				return *this;
+			}
+
+			CMethodType(CMethodeName *m)
+			{
+				Method = m;
+				DefineInBaseClass = true;
+			}
+
+			~CMethodType()
+			{
+				if(Method != NULL) Method->release();
+			}
+
+			const bool &isBasedOnBaseClass() const
+			{
+				return DefineInBaseClass;
+			}
+
+			void setMethodBasedOnBaseClassState(bool b)
+			{
+				DefineInBaseClass = b;
+			}
+		};
+	public:
 		static const NLAIC::CIdentType IdAgentClass;
 	private:
 		std::vector<CComponent *> _Components;
 
-		typedef std::vector<CMethodeName *>	tVectorMethode;
+		typedef std::vector<CMethodType>	tVectorMethode;
 		tVectorMethode						_Methode;
 		std::vector<const CAgentClass  *>	_VTable;
 		std::vector<sint32 *>				_MsgIndirectTable;

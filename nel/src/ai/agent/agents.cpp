@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.10 2001/01/24 09:54:31 portier Exp $
+ * $Id: agents.cpp,v 1.11 2001/01/24 15:35:58 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/agent/agent_mailer.h"
 #include "nel/ai/agent/agent_digital.h"
+#include "nel/ai/agent/agent_method_def.h"
 namespace NLAIAGENT
 {
 
@@ -284,8 +285,8 @@ namespace NLAIAGENT
 
 	IBasicAgent::CMethodCall IBasicAgent::_Method[] = 
 	{
-		IBasicAgent::CMethodCall("GetMailer",_GetMailer),
-		IBasicAgent::CMethodCall("Father",_Father)
+		IBasicAgent::CMethodCall(_MAILER_,_GetMailer),
+		IBasicAgent::CMethodCall(_FATHER_,_Father)
 	};
 
 	sint32 IBasicAgent::getMethodIndexSize() const

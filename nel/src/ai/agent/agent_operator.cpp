@@ -1,6 +1,6 @@
 /** \file agent_operator.cpp
  *
- * $Id: agent_operator.cpp,v 1.7 2001/01/18 15:04:57 portier Exp $
+ * $Id: agent_operator.cpp,v 1.8 2001/01/24 15:35:58 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,7 +92,7 @@ namespace NLAIAGENT
 
 	sint32 IObjetOp::getMethodIndexSize() const
 	{
-		return IObjectIA::getMethodIndexSize() + NLAIC::CTypeOfOperator::opAff;
+		return IObjectIA::getMethodIndexSize() + op_last;
 	}
 
 	// Executes a method from its index id and with its parameters

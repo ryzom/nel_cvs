@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.1 2001/01/11 16:38:30 chafik Exp $
+ * $Id: ai_exception.h,v 1.2 2001/01/24 15:35:53 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -233,6 +233,34 @@ namespace NLAIE
 		}
 
 		virtual ~CExceptionUnReference()
+		{
+			delete _Text;
+		}
+	};	
+
+	class CExceptionAllReadyExist: public IException
+	{
+	private:
+		char *_Text;
+	public:
+		
+		CExceptionAllReadyExist(char *text)
+		{
+			_Text = new char [strlen(text) + 1];
+			strcpy(_Text,text);
+		}
+
+		const char *what() const
+		{
+			return _Text;
+		}
+
+		virtual const IException *clone() const
+		{
+			return new CExceptionAllReadyExist(_Text);
+		}
+
+		virtual ~CExceptionAllReadyExist()
 		{
 			delete _Text;
 		}

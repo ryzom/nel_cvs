@@ -181,20 +181,21 @@ namespace NLAIAGENT
 	void CActorScript::save(NLMISC::IStream &os)
 	{
 		CAgentScript::save(os);
-		os.serial( (bool) _IsActivated );
+		sint32 b = (_IsActivated == false);
+		os.serial( b );
 	}
 
 	void CActorScript::load(NLMISC::IStream &is)
 	{
 		CAgentScript::load(is);
-		is.serial( _IsActivated );
+		sint32 b;
+		is.serial( b );
+		_IsActivated =  !b ;
 	}
 
 	sint32 CActorScript::getMethodIndexSize() const
 	{
-//		if ( _AgentClass )
-//			return CAgentScript::getMethodIndexSize() 
-//		else
+
 		return CAgentScript::getBaseMethodCount() + fid_switch;
 	}
 

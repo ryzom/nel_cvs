@@ -548,6 +548,10 @@ SOURCE=..\include\nel\ai\logic\fo_operator.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\logic\goal.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\logic\ia_assert.h
 # End Source File
 # Begin Source File

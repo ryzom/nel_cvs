@@ -1,7 +1,7 @@
 /** \file agent_method_def.h
  * Sevral define name method manipulation.
  *
- * $Id: agent_method_def.h,v 1.6 2001/01/23 14:27:28 portier Exp $
+ * $Id: agent_method_def.h,v 1.7 2001/01/24 15:35:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,11 +33,14 @@
 #define _GETCHILD_ "GetChild"
 ///define the addChild method name
 #define _ADDCHILD_ "AddChild"
+///define the addChild method name
+#define _REMOVECHILD_ "RemoveChild"
+///define the self mail boxe name
+#define _MAILER_ "GetMailer"
 
 #define	_CONSTRUCTOR_	"Constructor"
 #define _DESTRUCTOR_	"Destructor"
 #define _RUN_			"Run"
-#define _SEND_			"Send"
 #define _OPPLUS_		"operator+"
 #define _OPMOINS_		"operator-"
 #define _OPMUL_			"operator*"
@@ -47,11 +50,11 @@
 #define _OPINFEQ_		"operator<="
 #define _OPSUPEQ_		"operator>="
 #define _OPDIFF_		"operator!="
-#define _ADDSUBSET_		"addSubset"
-#define _UNFUZIFY_		"unfuzify"
-#define _FATHER_		"father"
-#define _SENDER_		"sender"
-#define _RECEIVER_		"receiver"
-#define _CONTINUATION_	"continuation"
+#define _ADDSUBSET_		"AddSubset"
+#define _UNFUZIFY_		"Unfuzify"
+#define _FATHER_		"Father"
+#define _SENDER_		"Sender"
+#define _RECEIVER_		"Receiver"
+#define _CONTINUATION_	"Continuation"
 
 #endif

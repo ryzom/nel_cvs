@@ -97,22 +97,13 @@ for i in $list_zone_lighted ; do
 	igsrc=`echo $i | sed -e 's&zone_lighted&../ig/ig_land&g' | sed -e 's/.zonel/.ig/g'`
 	if ( test -f $igsrc )
 	then
-		if ( ! test -e $dest ) || ( test $i -nt $dest ) 
+		if ( ! test -e $dest ) || ( test $i -nt $dest ) || ( test $igsrc -nt $dest )
 		then
 			echo -- IgLight $i
 			echo -- IgLight $i >> log.log
 			$exec_timeout $ig_light_timeout $zone_ig_lighter $i $dest ../../cfg/properties.cfg $depend
 			echo 
 			echo 
-		else
-			if ( ! test -e $dest ) || ( test $igsrc -nt $dest )
-			then
-				echo "-- IgLight" $i "(not lighted copy)"
-				echo "-- IgLight" $i "(not lighted copy)" >> log.log
-				cp $igsrc $dest
-				echo 
-				echo 
-			fi
 		fi
 	else
 		if ( test -f $dest )

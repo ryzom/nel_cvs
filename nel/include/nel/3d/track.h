@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.11 2001/03/14 14:33:52 corvazier Exp $
+ * $Id: track.h,v 1.12 2001/03/14 14:57:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -569,7 +569,27 @@ public:
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyRGBA* previous, const CKeyRGBA* next,
 							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date );
+							CAnimationTime date )
+	{
+		if(previous && next)
+		{
+			// lerp from previous to cur.
+			date-= datePrevious;
+			date/= (dateNext-datePrevious);
+			NLMISC::clamp(date, 0,1);
+			
+			// blend.
+			_Value.Value.blendFromui (previous->Value, next->Value, (uint)(255.f*date));
+		}
+		else
+		{
+			if (previous)
+				_Value.Value=previous->Value;
+			else
+				if (next)
+					_Value.Value=next->Value;
+		}
+	}
 
 private:
 	CAnimatedValueBlendable<NLMISC::CRGBA>	_Value;

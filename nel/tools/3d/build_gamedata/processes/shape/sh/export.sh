@@ -54,7 +54,7 @@ date
 
 for i in $shape_source_directories ; do
 	# Copy the script
-	cat maxscript/shape_export.ms | sed -e "s&shape_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/shape/tag&g" | sed -e "s&output_directory_without_coarse_mesh&$build_gamedata_directory/processes/shape/shape&g" | sed -e "s&output_directory_with_coarse_mesh&$build_gamedata_directory/processes/shape/shape_with_coarse_mesh&g" | sed -e "s&shape_export_opt_export_lighting&$seoel&g" | sed -e "s&shape_export_opt_shadow&$seos&g" | sed -e "s&shape_export_opt_lighting_limit&$seoll&g" | sed -e "s&shape_export_opt_lumel_size&$seols&g" | sed -e "s&shape_export_opt_oversampling&$seoo&g" | sed -e "s&shape_lightmap_path&$build_gamedata_directory/processes/shape/lightmap&g" > $max_directory/scripts/shape_export.ms
+	cat maxscript/shape_export.ms | sed -e "s&shape_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/shape/tag&g" | sed -e "s&output_directory_without_coarse_mesh&$build_gamedata_directory/processes/shape/shape_not_optimized&g" | sed -e "s&output_directory_with_coarse_mesh&$build_gamedata_directory/processes/shape/shape_with_coarse_mesh&g" | sed -e "s&shape_export_opt_export_lighting&$seoel&g" | sed -e "s&shape_export_opt_shadow&$seos&g" | sed -e "s&shape_export_opt_lighting_limit&$seoll&g" | sed -e "s&shape_export_opt_lumel_size&$seols&g" | sed -e "s&shape_export_opt_oversampling&$seoo&g" | sed -e "s&shape_lightmap_path&$build_gamedata_directory/processes/shape/lightmap_not_optimized&g" > $max_directory/scripts/shape_export.ms
 
 	# Start max
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript shape_export.ms -q -mi -vn

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.36 2001/09/03 12:43:35 corvazier Exp $
+ * $Id: ps_particle.cpp,v 1.37 2001/09/04 16:16:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -4160,7 +4160,15 @@ void CPSShockWave::draw(bool opaque)
 		do
 		{			
 			currAngle = *ptCurrAngle;
-			_RadiusRatio = (*ptCurrSize - _RadiusCut) / *ptCurrSize;
+			if (fabsf(*ptCurrSize) > 10E-6)
+			{
+				_RadiusRatio = (*ptCurrSize - _RadiusCut) / *ptCurrSize;
+			}
+			else
+			{
+				_RadiusRatio = 0.f;
+			}
+
 			for (k = 0; k <= _NbSeg; ++k)
 			{
 				radVect = *ptCurrSize * (CPSUtil::getCos((sint32) currAngle) * ptCurrBasis->X + CPSUtil::getSin((sint32) currAngle) * ptCurrBasis->Y);

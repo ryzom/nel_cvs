@@ -1,7 +1,7 @@
-/** \file memory_config.h
- * Memory manager configuraition
+/** \file raw_skinned.cpp
+ * Packed struct used for faster Software skinning
  *
- * $Id: memory_config.h,v 1.6 2003/12/08 13:55:18 corvazier Exp $
+ * $Id: raw_skinned.cpp,v 1.1 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -23,24 +23,25 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_MEMORY_CONFIG_H
-#define NL_MEMORY_CONFIG_H
+#include "std3d.h"
+#include "3d/raw_skinned.h"
 
-// Define this to disable debug features (use to trace buffer overflow and add debug informations in memory headers)
-#define NL_HEAP_ALLOCATION_NDEBUG
 
-// Define this to activate internal checks (use to debug the heap code)
-// #define NL_HEAP_ALLOCATOR_INTERNAL_CHECKS
+using namespace NLMISC;
 
-// Define this to disable small block optimizations
-//#define NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
+namespace NL3D 
+{
 
-// Stop when free a NULL pointer
-//#define NL_HEAP_STOP_NULL_FREE
 
-// Define this to disable the define new used to track memory leak
-//#define NL_NO_DEFINE_NEW
+// ***************************************************************************
+void		CRawSkinnedNormalCache::clearArrays()
+{
+	Vertices1.clear();
+	Vertices2.clear();
+	Vertices3.clear();
+	Vertices4.clear();
+	contReset(Geomorphs);
+	contReset(RdrPass);
+}
 
-#endif // NL_MEMORY_CONFIG_H
-
-/* End of memory_mutex.h */
+} // NL3D

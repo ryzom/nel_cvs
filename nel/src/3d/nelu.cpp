@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.32 2003/11/07 14:27:14 besson Exp $
+ * $Id: nelu.cpp,v 1.33 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/camera.h"
 #include "3d/register_3d.h"
 #include "3d/init_3d.h"
+#include "3d/vertex_stream_manager.h"
 #include "nel/misc/debug.h"
 using namespace std;
 using namespace NLMISC;
@@ -49,6 +50,7 @@ const float		CNELU::DefLzFar=1000.0f;
 IDriver				*CNELU::Driver=NULL;
 CScene				*CNELU::Scene=NULL;
 CShapeBank			*CNELU::ShapeBank=NULL;
+CVertexStreamManager*CNELU::MeshSkinManager=NULL;
 CRefPtr<CCamera>	CNELU::Camera;
 CEventServer		CNELU::EventServer;
 CEventListenerAsync	CNELU::AsyncListener;
@@ -60,6 +62,7 @@ bool			CNELU::initDriver (uint w, uint h, uint bpp, bool windowed, void *systemW
 //	NLMISC::InitDebug();
 
 	ShapeBank = new CShapeBank;
+
 	// Init driver.
 	CNELU::Driver= CDRU::createGlDriver();
 	if (!CNELU::Driver->init())
@@ -77,6 +80,10 @@ bool			CNELU::initDriver (uint w, uint h, uint bpp, bool windowed, void *systemW
 		nlwarning ("CNELU::initDriver: activate() failed");
 		return false;
 	}
+	
+	// Create a skin manager
+	MeshSkinManager = new CVertexStreamManager;
+
 	return true;
 }
 
@@ -108,6 +115,9 @@ void			CNELU::initScene(CViewport viewport)
 
 	// Link to the shape bank
 	CNELU::Scene->setShapeBank(CNELU::ShapeBank);
+
+	// set the MeshSkin Vertex Streams
+	CNELU::Scene->getRenderTrav().setMeshSkinManager(MeshSkinManager);
 }
 
 
@@ -142,6 +152,9 @@ void			CNELU::releaseScene()
 
 void			CNELU::releaseDriver()
 {
+	if (MeshSkinManager)
+		delete MeshSkinManager;
+
 	// "Release" the driver.
 	if (CNELU::Driver != NULL)
 	{

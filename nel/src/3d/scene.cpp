@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.114 2003/11/27 18:11:06 vizerie Exp $
+ * $Id: scene.cpp,v 1.115 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@
 #include "3d/mesh_base_instance.h"
 #include "3d/mesh_instance.h"
 #include "3d/mesh_mrm_instance.h"
+#include "3d/mesh_mrm_skinned_instance.h"
 #include "3d/mesh_multi_lod_instance.h"
 #include "3d/shape_bank.h"
 #include "3d/skeleton_model.h"
@@ -105,6 +106,7 @@ void	CScene::registerBasics()
 	CMeshBaseInstance::registerBasic();
 	CMeshInstance::registerBasic();
 	CMeshMRMInstance::registerBasic();
+	CMeshMRMSkinnedInstance::registerBasic();
 	CLandscapeModel::registerBasic();
 	CTransformShape::registerBasic();
 	CSkeletonModel::registerBasic();

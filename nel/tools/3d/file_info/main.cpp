@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.10 2003/08/14 08:52:27 corvazier Exp $
+ * $Id: main.cpp,v 1.11 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/misc/path.h"
 #include "3d/mesh.h"
 #include "3d/mesh_mrm.h"
+#include "3d/mesh_mrm_skinned.h"
 #include "3d/mesh_multi_lod.h"
 
 
@@ -78,6 +79,34 @@ void	displayMRMGeom(FILE *logStream, const CMeshMRMGeom &geom)
 	fprintf(logStream, "  NumFaces(Max Lod): %d\n", numFacesLodMax );
 	fprintf(logStream, "  NumFaces(Sum all Lods): %d\n", numFaces );
 	fprintf(logStream, "  NumVertices(Sum all Lods): %d\n", geom.getVertexBuffer().getNumVertices() );
+	fprintf(logStream, "  NumShadowSkinVertices: %d\n", geom.getNumShadowSkinVertices() );
+	fprintf(logStream, "  Skinned: %s\n", geom.isSkinned()?"true":"false" );
+}
+
+
+void	displayMRMSkinnedGeom(FILE *logStream, const CMeshMRMSkinnedGeom &geom)
+{
+	uint	i,j;
+	uint	numFaces=0;
+	uint	numFacesLodMax=0;
+	for(i=0;i<geom.getNbLod();i++)
+	{
+		for(j=0;j<geom.getNbRdrPass(i);j++)
+		{
+			CPrimitiveBlock block;
+			geom.getRdrPassPrimitiveBlock(i,j,block);
+			uint	nPassFaces= block.getNumTri();
+			numFaces+= nPassFaces;
+			if(i==geom.getNbLod()-1)
+				numFacesLodMax+= nPassFaces;
+		}
+	}
+	fprintf(logStream, "MRM Skinned Mesh\n");
+	fprintf(logStream, "  NumFaces(Max Lod): %d\n", numFacesLodMax );
+	fprintf(logStream, "  NumFaces(Sum all Lods): %d\n", numFaces );
+	CVertexBuffer VB;
+	geom.getVertexBuffer(VB);
+	fprintf(logStream, "  NumVertices(Sum all Lods): %d\n", VB.getNumVertices() );
 	fprintf(logStream, "  NumShadowSkinVertices: %d\n", geom.getNumShadowSkinVertices() );
 }
 
@@ -341,6 +370,7 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 			// Test Type
 			CMesh			*mesh= dynamic_cast<CMesh*>(shapeStream.getShapePointer());
 			CMeshMRM		*meshMRM= dynamic_cast<CMeshMRM*>(shapeStream.getShapePointer());
+			CMeshMRMSkinned *meshMRMSkinned= dynamic_cast<CMeshMRMSkinned*>(shapeStream.getShapePointer());
 			CMeshMultiLod	*meshMulti= dynamic_cast<CMeshMultiLod*>(shapeStream.getShapePointer());
 
 			// Material infos
@@ -359,6 +389,10 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 			else if( meshMRM )
 			{
 				displayMRMGeom(logStream, meshMRM->getMeshGeom());
+			}
+			else if( meshMRMSkinned )
+			{
+				displayMRMSkinnedGeom(logStream, meshMRMSkinned->getMeshGeom());
 			}
 			// MultiLod??
 			else if( meshMulti )

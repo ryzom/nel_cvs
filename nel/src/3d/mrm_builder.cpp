@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.31 2003/04/22 17:30:59 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.32 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2411,6 +2411,504 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 }
 
 // ***************************************************************************
+void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMSkinnedGeom::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats, const CMesh::CMeshBuild &mb)
+{
+	sint	i,j,k;
+	sint	attId;
+
+	// reset the mbuild.
+	mbuild= CMeshMRMSkinnedGeom::CMeshBuildMRM();
+	// Setup VB.
+
+	bool useFormatExt = false;
+	// Check wether there are texture coordinates with more than 2 compnents, which force us to use an extended vertex format
+	for (k = 0; k < CVertexBuffer::MaxStage; ++k)
+	{
+		if (
+			(vbFlags & (CVertexBuffer::TexCoord0Flag << k))
+			&& mb.NumCoords[k] != 2)
+		{
+			useFormatExt = true;
+			break;
+		}
+	}
+
+	uint numTexCoordUsed = 0;
+
+
+	for (k = 0; k < CVertexBuffer::MaxStage; ++k)
+	{
+		if (vbFlags & (CVertexBuffer::TexCoord0Flag << k))
+		{
+			numTexCoordUsed = k;
+		}
+	}
+
+	if (!useFormatExt)
+	{
+		// setup standard format
+		mbuild.VBuffer.setVertexFormat(vbFlags);
+	}
+	else // setup extended format
+	{
+		mbuild.VBuffer.clearValueEx();
+		if (vbFlags & CVertexBuffer::PositionFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::Position, CVertexBuffer::Float3);
+		if (vbFlags & CVertexBuffer::NormalFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::Normal, CVertexBuffer::Float3);
+		if (vbFlags & CVertexBuffer::PrimaryColorFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::PrimaryColor, CVertexBuffer::UChar4);
+		if (vbFlags & CVertexBuffer::SecondaryColorFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::SecondaryColor, CVertexBuffer::UChar4);
+		if (vbFlags & CVertexBuffer::WeightFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::Weight, CVertexBuffer::Float4);
+		if (vbFlags & CVertexBuffer::PaletteSkinFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::PaletteSkin, CVertexBuffer::UChar4);
+		if (vbFlags & CVertexBuffer::FogFlag) mbuild.VBuffer.addValueEx(CVertexBuffer::Fog, CVertexBuffer::Float1);
+
+		for (k = 0; k < CVertexBuffer::MaxStage; ++k)
+		{
+			if (vbFlags & (CVertexBuffer::TexCoord0Flag << k))
+			{
+				switch(mb.NumCoords[k])
+				{	
+					case 2:
+						mbuild.VBuffer.addValueEx((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), CVertexBuffer::Float2);
+					break;
+					case 3:
+						mbuild.VBuffer.addValueEx((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), CVertexBuffer::Float3);
+					break;
+					default:
+						nlassert(0);
+					break;
+				}
+			}
+		}
+		mbuild.VBuffer.initEx();
+	}
+
+	// Copy the UVRouting
+	for (i=0; i<CVertexBuffer::MaxStage; i++)
+	{
+		mbuild.VBuffer.setUVRouting (i, mb.UVRouting[i]);
+	}
+
+	// Setup the VertexBuffer.
+	// ========================
+	// resize the VB.
+	mbuild.VBuffer.setNumVertices(finalMRM.Wedges.size());
+	// Setup SkinWeights.
+	if(_Skinned)
+		mbuild.SkinWeights.resize(finalMRM.Wedges.size());
+
+	// fill the VB.
+	for(i=0; i<(sint)finalMRM.Wedges.size(); i++)
+	{
+		const CMRMMeshFinal::CWedge	&wedge= finalMRM.Wedges[i];
+
+		// setup Vertex.
+		mbuild.VBuffer.setVertexCoord(i, wedge.Vertex);
+
+		// seutp attributes.
+		attId= 0;
+
+		// For all activated attributes in mbuild, retriev the attribute from the finalMRM.
+		if(vbFlags & CVertexBuffer::NormalFlag)
+		{
+			mbuild.VBuffer.setNormalCoord(i, wedge.Attributes[attId] );
+			attId++;
+		}
+		if(vbFlags & CVertexBuffer::PrimaryColorFlag)
+		{
+			mbuild.VBuffer.setColor(i, attToColor(wedge.Attributes[attId]) );
+			attId++;
+		}
+		if(vbFlags & CVertexBuffer::SecondaryColorFlag)
+		{
+			mbuild.VBuffer.setSpecular(i, attToColor(wedge.Attributes[attId]) );
+			attId++;
+		}
+		for(k=0; k<CVertexBuffer::MaxStage;k++)
+		{
+			if(vbFlags & (CVertexBuffer::TexCoord0Flag<<k))
+			{
+				switch(mb.NumCoords[k])
+				{
+					case 2:				
+						mbuild.VBuffer.setTexCoord(i, k, (CUV) attToUvw(wedge.Attributes[attId]) );
+					break;
+					case 3:
+					{
+						CUVW uvw = attToUvw(wedge.Attributes[attId]);
+						mbuild.VBuffer.setValueFloat3Ex((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), i, uvw.U, uvw.V, uvw.W);
+					}
+					break;
+					default:
+						nlassert(0);
+					break;
+				}
+				attId++;
+			}
+		}
+
+		// Setup SkinWeights.
+		if(_Skinned)
+		{
+			mbuild.SkinWeights[i]= wedge.VertexSkin;
+		}
+	}
+
+
+	// Build Lods.
+	// ========================
+	// resize
+	mbuild.Lods.resize(finalMRM.Lods.size());
+	// fill.
+	for(i=0; i<(sint)finalMRM.Lods.size(); i++)
+	{
+		const CMRMMeshFinal::CLod	&srcLod= finalMRM.Lods[i];
+		CMeshMRMSkinnedGeom::CLod			&destLod= mbuild.Lods[i];
+
+		// Basic.
+		//---------
+
+		// Copy NWedges infos.
+		destLod.NWedges= srcLod.NWedges;
+		// Copy Geomorphs infos.
+		destLod.Geomorphs= srcLod.Geomorphs;
+
+
+		// Reorder faces by rdrpass.
+		//---------
+
+		// First count the number of faces used by this LOD for each material 
+		vector<sint>	matCount;
+		// resize, and reset to 0.
+		matCount.clear();
+		matCount.resize(nbMats, 0);
+		// For each face of this Lods, incr the mat face counter.
+		for(j= 0; j<(sint)srcLod.Faces.size(); j++)
+		{
+			sint	matId= srcLod.Faces[j].MaterialId;
+			nlassert(matId>=0);
+			nlassert(matId<(sint)nbMats);
+			// increment the refcount of this material by this LOD.
+			matCount[matId]++;
+		}
+
+		// Then for each material not empty, create a rdrPass, and ref it for this material.
+		vector<sint>	rdrPassIndex;	// material to rdrPass map.
+		rdrPassIndex.resize(nbMats);
+		for(j=0; j<(sint)nbMats; j++)
+		{
+			if(matCount[j]==0)
+				rdrPassIndex[j]= -1;
+			else
+			{
+				// map material to rdrPass.
+				sint	idRdrPass= destLod.RdrPass.size();
+				rdrPassIndex[j]= idRdrPass;
+				// create a rdrPass.
+				destLod.RdrPass.push_back(CMeshMRMSkinnedGeom::CRdrPass());
+				// assign the good materialId to this rdrPass.
+				destLod.RdrPass[idRdrPass].MaterialId= j;
+				// reserve the array of faces of this rdrPass.
+				destLod.RdrPass[idRdrPass].PBlock.reserve(3*matCount[j]);
+			}
+		}
+
+		// Then for each face, add it to the good rdrPass of this Lod.
+		for(j= 0; j<(sint)srcLod.Faces.size(); j++)
+		{
+			sint	matId= srcLod.Faces[j].MaterialId;
+			sint	idRdrPass= rdrPassIndex[matId];
+			// add this face to the good rdrPass.
+			sint	w0= srcLod.Faces[j].WedgeId[0];
+			sint	w1= srcLod.Faces[j].WedgeId[1];
+			sint	w2= srcLod.Faces[j].WedgeId[2];
+			destLod.RdrPass[idRdrPass].PBlock.push_back (w0);
+			destLod.RdrPass[idRdrPass].PBlock.push_back (w1);
+			destLod.RdrPass[idRdrPass].PBlock.push_back (w2);
+		}
+
+
+		// Build skin info for this Lod.
+		//---------
+		for(j=0; j<NL3D_MESH_SKINNING_MAX_MATRIX; j++)
+		{
+			destLod.InfluencedVertices[j].clear();
+		}
+		destLod.MatrixInfluences.clear();
+		if(_Skinned)
+		{
+			// This is the set which tell what wedge has already been inserted.
+			set<uint>	wedgeInfSet;
+
+			// First, build the list of vertices influenced by this Lod.
+			for(j= 0; j<(sint)srcLod.Faces.size(); j++)
+			{
+				for(k=0; k<3; k++)
+				{
+					sint	wedgeId= srcLod.Faces[j].WedgeId[k];
+					// If it is a geomorph
+					if(wedgeId<finalMRM.NGeomSpace)
+					{
+						// add the start and end to the list (if not here). NB: wedgeId is both the id 
+						// of the dest wedge, and the id of the geomorph.
+						sint	wedgeStartId= destLod.Geomorphs[wedgeId].Start;
+						sint	wedgeEndId= destLod.Geomorphs[wedgeId].End;
+						uint	nMatUsedStart= finalMRM.Wedges[wedgeStartId].NSkinMatUsed;
+						uint	nMatUsedEnd= finalMRM.Wedges[wedgeEndId].NSkinMatUsed;
+
+						// if insertion in the set work, add to the good array.
+						if( wedgeInfSet.insert(wedgeStartId).second )
+							destLod.InfluencedVertices[nMatUsedStart-1].push_back(wedgeStartId);
+						if( wedgeInfSet.insert(wedgeEndId).second )
+							destLod.InfluencedVertices[nMatUsedEnd-1].push_back(wedgeEndId);
+					}
+					else
+					{
+						uint	nMatUsed= finalMRM.Wedges[wedgeId].NSkinMatUsed;
+
+						// just add this wedge to the list (if not here).
+						// if insertion in the set work, add to the array.
+						if( wedgeInfSet.insert(wedgeId).second )
+							destLod.InfluencedVertices[nMatUsed-1].push_back(wedgeId);
+					}
+				}
+			}
+
+			// Optimisation: for better cache, sort the destLod.InfluencedVertices in increasing order.
+			for(j=0; j<NL3D_MESH_SKINNING_MAX_MATRIX; j++)
+			{
+				sort(destLod.InfluencedVertices[j].begin(), destLod.InfluencedVertices[j].end());
+			}
+
+
+			// Then Build the MatrixInfluences array, for all thoses Influenced Vertices only.
+			// This is the map MatrixId -> MatrixInfId.
+			map<uint, uint>		matrixInfMap;
+
+			// For all influenced vertices, flags matrix they use.
+			uint	iSkinMat;
+			for(iSkinMat= 0; iSkinMat<NL3D_MESH_SKINNING_MAX_MATRIX; iSkinMat++)
+			{
+				for(j= 0; j<(sint)destLod.InfluencedVertices[iSkinMat].size(); j++)
+				{
+					uint	wedgeId= destLod.InfluencedVertices[iSkinMat][j];
+
+					// take the original wedge.
+					const CMRMMeshFinal::CWedge	&wedge= finalMRM.Wedges[wedgeId];
+					// For all matrix with not null influence...
+					for(k= 0; k<NL3D_MESH_SKINNING_MAX_MATRIX; k++)
+					{
+						float	matWeight= wedge.VertexSkin.Weights[k];
+
+						// This check the validity of skin weights sort. If false, problem before in the algo.
+						if((uint)k<iSkinMat+1)
+						{
+							nlassert( matWeight>0 );
+						}
+						else
+						{
+							nlassert( matWeight==0 );
+						}
+						// if not null influence.
+						if(matWeight>0)
+						{
+							uint	matId= wedge.VertexSkin.MatrixId[k];
+
+							// search/insert the matrixInfId.
+							map<uint, uint>::iterator	it= matrixInfMap.find(matId);
+							if( it==matrixInfMap.end() )
+							{
+								uint matInfId= destLod.MatrixInfluences.size();
+								matrixInfMap.insert( make_pair(matId, matInfId) );
+								// create the new MatrixInfluence.
+								destLod.MatrixInfluences.push_back(matId);
+							}
+						}
+					}
+				}
+			}
+
+		}
+
+	}
+
+	// Indicate Skinning.
+	mbuild.Skinned= _Skinned;
+
+
+
+	bool useTgSpace = mb.MeshVertexProgram != NULL ? mb.MeshVertexProgram->needTangentSpace() : false;
+
+	// Construct Blend Shapes
+	//// mbuild <- finalMRM
+	mbuild.BlendShapes.resize (finalMRM.MRMBlendShapesFinals.size());
+	for (k = 0; k < (sint)mbuild.BlendShapes.size(); ++k)
+	{
+		CBlendShape &rBS = mbuild.BlendShapes[k];
+		sint32 nNbVertVB = finalMRM.Wedges.size();
+		bool bIsDeltaPos = false;
+		rBS.deltaPos.resize (nNbVertVB, CVector(0.0f,0.0f,0.0f));
+		bool bIsDeltaNorm = false;
+		rBS.deltaNorm.resize (nNbVertVB, CVector(0.0f,0.0f,0.0f));
+		bool bIsDeltaUV = false;
+		rBS.deltaUV.resize (nNbVertVB, CUV(0.0f,0.0f));
+		bool bIsDeltaCol = false;
+		rBS.deltaCol.resize (nNbVertVB, CRGBAF(0.0f,0.0f,0.0f,0.0f));
+		bool bIsDeltaTgSpace = false;
+		if (useTgSpace)
+		{
+			rBS.deltaTgSpace.resize(nNbVertVB, CVector::Null);
+		}
+
+		rBS.VertRefs.resize (nNbVertVB, 0xffffffff);
+
+		for (i = 0; i < nNbVertVB; i++)
+		{
+			const CMRMMeshFinal::CWedge	&rWedgeRef = finalMRM.Wedges[i];
+			const CMRMMeshFinal::CWedge	&rWedgeTar = finalMRM.MRMBlendShapesFinals[k].Wedges[i];
+
+			CVector delta = rWedgeTar.Vertex - rWedgeRef.Vertex;
+			CVectorH attr;
+
+			if (delta.norm() > 0.001f)
+			{
+				rBS.deltaPos[i] = delta;
+				rBS.VertRefs[i] = i;
+				bIsDeltaPos = true;
+			}
+
+			attId = 0;
+			if (vbFlags & CVertexBuffer::NormalFlag)
+			{
+				attr = rWedgeRef.Attributes[attId];
+				CVector NormRef = CVector(attr.x, attr.y, attr.z);
+				attr = rWedgeTar.Attributes[attId];
+				CVector NormTar = CVector(attr.x, attr.y, attr.z);
+				delta = NormTar - NormRef;
+				if (delta.norm() > 0.001f)
+				{
+					rBS.deltaNorm[i] = delta;
+					rBS.VertRefs[i] = i;
+					bIsDeltaNorm = true;
+				}
+				attId++;
+			}		
+
+			if (vbFlags & CVertexBuffer::PrimaryColorFlag)
+			{
+				attr = rWedgeRef.Attributes[attId];
+				CRGBAF RGBARef = CRGBAF(attr.x/255.0f, attr.y/255.0f, attr.z/255.0f, attr.w/255.0f);
+				attr = rWedgeTar.Attributes[attId];
+				CRGBAF RGBATar = CRGBAF(attr.x/255.0f, attr.y/255.0f, attr.z/255.0f, attr.w/255.0f);
+				CRGBAF deltaRGBA = RGBATar - RGBARef;
+				if ((deltaRGBA.R*deltaRGBA.R + deltaRGBA.G*deltaRGBA.G +
+					deltaRGBA.B*deltaRGBA.B + deltaRGBA.A*deltaRGBA.A) > 0.0001f)
+				{
+					rBS.deltaCol[i] = deltaRGBA;
+					rBS.VertRefs[i] = i;
+					bIsDeltaCol = true;
+				}
+				attId++;
+			}
+
+			if (vbFlags & CVertexBuffer::SecondaryColorFlag)
+			{	// Nothing to do !
+				attId++;
+			}
+
+			// Do that only for the UV0
+			if (vbFlags & CVertexBuffer::TexCoord0Flag)
+			{
+				attr = rWedgeRef.Attributes[attId];
+				CUV UVRef = CUV(attr.x, attr.y);
+				attr = rWedgeTar.Attributes[attId];
+				CUV UVTar = CUV(attr.x, attr.y);
+				CUV deltaUV = UVTar - UVRef;
+				if ((deltaUV.U*deltaUV.U + deltaUV.V*deltaUV.V) > 0.0001f)
+				{
+					rBS.deltaUV[i] = deltaUV;
+					rBS.VertRefs[i] = i;
+					bIsDeltaUV = true;
+				}
+				attId++;
+			}
+
+			if (useTgSpace)
+			{
+				attr = rWedgeRef.Attributes[attId];
+				CVector TgSpaceRef = CVector(attr.x, attr.y, attr.z);
+				attr = rWedgeTar.Attributes[attId];
+				CVector TgSpaceTar = CVector(attr.x, attr.y, attr.z);
+				delta = TgSpaceTar - TgSpaceRef;
+				if (delta.norm() > 0.001f)
+				{
+					rBS.deltaTgSpace[i] = delta;
+					rBS.VertRefs[i] = i;
+					bIsDeltaTgSpace = true;
+				}
+				attId++;
+			}
+			
+		} // End of all vertices added in blend shape
+
+		// Delete unused items and calculate the number of vertex used (blended)
+
+		sint32 nNbVertUsed = nNbVertVB;
+		sint32 nDstPos = 0;
+		for (j = 0; j < nNbVertVB; ++j)
+		{
+			if (rBS.VertRefs[j] == 0xffffffff) // Is vertex UNused
+			{
+				--nNbVertUsed;
+			}
+			else // Vertex used
+			{
+				if (nDstPos != j)
+				{
+					rBS.VertRefs[nDstPos]	= rBS.VertRefs[j];
+					rBS.deltaPos[nDstPos]	= rBS.deltaPos[j];
+					rBS.deltaNorm[nDstPos]	= rBS.deltaNorm[j];
+					rBS.deltaUV[nDstPos]	= rBS.deltaUV[j];
+					rBS.deltaCol[nDstPos]	= rBS.deltaCol[j];
+					if (useTgSpace)
+					{
+						rBS.deltaTgSpace[nDstPos]	= rBS.deltaTgSpace[j];
+					}
+				}
+				++nDstPos;
+			}
+		}
+
+		if (bIsDeltaPos)
+			rBS.deltaPos.resize (nNbVertUsed);
+		else
+			rBS.deltaPos.resize (0);
+
+		if (bIsDeltaNorm)
+			rBS.deltaNorm.resize (nNbVertUsed);
+		else
+			rBS.deltaNorm.resize (0);
+
+		if (bIsDeltaUV)
+			rBS.deltaUV.resize (nNbVertUsed);
+		else
+			rBS.deltaUV.resize (0);
+
+		if (bIsDeltaCol)
+			rBS.deltaCol.resize (nNbVertUsed);
+		else
+			rBS.deltaCol.resize (0);
+
+		if (bIsDeltaTgSpace)
+			rBS.deltaTgSpace.resize (nNbVertUsed);
+		else
+			rBS.deltaTgSpace.resize (0);
+
+
+		rBS.VertRefs.resize (nNbVertUsed);
+
+	}
+}
+
+// ***************************************************************************
 void CMRMBuilder::buildBlendShapes (CMRMMesh& baseMesh, 
 									std::vector<CMesh::CMeshBuild*> &bsList, uint32 VertexFlags)
 {
@@ -2492,6 +2990,65 @@ void CMRMBuilder::buildBlendShapes (CMRMMesh& baseMesh,
 // ***************************************************************************
 void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, std::vector<CMesh::CMeshBuild*> &bsList,
 								const CMRMParameters &params, CMeshMRMGeom::CMeshBuildMRM &mrmMesh, 
+								uint numMaxMaterial)
+{
+	// Temp data.
+	CMRMMesh						baseMesh;
+	vector<CMRMMeshGeom>			lodMeshs;
+	CMRMMeshFinal					finalMRM;
+	vector<CMRMMeshFinal>			finalBsMRM;
+	uint32	vbFlags;
+
+
+	nlassert(params.DistanceFinest>=0);
+	nlassert(params.DistanceMiddle > params.DistanceFinest);
+	nlassert(params.DistanceCoarsest > params.DistanceMiddle);
+
+
+	// Copy some parameters.
+	_SkinReduction= params.SkinReduction;
+
+	// Skinning??
+	_Skinned= ((mbuild.VertexFlags & CVertexBuffer::PaletteSkinFlag)==CVertexBuffer::PaletteSkinFlag);
+	// Skinning is OK only if SkinWeights are of same size as vertices.
+	_Skinned= _Skinned && ( mbuild.Vertices.size()==mbuild.SkinWeights.size() );
+	
+	// MeshInterface setuped ?
+	_HasMeshInterfaces= buildMRMSewingMeshes(mbuild, params.NLods, params.Divisor);
+
+	// from mbuild, build an internal MRM mesh representation.
+	// vbFlags returned is the VBuffer format supported by CMRMBuilder.
+	// NB: skinning is removed because skinning is made in software in CMeshMRMGeom.
+	vbFlags= buildMrmBaseMesh(mbuild, baseMesh);
+
+	// Construct all blend shapes in the same way we have constructed the basemesh mrm
+	buildBlendShapes (baseMesh, bsList, vbFlags);
+
+	// If skinned, must ensure that skin weights have weights in ascending order.
+	if(_Skinned)
+	{
+		normalizeBaseMeshSkin(baseMesh);
+	}
+
+	// from this baseMesh, builds all LODs of the MRM, with geomorph info. NB: vertices/wedges are duplicated.
+	buildAllLods (	baseMesh, lodMeshs, params.NLods, params.Divisor );
+
+	// From this array of LOD, build a finalMRM, by regrouping identical vertices/wedges, and compute index geomorphs.
+	buildFinalMRM(lodMeshs, finalMRM);
+
+	// From this finalMRM, build output: a CMeshBuildMRM.
+	buildMeshBuildMrm(finalMRM, mrmMesh, vbFlags, numMaxMaterial, mbuild);
+
+	// Copy degradation control params.
+	mrmMesh.DistanceFinest= params.DistanceFinest;
+	mrmMesh.DistanceMiddle= params.DistanceMiddle;
+	mrmMesh.DistanceCoarsest= params.DistanceCoarsest;
+}
+
+
+// ***************************************************************************
+void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, std::vector<CMesh::CMeshBuild*> &bsList,
+								const CMRMParameters &params, CMeshMRMSkinnedGeom::CMeshBuildMRM &mrmMesh, 
 								uint numMaxMaterial)
 {
 	// Temp data.

@@ -1,6 +1,6 @@
 /** \file export_mesh_interface.cpp
  *
- * $Id: export_mesh_interface.cpp,v 1.8 2003/04/01 17:07:00 vizerie Exp $
+ * $Id: export_mesh_interface.cpp,v 1.9 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/misc/polygon.h"
 #include "nel/misc/path.h"
 #include "3d/quad_grid.h"
+#include "3d/mesh_mrm_skinned.h"
 #include "export_appdata.h"
 
 
@@ -221,6 +222,7 @@ static void ApplyMeshInterfacesForMRM(std::vector<CMeshInterface> &interfaces, C
 		{
 			// back in object Space, because the CMeshInterface is in WorldSpace
 			mbuild.Interfaces[m].Vertices[k].Pos= toObjectMat * interfaces[m].Verts[k].Pos;
+
 			mbuild.Interfaces[m].Vertices[k].Normal= toObjectMatNormal * interfaces[m].Verts[k].Normal;
 			mbuild.Interfaces[m].Vertices[k].Normal.normalize();
 		}
@@ -242,6 +244,12 @@ static void ApplyMeshInterfacesForMRM(std::vector<CMeshInterface> &interfaces, C
 				mbuild.InterfaceLinks[k].InterfaceId= m;
 				mbuild.InterfaceLinks[k].InterfaceVertexId= snapTo;
 				mbuild.InterfaceVertexFlag.set(k);
+
+				// Force pack / unpack to be aligned with CMeshMRMSkinned vertices
+				CMeshMRMSkinnedGeom::CPackedVertexBuffer::CPackedVertex vertex;
+				vertex.setPos (mbuild.Vertices[k], NL3D_MESH_MRM_SKINNED_DEFAULT_POS_SCALE);
+				vertex.getPos (mbuild.Vertices[k], NL3D_MESH_MRM_SKINNED_DEFAULT_POS_SCALE);
+
 				break;
 			}
 		}

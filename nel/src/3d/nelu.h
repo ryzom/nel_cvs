@@ -1,7 +1,7 @@
 /** \file nelu.h
  * <File description>
  *
- * $Id: nelu.h,v 1.7 2003/11/07 14:27:14 besson Exp $
+ * $Id: nelu.h,v 1.8 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,6 +138,9 @@ public:
 	static IDriver				*Driver;
 	static CScene				*Scene;
 	static CShapeBank			*ShapeBank;
+	// There is one MeshSkin Vertex Stream per driver, and for all scenes.
+	static CVertexStreamManager	*MeshSkinManager;
+
 	static CRefPtr<CCamera>		Camera;
 	static NLMISC::CEventServer			EventServer;
 	static NLMISC::CEventListenerAsync	AsyncListener;

@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.cpp
  * <File description>
  *
- * $Id: lod_texture_builder.cpp,v 1.2 2002/11/12 16:46:37 berenguier Exp $
+ * $Id: lod_texture_builder.cpp,v 1.3 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -147,6 +147,52 @@ bool			CLodTextureBuilder::computeTexture(const CMeshMRM &meshMRM, NL3D::CLodCha
 	for(uint rp=0; rp<meshMRM.getNbRdrPass(lodId);rp++)
 	{
 		const CPrimitiveBlock	&pb= meshMRM.getRdrPassPrimitiveBlock(lodId, rp);
+		uint	matId= meshMRM.getRdrPassMaterial(lodId, rp);
+		// samples the tris of this pass
+		addSampleTris(srcPos, srcNormal, srcUV, vertexSize, pb.getTriPointer(), pb.getNumTri(), matId, edgeSet);
+	}
+
+
+	// **** compute the texture, with the samples
+	computeTextureFromSamples(text);
+
+	return true;
+}
+
+
+// ***************************************************************************
+bool			CLodTextureBuilder::computeTexture(const CMeshMRMSkinned &meshMRM, NL3D::CLodCharacterTexture  &text)
+{
+	// a set to flag if an edge has already been overSampled
+	TEdgeSet	edgeSet;
+
+	// **** Over sample the mesh
+	_Samples.clear();
+	_Samples.reserve(1000);
+	// Get vertex info
+	CVertexBuffer tmp;
+	meshMRM.getVertexBuffer(tmp);
+	uint8				*srcPos= (uint8*)tmp.getVertexCoordPointer();
+	uint8				*srcNormal= (uint8*)tmp.getNormalCoordPointer();
+	uint8				*srcUV= (uint8*)tmp.getTexCoordPointer();
+	uint				vertexSize= tmp.getVertexSize();
+	// For the more precise lod
+	uint	lodId= meshMRM.getNbLod()-1;
+	// Resolve Geomoprh problem: copy End to all geomorphs dest. Hence sure that all ids points to good vertex data
+	const std::vector<CMRMWedgeGeom>	&geoms= meshMRM.getMeshGeom().getGeomorphs(lodId);
+	for(uint gm=0;gm<geoms.size();gm++)
+	{
+		uint	srcId= geoms[gm].End;
+		// copy the geom src to the dest VB place.
+		*(CVector*)(srcPos+gm*vertexSize)= *(CVector*)(srcPos+srcId*vertexSize);
+		*(CVector*)(srcNormal+gm*vertexSize)= *(CVector*)(srcNormal+srcId*vertexSize);
+		*(CUV*)(srcUV+gm*vertexSize)= *(CUV*)(srcUV+srcId*vertexSize);
+	}
+	// for all rdrPass
+	for(uint rp=0; rp<meshMRM.getNbRdrPass(lodId);rp++)
+	{
+		CPrimitiveBlock	pb;
+		meshMRM.getRdrPassPrimitiveBlock(lodId, rp, pb);
 		uint	matId= meshMRM.getRdrPassMaterial(lodId, rp);
 		// samples the tris of this pass
 		addSampleTris(srcPos, srcNormal, srcUV, vertexSize, pb.getTriPointer(), pb.getNumTri(), matId, edgeSet);

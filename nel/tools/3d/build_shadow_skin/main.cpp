@@ -1,6 +1,7 @@
 
 
 #include "nel/misc/path.h"
+#include "3d/mesh_mrm_skinned.h"
 #include "3d/mesh_mrm.h"
 #include "3d/mesh.h"
 #include "nel/misc/file.h"
@@ -15,16 +16,27 @@ using namespace std;
 
 
 // ***************************************************************************
-typedef	CMeshMRMGeom::CShadowVertex		CShadowVertex;
 
+const CPrimitiveBlock *getRdrPassPrimitiveBlock(const CMeshMRMGeom *mesh, uint lodId, uint renderPass)
+{
+	return &(mesh->getRdrPassPrimitiveBlock(lodId, renderPass));
+}
 
 // ***************************************************************************
-void		addShadowMesh(CMeshMRMGeom *meshIn, float paramFaceRatio, sint paramMaxFace)
+
+const CPrimitiveBlock *getRdrPassPrimitiveBlock(const CMeshMRMSkinnedGeom *mesh, uint lodId, uint renderPass)
+{
+	static CPrimitiveBlock block;
+	mesh->getRdrPassPrimitiveBlock(lodId, renderPass, block);
+	return &block;
+}
+
+// ***************************************************************************
+
+template<class T>
+void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const std::vector<CMesh::CSkinWeight> &skinWeights, const CVertexBuffer &vertexBuffer)
 {
 	uint	i, j;
-	const std::vector<CMesh::CSkinWeight>	&skinWeights= meshIn->getSkinWeights();
-	const CVertexBuffer						&vertexBuffer= meshIn->getVertexBuffer();
-
 
 	// **** Select the Lod.
 	uint	numLods= meshIn->getNbLod();
@@ -49,9 +61,9 @@ void		addShadowMesh(CMeshMRMGeom *meshIn, float paramFaceRatio, sint paramMaxFac
 	// Parse all triangles.
 	for(i=0;i<meshIn->getNbRdrPass(lodId);i++)
 	{
-		const CPrimitiveBlock	&pb= meshIn->getRdrPassPrimitiveBlock(lodId, i);
-		const uint32	*triPtr= pb.getTriPointer();
-		for(j=0;j<pb.getNumTri()*3;j++)
+		const CPrimitiveBlock *pb = getRdrPassPrimitiveBlock(meshIn, lodId, i);
+		const uint32	*triPtr= pb->getTriPointer();
+		for(j=0;j<pb->getNumTri()*3;j++)
 		{
 			uint	idx= *triPtr;
 			// Flag the vertex with its own index => used.
@@ -72,12 +84,12 @@ void		addShadowMesh(CMeshMRMGeom *meshIn, float paramFaceRatio, sint paramMaxFac
 
 
 	// **** For all vertices used (not geomorphs), compute vertex Skins.
-	vector<CShadowVertex>		shadowVertices;
+	vector<T::CShadowVertex>		shadowVertices;
 	vector<sint>				vertexToVSkin;
 	vertexToVSkin.resize(vertexUsed.size());
 	shadowVertices.reserve(vertexUsed.size());
 	// use a map to remove duplicates (because of UV/normal discontinuities before!!)
-	map<CShadowVertex, uint>	shadowVertexMap;
+	map<T::CShadowVertex, uint>	shadowVertexMap;
 	uint						numMerged= 0;
 	// Skip Geomorphs.
 	for(i=geomorphs.size();i<vertexUsed.size();i++)
@@ -86,7 +98,7 @@ void		addShadowMesh(CMeshMRMGeom *meshIn, float paramFaceRatio, sint paramMaxFac
 		if(vertexUsed[i]!=-1)
 		{
 			// Build the vertex
-			CShadowVertex	shadowVert;
+			T::CShadowVertex	shadowVert;
 			shadowVert.Vertex= *(CVector*)vertexBuffer.getVertexCoordPointer(i);
 			// Select the best Matrix.
 			CMesh::CSkinWeight		sw= skinWeights[i];
@@ -106,7 +118,7 @@ void		addShadowMesh(CMeshMRMGeom *meshIn, float paramFaceRatio, sint paramMaxFac
 			shadowVert.MatrixId= matId;
 
 			// If dont find the shadowVertex in the map.
-			map<CShadowVertex, uint>::iterator		it= shadowVertexMap.find(shadowVert);
+			map<T::CShadowVertex, uint>::iterator		it= shadowVertexMap.find(shadowVert);
 			if(it==shadowVertexMap.end())
 			{
 				// Append
@@ -140,9 +152,9 @@ void		addShadowMesh(CMeshMRMGeom *meshIn, float paramFaceRatio, sint paramMaxFac
 	// Parse all input tri of the mesh.
 	for(i=0;i<meshIn->getNbRdrPass(lodId);i++)
 	{
-		const CPrimitiveBlock	&pb= meshIn->getRdrPassPrimitiveBlock(lodId, i);
-		const uint32	*triPtr= pb.getTriPointer();
-		for(j=0;j<pb.getNumTri()*3;j++)
+		const CPrimitiveBlock *pb = getRdrPassPrimitiveBlock(meshIn, lodId, i);
+		const uint32	*triPtr= pb->getTriPointer();
+		for(j=0;j<pb->getNumTri()*3;j++)
 		{
 			uint	idx= *triPtr;
 			// Get the real Vertex (ie not the geomporhed one).
@@ -183,8 +195,28 @@ void		addShadowMesh(CMeshMRMGeom *meshIn, float paramFaceRatio, sint paramMaxFac
 	meshIn->setShadowMesh(shadowVertices, shadowTriangles);
 }
 
+// ***************************************************************************
+
+void		addShadowMeshIntro(CMeshMRMGeom *meshIn, float paramFaceRatio, sint paramMaxFace)
+{
+	const std::vector<CMesh::CSkinWeight>	&skinWeights= meshIn->getSkinWeights();
+	const CVertexBuffer						&vertexBuffer= meshIn->getVertexBuffer();
+	addShadowMesh (meshIn, paramFaceRatio, paramMaxFace, skinWeights, vertexBuffer);
+}
 
 // ***************************************************************************
+
+void		addShadowMeshIntro(CMeshMRMSkinnedGeom *meshIn, float paramFaceRatio, sint paramMaxFace)
+{
+	std::vector<CMesh::CSkinWeight>	skinWeights;
+	meshIn->getSkinWeights(skinWeights);
+	CVertexBuffer vertexBuffer;
+	meshIn->getVertexBuffer(vertexBuffer);
+	addShadowMesh (meshIn, paramFaceRatio, paramMaxFace, skinWeights, vertexBuffer);
+}
+
+// ***************************************************************************
+
 int		main(int argc, char *argv[])
 {
 	// Filter addSearchPath
@@ -215,6 +247,7 @@ int		main(int argc, char *argv[])
 		maxFace= atoi(argv[4]);
 
 	// **** Load the Mesh In.
+	IShape *pResult = NULL;
 	CMeshMRM	*pMesh;
 	CShapeStream	shapeStreamIn;
 	CIFile		shapeFileIn;
@@ -228,24 +261,40 @@ int		main(int argc, char *argv[])
 	shapeFileIn.close();
 	if(!pMesh)
 	{
-		nlwarning("ERROR: Not a MRM Mesh: %s", shapeNameIn.c_str());
-		exit(-1);
+		CMeshMRMSkinned *pMeshSkinned= dynamic_cast<CMeshMRMSkinned*>(shapeStreamIn.getShapePointer());
+		if(!pMeshSkinned)
+		{
+			nlwarning("ERROR: Not a MRM Mesh nor a MRM Mesh skinned: %s", shapeNameIn.c_str());
+			exit(-1);
+		}
+
+		CMeshMRMSkinnedGeom	*pMeshGeom= (CMeshMRMSkinnedGeom*)&pMeshSkinned->getMeshGeom();
+
+		// **** Add Shadow mesh.
+		float	faceRatio;
+		clamp(percentageFace, 0, 100);
+		faceRatio= (float)percentageFace/100;
+		maxFace= max(0, maxFace);
+		addShadowMeshIntro(pMeshGeom, faceRatio, maxFace);
+		pResult = pMeshSkinned;
 	}
-	CMeshMRMGeom	*pMeshGeom= (CMeshMRMGeom*)&pMesh->getMeshGeom();
-	if( !pMeshGeom->isSkinned() )
+	else
 	{
-		nlwarning("ERROR: Not a Skinned MRM Mesh: %s", shapeNameIn.c_str());
-		exit(-1);
+		CMeshMRMGeom	*pMeshGeom= (CMeshMRMGeom*)&pMesh->getMeshGeom();
+		if( !pMeshGeom->isSkinned() )
+		{
+			nlwarning("ERROR: Not a Skinned MRM Mesh: %s", shapeNameIn.c_str());
+			exit(-1);
+		}
+
+		// **** Add Shadow mesh.
+		float	faceRatio;
+		clamp(percentageFace, 0, 100);
+		faceRatio= (float)percentageFace/100;
+		maxFace= max(0, maxFace);
+		addShadowMeshIntro(pMeshGeom, faceRatio, maxFace);
+		pResult = pMesh;
 	}
-
-
-	// **** Add Shadow mesh.
-	float	faceRatio;
-	clamp(percentageFace, 0, 100);
-	faceRatio= (float)percentageFace/100;
-	maxFace= max(0, maxFace);
-	addShadowMesh(pMeshGeom, faceRatio, maxFace);
-
 
 	// **** Save It
 	CShapeStream	shapeStreamOut;
@@ -255,7 +304,9 @@ int		main(int argc, char *argv[])
 		nlwarning("ERROR: cannot open output file: %s", shapeNameOut.c_str());
 		exit(-1);
 	}
-	shapeStreamOut.setShapePointer(pMesh);
+
+	nlassert (pResult);
+	shapeStreamOut.setShapePointer(pResult);
 	shapeStreamOut.serial(shapeFileOut);
 	shapeFileOut.close();
 

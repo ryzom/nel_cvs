@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.110 2003/11/25 14:40:48 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.111 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@
 #include <3d/nelu.h>
 #include <3d/mesh.h>
 #include <3d/mesh_mrm.h>
+#include <3d/mesh_mrm_skinned.h>
 #include <3d/transform_shape.h>
 #include <3d/mesh_instance.h>
 #include <3d/text_context.h>
@@ -2014,11 +2015,14 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 			// Get the skeleton
 			NL3D::CSkeletonModel *transformSkel = dynamic_cast<CSkeletonModel*>(_ListInstance[skelIndex]->TransformShape);
 			nlassert (transformSkel);
-
+			
 			// It is a skinned mesh ?
 			CMesh *mesh = dynamic_cast<CMesh *>(pMeshShape);
 			CMeshMRM *meshMrm = dynamic_cast<CMeshMRM *>(pMeshShape);
-			if ( (mesh && mesh->getMeshGeom().isSkinned()) || (meshMrm && meshMrm->getMeshGeom().isSkinned()) )
+			CMeshMRMSkinned *meshMrmSkinned = dynamic_cast<CMeshMRMSkinned *>(pMeshShape);
+			if ( (mesh && mesh->getMeshGeom().isSkinned()) || 
+				(meshMrm && meshMrm->getMeshGeom().isSkinned()) ||
+				meshMrmSkinned)
 			{
 				// Bind to skeleton
 				transformSkel->bindSkin (meshInstance);

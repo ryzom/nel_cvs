@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.61 2003/07/16 16:59:23 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.62 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include <3d/texture_file.h>
 #include <3d/texture_blend.h>
 #include <3d/mesh_mrm.h>
+#include <3d/mesh_mrm_skinned.h>
 #include <3d/mesh_multi_lod.h>
 #include <3d/coarse_mesh_manager.h>
 #include <3d/water_shape.h>
@@ -359,21 +360,43 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 						CMRMParameters	parameters;
 						buildMRMParameters (node, parameters);
 
-						// Make a CMesh object
-						CMeshMRM* meshMRM=new CMeshMRM;
-
 						// Get the blend shapes that can be linked
 						std::vector<CMesh::CMeshBuild*> bsList;
 						getBSMeshBuild (bsList, node, time, nodeMap!=NULL);
 
-						// Build the mesh with the build interface
-						meshMRM->build (buildBaseMesh, buildMesh, bsList, parameters);
+						// CMeshMRM or CMeshMRMSkinned ?
 
-						// optimize number of material
-						meshMRM->optimizeMaterialUsage(materialRemap);
+						/*
+						 * Here, export plugin choose between CMeshMRM and CMeshMRMSkinned
+						 */
+						if (CMeshMRMSkinned::isCompatible(buildMesh) && bsList.empty())
+						{
+							// Make a CMesh object
+							CMeshMRMSkinned* meshMRMSkinned=new CMeshMRMSkinned;
 
-						// Return this pointer
-						meshBase=meshMRM;
+							// Build the mesh with the build interface
+							meshMRMSkinned->build (buildBaseMesh, buildMesh, parameters);
+
+							// optimize number of material
+							meshMRMSkinned->optimizeMaterialUsage(materialRemap);
+
+							// Return this pointer
+							meshBase=meshMRMSkinned;
+						}
+						else
+						{
+							// Make a CMesh object
+							CMeshMRM* meshMRM=new CMeshMRM;
+
+							// Build the mesh with the build interface
+							meshMRM->build (buildBaseMesh, buildMesh, bsList, parameters);
+
+							// optimize number of material
+							meshMRM->optimizeMaterialUsage(materialRemap);
+
+							// Return this pointer
+							meshBase=meshMRM;
+						}
 					}
 					else
 					{

@@ -215,6 +215,14 @@ SOURCE=.\3d\mesh_mrm_instance.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_mrm_skinned_instance.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_mrm_skinned_instance.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mesh_multi_lod_instance.cpp
 # End Source File
 # Begin Source File
@@ -881,6 +889,19 @@ SOURCE=.\3d\mesh_mrm_skin_template.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_mrm_skinned.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_mrm_skinned.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_mrm_skinned_template.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mesh_multi_lod.cpp
 # End Source File
 # Begin Source File
@@ -934,6 +955,14 @@ SOURCE=.\3d\raw_skin.cpp
 # Begin Source File
 
 SOURCE=.\3d\raw_skin.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\raw_skinned.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\raw_skinned.h
 # End Source File
 # Begin Source File
 

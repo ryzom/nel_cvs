@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * A Builder of MRM.
  *
- * $Id: mrm_builder.h,v 1.10 2002/11/20 10:20:36 berenguier Exp $
+ * $Id: mrm_builder.h,v 1.11 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/mrm_parameters.h"
 #include "3d/mesh.h"
 #include "3d/mesh_mrm.h"
+#include "3d/mesh_mrm_skinned.h"
 #include <map>
 
 
@@ -64,6 +65,17 @@ public:
 	 */
 	void	compileMRM( const CMesh::CMeshBuild &mbuild, std::vector<CMesh::CMeshBuild*> &bsList,
 						const CMRMParameters &params, CMeshMRMGeom::CMeshBuildMRM &mrmMesh,
+						uint numMaxMaterial);
+
+
+
+	/** Compile a MRM skinned mesh info.
+	 *	\param mbuild the input mesh
+	 *	\param params the parameters of MRM process.
+	 *	\param mrmMesh the result MRM mesh.
+	 */
+	void	compileMRM( const CMesh::CMeshBuild &mbuild, std::vector<CMesh::CMeshBuild*> &bsList,
+						const CMRMParameters &params, CMeshMRMSkinnedGeom::CMeshBuildMRM &mrmMesh,
 						uint numMaxMaterial);
 
 
@@ -233,6 +245,12 @@ private:
 	 *	\param nbMats the number of materials of original MeshBuild.
 	 */
 	void			buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeom::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats, const CMesh::CMeshBuild &mb);
+
+	/** from a final MRM Mesh representation, compute a CMeshBuildMRM. This is the last stage of the algo.
+	 *	\param vbFlags the vertex format returned by earlier call too buildMrmBaseMesh().
+	 *	\param nbMats the number of materials of original MeshBuild.
+	 */
+	void			buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMSkinnedGeom::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats, const CMesh::CMeshBuild &mb);
 
 
 	void			normalizeBaseMeshSkin(CMRMMesh &baseMesh) const;

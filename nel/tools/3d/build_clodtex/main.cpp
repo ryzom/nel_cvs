@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.h
  * <File description>
  *
- * $Id: main.cpp,v 1.5 2003/07/01 15:39:52 distrib Exp $
+ * $Id: main.cpp,v 1.6 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -71,18 +71,30 @@ bool	computeOneShape(const char *lodFile, const char *shapeIn, const char *shape
 		CLodCharacterTexture	lodTexture;
 		CMesh		*mesh= dynamic_cast<CMesh*>((IShape*)theShape);
 		CMeshMRM	*meshMRM= dynamic_cast<CMeshMRM*>((IShape*)theShape);
+		CMeshMRMSkinned	*meshMRMSkinned= dynamic_cast<CMeshMRMSkinned*>((IShape*)theShape);
+		CMeshBase	*base = NULL;
 		if(mesh)
+		{
+			base = mesh;
 			lodBuilder.computeTexture(*mesh, lodTexture);
+		}
 		else if(meshMRM)
+		{
+			base = meshMRM;
 			lodBuilder.computeTexture(*meshMRM, lodTexture);
+		}
+		else if(meshMRMSkinned)
+		{
+			base = meshMRMSkinned;
+			lodBuilder.computeTexture(*meshMRMSkinned, lodTexture);
+		}
 		else
-			throw Exception("The shape %s is not a Mesh/MeshMRM", shapeIn);
+			throw Exception("The shape %s is not a Mesh, a MeshMRM or MeshMMRMSkinned", shapeIn);
 
 		// store in mesh
-		if(mesh)
-			mesh->setupLodCharacterTexture(lodTexture);
-		else
-			meshMRM->setupLodCharacterTexture(lodTexture);
+		nlassert (base)
+		base->setupLodCharacterTexture(lodTexture);
+
 		// serial
 		COFile	fOut;
 		if(!fOut.open(shapeOut))

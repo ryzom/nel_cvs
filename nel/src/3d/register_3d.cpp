@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.30 2003/04/01 15:36:56 vizerie Exp $
+ * $Id: register_3d.cpp,v 1.31 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "3d/track_keyframer.h"
 #include "3d/ps_util.h"
 #include "3d/mesh_mrm.h"
+#include "3d/mesh_mrm_skinned.h"
 #include "3d/flare_shape.h"
 #include "3d/water_shape.h"
 #include "3d/seg_remanence_shape.h"
@@ -123,6 +124,8 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CSkeletonShape);
 		NLMISC_REGISTER_CLASS(CMeshMRM);
 		NLMISC_REGISTER_CLASS(CMeshMRMGeom);
+		NLMISC_REGISTER_CLASS(CMeshMRMSkinned);
+		NLMISC_REGISTER_CLASS(CMeshMRMSkinnedGeom);
 		NLMISC_REGISTER_CLASS(CMeshMultiLod);
 		NLMISC_REGISTER_CLASS(CFlareShape);
 		NLMISC_REGISTER_CLASS(CWaterShape);

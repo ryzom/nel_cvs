@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.h
  * <File description>
  *
- * $Id: lod_texture_builder.h,v 1.1 2002/11/08 18:44:23 berenguier Exp $
+ * $Id: lod_texture_builder.h,v 1.2 2003/12/08 13:54:59 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/lod_character_shape.h"
 #include "3d/mesh.h"
 #include "3d/mesh_mrm.h"
+#include "3d/mesh_mrm_skinned.h"
 #include <set>
 
 
@@ -58,6 +59,9 @@ public:
 
 	/// compute the LodCharacterTexture For a CMeshMRM
 	bool			computeTexture(const NL3D::CMeshMRM &meshMRM, NL3D::CLodCharacterTexture &text);
+
+	/// compute the LodCharacterTexture For a CMeshMRMSkinned
+	bool			computeTexture(const NL3D::CMeshMRMSkinned &meshMRM, NL3D::CLodCharacterTexture &text);
 
 
 // ****************

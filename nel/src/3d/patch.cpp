@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.69 2001/10/29 09:36:37 corvazier Exp $
+ * $Id: patch.cpp,v 1.70 2001/10/31 10:19:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
 #include "3d/patchuv_locator.h"
+#include "3d/vegetable_manager.h"
 using	namespace	std;
 using	namespace	NLMISC;
 
@@ -116,7 +117,6 @@ void			CPatch::release()
 		getLandscape()->deleteTessFace(Son0);
 		getLandscape()->deleteTessFace(Son1);
 		// Vertices are smartptr/deleted in zone.
-		Zone= NULL;
 	}
 
 	// Flag the fact that this patch can't be rendered.
@@ -131,6 +131,10 @@ void			CPatch::release()
 	Clipped=false;
 	RenderClipped= true;
 	OldRenderClipped= true;
+
+	// the pathc is uncompiled. must do it after clearTessBlocks(), because may use it 
+	// for vegetable manager
+	Zone= NULL;
 }
 
 
@@ -554,10 +558,14 @@ CVector		CPatch::getTesselatedPos(CUV uv) const
 // ***************************************************************************
 void			CPatch::addRefTessBlocks()
 {
+	uint	i;
+
 	TessBlockRefCount++;
 	if(TessBlocks.size()==0)
 	{
 		// Allocate the tessblocks.
+		//==========
+
 		nlassert(NL3D_TESSBLOCK_TILESIZE==4);
 		// A tessblock is 2*2 tiles.
 		sint os= OrderS>>1;
@@ -566,8 +574,26 @@ void			CPatch::addRefTessBlocks()
 		nlassert(ot>0);
 		TessBlocks.resize(os*ot);
 		// init all tessBlocks with the Patch ptr.
-		for(uint i=0; i<TessBlocks.size(); i++)
+		for(i=0; i<TessBlocks.size(); i++)
 			TessBlocks[i].init(this);
+
+
+
+		// Vegetable management
+		//==========
+		CVegetableManager	*vegetableManager= getLandscape()->_VegetableManager;
+
+		// Create ClipBlocks.
+		uint	nTbPerCb= NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK;
+		uint	wCB= (os + nTbPerCb-1) >> NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT;
+		uint	hCB= (ot + nTbPerCb-1) >> NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT;
+		VegetableClipBlocks.resize(wCB * hCB);
+		// allocate ClipBlocks
+		for(i=0; i<VegetableClipBlocks.size(); i++)
+		{
+			VegetableClipBlocks[i]= vegetableManager->createClipBlock();
+		}
+
 	}
 }
 
@@ -585,6 +611,29 @@ void			CPatch::decRefTessBlocks()
 // ***************************************************************************
 void			CPatch::clearTessBlocks()
 {
+	uint	i;
+
+	// Vegetable management
+	//==========
+	// if compiled.
+	if(Zone)
+	{
+		CVegetableManager	*vegetableManager= getLandscape()->_VegetableManager;
+
+		// delete still existing vegetable Igs.
+		deleteAllVegetableIgs(vegetableManager);
+
+		// delete ClipBlocks.
+		for(i=0; i<VegetableClipBlocks.size(); i++)
+		{
+			vegetableManager->deleteClipBlock(VegetableClipBlocks[i]);
+		}
+		contReset(VegetableClipBlocks);
+	}
+
+
+	// Delete TessBlocks
+	//==========
 	TessBlockRefCount=0;
 	contReset(TessBlocks);
 }
@@ -832,6 +881,48 @@ void			CPatch::appendTileMaterialToRenderList(CTileMaterial *tm)
 	computeTbTm(numtb, numtm, tm->TileS, tm->TileT);
 	TessBlocks[numtb].RdrTileRoot[numtm]= tm;
 	TessBlocks[numtb].FaceTileMaterialRefCount++;
+	TessBlocks[numtb].TileMaterialRefCount++;
+
+	// TODODO: if was no tiles before in this tessBlock, create and fill the vegetable IG
+	//==========
+	// one Tile <=> was 0 before
+	if( TessBlocks[numtb].TileMaterialRefCount == 1 && getLandscape()->isVegetableActive() )
+	{
+		// TessBlock width
+		uint	tbWidth= OrderS >> 1;
+		// clipBlock width
+		uint	nTbPerCb= NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK;
+		uint	cbWidth= (tbWidth + nTbPerCb-1) >> NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT;
+
+		// compute tessBlock coordinate.
+		sint	tbs ,tbt;
+		tbs= tm->TileS >> 1;
+		tbt= tm->TileT >> 1;
+		// compute clipBlock coordinate.
+		sint	cbs,cbt;
+		cbs= tbs >> NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT;
+		cbt= tbt >> NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT;
+
+		// create the instance group
+		CVegetableInstanceGroup		*vegetIg=
+			getLandscape()->_VegetableManager->createIg(VegetableClipBlocks[cbt *cbWidth + cbs]);
+
+		// set in the tessBlock
+		TessBlocks[numtb].VegetableInstanceGroup= vegetIg;
+		
+		// Create vegetables instances per tile_material for the tessBlock.
+		sint	tms,tmt;
+		// for all tiles
+		for(tmt= tbt*2; tmt<tbt*2+2; tmt++)
+		{
+			for(tms= tbs*2; tms<tbs*2+2; tms++)
+			{
+				// generate 
+				generateTileVegetable(tms, tmt);
+			}
+		}
+
+	}
 }
 // ***************************************************************************
 void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
@@ -842,6 +933,17 @@ void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
 	computeTbTm(numtb, numtm, tm->TileS, tm->TileT);
 	TessBlocks[numtb].RdrTileRoot[numtm]= NULL;
 	TessBlocks[numtb].FaceTileMaterialRefCount--;
+	TessBlocks[numtb].TileMaterialRefCount--;
+
+	// TODODO: if no more tiles in this tessBlock, delete the vegetable IG
+	//==========
+	// if no more tiles in this tessBlock
+	if( TessBlocks[numtb].TileMaterialRefCount==0 )
+	{
+		// delete the IG.
+		getLandscape()->_VegetableManager->deleteIg(TessBlocks[numtb].VegetableInstanceGroup);
+		TessBlocks[numtb].VegetableInstanceGroup= NULL;
+	}
 
 	// Destroy if necessary the TessBlocks.
 	decRefTessBlocks();
@@ -2227,6 +2329,46 @@ void		CPatch::computeTileLightmapPixelAutomatic(uint ts, uint tt, uint s, uint t
 
 
 // ***************************************************************************
+void		CPatch::getTileLumelmapPrecomputed(uint ts, uint tt, uint8 *dest, uint stride)
+{
+	// Uncompressed ?
+	if (UncompressedLumels.empty())
+	{
+		// Unpack the lumels
+		uint8 buffer[NL_LUMEL_BY_TILE*NL_LUMEL_BY_TILE];
+		unpackLumelBlock (buffer, &(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]));
+
+		// Retrun it
+		uint	x, y;
+		for(y=0; y<NL_LUMEL_BY_TILE; y++)
+		{
+			for(x=0; x<NL_LUMEL_BY_TILE; x++)
+			{
+				// lumel
+				dest[y*stride + x]= buffer[x+(y<<NL_LUMEL_BY_TILE_SHIFT)];
+			}
+		}
+	}
+	else
+	{
+		// Offset in the lumel
+		uint offset=ts+tt*(OrderS<<NL_LUMEL_BY_TILE_SHIFT);
+
+		// For each lumels
+		uint	x, y;
+		for(y=0; y<NL_LUMEL_BY_TILE; y++)
+		{
+			for(x=0; x<NL_LUMEL_BY_TILE; x++)
+			{
+				// lumel
+				dest[y*stride + x]= UncompressedLumels[offset + x + (y<<NL_LUMEL_BY_TILE_SHIFT)];
+			}
+		}
+	}
+}
+
+
+// ***************************************************************************
 void		CPatch::computeTileLightmapPrecomputed(uint ts, uint tt, CRGBA *dest, uint stride)
 {
 	// Lumel table
@@ -3165,6 +3307,30 @@ void	CPatch::getBindNeighbor(uint edge, CBindInfo &neighborEdge) const
 	else
 	{
 		neighborEdge.Zone= NULL;
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// MicroVegetation
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void	CPatch::deleteAllVegetableIgs(CVegetableManager	*vegetableManager)
+{
+	// For all TessBlocks expanded
+	for(uint i=0; i<TessBlocks.size(); i++)
+	{
+		// if exist, must delete the ig.
+		if(TessBlocks[i].VegetableInstanceGroup)
+		{
+			vegetableManager->deleteIg(TessBlocks[i].VegetableInstanceGroup);
+			TessBlocks[i].VegetableInstanceGroup= NULL;
+		}
+	}
+
 		neighborEdge.NPatchs= 0;
 		neighborEdge.MultipleBindNum= 0;
 	}

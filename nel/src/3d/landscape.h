@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.18 2001/10/11 13:29:05 berenguier Exp $
+ * $Id: landscape.h,v 1.19 2001/10/31 10:19:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,9 @@ namespace NL3D
 
 class	CHeightMap;
 class	CTileNoiseMap;
+class	CVegetableManager;
+class	CVegetable;
+
 
 using NLMISC::Exception;
 using NLMISC::CTriangle;
@@ -375,6 +378,42 @@ public:
 	// @}
 
 
+	/// Micro-Vegetation.
+	// @{
+
+	/** enable the vegetable management in landscape. Valid only if VertexShader is OK.
+	 */
+	void		enableVegetable(bool enable);
+
+	/** return if the vegetable management is actually activated: 
+	 *	actually return _VerexShaderOk && _VegetableEnabled.
+	 */
+	bool		isVegetableActive() const;
+
+	/** load a texture for the vegetable, lookup in CPath
+	 */
+	void		loadVegetableTexture(const std::string &textureFileName);
+
+	/**	setup lighting ambient and diffuse for vegetable.
+	 */
+	void		setupVegetableLighting(const CRGBA &ambient, const CRGBA &diffuse, const CVector &directionalLight);
+
+	/** set the vegetable Wind for animation.
+	 *	All thoses variables may be modified each frame without penalty.
+	 *
+	 *	\param windDir is the direction of the wind. NB: only XY direction is kept.
+	 *	\param windFreq is the frequency for the animation (speed)
+	 *	\param windPower is the power of the wind, and is a factor (0..1) of Bend
+	 */
+	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower);
+
+
+	/** set the vegetable Wind animation Time (in seconds) (NB: setuped in MOT)
+	 */
+	void		setVegetableWindAnimationTime(double windTime);
+
+	// @}
+
 
 // ********************************
 private:
@@ -645,6 +684,26 @@ private:
 	CTessFacePListNode			_RootNewLeaves;
 	// @}
 
+
+	/// Micro-Vegetation.
+	// @{
+	/// The VegetableManager. (ptr only for include speed).
+	CVegetableManager			*_VegetableManager;
+
+	/// Tells if the Vegetable Managemnt is enabled.
+	bool						_VegetableManagerEnabled;
+
+	/// Vegetagble Lighting
+	CRGBA						_VegetableAmbient;
+	CRGBA						_VegetableDiffuse;
+
+
+	/** For a given tile Id, look into tileSet, and get the list of vegetable for this tile.
+	 *	\param tileId the tile [0..65535] to get the list of vegetable to create.
+	 */
+	const std::vector<CVegetable*>	&getTileVegetableList(uint16 tileId);
+
+	// @}
 
 };
 

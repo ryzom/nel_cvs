@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * <File description>
  *
- * $Id: tess_block.cpp,v 1.6 2001/10/11 13:29:05 berenguier Exp $
+ * $Id: tess_block.cpp,v 1.7 2001/10/31 10:19:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,10 @@ CTessBlock::CTessBlock()
 	_NextToModify= NULL;
 
 	FaceTileMaterialRefCount= 0;
+	TileMaterialRefCount= 0;
+
+	// Micro-vegetation.
+	VegetableInstanceGroup= NULL;
 }
 
 

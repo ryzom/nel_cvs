@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.6 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: landscape_user.h,v 1.7 2001/10/31 10:19:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,6 +140,14 @@ public:
 	// @{
 	virtual	CVector		getHeightFieldDeltaZ(float x, float y) const;
 	virtual	void		setHeightField(const CHeightMap &hf);
+	// @}
+
+	/// Micro-Vegetation.
+	// @{
+	virtual	void		enableVegetable(bool enable);
+	virtual	void		loadVegetableTexture(const std::string &textureFileName);
+	virtual	void		setupVegetableLighting(const CRGBA &ambient, const CRGBA &diffuse, const CVector &directionalLight);
+	virtual	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower);
 	// @}
 
 public:

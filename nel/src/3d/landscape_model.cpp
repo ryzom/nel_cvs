@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.12 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.13 2001/10/31 10:19:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "3d/landscape_model.h"
 #include "3d/landscape.h"
 #include "3d/cluster.h"
+#include "3d/scene.h"
 #include <vector>
 using namespace std;
 using namespace NLMISC;
@@ -94,6 +95,14 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 	CMatrix		m;
 	m.identity();
 	trav->getDriver()->setupModelMatrix(m);
+
+
+	// For vegetable, set the animation Time.
+	CScene		*scene= dynamic_cast<CScene*>(landModel->_OwnerMot);
+	if(scene)
+	{
+		landModel->Landscape.setVegetableWindAnimationTime(scene->getCurrentTime());
+	}
 
 	// First, refine.
 	landModel->Landscape.refine(trav->CamPos);

@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.10 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.11 2001/10/31 10:19:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,6 +209,31 @@ CVector		CLandscapeUser::getHeightFieldDeltaZ(float x, float y) const
 void		CLandscapeUser::setHeightField(const CHeightMap &hf)
 {
 	_Landscape->Landscape.setHeightField(hf);
+}
+
+
+//****************************************************************************
+void		CLandscapeUser::enableVegetable(bool enable)
+{
+	_Landscape->Landscape.enableVegetable(enable);
+}
+
+//****************************************************************************
+void		CLandscapeUser::loadVegetableTexture(const std::string &textureFileName)
+{
+	_Landscape->Landscape.loadVegetableTexture(textureFileName);
+}
+
+//****************************************************************************
+void		CLandscapeUser::setupVegetableLighting(const CRGBA &ambient, const CRGBA &diffuse, const CVector &directionalLight)
+{
+	_Landscape->Landscape.setupVegetableLighting(ambient, diffuse, directionalLight);
+}
+
+//****************************************************************************
+void		CLandscapeUser::setVegetableWind(const CVector &windDir, float windFreq, float windPower)
+{
+	_Landscape->Landscape.setVegetableWind(windDir, windFreq, windPower);
 }
 
 

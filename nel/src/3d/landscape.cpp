@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.86 2001/10/18 11:51:28 berenguier Exp $
+ * $Id: landscape.cpp,v 1.87 2001/10/31 10:19:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,9 +31,13 @@
 #include "3d/landscape_profile.h"
 #include "nel/3d/height_map.h"
 #include "3d/tile_noise_map.h"
+#include "3d/vegetable_manager.h"
+#include "3d/vegetable.h"
 
 
 #include "3d/vertex_program.h"
+
+
 
 using namespace NLMISC;
 using namespace std;
@@ -204,11 +208,24 @@ CLandscape::CLandscape() :
 	_OldRefineCenterSetuped= false;
 	_SplitPriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD);
 	_MergePriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD);
+
+	// create / Init the vegetable manager.
+	_VegetableManager= new CVegetableManager;
+
+	// Init vegetable  setup.
+	_VegetableManagerEnabled= false;
+	_VegetableAmbient.set(64, 64, 64, 255);
+	_VegetableDiffuse.set(150, 150, 150, 255);
+
 }
 // ***************************************************************************
 CLandscape::~CLandscape()
 {
 	clear();
+
+	// release the VegetableManager.
+	delete _VegetableManager;
+	_VegetableManager= NULL;
 }
 
 
@@ -663,6 +680,10 @@ void			CLandscape::updateGlobalsAndLockBuffers (const CVector &refineCenter)
 		_Far1VB.updateDriver(_Driver);
 		_TileVB.updateDriver(_Driver);
 
+		// must do the same for _VegetableManager.
+		if(_VertexShaderOk)
+			_VegetableManager->updateDriver(_Driver);
+
 		lockBuffers ();
 	}
 }
@@ -675,6 +696,9 @@ void			CLandscape::lockBuffers ()
 	_Far1VB.lockBuffer(CLandscapeGlobals::CurrentFar1VBInfo);
 	_TileVB.lockBuffer(CLandscapeGlobals::CurrentTileVBInfo);
 
+	// lock buffer of the vegetable manager.
+	_VegetableManager->lockBuffers();
+
 	// VertexProgrma mode???
 	CLandscapeGlobals::VertexProgramEnabled= _VertexShaderOk;
 }
@@ -686,6 +710,9 @@ void			CLandscape::unlockBuffers()
 	_Far0VB.unlockBuffer();
 	_Far1VB.unlockBuffer();
 	_TileVB.unlockBuffer();
+
+	// unlock buffer of the vegetable manager.
+	_VegetableManager->unlockBuffers();
 }
 
 
@@ -1188,6 +1215,22 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 	// Desactive the vertex program (if anyone)
 	if(_VertexShaderOk)
 		driver->activeVertexProgram (NULL);
+
+
+	// 5. Vegetable Management.
+	//================================
+	// render all vegetables, only if driver support VertexProgram.
+	if(_VertexShaderOk)
+	{
+		// Use same plane as TessBlock for faster clipping.
+		vector<CPlane>		vegetablePyramid;
+		vegetablePyramid.resize(NL3D_TESSBLOCK_NUM_CLIP_PLANE);
+		for(i=0;i<NL3D_TESSBLOCK_NUM_CLIP_PLANE;i++)
+		{
+			vegetablePyramid[i]= pyramid[i];
+		}
+		_VegetableManager->render(vegetablePyramid, driver);
+	}
 
 }
 
@@ -2512,6 +2555,142 @@ bool			CLandscape::getNoiseMode() const
 	return _NoiseEnabled;
 }
 
+
 // ***************************************************************************
+// ***************************************************************************
+// Micro vegetation
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CLandscape::enableVegetable(bool enable)
+{
+	_VegetableManagerEnabled= enable;
+
+	// if false, delete all Vegetable IGs.
+	// Landscape always create ClipBlokcs, but IGs/addInstances() are created only if isVegetableActive().
+	// For all zones.
+	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	{
+		// for all patch.
+		sint	N= (*it).second->getNumPatchs();
+		for(sint i=0;i<N;i++)
+		{
+			// delete vegetable Igs of this patch
+			CPatch	*pa= ((*it).second)->getPatch(i);
+			pa->deleteAllVegetableIgs(_VegetableManager);
+		}
+
+	}
+
+}
+
+// ***************************************************************************
+bool		CLandscape::isVegetableActive() const
+{
+	return _VegetableManagerEnabled && _VertexShaderOk;
+}
+
+// ***************************************************************************
+void		CLandscape::loadVegetableTexture(const string &textureFileName)
+{
+	// load the texture in the manager
+	_VegetableManager->loadTexture(textureFileName);
+}
+
+// ***************************************************************************
+void		CLandscape::setupVegetableLighting(const CRGBA &ambient, const CRGBA &diffuse, const CVector &directionalLight)
+{
+	// set the directional light to the manager
+	_VegetableManager->setDirectionalLight(directionalLight);
+	// Setup ambient/Diffuse.
+	_VegetableAmbient= ambient;
+	_VegetableDiffuse= diffuse;
+}
+
+// ***************************************************************************
+void		CLandscape::setVegetableWind(const CVector &windDir, float windFreq, float windPower)
+{
+	// setup vegetable manager
+	_VegetableManager->setWind(windDir, windFreq, windPower);
+}
+
+
+// ***************************************************************************
+void		CLandscape::setVegetableWindAnimationTime(double windTime)
+{
+	// setup vegetable manager
+	_VegetableManager->setWindAnimationTime(windTime);
+}
+
+
+// ***************************************************************************
+const std::vector<CVegetable*>	&CLandscape::getTileVegetableList(uint16 tileId)
+{
+	// TODO_VEGET: manage landscape tileSet.
+	static std::vector<CVegetable*>		grassArray;
+	static CVegetable					grass;
+	static bool							init= false;
+
+	if(!init)
+	{
+		init= true;
+
+
+		// init the grass vegetable.
+		grass.ShapeName= "grass.veget";
+		grass.Density.Abs= -10;
+		grass.Density.Rand= 20;
+		grass.Density.Frequency= 0.08f;
+		grass.setAngleGround(0.7f);
+
+		grass.Sxy.Abs= 0.5;
+		grass.Sxy.Rand= 1;
+		grass.Sxy.Frequency= 1;
+		grass.Sz.Abs= 0.5;
+		grass.Sz.Rand= 0.5;
+		grass.Sz.Frequency= 10;
+
+		grass.Rz.Abs=0;
+		grass.Rz.Rand= 20*(float)Pi;
+		grass.Rz.Frequency= 10;
+
+		grass.Rx.Abs=-(float)Pi/4;
+		grass.Rx.Rand= (float)Pi/2;
+		grass.Rx.Frequency= 1;
+
+		grass.Color.NoiseValue.Frequency= 0.1f;
+		grass.Color.NoiseValue.Abs= -1;
+		grass.Color.NoiseValue.Rand= 3;
+		CRGBAF	col0, col1, col2;
+		float	diff= 0.8f;
+		col0= CRGBAF(1.0f,1.0f,0.2f) * diff;
+		col1= CRGBAF(0.2f,1.0f,0.0f) * diff;
+		col2= CRGBAF(0.7f,0.6f,0.3f) * diff;
+		grass.Color.Gradients.push_back( CColorGradient( col0, col1) );
+		grass.Color.Gradients.push_back( CColorGradient( col1, col2) );
+
+
+		grass.BendPhase.Abs= 0;
+		grass.BendPhase.Rand= (float)(4*Pi);
+		grass.BendPhase.Frequency= 0.1f;
+		grass.BendFactor.Abs= (float)( Pi/10 );
+		grass.BendFactor.Rand= (float)( Pi/10 );
+		grass.BendPhase.Frequency= 0.1f;
+
+		grass.BendFactor.Abs/= 2;
+		grass.BendFactor.Rand/= 2;
+
+		// load the shape.
+		grass.registerToManager(_VegetableManager);
+
+		// init the array
+		grassArray.push_back(&grass);
+	}
+
+	return	grassArray;
+}
+
 
 } // NL3D

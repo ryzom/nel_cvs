@@ -448,6 +448,10 @@ SOURCE=.\3d\patch_render.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\patch_vegetable.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\patchuv_locator.cpp
 # End Source File
 # Begin Source File
@@ -1721,27 +1725,79 @@ SOURCE=.\3d\water_pool_manager.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\3d\nv_tri_strip_objects.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\nv_tri_strip_objects.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\nv_vertex_cache.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\nv_vertex_cache.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\stripifier.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\3d\stripifier.h
+# End Source File
+# End Group
+# Begin Group "vegetable"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\noise_value.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\noise_value.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_clip_block.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_clip_block.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_def.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_def.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_instance_group.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_instance_group.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_shape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_shape.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetablevb_allocator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetablevb_allocator.h
 # End Source File
 # End Group
 

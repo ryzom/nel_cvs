@@ -1,7 +1,7 @@
 /** \file tess_block.h
  * <File description>
  *
- * $Id: tess_block.h,v 1.5 2001/10/11 13:29:05 berenguier Exp $
+ * $Id: tess_block.h,v 1.6 2001/10/31 10:19:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,7 @@ namespace NL3D
 
 class	CPatchRdrPass;
 class	CLandscapeFaceVectorManager;
-
+class	CVegetableInstanceGroup;
 
 // ***************************************************************************
 /**
@@ -80,6 +80,8 @@ public:
 	CTileMaterial				*RdrTileRoot[NL3D_TESSBLOCK_TILESIZE];
 	// contains FarFaceList.size() + "RdrTileRoot.size()"
 	uint						FaceTileMaterialRefCount;
+	// contains only "RdrTileRoot.size()"
+	uint						TileMaterialRefCount;
 
 	// FaceVectors.
 	CLandscapeFaceVector		*Far0FaceVector;
@@ -91,6 +93,11 @@ public:
 	uint						LightMapId;
 	uint						LightMapRefCount;
 	CPatchRdrPass				*LightMapRdrPass;
+
+
+	// For micro-vegetation, little tessBlocks got InstanceGroups
+	CVegetableInstanceGroup		*VegetableInstanceGroup;
+
 
 public:
 	CTessBlock();

@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.6 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: u_landscape.h,v 1.7 2001/10/31 10:20:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,6 +140,33 @@ public:
 	 * from a previous place (eg 160m from last setup).
 	 */
 	virtual	void		setHeightField(const CHeightMap &hf) =0;
+	// @}
+
+
+	/// Micro-Vegetation.
+	// @{
+
+	/** enable the vegetable management in landscape. Valid only if Hardware support VertexShader.
+	 */
+	virtual	void		enableVegetable(bool enable) =0;
+
+	/** load a texture for the vegetable, lookup in CPath
+	 */
+	virtual	void		loadVegetableTexture(const std::string &textureFileName) =0;
+
+	/**	setup lighting ambient and diffuse for vegetable.
+	 */
+	virtual	void		setupVegetableLighting(const CRGBA &ambient, const CRGBA &diffuse, const CVector &directionalLight) =0;
+
+	/** set the vegetable Wind for animation.
+	 *	All thoses variables may be modified each frame without penalty.
+	 *
+	 *	\param windDir is the direction of the wind. NB: only XY direction is kept.
+	 *	\param windFreq is the frequency for the animation (speed)
+	 *	\param windPower is the power of the wind, and is a factor (0..1) of Bend
+	 */
+	virtual	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower) =0;
+
 	// @}
 
 };

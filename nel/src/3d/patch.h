@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.15 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: patch.h,v 1.16 2001/10/31 10:19:40 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -71,10 +71,21 @@ class	CLandscape;
 class	CZone;
 class	CBezierPatch;
 class	ITexture;
+class	CVegetableClipBlock;
+class	CVegetableManager;
 
 
 // ***************************************************************************
 #define	NL3D_NOISE_MAX	1
+
+
+// ***************************************************************************
+/* 
+	NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK == 2 means that 
+	clipBlocks enclose 2*2 tessBlocks (hence 4*4 tiles).
+*/
+#define	NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT	1
+#define	NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK		(1<<NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT)
 
 
 // ***************************************************************************
@@ -647,6 +658,17 @@ public:
 	// @}
 
 
+public:
+
+	/// \name MicroVegetation
+	// @{
+
+	/// Delete any vegetable Ig still existing in this patch.
+	void		deleteAllVegetableIgs(CVegetableManager	*vegetableManager);
+
+	// @}
+
+
 // Private part.
 private:
 /*********************************/
@@ -727,6 +749,13 @@ private:
 	std::vector<CTessBlock>		TessBlocks;
 	// The counter of faces which need TessBlocks (FarFaces, TileMaterial and FarVertices). When 0, the vector is contReset()-ed.
 	sint						TessBlockRefCount;
+	// @}
+
+
+	/// \name Vegetables.
+	// @{
+	/// list of vegetable clipBlocks, created/destroyed at same time as TessBlocks.
+	std::vector<CVegetableClipBlock*>	VegetableClipBlocks;
 	// @}
 
 
@@ -984,6 +1013,21 @@ private:
 
 	// From tile coordinates, return the tessBlockId, and the id of the material in this tessBlock.
 	void		computeTbTm(uint &numtb, uint &numtm, uint ts, uint tt);
+
+
+	/// Micro-Vegetation.
+	// @{
+
+	/*
+		generate the vegetables for a given tile in the vegetable manager.
+		TessBlocks, CB and associated IG must exist yet.
+	*/
+	void		generateTileVegetable(uint ts, uint tt);
+
+	// same as computeTileLightmapPrecomputed(), but brut result, not modified by colorTable.
+	void		getTileLumelmapPrecomputed(uint ts, uint tt, uint8 *dest, uint stride);
+
+	// @}
 
 
 private:

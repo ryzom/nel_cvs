@@ -1,0 +1,348 @@
+/** \file noise_value.cpp
+ * <File description>
+ *
+ * $Id: noise_value.cpp,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ */
+
+/* Copyright, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#include "3d/noise_value.h"
+
+using namespace NLMISC;
+
+namespace NL3D 
+{
+
+
+// 3 level: best quality/speed ratio.
+#define	NL3D_NOISE_LEVEL			3
+#define	NL3D_NOISE_GRID_SIZE_SHIFT	5
+#define	NL3D_NOISE_GRID_SIZE		(1<<NL3D_NOISE_GRID_SIZE_SHIFT)
+static	const float NL3D_OO255= 1.0f / 255;
+
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+// ***************************************************************************
+/// A static 3D array of random value + other infos for noise
+class	CRandomGrid3D
+{
+public:
+
+	// generate a random grid, with same seed.
+	CRandomGrid3D()
+	{
+		//seed
+		srand(0);
+
+		// init the grid
+		for(uint z=0; z<NL3D_NOISE_GRID_SIZE; z++)
+		{
+			for(uint y=0; y<NL3D_NOISE_GRID_SIZE; y++)
+			{
+				for(uint x=0; x<NL3D_NOISE_GRID_SIZE; x++)
+				{
+					uint	id= x + (y<<NL3D_NOISE_GRID_SIZE_SHIFT) + (z<<(NL3D_NOISE_GRID_SIZE_SHIFT*2));
+					// take higher bits of rand gives better result.
+					uint	v= rand() >> 5;
+					_Texture3d[id]= v&255;
+				}
+			}
+		}
+
+		// init sizes.
+		uint	i;
+		// sum of sizes must be 1, and each level must be /2.
+		float	sizeSum=0;
+		for(i=0; i<NL3D_NOISE_LEVEL; i++)
+		{
+			_Sizes[i]= 1.0f / (1<<i);
+			sizeSum+= _Sizes[i];
+		}
+		// normalize
+		for(i=0; i<NL3D_NOISE_LEVEL; i++)
+		{
+			_Sizes[i]/= sizeSum;
+		}
+
+		// init LevelPhases.
+		for(i=0; i<NL3D_NOISE_LEVEL; i++)
+		{
+			_LevelPhase[i].x= frand(NL3D_NOISE_GRID_SIZE);
+			_LevelPhase[i].y= frand(NL3D_NOISE_GRID_SIZE);
+			_LevelPhase[i].z= frand(NL3D_NOISE_GRID_SIZE);
+		}
+		// not for level 0.
+		_LevelPhase[0]= CVector::Null;
+	}
+
+	// x/y/z are use to lookup directly in the grid 3D.
+	static inline float	evalNearest(const CVector &pos)
+	{
+		// compute integer part.
+		sint	x= (sint)floor(pos.x);
+		sint	y= (sint)floor(pos.y);
+		sint	z= (sint)floor(pos.z);
+		// index in texture.
+		uint	ux= x& (NL3D_NOISE_GRID_SIZE-1);
+		uint	uy= y& (NL3D_NOISE_GRID_SIZE-1);
+		uint	uz= z& (NL3D_NOISE_GRID_SIZE-1);
+
+		// read the texture.
+		float	turb= lookup(ux,uy,uz);
+
+		return turb*NL3D_OO255;
+	}
+
+	// x/y/z are use to lookup directly in the grid 3D.
+	static inline float	evalBiLinear(const CVector &pos)
+	{
+		// compute integer part.
+		sint	x= (sint)floor(pos.x);
+		sint	y= (sint)floor(pos.y);
+		sint	z= (sint)floor(pos.z);
+		// index in texture.
+		uint	ux= x& (NL3D_NOISE_GRID_SIZE-1);
+		uint	uy= y& (NL3D_NOISE_GRID_SIZE-1);
+		uint	uz= z& (NL3D_NOISE_GRID_SIZE-1);
+		uint	ux2= (x+1)& (NL3D_NOISE_GRID_SIZE-1);
+		uint	uy2= (y+1)& (NL3D_NOISE_GRID_SIZE-1);
+		uint	uz2= (z+1)& (NL3D_NOISE_GRID_SIZE-1);
+		// delta.
+		float	dx2= easeInEaseOut(pos.x-x);
+		float	dy2= easeInEaseOut(pos.y-y);
+		float	dz2= easeInEaseOut(pos.z-z);
+		float	dx= 1-dx2;
+		float	dy= 1-dy2;
+		float	dz= 1-dz2;
+		// TriLinear in texture3D.
+		float	turb=0;
+		turb+= lookup(ux,uy,uz)* dx*dy*dz;
+		turb+= lookup(ux,uy,uz2)* dx*dy*dz2;
+		turb+= lookup(ux,uy2,uz)* dx*dy2*dz;
+		turb+= lookup(ux,uy2,uz2)* dx*dy2*dz2;
+		turb+= lookup(ux2,uy,uz)* dx2*dy*dz;
+		turb+= lookup(ux2,uy,uz2)* dx2*dy*dz2;
+		turb+= lookup(ux2,uy2,uz)* dx2*dy2*dz;
+		turb+= lookup(ux2,uy2,uz2)* dx2*dy2*dz2;
+
+		// End!
+		return turb*NL3D_OO255;
+	}
+
+
+	// get size according to level
+	static inline float	getLevelSize(uint level)
+	{
+		return _Sizes[level];
+	}
+
+	// get an additional level phase.
+	static inline const CVector	&getLevelPhase(uint level)
+	{
+		return _LevelPhase[level];
+	}
+
+
+// **************
+private:
+
+	static	uint8		_Texture3d[NL3D_NOISE_GRID_SIZE*NL3D_NOISE_GRID_SIZE*NL3D_NOISE_GRID_SIZE];
+	static	float		_Sizes[NL3D_NOISE_LEVEL];
+	static	CVector		_LevelPhase[NL3D_NOISE_LEVEL];
+
+
+	// lookup with no mod.
+	static inline float	lookup(uint ux, uint uy, uint uz)
+	{
+		uint	id= ux + (uy<<NL3D_NOISE_GRID_SIZE_SHIFT) + (uz<<(NL3D_NOISE_GRID_SIZE_SHIFT*2));
+		return	_Texture3d[id];
+	}
+
+	// easineasout
+	static inline float	easeInEaseOut(float x)
+	{
+		float	y;
+		// cubic such that f(0)=0, f'(0)=0, f(1)=1, f'(1)=0.
+		float	x2=x*x;
+		float	x3=x2*x;
+		y= -2*x3 + 3*x2;
+		return y;
+	}
+
+};
+
+
+uint8		CRandomGrid3D::_Texture3d[NL3D_NOISE_GRID_SIZE*NL3D_NOISE_GRID_SIZE*NL3D_NOISE_GRID_SIZE];
+float		CRandomGrid3D::_Sizes[NL3D_NOISE_LEVEL];
+CVector		CRandomGrid3D::_LevelPhase[NL3D_NOISE_LEVEL];
+
+// just to init the static arrays.
+static	CRandomGrid3D	NL3D_RandomGrid3D;
+
+
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+float	CNoiseValue::evalRandom(const CVector &pos) const
+{
+	return CRandomGrid3D::evalNearest(pos);
+}
+
+
+// ***************************************************************************
+float	CNoiseValue::noise(const CVector &pos) const
+{
+	// eval "fractaly".
+	float		turb;
+
+#if (NL3D_NOISE_LEVEL != 3)
+	CVector		vd= pos;
+	turb=0;
+	for(uint level=0;level<NL3D_NOISE_LEVEL;level++)
+	{
+		// Add the influence of the ith level.
+		turb+= CRandomGrid3D::getLevelSize(level) * 
+			CRandomGrid3D::evalBiLinear(vd + CRandomGrid3D::getLevelPhase(level) );
+		// Next level at higher frequency
+		vd*= 2;
+	}
+#else
+	// special case. unrolled loop.
+	// level 0 has no phase.
+	turb= CRandomGrid3D::getLevelSize(0) * 
+		CRandomGrid3D::evalBiLinear(pos);
+	// level 1
+	turb+= CRandomGrid3D::getLevelSize(1) * 
+		CRandomGrid3D::evalBiLinear(pos*2 + CRandomGrid3D::getLevelPhase(1) );
+	// level 2
+	turb+= CRandomGrid3D::getLevelSize(2) * 
+		CRandomGrid3D::evalBiLinear(pos*4 + CRandomGrid3D::getLevelPhase(2) );
+#endif
+
+	return turb;
+}
+
+
+
+// ***************************************************************************
+CNoiseValue::CNoiseValue()
+{
+	Abs= 0;
+	Rand= 1;
+	Frequency= 1;
+}
+
+
+// ***************************************************************************
+CNoiseValue::CNoiseValue(float abs, float rand, float freq)
+{
+	Abs= abs;
+	Rand= rand;
+	Frequency= freq;
+}
+
+
+// ***************************************************************************
+float	CNoiseValue::eval(const CVector &posInWorld) const
+{
+	// A single cube in the Grid3d correspond to Frequency==1.
+	// So enlarging size of the grid3d do not affect the frequency aspect.
+	return Abs + Rand * noise(posInWorld*Frequency);
+}
+
+
+// ***************************************************************************
+float	CNoiseValue::evalOneLevelRandom(const CVector &posInWorld) const
+{
+	// A single cube in the Grid3d correspond to Frequency==1.
+	// So enlarging size of the grid3d do not affect the frequency aspect.
+	return Abs + Rand * evalRandom(posInWorld*Frequency);
+}
+
+
+// ***************************************************************************
+void	CNoiseValue::serial(IStream &f)
+{
+	sint	ver= f.serialVersion(0);
+	f.serial(Abs);
+	f.serial(Rand);
+	f.serial(Frequency);
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void	CColorGradient::interpolate(float factor, CRGBAF &result) const
+{
+	result= Col0*(1-factor) + Col1*factor;
+}
+
+// ***************************************************************************
+void	CColorGradient::serial(IStream &f)
+{
+	sint	ver= f.serialVersion(0);
+	f.serial(Col0);
+	f.serial(Col1);
+}
+
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void	CNoiseColorGradient::eval(const CVector &posInWorld, CRGBAF &result) const
+{
+	// test if not null grads.
+	uint	nGrads= Gradients.size();
+	if(nGrads==0)
+		return;
+	// eval noise
+	float	f= NoiseValue.eval(posInWorld) * nGrads;
+	// look up in table of gradients.
+	uint	id= (uint)floor(f);
+	clamp(id, 0U, nGrads-1);
+	// fractionnal part.
+	f= f-id;
+	clamp(f, 0, 1);
+	// interpolate the gradient.
+	Gradients[id].interpolate(f, result);
+}
+
+// ***************************************************************************
+void	CNoiseColorGradient::serial(IStream &f)
+{
+	sint	ver= f.serialVersion(0);
+	f.serial(NoiseValue);
+	f.serialCont(Gradients);
+}
+
+
+
+} // NL3D

@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.4 2001/08/24 16:37:15 berenguier Exp $
+ * $Id: mot.h,v 1.5 2001/10/31 10:19:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -213,6 +213,12 @@ private:
 protected:
 	// For hertied class, to access observer result of a model.
 	IObs	*getModelObs(IModel *m, const NLMISC::CClassId &idTrav) const;
+
+
+private:
+	// a dummy method, usefull for dynamic_cast only.
+	virtual	void	dummyForDynamicCast() {}
+
 };
 
 

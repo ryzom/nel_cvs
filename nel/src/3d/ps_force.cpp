@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.13 2001/07/04 16:06:50 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.14 2001/07/12 15:47:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/computed_string.h"
 #include "3d/font_generator.h"
 #include "3d/font_manager.h"
+#include "3d/particle_system.h"
 #include "nel/misc/common.h"
 #include "3d/ps_util.h"
 

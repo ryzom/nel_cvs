@@ -1,7 +1,7 @@
 /** \file u_move_container.h
  * A container for movable objects
  *
- * $Id: u_move_container.h,v 1.11 2002/05/23 09:55:51 vizerie Exp $
+ * $Id: u_move_container.h,v 1.12 2002/05/24 12:35:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 namespace NLMISC 
 {
 	class CVectorD;
+	class CMatrix;	
 }
 
 namespace NLPACS 
@@ -73,7 +74,7 @@ public:
 	  * This primtive should be inserted in a world image before use. See UMovePrimitive::insertInWorldImage.
 	  *
 	  * \param firstWorldImage is the first world image where the primitive can be inserted.
-	  * \param numWorldImage is the count of world image where the primitive can be inserted.
+	  * \param numWorldImage is the count of world image where the primitive can be inserted.	  
 	  * \return a pointer on the new primitive.
 	  */
 	virtual UMovePrimitive		*addCollisionablePrimitive (uint8 firstWorldImage, uint8 numWorldImage) =0;
@@ -111,16 +112,18 @@ public:
 	  * \param primitives is a pointer on an array of primitive pointer to fill if success. If NULL, Do return nothing.
 	  * \param orientation is the orientation to give to the primitives.
 	  * \param position is the position to give to the primitives.
-	  * \param primitives is a pointer on an array of primitive pointer to fill if success. If NULL, Do return nothing.
+	  * \param primitives is a pointer on an array of primitive pointer to fill if success. If NULL, Do return nothing.	  
+	  * \param dontSnapToGround force the inserted primitive to be flagged as 'DontSnapToGround'
 	  * \see addCollisionablePrimitive
+	  * \see getPACSCoordsFromMatrix
 	  * \return true if the file is successfully loaded, else return false.
 	  */
-	virtual bool				loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position) =0;
+	virtual bool				loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position, bool dontSnapToGround = false) =0;
 
 
-	/** The same as loadCollisionablePrimitiveBlock, but the primitive block is provided by the caller
+	/** The same as loadCollisionablePrimitiveBlock, but the primitive block is provided by the caller	  
 	  */
-	virtual void                addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position) = 0;
+	virtual void                addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position, bool dontSnapToGround = false) = 0;
 
 	/**
 	  * Remove a primitive from the container.
@@ -128,6 +131,10 @@ public:
 	  * \param primitive is the pointer on the primitive to remove.
 	  */
 	virtual void				removePrimitive (UMovePrimitive* primitive) =0;
+
+	/// Get all the primitives in the container
+	virtual	void				getPrimitives(std::vector<const UMovePrimitive *> &dest) const = 0;
+	 
 
 	/// \name Primitive evaluation.
 
@@ -208,6 +215,10 @@ public:
 
 	// Delete method
 	static 	void				deleteMoveContainer (UMoveContainer	*container);
+
+	/** Get a pacs position and an orientation from a matrix	 
+	  */
+	static	void getPACSCoordsFromMatrix(NLMISC::CVector &pos, float &angle, const NLMISC::CMatrix &mat);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file u_global_position.h
  * <File description>
  *
- * $Id: u_global_position.h,v 1.2 2001/08/27 08:46:33 legros Exp $
+ * $Id: u_global_position.h,v 1.3 2002/05/24 12:35:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,15 @@ public:
 
 	/// The best position estimation of the point snapped on the surface. This is a CLocalRetriever local axis position.
 	NLMISC::CVector					Estimation;
+
+	// set this global position from another global position, but keep the old z coordinate
+	void								setKeepZ(const ULocalPosition &other)
+	{
+		Surface = other.Surface;
+		Estimation.set(other.Estimation.x,
+					   other.Estimation.y,
+					   Estimation.z);
+	}
 };
 
 
@@ -67,6 +76,13 @@ public:
 
 	/// The local position within the CLocalRetriever referred by the instance (cf. InstanceId)
 	ULocalPosition						LocalPosition;
+
+	// set this global position from another global position, but keep the old z coordinate
+	void								setKeepZ(const UGlobalPosition &other)
+	{
+		InstanceId = other.InstanceId;
+		LocalPosition.setKeepZ(other.LocalPosition);
+	}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file move_primitive.h
  * Description of movables primitives
  *
- * $Id: move_primitive.h,v 1.10 2001/09/28 12:26:35 corvazier Exp $
+ * $Id: move_primitive.h,v 1.11 2002/05/24 12:34:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,9 @@ private:
 
 		// Ghost flag. This flag tells that this object is a ghost object or not.
 		NonCollisionableFlag	=0x2000,
+		
+		/// The primitive shoudln't be snapped to ground
+		DontSnapToGroundFlag = 0x4000,
 
 		// Force the size to uint16.
 		ForceSize		=0xffff
@@ -82,7 +85,17 @@ public:
 
 	/// Destructor
 	~CMovePrimitive ();
-
+	//
+	virtual	void	setDontSnapToGround(bool dont)
+	{
+		if (dont) _StaticFlags |= DontSnapToGroundFlag;
+		else _StaticFlags &= ~DontSnapToGroundFlag;
+	}
+	//
+	bool	getDontSnapToGround() const 
+	{
+		return (_StaticFlags & DontSnapToGroundFlag) != 0;
+	}
 	// Return true if this primitive is noncollisionable
 	bool isNonCollisionable () const
 	{

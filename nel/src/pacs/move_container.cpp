@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.22 2002/05/23 09:57:02 vizerie Exp $
+ * $Id: move_container.cpp,v 1.23 2002/05/24 12:34:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "pacs/primitive_block.h"
 
 #include "nel/misc/i_xml.h"
+#include <math.h>
 
 using namespace NLMISC;
 
@@ -867,9 +868,9 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 			nlassert ((d0==d1)&&(d0==d2));
 //			nlassert (f1==f2);
 			if (_Retriever&&testMoveValid)
-			{
+			{								
 				// Do move
-				wI->doMove (*_Retriever, _SurfaceTemp, _DeltaTime, _DeltaTime);
+				wI->doMove (*_Retriever, _SurfaceTemp, _DeltaTime, _DeltaTime, primitive->getDontSnapToGround());				
 			}
 			else
 			{
@@ -1486,7 +1487,7 @@ void UTriggerInfo::serial (NLMISC::IStream& stream)
 
 
 // ***************************************************************************
-void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 firstWorldImage,uint8 numWorldImage,std::vector<UMovePrimitive*> *primitives,float orientation,const NLMISC::CVector &position)
+void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 firstWorldImage,uint8 numWorldImage,std::vector<UMovePrimitive*> *primitives,float orientation,const NLMISC::CVector &position, bool dontSnapToGround /* = false*/)
 {
 	CPrimitiveBlock *block = NLMISC::safe_cast<CPrimitiveBlock *>(pb);
 	// Reserve the pointer array
@@ -1511,6 +1512,7 @@ void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 f
 		primitive->setOcclusionMask (desc.OcclusionMask);
 		primitive->setObstacle (desc.Obstacle);
 		primitive->setAbsorbtion (desc.Attenuation);
+		primitive->setDontSnapToGround(dontSnapToGround);
 		if (desc.Type == UMovePrimitive::_2DOrientedBox)
 		{
 			primitive->setSize (desc.Length[0], desc.Length[1]);
@@ -1529,7 +1531,7 @@ void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 f
 		for (wI=firstWorldImage; wI<(uint)(firstWorldImage+numWorldImage); wI++)
 		{
 			// Insert the primitive
-			primitive->insertInWorldImage (firstWorldImage);
+			primitive->insertInWorldImage (wI);
 
 			// Final position
 			float cosa = (float) cos (orientation);
@@ -1559,7 +1561,7 @@ void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 f
 
 // ***************************************************************************
 
-bool CMoveContainer::loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position)
+bool CMoveContainer::loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position, bool dontSnapToGround /*= false*/)
 {
 	// Check world image
 	if ( (uint)(firstWorldImage+numWorldImage) > _ChangedRoot.size() )
@@ -1585,7 +1587,7 @@ bool CMoveContainer::loadCollisionablePrimitiveBlock (const char *filename, uint
 			file.serial (block);
 
 			// add primitives
-			addCollisionnablePrimitiveBlock(&block, firstWorldImage, numWorldImage, primitives, orientation, position);
+			addCollisionnablePrimitiveBlock(&block, firstWorldImage, numWorldImage, primitives, orientation, position, dontSnapToGround);
 		
 			return true;
 		}
@@ -1606,6 +1608,27 @@ bool CMoveContainer::loadCollisionablePrimitiveBlock (const char *filename, uint
 	}
 }
 
+
 // ***************************************************************************
+void CMoveContainer::getPrimitives(std::vector<const UMovePrimitive *> &dest) const
+{	
+	dest.resize(_PrimitiveSet.size());
+	std::copy(_PrimitiveSet.begin(), _PrimitiveSet.end(), dest.begin());
+}
+
+
+// ***************************************************************************
+void UMoveContainer::getPACSCoordsFromMatrix(NLMISC::CVector &pos,float &angle,const NLMISC::CMatrix &mat)
+{
+	pos = mat.getPos();
+	CVector orient = mat.mulVector(NLMISC::CVector::I);
+	orient.z = 0.f;
+	orient.normalize();
+	angle = orient.y >= 0.f ? ::acosf(orient.x)  
+							: 2.f * (float) NLMISC::Pi - ::acosf(orient.x);
+
+}
+
+
 
 } // NLPACS

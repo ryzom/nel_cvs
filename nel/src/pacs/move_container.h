@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.10 2002/05/23 09:57:02 vizerie Exp $
+ * $Id: move_container.h,v 1.11 2002/05/24 12:34:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,10 +90,10 @@ public:
 	UMovePrimitive*				addNonCollisionablePrimitive ();
 
 	/// Load a block of collisionable primitive
-	bool						loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position);
+	bool						loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position, bool dontSnapToGround = false);
 
 	/// Add a block of collsionnable primitives
-	void						addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position);
+	void						addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position, bool dontSnapToGround = false);
 
 	/// Set world image as static world image.
 	void						setAsStatic (uint8 worldImage);
@@ -136,6 +136,9 @@ public:
 		
 		return _Triggers[id];
 	}
+
+	/// Get all the primitives in the container
+	virtual	void				getPrimitives(std::vector<const UMovePrimitive *> &dest) const;
 
 private:
 	/// Current test time

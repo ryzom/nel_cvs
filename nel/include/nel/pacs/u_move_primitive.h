@@ -1,7 +1,7 @@
 /** \file u_move_primitive.h
  * Description of movables primitives.
  *
- * $Id: u_move_primitive.h,v 1.8 2001/09/28 12:26:23 corvazier Exp $
+ * $Id: u_move_primitive.h,v 1.9 2002/05/24 12:35:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,6 +180,14 @@ public:
 	  * \param attenuation is the new attenuation for the primitive.
 	  */
 	virtual void	setAbsorbtion (float attenuation) =0;
+
+	/** Tells that the primitive should not be snapped to ground.
+	  * The default is false
+	  */
+	virtual	void	setDontSnapToGround(bool dont) = 0;
+
+	/// Test if snapping to ground is off
+	virtual bool	getDontSnapToGround() const = 0;
 
 	/**
 	  * Set the box size. Only for boxes.

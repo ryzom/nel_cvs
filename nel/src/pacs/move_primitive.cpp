@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.13 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: move_primitive.cpp,v 1.14 2002/05/24 12:34:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -234,9 +234,9 @@ void CMovePrimitive::setGlobalPosition (const UGlobalPosition& pos, uint8 worldI
 void CMovePrimitive::setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage)
 {
 	if (isNonCollisionable())
-		getWorldImage (0)->setGlobalPosition (pos, *_Container, *this, worldImage);
+		getWorldImage (0)->setGlobalPosition (pos, *_Container, *this, worldImage, (_StaticFlags & DontSnapToGroundFlag) != 0);
 	else
-		getWorldImage (worldImage)->setGlobalPosition (pos, *_Container, *this, worldImage);
+		getWorldImage (worldImage)->setGlobalPosition (pos, *_Container, *this, worldImage, (_StaticFlags & DontSnapToGroundFlag) != 0);
 }
 
 // ***************************************************************************

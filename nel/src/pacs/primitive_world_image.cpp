@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.12 2002/01/11 10:01:14 legros Exp $
+ * $Id: primitive_world_image.cpp,v 1.13 2002/05/24 12:34:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -192,7 +192,7 @@ const TCollisionSurfaceDescVector *CPrimitiveWorldImage::evalCollision (CGlobalR
 
 // ***************************************************************************
 
-void CPrimitiveWorldImage::doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double originalMax, double finalMax)
+void CPrimitiveWorldImage::doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double originalMax, double finalMax, bool keepZ /*= false*/)
 {
 	// Time to avance
 	double ratio;
@@ -202,7 +202,15 @@ void CPrimitiveWorldImage::doMove (CGlobalRetriever &retriever, CCollisionSurfac
 		ratio=1;
 
 	// Make the move
-	_Position.setGlobalPos (retriever.doMove(_Position.getGlobalPos(), _DeltaPosition, (float)ratio, surfaceTemp, false), retriever);
+	if (!keepZ)
+	{	
+		_Position.setGlobalPos (retriever.doMove(_Position.getGlobalPos(), _DeltaPosition, (float)ratio, surfaceTemp, false), retriever);
+	}
+	else
+	{
+		_Position.setGlobalPosKeepZ(retriever.doMove(_Position.getGlobalPos(), _DeltaPosition, (float)ratio, surfaceTemp, false), retriever);
+	}
+		
 
 	// Final position
 	_InitTime=finalMax;
@@ -1392,9 +1400,9 @@ void CPrimitiveWorldImage::setGlobalPosition (const UGlobalPosition& pos, CMoveC
 
 	// Use the global retriever ?
 	nlassert (cont->getGlobalRetriever());
-
+	
 	// Get the pos
-	_Position.setGlobalPos (pos, *cont->getGlobalRetriever());
+	_Position.setGlobalPos (pos, *cont->getGlobalRetriever());	
 
 	// Precalc some values
 	_3dInitPosition = _Position.getPos ();
@@ -1409,7 +1417,7 @@ void CPrimitiveWorldImage::setGlobalPosition (const UGlobalPosition& pos, CMoveC
 
 // ***************************************************************************
 
-void CPrimitiveWorldImage::setGlobalPosition (const NLMISC::CVectorD& pos, CMoveContainer& container, CMovePrimitive &primitive, uint8 worldImage)
+void CPrimitiveWorldImage::setGlobalPosition (const NLMISC::CVectorD& pos, CMoveContainer& container, CMovePrimitive &primitive, uint8 worldImage, bool keepZ /*= false*/)
 {
 	// Cast type
 	nlassert (dynamic_cast<const CMoveContainer*>(&container));
@@ -1427,6 +1435,10 @@ void CPrimitiveWorldImage::setGlobalPosition (const NLMISC::CVectorD& pos, CMove
 		// Get global position
 		UGlobalPosition globalPosition=retriever->retrievePosition (pos);
 
+		if (keepZ)
+		{
+			globalPosition.LocalPosition.Estimation.z = (float) pos.z;
+		}
 		// Set global position
 		_Position.setGlobalPos (globalPosition, *retriever);
 	}

@@ -1,7 +1,7 @@
 /** \file primitive_world_image.h
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.h,v 1.6 2001/09/06 15:35:57 legros Exp $
+ * $Id: primitive_world_image.h,v 1.7 2002/05/24 12:34:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ public:
 	  * \param pos is the new global position of the primitive.
 	  */
 	void	setGlobalPosition (const NLMISC::CVectorD& pos, CMoveContainer& container, CMovePrimitive &primitive, 
-								uint8 worldImage);
+								uint8 worldImage, bool keepZ = false);
 
 	/**
 	  * Get the position of the move primitive at the end of the movement.
@@ -364,7 +364,7 @@ public:
 													uint32 testTime, uint32 maxTestIteration, CMovePrimitive& primitive);
 
 	// Make a move with globalRetriever. Must be call after a free collision evalCollision call.
-	void	doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double originalMax, double finalMax);
+	void	doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double originalMax, double finalMax, bool keepZ = false);
 
 	// Make a move wihtout globalRetriever.
 	void	doMove (double timeMax);
@@ -434,13 +434,23 @@ private:
 		// Set the global position
 		void										setGlobalPos (const UGlobalPosition& globalPosition,
 																  CGlobalRetriever& globalRetriver)
-		{
+		{			
 			// Get position with global position
 			_GlobalPosition=globalPosition;
 			_GlobalPosition.LocalPosition.Estimation.z = globalRetriver.getMeanHeight(globalPosition);
 			_3dPosition=globalRetriver.getDoubleGlobalPosition (globalPosition);
-//			_3dPosition.z=(double)globalRetriver.getMeanHeight(globalPosition);
+//			_3dPosition.z=(double)globalRetriver.getMeanHeight(globalPosition);			
 		}
+
+		void										setGlobalPosKeepZ(const UGlobalPosition& globalPosition,
+																	  CGlobalRetriever& globalRetriver)
+		{
+			_GlobalPosition.setKeepZ(globalPosition);
+			NLMISC::CVectorD dPos = globalRetriver.getDoubleGlobalPosition (globalPosition);
+			_3dPosition.x = dPos.x;
+			_3dPosition.y = dPos.y;
+		}
+
 	};
 
 	// Global position of the primitive in the world image.

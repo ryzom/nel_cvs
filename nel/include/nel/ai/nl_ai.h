@@ -12,6 +12,7 @@ namespace NLAILINK
 	void initIALib();
 	void releaseIALib();
 	void setLocalServerID(uint8 );
+	uint8 getLocalServerID();
 	void setMainManager(NLAIAGENT::IMainAgent *);
 	void releaseMainManager();
 	void buildScript(const std::string &scriptSrc, const std::string &name);

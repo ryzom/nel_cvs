@@ -73,6 +73,11 @@ namespace NLAILINK
 		NLAIAGENT::CNumericIndex::_I.DynamicId = (uint64)u;
 	}
 
+	uint8 getLocalServerID()
+	{
+		return NLAIAGENT::CAgentNumber::ServerID;
+	}
+
 	void setMainManager(NLAIAGENT::IMainAgent *manager)
 	{
 		NLAIAGENT::CProxyAgentMail::MainAgent = manager;

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.67 2003/06/25 10:19:50 cado Exp $
+ * $Id: unified_network.cpp,v 1.68 2003/07/01 10:12:30 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdnet.h"
 
 #include "nel/net/unified_network.h"
+#include "nel/misc/entity_id.h" // for createMessage()
 
 using namespace std;
 using namespace NLMISC;
@@ -1888,6 +1889,7 @@ static bool createMessage (CMessage &msgout, const vector<string> &args, CLog &l
 		else if (type == "d")			{ double v = atof(value.c_str()); msgout.serial (v); }
 		else if (type == "b")			{ bool v = atoi(value.c_str()) == 1; msgout.serial (v); }
 		else if (type == "s")			{ msgout.serial (value); }
+		else if (type == "e")			{ CEntityId e; e.fromString(value.c_str()); msgout.serial(e); }
 		else { log.displayNL ("type '%s' is not a valid type", type.c_str()); return false; }
 	}
 	return true;

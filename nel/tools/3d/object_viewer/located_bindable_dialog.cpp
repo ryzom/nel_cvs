@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.6 2001/06/25 13:26:50 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.7 2001/06/27 16:49:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include "precomputed_rotations_dlg.h"
 #include "tail_particle_dlg.h"
 #include "mesh_dlg.h"
+#include "texture_anim_dlg.h"
 
 
 using NL3D::CPSLocatedBindable ; 
@@ -134,17 +135,7 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 			yPos += rect.bottom + 3 ;
 		}
 
-		// check support for animated texture
-		if (dynamic_cast<NL3D::CPSTexturedParticle *>(_Bindable))
-		{
-			CTextureChooser *tc = new CTextureChooser ;
-			pushWnd(tc) ;
-			_TextureWrapper.P = dynamic_cast<NL3D::CPSTexturedParticle *>(_Bindable) ;
-			tc->setWrapper(&_TextureWrapper) ;
-			tc->init(xPos, yPos, this) ;
-			tc->GetClientRect(&rect) ;
-			yPos += rect.bottom + 3 ;
-		}
+		
 
 		CAttribDlgPlaneBasis *pb = NULL ;
 
@@ -301,6 +292,7 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 			yPos += rect.bottom + 3 ;
 
 			CTailParticleDlg *tpd = new CTailParticleDlg(dynamic_cast<NL3D::CPSTailParticle *>(_Bindable)) ;
+			pushWnd(tpd) ;
 			tpd->init(this, xPos, yPos) ;
 				
 			tpd->GetClientRect(&rect) ;
@@ -316,6 +308,57 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 			md->init(this, xPos, yPos) ;
 			md->GetClientRect(&rect) ;
 			yPos += rect.bottom + 3 ;
+		}
+
+
+		// check support for animated texture
+		if (dynamic_cast<NL3D::CPSTexturedParticle *>(_Bindable))
+		{
+			CTextureAnimDlg *td = new CTextureAnimDlg(dynamic_cast<NL3D::CPSTexturedParticle *>(_Bindable))  ;			
+			pushWnd(td) ;
+						
+			td->init(xPos, yPos, this) ;
+			td->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+		}
+
+		// ribbon texture (doesn't support texture animation for now)
+		if (dynamic_cast<NL3D::CPSRibbon *>(_Bindable))
+		{
+			_RibbonTextureWrapper.R = dynamic_cast<NL3D::CPSRibbon *>(_Bindable) ;
+			CTextureChooser *tc = new CTextureChooser  ;			
+			tc->setWrapper(&_RibbonTextureWrapper) ;
+			pushWnd(tc) ;
+						
+			tc->init(xPos, yPos, this) ;
+			tc->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+
+			// add dialog for uv tuning with ribbon
+			CEditableRangeFloat *uvd = new CEditableRangeFloat(std::string("RIBBON UFACTOR"), 0, 5) ;
+			pushWnd(uvd) ;
+			_RibbonUFactorWrapper.R = dynamic_cast<NL3D::CPSRibbon *>(_Bindable) ;
+			uvd->setWrapper(&_RibbonUFactorWrapper) ;
+			uvd->init(xPos + 140, yPos, this) ;
+			CStatic *s = new CStatic ;			
+			pushWnd(s) ;
+			s->Create("Texture U factor :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
+			s->ShowWindow(SW_SHOW) ;
+			uvd->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+
+			uvd = new CEditableRangeFloat(std::string("RIBBON VFACTOR"), 0, 5) ;
+			pushWnd(uvd) ;
+			_RibbonVFactorWrapper.R = dynamic_cast<NL3D::CPSRibbon *>(_Bindable) ;
+			uvd->setWrapper(&_RibbonVFactorWrapper) ;
+			uvd->init(xPos + 140, yPos, this) ;
+			s = new CStatic ;			
+			pushWnd(s) ;
+			s->Create("Texture V factor :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
+			s->ShowWindow(SW_SHOW) ;
+			uvd->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+
 		}
 
 	}	

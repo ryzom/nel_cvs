@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.6 2001/06/25 13:26:50 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.7 2001/06/27 16:49:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,7 +104,7 @@ protected:
 		//////////
 		// size //
 		//////////
-			struct tagSizeWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat 
+			struct CSizeWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat 
 			{
 			   NL3D::CPSSizedParticle *S ;
 			   float get(void) const { return S->getSize() ; }
@@ -116,7 +116,7 @@ protected:
 		///////////
 		// color //
 		///////////
-			struct tagColorWrapper : public IPSWrapperRGBA, IPSSchemeWrapperRGBA
+			struct CColorWrapper : public IPSWrapperRGBA, IPSSchemeWrapperRGBA
 			{
 			   NL3D::CPSColoredParticle *S ;
 			   CRGBA get(void) const { return S->getColor() ; }
@@ -128,7 +128,7 @@ protected:
 		//////////////
 		// angle 2D //
 		//////////////
-			struct tagAngle2DWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
+			struct CAngle2DWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
 			{
 			   NL3D::CPSRotated2DParticle *S ;
 			   float get(void) const { return S->getAngle2D() ; }
@@ -140,7 +140,7 @@ protected:
 		/////////////////
 		// plane basis //
 		/////////////////
-			struct tagPlaneBasisWrapper : public IPSWrapper<NL3D::CPlaneBasis>, IPSSchemeWrapper<NL3D::CPlaneBasis>
+			struct CPlaneBasisWrapper : public IPSWrapper<NL3D::CPlaneBasis>, IPSSchemeWrapper<NL3D::CPlaneBasis>
 			{
 			   NL3D::CPSRotated3DPlaneParticle *S ;
 			   NL3D::CPlaneBasis get(void) const { return S->getPlaneBasis() ; }
@@ -150,29 +150,20 @@ protected:
 			} _PlaneBasisWrapper ;
 
 
-		///////////////
-		//   texture //
-		///////////////
-			
-			struct tagTextureWrapper : public IPSWrapperTexture
-			{
-				NL3D::CPSTexturedParticle *P ;
-				NL3D::ITexture *get(void)  { return P->getTexture() ; }
-				void set(NL3D::ITexture *t) { P->setTexture(t) ; }
-			} _TextureWrapper ;
+	
 
 		///////////////////////
 		// motion blur coeff //
 		///////////////////////
 
-			struct tagMotionBlurCoeffWrapper : public IPSWrapperFloat
+			struct CMotionBlurCoeffWrapper : public IPSWrapperFloat
 			{
 				NL3D::CPSFaceLookAt *P ;
 			   float get(void) const { return P->getMotionBlurCoeff() ; }
 			   void set(const float &v) { P->setMotionBlurCoeff(v) ; }
 			}  _MotionBlurCoeffWrapper ;
 
-			struct tagMotionBlurThresholdWrapper : public IPSWrapperFloat
+			struct CMotionBlurThresholdWrapper : public IPSWrapperFloat
 			{
 				NL3D::CPSFaceLookAt *P ;
 			   float get(void) const { return P->getMotionBlurThreshold() ; }
@@ -182,13 +173,13 @@ protected:
 		///////////////
 		// fanlight  //
 		///////////////
-			struct tagFanLightWrapper : public IPSWrapperUInt
+			struct CFanLightWrapper : public IPSWrapperUInt
 			{
 				NL3D::CPSFanLight *P ;
 			  uint32 get(void) const { return P->getNbFans() ; }
 			   void set(const uint32 &v) { P->setNbFans(v) ; }
 			}  _FanLightWrapper ;
-			struct tagFanLightPhase : public IPSWrapperFloat
+			struct CFanLightPhase : public IPSWrapperFloat
 			{
 				NL3D::CPSFanLight *P ;
 				float get(void) const { return P->getPhaseSpeed() ; }
@@ -199,7 +190,7 @@ protected:
 		// ribbon / tail dot //
 		///////////////////////
 			
-			struct tagTailParticleWrapper : public IPSWrapperUInt
+			struct CTailParticleWrapper : public IPSWrapperUInt
 			{
 				NL3D::CPSTailParticle *P ;
 			    uint32 get(void) const { return P->getTailNbSeg() ; }
@@ -210,19 +201,51 @@ protected:
 		//		shockwave          //
 		/////////////////////////////
 	
-			struct tagRadiusCutWrapper : public IPSWrapperFloat
+			struct CRadiusCutWrapper : public IPSWrapperFloat
 			{
 			   NL3D::CPSShockWave *S ;
 			   float get(void) const { return S->getRadiusCut() ; }
 			   void set(const float &v) { S->setRadiusCut(v) ; }
 			} _RadiusCutWrapper ;
 
-			struct tagShockWaveNbSegWrapper : public IPSWrapperUInt
+			struct CShockWaveNbSegWrapper : public IPSWrapperUInt
 			{
 			   NL3D::CPSShockWave *S ;
 			   uint32 get(void) const { return S->getNbSegs() ; }
 			   void set(const uint32 &v) { S->setNbSegs(v) ; }
 			} _ShockWaveNbSegWrapper ;
+
+
+		/////////////////////////////
+		// single texture (ribbon) //
+		/////////////////////////////
+
+			struct CRibbonTextureWrapper : public IPSWrapperTexture
+			{
+				NL3D::CPSRibbon *R ;
+				virtual NL3D::ITexture *get(void) { return R->getTexture() ; }
+				virtual void set(NL3D::ITexture *t) { R->setTexture(t) ; }
+			} _RibbonTextureWrapper ;
+
+		//////////////////////////////
+		// u / v factors for ribbon //
+		//////////////////////////////
+
+			struct CRibbonUFactorWrapper : public IPSWrapperFloat
+			{
+			   NL3D::CPSRibbon *R ;
+			   float get(void) const { return R->getUFactor() ; }
+			   void set(const float &u) { R->setTexture(R->getTexture(), u, R->getVFactor()) ; }
+			} _RibbonUFactorWrapper ;
+
+			struct CRibbonVFactorWrapper : public IPSWrapperFloat
+			{
+			   NL3D::CPSRibbon *R ;
+			   float get(void) const { return R->getVFactor() ; }
+			   void set(const float &v) { R->setTexture(R->getTexture(), R->getUFactor(), v) ; }
+			} _RibbonVFactorWrapper ;
+
+
 
 
 

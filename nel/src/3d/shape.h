@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.9 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: shape.h,v 1.10 2002/03/29 17:05:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,7 @@ class IShape : public NLMISC::CRefCount, public NLMISC::IStreamable
 public:
 
 	/// Constructor
-	IShape() {}
+	IShape();
 	/// Dtor.
 	virtual ~IShape() {}
 
@@ -107,7 +107,13 @@ public:
 	/** return the DistMax where the shape is no more displayed.
 	 *	Default is to return -1, meaning DistMax = infinite.
 	 */
-	virtual	float				getDistMax() const {return -1;}
+	float						getDistMax() const {return _DistMax;}
+
+	/** setup the DistMax where the shape is no more displayed.
+	 *	setting <0 means -1 and so means DistMax = infinite.
+	 */
+	void						setDistMax(float distMax);
+
 
 	/// \name Load balancing methods
 	// @{
@@ -128,6 +134,11 @@ public:
 	virtual bool				useLightingLocalAttenuation () const {return false;}
 
 	// @}
+
+protected:
+
+	/// Default to -1
+	float			_DistMax;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.8 2002/03/29 14:19:55 berenguier Exp $
+ * $Id: particle_system_instance_user.h,v 1.9 2002/03/29 17:05:50 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -84,6 +84,9 @@ public:
 
 	// No-op for ParticleSystem
 	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
+	// change/get Shape distMax.
+	virtual void		setShapeDistMax(float distMax);
+	virtual float		getShapeDistMax(float distMax) const;
 
 private:
 	/// list of observers

@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.4 2002/03/21 16:07:51 berenguier Exp $
+ * $Id: skeleton_user.cpp,v 1.5 2002/03/29 17:05:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,27 @@ void		CSkeletonUser::setInterpolationDistance(float dist)
 float		CSkeletonUser::getInterpolationDistance() const
 {
 	return _Skeleton->getInterpolationDistance();
+}
+
+
+// ***************************************************************************
+void		CSkeletonUser::setShapeDistMax(float distMax)
+{
+	if(_Skeleton && _Skeleton->Shape)
+	{
+		_Skeleton->Shape->setDistMax(distMax);
+	}
+}
+
+// ***************************************************************************
+float		CSkeletonUser::getShapeDistMax(float distMax) const
+{
+	if(_Skeleton && _Skeleton->Shape)
+	{
+		return _Skeleton->Shape->getDistMax();
+	}
+	else
+		return -1;
 }
 
 

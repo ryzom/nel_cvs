@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.9 2002/03/29 14:19:55 berenguier Exp $
+ * $Id: instance_user.cpp,v 1.10 2002/03/29 17:05:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,27 @@ void		CInstanceUser::changeMRMDistanceSetup(float distanceFinest, float distance
 	{
 		mi->changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
 	}
+}
+
+
+// ***************************************************************************
+void		CInstanceUser::setShapeDistMax(float distMax)
+{
+	if(_Instance && _Instance->Shape)
+	{
+		_Instance->Shape->setDistMax(distMax);
+	}
+}
+
+// ***************************************************************************
+float		CInstanceUser::getShapeDistMax(float distMax) const
+{
+	if(_Instance && _Instance->Shape)
+	{
+		return _Instance->Shape->getDistMax();
+	}
+	else
+		return -1;
 }
 
 

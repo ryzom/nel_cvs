@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.2 2002/03/21 16:08:19 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.3 2002/03/29 17:05:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,25 @@ public:
 	virtual	void		setInterpolationDistance(float dist) =0;
 	/// see setInterpolationDistance()
 	virtual	float		getInterpolationDistance() const =0;
+
+
+	/** Change Max Display Skeleton distance. After this distance the shape won't be displayed.
+	 *	setting <0 means -1 and so means DistMax = infinite (default in meshs but multilod meshes).
+	 *	NB: This apply to the shape direclty!! ie All instances using same shape will be affected
+	 *
+	 *	Note: If the skeleton himself is sticked to an other skeleton, this setup is not taken into account.
+	 *	ie the skeleton clip follow the ancestor skeleton clip result (ie the first skeleton in hierarchy 
+	 *	which is not sticked).
+	 *
+	 *	Note (complex): same remark for QuadGridClipManager interaction with this function as in 
+	 *	UInstance::setShapeDistMax()
+	 */
+	virtual void		setShapeDistMax(float distMax) =0;
+
+	/// see setShapeDistMax()
+	virtual float		getShapeDistMax(float distMax) const =0;
+
+
 	// @}
 
 

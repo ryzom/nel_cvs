@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.5 2002/03/29 14:19:42 berenguier Exp $
+ * $Id: u_instance.h,v 1.6 2002/03/29 17:05:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,25 @@ public:
 	 */
 	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest) =0;
 
+
+	/** Change Max Display distance. After this distance the shape won't be displayed.
+	 *	setting <0 means -1 and so means DistMax = infinite (default in meshs but multilod meshes).
+	 *	NB: This apply to the shape direclty!! ie All instances using same shape will be affected
+	 *
+	 *	Note: If the instance is skinned/sticked to a skeleton, this setup is not taken into account. But you can
+	 *	call USkeleton::setShapeDistMax() to have same effect.
+	 *
+	 *	Note (complex): All instances of the same shape which are freezeHRC()-ed and are linked to the 
+	 *	QuadGridClipManager (ie not linked to a cluster) may not be updated corretcly. 
+	 *	In other words, you should setup this value only at beginning of program, just after creating your 
+	 *	instance (more exactly before UScene::render()), and all instances of the same shape should be setuped 
+	 *	with same value (or don't call setShapeDistMax() for subsequent instances).
+	 *	If you don't do this, QuadGridClipManager may clip such instances nearer than they should
+	 */
+	virtual void		setShapeDistMax(float distMax) =0;
+
+	/// see setShapeDistMax()
+	virtual float		getShapeDistMax(float distMax) const =0;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.13 2002/03/29 14:19:55 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.14 2002/03/29 17:05:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,9 +141,6 @@ public:
 	/// Geometry accessor
 	const IMeshGeom& getMeshGeom (uint slot) const;
 
-	/// Return the global max dist for this lod
-	virtual	float getDistMax () const;
-
 	/// Get slot mesh count.
 	uint			getNumSlotMesh () const
 	{
@@ -243,6 +240,9 @@ private:
 
 	/// Render a slot
 	void	render (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool staticLod, bool passOpaque);
+
+	/// copileDistMax when builded/loaded.
+	void	compileDistMax();
 
 	friend class CMeshMultiLodBalancingObs;
 };

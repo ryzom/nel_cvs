@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.17 2002/03/29 14:19:55 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.18 2002/03/29 17:05:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,6 +180,9 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 		// Calc A
 		_MeshVector[k].B=_MeshVector[k].EndPolygonCount-_MeshVector[k].A*endDist;
 	}
+
+	// End: compile the max distance of display
+	compileDistMax();
 }
 
 // ***************************************************************************
@@ -318,6 +321,13 @@ void CMeshMultiLod::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// Serial the values
 	f.serialCont (_MeshVector);
+
+
+	// if reading, compile the new max distance of display
+	if (f.isReading())
+	{
+		compileDistMax();
+	}
 }
 
 // ***************************************************************************
@@ -517,15 +527,15 @@ void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *tran
 }
 
 // ***************************************************************************
-float CMeshMultiLod::getDistMax () const
+void	CMeshMultiLod::compileDistMax()
 {
 	// Last element
 	std::vector<CMeshSlot>::const_iterator ite=_MeshVector.end();
 	ite--;
 	if (ite!=_MeshVector.end())
-		return ite->DistMax;
+		IShape::_DistMax= ite->DistMax;
 	else
-		return -1;
+		IShape::_DistMax= -1;
 }
 
 // ***************************************************************************

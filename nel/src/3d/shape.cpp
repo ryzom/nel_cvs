@@ -1,7 +1,7 @@
 /** \file shape.cpp
  * <File description>
  *
- * $Id: shape.cpp,v 1.6 2002/02/28 12:59:51 besson Exp $
+ * $Id: shape.cpp,v 1.7 2002/03/29 17:05:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,23 @@ CTransformShape		*IShape::createInstance(CScene &scene)
 	CTransformShape		*mo= (CTransformShape*)scene.createModel(NL3D::TransformShapeId);
 	mo->Shape= this;
 	return mo;
+}
+
+
+// ***************************************************************************
+IShape::IShape()
+{
+	_DistMax= -1;
+}
+
+
+// ***************************************************************************
+void			IShape::setDistMax(float distMax)
+{
+	_DistMax= distMax;
+	// normalize infinite setup.
+	if(distMax<0)
+		_DistMax= -1;
 }
 
 

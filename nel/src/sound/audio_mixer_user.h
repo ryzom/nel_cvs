@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.4 2001/07/17 14:21:54 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.5 2001/07/18 17:14:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,6 +120,8 @@ public:
 	void						balanceSources()						{ if ( moreSourcesThanTracks() ) redispatchSourcesToTrack(); }
 	/// Return the root of the envsounds tree
 	CEnvSoundUser				*getEnvSounds()							{ return _EnvSounds; }
+	/// Return the listen pos vector
+	const NLMISC::CVector&		getListenPosVector() const				{ return _ListenPosition; }
 
 protected:
 
@@ -175,6 +177,9 @@ public: // Temp (EDIT)
 
 	/// Size of the physical sources array (must be <= MAX_TRACKS)
 	uint						_NbTracks;
+
+	/// Flag set in destructor
+	bool						_Leaving;
 };
 
 

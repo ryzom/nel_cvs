@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.6 2001/07/17 16:57:42 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.7 2001/07/18 17:14:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,7 +109,8 @@ void CEnvSoundUser::serial( NLMISC::IStream& s )
 				}
 				else
 				{
-					_Source->initPos( NULL );
+					// The world envsound will be heard at the listener
+					_Source->initPos( &CAudioMixerUser::instance()->getListenPosVector() );
 				}
 			}
 		}
@@ -334,7 +335,7 @@ void CEnvSoundUser::recompute()
 /* Prepare the related sources to play (recursive).
  * In each children branch, there must be an env which is not a transition, for the recursion to stop
  */
-void CEnvSoundUser::markSources( const NLMISC::CVector& listenerpos, float gain, CEnvSoundUser *except )
+void CEnvSoundUser::markSources( const NLMISC::CVector& listenerpos, float gain )
 {
 	// Is the listener in a transition area ?
 	if ( _Transition )
@@ -350,12 +351,9 @@ void CEnvSoundUser::markSources( const NLMISC::CVector& listenerpos, float gain,
 		// The recursion stops because the child env is not a transition area
 		_Children[0]->markSources( listenerpos, gain * ratio );
 
-		// The 3d source of the current env and the parent env play at gain*(1-ratio)
+		// The parent env (therefore the 3d source of the current env as well) plays at gain*(1-ratio)
 		// The recursion stops because the parent env is not a transition area
-		float outergain = gain * (1.0f-ratio);
-		_Mark = true;
-		_Gain = outergain;
-		_Parent->markSources( listenerpos, outergain, this );	
+		_Parent->markSources( listenerpos, gain * (1.0f-ratio) );
 	}
 	else
 	{
@@ -366,15 +364,12 @@ void CEnvSoundUser::markSources( const NLMISC::CVector& listenerpos, float gain,
 		_Mark = true;
 		_Gain = gain;
 
-		// The children env (next level only) play, except the one specified
+		// The children env (next level only) play
 		vector<CEnvSoundUser*>::iterator ipe;
 		for( ipe=_Children.begin(); ipe!=_Children.end(); ++ipe )
 		{
-			if ( (*ipe) != except )
-			{
-				(*ipe)->_Mark = true;
-				(*ipe)->_Gain = gain;
-			}
+			(*ipe)->_Mark = true;
+			(*ipe)->_Gain = gain;
 		}
 	}
 }

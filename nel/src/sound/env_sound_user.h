@@ -1,7 +1,7 @@
 /** \file env_sound_user.h
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.h,v 1.5 2001/07/17 16:57:42 cado Exp $
+ * $Id: env_sound_user.h,v 1.6 2001/07/18 17:14:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,7 +156,7 @@ protected:
 	/** Prepare the related sources to play (recursive).
 	 * In each children branch, there must be an env which is not a transition, for the recursion to stop
 	 */
-	void					markSources( const NLMISC::CVector& listenerpos, float gain, CEnvSoundUser *except=NULL );
+	void					markSources( const NLMISC::CVector& listenerpos, float gain );
 
 	/// Count the envs in the tree (call on the root)
 	uint32					getCount() const;

@@ -1,7 +1,7 @@
 /** \file ambiant_source.cpp
  * CAmbiantSource: Stereo mix of a envsound, seen as a source
  *
- * $Id: ambiant_source.cpp,v 1.2 2001/07/17 15:32:12 cado Exp $
+ * $Id: ambiant_source.cpp,v 1.3 2001/07/18 17:14:34 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -58,9 +58,11 @@ CAmbiantSource::CAmbiantSource() :
  */
 CAmbiantSource::~CAmbiantSource()
 {
-	CAudioMixerUser::instance()->removeSource( &_StereoChannels[AMBIANT_CH1] );
+	/*CAudioMixerUser::instance()->removeSource( &_StereoChannels[AMBIANT_CH1] );
 	CAudioMixerUser::instance()->removeSource( &_StereoChannels[AMBIANT_CH2] );
 	CAudioMixerUser::instance()->removeSource( &_StereoChannels[SPARSE_CH] );
+	// Removed in ~CSourceUser
+	*/
 
 	// Delete sounds
 	vector<CSound*>::iterator ipsnds;
@@ -84,22 +86,24 @@ CAmbiantSource::~CAmbiantSource()
 void CAmbiantSource::initPos( const CVector *posvector )
 {
 	// Initialize ambiant sound channels
-	if ( _AmbiantSounds.size() >= 2 )
+	if ( ! _AmbiantSounds.empty()  )
 	{
 		_StereoChannels[AMBIANT_CH1].set3DPositionVector( posvector );
 		_StereoChannels[AMBIANT_CH1].setSound( getRandomSound( _AmbiantSounds ) );
 		_StereoChannels[AMBIANT_CH1].setGain( 0.0f );
 		_StereoChannels[AMBIANT_CH1].setPriority( LowPri, false );
-
-		_StereoChannels[AMBIANT_CH2].set3DPositionVector( posvector );
-		_StereoChannels[AMBIANT_CH2].setSound( getRandomSound( _AmbiantSounds ) );
-		_StereoChannels[AMBIANT_CH2].setGain( 0.0f );
-		_StereoChannels[AMBIANT_CH2].setPriority( LowPri, false );
-
 		CAudioMixerUser::instance()->addSource( &_StereoChannels[AMBIANT_CH1] );
 		CAudioMixerUser::instance()->giveTrack( &_StereoChannels[AMBIANT_CH1] );
-		CAudioMixerUser::instance()->addSource( &_StereoChannels[AMBIANT_CH2] );
-		CAudioMixerUser::instance()->giveTrack( &_StereoChannels[AMBIANT_CH2] );
+		
+		if ( _AmbiantSounds.size() > 1 )
+		{
+			_StereoChannels[AMBIANT_CH2].set3DPositionVector( posvector );
+			_StereoChannels[AMBIANT_CH2].setSound( getRandomSound( _AmbiantSounds ) );
+			_StereoChannels[AMBIANT_CH2].setGain( 0.0f );
+			_StereoChannels[AMBIANT_CH2].setPriority( LowPri, false );
+			CAudioMixerUser::instance()->addSource( &_StereoChannels[AMBIANT_CH2] );
+			CAudioMixerUser::instance()->giveTrack( &_StereoChannels[AMBIANT_CH2] );
+		}
 	}
 
 	// Initialize sparse sounds channel
@@ -122,7 +126,15 @@ void			CAmbiantSource::enable( bool toplay, float gain )
 	// Calc position in cycle
 	bool crossfade;
 	uint32 leadchannel;
-	calcPosInCycle( crossfade, leadchannel );
+	if ( _AmbiantSounds.size() > 1 )
+	{
+		calcPosInCycle( crossfade, leadchannel );
+	}
+	else
+	{
+		crossfade = false;
+		leadchannel = AMBIANT_CH1;
+	}
 
 	// Enable/disable
 	if ( toplay )
@@ -132,16 +144,17 @@ void			CAmbiantSource::enable( bool toplay, float gain )
 		if ( ! _Play )
 		{
 			// Start lead channel
-			nldebug( "AM: Envsound: Switch on channel %u", leadchannel );
-			nlassert( _StereoChannels[leadchannel].getSound() != NULL );
-			_StereoChannels[leadchannel].setPriority( HighPri ) ;
-			_StereoChannels[leadchannel].play();
+			if ( _StereoChannels[leadchannel].getSound() != NULL )
+			{
+				nldebug( "AM: Envsound: Switch on channel %u", leadchannel );
+				_StereoChannels[leadchannel].setPriority( HighPri ) ;
+				_StereoChannels[leadchannel].play();
+			}
 
 			// If crossfading, start back channel
-			if ( crossfade )
+			if ( crossfade && (_StereoChannels[1-leadchannel].getSound() != NULL) )
 			{
 				nldebug( "AM: Envsound: Switch on channel %u", 1-leadchannel );
-				nlassert( _StereoChannels[1-leadchannel].getSound() != NULL );
 				_StereoChannels[1-leadchannel].setPriority( HighPri ) ;
 				_StereoChannels[1-leadchannel].play();
 			}
@@ -158,12 +171,15 @@ void			CAmbiantSource::enable( bool toplay, float gain )
 		if ( _Play )
 		{
 			// Stop lead channel
-			nldebug( "AM: Envsound: Switch off channel %u", leadchannel );
-			_StereoChannels[leadchannel].stop();
-			_StereoChannels[leadchannel].setPriority( LowPri );
+			if ( _StereoChannels[leadchannel].getSound() != NULL )
+			{
+				nldebug( "AM: Envsound: Switch off channel %u", leadchannel );
+				_StereoChannels[leadchannel].stop();
+				_StereoChannels[leadchannel].setPriority( LowPri );
+			}
 
 			// If crossfading, stop back channel
-			if ( crossfade )
+			if ( crossfade && (_StereoChannels[1-leadchannel].getSound() != NULL) )
 			{
 				nldebug( "AM: Envsound: Switch off channel %u", 1-leadchannel );
 				_StereoChannels[1-leadchannel].stop();
@@ -171,9 +187,12 @@ void			CAmbiantSource::enable( bool toplay, float gain )
 			}
 
 			// Stop spare channel, anyway
-			nldebug( "AM: Envsound: Switch off sparse channel" );
-			_StereoChannels[SPARSE_CH].stop();
-			_StereoChannels[SPARSE_CH].setPriority( LowPri );
+			if ( _StereoChannels[SPARSE_CH].getSound() != NULL )
+			{
+				nldebug( "AM: Envsound: Switch off sparse channel" );
+				_StereoChannels[SPARSE_CH].stop();
+				_StereoChannels[SPARSE_CH].setPriority( LowPri );
+			}
 
 			_Play = false;
 		}
@@ -187,17 +206,23 @@ void			CAmbiantSource::enable( bool toplay, float gain )
 TTime CAmbiantSource::calcPosInCycle( bool& crossfade, uint32& leadchannel )
 {
 	TTime pos = CTime::getLocalTime();
-	pos = pos % ((_CrossfadeTime+_SustainTime)*2);
-	if ( pos < _CrossfadeTime+_SustainTime )
+	uint32 cycletime = _CrossfadeTime + _SustainTime;
+	pos = pos % (cycletime*2);
+
+	// Calc which channel will be the lead one
+	if ( pos < cycletime )
 	{
 		leadchannel = 0;
 	}
 	else
 	{
 		leadchannel = 1;
-		pos = pos - (_CrossfadeTime+_SustainTime);
+		pos = pos - (cycletime);
 	}
+
+	// Calc if the pos is in the first part (crossfade) or in the other part (sustain)
 	crossfade = ( pos < _CrossfadeTime );
+	
 	return pos;
 }
 
@@ -207,28 +232,27 @@ TTime CAmbiantSource::calcPosInCycle( bool& crossfade, uint32& leadchannel )
  */
 void CAmbiantSource::update()
 {
-	/*nldebug( "AM: EnvSound: Center source %p has sound %p, buffer %p, track %p, buffer %p",
-		&_CenterSource, _CenterSource.getSound(), _CenterSource.getSound()?_CenterSource.getSound()->getBuffer():NULL,
-		_CenterSource.getTrack(), _CenterSource.getTrack()?_CenterSource.getTrack()->DrvSource->getStaticBuffer():NULL );
-	nldebug( "AM: EnvSound: Channel #1    %p has sound %p, buffer %p, track %p, buffer %p",
-		&_StereoChannels[0], _StereoChannels[0].getSound(), _StereoChannels[0].getSound()?_StereoChannels[0].getSound()->getBuffer():NULL,
-		_StereoChannels[0].getTrack(), _StereoChannels[0].getTrack()?_StereoChannels[0].getTrack()->DrvSource->getStaticBuffer():NULL );
-	nldebug( "AM: EnvSound: Channel #2    %p has sound %p, buffer %p, track %p, buffer %p",
-		&_StereoChannels[1], _StereoChannels[1].getSound(), _StereoChannels[1].getSound()?_StereoChannels[1].getSound()->getBuffer():NULL,
-		_StereoChannels[1].getTrack(), _StereoChannels[1].getTrack()?_StereoChannels[1].getTrack()->DrvSource->getStaticBuffer():NULL );
-	nldebug( "AM: EnvSound: Channel #3    %p has sound %p, buffer %p, track %p, buffer %p",
-		&_StereoChannels[2], _StereoChannels[2].getSound(), _StereoChannels[2].getSound()?_StereoChannels[2].getSound()->getBuffer():NULL,
-		_StereoChannels[2].getTrack(), _StereoChannels[2].getTrack()?_StereoChannels[2].getTrack()->DrvSource->getStaticBuffer():NULL );*/
-
 	if ( (!_Play) || (_StereoGain==0.0f) )
 	{
 		return;
 	}
 
+	// Calc pos in cycle
 	bool crossfade;
 	uint32 leadchannel, backchannel;
-	TTime posInCycle = calcPosInCycle( crossfade, leadchannel );
-	backchannel = 1 - leadchannel;
+	TTime posInCycle;
+	if ( _AmbiantSounds.size() > 1 )
+	{
+		posInCycle = calcPosInCycle( crossfade, leadchannel );
+		backchannel = 1 - leadchannel;
+	}
+	else
+	{
+		// If there is less than 2 sounds, no crossfade, always sustain (a single sound must be looping)
+		crossfade = false;
+		leadchannel = AMBIANT_CH1;
+		_Sustain = true;
+	}
 	
 	// Crossfade the first two sources
 	if ( crossfade )
@@ -252,12 +276,13 @@ void CAmbiantSource::update()
 		// Set sustain gain (takes into account the possible changes to _StereoGain)
 		_StereoChannels[leadchannel].setRelativeGain( _StereoGain );
 
-		// Prepare next sound
+		// Prepare next ambiant sound
 		if ( ! _Sustain )
 		{
 			_Sustain = true;
 			TSoundId nextsound = getRandomSound( _AmbiantSounds );
 #ifdef ENVSOUND_DONT_DUPLICATE_AMBIANT
+			nlassert( _AmbiantSounds.size() > 1 ); // or infinite loop
 			while ( nextsound == _StereoChannels[leadchannel].getSound() )
 			{
 				nldebug( "AM: EnvSound: Avoiding ambiant sound duplication..." );
@@ -274,6 +299,10 @@ void CAmbiantSource::update()
 	// Add a short random sound into the third source
 	if ( ! _SparseSounds.empty() )
 	{
+		// Set sustain gain (takes into account the possible changes to _StereoGain)
+		_StereoChannels[SPARSE_CH].setRelativeGain( _StereoGain );
+
+		// Start next sparse sound
 		TTime now = CTime::getLocalTime();
 		if ( now > _NextSparseSoundTime )
 		{
@@ -288,7 +317,7 @@ void CAmbiantSource::update()
 				nldebug( "AM: Ensound: Switch on sparse channel" );
 				nlassert( _StereoChannels[SPARSE_CH].getSound() != NULL );
 			}
-			// Does not leave the track at present time
+			// Does not leave the track
 			calcRandomSparseSoundTime( nextsound );
 		}
 	}

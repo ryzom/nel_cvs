@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.4 2001/07/17 14:21:54 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.5 2001/07/18 17:14:35 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,7 +59,8 @@ UAudioMixer	*UAudioMixer::createAudioMixer()
 /*
  * Constructor
  */
-CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL), _NbTracks(0), _CurEnvEffect(NULL), _BalancePeriod(0), _ListenPosition(CVector::Null)
+CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL), _NbTracks(0), _CurEnvEffect(NULL),
+	_BalancePeriod(0), _ListenPosition(CVector::Null), _Leaving(false)
 {
 	if ( _Instance == NULL )
 	{
@@ -78,6 +79,7 @@ CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL), _NbTracks(0), _CurEnvEf
 CAudioMixerUser::~CAudioMixerUser()
 {
 	nldebug( "AM: Releasing..." );
+	_Leaving = true;
 
 	// Stop tracks
 	uint i;
@@ -91,6 +93,7 @@ CAudioMixerUser::~CAudioMixerUser()
 	}
 
 	// Env. sounds tree
+	_EnvSounds->stop();
 	delete _EnvSounds;
 
 	// Remaining sources (should have been removed and deleted by the user !)
@@ -233,7 +236,7 @@ void				CAudioMixerUser::giveTrack( CSourceUser *source )
  */
 void				CAudioMixerUser::releaseTrack( CSourceUser *source )
 {
-	bool recomp = _NbTracks <= _Sources.size();
+	bool recomp = ( _NbTracks <= _Sources.size() );
 
 	/*if ( source->isPlaying() )
 	{
@@ -244,7 +247,7 @@ void				CAudioMixerUser::releaseTrack( CSourceUser *source )
 	source->leaveTrack();
 
 	// Dispatch if needed
-	if ( recomp )
+	if ( recomp && (! _Leaving) )
 	{
 		redispatchSourcesToTrack();
 	}

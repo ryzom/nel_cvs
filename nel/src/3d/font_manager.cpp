@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.38 2003/01/22 18:00:01 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.39 2003/03/20 17:56:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ namespace NL3D {
 
 
 // ***************************************************************************
-inline CMaterial* CFontManager::getFontMaterial()
+CMaterial* CFontManager::getFontMaterial()
 {
 	if (_TexFont == NULL)
 	{

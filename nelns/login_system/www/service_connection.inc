@@ -66,7 +66,7 @@
 	// If true, $res contains the url to connect.
 	// If false, $res contains the reason why it s not okay.
 
-	function connectToLS($programname, $shardid, $uid, &$res)
+	function connectToLS($shardid, $uid, &$res)
 	{
 		$ok = false;
 
@@ -127,7 +127,7 @@
 				$msgin->serialstring($cookie);
 				$msgin->serialstring($addr);
 
-				$res = '<!--nel nel_exe='.$programname.' nel_args='.$cookie.' '.$addr.'-->';
+				$res = '<!--nel="launch" nelArgs="'.$cookie.' '.$addr.'"-->';
 				$ok = true;
 			}
 			else

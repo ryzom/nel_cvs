@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.12 2002/09/18 12:46:55 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.13 2002/09/30 14:37:20 lecroart Exp $
  *
  */
 
@@ -288,6 +288,10 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 			CNetManager::getNetBase("WSLS")->disconnect(from);
 			return;
 		}
+
+// BUG
+bug ici, faut ajouter a la liste Shards si ca a ete ajouter!
+
 	}
 	else if (nbrow == 1)
 	{

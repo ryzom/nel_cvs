@@ -20,10 +20,11 @@ class CNel_launcherDlg : public CDialog
 public:
 	CNel_launcherDlg(CWnd* pParent = NULL);	// standard constructor
 
+	CWebBrowser2	m_explore;
+
 // Dialog Data
 	//{{AFX_DATA(CNel_launcherDlg)
 	enum { IDD = IDD_NEL_LAUNCHER_DIALOG };
-	CWebBrowser2	m_explore;
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
@@ -31,6 +32,10 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
+
+	void login (const std::string &str);
+	void patch (const std::string &str);
+	void openUrl (const std::string &url);
 
 // Implementation
 protected:
@@ -43,6 +48,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnBeforeNavigate2Explorer1(LPDISPATCH pDisp, VARIANT FAR* URL, VARIANT FAR* Flags, VARIANT FAR* TargetFrameName, VARIANT FAR* PostData, VARIANT FAR* Headers, BOOL FAR* Cancel);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnDocumentCompleteExplorer1(LPDISPATCH pDisp, VARIANT FAR* URL);
 	DECLARE_EVENTSINK_MAP()
 	//}}AFX_MSG

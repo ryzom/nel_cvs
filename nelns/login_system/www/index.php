@@ -67,20 +67,23 @@
 		return $res;
 	}
 
-	function logged($login, $password, &$id)
+	function logged($login, $password, &$id, $add)
 	{
 		if (isset($login) && isset($password))
 		{
 			// mean that the user just enterer the login and password
 			if (checkLoginPassword($login, $password, $id, $reason))
 			{
-				// ok, valid login/pass, set the cookie
-				setcookie ("login", $login, time()+3600*24*15);
-				setcookie ("password", $password, time()+3600*24*15);
-
-				if(strlen($reason) != 0)
+				if ($add)
 				{
-					echo $reason."<br>";
+					// ok, valid login/pass, set the cookie
+					setcookie ("login", $login, time()+3600*24*15);
+					setcookie ("password", $password, time()+3600*24*15);
+	echo "set cookie";
+					if(strlen($reason) != 0)
+					{
+						echo $reason."<br>";
+					}
 				}
 				return 1;
 			}
@@ -91,13 +94,38 @@
 		}
 		else
 		{
+			echo "Authentification failed: login r$login and pass not set r$password<br>";
 			return 0;
 		}
 	}
 
-	function loginForm()
+	function patchForm($shardid, $clientApplication, $clientVersion, $serverVersion)
+	{
+		global $PHP_SELF;
+		echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">';
+		echo "<html><head><title>patch form</title></head><body>";
+		echo "<h1>Please wait while patching $clientApplication version $clientVersion to version $serverVersion </h1>";
+		echo '<!--nel="patch" serverVersion="'.$serverVersion.'" nelUrl="'.$PHP_SELF.'?cmd=login&shardid='.$shardid.'" nelServerPath="http://localhost/patch" nelUrlFailed="'.$PHP_SELF.'?cmd=patchFailed"';
+		echo "<h1>Current state</h1>";
+		echo "<!--nel_start_state--><!--nel_end_state--><br>";
+		echo "<h1>Log</h1>";
+		echo "<!--nel_start_log--><!--nel_end_log-->";
+		echo "</body></html>";
+	}
+
+	function patchFailed($reason)
 	{
 		global $PHP_SELF; 
+		echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">';
+		echo "<html><head><title>patch failed</title></head><body>";
+		echo "<h1>Patching failed</h1>";
+		echo "reason is: $reason";
+		echo "</body></html>";
+	}
+
+	function loginForm()
+	{
+		global $PHP_SELF;
 		?> 
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 		<html>
@@ -105,18 +133,17 @@
 				<title>login form</title>
 			</head>
 			<body>
-basename:"<?php echo basename($PHP_SELF); ?>" 	
 			<h1>Welcome to the NeL login system</h1>
 			<p>Please enter your login and your password. If the login is not already existing, it'll be automatically added to the database.</p>
 			<p>You have to enable cookies in your browser to use this application.</p>
-			<form method="post" action="<?php echo basename($PHP_SELF); ?>" name=loginform> 
+			<form method="get" action="<?php echo basename($PHP_SELF); ?>" name=loginform> 
 				<table frame=void rules=none WIDTH="300"> 
 					<tr>
 						<td align="left"> login: </td>
-						<td align="left"> <input type="text" name="login" maxlength=50 size=15> </td>
+						<td align="left"> <input type="text" name="newlogin" maxlength=50 size=15> </td>
 					<tr> 
 						<td align="left"> password: </td>
-						<td align="left"> <input type="password" name="password" maxlength=50 size=15> </td>
+						<td align="left"> <input type="password" name="newpassword" maxlength=50 size=15> </td>
 					<tr>
 						<td align="left">&nbsp; </td>
 						<td align="left">&nbsp; </td>
@@ -129,7 +156,7 @@ basename:"<?php echo basename($PHP_SELF); ?>"
 				<script type="text/javascript"> 
 				<!-- 
 					if (document.loginform) { 
-					document.loginform.login.focus(); 
+					document.loginform.newlogin.focus(); 
 				} 
 				// --> 
 				</script> 
@@ -138,11 +165,12 @@ basename:"<?php echo basename($PHP_SELF); ?>"
 		<?php 
 	}
 
-	function displayAvailableShards()
+	function displayAvailableShards($clientApplication, $clientVersion)
 	{
+		global $PHP_SELF; 
 		$link = mysql_connect() or die ("Can't connect to database");
 		mysql_select_db ("nel") or die ("Can't access to the table");
-		$query = "SELECT * FROM shard";
+		$query = "SELECT * FROM shard WHERE ClientApplication='".$clientApplication."'";
 		$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 		
 		if (mysql_num_rows ($result) == 0)
@@ -154,16 +182,34 @@ basename:"<?php echo basename($PHP_SELF); ?>"
 			echo '<h1>Please, select a shard:</h1>';
 			while($row = mysql_fetch_array($result))
 			{
-				echo "<li>";
-				if ($row["Online"])
+				if ($row["ProgramName"] == $programName)
 				{
-					echo '<a href="'.basename($PHP_SELF).'?cmd=login&shardid='.$row["ShardId"].'&programname='.$row["ProgramName"].'"> '.$row["Name"].' ('.$row["NbPlayers"].' players)</a>';
+					$versionok = true;
+					
+					if ($row["Version"] == "")
+						$ver = "no version";
+					else if ($row["Version"] != $clientVersion)
+					{
+						$ver = "version ".$row["Version"]." <font style=\"color:red\">You'll need to patch the client to access to this shard</font>";
+						$versionok = false;
+					}
+					else
+						$ver = "version ".$row["Version"];
+
+					echo "<li>";
+					if ($row["Online"])
+					{
+						if ($versionok)
+							echo '<a href="'.basename($PHP_SELF).'?cmd=login&shardid='.$row["ShardId"].'"> '.$row["Name"].'</a> '.$ver.' ('.$row["NbPlayers"].' players), wsip:'.$row["WsAddr"];
+						else
+							echo '<a href="'.basename($PHP_SELF).'?cmd=patch&serverVersion='.$row["Version"].'&shardid='.$row["ShardId"].'"> '.$row["Name"].'</a> '.$ver.' ('.$row["NbPlayers"].' players), wsip:'.$row["WsAddr"];
+					}
+					else
+					{
+						echo $row["Name"].' '.$ver.' (offline), wsip:'.$row["WsAddr"];
+					}
+					echo "</li>";
 				}
-				else
-				{
-					echo $row["Name"].' (offline)';
-				}
-				echo "</li>";
 			}
 
 			echo '</ul>';
@@ -177,7 +223,31 @@ basename:"<?php echo basename($PHP_SELF); ?>"
 // main 
 // --------------------------------------------------------------------------------------
 
-	if(!logged($login, $password, $id))
+	if ($HTTP_USER_AGENT != "nel_launcher")
+	{
+		die ("You must use the Nel Launcher to connect to a shard");
+	}
+
+	if (isset ($newClientVersion))
+	{
+		$clientVersion = $newClientVersion;
+		setcookie ("clientVersion", $clientVersion, time()+3600*24*15);
+	}
+
+	if (isset ($newClientApplication))
+	{
+		$clientApplication = $newClientApplication;
+		setcookie ("clientApplication", $clientApplication, time()+3600*24*15);
+	}
+
+	if (isset ($newlogin) && isset($newpassword))
+	{
+		$login = $newlogin;
+		$password = $newpassword;
+		$add = true;
+	}
+
+	if(!logged($login, $password, $id, $add))
 	{
 		loginForm();
 	}
@@ -198,7 +268,7 @@ basename:"<?php echo basename($PHP_SELF); ?>"
 		{
 			// user selected a shard, try to add the user to the shard
 
-			if (connectToLS($programname, $shardid, $id, $res))
+			if (connectToLS($shardid, $id, $res))
 			{
 				echo '<h1>Access validated</h1>Please wait while launching the application...<br>';
 				echo $res;
@@ -210,17 +280,28 @@ basename:"<?php echo basename($PHP_SELF); ?>"
 				echo '<p><a href="'.basename($PHP_SELF).'">Back to the shards page</a></p>';
 			}
 		}
+		else if ($cmd == "patch")
+		{
+			// user selected a shard that must be patched first, display the patch page
+			patchForm ($shardid, $clientApplication, $clientVersion, $serverVersion);
+		}
+		else if ($cmd == "patchFailed")
+		{
+			// patching failed! display the reason
+			patchFailed ($reason);
+		}
 		else
 		{
 			// user logged, display the available shard
 
-			// echo "id: '$id' login: '$login' password: '$password'<br>";
-			echo "basename: ".basename($PHP_SELF).". hello $login, nice to meet you.";
+echo "DEBUG: id: '$id' login: '$login' password: '$password' prog: '$clientApplication' version: '$clientVersion' ";
+echo "basename: '".basename($PHP_SELF)."'<br><br>";
 
-			displayAvailableShards ();
+			echo "Hello $login, nice to meet you.";
+
+			displayAvailableShards ($clientApplication, $clientVersion);
 
 			echo '<a href="'.basename($PHP_SELF).'?cmd=logout">logout</a><br>';
 		}
 	}
 ?>
-

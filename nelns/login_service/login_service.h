@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.11 2002/09/16 17:38:03 lecroart Exp $
+ * $Id: login_service.h,v 1.12 2002/09/30 14:37:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,11 +43,6 @@ using namespace NLMISC;
 using namespace NLNET;
 
 // Constantes
-
-
-/// Set the version of the server. you have to increase it each time the client-server protocol changes.
-/// You have to increment the client too (the server and client version must be the same)
-extern uint32 ServerVersion;
 
 
 

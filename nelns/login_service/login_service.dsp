@@ -174,9 +174,5 @@ SOURCE=.\login_service.cpp
 
 SOURCE=.\login_service.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\login_service.udb
-# End Source File
 # End Target
 # End Project

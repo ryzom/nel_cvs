@@ -40,6 +40,7 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
 # ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdafx.h" /FD /c
@@ -52,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 /nologo /subsystem:windows /machine:I386
+# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /machine:I386
 
 !ELSEIF  "$(CFG)" == "nel_launcher - Win32 Debug"
 
@@ -65,6 +66,7 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /c
@@ -77,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
 !ENDIF 
 
@@ -102,6 +104,10 @@ SOURCE=.\nel_launcherDlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\patch.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\StdAfx.cpp
 # ADD CPP /Yc"stdafx.h"
 # End Source File
@@ -120,6 +126,10 @@ SOURCE=.\nel_launcher.h
 # Begin Source File
 
 SOURCE=.\nel_launcherDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\patch.h
 # End Source File
 # Begin Source File
 
@@ -152,12 +162,12 @@ SOURCE=.\nel_launcher.cfg
 # End Source File
 # End Target
 # End Project
+# Section nel_launcher : {8856F961-340A-11D0-A96B-00C04FD705A2}
+# 	2:21:DefaultSinkHeaderFile:webbrowser2.h
+# 	2:16:DefaultSinkClass:CWebBrowser2
+# End Section
 # Section nel_launcher : {D30C1661-CDAF-11D0-8A3E-00C04FC9E26E}
 # 	2:5:Class:CWebBrowser2
 # 	2:10:HeaderFile:webbrowser2.h
 # 	2:8:ImplFile:webbrowser2.cpp
-# End Section
-# Section nel_launcher : {8856F961-340A-11D0-A96B-00C04FD705A2}
-# 	2:21:DefaultSinkHeaderFile:webbrowser2.h
-# 	2:16:DefaultSinkClass:CWebBrowser2
 # End Section

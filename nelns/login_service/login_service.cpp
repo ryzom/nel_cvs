@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.23 2002/09/16 17:38:03 lecroart Exp $
+ * $Id: login_service.cpp,v 1.24 2002/09/30 14:37:20 lecroart Exp $
  *
  * \todo check must say who are the master LS to know who set the shard online/offline etc... (USE an int instead of bool for Online)
  *
@@ -79,7 +79,6 @@ using namespace NLNET;
 // Variables
 //
 
-uint32 ServerVersion = 1;
 
 // store specific user information
 NLMISC::CFileDisplayer Fd (NELNS_LOGS "login_service.stat");
@@ -281,12 +280,6 @@ void beep (uint freq, uint nb, uint beepDuration, uint pauseDuration)
 #endif // NL_OS_WINDOWS
 }
 
-void cbVar (CConfigFile::CVar &var)
-{
-	if (var.Name == "ServerVersion") ServerVersion = var.asInt();
-	else nlstop;
-}
-
 void cbDatabaseVar (CConfigFile::CVar &var)
 {
 	DatabaseName = IService::getInstance ()->ConfigFile.getVar("DatabaseName").asString ();
@@ -335,11 +328,6 @@ public:
 		// init connection to the web server
 
 		connectionWebInit ();
-
-		// init config var
-
-		ConfigFile.setCallback ("ServerVersion", cbVar);
-		cbVar (ConfigFile.getVar ("ServerVersion"));
 
 		// Initialize the database access
 		

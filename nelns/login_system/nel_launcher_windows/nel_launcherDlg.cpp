@@ -13,6 +13,8 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/path.h"
 
+#include "patch.h"
+
 using namespace std;
 using namespace NLMISC;
 
@@ -27,6 +29,10 @@ static char THIS_FILE[] = __FILE__;
 const char *PleaseWaitFilename = "pleasewait.html";
 string PleaseWaitFullPath;
 
+void CNel_launcherDlg::openUrl (const std::string &url)
+{
+	m_explore.Navigate(url.c_str(), NULL, NULL, NULL, NULL);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CNel_launcherDlg dialog
@@ -54,6 +60,7 @@ BEGIN_MESSAGE_MAP(CNel_launcherDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_SIZE()
+	ON_WM_TIMER()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -71,15 +78,24 @@ BOOL CNel_launcherDlg::OnInitDialog()
 
 	//CWebBrowser2 m_browser - member variable  
 
-	// load the pleasewait html page if available
-	PleaseWaitFullPath = CPath::getFullPath (PleaseWaitFilename, false);
-	if (NLMISC::CFile::isExists (PleaseWaitFullPath))
-		m_explore.Navigate(PleaseWaitFullPath.c_str(), NULL, NULL, NULL, NULL);
+//	downloadFile ();
+//	return TRUE;
 
 	ConfigFile.load ("nel_launcher.cfg");
 
-	m_explore.Navigate(ConfigFile.getVar ("StartupPage").asString().c_str(), NULL, NULL, NULL, NULL);
+	// load the pleasewait html page if available
+	PleaseWaitFullPath = CPath::getFullPath (PleaseWaitFilename, false);
+	if (NLMISC::CFile::isExists (PleaseWaitFullPath))
+		openUrl(PleaseWaitFullPath.c_str());
 
+	string Version = getVersion ();
+
+	string url = "http://"+ConfigFile.getVar ("StartupHost").asString()+ConfigFile.getVar ("StartupPage").asString();
+	url += "?newClientVersion=" + Version;
+	url += "&newClientApplication=" + ConfigFile.getVar ("Application").asString(0);
+
+	openUrl (url);
+	
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -128,10 +144,91 @@ END_EVENTSINK_MAP()
 
 void CNel_launcherDlg::OnBeforeNavigate2Explorer1(LPDISPATCH pDisp, VARIANT FAR* URL, VARIANT FAR* Flags, VARIANT FAR* TargetFrameName, VARIANT FAR* PostData, VARIANT FAR* Headers, BOOL FAR* Cancel) 
 {
+	// set the user agent to nel_launcher changing the header
+    CString strHeader(Headers->bstrVal);
+    if (strHeader == "")
+	{
+		IWebBrowser2 *pBrowser;
+		LPDISPATCH pWebDisp;
+
+		pDisp->QueryInterface(IID_IWebBrowser2, (void**) &pBrowser);
+		pBrowser->get_Container(&pWebDisp);
+
+		BSTR bstr = SysAllocString(L"User-Agent: nel_launcher\r\n");
+		Headers->bstrVal =  bstr;
+
+		pBrowser->Navigate2(URL, Flags, TargetFrameName, PostData, Headers);
+
+		if (!pWebDisp)
+			(*Cancel) = true;
+
+		if (pWebDisp)
+			pWebDisp->Release();
+		if (pBrowser)
+			pBrowser->Release();
+
+		SysFreeString (bstr);
+
+		return;
+    }
+
+
 /*	CString cstr = URL->bstrVal;
 	string str = string((const char*)cstr);
 
-	if (str.find("?nel_quit=1") != string::npos)	
+	if (str.find ("clientVersion=") == string::npos)
+	{
+		string Version;
+
+		FILE *fp = fopen ("VERSION", "rb");
+		if (fp!=NULL)
+		{
+			char ver[1000];
+			if (fgets (ver, 1000, fp) != NULL)
+			{
+				Version = ver;
+			}
+			fclose (fp);
+		}
+
+		string url = str;
+
+		if (url.find ("?") != string::npos)
+		{
+			url += "&";
+		}
+		else
+		{
+			url += "?";
+		}
+//		url += "clientVersion=" + Version;
+//		url += "&clientApplication=" + ConfigFile.getVar ("Application").asString(0);
+		url += "toto=10";
+		*Cancel = TRUE;
+		m_explore.Navigate(url.c_str(), Flags, TargetFrameName, PostData, Headers);
+*/
+/*
+		VARIANT vurl;
+		VariantInit (&vurl);
+		vurl.vt = VT_BSTR;
+		vector<unsigned short> v;
+		for (uint i = 0; i < url.size (); i++)
+			v.push_back ((unsigned short)url[i]);
+		v.push_back (0);
+		BSTR bstr = SysAllocString((const unsigned short *)&(v[0]));
+		vurl.bstrVal = bstr;
+
+		OnBeforeNavigate2Explorer1(pDisp, &vurl, Flags, TargetFrameName, PostData, Headers, Cancel);
+
+		SysFreeString (bstr);
+*/
+/*	}
+	else
+	{
+		nlinfo ("coucou");
+	}
+*/
+/*	if (str.find("?nel_quit=1") != string::npos)	
 	{
 		exit(0);
 	}
@@ -240,6 +337,190 @@ void CNel_launcherDlg::OnSize(UINT nType, int cx, int cy)
 	m_explore.SetWindowPos ((CWnd* )HWND_TOP, rect.left, rect.top, rect.right, rect.bottom, SWP_SHOWWINDOW);
 }
 
+string getValue (const string &str, const string &token)
+{
+	string realtoken = token+"=\"";
+	uint spos = str.find (realtoken);
+	if (spos == string::npos) return "";
+
+	uint spos2 = str.find ("\"", spos+realtoken.size ()+1);
+	if (spos == string::npos) return "";
+
+	return str.substr (spos+realtoken.size (), spos2-spos-realtoken.size ());
+}
+
+
+void CNel_launcherDlg::login (const string &str)
+{
+	string exe = ConfigFile.getVar ("Application").asString(1);
+	string path = ConfigFile.getVar ("Application").asString(2);
+
+	string rawargs = getValue (str, "nelArgs");
+
+	// convert the command line in an array of string for the _execvp() function
+
+	vector<string> vargs;
+	const char *args[50];
+	int argspos = 0;
+
+	uint pos1 = 0, pos2 = 0;
+	while (true)
+	{
+		pos2 = rawargs.find(" ", pos1);
+		if (pos2==string::npos)
+		{
+			if(pos1!=rawargs.size())
+			{
+				string res = rawargs.substr (pos1);
+				vargs.push_back (res);
+			}
+			break;
+		}
+		if(pos1 != pos2)
+		{
+			string res = rawargs.substr (pos1, pos2-pos1);
+			vargs.push_back (res);
+		}
+		pos1 = pos2+1;
+	}
+
+	int i;
+	int size;
+	if(vargs.size()>47) size = 47;
+	else size = vargs.size();
+
+	args[0] = exe.c_str ();
+	for(i = 0; i < size; i++)
+	{
+		args[i+1] = vargs[i].c_str ();
+	}
+	args[i+1] = NULL;
+
+
+	// execute, should better use CreateProcess()
+
+	_chdir (path.c_str());
+	_execvp (exe.c_str(), args);
+	exit(0);
+}
+
+void CNel_launcherDlg::patch (const string &str)
+{
+	string path = ConfigFile.getVar ("Application").asString(2);
+
+	string url = "http://"+ConfigFile.getVar ("StartupHost").asString();
+
+	string serverVersion = getValue (str, "serverVersion");
+
+	string urlok = url;
+	urlok += getValue (str, "nelUrl");
+	urlok += "&newClientVersion=";
+	urlok += serverVersion;
+
+	string urlfailed = url;
+	urlfailed += getValue (str, "nelUrlFailed");
+	urlfailed += "&reason=";
+
+	startPatchThread (getValue (str, "nelServerPath"), serverVersion, urlok, urlfailed, "<br>");
+
+	SetTimer(0,100,NULL);
+	
+/*	try
+	{
+		string serverVersion = getValue (str, "serverVersion");
+		patchVersion (getValue (str, "nelServerPath"), serverVersion);
+
+		// this url is where we have to go after patching success
+		url += getValue (str, "nelUrl");
+		url += "&newClientVersion=";
+		url += serverVersion;
+	}
+	catch (Exception &e)
+	{
+		nlwarning ("Patching failed '%s'", e.what());
+
+		url += getValue (str, "nelUrlFailed");
+		url += "&reason=";
+		url += e.what ();
+	}
+
+	// go to the next url
+	openUrl (url.c_str());*/
+}
+
+void CNel_launcherDlg::OnTimer(UINT nIDEvent) 
+{
+	nlinfo ("check");
+
+	string state, log;
+	if (patchState(state, log))
+	{
+		nlinfo ("%s", state.c_str ());
+
+		LPDISPATCH lpDispatch;
+		lpDispatch = m_explore.GetDocument();
+		if (lpDispatch == NULL) return;
+
+		IHTMLDocument2* pHTMLDocument2;
+		HRESULT hr;
+		hr = lpDispatch->QueryInterface(IID_IHTMLDocument2, (LPVOID*) &pHTMLDocument2);
+		lpDispatch->Release();
+		if (FAILED(hr)) return;
+		if (pHTMLDocument2 == NULL) return;
+
+		IHTMLElement* pBody;
+		hr = pHTMLDocument2->get_body(&pBody);
+		if (FAILED(hr)) return;
+		if (pBody == NULL) return;
+
+		BSTR bstr;
+		pBody->get_innerHTML(&bstr);
+		CString csourceCode( bstr );
+		string htmlCode( (LPCSTR)csourceCode );
+		SysFreeString(bstr);
+
+		string tokenStart = "<!--nel_start_state-->";
+		string tokenEnd = "<!--nel_end_state-->";
+
+		int pos = csourceCode.Find (tokenStart.c_str());
+		if (pos == -1) return;
+		int pos2 = csourceCode.Find (tokenEnd.c_str());
+		if (pos2 == -1) return;
+
+		CString oldstate = csourceCode.Mid (pos, pos2-pos);
+
+		if (csourceCode.Replace (oldstate, string(tokenStart+state).c_str ()) == 0)
+			return;
+
+		string tokenStartLog = "<!--nel_start_log-->";
+		string tokenEndLog = "<!--nel_end_log-->";
+
+		int pos3 = csourceCode.Find (tokenStartLog.c_str());
+		if (pos3 == -1) return;
+
+		int pos4 = csourceCode.Find (tokenEndLog.c_str());
+		if (pos4 == -1) return;
+
+		CString oldlog = csourceCode.Mid (pos3, pos4-pos3);
+
+		if (csourceCode.Replace (oldlog, string(tokenStartLog+log).c_str ()) == 0)
+			return;
+
+	    pBody->put_innerHTML(csourceCode.AllocSysString ());	//insert the html
+
+		pBody->Release();
+	}
+
+	string url;
+	if (patchEnded(url))
+	{
+		nlinfo ("finnish");
+		KillTimer (0);
+		openUrl (url.c_str());
+	}
+}
+
+
 void CNel_launcherDlg::OnDocumentCompleteExplorer1(LPDISPATCH pDisp, VARIANT FAR* URL) 
 {
 	IHTMLDocument2* pHTMLDocument2;
@@ -267,7 +548,7 @@ void CNel_launcherDlg::OnDocumentCompleteExplorer1(LPDISPATCH pDisp, VARIANT FAR
 		if (pBody == NULL)
 			return;
 
-		BSTR bstr;                
+		BSTR bstr;
 		pBody->get_innerHTML(&bstr);
 		CString csourceCode( bstr );
 		string str( (LPCSTR)csourceCode );
@@ -279,85 +560,20 @@ void CNel_launcherDlg::OnDocumentCompleteExplorer1(LPDISPATCH pDisp, VARIANT FAR
 		// now I have the web page, look if there's something interesting in it.
 
 		// if something start with <!--nel it s cool
-		if (str.find ("<!--nel") == string::npos) return;
+		string action = getValue (str, "<!--nel");
 
-		string token ("nel_exe=");
-		int spos = str.find (token);
-		if (spos == string::npos) return;
+		if (action.empty ())
+			return;
 
-		int spos2 = str.find (" ", spos+token.size ());
-		if (spos == string::npos) return;
+		string token = "<!--nel";
+		uint spos = str.find (token);
+		uint spos2 = str.find ("-->", spos+token.size ()+1);
+		string comment = str.substr (spos+token.size (), spos2-spos-token.size ());
 
-		string path;
-		string exe = str.substr (spos+token.size (), spos2-spos-token.size ());
-
-		CConfigFile::CVar *var = ConfigFile.getVarPtr (exe);
-		if (var == NULL)
-		{
-			char str[1024];
-			smprintf (str, 1024, "Don't know the executable filename for the application '%s'", exe.c_str ());
-			MessageBox (str, "nel_launcher error");
-			exit(0);
-		}
-		else
-		{
-			exe = var->asString (0);
-			path = var->asString (1);
-		}
-
-		token = "nel_args=";
-		spos = str.find (token);
-		if (spos == string::npos) return;
-
-		spos2 = str.find ("-->", spos+token.size ()+1);
-		if (spos == string::npos) return;
-
-		string rawargs = str.substr (spos+token.size (), spos2-spos-token.size ());
-
-		// convert the command line in an array of string for the _execvp() function
-
-		vector<string> vargs;
-		const char *args[50];
-		int argspos = 0;
-
-		uint pos1 = 0, pos2 = 0;
-		while (true)
-		{
-			pos2 = rawargs.find(" ", pos1);
-			if (pos2==string::npos)
-			{
-				if(pos1!=rawargs.size())
-				{
-					string res = rawargs.substr (pos1);
-					vargs.push_back (res);
-				}
-				break;
-			}
-			if(pos1 != pos2)
-			{
-				string res = rawargs.substr (pos1, pos2-pos1);
-				vargs.push_back (res);
-			}
-			pos1 = pos2+1;
-		}
-
-		int i;
-		int size;
-		if(vargs.size()>47) size = 47;
-		else size = vargs.size();
-
-		args[0] = exe.c_str ();
-		for(i = 0; i < size; i++)
-		{
-			args[i+1] = vargs[i].c_str ();
-		}
-		args[i+1] = NULL;
-
-
-		// execute, should better use CreateProcess()
-
-		_chdir (path.c_str());
-		_execvp (exe.c_str(), args);
-		exit(0);
+		if (action=="login")
+			login (comment);
+		else if (action=="patch")
+			patch (comment);
+		return;
 	}
 }

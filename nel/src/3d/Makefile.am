@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.41 2001/07/27 17:25:40 valignat Exp $
+# $Id: Makefile.am,v 1.42 2001/08/02 09:13:59 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -45,6 +45,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        channel_mixer.h                     \
                        clip_trav.cpp                       \
                        clip_trav.h                         \
+                       cluster.cpp                         \
+                       cluster.h                           \
                        coarse_mesh_build.cpp               \
                        coarse_mesh_build.h                 \
                        coarse_mesh_manager.cpp             \
@@ -163,6 +165,8 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        play_list_manager_user.h            \
                        play_list_user.cpp                  \
                        play_list_user.h                    \
+                       portal.cpp                          \
+                       portal.h                            \
                        primitive_block.cpp                 \
                        primitive_block.h                   \
                        primitive_profile.cpp               \

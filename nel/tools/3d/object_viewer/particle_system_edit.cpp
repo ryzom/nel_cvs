@@ -1,7 +1,7 @@
  /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.20 2003/08/22 09:05:52 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.21 2004/03/11 17:26:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -596,7 +596,8 @@ void CParticleSystemEdit::OnGlobalColor()
 	/// if the system hasn't a global color scheme, add one.
 	if (_PS->getColorAttenuationScheme() == NULL)
 	{
-		_PS->setColorAttenuationScheme(new NL3D::CPSColorGradient);
+		static const NLMISC::CRGBA grad[] = { NLMISC::CRGBA::White, NLMISC::CRGBA::Black };
+		_PS->setColorAttenuationScheme(new NL3D::CPSColorGradient(grad, 2, 64, 1.f));
 		GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(TRUE);
 	}
 	else

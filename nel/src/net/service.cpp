@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.222 2005/02/02 11:24:05 corvazier Exp $
+ * $Id: service.cpp,v 1.223 2005/02/07 10:29:19 corvazier Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -389,12 +389,12 @@ void IService::setArgs (const char *args)
 					pos2 = sargs.find_first_of (" ", pos2+1);
 				}
 			}
-
-			// Compute the size of the string to extract
-			if (pos2 != string::npos)
-				pos2 = pos2-pos1;
 		}
-		string tmp = sargs.substr (pos1, pos2);
+
+		// Compute the size of the string to extract
+		int length = (pos2 != string::npos) ? pos2-pos1 : string::npos;
+
+		string tmp = sargs.substr (pos1, length);
 		_Args.push_back (tmp);
 	}
 	while (pos2 != string::npos);

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.35 2005/02/14 17:23:49 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.36 2005/03/23 17:00:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,6 +106,13 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 	uint yPos = 60;
 	const uint xPos = 5;
 	RECT rect;
+
+
+	// control at the top of the sheet are not available for meshs & constraint meshes, so use that extra space
+	if (dynamic_cast<NL3D::CPSMesh *>(_Bindable) || dynamic_cast<NL3D::CPSConstraintMesh *>(_Bindable))
+	{
+		yPos = 0;
+	}
 
 	// has the particle a material ?
 	if (dynamic_cast<NL3D::CPSMaterial *>(_Bindable))

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.37 2002/03/28 17:44:38 lecroart Exp $
+ * $Id: log.cpp,v 1.38 2002/05/22 16:05:38 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -429,15 +429,15 @@ void CLog::removeFilter( const char *filterstr )
 {
 	if (filterstr == NULL)
 	{
-		displayNL ("CLog::removeFilter(NULL)");
 		_PositiveFilter.clear();
 		_NegativeFilter.clear();
+		displayNL ("CLog::addNegativeFilter('%s')", filterstr);
 	}
 	else
 	{
-		displayNL ("CLog::removeFilter('%s')", filterstr);
 		_PositiveFilter.remove( filterstr );
 		_NegativeFilter.remove( filterstr );
+		displayNL ("CLog::removeFilter('%s')", filterstr);
 	}
 }
 
@@ -458,14 +458,14 @@ void CLog::displayFilter( CLog &log )
 
 void CLog::addPositiveFilter( const char *filterstr )
 {
-	_PositiveFilter.push_back( filterstr );
 	displayNL ("CLog::addPositiveFilter('%s')", filterstr);
+	_PositiveFilter.push_back( filterstr );
 }
 
 void CLog::addNegativeFilter( const char *filterstr )
 {
-	_NegativeFilter.push_back( filterstr );
 	displayNL ("CLog::addNegativeFilter('%s')", filterstr);
+	_NegativeFilter.push_back( filterstr );
 }
 
 void CLog::resetFilters()

@@ -1,7 +1,7 @@
 /** \file event_emitter_multi.cpp
  * <File description>
  *
- * $Id: event_emitter_multi.cpp,v 1.1 2002/03/28 10:34:08 vizerie Exp $
+ * $Id: event_emitter_multi.cpp,v 1.2 2003/04/28 12:34:32 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -95,6 +95,12 @@ IEventEmitter *CEventEmitterMulti::getEmitter(uint index)
 	return _Emitters[index].first;
 }
 
+///============================================================
+const IEventEmitter *CEventEmitterMulti::getEmitter(uint index) const 
+{
+	nlassert(index < _Emitters.size());
+	return _Emitters[index].first;
+}
 
 	
 

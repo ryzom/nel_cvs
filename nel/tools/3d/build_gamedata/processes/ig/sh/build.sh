@@ -29,10 +29,6 @@ echo "EXP_CellSize = 160.0;" >> prim_export.cfg
 continentdir=`cat ../../cfg/config.cfg | grep "leveldesign_igexport_continent_dir" | sed -e 's/leveldesign_igexport_continent_dir//' | sed -e 's/ //g' | sed -e 's/=//g'`
 echo "EXP_PrimFloraDir = $continentdir" >> prim_export.cfg
 
-# the following fields are not set because they are in the continent.cfg
-echo "EXP_Land = \"\";" >> prim_export.cfg
-echo "EXP_DfnDir = \"\";" >> prim_export.cfg
-echo "EXP_GameElemDir = \"\";" >> prim_export.cfg
 
 # *******************
 # Launch the exporter

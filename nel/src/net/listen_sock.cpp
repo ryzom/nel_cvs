@@ -1,7 +1,7 @@
 /** \file listen_sock.cpp
  * Network engine, layer 0, listening tcp socket
  *
- * $Id: listen_sock.cpp,v 1.6 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: listen_sock.cpp,v 1.7 2003/03/06 18:32:50 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@ typedef sint socklen_t;
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -104,6 +105,8 @@ void CListenSock::init( const CInetAddress& addr )
 		throw ESocket( "ReuseAddr failed" );
 	}
 #endif
+
+	ioctl(_Sock, FIOCLEX, NULL);
 
 	// Bind socket to port	
 	if ( ::bind( _Sock, (const sockaddr *)addr.sockAddr(), sizeof(sockaddr_in) ) != 0 )

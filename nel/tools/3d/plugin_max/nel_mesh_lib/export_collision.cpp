@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.5 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: export_collision.cpp,v 1.6 2002/06/06 14:44:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -583,7 +583,7 @@ bool	CExportNel::buildPrimitiveBlock (TimeValue time, std::vector<INode*> object
 					desc.Attenuation = absorbtion;
 					desc.Type = ( (clid.PartA() == NEL_PACS_BOX_CLASS_ID_A) && (clid.PartB() == NEL_PACS_BOX_CLASS_ID_B) ) ? 
 						UMovePrimitive::_2DOrientedBox : UMovePrimitive::_2DOrientedCylinder;
-					desc.Reaction = (UMovePrimitive::TReaction)(reaction-1);
+					desc.Reaction = (UMovePrimitive::TReaction)((reaction-1) << 4);
 					desc.Trigger = (UMovePrimitive::TTrigger)
 						(((enterTrigger!=0)?UMovePrimitive::EnterTrigger:0) |
 						((exitTrigger!=0)?UMovePrimitive::ExitTrigger:0) |

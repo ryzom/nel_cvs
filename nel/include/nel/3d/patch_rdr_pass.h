@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.h
  * <File description>
  *
- * $Id: patch_rdr_pass.h,v 1.4 2001/01/10 09:25:55 berenguier Exp $
+ * $Id: patch_rdr_pass.h,v 1.5 2001/01/30 13:44:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,18 +50,13 @@ namespace NL3D
 class	CPatchRdrPass : public CRefCount
 {
 public:
-	enum	TBlendType {Alpha=0, NegativeAlpha, Additive};
 
 	/// \name The Tiny material for this pass.
 	// @{
 	// The diffuse texture (for Far and tiles).
 	NLMISC::CSmartPtr<ITexture>		TextureDiffuse;
-	// The bump texture (for tiles only).
-	NLMISC::CSmartPtr<ITexture>		TextureBump;
-	// The Near Lightmap (for tiles only).
-	NLMISC::CSmartPtr<ITexture>		LightMap;
-	// Type of blending (for tile only).
-	TBlendType						BlendType;
+	// The Alpha texture (for tiles only).
+	NLMISC::CSmartPtr<ITexture>		TextureAlpha;
 	// @}
 
 
@@ -93,20 +88,11 @@ public:
 	// The operator which compare the material.
 	bool			operator<(const CPatchRdrPass &o) const
 	{
-		// Compare first the BlendType, so minmum changes are made during render...
-		if(BlendType!=o.BlendType)
-		{
-			return BlendType<o.BlendType;
-		}
+		// Compare first the Alphatext, so minmum changes are made during render...
+		if(TextureAlpha!=o.TextureAlpha)
+			return (void*)TextureAlpha<(void*)o.TextureAlpha;
 		else
-		{
-			if(LightMap!=o.LightMap)
-				return (void*)LightMap<(void*)o.LightMap;
-			else if(TextureBump!=o.TextureBump)
-				return (void*)TextureBump<(void*)o.TextureBump;
-			else
-				return (void*)TextureDiffuse<(void*)o.TextureDiffuse;
-		}
+			return (void*)TextureDiffuse<(void*)o.TextureDiffuse;
 	}
 
 public:

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.40 2001/01/25 10:14:06 berenguier Exp $
+ * $Id: landscape.cpp,v 1.41 2001/01/30 13:44:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,19 +116,15 @@ CLandscape::~CLandscape()
 
 
 // ***************************************************************************
-void			CLandscape::init(bool bumpTiles)
+void			CLandscape::init()
 {
 	// v3f/t2f/c4ub
 	FarVB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_COLOR );
 	FarVB.reserve(1024);
 
-	// v3f/t2f0/t2f1/c4ub
-	TileVB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_UV[1] | IDRV_VF_COLOR );
+	// v3f/t2f0/t2f1
+	TileVB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_UV[1]);
 	TileVB.reserve(1024);
-
-	// TODO_BUMP: Need t3f in IDriver.
-	// v3f/t2f0/t2f1/t2f2/t2f3/c4ub
-
 
 	// Fill Far mat.
 	// Must init his BlendFunction here!!! becaus it switch between blend on/off during rendering.
@@ -297,7 +293,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 	for(i=0; i<NL3D_MAX_TILE_PASS; i++)
 	{
 		// Do add pass???
-		if((i&1) && !doTileAddPass)
+		if((i==NL3D_TILE_PASS_ADD) && !doTileAddPass)
 			continue;
 
 		// Reset VB inbfos.
@@ -321,59 +317,115 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 
 		// Setup common material for this pass.
 		//=============================
-		if(i==0)
+		// Default: Modulate envmode.
+		TileMaterial.texEnvOpRGB(0, CMaterial::Modulate);
+		TileMaterial.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcColor);
+		TileMaterial.texEnvArg1RGB(0, CMaterial::Previous, CMaterial::SrcColor);
+		TileMaterial.texEnvOpAlpha(0, CMaterial::Modulate);
+		TileMaterial.texEnvArg0Alpha(0, CMaterial::Texture, CMaterial::SrcAlpha);
+		TileMaterial.texEnvArg1Alpha(0, CMaterial::Previous, CMaterial::SrcAlpha);
+
+		// Copy from stage 0 to stage 1.
+		TileMaterial.setTexEnvMode(1, TileMaterial.getTexEnvMode(0));
+
+		// setup multitex / blending.
+		if(i==NL3D_TILE_PASS_RGB0)
 		{
+			// first pass, no blend.
 			TileMaterial.setBlend(false);
 		}
 		else
 		{
 			TileMaterial.setBlend(true);
-			// Use srcalpha for src, since additive are blended with alpha gouraud (for smooth night transition).
-			if(i&1)
-				TileMaterial.setBlendFunc(CMaterial::srcalpha, CMaterial::one);
-			// Else Blendfunc will change during render (negative or not material...)
+			switch(i)
+			{
+				case NL3D_TILE_PASS_RGB1: 
+				case NL3D_TILE_PASS_RGB2: 
+					// alpha blending.
+					TileMaterial.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha);
+
+					// Must use a special envmode for stage1: "separateAlpha"!!.
+					// keep the color from previous stage.
+					TileMaterial.texEnvOpRGB(1, CMaterial::Replace);
+					TileMaterial.texEnvArg0RGB(1, CMaterial::Previous, CMaterial::SrcColor);
+					// take the alpha from current stage.
+					TileMaterial.texEnvOpAlpha(1, CMaterial::Replace);
+					TileMaterial.texEnvArg1Alpha(1, CMaterial::Texture, CMaterial::SrcAlpha);
+					break;
+				case NL3D_TILE_PASS_LIGHTMAP: 
+					// modulate.
+					TileMaterial.setBlendFunc(CMaterial::zero, CMaterial::srccolor);
+					break;
+				case NL3D_TILE_PASS_ADD: 
+					// Use srcalpha for src (and not ONE), since additive are blended with alpha gouraud 
+					// (for smooth night transition).
+					TileMaterial.setBlendFunc(CMaterial::srcalpha, CMaterial::one);
+					break;
+				default: 
+					nlstop;
+			};
 		}
-		// Reset the lightmap (so there is none in Addtive pass).
+		// Reset the textures (so there is none in Addtive pass or in Lightmap).
+		TileMaterial.setTexture(0, NULL);
 		TileMaterial.setTexture(1, NULL);
 
 
 		// Render All material RdrPass.
 		//=============================
-		ItTileRdrPassSet	itTile;
-		for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
+		if(i!=NL3D_TILE_PASS_LIGHTMAP)
 		{
-			// Get a ref on the render pass. Const cast work because we only modify attribut from CPatchRdrPass 
-			// that don't affect the operator< of this class
-			CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
-			if(pass.NTris==0)
-				continue;
+			// Render Base, Transitions or Additives.
+			bool	alphaStage= (i==NL3D_TILE_PASS_RGB1) || (i==NL3D_TILE_PASS_RGB2);
 
-			// Build the PBlock.
-			pass.buildPBlock(PBlock);
-			// must resetTriList at each end of each material process.
-			pass.resetTriList();
-
-			// Setup material.
-			// If diffuse part and not pass 0...
-			if((i&1)==0 && i>0)
+			ItTileRdrPassSet	itTile;
+			for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
 			{
-				// Choose beetween negative alpha or not.
-				if(pass.BlendType==CPatchRdrPass::Alpha)
-					TileMaterial.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha);
-				else
-					TileMaterial.setBlendFunc(CMaterial::invsrcalpha, CMaterial::srcalpha);
+				// Get a ref on the render pass. Const cast work because we only modify attribut from CPatchRdrPass 
+				// that don't affect the operator< of this class
+				CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
+				if(pass.NTris==0)
+					continue;
+
+				// Build the PBlock.
+				pass.buildPBlock(PBlock);
+				// must resetTriList at each end of each material process.
+				pass.resetTriList();
+
+				// Setup material.
+				// Setup Diffuse texture of the tile.
+				TileMaterial.setTexture(0, pass.TextureDiffuse);
+				// If transition tile, must enable the alpha for this pass.
+				if(alphaStage)
+					TileMaterial.setTexture(1, pass.TextureAlpha);
+
+
+				// Render!
+				driver->render(PBlock, TileMaterial);
 			}
-			// Setup Diffuse texture of the tile.
-			TileMaterial.setTexture(0, pass.TextureDiffuse);
-			// If diffuse part, must enable the lightmap for this pass.
-			if((i&1)==0)
+		}
+		else
+		{
+			// TODO_CLOUD: setup stage0, and setup texcoord generation.
+
+			// Render the lightmap.
+			for(sint lightRdrPass=0; lightRdrPass<(sint)_TextureNears.size(); lightRdrPass++)
 			{
-				TileMaterial.setTexture(1, pass.LightMap);
+				CPatchRdrPass	&pass= *_TextureNears[lightRdrPass];
+				if(pass.NTris==0)
+					continue;
+
+				// Build the PBlock.
+				pass.buildPBlock(PBlock);
+				// must resetTriList at each end of each material process.
+				pass.resetTriList();
+
+				// Setup Lightmap into stage1. Because we share UV with RGB0. So we use UV1.
+				// Cloud will be placed into stage0, and texture coordinate will be generated by T&L.
+				TileMaterial.setTexture(1, pass.TextureDiffuse);
+
+				// Render!
+				driver->render(PBlock, TileMaterial);
 			}
-
-
-			// Render!
-			driver->render(PBlock, TileMaterial);
 		}
 	}
 
@@ -540,9 +592,8 @@ void			CLandscape::loadTile(uint16 tileId)
 	{
 		// Fill rdrpass.
 		CPatchRdrPass	pass;
-		pass.BlendType= CPatchRdrPass::Additive;
 		pass.TextureDiffuse= findTileTexture(textName);
-		// no bump for additive, nor LightMap.
+		// No alpha part for additive.
 
 		// Fill tileInfo.
 		tileInfo->AdditiveRdrPass= findTileRdrPass(pass);
@@ -554,15 +605,10 @@ void			CLandscape::loadTile(uint16 tileId)
 	}
 
 
-	// Fill diffuse/bump part.
+	// Fill diffuse part.
 	// =======================
 	// Fill rdrpass.
 	CPatchRdrPass	pass;
-	// TODO: hulud neg alpha.
-	if(true)
-		pass.BlendType= CPatchRdrPass::Alpha;
-	else
-		pass.BlendType= CPatchRdrPass::NegativeAlpha;
 	// The diffuse part for a tile is inevitable.
 	if(tile)
 		pass.TextureDiffuse= findTileTexture(tile->getFileName(CTile::diffuse));
@@ -570,12 +616,12 @@ void			CLandscape::loadTile(uint16 tileId)
 		pass.TextureDiffuse= new CTextureCross;
 	if(tile)
 	{
-		textName= tile->getFileName(CTile::bump);
+		// TODO_ALPHA: replace CTile::diffuse by CTile::alpha.
+		// patch yoyo: en attendant le changement de tilebank, on prend l'alpha de la texture diffuse.
+		textName= tile->getFileName(CTile::diffuse);
 		if(textName!="")
-			pass.TextureBump= findTileTexture(textName);
+			pass.TextureAlpha= findTileTexture(textName);
 	}
-	// Do not Fill the LightMap pass here.
-	// RdrPass duplicated after.
 
 
 	// Fill tileInfo.
@@ -585,9 +631,11 @@ void			CLandscape::loadTile(uint16 tileId)
 	tileInfo->DiffuseUvScaleBias.x= 0;
 	tileInfo->DiffuseUvScaleBias.y= 0;
 	tileInfo->DiffuseUvScaleBias.z= 1;
-	tileInfo->BumpUvScaleBias.x= 0;
-	tileInfo->BumpUvScaleBias.y= 0;
-	tileInfo->BumpUvScaleBias.z= 1;
+	tileInfo->AlphaUvScaleBias.x= 0;
+	tileInfo->AlphaUvScaleBias.y= 0;
+	tileInfo->AlphaUvScaleBias.z= 1;
+	// Retrieve the good rot alpha decal.
+	tileInfo->RotAlpha= tile->getRotAlpha();
 
 
 	// Increment RefCount of RenderPart.
@@ -613,22 +661,13 @@ void			CLandscape::releaseTile(uint16 tileId)
 	if(tileInfo->DiffuseRdrPass)
 		tileInfo->DiffuseRdrPass->RefCount--;
 
-	// Release the lighted render passes.
-	ItTileRdrPassPtrSet	itPtr;
-	for(itPtr= tileInfo->LightedRdrPass.begin(); itPtr!= tileInfo->LightedRdrPass.end(); itPtr++)
-	{
-		(*itPtr)->RefCount--;
-	}
-	// Delete those render passes...
-	tileInfo->LightedRdrPass.clear();
-
 	delete tileInfo;
 	TileInfos[tileId]= NULL;
 }
 
 
 // ***************************************************************************
-CPatchRdrPass	*CLandscape::getTileRenderPass(uint16 tileId, bool additiveRdrPass, ITexture *lightmap)
+CPatchRdrPass	*CLandscape::getTileRenderPass(uint16 tileId, bool additiveRdrPass)
 {
 	CTileInfo	*tile= TileInfos[tileId];
 
@@ -652,57 +691,30 @@ CPatchRdrPass	*CLandscape::getTileRenderPass(uint16 tileId, bool additiveRdrPass
 	}
 	else
 	{
-		// If no lightmap is given, return the one with no LightMap.
-		if(!lightmap)
-			return tile->DiffuseRdrPass;
-		else
-		{
-			// Must get the good render pass for the correct lightmaped version of this tile.
-
-			// Copy the render pass from the one with no lightmap.
-			CPatchRdrPass	pass;
-			pass.BlendType= tile->DiffuseRdrPass->BlendType;
-			pass.TextureDiffuse= tile->DiffuseRdrPass->TextureDiffuse;
-			pass.TextureBump= tile->DiffuseRdrPass->TextureBump;
-			// Set the wanted lightmap.
-			pass.LightMap= lightmap;
-
-			// Insert/Retrieve this rdrpass.
-			CPatchRdrPass	*rdrpass= findTileRdrPass(pass);
-
-			// If not already inserted in the tile list, insert it.
-			// This is important for release...
-			ItTileRdrPassPtrSet	itPtr;
-			itPtr= tile->LightedRdrPass.find(rdrpass);
-			if(itPtr== tile->LightedRdrPass.end())
-			{
-				tile->LightedRdrPass.insert(rdrpass);
-				// Now, we have one more tile which use this lighted rdrpass...
-				rdrpass->RefCount++;
-			}
-
-			return rdrpass;
-		}
+		return tile->DiffuseRdrPass;
 	}
 }
 
 
 // ***************************************************************************
-void			CLandscape::getTileUvScaleBias(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias)
+void			CLandscape::getTileUvScaleBiasRot(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias, uint8 &rotAlpha)
 {
 	CTileInfo	*tile= TileInfos[tileId];
 	// tile should not be NULL.
 	// Because load of tiles are always done in getTileRenderPass(), and this insertion always succeed.
 	nlassert(tile);
 
+	rotAlpha= 0;
 	switch(bitmapType)
 	{
 		case CTile::diffuse:
 			uvScaleBias= tile->DiffuseUvScaleBias; break;
 		case CTile::additive:
 			uvScaleBias= tile->AdditiveUvScaleBias; break;
-		case CTile::bump:
-			uvScaleBias= tile->BumpUvScaleBias; break;
+		case CTile::alpha:
+			uvScaleBias= tile->AlphaUvScaleBias; 
+			rotAlpha= tile->RotAlpha;
+			break;
 	}
 }
 
@@ -712,16 +724,19 @@ NLMISC::CSmartPtr<ITexture>		CLandscape::getTileTexture(uint16 tileId, CTile::TB
 {
 	CPatchRdrPass	*pass;
 	if(bitmapType== CTile::additive)
-		pass= getTileRenderPass(tileId, true, NULL);
+		pass= getTileRenderPass(tileId, true);
 	else
-		pass= getTileRenderPass(tileId, false, NULL);
+		pass= getTileRenderPass(tileId, false);
 	if(!pass)
 		return NULL;
-	getTileUvScaleBias(tileId, bitmapType, uvScaleBias);
-	if(bitmapType== CTile::diffuse)
+	uint8	dummy;
+	getTileUvScaleBiasRot(tileId, bitmapType, uvScaleBias, dummy);
+
+	// return the wanted texture.
+	if(bitmapType==CTile::diffuse || bitmapType==CTile::additive)
 		return pass->TextureDiffuse;
 	else
-		return pass->TextureBump;
+		return pass->TextureAlpha;
 }
 
 
@@ -747,8 +762,8 @@ void			CLandscape::flushTiles(IDriver *drv, uint16 tileStart, uint16 nbTiles)
 		if(pass.TextureDiffuse && !pass.TextureDiffuse->loadedIntoDriver())
 			drv->setupTexture(*pass.TextureDiffuse);
 		// If present and not already setuped...
-		if(pass.TextureBump && !pass.TextureBump->loadedIntoDriver())
-			drv->setupTexture(*pass.TextureBump);
+		if(pass.TextureAlpha && !pass.TextureAlpha->loadedIntoDriver())
+			drv->setupTexture(*pass.TextureAlpha);
 	}
 }
 
@@ -780,38 +795,46 @@ void			CLandscape::releaseTiles(uint16 tileStart, uint16 nbTiles)
 			it++;
 	}
 
-	// Textures are automaticly deleted, but not their entry int the map. 
+	// Textures are automaticly deleted by smartptr, but not their entry int the map (TileTextureMap). 
 	// => doesn't matter since findTileTexture() manages this case.
 	// And the memory overhead is not a problem (we talk about pointers).
 }
 
 
 // ***************************************************************************
-uint		CLandscape::getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE], ITexture *&lightmap)
+uint		CLandscape::getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE], CPatchRdrPass *&lightmapRdrPass)
 {
 	sint	textNum;
 	uint	lightMapId;
 	/* 
 		NB: TextureNear are a grow only Array... TextureNear are never deleted. Why? :
+		2/ Unused near texture may be uncahced by opengl (and maybe by windows, to disk).
+
+	  (old reason, no longer valid, since lightmaps are unlinked from tiles.
 		1/ There is an important issue with releasing texture nears: tiles may acces them (see getTileRenderPass())
-		2/ Unused near texture may be uncahced by opengl (and maybe by windows, in memory).
+	  )
 	*/
 	// 0. Alloc Near Texture if necessary.
 	//====================================
 	if(_NFreeLightMaps==0)
 	{
 		CTextureNear	*text= new CTextureNear(TextureNearSize);
+		TSPRenderPass	newPass= new CPatchRdrPass;
 
-		_TextureNears.push_back(text);
+		newPass->TextureDiffuse= text;
+
+		_TextureNears.push_back(newPass);
 		_NFreeLightMaps+= text->getNbAvailableTiles();
 	}
 
 	// 1. Search the first texture which has a free tile.
 	//==================================================
 	CTextureNear	*nearText= NULL;
+	CPatchRdrPass	*nearRdrPass= NULL;
 	for(textNum=0;textNum<(sint)_TextureNears.size();textNum++)
 	{
-		nearText= _TextureNears[textNum];
+		nearRdrPass= _TextureNears[textNum];
+		nearText= (CTextureNear*)(ITexture*)nearRdrPass->TextureDiffuse;
 		if(nearText->getNbAvailableTiles()!=0)
 			break;
 	}
@@ -826,7 +849,7 @@ uint		CLandscape::getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHT
 	lightMapId= textNum*NbTilesByTexture + lightMapId;
 
 	// Result:
-	lightmap= nearText;
+	lightmapRdrPass= nearRdrPass;
 	return lightMapId;
 }
 // ***************************************************************************
@@ -838,6 +861,7 @@ void		CLandscape::getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBia
 	float	scale5= (float)NL_TILE_LIGHTMAP_SIZE/TextureNearSize;
 	float	scale4= (float)(NL_TILE_LIGHTMAP_SIZE-1)/TextureNearSize;
 	float	scale1= (float)(1)/TextureNearSize;
+	// The size of a minilightmap, mapped onto the polygon, is still 4 pixels.
 	uvScaleBias.z= scale4;
 
 	// Get the id local in the texture.
@@ -847,6 +871,7 @@ void		CLandscape::getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBia
 	// Get the coordinate of the tile, in tile number.
 	s= id%NbTilesByLine;
 	t= id/NbTilesByLine;
+	// But the real size of a minilightmap is 5 pixels, and we must reach the center of the pixel.
 	uvScaleBias.x= s*scale5 + 0.5f*scale1;
 	uvScaleBias.y= t*scale5 + 0.5f*scale1;
 }
@@ -861,7 +886,9 @@ void		CLandscape::releaseTileLightMap(uint tileLightMapId)
 	nlassert(textNum>=0 && textNum<_TextureNears.size());
 
 	// Release the tile in this texture.
-	_TextureNears[textNum]->releaseTile(id);
+	CPatchRdrPass	*nearRdrPass= _TextureNears[textNum];
+	CTextureNear	*nearText= (CTextureNear*)(ITexture*)nearRdrPass->TextureDiffuse;
+	nearText->releaseTile(id);
 	_NFreeLightMaps++;
 }
 

@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.19 2001/01/19 14:26:04 berenguier Exp $
+ * $Id: tile_bank.cpp,v 1.20 2001/01/30 13:44:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,7 +157,7 @@ sint CTileBank::createTile ()
 		{
 			_TileVector[i].setFileName (CTile::diffuse, "");
 			_TileVector[i].setFileName (CTile::additive, "");
-			_TileVector[i].setFileName (CTile::bump, "");
+			_TileVector[i].setFileName (CTile::alpha, "");
 			return i;
 		}
 	}
@@ -166,7 +166,7 @@ sint CTileBank::createTile ()
 	_TileVector.push_back (CTile());
 	_TileVector[_TileVector.size()-1].setFileName (CTile::diffuse, "");
 	_TileVector[_TileVector.size()-1].setFileName (CTile::additive, "");
-	_TileVector[_TileVector.size()-1].setFileName (CTile::bump, "");
+	_TileVector[_TileVector.size()-1].setFileName (CTile::alpha, "");
 	return _TileVector.size()-1;
 }
 // ***************************************************************************
@@ -296,8 +296,8 @@ void CTileBank::makeAllPathRelative ()
 		_TileVector[nTile].setFileName (CTile::additive, sTmpFileName);
 
 		// Bump
-		TroncFileName (sTmpFileName, _TileVector[nTile].getFileName (CTile::bump).c_str());
-		_TileVector[nTile].setFileName (CTile::bump, sTmpFileName);
+		TroncFileName (sTmpFileName, _TileVector[nTile].getFileName (CTile::alpha).c_str());
+		_TileVector[nTile].setFileName (CTile::alpha, sTmpFileName);
 	}
 }
 
@@ -357,7 +357,7 @@ void CTile::serial(IStream &f) throw(EStream)
 		f.serial (_Free);
 		f.serial (_BitmapName[diffuse]);
 		f.serial (_BitmapName[additive]);
-		f.serial (_BitmapName[bump]);
+		f.serial (_BitmapName[alpha]);
 		break;
 	}
 }
@@ -473,15 +473,15 @@ void CTileSet::serial(IStream &f) throw(EStream)
 	f.serialCont (_ChildName);
 	f.serial (_Border128[CTile::diffuse]);
 	f.serial (_Border128[CTile::additive]);
-	f.serial (_Border128[CTile::bump]);
+	f.serial (_Border128[CTile::alpha]);
 	f.serial (_Border256[CTile::diffuse]);
 	f.serial (_Border256[CTile::additive]);
-	f.serial (_Border256[CTile::bump]);
+	f.serial (_Border256[CTile::alpha]);
 	for (i=0; i<count; i++)
 	{
 		f.serial (_BorderTransition[i][CTile::diffuse]);
 		f.serial (_BorderTransition[i][CTile::additive]);
-		f.serial (_BorderTransition[i][CTile::bump]);
+		f.serial (_BorderTransition[i][CTile::alpha]);
 	}
 }
 // ***************************************************************************
@@ -722,7 +722,7 @@ void CTileSet::removeTile128 (int indexInTileSet, CTileBank& bank)
 	// Erase border if it is the last texture
 	deleteBordersIfLast (bank, CTile::diffuse);
 	deleteBordersIfLast (bank, CTile::additive);
-	deleteBordersIfLast (bank, CTile::bump);
+	deleteBordersIfLast (bank, CTile::alpha);
 }
 // ***************************************************************************
 void CTileSet::removeTile256 (int indexInTileSet, CTileBank& bank)
@@ -741,7 +741,7 @@ void CTileSet::removeTile256 (int indexInTileSet, CTileBank& bank)
 	// Erase border if it is the last texture
 	deleteBordersIfLast (bank, CTile::diffuse);
 	deleteBordersIfLast (bank, CTile::additive);
-	deleteBordersIfLast (bank, CTile::bump);
+	deleteBordersIfLast (bank, CTile::alpha);
 }
 // ***************************************************************************
 CTileSet::TTransition CTileSet::getTransitionTile (TFlagBorder _top, TFlagBorder _bottom, TFlagBorder _left, TFlagBorder _right)

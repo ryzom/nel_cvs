@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.32 2001/01/29 10:49:03 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.33 2001/01/30 13:44:13 berenguier Exp $
  *
  */
 
@@ -43,14 +43,6 @@ const	uint8	TileUvFmtNormal2= 1;
 const	uint8	TileUvFmtNormal3= 2;
 const	uint8	TileUvFmtNormal4= 3;
 const	uint8	TileUvFmtNormal5= 4;
-const	uint8	TileUvFmtNormal6= 5;
-// The bumped ones.
-const	uint8	TileUvFmtBump1= 16+0;
-const	uint8	TileUvFmtBump2= 16+1;
-const	uint8	TileUvFmtBump3= 16+2;
-const	uint8	TileUvFmtBump4= 16+3;
-const	uint8	TileUvFmtBump5= 16+4;
-const	uint8	TileUvFmtBump6= 16+5;
 
 
 // ***************************************************************************
@@ -134,14 +126,6 @@ ITileUv		*CTessFace::allocTileUv(uint8 fmt)
 		case TileUvFmtNormal2: return new CTileUvNormal2; break;
 		case TileUvFmtNormal3: return new CTileUvNormal3; break;
 		case TileUvFmtNormal4: return new CTileUvNormal4; break;
-		case TileUvFmtNormal5: return new CTileUvNormal5; break;
-		case TileUvFmtNormal6: return new CTileUvNormal6; break;
-		case TileUvFmtBump1: return new CTileUvBump1; break;
-		case TileUvFmtBump2: return new CTileUvBump2; break;
-		case TileUvFmtBump3: return new CTileUvBump3; break;
-		case TileUvFmtBump4: return new CTileUvBump4; break;
-		case TileUvFmtBump5: return new CTileUvBump5; break;
-		case TileUvFmtBump6: return new CTileUvBump6; break;
 		default: 
 			nlstop;
 			return NULL;
@@ -200,7 +184,7 @@ CTessFace::~CTessFace()
 // ***************************************************************************
 void			CTessFace::computeTileErrorMetric()
 {
-	// We msut take a more correct errometric here: We must have sons face which have
+	// We must take a more correct errometric here: We must have sons face which have
 	// lower projectedsize than father. This is not the case if Center of face is taken (but when not in
 	// tile mode this is nearly the case). So take the min dist from 3 points.
 	float	s0= (VBase->EndPos-RefineCenter).sqrnorm();
@@ -298,7 +282,7 @@ void		CTessFace::updateErrorMetric()
 
 
 // ***************************************************************************
-void		CTessFace::initTileUv0(sint pass, CParamCoord pointCoord, CParamCoord middle, CUV &uv)
+void		CTessFace::initTileUvRGBA(sint pass, bool alpha, CParamCoord pointCoord, CParamCoord middle, CUV &uv)
 {
 	// Get good coordinate according to patch orientation.
 	uv.U= pointCoord.S<=middle.S? 0.0f: 1.0f;
@@ -309,7 +293,7 @@ void		CTessFace::initTileUv0(sint pass, CParamCoord pointCoord, CParamCoord midd
 	CVector		uvScaleBias;
 	bool		is256;
 	uint8		uvOff;
-	Patch->getTileUvInfo(TileId, pass, orient, uvScaleBias, is256, uvOff);
+	Patch->getTileUvInfo(TileId, pass, alpha, orient, uvScaleBias, is256, uvOff);
 
 	// Orient the UV.
 	float	u= uv.U;
@@ -367,7 +351,7 @@ void		CTessFace::initTileUv0(sint pass, CParamCoord pointCoord, CParamCoord midd
 
 
 // ***************************************************************************
-void		CTessFace::initTileUv1(CParamCoord pointCoord, CParamCoord middle, CUV &uv)
+void		CTessFace::initTileUvLightmap(CParamCoord pointCoord, CParamCoord middle, CUV &uv)
 {
 	// Get good coordinate according to patch orientation.
 	uv.U= pointCoord.S<=middle.S? 0.0f: 1.0f;
@@ -429,50 +413,58 @@ void		CTessFace::computeTileMaterial()
 		TileMaterial= new CTileMaterial;
 
 		// First, build a lightmap for this tile, and get his id.
-		ITexture	*lightmap;	// local, used to get the correct render pass.
-		TileMaterial->LightMapId= Patch->getTileLightMap(ts, tt, lightmap);
+		TileMaterial->LightMapId= Patch->getTileLightMap(ts, tt, TileMaterial->Pass[NL3D_TILE_PASS_LIGHTMAP]);
 
 		// Fill pass of multi pass material.
 		for(i=0;i<NL3D_MAX_TILE_PASS;i++)
 		{
-			// Get the correct render pass, according to the tile number, the pass, and the lightmap.
-			TileMaterial->Pass[i]= Patch->getTileRenderPass(TileId, i, lightmap);
+			// Get the correct render pass, according to the tile number, and the pass.
+			if(i!=NL3D_TILE_PASS_LIGHTMAP)
+				TileMaterial->Pass[i]= Patch->getTileRenderPass(TileId, i);
 		}
-		// Use NULL in TileMaterial->TilePass to know the format and bind PassToUv.
-		sint	uvcount=0;
-		for(i=0;i<NL3D_MAX_TILE_PASS;i++)
+
+		// There is always 1 UV: for RGB0/LIGHTMAP.
+		sint	uvcount=1;
+		TileMaterial->PassToUv[NL3D_TILE_PASS_RGB0]= 0;
+		TileMaterial->PassToUv[NL3D_TILE_PASS_LIGHTMAP]= 0;
+
+		// Use NULL in RGB1/RGB2/ADD TileMaterial->TilePass to know the format and bind PassToUv.
+		for(i=1;i<NL3D_MAX_TILE_PASS;i++)
 		{
-			if(TileMaterial->Pass[i])
+			// Do not count lightmap.
+			if(i!=NL3D_TILE_PASS_LIGHTMAP && TileMaterial->Pass[i])
 			{
 				TileMaterial->PassToUv[i]= uvcount;
 				uvcount++;
 			}
 		}
-		// TODO_BUMP: choose beetween bump and normal.
 		TileMaterial->TileUvFmt= TileUvFmtNormal1+(uvcount-1);
 	}
 
 
 	// 2. Compute Uvs.
 	//----------------
+	// NB: TileMaterial and TileId are already setup. Usefull for initTileUvLightmap() and initTileUvRGBA().
+
 	// Must allocate the base uv.
 	TileUvBase= allocTileUv(TileMaterial->TileUvFmt);
-	// Init LightMap UV!!
-	CUV			uvLightMapBase;
-	initTileUv1(PVBase, middle, uvLightMapBase);
-	// Init UV!
+
+	// Init LightMap UV, in UvPass 0, UV1..
+	initTileUvLightmap(PVBase, middle, ((ITileUvNormal*)TileUvBase)->UvPasses[0].PUv1);
+
+	// Init UV RGBA, for all pass.
 	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
 	{
-		// TileId is already setup.
-		// If pass is valid.
-		if(TileMaterial->Pass[i])
+		// If pass is valid, and not lightmap pass.
+		if(i!=NL3D_TILE_PASS_LIGHTMAP && TileMaterial->Pass[i])
 		{
 			sint	uvpass= TileMaterial->PassToUv[i];
-			initTileUv0(i, PVBase, middle, ((ITileUvNormal*)TileUvBase)->UvPasses[uvpass].PUv0);
-			// Copy lightmap part...
-			((ITileUvNormal*)TileUvBase)->UvPasses[uvpass].PUv1= uvLightMapBase;
+			// Compute RGB UV in UV0.
+			initTileUvRGBA(i, false, PVBase, middle, ((ITileUvNormal*)TileUvBase)->UvPasses[uvpass].PUv0);
+			// If transition tile, compute alpha UV in UV1.
+			if(i== NL3D_TILE_PASS_RGB1 || i==NL3D_TILE_PASS_RGB2)
+				initTileUvRGBA(i, true, PVBase, middle, ((ITileUvNormal*)TileUvBase)->UvPasses[uvpass].PUv1);
 		}
-		// TODO_BUMP....
 	}
 
 	// if base neighbor is already at TileLimitLevel just ptr-copy, else create the left/right TileUvs...
@@ -487,26 +479,27 @@ void		CTessFace::computeTileMaterial()
 		// Must allocate the left/right uv.
 		TileUvLeft= allocTileUv(TileMaterial->TileUvFmt);
 		TileUvRight= allocTileUv(TileMaterial->TileUvFmt);
-		// Init first the lightmap UVs.
-		CUV			uvLightMapLeft;
-		CUV			uvLightMapRight;
-		initTileUv1(PVLeft, middle, uvLightMapLeft);
-		initTileUv1(PVRight, middle, uvLightMapRight);
-		// Init UV!
+
+		// Init LightMap UV, in UvPass 0, UV1..
+		initTileUvLightmap(PVLeft, middle, ((ITileUvNormal*)TileUvLeft)->UvPasses[0].PUv1);
+		initTileUvLightmap(PVRight, middle, ((ITileUvNormal*)TileUvRight)->UvPasses[0].PUv1);
+
+		// Init UV RGBA!
 		for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
 		{
-			// TileId is already setup.
-			// If pass is valid.
-			if(TileMaterial->Pass[i])
+			// If pass is valid, and not lightmap pass.
+			if(i!=NL3D_TILE_PASS_LIGHTMAP && TileMaterial->Pass[i])
 			{
 				sint	uvpass= TileMaterial->PassToUv[i];
-				initTileUv0(i, PVLeft, middle, ((ITileUvNormal*)TileUvLeft)->UvPasses[uvpass].PUv0);
-				initTileUv0(i, PVRight, middle, ((ITileUvNormal*)TileUvRight)->UvPasses[uvpass].PUv0);
-				// Copy lightmap part...
-				((ITileUvNormal*)TileUvLeft)->UvPasses[uvpass].PUv1= uvLightMapLeft;
-				((ITileUvNormal*)TileUvRight)->UvPasses[uvpass].PUv1= uvLightMapRight;
+				initTileUvRGBA(i, false, PVLeft, middle, ((ITileUvNormal*)TileUvLeft)->UvPasses[uvpass].PUv0);
+				initTileUvRGBA(i, false, PVRight, middle, ((ITileUvNormal*)TileUvRight)->UvPasses[uvpass].PUv0);
+				// If transition tile, compute alpha UV in UV1.
+				if(i== NL3D_TILE_PASS_RGB1 || i==NL3D_TILE_PASS_RGB2)
+				{
+					initTileUvRGBA(i, true, PVLeft, middle, ((ITileUvNormal*)TileUvLeft)->UvPasses[uvpass].PUv1);
+					initTileUvRGBA(i, true, PVRight, middle, ((ITileUvNormal*)TileUvRight)->UvPasses[uvpass].PUv1);
+				}
 			}
-			// TODO_BUMP....
 		}
 	}
 
@@ -1959,14 +1952,6 @@ void		CTessFace::heritTileMaterial()
 			case TileUvFmtNormal2: tuv= new CTileUvNormal2((CTileUvNormal2*)TileUvLeft, (CTileUvNormal2*)TileUvRight); break;
 			case TileUvFmtNormal3: tuv= new CTileUvNormal3((CTileUvNormal3*)TileUvLeft, (CTileUvNormal3*)TileUvRight); break;
 			case TileUvFmtNormal4: tuv= new CTileUvNormal4((CTileUvNormal4*)TileUvLeft, (CTileUvNormal4*)TileUvRight); break;
-			case TileUvFmtNormal5: tuv= new CTileUvNormal5((CTileUvNormal5*)TileUvLeft, (CTileUvNormal5*)TileUvRight); break;
-			case TileUvFmtNormal6: tuv= new CTileUvNormal6((CTileUvNormal6*)TileUvLeft, (CTileUvNormal6*)TileUvRight); break;
-			case TileUvFmtBump1: tuv= new CTileUvBump1((CTileUvBump1*)TileUvLeft, (CTileUvBump1*)TileUvRight); break;
-			case TileUvFmtBump2: tuv= new CTileUvBump2((CTileUvBump2*)TileUvLeft, (CTileUvBump2*)TileUvRight); break;
-			case TileUvFmtBump3: tuv= new CTileUvBump3((CTileUvBump3*)TileUvLeft, (CTileUvBump3*)TileUvRight); break;
-			case TileUvFmtBump4: tuv= new CTileUvBump4((CTileUvBump4*)TileUvLeft, (CTileUvBump4*)TileUvRight); break;
-			case TileUvFmtBump5: tuv= new CTileUvBump5((CTileUvBump5*)TileUvLeft, (CTileUvBump5*)TileUvRight); break;
-			case TileUvFmtBump6: tuv= new CTileUvBump6((CTileUvBump6*)TileUvLeft, (CTileUvBump6*)TileUvRight); break;
 			default: nlstop;
 		};
 	}

@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.15 2001/01/19 14:25:49 berenguier Exp $
+ * $Id: tile_bank.h,v 1.16 2001/01/30 13:44:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ class CTile
 public:
 	friend class CTileSet;
 	friend class CTileBank;
-	enum TBitmap { diffuse=0, additive, bump, bitmapCount };
+	enum TBitmap { diffuse=0, additive, alpha, bitmapCount };
 public:
 	CTile ()
 	{
@@ -83,6 +83,13 @@ public:
 	{ 
 		_Free=false;
 		_BitmapName[bitmapType]=name;
+	}
+
+	/// Get the additional orientation (CCW) for alpha texture.
+	uint8	getRotAlpha()
+	{
+		// TODO_ALPHA.
+		return 0;
 	}
 
 private:
@@ -187,7 +194,7 @@ public:
 		_Set=false;
 		_Borders[CTile::diffuse].clear();
 		_Borders[CTile::additive].clear();
-		_Borders[CTile::bump].clear();
+		_Borders[CTile::alpha].clear();
 	}
 	sint32 getWidth() const
 	{
@@ -380,7 +387,7 @@ public:
 	void computeXRef ();
 	void getTileXRef (int tile, int &tileSet, int &number, TTileType& type) const;
 	void makeAllPathRelative ();
-	/// This method change ".tga" of texture filename, to ".dds". Do this only for Additive and Diffuse part (not bump).
+	/// This method change ".tga" of texture filename, to ".dds". Do this only for Additive and Diffuse part (not alpha).
 	void makeAllExtensionDDS ();
 
 	void    serial(class NLMISC::IStream &f) throw(NLMISC::EStream);

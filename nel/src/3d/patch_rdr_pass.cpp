@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.cpp
  * <File description>
  *
- * $Id: patch_rdr_pass.cpp,v 1.4 2001/01/08 17:58:30 corvazier Exp $
+ * $Id: patch_rdr_pass.cpp,v 1.5 2001/01/30 13:44:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,6 @@ CPatchRdrPass::CPatchRdrPass()
 {
 	resetTriList();
 	RefCount= 0;
-	BlendType= Alpha;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.38 2001/01/25 10:13:50 berenguier Exp $
+ * $Id: patch.cpp,v 1.39 2001/01/30 13:44:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -773,21 +773,12 @@ void			CPatch::computeTileVertex(CTessVertex *vert, ITileUv *uv, sint idUv)
 	*(CVector*)CurVBPtr= vert->Pos;
 
 	// Set Uvs.
-	// TODO_BUMP: chose beetween bump and normal uvs. Always normal here.
 	ITileUvNormal	*uvn= (ITileUvNormal*)uv;
 	CPassUvNormal	&uvpass= uvn->UvPasses[idUv];
 	//CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 0, uvpass.PUv0);
 	//CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 1, uvpass.PUv1);
 	*(CUV*)(CurVBPtr+CurUV0Off)= uvpass.PUv0;
 	*(CUV*)(CurVBPtr+CurUV1Off)= uvpass.PUv1;
-
-	// Compute color.
-	static CRGBA	col(255,255,255,255);
-	// TODO_CLOUD/TODO_ADDITIVE: use cloud color information for RGB. And use alpha global for global apparition of 
-	// additives tiles only.
-	//CTessFace::CurrentVB->setColor(uv->TileIndex, col);
-	*(CRGBA*)(CurVBPtr+CurColorOff)= col;
-	// END!!
 
 	// Inc the ptr.
 	CurVBPtr+= CurVertexSize;
@@ -1148,34 +1139,46 @@ void			CPatch::serial(NLMISC::IStream &f)
 
 
 // ***************************************************************************
-CPatchRdrPass	*CPatch::getTileRenderPass(sint tileId, sint pass, ITexture *lightmap)
+CPatchRdrPass	*CPatch::getTileRenderPass(sint tileId, sint pass)
 {
-	nlassert(pass>=0 && pass<6);
+	// All but lightmap.
+	nlassert(pass==NL3D_TILE_PASS_RGB0 || pass==NL3D_TILE_PASS_RGB1 || pass==NL3D_TILE_PASS_RGB2 || 
+		pass==NL3D_TILE_PASS_ADD);
 
-	bool	additive= (pass&1)!=0;
-	sint	passNum= pass>>1;
+	bool	additive= (pass==NL3D_TILE_PASS_ADD);
+	sint	passNum= pass-NL3D_TILE_PASS_RGB0;
+	// If additive, take the additve tile of pass0.
+	if(additive)
+		passNum= 0;
 
 	sint	tileNumber= Tiles[tileId].Tile[passNum];
 	if(tileNumber==0xFFFF)
 	{
 		// Display a "fake" only if pass 0.
-		// Fake are NOT lightmapped!!
-		if(pass==0)
-			return Zone->Landscape->getTileRenderPass(0xFFFF, false, NULL);
+		if(pass==NL3D_TILE_PASS_RGB0)
+			return Zone->Landscape->getTileRenderPass(0xFFFF, false);
+		// Else, this tile do not have such a pass (not a transition).
 		return NULL;
 	}
 	else
 	{
 		// return still may be NULL, in additive case.
-		return Zone->Landscape->getTileRenderPass(tileNumber, additive, lightmap);
+		return Zone->Landscape->getTileRenderPass(tileNumber, additive);
 	}
 }
 
 // ***************************************************************************
-void			CPatch::getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvScaleBias, bool &is256x256, uint8 &uvOff)
+void			CPatch::getTileUvInfo(sint tileId, sint pass, bool alpha, uint8 &orient, CVector &uvScaleBias, bool &is256x256, uint8 &uvOff)
 {
-	bool	additive= (pass&1)!=0;
-	sint	passNum= pass>>1;
+	// All but lightmap.
+	nlassert(pass==NL3D_TILE_PASS_RGB0 || pass==NL3D_TILE_PASS_RGB1 || pass==NL3D_TILE_PASS_RGB2 || 
+		pass==NL3D_TILE_PASS_ADD);
+
+	bool	additive= (pass==NL3D_TILE_PASS_ADD);
+	sint	passNum= pass-NL3D_TILE_PASS_RGB0;
+	// If additive, take the additve tile of pass0.
+	if(additive)
+		passNum= 0;
 
 	sint	tileNumber= Tiles[tileId].Tile[passNum];
 	if(tileNumber==0xFFFF)
@@ -1196,8 +1199,19 @@ void			CPatch::getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvS
 		if(additive)
 			type= CTile::additive;
 		else
-			type= CTile::diffuse;
-		Zone->Landscape->getTileUvScaleBias(tileNumber, type, uvScaleBias);
+		{
+			if(alpha)
+				type= CTile::alpha;
+			else
+				type= CTile::diffuse;
+		}
+
+		uint8	rotalpha;
+		Zone->Landscape->getTileUvScaleBiasRot(tileNumber, type, uvScaleBias, rotalpha);
+
+		// Add the special rotation of alpha.
+		if(alpha)
+			orient= (orient+rotalpha)&3;
 	}
 
 }
@@ -1224,7 +1238,7 @@ void			CPatch::recreateTileUvs()
 	}
 }
 extern "C" void	NL3D_bilinearTileLightMap(CRGBA *tex);
-uint		CPatch::getTileLightMap(sint ts, sint tt, ITexture *&lightmap)
+uint		CPatch::getTileLightMap(sint ts, sint tt, CPatchRdrPass *&rdrpass)
 // ***************************************************************************
 	// Compute the lightmap texture, with help of TileColors.
 	CRGBA	lightText[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE];
@@ -1291,7 +1305,7 @@ void		CPatch::computeTileLightmapPixelAroundCorner(const CVector2f &stIn, CRGBA 
 		lumels+=OrderS*4+1;
 			}
 		}
-	return Zone->Landscape->getTileLightMap(lightText, lightmap);
+	return Zone->Landscape->getTileLightMap(lightText, rdrpass);
 
 }
 void		CPatch::getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBias)

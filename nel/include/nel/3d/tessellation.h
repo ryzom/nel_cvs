@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.23 2001/01/19 14:25:49 berenguier Exp $
+ * $Id: tessellation.h,v 1.24 2001/01/30 13:44:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,10 +36,6 @@ namespace	NL3D
 {
 
 
-// Odd pass are always additive pass.
-#define	NL3D_MAX_TILE_PASS 6
-
-
 using NLMISC::CVector;
 using NLMISC::CPlane;
 using NLMISC::CMatrix;
@@ -50,6 +46,18 @@ class	CPatchRdrPass;
 class	CVertexBuffer;
 class	CTessFace;
 
+
+// ***************************************************************************
+// 3th pass is always the Lightmapped one (Lightmap*clouds).
+#define	NL3D_MAX_TILE_PASS 5
+
+#define	NL3D_TILE_PASS_RGB0		0
+#define	NL3D_TILE_PASS_RGB1		1
+#define	NL3D_TILE_PASS_RGB2		2
+#define	NL3D_TILE_PASS_LIGHTMAP	3
+#define	NL3D_TILE_PASS_ADD		4
+
+
 // ***************************************************************************
 const	float	OO32768= 1.0f/0x8000;
 
@@ -58,18 +66,20 @@ const	float	OO32768= 1.0f/0x8000;
 struct	CTileMaterial
 {
 	// The type of the tile.
-	uint8			TileUvFmt;		// 4 first bits to know the number of Uv needed.  5th bit: 0 -> no bump. 16 -> bump. 
+	uint8			TileUvFmt;		// 4 first bits to know the number of Uv needed.
 	// The LUT to know which Uv to be used, for which pass.
 	uint8			PassToUv[NL3D_MAX_TILE_PASS];
 	// The rendering passes materials.
 	CPatchRdrPass	*Pass[NL3D_MAX_TILE_PASS];
 	// Pass are:
-	//  0: general Tile.
-	//  1: additive pass for general Tile.
-	//  2: 1st alpha tile.
-	//  3: additive pass for 1st alpha tile.
-	//  4: 2nd alpha tile.
-	//  5: additive pass for 2nd alpha tile.
+	//  0: RGB general Tile.
+	//  1: 1st alpha tile. 0: RGB.  1: Alpha.
+	//  2: 2nd alpha tile. 0: RGB.  1: Alpha.
+	//	3: Cloud*Lightmap.
+	//  4: additive pass.
+	// NB: BIG TRICK: the pass 0 has 2 Uvs: Uv0: RGB, and Uv1: Lightmap!!!! even, if they are not used at the same pass :o).
+	// This simplifies, save memory, and save from copies of v3f.
+
 	// The global id of the little lightmap part for this tile.
 	uint			LightMapId;
 
@@ -133,23 +143,9 @@ struct	CPassUvNormal
 		PUv1= (uv0.PUv1 + uv1.PUv1)*0.5;
 	}
 };
-struct	CPassUvBump : public CPassUvNormal
-{
-	// Herited: CUV	PUv0, PUv1;
-	CUV		PUv2;
-	CUVW	PUvw3;
-
-	void	makeMiddle(const CPassUvBump &uv0, const CPassUvBump &uv1)
-	{
-		PUv0= (uv0.PUv0 + uv1.PUv0)*0.5;
-		PUv1= (uv0.PUv1 + uv1.PUv1)*0.5;
-		PUv2= (uv0.PUv2 + uv1.PUv2)*0.5;
-		PUvw3= (uv0.PUvw3 + uv1.PUvw3)*0.5;
-	}
-};
 
 
-// TileUv format, without BumpMapping support.
+// TileUv format.
 // **************************************
 class	ITileUvNormal : public ITileUv
 {
@@ -178,42 +174,6 @@ typedef	CTileUvNormalT<1>	CTileUvNormal1;
 typedef	CTileUvNormalT<2>	CTileUvNormal2;
 typedef	CTileUvNormalT<3>	CTileUvNormal3;
 typedef	CTileUvNormalT<4>	CTileUvNormal4;
-typedef	CTileUvNormalT<5>	CTileUvNormal5;
-typedef	CTileUvNormalT<6>	CTileUvNormal6;
-
-
-// TileUv format, with BumpMapping support.
-// **************************************
-class	ITileUvBump : public ITileUv
-{
-public:
-	CPassUvBump		*UvPasses;
-};
-// ******
-template<sint NPass>
-class	CTileUvBumpT : public ITileUvBump
-{
-private:
-	CPassUvBump		MyUvPasses[NPass];
-
-public:
-	CTileUvBumpT() {UvPasses= MyUvPasses;}
-	// Create as the middle.
-	CTileUvBumpT(const CTileUvBumpT *uva, const CTileUvBumpT *uvb)
-	{
-		UvPasses= MyUvPasses;
-		for(sint i=0;i<NPass;i++)
-			UvPasses[i].makeMiddle(uva->UvPasses[i], uvb->UvPasses[i]);
-	}
-};
-
-
-typedef	CTileUvBumpT<1>	CTileUvBump1;
-typedef	CTileUvBumpT<2>	CTileUvBump2;
-typedef	CTileUvBumpT<3>	CTileUvBump3;
-typedef	CTileUvBumpT<4>	CTileUvBump4;
-typedef	CTileUvBumpT<5>	CTileUvBump5;
-typedef	CTileUvBumpT<6>	CTileUvBump6;
 
 
 
@@ -305,7 +265,7 @@ public:
 	uint8			TileId;
 	// The multi-pass tile Material.
 	CTileMaterial	*TileMaterial;
-	// Uv for tiles. ITileUv is either: 1,2 or 3 t2f0/t2f1,  either:  1,2 or 3 t2f0/t2f1/t2f2/t3f3.
+	// Uv for tiles. ITileUv is 2 to 5 t2f0/t2f1.
 	// color4ub are computed each frame (alpha= global night alpha, RGB= clouds color).
 	ITileUv			*TileUvBase, *TileUvLeft, *TileUvRight;
 	// @}
@@ -447,9 +407,9 @@ private:
 	void	heritTileMaterial();
 
 	// see computeTileMaterial().
-	void	initTileUv0(sint pass, CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
+	void	initTileUvRGBA(sint pass, bool alpha, CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
 	// The same, but for the lightmap pass.
-	void	initTileUv1(CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
+	void	initTileUvLightmap(CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
 
 private:
 	// Fake face are the only ones which have a NULL patch ptr (with mult face).

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.29 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: patch.h,v 1.30 2001/01/30 13:44:12 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -379,18 +379,17 @@ private:
 	// @{
 	// For CTessFace::computeMaterial(). Return the render pass for this material, given the number of the tile, and the
 	// desired pass. NULL may be returned if the pass is not present (eg: no additive for this tile...).
-	// The tile lightmap is also required, to get the good lightmapped tile...
-	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass, ITexture *lightmap);
+	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass);
 	// For CTessFace::computeMaterial(). Return the orient/scalebias for the tile in the patchtexture, and the
-	// desired pass.
-	void			getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvScaleBias, bool &is256x256, uint8 &uvOff);
+	// desired pass (and the desired stage: RGB/Alpha).
+	void			getTileUvInfo(sint tileId, sint pass, bool alpha, uint8 &orient, CVector &uvScaleBias, bool &is256x256, uint8 &uvOff);
 	// @}
 
 	// Tile LightMap mgt.
 	// @{
-	// for a given tile (accessed from the (ts,tt) coordinates), compute and get a lightmapId.
-	// lightmap returned is to be uses with getTileRenderPass(). The id returned must be stored.
-	uint		getTileLightMap(sint ts, sint tt, ITexture *&lightmap);
+	// for a given tile (accessed from the (ts,tt) coordinates), compute and get a lightmapId, and a RenderPass.
+	// The id returned must be stored, for getTileLightMapUvInfo() and releaseTileLightMap().
+	uint		getTileLightMap(sint ts, sint tt, CPatchRdrPass *&rdrpass);
 	// tileLightMapId must be the id returned  by getTileLightMap().
 	void		getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBias);
 	// tileLightMapId must be the id returned  by getTileLightMap().

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.33 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: landscape.h,v 1.34 2001/01/30 13:44:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,7 +97,7 @@ public:
 	/// \name Init/Build.
 	// @{
 	/// init the landscape VBuffers, texture cache etc...
-	void			init(bool bumpTiles=false);
+	void			init();
 
 	/** Add a zone which should be builded (or loaded), but not compiled. CLandscape compile it.
 	 * The contents of newZone are copied into the landscape.
@@ -237,9 +237,10 @@ private:
 	// Free the render pass for a far texture here.
 	void freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint farIndex);
 	// Return the render pass for a tile Id, and a patch Lightmap.
-	CPatchRdrPass	*getTileRenderPass(uint16 tileId, bool additiveRdrPass, ITexture *lightmap);
+	CPatchRdrPass	*getTileRenderPass(uint16 tileId, bool additiveRdrPass);
 	// Return the UvScaleBias for a tile Id. uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
-	void			getTileUvScaleBias(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias);
+	// if bitmap type is CTile::alpha, Return also the additionla rot for alpha (else 0).
+	void			getTileUvScaleBiasRot(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias, uint8 &rotAlpha);
 
 	// release Far render pass/reset Tile/Far render.
 	void			resetRenderFar();
@@ -272,25 +273,25 @@ private:
 	// RdrPass Set.
 	typedef	std::set<CPatchRdrPass>				TTileRdrPassSet;
 	typedef	TTileRdrPassSet::iterator			ItTileRdrPassSet;
-	typedef	std::set<CPatchRdrPass*>			TTileRdrPassPtrSet;
-	typedef	TTileRdrPassPtrSet::iterator		ItTileRdrPassPtrSet;
+	typedef NLMISC::CSmartPtr<CPatchRdrPass>	TSPRenderPass;
+
 	// The additional realtime structure for a tile.
 	struct	CTileInfo
 	{
 		// NB: CSmartPtr are not used for simplicity, and because of TTileRdrPassSet...
 		// CPatchRdrPass::RefCount are excplictly incremented/decremented...
-		// The rdrpass for diffuse+bump material.
+		// The rdrpass for diffuse+Alpha material.
 		CPatchRdrPass	*DiffuseRdrPass;
 		// The rdrpass for additive material (may be NULL if no additive part).
 		CPatchRdrPass	*AdditiveRdrPass;
-		// The RdrPass list of Diffuse+Bump+LightMap.
-		TTileRdrPassPtrSet		LightedRdrPass;
 		// The scale/Bias to access those tiles in the big texture.
 		// uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
 		// Manages the demi-texel on tile border too.
 		CVector			DiffuseUvScaleBias;
-		CVector			BumpUvScaleBias;
+		CVector			AlphaUvScaleBias;
 		CVector			AdditiveUvScaleBias;
+		// The additional rotation for this tile, in alpha.
+		uint8			RotAlpha;
 	};
 
 
@@ -302,10 +303,10 @@ private:
 	TTileRdrPassSet				TileRdrPassSet;
 	// The parrallel array of tile of those existing in TileBank. size of NbTilesMax.
 	std::vector<CTileInfo*>		TileInfos;
-	// The Lightmap for tiles.
-	typedef	NLMISC::CSmartPtr<CTextureNear>			PTextureNear;
-	std::vector<PTextureNear>	_TextureNears;
-	uint						_NFreeLightMaps;
+	// The Lightmap rdrpass for tiles.
+	// must have a vector of pointer, because of vector reallocation.
+	std::vector<TSPRenderPass>		_TextureNears;
+	uint							_NFreeLightMaps;
 
 
 	// The Tile material.
@@ -320,7 +321,6 @@ private:
 	// ** Some types
 
 	// The vector of set of far render pass
-	typedef NLMISC::CSmartPtr<CPatchRdrPass>	TSPRenderPass;
 	typedef std::set<TSPRenderPass>				TSPRenderPassSet;
 	typedef TSPRenderPassSet::iterator			ItSPRenderPassSet;
 	typedef	std::vector<TSPRenderPassSet>		TSPRdrPassSetVector;
@@ -349,9 +349,9 @@ private:
 
 	// Tile LightMap mgt.
 	// @{
-	// Compute and get a lightmapId.
+	// Compute and get a lightmapId/lightmap renderpass.
 	// lightmap returned is to be uses with getTileRenderPass(). The id returned must be stored.
-	uint		getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE], ITexture *&lightmap);
+	uint		getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE], CPatchRdrPass *&lightmapRdrPass);
 	// tileLightMapId must be the id returned  by getTileLightMap().
 	void		getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBias);
 	// tileLightMapId must be the id returned  by getTileLightMap().

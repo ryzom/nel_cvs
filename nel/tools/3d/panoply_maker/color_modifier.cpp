@@ -1,7 +1,7 @@
 /** \file color_modifier.cpp
  * A class describing color modifications
  *
- * $Id: color_modifier.cpp,v 1.8 2002/10/25 16:20:37 berenguier Exp $
+ * $Id: color_modifier.cpp,v 1.9 2003/11/04 18:14:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -142,9 +142,17 @@ void CColorModifier::evalBitmapStats(const NLMISC::CBitmap &srcBitmap,
 			weight += intensity;
 			if (!achromatic)
 			{
+				// takes the 360 - 0 loop in account.				
+				if (hWeight != 0.f)
+				{
+					float hMean = hTotal / hWeight;
+					if (fabs(h - 360.f - hMean) < fabs(h - hMean))
+					{
+						h -= 360.f;
+					}
+				}				
 				hTotal  += h * intensity;	
 				hWeight += intensity;
-
 			}			
 
 			++mask;
@@ -153,6 +161,7 @@ void CColorModifier::evalBitmapStats(const NLMISC::CBitmap &srcBitmap,
 	}
 
 	H = (hWeight != 0) ? hTotal / hWeight : 0.f;
+	if (H < 0.f) H += 360.f;
 	S = (weight != 0) ? sTotal / weight : 0.f;
 	L = (weight != 0) ? lTotal / weight : 0.f;	
 	greyLevel = (weight != 0) ? (uint8) (gTotal / weight) : 0;

@@ -1,7 +1,7 @@
 /** \file form_loader.cpp
  * Georges form loader implementation
  *
- * $Id: form_loader.cpp,v 1.7 2002/06/04 14:14:15 corvazier Exp $
+ * $Id: form_loader.cpp,v 1.8 2002/07/10 17:09:17 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -259,7 +259,7 @@ UForm *CFormLoader::loadForm (const char *filename)
 				else
 				{
 					// Output error
-					nlwarning ("CFormLoader: Can't open the form file %s", filename);
+					//nlwarning ("CFormLoader: Can't open the form file %s", filename);
 
 					// Delete the form
 					delete form;

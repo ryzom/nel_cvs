@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.31 2001/01/11 13:55:23 berenguier Exp $
+ * $Id: patch.cpp,v 1.32 2001/01/11 16:01:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -528,7 +528,8 @@ void			CPatch::preRender()
 		// Backup old pass0
 		CPatchRdrPass	*oldPass0=Pass0;
 		CPatchRdrPass	*oldPass1=Pass1;
-		float oldFar0UVScale=Far0UVScale;
+		float oldFar0UScale=Far0UScale;
+		float oldFar0VScale=Far0VScale;
 		float oldFar0UBias=Far0UBias;
 		float oldFar0VBias=Far0VBias;
 		uint8 oldFlags=FarRotated;
@@ -558,7 +559,8 @@ void			CPatch::preRender()
 					Pass0=oldPass1;
 
 					// Copy uv coordinates
-					Far0UVScale=Far1UVScale;
+					Far0UScale=Far1UScale;
+					Far0VScale=Far1VScale;
 					Far0UBias=Far1UBias;
 					Far0VBias=Far1VBias;
 
@@ -571,7 +573,7 @@ void			CPatch::preRender()
 				{
 					// Rotation boolean
 					bool bRot;
-					Pass0=Zone->Landscape->getFarRenderPass(this, newFar0, Far0UVScale, Far0UBias, Far0VBias, bRot);
+					Pass0=Zone->Landscape->getFarRenderPass(this, newFar0, Far0UScale, Far0VScale, Far0UBias, Far0VBias, bRot);
 
 					// Flags is set if the far texture is rotated of 90° to the left
 					if (bRot)
@@ -607,7 +609,8 @@ void			CPatch::preRender()
 					Pass1=oldPass0;
 
 					// Copy uv coordinates
-					Far1UVScale=oldFar0UVScale;
+					Far1UScale=oldFar0UScale;
+					Far1VScale=oldFar0VScale;
 					Far1UBias=oldFar0UBias;
 					Far1VBias=oldFar0VBias;
 
@@ -620,7 +623,7 @@ void			CPatch::preRender()
 				{
 					// Rotation boolean
 					bool bRot;
-					Pass1=Zone->Landscape->getFarRenderPass(this, newFar1, Far1UVScale, Far1UBias, Far1VBias, bRot);
+					Pass1=Zone->Landscape->getFarRenderPass(this, newFar1, Far1UScale, Far1VScale, Far1UBias, Far1VBias, bRot);
 
 					// Flags is set if the far texture is rotated of 90° to the left
 					if (bRot)
@@ -672,13 +675,13 @@ sint			CPatch::getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc)
 		static CUV		uv;
 		if (FarRotated&NL_PATCH_FAR0_ROTATED)
 		{
-			uv.U= pc.getT()* Far0UVScale + Far0UBias;
-			uv.V= (1.f-pc.getS())* Far0UVScale + Far0VBias;
+			uv.U= pc.getT()* Far0UScale + Far0UBias;
+			uv.V= (1.f-pc.getS())* Far0VScale + Far0VBias;
 		}
 		else
 		{
-			uv.U= pc.getS()* Far0UVScale + Far0UBias;
-			uv.V= pc.getT()* Far0UVScale + Far0VBias;
+			uv.U= pc.getS()* Far0UScale + Far0UBias;
+			uv.V= pc.getT()* Far0VScale + Far0VBias;
 		}
 		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, uv);
 
@@ -707,13 +710,13 @@ sint			CPatch::getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc)
 		static CUV		uv;
 		if (FarRotated&NL_PATCH_FAR1_ROTATED)
 		{
-			uv.U= pc.getT()* Far1UVScale + Far1UBias;
-			uv.V= (1.f-pc.getS())* Far1UVScale + Far1VBias;
+			uv.U= pc.getT()* Far1UScale + Far1UBias;
+			uv.V= (1.f-pc.getS())* Far1VScale + Far1VBias;
 		}
 		else
 		{
-			uv.U= pc.getS()* Far1UVScale + Far1UBias;
-			uv.V= pc.getT()* Far1UVScale + Far1VBias;
+			uv.U= pc.getS()* Far1UScale + Far1UBias;
+			uv.V= pc.getT()* Far1VScale + Far1VBias;
 		}
 		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, uv);
 

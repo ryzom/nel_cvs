@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.4 2001/01/09 17:38:06 corvazier Exp $
+ * $Id: texture_far.cpp,v 1.5 2001/01/11 16:01:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/3d/texture_far.h"
 #include "nel/3d/tile_far_bank.h"
 #include "nel/3d/patch.h"
+#include "nel/3d/tile_color.h"
 
 using namespace NLMISC;
 
@@ -63,7 +64,7 @@ void CTextureFar::setSizeOfFarPatch (sint width, sint height)
 }
 
 // Add a patch in the CTexture Patch. Must not be full! Return true if the texture is full after adding this patch else false.
-bool CTextureFar::addPatch (CPatch *pPatch, float& farUVScale, float& farUBias, float& farVBias, bool& bRot)
+bool CTextureFar::addPatch (CPatch *pPatch, float& farUScale, float& farVScale, float& farUBias, float& farVBias, bool& bRot)
 {
 	// Check that at least a cell is free
 	nlassert (_PatchCount<NL_NUM_FAR_PATCHES_BY_TEXTURE);
@@ -93,17 +94,18 @@ bool CTextureFar::addPatch (CPatch *pPatch, float& farUVScale, float& farUBias, 
 
 	// ** Return some values
 
+	// Rotation flag
+	bRot = ( pPatch->getOrderS() < pPatch->getOrderT() );
+
 	// Scale is the same for all
-	farUVScale=(float)((_OriginalWidth>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)-1)/(float)_OriginalWidth;
+	farUScale=(float)((_OriginalWidth>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)-1)/(float)_OriginalWidth;
+	farVScale=(float)((_OriginalHeight>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)-1)/(float)_OriginalHeight;
 
 	// UBias is the same for all
 	farUBias=((float)x+0.5f)/(float)_OriginalWidth;
 
 	// UBias is the same for all
 	farVBias=((float)y+0.5f)/(float)_OriginalHeight;
-
-	// Rotation flag
-	bRot = ( pPatch->getOrderS() < pPatch->getOrderT() );
 	
 	// One more patch
 	_PatchCount++;
@@ -196,8 +198,8 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 	nlassert (patch);
 
 	// get the order
-	sint nS=patch->getOrderS();
-	sint nT=patch->getOrderT();
+	uint nS=patch->getOrderS();
+	uint nT=patch->getOrderT();
 
 	// Check it is a 16 bits texture
 	nlassert (getPixelFormat()==RGBA);
@@ -305,30 +307,59 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 	// For all the tiles in the textures
 	sint nTileInPatch=0;
 
+	// ** Fill the struct for the tile fill method for each layers
+	NL3D_CComputeTileFar TileFar;
+
+	// Destination pointer
+
+	// Destination delta
+	TileFar.DstDeltaX=dstDeltaX;
+	TileFar.DstDeltaY=dstDeltaY;
+
+	// ** Build expand lightmap..
+	NL3D_CExpandLightmap lightMap;
+	
+	// Static buffer for far expanded lightmap 64*64  (16*4 * 16*4)
+	static CRGBA lightmapExpanded[NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_MAX_TILES_BY_PATCH_EDGE*NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_MAX_TILES_BY_PATCH_EDGE];
+
+	// Fill the structure
+	lightMap.MulFactor=tileSize;
+	lightMap.ColorTile=&patch->TileColors[0];
+	lightMap.Width=nS+1;
+	lightMap.Height=nT+1;
+	lightMap.SunColor=CRGBA (255,255,255);
+	lightMap.DstPixels=lightmapExpanded;
+
+	// Expand the patch lightmap now
+	NL3D_expandLightmap (&lightMap);
+
+	// DeltaY for lightmap
+	TileFar.SrcLightingDeltaY=nS*tileSize;
+
 	// Base Dst pointer on the tile line
 	uint nBaseDstTileLine=nBaseOffset;
-	for (sint t=0; t<nT; t++)
+	for (uint t=0; t<nT; t++)
 	{
 		// Base Dst pointer on the tile
 		uint nBaseDstTilePixels=nBaseDstTileLine;
 
 		// For each tile of the line
-		for (sint s=0; s<nS; s++)
+		for (uint s=0; s<nS; s++)
 		{
+			// Base pointer of the destination texture
+			TileFar.DstPixels=(CRGBA*)&(getPixels()[0])+nBaseDstTilePixels;
+
+			// Lightmap pointer
+			TileFar.SrcLightingPixels=lightmapExpanded+(s*tileSize)+(t*nS*tileSize*tileSize);
+
 			// For each layer of the tile
 			for (sint l=0; l<3; l++)
 			{
-				// ** Fill the struct for the tile fill method for each layers
-				NL3D_CComputeTileFar TileFar;
-
 				// Use of additive in this layer ?
 				bool bAdditive=false;
 
 				// Size of the edge far tile
 				TileFar.Size=tileSize;
-
-				// Base pointer of the texture
-				TileFar.DstPixels=(CRGBA*)&(getPixels()[0]);
 
 				// Get a tile element reference for this tile.
 				const CTileElement &tileElm=patch->Tiles[nTileInPatch];
@@ -357,7 +388,8 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 						sint nRot=tileElm.getTileOrient(l);
 
 						// Source pointer
-						TileFar.SrcDiffusePixels=pTile->getPixels (CTileFarBank::diffuse, orderX);
+						const CRGBA*	pSrcDiffusePixels=pTile->getPixels (CTileFarBank::diffuse, orderX);
+						const CRGBA*	pSrcAdditivePixels=NULL;
 
 						// Additive ?
 						if (pTile->isFill (CTileFarBank::additive))
@@ -366,73 +398,82 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 							bAdditive=true;
 
 							// Get additive pointer
-							TileFar.SrcAdditivePixels=pTile->getPixels (CTileFarBank::additive, orderX);
+							pSrcAdditivePixels=pTile->getPixels (CTileFarBank::additive, orderX);
 						}
+
+						// Source size
+						sint sourceSize;
+
+						// Source offset (for 256)
+						uint sourceOffset=0;
 
 						// 256 ?
 						if (is256x256)
 						{
-							// Calc offset
-							uint nOffset=0;
-
 							// On the left ?
 							if (uvOff&0x02)
-								nOffset+=tileSize;
+								sourceOffset+=tileSize;
 
 							// On the bottom ?
 							if ((uvOff==1)||(uvOff==2))
-								nOffset+=2*tileSize*tileSize;
-
-							// Change origine of the diffuse bitmaps
-							TileFar.SrcDiffusePixels+=nOffset;
-
-							// Change origine of the additive bitmaps
-							if (TileFar.SrcAdditivePixels)
-								TileFar.SrcAdditivePixels+=nOffset;
+								sourceOffset+=2*tileSize*tileSize;
 
 							// Yes, 256
-							TileFar.SrcDeltaY=tileSize<<1;
+							sourceSize=tileSize<<1;
 						}
 						else
 						{
 							// No, 128
-							TileFar.SrcDeltaY=tileSize;
+							sourceSize=tileSize;
 						}
 
 						// Compute offset and deltas
 						switch (nRot)
 						{
 						case 0:
-							// Destination pointer
-							TileFar.DstOffset=nBaseDstTilePixels;
+							// Source pointers
+							TileFar.SrcDiffusePixels=pSrcDiffusePixels+sourceOffset;
+							TileFar.SrcAdditivePixels=pSrcAdditivePixels+sourceOffset;
 
-							// Destination delta
-							TileFar.DstDeltaX=dstDeltaX;
-							TileFar.DstDeltaY=dstDeltaY;
+							// Source delta
+							TileFar.SrcDeltaX=1;
+							TileFar.SrcDeltaY=sourceSize;
 							break;
 						case 1:
-							// Destination pointer
-							TileFar.DstOffset=nBaseDstTilePixels+dstDeltaY*(tileSize-1);
+							{
+								// Source pointers
+								uint newOffset=sourceOffset+(tileSize-1);
+								TileFar.SrcDiffusePixels=pSrcDiffusePixels+newOffset;
+								TileFar.SrcAdditivePixels=pSrcAdditivePixels+newOffset;
 
-							// Destination delta
-							TileFar.DstDeltaX=-dstDeltaY;
-							TileFar.DstDeltaY=dstDeltaX;
+								// Source delta
+								TileFar.SrcDeltaX=sourceSize;
+								TileFar.SrcDeltaY=-1;
+							}
 							break;
 						case 2:
-							// Destination pointer
-							TileFar.DstOffset=nBaseDstTilePixels+dstDeltaY*(tileSize-1)+dstDeltaX*(tileSize-1);
+							{
+								// Destination pointer
+								uint newOffset=sourceOffset+(tileSize-1)*sourceSize+tileSize-1;
+								TileFar.SrcDiffusePixels=pSrcDiffusePixels+newOffset;
+								TileFar.SrcAdditivePixels=pSrcAdditivePixels+newOffset;
 
-							// Destination delta
-							TileFar.DstDeltaX=-dstDeltaX;
-							TileFar.DstDeltaY=-dstDeltaY;
+								// Source delta
+								TileFar.SrcDeltaX=-1;
+								TileFar.SrcDeltaY=-sourceSize;
+							}
 							break;
 						case 3:
-							// Destination pointer
-							TileFar.DstOffset=nBaseDstTilePixels+dstDeltaX*(tileSize-1);
+							{
+								// Destination pointer
+								uint newOffset=sourceOffset+(tileSize-1)*sourceSize;
+								TileFar.SrcDiffusePixels=pSrcDiffusePixels+newOffset;
+								TileFar.SrcAdditivePixels=pSrcAdditivePixels+newOffset;
 
-							// Destination delta
-							TileFar.DstDeltaX=dstDeltaY;
-							TileFar.DstDeltaY=-dstDeltaX;
+								// Source delta
+								TileFar.SrcDeltaX=-sourceSize;
+								TileFar.SrcDeltaY=1;
+							}
 							break;
 						}
 
@@ -480,13 +521,203 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 // ***************************************************************************
 // TODO: asm implementation of this function \\//
 //#ifdef NL_NO_ASM
+extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
+{
+	// Will be much more efficient with a MMX based code !
+
+	// Ptr on the begining of the line
+	const NL3D::CTileColor*		pColorTile=pLightmap->ColorTile;
+
+	// Ptr on the begining of the dst line
+	CRGBA*	pDstPixels=pLightmap->DstPixels;
+
+	// Expanded width
+	uint dstWidth=(pLightmap->Width-1)*pLightmap->MulFactor;
+	uint dstBlock=dstWidth*pLightmap->MulFactor;
+
+	// Switch to the optimal method for each expansion value
+	switch (pLightmap->MulFactor)
+	{
+	case 1:
+		{
+			// Expand lumel in bilinear
+			uint x, y;
+			for (y=0; y<pLightmap->Height-1; y++)
+			{
+				for (x=0; x<pLightmap->Width-1; x++)
+				{
+					// Comupte previous colors
+					uint color16=pColorTile[x].Color565;
+					uint shade=pColorTile[x].Shade;									// 8:0
+					uint shadingR=shade*(uint)pLightmap->SunColor.R;				// 8:8
+					uint shadingG=shade*(uint)pLightmap->SunColor.G;	
+					uint shadingB=shade*(uint)pLightmap->SunColor.B;
+					CRGBA value;
+
+					uint valueR=color16>>11;									// 8:16
+					pDstPixels->R=(((valueR<<3)|(valueR>>3))*shadingR)>>16;
+					uint valueG=color16&0x07e0;
+					pDstPixels->G=(((valueG>>3)|(valueG>>9))*shadingG)>>16;
+					uint valueB=color16&0x001f;
+					pDstPixels->B=(((valueB<<3)|(valueB>>2))*shadingB)>>16;
+
+					pDstPixels++;
+				}
+				pColorTile+=pLightmap->Width;
+			}
+		}
+		break;
+	case 2:
+	case 4:
+		{
+			// Expand lumel in bilinear
+			uint x, y;
+			for (y=0; y<pLightmap->Height-1; y++)
+			{
+				// Ptr on the line
+				CRGBA *pDst=pDstPixels;
+
+				// Comupte previous colors
+				uint color16=pColorTile[0].Color565;
+				uint shade=pColorTile[0].Shade;									// 8:0
+				uint shadingR=shade*(uint)pLightmap->SunColor.R;				// 8:8
+				uint shadingG=shade*(uint)pLightmap->SunColor.G;	
+				uint shadingB=shade*(uint)pLightmap->SunColor.B;
+				uint PreviousUpR=color16>>11;									// 8:16
+				PreviousUpR=((PreviousUpR<<3)|(PreviousUpR>>3))*shadingR;
+				uint PreviousUpG=color16&0x07e0;
+				PreviousUpG=((PreviousUpG>>3)|(PreviousUpG>>9))*shadingG;
+				uint PreviousUpB=color16&0x001f;
+				PreviousUpB=((PreviousUpB<<3)|(PreviousUpB>>2))*shadingB;
+
+				color16=pColorTile[pLightmap->Width].Color565;
+				shade=pColorTile[pLightmap->Width].Shade;
+				shadingR=shade*(uint)pLightmap->SunColor.R;
+				shadingG=shade*(uint)pLightmap->SunColor.G;
+				shadingB=shade*(uint)pLightmap->SunColor.B;
+				uint PreviousDownR=color16>>11;									// 8:16
+				PreviousDownR=((PreviousDownR<<3)|(PreviousDownR>>3))*shadingR;
+				uint PreviousDownG=color16&0x07e0;
+				PreviousDownG=((PreviousDownG>>3)|(PreviousDownG>>9))*shadingG;
+				uint PreviousDownB=color16&0x001f;
+				PreviousDownB=((PreviousDownB<<3)|(PreviousDownB>>2))*shadingB;
+
+				// Shade colors
+
+				// For the line
+				for (x=1; x<pLightmap->Width; x++)
+				{
+					// 2 next colors
+					CRGBA NextUp;
+					CRGBA NextDown;
+					color16=pColorTile[x].Color565;
+					shadingR=pColorTile[x].Shade*(uint)pLightmap->SunColor.R;
+					shadingG=pColorTile[x].Shade*(uint)pLightmap->SunColor.G;
+					shadingB=pColorTile[x].Shade*(uint)pLightmap->SunColor.B;
+					uint NextUpR=color16>>11;									// 8:16
+					NextUpR=((NextUpR<<3)|(NextUpR>>3))*shadingR;
+					uint NextUpG=color16&0x07e0;
+					NextUpG=((NextUpG>>3)|(NextUpG>>9))*shadingG;
+					uint NextUpB=color16&0x001f;
+					NextUpB=((NextUpB<<3)|(NextUpB>>2))*shadingB;
+
+					color16=pColorTile[pLightmap->Width+x].Color565;
+					shadingR=pColorTile[pLightmap->Width+x].Shade*(uint)pLightmap->SunColor.R;
+					shadingG=pColorTile[pLightmap->Width+x].Shade*(uint)pLightmap->SunColor.G;
+					shadingB=pColorTile[pLightmap->Width+x].Shade*(uint)pLightmap->SunColor.B;
+					uint NextDownR=color16>>11;									// 8:16
+					NextDownR=((NextDownR<<3)|(NextDownR>>3))*shadingR;
+					uint NextDownG=color16&0x07e0;
+					NextDownG=((NextDownG>>3)|(NextDownG>>9))*shadingG;
+					uint NextDownB=color16&0x001f;
+					NextDownB=((NextDownB<<3)|(NextDownB>>2))*shadingB;
+
+					// 2x2 expansion ?
+					if (pLightmap->MulFactor==2)
+					{
+						// Expand 4x4
+						pDst[0].R=PreviousUpR>>16;													// 8:16
+						pDst[0].G=PreviousUpG>>16;													
+						pDst[0].B=PreviousUpB>>16;													
+						pDst[1].R=(uint8)(((uint)PreviousUpR+(uint)NextUpR)>>17);					// 8:17
+						pDst[1].G=(uint8)(((uint)PreviousUpG+(uint)NextUpG)>>17);
+						pDst[1].B=(uint8)(((uint)PreviousUpB+(uint)NextUpB)>>17);
+						pDst[dstWidth].R=(uint8)(((uint)PreviousUpR+(uint)PreviousDownR)>>17);		// 8:17
+						pDst[dstWidth].G=(uint8)(((uint)PreviousUpG+(uint)PreviousDownG)>>17);
+						pDst[dstWidth].B=(uint8)(((uint)PreviousUpB+(uint)PreviousDownB)>>17);
+						pDst[dstWidth+1].R=(uint8)(((uint)PreviousUpR+(uint)NextUpR+(uint)PreviousDownR+(uint)NextDownR)>>18);	// 8:18
+						pDst[dstWidth+1].G=(uint8)(((uint)PreviousUpG+(uint)NextUpG+(uint)PreviousDownG+(uint)NextDownG)>>18);
+						pDst[dstWidth+1].B=(uint8)(((uint)PreviousUpB+(uint)NextUpB+(uint)PreviousDownB+(uint)NextDownB)>>18);
+					}
+					else	// 4x4 expansion
+					{
+						// Pointer on line dst
+						CRGBA *pDstLine=pDst;
+
+						// For each 4x4 expanded pixels
+						int s,t;
+						for (t=0; t<4; t++)
+						{
+							// Compute start and end of line
+							uint startR=(uint)PreviousUpR*(4-t)+(uint)PreviousDownR*t;		// 8:18
+							uint startG=(uint)PreviousUpG*(4-t)+(uint)PreviousDownG*t;
+							uint startB=(uint)PreviousUpB*(4-t)+(uint)PreviousDownB*t;
+							uint endR=(uint)NextUpR*(4-t)+(uint)NextDownR*t;				// 8:18
+							uint endG=(uint)NextUpG*(4-t)+(uint)NextDownG*t;
+							uint endB=(uint)NextUpB*(4-t)+(uint)NextDownB*t;						
+
+							// Compute the line
+							for (s=0; s<4; s++)
+							{
+								pDstLine[s].R=((uint)startR*(4-s)+(uint)endR*s)>>20;		// 8:20
+								pDstLine[s].G=((uint)startG*(4-s)+(uint)endG*s)>>20;
+								pDstLine[s].B=((uint)startB*(4-s)+(uint)endB*s)>>20;
+							}
+
+							// Next line
+							pDstLine+=dstWidth;
+						}
+					}
+
+					// New next and previous colors
+					if (x<pLightmap->Width)
+					{
+						PreviousUpR=NextUpR;
+						PreviousDownR=NextDownR;
+						PreviousUpG=NextUpG;
+						PreviousDownG=NextDownG;
+						PreviousUpB=NextUpB;
+						PreviousDownB=NextDownB;
+					}
+
+					// Next pixel dst
+					pDst+=pLightmap->MulFactor;
+				}
+				pColorTile+=pLightmap->Width;
+				pDstPixels+=dstBlock;
+			}
+		}
+		break;
+	default:
+		nlassert (0);		// no, only x4 x2 and x1 expansion.
+	}
+}
+//#endif // NL_NO_ASM
+
+
+// ***************************************************************************
+// TODO: asm implementation of this function \\//
+//#ifdef NL_NO_ASM
 void NL3D_drawFarTileInFarTexture (const NL3D_CComputeTileFar* pTileFar)
 {
 	// Pointer of the Src diffuse pixels
 	const CRGBA* pSrcPixels=pTileFar->SrcDiffusePixels;
 
 	// Pointer of the Dst pixels
-	CRGBA* pDstPixels=pTileFar->DstPixels+pTileFar->DstOffset;
+	const CRGBA* pSrcLightPixels=pTileFar->SrcLightingPixels;
+
+	// Pointer of the Dst pixels
+	CRGBA* pDstPixels=pTileFar->DstPixels;
 
 	// For each pixels
 	int x, y;
@@ -495,6 +726,9 @@ void NL3D_drawFarTileInFarTexture (const NL3D_CComputeTileFar* pTileFar)
 		// Pointer of the source line
 		const CRGBA* pSrcLine=pSrcPixels;
 
+		// Pointer of the source lighting line
+		const CRGBA* pSrcLightingLine=pSrcLightPixels;
+		
 		// Pointer of the destination line
 		CRGBA* pDstLine=pDstPixels;
 
@@ -502,15 +736,19 @@ void NL3D_drawFarTileInFarTexture (const NL3D_CComputeTileFar* pTileFar)
 		for (x=0; x<pTileFar->Size; x++)
 		{
 			// Read and write a pixel
-			*pDstLine=*pSrcLine;
+			pDstLine->R=(uint8)(((uint)pSrcLine->R*(uint)pSrcLightingLine->R)>>8);
+			pDstLine->G=(uint8)(((uint)pSrcLine->G*(uint)pSrcLightingLine->G)>>8);
+			pDstLine->B=(uint8)(((uint)pSrcLine->B*(uint)pSrcLightingLine->B)>>8);
 
 			// Next pixel
-			pSrcLine++;
+			pSrcLine+=pTileFar->SrcDeltaX;
+			pSrcLightingLine++;
 			pDstLine+=pTileFar->DstDeltaX;
 		}
 
 		// Next line
 		pSrcPixels+=pTileFar->SrcDeltaY;
+		pSrcLightPixels+=pTileFar->SrcLightingDeltaY;
 		pDstPixels+=pTileFar->DstDeltaY;
 	}
 }
@@ -526,7 +764,10 @@ void NL3D_drawFarTileInFarTextureAlpha (const NL3D_CComputeTileFar* pTileFar)
 	const CRGBA* pSrcPixels=pTileFar->SrcDiffusePixels;
 
 	// Pointer of the Dst pixels
-	CRGBA* pDstPixels=pTileFar->DstPixels+pTileFar->DstOffset;
+	const CRGBA* pSrcLightPixels=pTileFar->SrcLightingPixels;
+
+	// Pointer of the Dst pixels
+	CRGBA* pDstPixels=pTileFar->DstPixels;
 
 	// Fill the buffer with layer 0
 	int x, y;
@@ -534,6 +775,9 @@ void NL3D_drawFarTileInFarTextureAlpha (const NL3D_CComputeTileFar* pTileFar)
 	{
 		// Pointer of the source line
 		const CRGBA* pSrcLine=pSrcPixels;
+
+		// Pointer of the source lighting line
+		const CRGBA* pSrcLightingLine=pSrcLightPixels;
 
 		// Pointer of the Dst pixels
 		CRGBA* pDstLine=pDstPixels;
@@ -544,17 +788,19 @@ void NL3D_drawFarTileInFarTextureAlpha (const NL3D_CComputeTileFar* pTileFar)
 			// Read and write a pixel
 			register uint alpha=pSrcLine->A;
 			register uint oneLessAlpha=255-pSrcLine->A;
-			pDstLine->R=(uint8)(((uint)pSrcLine->R*alpha+(uint)pDstLine->R*oneLessAlpha)>>8);
-			pDstLine->G=(uint8)(((uint)pSrcLine->G*alpha+(uint)pDstLine->G*oneLessAlpha)>>8);
-			pDstLine->B=(uint8)(((uint)pSrcLine->B*alpha+(uint)pDstLine->B*oneLessAlpha)>>8);
+			pDstLine->R=(uint8)(((((uint)pSrcLine->R*(uint)pSrcLightingLine->R)>>8)*alpha+(uint)pDstLine->R*oneLessAlpha)>>8);
+			pDstLine->G=(uint8)(((((uint)pSrcLine->G*(uint)pSrcLightingLine->G)>>8)*alpha+(uint)pDstLine->G*oneLessAlpha)>>8);
+			pDstLine->B=(uint8)(((((uint)pSrcLine->B*(uint)pSrcLightingLine->B)>>8)*alpha+(uint)pDstLine->B*oneLessAlpha)>>8);
 
 			// Next pixel
-			pSrcLine++;
+			pSrcLine+=pTileFar->SrcDeltaX;
+			pSrcLightingLine++;
 			pDstLine+=pTileFar->DstDeltaX;
 		}
 
 		// Next line
 		pSrcPixels+=pTileFar->SrcDeltaY;
+		pSrcLightPixels+=pTileFar->SrcLightingDeltaY;
 		pDstPixels+=pTileFar->DstDeltaY;
 	}
 }
@@ -573,7 +819,10 @@ void NL3D_drawFarTileInFarTextureAdditive (const NL3D_CComputeTileFar* pTileFar)
 	const CRGBA* pSrcAddPixels=pTileFar->SrcDiffusePixels;
 
 	// Pointer of the Dst pixels
-	CRGBA* pDstPixels=pTileFar->DstPixels+pTileFar->DstOffset;
+	const CRGBA* pSrcLightPixels=pTileFar->SrcLightingPixels;
+
+	// Pointer of the Dst pixels
+	CRGBA* pDstPixels=pTileFar->DstPixels;
 
 	// For each pixels
 	int x, y;
@@ -585,6 +834,9 @@ void NL3D_drawFarTileInFarTextureAdditive (const NL3D_CComputeTileFar* pTileFar)
 		// Pointer of the source line
 		const CRGBA* pSrcAddLine=pSrcAddPixels;
 
+		// Pointer of the source lighting line
+		const CRGBA* pSrcLightingLine=pSrcLightPixels;
+
 		// Pointer of the destination line
 		CRGBA* pDstLine=pDstPixels;
 
@@ -592,28 +844,30 @@ void NL3D_drawFarTileInFarTextureAdditive (const NL3D_CComputeTileFar* pTileFar)
 		for (x=0; x<pTileFar->Size; x++)
 		{
 			// Read and write a pixel
-			uint nTmp=(uint)pSrcLine->R+(uint)pSrcAddLine->R;
+			uint nTmp=(((uint)pSrcLine->R*(uint)pSrcLightingLine->R)>>8)+(uint)pSrcAddLine->R;
 			if (nTmp>255)
 				nTmp=255;
 			pDstLine->R=(uint8)nTmp;
-			nTmp=(uint)pSrcLine->G+(uint)pSrcAddLine->G;
+			nTmp=(((uint)pSrcLine->G*(uint)pSrcLightingLine->G)>>8)+(uint)pSrcAddLine->G;
 			if (nTmp>255)
 				nTmp=255;
 			pDstLine->G=(uint8)nTmp;
-			nTmp=(uint)pSrcLine->B+(uint)pSrcAddLine->B;
+			nTmp=(((uint)pSrcLine->B*(uint)pSrcLightingLine->B)>>8)+(uint)pSrcAddLine->B;
 			if (nTmp>255)
 				nTmp=255;
 			pDstLine->B=(uint8)nTmp;
 
 			// Next pixel
-			pSrcLine++;
-			pSrcAddLine++;
+			pSrcLine+=pTileFar->SrcDeltaX;
+			pSrcAddLine+=pTileFar->SrcDeltaX;
+			pSrcLightingLine++;
 			pDstLine+=pTileFar->DstDeltaX;
 		}
 
 		// Next line
 		pSrcPixels+=pTileFar->SrcDeltaY;
 		pSrcAddPixels+=pTileFar->SrcDeltaY;
+		pSrcLightPixels+=pTileFar->SrcLightingDeltaY;
 		pDstPixels+=pTileFar->DstDeltaY;
 	}
 }
@@ -632,7 +886,10 @@ void NL3D_drawFarTileInFarTextureAdditiveAlpha (const NL3D_CComputeTileFar* pTil
 	const CRGBA* pSrcAddPixels=pTileFar->SrcAdditivePixels;
 
 	// Pointer of the Dst pixels
-	CRGBA* pDstPixels=pTileFar->DstPixels+pTileFar->DstOffset;
+	const CRGBA* pSrcLightPixels=pTileFar->SrcLightingPixels;
+
+	// Pointer of the Dst pixels
+	CRGBA* pDstPixels=pTileFar->DstPixels;
 
 	// Fill the buffer with layer 0
 	int x, y;
@@ -643,6 +900,9 @@ void NL3D_drawFarTileInFarTextureAdditiveAlpha (const NL3D_CComputeTileFar* pTil
 
 		// Pointer of the source line
 		const CRGBA* pSrcAddLine=pSrcAddPixels;
+
+		// Pointer of the source lighting line
+		const CRGBA* pSrcLightingLine=pSrcLightPixels;
 
 		// Pointer of the Dst pixels
 		CRGBA* pDstLine=pDstPixels;
@@ -655,28 +915,30 @@ void NL3D_drawFarTileInFarTextureAdditiveAlpha (const NL3D_CComputeTileFar* pTil
 			register uint oneLessAlpha=255-pSrcLine->A;
 			
 			// Read and write a pixel
-			uint nTmp=(uint)pSrcLine->R+(uint)pSrcAddLine->R;
+			uint nTmp=(((uint)pSrcLine->R*(uint)pSrcLightingLine->R)>>8)+(uint)pSrcAddLine->R;
 			if (nTmp>255)
 				nTmp=255;
 			pDstLine->R=(uint8)((nTmp*alpha+pDstLine->R*oneLessAlpha)>>8);
-			nTmp=(uint)pSrcLine->G+(uint)pSrcAddLine->G;
+			nTmp=(((uint)pSrcLine->G*(uint)pSrcLightingLine->G)>>8)+(uint)pSrcAddLine->G;
 			if (nTmp>255)
 				nTmp=255;
 			pDstLine->G=(uint8)((nTmp*alpha+pDstLine->G*oneLessAlpha)>>8);
-			nTmp=(uint)pSrcLine->B+(uint)pSrcAddLine->B;
+			nTmp=(((uint)pSrcLine->B*(uint)pSrcLightingLine->B)>>8)+(uint)pSrcAddLine->B;
 			if (nTmp>255)
 				nTmp=255;
 			pDstLine->B=(uint8)((nTmp*alpha+pDstLine->B*oneLessAlpha)>>8);
 
 			// Next pixel
-			pSrcLine++;
-			pSrcAddLine++;
+			pSrcLine+=pTileFar->SrcDeltaX;
+			pSrcAddLine+=pTileFar->SrcDeltaX;
+			pSrcLightingLine++;
 			pDstLine+=pTileFar->DstDeltaX;
 		}
 
 		// Next line
 		pSrcPixels+=pTileFar->SrcDeltaY;
 		pSrcAddPixels+=pTileFar->SrcDeltaY;
+		pSrcLightPixels+=pTileFar->SrcLightingDeltaY;
 		pDstPixels+=pTileFar->DstDeltaY;
 	}
 }

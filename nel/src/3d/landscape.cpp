@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.32 2001/01/11 15:29:28 berenguier Exp $
+ * $Id: landscape.cpp,v 1.33 2001/01/11 16:01:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -837,7 +837,7 @@ void		CLandscape::releaseTileLightMap(uint tileLightMapId)
 
 
 // ***************************************************************************
-CPatchRdrPass*	CLandscape::getFarRenderPass(CPatch* pPatch, uint farIndex, float& farUVScale, float& farUBias, float& farVBias, bool& bRot)
+CPatchRdrPass*	CLandscape::getFarRenderPass(CPatch* pPatch, uint farIndex, float& farUScale, float& farVScale, float& farUBias, float& farVBias, bool& bRot)
 {
 	// Check args
 	nlassert (farIndex>0);
@@ -883,7 +883,7 @@ CPatchRdrPass*	CLandscape::getFarRenderPass(CPatch* pPatch, uint farIndex, float
 	CTextureFar *pTextureFar=(CTextureFar*)(&*(pass->TextureDiffuse));
 
 	// Add the patch to the far texture
-	if (pTextureFar->addPatch (pPatch, farUVScale, farUBias, farVBias, bRot))
+	if (pTextureFar->addPatch (pPatch, farUScale, farVScale, farUBias, farVBias, bRot))
 	{
 		// The render state is full, remove from the free list..
 		_FarRdrPassSetVectorFree[passIndex].erase (pass);

@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.4 2001/01/08 17:58:29 corvazier Exp $
+ * $Id: texture_far.h,v 1.5 2001/01/11 16:01:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,12 +48,17 @@ namespace NL3D
 
 class CPatch;
 class CTileFarBank;
+class CTileColor;
 
 /**
  * A CTextureFar is a set of NL_NUM_FAR_PATCHES_BY_TEXTURE texture used to map a whole patch when it is in far Mode. (ie not in tile mode).
  * A CTextureFar handle several patch texture.\\
  *
  * Before adding patch to the texture, you must call setSizeOfFarPatch, to intialize the texture.
+ *
+ * TODO: keeping the far texture level1 alive when the tile pass in level0 (tile mode), don't erase it.
+ * TODO: add an hysteresis to avoid swap of far texture on boundaries of levels
+ * TODO: set the upload format in rgba565
  *
  * \author Cyril Corvazier
  * \author Nevrax France
@@ -107,7 +112,7 @@ public:
 	 *  \param bRot will receive true if the texture is rotated of 90° to the left or false. 
 	 *         You should take care of this value to compute UV coordinates.
 	 */
-	bool						addPatch (CPatch *pPatch, float& far1UVScale, float& far1UBias, float& far1VBias, bool& bRot);
+	bool						addPatch (CPatch *pPatch, float& far1UScale, float& far1VScale, float& far1UBias, float& far1VBias, bool& bRot);
 
 	/**
 	 *  Remove a patch in the CTexture Patch.
@@ -164,13 +169,19 @@ public:
 	const NLMISC::CRGBA*		SrcAdditivePixels;
 
 	// Source deltaY
+	sint32						SrcDeltaX;
+
+	// Source deltaY
 	sint32						SrcDeltaY;
+
+	// Source lighting
+	const NLMISC::CRGBA*		SrcLightingPixels;
+
+	// Delta Y for lighting
+	sint32						SrcLightingDeltaY;
 
 	// TileFar pixels
 	NLMISC::CRGBA*				DstPixels;
-
-	// Destination offset
-	sint32						DstOffset;
 
 	// Destination deltaX
 	sint32						DstDeltaX;
@@ -182,7 +193,31 @@ public:
 	sint32						Size;
 };
 
+// For NL3D_expandLightmap external call
+struct NL3D_CExpandLightmap
+{
+public:
+	// CTileColor array
+	const NL3D::CTileColor*		ColorTile;
+
+	// Width of the array
+	uint32						Width;
+
+	// Height of the array
+	uint32						Height;
+
+	// Mul factor for the size (1, 2 or 4)
+	uint32						MulFactor;
+
+	// Sun color
+	NLMISC::CRGBA				SunColor;
+
+	// Destination array
+	NLMISC::CRGBA*				DstPixels;
+};
+	
 // Extern ASM functions
+extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap);
 extern "C" void NL3D_drawFarTileInFarTexture (const NL3D_CComputeTileFar* pTileFar);
 extern "C" void NL3D_drawFarTileInFarTextureAdditive (const NL3D_CComputeTileFar* pTileFar);
 extern "C" void NL3D_drawFarTileInFarTextureAlpha (const NL3D_CComputeTileFar* pTileFar);

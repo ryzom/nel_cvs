@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.27 2001/01/11 15:29:01 berenguier Exp $
+ * $Id: landscape.h,v 1.28 2001/01/11 16:01:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -210,7 +210,7 @@ private:
 	friend class	CZone;
 
 	// Return the render pass for a far texture here.
-	CPatchRdrPass	*getFarRenderPass(CPatch* pPatch, uint farIndex, float& far1UVScale, float& far1UBias, float& far1VBias, bool& bRot);
+	CPatchRdrPass	*getFarRenderPass(CPatch* pPatch, uint farIndex, float& far1UScale, float& far1VScale, float& far1UBias, float& far1VBias, bool& bRot);
 	// Free the render pass for a far texture here.
 	void freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint farIndex);
 	// Return the render pass for a tile Id, and a patch Lightmap.

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.25 2001/01/11 13:54:04 berenguier Exp $
+ * $Id: patch.h,v 1.26 2001/01/11 16:01:33 corvazier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -261,8 +261,8 @@ private:
 	// For Far Texture coordinates.
 	sint			Far0;			// The level of First Far: 0,1,2 or 3. 0 means Tile.
 	sint			Far1;			// The level of second Far, for transition: 1,2 or 3. 0 means none.
-	float			Far0UVScale, Far0UBias, Far0VBias;
-	float			Far1UVScale, Far1UBias, Far1VBias;
+	float			Far0UScale, Far0VScale, Far0UBias, Far0VBias;
+	float			Far1UScale, Far1VScale, Far1UBias, Far1VBias;
 
 	// Pack 4 bytes
 	// {

@@ -1,7 +1,7 @@
 /** \file pacs.cpp
  * pacs management
  *
- * $Id: pacs.cpp,v 1.6 2001/07/20 14:29:56 legros Exp $
+ * $Id: pacs.cpp,v 1.7 2001/07/27 09:07:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,33 +92,43 @@ void	initPACS()
 	VisualCollisionManager->setLandscape(Landscape);
 
 	// create a move primite for each instance in the instance group
-	uint	i;
-	for (i=0; i<InstanceGroup->getNumInstance(); ++i)
+	uint	i, j;
+	for (j=0; j<InstanceGroups.size(); ++j)
 	{
-		UMovePrimitive	*primitive = MoveContainer->addCollisionablePrimitive(0, 1);
-		primitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
-		primitive->setReactionType(UMovePrimitive::DoNothing);
-		primitive->setTriggerType(UMovePrimitive::NotATrigger);
-		primitive->setCollisionMask(OtherCollisionBit+SelfCollisionBit+SnowballCollisionBit);
-		primitive->setOcclusionMask(StaticCollisionBit);
-		primitive->setObstacle(true);
-
-		string	name = InstanceGroup->getInstanceName(i);
-
-		if (strlwr(name) == string("pi_po_igloo_a"))
+		for (i=0; i<InstanceGroups[j]->getNumInstance(); ++i)
 		{
-			primitive->setRadius(3.0f);
+			UMovePrimitive	*primitive = MoveContainer->addCollisionablePrimitive(0, 1);
+			primitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
+			primitive->setReactionType(UMovePrimitive::DoNothing);
+			primitive->setTriggerType(UMovePrimitive::NotATrigger);
+			primitive->setCollisionMask(OtherCollisionBit+SelfCollisionBit+SnowballCollisionBit);
+			primitive->setOcclusionMask(StaticCollisionBit);
+			primitive->setObstacle(true);
+
+			// setup the radius of each mesh in the instance group
+			string	name = InstanceGroups[j]->getInstanceName(i);
+			float rad;
+
+			     if (strlwr(name) == "pi_po_igloo_a")		rad = 4.5f;
+			else if (strlwr(name) == "pi_po_snowman_a")		rad = 1.0f;
+			else if (strlwr(name) == "pi_po_pinetree_a")	rad = 2.0f;
+			else if (strlwr(name) == "pi_po_tree_a")		rad = 2.0f;
+			else if (strlwr(name) == "pi_po_pingoo_stat_a")	rad = 1.0f;
+			else if (strlwr(name) == "pi_po_gnu_stat_a")	rad = 1.0f;
+			else
+			{
+				rad = 2.0f;
+				nlwarning ("Instance name %s doesn't have a good radius for collision", name.c_str());
+			}
+
+			primitive->setRadius(rad);
 			primitive->setHeight(6.0f);
+
+			primitive->insertInWorldImage(0);
+			CVector	pos = InstanceGroups[j]->getInstancePos(i);
+			primitive->setGlobalPosition(CVectorD(pos.x, pos.y, pos.z-1.5f), 0);
+			InstancesMovePrimitives.push_back(primitive);
 		}
-		else
-		{
-			primitive->setRadius(1.0f);
-			primitive->setHeight(2.0f);
-		}
-		primitive->insertInWorldImage(0);
-		CVector	pos = InstanceGroup->getInstancePos(i);
-		primitive->setGlobalPosition(CVectorD(pos.x, pos.y, pos.z-1.5f), 0);
-		InstancesMovePrimitives.push_back(primitive);
 	}
 }
 

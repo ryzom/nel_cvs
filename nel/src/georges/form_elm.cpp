@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.2 2002/05/17 11:38:42 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.3 2002/05/17 20:18:44 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1821,7 +1821,7 @@ bool CFormElmAtom::getValue (string &result, bool evaluate) const
 		for (i=0; i<predefCount; i++)
 		{
 			// Ref on the value
-			const CType::CDefinition &def = Type->Definitions[predefCount];
+			const CType::CDefinition &def = Type->Definitions[i];
 
 			// This predefinition ?
 			if (def.Label == result)

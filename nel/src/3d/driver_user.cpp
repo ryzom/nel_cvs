@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.2 2001/02/28 16:19:51 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.3 2001/03/02 09:27:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,9 +62,9 @@ UDriver					*createDriver()
 CDriverUser::CDriverUser()
 {
 	// The enum of IDriver and UDriver MUST be the same!!!
-	nlassert(IDriver::idCount == UDriver::idCount);
-	nlassert(IDriver::typeCount == UDriver::typeCount);
-	nlassert(IDriver::iconCount == UDriver::iconCount);
+	nlassert((uint)IDriver::idCount == (uint)UDriver::idCount);
+	nlassert((uint)IDriver::typeCount == (uint)UDriver::typeCount);
+	nlassert((uint)IDriver::iconCount == (uint)UDriver::iconCount);
 
 
 	// Static Initialisation.

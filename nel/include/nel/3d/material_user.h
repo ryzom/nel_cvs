@@ -1,7 +1,7 @@
 /** \file material_user.h
  * <File description>
  *
- * $Id: material_user.h,v 1.2 2001/02/28 16:19:51 berenguier Exp $
+ * $Id: material_user.h,v 1.3 2001/03/02 09:28:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,8 +57,8 @@ public:
 	{
 		_Material.initUnlit();
 		// Enum assertion.
-		nlassert(UMaterial::blendCount==CMaterial::blendCount);
-		nlassert(UMaterial::zfuncCount==CMaterial::zfuncCount);
+		nlassert((uint)UMaterial::blendCount==(uint)CMaterial::blendCount);
+		nlassert((uint)UMaterial::zfuncCount==(uint)CMaterial::zfuncCount);
 	}
 	virtual ~CMaterialUser()
 	{

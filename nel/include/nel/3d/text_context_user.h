@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.2 2001/02/28 16:19:51 berenguier Exp $
+ * $Id: text_context_user.h,v 1.3 2001/03/02 09:28:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,7 +53,7 @@ public:
 	CTextContextUser(const std::string fontFileName, const std::string fontExFileName, IDriver *drv, CFontManager *fmg)
 	{
 		// The enum of CComputedString and UTextContext MUST be the same!!!
-		nlassert(UTextContext::HotSpotCount== CComputedString::HotSpotCount);
+		nlassert((uint)UTextContext::HotSpotCount== (uint)CComputedString::HotSpotCount);
 
 		_Driver= drv;
 		_TextContext.init(drv, fmg);

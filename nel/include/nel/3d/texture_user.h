@@ -1,7 +1,7 @@
 /** \file texture_user.h
  * <File description>
  *
- * $Id: texture_user.h,v 1.2 2001/02/28 16:19:51 berenguier Exp $
+ * $Id: texture_user.h,v 1.3 2001/03/02 09:28:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,10 +63,10 @@ public:
 		_Texture=text;
 
 		// UTexture and ITexture MUST be the same!
-		nlassert(UTexture::WrapModeCount==ITexture::WrapModeCount);
-		nlassert(UTexture::UploadFormatCount==ITexture::UploadFormatCount);
-		nlassert(UTexture::MagFilterCount==ITexture::MagFilterCount);
-		nlassert(UTexture::MinFilterCount==ITexture::MinFilterCount);
+		nlassert((uint)UTexture::WrapModeCount==(uint)ITexture::WrapModeCount);
+		nlassert((uint)UTexture::UploadFormatCount==(uint)ITexture::UploadFormatCount);
+		nlassert((uint)UTexture::MagFilterCount==(uint)ITexture::MagFilterCount);
+		nlassert((uint)UTexture::MinFilterCount==(uint)ITexture::MinFilterCount);
 	}
 	virtual ~CTextureUser()
 	{
@@ -177,6 +177,9 @@ class	CTextureRawUser : virtual public UTextureRaw, public CTextureUser
 public:
 
 	/// TODO_TEXTURERAW
+	CTextureRawUser() : CTextureUser(NULL)
+	{
+	}
 };
 
 

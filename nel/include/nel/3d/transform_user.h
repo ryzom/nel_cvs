@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.2 2001/02/28 16:19:51 berenguier Exp $
+ * $Id: transform_user.h,v 1.3 2001/03/02 09:28:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ public:
 		_Transform= (CTransform*)trans;
 
 		// Same enums!!
-		nlassert(UTransform::VisibilityCount == CHrcTrav::VisibilityCount);
+		nlassert((uint)UTransform::VisibilityCount == (uint)CHrcTrav::VisibilityCount);
 	}
 	virtual	~CTransformUser()
 	{

@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.9 2002/01/28 14:19:24 vizerie Exp $
+ * $Id: polygon.cpp,v 1.10 2002/01/28 14:50:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -640,8 +640,9 @@ bool        CPolygon2D::intersect(const CPolygon2D &other) const
 
 			/// get the line equation of the current segment
 			float a, b, c; /// contains the seg 2d equation
-			getLineEquation(k, a, b, c);			
-			for (uint l = 0; l < other.Vertices.size(); ++l)
+			getLineEquation(k, a, b, c);
+			uint l;
+			for (l = 0; l < other.Vertices.size(); ++l)
 			{
 				const CVector2f &ov = other.Vertices[l];
 				if ( orient * (ov.x * a + ov.y * b +c) > 0.f) break;

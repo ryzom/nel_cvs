@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.16 2001/08/28 14:22:30 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.17 2001/08/29 10:27:42 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -435,6 +435,7 @@ bool CInstanceGroup::addToScene (CScene& scene)
 bool CInstanceGroup::linkToParent (CInstanceGroup *pFather)
 {
 	uint32 i, j;
+	bool ret;
 
 	for (i = 0; i < pFather->_ClusterInstances.size(); ++i)
 	{
@@ -444,6 +445,7 @@ bool CInstanceGroup::linkToParent (CInstanceGroup *pFather)
 				return true;
 		}
 	}
+	ret = false;
 	for (j = 0; j < this->_ClusterInstances.size(); ++j)
 	{
 		if ((this->_ClusterInstances[j]->FatherVisible) ||
@@ -455,12 +457,12 @@ bool CInstanceGroup::linkToParent (CInstanceGroup *pFather)
 				{
 					pFather->_ClusterInstances[i]->Children.push_back(this->_ClusterInstances[j]);
 					this->_ClusterInstances[j]->Father = pFather->_ClusterInstances[i];
-					return true;
+					ret = true;
 				}
 			}
 		}
 	}
-	return false;
+	return ret;
 }
 
 // ***************************************************************************
@@ -496,7 +498,7 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 	}
 
 	scene.deleteModel (_Root);
-	_Root= NULL;
+	_Root = NULL;
 
 	return true;
 }

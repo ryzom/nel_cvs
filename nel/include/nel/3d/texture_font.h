@@ -1,7 +1,7 @@
 /** \file texture_font.h
  * <File description>
  *
- * $Id: texture_font.h,v 1.2 2000/12/22 13:24:28 berenguier Exp $
+ * $Id: texture_font.h,v 1.3 2001/01/15 11:11:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,9 @@ public:
 		_Height = 0;
 		setWrapS(ITexture::Clamp);
 		setWrapT(ITexture::Clamp);
+
+		// Font are always Alpha only.
+		setUploadFormat(Alpha);
 	}
 
 	
@@ -88,6 +91,9 @@ public:
 		_FontGen = desc.FontGen;
 		_Width = 0;
 		_Height = 0;
+
+		// Font are always Alpha only.
+		setUploadFormat(Alpha);
 	}
 
 	/** constructor
@@ -102,6 +108,9 @@ public:
 		_FontGen = fg;
 		_Width = 0;
 		_Height = 0;
+
+		// Font are always Alpha only.
+		setUploadFormat(Alpha);
 	}
 
 	uint32	getCharWidth() const {return _CharWidth;}

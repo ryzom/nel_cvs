@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.16 2001/01/09 14:55:20 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.17 2001/01/15 11:10:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,8 +73,8 @@ NLMISC::CSmartPtr<CMaterial> CFontManager::getFontMaterial(CFontDescriptor desc)
 		// generating texture
 		pTexFont->generate();
 		
-		// Eval mem Size
-		int nMemSize = pTexFont->getWidth()*pTexFont->getHeight()*4; 
+		// Eval mem Size (alpha only).
+		int nMemSize = pTexFont->getWidth()*pTexFont->getHeight(); 
 			
 		// adding TexTure to list
 		pMatFont= new CMaterial;

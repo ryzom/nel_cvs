@@ -1,7 +1,7 @@
 /** \file sound_system.h
  * This initilize the sound system
  *
- * $Id: sound_system.h,v 1.8 2002/11/25 14:14:32 boucher Exp $
+ * $Id: sound_system.h,v 1.9 2003/03/26 10:45:03 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,8 @@ public:
 		_SampleBanksFileName.insert(sampleBankFileName);
 	}
 
-	static void setSamplePath(std::string& path)		{ _SamplePath = path; }
+	static void setSamplePath(std::string& path)		{ _SamplePath = NLMISC::CPath::standardizePath(path, true); }
+	static void setPackedSheetPath(std::string& path)		{ _PackedSheetPath = NLMISC::CPath::standardizePath(path, true); }
 
 	/** Init the sound system this also load the sound bank
 	  * See setSoundBank
@@ -106,6 +107,7 @@ private:
 	//static NLSOUND::TSoundAnimPlayId	_CurrentPlayback;
 	static NLMISC::CVector				_Zero;
 	static std::string					_SamplePath;
+	static std::string					_PackedSheetPath;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.20 2003/03/03 13:05:37 boucher Exp $
+ * $Id: sound_system.cpp,v 1.21 2003/03/26 10:45:03 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,7 @@ CSoundAnimManager		*CSoundSystem::_AnimManager = NULL;
 //sint32					CSoundSystem::_CurrentPlayback = -1;
 CVector					CSoundSystem::_Zero = CVector::Null;
 string					CSoundSystem::_SamplePath;
+string					CSoundSystem::_PackedSheetPath;
 //sint					CSoundSystem::_AnimIndex = -1;
 
 void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
@@ -72,6 +73,7 @@ void CSoundSystem::initSoundSystem ()
 	try
 	{
 		_AudioMixer->setSamplePath(_SamplePath);
+		_AudioMixer->setPackedSheetOption(_PackedSheetPath, true);
 		_AudioMixer->init();
 	}
 	catch(NLMISC::Exception &e)

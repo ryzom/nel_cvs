@@ -1,7 +1,7 @@
 /** \file sample_bank.h
  * CSampleBank: a set of samples
  *
- * $Id: sample_bank.h,v 1.9 2004/06/09 14:09:08 berenguier Exp $
+ * $Id: sample_bank.h,v 1.10 2004/06/09 14:54:35 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -174,7 +174,7 @@ private:
 	};
 
 	/// List of virtual sample bank.
-	typedef std::hash_map<NLMISC::TStringId, std::vector<TFilteredBank>, NLMISC::CStringIdHasher >	TVirtualBankCont;
+	typedef std::hash_map<NLMISC::TStringId, std::vector<TFilteredBank>, NLMISC::CStringIdHasher>	TVirtualBankCont;
 	static TVirtualBankCont		_VirtualBanks;
 
 };

@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.20 2004/06/09 14:09:08 berenguier Exp $
+ * $Id: clustered_sound.cpp,v 1.21 2004/06/09 14:54:35 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -310,12 +310,13 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	// update the clustered sound (create and stop sound)
 	//-----------------------------------------------------
 
-	std::hash_map<NLMISC::TStringId, CClusterSound, NLMISC::CStringIdHasher>		newSources;
+//	std::hash_map<uint, CClusterSound>		newSources;
+	TClusterSoundCont		newSources;
 
 	{
 		// fake the distance for all playing source
 //		std::map<std::string, CClusterSound>::iterator first(_Sources.begin()), last(_Sources.end());
-		std::hash_map<NLMISC::TStringId, CClusterSound, NLMISC::CStringIdHasher>::iterator first(_Sources.begin()), last(_Sources.end());
+		TClusterSoundCont::iterator first(_Sources.begin()), last(_Sources.end());
 		for (; first != last; ++first)
 		{
 			first->second.Distance = FLT_MAX;
@@ -337,7 +338,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 		if (soundGroup != NO_SOUND_GROUP)
 		{
 			// search an associated sound name
-			std::hash_map<NLMISC::TStringId, CClusterSound, NLMISC::CStringIdHasher>::iterator it(_Sources.find(soundGroup));
+			TClusterSoundCont::iterator it(_Sources.find(soundGroup));
 			if (it != _Sources.end())
 			{
 				// the source is already playing, check and replace if needed
@@ -361,7 +362,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 
 //				nldebug("Searching sound assoc for group [%s]", CStringMapper::unmap(soundGroup).c_str());
 
-				std::hash_map<NLMISC::TStringId, NLMISC::TStringId, NLMISC::CStringIdHasher>::iterator it2(_SoundGroupToSound.find(soundGroup));
+				TStringStringMap::iterator it2(_SoundGroupToSound.find(soundGroup));
 				if (it2 != _SoundGroupToSound.end())
 				{
 					NLMISC::TStringId soundName = it2->second;
@@ -388,16 +389,16 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	// check for source to stop
 	{
 #if _STLPORT_VERSION >= 0x450
-		std::hash_map<NLMISC::TStringId, CClusterSound, NLMISC::CStringIdHasher>	oldSources;
+		TClusterSoundCont	oldSources;
 		oldSources.swap(_Sources);
 #else
 		// there is a bug in the swap methode in stlport 4.5, so fallback to a
 		// very less effective create by copy and clear.
-		std::hash_map<NLMISC::TStringId, CClusterSound, NLMISC::CStringIdHasher>	oldSources(_Sources);
+		TClusterSoundCont	oldSources(_Sources);
 		_Sources.clear();
 #endif
 
-		std::hash_map<NLMISC::TStringId, CClusterSound, NLMISC::CStringIdHasher>::iterator first(newSources.begin()), last(newSources.end());
+		TClusterSoundCont::iterator first(newSources.begin()), last(newSources.end());
 		for (; first != last; ++first)
 		{
 			_Sources.insert(*first);
@@ -442,7 +443,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 		uint newEnv;
 
 		// retrieve the EAX environment number
-		std::hash_map<NLMISC::TStringId, uint, NLMISC::CStringIdHasher>::iterator it(_IdToEaxEnv.find(fxId));
+		TStringIntMap::iterator it(_IdToEaxEnv.find(fxId));
 		if (it != _IdToEaxEnv.end())
 		{
 			// there is an EAX effect
@@ -694,7 +695,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 								css.Gain = travContext.Gain;
 								CVector soundDir = (nearPos - travContext.ListenerPos).normed();
 								TStringId occId = portal->getOcclusionModelId();
-								std::hash_map<NLMISC::TStringId, uint, NLMISC::CStringIdHasher>::iterator it(_IdToMaterial.find(occId));
+								TStringIntMap::iterator it(_IdToMaterial.find(occId));
 
 	#if EAX_AVAILABLE == 1
 								if (it != _IdToMaterial.end())

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.43 2003/03/24 17:09:25 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.44 2003/03/24 18:09:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -669,7 +669,7 @@ void CAudioMixerUser::initUserVar()
 	// read all *.user_var_binding sheet in data/sound/user_var folder
 
 	// load the sound_group sheets
-	::loadForm("user_var_binding", _PackedSheetPath+"user_var_binding.packed_sheets", Container, _UpdatePackedSheet);
+	::loadForm("user_var_binding", _PackedSheetPath+"user_var_binding.packed_sheets", Container, _UpdatePackedSheet, false);
 	// fill the real container.
 	std::map<std::string, CUserVarSerializer>::iterator first(Container.begin()), last(Container.end());
 	for (; first != last; ++first)

@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.3 2001/07/09 10:12:25 lecroart Exp $
+ * $Id: udp_sock.cpp,v 1.4 2001/08/22 15:50:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,11 +151,6 @@ void CUdpSock::sendTo( const uint8 *buffer, uint len, const CInetAddress& addr )
  */
 bool CUdpSock::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr )
 {
-	if ( ! dataAvailable() )
-	{
-		return false;
-	}
-
 	// Receive incoming message
 	sockaddr_in saddr;
 	socklen_t saddrlen = sizeof(saddr);

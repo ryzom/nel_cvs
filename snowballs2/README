@@ -74,28 +74,25 @@ directories of the directory in which the executables are located.
 See the INSTALL file for the requirements and installation instructions.
 
 
-6. Running SNOWBALLS
-   -----------------
+6. Running SNOWBALLS client
+   ------------------------
 
 It is highly recommended that you run the client on a PC with plenty of 
 main memory (128Megs+) and a 3D card that supports T&L in hardware and 
 has 32Mb of memory. Lesser configurations will probably give you very 
 poor framerates.
 
-If you want to run your own server, start the naming service on the
-machine that you want to use as a server. The binary is named,
-appropriately, naming_service. Otherwise, you may use the default server
-itsalive.nevrax.org, which is hosted here at Nevrax.
-
-The client starts normally. Once started, you'll be asked to select
-your langage. You then fill in a name and password (which must be
-alpha-numeric), and you'll be able to enter the test area. If you enter
+You just have to execute nel_launcher.exe (and never snowballs.exe directly).
+The application will prompt you a login and password. If you enter
 a user name that has never been used before on the server that you are
 connected to then a new account will be created with the password that
 you enter at the 'PASSWORD' prompt. You'll need to remeber this password
-as you'll need each time you login in the future.
+as you'll need each time you login in the future. Use only alphanumeric
+value for login and password, don't use space and other strange characters.
+WARNING: Password are not crypted so you should use 'dummy' password.
 
-Select now your character type and server to play on, and you're set.
+After you have to select a shard if available, just click on the shard name.
+It patch if necessary and automatically launch snowballs game, just wait.
 
 You're now a penguin on an artic snowfield. You have snowballs which you
 can throw at other people. When you throw a snowball, you have a few
@@ -104,9 +101,7 @@ one. If you hit someone, your score increases, and the snowed opponent
 becomes immune to further snowing (he flashes on the screen) for 5s. He
 cannot retaliate while invulnerable.
 
-If you get stuck somehow, remove the client.cfg file from your client
-directory, and restart. Good luck. If you find a penguin named TMS on
-the server, it's me, throw me a low one :)
+Good luck.
 
 
 7. The controls in SNOWBALLS

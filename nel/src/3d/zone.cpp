@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.23 2000/12/22 17:25:59 coutelas Exp $
+ * $Id: zone.cpp,v 1.24 2001/01/09 15:25:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,7 +110,9 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 		for(i=0;i<4;i++)
 			pa.Interiors[i].pack(p.Interiors[i], PatchBias, PatchScale);
 		pa.Tiles= pi.Tiles;
+		pa.TileColors= pi.TileColors;
 		nlassert(pa.Tiles.size()== (uint)pi.OrderS*pi.OrderT);
+		nlassert(pa.TileColors.size()== (uint)pi.OrderS*pi.OrderT);
 
 
 
@@ -154,6 +156,7 @@ void			CZone::retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVerte
 		for(i=0;i<4;i++)
 			pa.Interiors[i].unpack(p.Interiors[i], PatchBias, PatchScale);
 		pi.Tiles= pa.Tiles;
+		pi.TileColors= pa.TileColors;
 		// from the patchConnect.
 		pi.OrderS= pc.OrderS;
 		pi.OrderT= pc.OrderT;

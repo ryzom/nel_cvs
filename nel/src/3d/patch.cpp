@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.27 2001/01/08 17:58:30 corvazier Exp $
+ * $Id: patch.cpp,v 1.28 2001/01/09 15:25:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1098,13 +1098,31 @@ void			CPatch::bind(CBindInfo	Edges[4])
 // ***************************************************************************
 void			CPatch::serial(NLMISC::IStream &f)
 {
-	uint	ver= f.serialVersion(0);
+	/*
+	Version 1:
+		- Tile color.
+	Version 0:
+		- base verison.
+	*/
+	uint	ver= f.serialVersion(1);
 
 	f.serial(Vertices[0], Vertices[1], Vertices[2], Vertices[3]);
 	f.serial(Tangents[0], Tangents[1], Tangents[2], Tangents[3]);
 	f.serial(Tangents[4], Tangents[5], Tangents[6], Tangents[7]);
 	f.serial(Interiors[0], Interiors[1], Interiors[2], Interiors[3]);
 	f.serialCont(Tiles);
+	if(ver>=1)
+		f.serialCont(TileColors);
+	else if(f.isReading())
+	{
+		// Leave it as default behavior: Must init the color as pure white...
+		TileColors.resize(Tiles.size());
+		for(sint i=0;i<(sint)TileColors.size();i++)
+		{
+			TileColors[i].Color565= 0xFFFF;
+			TileColors[i].Shade= 0xFF;
+		}
+	}
 }
 
 

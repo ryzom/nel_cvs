@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.23 2001/01/08 17:58:29 corvazier Exp $
+ * $Id: patch.h,v 1.24 2001/01/09 15:25:02 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -36,6 +36,7 @@
 #include "nel/3d/aabbox.h"
 #include "nel/3d/bsphere.h"
 #include "nel/3d/tile_element.h"
+#include "nel/3d/tile_color.h"
 
 
 namespace NL3D {
@@ -141,6 +142,10 @@ public:
 	*/
 	// There is OrderS*OrderT tiles. CZone build it at build() time.
 	std::vector<CTileElement>	Tiles;
+
+	// There is OrderS*OrderT tiles color. CZone build it at build() time.
+	std::vector<CTileColor>		TileColors;
+
 
 
 public:

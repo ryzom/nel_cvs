@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.8 2001/01/08 17:58:30 corvazier Exp $
+ * $Id: rgba.h,v 1.9 2001/01/09 15:25:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,6 +107,22 @@ public:
 	{
 		return ((uint16)(R&0xf8)<<8) | ((uint16)(G&0xfc)<<3) | (uint16)(B>>3);
 	}
+
+	/**
+	 * Set the RGB fields with a 16 bits 565 pixel.
+	 */
+	void	set565(uint16 col)
+	{
+		// unpack.
+		R= col>>11;
+		G= (col>>5)&0x3F;
+		B= (col)&0x1F;
+		// to 8 bits.
+		R= (R<<3) + (R>>2);
+		G= (G<<2) + (G>>4);
+		B= (B<<3) + (B>>2);
+	}
+
 
 	/// Red componant.
 	uint8	R;

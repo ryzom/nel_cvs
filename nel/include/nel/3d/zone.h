@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.15 2000/12/22 14:38:40 berenguier Exp $
+ * $Id: zone.h,v 1.16 2001/01/09 15:25:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,6 +128,10 @@ public:
 	 * They are stored in line first order, from S=0 to 1, and T=0 to 1.
 	 */
 	std::vector<CTileElement>	Tiles;
+	/** The Tile colors for this patch. There must be OrderS*OrderT tiles.
+	 * They are stored in line first order, from S=0 to 1, and T=0 to 1.
+	 */
+	std::vector<CTileColor>		TileColors;
 	// @}
 
 

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.64 2003/12/02 11:22:44 besson Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.65 2004/01/15 17:31:46 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -250,7 +250,7 @@ static inline GLenum	translateMagFilterToGl(CTextureDrvInfosGL *glText)
 {	
 #ifdef NEL_FORCE_NEAREST
 	return GL_NEAREST;
-#else NEL_FORCE_NEAREST
+#else // NEL_FORCE_NEAREST
 	switch(glText->MagFilter)
 	{
 		case ITexture::Linear: return GL_LINEAR;
@@ -260,7 +260,7 @@ static inline GLenum	translateMagFilterToGl(CTextureDrvInfosGL *glText)
 
 	nlstop;
 	return GL_LINEAR;
-#endif NEL_FORCE_NEAREST
+#endif // NEL_FORCE_NEAREST
 }
 
 
@@ -269,7 +269,7 @@ static inline GLenum	translateMinFilterToGl(CTextureDrvInfosGL *glText)
 {
 #ifdef NEL_FORCE_NEAREST
 	return GL_NEAREST;
-#else NEL_FORCE_NEAREST
+#else // NEL_FORCE_NEAREST
 
 	if(glText->MipMap)
 	{
@@ -302,7 +302,7 @@ static inline GLenum	translateMinFilterToGl(CTextureDrvInfosGL *glText)
 
 	nlstop;
 	return GL_LINEAR;
-#endif NEL_FORCE_NEAREST
+#endif // NEL_FORCE_NEAREST
 }
 
 

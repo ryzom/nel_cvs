@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.6 2000/11/21 18:02:04 valignat Exp $
+ * $Id: mot.cpp,v 1.7 2000/12/06 12:51:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,11 @@ ITrav	*CMOT::getTrav(const CClassId &idTrav) const
 	}
 
 	return NULL;
+}
+// ***************************************************************************
+void	CMOT::deleteAllTraversals()
+{
+	Traversals.clear();
 }
 
 

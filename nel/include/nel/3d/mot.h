@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.3 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: mot.h,v 1.4 2000/12/06 12:50:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,6 +175,8 @@ public:
 	 * \return the traversal. NULL, if not found.
 	 */
 	ITrav	*getTrav(const NLMISC::CClassId &idTrav) const;
+	/// Delete all the traversals of the MOT.
+	void	deleteAllTraversals();
 	//@}
 
 

@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.28 2001/08/23 17:21:56 lecroart Exp $
+ * $Id: message.h,v 1.29 2001/08/27 10:34:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -253,8 +253,12 @@ public:
 
 		// debug features, we number all packet to be sure that they are all sent and received
 		// \todo remove this debug feature when ok
-		uint32 zeroValue;
-		serial (zeroValue);
+
+		// we remove the message from the message
+		seek (5, begin);
+
+//		uint32 zeroValue;
+//		serial (zeroValue);
 
 		uint8 LongFormat;
 		serial (LongFormat);

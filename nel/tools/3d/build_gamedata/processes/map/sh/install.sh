@@ -40,8 +40,7 @@ if test "$panoply_file_list" ; then
 	cp -u -p $panoply_file_list $client_directory/$bitmap_install_directory 2>> log.log	
 	panoply_config_file=`cat ../../cfg/directories.cfg | grep "panoply_config_file" | sed -e 's/panoply_config_file//' | sed -e 's/ //g' | sed -e 's/=//g'`
 	for psource in $panoply_config_file ; do
-		cp $database_directory/$psource .
-		mv $psource	$client_directory/$bitmap_install_directory/panoply.cfg 2>> log.log
+		cp $database_directory/$psource $client_directory/$bitmap_install_directory/panoply.cfg
 	done
 	ls panoply >> $panoply_file_list
 fi

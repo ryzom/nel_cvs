@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.45 2004/04/27 12:11:21 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.46 2004/06/02 16:32:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1247,13 +1247,10 @@ void	registerGlExtensions(CGlExtensions &ext)
 	if(!ext.DisableHardwareVertexArrayAGP)
 	{
 		ext.ARBVertexBufferObject = setupARBVertexBufferObject(glext);
-	}	
-
-	// with the 9500 and above, the ATI_env_map_bump_map seems to be broken (with catalyst 4.4)
-	// moreover, in my tries ATI_fragment_shader doesn't like to be used With ARB_fragment_program (maybe a driver bug, display become corrupted)
+	}		
+	// In my tries ATI_fragment_shader doesn't like to be used With ARB_fragment_program (maybe a driver bug, display become corrupted)
 	if (ext.IsATI9500OrAbove)
-	{
-		ext.ATIEnvMapBumpMap = false;
+	{		
 		ext.ATIFragmentShader = false;
 	}	
 }

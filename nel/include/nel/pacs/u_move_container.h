@@ -1,7 +1,7 @@
 /** \file u_move_container.h
  * A container for movable objects
  *
- * $Id: u_move_container.h,v 1.9 2002/03/26 17:09:37 corvazier Exp $
+ * $Id: u_move_container.h,v 1.10 2002/03/29 15:43:20 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #define NL_U_MOVE_CONTAINER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
+#include <vector>
 
 namespace NLMISC 
 {

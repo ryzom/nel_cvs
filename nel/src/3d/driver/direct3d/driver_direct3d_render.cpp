@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_render.cpp,v 1.5 2004/08/09 14:35:08 vizerie Exp $
+ * $Id: driver_direct3d_render.cpp,v 1.6 2004/08/13 15:27:52 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -79,11 +79,14 @@ bool CDriverD3D::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 	return true;
 }
 
+
+
+
 // ***************************************************************************
 
 bool CDriverD3D::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris)
 {
-	H_AUTO_D3D(CDriverD3D_renderTriangles)
+	H_AUTO_D3D(CDriverD3D_renderTriangles)		
 	// Setup material
 	if ( !setupMaterial(mat) )
 		return false;
@@ -109,7 +112,6 @@ bool CDriverD3D::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris
 	// Stats
 	_PrimitiveProfileIn.NTriangles += ntris;
 	_PrimitiveProfileOut.NTriangles += ntris*_CurrentShaderPassCount;
-
 	return true;
 }
 
@@ -300,42 +302,70 @@ void CDriverD3D::setDebugMaterial()
 bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuads)
 {
 	H_AUTO_D3D(CDriverD3D_renderRawQuads)
-	if (numQuads == 0)
-		return false;
-
-	// Num of indexes needed
-	const uint numQuadsNeeded = numQuads*6;
-
-	// Need to resize the quad indexes array ?
-	if (_QuadIndexes.getNumIndexes() < numQuadsNeeded)
-	{
-		// Resize it
-		_QuadIndexes.setNumIndexes(numQuadsNeeded);
-		_QuadIndexes.setPreferredMemory (CIndexBuffer::RAMPreferred, false);
-
-		// Fill the index buffer in VRAM
-		CIndexBufferReadWrite iba;
-		_QuadIndexes.lock (iba);
-		fillQuadIndexes (iba.getPtr(), 0, numQuadsNeeded); 
-	}
-
-	activeIndexBuffer (_QuadIndexes);
-
-	// Setup material
-	if ( !setupMaterial(mat) )
-		return false;
+	if (numQuads == 0)	return false;
 
 	if (_VertexBufferCache.VertexBuffer)
 	{
+
+		// Num of indexes needed
+		const uint numQuadsNeeded = numQuads*6;
+
+		//static volatile bool enableAGPIndex = false;
+
+		bool wantAGPIndex = false;
+		/*
+		if (_VertexBufferCache.Usage & D3DUSAGE_DYNAMIC)
+		{
+			wantAGPIndex = true;
+		}
+		else if (_VertexBufferCache.PrefferedMemory == CVertexBuffer::AGPVolatile && !_DisableHardwareVertexArrayAGP)
+		{
+			if (_VolatileVertexBufferAGP[_CurrentRenderPass&1].Location == CVertexBuffer::AGPResident) // did manage to alocate volatile index buffer in agp ?
+			{
+				wantAGPIndex = true;
+			}
+		}
+
+		if (!enableAGPIndex)
+		{
+			wantAGPIndex = false;
+		}
+		*/
+		
+
+		CIndexBuffer &quadIB = wantAGPIndex ? _QuadIndexesAGP : _QuadIndexes; 
+
+		const uint IB_RESIZE_STRIDE = 6 * 256;
+		nlctassert(IB_RESIZE_STRIDE % 6 == 0);
+		// Need to resize the quad indexes array ?
+		if (quadIB.getNumIndexes() < numQuadsNeeded)
+		{
+			// Resize it
+			uint32 numIndexResize = IB_RESIZE_STRIDE * ((numQuadsNeeded + (IB_RESIZE_STRIDE - 1)) / IB_RESIZE_STRIDE);
+			quadIB.setNumIndexes(numIndexResize); // snap to nearest size
+			quadIB.setPreferredMemory (wantAGPIndex ? CIndexBuffer::AGPPreferred : CIndexBuffer::RAMPreferred, wantAGPIndex);
+			//quadIB.setPreferredMemory (wantAGPIndex ? CIndexBuffer::StaticPreferred : CIndexBuffer::RAMPreferred, wantAGPIndex);
+
+			// Fill the index buffer in VRAM
+			CIndexBufferReadWrite iba;
+			quadIB.lock (iba);
+			fillQuadIndexes (iba.getPtr(), 0, numIndexResize); 
+		}
+
+		activeIndexBuffer (quadIB);
+
+		// Setup material
+		if ( !setupMaterial(mat) )
+			return false;
+	
 		uint pass;
 		beginMultiPass ();
 		for (pass=0; pass<_CurrentShaderPassCount; pass++)
 		{
 			// Active the pass
-			activePass (pass);
-
-			_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset, 0, _VertexBufferSize-startIndex,
-				startIndex, numQuads*2);
+			activePass (pass);			
+			_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset + startIndex, 0, numQuadsNeeded,
+				0, numQuads*2);			
 		}
 		endMultiPass ();
 	}
@@ -350,3 +380,24 @@ bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQua
 // ***************************************************************************
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

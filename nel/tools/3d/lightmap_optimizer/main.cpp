@@ -328,8 +328,7 @@ int main(int nNbArg, char **ppArgs)
 
 			// Add the shape to the map.
 			CMeshBase *pMB = dynamic_cast<CMeshBase*>(mesh.getShapePointer());
-			if (pMB != NULL)
-				AllShapes.push_back (pMB);
+			AllShapes.push_back (pMB);
 		}
 		catch (NLMISC::EPathNotFound &e)
 		{
@@ -536,6 +535,9 @@ int main(int nNbArg, char **ppArgs)
 					for (k = 0; k < (sint32)AllShapes.size(); ++k)
 					{
 						CMeshBase *pMB = AllShapes[k];
+						if (!pMB)
+							continue;
+
 						uint nNbMat = pMB->getNbMaterial ();
 						vector< vector<bool> > VerticesNeedRemap;
 						bool bMustSave = false;
@@ -703,11 +705,14 @@ int main(int nNbArg, char **ppArgs)
 						{
 							try
 							{
-								CShapeStream mesh;
-								mesh.setShapePointer (AllShapes[k]);
-								NLMISC::COFile meshfile (AllShapeNames[k]);
-								meshfile.serial (mesh);
-								meshfile.close ();
+								if (AllShapes[k])
+								{
+									CShapeStream mesh;
+									mesh.setShapePointer (AllShapes[k]);
+									NLMISC::COFile meshfile (AllShapeNames[k]);
+									meshfile.serial (mesh);
+									meshfile.close ();
+								}
 							}
 							catch (NLMISC::EPathNotFound &e)
 							{

@@ -1,7 +1,7 @@
 /** \file listener_dsound.h
  * DirectSound sound listener
  *
- * $Id: listener_dsound.h,v 1.1 2002/05/24 16:50:48 hanappe Exp $
+ * $Id: listener_dsound.h,v 1.2 2002/06/04 10:01:21 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,8 @@ namespace NLSOUND {
  */
 class CListenerDSound : public IListener
 {
+friend class CSoundDriverDSound;  
+
 public:
 
 	/// Constructor
@@ -106,11 +108,17 @@ public:
 	virtual void			setEAXProperty( uint prop, void *value, uint valuesize );
 	//@}
 
+	/// Commit any changes to the 3D environment
+	void					commit3DChanges();
+
 
 private:
 
+	/// Release all DirectSound resources
+	void					release();
+
 	/// The instance of the singleton
-	static CListenerDSound		*_Instance;
+	static CListenerDSound	*_Instance;
 
     /// The DirectSound listener interface
     LPDIRECTSOUND3DLISTENER _Listener;

@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.3 2002/05/27 16:17:06 hanappe Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.4 2002/06/04 10:01:21 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,8 +32,6 @@
 
 #include "sound_driver_dsound.h"
 #include "listener_dsound.h"
-#include "source_dsound.h"
-#include "buffer_dsound.h"
 #include <math.h>
 
 
@@ -133,7 +131,6 @@ CSoundDriverDSound::CSoundDriverDSound() : ISoundDriver()
         _DirectSound = NULL;
         _PrimaryBuffer = NULL;
         _SourceCount = 0;
-        _Sources = NULL;
         _TimerID = NULL;
 
 #if NLSOUND_PROFILE
@@ -166,19 +163,24 @@ CSoundDriverDSound::~CSoundDriverDSound()
         timeEndPeriod(_TimerResolution); 
     }
 
-    if (_Sources != NULL) 
-    {
-        for (uint i = 0; i < _SourceCount; i++) 
-        {
-            if (_Sources[i] != NULL)
-            {
-                delete _Sources[i];
-            }
-        }
 
-        delete[] _Sources;
-        _Sources = NULL;
-    }
+	// Assure that the remaining sources have released all their DSBuffers 
+	// before closing down DirectSound
+	set<CSourceDSound*>::iterator iter;
+
+	for (iter = _Sources.begin(); iter != _Sources.end(); iter++)
+	{
+		(*iter)->release();
+	}
+
+
+	// Assure that the listener has released all resources before closing 
+	// down DirectSound
+	if (CListenerDSound::instance() != 0)
+	{
+		CListenerDSound::instance()->release();
+	}
+
 
     if (_PrimaryBuffer != NULL) 
     {
@@ -357,6 +359,7 @@ bool CSoundDriverDSound::init(HWND wnd)
 		numBuffers = 31;
 	}
 
+	/*
     _Sources = new CSourceDSound*[numBuffers];
 
 
@@ -389,6 +392,8 @@ bool CSoundDriverDSound::init(HWND wnd)
 		}
 	}
 
+*/
+
 
     TIMECAPS tcaps;
     
@@ -399,7 +404,7 @@ bool CSoundDriverDSound::init(HWND wnd)
 
 
 #if NLSOUND_PROFILE
-    for (i = 0; i < 1024; i++)
+    for (uint i = 0; i < 1024; i++)
     {
         _TimerInterval[i] = 0;
     }
@@ -481,24 +486,23 @@ void CSoundDriverDSound::update()
     TTicks now = CTime::getPerformanceTime();
 #endif
 
-	if (_Sources[0]->needsUpdate())
-	{
-#if NLSOUND_PROFILE
-		_UpdateExec++;
-#endif
+	set<CSourceDSound*>::iterator iter;
 
-		for (uint i = 0; i < _SourceCount; i++) 
+	iter = _Sources.begin();
+
+	if ((iter != _Sources.end()) && (*iter)->needsUpdate())
+	{
+		while (iter != _Sources.end())
 		{
-			if (_Sources[i] != NULL) 
-			{
-				if (_Sources[i]->update2()) {
+			if ((*iter)->update2()) {
 #if NLSOUND_PROFILE
-					_UpdateSources++;
+				_UpdateSources++;
 #endif
-				}
 			}
+			iter++;
 		}
 	}
+
 
 #if NLSOUND_PROFILE
     _TotalUpdateTime += 1000.0 * CTime::ticksToSecond(CTime::getPerformanceTime() - now);
@@ -614,16 +618,11 @@ ISource *CSoundDriverDSound::createSource()
     }
 
 
-    for (uint i = 0; i < _SourceCount; i++) 
-    {
-        if ((_Sources[i] != NULL) && _Sources[i]->isStopped())
-        {
-			_Sources[i]->reset();
-            return _Sources[i];
-        }
-    }
-    
-    return 0;
+	CSourceDSound* src = new CSourceDSound(0);
+	src->init(_DirectSound);
+	_Sources.insert(src);
+
+	return src;
 }
 
 
@@ -632,21 +631,28 @@ ISource *CSoundDriverDSound::createSource()
  */
 void CSoundDriverDSound::removeSource(ISource *source)
 {
-	// Do nothing. All sources are allocated at init() and released in the deconstructor.
+	_Sources.erase((CSourceDSound*) source);
+}
+
+
+void CSoundDriverDSound::commit3DChanges()
+{
+	CListenerDSound::instance()->commit3DChanges();
 }
 
 
 uint CSoundDriverDSound::countPlayingSources()
 {
     uint n = 0;
+	set<CSourceDSound*>::iterator iter;
 
-    for (uint i = 0; i < _SourceCount; i++)
-    {
-        if ((_Sources[i] != NULL) && _Sources[i]->isPlaying())
-        {
-            n++;
-        }
-    }
+	for (iter = _Sources.begin(); iter != _Sources.end(); iter++)
+	{
+		if ((*iter)->isPlaying()) 
+		{
+			n++;
+		}
+	}
 
     return n;
 }

@@ -1,7 +1,7 @@
 /** \file buffer_dsound.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_dsound.cpp,v 1.2 2002/05/27 16:17:06 hanappe Exp $
+ * $Id: buffer_dsound.cpp,v 1.3 2002/06/04 10:01:20 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,7 +87,7 @@ float CBufferDSound::getDuration() const
         break;
     }
 
-    return frames / (float) _Freq;
+    return 1000.0f * frames / (float) _Freq;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.2 2002/05/27 09:35:57 hanappe Exp $
+ * $Id: sound_driver_dsound.h,v 1.3 2002/06/04 10:01:21 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #define NL_SOUND_DRIVER_DSOUND_H
 
 #include "sound/driver/sound_driver.h"
+#include "source_dsound.h"
+#include "buffer_dsound.h"
 #include <iostream>
 
 namespace NLSOUND {
@@ -68,6 +70,8 @@ public:
 	virtual	ISource *createSource();
 
 
+	virtual void commit3DChanges();
+
 	/// Count the number of available hardware streaming 3D buffers
     uint countHw3DBuffers();
 
@@ -107,6 +111,9 @@ private:
 	// The period of the timer.
     static uint32 _TimerPeriod;
 
+	friend CBufferDSound::~CBufferDSound();
+	friend CSourceDSound::~CSourceDSound();
+
  	/// Remove a buffer (should be called by the friend destructor of the buffer class)
 	virtual void removeBuffer(IBuffer *buffer);
 
@@ -123,7 +130,8 @@ private:
     DSCAPS _Caps;
 
     // Array with the allocated sources
-    CSourceDSound** _Sources;
+    //CSourceDSound** _Sources;
+	std::set<CSourceDSound*> _Sources;
 
 	// The number of allocated sources
     uint _SourceCount;
@@ -133,7 +141,6 @@ private:
 
 	// The timer resolution.
     uint32 _TimerResolution;
-
 
 
 #if NLSOUND_PROFILE

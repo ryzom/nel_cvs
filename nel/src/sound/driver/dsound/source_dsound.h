@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.2 2002/05/27 16:17:06 hanappe Exp $
+ * $Id: source_dsound.h,v 1.3 2002/06/04 10:01:21 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,7 @@ public:
 	virtual ~CSourceDSound();
 
     /// Initialize the DirectSound buffers. Called by the sound driver only.
-	void init(LPDIRECTSOUND directSound);
+	void					init(LPDIRECTSOUND directSound);
 
 	/// \name Initialization
 	//@{
@@ -91,7 +91,7 @@ public:
 	 * otherwise the source is considered as a 3D source.
 	 * Set NULL to set "no buffer"
 	 */
-	virtual void setStaticBuffer( IBuffer *buffer );
+	virtual void			setStaticBuffer( IBuffer *buffer );
 
     /// Set the next source that is to be played immediately after the present source
 	//virtual void					setNext( ISource *next );
@@ -102,35 +102,35 @@ public:
 	//@{
 
     /// Set looping on/off for future playbacks (default: off)
-	virtual void setLooping( bool l );
+	virtual void			setLooping( bool l );
 
     /// Return the looping state
-	virtual bool getLooping() const;
+	virtual bool			getLooping() const;
 
     /// Play the static buffer (or stream in and play)
-	virtual void play();
+	virtual void			play();
 
     /// Stop playing
-	virtual void stop();
+	virtual void			stop();
 
     /// Pause. Call play() to resume.
-	virtual void pause();
+	virtual void			pause();
 
     /// Return the playing state
-	virtual bool isPlaying() const;
+	virtual bool			isPlaying() const;
 
     /// Return true if playing is finished or stop() has been called.
-	virtual bool isStopped() const;
+	virtual bool			isStopped() const;
 
     /// Return the paused state
-	virtual bool isPaused() const;
+	virtual bool			isPaused() const;
 
     /// Update the source (e.g. continue to stream the data in)
-	virtual void update();
+	virtual void			update();
 
     /** Update the source (e.g. continue to stream the data in)
 	    Returns an indication whether the source actually streamed data or not. */
-	virtual bool update2();
+	virtual bool			update2();
 
 	//@}
 
@@ -142,24 +142,24 @@ public:
 	 * 3D mode -> 3D position
 	 * st mode -> x is the pan value (from left (-1) to right (1)), set y and z to 0
 	 */
-	virtual void setPos( const NLMISC::CVector& pos );
+	virtual void			setPos( const NLMISC::CVector& pos );
 
     /** Get the position vector.
 	 * See setPos() for details.
 	 */
-	virtual void getPos( NLMISC::CVector& pos ) const;
+	virtual void			getPos( NLMISC::CVector& pos ) const;
 
     /// Set the velocity vector (3D mode only) (default: (0,0,0))
-	virtual void setVelocity( const NLMISC::CVector& vel );
+	virtual void			setVelocity( const NLMISC::CVector& vel );
 
     /// Get the velocity vector
-	virtual void getVelocity( NLMISC::CVector& vel ) const;
+	virtual void			getVelocity( NLMISC::CVector& vel ) const;
 
     /// Set the direction vector (3D mode only) (default: (0,0,0) as non-directional)
-	virtual void setDirection( const NLMISC::CVector& dir );
+	virtual void			setDirection( const NLMISC::CVector& dir );
 
     /// Get the direction vector
-	virtual void getDirection( NLMISC::CVector& dir ) const;
+	virtual void			getDirection( NLMISC::CVector& dir ) const;
 
     /** Set the gain (volume value inside [0 , 1]) (default: 1)
 	 * 0.0 -> silence
@@ -167,157 +167,168 @@ public:
 	 * 1.0 -> no attenuation
 	 * values > 1 (amplification) not supported by most drivers
 	 */
-	virtual void setGain( float gain );
+	virtual void			setGain( float gain );
 
     /// Get the gain
-	virtual float getGain() const;
+	virtual float			getGain() const;
 
     /** Shift the frequency. 1.0f equals identity, each reduction of 50% equals a pitch shift
 	 * of one octave. 0 is not a legal value.
 	 */
-	virtual void setPitch( float pitch );
+	virtual void			setPitch( float pitch );
 
     /// Get the pitch
-	virtual float getPitch() const;
+	virtual float			getPitch() const;
 
     /// Set the source relative mode. If true, positions are interpreted relative to the listener position (default: false)
-	virtual void setSourceRelativeMode( bool mode );
+	virtual void			setSourceRelativeMode( bool mode );
 
     /// Get the source relative mode
-	virtual bool getSourceRelativeMode() const;
+	virtual bool			getSourceRelativeMode() const;
 
     /// Set the min and max distances (default: 1, MAX_FLOAT) (3D mode only)
-	virtual void setMinMaxDistances( float mindist, float maxdist );
+	virtual void			setMinMaxDistances( float mindist, float maxdist );
 
     /// Get the min and max distances
-	virtual void getMinMaxDistances( float& mindist, float& maxdist ) const;
+	virtual void			getMinMaxDistances( float& mindist, float& maxdist ) const;
 
     /// Set the cone angles (in radian) and gain (in [0 , 1]) (default: 2PI, 2PI, 0) (3D mode only)
-	virtual void setCone( float innerAngle, float outerAngle, float outerGain );
+	virtual void			setCone( float innerAngle, float outerAngle, float outerGain );
 
     /// Get the cone angles (in radian)
-	virtual void getCone( float& innerAngle, float& outerAngle, float& outerGain ) const;
+	virtual void			getCone( float& innerAngle, float& outerAngle, float& outerGain ) const;
 
     /// Set any EAX source property if EAX available
-	virtual void setEAXProperty( uint prop, void *value, uint valuesize );
+	virtual void			setEAXProperty( uint prop, void *value, uint valuesize );
 	//@}
 
 
 	/// Return the OpenAL source name
-	uint sourceName() { return _SourceName; }
+	uint					sourceName() { return _SourceName; }
 
     /// Returns the buffer associated with this source. 
-    IBuffer *getBuffer();
+    IBuffer*				getBuffer();
 
 	// Reset the source before reuse
-	void reset();
+	void					reset();
 
 
 
 private:
 
+	/// Release all DirectSound resources
+	void					release();
+
     // The minimum size of available space in the DS buffer for update
-    static uint32 _UpdateCopySize;
+    static uint32			_UpdateCopySize;
 
     // The size of the samples that are copied when buffers are swapped
-    static uint32 _SwapCopySize;
+    static uint32			_SwapCopySize;
 
     // The number of channels
-    static uint _Channels;
+    static uint				_Channels;
 
     // The default sample rate
-    static uint _SampleRate;
+    static uint				_SampleRate;
 
     // The default sample size
-    static uint _SampleSize;
+    static uint				_SampleSize;
 
     // The length of the crossfade, in samples
-    static uint32 _XFadeSize;
+    static uint32			_XFadeSize;
 
 	// Utility function that locks the DirectSound buffer and restores it if it was lost.
-	bool lock(uint32 writePos, uint32 size, uint8* &ptr1, DWORD &bytes1, uint8* &ptr2, DWORD &bytes2);
+	bool					lock(uint32 writePos, uint32 size, uint8* &ptr1, DWORD &bytes1, uint8* &ptr2, DWORD &bytes2);
 
 	// Utility function that unlocks the DirectSound buffer 
-	bool unlock(uint8* ptr1, DWORD bytes1, uint8* ptr2, DWORD bytes2);
+	bool					unlock(uint8* ptr1, DWORD bytes1, uint8* ptr2, DWORD bytes2);
 
 	// getFadeOutSize() calculates how many samples have been written after the
 	// write cursor in the DirectSound buffer. This value is returned in the
 	// writtenTooMuch variable. The xfadeSize contains the number of samples over
 	// which to do a xfade or fade out, and in1 points to the sample in the sample
 	// buffer where to start the fade.
-	void getFadeOutSize(uint32 writePos, uint32& xfadeSize, sint16* &in1, uint32 &writtenTooMuch);
+	void					getFadeOutSize(uint32 writePos, uint32& xfadeSize, sint16* &in1, uint32 &writtenTooMuch);
 
 	// Fill the buffer with fresh samples. Should be called inside the critical zone.
-	bool fill();
+	bool					fill();
 
 	// Fill the buffer with sparkling silence. Should be called inside the critical zone.
-	bool silence();
+	bool					silence();
 
 	// Do a cross fade between the current buffer and the buffer stored in the _SwapBuffer
 	// variable. Call inside the critical zone.
-	void crossFade();
+	void					crossFade();
 
 	// Fade out the current buffer. Call inside the critical zone.
-	void fadeOut();
+	void					fadeOut();
 
 	// Fade in the current buffer. Call inside the critical zone.
-	void fadeIn();
+	void					fadeIn();
 
 	/// Check whether the play position has advanced enough to require an update
-	bool needsUpdate();
-
+	bool					needsUpdate();
+	
 	// Source name
-	uint _SourceName;
+	uint					_SourceName;
 
     // The size of the sound buffer, in bytes
-    uint32 _BufferSize;
+    uint32					_BufferSize;
 
     // The next sound buffer
-    IBuffer *_SwapBuffer;
+    IBuffer					*_SwapBuffer;
 
     // To loop or not to loop
-    bool _Loop;
+    bool					_Loop;
 
 	// The state of the source (playing, paused, stopped)
-	TSourceDSoundUserState _UserState;
+	TSourceDSoundUserState	_UserState;
 
     // DirectSound secondary buffer
-    LPDIRECTSOUNDBUFFER _SecondaryBuffer;
+    LPDIRECTSOUNDBUFFER		_SecondaryBuffer;
 
     // The byte size of the DirectSound secondary buffers
-    static uint32 _SecondaryBufferSize;
+    static uint32			_SecondaryBufferSize;
 
 	// The state of the DirectSound buffer (filling, silencing, silenced)
 	TSourceDSoundBufferState _SecondaryBufferState;
 
     // 3D interface of the secondary buffer. 
-    LPDIRECTSOUND3DBUFFER _3DBuffer;
+    LPDIRECTSOUND3DBUFFER	_3DBuffer;
 
     // The critial section object to protect the swap and update functions
-    CRITICAL_SECTION _CriticalSection; 
+    CRITICAL_SECTION		_CriticalSection; 
 
     // The next position in the DirectSound buffer where we should write next
-    uint32 _NextWritePos;
+    uint32					_NextWritePos;
 
     // The total number of bytes written from the current sound buffer
-    uint32 _BytesWritten;
+    uint32					_BytesWritten;
 
     // The amount of silence written (in bytes) after the end of the current sound buffer
-    uint32 _SilenceWritten;
+    uint32					_SilenceWritten;
 
     // The position of the last audio sample written.
-    uint32 _EndPosition;
+    uint32					_EndPosition;
 
 	// The state of the buffer to reach the end of the audio samples. To flag the buffer as
 	// STOPPED, we have to make sure all the samples in the buffer are played. The play
 	// cursor in the DirectSound buffer is inspected and when it crosses the position of
 	// the last sample written (_EndPosition) the buffer is flagged as stopped. The _EndState
 	// field is used to keep a trace of the whereabouts of the play cursor.
-	TSourceDSoundEndState _EndState;
-
+	TSourceDSoundEndState	_EndState;
 
 	// The frequency of the source [0,10], i.e. slowed down or accelerated
-	float _Freq;
+	float					_Freq;
+
+	// Has this source been handed out. 
+	bool					_IsUsed;
+	
+	// Set the 'used' state of the source. Managed by the driver.
+	void					setUsed(bool v) { _IsUsed = v; }
+
+	// Return the 'used' state of the source
+	bool					isUsed() { return _IsUsed; }
 
 
 #if NLSOUND_PROFILE

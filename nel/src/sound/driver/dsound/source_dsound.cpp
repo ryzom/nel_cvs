@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.4 2002/05/27 17:37:23 hanappe Exp $
+ * $Id: source_dsound.cpp,v 1.5 2002/06/04 10:01:21 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,7 @@ CSourceDSound::CSourceDSound( uint sourcename ) : _SourceName(sourcename)
 	_EndState = NL_DSOUND_TAIL1;
 	_UserState = NL_DSOUND_STOPPED;
 	_Freq = 1.0f;
+	_IsUsed = false;
     InitializeCriticalSection(&_CriticalSection);
 }
 
@@ -123,21 +124,33 @@ CSourceDSound::~CSourceDSound()
 {
 	nldebug("Destroying DirectSound source");
 
-	if (_3DBuffer != NULL)
-    {
-        _3DBuffer->Release();
-    }
+	CSoundDriverDSound::instance()->removeSource(this);
 
-    if (_SecondaryBuffer != NULL)
-    {
-        _SecondaryBuffer->Stop();
-        _SecondaryBuffer->Release();
-    }
-
+	release();
 
     DeleteCriticalSection(&_CriticalSection);
 }
 
+
+/*
+ * Release all DirectSound resources
+ */
+void CSourceDSound::release()
+{
+	if (_3DBuffer != 0)
+    {
+        _3DBuffer->Release();
+		_3DBuffer = 0;
+    }
+
+    if (_SecondaryBuffer != 0)
+    {
+        _SecondaryBuffer->Stop();
+        _SecondaryBuffer->Release();
+		_SecondaryBuffer = 0;
+    }
+
+}
 
 /*
  * Initilize the DirectSound buffers
@@ -201,14 +214,12 @@ void CSourceDSound::init(LPDIRECTSOUND directSound)
 		if (driver->countHw2DBuffers() > 0)
 		{
 			nldebug("Source: Allocating 2D buffer in hardware");
-			desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCHARDWARE | DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLVOLUME 
-							| DSBCAPS_CTRLFREQUENCY | DSBCAPS_MUTE3DATMAXDISTANCE;
+			desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCHARDWARE | DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY;
 		} 
 		else
 		{
  			nldebug("Source: Allocating 2D buffer in software");
-			desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCSOFTWARE | DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLVOLUME 
-							| DSBCAPS_CTRLFREQUENCY | DSBCAPS_MUTE3DATMAXDISTANCE;
+			desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCSOFTWARE | DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY;
 		}
 
 		if (FAILED(directSound->CreateSoundBuffer(&desc, &_SecondaryBuffer, NULL))) 
@@ -309,7 +320,6 @@ void CSourceDSound::play()
 			_SwapBuffer = 0;
 			_BytesWritten = 0;
 
-			setPitch(_Freq);
 			fadeIn();
 		}
 		else 
@@ -322,7 +332,6 @@ void CSourceDSound::play()
 		_UserState = NL_DSOUND_PLAYING;
 		DBGPOS(("PLAY: PLAYING"));
 
-		setPitch(_Freq);
 		fadeIn();
 	}
 
@@ -516,7 +525,7 @@ void CSourceDSound::setPos( const NLMISC::CVector& pos )
 	// Coordinate system: conversion from NeL to OpenAL/GL:
     if (_3DBuffer != NULL)
     {
-		if (_3DBuffer->SetPosition(pos.x, pos.z, -pos.y, DS3D_IMMEDIATE) != DS_OK)
+		if (_3DBuffer->SetPosition(pos.x, pos.z, -pos.y, DS3D_DEFERRED) != DS_OK)
 		{
 			nldebug("SetPosition failed");
 		}
@@ -559,7 +568,7 @@ void CSourceDSound::setVelocity( const NLMISC::CVector& vel )
 {
     if (_3DBuffer != NULL)
     {
-		if (_3DBuffer->SetVelocity(vel.x, vel.z, -vel.y, DS3D_IMMEDIATE) != DS_OK)
+		if (_3DBuffer->SetVelocity(vel.x, vel.z, -vel.y, DS3D_DEFERRED) != DS_OK)
 		{
 			nldebug("SetVelocity failed");
 		}
@@ -600,9 +609,9 @@ void CSourceDSound::setDirection( const NLMISC::CVector& dir )
 {
 	if (_3DBuffer != 0)
 	{
-		if (_3DBuffer->SetConeOrientation(dir.x, dir.z, -dir.y, DS3D_IMMEDIATE) != DS_OK)
+		if (_3DBuffer->SetConeOrientation(dir.x, dir.z, -dir.y, DS3D_DEFERRED) != DS_OK)
 		{
-			nldebug("SetConeOrientation failed");
+			nldebug("SetConeOrientation failed (x=%.2f, y=%.2f, z=%.2f)", dir.x, dir.y, dir.z);
 		}
 	}
 }
@@ -697,18 +706,23 @@ float CSourceDSound::getGain() const
  */
 void CSourceDSound::setPitch( float coeff )
 {
-	_Freq = coeff;
+//	_Freq = coeff;
 
 	if ((_Buffer != 0) && (_SecondaryBuffer != 0))
 	{
 		TSampleFormat format;
 		uint freq;
+		uint newfreq;
 
 		_Buffer->getFormat(format, freq);
 
-		if (_SecondaryBuffer->SetFrequency((DWORD)(coeff * (float) freq)) != DS_OK)
+		newfreq = (uint) (coeff * (float) freq);
+
+		//nldebug("Freq=%d", newfreq);
+
+		if (_SecondaryBuffer->SetFrequency(newfreq) != DS_OK)
 		{
-			nldebug("SetFrequency failed");
+			//nldebug("SetFrequency failed (buffer freq=%d, NeL freq=%.5f, DSound freq=%d)", freq, coeff, newfreq);
 		}
 	}
 }
@@ -751,11 +765,11 @@ void CSourceDSound::setSourceRelativeMode( bool mode )
 
 		if (mode)
 		{
-			hr = _3DBuffer->SetMode(DS3DMODE_HEADRELATIVE, DS3D_IMMEDIATE);
+			hr = _3DBuffer->SetMode(DS3DMODE_HEADRELATIVE, DS3D_DEFERRED);
 		}
 		else
 		{
-			hr = _3DBuffer->SetMode(DS3DMODE_NORMAL, DS3D_IMMEDIATE);
+			hr = _3DBuffer->SetMode(DS3DMODE_NORMAL, DS3D_DEFERRED);
 		}
 
 		if (hr != DS_OK)
@@ -802,8 +816,8 @@ void CSourceDSound::setMinMaxDistances( float mindist, float maxdist )
 {
 	if (_3DBuffer != 0)
 	{
-		if ((_3DBuffer->SetMinDistance(mindist, DS3D_IMMEDIATE) != DS_OK)
-			|| (_3DBuffer->SetMaxDistance(maxdist, DS3D_IMMEDIATE) != DS_OK))
+		if ((_3DBuffer->SetMinDistance(mindist, DS3D_DEFERRED) != DS_OK)
+			|| (_3DBuffer->SetMaxDistance(maxdist, DS3D_DEFERRED) != DS_OK))
 		{
 			nldebug("SetMinDistance or SetMaxDistance failed");
 		}
@@ -886,7 +900,7 @@ void CSourceDSound::setCone( float innerAngle, float outerAngle, float outerGain
 			outer -= 360;
 		}
 
-		if (_3DBuffer->SetConeAngles(inner, outer, DS3D_IMMEDIATE) != DS_OK)
+		if (_3DBuffer->SetConeAngles(inner, outer, DS3D_DEFERRED) != DS_OK)
 		{
 			nldebug("SetConeAngles failed");			
 		}
@@ -909,7 +923,7 @@ void CSourceDSound::setCone( float innerAngle, float outerAngle, float outerGain
 			volume = DSBVOLUME_MAX;
 		}
 
-		if (_3DBuffer->SetConeOutsideVolume(volume, DS3D_IMMEDIATE) != DS_OK)
+		if (_3DBuffer->SetConeOutsideVolume(volume, DS3D_DEFERRED) != DS_OK)
 		{
 			nldebug("SetConeOutsideVolume failed");			
 		}
@@ -1663,6 +1677,8 @@ void CSourceDSound::crossFade()
 	_Buffer = _SwapBuffer;
 	_SwapBuffer = 0;
 
+	setPitch(_Freq);
+
 	// Check if we've reached the end of the file
 	if (_BytesWritten == _BufferSize) 
 	{
@@ -1892,6 +1908,8 @@ void CSourceDSound::fadeIn()
 
 
 	INITTIME(startPos);
+
+	setPitch(_Freq);
 
 
 	_SecondaryBuffer->GetCurrentPosition(&playPos, &writePos);

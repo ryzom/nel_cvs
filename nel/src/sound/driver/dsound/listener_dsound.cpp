@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.4 2002/05/27 17:37:23 hanappe Exp $
+ * $Id: listener_dsound.cpp,v 1.5 2002/06/04 10:01:21 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,12 +60,21 @@ CListenerDSound::~CListenerDSound()
 {
 	nldebug("Destroying DirectSound listener");
 
+    release();
+	_Instance = NULL;
+}
+
+
+/*
+ * 	Release all DirectSound resources
+ */
+void CListenerDSound::release()
+{
     if (_Listener != NULL)
     {
         _Listener->Release();
+		_Listener = NULL;
     }
-
-	_Instance = NULL;
 }
 
 
@@ -77,7 +86,7 @@ void CListenerDSound::setPos( const NLMISC::CVector& pos )
 	// Coordinate system: conversion from NeL to OpenAL/GL:
     if (_Listener != NULL)
     {
-        if (FAILED(_Listener->SetPosition(pos.x, pos.z, -pos.y, DS3D_IMMEDIATE)))
+        if (FAILED(_Listener->SetPosition(pos.x, pos.z, -pos.y, DS3D_DEFERRED)))
 		{
 			nldebug("SetPosition failed");
 		}
@@ -118,7 +127,7 @@ void CListenerDSound::setVelocity( const NLMISC::CVector& vel )
 {
     if (_Listener != NULL)
     {
-        if (FAILED(_Listener->SetVelocity(vel.x, vel.z, -vel.y, DS3D_IMMEDIATE)))
+        if (FAILED(_Listener->SetVelocity(vel.x, vel.z, -vel.y, DS3D_DEFERRED)))
 		{
 			nldebug("SetVelocity failed");
 		}
@@ -158,7 +167,7 @@ void CListenerDSound::setOrientation( const NLMISC::CVector& front, const NLMISC
 {
     if (_Listener != NULL)
     {
-        _Listener->SetOrientation(front.x, front.z, -front.y, up.x, up.z, -up.y, DS3D_IMMEDIATE);
+        _Listener->SetOrientation(front.x, front.z, -front.y, up.x, up.z, -up.y, DS3D_DEFERRED);
     }
 }
 
@@ -228,7 +237,7 @@ void CListenerDSound::setDopplerFactor( float f )
 			f = DS3D_MINDOPPLERFACTOR;
 		}
 
-        if (FAILED(_Listener->SetDopplerFactor(f, DS3D_IMMEDIATE)))
+        if (FAILED(_Listener->SetDopplerFactor(f, DS3D_DEFERRED)))
 		{
 			nldebug("SetDopplerFactor failed");
 		}
@@ -252,11 +261,20 @@ void CListenerDSound::setRolloffFactor( float f )
 			f = DS3D_MINROLLOFFFACTOR;
 		}
 
-        if (FAILED(_Listener->SetRolloffFactor(f, DS3D_IMMEDIATE)))
+        if (FAILED(_Listener->SetRolloffFactor(f, DS3D_DEFERRED)))
 		{
 			nldebug("SetRolloffFactor failed");
 		}
     }
+}
+
+
+void CListenerDSound::commit3DChanges()
+{
+    if (_Listener != NULL)
+    {
+		_Listener->CommitDeferredSettings();
+	}
 }
 
 

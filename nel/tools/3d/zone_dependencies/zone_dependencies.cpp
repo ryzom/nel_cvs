@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.13 2002/07/02 12:05:24 corvazier Exp $
+ * $Id: zone_dependencies.cpp,v 1.14 2002/07/02 13:26:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -631,7 +631,7 @@ static bool computeZoneIGBBox(const char *zoneName, NLMISC::CAABBox &result, TSh
 
 	if (pathName.empty())
 	{
-		nlwarning("unable to find instance group of zone : %s", zoneName);
+		// nlwarning("unable to find instance group of zone : %s", zoneName);
 		return hasAdditionnalBBox;
 	}
 

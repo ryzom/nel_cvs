@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.43 2002/07/01 09:26:58 lecroart Exp $
+ * $Id: path.cpp,v 1.44 2002/07/02 13:26:27 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -195,6 +195,13 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 	// Try to find in the map directories
 	CPath *inst = CPath::getInstance();
 	string str = strlwr (filename);
+
+	// Remove end spaces
+	while (str.size() && (str[str.size()-1] == ' '))
+	{
+		str.resize (str.size()-1);
+	}
+
 	map<string, CFileEntry>::iterator it = inst->_Files.find (str);
 	// If found in the map, returns it
 	if (it != inst->_Files.end())

@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.5 2001/10/26 08:16:41 vizerie Exp $
+ * $Id: material.h,v 1.6 2001/10/26 09:59:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,7 +148,7 @@ public:
 	  */
 	// @{
 	enum TTexAddressingMode { 
-							 None = 0, FetchTexture, PassThrough, CullFragment,
+							 TextureOff = 0 /* no texture */, FetchTexture, PassThrough, CullFragment,
 							 OffsetTexture, OffsetTextureScale, 
 							 DependentARTexture, DependentGBTexture,
 							 DP3, DP3Texture2D,

@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.30 2002/06/11 09:34:04 berenguier Exp $
+ * $Id: log.h,v 1.31 2002/08/23 14:54:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,9 @@ public:
 
 	/// Set the name of the process
 	static void setProcessName (const std::string &processName);
+
+	/// Find the process name if nobody call setProcessName before
+	static void setDefaultProcessName ();
 
 	/// If !noDisplayer(), sets line and file parameters, and enters the mutex. If !noDisplayer(), don't forget to call display...() after, to release the mutex.
 	void setPosition (sint line, char *fileName);

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.44 2002/08/23 12:30:37 lecroart Exp $
+ * $Id: log.cpp,v 1.45 2002/08/23 14:54:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,10 @@ namespace NLMISC
 string CLog::_ProcessName = "";
 
 CLog::CLog( TLogType logType) : _LogType (logType), _Line(-1), _FileName(NULL), _Mutex("LOG"+toString((uint)logType)), _PosSet(false)
+{
+}
+
+void CLog::setDefaultProcessName ()
 {
 #ifdef NL_OS_WINDOWS
 	if (_ProcessName.empty())
@@ -225,6 +229,8 @@ void CLog::displayString (const char *str)
 	const char *disp = NULL;
 	TDisplayInfo localargs, *args = NULL;
 
+	setDefaultProcessName ();
+
 	if(strchr(str,'\n') == NULL)
 	{
 		if (TempString.empty())
@@ -364,6 +370,8 @@ void CLog::displayRawString (const char *str)
 {
 	const char *disp = NULL;
 	TDisplayInfo localargs, *args = NULL;
+
+	setDefaultProcessName ();
 
 	if(strchr(str,'\n') == NULL)
 	{

@@ -3,6 +3,7 @@
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/script/codage.h"
 #include "nel/ai/agent/gd_agent_script.h"
+#include "nel/ai/logic/interpret_object_operator.h"
 
 namespace NLAIAGENT
 {
@@ -107,16 +108,18 @@ namespace NLAIAGENT
 	IObjectIA::CProcessResult COperatorScript::runMethodBase(int index,IObjectIA *params)
 	{	
 
-		index = index - IAgent::getMethodIndexSize();
-/*
+		int i = index - IAgent::getMethodIndexSize();
 
-		if ( index < getBaseMethodCount() )
-			return CAgentScript::runMethodeMember(index, params);
-*/
+
+		if ( i < getBaseMethodCount() )
+			return CAgentScript::runMethodBase(index, params);
+
 		IObjectIA::CProcessResult r;
 
+#ifdef NL_DEBUG
 		char buf[1024];
 		getDebugString(buf);
+#endif
 
 		return r;
 	}
@@ -136,12 +139,12 @@ namespace NLAIAGENT
 
 		if ( result.size() )
 			return result;
-
+/*
 		if ( *name == CStringVarName("post") )
 		{
-/*			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod(  IAgent::getMethodIndexSize() + fid_activate, 0.0,NULL, r_type ) );*/
-		}
+			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod(  IAgent::getMethodIndexSize() + fid_activate, 0.0,NULL, r_type ) );
+		}*/
 		return result;
 	}
 
@@ -158,31 +161,69 @@ namespace NLAIAGENT
 		IRefrence::setParent(parent);		
 	}
 
-/*	void COperatorScript::setFactBase(NLAILOGIC::CFactBase *fb)
-	{
-		_FactBase = fb;
-	}
-*/
 	const IObjectIA::CProcessResult &COperatorScript::run()
 	{
-		NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
-		context->Self = this;
 
-		((NLAISCRIPT::COperatorClass *)_AgentClass)->isValidFonc( context );
+		setState(processBuzzy,NULL);
+
+#ifdef NL_DEBUG
+		const char *dbg_class_name = (const char *) getType();
+#endif
+
+		//_ScriptMail->run();
+		getMail()->run();
+		runChildren();
+		
+		processMessages();
+
+	
+		bool is_activated = false;
+
+		// Looks for the goal
+		std::vector<NLAILOGIC::CGoal *> &goals = ( (CAgentScript *)getParent() )->getGoalStack();
+		std::vector<NLAILOGIC::CGoal *> activated_goals;
+		int i;
+		for ( i = 0; i < (int) goals.size(); i++ )
+		{
+			NLAILOGIC::CGoal *av_goal = goals[i];
+			const NLAILOGIC::CGoal *op_goal = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal();
+
+#ifdef NL_DEBUG
+			char buf_g1[1024 * 2];
+			char buf_g2[1024 * 2];
+
+			av_goal->getDebugString(buf_g1);
+			op_goal->getDebugString(buf_g2);
+#endif
+			if ( (*(goals[i])) == *( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() )
+				activated_goals.push_back( goals[i] );
+		}
+
+		// If a goal is posted corresponding to this operator's one
+		if ( activated_goals.size() )
+		{
+			// Checks the boolean funcs conditions
+			NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+			context->Self = this;
+			
+			if ( !((NLAISCRIPT::COperatorClass *)_AgentClass)->isValidFonc( context ) )
+				is_activated = false;
+
+		}
+		else
+			is_activated = false;
 
 
-		return CAgentScript::run();
 
-//		return IObjectIA::ProcessRun;
-/*		if ( _IsActivated )
+		// Runs the operator if every precondition is validated	
+		if ( is_activated )
 		{
 			return CAgentScript::run();
 		}
 		else
+		{
+			setState(processIdle,NULL);			
 			return IObjectIA::ProcessRun;
-			*/
+		}
 	}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////
 }

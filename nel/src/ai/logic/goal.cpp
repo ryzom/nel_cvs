@@ -28,6 +28,8 @@ namespace NLAILOGIC
 	{
 		if ( c._Name )
 			_Name = (NLAIAGENT::IVarName *) c._Name->clone();
+		else
+			_Name = NULL;
 	}
 
 	CGoal::~CGoal()
@@ -141,6 +143,16 @@ namespace NLAILOGIC
 
 	NLAIAGENT::tQueue CGoal::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
 	{
+
+#ifdef NL_DEBUG	
+	char nameM[1024*4];
+	char nameP[1024*4];
+	char name[1024*8];
+	funcName->getDebugString(nameM);
+	params.getDebugString(nameP);
+
+	const char *dbg_class_name = (const char *) getType();
+#endif
 		NLAIAGENT::tQueue r;
 		if(className == NULL)
 		{
@@ -150,7 +162,11 @@ namespace NLAILOGIC
 				r.push( NLAIAGENT::CIdMethod( 0 + IObjetOp::getMethodIndexSize(), 0.0, NULL, c) );					
 			}
 		}
-		return r;
+
+		if ( r.empty() )
+			return IBaseBoolType::isMember(className, funcName, params);
+		else
+			return r;
 	}
 
 	///\name Some IObjectIA method definition.
@@ -169,7 +185,7 @@ namespace NLAILOGIC
 		case 0:
 			{					
 
-				NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->get();
+				NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->get()->clone();
 				param->popFront();
 #ifdef NL_DEBUG
 				const char *dbg_name = name->getStr().getString();
@@ -199,4 +215,20 @@ namespace NLAILOGIC
 		return IBaseBoolType::getMethodIndexSize() + 1;
 	}
 	//@}
+
+	void CGoal::addSuccessor(IBaseOperator *succ)
+	{
+	}
+
+	void CGoal::addPredecessor(IBaseOperator *pred)
+	{
+	}
+
+	bool CGoal::operator==(const CGoal &g)
+	{
+		if ( (*g._Name) == (*_Name) && _Args.size() == g._Args.size() )
+			return true;
+
+		return false;
+	}
 }

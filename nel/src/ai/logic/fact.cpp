@@ -25,6 +25,11 @@ namespace NLAILOGIC
 {
 	using namespace NLAIAGENT;
 
+
+	CFact::CFact() : CValueSet()
+	{
+	}
+
 	CFact::CFact(IBaseAssert *a) : CValueSet(a->nbVars() )
 	{
 		_Assert = a;

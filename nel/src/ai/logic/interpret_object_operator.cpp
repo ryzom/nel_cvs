@@ -14,30 +14,38 @@ namespace NLAISCRIPT
 	{
 		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());		
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
+		_Goal = NULL;
 	}
 	
 	COperatorClass::COperatorClass(const NLAIC::CIdentType &id): CAgentClass(id)
 	{
 		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
+		_Goal = NULL;
 	}
 
 	COperatorClass::COperatorClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CAgentClass( inheritance )
 	{
 		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
+		_Goal = NULL;
 	}
 
 	COperatorClass::COperatorClass(const COperatorClass &c) : CAgentClass( c )
 	{
 		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
+		if ( c._Goal != NULL)
+			_Goal = (NLAILOGIC::CGoal *) c._Goal->clone();
+		else
+			_Goal = NULL;
 	}	
 
 	COperatorClass::COperatorClass()
 	{
 		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));
+		_Goal = NULL;
 	}
 
 
@@ -377,7 +385,7 @@ namespace NLAISCRIPT
 	{
 	}
 
-	void COperatorClass::setGoal(NLAILOGIC::CGoal *g)
+/*	void COperatorClass::setGoal(NLAILOGIC::CGoal *g)
 	{
 		if ( _Goal != NULL )
 		{
@@ -389,6 +397,7 @@ namespace NLAISCRIPT
 		if ( _Goal )
 			_Goal->incRef();
 	}
+	*/
 
 	const NLAILOGIC::CGoal *COperatorClass::getGoal()
 	{
@@ -467,17 +476,6 @@ namespace NLAISCRIPT
 		}
 		return -1;
 	}
-
-/*
-	// Logique
-	std::list<const NLAIAGENT::IVarName *> _BooleanConds;
-	std::list<const NLAIAGENT::IVarName *> _BooleanConcs;
-	std::vector<const NLAIAGENT::IVarName *> _CondAsserts;
-	std::vector<const NLAIAGENT::IVarName *> _ConcAsserts;
-	std::vector< std::list<const NLAIAGENT::IVarName *> *> _ClassCondVars;
-	std::vector< std::list<const NLAIAGENT::IVarName *> *> _ClassConcVars;
-	///////////////////////////////////////////////////
-*/
 
 	/// Add first order patterns as preconditions or postconditions
 	void COperatorClass::addFirstOrderCond(const NLAIAGENT::IVarName *assert_name, std::list<const NLAIAGENT::IVarName *> &params_list)
@@ -570,7 +568,12 @@ namespace NLAISCRIPT
 
 	void COperatorClass::setGoal(NLAIAGENT::CStringVarName &g)
 	{
-		_GoalName = (NLAIAGENT::CStringVarName *) g.clone();
+		if ( _Goal != NULL )
+		{
+			_Goal->release();
+		}
+
+		_Goal = new NLAILOGIC::CGoal( *(NLAIAGENT::CStringVarName *) g.clone());
 	}
 
 	bool COperatorClass::isValidFonc(NLAIAGENT::IObjectIA *c)
@@ -590,12 +593,13 @@ namespace NLAISCRIPT
 				context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
 				*context.Code = 0;
 
+
 				r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
 				// If we are in Debug Mode
-				if (context.ContextDebug.Active)
+				/*if (context.ContextDebug.Active)
 				{
 					context.ContextDebug.callStackPop();
-				}
+				}*/
 				*context.Code = ip;
 				context.Code = opTmp;		
 

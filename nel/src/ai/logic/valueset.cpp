@@ -29,6 +29,12 @@ namespace NLAILOGIC
 
 	const TProcessStatement CValueSet::state = processIdle;
 
+	CValueSet::CValueSet()
+	{
+		_NbValues = 0;
+		_Values = NULL;
+	}
+
 	/// Initialises a CValueSet of size <size> with values to NULL.
 	CValueSet::CValueSet(sint32 size)
 	{

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.7 2001/11/14 15:15:04 corvazier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.8 2001/11/14 15:50:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,8 +51,7 @@ void			CDriverGLStates::init(bool supportTextureCubeMap)
 	_VertexArrayEnabled= false;
 	_NormalArrayEnabled= false;
 	_WeightArrayEnabled= false;
-	_ColorArrayEnabled= false;
-	_NVTextureShader = false;
+	_ColorArrayEnabled= false;	
 	_SecondaryColorArrayEnabled= false;
 	uint	i;
 	for(i=0; i<IDRV_MAT_MAXTEXTURES; i++)
@@ -106,12 +105,7 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, one);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, _CurShininess);
-
-	if (_NVTextureShader)
-	{
-		glDisable(GL_TEXTURE_SHADER_NV);
-		_NVTextureShader = false;
-	}
+	
 
 	// TexModes
 	for(uint stage=0;stage<nbStages; stage++)
@@ -331,6 +325,7 @@ void			CDriverGLStates::setShininess(float shin)
 	}
 }
 
+
 // ***************************************************************************
 void			CDriverGLStates::setVertexColorLighted(bool enable)
 {
@@ -352,38 +347,7 @@ void			CDriverGLStates::setVertexColorLighted(bool enable)
 	}
 }
 
-// ***************************************************************************
-void      CDriverGLStates::enableNVTextureShader(bool enabled)
-{
-	if (enabled != _NVTextureShader)
-	{		
 
-		if (enabled)
-		{			
-			glEnable(GL_TEXTURE_SHADER_NV);			
-		}
-		else
-		{			
-			glDisable(GL_TEXTURE_SHADER_NV);			
-		}
-		_NVTextureShader = enabled;
-
-						
-	}
-}
-
-
-// ****************************************************************************
-void CDriverGLStates::verifyNVTextureShaderConfig()
-{
-	int consistent;
-	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
-	{
-		activeTextureARB(k);
-		glGetTexEnviv(GL_TEXTURE_SHADER_NV, GL_SHADER_CONSISTENT_NV, & consistent);
-		if(consistent == GL_FALSE) nlassert(0);
-	}
-}
 
 
 
@@ -402,7 +366,7 @@ void			CDriverGLStates::resetTextureMode()
 // ***************************************************************************
 void			CDriverGLStates::setTextureMode(TTextureMode texMode)
 {
-	if (_NVTextureShader) return; // ignored when texture shaders are used
+	//if (_NVTextureShaderEnabled) return; // ignored when texture shaders are used
 	TTextureMode	oldTexMode = _TextureMode[_CurrentActiveTextureARB];
 	if(oldTexMode != texMode)
 	{

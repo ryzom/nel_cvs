@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.6 2001/11/14 15:15:04 corvazier Exp $
+ * $Id: driver_opengl_states.h,v 1.7 2001/11/14 15:50:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,11 +106,8 @@ public:
 	void			setShininess(float shin);
 	void			setVertexColorLighted(bool enable);
 	// @}
-
-	/// nv texture shaders. Should be used only if this caps is present!
-	void            enableNVTextureShader(bool enabled);
-	// check nv texture shader consistency
-	void			verifyNVTextureShaderConfig();
+	
+	
 
 	/// \name Texture Mode setting.
 	// @{
@@ -146,8 +143,7 @@ private:
 	bool			_CurCullFace;
 	bool			_CurAlphaTest;
 	bool			_CurLighting;
-	bool			_CurZWrite;
-	bool			_NVTextureShader;
+	bool			_CurZWrite;	
 
 	GLenum			_CurBlendSrc;
 	GLenum			_CurBlendDst;

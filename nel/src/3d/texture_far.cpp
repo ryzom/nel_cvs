@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.12 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: texture_far.cpp,v 1.13 2001/10/08 15:02:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -407,7 +407,8 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 					const CTileFarBank::CTileFar*	pTile=_Bank->getTile (tile);
 
 					// This pointer must not be null, else the farBank is not valid!
-					nlassertonce (pTile);	// farBank is not valid!
+					if (pTile==NULL)
+						nlwarning ("FarBank is not valid!");
 
 					// If the tile exist
 					if (pTile)

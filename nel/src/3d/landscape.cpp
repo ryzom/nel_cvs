@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.83 2001/10/04 11:57:36 berenguier Exp $
+ * $Id: landscape.cpp,v 1.84 2001/10/08 15:02:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1532,10 +1532,6 @@ CPatchRdrPass*	CLandscape::getFarRenderPass(CPatch* pPatch, uint farIndex, float
 {
 	// Check args
 	nlassert (farIndex>0);
-
-	// If no far texture, return
-	if (!_FarInitialized)
-		return NULL;
 
 	// Get size of the far texture
 	uint width=(pPatch->getOrderS ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);

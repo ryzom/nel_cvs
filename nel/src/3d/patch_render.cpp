@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.5 2001/10/04 11:57:36 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.6 2001/10/08 15:02:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,6 +77,13 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 		// Backup old pass0
 		CPatchRdrPass	*oldPass0=Pass0.PatchRdrPass;
 		CPatchRdrPass	*oldPass1=Pass1.PatchRdrPass;
+
+		// Checks
+		if (oldPass0==NULL)
+			nlassert (Far0<=0);
+		if (oldPass1==NULL)
+			nlassert (Far1<=0);
+
 		float oldFar0UScale=Far0UScale;
 		float oldFar0VScale=Far0VScale;
 		float oldFar0UBias=Far0UBias;
@@ -157,6 +164,7 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 				{
 					// Yes, recycle it!
 					Pass1.PatchRdrPass= oldPass0;
+					nlassert (Pass1.PatchRdrPass);
 
 					// Copy uv coordinates
 					Far1UScale=oldFar0UScale;
@@ -174,6 +182,7 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 					// Rotation boolean
 					bool bRot;
 					Pass1.PatchRdrPass=Zone->Landscape->getFarRenderPass(this, newFar1, Far1UScale, Far1VScale, Far1UBias, Far1VBias, bRot);
+					nlassert (Pass1.PatchRdrPass);
 
 					// Flags is set if the far texture is rotated of 90° to the left
 					if (bRot)

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.24 2002/04/25 08:26:40 vizerie Exp $
+ * $Id: particle_system.h,v 1.25 2002/06/03 08:50:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -754,9 +754,19 @@ public:
 		// @{
 				/// return the number the number of located bindable bound with this ID
 				uint			   getNumLocatedBindableByExternID(uint32 id) const;
-				/// return the nth locatedBindable associtaed with this ID. An assertion is raised if it doesn't exist
+				/** return the nth locatedBindable associtaed with this ID. 
+				  * \return NULL if it doesn't exist
+				  */
 				CPSLocatedBindable *getLocatedBindableByExternID(uint32 id, uint index);
 				const CPSLocatedBindable *getLocatedBindableByExternID(uint32 id, uint index) const;
+				/// Get the number of IDs in the system
+				uint   getNumID() const;
+				/// Get the nth ID, or 0 if index is invalid.			  
+				uint32 getID(uint index) const;
+				/** Get all the IDs in the system. 
+				  * \warning As IDs are not stored in a vector, it is faster than several calls to getID
+				  */
+				void getIDs(std::vector<uint32> &dest) const;
 		// @}
 
 

@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.47 2002/04/25 08:26:40 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.48 2002/06/03 08:50:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -640,7 +640,10 @@ uint CParticleSystem::getNumLocatedBindableByExternID(uint32 id) const
 ///=======================================================================================
 CPSLocatedBindable *CParticleSystem::getLocatedBindableByExternID(uint32 id, uint index)
 {
-	nlassert(index < _LBMap.count(id));
+	if (index >= _LBMap.count(id))
+	{
+		return NULL;
+	}
 	TLBMap::const_iterator el = _LBMap.lower_bound(id);
 	uint left = index;
 	while (left--) ++el;
@@ -651,7 +654,10 @@ CPSLocatedBindable *CParticleSystem::getLocatedBindableByExternID(uint32 id, uin
 ///=======================================================================================
 const CPSLocatedBindable *CParticleSystem::getLocatedBindableByExternID(uint32 id, uint index) const
 {
-	nlassert(index < _LBMap.count(id));
+	if (index >= _LBMap.count(id))
+	{
+		return NULL;
+	}
 	TLBMap::const_iterator el = _LBMap.lower_bound(id);
 	uint left = index;
 	while (left--) ++el;
@@ -748,6 +754,36 @@ uint CParticleSystem::getIndexOf(const CParticleSystemProcess *process) const
 		if (_ProcessVect[k] == process) return k;
 	}
 	nlassert(0); // not a process of this system
+}
+
+///=======================================================================================
+uint CParticleSystem::getNumID() const
+{
+	return _LBMap.size();
+}
+
+///=======================================================================================
+uint32 CParticleSystem::getID(uint index) const
+{
+	TLBMap::const_iterator it = _LBMap.begin();
+	for(uint k = 0; k < index; ++k)
+	{
+		if (it == _LBMap.end()) return 0;
+		++it;
+	}
+	return it->first;
+}
+
+///=======================================================================================
+void CParticleSystem::getIDs(std::vector<uint32> &dest) const
+{
+	dest.resize(_LBMap.size());
+	uint k = 0;
+	for(TLBMap::const_iterator it = _LBMap.begin(); it != _LBMap.end(); ++it)
+	{
+		dest[k] = it->first;
+		++k;
+	}
 }
 
 

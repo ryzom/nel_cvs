@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * <File description>
  *
- * $Id: u_instance_material.h,v 1.2 2002/02/06 14:54:57 vizerie Exp $
+ * $Id: u_instance_material.h,v 1.3 2002/06/03 08:50:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,6 +105,8 @@ public:
 
 	/// \name Texture files specific
 	// @{
+	/// Get the last stage that got a texture. -1 means there is no textures.
+	virtual sint				getLastTextureStage() const = 0;
 	/// Check wether the texture of the n-th stage is a texture file
 	virtual bool				isTextureFile(uint stage = 0) const = 0;
 	/// Get the fileName used by the n-th texture file. (must be a texture file or an assertion is raised)

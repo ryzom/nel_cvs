@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.5 2002/02/20 18:04:40 lecroart Exp $
+ * $Id: u_particle_system_instance.h,v 1.6 2002/06/03 08:50:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -143,17 +143,24 @@ public:
 		virtual void		removePSObserver	(IPSObserver *observer) = 0;
 	 //@}
 
-	 //@{ System action. All these actions need that the system be present, otherwise an assertion is raised
-
+	 //@{
 			/** All the emitters that have the given ID emit their target.
-			  * An assertion is raised if there is no emitter with the given ID
+			  * \return false if the id is invalid, or if it isn't an emitter ID
 			  */
-			virtual void	emit(uint32 id, uint quantity = 1) = 0;
-
+			virtual bool	emit(uint32 id, uint quantity = 1) = 0;
 			/** All the object with the given id are removed.
-			  * An assertion is raised if there is no emitter with the given ID.
+			  * \return false if the id is invalid.
 			  */
-			virtual void   removeByID(uint32 id) = 0;
+			virtual bool   removeByID(uint32 id) = 0;
+			/// Return the number of objects in the system that are flagged with an ID, or 0 if the system is not present			  
+			virtual uint   getNumID() const = 0;
+			/// Get the nth ID, or 0 if index is invalid.			  
+			virtual uint32 getID(uint index) const = 0;
+			/** Get all the IDs in the system. 
+			  * \warning As IDs are not stored in a vector, it is faster than several calls to getID
+			  *
+			  */
+			virtual bool   getIDs(std::vector<uint32> &dest) const = 0;						  
 	 //@}
 };
 

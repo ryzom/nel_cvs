@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.10 2002/04/26 15:05:00 berenguier Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.11 2002/06/03 08:50:11 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -146,13 +146,13 @@ static inline uint32 IDToLittleEndian(uint32 input)
 	#endif
 }
 
-void	CParticleSystemInstanceUser::emit(uint32 anId, uint quantity)
+bool	CParticleSystemInstanceUser::emit(uint32 anId, uint quantity)
 {
 	const uint32 id = IDToLittleEndian(anId);
 	nlassert(isSystemPresent());
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
 	uint numLb  = ps->getNumLocatedBindableByExternID(id);
-	nlassert(numLb != 0); // INVALID ID !!
+	return false; // INVALID ID !!
 	for (uint k = 0; k < numLb; ++k)
 	{
 		CPSLocatedBindable *lb = ps->getLocatedBindableByExternID(id, k);		
@@ -167,15 +167,16 @@ void	CParticleSystemInstanceUser::emit(uint32 anId, uint quantity)
 			}
 		}
 	}
+	return true;
 }
 
-void CParticleSystemInstanceUser::removeByID(uint32 anId)
+bool CParticleSystemInstanceUser::removeByID(uint32 anId)
 {
 	const uint32 id = IDToLittleEndian(anId);
-	nlassert(isSystemPresent());
+	if (!isSystemPresent()) return false;
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
 	uint numLb  = ps->getNumLocatedBindableByExternID(id);
-	nlassert(numLb != 0); // INVALID ID !!
+	return false; // INVALID ID !!
 	for (uint k = 0; k < numLb; ++k)
 	{
 		CPSLocatedBindable *lb = ps->getLocatedBindableByExternID(id, k);
@@ -187,13 +188,40 @@ void CParticleSystemInstanceUser::removeByID(uint32 anId)
 			owner->deleteElement(0);
 		}		
 	}
-
+	return true;
 }
 
 void		CParticleSystemInstanceUser::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
 {
 	// no-op.
 }
+
+
+// ***************************************************************************
+uint CParticleSystemInstanceUser::getNumID() const
+{
+	if (!isSystemPresent()) return 0;
+	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
+	return ps->getNumID();
+}
+
+// ***************************************************************************
+uint32 CParticleSystemInstanceUser::getID(uint index) const
+{
+	if (!isSystemPresent()) return 0;
+	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
+	return ps->getID(index);
+}
+
+// ***************************************************************************
+bool CParticleSystemInstanceUser::getIDs(std::vector<uint32> &dest) const
+{
+	if (!isSystemPresent()) return false;
+	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
+	ps->getIDs(dest);
+	return true;
+}
+
 
 // ***************************************************************************
 void		CParticleSystemInstanceUser::setShapeDistMax(float distMax)

@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.35 2002/11/05 16:48:24 corvazier Exp $
+ * $Id: types_nl.h,v 1.36 2002/11/15 15:41:21 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -98,6 +98,12 @@
 #    define NL_NO_ASM						// Don't use extern ASM. Full C++ code.
 #  endif // NL_CPU_INTEL
 #endif // NL_NO_ASM
+
+
+// Define this if you want to use GTK for gtk_displayer
+
+//#define NL_USE_GTK
+#undef NL_USE_GTK
 
 
 // Standard types

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.20 2002/08/23 14:34:15 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.21 2002/10/29 10:45:14 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -276,24 +276,29 @@ void	CBitMemStream::serial(float &b)
  */
 void	CBitMemStream::serial(std::string &b) 
 {
-	uint32 length=0;
+	uint32 len=0;
 
 	// Serialize length
 	if ( isReading() )
 	{
-		serial( length );
-		b.resize( length );
+		serial( len );
+		if (len > length()-getPos())
+		{
+			nlwarning("string maximum length reached, perhaps invalid string size (%d)", len);
+			throw NLMISC::EInvalidDataStream();
+		}
+		b.resize( len );
 	}
 	else
 	{
-		length = b.size();
-		serial( length );
+		len = b.size();
+		serial( len );
 	}
 
 	// Serialize buffer
-	if ( length != 0 )
+	if ( len != 0 )
 	{
-		serialBuffer( (uint8*)(&*b.begin()), length );
+		serialBuffer( (uint8*)(&*b.begin()), len );
 	}
 }
 
@@ -302,24 +307,29 @@ void	CBitMemStream::serial(std::string &b)
  */
 void	CBitMemStream::serial(CBitMemStream &b)
 {
-	uint32 length=0;
+	uint32 len=0;
 
 	// Serialize length
 	if ( isReading() )
 	{
 		// fill b with data from this
-		serial (length);
+		serial (len);
+		if (len > length()-getPos())
+		{
+			nlwarning("bitmemstream maximum length reached, perhaps invalid bitmemstream size (%d)", len);
+			throw NLMISC::EInvalidDataStream();
+		}
 
-		serialBuffer (b.bufferToFill (length), length);
+		serialBuffer (b.bufferToFill (len), len);
 		b.resetBufPos ();
 	}
 	else
 	{
 		// fill this with data from b
-		length = b.length();
+		len = b.length();
 
-		serial( length );
-		serialBuffer( (uint8*) b.buffer (), length );
+		serial( len );
+		serialBuffer( (uint8*) b.buffer (), len );
 	}
 
 }
@@ -333,6 +343,11 @@ void CBitMemStream::serialCont(std::vector<bool> &cont)
 	if(isReading())
 	{
 		serial(len);
+		if (len/8 > (sint32)(length()-getPos()))
+		{
+			nlwarning("stl container maximum length reached, perhaps invalid container size (%d)", len);
+			throw NLMISC::EInvalidDataStream();
+		}
 		// special version for vector: adjut good size.
 		contReset(cont);
 		cont.reserve(len);

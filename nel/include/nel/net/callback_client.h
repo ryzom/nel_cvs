@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.13 2002/06/12 10:16:41 lecroart Exp $
+ * $Id: callback_client.h,v 1.14 2002/08/22 16:11:48 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,6 +67,8 @@ public:
 	 * if there is one)
 	 */
 	virtual bool	connected () const { checkThreadId (); return CBufClient::connected (); } 
+
+	virtual const CInetAddress&	hostAddress( TSockId hostid ) { return remoteAddress(); }
 
 	/** Disconnect a connection
 	 * Unlike in CCallbackClient, you can call disconnect() on a socket that is already disconnected

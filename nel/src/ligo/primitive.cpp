@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.40 2004/09/15 13:27:03 boucher Exp $
+ * $Id: primitive.cpp,v 1.41 2004/09/16 12:29:11 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -929,8 +929,10 @@ void CPrimZone::getAABox( NLMISC::CVector& cornerMin, NLMISC::CVector& cornerMax
 {
 	cornerMin.x = FLT_MAX;
 	cornerMin.y = FLT_MAX;
+	cornerMin.z = 0;
 	cornerMax.x = -FLT_MAX;
 	cornerMax.y = -FLT_MAX;
+	cornerMax.z = 0;
 	for ( uint i=0; i!=VPoints.size(); ++i )
 	{
 		const CVector& p = VPoints[i];

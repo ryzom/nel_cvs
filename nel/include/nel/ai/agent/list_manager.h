@@ -1,7 +1,7 @@
 /** \file list_manager.h
  * Sevral class for objects manipulation.
  *
- * $Id: list_manager.h,v 1.2 2001/03/01 16:53:53 chafik Exp $
+ * $Id: list_manager.h,v 1.3 2001/03/02 15:18:26 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

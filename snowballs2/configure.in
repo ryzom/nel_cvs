@@ -2,7 +2,7 @@ dnl ==========================================================================
 dnl Configuration script for Snowballs
 dnl ==========================================================================
 dnl
-dnl $Id: configure.in,v 1.3 2001/07/23 13:30:41 valignat Exp $
+dnl $Id: configure.in,v 1.4 2001/08/07 14:19:53 valignat Exp $
 dnl 
 
 
@@ -12,7 +12,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(client/src/client.cpp)
 
 MAJOR_VERSION=0
-MINOR_VERSION=1
+MINOR_VERSION=2
 PICO_VERSION=0
 
 AM_INIT_AUTOMAKE(snowballs, $MAJOR_VERSION.$MINOR_VERSION.$PICO_VERSION)
@@ -35,13 +35,15 @@ dnl Client
 AC_ARG_ENABLE( client,
     [  --disable-client        disable compilation and install of Snowballs Client.],
     [ AC_MSG_RESULT(disable Snowballs Client.) ],
-    [ SNO_SUBDIRS="$SNO_SUBDIRS client" ] )
+    [ SNO_SUBDIRS="$SNO_SUBDIRS client"
+      enable_client=yes ] )
 
 dnl Server
 AC_ARG_ENABLE( server,
     [  --disable-server        disable compilation and install of Snowballs Server.],
     [ AC_MSG_RESULT(disable Snowballs Server.) ],
-    [ SNO_SUBDIRS="$SNO_SUBDIRS server" ] )
+    [ SNO_SUBDIRS="$SNO_SUBDIRS server"
+      enable_server=yes ] )
 
 AC_SUBST(SNO_SUBDIRS)
 
@@ -95,58 +97,65 @@ if test ! "$no_x" = "yes" ; then
         CXXFLAGS="$CXXFLAGS -I$x_includes"
     fi
 else
-    AC_MSG_ERROR(X11 must be installed.)
+    if test "$enable_client" = "yes"
+    then
+        AC_MSG_ERROR(X11 must be installed.)
+    fi
 fi
 
 
 dnl ==========================================================================
 dnl STLPort
 
-dnl Ask user for path to the STLport header files
+dnl Ask user for path to the STLport files location
 AC_ARG_WITH( stlport,
-    [  --with-stlport=<path>   path to the STLPort header files directory.
-                          e.g. /usr/local/include/stlport ],
-    [ STLPORT_DIR=$with_stlport
-      AC_MSG_RESULT(using STLPort header files located in $with_stlport) ],
-      AC_MSG_ERROR([You must call configure with the --with-stlport option.
-    This tells configure where to find the STLPort header files.
-    e.g. --with-stlport=/usr/local/include/stlport])
-)
+    [  --with-stlport=<path>   path to the STLPort install files directory.
+                          e.g. /usr/local/stlport] 
+)                         
 
-if test X"$STLPORT_DIR" != X"";
+AC_ARG_WITH( stlport-include,
+    [  --with-stlport-include=<path>
+                          path to the STLPort header files directory.
+                          e.g. /usr/local/stlport/include] 
+)                         
+
+AC_ARG_WITH( stlport-lib,
+    [  --with-stlport-lib=<path>
+                          path to the STLPort library files directory.
+                          e.g. /usr/local/stlport/lib]
+)                         
+
+if test "$with_stlport" != "no"
 then
-    CXXFLAGS="-I$STLPORT_DIR $CXXFLAGS"
+    if test -z "$with_stlport" && test -z "$with_stlport_lib" -o -z "$with_stlport_include"
+    then
+        AC_MSG_ERROR([You must call configure with the --with-stlport or --with-stlport-lib and with-stlport-include options.
+This tells configure where to find the STLPort files.])
+    fi
+
+    if test $with_stlport
+    then
+        AC_MSG_RESULT(using STLPort files located in $with_stlport)
+
+        STLPORT_CFLAGS="$with_stlport/include"
+        STLPORT_LIB="$with_stlport/lib"
+    fi
+else
+    no_stlport="no"
+    AC_MSG_RESULT(*** Override the use of the STLPorts (EXPERIMENTAL) ***)
 fi
 
-dnl Ask user for path to the STLPort library files
-AC_ARG_WITH( stllib,
-    [  --with-stllib=<path>    path to the STLPort installation directory.
-                          e.g. /usr/local/lib/stlport],
-    [ STLLIB_DIR=$with_stllib
-      AC_MSG_RESULT(using STLPort library located in $with_stllib) ]
-)
-
-if test X"$STLLIB_DIR" != X"";
+if test -z "$no_stlport" -a "$with_stlport_include"
 then
-    LIBS="-L$STLLIB_DIR $LIBS"
+    AC_MSG_RESULT(using STLPort header files located in $with_stlport_include)
+    STLPORT_CFLAGS="$with_stlport_include"
 fi
 
-LIBS="$LIBS -lstlport_gcc"
-
-_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CXXFLAGS"
-
-AC_MSG_CHECKING(for STLPort)
-AC_EGREP_CPP( yo_stlport,
-[#include <algorithm>
-#ifdef __SGI_STL_PORT
-   yo_stlport
-#endif],
-[ AC_MSG_RESULT(yes)],
-  AC_MSG_ERROR([STLPort is needed to compile the client (www.stlport.org)])
-)
-
-CPPFLAGS="$_CPPFLAGS"
+if test -z "$no_stlport" -a  "$with_stlport_lib"
+then
+    AC_MSG_RESULT(using STLPort library files located in $with_stlport_lib)
+    STLPORT_LIB="$with_stlport_lib"
+fi
 
 
 dnl ==========================================================================
@@ -177,9 +186,10 @@ dnl FreeType 2
 dnl Check for the FreeType 2 library files
 AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, no)
 
-if test "$FREETYPE_CONFIG" = "no"; then
+if test "$FREETYPE_CONFIG" = "no" -a "$enable_client" = "yes"
+then
     AC_MSG_ERROR([Cannot find freetype-config: check your path.
-    FreeType 2 library is needed to compile NeL (freetype.sourceforge.net).])
+    FreeType 2 library is needed to compile Snowballs (freetype.sourceforge.net).])
 else
     FREETYPE_CFLAGS=`freetype-config --cflags`
     FREETYPE_LIBS=`freetype-config --libs`
@@ -198,8 +208,13 @@ AC_EGREP_CPP( yo_freetype2,
 #if FREETYPE_MAJOR == 2
    yo_freetype2
 #endif],
-[ AC_MSG_RESULT(yes)],
-  AC_MSG_ERROR([Freetype 2 library is needed to compile NeL (freetype.sourceforge.net).])
+[ AC_MSG_RESULT(yes) ],
+  if test "$enable_client" = "yes"
+  then
+      AC_MSG_ERROR([Freetype 2 library is needed to compile Snowballs (freetype.sourceforge.net).])
+  else
+      AC_MSG_RESULT(no)
+  fi
 )
 
 CPPFLAGS="$_CPPFLAGS"
@@ -259,14 +274,48 @@ fi
 
 dnl ==========================================================================
 dnl Checks for libraries.
+dnl ==========================================================================
+
+dnl ==========================================================================
+dnl STLPort
+
+if test -z "$no_stlport"
+then 
+
+    if test X"$STLPORT_CFLAGS" != X
+    then
+        CXXFLAGS="-I$STLPORT_CFLAGS $CXXFLAGS"
+    fi
+
+    if test X"$STLPORT_LIB" != X
+    then
+        LIBS="-L$STLPORT_LIB $LIBS -lstlport_gcc"
+    fi
+
+    _CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CXXFLAGS $STLPORT_CFLAGS"
+
+    AC_MSG_CHECKING(for STLPort)
+    AC_EGREP_CPP( yo_stlport,
+    [#include <algorithm>
+#ifdef __SGI_STL_PORT
+   yo_stlport
+#endif],
+    [ AC_MSG_RESULT(yes)],
+      AC_MSG_ERROR([STLPort is needed to compile Snowballs (www.stlport.org).]) )
+
+      CPPFLAGS="$_CPPFLAGS"
+fi
 
 
 dnl ==========================================================================
 dnl Checks for library functions.
+dnl ==========================================================================
 
 
 dnl ==========================================================================
 dnl Output files to generate.
+dnl ==========================================================================
 
 AC_OUTPUT( Makefile                                         \
            client/Makefile                                  \

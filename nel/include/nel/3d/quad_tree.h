@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.7 2000/11/23 15:53:43 corvazier Exp $
+ * $Id: quad_tree.h,v 1.8 2000/12/07 16:32:19 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #ifndef	NL_QUAD_TREE_H
 #define	NL_QUAD_TREE_H
 
+#include "nel/misc/debug.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/matrix.h"
@@ -324,7 +325,7 @@ private:// Classes.
 		// ============================================================================================
 		void	split()
 		{
-			assert(isLeaf());
+			nlassert(isLeaf());
 			sint	i;
 
 			for(i=0;i<4;i++)
@@ -412,7 +413,7 @@ private:// Classes.
 		// ============================================================================================
 		void	addElement(CNode *newNode)
 		{
-			assert(newNode->QuadNexts[ListIndex]==NULL);
+			nlassert(newNode->QuadNexts[ListIndex]==NULL);
 			newNode->QuadPrevs[ListIndex]= &RootNode;
 			newNode->QuadNexts[ListIndex]= RootNode.QuadNexts[ListIndex];
 			if(RootNode.QuadNexts[ListIndex])
@@ -437,8 +438,8 @@ private:// Classes.
 					}
 					else
 					{
-						BBoxMin.y= min(boxmin.y, BBoxMin.y);
-						BBoxMax.y= max(boxmax.y, BBoxMax.y);
+						BBoxMin.y= std::min(boxmin.y, BBoxMin.y);
+						BBoxMax.y= std::max(boxmax.y, BBoxMax.y);
 					}
 					addElement(newNode);
 					return;
@@ -458,8 +459,8 @@ private:// Classes.
 			}
 			else
 			{
-				BBoxMin.y= min(boxmin.y, BBoxMin.y);
-				BBoxMax.y= max(boxmax.y, BBoxMax.y);
+				BBoxMin.y= std::min(boxmin.y, BBoxMin.y);
+				BBoxMax.y= std::max(boxmax.y, BBoxMax.y);
 			}
 
 			// Si on est au bon, niveau, on a plus qu'à l'insérer dans ce node.
@@ -708,7 +709,7 @@ template<class T>	CQuadTree<T>::CIterator	CQuadTree<T>::insert(const NLMISC::CVe
 	nlassert(myboxmax.y>=myboxmin.y);
 	nlassert(myboxmax.z>=myboxmin.z);
 
-	float	boxsize= max(myboxmax.x-myboxmin.x, myboxmax.z-myboxmin.z );
+	float	boxsize= std::max(myboxmax.x-myboxmin.x, myboxmax.z-myboxmin.z );
 	// Prevent float precision problems. Increase bbox size a little.
 	boxsize*=1.01f;
 	// We must find the level quad which is just bigger.

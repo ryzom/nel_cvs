@@ -1166,7 +1166,7 @@ plugin material NelMaterial
 				dlRgbArg0Operand.enabled = bEnableSlot_1 and bNormalShader
 				dlRgbArg1Operand.enabled = bEnableSlot_1 and bNormalShader
 				dlAlphaOperation.enabled = bEnableSlot_1 and bNormalShader
-				dlAlphaBlendSource.enabled = (bEnableSlot_1 == true) and (iAlphaBlendSource_1 == 5) and bNormalShader
+				dlAlphaBlendSource.enabled = (bEnableSlot_1 == true) and (iAlphaOperation_1 == 5) and bNormalShader
 				dlAlphaArg0.enabled = bEnableSlot_1 and bNormalShader
 				dlAlphaArg1.enabled = bEnableSlot_1 and bNormalShader
 				dlAlphaArg0Operand.enabled = bEnableSlot_1 and bNormalShader
@@ -1326,7 +1326,7 @@ plugin material NelMaterial
 				dlRgbArg0Operand.enabled = bEnableSlot_2 and bNormalShader
 				dlRgbArg1Operand.enabled = bEnableSlot_2 and bNormalShader
 				dlAlphaOperation.enabled = bEnableSlot_2 and bNormalShader
-				dlAlphaBlendSource.enabled = (bEnableSlot_2 == true) and (iAlphaBlendSource_2 == 5) and bNormalShader
+				dlAlphaBlendSource.enabled = (bEnableSlot_2 == true) and (iAlphaOperation_2 == 5) and bNormalShader
 				dlAlphaArg0.enabled = bEnableSlot_2 and bNormalShader
 				dlAlphaArg1.enabled = bEnableSlot_2 and bNormalShader
 				dlAlphaArg0Operand.enabled = bEnableSlot_2 and bNormalShader

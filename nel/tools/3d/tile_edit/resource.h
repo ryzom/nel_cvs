@@ -92,6 +92,14 @@
 #define IDC_SUBGROUP2                   1084
 #define IDC_PATH                        1084
 #define IDC_SUBGROUP3                   1085
+#define IDC_SUBGROUP4                   1086
+#define IDC_SUBGROUP5                   1087
+#define IDC_SUBGROUP6                   1088
+#define IDC_SUBGROUP7                   1089
+#define IDC_SUBGROUP8                   1090
+#define IDC_SUBGROUP9                   1091
+#define IDC_SUBGROUP10                  1092
+#define IDC_SUBGROUP11                  1093
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496

@@ -24,6 +24,14 @@ Browse::Browse(int nland, CWnd* pParent /*=NULL*/)
 	SubGroup1 = FALSE;
 	SubGroup2 = FALSE;
 	SubGroup3 = FALSE;
+	SubGroup4 = FALSE;
+	SubGroup5 = FALSE;
+	SubGroup6 = FALSE;
+	SubGroup7 = FALSE;
+	SubGroup10 = FALSE;
+	SubGroup11 = FALSE;
+	SubGroup8 = FALSE;
+	SubGroup9 = FALSE;
 	//}}AFX_DATA_INIT
 	land=nland;
 	m_128x128=0;
@@ -42,6 +50,14 @@ void Browse::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_SUBGROUP1, SubGroup1);
 	DDX_Check(pDX, IDC_SUBGROUP2, SubGroup2);
 	DDX_Check(pDX, IDC_SUBGROUP3, SubGroup3);
+	DDX_Check(pDX, IDC_SUBGROUP4, SubGroup4);
+	DDX_Check(pDX, IDC_SUBGROUP5, SubGroup5);
+	DDX_Check(pDX, IDC_SUBGROUP6, SubGroup6);
+	DDX_Check(pDX, IDC_SUBGROUP7, SubGroup7);
+	DDX_Check(pDX, IDC_SUBGROUP10, SubGroup10);
+	DDX_Check(pDX, IDC_SUBGROUP11, SubGroup11);
+	DDX_Check(pDX, IDC_SUBGROUP8, SubGroup8);
+	DDX_Check(pDX, IDC_SUBGROUP9, SubGroup9);
 	//}}AFX_DATA_MAP
 }
 
@@ -61,11 +77,19 @@ BEGIN_MESSAGE_MAP(Browse, CDialog)
 	ON_BN_CLICKED(IDC_SUBGROUP1, OnSubgroup1)
 	ON_BN_CLICKED(IDC_SUBGROUP2, OnSubgroup2)
 	ON_BN_CLICKED(IDC_SUBGROUP3, OnSubgroup3)
+	ON_BN_CLICKED(IDC_SUBGROUP4, OnSubgroup4)
+	ON_BN_CLICKED(IDC_SUBGROUP5, OnSubgroup5)
+	ON_BN_CLICKED(IDC_SUBGROUP6, OnSubgroup6)
+	ON_BN_CLICKED(IDC_SUBGROUP7, OnSubgroup7)
 	ON_BN_CLICKED(IDC_ZOOM5, OnChangeVariety)
 	ON_BN_CLICKED(IDC_ZOOM6, OnChangeVariety)
 	ON_BN_CLICKED(IDCANCEL, OnCancel)
 	ON_BN_CLICKED(IDC_CANCEL, OnCancel)
 	ON_BN_CLICKED(IDC_DISPLACE, OnChangeVariety)
+	ON_BN_CLICKED(IDC_SUBGROUP8, OnSubgroup8)
+	ON_BN_CLICKED(IDC_SUBGROUP9, OnSubgroup9)
+	ON_BN_CLICKED(IDC_SUBGROUP10, OnSubgroup10)
+	ON_BN_CLICKED(IDC_SUBGROUP11, OnSubgroup11)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -926,9 +950,17 @@ void Browse::UpdateFlags ()
 	SubGroup1=0;
 	SubGroup2=0;
 	SubGroup3=0;
+	SubGroup4=0;
+	SubGroup5=0;
+	SubGroup6=0;
+	SubGroup7=0;
+	SubGroup8=0;
+	SubGroup9=0;
+	SubGroup10=0;
+	SubGroup11=0;
 
 	// Flags
-	uint8 or=0, and=0xff;
+	uint or=0, and=0xffffffff;
 	bool find=false;
 
 	// For each 
@@ -981,15 +1013,31 @@ void Browse::UpdateFlags ()
 	GetDlgItem (IDC_SUBGROUP1)->EnableWindow (find?TRUE:FALSE);
 	GetDlgItem (IDC_SUBGROUP2)->EnableWindow (find?TRUE:FALSE);
 	GetDlgItem (IDC_SUBGROUP3)->EnableWindow (find?TRUE:FALSE);
+	GetDlgItem (IDC_SUBGROUP4)->EnableWindow (find?TRUE:FALSE);
+	GetDlgItem (IDC_SUBGROUP5)->EnableWindow (find?TRUE:FALSE);
+	GetDlgItem (IDC_SUBGROUP6)->EnableWindow (find?TRUE:FALSE);
+	GetDlgItem (IDC_SUBGROUP7)->EnableWindow (find?TRUE:FALSE);
+	GetDlgItem (IDC_SUBGROUP8)->EnableWindow (find?TRUE:FALSE);
+	GetDlgItem (IDC_SUBGROUP9)->EnableWindow (find?TRUE:FALSE);
+	GetDlgItem (IDC_SUBGROUP10)->EnableWindow (find?TRUE:FALSE);
+	GetDlgItem (IDC_SUBGROUP11)->EnableWindow (find?TRUE:FALSE);
 
 	// Find at least one tile ?
 	if (find)
 	{
 		// Set UI
-		SubGroup0=(and&1)?1:(or&1)?2:0;
-		SubGroup1=(and&2)?1:(or&2)?2:0;
-		SubGroup2=(and&4)?1:(or&4)?2:0;
-		SubGroup3=(and&8)?1:(or&8)?2:0;
+		SubGroup0=(and&0x1)?1:(or&0x1)?2:0;
+		SubGroup1=(and&0x2)?1:(or&0x2)?2:0;
+		SubGroup2=(and&0x4)?1:(or&0x4)?2:0;
+		SubGroup3=(and&0x8)?1:(or&0x8)?2:0;
+		SubGroup4=(and&0x10)?1:(or&0x10)?2:0;
+		SubGroup5=(and&0x20)?1:(or&0x20)?2:0;
+		SubGroup6=(and&0x40)?1:(or&0x40)?2:0;
+		SubGroup7=(and&0x80)?1:(or&0x80)?2:0;
+		SubGroup8=(and&0x100)?1:(or&0x100)?2:0;
+		SubGroup9=(and&0x200)?1:(or&0x200)?2:0;
+		SubGroup10=(and&0x400)?1:(or&0x400)?2:0;
+		SubGroup11=(and&0x800)?1:(or&0x800)?2:0;
 	}
 
 	// Update UI data
@@ -1030,7 +1078,7 @@ void Browse::Flags (int flagNumber, bool go)
 			if (index!=-1)
 			{
 				// Get flags
-				uint8 value=tileBank2.getTile (index)->getGroupFlags ();
+				uint value=tileBank2.getTile (index)->getGroupFlags ();
 
 				// Clear flag
 				value&=~(1<<flagNumber);
@@ -1121,4 +1169,156 @@ void Browse::OnSubgroup3()
 		Flags (3, false);
 	if (SubGroup3==1)
 		Flags (3, true);
+}
+
+void Browse::OnSubgroup4() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup4==2)
+	{
+		SubGroup4=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup4!=2);
+	if (SubGroup4==0)
+		Flags (4, false);
+	if (SubGroup4==1)
+		Flags (4, true);
+}
+
+void Browse::OnSubgroup5() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup5==2)
+	{
+		SubGroup5=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup5!=2);
+	if (SubGroup5==0)
+		Flags (5, false);
+	if (SubGroup5==1)
+		Flags (5, true);
+}
+
+void Browse::OnSubgroup6() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup6==2)
+	{
+		SubGroup6=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup6!=2);
+	if (SubGroup6==0)
+		Flags (6, false);
+	if (SubGroup6==1)
+		Flags (6, true);
+}
+
+void Browse::OnSubgroup7() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup7==2)
+	{
+		SubGroup7=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup7!=2);
+	if (SubGroup7==0)
+		Flags (7, false);
+	if (SubGroup7==1)
+		Flags (7, true);
+}
+
+void Browse::OnSubgroup8() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup8==2)
+	{
+		SubGroup8=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup8!=2);
+	if (SubGroup8==0)
+		Flags (8, false);
+	if (SubGroup8==1)
+		Flags (8, true);
+}
+
+void Browse::OnSubgroup9() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup9==2)
+	{
+		SubGroup9=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup9!=2);
+	if (SubGroup9==0)
+		Flags (9, false);
+	if (SubGroup9==1)
+		Flags (9, true);
+}
+
+void Browse::OnSubgroup10() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup10==2)
+	{
+		SubGroup10=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup10!=2);
+	if (SubGroup10==0)
+		Flags (10, false);
+	if (SubGroup10==1)
+		Flags (10, true);
+}
+
+void Browse::OnSubgroup11() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup11==2)
+	{
+		SubGroup11=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup11!=2);
+	if (SubGroup11==0)
+		Flags (11, false);
+	if (SubGroup11==1)
+		Flags (11, true);
 }

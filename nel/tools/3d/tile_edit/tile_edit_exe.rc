@@ -189,7 +189,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,77,25,50,14
 END
 
-IDD_BROWSER DIALOGEX 0, 0, 481, 414
+IDD_BROWSER DIALOGEX 0, 0, 482, 452
 STYLE DS_CENTER | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
     WS_THICKFRAME
 EXSTYLE WS_EX_ACCEPTFILES
@@ -207,16 +207,16 @@ BEGIN
     CONTROL         "Normal",IDC_ZOOM2,"Button",BS_AUTORADIOBUTTON,15,85,42,
                     8
     CONTROL         "Big",IDC_ZOOM3,"Button",BS_AUTORADIOBUTTON,15,95,25,8
-    DEFPUSHBUTTON   "Ok",IDC_OK,5,295,65,15
-    PUSHBUTTON      "Cancel",IDC_CANCEL,5,314,65,16
+    DEFPUSHBUTTON   "Ok",IDC_OK,5,370,65,15
+    PUSHBUTTON      "Cancel",IDC_CANCEL,5,389,65,16
     GROUPBOX        "Texte info",IDC_STATIC,5,115,65,40
     CONTROL         "Index",IDC_INFONUM,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,15,130,43,10
     CONTROL         "File name",IDC_FILENAME,"Button",BS_AUTORADIOBUTTON,15,
                     140,43,9
-    CONTROL         "",IDC_VIEW,"Static",SS_GRAYFRAME,75,5,400,400,
+    CONTROL         "",IDC_VIEW,"Static",SS_GRAYFRAME,75,5,400,440,
                     WS_EX_ACCEPTFILES | WS_EX_CLIENTEDGE
-    PUSHBUTTON      "Update tiles",IDC_OK2,5,335,65,16
+    PUSHBUTTON      "Update tiles",IDC_OK2,5,410,65,16
     GROUPBOX        "Tiles",IDC_STATIC,5,160,65,60
     CONTROL         "128 x 128",IDC_128X128,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,15,175,45,8
@@ -224,8 +224,8 @@ BEGIN
                     45,8
     CONTROL         "Transitions",IDC_ZOOM6,"Button",BS_AUTORADIOBUTTON,15,
                     195,50,8
-    PUSHBUTTON      "Batch load...",IDC_BATCH_LOAD,5,356,65,16
-    GROUPBOX        "Subtile set",IDC_STATIC,5,225,65,60
+    PUSHBUTTON      "Batch load...",IDC_BATCH_LOAD,5,431,65,16
+    GROUPBOX        "Subtile set",IDC_STATIC,5,225,65,140
     CONTROL         "Group 0",IDC_SUBGROUP0,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,15,240,45,8
     CONTROL         "Group 1",IDC_SUBGROUP1,"Button",BS_AUTO3STATE | 
@@ -236,6 +236,22 @@ BEGIN
                     WS_TABSTOP,15,270,45,8
     CONTROL         "Displace",IDC_DISPLACE,"Button",BS_AUTORADIOBUTTON,15,
                     205,50,8
+    CONTROL         "Group 4",IDC_SUBGROUP4,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,280,45,8
+    CONTROL         "Group 5",IDC_SUBGROUP5,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,290,45,8
+    CONTROL         "Group 6",IDC_SUBGROUP6,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,300,45,8
+    CONTROL         "Group 7",IDC_SUBGROUP7,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,310,45,8
+    CONTROL         "Group 8",IDC_SUBGROUP8,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,320,45,8
+    CONTROL         "Group 9",IDC_SUBGROUP9,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,330,45,8
+    CONTROL         "Group 10",IDC_SUBGROUP10,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,340,45,8
+    CONTROL         "Group 11",IDC_SUBGROUP11,"Button",BS_AUTO3STATE | 
+                    WS_TABSTOP,15,350,45,8
 END
 
 IDD_GROUPE DIALOG DISCARDABLE  0, 0, 225, 146
@@ -342,9 +358,9 @@ BEGIN
     IDD_BROWSER, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 473
+        RIGHTMARGIN, 474
         TOPMARGIN, 7
-        BOTTOMMARGIN, 408
+        BOTTOMMARGIN, 446
     END
 
     IDD_GROUPE, DIALOG

@@ -67,6 +67,14 @@ public:
 	int		SubGroup1;
 	int		SubGroup2;
 	int		SubGroup3;
+	int		SubGroup4;
+	int		SubGroup5;
+	int		SubGroup6;
+	int		SubGroup7;
+	int		SubGroup10;
+	int		SubGroup11;
+	int		SubGroup8;
+	int		SubGroup9;
 	//}}AFX_DATA
 
 
@@ -100,6 +108,14 @@ protected:
 	afx_msg void OnSubgroup1();
 	afx_msg void OnSubgroup2();
 	afx_msg void OnSubgroup3();
+	afx_msg void OnSubgroup4();
+	afx_msg void OnSubgroup5();
+	afx_msg void OnSubgroup6();
+	afx_msg void OnSubgroup7();
+	afx_msg void OnSubgroup8();
+	afx_msg void OnSubgroup9();
+	afx_msg void OnSubgroup10();
+	afx_msg void OnSubgroup11();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

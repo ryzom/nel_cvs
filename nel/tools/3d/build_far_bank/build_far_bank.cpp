@@ -5,7 +5,7 @@
 #include <nel/misc/file.h>
 #include <nel/3d/tile_bank.h>
 #include <nel/3d/tile_far_bank.h>
-#include <nel/3d/bitmap.h>
+#include <nel/misc/bitmap.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -213,21 +213,22 @@ int main (int argc, char **argv)
 					// Delete pixels
 					bool bDeleteDiffuse=true;
 					bool bDeleteAdditive=true;
+					bool bDeleteAlpha=true;
 
 					// Tile not free ?
 					if (!pTile->isFree())
 					{
 						// Diffuse bitmap filled ?
-						if (pTile->getFileName (CTile::diffuse)!="")
+						if (pTile->getRelativeFileName (CTile::diffuse)!="")
 						{
 							// File exist ?
-							if (isFileExist (pTile->getFileName (CTile::diffuse).c_str()))
+							if (isFileExist ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str()))
 							{
 								// Recompute it?
-								if (recompute (pTile->getFileName (CTile::diffuse).c_str(), argv[2])||forceRecomputation)
+								if (recompute ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str(), argv[2])||forceRecomputation)
 								{
 									// Fill infos
-									if (fillTileFar (tile, pTile->getFileName (CTile::diffuse).c_str(), CTileFarBank::diffuse, farBank))
+									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str(), CTileFarBank::diffuse, farBank))
 									{
 										// One more tile
 										tileCount++;
@@ -241,23 +242,23 @@ int main (int argc, char **argv)
 									// One more tile
 									tileCount++;
 	
-									printf ("Skipping %s...\n", pTile->getFileName (CTile::diffuse).c_str());
+									printf ("Skipping %s...\n", (bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str());
 									bDeleteDiffuse=false;
 								}
 							}
 						}
 
 						// Additive bitmap filled ?
-						if (pTile->getFileName (CTile::additive)!="")
+						if (pTile->getRelativeFileName (CTile::additive)!="")
 						{
 							// File exist ?
-							if (isFileExist (pTile->getFileName (CTile::additive).c_str()))
+							if (isFileExist ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::additive)).c_str()))
 							{
 								// Recompute it?
-								if (recompute (pTile->getFileName (CTile::additive).c_str(), argv[2])||forceRecomputation)
+								if (recompute ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::additive)).c_str(), argv[2])||forceRecomputation)
 								{
 									// Fill infos
-									if (fillTileFar (tile, pTile->getFileName (CTile::additive).c_str(), CTileFarBank::additive, farBank))
+									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::additive)).c_str(), CTileFarBank::additive, farBank))
 									{
 										// One more tile
 										tileCount++;
@@ -271,8 +272,38 @@ int main (int argc, char **argv)
 									// One more tile
 									tileCount++;
 
-									printf ("Skipping %s...\n", pTile->getFileName (CTile::diffuse).c_str());
+									printf ("Skipping %s...\n", (bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str());
 									bDeleteAdditive=false;
+								}
+							}
+						}
+
+						// Alpha bitmap filled ?
+						if (pTile->getRelativeFileName (CTile::alpha)!="")
+						{
+							// File exist ?
+							if (isFileExist ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::alpha)).c_str()))
+							{
+								// Recompute it?
+								if (recompute ((bank.getAbsPath()+pTile->getRelativeFileName (CTile::alpha)).c_str(), argv[2])||forceRecomputation)
+								{
+									// Fill infos
+									if (fillTileFar (tile, (bank.getAbsPath()+pTile->getRelativeFileName (CTile::alpha)).c_str(), CTileFarBank::alpha, farBank))
+									{
+										// One more tile
+										tileCount++;
+
+										tileComputed++;
+										bDeleteAlpha=false;
+									}
+								}
+								else
+								{
+									// One more tile
+									tileCount++;
+
+									printf ("Skipping %s...\n", (bank.getAbsPath()+pTile->getRelativeFileName (CTile::diffuse)).c_str());
+									bDeleteAlpha=false;
 								}
 							}
 						}

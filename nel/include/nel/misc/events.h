@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.9 2000/11/13 13:41:15 corvazier Exp $
+ * $Id: events.h,v 1.10 2000/11/13 13:41:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@ class IEventEmitter;
 class CEvent : public CClassId
 {
 public:
-	/// Emitter of the event.
+	/// Emitter of the event. Can be NULL if the event is posted directly to the CEventServer.
 	IEventEmitter* Emitter;
 protected:
 	/** Constructor.

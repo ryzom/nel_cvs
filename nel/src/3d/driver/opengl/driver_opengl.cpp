@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.216 2004/04/28 18:20:13 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.217 2004/05/11 17:36:29 boucher Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -202,6 +202,7 @@ CDriverGL::CDriverGL()
 	_hRC = NULL;
 	_hDC = NULL;
 	_NeedToRestaureGammaRamp = false;
+	_Interval = 1;
 #elif defined (NL_OS_UNIX) // NL_OS_WINDOWS
 
 	cursor = None;
@@ -303,7 +304,6 @@ CDriverGL::CDriverGL()
 	_VBHardProfiling= false;
 	_CurVBHardLockCount= 0;
 	_NumVBHardProfileFrame= 0;
-	_Interval = 1;
 	SwapBufferCounter = 0;
 }
 
@@ -1337,8 +1337,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 			}
 	}
 
+#ifdef NL_OS_WINDOWS
 	// Reset the vbl interval
 	setSwapVBLInterval(_Interval);
+#endif
 
 	return true;
 }
@@ -3294,8 +3296,8 @@ void CDriverGL::finish()
 // ***************************************************************************
 void	CDriverGL::setSwapVBLInterval(uint interval)
 {
-	_Interval = interval;
 #ifdef NL_OS_WINDOWS
+	_Interval = interval;
 	if(_Extensions.WGLEXTSwapControl && _Initialized)
 	{
 		wglSwapIntervalEXT(_Interval);

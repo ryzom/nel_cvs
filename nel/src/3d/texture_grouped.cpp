@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.7 2002/02/20 16:36:12 vizerie Exp $
+ * $Id: texture_grouped.cpp,v 1.8 2002/02/26 16:26:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,26 +38,24 @@ static inline void GetTextureSize(ITexture *tex, uint &width, uint &height)
 {	
 	if (tex->getClassName() == "CTextureFile")
 	{
-		CTextureFile *tf = static_cast<CTextureFile *>(tex);
-		try
-		{						
-			uint32 srcWidth, srcHeight;
-			if (!tf->getFileName().empty())
-			{
-				CBitmap::loadSize(tf->getFileName(), srcWidth, srcHeight);
-				width = srcWidth;
-				height = srcHeight;
-			}
-			else
-			{
-				width = height = 0;
-			}
-		}
-		catch (NLMISC::EStream &)
+		CTextureFile *tf = static_cast<CTextureFile *>(tex);								
+		uint32 srcWidth, srcHeight;
+		if (!tf->getFileName().empty())
 		{
-			nlinfo("Unable to get size of texture : %d", tf->getFileName().c_str());
-			width = height = 0;
+			CBitmap::loadSize(NLMISC::CPath::lookup(tf->getFileName()), srcWidth, srcHeight);
+			if (srcWidth == 0 || srcHeight == 0)
+			{
+				nlinfo("Unable to get size of texture : %s", tf->getFileName().c_str());
+				width = height = 0;
+				return;
+			}
+			width = srcWidth;
+			height = srcHeight;
 		}
+		else
+		{
+			width = height = 0;
+		}		
 	}
 	else // we must generate the texture to get its size
 	{
@@ -148,7 +146,7 @@ void CTextureGrouped::setTextures(CSmartPtr<ITexture> *textureTab, uint nbTex)
 	_Textures.clear();	
 	
 	const float deltaV = realHeight ? (float(totalHeight) / float(realHeight)) * (1.0f / nbTex)
-									: 1.f;
+									: 0.f;
 	_DeltaUV = CUV(1,  deltaV);
 	CUV currentUV(0, 0);
 	
@@ -182,7 +180,7 @@ void CTextureGrouped::doGenerate()
 		makeDummy();
 	}
 	else
-	{		
+	{				
 		// Generate the first texture to get the size	
 		_Textures[0]->generate();
 		const uint width = _Textures[0]->getWidth(), height = _Textures[0]->getHeight();		

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.17 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: i18n.cpp,v 1.18 2001/08/23 14:31:54 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -225,12 +225,13 @@ void CI18N::setPath (const char* str)
 void CI18N::load (uint32 lid)
 {
 	nlassert (lid >= 0 && lid < sizeof (_LanguageFiles)/sizeof(_LanguageFiles[0]));
+	nlassert (_LanguagesNamesLoaded);
 
 	_FileName  = _Path + _LanguageFiles[lid] + ".uxt";
 
 	if (_StrMapLoaded)	_StrMap.clear ();
 	else				_StrMapLoaded = true;
-	
+
 	CIFile cf;
 	// if the file does not exist, it'll be create automatically
 	if (!cf.open (_FileName, true))
@@ -303,7 +304,7 @@ void CI18N::load (uint32 lid)
 				nlerror ("'=' missing in \"%s\" line %d", _FileName.c_str(), line);
 			}
 			equal = false;
-			
+
 			second = true;
 			// get the translated string
 			c = skipWS (cf, line);

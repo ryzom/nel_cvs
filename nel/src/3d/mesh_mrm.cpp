@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.44 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.45 2002/07/01 08:56:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1072,22 +1072,28 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	}
 
 
-	// Setup meshVertexProgram
-	//===========
-	CMatrix		invertedObjectMatrix;
-	if (bSkinApplied)
-		invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
-	else
-		invertedObjectMatrix = trans->getWorldMatrix().inverted();
-
-
 	// force normalisation of normals..
 	bool	bkupNorm= drv->isForceNormalize();
 	drv->forceNormalize(true);			
 
+
+	// Setup meshVertexProgram
+	//===========
+
 	// use MeshVertexProgram effect?
-	bool	useMeshVP= _MeshVertexProgram != NULL ? _MeshVertexProgram->begin(drv, mi->getScene(), mi, invertedObjectMatrix, renderTrav->CamPos) : false;
+	bool	useMeshVP= _MeshVertexProgram != NULL;
+	if( useMeshVP )
+	{
+		CMatrix		invertedObjectMatrix;
+		if (bSkinApplied)
+			invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
+		else
+			invertedObjectMatrix = trans->getWorldMatrix().inverted();
+		// really ok if success to begin VP
+		useMeshVP= _MeshVertexProgram->begin(drv, mi->getScene(), mi, invertedObjectMatrix, renderTrav->CamPos);
+	}
 	
+
 	// Render the lod.
 	//===========
 	// active VB.

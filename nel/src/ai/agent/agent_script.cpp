@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.124 2002/07/23 15:37:47 chafik Exp $
+ * $Id: agent_script.cpp,v 1.125 2002/07/26 09:32:24 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -671,7 +671,6 @@ namespace NLAIAGENT
 			t += NLAIC::stringGetBuild("<%s> (scripted)  -StaticComponents:\n",(const char *)_AgentClass->getType());
 		else
 			t += "<undefined_class> (scripted) -StaticComponents:\n";
-			
 		for (int i = 0; i < _NbComponents; i++ )
 		{
 			std::string buf;

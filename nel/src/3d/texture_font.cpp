@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.19 2002/11/21 15:56:57 berenguier Exp $
+ * $Id: texture_font.cpp,v 1.20 2003/04/25 13:44:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,8 +156,8 @@ void CTextureFont::dumpTextureFont(const char *filename)
 	CBitmap b;
 	COFile f( filename );
 	b.resize (TextureSizeX, TextureSizeY, CBitmap::RGBA);
-	vector<uint8>&bits = b.getPixels();
-	vector<uint8>&src = getPixels();
+	CObjectVector<uint8>&bits = b.getPixels();
+	CObjectVector<uint8>&src = getPixels();
 
 	for (uint i = 0; i < (TextureSizeX*TextureSizeY); ++i)
 	{

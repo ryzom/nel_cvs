@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.45 2003/04/23 10:11:52 berenguier Exp $
+ * $Id: landscape.h,v 1.46 2003/04/25 13:44:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -661,8 +661,8 @@ private:
 	void updateTessBlocksFaceVector();
 
 
-	// System: update UL links, and call _FarRdrPassSet.erase()
-	void eraseFarRenderPassFromSet (CPatchRdrPass* pass);
+	// System: update UL links, but don't call _TextureFars.erase()
+	void clearFarRenderPass (CPatchRdrPass* pass);
 
 
 
@@ -747,22 +747,14 @@ private:
 
 	// ** Some types
 
-	// The vector of set of far render pass
-	typedef std::set<TSPRenderPass>				TSPRenderPassSet;
-	typedef TSPRenderPassSet::iterator			ItSPRenderPassSet;
-	typedef	std::vector<TSPRenderPassSet>		TSPRdrPassSetVector;
-	TSPRenderPassSet							_FarRdrPassSet;					// Contain all the render pass not empty for pass0 and pass1
-	TSPRdrPassSetVector							_FarRdrPassSetVectorFree;		// Contain the render pass not filled yet sorted by size for pass0 and pass1
-	bool										_FarInitialized;
+	// The vector of far render pass
+	// must have a vector of pointer, because of vector reallocation.
+	typedef	std::vector<TSPRenderPass>::iterator	ItSPRenderPassVector;
+	std::vector<TSPRenderPass>		_TextureFars;
+	bool							_FarInitialized;
 
 	// Used internaly by initTileBanks
 	bool										eraseTileFarIfNotGood (uint tileNumber, uint sizeOrder0, uint sizeOrder1, uint sizeOrder2);
-
-	// ** Some private methods
-	static uint									getRdrPassIndexWithSize (uint width, uint height);
-	void										addPatch ();
-	void										removePatch ();
-
 
 	// *** Lighting
 	CRGBA			_LightValue[256];
@@ -925,8 +917,6 @@ private:
 	float						_ULFarPixelsToUpdate;
 	/// The current TextureFar rendered.
 	CTextureFar					*_ULRootTextureFar;
-	/// Current patch id in the current TextureFar processed
-	uint						_ULFarCurrentPatchId;
 
 
 	/// Near UpdateLighting.

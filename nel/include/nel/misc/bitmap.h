@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.19 2003/03/20 17:54:32 lecroart Exp $
+ * $Id: bitmap.h,v 1.20 2003/04/25 13:45:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@ extern "C"
 #include "nel/misc/rgba.h"
 #include "nel/misc/debug.h"
 #include <vector>
+#include "nel/misc/object_vector.h"
 
 
 namespace NLMISC 
@@ -86,7 +87,7 @@ const uint8	MAX_MIPMAP = 16;
 class CBitmap
 {
 protected :
-	std::vector<uint8> _Data[MAX_MIPMAP];
+	CObjectVector<uint8> _Data[MAX_MIPMAP];
 
 	// The number of mipmaps. base image IS a mipmap. 1 means a base image with no mipmaping.
 	uint8	_MipMapCount;
@@ -301,15 +302,15 @@ public:
 	/** 
 	 * Return the pixels buffer of the image, or of one of its mipmap.
 	 * Return a reference of an array in pixel format get with getPixelFormat().
-	 * \return vector<uint8>& RGBA pixels
+	 * \return CObjectVector<uint8>& RGBA pixels
 	 */	
 	///@{
-	std::vector<uint8>& getPixels(uint32 numMipMap = 0) 
+	CObjectVector<uint8>& getPixels(uint32 numMipMap = 0) 
 	{ 
 		//nlassert (numMipMap<=_MipMapCount);
 		return _Data[numMipMap];
 	}
-	const std::vector<uint8>& getPixels(uint32 numMipMap = 0) const
+	const CObjectVector<uint8>& getPixels(uint32 numMipMap = 0) const
 	{
 		//nlassert (numMipMap<=_MipMapCount);
 		return _Data[numMipMap]; 
@@ -416,8 +417,9 @@ public:
 	 * \param nNewWidth width after resize
 	 * \param nNewHeight height after resize
 	 * \param newType is the new type of the bitmap. If don_t_know, keep the same pixel format that before.
+	 * \param resetTo0 by default the vector are filled by 0. set false to gain performances.
 	 */	
-	void resize (sint32 nNewWidth, sint32 nNewHeight, TType newType=DonTKnow);
+	void resize (sint32 nNewWidth, sint32 nNewHeight, TType newType=DonTKnow, bool resetTo0= true);
 
 
 	/**  ADVANCED USE
@@ -428,8 +430,9 @@ public:
 	 * \param numMipMap id of the mipmap
 	 * \param nNewWidth width after resize
 	 * \param nNewHeight height after resize
+	 * \param resetTo0 by default the vector are filled by 0. set false to gain performances.
 	 */	
-	void resizeMipMap (uint32 numMipMap, sint32 nNewWidth, sint32 nNewHeight);
+	void resizeMipMap (uint32 numMipMap, sint32 nNewWidth, sint32 nNewHeight, bool resetTo0= true);
 
 
 	/**  ADVANCED USE

@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.6 2003/04/23 10:07:58 berenguier Exp $
+ * $Id: texture_far.h,v 1.7 2003/04/25 13:44:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,16 +27,36 @@
 #define NL_TEXTURE_FAR_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/texture.h"
 #include "nel/misc/rect.h"
+#include "3d/texture.h"
+#include "3d/tile_far_bank.h"
 
-// Define the number of tile per tile far texture 
-#define NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT 2														// 2 (shit)
+/* NB: those Values work only if NL_MAX_TILES_BY_PATCH_EDGE is 16.
+	asserted in the cpp.
+	Else must change NL_MAX_FAR_PATCH_EDGE, NL_NUM_FAR_PATCH_EDGE_LEVEL, and NL_NUM_FAR_RECTANGLE_RATIO
+*/
 
-// Same by precomputed values
-#define NL_NUM_FAR_PATCHES_BY_EDGE (1<<NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)						// 4 patches by edges
-#define NL_NUM_FAR_PATCHES_BY_EDGE_MASK (NL_NUM_FAR_PATCHES_BY_EDGE-1)							// 0x3 (mask)
-#define NL_NUM_FAR_PATCHES_BY_TEXTURE (NL_NUM_FAR_PATCHES_BY_EDGE*NL_NUM_FAR_PATCHES_BY_EDGE)	// 16 patches by CTextureFar
+// The number of different Level to allocate. only possible to allocate 16, 8, 4 or 2 tiles patch (1x? is impossible)
+#define	NL_NUM_FAR_PATCH_EDGE_LEVEL		(4+NL_NUM_PIXELS_ON_FAR_TILE_EDGE_SHIFT)
+
+// Define the max number of pixel per edge for a far texture 
+#define NL_MAX_FAR_PATCH_EDGE (16*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)					// Max is 16x16 tiles for 4 pix/tiles.
+
+// Define the min number of pixel per edge for a far texture 
+#define NL_MIN_FAR_PATCH_EDGE 2														// Min is 2x2 tiles for 1 pix/tile
+
+// The max Difference of level between Height and Width
+#define	NL_NUM_FAR_RECTANGLE_RATIO	4												// 16x16, 16x8, 16x4, 16x2
+#define	NL_MAX_FAR_RECTANGLE_RATIO_SHIFT	(NL_NUM_RECTANGLE_ASPECT_RATIO-1)
+#define	NL_MAX_FAR_RECTANGLE_RATIO	(1<<NL_MAX_RECTANGLE_RATIO_SHIFT)				// Max is 16 tiles fo 2 tiles => 8.
+
+// The number of Square of MaxFarEdge.
+#define	NL_NUM_FAR_BIGGEST_PATCH_PER_EDGE			8
+#define	NL_NUM_FAR_BIGGEST_PATCH_PER_TEXTURE		(NL_NUM_FAR_BIGGEST_PATCH_PER_EDGE*NL_NUM_FAR_BIGGEST_PATCH_PER_EDGE)
+
+// The size of the texture.  8*64 => textureFar of 512*512.
+#define	NL_FAR_TEXTURE_EDGE_SIZE					(NL_MAX_FAR_PATCH_EDGE*NL_NUM_FAR_BIGGEST_PATCH_PER_EDGE)
+
 
 namespace NLMISC
 {
@@ -51,70 +71,49 @@ class CTileFarBank;
 class CTileColor;
 
 /**
- * A CTextureFar is a set of NL_NUM_FAR_PATCHES_BY_TEXTURE texture used to map a whole patch when it is in far Mode. (ie not in tile mode).
+ * A CTextureFar is a set of texture used to map a whole patch when it is in far Mode. (ie not in tile mode).
  * A CTextureFar handle several patch texture.\\
- *
- * Before adding patch to the texture, you must call setSizeOfFarPatch, to intialize the texture.
  *
  * TODO: keeping the far texture level1 alive when the tile pass in level0 (tile mode), don't erase it.
  * TODO: add an hysteresis to avoid swap of far texture on boundaries of levels
  * TODO: set the upload format in rgba565
  *
- * \author Cyril Corvazier
+ * \author Cyril Corvazier - Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
 class CTextureFar : public ITexture
 {
 public:
-	/// Patch identifier
-	struct CPatchIdent
-	{
-		/// Default constructor. do nothing, only for vector
-		CPatchIdent () {};
-
-		/// Constructor
-		CPatchIdent (CPatch* patch)
-		{
-			Patch=patch;
-		}
-
-		// Data
-
-		// Patch pointer
-		CPatch*	Patch;
-	};
-
 	/// Constructor
 	CTextureFar();
 	virtual ~CTextureFar();
 
-	/**
-	  *  Set the size of the patch stored in this texture far. Note that width must be larger than height.
-	  *  For patch with a bigger height than width, invert width and height value. So, in this texture far,
-	  *  you can store patches with a size of width*height but also patches with a size of height*width.
-	  *  
-	  *  \param width is the width of the texture far stored in this texture. Can be 64, 32, 16, 8, 4 or 2
-	  *  \param height is the height of the texture far stored in this texture. Can be 64, 32, 16, 8, 4 or 2
-	  */
-	void						setSizeOfFarPatch (sint width, sint height);
+
+	/** Try to allocate a patch.
+	 *	return -1 if error (not enough space)
+	 *	return 0 if OK, and success to allocate a place without splitting any square
+	 *	else return the size of the max space to split (eg if must a split a 32x32 to allocate a 16x8)
+	 */
+	sint						tryAllocatePatch (CPatch *pPatch, uint farIndex);
+
 
 	/**
-	 *  Add a patch in the CTexture Patch. Must not be full! Return true if the texture is full after adding this patch else false.
+	 *  Allocate a patch in the CTextureFar, according to its size. nlstop if fails. Must call before tryAllocate()
 	 *
 	 *  \param pPatch is the pointer to the patch to add in the landscape
-	 *  \param far1UVScale will receive the scale to use to compute the UV coordinates
-	 *  \param far1UBias will receive the U Bias to use to compute the UV coordinates
-	 *  \param far1VBias will receive the V Bias to use to compute the UV coordinates
+	 *  \param farUVScale will receive the scale to use to compute the UV coordinates
+	 *  \param farUBias will receive the U Bias to use to compute the UV coordinates
+	 *  \param farVBias will receive the V Bias to use to compute the UV coordinates
 	 *  \param bRot will receive true if the texture is rotated of 90° to the left or false. 
 	 *         You should take care of this value to compute UV coordinates.
 	 */
-	bool						addPatch (CPatch *pPatch, float& far1UScale, float& far1VScale, float& far1UBias, float& far1VBias, bool& bRot);
+	void						allocatePatch (CPatch *pPatch, uint farIndex, float& farUScale, float& farVScale, float& farUBias, float& farVBias, bool& bRot);
 
 	/**
-	 *  Remove a patch in the CTexture Patch.
+	 *  Remove a patch in the CTexture Far.
 	 */
-	bool						removePatch (CPatch *pPatch);
+	void						removePatch (CPatch *pPatch, uint farIndex);
 
 	/**
 	 *  Generate the texture. See ITexture::doGenerate().
@@ -124,12 +123,12 @@ public:
 	virtual void				doGenerate();
 
 	/**
-	 *	Touch a patch by its id in texture (call touchRect()).
-	 *	\param patchId a value beetween 0 and NL_NUM_FAR_PATCHES_BY_TEXTURE-1, which gives the id of the patch 
-	 *	in the texture
-	 *	\return number of pixels touched. 0 if Patch==NULL (empty).
+	 *	Touch a patch (call touchRect()) and iterate to next .
+	 *	\return number of pixels touched. 0 if end() (empty).
 	 */
-	uint						touchPatch(uint patchId);
+	uint						touchPatchULAndNext();
+	void						startPatchULTouch();
+	bool						endPatchULTouch() const;
 
 
 	/// For lighting update, insert this before textNext (CiruclarList). textNext must be !NULL
@@ -140,34 +139,59 @@ public:
 	CTextureFar					*getNextUL() const {return _ULNext;}
 
 
-	// Get number of patch in this textureFar
-	uint32						getPatchCount() const {return _PatchCount;}
-	uint32						getPatchWidth() const {return _OriginalWidth/NL_NUM_FAR_PATCHES_BY_EDGE;}
-	uint32						getPatchHeight() const {return _OriginalHeight/NL_NUM_FAR_PATCHES_BY_EDGE;}
-
-	// Data
-
-	/**
-	 *  Vector of patches which texture far is stored in this CTextureFar
-	 *  Should be == to _WidthPatches*_HeightPatches
-	 */
-	std::vector<CPatchIdent>	_Patches;
-
-	// Count of patch stored in this texture
-	uint32						_PatchCount;
-
 	/// A pointer on the far bank.
 	CTileFarBank*				_Bank;
 
+
 private:
-	/// The original size
-	uint32						_OriginalWidth;
-	uint32						_OriginalHeight;
+
+	struct	CPatchIdent
+	{
+		CPatch	*Patch;
+		uint	FarIndex;
+
+		bool operator < (const CPatchIdent &rhs) const
+		{
+			return (Patch != rhs.Patch) ? Patch < rhs.Patch : FarIndex < rhs.FarIndex;	
+		}
+	};
+
+	struct	CVector2s
+	{
+		uint16	x, y;
+
+		CVector2s() {}
+		CVector2s(uint16 _x, uint16 _y) {x= _x; y= _y;}
+
+		bool operator < (const CVector2s &rhs) const
+		{
+			return (x != rhs.x) ? x < rhs.x : y < rhs.y;	
+		}
+	};
 
 	/**
-	 *  Rebuild the rectangle passed in parameter
+	 *  Map of Patchs stored in this texture Far.
+	 *  Should be == to _WidthPatches*_HeightPatches
 	 */
-	void rebuildRectangle (uint x, uint y);
+	typedef	std::map<CPatchIdent, CVector2s>	TPatchToPosMap;
+	typedef	std::map<CVector2s, CPatchIdent>	TPosToPatchMap;
+	TPatchToPosMap						_PatchToPosMap;
+	TPosToPatchMap						_PosToPatchMap;
+
+	/** Lists of empty Space. One for each possible size (64x64, 64x8 etc, but not 64x4 since not possible...)
+	 */
+	std::list<CVector2s>				_FreeSpaces[NL_NUM_FAR_PATCH_EDGE_LEVEL * NL_NUM_FAR_RECTANGLE_RATIO];
+
+
+	// allocate search
+	bool	getUpperSize(uint &width, uint &height);
+	uint	getFreeListId(uint width, uint height);
+	void	recursSplitNext(uint width, uint height);
+
+	/**
+	 *  Rebuild the patch passed in parameter
+	 */
+	void rebuildPatch  (const CVector2s texturePos, const CPatchIdent &pid);
 
 	/// From IStreamable
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream) {};
@@ -182,6 +206,9 @@ private:
 	/// UpdateLighting. CiruclarList
 	CTextureFar					*_ULPrec;
 	CTextureFar					*_ULNext;
+	// Iterator to the next patch to update.
+	TPatchToPosMap::iterator	_ItULPatch;
+
 };
 
 } // NL3D

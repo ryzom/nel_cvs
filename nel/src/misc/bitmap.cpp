@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.39 2003/04/16 10:29:52 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.40 2003/04/25 13:45:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -223,7 +223,7 @@ void	CBitmap::makeDummy()
 	_Width= 32;
 	_Height= 32;
 	_Data[0].resize(_Width*_Height*sizeof(NLMISC::CRGBA));
-	NLMISC::CRGBA	*pix= (NLMISC::CRGBA*)(&(*_Data[0].begin()));
+	NLMISC::CRGBA	*pix= (NLMISC::CRGBA*)(_Data[0].getPtr());
 
 	for(sint i=0;i<(sint)(_Width*_Height);i++)
 	{
@@ -388,7 +388,7 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f, uint mipMapSkip)
 	for(m= 0; m<_MipMapCount; m++)
 	{
 		uint32	mipMapSz= _Data[m].size();
-		memcpy(&(*_Data[m].begin()), &(pixData[pixIndex]), mipMapSz);
+		memcpy(_Data[m].getPtr(), &(pixData[pixIndex]), mipMapSz);
 		pixIndex+= mipMapSz;
 	}
 
@@ -429,21 +429,22 @@ bool CBitmap::convertToDXTC5()
 
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(2*_Data[m].size());
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(2*_Data[m].size());
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i+=8)
 		{
 			//64 bits alpha
 			for(j=0; j<8; j++)
 			{
-				dataTmp.push_back(255);
+				dataTmp[dstId++]= 255;
 			}
 
 			//64 bits RGB
 			for(j=0; j<8; j++)
 			{
-				dataTmp.push_back(_Data[m][i+j]);
+				dataTmp[dstId++]= _Data[m][i+j];
 			}
 		}
 		_Data[m] = dataTmp;
@@ -466,15 +467,16 @@ bool CBitmap::luminanceToRGBA()
 	
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size()*4);
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(_Data[m].size()*4);
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i++)
 		{
-			dataTmp.push_back(_Data[m][i]);
-			dataTmp.push_back(_Data[m][i]);
-			dataTmp.push_back(_Data[m][i]);
-			dataTmp.push_back(255);
+			dataTmp[dstId++]= _Data[m][i];
+			dataTmp[dstId++]= _Data[m][i];
+			dataTmp[dstId++]= _Data[m][i];
+			dataTmp[dstId++]= 255;
 		}
 		_Data[m] = dataTmp;
 	}
@@ -493,15 +495,16 @@ bool CBitmap::alphaToRGBA()
 	
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size()*4);
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(_Data[m].size()*4);
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i++)
 		{
-			dataTmp.push_back(255);
-			dataTmp.push_back(255);
-			dataTmp.push_back(255);
-			dataTmp.push_back(_Data[m][i]);
+			dataTmp[dstId++]= 255;
+			dataTmp[dstId++]= 255;
+			dataTmp[dstId++]= 255;
+			dataTmp[dstId++]= _Data[m][i];
 		}
 		_Data[m] = dataTmp;
 	}
@@ -521,15 +524,16 @@ bool CBitmap::alphaLuminanceToRGBA()
 	
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size()*2);
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(_Data[m].size()*2);
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i+=2)
 		{
-			dataTmp.push_back(_Data[m][i]);
-			dataTmp.push_back(_Data[m][i]);
-			dataTmp.push_back(_Data[m][i]);
-			dataTmp.push_back(_Data[m][i+1]);
+			dataTmp[dstId++]= _Data[m][i];
+			dataTmp[dstId++]= _Data[m][i];
+			dataTmp[dstId++]= _Data[m][i];
+			dataTmp[dstId++]= _Data[m][i+1];
 		}
 		_Data[m] = dataTmp;
 	}
@@ -551,13 +555,14 @@ bool CBitmap::rgbaToAlphaLuminance()
 	
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size()/2);
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(_Data[m].size()/2);
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i+=4)
 		{
-			dataTmp.push_back((_Data[m][i]*77 + _Data[m][i+1]*150 + _Data[m][i+2]*28)/255);
-			dataTmp.push_back(_Data[m][i+3]);
+			dataTmp[dstId++]= (_Data[m][i]*77 + _Data[m][i+1]*150 + _Data[m][i+2]*28)/255;
+			dataTmp[dstId++]= _Data[m][i+3];
 		}
 		NLMISC::contReset(_Data[m]); 
 		_Data[m].resize(0);
@@ -579,13 +584,14 @@ bool CBitmap::luminanceToAlphaLuminance()
 		
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size()*2);
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(_Data[m].size()*2);
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i++)
 		{
-			dataTmp.push_back(_Data[m][i]);
-			dataTmp.push_back(255);
+			dataTmp[dstId++]= _Data[m][i];
+			dataTmp[dstId++]= 255;
 		}
 		_Data[m] = dataTmp;
 	}
@@ -606,13 +612,14 @@ bool CBitmap::alphaToAlphaLuminance()
 		
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size()*2);
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(_Data[m].size()*2);
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i++)
 		{
-			dataTmp.push_back(0);
-			dataTmp.push_back(_Data[m][i]);
+			dataTmp[dstId++]= 0;
+			dataTmp[dstId++]= _Data[m][i];
 		}
 		_Data[m] = dataTmp;
 	}
@@ -633,12 +640,13 @@ bool CBitmap::rgbaToLuminance()
 		
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size()/4);
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(_Data[m].size()/4);
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i+=4)
 		{
-			dataTmp.push_back((_Data[m][i]*77 + _Data[m][i+1]*150 + _Data[m][i+2]*28)/255);
+			dataTmp[dstId++]= (_Data[m][i]*77 + _Data[m][i+1]*150 + _Data[m][i+2]*28)/255;
 		}
 		NLMISC::contReset(_Data[m]); 
 		_Data[m].resize(0);
@@ -674,15 +682,16 @@ bool CBitmap::alphaLuminanceToLuminance()
 		
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size()/2);
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(_Data[m].size()/2);
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i+=2)
 		{
-			dataTmp.push_back(0);
-			dataTmp.push_back(0);
-			dataTmp.push_back(0);
-			dataTmp.push_back(_Data[m][i]);
+			dataTmp[dstId++]= 0;
+			dataTmp[dstId++]= 0;
+			dataTmp[dstId++]= 0;
+			dataTmp[dstId++]= _Data[m][i];
 		}
 		NLMISC::contReset(_Data[m]); 
 		_Data[m].resize(0);
@@ -704,15 +713,16 @@ bool CBitmap::rgbaToAlpha()
 		
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size()/4);
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(_Data[m].size()/4);
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i+=4)
 		{
-			dataTmp.push_back(0);
-			dataTmp.push_back(0);
-			dataTmp.push_back(0);
-			dataTmp.push_back(_Data[m][i+3]);
+			dataTmp[dstId++]= 0;
+			dataTmp[dstId++]= 0;
+			dataTmp[dstId++]= 0;
+			dataTmp[dstId++]= _Data[m][i+3];
 		}
 		NLMISC::contReset(_Data[m]); 
 		_Data[m].resize(0);
@@ -734,12 +744,13 @@ bool CBitmap::luminanceToAlpha()
 		
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size());
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(_Data[m].size());
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i++)
 		{
-			dataTmp.push_back(_Data[m][i]);
+			dataTmp[dstId++]= _Data[m][i];
 		}
 		_Data[m] = dataTmp;
 	}
@@ -759,12 +770,13 @@ bool CBitmap::alphaLuminanceToAlpha()
 		
 	for(uint8 m= 0; m<_MipMapCount; m++)
 	{
-		std::vector<uint8> dataTmp;
-		dataTmp.reserve(_Data[m].size()/2);
+		CObjectVector<uint8> dataTmp;
+		dataTmp.resize(_Data[m].size()/2);
+		uint	dstId= 0;
 
 		for(i=0; i<_Data[m].size(); i+=2)
 		{
-			dataTmp.push_back(_Data[m][i+1]);
+			dataTmp[dstId++]= _Data[m][i+1];
 		}
 		NLMISC::contReset(_Data[m]); 
 		_Data[m].resize(0);
@@ -957,7 +969,7 @@ bool CBitmap::decompressDXT1(bool alpha)
 {
 	uint32 i,j,k;
 	NLMISC::CRGBA	c[4];
-	std::vector<uint8> dataTmp[MAX_MIPMAP];
+	CObjectVector<uint8> dataTmp[MAX_MIPMAP];
 	
 	uint32 width= _Width;
 	uint32 height= _Height;
@@ -975,7 +987,7 @@ bool CBitmap::decompressDXT1(bool alpha)
 			htmp = height;
 		uint32 mipMapSz = wtmp*htmp*4;
 		dataTmp[m].resize(mipMapSz); 
-		if(dataTmp[m].capacity()<mipMapSz)
+		if(dataTmp[m].size()<mipMapSz)
 		{
 			throw EAllocationFailure();
 		}
@@ -1082,7 +1094,7 @@ bool CBitmap::decompressDXT3()
 {
 	uint32 i,j,k;
 	NLMISC::CRGBA	c[4];
-	std::vector<uint8> dataTmp[MAX_MIPMAP];
+	CObjectVector<uint8> dataTmp[MAX_MIPMAP];
 	
 	uint32 width= _Width;
 	uint32 height= _Height;
@@ -1100,7 +1112,7 @@ bool CBitmap::decompressDXT3()
 			htmp = height;
 		uint32 mipMapSz = wtmp*htmp*4;
 		dataTmp[m].resize(mipMapSz); 
-		if(dataTmp[m].capacity()<mipMapSz)
+		if(dataTmp[m].size()<mipMapSz)
 		{
 			throw EAllocationFailure();
 		}
@@ -1192,7 +1204,7 @@ bool CBitmap::decompressDXT5()
 {
 	uint32 i,j,k;
 	NLMISC::CRGBA	c[4];
-	std::vector<uint8> dataTmp[MAX_MIPMAP];
+	CObjectVector<uint8> dataTmp[MAX_MIPMAP];
 	
 	uint32 width= _Width;
 	uint32 height= _Height;
@@ -1210,7 +1222,7 @@ bool CBitmap::decompressDXT5()
 			htmp = height;
 		uint32 mipMapSz = wtmp*htmp*4;
 		dataTmp[m].resize(mipMapSz); 
-		if(dataTmp[m].capacity()<mipMapSz)
+		if(dataTmp[m].size()<mipMapSz)
 		{
 			throw EAllocationFailure();
 		}
@@ -1512,7 +1524,7 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 		return;
 	}
 	
-	std::vector<uint8> pDestui;
+	CObjectVector<uint8> pDestui;
 	pDestui.resize(nNewWidth*nNewHeight*4);
 	NLMISC::CRGBA *pDestRgba = (NLMISC::CRGBA*)&pDestui[0];
 
@@ -1533,7 +1545,7 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 /*-------------------------------------------------------------------*\
 							resize
 \*-------------------------------------------------------------------*/
-void CBitmap::resize (sint32 nNewWidth, sint32 nNewHeight, TType newType)
+void CBitmap::resize (sint32 nNewWidth, sint32 nNewHeight, TType newType, bool resetTo0)
 {
 	// Deleting mipmaps
 	releaseMipMaps();
@@ -1546,14 +1558,14 @@ void CBitmap::resize (sint32 nNewWidth, sint32 nNewHeight, TType newType)
 	_Height = nNewHeight;
 
 	// resize the level 0 only.
-	resizeMipMap(0, nNewWidth, nNewHeight);
+	resizeMipMap(0, nNewWidth, nNewHeight, resetTo0);
 }
 
 
 /*-------------------------------------------------------------------*\
 							resizeMipMap
 \*-------------------------------------------------------------------*/
-void CBitmap::resizeMipMap (uint32 numMipMap, sint32 nNewWidth, sint32 nNewHeight)
+void CBitmap::resizeMipMap (uint32 numMipMap, sint32 nNewWidth, sint32 nNewHeight, bool resetTo0)
 {
 	nlassert(numMipMap<MAX_MIPMAP);
 
@@ -1568,6 +1580,10 @@ void CBitmap::resizeMipMap (uint32 numMipMap, sint32 nNewWidth, sint32 nNewHeigh
 
 	// resize the buffer
 	_Data[numMipMap].resize (((uint32)(nNewWidth*nNewHeight)*bitPerPixels[PixelFormat])/8);
+
+	// Fill 0?
+	if( resetTo0 )
+		_Data[numMipMap].fill(0);
 }
 
 
@@ -2022,7 +2038,8 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 			uint8 pixel[4];
 			uint32 imageSize = width*height;
 			uint32 readSize = 0;
-			_Data[0].reserve(_Width*_Height*4);
+			_Data[0].resize(_Width*_Height*4);
+			uint	dstId= 0;
 
 			while(readSize < imageSize)
 			{
@@ -2037,11 +2054,11 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 					{
 						for(j=0; j<imageDepth/8; j++)
 						{
-							_Data[0].push_back(pixel[j]);
+							_Data[0][dstId++]= pixel[j];
 						}
 						if(imageDepth==24)
 						{
-							_Data[0].push_back(0);
+							_Data[0][dstId++]= 0;
 						}
 					}
 				}
@@ -2055,17 +2072,17 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 						}
 						if(imageDepth==32)
 						{
-							_Data[0].push_back(pixel[2]);
-							_Data[0].push_back(pixel[1]);
-							_Data[0].push_back(pixel[0]);
-							_Data[0].push_back(pixel[3]);
+							_Data[0][dstId++]= pixel[2];
+							_Data[0][dstId++]= pixel[1];
+							_Data[0][dstId++]= pixel[0];
+							_Data[0][dstId++]= pixel[3];
 						}
 						if(imageDepth==24)
 						{
-							_Data[0].push_back(pixel[2]);
-							_Data[0].push_back(pixel[1]);
-							_Data[0].push_back(pixel[0]);
-							_Data[0].push_back(0);
+							_Data[0][dstId++]= pixel[2];
+							_Data[0][dstId++]= pixel[1];
+							_Data[0][dstId++]= pixel[0];
+							_Data[0][dstId++]= 0;
 						}
 					}
   				}
@@ -2082,7 +2099,8 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 			uint8 pixel[4];
 			uint32 imageSize = width*height;
 			uint32 readSize = 0;
-			_Data[0].reserve(_Width*_Height);
+			_Data[0].resize(_Width*_Height);
+			uint	dstId= 0;
 
 			while(readSize < imageSize)
 			{
@@ -2092,7 +2110,7 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 					f.serial(pixel[0]);
 					for (i=0; i < (packet & 0x7F) + 1; i++)
 					{
-						_Data[0].push_back(pixel[0]);
+						_Data[0][dstId++]= pixel[0];
 					}
 				}
 				else	// packet Raw 
@@ -2100,7 +2118,7 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 					for(i=0; i<((packet & 0x7F) + 1); i++)
 					{
 						f.serial(pixel[0]);
-						_Data[0].push_back(pixel[0]);
+						_Data[0][dstId++]= pixel[0];
 					}
   				}
 				readSize += (packet & 0x7F) + 1;
@@ -2279,7 +2297,7 @@ void rotateCCW (const vector<T>& src, vector<T>& dst, uint srcWidth, uint srcHei
 void CBitmap::rotateCCW()
 {
 	// Copy the array
-	std::vector<uint8> copy=_Data[0];
+	CObjectVector<uint8> copy=_Data[0];
 
 	switch (PixelFormat)
 	{
@@ -2452,7 +2470,7 @@ CRGBAF CBitmap::getColor (float x, float y) const
 
 	if (nWidth == 0 || nHeight == 0) return CRGBAF(0, 0, 0, 0);
 
-	const std::vector<uint8> &rBitmap = getPixels(0);
+	const CObjectVector<uint8> &rBitmap = getPixels(0);
 	sint32 nX[4], nY[4];
 
 	x *= nWidth-1;
@@ -2730,7 +2748,7 @@ void	CBitmap::rot90CW()
 		needRebuild = true;
 	releaseMipMaps();
 
-	std::vector<uint8> pDestui;
+	CObjectVector<uint8> pDestui;
 	pDestui.resize(nWidth*nHeight*4);
 	NLMISC::CRGBA *pDestRgba = (NLMISC::CRGBA*)&pDestui[0];
 
@@ -2765,7 +2783,7 @@ void	CBitmap::rot90CCW()
 		needRebuild = true;
 	releaseMipMaps();
 
-	std::vector<uint8> pDestui;
+	CObjectVector<uint8> pDestui;
 	pDestui.resize(nWidth*nHeight*4);
 	NLMISC::CRGBA *pDestRgba = (NLMISC::CRGBA*)&pDestui[0];
 

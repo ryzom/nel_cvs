@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.128 2003/04/23 10:11:52 berenguier Exp $
+ * $Id: landscape.cpp,v 1.129 2003/04/25 13:44:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,9 +190,6 @@ CLandscape::CLandscape() :
 
 	TileInfos.resize(NL3D::NbTilesMax);
 
-	// Resize the vectors of sert of render pass for the far texture
-	_FarRdrPassSetVectorFree.resize (getRdrPassIndexWithSize (NL_MAX_SIZE_OF_TEXTURE_EDGE, NL_MAX_SIZE_OF_TEXTURE_EDGE)+1);
-
 	// Far texture not initialized till initTileBanks is not called
 	_FarInitialized=false;
 	
@@ -253,7 +250,6 @@ CLandscape::CLandscape() :
 	_ULTotalFarPixels= 0;
 	_ULFarPixelsToUpdate= 0;
 	_ULRootTextureFar= NULL;
-	_ULFarCurrentPatchId= 0;
 	// Default: no patch created
 	_ULTotalNearPixels= 0;
 	_ULNearPixelsToUpdate= 0;
@@ -548,19 +544,16 @@ void			CLandscape::clear()
 
 
 	// Reset All Far Texture and unlink _ULRootTextureFar ciruclarList.
-	// First "free" the Free list. 
-	for(i=0;i<(sint)_FarRdrPassSetVectorFree.size();i++)
-	{
-		_FarRdrPassSetVectorFree[i].clear();
-	}
-	// Then free all Far RdrPass.
-	ItSPRenderPassSet	itFar;
+	ItSPRenderPassVector	itFar= _TextureFars.begin();
 	// unitl set is empty
-	while( (itFar= _FarRdrPassSet.begin()) != _FarRdrPassSet.end())
+	while( itFar != _TextureFars.end() )
 	{
 		// erase with link update.
-		eraseFarRenderPassFromSet(*itFar);
+		clearFarRenderPass(*itFar);
+		itFar++;
 	}
+	// delete all
+	_TextureFars.clear();
 
 
 	// reset driver.
@@ -955,8 +948,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 
 	ItZoneMap	it;
 	sint		i;
-	ItTileRdrPassSet	itTile;
-	ItSPRenderPassSet	itFar;
+	ItTileRdrPassSet		itTile;
+	ItSPRenderPassVector	itFar;
 
 	// Yoyo: profile.
 	NL3D_PROFILE_LAND_SET(ProfNRdrFar0, 0);
@@ -981,7 +974,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	H_BEFORE( NL3D_Landscape_Render_Clear );
 
 	// Fars.
-	for(itFar= _FarRdrPassSet.begin(); itFar!= _FarRdrPassSet.end(); itFar++)
+	for(itFar= _TextureFars.begin(); itFar!= _TextureFars.end(); itFar++)
 	{
 		CPatchRdrPass	&pass= **itFar;
 		// clear list.
@@ -1454,8 +1447,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	FarMaterial.setTexture(1, _TextureDLM);
 
 	// Render All material RdrPass0.
-	itFar=_FarRdrPassSet.begin();
-	while (itFar!=_FarRdrPassSet.end())
+	itFar=_TextureFars.begin();
+	while (itFar!=_TextureFars.end())
 	{
 		CPatchRdrPass	&pass= **itFar;
 
@@ -1512,8 +1505,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 
 
 	// Render All material RdrPass1.
-	itFar=_FarRdrPassSet.begin();
-	while (itFar!=_FarRdrPassSet.end())
+	itFar=_TextureFars.begin();
+	while (itFar!=_TextureFars.end())
 	{
 		CPatchRdrPass	&pass= **itFar;
 
@@ -2092,13 +2085,39 @@ CPatchRdrPass*	CLandscape::getFarRenderPass(CPatch* pPatch, uint farIndex, float
 	// For updateLighting: increment total of pixels to update.
 	_ULTotalFarPixels+= width*height;
 
-	// Render pass index
-	uint passIndex=getRdrPassIndexWithSize (width, height);
-
-	// Look for a free render pass
-	if (_FarRdrPassSetVectorFree[passIndex].begin()==_FarRdrPassSetVectorFree[passIndex].end())
+	// Try to allocate in every textures
+	uint	i;
+	sint	bestRdrPass= -1;
+	sint	bestSplit= INT_MAX;
+	for(i=0;i<_TextureFars.size();i++)
 	{
-		// Empty, add a new render pass
+		CTextureFar *pTextureFar=(CTextureFar*)(&*(_TextureFars[i]->TextureDiffuse));
+
+		sint	splitRes= pTextureFar->tryAllocatePatch(pPatch, farIndex);
+		// if found with no split, ok, stop!
+		if(splitRes==0)
+		{
+			bestRdrPass= i;
+			break;
+		}
+		// else if found, but with split
+		else if(splitRes > 0)
+		{
+			// Then must take the small split possible along all the texture fars.
+			if (splitRes<bestSplit)
+			{
+				bestRdrPass= i;
+				bestSplit= splitRes;
+			}
+		}
+	}
+
+	// If no one found, must allocate a new render pass.
+	if(bestRdrPass==-1)
+	{
+		bestRdrPass= _TextureFars.size();
+
+		// add a new render pass
 		CPatchRdrPass	*pass=new CPatchRdrPass;
 
 		// Fill the render pass
@@ -2116,26 +2135,19 @@ CPatchRdrPass*	CLandscape::getFarRenderPass(CPatch* pPatch, uint farIndex, float
 		// Set as diffuse texture for this renderpass
 		pass->TextureDiffuse=pTextureFar;
 
-		// Set the size for this texture
-		pTextureFar->setSizeOfFarPatch (std::max (width, height), std::min (width, height));
-
-		// Add the render pass
-		_FarRdrPassSetVectorFree[passIndex].insert (pass);
-		_FarRdrPassSet.insert (pass);
+		// Add the render pass to the list
+		_TextureFars.push_back(pass);
 	}
 
-	// Ok, add the patch to the first render pass in the free list
-	TSPRenderPass pass=*_FarRdrPassSetVectorFree[passIndex].begin();
+
+	// Ok, add the patch to the best render pass in the _TextureFars
+	TSPRenderPass pass= _TextureFars[bestRdrPass];
 
 	// Get a pointer on the diffuse far texture
 	CTextureFar *pTextureFar=(CTextureFar*)(&*(pass->TextureDiffuse));
 
-	// Add the patch to the far texture
-	if (pTextureFar->addPatch (pPatch, farUScale, farVScale, farUBias, farVBias, bRot))
-	{
-		// The render state is full, remove from the free list..
-		_FarRdrPassSetVectorFree[passIndex].erase (pass);
-	}
+	// Allocate really in it (must success since tryAllocate() has succeed)
+	pTextureFar->allocatePatch(pPatch, farIndex, farUScale, farVScale, farUBias, farVBias, bRot);
 
 	// Return the renderpass
 	return pass;
@@ -2153,40 +2165,16 @@ void		CLandscape::freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint f
 	_ULTotalFarPixels-= width*height;
 	nlassert(_ULTotalFarPixels>=0);
 
-	// Render pass index
-	uint passIndex=getRdrPassIndexWithSize (width, height);
-
 	// Get a pointer on the diffuse far texture
 	CTextureFar *pTextureFar=(CTextureFar*)(&*(pass->TextureDiffuse));
 
 	// Remove from the patch from the texture if empty
-	if (pTextureFar->removePatch (pPatch))
-	{
-		// Free list empty ?
-		if (_FarRdrPassSetVectorFree[passIndex].begin()==_FarRdrPassSetVectorFree[passIndex].end())
-		{
-			// Let this render pass in the free list
-			_FarRdrPassSetVectorFree[passIndex].insert (pass);
-		}
-		else
-		{
-			// Release for good
-			_FarRdrPassSetVectorFree[passIndex].erase (pass);
-
-			// update UL links, and Remove from draw list
-			eraseFarRenderPassFromSet (pass);
-		}
-	}
-	else
-	{
-		// Insert in the free list
-		_FarRdrPassSetVectorFree[passIndex].insert (pass);
-	}
+	pTextureFar->removePatch (pPatch, farIndex);
 }
 
 
 // ***************************************************************************
-void		CLandscape::eraseFarRenderPassFromSet (CPatchRdrPass* pass)
+void		CLandscape::clearFarRenderPass (CPatchRdrPass* pass)
 {
 	// Before deleting, must remove TextureFar from UpdateLighting list.
 
@@ -2201,16 +2189,10 @@ void		CLandscape::eraseFarRenderPassFromSet (CPatchRdrPass* pass)
 		// if still the same, it means that the circular list is now empty
 		if(_ULRootTextureFar==pTextureFar)
 			_ULRootTextureFar= NULL;
-		// reset patch counter.
-		_ULFarCurrentPatchId= 0;
 	}
 
 	// unlink the texture from list
 	pTextureFar->unlinkUL();
-
-
-	// Remove from draw list
-	_FarRdrPassSet.erase (pass);
 }
 
 
@@ -2561,33 +2543,6 @@ CVector			CLandscape::getTesselatedPos(const CPatchIdent &patchId, const CUV &uv
 		return CVector::Null;
 }
 
-
-// ***************************************************************************
-uint			CLandscape::getRdrPassIndexWithSize (uint width, uint height)
-{
-	// Check no NULL size
-	nlassert (width);
-	nlassert (height);
-
-	// Find width order
-	int orderWidth=0;
-	while (!(width&(1<<orderWidth)))
-		orderWidth++;
-
-	// Find heightorder
-	int orderHeight=0;
-	while (!(height&(1<<orderHeight)))
-		orderHeight++;
-
-	if (orderWidth>orderHeight)
-	{
-		return NL_MAX_SIZE_OF_TEXTURE_EDGE_SHIFT*orderHeight+orderWidth;
-	}
-	else
-	{
-		return NL_MAX_SIZE_OF_TEXTURE_EDGE_SHIFT*orderWidth+orderHeight;
-	}
-}
 
 #define NL_TILE_FAR_SIZE_ORDER0 (NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)
 #define NL_TILE_FAR_SIZE_ORDER1 ((NL_NUM_PIXELS_ON_FAR_TILE_EDGE>>1)*(NL_NUM_PIXELS_ON_FAR_TILE_EDGE>>1))
@@ -2983,13 +2938,15 @@ public:
 
 void		CLandscape::profileRender()
 {
+	// TODO yoyo: new Far mgt profile
+	/*
 	std::map<CVector2f, CTextureFarLevelInfo >	levelFarMap;
 
-	nlinfo("***** Landscape TextureFar Profile. NumTextureFar= %d", _FarRdrPassSet.size());
+	nlinfo("***** Landscape TextureFar Profile. NumTextureFar= %d", _TextureFars.size());
 	// Profile Texture Allocate
-	ItSPRenderPassSet	itFar;
+	ItSPRenderPassVector	itFar;
 	uint	totalMemUsage= 0;
-	for(itFar= _FarRdrPassSet.begin(); itFar!= _FarRdrPassSet.end(); itFar++)
+	for(itFar= _TextureFars.begin(); itFar!= _TextureFars.end(); itFar++)
 	{
 		CPatchRdrPass	&pass= **itFar;
 		CTextureFar *textureFar= safe_cast<CTextureFar*>((ITexture*)pass.TextureDiffuse);
@@ -3038,6 +2995,7 @@ void		CLandscape::profileRender()
 		
 		itLevelFar++;
 	}
+	*/
 }
 
 
@@ -3481,17 +3439,15 @@ void			CLandscape::updateLightingTextureFar(float ratio)
 	while(_ULFarPixelsToUpdate > 0 && _ULRootTextureFar)
 	{
 		// update patch (if not null) in the textureFar.
-		_ULFarPixelsToUpdate-= _ULRootTextureFar->touchPatch(_ULFarCurrentPatchId);
-		// Next patch to process.
-		_ULFarCurrentPatchId++;
+		_ULFarPixelsToUpdate-= _ULRootTextureFar->touchPatchULAndNext();
 
 		// last patch in the texture??
-		if(_ULFarCurrentPatchId>=NL_NUM_FAR_PATCHES_BY_TEXTURE)
+		if( _ULRootTextureFar->endPatchULTouch() )
 		{
 			// yes, go to next texture.
 			_ULRootTextureFar= _ULRootTextureFar->getNextUL();
 			// reset to 0th patch.
-			_ULFarCurrentPatchId=0;
+			_ULRootTextureFar->startPatchULTouch();
 		}
 	}
 

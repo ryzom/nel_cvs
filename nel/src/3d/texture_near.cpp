@@ -1,7 +1,7 @@
 /** \file texture_near.cpp
  * <File description>
  *
- * $Id: texture_near.cpp,v 1.5 2002/08/23 16:32:52 berenguier Exp $
+ * $Id: texture_near.cpp,v 1.6 2003/04/25 13:44:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,7 +92,7 @@ void			CTextureNear::refillRect(uint id, CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TIL
 	s*= NL_TILE_LIGHTMAP_SIZE;
 	t*= NL_TILE_LIGHTMAP_SIZE;
 	CRGBA	*src= map;
-	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
+	CRGBA	*dst= (CRGBA*)getPixels().getPtr();
 	dst+= t*dstWidth+s;
 	for(sint n= NL_TILE_LIGHTMAP_SIZE;n>0;n--, src+= NL_TILE_LIGHTMAP_SIZE, dst+= dstWidth)
 	{

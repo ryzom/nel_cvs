@@ -1,7 +1,7 @@
 /** \file height_map.cpp
  * <File description>
  *
- * $Id: height_map.cpp,v 1.5 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: height_map.cpp,v 1.6 2003/04/25 13:44:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,7 @@ void			CHeightMap::buildFromBitmap(const NLMISC::CBitmap &bitmap0)
 	resize(w,h);
 
 	// get luminance image.
-	std::vector<uint8>	&array= bitmap.getPixels();
+	CObjectVector<uint8>	&array= bitmap.getPixels();
 	// invert the image in Y.
 	for(uint y=0;y<h;y++)
 	{

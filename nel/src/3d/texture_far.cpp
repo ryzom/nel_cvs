@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.22 2002/08/27 14:29:02 berenguier Exp $
+ * $Id: texture_far.cpp,v 1.23 2003/04/25 13:44:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 
 using namespace NLMISC;
 using namespace NL3D;
+using namespace std;
 
 namespace NL3D {
 
@@ -43,15 +44,51 @@ CRGBA CTextureFar::_LightmapExpanded[NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_MAX_TILES
 uint8 CTextureFar::_LumelExpanded[(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)*(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)];
 CRGBA CTextureFar::_TileTLIColors[(NL_MAX_TILES_BY_PATCH_EDGE+1)*(NL_MAX_TILES_BY_PATCH_EDGE+1)];
 
+// ***************************************************************************
 CTextureFar::CTextureFar()
 {
+	/* NB: define Values work only if NL_MAX_TILES_BY_PATCH_EDGE is 16.
+		Else must change NL_MAX_FAR_EDGE and NL_NUM_RECTANGLE_RATIO
+	*/
+	nlctassert(NL_MAX_TILES_BY_PATCH_EDGE==16);
+
 	// This texture is releasable. It doesn't stays in standard memory after been uploaded into video memory.
 	setReleasable (true);
 
+	// Init upload format 16 bits
+	setUploadFormat(RGB565);
+
+	// Set filter mode. No mipmap!
+	setFilterMode (Linear, LinearMipMapOff);
+
+	// Wrap
+	setWrapS (Clamp);
+	setWrapT (Clamp);
+
+	// init update Lighting
 	_ULPrec= this;
 	_ULNext= this;
+
+	// Start With All Patch of Max Far (64x64) Frees!
+	uint	freeListId= getFreeListId(NL_MAX_FAR_PATCH_EDGE, NL_MAX_FAR_PATCH_EDGE);
+	for(uint i=0;i<NL_NUM_FAR_BIGGEST_PATCH_PER_EDGE;i++)
+	{
+		for(uint j=0;j<NL_NUM_FAR_BIGGEST_PATCH_PER_EDGE;j++)
+		{
+			CVector2s	pos;
+			pos.x= i*NL_MAX_FAR_PATCH_EDGE;
+			pos.y= j*NL_MAX_FAR_PATCH_EDGE;
+
+			// add this place to the free list.
+			_FreeSpaces[freeListId].push_back(pos);
+		}
+	}
+
+	// reset
+	_ItULPatch= _PatchToPosMap.end();
 }
 
+// ***************************************************************************
 CTextureFar::~CTextureFar()
 {
 	// verify the textureFar is correctly unlinked from any ciruclar list.
@@ -59,6 +96,7 @@ CTextureFar::~CTextureFar()
 }
 
 
+// ***************************************************************************
 void CTextureFar::linkBeforeUL(CTextureFar *textNext)
 {
 	nlassert(textNext);
@@ -74,6 +112,7 @@ void CTextureFar::linkBeforeUL(CTextureFar *textNext)
 	_ULPrec->_ULNext= this;
 }
 
+// ***************************************************************************
 void CTextureFar::unlinkUL()
 {
 	// first, unlink others from me. NB: works even if _ULPrec==_ULNext==this.
@@ -85,64 +124,193 @@ void CTextureFar::unlinkUL()
 }
 
 
-void CTextureFar::setSizeOfFarPatch (sint width, sint height)
+// ***************************************************************************
+uint	CTextureFar::getFreeListId(uint width, uint height)
 {
-	// Resizing the bitmap
-	_OriginalWidth=width*NL_NUM_FAR_PATCHES_BY_EDGE;
-	_OriginalHeight=height*NL_NUM_FAR_PATCHES_BY_EDGE;
+	nlassert(width>=height);
+	nlassert(isPowerOf2(width));
+	nlassert(isPowerOf2(height));
+	nlassert(width<=NL_MAX_FAR_PATCH_EDGE);
 
-	// Resize patch array
-	contReset (_Patches);
-	_Patches.resize (NL_NUM_FAR_PATCHES_BY_TEXTURE);
+	// compute the level index
+	uint	sizeIndex= getPowerOf2(NL_MAX_FAR_PATCH_EDGE / width);
+	nlassert(sizeIndex < NL_NUM_FAR_PATCH_EDGE_LEVEL);
 
-	// Init count of patch
-	_PatchCount=0;
+	// Compute the aspect ratio index.
+	uint	aspectRatioIndex= getPowerOf2(width/height);
+	nlassert(aspectRatioIndex < NL_NUM_FAR_RECTANGLE_RATIO );
 
-	// Init upload format 16 bits
-	setUploadFormat(RGB565);
+	return sizeIndex*NL_NUM_FAR_RECTANGLE_RATIO + aspectRatioIndex;
+}
 
-	// Set filter mode. No mipmap!
-	setFilterMode (Linear, LinearMipMapOff);
 
-	// Wrap
-	setWrapS (Clamp);
-	setWrapT (Clamp);
+// ***************************************************************************
+bool	CTextureFar::getUpperSize(uint &width, uint &height)
+{
+	nlassert(width>=height);
+	nlassert(isPowerOf2(width));
+	nlassert(isPowerOf2(height));
 
-	// Init patch array
-	for (sint p=0; p<NL_NUM_FAR_PATCHES_BY_TEXTURE; p++)
+	// if height is smaller than widht, then reduce the ratio
+	if(width>height)
 	{
-		// Set patch pointer to NULL
-		_Patches[p].Patch=NULL;
+		height*= 2;
+		return true;
+	}
+	else
+	{
+		// else raise up to the next square level, if possible
+		if(width<NL_MAX_FAR_PATCH_EDGE)
+		{
+			width*= 2;
+			height*= 2;
+			return true;
+		}
+		else
+			return false;
 	}
 }
 
-// Add a patch in the CTexture Patch. Must not be full! Return true if the texture is full after adding this patch else false.
-bool CTextureFar::addPatch (CPatch *pPatch, float& farUScale, float& farVScale, float& farUBias, float& farVBias, bool& bRot)
+
+// ***************************************************************************
+sint	CTextureFar::tryAllocatePatch (CPatch *pPatch, uint farIndex)
 {
-	// Check that at least a cell is free
-	nlassert (_PatchCount<NL_NUM_FAR_PATCHES_BY_TEXTURE);
+	// get the size of the subtexture to allocate
+	uint width=(pPatch->getOrderS ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
+	uint height=(pPatch->getOrderT ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
 
-	// Look for a free cell
-	sint p;
-	for (p=0; p<NL_NUM_FAR_PATCHES_BY_TEXTURE; p++)
+	// make width the biggest
+	if(width<height)
+		swap(width, height);
+
+	// get where to find a subtexture
+	uint	freeListId= getFreeListId(width, height);
+
+	// if some place, ok!
+	if(!_FreeSpaces[freeListId].empty())
+		return 0;
+	else
 	{
-		// Cell is NULL ?
-		if (_Patches[p].Patch==NULL)
+		// try to get the next size
+		while( getUpperSize(width, height) )
 		{
-			// Put the patch here and go out.
-			_Patches[p].Patch=pPatch;
-			break;
+			freeListId= getFreeListId(width, height);
+			// if some subtexture free
+			if(!_FreeSpaces[freeListId].empty())
+			{
+				// Ok! return the size of this texture we must split
+				return width*height;
+			}
 		}
-	}
-	// Check that at least a cell is free
-	nlassert (p<NL_NUM_FAR_PATCHES_BY_TEXTURE);
 
-	// Position of the invalide rectangle
-	int x = ((p & NL_NUM_FAR_PATCHES_BY_EDGE_MASK) * _OriginalWidth) >> NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT;
-	int y = ((p >> NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT) * _OriginalHeight) >> NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT;
+		// fail => no more space => -1
+		return -1;
+	}
+}
+
+// ***************************************************************************
+void	CTextureFar::recursSplitNext(uint wson, uint hson)
+{
+	// get the upper subTexture
+	uint	wup= wson, hup= hson;
+	nlverify( getUpperSize(wup, hup) );
+
+	// get the list id.
+	uint	fatherListId= getFreeListId(wup, hup);
+
+	// if must split bigger patch...
+	if(_FreeSpaces[fatherListId].empty())
+	{
+		// recurs, try to get a bigger subtexture and split it.
+		recursSplitNext(wup, hup);
+	}
+
+	// OK, now we should have a free entry.
+	nlassert( !_FreeSpaces[fatherListId].empty() );
+
+	// remove from free list, because it is split now!
+	CVector2s	fatherPos= _FreeSpaces[fatherListId].front();
+	_FreeSpaces[fatherListId].pop_front();
+
+	// Create New free rectangles for sons
+	uint	sonListId= getFreeListId(wson, hson);
+	CVector2s	sonPos;
+
+	// if my son is a rectangle son
+	if(wson>hson)
+	{
+		// Then Add 2 free Spaces!
+		sonPos.x= fatherPos.x;
+		// 1st.
+		sonPos.y= fatherPos.y;
+		_FreeSpaces[sonListId].push_back(sonPos);
+		// 2nd.
+		sonPos.y= fatherPos.y+hson;
+		_FreeSpaces[sonListId].push_back(sonPos);
+	}
+	else
+	{
+		// Then Add 4 free Spaces!
+		// 1st.
+		sonPos.x= fatherPos.x;
+		sonPos.y= fatherPos.y;
+		_FreeSpaces[sonListId].push_back(sonPos);
+		// 2nd.
+		sonPos.x= fatherPos.x+wson;
+		sonPos.y= fatherPos.y;
+		_FreeSpaces[sonListId].push_back(sonPos);
+		// 3rd.
+		sonPos.x= fatherPos.x;
+		sonPos.y= fatherPos.y+hson;
+		_FreeSpaces[sonListId].push_back(sonPos);
+		// 4th.
+		sonPos.x= fatherPos.x+wson;
+		sonPos.y= fatherPos.y+hson;
+		_FreeSpaces[sonListId].push_back(sonPos);
+	}
+
+}
+
+
+// ***************************************************************************
+void	CTextureFar::allocatePatch (CPatch *pPatch, uint farIndex, float& farUScale, float& farVScale, float& farUBias, float& farVBias, bool& bRot)
+{
+	// get the size of the subtexture to allocate
+	uint width=(pPatch->getOrderS ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
+	uint height=(pPatch->getOrderT ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
+
+	// make width the biggest
+	if(width<height)
+		swap(width, height);
+
+	// get where to find a subtexture
+	uint	freeListId= getFreeListId(width, height);
+
+	// if free list is empty, must split bigger patch...
+	if(_FreeSpaces[freeListId].empty())
+	{
+		// try to get a bigger subtexture and split it.
+		recursSplitNext(width, height);
+	}
+
+	// now the list should have som free space.
+	nlassert( !_FreeSpaces[freeListId].empty() );
+	CVector2s	pos= _FreeSpaces[freeListId].front();
+
+	// Allocate. Add this entry to the maps
+	CPatchIdent	pid;
+	pid.Patch= pPatch;
+	pid.FarIndex= farIndex;
+	// verify not already here.
+	nlassert( _PatchToPosMap.find(pid) == _PatchToPosMap.end() );
+	_PatchToPosMap[pid]= pos;
+	_PosToPatchMap[pos]= pid;
+	
+	// remove from free list.
+	_FreeSpaces[freeListId].pop_front();
 
 	// Invalidate the rectangle
-	CRect rect (x, y, _OriginalWidth>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT, _OriginalHeight>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT);
+	CRect rect (pos.x, pos.y, width, height);
 	ITexture::touchRect (rect);
 
 	// ** Return some values
@@ -151,68 +319,78 @@ bool CTextureFar::addPatch (CPatch *pPatch, float& farUScale, float& farVScale, 
 	bRot = ( pPatch->getOrderS() < pPatch->getOrderT() );
 
 	// Scale is the same for all
-	farUScale=(float)((_OriginalWidth>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)-1)/(float)_OriginalWidth;
-	farVScale=(float)((_OriginalHeight>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)-1)/(float)_OriginalHeight;
+	farUScale=(float)(width-1)/(float)NL_FAR_TEXTURE_EDGE_SIZE;
+	farVScale=(float)(height-1)/(float)NL_FAR_TEXTURE_EDGE_SIZE;
 
 	// UBias is the same for all
-	farUBias=((float)x+0.5f)/(float)_OriginalWidth;
+	farUBias=((float)pos.x+0.5f)/(float)NL_FAR_TEXTURE_EDGE_SIZE;
 
 	// UBias is the same for all
-	farVBias=((float)y+0.5f)/(float)_OriginalHeight;
-	
-	// One more patch
-	_PatchCount++;
-
-	return (_PatchCount == NL_NUM_FAR_PATCHES_BY_TEXTURE);
+	farVBias=((float)pos.y+0.5f)/(float)NL_FAR_TEXTURE_EDGE_SIZE;
 }
 
+
+// ***************************************************************************
 // Remove a patch in the CTexture Patch
-bool CTextureFar::removePatch (CPatch *pPatch)
+void	CTextureFar::removePatch (CPatch *pPatch, uint farIndex)
 {
-	// Check that at least a cell is used
-	nlassert (_PatchCount>0);
+	// must be found
+	CPatchIdent	pid;
+	pid.Patch= pPatch;
+	pid.FarIndex= farIndex;
+	TPatchToPosMap::iterator	it= _PatchToPosMap.find(pid);
+	nlassert( it != _PatchToPosMap.end() );
 
-	// Look for the patch free cell
-	sint p;
-	for (p=0; p<NL_NUM_FAR_PATCHES_BY_TEXTURE; p++)
-	{
-		// Is the good cell ?
-		if (_Patches[p].Patch==pPatch)
-		{
-			// ok, remove it
-			_Patches[p].Patch=NULL;
-			break;
-		}
-	}
+	// get the pos where this patch texture is stored
+	CVector2s	pos= it->second;
 
-	// Check it has been found
-	nlassert (p<NL_NUM_FAR_PATCHES_BY_TEXTURE);
+	// If I erase the patch wihch must next UL, then update UL
+	if( it == _ItULPatch )
+		_ItULPatch++;
 
-	// One patch less
-	_PatchCount--;
+	// erase from the 1st map
+	_PatchToPosMap.erase(it);
 
-	// Return true if it is empty, else return false
-	return (_PatchCount == 0);
+	// erase from the second map
+	_PosToPatchMap.erase(pos);
+
+	// Append to the free list.
+	uint width=(pPatch->getOrderS ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
+	uint height=(pPatch->getOrderT ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
+	if(width<height)
+		swap(width, height);
+	uint	freeListId= getFreeListId(width, height);
+	_FreeSpaces[freeListId].push_back(pos);
 }
 
-uint CTextureFar::touchPatch(uint p)
-{
-	// Check param
-	nlassert (p<NL_NUM_FAR_PATCHES_BY_TEXTURE);
 
+// ***************************************************************************
+uint	CTextureFar::touchPatchULAndNext()
+{
 	// if there is still a patch here
-	if( _Patches[p].Patch!=NULL )
+	if( _ItULPatch!=_PatchToPosMap.end() )
 	{
 		// Position of the invalide rectangle
-		int x = ((p & NL_NUM_FAR_PATCHES_BY_EDGE_MASK) * _OriginalWidth) >> NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT;
-		int y = ((p >> NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT) * _OriginalHeight) >> NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT;
+		int x = _ItULPatch->second.x;
+		int y = _ItULPatch->second.y;
+		uint	farIndex= _ItULPatch->first.FarIndex;
+		CPatch	*pPatch= _ItULPatch->first.Patch;
+
+		// recompute the correct size.
+		uint width=(pPatch->getOrderS ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
+		uint height=(pPatch->getOrderT ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
+		if(width<height)
+			swap(width, height);
 
 		// Invalidate the associated rectangle
-		CRect rect (x, y, _OriginalWidth>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT, _OriginalHeight>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT);
+		CRect rect (x, y, width, height);
 		ITexture::touchRect (rect);
 
+		// Go next.
+		_ItULPatch++;
+
 		// return number of pixels touched
-		return (_OriginalWidth>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT) * (_OriginalHeight>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT);
+		return width * height;
 	}
 	else
 	{
@@ -221,11 +399,28 @@ uint CTextureFar::touchPatch(uint p)
 	}
 }
 
+
+// ***************************************************************************
+void	CTextureFar::startPatchULTouch()
+{
+	_ItULPatch= _PatchToPosMap.begin();
+}
+
+
+// ***************************************************************************
+bool	CTextureFar::endPatchULTouch() const
+{
+	return _ItULPatch == _PatchToPosMap.end();
+}
+
+
+
+// ***************************************************************************
 // Generate the texture. See ITexture::doGenerate().
 void CTextureFar::doGenerate ()
 {
-	// Resize
-	CBitmap::resize (_OriginalWidth, _OriginalHeight, RGBA);
+	// Resize. But don't need to fill with 0!!
+	CBitmap::resize (NL_FAR_TEXTURE_EDGE_SIZE, NL_FAR_TEXTURE_EDGE_SIZE, RGBA, false);
 
 	// Rectangle invalidate ?
 	if (_ListInvalidRect.begin()!=_ListInvalidRect.end())
@@ -236,19 +431,15 @@ void CTextureFar::doGenerate ()
 		std::list<NLMISC::CRect>::iterator ite=_ListInvalidRect.begin();
 		while (ite!=_ListInvalidRect.end())
 		{
-			// Compute rectangle coordinates
-			sint x=(ite->left()<<NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)/_Width;
-			sint y=(ite->top()<<NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)/_Height;
-
-			// X and Y coord should be >0 and not be greater or equal to the number of patch stored on a texture edge.
-			nlassert (x>=0);
-			nlassert (x<NL_NUM_FAR_PATCHES_BY_EDGE);
-			nlassert (y>=0);
-			nlassert (y<NL_NUM_FAR_PATCHES_BY_EDGE);
-
-			// ReBuild the rectangle. verify first patch still exist.
-			if (_Patches[x+(y<<NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)].Patch)
-				rebuildRectangle (x, y);
+			// Get the PatchIdent.
+			CVector2s	pos((uint16)ite->left(), (uint16)ite->top());
+			TPosToPatchMap::iterator	itPosToPid= _PosToPatchMap.find( pos );
+			// If the patch is still here...
+			if( itPosToPid!=_PosToPatchMap.end() )
+			{
+				// ReBuild the rectangle.
+				rebuildPatch (pos, itPosToPid->second);
+			}
 
 			// Next rectangle
 			ite++;
@@ -256,23 +447,28 @@ void CTextureFar::doGenerate ()
 	}
 	else
 	{
-		// no, rebuild all the rectangle
-		for (sint y=0; y<NL_NUM_FAR_PATCHES_BY_EDGE; y++)
-		for (sint x=0; x<NL_NUM_FAR_PATCHES_BY_EDGE; x++)
+		// Parse all existing Patchs.
+		TPosToPatchMap::iterator	itPosToPid= _PosToPatchMap.begin();
+		while( itPosToPid!= _PosToPatchMap.end() )
 		{
-			// Rebuild this rectangle
-			if (_Patches[x+(y<<NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)].Patch)
-				rebuildRectangle (x, y);
+			// ReBuild the rectangle.
+			rebuildPatch (itPosToPid->first, itPosToPid->second);
+
+			itPosToPid++;
 		}
 	}
 }
 
 
+// ***************************************************************************
 // Rebuild the rectangle passed with coordinate passed in parameter
-void CTextureFar::rebuildRectangle (uint x, uint y)
+void CTextureFar::rebuildPatch (const CVector2s texturePos, const CPatchIdent &pid)
 {
+	uint x= texturePos.x;
+	uint y= texturePos.y;
+
 	// Patch pointer
-	CPatch* patch=_Patches[x+(y<<NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)].Patch;
+	CPatch* patch= pid.Patch;
 
 	// Check it exists
 	nlassert (patch);
@@ -280,6 +476,10 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 	// get the order
 	uint nS=patch->getOrderS();
 	uint nT=patch->getOrderT();
+
+	// get the size of the texture to compute
+	uint subTextWidth=(nS*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(pid.FarIndex-1);
+	uint subTextHeight=(nT*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(pid.FarIndex-1);
 
 	// Check it is a 16 bits texture
 	nlassert (getPixelFormat()==RGBA);
@@ -296,47 +496,38 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 	// Delta to add to the destination offset when walk for a pixel to the bottom in the source tile
 	sint dstDeltaY;
 
-	// larger size
-	uint larger;
-
 	// larger than higher  (regular)
 	if (nS>=nT)
 	{
 		// Regular offset, top left
-		nBaseOffset=((x*_Width)>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)+((y*_Height)>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)*_Width;
+		nBaseOffset= x + y*_Width;
 
 		// Regular deltaX, to the right
 		dstDeltaX=1;
 
 		// Regular deltaY, to the bottom
 		dstDeltaY=_Width;
-
-		// Larger size
-		larger=nS;
 	}
 	// higher than larger (goofy), the patch is stored with a rotation of 1 (to the left of course)
 	else
 	{
 		// Goofy offset, bottom left
-		nBaseOffset=((x*_Width)>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)+((y*_Height)>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)*_Width;
-		nBaseOffset+=((_Height>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)-1)*_Width;
+		nBaseOffset= x + y*_Width;
+		nBaseOffset+=(subTextWidth-1)*_Width;
 
 		// Goofy deltaX, to the top
 		dstDeltaX=-(sint)_Width;
 
 		// Goofy deltaY, to the right
 		dstDeltaY=1;
-
-		// Larger size
-		larger=nT;
 	}
 		
 	// Compute the order of the patch
 	CTileFarBank::TFarOrder orderX=CTileFarBank::order0;
 	uint tileSize=0;
-	switch ((larger*NL_NUM_FAR_PATCHES_BY_EDGE*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)/_Width)
+	switch (pid.FarIndex)
 	{
-	case 4:
+	case 3:
 		// Ratio 1:4
 		orderX=CTileFarBank::order2;
 		tileSize=NL_NUM_PIXELS_ON_FAR_TILE_EDGE>>2;
@@ -356,31 +547,6 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 		nlassert (0);
 	}
 
-#ifdef NL_DEBUG
-	// Compute the Y order
-	CTileFarBank::TFarOrder orderY;
-	switch ((std::min(nS, nT)*NL_NUM_FAR_PATCHES_BY_EDGE*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)/_Height)
-	{
-	case 4:
-		// Ratio 1:4
-		orderY=CTileFarBank::order2;
-		break;
-	case 2:
-		// Ratio 1:2
-		orderY=CTileFarBank::order1;
-		break;
-	case 1:
-		// Ratio 1:1
-		orderY=CTileFarBank::order0;
-		break;
-	default:
-		// no!: must be one of the previous values
-		nlassert (0);
-	}
-
-	// Check the ratio on Y is the same than on X
-	nlassert (orderX == orderY);
-#endif // NL_DEBUG
 	// Must have a far tile bank pointer set in the CFarTexture
 	nlassert (_Bank);
 

@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.30 2003/04/09 12:18:18 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.31 2003/04/25 13:44:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -515,7 +515,7 @@ void RenderTriangle (const CZoneLighter::CTriangle &triangle, const CZoneLighter
 		// Texture informations
 		uint width;
 		uint height;
-		const std::vector<uint8> *pixels;
+		const CObjectVector<uint8> *pixels;
 		if (needUV)
 		{
 			// Get pixels
@@ -2981,7 +2981,7 @@ void CZoneLighter::lightWater(CWaterShape &ws, const CMatrix &MT, const CLightDe
 		// matrix to go from uv space to worldspace
 		NLMISC::CMatrix UVSpaceToWorldSpace = worldSpaceToUVs.inverted();
 
-		std::vector<uint8> &pixs8 = diffuseTex->getPixels();
+		CObjectVector<uint8> &pixs8 = diffuseTex->getPixels();
 		NLMISC::CRGBA *rgbPixs = (NLMISC::CRGBA *) &pixs8[0];
 
 	

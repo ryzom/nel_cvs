@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.16 2003/04/23 10:16:17 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.17 2003/04/25 13:44:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -553,30 +553,6 @@ void			CPatch::renderFar0()
 			NL3D_PROFILE_LAND_ADD_FACE_VECTOR(ProfNRdrFar0, tblock.Far0FaceVector);
 		}
 	}
-
-
-	// Check the pass is in the set
-#ifdef NL_DEBUG
-	if (_PatchRdrPassFar0)
-	{
-		nlassert (Zone->Landscape->_FarRdrPassSet.find (_PatchRdrPassFar0)!=Zone->Landscape->_FarRdrPassSet.end());
-		if (Zone->Landscape->_FarRdrPassSet.find (_PatchRdrPassFar0)==Zone->Landscape->_FarRdrPassSet.end())
-		{
-			bool bFound=false;
-			{
-				for (sint t=0; t<(sint)Zone->Landscape->_FarRdrPassSetVectorFree.size(); t++)
-				{
-					if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (_PatchRdrPassFar0)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
-					{
-						bFound=true;
-						break;
-					}
-				}
-			}
-			nlassert (bFound);
-		}
-	}
-#endif // NL_DEBUG
 }
 
 
@@ -609,29 +585,6 @@ void			CPatch::renderFar1()
 			NL3D_PROFILE_LAND_ADD_FACE_VECTOR(ProfNRdrFar1, tblock.Far1FaceVector);
 		}
 	}
-
-	// Check the pass is in the set
-#ifdef NL_DEBUG
-	if (_PatchRdrPassFar1)
-	{
-		nlassert (Zone->Landscape->_FarRdrPassSet.find (_PatchRdrPassFar1)!=Zone->Landscape->_FarRdrPassSet.end());
-		if (Zone->Landscape->_FarRdrPassSet.find (_PatchRdrPassFar1)==Zone->Landscape->_FarRdrPassSet.end())
-		{
-			bool bFound=false;
-			{
-				for (sint t=0; t<(sint)Zone->Landscape->_FarRdrPassSetVectorFree.size(); t++)
-				{
-					if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (_PatchRdrPassFar1)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
-					{
-						bFound=true;
-						break;
-					}
-				}
-			}
-			nlassert (bFound);
-		}
-	}
-#endif // NL_DEBUG
 }
 
 

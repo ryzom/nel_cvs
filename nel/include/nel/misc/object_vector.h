@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * <File description>
  *
- * $Id: object_vector.h,v 1.4 2003/04/18 13:13:54 berenguier Exp $
+ * $Id: object_vector.h,v 1.5 2003/04/25 13:45:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -364,6 +364,51 @@ private:
 		}
 	}
 
+};
+
+
+// ***************************************************************************
+// Explicit Specialisation of basic types which have no special ctor/dtor
+// ***************************************************************************
+
+/* This make faster Code in Debug (no change in release)
+*/
+
+template<> class CObjectVector<uint8, true> : public CObjectVector<uint8, false>
+{
+};
+template<> class CObjectVector<sint8, true> : public CObjectVector<sint8, false>
+{
+};
+template<> class CObjectVector<uint16, true> : public CObjectVector<uint16, false>
+{
+};
+template<> class CObjectVector<sint16, true> : public CObjectVector<sint16, false>
+{
+};
+template<> class CObjectVector<uint32, true> : public CObjectVector<uint32, false>
+{
+};
+template<> class CObjectVector<sint32, true> : public CObjectVector<sint32, false>
+{
+};
+template<> class CObjectVector<uint64, true> : public CObjectVector<uint64, false>
+{
+};
+template<> class CObjectVector<sint64, true> : public CObjectVector<sint64, false>
+{
+};
+template<> class CObjectVector<uint, true> : public CObjectVector<uint, false>
+{
+};
+template<> class CObjectVector<sint, true> : public CObjectVector<sint, false>
+{
+};
+template<> class CObjectVector<float, true> : public CObjectVector<float, false>
+{
+};
+template<> class CObjectVector<double, true> : public CObjectVector<double, false>
+{
 };
 
 

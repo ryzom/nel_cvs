@@ -1,7 +1,7 @@
 /** \file texture_dlm.cpp
  * <File description>
  *
- * $Id: texture_dlm.cpp,v 1.10 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: texture_dlm.cpp,v 1.11 2003/04/25 13:44:37 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -242,7 +242,7 @@ void			CTextureDLM::copyRect(uint x, uint y, uint w, uint h, CRGBA  *textMap)
 {
 	// copy image.
 	CRGBA	*src= textMap;
-	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
+	CRGBA	*dst= (CRGBA*)getPixels().getPtr();
 	dst+= y*getWidth()+x;
 	for(sint n= h;n>0;n--, src+= w, dst+= getWidth())
 	{
@@ -257,7 +257,7 @@ void			CTextureDLM::copyRect(uint x, uint y, uint w, uint h, CRGBA  *textMap)
 void			CTextureDLM::fillRect(uint x, uint y, uint w, uint h, uint8 value)
 {
 	// copy image.
-	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
+	CRGBA	*dst= (CRGBA*)getPixels().getPtr();
 	dst+= y*getWidth()+x;
 	for(sint n= h;n>0;n--, dst+= getWidth())
 	{
@@ -273,7 +273,7 @@ void			CTextureDLM::fillRect(uint x, uint y, uint w, uint h, uint8 value)
 void			CTextureDLM::modulateAndfillRect565(uint x, uint y, uint w, uint h, CRGBA  *textMap, uint16 *modColor)
 {
 	// compute start dst to copy.
-	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
+	CRGBA	*dst= (CRGBA*)getPixels().getPtr();
 	dst+= y*getWidth()+x;
 
 	// precahce Data in memory (best CPU support)
@@ -305,7 +305,7 @@ void			CTextureDLM::modulateAndfillRect565(uint x, uint y, uint w, uint h, CRGBA
 void			CTextureDLM::modulateAndfillRect8888(uint x, uint y, uint w, uint h, CRGBA  *textMap, CRGBA *modColor)
 {
 	// compute start dst to copy.
-	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
+	CRGBA	*dst= (CRGBA*)getPixels().getPtr();
 	dst+= y*getWidth()+x;
 
 	// precahce Data in memory (best CPU support)
@@ -335,7 +335,7 @@ void			CTextureDLM::modulateAndfillRect8888(uint x, uint y, uint w, uint h, CRGB
 void			CTextureDLM::modulateConstantAndfillRect(uint x, uint y, uint w, uint h, CRGBA  *textMap, CRGBA mc)
 {
 	// compute start dst to copy.
-	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
+	CRGBA	*dst= (CRGBA*)getPixels().getPtr();
 	dst+= y*getWidth()+x;
 
 	// precahce Data in memory (best CPU support)

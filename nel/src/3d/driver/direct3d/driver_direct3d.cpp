@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.21 2004/09/07 15:23:36 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.22 2004/09/17 15:10:35 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -68,6 +68,27 @@ HINSTANCE HInstDLL = NULL;
 #define NL_VOLATILE_AGP_IB_MAXSIZE	256*1024
 
 
+
+// tmp
+/*
+class CDumpAuto
+{
+public:
+	CDumpAuto(const char *name) : _Name(name) 
+	{ 
+		nldebug(name);
+	}
+	~CDumpAuto()
+	{
+		nldebug(("Leaving" +  _Name).c_str());
+	}
+private:
+	std::string _Name;
+};
+
+#define DUMP_AUTO(label) CDumpAuto __dump__auto##label(#label);
+  */
+
 // ***************************************************************************
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
@@ -99,6 +120,31 @@ __declspec(dllexport) uint32 NL3D_interfaceVersion ()
 {
 	return IDriver::InterfaceVersion;
 }
+
+
+
+/*static*/ bool CDriverD3D::_CacheTest[CacheTest_Count] = 
+{
+	false, // CacheTest_CullMode = 0;
+	false, // CacheTest_RenderState = 1, 
+	false, // CacheTest_TextureState = 2,
+	false, // CacheTest_TextureIndexMode = 3,
+	false, // CacheTest_TextureIndexUV = 4,
+	false, // CacheTest_Texture = 5,
+	false, // CacheTest_VertexProgram = 6,
+	false, // CacheTest_PixelShader = 7,
+	false, // CacheTest_VertexProgramConstant = 8,
+	false, // CacheTest_PixelShaderConstant = 9,
+	false, // CacheTest_SamplerState = 10,
+	false, // CacheTest_VertexBuffer = 11,
+	false, // CacheTest_IndexBuffer = 12,
+	false, // CacheTest_VertexDecl = 13,
+	false, // CacheTest_Matrix = 14,
+	false, // CacheTest_RenderTarget = 15,
+	false, // CacheTest_MaterialState = 16,
+	false  // CacheTest_DepthRange = 17,	
+};
+
 
 // ***************************************************************************
 
@@ -195,10 +241,11 @@ CDriverD3D::CDriverD3D()
 	_VolatileIndexBufferRAM[1]= new CVolatileIndexBuffer;
 	_VolatileIndexBufferAGP[0]= new CVolatileIndexBuffer;
 	_VolatileIndexBufferAGP[1]= new CVolatileIndexBuffer;	
-	_StateBlockCategory = 0;
 	_MustRestoreLight = false;	
 	_VertexStreamStride = 0;
 	_VertexDeclStride = 0;
+	_Lost = false;
+	_SceneBegun = false;	
 }
 
 
@@ -300,9 +347,11 @@ void CDriverD3D::resetRenderVariables()
 	
 	// Vertices and indexes are not valid anymore
 	_VertexProgramCache.VertexProgram = NULL;
+	_VertexProgramCache.VP = NULL;
 	touchRenderVariable (&(_VertexProgramCache));
 	_PixelShaderCache.PixelShader = NULL;
-	touchRenderVariable (&(_PixelShaderCache));
+	touchRenderVariable (&(_PixelShaderCache));		
+	touchRenderVariable(&_MaterialState);		
 
 	for (i=0; i<MaxVertexProgramConstantState; i++)
 	{
@@ -742,7 +791,7 @@ void CDriverD3D::updateRenderVariablesInternal()
 		// Unlinked
 		_ModifiedRenderState = currentRenderState->NextModified;
 		currentRenderState->apply(this);
-	}	
+	}		
 }
 
 // ***************************************************************************
@@ -846,6 +895,7 @@ static void D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wPara
 
 bool CDriverD3D::handlePossibleSizeChange()
 {
+	//DUMP_AUTO(handlePossibleSizeChange);
 	H_AUTO_D3D(CDriver3D_handlePossibleSizeChange);
 	// If windowed, check if the size as changed
 	if (_CurrentMode.Windowed)
@@ -863,8 +913,10 @@ bool CDriverD3D::handlePossibleSizeChange()
 		mode.Height = newHeight;
 		if ( ( (mode.Width != _CurrentMode.Width) || (mode.Height != _CurrentMode.Height) ) &&
 			( mode.Width != 0 ) &&
-			( mode.Height != 0 ) )
-			return reset (mode);
+			( mode.Height != 0 ) )		
+		{			
+			return reset (mode);			
+		}
 	}
 	return false;
 }
@@ -1075,15 +1127,16 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	}
 
 	// Create the D3D device	
-	HRESULT result = _D3D->CreateDevice (adapter, _Rasterizer, (HWND)_HWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING|D3DCREATE_PUREDEVICE, &parameters, &_DeviceInterface);	
+
+	
+	HRESULT result = _D3D->CreateDevice (adapter, _Rasterizer, (HWND)_HWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING|D3DCREATE_PUREDEVICE, &parameters, &_DeviceInterface);
 	if (result != D3D_OK)
 	{
 		nlwarning ("CDriverD3D::setDisplay: Can't create device.");
 		release();
 		return false;
-	}
-
-	// Check some caps
+	}	
+	// Check some caps	
 	D3DCAPS9 caps;
 	if (_DeviceInterface->GetDeviceCaps(&caps) == D3D_OK)
 	{
@@ -1092,6 +1145,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_MADOperatorSupported = (caps.TextureOpCaps & D3DTEXOPCAPS_MULTIPLYADD) != 0;
 		_EMBMSupported = (caps.TextureOpCaps &  D3DTOP_BUMPENVMAP) != 0;
 		_PixelShaderVersion = caps.PixelShaderVersion;
+		_CubbedMipMapSupported = (caps.TextureCaps & D3DPTEXTURECAPS_MIPCUBEMAP) != 0;
 	}
 	else
 	{
@@ -1099,6 +1153,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_NbNeLTextureStages = 1;
 		_MADOperatorSupported = false;
 		_EMBMSupported = false;
+		_CubbedMipMapSupported = false;
 		_PixelShaderVersion = 0;
 	}
 	// test for occlusion query support
@@ -1218,8 +1273,8 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	setupViewport (CViewport());
 
 	// Begin now
-	if (_DeviceInterface->BeginScene() != D3D_OK)
-		return false;
+	//nldebug("BeginScene");
+	if (!beginScene()) return false;	
 
 	// Done
 	return true;
@@ -1453,6 +1508,7 @@ void CDriverD3D::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 // ***************************************************************************
 bool CDriverD3D::swapBuffers() 
 {		
+	//DUMP_AUTO(swapBuffers);
 	H_AUTO_D3D(CDriverD3D_swapBuffers);
 	nlassert (_DeviceInterface);
 
@@ -1476,8 +1532,13 @@ bool CDriverD3D::swapBuffers()
 	}
 
 	// End now
-	if (_DeviceInterface->EndScene() != D3D_OK)
+	//nldebug("EndScene");
+	if (!endScene())
+	{
+		// tmp
+		nlassert(0);
 		return false;	
+	}
 
 	HRESULT result;
 	if ((result=_DeviceInterface->Present( NULL, NULL, NULL, NULL)) != D3D_OK)
@@ -1485,9 +1546,13 @@ bool CDriverD3D::swapBuffers()
 		// Device lost ?
 		if (result == D3DERR_DEVICELOST)
 		{
-			// Reset the driver
-			reset (_CurrentMode);
-			_DeviceInterface->EndScene();
+			_Lost = true;
+			// check if we can exit lost state
+			if (_DeviceInterface->TestCooperativeLevel() == D3DERR_DEVICENOTRESET)
+			{
+				// Reset the driver
+				reset (_CurrentMode);				
+			}
 		}
 	}	
 	
@@ -1504,7 +1569,7 @@ bool CDriverD3D::swapBuffers()
 	_TextureUsed.clear();
 
 	// Reset vertex program
-	setVertexProgram (NULL);
+	setVertexProgram (NULL, NULL);
 
 	if (_VBHardProfiling)
 	{
@@ -1513,10 +1578,10 @@ bool CDriverD3D::swapBuffers()
 	if (_IBProfiling)
 	{
 		++ _NumIBProfileFrame;
-	}
-
+	}	
 	// Begin now
-	return _DeviceInterface->BeginScene() == D3D_OK;
+	//nldebug("BeginScene");
+	return beginScene();
 };
 
 // ***************************************************************************
@@ -1777,7 +1842,7 @@ bool CDriverD3D::setMode (const GfxMode& mode)
         SetWindowLong( _HWnd, GWL_STYLE, D3D_FULLSCREEN_STYLE|WS_VISIBLE);
 		_FullScreen = true;
     }
-
+		
 	// Reset the driver
 	if (reset (mode))
 	{
@@ -1797,9 +1862,9 @@ bool CDriverD3D::setMode (const GfxMode& mode)
 						  ( WndRect.right - WndRect.left ),
 						  ( WndRect.bottom - WndRect.top ),
 						  SWP_SHOWWINDOW );
-		}
+		}		
 		return true;
-	}
+	}	
 	return false;
 }
 
@@ -1822,9 +1887,35 @@ void CDriverD3D::deleteIndexBuffer(CIBDrvInfosD3D *indexBuffer)
 // ***************************************************************************
 bool CDriverD3D::reset (const GfxMode& mode)
 {
+	//DUMP_AUTO(reset);
 	H_AUTO_D3D(CDriverD3D_reset);
+	if (_DeviceInterface->TestCooperativeLevel() == D3DERR_DEVICELOST) return false;
+	
+	// Choose an adapter
+	UINT adapter = (_Adapter==0xffffffff)?D3DADAPTER_DEFAULT:(UINT)_Adapter;
+
+	// Get adapter format
+	D3DDISPLAYMODE adapterMode;
+	if (_D3D->GetAdapterDisplayMode (adapter, &adapterMode) != D3D_OK)
+	{
+		nlwarning ("CDriverD3D::reset: GetAdapterDisplayMode failed");
+		release();
+		return false;
+	}
+		
+	// Do the reset
+	// Increment the IDriver reset counter
+
+	D3DPRESENT_PARAMETERS parameters;
+	D3DFORMAT adapterFormat;
+	if (!fillPresentParameter (parameters, adapterFormat, mode, adapterMode))
+		return false;
+
+
 	// Current mode
 	_CurrentMode = mode;
+	_CurrentMaterial = NULL;
+	_CurrentMaterialInfo = NULL;
 
 	// Restaure non managed vertex buffer in system memory
 	ItVBDrvInfoPtrList iteVb = _VBDrvInfos.begin();
@@ -1904,51 +1995,44 @@ bool CDriverD3D::reset (const GfxMode& mode)
 	}
 
 	// Release internal shaders
-	releaseInternalShaders();
+	//releaseInternalShaders();
 
-	// Choose an adapter
-	UINT adapter = (_Adapter==0xffffffff)?D3DADAPTER_DEFAULT:(UINT)_Adapter;
 
-	// Get adapter format
-	D3DDISPLAYMODE adapterMode;
-	if (_D3D->GetAdapterDisplayMode (adapter, &adapterMode) != D3D_OK)
-	{
-		nlwarning ("CDriverD3D::reset: GetAdapterDisplayMode failed");
-		release();
-		return false;
-	}
+	notifyAllShaderDrvOfLostDevice();
+	
 	
 
-
-
-	// Do the reset
-
-	// Increment the IDriver reset counter
-
-	D3DPRESENT_PARAMETERS parameters;
-	D3DFORMAT adapterFormat;
-	if (!fillPresentParameter (parameters, adapterFormat, mode, adapterMode))
-		return false;
-
-	/* Do not reset if reset will fail */
-	if (_DeviceInterface->TestCooperativeLevel() != D3DERR_DEVICELOST)
+	/* Do not reset if reset will fail */		
+	_ResetCounter++;
+	bool sceneBegun = hasSceneBegun();
+	if (sceneBegun)
 	{
-		_ResetCounter++;
-		if (_DeviceInterface->Reset (&parameters) != D3D_OK)
-		{
-			nlwarning ("CDriverD3D::reset: Reset on _DeviceInterface");
-			return false;
-		}
-
-		// BeginScene now
-		_DeviceInterface->BeginScene();
+		//nldebug("EndScene");
+		endScene();			
 	}
+	if (_DeviceInterface->Reset (&parameters) != D3D_OK)
+	{
+		// tmp
+		nlassert(0); // Fatal ...
+		nlwarning ("CDriverD3D::reset: Reset on _DeviceInterface");
+		return false;
+	}
+	_Lost = false;
+	// BeginScene now
+	if (sceneBegun)
+	{
+		//nldebug("BeginScene");
+		beginScene();
+	}	
+
+
+	notifyAllShaderDrvOfResetDevice();
 
 	// Reset internal caches
 	resetRenderVariables();
 
 	// Init shaders
-	initInternalShaders();
+	//initInternalShaders();
 
 	// reallocate occlusion queries
 	for(TOcclusionQueryList::iterator it = _OcclusionQueryList.begin(); it != _OcclusionQueryList.end(); ++it)
@@ -1957,8 +2041,7 @@ bool CDriverD3D::reset (const GfxMode& mode)
 		{
 			_DeviceInterface->CreateQuery(D3DQUERYTYPE_OCCLUSION, &(*it)->Query);
 		}
-	}
-
+	}	
 	return true;
 }
 
@@ -2016,7 +2099,7 @@ bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFOR
 		uint backBuffer;
 		for (backBuffer=0; backBuffer<numFormat; backBuffer++)
 		{
-			if (_D3D->CheckDeviceType(adapter, _Rasterizer, adapterMode.Format, backBufferFormats[depthIndex][backBuffer], FALSE) == D3D_OK)
+			if (_D3D->CheckDeviceType(adapter, _Rasterizer, adapterMode.Format, backBufferFormats[depthIndex][backBuffer], TRUE) == D3D_OK)
 			{
 				parameters.BackBufferFormat = backBufferFormats[depthIndex][backBuffer];
 				adapterFormat = adapterMode.Format;
@@ -2271,8 +2354,10 @@ void CDriverD3D::finish()
 {
 	H_AUTO_D3D(CDriverD3D_finish);	
 	// Flush now
-	_DeviceInterface->EndScene();
-	_DeviceInterface->BeginScene();
+	//nldebug("EndScene");
+	endScene();
+	//nldebug("BeginScene");
+	beginScene();
 }
 
 // ***************************************************************************
@@ -2459,7 +2544,7 @@ void CDriverD3D::setCullMode(TCullMode cullMode)
 {
 	H_AUTO_D3D(CDriver3D_cullMode);
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-	if (cullMode != _CullMode)
+	NL_D3D_CACHE_TEST(CacheTest_CullMode, cullMode != _CullMode)
 #endif
 	{
 		if (_InvertCullMode)
@@ -2642,7 +2727,11 @@ void CDriverD3D::CVertexProgramPtrState::apply(CDriverD3D *driver)
 // ***************************************************************************
 void CDriverD3D::CPixelShaderPtrState::apply(CDriverD3D *driver)
 {
-	H_AUTO_D3D(CDriverD3D_CPixelShaderPtrState);
+	// H_AUTO enlevé TMP TMP TMP TMP
+	// TMP TMP TMP TMP TMP
+	// TMP TMP TMP TMP TMP
+	// TMP TMP TMP TMP TMP
+	//H_AUTO_D3D(CDriverD3D_CPixelShaderPtrState);
 	driver->_DeviceInterface->SetPixelShader(PixelShader);
 }
 
@@ -2769,7 +2858,46 @@ void CDriverD3D::CMaterialState::apply(CDriverD3D *driver)
 
 
 
+
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

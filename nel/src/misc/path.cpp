@@ -1,7 +1,7 @@
 /** \file path.cpp
  * CPath
  *
- * $Id: path.cpp,v 1.7 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: path.cpp,v 1.8 2001/02/07 13:54:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,7 +114,7 @@ std::string CFile::getFilename (const std::string &filename)
 	if (pos != string::npos)
 		return filename.substr (pos + 1);
 	else
-		return "";
+		return filename;
 }
 
 std::string CFile::getPath (const std::string &filename)
@@ -123,7 +123,7 @@ std::string CFile::getPath (const std::string &filename)
 	if (pos != string::npos)
 		return filename.substr (0, pos + 1);
 	else
-		return "";
+		return filename;
 }
 
 bool CFile::isDirectory (const std::string &filename)

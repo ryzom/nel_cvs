@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.73 2002/07/25 13:36:43 lecroart Exp $
+ * $Id: object_viewer.cpp,v 1.74 2002/08/02 13:47:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -897,9 +897,19 @@ void CObjectViewer::setupPlaylist (float time)
 			}
 			else
 			{
-				_ListInstance[i]->TransformShape->setPos (CVector::Null);
-				_ListInstance[i]->TransformShape->setRotQuat (CQuat::Identity);
-				_ListInstance[i]->TransformShape->setScale (1, 1, 1);
+				CMeshBase *meshBase = dynamic_cast<CMeshBase *> ((IShape*)_ListInstance[i]->TransformShape->Shape);
+				if (meshBase)
+				{
+					_ListInstance[i]->TransformShape->setPos (((CAnimatedValueVector&)meshBase->getDefaultPos ()->getValue ()).Value);
+					_ListInstance[i]->TransformShape->setRotQuat (((CAnimatedValueQuat&)meshBase->getDefaultRotQuat ()->getValue ()).Value);
+					_ListInstance[i]->TransformShape->setScale (((CAnimatedValueVector&)meshBase->getDefaultScale ()->getValue ()).Value);
+				}
+				else
+				{
+					_ListInstance[i]->TransformShape->setPos (CVector::Null);
+					_ListInstance[i]->TransformShape->setRotQuat (CQuat::Identity);
+					_ListInstance[i]->TransformShape->setScale (1, 1, 1);
+				}
 			}
 		}
 	}
@@ -1796,9 +1806,9 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 				if (bindBone != 0xffffffff)
 				{
 					transformSkel->stickObject (meshInstance, bindBone);
-					meshInstance->setPos (CVector::Null);
+					/*meshInstance->setPos (CVector::Null);
 					meshInstance->setRotQuat (CQuat::Identity);
-					meshInstance->setScale (1, 1, 1);
+					meshInstance->setScale (1, 1, 1);*/
 				}
 
 				// Set the bone name

@@ -1,7 +1,7 @@
 /** \file inet_address.h
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.h,v 1.26 2002/08/22 12:10:04 lecroart Exp $
+ * $Id: inet_address.h,v 1.27 2002/08/28 15:15:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,6 +133,9 @@ public:
 
 	/// Serialize
 	void serial( NLMISC::IStream& s );
+
+	/// Returns true if this CInetAddress is 127.0.0.1
+	bool is127001 () const;
 
 	/// Creates a CInetAddress object with local host address, port=0
 	static CInetAddress	localHost();

@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.40 2002/08/22 15:25:04 lecroart Exp $
+ * $Id: inet_address.cpp,v 1.41 2002/08/28 15:15:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,7 +197,6 @@ CInetAddress::~CInetAddress()
 	delete _SockAddr;
 	// _Valid = false;
 }
-
 
 /*
  * Sets hostname and port (ex: www.nevrax.com:80)
@@ -493,6 +492,12 @@ std::vector<CInetAddress> CInetAddress::localAddresses()
 	
 	return vect;
 }
+
+bool CInetAddress::is127001 () const 
+{
+	return (internalIPAddress () == htonl(0x7F000001));
+}
+
 
 std::string vectorCInetAddressToString(const std::vector<CInetAddress> &addrs)
 {

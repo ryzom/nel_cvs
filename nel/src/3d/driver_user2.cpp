@@ -1,7 +1,7 @@
 /** \file driver_user2.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.21 2003/11/26 13:44:00 berenguier Exp $
+ * $Id: driver_user2.cpp,v 1.22 2004/03/24 16:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,6 +159,33 @@ void			CDriverUser::deleteMaterial(UMaterial *umat)
 	NL3D_MEM_DRIVER
 
 	_Materials.erase( (CMaterialUser*)umat, "deleteMaterial: Bad material");
+}
+
+// ***************************************************************************
+UAnimationSet			*CDriverUser::createAnimationSet() 
+{
+	NL_ALLOC_CONTEXT( 3dAnmSt )
+	
+	return _AnimationSets.insert(new CAnimationSetUser());
+}
+// ***************************************************************************
+UAnimationSet			*CDriverUser::createAnimationSet(const std::string &animationSetFile) 
+{
+	NL_ALLOC_CONTEXT( 3dAnmSt )
+	H_AUTO( NL3D_Load_AnimationSet )
+	
+	NLMISC::CIFile	f;
+	// throw exception if not found.
+	std::string	path= CPath::lookup(animationSetFile);
+	f.open(path);
+	return _AnimationSets.insert(new CAnimationSetUser(f));
+}
+// ***************************************************************************
+void			CDriverUser::deleteAnimationSet(UAnimationSet *animationSet) 
+{
+	NL_ALLOC_CONTEXT( 3dAnmSt )
+	
+	_AnimationSets.erase((CAnimationSetUser*)animationSet, "deleteAnimationSet(): Bad AnimationSet ptr");
 }
 
 

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.57 2004/03/23 10:14:51 vizerie Exp $
+ * $Id: scene_user.cpp,v 1.58 2004/03/24 16:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,6 @@ namespace NL3D
 
 H_AUTO_DECL( NL3D_UI_Scene )
 H_AUTO_DECL( NL3D_Misc_Scene_CreateDel_Element )
-H_AUTO_DECL( NL3D_Load_AnimationSet )
 H_AUTO_DECL( NL3D_CreateOrLoad_Instance )
 H_AUTO_DECL( NL3D_CreateOrLoad_Skeleton )
 H_AUTO_DECL( NL3D_Load_CLodOrCoarseMesh )
@@ -51,7 +50,6 @@ H_AUTO_DECL( NL3D_Load_AsyncIG )
 
 #define	NL3D_HAUTO_UI_SCENE						H_AUTO_USE( NL3D_UI_Scene )
 #define	NL3D_HAUTO_ELT_SCENE					H_AUTO_USE( NL3D_Misc_Scene_CreateDel_Element )
-#define	NL3D_HAUTO_LOAD_ANIMSET					H_AUTO_USE( NL3D_Load_AnimationSet )
 #define	NL3D_HAUTO_CREATE_INSTANCE				H_AUTO_USE( NL3D_CreateOrLoad_Instance )
 #define	NL3D_HAUTO_CREATE_SKELETON				H_AUTO_USE( NL3D_CreateOrLoad_Skeleton )
 #define	NL3D_HAUTO_LOAD_LOD						H_AUTO_USE( NL3D_Load_CLodOrCoarseMesh )
@@ -73,34 +71,6 @@ H_AUTO_DECL( NL3D_Render_Animate_Scene )
 #define NL3D_MEM_CLOUDS						NL_ALLOC_CONTEXT( 3dCloud )
 #define NL3D_MEM_VISUAL_COLLISION			NL_ALLOC_CONTEXT( 3dVsCol )
 
-// ***************************************************************************
-UAnimationSet			*CSceneUser::createAnimationSet() 
-{
-	NL_ALLOC_CONTEXT( 3dAnmSt )
-	NL3D_HAUTO_ELT_SCENE;
-
-	return _AnimationSets.insert(new CAnimationSetUser());
-}
-// ***************************************************************************
-UAnimationSet			*CSceneUser::createAnimationSet(const std::string &animationSetFile) 
-{
-	NL_ALLOC_CONTEXT( 3dAnmSt )
-	NL3D_HAUTO_LOAD_ANIMSET;
-
-	NLMISC::CIFile	f;
-	// throw exception if not found.
-	std::string	path= CPath::lookup(animationSetFile);
-	f.open(path);
-	return _AnimationSets.insert(new CAnimationSetUser(f));
-}
-// ***************************************************************************
-void			CSceneUser::deleteAnimationSet(UAnimationSet *animationSet) 
-{
-	NL_ALLOC_CONTEXT( 3dAnmSt )
-	NL3D_HAUTO_ELT_SCENE;
-
-	_AnimationSets.erase((CAnimationSetUser*)animationSet, "deleteAnimationSet(): Bad AnimationSet ptr");
-}
 
 // ***************************************************************************
 void			CSceneUser::setAutomaticAnimationSet(UAnimationSet *as)

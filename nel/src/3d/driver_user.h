@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.37 2004/03/23 10:23:47 vizerie Exp $
+ * $Id: driver_user.h,v 1.38 2004/03/24 16:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,7 @@ namespace NL3D
 class	CTextureUser;
 class	CTextContextUser;
 class	CSceneUser;
+class	CAnimationSetUser;
 
 
 // ***************************************************************************
@@ -84,10 +85,12 @@ protected:
 	typedef	CPtrSet<CMaterialUser>		TMaterialSet;
 	typedef	CPtrSet<CTextContextUser>	TTextContextSet;
 	typedef	CPtrSet<CSceneUser>			TSceneSet;
+	typedef	CPtrSet<CAnimationSetUser>	TAnimationSetSet;
 	TTextureSet				_Textures;
 	TMaterialSet			_Materials;
 	TTextContextSet			_TextContexts;
 	TSceneSet				_Scenes;
+	TAnimationSetSet		_AnimationSets;
 	CShapeBankUser			_ShapeBank;
 	// There is one MeshSkin Vertex Stream per driver, and for all scenes.
 	CVertexStreamManager	_MeshSkinManager;
@@ -200,6 +203,16 @@ public:
 	// @}
 
 
+	/// \name AnimationSet gestion.
+	// @{
+	/// Create an empty AnimationSet.
+	virtual	UAnimationSet	*createAnimationSet();
+	/// Create a new AnimationSet, load it from a file. Use CPath to search the animation set. exception EPathNotFound if not found.
+	virtual	UAnimationSet	*createAnimationSet(const std::string &animationSetFile);
+	/// Delete a AnimationSet.
+	virtual	void			deleteAnimationSet(UAnimationSet *animationSet);
+	// @}
+	
 
 	/// \name Components gestion for Interface 2D/3D.
 	// @{

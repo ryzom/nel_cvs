@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.16 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: animation_set.cpp,v 1.17 2004/03/24 16:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,11 @@ namespace NL3D
 {
 
 // ***************************************************************************
-
+CAnimationSet::CAnimationSet ()
+{
+}
+	
+// ***************************************************************************
 CAnimationSet::~CAnimationSet ()
 {
 	// Erase all animations.
@@ -50,14 +54,12 @@ CAnimationSet::~CAnimationSet ()
 }
 
 // ***************************************************************************
-
 uint CAnimationSet::getNumChannelId () const
 {
 	return _ChannelIdByName.size ();
 }
 
 // ***************************************************************************
-
 uint CAnimationSet::addAnimation (const char* name, CAnimation* animation)
 {
 	// Add an animation
@@ -72,7 +74,6 @@ uint CAnimationSet::addAnimation (const char* name, CAnimation* animation)
 }
 
 // ***************************************************************************
-
 uint CAnimationSet::addSkeletonWeight (const char* name, CSkeletonWeight* skeletonWeight)
 {
 	// Add an animation
@@ -87,7 +88,6 @@ uint CAnimationSet::addSkeletonWeight (const char* name, CSkeletonWeight* skelet
 }
 
 // ***************************************************************************
-
 void CAnimationSet::reset ()
 {
 	_Animation.clear();
@@ -100,7 +100,6 @@ void CAnimationSet::reset ()
 }
 
 // ***************************************************************************
-
 void CAnimationSet::build ()
 {
 	// Clear the channel map
@@ -130,7 +129,6 @@ void CAnimationSet::build ()
 }
 
 // ***************************************************************************
-
 void CAnimationSet::serial (NLMISC::IStream& f)
 {
 	// Serial an header

@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.4 2002/04/12 16:17:25 vizerie Exp $
+ * $Id: animation_set.h,v 1.5 2004/03/24 16:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,6 +57,7 @@ public:
 
 	enum { NotFound=0xffffffff };
 
+	CAnimationSet ();
 	~CAnimationSet ();
 
 	/**

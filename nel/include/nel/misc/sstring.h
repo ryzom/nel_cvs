@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.28 2005/03/18 11:29:00 guignot Exp $
+ * $Id: sstring.h,v 1.29 2005/04/04 14:51:09 miller Exp $
  */
 
 
@@ -331,8 +331,10 @@ public:
 	/// Return true if this contains given sub string
 	bool contains(int character) const;
 
-	/// A handy atoi routine...
+	/// Handy atoi routines...
 	int atoi() const;
+	signed atosi() const;
+	unsigned atoui() const;
 
 	/// A handy atof routine...
 	double atof() const;
@@ -1352,6 +1354,9 @@ inline bool CSString::splitByOneOfSeparators(	const CSString& separators, CVecto
 											 ) const
 {
 	CSString s=*this;
+	while (!s.empty() && retainSeparators && separators.contains(s[0]))
+		s= s.leftCrop(1);
+
 	while(!s.empty())
 	{
 		uint32 pre=s.size();
@@ -1937,7 +1942,145 @@ inline bool CSString::contains(int character) const
 
 inline int CSString::atoi() const
 {
-	return ::atoi(c_str());
+	if (empty())
+		return 0;
+
+	bool neg= false;
+	uint32 result;
+	switch (*begin())
+	{
+		case '+':	result=0; break;
+		case '-':	result=0; neg=true; break;
+		case '0':	result=0; break;
+		case '1':	result=1; break;
+		case '2':	result=2; break;
+		case '3':	result=3; break;
+		case '4':	result=4; break;
+		case '5':	result=5; break;
+		case '6':	result=6; break;
+		case '7':	result=7; break;
+		case '8':	result=8; break;
+		case '9':	result=9; break;
+		default:	return 0;
+	}
+
+	for (const_iterator it=begin()+1;it!=end();++it)
+	{
+		uint32 offset;
+		switch (*it)
+		{
+			case '0':	offset=0; break;
+			case '1':	offset=1; break;
+			case '2':	offset=2; break;
+			case '3':	offset=3; break;
+			case '4':	offset=4; break;
+			case '5':	offset=5; break;
+			case '6':	offset=6; break;
+			case '7':	offset=7; break;
+			case '8':	offset=8; break;
+			case '9':	offset=9; break;
+			default:	return 0;
+		}
+		if (!neg)
+		{
+			if (result>=429496729/*~0u/10*/)
+			{
+				if (result>429496729 || offset>5)
+					return 0;
+			}
+		}
+		else
+		{
+			if (result>=214748364 /*~0u/20*/)
+			{
+				if (result>214748364 || offset>8)
+					return 0;
+			}
+		}
+		result=10*result+offset;
+	}
+	return neg? -(sint32)result: (sint32)result;
+}
+
+inline int CSString::atosi() const
+{
+	if (empty())
+		return 0;
+
+	bool neg= false;
+	uint32 result;
+	switch (*begin())
+	{
+		case '+':	result=0; break;
+		case '-':	result=0; neg=true; break;
+		case '0':	result=0; break;
+		case '1':	result=1; break;
+		case '2':	result=2; break;
+		case '3':	result=3; break;
+		case '4':	result=4; break;
+		case '5':	result=5; break;
+		case '6':	result=6; break;
+		case '7':	result=7; break;
+		case '8':	result=8; break;
+		case '9':	result=9; break;
+		default:	return 0;
+	}
+
+	for (const_iterator it=begin()+1;it!=end();++it)
+	{
+		uint32 offset;
+		switch (*it)
+		{
+			case '0':	offset=0; break;
+			case '1':	offset=1; break;
+			case '2':	offset=2; break;
+			case '3':	offset=3; break;
+			case '4':	offset=4; break;
+			case '5':	offset=5; break;
+			case '6':	offset=6; break;
+			case '7':	offset=7; break;
+			case '8':	offset=8; break;
+			case '9':	offset=9; break;
+			default:	return 0;
+		}
+		if (result>=214748364 /*~0u/20*/)
+		{
+			if (result>214748364u || offset>(neg?8u:7u))
+				return 0;
+		}
+		result=10*result+offset;
+	}
+	return neg? -(sint32)result: (sint32)result;
+}
+
+inline unsigned CSString::atoui() const
+{
+	uint32 result=0;
+	for (const_iterator it=begin();it!=end();++it)
+	{
+		uint32 offset;
+		switch (*it)
+		{
+		case '0':	offset=0; break;
+		case '1':	offset=1; break;
+		case '2':	offset=2; break;
+		case '3':	offset=3; break;
+		case '4':	offset=4; break;
+		case '5':	offset=5; break;
+		case '6':	offset=6; break;
+		case '7':	offset=7; break;
+		case '8':	offset=8; break;
+		case '9':	offset=9; break;
+		default:	return 0;
+		}
+		if (result>=429496729/*~0u/10*/)
+		{
+			if (result>429496729 || offset>5)
+				return 0;
+		}
+		result=10*result+offset;
+	}
+	return result;
 }
 
 inline double CSString::atof() const

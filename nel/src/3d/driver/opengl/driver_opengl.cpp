@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.86 2001/04/06 14:54:10 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.87 2001/04/11 13:03:22 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -671,13 +671,14 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 			glLoadMatrixf(CMatrix::Identity.get());
 			
 			// in software, we must test Model View Matrixes flags (_ModelViewMatrixDirtyPaletteSkin), to
-			// compute M-1t matrices fro normals.
+			// compute M-1t matrices fro normals, and to compute fast matrix3x4.
 			for(sint i=0;i<IDriver::MaxModelMatrix;i++)
 			{
 				if(_ModelViewMatrixDirtyPaletteSkin[i])
 				{
 					_ModelViewMatrixDirtyPaletteSkin.clear(i);
 
+					// a. compute correct noraml matrix.
 					CMatrix		&mview= _ModelViewMatrix[i];
 					CMatrix		&mviewNormal= _ModelViewMatrixNormal[i];
 					// copy only the rot matrix.
@@ -690,6 +691,11 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 						mviewNormal.transpose3x3();
 					}
 					// else, no need to do it since transpose==inverse.
+
+					// b. compute fast 3x4 matrixs.
+					_ModelViewMatrix3x4[i].set(_ModelViewMatrix[i]);
+					_ModelViewMatrixNormal3x4[i].set(_ModelViewMatrixNormal[i]);
+
 				}
 			}
 
@@ -1420,7 +1426,8 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 
 void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pDst)
 {
-	CMatrix		*pMat;
+	CMatrix3x4		*pMat;
+	CVector			tmp;
 
 	// TODO_OPTIMIZE: SSE verion...
 
@@ -1436,20 +1443,23 @@ void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pDst)
 
 
 	// Sum influences.
-	pDst->set(0,0,0);
 
 	// 0th matrix influence.
-	pMat= _ModelViewMatrix + srcPal->MatrixId[0];
-	*pDst+= pMat->mulPoint(*srcVec) * srcWgt[0];
+	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[0];
+	pMat->mulPoint(*srcVec, tmp);
+	*pDst=  tmp * srcWgt[0];
 	// 1th matrix influence.
-	pMat= _ModelViewMatrix + srcPal->MatrixId[1];
-	*pDst+= pMat->mulPoint(*srcVec) * srcWgt[1];
+	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[1];
+	pMat->mulPoint(*srcVec, tmp);
+	*pDst+= tmp * srcWgt[1];
 	// 2th matrix influence.
-	pMat= _ModelViewMatrix + srcPal->MatrixId[2];
-	*pDst+= pMat->mulPoint(*srcVec) * srcWgt[2];
+	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[2];
+	pMat->mulPoint(*srcVec, tmp);
+	*pDst+= tmp * srcWgt[2];
 	// 3th matrix influence.
-	pMat= _ModelViewMatrix + srcPal->MatrixId[3];
-	*pDst+= pMat->mulPoint(*srcVec) * srcWgt[3];
+	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[3];
+	pMat->mulPoint(*srcVec, tmp);
+	*pDst+= tmp * srcWgt[3];
 
 }
 
@@ -1457,7 +1467,8 @@ void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pDst)
 
 void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pDst)
 {
-	CMatrix		*pMat;
+	CMatrix3x4		*pMat;
+	CVector			tmp;
 
 	// TODO_OPTIMIZE: SSE verion...
 
@@ -1473,20 +1484,23 @@ void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pDst)
 
 	
 	// Sum influences.
-	pDst->set(0,0,0);
 
 	// 0th matrix influence.
-	pMat= _ModelViewMatrixNormal + srcPal->MatrixId[0];
-	*pDst+= pMat->mulVector(*srcNormal) * srcWgt[0];
+	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[0];
+	pMat->mulVector(*srcNormal, tmp);
+	*pDst= tmp * srcWgt[0];
 	// 1th matrix influence.
-	pMat= _ModelViewMatrixNormal + srcPal->MatrixId[1];
-	*pDst+= pMat->mulVector(*srcNormal) * srcWgt[1];
+	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[1];
+	pMat->mulVector(*srcNormal, tmp);
+	*pDst+= tmp * srcWgt[1];
 	// 2th matrix influence.
-	pMat= _ModelViewMatrixNormal + srcPal->MatrixId[2];
-	*pDst+= pMat->mulVector(*srcNormal) * srcWgt[2];
+	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[2];
+	pMat->mulVector(*srcNormal, tmp);
+	*pDst+= tmp * srcWgt[2];
 	// 3th matrix influence.
-	pMat= _ModelViewMatrixNormal + srcPal->MatrixId[3];
-	*pDst+= pMat->mulVector(*srcNormal) * srcWgt[3];
+	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[3];
+	pMat->mulVector(*srcNormal, tmp);
+	*pDst+= tmp * srcWgt[3];
 }
 
 // ***************************************************************************

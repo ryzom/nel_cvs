@@ -1,7 +1,7 @@
 /** \file driver_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.6 2001/04/06 14:54:10 corvazier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.7 2001/04/11 13:03:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,5 +91,17 @@ void CDriverGL::setupModelMatrix(const CMatrix& mtx, uint8 n)
 	// Put the matrix in the opengl world, and store it.
 	_ModelViewMatrix[n]= _ViewMtx*mtx;
 }
+
+
+
+// ***************************************************************************
+void	CDriverGL::CMatrix3x4::set(const CMatrix &mat)
+{
+	const float	*m =mat.get();
+	a11= m[0]; a12= m[4]; a13= m[8] ; a14= m[12]; 
+	a21= m[1]; a22= m[5]; a23= m[9] ; a24= m[13]; 
+	a31= m[2]; a32= m[6]; a33= m[10]; a34= m[14]; 
+}
+
 
 } // NL3D

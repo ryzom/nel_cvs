@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.56 2001/04/06 14:54:10 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.57 2001/04/11 13:03:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -246,6 +246,35 @@ public:
 
 
 private:
+
+	// For fast vector/point multiplication.
+	struct	CMatrix3x4
+	{
+		// Order them in memory line first, for faster memory access.
+		float	a11, a12, a13, a14;
+		float	a21, a22, a23, a24;
+		float	a31, a32, a33, a34;
+
+		// Copy from a matrix.
+		void	set(const CMatrix &mat);
+		// mulvector. NB: in should be different as v!! (else don't work).
+		void	mulVector(const CVector &in, CVector &out)
+		{
+			out.x= a11*in.x + a12*in.y + a13*in.z;
+			out.y= a21*in.x + a22*in.y + a23*in.z;
+			out.z= a31*in.x + a32*in.y + a33*in.z;
+		}
+		// mulpoint. NB: in should be different as v!! (else don't work).
+		void	mulPoint(const CVector &in, CVector &out)
+		{
+			out.x= a11*in.x + a12*in.y + a13*in.z + a14;
+			out.y= a21*in.x + a22*in.y + a23*in.z + a24;
+			out.z= a31*in.x + a32*in.y + a33*in.z + a34;
+		}
+	};
+
+
+private:
 	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
 	static const uint32		ReleaseVersion;
 
@@ -302,6 +331,8 @@ private:
 	CMatrix					_ModelViewMatrix[MaxModelMatrix];
 	// For software skinning.
 	CMatrix					_ModelViewMatrixNormal[MaxModelMatrix];
+	CMatrix3x4				_ModelViewMatrix3x4[MaxModelMatrix];
+	CMatrix3x4				_ModelViewMatrixNormal3x4[MaxModelMatrix];
 
 
 	// Sofware Skinning.

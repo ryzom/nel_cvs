@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: smart_ptr.h,v 1.2 2000/09/21 09:12:35 berenguier Exp $
+ * $Id: smart_ptr.h,v 1.3 2000/09/21 09:13:06 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -89,7 +89,6 @@ public:
 		a1= new A;
 		a2= a1;
 		a1=NULL;
-		getch();
 		b0= new B;
 		a0=b0;
 	}

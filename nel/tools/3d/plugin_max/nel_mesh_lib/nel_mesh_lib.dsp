@@ -185,6 +185,10 @@ SOURCE=.\export_collision.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\export_flare.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\export_light.cpp
 # End Source File
 # Begin Source File
@@ -224,7 +228,15 @@ SOURCE=.\export_misc.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\export_particle_system.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\export_radial_normal.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\export_remanence.cpp
 # End Source File
 # Begin Source File
 

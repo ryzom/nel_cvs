@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.27 2003/04/30 09:43:11 berenguier Exp $
+ * $Id: driver_user.h,v 1.28 2003/05/19 13:14:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,7 +140,7 @@ public:
 	virtual void			disableHardwareTextureShader();
 
 	/// create the window.
-	virtual	bool			setDisplay(const CMode &mode) ;
+	virtual	bool			setDisplay(const CMode &mode, bool show) ;
 	/// Release the window.
 	virtual	void			release() ;
 

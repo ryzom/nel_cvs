@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.29 2003/04/30 09:43:31 berenguier Exp $
+ * $Id: u_driver.h,v 1.30 2003/05/19 13:14:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,8 +168,11 @@ public:
 	/// Enum All Fullscreen modes.
 	virtual TModeList		enumModes()=0;
 
-	/// create the window. call activate(). Return true if mode activated, false if it failed.
-	virtual	bool			setDisplay(const CMode &mode) =0;
+	/**
+	  * create the window. call activate(). Return true if mode activated, false if it failed.
+	  * \param show show or hide the window in window mode.
+	  */
+	virtual	bool			setDisplay(const CMode &mode, bool show = true) =0;
 	/// Release the window. All components are released (Texture, materials, scene, textcontexts).
 	virtual	void			release() =0;
 

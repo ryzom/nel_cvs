@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.186 2003/05/06 15:26:41 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.187 2003/05/19 13:14:13 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -380,7 +380,7 @@ void CDriverGL::disableHardwareTextureShader()
 
 // --------------------------------------------------
 
-bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
+bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBadDisplay)
 {
 	
 	uint width = mode.Width;
@@ -755,7 +755,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 			AdjustWindowRectEx (&rc, GetWindowStyle (_hWnd), GetMenu (_hWnd) != NULL, GetWindowExStyle (_hWnd));
 			SetWindowPos (_hWnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
 
-			ShowWindow(_hWnd,SW_SHOW);
+			if (show || _FullScreen)
+				ShowWindow(_hWnd,SW_SHOW);
 		}
 
 		// Init Window Width and Height

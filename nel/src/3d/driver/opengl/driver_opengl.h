@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.147 2003/05/06 15:26:41 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.148 2003/05/19 13:14:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,7 +219,7 @@ public:
 	virtual void			disableHardwareVertexArrayAGP();
 	virtual void			disableHardwareTextureShader();
 
-	virtual bool			setDisplay(void* wnd, const GfxMode& mode) throw(EBadDisplay);
+	virtual bool			setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBadDisplay);
 
 	virtual void*			getDisplay()
 	{

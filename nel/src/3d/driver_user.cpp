@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.34 2003/04/30 09:43:11 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.35 2003/05/19 13:14:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -214,13 +214,13 @@ void			CDriverUser::disableHardwareTextureShader()
 }
 
 // ***************************************************************************
-bool			CDriverUser::setDisplay(const CMode &mode) 
+bool			CDriverUser::setDisplay(const CMode &mode, bool show) 
 {
 	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	// window init.
-	if (_Driver->setDisplay(NULL, GfxMode(mode.Width, mode.Height, mode.Depth, mode.Windowed, false, mode.Frequency)))
+	if (_Driver->setDisplay(NULL, GfxMode(mode.Width, mode.Height, mode.Depth, mode.Windowed, false, mode.Frequency), show))
 	{
 		// Always true
 		nlverify (activate());

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.92 2002/11/04 13:09:10 coutelas Exp $
+# $Id: Makefile.am,v 1.93 2002/11/04 13:55:05 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -63,6 +63,10 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        channel_mixer.h \
                        clip_trav.cpp \
                        clip_trav.h \
+		       cloud.cpp \
+		       cloud.h \
+		       cloud_scape.cpp \
+		       cloud_scape.h \
 		       cloud_scape_user.cpp \
 		       cloud_scape_user.h \
                        cluster.cpp \
@@ -231,6 +235,8 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        mrm_parameters.h \
                        nelu.cpp \
                        nelu.h \
+		       noise_3d.cpp \
+		       noise_3d.h \
                        noise_value.cpp \
                        noise_value.h \
                        ordering_table.h \

@@ -1,7 +1,7 @@
 /** \file frustum.cpp
  * <File description>
  *
- * $Id: frustum.cpp,v 1.4 2001/02/12 08:47:14 coutelas Exp $
+ * $Id: frustum.cpp,v 1.5 2001/02/14 15:11:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,8 +135,8 @@ CVector			CFrustum::unProject(const CVector &vec) const
 	pt.z= vec.z;
 	
 	// Map it to -1..1
-	pt.x= 2*(pt.x-0.5);
-	pt.y= 2*(pt.y-0.5);
+	pt.x= 2*(pt.x-0.5f);
+	pt.y= 2*(pt.y-0.5f);
 
 	// Map Z to Near..Far.
 	// Z IN is 1/Z, and is in 0..1.

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.22 2002/06/19 17:24:59 vizerie Exp $
+ * $Id: water_model.cpp,v 1.23 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -974,6 +974,8 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 
 CWaveMakerModel::CWaveMakerModel() : _Time(0), _Scene(NULL)
 {
+	// AnimDetail behavior: Must be traversed in AnimDetail, even if no channel mixer registered
+	CTransform::setIsForceAnimDetail(true);
 }
 
 //================================================

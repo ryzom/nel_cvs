@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.23 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: particle_system_model.h,v 1.24 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -347,6 +347,22 @@ public:
 	void				traverse(IObs *caller);
 	static IObs			*creator() {return new CParticleSystemClipObs;}
 	
+	// insert the observer in the Clip/AnimDetail/LoadBalacing visible list.
+	void				insertInVisibleList()
+	{
+		CParticleSystemModel	*m= (CParticleSystemModel*)Model;	
+		CClipTrav				*trav= (CClipTrav*)Trav;
+		// if not already not inserted
+		if (!m->_InsertedInVisibleList)
+		{
+			m->_InsertedInVisibleList = true;
+			// add to clip/anim/load Trav.
+			trav->addVisibleObs(this);
+			// NB: no need to test isAnimDetailable()... for PS, always add them
+			trav->AnimDetailTrav->addVisibleObs(static_cast<CTransformAnimDetailObs*>(AnimDetailObs));
+			trav->LoadBalancingTrav->addVisibleObs(LoadBalancingObs);
+		}
+	}
 };
 
 /// a render observer for a particle system

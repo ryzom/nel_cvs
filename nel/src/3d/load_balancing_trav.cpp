@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.9 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.10 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,13 +58,6 @@ CLoadBalancingGroup::CLoadBalancingGroup()
 
 	_NbFacePass0= 0;
 	_FaceRatio= 1;
-}
-
-
-// ***************************************************************************
-float			CLoadBalancingGroup::computeModelNbFace(float faceIn, float camDist)
-{
-	return faceIn * _FaceRatio;
 }
 
 
@@ -142,6 +135,22 @@ CLoadBalancingTrav::CLoadBalancingTrav()
 
 	// Add also a global group.
 	_GroupMap["Global"].Name= "Global";
+
+	// prepare some space
+	_VisibleList.reserve(1024);
+}
+
+
+// ***************************************************************************
+void				CLoadBalancingTrav::clearVisibleList()
+{
+	_VisibleList.clear();
+}
+
+// ***************************************************************************
+void				CLoadBalancingTrav::addVisibleObs(IBaseLoadBalancingObs *obs)
+{
+	_VisibleList.push_back(obs);
 }
 
 
@@ -196,11 +205,11 @@ void				CLoadBalancingTrav::traverse()
 void				CLoadBalancingTrav::traverseVisibilityList()
 {
 	// Traverse all nodes of the visibility list.
-	uint	nObs= _ClipTrav->numVisibleObs();
+	uint	nObs= _VisibleList.size();
 	for(uint i=0; i<nObs; i++)
 	{
-		CTransformClipObs	*clipObs= _ClipTrav->getVisibleObs(i);
-		clipObs->LoadBalancingObs->traverse(NULL);
+		IBaseLoadBalancingObs	*loadBalObs= _VisibleList[i];
+		loadBalObs->traverse(NULL);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.78 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: scene.cpp,v 1.79 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -389,15 +389,12 @@ void	CScene::render(bool	doHrcPass)
 	LoadBalancingTrav->setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
 
 
-	// Set the clipTrav for AnimDetailTrav and LoadBalancingTrav.
-	AnimDetailTrav->setClipTrav (ClipTrav);	
-	LoadBalancingTrav->setClipTrav (ClipTrav);
-
-
 	// Set the renderTrav for cliptrav.
-	ClipTrav->setRenderTrav (RenderTrav);
 	ClipTrav->setHrcTrav (HrcTrav);
 	ClipTrav->setLightTrav (LightTrav);
+	ClipTrav->setAnimDetailTrav (AnimDetailTrav);
+	ClipTrav->setLoadBalancingTrav (LoadBalancingTrav);
+	ClipTrav->setRenderTrav (RenderTrav);
 	ClipTrav->Camera = CurrentCamera;
 	ClipTrav->setQuadGridClipManager (&_QuadGridClipManager);
 
@@ -408,6 +405,7 @@ void	CScene::render(bool	doHrcPass)
 		ITravScene	*trav= (*it).second;
 		// TempYoyo
 		/*if(AnimDetailTravId!=trav->getClassId() && 
+			LoadBalancingTravId!=trav->getClassId() && 
 			HrcTravId!=trav->getClassId() && 
 			ClipTravId!=trav->getClassId() )
 			continue;*/

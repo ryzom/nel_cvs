@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.27 2002/06/25 12:57:57 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.28 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,43 +111,40 @@ void		CRenderTrav::traverse()
 	// fill the OTs.
 	std::vector<IBaseRenderObs*>::iterator it = RenderList.begin();
 	uint32 nNbObs = RenderList.size();
-	IBaseRenderObs *pObs;
-	CTransform *pTransform;
 	float rPseudoZ, rPseudoZ2;
 	for( uint32 i = 0; i < nNbObs; ++i )
 	{
-		pObs = *it;
-		pTransform = pObs->getTransformModel();
+		IBaseRenderObs		*pObs = *it;
+		// Only rdrObserver of transform models can be inserted!! It's a requirement
+		CTransform			*pTransform = safe_cast<CTransform*>(pObs->Model);
+		CTransformHrcObs	*trHrcObs= safe_cast<CTransformHrcObs*>(pObs->HrcObs);
 
-		if(pTransform!=NULL)
+		// If the object is binded to a skeleton (skined or sticked, or sticked indirectly), 
+		// get the skeleton WM.
+		if( trHrcObs->_AncestorSkeletonModel )
+			rPseudoZ = (trHrcObs->_AncestorSkeletonModel->getWorldMatrix().getPos() - CamPos).norm();
+		// else get the object WM.
+		else
+			rPseudoZ = (trHrcObs->WorldMatrix.getPos() - CamPos).norm();
+
+		// rPseudoZ from 0.0 -> 1.0
+		rPseudoZ =  sqrtf( rPseudoZ / this->Far );
+
+		if( pTransform->isOpaque() )
 		{
-			CTransformHrcObs	*trHrcObs= safe_cast<CTransformHrcObs*>(pObs->HrcObs);
-
-			// If the object is binded to a skeleton (skined or sticked, or sticked indirectly), 
-			// get the skeleton WM.
-			if( trHrcObs->_AncestorSkeletonModel )
-				rPseudoZ = (trHrcObs->_AncestorSkeletonModel->getWorldMatrix().getPos() - CamPos).norm();
-			// else get the object WM.
-			else
-				rPseudoZ = (trHrcObs->WorldMatrix.getPos() - CamPos).norm();
-
-			// rPseudoZ from 0.0 -> 1.0
-			rPseudoZ =  sqrtf( rPseudoZ / this->Far );
-
-			if( pTransform->isOpaque() )
-			{
-				rPseudoZ2 = rPseudoZ * OrderOpaqueList.getSize();
-				clamp( rPseudoZ2, 0.0f, OrderOpaqueList.getSize() - 1 );
-				OrderOpaqueList.insert( (uint32)rPseudoZ2, pObs );
-			}
-			if( pTransform->isTransparent() )
-			{
-				rPseudoZ2 = rPseudoZ * OrderTransparentList.getSize();
-				rPseudoZ2 = OrderTransparentList.getSize() - rPseudoZ2;
-				clamp( rPseudoZ2, 0.0f, OrderTransparentList.getSize() - 1 );				
-				OrderTransparentList.insert( pTransform->getOrderingLayer(), pObs, (uint32)rPseudoZ2 );
-			}
+			rPseudoZ2 = rPseudoZ * OrderOpaqueList.getSize();
+			clamp( rPseudoZ2, 0.0f, OrderOpaqueList.getSize() - 1 );
+			OrderOpaqueList.insert( (uint32)rPseudoZ2, pObs );
 		}
+		if( pTransform->isTransparent() )
+		{
+			rPseudoZ2 = rPseudoZ * OrderTransparentList.getSize();
+			rPseudoZ2 = OrderTransparentList.getSize() - rPseudoZ2;
+			clamp( rPseudoZ2, 0.0f, OrderTransparentList.getSize() - 1 );				
+			OrderTransparentList.insert( pTransform->getOrderingLayer(), pObs, (uint32)rPseudoZ2 );
+		}
+
+		// next
 		++it;
 	}
 

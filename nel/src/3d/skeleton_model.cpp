@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.20 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.21 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,9 @@ CSkeletonModel::CSkeletonModel()
 	// The model may be rendered when it enters in LodCharacter mode. Must be rendered at Opaque Pass only.
 	setOpacity(true);
 	setTransparency(false);
+
+	// AnimDetail behavior: Must be traversed in AnimDetail, even if no channel mixer registered
+	CTransform::setIsForceAnimDetail(true);
 
 	// Lighting behavior. Lightable because skins/stickedObjects may surely need its LightContribution
 	CTransform::setIsLightable(true);
@@ -451,9 +454,6 @@ float		CSkeletonModel::getInterpolationDistance() const
 // ***************************************************************************
 void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 {
-	// if skeleton is clipped, no need to transform.
-	// NB: no need to test ClipObs->Visible because of VisibilityList use.
-
 	CSkeletonModel	*sm= (CSkeletonModel*)Model;
 	CSkeletonShape	*skeShape= ((CSkeletonShape*)(IShape*)sm->Shape);
 

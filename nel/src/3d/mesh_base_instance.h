@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.14 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.15 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,10 +101,7 @@ public:
 	// @}
 
 	// To build lightmap
-	void setAnimatedLightmap (CAnimatedLightmap *alm)
-	{
-		_AnimatedLightmap.push_back( alm );
-	}
+	void setAnimatedLightmap (CAnimatedLightmap *alm);
 
 	/// \name BlendShape properties
 	// @{

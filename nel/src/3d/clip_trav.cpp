@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.24 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.25 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,13 +52,18 @@ namespace	NL3D
 CClipTrav::CClipTrav() : ViewPyramid(6), WorldPyramid(6)
 {
 	_VisibleList.reserve(1024);
-	RenderTrav = NULL;
 	CurrentDate = 0;
 	Accel.create (64, 16.0f);
 
 	ForceNoFrustumClip= false;
 	_QuadGridClipManager= NULL;
 
+
+	HrcTrav= NULL;
+	AnimDetailTrav= NULL;
+	LoadBalancingTrav= NULL;
+	LightTrav= NULL;
+	RenderTrav = NULL;
 }
 
 // ***************************************************************************
@@ -145,7 +150,10 @@ void CClipTrav::traverse()
 		_QuadGridClipManager->updateClustersFromCamera(this, CamPos);
 	}
 
-	// Clear the render/lighted list.
+	// Clear the traversals list.
+	nlassert(AnimDetailTrav && LoadBalancingTrav && LightTrav && RenderTrav);
+	AnimDetailTrav->clearVisibleList();
+	LoadBalancingTrav->clearVisibleList();
 	LightTrav->clearLightedList();
 	RenderTrav->clearRenderList();
 
@@ -317,21 +325,33 @@ void CClipTrav::traverse()
 
 
 // ***************************************************************************
-void CClipTrav::setRenderTrav (CRenderTrav* trav)
-{
-	RenderTrav = trav;
-}
-
-// ***************************************************************************
 void CClipTrav::setHrcTrav (CHrcTrav* trav)
 {
 	HrcTrav = trav;
 }
 
 // ***************************************************************************
+void CClipTrav::setAnimDetailTrav(CAnimDetailTrav *trav)
+{
+	AnimDetailTrav= trav;
+}
+
+// ***************************************************************************
+void CClipTrav::setLoadBalancingTrav(CLoadBalancingTrav *trav)
+{
+	LoadBalancingTrav= trav;
+}
+
+// ***************************************************************************
 void CClipTrav::setLightTrav (CLightTrav* trav)
 {
 	LightTrav = trav;
+}
+
+// ***************************************************************************
+void CClipTrav::setRenderTrav (CRenderTrav* trav)
+{
+	RenderTrav = trav;
 }
 
 // ***************************************************************************

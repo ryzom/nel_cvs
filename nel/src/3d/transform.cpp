@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.44 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: transform.cpp,v 1.45 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,7 @@ CTransform::CTransform()
 
 	/*
 		Default are:
-			IsAnimDetailable= 1
+			IsAnimDetailable= 0
 			IsLoadBalancable= 1
 			IsLightable= 0
 			IsRenderable= 0
@@ -104,7 +104,7 @@ CTransform::CTransform()
 
 			IsDeleteChannelMixer = 0;
 	*/
-	_StateFlags= IsAnimDetailable | IsLoadBalancable | IsOpaque | IsUserLightable;
+	_StateFlags= IsLoadBalancable | IsOpaque | IsUserLightable;
 }
 
 
@@ -215,6 +215,9 @@ void	CTransform::registerToChannelMixer(CChannelMixer *chanMixer, const std::str
 
 	// Hey!! we are animated!!
 	_ChannelMixer= chanMixer;
+
+	// Update flag, if we must be inserted in AnimDetail
+	setStateFlag(IsAnimDetailable, _ChannelMixer || getStateFlag(IsForceAnimDetail) );
 
 	// For CTransfom, channels are not detailled.
 	addValue(chanMixer, PosValue, OwnerBit, prefix, false);
@@ -485,6 +488,15 @@ void		CTransform::setApplySkin(bool state)
 	setStateFlag(IsSkinned, state);
 }
 
+// ***************************************************************************
+void		CTransform::setIsForceAnimDetail(bool val)
+{
+	setStateFlag(IsForceAnimDetail, val );
+
+	// Update flag, if we must be inserted in AnimDetail
+	setStateFlag(IsAnimDetailable, _ChannelMixer || getStateFlag(IsForceAnimDetail) );
+}
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -707,21 +719,29 @@ void	CTransformClipObs::traverse(IObs *caller)
 		// add this observer to the visibility list.
 		clipTrav->addVisibleObs(this);
 
-		// Insert the model in the render list.
-		if( transform->isRenderable() )
+		// Has not an ancestor skeleton model?
+		if( ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel==NULL )
 		{
-			clipTrav->RenderTrav->addRenderObs(RenderObs);
-		}
-
-		// If needed, insert the model in the lighted list.
-		if( transform->isLightable() &&
+			// If needed, insert the model in the lighted list.
 			// don't insert if has an ancestorSkeletonModel, because in this case, result is driven by 
 			// the _LightContribution of the _AncestorSkeletonModel.
-			((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel==NULL )
-		{
-			clipTrav->LightTrav->addLightedObs(transform->_LightObs);
+			if( transform->isLightable() )
+				clipTrav->LightTrav->addLightedObs(transform->_LightObs);
+
+			// If needed, insert the model in the animDetail list.
+			// don't insert if has an ancestoreSkeletonModel, because in this case, this ancestore will 
+			// animDetail through the hierarchy...
+			if( transform->isAnimDetailable() )
+				clipTrav->AnimDetailTrav->addVisibleObs(safe_cast<CTransformAnimDetailObs*>(AnimDetailObs));
 		}
 
+		// If needed, Add it to the loadBalancing trav
+		if( transform->isLoadBalancable() )
+			clipTrav->LoadBalancingTrav->addVisibleObs(LoadBalancingObs);
+
+		// If needed, insert the model in the render list.
+		if( transform->isRenderable() )
+			clipTrav->RenderTrav->addRenderObs(RenderObs);
 	}
 
 	// DoIt the sons.

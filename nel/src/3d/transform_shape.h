@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.14 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: transform_shape.h,v 1.15 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,9 +218,6 @@ public:
 
 
 protected:
-
-	// The distance of the model to the camera computed in Pass0.
-	float		_ModelDist;
 
 	// The number of face computed in Pass0.
 	float		_FaceCount;

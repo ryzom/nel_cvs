@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.22 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: transform.h,v 1.23 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,6 +83,10 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
  *
  * CTransform by default IS NOT RENDERABLE. ie never inserted in renderList.
  *	Deriver should call setIsRenderable(true) to make the model renderable
+ *
+ * CTransform by default IS NOT ANIMDETAIL-able. ie never inserted in anim detail list.
+ *	It is automatically inserted in anim detail list if registerToChannelMixer() is called.
+ *	Deriver should call setIsForceAnimdetail(true) to make the model always anim-detail-ed
  *
  * \author Lionel Berenguier
  * \author Nevrax France
@@ -298,6 +302,10 @@ public:
 	/// see setMeanColor()
 	CRGBA				getMeanColor() const {return _MeanColor;}
 
+	/// non-zero if the model is animDetailable (ie added to the animDetail list if visible)
+	uint32				isAnimDetailable() const {return getStateFlag(IsAnimDetailable);}
+	/// non-zero if the model is loadBalancable (ie added to the loadBalancing list if visible)
+	uint32				isLoadBalancable() const {return getStateFlag(IsLoadBalancable);}
 	/// non-zero if the model is renderable (ie something may appear on screen)
 	uint32				isRenderable() const {return getStateFlag(IsRenderable);}
 
@@ -400,6 +408,10 @@ protected:
 	void				setIsBigLightable(bool val);
 	/// For CSkeletonModel only.
 	void				setIsSkeleton(bool val);
+	/** Deriver must use this method with true if the model must be AnimDetail-ed whatever 
+	 *	registerToChannelMixer() has been called or not
+	 */
+	void				setIsForceAnimDetail(bool val);
 
 	// @}
 
@@ -473,6 +485,7 @@ private:
 		IsSkinned=				0x2000,		// true if the model is isSkinnable() and if currently skinned
 		// Misc
 		IsDeleteChannelMixer=	0x4000,
+		IsForceAnimDetail=		0x8000,
 
 		// NB: may continue on >=0x10000
 	};
@@ -499,11 +512,11 @@ private:
 
 protected:
 	// shortcut to the HrcObs.
-	CTransformHrcObs	*_HrcObs;
+	CTransformHrcObs			*_HrcObs;
 	// shortcut to the ClipObs.
-	CTransformClipObs	*_ClipObs;
+	CTransformClipObs			*_ClipObs;
 	// shortcut to the LightObs.
-	CTransformLightObs	*_LightObs;
+	CTransformLightObs			*_LightObs;
 
 
 };
@@ -650,14 +663,6 @@ public:
 	 */
 	virtual	void	traverse(IObs *caller)
 	{
-	}
-
-	/**
-	 * To avoid dynamic casting in mot fault of yoyo
-	 */
-	virtual CTransform* getTransformModel()
-	{
-		return static_cast<CTransform*>(Model);
 	}
 
 	static IObs	*creator() {return new CTransformRenderObs;}

@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.h
  * <File description>
  *
- * $Id: anim_detail_trav.h,v 1.4 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: anim_detail_trav.h,v 1.5 2002/06/27 16:31:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ class	IBaseAnimDetailObs;
 class	IBaseHrcObs;
 class	IBaseClipObs;
 class	CClipTrav;
-
+class	CTransformAnimDetailObs;
 
 // ***************************************************************************
 // ClassIds.
@@ -70,10 +70,7 @@ class CAnimDetailTrav : public ITravScene
 public:
 
 	/// Constructor
-	CAnimDetailTrav()
-	{
-		CurrentDate=0;
-	}
+	CAnimDetailTrav();
 
 
 	/// \name ITrav/ITravScene Implementation.
@@ -88,19 +85,27 @@ public:
 	//@}
 
 
-	void				setClipTrav(CClipTrav *trav) {_ClipTrav= trav;}
-
-
 public:
 	// ONLY FOR OBSERVERS.
 
 	sint64		CurrentDate;	// The current date of the traversal, usefull for evaldetail just one time..
 
-private:
-	CClipTrav	*_ClipTrav;
 
+	// For clipTrav. cleared at beginning of CClipTrav::traverse
+	void				clearVisibleList();
+
+	// For ClipObservers only. NB: list is cleared at begining of traverse(). NB: only CTransform are supported
+	void				addVisibleObs(CTransformAnimDetailObs *obs);
+
+
+// ********************
+private:
 	/// traverse the observer recusrively, followin Hrc hierarchy
 	void				traverseHrcRecurs(IBaseAnimDetailObs *adObs);
+
+	// traverse list of model visible and usefull to animDetail.
+	std::vector<CTransformAnimDetailObs*>	_VisibleList;
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.10 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: render_trav.h,v 1.11 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,9 @@ public:
 	//@{
 	/// Clear the list of rendered observers.
 	void			clearRenderList();
-	/// Add an observer to the list of rendered observers. \b DOESN'T \b CHECK if already inserted.
+	/** Add an observer to the list of rendered observers. \b DOESN'T \b CHECK if already inserted.
+	 *	NB: only CTransform renderObs can be inserted!! asserted in the render() method
+	 */
 	void			addRenderObs(IBaseRenderObs *o);
 	//@}
 
@@ -368,14 +370,6 @@ public:
 	 * The observers should not traverseSons(), for speed improvement.
 	 */
 	virtual	void	traverse(IObs *caller)=0;
-
-	/**
-	 * To avoid dynamic casting in mot fault of yoyo
-	 */
-	virtual CTransform* getTransformModel() 
-	{
-		return NULL;
-	}
 };
 
 

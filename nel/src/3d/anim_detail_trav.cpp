@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * <File description>
  *
- * $Id: anim_detail_trav.cpp,v 1.8 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.9 2002/06/27 16:31:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,26 @@ IObs				*CAnimDetailTrav::createDefaultObs() const
 	return new CDefaultAnimDetailObs;
 }
 
+// ***************************************************************************
+CAnimDetailTrav::CAnimDetailTrav()
+{
+	CurrentDate=0;
+	// prepare some space
+	_VisibleList.reserve(1024);
+}
+
+// ***************************************************************************
+void				CAnimDetailTrav::clearVisibleList()
+{
+	_VisibleList.clear();
+}
+
+// ***************************************************************************
+void				CAnimDetailTrav::addVisibleObs(CTransformAnimDetailObs *obs)
+{
+	_VisibleList.push_back(obs);
+}
+
 
 // ***************************************************************************
 void				CAnimDetailTrav::traverse()
@@ -57,12 +77,12 @@ void				CAnimDetailTrav::traverse()
 	CurrentDate++;
 
 	// Traverse all nodes of the visibility list.
-	uint	nObs= _ClipTrav->numVisibleObs();
+	uint	nObs= _VisibleList.size();
 	for(uint i=0; i<nObs; i++)
 	{
-		CTransformClipObs	*clipObs= _ClipTrav->getVisibleObs(i);
+		CTransformAnimDetailObs		*detailObs= _VisibleList[i];
 		// If this object has an ancestorSkeletonModel
-		CTransformHrcObs	*hrcObs= safe_cast<CTransformHrcObs*>(clipObs->HrcObs);
+		CTransformHrcObs			*hrcObs= safe_cast<CTransformHrcObs*>(detailObs->HrcObs);
 		if(hrcObs->_AncestorSkeletonModel)
 		{
 			// then just skip it! because it will be parsed hierarchically by the first 
@@ -72,19 +92,19 @@ void				CAnimDetailTrav::traverse()
 		else
 		{
 			// get the model
-			CTransform	*model= safe_cast<CTransform*>(clipObs->Model);
+			CTransform	*model= safe_cast<CTransform*>(detailObs->Model);
 			// If this is a skeleton model, and because hrcObs->_AncestorSkeletonModel==NULL,
 			// then it means that it is the Root of a hierarchy of transform that have 
 			// hrcObs->_AncestorSkeletonModel!=NULL.
 			if( model->isSkeleton() )
 			{
 				// Then I must update hierarchically me and the sons (according to HRC hierarchy graph) of this model.
-				traverseHrcRecurs(clipObs->AnimDetailObs);
+				traverseHrcRecurs(detailObs);
 			}
 			else
 			{
 				// else, just traverse AnimDetail, an do nothing for Hrc sons
-				clipObs->AnimDetailObs->traverse(NULL);
+				detailObs->traverse(NULL);
 			}
 		}
 	}

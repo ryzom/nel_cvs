@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.32 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: particle_system_model.cpp,v 1.33 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,9 @@ CParticleSystemModel::CParticleSystemModel() : _ParticleSystem(NULL),_EllapsedTi
 	setTransparency(true);
 	IAnimatable::resize(AnimValueLast);
 	_TriggerAnimatedValue.Value = true;
+
+	// AnimDetail behavior: Must be traversed in AnimDetail, even if no channel mixer registered
+	CTransform::setIsForceAnimDetail(true);
 }
 
 
@@ -571,21 +574,13 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 
 					{						
 						Visible = true;
-						if (!m->_InsertedInVisibleList)
-						{
-							trav->addVisibleObs(this);
-							m->_InsertedInVisibleList = true;
-						}						
+						insertInVisibleList();
 						return;
 					}
 				}	
 				
 				Visible = true; // not too far, but not in cluster
-				if (!m->_InsertedInVisibleList)
-				{
-					m->_InsertedInVisibleList = true;
-					trav->addVisibleObs(this);
-				}
+				insertInVisibleList();				
 				m->_InClusterAndVisible = true;
 				return;						
 			}
@@ -598,21 +593,13 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 					if ( !pss->_PrecomputedBBox.clipBack(pyramid[i]  * mat  ) ) 
 					{
 						Visible = true;
-						if (!m->_InsertedInVisibleList)
-						{
-							trav->addVisibleObs(this);
-							m->_InsertedInVisibleList = true;
-						}						
+						insertInVisibleList();
 						return;					
 					}
 				}			
 
 				Visible = true; // not too far, but not in cluster				
-				if (!m->_InsertedInVisibleList)
-				{
-					m->_InsertedInVisibleList = true;
-					trav->addVisibleObs(this);
-				}
+				insertInVisibleList();
 				m->_InClusterAndVisible = true;
 				return;
 				
@@ -662,22 +649,14 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 			if (!m->_EditionMode)
 			{
 				Visible = true; // not too far, but not in cluster
-				if (!m->_InsertedInVisibleList)
-				{
-					trav->addVisibleObs(this);
-					m->_InsertedInVisibleList = true;
-				}														
+				insertInVisibleList();
 			}				
 			return;
 		}
 		
 
 		Visible = true; // not too far, but not in cluster
-		if (!m->_InsertedInVisibleList)
-		{
-			m->_InsertedInVisibleList = true;
-			trav->addVisibleObs(this);
-		}
+		insertInVisibleList();
 		m->_InClusterAndVisible = true;
 }
 

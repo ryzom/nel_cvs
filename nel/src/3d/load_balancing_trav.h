@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.h
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.h,v 1.5 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: load_balancing_trav.h,v 1.6 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,10 +86,8 @@ public:
 	// ONLY FOR OBSERVERS
 	void				addNbFacesPass0(float v) {_NbFacePass0+= v;}
 
-	/** Compute the number of face to be rendered for thismodel, according to the number of faces he want to draw
-	 * and to his distance from camera.
-	 */
-	float				computeModelNbFace(float faceIn, float camDist);
+	/// Compute the number of face to be rendered for thismodel, according to the number of faces he want to draw
+	float				computeModelNbFace(float faceIn)	{return faceIn * _FaceRatio;}
 
 private:
 	friend class	CLoadBalancingTrav;
@@ -148,9 +146,6 @@ public:
 	//@}
 
 
-	void				setClipTrav(CClipTrav *trav) {_ClipTrav= trav;}
-
-
 	/// \name LoadBalancing mgt.
 	//@{
 
@@ -196,6 +191,14 @@ public:
 	// Get a group by name, create if needed.
 	CLoadBalancingGroup	*getOrCreateGroup(const std::string &group);
 
+
+	// For clipTrav. cleared at beginning of CClipTrav::traverse
+	void				clearVisibleList();
+
+	// For ClipObservers only. NB: list is cleared at begining of traverse().
+	void				addVisibleObs(IBaseLoadBalancingObs *obs);
+
+// **************
 private:
 	// Pass: 0 (compute faceCount from all models) or 1 (setup wanted faceCount).
 	uint				_LoadPass;
@@ -204,7 +207,6 @@ private:
 	float				_SumNbFacePass0;
 
 	// The loadBalancing balance only visible objects.
-	CClipTrav			*_ClipTrav;
 	void				traverseVisibilityList();
 
 
@@ -213,6 +215,9 @@ private:
 	typedef	std::map<std::string, CLoadBalancingGroup>	TGroupMap;
 	typedef	TGroupMap::iterator							ItGroupMap;
 	TGroupMap			_GroupMap;
+
+	// traverse list of model visible and usefull to loadBalance.
+	std::vector<IBaseLoadBalancingObs*>	_VisibleList;
 
 };
 

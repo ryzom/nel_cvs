@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.11 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: clip_trav.h,v 1.12 2002/06/27 16:31:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,8 @@ class	IBaseRenderObs;
 class	IBaseAnimDetailObs;
 class	IBaseLoadBalancingObs;
 class	CRenderTrav;
+class	CAnimDetailTrav;
+class	CLoadBalancingTrav;
 class	CHrcTrav;
 class	CLightTrav;
 class	CCluster;
@@ -74,7 +76,7 @@ const NLMISC::CClassId		ClipTravId=NLMISC::CClassId(0x135208fe, 0x225334fc);
 // ***************************************************************************
 /**
  * The clip traversal.
- * The purpose of this traversal is to insert in the RenderTraversal the observers which are 
+ * The purpose of this traversal is to insert in the post-clip Traversal the observers which are 
  * said to be not clipped. Some observers may do something else.
  *
  * Observer should use the IBaseHrcObs->clip() method to implement their observer, or completly redefine the traverse() method.
@@ -82,7 +84,7 @@ const NLMISC::CClassId		ClipTravId=NLMISC::CClassId(0x135208fe, 0x225334fc);
  * \b USER \b RULES: Before using traverse() on a clip traversal, you should:
  *	- setFrustum() the camera shape (focale....)
  *	- setCamMatrix() for the camera transform
- *	- setRenderTrav(), to setup the rendertraversal where observers will be cleared / inserted.
+ *	- setHrcTrav(),setRenderTrav()...., to setup shortcuts to other traversals
  *
  * NB: see CScene for 3d conventions (orthonormal basis...)
  * \sa CScene IBaseClipObs
@@ -110,9 +112,11 @@ public:
 	void unregisterCluster (CCluster* pCluster);
 
 	/// Setup the render traversal (else traverse() won't work)
-	void setRenderTrav (CRenderTrav* trav);
 	void setHrcTrav (CHrcTrav* trav);
+	void setAnimDetailTrav(CAnimDetailTrav *trav);
+	void setLoadBalancingTrav(CLoadBalancingTrav *trav);
 	void setLightTrav (CLightTrav* trav);
+	void setRenderTrav (CRenderTrav* trav);
 	void setQuadGridClipManager(CQuadGridClipManager *mgr);
 
 
@@ -120,9 +124,6 @@ public:
 
 	/// \name Visible List mgt. Those visible observers are updated each traverse(). Only support Transform Type obs.
 	//@{
-	uint				numVisibleObs() const {return _VisibleList.size();}
-	CTransformClipObs	*getVisibleObs(uint i) const {return _VisibleList[i];}
-
 	// For ClipObservers only. NB: list is cleared at begining of traverse().
 	void				addVisibleObs(CTransformClipObs *obs);
 	//@}
@@ -143,9 +144,11 @@ public:
 	/// Vision Pyramid in the world basis. NB: may be modified by the ClusterSystem.
 	std::vector<CPlane>	WorldPyramid;	
 	/// Shortcut to the Rdr Traversals (to add the models rdr observers).
-	CRenderTrav		*RenderTrav;
-	CHrcTrav		*HrcTrav;
-	CLightTrav		*LightTrav;
+	CHrcTrav			*HrcTrav;
+	CAnimDetailTrav		*AnimDetailTrav;
+	CLoadBalancingTrav	*LoadBalancingTrav;
+	CLightTrav			*LightTrav;
+	CRenderTrav			*RenderTrav;
 	//@}
 	sint64 CurrentDate;
 
@@ -236,7 +239,7 @@ public:
 	 *	- test if HrcObs->WorldVis is visible.
 	 *	- test if the observer is clipped with clip()
 	 *	- if visible and not clipped, set \c Visible=true (else false).
-	 *	- if Visible==true, and renderable, add it to the RenderTraversal: \c RenderTrav->addRenderObs(RenderObs);
+	 *	- if Visible==true, add it to the post-clip traversals which need it (if renderable, animDetailable etc...)
 	 *	- always traverseSons(), to clip the sons.
 	 */
 	virtual	void	traverse(IObs *caller) =0;

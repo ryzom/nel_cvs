@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.5 2001/06/27 16:50:47 vizerie Exp $
+ * $Id: editable_range.cpp,v 1.6 2001/09/05 08:47:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,7 +140,16 @@ void CEditableRange::OnReleasedcaptureSlider(NMHDR* pNMHDR, LRESULT* pResult)
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	UpdateData() ;
 	CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_SLIDER) ;	
-	updateValueFromSlider(m_SliderPos * 1.f / (sl->GetRangeMax() -  sl->GetRangeMin())) ;
+	if (
+		(sl->GetRangeMax() -  sl->GetRangeMin()) != 0
+		)
+	{
+		updateValueFromSlider(m_SliderPos * 1.f / (sl->GetRangeMax() -  sl->GetRangeMin()));		
+	}
+	else
+	{
+		updateValueFromSlider(0);
+	}
 	*pResult = 0;
 }
 

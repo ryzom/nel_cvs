@@ -1,7 +1,7 @@
 /** \file editable_range.h
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.h,v 1.5 2001/06/27 16:50:47 vizerie Exp $
+ * $Id: editable_range.h,v 1.6 2001/09/05 08:47:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,24 +79,24 @@ public:
 	// init the dialog at the given position
 	public:
 
-		virtual void init(uint32 x, uint32 y, CWnd *pParent) ;
+		virtual void init(uint32 x, uint32 y, CWnd *pParent);
 
 	BOOL EnableWindow( BOOL bEnable = TRUE );
 
 
 public:
 	/// for derivers : this must querries the value to the desired manager and set the dialog values
-	virtual void updateRange(void) = 0 ;
+	virtual void updateRange(void) = 0;
 	/** for derivers : value update from a linked object (reader). See examples in subclasses
 	 */
-	virtual void updateValueFromReader(void) = 0 ;
+	virtual void updateValueFromReader(void) = 0;
 
 	// empty the values and the slider
-	void emptyDialog(void) ;
+	void emptyDialog(void);
 
 	
 	// validate the lower an upper bound of a range from their string representation
-	virtual bool editableRangeValueValidator(const CString &lo, const CString &up) = 0 ;
+	virtual bool editableRangeValueValidator(const CString &lo, const CString &up) = 0;
 
 // Implementation
 protected:
@@ -105,23 +105,23 @@ protected:
 	/** for derivers : value update : this is call with a float ranging from 0.f to 1.f (from the slider)
 	 *  And it must convert it to the desired value, changing the value of this dialog
 	 */
-	virtual void updateValueFromSlider(double sliderValue) = 0 ;
+	virtual void updateValueFromSlider(double sliderValue) = 0;
 
 	
 
 	/// the text has changed, and the user has pressed update
-	virtual void updateValueFromText(void) = 0 ;	
+	virtual void updateValueFromText(void) = 0;	
 
 
 
 
 	// the range tune button was pressed. It muist show a dialog that allows the user to choose the range he wants
-	virtual void selectRange(void) = 0 ;
+	virtual void selectRange(void) = 0;
 
 	
 
 	// the unique id of this dialog
-	std::string _Id ;
+	std::string _Id;
 
 
 	// Generated message map functions
@@ -151,28 +151,28 @@ public:
 	}
 	
 	// set an interface of a wrapper  to read / write values in the particle system
-	void setWrapper(IPSWrapper<T> *wrapper) { _Wrapper = wrapper ; }
+	void setWrapper(IPSWrapper<T> *wrapper) { _Wrapper = wrapper; }
 
 	/** enable upper bound use (e.g. value must be < or <= upper bound )
 	 *  \param upperBoundExcluded if true then the test is <, otherwise its <=
 	 */
 	void enableUpperBound(T upperBound, bool upperBoundExcluded) 
 	{ 
-		_UpperBoundEnabled = true ;
-		_UpperBoundExcluded = upperBoundExcluded ;
-		_UpperBound = upperBound ; 
+		_UpperBoundEnabled = true;
+		_UpperBoundExcluded = upperBoundExcluded;
+		_UpperBound = upperBound; 
 	}
 
 	// disable upper bound usage
-	void disableUpperBound(void) { _UpperBoundEnabled = false ; }
+	void disableUpperBound(void) { _UpperBoundEnabled = false; }
 
 	// get the upper bound
-	T getUpperBound(void) const { return _UpperBound ; }
+	T getUpperBound(void) const { return _UpperBound; }
 
 	// test wether the upper bound is excluded of the test
 	bool isUpperBoundExcluded(void) const
 	{
-		return _UpperBoundExcluded ;
+		return _UpperBoundExcluded;
 	}
 
 	/** enable lower bound use (e.g. value must be < or <= lower bound )
@@ -180,49 +180,49 @@ public:
 	 */
 	void enableLowerBound(T lowerBound, bool lowerBoundExcluded) 
 	{ 
-		_LowerBoundEnabled = true ;
-		_LowerBoundExcluded = lowerBoundExcluded ;
-		_LowerBound = lowerBound ; 
+		_LowerBoundEnabled = true;
+		_LowerBoundExcluded = lowerBoundExcluded;
+		_LowerBound = lowerBound; 
 	}
 	
 	// disable lower bound
-	void disableLowerBound(void) { _LowerBoundEnabled = false ; }
+	void disableLowerBound(void) { _LowerBoundEnabled = false; }
 	
 	// get the lower bound
-	T getLowerBound(void) const { return _LowerBound ; }
+	T getLowerBound(void) const { return _LowerBound; }
 
 	// test wether the lower bound is excluded of the test
 	bool isLowerBoundExcluded(void) const
 	{
-		return _LowerBoundExcluded ;
+		return _LowerBoundExcluded;
 	}
 
 
 public:	
 	// SPECIALIZE THAT. write value into the given CString
-	static void value2CString(T value, CString &dest) ;
+	static void value2CString(T value, CString &dest);
 	// SPECIALIZE THAT. convert a CString into a value, return NULL if ok, or a pointer to an error message
-	static const char *string2value(const CString &value, T &result) ;
+	static const char *string2value(const CString &value, T &result);
 	
 	
 
 	void updateRange(void)
 	{
 		// retrieve our range
-		_Range = CRangeManager<T>::GetRange(_Id, _Range.first, _Range.second) ;
-		value2CString(_Range.first, m_MinRange) ;
-		value2CString(_Range.second, m_MaxRange) ;		
+		_Range = CRangeManager<T>::GetRange(_Id, _Range.first, _Range.second);
+		value2CString(_Range.first, m_MinRange);
+		value2CString(_Range.second, m_MaxRange);		
 	/*	if (_Wrapper)
 		{
-			setValue(_Wrapper->get()) ;
+			setValue(_Wrapper->get());
 		}*/
-		UpdateData(FALSE) ;
+		UpdateData(FALSE);
 	}
 	void updateValueFromReader(void)
 	{
 		if (_Wrapper)
 		{
-			setValue(_Wrapper->get()) ;		
+			setValue(_Wrapper->get());		
 		}
 	}
 protected:	
@@ -232,10 +232,10 @@ protected:
 	 */
 	const char *validateUpperBound(T v)
 	{
-		if (!_UpperBoundEnabled) return NULL ;
-		if (_UpperBoundExcluded && v < _UpperBound) return NULL ;
-		if (!_UpperBoundExcluded && v <= _UpperBound) return NULL ;
-		return "value too high" ;
+		if (!_UpperBoundEnabled) return NULL;
+		if (_UpperBoundExcluded && v < _UpperBound) return NULL;
+		if (!_UpperBoundExcluded && v <= _UpperBound) return NULL;
+		return "value too high";
 	}
 
 	
@@ -244,183 +244,190 @@ protected:
 	 */
 	const char *validateLowerBound(T v)
 	{
-		if (!_LowerBoundEnabled) return NULL ;
-		if (_LowerBoundExcluded && v > _LowerBound) return NULL ;
-		if (!_LowerBoundExcluded && v >= _LowerBound) return NULL ;
-		return "value too low" ;
+		if (!_LowerBoundEnabled) return NULL;
+		if (_LowerBoundExcluded && v > _LowerBound) return NULL;
+		if (!_LowerBoundExcluded && v >= _LowerBound) return NULL;
+		return "value too low";
 	}
 
 
 
 	void updateValueFromText(void)
 	{
-		T value ;
-		const char *message = string2value(m_Value, value) ;
+		T value;
+		const char *message = string2value(m_Value, value);
 		if (!message)
 		{
 			const char *mess = validateUpperBound(value) 
-					  ,*mess2 = validateLowerBound(value) ;
+					  ,*mess2 = validateLowerBound(value);
 			if (mess || mess2)
 			{
-				MessageBox(mess ? mess : mess2, "error") ;
-				return ;
+				MessageBox(mess ? mess : mess2, "error");
+				return;
 			}
 			
 
-			_Wrapper->set(value) ;
-			setValue(value) ;
-			return ;
+			_Wrapper->set(value);
+			setValue(value);
+			return;
 		}
 		
-		MessageBox(message, "error") ;
+		MessageBox(message, "error");
 		
 	}
 	void selectRange(void)
 	{
-		CString lowerBound, upperBound ;	
-		value2CString(_Range.first, lowerBound) ;
-		value2CString(_Range.second, upperBound) ;
+		CString lowerBound, upperBound;	
+		value2CString(_Range.first, lowerBound);
+		value2CString(_Range.second, upperBound);
 	
-		CRangeSelector rs(lowerBound, upperBound, this)  ;
+		CRangeSelector rs(lowerBound, upperBound, this);
 
 		if (rs.DoModal())
 		{
-			string2value(rs.getLowerBound(), _Range.first) ;
-			string2value(rs.getUpperBound(), _Range.second) ;				
-			CRangeManager<T>::SetRange(_Id, _Range.first, _Range.second) ;
-			updateRange() ;
+			string2value(rs.getLowerBound(), _Range.first);
+			string2value(rs.getUpperBound(), _Range.second);				
+			CRangeManager<T>::SetRange(_Id, _Range.first, _Range.second);
+			updateRange();
 		}
 	}
 	void updateValueFromSlider(double sliderValue)
 	{
-		nlassert(_Wrapper) ;
+		nlassert(_Wrapper);
 		
-		T value = _Range.first  + (T) ((_Range.second - _Range.first) * sliderValue) ;
-		value2CString(value, m_Value) ;
+		T value = _Range.first  + (T) ((_Range.second - _Range.first) * sliderValue);
+		value2CString(value, m_Value);
 
 		if (_Wrapper)
 		{
-			_Wrapper->set(value) ;
+			_Wrapper->set(value);
 		}
 
-		UpdateData(FALSE) ;
+		UpdateData(FALSE);
 	}
 
 	/// set a new value that will affect both slider and value display
 	void setValue(T value)
 	{
-		value2CString(value, m_Value) ;
+		value2CString(value, m_Value);
 
-	//	_Wrapper->set(value) ;
+	//	_Wrapper->set(value);
 
 		if (value < _Range.first)
 		{
-			m_SliderPos = (uint) (m_SliderCtrl.GetRangeMin()) ;
+			m_SliderPos = (uint) (m_SliderCtrl.GetRangeMin());
 		}
 		else
 		if (value > _Range.second)
 		{
-			m_SliderPos = (uint) (m_SliderCtrl.GetRangeMax()) ;
+			m_SliderPos = (uint) (m_SliderCtrl.GetRangeMax());
 		}
 		else
 		{
-			m_SliderPos = (uint) ((double) (value - _Range.first) / (_Range.second - _Range.first) * (m_SliderCtrl.GetRangeMax() - m_SliderCtrl.GetRangeMin())
-								+ m_SliderCtrl.GetRangeMin()) ;
+			if (_Range.second != _Range.first)
+			{
+				m_SliderPos = (uint) ((double) (value - _Range.first) / (_Range.second - _Range.first) * (m_SliderCtrl.GetRangeMax() - m_SliderCtrl.GetRangeMin())
+									+ m_SliderCtrl.GetRangeMin());
+			}
+			else
+			{
+				m_SliderPos = m_SliderCtrl.GetRangeMin();
+			}
 		}	
-		UpdateData(FALSE) ;	
+		UpdateData(FALSE);	
 	}
 
 
 	virtual bool editableRangeValueValidator(const CString &lo, const CString &up)
 	{
-		T upT, loT ;
+		T upT, loT;
 
-		const char *message = string2value(lo, loT) ;
+		const char *message = string2value(lo, loT);
 		if (message)
 		{
-			::MessageBox(NULL, message, "Range selection error", MB_OK) ;
-			return false ;
+			::MessageBox(NULL, message, "Range selection error", MB_OK);
+			return false;
 		}
 		const char *mess = validateUpperBound(loT)
-					  ,*mess2 = validateLowerBound(loT) ;
+					  ,*mess2 = validateLowerBound(loT);
 		if (mess ||  mess2)
 		{
-			MessageBox(mess ? mess : mess2, "error") ;
-			return false ;
+			MessageBox(mess ? mess : mess2, "error");
+			return false;
 		}
 
-		message = string2value(up, upT) ;
+		message = string2value(up, upT);
 		if (message)
 		{
-			::MessageBox(NULL, message, "Range selection error", MB_OK) ;
-			return false ;
+			::MessageBox(NULL, message, "Range selection error", MB_OK);
+			return false;
 		}
 
-		mess = validateUpperBound(upT) ;
-		mess2 = validateLowerBound(upT) ;
+		mess = validateUpperBound(upT);
+		mess2 = validateLowerBound(upT);
 		if (mess || mess2)
 		{
-			MessageBox(mess ? mess : mess2, "error") ;
-			return false ;
+			MessageBox(mess ? mess : mess2, "error");
+			return false;
 		}
 
 
 		if (upT <= loT)
 		{
-			::MessageBox(NULL, "upper bound must be strictly greater than lower bound", "Range selection error", MB_OK) ;
-			return false ;
+			::MessageBox(NULL, "upper bound must be strictly greater than lower bound", "Range selection error", MB_OK);
+			return false;
 		}
 
-		return true ;
+		return true;
 	}
 
-	bool _UpperBoundEnabled ;
-	bool _UpperBoundExcluded ;
-	T _UpperBound ;
+	bool _UpperBoundEnabled;
+	bool _UpperBoundExcluded;
+	T _UpperBound;
 
-	bool _LowerBoundEnabled ;
-	bool _LowerBoundExcluded ;
-	T _LowerBound ;
+	bool _LowerBoundEnabled;
+	bool _LowerBoundExcluded;
+	T _LowerBound;
 
 	// min max values
-	std::pair<T, T> _Range ;
+	std::pair<T, T> _Range;
 
 	// wrapper to the particle system
-	IPSWrapper<T> *_Wrapper ;
+	IPSWrapper<T> *_Wrapper;
 
 
-} ;
+};
 
 
 ////////////////////////////////////////////////////////
 // float specialization. Implementation is in the cpp //
 ////////////////////////////////////////////////////////
-CEditableRangeT<float>::CEditableRangeT(const std::string &id, float defaultMin = 0.1f , float defaultMax = 10.1f) ;
-void CEditableRangeT<float>::value2CString(float value, CString &dest) ;
-const char *CEditableRangeT<float>::string2value(const CString &value, float &result) ;
+CEditableRangeT<float>::CEditableRangeT(const std::string &id, float defaultMin = 0.1f , float defaultMax = 10.1f);
+void CEditableRangeT<float>::value2CString(float value, CString &dest);
+const char *CEditableRangeT<float>::string2value(const CString &value, float &result);
 
 ////////////////////////////////////////////////////////
 // uint32 specialization. Implementation is in the cpp //
 ////////////////////////////////////////////////////////
-CEditableRangeT<uint32>::CEditableRangeT(const std::string &id, uint32 defaultMin = 0 , uint32 defaultMax = 10) ;
-void CEditableRangeT<uint32>::value2CString(uint32 value, CString &dest) ;
-const char *CEditableRangeT<uint32>::string2value(const CString &value, uint32 &result) ;
+CEditableRangeT<uint32>::CEditableRangeT(const std::string &id, uint32 defaultMin = 0 , uint32 defaultMax = 10);
+void CEditableRangeT<uint32>::value2CString(uint32 value, CString &dest);
+const char *CEditableRangeT<uint32>::string2value(const CString &value, uint32 &result);
 
 ////////////////////////////////////////////////////////
 // sint32 specialization. Implementation is in the cpp //
 ////////////////////////////////////////////////////////
-CEditableRangeT<sint32>::CEditableRangeT(const std::string &id, sint32 defaultMin = 0 , sint32 defaultMax = 10) ;
-void CEditableRangeT<sint32>::value2CString(sint32 value, CString &dest) ;
-const char *CEditableRangeT<sint32>::string2value(const CString &value, sint32 &result) ;
+CEditableRangeT<sint32>::CEditableRangeT(const std::string &id, sint32 defaultMin = 0 , sint32 defaultMax = 10);
+void CEditableRangeT<sint32>::value2CString(sint32 value, CString &dest);
+const char *CEditableRangeT<sint32>::string2value(const CString &value, sint32 &result);
 
 
 
 // some typedefs
 
 
-typedef CEditableRangeT<float> CEditableRangeFloat ;
-typedef CEditableRangeT<uint32> CEditableRangeUInt ;
-typedef CEditableRangeT<sint32> CEditableRangeInt ;
+typedef CEditableRangeT<float> CEditableRangeFloat;
+typedef CEditableRangeT<uint32> CEditableRangeUInt;
+typedef CEditableRangeT<sint32> CEditableRangeInt;
 
 
 

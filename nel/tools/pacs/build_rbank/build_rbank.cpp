@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.5 2002/03/14 17:01:08 corvazier Exp $
+ * $Id: build_rbank.cpp,v 1.6 2002/03/19 17:13:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -381,8 +381,12 @@ void	processGlobalRetriever()
 		{
 			try
 			{
-				uint	retrieverId = retrieverBank.addRetriever(OutputPath+getZoneNameById(x+y*256)+".lr");
-				globalRetriever.makeInstance(retrieverId, 0, getZoneCenterById((uint16)getIdByCoord(x, y))); 
+				string filename = OutputPath+getZoneNameById(x+y*256)+".lr";
+				if (CFile::fileExists (filename))
+				{
+					uint	retrieverId = retrieverBank.addRetriever(filename);
+					globalRetriever.makeInstance(retrieverId, 0, getZoneCenterById((uint16)getIdByCoord(x, y))); 
+				}
 			}
 			catch (Exception &e)
 			{

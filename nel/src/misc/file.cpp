@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.37 2004/01/28 18:09:02 legros Exp $
+ * $Id: file.cpp,v 1.38 2004/03/29 11:33:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -258,7 +258,7 @@ void		CIFile::close()
 	{
 		if (_Cache)
 		{
-			delete _Cache;
+			delete[] _Cache;
 			_Cache = NULL;
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.12 2004/09/16 16:41:13 berenguier Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.13 2004/09/17 15:07:03 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -63,6 +63,12 @@ CTextureDrvInfosD3D::CTextureDrvInfosD3D(IDriver *drv, ItTexDrvInfoPtrMap it, CD
 
 	// Nb: at Driver dtor, all tex infos are deleted, so _Driver is always valid.
 	_Driver= drvD3D;
+
+	WrapS = D3DTADDRESS_WRAP;
+	WrapT = D3DTADDRESS_WRAP;
+	MagFilter = D3DTEXF_POINT;
+	MinFilter = D3DTEXF_POINT;
+	MipFilter = D3DTEXF_NONE;
 }
 
 // ***************************************************************************
@@ -353,6 +359,10 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 		width = texture->getWidth();
 		height = texture->getHeight();
 		levels = texture->getMipMapCount();
+		if (cube && !_CubbedMipMapSupported)
+		{
+			levels = 1;
+		}
 		renderTarget = texture->getRenderTarget();
 
 		// Texture degradation
@@ -366,8 +376,17 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 			// Modify source texture
 			if (srcFormatCompressed)
 			{
-				// Skip a compressed mipmap
-				firstMipMap = texture->getMipMapCount()-levels;
+				if (cube && !_CubbedMipMapSupported)
+				{
+					// just uses one the level of interest and not the others
+					firstMipMap = (texture->getMipMapCount()>_ForceTextureResizePower)?_ForceTextureResizePower : texture->getMipMapCount() - 1;
+					levels = 1;
+				}
+				else
+				{
+					// Skip a compressed mipmap
+					firstMipMap = texture->getMipMapCount()-levels;
+				}
 			}
 			else
 			{
@@ -379,7 +398,7 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 		// Generate mipmap
 		if (!srcFormatCompressed)
 		{
-			if (texture->mipMapOn())
+			if (texture->mipMapOn() && levels > 1)
 			{
 				texture->buildMipMaps();
 				levels= texture->getMipMapCount();
@@ -387,7 +406,7 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 			else
 				levels= 1;
 		}
-	}
+	}	
 
 	// If compressed, width and height must be 4x4 aligned
 	if (srcFormatCompressed)
@@ -471,9 +490,7 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 {
 	H_AUTO_D3D(CDriverD3D_setupTextureEx )
 	bAllUploaded = false;
-	
-	if(tex.isTextureCube() && (!_TextureCubeSupported))
-		return true;
+		
 
 	// 0. Create/Retrieve the driver texture.
 	//=======================================
@@ -568,6 +585,9 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 		else if(tex.touched())
 			mustLoadPart= true;
 	}
+
+	if(tex.isTextureCube() && (!_TextureCubeSupported))
+		return true;
 
 	// B. Setup texture.
 	//==================
@@ -810,7 +830,7 @@ bool CDriverD3D::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 	// if the texture src is in DXTC MipMaped, and mipmapskip is enabled, skip first levels the user want to upload
 	if(d3dtext->FirstMipMap > nNumMipMap)
 		return false;
-
+	
 	nlassert (rect.X < (sint)d3dtext->Width);
 	nlassert (rect.Y < (sint)d3dtext->Height);
 	nlassert (rect.X + rect.Width <= (sint)d3dtext->Width);

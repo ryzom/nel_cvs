@@ -1,7 +1,7 @@
 /** \file stream_server.h
  * Network engine, layer 2, server
  *
- * $Id: stream_server.h,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: stream_server.h,v 1.2 2001/06/18 09:05:44 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,14 @@ class CStreamServer : public CBufServer
 {
 public:
 
-	/// Sendq a message to the specified host
+	/// Constructor
+	CStreamServer( TThreadStategy strategy=DEFAULT_STRATEGY,
+				   uint16 max_threads=DEFAULT_MAX_THREADS,
+				   uint16 max_sockets_per_thread=DEFAULT_MAX_SOCKETS_PER_THREADS,
+				   bool nodelay=true, bool replay=false ) :
+			CBufServer( strategy, max_threads, max_sockets_per_thread, nodelay, replay ) {}
+
+	/// Sends a message to the specified host
 	void	send (const NLMISC::CMemStream &buffer, TSockId hostid);
 
 	/// Receives next block of data in the specified. The length and hostid are output arguments.

@@ -1,7 +1,7 @@
 /** \file stream_client.h
  * Network engine, layer 2, client
  *
- * $Id: stream_client.h,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: stream_client.h,v 1.2 2001/06/18 09:05:44 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,9 @@ namespace NLNET {
 class CStreamClient : public CBufClient
 {
 public:
+
+	/// Constructor
+	CStreamClient( bool nodelay=true, bool replay=false ) : CBufClient( nodelay, replay ) {}
 
 	/// Sends a message to the remote host
 	void	send (const NLMISC::CMemStream &buffer);

@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.11 2001/09/05 14:45:57 cado Exp $
+ * $Id: u_audio_mixer.h,v 1.12 2001/09/05 14:49:59 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,7 @@ public:
 	 * (set 0 for "never auto-balance")
 	 */
 	virtual void		init( uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD ) = 0;
-	/// Resets the audio system (deletes sources, envsounds and enveffects, but not sound buffers)
+	/// Resets the audio system (deletes all the sources, include envsounds)
 	virtual void		reset() = 0;
 
 

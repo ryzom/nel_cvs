@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.26 2004/06/09 10:23:35 boucher Exp $
+ * $Id: primitive.h,v 1.27 2004/06/11 16:36:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,6 +191,7 @@ public:
 
 	// Deprecated
 	std::string						Layer;
+	// Deprecated
 	std::string						Name;
 
 	// Expended in the tree view

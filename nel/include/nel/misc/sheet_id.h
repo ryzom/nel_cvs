@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.5 2002/06/10 14:51:41 lecroart Exp $
+ * $Id: sheet_id.h,v 1.6 2002/06/24 17:14:50 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -59,6 +59,9 @@ public :
 	 *	Constructor
 	 */
 	explicit CSheetId( const std::string& sheetName );
+
+	// build from a string and returns true if the build succeed
+	bool	 build(const std::string& sheetName);
 
 	/**
 	 *	Load the association sheet ref / sheet name 

@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.6 2002/06/21 12:59:06 miller Exp $
+ * $Id: sheet_id.cpp,v 1.7 2002/06/24 17:18:25 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -49,20 +49,34 @@ const CSheetId CSheetId::Unknown(0);
 //-----------------------------------------------
 CSheetId::CSheetId( const string& sheetName )
 {
-	nlassert(_initialised);
-
-	map<string,uint32>::const_iterator itId = _SheetNameToId.find( sheetName );
-	if( itId != _SheetNameToId.end() )
-	{
-		_Id.Id = (*itId).second;
-	}
-	else
+	if (!build(sheetName))
 	{
 		nlerror("<CSheetId::CSheetId> The sheet %s is not in sheet_id.bin",sheetName.c_str());
 	}
 
 
 } // CSheetId //
+
+
+//-----------------------------------------------
+//	Build
+//
+//-----------------------------------------------
+bool CSheetId::build(const std::string& sheetName)
+{
+	nlassert(_initialised);
+
+	map<string,uint32>::const_iterator itId = _SheetNameToId.find( sheetName );
+	if( itId != _SheetNameToId.end() )
+	{
+		_Id.Id = (*itId).second;
+		return true;
+	}
+	else
+	{
+		return false;		
+	}
+}
 
 
 //-----------------------------------------------

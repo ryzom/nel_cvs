@@ -1,7 +1,7 @@
 /** \file item_elt_atom.cpp
  * Georges system files
  *
- * $Id: item_elt_atom.cpp,v 1.3 2002/03/12 09:22:57 besson Exp $
+ * $Id: item_elt_atom.cpp,v 1.4 2002/03/14 17:29:57 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,10 +59,10 @@ void CItemEltAtom::BuildItem( CMoldElt* const _pme )
 	sxoldparentvalue.clear();
 	sxoldcurrentvalue.clear();
 
-	//sxparentresult = pmet->GetDefaultValue();
-	//sxcurrentresult = pmet->GetDefaultValue();
+	sxparentresult = pmet->GetDefaultValue();
+	sxcurrentresult = pmet->GetDefaultValue();
 
-	SetParentValue(pmet->GetDefaultValue());
+	//SetParentValue(pmet->GetDefaultValue());
 
 	if( pmet->IsEnum() )
 		infos |= ITEM_ISENUM;
@@ -86,6 +86,7 @@ void CItemEltAtom::SetParentValue( const CStringEx _sxparentvalue )
 void CItemEltAtom::SetCurrentValue( const CStringEx _sxcurrentvalue )
 {
 	nlassert( pmet );
+	bmodified = true;
 	sxcurrentvalue = pmet->Format( _sxcurrentvalue );
 	sxcurrentresult = pmet->CalculateResult( sxparentresult, sxcurrentvalue );
 	if( !sxcurrentvalue.empty() )

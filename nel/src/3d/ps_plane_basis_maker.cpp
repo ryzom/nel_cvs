@@ -1,7 +1,7 @@
 /** \file plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.cpp,v 1.4 2001/07/12 15:42:04 vizerie Exp $
+ * $Id: ps_plane_basis_maker.cpp,v 1.5 2001/09/07 12:01:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,6 @@ CPlaneBasis CPSPlaneBasisGradient::DefaultPlaneBasisTab[] = { CPlaneBasis(NLMISC
 /////////////////////////////////////////////
 // CPSPlaneBasisFollowSpeed implementation //
 /////////////////////////////////////////////
-
 
 CPlaneBasis CPSPlaneBasisFollowSpeed::get(CPSLocated *loc, uint32 index)
 {
@@ -105,8 +104,58 @@ void CPSPlaneBasisFollowSpeed::makeN(CPSLocated *loc, uint32 startIndex, void *t
 		++ speedIt ;		
 	}
 	while (speedIt != endSpeedIt) ;
-
 }
+
+
+/////////////////////////////////////////////
+// CSpinnerFunctor implementation		   //
+/////////////////////////////////////////////
+
+
+
+CSpinnerFunctor::CSpinnerFunctor() : _NbSamples(16), _Axis(NLMISC::CVector::K)
+{
+	updateSamples();
+}
+
+void CSpinnerFunctor::setAxis(const NLMISC::CVector &axis)
+{
+	_Axis = axis;
+	updateSamples();
+}
+const void CSpinnerFunctor::setNumSamples(uint32 nbSamples)
+{
+	nlassert(nbSamples > 0);
+	_NbSamples = nbSamples;
+	updateSamples();
+}
+
+const uint32 CSpinnerFunctor::getNumSamples(void) const
+{
+	return _NbSamples;
+}
+
+void CSpinnerFunctor::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1);
+	f.serial(_Axis, _NbSamples);
+	if (f.isReading()) updateSamples();
+}
+
+void CSpinnerFunctor::updateSamples(void)
+{
+	// compute step between each angle
+	const float angInc = (float) (NLMISC::Pi / _NbSamples);
+	_PBTab.resize(_NbSamples);
+	NLMISC::CMatrix mat;
+	// compute each sample
+	for (uint32 k = 0; k < _NbSamples ; ++k)
+	{		
+		mat.setRot(NLMISC::CQuat(_Axis, k * angInc));
+		_PBTab[k] = CPlaneBasis(mat.getI(), mat.getJ());
+	}
+}
+
 
 } // NL3D
 

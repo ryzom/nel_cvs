@@ -1,7 +1,7 @@
 /** \file plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.h,v 1.4 2001/07/12 15:41:27 vizerie Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.5 2001/09/07 12:01:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/ps_attrib_maker_template.h"
 #include "3d/ps_attrib_maker_bin_op.h"
 #include "3d/ps_plane_basis.h"
+#include "3d/fast_floor.h"
 
 
 namespace NL3D {
@@ -44,23 +45,23 @@ namespace NL3D {
 class CPSPlaneBasisBlender : public CPSValueBlender<CPlaneBasis>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSPlaneBasisBlender) ;
+	NLMISC_DECLARE_CLASS(CPSPlaneBasisBlender);
 
 	CPSPlaneBasisBlender(const CPlaneBasis &startBasis = CPlaneBasis(NLMISC::CVector::I), const CPlaneBasis &endBasis = CPlaneBasis(NLMISC::CVector::J), float nbCycles = 1.0f) : CPSValueBlender<CPlaneBasis>(nbCycles)
 	{
-		_F.setValues(startBasis, endBasis) ;
+		_F.setValues(startBasis, endBasis);
 	}
 	
 	// F is serialized by base classes...
 
-} ;
+};
 
 
 /// This is a PlaneBasis gradient class
 class CPSPlaneBasisGradient : public CPSValueGradient<CPlaneBasis>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSPlaneBasisGradient) ;
+	NLMISC_DECLARE_CLASS(CPSPlaneBasisGradient);
 
 	/**	
 	 *	Construct the value gradient blender by passing a pointer to a float table.
@@ -71,13 +72,13 @@ public:
 	CPSPlaneBasisGradient(const CPlaneBasis *basisTab = CPSPlaneBasisGradient::DefaultPlaneBasisTab
 		, uint32 nbValues = 2, uint32 nbStages = 16, float nbCycles = 1.0f) : CPSValueGradient<CPlaneBasis>(nbCycles)
 	{
-		_F.setValues(basisTab, nbValues, nbStages) ;
+		_F.setValues(basisTab, nbValues, nbStages);
 	}
 
-	static CPlaneBasis DefaultPlaneBasisTab[] ;
+	static CPlaneBasis DefaultPlaneBasisTab[];
 		
 	// F is serialized by base classes...	
-} ;
+};
 
 
 
@@ -92,60 +93,95 @@ class CPSPlaneBasisFollowSpeed : public CPSAttribMaker<CPlaneBasis>
 		CPSPlaneBasisFollowSpeed() : CPSAttribMaker<CPlaneBasis>(1) {}
 
 		/// compute one value of the attribute for the given index
-		virtual CPlaneBasis get(CPSLocated *loc, uint32 index) ;
+		virtual CPlaneBasis get(CPSLocated *loc, uint32 index);
 
 		/** Fill tab with an attribute by using the given stride. It fills numAttrib attributes.
 		 *  \param loc the 'located' that hold the 'located bindable' that need an attribute to be filled
 		 *  \param startIndex usually 0, it gives the index of the first element in the located
 		 */
 
-		virtual void *make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool enableNoCopy = false) const ;
+		virtual void *make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool enableNoCopy = false) const;
 
 		/** The same as make, but it replicate each attribute 4 times, thus filling 4*numAttrib. Useful for facelookat and the like
 		 *  \see make()
 		 */
-		virtual void make4(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const ;
+		virtual void make4(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const;
 
 
 		/** the same as make4, but with nbReplicate replication isntead of 4
 		 *  \see make4
 		 */
-		virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const ;
+		virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const;
 
-		NLMISC_DECLARE_CLASS(CPSPlaneBasisFollowSpeed) ;
+		NLMISC_DECLARE_CLASS(CPSPlaneBasisFollowSpeed);
 
 		/// serialization
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			// nothing to save here
-			f.serialVersion(1) ;
+			f.serialVersion(1);
 		}
 
-} ;
+};
 
 
 
 
-/** this memorize value by applying some function on the emitter. For a particle's attribute, each particle has its
+/** this memorize value by applying some function based on the emitter. For a particle's attribute, each particle has its
   * own value memorized
-  *  You MUST called setScheme (from CPSAttribMakerMemory) to tell how the value will be generted
+  *  You MUST called setScheme (from CPSAttribMakerMemory) to tell how the value will be generated
   */
 class CPSPlaneBasisMemory : public CPSAttribMakerMemory<CPlaneBasis>
 {
 public:
-	CPSPlaneBasisMemory() { setDefaultValue(CPlaneBasis(NLMISC::CVector::K)) ; }
-	NLMISC_DECLARE_CLASS(CPSPlaneBasisMemory) ;
-} ;
+	CPSPlaneBasisMemory() { setDefaultValue(CPlaneBasis(NLMISC::CVector::K)); }
+	NLMISC_DECLARE_CLASS(CPSPlaneBasisMemory);
+};
 
 
-/** An attribute maker whose output if the result of a binary op on plkane basis
+/** An attribute maker whose output if the result of a binary op on plane basis
   *
   */
 class CPSPlaneBasisBinOp : public CPSAttribMakerBinOp<CPlaneBasis>
 {
 public:
-	NLMISC_DECLARE_CLASS(CPSPlaneBasisBinOp) ;
-} ;
+	NLMISC_DECLARE_CLASS(CPSPlaneBasisBinOp);
+};
+
+
+// a functor object that produce basis by applying a rotation over a fixed axis
+class CSpinnerFunctor
+{
+public:
+	CSpinnerFunctor();
+	const CPlaneBasis &operator()(float date) const { return _PBTab[OptFastFloor(date * _NbSamples)]; }
+	/// set the rotation axis
+	void					setAxis(const NLMISC::CVector &axis);
+	/// get the rotation axis
+	const NLMISC::CVector   getAxis(void) const { return _Axis;}
+	/// set the number of samples for the rotation
+	const void setNumSamples(uint32 nbSamples);
+	/// get the number of samples for the rotation
+	const uint32 getNumSamples(void) const;
+	/// serial this object
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
+protected:
+	std::vector<CPlaneBasis>	_PBTab;
+	uint32						_NbSamples;
+	NLMISC::CVector				_Axis;
+	/// update the samples tab
+	void						updateSamples(void);
+};
+
+
+
+/// this is a spinner : this compute a basis by applying a rotation over the given axis
+class CPSBasisSpinner : public CPSAttribMakerT<CPlaneBasis, CSpinnerFunctor>
+{
+public:
+	CPSBasisSpinner() : CPSAttribMakerT<CPlaneBasis, CSpinnerFunctor>(1) {}
+	NLMISC_DECLARE_CLASS(CPSBasisSpinner);
+};
 
 
 

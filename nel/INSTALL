@@ -173,19 +173,18 @@ Compilation
 
        In the case (ex: after a cvs checkout) that you need to rebuild the
        "configure" script and/or the "Makefile.in" files, execute the
-       "bootstrap" script in the NeL directory :
- 
-         % ./bootstrap
+       "autogen.sh" script in the NeL directory :
 
-         % ./configure --with-stlport=<Path_to_the_stlport_install_directory>
+         % chmod +x ./autogen.sh
+
+         % ./autogen.sh
+
+         % ./configure
 
          % make
 
-      The "configure" script must be call with the "--with-stlport".
-      The option "--with-stlport" allow to override the default STL headers
-
       It is possible to compile and install only the needed part of NeL.
-      So you may, by using --disable-<net|3d|pacs> and --enable-<sound|ai> :
+      So you may, by using --disable-<net|3d|pacs|georges|ligo> and --enable-<sound|ai> :
 
          - misc
               default: Mandatory
@@ -198,9 +197,15 @@ Compilation
          - pacs
               default: Enable
               desativate with: --disable-pacs
-         - ai
+         - georges
               default: Enable
-              desativate with: --disable-ai 
+              desativate with: --disable-georges
+         - ligo
+              default: Enable
+              desativate with: --disable-ligo
+         - ai
+              default: Disable
+              desativate with: --enable-ai 
          - sound
               default: Disable
               ativate with: --enable-sound

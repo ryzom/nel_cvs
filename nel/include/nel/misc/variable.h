@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.14 2004/06/14 15:04:41 cado Exp $
+ * $Id: variable.h,v 1.15 2004/07/06 14:28:32 cado Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -217,7 +217,7 @@ private:
 
 template <class T>
 class CVariable : public IVariable
-{
+	{
 public:
 
 	CVariable ( const char *commandName,
@@ -225,10 +225,11 @@ public:
 				const T &defaultValue,
 				uint nbMeanValue = 0,
 				bool useConfigFile = false,
-				void (*cc)(IVariable &var)=NULL) :
+				void (*cc)(IVariable &var)=NULL,
+				bool executeCallbackForDefaultValue=false ) :
 		IVariable (commandName, commandHelp, "[<value>|stat|mean|min|max]", useConfigFile, cc), _Mean(nbMeanValue), _First(true)
 	{
-		set (defaultValue, false);
+		set (defaultValue, executeCallbackForDefaultValue);
 	}
 
 	virtual void fromString (const std::string &val, bool human=false)

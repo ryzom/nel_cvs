@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.28 2002/03/14 18:22:22 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.29 2002/03/21 16:10:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,7 @@ public:
 			SubVPDlg[i] = NULL;
 	}
 
+	// Lod.
 	bool					ListActived;
 	std::list<std::string>	ListLodName;
 	int						BlendIn;
@@ -121,6 +122,10 @@ public:
 	std::string				DistanceCoarsest;
 
 	const std::set<INode*> *ListNode;
+
+	// Bone Lod.
+	std::string				BoneLodDistance;
+
 
 	int						AccelType; // -1->undeterminate   0->Not  1->Portal  2->Cluster
 										// 3rd bit -> Father visible
@@ -472,6 +477,7 @@ int CALLBACK MRMDialogCallback (
 			SetWindowText (GetDlgItem (hwndDlg, IDC_DIST_FINEST), currentParam->DistanceFinest.c_str());
 			SetWindowText (GetDlgItem (hwndDlg, IDC_DIST_MIDDLE), currentParam->DistanceMiddle.c_str());
 			SetWindowText (GetDlgItem (hwndDlg, IDC_DIST_COARSEST), currentParam->DistanceCoarsest.c_str());
+			SetWindowText (GetDlgItem (hwndDlg, IDC_BONE_LOD_DISTANCE), currentParam->BoneLodDistance.c_str());
 
 			// Iterate list
 			HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
@@ -528,6 +534,8 @@ int CALLBACK MRMDialogCallback (
 							currentParam->DistanceMiddle=tmp;
 							GetWindowText (GetDlgItem (hwndDlg, IDC_DIST_COARSEST), tmp, 512);
 							currentParam->DistanceCoarsest=tmp;
+							GetWindowText (GetDlgItem (hwndDlg, IDC_BONE_LOD_DISTANCE), tmp, 512);
+							currentParam->BoneLodDistance=tmp;
 
 							// Iterate list
 							HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
@@ -2142,6 +2150,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.DistanceMiddle=toString(floatTmp);
 		floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT);
 		param.DistanceCoarsest=toString(floatTmp);
+		floatTmp=CExportNel::getScriptAppData (node, NEL3D_APPDATA_BONE_LOD_DISTANCE, 0.f);
+		param.BoneLodDistance=toString(floatTmp);
 
 		// Lod names
 		int nameCount=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_NAME_COUNT, 0);
@@ -2258,6 +2268,9 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.DistanceMiddle="";
 			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT))!=param.DistanceCoarsest)
 				param.DistanceCoarsest="";
+			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_BONE_LOD_DISTANCE, 0.f))!=param.BoneLodDistance)
+				param.BoneLodDistance="";
+
 
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32)!=param.AccelType)
 				param.AccelType = -1;
@@ -2415,6 +2428,12 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE, param.DistanceMiddle);
 				if (param.DistanceCoarsest!="")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, param.DistanceCoarsest);
+				if (param.BoneLodDistance!="")
+				{
+					float	f= (float)atof(param.BoneLodDistance.c_str());
+					f= std::max(0.f, f);
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_BONE_LOD_DISTANCE, f);
+				}
 
 				if (param.AccelType != -1)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ACCEL, param.AccelType);

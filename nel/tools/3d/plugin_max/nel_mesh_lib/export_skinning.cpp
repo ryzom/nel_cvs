@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.13 2002/03/06 10:24:47 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.14 2002/03/21 16:10:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "stdafx.h"
 #include "export_nel.h"
+#include "export_lod.h"
 #include "3d/skeleton_shape.h"
 
 using namespace NLMISC;
@@ -196,6 +197,10 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 	// Set the bind pos of the bone, it is invNodeTM;
 	convertMatrix (bone.InvBindPos, worldTM);
 	bone.InvBindPos.invert();
+
+	// **** Get bone Lod disactivation
+	bone.LodDisableDistance= getScriptAppData (&node, NEL3D_APPDATA_BONE_LOD_DISTANCE, 0.f);
+	bone.LodDisableDistance= std::max(0.f, bone.LodDisableDistance);
 
 	// **** Add the bone
 	bonesArray.push_back (bone);

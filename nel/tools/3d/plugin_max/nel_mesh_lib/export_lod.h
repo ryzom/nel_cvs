@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.18 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: export_lod.h,v 1.19 2002/03/21 16:10:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,6 +112,9 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 /// Collision Flags
 #define NEL3D_APPDATA_COLLISION						(1423062613)
 #define NEL3D_APPDATA_COLLISION_EXTERIOR			(1423062614)
+
+/// Lod for bone.
+#define NEL3D_APPDATA_BONE_LOD_DISTANCE				(1423062615)
 
 // ***************************************************************************
 

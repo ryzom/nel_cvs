@@ -168,6 +168,11 @@ BEGIN
     LTEXT           "Dist coarsest:",IDC_STATIC,260,80,45,13,SS_CENTERIMAGE
     EDITTEXT        IDC_DIST_COARSEST,305,80,45,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
+    GROUPBOX        "LOD Bones",IDC_STATIC,185,105,170,45
+    LTEXT           "Disable Distance (0 means always activated) :",
+                    IDC_STATIC,190,120,160,10
+    EDITTEXT        IDC_BONE_LOD_DISTANCE,190,130,45,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
 END
 
 IDD_ACCEL DIALOG DISCARDABLE  0, 0, 360, 200

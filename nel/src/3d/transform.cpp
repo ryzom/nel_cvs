@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.11 2001/03/16 16:54:17 berenguier Exp $
+ * $Id: transform.cpp,v 1.12 2001/03/16 19:22:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,7 +103,7 @@ ITrack* CTransform::getDefaultTrack (uint valueId)
 	}
 
 	// No, only ITrnasformable values!
-	nlstop();
+	nlstop;
 	// Deriver note: else call BaseClass::getDefaultTrack(valueId);
 
 	return NULL;

@@ -1,7 +1,7 @@
 /** \file transformable.cpp
  * <File description>
  *
- * $Id: transformable.cpp,v 1.1 2001/03/16 16:44:41 berenguier Exp $
+ * $Id: transformable.cpp,v 1.2 2001/03/16 19:22:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ IAnimatedValue*		ITransformable::getValue (uint valueId)
 	}
 
 	// No, only ITrnasformable values!
-	nlstop();
+	nlstop;
 	// Deriver note: else call BaseClass::getValue(valueId);
 
 	return NULL;
@@ -87,7 +87,7 @@ const char 	*ITransformable::getValueName (uint valueId) const
 	}
 
 	// No, only ITrnasformable values!
-	nlstop();
+	nlstop;
 	// Deriver note: else call BaseClass::getValueName(valueId);
 
 	return "";

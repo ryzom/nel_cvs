@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.41 2001/10/16 16:45:23 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.42 2001/10/26 08:28:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,41 @@ static void	convColor(CRGBA col, GLfloat glcol[4])
 	glcol[1]= col.G*OO255;
 	glcol[2]= col.B*OO255;
 	glcol[3]= col.A*OO255;
+}
+
+static inline void convTexAddr(ITexture *tex, CMaterial::TTexAddressingMode mode, GLenum &glenum)
+{	
+	nlassert(mode < CMaterial::TexAddrCount);
+	static const GLenum glTex2dAddrModesNV[] =
+	{
+		GL_NONE, GL_TEXTURE_2D, GL_PASS_THROUGH_NV, GL_CULL_FRAGMENT_NV,
+		GL_OFFSET_TEXTURE_2D_NV, GL_OFFSET_TEXTURE_2D_SCALE_NV,
+		GL_DEPENDENT_AR_TEXTURE_2D_NV, GL_DEPENDENT_GB_TEXTURE_2D_NV,
+		GL_DOT_PRODUCT_NV, GL_DOT_PRODUCT_TEXTURE_2D_NV, GL_DOT_PRODUCT_TEXTURE_CUBE_MAP_NV,
+		GL_DOT_PRODUCT_REFLECT_CUBE_MAP_NV, GL_DOT_PRODUCT_CONST_EYE_REFLECT_CUBE_MAP_NV,
+		GL_DOT_PRODUCT_DIFFUSE_CUBE_MAP_NV, GL_DOT_PRODUCT_DEPTH_REPLACE_NV
+	};
+
+
+	static const GLenum glTexCubedAddrModesNV[] =
+	{
+		GL_NONE, GL_TEXTURE_CUBE_MAP_ARB, GL_PASS_THROUGH_NV, GL_CULL_FRAGMENT_NV,
+		GL_OFFSET_TEXTURE_2D_NV, GL_OFFSET_TEXTURE_2D_SCALE_NV,
+		GL_DEPENDENT_AR_TEXTURE_2D_NV, GL_DEPENDENT_GB_TEXTURE_2D_NV,
+		GL_DOT_PRODUCT_NV, GL_DOT_PRODUCT_TEXTURE_2D_NV, GL_DOT_PRODUCT_TEXTURE_CUBE_MAP_NV,
+		GL_DOT_PRODUCT_REFLECT_CUBE_MAP_NV, GL_DOT_PRODUCT_CONST_EYE_REFLECT_CUBE_MAP_NV,
+		GL_DOT_PRODUCT_DIFFUSE_CUBE_MAP_NV, GL_DOT_PRODUCT_DEPTH_REPLACE_NV
+	};
+
+	
+	if (!tex || !tex->isTextureCube())
+	{	
+		glenum = glTex2dAddrModesNV[(uint) mode];
+	}
+	else
+	{
+		glenum = glTexCubedAddrModesNV[(uint) mode];
+	}
 }
 
 
@@ -261,6 +296,35 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			// Color unlit part.
 			CRGBA	col= mat.getColor();
 			glColor4ub(col.R, col.G, col.B, col.A);
+		}
+
+		// Texture addressing modes (support only via NVTextureShader for now)
+		//===================================================================
+
+		if (_Extensions.NVTextureShader)
+		{
+			if ( // supported only with normal shader
+				mat.getShader() == CMaterial::Normal 
+				&& (mat.getFlags() & IDRV_MAT_TEX_ADDR)
+			   )
+			{
+				_DriverGLStates.enableNVTextureShader(true);
+				GLenum glAddrMode;
+				for (stage = 0; stage < getNbTextureStages(); ++stage)
+				{
+					convTexAddr(mat.getTexture(stage), (CMaterial::TTexAddressingMode) (mat._TexAddrMode[stage]), glAddrMode);
+					if (glAddrMode != _CurrentTexAddrMode[stage]) // addressing mode different from the one in the device?
+					{
+						glActiveTextureARB(GL_TEXTURE0_ARB + stage);
+						glTexEnvi(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, glAddrMode);					
+						_CurrentTexAddrMode[stage] = glAddrMode;					
+					}
+				}
+			}
+			else
+			{
+				_DriverGLStates.enableNVTextureShader(false);
+			}
 		}
 
 

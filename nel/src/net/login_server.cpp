@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.7 2001/10/16 09:22:03 legros Exp $
+ * $Id: login_server.cpp,v 1.8 2001/10/26 13:51:56 lecroart Exp $
  *
  */
 
@@ -153,15 +153,18 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 		if ((*it).Cookie == cookie)
 		{
 			// ok, it was validate, remove it
-			PendingUsers.erase (it);
-			reason = "";
 			break;
 		}
 	}
 
 	if (it == PendingUsers.end ())
 	{
-		reason = "Didn't receive the cookie from WS";
+		reason = "I didn't receive the cookie from WS";
+	}
+	else
+	{
+		PendingUsers.erase (it);
+		reason = "";
 	}
 
 	CMessage msgout2 (netbase.getSIDA (), "SV");

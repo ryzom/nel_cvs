@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.14 2004/09/24 07:56:01 boucher Exp $
+ * $Id: ligo_config.cpp,v 1.15 2004/10/07 15:42:57 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NLLIGO
 
 // ***************************************************************************
 
-bool CLigoConfig::read (const char *fileName)
+bool CLigoConfig::readConfigFile (const char *fileName, bool parsePrimitiveComboContent)
 {
 	// The CF
 	CConfigFile cf;
@@ -68,14 +68,14 @@ bool CLigoConfig::read (const char *fileName)
 	// Read the primitive class name
 	if (!PrimitiveClassFilename.empty())
 	{
-		return readPrimitiveClass (PrimitiveClassFilename.c_str());
+		return readPrimitiveClass (PrimitiveClassFilename.c_str(), parsePrimitiveComboContent);
 	}
 	return true;
 }
 
 // ***************************************************************************
 
-bool CLigoConfig::readPrimitiveClass (const char *_fileName)
+bool CLigoConfig::readPrimitiveClass (const char *_fileName, bool parsePrimitiveComboContent)
 {
 	// File exist ?
 	string filename = _fileName;
@@ -156,7 +156,7 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName)
 								_PrimitiveClasses.insert (std::map<std::string, CPrimitiveClass>::value_type (name, CPrimitiveClass ()));
 							if (insertResult.second)
 							{
-								if (!insertResult.first->second.read (primitive, filename.c_str(), name.c_str (), contextStrings, _ContextFilesLookup, *this))
+								if (!insertResult.first->second.read (primitive, filename.c_str(), name.c_str (), contextStrings, _ContextFilesLookup, *this, parsePrimitiveComboContent))
 									return false;
 							}
 							else

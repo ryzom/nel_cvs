@@ -1,7 +1,7 @@
 /** \file primitive_class.h
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.h,v 1.10 2004/09/13 16:54:50 boucher Exp $
+ * $Id: primitive_class.h,v 1.11 2004/10/07 15:42:43 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -231,8 +231,13 @@ public:
 	std::vector<CChild>			GeneratedChildren;
 
 	// Read
-	bool	read (xmlNodePtr primitiveNode, const char *filename, const char *className, std::set<std::string> &contextStrings,
-		std::map<std::string, std::string> &contextFilesLookup, NLLIGO::CLigoConfig &config);
+	bool	read (xmlNodePtr primitiveNode, 
+					const char *filename, 
+					const char *className, 
+					std::set<std::string> &contextStrings,
+					std::map<std::string, std::string> &contextFilesLookup, 
+					NLLIGO::CLigoConfig &config,
+					bool parsePrimitiveComboContent);
 };
 
 } // NLLIGO

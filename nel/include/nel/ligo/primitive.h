@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.36 2004/10/04 09:36:08 boucher Exp $
+ * $Id: primitive.h,v 1.37 2004/10/07 15:42:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,7 +196,7 @@ public:
 //	std::string						Name;
 
 	// Expended in the tree view
-	bool							Expanded;
+//	bool							Expanded;
 
 	enum 
 	{
@@ -366,6 +366,9 @@ public:
 	// shortcut to getPropertyByName("name", ret); return ret;
 	std::string					getName() const;
 
+	const std::string			&getUnparsedProperties() const;
+	void						setUnparsedProperties(const std::string &unparsedProperties) const;
+
 private:
 
 	// callback called just after the node is attach under a parent
@@ -397,6 +400,10 @@ private:
 	// Single properties
 	std::map<std::string, IProperty*>		_Properties;
 
+	// Editor specific properties (unparsed)
+	mutable std::string						_UnparsedProperties;
+
+
 #ifdef NLLIGO_DEBUG
 	std::string								_DebugClassName;
 	std::string								_DebugPrimitiveName;
@@ -414,7 +421,7 @@ public:
 	// \name From IClassable
 	NLMISC_DECLARE_CLASS (CPrimNode)
 
-private:
+protected:
 
 	// void operator= (const CPrimNode &node);
 	
@@ -456,7 +463,7 @@ public:
 	// \name From IClassable
 	NLMISC_DECLARE_CLASS (CPrimPoint);
 
-private:
+protected:
 
 	// Get the vertices
 	virtual uint				getNumVector () const;
@@ -491,7 +498,7 @@ public:
 	// \name From IClassable
 	NLMISC_DECLARE_CLASS (CPrimPath);
 
-private:
+protected:
 
 	// Get the vertices
 	virtual uint				getNumVector () const;
@@ -550,7 +557,7 @@ public:
 	// \name From IClassable
 	NLMISC_DECLARE_CLASS (CPrimZone);
 
-private:
+protected:
 
 	// Get the vertices
 	virtual uint				getNumVector () const;

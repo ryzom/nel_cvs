@@ -1,7 +1,7 @@
 /** \file ligo_config.h
  * Ligo config file 
  *
- * $Id: ligo_config.h,v 1.5 2004/09/13 16:54:50 boucher Exp $
+ * $Id: ligo_config.h,v 1.6 2004/10/07 15:42:43 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -56,13 +56,13 @@ public:
 	  * This file will try to open the file ligo class description file (XML) using the LigoClass as file name.
 	  * It will try first to load directly the file and then to lookup the file in NLMISC::CPath.
 	  */
-	bool read (const char *fileName);
+	bool readConfigFile (const char *fileName, bool parsePrimitiveComboContent);
 
 	/**
 	  * This file will read the file ligo class description file (XML) using the LigoClass as file name.
 	  * It will try first to load directly the file and then to lookup the file in NLMISC::CPath.
 	  */
-	bool readPrimitiveClass (const char *fileName);
+	bool readPrimitiveClass (const char *fileName, bool parsePrimitiveComboContent);
 
 	bool reloadIndexFile(const std::string &indexFileName = std::string());
 

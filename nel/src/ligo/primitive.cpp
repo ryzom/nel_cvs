@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.44 2004/10/04 09:35:33 boucher Exp $
+ * $Id: primitive.cpp,v 1.45 2004/10/07 15:42:57 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1029,6 +1029,8 @@ IPrimitive::IPrimitive (const IPrimitive &node)
 
 void IPrimitive::serial (NLMISC::IStream &f)
 {
+	// NB : unparsed parameters are not binary serialized !
+
 	// serialize the property container
 	if (f.isReading())
 	{
@@ -1059,7 +1061,7 @@ void IPrimitive::serial (NLMISC::IStream &f)
 
 //	f.serial(Layer);
 //	f.serial(Name);
-	f.serial(Expanded);
+//	f.serial(Expanded);
 
 	// serial the childrens
 	f.serialContPolyPtr(_Children);
@@ -1124,8 +1126,11 @@ void IPrimitive::operator= (const IPrimitive &node)
 //	Layer = node.Layer;
 //	Name = node.Name;
 
+	// copy unparsed properties
+	_UnparsedProperties = node._UnparsedProperties;
+
 	// Copy the flags
-	Expanded = node.Expanded;
+//	Expanded = node.Expanded;
 	_ChildId = node._ChildId;
 
 	// Copy children
@@ -1637,11 +1642,19 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 	// Erase old properties
 	_Properties.clear ();
 
+	// Read the unparsed properties (for editor view)
+	xmlNodePtr commentNode = CIXml::getFirstChildNode(xmlNode, XML_COMMENT_NODE);
+	if (commentNode)
+	{
+		 if (!CIXml::getContentString(_UnparsedProperties, commentNode))
+			_UnparsedProperties = "";
+	}
+
 	// Read the expanded flag
-	string expanded;
-	Expanded = true;
-	if (CIXml::getPropertyString (expanded, xmlNode, "EXPANDED"))
-		Expanded = (expanded != "false");
+//	string expanded;
+//	Expanded = true;
+//	if (CIXml::getPropertyString (expanded, xmlNode, "EXPANDED"))
+//		Expanded = (expanded != "false");
 
 	// Read the properties
 	xmlNodePtr propNode;
@@ -1882,11 +1895,16 @@ void IPrimitive::initDefaultValues (CLigoConfig &config)
 void IPrimitive::write (xmlNodePtr xmlNode, const char *filename) const
 {
 	// Save the expanded flag
-	if (!Expanded)
-		xmlSetProp (xmlNode, (const xmlChar*)"EXPANDED", (const xmlChar*)"false");
+//	if (!Expanded)
+//		xmlSetProp (xmlNode, (const xmlChar*)"EXPANDED", (const xmlChar*)"false");
 
 	// Set the type
 	xmlSetProp (xmlNode, (const xmlChar*)"TYPE", (const xmlChar*)(const_cast<IPrimitive*> (this)->getClassName ().c_str ()));
+
+	// Save the unparsed property
+	xmlNodePtr commentNode = xmlNewComment((const xmlChar*)(_UnparsedProperties.c_str()));
+	nlverify(commentNode);
+	xmlAddChild(xmlNode, commentNode);
 
 	// Save the properties
 	std::map<std::string, IProperty*>::const_iterator ite =	_Properties.begin ();
@@ -1987,6 +2005,19 @@ std::string		IPrimitive::getName() const
 	return ret;
 }
 
+// ***************************************************************************
+
+const std::string &IPrimitive::getUnparsedProperties() const
+{
+	return _UnparsedProperties;
+}
+
+// ***************************************************************************
+
+void IPrimitive::setUnparsedProperties(const std::string &unparsedProperties) const
+{
+	_UnparsedProperties = unparsedProperties;
+}
 
 // ***************************************************************************
 // CPrimAlias

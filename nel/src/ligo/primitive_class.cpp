@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.15 2004/09/13 16:54:50 boucher Exp $
+ * $Id: primitive_class.cpp,v 1.16 2004/10/07 15:42:57 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -122,67 +122,57 @@ bool ReadColor (CRGBA &color, xmlNodePtr node)
 bool ReadChild (CPrimitiveClass::CChild &child, xmlNodePtr childNode, const char *filename, bool _static, CLigoConfig &config)
 {
 	// Read the class name
-	if (config.getPropertyString (child.ClassName, filename, childNode, "CLASS_NAME"))
+	if (!config.getPropertyString (child.ClassName, filename, childNode, "CLASS_NAME"))
+		goto failed;
+
+	// Read the name
+	if (!_static || config.getPropertyString (child.Name, filename, childNode, "NAME"))
 	{
-		// Read the name
-		if (!_static || config.getPropertyString (child.Name, filename, childNode, "NAME"))
+		// Read the parameters
+		child.Parameters.reserve (CIXml::countChildren (childNode, "PARAMETER"));
+		for (	xmlNodePtr childParamNode = CIXml::getFirstChildNode (childNode, "PARAMETER");
+				childParamNode != NULL;
+				childParamNode = CIXml::getNextChildNode (childParamNode, "PARAMETER"))
 		{
+			// Add a static child
+			child.Parameters.push_back (CPrimitiveClass::CInitParameters ());
+			
+			// Child ref
+			CPrimitiveClass::CInitParameters &childParam = child.Parameters.back ();
+
+			// Read the class name
+			if (!config.getPropertyString (childParam.Name, filename, childParamNode, "NAME"))
+				goto failed;
+
 			// Read the parameters
-			xmlNodePtr childParamNode = CIXml::getFirstChildNode (childNode, "PARAMETER");
-			child.Parameters.reserve (CIXml::countChildren (childNode, "PARAMETER"));
-			if (childParamNode)
+			uint defaultId = 0;
+			childParam.DefaultValue.resize (CIXml::countChildren (childParamNode, "DEFAULT_VALUE"));
+			for (	xmlNodePtr childParamValueNode = CIXml::getFirstChildNode (childParamNode, "DEFAULT_VALUE");
+					childParamValueNode != NULL;
+					childParamValueNode = CIXml::getNextChildNode (childParamValueNode, "DEFAULT_VALUE"))
 			{
-				do
+				// Gen id flag
+				childParam.DefaultValue[defaultId].GenID = false;
+
+				// Read the gen id flag
+				string value;
+				if (CIXml::getPropertyString (value, childParamValueNode, "GEN_ID") && (value != "false"))
 				{
-					// Add a static child
-					child.Parameters.push_back (CPrimitiveClass::CInitParameters ());
-					
-					// Child ref
-					CPrimitiveClass::CInitParameters &childParam = child.Parameters.back ();
-
-					// Read the class name
-					if (config.getPropertyString (childParam.Name, filename, childParamNode, "NAME"))
-					{
-						// Read the parameters
-						xmlNodePtr childParamValueNode = CIXml::getFirstChildNode (childParamNode, "DEFAULT_VALUE");
-						childParam.DefaultValue.resize (CIXml::countChildren (childParamNode, "DEFAULT_VALUE"));
-						uint defaultId = 0;
-						if (childParamValueNode)
-						{
-							do
-							{
-								// Gen id flag
-								childParam.DefaultValue[defaultId].GenID = false;
-
-								// Read the gen id flag
-								string value;
-								if (CIXml::getPropertyString (value, childParamValueNode, "GEN_ID") && (value != "false"))
-								{
-									childParam.DefaultValue[defaultId].GenID = true;
-								}
-								else
-								{
-									if (config.getPropertyString (value, filename, childParamValueNode, "VALUE"))
-									{
-										childParam.DefaultValue[defaultId].Name = value;
-									}
-									else
-										goto failed;
-								}
-								defaultId++;
-							}
-							while ((childParamValueNode = CIXml::getNextChildNode (childParamValueNode, "DEFAULT_VALUE")));
-						}
-					}
-					else
-						goto failed;
+					childParam.DefaultValue[defaultId].GenID = true;
 				}
-				while ((childParamNode = CIXml::getNextChildNode (childParamNode, "PARAMETER")));
+				else
+				{
+					if (!config.getPropertyString (value, filename, childParamValueNode, "VALUE"))
+						goto failed;
+					
+					childParam.DefaultValue[defaultId].Name = value;
+				}
+				defaultId++;
 			}
-
-			// Ok
-			return true;
 		}
+
+		// Ok
+		return true;
 	}
 failed:
 	return false;
@@ -190,8 +180,13 @@ failed:
 
 // ***************************************************************************
 
-bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, const char *className, std::set<std::string> &contextStrings, 
-							std::map<std::string, std::string> &contextFilesLookup, CLigoConfig &config)
+bool CPrimitiveClass::read (xmlNodePtr primitiveNode, 
+							const char *filename, 
+							const char *className, 
+							std::set<std::string> &contextStrings, 
+							std::map<std::string, std::string> &contextFilesLookup, 
+							CLigoConfig &config,
+							bool parsePrimitiveComboContent)
 {
 	//	init default parameters
 	AutoInit = false;
@@ -224,376 +219,332 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 
 	// Read the type
 	std::string type;
-	if (config.getPropertyString (type, filename, primitiveNode, "TYPE"))
+	if (!config.getPropertyString (type, filename, primitiveNode, "TYPE"))
+		goto failed;
+
+	// Good type ?
+	if (type == "node")
+		Type = Node;
+	else if (type == "point")
+		Type = Point;
+	else if (type == "path")
+		Type = Path;
+	else if (type == "zone")
+		Type = Zone;
+	else if (type == "bitmap")
+		Type = Bitmap;
+	else if (type == "alias")
+		Type = Alias;
+	else 
 	{
-		// Good type ?
-		if (type == "node")
-			Type = Node;
-		else if (type == "point")
-			Type = Point;
-		else if (type == "path")
-			Type = Path;
-		else if (type == "zone")
-			Type = Zone;
-		else if (type == "bitmap")
-			Type = Bitmap;
-		else if (type == "alias")
-			Type = Alias;
-		else 
+		config.syntaxError (filename, primitiveNode, "Unknown primitive type (%s)", type.c_str ());
+		goto failed;
+	}
+
+	// Read the color
+	ReadColor (Color, primitiveNode);
+
+	// Autoinit
+	ReadBool ("AUTO_INIT", AutoInit, primitiveNode, filename, config);
+	
+	// Deletable
+	ReadBool ("DELETABLE", Deletable, primitiveNode, filename, config);
+
+	// File extension
+	CIXml::getPropertyString (FileExtension, primitiveNode, "FILE_EXTENSION");
+
+	// File type
+	CIXml::getPropertyString (FileType, primitiveNode, "FILE_TYPE");
+
+	// Collision
+	ReadBool ("COLLISION", Collision, primitiveNode, filename, config);
+
+	// LinkBrothers
+	ReadBool ("LINK_BROTHERS", LinkBrothers, primitiveNode, filename, config);
+
+	// ShowArrow
+	ReadBool ("SHOW_ARROW", ShowArrow, primitiveNode, filename, config);
+	
+	// Numberize when copy the primitive
+	ReadBool ("NUMBERIZE", Numberize, primitiveNode, filename, config);
+
+	// Read the parameters
+	for (	xmlNodePtr paramNode = CIXml::getFirstChildNode (primitiveNode, "PARAMETER");
+			paramNode != NULL;
+			paramNode = CIXml::getNextChildNode (paramNode, "PARAMETER"))
+	{
+		// Read the property name
+		if (!config.getPropertyString (type, filename, paramNode, "NAME"))
+			goto failed;
+
+		// look if the parameter is not already defined by the parent class
+		uint i=0;
+		while (i<Parameters.size())
 		{
-			config.syntaxError (filename, primitiveNode, "Unknown primitive type (%s)", type.c_str ());
+			if (Parameters[i].Name == type)
+			{
+				// the param already exist, remove parent param
+				Parameters.erase(Parameters.begin() + i);
+				continue;
+			}
+			++i;
+		}
+
+		// Add a parameter
+		Parameters.push_back (CParameter ());
+
+		// The parameter ref
+		CParameter &parameter = Parameters.back ();
+
+		// Set the name
+		parameter.Name = type;
+
+		// Read the type
+		if (!config.getPropertyString (type, filename, paramNode, "TYPE"))
+			goto failed;
+
+		// Good type ?
+		if (type == "boolean")
+			parameter.Type = CParameter::Boolean;
+		else if (type == "const_string")
+			parameter.Type = CParameter::ConstString;
+		else if (type == "string")
+			parameter.Type = CParameter::String;
+		else if (type == "string_array")
+			parameter.Type = CParameter::StringArray;
+		else if (type == "const_string_array")
+			parameter.Type = CParameter::ConstStringArray;
+		else
+		{
+			config.syntaxError (filename, paramNode, "Unknown primitive parameter type (%s)", type.c_str ());
 			goto failed;
 		}
 
-		// Read the color
-		ReadColor (Color, primitiveNode);
+		// Visible
+		parameter.Visible = true;
+		ReadBool ("VISIBLE", parameter.Visible, paramNode, filename, config);
 
-		// Autoinit
-		ReadBool ("AUTO_INIT", AutoInit, primitiveNode, filename, config);
+		// Filename
+		parameter.Filename = false;
+		ReadBool ("FILENAME", parameter.Filename, paramNode, filename, config);
+
+		// Lookup
+		parameter.Lookup = false;
+		ReadBool ("LOOKUP", parameter.Lookup, paramNode, filename, config);
+
+		// Read only primitive
+		parameter.ReadOnly = false;
+		ReadBool ("READ_ONLY", parameter.ReadOnly, paramNode, filename, config);
+
+		// sort combo box entries 
+		parameter.SortEntries = false;
+		ReadBool ("SORT_ENTRIES", parameter.SortEntries, paramNode, filename, config);
+
+		// Display horizontal scroller in multi-line edit box
+		parameter.DisplayHS = false;
+		ReadBool ("SHOW_HS", parameter.DisplayHS, paramNode, filename, config);
+
+		// Lookup
+		parameter.WidgetHeight = 100;
+		int temp;
+		if (ReadInt ("WIDGET_HEIGHT", temp, paramNode))
+			parameter.WidgetHeight = (uint)temp;
+
+		// Read the file extension
+		parameter.FileExtension = "";
+		CIXml::getPropertyString (parameter.FileExtension, paramNode, "FILE_EXTENSION");
+		parameter.FileExtension = toLower(parameter.FileExtension);
+
+		// Autonaming preference
+		parameter.Autoname = "";
+		CIXml::getPropertyString (parameter.Autoname, paramNode, "AUTONAME");
 		
-		// Deletable
-		ReadBool ("DELETABLE", Deletable, primitiveNode, filename, config);
+		// Read the file extension
+		parameter.Folder = "";
+		CIXml::getPropertyString (parameter.Folder, paramNode, "FOLDER");
+		parameter.Folder = toLower(parameter.Folder);
 
-		// File extension
-		CIXml::getPropertyString (FileExtension, primitiveNode, "FILE_EXTENSION");
-
-		// File type
-		CIXml::getPropertyString (FileType, primitiveNode, "FILE_TYPE");
-
-		// Collision
-		ReadBool ("COLLISION", Collision, primitiveNode, filename, config);
-
-		// LinkBrothers
-		ReadBool ("LINK_BROTHERS", LinkBrothers, primitiveNode, filename, config);
-
-		// ShowArrow
-		ReadBool ("SHOW_ARROW", ShowArrow, primitiveNode, filename, config);
-		
-		// Numberize when copy the primitive
-		ReadBool ("NUMBERIZE", Numberize, primitiveNode, filename, config);
-
-		// Read the parameters
-		xmlNodePtr paramNode = CIXml::getFirstChildNode (primitiveNode, "PARAMETER");
-		if (paramNode)
+		// Read the combo values
+		for (	xmlNodePtr comboValueNode = CIXml::getFirstChildNode (paramNode, "COMBO_VALUES");
+				comboValueNode != NULL; 
+				comboValueNode = CIXml::getNextChildNode (comboValueNode, "COMBO_VALUES"))
 		{
-			do
+			// Read the context
+			if (!config.getPropertyString (type, filename, comboValueNode, "CONTEXT_NAME"))
+				goto failed;
+
+			// Add this context
+			contextStrings.insert (type);
+
+			// Add a combo value
+			pair<std::map<std::string, CParameter::CConstStringValue>::iterator, bool> insertResult =
+				parameter.ComboValues.insert (std::map<std::string, CParameter::CConstStringValue>::value_type (type, CParameter::CConstStringValue ()));
+
+			// The combo value ref
+			CParameter::CConstStringValue &comboValue = insertResult.first->second;
+
+			// Read the values
+			for (	xmlNodePtr comboValueValueNode = CIXml::getFirstChildNode (comboValueNode, "CONTEXT_VALUE");
+					comboValueValueNode != NULL; 
+					comboValueValueNode = CIXml::getNextChildNode (comboValueValueNode, "CONTEXT_VALUE"))
 			{
-				// Read the property name
-				if (config.getPropertyString (type, filename, paramNode, "NAME"))
+				// Read the value 
+				if (!config.getPropertyString (type, filename, comboValueValueNode, "VALUE"))
+					goto failed;
+
+				comboValue.Values.push_back (type);
+			}
+		}
+
+		// Read the combo files
+		for (	xmlNodePtr comboValueNode = CIXml::getFirstChildNode (paramNode, "COMBO_FILES");
+				comboValueNode != NULL;
+				comboValueNode = CIXml::getNextChildNode (comboValueNode, "COMBO_FILES"))
+		{
+			// Read the context
+			if (!config.getPropertyString (type, filename, comboValueNode, "CONTEXT_NAME"))
+				goto failed;
+
+			// Read the path to search
+			string path;
+			if	(CIXml::getPropertyString (path, comboValueNode, "PATH"))
+			{
+				if (!parsePrimitiveComboContent)
+					continue;
+
+				// Look for files in the path
+				std::vector<std::string> files;
+				CPath::getPathContent (path, true, false, true, files);
+
+				// Not empty ?
+				if (files.empty ())
+					continue;
+
+				// Add this context
+				contextStrings.insert (type);
+
+				// For each file
+				for (uint i=0; i<files.size (); i++)
 				{
-					// look if the parameter is not already defined by the parent class
-					uint i=0;
-					while (i<Parameters.size())
-					{
-						if (Parameters[i].Name == type)
-						{
-							// the param already exist, remove parent param
-							Parameters.erase(Parameters.begin() + i);
-							continue;
-						}
-						++i;
-					}
+					// Good extension ?
+					if (toLower(NLMISC::CFile::getExtension (files[i])) != parameter.FileExtension)
+						continue;
 
-					// Add a parameter
-					Parameters.push_back (CParameter ());
+					// Add a combo value
+					pair<std::map<std::string, CParameter::CConstStringValue>::iterator, bool> insertResult =
+						parameter.ComboValues.insert (std::map<std::string, CParameter::CConstStringValue>::value_type (type, CParameter::CConstStringValue ()));
 
-					// The parameter ref
-					CParameter &parameter = Parameters.back ();
+					// The combo value ref
+					CParameter::CConstStringValue &comboValue = insertResult.first->second;
 
-					// Set the name
-					parameter.Name = type;
+					// Get the filename without extension
+					string nameWithoutExt = toLower(NLMISC::CFile::getFilenameWithoutExtension (files[i]));
 
-					// Read the type
-					if (config.getPropertyString (type, filename, paramNode, "TYPE"))
-					{
-						// Good type ?
-						if (type == "boolean")
-							parameter.Type = CParameter::Boolean;
-						else if (type == "const_string")
-							parameter.Type = CParameter::ConstString;
-						else if (type == "string")
-							parameter.Type = CParameter::String;
-						else if (type == "string_array")
-							parameter.Type = CParameter::StringArray;
-						else if (type == "const_string_array")
-							parameter.Type = CParameter::ConstStringArray;
-						else
-						{
-							config.syntaxError (filename, paramNode, "Unknown primitive parameter type (%s)", type.c_str ());
-							goto failed;
-						}
+					// Add the values
+					comboValue.Values.push_back (nameWithoutExt);
 
-						// Visible
-						parameter.Visible = true;
-						ReadBool ("VISIBLE", parameter.Visible, paramNode, filename, config);
-
-						// Filename
-						parameter.Filename = false;
-						ReadBool ("FILENAME", parameter.Filename, paramNode, filename, config);
-
-						// Lookup
-						parameter.Lookup = false;
-						ReadBool ("LOOKUP", parameter.Lookup, paramNode, filename, config);
-
-						// Read only primitive
-						parameter.ReadOnly = false;
-						ReadBool ("READ_ONLY", parameter.ReadOnly, paramNode, filename, config);
-
-						// sort combo box entries 
-						parameter.SortEntries = false;
-						ReadBool ("SORT_ENTRIES", parameter.SortEntries, paramNode, filename, config);
-
-						// Display horizontal scoller in multiline edit box
-						parameter.DisplayHS = false;
-						ReadBool ("SHOW_HS", parameter.DisplayHS, paramNode, filename, config);
-
-						// Lookup
-						parameter.WidgetHeight = 100;
-						int temp;
-						if (ReadInt ("WIDGET_HEIGHT", temp, paramNode))
-							parameter.WidgetHeight = (uint)temp;
-
-						// Read the file extension
-						parameter.FileExtension = "";
-						CIXml::getPropertyString (parameter.FileExtension, paramNode, "FILE_EXTENSION");
-						parameter.FileExtension = toLower(parameter.FileExtension);
-
-						// Autonaming preference
-						parameter.Autoname = "";
-						CIXml::getPropertyString (parameter.Autoname, paramNode, "AUTONAME");
-						
-						// Read the file extension
-						parameter.Folder = "";
-						CIXml::getPropertyString (parameter.Folder, paramNode, "FOLDER");
-						parameter.Folder = toLower(parameter.Folder);
-
-						// Read the combo values
-						xmlNodePtr comboValueNode = CIXml::getFirstChildNode (paramNode, "COMBO_VALUES");
-						if (comboValueNode)
-						{
-							do
-							{
-								// Read the context
-								if (config.getPropertyString (type, filename, comboValueNode, "CONTEXT_NAME"))
-								{
-									// Add this context
-									contextStrings.insert (type);
-
-									// Add a combo value
-									pair<std::map<std::string, CParameter::CConstStringValue>::iterator, bool> insertResult =
-										parameter.ComboValues.insert (std::map<std::string, CParameter::CConstStringValue>::value_type (type, CParameter::CConstStringValue ()));
-
-									// The combo value ref
-									CParameter::CConstStringValue &comboValue = insertResult.first->second;
-
-									// Read the values
-									xmlNodePtr comboValueValueNode = CIXml::getFirstChildNode (comboValueNode, "CONTEXT_VALUE");
-									comboValue.Values.reserve (CIXml::countChildren (comboValueNode, "CONTEXT_VALUE"));
-									if (comboValueValueNode)
-									{
-										do
-										{
-											// Read the value 
-											if (config.getPropertyString (type, filename, comboValueValueNode, "VALUE"))
-											{
-												// Add a combo box
-												comboValue.Values.push_back (type);
-											}
-											else
-												goto failed;
-										}
-										while ((comboValueValueNode = CIXml::getFirstChildNode (comboValueValueNode, "CONTEXT_VALUE")));
-									}
-								}
-								else
-									goto failed;
-							}
-							while ((comboValueNode = CIXml::getNextChildNode (comboValueNode, "COMBO_VALUES")));
-						}
-
-						// Read the combo files
-						comboValueNode = CIXml::getFirstChildNode (paramNode, "COMBO_FILES");
-						if (comboValueNode)
-						{
-							do
-							{
-								// Read the context
-								if (config.getPropertyString (type, filename, comboValueNode, "CONTEXT_NAME"))
-								{
-									// Read the path to search
-									string path;
-									if	(CIXml::getPropertyString (path, comboValueNode, "PATH"))
-//									if	(config.getPropertyString (path, filename, comboValueNode, "PATH"))
-									{
-										// Look for files in the path
-										std::vector<std::string> files;
-										CPath::getPathContent (path, true, false, true, files);
-
-										// Not empty ?
-										if (!files.empty ())
-										{
-											// Add this context
-											contextStrings.insert (type);
-
-											// For each file
-											for (uint i=0; i<files.size (); i++)
-											{
-												// Good extension ?
-												if (toLower(NLMISC::CFile::getExtension (files[i])) == parameter.FileExtension)
-												{
-													// Add a combo value
-													pair<std::map<std::string, CParameter::CConstStringValue>::iterator, bool> insertResult =
-														parameter.ComboValues.insert (std::map<std::string, CParameter::CConstStringValue>::value_type (type, CParameter::CConstStringValue ()));
-
-													// The combo value ref
-													CParameter::CConstStringValue &comboValue = insertResult.first->second;
-
-													// Get the filename without extension
-													string nameWithoutExt = toLower(NLMISC::CFile::getFilenameWithoutExtension (files[i]));
-
-													// Add the values
-													comboValue.Values.push_back (nameWithoutExt);
-
-													// Add the value for lookup
-													contextFilesLookup.insert (map<string, string>::value_type (nameWithoutExt, files[i]));
-												}
-
-											}
-
-										}
-
-									}
-									else
-									{
-										string	primpath;
-										if	(config.getPropertyString (primpath, filename, comboValueNode, "PRIM_PATH"))
-										{
-
-											// Add this context
-											contextStrings.insert (type);
-
-											// Add a combo value
-											pair<std::map<std::string, CParameter::CConstStringValue>::iterator, bool> insertResult =
-												parameter.ComboValues.insert (std::map<std::string, CParameter::CConstStringValue>::value_type (type, CParameter::CConstStringValue ()));
-											
-											// The combo value ref
-											CParameter::CConstStringValue &comboValue = insertResult.first->second;
-
-											comboValue.PrimitivePath.push_back(primpath);																					
-										}
-										else
-											goto failed;
-									}
-
-								}
-								else
-									goto failed;
-							}
-							while ((comboValueNode = CIXml::getNextChildNode (comboValueNode, "COMBO_FILES")));
-						}
-
-						// Read parameters default values
-						xmlNodePtr defaultValueNode = CIXml::getFirstChildNode (paramNode, "DEFAULT_VALUE");
-						parameter.DefaultValue.resize (CIXml::countChildren (paramNode, "DEFAULT_VALUE"));
-						uint defaultId = 0;
-						if (defaultValueNode)
-						{
-							do
-							{
-								// Gen id flag
-								parameter.DefaultValue[defaultId].GenID = false;
-
-								// Read the gen id flag
-								string value;
-								if (CIXml::getPropertyString (value, defaultValueNode, "GEN_ID") && (value != "false"))
-								{
-									parameter.DefaultValue[defaultId].GenID = true;
-								}
-								else
-								{
-									if (config.getPropertyString (value, filename, defaultValueNode, "VALUE"))
-									{
-										parameter.DefaultValue[defaultId].Name = value;
-									}
-									else
-										goto failed;
-								}
-								defaultId++;
-							}
-							while ((defaultValueNode = CIXml::getNextChildNode (defaultValueNode, "DEFAULT_VALUE")));
-						}
-					}
-					else
-						goto failed;
+					// Add the value for lookup
+					contextFilesLookup.insert (map<string, string>::value_type (nameWithoutExt, files[i]));
 				}
-				else
-					goto failed;
 			}
-			while ((paramNode = CIXml::getNextChildNode (paramNode, "PARAMETER")));
-		}
-
-		// Read static children
-		xmlNodePtr childrenNode = CIXml::getFirstChildNode (primitiveNode, "STATIC_CHILD");
-		StaticChildren.reserve (StaticChildren.size() + CIXml::countChildren (primitiveNode, "STATIC_CHILD"));
-		if (childrenNode)
-		{
-			do
+			else
 			{
-				// Add a static child
-				StaticChildren.push_back (CChild ());
-				
-				// Child ref
-				CChild &child = StaticChildren.back ();
-
-				// Read the child
-				if (!ReadChild (child, childrenNode, filename, true, config))
+				string	primpath;
+				if	(!config.getPropertyString (primpath, filename, comboValueNode, "PRIM_PATH"))
 					goto failed;
+
+				// Add this context
+				contextStrings.insert (type);
+
+				// Add a combo value
+				pair<std::map<std::string, CParameter::CConstStringValue>::iterator, bool> insertResult =
+					parameter.ComboValues.insert (std::map<std::string, CParameter::CConstStringValue>::value_type (type, CParameter::CConstStringValue ()));
+				
+				// The combo value ref
+				CParameter::CConstStringValue &comboValue = insertResult.first->second;
+
+				comboValue.PrimitivePath.push_back(primpath);																					
 			}
-			while ((childrenNode = CIXml::getNextChildNode (childrenNode, "STATIC_CHILD")));
 		}
 
-		// Read dynamic children
-		childrenNode = CIXml::getFirstChildNode (primitiveNode, "DYNAMIC_CHILD");
-		DynamicChildren.reserve (DynamicChildren.size() + CIXml::countChildren (primitiveNode, "DYNAMIC_CHILD"));
-		if (childrenNode)
+		// Read parameters default values
+		uint defaultId = 0;
+		parameter.DefaultValue.resize (CIXml::countChildren (paramNode, "DEFAULT_VALUE"));
+		for (	xmlNodePtr defaultValueNode = CIXml::getFirstChildNode (paramNode, "DEFAULT_VALUE");
+				defaultValueNode != NULL;
+				defaultValueNode = CIXml::getNextChildNode (defaultValueNode, "DEFAULT_VALUE"))
 		{
-			do
+			// Gen id flag
+			parameter.DefaultValue[defaultId].GenID = false;
+
+			// Read the gen id flag
+			string value;
+			if (CIXml::getPropertyString (value, defaultValueNode, "GEN_ID") && (value != "false"))
 			{
-				// Add a static child
-				DynamicChildren.push_back (CChild ());
-				
-				// Child ref
-				CChild &child = DynamicChildren.back ();
-
-				// Read the child
-				if (!ReadChild (child, childrenNode, filename, false, config))
-					goto failed;
+				parameter.DefaultValue[defaultId].GenID = true;
 			}
-			while ((childrenNode = CIXml::getNextChildNode (childrenNode, "DYNAMIC_CHILD")));
-		}
-
-		// Read generated children
-		childrenNode = CIXml::getFirstChildNode (primitiveNode, "GENERATED_CHILD");
-		GeneratedChildren.reserve (GeneratedChildren.size() + CIXml::countChildren (primitiveNode, "GENERATED_CHILD"));
-		if (childrenNode)
-		{
-			do
+			else
 			{
-				// Add a static child
-				GeneratedChildren.push_back (CChild ());
-				
-				// Child ref
-				CChild &child = GeneratedChildren.back ();
-
-				// Read the child
-				if (!ReadChild (child, childrenNode, filename, false, config))
+				if (!config.getPropertyString (value, filename, defaultValueNode, "VALUE"))
 					goto failed;
+				parameter.DefaultValue[defaultId].Name = value;
 			}
-			while ((childrenNode = CIXml::getNextChildNode (childrenNode, "GENERATED_CHILD")));
+			defaultId++;
 		}
-
-		return true;
 	}
+
+	// Read static children
+	StaticChildren.reserve (StaticChildren.size() + CIXml::countChildren (primitiveNode, "STATIC_CHILD"));
+	for (	xmlNodePtr childrenNode = CIXml::getFirstChildNode (primitiveNode, "STATIC_CHILD");
+			childrenNode != NULL;
+			childrenNode = CIXml::getNextChildNode (childrenNode, "STATIC_CHILD"))
+	{
+		// Add a static child
+		StaticChildren.push_back (CChild ());
+		
+		// Child ref
+		CChild &child = StaticChildren.back ();
+
+		// Read the child
+		if (!ReadChild (child, childrenNode, filename, true, config))
+			goto failed;
+	}
+
+	// Read dynamic children
+	DynamicChildren.reserve (DynamicChildren.size() + CIXml::countChildren (primitiveNode, "DYNAMIC_CHILD"));
+	for (	xmlNodePtr childrenNode = CIXml::getFirstChildNode (primitiveNode, "DYNAMIC_CHILD");
+			childrenNode != NULL;
+			childrenNode = CIXml::getNextChildNode (childrenNode, "DYNAMIC_CHILD"))
+	{
+		// Add a static child
+		DynamicChildren.push_back (CChild ());
+		
+		// Child ref
+		CChild &child = DynamicChildren.back ();
+
+		// Read the child
+		if (!ReadChild (child, childrenNode, filename, false, config))
+			goto failed;
+	}
+
+	// Read generated children
+	GeneratedChildren.reserve (GeneratedChildren.size() + CIXml::countChildren (primitiveNode, "GENERATED_CHILD"));
+	for (	xmlNodePtr childrenNode = CIXml::getFirstChildNode (primitiveNode, "GENERATED_CHILD");
+			childrenNode != NULL;
+			childrenNode = CIXml::getNextChildNode (childrenNode, "GENERATED_CHILD"))
+	{
+		// Add a static child
+		GeneratedChildren.push_back (CChild ());
+		
+		// Child ref
+		CChild &child = GeneratedChildren.back ();
+
+		// Read the child
+		if (!ReadChild (child, childrenNode, filename, false, config))
+			goto failed;
+	}
+
+	return true;
 failed:
 	return false;
 }

@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.5 2000/11/21 15:26:14 lecroart Exp $
+ * $Id: font_manager.h,v 1.6 2000/12/08 13:45:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,7 +88,7 @@ public:
 	CFontManager()
 	{
 		_MemSize = 0;
-		_MaxMemory = 0;
+		_MaxMemory = 1000000;
 	}
 
 

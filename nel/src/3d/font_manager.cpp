@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.7 2000/12/04 10:55:02 coutelas Exp $
+ * $Id: font_manager.cpp,v 1.8 2000/12/08 13:45:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -137,6 +137,7 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 	sint32 penx = 0;
 	sint32 penz = 0;
 	float x, z;
+	output.StringHeight = 0;
 	for(uint i=0; i<s.size(); i++)
 	{
 		// Creating font

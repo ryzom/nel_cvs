@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.4 2000/11/22 10:11:55 coutelas Exp $
+ * $Id: font_generator.cpp,v 1.5 2000/12/08 13:45:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,7 @@ CFontGenerator::CFontGenerator (const std::string fontFileName, const std::strin
 uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &height, uint32 &pitch, sint32 &left, sint32 &top, sint32 &advx, uint32 &glyphIndex)
 {
 	FT_Error error;
-
+	
 	error = FT_Set_Pixel_Sizes (_Face, size, size);
 	if (error)
 	{

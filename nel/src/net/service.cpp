@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.28 2000/12/08 09:38:55 cado Exp $
+ * $Id: service.cpp,v 1.29 2000/12/08 13:45:36 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -211,11 +211,11 @@ sint IService::main (int argc, char **argv)
 		// don't install signal is the application is started in debug mode
 		if (IsDebuggerPresent ())
 		{
-			nlinfo("Running with the debugger");
+			nlinfo("Running with the debugger, don't redirect signals");
 		}
 		else
 		{
-			nlinfo("Running without the debugger");
+			nlinfo("Running without the debugger, redirect SIGINT signal");
 			InitSignal();
 		}
 #endif

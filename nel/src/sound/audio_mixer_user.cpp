@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.13 2001/09/03 14:19:19 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.14 2001/09/04 11:15:50 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -349,8 +349,15 @@ void				CAudioMixerUser::update()
 	{
 		ipOld = ips;
 		++ips;
+		// Check if source is spawned and stopped
 		if ( (*ipOld)->isSpawn() && (*ipOld)->isStopped() )
 		{
+			// Remove source (possibly, call callback before)
+			TSpawnEndCallback cb = (*ipOld)->getSpawnEndCallback();
+			if ( cb != NULL )
+			{
+				cb( *ipOld );
+			}
 			removeSource( ipOld, true );
 		}
 	}
@@ -432,11 +439,12 @@ TSoundId			CAudioMixerUser::getSoundId( const char *name )
 
 
 /* Add a logical sound source (returns NULL if name not found).
- * To remove a source, just delete it (if spawn is false).
  * If spawn is true, the source will auto-delete after playing. If so, the return USource* pointer
- * is valid only before the time when calling play() plus the duration of the sound: be careful!
+ * is valid only before the time when calling play() plus the duration of the sound. You can
+ * pass a callback function that will be called (if not NULL) just before deleting the spawned
+ * source.
  */
-USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn )
+USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCallback cb )
 {
 	if ( id == NULL )
 	{
@@ -445,7 +453,7 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn )
 	}
 
 	// Create source
-	CSourceUser *source = new CSourceUser( id, spawn );
+	CSourceUser *source = new CSourceUser( id, spawn, cb );
 	_Sources.insert( source );
 
 	// Link the position to the listener position if it'a stereo source
@@ -467,9 +475,9 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn )
 /*
  * Add a logical sound source (returns NULL if name not found). To remove a source, just delete it.
  */
-USource				*CAudioMixerUser::createSource( const char *name, bool spawn )
+USource				*CAudioMixerUser::createSource( const char *name, bool spawn, TSpawnEndCallback cb )
 {
-	return createSource( getSoundId( name ), spawn );
+	return createSource( getSoundId( name ), spawn, cb );
 }
 
 

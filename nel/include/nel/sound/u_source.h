@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.7 2001/09/03 14:18:31 cado Exp $
+ * $Id: u_source.h,v 1.8 2001/09/04 11:15:29 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,13 +39,17 @@ namespace NLSOUND {
 
 
 class CSound;
+class USource;
 
 
 /// Sound sample identifiers
 typedef CSound* TSoundId;
 
-// Priority of the sources (p1<p2 means p1 has higher priority than p2)
+/// Priority of the sources (p1<p2 means p1 has higher priority than p2)
 enum TSoundPriority { HighPri, MidPri, LowPri };
+
+/// Type of callbacks called before a spawned source is deleted
+typedef void (*TSpawnEndCallback) (USource *);
 
 
 /**

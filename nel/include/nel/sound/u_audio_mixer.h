@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.8 2001/09/03 14:18:05 cado Exp $
+ * $Id: u_audio_mixer.h,v 1.9 2001/09/04 11:15:29 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,11 +93,13 @@ public:
 
 	/** Add a logical sound source (returns NULL if name not found).
 	 * If spawn is true, the source will auto-delete after playing. If so, the return USource* pointer
-	 * is valid only before the time when calling play() plus the duration of the sound: be careful!
+	 * is valid only before the time when calling play() plus the duration of the sound. You can
+	 * pass a callback function that will be called (if not NULL) just before deleting the spawned
+	 * source.
 	 */
-	virtual USource		*createSource( const char *name, bool spawn=false ) = 0;
+	virtual USource		*createSource( const char *name, bool spawn=false, TSpawnEndCallback cb=NULL ) = 0;
 	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
-	virtual USource		*createSource( TSoundId id, bool spawn=false ) = 0;
+	virtual USource		*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL ) = 0;
 	/** Delete a logical sound source. If you don't call it, the source will be auto-deleted
 	 * when deleting the audio mixer object
 	 */

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.12 2001/09/03 16:00:05 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.13 2001/09/04 11:15:50 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ class CEnvEffect;
 
 
 // Max number of tracks (physical sources)
-#define MAX_TRACKS 32
+#define MAX_TRACKS 5
 
 
 /**
@@ -107,11 +107,13 @@ public:
 
 	/** Add a logical sound source (returns NULL if name not found).
 	 * If spawn is true, the source will auto-delete after playing. If so, the return USource* pointer
-	 * is valid only before the time when calling play() plus the duration of the sound: be careful!
+	 * is valid only before the time when calling play() plus the duration of the sound. You can
+	 * pass a callback function that will be called (if not NULL) just before deleting the spawned
+	 * source.
 	 */
-	virtual USource				*createSource( const char *name, bool spawn=false );
+	virtual USource				*createSource( const char *name, bool spawn=false, TSpawnEndCallback cb=NULL );
 	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
-	virtual USource				*createSource( TSoundId id, bool spawn=false );
+	virtual USource				*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL );
 	/** Delete a logical sound source. If you don't call it, the source will be auto-deleted
 	 * when deleting the audio mixer object
 	 */

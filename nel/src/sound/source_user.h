@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.9 2001/09/03 14:20:20 cado Exp $
+ * $Id: source_user.h,v 1.10 2001/09/04 11:15:50 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ class CSourceUser : public USource, public IPlayable
 public:
 
 	/// Constructor
-	CSourceUser( TSoundId id=NULL, bool spawn=false );
+	CSourceUser( TSoundId id=NULL, bool spawn=false, TSpawnEndCallback cb=NULL );
 	/// Destructor
 	virtual ~CSourceUser();
 
@@ -150,6 +150,8 @@ public:
 	bool							isStopped();
 	/// Return the spawn state
 	bool							isSpawn() const								{ return _Spawn; }
+	/// Return the spawn end callback
+	TSpawnEndCallback				getSpawnEndCallback() const					{ return _SpawnEndCb; }
 
 
 	// From IPlayable
@@ -195,6 +197,7 @@ private:
 
 	// Spawn state
 	const bool						_Spawn;
+	TSpawnEndCallback				_SpawnEndCb;
 };
 
 

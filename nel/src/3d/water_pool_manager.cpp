@@ -1,7 +1,7 @@
 /** \file water_pool_manager.cpp
  * <File description>
  *
- * $Id: water_pool_manager.cpp,v 1.4 2001/11/07 17:10:14 vizerie Exp $
+ * $Id: water_pool_manager.cpp,v 1.5 2001/11/14 15:39:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -84,7 +84,8 @@ CWaterHeightMap *CWaterPoolManager::createWaterPool(const CWaterHeightMapBuild &
 	whm->setFilterWeight(params.FilterWeight);
 	whm->setSize(params.Size);
 	whm->setUnitSize(params.UnitSize);
-	whm->setWaves(params.WaveIntensity, params.WavePeriod);
+	whm->setWaves(params.WaveIntensity, params.WavePeriod, params.WaveRadius, params.BorderWaves);
+	whm->enableWaves(params.WavesEnabled);
 	_PoolMap[params.ID] = whm; // in case it was just created
 	return whm;
 }
@@ -130,10 +131,14 @@ void CWaterPoolManager::setBlendFactor(IDriver *drv, float factor)
 	nlassert(factor >= 0 && factor <= 1);
 	for (TWaterShapeVect::iterator it = _WaterShapes.begin(); it != _WaterShapes.end(); ++it)
 	{
-		CTextureBlend *tb = NLMISC::safe_cast<CTextureBlend *>((*it)->getEnvMap());
-		if (tb->setBlendFactor((uint16) (256.f * factor)))
+		CTextureBlend *tb;
+		for (uint k = 0; k < 2; ++k)
 		{
-			drv->setupTexture(*tb);
+			tb = dynamic_cast<CTextureBlend *>((*it)->getEnvMap(k));
+			if (tb && tb->setBlendFactor((uint16) (256.f * factor)))
+			{
+				drv->setupTexture(*tb);
+			}
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file water_pool_manager.h
  * <File description>
  *
- * $Id: water_pool_manager.h,v 1.2 2001/11/07 10:38:39 vizerie Exp $
+ * $Id: water_pool_manager.h,v 1.3 2001/11/14 15:39:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -52,9 +52,12 @@ public:
 		float		Damping;
 		float		FilterWeight;
 		float		UnitSize;
+		bool		WavesEnabled;
 		float		WaveIntensity;
+		uint		WaveRadius;
 		float		WavePeriod;
-		CWaterHeightMapBuild() : ID(0), Size(256), Damping(0.999f), FilterWeight(5), UnitSize(0.4f), WaveIntensity(0.5f), WavePeriod(0) {}
+		bool		BorderWaves;
+		CWaterHeightMapBuild() : ID(0), Size(256), WavesEnabled(false), Damping(0.99f), FilterWeight(4), UnitSize(0.15f), WaveIntensity(3), WavePeriod(0), WaveRadius(3), BorderWaves(true) {}
 	};
 	/// create a water pool with the given id and the given parameters. If the pool existed before, its parameter are reset
 	CWaterHeightMap *createWaterPool(const CWaterHeightMapBuild &params = CWaterHeightMapBuild());
@@ -70,7 +73,7 @@ public:
 	/** Set a blend factor for all pool (more precisely, all models based on a water shape) that have a blend texture for their envmap (to have cycle between night and day for example)
 	  * \param factor The blend factor which range from 0 to 1
 	  */
-	void setBlendFactor(IDriver *drv, float factor);
+	void setBlendFactor(IDriver *drv, float factor);		
 
 private:		
 	friend class CWaterShape;

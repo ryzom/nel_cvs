@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.9 2001/06/25 13:47:39 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.10 2001/06/25 16:10:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -236,7 +236,23 @@ void CPSSpring::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 void CPSSpring::show(CAnimationTime ellapsedTime)
 {
-	// TODO
+	CVector I = CVector::I ;
+	CVector J = CVector::J ;
+
+	const CVector tab[] = { -I + 2 * J, I + 2 * J
+							, I + 2 * J, -I + J
+							, -I + J, I + J
+							, I + J, -I
+							,  -I, I
+							, I, -I - J
+							, -I - J, I - J
+							, I - J, - I - 2 * J
+							, - I - 2 * J, I - 2 * J
+							} ;
+	const uint tabSize = sizeof(tab) / (2 * sizeof(CVector)) ;
+
+	const float sSize = 0.08f ;
+	displayIcon2d(tab, tabSize, sSize) ;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.200 2003/12/29 17:29:49 lecroart Exp $
+ * $Id: service.cpp,v 1.201 2004/01/29 17:14:44 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -858,9 +858,19 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			bool ok = false;
 			while (!ok)
 			{
-				// read the naming service address from the config file
-				string LSAddr = ConfigFile.getVar ("NSHost").asString();
-				
+				string LSAddr;
+
+				if (haveArg('B'))
+				{
+					// if the naming service address is set on the command line, get it (overwrite the cfg)
+					LSAddr = CPath::standardizePath(getArg('B'));
+				}
+				else
+				{
+					// else read the naming service address from the config file
+					LSAddr = ConfigFile.getVar ("NSHost").asString();
+				}
+
 				// if there's no port to the NS, use the default one 50000
 				if (LSAddr.find(":") == string::npos)
 					LSAddr += ":50000";

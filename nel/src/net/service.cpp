@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.188 2003/09/03 13:50:56 lecroart Exp $
+ * $Id: service.cpp,v 1.189 2003/09/09 14:30:19 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -223,28 +223,19 @@ static void initSignal()
 #endif
 }
 
-static void cbRunningDirectoryChanged (IVariable &var)
+void cbDirectoryChanged (IVariable &var)
 {
 	string vp = CPath::getFullPath(var.toString());
-	if (vp != var.toString())
+	nlinfo ("'%s' changed to '%s'", var.getName().c_str(), vp.c_str());
+	var.fromString(vp);
+
+	if (var.getName() == "RunningDirectory")
 	{
-		nlinfo ("Running dir changed to '%s'", vp.c_str());
-		var.fromString(vp);
 #ifdef NL_OS_WINDOWS
 		_chdir (vp.c_str());
 #else
 		chdir (vp.c_str());
 #endif
-	}
-}
-
-void cbDirectoryChanged (IVariable &var)
-{
-	string vp = CPath::getFullPath(var.toString());
-	if (vp != var.toString())
-	{
-		nlinfo ("%s changed to '%s'", var.getName().c_str(), vp.c_str());
-		var.fromString(vp);
 	}
 }
 
@@ -266,7 +257,7 @@ IService::IService() :
 	_DontUseAES(false),
 	_ResetMeasures(false),
 	ListeningPort("ListeningPort", "listening port for this service", 0, 0, true),
-	RunningDirectory("RunningDirectory", "directory where the service is running on", ".", 0, true, cbRunningDirectoryChanged),
+	RunningDirectory("RunningDirectory", "directory where the service is running on", ".", 0, true, cbDirectoryChanged),
 	ConfigDirectory("ConfigDirectory", "directory where config files are", ".", 0, true, cbDirectoryChanged),
 	LogDirectory("LogDirectory", "directory where the service is logging", ".", 0, true, cbDirectoryChanged),
 	Version("Version", "Version of the shard", ""),
@@ -426,48 +417,15 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		setReportEmailFunction ((void*)sendEmail);
 		setDefaultEmailParams ("gw.nevrax.com", "", "lecroart@nevrax.com");
 
-		// get the path where to run the service if any in the command line
-		if (haveArg('A'))
-			RunningDirectory = CPath::standardizePath(getArg('A'));
-
-		//
-		// Init debug/log stuffs (must be first things otherwise we can't log if errors)
-		//
-
-		// get the log dir if any in the command line
-		if (haveArg('L'))
-			LogDirectory = CPath::standardizePath(getArg('L'));
-
-		// get the config file dir if any in the command line
-		if (haveArg('C'))
-			ConfigDirectory = CPath::standardizePath(getArg('C'));
-
-		createDebug (LogDirectory.c_str(), false);
-
-		//DebugLog->addNegativeFilter ("NETL");
-
-		// we create the log with service name filename ("test_service.log" for example)
-		fd.setParam (LogDirectory.c_str() + _LongName + ".log", false);
-
-		DebugLog->addDisplayer (&fd);
-		InfoLog->addDisplayer (&fd);
-		WarningLog->addDisplayer (&fd);
-		AssertLog->addDisplayer (&fd);
-		ErrorLog->addDisplayer (&fd);
-		CommandLog.addDisplayer (&fd, true);
-
-		//
-		// Init the hierarchical timer
-		//
-
-		CHTimer::startBench(false, true);
-		CHTimer::endBench();
-		
 
 		//
 		// Load the config file
 		//
-
+		
+		// get the config file dir if any in the command line
+		if (haveArg('C'))
+			ConfigDirectory = CPath::standardizePath(getArg('C'));
+		
 		string cfn = ConfigDirectory.c_str() + _LongName + ".cfg";
 		if (!CFile::fileExists(ConfigDirectory.c_str() + _LongName + ".cfg"))
 		{
@@ -491,9 +449,48 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		}	
 		
 		ConfigFile.load (cfn);
-
+		
 		// setup variable with config file variable
 		IVariable::init (ConfigFile);
+		
+
+		//
+		// Overload config file variable with command line value
+		//
+
+		// get the path where to run the service if any in the command line
+		if (haveArg('A'))
+			RunningDirectory = CPath::standardizePath(getArg('A'));
+
+
+		//
+		// Init debug/log stuffs (must be first things otherwise we can't log if errors)
+		//
+
+		// get the log dir if any in the command line
+		if (haveArg('L'))
+			LogDirectory = CPath::standardizePath(getArg('L'));
+
+		createDebug (LogDirectory.c_str(), false);
+
+		//DebugLog->addNegativeFilter ("NETL");
+
+		// we create the log with service name filename ("test_service.log" for example)
+		fd.setParam (LogDirectory.c_str() + _LongName + ".log", false);
+
+		DebugLog->addDisplayer (&fd);
+		InfoLog->addDisplayer (&fd);
+		WarningLog->addDisplayer (&fd);
+		AssertLog->addDisplayer (&fd);
+		ErrorLog->addDisplayer (&fd);
+		CommandLog.addDisplayer (&fd, true);
+
+		//
+		// Init the hierarchical timer
+		//
+
+		CHTimer::startBench(false, true);
+		CHTimer::endBench();
 
 
 		//

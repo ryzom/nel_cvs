@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: scene_user.h,v 1.2 2001/06/19 14:28:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,7 +196,7 @@ public:
 		if(model==NULL)
 			return NULL;
 
-		if( dynamic_cast<CMeshInstance*>(model)==NULL )
+		if( dynamic_cast<CMeshBaseInstance*>(model)==NULL )
 			nlerror("UScene::createInstance(): shape is not a mesh");
 
 		// The component is auto added/deleted to _Scene in ctor/dtor.

@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: instance_user.h,v 1.2 2001/06/19 14:28:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "3d/transform_user.h"
 #include "3d/transform.h"
 #include "3d/transform_shape.h"
-#include "3d/mesh_instance.h"
+#include "3d/mesh_base_instance.h"
 #include "3d/instance_material_user.h"
 
 
@@ -50,7 +50,7 @@ class CInstanceUser : virtual public UInstance, public CTransformUser
 {
 public:
 	/// This is the SAME pointer than _Transform, but correctly casted.
-	CMeshInstance			*_Instance;
+	CMeshBaseInstance			*_Instance;
 
 	/// This is a mirror of _Instance->Materials
 	std::vector<CInstanceMaterialUser>	_Materials;
@@ -64,8 +64,8 @@ public:
 	CInstanceUser(CScene *scene, IModel *trans) : 
 	  CTransformUser(scene, trans)
 	{
-		nlassert(dynamic_cast<CMeshInstance*>(_Transform));
-		_Instance= (CMeshInstance*)_Transform;
+		nlassert(dynamic_cast<CMeshBaseInstance*>(_Transform));
+		_Instance= (CMeshBaseInstance*)_Transform;
 
 		// create user mats.
 		uint	numMat= _Instance->Materials.size();

@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.35 2003/06/26 14:54:34 besson Exp $
+ * $Id: clip_trav.cpp,v 1.36 2003/06/27 12:48:47 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,19 +214,19 @@ void CClipTrav::traverse()
 	static vector<CCluster*> vCluster;
 
 	vCluster.clear();
+	sceneRoot->clipDelChild(RootCluster);
 
 	// In which cluster is the camera ?
-	bool bInWorld = true;
 	CQuadGrid<CCluster*>::CIterator itAcc;
 	if (Camera->getClusterSystem() == (CInstanceGroup*)-1)
 	{
-		if (fullSearch(vCluster, RootCluster->Group, CamPos))
-			bInWorld = false;
+		fullSearch(vCluster, RootCluster->Group, CamPos);
 		for (i = 0; i < vCluster.size(); ++i)
 			sceneRoot->clipAddChild(vCluster[i]);
 	}
 	else
 	{
+		bool bInWorld = true;
 		Accel.select (CamPos, CamPos);
 		itAcc = Accel.begin();
 		while (itAcc != Accel.end())
@@ -241,17 +241,12 @@ void CClipTrav::traverse()
 			}
 			++itAcc;
 		}
-	}
 
-	/// \todo check if necessary ... I think not 
-	if (bInWorld)
-	{
-		sceneRoot->clipAddChild(RootCluster);
-		vCluster.push_back (RootCluster);
-	}
-	else
-	{
-		sceneRoot->clipDelChild(RootCluster);
+		if (bInWorld)
+		{
+			sceneRoot->clipAddChild(RootCluster);
+			vCluster.push_back (RootCluster);
+		}
 	}
 
 	/// Flag all cluster to know if they are in camera or not.

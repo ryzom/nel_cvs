@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
+ * $Id: ps_located.h,v 1.4 2001/04/27 14:28:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,7 @@ public:
 
 	/// dtor
 
-	~CPSLocated() ;
+	virtual ~CPSLocated() ;
 
 	/**
 	* attach a bindable object to this located, such as a force or a particle

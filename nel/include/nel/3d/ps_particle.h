@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.3 2001/04/27 09:32:27 vizerie Exp $
+ * $Id: ps_particle.h,v 1.4 2001/04/27 14:28:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,9 +58,20 @@ public:
 	virtual uint32 getPriority(void) const { return 1000 ; }
 	
 	/**
-	* process one pass for the particle	
+	* process one pass for the particles. The default behaviour shows the particles
 	*/
-	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) = 0 ;
+	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+	{
+		if (pass == PSBlendRender)
+		{
+			draw() ;
+		}
+	}
+
+
+	/// draw the particles
+
+	virtual void draw(void) = 0 ;
 
 	/**	Generate a new element for this bindable. They are generated according to the propertie of the class	
 	 * \return true if it could be added
@@ -94,7 +105,7 @@ class CPSDot : public CPSParticle
 		/**
 		* process one pass for the particle	
 		*/
-		virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
+		virtual void draw(void) ;
 
 		void resize(uint32) {}
 		bool newElement(void) { return true ; }
@@ -131,7 +142,7 @@ class CPSFaceLookAt : public CPSDot
 public:
 	/// create the face look at by giving a texture and an optionnal color
 	CPSFaceLookAt(CSmartPtr<ITexture> tex, const CRGBA &c = CRGBA(255, 255, 255)) ;
-	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
+	virtual void draw(void) ;
 	void serial(NLMISC::IStream &f) ;
 	
 	NLMISC_DECLARE_CLASS(CPSFaceLookAt) ;

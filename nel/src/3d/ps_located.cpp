@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.4 2001/04/27 14:27:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,11 +44,7 @@ CPSLocated::CPSLocated() : _MinMass(1), _MaxMass(1), _LastForever(true)
 						 , _MaxLife(1.0f), _MinLife(1.0f), _Size(0)
 						 , _MaxSize(DefaultMaxLocatedInstance), _UpdateLock(false)
 						 , _CollisionInfo(NULL), _CollisionInfoNbRef(0)
-{
-	for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin() ; it != _LocatedBoundCont.end() ; ++it)
-	{
-		delete *it ;
-	}	
+{		
 }
 
 
@@ -71,7 +67,10 @@ CPSLocated::~CPSLocated()
 
 	// delete all bindable
 
-
+	for (TLocatedBoundCont::iterator it2 = _LocatedBoundCont.begin() ; it2 != _LocatedBoundCont.end() ; ++it2)
+	{
+		delete *it2 ;
+	}
 }
 
 
@@ -355,15 +354,14 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {
 	if (pass == PSCollision)
 	{
-		if (_CollisionInfo)  // are there any collisionner for us ?
-		{
-			resetCollisionInfo() ;
-		}
+		
 	}
 
 	if (pass == PSMotion)
 	{		
 		
+		
+
 		// update the located creation requests that may have been posted
 		updateNewElementRequestStack() ;
 
@@ -376,7 +374,12 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 			TPSAttribVector::const_iterator itSpeed = _Speed.begin() ;		
 			for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed)
 			{
-				(*itPos) += ellapsedTime * (*itSpeed) ;
+				/* (*itPos) += ellapsedTime * (*itSpeed) ; */
+
+				// let's avoid a constrictor call
+				itPos->x += ellapsedTime * itSpeed->x ;
+				itPos->y += ellapsedTime * itSpeed->y ;
+				itPos->z += ellapsedTime * itSpeed->z ;
 			}
 		}
 		else
@@ -397,6 +400,12 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 					(*itPos) += ellapsedTime * (*itSpeed) ;
 				}
 			}
+
+			
+			// reset collision info for the next time
+
+			resetCollisionInfo() ;
+			
 		}
 
 

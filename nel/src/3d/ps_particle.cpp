@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.4 2001/04/27 14:27:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ void CPSDot::init(void)
 	_Mat.setBlend(true) ;
 }
 
-
+/*
 void CPSDot::step(TPSProcessPass pass, CAnimationTime)
 {
 	if (pass != PSBlendRender) return  ;
@@ -110,6 +110,54 @@ void CPSDot::step(TPSProcessPass pass, CAnimationTime)
 
 	delete[] tab ;
 }
+*/
+
+void CPSDot::draw(void)
+{
+	
+
+	// we create a vertex buffer that contains all the particles before to show them
+	uint32 size = _Owner->getSize() ;
+
+
+	if (!size) return ;
+
+
+	setupDriverModelMatrix() ;
+
+	CVertexBuffer vb ;
+	vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR) ;
+	vb.setNumVertices(size) ;
+
+	
+	TPSAttribVector::iterator it = _Owner->getPos().begin() ;
+	TPSAttribFloat::iterator it2 = _Owner->getTime().begin() ;
+
+	IDriver *driver = getDriver() ;
+	
+
+	uint32 k = 0 ;
+
+	float intensity ;
+
+	CRGBA result ;
+
+
+	// pas du tout optimise mais c pour tester ...
+
+	do
+	{
+		intensity = 1.0f - *it2 ;
+		vb.setVertexCoord(k, *it) ;	
+		result.blendFromui(CRGBA(0,0,0), _Color, (uint8) (255.0f * intensity)) ;
+		vb.setColor(k,  result) ;		
+		++it ; ++it2 ; ++k ;
+	}
+	while (k != size) ;
+
+	driver->activeVertexBuffer(vb) ;		
+	driver->renderPoints(_Mat, size) ;
+}
 
 
 
@@ -151,9 +199,9 @@ void CPSFaceLookAt::init(void)
 }
 
 
-void CPSFaceLookAt::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+void CPSFaceLookAt::draw(void)
 {
-	if (pass != PSBlendRender) return  ;
+
 
 	setupDriverModelMatrix() ;
 	CVector I = computeI() ;

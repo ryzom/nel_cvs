@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.9 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: zone.h,v 1.10 2001/09/14 09:44:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -390,11 +390,7 @@ public:
 	/// Refine a zone (if needed).
 	void			refine();
 	/// PreRender a zone (if needed).
-	void			preRender(const std::vector<CPlane>	&pyramid);
-	/// Render pass (if needed).
-	void			renderFar0();
-	void			renderFar1();
-	void			renderTile(sint pass);
+	void			preRender();
 	// release Far render pass/reset Tile/Far render.
 	void			resetRenderFar();
 	/// For changing TileMaxSubdivision. force tesselation to be under tile.
@@ -494,7 +490,6 @@ private:
 	bool			ComputeTileErrorMetric;
 	// REMIND: can't have any patch/zone global, since a propagated split()/updateErrorMetric() can arise.
 
-	std::vector<CPlane>	CurrentPyramid;
 	sint			ClipResult;
 	enum	TClipResult {ClipIn= 0, ClipOut= 1, ClipSide= 2};
 

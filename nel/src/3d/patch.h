@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.11 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: patch.h,v 1.12 2001/09/14 09:44:25 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -420,14 +420,30 @@ public:
 	void			clip(const std::vector<CPlane>	&pyramid);
 	/// Refine / geomorph this patch. Even if clipped.
 	void			refine();
-	/// preRender this patch, if not clipped. Build Max faces / pass etc...
-	void			preRender(const std::vector<CPlane>	&pyramid);
-	/// Render this patch, if not clipped (fill materials primitive block).
+
+
+	/// \name Render
+	//@{
+	// Globals for speed render.
+	static IDriver	*PatchCurrentDriver;
+	// The triangles array for the current pass rendered.
+	static std::vector<uint32>	PassTriArray;
+	static uint					PassNTri;
+
+	/// preRender this patch. no-op if(RenderClipped). Build Max faces / pass etc...
+	void			preRender();
+	// like preRender(), but update TextureFar only. no-op if(!RenderClipped). (you should call preRender() in this case).
+	void			updateTextureFarOnly();
+	/// Render this patch, if not clipped. Call PatchCurrentDriver->renderSimpleTriangles().
+	// Global Setup setup it in CLandscape::render().
 	void			renderFar0();
 	void			renderFar1();
-	void			renderTile(sint pass);
+	// NB: renderTile() is now in CTileMaterial.
 	// For All Far0/Far1/Tile etc..., compute Geomorph and Alpha in software (no VertexShader).
 	void			computeSoftwareGeomorphAndAlpha();
+	//@}
+
+
 	// release Far render pass/reset Tile/Far render.
 	void			resetRenderFar();
 
@@ -574,6 +590,8 @@ public:
 
 	// only usefull for CZone refine.
 	bool			isClipped() const {return Clipped;}
+	// only usefull for CZone preRender.
+	bool			isRenderClipped() const {return RenderClipped;}
 
 
 	// get the according vertex for a corner. use wisely
@@ -589,10 +607,12 @@ public:
 	// @{
 
 	// delete all VB allocated in VertexBuffers, according to Far0 and Far1. Do not Test RenderClipped state.
-	void		deleteVB();
+	// With VB, allocate to he faces array.
+	void		deleteVBAndFaceVector();
 
 	// allocate all VB, according to Far0 and Far1. Do not Test RenderClipped state.
-	void		allocateVB();
+	// With VB, allocate to he faces array.
+	void		allocateVBAndFaceVector();
 
 	// fill all VB, according to Far0, Far1 and CTessFace VBInfos. Do not Test RenderClipped state.
 	// Do not fill a VB if reallocationOccurs().
@@ -602,10 +622,12 @@ public:
 	void		fillVBIfVisible();
 
 	// delete Far1 VB allocated in VertexBuffers. do it only if Far1==true. Do not Test RenderClipped state.
-	void		deleteVBFar1Only();
+	// With VB, allocate to he faces array.
+	void		deleteVBAndFaceVectorFar1Only();
 
 	// allocate Far1 VB, . do it only if Far1==true. Do not Test RenderClipped state.
-	void		allocateVBFar1Only();
+	// With VB, allocate to he faces array.
+	void		allocateVBAndFaceVectorFar1Only();
 
 	// fill Far0 VB according CTessFace VBInfos and Far0 (do not fill if !Far0). Do not Test RenderClipped state.
 	// Do not fill a VB if reallocationOccurs().
@@ -614,12 +636,17 @@ public:
 	void		fillVBFar1Only();
 
 
-	// Test Old anc Current RenderClipped test, and VBuffer according to.
+	// Test Old anc Current RenderClipped test, and fill VBuffer/face/renderPass according to.
 	void		updateClipPatchVB();
 
 
 	// For Debug only.
 	void		debugAllocationMarkIndices(uint marker);
+
+
+	// Because of refine... tessBlock FaceVector may have been deleted, this method do nothing if RenderClipped.
+	// If not, recreate FaceVector for this tessBlock only, according to Far0 and Far1.
+	void		recreateTessBlockFaceVector(CTessBlock &block);
 
 
 	// @}
@@ -697,7 +724,7 @@ private:
 	// }
 	
 	// The render Pass of Far0 and Far1.
-	CPatchRdrPass	*Pass0, *Pass1;
+	CRdrPatchId		Pass0, Pass1;
 	// Info for alpha transition with Far1.
 	float			TransitionSqrMin;
 	float			OOTransitionSqrDelta;
@@ -751,6 +778,10 @@ private:
 	enum			TFarVertType {FVMasterBlock=0, FVTessBlock, FVTessBlockEdge};
 	// Retrieve the tessblockId, depending on a ParamCoord.
 	void			getNumTessBlock(CParamCoord pc, TFarVertType &type, uint &numtb);
+
+
+	// If pathc is visible, force deletion of this TessBlock.
+	void			dirtTessBlockFaceVector(CTessBlock &block);
 
 
 	// For rdr. Insert in the GOOD TessBlock the face (depending on level, patchcoordinates etc...)
@@ -830,6 +861,11 @@ private:
 
 	// @}
 
+
+	// Recompute of new Far Values, according to globals. Don't erase Far0 and Far1.
+	void		computeNewFar(sint &newFar0, sint &newFar1);
+
+
 	// For Render. Those methods compute the vertices for Driver (in CTessFace::Current*VB).
 	void		fillFar0VertexVB(CTessFarVertex *pVert);
 	void		fillFar1VertexVB(CTessFarVertex *pVert);
@@ -845,6 +881,12 @@ private:
 	// For Debug Allcoation only.
 	void		debugAllocationMarkIndicesFarList(CTessList<CTessFarVertex>  &vertList, uint marker);
 	void		debugAllocationMarkIndicesNearList(CTessList<CTessNearVertex>  &vertList, uint marker);
+	// For Render. Allocate / Fill FaceVector, according to Far0/Far1.
+	void		createFaceVectorFar1();
+	void		deleteFaceVectorFar1();
+	void		createFaceVectorFar0OrTile();
+	void		deleteFaceVectorFar0OrTile();
+
 
 
 	// For Refine. Those methods do all the good job, and test if they can allocate / fill the VB.
@@ -853,11 +895,6 @@ private:
 	// For Refine. Those methods do all the good job, and test if they have to delete the VB.
 	void		checkDeleteVertexVBFar(CTessFarVertex *pVert);
 	void		checkDeleteVertexVBNear(CTessNearVertex	*pVert);
-
-	// For Render. Those methods compute the primitives for Driver (in pass).
-	void		addFar0TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist);
-	void		addFar1TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist);
-	void		addTileTriList(CPatchRdrPass *pass, CTessList<CTileFace> &flist);
 
 	// For Render, geomorph / Alpha in software.
 	void		computeGeomorphFar0VertexListVB(CTessList<CTessFarVertex>  &vertList);
@@ -951,6 +988,10 @@ private:
 	void		computeNoise(float s, float t, CVector &displace) const;
 
 	// @}
+
+
+	// From tile coordinates, return the tessBlockId, and the id of the material in this tessBlock.
+	void		computeTbTm(uint &numtb, uint &numtm, uint ts, uint tt);
 
 
 private:

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.62 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: patch.cpp,v 1.63 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,11 @@ CBezierPatch	CPatch::CachePatch;
 const CPatch	*CPatch::LastPatch= NULL;
 uint32			CPatch::_Version=4;
 
+
+IDriver			*CPatch::PatchCurrentDriver= NULL;
+std::vector<uint32>	CPatch::PassTriArray;
+uint				CPatch::PassNTri= 0;
+
 // ***************************************************************************
 CPatch::CPatch()
 {
@@ -61,13 +66,13 @@ CPatch::CPatch()
 	// for Pacs process. By default, false.
 	ExcludeFromRefineAll= false;
 
+	// Init Passes.
+	// DO NOT FILL Patch here, because of operator= problem. do it in compile().
+	// By default, RdrPasses are NULL.
+
 	// To force computation of texture info on next preRender().
 	Far0= -1;
 	Far1= -1;
-
-	// Null the two passes
-	Pass0=NULL;
-	Pass1=NULL;
 
 	// Default: not binded.
 	_BindZoneNeighbor[0]= NULL;
@@ -94,7 +99,8 @@ void			CPatch::release()
 		if(!RenderClipped)
 		{
 			// release VertexBuffer.
-			deleteVB();
+			deleteVBAndFaceVector();
+
 			// Flag.
 			RenderClipped= true;
 		}
@@ -114,6 +120,9 @@ void			CPatch::release()
 		Zone= NULL;
 	}
 
+	// Flag the fact that this patch can't be rendered.
+	Pass0.Patch= NULL;
+	Pass1.Patch= NULL;
 	OrderS=0;
 	OrderT=0;
 	Son0=NULL;
@@ -557,6 +566,9 @@ void			CPatch::addRefTessBlocks()
 		nlassert(os>0);
 		nlassert(ot>0);
 		TessBlocks.resize(os*ot);
+		// init all tessBlocks with the Patch ptr.
+		for(uint i=0; i<TessBlocks.size(); i++)
+			TessBlocks[i].init(this);
 	}
 }
 
@@ -582,6 +594,9 @@ void			CPatch::clearTessBlocks()
 // ***************************************************************************
 void			CPatch::resetMasterBlock()
 {
+	// We should be not visible so FaceVector no more exist.
+	nlassert(RenderClipped);
+
 	MasterBlock.FarVertexList.clear();
 	MasterBlock.FarFaceList.clear();
 	// no tiles should be here!!
@@ -649,12 +664,35 @@ void			CPatch::extendTessBlockWithEndPos(CTessFace *face)
 
 
 // ***************************************************************************
+void			CPatch::dirtTessBlockFaceVector(CTessBlock &tb)
+{
+	// If patch is visible, block's faceVector should exist, but are no more valid.
+	if(!RenderClipped)
+	{
+		// If this tessBlock not already notified to modification.
+		if(!tb.isInModifyList())
+		{
+			// Then append, and delete all FaceVector.
+			// NB: delete FaceVector now, because the TessBlock himself may disapear soon.
+			tb.appendToModifyListAndDeleteFaceVector(getLandscape()->_TessBlockModificationRoot, getLandscape()->_FaceVectorManager);
+		}
+	}
+}
+
+
+// ***************************************************************************
 void			CPatch::appendFaceToRenderList(CTessFace *face)
 {
 	// Update Gnal render.
 	//====================
 	if(face->Level<TessBlockLimitLevel)
+	{
 		MasterBlock.FarFaceList.append(face);
+		MasterBlock.FaceTileMaterialRefCount++;
+
+		// The facelist is modified, so we must update the faceVector, if visible.
+		dirtTessBlockFaceVector(MasterBlock);
+	}
 	else
 	{
 		// Alloc if necessary the TessBlocks.
@@ -663,6 +701,10 @@ void			CPatch::appendFaceToRenderList(CTessFace *face)
 		// link the face to the good tessblock.
 		uint	numtb= getNumTessBlock(face);
 		TessBlocks[numtb].FarFaceList.append(face);
+		TessBlocks[numtb].FaceTileMaterialRefCount++;
+
+		// The facelist is modified, so we must update the faceVector, if visible.
+		dirtTessBlockFaceVector(TessBlocks[numtb]);
 
 		// Must enlarge the BSphere of the tesblock!!
 		// We must do it on a per-face approach, because of tessblocks 's corners which are outside of tessblocks.
@@ -688,11 +730,22 @@ void			CPatch::removeFaceFromRenderList(CTessFace *face)
 	// Update Gnal render.
 	//====================
 	if(face->Level<TessBlockLimitLevel)
+	{
 		MasterBlock.FarFaceList.remove(face);
+		MasterBlock.FaceTileMaterialRefCount--;
+
+		// The facelist is modified, so we must update the faceVector, if visible.
+		dirtTessBlockFaceVector(MasterBlock);
+	}
 	else
 	{
 		// link the face to the good tessblock.
-		TessBlocks[getNumTessBlock(face)].FarFaceList.remove(face);
+		uint	numtb= getNumTessBlock(face);
+		TessBlocks[numtb].FarFaceList.remove(face);
+		TessBlocks[numtb].FaceTileMaterialRefCount--;
+
+		// The facelist is modified, so we must update the faceVector, if visible.
+		dirtTessBlockFaceVector(TessBlocks[numtb]);
 
 		// Update Tile render (no need to do it if face not at least at tessblock level).
 		removeFaceFromTileRenderList(face);
@@ -712,7 +765,7 @@ void			CPatch::appendFaceToTileRenderList(CTessFace *face)
 		// Do not do this for lightmap, since it use same face from RGB0 pass.
 		for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
 		{
-			CPatchRdrPass	*tilePass= face->TileMaterial->Pass[i];
+			CPatchRdrPass	*tilePass= face->TileMaterial->Pass[i].PatchRdrPass;
 			// If tile i enabled.
 			if(tilePass)
 			{
@@ -721,6 +774,10 @@ void			CPatch::appendFaceToTileRenderList(CTessFace *face)
 				face->TileMaterial->TileFaceList[i].append(face->TileFaces[i]);
 			}
 		}
+
+		// The facelist is modified, so we must update the faceVector, if visible.
+		uint	numtb= getNumTessBlock(face);
+		dirtTessBlockFaceVector(TessBlocks[numtb]);
 	}
 }
 
@@ -734,7 +791,7 @@ void			CPatch::removeFaceFromTileRenderList(CTessFace *face)
 		// Do not do this for lightmap, since it use same face from RGB0 pass.
 		for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
 		{
-			CPatchRdrPass	*tilePass= face->TileMaterial->Pass[i];
+			CPatchRdrPass	*tilePass= face->TileMaterial->Pass[i].PatchRdrPass;
 			// If tile i enabled.
 			if(tilePass)
 			{
@@ -743,19 +800,23 @@ void			CPatch::removeFaceFromTileRenderList(CTessFace *face)
 				face->TileMaterial->TileFaceList[i].remove(face->TileFaces[i]);
 			}
 		}
+
+		// The facelist is modified, so we must update the faceVector, if visible.
+		uint	numtb= getNumTessBlock(face);
+		dirtTessBlockFaceVector(TessBlocks[numtb]);
 	}
 }
 
 
 // ***************************************************************************
-static void computeTbTm(uint &numtb, uint &numtm, uint ts, uint tt, uint orderS)
+void			CPatch::computeTbTm(uint &numtb, uint &numtm, uint ts, uint tt)
 {
 	sint	is= ts&1;
 	sint	it= tt&1;
 	ts>>=1;
 	tt>>=1;
 	
-	numtb= tt*(uint)(orderS>>1) + ts;
+	numtb= tt*(uint)(OrderS>>1) + ts;
 	numtm= it*2+is;
 }
 
@@ -769,8 +830,9 @@ void			CPatch::appendTileMaterialToRenderList(CTileMaterial *tm)
 	addRefTessBlocks();
 
 	uint	numtb, numtm;
-	computeTbTm(numtb, numtm, tm->TileS, tm->TileT, OrderS);
+	computeTbTm(numtb, numtm, tm->TileS, tm->TileT);
 	TessBlocks[numtb].RdrTileRoot[numtm]= tm;
+	TessBlocks[numtb].FaceTileMaterialRefCount++;
 }
 // ***************************************************************************
 void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
@@ -778,8 +840,9 @@ void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
 	nlassert(tm);
 
 	uint	numtb, numtm;
-	computeTbTm(numtb, numtm, tm->TileS, tm->TileT, OrderS);
+	computeTbTm(numtb, numtm, tm->TileS, tm->TileT);
 	TessBlocks[numtb].RdrTileRoot[numtm]= NULL;
+	TessBlocks[numtb].FaceTileMaterialRefCount--;
 
 	// Destroy if necessary the TessBlocks.
 	decRefTessBlocks();
@@ -794,7 +857,6 @@ void			CPatch::appendFarVertexToRenderList(CTessFarVertex *fv)
 	getNumTessBlock(fv->PCoord, type, numtb);
 	
 	
-	// \todo yoyo: TODO_OPTIMIZE: mgt TessEdgeBlock. For now, insert them in MasterBlock...
 	if(type==FVMasterBlock || type==FVTessBlockEdge)
 	{
 		MasterBlock.FarVertexList.append(fv);
@@ -815,7 +877,6 @@ void			CPatch::removeFarVertexFromRenderList(CTessFarVertex *fv)
 	getNumTessBlock(fv->PCoord, type, numtb);
 	
 	
-	// \todo yoyo: TODO_OPTIMIZE: mgt TessEdgeBlock. For now, remove them in MasterBlock...
 	if(type==FVMasterBlock || type==FVTessBlockEdge)
 	{
 		MasterBlock.FarVertexList.remove(fv);
@@ -839,7 +900,7 @@ void			CPatch::appendNearVertexToRenderList(CTileMaterial *tileMat, CTessNearVer
 	addRefTessBlocks();
 
 	uint	numtb, numtm;
-	computeTbTm(numtb, numtm, tileMat->TileS, tileMat->TileT, OrderS);
+	computeTbTm(numtb, numtm, tileMat->TileS, tileMat->TileT);
 	TessBlocks[numtb].NearVertexList.append(nv);
 }
 // ***************************************************************************
@@ -848,7 +909,7 @@ void			CPatch::removeNearVertexFromRenderList(CTileMaterial *tileMat, CTessNearV
 	nlassert(tileMat);
 
 	uint	numtb, numtm;
-	computeTbTm(numtb, numtm, tileMat->TileS, tileMat->TileT, OrderS);
+	computeTbTm(numtb, numtm, tileMat->TileS, tileMat->TileT);
 	TessBlocks[numtb].NearVertexList.remove(nv);
 
 	// Destroy if necessary the TessBlocks.
@@ -1017,6 +1078,14 @@ void			CPatch::compile(CZone *z, uint patchId, uint8 orderS, uint8 orderT, CTess
 	nlassert(z);
 	Zone= z;
 
+	// Once the patch is inserted and compiled in a zone, it is ready to be rendered.
+	// So now fill the Patch info in render pass.
+	Pass0.Patch= this;
+	Pass1.Patch= this;
+
+	// init also the MasterBlock.
+	MasterBlock.init(this);
+
 	// only 65536 patch per zone allowed.
 	nlassert(patchId<0x10000);
 	PatchId= (uint16)patchId;
@@ -1087,6 +1156,8 @@ CVector			CPatch::computeVertex(float s, float t) const
 // ***************************************************************************
 void			CPatch::refine()
 {
+	// Default: we are not in TileFarTransition. This can only be true if Zone->ComputeTileErrorMetric==true.
+	TileFarTransition= false;
 	if(Zone->ComputeTileErrorMetric)
 	{
 		// Must test more precisely...
@@ -1098,9 +1169,7 @@ void			CPatch::refine()
 		if(ComputeTileErrorMetric)
 		{
 			// Do the zone include ALL the patch???
-			if(CTessFace::TileNearSphere.include(BSphere))
-				TileFarTransition= false;
-			else
+			if(!CTessFace::TileNearSphere.include(BSphere))
 				TileFarTransition= true;
 		}
 	}
@@ -1186,13 +1255,19 @@ void			CPatch::clip(const std::vector<CPlane>	&pyramid)
 // ***************************************************************************
 void			CPatch::resetRenderFar()
 {
-	if (Pass0)
-		Zone->Landscape->freeFarRenderPass (this, Pass0, Far0);
-	if (Pass1)
-		Zone->Landscape->freeFarRenderPass (this, Pass1, Far1);
+	if (Pass0.PatchRdrPass)
+	{
+		// free the render pass.
+		Zone->Landscape->freeFarRenderPass (this, Pass0.PatchRdrPass, Far0);
+		Pass0.PatchRdrPass= NULL;
+	}
+	if (Pass1.PatchRdrPass)
+	{
+		// free the render pass.
+		Zone->Landscape->freeFarRenderPass (this, Pass1.PatchRdrPass, Far1);
+		Pass1.PatchRdrPass= NULL;
+	}
 
-	Pass0= NULL;
-	Pass1= NULL;
 	Far0= -1;
 	Far1= -1;
 }
@@ -2719,7 +2794,7 @@ void		CPatch::getTileLightMap(uint ts, uint tt, CPatchRdrPass *&rdrpass)
 {
 	// TessBlocks must have been allocated.
 	nlassert(TessBlocks.size()!=0);
-	computeTbTm(numtb, numtm, ts, tt, OrderS);
+
 	// get what tessBlock to use.
 	uint	numtb, numtm;
 	computeTbTm(numtb, numtm, ts, tt);
@@ -2753,7 +2828,7 @@ void		CPatch::getTileLightMapUvInfo(uint ts, uint tt, CVector &uvScaleBias)
 {
 	// TessBlocks must have been allocated.
 	nlassert(TessBlocks.size()!=0);
-	computeTbTm(numtb, numtm, ts, tt, OrderS);
+
 	// get what tessBlock to use.
 	uint	numtb, numtm;
 	computeTbTm(numtb, numtm, ts, tt);
@@ -2775,7 +2850,7 @@ void		CPatch::releaseTileLightMap(uint ts, uint tt)
 {
 	// TessBlocks must have been allocated.
 	nlassert(TessBlocks.size()!=0);
-	computeTbTm(numtb, numtm, ts, tt, OrderS);
+
 	// get what tessBlock to use.
 	uint	numtb, numtm;
 	computeTbTm(numtb, numtm, ts, tt);

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.52 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: tessellation.cpp,v 1.53 2001/09/14 09:44:25 berenguier Exp $
  *
  */
 
@@ -198,9 +198,25 @@ void		CNearVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *
 // ***************************************************************************
 CTileMaterial::CTileMaterial()
 {
-	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+	// By default, all pass are NULL.
+	for(uint i=0; i<NL3D_MAX_TILE_FACE; i++)
 	{
-		Pass[i]=NULL;
+		TileFaceVectors[i]= NULL;
+	}
+}
+
+
+// ***************************************************************************
+void		CTileMaterial::appendTileToEachRenderPass()
+{
+	for(uint i=0;i<NL3D_MAX_TILE_PASS;i++)
+	{
+		// If RdrPass exist, add this Material Id
+		CPatchRdrPass	*rdrPass= Pass[i].PatchRdrPass;
+		if(rdrPass!=NULL)
+		{
+			rdrPass->appendRdrPatchTile(i, &Pass[i]);
+		}
 	}
 }
 
@@ -213,6 +229,7 @@ CTileMaterial::CTileMaterial()
 
 // ***************************************************************************
 sint		CTessFace::CurrentDate=0;
+sint		CTessFace::CurrentRenderDate=0;
 CVector		CTessFace::RefineCenter= CVector::Null;
 float		CTessFace::RefineThreshold= 0.001f;
 float		CTessFace::OORefineThreshold= 1.0f / CTessFace::RefineThreshold;
@@ -246,6 +263,10 @@ CLandscapeVBAllocator	*CTessFace::CurrentTileVBAllocator= NULL;
 
 CTessFace	CTessFace::CantMergeFace;
 CTessFace	CTessFace::MultipleBindFace;
+
+
+uint		CTessFace::PatchRefinePeriod= 1;
+
 
 
 // ***************************************************************************
@@ -561,7 +582,7 @@ void		CTessFace::buildTileFaces()
 	// Do nothgin for lightmap pass, of course.
 	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
 	{
-		if(TileMaterial->Pass[i])
+		if(TileMaterial->Pass[i].PatchRdrPass)
 		{
 			TileFaces[i]= Patch->getLandscape()->newTileFace();
 			TileFaces[i]->VBase= NULL;
@@ -578,7 +599,7 @@ void		CTessFace::deleteTileFaces()
 	// Do nothgin for lightmap pass, of course.
 	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
 	{
-		if(TileMaterial->Pass[i])
+		if(TileMaterial->Pass[i].PatchRdrPass)
 		{
 			nlassert(TileFaces[i]);
 			Patch->getLandscape()->deleteTileFace(TileFaces[i]);
@@ -695,7 +716,6 @@ void		CTessFace::initTileUvLightmap(CParamCoord pointCoord, CParamCoord middle, 
 }
 
 
-
 // ***************************************************************************
 void		CTessFace::computeTileMaterial()
 {
@@ -747,15 +767,23 @@ void		CTessFace::computeTileMaterial()
 
 		// First, get a lightmap for this tile. NB: important to do this after appendTileMaterialToRenderList(), 
 		// because use TessBlocks.
-		Patch->getTileLightMap(ts, tt, TileMaterial->Pass[NL3D_TILE_PASS_LIGHTMAP]);
+		Patch->getTileLightMap(ts, tt, TileMaterial->Pass[NL3D_TILE_PASS_LIGHTMAP].PatchRdrPass);
 
 		// Fill pass of multi pass material.
 		for(i=0;i<NL3D_MAX_TILE_PASS;i++)
 		{
 			// Get the correct render pass, according to the tile number, and the pass.
 			if(i!=NL3D_TILE_PASS_LIGHTMAP)
-				TileMaterial->Pass[i]= Patch->getTileRenderPass(TileId, i);
+				TileMaterial->Pass[i].PatchRdrPass= Patch->getTileRenderPass(TileId, i);
 		}
+
+		// Fill Pass Info.
+		for(i=0;i<NL3D_MAX_TILE_PASS;i++)
+		{
+			TileMaterial->Pass[i].TileMaterial= TileMaterial;
+		}
+
+		// Do not append this tile to each RenderPass, done in preRender().
 	}
 
 
@@ -778,7 +806,7 @@ void		CTessFace::computeTileMaterial()
 	{
 		nlassert(i!=NL3D_TILE_PASS_LIGHTMAP);
 		// If pass is valid
-		if( TileMaterial->Pass[i])
+		if( TileMaterial->Pass[i].PatchRdrPass)
 		{
 			// Face must exist.
 			nlassert(TileFaces[i]);
@@ -819,7 +847,7 @@ void		CTessFace::computeTileMaterial()
 		{
 			nlassert(i!=NL3D_TILE_PASS_LIGHTMAP);
 			// If pass is valid
-			if(TileMaterial->Pass[i])
+			if(TileMaterial->Pass[i].PatchRdrPass)
 			{
 				// Face must exist.
 				nlassert(TileFaces[i]);
@@ -1719,7 +1747,8 @@ void		CTessFace::refine()
 		// NB: errorMetric are never computed twice.
 		// NB: do geomoprh only if patch is visible. (refine still may be done on clipped patch, to have correct 
 		// splitted patchs)
-		if(!isLeaf() && ps>1.0f && !Patch->RenderClipped)
+		// Use Clipped state, because of  refineAll().
+		if(!isLeaf() && ps>1.0f && !Patch->Clipped)
 		{
 			// Hulud VP_TEST
 			
@@ -1813,8 +1842,9 @@ void		CTessFace::refine()
 					if(ps>SelfEndComputeLimit)				// 2.1
 					{
 						NeedCompute=false;
-						// If patch clipped to render, we must ensure that Geomorph is correctly setuped.
-						if(Patch->RenderClipped)
+						// If patch clipped, we must ensure that Geomorph is correctly setuped.
+						// Use Clipped state, because of  refineAll().
+						if(Patch->Clipped)
 						{
 							CTessVertex		*morph=SonLeft->VBase;
 							morph->Pos= morph->EndPos;

@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * <File description>
  *
- * $Id: tess_block.cpp,v 1.3 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: tess_block.cpp,v 1.4 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,10 +25,37 @@
 
 #include "3d/tess_block.h"
 #include "3d/patch_rdr_pass.h"
+#include "3d/landscape_face_vector_manager.h"
 
 
 namespace NL3D 
 {
+
+
+CPlane	CTessBlock::CurrentPyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE];
+
+
+
+// ***************************************************************************
+CTessBlock::~CTessBlock()
+{
+	if(isInModifyList())
+	{
+		removeFromModifyList();
+	}
+}
+
+// ***************************************************************************
+void			CTessBlock::init(CPatch *patch)
+{
+	_Patch= patch;
+}
+// ***************************************************************************
+CPatch			*CTessBlock::getPatch()
+{
+	return _Patch;
+}
+
 
 
 // ***************************************************************************
@@ -54,13 +81,13 @@ void			CTessBlock::resetClip()
 	EmptyFar1= false;
 }
 // ***************************************************************************
-void			CTessBlock::clip(const std::vector<CPlane>	&pyramid)
+void			CTessBlock::clip()
 {
 	Clipped= false;
-	for(sint i=0;i<(sint)pyramid.size();i++)
+	for(sint i=0;i<NL3D_TESSBLOCK_NUM_CLIP_PLANE;i++)
 	{
 		// If entirely out.
-		if(!BSphere.clipBack(pyramid[i]))
+		if(!BSphere.clipBack( CTessBlock::CurrentPyramid[i] ))
 		{
 			Clipped= true;
 			break;
@@ -82,6 +109,162 @@ void			CTessBlock::clipFar(const CVector &refineCenter, float tileDistNear, floa
 	}
 }
 
+
+// ***************************************************************************
+void			CTessBlock::createFaceVectorFar0(CLandscapeFaceVectorManager &mgr)
+{
+	nlassert(Far0FaceVector==NULL);
+	// If size is not 0.
+	if(FarFaceList.size()>0)
+	{
+		// Create a faceVector of the wanted triangles size.
+		Far0FaceVector= mgr.createFaceVector(FarFaceList.size());
+
+		// Fill this faceVector, with FarFaceList
+		CTessFace	*pFace;
+		uint32		*dest= Far0FaceVector->TriPtr;
+		for(pFace= FarFaceList.begin(); pFace; pFace= (CTessFace*)pFace->Next)
+		{
+			*(dest++)= pFace->FVBase->Index0;
+			*(dest++)= pFace->FVLeft->Index0;
+			*(dest++)= pFace->FVRight->Index0;
+		}
+	}
+
+}
+// ***************************************************************************
+void			CTessBlock::deleteFaceVectorFar0(CLandscapeFaceVectorManager &mgr)
+{
+	if(Far0FaceVector)
+	{
+		mgr.deleteFaceVector(Far0FaceVector);
+		Far0FaceVector= NULL;
+	}
+}
+// ***************************************************************************
+void			CTessBlock::createFaceVectorFar1(CLandscapeFaceVectorManager &mgr)
+{
+	nlassert(Far1FaceVector==NULL);
+	// If size is not 0.
+	if(FarFaceList.size()>0)
+	{
+		// Create a faceVector of the wanted triangles size.
+		Far1FaceVector= mgr.createFaceVector(FarFaceList.size());
+
+		// Fill this faceVector, with FarFaceList
+		CTessFace	*pFace;
+		uint32		*dest= Far1FaceVector->TriPtr;
+		for(pFace= FarFaceList.begin(); pFace; pFace= (CTessFace*)pFace->Next)
+		{
+			*(dest++)= pFace->FVBase->Index1;
+			*(dest++)= pFace->FVLeft->Index1;
+			*(dest++)= pFace->FVRight->Index1;
+		}
+	}
+}
+// ***************************************************************************
+void			CTessBlock::deleteFaceVectorFar1(CLandscapeFaceVectorManager &mgr)
+{
+	if(Far1FaceVector)
+	{
+		mgr.deleteFaceVector(Far1FaceVector);
+		Far1FaceVector= NULL;
+	}
+}
+// ***************************************************************************
+void			CTessBlock::createFaceVectorTile(CLandscapeFaceVectorManager &mgr)
+{
+	// For all tiles existing, and for all facePass existing, delete the faceVector.
+	for(uint tileId=0; tileId<NL3D_TESSBLOCK_TILESIZE; tileId++)
+	{
+		// if tile exist.
+		if(RdrTileRoot[tileId])
+		{
+			// For all Pass faces of the tile.
+			for(uint facePass=0; facePass<NL3D_MAX_TILE_FACE; facePass++)
+			{
+				CTessList<CTileFace>	&faceList= RdrTileRoot[tileId]->TileFaceList[facePass];
+				CLandscapeFaceVector	*&faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
+				// If some triangles create them.
+				if(faceList.size()>0)
+				{
+					// Create a faceVector of the wanted triangles size.
+					faceVector= mgr.createFaceVector(faceList.size());
+
+					// Fill this faceVector, with the TileFaceList
+					CTileFace	*pFace;
+					uint32		*dest= faceVector->TriPtr;
+					for(pFace= faceList.begin(); pFace; pFace= (CTileFace*)pFace->Next)
+					{
+						*(dest++)= pFace->VBase->Index;
+						*(dest++)= pFace->VLeft->Index;
+						*(dest++)= pFace->VRight->Index;
+					}
+				}
+			}
+		}
+	}
+}
+// ***************************************************************************
+void			CTessBlock::deleteFaceVectorTile(CLandscapeFaceVectorManager &mgr)
+{
+	// For all tiles existing, and for all facePass existing, delete the faceVector.
+	for(uint tileId=0; tileId<NL3D_TESSBLOCK_TILESIZE; tileId++)
+	{
+		// if tile exist.
+		if(RdrTileRoot[tileId])
+		{
+			// For all Pass faces of the tile.
+			for(uint facePass=0; facePass<NL3D_MAX_TILE_FACE; facePass++)
+			{
+				CTessList<CTileFace>	&faceList= RdrTileRoot[tileId]->TileFaceList[facePass];
+				CLandscapeFaceVector	*&faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
+				// If the faceVector exist, delete it.
+				if(faceVector)
+				{
+					mgr.deleteFaceVector(faceVector);
+					faceVector= NULL;
+				}
+			}
+		}
+	}
+}
+
+
+// ***************************************************************************
+void			CTessBlock::appendToModifyListAndDeleteFaceVector(CTessBlock &root, CLandscapeFaceVectorManager &mgr)
+{
+	// If already appened, return.
+	if(isInModifyList())
+		return;
+
+	// append to root.
+	_PrecToModify= &root;
+	_NextToModify= root._NextToModify;
+	if(root._NextToModify)
+		root._NextToModify->_PrecToModify= this;
+	root._NextToModify= this;
+
+	// Then delete All faceVector that may exist.
+	deleteFaceVectorFar0(mgr);
+	deleteFaceVectorFar1(mgr);
+	deleteFaceVectorTile(mgr);
+}
+// ***************************************************************************
+void			CTessBlock::removeFromModifyList()
+{
+	// If already removed, return.
+	// _PrecToModify must be !NULL
+	if(!isInModifyList())
+		return;
+
+	// unlink.
+	_PrecToModify->_NextToModify= _NextToModify;
+	if(_NextToModify)
+		_NextToModify->_PrecToModify= _PrecToModify;
+	_PrecToModify= NULL;
+	_NextToModify= NULL;
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.3 2001/08/29 12:49:29 berenguier Exp $
+ * $Id: landscape_model.h,v 1.4 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,7 +111,8 @@ private:
 	friend class CLandscapeClipObs;
 	friend class CLandscapeRenderObs;
 
-	std::vector<CPlane>		CurrentPyramid;
+	// The current small pyramid, for faster clip.
+	CPlane		CurrentPyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE];
 };
 
 

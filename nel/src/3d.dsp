@@ -376,6 +376,22 @@ SOURCE=.\3d\landscape.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\landscape_def.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\landscape_def.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\landscape_face_vector_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\landscape_face_vector_manager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\landscape_profile.cpp
 # End Source File
 # Begin Source File
@@ -385,17 +401,6 @@ SOURCE=.\3d\landscape_profile.h
 # Begin Source File
 
 SOURCE=.\3d\landscapevb_allocator.cpp
-
-!IF  "$(CFG)" == "3d - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.14 2001/08/29 12:49:29 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.15 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,13 +113,13 @@ void CClipTrav::traverse()
 
 	uint32 i, j;
 
-	ViewPyramid[0].make(lt, lb, rt);
-	ViewPyramid[1].make(lbFar, ltFar, rtFar);
+	ViewPyramid[NL3D_CLIP_PLANE_NEAR].make(lt, lb, rt);
+	ViewPyramid[NL3D_CLIP_PLANE_FAR].make(lbFar, ltFar, rtFar);
 
-	ViewPyramid[2].make(pfoc, lt, lb);
-	ViewPyramid[3].make(pfoc, rt, lt);
-	ViewPyramid[4].make(pfoc, rb, rt);
-	ViewPyramid[5].make(pfoc, lb, rb);
+	ViewPyramid[NL3D_CLIP_PLANE_LEFT].make(pfoc, lt, lb);
+	ViewPyramid[NL3D_CLIP_PLANE_TOP].make(pfoc, rt, lt);
+	ViewPyramid[NL3D_CLIP_PLANE_RIGHT].make(pfoc, rb, rt);
+	ViewPyramid[NL3D_CLIP_PLANE_BOTTOM].make(pfoc, lb, rb);
 	
 	// Compute pyramid in World basis.
 	// The vector transformation M of a plane p is computed as p*M-1.

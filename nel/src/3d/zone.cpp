@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.51 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: zone.cpp,v 1.52 2001/09/14 09:44:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -791,9 +791,6 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 {
 	nlassert(Compiled);
 
-	// Store current pyramid.
-	CurrentPyramid= pyramid;
-
 	// bkup old ClipResult. NB: by default, it is ClipOut (no VB created).
 	sint	oldClipResult= ClipResult;
 
@@ -858,7 +855,7 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 		CPatch		*pPatch= &(*Patchs.begin());
 		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 		{
-			pPatch->clip(CurrentPyramid);
+			pPatch->clip(pyramid);
 		}
 	}
 
@@ -949,6 +946,7 @@ void			CZone::refine()
 	nlassert(Compiled);
 	// Must be 2^X-1.
 	static const	sint	hideRefineFreq= 15;
+	sint	showRefineFreq= CTessFace::PatchRefinePeriod-1;
 
 	// DebugYoyo.
 	// For the monkey bind test.
@@ -979,8 +977,18 @@ void			CZone::refine()
 		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 		{
 			// "ZoneId+n", because there is only 70 approx patchs per zone. doing this may stabilize framerate.
-			if(pPatch->isClipped() && (CTessFace::CurrentDate & hideRefineFreq)!=((ZoneId+n) & hideRefineFreq))
-				continue;
+			if(pPatch->isClipped())
+			{
+				if( (CTessFace::CurrentDate & hideRefineFreq)!=((ZoneId+n) & hideRefineFreq) )
+					continue;
+			}
+			// Visible.
+			else
+			{
+				if( (CTessFace::CurrentDate & showRefineFreq)!=((ZoneId+n) & showRefineFreq) )
+					continue;
+			}
+			// If really want to refine, do it.
 			pPatch->refine();
 		}
 	}
@@ -989,7 +997,8 @@ void			CZone::refine()
 		// Else refine ALL patchs (even those which may be invisible).
 		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 		{
-			pPatch->refine();
+			if( (CTessFace::CurrentDate & showRefineFreq)==((ZoneId+n) & showRefineFreq) )
+				pPatch->refine();
 		}
 	}
 
@@ -1061,62 +1070,66 @@ void			CZone::averageTesselationVertices()
 
 
 // ***************************************************************************
-void			CZone::preRender(const std::vector<CPlane>	&pyramid)
+void			CZone::preRender()
 {
 	nlassert(Compiled);
-	if(ClipResult==ClipOut)
+
+	// Must be 2^X-1.
+	static const	sint	updateFarRefineFreq= 15;
+	// Take the renderDate here.
+	sint		curDateMod= CTessFace::CurrentRenderDate & updateFarRefineFreq;
+
+	// If no patchs, do nothing.
+	if(Patchs.empty())
 		return;
 
-	// PreRender Pass.
-	CPatch		*pPatch= &(*Patchs.begin());
-	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
-	{
-		pPatch->preRender(pyramid);
-	}
-}
+	/* If patchs invisible, must still update their Far Textures,
+		else, there may be slowdown when we turn the head.
+	*/
 
 
-// ***************************************************************************
-void			CZone::renderFar0()
-{
-	nlassert(Compiled);
+	// If all the zone is invisible.
 	if(ClipResult==ClipOut)
-		return;
-
-	// RenderFar0.
-	CPatch		*pPatch= &(*Patchs.begin());
-	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 	{
-		pPatch->renderFar0();
+		// No patchs are visible, but maybe update the far textures.
+		if( curDateMod==(ZoneId & updateFarRefineFreq) )
+		{
+			// updateTextureFarOnly for all patchs.
+			CPatch		*pPatch= &(*Patchs.begin());
+			for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+				pPatch->updateTextureFarOnly();
+		}
 	}
-}
-// ***************************************************************************
-void			CZone::renderFar1()
-{
-	nlassert(Compiled);
-	if(ClipResult==ClipOut)
-		return;
-
-	// RenderFar1.
-	CPatch		*pPatch= &(*Patchs.begin());
-	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+	// else If some patchs only are visible.
+	else if(ClipResult==ClipSide)
 	{
-		pPatch->renderFar1();
+		// PreRender Pass, or updateTextureFarOnly(), according to RenderClipped state.
+		CPatch		*pPatch= &(*Patchs.begin());
+		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+		{
+			// If the patch is visible
+			if(!pPatch->isRenderClipped())
+			{
+				// Then preRender it.
+				pPatch->preRender();
+			}
+			else
+			{
+				// else maybe updateFar it.
+				// ZoneId+n for better repartition.
+				if( curDateMod==((ZoneId+n) & updateFarRefineFreq) )
+					pPatch->updateTextureFarOnly();
+			}
+		}
 	}
-}
-// ***************************************************************************
-void			CZone::renderTile(sint pass)
-{
-	nlassert(Compiled);
-	if(ClipResult==ClipOut)
-		return;
-
-	// RenderTile.
-	CPatch		*pPatch= &(*Patchs.begin());
-	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+	else	// ClipResult==ClipIn
 	{
-		pPatch->renderTile(pass);
+		// PreRender Pass for All
+		CPatch		*pPatch= &(*Patchs.begin());
+		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+			pPatch->preRender();
 	}
+
 }
 
 
@@ -1186,7 +1199,12 @@ void			CZone::changePatchTextureAndColor (sint numPatch, const std::vector<CTile
 
 		// unlockBuffers() if necessary.
 		if(!Patchs[numPatch].RenderClipped)
+		{
 			Landscape->unlockBuffers();
+			// This patch is visible, and TileFaces have been deleted / added.
+			// So must update TessBlock.
+			Landscape->updateTessBlocksFaceVector();
+		}
 	}
 }
 

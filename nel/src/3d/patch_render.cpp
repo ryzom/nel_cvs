@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.2 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.3 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/bezier_patch.h"
 #include "3d/zone.h"
 #include "3d/landscape.h"
+#include "3d/landscape_profile.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
 using	namespace	std;
@@ -41,21 +42,16 @@ namespace NL3D
 
 // ***************************************************************************
 // ***************************************************************************
-// Patch / Face rendering.
+// Patch Texture computation.
 // ***************************************************************************
 // ***************************************************************************
 
 
 // ***************************************************************************
-void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
+void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 {
-	// Don't do anything if clipped.
-	if(RenderClipped)
-		return;
-
-	// 0. Classify the patch.
-	//=======================
-	sint	newFar0,newFar1;
+	// Classify the patch.
+	//========================
 	float	r= (CTessFace::RefineCenter-BSphere.Center).norm() - BSphere.Radius;
 	float	rr;
 	if(r<CTessFace::TileDistNear)
@@ -74,26 +70,27 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 	}
 
 
-	// 1. Update Texture Info.
+	// Update Texture Info.
 	//========================
 	if(newFar0!=Far0 || newFar1!=Far1)
 	{
 		// Backup old pass0
-		CPatchRdrPass	*oldPass0=Pass0;
-		CPatchRdrPass	*oldPass1=Pass1;
+		CPatchRdrPass	*oldPass0=Pass0.PatchRdrPass;
+		CPatchRdrPass	*oldPass1=Pass1.PatchRdrPass;
 		float oldFar0UScale=Far0UScale;
 		float oldFar0VScale=Far0VScale;
 		float oldFar0UBias=Far0UBias;
 		float oldFar0VBias=Far0VBias;
 		uint8 oldFlags=Flags;
 
+
 		// Don't delete the pass0 if the new newFar1 will use it
 		if ((newFar1==Far0)&&(Far0>0))
-			Pass0=NULL;
+			Pass0.PatchRdrPass=NULL;
 
 		// Don't delete the pass1 if the new newFar0 will use it
 		if ((newFar0==Far1)&&(Far1>0))
-			Pass1=NULL;
+			Pass1.PatchRdrPass=NULL;
 
 		// Pass0 have changed ?
 		if (newFar0!=Far0)
@@ -102,14 +99,14 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			if(newFar0>0)
 			{
 				// Free the old pass, don't used any more
-				if (Pass0)
-					Zone->Landscape->freeFarRenderPass (this, Pass0, Far0);
+				if (Pass0.PatchRdrPass)
+					Zone->Landscape->freeFarRenderPass (this, Pass0.PatchRdrPass, Far0);
 
 				// Can we use the old pass1 ?
 				if (newFar0==Far1)
 				{
 					// Yes, recycle it!
-					Pass0=oldPass1;
+					Pass0.PatchRdrPass=oldPass1;
 
 					// Copy uv coordinates
 					Far0UScale=Far1UScale;
@@ -126,7 +123,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 				{
 					// Rotation boolean
 					bool bRot;
-					Pass0=Zone->Landscape->getFarRenderPass(this, newFar0, Far0UScale, Far0VScale, Far0UBias, Far0VBias, bRot);
+					Pass0.PatchRdrPass=Zone->Landscape->getFarRenderPass(this, newFar0, Far0UScale, Far0VScale, Far0UBias, Far0VBias, bRot);
 
 					// Flags is set if the far texture is rotated of 90° to the left
 					if (bRot)
@@ -137,10 +134,10 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			}
 			else	// no more far pass0
 			{
-				if (Pass0)
+				if (Pass0.PatchRdrPass)
 				{
-					Zone->Landscape->freeFarRenderPass (this, Pass0, Far0);
-					Pass0=NULL;
+					Zone->Landscape->freeFarRenderPass (this, Pass0.PatchRdrPass, Far0);
+					Pass0.PatchRdrPass=NULL;
 				}
 			}
 		}
@@ -152,14 +149,14 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			if(newFar1>0)
 			{
 				// Delete the pass1 if not used any more
-				if (Pass1)
-					Zone->Landscape->freeFarRenderPass (this, Pass1, Far1);
+				if (Pass1.PatchRdrPass)
+					Zone->Landscape->freeFarRenderPass (this, Pass1.PatchRdrPass, Far1);
 
 				// Can we use the old pass1 ?
 				if (newFar1==Far0)
 				{
 					// Yes, recycle it!
-					Pass1=oldPass0;
+					Pass1.PatchRdrPass= oldPass0;
 
 					// Copy uv coordinates
 					Far1UScale=oldFar0UScale;
@@ -176,7 +173,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 				{
 					// Rotation boolean
 					bool bRot;
-					Pass1=Zone->Landscape->getFarRenderPass(this, newFar1, Far1UScale, Far1VScale, Far1UBias, Far1VBias, bRot);
+					Pass1.PatchRdrPass=Zone->Landscape->getFarRenderPass(this, newFar1, Far1UScale, Far1VScale, Far1UBias, Far1VBias, bRot);
 
 					// Flags is set if the far texture is rotated of 90° to the left
 					if (bRot)
@@ -199,14 +196,61 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			}
 			else	// no more far pass1
 			{
-				if (Pass1)
+				if (Pass1.PatchRdrPass)
 				{
-					Zone->Landscape->freeFarRenderPass (this, Pass1, Far1);
-					Pass1=NULL;
+					Zone->Landscape->freeFarRenderPass (this, Pass1.PatchRdrPass, Far1);
+					Pass1.PatchRdrPass=NULL;
 				}
 			}
 		}
+
 	}
+
+	// Don't copy Far0 and Far1.
+}
+
+
+// ***************************************************************************
+void			CPatch::updateTextureFarOnly()
+{
+	// If visible, don't change Far, because VB must be changed too. preRender() should have been called isntead.
+	if(!RenderClipped)
+		return;
+
+	sint	newFar0,newFar1;
+	// compute new Far0 and new Far1.
+	computeNewFar(newFar0, newFar1);
+
+	// Far change.
+	//------------------
+	// Set new far values
+	Far0= newFar0;
+	Far1= newFar1;
+}
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Patch / Face rendering.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CPatch::preRender()
+{
+	// If not visible, do nothing.
+	if(RenderClipped)
+		return;
+
+
+	// 0. Classify the patch, and update TextureInfo.
+	//=======================
+	sint	newFar0,newFar1;
+	// compute new Far0 and new Far1.
+	computeNewFar(newFar0, newFar1);
+
 
 	// 2. Update vertices in VB
 	//========================
@@ -226,7 +270,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 	{
 		// delete the old VB (NB: RenderClipped==false here). 
 		// NB: Far0 and Far1 are still unmodified, so deleteVB() will do the good job.
-		deleteVB();
+		deleteVBAndFaceVector();
 	}
 	else
 	{
@@ -236,7 +280,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 		if(newFar1!=oldFar1)
 		{
 			// NB: Far1 is still unmodified, so deleteVB() will do the good job.
-			deleteVBFar1Only();
+			deleteVBAndFaceVectorFar1Only();
 		}
 	}
 
@@ -252,7 +296,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 	if(changeTileMode)
 	{
 		// major change: recreate all the VB.
-		allocateVB();
+		allocateVBAndFaceVector();
 		// Then try to refill if possible.
 		fillVB();
 	}
@@ -271,147 +315,103 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 		// If change in Far1, must allcoate and recompute UVs.
 		if(newFar1!=oldFar1)
 		{
-			allocateVBFar1Only();
+			allocateVBAndFaceVectorFar1Only();
 			// try to fill if no reallocation problem
 			fillVBFar1Only();
 		}
 	}
 
 
-	// 3. Clip tess blocks.
+	// 3. Append patch to renderList.
+	//=====================
+	// This patch is visible. So if good far, append.
+	if(Far0>0)
+	{
+		Pass0.PatchRdrPass->appendRdrPatchFar0(&Pass0);
+	}
+	// Same for Far1.
+	if(Far1>0)
+	{
+		Pass1.PatchRdrPass->appendRdrPatchFar1(&Pass1);
+	}
+
+
+	// 4. Clip tess blocks.
 	//=====================
 	// MasterBlock never clipped.
 	MasterBlock.resetClip();
 	// If we are in Tile/FarTransition
 	bool	doClipFar= Far0==0 && Far1==1;
-	for(sint i=0; i<(sint)TessBlocks.size(); i++)
+	// Parse all TessBlocks.
+	uint			nTessBlock= TessBlocks.size();
+	CTessBlock		*pTessBlock= nTessBlock>0? &TessBlocks[0]: NULL ;
+	for(; nTessBlock>0; pTessBlock++, nTessBlock--)
 	{
-		TessBlocks[i].resetClip();
-		TessBlocks[i].clip(pyramid);
-		// If we are in Tile/FarTransition
-		if(doClipFar)
-			TessBlocks[i].clipFar(CTessFace::RefineCenter, CTessFace::TileDistNear, CTessFace::FarTransition);
-	}
-	// \todo yoyo: TODO_OPTIMIZE: CTessBlockEdge gestion.
-
-
-
-	// 4. Count Triangles usage.
-	//======================================
-
-	// FAR0.
-	//=======
-	if(Pass0)
-	{
-		// Inc tri count.
-		Pass0->addMaxTris(MasterBlock.FarFaceList.size());
-
-		// For all tessBlocks not clipped.
-		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		CTessBlock		&tblock= *pTessBlock;
+		// If this TessBlock is empty, do not need to clip
+		if(tblock.FaceTileMaterialRefCount==0)
 		{
-			CTessBlock	&tblock= TessBlocks[i];
-			if(!tblock.Clipped && !tblock.FullFar1)
-			{
-				// Inc tri count.
-				Pass0->addMaxTris(tblock.FarFaceList.size());
-			}
+			// Simply force the clip.
+			tblock.Clipped= true;
 		}
-	}
-	// \todo yoyo: TODO_OPTIMIZE: CTessBlockEdge gestion (add new vertices).
-
-	// FAR1.
-	//=======
-	if(Pass1)
-	{
-		// Inc tri count.
-		Pass1->addMaxTris(MasterBlock.FarFaceList.size());
-		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		else
 		{
-			CTessBlock	&tblock= TessBlocks[i];
-			if(!tblock.Clipped && !tblock.EmptyFar1)
+			// clip the tessBlock.
+			tblock.resetClip();
+			tblock.clip();
+			// If we are in Tile/FarTransition
+			if(doClipFar)
+				tblock.clipFar(CTessFace::RefineCenter, CTessFace::TileDistNear, CTessFace::FarTransition);
+
+			// If TileMode, and if tile visible
+			if(Far0==0 && !tblock.Clipped && !tblock.FullFar1)
 			{
-				// Inc tri count.
-				Pass1->addMaxTris(tblock.FarFaceList.size());
-			}
-		}
-	}
-	// \todo yoyo: TODO_OPTIMIZE: CTessBlockEdge gestion (add new vertices).
-
-
-	// TILE.
-	//=======
-	if(Far0==0)
-	{
-		// No Tiles in MasterBlock!!
-
-		// Traverse the TessBlocks to add vertices, and each TileMaterial, to addMaxTris to pass.
-		for(sint i=0; i<(sint)TessBlocks.size(); i++)
-		{
-			CTessBlock	&tblock= TessBlocks[i];
-			if(!tblock.Clipped && !tblock.FullFar1)
-			{
-				// Inc tri count.
-				for(sint j=0; j<NL3D_TESSBLOCK_TILESIZE; j++)
+				// Append all tiles (if any) to the renderPass list!
+				for(uint j=0;j<NL3D_TESSBLOCK_TILESIZE; j++)
 				{
-					CTileMaterial	*tileMat= tblock.RdrTileRoot[j];
-					if(tileMat)
-					{
-						nlassert(NL3D_MAX_TILE_PASS==5);
-						nlassert(NL3D_TILE_PASS_LIGHTMAP==4);
-						// We must always have a RGB0 pass, and a lightmap pass.
-						nlassert(tileMat->Pass[NL3D_TILE_PASS_RGB0]);
-						nlassert(tileMat->Pass[NL3D_TILE_PASS_LIGHTMAP]);
-
-						// Add the max faces for RGB0 and LIGHTMAP. NB: lightmap pass use RGB0 faces...
-						// Because of sharing of vertices.
-						tileMat->Pass[NL3D_TILE_PASS_RGB0]->addMaxTris(tileMat->TileFaceList[NL3D_TILE_PASS_RGB0].size());
-						tileMat->Pass[NL3D_TILE_PASS_LIGHTMAP]->addMaxTris(tileMat->TileFaceList[NL3D_TILE_PASS_RGB0].size());
-
-						// Add the optionnal faces for each Mat Pass.
-						if(tileMat->Pass[NL3D_TILE_PASS_RGB1])
-							tileMat->Pass[NL3D_TILE_PASS_RGB1]->addMaxTris(tileMat->TileFaceList[NL3D_TILE_PASS_RGB1].size());
-						if(tileMat->Pass[NL3D_TILE_PASS_RGB2])
-							tileMat->Pass[NL3D_TILE_PASS_RGB2]->addMaxTris(tileMat->TileFaceList[NL3D_TILE_PASS_RGB2].size());
-						if(tileMat->Pass[NL3D_TILE_PASS_ADD])
-							tileMat->Pass[NL3D_TILE_PASS_ADD]->addMaxTris(tileMat->TileFaceList[NL3D_TILE_PASS_ADD].size());
-					}
+					// If tile exist
+					if(tblock.RdrTileRoot[j])
+						// add it to the renderList
+						tblock.RdrTileRoot[j]->appendTileToEachRenderPass();
 				}
-			}
+			}	
 		}
 	}
+
 }
 
 
-
-// ***************************************************************************
-void			CPatch::addFar0TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist)
-{
-	CTessFace	*pFace;
-	for(pFace= flist.begin(); pFace; pFace= (CTessFace*)pFace->Next)
-	{
-		pass->addTri(pFace->FVBase->Index0, pFace->FVLeft->Index0, pFace->FVRight->Index0);
+// Special profiling.
+#ifdef	NL3D_PROFILE_LAND
+#define	NL3D_PROFILE_LAND_ADD_FACE_VECTOR(_x, _fv)		\
+	if(_fv)											\
+	{												\
+		NL3D_PROFILE_LAND_ADD(_x, _fv->NumTri);		\
 	}
-}
+#else
+#define	NL3D_PROFILE_LAND_ADD_FACE_VECTOR(_x, _fv)
+#endif
 
 
 // ***************************************************************************
-void			CPatch::addFar1TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist)
+static	inline	void	renderFaceVector(CLandscapeFaceVector *fv)
 {
-	CTessFace	*pFace;
-	for(pFace= flist.begin(); pFace; pFace= (CTessFace*)pFace->Next)
+	// If not NULL (ie not empty).
+	if(fv)
 	{
-		pass->addTri(pFace->FVBase->Index1, pFace->FVLeft->Index1, pFace->FVRight->Index1);
-	}
-}
+		// here we have NumTri>0, because fv!=NULL.
 
+		// making lot of render() is slower than copy a block, and render it.
+		//CPatch::PatchCurrentDriver->renderSimpleTriangles(fv->TriPtr, fv->NumTri);
 
-// ***************************************************************************
-void			CPatch::addTileTriList(CPatchRdrPass *pass, CTessList<CTileFace> &flist)
-{
-	CTileFace	*pFace;
-	for(pFace= flist.begin(); pFace; pFace= (CTileFace*)pFace->Next)
-	{
-		pass->addTri(pFace->VBase->Index, pFace->VLeft->Index, pFace->VRight->Index);
+		uint	nTriIndex= fv->NumTri*3;
+		uint	oldSize= CPatch::PassNTri*3;
+		// realloc if necessary
+		if( CPatch::PassTriArray.size() < oldSize + nTriIndex )
+			CPatch::PassTriArray.resize( oldSize + nTriIndex );
+		// Fill and increment the array.
+		memcpy( &CPatch::PassTriArray[oldSize], fv->TriPtr, nTriIndex * sizeof(uint32) );
+		CPatch::PassNTri+= fv->NumTri;
 	}
 }
 
@@ -419,152 +419,247 @@ void			CPatch::addTileTriList(CPatchRdrPass *pass, CTessList<CTileFace> &flist)
 // ***************************************************************************
 void			CPatch::renderFar0()
 {
-	if(Pass0 && !RenderClipped)
+	// Must be visible, and must be called only if the RdrPass is enabled.
+	nlassert(!RenderClipped && Pass0.PatchRdrPass);
+
+	// Render tris of MasterBlock.
+	renderFaceVector(MasterBlock.Far0FaceVector);
+	// profile
+	NL3D_PROFILE_LAND_ADD_FACE_VECTOR(ProfNRdrFar0, MasterBlock.Far0FaceVector);
+
+	// Render tris of TessBlocks.
+	uint			nTessBlock= TessBlocks.size();
+	CTessBlock		*pTessBlock= nTessBlock>0? &TessBlocks[0]: NULL ;
+	for(; nTessBlock>0; pTessBlock++, nTessBlock--)
 	{
-
-		// Fill PBlock.
-		//=======
-		// Add tris of MasterBlock.
-		addFar0TriList(Pass0, MasterBlock.FarFaceList);
-		// Add tris of TessBlocks.
-		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		CTessBlock		&tblock= *pTessBlock;
+		// if block visible, render
+		if(!tblock.Clipped && !tblock.FullFar1)
 		{
-			CTessBlock	&tblock= TessBlocks[i];
-			if(!tblock.Clipped && !tblock.FullFar1)
-				addFar0TriList(Pass0, tblock.FarFaceList);
+			renderFaceVector(tblock.Far0FaceVector);
+			// profile
+			NL3D_PROFILE_LAND_ADD_FACE_VECTOR(ProfNRdrFar0, tblock.Far0FaceVector);
 		}
+	}
 
-		// Check the pass is in the set
+	// Check the pass is in the set
 #ifdef NL_DEBUG
-		if (Pass0)
+	if (Pass0.PatchRdrPass)
+	{
+		nlassert (Zone->Landscape->_FarRdrPassSet.find (Pass0.PatchRdrPass)!=Zone->Landscape->_FarRdrPassSet.end());
+		if (Zone->Landscape->_FarRdrPassSet.find (Pass0.PatchRdrPass)==Zone->Landscape->_FarRdrPassSet.end())
 		{
-			nlassert (Zone->Landscape->_FarRdrPassSet.find (Pass0)!=Zone->Landscape->_FarRdrPassSet.end());
-			if (Zone->Landscape->_FarRdrPassSet.find (Pass0)==Zone->Landscape->_FarRdrPassSet.end())
+			bool bFound=false;
 			{
-				bool bFound=false;
+				for (sint t=0; t<(sint)Zone->Landscape->_FarRdrPassSetVectorFree.size(); t++)
 				{
-					for (sint t=0; t<(sint)Zone->Landscape->_FarRdrPassSetVectorFree.size(); t++)
+					if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (Pass0.PatchRdrPass)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
 					{
-						if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (Pass0)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
-						{
-							bFound=true;
-							break;
-						}
+						bFound=true;
+						break;
 					}
 				}
-				nlassert (bFound);
 			}
+			nlassert (bFound);
 		}
-#endif // NL_DEBUG
 	}
+#endif // NL_DEBUG
 }
 
 
 // ***************************************************************************
 void			CPatch::renderFar1()
 {
-	if(Pass1 && !RenderClipped)
+	// Must be visible, and must be called only if the RdrPass is enabled.
+	nlassert(!RenderClipped && Pass1.PatchRdrPass);
+
+	// Render tris of MasterBlock.
+	renderFaceVector(MasterBlock.Far1FaceVector);
+	// profile.
+	NL3D_PROFILE_LAND_ADD_FACE_VECTOR(ProfNRdrFar1, MasterBlock.Far1FaceVector);
+
+	// Render tris of TessBlocks.
+	uint			nTessBlock= TessBlocks.size();
+	CTessBlock		*pTessBlock= nTessBlock>0? &TessBlocks[0]: NULL ;
+	for(; nTessBlock>0; pTessBlock++, nTessBlock--)
 	{
-
-		// Fill PBlock.
-		//=======
-		// Add tris of MasterBlock.
-		addFar1TriList(Pass1, MasterBlock.FarFaceList);
-		// Add tris of TessBlocks.
-		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		CTessBlock		&tblock= *pTessBlock;
+		// if block visible, render
+		if(!tblock.Clipped && !tblock.EmptyFar1)
 		{
-			CTessBlock	&tblock= TessBlocks[i];
-			if(!tblock.Clipped && !tblock.EmptyFar1)
-				addFar1TriList(Pass1, tblock.FarFaceList);
+			renderFaceVector(tblock.Far1FaceVector);
+			// profile.
+			NL3D_PROFILE_LAND_ADD_FACE_VECTOR(ProfNRdrFar1, tblock.Far1FaceVector);
 		}
+	}
 
-		// Check the pass is in the set
+	// Check the pass is in the set
 #ifdef NL_DEBUG
-		if (Pass1)
+	if (Pass1.PatchRdrPass)
+	{
+		nlassert (Zone->Landscape->_FarRdrPassSet.find (Pass1.PatchRdrPass)!=Zone->Landscape->_FarRdrPassSet.end());
+		if (Zone->Landscape->_FarRdrPassSet.find (Pass1.PatchRdrPass)==Zone->Landscape->_FarRdrPassSet.end())
 		{
-			nlassert (Zone->Landscape->_FarRdrPassSet.find (Pass1)!=Zone->Landscape->_FarRdrPassSet.end());
-			if (Zone->Landscape->_FarRdrPassSet.find (Pass1)==Zone->Landscape->_FarRdrPassSet.end())
+			bool bFound=false;
 			{
-				bool bFound=false;
+				for (sint t=0; t<(sint)Zone->Landscape->_FarRdrPassSetVectorFree.size(); t++)
 				{
-					for (sint t=0; t<(sint)Zone->Landscape->_FarRdrPassSetVectorFree.size(); t++)
+					if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (Pass1.PatchRdrPass)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
 					{
-						if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (Pass1)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
-						{
-							bFound=true;
-							break;
-						}
+						bFound=true;
+						break;
 					}
 				}
-				nlassert (bFound);
 			}
+			nlassert (bFound);
 		}
+	}
 #endif // NL_DEBUG
+}
+
+
+// ***************************************************************************
+void			CTileMaterial::renderTile(uint pass)
+{
+	// because precisely inserted in preRender(), and correctly tested, this tile is to be rendered,
+	// If the pass is enabled.
+	if(Pass[pass].PatchRdrPass)
+	{
+		// render tris of the good faceList.
+		renderFaceVector(TileFaceVectors[pass]);
+
+		// profile.
+		NL3D_PROFILE_LAND_ADD_FACE_VECTOR(ProfNRdrTile[pass], TileFaceVectors[pass]);
+	}
+}
+
+// ***************************************************************************
+void			CTileMaterial::renderTilePassRGB0()
+{
+	// because precisely inserted in preRender(), and correctly tested, this tile is to be rendered,
+	// this pass must be enabled!
+	nlassert(Pass[NL3D_TILE_PASS_RGB0].PatchRdrPass);
+	// render tris of the good faceList.
+	renderFaceVector(TileFaceVectors[NL3D_TILE_PASS_RGB0]);
+
+	// profile.
+	NL3D_PROFILE_LAND_ADD_FACE_VECTOR(ProfNRdrTile[NL3D_TILE_PASS_RGB0], TileFaceVectors[NL3D_TILE_PASS_RGB0]);
+}
+
+// ***************************************************************************
+void			CTileMaterial::renderTilePassLightmap()
+{
+	// because precisely inserted in preRender(), and correctly tested, this tile is to be rendered,
+	// this pass must be enabled!
+	nlassert(Pass[NL3D_TILE_PASS_LIGHTMAP].PatchRdrPass);
+	// render tris of the good faceList, ie the one of PassRGB0, because vertices are reused.
+	renderFaceVector(TileFaceVectors[NL3D_TILE_PASS_RGB0]);
+
+	// profile.
+	NL3D_PROFILE_LAND_ADD_FACE_VECTOR(ProfNRdrTile[NL3D_TILE_PASS_LIGHTMAP], TileFaceVectors[NL3D_TILE_PASS_RGB0]);
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// FaceVector Allocation
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CPatch::createFaceVectorFar1()
+{
+	if(Far1>0)
+	{
+		// Create the face for all TessBlocks.
+		MasterBlock.createFaceVectorFar1(getLandscape()->_FaceVectorManager);
+		for(uint i=0; i<TessBlocks.size(); i++)
+			TessBlocks[i].createFaceVectorFar1(getLandscape()->_FaceVectorManager);
 	}
 }
 // ***************************************************************************
-void			CPatch::renderTile(sint pass)
+void		CPatch::deleteFaceVectorFar1()
 {
-	// If tile mode.
-	if(Far0==0 && !RenderClipped)
+	if(Far1>0)
 	{
-		// NB: VB is previously filled in fillVertexBuffer().
+		// delete the face for all TessBlocks.
+		MasterBlock.deleteFaceVectorFar1(getLandscape()->_FaceVectorManager);
+		for(uint i=0; i<TessBlocks.size(); i++)
+			TessBlocks[i].deleteFaceVectorFar1(getLandscape()->_FaceVectorManager);
+	}
+}
+// ***************************************************************************
+void		CPatch::createFaceVectorFar0OrTile()
+{
+	// If Far Mode.
+	if(Far0>0)
+	{
+		// Create the face for all TessBlocks.
+		MasterBlock.createFaceVectorFar0(getLandscape()->_FaceVectorManager);
+		for(uint i=0; i<TessBlocks.size(); i++)
+			TessBlocks[i].createFaceVectorFar0(getLandscape()->_FaceVectorManager);
+	}
+	// Or If Tile Mode.
+	else if(Far0==0)
+	{
+		// Create the face for all TessBlocks.
+		// No tiles in MasterBlock!
+		for(uint i=0; i<TessBlocks.size(); i++)
+			TessBlocks[i].createFaceVectorTile(getLandscape()->_FaceVectorManager);
+	}
+}
+// ***************************************************************************
+void		CPatch::deleteFaceVectorFar0OrTile()
+{
+	// If Far Mode.
+	if(Far0>0)
+	{
+		// delete the face for all TessBlocks.
+		MasterBlock.deleteFaceVectorFar0(getLandscape()->_FaceVectorManager);
+		for(uint i=0; i<TessBlocks.size(); i++)
+			TessBlocks[i].deleteFaceVectorFar0(getLandscape()->_FaceVectorManager);
+	}
+	// Or If Tile Mode.
+	else if(Far0==0)
+	{
+		// delete the face for all TessBlocks.
+		// No tiles in MasterBlock!
+		for(uint i=0; i<TessBlocks.size(); i++)
+			TessBlocks[i].deleteFaceVectorTile(getLandscape()->_FaceVectorManager);
+	}
+}
 
-		// Fill PBlock.
-		//=======
-		// LIGHTMAP should not be rendered directly.
-		nlassert(pass==NL3D_TILE_PASS_RGB0 || pass==NL3D_TILE_PASS_RGB1 || pass==NL3D_TILE_PASS_RGB2 || pass==NL3D_TILE_PASS_ADD);
 
-		// No Tiles in MasterBlock!!!!
-
-		// General Case: RGB0 + lightmap.
-		if(pass==NL3D_TILE_PASS_RGB0)
+// ***************************************************************************
+void		CPatch::recreateTessBlockFaceVector(CTessBlock &block)
+{
+	// Do it Only if patch is visible.
+	if(!RenderClipped)
+	{
+		// Far0.
+		// If Far Mode.
+		if(Far0>0)
 		{
-			// Traverse the TessBlocks to add faces to each TileMaterial.
-			for(sint i=0; i<(sint)TessBlocks.size(); i++)
-			{
-				CTessBlock	&tblock= TessBlocks[i];
-				if(!tblock.Clipped && !tblock.FullFar1)
-				{
-					// Add the faces.
-					for(sint j=0; j<NL3D_TESSBLOCK_TILESIZE; j++)
-					{
-						CTileMaterial	*tileMat= tblock.RdrTileRoot[j];
-						if(tileMat)
-						{
-							nlassert(tileMat->Pass[NL3D_TILE_PASS_RGB0]);
-							nlassert(tileMat->Pass[NL3D_TILE_PASS_LIGHTMAP]);
-							// Add the trilist of RGB0 both to RGB0 and LIGHTMAP.
-							addTileTriList(tileMat->Pass[NL3D_TILE_PASS_RGB0], tileMat->TileFaceList[NL3D_TILE_PASS_RGB0]);
-							addTileTriList(tileMat->Pass[NL3D_TILE_PASS_LIGHTMAP], tileMat->TileFaceList[NL3D_TILE_PASS_RGB0]);
-						}
-					}
-				}
-			}
+			// Create the face for this TessBlock only.
+			block.createFaceVectorFar0(getLandscape()->_FaceVectorManager);
 		}
-		// Else: RGB1, RGB2, ADD.
-		else
+		// Or If Tile Mode.
+		else if(Far0==0)
 		{
-			// Traverse the TessBlocks to add faces to each TileMaterial.
-			for(sint i=0; i<(sint)TessBlocks.size(); i++)
-			{
-				CTessBlock	&tblock= TessBlocks[i];
-				if(!tblock.Clipped && !tblock.FullFar1)
-				{
-					// Add the faces.
-					for(sint j=0; j<NL3D_TESSBLOCK_TILESIZE; j++)
-					{
-						CTileMaterial	*tileMat= tblock.RdrTileRoot[j];
-						if(tileMat)
-						{
-							if(tileMat->Pass[pass])
-								addTileTriList(tileMat->Pass[pass], tileMat->TileFaceList[pass]);
-						}
-					}
-				}
-			}
+			// No tiles in MasterBlock! So no need to call createFaceVectorTile(), if this block is the MasterBlock.
+			if(&block != &MasterBlock)
+				block.createFaceVectorTile(getLandscape()->_FaceVectorManager);
+		}
+
+		// Far1.
+		if(Far1>0)
+		{
+			// Create the face for this TessBlock only.
+			block.createFaceVectorFar1(getLandscape()->_FaceVectorManager);
 		}
 	}
+
 }
 
 
@@ -663,20 +758,24 @@ void			CPatch::updateVBAlloc(bool alloc)
 }
 
 // ***************************************************************************
-void			CPatch::deleteVB()
+void			CPatch::deleteVBAndFaceVector()
 {
 	updateVBAlloc(false);
+	deleteFaceVectorFar1();
+	deleteFaceVectorFar0OrTile();
 }
 
 // ***************************************************************************
-void			CPatch::allocateVB()
+void			CPatch::allocateVBAndFaceVector()
 {
 	updateVBAlloc(true);
+	createFaceVectorFar1();
+	createFaceVectorFar0OrTile();
 }
 
 
 // ***************************************************************************
-void		CPatch::deleteVBFar1Only()
+void		CPatch::deleteVBAndFaceVectorFar1Only()
 {
 	if(Far1>0)
 	{
@@ -688,10 +787,12 @@ void		CPatch::deleteVBFar1Only()
 			updateFar1VBAlloc(tblock.FarVertexList, false);
 		}
 	}
+
+	deleteFaceVectorFar1();
 }
 
 // ***************************************************************************
-void		CPatch::allocateVBFar1Only()
+void		CPatch::allocateVBAndFaceVectorFar1Only()
 {
 	if(Far1>0)
 	{
@@ -703,6 +804,8 @@ void		CPatch::allocateVBFar1Only()
 			updateFar1VBAlloc(tblock.FarVertexList, true);
 		}
 	}
+
+	createFaceVectorFar1();
 }
 
 
@@ -1127,12 +1230,12 @@ void		CPatch::updateClipPatchVB()
 		if(RenderClipped)
 		{
 			// Then delete vertices.
-			deleteVB();
+			deleteVBAndFaceVector();
 		}
 		else
 		{
 			// else allocate / fill them.
-			allocateVB();
+			allocateVBAndFaceVector();
 			// NB: fillVB() test if any reallocation occurs.
 			fillVB();
 		}

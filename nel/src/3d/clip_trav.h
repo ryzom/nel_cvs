@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.5 2001/08/29 12:49:29 berenguier Exp $
+ * $Id: clip_trav.h,v 1.6 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,16 @@ class	CCluster;
 class	CInstanceGroup;
 class	CCamera;
 class	CQuadGridClipManager;
+
+
+// ***************************************************************************
+// This is the order of clip planes.
+#define	NL3D_CLIP_PLANE_NEAR	0
+#define	NL3D_CLIP_PLANE_FAR		1
+#define	NL3D_CLIP_PLANE_LEFT	2
+#define	NL3D_CLIP_PLANE_TOP		3
+#define	NL3D_CLIP_PLANE_RIGHT	4
+#define	NL3D_CLIP_PLANE_BOTTOM	5
 
 
 // ***************************************************************************

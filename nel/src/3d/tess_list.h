@@ -1,7 +1,7 @@
 /** \file tess_list.h
  * <File description>
  *
- * $Id: tess_list.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: tess_list.h,v 1.2 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,6 +74,8 @@ public:
 	{
 		Size++;
 		nlassert(node);
+		// inserted???
+		nlassert(node->Prec==NULL && Root!=node);
 		// update Next.
 		node->Next= Root;
 		if(Root)
@@ -86,6 +88,8 @@ public:
 	{
 		Size--;
 		nlassert(node);
+		// inserted???
+		nlassert(node->Prec!=NULL || Root==node);
 		nlassert(Size>=0);
 		// update Prec.
 		if(!node->Prec)

@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.cpp
  * <File description>
  *
- * $Id: patch_rdr_pass.cpp,v 1.7 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: patch_rdr_pass.cpp,v 1.8 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,65 +32,71 @@ namespace NL3D
 
 
 // ***************************************************************************
-// Primitives Indices reallocation. must be >3 (see below..)
-static sint		GlobalTriListBlockRealloc= 1024;
+CRdrPatchId::CRdrPatchId()
+{
+	PatchRdrPass= NULL;
+	Patch= NULL;
+	_Next= NULL;
+}
 
 
 // ***************************************************************************
-sint			CPatchRdrPass::MaxGlobalIndex= GlobalTriListBlockRealloc;
-std::vector<uint32>	CPatchRdrPass::GlobalTriList(CPatchRdrPass::MaxGlobalIndex);
-// For CPatchRdrPass::getStartPointer(), must init to not 0 list size.
+CRdrTileId::CRdrTileId()
+{
+	PatchRdrPass= NULL;
+	TileMaterial= NULL;
+	_Next= NULL;
+}
 
-	
+
 // ***************************************************************************
 CPatchRdrPass::CPatchRdrPass()
 {
 	RefCount= 0;
-	resetMaxTriList();
-	resetTriList();
+
+	clearAllRenderList();
 }
 
-	
-// ***************************************************************************
-void			CPatchRdrPass::resetMaxTriList()
-{
-	NMaxTris=0;
-	StartIndex= 0;
-}
 
 // ***************************************************************************
-void			CPatchRdrPass::addMaxTris(sint ntris)
+void	CPatchRdrPass::clearAllRenderList()
 {
-	NMaxTris+= ntris;
-	MaxGlobalIndex+= ntris*3;
-	// Realloc if necessary.
-	if((sint)GlobalTriList.size() < MaxGlobalIndex)
+	_Far0ListRoot= NULL;
+	_Far1ListRoot= NULL;
+	for(uint i=0;i<NL3D_MAX_TILE_PASS; i++)
 	{
-		GlobalTriList.resize(GlobalTriList.size() + NL3D::GlobalTriListBlockRealloc);
+		_TileListRoot[i]= NULL;
 	}
 }
 
 
 // ***************************************************************************
-void			CPatchRdrPass::computeStartIndex()
+void		CPatchRdrPass::appendRdrPatchFar0(CRdrPatchId *rdrPatch)
 {
-	StartIndex= MaxGlobalIndex;
-	MaxGlobalIndex+= NMaxTris*3;
+	rdrPatch->_Next= _Far0ListRoot;
+	_Far0ListRoot= rdrPatch;
 }
-
-
-// ***************************************************************************
-void			CPatchRdrPass::resetTriList()
+void		CPatchRdrPass::appendRdrPatchFar1(CRdrPatchId *rdrPatch)
 {
-	NTris=0;
-	CurIndex=StartIndex;
+	rdrPatch->_Next= _Far1ListRoot;
+	_Far1ListRoot= rdrPatch;
 }
-
-
-// ***************************************************************************
-void	CPatchRdrPass::resetGlobalIndex()
+void		CPatchRdrPass::appendRdrPatchTile(uint pass, CRdrTileId *rdrTile)
 {
-	MaxGlobalIndex= 0;
+	rdrTile->_Next= _TileListRoot[pass];
+	_TileListRoot[pass]= rdrTile;
+}
+CRdrPatchId *CPatchRdrPass::getRdrPatchFar0()
+{
+	return _Far0ListRoot;
+}
+CRdrPatchId	*CPatchRdrPass::getRdrPatchFar1()
+{
+	return _Far1ListRoot;
+}
+CRdrTileId  *CPatchRdrPass::getRdrTileRoot(uint pass)
+{
+	return _TileListRoot[pass];
 }
 
 

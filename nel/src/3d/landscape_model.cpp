@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.11 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.12 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,12 @@ bool	CLandscapeClipObs::clip(IBaseClipObs *caller)
 
 	// Yes, this is ugly, but the clip pass is finished in render(), for clipping TessBlocks.
 	// This saves an other Landscape patch traversal, so this is faster...
-	landModel->CurrentPyramid= pyramid;
+	// Order them in order which clip faster (first horizontal, then vertical).
+	landModel->CurrentPyramid[0]= pyramid[NL3D_CLIP_PLANE_LEFT];
+	landModel->CurrentPyramid[1]= pyramid[NL3D_CLIP_PLANE_RIGHT];
+	landModel->CurrentPyramid[2]= pyramid[NL3D_CLIP_PLANE_TOP];
+	landModel->CurrentPyramid[3]= pyramid[NL3D_CLIP_PLANE_BOTTOM];
+	nlassert(NL3D_TESSBLOCK_NUM_CLIP_PLANE==4);
 
 	// Well, always visible....
 	return true;

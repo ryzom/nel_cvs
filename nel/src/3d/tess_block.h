@@ -1,7 +1,7 @@
 /** \file tess_block.h
  * <File description>
  *
- * $Id: tess_block.h,v 1.2 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: tess_block.h,v 1.3 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,11 +37,16 @@ namespace NL3D
 {
 
 
+// clip Only with Left/Right and Top/Bottom planes, for faster clip.
+#define	NL3D_TESSBLOCK_NUM_CLIP_PLANE	4
+
+
 // block of 2*2 tiles, for accurate clipping.
 #define	NL3D_TESSBLOCK_TILESIZE	4
 
 
 class	CPatchRdrPass;
+class	CLandscapeFaceVectorManager;
 
 
 // ***************************************************************************
@@ -72,6 +77,13 @@ public:
 	// Faces.
 	CTessList<CTessFace>		FarFaceList;
 	CTileMaterial				*RdrTileRoot[NL3D_TESSBLOCK_TILESIZE];
+	// contains FarFaceList.size() + "RdrTileRoot.size()"
+	uint						FaceTileMaterialRefCount;
+
+	// FaceVectors.
+	CLandscapeFaceVector		*Far0FaceVector;
+	CLandscapeFaceVector		*Far1FaceVector;
+	// tiles one are stored in material.
 
 
 	// For memory optimisation, Info for Lightmap per block of 2x2 tiles are stored here too.
@@ -82,6 +94,8 @@ public:
 public:
 	CTessBlock()
 	{
+		_Patch= NULL;
+
 		// init bounding info.
 		Empty= true;
 		Clipped= false;
@@ -96,18 +110,62 @@ public:
 
 		// init LightMap.
 		LightMapRefCount= 0;
+
+		Far0FaceVector= NULL;
+		Far1FaceVector= NULL;
+
+		_PrecToModify= NULL;
+		_NextToModify= NULL;
+
+		FaceTileMaterialRefCount= 0;
 	}
+
+	// in dtor, remove me from list of TessBlock to modify, if needed.
+	~CTessBlock();
+
+	// Must have a patch, for good TessBlock FaceVector (re)construction.
+	void			init(CPatch *patch);
+	CPatch			*getPatch();
 
 	// BBox.
 	void			extendSphere(const CVector &vec);
 
 	// Reset clip to no clipped.
 	void			resetClip();
-	// Clip. (set Clipped to true/false).
-	void			clip(const std::vector<CPlane>	&pyramid);
+	// Clip. (set Clipped to true/false). Use the CurrentPyramid static.
+	static CPlane	CurrentPyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE];
+	void			clip();
 	// Clip Tile/Far. Use CTessFace::RefineCenter, CTessFace::TileDistNear, and CTessFace::FarTransition.
 	void			clipFar(const CVector &refineCenter, float tileDistNear, float farTransition);
 
+
+	// create and build FaceVector, from the FaceList.
+	void			createFaceVectorFar0(CLandscapeFaceVectorManager &mgr);
+	void			deleteFaceVectorFar0(CLandscapeFaceVectorManager &mgr);
+	void			createFaceVectorFar1(CLandscapeFaceVectorManager &mgr);
+	void			deleteFaceVectorFar1(CLandscapeFaceVectorManager &mgr);
+	void			createFaceVectorTile(CLandscapeFaceVectorManager &mgr);
+	void			deleteFaceVectorTile(CLandscapeFaceVectorManager &mgr);
+
+
+
+	// append/remove to modify list. This is for FaceVector update durint refine(), addZone() ....
+	bool			isInModifyList() const {return _PrecToModify!=NULL;}
+	// append to modify list has the side effect od deleting ALL FaceVector.
+	void			appendToModifyListAndDeleteFaceVector(CTessBlock &root, CLandscapeFaceVectorManager &mgr);
+	void			removeFromModifyList();
+
+
+public:
+	// For CLandscape only.
+	CTessBlock		*getNextToModify() {return _NextToModify;}
+
+private:
+	CPatch			*_Patch;
+
+	// If in list, prec is !NULL.
+	CTessBlock		*_PrecToModify;
+	CTessBlock		*_NextToModify;
 };
 
 

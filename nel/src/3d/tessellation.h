@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.7 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: tessellation.h,v 1.8 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "nel/misc/uv.h"
 #include "nel/misc/bsphere.h"
 #include "3d/tess_list.h"
+#include "3d/landscape_def.h"
+#include "3d/patch_rdr_pass.h"
 
 
 namespace	NL3D
@@ -44,25 +46,11 @@ using NLMISC::CUV;
 
 
 class	CPatch;
-class	CPatchRdrPass;
 class	CVertexBuffer;
 class	IVertexBufferHard;
 class	CTessFace;
 class	CLandscapeVBAllocator;
-
-
-// ***************************************************************************
-// 4th pass is always the Lightmapped one (Lightmap*clouds).
-#define	NL3D_MAX_TILE_PASS 5
-// There is no Face for lightmap, since lightmap pass share the RGB0 face.
-#define	NL3D_MAX_TILE_FACE	NL3D_MAX_TILE_PASS-1
-
-#define	NL3D_TILE_PASS_RGB0		0
-#define	NL3D_TILE_PASS_RGB1		1
-#define	NL3D_TILE_PASS_RGB2		2
-#define	NL3D_TILE_PASS_ADD		3
-#define	NL3D_TILE_PASS_LIGHTMAP	4
-// NB: RENDER ORDER: CLOUD*LIGHTMAP is done BEFORE ADDITIVE.
+class	CLandscapeFaceVector;
 
 
 // ***************************************************************************
@@ -210,7 +198,7 @@ struct	CTileMaterial
 	// The coordinates of the tile in the patch.
 	uint8			TileS, TileT;
 	// The rendering passes materials.
-	CPatchRdrPass	*Pass[NL3D_MAX_TILE_PASS];
+	CRdrTileId		Pass[NL3D_MAX_TILE_PASS];
 	// Pass are:
 	//  0: RGB general Tile.
 	//  1: 1st alpha tile. 0: RGB.  1: Alpha.
@@ -225,12 +213,26 @@ struct	CTileMaterial
 	// The only thing not shared is the renderpass (Pass[0] and Pass[3] are different).
 	CTessList<CTileFace>	TileFaceList[NL3D_MAX_TILE_FACE];
 
+	// FaceVectors.
+	CLandscapeFaceVector	*TileFaceVectors[NL3D_MAX_TILE_FACE];
+
 
 	// The global id of the little lightmap part for this tile.
 	uint			LightMapId;
 
 	// ptrs are Null by default.
 	CTileMaterial();
+
+	// For fast Tile clipping, may add only tiles which are visibles in RenderPass. (see preRender()).
+	void			appendTileToEachRenderPass();
+
+	// Render of this tile. code in patch_render.cpp. use pass to acces both Pass[] and TileFaceVectors[].
+	// So don't work for lightmap.
+	void			renderTile(uint pass);
+	// For faster render of Pass RGB0 and Lightmap which are always setuped.
+	void			renderTilePassRGB0();
+	void			renderTilePassLightmap();
+
 };
 
 
@@ -361,6 +363,8 @@ public:
 	// LANDSCAPE RENDERING CONTEXT.  Landscape must setup it at the begining at refine()/render().
 	// The current date of LandScape for refine only.
 	static	sint	CurrentDate;
+	// The current date of LandScape for render only.
+	static	sint	CurrentRenderDate;
 	// The center view for refinement.
 	static	CVector RefineCenter;
 	// What is the treshold for tessellation.
@@ -409,6 +413,9 @@ public:
 	static	CLandscapeVBAllocator	*CurrentFar1VBAllocator;
 	// The current VertexBuffer Allocator for Tile.
 	static	CLandscapeVBAllocator	*CurrentTileVBAllocator;
+
+	// For CLandscape::setRefineModeFrequency()
+	static	uint					PatchRefinePeriod;
 
 
 	// PATCH GLOBAL INTERFACE.  patch must setup them at the begining at refine()/render().

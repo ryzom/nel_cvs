@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.77 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: landscape.cpp,v 1.78 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,6 +183,7 @@ CLandscape::CLandscape() :
 	_TileDistNear=100.f;
 	_Threshold= 0.001f;
 	_RefineMode=true;
+	_RefinePeriod= 4;
 
 	_TileMaxSubdivision= 0;
 
@@ -258,6 +259,21 @@ uint 			CLandscape::getTileMaxSubdivision ()
 
 
 // ***************************************************************************
+void			CLandscape::setRefinePeriod(uint period)
+{
+	_RefinePeriod= raiseToNextPowerOf2(period);
+	_RefinePeriod= max(_RefinePeriod, 1U);
+}
+
+
+// ***************************************************************************
+uint			CLandscape::getRefinePeriod() const
+{
+	return _RefinePeriod;
+}
+
+
+// ***************************************************************************
 void			CLandscape::resetRenderFar()
 {
 	// For all patch of all zones.
@@ -318,6 +334,10 @@ bool			CLandscape::addZone(const CZone	&newZone)
 	// Must realase VB Buffers
 	unlockBuffers();
 
+	// Because bind may add faces in other (visible) zones because of enforced split, we must check
+	// and update any FaceVector.
+	updateTessBlocksFaceVector();
+
 	return true;
 }
 // ***************************************************************************
@@ -363,6 +383,9 @@ bool			CLandscape::removeZone(uint16 zoneId)
 
 	// Must realase VB Buffers
 	unlockBuffers();
+
+	// because of forceMerge() at unbind, removeZone() can cause change in faces in other (visible) zones.
+	updateTessBlocksFaceVector();
 
 	return true;
 }
@@ -417,6 +440,12 @@ void			CLandscape::clip(const CVector &refineCenter, const std::vector<CPlane>	&
 
 	// Must realase VB Buffers
 	unlockBuffers();
+
+	// clip() should not cause change in faces in visible patchs.
+	// It should not happens, but check for security.
+	nlassert(_TessBlockModificationRoot.getNextToModify()==NULL);
+	updateTessBlocksFaceVector();
+
 }
 // ***************************************************************************
 void			CLandscape::refine(const CVector &refineCenter)
@@ -445,6 +474,10 @@ void			CLandscape::refine(const CVector &refineCenter)
 
 	// Must realase VB Buffers
 	unlockBuffers();
+
+	// refine() may cause change in faces in visible patchs.
+	updateTessBlocksFaceVector();
+
 }
 
 
@@ -465,6 +498,9 @@ void			CLandscape::refineAll(const CVector &refineCenter)
 
 	// Must realase VB Buffers
 	unlockBuffers();
+
+	// refineAll() may cause change in faces in visible patchs.
+	updateTessBlocksFaceVector();
 }
 
 
@@ -497,6 +533,12 @@ void			CLandscape::averageTesselationVertices()
 
 	// Must realase VB Buffers
 	unlockBuffers();
+
+	// averageTesselationVertices() should not cause change in faces in any patchs.
+	// It should not happens, but check for security.
+	nlassert(_TessBlockModificationRoot.getNextToModify()==NULL);
+	updateTessBlocksFaceVector();
+
 }
 
 
@@ -537,6 +579,9 @@ void			CLandscape::updateGlobalsAndLockBuffers (const CVector &refineCenter)
 	CTessFace::CurrentFar1VBAllocator= &_Far1VB;
 	CTessFace::CurrentTileVBAllocator= &_TileVB;
 
+	// RefinePeriod
+	CTessFace::PatchRefinePeriod= _RefinePeriod;
+
 	// Must check driver, and create VB infos,locking buffers.
 	if(_Driver)
 	{
@@ -568,12 +613,45 @@ void			CLandscape::unlockBuffers()
 
 
 // ***************************************************************************
-void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>	&pyramid, bool doTileAddPass)
+void			CLandscape::updateTessBlocksFaceVector()
+{
+	// while some tessBlock to update remains.
+	CTessBlock	*tb;
+	while( (tb=_TessBlockModificationRoot.getNextToModify()) !=NULL )
+	{
+		// Get the patch which owns this TessBlock.
+		CPatch	*patch= tb->getPatch();
+
+		// If this patch is visible, recreate faceVector for his tessBlock.
+		patch->recreateTessBlockFaceVector(*tb);
+
+		// remove from list.
+		tb->removeFromModifyList();
+	}
+}
+
+
+// ***************************************************************************
+static inline void	drawPassTriArray()
+{
+	if(CPatch::PassNTri>0)
+	{
+		CPatch::PatchCurrentDriver->renderSimpleTriangles(&CPatch::PassTriArray[0], CPatch::PassNTri);
+		CPatch::PassNTri= 0;
+	}
+}
+
+
+// ***************************************************************************
+void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE], bool doTileAddPass)
 {
 	IDriver *driver= _Driver;
 	nlassert(driver);
 
-	CTessFace::RefineCenter= refineCenter;
+	// Increment the update date for preRender.
+	CTessFace::CurrentRenderDate++;
+
+
 	ItZoneMap	it;
 	sint		i;
 	ItTileRdrPassSet	itTile;
@@ -588,39 +666,52 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 	}
 
 
-	// -1. Update globals
+	// -2. Update globals
 	//====================
 	updateGlobalsAndLockBuffers (refineCenter);
 	// NB: render may change vertices in VB in visible patchs => buffers are locked.
 
 
-	// 0. preRender pass.
+	// -1. clear all PatchRenderPass renderList
 	//===================
-	// Reset MaxTris info.
-	CPatchRdrPass::resetGlobalIndex();
+
+	// Fars.
+	for(itFar= _FarRdrPassSet.begin(); itFar!= _FarRdrPassSet.end(); itFar++)
+	{
+		CPatchRdrPass	&pass= **itFar;
+		// clear list.
+		pass.clearAllRenderList();
+	}
+
+	// Tiles.
 	for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
 	{
 		CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
-		pass.resetMaxTriList();
-	}
-	for(itFar=_FarRdrPassSet.begin(); itFar!=_FarRdrPassSet.end(); itFar++)
-	{
-		CPatchRdrPass	&pass= **itFar;
-		pass.resetMaxTriList();
-	}
-	for(i=0; i<(sint)_TextureNears.size(); i++)
-	{
-		CPatchRdrPass	&pass= *_TextureNears[i];
-		pass.resetMaxTriList();
+		// clear list.
+		pass.clearAllRenderList();
 	}
 
-	// preRender.
+	// Lightmaps.
+	for(sint lightRdrPass=0; lightRdrPass<(sint)_TextureNears.size(); lightRdrPass++)
+	{
+		CPatchRdrPass	&pass= *_TextureNears[lightRdrPass];
+		// clear list.
+		pass.clearAllRenderList();
+	}
+
+	// 0. preRender pass.
+	//===================
+
+	// change Far0 / Far1.
 	// Clip TessBlocks against pyramid and Far Limit.
-	// Compute MaxTris of each RenderPass (tile and far).
+	for(i=0; i<NL3D_TESSBLOCK_NUM_CLIP_PLANE; i++)
+	{
+		CTessBlock::CurrentPyramid[i]= pyramid[i];
+	}
 	// Update VB with change of Far0 / Far1.
 	for(it= Zones.begin();it!=Zones.end();it++)
 	{
-		(*it).second->preRender(pyramid);
+		(*it).second->preRender();
 	}
 
 
@@ -681,33 +772,6 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 
 
 
-	// 0.a for each RenderPass, compute his starting ptr.
-	//===================================================
-	CPatchRdrPass::resetGlobalIndex();
-	for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
-	{
-		CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
-		pass.computeStartIndex();
-		// Must reset the list, so that CurIndex begin at StartIndex!!
-		pass.resetTriList();
-	}
-	for(itFar=_FarRdrPassSet.begin(); itFar!=_FarRdrPassSet.end(); itFar++)
-	{
-		CPatchRdrPass	&pass= **itFar;
-		pass.computeStartIndex();
-		// Must reset the list, so that CurIndex begin at StartIndex!!
-		pass.resetTriList();
-	}
-	for(i=0; i<(sint)_TextureNears.size(); i++)
-	{
-		CPatchRdrPass	&pass= *_TextureNears[i];
-		pass.computeStartIndex();
-		// Must reset the list, so that CurIndex begin at StartIndex!!
-		pass.resetTriList();
-	}
-
-
-
 	// 1. TileRender pass.
 	//====================
 
@@ -721,6 +785,9 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 
 	// Render.
 	// ==================
+	// Before any render call. Set the global driver used to render.
+	CPatch::PatchCurrentDriver= driver;
+
 
 	// Render Order. Must "invert", since initial order is NOT the render order. This is done because the lightmap pass
 	// DO NOT have to do any renderTile(), since it is computed in RGB0 pass.
@@ -735,18 +802,6 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 		// Do add pass???
 		if((passOrder==NL3D_TILE_PASS_ADD) && !doTileAddPass)
 			continue;
-
-		// Process all zones.
-		//=============================
-		if(passOrder!= NL3D_TILE_PASS_LIGHTMAP)
-		{
-			for(it= Zones.begin();it!=Zones.end();it++)
-			{
-				(*it).second->renderTile(passOrder);
-			}
-		}
-		// NB: if passOrder is RGB0, primitives will be added to to the RGB0 pass AND the LIGHTMAP pass.
-		// So there is nothing to do here if LIGHTMAP PASS.
 
 
 		// Setup common material for this pass.
@@ -806,8 +861,68 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 
 		// Render All material RdrPass.
 		//=============================
-		if(passOrder!=NL3D_TILE_PASS_LIGHTMAP)
+		// Special code for Lightmap and RGB0, for faster render.
+		if(passOrder==NL3D_TILE_PASS_RGB0)
 		{
+			// RGB0 pass.
+			ItTileRdrPassSet	itTile;
+			for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
+			{
+				// Get a ref on the render pass. Const cast work because we only modify attribut from CPatchRdrPass 
+				// that don't affect the operator< of this class
+				CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
+
+				// Setup Diffuse texture of the tile.
+				TileMaterial.setTexture(0, pass.TextureDiffuse);
+
+				// Setup the material in Driver.
+				driver->setupMaterial(TileMaterial);
+
+				// Add triangles to array
+				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);
+				while(tileToRdr)
+				{
+					// renderSimpleTriangles() with the material setuped.
+					tileToRdr->TileMaterial->renderTilePassRGB0();
+					tileToRdr= (CRdrTileId*)tileToRdr->getNext();
+				}
+				// Render triangles.
+				drawPassTriArray();
+			}
+		}
+		else if(passOrder==NL3D_TILE_PASS_LIGHTMAP)
+		{
+			// Lightmap Pass.
+			// \todo yoyo: TODO_CLOUD: setup stage0, and setup texcoord generation.
+
+			// Render All the lightmaps.
+			for(sint lightRdrPass=0; lightRdrPass<(sint)_TextureNears.size(); lightRdrPass++)
+			{
+				CPatchRdrPass	&pass= *_TextureNears[lightRdrPass];
+
+				// Setup Lightmap into stage1. Because we share UV with RGB0. So we use UV1.
+				// Cloud will be placed into stage0, and texture coordinate will be generated by T&L.
+				TileMaterial.setTexture(1, pass.TextureDiffuse);
+
+				// Setup the material in Driver.
+				driver->setupMaterial(TileMaterial);
+
+				// Add triangles to array
+				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);
+				while(tileToRdr)
+				{
+					// renderSimpleTriangles() with the material setuped.
+					tileToRdr->TileMaterial->renderTilePassLightmap();
+					tileToRdr= (CRdrTileId*)tileToRdr->getNext();
+				}
+				// Render triangles.
+				drawPassTriArray();
+			}
+		}
+		else
+		{
+			// RGB1, RGB2, and ADD pass.
+
 			// Render Base, Transitions or Additives.
 			bool	alphaStage= (passOrder==NL3D_TILE_PASS_RGB1) || (passOrder==NL3D_TILE_PASS_RGB2);
 
@@ -817,8 +932,6 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 				// Get a ref on the render pass. Const cast work because we only modify attribut from CPatchRdrPass 
 				// that don't affect the operator< of this class
 				CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
-				if(pass.NTris==0)
-					continue;
 
 				// Setup material.
 				// Setup Diffuse texture of the tile.
@@ -827,41 +940,19 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 				if(alphaStage)
 					TileMaterial.setTexture(1, pass.TextureAlpha);
 
-				// Render!
-				driver->renderTriangles(TileMaterial, pass.getStartPointer(), pass.NTris);
+				// Setup the material in Driver.
+				driver->setupMaterial(TileMaterial);
 
-				// Yoyo: profile.
-				NL3D_PROFILE_LAND_ADD(ProfNRdrTile[passOrder], pass.NTris);
-
-
-				// must resetTriList at each end of each material process.
-				pass.resetTriList();
-			}
-		}
-		else
-		{
-			// \todo yoyo: TODO_CLOUD: setup stage0, and setup texcoord generation.
-
-			// Render the lightmap.
-			for(sint lightRdrPass=0; lightRdrPass<(sint)_TextureNears.size(); lightRdrPass++)
-			{
-				CPatchRdrPass	&pass= *_TextureNears[lightRdrPass];
-				if(pass.NTris==0)
-					continue;
-
-				// Setup Lightmap into stage1. Because we share UV with RGB0. So we use UV1.
-				// Cloud will be placed into stage0, and texture coordinate will be generated by T&L.
-				TileMaterial.setTexture(1, pass.TextureDiffuse);
-
-				// Render!
-				driver->renderTriangles(TileMaterial, pass.getStartPointer(), pass.NTris);
-
-				// Yoyo: profile.
-				NL3D_PROFILE_LAND_ADD(ProfNRdrTile[passOrder], pass.NTris);
-
-				
-				// must resetTriList at each end of each material process.
-				pass.resetTriList();
+				// Add triangles to array
+				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);
+				while(tileToRdr)
+				{
+					// renderSimpleTriangles() with the material setuped.
+					tileToRdr->TileMaterial->renderTile(passOrder);
+					tileToRdr= (CRdrTileId*)tileToRdr->getNext();
+				}
+				// Render triangles.
+				drawPassTriArray();
 			}
 		}
 	}
@@ -869,15 +960,6 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 
 	// 2. Far0Render pass.
 	//====================
-
-	// Fill Primitives.
-	// ==================
-	// for all zones, build triangles.
-	for(it= Zones.begin();it!=Zones.end();it++)
-	{
-		(*it).second->renderFar0();
-	}
-
 
 	// Active VB.
 	// ==================
@@ -898,14 +980,20 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 	{
 		CPatchRdrPass	&pass= **itFar;
 
+		// Setup the material in Driver.
 		FarMaterial.setTexture(0, pass.TextureDiffuse);
-		driver->renderTriangles(FarMaterial, pass.getStartPointer(), pass.NTris);
+		driver->setupMaterial(FarMaterial);
 
-		// Yoyo: profile.
-		NL3D_PROFILE_LAND_ADD(ProfNRdrFar0, pass.NTris);
-
-		// must resetTriList at each end of each material process. (because Far1 and Far0 are blended into same rdrpass).
-		pass.resetTriList();
+		// Add triangles to array
+		CRdrPatchId		*patchToRdr= pass.getRdrPatchFar0();
+		while(patchToRdr)
+		{
+			// renderSimpleTriangles() with the material setuped.
+			patchToRdr->Patch->renderFar0();
+			patchToRdr= (CRdrPatchId*)patchToRdr->getNext();
+		}
+		// Render triangles.
+		drawPassTriArray();
 
 		// Next render pass
 		itFar++;
@@ -915,15 +1003,6 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 
 	// 3. Far1Render pass.
 	//====================
-
-	// Fill Primitives.
-	// ==================
-	// Process all zones.
-	for(it= Zones.begin();it!=Zones.end();it++)
-	{
-		(*it).second->renderFar1();
-	}
-
 
 	// Active VB.
 	// ==================
@@ -945,14 +1024,20 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 	{
 		CPatchRdrPass	&pass= **itFar;
 
+		// Setup the material in Driver.
 		FarMaterial.setTexture(0, pass.TextureDiffuse);
-		driver->renderTriangles(FarMaterial, pass.getStartPointer(), pass.NTris);
+		driver->setupMaterial(FarMaterial);
 
-		// Yoyo: profile.
-		NL3D_PROFILE_LAND_ADD(ProfNRdrFar1, pass.NTris);
-
-		// must resetTriList at each end of each material process.
-		pass.resetTriList();
+		// Add triangles to array
+		CRdrPatchId		*patchToRdr= pass.getRdrPatchFar1();
+		while(patchToRdr)
+		{
+			// renderSimpleTriangles() with the material setuped.
+			patchToRdr->Patch->renderFar1();
+			patchToRdr= (CRdrPatchId*)patchToRdr->getNext();
+		}
+		// Render triangles.
+		drawPassTriArray();
 
 		// Next render pass
 		itFar++;
@@ -968,6 +1053,9 @@ void			CLandscape::render(const CVector &refineCenter, const std::vector<CPlane>
 	TileMaterial.setTexture(1, NULL);
 	TileMaterial.setTexture(2, NULL);
 	TileMaterial.setTexture(3, NULL);
+
+	// To ensure no use but in render()..
+	CPatch::PatchCurrentDriver= NULL;
 
 	// Hulud VP_TEST
 	// Desactive the vertex program

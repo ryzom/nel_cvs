@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.13 2001/09/10 10:06:56 berenguier Exp $
+ * $Id: landscape.h,v 1.14 2001/09/14 09:44:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@
 #include "3d/quad_grid.h"
 #include "nel/misc/block_memory.h"
 #include "3d/landscapevb_allocator.h"
+#include "3d/landscape_face_vector_manager.h"
 
 #include <map>
 
@@ -196,6 +197,11 @@ public:
 	void			setNoiseMode(bool enabled);
 	bool			getNoiseMode() const;
 
+	/** set the refine Mode frequency. raised to the nearest power of 2 (eg: 1,2,4,8...). 4 by default.
+	 *	The more is the Period, the more you'll get pops in landscape tesselation.
+	 */
+	void			setRefinePeriod(uint period);
+	uint			getRefinePeriod() const;
 
 	// \todo yoyo: other landscape param setup (Transition etc...).
 	// Store it by landscape, and not only globally in CTessFace statics.
@@ -217,8 +223,11 @@ public:
 	/** Refine/Geomorph the tesselation of the landscape.
 	 */
 	void			refine(const CVector &refineCenter);
-	/// Render the landscape. A more precise clip is made on TessBlocks. pyramid should be the same as one passed to clip().
-	void			render(const CVector &refineCenter, const std::vector<CPlane>	&pyramid, bool doTileAddPass=false);
+	/** Render the landscape. 
+	 *	A more precise clip is made on TessBlocks. pyramid should be the same as one passed to clip().
+	 *	For optimisation, this pyramid should contains only the Left/Right and Top/Bottom clip planes, in this order.
+	 */
+	void			render(const CVector &refineCenter, const CPlane pyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE], bool doTileAddPass=false);
 
 	/// Refine/Geomorph ALL the tesselation of the landscape, from the view point refineCenter. Even if !RefineMode.
 	void			refineAll(const CVector &refineCenter);
@@ -404,6 +413,11 @@ private:
 	void				deleteTileMaterial(CTileMaterial *tm);
 	void				deleteTileFace(CTileFace *tf);
 
+	// Allocator of FaceVector for allocation of packed triangles indices.
+	CLandscapeFaceVectorManager		_FaceVectorManager;
+	// This is not a valid TessBlock. But it is used as a Root for modification list.
+	// Can't use a ptr, because of ~CTessBlock().
+	CTessBlock						_TessBlockModificationRoot;
 	// @}
 
 
@@ -428,6 +442,9 @@ private:
 	void lockBuffers ();
 	// unlockBuffers. This is the END call for updateGlobalsAndLockBuffers().
 	void unlockBuffers ();
+	// update TheFaceVector for which the faces may have been modified during refine(), refineAll() etc....
+	void updateTessBlocksFaceVector();
+
 
 private:
 	TZoneMap		Zones;
@@ -438,6 +455,7 @@ private:
 	bool			_RefineMode;
 	float			_FarTransition;
 	uint			_TileMaxSubdivision;
+	uint			_RefinePeriod;
 
 
 	/// \name VertexBuffer mgt.

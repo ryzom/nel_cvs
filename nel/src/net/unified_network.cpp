@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.58 2003/01/17 15:03:41 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.59 2003/01/28 14:14:37 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1388,6 +1388,21 @@ bool CUnifiedNetwork::isServiceLocal (uint16 sid)
 	}
 	return false;
 }
+
+
+/*
+ * Return a string identifying the service, using the format "NAME/sid" (or "sid" only if not found)
+ */
+std::string			CUnifiedNetwork::getServiceNameAndId(uint16 sid)
+{
+	string s;
+	CUnifiedConnection *c = getUnifiedConnection(sid);
+	if (c)
+		s = c->ServiceName + "/";
+	s += toString(sid);
+	return s;
+}
+
 
 //
 //

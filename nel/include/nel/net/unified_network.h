@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.33 2003/01/17 15:03:28 lecroart Exp $
+ * $Id: unified_network.h,v 1.34 2003/01/28 14:15:07 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -192,6 +192,9 @@ public:
 
 	/// Returns true if the serviceName service is on the same computer than this service
 	bool	isServiceLocal (const std::string &serviceName);
+
+	/// Return a string identifying the service, using the format "NAME/sid" (or "sid" only if not found)
+	std::string			getServiceNameAndId(uint16 sid);
 
 	
 	/// \warning You should not use getNetBase functions because it could have more than one connection to a service and in this case

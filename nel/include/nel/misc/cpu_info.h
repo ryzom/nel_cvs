@@ -1,7 +1,7 @@
 /** \file cpu_info.h
  * <File description>
  *
- * $Id: cpu_info.h,v 1.3 2001/12/06 17:05:27 vizerie Exp $
+ * $Id: cpu_info.h,v 1.4 2002/05/21 16:34:30 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NLMISC {
  * \author Nevrax France
  * \date 2001
  */
-struct CCpuInfo
+struct CCpuInfo___
 {
 	/** test wether the cpuid instruction is supported
 	  * (always false on non intel architectures)

@@ -1,7 +1,7 @@
 /** \file cpu_info.cpp
  * <File description>
  *
- * $Id: cpu_info.cpp,v 1.5 2002/03/28 16:58:21 cado Exp $
+ * $Id: cpu_info.cpp,v 1.6 2002/05/21 16:34:30 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NLMISC
 static bool DetectMMX(void)
 {		
 	#ifdef NL_OS_WINDOWS		
-		if (!CCpuInfo::hasCPUID()) return false; // cpuid not supported ...
+		if (!CCpuInfo___::hasCPUID()) return false; // cpuid not supported ...
 
 		uint32 result = 0;
 		__asm
@@ -60,7 +60,7 @@ static bool DetectMMX(void)
 static bool DetectSSE(void)
 {	
 	#ifdef NL_OS_WINDOWS
-		if (!CCpuInfo::hasCPUID()) return false; // cpuid not supported ...
+		if (!CCpuInfo___::hasCPUID()) return false; // cpuid not supported ...
 
 		uint32 result = 0;
 		__asm
@@ -105,7 +105,7 @@ static bool DetectSSE(void)
 bool HasMMX = DetectMMX();
 bool HasSSE = DetectSSE();
 
-bool CCpuInfo::hasCPUID(void)
+bool CCpuInfo___::hasCPUID(void)
 {
 	#ifdef NL_OS_WINDOWS
 		 uint32 result;
@@ -141,7 +141,7 @@ bool CCpuInfo::hasCPUID(void)
 		 return false;
 	#endif
 }
-bool CCpuInfo::hasMMX(void) { return HasMMX; }
-bool CCpuInfo::hasSSE(void) { return HasSSE; }
+bool CCpuInfo___::hasMMX(void) { return HasMMX; }
+bool CCpuInfo___::hasSSE(void) { return HasSSE; }
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.14 2000/12/15 15:10:35 berenguier Exp $
+ * $Id: zone.h,v 1.15 2000/12/22 14:38:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/3d/tessellation.h"
 #include "nel/3d/patch.h"
 #include "nel/3d/bezier_patch.h"
+#include <stdio.h>
 #include <vector>
 #include <map>
 
@@ -214,6 +215,12 @@ public:
 	 * \param borderVertices vertices connectivity for this zone.
 	 */
 	void			retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVertex> &borderVertices);
+
+
+	/** Debug a zone, print binds in display.
+	 *
+	 */
+	void			debugBinds(FILE *f= stdout);
 
 
 	/** Compile a zone. Make it usable for clip()/refine()/render().

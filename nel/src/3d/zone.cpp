@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.20 2000/12/15 15:10:56 berenguier Exp $
+ * $Id: zone.cpp,v 1.21 2000/12/22 14:38:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -825,6 +825,30 @@ const std::vector<CTileElement> &CZone::getPatchTexture(sint numPatch) const
 	// Update the patch texture.
 	return Patchs[numPatch].Tiles;
 }
+
+
+// ***************************************************************************
+void			CZone::debugBinds(FILE *f)
+{
+	fprintf(f, "*****************************\n");
+	fprintf(f, "ZoneId: %d. NPatchs:%d\n", ZoneId, PatchConnects.size());
+	for(sint i=0;i<(sint)PatchConnects.size();i++)
+	{
+		CPatchConnect	&pc= PatchConnects[i];
+		fprintf(f, "patch%d:\n", i);
+		for(sint j=0;j<4;j++)
+		{
+			CPatchInfo::CBindInfo	&bd= pc.BindEdges[j];
+			fprintf(f, "    edge%d: Zone:%d. NPatchs:%d. ", i, bd.ZoneId, bd.NPatchs);
+			for(sint k=0;k<bd.NPatchs;k++)
+			{
+				fprintf(f, "p%de%d - ", bd.Next[k], bd.Edge[k]);
+			}
+			fprintf(f, "\n");
+		}
+	}
+}
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.59 2003/05/06 09:47:36 legros Exp $
+ * $Id: local_retriever.cpp,v 1.60 2003/05/07 09:05:58 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -438,7 +438,8 @@ sint32	NLPACS::CLocalRetriever::addChain(const vector<CVector> &verts,
 	chain._StopTip = 0xffff;
 
 	// make the chain and its subchains.
-	chain.make(vertices, left, right, _OrderedChains, (uint16)newId, _FullOrderedChains);
+	vector<uint>	empty;
+	chain.make(vertices, left, right, _OrderedChains, (uint16)newId, _FullOrderedChains, empty);
 
 	return newId;
 }

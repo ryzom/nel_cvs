@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.19 2003/02/10 10:27:08 lecroart Exp $
+ * $Id: displayer.h,v 1.19.4.1 2003/05/30 17:06:57 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,10 +67,13 @@ protected:
 	/// Method to implement in the deriver
 	virtual void doDisplay( const CLog::TDisplayInfo& args, const char *message) = 0;
 
-	
 	/// Convert log type to string
 	static const char *logTypeToString (CLog::TLogType logType, bool longFormat = false);
 
+	// Return the header string with date (for the first line of the log)
+	static const char *HeaderString ();
+
+public:
 	/// Convert the current date to human string
 	static const char *IDisplayer::dateToHumanString ();
 
@@ -79,9 +82,6 @@ protected:
 
 	/// Convert date to "784551148" string (time in second from 1975)
 	static const char *dateToComputerString (time_t date);
-
-	// Return the header string with date (for the first line of the log)
-	static const char *HeaderString ();
 
 private:
 

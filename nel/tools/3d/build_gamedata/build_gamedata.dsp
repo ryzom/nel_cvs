@@ -999,5 +999,45 @@ SOURCE=.\processes\ligo\export_build_all_data.bat
 SOURCE=.\processes\ligo\export_build_data.bat
 # End Source File
 # End Group
+# Begin Group "Font"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\processes\font\0_setup.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\1_clean.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\2_export.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\3_build.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\4_install.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\export_build_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\font\sh\install.sh
+# End Source File
+# End Group
 # End Target
 # End Project

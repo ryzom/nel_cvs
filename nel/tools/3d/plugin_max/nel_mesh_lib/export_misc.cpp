@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.19 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.20 2002/04/23 16:29:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -820,3 +820,117 @@ std::string		CExportNel::getLightGroupName (INode *node)
 
 	return ret;
 }
+
+
+
+// a segment (used by maxPolygonMeshToOrderedPoly)
+struct CMaxMeshSeg
+{
+	uint V0, V1;
+	// for map insertion
+	bool operator<(const CMaxMeshSeg &other) const
+	{ 
+		uint lv0 = std::min(V0, V1);
+		uint lv1 = std::max(V0, V1);
+
+		uint rv0 = std::min(other.V0, other.V1);
+		uint rv1 = std::max(other.V0, other.V1);
+
+
+		if (lv0 != rv0) return lv0 < rv0;
+		return lv1 < rv1;
+	}
+	bool operator==(const CMaxMeshSeg &other) const
+	{
+		return !(*this < other) && !(other < *this);
+	}
+	CMaxMeshSeg(uint v0, uint v1) : V0(v0),
+							 V1(v1)				
+	{			
+	}
+};
+
+// private : predicate to ordonate segments (used by maxPolygonMeshToOrderedPoly)
+struct CPredNextSegOf
+{
+	uint Prev;
+	CPredNextSegOf(uint prev) : Prev(prev) {}
+	bool operator()(const CMaxMeshSeg &value) const { return value.V0 == Prev || value.V1 == Prev; }		
+};
+
+
+
+// --------------------------------------------------
+// This convert a polygon expressed as a max mesh into a list of ordered vectors
+void CExportNel::maxPolygonMeshToOrderedPoly(Mesh &mesh, std::vector<NLMISC::CVector> &dest)
+{
+	/// We use a very simple (but slow) algo : examine for each segment how many tris share it. If it is one then it is a border seg	 
+	/// Then, just order segments
+	
+	typedef std::map<CMaxMeshSeg, uint> TSegMap;		
+		
+
+	/////////////////////////////////////////////////////////////
+	// count the number of ref by a triangle for each segment  //
+	/////////////////////////////////////////////////////////////
+
+	TSegMap segs;
+	uint k;
+	for(k = 0; k < (uint) mesh.getNumFaces(); ++k)
+	{
+		for(uint l = 0; l < 3; ++l)
+		{
+			CMaxMeshSeg seg(mesh.faces[k].v[l], mesh.faces[k].v[(l + 1) % 3]);
+			TSegMap::iterator it = segs.find(seg);
+			if (it != segs.end())
+			{
+				++ it->second;
+			}
+			else
+			{
+				// create a new entry
+				segs[seg] = 1;
+			}
+		}
+	}
+
+
+	////////////////////////////////////////
+	// keep segments for which nbref is 1 //
+	////////////////////////////////////////
+
+	typedef std::list<CMaxMeshSeg> TSegList;	
+	TSegList borderSegs;	
+	for(TSegMap::const_iterator it = segs.begin(); it != segs.end(); ++it)
+	{
+		if (it->second == 1) borderSegs.push_back(it->first);
+	}
+
+
+	
+	dest.clear();
+	if (borderSegs.empty()) return;
+
+
+	///////////////////////
+	// ordonate segments //
+	///////////////////////
+
+	NLMISC::CVector pos;
+	CExportNel::convertVector(pos, mesh.verts[borderSegs.begin()->V0]);
+	dest.push_back(pos);
+	uint nextToFind = borderSegs.begin()->V1;
+	borderSegs.pop_front();
+	for(;;)
+	{
+		TSegList::iterator nextSeg = std::find_if(borderSegs.begin(), borderSegs.end(), CPredNextSegOf(nextToFind));
+		if (nextSeg == borderSegs.end()) return;					
+		CExportNel::convertVector(pos, mesh.verts[nextSeg->V0 == nextToFind ? nextSeg->V0 : nextSeg->V1]);
+		dest.push_back(pos);	
+		nextToFind = (nextSeg->V0 == nextToFind) ? nextSeg->V1 : nextSeg->V0;
+		borderSegs.erase(nextSeg);
+	}
+
+
+}
+

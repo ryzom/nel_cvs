@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.h
  * <File description>
  *
- * $Id: landscapevb_allocator.h,v 1.8 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: landscapevb_allocator.h,v 1.9 2004/04/22 16:43:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ class	CVertexProgram;
 #define	NL3D_LANDSCAPE_VPPOS_STARTPOS		(CVertexBuffer::Position)
 #define	NL3D_LANDSCAPE_VPPOS_TEX0			(CVertexBuffer::TexCoord0)
 #define	NL3D_LANDSCAPE_VPPOS_TEX1			(CVertexBuffer::TexCoord1)
-#define	NL3D_LANDSCAPE_VPPOS_TEX2			(CVertexBuffer::TexCoord5)
+#define	NL3D_LANDSCAPE_VPPOS_TEX2			(CVertexBuffer::TexCoord4)
 #define	NL3D_LANDSCAPE_VPPOS_GEOMINFO		(CVertexBuffer::TexCoord2)
 #define	NL3D_LANDSCAPE_VPPOS_DELTAPOS		(CVertexBuffer::TexCoord3)
 #define	NL3D_LANDSCAPE_VPPOS_ALPHAINFO		(CVertexBuffer::TexCoord4)

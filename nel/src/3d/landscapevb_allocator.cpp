@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.16 2004/04/09 14:30:51 vizerie Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.17 2004/04/22 16:43:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -509,7 +509,7 @@ const char* NL3D_LandscapeTileLightMapEndProgram=
 	DP4 o[HPOS].y, c[1], R1;															\n\
 	DP4 o[HPOS].z, c[2], R1;															\n\
 	DP4 o[HPOS].w, c[3], R1;															\n\
-	MOV o[TEX0], v[13];																\n\
+	MOV o[TEX0], v[12];																\n\
 	MOV o[TEX1], v[9];																\n\
 	DP4	o[FOGC].x, c[10], R1;															\n\
 	END																					\n\
@@ -591,7 +591,7 @@ void			CLandscapeVBAllocator::setupVBFormatAndVertexProgram(bool withVertexProgr
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_STARTPOS,	CVertexBuffer::Float3);	// v[0]= StartPos.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX0,		CVertexBuffer::Float2);	// v[8]= Tex0.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX1,		CVertexBuffer::Float2);	// v[9]= Tex1.
-			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX2,		CVertexBuffer::Float2);	// v[13]= Tex2.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX2,		CVertexBuffer::Float2);	// v[12]= Tex2.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO,	CVertexBuffer::Float2);	// v[10]= GeomInfos.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS,	CVertexBuffer::Float3);	// v[11]= EndPos-StartPos.
 			_VB.initEx();

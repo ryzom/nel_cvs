@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.51 2003/09/10 14:43:13 lecroart Exp $
+ * $Id: config_file.cpp,v 1.52 2003/09/12 17:05:36 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -473,10 +473,10 @@ bool CConfigFile::exists (const std::string &varName)
 
 void CConfigFile::save () const
 {
-	/*FILE *fp = fopen (_FileName.c_str (), "w");
+	FILE *fp = fopen (getFilename().c_str (), "w");
 	if (fp == NULL)
 	{
-		nlwarning ("Couldn't create %s file", _FileName.c_str ());
+		nlwarning ("Couldn't create %s file", getFilename().c_str ());
 		return;
 	}
 
@@ -536,7 +536,7 @@ void CConfigFile::save () const
 			}
 		}
 	}
-	fclose (fp);*/
+	fclose (fp);
 }
 
 void CConfigFile::display () const

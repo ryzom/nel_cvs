@@ -1,7 +1,7 @@
 /** \file animation_playlist.cpp
  * <File description>
  *
- * $Id: animation_playlist.cpp,v 1.3 2001/03/29 15:13:30 corvazier Exp $
+ * $Id: animation_playlist.cpp,v 1.4 2001/03/29 15:16:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -205,12 +205,6 @@ void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, CAnimationTime time) 
 						// Mod repeat the time
 						{
 							float length=pAnimation->getEndTime ()-pAnimation->getBeginTime();
-							if (length>0.f)
-							{
-								while (wrappedTime<pAnimation->getBeginTime())
-									wrappedTime+=length;
-							}
-
 							if (wrappedTime>=pAnimation->getBeginTime())
 								wrappedTime=pAnimation->getBeginTime()+(float)fmod (wrappedTime-pAnimation->getBeginTime(), length);
 							else

@@ -1,7 +1,7 @@
 /** \file algo.cpp
  * <File description>
  *
- * $Id: algo.cpp,v 1.4 2003/02/17 16:25:56 corvazier Exp $
+ * $Id: algo.cpp,v 1.5 2003/02/26 16:45:28 legros Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -259,6 +259,31 @@ void drawFullLine (float x0, float y0, float x1, float y1, std::vector<std::pair
 			// Next Y
 			currentY++;
 		}
+	}
+}
+
+// ***************************************************************************
+
+void drawLine (float x0, float y0, float x1, float y1, vector<pair<sint, sint> > &result)
+{
+	float	dx = (float)(floor(x1+0.5) - floor(x0+0.5));
+	float	dy = (float)(floor(y1+0.5) - floor(y0+0.5));
+
+	float	rdx = x1-x0;
+	float	rdy = y1-y0;
+
+	sint	d = (sint)std::max(fabs(dx), fabs(dy));
+	float	maxd = (float)(std::max(fabs(rdx), fabs(rdy)));
+
+	rdx /= maxd;
+	rdy /= maxd;
+
+	for (; d>=0; --d)
+	{
+		result.push_back(make_pair<sint,sint>((sint)floor(x0+0.5), (sint)floor(y0+0.5)));
+
+		x0 += rdx;
+		y0 += rdy;
 	}
 }
 

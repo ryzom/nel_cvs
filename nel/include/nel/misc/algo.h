@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.6 2003/02/17 16:25:56 corvazier Exp $
+ * $Id: algo.h,v 1.7 2003/02/26 16:45:13 legros Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -63,6 +63,11 @@ T computeBilinear(const T &v0, const T &v1, const T &v2, const T &v3, const U &s
  *  Not the same than brensenham
  */
 void drawFullLine (float x0, float y0, float x1, float y1, std::vector<std::pair<sint, sint> > &result);
+
+// ***************************************************************************
+/** Select points on the line [(x0,y0) ; (x1,y1)]
+ */
+void drawLine (float x0, float y0, float x1, float y1, std::vector<std::pair<sint, sint> > &result);
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file ps_sound_impl.h
  * <File description>
  *
- * $Id: ps_sound_impl.h,v 1.3 2001/08/16 17:13:23 vizerie Exp $
+ * $Id: ps_sound_impl.h,v 1.4 2001/08/23 14:11:10 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -129,6 +129,7 @@ public:
 		NLSOUND::USource *source = _AudioMixer->createSource(soundName.c_str());
 		if (source)
 		{			
+			source->setLooping(false);
 			return new CPSSoundInstanceImpl(source);
 		}
 		else

@@ -1,7 +1,7 @@
 /** \file win_displayer.h
  * Implementation of the CDisplayer (look at displayer.h) that display on a Win32 Windows
  *
- * $Id: win_displayer.h,v 1.4 2001/07/11 12:14:25 lecroart Exp $
+ * $Id: win_displayer.h,v 1.5 2001/08/24 09:45:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,7 @@ public:
 	void	clear ();
 
 	uint	createLabel (const char *Name);
-	void	setLabel (uint Label, const char *Name);
+	void	setLabel (uint Label, const std::string &Name);
 
 	void	setWindowParams (sint x, sint y, sint w, sint h);
 

@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * <File description>
  *
- * $Id: win_displayer.cpp,v 1.4 2001/08/23 14:32:16 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.5 2001/08/24 09:45:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,19 +115,25 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					while (*pos2 != '\0')
 					{
 						str = "";
-						while (*pos2 != '\0' && *pos2 != 13)
+
+						// get the string
+						while (*pos2 != '\0' && *pos2 != '\n')
 						{
-							if (*pos2 != 10)
+							if (*pos2 != '\r')
 							{
 								str += *pos2;
 							}
 							*pos2++;
 						}
+
+						// eat the \n
+						if (*pos2 == '\n')
+							*pos2++;
+
 						if (!str.empty())
 						{
 							ICommand::execute (str, *InfoLog);
 						}
-						*pos2++;
 					}
 				}
 			}
@@ -159,9 +165,11 @@ uint CWinDisplayer::createLabel (const char *Name)
 	return (uint)label;
 }
 
-void CWinDisplayer::setLabel (uint label, const char *Name)
+void CWinDisplayer::setLabel (uint label, const string &Name)
 {
-	SendMessage ((HWND)label, WM_SETTEXT, 0, (LONG) Name);
+	// do this fucking tricks to be sure that windows will clear what is after the number
+	string n = Name + "         ";
+	SendMessage ((HWND)label, WM_SETTEXT, 0, (LONG) n.c_str());
 }
 
 void CWinDisplayer::setWindowParams (sint x, sint y, sint w, sint h)
@@ -342,11 +350,13 @@ void CWinDisplayer::doDisplay (const NLMISC::TDisplayInfo &args, const char *mes
 	// get number of line
 	sint nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
 
-	// clear old line if history size is too big
+	// clear half of the history line if history size is too big
 	if (_HistorySize > 0 && nLine > _HistorySize)
 	{
 		sint oldIndex1 = SendMessage (_HEdit, EM_LINEINDEX, 0, 0);
-		sint oldIndex2 = SendMessage (_HEdit, EM_LINEINDEX, nbl, 0);
+		int nbline = _HistorySize-50;
+		if (nbline < 0) nbline = _HistorySize;
+		sint oldIndex2 = SendMessage (_HEdit, EM_LINEINDEX, nbline, 0);
 		SendMessage (_HEdit, EM_SETSEL, oldIndex1, oldIndex2);
 		SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) "");
 	}

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.77 2001/07/10 16:50:45 lecroart Exp $
+ * $Id: service.cpp,v 1.78 2001/08/24 09:45:36 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -777,24 +777,30 @@ sint IService::main (void *wd)
 			if (cwd != NULL)
 			{
 				string str;
-				str = "NetSpdLoop: ";
+				str = "NetLop: ";
 				str += toString (NetSpeedLoop);
-				cwd->setLabel (speedNetLabel, str.c_str ());
-				str = "UsrSpdLoop: ";
+				cwd->setLabel (speedNetLabel, str);
+				str = "UsrLop: ";
 				str += toString (UserSpeedLoop);
-				cwd->setLabel (speedUsrLabel, str.c_str ());
+				cwd->setLabel (speedUsrLabel, str);
 				str = "Rcv: ";
 				str += toString (CNetManager::getBytesReceived ());
-				cwd->setLabel (rcvLabel, str.c_str ());
+				cwd->setLabel (rcvLabel, str);
 				str = "Snd: ";
 				str += toString (CNetManager::getBytesSended ());
-				cwd->setLabel (sndLabel, str.c_str ());
+				cwd->setLabel (sndLabel, str);
 				str = "RcvQ: ";
 				str += toString (CNetManager::getReceiveQueueSize ());
-				cwd->setLabel (rcvQLabel, str.c_str ());
+				cwd->setLabel (rcvQLabel, str);
 				str = "SndQ: ";
 				str += toString (CNetManager::getSendQueueSize ());
-				cwd->setLabel (sndQLabel, str.c_str ());
+				cwd->setLabel (sndQLabel, str);
+
+				static string toto =	"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! "
+										"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! ";
+				
+				static int pos = 0;
+				cwd->setLabel (sndQLabel, toto.substr ((pos++)%(toto.size()/2), string::npos));
 			}
 #endif
 

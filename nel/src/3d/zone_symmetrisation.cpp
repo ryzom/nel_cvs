@@ -1,7 +1,7 @@
 /** \file zone_symmetrisation.cpp
  * Environnement used to symmetrise zones
  *
- * $Id: zone_symmetrisation.cpp,v 1.3 2003/03/05 16:01:12 corvazier Exp $
+ * $Id: zone_symmetrisation.cpp,v 1.4 2003/03/20 17:55:16 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -738,7 +738,7 @@ bool CZoneSymmetrisation::propagateTileState (uint patch, uint s, uint t, const 
 							}
 
 							// Is still in patch ?
-							if ( (neighborNode.S<0) || (neighborNode.S>=patchInfo[currentNode.Patch].OrderS) || (neighborNode.T<0) || (neighborNode.T>=patchInfo[currentNode.Patch].OrderT) )
+							if ( (neighborNode.S>=patchInfo[currentNode.Patch].OrderS) || (neighborNode.T>=patchInfo[currentNode.Patch].OrderT) )
 							{
 								// No, found new patch
 								uint position;

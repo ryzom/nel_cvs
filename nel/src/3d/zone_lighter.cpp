@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.26 2003/02/20 14:18:02 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.27 2003/03/20 17:55:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2382,8 +2382,8 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 
 			for (i=0; i<10; i++)
 			{
-				uint s=(uint)((float)orderS*4*interpolatedS[i]);
-				uint t=(uint)((float)orderT*4*interpolatedT[i]);
+				sint s=(sint)((float)orderS*4*interpolatedS[i]);
+				sint t=(sint)((float)orderT*4*interpolatedT[i]);
 
 				if ((s>=0)&&(s<orderS*4)&&(t>=0)&&(t<orderT*4))
 				{

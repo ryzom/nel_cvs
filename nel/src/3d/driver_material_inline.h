@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.9 2002/08/19 09:34:32 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.10 2003/03/20 17:55:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,14 +214,14 @@ inline bool		CMaterial::getLightedVertexColor () const
 inline void					CMaterial::texEnvOpRGB(uint stage, TTexOperator ope)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].Env.OpRGB= ope;
 }
 // ***************************************************************************
 inline void					CMaterial::texEnvArg0RGB(uint stage, TTexSource src, TTexOperand oper)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].Env.SrcArg0RGB= src;
 	_TexEnvs[stage].Env.OpArg0RGB= oper;
 }
@@ -229,7 +229,7 @@ inline void					CMaterial::texEnvArg0RGB(uint stage, TTexSource src, TTexOperand
 inline void					CMaterial::texEnvArg1RGB(uint stage, TTexSource src, TTexOperand oper)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	nlassert(src!=Texture);
 	_TexEnvs[stage].Env.SrcArg1RGB= src;
 	_TexEnvs[stage].Env.OpArg1RGB= oper;
@@ -240,14 +240,14 @@ inline void					CMaterial::texEnvArg1RGB(uint stage, TTexSource src, TTexOperand
 inline void					CMaterial::texEnvOpAlpha(uint stage, TTexOperator ope)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].Env.OpAlpha= ope;
 }
 // ***************************************************************************
 inline void					CMaterial::texEnvArg0Alpha(uint stage, TTexSource src, TTexOperand oper)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	nlassert(oper==SrcAlpha || oper==InvSrcAlpha);
 	_TexEnvs[stage].Env.SrcArg0Alpha= src;
 	_TexEnvs[stage].Env.OpArg0Alpha= oper;
@@ -256,7 +256,7 @@ inline void					CMaterial::texEnvArg0Alpha(uint stage, TTexSource src, TTexOpera
 inline void					CMaterial::texEnvArg1Alpha(uint stage, TTexSource src, TTexOperand oper)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	nlassert(oper==SrcAlpha || oper==InvSrcAlpha);
 	nlassert(src!=Texture);
 	_TexEnvs[stage].Env.SrcArg1Alpha= src;
@@ -268,7 +268,7 @@ inline void					CMaterial::texEnvArg1Alpha(uint stage, TTexSource src, TTexOpera
 inline void					CMaterial::texConstantColor(uint stage, CRGBA color)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].ConstantColor= color;
 }
 
@@ -277,33 +277,33 @@ inline void					CMaterial::texConstantColor(uint stage, CRGBA color)
 inline uint32				CMaterial::getTexEnvMode(uint stage)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	return _TexEnvs[stage].EnvPacked;
 }
 // ***************************************************************************
 inline void					CMaterial::setTexEnvMode(uint stage, uint32 packed)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	_TexEnvs[stage].EnvPacked= packed;
 }
 // ***************************************************************************
 inline CRGBA				CMaterial::getTexConstantColor(uint stage)
 {
 	nlassert(_ShaderType==CMaterial::Normal);
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	return _TexEnvs[stage].ConstantColor;
 }
 // ***************************************************************************
 inline bool					CMaterial::getTexCoordGen(uint stage) const
 {
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	return (_Flags&(IDRV_MAT_GEN_TEX_0<<stage))!=0;
 }
 // ***************************************************************************
 inline void					CMaterial::setTexCoordGen(uint stage, bool generate)
 {
-	nlassert(stage>=0 && stage<IDRV_MAT_MAXTEXTURES);
+	nlassert(stage<IDRV_MAT_MAXTEXTURES);
 	if (generate)
 		_Flags|=(IDRV_MAT_GEN_TEX_0<<stage);
 	else

@@ -115,7 +115,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
-# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib libxml2.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
+# ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib libxml2.lib freetype.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 DebugFast"
 
@@ -584,17 +584,6 @@ SOURCE=.\edit_attrib_dlg.h
 # Begin Source File
 
 SOURCE=.\edit_morph_mesh_dlg.cpp
-
-!IF  "$(CFG)" == "object_viewer - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
-
-!ELSEIF  "$(CFG)" == "object_viewer - Win32 DebugFast"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

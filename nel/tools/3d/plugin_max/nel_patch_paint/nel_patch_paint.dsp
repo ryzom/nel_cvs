@@ -132,7 +132,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G6 /MD /W3 /GR /GX /O2 /I "..\..\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G6 /MD /W3 /GR /GX /Zi /O2 /I "..\..\include" /D "_WINDOWS" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /G6 /MD /W3 /GR /GX /Zi /O2 /I "..\..\include" /D "_WINDOWS" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /Yu"stdafx.h" /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -154,186 +154,6 @@ LINK32=link.exe
 # Name "nel_patch_paint - Win32 Debug"
 # Name "nel_patch_paint - Win32 Hybrid"
 # Name "nel_patch_paint - Win32 ReleaseDebug"
-# Begin Group "Source Files"
-
-# PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90"
-# Begin Source File
-
-SOURCE=.\_0.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_1.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_10.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_11.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_128.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_2.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_256.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_3.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_4.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_5.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_6.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_7.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_8.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_9.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\_small.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\all.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\DllEntry.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\large.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\light.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\medium.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\nel_patch_paint.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\nel_patch_paint.def
-# End Source File
-# Begin Source File
-
-SOURCE=.\nel_patch_paint.rc
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_data.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_file.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_fill.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_main.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_mod.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_pops.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_record.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_restore.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_rollup.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_tileset.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_to_nel.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_ui.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_undo.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\paint_vcolor.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\stdafx.cpp
-# ADD CPP /Yc"stdafx.h"
-# End Source File
-# End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl;fi;fd"
@@ -1441,6 +1261,186 @@ InputName=medium
 
 !ENDIF 
 
+# End Source File
+# End Group
+# Begin Group "Source Files"
+
+# PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90"
+# Begin Source File
+
+SOURCE=.\_0.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_1.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_10.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_11.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_128.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_2.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_256.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_3.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_4.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_5.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_6.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_7.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_8.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_9.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\_small.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\all.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\DllEntry.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\large.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\light.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\medium.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\nel_patch_paint.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\nel_patch_paint.def
+# End Source File
+# Begin Source File
+
+SOURCE=.\nel_patch_paint.rc
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_data.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_file.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_fill.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_main.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_mod.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_pops.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_record.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_restore.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_rollup.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_tileset.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_to_nel.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_ui.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_undo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_vcolor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\stdafx.cpp
+# ADD CPP /Yc"stdafx.h"
 # End Source File
 # End Group
 # Begin Source File

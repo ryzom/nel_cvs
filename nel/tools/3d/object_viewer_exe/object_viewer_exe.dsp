@@ -112,7 +112,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 msvcrt.lib libc.lib /nologo /subsystem:windows /machine:I386 /out:"Release/object_viewer.exe"
-# ADD LINK32 msvcrt.lib libc.lib /nologo /subsystem:windows /debug /machine:I386 /out:"ReleaseDebug/object_viewer.exe"
+# ADD LINK32 msvcrt.lib libc.lib freetype.lib /nologo /subsystem:windows /debug /machine:I386 /out:"ReleaseDebug/object_viewer.exe"
 
 !ELSEIF  "$(CFG)" == "object_viewer_exe - Win32 DebugFast"
 

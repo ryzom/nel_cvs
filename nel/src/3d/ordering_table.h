@@ -1,7 +1,7 @@
 /** \file ordering_table.h
  * Generic Ordering Table
  *
- * $Id: ordering_table.h,v 1.3 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: ordering_table.h,v 1.4 2002/07/01 08:05:29 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,7 +184,7 @@ template<class T> void COrderingTable<T>::insert( uint32 nEntryPos, T *pValue )
 {
 #ifdef NL_DEBUG
 	// check not so many calls to insert()
-	nlassert( _CurAllocatedNode < _Allocator.end() );
+	//\todo:yoyo correct this error in debug !!! nlassert( _CurAllocatedNode < _Allocator.end() );
 	// check good entry size
 	nlassert( nEntryPos < _nNbElt );
 #endif

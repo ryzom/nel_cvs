@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.64 2004/03/25 16:59:32 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.65 2004/04/05 18:09:46 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1352,11 +1352,6 @@ void				CAudioMixerUser::update()
 		while (!_EventList.empty() && _EventList.begin()->first <= now)
 		{
 			CAudioMixerUser::IMixerEvent	*CurrentEvent = _EventList.begin()->second;
-			if (CurrentEvent != NULL)
-			{
-	//			nldebug("Sending Event %p", _EventList.begin()->second);
-				CurrentEvent->onEvent();
-			}
 			TEventContainer::iterator it(_Events.lower_bound(_EventList.begin()->second));
 			while (it->first == _EventList.begin()->second.ptr())
 			{
@@ -1368,6 +1363,13 @@ void				CAudioMixerUser::update()
 				it++;
 			}
 			_EventList.erase(_EventList.begin());
+			// now, run the event
+			if (CurrentEvent != NULL)
+			{
+	//			nldebug("Sending Event %p", _EventList.begin()->second);
+				CurrentEvent->onEvent();
+			}
+
 #if defined(NL_DEBUG) || defined(NL_DEBUG_FAST)
 			CurrentEvent = 0;
 #endif

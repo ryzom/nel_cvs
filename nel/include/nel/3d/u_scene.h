@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.24 2002/09/05 08:24:54 berenguier Exp $
+ * $Id: u_scene.h,v 1.25 2002/10/10 12:48:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -388,6 +388,25 @@ public:
 	virtual sint32				getCLodAnimIdByName(uint32 shapeId, const std::string &name) const =0;
 
 	//@}
+
+
+	/// \name Async Texture loading mgt
+	// @{
+	/** setup the mipMap levels. 
+	 *	\baseLevel When the texture is first added, it is loaded skipping the baseLevel
+	 *	first mipmap
+	 *	\maxLevel During time, furhter mipmap are loaded, according to instance position etc... maxLevel
+	 *	tells where to stop. If 0, the texture will finally be entirely uploaded.
+	 *	Default is 3,1.
+	 */
+	virtual void				setupAsyncTextureLod(uint baseLevel, uint maxLevel) =0;
+	/// Setup max texture upload in driver per updateAscyncTexture() call.
+	virtual void				setupAsyncTextureMaxUploadPerFrame(uint maxup) =0;
+	/** update the manager. New loaded texture are uploaded. Instances are updated to know if all their 
+	 *	pending textures have been uploaded.
+	 */
+	virtual void				updateAscyncTexture() =0;
+	// @}
 
 };
 

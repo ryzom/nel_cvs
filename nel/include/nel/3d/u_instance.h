@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.8 2002/07/03 09:12:55 vizerie Exp $
+ * $Id: u_instance.h,v 1.9 2002/10/10 12:48:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,6 +118,35 @@ public:
 	virtual void		stop()  = 0;
 	// For instance that have a start/stop caps
 	virtual bool		isStarted() const = 0;
+
+
+	/// \name Async Texture Loading
+	/// All those methods assert if the instance is not a CMeshBaseInstance.
+	// @{
+	/** if true, the instance is said in "AsyncTextureMode". Ie user must fill AsyncTextures field with name of the
+	 *	textures to load. At each startAsyncTextureLoading(), the system start to load async them.
+	 *	Then, isAsyncTextureReady() should be test each frame, to know if loading has completed.
+	 *	By default, AsyncTextureMode=false. 
+	 *	When it swap from false to true, each texture file in Materials are replaced with 
+	 *	"blank.tga", and true fileNames are copied into AsyncTextures.
+	 *	When it swap from true to false, the inverse is applied.
+	 */
+	virtual	void		enableAsyncTextureMode(bool enable) =0;
+	virtual	bool		getAsyncTextureMode() const =0;
+	/** Start to load all textures in AsyncTextures array (if needed)
+	 *	NB: old setup is kept in Material => instance is still rendered with "coherent" textures, until new textures
+	 *	are ready
+	 *	no op if not in async texture mode.
+	 */
+	virtual	void		startAsyncTextureLoading() =0;
+	/**	return true if all the async textures of the instances are uploaded.
+	 *	if was not ready before, this swap the upload textures into the rendered ones so they are rendered
+	 *	return always true if not in async texture mode, or if startAsyncTextureLoading() has not been called
+	 *	since last enableAsyncTextureMode(true)
+	 */
+	virtual	bool		isAsyncTextureReady() =0;
+	// @}
+
 };
 
 

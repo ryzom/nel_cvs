@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.92 2001/04/13 09:50:05 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.93 2001/04/13 10:13:12 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -905,7 +905,10 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	// if software palette skinning: setup correct Vertex/Normal array.
 	if(paletteSkinning && !_PaletteSkinHard)
 	{
-		// Must point on computed Vertex/Normal array.
+		/// Must check vbinfo.
+		nlassert(vbInf->SoftSkinVertices.size()==VB.getNumVertices());
+
+		// Must point on computed Vertex array.
 		glEnable(GL_VERTEX_ARRAY);
 		// array is compacted.
 		glVertexPointer(3,GL_FLOAT,0,&(*vbInf->SoftSkinVertices.begin()));
@@ -913,6 +916,9 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 		// Check for normal param in vertex buffer
 		if (flags & IDRV_VF_NORMAL)
 		{
+			/// Must check vbinfo.
+			nlassert(vbInf->SoftSkinNormals.size()==VB.getNumVertices());
+			// Must point on computed Normal array.
 			glEnableClientState(GL_NORMAL_ARRAY);
 			// array is compacted.
 			glNormalPointer(GL_FLOAT,0,&(*vbInf->SoftSkinNormals.begin()));

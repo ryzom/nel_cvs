@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.10 2002/04/09 12:23:52 lecroart Exp $
+ * $Id: udp_sock.cpp,v 1.11 2002/04/17 09:54:00 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,15 +186,14 @@ void CUdpSock::receivedFrom( uint8 *buffer, uint& len, CInetAddress& addr )
 	len = ::recvfrom( _Sock, (char*)buffer, len , 0, (sockaddr*)&saddr, &saddrlen );
 
 	// If an error occurs, the saddr is not valid
+	// When the remote socket is closed, get sender's address to know who is quitting
+	addr.setSockAddr( &saddr );
 
 	// Check for errors (after setting the address)
 	if ( len == SOCKET_ERROR )
 	{
 		throw ESocket( "Cannot receive data" );
 	}
-
-	// Get sender's address
-	addr.setSockAddr( &saddr );
 
 	_BytesReceived += len;
 	if ( _Logging )

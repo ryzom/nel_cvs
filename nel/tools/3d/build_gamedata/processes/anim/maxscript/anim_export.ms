@@ -69,14 +69,16 @@ try
 					(
 						-- Select Bip01, not very smart
 						if $Bip01 != undefined then
+						(
 							select $Bip01
 
-						-- Always uncheck triangle pelvis
-						if (classof $Bip01) == Biped_Object then
-						(
-							$Bip01.controller.figureMode = true
-							$Bip01.controller.trianglepelvis = false
-							$Bip01.controller.figureMode = false
+							-- Always uncheck triangle pelvis
+							if (classof $Bip01) == Biped_Object then
+							(
+								$Bip01.controller.figureMode = true
+								$Bip01.controller.trianglepelvis = false
+								$Bip01.controller.figureMode = false
+							)
 						)
 
 						-- For each node

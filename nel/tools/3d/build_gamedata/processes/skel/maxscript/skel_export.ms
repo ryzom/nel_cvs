@@ -61,25 +61,34 @@ fn nlerror message =
 					-- Open the max project
 					if loadMaxFile files[i] == true then
 					(
-						-- Select Bip01
-						select $Bip01
-
-						if ($ != undefined) then
+						-- Select Bip01, not very smart
+						if $Bip01 != undefined then
 						(
-							-- Set figure mode on
-							if ((classof $) == Biped_Object) then
-							(
-								$.controller.figureMode = true
-							)
+							-- Select Bip01
+							select $Bip01
 
-							-- Export the skeleton template
-							if (NelExportSkeleton $ output) == false then
+							if ($ != undefined) then
 							(
-								nlerror ("ERROR exporting skeleton "+files[i])
+								-- Set figure mode on
+								if ((classof $) == Biped_Object) then
+								(
+									$.controller.figureMode = true
+								)
+
+								-- Export the skeleton template
+								if (NelExportSkeleton $ output) == false then
+								(
+									nlerror ("ERROR exporting skeleton "+files[i])
+								)
+								else
+								(
+									nlerror ("OK "+output)
+								)
 							)
 							else
 							(
-								nlerror ("OK "+output)
+								-- Error
+								nlerror ("ERROR exporting skeleton: no Bip01 node in file "+files[i])
 							)
 						)
 						else

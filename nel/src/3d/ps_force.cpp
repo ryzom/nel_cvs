@@ -1,0 +1,220 @@
+/** \file ps_force.cpp
+ * <File description>
+ *
+ * $Id: ps_force.cpp,v 1.1 2001/04/25 08:46:36 vizerie Exp $
+ */
+
+/* Copyright, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#include "nel/3d/ps_force.h"
+#include "nel/3d/driver.h"
+#include "nel/3d/primitive_block.h"
+#include "nel/3d/material.h"
+#include "nel/3d/vertex_buffer.h"
+#include "nel/3d/computed_string.h"
+#include "nel/3d/font_generator.h"
+#include "nel/3d/font_manager.h"
+#include "nel/misc/common.h"
+#include "nel/3d/ps_util.h"
+
+namespace NL3D {
+
+
+/*
+ * Constructor
+ */
+CPSForce::CPSForce()
+{
+}
+
+void CPSForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	uint32 size ;
+	f.serialVersion(1) ;	
+	if (f.isReading())
+	{
+		_Targets.clear() ;
+		f.serial(size) ;
+		for (uint32 k = 0 ; k < size ; ++k)
+		{
+			CPSLocated *pt = NULL ;
+			f.serialPolyPtr(pt) ;
+			_Targets.push_back(CSmartPtr<CPSLocated>(pt)) ;
+		}
+	}
+	else
+	{
+		size = _Targets.size() ;
+		f.serial(size) ;
+		for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+		{
+			CPSLocated *pt = (*it) ;
+			f.serialPolyPtr(pt) ;
+		}
+	}
+}
+
+
+void CPSForce::attachTarget(CSmartPtr<CPSLocated> ptr)
+{
+	nlassert(std::find(_Targets.begin(), _Targets.end(), ptr) == _Targets.end()) ;
+	_Targets.push_back(ptr) ;
+}
+
+void CPSForce::detachTarget(CSmartPtr<CPSLocated> ptr)
+{
+	TTargetCont::iterator it = std::find(_Targets.begin(), _Targets.end(), ptr) ;
+	nlassert(it != _Targets.end()) ;
+	_Targets.erase(it) ;
+}
+
+void CPSForce::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+{
+	switch(pass)
+	{
+		case PSMotion:
+			performMotion(ellapsedTime) ;
+		break ;
+		case PSToolRender:
+			show(ellapsedTime) ;
+		break ;
+	}
+}
+
+
+
+/////////////
+// gravity //
+/////////////
+
+
+void CPSGravity::performMotion(CAnimationTime ellapsedTime)
+{	
+	CVector toAddLocal = ellapsedTime * CVector(0, 0, -9.8f) ;
+	// perform the operation on each target
+
+	CVector toAdd ;
+
+
+	
+
+	for (uint32 k = 0 ; k < _Owner->getSize() ; ++k)
+	{	
+		for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
+		{
+			if (_Owner->isInSystemBasis() != (*it)->isInSystemBasis())
+			{
+				if (_Owner->isInSystemBasis())
+				{
+					toAdd = getSysMat().mulVector(toAddLocal) ;
+				}
+				else
+				{
+					toAdd = getInvertedSysMat().mulVector(toAddLocal) ;
+				}
+			}
+			else
+			{
+				toAdd = toAddLocal ;
+			}
+
+			uint32 size = (*it)->getSize() ;	
+			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin() ;
+			TPSAttribFloat::iterator itm = (*it)->getInvMass().begin() ;
+			for (uint32 k = 0 ; k < size ; ++ k, ++ it2, ++ itm)
+			{
+				(*it2) += 1.0f / (*itm) * toAdd ;				
+				
+			}
+		}
+	}
+}
+void CPSGravity::show(CAnimationTime ellapsedTime) 
+{	
+	CVector I = computeI() ;
+	CVector K = CVector(0,0,1) ;	    
+
+	// this is not designed for efficiency (target : edition code)
+	CPrimitiveBlock	 pb ;
+	CVertexBuffer vb ;
+	CMaterial material ;
+	IDriver *driver = getDriver() ;
+	const float toolSize = 0.2f ;
+
+	vb.setVertexFormat(IDRV_VF_XYZ) ;
+	vb.setNumVertices(6) ;
+	vb.setVertexCoord(0, -toolSize * I) ;
+	vb.setVertexCoord(1, toolSize * I) ;
+	vb.setVertexCoord(2, CVector(0, 0, 0)) ;
+	vb.setVertexCoord(3, -6.0f * toolSize * K) ;
+	vb.setVertexCoord(4, -toolSize * I  - 5.0f * toolSize * K) ;
+	vb.setVertexCoord(5, toolSize * I - 5.0f * toolSize * K) ;
+
+	pb.reserveLine(4) ;
+	pb.addLine(0, 1) ;
+	pb.addLine(2, 3) ;
+	pb.addLine(4, 3) ;
+	pb.addLine(3, 5) ;	
+	
+	material.setColor(CRGBA(127, 127, 127)) ;
+	material.setLighting(false) ;
+	material.setBlendFunc(CMaterial::one, CMaterial::one) ;
+	material.setZWrite(false) ;
+	material.setBlend(true) ;
+
+	
+	CMatrix mat ;
+
+	for (TPSAttribVector::const_iterator it = _Owner->getPos().begin() ; it != _Owner->getPos().end() ; ++it)
+	{
+		mat.identity() ;
+		mat.translate(*it) ;
+		if (_Owner->isInSystemBasis())
+		{
+			mat = getSysMat() * mat ;
+		}
+		
+		driver->setupModelMatrix(mat) ;
+		driver->activeVertexBuffer(vb) ;
+		driver->render(pb, material) ;
+	
+
+
+		// affiche un g a cote de la force
+
+		CVector pos = *it + CVector(1.5f * toolSize, 0, -1.2f * toolSize) ;
+
+		if (_Owner->isInSystemBasis())
+		{
+			pos = getSysMat() * pos ;
+		}
+		
+		CPSUtil::print(std::string("G")
+							, *getFontGenerator()
+							, *getFontManager()
+							, pos
+							, 80.0f * toolSize ) ;								
+	}
+
+	
+}
+
+
+} // NL3D

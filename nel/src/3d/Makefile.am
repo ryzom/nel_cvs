@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.91 2002/10/28 15:51:14 coutelas Exp $
+# $Id: Makefile.am,v 1.92 2002/11/04 13:09:10 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -63,6 +63,8 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        channel_mixer.h \
                        clip_trav.cpp \
                        clip_trav.h \
+		       cloud_scape_user.cpp \
+		       cloud_scape_user.h \
                        cluster.cpp \
                        cluster.h \
                        coarse_mesh_build.cpp \

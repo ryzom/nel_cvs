@@ -1,7 +1,7 @@
 /** \file primitive_block_pacs.cpp
  * Block of PACS primitives
  *
- * $Id: primitive_block_pacs.cpp,v 1.1 2002/03/26 10:11:43 corvazier Exp $
+ * $Id: primitive_block_pacs.cpp,v 1.2 2002/05/23 09:57:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,9 @@
  */
 
 #include "stdpacs.h"
+#include "nel/misc/i_xml.h"
 #include "pacs/primitive_block.h"
+#include <memory>
 
 
 namespace NLPACS 
@@ -97,5 +99,31 @@ void CPrimitiveBlock::serial (NLMISC::IStream &s)
 }
 
 // ***************************************************************************
+UPrimitiveBlock *UPrimitiveBlock::createPrimitiveBlock(NLMISC::IStream &src)
+{
+	nlassert(src.isReading());
+	std::auto_ptr<CPrimitiveBlock> pb(new CPrimitiveBlock);
+	pb->serial(src);
+	return pb.release();
+}
+
+// ***************************************************************************
+UPrimitiveBlock *UPrimitiveBlock::createPrimitiveBlockFromFile(const std::string &fileName)
+{
+	NLMISC::CIFile input(fileName);
+	NLMISC::CIXml xmlInput;
+	// Init
+	if (xmlInput.init (input))
+	{
+		return createPrimitiveBlock(xmlInput);
+	}
+	else
+	{
+		throw NLMISC::Exception(std::string("Unable to init an xml input file from ") + fileName);
+	}
+}
+
+
+
 
 } // NLPACS

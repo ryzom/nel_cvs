@@ -1,7 +1,7 @@
 /** \file primitive_block.h
  * Block of PACS primitive
  *
- * $Id: primitive_block.h,v 1.1 2002/03/26 10:11:43 corvazier Exp $
+ * $Id: primitive_block.h,v 1.2 2002/05/23 09:57:40 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/pacs/u_move_primitive.h"
+#include "nel/pacs/u_primitive_block.h"
 
 
 namespace NLPACS 
@@ -90,7 +91,7 @@ public:
  * \author Nevrax France
  * \date 2002
  */
-class CPrimitiveBlock
+class CPrimitiveBlock	: public UPrimitiveBlock
 {
 public:
 
@@ -99,6 +100,12 @@ public:
 
 	// Serial methods
 	void serial (NLMISC::IStream &s);
+
+	///\name from UPrimitive block, create a P.B. from a stream
+	//@{
+	static UPrimitiveBlock *createPrimitiveBlock(NLMISC::IStream &src);
+	static UPrimitiveBlock *createPrimitiveBlockFromFile(const std::string &fileName);
+	//@}	
 };
 
 

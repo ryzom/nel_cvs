@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.23 2002/08/23 14:34:45 cado Exp $
+ * $Id: mem_stream.h,v 1.24 2002/09/10 09:24:49 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -265,7 +265,7 @@ public:
 	}
 
 
-	template <class T> void fastWrite (T &val)
+	template <class T> void fastSerial (T &val)
 	{
 #ifdef NL_LITTLE_ENDIAN
 		if(isReading())
@@ -289,8 +289,18 @@ public:
 	}
 
 	template <class T>
+	void			fastWrite( T& value )
+	{
+		//nldebug( "MEMSTREAM: Writing %u bits value in %p at pos %u", sizeof(value), this, _BufPos - _Buffer.getPtr() );
+		increaseBufferIfNecessary (sizeof(T));
+		*(T*)_BufPos = value;
+		_BufPos += sizeof (T);
+	}
+
+	template <class T>
 	void			fastRead( T& value )
 	{
+		//nldebug( "MEMSTREAM: Reading %u bits value in %p at pos %u", sizeof(value), this, _BufPos - _Buffer.getPtr() );
 		// Check that we don't read more than there is to read
 		if ( lengthS()+sizeof(value) > lengthR() )
 		{
@@ -460,7 +470,7 @@ inline	void		CMemStream::serial(uint8 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -480,7 +490,7 @@ inline	void		CMemStream::serial(sint8 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -501,7 +511,7 @@ inline	void		CMemStream::serial(uint16 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -521,7 +531,7 @@ inline	void		CMemStream::serial(sint16 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -541,7 +551,7 @@ inline	void		CMemStream::serial(uint32 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -562,7 +572,7 @@ inline	void		CMemStream::serial(sint32 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -582,7 +592,7 @@ inline	void		CMemStream::serial(uint64 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -602,7 +612,7 @@ inline	void		CMemStream::serial(sint64 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -622,7 +632,7 @@ inline	void		CMemStream::serial(float &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -642,7 +652,7 @@ inline	void		CMemStream::serial(double &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -694,7 +704,7 @@ inline	void		CMemStream::serial(char &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 #endif

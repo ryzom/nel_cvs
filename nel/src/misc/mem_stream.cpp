@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.17 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: mem_stream.cpp,v 1.18 2002/09/10 09:25:10 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -396,7 +396,7 @@ void		CMemStream::serial(uint8 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -416,7 +416,7 @@ void		CMemStream::serial(sint8 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -437,7 +437,7 @@ void		CMemStream::serial(uint16 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -457,7 +457,7 @@ void		CMemStream::serial(sint16 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -477,7 +477,7 @@ void		CMemStream::serial(uint32 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -498,7 +498,7 @@ void		CMemStream::serial(sint32 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -518,7 +518,7 @@ void		CMemStream::serial(uint64 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -538,7 +538,7 @@ void		CMemStream::serial(sint64 &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -558,7 +558,7 @@ void		CMemStream::serial(float &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -578,7 +578,7 @@ void		CMemStream::serial(double &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 
@@ -629,7 +629,7 @@ void		CMemStream::serial(char &b)
 	}
 	else
 	{
-		fastWrite (b);
+		fastSerial (b);
 	}
 }
 #endif

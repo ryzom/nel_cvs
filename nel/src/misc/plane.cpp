@@ -1,7 +1,7 @@
 /** \file plane.cpp
  * class CPlane
  *
- * $Id: plane.cpp,v 1.3 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: plane.cpp,v 1.4 2000/11/21 17:17:29 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,3 +148,4 @@ sint	CPlane::clipPolygonFront(CVector in[], CVector out[], sint nIn) const
 
 
 }
+

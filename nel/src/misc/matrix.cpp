@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.13 2000/11/20 15:51:49 cado Exp $
+ * $Id: matrix.cpp,v 1.14 2000/11/21 17:16:57 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1066,3 +1066,4 @@ void		CMatrix::serial(IStream &f)
 
 
 }
+

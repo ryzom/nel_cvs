@@ -1,7 +1,7 @@
 /** \file class_registry.cpp
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.cpp,v 1.4 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: class_registry.cpp,v 1.5 2000/11/21 17:14:01 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,3 +92,4 @@ bool		CClassRegistry::checkObject(IClassable* obj)
 
 
 }
+

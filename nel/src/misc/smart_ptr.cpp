@@ -1,7 +1,7 @@
 /** \file smart_ptr.cpp
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.cpp,v 1.2 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: smart_ptr.cpp,v 1.3 2000/11/21 17:17:56 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,3 +32,4 @@ namespace NLMISC
 CRefCount::CPtrInfo		CRefCount::NullPtrInfo('a');
 
 }
+

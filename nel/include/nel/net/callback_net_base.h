@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 4, base
  *
- * $Id: callback_net_base.h,v 1.4 2001/02/23 09:48:38 cado Exp $
+ * $Id: callback_net_base.h,v 1.5 2001/02/23 15:44:30 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NLNET {
 typedef uint32 TSockId;
 
 /// Callback function for message processing
-typedef void (*TNetCallback) ( CMessage&, TSockId );
+typedef void (*TNetCallback) ( TSockId );
 
 
 /// Callback items. See CMsgSocket::update() for an explanation on how the callbacks are called.
@@ -49,7 +49,7 @@ typedef void (*TNetCallback) ( CMessage&, TSockId );
 	/// Key C string. It is a message type name, or "C" for connection or "D" for disconnection
 	char			*Key;
 	/// The callback function
-	TNetCallback	Callback;
+	TMsgCallback	Callback;
 
 } TCallbackItem;
 */
@@ -82,8 +82,8 @@ public:
 	/// Update the network (call this method evenly)
 	void	update();
 
-	/// Sets callback for detecting a disconnection
-	void	setDisconnectionCallback( TNetCallback cb );
+	/// Sets callback for detecting a disconnection (or NULL to disable callback)
+	void	setDisconnectionCallback( TNetCallback cb ) { _DisconnectionCallback = cb; }
 
 	// Internal use
 	friend void cbProcessDisconnectionCallback( CMessage& msg, TSockId id );

@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 4, server
  *
- * $Id: callback_server.cpp,v 1.3 2001/02/23 09:48:28 cado Exp $
+ * $Id: callback_server.cpp,v 1.4 2001/02/23 15:44:30 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ void cbProcessConnectionCallback( CMessage& msg, TSockId id )
 
 	if ( CCallbackServer::_TheServer->_ConnectionCallback != NULL )
 	{
-		CCallbackServer::_TheServer->_ConnectionCallback( msg, id );
+		CCallbackServer::_TheServer->_ConnectionCallback( id );
 	}
 }
 
@@ -95,15 +95,6 @@ void CCallbackServer::disconnect( TSockId hostid )
 void CCallbackServer::send( CMessage& outmsg, TSockId hostid )
 {
 	CMsgSocket::send( outmsg, hostid );
-}
-
-
-/*
- * Sets callback for incoming connections
- */
-void CCallbackServer::setConnectionCallback( TNetCallback cb )
-{
-	_ConnectionCallback = cb;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 4, server
  *
- * $Id: callback_server.h,v 1.3 2001/02/23 09:48:19 cado Exp $
+ * $Id: callback_server.h,v 1.4 2001/02/23 15:44:30 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,8 +61,8 @@ public:
 	/// Send a message to the specified host
 	void	send( CMessage& outmsg, TSockId hostid );
 
-	/// Sets callback for incoming connections
-	void	setConnectionCallback( TNetCallback cb );
+	/// Sets callback for incoming connections (or NULL to disable callback)
+	void	setConnectionCallback( TNetCallback cb ) { _ConnectionCallback = cb; }
 
 	/// Returns the internet address of the listening socket
 	const CInetAddress	*listenAddress();

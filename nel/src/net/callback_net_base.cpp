@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
- * Network engine, layer 4, 
+ * Network engine, layer 4, base
  *
- * $Id: callback_net_base.cpp,v 1.3 2001/02/23 09:48:38 cado Exp $
+ * $Id: callback_net_base.cpp,v 1.4 2001/02/23 15:44:30 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@ void cbProcessDisconnectionCallback( CMessage& msg, TSockId id )
 	CCallbackNetBase *obj = CCallbackNetBase::_SockIdMap[id];
 	if ( obj->_DisconnectionCallback != NULL )
 	{
-		obj->_DisconnectionCallback( msg, id );
+		obj->_DisconnectionCallback( id );
 	}
 }
 
@@ -108,16 +108,6 @@ void CCallbackNetBase::update()
 {
 	CMsgSocket::update();
 }
-
-
-/*
- * Sets callback for detecting a disconnection
- */
-void CCallbackNetBase::setDisconnectionCallback( TNetCallback cb )
-{
-	_DisconnectionCallback = cb;
-}
-
 
 
 

@@ -58,6 +58,8 @@ public:
 	bool		    GlobalWindWindow;
 	bool		    SoundAnimWindow;
 	bool		    LightGroupWindow;
+	bool			ChooseFrameDelayWindow;
+	bool			ChooseBGColorWindow;
 	TMouseMove		MouseMoveType;
 	bool			X;
 	bool			Y;
@@ -122,6 +124,8 @@ public:
 	afx_msg void OnWindowDayNight();
 	afx_msg void OnWindowWaterPool();
 	afx_msg void OnWindowSoundAnim();
+	afx_msg void OnWindowChooseFrameDelay();
+	afx_msg void OnWindowChooseBGColor();
 	afx_msg void OnSetLightGroupFactor();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
@@ -132,6 +136,8 @@ public:
 	afx_msg void OnUpdateWindowDayNight(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowWaterPool(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowSoundAnim(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateWindowChooseFrameDelay(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateWindowBGColor(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewObjectmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewFirstpersonmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewCamera(CCmdUI* pCmdUI);
@@ -140,8 +146,7 @@ public:
 	afx_msg void OnUpdateEditZ(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditMoveelement(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowLightGroup(CCmdUI* pCmdUI);
-	afx_msg void OnHelpAboutobjectviewer();
-	afx_msg void OnSetFrameDelay();
+	afx_msg void OnHelpAboutobjectviewer();	
 	afx_msg void OnRemoveAllInstancesFromScene();
 	afx_msg void OnActivateTextureSet(UINT nID);
 	afx_msg void OnShuffleTextureSet();
@@ -164,6 +169,12 @@ public:
 	DECLARE_MESSAGE_MAP()
 
 	CSceneDlgMouseListener _RightButtonMouseListener ;
+
+	// The default behaviour of CFrameWnd::PostNcDestroy() is to call 'delete this'. We dont want that behaviour, we want the object viewer to call this
+	virtual void PostNcDestroy()
+	{
+		// do nothing
+	}
 
 private:
 	float			_LastSceneRotX;

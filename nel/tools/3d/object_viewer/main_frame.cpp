@@ -8,6 +8,7 @@
 #include "particle_dlg.h"
 #include "about_dialog.h"
 #include "choose_frame_delay.h"
+#include "choose_bg_color_dlg.h"
 #include "day_night_dlg.h"
 #include "water_pool_editor.h"
 #include "vegetable_dlg.h"
@@ -99,6 +100,8 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	GlobalWindWindow= false;
 	SoundAnimWindow=false;
 	LightGroupWindow=false;
+	ChooseFrameDelayWindow=false;
+	ChooseBGColorWindow=false;
 	MouseMoveType= MoveCamera;
 	MoveMode=ObjectMode;
 	X=true;
@@ -119,8 +122,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 }
 
 CMainFrame::~CMainFrame()
-{
-	ObjView->_MainFrame=NULL;
+{	
 	_RightButtonMouseListener.releaseFromServer (CNELU::EventServer);
 }
 
@@ -155,7 +157,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_WINDOW_DAYNIGHT, OnWindowDayNight)
 	ON_COMMAND(ID_WINDOW_WATER_POOL, OnWindowWaterPool)
 	ON_COMMAND(ID_WINDOW_ANIMSOUND, OnWindowSoundAnim)
-	ON_COMMAND(ID_SCENE_SETLIGHTGROUPFACTOR, OnSetLightGroupFactor)
+	ON_COMMAND(ID_WINDOW_CHOOSE_FRAME_DELAY, OnWindowChooseFrameDelay)	
+	ON_COMMAND(ID_WINDOW_CHOOSE_BG_COLOR, OnWindowChooseBGColor)
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMATION, OnUpdateWindowAnimation)
@@ -165,6 +168,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_DAYNIGHT, OnUpdateWindowDayNight)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_WATER_POOL, OnUpdateWindowWaterPool)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMSOUND, OnUpdateWindowSoundAnim)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_CHOOSE_FRAME_DELAY, OnUpdateWindowChooseFrameDelay)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_CHOOSE_BG_COLOR, OnUpdateWindowBGColor)
 	ON_UPDATE_COMMAND_UI(ID_SCENE_SETLIGHTGROUPFACTOR, OnUpdateWindowLightGroup)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_OBJECTMODE, OnUpdateViewObjectmode)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTPERSONMODE, OnUpdateViewFirstpersonmode)
@@ -173,8 +178,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_Y, OnUpdateEditY)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_Z, OnUpdateEditZ)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVEELEMENT, OnUpdateEditMoveelement)
-	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)
-	ON_COMMAND(IDM_SET_FRAME_DELAY, OnSetFrameDelay)
+	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)	
 	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)	
 	ON_COMMAND_RANGE(IDM_ACTIVATE_TEXTURE_SET_1, IDM_ACTIVATE_TEXTURE_SET_8, OnActivateTextureSet)
 	ON_COMMAND(IDM_SHUFFLE_TEXTURE_SET, OnShuffleTextureSet)	
@@ -224,6 +228,8 @@ void CMainFrame::update ()
 	ObjView->_GlobalWindDlg->ShowWindow (GlobalWindWindow?SW_SHOW:SW_HIDE);
 	ObjView->_SoundAnimDlg->ShowWindow (SoundAnimWindow?SW_SHOW:SW_HIDE);
 	ObjView->_LightGroupDlg->ShowWindow (LightGroupWindow?SW_SHOW:SW_HIDE);
+	ObjView->_ChooseFrameDelayDlg->ShowWindow (ChooseFrameDelayWindow?SW_SHOW:SW_HIDE);
+	ObjView->_ChooseBGColorDlg->ShowWindow (ChooseBGColorWindow?SW_SHOW:SW_HIDE);
 }
 
 // ***************************************************************************
@@ -264,6 +270,10 @@ void CMainFrame::registerValue (bool read)
 			RegQueryValueEx (hKey, "BackGroundColor", 0, &type, (LPBYTE)&BgColor, &len);
 			len=sizeof (float);
 			RegQueryValueEx (hKey, "GlobalWindPower", 0, &type, (LPBYTE)&GlobalWindPower, &len);
+			len=sizeof (BOOL);
+			RegQueryValueEx (hKey, "ViewChooseFrameDelay", 0, &type, (LPBYTE)&ChooseFrameDelayWindow, &len);
+			len=sizeof (BOOL);
+			RegQueryValueEx (hKey, "ViewChooseBGColor", 0, &type, (LPBYTE)&ChooseBGColorWindow, &len);
 		}
 	}
 	else
@@ -282,6 +292,8 @@ void CMainFrame::registerValue (bool read)
 			RegSetValueEx(hKey, "ViewGlobalWind", 0, REG_BINARY, (LPBYTE)&GlobalWindWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewSoundAnimWind", 0, REG_BINARY, (LPBYTE)&SoundAnimWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewLightGroupWind", 0, REG_BINARY, (LPBYTE)&LightGroupWindow, sizeof(bool));
+			RegSetValueEx(hKey, "ViewChooseFrameDelay", 0, REG_BINARY, (LPBYTE)&ChooseFrameDelayWindow, sizeof(bool));
+			RegSetValueEx(hKey, "ViewChooseBGColor", 0, REG_BINARY, (LPBYTE)&ChooseBGColorWindow, sizeof(bool));
 			RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
 			RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&MoveMode, sizeof(uint));
 			RegSetValueEx(hKey, "BackGroundColor", 0, REG_BINARY, (LPBYTE)&BgColor, sizeof(NLMISC::CRGBA));
@@ -835,6 +847,20 @@ void CMainFrame::OnWindowSoundAnim()
 	update ();
 }
 
+void CMainFrame::OnWindowChooseFrameDelay() 
+{
+	ChooseFrameDelayWindow^= true;
+	update ();
+}
+
+void CMainFrame::OnWindowChooseBGColor() 
+{
+	ChooseBGColorWindow^= true;
+	update ();
+}
+
+
+
 void CMainFrame::OnSetLightGroupFactor() 
 {
 	LightGroupWindow^= true;
@@ -942,6 +968,16 @@ void CMainFrame::OnUpdateWindowSoundAnim(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck (SoundAnimWindow);
 }
 
+void CMainFrame::OnUpdateWindowChooseFrameDelay(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck (ChooseFrameDelayWindow);
+}
+
+void CMainFrame::OnUpdateWindowBGColor(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck (ChooseBGColorWindow);
+}
+
 void CMainFrame::OnUpdateWindowLightGroup(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck (LightGroupWindow);
@@ -984,16 +1020,6 @@ void CMainFrame::OnHelpAboutobjectviewer()
 	about.DoModal();
 }
 
-
-void CMainFrame::OnSetFrameDelay()
-{
-CChooseFrameDelay cfd;
-cfd.m_FrameDelay = ObjView->getFrameDelay();
-if (cfd.DoModal() == IDOK)
-{
-	ObjView->setFrameDelay(cfd.m_FrameDelay);
-}
-}
 
 ///===========================================================================================
 void CMainFrame::OnRemoveAllInstancesFromScene()

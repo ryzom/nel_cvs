@@ -33,6 +33,8 @@ date >> log.log
 date
 
 
+
+
 panoply_file_list=`cat ../../cfg/config.cfg | grep "panoply_file_list" | sed -e 's/panoply_file_list//' | sed -e 's/ //g' | sed -e 's/=//g'`
 if test "$panoply_file_list" ; then
 	panoply_source_directories=`cat ../../cfg/directories.cfg | grep "panoply_source_directory" | sed -e 's/panoply_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -55,7 +57,7 @@ if test "$panoply_file_list" ; then
 fi
 
 
-echo "essai" > compress.txt
+
 
 # For each directoy
 for i in tga/*.tga ; do
@@ -81,8 +83,11 @@ done
 for i in panoply/*.tga ; do
 
 	# Destination file
-	dest=`echo $i | sed -e 's/tga/dds/g'`
+	dest=`echo $i | sed -e 's%panoply/%dds/%g' | sed -e 's/tga/dds/g'`
 	dds=`echo $i | sed -e 's/.tga/.dds/g'`
+
+	echo dest=$dest
+	echo dds=$dds
 
 	# Convert the lightmap in 16 bits mode
 	if ( ! test -e $dest ) || ( test $i -nt $dest )
@@ -97,4 +102,3 @@ for i in panoply/*.tga ; do
 		$tga_2_dds $i -o $dest -m 2>> log.log
 	fi
 done
-

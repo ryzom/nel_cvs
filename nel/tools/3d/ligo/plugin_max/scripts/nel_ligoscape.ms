@@ -1,12 +1,12 @@
 -- Some pathes to configure
 
 old_zone_path				= "w:\\database\\landscape\\zones\\"
-ligo_root_path				= "c:\\ligo\\"
+ligo_root_path				= "w:\\database\\landscape\\ligo\\max\\"
 ligo_material_path			= "materials\\"
 ligo_transition_path		= "transitions\\"
 -- ligo_export_path path where to put (*.zone,*ligozone and *.tga)
 -- 3 pathes are created under this one :(zones, zoneLigos and zoneBitmaps)
-ligo_export_path			= "c:\\leveldesign\\"
+ligo_export_path			= "w:\\database\\landscape\\ligo\\"
 
 -- Some extensions
 
@@ -368,18 +368,20 @@ fn show_errors node debug id =
 )
 
 -- Export a ligo material
-fn export_and_check_and_debug_material checkOnly debug = 
+fn export_and_check_and_debug_material checkOnly debug displayMB = 
 ( 
 	-- Select a file ?
 	if $ == undefined then
 	(
-		messageBox "Please select a 3ds NeL patch mesh object" title:title_msgbox beep:true
+		if displayMB == true then
+			messageBox "Please select a 3ds NeL patch mesh object" title:title_msgbox beep:true
 	)
 	else
 	(
 		if $ == $selection then
 		(
-			messageBox "Please select only one 3ds NeL patch mesh object" title:title_msgbox beep:true
+			if displayMB == true then
+				messageBox "Please select only one 3ds NeL patch mesh object" title:title_msgbox beep:true
 		)
 		else
 		(
@@ -413,11 +415,13 @@ fn export_and_check_and_debug_material checkOnly debug =
 					-- Success
 					if checkOnly == true then
 					(
-						messageBox "No error" title:title_msgbox beep:true
+						if displayMB == true then
+							messageBox "No error" title:title_msgbox beep:true
 					)
 					else
 					(
-						messageBox (filename+" export success") title:title_msgbox
+						if displayMB == true then
+							messageBox (filename+" export success") title:title_msgbox
 					)
 
 					return true
@@ -463,7 +467,7 @@ fn getTransitionZoneCoordinates node x y =
 )
 
 -- Export a ligo transition
-fn export_and_check_and_debug_transition_template checkOnly debug = 
+fn export_and_check_and_debug_transition_template checkOnly debug displayMB = 
 ( 
 	-- Get nelsize
 	cellSize = NeLLigoGetCellSize ()
@@ -471,7 +475,8 @@ fn export_and_check_and_debug_transition_template checkOnly debug =
 	-- Select a file ?
 	if $ == undefined then
 	(
-		messageBox "Please select one or several 3ds NeL patch mesh object" title:title_msgbox beep:true
+		if displayMB == true then
+			messageBox "Please select one or several 3ds NeL patch mesh object" title:title_msgbox beep:true
 	)
 	else
 	(
@@ -580,11 +585,13 @@ fn export_and_check_and_debug_transition_template checkOnly debug =
 								-- Success
 								if checkOnly == true then
 								(
-									messageBox "No error" title:title_msgbox beep:true
+									if displayMB == true then
+										messageBox "No error" title:title_msgbox beep:true
 								)
 								else
 								(
-									messageBox (filename+" export success") title:title_msgbox
+									if displayMB == true then
+										messageBox (filename+" export success") title:title_msgbox
 								)
 
 								return true
@@ -595,7 +602,8 @@ fn export_and_check_and_debug_transition_template checkOnly debug =
 			)
 			else
 			(
-				messageBox "No zone selected" title:title_msgbox beep:true
+				if displayMB == true then
+					messageBox "No zone selected" title:title_msgbox beep:true
 			)
 		)
 	)
@@ -605,18 +613,20 @@ fn export_and_check_and_debug_transition_template checkOnly debug =
 )
 
 -- Export a ligo zone
-fn export_and_check_and_debug_zone checkOnly debug = 
+fn export_and_check_and_debug_zone checkOnly debug displayMB = 
 ( 
 	-- Select a zone
 	if $ == undefined then
 	(
-		messageBox "Please select a 3ds NeL patch mesh object" title:title_msgbox beep:true
+		if displayMB == true then
+			messageBox "Please select a 3ds NeL patch mesh object" title:title_msgbox beep:true
 	)
 	else
 	(
 		if $ == $selection then
 		(
-			messageBox "Please select only one 3ds NeL patch mesh object" title:title_msgbox beep:true
+			if displayMB == true then
+				messageBox "Please select only one 3ds NeL patch mesh object" title:title_msgbox beep:true
 		)
 		else
 		(
@@ -649,7 +659,8 @@ fn export_and_check_and_debug_zone checkOnly debug =
 
 					if checkOnly == true then
 					(
-						messageBox "No error" title:title_msgbox beep:true
+						if displayMB == true then
+							messageBox "No error" title:title_msgbox beep:true
 
 						return true
 					)
@@ -669,7 +680,8 @@ fn export_and_check_and_debug_zone checkOnly debug =
 						if (NeLLigoExportZone $ filename props true) == true then
 						(
 							-- Success message
-							messageBox (filename+" export success") title:title_msgbox
+							if displayMB == true then
+								messageBox (filename+" export success") title:title_msgbox
 
 							return true
 						)
@@ -684,7 +696,7 @@ fn export_and_check_and_debug_zone checkOnly debug =
 )
 
 -- Export a ligo transition
-fn export_and_check_and_debug_transition_zone checkOnly debug = 
+fn export_and_check_and_debug_transition_zone checkOnly debug displayMB = 
 ( 
 	-- Get nelsize
 	cellSize = NeLLigoGetCellSize ()
@@ -692,7 +704,8 @@ fn export_and_check_and_debug_transition_zone checkOnly debug =
 	-- Select a file ?
 	if $ == undefined then
 	(
-		messageBox "Please select one or several 3ds NeL patch mesh object" title:title_msgbox beep:true
+		if displayMB == true then
+			messageBox "Please select one or several 3ds NeL patch mesh object" title:title_msgbox beep:true
 	)
 	else
 	(
@@ -851,12 +864,14 @@ fn export_and_check_and_debug_transition_zone checkOnly debug =
 							if checkOnly == true then
 							(
 								-- Success
-								messageBox "No error" title:title_msgbox beep:true
+								if displayMB == true then
+									messageBox "No error" title:title_msgbox beep:true
 							)
 							else
 							(
 								-- Success message
-								messageBox ("Export success") title:title_msgbox
+								if displayMB == true then
+									messageBox ("Export success") title:title_msgbox
 							)
 
 							-- Success
@@ -999,6 +1014,7 @@ rollout material_rollout "Material Template"
 group "Check, debug and export"
 	(
 
+	Button		ExportAllMaterial		"Export all material non-ok"	width:140 align:#center
 	Button		ExportMaterial			"Export material template"		width:140 align:#center
 	Button		ShowHelpZones			"Show help zones"				width:140 align:#center
 	Button		DeleteDebugMarkers		"Delete debug markers"			width:140 align:#center
@@ -1011,6 +1027,7 @@ group "Projects management"
 	(
 
 	Listbox		MaterialProject			"Material projects"				height:8 align:#center
+	Button		DelMaterial				"Delete selected material"		width:140 align:#center
 	Label		MaterialName			"Material name:"				align:#left
 	EditText	NewMaterialName			""								width:140 align:#left
 	Button		AddMaterial				"Add material"					width:140 align:#center
@@ -1055,13 +1072,36 @@ group "Projects management"
 		MaterialProject.items = tmpArray
 	)
 
+	on ExportAllMaterial pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+		
+		refresh_list ()
+		for curMat in MaterialProject.items do
+		(
+			if (substring curMat 1 4) == "[..]" then
+			(
+				curFileName = ligo_root_path + ligo_material_prefix + (substring curMat 5 100) + ".max"
+				loadMaxFile curFileName
+				max select all
+				export_and_check_and_debug_material false false false
+				refresh_list ()
+			)
+		)
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		Messagebox "Export All End" title:title_msgbox beep:true
+	)
+
 	on ExportMaterial pressed do 
 	(
 		if (project_cur_file != "") then
 		(
 			saveMaxFile project_cur_file
 		)
-		export_and_check_and_debug_material CheckOnly.checked Debug.checked
+		export_and_check_and_debug_material CheckOnly.checked Debug.checked true
 		refresh_list ()
 	)
 
@@ -1118,6 +1158,20 @@ group "Projects management"
 	on material_rollout open do
 	(
 		refresh_list ()
+	)
+
+	on DelMaterial pressed do
+	(
+		if (MaterialProject.selected != undefined) then
+		(
+			fileName = ligo_root_path + ligo_material_prefix + (substring MaterialProject.selected 5 100) + ".max"
+			if queryBox ("Do you want to delete "+fileName+" ?") beep:no then
+			(
+				deleteFile filename
+				refresh_project_list ()
+				refresh_list
+			)
+		)
 	)
 
 	on AddMaterial pressed do
@@ -1180,7 +1234,7 @@ group "Projects management"
 		(
 			-- Open the new file
 			project_cur_file = substring MaterialProject.items[id] 5 100
-			material_zone_rollout.MaterialDDL.selected = project_cur_file
+			material_zone_rollout.MaterialDDL.selection = finditem material_zone_rollout.MaterialDDL.items project_cur_file
 			material_zone_rollout.refresh_zone_list project_cur_file
 			project_cur_file = ligo_root_path + ligo_material_prefix + project_cur_file + ".max"
 			loadMaxFile (project_cur_file)
@@ -1195,6 +1249,7 @@ rollout transition_rollout "Transition Template"
 group "Check, debug and export"
 	(
 
+	Button		ExportAllTransition		"Export all transition non-ok"	width:140 align:#center
 	Button		ExportTransition		"Export transition template"	width:140 align:#center
 	Button		HideOtherZones			"Hide other zones"				width:140 align:#center
 	Button		UnhideOtherZones		"Unhide other zones"			width:140 align:#center
@@ -1210,6 +1265,7 @@ group "Projects management"
 	(
 
 	Listbox			TransitionProject		"Transition projects"			height:8 align:#center
+	Button			DelTransition			"Delete selected transition"	width:140 align:#center
 	Dropdownlist	NewTransitionName0DDL	"Material 0:"					width:140 align:#left
 	Dropdownlist	NewTransitionName1DDL	"Material 1:"					width:140 align:#left
 	Button			AddTransition			"Add transition"				width:140 align:#center
@@ -1266,11 +1322,34 @@ group "Projects management"
 		TransitionProject.items = tmpArray
 	)
 
+	on ExportAllTransition pressed do 
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		refresh_list ()
+		for curTrans in TransitionProject.items do
+		(
+			if (substring curTrans 1 4) == "[..]" then
+			(
+				curFileName = ligo_root_path + ligo_transition_prefix + (substring curtrans 5 100) + ".max"
+				loadMaxFile curFileName
+				max select all
+				export_and_check_and_debug_transition_template false false false
+				refresh_list ()
+			)
+		)
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		Messagebox "Export All End" title:title_msgbox beep:true
+	)
+
 	on ExportTransition pressed do 
 	(
 		if (project_cur_file != "") then
 			saveMaxFile project_cur_file
-		export_and_check_and_debug_transition_template CheckOnly.checked Debug.checked
+		export_and_check_and_debug_transition_template CheckOnly.checked Debug.checked true
 		refresh_list ()
 	)
 
@@ -1546,6 +1625,20 @@ group "Projects management"
 		)
 		return true
 	)
+	
+	on DelTransition pressed do
+	(
+		if (TransitionProject.selected != undefined) then
+		(
+			fileName = ligo_root_path + ligo_transition_prefix + (substring TransitionProject.selected 5 100) + ".max"
+			if queryBox ("Do you want to delete "+fileName+" ?") beep:no then
+			(
+				deleteFile filename
+				refresh_project_list ()
+				refresh_list
+			)
+		)
+	)
 
 	on AddTransition pressed do
 	(
@@ -1607,10 +1700,11 @@ group "Projects management"
 		(
 			-- Open the max project
 			project_cur_file = substring TransitionProject.items[id] 5 100
-			transition_zone_rollout.TransitionDDL.selected = project_cur_file
+			transition_zone_rollout.TransitionDDL.selection = finditem transition_zone_rollout.TransitionDDL.items project_cur_file
 			transition_zone_rollout.refresh_list project_cur_file
 			project_cur_file = ligo_root_path + ligo_transition_prefix + project_cur_file + ".max"
 			loadMaxFile project_cur_file
+			refresh_list ()
 		)
 	)
 )
@@ -1620,6 +1714,7 @@ rollout material_zone_rollout "Material Zone"
 group "Check, debug and export"
 	(
 
+	Button		ExportAllZone			"Export all zone non-ok"		width:140 align:#center
 	Button		ExportZone				"Export zone"					width:140 align:#center
 	Button		ShowHelpZones			"Show help zones"				width:140 align:#center
 	Button		DeleteDebugMarkers		"Delete debug markers"			width:140 align:#center
@@ -1634,15 +1729,18 @@ group "Projects management"
 
 	Dropdownlist	MaterialDDL				"Material"				height:8 align:#center
 	Listbox			ZoneProject				"Zones"					height:8 align:#center
+	Button			DelZone					"Delete selected zone"	width:140 align:#center
 	Label			ZoneName				"Zone name:"			align:#left
 	EditText		NewZoneName				""						width:140 align:#left
 	Button			AddZone					"Add zone"				width:140 align:#center
+	Button			CopyZone				"Copy selected zone"	width:140 align:#center
 
 	)
 
 	fn refresh_mat_list =
 	(
 		tmpArray = #()
+		append tmpArray "-- ALL --"
 		for proj in project_file_list do
 		(
 			-- Get token
@@ -1664,7 +1762,8 @@ group "Projects management"
 			tokenArray = filterString (getFilenameFile curFileName) "-"
 
 			-- Valid name ?
-			if (tokenArray.count == 3) and (tokenArray[1] == "zonematerial") and (tokenArray[2] == currentMaterial) then
+			if (currentMaterial == "-- ALL --") or (tokenArray[2] == currentMaterial) then
+			if (tokenArray.count == 3) and (tokenArray[1] == "zonematerial")  then
 			(
 				curFileDate = getFileModDate curFileName
 
@@ -1673,7 +1772,6 @@ group "Projects management"
 				expFileNameBase = #()
 				if (get_material_and_zone_name_in_zone_project_name curFileName expFileNameBase) == true then
 				(					
-					-- expFileName = ligo_root_path + ligo_zone_path + expFileNameBase[1] + "-" + expFileNameBase[2] + ligo_zone_ext
 					expFileName = ligo_export_path + "zoneLigos\\" + expFileNameBase[1] + "-" + expFileNameBase[2] + ligo_zone_ext
 					if (getFiles expFileName).count != 0 then
 						expFileDate = getFileModDate expFileName
@@ -1683,22 +1781,54 @@ group "Projects management"
 				tokenArray = filterString (getFilenameFile curFileName) "-"
 				if (expFileDate != "") and (date_older_or_equal_than curFileDate expFileDate) then
 				(
-					append tmpArray ("[ok]"+tokenArray[3])
+					if (currentMaterial == "-- ALL --") then
+						append tmpArray ("[ok]"+tokenArray[2]+"-"+tokenArray[3])
+					else
+						append tmpArray ("[ok]"+tokenArray[3])
 				)
 				else
 				(
-					append tmpArray ("[..]"+tokenArray[3])
+					if (currentMaterial == "-- ALL --") then
+						append tmpArray ("[..]"+tokenArray[2]+"-"+tokenArray[3])
+					else
+						append tmpArray ("[..]"+tokenArray[3])
 				)
 			)
 		)
 		ZoneProject.items = tmpArray
 	)
 
+	on ExportAllZone pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		refresh_zone_list MaterialDDL.selected
+		for curZone in ZoneProject.items do
+		(
+			if (substring curZone 1 4) == "[..]" then
+			(
+				curFileName = ligo_root_path + ligo_zonematerial_prefix
+				if (MaterialDDL.selected != "-- ALL --") then
+					curFileName = curFileName + MaterialDDL.selected + "-" 
+				curFileName = curFileName + (substring curZone 5 100) + ".max"
+				loadMaxFile curFileName
+				max select all
+				export_and_check_and_debug_zone false false false
+				refresh_zone_list MaterialDDL.selected
+			)
+		)
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		Messagebox "Export All End" title:title_msgbox beep:true
+	)
+
 	on ExportZone pressed do 
 	(
 		if (project_cur_file != "") then
 			saveMaxFile project_cur_file
-		export_and_check_and_debug_zone CheckOnly.checked Debug.checked
+		export_and_check_and_debug_zone CheckOnly.checked Debug.checked true
 		refresh_zone_list MaterialDDL.selected
 	)
 
@@ -1860,6 +1990,24 @@ group "Projects management"
 		refresh_zone_list MaterialDDL.selected
 	)
 
+	on DelZone pressed do
+	(
+		if (ZoneProject.selected != undefined) then
+		(
+			if (MaterialDDL.selected == "-- ALL --") then
+				fileName = substring ZoneProject.selected 5 100
+			else
+				fileName = MaterialDDL.selected + "-" + (substring ZoneProject.selected 5 100)
+			fileName = ligo_root_path + ligo_zonematerial_prefix + fileName + ".max"
+			if queryBox ("Do you want to delete "+fileName+" ?") beep:no then
+			(
+				deleteFile filename
+				refresh_project_list ()
+				refresh_zone_list MaterialDDL.selected
+			)
+		)
+	)
+
 	on AddZone pressed do
 	(
 		-- Valid name ?
@@ -1869,40 +2017,70 @@ group "Projects management"
 		)
 		else
 		(
-			-- Check the open project is a material
-			if (isMaterial maxFileName) == true then
+			if (MaterialDDL.selected == "-- ALL --") then
 			(
-				-- Get the material name
-				tokenArray = filterString (getFilenameFile maxFileName) "-"
-				materialName = tokenArray[2]
-
-				-- Check for save
-				if (checkForSave ()) == true then
-				(
-					-- Project name
-					projectName = ligo_root_path+ligo_zonematerial_prefix+materialName+"-"+NewZoneName.text+".max"
-
-					-- Open the project
-					if (loadMaxFile projectName) == false then
-					(
-						-- Save the max file
-						saveMaxFile projectName
-						loadMaxFile projectName
-						project_cur_file = projectName
-
-						-- Refresh max project
-						refresh_project_list ()
-						MaterialDDL.selected = materialName
-						refresh_zone_list MaterialDDL.selected
-					)
-				)
+				Messagebox "Please select a valid material template." title:title_msgbox beep:true
 			)
 			else
 			(
-				Messagebox "Load the material you want base your zone on first." title:title_msgbox beep:true
+				existingFile = ligo_root_path + ligo_material_prefix + MaterialDDL.selected + ".max"
+				newFile = ligo_root_path + ligo_zonematerial_prefix + MaterialDDL.selected + "-" + NewZoneName.text + ".max"
+				if (copyFile existingFile newFile) == false then
+				(
+					Messagebox ("Cannot create file :"+newFile) title:title_msgbox beep:true
+				)
+				else
+				(
+					loadMaxFile newFile
+					project_cur_file = newFile
+					refresh_project_list ()
+					refresh_zone_list MaterialDDL.selected
+				)
 			)
 		)
 	)
+
+	on CopyZone pressed do
+	(
+		if (NewZoneName.text == "")  then
+		(
+			Messagebox "Choose a name for your new zone." title:title_msgbox beep:true
+		)
+		else
+		(
+			if (ZoneProject.selection == 0) then
+			(
+				Messagebox "Please select a valid material zone." title:title_msgbox beep:true
+			)
+			else
+			(
+				if (MaterialDDL.selected == "-- ALL --") then
+				(
+					tokenArray = filterString (substring ZoneProject.selected 5 100) "-"
+					existingFile = ligo_root_path + ligo_zonematerial_prefix + tokenArray[1] + "-" + tokenArray[2] + ".max"
+					newFile = ligo_root_path + ligo_zonematerial_prefix + tokenArray[1] + "-" + NewZoneName.text + ".max"
+				)
+				else
+				(
+					fileName = substring ZoneProject.selected 5 100
+					existingFile = ligo_root_path + ligo_zonematerial_prefix + MaterialDDL.selected + "-" + fileName + ".max"
+					newFile = ligo_root_path + ligo_zonematerial_prefix + MaterialDDL.selected + "-" + NewZoneName.text + ".max"
+				)
+				print existingfile
+				print newfile
+				if (copyFile existingFile newFile) == false then
+				(
+					Messagebox ("Cannot create file :"+newFile) title:title_msgbox beep:true
+				)
+				else
+				(
+					loadMaxFile newFile
+					project_cur_file = newFile
+					refresh_project_list ()
+					refresh_zone_list MaterialDDL.selected
+				)
+			)
+		)	)
 
 	on ZoneProject doubleClicked id do
 	(
@@ -1910,7 +2088,10 @@ group "Projects management"
 		if (checkForSave ()) == true then
 		(
 			-- Open the max project
-			project_cur_file = MaterialDDL.selected + "-" + (substring ZoneProject.items[id] 5 100)
+			if (MaterialDDL.selected == "-- ALL --") then
+				project_cur_file = substring ZoneProject.items[id] 5 100
+			else
+				project_cur_file = MaterialDDL.selected + "-" + (substring ZoneProject.items[id] 5 100)
 			project_cur_file = ligo_root_path + ligo_zonematerial_prefix + project_cur_file + ".max"
 			loadMaxFile project_cur_file
 			refresh_zone_list MaterialDDL.selected
@@ -1928,6 +2109,7 @@ rollout transition_zone_rollout "Transition Zone"
 group "Check, debug and export"
 	(
 
+	Button		ExportAllTransition		"Export all transZone non-ok"	width:140 align:#center
 	Button		ExportZone				"Export zone"					width:140 align:#center
 	Button		HideOtherZones			"Hide other zones"				width:140 align:#center
 	Button		UnhideOtherZones		"Unhide other zones"			width:140 align:#center
@@ -1943,16 +2125,18 @@ group "Projects management"
 	(
 
 	Dropdownlist	TransitionDDL			"Transition"					height:8 align:#center
-	Listbox			ZoneProject				"Zone transition projects"		height:8 align:#center
-	Label			ZoneName				"Zone transition name:"			align:#left
-	EditText		NewZoneName				""								width:140 align:#left
-	Button			AddZone					"Add transition zone"			width:140 align:#center
+	Listbox			ZoneProject				"transZone projects"			height:8 align:#center
+	Button			DelTransZone			"Delete transZone selected"		width:140 align:#center
+	Label			ZoneName				"transZone name:	"			align:#left
+	EditText		NewTransZoneName		""								width:140 align:#left
+	Button			AddTransZone			"Add transZone"					width:140 align:#center
 
 	)
 
 	fn refresh_trans_list =
 	(
 		tmpArray = #()
+		append tmpArray "-- ALL --"
 		for proj in project_file_list do
 		(
 			-- Get token
@@ -1974,7 +2158,7 @@ group "Projects management"
 
 			-- Valid name ?
 			if (tokenArray.count == 4) and (tokenArray[1] == "zonetransition") and
-				((tokenArray[2]+"-"+tokenArray[3]) == trans) then
+				((trans == "-- ALL --") or (trans == (tokenArray[2]+"-"+tokenArray[3]))) then
 			(
 				curFileDate = getFileModDate curFileName
 
@@ -1990,21 +2174,58 @@ group "Projects management"
 					if not ((expFileDate != "") and (date_older_or_equal_than curFileDate expFileDate)) then
 						isUpToDate = false
 				)
+
 				if (isUpToDate == true) then
-					append tmpArray ("[ok]" + tokenArray[4])
+				(
+					if (trans == "-- ALL --") then
+						append tmpArray ("[ok]" + tokenArray[2] + "-" + tokenArray[3] + "-" + tokenArray[4])
+					else
+						append tmpArray ("[ok]" + tokenArray[4])
+				)
 				else
-					append tmpArray ("[..]" + tokenArray[4])
+				(
+					if (trans == "-- ALL --") then
+						append tmpArray ("[..]" + tokenArray[2] + "-" + tokenArray[3] + "-" + tokenArray[4])
+					else
+						append tmpArray ("[..]" + tokenArray[4])
+				)
 			)
 		)
 
 		ZoneProject.items = tmpArray
 	)
 
+	on ExportAllTransition pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		refresh_list TransitionDDL.selected
+		for curTrans in ZoneProject.items do
+		(
+			if (substring curTrans 1 4) == "[..]" then
+			(
+				curFileName = ligo_root_path + ligo_zonetransition_prefix
+				if (TransitionDDL.selected != "-- ALL --") then
+					curFileName = curFileName + TransitionDDL.selected + "-" 
+				curFileName = curFileName + (substring curTrans 5 100) + ".max"
+				loadMaxFile curFileName
+				max select all
+				export_and_check_and_debug_transition_zone false false true
+				refresh_list TransitionDDL.selected
+			)
+		)
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		Messagebox "Export All End" title:title_msgbox beep:true
+	)
+
 	on ExportZone pressed do 
 	(
 		if (project_cur_file != "") then
 			saveMaxFile project_cur_file
-		export_and_check_and_debug_transition_zone CheckOnly.checked Debug.checked
+		export_and_check_and_debug_transition_zone CheckOnly.checked Debug.checked true
 		refresh_list TransitionDDL.selected
 	)
 
@@ -2185,47 +2406,52 @@ group "Projects management"
 		refresh_list TransitionDDL.selected
 	)
 
-	on AddZone pressed do
+	on DelTransZone pressed do
+	(
+		if (ZoneProject.selected != undefined) then
+		(
+			if (TransitionDDL.selected == "-- ALL --") then
+				fileName = substring ZoneProject.selected 5 100
+			else
+				fileName = TransitionDDL.selected + "-" + (substring ZoneProject.selected 5 100)
+			fileName = ligo_root_path + ligo_zonetransition_prefix + fileName + ".max"
+			if queryBox ("Do you want to delete "+fileName+" ?") beep:no then
+			(
+				deleteFile filename
+				refresh_project_list ()
+				refresh_list TransitionDDL.selected
+			)
+		)
+	)
+
+	on AddTransZone pressed do
 	(
 		-- Valid name ?
-		if (NewZoneName.text == "")  then
+		if (NewTransZoneName.text == "")  then
 		(
 			Messagebox "Choose a name for your new transition zone." title:title_msgbox beep:true
 		)
 		else
 		(
-			-- Check the open project is a material
-			if (isTransition maxFileName) == true then
+			if (TransitionDDL.selected == "-- ALL --") then
 			(
-				-- Get the material name
-				tokenArray = filterString (getFilenameFile maxFileName) "-"
-				materialName0 = tokenArray[2]
-				materialName1 = tokenArray[3]
-
-				-- Check for save
-				if (checkForSave ()) == true then
-				(
-					-- Project name
-					projectName = ligo_root_path + ligo_zonetransition_prefix + materialName0 + "-" 
-					projectName = projectName + materialName1 + "-" + NewZoneName.text + ".max"
-
-					-- Open the project
-					if (loadMaxFile projectName) == false then
-					(
-						-- Save the max file
-						saveMaxFile projectName
-						loadMaxFile projectName
-						project_cur_file = projectName
-
-						-- Refresh max project
-						refresh_project_list ()
-						refresh_list TransitionDDL.selected
-					)
-				)
+				Messagebox "Please select a valid transition template." title:title_msgbox beep:true
 			)
 			else
 			(
-				Messagebox "Load the transition you want base your zone on first." title:title_msgbox beep:true
+				existingFile = ligo_root_path + ligo_transition_prefix + TransitionDDL.selected + ".max"
+				newFile = ligo_root_path + ligo_zonetransition_prefix + TransitionDDL.selected + "-" + NewTransZoneName.text + ".max"
+				if (copyFile existingFile newFile) == false then
+				(
+					Messagebox ("Cannot create file :"+newFile) title:title_msgbox beep:true
+				)
+				else
+				(
+					loadMaxFile newFile
+					project_cur_file = newFile
+					refresh_project_list ()
+					refresh_list TransitionDDL.selected
+				)
 			)
 		)
 	)
@@ -2236,7 +2462,10 @@ group "Projects management"
 		if (checkForSave ()) == true then
 		(
 			-- Open the max project
-			project_cur_file = transitionDDL.selected + "-" + (substring ZoneProject.items[id] 5 100)
+			if (TransitionDDL.selected == "-- ALL --") then
+				project_cur_file = substring ZoneProject.items[id] 5 100
+			else
+				project_cur_file = transitionDDL.selected + "-" + (substring ZoneProject.items[id] 5 100)
 			project_cur_file = ligo_root_path + ligo_zonetransition_prefix + project_cur_file + ".max"
 			loadMaxFile project_cur_file
 		)

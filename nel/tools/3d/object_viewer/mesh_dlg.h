@@ -1,6 +1,6 @@
 /** \file mesh_dlg.h
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.h,v 1.3 2004/06/17 08:11:29 vizerie Exp $
+ * $Id: mesh_dlg.h,v 1.4 2005/02/16 17:05:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "popup_notify.h"
 #include "particle_dlg.h"
 #include "particle_workspace.h"
+#include "color_static.h"
 
 namespace NL3D
 {
@@ -57,6 +58,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CMeshDlg)
 	enum { IDD = IDD_CHOOSE_MESH };
+	CColorStatic	m_MeshErrorMsg;
 	CString	m_ShapeName;
 	//}}AFX_DATA
 
@@ -67,6 +69,10 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
+
+public:
+	// utility function : string from shape error code
+	static CString getShapeErrorString(sint errorCode);
 
 // Implementation
 protected:
@@ -86,6 +92,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	void updateModifiedFlag() { if (_Node) _Node->setModified(true); }
 	void touchPSState();
+	void updateMeshErrorString();
 };
 
 //{{AFX_INSERT_LOCATION}}

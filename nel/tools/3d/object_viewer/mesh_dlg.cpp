@@ -1,6 +1,6 @@
 /** \file mesh_dlg.cpp
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.cpp,v 1.10 2004/06/17 08:11:29 vizerie Exp $
+ * $Id: mesh_dlg.cpp,v 1.11 2005/02/16 17:05:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,7 @@ void CMeshDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CMeshDlg)
+	DDX_Control(pDX, IDC_MESH_ERROR, m_MeshErrorMsg);
 	DDX_Text(pDX, IDC_SHAPE_NAME, m_ShapeName);
 	//}}AFX_DATA_MAP
 }
@@ -123,6 +124,7 @@ void CMeshDlg::OnBrowseShape()
 		{
 			MessageBox(e.what(), "shape loading error");
 		}		
+		updateMeshErrorString();
 	}
 	UpdateData(FALSE);
 }
@@ -150,6 +152,7 @@ BOOL CMeshDlg::OnInitDialog()
 		}
 		updateForMorph();
 	}
+	m_MeshErrorMsg.SetTextColor(RGB(255,  0,  0));
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -174,6 +177,7 @@ void CMeshDlg::updateForMorph()
 			m_ShapeName = "";
 		}
 	}
+	updateMeshErrorString();
 	UpdateData(FALSE);
 }
 
@@ -195,6 +199,7 @@ void CMeshDlg::OnEnableMorphing()
 	}
 	updateForMorph();
 	updateModifiedFlag();
+	updateMeshErrorString();
 }
 
 ///==================================================================
@@ -215,6 +220,7 @@ void CMeshDlg::childPopupClosed(CWnd *child)
 	delete _EMMD;
 	_EMMD = NULL;
 	EnableWindow(TRUE);
+	updateMeshErrorString();
 }
 
 
@@ -233,6 +239,57 @@ BOOL CMeshDlg::EnableWindow( BOOL bEnable)
 		GetDlgItem(IDC_ENABLE_MORPHING)->EnableWindow(TRUE);
 		updateForMorph();
 	}
+	updateMeshErrorString();
 	return CDialog::EnableWindow(bEnable);
 }
+
+///==================================================================
+void CMeshDlg::updateMeshErrorString()
+{
+	GetDlgItem(IDC_MESH_ERROR)->SetWindowText("");
+	NL3D::CPSConstraintMesh *cm = dynamic_cast<NL3D::CPSConstraintMesh *>(_ShapeParticle);
+	if (!cm) return;
+	std::vector<sint> numVerts;
+	cm->getShapeNumVerts(numVerts);
+	if (numVerts.empty()) return;
+	if (numVerts.size() == 1)
+	{
+		GetDlgItem(IDC_MESH_ERROR)->SetWindowText((LPCTSTR) getShapeErrorString(numVerts[0]));
+	}
+	else
+	{
+		// display error msg for morphed meshs
+		bool hasError = false;
+		for(uint k = 0; k < numVerts.size(); ++k)
+		{
+			if (numVerts[k] < 0)
+			{
+				hasError = true;
+				break;
+			}
+		}
+		if (hasError)
+		{
+			CString errorInMorphMesh;
+			errorInMorphMesh.LoadString(IDS_ERROR_IN_MORPH_MESH);
+			GetDlgItem(IDC_MESH_ERROR)->SetWindowText((LPCTSTR) errorInMorphMesh);
+		}
+	}
+}
+
+//====================================================================
+CString CMeshDlg::getShapeErrorString(sint errorCode)
+{
+	CString str;
+	switch(errorCode)
+	{
+		case NL3D::CPSConstraintMesh::ShapeFileIsNotAMesh: str.LoadString(IDS_SHAPE_FILE_NOT_MESH); break;
+		case NL3D::CPSConstraintMesh::ShapeFileNotLoaded: str.LoadString(IDS_SHAPE_NOT_LOADED); break;
+		case NL3D::CPSConstraintMesh::ShapeHasTooMuchVertices: str.LoadString(IDS_TOO_MUCH_VERTICES); break;
+		default:
+		break;
+	};
+	return str;
+}
+
 

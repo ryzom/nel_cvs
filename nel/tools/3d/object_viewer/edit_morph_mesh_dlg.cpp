@@ -6,9 +6,10 @@
 #include "edit_morph_mesh_dlg.h"
 #include "3d/ps_mesh.h"
 #include "3d/particle_system_model.h"
-
+//
 #include "attrib_dlg.h"
 #include "particle_dlg.h"
+#include "mesh_dlg.h"
 
 using NL3D::CPSConstraintMesh;
 
@@ -309,15 +310,9 @@ std::string CEditMorphMeshDlg::getShapeDescStr(uint shapeIndex, sint numVerts) c
 		return msg;
 	}
 	else
-	{
-		CString str;
-		switch(numVerts)
-		{
-			case CPSConstraintMesh::ShapeFileIsNotAMesh: str.LoadString(IDS_SHAPE_FILE_NOT_MESH); break;
-			case CPSConstraintMesh::ShapeFileNotLoaded: str.LoadString(IDS_SHAPE_NOT_LOADED); break;
-			case CPSConstraintMesh::ShapeHasTooMuchVertices: str.LoadString(IDS_TOO_MUCH_VERTICES); break;
-		};
-		std::string result =  _CM->getShape(shapeIndex) + " (" + (LPCTSTR) str + ")";
+	{		
+		std::string result =  _CM->getShape(shapeIndex) + " (" + (LPCTSTR) CMeshDlg::getShapeErrorString(numVerts) + ")";
 		return result;
 	}
 }
+

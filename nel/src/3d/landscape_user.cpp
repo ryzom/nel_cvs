@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.1 2001/02/28 14:43:19 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.2 2001/04/19 08:24:34 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,6 +124,8 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius)
 		_Landscape->Landscape.removeZone(_ZoneManager.IdZoneToRemove);
 		_ZoneManager.ZoneRemoved = true;
 	}
+
+	_ZoneManager.loadAllZonesAround((uint)pos.x, (uint)(-pos.y), (uint)radius, false);
 }
 
 

@@ -47,7 +47,8 @@ protected:
 	afx_msg void OnSelchangeSchemeList();
 	afx_msg void OnSaveBank();
 	afx_msg void OnLoadBank();
-	afx_msg void OnDoubleclickedRemove();
+	afx_msg void OnRemove();
+	afx_msg void OnRename();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

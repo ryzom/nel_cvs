@@ -5,6 +5,7 @@
 #include "object_viewer.h"
 #include "scheme_bank_dlg.h"
 #include "scheme_manager.h"
+#include "choose_name.h"
 #include <nel/misc/file.h>
 
 #ifdef _DEBUG
@@ -39,7 +40,8 @@ BEGIN_MESSAGE_MAP(CSchemeBankDlg, CDialog)
 	ON_LBN_SELCHANGE(IDC_SCHEME_LIST, OnSelchangeSchemeList)
 	ON_BN_CLICKED(IDC_SAVE_BANK, OnSaveBank)
 	ON_BN_CLICKED(IDC_LOAD_BANK, OnLoadBank)
-	ON_BN_DOUBLECLICKED(IDC_REMOVE, OnDoubleclickedRemove)
+	ON_BN_CLICKED(IDC_REMOVE, OnRemove)
+	ON_BN_CLICKED(IDC_RENAME, OnRename)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -82,8 +84,8 @@ void CSchemeBankDlg::buildList()
 
 void CSchemeBankDlg::OnSaveBank() 
 {
-	static char BASED_CODE szFilter[] = "scheme bank files(*.scb)";
-	CFileDialog fd( FALSE, "scb", "default", 0, szFilter);
+	static char BASED_CODE szFilter[] = "scheme bank files(*.scb)|*.scb||";
+	CFileDialog fd( FALSE, NULL, "default.scb", 0, szFilter);
 	
 	if (fd.DoModal() == IDOK)
 	{
@@ -96,13 +98,12 @@ void CSchemeBankDlg::OnSaveBank()
 		_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
 		_makepath (path, drive, dir, NULL, NULL);
 		NLMISC::CPath::addSearchPath (path);
-
-		CSchemeManager sm;
+		
 		try
 		{
 			NLMISC::COFile iF;
 			iF.open(std::string( (LPCTSTR) fd.GetFileName()));
-			iF.serial(sm);			
+			iF.serial(SchemeManager);			
 		}
 		catch (std::exception &e)
 		{
@@ -114,8 +115,8 @@ void CSchemeBankDlg::OnSaveBank()
 
 void CSchemeBankDlg::OnLoadBank() 
 {
-	static char BASED_CODE szFilter[] = "scheme bank files(*.scb)";
-	CFileDialog fd( TRUE, ".scb", "default.scb", 0, szFilter);
+	static char BASED_CODE szFilter[] = "scheme bank files(*.scb)|*.scb||";
+	CFileDialog fd( TRUE, NULL, "*.scb", 0, szFilter);
 	
 	if (fd.DoModal() == IDOK)
 	{
@@ -146,8 +147,33 @@ void CSchemeBankDlg::OnLoadBank()
 	}						
 }
 
-void CSchemeBankDlg::OnDoubleclickedRemove() 
+
+void CSchemeBankDlg::OnRemove() 
 {
-	// TODO: Add your control notification handler code here
+	UpdateData();
+	if (m_SchemeList.GetCurSel() == LB_ERR) return;
+	SchemeManager.remove((NL3D::CPSAttribMakerBase *) m_SchemeList.GetItemData(m_SchemeList.GetCurSel()));
+	m_SchemeList.DeleteString(m_SchemeList.GetCurSel());
+	_CurrScheme = NULL;
+}
+
+void CSchemeBankDlg::OnRename() 
+{
+	UpdateData();
+	if (m_SchemeList.GetCurSel() == LB_ERR) return;
+	CString name;
+	m_SchemeList.GetText(m_SchemeList.GetCurSel(), name);
+	CChooseName cn((LPCTSTR) name, this);
+	if (cn.DoModal() == IDOK)
+	{
+		NL3D::CPSAttribMakerBase *scheme = (NL3D::CPSAttribMakerBase *) m_SchemeList.GetItemData(m_SchemeList.GetCurSel());
+		SchemeManager.rename(scheme, cn.getName());
+		int curSel = m_SchemeList.GetCurSel();
+		m_SchemeList.DeleteString(curSel);
+		int insertedPos = m_SchemeList.InsertString(curSel, cn.getName().c_str());
+		m_SchemeList.SetCurSel(insertedPos);
+		m_SchemeList.Invalidate();
+	}	
+	
 	
 }

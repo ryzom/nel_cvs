@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.49 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.50 2002/08/07 16:43:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -862,6 +862,8 @@ bool	CMeshMRMGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &world
 		{
 			// Transform the pyramid in Object space.
 			localPlane= pyramid[i]*worldMatrix;
+			// localPlane must be normalized, because worldMatrix mya have a scale.
+			localPlane.normalize();
 			// if the box is not partially inside the plane, quit
 			if( !_BBox.clipBack(localPlane) )
 				return false;

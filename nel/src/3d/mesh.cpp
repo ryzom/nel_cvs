@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.66 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: mesh.cpp,v 1.67 2002/08/07 16:43:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -490,6 +490,8 @@ bool	CMeshGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMat
 		{
 			// Transform the pyramid in Object space.
 			localPlane= pyramid[i]*worldMatrix;
+			// localPlane must be normalized, because worldMatrix mya have a scale.
+			localPlane.normalize();
 			// if the box is not partially inside the plane, quit
 			if( !_BBox.clipBack(localPlane) )
 				return false;

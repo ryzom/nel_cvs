@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.24 2004/04/08 18:25:49 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.25 2004/04/29 19:31:01 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/entity_id.h"
 #include "nel/misc/eid_translator.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace std;
 
@@ -60,6 +61,7 @@ const uint CEntityIdTranslator::Version = 1;
 
 void CEntityIdTranslator::CEntity::serial (NLMISC::IStream &s)
 {
+	H_AUTO(EIdTrans_serial);
 	s.serial (EntityName);
 	
 	if (CEntityIdTranslator::getInstance()->FileVersion >= 1)
@@ -91,6 +93,7 @@ CEntityIdTranslator *CEntityIdTranslator::getInstance ()
 
 void CEntityIdTranslator::getByUser (uint32 uid, vector<CEntityId> &res)
 {
+	H_AUTO(EIdTrans_getByUser);
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
 		if ((*it).second.UId == uid)
@@ -102,6 +105,7 @@ void CEntityIdTranslator::getByUser (uint32 uid, vector<CEntityId> &res)
 
 void CEntityIdTranslator::getByUser (const string &userName, vector<CEntityId> &res, bool exact)
 {
+	H_AUTO(EIdTrans_getByUser2);
 	string lowerName = strlwr (userName);
 	
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
@@ -125,6 +129,7 @@ void CEntityIdTranslator::getByUser (const string &userName, vector<CEntityId> &
 
 ucstring CEntityIdTranslator::getByEntity (const CEntityId &eid)
 {
+	H_AUTO(EIdTrans_getByEntity);
 	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
 	CEntityId reid(eid);
 	reid.setCreatorId(0);
@@ -143,6 +148,7 @@ ucstring CEntityIdTranslator::getByEntity (const CEntityId &eid)
 
 CEntityId CEntityIdTranslator::getByEntity (const ucstring &entityName)
 {
+	H_AUTO(EIdTrans_getByEntity2);
 	vector<CEntityId> res;
 	getByEntity (entityName, res, true);
 	if (res.empty())
@@ -153,6 +159,7 @@ CEntityId CEntityIdTranslator::getByEntity (const ucstring &entityName)
 
 void CEntityIdTranslator::getByEntity (const ucstring &entityName, vector<CEntityId> &res, bool exact)
 {
+	H_AUTO(EIdTrans_getByEntity3);
 	string lowerName = strlwr (entityName.toString());
 
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); ++it)
@@ -176,6 +183,7 @@ void CEntityIdTranslator::getByEntity (const ucstring &entityName, vector<CEntit
 
 bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *log, bool acceptBlanks)
 {
+	H_AUTO(EIdTrans_isValidEntityName);
 	// 3 char at least
 	if (entityName.size() < 3)
 	{
@@ -254,6 +262,7 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 
 bool CEntityIdTranslator::entityNameExists (const ucstring &entityName, bool acceptBlanks )
 {
+	H_AUTO(EIdTrans_entityNameExists);
 	// if bad name, don't accept it
 	if (!isValidEntityName (entityName,NLMISC::InfoLog,acceptBlanks)) return true;
 
@@ -272,6 +281,7 @@ bool CEntityIdTranslator::entityNameExists (const ucstring &entityName, bool acc
 
 void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const string &userName)
 {
+	H_AUTO(EIdTrans_registerEntity);
 	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
 	CEntityId reid(eid);
 	reid.setCreatorId(0);
@@ -297,6 +307,7 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 
 void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 {
+	H_AUTO(EIdTrans_unregisterEntity);
 	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
 	CEntityId reid(eid);
 	reid.setCreatorId(0);
@@ -318,6 +329,7 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 
 void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const string &userName)
 {
+	H_AUTO(EIdTrans_checkEntity);
 	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
 	CEntityId reid(eid);
 	reid.setCreatorId(0);
@@ -410,6 +422,7 @@ void cbInvalidEntityNamesFilename(const std::string &invalidEntityNamesFilename)
 
 void CEntityIdTranslator::load (const string &fileName, const string &invalidEntityNamesFilename)
 {
+	H_AUTO(EIdTrans_load);
 	if (fileName.empty())
 	{
 		nlwarning ("EIT: Can't load empty filename for EntityIdTranslator");
@@ -450,6 +463,8 @@ void CEntityIdTranslator::load (const string &fileName, const string &invalidEnt
 
 void CEntityIdTranslator::save ()
 {
+	H_AUTO(EIdTrans_save);
+
 	if (FileName.empty())
 	{
 		nlwarning ("EIT: Can't save empty filename for EntityIdTranslator (you forgot to load() it before?)");

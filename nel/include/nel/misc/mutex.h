@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.22 2003/03/25 14:00:19 corvazier Exp $
+ * $Id: mutex.h,v 1.23 2003/03/27 17:51:23 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,9 +32,10 @@
 #include <map>
 
 #ifdef NL_OS_UNIX
+//#include <iostream>
 #include <pthread.h> // PThread
 #include <semaphore.h> // PThread POSIX semaphores
-
+#define __forceinline inline
 #endif
 
 #undef MUTEX_DEBUG
@@ -103,6 +104,36 @@ private:
 
 };
 
+
+// In AT&T syntax:
+// operands reversed,
+// l after opcode replaces dword ptr,
+// () instead of [],
+// immediate values prefixed by $
+
+// Does not work (at least on multi-processor)! (with or without 'lock' prefix)
+#define ASM_ASWAP_FOR_GCC __asm__ volatile( \
+		    "mov $1, %%edx;" \
+		    "mov %1, %%ecx;" \
+		    "mov (%%ecx), %%eax;" \
+		    "1:nop;" \
+		    "lock cmpxchgl %%edx, (%%ecx);" \
+		    "jne 1b;" \
+		    "mov %%eax, %0" \
+	            : "=m" (result) \
+		    : "m" (l) \
+		    : "eax", "ecx", "edx", "memory" ); // force to use registers and memory
+
+// Works on multi-processor
+#define ASM_ASWAP_FOR_GCC_2 __asm__ volatile( \
+		    "mov $1, %%edx;" \
+		    "mov %1, %%ebx;" \
+		    "xchg %%eax, (%%ebx);" \
+		    "mov %%eax, %0" \
+	            : "=m" (result) \
+		    : "m" (l) \
+		    : "eax", "ebx", "memory" ); // force to use registers and memory
+
 /**
  * Fast mutex implementation (not fairly)
  * The mutex ARE NOT recursive (ie don't call enter() several times
@@ -116,6 +147,8 @@ private:
  *  - Implementated under WIN32
  *  - Other OS use CMutex
  *
+ * Tested: OK on Windows and Linux single & multi-processor
+ *
  *\code
  CFastMutex m;
  m.enter ();
@@ -126,7 +159,6 @@ private:
  * \author Nevrax France
  * \date 2000
  */
-#ifdef NL_OS_WINDOWS
 class CFastMutex
 {
 public:
@@ -137,29 +169,33 @@ public:
 	__forceinline static bool atomic_swap (volatile uint32 *l)
 	{
 		uint32 result;
+#ifdef NL_OS_WINDOWS
 		__asm 
 		{ 
-/*			mov eax,1
+			mov eax,1
 			mov ebx,l
 
 			// Lock is implicit with xchg
 			xchg [ebx],eax
 
-			mov [result],eax*/
-			mov edx,1
+			mov [result],eax
+			 /*mov edx,1
 			mov ecx,l
 			mov eax,[ecx]
 test_again:
 			nop
 			cmpxchg     dword ptr [ecx],edx
 			jne         test_again
-			mov [result],eax
-		}
+			mov [result],eax*/
+#else
+		 ASM_ASWAP_FOR_GCC_2
+#endif
 		return result != 0;
 	}
 
-	__forceinline void enter ()
+	__forceinline void enter () volatile
 	{
+	  //std::cout << "Entering, Lock=" << _Lock << std::endl; 
 		if (atomic_swap (&_Lock))
 		{
 			// First test
@@ -181,27 +217,28 @@ test_again:
 				if (!atomic_swap (&_Lock))
 					break;
 
+#ifdef NL_OS_WINDOWS
 				Sleep (wait_time);
+#else
+				//std::cout <<  "Sleeping i=" << i << std::endl;
+				usleep( wait_time*1000 );
+#endif
 			}
 		}
 	}
 
-	__forceinline void leave ()
+	__forceinline void leave () volatile
 	{
 		_Lock = 0;
+		//std::cout << "Leave" << std::endl;		
 	}
 
 	volatile uint32	_Lock;
 
-private:
+	/*private:
 
-	void *Mutex;
+	void *Mutex;*/
 };
-#else // NL_OS_WINDOWS
-
-#define CFastMutex CMutex
-
-#endif // NL_OS_WINDOWS
 
 
 
@@ -228,7 +265,6 @@ private:
  * \author Nevrax France
  * \date 2000
  */
-#ifdef NL_OS_WINDOWS
 class CFastMutexMP
 {
 public:
@@ -239,29 +275,35 @@ public:
 	__forceinline static bool atomic_swap (volatile uint32 *l)
 	{
 		uint32 result;
+#ifdef NL_OS_WINDOWS
 		__asm 
 		{ 
-/*			mov eax,1
+			mov eax,1
 			mov ebx,l
 
 			// Lock is implicit with xchg
 			xchg [ebx],eax
 
-			mov [result],eax*/
-			mov edx,1
+			mov [result],eax
+			  /*mov edx,1
 			mov ecx,l
 			mov eax,[ecx]
 test_again:
 			nop
 			cmpxchg     dword ptr [ecx],edx
 			jne         test_again
-			mov [result],eax
+		   
+			mov [result],eax*/
 		}
+#else
+		ASM_ASWAP_FOR_GCC
+#endif
 		return result != 0;
 	}
 
-	__forceinline void enter ()
+	__forceinline void enter () volatile
 	{
+	  //std::cout << "Entering, Lock=" << _Lock << std::endl; 
 		while (atomic_swap (&_Lock))
 		{
 			static uint last = 0;
@@ -309,28 +351,29 @@ test_again:
 				
 				if (!atomic_swap (&_Lock))
 					break;
-				
+
+#ifdef NL_OS_WINDOWS
 				Sleep (wait_time);
+#else
+				//std::cout <<  "Sleeping i=" << i << std::endl;
+				usleep( wait_time*1000 );
+#endif				
 			}
 		}
 	}
 
-	__forceinline void leave ()
+	__forceinline void leave () volatile
 	{
 		_Lock = 0;
+		//std::cout << "Leave" << std::endl;
 	}
 
 	volatile uint32	_Lock;
 
-private:
+	/*private:
 
-	void *Mutex;
+	void *Mutex;*/
 };
-#else // NL_OS_WINDOWS
-
-#define CFastMutexMP CMutex
-
-#endif // NL_OS_WINDOWS
 
 
 

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.15 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.16 2003/02/03 16:42:13 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -419,7 +419,7 @@ inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValu
 	float step = 1.0f / float(nbStages);
 	float alpha; 
 	
-	std::vector<T>::iterator dest = _Tab.begin();
+	typename std::vector<T>::iterator dest = _Tab.begin();
 	// copy the tab performing linear interpolation between values given in parameter
 	for (uint32 k = 0; k  < (numValues - 1); ++k)
 	{				

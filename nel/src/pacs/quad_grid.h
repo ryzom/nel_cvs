@@ -1,7 +1,7 @@
 /** \file pacs/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.3 2002/02/20 18:09:21 lecroart Exp $
+ * $Id: quad_grid.h,v 1.4 2003/02/03 16:42:13 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -254,7 +254,7 @@ private:// Methods.
 	// Try to add each node of the quad node list.
 	void		addQuadNodeToSelection(CQuadNode	&quad)
 	{
-		std::list<CNode*>::iterator	itNode;
+		typename std::list<CNode*>::iterator	itNode;
 		for(itNode= quad.Nodes.begin();itNode!=quad.Nodes.end();itNode++)
 		{
 			addToSelection(*itNode);
@@ -394,7 +394,7 @@ template<class T>	void		CQuadGrid<T>::clear()
 	_Selection.Next= NULL;
 }
 // ***************************************************************************
-template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::erase(CQuadGrid<T>::CIterator it)
+template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::erase(typename CQuadGrid<T>::CIterator it)
 {
 	sint	x,y;
 	CNode	*ptr= it._Ptr;
@@ -412,7 +412,7 @@ template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::erase(CQuadGrid<T>::CIte
 		{
 			xe= x &(_Size-1);
 			CQuadNode	&quad= _Grid[(ye<<_SizePower)+xe];
-			std::list<CNode*>::iterator	itNode;
+			typename std::list<CNode*>::iterator	itNode;
 			for(itNode= quad.Nodes.begin();itNode!=quad.Nodes.end();itNode++)
 			{
 				if((*itNode)==ptr)
@@ -441,7 +441,7 @@ template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::erase(CQuadGrid<T>::CIte
 	return CIterator((CNode*)next);
 }
 // ***************************************************************************
-template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::insert(const NLMISC::CVector &bboxmin, const NLMISC::CVector &bboxmax, const T &val)
+template<class T>	typename CQuadGrid<T>::CIterator	CQuadGrid<T>::insert(const NLMISC::CVector &bboxmin, const NLMISC::CVector &bboxmax, const T &val)
 {
 	CVector		bmin,bmax;
 	bmin= _ChangeBasis*bboxmin;
@@ -538,12 +538,12 @@ template<class T>	void			CQuadGrid<T>::select(const NLMISC::CVector &bboxmin, co
 
 }
 // ***************************************************************************
-template<class T>	CQuadGrid<T>::CIterator		CQuadGrid<T>::begin()
+template<class T>	typename CQuadGrid<T>::CIterator		CQuadGrid<T>::begin()
 {
 	return CIterator((CNode*)(_Selection.Next));
 }
 // ***************************************************************************
-template<class T>	CQuadGrid<T>::CIterator		CQuadGrid<T>::end()
+template<class T>	typename CQuadGrid<T>::CIterator		CQuadGrid<T>::end()
 {
 	return CIterator(NULL);
 }

@@ -1,7 +1,7 @@
 /** \file pool_memory.h
  * Pool memory allocation
  *
- * $Id: pool_memory.h,v 1.4 2001/07/02 13:02:11 corvazier Exp $
+ * $Id: pool_memory.h,v 1.5 2003/02/03 16:42:13 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,7 +100,7 @@ public:
 	 */
 	void	free ()
 	{
-		std::list< std::vector<T> >::iterator ite=_BlockList.begin();
+		typename std::list< std::vector<T> >::iterator ite=_BlockList.begin();
 		while (ite!=_BlockList.end())
 		{
 			// Clear the block
@@ -127,7 +127,7 @@ public:
 private:
 	uint									_BlockSize;
 	std::list< std::vector<T> >				_BlockList;
-	std::list< std::vector<T> >::iterator	_BlockPointer;
+	typename std::list< std::vector<T> >::iterator	_BlockPointer;
 };
 
 

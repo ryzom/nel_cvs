@@ -1,7 +1,7 @@
 /** \file track_keyframer.cpp
  * <File description>
  *
- * $Id: track_keyframer.cpp,v 1.5 2002/02/28 12:59:52 besson Exp $
+ * $Id: track_keyframer.cpp,v 1.6 2003/02/03 16:42:13 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,8 +35,8 @@ template <class T>
 void ITrackKeyFramer<T>::getKeysInRange(TAnimationTime t1, TAnimationTime t2, std::vector<TAnimationTime> &result)
 {
 	nlassert(t1 <= t2);
-	TMapTimeCKey::const_iterator it = _MapKey.lower_bound(t1)
-								, ub = _MapKey.upper_bound(t2);
+	typename TMapTimeCKey::const_iterator it = _MapKey.lower_bound(t1)
+	typename TMapTimeCKey::const_iterator ub = _MapKey.upper_bound(t2);
 	result.clear();		
 	while (it != ub)
 	{			

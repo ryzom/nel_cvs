@@ -1,7 +1,7 @@
 /** \file skeleton_spawn_script.cpp
  * TODO: File description
  *
- * $Id: skeleton_spawn_script.cpp,v 1.2 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: skeleton_spawn_script.cpp,v 1.3 2004/11/26 17:30:22 berenguier Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/skeleton_model.h"
 #include "3d/mesh_base_instance.h"
 #include "3d/scene.h"
+#include "3d/particle_system_model.h"
 #include "nel/misc/common.h"
 #include "nel/misc/algo.h"
 
@@ -60,6 +61,20 @@ void	CSkeletonSpawnScript::evaluate(CSkeletonModel *skeleton)
 	{
 		_Cache=skeleton->getSpawnScript();
 		parseCache(skeleton->getOwnerScene(), skeleton);
+	}
+
+	// each frame, update PS UserMatrix
+	for(uint i=0;i<_Instances.size();i++)
+	{
+		CInstance &inst= _Instances[i];
+		if(inst.Model && inst.PS)
+		{
+			CMatrix	userMat;
+			userMat.setRot(CVector::I, skeleton->getSSSWODir(), CVector::K);
+			userMat.normalize(CMatrix::YZX);
+			userMat.setPos(skeleton->getSSSWOPos());
+			inst.PS->setUserMatrix(userMat);
+		}
 	}
 }
 
@@ -265,6 +280,7 @@ void		CSSSModelRequest::execute()
 	// OK, create the model
 	CSkeletonSpawnScript::CInstance		&inst= sss._Instances[InstanceId];
 	inst.Model= scene->createInstance(Shape);
+	inst.PS= dynamic_cast<CParticleSystemModel*>((CTransformShape*)inst.Model);
 	if(inst.Model)
 	{
 		Skel->stickObject(inst.Model, BoneId);

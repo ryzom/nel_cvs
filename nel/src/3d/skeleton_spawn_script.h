@@ -1,7 +1,7 @@
 /** \file skeleton_spawn_script.h
  * TODO: File description
  *
- * $Id: skeleton_spawn_script.h,v 1.3 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: skeleton_spawn_script.h,v 1.4 2004/11/26 17:30:22 berenguier Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -73,9 +73,11 @@ private:
 		NLMISC::CRefPtr<CTransformShape>		Model;
 		// this is a copy of the line in script, to compare for possible deletion
 		std::string								ScriptLine;
+		class CParticleSystemModel				*PS;
 		CInstance()
 		{
 			Model= NULL;
+			PS= NULL;
 		}
 	};
 	std::vector<CInstance>	_Instances;

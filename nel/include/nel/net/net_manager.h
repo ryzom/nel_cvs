@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.6 2001/06/06 15:36:59 lecroart Exp $
+ * $Id: net_manager.h,v 1.7 2001/06/12 15:41:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,7 +115,12 @@ public:
 	/// Adds a callback array to a specific service connection. You can add callback only *after* adding the server, the client or the group
 	static void	addCallbackArray (const std::string &serviceName, const TCallbackItem *callbackarray, NLMISC::CStringIdArray::TStringId arraysize);
 
-	/// Calls it evenly
+	/** Call it evenly. the parameter select the timeout value in milliseconds for each update. You are absolutely certain that this
+	 * function will not be returns before this amount of time you set.
+	 * If you set the update timeout value higher than 0, all messages in queues will be process until the time greater than the timeout user update().
+	 * If you set the update timeout value to 0, all messages in queues will be process one time before calling the user update().
+	 * If you set the update timeout value to -1, only one message will be process one time before calling the user update().
+	 */
 	static void	update (sint32 timeout = 0);
 
 	/// Sends a message to a specific serviceName

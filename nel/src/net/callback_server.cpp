@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.8 2001/06/01 13:42:30 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.9 2001/06/12 15:41:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,7 +72,7 @@ void CCallbackServer::sendAllMyAssociations (TSockId to)
 
 	for (CStringIdArray::TStringId i = 0; i < size; i++)
 	{
-		nldebug ("L3S:  sending association '%s' -> %d", _OutputSIDA.getString(i).c_str (), i);
+//		nldebug ("L3S:  sending association '%s' -> %d", _OutputSIDA.getString(i).c_str (), i);
 		string str(_OutputSIDA.getString(i));
 		msgout.serial (str);
 		msgout.serial (i);

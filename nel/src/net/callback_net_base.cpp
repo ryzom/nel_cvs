@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.14 2001/06/07 16:16:47 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.15 2001/06/12 15:41:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,6 +121,9 @@ CCallbackNetBase::CCallbackNetBase () : _FirstUpdate (true), _DisconnectionCallb
 {
 	_NewDisconnectionCallback = cbnbNewDisconnection;
 
+	nldebug ("disable display layer 3 association message");
+	DebugLog->addNegativeFilter ("L3NB_ASSOC");
+
 	// add the callback needed to associate messages with id
 	addCallbackArray (cbnbMessageAssociationArray, sizeof (cbnbMessageAssociationArray) / sizeof (cbnbMessageAssociationArray[0]));
 }
@@ -145,12 +148,12 @@ void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CSt
 	_CallbackArray.resize (oldsize + arraysize);
 	_OutputSIDA.resize (oldsize + arraysize);
 
-	nldebug ("L3NB_CB: Adding %d callback to the array", arraysize);
+//TOO MUCH MESSAGE	nldebug ("L3NB_CB: Adding %d callback to the array", arraysize);
 
 	for (sint i = 0; i < arraysize; i++)
 	{
 		CStringIdArray::TStringId ni = oldsize + i;
-		nldebug ("L3NB_CB: Adding callback to message '%s', id '%d'", callbackarray[i].Key, ni);
+//TOO MUCH MESSAGE		nldebug ("L3NB_CB: Adding callback to message '%s', id '%d'", callbackarray[i].Key, ni);
 		// copy callback value
 		
 		_CallbackArray[ni] = callbackarray[i];
@@ -158,7 +161,60 @@ void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CSt
 		_OutputSIDA.addString (callbackarray[i].Key, ni);
 
 	}
-	nldebug ("L3NB_CB: Now, having %d callback associated with message", _CallbackArray.size ());
+	nldebug ("L3NB_CB: Added %d callback Now, there's %d callback associated with message type", arraysize, _CallbackArray.size ());
+}
+
+void CCallbackNetBase::processOneMessage ()
+{
+	CMessage msgin (_OutputSIDA, "", true);
+	TSockId tsid;
+	receive (msgin, &tsid);
+
+	nldebug ("L3NB: Received a message %s from %s", msgin.toString().c_str(), tsid->asString().c_str());
+	
+	// now, we have to call the good callback
+	NLMISC::CStringIdArray::TStringId pos = -1;
+	if (msgin.TypeHasAnId)
+	{
+		pos = msgin.getId ();
+	}
+	else
+	{
+		std::string name = msgin.getName ();
+		sint16 i;
+		for (i = 0; i < (sint16) _CallbackArray.size (); i++)
+		{
+			if (name == _CallbackArray[i].Key)
+			{
+				pos = i;
+				break;
+			}
+		}
+	}
+
+	if (pos < 0 || pos >= (sint16) _CallbackArray.size ())
+	{
+		nlerror ("L3NB_CB: Callback %s not found in _CallbackArray", msgin.toString().c_str());
+	}
+	else
+	{
+		TSockId realid = getSockId (tsid);
+
+		if (!realid->AuthorizedCallback.empty() && msgin.getName() != realid->AuthorizedCallback)
+		{
+			nlwarning ("L3NB_CB: %s try to call the callback %s but only %s is authorized. Disconnect him!", tsid->asString().c_str(), msgin.toString().c_str(), tsid->AuthorizedCallback.c_str());
+			disconnect (tsid);
+		}
+		else if (_CallbackArray[pos].Callback == NULL)
+		{
+			nlwarning ("L3NB_CB: Callback %s is NULL, can't call it", msgin.toString().c_str());
+		}
+		else
+		{
+			nldebug ("L3NB_CB: Calling callback (%s)", _CallbackArray[pos].Key);
+			_CallbackArray[pos].Callback (msgin, realid, *this);
+		}
+	}
 }
 
 
@@ -167,7 +223,9 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 	nlassert( timeout >= -1 );
 	TTime t0 = CTime::getLocalTime();
 
+	//
 	// The first time, we init time counters
+	//
 	if (_FirstUpdate)
 	{
 		nldebug("L3NB: First update()");
@@ -176,7 +234,9 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		_LastMovedStringArray = CTime::getLocalTime ();
 	}
 
+	//
 	// Every 1 seconds if we have new unknown association, we ask them to the other side
+	//
 	if (_LastUpdateTime + 1000 < CTime::getLocalTime ())
 	{
 //		nldebug("L3NB: baseUpdate()");
@@ -203,7 +263,9 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		}
 	}
 
+	//
 	// Every 60 seconds if we have not answered association, we ask again to get them!
+	//
 	if (!_InputSIDA.getAskedStringArray().empty() && _LastMovedStringArray + 60000 < CTime::getLocalTime ())
 	{
 		// we didn't have an answer for the association, resend them
@@ -225,68 +287,43 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 	}
 
 
-	NLMISC::CStringIdArray::TStringId pos;
-
 	/*
-	 * timeout -1    =>  read all
-	 * timeout 0     =>  read one
-	 * timeout other =>  read until timeout expired (at least one)
+	 * timeout -1    =>  read one message in the queue
+	 * timeout 0     =>  read all messages in the queue
+	 * timeout other =>  read all messages in the queue until timeout expired (at least all one time)
 	 */
 
-	while ( dataAvailable() ) // can be interrupted by "break"
+	bool exit = false;
+
+	while (!exit)
 	{
-		CMessage msgin (_OutputSIDA, "", true);
-		TSockId tsid;
-		receive (msgin, &tsid);
-
-		nldebug ("L3NB: Received a message %s from %s", msgin.toString().c_str(), tsid->asString().c_str());
-		
-		// now, we have to call the good callback
-		pos = -1;
-		if (msgin.TypeHasAnId)
+		// process all messages in the queue
+		while (dataAvailable ())
 		{
-			pos = msgin.getId ();
-		}
-		else
-		{
-			std::string name = msgin.getName ();
-			sint16 i;
-			for (i = 0; i < (sint16) _CallbackArray.size (); i++)
+			processOneMessage ();
+			if (timeout == -1)
 			{
-				if (name == _CallbackArray[i].Key)
-				{
-					pos = i;
-					break;
-				}
+				break;
 			}
 		}
 
-		if (pos < 0 || pos >= (sint16) _CallbackArray.size ())
-		{
-			nlerror ("L3NB_CB: Callback %s not found in _CallbackArray", msgin.toString().c_str());
-		}
-		else
-		{
-			TSockId realid = getSockId (tsid);
+		// enable multithreading on windows :-/
+		nlSleep (1);
 
-			if (!realid->AuthorizedCallback.empty() && msgin.getName() != realid->AuthorizedCallback)
-			{
-				nlwarning ("L3NB_CB: %s try to call the callback %s but only %s is authorized. Disconnect him!", tsid->asString().c_str(), msgin.toString().c_str(), tsid->AuthorizedCallback.c_str());
-				disconnect (tsid);
-			}
-			else if (_CallbackArray[pos].Callback == NULL)
-			{
-				nlwarning ("L3NB_CB: Callback %s is NULL, can't call it", msgin.toString().c_str());
-			}
-			else
-			{
-				nldebug ("L3NB_CB: Calling callback (%s)", _CallbackArray[pos].Key);
-				_CallbackArray[pos].Callback (msgin, realid, *this);
-			}
+		// need to exit?
+		if (timeout == -1 || timeout == 0 || (sint32)(CTime::getLocalTime()-t0) > timeout)
+		{
+			exit = true;
 		}
+	}
+
+/* old message processing
+	while (dataAvailable ()) // can be interrupted by "break"
+	{
+		processOneMessage ();
 
 		// Test if we read more data
-		if ( timeout == 0 )
+		if ( timeout == -1 )
 		{
 			break; // only one read already done => exit
 		}
@@ -298,6 +335,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 			}
 		}
 	}
+*/
 }
 
 

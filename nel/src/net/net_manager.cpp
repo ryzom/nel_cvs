@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.7 2001/06/05 15:36:38 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.8 2001/06/12 15:41:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -337,6 +337,7 @@ void CNetManager::update (sint32 timeout)
 {
 //	nldebug ("L4: update()");
 
+	// 
 	sint32 quantum = 0;
 
 	if (timeout > 0)

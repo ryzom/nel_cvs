@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.50 2002/02/01 12:24:10 chafik Exp $
+ * $Id: agents.cpp,v 1.51 2002/04/17 09:57:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,6 +170,7 @@ namespace NLAIAGENT
 		if(n != (sint)_AgentList.size())
 								throw;
 #endif
+
 		while ( /*i_agl != _AgentList.end()*/n -- )
 		{					
 			IBasicAgent *c = *i_agl;
@@ -240,7 +241,6 @@ namespace NLAIAGENT
 
 	const IObjectIA::CProcessResult &IAgent::run()
 	{	
-				
 		/*nlinfo("%s<%4x> go to run %s with %d childs:",Shift.c_str(),this, (const char *)getType(),_AgentList.size());
 		Shift += "\t";
 		kShift++;*/

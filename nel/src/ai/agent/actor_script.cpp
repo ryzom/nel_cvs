@@ -447,7 +447,6 @@ namespace NLAIAGENT
 					}
 
 					_Launched.push_back( (NLAIAGENT::IAgent *) child );
-//					child->incRef();
 				}
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
@@ -599,7 +598,6 @@ namespace NLAIAGENT
 						((CActorScript *)child)->activate();
 */
 					_Launched.push_back( (NLAIAGENT::IAgent *) child );
-//					child->incRef();
 
 				}
 				r.ResultState =  NLAIAGENT::processIdle;

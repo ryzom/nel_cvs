@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.83 2002/07/12 13:52:55 lecroart Exp $
+# $Id: Makefile.am,v 1.84 2002/08/09 08:36:02 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -348,6 +348,7 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        quad_grid.h \
                        radix_sort.cpp \
                        radix_sort.h \
+                       raw_skin.h \
                        register_3d.cpp \
                        register_3d.h \
                        render_trav.cpp \

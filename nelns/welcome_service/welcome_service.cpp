@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.9 2002/01/14 17:47:41 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.10 2002/03/04 10:17:55 lecroart Exp $
  *
  */
 
@@ -127,10 +127,15 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 	{
 		msgin.serial (addr);
 
+		// if we set the FontEndAddress in the welcome_service.cfg we use this address
 		if (FrontEndAddress.empty())
-			FrontEndAddress = addr;
-
-		msgout.serial (FrontEndAddress);
+		{
+			msgout.serial (addr);
+		}
+		else
+		{
+			msgout.serial (FrontEndAddress);
+		}
 	}
 	
 	CUnifiedNetwork::getInstance()->send ("LS", msgout);
@@ -348,6 +353,26 @@ public:
 /// Welcome Service
 NLNET_SERVICE_MAIN (CWelcomeService, "WS", "welcome_service", 0, FESCallbackArray);
 
+
+//
+// Variables
+//
+
+NLMISC_DYNVARIABLE(uint32, online_users_nb, "number of connected users on this shard")
+{
+	// we can only read the value
+	if (get)
+	{
+		uint32 nbusers = 0;
+		for (list<CFES>::iterator it = FESList.begin(); it != FESList.end (); it++)
+		{
+			nbusers += (*it).NbUser;
+		}
+		*pointer = nbusers;
+	}
+}
+
+
 //
 // Commands
 //
@@ -380,4 +405,3 @@ NLMISC_COMMAND (users, "displays the list of all registered users", "")
 
 	return true;
 }
-

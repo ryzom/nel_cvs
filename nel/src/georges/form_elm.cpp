@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.33 2002/10/08 09:13:14 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.34 2002/10/21 13:25:50 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2478,7 +2478,6 @@ bool CFormElmArray::getArrayValue (sint32 &result, uint arrayIndex, bool evaluat
 
 bool CFormElmArray::getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	return true;
 	if (Type)
 	{
 		string str;
@@ -2805,35 +2804,10 @@ bool CFormElmAtom::isAtom () const
 
 bool CFormElmAtom::getValue (string &result, bool evaluate) const
 {
-	// evaluate the value ?
-	if (evaluate)
-	{
-		nlassert (Type);
-		uint i;
-		uint predefCount = Type->Definitions.size ();
-		for (i=0; i<predefCount; i++)
-		{
-			// Ref on the value
-			const CType::CDefinition &def = Type->Definitions[i];
+	nlassert (Type);
 
-			// This predefinition ?
-			if (def.Label == result)
-			{
-				result = def.Value;
-				break;
-			}
-		}
-
-		// Not found ?
-		if (i == predefCount)
-			result = Value;
-	}
-	else
-	{
-		result = Value;
-	}
-
-	return true;
+	// Evale
+	return Type->getValue (result, Form, this, *ParentDfn, ParentIndex, evaluate, NULL, LastRound++, "");
 }
 
 // ***************************************************************************

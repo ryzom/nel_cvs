@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.10 2001/06/26 10:12:03 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.11 2001/06/27 14:01:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,7 @@ static	NLMISC::CAABBoxExt	makeBBox(const std::vector<CVector>	&Vertices)
 CMeshMRMGeom::CMeshMRMGeom()
 {
 	_Skinned= false;
+	_NbLodLoaded= 0;
 }
 
 
@@ -108,7 +109,21 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
 	_Skinned= meshBuildMRM.Skinned;
 	_SkinWeights= meshBuildMRM.SkinWeights;
 
-	
+
+	// Build the _LodInfos.
+	_LodInfos.resize(_Lods.size());
+	uint32	precNWedges= 0;
+	for(uint i=0;i<_Lods.size();i++)
+	{
+		_LodInfos[i].StartAddWedge= precNWedges;
+		_LodInfos[i].EndAddWedges= _Lods[i].NWedges;
+		precNWedges= _Lods[i].NWedges;
+		// LodOffset is filled in serial() when stream is input.
+	}
+	// After build, all lods are present in memory. 
+	_NbLodLoaded= _Lods.size();
+
+
 	// For skinning.
 	if( _Skinned )
 	{
@@ -316,7 +331,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans)
 	// TempYoyo.
 	// TODODO.
 	static	float	testTime= 0;
-	testTime+= 0.003f;
+	testTime+= 0.03f;
 	float	testAlpha= (1+(float)sin(testTime))/2;
 
 
@@ -335,6 +350,14 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans)
 	{
 		// Lerp beetween lod i-1 and lod i.
 		alphaLod= alpha-(numLod-1);
+	}
+
+
+	// If lod chosen is not loaded, take the best loaded.
+	if(numLod>=(sint)_NbLodLoaded)
+	{
+		numLod= _NbLodLoaded-1;
+		alphaLod= 1;
 	}
 
 
@@ -404,6 +427,20 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans)
 // ***************************************************************************
 void	CMeshMRMGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	// because of complexity, serial is separated in save / load.
+
+	if(f.isReading())
+		load(f);
+	else
+		save(f);
+
+}
+
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
 	/*
 	Version 0:
 		- base version.
@@ -411,27 +448,256 @@ void	CMeshMRMGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	sint	ver= f.serialVersion(0);
 
 
+	// serial Basic info.
+	// ==================
+	f.serial(_Skinned);
+	f.serial(_BBox);
+	// preload the Lods.
+	f.serialCont(_LodInfos);
+
+	// read/save number of wedges.
+	/* NB: prepare memory space too for vertices.
+		\todo yoyo: TODO_OPTIMIZE. for now there is no Lod memory profit with vertices / skinWeights.
+		But resizing arrays is a problem because of reallocation...
+	*/
+	uint32	nWedges;
+	f.serial(nWedges);
+	// Prepare the VBuffer.
+	_VBuffer.serialHeader(f);
+	// If skinned, must allocate skinWeights.
+	contReset(_SkinWeights);
+	if(_Skinned)
+	{
+		_SkinWeights.resize(nWedges);
+	}
+
+
+	// Serial lod offsets.
+	// ==================
+	// This is the reference pos, to load / save relative offsets.
+	sint32			startPos = f.getPos();
+	// Those are the lodOffsets, relative to startPos.
+	vector<sint32>	lodOffsets;
+	lodOffsets.resize(_LodInfos.size(), 0);
+
+	// read all relative offsets, and build the absolute offset of LodInfos.
+	for(uint i=0;i<_LodInfos.size(); i++)
+	{
+		f.serial(lodOffsets[i]);
+		_LodInfos[i].LodOffset= startPos + lodOffsets[i];
+	}
+
+
+	// resest the Lod arrays. NB: each Lod is empty, and ready to receive Lod data.
+	// ==================
+	contReset(_Lods);
+	_Lods.resize(_LodInfos.size());
+
+	// Flag the fact that no lod is loaded for now.
+	_NbLodLoaded= 0;
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::load(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+
+	// Load the header of the stream.
+	// ==================
+	loadHeader(f);
+
+	// Read All lod subsets.
+	// ==================
+	for(uint i=0;i<_LodInfos.size(); i++)
+	{
+		// read the lod face data.
+		f.serial(_Lods[i]);
+		// read the lod vertex data.
+		serialLodVertexData(f, _LodInfos[i].StartAddWedge, _LodInfos[i].EndAddWedges);
+		// if reading, must bkup all original vertices from VB.
+		// this is done in serialLodVertexData(). by subset
+	}
+
+
+	// Now, all lods are loaded.
+	_NbLodLoaded= _Lods.size();
+
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	/*
+	Version 0:
+		- base version.
+	*/
+	sint	ver= f.serialVersion(0);
+	uint	i;
+
 	// must have good original Skinned Vertex before writing.
-	if( !f.isReading() && _Skinned )
+	if( _Skinned )
 	{
 		restoreOriginalSkinVertices();
 	}
 
 
-	// serial geometry.
+	// serial Basic info.
+	// ==================
 	f.serial(_Skinned);
-	f.serial(_VBuffer);
-	f.serialCont(_SkinWeights);
-	f.serialCont(_Lods);
 	f.serial(_BBox);
+	f.serialCont(_LodInfos);
+
+	// save number of wedges.
+	uint32	nWedges;
+	nWedges= _VBuffer.getNumVertices();
+	f.serial(nWedges);
+	// Save the VBuffer header.
+	_VBuffer.serialHeader(f);
 
 
-	// serial.
-	if( f.isReading() && _Skinned )
+	// Serial lod offsets.
+	// ==================
+	// This is the reference pos, to load / save relative offsets.
+	sint32			startPos = f.getPos();
+	// Those are the lodOffsets, relative to startPos.
+	vector<sint32>	lodOffsets;
+	lodOffsets.resize(_LodInfos.size(), 0);
+
+	// write all dummy offset. For now (since we don't know what to set), compute the offset of 
+	// the sint32 to come back in serial lod parts below.
+	for(i=0;i<_LodInfos.size(); i++)
 	{
-		bkupOriginalSkinVertices();
+		lodOffsets[i]= f.getPos();
+		f.serial(lodOffsets[i]);
 	}
 
+	// Serial lod subsets.
+	// ==================
+
+	// Save all the lods.
+	for(i=0;i<_LodInfos.size(); i++)
+	{
+		// get current absolute position.
+		sint32	absCurPos= f.getPos();
+
+		// come back to "relative lodOffset" absolute position in the stream. (temp stored in lodOffset[i]).
+		f.seek(lodOffsets[i], IStream::begin);
+
+		// write the relative position of the lod to the stream.
+		sint32	relCurPos= absCurPos - startPos;
+		f.serial(relCurPos);
+
+		// come back to absCurPos, to save the lod.
+		f.seek(absCurPos, IStream::begin);
+
+		// And so now, save the lod.
+		// write the lod face data.
+		f.serial(_Lods[i]);
+		// write the lod vertex data.
+		serialLodVertexData(f, _LodInfos[i].StartAddWedge, _LodInfos[i].EndAddWedges);
+	}
+
+
+}
+
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint endWedge)
+{
+	sint	ver= f.serialVersion(0);
+
+	// VBuffer part.
+	_VBuffer.serialSubset(f, startWedge, endWedge);
+
+	// SkinWeights.
+	if(_Skinned)
+	{
+		for(uint i= startWedge; i<endWedge; i++)
+		{
+			f.serial(_SkinWeights[i]);
+		}
+		// if reading, must copy original vertices from VB.
+		if( f.isReading())
+		{
+			bkupOriginalSkinVerticesSubset(startWedge, endWedge);
+		}
+	}
+}
+
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::loadFirstLod(NLMISC::IStream &f)
+{
+
+	// Load the header of the stream.
+	// ==================
+	loadHeader(f);
+
+
+	// If empty MRM, quit.
+	if(_LodInfos.size()==0)
+		return;
+
+
+	// Read only the first lod subset.
+	// ==================
+	for(uint i=0;i<1; i++)
+	{
+		// read the lod face data.
+		f.serial(_Lods[i]);
+		// read the lod vertex data.
+		serialLodVertexData(f, _LodInfos[i].StartAddWedge, _LodInfos[i].EndAddWedges);
+		// if reading, must bkup all original vertices from VB.
+		// this is done in serialLodVertexData(). by subset
+	}
+
+
+	// Now, just first lod is loaded.
+	_NbLodLoaded= 1;
+
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::loadNextLod(NLMISC::IStream &f)
+{
+	// If all is loaded, quit.
+	if(getNbLodLoaded() == getNbLod())
+		return;
+
+	// Set pos to good lod.
+	f.seek(_LodInfos[_NbLodLoaded].LodOffset, IStream::begin);
+
+	// Serial this lod data.
+	// read the lod face data.
+	f.serial(_Lods[_NbLodLoaded]);
+	// read the lod vertex data.
+	serialLodVertexData(f, _LodInfos[_NbLodLoaded].StartAddWedge, _LodInfos[_NbLodLoaded].EndAddWedges);
+	// if reading, must bkup all original vertices from VB.
+	// this is done in serialLodVertexData(). by subset
+
+
+	// Inc LodLoaded count.
+	_NbLodLoaded++;
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::unloadNextLod(NLMISC::IStream &f)
+{
+	// If just first lod remain (or no lod), quit
+	if(getNbLodLoaded() <= 1)
+		return;
+
+	// Reset the entire Lod object. (Free Memory).
+	contReset(_Lods[_NbLodLoaded-1]);
+
+
+	// Dec LodLoaded count.
+	_NbLodLoaded--;
 }
 
 
@@ -440,12 +706,22 @@ void	CMeshMRMGeom::bkupOriginalSkinVertices()
 {
 	nlassert(_Skinned);
 
+	// bkup the entire array.
+	bkupOriginalSkinVerticesSubset(0, _VBuffer.getNumVertices());
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::bkupOriginalSkinVerticesSubset(uint wedgeStart, uint wedgeEnd)
+{
+	nlassert(_Skinned);
+
 	// Copy VBuffer content into Original vertices normals.
 	if(_VBuffer.getVertexFormat() & IDRV_VF_XYZ)
 	{
 		// copy vertices from VBuffer. (NB: unusefull geomorphed vertices are still copied, but doesn't matter).
 		_OriginalSkinVertices.resize(_VBuffer.getNumVertices());
-		for(uint i=0; i<_VBuffer.getNumVertices();i++)
+		for(uint i=wedgeStart; i<wedgeEnd;i++)
 		{
 			_OriginalSkinVertices[i]= *(CVector*)_VBuffer.getVertexCoordPointer(i);
 		}
@@ -454,7 +730,7 @@ void	CMeshMRMGeom::bkupOriginalSkinVertices()
 	{
 		// copy normals from VBuffer. (NB: unusefull geomorphed normals are still copied, but doesn't matter).
 		_OriginalSkinNormals.resize(_VBuffer.getNumVertices());
-		for(uint i=0; i<_VBuffer.getNumVertices();i++)
+		for(uint i=wedgeStart; i<wedgeEnd;i++)
 		{
 			_OriginalSkinNormals[i]= *(CVector*)_VBuffer.getNormalCoordPointer(i);
 		}

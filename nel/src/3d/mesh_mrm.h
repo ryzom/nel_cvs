@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.6 2001/06/26 10:12:03 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.7 2001/06/27 14:01:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,37 @@ public:
 	/// serial this meshGeom.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CMeshMRMGeom);
+
+	// @}
+
+
+	/// \name Lod management.
+	// @{
+
+	/** get the number of LOD currently loaded.
+	 */
+	uint			getNbLodLoaded() const { return _NbLodLoaded ; }
+
+
+	/** Load the header and the first lod of a MRM in a stream.
+	 *	\param f the input stream to read. NB: after load, f.getPos() return the position of the second lod in the stream.
+	 */
+	void			loadFirstLod(NLMISC::IStream &f);
+
+
+	/** Load next lod of a stream. use getNbLodLoaded() to know what Lod will be loaded.
+	 * NB: if getNbLodLoaded() == getNbLod(), no op.
+	 *	\param f the same input stream passed to loadFirstLod(). NB: after load, f.getPos() is "unedfined" 
+	 *	(actually return the position of the next lod in the stream).
+	 */
+	void			loadNextLod(NLMISC::IStream &f);
+
+
+	/** UnLoad Lod getNbLodLoaded()-1 from memory. use getNbLodLoaded()-1 to know what Lod will be unloaded.
+	 * NB: if getNbLodLoaded() <= 1, no op.
+	 */
+	void			unloadNextLod(NLMISC::IStream &f);
+
 
 	// @}
 
@@ -238,6 +269,29 @@ private:
 	//@}
 
 
+	/// A LOD of the MRM.
+	class	CLodInfo
+	{
+	public:
+		/// The frist new wedge this lod use.
+		uint32		StartAddWedge;
+		/// The last+1 new wedge this lod use. NB: Lod.NWedges== LodInfo.EndAddWedges.
+		uint32		EndAddWedges;
+		/// the absolute Lod offset in the last Stream which has been used to read this MRM.
+		sint32		LodOffset;
+
+		void	serial(NLMISC::IStream &f)
+		{
+			sint	ver= f.serialVersion(0);
+
+			f.serial(StartAddWedge);
+			f.serial(EndAddWedges);
+			// do not serial LodOffset here.
+		}
+	};
+
+
+
 private:
 
 	/// Skinning: This tells if the mesh is correctly skinned (suuport skinning).
@@ -255,12 +309,21 @@ private:
 	NLMISC::CAABBoxExt			_BBox;
 
 
+	/// Info for pre-loading Lods.
+	std::vector<CLodInfo>		_LodInfos;
+	uint						_NbLodLoaded;
+
+
+	/// serial a subset of the vertices.
+	void	serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint endWedge);
+
 
 	/// Apply the geomorph to the _VBuffer.
 	void	applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod);
 
 	/// Skinning: bkup Vertex/Normal into _OriginalSkin* from VBuffer.
 	void	bkupOriginalSkinVertices();
+	void	bkupOriginalSkinVerticesSubset(uint wedgeStart, uint wedgeEnd);
 	/// Skinning: restore Vertex/Normal from _OriginalSkin* to VBuffer.
 	void	restoreOriginalSkinVertices();
 
@@ -268,6 +331,15 @@ private:
 	void	applySkin(CLod &lod, const std::vector<CBone> &bones);
 	/// Skinning: same as restoreOriginalSkinVertices(), but for one Lod only.
 	void	restoreOriginalSkinPart(CLod &lod);
+
+
+
+	/// load the header of this mesh.
+	void		loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream);
+	/// load this mesh.
+	void		load(NLMISC::IStream &f) throw(NLMISC::EStream);
+	/// save the entire mesh.
+	void		save(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 };
 

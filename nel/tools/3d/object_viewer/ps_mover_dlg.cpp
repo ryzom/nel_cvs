@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.cpp
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.cpp,v 1.11 2004/06/17 08:03:14 vizerie Exp $
+ * $Id: ps_mover_dlg.cpp,v 1.12 2004/07/21 13:31:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,6 +83,7 @@ void CPSMoverDlg::updateListener(void)
 		m = _MouseListener->getModelMatrix();
 		m.setPos(pos);
 		_MouseListener->setModelMatrix(m);
+		_Node->setModified(true);
 	}
 }
 

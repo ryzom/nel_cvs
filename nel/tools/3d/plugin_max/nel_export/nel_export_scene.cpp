@@ -1,7 +1,7 @@
 /** \file nel_export_scene.cpp
  * <File description>
  *
- * $Id: nel_export_scene.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: nel_export_scene.cpp,v 1.2 2001/05/04 13:31:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@
 using namespace NL3D;
 using namespace NLMISC;
 
+#define NEL_OBJET_NAME_DATA 1970
 
 bool CNelExport::exportScene(const char *sPath, std::vector<INode*>& vectNode, Interface& ip)
 {
@@ -91,8 +92,18 @@ bool CNelExport::exportScene(const char *sPath, std::vector<INode*>& vectNode, I
 		CQuat qRotTemp;
 		CVector vPosTemp;
 
-		// Extract the node name
-		aIGArray[nNumIG].Name = pNode->GetName();
+		// Try to get an APPDATA for the name of the object
+		AppDataChunk *ad = pNode->GetAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA );
+		if (ad&&ad->data)
+		{
+			// Get the name of the object in the APP data
+			aIGArray[nNumIG].Name=(const char*)ad->data;
+		}
+		else
+		{
+			// Extract the node name
+			aIGArray[nNumIG].Name = pNode->GetName();
+		}
 
 		//Get the local transformation matrix
 		Matrix3 nodeTM = pNode->GetNodeTM(0);

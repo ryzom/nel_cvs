@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.8 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_sound.cpp,v 1.9 2001/11/26 10:41:10 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,12 +38,36 @@ static const uint SoundBufSize = 1024;
 
 
 CPSSound::CPSSound() : _GainScheme(NULL), _PitchScheme(NULL)
-					   ,_Gain(1.f)	  , _Pitch(1.f), _SoundStopped(false), _EmissionPercent(1)
+					   ,_Gain(1.f)	  , _Pitch(1.f), _SoundStopped(false), _SoundReactivated(false), _EmissionPercent(1)
 					   ,_SpawnSounds(false), _Mute(false)
 {
 	_Name = std::string("sound");
 }
 
+
+
+void	CPSSound::stopSound()
+{
+
+	if (_SoundStopped) return;
+	CPSAttrib<UPSSoundInstance *>::iterator it = _Sounds.begin()
+												, endIt = _Sounds.end();
+	while (it != endIt)
+	{
+		if (*it)
+		{
+			(*it)->stop();
+		}
+		++it;
+	}
+	_SoundStopped = true;
+}
+
+void	CPSSound::reactivateSound()
+{
+	//if (!_SoundStopped) return;	
+	_SoundReactivated  = true;
+}
 
 void CPSSound::removeAllSources(void)
 {
@@ -71,30 +95,20 @@ void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 {
 	if (pass != PSMotion) return;
 	const uint32 size = _Owner->getSize();	
+	if (!size) return;
 
-	CPSAttrib<UPSSoundInstance *>::iterator it = _Sounds.begin()
-												, endIt;
+	
 
-	if (ellapsedTime == 0.f)
+	
+	if (_SoundStopped && !_SoundReactivated)
 	{
-		_SoundStopped = true;
-		// paused, stop all the sounds...
-		endIt = _Sounds.end();
-		while (it != endIt)
-		{
-			if (*it)
-			{
-				(*it)->stop();
-			}
-			++it;
-		}
-		
 		return;
 	}
-
-	if (_SoundStopped)
+	
+	if (_SoundReactivated)
 	{
 		_SoundStopped = false;
+		_SoundReactivated = false;
 		if (!_Mute)
 		{
 			sint32 k;
@@ -108,7 +122,7 @@ void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 		}
 	}
 
-	if (!size) return;
+	
 		
 
 	nlassert(_Owner);	
@@ -122,7 +136,9 @@ void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 	float   *currVol, *currFrequency;
 	
 
-	
+	CPSAttrib<UPSSoundInstance *>::iterator it = _Sounds.begin()
+												, endIt = _Sounds.end();
+
 	CPSAttrib<NLMISC::CVector>::const_iterator posIt = _Owner->getPos().begin();
 	CPSAttrib<NLMISC::CVector>::const_iterator speedIt = _Owner->getSpeed().begin();
 
@@ -281,7 +297,7 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	
 	if (f.isReading())
 	{
-		_SoundStopped = true;
+		_SoundStopped = false;
 	}
 
 	if (ver > 1)
@@ -298,7 +314,7 @@ void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 	if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->newElement(emitterLocated, emitterIndex);
 	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->newElement(emitterLocated, emitterIndex);
 	// if there's a sound server, we generate a new sound instance
-	if (!_Mute && CParticleSystem::getSoundServer())
+	if (!_Mute && !_SoundStopped && CParticleSystem::getSoundServer())
 	{
 		if ((rand() % 99) * 0.01f < _EmissionPercent)
 		{

@@ -1,7 +1,7 @@
 /** \file ps_sound.h
  * <File description>
  *
- * $Id: ps_sound.h,v 1.6 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_sound.h,v 1.7 2001/11/26 10:41:10 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -154,7 +154,9 @@ public:
 	/// test wether mute has been activated
 	bool							getMute(void) const { return _Mute; }
 
-	
+	void							stopSound();
+
+	void							reactivateSound();
 	
 protected:
 	virtual void			newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
@@ -171,7 +173,7 @@ protected:
 	float							_EmissionPercent;
 	bool							_SpawnSounds;
 	bool							_Mute;
-	bool							_SoundStopped;
+	bool							_SoundStopped, _SoundReactivated;
 };
 
 

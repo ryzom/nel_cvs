@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.124 2001/10/18 13:17:43 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.125 2001/10/26 08:27:31 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -86,7 +86,7 @@ uint CDriverGL::_Registered=0;
 #endif // NL_OS_WINDOWS
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverGL::ReleaseVersion = 0x6;
+const uint32		CDriverGL::ReleaseVersion = 0x7;
 
 #ifdef NL_OS_WINDOWS
 
@@ -206,6 +206,7 @@ CDriverGL::CDriverGL()
 	for(i=0; i<IDRV_MAT_MAXTEXTURES; i++)
 	{
 		_MaterialAllTextureTouchedFlag|= IDRV_TOUCHED_TEX[i];
+		_CurrentTexAddrMode[i] = GL_NONE;
 	}
 
 
@@ -657,6 +658,13 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 		// Not special TexEnv.
 		_CurrentTexEnvSpecial[stage]= TexEnvSpecialDisabled;
+
+		// texture addressing mode use previous texture
+		if (stage !=0 && _Extensions.NVTextureShader)
+		{
+			glTexEnvi(GL_TEXTURE_SHADER_NV, GL_PREVIOUS_TEXTURE_INPUT_NV, GL_TEXTURE0_ARB + stage - 1);	
+			glTexEnvi(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, GL_NONE);	
+		}
 	}
 
 	// Get num of light for this driver
@@ -1497,6 +1505,36 @@ uint32			CDriverGL::getUsedTextureMemory() const
 	// Return the count
 	return memory;
 }
+
+
+// ***************************************************************************
+bool CDriverGL::supportTextureShaders() const
+{
+// supported only vie NV_TEXTURE_SHADERS for now
+	return _Extensions.NVTextureShader;
+}
+
+// ***************************************************************************
+bool CDriverGL::isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) const
+{
+	if (_Extensions.NVTextureShader)
+	{
+		// all the gicen addessing mode are supported with this extension
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+// ***************************************************************************
+void CDriverGL::setMatrix2DForTextureOffsetAddrMode(const float mat[4])
+{
+	nlassert(supportTextureShaders());
+	glTexEnvfv(GL_TEXTURE_SHADER_NV, GL_OFFSET_TEXTURE_MATRIX_NV, mat);
+}
+
 
 
 } // NL3D

@@ -64,19 +64,23 @@ bool CEditMorphMeshDlg::getShapeNameFromDlg(std::string &name)
 	if (fd.DoModal() == IDOK)
 	{
 		// Add to the path
+		/*
 		char drive[256];
 		char dir[256];
 		char path[256];
 		char fname[256];
 		char ext[256];
+		*/
 
 
 		// Add search path for the texture
+		/*
 		_splitpath (fd.GetPathName(), drive, dir, fname, ext);
 		_makepath (path, drive, dir, NULL, NULL);
 		NLMISC::CPath::addSearchPath (path);
+		*/
 
-		name = std::string(fname) + std::string(ext);
+		name = fd.GetPathName();
 		
 		return true;
 	}

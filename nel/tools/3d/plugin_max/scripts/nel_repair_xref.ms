@@ -34,13 +34,95 @@ fn addString str =
 		append xrefobj lwrstr
 )
 
+fn appendList l0 l1 =
+(
+	local out = #()
+	for i in l0 do
+	(
+		append out i
+	)
+	for i in l1 do
+	(
+		append out i
+	)
+	return out
+)
+
+fn getDirList baseDir =
+(
+	local numChar = baseDir.count
+	local newDir = ""
+	if numChar != 0 then
+	(
+		if baseDir[numChar] == "\\" then
+		(
+		    baseDir = substring baseDir 1 (numChar - 1)
+		)
+	)
+	retPathList = #(baseDir)
+	subDirectories = getDirectories(baseDir+"\\*")
+    for currDir in subDirectories do
+	(		
+		subDirectoriesTree = getDirList(currDir)
+		retPathList = appendList retPathList subDirectoriesTree		
+	)
+	return retPathList
+)
+
+fn splitPathList str =
+(
+  if str.count == 0 then return #()
+  local out = #()
+  local curr = ""
+  for index = 1 to str.count do
+  (
+	if str[index] == ";" then
+	(
+		append out curr
+		curr = ""
+	)
+	else
+	(
+		curr = curr + str[index]
+	)
+  )
+  if curr.count != 0 then
+  (
+  	append out curr
+  )
+  return out
+)
+
+fn getAllPathToFix pathListAsString recurse =
+(
+	local out = #()
+	local currSubPaths
+	local basePaths = splitPathList pathListAsString
+	if recurse then
+	(
+		for basePath in basePaths do
+		(
+			currSubPaths = getDirList basePath
+			out = appendList out currSubPaths
+		)	
+	)
+	else
+	(
+		out = basePaths
+	)
+	return out
+)
+
 rollout repair_xref_rollout "Properties"
 (
-	label			PathLabel				"Path for max projects using XREF:"	align:#left
+	label			PathLabel				"Path for max projects using XREF (separated by ;):"	align:#left
 	edittext		Path														align:#left
+   checkbox    RecurseSubPaths      "Recurse sub paths"
 	button			List					"Get XRefed files"					align:#left across:2
+	button			GetPathList				"Get path list"					    align:#left across:2
 	button			Repair					"Repair all"						enabled:false align:#left
 	listbox			XRefProjects			height:20							align:#left
+	listbox			PathListBox				height:14							align:#left
 	listbox			Errors					height:14							align:#left
 
 	fn message str =
@@ -51,43 +133,52 @@ rollout repair_xref_rollout "Properties"
 		Errors.selection = 0
 	)
 
+	on GetPathList pressed do
+	(		
+		PathListBox.items = getAllPathToFix Path.text RecurseSubPaths.checked
+	)
+
 	on List pressed do
 	(
 		xrefobj = #()
 		Errors.items = #()
-		files = getFiles (Path.text+"\\*.max")
-		for i in files do
-		(
-			-- Reset the max project
-			fullreset ()
+		local pathList = getAllPathToFix Path.text RecurseSubPaths.checked
+		for currPath in pathList do
+        (
+		    files = getFiles (currPath+"\\*.max")
+  		    for i in files do
+    		(
+			    -- Reset the max project
+			    fullreset ()
 
-			-- Merge the project
-			message ("Merging "+i)
-			if (mergeMAXFile i) == true then
-			(
-				-- Unhide all
-				max unhide all
+			    -- Merge the project
+			    message ("Merging "+i)
+			    if (mergeMAXFile i) == true then
+			    (
+				    -- Unhide all
+				    max unhide all
 
-				-- For each xref
-				xrefFound = false
-				for node in objects do
-				(
-					if (classof node) == XRefObject then
+				    -- For each xref
+				    xrefFound = false
+					for node in objects do
 					(
-						addString node.filename
-						xrefFound = true
+						if (classof node) == XRefObject then
+						(
+							addString node.filename
+							xrefFound = true
+						)
+					)
+
+					-- XRef found
+					if xrefFound == true then
+					(
+						addString i;
 					)
 				)
-
-				-- XRef found
-				if xrefFound == true then
+				else
 				(
-					addString i;
+					message ("Error merging "+i)
 				)
-			)
-			else
-			(
-				message ("Error merging "+i)
 			)
 		)
 		XRefProjects.items  = xrefobj

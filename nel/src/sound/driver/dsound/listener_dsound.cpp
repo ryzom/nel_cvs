@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.3 2002/05/27 16:17:06 hanappe Exp $
+ * $Id: listener_dsound.cpp,v 1.4 2002/05/27 17:37:23 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,10 @@ void CListenerDSound::setPos( const NLMISC::CVector& pos )
 	// Coordinate system: conversion from NeL to OpenAL/GL:
     if (_Listener != NULL)
     {
-        _Listener->SetPosition(pos.x, pos.z, -pos.y, DS3D_IMMEDIATE);
+        if (FAILED(_Listener->SetPosition(pos.x, pos.z, -pos.y, DS3D_IMMEDIATE)))
+		{
+			nldebug("SetPosition failed");
+		}
     }
 }
 
@@ -91,8 +94,15 @@ void CListenerDSound::getPos( NLMISC::CVector& pos ) const
     if (_Listener != NULL)
 	{
 		D3DVECTOR v;
-        _Listener->GetPosition(&v);
-		pos.set(v.x, -v.z, v.y);
+        if (FAILED(_Listener->GetPosition(&v)))
+		{
+			nldebug("GetPosition failed");
+			pos.set(0.0f, 0.0f, 0.0f);
+		}
+		else
+		{
+			pos.set(v.x, -v.z, v.y);
+		}
     }
 	else
 	{
@@ -108,7 +118,10 @@ void CListenerDSound::setVelocity( const NLMISC::CVector& vel )
 {
     if (_Listener != NULL)
     {
-        _Listener->SetVelocity(vel.x, vel.z, -vel.y, DS3D_IMMEDIATE);
+        if (FAILED(_Listener->SetVelocity(vel.x, vel.z, -vel.y, DS3D_IMMEDIATE)))
+		{
+			nldebug("SetVelocity failed");
+		}
     }
 }
 
@@ -121,8 +134,15 @@ void CListenerDSound::getVelocity( NLMISC::CVector& vel ) const
     if (_Listener != NULL)
 	{
 		D3DVECTOR v;
-        _Listener->GetVelocity(&v);
-		vel.set(v.x, -v.z, v.y);
+        if (FAILED(_Listener->GetVelocity(&v)))
+		{
+			nldebug("GetVelocity failed");
+			vel.set(0.0f, 0.0f, 0.0f);
+		}
+		else
+		{
+			vel.set(v.x, -v.z, v.y);
+		}
     }
 	else
 	{
@@ -151,9 +171,17 @@ void CListenerDSound::getOrientation( NLMISC::CVector& front, NLMISC::CVector& u
     if (_Listener != NULL)
 	{
 		D3DVECTOR vfront, vtop;
-        _Listener->GetOrientation(&vfront, &vtop);
-		front.set(vfront.x, -vfront.z, vfront.y);
-		up.set(vtop.x, -vtop.z, vtop.y);
+        if (FAILED(_Listener->GetOrientation(&vfront, &vtop)))
+		{
+			nldebug("GetOrientation failed");
+			front.set(0.0f, -1.0f, 0.0f);
+			up.set(0.0f, 0.0f, 1.0f);
+		}
+		else
+		{
+			front.set(vfront.x, -vfront.z, vfront.y);
+			up.set(vtop.x, -vtop.z, vtop.y);
+		}
     }
 	else
 	{
@@ -191,7 +219,19 @@ void CListenerDSound::setDopplerFactor( float f )
 {
     if (_Listener != NULL)
     {
-        _Listener->SetDopplerFactor(f, DS3D_IMMEDIATE);
+		if (f > DS3D_MAXDOPPLERFACTOR)
+		{
+			f = DS3D_MAXDOPPLERFACTOR;
+		}
+		else if (f < DS3D_MINDOPPLERFACTOR)
+		{
+			f = DS3D_MINDOPPLERFACTOR;
+		}
+
+        if (FAILED(_Listener->SetDopplerFactor(f, DS3D_IMMEDIATE)))
+		{
+			nldebug("SetDopplerFactor failed");
+		}
     }
 }
 
@@ -203,7 +243,19 @@ void CListenerDSound::setRolloffFactor( float f )
 {
     if (_Listener != NULL)
     {
-        _Listener->SetRolloffFactor(f, DS3D_IMMEDIATE);
+		if (f > DS3D_MAXROLLOFFFACTOR)
+		{
+			f = DS3D_MAXROLLOFFFACTOR;
+		}
+		else if (f < DS3D_MINROLLOFFFACTOR)
+		{
+			f = DS3D_MINROLLOFFFACTOR;
+		}
+
+        if (FAILED(_Listener->SetRolloffFactor(f, DS3D_IMMEDIATE)))
+		{
+			nldebug("SetRolloffFactor failed");
+		}
     }
 }
 

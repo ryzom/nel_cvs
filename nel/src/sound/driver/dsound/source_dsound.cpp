@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.3 2002/05/27 16:17:06 hanappe Exp $
+ * $Id: source_dsound.cpp,v 1.4 2002/05/27 17:37:23 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -182,6 +182,7 @@ void CSourceDSound::init(LPDIRECTSOUND directSound)
 		desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCSOFTWARE | DSBCAPS_GETCURRENTPOSITION2 
 						| DSBCAPS_CTRL3D | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_MUTE3DATMAXDISTANCE;
         desc.guid3DAlgorithm = DS3DALG_NO_VIRTUALIZATION;
+		//desc.guid3DAlgorithm = DS3DALG_HRTF_FULL;
 	}
 
 

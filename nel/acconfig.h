@@ -11,3 +11,5 @@
  * 0 to suppress them.
  */
 #undef NEL_LOG_IN_FILE
+
+#undef HAVE_X86

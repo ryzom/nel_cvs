@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.14 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: time_nl.cpp,v 1.15 2002/04/15 12:58:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,9 +111,21 @@ TTicks CTime::getPerformanceTime ()
 	else
 		return 0;
 #else // NL_OS_WINDOWS
+
+#ifdef HAVE_X86
 	unsigned long long int x;
 	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
 	return x;
+#else HAVE_X86
+	static bool firstWarn = true;
+	if (firstWarn)
+	{
+		nlwarning ("TTicks CTime::getPerformanceTime () is not implemented for your processor, returning 0");
+		firstWarn = false;
+	}
+	return 0;
+#endif // HAVE_X86
+
 #endif // NL_OS_WINDOWS
 }
 /*

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.25 2002/12/19 13:05:25 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.26 2002/12/19 14:58:04 lecroart Exp $
  *
  */
 
@@ -1076,6 +1076,14 @@ static void cbRegisteredServices (CMessage &msgin, const std::string &serviceNam
 	msgin.serialCont (RegisteredServices);
 }
 
+static void cbRejected (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	// receive a message that mean that the AS doesn't want me
+	string res;
+	msgin.serial (res);
+	nlerror ("Can't connect to AS: %s", res.c_str());
+}
+
 static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// receive an view answer from the service
@@ -1207,6 +1215,8 @@ TUnifiedCallbackItem CallbackArray[] =
 	{ "VIEW", cbView },
 
 	{ "REGISTERED_SERVICES", cbRegisteredServices },
+
+	{ "REJECTED", cbRejected },
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

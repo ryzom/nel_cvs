@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.5 2002/11/18 09:25:06 berenguier Exp $
+ * $Id: big_file.cpp,v 1.6 2002/11/18 10:03:06 berenguier Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -171,6 +171,14 @@ void CBigFile::remove (const std::string &sBigFileName)
 		}
 		_BNPs.erase (it);
 	}
+}
+
+// ***************************************************************************
+bool CBigFile::isBigFileAdded(const std::string &sBigFileName)
+{
+	// Is already the same bigfile name ?
+	string bigfilenamealone = CFile::getFilename (sBigFileName);
+	return _BNPs.find(bigfilenamealone) != _BNPs.end();
 }
 
 // ***************************************************************************

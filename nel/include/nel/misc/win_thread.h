@@ -1,7 +1,7 @@
 /** \file win_thread.h
  * class CWinThread
  *
- * $Id: win_thread.h,v 1.4 2001/02/14 10:57:57 cado Exp $
+ * $Id: win_thread.h,v 1.5 2001/02/16 14:26:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,10 +52,6 @@ public:
 	virtual void start();
 	virtual void terminate();
 	virtual void wait();
-	virtual void sleep(sint ms = 0) 
-	{ 
-		Sleep(ms); 
-	}
 
 	virtual IRunnable *getRunnable()
 	{

@@ -336,6 +336,10 @@ SOURCE=..\include\nel\misc\command.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\common.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\common.h
 # End Source File
 # Begin Source File

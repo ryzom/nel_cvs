@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.3 2001/02/13 18:25:48 corvazier Exp $
+ * $Id: win_thread.cpp,v 1.4 2001/02/16 14:26:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,6 @@
  * MA 02111-1307, USA.
  */
 
-
 #include "nel/misc/types_nl.h"
 
 #ifdef NL_OS_WINDOWS
@@ -33,7 +32,6 @@
 
 
 namespace NLMISC {
-
 
 // the IThread static creator
 IThread *IThread::create (IRunnable *runnable)

@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.18 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: common.h,v 1.19 2001/02/16 14:26:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -300,7 +300,13 @@ public:
 };
 
 
-}	// NLMISC
+/**
+ * Portable Sleep() function that suspends the execution of the calling thread for a number of milliseconds.
+ * Note: the resolution of the timer is system-dependant and may be more than 1 millisecond.
+ */
+void nlSleep( uint32 ms );
 
+
+}	// NLMISC
 
 #endif	// NL_COMMON_H

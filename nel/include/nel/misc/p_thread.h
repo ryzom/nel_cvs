@@ -1,7 +1,7 @@
 /** \file p_thread.h
  * <File description>
  *
- * $Id: p_thread.h,v 1.3 2001/02/14 13:39:58 cado Exp $
+ * $Id: p_thread.h,v 1.4 2001/02/16 14:26:34 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,10 +54,6 @@ public:
 	virtual void start();
 	virtual void terminate();
 	virtual void wait();
-	virtual void sleep(sint ms = 0) 
-	{ 
-		sleep( ms/1000 );
-	}
 
 	virtual IRunnable *getRunnable()
 	{

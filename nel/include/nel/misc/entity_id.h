@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.16 2002/02/20 15:22:59 lecroart Exp $
+ * $Id: entity_id.h,v 1.17 2002/02/26 10:09:13 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,8 +41,13 @@ namespace NLMISC {
  */
 struct CEntityId
 {
+	///The local num service id of the local machin.
 	static uint8 ServerId;
+	///The maximume of number that we could generate without generat an overtaking exception.
 	static const uint64 MaxEntityId;
+	/// Unknow CEntityId is similar as an NULL pointer.
+	static const CEntityId Unknown;
+
 
 	/// Id of the service where the entity is.
 	uint64	DynamicId   :  8;
@@ -62,7 +67,7 @@ struct CEntityId
 		CreatorId = 0;
 		Type = 0;
 		Id = 0;
-	}		
+	}
 
 	CEntityId (uint8 type, uint64 id, uint8 creator, uint8 dynamic)
 	{
@@ -148,21 +153,12 @@ struct CEntityId
 		Type = atoiInt64(type, base);
 		Id = atoiInt64(id, base);
 	}
-
-	//@}
-
-	uint64 getRawId ()
-	{
-		return (DynamicId << 56) | (CreatorId << 48) | (Type << 40) | (Id);
-	}
-
-	// Unknow CEntityId
-	static const CEntityId Unknown;
+	//@}	
+	
 
 
 	///\name comparison of two CEntityId.
 	//@{
-
 	virtual bool operator == (const CEntityId &a) const
 	{
 		return (Id == a.Id && CreatorId == a.CreatorId && Type == a.Type);
@@ -184,8 +180,7 @@ struct CEntityId
 			{
 				return (CreatorId < a.CreatorId);
 			}
-		}
-		// greater
+		}		
 		return false;
 	}
 
@@ -244,6 +239,11 @@ struct CEntityId
 		Id = (uint64)(p);
 		
 		return *this;
+	}
+
+	uint64 getRawId() const
+	{
+		return (uint64)*this;
 	}
 
 	operator uint64 () const
@@ -358,6 +358,11 @@ struct CEntityId
 			save (f);
 		}
 
+	}
+
+	uint8 getType() const
+	{
+		return (uint8)Type;
 	}
 	//@}
 

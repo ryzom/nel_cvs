@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.13 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.14 2004/06/02 08:59:36 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -211,7 +211,7 @@ void CSegRemanenceShape::setupVBnPB()
 		for(k = 0; k < _NumSlices; ++k)
 		{
 			ibaWrite.setTri(3 * 2 * (l * _NumSlices + k), (_NumSlices + 1) * l + k,  (_NumSlices + 1) * (l + 1) + k + 1, (_NumSlices + 1) * (l + 1) + k);
-			ibaWrite.setTri(3 * 2 * (l * _NumSlices + k) + 1, (_NumSlices + 1) * l + k, (_NumSlices + 1) * l + k + 1, (_NumSlices + 1) * (l + 1) + k + 1);
+			ibaWrite.setTri(3 * (2 * (l * _NumSlices + k) + 1), (_NumSlices + 1) * l + k, (_NumSlices + 1) * l + k + 1, (_NumSlices + 1) * (l + 1) + k + 1);
 		}
 	}
 	_GeomTouched = false;	

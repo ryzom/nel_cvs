@@ -1,7 +1,7 @@
 /** \file u_bone.h
  * <File description>
  *
- * $Id: u_bone.h,v 1.3 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: u_bone.h,v 1.4 2002/03/28 15:06:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,6 +60,12 @@ public:
 
 	/** get the last world matrix computed in last render().
 	 *	NB: this WM is computed in last render() only if the object was not clipped. So use it wisely.
+	 *
+	 *	NB: this WM may also not be computed in last render() for "Lod skeleton" reason. ie if the skeleton
+	 *	is too far, the engine may not compute a bone (for speed). To avoid problem, you should ask the artist what
+	 *	bones have such a scheme, or you could stickObject() a dummy (eg a UTransform) onto this bone, because 
+	 *	in this case, this bone will always be computed.
+	 *	
 	 */
 	virtual	const CMatrix	&getLastWorldMatrixComputed() const =0;
 

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.10 2001/06/05 10:37:59 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.11 2001/06/07 08:23:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -231,7 +231,7 @@ void	NLPACS::CRetrieverInstance::link(const CRetrieverInstance &neighbor, uint8 
 		if (!found)
 		{
 			nlwarning("in call to NLPACS::CRetrieverInstance::link");
-			nlerror("Instance %d and instance %d have different number of tips on common edge", _InstanceId, neighbor._InstanceId);
+			nlerror("Couldn't find opposite edge (on instance %d) to edge %d (on instance %d)", neighbor._InstanceId, edgeChains[i], _InstanceId);
 		}
 
 		_EdgeChainLinks[edge].push_back(nEdgeChains[j]);

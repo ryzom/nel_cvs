@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.6 2001/06/05 13:50:04 legros Exp $
+ * $Id: local_retriever.h,v 1.7 2001/06/07 08:23:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -364,8 +364,7 @@ private:
 
 	uint32								getPreviousChain(uint32 chain, sint32 surface) const;
 	uint32								getNextChain(uint32 chain, sint32 surface) const;
-	
-	
+
 	void								dumpSurface(uint surf) const;
 };
 

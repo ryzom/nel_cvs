@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.2 2001/06/05 10:37:47 legros Exp $
+ * $Id: retrievable_surface.h,v 1.3 2001/06/07 08:23:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,7 @@ protected:
 
 	struct TLoop : std::vector<uint16>
 	{
+		float	Length;
 		void	serial(NLMISC::IStream &f) { f.serialCont(*this); }
 	};
 

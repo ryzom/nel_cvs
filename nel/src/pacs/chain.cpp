@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.10 2001/06/05 10:37:59 legros Exp $
+ * $Id: chain.cpp,v 1.11 2001/06/07 08:23:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,6 +71,7 @@ void	NLPACS::COrderedChain3f::serial(IStream &f)
 	f.serialCont(_Vertices);
 	f.serial(_Forward);
 	f.serial(_ParentId);
+	f.serial(_IndexInParent);
 }
 
 // end of COrderedChain3f methods implementation
@@ -87,37 +88,36 @@ void	NLPACS::COrderedChain::translate(const CVector &translation)
 		_Vertices[i] += translat;
 }
 
+//
+void	NLPACS::COrderedChain::traverse(sint from, sint to, bool forward, vector<NLPACS::CVector2s> path) const
+{
+	sint	i;
+	if (forward)
+	{
+		if (from < 0)	from = 0;
+		if (to < 0)		to = _Vertices.size()-1;
+
+		for (i=from+1; i<=to; ++i)
+			path.push_back(_Vertices[i]);
+	}
+	else
+	{
+		if (from < 0)	from = _Vertices.size()-2;
+		if (to < 0)		to = 0;
+
+		for (i=from; i>=to; --i)
+			path.push_back(_Vertices[i]);
+	}
+}
+
 // serialises the ordered chain
 void	NLPACS::COrderedChain::serial(IStream &f)
 {
 	f.serialCont(_Vertices);
 	f.serial(_Forward);
 	f.serial(_ParentId);
+	f.serial(_IndexInParent);
 	f.serial(_Length);
-}
-
-// sets value to the right surface id for later edge link
-void	NLPACS::CChain::setIndexOnEdge(uint edge, sint32 index)
-{
-	// the _Right id should have been previously set to -2.
-	if (_Right >= 0)
-	{
-		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
-		nlwarning("Tried to set the right surface of a chain whereas previous value (%d) is greater than -1", _Right);
-		return;
-	}
-
-	// The index must be positive or zero
-	if (index < 0)
-	{
-		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
-		nlwarning("Can't set negative index");
-		return;
-	}
-
-	// sets _Edge and _Right values.
-	_Edge = edge;
-	_Right = -index-256;
 }
 
 // end of COrderedChain methods implementation
@@ -166,6 +166,7 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 		subchain3f._Vertices.reserve(last-first+1);
 		subchain3f._Forward = forward;
 		subchain3f._ParentId = thisId;
+		subchain3f._IndexInParent = _SubChains.size()-1;
 
 		// and then copies the vertices (sorted, btw!)
 		if (forward)
@@ -200,6 +201,30 @@ void	NLPACS::CChain::serial(IStream &f)
 	f.serial(_Length);
 	f.serial(_LeftLoop, _LeftLoopIndex);
 	f.serial(_RightLoop, _RightLoopIndex);
+}
+
+// sets value to the right surface id for later edge link
+void	NLPACS::CChain::setIndexOnEdge(uint edge, sint32 index)
+{
+	// the _Right id should have been previously set to -2.
+	if (_Right >= 0)
+	{
+		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
+		nlwarning("Tried to set the right surface of a chain whereas previous value (%d) is greater than -1", _Right);
+		return;
+	}
+
+	// The index must be positive or zero
+	if (index < 0)
+	{
+		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
+		nlwarning("Can't set negative index");
+		return;
+	}
+
+	// sets _Edge and _Right values.
+	_Edge = edge;
+	_Right = -index-256;
 }
 
 // end of CChain methods implementation

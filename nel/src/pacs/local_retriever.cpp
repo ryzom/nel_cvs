@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.14 2001/06/05 13:50:13 legros Exp $
+ * $Id: local_retriever.cpp,v 1.15 2001/06/07 08:23:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -286,13 +286,14 @@ sint32	NLPACS::CLocalRetriever::addChain(const vector<CVector> &verts,
 	vector<CVector>::iterator	it3f = vertices.begin();
 
 	CVector2s					prev = *it2s;
+	CVector						prev3f = *it3f;
 	++it2s;
 	++it3f;
 
 	for (; it2s!=converts.end(); )
 	{
 		// it the next point is equal to the previous
-		if (*it2s == prev)
+		if (*it2s == prev && fabs(it3f->z-prev3f.z)<1e-3f)
 		{
 			// then remove the next point
 			it2s = converts.erase(it2s);
@@ -302,6 +303,7 @@ sint32	NLPACS::CLocalRetriever::addChain(const vector<CVector> &verts,
 		{
 			// else remember the next point, and step to the next...
 			prev = *it2s;
+			prev3f = *it3f;
 			++it2s;
 			++it3f;
 		}
@@ -365,6 +367,8 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 		for (j=0; j<chainFlags.size(); ++j)
 			chainFlags[j] = false;
 
+		uint	totalAdded = 0;
+
 		while (true)
 		{
 			for (j=0; j<chainFlags.size() && chainFlags[j]; ++j)
@@ -385,8 +389,10 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 
 			float	loopCloseDistance;
 
-			while ((loopCloseDistance = hybrid2dNorm(loopStart-currentEnd)) > 3.0e-2f)
+			while (true)
 			{
+				loopCloseDistance = hybrid2dNorm(loopStart-currentEnd);
+
 				// choose the best matching start vector
 				sint	bestChain = -1;
 				float	best = 1.0e10f;
@@ -404,7 +410,7 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 					}
 				}
 
-				if (bestChain == -1 || best > 1.0e0f)
+				if (bestChain == -1 && loopCloseDistance > 3.0e-2f)
 				{
 					nlwarning("in NLPACS::CLocalRetriever::computeTips()");
 
@@ -423,15 +429,19 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 					nlwarning("loopCloseDistance=%f", loopCloseDistance);
 					nlerror("Couldn't close loop on surface=%d", i);
 				}
+				else if (best > 1.0e0f && loopCloseDistance < 3.0e-2f)
+				{
+					break;
+				}
 
 				currentEnd = getStopVector(surface._Chains[bestChain].Chain, i);
 				_Chains[surface._Chains[bestChain].Chain].setLoopIndexes(i, loopId, loop.size());
 				loop.push_back(bestChain);
 				chainFlags[bestChain] = true;
+				++totalAdded;
 			}
 		}
 	}
-
 
 	for (i=0; i<_Chains.size(); ++i)
 	{
@@ -494,17 +504,34 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 		}
 	}
 
-
 	for (i=0; i<_Chains.size(); ++i)
 	{
 		uint	startTip = _Chains[i].getStartTip(),
 				stopTip = _Chains[i].getStopTip();
+
+		if (_Chains[i].getEdge() >= 0 && startTip == stopTip)
+		{
+			nlwarning("NLPACS::CLocalRetriever::computeLoopsAndTips(): chain %d on edge %d has same StartTip and StopTip", i, _Chains[i].getEdge(), startTip, stopTip);
+		}
+
 		uint	edgeFlag = (_Chains[i].getEdge() >= 0) ? (1<<_Chains[i].getEdge()) : 0;
 
 		_Tips[startTip].Chains.push_back(CTip::CChainTip(i, true));
 		_Tips[startTip].Edges |= edgeFlag;
 		_Tips[stopTip].Chains.push_back(CTip::CChainTip(i, false));
 		_Tips[stopTip].Edges |= edgeFlag;
+	}
+
+	for (i=0; i<_Surfaces.size(); ++i)
+	{
+		for (j=0; j<_Surfaces[i]._Loops.size(); ++j)
+		{
+			_Surfaces[i]._Loops[j].Length = 0.0f;
+			uint	k;
+
+			for (k=0; k<_Surfaces[i]._Loops[j].size(); ++k)
+				_Surfaces[i]._Loops[j].Length += _Chains[_Surfaces[i]._Chains[_Surfaces[i]._Loops[j][k]].Chain].getLength();
+		}
 	}
 }
 
@@ -835,15 +862,16 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 //	vector<CIntersectionMarker>	intersections;
 
 	uint	i, j;
-	sint32	surface = A.Surface;
+	sint32	surfaceId = A.Surface;
+	const CRetrievableSurface	&surface = _Surfaces[surfaceId];
 
 	for (i=0; i<cst.EdgeChainEntries.size(); ++i)
 	{
 		CEdgeChainEntry		&entry = cst.EdgeChainEntries[i];
 		const COrderedChain	&chain = _OrderedChains[entry.OChainId];
 
-		if (_Chains[chain.getParentId()].getLeft() != surface &&
-			_Chains[chain.getParentId()].getRight() != surface)
+		if (_Chains[chain.getParentId()].getLeft() != surfaceId &&
+			_Chains[chain.getParentId()].getRight() != surfaceId)
 			continue;
 
 		for (j=entry.EdgeStart; j<entry.EdgeEnd; ++j)
@@ -867,7 +895,7 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 				if (va*vb <= 0.0f)
 				{
 					const CChain	&parent = _Chains[chain.getParentId()];
-					bool			isIn = (va < 0.0f) ^ (parent.getLeft() == surface) ^ chain.isForward();
+					bool			isIn = (va < 0.0f) ^ (parent.getLeft() == surfaceId) ^ chain.isForward();
 
 					intersections.push_back(CIntersectionMarker(va/(va-vb), entry.OChainId, j, isIn));
 				}
@@ -877,6 +905,7 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 
 	sort(intersections.begin(), intersections.end());
 
+	// Check intersections have a valid order
 	if (intersections.size() & 1)
 	{
 		nlwarning("in NLPACS::CLocalRetriever::findPath()");
@@ -885,17 +914,112 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 	
 	for (i=0; i<intersections.size(); )
 	{
+		uint	exitLoop, enterLoop;
+
+		const CChain	&exitChain = _Chains[_OrderedChains[intersections[i].OChain].getParentId()];
+		exitLoop = (exitChain.getLeft() == surfaceId) ? exitChain.getLeftLoop() : exitChain.getRightLoop();
+
 		if (intersections[i++].In)
 		{
 			nlwarning("in NLPACS::CLocalRetriever::findPath()");
 			nlerror("Entered the surface before exited", intersections.size());
 		}
 
+		const CChain	&enterChain = _Chains[_OrderedChains[intersections[i].OChain].getParentId()];
+		enterLoop = (enterChain.getLeft() == surfaceId) ? enterChain.getLeftLoop() : enterChain.getRightLoop();
+
 		if (!intersections[i++].In)
 		{
 			nlwarning("in NLPACS::CLocalRetriever::findPath()");
 			nlerror("Exited twice the surface", intersections.size());
 		}
+
+		if (exitLoop != enterLoop)
+		{
+			nlwarning("in NLPACS::CLocalRetriever::findPath()");
+			nlerror("Exited and rentered by a different loop");
+		}
+	}
+
+	path.push_back(CVector2s(A.Estimation));
+
+	for (i=0; i<intersections.size(); )
+	{
+		uint								exitChainId = _OrderedChains[intersections[i].OChain].getParentId(),
+											enterChainId = _OrderedChains[intersections[i+1].OChain].getParentId();
+		const CChain						&exitChain = _Chains[exitChainId],
+											&enterChain = _Chains[enterChainId];
+		uint								loopId, exitLoopIndex, enterLoopIndex;
+
+		if (exitChain.getLeft() == surfaceId)
+		{
+			loopId = exitChain.getLeftLoop();
+			exitLoopIndex = exitChain.getLeftLoopIndex();
+		}
+		else
+		{
+			loopId = exitChain.getRightLoop();
+			exitLoopIndex = exitChain.getRightLoopIndex();
+		}
+
+		const CRetrievableSurface::TLoop	&loop = surface._Loops[loopId];
+
+		if (enterChain.getLeft() == surfaceId)
+			enterLoopIndex = enterChain.getLeftLoopIndex();
+		else
+			enterLoopIndex = enterChain.getRightLoopIndex();
+
+		float			forwardLength = (exitChain.getLength()+enterChain.getLength())*0.5f;
+		for (j=(exitLoopIndex+1)%loop.size(); j!=enterLoopIndex; j=(j+1)%loop.size())
+			forwardLength += _Chains[_OrderedChains[surface._Chains[loop[j]].Chain].getParentId()].getLength();
+
+		bool	forward = (forwardLength <= loop.Length-forwardLength);
+		sint	loopIndex = exitLoopIndex;
+		uint	thisChainId = exitChainId;
+		bool	thisChainForward = (enterChain.getLeft() == surfaceId);
+		uint	thisOChainId = intersections[i].OChain;
+		sint	thisOChainIndex = _OrderedChains[thisOChainId].getIndexInParent();
+
+		path.push_back(CVector2s(A.Estimation+intersections[i].Position*(B.Estimation-A.Estimation)));
+
+		while (true)
+		{
+			sint	from = (thisOChainId == intersections[i].OChain) ? intersections[i].Edge : -1,
+					to = (thisOChainId == intersections[i+1].OChain) ? intersections[i+1].Edge : -1;
+			bool	oforward = thisChainForward ^ forward ^ _OrderedChains[thisOChainId].isForward();
+
+			_OrderedChains[thisOChainId].traverse(from, to, oforward, path);
+
+			if (thisOChainId == intersections[i+1].OChain)
+				break;
+
+			thisOChainIndex = (thisChainForward ^ forward) ? thisOChainIndex-1 : thisOChainIndex+1;
+
+			if (thisOChainIndex < 0 || thisOChainIndex >= (sint)_Chains[thisChainId]._SubChains.size())
+			{
+				if (forward)
+				{
+					loopIndex++;
+					if (loopIndex == (sint)loop.size())
+						loopIndex = 0;
+				}
+				else
+				{
+					loopIndex--;
+					if (loopIndex < 0)
+						loopIndex = loop.size()-1;
+				}
+
+				thisChainId = surface._Chains[loop[loopIndex]].Chain;
+				thisChainForward = (_Chains[thisChainId].getLeft() == surfaceId);
+				thisOChainIndex = (thisChainForward) ? 0 : _Chains[thisChainId]._SubChains.size()-1;
+			}
+
+			thisChainId = _Chains[thisChainId]._SubChains[thisOChainIndex];
+		}
+
+		path.push_back(CVector2s(A.Estimation+intersections[i+1].Position*(B.Estimation-A.Estimation)));
+		i += 2;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.4 2001/06/05 10:37:47 legros Exp $
+ * $Id: chain.h,v 1.5 2001/06/07 08:23:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,9 @@ protected:
 	/// The parent chain Id.
 	uint16								_ParentId;
 
+	/// The index of the ochain within the parent chain
+	uint16								_IndexInParent;
+
 public:
 	/// Returns the vertices of the chain
 	const std::vector<NLMISC::CVector>	&getVertices() const { return _Vertices; }
@@ -68,6 +71,9 @@ public:
 
 	/// Returns the parent chain Id of this ordered chain.
 	uint16								getParentId() const { return _ParentId; }
+
+	/// Returns the index of the ochain within the parent chain.
+	uint16								getIndexInParent() const { return _IndexInParent; }
 
 	///
 	const NLMISC::CVector				&operator[] (uint n) const { return _Vertices[n]; }
@@ -108,6 +114,9 @@ protected:
 	/// The parent chain Id.
 	uint16								_ParentId;
 
+	/// The index of the ochain within the parent chain
+	uint16								_IndexInParent;
+
 	/// The length of the chain.
 	float								_Length;
 
@@ -120,6 +129,9 @@ public:
 
 	/// Returns the parent chain Id of this ordered chain.
 	uint16								getParentId() const { return _ParentId; }
+
+	/// Returns the index of the ochain within the parent chain.
+	uint16								getIndexInParent() const { return _IndexInParent; }
 
 	///
 	const CVector2s						&operator[] (uint n) const { return _Vertices[n]; }
@@ -137,8 +149,10 @@ public:
 			_Vertices[i] = CVector2s(vertices[i]);
 	}
 
-	void								serial(NLMISC::IStream &f);
+	void								traverse(sint from, sint to, bool forward, std::vector<CVector2s> path) const;
 
+
+	void								serial(NLMISC::IStream &f);
 };
 
 /**

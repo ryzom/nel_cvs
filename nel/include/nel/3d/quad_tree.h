@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.10 2000/12/20 15:30:56 lecroart Exp $
+ * $Id: quad_tree.h,v 1.11 2000/12/20 15:34:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -786,11 +786,11 @@ template<class T>	void		CQuadTree<T>::select(const std::vector<NLMISC::CPlane> &
 // ============================================================================================
 template<class T>	void		CQuadTree<T>::selectRay(const NLMISC::CVector& source, const NLMISC::CVector& dir)
 {
-	CMatrix mat;
+	NLMISC::CMatrix mat;
 	mat.identity ();
 
 	// Set a wrong matrix
-	CVector vTmp=dir^((fabs(vTmp*CVector(1,0,0))>0.f)?CVector(1,0,0):CVector(0,1,0));
+	NLMISC::CVector vTmp=dir^((fabs(vTmp*CVector(1,0,0))>0.f)?CVector(1,0,0):CVector(0,1,0));
 	mat.setRot (dir, vTmp, dir^vTmp);
 
 	// Normalize it Yoyo!

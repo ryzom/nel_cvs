@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.11 2001/08/28 13:08:30 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.12 2001/10/26 08:30:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,7 +66,8 @@ const uint32 CBitmap::bitPerPixels[ModeCount]=
 	4,		// DXTC1
 	4,		// DXTC1Alpha
 	8,		// DXTC3
-	8		// DXTC5
+	8,		// DXTC5
+	16		// DsDt
 };
 
 const uint32 CBitmap::DXTC1HEADER = NL_MAKEFOURCC('D','X', 'T', '1');
@@ -791,7 +792,9 @@ bool CBitmap::convertToRGBA()
 		case AlphaLuminance :
 			return alphaLuminanceToRGBA();
 			break;
-
+		case RGBA:
+			return true;
+		break;
 		default:
 			break;
 	}

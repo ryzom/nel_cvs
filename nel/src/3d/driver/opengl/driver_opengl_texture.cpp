@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.39 2001/10/24 09:59:34 besson Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.40 2001/10/26 08:28:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,6 +97,7 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 			case CBitmap::Luminance: texfmt= ITexture::Luminance; break;
 			case CBitmap::Alpha: texfmt= ITexture::Alpha; break;
 			case CBitmap::AlphaLuminance: texfmt= ITexture::AlphaLuminance; break;
+			case CBitmap::DsDt: texfmt= ITexture::DsDt; break;
 			default: texfmt= ITexture::RGBA8888; break;
 		}
 	}
@@ -129,6 +130,7 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 		case ITexture::Luminance: return GL_LUMINANCE8;
 		case ITexture::Alpha: return GL_ALPHA8;
 		case ITexture::AlphaLuminance: return GL_LUMINANCE8_ALPHA8;
+		case ITexture::DsDt: return GL_DSDT_NV;
 		default: return GL_RGBA8;
 	}
 }
@@ -146,6 +148,11 @@ static GLint	getGlSrcTextureFormat(ITexture &tex, GLint glfmt)
 		case CBitmap::AlphaLuminance:	return GL_LUMINANCE_ALPHA;
 		case CBitmap::Luminance:	return GL_LUMINANCE;
 		}
+	}
+
+	if (glfmt == GL_DSDT_NV)
+	{
+		return GL_DSDT_NV;
 	}
 
 	// Else, not a Src format for upload, or RGBA.
@@ -171,6 +178,7 @@ uint				CDriverGL::computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const
 	case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:	return w*h /2;
 	case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:	return w*h* 1;
 	case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:	return w*h* 1;
+	case GL_DSDT_NV:						return w*h* 2;
 	};
 
 	// One format has not been coded.
@@ -433,6 +441,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 							uint	h= pTInTC->getHeight(i);
 							glTexImage2D(face_map[nText],i,glfmt, w, h, 0,glSrcFmt,GL_UNSIGNED_BYTE, ptr );
 
+
 							// profiling: count TextureMemory usage.
 							gltext->TextureMemory+= computeMipMapMemoryUsage(w, h, glfmt);
 						}
@@ -491,8 +500,8 @@ bool CDriverGL::setupTexture(ITexture& tex)
 								void	*ptr= &(*tex.getPixels(i).begin());
 								uint	w= tex.getWidth(i);
 								uint	h= tex.getHeight(i);
-								glTexImage2D(GL_TEXTURE_2D,i,glfmt, w, h, 0,glSrcFmt,GL_UNSIGNED_BYTE, ptr );
-
+								glTexImage2D(GL_TEXTURE_2D,i,glfmt, w, h, 0,glSrcFmt,GL_UNSIGNED_BYTE, ptr );								
+								nlassert(glGetError() == GL_NO_ERROR);
 								// profiling: count TextureMemory usage.
 								gltext->TextureMemory+= computeMipMapMemoryUsage(w, h, glfmt);
 							}

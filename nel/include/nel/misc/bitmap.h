@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.6 2001/07/05 09:19:56 besson Exp $
+ * $Id: bitmap.h,v 1.7 2001/10/26 08:31:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,6 +209,7 @@ public:
 		DXTC1Alpha,
 		DXTC3,
 		DXTC5,
+		DsDt,
 		ModeCount,
 		DonTKnow=0xffffffff
 	} PixelFormat;

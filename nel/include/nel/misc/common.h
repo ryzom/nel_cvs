@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.37 2002/02/28 15:19:08 lecroart Exp $
+ * $Id: common.h,v 1.38 2002/03/20 14:51:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,8 +86,8 @@ const double Pi = 3.1415926535897932384626433832795;
 char _cstring[_size]; \
 va_list _args; \
 va_start (_args, _format); \
-int res = vsnprintf (_cstring, _size-1, _format, _args); \
-if (res == -1 || res == _size-1) \
+int _res = vsnprintf (_cstring, _size-1, _format, _args); \
+if (_res == -1 || _res == _size-1) \
 { \
 	_cstring[_size-1] = '\0'; \
 } \
@@ -287,6 +287,19 @@ template<class T> std::string toString (const T &t)
 	ss << t;
 	return ss.str();
 }
+
+
+/** Returns a string corresponding to the format and parameter (like printf).
+ * Example:
+ *  string hexnum = toString ("%x", 255); // hexnum = "ff";
+ */
+inline std::string toString (const char *format, ...)
+{
+	std::string Result;
+	NLMISC_CONVERT_VARGS (Result, format, NLMISC::MaxCStringSize);
+	return Result;
+}
+
 
 /* All the code above is used to add our types (uint8, ...) in the stringstream (used by the toString() function).
  * So we can use stringstream operator << and >> with all NeL simple types (except for ucchar and ucstring)

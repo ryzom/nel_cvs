@@ -1,7 +1,7 @@
 /** \file coammnds.cpp
  * 
  *
- * $Id: commands.cpp,v 1.4 2001/06/27 08:32:17 lecroart Exp $
+ * $Id: commands.cpp,v 1.5 2002/03/18 13:15:26 lecroart Exp $
  *
  * contains all admin commands
  *
@@ -55,7 +55,7 @@ NLMISC_COMMAND (connect, "connect to the AS", "<asid>")
 }
 
 
-NLMISC_COMMAND (start, "start a service", "<asid> <aesid> <service_alias>")
+NLMISC_COMMAND (start_service, "start a service", "<asid> <aesid> <service_alias>")
 {
 	if(args.size() != 3) return false;
 
@@ -84,7 +84,7 @@ NLMISC_COMMAND (start, "start a service", "<asid> <aesid> <service_alias>")
 }
 
 
-NLMISC_COMMAND (stop, "stop a service", "<asid> <aesid> <sid>")
+NLMISC_COMMAND (stop_service, "stop a service", "<asid> <aesid> <sid>")
 {
 	if(args.size() != 3) return false;
 
@@ -205,7 +205,7 @@ NLMISC_COMMAND (list, "display list of service", "")
 	return true;
 }
 
-NLMISC_COMMAND (startall, "start all services on a as", "<asid>")
+NLMISC_COMMAND (startall_services, "start all services on a as", "<asid>")
 {
 	if(args.size() != 1) return false;
 
@@ -228,7 +228,7 @@ NLMISC_COMMAND (startall, "start all services on a as", "<asid>")
 	return true;
 }
 
-NLMISC_COMMAND (stopall, "stop all services on a as", "<asid>")
+NLMISC_COMMAND (stopall_services, "stop all services on a as", "<asid>")
 {
 	if(args.size() != 1) return false;
 

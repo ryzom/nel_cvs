@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.14 2002/10/28 11:07:39 corvazier Exp $
+ * $Id: type.cpp,v 1.15 2002/12/02 13:47:57 brigand Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 #include "georges/form.h"
 #include "georges/form_elm.h"
+#include "georges\form_loader.h"
 
 #include "type.h"
 
@@ -330,8 +331,9 @@ const char *CType::getUIName (TUI type)
 class CMyEvalNumExpr : public CEvalNumExpr
 {
 public:
-	CMyEvalNumExpr (const CForm *form)
+	CMyEvalNumExpr (const CForm *form , const CType *type )
 	{
+		Type = type;
 		Form = form;
 	}
 	virtual CEvalNumExpr::TReturnState evalValue (const char *value, double &result, uint32 round)
@@ -369,6 +371,17 @@ public:
 			}
 			else
 			{
+				// check if the value is a label defined in the ".typ" file
+				for (uint i =0; i < Type->Definitions.size(); i++)
+				{
+					if ( !strcmp( Type->Definitions[i].Label.c_str(),value ) )
+					{
+						CMyEvalNumExpr expr(Form, Type);
+						int index;
+						return expr.evalExpression (Type->Definitions[i].Value.c_str(), result, &index );
+					}
+				}
+
 				// try to get a Form value
 
 				// The parent Dfn
@@ -380,7 +393,6 @@ public:
 				bool array;
 				bool parentVDfnArray;
 				UFormDfn::TEntryType type;
-
 				// Search for the node
 				if (((const CFormElm&)Form->getRootNode ()).getNodeByName (value, &parentDfn, parentIndex, &nodeDfn, &nodeType, &node, type, array, parentVDfnArray, false, round))
 				{
@@ -409,6 +421,8 @@ public:
 
 	// The working form
 	const CForm		*Form;
+	// the type of the field containing the expression
+	const CType		*Type;
 };
 
 // ***************************************************************************
@@ -576,7 +590,7 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 			}
 
 			double value;
-			CMyEvalNumExpr expr (form);
+			CMyEvalNumExpr expr (form,this);
 			int offset;
 			CEvalNumExpr::TReturnState error = expr.evalExpression (result.c_str (), value, &offset, round);
 			if (error == CEvalNumExpr::NoError)
@@ -634,7 +648,7 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 						string valueName = result.substr ( offset, nextEnd-offset );
 
 						double value;
-						CMyEvalNumExpr expr (form);
+						CMyEvalNumExpr expr (form,this);
 						int offsetExpr;
 						CEvalNumExpr::TReturnState error = expr.evalExpression (valueName.c_str (), value, &offsetExpr, round);
 						if (error == CEvalNumExpr::NoError)

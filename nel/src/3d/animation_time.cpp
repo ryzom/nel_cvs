@@ -1,7 +1,7 @@
 /** \file animation_time.cpp
  * <File description>
  *
- * $Id: animation_time.cpp,v 1.1 2001/02/05 16:52:22 corvazier Exp $
+ * $Id: animation_time.cpp,v 1.2 2001/03/28 15:16:19 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/animation_time.h"
+#include "nel/3d/tmp/animation_time.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.8 2001/03/19 13:19:15 corvazier Exp $
+ * $Id: animation.h,v 1.9 2001/03/28 15:17:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_ANIMATION_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/animation_time.h"
+#include "nel/3d/tmp/animation_time.h"
 #include <memory>
 #include <map>
 #include <set>

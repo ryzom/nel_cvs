@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.9 2001/03/28 10:31:09 berenguier Exp $
+ * $Id: channel_mixer.h,v 1.10 2001/03/28 15:17:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/smart_ptr.h"
-#include "nel/3d/animation_time.h"
+#include "nel/3d/tmp/animation_time.h"
 #include "nel/3d/animation_set.h"
 #include <map>
 

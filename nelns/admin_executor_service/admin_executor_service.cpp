@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.24 2002/12/19 10:45:36 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.25 2002/12/19 13:05:25 lecroart Exp $
  *
  */
 
@@ -615,7 +615,8 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 				if (Services[j].Connected)
 				{
 					addRequestWaitingNb (rid);
-
+					bool send = true;
+					
 					// check if the command is not to stop the service
 					CVarPath subvarpath(varpath.Destination[i].second);
 					for (uint k = 0; k < subvarpath.Destination.size (); k++)
@@ -636,14 +637,17 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 						}
 					}
 					
-
-					Services[j].WaitingRequestId.push_back (rid);
-					CMessage msgout("GET_VIEW");
-					msgout.serial(rid);
-					msgout.serial (varpath.Destination[i].second);
-					nlassert (Services[j].ServiceId);
-					CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
-					nlinfo ("Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
+					if (send)
+					{
+						// now send the request to the service
+						Services[j].WaitingRequestId.push_back (rid);
+						CMessage msgout("GET_VIEW");
+						msgout.serial(rid);
+						msgout.serial (varpath.Destination[i].second);
+						nlassert (Services[j].ServiceId);
+						CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
+						nlinfo ("Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), Services[j].toString ().c_str());
+					}
 				}
 			}
 
@@ -864,10 +868,9 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 						CMessage msgout("GET_VIEW");
 						msgout.serial(rid);
 						msgout.serial (varpath.Destination[i].second);
-						CService &cs = (*sit);
 						nlassert ((*sit).ServiceId);
 						CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
-						nlinfo ("Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
+						nlinfo ("Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), (*sit).toString ().c_str());
 					}
 				}
 			}			

@@ -1,7 +1,7 @@
 /** \file font_generator.h
  * CFontGenerator class
  *
- * $Id: font_generator.h,v 1.6 2003/12/22 13:00:37 lecroart Exp $
+ * $Id: font_generator.h,v 1.7 2004/01/13 18:10:32 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,14 +73,19 @@ public:
 	 *
 	 * \warning this function is not very fast (but faster than getBitmap()) because it has to load the char before.
 	 */
-	void	 getSizes (ucchar c, uint32 size, uint32 &width, uint32 &height);
+	void	getSizes (ucchar c, uint32 size, uint32 &width, uint32 &height);
 
-	void	 getKerning (ucchar left, ucchar right, sint32 &kernx);
+	void	getKerning (ucchar left, ucchar right, sint32 &kernx);
 
-	uint32	 getCharIndex (ucchar c);
+	uint32	getCharIndex (ucchar c);
 
-	std::string	FontFileName;
+	uint32	getUID() { return _UID; }
+
 private:
+
+	static uint32 _FontGeneratorCounterUID;
+	uint32			_UID;
+	std::string		_FontFileName;
 
 #ifndef NL_DONT_USE_EXTERNAL_CODE
 	const char			*getFT2Error(FT_Error fte);

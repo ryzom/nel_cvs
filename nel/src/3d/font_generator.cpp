@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.20 2002/11/05 16:48:24 corvazier Exp $
+ * $Id: font_generator.cpp,v 1.21 2004/01/13 18:10:32 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,7 @@ namespace NL3D {
 
 FT_Library	CFontGenerator::_Library;
 bool		CFontGenerator::_LibraryInit = false;
-
+uint32		CFontGenerator::_FontGeneratorCounterUID = 1;
 
 const char *CFontGenerator::getFT2Error(FT_Error fte)
 {
@@ -93,6 +93,10 @@ const char *CFontGenerator::getFT2Error(FT_Error fte)
 CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::string &fontExFileName)
 {
 	NL_ALLOC_CONTEXT (FreeTyp);
+
+	_UID = _FontGeneratorCounterUID;
+	_FontGeneratorCounterUID++;
+	_FontFileName = fontFileName;
 
 	FT_Error error;
 

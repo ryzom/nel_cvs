@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.21 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_font.cpp,v 1.22 2004/01/13 18:10:32 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,38 +52,17 @@ const int TextureSizeY = 256;
 const int Categories[TEXTUREFONT_NBCATEGORY] = { 8, 16, 24, 32 };
 const int NbLine[TEXTUREFONT_NBCATEGORY] = { 4, 6, 4, 1 }; // Based on textsize
 */
+
 // ---------------------------------------------------------------------------
 inline uint32 CTextureFont::SLetterKey::getVal()
 {
-	return Char + ((Size&255)<<16) + ((((uint32)FontGenerator)&255)<<24);
-}
 
-/*bool CTextureFont::SLetterKey::operator < (const CTextureFont::SLetterKey&k) const
-{
-	if (Char < k.Char)
-		return true;
-	if (Char > k.Char)
-		return false;
-	if (Size < k.Size)
-		return true;
-	if (Size > k.Size)
-		return false;
-	if (FontGenerator < k.FontGenerator)
-		return true;
-	if (FontGenerator > k.FontGenerator)
-		return false;
-	return false;
-}
-
-// ---------------------------------------------------------------------------
-bool CTextureFont::SLetterKey::operator == (const CTextureFont::SLetterKey&k) const
-{
-	if ((Char == k.Char) && (Size == k.Size) && (FontGenerator == k.FontGenerator))
-		return true;
+	if (FontGenerator == NULL)
+		return Char + ((Size&255)<<16);
 	else
-		return false;
+		return Char + ((Size&255)<<16) + ((((uint32)FontGenerator->getUID()))<<24);
 }
-*/
+
 // ---------------------------------------------------------------------------
 CTextureFont::CTextureFont()
 {
@@ -294,7 +273,8 @@ void CTextureFont::doGenerate(bool async)
 CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 {
 	sint cat;
-	map<uint32, SLetterInfo*>::iterator itAccel = Accel.find (k.getVal());
+	uint32 nTmp = k.getVal();
+	map<uint32, SLetterInfo*>::iterator itAccel = Accel.find (nTmp);
 	if (itAccel != Accel.end())
 	{
 		// Put it in the first place

@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.5 2001/12/20 14:14:50 chafik Exp $
+ * $Id: entity_id.h,v 1.6 2001/12/20 14:40:29 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,6 +109,7 @@ struct CEntityId
 		char *type;
 		char *creator;
 		char *dyn;
+		char *countdDec = 0;
 		
 		uint base = 10;
 
@@ -120,8 +121,8 @@ struct CEntityId
 			base = 16;
 			str += 2;
 		}
-		ident = str;
-		id = str;
+		ident = str +countdDec;
+		id = str + countdDec;
 
 		sint n = 0;
 		while(*(ident++) != ':') ;

@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.1 2002/07/16 13:16:10 lecroart Exp $
+ * $Id: background_sound_manager.h,v 1.2 2002/07/30 14:25:42 miller Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -60,6 +60,14 @@ public:
 	 * So, don't forget to add sound .prim in the CPath system for the lookup
 	 */
 	static	void load (const std::string &continent);
+
+	/** Load a background sound, only when the distance is little to avoid allocated too many sources.
+	 */
+	static	void load (uint32 i);
+
+	/** Unoad a background sound, only when the distance is too far. avoid allocated of too many sources.
+	 */
+	static	void unload (uint32 i);
 
 	/** Remove all data about the current continents
 	 */

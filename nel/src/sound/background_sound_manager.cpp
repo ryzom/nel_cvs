@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.5 2002/07/30 10:11:54 miller Exp $
+ * $Id: background_sound_manager.cpp,v 1.6 2002/07/30 14:25:42 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,10 +48,16 @@ class CBackgroundSound
 {
 public:
 
-	CBackgroundSound () : SourceDay(NULL), SourceNight(NULL) {}
+	CBackgroundSound () : SourceDay(NULL), SourceNight(NULL), Loaded(false) {}
 
-	// name of the background sound
+	// name of the background sound (add _day or _night to know the source name)
 	string				Name;
+
+	// full name (name of the patatoid)
+	string				FullName;
+
+	// true if the backsound is loaded
+	bool				Loaded;
 
 	// point that delimit the zone (patate)
 	vector<CVector>		Points;
@@ -78,6 +84,91 @@ void CBackgroundSoundManager::release ()
 }
 
 
+void CBackgroundSoundManager::unload (uint32 i)
+{
+	nlassert (i < BackgroundSounds.size());
+
+	if(!BackgroundSounds[i].SourceDay)
+	{
+		nlwarning ("try to unload a not loaded background sound (%s)", BackgroundSounds[i].FullName.c_str());
+	}
+	else
+	{
+		if(BackgroundSounds[i].SourceDay->isPlaying())
+			BackgroundSounds[i].SourceDay->stop();
+		_AudioMixer->removeSource(BackgroundSounds[i].SourceDay);
+		BackgroundSounds[i].SourceDay = NULL;
+
+		nlinfo ("unloaded day background sound '%s'", BackgroundSounds[i].FullName.c_str());
+	}
+
+	if(!BackgroundSounds[i].SourceNight)
+	{
+		nlwarning ("try to unload a not loaded background sound (%s)", BackgroundSounds[i].FullName.c_str());
+	}
+	else
+	{
+		if(BackgroundSounds[i].SourceNight->isPlaying())
+			BackgroundSounds[i].SourceNight->stop();
+		_AudioMixer->removeSource(BackgroundSounds[i].SourceNight);
+		BackgroundSounds[i].SourceNight = NULL;
+
+		nlinfo ("unloaded night background sound '%s'", BackgroundSounds[i].FullName.c_str());
+	}
+	BackgroundSounds[i].Loaded = false;
+}
+
+void CBackgroundSoundManager::load (uint32 i)
+{
+	nlassert (i < BackgroundSounds.size());
+
+	CVector srcpos( BackgroundSounds[i].Points[0].x, BackgroundSounds[i].Points[0].y, BackgroundSounds[i].Points[0].z );
+
+	if(BackgroundSounds[i].SourceDay)
+	{
+		nlwarning ("try to load an already loaded background sound (%s)", BackgroundSounds[i].FullName.c_str());
+	}
+	else
+	{
+		BackgroundSounds[i].SourceDay = _AudioMixer->createSource( string(BackgroundSounds[i].Name+"_day").c_str() );
+		
+		if(BackgroundSounds[i].SourceDay == NULL)
+		{
+			nlwarning ("Can't load '%s'", string(BackgroundSounds[i].Name+"_day").c_str());
+		}
+		else
+		{
+			BackgroundSounds[i].SourceDay->setPos( srcpos );
+			BackgroundSounds[i].SourceDayMaxGain = BackgroundSounds[i].SourceDay->getGain ();
+			
+			nlinfo ("loaded day background sound '%s'", BackgroundSounds[i].Name.c_str());
+		}
+	}
+
+	if(BackgroundSounds[i].SourceNight)
+	{
+		nlwarning ("try to load an already loaded background sound (%s)", BackgroundSounds[i].FullName.c_str());
+	}
+	else
+	{
+		BackgroundSounds[i].SourceNight = _AudioMixer->createSource( string(BackgroundSounds[i].Name+"_night").c_str() );
+		if(BackgroundSounds[i].SourceNight == NULL)
+		{
+			nlwarning ("Can't load '%s'", string(BackgroundSounds[i].Name+"_night").c_str());
+		}
+		else
+		{
+			BackgroundSounds[i].SourceNight->setPos( srcpos );
+			BackgroundSounds[i].SourceNightMaxGain = BackgroundSounds[i].SourceNight->getGain ();
+
+			nlinfo ("loaded night background sound '%s'", BackgroundSounds[i].Name.c_str());
+		}
+	}
+	BackgroundSounds[i].Loaded = true;
+}
+
+
+
 void CBackgroundSoundManager::load (const string &continent)
 {
 	CIFile file;
@@ -99,54 +190,34 @@ void CBackgroundSoundManager::load (const string &continent)
 
 	nlinfo ("Region '%s' contains %d zones for the background sounds", continent.c_str(), region.VZones.size());
 
-	BackgroundSounds.resize(region.VZones.size());
+	BackgroundSounds.reserve(region.VZones.size());
 	for (uint i = 0; i < region.VZones.size(); i++)
 	{
 		if(region.VZones[i].VPoints.size()>2)
 		{
-			CVector srcpos( region.VZones[i].VPoints[0].x, region.VZones[i].VPoints[0].y, region.VZones[i].VPoints[0].z );
-
-			BackgroundSounds[i].Points = region.VZones[i].VPoints;
-			BackgroundSounds[i].Name = region.VZones[i].Name;
-
-			sint32 pos1 = BackgroundSounds[i].Name.find ("-");
+			sint32 pos1 = region.VZones[i].Name.find ("-");
 			if(pos1 == string::npos)
 			{
-				nlwarning ("zone %d have the malformated name '%s' missing -name-", i, BackgroundSounds[i].Name.c_str());
-				return;
+				nlwarning ("zone %d have the malformated name '%s' missing -name-", i, region.VZones[i].Name.c_str());
+				continue;
 			}
 			pos1++;
 
-			sint32 pos2 = BackgroundSounds[i].Name.find ("-", pos1);
+			sint32 pos2 = region.VZones[i].Name.find ("-", pos1);
 			if(pos2 == string::npos)
 			{
-				nlwarning ("zone %d have the malformated name '%s' missing -name-", i, BackgroundSounds[i].Name.c_str());
-				return;
+				nlwarning ("zone %d have the malformated name '%s' missing -name-", i, region.VZones[i].Name.c_str());
+				continue;
 			}
 
-			string sample = BackgroundSounds[i].Name.substr(pos1, pos2-pos1);
-			
-			BackgroundSounds[i].SourceDay = _AudioMixer->createSource( string(sample+"_day").c_str() );
-			if(BackgroundSounds[i].SourceDay == NULL)
-			{
-				nlwarning ("Can't load '%s'", string(sample+"_day").c_str());
-			}
-			else
-			{
-				BackgroundSounds[i].SourceDay->setPos( srcpos );
-				BackgroundSounds[i].SourceDayMaxGain = BackgroundSounds[i].SourceDay->getGain ();
-			}
-
-			BackgroundSounds[i].SourceNight = _AudioMixer->createSource( string(sample+"_night").c_str() );
-			if(BackgroundSounds[i].SourceNight == NULL)
-			{
-				nlwarning ("Can't load '%s'", string(sample+"_night").c_str());
-			}
-			else
-			{
-				BackgroundSounds[i].SourceNight->setPos( srcpos );
-				BackgroundSounds[i].SourceNightMaxGain = BackgroundSounds[i].SourceNight->getGain ();
-			}
+			BackgroundSounds.push_back(CBackgroundSound());
+			BackgroundSounds[BackgroundSounds.size()-1].Points = region.VZones[i].VPoints;
+			BackgroundSounds[BackgroundSounds.size()-1].FullName = region.VZones[i].Name;
+			BackgroundSounds[BackgroundSounds.size()-1].Name = region.VZones[i].Name.substr(pos1, pos2-pos1);
+		}
+		else
+		{
+			nlwarning ("A background sound patatoid have less than 3 points '%s'", region.VZones[i].Name.c_str());
 		}
 	}
 	OldRatio = 10.0f;
@@ -265,9 +336,22 @@ void CBackgroundSoundManager::setListenerPosition (const CVector &listenerPositi
 			//nlinfo ("near patate %d name '%s' from %f ", i, BackgroundSounds[i].Name.c_str(), nearestDist);
 		}
 
+		// if the source is near, load the source
+		if(nearestDist < 190.0f && !BackgroundSounds[i].Loaded)
+		{
+nlinfo ("nearest dist = %f pos = %f %f %f lis %f %f %f", nearestDist, nearestPoint.x, nearestPoint.y, nearestPoint.z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
+			nlinfo ("background sound %d '%s' is too near (%f) , load it", i, BackgroundSounds[i].FullName.c_str(), nearestDist);
+			load(i);
+		}
+		else if(nearestDist > 210.0f && BackgroundSounds[i].Loaded)
+		{
+			// if the source is far, unload the source
+nlinfo ("nearest dist = %f pos = %f %f %f lis %f %f %f", nearestDist, nearestPoint.x, nearestPoint.y, nearestPoint.z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
+			nlinfo ("background sound %d '%s' is too far (%f), unload it", i, BackgroundSounds[i].FullName.c_str(), nearestDist);
+			unload(i);
+		}
+		
 		nearestPoint.z = listenerPosition.z;
-
-//nlinfo ("nearest dist = %f pos = %f %f %f lis %f %f %f", nearestDist, nearestPoint.x, nearestPoint.y, nearestPoint.z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
 
 		if(BackgroundSounds[i].SourceDay != NULL)
 			BackgroundSounds[i].SourceDay->setPos (nearestPoint);
@@ -324,7 +408,7 @@ void CBackgroundSoundManager::setDayNightRatio(float ratio)
 			if(BackgroundSounds[i].SourceDay != NULL)
 			{
 				BackgroundSounds[i].SourceDay->setGain(BackgroundSounds[i].SourceDayMaxGain);
-				
+
 				if (!BackgroundSounds[i].SourceDay->isPlaying())
 					BackgroundSounds[i].SourceDay->play();
 			}

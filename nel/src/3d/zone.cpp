@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.58 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: zone.cpp,v 1.59 2002/02/15 09:28:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,6 +175,9 @@ void			CZone::build(const CZoneInfo &zoneInfo, uint32 numVertices)
 			pa.setCornerSmoothFlag(i, pi.getCornerSmoothFlag(i));
 		}
 
+		// Copy order of the patch
+		pa.OrderS= pi.OrderS;
+		pa.OrderT= pi.OrderT;
 
 		// Build the patch.
 		for(i=0;i<4;i++)
@@ -185,20 +188,19 @@ void			CZone::build(const CZoneInfo &zoneInfo, uint32 numVertices)
 			pa.Interiors[i].pack(p.Interiors[i], PatchBias, PatchScale);
 		pa.Tiles= pi.Tiles;
 		pa.TileColors= pi.TileColors;
-		// Copy TileLightInfluences
-		if(pi.TileLightInfluences.size()==0)
+		/* Copy TileLightInfluences. It is possible that pi.TileLightInfluences.size()!= 0
+			and pi.TileLightInfluences.size()!= (uint)(pi.OrderS/2+1)*(pi.OrderT/2+1)
+			Because of a preceding bug where pa.OrderS and pa.OrderT were not initialized before the 
+			pa.resetTileLightInfluences();
+		*/
+		if( pi.TileLightInfluences.size()!= (uint)(pi.OrderS/2+1)*(pi.OrderT/2+1) )
 		{
 			pa.resetTileLightInfluences();
 		}
 		else
 		{
-			nlassert(pi.TileLightInfluences.size()== (uint)(pi.OrderS/2+1)*(pi.OrderT/2+1));
 			pa.TileLightInfluences= pi.TileLightInfluences;
 		}
-
-		// Copy order of the patch
-		pa.OrderS= pi.OrderS;
-		pa.OrderT= pi.OrderT;
 
 		// Number of lumels in this patch
 		uint lumelCount=(pi.OrderS*NL_LUMEL_BY_TILE)*(pi.OrderT*NL_LUMEL_BY_TILE);

@@ -1,6 +1,6 @@
 /** \file tail_particle_dlg.h
  * A dailog that helps to tune propertie of particle that owns a tail 
- * $Id: tail_particle_dlg.h,v 1.1 2001/06/25 12:55:45 vizerie Exp $
+ * $Id: tail_particle_dlg.h,v 1.2 2001/06/27 16:38:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,7 @@ protected:
 	afx_msg void OnTailInSystemBasis();
 	afx_msg void OnTailPersistAfterDeath();
 	afx_msg void OnSelchangeTailShape();
+	afx_msg void OnPaint();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -1,6 +1,6 @@
 /** \file tail_particle_dlg.cpp
  * A dailog that helps to tune propertie of particle that owns a tail 
- * $Id: tail_particle_dlg.cpp,v 1.1 2001/06/25 12:55:45 vizerie Exp $
+ * $Id: tail_particle_dlg.cpp,v 1.2 2001/06/27 16:38:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,6 +97,7 @@ BEGIN_MESSAGE_MAP(CTailParticleDlg, CDialog)
 	ON_BN_CLICKED(IDC_TAIL_IN_SYSTEM_BASIS, OnTailInSystemBasis)
 	ON_BN_CLICKED(IDC_TAIL_PERSIST_AFTER_DEATH, OnTailPersistAfterDeath)
 	ON_CBN_SELCHANGE(IDC_TAIL_SHAPE, OnSelchangeTailShape)
+	ON_WM_PAINT()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -128,6 +129,55 @@ void CTailParticleDlg::OnTailPersistAfterDeath()
 
 void CTailParticleDlg::OnSelchangeTailShape() 
 {
-	// TODO: Add your control notification handler code here
+	UpdateData() ;
+	NL3D::CPSRibbon *r = dynamic_cast<NL3D::CPSRibbon *>(_TailParticle) ;
+	nlassert(r) ;
+	switch (m_TailShape.GetCurSel() )
+	{
+		case 0: // triangle
+			r->setShape(NL3D::CPSRibbon::Triangle, NL3D::CPSRibbon::NbVerticesInTriangle) ;
+		break ;
+		case 1:	// quad
+			r->setShape(NL3D::CPSRibbon::Losange, NL3D::CPSRibbon::NbVerticesInLosange) ;
+		break ;
+		case 2: // octogon
+			r->setShape(NL3D::CPSRibbon::HeightSides, NL3D::CPSRibbon::NbVerticesInHeightSide) ;
+		break ;
+		case 3: // pentacle
+			r->setShape(NL3D::CPSRibbon::Pentagram, NL3D::CPSRibbon::NbVerticesInPentagram) ;
+		break ;
+	}
+
+	Invalidate() ;
+}
+
+void CTailParticleDlg::OnPaint() 
+{
+	CPaintDC dc(this); // device context for painting
 	
+	NL3D::CPSRibbon *r = dynamic_cast<NL3D::CPSRibbon *>(_TailParticle) ;
+	// if we're dealing with a ribbon, we draw the shape used for extrusion
+	if (r)
+	{
+		const uint x = 270, y = 15, size = 32 ;
+	
+
+		dc.FillSolidRect(x, y, size, size, 0xffffff) ;
+		
+		std::vector<NLMISC::CVector> verts ;
+		verts.resize(r->getNbVerticesInShape() ) ;
+		r->getShape(&verts[0]) ;
+
+		CPen p ;
+		p.CreatePen(PS_SOLID, 1, (COLORREF) 0) ;
+		CPen *old = dc.SelectObject(&p) ;
+
+		dc.MoveTo((int) (x + (size / 2) * (1 + verts[0].x)), (int) (y + (size / 2) * (1 - verts[0].y))) ;
+		for (std::vector<NLMISC::CVector>::const_iterator it = verts.begin() ; it != verts.end() ; ++it)
+		{
+			dc.LineTo((int) (x + (size / 2) * (1 + it->x)), (int) (y + (size / 2) * (1 - it->y))) ;
+		}
+		dc.LineTo((int) (x + (size / 2) * (1 + verts[0].x)), (int) (y + (size / 2) * (1 - verts[0].y))) ;
+		dc.SelectObject(old) ;
+	}
 }

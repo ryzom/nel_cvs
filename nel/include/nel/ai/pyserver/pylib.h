@@ -215,12 +215,15 @@ exemple:
 		sint32 getGlobal(char  *NameSpace,char  *VarName,char *Format,void *VarValue); // la meme chose que GetMembreValue mais sur un module
 		sint32 setGlobal(char  *NameSpace,char  *VarName,char  *Format, ...); // la meme chose que SetMembreValue mais sur un module
 		PyObject *addModule(char  *,PyMethodDef *);
-		PyObject *getRefVar(char  *VarName);
+		PyObject *getRefVar(char  *VarName);		
 		
 		~CPyExport()
 		{
 
 		}
+
+		public:
+			static const char *getPathSeparator();
 	};
 
 

@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.14 2001/11/09 11:23:44 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.15 2001/11/09 14:03:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,6 @@
  */
 #include "nel/ai/pyserver/pylib.h"
 #include "object.h"
-#include "osdefs.h"
 
 extern PyTypeObject StackDef;
 extern PyMethodDef M_STACK[];
@@ -195,9 +194,11 @@ namespace NLAIPYSERVER
 		/*strcpy(S,PathPython);
 		strcat(S,"/PyLib");*/
 
-		const char delem[2] = {DELIM,0};		
+		//const char delem[2] = {DELIM,0};	
+
+		CPyExport *m_pPyLib = new CPyExport;
 				
-		PathPython += delem;
+		PathPython += CPyExport::getPathSeparator();
 /*#ifdef NL_OS_WINDOWS
 		//sprintf(PathPython,"%s;%s",Py_GetPath(),pathWay);
 		PathPython += ";";
@@ -205,9 +206,7 @@ namespace NLAIPYSERVER
 		//sprintf(PathPython,"%s:%s",Py_GetPath(),pathWay);
 		PathPython += ":";
 #endif*/
-		PathPython += pathWay;
-				
-		CPyExport *m_pPyLib = new CPyExport;
+		PathPython += pathWay;						
 
 		PySys_SetPath((char *)PathPython.c_str());
 

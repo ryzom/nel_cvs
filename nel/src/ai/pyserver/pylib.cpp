@@ -1,6 +1,6 @@
 /** \file pylib.cpp
  *
- * $Id: pylib.cpp,v 1.6 2001/10/24 16:37:04 chafik Exp $
+ * $Id: pylib.cpp,v 1.7 2001/11/09 14:03:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include <iostream.h>
 #include <string.h>
 #include "nel/ai/pyserver/pylib.h"
+#include "osdefs.h"
 
 namespace NLAIPYSERVER
 {		
@@ -330,5 +331,11 @@ namespace NLAIPYSERVER
 		code[uk] = 0;
 		return code;
 		delete buf;
+	}
+
+	const char *CPyExport::getPathSeparator()
+	{
+		static const char s[] = {DELIM,0};
+		return s;
 	}
 }

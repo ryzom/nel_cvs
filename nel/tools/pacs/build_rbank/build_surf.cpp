@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.6 2002/06/24 14:41:05 legros Exp $
+ * $Id: build_surf.cpp,v 1.7 2002/07/03 16:38:48 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1180,6 +1180,16 @@ bool	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 	ContBBox.setSize(CVector(sz, sz, OriginalBBox.getSize().z));
 	Container.create(7, OriginalBBox.getCenter(), sz);
 
+	// if zone doesn't exist, don't even setup tessellation
+	try
+	{
+		if (CPath::lookup(getZoneNameById(zoneId)+ZoneExt, false, false) == "")
+			return false;
+	}
+	catch (EPathNotFound &)
+	{
+		return false;
+	}
 
 
 	uint	i, j;
@@ -1460,11 +1470,13 @@ void	NLPACS::CZoneTessellation::build()
 		nldebug("Compute landscape tessellation");
 
 		// setup landscape for the tessellation
+		// try not to load tile bank ?
+/*
 		nldebug("   - load tile bank");
 		CIFile bankFile(CPath::lookup(Bank));
 		_Landscape.TileBank.serial(bankFile);
 		bankFile.close();
-
+*/
 		nldebug("   - tessellate landscape");
 		_Landscape.setThreshold(0.0f);
 		_Landscape.setTileMaxSubdivision(TessellateLevel);
@@ -1747,35 +1759,37 @@ void	NLPACS::CZoneTessellation::compile()
 	}
 
 	// flood fills the tessellation to get surfaces
-	nldebug("build and flood fill surfaces");
-	uint32	surfId = 0; // + (ZoneId<<16);
-	uint	totalSurf = 0;
-	sint32	extSurf = -1024;
-
-	CPlane	planes[6];
-	BBox.makePyramid(planes);
-
-	for (p=0; p<(sint)Elements.size(); ++p)
 	{
-		if (Elements[p]->SurfaceId == UnaffectedSurfaceId)
+		nldebug("build and flood fill surfaces -- pass 1");
+		uint32	surfId = 0; // + (ZoneId<<16);
+		uint	totalSurf = 0;
+		sint32	extSurf = -1024;
+
+		CPlane	planes[6];
+		BBox.makePyramid(planes);
+
+		for (p=0; p<(sint)Elements.size(); ++p)
 		{
-			bool	elInCentral = (Elements[p]->Root->ZoneId == CentralZoneId);
-//			bool	elInCentral = true;
+			if (Elements[p]->SurfaceId == UnaffectedSurfaceId)
+			{
+				bool	elInCentral = (Elements[p]->Root->ZoneId == CentralZoneId);
+//				bool	elInCentral = true;
 
-			++totalSurf;
-			sint32	thisSurfId = (elInCentral) ? surfId++ : extSurf--;
-			if (elInCentral)
-				Surfaces.push_back(CComputableSurface());
-			else
-				ExtSurfaces.push_back(CComputableSurface());
+				++totalSurf;
+				sint32	thisSurfId = (elInCentral) ? surfId++ : extSurf--;
+				if (elInCentral)
+					Surfaces.push_back(CComputableSurface());
+				else
+					ExtSurfaces.push_back(CComputableSurface());
 
-		
-			CComputableSurface	&surf = (elInCentral) ? Surfaces.back() : ExtSurfaces.back();
-			surf.BorderKeeper = &Borders;
-			surf.floodFill(Elements[p], thisSurfId);
-			surf.BBox = BestFittingBBox;
-			if (surf.IsHorizontal && elInCentral)
-				surf.computeHeightQuad();
+			
+				CComputableSurface	&surf = (elInCentral) ? Surfaces.back() : ExtSurfaces.back();
+				surf.BorderKeeper = &Borders;
+				surf.floodFill(Elements[p], thisSurfId);
+				surf.BBox = BestFittingBBox;
+				if (surf.IsHorizontal && elInCentral)
+					surf.computeHeightQuad();
+			}
 		}
 	}
 /*
@@ -1845,32 +1859,41 @@ void	NLPACS::CZoneTessellation::compile()
 		Elements[i]->SurfaceId = UnaffectedSurfaceId;
 
 	//
-	for (p=0; p<(sint)Elements.size(); ++p)
 	{
-		if (Elements[p]->SurfaceId == UnaffectedSurfaceId)
+		nldebug("build and flood fill surfaces -- pass 2");
+		uint32	surfId = 0; // + (ZoneId<<16);
+		uint	totalSurf = 0;
+		sint32	extSurf = -1024;
+
+		CPlane	planes[6];
+		BBox.makePyramid(planes);
+
+		for (p=0; p<(sint)Elements.size(); ++p)
 		{
-			bool	elInCentral = (Elements[p]->Root->ZoneId == CentralZoneId);
-//			bool	elInCentral = true;
+			if (Elements[p]->SurfaceId == UnaffectedSurfaceId)
+			{
+				bool	elInCentral = (Elements[p]->Root->ZoneId == CentralZoneId);
+//				bool	elInCentral = true;
 
-			++totalSurf;
-			sint32	thisSurfId = (elInCentral) ? surfId++ : extSurf--;
-			if (elInCentral)
-				Surfaces.push_back(CComputableSurface());
-			else
-				ExtSurfaces.push_back(CComputableSurface());
+				++totalSurf;
+				sint32	thisSurfId = (elInCentral) ? surfId++ : extSurf--;
+				if (elInCentral)
+					Surfaces.push_back(CComputableSurface());
+				else
+					ExtSurfaces.push_back(CComputableSurface());
 
-		
-			CComputableSurface	&surf = (elInCentral) ? Surfaces.back() : ExtSurfaces.back();
-			surf.BorderKeeper = &Borders;
-			surf.floodFill(Elements[p], thisSurfId);
-			surf.BBox = BestFittingBBox;
-			if (surf.IsHorizontal && elInCentral)
-				surf.computeHeightQuad();
+			
+				CComputableSurface	&surf = (elInCentral) ? Surfaces.back() : ExtSurfaces.back();
+				surf.BorderKeeper = &Borders;
+				surf.floodFill(Elements[p], thisSurfId);
+				surf.BBox = BestFittingBBox;
+				if (surf.IsHorizontal && elInCentral)
+					surf.computeHeightQuad();
+			}
 		}
+
+		nldebug("%d surfaces generated", totalSurf);
 	}
-
-
-	nldebug("%d surfaces generated", totalSurf);
 }
 
 

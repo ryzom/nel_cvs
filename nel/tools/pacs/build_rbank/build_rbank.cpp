@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.6 2002/03/19 17:13:28 corvazier Exp $
+ * $Id: build_rbank.cpp,v 1.7 2002/07/03 16:38:48 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,122 +173,132 @@ void moulineZone(string &zoneName)
 		CAABBox	box = getZoneBBoxById(zid);
 
 		CVector		translation = -box.getCenter();
-		tessellation.setup(zid, 4, translation);
 
-		CIFile	tesselInput;
-		name = changeExt(zoneName, string("tessel"));
-		filename = TessellationPath+name;
-		tesselInput.open(filename);
-		tessellation.loadTessellation(tesselInput);
-		tesselInput.close();
-
-		CAABBox	tbox = tessellation.computeBBox();
-
-		vector<CIGBox>				boxes;
-		try
+		// if can't setup tessellation, don't mouline zone (no .lr created)
+		if (tessellation.setup(zid, 4, translation))
 		{
-			CIFile						binput(IGBoxes);
-			binput.serialCont(boxes);
-		}
-		catch (Exception &) { nlinfo("WARNING: IG list no found"); }
+			CIFile	tesselInput;
+			name = changeExt(zoneName, string("tessel"));
+			filename = TessellationPath+name;
+			tesselInput.open(filename);
+			tessellation.loadTessellation(tesselInput);
+			tesselInput.close();
 
-		for (i=0; i<boxes.size(); ++i)
-		{
-			if (tbox.intersect(boxes[i].BBox))
+			CAABBox	tbox = tessellation.computeBBox();
+
+			vector<CIGBox>				boxes;
+			try
 			{
-				try
+				if (CFile::fileExists (IGBoxes))
 				{
-					// load ig associated to the zone
-					string	igname = boxes[i].Name;
-					CIFile			monStream(CPath::lookup(igname));
-					CInstanceGroup	ig;
-					monStream.serial(ig);
+					CIFile		binput(IGBoxes);
+					binput.serialCont(boxes);
+				}
+				else
+				{
+					nlinfo("WARNING: IG list no found");
+				}
+			}
+			catch (Exception &) { nlinfo("WARNING: IG list no found"); }
 
-					// search in group for water instance
-					for (j=0; j<ig._InstancesInfos.size(); ++j)
+			for (i=0; i<boxes.size(); ++i)
+			{
+				if (tbox.intersect(boxes[i].BBox))
+				{
+					try
 					{
-						// c'est degueulasse, mais c'est les coders a la 3D, y savent pas coder
-						CIFile			monfile(CPath::lookup(ig._InstancesInfos[j].Name+".shape"));
-						CShapeStream	shape;
-						shape.serial(monfile);
+						// load ig associated to the zone
+						string	igname = boxes[i].Name;
+						CIFile			monStream(CPath::lookup(igname));
+						CInstanceGroup	ig;
+						monStream.serial(ig);
 
-						CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
-						if (wshape == NULL)
-							continue;
+						// search in group for water instance
+						for (j=0; j<ig._InstancesInfos.size(); ++j)
+						{
+							// c'est degueulasse, mais c'est les coders a la 3D, y savent pas coder
+							CIFile			monfile(CPath::lookup(ig._InstancesInfos[j].Name+".shape"));
+							CShapeStream	shape;
+							shape.serial(monfile);
 
-						CPolygon			wpoly;
-						wshape->getShapeInWorldSpace(wpoly);
+							CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
+							if (wshape == NULL)
+								continue;
 
-						tessellation.addWaterShape(wpoly);
+							CPolygon			wpoly;
+							wshape->getShapeInWorldSpace(wpoly);
+
+							tessellation.addWaterShape(wpoly);
+						}
+					}
+					catch (Exception &e)
+					{
+						nlwarning("%s", e.what());
 					}
 				}
-				catch (Exception &e)
+			}
+
+			tessellation.compile();
+			tessellation.generateBorders(1.0);
+			tessellation.generateStats();
+
+			NLPACS::CLocalRetriever	retriever;
+
+			CAABBox	rbbox = tessellation.BestFittingBBox;
+			CVector hs = rbbox.getHalfSize();
+			hs.z = 10000.0f;
+			rbbox.setHalfSize(hs);
+			retriever.setBBox(rbbox);
+			retriever.setType(NLPACS::CLocalRetriever::Landscape);
+
+			for (j=0; j<(sint)tessellation.Surfaces.size(); ++j)
+			{
+				retriever.addSurface(tessellation.Surfaces[j].NormalQuanta,
+									 tessellation.Surfaces[j].OrientationQuanta,
+									 tessellation.Surfaces[j].Material,
+									 tessellation.Surfaces[j].Character,
+									 tessellation.Surfaces[j].Level,
+									 tessellation.Surfaces[j].IsUnderWater,
+									 tessellation.Surfaces[j].WaterHeight,
+									 tessellation.Surfaces[j].Center,
+									 tessellation.Surfaces[j].HeightQuad);
+			}
+
+			for (j=0; j<(sint)tessellation.Borders.size(); ++j)
+			{
+				if (tessellation.Borders[j].Right < -1)
 				{
-					nlwarning("%s", e.what());
+					retriever.addChain(tessellation.Borders[j].Vertices,
+									   tessellation.Borders[j].Left,
+									   NLPACS::CChain::getDummyBorderChainId());
+
+				}
+				else
+				{
+					retriever.addChain(tessellation.Borders[j].Vertices,
+									   tessellation.Borders[j].Left,
+									   tessellation.Borders[j].Right);
 				}
 			}
+
+			fullChains = retriever.getFullOrderedChains();
+
+			// save raw retriever
+			COFile	outputRetriever;
+			name = changeExt(zoneName, string("lr"));
+			filename = OutputPath+PreprocessDirectory+name;
+			nldebug("save file %s", filename.c_str());
+			outputRetriever.open(filename);
+			retriever.serial(outputRetriever);
+
+			// save raw chains
+			COFile	outputChains;
+			name = changeExt(zoneName, string("ochain"));
+			filename = OutputPath+name;
+			nldebug("save file %s", filename.c_str());
+			outputChains.open(filename);
+			outputChains.serialCont(fullChains);
 		}
-
-		tessellation.compile();
-		tessellation.generateBorders(1.0);
-		tessellation.generateStats();
-
-		NLPACS::CLocalRetriever	retriever;
-
-		CAABBox	rbbox = tessellation.BestFittingBBox;
-		CVector hs = rbbox.getHalfSize();
-		hs.z = 10000.0f;
-		rbbox.setHalfSize(hs);
-		retriever.setBBox(rbbox);
-		retriever.setType(NLPACS::CLocalRetriever::Landscape);
-
-		for (j=0; j<(sint)tessellation.Surfaces.size(); ++j)
-		{
-			retriever.addSurface(tessellation.Surfaces[j].NormalQuanta,
-								 tessellation.Surfaces[j].OrientationQuanta,
-								 tessellation.Surfaces[j].Material,
-								 tessellation.Surfaces[j].Character,
-								 tessellation.Surfaces[j].Level,
-								 tessellation.Surfaces[j].IsUnderWater,
-								 tessellation.Surfaces[j].WaterHeight,
-								 tessellation.Surfaces[j].Center,
-								 tessellation.Surfaces[j].HeightQuad);
-		}
-
-		for (j=0; j<(sint)tessellation.Borders.size(); ++j)
-		{
-			if (tessellation.Borders[j].Right == -2)
-			{
-				retriever.addChain(tessellation.Borders[j].Vertices,
-								   tessellation.Borders[j].Left,
-								   NLPACS::CChain::getDummyBorderChainId());
-
-			}
-			else
-			{
-				retriever.addChain(tessellation.Borders[j].Vertices,
-								   tessellation.Borders[j].Left,
-								   tessellation.Borders[j].Right);
-			}
-		}
-
-		fullChains = retriever.getFullOrderedChains();
-
-		// save raw retriever
-		COFile	outputRetriever;
-		name = changeExt(zoneName, string("lr"));
-		filename = OutputPath+PreprocessDirectory+name;
-		nlinfo("save file %s", filename.c_str());
-		outputRetriever.open(filename);
-		retriever.serial(outputRetriever);
-
-		// save raw chains
-		COFile	outputChains;
-		name = changeExt(zoneName, string("ochain"));
-		filename = OutputPath+name;
-		nlinfo("save file %s", filename.c_str());
-		outputChains.open(filename);
-		outputChains.serialCont(fullChains);
 	}
 	catch(Exception &e)
 	{
@@ -314,29 +324,33 @@ void processRetriever(string &zoneName)
 		name = changeExt(zoneName, string("lr"));
 		filename = OutputPath+PreprocessDirectory+name;
 		nlinfo("load file %s", filename.c_str());
-		inputRetriever.open(filename);
-		retriever.serial(inputRetriever);
 
-		// compute the retriever
+		if (CFile::fileExists(filename))
+		{
+			inputRetriever.open(filename);
+			retriever.serial(inputRetriever);
 
-		retriever.computeLoopsAndTips();
+			// compute the retriever
 
-		retriever.findBorderChains();
-		retriever.updateChainIds();
-		retriever.computeTopologies();
+			retriever.computeLoopsAndTips();
 
-		retriever.computeCollisionChainQuad();
+			retriever.findBorderChains();
+			retriever.updateChainIds();
+			retriever.computeTopologies();
 
-		retriever.setType(NLPACS::CLocalRetriever::Landscape);
+			retriever.computeCollisionChainQuad();
 
-		// and save it...
+			retriever.setType(NLPACS::CLocalRetriever::Landscape);
 
-		COFile	outputRetriever;
-		name = changeExt(zoneName, string("lr"));
-		filename = OutputPath+name;
-		nlinfo("save file %s", filename.c_str());
-		outputRetriever.open(filename);
-		retriever.serial(outputRetriever);
+			// and save it...
+
+			COFile	outputRetriever;
+			name = changeExt(zoneName, string("lr"));
+			filename = OutputPath+name;
+			nlinfo("save file %s", filename.c_str());
+			outputRetriever.open(filename);
+			retriever.serial(outputRetriever);
+		}
 	}
 	catch(Exception &e)
 	{

@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.27 2004/08/16 13:21:05 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.27.4.1 2004/09/14 17:18:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -47,6 +47,7 @@ bool CFlareModel::_OcclusionQuerySettuped = false;
 CVertexBuffer CFlareModel::_OcclusionQueryVB;
 
 
+using NLMISC::CVector;
 //********************************************************************************************************************
 CFlareModel::CFlareModel()
 {
@@ -106,6 +107,22 @@ void CFlareModel::registerBasic()
 }
 
 
+// write a vector in a vertex buffer
+static inline void vbWrite(uint8 *&dest, CVector &v)
+{
+	((float *) dest)[0] = v.x;
+	((float *) dest)[1] = v.y;
+	((float *) dest)[2] = v.z;
+	dest += 3 * sizeof(float);
+}
+
+// write uvs in a vertex buffer
+static inline void vbWrite(uint8 *&dest, float uCoord, float vCoord)
+{
+	((float *) dest)[0] = uCoord;
+	((float *) dest)[1] = vCoord;	
+	dest += 2 * sizeof(float);
+}
 //********************************************************************************************************************
 void	CFlareModel::traverseRender()
 {				
@@ -336,7 +353,7 @@ void	CFlareModel::traverseRender()
 
 		// setup vertex buffer
 		vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
-		vb.setPreferredMemory(CVertexBuffer::RAMVolatile, true);
+		vb.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
 		vb.setNumVertices(4);
 		vb.setName("CFlareModel");
 		{
@@ -352,8 +369,7 @@ void	CFlareModel::traverseRender()
 	}	
 	// setup driver	
 	drv->activeVertexProgram(NULL);	
-	drv->setupModelMatrix(fs->getLookAtMode() ? CMatrix::Identity : getWorldMatrix());
-	drv->activeVertexBuffer(vb);
+	drv->setupModelMatrix(fs->getLookAtMode() ? CMatrix::Identity : getWorldMatrix());	
 	// we don't change the fustrum to draw 2d shapes : it is costly, and we need to restore it after the drawing has been done
 	// we setup Z to be (near + far) / 2, and setup x and y to get the screen coordinates we want
 	const float zPos             = 0.5f * (renderTrav.Near + renderTrav.Far); 
@@ -467,22 +483,32 @@ void	CFlareModel::traverseRender()
 					rK.set(-sinTheta, 0.f, cosTheta);
 				}
 			}
+			uint8 *vbPtr = (uint8 *) vba.getVertexCoordPointer();
 			if (fs->getLookAtMode())
-			{			
-				vba.setVertexCoord(0, upt + size * (rI + rK));
-				vba.setVertexCoord(1, upt + size * (rI - rK));
-				vba.setVertexCoord(2, upt + size * (-rI - rK));
-				vba.setVertexCoord(3, upt + size * (-rI + rK));
+			{
+				vbWrite(vbPtr, upt + size * (rI + rK));
+				vbWrite(vbPtr, 1.f, 0.f); // uvs
+				vbWrite(vbPtr, upt + size * (rI - rK));
+				vbWrite(vbPtr, 1.f, 1.f); // uvs
+				vbWrite(vbPtr, upt + size * (-rI - rK));
+				vbWrite(vbPtr, 0.f, 1.f); // uvs
+				vbWrite(vbPtr, upt + size * (-rI + rK));
+				vbWrite(vbPtr, 0.f, 0.f); // uvs
 			}
 			else
 			{
-				vba.setVertexCoord(0, size * (rI + rK));
-				vba.setVertexCoord(1, size * (rI - rK));
-				vba.setVertexCoord(2, size * (-rI - rK));
-				vba.setVertexCoord(3, size * (-rI + rK));
+				vbWrite(vbPtr, size * (rI + rK));
+				vbWrite(vbPtr, 1.f, 0.f); // uvs				
+				vbWrite(vbPtr, size * (rI - rK));
+				vbWrite(vbPtr, 1.f, 1.f); // uvs
+				vbWrite(vbPtr, size * (-rI - rK));
+				vbWrite(vbPtr, 0.f, 1.f); // uvs
+				vbWrite(vbPtr, size * (-rI + rK));
+				vbWrite(vbPtr, 0.f, 0.f); // uvs
 			}
 		}
 		material.setTexture(0, tex);
+		drv->activeVertexBuffer(vb);
 		drv->renderRawQuads(material, 0, 1);					
 	}		
 	if (fs->_LookAtMode)
@@ -501,14 +527,19 @@ void	CFlareModel::traverseRender()
 			{
 				CVertexBufferReadWrite vba;
 				vb.lock (vba);
-
+				uint8 *vbPtr = (uint8 *) vba.getVertexCoordPointer();
 				float size = fs->getSize(k) * zPos * renderTrav.Near;
-				vba.setVertexCoord(0, scrPos + size * (I + K));
-				vba.setVertexCoord(1, scrPos + size * (I - K));
-				vba.setVertexCoord(2, scrPos + size * (-I - K));
-				vba.setVertexCoord(3, scrPos + size * (-I + K));
+				vbWrite(vbPtr, scrPos + size * (I + K));
+				vbWrite(vbPtr, 1.f, 0.f); // uvs
+				vbWrite(vbPtr, scrPos + size * (I - K));
+				vbWrite(vbPtr, 1.f, 1.f); // uvs
+				vbWrite(vbPtr, scrPos + size * (-I - K));
+				vbWrite(vbPtr, 0.f, 1.f); // uvs
+				vbWrite(vbPtr, scrPos + size * (-I + K));
+				vbWrite(vbPtr, 0.f, 0.f); // uvs
 			}
 			material.setTexture(0, tex);
+			drv->activeVertexBuffer(vb);
 			drv->renderRawQuads(material, 0, 1);		
 		}		
 	}		
@@ -516,7 +547,7 @@ void	CFlareModel::traverseRender()
 
 //********************************************************************************************************************
 void CFlareModel::initStatics()
-{
+{	
 	if (!_OcclusionQuerySettuped)
 	{
 		// setup materials
@@ -542,6 +573,7 @@ void CFlareModel::updateOcclusionQueryBegin(IDriver *drv)
 	drv->setupModelMatrix(CMatrix::Identity);	
 	initStatics();
 	drv->setColorMask(false, false, false, false); // don't write any pixel during the test		
+	
 }
 
 //********************************************************************************************************************
@@ -570,9 +602,9 @@ void CFlareModel::updateOcclusionQuery(IDriver *drv)
 		_OcclusionQueryVB.lock(vbrw);
 		*vbrw.getVertexCoordPointer(0) = getWorldMatrix().getPos();
 	}	
+	drv->activeVertexBuffer(_OcclusionQueryVB);
 	oq->begin();
-	// draw a single point	
-	drv->activeVertexBuffer(_OcclusionQueryVB);	
+	// draw a single point		
 	drv->renderRawPoints(_OcclusionQueryMaterial, 0, 1);
 	oq->end();
 }

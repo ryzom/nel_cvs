@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.11 2002/12/30 13:59:52 corvazier Exp $
+ * $Id: primitive.cpp,v 1.12 2003/01/17 13:24:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -923,6 +923,16 @@ IPrimitive::IPrimitive (const IPrimitive &node)
 
 // ***************************************************************************
 
+void IPrimitive::updateChildId (uint index)
+{
+	uint i;
+	uint count = _Children.size ();
+	for (i=index; i<count; i++)
+		_Children[i]->_ChildId = i;
+}
+
+// ***************************************************************************
+
 void IPrimitive::operator= (const IPrimitive &node)
 {
 	// Clean dest
@@ -931,6 +941,7 @@ void IPrimitive::operator= (const IPrimitive &node)
 
 	// Copy the flags
 	Expanded = node.Expanded;
+	_ChildId = node._ChildId;
 
 	// Copy children
 	_Children.resize (node._Children.size ());
@@ -1249,6 +1260,7 @@ bool IPrimitive::removeChild (uint childId)
 	{
 		delete _Children[childId];
 		_Children.erase (_Children.begin()+childId);
+		updateChildId (childId);
 		return true;
 	}
 	else
@@ -1284,6 +1296,9 @@ bool IPrimitive::insertChild (IPrimitive *primitive, uint index)
 
 	// Insert
 	_Children.insert (_Children.begin () + index, primitive);
+
+	// Update child id
+	updateChildId (index);
 
 	// Link to the parent
 	primitive->_Parent = this;
@@ -1569,17 +1584,8 @@ void IPrimitive::write (xmlNodePtr xmlNode, const char *filename) const
 
 bool IPrimitive::getChildId (uint &childId, const IPrimitive *child) const
 {
-	const uint childrenSize = _Children.size ();
-	for (uint i=0; i<childrenSize; i++)
-	{
-		if (_Children[i] == child)
-		{
-			childId = i;
-			return true;
-		}
-	}
-	childId = 0xffffffff;
-	return false;
+	childId = child->_ChildId;
+	return true;
 }
 
 // ***************************************************************************
@@ -1593,13 +1599,34 @@ uint IPrimitive::getNumProperty () const
 // CPrimitives
 // ***************************************************************************
 
+CPrimitives::CPrimitives ()
+{
+	RootNode = static_cast<CPrimNode *> (CClassRegistry::create ("CPrimNode"));
+}
+
+// ***************************************************************************
+
+CPrimitives::CPrimitives (const CPrimitives &other)
+{
+	RootNode = static_cast<CPrimNode *> (((IPrimitive*)other.RootNode)->copy ());
+}
+
+// ***************************************************************************
+
+CPrimitives::~CPrimitives ()
+{
+	delete RootNode;
+}
+
+// ***************************************************************************
+
 bool CPrimitives::read (xmlNodePtr xmlNode, const char *filename)
 {
 	nlassert (xmlNode);
 
 	// Clear the primitives
-	RootNode.removeChildren ();
-	RootNode.removeProperties ();
+	RootNode->removeChildren ();
+	RootNode->removeProperties ();
 
 	// Get the name
 	if (strcmp ((const char*)xmlNode->name, "PRIMITIVES") == 0)
@@ -1619,7 +1646,7 @@ bool CPrimitives::read (xmlNodePtr xmlNode, const char *filename)
 				if (xmlNode)
 				{
 					// Read the primitive tree
-					((IPrimitive*)&RootNode)->read (xmlNode, filename, version);
+					((IPrimitive*)RootNode)->read (xmlNode, filename, version);
 				}
 			}
 			else
@@ -1668,7 +1695,7 @@ void CPrimitives::write (xmlNodePtr root, const char *filename) const
 	xmlNodePtr nameNode = xmlNewChild ( root, NULL, (const xmlChar*)"ROOT_PRIMITIVE", NULL);
 
 	// Write the primitive tree
-	((IPrimitive*)&RootNode)->write (nameNode, filename);
+	((IPrimitive*)RootNode)->write (nameNode, filename);
 }
 
 // ***************************************************************************
@@ -1683,7 +1710,7 @@ void CPrimitives::convertAddPrimitive (IPrimitive *child, const IPrimitive *prim
 	if (oldPoint)
 	{
 		// Create a primitive
-		CPrimPoint *point = new CPrimPoint ();
+		CPrimPoint *point = static_cast<CPrimPoint *> (CClassRegistry::create ("CPrimPoint"));
 		primitive = point;
 
 		// Copy it
@@ -1696,7 +1723,7 @@ void CPrimitives::convertAddPrimitive (IPrimitive *child, const IPrimitive *prim
 		if (oldPath)
 		{
 			// Create a primitive
-			CPrimPath *path = new CPrimPath ();
+			CPrimPath *path = static_cast<CPrimPath *> (CClassRegistry::create ("CPrimPath"));
 			primitive = path;
 
 			// Copy it
@@ -1708,7 +1735,7 @@ void CPrimitives::convertAddPrimitive (IPrimitive *child, const IPrimitive *prim
 			if (oldZone)
 			{
 				// Create a primitive
-				CPrimZone *zone = new CPrimZone ();
+				CPrimZone *zone = static_cast<CPrimZone *> (CClassRegistry::create ("CPrimZone"));
 				primitive = zone;
 
 				// Copy it
@@ -1747,12 +1774,12 @@ void CPrimitives::convertAddPrimitive (IPrimitive *child, const IPrimitive *prim
 void CPrimitives::convertPrimitive (const IPrimitive *prim, bool hidden)
 {
 	// Look for the group
-	uint numChildren = RootNode.getNumChildren ();
+	uint numChildren = RootNode->getNumChildren ();
 	uint j;
 	for (j=0; j<numChildren; j++)
 	{
 		IPrimitive *child;
-		nlverify (RootNode.getChild (child, j));
+		nlverify (RootNode->getChild (child, j));
 		const IProperty *prop;
 		if (child->getPropertyByName ("name", prop))
 		{
@@ -1774,7 +1801,7 @@ void CPrimitives::convertPrimitive (const IPrimitive *prim, bool hidden)
 	if (j==numChildren)
 	{
 		// Create a node
-		CPrimNode *primNode = new CPrimNode;
+		CPrimNode *primNode = static_cast<CPrimNode *> (CClassRegistry::create ("CPrimNode"));
 	
 		// Create a property for the layer
 		CPropertyString *nameProp = new CPropertyString;
@@ -1784,7 +1811,7 @@ void CPrimitives::convertPrimitive (const IPrimitive *prim, bool hidden)
 		primNode->addPropertyByName ("name", nameProp);
 
 		// Add the child
-		RootNode.insertChild (primNode);
+		RootNode->insertChild (primNode);
 
 		// Add the primitive
 		convertAddPrimitive (primNode, prim, hidden);
@@ -1796,8 +1823,8 @@ void CPrimitives::convertPrimitive (const IPrimitive *prim, bool hidden)
 void CPrimitives::convert (const CPrimRegion &region)
 {
 	// Delete
-	RootNode.removeChildren ();
-	RootNode.removeProperties ();
+	RootNode->removeChildren ();
+	RootNode->removeProperties ();
 
 	// For each primitives
 	uint i;

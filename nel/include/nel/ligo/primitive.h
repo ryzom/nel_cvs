@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.14 2002/12/19 14:33:07 corvazier Exp $
+ * $Id: primitive.h,v 1.15 2003/01/17 13:24:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,7 +145,7 @@ public:
 
 	// Expended in the tree view
 	bool							Expanded;
-	
+
 	enum 
 	{
 		NotAnArray,
@@ -293,6 +293,12 @@ public:
 	virtual IPrimitive *copy () const = 0;
 
 private:
+
+	// Update child Id
+	void updateChildId (uint index);
+
+	// Child id
+	uint									_ChildId;
 
 	// Parent
 	IPrimitive								*_Parent;
@@ -493,11 +499,15 @@ class CPrimitives
 {
 public:
 
+	CPrimitives ();
+	CPrimitives (const CPrimitives &other);
+	~CPrimitives ();
+
 	// Convert from old format to the new one
 	void			convert (const CPrimRegion &region);
 
 	// Root primitive hierarchy
-	CPrimNode		RootNode;
+	CPrimNode		*RootNode;
 
 	// Read the primitive
 	bool			read (xmlNodePtr xmlNode, const char *filename);

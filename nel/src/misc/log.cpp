@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.27 2001/05/07 15:39:48 cado Exp $
+ * $Id: log.cpp,v 1.28 2001/05/09 17:09:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -321,6 +321,24 @@ void CLog::removeFilter( const char *filterstr )
 	_PositiveFilter.remove( filterstr );
 	_NegativeFilter.remove( filterstr );
 }
+
+
+
+void CLog::addPositiveFilter( const char *filterstr )
+{
+	_PositiveFilter.push_back( filterstr );
+}
+
+void CLog::addNegativeFilter( const char *filterstr )
+{
+	_NegativeFilter.push_back( filterstr );
+}
+
+void CLog::resetFilters()
+{
+	_PositiveFilter.clear(); _NegativeFilter.clear();
+}
+
 
 
 ////////////////////////////////////////////////////

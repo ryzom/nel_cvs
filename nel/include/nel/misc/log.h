@@ -1,7 +1,7 @@
 /** \file log.h
  * CLog class
  *
- * $Id: log.h,v 1.20 2001/05/07 15:39:48 cado Exp $
+ * $Id: log.h,v 1.21 2001/05/09 17:09:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,13 +94,13 @@ public:
 
 	
 	/// Adds a positive filter. Tells the logger to log only the lines that contain filterstr
-	void addPositiveFilter( const char *filterstr ) { _PositiveFilter.push_back( filterstr ); }
+	void addPositiveFilter( const char *filterstr );
 
 	/// Adds a negative filter. Tells the logger to discard the lines that contain filterstr
-	void addNegativeFilter( const char *filterstr ) { _NegativeFilter.push_back( filterstr ); }
+	void addNegativeFilter( const char *filterstr );
 
 	/// Reset both filters
-	void resetFilters() { _PositiveFilter.clear(); _NegativeFilter.clear(); }
+	void resetFilters();
 
 	/// Removes a filter by name (in both filters).
 	void removeFilter( const char *filterstr );

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.53 2003/03/11 09:42:50 berenguier Exp $
+ * $Id: transform.cpp,v 1.54 2003/03/12 15:03:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,6 +167,12 @@ void		CTransform::hide()
 	{
 		foulTransform();
 		Visibility= CHrcTrav::Hide;
+		// If skinned, then must inform skeleton parent that it must recompute skin render/animDetail lists
+		if(isSkinned())
+		{
+			nlassert(_FatherSkeletonModel);
+			_FatherSkeletonModel->dirtSkinRenderLists();
+		}
 	}
 }
 // ***************************************************************************
@@ -177,6 +183,12 @@ void		CTransform::show()
 	{
 		foulTransform();
 		Visibility= CHrcTrav::Show;
+		// If skinned, then must inform skeleton parent that it must recompute skin render/animDetail lists
+		if(isSkinned())
+		{
+			nlassert(_FatherSkeletonModel);
+			_FatherSkeletonModel->dirtSkinRenderLists();
+		}
 	}
 }
 // ***************************************************************************
@@ -187,6 +199,12 @@ void		CTransform::heritVisibility()
 	{
 		foulTransform();
 		Visibility= CHrcTrav::Herit;
+		// If skinned, then must inform skeleton parent that it must recompute skin render/animDetail lists
+		if(isSkinned())
+		{
+			nlassert(_FatherSkeletonModel);
+			_FatherSkeletonModel->dirtSkinRenderLists();
+		}
 	}
 }
 

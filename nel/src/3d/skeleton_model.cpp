@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.38 2003/03/11 09:41:30 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.39 2003/03/12 15:03:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1036,6 +1036,11 @@ void			CSkeletonModel::updateSkinRenderLists()
 		for(it= _Skins.begin();it!=_Skins.end();it++)
 		{
 			CTransform	*skin= *it;
+
+			// If the skin is hidden, don't add it to any list!
+			if(skin->getVisibility()==CHrcTrav::Hide)
+				continue;
+
 			// if transparent, then must fill in transparent list.
 			if(skin->isTransparent())
 				transparentSize++;
@@ -1096,6 +1101,11 @@ void			CSkeletonModel::updateSkinRenderLists()
 		for(it= _Skins.begin();it!=_Skins.end();it++)
 		{
 			CTransform	*skin= *it;
+
+			// If the skin is hidden, don't add it to any list!
+			if(skin->getVisibility()==CHrcTrav::Hide)
+				continue;
+
 			// if transparent, then must fill in transparent list.
 			if(skin->isTransparent())
 			{

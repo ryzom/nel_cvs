@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.9 2001/01/08 14:39:59 valignat Exp $
+ * $Id: codage.h,v 1.10 2001/01/12 09:52:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,7 +181,7 @@ namespace NLAISCRIPT
 		///Get the IObjectIA pointer in current position.
 		operator NLAIAGENT::IObjectIA *()
 		{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 			if ( (_Sp + _Bp + _Sh) >= _Count )
 			{
 				throw NLAIE::CExceptionIndexError();
@@ -193,7 +193,7 @@ namespace NLAISCRIPT
 		///Dec the current position of the stack point by one.
 		virtual void operator -- (int)
 		{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 			if ( (_Sp + _Bp + _Sh) >= _Count )
 			{
 				throw NLAIE::CExceptionIndexError();
@@ -211,7 +211,7 @@ namespace NLAISCRIPT
 		///Dec the current position of the stack point by k unite.
 		virtual void operator -= (int k)
 		{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 			if ( (_Sp + _Bp + _Sh) >= _Count )
 			{
 				throw NLAIE::CExceptionIndexError();

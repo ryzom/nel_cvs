@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.5 2001/01/08 14:42:11 valignat Exp $
+ * $Id: interpret_object_agent.cpp,v 1.6 2001/01/12 09:52:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,14 +97,14 @@ namespace NLAISCRIPT
 
 		if(_Methode.size())
 		{		
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 	char txtClass[2048*8];
 	sprintf(txtClass,getClassName()->getString());
 #endif	
 			for(sint32 j =  0; j < (sint32)_Methode.size(); j++)
 			{				
 				CMethodeName *c = _Methode[j];
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 	char txt[2048*8];
 	c->getDebugString(txt);
 #endif					
@@ -328,7 +328,7 @@ namespace NLAISCRIPT
 
 	sint32 CAgentClass::addBrancheCode(const NLAIAGENT::IVarName &name,const CParam &param)
 	{	
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 	char txtClass[2048*8];
 	char txt[2048*8];
 	param.getDebugString(txtClass);
@@ -422,7 +422,7 @@ namespace NLAISCRIPT
 
 	void CAgentClass::createBaseClassComponents( std::list<NLAIAGENT::IObjectIA *> &comps) const
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		const char *txt = NULL;
 		if(getName() != NULL) txt = getName()->getString();		
 #endif				
@@ -432,7 +432,7 @@ namespace NLAISCRIPT
 			base_class->createBaseClassComponents( comps );
 		}		
 		createComponents( comps );
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		sint32 i = (sint32)comps.size();
 #endif		
 	}
@@ -459,7 +459,7 @@ namespace NLAISCRIPT
 
 	void CAgentClass::buildVMethode()
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 	char txtClass[2048*8];
 	sprintf(txtClass,getClassName()->getString());
 #endif					
@@ -471,7 +471,7 @@ namespace NLAISCRIPT
 			for(sint32 i = 0; i < t->getMethodIndexSize() - getBaseMethodCount(); i ++)
 			{
 				CMethodeName *m = &t->getBrancheCode(i);
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 	char txt[2048*8];
 	m->getDebugString(txt);	
 #endif
@@ -485,10 +485,25 @@ namespace NLAISCRIPT
 	{		
 		for(sint32 i = 0; i < (sint32)_VTable.size(); i ++)
 		{
-			const NLAIAGENT::IObjectIA *o = _VTable[i];
-			if(*(_VTable[i]->getClassName()) == className)
+#ifdef NL_DEBUG
+		const NLAIAGENT::IObjectIA *o = _VTable[i];
+#endif
+			const NLAIAGENT::IVarName *thisName = _VTable[i]->getClassName();			
+			if(thisName == NULL) 
 			{
-				return i;
+				//thisName = 
+				const NLAIC::CIdentType &id = _VTable[i]->getType();
+				if(strcmp((const char *)id , className.getString()) == 0)
+				{
+					return i;
+				}
+			}
+			else
+			{
+				if(*(_VTable[i]->getClassName()) == className)
+				{
+					return i;
+				}
 			}
 		}		
 		return -1;
@@ -655,7 +670,7 @@ namespace NLAISCRIPT
 	const void CAgentClass::getClassPath(std::vector<const CAgentClass *> &path) const
 	{
 		const CAgentClass *base_class = (CAgentClass *) getBaseClass();
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		const char *txt = NULL;
 		if(getName() != NULL) txt = getName()->getString();
 		else if(getName() != NULL) txt = base_class->getName()->getString();

@@ -1,7 +1,7 @@
 /** \file module.h
  * Class op-code storage.
  *
- * $Id: module.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: module.h,v 1.4 2001/01/12 09:52:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,7 +101,7 @@ namespace NLAISCRIPT
 			tDicoStrIter it = _DicoLocVar->begin();
 			while(it != _DicoLocVar->end())
 			{
-#ifdef _DEBUG				
+#ifdef NL_DEBUG				
 				const NLAIAGENT::IObjectIA *o = (*it).second;
 #endif								
 				(*it).second->release();

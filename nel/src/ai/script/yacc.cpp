@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.4 2001/01/08 14:42:12 valignat Exp $
+ * $Id: yacc.cpp,v 1.5 2001/01/12 09:52:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,7 +166,7 @@ namespace NLAISCRIPT
 							_ExpressionType = NULL;
 						}						
 						
-						#ifdef _DEBUG
+						#ifdef NL_DEBUG
 						_LastAffectation = new CVarPStackParam((sint32)_VarState,_LasAffectationVarStr.front().data());
 						_LastAffectation->incRef();
 						#else
@@ -511,7 +511,7 @@ namespace NLAISCRIPT
 		IClassInterpret *c = (IClassInterpret *)_SelfClass.get();
 		//c->buildVTable();
 		const NLAIAGENT::IVarName &className = *c->getClassName();		
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 	className.getString();
 	_ConstraintType.size();
 #endif
@@ -625,7 +625,7 @@ namespace NLAISCRIPT
 		while(_Attrib.size() != 0)
 		{
 			i--;
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 			_LastAffectation = new CVarPStackParam(i,_Attrib.back().first->getString());
 			_LastAffectation->incRef();
 #else
@@ -715,7 +715,7 @@ namespace NLAISCRIPT
 
 	void CCompilateur::callFunction()
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 	char mName[1024];
 	char pName[1024];
 	_LastStringParam.back()->getDebugString(mName);
@@ -789,7 +789,7 @@ namespace NLAISCRIPT
 			((NLAIAGENT::IObjectIA *)nameRun->pop())->release();
 			nameRun->cpy(NLAIAGENT::CStringType ((NLAIAGENT::CStringVarName(_RUN_))));
 			nameRun->incRef();
-#ifdef _DEBUG	
+#ifdef NL_DEBUG	
 	nameRun->getDebugString(mName);
 #endif
 			_Param.back()->incRef();

@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.5 2001/01/11 15:24:39 chafik Exp $
+ * $Id: codage.cpp,v 1.6 2001/01/12 09:52:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,7 @@ namespace NLAISCRIPT
 		{
 			std::string s;
 			is.serial( s );
-#ifdef _DEBUG			
+#ifdef NL_DEBUG			
 			const char *ss = s.data();
 #endif
 			
@@ -134,7 +134,7 @@ namespace NLAISCRIPT
 	{		
 		IOpCode &op = nextCode();
 /*		
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		char chaine[1024*8];
 		op.getDebugResult(chaine,p);
 		InputOutput->Echo("Operation %s\n",chaine);		

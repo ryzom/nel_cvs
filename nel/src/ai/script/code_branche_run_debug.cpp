@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.5 2001/01/12 09:52:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -159,7 +159,7 @@ namespace NLAISCRIPT
 		IOpCode &op = nextCode();
 
 /*
-#ifdef _DEBUG		
+#ifdef NL_DEBUG		
 		char chaine[1024*8];
 		op.getDebugResult(chaine,p);
 		InputOutput->Echo("Operation %s\n", chaine);

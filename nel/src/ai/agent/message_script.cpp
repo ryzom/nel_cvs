@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.5 2001/01/08 14:42:11 valignat Exp $
+ * $Id: message_script.cpp,v 1.6 2001/01/12 09:52:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,7 @@ namespace NLAIAGENT
 
 	NLAISCRIPT::IOpCode &CMessageScript::getMethode(sint32 inheritance,sint32 index)
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		if ( index >= _MessageClass->getMethodIndexSize())
 		{
 			throw NLAIE::CExceptionIndexError();
@@ -98,7 +98,7 @@ namespace NLAIAGENT
 
 	NLAISCRIPT::IOpCode &CMessageScript::getMethode(sint32 index)
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		if ( index >= _MessageClass->getMethodIndexSize())
 		{
 			throw NLAIE::CExceptionIndexError();
@@ -204,7 +204,7 @@ namespace NLAIAGENT
 
 	void CMessageScript::setStaticMember(sint32 index,IObjectIA *op)
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		if ( index >= size() )
 		{
 			throw NLAIE::CExceptionIndexError();
@@ -218,7 +218,7 @@ namespace NLAIAGENT
 
 	const IObjectIA *CMessageScript::getStaticMember(sint32 index) const
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		if ( index >= size() )
 		{
 			throw NLAIE::CExceptionIndexError();

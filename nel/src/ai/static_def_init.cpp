@@ -347,7 +347,7 @@ namespace NLAISCRIPT
 
 
 	NLAIAGENT::IObjectIA **CVarPStack::_LocalTableRef = NULL;
-	#ifdef _DEBUG
+	#ifdef NL_DEBUG
 	NLAIC::CIdentType CVarPStack::IdVarPStack ("VarPStack",	NLAIC::CSelfClassCFactory(CVarPStack(0,"Inst")),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
@@ -377,7 +377,7 @@ namespace NLAISCRIPT
 														NLAIC::CTypeOfOperator::opDiff));
 	#endif													
 
-	#ifdef _DEBUG
+	#ifdef NL_DEBUG
 	NLAIC::CIdentType CVarPStackParam::IdVarPStackParam ("VarPStackParam",	NLAIC::CSelfClassCFactory(CVarPStack(0,"Inst")),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 

@@ -1,7 +1,7 @@
 
 /** \file varstack.h
  *
- * $Id: varstack.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: varstack.h,v 1.4 2001/01/12 09:52:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ namespace NLAISCRIPT
 		///Heap pointer index.
 		sint32		_Val;	
 
-	#ifdef _DEBUG
+	#ifdef NL_DEBUG
 		NLAIAGENT::IVarName *_NameVar;
 	#endif
 
@@ -57,7 +57,7 @@ namespace NLAISCRIPT
 		static NLAIAGENT::IObjectIA**	_LocalTableRef;
 
 	public:
-	#ifdef _DEBUG
+	#ifdef NL_DEBUG
 		CVarPStack(sint32 val, const char *nameVar):
 		  _Val(val),_NameVar(new NLAIAGENT::CIndexedVarName(nameVar))
 		{			  
@@ -233,7 +233,7 @@ namespace NLAISCRIPT
 		
 		virtual ~CVarPStack()
 		{
-	#ifdef _DEBUG
+	#ifdef NL_DEBUG
 			_NameVar->release();
 	#endif
 		}
@@ -260,12 +260,12 @@ namespace NLAISCRIPT
 	private:		
 		sint32		_Val;		
 
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		NLAIAGENT::IVarName *_NameVar;
 #endif	
 
 	public:
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		CVarPStackParam(sint32 val, const char *nameVar): _Val(val),_NameVar(new NLAIAGENT::CIndexedVarName(nameVar))
 		{			  
 			_NameVar->incRef();
@@ -353,7 +353,7 @@ namespace NLAISCRIPT
 		{		
 			char valVar[200];
 			CVarPStack::_LocalTableRef[_Val + _Shift]->getDebugString(valVar);
-#if _DEBUG			
+#if NL_DEBUG			
 			sprintf(text,"Stack<%d,%s>: pointe la variable %s",_Val,_NameVar->getString(),valVar);
 #else			
 			sprintf(text,"Stack<%d>: pointe la variable %s",_Val,valVar);
@@ -463,7 +463,7 @@ namespace NLAISCRIPT
 		//@}
 		virtual ~CVarPStackParam()
 		{
-	#ifdef _DEBUG
+	#ifdef NL_DEBUG
 			_NameVar->release();
 	#endif
 		}

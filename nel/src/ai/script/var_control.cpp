@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.6 2001/01/10 10:10:08 chafik Exp $
+ * $Id: var_control.cpp,v 1.7 2001/01/12 09:52:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -420,7 +420,7 @@ namespace NLAISCRIPT
 	void CCompilateur::setMethodVar()
 	{
 
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 	char mName[1024];
 	char pName[1024];
 	_LastStringParam.back()->getDebugString(mName);
@@ -460,7 +460,7 @@ namespace NLAISCRIPT
 		_LastStringParam.pop_back();
 		_Param.back()->release();
 		_Param.pop_back();
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 	if(_LastStringParam.size()) _LastStringParam.back()->getDebugString(mName);
 	if(_Param.size())_Param.back()->getDebugString(pName);
 		

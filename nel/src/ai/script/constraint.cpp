@@ -1,6 +1,6 @@
 /** \file constraint.cpp
  *
- * $Id: constraint.cpp,v 1.5 2001/01/08 14:42:11 valignat Exp $
+ * $Id: constraint.cpp,v 1.6 2001/01/12 09:52:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ namespace NLAISCRIPT
 	void CConstraintMethode::run(CCompilateur &comp)
 	{
 		if(_Satisfied) return;
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		char mtxt[1024*2];
 		char ptxt[1024*2];
 		char txt[1024*8];

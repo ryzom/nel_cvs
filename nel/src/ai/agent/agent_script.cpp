@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.6 2001/01/10 10:10:08 chafik Exp $
+ * $Id: agent_script.cpp,v 1.7 2001/01/12 09:52:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,7 +140,7 @@ namespace NLAIAGENT
 
 	void CAgentScript::setStaticMember(sint32 index,IObjectIA *op)
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		if ( index >= _NbComponents )
 		{
 			throw NLAIE::CExceptionIndexError();
@@ -158,7 +158,7 @@ namespace NLAIAGENT
 	
 	const IObjectIA *CAgentScript::getStaticMember(sint32 index) const
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		if ( index >= _NbComponents )
 		{
 			throw NLAIE::CExceptionIndexError();
@@ -169,7 +169,7 @@ namespace NLAIAGENT
 
 	NLAISCRIPT::IOpCode &CAgentScript::getMethode(sint32 inheritance,sint32 index)
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		if ( index >= _AgentClass->getMethodIndexSize())
 		{
 			throw NLAIE::CExceptionIndexError();
@@ -185,7 +185,7 @@ namespace NLAIAGENT
 
 	NLAISCRIPT::IOpCode &CAgentScript::getMethode(sint32 index)
 	{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		if ( index >= _AgentClass->getMethodIndexSize())
 		{
 			throw NLAIE::CExceptionIndexError();
@@ -641,7 +641,7 @@ namespace NLAIAGENT
 			m.incRef();
 			m.incRef();
 			p.push(&m);
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 	char txt1[1024*4];
 	char txt2[1024*4];
 

@@ -48,10 +48,11 @@ IDD_View DIALOG DISCARDABLE  0, 0, 492, 282
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         " ",IDC_Service,"Static",SS_SIMPLE | WS_GROUP,40,5,445,8
+    CONTROL         " ",IDC_Service,"Static",SS_SIMPLE | WS_GROUP,70,5,415,8
     PUSHBUTTON      "Filter...",IDC_BUTTON1,5,5,30,10,NOT WS_VISIBLE
     CONTROL         "List1",IDC_LIST1,"SysListView32",LVS_REPORT | 
                     LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,5,20,480,255
+    PUSHBUTTON      "Find...",IDC_BUTTON2,35,5,30,10,NOT WS_VISIBLE
 END
 
 IDD_FILTERDIALOG DIALOG DISCARDABLE  0, 0, 269, 95
@@ -91,8 +92,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,1,0,1
+ PRODUCTVERSION 1,1,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -110,14 +111,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "NeL Log Analyser\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "FileVersion", "1, 1, 0, 1\0"
             VALUE "InternalName", "log_analyser\0"
             VALUE "LegalCopyright", "Copyright (C) 2002 Nevrax\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "NeL Log Analyser\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "ProductVersion", "1, 1, 0, 1\0"
             VALUE "SpecialBuild", "\0"
         END
     END

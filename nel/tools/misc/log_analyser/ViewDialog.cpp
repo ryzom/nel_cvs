@@ -1,7 +1,7 @@
 /** \file ViewDialog.cpp
  * implementation file
  *
- * $Id: ViewDialog.cpp,v 1.2 2002/10/21 09:01:02 cado Exp $
+ * $Id: ViewDialog.cpp,v 1.3 2002/12/20 16:32:58 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -42,6 +42,225 @@ static char THIS_FILE[] = __FILE__;
 
 
 extern CString						LogDateString;
+static UINT WM_FINDREPLACE = ::RegisterWindowMessage(FINDMSGSTRING);
+
+
+void CListCtrlEx::initIt()
+{
+	DWORD dwStyle = GetWindowLong(m_hWnd, GWL_STYLE); 
+	SetWindowLong( m_hWnd, GWL_STYLE, dwStyle | LVS_OWNERDRAWFIXED );
+}
+
+// Adapted from http://zeus.eed.usv.ro/misc/doc/prog/c/mfc/listview/sel_row.html
+void CListCtrlEx::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+	CRect rcItem(lpDrawItemStruct->rcItem);
+	int nItem = lpDrawItemStruct->itemID;
+	CImageList* pImageList;
+
+	// Save dc state
+	int nSavedDC = pDC->SaveDC();
+
+	// Get item image and state info
+	LV_ITEM lvi;
+	lvi.mask = LVIF_IMAGE | LVIF_STATE;
+	lvi.iItem = nItem;
+	lvi.iSubItem = 0;
+	lvi.stateMask = 0xFFFF;		// get all state flags
+	GetItem(&lvi);
+
+	BOOL bHighlight =((lvi.state & LVIS_DROPHILITED)
+					|| ( (lvi.state & LVIS_SELECTED)
+						&& ((GetFocus() == this)
+							|| (GetStyle() & LVS_SHOWSELALWAYS)
+							)
+						)
+					);
+
+	// Get rectangles for drawing
+	CRect rcBounds, rcLabel, rcIcon;
+	GetItemRect(nItem, rcBounds, LVIR_BOUNDS);
+	GetItemRect(nItem, rcLabel, LVIR_LABEL);
+	GetItemRect(nItem, rcIcon, LVIR_ICON);
+	CRect rcCol( rcBounds ); 
+
+
+	CString sLabel = GetItemText( nItem, 0 );
+
+	// Labels are offset by a certain amount  
+	// This offset is related to the width of a space character
+	int offset = pDC->GetTextExtent(_T(" "), 1 ).cx*2;
+
+	CRect rcHighlight;
+	CRect rcWnd;
+	GetClientRect(&rcWnd);
+	rcHighlight = rcBounds;
+	rcHighlight.left = rcLabel.left;
+	rcHighlight.right = rcWnd.right;
+
+	// Draw the background color
+	if( bHighlight )
+	{
+		pDC->SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
+		pDC->SetBkColor(::GetSysColor(COLOR_HIGHLIGHT));
+
+		pDC->FillRect(rcHighlight, &CBrush(::GetSysColor(COLOR_HIGHLIGHT)));
+	}
+	else
+		pDC->FillRect(rcHighlight, &CBrush(::GetSysColor(COLOR_WINDOW)));
+
+	// Set clip region
+	rcCol.right = rcCol.left + GetColumnWidth(0);
+	CRgn rgn;
+	rgn.CreateRectRgnIndirect(&rcCol);
+	pDC->SelectClipRgn(&rgn);
+	rgn.DeleteObject();
+
+	// Draw state icon
+	if (lvi.state & LVIS_STATEIMAGEMASK)
+	{
+		int nImage = ((lvi.state & LVIS_STATEIMAGEMASK)>>12) - 1;
+		pImageList = GetImageList(LVSIL_STATE);
+		if (pImageList)
+		{
+			pImageList->Draw(pDC, nImage,
+				CPoint(rcCol.left, rcCol.top), ILD_TRANSPARENT);
+		}
+	}
+	
+	// Draw normal and overlay icon
+	pImageList = GetImageList(LVSIL_SMALL);
+	if (pImageList)
+	{
+		UINT nOvlImageMask=lvi.state & LVIS_OVERLAYMASK;
+		pImageList->Draw(pDC, lvi.iImage, 
+			CPoint(rcIcon.left, rcIcon.top),
+			ILD_TRANSPARENT | nOvlImageMask );
+	}
+
+	
+	
+	// Draw item label - Column 0
+	rcLabel.left += offset/2;
+	rcLabel.right -= offset;
+
+	pDC->SetTextColor( _ViewDialog->getColorForLine( nItem ) );
+	pDC->DrawText(sLabel,-1,rcLabel,DT_LEFT | DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP 
+				| DT_VCENTER | DT_END_ELLIPSIS);
+
+
+	// Draw labels for remaining columns
+	LV_COLUMN lvc;
+	lvc.mask = LVCF_FMT | LVCF_WIDTH;
+
+	rcBounds.right = rcHighlight.right > rcBounds.right ? rcHighlight.right :
+							rcBounds.right;
+	rgn.CreateRectRgnIndirect(&rcBounds);
+	pDC->SelectClipRgn(&rgn);
+				   
+	for(int nColumn = 1; GetColumn(nColumn, &lvc); nColumn++)
+	{
+		rcCol.left = rcCol.right;
+		rcCol.right += lvc.cx;
+
+		sLabel = GetItemText(nItem, nColumn);
+		if (sLabel.GetLength() == 0)
+			continue;
+
+		// Get the text justification
+		UINT nJustify = DT_LEFT;
+		switch(lvc.fmt & LVCFMT_JUSTIFYMASK)
+		{
+		case LVCFMT_RIGHT:
+			nJustify = DT_RIGHT;
+			break;
+		case LVCFMT_CENTER:
+			nJustify = DT_CENTER;
+			break;
+		default:
+			break;
+		}
+
+		rcLabel = rcCol;
+		rcLabel.left += offset;
+		rcLabel.right -= offset;
+
+		pDC->DrawText(sLabel, -1, rcLabel, nJustify | DT_SINGLELINE | 
+					DT_NOPREFIX | DT_VCENTER | DT_END_ELLIPSIS);
+	}
+
+	// Draw focus rectangle if item has focus
+	if (lvi.state & LVIS_FOCUSED && (GetFocus() == this))
+	{
+		pDC->DrawFocusRect(rcHighlight);
+	}
+
+	
+	// Restore dc
+	pDC->RestoreDC( nSavedDC );
+}
+
+
+void CListCtrlEx::RepaintSelectedItems()
+{
+	CRect rcBounds, rcLabel;
+
+	// Invalidate focused item so it can repaint 
+	int nItem = GetNextItem(-1, LVNI_FOCUSED);
+
+	if(nItem != -1)
+	{
+		GetItemRect(nItem, rcBounds, LVIR_BOUNDS);
+		GetItemRect(nItem, rcLabel, LVIR_LABEL);
+		rcBounds.left = rcLabel.left;
+
+		InvalidateRect(rcBounds, FALSE);
+	}
+
+	// Invalidate selected items depending on LVS_SHOWSELALWAYS
+	if(!(GetStyle() & LVS_SHOWSELALWAYS))
+	{
+		for(nItem = GetNextItem(-1, LVNI_SELECTED);
+			nItem != -1; nItem = GetNextItem(nItem, LVNI_SELECTED))
+		{
+			GetItemRect(nItem, rcBounds, LVIR_BOUNDS);
+			GetItemRect(nItem, rcLabel, LVIR_LABEL);
+			rcBounds.left = rcLabel.left;
+
+			InvalidateRect(rcBounds, FALSE);
+		}
+	}
+
+	UpdateWindow();
+}
+
+
+/*void CListCtrlEx::OnKillFocus(CWnd* pNewWnd) 
+{
+	CListCtrl::OnKillFocus(pNewWnd);
+
+	// check if we are losing focus to label edit box
+	if(pNewWnd != NULL && pNewWnd->GetParent() == this)
+		return;
+
+	// repaint items that should change appearance
+	if((GetStyle() & LVS_TYPEMASK) == LVS_REPORT)
+		RepaintSelectedItems();
+}
+
+void CListCtrlEx::OnSetFocus(CWnd* pOldWnd) 
+{
+	CListCtrl::OnSetFocus(pOldWnd);
+	
+	// check if we are getting focus from label edit box
+	if(pOldWnd!=NULL && pOldWnd->GetParent()==this)
+		return;
+
+	// repaint items that should change appearance
+	if((GetStyle() & LVS_TYPEMASK)==LVS_REPORT)
+		RepaintSelectedItems();
+}*/
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -79,6 +298,7 @@ void		CViewDialog::reload()
 	}
 
 	((CButton*)GetDlgItem( IDC_BUTTON1 ))->ShowWindow( SW_SHOW );
+	((CButton*)GetDlgItem( IDC_BUTTON2 ))->ShowWindow( SW_SHOW );
 	m_Caption.Format( "%s %u+ %u- (%s)", Filename, PosFilter.size(), NegFilter.size(), LogSessionStartDate.IsEmpty()?"all":CString("session ")+LogSessionStartDate );
 	UpdateData( false );
 	clear();
@@ -168,6 +388,7 @@ void		CViewDialog::reloadTrace()
 {
 	CWaitCursor wc;
 	((CButton*)GetDlgItem( IDC_BUTTON1 ))->ShowWindow( SW_HIDE );
+	((CButton*)GetDlgItem( IDC_BUTTON2 ))->ShowWindow( SW_HIDE );
 	if ( LogSessionStartDate.IsEmpty() )
 	{
 		SessionDatePassed = true;
@@ -243,6 +464,8 @@ BEGIN_MESSAGE_MAP(CViewDialog, CDialog)
 	ON_NOTIFY(LVN_GETDISPINFO, IDC_LIST1, OnGetdispinfoList1)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST1, OnItemchangedList1)
 	ON_NOTIFY(NM_SETFOCUS, IDC_LIST1, OnSetfocusList1)
+	ON_BN_CLICKED(IDC_BUTTON2, OnButtonFind)
+	ON_REGISTERED_MESSAGE( WM_FINDREPLACE, OnFindReplace )
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -259,6 +482,7 @@ void CViewDialog::OnSetfocusList1(NMHDR* pNMHDR, LRESULT* pResult)
 	if ( m_ListCtrl.GetSelectionMark() != -1 )
 		displayString();
 
+	m_ListCtrl.RepaintSelectedItems();
 	*pResult = 0;
 }
 
@@ -272,7 +496,8 @@ void CViewDialog::OnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult)
 	// Display the current item when it changes
 	if ( pNMListView->iItem != -1 )
 		displayString();
-	
+
+	m_ListCtrl.RepaintSelectedItems();
 	*pResult = 0;
 }
 
@@ -359,6 +584,29 @@ void CViewDialog::scrollTo( int index )
 
 
 /*
+ * Select
+ */
+void CViewDialog::select( int index )
+{
+	LVITEM itstate;
+	itstate.mask = LVIF_STATE;
+	itstate.state = 0;
+	int sm = m_ListCtrl.GetSelectionMark();
+	if ( sm != -1 )
+	{
+		m_ListCtrl.SetItemState( sm, &itstate );
+	}
+
+	if ( index != -1 )
+	{
+		itstate.state = LVIS_SELECTED | LVIS_DROPHILITED | LVIS_FOCUSED;
+		m_ListCtrl.SetItemState( index, &itstate );
+		m_ListCtrl.SetSelectionMark( index );
+	}
+}
+
+
+/*
  * Return the index of the top of the listbox
  */
 int CViewDialog::getScrollIndex() const
@@ -400,9 +648,30 @@ BOOL CViewDialog::OnInitDialog()
 	
 	m_ListCtrl.GetHeaderCtrl()->ModifyStyle( 0, HDS_HIDDEN );
 	m_ListCtrl.InsertColumn( 0, "" );
-	
+	m_ListCtrl.setViewDialog( this );
+	m_ListCtrl.initIt();
+
+	BeginFindIndex = -1;
+	FindDialog = NULL;
 	return TRUE;
 }
+
+
+/*
+ * Return the color
+ */
+COLORREF CViewDialog::getColorForLine( int index )
+{
+	if ( Buffer[index].Find( "DBG" ) != -1 )
+		return RGB(0x80,0x80,0x80);
+	else if ( Buffer[index].Find( "WRN" ) != -1 )
+		return RGB(0x80,0,0);
+	else if ( Buffer[index].Find( "ERR" ) != -1 )
+		return RGB(0xFF,0,0);
+	else // INF and others
+		return RGB(0,0,0);
+}
+
 
 void CViewDialog::OnGetdispinfoList1(NMHDR* pNMHDR, LRESULT* pResult) 
 {
@@ -436,5 +705,86 @@ void CViewDialog::displayString()
 	((CLog_analyserDlg*)GetParent())->displayCurrentLine( s );
 }
 
+
+/*
+ * Search string
+ */
+void CViewDialog::OnButtonFind() 
+{
+	m_ListCtrl.ModifyStyle( 0, LVS_SHOWSELALWAYS );
+	BeginFindIndex = m_ListCtrl.GetSelectionMark()+1;
+	select( -1 );
+	FindDialog = new CFindReplaceDialog();
+	FindDialog->Create( true, FindStr, NULL, FR_DOWN | FR_HIDEWHOLEWORD, this );
+}
+
+
+bool matchString( const CString& str, const CString& substr, bool matchCase )
+{
+	if ( matchCase )
+	{
+		return str.Find( substr ) != -1;
+	}
+	else
+	{
+		CString str2 = str, substr2 = substr;
+		str2.MakeUpper();
+		substr2.MakeUpper();
+		return str2.Find( substr2 ) != -1;
+	}
+}
+
+
+/*
+ *
+ */
+afx_msg LONG CViewDialog::OnFindReplace(WPARAM wParam, LPARAM lParam)
+{
+	if ( FindDialog->IsTerminating() )
+    {
+		m_ListCtrl.ModifyStyle( LVS_SHOWSELALWAYS, 0 );
+		select( -1 );
+        return 0;
+	}
+
+	if ( FindDialog->FindNext() )
+	{
+		FindStr = FindDialog->GetFindString();
+		int index;
+		if ( FindDialog->SearchDown() )
+		{
+			for ( index=BeginFindIndex; index!=(int)Buffer.size(); ++index )
+			{
+				if ( matchString( Buffer[index], FindStr, FindDialog->MatchCase()!=0 ) )
+				{
+					scrollTo( index );
+					select( index );
+					BeginFindIndex = m_ListCtrl.GetSelectionMark()+1;
+					displayString();
+					return 1;
+				}
+			}
+		}
+		else
+		{
+			for ( index=BeginFindIndex; index>=0; --index )
+			{
+				if ( matchString( Buffer[index], FindStr, FindDialog->MatchCase()!=0 ) )
+				{
+					scrollTo( index );
+					select( index );
+					BeginFindIndex = m_ListCtrl.GetSelectionMark()-1;
+					displayString();
+					return 1;
+				}
+			}
+		}
+		AfxMessageBox( "Not found" );
+		BeginFindIndex = 0;
+		return 0;
+	}
+
+	return 0;
+}
 
 

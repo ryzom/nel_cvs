@@ -1,7 +1,7 @@
 /** \file ViewDialog.h
  * header file
  *
- * $Id: ViewDialog.h,v 1.1 2002/10/18 12:04:56 cado Exp $
+ * $Id: ViewDialog.h,v 1.2 2002/12/20 16:32:58 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -34,6 +34,28 @@
 // ViewDialog.h : header file
 //
 
+
+class CViewDialog;
+
+/*
+ *
+ */
+class CListCtrlEx : public CListCtrl
+{
+public:
+	void	initIt();
+	void	DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+	void	RepaintSelectedItems();
+	//void	OnKillFocus(CWnd* pNewWnd);
+	//void	OnSetFocus(CWnd* pOldWnd);
+	
+	void	setViewDialog( CViewDialog *pt ) { _ViewDialog = pt; }
+
+private:
+
+	CViewDialog	*_ViewDialog;
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // CViewDialog dialog
 
@@ -46,7 +68,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CViewDialog)
 	enum { IDD = IDD_View };
-	CListCtrl	m_ListCtrl;
+	CListCtrlEx	m_ListCtrl;
 	CString	m_Caption;
 	//}}AFX_DATA
 
@@ -86,11 +108,17 @@ public:
 	/// Scroll
 	void		scrollTo( int index );
 
+	/// Select
+	void		select( int index );
+	
 	/// Return the index of the top of the listbox
 	int			getScrollIndex() const;
 
 	/// Display string
 	void		displayString();
+
+	/// Return the color
+	COLORREF	getColorForLine( int index );
 
 	int						Index;
 	CString					Filename;
@@ -99,6 +127,9 @@ public:
 	CString					LogSessionStartDate;
 	bool					SessionDatePassed;
 	std::vector<CString>	Buffer;
+	int						BeginFindIndex;
+	CFindReplaceDialog		*FindDialog;
+	CString					FindStr;
 
 
 // Overrides
@@ -111,6 +142,8 @@ public:
 // Implementation
 protected:
 
+	afx_msg LONG OnFindReplace(WPARAM wParam, LPARAM lParam);
+
 	// Generated message map functions
 	//{{AFX_MSG(CViewDialog)
 	afx_msg void OnButtonFilter();
@@ -118,6 +151,7 @@ protected:
 	afx_msg void OnGetdispinfoList1(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSetfocusList1(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnButtonFind();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

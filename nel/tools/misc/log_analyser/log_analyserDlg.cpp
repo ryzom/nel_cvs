@@ -1,7 +1,7 @@
 /** \file log_analyserDlg.cpp
  * implementation file
  *
- * $Id: log_analyserDlg.cpp,v 1.2 2002/10/21 09:01:02 cado Exp $
+ * $Id: log_analyserDlg.cpp,v 1.3 2002/12/20 16:32:58 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -454,7 +454,7 @@ void CLog_analyserDlg::OnDestroy()
  */
 void CLog_analyserDlg::OnHelpBtn() 
 {
-	CString s = "NeL Log Analyser\n(c) 2002 Nevrax\n\n";
+	CString s = "NeL Log Analyser v1.1.0\n(c) 2002 Nevrax\n\n";
 	s += "Simple Mode: open one or more log files using the button 'Add View...'.\n";
 	s += "If the file being opened contains several log sessions, you can choose one or choose\n";
 	s += "to display all sessions, if the checkbox 'Browse Log Sessions' is enabled. You can\n";

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.30 2002/09/25 14:17:55 coutelas Exp $
+ * $Id: vegetable_manager.cpp,v 1.31 2003/02/19 14:46:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1188,16 +1188,18 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	ambientRGBA.B= (uint8)OptFastFloor(ambientColor.B*255);
 	ambientRGBA.A= 255;
 
-	// For Unlit and Lighted, modulate with global light.
-	primaryRGBA.modulateFromColorRGBOnly(diffuseRGBA, _GlobalDiffuse);
-	secondaryRGBA.modulateFromColorRGBOnly(ambientRGBA, _GlobalAmbient);
-
-	// if the instance is not lighted, then suppose full lighting => add ambient and diffuse
-	if(!instanceLighted)
+	// For Lighted, modulate with global light.
+	if(instanceLighted)
 	{
-		primaryRGBA.R= min(255, primaryRGBA.R + secondaryRGBA.R);
-		primaryRGBA.G= min(255, primaryRGBA.G + secondaryRGBA.G);
-		primaryRGBA.B= min(255, primaryRGBA.B + secondaryRGBA.B);
+		primaryRGBA.modulateFromColorRGBOnly(diffuseRGBA, _GlobalDiffuse);
+		secondaryRGBA.modulateFromColorRGBOnly(ambientRGBA, _GlobalAmbient);
+	}
+	// if the instance is not lighted, then don't take care of lighting
+	else
+	{
+		primaryRGBA.R= diffuseRGBA.R;
+		primaryRGBA.G= diffuseRGBA.G;
+		primaryRGBA.B= diffuseRGBA.B;
 		// useFull if 2Sided
 		secondaryRGBA= primaryRGBA;
 	}

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.12 2002/04/03 13:23:00 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.13 2002/04/11 15:30:54 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -175,7 +175,7 @@ sint32 CBitMemStream::getPosInBit ()
 
 
 /*
- * Serialize only the nbits lower bits of value (when reading, please initialize to zero your variables)
+ * Serialize only the nbits lower bits of value
  */
 void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 {

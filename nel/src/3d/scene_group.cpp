@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.32 2002/05/21 09:59:11 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.33 2002/05/23 09:30:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -207,6 +207,7 @@ CInstanceGroup::CInstanceGroup()
 	_RealTimeSunContribution= true;
 	_AddToSceneState = StateNotAdded;
 	_TransformName = NULL;
+	_AddRemoveInstance = NULL;
 }
 
 // ***************************************************************************
@@ -437,6 +438,14 @@ void CInstanceGroup::setTransformNameCallback (ITransformName *pTN)
 {
 	_TransformName = pTN;
 }
+
+
+// ***************************************************************************
+void CInstanceGroup::setAddRemoveInstanceCallback(IAddRemoveInstance *callback)
+{
+	_AddRemoveInstance = callback;
+}
+
 
 // ***************************************************************************
 bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
@@ -678,6 +687,9 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 		scene.addInstanceGroupForLightAnimation(this);
 
 	_AddToSceneState = StateAdded;
+
+	if (_AddRemoveInstance)
+		_AddRemoveInstance->instanceGroupAdded();
 	return true;
 }
 
@@ -858,7 +870,8 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 	if(_PointLightArray.getPointLights().size() > 0)
 		scene.removeInstanceGroupForLightAnimation(this);
 
-
+	if (_AddRemoveInstance)
+		_AddRemoveInstance->instanceGroupRemoved();
 	return true;
 }
 

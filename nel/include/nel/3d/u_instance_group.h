@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.16 2002/05/02 12:43:07 besson Exp $
+ * $Id: u_instance_group.h,v 1.17 2002/05/23 09:30:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,6 +67,21 @@ public:
 	virtual std::string transformName (const std::string &Name) = 0;
 };
 
+
+
+/** Callback to know when an instance group is added / removed from the scene.
+  */
+struct IAddRemoveInstance
+{
+	// All instances have been been added to the scene
+	virtual void instanceGroupAdded() = 0;
+	// All instances have been removed from the scene
+	virtual void instanceGroupRemoved() = 0;
+};
+
+
+
+
 /**
  * Game interface for managing group instance.
  *
@@ -91,6 +106,9 @@ public:
 	 * \param pTN is the transformName class that hold the callback
 	 */
 	virtual void setTransformNameCallback (ITransformName *pTN)=0;
+
+	/// set a callback to know when an instance has been added / removed from scene
+	virtual void setAddRemoveInstanceCallback(IAddRemoveInstance *callback) = 0;
 
 	/**
 	 * Add all the instances to the scene. By default, freezeHRC() those instances and the root.

@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.14 2002/05/02 12:24:19 besson Exp $
+ * $Id: scene_group.h,v 1.15 2002/05/23 09:30:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,6 +51,7 @@ class CScene;
 class CTransformShape;
 class IDriver;
 class ITransformName;
+struct IAddRemoveInstance;
 
 /**
   * A CInstanceGroup is a group of mesh instance and so composed by
@@ -199,6 +200,10 @@ public:
 
 	/// Setup the callback in charge of changing name at the addToScene moment
 	void setTransformNameCallback (ITransformName *pTN);
+
+	/// Set a callback to know when an instance has been added / removed
+	void setAddRemoveInstanceCallback(IAddRemoveInstance *callback);
+
 
 	/**
 	  * Add all the instances to the scene. By default, freezeHRC() those instances and the root.
@@ -372,7 +377,8 @@ private:
 	IDriver		*_AddToSceneTempDriver;
 	// @}
 
-	ITransformName *_TransformName;
+	ITransformName       *_TransformName;
+	IAddRemoveInstance   *_AddRemoveInstance;
 };
 
 

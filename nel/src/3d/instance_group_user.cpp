@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.20 2002/05/02 12:24:19 besson Exp $
+ * $Id: instance_group_user.cpp,v 1.21 2002/05/23 09:29:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,6 +125,14 @@ void CInstanceGroupUser::setTransformNameCallback (ITransformName *pTN)
 {
 	_InstanceGroup.setTransformNameCallback (pTN);
 }
+
+
+// ***************************************************************************
+void CInstanceGroupUser::setAddRemoveInstanceCallback(IAddRemoveInstance *callback)
+{
+	_InstanceGroup.setAddRemoveInstanceCallback(callback);
+}
+
 
 // ***************************************************************************
 void CInstanceGroupUser::addToScene (class UScene& scene, UDriver *driver)

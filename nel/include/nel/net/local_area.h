@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.17 2001/01/09 16:54:02 cado Exp $
+ * $Id: local_area.h,v 1.18 2001/01/12 10:52:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,7 +104,7 @@ public:
 		_NewEntityCallback = cb;
 	}
 
-	/// Provides a callback function to be called after deletion of a remote entity
+	/// Provides a callback function to be called before deletion of a remote entity
 	void					setEntityRemovedCallback( TEntityIdCallback cb )
 	{
 		_EntityRemovedCallback = cb;

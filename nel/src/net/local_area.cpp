@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.34 2001/01/11 18:00:22 cado Exp $
+ * $Id: local_area.cpp,v 1.35 2001/01/12 10:52:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,12 +153,12 @@ void NLNET::cbRemoveEntity( CMessage& msgin, TSenderId idfrom )
 	CRemoteEntities::iterator ire = CLocalArea::Instance->_Neighbors.find( id );
 	if ( ire != CLocalArea::Instance->_Neighbors.end() )
 	{
-		delete (*ire).second;
-		CLocalArea::Instance->_Neighbors.erase( ire );
 		if ( CLocalArea::Instance->_EntityRemovedCallback != NULL )
 		{
 			CLocalArea::Instance->_EntityRemovedCallback( id );
 		}
+		delete (*ire).second;
+		CLocalArea::Instance->_Neighbors.erase( ire );
 		nldebug( "Removed entity %u", id );
 	}
 	// else: it is the case when a shooter deletes his weapon (because blocked or too far)

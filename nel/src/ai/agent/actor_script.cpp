@@ -348,13 +348,15 @@ namespace NLAIAGENT
 				break;
 
 			case fid_success:
-				onSuccess( params );
-				return IObjectIA::CProcessResult();
+				onSuccess(params);
+				r.Result = new NLAIAGENT::CSuccessMsg();
+				return r;
 				break;
 
 			case fid_failure:
-				onFailure( params );
-				return IObjectIA::CProcessResult();
+				onFailure(params);
+				r.Result = new NLAIAGENT::CFailureMsg();
+				return r;
 				break;
 		}
 		return r;

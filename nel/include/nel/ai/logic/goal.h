@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.16 2001/06/26 13:28:21 portier Exp $
+ * $Id: goal.h,v 1.17 2001/06/26 15:42:37 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ namespace NLAILOGIC
 			std::vector<NLAIAGENT::IBasicAgent *>	_Predecessors;
 			std::vector<NLAIAGENT::IBasicAgent *>	_Successors;
 
-			TTypeOfGoal	type;
+			TTypeOfGoal	_Mode;
 
 			NLAIAGENT::IBasicAgent *_Sender;
 			NLAIAGENT::IBasicAgent *_Receiver;
@@ -57,8 +57,8 @@ namespace NLAILOGIC
 		public:
 
 			CGoal();
-			CGoal(const NLAIAGENT::IVarName &);
-			CGoal(const NLAIAGENT::IVarName &, std::list<const NLAIAGENT::IObjectIA *> &);
+			CGoal(const NLAIAGENT::IVarName &, TTypeOfGoal mode = achieveOnce);
+			CGoal(const NLAIAGENT::IVarName &, std::list<const NLAIAGENT::IObjectIA *> &,TTypeOfGoal mode = achieveOnce);
 			CGoal(const CGoal &);
 			virtual ~CGoal();
 
@@ -113,6 +113,11 @@ namespace NLAILOGIC
 
 /*			virtual void setTopLevel(NLAIAGENT::CAgentScript *);
 			const NALAIGENT::CAgentScript *getTOpLevel() const;*/
+
+			void setMode(TTypeOfGoal mode)
+			{
+				_Mode = mode;
+			}
 	};
 }
 

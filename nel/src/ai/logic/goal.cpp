@@ -12,14 +12,15 @@ namespace NLAILOGIC
 		_Receiver = NULL;
 	}
 		
-	CGoal::CGoal(const NLAIAGENT::IVarName &name) : IBaseBoolType()
+	CGoal::CGoal(const NLAIAGENT::IVarName &name, TTypeOfGoal mode) : IBaseBoolType()
 	{
 		_Name = (NLAIAGENT::IVarName *) name.clone();
 		_Sender = NULL;
 		_Receiver = NULL;
+		_Mode = mode;
 	}
 
-	CGoal::CGoal(const NLAIAGENT::IVarName &name, std::list<const NLAIAGENT::IObjectIA *> &args)
+	CGoal::CGoal(const NLAIAGENT::IVarName &name, std::list<const NLAIAGENT::IObjectIA *> &args, TTypeOfGoal mode)
 	{
 		_Name = (NLAIAGENT::IVarName *) name.clone();
 		while ( !args.empty() )
@@ -29,6 +30,7 @@ namespace NLAILOGIC
 		}
 		_Sender = NULL;
 		_Receiver = NULL;
+		_Mode = mode;
 	}
 
 	CGoal::CGoal(const CGoal &c) : IBaseBoolType()
@@ -39,6 +41,7 @@ namespace NLAILOGIC
 			_Name = NULL;
 		_Sender = NULL;
 		_Receiver = NULL;
+		_Mode = c._Mode;
 
 		for ( int i = 0; i < (int) c._Args.size(); i++ )
 			_Args.push_back( (NLAIAGENT::IObjectIA *) c._Args[i]->clone() );
@@ -49,7 +52,8 @@ namespace NLAILOGIC
 		if ( _Name )
 			_Name->release();
 
-		int i;		for ( i = 0; i < (int) _Args.size(); i++ )
+		int i;		
+		for ( i = 0; i < (int) _Args.size(); i++ )
 			_Args[i]->release();
 	}
 
@@ -71,12 +75,28 @@ namespace NLAILOGIC
 
 	void CGoal::operatorSuccess(NLAIAGENT::IBasicAgent *)
 	{
+		switch ( _Mode )
+		{
+			case achieveOnce:
+				( (NLAIAGENT::CAgentScript *) _Receiver)->removeGoal( this );
+				break;
 
+			case achieveForever:
+				break;
+		}
 	}
 
 	void CGoal::operatorFailure(NLAIAGENT::IBasicAgent *)
 	{
+		switch ( _Mode )
+		{
+			case achieveOnce:
+				( (NLAIAGENT::CAgentScript *) _Receiver )->removeGoal( this );
+				break;
 
+			case achieveForever:
+				break;
+		}
 	}
 
 	const NLAIC::IBasicType *CGoal::clone() const

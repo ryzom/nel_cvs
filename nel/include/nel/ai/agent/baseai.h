@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.9 2001/03/21 14:59:34 chafik Exp $
+ * $Id: baseai.h,v 1.10 2001/03/21 15:37:51 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include <queue>
 
 #include "nel/ai/agent/ident.h"
-#include "nel/ai/agent/identtype.h"
+
 
 /**
 this is the objects agents name scpace.

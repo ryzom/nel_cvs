@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.25 2002/10/07 09:28:55 vizerie Exp $
+ * $Id: mem_stream.h,v 1.26 2002/11/18 13:43:35 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,8 +221,8 @@ public:
 
 		// Same as fill() but the memcpy is done by an external function
 		_Buffer.resize( msgsize );
-		_BufPos = _Buffer.getPtr();
-		return _BufPos;
+		_BufPos = _Buffer.getPtr() + msgsize;
+		return _Buffer.getPtr();
 	}
 
 	/// Transforms the message from input to output or from output to input
@@ -291,7 +291,7 @@ public:
 	template <class T>
 	void			fastWrite( T& value )
 	{
-		//nldebug( "MEMSTREAM: Writing %u bits value in %p at pos %u", sizeof(value), this, _BufPos - _Buffer.getPtr() );
+		//nldebug( "MEMSTREAM: Writing %u-byte value in %p at pos %u", sizeof(value), this, _BufPos - _Buffer.getPtr() );
 		increaseBufferIfNecessary (sizeof(T));
 		*(T*)_BufPos = value;
 		_BufPos += sizeof (T);
@@ -300,7 +300,7 @@ public:
 	template <class T>
 	void			fastRead( T& value )
 	{
-		//nldebug( "MEMSTREAM: Reading %u bits value in %p at pos %u", sizeof(value), this, _BufPos - _Buffer.getPtr() );
+		//nldebug( "MEMSTREAM: Reading %u-byte value in %p at pos %u", sizeof(value), this, _BufPos - _Buffer.getPtr() );
 		// Check that we don't read more than there is to read
 		if ( lengthS()+sizeof(value) > lengthR() )
 		{

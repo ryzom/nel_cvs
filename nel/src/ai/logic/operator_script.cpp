@@ -293,7 +293,12 @@ namespace NLAIAGENT
 			{
 				linkGoalArgs( *it_goal );
 				if ( checkPreconditions() == true )
+				{
+					NLAILOGIC::CGoal *goal = *it_goal;
+					_ActivatedGoals.clear();
+					_ActivatedGoals.push_back( goal );
 					return true;
+				}
 				it_goal++;
 			}
 			return false;
@@ -524,12 +529,11 @@ namespace NLAIAGENT
 	}
 
 	// Function called when a launched actor succeded
-	void COperatorScript::onSuccess( IObjectIA *)
+	void COperatorScript::onSuccess( IObjectIA *msg)
 	{
 #ifdef NL_DEBUG
 		const char *dbg_class = (const char *) getType();
 #endif
-
 		if(_CurrentGoal == NULL) 
 			return;
 		_CurrentGoal->operatorSuccess( this );

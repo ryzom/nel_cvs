@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.66 2004/05/14 10:13:12 cado Exp $
+ * $Id: stream.h,v 1.67 2004/05/24 16:10:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -867,6 +867,10 @@ protected:
 	 */
 	void				setInOut(bool inputStream);
 
+	/** Get the size for this stream. return 0 by default. Only implemented for input stream that know their size.
+	 *	Used internally to detect OverFlow with vector<> for instance
+	 */
+	virtual uint			getDbgStreamSize() const {return 0;}
 
 public:
 	//@{
@@ -915,6 +919,13 @@ private:
 
 		if(isReading())
 		{
+			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
+			uint32	ssize= getDbgStreamSize();
+			if(ssize)
+			{
+				nlassert(ssize >= len*sizeof(T::value_type));
+			}
+
 			for(sint i=0;i<len;i++)
 			{
 				xmlPush ("ELM");
@@ -1011,6 +1022,13 @@ protected:
 		{
 			serial(len);
 
+			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
+			uint32	ssize= getDbgStreamSize();
+			if(ssize)
+			{
+				nlassert(ssize >= len*sizeof(T::value_type));
+			}
+			
 			// Open a node header
 			xmlPushEnd ();
 
@@ -1066,6 +1084,14 @@ private:
 
 		if(isReading())
 		{
+			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
+			uint32	ssize= getDbgStreamSize();
+			if(ssize)
+			{
+				nlassert(ssize >= len*sizeof(void*));
+			}
+			
+			
 			for(sint i=0;i<len;i++)
 			{
 				__value_type	v;
@@ -1172,6 +1198,14 @@ private:
 
 		if(isReading())
 		{
+			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
+			uint32	ssize= getDbgStreamSize();
+			if(ssize)
+			{
+				nlassert(ssize >= len*sizeof(void*));
+			}
+			
+			
 			for(sint i=0;i<len;i++)
 			{
 				__value_type	v=NULL;
@@ -1292,6 +1326,14 @@ private:
 			cont.clear();
 			serial(len);
 
+			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
+			uint32	ssize= getDbgStreamSize();
+			if(ssize)
+			{
+				nlassert(ssize >= len*(sizeof(T::key_type) + sizeof(T::value_type)) );
+			}
+			
+			
 			// Close the node header
 			xmlPushEnd ();
 
@@ -1381,6 +1423,14 @@ private:
 			cont.clear();
 			serial(len);
 
+			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
+			uint32	ssize= getDbgStreamSize();
+			if(ssize)
+			{
+				nlassert(ssize >= len*(sizeof(T::key_type) + sizeof(T::value_type)) );
+			}
+			
+			
 			// Close the node header
 			xmlPushEnd ();
 

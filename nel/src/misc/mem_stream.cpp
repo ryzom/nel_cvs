@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.23 2004/05/14 10:13:12 cado Exp $
+ * $Id: mem_stream.cpp,v 1.24 2004/05/24 16:10:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -393,6 +393,16 @@ inline uint32 atoui( const char *ident)
 	return (uint32) strtoul (ident, NULL, 10);
 }
 */
+
+// ***************************************************************************
+uint			CMemStream::getDbgStreamSize() const
+{
+	if(isReading())
+		return length();
+	else
+		return 0;
+}
+		
 
 }
 

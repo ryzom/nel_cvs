@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.38 2004/05/14 10:13:11 cado Exp $
+ * $Id: mem_stream.h,v 1.39 2004/05/24 16:10:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -515,6 +515,11 @@ protected:
 	{
 		return size();
 	}
+
+	/** Get the size for this stream. return 0 by default. Only implemented for input stream that know their size.
+	 *	Used internally to detect OverFlow with vector<> for instance
+	 */
+	virtual uint			getDbgStreamSize() const;
 
 	CObjectVector<uint8, false>	_Buffer;
 	uint8						*_BufPos;

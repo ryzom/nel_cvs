@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.25 2003/12/04 16:59:42 corvazier Exp $
+ * $Id: file.h,v 1.26 2004/05/24 16:10:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ public:		// Advanced Usage.
 	void getline (char *buffer, uint32 bufferSize);
 
 	// return the size of the file
-	uint32 getFileSize () { return _FileSize; }
+	uint32 getFileSize () const { return _FileSize; }
 
 	// return true if there s nothing more to read (same as ifstream)
 	bool eof ();
@@ -143,6 +143,9 @@ public:		// Advanced Usage.
 protected:
 	virtual void		serialBit(bool &bit) throw(EReadError);
 
+	virtual uint		getDbgStreamSize() const;
+	
+	
 private:
 	FILE		*_F;
 	std::string _FileName;

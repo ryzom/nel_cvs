@@ -71,11 +71,11 @@ CEventListenerAsync asyncListener;
 CEventServer server;
 
 // adding an emitter to the server 
-CScene scene;
-Server.addEmitter(scene.getDriver()->getEventEmitter()); //here, the driver provides the emitter
+... // here, a driver is initialized
+server.addEmitter(driver->getEventEmitter()); //in this ex the driver provides the emitter
 
 // adding the listener to the server
-asyncListener.addToServer(Server);
+asyncListener.addToServer(server);
 
 // events loop
 do
@@ -86,14 +86,16 @@ do
  // user main function
  mainproc();
 }
-while(!getKey(KeyESCAPE)); 
+while(!asyncListener.isKeyPush(KeyESCAPE)); 
 
 // removing listener from server
 asyncListener.removeFromServer(Server);
 \endcode
 
 
-This listener adds two types of event to a server : EventKeyUpId and EventKeyDownId.
+
+Notes about the listener CEventListenerAsync :
+this listener adds two types of event to a server : EventKeyUpId and EventKeyDownId.
  
 \code
 void CEventListenerAsync::addToServer (CEventServer& server)

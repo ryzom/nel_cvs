@@ -1,8 +1,8 @@
-/** \file actor_script.h
+/** \file comp_handle.h
  *	
  *	Scripted actors	
  *
- * $Id: comp_handle.h,v 1.4 2001/08/28 12:56:08 portier Exp $
+ * $Id: comp_handle.h,v 1.5 2001/08/28 15:34:13 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,7 @@ namespace NLAIAGENT
 					{
 						// Looks in dynamic component
 						CGroupType *param = new CGroupType();
-						param->push( (IObjectIA *) _CompName );
+						param->push( (IObjectIA *) new CStringType(*_CompName) );
 						IObjectIA::CProcessResult comp = ( (CAgentScript *) _CompFather)->getDynamicAgent(param);
 						param->pop();
 						delete param;

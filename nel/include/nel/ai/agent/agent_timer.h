@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.8 2001/06/12 09:43:59 chafik Exp $
+ * $Id: agent_timer.h,v 1.9 2001/08/28 15:34:13 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -168,6 +168,7 @@ namespace NLAIAGENT
 
 		int _Clock;
 		std::list<std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > > _Call;
+		std::list<std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > >::iterator _CallIter;
 		/*_Call;
 		_MSG;*/
 		
@@ -198,7 +199,7 @@ namespace NLAIAGENT
 		void attach();
 		void detach();
 		bool detach(IConnectIA *,bool deleteFromConnection = true);
-		void tellBroker();
+		bool tellBroker();
 		sint getSubscribedCount() const
 		{
 			return _Call.size();

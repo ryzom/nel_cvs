@@ -1,7 +1,7 @@
 /** \file opcode.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode.h,v 1.9 2001/05/22 16:08:01 chafik Exp $
+ * $Id: opcode.h,v 1.10 2001/08/28 15:34:13 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -492,7 +492,8 @@ namespace NLAISCRIPT
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
 		{		
 			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) > *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			if(context.Stack[(int)context.Stack - 1] != NULL) context.Stack[(int)context.Stack - 1]->release();
+			//if(context.Stack[(int)context.Stack - 1] != NULL) 
+			context.Stack[(int)context.Stack - 1]->release();
 			context.Stack[(int)context.Stack - 1] = op;
 			context.Stack--;
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
@@ -563,7 +564,8 @@ namespace NLAISCRIPT
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
 		{				
 			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) < *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			if(context.Stack[(int)context.Stack - 1] != NULL) context.Stack[(int)context.Stack - 1]->release();
+			//if(context.Stack[(int)context.Stack - 1] != NULL) 
+			context.Stack[(int)context.Stack - 1]->release();
 			context.Stack[(int)context.Stack - 1] = op;
 			context.Stack--;
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
@@ -633,7 +635,8 @@ namespace NLAISCRIPT
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
 		{				
 			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) == *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			if(context.Stack[(int)context.Stack - 1] != NULL) context.Stack[(int)context.Stack - 1]->release();
+			//if(context.Stack[(int)context.Stack - 1] != NULL) 
+			context.Stack[(int)context.Stack - 1]->release();
 			context.Stack[(int)context.Stack - 1] = op;
 			context.Stack--;
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
@@ -705,7 +708,8 @@ namespace NLAISCRIPT
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
 		{				
 			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) >= *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			if(context.Stack[(int)context.Stack - 1] != NULL) context.Stack[(int)context.Stack - 1]->release();
+			//if(context.Stack[(int)context.Stack - 1] != NULL) 
+			context.Stack[(int)context.Stack - 1]->release();
 			context.Stack[(int)context.Stack - 1] = op;
 			context.Stack--;
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
@@ -774,7 +778,8 @@ namespace NLAISCRIPT
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
 		{				
 			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) <= *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			if(context.Stack[(int)context.Stack - 1] != NULL) context.Stack[(int)context.Stack - 1]->release();
+			//if(context.Stack[(int)context.Stack - 1] != NULL) 
+			context.Stack[(int)context.Stack - 1]->release();
 			context.Stack[(int)context.Stack - 1] = op;
 			context.Stack--;
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
@@ -846,7 +851,8 @@ namespace NLAISCRIPT
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
 		{				
 			NLAIAGENT::IObjetOp *op = *((NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack - 1]) != *((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			if(context.Stack[(int)context.Stack - 1] != NULL) context.Stack[(int)context.Stack - 1]->release();
+			//if(context.Stack[(int)context.Stack - 1] != NULL) 
+			context.Stack[(int)context.Stack - 1]->release();
 			context.Stack[(int)context.Stack - 1] = op;
 			context.Stack--;
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
@@ -918,7 +924,8 @@ namespace NLAISCRIPT
 		{		
 			
 			NLAIAGENT::IObjetOp *op = !*((NLAIAGENT::IObjetOp *)((NLAIAGENT::IObjectIA *)context.Stack));
-			if(context.Stack[(int)context.Stack] != NULL) context.Stack[(int)context.Stack]->release();
+			//if(context.Stack[(int)context.Stack] != NULL) 
+			context.Stack[(int)context.Stack]->release();
 			context.Stack[(int)context.Stack] = op;
 			//context.Stack--;
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
@@ -928,7 +935,7 @@ namespace NLAISCRIPT
 			std::string Y;
 			context.Stack[(int)context.Stack]->getDebugString(Y);
 			
-			str = " ! ";
+			str = "!";
 			str += Y;
 		}
 		const NLAIC::IBasicType *clone() const

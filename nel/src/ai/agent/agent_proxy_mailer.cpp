@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.10 2001/05/17 14:11:53 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.11 2001/08/28 15:34:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,7 +209,7 @@ namespace NLAIAGENT
 				if(_AgentRef != NULL) delete _AgentRef;
 				_AgentRef = new CAgentNumber(n->getStr().getString());
 			}
-			break;
+			return IObjectIA::CProcessResult();
 		}
 		return IBasicAgent::runMethodeMember(m,p);
 	}

@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.9 2001/07/11 16:25:08 chafik Exp $
+ * $Id: compilateur.cpp,v 1.10 2001/08/28 15:34:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,14 @@ namespace NLAISCRIPT
 		}
 		else
 		{
+			/*std::string s;
+			methodeName.getDebugString(s);			
+			param.getDebugString(s);						
+
+			s += "  ";
+			classType->getDebugString(s);
+
+			NLAIC::Out("%s\n",s.c_str());*/
 			q = classType->isMember(NULL,&methodeName,param);
 		}
 

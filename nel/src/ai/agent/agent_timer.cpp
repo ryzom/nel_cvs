@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.19 2001/07/26 13:17:01 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.20 2001/08/28 15:34:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,11 +104,11 @@ namespace NLAIAGENT
 				NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
 				accessor.value() = h;
 			}
-			/*CAgentManagerTimer::RunTimer = new CAgentManagerTimer::CRunTimer();
+			CAgentManagerTimer::RunTimer = new CAgentManagerTimer::CRunTimer();
 			CAgentManagerTimer::TimerManagerRun =  NLMISC::IThread::create(CAgentManagerTimer::RunTimer);
 			CAgentManagerTimer::TimerManagerRun->start();
-			CAgentManagerTimer::IsRunning = true;*/
-			CAgentManagerTimer::IsRunning = false;
+			CAgentManagerTimer::IsRunning = true;
+			//CAgentManagerTimer::IsRunning = false;
 		}
 	}
 
@@ -128,11 +128,11 @@ namespace NLAIAGENT
 			CAgentManagerTimer::IdAgentTimer = NULL;				
 			delete CAgentManagerTimer::TimerManager;
 			CAgentManagerTimer::TimerManager = NULL;
-			/*if(CAgentManagerTimer::IsRunning)
+			if(CAgentManagerTimer::IsRunning)
 			{				
 				delete CAgentManagerTimer::RunTimer;
 				delete CAgentManagerTimer::TimerManagerRun;
-			}*/
+			}
 			CAgentManagerTimer::IsRunning = false;
 		}
 	}
@@ -230,10 +230,11 @@ namespace NLAIAGENT
 	const NLAIC::CIdentType *CAgentWatchTimer::IdAgentWatchTimer = NULL;
 	
 
-	CAgentWatchTimer::CAgentWatchTimer(): CAgentScript(NULL),_Clock(0)/*,_Call(NULL),_MSG(NULL)*/
+	CAgentWatchTimer::CAgentWatchTimer(): CAgentScript(NULL),_Clock(0)
 	{		
+		_CallIter = _Call.end();
 	}
-	CAgentWatchTimer::CAgentWatchTimer(const CAgentWatchTimer &t):CAgentScript(t), _Clock(t._Clock),_Call(t._Call)/*,_MSG(t._MSG)*/
+	CAgentWatchTimer::CAgentWatchTimer(const CAgentWatchTimer &t):CAgentScript(t), _Clock(t._Clock),_Call(t._Call)
 	{		
 		std::list<std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > >::iterator i = _Call.begin();
 		while(i != _Call.end())
@@ -243,6 +244,8 @@ namespace NLAIAGENT
 			p.first->incRef();
 			i ++;
 		}
+		_CallIter = _Call.end();
+
 	}
 	CAgentWatchTimer::CAgentWatchTimer(IAgentManager *m):CAgentScript(m), _Clock(0)/*,_Call(NULL),_MSG(NULL)*/
 	{
@@ -288,17 +291,22 @@ namespace NLAIAGENT
 		return getState();
 	}
 
-	void CAgentWatchTimer::tellBroker()
-	{		
-		std::list<std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > >::iterator i = _Call.begin();
-		while(i != _Call.end())
+	bool CAgentWatchTimer::tellBroker()
+	{
+		if(_CallIter == _Call.end()) 
+				_CallIter = _Call.begin();
+		uint n = 0;
+		while(_CallIter != _Call.end())
 		{
-			std::pair<IMessageBase *, sint32> p = ((*i).second);//->second->incRef();
+			std::pair<IMessageBase *, sint32> p = ((*_CallIter).second);//->second->incRef();
 			IMessageBase *msg = (IMessageBase *)p.first;//->clone();
 			msg->incRef();
-			if((*i).first->getState().ResultState == NLAIAGENT::processIdle) (*i).first->sendMessage((IObjectIA *)msg);
-			i ++;
+			if((*_CallIter).first->getState().ResultState == NLAIAGENT::processIdle) (*_CallIter).first->sendMessage((IObjectIA *)msg);
+			_CallIter ++;
+			/*n ++;
+			if(n >= 10) return false;*/
 		}
+		return true;
 	}
 
 	void CAgentWatchTimer::addAttrib(IConnectIA *c,IMessageBase *msg)
@@ -624,9 +632,12 @@ namespace NLAIAGENT
 	{
 		_Clock -= CAgentManagerTimer::ClockTick;
 		if(_Clock <= 0)
-		{
-			_Clock = _TimeCount;
-			tellBroker();
+		{			
+			if(tellBroker())
+			{
+				_Clock = _TimeCount;
+			}
+
 		}
 		return getState();
 	}

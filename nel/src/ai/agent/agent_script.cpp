@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.80 2001/07/27 13:42:28 chafik Exp $
+ * $Id: agent_script.cpp,v 1.81 2001/08/28 15:34:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -610,6 +610,9 @@ namespace NLAIAGENT
 		CStringType *s = (CStringType *)g->get();
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
+#ifdef NL_DEBUG
+	const char *tttttt = s->getStr().getString();
+#endif
 		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
 		
 		if(p.first != p.second)

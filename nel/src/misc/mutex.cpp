@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.36 2002/12/30 13:57:18 corvazier Exp $
+ * $Id: mutex.cpp,v 1.37 2003/01/03 11:25:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -559,7 +559,7 @@ void	CSharedMutex::leave()
 }
 
 
-#endif // NL_OS_WINDOWS/NL_OS_LINUX
+#endif // NL_OS_WINDOWS/NL_OS_UNIX
 
 
 

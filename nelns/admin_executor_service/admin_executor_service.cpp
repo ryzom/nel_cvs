@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.27 2002/12/23 14:46:51 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.28 2003/01/03 11:25:05 lecroart Exp $
  *
  */
 
@@ -1203,7 +1203,11 @@ void serviceDisconnection (const std::string &serviceName, uint16 sid, void *arg
 	{
 		// we have to relaunch it
 		nlinfo ("Waiting few seconds and relaunching the service %s", Services[sid].toString().c_str ());
-		startService (CTime::getSecondsSince1970()+IService::getInstance()->ConfigFile.getVar("RestartDelay").asInt(), Services[sid].AliasName);
+		sint32 delay = IService::getInstance()->ConfigFile.getVar("RestartDelay").asInt();
+		if (delay >= 0)
+			startService (CTime::getSecondsSince1970()+delay, Services[sid].AliasName);
+		else
+			nlinfo ("Don't restart the service because RestartDelay is %d", delay);
 	}
 
 	Services[sid].reset();
@@ -1467,7 +1471,7 @@ NLMISC_COMMAND (displayRequests, "display all pending requests", "")
 	return true;
 }
 
-#ifdef NL_OS_LINUX
+#ifdef NL_OS_UNIX
 
 static inline char *skipToken(const char *p)
 {
@@ -1527,4 +1531,4 @@ NLMISC_DYNVARIABLE(uint32, NetError, "Number of error on all networks cards")
 	if (get) *pointer = getSystemNetwork (2) + getSystemNetwork (10);
 }
 
-#endif // NL_OS_LINUX
+#endif // NL_OS_UNIX

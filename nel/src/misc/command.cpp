@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.18 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: command.cpp,v 1.19 2003/01/03 11:25:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ ICommand::ICommand(const char *commandName, const char *commandHelp, const char 
 
 	if (!CommandsInit)
 	{
-		//printf("create map\n");
+		//nlinfo ("create map");
 		Commands = new TCommand;
 		CommandsInit = true;
 	}
@@ -56,7 +56,7 @@ ICommand::ICommand(const char *commandName, const char *commandHelp, const char 
 	else
 	{
 		// insert the new command in the map
-		//printf("add command\n");
+		//nlinfo ("add command '%s'", commandName);
 		HelpString = commandHelp;
 		CommandArgs = commandArgs;
 		_CommandName = commandName;

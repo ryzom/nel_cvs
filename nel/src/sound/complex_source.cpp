@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.cpp,v 1.3 2003/01/08 15:48:11 boucher Exp $
+ * $Id: complex_source.cpp,v 1.4 2003/02/06 09:21:46 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,10 +65,6 @@ CComplexSource::~CComplexSource()
 	}
 }
 
-
-void CComplexSource::setSound( TSoundId id, CSoundContext *context)
-{
-}
 
 TSoundId CComplexSource::getSound()
 {

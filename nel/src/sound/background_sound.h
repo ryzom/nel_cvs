@@ -1,6 +1,6 @@
 /** \file background_sound.h
  *
- * $Id: background_sound.h,v 1.3 2003/01/08 15:48:11 boucher Exp $
+ * $Id: background_sound.h,v 1.4 2003/02/06 09:18:27 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #define NL_BACKGROUND_SOUND_H
 
 #include "sound.h"
+#include "nel/sound/u_audio_mixer.h"
 
 namespace NLSOUND {
 

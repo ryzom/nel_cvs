@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.h,v 1.3 2003/01/08 15:48:11 boucher Exp $
+ * $Id: complex_source.h,v 1.4 2003/02/06 09:21:46 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,8 +46,6 @@ public:
 	/// Destructor
 	~CComplexSource	();
 
-	/// Change the sound binded to the source
-	void							setSound( TSoundId id, CSoundContext *context = 0);
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound();
 	/// Change the priority of the source

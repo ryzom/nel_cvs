@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.3 2001/06/01 13:36:41 cado Exp $
+ * $Id: buf_net_base.h,v 1.4 2001/06/07 16:16:14 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ class CBufNetBase
 public:
 
 	/// Type of incoming events (max 256)
-	enum TEventType { User, Connection, Disconnection };
+	enum TEventType { User = 'U', Connection = 'C', Disconnection ='D' };
 
 	/// Destructor
 	virtual ~CBufNetBase() {};

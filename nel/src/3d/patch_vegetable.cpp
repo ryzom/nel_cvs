@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.18 2003/07/30 16:03:02 vizerie Exp $
+ * $Id: patch_vegetable.cpp,v 1.19 2003/08/19 14:11:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,7 +153,8 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	vegetLex.NumLights= min((uint)CVegetableLightEx::MaxNumLight, lightList.size());
 	for(i=0;i<vegetLex.NumLights;i++)
 	{
-		CPointLight	*pl= lightList[i].PointLight;
+		// WARNING: can C cast to CPointLightNamed here because comes from CPatch::appendTileLightInfluences() only!
+		CPointLightNamed	*pl= (CPointLightNamed*)(lightList[i].PointLight);
 		// copy to vegetLex.
 		vegetLex.PointLight[i]= pl;
 		// get the attenuation

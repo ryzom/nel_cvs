@@ -1,7 +1,7 @@
 /** \file vegetable_light_ex.h
  * <File description>
  *
- * $Id: vegetable_light_ex.h,v 1.2 2002/03/15 16:10:44 berenguier Exp $
+ * $Id: vegetable_light_ex.h,v 1.3 2003/08/19 14:11:34 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NL3D
 {
 
 
-class	CPointLight;
+class	CPointLightNamed;
 
 
 /**
@@ -53,16 +53,16 @@ public:
 	enum	{MaxNumLight= 2};
 
 	/// Number Of light currently really enabled.
-	uint			NumLights;
+	uint				NumLights;
 	/// PointLights. Used at CVegetableManager::updateLighting() to get current colors of pointLights.
-	CPointLight		*PointLight[MaxNumLight];
+	CPointLightNamed	*PointLight[MaxNumLight];
 	/// Direction of the light. the direction to the instance should be precomputed.
-	CVector			Direction[MaxNumLight];
+	CVector				Direction[MaxNumLight];
 	/// Factor to be multiplied by color of the light. Actually it is the attenuation factor.
-	uint			PointLightFactor[MaxNumLight];
+	uint				PointLightFactor[MaxNumLight];
 
 	/// Current Color of the light.
-	NLMISC::CRGBA	Color[MaxNumLight];
+	NLMISC::CRGBA		Color[MaxNumLight];
 
 public:
 	CVegetableLightEx()
@@ -71,7 +71,7 @@ public:
 	}
 
 	/// Fill Color array according to PointLight[] and PointLightFactor[].
-	void			computeCurrentColors();
+	void				computeCurrentColors();
 };
 
 

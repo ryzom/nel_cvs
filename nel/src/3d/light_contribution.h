@@ -1,7 +1,7 @@
 /** \file light_contribution.h
  * <File description>
  *
- * $Id: light_contribution.h,v 1.4 2003/05/22 12:51:03 berenguier Exp $
+ * $Id: light_contribution.h,v 1.5 2003/08/19 14:11:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,35 @@ public:
 
 	/// Constructor
 	CLightContribution();
+
+	/** Compute the current ambiant according to the FrozenAmbientLight, or LocalAmbient and provided sunAmbiant
+	 *	NB: The MergerPointLight is not added (since not really an ambiant)
+	 */
+	CRGBA				computeCurrentAmbient(CRGBA sunAmbient) const
+	{
+		CRGBA	finalAmbient;
+		if(FrozenStaticLightSetup)
+		{
+			// Any FrozenAmbientLight provided??
+			if(FrozenAmbientLight)
+				// Take his current (maybe animated) ambient
+				finalAmbient= FrozenAmbientLight->getAmbient();
+			else
+				// Take the sun ones.
+				finalAmbient= sunAmbient;
+		}
+		else
+		{
+			// must interpolate between SunAmbient and localAmbient
+			uint	uAmbFactor= LocalAmbient.A;
+			// expand 0..255 to 0..256, to avoid loss of precision.
+			uAmbFactor+= uAmbFactor>>7;
+			// Blend, but LocalAmbient.r/g/b is already multiplied by a.
+			finalAmbient.modulateFromuiRGBOnly(sunAmbient, 256 - uAmbFactor);
+			finalAmbient.addRGBOnly(finalAmbient, LocalAmbient);
+		}
+		return finalAmbient;
+	}
 
 };
 

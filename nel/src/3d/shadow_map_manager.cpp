@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.2 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.3 2003/08/19 14:11:34 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -494,11 +494,9 @@ void			CShadowMapManager::renderProject(CScene *scene)
 
 			// setup the Material.
 			_ReceiveShadowMaterial.setTexture(0, sm->getTexture());
-			/* TODO_SHADOW: the Diffuse color must varies according to what light is taken (blend).
-				Also the ambient may be sometimes not always the sun (ambient interior)
-			*/
-			CRGBA	ambient= scene->getSunAmbient();
-			CRGBA	diffuse= scene->getSunDiffuse();
+			/// Get The Mean Ambiant and Diffuse the caster receive (and cast, by approximation)
+			CRGBA	ambient, diffuse;
+			computeShadowColors(scene, caster, ambient, diffuse);
 			// copute the shadowColor so that modulating a Medium diffuse terrain will  get the correct result.
 			uint	R= ambient.R + (diffuse.R>>1);
 			uint	G= ambient.G + (diffuse.G>>1);
@@ -596,9 +594,74 @@ void			CShadowMapManager::renderProject(CScene *scene)
 // ***************************************************************************
 void			CShadowMapManager::computeShadowDirection(CScene *scene, CTransform *sc, CVector &lightDir)
 {
-	// TODO_SHADOW: merge with pointLights. clamp YAngle direction to 45 degrees for instance
+	// merge the sunLight and pointLights into a single directional
 	lightDir= scene->getSunDirection();
+	const	CLightContribution	&lc= sc->getLightContribution();
+	// For Better result, weight with the light color too.
+	CRGBA	color= scene->getSunDiffuse();
+	lightDir*= (float)lc.SunContribution * (color.R + color.G + color.B);
+
+	// merge pointLights
+	const CVector		&modelPos= sc->getWorldMatrix().getPos();
+	for(uint i=0;i<NL3D_MAX_LIGHT_CONTRIBUTION;i++)
+	{
+		CPointLight		*pl= lc.PointLight[i];
+		// End of List?
+		if(!pl)
+			break;
+
+		CVector	plDir= modelPos - pl->getPosition();
+		plDir.normalize();
+		// Sum with this light, weighted by AttFactor, and light color
+		color= pl->getDiffuse();
+		lightDir+= plDir * (float)lc.AttFactor[i] * (float)(color.R + color.G + color.B);
+	}
+
+	// normalize merged dir
 	lightDir.normalize();
+}
+
+
+// ***************************************************************************
+void			CShadowMapManager::computeShadowColors(CScene *scene, CTransform *sc, CRGBA &ambient, CRGBA &diffuse)
+{
+	const	CLightContribution	&lc= sc->getLightContribution();
+
+	// Get the current ambiant
+	ambient= lc.computeCurrentAmbient(scene->getSunAmbient());
+
+	// Compute the current diffuse as a sum (not a mean)
+	uint	r, g, b;
+	CRGBA	color= scene->getSunDiffuse();
+	r= color.R * lc.SunContribution;
+	g= color.G * lc.SunContribution;
+	b= color.B * lc.SunContribution;
+
+	// Add PointLights contribution
+	for(uint i=0;i<NL3D_MAX_LIGHT_CONTRIBUTION;i++)
+	{
+		CPointLight		*pl= lc.PointLight[i];
+		// End of List?
+		if(!pl)
+			break;
+
+		// Sum with this light, weighted by AttFactor
+		color= pl->getDiffuse();
+		r+= color.R * lc.AttFactor[i];
+		g+= color.G * lc.AttFactor[i];
+		b+= color.B * lc.AttFactor[i];
+	}
+
+	// normalize
+	r>>=8;
+	g>>=8;
+	b>>=8;
+
+	// Don't take the MergedPointLight into consideration (should add to the diffuse part here, but rare case)
+
+	diffuse.R= min(r, 255U);
+	diffuse.G= min(g, 255U);
+	diffuse.B= min(b, 255U);
 }
 
 

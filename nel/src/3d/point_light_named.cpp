@@ -1,7 +1,7 @@
 /** \file point_light_named.cpp
  * <File description>
  *
- * $Id: point_light_named.cpp,v 1.4 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: point_light_named.cpp,v 1.5 2003/08/19 14:11:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,22 +38,34 @@ CPointLightNamed::CPointLightNamed()
 	_DefaultAmbient= getAmbient();
 	_DefaultDiffuse= getDiffuse();
 	_DefaultSpecular= getSpecular();
+	_UnAnimatedDiffuse= getDiffuse();
 }
 
 
 // ***************************************************************************
 void			CPointLightNamed::setLightFactor(NLMISC::CRGBA nFactor)
 {
+	setLightFactor(nFactor, nFactor);
+}
+
+
+// ***************************************************************************
+void			CPointLightNamed::setLightFactor(NLMISC::CRGBA nAnimatedFactor, NLMISC::CRGBA nUnAnimatedFactor)
+{
 	CRGBA	col;
 	// setup current ambient.
-	col.modulateFromColor(_DefaultAmbient, nFactor);
+	col.modulateFromColor(_DefaultAmbient, nAnimatedFactor);
 	setAmbient(col);
 	// setup current diffuse.
-	col.modulateFromColor(_DefaultDiffuse, nFactor);
+	col.modulateFromColor(_DefaultDiffuse, nAnimatedFactor);
 	setDiffuse(col);
 	// setup current specular.
-	col.modulateFromColor(_DefaultSpecular, nFactor);
+	col.modulateFromColor(_DefaultSpecular, nAnimatedFactor);
 	setSpecular(col);
+
+	// special UnAnimatedDiffuse
+	col.modulateFromColor(_DefaultDiffuse, nUnAnimatedFactor);
+	_UnAnimatedDiffuse= col;
 }
 
 
@@ -73,6 +85,12 @@ void			CPointLightNamed::serial(NLMISC::IStream &f)
 
 	if (ver>=1)
 		f.serial(LightGroup);
+
+	// read: and copy default _UnAnimatedDiffuse
+	if(f.isReading())
+	{
+		_UnAnimatedDiffuse= getDiffuse();
+	}
 }
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.33 2003/04/23 10:13:38 berenguier Exp $
+ * $Id: patch.h,v 1.34 2003/08/19 14:11:34 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -627,7 +627,9 @@ public:
 	/// Get the lumel under the position.
 	uint8		getLumel(const CUV &uv) const;
 
-	/// Append lights under the position to pointLightList.
+	/** Append lights under the position to pointLightList.
+	 *	Notice that the PointLight are ensured to be actually CPointLightNamed.
+	 */
 	void		appendTileLightInfluences(const CUV &uv, 
 		std::vector<CPointLightInfluence> &pointLightList) const;
 

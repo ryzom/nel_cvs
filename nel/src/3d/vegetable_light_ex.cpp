@@ -1,7 +1,7 @@
 /** \file vegetable_light_ex.cpp
  * <File description>
  *
- * $Id: vegetable_light_ex.cpp,v 1.2 2002/03/15 16:10:44 berenguier Exp $
+ * $Id: vegetable_light_ex.cpp,v 1.3 2003/08/19 14:11:34 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/vegetable_light_ex.h"
+#include "3d/point_light_named.h"
 
 
 namespace NL3D 
@@ -38,11 +39,11 @@ void			CVegetableLightEx::computeCurrentColors()
 	for(uint i=0;i<NumLights;i++)
 	{
 		// get the light.
-		CPointLight	*pl= PointLight[i];
+		CPointLightNamed	*pl= PointLight[i];
 		// get the attenuation
 		uint	att= PointLightFactor[i];
-		// modulate the color with it.
-		Color[i].modulateFromui(pl->getDiffuse(), att);
+		// modulate the color with it. Use the Unanimated one!!
+		Color[i].modulateFromui(pl->getUnAnimatedDiffuse(), att);
 	}
 }
 

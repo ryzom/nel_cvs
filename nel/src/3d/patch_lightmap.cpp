@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.10 2003/07/30 16:02:47 vizerie Exp $
+ * $Id: patch_lightmap.cpp,v 1.11 2003/08/19 14:11:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1496,6 +1496,10 @@ void		CPatch::resetTileLightInfluences()
 void		CPatch::appendTileLightInfluences(const CUV &uv, 
 	std::vector<CPointLightInfluence> &pointLightList) const
 {
+	/*
+		WARNING !! only CPointLightNamed must be added here (used for convenience by CPatch::generateTileVegetable() )
+	*/
+
 	// Compute TLI coord for BiLinear.
 	sint	x,y;
 	// There is (OrderS/2+1) * (OrderT/2+1) tileLightInfluences (TLI).
@@ -1585,8 +1589,8 @@ CRGBA		CPatch::getCurrentTLIColor(uint x, uint y) const
 			// Not influenced by a pointLight?, stop
 			if(tli.Light[lid]==0xFF)
 				break;
-			// Append the influence of this pointLight. 
-			CRGBA	lightCol= zonePointLights[tli.Light[lid]].getDiffuse();
+			// Append the influence of this pointLight. NB: use unanimated version.
+			CRGBA	lightCol= zonePointLights[tli.Light[lid]].getUnAnimatedDiffuse();
 			// modulate with landscape Material.
 			lightCol.modulateFromColorRGBOnly(lightCol, getLandscape()->getPointLightDiffuseMaterial() );
 			// modulate with precomputed diffuse factor

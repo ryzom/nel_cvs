@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.h
  * <File description>
  *
- * $Id: shadow_map_manager.h,v 1.2 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: shadow_map_manager.h,v 1.3 2003/08/19 14:11:34 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -122,6 +122,7 @@ private:
 	uint						_NumShadowReceivers;
 
 	void			computeShadowDirection(CScene *scene, CTransform *sc, CVector &lightDir);
+	void			computeShadowColors(CScene *scene, CTransform *sc, CRGBA &ambient, CRGBA &diffuse);
 
 	void			fillBlackBorder(IDriver *drv, uint numPassText, uint numTextW, uint numTextH, uint baseTextureSize);
 

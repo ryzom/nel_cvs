@@ -1,7 +1,7 @@
 /** \file point_light_named.h
  * <File description>
  *
- * $Id: point_light_named.h,v 1.2 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: point_light_named.h,v 1.3 2003/08/19 14:11:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,9 +74,18 @@ public:
 	/// Get the Default specular color of the light.
 	NLMISC::CRGBA	getDefaultSpecular () const	{return _DefaultSpecular;}
 
+	/// get the unanimated diffuse (used for Landscape)
+	NLMISC::CRGBA	getUnAnimatedDiffuse() const {return _UnAnimatedDiffuse;}
 
-	/// modulate the default color setup with nFactor, and set to the current setup.
+	/** modulate the default color setup with nFactor, and set to the current setup. 
+	 *	NB: getUnAnimatedDiffuse() == getDiffuse()
+	 */
 	void			setLightFactor(NLMISC::CRGBA nFactor);
+
+	/** modulate the default color setup with nFactor, and set to the current setup. 
+	 *	give 2 params the second is the "not animated" factor. used for Landscape.
+	 */
+	void			setLightFactor(NLMISC::CRGBA nAnimatedFactor, NLMISC::CRGBA nUnAnimatedFactor);
 
 
 	void			serial(NLMISC::IStream &f);
@@ -94,6 +103,8 @@ private:
 	NLMISC::CRGBA		_DefaultDiffuse;
 	NLMISC::CRGBA		_DefaultSpecular;
 
+	// The unanimated diffuse
+	NLMISC::CRGBA		_UnAnimatedDiffuse;
 
 };
 

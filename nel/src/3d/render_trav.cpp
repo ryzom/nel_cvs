@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.47 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.48 2003/08/19 14:11:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -426,28 +426,8 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution, bool 
 		{
 			// Compute SunAmbient / LocalAmbient
 			//-----------
-			CRGBA	finalAmbient;
-			// Different case if the contribution is frozen or not.
-			if(lightContribution->FrozenStaticLightSetup)
-			{
-				// Any FrozenAmbientLight provided??
-				if(lightContribution->FrozenAmbientLight)
-					// Take his current (maybe animated) ambient
-					finalAmbient= lightContribution->FrozenAmbientLight->getAmbient();
-				else
-					// Take the sun ones.
-					finalAmbient= SunAmbient;
-			}
-			else
-			{
-				// must interpolate between SunAmbient and localAmbient
-				uint	uAmbFactor= lightContribution->LocalAmbient.A;
-				// expand 0..255 to 0..256, to avoid loss of precision.
-				uAmbFactor+= uAmbFactor>>7;
-				// Blend, but LocalAmbient.r/g/b is already multiplied by a.
-				finalAmbient.modulateFromuiRGBOnly(SunAmbient, 256 - uAmbFactor);
-				finalAmbient.addRGBOnly(finalAmbient, lightContribution->LocalAmbient);
-			}
+			// Take the current model ambient
+			CRGBA	finalAmbient= lightContribution->computeCurrentAmbient(SunAmbient);
 			// If use the mergedPointLight, add it to final Ambient
 			if(lightContribution->UseMergedPointLight)
 				finalAmbient.addRGBOnly(finalAmbient, lightContribution->MergedPointLight);

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.134 2003/08/07 09:10:55 corvazier Exp $
+ * $Id: landscape.cpp,v 1.135 2003/08/19 14:11:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -403,7 +403,7 @@ bool			CLandscape::addZone(const CZone	&newZone)
 	{
 		CScene *scene = OwnerModel->getOwnerScene();
 		zone->_PointLightArray.initAnimatedLightIndex(*scene);
-		zone->_PointLightArray.setPointLightFactor(*scene, false);
+		zone->_PointLightArray.setPointLightFactor(*scene);
 	}
 
 	// apply the landscape heightField, modifying BBoxes.
@@ -3318,7 +3318,7 @@ void			CLandscape::setPointLightFactor(const CScene &scene)
 	// Affect currently added zones.
 	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
 	{
-		(*it).second->_PointLightArray.setPointLightFactor(scene, false);
+		(*it).second->_PointLightArray.setPointLightFactor(scene);
 	}
 }
 

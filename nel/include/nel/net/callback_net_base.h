@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * <File description>
  *
- * $Id: callback_net_base.h,v 1.1 2001/02/22 16:18:35 cado Exp $
+ * $Id: callback_net_base.h,v 1.2 2001/02/22 17:51:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,9 @@
 #define NL_CALLBACK_NET_BASE_H
 
 #include "nel/misc/types_nl.h"
+
 #include "nel/net/message.h"
+#include "nel/net/pt_callback_item.h"
 
 
 namespace NLNET {
@@ -40,7 +42,7 @@ typedef void (*TNetCallback) ( TSockId, CMessage& );
 
 
 /// Callback items. See CMsgSocket::update() for an explanation on how the callbacks are called.
-typedef struct
+/*typedef struct
 {
 	/// Key C string. It is a message type name, or "C" for connection or "D" for disconnection
 	char			*Key;
@@ -48,7 +50,7 @@ typedef struct
 	TNetCallback	Callback;
 
 } TCallbackItem;
-
+*/
 
 typedef sint16 TTypeNum;
 

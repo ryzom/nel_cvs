@@ -226,6 +226,22 @@ SOURCE=..\include\nel\3d\patch_rdr_pass.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\tess_block.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tess_block.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tess_list.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tess_list.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\tessellation.cpp
 # End Source File
 # Begin Source File
@@ -395,6 +411,14 @@ SOURCE=.\3d\frustum.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\frustum.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\line.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\line.h
 # End Source File
 # Begin Source File
 
@@ -659,14 +683,6 @@ SOURCE=.\3d\event_mouse_listener.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\event_mouse_listener.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\line.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\line.h
 # End Source File
 # Begin Source File
 

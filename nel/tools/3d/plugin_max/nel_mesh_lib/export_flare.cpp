@@ -1,6 +1,6 @@
 /** \file export_flare.cpp
  *
- * $Id: export_flare.cpp,v 1.3 2004/04/07 09:56:25 berenguier Exp $
+ * $Id: export_flare.cpp,v 1.4 2004/06/29 13:43:07 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 
 using namespace NL3D;
+
 
 IShape* CExportNel::buildFlare(INode& node, TimeValue time)
 {
@@ -113,6 +114,43 @@ IShape* CExportNel::buildFlare(INode& node, TimeValue time)
 			fshape->setTexture(k, NULL);
 		}	
 	}
+	// retrieve the occlusion test mesh
+	std::string occlusionTestMesh;
+	if (CExportNel::getValueByNameUsingParamBlock2(node, "occlusionTestMesh", (ParamType2) TYPE_STRING, &occlusionTestMesh, 0))
+	{	
+		fshape->setOcclusionTestMeshName(occlusionTestMesh);
+	}
+	//
+	bool occlusionTestMeshInheritScaleRot;
+	if (CExportNel::getValueByNameUsingParamBlock2(node, "occlusionTestMeshInheritScaleRot", (ParamType2) TYPE_BOOL, &occlusionTestMeshInheritScaleRot, 0))
+	{	
+		fshape->setOcclusionTestMeshInheritScaleRot(occlusionTestMeshInheritScaleRot != 0);
+	}
+	//
+	int scaleWhenDisappear;
+	if (CExportNel::getValueByNameUsingParamBlock2(node, "scaleWhenDisappear", (ParamType2) TYPE_BOOL, &scaleWhenDisappear, 0))
+	{	
+		fshape->setScaleWhenDisappear(scaleWhenDisappear != 0);
+	}
+	//
+	float sizeDisappear;	
+	if (CExportNel::getValueByNameUsingParamBlock2(node, "sizeDisappear", (ParamType2) TYPE_FLOAT, &sizeDisappear, 0))
+	{	
+		fshape->setSizeDisappear(sizeDisappear);
+	}
+	//
+	float angleDisappear;
+	if (CExportNel::getValueByNameUsingParamBlock2(node, "angleDisappear", (ParamType2) TYPE_FLOAT, &angleDisappear, 0))
+	{	
+		fshape->setAngleDisappear(angleDisappear);
+	}
+	//
+	bool lookAtMode;
+	if (CExportNel::getValueByNameUsingParamBlock2(node, "lookAtMode", (ParamType2) TYPE_BOOL, &lookAtMode, 0))
+	{
+		fshape->setLookAtMode(lookAtMode);
+	}
+	
 	// Get the node matrix
 	Matrix3 localTM;
 	getLocalMatrix (localTM, node, time);			
@@ -121,3 +159,4 @@ IShape* CExportNel::buildFlare(INode& node, TimeValue time)
 	fshape->getDefaultPos()->setDefaultValue( CVector(fp.x, fp.y, fp.z) );						
 	return fshape;
 }
+

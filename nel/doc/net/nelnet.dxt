@@ -1,0 +1,333 @@
+/**
+\page netnet NeL Network Library
+
+$Id: nelnet.dxt,v 1.1 2002/10/24 08:26:24 lecroart Exp $
+
+\author Daniel Miller, Vianney Lecroart, Olivier Cado
+
+\date 06/15/2001
+
+\section nnintro Introduction
+
+
+This documents presents 'NeL Net', the NeL network library.
+
+NeL is a toolkit for the development of massively online universes.
+It provides the base technologies and a set of
+development methodologies for the development of both client and server code.
+
+The NeL Net comprises code libraries for inter-server communication and server-client
+communication. It also provides implementations of the service executables required by
+the higher level layers of the code libraries.
+
+\subsection nnmission Mission Statement
+
+The first objective of NeL Net is to provide a complete data transfer system that
+abstracts system specific code and provides mechanisms for complete control of bandwidth usage by the application code.
+
+NeL Net has a further objective of providing a complete toolkit, comprising further layers of library code  and core
+service implementations, for the development of performance critical distributed program systems for massively multi
+user universe servers.
+
+The current feature requirement list for NeL Net corresponds to the application architecture for Nevrax' first product.
+This notably includes the requirement for a centralised login validation system at a separate geographical location from
+the universe servers.
+
+Nevrax is currently developing a TCP/IP implementation of the low level network layers. A UDP implementation may be
+developed at a later date.
+
+\subsection nntarget Target Platforms
+
+The Nevrax team expect to run GNU/Linux servers for their first product. As such, GNU/Linux is the primary target
+operating system.
+
+NeL Net is currently tested on GNU/Linux and Microsoft Windows NT platforms.
+
+
+\section nnrequirements Statement of requirements
+
+The Network library addresses the following problems:
+
+\subsection nnclientserver Client -> Server communication
+
+- The product code (also referred to as app code) on the Client needs to be able to pass blocks of information to the
+network layer for communication to the server. The network code is responsible for ensuring that the blocks of data
+arrive complete server-side. In the majority of cases the blocks of data from the client will be significantly smaller
+than the maximum packet size, which means that the network code should not need to split data blocks across
+network packets.
+- In order for the app code to control the flow of data to the server, the network code should buffer sends until either
+an app-definable time has elapsed or an app-definable packet size has been reached.
+- Note: The information sent from the client to the server will generally be small in size, typically representing player
+actions such as movement. 
+
+\subsection nnserverclient Server -> Client communication
+
+- The app code on the Server needs to be able to pass blocks of information to the network layer for communication
+to the client. This problem is exactly the same as the Client -> Server problem, described above.
+- The app code is responsible for limiting the amount of data sent to each player each second by prioritising the
+information to be dispatched. In order to achieve this, the network code should buffer sends until the app code
+explicitly requests a buffer flush. The network API should provide the app code with the means of tracking the
+growth of the output buffer. 
+- Note: The information sent from the server to the client will often be large in size, as the server must inform the
+player of changes of state and position of all other characters and objects in the player's vicinity. 
+
+\subsection nninterprocess Inter-Process communication across servers
+
+- The different processes that make up the game need to be able to send messages to each other to request or
+exchange information.
+- There needs to be a transparent routing mechanism that locates the services to which messages are addressed
+and dispatches them.
+- There needs to be a standard framework that handles the queue of incoming messages and manages the dispatch
+of messages to different modules within a process. (e.g. A process that manages a set of AI controlled characters
+may have one module that handles incoming environment information, another that treats other processes'
+information requests, and so on).
+
+\subsection nnbackup On the fly backup management
+
+- There needs to be a reliable centralised system for backing up and retrieving world data.
+- The system must be capable of treating large volumes of data as 'transactions'. This means that if a server goes
+down - when it comes back up transactions will never be 'half complete'. Any transactions that had been begun but
+not finished must be automatically undone.
+- The backup system must be capable of managing a 'backup schedule' under which it sends backup requests to
+scheduled processes and treats the return data.
+- The backup system must be capable of handling spontaneous backups from different processes (particularly the
+player management processes who are capable of backing up players at any time).
+- The backup system will be called upon to retrieve player data whenever a player logs in. This operation must be
+reasonably fast.
+- The backup system will be called upon to supply data to each system at system initialisation time. The backup
+system should supply such systems with their complete data sets.
+
+\subsection nngenreq General requirements
+
+- The app code is responsible for network traffic and must be capable of much lower level access to the Network
+library than the above requirements suggest.
+
+\subsection nnlogin Login / logout management
+
+- The product that Nevrax is developing handles multiple instances of the game world running on different server sets
+(known as 'Shards') with a single centralised login manager.
+- The login manager must:
+
+Receive login requests from client machines
+
+Validate login requests with the account management system
+
+Provide the client with the active shard list
+
+Negotiate a connection with the shard of the client's choice
+
+Dispatch the shard's IP address and a unique login key to the client
+
+- The login manager must refuse attempts to login multiple times under the same user account. This implies that the
+login manager must be warned when players log out.
+- The login system should include client and shard modules that provide a high level interface to the login manager,
+encapsulating communication.
+
+\section nnaccount Account management
+
+- No choice has been made as to what solution to take to account management at NeL.
+- It is sufficient to know that we need a standard API for the account management system capable of validating
+logins.
+
+\section nntechdes Technical design details
+
+\subsection nndesignoutline Design outline
+
+The NeL network library provides a single solution which caters for all of the Server -> Client, Client -> Server and
+Inter-Process communication requirements.
+
+This solution is structured as a number of layers that are stacked on top of each other. The API gives the app
+programmers direct access to all of the layers.
+
+There is a program skeleton for the programs within a shard who are capable of communicating with each other via
+layer 5 messages. Programs of this form are referred to as 'Services'.
+
+The backup system is a standalone service (a service being a process which exposes a standard message interface)
+which will encapsulate a 3rd party database.
+
+The login manager and account manager are standalone programs at an isolated site.
+In a nutshell the network support layers include:
+
+- Layer 5 (Top Layer): Unified Network is an utility class that
+remove the need to manage the connection between services.
+- Layer 4: Inter-Service message addressing layer.
+Handles routing of messages to services,
+encapsulating connection to naming service and
+handling of lost connections.
+- Layer 3: Message management layer
+(Handling of asynchronous message passing, and callbacks)
+- Layer 2: Serialised data management layer
+Supports the standard serial() mechanism
+provided by NeL for handling data streams.
+- Layer 1: Data block management layer
+(buffering and structuring of data with generic
+serialization system)0
+Also provides multi-threading listening system for services
+- Layer 0 (Bottom Layer): Data transfer layer
+Abstraction of the network API and links (PC may
+be across a network, or local messaging)
+
+\subsection nnl0 Layer 0
+
+Layer 0 includes the following classes:
+
+- CSock : Base interface and behavior definition for hierarchical descendents
+- CTcpSock : Implementation of a socket class for the TCP/IP protocol
+- CUdpSock : Implementation of a socket class for the UDP protocol
+
+\e Document \e under \e construction
+
+\subsection nnl1 Layer 1
+
+Layer 1 includes the following classes:
+
+- CBufNetBase : Buffer functionality common to client and server
+- CBufClient : Implements client-specific buffer functionality 
+- CBufServer : Implements server-specific buffer functionality
+
+\e Document \e under \e construction
+
+\subsection nnl2 Layer 2
+
+Layer 2 includes the following classes:
+
+- CStreamNetBase : Stream functionality common to client and server
+- CStreamClient : Client-specific stream functionality
+- CStreamServer : Server-specific stream functionality
+
+\e Document \e under \e construction
+
+\subsection nnl3 Layer 3
+
+Layer 3 includes the following classes:
+
+- CCallbackNetBase : Functionality common to client and server
+- CCallbackClient : Client-specific functionality
+- CCallbackServer : Server-specific functionality
+
+\e Document \e under \e construction
+
+\subsection nnl4 Layer 4
+
+Layer 4 includes the following class:
+
+- CNetManager
+
+\e Document \e under \e construction
+
+\subsection nnl5 Layer 5
+
+Layer 5 includes the following class:
+
+- CUnifiedNetwork
+
+\e Document \e under \e construction
+
+\section nnserv System Services
+
+The following system services are provided as part of NeL. For each of these services there exists an API class that
+may be instantiated in any app-specific service in order to encapsulate the system service's functionality.
+
+\subsection nnns The Naming Service
+
+A standalone program used by all services to reference each other.
+
+- All services connect to the naming service when they are initialised. They inform the naming service of their name
+and whereabouts.
+- The naming service is capable of informing any service of the whereabouts of any other service.
+- When more than one instance of the same service connect to the naming service we anticipate the possibility of the
+naming service managing simple load balancing by distributing connection requests to the given service across the
+available instances.
+
+API class: CNamingClient
+
+- Generates dynamic port numbers
+- Registers the application service's name with the naming service.
+
+- Retrieves the IP address and port number for a named service.
+- See technical documentation for details
+
+\subsection nnts The Time Service
+
+Provides standard universal time (in milliseconds) for the services within a shard and also for remote clients across the
+internet.
+API class: CUniTime - See technical documentation for details
+
+- Synchronises the local machine time with the universal time
+- Provides access to the universal time
+- See technical documentation for details
+
+\subsection nnls The Log Service
+
+Provides a centralised information logging system.
+
+API class: CNetDisplayer
+
+- Allows any log message to be directed to the log service (instead of or as well as the screen, a disk log file, etc)
+- This is a displayer in the logging system (see misc library for details)
+- See technical documentation for more details
+
+\subsection nnservskel The Service Skeleton
+
+The network library presents a generic service skeleton, which includes the base functions of a distributed service. At
+initialisation time it performs the following:
+
+- Reads and interprets configuration file and command line parameters
+- Redirects the system signals to NeL handler routines
+- Connects to the Log Service
+- Connects to the Time Service and synchronises clock with universal time
+- Creates and registers callbacks for network layer 3
+- Sets up the service's 'listen' socket
+- Registers itself with the Naming Service
+
+The skeleton also handles exceptions and housekeeping when the program exits (whether cleanly or not)
+
+\subsection nnlogsys Login system
+
+\e Document \e under \e construction
+
+- Login manager (stand alone)
+
+\e Document \e under \e construction
+
+- Login client API
+
+\e Document \e under \e construction
+
+- Login shard API
+
+\e Document \e under \e construction
+
+\subsection nnaccountman Account manager (stand alone)
+
+Stand alone program that handles the list of users permitted to connect to shards managed by a given Login Manager. 
+NeL provides a skeleton program that includes the communication protocols for the Login manager.
+
+\subsection nnbackups Backup Service
+
+\e Document \e under \e construction
+
+\subsection nnadmin Administration
+
+NeL provides the base mechanisms for administering a NeL shard. Two basic services are provided:
+
+The Admin Service (1 per shard)
+
+- Provides an entry point for cluster administration.
+- Provides access to logging information and mechanisms for starting or restarting services
+
+The Admin Executor (1 per server)
+
+- This is the relay for the Admin Service.
+- Fetches statistics on the local machine and relays them to the Admin Service
+- Launches and controls the services running on the local machine.
+
+\section nnfuture Future plans
+
+The purely network library is typically self-contained, and not much subject to modification, unless one wants to change
+the entire paradigm around which the platform runs. Addition of a specific and non-standard network or network API
+would be the only reason one would change layer 1. 
+
+\e Document \e under \e construction
+
+*/

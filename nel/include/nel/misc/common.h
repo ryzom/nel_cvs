@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.36 2002/02/20 18:05:44 lecroart Exp $
+ * $Id: common.h,v 1.37 2002/02/28 15:19:08 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -261,7 +261,7 @@ void nlSleep( uint32 ms );
 uint getThreadId();
 
 /// Returns a readable string from a vector of bytes. unprintable char are replaced by '?'
-std::string stringFromVector( const std::vector<uint8>& v );
+std::string stringFromVector( const std::vector<uint8>& v, bool limited = true );
 
 
 /// Convert a string into an sint64 (same as atoi() function but for 64 bits intergers)

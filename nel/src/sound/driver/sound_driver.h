@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.6 2001/11/12 16:20:26 berenguier Exp $
+ * $Id: sound_driver.h,v 1.7 2002/06/04 10:07:43 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,8 @@ class ISource;
 
 
 #ifdef NL_OS_WINDOWS
+
+#if 0
 // must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
 #ifdef NL_DEBUG_FAST
 #define NLSOUND_DLL_NAME "nel_drv_openal_win_debug_fast.dll"
@@ -51,6 +53,24 @@ class ISource;
 #else
 #error "Unknown dll name"
 #endif
+
+#else
+
+// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
+#ifdef NL_DEBUG_FAST
+#define NLSOUND_DLL_NAME "nel_drv_dsound_win_debug_fast.dll"
+#elif defined (NL_DEBUG)
+#define NLSOUND_DLL_NAME "nel_drv_dsound_win_debug.dll"
+#elif defined (NL_RELEASE_DEBUG)
+#define NLSOUND_DLL_NAME "nel_drv_dsound_win_rd.dll"
+#elif defined (NL_RELEASE)
+#define NLSOUND_DLL_NAME "nel_drv_dsound_win.dll"
+#else
+#error "Unknown dll name"
+#endif
+
+#endif 
+
 #elif defined (NL_OS_UNIX)
 #define NLSOUND_DLL_NAME "libnel_drv_openal.so"
 #else
@@ -96,6 +116,10 @@ public:
 
 	/// Temp
 	virtual bool			loadWavFile( IBuffer *destbuffer, const char *filename ) = 0;
+
+
+	/// Commit all the changes made to 3D settings of listener and sources
+	virtual void			commit3DChanges() {}
 
 	// Does not create a sound loader
 

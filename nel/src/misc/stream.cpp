@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.11 2000/11/21 11:22:19 corvazier Exp $
+ * $Id: stream.cpp,v 1.12 2000/11/21 14:53:41 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,9 @@ void			IStream::serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream)
 		}
 		else
 		{
-			node= (uint64)ptr;
+			// Assume that prt size is an int size
+			nlassert(sizeof(uint) == sizeof(void *));
+			node= (uint64)((uint)ptr);
 			serial(node);
 
 			// Test if object already written.
@@ -278,3 +280,4 @@ sint32			IStream::getPos () throw(EStream)
 
 
 }
+

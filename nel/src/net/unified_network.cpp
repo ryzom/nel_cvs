@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.27 2001/12/31 13:32:39 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.28 2002/01/22 14:08:59 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -323,6 +323,8 @@ void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 
 		sid = _SId;
 	}
+
+	nlinfo ("HNETL5: Server '%s' added, registered and listen to port %hu", shortName.c_str (), port);
 }
 
 void	CUnifiedNetwork::connect()
@@ -579,7 +581,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 				break;
 			
 			// Enable windows multithreading before rescanning all connections
-			nlSleep (0);
+			nlSleep (1);
 		}
 	}
 

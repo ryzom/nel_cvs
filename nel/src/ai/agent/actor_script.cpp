@@ -471,10 +471,14 @@ namespace NLAIAGENT
 
 			case fid_success:
 				onSuccess(params);
+				r.Result = new NLAIAGENT::CSuccessMsg();
+				return r;
 				break;
 
 			case fid_failure:
 				onFailure(params);
+				r.Result = new NLAIAGENT::CFailureMsg();
+				return r;
 				break;
 
 		}
@@ -492,6 +496,8 @@ namespace NLAIAGENT
 
 #ifdef NL_DEBUG
 		const char *dbg_func_name = name->getString();
+		std::string buffer;
+		param.getDebugString( buffer );
 #endif
 
 		tQueue result; /* = CAgentScript::isMember( className, name, param);

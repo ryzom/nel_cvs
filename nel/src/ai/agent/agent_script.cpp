@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.70 2001/06/14 10:23:18 chafik Exp $
+ * $Id: agent_script.cpp,v 1.71 2001/06/26 13:27:23 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -356,8 +356,11 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionIndexError();
 		}
 #endif
-		_Components[ index ]->release();
+		IObjectIA *old_comp = _Components[ index ];
 		_Components[ index ] = op;
+		op->incRef();
+		old_comp->release();
+
 
 
 		if(((const NLAIC::CTypeOfObject &) op->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)

@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.17 2004/07/12 13:56:30 miller Exp $
+ * $Id: admin.cpp,v 1.17.8.1 2004/11/04 11:18:19 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -389,7 +389,7 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 	CLog logDisplayVars;
 	CLightMemDisplayer mdDisplayVars;
 	logDisplayVars.addDisplayer (&mdDisplayVars);
-	mdDisplayVars.setParam (1024);
+	mdDisplayVars.setParam (4096);
 
 	CVarPath varpath(rawvarpath);
 

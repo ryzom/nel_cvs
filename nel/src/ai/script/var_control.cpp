@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.22 2002/01/30 15:39:59 chafik Exp $
+ * $Id: var_control.cpp,v 1.23 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,7 +142,6 @@ namespace NLAISCRIPT
 									yyerror("attribut is not define");
 									return 0;
 								}									
-								const NLAIAGENT::IObjectIA *o = c->getStaticMember(i);								
 								NLAIC::CIdentType *id = new NLAIC::CIdentType (c->getType());
 								_FlotingExpressionType = new COperandSimple(id);																
 								type->release();
@@ -429,6 +428,7 @@ namespace NLAISCRIPT
 		case NLAIAGENT::IMessageBase::PEven:
 			_LastFact.Value = new NLAIAGENT::CPEven();
 			break;
+		default: break;
 		}		
 		_LastFact.VarType = varTypeImediate;
 		_LastFact.IsUsed = false;		

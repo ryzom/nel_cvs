@@ -49,7 +49,6 @@ namespace NLAILOGIC
 	std::list<CFact *> *CBoolOperator::backward(std::list<IBaseAssert *> &conds, std::list<bool> &vals)
 	{
 		std::list<CFact *> *result = new std::list<CFact *>;
-		std::vector<IBaseAssert *>::iterator it_c = _Conds.begin();
 		for ( sint32 i = 0; i < (sint32) _Conds.size(); i++ )
 		{
 			CFact *tmp = new CFact (_Conds[i], _CondsVal[i] );

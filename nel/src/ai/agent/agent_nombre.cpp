@@ -1,6 +1,6 @@
 /** \file agent_nombre.cpp
  *
- * $Id: agent_nombre.cpp,v 1.5 2001/03/08 13:42:34 portier Exp $
+ * $Id: agent_nombre.cpp,v 1.6 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,8 +43,6 @@ namespace NLAIAGENT
 	{
 		tQueue a;
 		NLAISCRIPT::CParam methodParam;
-		NLAISCRIPT::CParam &param = (NLAISCRIPT::CParam &)p;
-
 		
 		if(className == NULL)
 		{

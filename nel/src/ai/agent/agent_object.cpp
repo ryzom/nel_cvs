@@ -1,6 +1,6 @@
 /** \file agent_object.cpp
  *
- * $Id: agent_object.cpp,v 1.8 2002/05/06 12:55:23 robert Exp $
+ * $Id: agent_object.cpp,v 1.9 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,7 +125,6 @@ namespace NLAIAGENT
 	{
 		tQueue a;
 		NLAISCRIPT::CParam methodParam;
-		NLAISCRIPT::CParam &param = (NLAISCRIPT::CParam &)p;
 		
 		if(className == NULL)
 		{
@@ -153,8 +152,6 @@ namespace NLAIAGENT
 	}
 	IObjectIA::CProcessResult CPaireType::runMethodeMember(sint32 index,IObjectIA *p)
 	{
-		IBaseGroupType *param = (IBaseGroupType *)p;
-
 		/*switch(index - IObjetOp::getMethodIndexSize())
 		{
 		case _Const:

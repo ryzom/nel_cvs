@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.19 2002/04/17 15:35:54 portier Exp $
+ * $Id: opcode.cpp,v 1.20 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -434,7 +434,6 @@ namespace NLAISCRIPT
 		std::string txtClass;
 		((NLAIAGENT::IObjectIA *)context.Stack)->getDebugString(txt);
 		((NLAIAGENT::IObjectIA *)context.Heap[(int)_N])->getDebugString(txtClass);
-		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Heap[(int)_N]);			
 		std::list<sint32>::const_iterator i = _I.begin();
 		sint32 n = _I.size();
 		str += NLAIC::stringGetBuild("Affecte le membre sur le heap : %s ",txtClass.c_str());

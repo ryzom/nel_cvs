@@ -252,7 +252,7 @@ namespace NLAILOGIC
 	{
 		CValueSet *result;
 
-		if ( result = fp->unify( vals, pos_vals ) )
+		if ( (result = fp->unify( vals, pos_vals )) )
 			return result;
 		else
 		{
@@ -383,7 +383,6 @@ namespace NLAILOGIC
 		}*/
 
 		// Conditions
-		sint32 s = ((IBaseGroupType *)params)->size();
 		CIteratorContener it_fp = ((IBaseGroupType *)params)->getIterator();
 		while ( !it_fp.isInEnd())
 		{

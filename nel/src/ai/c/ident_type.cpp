@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.19 2001/12/11 09:27:05 chafik Exp $
+ * $Id: ident_type.cpp,v 1.20 2002/08/21 13:58:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,16 +105,18 @@ namespace NLAIC
 		serial(f);
 	}
 
-	CIdentType::CIdentType(const char *ident,const CTypeOfObject &objType,const CTypeOfOperator &opSupport,sint32 index):_Index(-1),
-				_ObjType((CTypeOfObject *)objType.clone()),_OpSupport((CTypeOfOperator *)opSupport.clone())
+	CIdentType::CIdentType(const char *ident,const CTypeOfObject &objType,const CTypeOfOperator &opSupport,sint32 index): _ObjType((CTypeOfObject *)objType.clone()),
+															      _OpSupport((CTypeOfOperator *)opSupport.clone()),
+															      _Index(-1)
 	{
 		_Ident = new char [strlen(ident) + 1];
 		strcpy((char *)_Ident,ident);
 		_Index = index;
 	}
 	
-	CIdentType::CIdentType(const char *ident,const IClassFactory &classCFactory,const CTypeOfObject &objType,const CTypeOfOperator &opSupport): _Index(-1),
-		_ObjType((CTypeOfObject *)objType.clone()),_OpSupport((CTypeOfOperator *)opSupport.clone())
+	CIdentType::CIdentType(const char *ident,const IClassFactory &classCFactory,const CTypeOfObject &objType,const CTypeOfOperator &opSupport): _ObjType((CTypeOfObject *)objType.clone()),
+																		    _OpSupport((CTypeOfOperator *)opSupport.clone()),
+																		    _Index(-1)
 	{	
 		_Ident = new char [strlen(ident) + 1];
 		strcpy((char *)_Ident,ident);
@@ -123,7 +125,6 @@ namespace NLAIC
 		{				
 			CRegistry *r = getRegistry();
 			_Index = r->registerClass(*this,classCFactory);
-			const CIdentType &id= getRegistry()->getIdent(_Index);			
 		}
 		catch (NLAIE::IException &err)
 		{
@@ -162,7 +163,7 @@ namespace NLAIC
 		}		
 	}
 
-	CIdentType::CIdentType(const CIdentType &i):_Index(-1),_ObjType((CTypeOfObject *)i._ObjType->clone()),_OpSupport((CTypeOfOperator *)i._OpSupport->clone())
+	CIdentType::CIdentType(const CIdentType &i):_ObjType((CTypeOfObject *)i._ObjType->clone()),_OpSupport((CTypeOfOperator *)i._OpSupport->clone()),_Index(-1)
 	{
 		_Index = i._Index;
 		_Ident = new char [strlen(i._Ident) + 1];

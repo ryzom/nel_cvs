@@ -180,7 +180,6 @@ namespace NLAILOGIC
 		if ( fp->_Vars.size() != _Vars.size() )
 			return false;
 
-		std::vector<IBaseVar *> *tmp_Vars = new std::vector<IBaseVar *>;
 		std::vector<IBaseVar *>::iterator it_vt = _Vars.begin();
 		std::vector<IBaseVar *>::iterator it_vu = fp->_Vars.begin();
 
@@ -280,7 +279,7 @@ namespace NLAILOGIC
 		{
 			tmp_val = _Vars[ i ];
 			IObjetOp *val;
-			if ( val = _Vars[ i ]->getValue() )
+			if ( (val = _Vars[ i ]->getValue()) )
 				result->push_back( val );
 		}
 
@@ -365,8 +364,6 @@ namespace NLAILOGIC
 		{
 		//	throw Exc::
 		}
-
-		sint32 x = ((IBaseGroupType *)params)->size();
 
 		// Assertion
 		IObjectIA * arg = (IObjectIA *) ((IBaseGroupType *)params)->popFront();

@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.32 2002/01/30 15:39:59 chafik Exp $
+ * $Id: yacc.cpp,v 1.33 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -519,6 +519,7 @@ namespace NLAISCRIPT
 				}
 				if(op) _LastBloc->addCode(op);
 				break;
+			default: break;
 		}
 	}
 
@@ -821,7 +822,6 @@ namespace NLAISCRIPT
 	_Param.back()->getDebugString(pName);	
 	//sint32 i = _TypeList.size();
 #endif
-		CBagOfCode *sendOp = NULL;
 		NLAIAGENT::CStringType *s = (NLAIAGENT::CStringType *)_LastStringParam.back()->get();
 		if(	!strcmp(s->getStr().getString(),_SEND_)/* && _Param.back()->size() == 1*/)
 		{			

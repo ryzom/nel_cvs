@@ -170,14 +170,16 @@ namespace NLAILOGIC
 		{
 			sint32 pos = 0;
 			std::vector<IBaseAssert *>::iterator it_conc = _Concs.begin();
+#ifdef NL_DEBUG
 			std::vector< std::vector<sint32> >::iterator it_pos = _PosVarsConc.begin();
+#endif
 			while ( it_conc != _Concs.end() )
 			{
 				// Construire le fait correspondant par rapport à la position des variables
-				CValueSet *conflit = new CValueSet( *it_conf , *it_pos );
 				
 				/////////////////////
 #ifdef NL_DEBUG
+				CValueSet *conflit = new CValueSet( *it_conf , *it_pos );
 				std::string buf;
 				std::string buf2;
 				(*it_conc)->getDebugString( buf );
@@ -218,7 +220,6 @@ namespace NLAILOGIC
 		// Conclusions
 		IBaseGroupType *concs = (IBaseGroupType *) ((IBaseGroupType *)params)->popFront();
 		CIteratorContener it_fp = concs->getIterator();
-		sint32 s = concs->size();
 		while ( !it_fp.isInEnd() )
 		{
 			CFactPattern *tmp = (CFactPattern *) ( it_fp ++)->clone();
@@ -334,8 +335,6 @@ namespace NLAILOGIC
 		if ( it_a == _Concs.end() )
 			return NULL;
 
-		IBaseAssert *my_assert = *it_a;
-
 		// Créé la liste des valeurs 
 		std::list<IObjetOp *> *vals = fp->getValues();
 
@@ -359,7 +358,6 @@ namespace NLAILOGIC
 					std::vector<sint32>::iterator it_i = (*it_p).begin();
 					while ( it_i != (*it_p).end() )
 					{
-						sint32 i = *it_i;
 #ifdef NL_DEBUG
 						std::string buf;
 						(*result)[ *it_i ]->getDebugString(buf);
@@ -411,7 +409,6 @@ namespace NLAILOGIC
 		{
 			IObjectIA *l_val = (*unified)[*it_pos];
 			IObjectIA *r_val = *it_v;
-			sint32 p = *it_pos;
 			if ( !l_val )
 			{
 /*				if ( r_val )

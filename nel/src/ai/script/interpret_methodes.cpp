@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.18 2001/05/29 16:16:25 chafik Exp $
+ * $Id: interpret_methodes.cpp,v 1.19 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -234,7 +234,6 @@ namespace NLAISCRIPT
 
 	void CParam::save(NLMISC::IStream &os)
 	{
-		tParam &p = (tParam &)_Param;
 		sint32 n = _Param.size();
 		os.serial(n);
 		for(int i = 0; i < (int)_Param.size(); i++)

@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.14 2002/01/30 15:39:59 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.15 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -206,7 +206,7 @@ namespace NLAISCRIPT
 	{			
 		NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Self;
 		std::list<sint32>::const_iterator i = _I.begin();
-		int j;
+		int j=0;
 		std::string className, name = "????";
 
 		while(i != _I.end())

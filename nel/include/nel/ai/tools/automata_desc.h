@@ -1,7 +1,7 @@
 /** \file automata_desc.h
  * A class which describe a simple success/fail automat.
  *
- * $Id: automata_desc.h,v 1.4 2001/05/09 17:11:14 berenguier Exp $
+ * $Id: automata_desc.h,v 1.5 2002/08/21 13:58:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,8 @@ public:
 
 	/// Constructor
 	CAutomataDesc();
+	/// Destructor
+	virtual ~CAutomataDesc() {}
 
 	/// Give the automat name.
 	std::string	getAutomatName() const;

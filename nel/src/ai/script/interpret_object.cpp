@@ -1,6 +1,6 @@
 /** \file interpret_object.cpp
  *
- * $Id: interpret_object.cpp,v 1.12 2002/02/20 18:08:58 lecroart Exp $
+ * $Id: interpret_object.cpp,v 1.13 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ namespace NLAISCRIPT
 		_IdType = new NLAIC::CIdentType( name.getString(), CClassInterpretFactory( this ) , NLAIC::CTypeOfObject::tAgent, 0);
 	}
 
-	IClassInterpret::IClassInterpret(NLAIC::CIdentType *idType):_IdType(idType),_Name(NULL)
+	IClassInterpret::IClassInterpret(NLAIC::CIdentType *idType):_Name(NULL),_IdType(idType)
 	{
 	}
 
@@ -71,7 +71,7 @@ namespace NLAISCRIPT
 			_IdType->release();
 	}
 
-	IClassInterpret::IClassInterpret():_IdType(NULL), _Name(NULL)
+	IClassInterpret::IClassInterpret():_Name(NULL),_IdType(NULL)
 	{
 	}
 
@@ -89,7 +89,6 @@ namespace NLAISCRIPT
 
 	void IClassInterpret::setType(const NLAIAGENT::IVarName &name, const IClassInterpret &a)
 	{
-		const char *txt = name.getString();
 		if(_IdType != NULL) _IdType->release();
 		_IdType = new NLAIC::CIdentType( name.getString(), CClassInterpretFactory( this ), NLAIC::CTypeOfObject::tAgent, 0);
 	}

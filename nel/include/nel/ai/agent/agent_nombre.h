@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.16 2002/06/06 09:26:56 portier Exp $
+ * $Id: agent_nombre.h,v 1.17 2002/08/21 13:58:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,7 +139,6 @@ namespace NLAIAGENT
 			{
 			case INombreDefine::TConst:
 				{					
-					INombre *o = (INombre *)param->get();
 					_Value = (tNombre )((INombreDefine *)param->get())->getNumber();
 					return IObjectIA::CProcessResult();		
 				}

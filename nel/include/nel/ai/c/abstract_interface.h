@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.23 2001/12/05 10:00:35 portier Exp $
+ * $Id: abstract_interface.h,v 1.24 2002/08/21 13:58:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -499,7 +499,7 @@ namespace NLAIC //Gen pour general.
 			else return NULL;
 		}		
 
-		~CIdentTypeAlloc()
+		virtual ~CIdentTypeAlloc()
 		{
 			if(_Id != NULL) delete _Id;
 		}

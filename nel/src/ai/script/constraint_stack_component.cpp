@@ -1,6 +1,6 @@
 /** \file constraint_stack_component.cpp
  *
- * $Id: constraint_stack_component.cpp,v 1.10 2001/10/30 15:04:00 chafik Exp $
+ * $Id: constraint_stack_component.cpp,v 1.11 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@ namespace NLAISCRIPT
 {
 
 	CConstraintStackComp::CConstraintStackComp(OpCodeType opCodeType,sint32 stackPos,const std::list<NLAISCRIPT::CStringType > &memberName,IOpType *typeStack,sint32 lign,sint32 col):
-	_MemberName(memberName),_TypeStack(typeStack),_Lin(lign),_Col(col)
+	_TypeStack(typeStack),_MemberName(memberName),_Lin(lign),_Col(col)
 	{		
 		char m[1028*8];
 		std::list<NLAISCRIPT::CStringType >::const_iterator i = _MemberName.begin();
@@ -83,7 +83,7 @@ namespace NLAISCRIPT
 
 					std::list<sint32> b;
 					b.push_back(i);
-					IOpCode *x;
+					IOpCode *x=0;
 					switch(_OpCodeType)
 					{
 					case stackCall:
@@ -123,7 +123,7 @@ namespace NLAISCRIPT
 				}
 				_Id = new NLAIC::CIdentType (*c->getConstraintTypeOf());
 				c->release();
-				IOpCode *x;
+				IOpCode *x=0;
 
 				switch(_OpCodeType)
 				{

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.53 2002/08/13 15:33:21 chafik Exp $
+ * $Id: agents.cpp,v 1.54 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,7 +143,6 @@ namespace NLAIAGENT
 
 			if(c->getState().ResultState == processToKill)
 			{
-				std::list<IBasicAgent *>::iterator i_temp = _Iter_Child;
 				_Iter_Child ++;
 				removeChild(c);
 			}
@@ -177,14 +176,12 @@ namespace NLAIAGENT
 			{
 			case processToKill:
 				{
-					std::list<IBasicAgent *>::iterator i_temp = i_agl;
 					i_agl ++;
 					removeChild(c);
 				}
 				break;
 			case processPresKill:
 				{
-					std::list<IBasicAgent *>::iterator i_temp = i_agl;
 					i_agl ++;
 					c->incRef();
 					removeChild(c);
@@ -214,7 +211,7 @@ namespace NLAIAGENT
 #endif
 			try
 			{
-				IObjectIA *o = IBasicAgent::run( msg );
+				(void)IBasicAgent::run( msg );
 				mail->popMessage();
 			}
 			catch(NLAIE::IException &)
@@ -422,6 +419,7 @@ namespace NLAIAGENT
 			returnMsg = runEven(msg);
 			((IMessageBase &)msg).setDispatch();
 			break;
+		default: break;
 		}
 		
 		if(returnMsg) returnMsg->release();

@@ -1,6 +1,6 @@
 /** \file constraint_find_run.cpp
  *
- * $Id: constraint_find_run.cpp,v 1.12 2001/12/11 09:27:05 chafik Exp $
+ * $Id: constraint_find_run.cpp,v 1.13 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,7 +76,7 @@ namespace NLAISCRIPT
 						_Param->incRef();
 						_BaseClass->incRef();
 						const CFunctionTag &m = getfunctionTag();
-						ILoadObject *o;
+						ILoadObject *o=0;
 						switch(_TypeOfCallType)
 						{
 						case normalCall:

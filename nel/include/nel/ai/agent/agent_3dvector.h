@@ -1,7 +1,7 @@
 /** \file agent_3dvector.h
  * <File description>
  *
- * $Id: agent_3dvector.h,v 1.10 2002/08/01 14:17:54 chafik Exp $
+ * $Id: agent_3dvector.h,v 1.11 2002/08/21 13:58:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,14 +165,14 @@ namespace NLAIAGENT
 		virtual IObjetOp &operator += (const IObjetOp &a)
 		{
 			NLMISC::CVectorD v = (NLMISC::CVectorD)((const IVector &)a).getValue();
-			_Value += _Value;
+			_Value += v;
 			return *this;
 		}
 
 		virtual IObjetOp &operator -= (const IObjetOp &a)
 		{
 			NLMISC::CVectorD v = (NLMISC::CVectorD)((const IVector &)a).getValue();
-			_Value -= _Value;
+			_Value -= v;
 			return *this;
 		}
 

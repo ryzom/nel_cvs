@@ -29,7 +29,6 @@ namespace NLAILOGIC
 		sint32 i;
 		if ( _Goals.size() > 1)
 		{
-			CGoal *old_top = _Goals.front();
 			std::sort(_Goals.begin(), _Goals.end(), greater());
 		}
 

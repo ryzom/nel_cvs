@@ -1,7 +1,7 @@
 /** \file opcode.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode.h,v 1.11 2002/01/30 15:40:10 chafik Exp $
+ * $Id: opcode.h,v 1.12 2002/08/21 13:58:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1696,7 +1696,7 @@ namespace NLAISCRIPT
 
 	public:
 
-		CMarkMsg(int h,int i):_Heritance(h),_I(i)
+		CMarkMsg(int h,int i):_I(i),_Heritance(h)
 		{			
 		}
 

@@ -230,7 +230,6 @@ namespace NLAILOGIC
 		{
 			sint32 pos = *it_pos;
 			IObjectIA *l_val = _Values[ pos ];
-			IObjectIA *r_val = *it_val;
 //			IObjectIA *test = NULL;
 			if (  !l_val || (  (*l_val) == ( **it_val ) ) )
 			{

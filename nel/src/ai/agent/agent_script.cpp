@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.129 2002/08/20 15:21:58 chafik Exp $
+ * $Id: agent_script.cpp,v 1.130 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -647,7 +647,6 @@ namespace NLAIAGENT
 			tQueue r = isMember(NULL,&debugStringF,p);
 			if(r.size())
 			{
-				const IObjectIA *self = ((const NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext())->Self;
 				NLAISCRIPT::CCodeContext *c = (NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext()->clone();
 				NLAIAGENT::CIdMethod m = r.top();
 				//msg->setMethodIndex(0,m.Index);	
@@ -791,7 +790,6 @@ namespace NLAIAGENT
 
 		if(p.first != p.second)
 		{	
-			tsetDefNameAgent::iterator debut = p.first;
 			while(p.first != p.second)
 			{
 				tsetDefNameAgent::iterator iTmp = p.first;
@@ -977,7 +975,6 @@ namespace NLAIAGENT
 		for ( int i = 0; i < msg_result.size() ; i += 3 )
 		{
 			CStringType *comp_name = (CStringType *) msg_result[ (sint32) i ];
-			CStringType *comp_type = (CStringType *) msg_result[ (sint32) (i + 1) ];
 			IObjectIA *comp_val = (IObjectIA *) msg_result[ (sint32) (i + 2) ];
 			
 			sint32 index = getStaticMemberIndex( comp_name->getStr() ); //_AgentClass->getInheritedStaticMemberIndex(  comp_name->getStr()  );
@@ -1446,7 +1443,7 @@ namespace NLAIAGENT
 				((IObjectIA *)msg->getContinuation())->sendMessage(o);
 			}
 			break;
-
+			default: break;
 		}
 	}
 
@@ -2093,7 +2090,6 @@ namespace NLAIAGENT
 		IObjectIA::CProcessResult r;
 		if(opPtr != NULL)
 		{
-			NLAISCRIPT::IOpCode &op = *opPtr;//getMethode(inheritance,i);
 			NLAISCRIPT::CCodeBrancheRun *opTmp = context.Code;
 			int ip;
 			if(context.Code != NULL) ip = (uint32)*context.Code;
@@ -2330,7 +2326,7 @@ namespace NLAIAGENT
 
 			*codeContext.Code = 0;
 
-			IObjectIA::CProcessResult r = o->run(codeContext);
+			(void)o->run(codeContext);
 
 			*codeContext.Code = ip;
 

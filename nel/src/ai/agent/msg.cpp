@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.21 2002/06/06 09:12:14 chafik Exp $
+ * $Id: msg.cpp,v 1.22 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -391,8 +391,6 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult IMessageBase::runMethodeMember(sint32 index,IObjectIA *p)
 	{
-		IBaseGroupType *param = (IBaseGroupType *)p;
-
 		switch(index - IBaseGroupType::getMethodIndexSize())
 		{
 			case _TSender		:

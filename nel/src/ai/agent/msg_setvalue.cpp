@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_setvalue.cpp,v 1.3 2002/06/06 09:12:14 chafik Exp $
+ * $Id: msg_setvalue.cpp,v 1.4 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,7 +83,6 @@ namespace NLAIAGENT
 
 	void CSetValueMsg::getDebugString(std::string &t) const
 	{
-		double i = ((const INombreDefine *)getFront())->getNumber();
 		std::string txt;
 		get()->getDebugString(txt);
 		t += NLAIC::stringGetBuild("CSetValueMsg<%s>",txt.c_str());
@@ -116,8 +115,6 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CSetValueMsg::runMethodeMember(sint32 index, IObjectIA *context)
 	{
-		IBaseGroupType *arg = (IBaseGroupType *) ( (NLAISCRIPT::CCodeContext *)context )->Param.back();
-
 		switch( index - IMessageBase::getMethodIndexSize() )
 		{
 		case 0:

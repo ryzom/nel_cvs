@@ -1,7 +1,7 @@
 /** \file fuzzyvar.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: fuzzyvar.cpp,v 1.9 2001/05/22 16:08:16 chafik Exp $
+ * $Id: fuzzyvar.cpp,v 1.10 2002/08/21 13:58:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,7 +118,6 @@ namespace NLAIFUZZY
 			set_membership = _sets[i]->agregate();
 			if ( set_membership )
 			{
-				char *name = _sets[i]->getName();
 				set_center = _sets[i]->center();
 				_Value = _Value + set_membership * set_center;
 				total_membership = total_membership + set_membership;
@@ -316,7 +315,6 @@ namespace NLAIFUZZY
 		NLAIAGENT::IObjetOp *x= NULL;
 		if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 		{
-			NLAIAGENT::IObjetOp *x = (NLAIAGENT::IObjetOp *) ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
 			( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
 
 #ifdef NL_DEBUG
@@ -365,8 +363,6 @@ namespace NLAIFUZZY
 		{
 		//	throw Exc::
 		}
-
-		sint32 x = params->size();
 
 		// Nom
 		IObjectIA * arg = (IObjectIA *) params->popFront();

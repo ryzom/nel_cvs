@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.22 2001/12/05 10:00:24 portier Exp $
+ * $Id: lexsupport.cpp,v 1.23 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,7 +188,7 @@ namespace NLAISCRIPT
 
 	void EraseDico()
 	{
-		Arbre::iterator Itr = DicoDeNom.begin();
+	        //Arbre::iterator Itr = DicoDeNom.begin();
 		DicoDeNom.clear();
 		/*while(Itr != DicoDeNom.end())
 		{

@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.48 2002/07/03 08:36:02 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.49 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,7 +133,6 @@ namespace NLAISCRIPT
 	
 	bool CAgentClass::isMessageFunc(const CParam &param) const 
 	{
-		int s = param.size();
 		if ( param.size() == 1 )
 		{
 			IOpType &msg_arg = *((IOpType *)param[0]);
@@ -364,7 +363,6 @@ namespace NLAISCRIPT
 
 	const NLAIAGENT::IObjectIA *CAgentClass::getStaticMember(sint32 index) const
 	{	
-		int iiii = 0;
 		try
 		{
 			/*NLAIC::CIdentType id(_Components[i]->RegisterName->getString());
@@ -606,7 +604,6 @@ namespace NLAISCRIPT
 	void CAgentClass::createComponents( std::list<NLAIAGENT::IObjectIA *> &comps) const
 	{
 		NLAIAGENT::IObjectIA *obj;
-		int st_comp_nb = 0;
 		for (sint32 i = 0; i < (sint32) _Components.size(); i++)
 		{
 			CComponent *comp = _Components[i];
@@ -963,7 +960,7 @@ namespace NLAISCRIPT
 			codeContext.Self = this;
 			NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *)getBrancheCode( id_func ).getCode();
 			codeContext.Code = o;
-			IObjectIA::CProcessResult r = o->run(codeContext);
+			o->run(codeContext);
 		}
 	}
 

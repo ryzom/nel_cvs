@@ -1,6 +1,6 @@
 /** \file main_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.30 2002/02/20 18:08:37 lecroart Exp $
+ * $Id: main_agent_script.cpp,v 1.31 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,7 +106,7 @@ namespace NLAIAGENT
 			_CodeContext->InputOutput->incRef();
 			NLAISCRIPT::CCodeContext codeContext(stack,heap,NULL,this,_CodeContext->InputOutput);
 			codeContext.Code = o;
-			IObjectIA::CProcessResult r = o->run(codeContext);
+			(void)o->run(codeContext);
 			heap -= (int)heap;
 			stack -= (int)stack;
 		}

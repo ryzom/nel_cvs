@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.28 2002/06/06 09:12:14 chafik Exp $
+ * $Id: group_type.cpp,v 1.29 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,7 +98,6 @@ namespace NLAIAGENT
 	{
 		tQueue a;
 		NLAISCRIPT::CParam methodParam;
-		NLAISCRIPT::CParam &param = (NLAISCRIPT::CParam &)p;
 		
 		if(className == NULL)
 		{
@@ -232,7 +231,6 @@ namespace NLAIAGENT
 
 		case _Set:
 			{
-				IObjectIA::CProcessResult c;
 				CIteratorContener i = param->getIterator();
 				const DigitalType *f = (const DigitalType *)i ++;
 				IObjectIA *n = (IObjectIA *)i++;				
@@ -410,7 +408,6 @@ namespace NLAIAGENT
 	void CGroupType::getDebugString(std::string &text) const
 	{						
 		text += "[";
-		sint32 k = 0;
 		std::list<const IObjectIA *>::const_iterator i = _List.begin();
 		while(i != _List.end())
 		{
@@ -813,7 +810,6 @@ namespace NLAIAGENT
 		if(_Vector.size())
 		{			
 			text += "[";
-			sint32 k = 0;
 			std::vector<const IObjectIA *>::const_iterator i = _Vector.begin();
 			while(i != _Vector.end())
 			{

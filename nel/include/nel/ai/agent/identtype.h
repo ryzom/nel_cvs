@@ -1,7 +1,7 @@
 /** \file identtype.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.26 2002/07/26 08:46:05 coutelas Exp $
+ * $Id: identtype.h,v 1.27 2002/08/21 13:58:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -331,6 +331,8 @@ namespace NLAIAGENT
 			is.serial(s);
 			TypeName = s;
 		}
+
+		virtual ~CIdent() {}
 
 		bool operator == (const CIdent &a) const
 		{

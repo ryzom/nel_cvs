@@ -1,7 +1,7 @@
 /** \file constraint.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: constraint.h,v 1.10 2002/05/27 09:22:45 chafik Exp $
+ * $Id: constraint.h,v 1.11 2002/08/21 13:58:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -280,7 +280,7 @@ namespace NLAISCRIPT
 		
 	public:
 		CConstraintMethode(TCallTypeOpCode callType,int posHeap,IConstraint *baseClass,NLAIAGENT::IBaseGroupType *methodName,CParam *param,int lin,int col):
-			_CallType(callType),_PosHeap(posHeap),_BaseClass(baseClass),_MethodName(methodName),_Param(param),_Satisfied(false),_Lin(lin),_Col(col)
+			_CallType(callType),_BaseClass(baseClass),_MethodName(methodName),_Param(param),_Satisfied(false),_Lin(lin),_Col(col),_PosHeap(posHeap)
 		{						
 			_Txt = NULL;
 			_Type = NULL;

@@ -84,7 +84,7 @@ namespace NLAILOGIC
 		for ( sint32 i = 0; i < (sint32)_Outputs.size(); i++ )
 		{
 			// Créé la liste des valeurs
-			std::list<IObjectIA *> *values = f->getValues();
+//			std::list<IObjectIA *> *values = f->getValues();
 //			TODO: unifier pour bool et first order operator			
 //			_Outputs[i]->propagate(values, _PosVars[i] );
 		}
@@ -201,7 +201,7 @@ namespace NLAILOGIC
 
 	void CFirstOrderAssert::init(IObjectIA *params)
 	{
-		IVarName *name = (IVarName *) ((IBaseGroupType *)params)->popFront();
+		((IBaseGroupType *)params)->popFront();
 		
 		_NbVars = (sint32) ( (DigitalType *) ((IBaseGroupType *)params)->popFront() )->getValue();
 	}

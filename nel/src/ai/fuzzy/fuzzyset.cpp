@@ -1,7 +1,7 @@
 /** \file fuzzyset.cpp
  * Fuzzy sets: triangle, trapeze...
  *
- * $Id: fuzzyset.cpp,v 1.10 2002/07/02 08:50:12 portier Exp $
+ * $Id: fuzzyset.cpp,v 1.11 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -303,10 +303,6 @@ namespace NLAIFUZZY
 
 	NLAIAGENT::IObjectIA::CProcessResult IFuzzySet::runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p)
 	{
-		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)p;
-
-		IObjectIA::CProcessResult r;
-
 		switch(index - IObjectIA::getMethodIndexSize() )
 		{
 		case 0:

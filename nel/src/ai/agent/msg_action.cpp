@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_action.cpp,v 1.6 2001/06/18 13:57:43 chafik Exp $
+ * $Id: msg_action.cpp,v 1.7 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,6 @@ namespace NLAIAGENT
 
 	void CSuccessMsg::getDebugString(std::string &t) const
 	{
-		double i = ((const INombreDefine *)getFront())->getNumber();
 		std::string txt;
 		get()->getDebugString(txt);
 		t += NLAIC::stringGetBuild("CSuccessMsg<%s>",txt.c_str());
@@ -191,7 +190,6 @@ namespace NLAIAGENT
 
 	void CFailureMsg::getDebugString(std::string &t) const
 	{
-		double i = ((const INombreDefine *)getFront())->getNumber();
 		std::string txt;
 		get()->getDebugString(txt);
 		t += NLAIC::stringGetBuild("CFailureMsg<%s>",txt.c_str());

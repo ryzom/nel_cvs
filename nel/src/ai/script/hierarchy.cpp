@@ -1,6 +1,6 @@
 /** \file hierarchy.cpp
  *
- * $Id: hierarchy.cpp,v 1.9 2001/12/11 09:27:05 chafik Exp $
+ * $Id: hierarchy.cpp,v 1.10 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,9 +172,7 @@ namespace NLAISCRIPT
 		{
 			sint32 i;
 			NLAIAGENT::CStringVarName oldLastClassName("");
-			sint32 Dec = 0;
 
-			const NLAIAGENT::IObjectIA *classType = baseClass;
 			while(varHName.size())
 			{
 			

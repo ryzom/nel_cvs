@@ -1,7 +1,7 @@
 /** \file key_agent.h
  * key for the multi set in the CAgentScript class.
  *
- * $Id: key_agent.h,v 1.3 2001/04/17 09:26:09 portier Exp $
+ * $Id: key_agent.h,v 1.4 2002/08/21 13:58:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,7 @@ namespace NLAIAGENT
 			Obj->release();
 			Obj = a.Obj;
 			Obj->incRef();
+			return *this;
 		}
 
 		bool operator < (const CKeyObject &k) const

@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.19 2002/06/27 16:58:09 chafik Exp $
+ * $Id: compilateur.cpp,v 1.20 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,11 +92,11 @@ namespace NLAISCRIPT
 	NLAIAGENT::IObjectIA::CProcessResult CCompilateur::Compile()
 	{
 		NLAISCRIPT::InitDico();
-		int k = yywrap();
+		(void)yywrap();
 		yyLine = yyColone = 1;
 		_Error = false;
 		
-		sint32 i = yyparse();
+		(void)yyparse();
 		while(yylex());
 		
 		NLAISCRIPT::EraseDico();
@@ -278,7 +278,6 @@ namespace NLAISCRIPT
 
 
 		sint32 n = 1;
-		sint32 did = 0;
 		while(n)
 		{		
 			std::list<IConstraint *>::iterator i = _MethodConstraint.begin();
@@ -425,7 +424,7 @@ namespace NLAISCRIPT
 	{
 		while(_MethodConstraint.size())
 		{	
-			IConstraint *c = _MethodConstraint.back();
+			//IConstraint *c = _MethodConstraint.back();
 			//c->release();
 			_MethodConstraint.pop_back();
 		}

@@ -1,6 +1,6 @@
 /** \file constraint.cpp
  *
- * $Id: constraint.cpp,v 1.16 2002/06/06 09:12:14 chafik Exp $
+ * $Id: constraint.cpp,v 1.17 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -150,7 +150,7 @@ namespace NLAISCRIPT
 		else
 		{
 			_Satisfied = true;
-			IOpCode *x;
+			IOpCode *x=0;
 						
 
 			if(((const NLAIC::CTypeOfObject &)_M.Object->getType()) & NLAIC::CTypeOfObject::tInterpret)

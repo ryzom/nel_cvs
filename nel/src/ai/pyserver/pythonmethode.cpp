@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.18 2001/12/11 09:27:05 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.19 2002/08/21 13:58:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,7 +171,6 @@ namespace NLAIPYSERVER
 	CPyExport *initPythonLib(NLAIC::IIO *P,char *pathWay)
 	{
 		//char S[MAX_PATH + 1];
-		bool PyExiste = false;
 		//HKEY	hKey;
 
 		Interface = P;		

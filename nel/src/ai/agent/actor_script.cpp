@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.63 2002/08/09 08:41:27 portier Exp $
+ * $Id: actor_script.cpp,v 1.64 2002/08/21 13:58:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -187,8 +187,6 @@ namespace NLAIAGENT
 
 			if ( !_IsPaused )
 			{
-				CAgentScript *father = (CAgentScript *) getParent();
-
 				// Looks for the function to call when the actor is paused
 				static CStringVarName activate_func_name("OnPause");
 				tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
@@ -240,8 +238,6 @@ namespace NLAIAGENT
 		{
 			if ( _IsPaused )
 			{
-				CAgentScript *father = (CAgentScript *) getParent();
-
 				// Looks for the function to call when the actor is restarted
 				static CStringVarName activate_func_name("OnRestart");
 				tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );

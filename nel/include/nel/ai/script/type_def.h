@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.13 2002/05/27 09:22:45 chafik Exp $
+ * $Id: type_def.h,v 1.14 2002/08/21 13:58:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1005,6 +1005,7 @@ namespace NLAISCRIPT
 		case operandSimpleListOr:
 			x = new COperandSimpleListOr(f);
 			return x;
+		default: break;
 		}
 		return NULL;
 	}

@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.23 2002/06/27 16:58:09 chafik Exp $
+ * $Id: codage.cpp,v 1.24 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,7 +99,6 @@ namespace NLAISCRIPT
 		CStackPointer	stack,heap;
 		CCodeContext p(stack,heap,this,NULL,InputOutput);
 		
-		NLAIAGENT::TProcessStatement i = NLAIAGENT::processIdle;		
 		CVarPStack::_LocalTableRef = &heap[0];
 		stack --;
 

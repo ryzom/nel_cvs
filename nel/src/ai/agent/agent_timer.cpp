@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.30 2002/03/12 11:29:21 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.31 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -292,7 +292,6 @@ namespace NLAIAGENT
 	{
 		if(_CallIter == _Call.end()) 
 				_CallIter = _Call.begin();
-		uint n = 0;
 		while(_CallIter != _Call.end())
 		{
 			std::pair<IMessageBase *, sint32> p = ((*_CallIter).second);

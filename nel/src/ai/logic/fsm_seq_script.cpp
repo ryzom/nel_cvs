@@ -99,7 +99,6 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CSeqFsmScript::runMethodBase(int index,int heritance, IObjectIA *params)
 	{
-		IBaseGroupType *param = (IBaseGroupType *) params;
 		return IObjectIA::CProcessResult();
 	}
 
@@ -121,7 +120,9 @@ namespace NLAIAGENT
 			{	
 				while ( param->size() )
 				{
+#ifdef NL_DEBUG
 					const IVarName *state_name = (NLAIAGENT::IVarName *) param->get()->clone();
+#endif
 					param->popFront();
 #ifdef NL_DEBUG
 					const char *dbg_state_name = state_name->getString();
@@ -151,8 +152,6 @@ namespace NLAIAGENT
 	tQueue CSeqFsmScript::isMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
 	{		
 
-		const char *txt = name->getString();
-
 		tQueue result = CFsmScript::isMember( className, name, param);
 
 		if ( result.size() )
@@ -181,7 +180,6 @@ namespace NLAIAGENT
 		}
 
 		_IdActiveChild = no_child;
-		const NLAIAGENT::IVarName *active_name = ( (NLAISCRIPT::CSeqFsmClass *)_AgentClass )->getStep( no_child );
 //		IBasicAgent *tmp = get
 
 		if ( _ActiveChild != NULL )

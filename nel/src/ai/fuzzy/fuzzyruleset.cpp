@@ -1,7 +1,7 @@
 /** \file fuzzyruleset.cpp
  *	A container for fuzzy rules
  *	
- * $Id: fuzzyruleset.cpp,v 1.6 2001/05/22 16:08:16 chafik Exp $
+ * $Id: fuzzyruleset.cpp,v 1.7 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,8 +113,6 @@ namespace NLAIFUZZY
 	void CFuzzyRuleSet::init(NLAIAGENT::IObjectIA  *p)
 	{
 		NLAIAGENT::IBaseGroupType *params = ((NLAIAGENT::IBaseGroupType *)p);
-
-		sint32 x = params->size();
 
 		while (	 params->size() )
 		{

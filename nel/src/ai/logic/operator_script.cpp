@@ -316,9 +316,6 @@ namespace NLAIAGENT
 		int i;
 		for ( i = 0; i < (int) goals->size(); i++ )
 		{
-			NLAILOGIC::CGoal *av_goal = (*goals)[i];
-			const NLAILOGIC::CGoal *op_goal = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal();
-
 			if ( (*( (*goals)[i])) == *( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() )
 				_ActivatedGoals.push_back( (*goals)[i] );
 		}
@@ -401,7 +398,6 @@ namespace NLAIAGENT
 		NLAILOGIC::CFact *result = new NLAILOGIC::CFact( assert);	// TODO:: pas besoin du nombre dans ce constructeur puisqu'on a l'assert
 		for (sint32 i = 0; i < (sint32) pl.size() ; i++ )
 		{
-			sint32 p = pl[i];
 			result->setValue( i, (*vars)[ pl[i] ] );
 		}
 		return result;
@@ -509,7 +505,7 @@ namespace NLAIAGENT
 	{
 		NLAILOGIC::CValueSet *result;
 
-		if ( result = fp->unify( vals, pos_vals ) )
+		if ( (result = fp->unify( vals, pos_vals )) )
 			return result;
 		else
 		{

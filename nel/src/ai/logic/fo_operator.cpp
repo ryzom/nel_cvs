@@ -305,7 +305,6 @@ namespace NLAILOGIC
 		CFact *result = new CFact( assert);	// TODO:: pas besoin du nombre dans ce constructeur puisqu'on a l'assert
 		for (sint32 i = 0; i < (sint32) pl.size() ; i++ )
 		{
-			sint32 p = pl[i];
 			result->setValue( i, (*vars)[ pl[i] ] );
 		}
 		return result;
@@ -418,7 +417,7 @@ namespace NLAILOGIC
 	{
 		CValueSet *result;
 
-		if ( result = fp->unify( vals, pos_vals ) )
+		if ( (result = fp->unify( vals, pos_vals )) )
 			return result;
 		else
 		{

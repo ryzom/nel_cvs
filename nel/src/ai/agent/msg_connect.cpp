@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_connect.cpp,v 1.3 2002/03/11 09:56:17 portier Exp $
+ * $Id: msg_connect.cpp,v 1.4 2002/08/21 13:58:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,6 @@ namespace NLAIAGENT
 
 	void CConnectObjectValueMsg::getDebugString(std::string &t) const
 	{
-		double i = ((const INombreDefine *)getFront())->getNumber();
 		std::string txt;
 		get()->getDebugString(txt);
 		t += NLAIC::stringGetBuild("CConnectObjectValueMsg<%s>",txt.c_str());

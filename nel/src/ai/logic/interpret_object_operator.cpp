@@ -325,7 +325,6 @@ namespace NLAISCRIPT
 		NLAILOGIC::CFact *result = new NLAILOGIC::CFact( assert);	// TODO:: pas besoin du nombre dans ce constructeur puisqu'on a l'assert
 		for (sint32 i = 0; i < (sint32) pl.size() ; i++ )
 		{
-			sint32 p = pl[i];
 			result->setValue( i, (*vars)[ pl[i] ] );
 		}
 		return result;
@@ -429,7 +428,7 @@ namespace NLAISCRIPT
 	{
 		NLAILOGIC::CValueSet *result;
 
-		if ( result = fp->unify( vals, pos_vals ) )
+		if ( (result = fp->unify( vals, pos_vals )) )
 			return result;
 		else
 		{
@@ -611,7 +610,6 @@ namespace NLAISCRIPT
 			while ( it_var != params_list.end() )
 			{
 				NLAIAGENT::CStringVarName var_name = *(NLAIAGENT::CStringVarName *)(*it_var);
-				const char *txt = var_name.getString();
 				pattern->addVar(  new NLAILOGIC::CVar( var_name ) );
 				it_var++;
 			}
@@ -668,7 +666,6 @@ namespace NLAISCRIPT
 			while ( it_var != _ClassCondVars[i]->end() )
 			{
 				NLAIAGENT::CStringVarName var_name = *(NLAIAGENT::CStringVarName *)(*it_var);
-				const char *txt = var_name.getString();
 				pattern->addVar(  new NLAILOGIC::CVar( var_name ) );
 				it_var++;
 			}
@@ -684,7 +681,6 @@ namespace NLAISCRIPT
 			while ( it_var != _ClassConcVars[i]->end() )
 			{
 				NLAIAGENT::CStringVarName var_name = *(NLAIAGENT::CStringVarName *)(*it_var);
-				const char *txt = var_name.getString();
 				pattern->addVar(  new NLAILOGIC::CVar( var_name ) );
 				it_var++;
 			}
@@ -842,7 +838,6 @@ namespace NLAISCRIPT
 			while ( it_var != _ClassCondVars[i]->end() )
 			{
 				NLAIAGENT::CStringVarName var_name = *(NLAIAGENT::CStringVarName *)(*it_var);
-				const char *txt = var_name.getString();
 				pattern->addVar(  new NLAILOGIC::CVar( var_name ) );
 				it_var++;
 			}
@@ -858,7 +853,6 @@ namespace NLAISCRIPT
 			while ( it_var != _ClassConcVars[i]->end() )
 			{
 				NLAIAGENT::CStringVarName var_name = *(NLAIAGENT::CStringVarName *)(*it_var);
-				const char *txt = var_name.getString();
 				pattern->addVar(  new NLAILOGIC::CVar( var_name ) );
 				it_var++;
 			}

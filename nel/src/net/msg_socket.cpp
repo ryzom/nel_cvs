@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.56 2001/02/23 10:05:04 cado Exp $
+ * $Id: msg_socket.cpp,v 1.57 2001/04/06 16:08:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -741,12 +741,12 @@ void printOutCallbacks( const CSearchSet& s )
 	CSearchSet::iterator is;
 	for ( is=s.begin(); is!=s.end(); ++is )
 	{
-		NLMISC::DebugLog.displayRawNL( (*is).key() );
+		NLMISC::DebugLog->displayRawNL( (*is).key() );
 	}
 	nldebug( "Static callbacks:" );
 	for ( is=CMsgSocket::_SearchSet.begin(); is!=CMsgSocket::_SearchSet.end(); ++is )
 	{
-		NLMISC::DebugLog.displayRawNL( (*is).key() );
+		NLMISC::DebugLog->displayRawNL( (*is).key() );
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: new_service.cpp,v 1.8 2001/03/29 09:31:34 lecroart Exp $
+ * $Id: new_service.cpp,v 1.9 2001/04/06 16:08:12 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -342,12 +342,12 @@ sint INewService::main (int argc, char **argv)
 				NetLog.addDisplayer( nd );
 
 				// Add the net displayer for all debug information
-				ErrorLog.addDisplayer (nd);
-				WarningLog.addDisplayer (nd);
-				InfoLog.addDisplayer (nd);
+				ErrorLog->addDisplayer (nd);
+				WarningLog->addDisplayer (nd);
+				InfoLog->addDisplayer (nd);
 #ifdef NL_DEBUG
-				DebugLog.addDisplayer (nd);
-				AssertLog.addDisplayer (nd);
+				DebugLog->addDisplayer (nd);
+				AssertLog->addDisplayer (nd);
 #endif
 			}
 

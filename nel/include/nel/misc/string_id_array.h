@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * <File description>
  *
- * $Id: string_id_array.h,v 1.9 2001/04/04 14:43:23 cado Exp $
+ * $Id: string_id_array.h,v 1.10 2001/04/06 16:08:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,7 @@ public:
 		addString (str, _StringArray.size ());
 	}
 
-	TStringId getId (const std::string &str)
+	TStringId getId (const std::string &str, bool IgnoreIfUnknown = false)
 	{
 		// sorry for this bullshit but it's the simplest way ;)
 		if (this == NULL) return -1;
@@ -88,7 +88,7 @@ public:
 				return i;
 		}
 
-		if (!_IgnoreAllUnknownId)
+		if (!_IgnoreAllUnknownId && !IgnoreIfUnknown)
 		{
 			// the string is not found, add it to the _AskedStringArray if necessary
 			if (_NeedToAskStringArray.find (str) == _NeedToAskStringArray.end ())

@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.38 2001/01/19 15:13:26 cado Exp $
+ * $Id: local_area.cpp,v 1.39 2001/04/06 16:08:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,12 +131,12 @@ void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
 		msgin.serial( es );
 		msgin.serial( name );
 		msgin.serial( metype );
-		DebugLog.displayRaw( " %s (type %u)", name.c_str(), metype );
+		DebugLog->displayRaw( " %s (type %u)", name.c_str(), metype );
 		es.setName( name );
 		es.setType( metype );
 		createRemoteEntity( es );
 	}
-	DebugLog.displayRawNL( "." );
+	DebugLog->displayRawNL( "." );
 }
 
 

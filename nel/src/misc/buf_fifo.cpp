@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.13 2001/03/29 09:34:14 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.14 2001/04/06 16:08:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -432,7 +432,7 @@ void CBufFIFO::display ()
 #else
 	strncat (str, "\r", 1024);
 #endif
-	DebugLog.display (str);
+	DebugLog->display (str);
 }
 
 bool CBufFIFO::canFit (uint32 size)

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.27 2001/03/07 17:34:51 lecroart Exp $
+ * $Id: debug.h,v 1.28 2001/04/06 16:08:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,11 +37,11 @@ namespace NLMISC
 
 // Externals
 
-extern CLog ErrorLog;
-extern CLog WarningLog;
-extern CLog InfoLog;
-extern CLog DebugLog;
-extern CLog AssertLog;
+extern CLog *ErrorLog;
+extern CLog *WarningLog;
+extern CLog *InfoLog;
+extern CLog *DebugLog;
+extern CLog *AssertLog;
 
 
 // Functions
@@ -57,6 +57,9 @@ void nlError (const char *format, ...);
  * mode too, just put true in the first parameter.
  */
 void initDebug (bool setDisplayerInReleaseModeToo = false);
+
+// internal use only
+void createDebug ();
 
 // Macros
 
@@ -75,16 +78,16 @@ void initDebug (bool setDisplayerInReleaseModeToo = false);
  *\endcode
  */
 //#ifdef NL_DEBUG
-//#define nldebug NLMISC::DebugLog.setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog.displayNL
+//#define nldebug NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog->displayNL
 //#else
 //#define nldebug //
 //#endif
 
-extern CMutex MutexNLDebug;
+extern CMutex *MutexNLDebug;
 void nlMtDebug( const char *format, ... );
 
 #define nldebug \
-NLMISC::MutexNLDebug.enter(), NLMISC::DebugLog.setPosition( __LINE__, __FILE__ ), NLMISC::nlMtDebug
+NLMISC::createDebug (), NLMISC::MutexNLDebug->enter(), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlMtDebug
 
 
 /**
@@ -92,7 +95,7 @@ NLMISC::MutexNLDebug.enter(), NLMISC::DebugLog.setPosition( __LINE__, __FILE__ )
  * Same as nldebug but it will be display in debug and in release mode.
  */
 #define nlinfo \
-/*NLMISC::InfoLog.setPosition( __LINE__, __FILE__ ),*/ NLMISC::InfoLog.displayNL
+/*NLMISC::InfoLog.setPosition( __LINE__, __FILE__ ),*/ NLMISC::createDebug (), NLMISC::InfoLog->displayNL
 
 /**
  * \def nlwarning(exp)
@@ -112,7 +115,7 @@ NLMISC::MutexNLDebug.enter(), NLMISC::DebugLog.setPosition( __LINE__, __FILE__ )
  *\endcode
  */
 #define nlwarning \
-NLMISC::WarningLog.setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog.displayNL
+NLMISC::createDebug (), NLMISC::WarningLog->setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog->displayNL
 
 /**
  * \def nlerror(exp)
@@ -131,7 +134,7 @@ NLMISC::WarningLog.setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog.display
  *\endcode
  */
 #define nlerror \
-NLMISC::ErrorLog.setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
+NLMISC::createDebug (), NLMISC::ErrorLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
 
 
 /**
@@ -246,8 +249,9 @@ NLMISC::ErrorLog.setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
 #define nlassert(exp) \
 { \
 	if (!(exp)) { \
-		NLMISC::AssertLog.setPosition (__LINE__, __FILE__); \
-		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
+		NLMISC::createDebug (); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -257,8 +261,9 @@ NLMISC::ErrorLog.setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
 	static bool ignoreAlways = false; \
 	if (!ignoreAlways && !(exp)) { \
 		ignoreAlways=true; \
-		NLMISC::AssertLog.setPosition( __LINE__, __FILE__ ); \
-		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
+		NLMISC::createDebug (); \
+		NLMISC::AssertLog->setPosition( __LINE__, __FILE__ ); \
+		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -267,9 +272,10 @@ NLMISC::ErrorLog.setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
 { \
 	if (!(exp)) \
 	{ \
-		NLMISC::AssertLog.setPosition( __LINE__, __FILE__ ); \
-		NLMISC::AssertLog.display ("\"%s\" ", #exp); \
-		NLMISC::AssertLog.displayRawNL str; \
+		NLMISC::createDebug (); \
+		NLMISC::AssertLog->setPosition( __LINE__, __FILE__ ); \
+		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
+		NLMISC::AssertLog->displayRawNL str; \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -277,8 +283,9 @@ NLMISC::ErrorLog.setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
 #define nlverify(exp) \
 { \
 	if (!(exp)) { \
-		NLMISC::AssertLog.setPosition (__LINE__, __FILE__); \
-		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
+		NLMISC::createDebug (); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -288,8 +295,9 @@ NLMISC::ErrorLog.setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
 	static bool ignoreAlways = false; \
 	if (!ignoreAlways && !(exp)) { \
 		ignoreAlways=true; \
-		NLMISC::AssertLog.setPosition ( __LINE__, __FILE__ ); \
-		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
+		NLMISC::createDebug (); \
+		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
+		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		NLMISC_BREAKPOINT \
 	} \
 }
@@ -298,17 +306,19 @@ NLMISC::ErrorLog.setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
 { \
 	if (!(exp)) \
 	{ \
-		NLMISC::AssertLog.setPosition ( __LINE__, __FILE__ ); \
-		NLMISC::AssertLog.display ("\"%s\" ", #exp); \
-		NLMISC::AssertLog.displayRawNL str; \
+		NLMISC::createDebug (); \
+		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
+		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
+		NLMISC::AssertLog->displayRawNL str; \
 		NLMISC_BREAKPOINT \
 	} \
 }
 
 #define nlstop \
 { \
-	NLMISC::AssertLog.setPosition (__LINE__, __FILE__); \
-	NLMISC::AssertLog.displayNL ("STOP "); \
+	NLMISC::createDebug (); \
+	NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+	NLMISC::AssertLog->displayNL ("STOP "); \
 	NLMISC_BREAKPOINT \
 }
 
@@ -317,17 +327,19 @@ NLMISC::ErrorLog.setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
 	static bool ignoreAlways = false; \
 	if (!ignoreAlways) { \
 		ignoreAlways=true; \
-		NLMISC::AssertLog.setPosition ( __LINE__, __FILE__ ); \
-		NLMISC::AssertLog.displayNL ("STOP "); \
+		NLMISC::createDebug (); \
+		NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
+		NLMISC::AssertLog->displayNL ("STOP "); \
 		NLMISC_BREAKPOINT \
 	} \
 }
 
 #define nlstopex(str) \
 { \
-	NLMISC::AssertLog.setPosition ( __LINE__, __FILE__ ); \
-	NLMISC::AssertLog.display ("STOP "); \
-	NLMISC::AssertLog.displayRawNL str; \
+	NLMISC::createDebug (); \
+	NLMISC::AssertLog->setPosition ( __LINE__, __FILE__ ); \
+	NLMISC::AssertLog->display ("STOP "); \
+	NLMISC::AssertLog->displayRawNL str; \
 	NLMISC_BREAKPOINT \
 }
 

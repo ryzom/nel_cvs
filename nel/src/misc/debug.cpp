@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.31 2001/03/30 15:54:57 portier Exp $
+ * $Id: debug.cpp,v 1.32 2001/04/06 16:08:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,25 +38,31 @@
  
 #include "nel/misc/debug.h"
 
+// If you don't want to add default displayer, put 0 instead of 1. In this case, you
+// have to manage yourself displayer (in final release for example, we have to put 0)
+#define DEFAULT_DISPLAYER 1
+
+// Put 0 if you don't want to display in file "log.log"
+#define LOG_IN_FILE 1
 
 namespace NLMISC {
 
-CLog ErrorLog (CLog::LOG_ERROR);
-CLog WarningLog (CLog::LOG_WARNING);
-CLog InfoLog (CLog::LOG_INFO);
-CLog DebugLog (CLog::LOG_DEBUG);
-CLog AssertLog (CLog::LOG_ASSERT);
+CLog *ErrorLog = NULL;
+CLog *WarningLog = NULL;
+CLog *InfoLog = NULL;
+CLog *DebugLog = NULL;
+CLog *AssertLog = NULL;
 
-CStdDisplayer sd;
-CMsgBoxDisplayer mbd;
-
+static CStdDisplayer *sd = NULL;
+static CFileDisplayer *fd = NULL;
+static CMsgBoxDisplayer *mbd = NULL;
 
 void nlFatalError (const char *format, ...)
 {
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
-	NLMISC::ErrorLog.displayNL (str);
+	NLMISC::ErrorLog->displayNL (str);
 
 #if defined(NL_OS_WINDOWS) && defined (NL_DEBUG)
 	_asm int 3;
@@ -70,57 +76,96 @@ void nlError (const char *format, ...)
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
-	NLMISC::ErrorLog.displayNL (str);
+	NLMISC::ErrorLog->displayNL (str);
 
 #if defined(NL_OS_WINDOWS) && defined (NL_DEBUG)
 	_asm int 3;
 #endif
 }
 
-void initDebug (bool setDisplayerInReleaseModeToo)
+// the default behavior is to display all in standard output and to a file named "log.log";
+
+void initDebug2 ()
 {
 	static bool alreadyInit = false;
 
 	if (!alreadyInit)
 	{
+#if DEFAULT_DISPLAYER
+		InfoLog->addDisplayer (sd);
+		WarningLog->addDisplayer (sd);
+		ErrorLog->addDisplayer (sd);
+#if LOG_IN_FILE
+		InfoLog->addDisplayer (fd);
+		WarningLog->addDisplayer (fd);
+		ErrorLog->addDisplayer (fd);
+#endif // LOG_IN_FILE
+
 #ifdef NL_DEBUG
+		DebugLog->addDisplayer (sd);
+		AssertLog->addDisplayer (sd);
 
-		ErrorLog.addDisplayer (&sd);
-		WarningLog.addDisplayer (&sd);
-		InfoLog.addDisplayer (&sd);
-		DebugLog.addDisplayer (&sd);
-		AssertLog.addDisplayer (&sd);
+#if LOG_IN_FILE
+		DebugLog->addDisplayer (fd);
+		AssertLog->addDisplayer (fd);
+#endif // LOG_IN_FILE
 
-#elif defined(NL_RELEASE)
+#endif // NL_DEBUG
 
-		if (setDisplayerInReleaseModeToo)
-		{
-			InfoLog.addDisplayer (&sd);
-			WarningLog.addDisplayer (&sd);
-			ErrorLog.addDisplayer (&sd);
-			ErrorLog.addDisplayer (&mbd);
-		}
-
+#ifdef NL_RELEASE
+		ErrorLog->addDisplayer (mbd);
 #endif // NL_RELEASE
 
+#endif // DEFAULT_DISPLAYER
 		alreadyInit = true;
 	}
 	else
 	{
-		nlwarning ("NLMISC::initDebug() already called");
+		nlwarning ("NLMISC::initDebug2() already called");
 	}
 }
 
+void createDebug ()
+{
+	static alreadyCreate = false;
+	if (!alreadyCreate)
+	{
+		ErrorLog = new CLog (CLog::LOG_ERROR);
+		WarningLog = new CLog (CLog::LOG_WARNING);
+		InfoLog = new CLog (CLog::LOG_INFO);
+		DebugLog = new CLog (CLog::LOG_DEBUG);
+		AssertLog = new CLog (CLog::LOG_ASSERT);
 
-CMutex MutexNLDebug;
+		sd = new CStdDisplayer;
+		mbd = new CMsgBoxDisplayer;
+		fd = new CFileDisplayer ("log.log", true);
+		
+		MutexNLDebug = new CMutex;
+
+		initDebug2();
+
+		alreadyCreate = true;
+	}
+}
+
+void initDebug (bool setDisplayerInReleaseModeToo)
+{
+	// deprecated!!!
+	// you don't need to call initDebug anymore
+	nlstop;
+}
+
+CMutex *MutexNLDebug = NULL;
 
 
 void nlMtDebug( const char *format, ... )
 {
+	createDebug ();
+
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
-	DebugLog.displayNL (str);
-	MutexNLDebug.leave();
+	DebugLog->displayNL (str);
+	MutexNLDebug->leave();
 }
 
 } // NLMISC

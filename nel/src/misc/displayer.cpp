@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.11 2001/03/09 14:56:47 cado Exp $
+ * $Id: displayer.cpp,v 1.12 2001/04/06 16:08:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -159,11 +159,11 @@ void CStdDisplayer::doDisplay (time_t date, CLog::TLogType logType, const string
 
 #ifdef NL_OS_WINDOWS
 	// display the string in the debugger is the application is started with the debugger
+	// todo to the display like this "R:\code\nel\src\misc\displayer.cpp(168) : message"
 	if (IsDebuggerPresent ())
 		OutputDebugString(ss.str().c_str());
 #endif
 }
-
 
 CFileDisplayer::CFileDisplayer(const std::string& filename, bool eraseLastLog) : _FileName(filename), _NeedHeader(true)
 {

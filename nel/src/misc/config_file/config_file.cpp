@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.58 2003/10/27 11:18:37 lecroart Exp $
+ * $Id: config_file.cpp,v 1.59 2004/03/22 11:41:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,6 +142,36 @@ void CConfigFile::CVar::setAsString (std::string val, int index)
 	else if (index > (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
 	else if (index == (int)StrValues.size ()) StrValues.push_back(val);
 	else StrValues[index] = val;
+	Root = false;
+}
+
+void CConfigFile::CVar::forceAsInt	(int val)
+{
+	Type= T_INT;
+	IntValues.resize(1);
+	RealValues.clear();
+	StrValues.clear();
+	IntValues[0]= val;
+	Root = false;
+}
+
+void CConfigFile::CVar::forceAsDouble	(double val)
+{
+	Type= T_REAL;
+	IntValues.clear();
+	RealValues.resize(1);
+	StrValues.clear();
+	RealValues[0]= val;
+	Root = false;
+}
+
+void CConfigFile::CVar::forceAsString	(std::string val)
+{
+	Type= T_STRING;
+	IntValues.clear();
+	RealValues.clear();
+	StrValues.resize(1);
+	StrValues[0]= val;
 	Root = false;
 }
 

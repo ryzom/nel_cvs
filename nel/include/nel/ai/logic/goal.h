@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.19 2001/07/13 14:52:59 portier Exp $
+ * $Id: goal.h,v 1.20 2001/08/28 14:45:05 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,12 @@
 
 #include "nel/ai/logic/boolval.h"
 #include "nel/ai/agent/agent.h"
+
+
+namespace NLAIAGENT
+{
+	class COperatorScript;
+}
 
 namespace NLAILOGIC 
 {
@@ -140,6 +146,8 @@ namespace NLAILOGIC
 			{
 				return ( !_Successors.empty() );
 			}
+
+			bool isExclusive();
 	};
 }
 

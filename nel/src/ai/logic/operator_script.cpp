@@ -550,6 +550,18 @@ namespace NLAIAGENT
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = new NLAIAGENT::DigitalType( priority() );
 				return r;
+
+			case fid_background:
+				_Exclusive = false;
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
+
+			case fid_exclusive:
+				_Exclusive = true;
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
 		}
 		return r;
 	}
@@ -626,6 +638,8 @@ namespace NLAIAGENT
 		static NLAIAGENT::CStringVarName ispaused_name("IsPaused");
 		static NLAIAGENT::CStringVarName isactivable_name("IsActivable");
 		static NLAIAGENT::CStringVarName priority_name("GetPriority");
+		static NLAIAGENT::CStringVarName exclusive_name("SetExclusive");
+		static NLAIAGENT::CStringVarName background_name("SetBackground");
 
 
 		if ( *name == modeachieve_name )
@@ -659,6 +673,18 @@ namespace NLAIAGENT
 			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_getPriority , 0.0,NULL, r_type ) );
 		}
 
+		if ( *name == exclusive_name )
+		{
+			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_exclusive , 0.0,NULL, r_type ) );
+		}
+
+		if ( *name == background_name )
+		{
+			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_background , 0.0,NULL, r_type ) );
+		}
+
 		if ( result.empty() )
 			return CActorScript::getPrivateMember(className, name, param);
 		else
@@ -668,5 +694,10 @@ namespace NLAIAGENT
 	sint32 COperatorScript::getMethodIndexSize() const
 	{
 		return CActorScript::getMethodIndexSize() + fid_last;
+	}
+
+	bool COperatorScript::isExclusive()
+	{
+		return _Exclusive;
 	}
 }

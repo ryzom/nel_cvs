@@ -361,15 +361,13 @@ namespace NLAILOGIC
 		}
 		return pri;
 	}
-/*
-	void CGoal::setTopLevel(NLAIAGENT::CAgentScript *tl)
+
+	bool CGoal::isExclusive()
 	{
-		_TopLevel = tl;
+		if ( _Successors.empty() )
+			return false;
+		else
+			return ( (NLAIAGENT::COperatorScript *)_Successors.front())->isExclusive();
 	}
 
-	const NLAIAGENT::CAgentScript *getTopLevel() const
-	{
-		return _TopLevel;
-	}
-	*/
 }

@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.23 2001/08/01 13:16:03 portier Exp $
+ * $Id: operator_script.h,v 1.24 2001/08/28 14:45:05 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,8 @@ namespace NLAIAGENT
 				fid_isPaused,
 				fid_getPriority,
 				fid_isActivable,
+				fid_background,
+				fid_exclusive,
 				fid_last
 			};
 
@@ -63,6 +65,7 @@ namespace NLAIAGENT
 			sint32								_CyclesBeforeUpdate;	// Number of cycles before the preconditions are checked
 			std::list<NLAILOGIC::CGoal *>		_ActivatedGoals;
 			bool								_IsActivable;
+			bool								_Exclusive;
 			bool								_Maintain;
 			float								_Priority;
 		public:
@@ -130,6 +133,7 @@ namespace NLAIAGENT
 			bool checkPreconditions();
 			void execOnActivate();
 			void checkPause();
+			bool isExclusive();
 	};
 }
 #endif

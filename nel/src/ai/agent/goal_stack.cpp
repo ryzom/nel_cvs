@@ -28,65 +28,6 @@ namespace NLAILOGIC
 		}
 		*/
 	}
-/*
-	NLAIAGENT::IObjectIA::CProcessResult CGoalStack::runActivity()
-	{
-		int i;
-		if ( _Goals.size() > 1)
-		{
-			CGoal *old_top = _Goals.front();
-
-			std::sort(_Goals.begin(), _Goals.end(), greater());
-
-
-			CGoal *new_top = _Goals.front();
-
-#ifdef NL_DEBUG
-			std::string dbg_stack;
-			for ( i = 0; i < (int) _Goals.size(); i++ )
-			{
-				std::string tmp;
-				 _Goals[i]->getDebugString( tmp );
-				dbg_stack += tmp;
-			}
-			const char *dbg_str = dbg_stack.c_str();
-#endif
-
-
-		if ( ! _MultiTask )
-		{
-				new_top->select();
-				
-				if ( ! ( (*old_top) == (*new_top) ) )
-				{
-					old_top->unSelect();
-				}
-			}
-			else
-			{
-				if ( _Goals.size() == 1 )
-				{
-#ifdef NL_DEBUG
-					std::string tmp;
-					 _Goals[0]->getDebugString( tmp );
-#endif
-					_Goals.front()->select();
-				}
-			}
-		}
-		else
-		{
-			for ( i = 0; i < (int) _Goals.size(); i++ )
-			{
-				if ( _Goals[i]->priority() > 0 )
-					_Goals[i]->select();
-				else
-					_Goals[i]->unSelect();
-			}
-		}
-		return NLAIAGENT::IObjectIA::CProcessResult();
-	}
-	*/
 
 	NLAIAGENT::IObjectIA::CProcessResult CGoalStack::runActivity()
 	{
@@ -112,7 +53,7 @@ namespace NLAILOGIC
 		std::vector<CGoal *>::iterator it_g = _Goals.begin();
 		while ( ( it_g != _Goals.end() ) )
 		{
-			if ( ( i < _MaxGoals ) && ( (*it_g)->priority() > 0 ) )
+			if ( ( i < _MaxGoals || !(*it_g)->isExclusive() ) && ( (*it_g)->priority() > 0 ) )
 			{		
 				_Goals[i]->select();
 				i++;

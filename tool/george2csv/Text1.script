@@ -5,7 +5,7 @@ PATH	r:\code\ryzom\data_leveldesign
 //OUTPUT	creatures.csv
 //FIELD	Basics.Scores.HitPoints
 //FIELD	Basics.Scores.Sap
-//SCANFILES +.creature
+//SCANFILES +*.creature
 
 OUTPUT	skeletons.csv
 //FIELD	Basics.Equipment.Body.Item
@@ -17,7 +17,7 @@ OUTPUT	skeletons.csv
 //FIELD	Basics.Equipment.Face.Item
 FIELD	3d data.Skel
 FIELD	3d data.AnimSetBaseName
-SCANFILES +.creature -0 -1 -2 -3 -4 -5
+SCANFILES +_*.creature
 
 OUTPUT	anims.csv
 FIELD	idle.animations[0].filename
@@ -29,11 +29,11 @@ FIELD	about_face_left.animations[0].filename
 FIELD	about_face_right.animations[0].filename
 FIELD	attack1.animations[0].filename
 FIELD	attack2.animations[0].filename
-SCANFILES +.animation_set
+SCANFILES +*.animation_set
 
 //OUTPUT items.csv
 //SOURCE	Basics.Scores.HitPoints
 //SOURCE	Basics.Scores.Sap
-//SCANFILES +.item
+//SCANFILES +*.item
 
 

@@ -21,7 +21,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "georges"=R:\CODE\nel\src\georges.dsp - Package Owner=<4>
+Project: "georges"=..\..\nel\src\georges.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -33,7 +33,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "misc"=R:\CODE\nel\src\misc.dsp - Package Owner=<4>
+Project: "misc"=..\..\nel\src\misc.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

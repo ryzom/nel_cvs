@@ -12,14 +12,17 @@
 */
 
 
-#include "stdafx.h"
-
 // Misc
+#include "nel/misc/types_nl.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/command.h"
 #include "nel/misc/path.h"
+#include "nel/memory/memory_manager.h"
+#include "nel/misc/i18n.h"
+#include "nel/misc/sstring.h"
+#include "nel/misc/algo.h"
 // Georges
 #include "nel/georges/u_form.h"
 #include "nel/georges/u_form_elm.h"
@@ -51,19 +54,22 @@ void setOutputFile(char *);
 void addField(char *);
 void addSource(char *);
 void scanFiles(std::string extension);
-void executeScriptFile(const char *);
+void executeScriptFile(const string &);
 
 /*
 	Some globals
 */
-FILE *Outf;
+FILE *Outf = NULL;
+
 class CField
 {
 public:
 	std::string _name;
 //	bool _evaluated;
 	UFormElm::TEval	_evaluated;
-	CField(std::string name,UFormElm::TEval eval) { _name=name; _evaluated=eval; }
+	CField(const std::string &name, UFormElm::TEval eval) 
+		: _name(name), _evaluated(eval)
+	{ }
 };
 std::vector<CField> fields;
 std::vector<std::string> files;
@@ -119,43 +125,76 @@ private:
 /*
 	Some routines for dealing with script input
 */
-void setOutputFile(char *filename)
+void setOutputFile(const CSString &filename)
 {
 	if (Outf!=NULL)
 		fclose(Outf);
-	Outf=fopen(filename,"wt");
+	Outf=fopen(filename.c_str(), "wt");
+	if (Outf == NULL)
+	{
+		fprintf(stderr, "Can't open output file '%s' ! aborting.", filename.c_str());
+		getch();
+		exit(1);
+	}
+	fields.clear();
 }
 
-void addField(char *name)
+void addField(const CSString &name)
 {
-//	fields.push_back(CField(name,true));
-	fields.push_back(CField(name,UFormElm::Eval));
+	fields.push_back(CField(name, UFormElm::Eval));
 }
 
-void addSource(char *name)
+void addSource(const CSString &name)
 {
-//	fields.push_back(CField(name,false));
-	fields.push_back(CField(name,UFormElm::NoEval));
+	fields.push_back(CField(name, UFormElm::NoEval));
 }
 
-void buildFileVector(std::vector<std::string> &filenames,std::string filespec)
+void buildFileVector(std::vector<std::string> &filenames, const std::string &filespec)
 {
 	uint i,j;
 	// split up the filespec into chains
+	CSString filters = filespec;
+	filters.strip();
 	std::vector<std::string> in, out;
-	for (i=0;i<filespec.size();)
+
+	while (!filters.empty())
+	{
+		CSString filter = filters.strtok(" \t");
+		if (filter.empty())
+			continue;
+
+		switch (filter[0])
+		{
+		case '+':
+			in.push_back(filter.leftCrop(1)); break;
+			break;
+		case '-':
+			out.push_back(filter.leftCrop(1)); break;
+			break;
+		default:
+			fprintf(stderr,"Error in '%s' : filter must start with '+' or '-'\n",
+				filter.c_str());
+			getch(); 
+			exit(1);
+		}
+	}
+
+/*	for (i=0;i<filespec.size();)
 	{
 		for (j=i;j<filespec.size() && filespec[j]!=' ' && filespec[j]!='\t';j++) {}
 		switch(filespec[i])
 		{
-		case '+': in.push_back(filespec.substr(i+1,j-i-1)); break;
-		case '-': out.push_back(filespec.substr(i+1,j-i-1)); break;
-		default: fprintf(stderr,"Filter must start with '+' or '-'\n",&(filespec[i])); getch(); exit(1);
+		case '+': 
+			in.push_back(filespec.substr(i+1,j-i-1)); break;
+		case '-': 
+			out.push_back(filespec.substr(i+1,j-i-1)); break;
+		default: 
+			fprintf(stderr,"Filter must start with '+' or '-'\n",&(filespec[i])); getch(); exit(1);
 		}
 		i=j;
 		while (i<filespec.size() && (filespec[i]==' ' || filespec[i]=='\t')) i++; // skip white space
 	}
-
+*/
 	// use the filespec as a filter while we build the sheet file vector
 	for (i=0;i<files.size();i++)
 	{
@@ -163,17 +202,21 @@ void buildFileVector(std::vector<std::string> &filenames,std::string filespec)
 
 		// make sure the filename includes all of the include strings
 		for (j=0;j<in.size() && ok;j++)
-			if (files[i].find(in[j])==-1)
+		{
+			if (!testWildCard(CFile::getFilename(files[i]), in[j]))
 			{
 				ok=false;
 			}
+		}
 
 		// make sure the filename includes none of the exclude strings
 		for (j=0;j<out.size() && ok;j++)
-			if (files[i].find(out[j])!=-1)
+		{
+			if (testWildCard(CFile::getFilename(files[i]), out[j]))
 			{
 				ok=false;
 			}
+		}
 
 		// if the filename matched all of the above criteria then add it to the list
 		if (ok)
@@ -229,20 +272,13 @@ void	setErrorString	(std::string	&valueString, const UFormElm::TEval &evaluated,
 /*
 	Scanning the files ... this is the business!!
 */
-void scanFiles(std::string filespec)
+void scanFiles(const CSString &filespec)
 {
-	// make sure the CSheetId singleton has been properly initialised
-//	NLMISC::CSheetId::init();
-
-	// build a vector of the sheetFilters sheet ids (".item")
-//	std::vector<NLMISC::CSheetId> sheetIds;
 	std::vector<std::string> filenames;
 
-//	NLMISC::CSheetId::buildIdVector(sheetIds, filenames, extension);
-	buildFileVector(filenames,filespec);
+	buildFileVector(filenames, filespec);
 
 	// if there s no file, nothing to do
-//	if (sheetIds.empty())
 	if (filenames.empty())
 		return;
 
@@ -392,133 +428,82 @@ void scanFiles(std::string filespec)
 }
 
 
-void executeScriptBuf(char *txt)
+//void executeScriptBuf(char *txt)
+void executeScriptBuf(const string &text)
 {
-	/*
-		note: the text buffer is assumed to end with 2 consecutive ASCIIZ terminators (0x00)
-	*/
-	char *command, *commandend;
-	char *args;
-	char *ptr=txt;
+	CSString buf = text;
+	CVectorSString	lines;
 
-	while (*ptr)
+	NLMISC::explode(buf, "\n", lines, true);
+
+	for (uint i=0; i<lines.size(); ++i)
 	{
-		// skip white space
-		while (*ptr==' ' || *ptr=='\t' || *ptr=='\r' || *ptr=='\n') ptr++;
-
-		// drop anchor at start of text and look for the next blank
-		command=ptr;
-		while (*ptr && *ptr!=' ' && *ptr!='\t' && *ptr!='\r' && *ptr !='\n') ptr++;
-
-		// drop a bookmark and skip to the start of the args
-		commandend=ptr;
-		while (*ptr==' ' || *ptr=='\t') ptr++;
-
-		// drop a bookmark and look for the end of line
-		args=ptr;
-		while (*ptr && *ptr!='\n' && *ptr!='\r') ptr++;
-		while (ptr[-1]==' ' || ptr[-1]=='\t') ptr--;
-
-		// add terminators to the args and command (note that this is destructive!!
-		*commandend=0;
-		*ptr=0;
-		ptr++;
-
-		if (command[0]=='/' || command[0]==0)
+		CSString line = lines[i];
+		line = line.strip();
+		if (line.empty() || line.find("//") == 0)
 		{
-			// this is a comment or the end of file line so ignore it
+			// comment or empty line, skip
+			continue;
 		}
-		else if (strcmpi(command,"DFNPATH")==0)
+		CSString command = line.strtok(" \t");
+		line = line.strip();
+
+		
+		if (command == "DFNPATH")
 		{
 			//CPath::getPathContent(args,true,false,true,files);
-			CPath::addSearchPath(args, true, false); // for the dfn files
+			CPath::addSearchPath(line, true, false); // for the dfn files
 		}
-		else if (strcmpi(command,"PATH")==0)
+		else if (command == "PATH")
 		{
 			files.clear();
-			CPath::getPathContent(args,true,false,true,files);
-			CPath::addSearchPath(args, true, false); // for the dfn files
+			CPath::getPathContent(line, true,false,true,files);
+			CPath::addSearchPath(line, true, false); // for the dfn files
 		}
-		else if (strcmpi(command,"OUTPUT")==0)
+		else if (command == "OUTPUT")
 		{
-			setOutputFile(args);
+			setOutputFile(line);
 		}
-		else if (strcmpi(command,"FIELD")==0)
+		else if (command == "FIELD")
 		{
-			addField(args);
+			addField(line);
 		}
-		else if (strcmpi(command,"SOURCE")==0)
+		else if (command == "SOURCE")
 		{
-			addSource(args);
+			addSource(line);
 		}
-		else if (strcmpi(command,"SCANFILES")==0)
+		else if (command == "SCANFILES")
 		{
-			scanFiles(args);
+			scanFiles(line);
 		}
-		else if (strcmpi(command,"SCRIPT")==0)
+		else if (command == "SCRIPT")
 		{
-			executeScriptFile(args);
+			executeScriptFile(line);
 		}
 		else
 		{
-			fprintf(stderr,"Unknown command: %s %s",command,args);
+			fprintf(stderr,"Unknown command: '%s' '%s'\n", command.c_str(), line.c_str());
 		}
 	}
+
+	
 }
 
-void executeScriptFile(const char *filename)
+void executeScriptFile(const string &filename)
 {
-	FILE *inf=fopen(filename,"rb");
-	if (inf==0)
+	ucstring	temp;
+	CI18N::readTextFile(filename, temp, false, false, false);
+
+	if (temp.empty())
 	{
-		fprintf(stderr,"script file not found: %s\n",filename);
+		fprintf(stderr, "the fiel '%s' is empty.\n", filename);
 		return;
 	}
-	int filelen=_filelength(fileno(inf));
-	int result;
-	char *buf=(char *)malloc(filelen+2);
-	if (buf==0)
-	{
-		fclose(inf);
-		fprintf(stderr,"failed to allocate memory buffer for script file: %s\n",filename);
-		return;
-	}
-	result=fread(buf,1,filelen,inf);
-	fclose(inf);
-	if (result==filelen)
-	{
-		buf[filelen]=0;
-		buf[filelen+1]=0;
-		executeScriptBuf(buf);
-	}
-	else
-		fprintf(stderr,"unknown error while reading file: %s\n",filename);
+	string buf = temp.toString();
 
-	free(buf);
+	executeScriptBuf(buf);
 }
-//
-/*
-void	explode(const string &input, const string &separators, vector<string> &fields)
-{
-	fields.clear();
-	uint	pos = 0;
-	string	sep = separators+"\n\r";
 
-	while (pos < input.size() && pos != string::npos)
-	{
-		uint	next = input.find_first_of(sep, pos);
-		if (next == string::npos)
-		{
-			fields.push_back(input.substr(pos));
-			return;
-		}
-		fields.push_back(input.substr(pos, next-pos));
-		pos = next+1;
-		if (input[next] == '\r' || input[next] == '\n')
-			return;
-	}
-}
-*/
 void	loadSheetPath()
 {
 	if (inputSheetPathLoaded)
@@ -646,7 +631,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 
 	if ((s = fopen(file.c_str(), "r")) == NULL)
 	{
-		fprintf(stderr, "Can't find file %s to convert", file.c_str());
+		fprintf(stderr, "Can't find file %s to convert\n", file.c_str());
 		return;
 	}
 
@@ -1243,8 +1228,10 @@ int main(int argc, char* argv[])
 		exit(0);
 	}
 
+
+
 	for (i=0; i<inputScriptFiles.size(); ++i)
-		executeScriptFile(inputScriptFiles[i].c_str());
+		executeScriptFile(inputScriptFiles[i]);
 
 	for (i=0; i<inputCsvFiles.size(); ++i)
 		convertCsvFile(inputCsvFiles[i], generate, sheetType);

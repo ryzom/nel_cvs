@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.76 2003/05/16 17:45:13 lecroart Exp $
+ * $Id: path.cpp,v 1.77 2003/06/10 09:40:05 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1305,8 +1305,44 @@ static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool 
 	return copyFile  ? CopyFile(dossrc.c_str(), dosdest.c_str(), failIfExists) != FALSE
 					 : MoveFile(dossrc.c_str(), dosdest.c_str()) != FALSE;
 #else
-	nlstop; // not implemented yet
-	return false;
+	std::string sdest = CPath::standardizePath(dest,false);
+	std::string ssrc = CPath::standardizePath(src,false);
+
+	if(copyFile)
+	  {
+		FILE *fp1 = fopen(ssrc.c_str(), "rb");
+		if (fp1 == NULL)
+		  {
+			nlwarning ("CopyMoveFile error: can't fopen in read mode '%s'", ssrc.c_str());
+			return false;
+		  }
+		FILE *fp2 = fopen(sdest.c_str(), "wb");
+		if (fp2 == NULL)
+		  {
+			nlwarning ("CopyMoveFile error: can't fopen in read write mode '%s'", sdest.c_str());
+			return false;
+		  }
+		static char buffer [1000];
+		int s;
+		for(s = fread(buffer, 1, sizeof(buffer), fp1); s > 0 && (s = fread(buffer, 1, sizeof(buffer), fp1)) ; fwrite(buffer, 1, s, fp2));
+		fclose(fp1);
+		fclose(fp2);
+	  }
+	else
+	  {
+		if (link (ssrc.c_str(), sdest.c_str()) == -1)
+		  {
+			nlwarning ("CopyMoveFile error: can't link '%s' into '%s'", ssrc.c_str(), sdest.c_str());
+			return false;
+		  }
+
+		if (unlink (ssrc.c_str()) == -1)
+		  {
+			nlwarning ("CopyMoveFile error: can't unlink '%s'", ssrc.c_str());
+			return false;
+		  }
+	  }
+	  return true;
 #endif	
 }
 

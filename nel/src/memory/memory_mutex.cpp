@@ -1,7 +1,7 @@
 /** \file memory_mutex.cpp
  * Mutex used by the memory manager
  *
- * $Id: memory_mutex.cpp,v 1.1 2002/11/05 16:48:25 corvazier Exp $
+ * $Id: memory_mutex.cpp,v 1.2 2003/07/01 15:33:14 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -47,13 +47,6 @@ CMemoryMutex::CMemoryMutex ()
 // *********************************************************
 
 CMemoryMutex::CMemoryMutex()
-{
-	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
-}
-
-// *********************************************************
-
-CMemoryMutex::CMemoryMutex(	const std::string &name )
 {
 	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
 }

@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.9 2003/03/13 15:06:54 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.10 2003/07/01 15:33:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,9 +92,9 @@ CHeapAllocator::CHeapAllocator (uint mainBlockSize, uint blockCount, TBlockAlloc
 	_BlockAllocationMode = blockAllocationMode;
 	_OutOfMemoryMode = outOfMemoryMode;
 	_FreeTreeRoot = &_NullNode.FreeNode;
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	_AlwaysCheck = false;
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	_NullNode.FreeNode.Left = &_NullNode.FreeNode;
 	_NullNode.FreeNode.Right = &_NullNode.FreeNode;
@@ -102,9 +102,9 @@ CHeapAllocator::CHeapAllocator (uint mainBlockSize, uint blockCount, TBlockAlloc
 
 	setNodeBlack (&_NullNode.FreeNode);
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	_AllocateCount = 0;
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// *********************************************************
 	// Small Block
@@ -449,10 +449,10 @@ CHeapAllocator::CNodeBegin *CHeapAllocator::splitNode (CNodeBegin *node, uint ne
 	if (allignedSize <= UserDataBlockSizeMin)
 		allignedSize = UserDataBlockSizeMin;
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	// End magic number aligned on new size
 	node->EndMagicNumber = (uint32*)((uint8*)node + newSize + sizeof (CNodeBegin));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// Rest is empty ?
 	if ( getNodeSize (node) - allignedSize < UserDataBlockSizeMin + sizeof (CNodeBegin) + NL_HEAP_NODE_END_SIZE )
@@ -476,7 +476,7 @@ CHeapAllocator::CNodeBegin *CHeapAllocator::splitNode (CNodeBegin *node, uint ne
 	// Last flag
 	setNodeLast (newNode, isNodeLast (node));
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	// Begin markers
 	memset (newNode->BeginMarkers, BeginNodeMarkers, CNodeBegin::MarkerSize-1);
 	newNode->BeginMarkers[CNodeBegin::MarkerSize-1] = 0;
@@ -497,7 +497,7 @@ CHeapAllocator::CNodeBegin *CHeapAllocator::splitNode (CNodeBegin *node, uint ne
 
 	// Heap pointer
 	newNode->Heap = this;
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// Get next node
 	CNodeBegin *next = getNextNode (node);
@@ -535,10 +535,10 @@ void CHeapAllocator::mergeNode (CNodeBegin *node)
 	// New size
 	setNodeSize (previous, getNodeSize (previous) + getNodeSize (node) + sizeof (CNodeBegin) + NL_HEAP_NODE_END_SIZE);
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	// Set end pointers
 	previous->EndMagicNumber = (uint32*)((uint8*)previous + getNodeSize (previous) + sizeof (CNodeBegin));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// Get the next node to relink
 	CNodeBegin *next = getNextNode (node);
@@ -553,14 +553,14 @@ void CHeapAllocator::mergeNode (CNodeBegin *node)
 	// Get the last flag
 	setNodeLast (previous, isNodeLast (node));
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// todo align
 
 	// Clear the node informations
 	memset (((uint8*)node + getNodeSize (node) + sizeof (CNodeBegin)), DeletedMemory, NL_HEAP_NODE_END_SIZE);
 	memset (node, DeletedMemory, sizeof (CNodeBegin));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 }
 
 
@@ -597,7 +597,7 @@ void CHeapAllocator::initEmptyBlock (CMainBlock& mainBlock)
 	node->Previous = NULL;
 
 	// Debug info
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	// End magic number
 	node->EndMagicNumber = (uint32*)((uint8*)node + getNodeSize (node) + sizeof (CNodeBegin));
 
@@ -623,7 +623,7 @@ void CHeapAllocator::initEmptyBlock (CMainBlock& mainBlock)
 	node->Heap = this;
 
 	NL_UPDATE_MAGIC_NUMBER (node);
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 }
 
 // *********************************************************
@@ -638,16 +638,16 @@ uint CHeapAllocator::getBlockSize (void *block)
 
 // *********************************************************
 
-#ifdef NL_HEAP_ALLOCATION_NDEBUG
+#ifdef NLMISC_HEAP_ALLOCATION_NDEBUG
 void *CHeapAllocator::allocate (uint size)
-#else // NL_HEAP_ALLOCATION_NDEBUG
+#else // NLMISC_HEAP_ALLOCATION_NDEBUG
 void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, const char *category)
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 {
 	// Check size is valid
 	if (size != 0)
 	{
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 		// If category is NULL
 		if (category == NULL)
 		{
@@ -681,14 +681,14 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 			// ********
 			NL_ALLOC_STOP;
 		}*/
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 		// Small or largs block ?
-#ifdef NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
+#ifdef NLMISC_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
 		if (0)
-#else // NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
+#else // NLMISC_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
 		if (size <= LastSmallBlock)
-#endif// NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
+#endif// NLMISC_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
 		{
 			// *******************
 			// Small block
@@ -734,7 +734,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 					nextNode = node;
 
 					// Set debug informations
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 					// Set node free
 					setNodeFree (node);
 					
@@ -764,7 +764,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 
 					NL_UPDATE_MAGIC_NUMBER (node);
 
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 				}
 
 				// Link the new blocks
@@ -784,7 +784,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 			// Relink
 			*freeNode = getNextSmallBlock (node);
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG		
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG		
 			// Check the node CRC
 			checkNode (node, evalMagicNumber (node));
 
@@ -811,7 +811,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 
 			// Crc node
 			NL_UPDATE_MAGIC_NUMBER (node);
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 			leaveCriticalSectionSB ();
 
@@ -906,10 +906,10 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 				erase (freeNode);
 			}
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 			// Check the node CRC
 			checkNode (node, evalMagicNumber (node));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 			// Split the node
 			CNodeBegin *rest = splitNode (node, size);
@@ -919,7 +919,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 			// Clear free flag
 			setNodeUsed (node);
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 			// Fill category
 			strncpy (node->Category, category, CategoryStringLength-1);
 
@@ -937,7 +937,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 
 			// Uninitialised memory
 			memset ((uint8*)node + sizeof(CNodeBegin), UninitializedMemory, (uint32)(node->EndMagicNumber) - ( (uint32)node + sizeof(CNodeBegin) ) );
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 			// Node has been splited ?
 			if (rest)
@@ -996,39 +996,39 @@ void CHeapAllocator::free (void *ptr)
 		// ********
 		// * Attempt to delete a NULL pointer
 		// ********
-#ifdef NL_HEAP_STOP_NULL_FREE
+#ifdef NLMISC_HEAP_STOP_NULL_FREE
 		NL_ALLOC_STOP;
-#endif // NL_HEAP_STOP_NULL_FREE
+#endif // NLMISC_HEAP_STOP_NULL_FREE
 	}
 	else
 	{
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 		// Checks ?
 		if (_AlwaysCheck)
 		{
 			// Check heap integrity
 			internalCheckHeap (true);
 		}
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 		
 		// Get the node pointer
 		CNodeBegin *node = (CNodeBegin*) ((uint)ptr - sizeof (CNodeBegin));
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 		// Check the node CRC
 		enterCriticalSectionSB ();
 		enterCriticalSectionLB ();
 		checkNode (node, evalMagicNumber (node));
 		leaveCriticalSectionLB ();
 		leaveCriticalSectionSB ();
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 		// Large or small block ?
-#ifdef NL_HEAP_ALLOCATION_NDEBUG
+#ifdef NLMISC_HEAP_ALLOCATION_NDEBUG
 		uint size = (((CNodeBegin*) ((uint)ptr - sizeof (CNodeBegin))))->SizeAndFlags;
-#else // NL_HEAP_ALLOCATION_NDEBUG
+#else // NLMISC_HEAP_ALLOCATION_NDEBUG
 		uint size = getNodeSize (((CNodeBegin*) ((uint)ptr - sizeof (CNodeBegin))));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 		if (size <= LastSmallBlock)
 		{
 			// *******************
@@ -1051,7 +1051,7 @@ void CHeapAllocator::free (void *ptr)
 			{
 				enterCriticalSectionSB ();
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 				// Uninitialised memory
 				memset ((uint8*)node + sizeof(CNodeBegin), DeletedMemory, size );
 
@@ -1060,7 +1060,7 @@ void CHeapAllocator::free (void *ptr)
 
 				// Mark has free
 				setNodeFree (node);
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 				// Add in the free list
 				CNodeBegin **freeNode = (CNodeBegin **)_FreeSmallBlocks+NL_SIZE_TO_SMALLBLOCK_INDEX (size);
@@ -1075,10 +1075,10 @@ void CHeapAllocator::free (void *ptr)
 		}
 		else
 		{
-#ifdef NL_HEAP_ALLOCATION_NDEBUG
+#ifdef NLMISC_HEAP_ALLOCATION_NDEBUG
 			// Get the real size
 			size = getNodeSize (((CNodeBegin*) ((uint)ptr - sizeof (CNodeBegin))));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 			// Get the node pointer
 			CNodeBegin *node = (CNodeBegin*) ((uint)ptr - sizeof (CNodeBegin));
@@ -1099,13 +1099,13 @@ void CHeapAllocator::free (void *ptr)
 			{
 				enterCriticalSectionLB ();
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 				// Uninitialised memory
 				memset ((uint8*)node + sizeof(CNodeBegin), DeletedMemory, size );
 
 				// Set end pointers
 				node->EndMagicNumber = (uint32*)((uint8*)node + size + sizeof (CNodeBegin));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 				// Mark has free
 				setNodeFree (node);
@@ -1121,10 +1121,10 @@ void CHeapAllocator::free (void *ptr)
 				CNodeBegin *previous = node->Previous;
 				if (previous)
 				{
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 					// Check the previous node
 					checkNode (previous, evalMagicNumber (previous));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 					// Is it free ?
 					if (isNodeFree (previous))
@@ -1147,10 +1147,10 @@ void CHeapAllocator::free (void *ptr)
 				CNodeBegin *next = getNextNode (node);
 				if (next)
 				{
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 					// Check the next node
 					checkNode (next, evalMagicNumber (next));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 					// Is it free ?
 					if (isNodeFree (next))
@@ -1213,16 +1213,16 @@ uint CHeapAllocator::getAllocatedMemory () const
 		const CNodeBegin *current = getFirstNode (currentBlock);
 		while (current)
 		{
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 			// Check node
 			checkNode (current, evalMagicNumber (current));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 			// Node allocated ? Don't sum small blocks..
 			if (isNodeUsed (current))
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 				if (strcmp (current->Category, NL_HEAP_SB_CATEGORY) != 0)
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 					memory += getNodeSize (current) + ReleaseHeaderSize;
 
 			// Next node
@@ -1241,7 +1241,7 @@ uint CHeapAllocator::getAllocatedMemory () const
 
 // *********************************************************
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 uint CHeapAllocator::debugGetAllocatedMemoryByCategory (const char* category) const
 {
 	enterCriticalSection ();
@@ -1296,11 +1296,11 @@ uint CHeapAllocator::debugGetAllocatedMemoryByCategory (const char* category) co
 	// Return memory used
 	return memory;
 }
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 // *********************************************************
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 uint CHeapAllocator::debugGetDebugInfoSize () const
 {
 	// Return memory used
@@ -1361,7 +1361,7 @@ uint CHeapAllocator::debugGetSBDebugInfoSize () const
 	// Return memory used
 	return memory;
 }
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 // *********************************************************
 
@@ -1372,7 +1372,7 @@ void fprintf_int (uint value)
 
 // *********************************************************
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 
 class CCategoryMap
 {
@@ -1678,7 +1678,7 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 
 	return status;
 }
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 // *********************************************************
 
@@ -1720,10 +1720,10 @@ uint CHeapAllocator::getFreeMemory () const
 		const CNodeBegin *current = getFirstNode (currentBlock);
 		while (current)
 		{
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 			// Check node
 			checkNode (current, evalMagicNumber (current));
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 			// Node allocated ?
 			if (isNodeFree (current))
@@ -1903,7 +1903,7 @@ void	CHeapAllocator::releaseMemory ()
 
 // *********************************************************
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 
 struct CLeak
 {
@@ -2043,7 +2043,7 @@ void CHeapAllocator::debugReportMemoryLeak ()
 
 	// leaveCriticalSection ();
 }
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 // *********************************************************
 
@@ -2139,21 +2139,21 @@ bool CHeapAllocator::internalCheckHeap (bool stopOnError) const
 
 // *********************************************************
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 void CHeapAllocator::debugAlwaysCheckMemory (bool alwaysCheck)
 {
 	_AlwaysCheck = alwaysCheck;
 }
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 // *********************************************************
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 bool CHeapAllocator::debugIsAlwaysCheckMemory (bool alwaysCheck) const
 {
 	return _AlwaysCheck;
 }
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 // *********************************************************
 
@@ -2205,7 +2205,7 @@ void CHeapAllocator::debugPopCategoryString ()
 
 // *********************************************************
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 
 #ifdef NL_OS_WINDOWS
 #pragma optimize( "", off )
@@ -2244,7 +2244,7 @@ void CHeapAllocator::checkNode (const CNodeBegin *node, uint32 crc) const
 #pragma optimize( "", on )
 #endif // NL_OS_WINDOWS
 
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 
 

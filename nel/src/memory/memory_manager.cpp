@@ -1,7 +1,7 @@
 /** \file memory_manager.cpp
  * A new memory manager
  *
- * $Id: memory_manager.cpp,v 1.3 2003/03/13 15:06:54 corvazier Exp $
+ * $Id: memory_manager.cpp,v 1.4 2003/07/01 15:33:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,10 @@ namespace NLMEMORY
 // Global allocator
 CHeapAllocator *GlobalHeapAllocator = NULL;
 
+// *********************************************************
+
+#ifndef NL_USE_DEFAULT_MEMORY_MANAGER
+
 #ifdef NL_HEAP_ALLOCATION_NDEBUG
 
 MEMORY_API void* MemoryAllocate (unsigned int size)
@@ -70,10 +74,6 @@ MEMORY_API void* MemoryAllocateDebug (uint size, const char *filename, uint line
 }
 
 #endif // NL_HEAP_ALLOCATION_NDEBUG
-
-// *********************************************************
-
-#ifndef NL_USE_DEFAULT_MEMORY_MANAGER
 
 MEMORY_API unsigned int GetAllocatedMemory ()
 {
@@ -157,6 +157,34 @@ MEMORY_API bool StatisticsReport (const char *filename, bool memoryDump)
 
 // *********************************************************
 
+MEMORY_API void	ReportMemoryLeak ()
+{
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+	GlobalHeapAllocator->debugReportMemoryLeak ();
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+}
+
+// *********************************************************
+
+MEMORY_API void			AlwaysCheckMemory(bool alwaysCheck)
+{
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+	GlobalHeapAllocator->debugAlwaysCheckMemory (alwaysCheck);
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+}
+
+// *********************************************************
+
+MEMORY_API bool			IsAlwaysCheckMemory()
+{
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+	return GlobalHeapAllocator->debugIsAlwaysCheckMemory ();
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+	return false;
+}
+
+// *********************************************************
+
 MEMORY_API unsigned int GetBlockSize (void *pointer)
 {
 	return GlobalHeapAllocator->getBlockSize (pointer);
@@ -174,6 +202,31 @@ MEMORY_API void MemoryDeallocate (void *p)
 MEMORY_API NLMEMORY::CHeapAllocator* GetGlobalHeapAllocator ()
 {
 	return GlobalHeapAllocator;
+}
+
+// *********************************************************
+
+MEMORY_API void* NLMEMORY::MemoryReallocate (void *p, unsigned int size)
+{
+	// Get the block size
+/*	uint oldSize = NLMEMORY::GetBlockSize (p);
+	if (size > oldSize)
+	{
+		void *newPtr = MemoryAllocate (size);
+		memcpy (newPtr, p, oldSize);
+		MemoryDeallocate (p);
+		p = newPtr;
+	}
+	return p;*/
+
+	uint oldSize = NLMEMORY::GetBlockSize (p);
+	
+	void *newPtr = MemoryAllocate (size);
+	memcpy (newPtr, p, (size<oldSize) ? size : oldSize);
+	
+	MemoryDeallocate (p);
+	return newPtr;
+	
 }
 
 // *********************************************************
@@ -196,7 +249,7 @@ public:
 // *********************************************************
 
 // Singleton
-CReportMemoryLeak	ReportMemoryLeak;
+CReportMemoryLeak	ReportMemoryLeakSingleton;
 
 // *********************************************************
 

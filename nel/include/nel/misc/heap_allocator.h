@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.h,v 1.4 2002/11/13 17:09:10 coutelas Exp $
+ * $Id: heap_allocator.h,v 1.5 2003/07/01 15:33:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,16 +41,16 @@ namespace NLMISC
 /// \name Configuration
 
 // Define this to disable debug features (use to trace buffer overflow and add debug informations in memory headers)
-// #define NL_HEAP_ALLOCATION_NDEBUG
+// #define NLMISC_HEAP_ALLOCATION_NDEBUG
 
 // Define this to activate internal checks (use to debug the heap code)
-// #define NL_HEAP_ALLOCATOR_INTERNAL_CHECKS
+// #define NLMISC_HEAP_ALLOCATOR_INTERNAL_CHECKS
 
 // Define this to disable small block optimizations
-//#define NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
+//#define NLMISC_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
 
 // Stop when free a NULL pointer
-//#define NL_HEAP_STOP_NULL_FREE
+//#define NLMISC_HEAP_STOP_NULL_FREE
 
 // Mutex to use with the allocator
 typedef CFastMutex CAllocatorMutex;			// Not fair, non-system, using sleep(), but very fast
@@ -105,7 +105,7 @@ public:
 	
 	typedef char TCategoryString[CategoryStringLength];
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	struct CMemoryLeakBlock
 	{
@@ -117,7 +117,7 @@ public:
 		TCategoryString	Category;
 	};
 
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// Constructor / Destructor
 	CHeapAllocator (	uint mainBlockSize=1024*1024*10, 
@@ -127,15 +127,15 @@ public:
 	virtual ~CHeapAllocator ();
 
 	// Allocation / desallocation
-#ifndef	NL_HEAP_ALLOCATION_NDEBUG
+#ifndef	NLMISC_HEAP_ALLOCATION_NDEBUG
 	/* Use the NelAlloc macro */
 	void					*allocate (uint size, const char *sourceFile, uint line, const char *category);
 	/* Use the NelRealloc macro */
 	void					*reallocate (void *ptr, uint size, const char *sourceFile, uint line, const char *category);
-#else	// NL_HEAP_ALLOCATION_NDEBUG
+#else	// NLMISC_HEAP_ALLOCATION_NDEBUG
 	void					*allocate (uint size);
 	void					*realloc (void *ptr, uint size);
-#endif	// NL_HEAP_ALLOCATION_NDEBUG
+#endif	// NLMISC_HEAP_ALLOCATION_NDEBUG
 	void					free (void *ptr);
 	void					freeAll ();
 	void					releaseMemory ();
@@ -179,7 +179,7 @@ public:
 	void					setName (const char* name);
 	const char				*getName () const;
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 /*	void					debugAddBreakpoint (uint32 allocateNumber);
 	void					debugRemoveBreakpoints ();*/
 	uint					debugGetDebugInfoSize () const;
@@ -193,7 +193,7 @@ public:
 	// Heap debug
 	void					debugReportMemoryLeak ();
 
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// Overridable
 	virtual uint8			*allocateBlock (uint size);
@@ -218,9 +218,9 @@ private:
 
 	struct CNodeBegin;
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	struct CNodeEnd;
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	struct CFreeNode;
 
@@ -239,7 +239,7 @@ private:
 			SizeMask=0x3fffffff,
 		};
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 		char		BeginMarkers[MarkerSize];			// <<<<<<<
 		uint16		Line;								// Source line number
 		char		Category[CategoryStringLength];		// Category name
@@ -247,13 +247,13 @@ private:
 		CHeapAllocator		*Heap;						// Heap holder of this node
 		uint32		*EndMagicNumber;					// Pointer on the end magic number
 		uint32		AllocateNumber;						// Align structure to 80 bytes
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 		uint32		SizeAndFlags;						// Size of the user memory zone of 30 bits (1 Go max), and 2 flags (Free/Used and LastBlock)
 		CNodeBegin	*Previous;							// Previous node in large block mode / Small block pointer in small block mode
 	};
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	struct CNodeEnd
 	{
 		enum	
@@ -264,21 +264,21 @@ private:
 		uint32		MagicNumber;						// CRC32 of the node pointer and the node header. Can be move backward to fit the data
 		char		EndMarkers[MarkerSize];				// >>>>
 	};
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
-#ifdef NL_HEAP_ALLOCATION_NDEBUG
+#ifdef NLMISC_HEAP_ALLOCATION_NDEBUG
 
 #define NL_HEAP_NODE_END_SIZE 0
 
-#else // NL_HEAP_ALLOCATION_NDEBUG
+#else // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 #define NL_HEAP_NODE_END_SIZE sizeof(CNodeEnd)
 
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	static uint32			evalMagicNumber (const CNodeBegin *node);
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 	static const CNodeBegin	*getNextNode	(const CNodeBegin *current);
 	static CNodeBegin		*getNextNode	(CNodeBegin *current);
 	static const CFreeNode	*getFreeNode	(const CNodeBegin *current);
@@ -310,7 +310,7 @@ private:
 	static const CNodeBegin	*getFirstNode	(const CMainBlock *mainBlock);
 	static CNodeBegin		*getFirstNode	(CMainBlock *mainBlock);
 
-	/* Integrity check of a single node. Called at each allocation / deallocation when NL_HEAP_ALLOCATION_NDEBUG is not defined.
+	/* Integrity check of a single node. Called at each allocation / deallocation when NLMISC_HEAP_ALLOCATION_NDEBUG is not defined.
 	   Call it inside a critical section. */
 	bool		checkNodeLB (const CMainBlock *mainBlock, const CNodeBegin *previous, 
 							const CNodeBegin *current, const CNodeBegin *next, bool stopOnError) const;
@@ -344,15 +344,15 @@ private:
 	inline CNodeBegin			*splitNode (CNodeBegin *node, uint newSize);
 	inline void					initEmptyBlock (CMainBlock& mainBlock);
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	inline static void			computeCRC32 (uint32 &crc, const void* buffer, unsigned int count);
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// Checks
 	bool				checkFreeNode (const CFreeNode *current, bool stopOnError, bool recurse) const;
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	void				checkNode (const CNodeBegin *current, uint32 crc) const;
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// Performe full integrity check of the heap, free list and smallblock. Call it outside critical sections.
 	bool				internalCheckHeap (bool stopOnError) const;
@@ -376,9 +376,9 @@ private:
 	uint						_BlockCount;
 	TBlockAllocationMode		_BlockAllocationMode;
 	TOutOfMemoryMode			_OutOfMemoryMode;
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	bool						_AlwaysCheck;
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// List of main block.
 	CMainBlock					*_MainBlockList;
@@ -389,10 +389,10 @@ private:
 	mutable CAllocatorMutex		_MutexLB;
 
 	char						_Name[NameLength];
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	uint32						_AllocateCount;
 	// std::set<uint32>			_Breakpoints;
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// *********************************************************
 
@@ -429,7 +429,7 @@ private:
 
 	// Some internal methods
 
-	/* Integrity check of a single node. Called at each allocation / deallocation when NL_HEAP_ALLOCATION_NDEBUG is not defined.
+	/* Integrity check of a single node. Called at each allocation / deallocation when NLMISC_HEAP_ALLOCATION_NDEBUG is not defined.
 	   Call it inside a critical section. */
 	bool		checkNodeSB (const CSmallBlockPool *mainBlock, const CNodeBegin *previous, const CNodeBegin *current, 
 		const CNodeBegin *next, bool stopOnError) const;
@@ -482,7 +482,7 @@ private:
 /// \name Macros
 
 /* Heap macro */
-#ifdef	NL_HEAP_ALLOCATION_NDEBUG
+#ifdef	NLMISC_HEAP_ALLOCATION_NDEBUG
 
 /* NelAlloc: category can be NULL. Then, category string will be the last pushed category string. */
 #define NelAlloc(heap,size,category) ((heap).allocate (size))
@@ -490,7 +490,7 @@ private:
 /* NelRealloc: category can be NULL. Then, category string will be the last pushed category string. */
 #define NelRealloc(heap,size,ptr,category) (heap.allocate (ptr, size))
 
-#else // NL_HEAP_ALLOCATION_NDEBUG
+#else // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 /* NelAlloc: category can be NULL. Then, category string will be the last pushed category string. */
 #define NelAlloc(heap,size,category) ((heap).allocate (size, __FILE__, __LINE__, category))
@@ -498,7 +498,7 @@ private:
 /* NelRealloc: category can be NULL. Then, category string will be the last pushed category string. */
 #define NelRealloc(heap,size,ptr,category) (heap.allocate (ptr, size, __FILE__, __LINE__, category))
 
-#endif	//NL_HEAP_ALLOCATION_NDEBUG
+#endif	//NLMISC_HEAP_ALLOCATION_NDEBUG
 
 } // NLMISC 
 

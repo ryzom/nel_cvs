@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.9 2003/05/15 08:03:44 corvazier Exp $
+ * $Id: memory_manager.h,v 1.10 2003/07/01 15:33:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,9 +27,84 @@
 #define NL_MEMORY_MANAGER_H
 
 // CONFIGURATION
+#include "nel/memory/memory_config.h"
 
-// Define this to use the allocator in release mode (no statistics, no checks, maximum speed, minimal memory used)
-// #define NL_HEAP_ALLOCATION_NDEBUG
+// Malloc
+#include <malloc.h>
+
+/*	Doc:
+	----
+
+	// Allocate memory
+	void*		MemoryAllocate (unsigned int size);
+
+	// Allocate debug memory : specify a filename, the line and the category of allocation (7 letters max)
+	void*		MemoryAllocateDebug (unsigned int size, const char *filename, unsigned int line, const char *category);
+
+	// Deallocation
+	void		MemoryDeallocate (void *p);
+
+	// Returns the amount of allocated memory
+	// Works only with nel memory allocator
+	unsigned int GetAllocatedMemory ();
+
+	// Returns the amount of free memory inside the allocator. This is not the amount of free system memory.
+	// Works only with nel memory allocator
+	unsigned int GetFreeMemory ();
+
+	// Returns the total of memory used by the allocator
+	// Works only with nel memory allocator
+	unsigned int GetTotalMemoryUsed ();
+
+	// Returns the amount of memory used by debug purpose
+	// Works only with nel memory allocator
+	unsigned int GetDebugInfoSize ();
+
+	// Returns the amount of memory used by a category
+	// Works only with nel memory allocator with debug features activated
+	unsigned int GetAllocatedMemoryByCategory (const char *category);
+
+	// Returns the size of a memory block
+	// Works only with nel memory allocator
+	unsigned int GetBlockSize (void *pointer);
+
+	// Returns the fragentation ratio. 0 : no fragmentation, 1 : heavy fragmentation
+	// Works only with nel memory allocator
+	float		GetFragmentationRatio ();
+
+	// Returns the amount of system memory allocated by the allocator tracing the process heap
+	// Works only with nel memory allocator
+	unsigned int GetAllocatedSystemMemoryByAllocator ();
+
+	// Returns the amount of system memory allocated tracing the process heap
+	// Works only with nel memory allocator
+	unsigned int GetAllocatedSystemMemory ();
+
+	// Check the heap
+	bool		CheckHeap (bool stopOnError);
+
+	// Make a statistic report
+	// Works only with nel memory allocator with debug features activated
+	bool		StatisticsReport (const char *filename, bool memoryDump);
+
+	// Report memory leaks in debug window
+	// Works with standard memory allocator in _DEBUG and with nel memory allocator with debug features activated
+	bool		ReportMemoryLeak ();
+
+	// Set the flag to check memory at each allocation / deallocation (warning, very slow)
+	// Works with standard memory allocator in _DEBUG and with nel memory allocator with debug features activated
+	void		AlwaysCheckMemory(bool alwaysCheck);
+
+	// Get the flag
+	// Works with standard memory allocator in _DEBUG and with nel memory allocator with debug features activated
+	bool		IsAlwaysCheckMemory();
+  
+*/
+
+// Memory debug for windows
+#ifdef WIN32
+#include <crtdbg.h>
+#endif // WIN32
 
 #undef MEMORY_API
 #ifdef MEMORY_EXPORTS
@@ -37,13 +112,13 @@
   #define MEMORY_API __declspec(dllexport)
  #else 
   #define MEMORY_API
- #endif // NL_OS_WINDOWS
+ #endif // WIN32
 #else
  #ifdef WIN32
   #define MEMORY_API __declspec(dllimport)
  #else 
   #define MEMORY_API
- #endif // NL_OS_WINDOWS
+ #endif // WIN32
 #endif
 
 #ifdef __cplusplus
@@ -56,7 +131,6 @@
 
 #if 0
 // ********* Cut here
-
 /*
  * Set _STLP_NEL_ALLOC to use NEL allocator that perform memory debugging,
  * such as padding/checking for memory consistency, a lot of debug features
@@ -104,27 +178,31 @@
 // ********* Cut here
 #endif // 0
 
-
-
-
-
-
-
 #ifndef _STLP_USE_NEL
 #define NL_USE_DEFAULT_MEMORY_MANAGER
 #endif // _STLP_USE_NEL
 
+// *********************************************************
 #ifdef NL_USE_DEFAULT_MEMORY_MANAGER
-
-#define NL_NEW new
-#define NL_ALLOC_CONTEXT(str) ((void)0);
+// *********************************************************
 
 namespace NLMEMORY
 {
 
-MEMORY_API void*		MemoryAllocate (unsigned int size);
-MEMORY_API void*		MemoryAllocateDebug (unsigned int size, const char *filename, unsigned int line, const char *category);
-MEMORY_API void			MemoryDeallocate (void *p);
+inline void*		MemoryAllocate (unsigned int size) {return malloc(size);}
+inline void*		MemoryAllocateDebug (unsigned int size, const char *filename, unsigned int line, const char *category)
+{
+#ifdef WIN32
+	return _malloc_dbg(size, _NORMAL_BLOCK, filename, line);
+#else // WIN32
+	return malloc(size);
+#endif // WIN32
+}
+inline void			MemoryDeallocate (void *p)
+{
+	free(p);
+}
+inline void*		MemoryReallocate (void *p, unsigned int size) {return realloc(p, size);}
 inline unsigned int GetAllocatedMemory () { return 0;}
 inline unsigned int GetFreeMemory () { return 0;}
 inline unsigned int GetTotalMemoryUsed () { return 0;}
@@ -134,11 +212,49 @@ inline unsigned int GetBlockSize (void *pointer) { return 0;}
 inline float		GetFragmentationRatio () { return 0.0f;}
 inline unsigned int GetAllocatedSystemMemoryByAllocator () { return 0;}
 inline unsigned int GetAllocatedSystemMemory () { return 0;}
-inline bool			CheckHeap (bool stopOnError) { return true;}
-inline bool StatisticsReport (const char *filename, bool memoryDump) { return true; }
+inline void			ReportMemoryLeak() 
+{
+#ifdef WIN32
+	_CrtDumpMemoryLeaks();
+#endif // WIN32
+}
+inline bool			CheckHeap (bool stopOnError) 
+{ 
+#ifdef WIN32
+	if (!_CrtCheckMemory())
+	{
+		if (stopOnError)
+			// ***************
+			// Invalide heap !
+			// ***************
+			_ASSERT(0);
+		return false;
+	}
+#endif // WIN32
+	return true;
+}
+inline void			AlwaysCheckMemory(bool alwaysCheck)
+{
+#ifdef WIN32
+	int previous = _CrtSetDbgFlag (0);
+	_CrtSetDbgFlag (alwaysCheck?(previous|_CRTDBG_CHECK_ALWAYS_DF):(previous&(~_CRTDBG_CHECK_ALWAYS_DF)));
+#endif // WIN32
+}
+inline bool			IsAlwaysCheckMemory()
+{
+#ifdef WIN32
+	int previous = _CrtSetDbgFlag (0);
+	_CrtSetDbgFlag (previous);
+	return (previous&_CRTDBG_CHECK_ALWAYS_DF) != 0;
+#else // WIN32
+	return false;
+#endif // WIN32
+}
+inline bool			StatisticsReport (const char *filename, bool memoryDump) { return true; }
 
 }
 
+// *********************************************************
 #else // NL_USE_DEFAULT_MEMORY_MANAGER
 // *********************************************************
 
@@ -147,6 +263,7 @@ namespace NLMEMORY
 
 MEMORY_API void*		MemoryAllocate (unsigned int size);
 MEMORY_API void*		MemoryAllocateDebug (unsigned int size, const char *filename, unsigned int line, const char *category);
+MEMORY_API void*		MemoryReallocate (void *p, unsigned int size);
 MEMORY_API void			MemoryDeallocate (void *p);
 MEMORY_API unsigned int GetAllocatedMemory ();
 MEMORY_API unsigned int GetFreeMemory ();
@@ -159,56 +276,52 @@ MEMORY_API unsigned int GetAllocatedSystemMemoryByAllocator ();
 MEMORY_API unsigned int GetAllocatedSystemMemory ();
 MEMORY_API bool			CheckHeap (bool stopOnError);
 MEMORY_API bool			StatisticsReport (const char *filename, bool memoryDump);
+MEMORY_API void			ReportMemoryLeak ();
+MEMORY_API void			AlwaysCheckMemory(bool alwaysCheck);
+MEMORY_API bool			IsAlwaysCheckMemory();
 
+ /* Allocation context
+ */
+ class CAllocContext
+ {
+ public:
+	 MEMORY_API CAllocContext::CAllocContext (const char* str);
+	 MEMORY_API CAllocContext::~CAllocContext ();
+ };
 }
 
-// Need a debug new ?
-#ifdef NL_HEAP_ALLOCATION_NDEBUG
-
-inline void* operator new(size_t size)
+#ifdef __cplusplus
+extern "C"
 {
-	return NLMEMORY::MemoryAllocate (size);
+#endif // __cplusplus
+
+	MEMORY_API void*		NelMemoryAllocate (unsigned int size);
+	MEMORY_API void*		NelMemoryAllocateDebug (unsigned int size, const char *filename, unsigned int line, const char *category);
+	MEMORY_API void			NelMemoryDeallocate (void *pointer);
+
+#ifdef __cplusplus
 }
+#endif // __cplusplus
 
-#define NL_NEW new
-#define NL_ALLOC_CONTEXT(str) ((void)0);
+// *********************************************************
+#endif // NL_USE_DEFAULT_MEMORY_MANAGER
+// *********************************************************
 
-#else // NL_HEAP_ALLOCATION_NDEBUG
+// *********************************************************
+// New operators
+// *********************************************************
 
 inline void* operator new(size_t size, const char *filename, int line)
 {
 	return NLMEMORY::MemoryAllocateDebug (size, filename, line, 0);
 }
 
+// *********************************************************
+
 inline void* operator new(size_t size)
 {
 	return NLMEMORY::MemoryAllocateDebug (size, "::new (size_t size) operator", 0, 0);
 }
-
-namespace NLMEMORY
-{
-
-class CAllocContext
-{
-public:
-	MEMORY_API CAllocContext::CAllocContext (const char* str);
-	MEMORY_API CAllocContext::~CAllocContext ();
-};
-
-};
-
-/* New operator in debug mode
- * Doesn't work with placement new. To do a placement new, undef new, make your placement new, and redefine new with the macro NL_NEW */
-#define NL_NEW new(__FILE__, __LINE__)
-#define new NL_NEW
-#define NL_ALLOC_CONTEXT(__name) NLMEMORY::CAllocContext _##__name##MemAllocContext##__name (#__name);
-
-#endif // NL_HEAP_ALLOCATION_NDEBUG
-
-namespace NLMEMORY
-{
-	class CHeapAllocator;
-};
 
 // *********************************************************
 
@@ -238,21 +351,30 @@ inline void operator delete[](void* p, const char *filename, int line)
 	NLMEMORY::MemoryDeallocate (p);
 }
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif // __cplusplus
+// *********************************************************
+// Macros
+// *********************************************************
 
-	MEMORY_API void*		NelMemoryAllocate (unsigned int size);
-	MEMORY_API void*		NelMemoryAllocateDebug (unsigned int size, const char *filename, unsigned int line, const char *category);
-	MEMORY_API void			NelMemoryDeallocate (void *pointer);
+/* New operator in debug mode
+ * Doesn't work with placement new. To do a placement new, undef new, make your placement new, and redefine new with the macro NL_NEW */
+#define NL_NEW new(__FILE__, __LINE__)
+#define new NL_NEW
 
-#ifdef __cplusplus
-}
-#endif // __cplusplus
+// Use allocation context ?
+#define NL_ALLOC_CONTEXT(str) ((void)0);
 
+#ifndef NL_USE_DEFAULT_MEMORY_MANAGER
+ #ifndef NL_HEAP_ALLOCATION_NDEBUG
+  #undef NL_ALLOC_CONTEXT
+  #define NL_ALLOC_CONTEXT(__name) NLMEMORY::CAllocContext _##__name##MemAllocContext##__name (#__name);
+ #endif // NL_HEAP_ALLOCATION_NDEBUG
 #endif // NL_USE_DEFAULT_MEMORY_MANAGER
 
+
+namespace NLMEMORY
+{
+	class CHeapAllocator;
+};
 
 #endif // __cplusplus
 

@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.h,v 1.1 2002/11/05 16:48:25 corvazier Exp $
+ * $Id: heap_allocator.h,v 1.2 2003/07/01 15:33:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -178,7 +178,7 @@ public:
 	
 	void					debugAlwaysCheckMemory (bool alwaysCheck);
 	
-	bool					debugIsAlwaysCheckMemory (bool alwaysCheck) const;
+	bool					debugIsAlwaysCheckMemory () const;
 
 	// Heap debug
 	void					debugReportMemoryLeak ();
@@ -434,7 +434,6 @@ private:
 	char						_Name[NameLength];
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 	uint32						_AllocateCount;
-	// std::set<uint32>			_Breakpoints;
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 	// *********************************************************

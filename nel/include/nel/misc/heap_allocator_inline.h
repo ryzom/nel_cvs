@@ -1,7 +1,7 @@
 /** \file heap_allocator_inline.h
  * A Heap allocator, inline functions
  *
- * $Id: heap_allocator_inline.h,v 1.2 2002/11/05 16:48:24 corvazier Exp $
+ * $Id: heap_allocator_inline.h,v 1.3 2003/07/01 15:33:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,12 +32,12 @@
 #define internalAssert(a) ((void)0)
 #endif // NL_HEAP_ALLOCATOR_INTERNAL_CHECKS
 
-#ifdef	NL_HEAP_ALLOCATION_NDEBUG
+#ifdef	NLMISC_HEAP_ALLOCATION_NDEBUG
 
 #define NL_UPDATE_MAGIC_NUMBER(node) ((void)0)
 #define NL_UPDATE_MAGIC_NUMBER_FREE_NODE(node) ((void)0)
 
-#else // NL_HEAP_ALLOCATION_NDEBUG
+#else // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 #define NL_UPDATE_MAGIC_NUMBER(node) {\
 		uint32 crc = evalMagicNumber (node);\
@@ -52,7 +52,7 @@
 		} \
 	}
 
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 #if defined (NL_OS_WINDOWS)
 #define NL_ALLOC_STOP _asm { int 3 }
@@ -296,7 +296,7 @@ inline CHeapAllocator::CFreeNode *CHeapAllocator::find (uint size)
 // Node methods
 // *********************************************************
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 
 inline void CHeapAllocator::computeCRC32(uint32 &crc, const void* buffer, unsigned int count)
 {
@@ -330,7 +330,7 @@ inline void CHeapAllocator::computeCRC32(uint32 &crc, const void* buffer, unsign
 */
 }
 
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 // *********************************************************
 
@@ -409,7 +409,7 @@ inline uint CHeapAllocator::getNodeSize (const CNodeBegin *current)
 
 // *********************************************************
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 
 inline uint32 CHeapAllocator::evalMagicNumber (const CNodeBegin *node)
 {
@@ -426,7 +426,7 @@ inline uint32 CHeapAllocator::evalMagicNumber (const CNodeBegin *node)
 	return crc;
 }
 
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 // *********************************************************
 // Integrity checks
@@ -434,7 +434,7 @@ inline uint32 CHeapAllocator::evalMagicNumber (const CNodeBegin *node)
 
 inline bool CHeapAllocator::checkNodeSB (const CSmallBlockPool *mainBlock, const CNodeBegin *previous, const CNodeBegin *current, const CNodeBegin *next, bool stopOnError) const
 {
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	// Get the theorical CRC check
 	uint32 crc = evalMagicNumber (current);
 
@@ -461,7 +461,7 @@ inline bool CHeapAllocator::checkNodeSB (const CSmallBlockPool *mainBlock, const
 		// CRC is wrong
 		return false;
 	}
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// *** Release node control
 
@@ -500,7 +500,7 @@ inline bool CHeapAllocator::checkNodeSB (const CSmallBlockPool *mainBlock, const
 
 inline bool CHeapAllocator::checkNodeLB (const CMainBlock *mainBlock, const CNodeBegin *previous, const CNodeBegin *current, const CNodeBegin *next, bool stopOnError) const
 {
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 	// Get the theorical CRC check
 	uint32 crc = evalMagicNumber (current);
 
@@ -527,7 +527,7 @@ inline bool CHeapAllocator::checkNodeLB (const CMainBlock *mainBlock, const CNod
 		// CRC is wrong
 		return false;
 	}
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 	// *** Release node control
 
@@ -782,7 +782,7 @@ inline uint CHeapAllocator::getMainBlockCount () const
 // Debug functions
 // *********************************************************
 
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
 
 /*inline void CHeapAllocator::debugAddBreakpoint (uint32 allocateNumber)
 {
@@ -796,7 +796,7 @@ inline uint CHeapAllocator::getMainBlockCount () const
 	_Breakpoints.clear ();
 }*/
 
-#endif // NL_HEAP_ALLOCATION_NDEBUG
+#endif // NLMISC_HEAP_ALLOCATION_NDEBUG
 
 // *********************************************************
 

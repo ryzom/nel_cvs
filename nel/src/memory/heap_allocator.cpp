@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.3 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.4 2003/07/01 15:33:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1961,8 +1961,6 @@ public:
 	CLeak			*Next;
 };
 
-// typedef std::map<std::string, CLeak> TLinkMap;
-
 void CHeapAllocator::debugReportMemoryLeak ()
 {
 	debugPushCategoryString (NL_HEAP_MEM_DEBUG_CATEGORY);
@@ -2201,7 +2199,7 @@ void CHeapAllocator::debugAlwaysCheckMemory (bool alwaysCheck)
 // *********************************************************
 
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-bool CHeapAllocator::debugIsAlwaysCheckMemory (bool alwaysCheck) const
+bool CHeapAllocator::debugIsAlwaysCheckMemory () const
 {
 	return _AlwaysCheck;
 }

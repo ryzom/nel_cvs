@@ -162,6 +162,10 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=..\include\nel\memory\memory_config.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\memory\memory_manager.h
 # End Source File
 # End Group
@@ -187,10 +191,6 @@ SOURCE=.\memory\memory.cpp
 # Begin Source File
 
 SOURCE=.\memory\memory_common.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\memory\memory_config.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file heap_allocator_inline.h
  * A Heap allocator, inline functions
  *
- * $Id: heap_allocator_inline.h,v 1.1 2002/11/05 16:48:25 corvazier Exp $
+ * $Id: heap_allocator_inline.h,v 1.2 2003/07/01 15:33:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -874,17 +874,5 @@ inline void CHeapAllocator::setNextSmallBlock (CNodeBegin *previous, CNodeBegin 
 }
 
 // *********************************************************
-
-/*
-void					*reallocate (void *ptr, uint size, const char *sourceFile, uint line, const char *category);
-void					freeAll ();
-void					releaseMemory ();
-void					setMainBlockSize (uint mainBlockSize);
-uint					getMainBlockSize () const;
-bool					setMainBlockCount (uint blockCount);
-uint					debugGetDebugInfoSize () const;
-uint					debugGetAllocatedMemoryByCatgegory (const char* category) const;
-void					debugReportMemoryLeak (std::vector<CMemoryLeakBlock> &result);
-*/
 
 #endif // NL_HEAP_ALLOCATOR_H

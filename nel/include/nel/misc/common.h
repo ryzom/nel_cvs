@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.39 2002/04/12 11:46:52 lecroart Exp $
+ * $Id: common.h,v 1.40 2002/06/03 12:23:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,6 +227,17 @@ std::string		&strupr ( std::string &str );
  * \param a pointer to char to transform to upper case
  */
 char			*strupr ( char *str );
+
+/** Compare 2 C-Style strings without regard to case
+  * \return 0 if strings are equal, < 0 if lhs < rhs, > 0 if lhs > rhs
+  */
+uint			nlstricmp(const char *lhs, const char *rhs);
+
+/** Compare 2 strings without regard to case
+  */
+uint			nlstricmp(const std::string &lhs, const std::string &rhs);
+
+
 
 /**
  * Base class for all NeL exception.

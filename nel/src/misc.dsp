@@ -377,11 +377,27 @@ SOURCE=..\include\nel\misc\buf_fifo.h
 # End Source File
 # Begin Source File
 
+SOURCE=R:\code\nel\src\misc\contiguous_block_allocator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\misc\contiguous_block_allocator.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\fast_mem.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\misc\fast_mem.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\misc\fixed_size_allocator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\misc\fixed_size_allocator.h
 # End Source File
 # Begin Source File
 
@@ -403,6 +419,14 @@ SOURCE=.\misc\heap_memory.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\heap_memory.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\misc\object_arena_allocator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\misc\object_arena_allocator.h
 # End Source File
 # Begin Source File
 
@@ -1036,6 +1060,10 @@ SOURCE=.\misc\stdmisc.h
 # Begin Source File
 
 SOURCE=..\include\nel\misc\timeout_assertion_thread.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\traits_nl.h
 # End Source File
 # End Group
 # Begin Source File

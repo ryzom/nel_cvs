@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.18 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.19 2002/01/11 17:27:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,9 +140,35 @@ void CClipTrav::traverse()
 		_QuadGridClipManager->updateClustersFromCamera(this, CamPos);
 	}
 
-	// Clear the render list.
+	// Clear the render/lighted list.
+	// TempYoyo
+	//LightTrav->clearLightedList();
 	RenderTrav->clearRenderList();
+
+
+	/* For all objects marked visible in preceding render, reset Visible state here.
+		NB: must reset Visible State to false because sometimes ClipObs::traverse() are even not executed
+		(Cluster clip, QuadGridClipManager clip...).
+		And somes models read this Visible state. eg: Skins/StickedObjects test the Visible state of 
+		their _AncestorSkeletonModel.
+	*/
+	for (i=0;i<_VisibleList.size();i++)
+	{
+		// if the observer still exists (see ~IBaseClipObs())
+		if( _VisibleList[i] )
+		{
+			// disable his visibility.
+			_VisibleList[i]->Visible= false;
+			// let him know that it is no more in the list.
+			_VisibleList[i]->_IndexInVisibleList= -1;
+		}
+	}
+	// Clear The visible List.
 	_VisibleList.clear();
+
+
+	// Found where is the camera
+	//========================
 
 	// Found the cluster where the camera is
 	static vector<CCluster*> vCluster;
@@ -183,6 +209,10 @@ void CClipTrav::traverse()
 		link (NULL, RootCluster);
 		vCluster.push_back (RootCluster);
 	}
+
+
+	// Manage Moving Objects
+	//=====================
 
 	// Unlink the moving objects from their clusters
 	for (i = 0; i < HrcTrav->_MovingObjects.size(); ++i)
@@ -259,6 +289,9 @@ void CClipTrav::traverse()
 		}
 	}
 
+	// Clip the graph.
+	//=====================
+
 	// Traverse the graph.
 	if (Root)
 		Root->traverse (NULL);
@@ -290,6 +323,13 @@ void CClipTrav::setHrcTrav (CHrcTrav* trav)
 {
 	HrcTrav = trav;
 }
+
+// ***************************************************************************
+// TempYoyo
+/*void CClipTrav::setLightTrav (CLightTrav* trav)
+{
+	LightTrav = trav;
+}*/
 
 // ***************************************************************************
 void CClipTrav::setQuadGridClipManager(CQuadGridClipManager *mgr)
@@ -328,12 +368,35 @@ void CClipTrav::setSonsOfAncestorSkeletonModelGroup(CRootModel *m)
 }
 
 
+// ***************************************************************************
+void CClipTrav::addVisibleObs(IBaseClipObs *obs)
+{
+	obs->_IndexInVisibleList= _VisibleList.size();
+	_VisibleList.push_back(obs);
+}
+
+
 
 // ***************************************************************************
 // ***************************************************************************
 // IBaseClipObs
 // ***************************************************************************
 // ***************************************************************************
+
+
+// ***************************************************************************
+IBaseClipObs::~IBaseClipObs()
+{
+	// I must remove me from _VisibleList.
+	if(_IndexInVisibleList>=0)
+	{
+		CClipTrav	*clipTrav= (CClipTrav*) Trav;
+		nlassert(_IndexInVisibleList < (sint)clipTrav->_VisibleList.size() );
+		// Mark NULL. NB: faster than a CRefPtr.
+		clipTrav->_VisibleList[_IndexInVisibleList]= NULL;
+		_IndexInVisibleList= -1;
+	}
+}
 
 
 // ***************************************************************************

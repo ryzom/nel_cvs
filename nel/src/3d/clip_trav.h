@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.7 2001/12/11 16:40:40 berenguier Exp $
+ * $Id: clip_trav.h,v 1.8 2002/01/11 17:27:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,8 @@ class	IBaseAnimDetailObs;
 class	IBaseLoadBalancingObs;
 class	CRenderTrav;
 class	CHrcTrav;
+// TempYoyo
+//class	CLightTrav;
 class	CCluster;
 class	CInstanceGroup;
 class	CCamera;
@@ -110,6 +112,8 @@ public:
 	/// Setup the render traversal (else traverse() won't work)
 	void setRenderTrav (CRenderTrav* trav);
 	void setHrcTrav (CHrcTrav* trav);
+	// TempYoyo
+	//void setLightTrav (CLightTrav* trav);
 	void setQuadGridClipManager(CQuadGridClipManager *mgr);
 
 
@@ -121,7 +125,7 @@ public:
 	IBaseClipObs		*getVisibleObs(uint i) const {return _VisibleList[i];}
 
 	// For ClipObservers only. NB: list is cleared at begining of traverse().
-	void				addVisibleObs(IBaseClipObs *obs) {_VisibleList.push_back(obs);}
+	void				addVisibleObs(IBaseClipObs *obs);
 	//@}
 
 
@@ -142,6 +146,8 @@ public:
 	/// Shortcut to the Rdr Traversals (to add the models rdr observers).
 	CRenderTrav		*RenderTrav;
 	CHrcTrav		*HrcTrav;
+	// TempYoyo
+	//CLightTrav		*LightTrav;
 	//@}
 	sint64 CurrentDate;
 
@@ -160,6 +166,8 @@ public:
 	CRootModel		*SonsOfAncestorSkeletonModelGroup;
 
 private:
+	friend class	IBaseClipObs;
+
 	std::vector<IBaseClipObs*>	_VisibleList;
 
 	CQuadGridClipManager		*_QuadGridClipManager;
@@ -207,8 +215,12 @@ public:
 	{
 		HrcObs=NULL;
 		RenderObs= NULL;
-		Visible=true;
+		Visible=false;
+		_IndexInVisibleList= -1;
 	}
+	// Dtor: remove me from _VisibleList.
+	virtual	~IBaseClipObs();
+
 	/// Build shortcut to HrcObs and RenderObs.
 	virtual	void	init();
 
@@ -240,6 +252,12 @@ public:
 	 * Because the clip traversal is a graph of observer not a hierarchy
 	 */
 	virtual bool	isTreeNode() {return false;}
+
+private:
+	friend class	CClipTrav;
+
+	// The index of the Observer in the _VisibleList; -1 (default) means not in
+	sint			_IndexInVisibleList;
 };
 
 

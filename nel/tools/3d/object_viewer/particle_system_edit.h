@@ -1,7 +1,7 @@
 /** \file particle_system_edit.h
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.h,v 1.5 2001/12/18 18:39:20 vizerie Exp $
+ * $Id: particle_system_edit.h,v 1.6 2002/01/28 14:55:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,56 +36,56 @@
 
 namespace NL3D
 {
-	class CParticleSystem ;
+	class CParticleSystem;
 }
 
 
 
-template <class T> class CEditableRangeT ;
-typedef CEditableRangeT<float> CEditableRangeFloat ;
-typedef CEditableRangeT<uint32> CEditableRangeUInt ;
+template <class T> class CEditableRangeT;
+typedef CEditableRangeT<float> CEditableRangeFloat;
+typedef CEditableRangeT<uint32> CEditableRangeUInt;
 
 
 class CUserParamWrapper : public IPSWrapperFloat
 {
 public:
-	NL3D::CParticleSystem *PS ;
-	uint32 Index ;
-	float get(void) const ;
-	void set(const float &v) ;
+	NL3D::CParticleSystem *PS;
+	uint32 Index;
+	float get(void) const;
+	void set(const float &v);
 };
 
 
 class CTimeThresholdWrapper : public IPSWrapperFloat
 {
 public:
-	NL3D::CParticleSystem *PS ;
-	float get(void) const ;		
-	void set(const float &) ;
+	NL3D::CParticleSystem *PS;
+	float get(void) const;		
+	void set(const float &);
 };
 
 class CMaxNbIntegrationWrapper : public IPSWrapperUInt
 {
 public:
-	NL3D::CParticleSystem *PS ;
-	uint32 get(void) const ;		
-	void set(const uint32 &) ;
+	NL3D::CParticleSystem *PS;
+	uint32 get(void) const;		
+	void set(const uint32 &);
 };
 
 class CMaxViewDistWrapper : public IPSWrapperFloat
 {
 public:
-	NL3D::CParticleSystem *PS ;
-	float get(void) const ;		
-	void set(const float &) ;
+	NL3D::CParticleSystem *PS;
+	float get(void) const;		
+	void set(const float &);
 };
 
 class CLODRatioWrapper : public IPSWrapperFloat
 {
 public:
-	NL3D::CParticleSystem *PS ;
-	float get(void) const ;		
-	void set(const float &) ;
+	NL3D::CParticleSystem *PS;
+	float get(void) const;		
+	void set(const float &);
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -97,13 +97,16 @@ class CParticleSystemEdit : public CDialog, public CDialogStack
 public:
 	CParticleSystemEdit(NL3D::CParticleSystem *ps);   // standard constructor
 
-	~CParticleSystemEdit() ;
+	~CParticleSystemEdit();
 
-	void init(CWnd *pParent) ;
+	void init(CWnd *pParent);
 // Dialog Data
 	//{{AFX_DATA(CParticleSystemEdit)
 	enum { IDD = IDD_EDIT_PARTICLE_SYSTEM };
-	CButton	m_PerformMotionWhenOutOfFrustumDlg;
+	CButton	m_DieWhenOutOfFrustumCtrl;
+	CButton	m_DieWhenOutOfRangeCtrl;
+	CComboBox	m_AnimTypeCtrl;
+	CComboBox	m_PresetCtrl;
 	CComboBox	m_DieOnEvent;
 	CButton	m_PrecomputeBBoxCtrl;
 	CEdit	m_BBoxZCtrl;
@@ -114,7 +117,6 @@ public:
 	BOOL	m_EnableSlowDown;
 	BOOL	m_DieWhenOutOfRange;
 	BOOL	m_DieWhenOutOfFrustum;
-	BOOL	m_PerformMotionWhenOutOfFrustum;
 	//}}AFX_DATA
 
 
@@ -128,11 +130,11 @@ public:
 // Implementation
 protected:
 
-	NL3D::CParticleSystem *_PS ;
+	NL3D::CParticleSystem *_PS;
 
 
-	CEditableRangeFloat *_TimeThresholdDlg, *_MaxViewDistDlg, *_LODRatioDlg ;
-	CEditableRangeUInt  *_MaxIntegrationStepDlg ; 
+	CEditableRangeFloat *_TimeThresholdDlg, *_MaxViewDistDlg, *_LODRatioDlg;
+	CEditableRangeUInt  *_MaxIntegrationStepDlg; 
 
 	// Generated message map functions
 	//{{AFX_MSG(CParticleSystemEdit)
@@ -146,25 +148,27 @@ protected:
 	afx_msg void OnSelchangePsDieOnEvent();
 	afx_msg void OnChangeApplyAfterDelay();
 	afx_msg void OnDieWhenOutOfFrustum();
-	afx_msg void OnPerformMotionWhenOutOfFrustum();
+	afx_msg void OnSelchangeLifeMgtPresets();
+	afx_msg void OnSelchangeAnimTypeCtrl();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 
-	void updatePrecomputedBBoxParams(void) ;
-	void updateIntegrationParams(void) ;
-	void updateDieOnEventParams(void) ;
+	void updatePrecomputedBBoxParams(void);
+	void updateIntegrationParams(void);
+	void updateDieOnEventParams(void);
+	void updateLifeMgtPresets();
 
-	static CTimeThresholdWrapper _TimeThresholdWrapper ;
+	static CTimeThresholdWrapper _TimeThresholdWrapper;
 
-	static CMaxViewDistWrapper _MaxViewDistWrapper ;
+	static CMaxViewDistWrapper _MaxViewDistWrapper;
 
-	static CMaxNbIntegrationWrapper _MaxNbIntegrationWrapper  ;
+	static CMaxNbIntegrationWrapper _MaxNbIntegrationWrapper;
 
-	static CLODRatioWrapper _LODRatioWrapper ;
+	static CLODRatioWrapper _LODRatioWrapper;
 
     /// wrapper to tune user parameters
-	static CUserParamWrapper _UserParamWrapper[4] ;
+	static CUserParamWrapper _UserParamWrapper[4];
 };
 
 //{{AFX_INSERT_LOCATION}}

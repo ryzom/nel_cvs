@@ -1,7 +1,7 @@
 /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.7 2001/12/19 15:49:05 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.8 2002/01/28 14:55:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,15 +39,15 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CParticleSystemEdit dialog
 
-CTimeThresholdWrapper CParticleSystemEdit::_TimeThresholdWrapper ;
+CTimeThresholdWrapper CParticleSystemEdit::_TimeThresholdWrapper;
 
-CMaxViewDistWrapper CParticleSystemEdit::_MaxViewDistWrapper ;
+CMaxViewDistWrapper CParticleSystemEdit::_MaxViewDistWrapper;
 
-CMaxNbIntegrationWrapper CParticleSystemEdit::_MaxNbIntegrationWrapper  ;
+CMaxNbIntegrationWrapper CParticleSystemEdit::_MaxNbIntegrationWrapper;
 
-CLODRatioWrapper CParticleSystemEdit::_LODRatioWrapper ;
+CLODRatioWrapper CParticleSystemEdit::_LODRatioWrapper;
 
-CUserParamWrapper CParticleSystemEdit::_UserParamWrapper[4] ;
+CUserParamWrapper CParticleSystemEdit::_UserParamWrapper[4];
 
 CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps)
 	: _PS(ps), _TimeThresholdDlg(NULL), _MaxIntegrationStepDlg(NULL)
@@ -58,7 +58,6 @@ CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps)
 	m_EnableSlowDown = FALSE;
 	m_DieWhenOutOfRange = FALSE;
 	m_DieWhenOutOfFrustum = FALSE;
-	m_PerformMotionWhenOutOfFrustum = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -130,16 +129,11 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 
 	m_AccurateIntegration = _PS->isAccurateIntegrationEnabled();
 	m_PrecomputeBBoxCtrl.SetCheck(!_PS->getAutoComputeBBox());
-	m_EnableSlowDown = csd;
-	m_DieWhenOutOfRange = _PS->getDestroyModelWhenOutOfRange();
-	m_DieWhenOutOfFrustum = _PS->doesDestroyWhenOutOfFrustum();
-	m_PerformMotionWhenOutOfFrustum = _PS->doesPerformMotionWhenOutOfFrustum();
-	m_PerformMotionWhenOutOfFrustumDlg.EnableWindow(!_PS->doesDestroyWhenOutOfFrustum());
-	m_DieOnEvent.SetCurSel((int) _PS->getDestroyCondition());
+	m_EnableSlowDown = csd;	
 
 	updateIntegrationParams();
-	updatePrecomputedBBoxParams();
-	updateDieOnEventParams();
+	updatePrecomputedBBoxParams();	
+	updateLifeMgtPresets();
 
 	UpdateData(FALSE);
 	ShowWindow(SW_SHOW);	
@@ -211,7 +205,10 @@ void CParticleSystemEdit::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CParticleSystemEdit)
-	DDX_Control(pDX, IDC_PERFORM_MOTION_WHEN_OUT_OF_FRUSTUM, m_PerformMotionWhenOutOfFrustumDlg);
+	DDX_Control(pDX, IDC_DIE_WHEN_OUT_OF_FRUSTRUM, m_DieWhenOutOfFrustumCtrl);
+	DDX_Control(pDX, IDC_DIE_WHEN_OUT_OF_RANGE, m_DieWhenOutOfRangeCtrl);
+	DDX_Control(pDX, IDC_ANIM_TYPE_CTRL, m_AnimTypeCtrl);
+	DDX_Control(pDX, IDC_LIFE_MGT_PRESETS, m_PresetCtrl);
 	DDX_Control(pDX, IDC_PS_DIE_ON_EVENT, m_DieOnEvent);
 	DDX_Control(pDX, IDC_PRECOMPUTE_BBOX, m_PrecomputeBBoxCtrl);
 	DDX_Control(pDX, IDC_BB_Z, m_BBoxZCtrl);
@@ -222,7 +219,6 @@ void CParticleSystemEdit::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_ENABLE_SLOW_DOWN, m_EnableSlowDown);
 	DDX_Check(pDX, IDC_DIE_WHEN_OUT_OF_RANGE, m_DieWhenOutOfRange);
 	DDX_Check(pDX, IDC_DIE_WHEN_OUT_OF_FRUSTRUM, m_DieWhenOutOfFrustum);
-	DDX_Check(pDX, IDC_PERFORM_MOTION_WHEN_OUT_OF_FRUSTUM, m_PerformMotionWhenOutOfFrustum);
 	//}}AFX_DATA_MAP
 }
 
@@ -238,8 +234,9 @@ BEGIN_MESSAGE_MAP(CParticleSystemEdit, CDialog)
 	ON_BN_CLICKED(IDC_DIE_WHEN_OUT_OF_RANGE, OnDieWhenOutOfRange)
 	ON_CBN_SELCHANGE(IDC_PS_DIE_ON_EVENT, OnSelchangePsDieOnEvent)
 	ON_EN_CHANGE(IDC_APPLY_AFTRE_DELAY, OnChangeApplyAfterDelay)
-	ON_BN_CLICKED(IDC_DIE_WHEN_OUT_OF_FRUSTRUM, OnDieWhenOutOfFrustum)
-	ON_BN_CLICKED(IDC_PERFORM_MOTION_WHEN_OUT_OF_FRUSTUM, OnPerformMotionWhenOutOfFrustum)
+	ON_BN_CLICKED(IDC_DIE_WHEN_OUT_OF_FRUSTRUM, OnDieWhenOutOfFrustum)	
+	ON_CBN_SELCHANGE(IDC_LIFE_MGT_PRESETS, OnSelchangeLifeMgtPresets)
+	ON_CBN_SELCHANGE(IDC_ANIM_TYPE_CTRL, OnSelchangeAnimTypeCtrl)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -318,18 +315,8 @@ void CParticleSystemEdit::OnDieWhenOutOfFrustum()
 {
 	UpdateData();
 	_PS->destroyWhenOutOfFrustum(m_DieWhenOutOfFrustum ? true : false);
-	m_PerformMotionWhenOutOfFrustumDlg.EnableWindow(!m_DieWhenOutOfFrustum);
+	m_AnimTypeCtrl.EnableWindow(!m_DieWhenOutOfFrustum);
 }
-
-
-
-void CParticleSystemEdit::OnPerformMotionWhenOutOfFrustum() 
-{
-	UpdateData();
-	_PS->performMotionWhenOutOfFrustum(m_PerformMotionWhenOutOfFrustum ? true : false);	
-}
-
-
 
 void CParticleSystemEdit::OnChangeApplyAfterDelay() 
 {
@@ -340,6 +327,38 @@ void CParticleSystemEdit::OnChangeApplyAfterDelay()
 	{
 		_PS->setDelayBeforeDeathConditionTest(value);
 	}
+}
+
+void CParticleSystemEdit::OnSelchangeLifeMgtPresets() 
+{
+	UpdateData(TRUE);
+	_PS->activatePresetBehaviour((NL3D::CParticleSystem::TPresetBehaviour) m_PresetCtrl.GetCurSel());	
+	updateLifeMgtPresets();
+}
+
+void CParticleSystemEdit::OnSelchangeAnimTypeCtrl() 
+{
+	UpdateData(TRUE);
+	_PS->setAnimType((NL3D::CParticleSystem::TAnimType) m_AnimTypeCtrl.GetCurSel());
+}
+
+void CParticleSystemEdit::updateLifeMgtPresets()
+{
+	m_PresetCtrl.SetCurSel((int) _PS->getBehaviourType());
+	m_DieWhenOutOfRange = _PS->getDestroyModelWhenOutOfRange();
+	m_DieWhenOutOfFrustum = _PS->doesDestroyWhenOutOfFrustum();		
+	m_DieOnEvent.SetCurSel((int) _PS->getDestroyCondition());
+	m_AnimTypeCtrl.SetCurSel((int) _PS->getAnimType());
+	updateDieOnEventParams();
+
+	BOOL bEnable =  _PS->getBehaviourType() == NL3D::CParticleSystem::UserBehaviour ? TRUE :  FALSE;
+	
+	m_DieWhenOutOfRangeCtrl.EnableWindow(bEnable);
+	m_DieWhenOutOfFrustumCtrl.EnableWindow(bEnable);
+	m_DieOnEvent.EnableWindow(bEnable);
+	m_AnimTypeCtrl.EnableWindow(bEnable);
+
+	UpdateData(FALSE);
 }
 
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.50 2001/10/26 08:53:52 vizerie Exp $
+# $Id: Makefile.am,v 1.51 2001/10/26 09:41:55 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -93,14 +93,14 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        landscape.cpp                       \
                        landscape.h                         \
                        landscape_collision_grid.cpp        \
-                       landscape_collision_grid.h          \                                              
+                       landscape_collision_grid.h          \
                        landscapeig_manager.cpp             \
                        landscape_model.cpp                 \
                        landscape_model.h                   \
                        landscape_profile.cpp               \
                        landscape_profile.h                 \
                        landscape_user.cpp                  \
-                       landscape_user.h                    \                       
+                       landscape_user.h                    \
                        light.cpp                           \
                        light.h                             \
                        light_trav.cpp                      \
@@ -122,7 +122,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        mesh_geom.cpp                       \
                        mesh_geom.h                         \
                        mesh_instance.cpp                   \
-                       mesh_instance.h                     \                       
+                       mesh_instance.h                     \
                        mesh_mrm.cpp                        \
                        mesh_mrm.h                          \
                        mesh_mrm_instance.cpp               \
@@ -334,7 +334,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        water_pool_manager.cpp              \
                        water_pool_manager.h                \
                        water_shape.cpp                     \
-                       water_shape.h                       \                       
+                       water_shape.h                       \
                        zone.cpp                            \
                        zone.h                              \
                        zone_corner_smoother.h              \

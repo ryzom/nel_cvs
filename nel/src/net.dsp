@@ -304,6 +304,10 @@ SOURCE=.\net\service.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\doc\net\service.dxt
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\net\service.h
 # End Source File
 # Begin Source File

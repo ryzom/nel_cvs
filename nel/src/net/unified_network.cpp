@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.10 2001/11/14 10:14:06 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.11 2001/11/15 15:26:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,32 @@ using namespace std;
 using namespace NLMISC;
 
 namespace NLNET {
+
+//
+inline void	CUnifiedNetwork::enterReentrant()
+{
+	if (_MThreadId == 0xFFFFFFFF || _MThreadId != NLMISC::getThreadId())
+	{
+		if (_MThreadId != 0xFFFFFFFF)
+			nldebug("Waiting for thread %d to leave the mutex", _MThreadId);
+		_Mutex.enter();
+		_MThreadId = NLMISC::getThreadId();
+	}
+	++_MutexCount;
+	nldebug("Enter reentrant CS (_MutexCount=%d)", _MutexCount);
+}
+
+inline void	CUnifiedNetwork::leaveReentrant()
+{
+	nldebug("Leave reentrant CS (_MutexCount=%d)", _MutexCount);
+	--_MutexCount;
+	if (_MutexCount == 0)
+	{
+		_MThreadId = 0xFFFFFFFF;
+		_Mutex.leave();
+	}
+}
+
 
 // Service registration callbacks
 
@@ -75,6 +101,14 @@ void	cbDisconnection(TSockId from, void *arg)
 
 		// adds the connection to the disconnection stack
 		instance->_DisconnectionStack.push_back(cnx.ServiceId);
+		if (instance->_TempDisconnectionTable.size() <= cnx.ServiceId)
+		{
+			uint	i = instance->_TempDisconnectionTable.size();
+			instance->_TempDisconnectionTable.resize(cnx.ServiceId+1);
+			for (; i <= cnx.ServiceId; ++i)
+				instance->_TempDisconnectionTable[i] = false;
+		}
+		instance->_TempDisconnectionTable[cnx.ServiceId] = true;
 
 		if (it != instance->_DownCallbacks.end())
 		{
@@ -258,6 +292,8 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 	cbc->setDefaultCallback(cbMsgProcessing);
 
 	bool	connectSuccess = false;
+	if (_TempDisconnectionTable.size() <= sid)
+		_TempDisconnectionTable.resize(sid+1);
 
 	try
 	{
@@ -329,6 +365,8 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 
 void	CUnifiedNetwork::update(sint32 timeout)
 {
+	nldebug("In CUnifiedNetwork::update()");
+	enterReentrant();
 	{
 		// lock read access to the connections
 		CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
@@ -369,43 +407,170 @@ void	CUnifiedNetwork::update(sint32 timeout)
 	}
 
 	updateConnectionTable();
+	leaveReentrant();
+	nldebug("Out CUnifiedNetwork::update()");
 }
 
 
 void	CUnifiedNetwork::updateConnectionTable()
 {
-	CRWSynchronized<TNameMappedConnection>::CWriteAccessor				nameAccess(&_NamedCnx);
-	CRWSynchronized< std::vector<CUnifiedConnection> >::CWriteAccessor	idAccess(&_IdCnx);
-	uint	i;
-
-	// try to reconnect
-	for (i=0; i<_ConnectionRetriesStack.size(); ++i)
 	{
-		CUnifiedConnection	&cnx = idAccess.value()[_ConnectionRetriesStack[i]];
-		nlassert(!cnx.IsServerConnection);
+		// First: recreate connections, setup connection tables etc.
+		CRWSynchronized<TNameMappedConnection>::CWriteAccessor				nameAccess(&_NamedCnx);
+		CRWSynchronized< std::vector<CUnifiedConnection> >::CWriteAccessor	idAccess(&_IdCnx);
+		uint	i;
 
-		try
+		// try to reconnect
+		for (i=0; i<_ConnectionRetriesStack.size(); ++i)
 		{
-			cnx.Connection.CbClient->connect(cnx.ExtAddress);
-			cnx.Connection.CbClient->getSockId()->setAppId(cnx.ServiceId);
-			cnx.IsConnected = true;
+			CUnifiedConnection	&cnx = idAccess.value()[_ConnectionRetriesStack[i]];
+			nlassert(!cnx.IsServerConnection);
 
-			if (cnx.SendId)
+			try
 			{
-				// send identification to the service
-				CMessage	msg("UN_SIDENT");
-				uint16		ssid = _SId;
-				msg.serial(_Name);
-				msg.serial(ssid);	// serializes a 16 bits service id
-				send(cnx.ServiceName, msg);
+				cnx.Connection.CbClient->connect(cnx.ExtAddress);
+				cnx.Connection.CbClient->getSockId()->setAppId(cnx.ServiceId);
+				cnx.IsConnected = true;
 			}
-
-			// call the connection callback associated to this service
-			TNameMappedCallback::iterator	itcb = _UpCallbacks.find(cnx.ServiceName);
-			if (itcb != _UpCallbacks.end() && (*itcb).second.first != NULL)
+			catch (ESocketConnectionFailed &e)
 			{
-				TUnifiedNetCallback	cb = (*itcb).second.first;
-				cb(cnx.ServiceName, cnx.ServiceId, (*itcb).second.second);
+				nlinfo ("L5: can't connect to %s (sid %u) now (%s)", cnx.ServiceName.c_str(), cnx.ServiceId, e.what ());
+			}
+		}
+
+		// remove all flaged connections
+		for (i=0; i<_DisconnectionStack.size(); ++i)
+		{
+			CUnifiedConnection	&cnx = idAccess.value()[_DisconnectionStack[i]];
+
+			nlassert(cnx.EntryUsed);
+
+			_TempDisconnectionTable[_DisconnectionStack[i]] = false;
+
+			// flag the connection as unavailable
+			cnx.IsConnected = false;
+
+			if (!cnx.IsExternal || !cnx.AutoRetry)
+			{
+				// if the cnx isn't extern or if no autoretry, delete it.
+				cnx.EntryUsed = false;
+
+				if (!cnx.IsServerConnection)
+					delete cnx.Connection.CbClient;
+
+				TNameMappedConnection::iterator	itnmc = nameAccess.value().find(cnx.ServiceName);
+				nlassert(itnmc != nameAccess.value().end());
+				nameAccess.value().erase(itnmc);
+			}
+		}
+
+		// add new connections
+		for (i=0; i<_ConnectionStack.size(); ++i)
+		{
+			if (_ConnectionStack[i].SId >= idAccess.value().size())
+				idAccess.value().resize(_ConnectionStack[i].SId+1);
+
+			CUnifiedConnection	&cnx = idAccess.value()[_ConnectionStack[i].SId];
+
+			nlassert(!cnx.EntryUsed);
+
+			cnx = CUnifiedConnection(_ConnectionStack[i].SName, _ConnectionStack[i].SId, _ConnectionStack[i].SHost);
+			cnx.IsConnected = true;
+			nameAccess.value().insert(make_pair(_ConnectionStack[i].SName, _ConnectionStack[i].SId));
+		}
+
+/*
+		CRWSynchronized<TNameMappedConnection>::CWriteAccessor				nameAccess(&_NamedCnx);
+		CRWSynchronized< std::vector<CUnifiedConnection> >::CWriteAccessor	idAccess(&_IdCnx);
+		uint	i;
+
+		// try to reconnect
+		for (i=0; i<_ConnectionRetriesStack.size(); ++i)
+		{
+			CUnifiedConnection	&cnx = idAccess.value()[_ConnectionRetriesStack[i]];
+			nlassert(!cnx.IsServerConnection);
+
+			try
+			{
+				cnx.Connection.CbClient->connect(cnx.ExtAddress);
+				cnx.Connection.CbClient->getSockId()->setAppId(cnx.ServiceId);
+				cnx.IsConnected = true;
+
+				if (cnx.SendId)
+				{
+					// send identification to the service
+					CMessage	msg("UN_SIDENT");
+					uint16		ssid = _SId;
+					msg.serial(_Name);
+					msg.serial(ssid);	// serializes a 16 bits service id
+					send(cnx.ServiceName, msg);
+				}
+
+				// call the connection callback associated to this service
+				TNameMappedCallback::iterator	itcb = _UpCallbacks.find(cnx.ServiceName);
+				if (itcb != _UpCallbacks.end() && (*itcb).second.first != NULL)
+				{
+					TUnifiedNetCallback	cb = (*itcb).second.first;
+					cb(cnx.ServiceName, cnx.ServiceId, (*itcb).second.second);
+				}
+
+				if (_UpUniCallback.first != NULL)
+				{
+					_UpUniCallback.first(cnx.ServiceName, cnx.ServiceId, _UpUniCallback.second);
+				}
+			}
+			catch (ESocketConnectionFailed &e)
+			{
+				nlinfo ("L5: can't connect to %s (sid %u) now (%s)", cnx.ServiceName.c_str(), cnx.ServiceId, e.what ());
+			}
+		}
+
+		// remove all flaged connections
+		for (i=0; i<_DisconnectionStack.size(); ++i)
+		{
+			CUnifiedConnection	&cnx = idAccess.value()[_DisconnectionStack[i]];
+
+			nlassert(cnx.EntryUsed);
+
+			// flag the connection as unavailable
+			cnx.IsConnected = false;
+
+			if (!cnx.IsExternal || !cnx.AutoRetry)
+			{
+				// if the cnx isn't extern or if no autoretry, delete it.
+				cnx.EntryUsed = false;
+
+				if (!cnx.IsServerConnection)
+					delete cnx.Connection.CbClient;
+
+				TNameMappedConnection::iterator	itnmc = nameAccess.value().find(cnx.ServiceName);
+				nlassert(itnmc != nameAccess.value().end());
+				nameAccess.value().erase(itnmc);
+			}
+		}
+
+		// add new connections
+		for (i=0; i<_ConnectionStack.size(); ++i)
+		{
+			if (_ConnectionStack[i].SId >= idAccess.value().size())
+				idAccess.value().resize(_ConnectionStack[i].SId+1);
+
+			CUnifiedConnection	&cnx = idAccess.value()[_ConnectionStack[i].SId];
+
+			nlassert(!cnx.EntryUsed);
+
+			cnx = CUnifiedConnection(_ConnectionStack[i].SName, _ConnectionStack[i].SId, _ConnectionStack[i].SHost);
+			cnx.IsConnected = true;
+			nameAccess.value().insert(make_pair(_ConnectionStack[i].SName, _ConnectionStack[i].SId));
+
+			// get the connection callback
+			CUnifiedNetwork::TNameMappedCallback::iterator	it = _UpCallbacks.find(cnx.ServiceName);
+
+			if (it != _UpCallbacks.end())
+			{
+				// call it
+				TUnifiedNetCallback	cb = (*it).second.first;
+				cb(cnx.ServiceName, cnx.ServiceId, (*it).second.second);
 			}
 
 			if (_UpUniCallback.first != NULL)
@@ -413,63 +578,69 @@ void	CUnifiedNetwork::updateConnectionTable()
 				_UpUniCallback.first(cnx.ServiceName, cnx.ServiceId, _UpUniCallback.second);
 			}
 		}
-		catch (ESocketConnectionFailed &e)
-		{
-			nlinfo ("L5: can't connect to %s (sid %u) now (%s)", cnx.ServiceName.c_str(), cnx.ServiceId, e.what ());
-		}
+*/
 	}
 
-	// remove all flaged connections
-	for (i=0; i<_DisconnectionStack.size(); ++i)
+	//
+	//
+
 	{
-		CUnifiedConnection	&cnx = idAccess.value()[_DisconnectionStack[i]];
+		// Second: send identification, callbacks etc.
+		CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
+		uint	i;
 
-		nlassert(cnx.EntryUsed);
-
-		// flag the connection as unavailable
-		cnx.IsConnected = false;
-
-		if (!cnx.IsExternal || !cnx.AutoRetry)
+		// send id and callbacks
+		for (i=0; i<_ConnectionRetriesStack.size(); ++i)
 		{
-			// if the cnx isn't extern or if no autoretry, delete it.
-			cnx.EntryUsed = false;
+			const CUnifiedConnection	&cnx = idAccess.value()[_ConnectionRetriesStack[i]];
+			nlassert(!cnx.IsServerConnection);
 
-			if (!cnx.IsServerConnection)
-				delete cnx.Connection.CbClient;
+			if (cnx.IsConnected)
+			{
+				if (cnx.SendId)
+				{
+					// send identification to the service
+					CMessage	msg("UN_SIDENT");
+					uint16		ssid = _SId;
+					msg.serial(_Name);
+					msg.serial(ssid);	// serializes a 16 bits service id
+					send(cnx.ServiceId, msg);
+				}
 
-			TNameMappedConnection::iterator	itnmc = nameAccess.value().find(cnx.ServiceName);
-			nlassert(itnmc != nameAccess.value().end());
-			nameAccess.value().erase(itnmc);
-		}
-	}
+				// call the connection callback associated to this service
+				TNameMappedCallback::iterator	itcb = _UpCallbacks.find(cnx.ServiceName);
+				if (itcb != _UpCallbacks.end() && (*itcb).second.first != NULL)
+				{
+					TUnifiedNetCallback	cb = (*itcb).second.first;
+					cb(cnx.ServiceName, cnx.ServiceId, (*itcb).second.second);
+				}
 
-	// add new connections
-	for (i=0; i<_ConnectionStack.size(); ++i)
-	{
-		if (_ConnectionStack[i].SId >= idAccess.value().size())
-			idAccess.value().resize(_ConnectionStack[i].SId+1);
-
-		CUnifiedConnection	&cnx = idAccess.value()[_ConnectionStack[i].SId];
-
-		nlassert(!cnx.EntryUsed);
-
-		cnx = CUnifiedConnection(_ConnectionStack[i].SName, _ConnectionStack[i].SId, _ConnectionStack[i].SHost);
-		cnx.IsConnected = true;
-		nameAccess.value().insert(make_pair(_ConnectionStack[i].SName, _ConnectionStack[i].SId));
-
-		// get the connection callback
-		CUnifiedNetwork::TNameMappedCallback::iterator	it = _UpCallbacks.find(cnx.ServiceName);
-
-		if (it != _UpCallbacks.end())
-		{
-			// call it
-			TUnifiedNetCallback	cb = (*it).second.first;
-			cb(cnx.ServiceName, cnx.ServiceId, (*it).second.second);
+				if (_UpUniCallback.first != NULL)
+				{
+					_UpUniCallback.first(cnx.ServiceName, cnx.ServiceId, _UpUniCallback.second);
+				}
+			}
 		}
 
-		if (_UpUniCallback.first != NULL)
+		// callbacks
+		for (i=0; i<_ConnectionStack.size(); ++i)
 		{
-			_UpUniCallback.first(cnx.ServiceName, cnx.ServiceId, _UpUniCallback.second);
+			const CUnifiedConnection	&cnx = idAccess.value()[_ConnectionStack[i].SId];
+
+			// get the connection callback
+			CUnifiedNetwork::TNameMappedCallback::iterator	it = _UpCallbacks.find(cnx.ServiceName);
+
+			if (it != _UpCallbacks.end())
+			{
+				// call it
+				TUnifiedNetCallback	cb = (*it).second.first;
+				cb(cnx.ServiceName, cnx.ServiceId, (*it).second.second);
+			}
+
+			if (_UpUniCallback.first != NULL)
+			{
+				_UpUniCallback.first(cnx.ServiceName, cnx.ServiceId, _UpUniCallback.second);
+			}
 		}
 	}
 }
@@ -480,27 +651,85 @@ void	CUnifiedNetwork::updateConnectionTable()
 
 void	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout)
 {
-	CRWSynchronized<TNameMappedConnection>::CReadAccessor				nameAccess(&_NamedCnx);
-	CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
-	TNameMappedConnection												&namedCnx = const_cast<TNameMappedConnection&>(nameAccess.value());
-
-	TNameMappedConnection::const_iterator								it;
-	pair<TNameMappedConnection::const_iterator,TNameMappedConnection::const_iterator>	range;
-	range = namedCnx.equal_range(serviceName);
-
-	bool	found = false;
-	if (range.first != nameAccess.value().end())
+	enterReentrant();
 	{
-		for (it=range.first; it!=range.second; ++it)
+		CRWSynchronized<TNameMappedConnection>::CReadAccessor				nameAccess(&_NamedCnx);
+		CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
+		TNameMappedConnection												&namedCnx = const_cast<TNameMappedConnection&>(nameAccess.value());
+
+		TNameMappedConnection::const_iterator								it;
+		pair<TNameMappedConnection::const_iterator,TNameMappedConnection::const_iterator>	range;
+		range = namedCnx.equal_range(serviceName);
+
+		bool	found = false;
+		if (range.first != nameAccess.value().end())
 		{
-			uint16	sid = (*it).second;
+			for (it=range.first; it!=range.second; ++it)
+			{
+				uint16	sid = (*it).second;
+				const CUnifiedConnection	&connection = idAccess.value()[sid];
+
+				nlassert(connection.EntryUsed);
+				if (!connection.IsConnected || _TempDisconnectionTable[sid])
+					continue;
+
+				found = true;
+
+
+				if (connection.IsServerConnection)
+					_CbServer.send(msgout, connection.Connection.HostId);
+				else
+					connection.Connection.CbClient->send(msgout);
+
+			}
+		}
+
+		// looks for waiting connections
+		uint	i;
+		for (i=0; i<_ConnectionStack.size(); ++i)
+		{
+			uint16	sid = _ConnectionStack[i].SId;
+			if (_ConnectionStack[i].SName == serviceName && !_TempDisconnectionTable[sid])
+			{
+				found = true;
+				_CbServer.send(msgout, _ConnectionStack[i].SHost);
+			}
+		}
+
+		if (!found)
+			nlwarning("L5: can't find service %s to send message %s", serviceName.c_str(), msgout.getName().c_str());
+	}
+	leaveReentrant();
+}
+
+void	CUnifiedNetwork::send(uint16 sid, const CMessage &msgout)
+{
+	enterReentrant();
+	{
+		CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
+
+		if (_TempDisconnectionTable[sid])
+		{
+			nlwarning("L5: service %d just got disconnected", sid);
+			goto SendCSLeave;
+		}
+
+		if (sid>=idAccess.value().size() || !idAccess.value()[sid].EntryUsed || !idAccess.value()[sid].EntryUsed)
+		{
+			uint	i;
+			for (i=0; i<_ConnectionStack.size(); ++i)
+			{
+				if (_ConnectionStack[i].SId == sid)
+				{
+					_CbServer.send(msgout, _ConnectionStack[i].SHost);
+					goto SendCSLeave;
+				}
+			}
+			nlwarning("L5: incorrect service id %d to send message %s", sid, msgout.getName().c_str());
+		}
+		else
+		{
 			const CUnifiedConnection	&connection = idAccess.value()[sid];
-
-			nlassert(connection.EntryUsed);
-			if (!connection.IsConnected)
-				continue;
-
-			found = true;
 
 			if (connection.IsServerConnection)
 				_CbServer.send(msgout, connection.Connection.HostId);
@@ -508,65 +737,29 @@ void	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout)
 				connection.Connection.CbClient->send(msgout);
 		}
 	}
-
-	// looks for waiting connections
-	uint	i;
-	for (i=0; i<_ConnectionStack.size(); ++i)
-	{
-		if (_ConnectionStack[i].SName == serviceName)
-		{
-			found = true;
-			_CbServer.send(msgout, _ConnectionStack[i].SHost);
-		}
-	}
-
-	if (!found)
-		nlwarning("L5: can't find service %s to send message %s", serviceName.c_str(), msgout.getName().c_str());
-}
-
-void	CUnifiedNetwork::send(uint16 sid, const CMessage &msgout)
-{
-	CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
-
-	if (sid>=idAccess.value().size() || !idAccess.value()[sid].EntryUsed || !idAccess.value()[sid].EntryUsed)
-	{
-		uint	i;
-		for (i=0; i<_ConnectionStack.size(); ++i)
-		{
-			if (_ConnectionStack[i].SId == sid)
-			{
-				_CbServer.send(msgout, _ConnectionStack[i].SHost);
-				return;
-			}
-		}
-		nlwarning("L5: incorrect service id %d to send message %s", sid, msgout.getName().c_str());
-	}
-	else
-	{
-		const CUnifiedConnection	&connection = idAccess.value()[sid];
-
-		if (connection.IsServerConnection)
-			_CbServer.send(msgout, connection.Connection.HostId);
-		else
-			connection.Connection.CbClient->send(msgout);
-	}
+SendCSLeave:
+	leaveReentrant();
 }
 
 void	CUnifiedNetwork::send(const CMessage &msgout)
 {
-	CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
-	const std::vector<CUnifiedConnection>								&connections = idAccess.value();
+	enterReentrant();
+	{
+		CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
+		const std::vector<CUnifiedConnection>								&connections = idAccess.value();
 
-	uint	i;
-	for (i=0; i<connections.size(); ++i)
-		if (connections[i].EntryUsed && connections[i].IsConnected)
-			if (connections[i].IsServerConnection)
-				_CbServer.send(msgout, connections[i].Connection.HostId);
-			else
-				connections[i].Connection.CbClient->send(msgout);
+		uint	i;
+		for (i=0; i<connections.size(); ++i)
+			if (connections[i].EntryUsed && connections[i].IsConnected)
+				if (connections[i].IsServerConnection)
+					_CbServer.send(msgout, connections[i].Connection.HostId);
+				else
+					connections[i].Connection.CbClient->send(msgout);
 
-	for (i=0; i<_ConnectionStack.size(); ++i)
-		_CbServer.send(msgout, _ConnectionStack[i].SHost);
+		for (i=0; i<_ConnectionStack.size(); ++i)
+			_CbServer.send(msgout, _ConnectionStack[i].SHost);
+	}
+	leaveReentrant();
 }
 
 

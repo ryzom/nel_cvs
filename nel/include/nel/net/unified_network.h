@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.6 2001/11/13 13:05:47 legros Exp $
+ * $Id: unified_network.h,v 1.7 2001/11/15 15:26:21 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,8 +139,10 @@ public:
 	 * On a client, the callback will be call when the connection to the server is established (the first connection or after the server shutdown and started)
 	 * On a server, the callback is called each time a new client is connected to him
 	 * 
+	 * Only the last set callback will be called, that is only one callback is active at a time.
 	 * If the serviceName is "*", the callback will be call for any services
-	 * You can set more than one callback for each service, in this case, these callbacks will be call one after other.
+	 * If you set the same callback for a specific service S and for "*", the callback might be
+	 * call twice (in case the service S is up)
 	 */
 	void	setServiceUpCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg);
 
@@ -148,8 +150,10 @@ public:
 	 * On a client, the callback will be call each time the connection to the server is lost.
 	 * On a server, the callback is called each time a client is disconnected.
 	 * 
+	 * Only the last set callback will be called, that is only one callback is active at a time.
 	 * If the serviceName is "*", the callback will be call for any services
-	 * You can set more than one callback for each service, in this case, these callbacks will be call one after other.
+	 * If you set the same callback for a specific service S and for "*", the callback might be
+	 * call twice (in case the service S is down)
 	 */
 	void	setServiceDownCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg);
 
@@ -276,10 +280,16 @@ private:
 	std::vector<CConnectionId>									_ConnectionStack;
 	std::vector<uint16>											_DisconnectionStack;
 	std::vector<uint16>											_ConnectionRetriesStack;
+	std::vector<bool>											_TempDisconnectionTable;
 
 
 	/// The main instance
 	static CUnifiedNetwork										*_Instance;
+
+	//
+	NLMISC::CMutex												_Mutex;
+	volatile uint												_MThreadId;
+	volatile uint												_MutexCount;
 
 
 	//
@@ -289,11 +299,17 @@ private:
 		_UpUniCallback.second = NULL;
 		_DownUniCallback.first = NULL;
 		_DownUniCallback.second = NULL;
+		_MThreadId = 0xFFFFFFFF;
+		_MutexCount = 0;
 	}
 	~CUnifiedNetwork() { }
 
 	//
 	void	updateConnectionTable();
+
+	//
+	void	enterReentrant();
+	void	leaveReentrant();
 };
 
 

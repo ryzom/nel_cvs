@@ -8,7 +8,7 @@
  *      single character names, were used because those were the names
  *      used in the publication.
  *
- * $Id: sha1.h,v 1.1 2003/02/19 17:32:56 lecroart Exp $
+ * $Id: sha1.h,v 1.2 2003/02/19 18:09:22 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -114,7 +114,7 @@ inline bool operator <(const struct CHashKey &a,const struct CHashKey &b)
 	return a.HashKeyString<b.HashKeyString;
 }
 
-// This function get a filename (with full path) and returns his SHA hash key
+// This function get a filename (it works with big files) and returns his SHA hash key
 CHashKey getSHA1(const std::string &filename);
 
 // This function get a buffer with size and returns his SHA hash key

@@ -25,7 +25,7 @@
  *      implementation only works with messages with a length that is
  *      a multiple of the size of an 8-bit character.
  *
- * $Id: sha1.cpp,v 1.1 2003/02/19 17:32:49 lecroart Exp $
+ * $Id: sha1.cpp,v 1.2 2003/02/19 18:09:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,12 +60,15 @@
 #include <vector>
 
 #include "nel/misc/sha1.h"
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
 
 //
 // Namespaces
 //
 
 using namespace std;
+using namespace NLMISC;
 
 //
 // Types
@@ -171,33 +174,46 @@ CHashKey getSHA1(const string &filename)
     uint8_t Message_Digest[20];
 
 	//printf("reading '%s'\n", findData.cFileName);
-	FILE *fp = fopen (filename.c_str(), "rb");
-	if (fp == NULL) return CHashKey();
+	CIFile ifile;
+	ifile.setCacheFileOnOpen(true);
+	if (!ifile.open(CPath::lookup(filename)))
+	{
+		nlwarning ("Can't open the file '%s'", filename.c_str());
+		return CHashKey();
+	}
+
+	//FILE *fp = fopen (filename.c_str(), "rb");
+	//if (fp == NULL) return CHashKey();
 
 	err = SHA1Reset(&sha);
 	if (err)
 	{
 		nlwarning("SHA1Reset Error %d.\n", err );
+		ifile.close ();
 		return CHashKey();
 	}
 
-	int bs;
+	sint fs = ifile.getFileSize();
+	sint n, read = 0;
 	do
 	{
-		bs = (int)fread (buffer, 1, bufferSize, fp);
+		//bs = (int)fread (buffer, 1, bufferSize, fp);
+		n = std::min (bufferSize, fs-read);
+		nlinfo ("read %d bytes", n);
+		ifile.serialBuffer((uint8 *)buffer, n);
 
-		err = SHA1Input(&sha, buffer, bs);
+		err = SHA1Input(&sha, buffer, n);
 		if (err)
 		{
 			nlwarning ("SHA1Input Error %d.\n", err);
-			fclose (fp);
+			ifile.close();
 			return CHashKey();
 		}
-
+		read += n;
 	}
-	while (bs == bufferSize);
+	while (!ifile.eof());
 
-	fclose (fp);
+	ifile.close	();
 
 	err = SHA1Result(&sha, Message_Digest);
 	if (err)

@@ -5,7 +5,7 @@ texture texture3; // diffuse
 
 float4 factor0; // bumpmap0 scale
 float4 factor1; // bumpmap1 scale
-float  scalar0; // bump scale for 1_1 version
+float  scalarFloat0; // bump scale for 1_1 version
 
 pixelshader water_diffuse_2_0 = asm
 {
@@ -40,7 +40,7 @@ pixelshader water_diffuse_2_0 = asm
 technique technique_water_diffuse_2_0
 {
 	pass p0
-	{
+	{		
 		Texture[0] = <texture0>;
 		Texture[1] = <texture1>;
 		Texture[2] = <texture2>;
@@ -68,7 +68,7 @@ pixelshader water_diffuse_1_4 = asm
 technique technique_water_diffuse_1_4
 {
 	pass p0
-	{
+	{		
 		Texture[0] = <texture0>;
 		Texture[1] = <texture1>;
 		Texture[2] = <texture2>;
@@ -92,16 +92,16 @@ pixelshader water_diffuse_1_1 = asm
 technique technique_water_diffuse_1_1
 {
 	pass p0
-	{
+	{		
 		Texture[1] = <texture1>;
 		Texture[2] = <texture2>;
 		Texture[3] = <texture3>;
 		PixelShaderConstant[0] = <factor0>;
 		PixelShaderConstant[1] = <factor1>;
 		PixelShader = (water_diffuse_1_1);
-		BumpEnvMat00[2] = <scalar0>;
+		BumpEnvMat00[2] = <scalarFloat0>;
 		BumpEnvMat01[0] = 0;
 		BumpEnvMat10[0] = 0;
-		BumpEnvMat11[2] = <scalar0>;
+		BumpEnvMat11[2] = <scalarFloat0>;
 	}
 };

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.46 2002/03/28 11:06:12 vizerie Exp $
+# $Id: Makefile.am,v 1.47 2002/03/29 14:17:03 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -46,7 +46,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         rect.cpp                           \
                         rgba.cpp                           \
                         smart_ptr.cpp                      \
-			            stop_watch.cpp			           \
+                        stop_watch.cpp                     \
                         stream.cpp                         \
                         string_id_array.cpp                \
                         system_info.cpp                    \
@@ -67,18 +67,14 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         win_displayer.cpp                  \
                         gtk_displayer.cpp                  \
                         window_displayer.cpp               \
-			            debug_displayer.cpp                \
-			            mem_displayer.cpp                  \
+                        debug_displayer.cpp                \
+                        mem_displayer.cpp                  \
                         game_device_events.cpp             \
                         input_device.cpp                   \
                         input_device_server.cpp            \
-                        
-                        
-=======
-			mem_displayer.cpp                  
 
-noinst_HEADERS	      = stdmisc.h
->>>>>>> 1.45
+
+
 
 libnelmisc_la_LIBADD  = config_file/libconfig.la -lc -lpthread
 

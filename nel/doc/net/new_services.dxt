@@ -3,7 +3,7 @@
 
 \author Olivier Cado
 
-\subsection networkintro Introduction
+\subsection new_service_intro Introduction
 
 A service is set of functionnalities provided by a server.
 The class NLNET::IService is the base class of all services.

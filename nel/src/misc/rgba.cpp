@@ -1,10 +1,10 @@
 /** \file rgba.cpp
  * <File description>
  *
- * $Id: rgba.cpp,v 1.1 2000/10/17 14:58:14 corvazier Exp $
+ * $Id: rgba.cpp,v 1.2 2000/10/17 15:36:07 cado Exp $
  */
 
-/** Copyright, 2000 Nevrax Ltd.
+/* Copyright, 2000 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify

@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.11 2004/06/07 15:29:12 miller Exp $
+ * $Id: sstring.h,v 1.12 2004/06/07 16:38:03 boucher Exp $
  */
 
 
@@ -1576,6 +1576,21 @@ namespace std
 } // std
 //_STLP_END_NAMESPACE
 
+/** 
+  * Instead of overriding std::less, please use the following predicate. 
+  * For example, declare your map as: 
+  *   std::map<NLMISC::CSString, CMyDataClass, NLMISC::CUnsensitiveSStringLessPred> MyMap; 
+  * Caution: a map declared without CUnsensitiveSStringLessPred will behave as a 
+  * standard string map. 
+  * 
+  * \see also CUnsensitiveStrLessPred in misc/string_conversion.h 
+  * for a similar predicate with std::string. 
+  */ 
+struct CUnsensitiveSStringLessPred : public std::less<NLMISC::CSString> 
+{ 
+	bool operator()(const NLMISC::CSString& x, const NLMISC::CSString& y) const { return x.icompare(y); } 
+}; 
+ 
 
 #endif // NL_SSTRING_H
 

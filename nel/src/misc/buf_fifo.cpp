@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.19 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.20 2002/01/23 14:27:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ CBufFIFO::~CBufFIFO()
 void CBufFIFO::push(const std::vector<uint8> &buffer)
 {
 	// if the buffer is more than 1 meg, there s surely a problem, no?
-	nlassert( buffer.size() < 1000000 ); // size check in debug mode
+//	nlassert( buffer.size() < 1000000 ); // size check in debug mode
 
 	TTicks before = CTime::getPerformanceTime();
 

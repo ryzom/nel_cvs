@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.24 2002/04/26 15:06:50 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.25 2002/04/29 08:27:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,8 +108,11 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller)
 			}
 		}
 
-		// Else finer clip with pyramid.
-		return m->Shape->clip(trav->WorldPyramid, HrcObs->WorldMatrix);
+		// Else finer clip with pyramid, only if needed
+		if(trav->ForceNoFrustumClip)
+			return true;
+		else
+			return m->Shape->clip(trav->WorldPyramid, HrcObs->WorldMatrix);
 	}
 	else
 		return false;

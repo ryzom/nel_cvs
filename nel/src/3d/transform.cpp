@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.40 2002/04/12 16:22:46 vizerie Exp $
+ * $Id: transform.cpp,v 1.41 2002/04/29 08:27:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -598,21 +598,14 @@ void	CTransformClipObs::traverse(IObs *caller)
 	// if at least visible.
 	if(HrcObs->WorldVis)
 	{
-		if(clipTrav->ForceNoFrustumClip)
-		{
-			Visible= true;
-		}
+		// If linked to a SkeletonModel anywhere in the hierarchy, don't clip, and use skeleton model clip result.
+		// This works because we are sons of a special node which is not in the clip traversal, and
+		// which is traversed at end of the traversal.
+		if( ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel!=NULL )
+			Visible= ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel->isClipVisible();
+		// else, clip.
 		else
-		{
-			// If linked to a SkeletonModel anywhere in the hierarchy, don't clip, and use skeleton model clip result.
-			// This works because we are sons of a special node which is not in the clip traversal, and
-			// which is traversed at end of the traversal.
-			if( ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel!=NULL )
-				Visible= ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel->isClipVisible();
-			// else, clip.
-			else
-				Visible= clip(callerClipObs);
-		}
+			Visible= clip(callerClipObs);
 	}
 
 	// if visible, add to list.

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.h
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.h,v 1.8 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.h,v 1.9 2004/04/27 12:05:39 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -64,7 +64,7 @@ public:
 	virtual	IVertexBufferHardGL		*createVBHardGL(uint size, CVertexBuffer *vb) =0;
 	/// return the size allocated. 0 if not allocated or failure
 	virtual	uint					sizeAllocated() const =0;
-
+	
 protected:
 	CDriverGL	*_Driver;
 };
@@ -100,6 +100,8 @@ public:
 	// For Fence access. Ignored for ATI.
 	bool				GPURenderingAfterFence;
 
+	// test if buffer content is invalid. If so, no rendering should occurs (rendering should silently fail)
+	bool							isInvalid() { return _Invalid; }
 
 public:
 
@@ -107,6 +109,7 @@ public:
 
 protected:
 	CDriverGL			*_Driver;
+	bool		 _Invalid;	
 };
 
 
@@ -422,6 +425,9 @@ private:
 	uint						   _VertexObjectId;	
 	void						   *_VertexPtr; // pointer on current datas. Null if not locked
 	CVertexArrayRangeMapObjectATI  *_VertexArrayRange;
+	// if buffer has been invalidated, returns a dummy memory block and silently fails rendering
+	std::vector<uint8>				_DummyVB;
+	uint							_SwapBufferCounterWhenInvalidated; // value of the swap buffer counter when the buffer was invalidated
 };
 
 // ***************************************************************************

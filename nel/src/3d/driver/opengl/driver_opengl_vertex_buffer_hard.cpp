@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.15 2004/04/21 12:04:02 vizerie Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.16 2004/04/27 12:05:39 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -67,6 +67,7 @@ IVertexBufferHardGL::IVertexBufferHardGL(CDriverGL *drv, CVertexBuffer *vb) : VB
 	_Driver= drv;
 	GPURenderingAfterFence= false;
 	VBType = UnknownVB;
+	_Invalid = false;	
 }
 // ***************************************************************************
 IVertexBufferHardGL::~IVertexBufferHardGL()
@@ -841,6 +842,7 @@ CVertexBufferHardGLMapObjectATI::CVertexBufferHardGLMapObjectATI(CDriverGL *drv,
 {	
 	// Flag our type
 	VBType = ATIMapObjectVB;		
+	_SwapBufferCounterWhenInvalidated = 0;
 }
 
 // ***************************************************************************
@@ -853,8 +855,50 @@ CVertexBufferHardGLMapObjectATI::~CVertexBufferHardGLMapObjectATI()
 void *CVertexBufferHardGLMapObjectATI::lock()
 {
 	if (_VertexPtr) return _VertexPtr; // already locked
+	if (_Invalid)
+	{
+		// if lock happend at the same frame, don't try to reallocate a vertex buffer
+		if (_SwapBufferCounterWhenInvalidated == _Driver->SwapBufferCounter)
+		{
+			return &_DummyVB[0];
+		}
+		// recreate a vb
+		const uint size = VB->getNumVertices() * VB->getVertexSize();
+		switch(VBType)
+		{
+			case CVertexBuffer::AGPPreferred: 
+				_VertexObjectId = nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
+				break;
+			case CVertexBuffer::StaticPreferred:
+				if (_Driver->getStaticMemoryToVRAM())
+					_VertexObjectId = nglNewObjectBufferATI(size, NULL, GL_STATIC_ATI);
+				else
+					_VertexObjectId = nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
+				break;
+		};
+		if (!_VertexObjectId)
+		{
+			return &_DummyVB[0];
+		}
+		NLMISC::contReset(_DummyVB); // free vector memory for real
+		_Invalid = false;
+		// continue to standard mapping code below ..
+	}
 	if (!_VertexObjectId) return NULL;
 	_VertexPtr = nglMapObjectBufferATI(_VertexObjectId);
+	if (!_VertexPtr)
+	{
+		// Buffer is lost (maybe there was a alt-tab or fullscrren / windowed change)
+		// Kill the buffer and allocate fake memory 
+		nglDeleteObjectBufferATI(_VertexObjectId);
+		_VertexObjectId = 0;
+		_Invalid = true;
+		_DummyVB.resize(VB->getNumVertices() * VB->getVertexSize(), 0);
+		// keep the frame counter. We'll try to reallocate the buffer only during the next frame
+		_Driver->incrementResetCounter();
+		_SwapBufferCounterWhenInvalidated = _Driver->SwapBufferCounter;
+		return &_DummyVB[0];
+	}	
 	return _VertexPtr;
 }
 
@@ -993,7 +1037,7 @@ IVertexBufferHardGL *CVertexArrayRangeARB::createVBHardGL(uint size, CVertexBuff
 	glGetError();
 	nglGenBuffersARB(1, &vertexBufferID);
 	if (glGetError() != GL_NO_ERROR) return false;		
-	_Driver->_DriverGLStates.forceBindARBVertexBuffer(vertexBufferID);
+	_Driver->_DriverGLStates.forceBindARBVertexBuffer(vertexBufferID);	
 	switch(_VBType)
 	{	
 		case CVertexBuffer::AGPPreferred: 
@@ -1008,7 +1052,7 @@ IVertexBufferHardGL *CVertexArrayRangeARB::createVBHardGL(uint size, CVertexBuff
 		default:
 			nlassert(0);
 			break;
-	}
+	}	
 	if (glGetError() != GL_NO_ERROR)
 	{
 		nglDeleteBuffersARB(1, &vertexBufferID);
@@ -1072,12 +1116,12 @@ CVertexBufferHardARB::~CVertexBufferHardARB()
 void *CVertexBufferHardARB::lock()
 {
 	if (_VertexPtr) return _VertexPtr; // already locked
-	if (!_VertexObjectId) return NULL;
+	if (!_VertexObjectId) return NULL;	
 	TTicks	beforeLock;
 	if(_Driver->_VBHardProfiling)
 	{
 		beforeLock= CTime::getPerformanceTime();
-	}
+	}	
 	_Driver->_DriverGLStates.bindARBVertexBuffer(_VertexObjectId);
 	//nlassert(VB->isResident());
 	//_VertexPtr = nglMapBufferARB(GL_ARRAY_BUFFER_ARB, VB->isResident() ?	GL_WRITE_ONLY_ARB : GL_READ_WRITE_ARB);		
@@ -1087,13 +1131,13 @@ void *CVertexBufferHardARB::lock()
 	_Driver->_DriverGLStates.forceBindARBVertexBuffer(0);
 	
 		
-	// Lock Profile?
+	// Lock Profile?	
 	if(_Driver->_VBHardProfiling)
 	{
 		TTicks	afterLock;
 		afterLock= CTime::getPerformanceTime();
 		_Driver->appendVBHardLockProfile(afterLock-beforeLock, VB);
-	}		
+	}	
 	return _VertexPtr;
 }
 
@@ -1101,9 +1145,21 @@ void *CVertexBufferHardARB::lock()
 void CVertexBufferHardARB::unlock()
 {
 	if (!_VertexObjectId || !_VertexPtr) return;
+	TTicks	beforeLock;
+	if(_Driver->_VBHardProfiling)
+	{
+		beforeLock= CTime::getPerformanceTime();
+	}
 	_Driver->_DriverGLStates.bindARBVertexBuffer(_VertexObjectId);	
-	// double start = CTime::ticksToSecond(CTime::getPerformanceTime());
+	// double start = CTime::ticksToSecond(CTime::getPerformanceTime());	
 	nglUnmapBufferARB(GL_ARRAY_BUFFER_ARB);	
+	// Lock Profile?
+	if(_Driver->_VBHardProfiling)
+	{
+		TTicks	afterLock;
+		afterLock= CTime::getPerformanceTime();
+		_Driver->appendVBHardLockProfile(afterLock-beforeLock, VB);
+	}
 
 	_Driver->_DriverGLStates.forceBindARBVertexBuffer(0);
 	

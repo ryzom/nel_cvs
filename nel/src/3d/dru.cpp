@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.6 2000/12/01 14:33:31 corvazier Exp $
+ * $Id: dru.cpp,v 1.7 2000/12/01 15:16:49 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,12 +25,12 @@
 
 #include "nel/misc/types_nl.h"
 
-#ifdef NL_OS_WINDOWS
-
-#include <windows.h>
 #include "nel/3d/dru.h"
 #include "nel/3d/driver.h"
 
+#ifdef NL_OS_WINDOWS
+#include <windows.h>
+#endif // NL_OS_WINDOWS
 
 namespace NL3D 
 {
@@ -41,6 +41,8 @@ typedef IDriver* (*IDRV_CREATE_PROC)(void);
 
 IDriver		*CDRU::createGlDriver()
 {
+#ifdef NL_OS_WINDOWS
+
 	// WINDOWS code.
 	HINSTANCE			hInst;
 	IDRV_CREATE_PROC	createDriver;
@@ -62,11 +64,16 @@ IDriver		*CDRU::createGlDriver()
 	{
 		nlerror("Can't create IDriver Instance from driver_opengl.dll (bad dll?)");
 	}
-
 	return ret;
+
+#else // NL_OS_WINDOWS
+
+	return NULL;	// Not yet implemented..
+
+#endif // NL_OS_WINDOWS
+
 }
 
 
 } // NL3D
 
-#endif // NL_OS_WINDOWS

@@ -1,7 +1,7 @@
 /** \file tile_element.h
  * <File description>
  *
- * $Id: tile_element.h,v 1.1 2000/11/30 10:57:38 berenguier Exp $
+ * $Id: tile_element.h,v 1.2 2000/12/01 15:17:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,9 @@
 namespace NL3D 
 {
 
+#define NL_TILE_ELM_MASK_ROTATE				0x03
+#define NL_TILE_ELM_OFFSET_ROTATE			0
+#define NL_TILE_ELM_SIZE_ROTATE				2
 
 // ***************************************************************************
 /**
@@ -51,14 +54,16 @@ public:
 	 *
 	 */
 	uint16	Tile[3];
+	
 	/** Set the tile orientation of tile of pass i, to "orient".
 	 * orient E [0,3]. The rotation is CCW.
 	 */
 	void	setTileOrient(sint i, uint8 orient);
+	
 	/** Get the tile orientation of tile of pass i.
 	 * orient E [0,3]. The rotation is CCW.
 	 */
-	uint8	getTileOrient(sint i);
+	uint8	getTileOrient(sint i) const;
 
 
 	void	serial(NLMISC::IStream &f);

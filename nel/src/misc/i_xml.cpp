@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.3 2001/10/25 08:17:25 besson Exp $
+ * $Id: i_xml.cpp,v 1.4 2001/11/27 15:58:39 urro Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -260,6 +260,15 @@ void CIXml::serialSeparatedBufferIn ( string &value, bool checkSeparator )
 					// Try to open the node
 					do
 					{
+						// If no more node, empty string
+						if (_CurrentNode == NULL)
+						{
+							value = "";
+							_ContentStringIndex = 0;
+							_ContentString.erase ();
+							return;
+						}
+
 						// Node with the good name
 						if (_CurrentNode->type == XML_TEXT_NODE)
 						{
@@ -273,30 +282,21 @@ void CIXml::serialSeparatedBufferIn ( string &value, bool checkSeparator )
 					while (_CurrentNode);
 
 					// Not found ?
-					if (_CurrentNode == NULL)
+					if (_CurrentNode != NULL)
 					{
-						// Should have a name
-						nlassert (_CurrentElement->name);
+						// Read the content
+						const char *content = (const char*)xmlNodeGetContent (_CurrentNode);
+						if (content)
+							_ContentString = content;
+						else
+							_ContentString.erase ();
 
-						// Make an error message
-						char tmp[512];
-						smprintf (tmp, 512, "NeL XML Syntax error in block line %d \nCan't open child text node in the node %s ", 
-							(int)_CurrentElement->content, _CurrentElement->name);
-						throw EXmlParsingError (tmp);
+						// Set the current index
+						_ContentStringIndex = 0;
+
+						// New length
+						length = _ContentString.length();
 					}
-
-					// Read the content
-					const char *content = (const char*)xmlNodeGetContent (_CurrentNode);
-					if (content)
-						_ContentString = content;
-					else
-						_ContentString.erase ();
-
-					// Set the current index
-					_ContentStringIndex = 0;
-
-					// New length
-					length = _ContentString.length();
 				}
 
 				// Keyword in the buffer ?

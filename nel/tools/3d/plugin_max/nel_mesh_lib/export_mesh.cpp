@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.56 2003/03/17 10:43:24 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.57 2003/03/18 15:34:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -783,7 +783,8 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 		const CMaterial &material = buildBaseMesh.Materials[nMaterialID];
 
 		// Info about the material
-		CRGBA diffuse = material.getColor ();
+		CRGBA diffuse = material.getDiffuse ();
+		CRGBA color = material.getColor ();
 		uint8 opacity = material.getOpacity ();
 		bool isLighted = material.isLighted ();
 
@@ -970,14 +971,10 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 					clamp (fA, 0.f, 255.f);
 					pCorner->Color.A=(uint8)fA;
 				}
-
-				// The material is lighted ?
-				if (isLighted)
-				{
-					// Modulate the alpha
-					pCorner->Color.A = (uint8) ((pCorner->Color.A*opacity) >> 8);
-				}
 			}
+
+			// Modulate the alpha
+			pCorner->Color.A = (uint8) ((pCorner->Color.A*opacity) / 255);
 
 			// *** ************
 			// *** Export Color
@@ -1011,11 +1008,12 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 				pCorner->Color.B=(uint8)fB;
 			}
 
-			// The material is lighted ?
-			if (isLighted)
+			// Modulate the color
+			if (!vpColorVertex)
 			{
-				// Modulate the color
-				pCorner->Color.modulateFromColor (pCorner->Color, diffuse);
+				uint8 alphaBackup = pCorner->Color.A;
+				pCorner->Color.modulateFromColor (pCorner->Color, isLighted ? diffuse : color);
+				pCorner->Color.A = alphaBackup;
 			}
 		}
 	}

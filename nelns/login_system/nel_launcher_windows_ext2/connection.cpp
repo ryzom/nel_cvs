@@ -1,6 +1,6 @@
 /** \file connexion.cpp
  *
- * $Id: connection.cpp,v 1.4 2004/01/08 11:38:58 lecroart Exp $
+ * $Id: connection.cpp,v 1.5 2004/01/20 18:50:11 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -118,18 +118,22 @@ static bool receive(string &res)
 
 	uint8 buf[1024];
 
+	if(VerboseLog) nlinfo("Receiving");
+
 	while (true)
 	{
 		size = 1023;
 
 		if (sock.receive((uint8*)buf, size, false) == CSock::Ok)
 		{
+			if(VerboseLog) nlinfo("Received OK %d bytes", size);
 			buf[1023] = '\0';
 			res += (char*)buf;
 			//nlinfo("block received '%s'", buf);
 		}
 		else
 		{
+			if(VerboseLog) nlinfo("Received CLOSE %d bytes", size);
 			buf[size] = '\0';
 			res += (char*)buf;
 			//nlwarning ("server connection closed");
@@ -148,13 +152,19 @@ string checkLogin(const string &login, const string &password, const string &cli
 	if(!connect())
 		return "Can't connect (error code 1)";
 
+	if(VerboseLog) nlinfo("Connected");
+
 	if(!send(ConfigFile.getVar("StartupPage").asString()+"?login="+login+"&password="+password+"&clientApplication="+clientApp))
 		return "Can't send (error code 2)";
 
+	if(VerboseLog) nlinfo("Sent request login check");
+
 	string res;
-		
+
 	if(!receive(res))
 		return "Can't receive (error code 3)";
+
+	if(VerboseLog) nlinfo("Received request login check");
 
 	if(res.empty())
 		return "Empty answer from server (error code 4)";

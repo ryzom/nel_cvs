@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.3 2001/05/30 10:01:10 berenguier Exp $
+ * $Id: global_retriever.h,v 1.4 2001/05/31 12:30:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,10 +45,6 @@ namespace NLPACS
 {
 
 class CRetrieverBank;
-
-
-/// Precision of Snap. 1/1024 meter. If you change this, CEdgeCollide::testPointMove() won't work.
-const	float	SnapPrecision= 1024;
 
 
 /**
@@ -361,26 +357,6 @@ private:
 	 * result: new collisionDescs in cst.
 	 */
 	void	testRotCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, CSurfaceIdent startSurface, const CVector2f bbox[4])  const;
-
-
-	/** Snap a vector at 1mm (1/1024). v must be a local position (ie range from -80 to +240).
-	 * Doing this, we are sure we have precision of 9+10 bits, which is enough for 24 bits float precision.
-	 * NB: z is not snapped.
-	 */
-	void	snapVector(CVector &v) const
-	{
-		v.x= (float)floor(v.x*SnapPrecision)/SnapPrecision;
-		v.y= (float)floor(v.y*SnapPrecision)/SnapPrecision;
-	}
-	/** Snap a vector at 1mm (1/1024). v must be a local position (ie range from -80 to +240).
-	 * Doing this, we are sure we have precision of 9+10 bits, which is enough for 24 bits float precision.
-	 */
-	void	snapVector(CVector2f &v) const
-	{
-		v.x= (float)floor(v.x*SnapPrecision)/SnapPrecision;
-		v.y= (float)floor(v.y*SnapPrecision)/SnapPrecision;
-	}
-
 	// @}
 
 

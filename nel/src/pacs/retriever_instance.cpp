@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.8 2001/05/22 16:41:41 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.9 2001/05/31 12:30:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,6 +263,8 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 
 	// get local coordinates
 	localEstimated = getLocalPosition(estimated);
+	// Yoyo: must snap vector.
+	CRetrieverInstance::snapVector(localEstimated);
 
 	// fills _RetrieveTable by retrievingPosition.
 	retriever.retrievePosition(localEstimated, _RetrieveTable);

@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.2 2001/05/22 16:41:12 legros Exp $
+ * $Id: retriever_instance.h,v 1.3 2001/05/31 12:30:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,11 @@
 
 namespace NLPACS
 {
+
+
+/// Precision of Snap. 1/1024 meter. If you change this, CEdgeCollide::testPointMove() won't work.
+const	float	SnapPrecision= 1024;
+
 
 /**
  * An instance of a local retriever.
@@ -198,6 +203,29 @@ public:
 
 	/// Returns the bbox of the instance.
 //	NLMISC::CAABBox						getBBox() { return _BBox; }
+
+
+	/// \name Vector Snapping.
+	// @{
+	/** Snap a vector at 1mm (1/1024). v must be a local position (ie range from -80 to +240).
+	 * Doing this, we are sure we have precision of 9+10 bits, which is enough for 24 bits float precision.
+	 * NB: z is not snapped.
+	 */
+	static void	snapVector(CVector &v)
+	{
+		v.x= (float)floor(v.x*SnapPrecision)/SnapPrecision;
+		v.y= (float)floor(v.y*SnapPrecision)/SnapPrecision;
+	}
+	/** Snap a vector at 1mm (1/1024). v must be a local position (ie range from -80 to +240).
+	 * Doing this, we are sure we have precision of 9+10 bits, which is enough for 24 bits float precision.
+	 */
+	static void	snapVector(CVector2f &v)
+	{
+		v.x= (float)floor(v.x*SnapPrecision)/SnapPrecision;
+		v.y= (float)floor(v.y*SnapPrecision)/SnapPrecision;
+	}
+	// @}
+
 };
 
 }; // NLPACS

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.13 2001/05/30 10:01:10 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.14 2001/05/31 12:30:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -992,7 +992,7 @@ NLPACS::CGlobalRetriever::CGlobalPosition
 	CVector		end= start + delta*t;
 
 	// must snap the end position.
-	snapVector(end);
+	CRetrieverInstance::snapVector(end);
 
 	// look where we arrive.
 	CVector2f	startCol(start.x, start.y);

@@ -66,8 +66,7 @@ Compilation
 
 	  SP5 and Processor Pack for SP5 can be found at:
 
-		<URL:http://msdn.microsoft.com/vstudio/downloads/ppack/download.asp>
- 
+		<URL:http://msdn.microsoft.com/vstudio/downloads/tools/ppack/download.aspx>
 
       You first need to compile STLport and FreeType libraries. It's a quite
       long compilation process, and you should carefully read these libraries

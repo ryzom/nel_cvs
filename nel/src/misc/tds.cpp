@@ -1,7 +1,7 @@
 /** \file tds.cpp
  * <File description>
  *
- * $Id: tds.cpp,v 1.1 2002/10/24 10:09:08 corvazier Exp $
+ * $Id: tds.cpp,v 1.2 2002/10/28 14:44:30 coutelas Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -79,7 +79,7 @@ void CTDS::setPointer (void* pointer)
 #ifdef NL_OS_WINDOWS
 	nlverify (TlsSetValue (_Handle, pointer));
 #else // NL_OS_WINDOWS
-	nlverify (pthread_setspecific (_Key, pionter) == 0);
+	nlverify (pthread_setspecific (_Key, pointer) == 0);
 #endif // NL_OS_WINDOWS
 }
 

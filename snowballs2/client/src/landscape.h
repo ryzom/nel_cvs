@@ -1,7 +1,7 @@
 /** \file landscape.h
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.h,v 1.9 2001/07/20 17:31:08 legros Exp $
+ * $Id: landscape.h,v 1.10 2001/07/27 09:07:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,8 @@
 // Includes
 //
 
+#include <vector>
+
 #include <nel/3d/u_landscape.h>
 #include <nel/misc/time_nl.h>
 #include <nel/misc/vector.h>
@@ -50,9 +52,9 @@ class CTrajectory;
 // External variables
 //
 
-extern NL3D::ULandscape		*Landscape;
-extern NL3D::UInstanceGroup	*InstanceGroup;
-extern NLMISC::CVector		 SunDirection;
+extern NL3D::ULandscape						*Landscape;
+extern std::vector<NL3D::UInstanceGroup*>	 InstanceGroups;
+extern NLMISC::CVector						 SunDirection;
 
 
 //

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.cpp,v 1.15 2001/07/23 16:42:34 lecroart Exp $
+ * $Id: landscape.cpp,v 1.16 2001/07/27 09:07:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 #include <string>
 #include <deque>
+#include <vector>
 
 #include "nel/misc/command.h"
 #include "nel/misc/debug.h"
@@ -71,7 +72,7 @@ using namespace NL3D;
 
 ULandscape				*Landscape = NULL;
 UVisualCollisionEntity	*AimingEntity = NULL;
-UInstanceGroup			*InstanceGroup = NULL;
+vector<UInstanceGroup*>	 InstanceGroups;
 
 ULight					*Sun = NULL;
 
@@ -150,14 +151,15 @@ void	initLandscape()
 	CConfigFile::CVar igv = ConfigFile.getVar("InstanceGroups");
 	for (sint32 i = 0; i < igv.size (); i++)
 	{
-		InstanceGroup = UInstanceGroup::createInstanceGroup (igv.asString (i));
-		if (InstanceGroup == NULL)
+		UInstanceGroup *inst = UInstanceGroup::createInstanceGroup (igv.asString (i));
+		if (inst == NULL)
 		{
 			nlwarning ("Instance group '%s' not found", igv.asString (i).c_str ());
 		}
 		else
 		{
-			InstanceGroup->addToScene (*Scene);
+			inst->addToScene (*Scene);
+			InstanceGroups.push_back (inst);
 		}
 	}
 

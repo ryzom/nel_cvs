@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.11 2001/07/11 16:11:29 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.12 2001/07/12 16:22:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,15 +31,21 @@
 #include "../nel_export/nel_export.h"
 #include "../nel_export/nel_export_scene.h"
 
+
 #include <3d/texture_file.h>
 #include <3d/mesh_mrm.h>
 #include <3d/mesh_multi_lod.h>
+#include <3d/particle_system_model.h>
 #include <3d/coarse_mesh_manager.h>
 
 using namespace NLMISC;
 using namespace NL3D;
 
+#define NEL_OBJET_NAME_DATA 1970
+
+
 // ***************************************************************************
+
 
 void buildNeLMatrix (CMatrix& tm, const CVector& scale, const CQuat& rot, const CVector& pos)
 {
@@ -55,6 +61,7 @@ void buildNeLMatrix (CMatrix& tm, const CVector& scale, const CQuat& rot, const 
 
 // ***************************************************************************
 
+
 CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath, CMesh::CMeshBaseBuild*& baseBuild)
 {
 	CMesh::CMeshBuild *pMeshBuild = new CMesh::CMeshBuild();
@@ -65,7 +72,8 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 
 	// Check if there is an object
 	if (obj)
-	{
+	{		
+
 		// Object can be converted in triObject ?
 		if (obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) 
 		{ 
@@ -107,6 +115,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 								const CSkeletonShape* skeletonShape, bool absolutePath,
 								CExportNelOptions &opt, bool view)
 {
+
 	// Here, we must check what kind of node we can build with this mesh.
 	// For the time, just Triobj is supported.
 	IShape *retShape=NULL;
@@ -121,6 +130,29 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 	// Check if there is an object
 	if (obj)
 	{
+		Class_ID  clid = obj->ClassID() ;
+		// is the object a particle system ? (we do this defore meshs, because for now there is a mesh in max scenes to say where a particle system is...)
+		if (clid.PartA() == NEL_PARTICLE_SYSTEM_CLASS_ID)
+		{
+			// build the shape from the file name
+			AppDataChunk *ad = obj->GetAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA );
+			if (ad&&ad->data)
+			{											
+				NL3D::CShapeStream ss ;
+				NLMISC::CIFile iF ;
+				if (iF.open((const char *) ad->data))
+				{
+					iF.serial(ss) ;
+					return ss.getShapePointer() ;
+				}
+				else
+				{
+					throw NLMISC::EStream("file not found (particle system file)") ;
+				}				
+			}
+		}
+		
+
 		// Object can be converted in triObject ?
 		if (obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) 
 		{ 
@@ -134,7 +166,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 			if (obj != tri) 
 				deleteIt = true;
 
-			/// \toto hulud: here, check if it is another kind of shape than mesh, multi lod mesh or mrm mesh. (particule system for exemple)
+			/// \toto hulud: here, check if it is another kind of shape than mesh, multi lod mesh or mrm mesh. 
 			{
 				// Mesh base ?
 				CMeshBase *meshBase;

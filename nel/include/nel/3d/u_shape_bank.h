@@ -1,7 +1,7 @@
 /** \file u_shape_bank.h
  * Game interface for managing shape bank.
  *
- * $Id: u_shape_bank.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_shape_bank.h,v 1.2 2002/11/18 09:32:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,6 +67,26 @@ public:
 	  * Link a shape to a ShapeCache. The ShapeCache must exist and must not contains the shape.
 	  */
 	virtual void linkShapeToShapeCache(const std::string &shapeName, const std::string &shapeCacheName) = 0;
+
+
+	/** PreLoad all shapes (.shape, .ps, .skel...) files from a directory into a shapeCache.
+	 *	Shapes are Loaded if not present, assigned to the given cache, and fit in the cache Size as max possible.
+	 *	NB: crash if you try to load a non shape file (eg: a .dds etc...)
+	 *	\param shapeCacheName name of a shapeCache created with addShapeCache()/setShapeCacheSize(). no-op if don't exist
+	 *	\param path a valid path (local or not) where to find shapes. NB: CPath is used to load the shapes.
+	 *	\param wildcard a filter string like: "*.shape", "??_HOM*.shape". NB: strlwr-ed internally
+	 *	\param recurs true if want to recurs in sub directory
+	 */
+	virtual void	preLoadShapesFromDirectory(const std::string &shapeCacheName, 
+		const std::string &path, const std::string &wildCard, bool recurs= false) =0;
+
+	/** PreLoad all shapes (.shape, .ps, .skel...) files from a directory into a shapeCache.
+	 *	same as preLoadShapesFromDirectory() but take a BNP name which must have been added with
+	 *	CBigFile::add() or through CPath::addSearchBigFile()
+	 *	\param bnpName eg: "characters.bnp" (NB: set the bigFileNAme without any path).
+	 */
+	virtual void	preLoadShapesFromBNP(const std::string &shapeCacheName, 
+		const std::string &bnpName, const std::string &wildCard) =0;
 
 };
 

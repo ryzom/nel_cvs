@@ -1,7 +1,7 @@
 /** \file shape_bank_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: shape_bank_user.cpp,v 1.4 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: shape_bank_user.cpp,v 1.5 2002/11/18 09:27:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,11 @@
 
 #include "3d/shape_bank_user.h"
 #include "nel/misc/file.h"
+#include "nel/misc/path.h"
+#include "nel/misc/big_file.h"
 
 using namespace NLMISC;
+using namespace std;
 
 namespace NL3D 
 {
@@ -74,5 +77,30 @@ void CShapeBankUser::linkShapeToShapeCache(const std::string &shapeName, const s
 }
 
 // ***************************************************************************
+void CShapeBankUser::preLoadShapesFromDirectory(const std::string &shapeCacheName, 
+	const std::string &path, const std::string &wildCardNotLwr, bool recurs)
+{
+	// List all files From the path
+	vector<string>	listFile;
+	CPath::getPathContent(path, recurs, false, true, listFile);
+
+	// preLoad
+	if(!listFile.empty())
+		_ShapeBank.preLoadShapes(shapeCacheName, listFile, wildCardNotLwr);
+}
+
+// ***************************************************************************
+void CShapeBankUser::preLoadShapesFromBNP(const std::string &shapeCacheName, 
+		const std::string &bnpName, const std::string &wildCardNotLwr)
+{
+	// List all files From the bnp
+	vector<string>	listFile;
+	CBigFile::getInstance().list(bnpName, listFile);
+ 
+	// preLoad
+	if(!listFile.empty())
+		_ShapeBank.preLoadShapes(shapeCacheName, listFile, wildCardNotLwr);
+}
+
 
 } // NL3D

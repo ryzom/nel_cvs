@@ -1,7 +1,7 @@
 /** \file shape_bank_user.h
  * Implementation of the user interface managing shape bank.
  *
- * $Id: shape_bank_user.h,v 1.3 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: shape_bank_user.h,v 1.4 2002/11/18 09:27:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,11 +50,15 @@ public:
 		NL3D_MEM_SHAPE_BANK
 	}
 
-	void addShapeCache(const std::string &shapeCacheName);
-	void removeShapeCache(const std::string &shapeCacheName);
-	void reset();
-	void setShapeCacheSize(const std::string &shapeCacheName, sint32 maxSize);
-	void linkShapeToShapeCache(const std::string &shapeName, const std::string &shapeCacheName);
+	virtual void addShapeCache(const std::string &shapeCacheName);
+	virtual void removeShapeCache(const std::string &shapeCacheName);
+	virtual void reset();
+	virtual void setShapeCacheSize(const std::string &shapeCacheName, sint32 maxSize);
+	virtual void linkShapeToShapeCache(const std::string &shapeName, const std::string &shapeCacheName);
+	virtual void	preLoadShapesFromDirectory(const std::string &shapeCacheName, 
+		const std::string &path, const std::string &wildCard, bool recurs);
+	virtual void	preLoadShapesFromBNP(const std::string &shapeCacheName, 
+		const std::string &bnpName, const std::string &wildCard);
 
 	// The real shape bank
 	CShapeBank _ShapeBank;

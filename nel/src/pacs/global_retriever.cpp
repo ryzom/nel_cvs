@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.59 2002/04/18 13:57:31 saffray Exp $
+ * $Id: global_retriever.cpp,v 1.60 2002/04/18 14:15:19 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1711,6 +1711,14 @@ NLPACS::UGlobalPosition
 	// must snap the end position.
 	CRetrieverInstance::snapVector(endRequest);
 	end= endRequest;
+
+	// verify start is already snapped
+	{
+		CVector		startTest= start;
+		CRetrieverInstance::snapVector(startTest);
+		nlassert( start == startTest );
+	}
+
 
 	// Normally, just one iteration is made in this loop (but if precision problem (stopOnEdge, startOnEdge....).
 	while(true)

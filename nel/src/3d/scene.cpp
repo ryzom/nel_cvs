@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.51 2001/09/04 13:43:46 vizerie Exp $
+ * $Id: scene.cpp,v 1.52 2001/09/10 15:26:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -556,7 +556,7 @@ void CScene::loadLightmapAutoAnim( const std::string &filename )
 	}
 }
 
-void CScene::animate( CAnimationTime atTime )
+void CScene::animate( double atTime )
 {
 	if (_FirstAnimateCall)
 	{
@@ -567,7 +567,7 @@ void CScene::animate( CAnimationTime atTime )
 	}
 	else
 	{
-		_EllapsedTime = atTime - _RealTime ;
+		_EllapsedTime = (float) (atTime - _RealTime) ;
 		nlassert(_EllapsedTime >= 0);
 		_EllapsedTime = fabsf(_EllapsedTime);
 		_RealTime = atTime ;

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.15 2001/08/31 14:39:15 besson Exp $
+ * $Id: scene_user.h,v 1.16 2001/09/10 15:26:51 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,7 +149,7 @@ public:
 		_DriverUser->restoreMatrixContext();
 	}
 
-	virtual	void			animate(CAnimationTime time)
+	virtual	void			animate(double time)
 	{
 		_Scene.animate(time);
 	}

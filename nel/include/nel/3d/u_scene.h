@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.9 2001/08/30 10:07:11 corvazier Exp $
+ * $Id: u_scene.h,v 1.10 2001/09/10 15:26:51 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,7 +86,7 @@ public:
 	/**
 	 *	Set the animation time for lightmap and Particle System animation.
 	 */
-	virtual	void			animate(CAnimationTime time)=0;
+	virtual	void			animate(double time)=0;
 
 	//@}
 

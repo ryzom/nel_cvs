@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.7 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: flare_model.cpp,v 1.8 2001/09/10 15:26:51 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -121,7 +121,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		}
 		else
 		{
-			m->_Intensity -= 1.f / p * m->_Scene->getEllapsedTime() ;	
+			m->_Intensity -= 1.f / p * (float)m->_Scene->getEllapsedTime() ;	
 			if (m->_Intensity < 0.f) 
 			{
 				m->_Intensity = 0.f ;
@@ -138,7 +138,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		}
 		else
 		{
-			m->_Intensity += 1.f / p * m->_Scene->getEllapsedTime() ;	
+			m->_Intensity += 1.f / p * (float)m->_Scene->getEllapsedTime() ;	
 			if (m->_Intensity > 1.f) m->_Intensity = 1.f ;
 		}			
 	}

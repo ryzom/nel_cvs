@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.3 2001/03/07 14:51:59 cado Exp $
+ * $Id: common.cpp,v 1.4 2001/03/09 14:56:32 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,7 @@ void nlSleep( uint32 ms )
 uint getThreadId()
 {
 #ifdef NL_OS_WINDOWS
-	return (uint)GetCurrentThread(); // ???
+	return GetCurrentThreadId();
 #elif defined NL_OS_UNIX
 	return getpid();
 #endif

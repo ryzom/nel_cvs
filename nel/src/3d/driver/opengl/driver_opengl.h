@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.44 2001/01/23 09:26:06 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.45 2001/01/25 10:15:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,17 +74,10 @@ public:
 	ITexture::TMagFilter	MagFilter;
 	ITexture::TMinFilter	MinFilter;
 
-	CTextureDrvInfosGL()
-	{
-		// The id is auto created here.
-		glGenTextures(1,&ID);
-		Compressed= false;
-	}
-	~CTextureDrvInfosGL()
-	{
-		// The id is auto deleted here.
-		glDeleteTextures(1,&ID);
-	}
+	// The gl id is auto created here.
+	CTextureDrvInfosGL();
+	// The gl id is auto deleted here.
+	~CTextureDrvInfosGL();
 };
 
 

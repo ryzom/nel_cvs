@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.37 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: patch.cpp,v 1.38 2001/01/25 10:13:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1256,7 +1256,7 @@ uint		CPatch::getTileLightMap(sint ts, sint tt, ITexture *&lightmap)
 		col.set565 (tcol.Color565);
 		col.A=255;
 void		CPatch::computeTileLightmapPixelAroundCorner(const CVector2f &stIn, CRGBA *dest, bool lookAround)
-		// TempYoyo.
+		// TestYoyo: test with a dummy light.
 		/*CBezierPatch	*pa= unpackIntoCache();
 		float	t= (float)(tt+(i>>1))/OrderT;
 		float	s= (float)(ts+(i&1))/OrderS;

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.61 2001/01/23 10:39:06 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.62 2001/01/25 10:15:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -577,11 +577,32 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 bool CDriverGL::swapBuffers()
 {
 #ifdef NL_OS_WINDOWS
-	return SwapBuffers(_hDC) == TRUE;
+	SwapBuffers(_hDC);
 #else // NL_OS_WINDOWS
 	glXSwapBuffers(dpy, win);
-	return true;
 #endif // NL_OS_WINDOWS
+
+	// Activate the default texture environnments for all stages.
+	//===========================================================
+	// This is not a requirement, but it ensure a more stable state each frame.
+	// (well, maybe the good reason is "it hides much more the bugs"  :o) ).
+	for(sint stage=0;stage<getNbTextureStages(); stage++)
+	{
+		// init no texture.
+		_CurrentTexture[stage]= NULL;
+		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+		glDisable(GL_TEXTURE_2D);
+		
+		// init default env.
+		CMaterial::CTexEnv	env;	// envmode init to default.
+		env.ConstantColor.set(255,255,255,255);
+		activateTexEnvMode(stage, env);
+		activateTexEnvColor(stage, env);
+	}
+	glActiveTextureARB(GL_TEXTURE0_ARB);
+
+
+	return true;
 }
 
 // --------------------------------------------------

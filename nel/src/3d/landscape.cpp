@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.39 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: landscape.cpp,v 1.40 2001/01/25 10:14:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #include "nel/3d/texture_far.h"
 using namespace NLMISC;
 using namespace std;
+
+
 
 namespace NL3D 
 {
@@ -799,9 +801,6 @@ uint		CLandscape::getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHT
 	if(_NFreeLightMaps==0)
 	{
 		CTextureNear	*text= new CTextureNear(TextureNearSize);
-
-		// TODO: remove
-		//text->setFilterMode (ITexture::Nearest, ITexture::NearestMipMapOff);
 
 		_TextureNears.push_back(text);
 		_NFreeLightMaps+= text->getNbAvailableTiles();

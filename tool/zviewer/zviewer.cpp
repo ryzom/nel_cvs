@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.4 2001/01/24 16:52:56 coutelas Exp $
+ * $Id: zviewer.cpp,v 1.5 2001/01/25 10:12:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -719,7 +719,7 @@ void initViewerConfig(const char * configFileName)
 	}
 	catch (EConfigFile &e)
 	{
-		printf ("Problem in config file : %s", e.what ());
+		printf ("Problem in config file : %s\n", e.what ());
 	}
 
 }

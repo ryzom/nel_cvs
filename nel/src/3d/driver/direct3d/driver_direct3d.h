@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.22 2004/08/19 12:43:51 besson Exp $
+ * $Id: driver_direct3d.h,v 1.22.4.1 2004/08/31 09:41:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@
 //#define NL_DEBUG_D3D
 
 // Define this to enable the render state caching (default is defined)
-//#define NL_D3D_USE_RENDER_STATE_CACHE
+#define NL_D3D_USE_RENDER_STATE_CACHE
 
 // Define this to disable hardware vertex program (default is undefined)
 // #define NL_DISABLE_HARDWARE_VERTEX_PROGAM

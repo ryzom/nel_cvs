@@ -27,6 +27,7 @@ ligo_material_prefix	= "material-"
 ligo_transition_prefix	= "transition-"
 ligo_zonematerial_prefix = "zonematerial-"
 ligo_zonetransition_prefix = "zonetransition-"
+ligo_zonespecial_prefix = "zonespecial-"
 
 -- Some globals
 
@@ -142,6 +143,11 @@ fn refresh_project_list =
 	(
 		transition_zone_rollout.refresh_trans_list ()
 		transition_zone_rollout.refresh_list transition_zone_rollout.TransitionDDL.selected
+	)
+	-- special zone
+	if special_zone_rollout != undefined then
+	(
+		special_zone_rollout.refresh_zone_list ()
 	)
 )
 
@@ -281,6 +287,32 @@ fn get_material_and_zone_name_in_zone_project_name zoneNameSrc result =
 
 	-- Error
 	Messagebox (zoneNameSrc+" is not a valid zone material project name. ( should be : zonematerial-materialName-zoneName.max )") title:title_msgbox beep:true
+
+	-- Error
+	return false
+)
+
+-- Get the material and zone name in a zone project file name
+fn get_material_and_zone_name_in_special_project_name zoneNameSrc result =
+(
+	-- Decompose in token
+	tokenArray = filterString (getFilenameFile zoneNameSrc) "-"
+
+	-- Look for token "zone"
+	if tokenArray.count == 2 then
+	(
+		if tokenArray[1] == "zonespecial" then
+		(
+			-- Get the name
+			result[1] = tokenArray[2]
+
+			-- Ok
+			return true
+		)
+	)
+
+	-- Error
+	Messagebox (zoneNameSrc+" is not a valid zone special project name. ( should be : zonespecial-zoneName.max )") title:title_msgbox beep:true
 
 	-- Error
 	return false
@@ -892,6 +924,86 @@ fn export_and_check_and_debug_transition_zone checkOnly debug displayMB =
 							)
 
 							-- Success
+							return true
+						)
+					)
+				)
+			)
+		)
+	)
+
+	-- Error
+	return false
+)
+
+
+-- Export a special zone
+fn export_and_check_and_debug_special_zone checkOnly debug displayMB = 
+( 
+	-- Select a zone
+	if $ == undefined then
+	(
+		if displayMB == true then
+			messageBox "Please select a 3ds NeL patch mesh object" title:title_msgbox beep:true
+	)
+	else
+	(
+		if $ == $selection then
+		(
+			if displayMB == true then
+				messageBox "Please select only one 3ds NeL patch mesh object" title:title_msgbox beep:true
+		)
+		else
+		(
+
+			-- Get the material name with the project name
+			result = #()
+			if (get_material_and_zone_name_in_special_project_name maxFileName result) == true then
+			(
+				zonename = result[1]
+
+				if (NeLLigoCheckZoneWithMaterial $ "" true) == false then
+				(
+					-- Backup selection
+					backupSelect = $selection as array
+
+					res = show_errors $ debug 1
+
+					-- Restaure
+					select backupSelect
+
+					return res
+				)
+				else
+				(
+					-- Success
+
+					if checkOnly == true then
+					(
+						if displayMB == true then
+							messageBox "No error" title:title_msgbox beep:true
+
+						return true
+					)
+					else
+					(
+						-- Select an output filename
+						-- filename = ligo_root_path+ligo_zone_path+matname+"-"+zonename+ligo_zone_ext
+						filename = ligo_export_path + zonename + ligo_zone_ext
+						
+						-- Make an array of properties
+						props = #( #("zone", zonename), #("material", "special") )
+
+						-- Add the properties
+						addProperties $ props
+
+						-- Export the files ( The ligozone (*.ligozone), the NeL zone (*.zone), and the snap shot (*.tga) )
+						if (NeLLigoExportZone $ filename props true true) == true then
+						(
+							-- Success message
+							if displayMB == true then
+								messageBox (filename+" export success") title:title_msgbox
+
 							return true
 						)
 					)
@@ -2735,6 +2847,197 @@ group "Projects management"
 	)
 )
 
+rollout special_zone_rollout "Special Zone"
+(
+group "Check, debug and export"
+	(
+
+	Button		ExportAllZone			"Export all zone"				width:140 align:#center
+	Button		ExportAllZoneNonOk		"Export all zone non-ok"		width:140 align:#center
+	Button		ExportZone				"Export zone"					width:140 align:#center
+	Checkbox	CheckOnly				"Check only"					checked:false enabled:true
+	Checkbox	Debug					"Debug"							checked:false enabled:true
+
+	)
+
+group "Projects management"
+	(
+
+	Listbox			ZoneProject				"Zones"					height:8 align:#center
+	Button			DelZone					"Delete selected zone"	width:140 align:#center
+	Label			ZoneName				"Zone name:"			align:#left
+	EditText		NewZoneName				""						width:140 align:#left
+	Button			AddZone					"Add zone"				width:140 align:#center
+
+	)
+
+	fn refresh_zone_list =
+	(
+		tmpArray = #()
+
+		-- Make an array of zonespecial project
+		for curFileName in project_file_list do
+		(
+			-- Get token
+			tokenArray = filterString (getFilenameFile curFileName) "-"
+
+			-- Valid name ?
+			if (tokenArray.count == 2) and (tokenArray[1] == "zonespecial")  then
+			(
+				curFileDate = getFileModDate curFileName
+
+				-- exported file date
+				expFileDate = ""
+				expFileName = ligo_export_path + "zoneLigos\\" + tokenArray[2] + ligo_zone_ext
+				if (getFiles expFileName).count != 0 then
+					expFileDate = getFileModDate expFileName
+
+				-- Get token
+				tokenArray = filterString (getFilenameFile curFileName) "-"
+				if (expFileDate != "") and (date_older_or_equal_than curFileDate expFileDate) then
+				(
+					append tmpArray ("[ok]"+tokenArray[2])
+				)
+				else
+				(
+					append tmpArray ("[..]"+tokenArray[2])
+				)
+			)
+		)
+		ZoneProject.items = tmpArray
+	)
+
+	on ExportAllZone pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		refresh_project_list ()
+		refresh_zone_list ()
+		for curZone in ZoneProject.items do
+		(
+			curFileName = ligo_root_path + ligo_zonespecial_prefix
+			curFileName = curFileName + (substring curZone 5 100) + ".max"
+			loadMaxFile curFileName
+			max select all
+			export_and_check_and_debug_special_zone false false false
+			refresh_project_list ()
+			refresh_zone_list ()
+		)
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		Messagebox "Export All Zone End" title:title_msgbox beep:true
+	)
+
+	on ExportAllZoneNonOk pressed do
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+
+		refresh_project_list ()
+		refresh_zone_list ()
+		for curZone in ZoneProject.items do
+		(
+			if (substring curZone 1 4) == "[..]" then
+			(
+				curFileName = ligo_root_path + ligo_zonespecial_prefix
+				curFileName = curFileName + (substring curZone 5 100) + ".max"
+				loadMaxFile curFileName
+				max select all
+				export_and_check_and_debug_special_zone false false false
+				refresh_project_list ()
+				refresh_zone_list ()
+			)
+		)
+
+		if (project_cur_file != "") then
+			loadMaxFile project_cur_file
+		Messagebox "Export All Zone Non-Ok End" title:title_msgbox beep:true
+	)
+
+	on ExportZone pressed do 
+	(
+		if (project_cur_file != "") then
+			saveMaxFile project_cur_file
+		export_and_check_and_debug_special_zone CheckOnly.checked Debug.checked true
+		refresh_project_list ()
+		refresh_zone_list ()
+	)
+
+	on special_zone_rollout open do
+	(
+		refresh_project_list ()
+		refresh_zone_list ()
+	)
+
+	on DelZone pressed do
+	(
+		if (ZoneProject.selected != undefined) then
+		(
+			zoneNameTmp = (substring ZoneProject.selected 5 100)
+			fileName = ligo_root_path + ligo_zonespecial_prefix + zoneNameTmp + ".max"
+			if queryBox ("Do you want to delete "+fileName+" ?") beep:no then
+			(
+				deleteFile filename
+				print ("deleting "+filename)
+				-- delete the exported file .tga
+				fileName = ligo_export_path + "zoneBitmaps\\" + zoneNameTmp + ".tga"
+				deleteFile filename
+				print ("deleting "+filename)
+				-- delete the exported file .zone
+				fileName = ligo_export_path + "zones\\" + zoneNameTmp + ".zone"
+				deleteFile filename
+				print ("deleting "+filename)
+				-- delete the exported file .ligozone
+				fileName = ligo_export_path + "zoneLigos\\" + zoneNameTmp + ".ligozone"
+				deleteFile filename
+				print ("deleting "+filename)
+
+				refresh_project_list ()
+				refresh_zone_list ()
+			)
+		)
+	)
+
+	on AddZone pressed do
+	(
+		-- Valid name ?
+		if (NewZoneName.text == "")  then
+		(
+			Messagebox "Choose a name for your new zone." title:title_msgbox beep:true
+		)
+		else
+		(
+			newFile = ligo_root_path + ligo_zonespecial_prefix + NewZoneName.text + ".max"
+			if (saveMaxFile newFile) == false then
+			(
+				Messagebox ("Cannot create file :"+newFile) title:title_msgbox beep:true
+			)
+			else
+			(
+				project_cur_file = newFile
+				refresh_project_list ()
+				refresh_zone_list ()
+			)
+		)
+	)
+
+	on ZoneProject doubleClicked id do
+	(
+		-- Check for save
+		if (checkForSave ()) == true then
+		(
+			-- Open the max project
+			project_cur_file = substring ZoneProject.items[id] 5 100
+			project_cur_file = ligo_root_path + ligo_zonespecial_prefix + project_cur_file + ".max"
+			loadMaxFile project_cur_file
+			refresh_project_list ()
+			refresh_zone_list ()
+		)
+	)
+)
+
 rollout properties_rollout "Properties"
 (
 group "Flags"
@@ -3093,6 +3396,7 @@ addrollout material_rollout ligoscape_tools_floater rolledUp:true
 addrollout transition_rollout ligoscape_tools_floater rolledUp:true
 addrollout material_zone_rollout ligoscape_tools_floater rolledUp:true
 addrollout transition_zone_rollout ligoscape_tools_floater rolledUp:true
+addrollout special_zone_rollout ligoscape_tools_floater rolledUp:true
 addrollout properties_rollout ligoscape_tools_floater rolledUp:true
 addrollout options_rollout ligoscape_tools_floater rolledUp:true
 addrollout exporter_rollout ligoscape_tools_floater rolledUp:true

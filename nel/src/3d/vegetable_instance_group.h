@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * <File description>
  *
- * $Id: vegetable_instance_group.h,v 1.7 2001/12/06 16:52:07 berenguier Exp $
+ * $Id: vegetable_instance_group.h,v 1.8 2002/03/15 16:10:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/tess_list.h"
 #include "3d/vegetable_instance_group.h"
 #include "3d/vegetable_def.h"
+#include "3d/vegetable_light_ex.h"
 #include <vector>
 
 
@@ -65,6 +66,10 @@ public:
 	/// tells if the instanceGroup has no faces at all.
 	bool			isEmpty() const;
 
+	/** The Vegetable Light Information. Contains list of PointLights which influence the vegetIg.
+	 *	NB: PointLights ptrs are kept so the ig must be deleted when the lights are deleted.
+	 */
+	CVegetableLightEx		VegetableLightEx;
 
 // ***************
 private:

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.17 2002/03/15 12:11:32 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.18 2002/03/15 16:10:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -943,11 +943,87 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 
 
 // ***************************************************************************
+inline void		computeVegetVertexLighting(const CVector &rotNormal, bool instanceDoubleSided,
+	const CVector &sunDir, CRGBA primaryRGBA, CRGBA secondaryRGBA,
+	CVegetableLightEx &vegetLex, CRGBA diffusePL[2],
+	CRGBA *dstFront, CRGBA *dstBack)
+{
+	float	dpSun;
+	float	dpPL[2];
+	CRGBA	col;
+	CRGBA	resColor;
+
+
+	// compute front-facing coloring.
+	{
+		// Compute Sun Light.
+		dpSun= rotNormal*sunDir;
+		float	f= max(0.f, -dpSun);
+		col.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+		// Add it with ambient
+		resColor.addRGBOnly(col, secondaryRGBA);
+
+		// Add influence of 2 lights only. (unrolled for better BTB use)
+		// Compute Light 0 ?
+		if(vegetLex.NumLights>=1)
+		{
+			dpPL[0]= rotNormal*vegetLex.Direction[0];
+			f= max(0.f, -dpPL[0]);
+			col.modulateFromuiRGBOnly(diffusePL[0], OptFastFloor(f*256));
+			resColor.addRGBOnly(col, resColor);
+			// Compute Light 1 ?
+			if(vegetLex.NumLights>=2)
+			{
+				dpPL[1]= rotNormal*vegetLex.Direction[1];
+				f= max(0.f, -dpPL[1]);
+				col.modulateFromuiRGBOnly(diffusePL[1], OptFastFloor(f*256));
+				resColor.addRGBOnly(col, resColor);
+			}
+		}
+
+		// copy to dest
+		*dstFront= resColor;
+	}
+
+	// If 2Sided
+	if(instanceDoubleSided)
+	{
+		// reuse dotproduct of front-facing computing.
+
+		// Compute Sun Light.
+		float	f= max(0.f, dpSun);
+		col.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+		// Add it with ambient
+		resColor.addRGBOnly(col, secondaryRGBA);
+
+		// Add influence of 2 lights only. (unrolled for better BTB use)
+		// Compute Light 0 ?
+		if(vegetLex.NumLights>=1)
+		{
+			f= max(0.f, dpPL[0]);
+			col.modulateFromuiRGBOnly(diffusePL[0], OptFastFloor(f*256));
+			resColor.addRGBOnly(col, resColor);
+			// Compute Light 1 ?
+			if(vegetLex.NumLights>=2)
+			{
+				f= max(0.f, dpPL[1]);
+				col.modulateFromuiRGBOnly(diffusePL[1], OptFastFloor(f*256));
+				resColor.addRGBOnly(col, resColor);
+			}
+		}
+
+		// copy to dest
+		*dstBack= resColor;
+	}
+}
+
+
+// ***************************************************************************
 void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig, 
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
 		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
 		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax,
-		TVegetableWater vegetWaterState, CVegetableLightEx &vegetLex)
+		TVegetableWater vegetWaterState)
 {
 	sint	i;
 
@@ -1000,6 +1076,8 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		secondaryRGBA= primaryRGBA;
 	}
 
+	// get ref on the vegetLex.
+	CVegetableLightEx	&vegetLex= ig->VegetableLightEx;
 	// Color of pointLights modulated by diffuse.
 	CRGBA	diffusePL[2];
 	if(vegetLex.NumLights>=1)
@@ -1197,80 +1275,19 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		}
 		else
 		{
-			float	dpSun;
-			float	dpPL[2];
-			CRGBA	col;
-			CRGBA	resColor;
-
 			nlassert(!destLighted);
 
-			// compute dot product.
+			// compute normal.
 			CVector		rotNormal= normalMat.mulVector( *(CVector*)(srcPtr + srcNormalOff) );
 			// must normalize() because scale is possible.
 			rotNormal.normalize();
 
+			// Do the compute.
+			computeVegetVertexLighting(rotNormal, instanceDoubleSided, 
+				_DirectionalLight, primaryRGBA, secondaryRGBA, 
+				vegetLex, diffusePL, 
+				(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
 
-			// compute front-facing coloring.
-			{
-				// Compute Sun Light.
-				dpSun= rotNormal*_DirectionalLight;
-				float	f= max(0.f, -dpSun);
-				col.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
-				// Add it with ambient
-				resColor.addRGBOnly(col, secondaryRGBA);
-
-				// Add influence of 2 lights only. (unrolled for better BTB use)
-				// Compute Light 0 ?
-				if(vegetLex.NumLights>=1)
-				{
-					dpPL[0]= rotNormal*vegetLex.Direction[0];
-					f= max(0.f, -dpPL[0]);
-					col.modulateFromuiRGBOnly(diffusePL[0], OptFastFloor(f*256));
-					resColor.addRGBOnly(col, resColor);
-					// Compute Light 1 ?
-					if(vegetLex.NumLights>=2)
-					{
-						dpPL[1]= rotNormal*vegetLex.Direction[1];
-						f= max(0.f, -dpPL[1]);
-						col.modulateFromuiRGBOnly(diffusePL[1], OptFastFloor(f*256));
-						resColor.addRGBOnly(col, resColor);
-					}
-				}
-
-				// copy to dest
-				*(CRGBA*)(dstPtr + dstColor0Off)= resColor;
-			}
-
-			// If 2Sided
-			if(instanceDoubleSided)
-			{
-				// reuse dotproduct of front-facing computing.
-
-				// Compute Sun Light.
-				float	f= max(0.f, dpSun);
-				col.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
-				// Add it with ambient
-				resColor.addRGBOnly(col, secondaryRGBA);
-
-				// Add influence of 2 lights only. (unrolled for better BTB use)
-				// Compute Light 0 ?
-				if(vegetLex.NumLights>=1)
-				{
-					f= max(0.f, dpPL[0]);
-					col.modulateFromuiRGBOnly(diffusePL[0], OptFastFloor(f*256));
-					resColor.addRGBOnly(col, resColor);
-					// Compute Light 1 ?
-					if(vegetLex.NumLights>=2)
-					{
-						f= max(0.f, dpPL[1]);
-						col.modulateFromuiRGBOnly(diffusePL[1], OptFastFloor(f*256));
-						resColor.addRGBOnly(col, resColor);
-					}
-				}
-
-				// copy to dest
-				*(CRGBA*)(dstPtr + dstColor1Off)= resColor;
-			}
 		}
 
 
@@ -2174,6 +2191,10 @@ bool		CVegetableManager::updateLightingIGPart()
 	nlassert(_ULRootIg);
 
 
+	// First, update lighting info global to the ig, ie update current 
+	// colros of the PointLights which influence the ig.
+	_ULRootIg->VegetableLightEx.computeCurrentColors();
+
 	// while there is some vertices to update
 	while(_ULNVerticesToUpdate>0)
 	{
@@ -2248,6 +2269,19 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 	bool	instanceLighted= true;
 
 
+	// get ref on the vegetLex.
+	CVegetableLightEx	&vegetLex= ig->VegetableLightEx;
+	// Color of pointLights modulated by diffuse.
+	CRGBA	diffusePL[2];
+	if(vegetLex.NumLights>=1)
+	{
+		diffusePL[0].modulateFromColorRGBOnly(vegetLI.MatDiffuse, vegetLex.Color[0]);
+		if(vegetLex.NumLights>=2)
+		{
+			diffusePL[1].modulateFromColorRGBOnly(vegetLI.MatDiffuse, vegetLex.Color[1]);
+		}
+	}
+
 	// Recompute lighting
 	//===========
 	
@@ -2313,32 +2347,17 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 		{
 			nlassert(!destLighted);
 
-			// compute dot product.
+			// compute normal.
 			CVector		rotNormal= normalMat.mulVector( *(CVector*)(srcPtr + srcNormalOff) );
 			// must normalize() because scale is possible.
 			rotNormal.normalize();
-			// compute dot product with current light
-			float	dp= rotNormal*_DirectionalLight;
 
-			// compute front-facing coloring.
-			float	f= max(0.f, -dp);
-			CRGBA	resColor;
-			resColor.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
-			resColor.addRGBOnly(resColor, secondaryRGBA);
-			// copy to dest
-			*(CRGBA*)(dstPtr + dstColor0Off)= resColor;
+			// Do the compute.
+			computeVegetVertexLighting(rotNormal, instanceDoubleSided, 
+				_DirectionalLight, primaryRGBA, secondaryRGBA, 
+				vegetLex, diffusePL, 
+				(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
 
-			// If 2Sided
-			if(instanceDoubleSided)
-			{
-				// compute back-facing coloring.
-				float	f= max(0.f, dp);
-				CRGBA	resColor;
-				resColor.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
-				resColor.addRGBOnly(resColor, secondaryRGBA);
-				// copy to dest
-				*(CRGBA*)(dstPtr + dstColor1Off)= resColor;
-			}
 		}
 
 		// flust the vertex in AGP.

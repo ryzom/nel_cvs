@@ -1,7 +1,7 @@
 /** \file vegetable_light_ex.cpp
  * <File description>
  *
- * $Id: vegetable_light_ex.cpp,v 1.1 2002/03/15 12:11:32 berenguier Exp $
+ * $Id: vegetable_light_ex.cpp,v 1.2 2002/03/15 16:10:44 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -31,6 +31,20 @@
 namespace NL3D 
 {
 
+
+
+void			CVegetableLightEx::computeCurrentColors()
+{
+	for(uint i=0;i<NumLights;i++)
+	{
+		// get the light.
+		CPointLight	*pl= PointLight[i];
+		// get the attenuation
+		uint	att= PointLightFactor[i];
+		// modulate the color with it.
+		Color[i].modulateFromui(pl->getDiffuse(), att);
+	}
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.19 2002/03/13 14:25:08 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.20 2002/03/15 16:10:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3112,6 +3112,8 @@ void			CZoneLighter::processZonePointLightRT(vector<CPointLightNamed> &listPoint
 					dir.normalize();
 					tli.LightFactor[lightInfId]= dir * normal;
 					clamp(tli.LightFactor[lightInfId], 0.f, 1.f);
+					// modulate by light attenuation.
+					tli.LightFactor[lightInfId]*= pl->PointLight.computeLinearAttenuation(pos);
 
 					// Inc RefCount of the light.
 					pl->RefCount++;

@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.14 2002/03/15 12:11:32 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.15 2002/03/15 16:10:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,20 +149,23 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	}
 	// sort the light by influence
 	sort(lightList.begin(), lightList.end());
-	// Setup the vegetLex, take only 2 first, computing direction to tilePos and computing attenuation.
-	CVegetableLightEx	vegetLex;
+	// Setup the vegetLex directly in the ig. 
+	CVegetableLightEx	&vegetLex= vegetIg->VegetableLightEx;
+	// take only 2 first, computing direction to tilePos and computing attenuation.
 	vegetLex.NumLights= min((uint)CVegetableLightEx::MaxNumLight, lightList.size());
 	for(i=0;i<vegetLex.NumLights;i++)
 	{
 		CPointLight	*pl= lightList[i].PointLight;
+		// copy to vegetLex.
+		vegetLex.PointLight[i]= pl;
 		// get the attenuation
-		uint	att= (uint)(256* lightList[i].Influence);
-		// modulate the color with it.
-		vegetLex.Color[i].modulateFromui(pl->getDiffuse(), att);
+		vegetLex.PointLightFactor[i]= (uint)(256* lightList[i].Influence);
 		// Setup the direction from pointLight.
 		vegetLex.Direction[i]= tilePos - pl->getPosition();
 		vegetLex.Direction[i].normalize();
 	}
+	// compute now the current colors of the vegetLex.
+	vegetLex.computeCurrentColors();
 
 
 
@@ -234,8 +237,7 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 			// generate the instance of the vegetable
 			veget.generateInstance(vegetIg, matInstance, ambientF, 
 				diffuseColorF[ (lumelT<<NL_LUMEL_BY_TILE_SHIFT) + lumelS ],
-				(distType+1) * NL3D_VEGETABLE_BLOCK_ELTDIST, (CVegetable::TVegetableWater)vegetWaterState,
-				vegetLex);
+				(distType+1) * NL3D_VEGETABLE_BLOCK_ELTDIST, (CVegetable::TVegetableWater)vegetWaterState);
 		}
 	}
 }

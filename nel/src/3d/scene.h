@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.20 2002/03/01 14:06:59 berenguier Exp $
+ * $Id: scene.h,v 1.21 2002/03/15 16:10:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -303,6 +303,9 @@ public:
 	 *	If false, all objects will take last driver 's light setup
 	 */
 	void			enableLightingSystem(bool enable);
+
+	/// see enableLightingSystem
+	bool			isLightingSystemEnabled() const {return _LightingSystemEnabled;}
 
 	/// set the global Ambient used for the scene. Default to (50, 50, 50).
 	void			setAmbientGlobal(NLMISC::CRGBA ambient);

@@ -1,7 +1,7 @@
 /** \file vegetable.h
  * <File description>
  *
- * $Id: vegetable.h,v 1.12 2002/03/15 12:11:32 berenguier Exp $
+ * $Id: vegetable.h,v 1.13 2002/03/15 16:10:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,6 @@ class	CVegetableManager;
 class	CVegetableShape;
 class	CVegetableInstanceGroup;
 class	CVegetableInstanceGroupReserve;
-class	CVegetableLightEx;
 
 
 // ***************************************************************************
@@ -158,7 +157,7 @@ public:
 	 */
 	void	generateInstance(CVegetableInstanceGroup *ig, const NLMISC::CMatrix &posInWorld, 
 		const NLMISC::CRGBAF &modulateAmbientColor, const NLMISC::CRGBAF &modulateDiffuseColor, float blendDistMax,
-		TVegetableWater vegetWaterState, CVegetableLightEx &vlex) const;
+		TVegetableWater vegetWaterState) const;
 
 
 	void	serial(NLMISC::IStream &f);

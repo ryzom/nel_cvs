@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.67 2003/11/06 14:53:55 vizerie Exp $
+ * $Id: transform.cpp,v 1.68 2003/11/17 10:39:28 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,7 +238,8 @@ void		CTransform::hide()
 // ***************************************************************************
 void		CTransform::setTransparency(bool v)
 { 
-	if (getStateFlag(IsTransparent) != v)
+	bool bTmp = getStateFlag(IsTransparent) == 0 ? false : true;
+	if (bTmp != v)
 	{
 		setStateFlag(IsTransparent, v);
 		if(isSkinned())
@@ -252,7 +253,8 @@ void		CTransform::setTransparency(bool v)
 // ***************************************************************************
 void		CTransform::setOpacity(bool v)
 { 
-	if (getStateFlag(IsOpaque) != v)
+	bool bTmp = getStateFlag(IsOpaque) == 0 ? false : true;
+	if (bTmp != v)
 	{
 		setStateFlag(IsOpaque, v);
 		if(isSkinned())

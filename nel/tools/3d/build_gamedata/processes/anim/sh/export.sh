@@ -33,7 +33,7 @@ date
 
 for i in $anim_source_directories ; do
 	# Copy the script
-	cat maxscript/anim_export.ms | sed -e "s&anim_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/anim/anim&g" > $max_directory/scripts/anim_export.ms
+	cat maxscript/anim_export.ms | sed -e "s&anim_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/anim/anim_export&g" > $max_directory/scripts/anim_export.ms
 
 	# Start max
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript anim_export.ms -q -mi -vn

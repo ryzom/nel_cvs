@@ -452,6 +452,10 @@ SOURCE=.\processes\anim\maxscript\anim_export.ms
 # End Source File
 # Begin Source File
 
+SOURCE=.\processes\anim\sh\build.sh
+# End Source File
+# Begin Source File
+
 SOURCE=.\processes\anim\sh\export.sh
 # End Source File
 # Begin Source File

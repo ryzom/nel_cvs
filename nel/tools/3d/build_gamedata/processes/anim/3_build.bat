@@ -1,3 +1,3 @@
 @echo off
 
-echo ***** > log.log
+bash sh\build.sh

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.11 2001/09/12 13:29:18 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.12 2001/09/26 17:49:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,11 @@ namespace NL3D
 #include "nel/misc/rgba.h"
 #include "3d/texture.h"
 #include "3d/ps_plane_basis.h"
+#include "3d/particle_system.h"
+#include "3d/ps_particle.h"
+#include "3d/ps_particle2.h"
+
+
 
 
 #include "dialog_stack.h"
@@ -226,6 +231,16 @@ protected:
 			    uint32 get(void) const { return P->getTailNbSeg(); }
 			    void set(const uint32 &v) { P->setTailNbSeg(v); }
 			}  _TailParticleWrapper;
+
+		//////////////////////////////////////
+		// duration of segment for a ribbon //
+		//////////////////////////////////////		
+			struct CSegDurationWrapper : public IPSWrapperFloat
+			{
+			   NL3D::CPSRibbonLookAt *R;
+			   float get(void) const { return R->getSegDuration(); }
+			   void set(const float &v) { R->setSegDuration(v); }
+			} _SegDurationWrapper;
 		
 		/////////////////////////////
 		//		shockwave          //
@@ -246,16 +261,16 @@ protected:
 			} _ShockWaveNbSegWrapper;
 
 
-		/////////////////////////////
-		// single texture (ribbon) //
-		/////////////////////////////
+		////////////////////////
+		// unanimated texture //
+		////////////////////////
 
-			struct CRibbonTextureWrapper : public IPSWrapperTexture
+			struct CTextureNoAnimWrapper : public IPSWrapperTexture
 			{
-				NL3D::CPSRibbon *R;
-				virtual NL3D::ITexture *get(void) { return R->getTexture(); }
-				virtual void set(NL3D::ITexture *t) { R->setTexture(t); }
-			} _RibbonTextureWrapper;
+				NL3D::CPSTexturedParticleNoAnim *TP;
+				virtual NL3D::ITexture *get(void) { return TP->getTexture(); }
+				virtual void set(NL3D::ITexture *t) { TP->setTexture(t); }
+			} _TextureNoAnimWrapper;	
 
 		//////////////////////////////
 		// u / v factors for ribbon //
@@ -265,27 +280,15 @@ protected:
 			{
 			   NL3D::CPSRibbon *R;
 			   float get(void) const { return R->getUFactor(); }
-			   void set(const float &u) { R->setTexture(R->getTexture(), u, R->getVFactor()); }
+			   void set(const float &u) { R->setTexFactor(u, R->getVFactor()); }
 			} _RibbonUFactorWrapper;
 
 			struct CRibbonVFactorWrapper : public IPSWrapperFloat
 			{
 			   NL3D::CPSRibbon *R;
 			   float get(void) const { return R->getVFactor(); }
-			   void set(const float &v) { R->setTexture(R->getTexture(), R->getUFactor(), v); }
+			   void set(const float &v) { R->setTexFactor(R->getUFactor(), v); }
 			} _RibbonVFactorWrapper;
-
-
-		///////////////////////////////
-		// single texture (fanlight) //
-		///////////////////////////////
-
-			struct CFanLightTextureWrapper : public IPSWrapperTexture
-			{
-				NL3D::CPSFanLight *F;
-				virtual NL3D::ITexture *get(void) { return F->getTexture(); }
-				virtual void set(NL3D::ITexture *t) { F->setTexture(t); }
-			} _FanLightTextureWrapper;
 
 
 

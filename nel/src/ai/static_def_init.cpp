@@ -516,4 +516,8 @@ namespace NLAISCRIPT
 	const NLAIC::CIdentType CCodeContext::IdCodeContext = NLAIC::CIdentType("CodeContext",
 																		NLAIC::CSelfClassCFactory(CCodeContext(staticStack,staticHeap,NULL,NULL,NULL)),
 																		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
+	const NLAIC::CIdentType CScriptDebugSourceFile::IdScriptDebugSourceFile("ScriptDebugSourceFile",NLAIC::CSelfClassCFactory(CScriptDebugSourceFile("")),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
+	const NLAIC::CIdentType CScriptDebugSourceMemory::IdScriptDebugSourceMemory("ScriptDebugSourceMemory",NLAIC::CSelfClassCFactory(CScriptDebugSourceMemory("","")),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 }

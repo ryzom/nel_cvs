@@ -32,6 +32,9 @@
 #include <stdio.h>
 #include <io.h>
 
+// stl
+#include <map>
+
 using namespace NLMISC;
 using namespace std;
 using namespace NLGEORGES;
@@ -44,7 +47,7 @@ void setOutputFile(char *);
 void addField(char *);
 void addSource(char *);
 void scanFiles(std::string extension);
-void executeScriptFile(char *);
+void executeScriptFile(const char *);
 
 /*
 	Some globals
@@ -59,6 +62,12 @@ public:
 };
 std::vector<CField> fields;
 std::vector<std::string> files;
+
+vector<string>		inputScriptFiles;
+vector<string>		inputCsvFiles;
+string				inputSheetPath;
+bool				inputSheetPathLoaded = false;
+map<string, string>	inputSheetPathContent;
 
 
 /*
@@ -319,7 +328,7 @@ void executeScriptBuf(char *txt)
 	}
 }
 
-void executeScriptFile(char *filename)
+void executeScriptFile(const char *filename)
 {
 	FILE *inf=fopen(filename,"rb");
 	if (inf==0)
@@ -349,27 +358,206 @@ void executeScriptFile(char *filename)
 
 	free(buf);
 }
+//
+
+void	explode(const string &input, const string &separators, vector<string> &fields)
+{
+	fields.clear();
+	uint	pos = 0;
+	string	sep = separators+"\n\r";
+
+	while (pos < input.size() && pos != string::npos)
+	{
+		uint	next = input.find_first_of(sep, pos);
+		if (next == string::npos)
+		{
+			fields.push_back(input.substr(pos));
+			return;
+		}
+		fields.push_back(input.substr(pos, next-pos));
+		pos = next+1;
+		if (input[next] == '\r' || input[next] == '\n')
+			return;
+	}
+}
+
+void	loadSheetPath()
+{
+	if (inputSheetPathLoaded)
+		return;
+
+	CPath::addSearchPath(inputSheetPath, true, false);
+
+	vector<string>	files;
+	CPath::getPathContent (inputSheetPath, true, false, true, files);
+
+	uint	i;
+	for (i=0; i<files.size(); ++i)
+	{
+		string	filename = files[i];
+		string	filebase = CFile::getFilenameWithoutExtension(filename);
+		inputSheetPathContent[filebase] = filename;
+	}
+
+	inputSheetPathLoaded = true;
+}
+
+void	convertCsvFile(const string &file)
+{
+	char			lineBuffer[2048];
+	FILE			*s;
+
+	vector<string>	fields;
+	vector<string>	args;
+
+	if ((s = fopen(file.c_str(), "r")) == NULL)
+	{
+		fprintf(stderr, "Can't find file %s to convert", file.c_str());
+		return;
+	}
+
+	loadSheetPath();
+
+	NLGEORGES::UFormLoader				*formLoader = NLGEORGES::UFormLoader::createLoader ();
+	NLMISC::CSmartPtr<NLGEORGES::UForm> form;
+
+
+	fgets(lineBuffer, 2048, s);
+	explode(lineBuffer, ",", fields);
+
+	nldebug("Updating modifications (only modified fields are updated)");
+
+	while (!feof(s))
+	{
+		fgets(lineBuffer, 2048, s);
+		explode(lineBuffer, ",", args);
+
+		if (args.size() < 1)
+			continue;
+
+		string			&filebase = args[0];
+		map<string, string>::iterator	it = inputSheetPathContent.find(filebase);
+		if (it == inputSheetPathContent.end())
+			continue;
+
+		string			filename = (*it).second;
+		form = formLoader->loadForm (filename.c_str());
+
+		if (form == NULL)
+			continue;
+
+		bool	displayed = false;
+		uint	i;
+		for (i=1; i<args.size() && i<fields.size(); ++i)
+		{
+			const string	&var = fields[i];
+			string			&val = args[i];
+
+			if (val[0] == '"')
+				val.erase(0, 1);
+			if (val.size()>0 && val[val.size()-1] == '"')
+				val.resize(val.size()-1);
+
+			if (val == "ValueForm" ||
+				val == "ValueParentForm" ||
+				val == "ValueDefaultDfn" ||
+				val == "ValueDefaultType" ||
+				val == "ERR")
+				continue;
+
+			string	test;
+			if (form->getRootNode().getValueByName(test, var.c_str()) &&
+				test == val)
+				continue;
+
+			form->getRootNode().setValueByName(val.c_str(), var.c_str());
+
+			if (!displayed)
+				nldebug("in %s:", filename.c_str());
+			displayed = true;
+			nldebug("%s = %s", var.c_str(), val.c_str());
+		}
+
+		if (displayed)
+		{
+			COFile	output(filename);
+			form->write(output, true);
+		}
+	}
+
+	NLGEORGES::UFormLoader::releaseLoader (formLoader);
+}
+
+//
+void	usage(char *argv0, FILE *out)
+{
+	fprintf(out, "\n");
+	fprintf(out, "Syntax: %s [-p <sheet path>] [<script file name> | <csv file name>]", argv0);
+	fprintf(out, "\n");
+	fprintf(out, "Script commands:\n");
+	fprintf(out, "\tDFNPATH\t\t<search path for george dfn files>\n");
+	fprintf(out, "\tPATH\t\t<search path for files to scan>\n");
+	fprintf(out, "\tOUTPUT\t\t<output file>\n");
+	fprintf(out, "\tFIELD\t\t<field in george file>\n");
+	fprintf(out, "\tSOURCE\t\t<field in george file>\n");
+	fprintf(out, "\tSCANFILES\t[+<text>|-<text>[...]]\n");
+	fprintf(out, "\tSCRIPT\t\t<script file to execute>\n");
+	fprintf(out, "\n");
+}
 
 int main(int argc, char* argv[])
 {
-	if (argc==1)
+	// parse command line
+	uint	i;
+	for (i=1; (sint)i<argc; i++)
 	{
-		fprintf(stderr,"\n");
-		fprintf(stderr,"Syntax: %s <script file name>", argv[0]);
-		fprintf(stderr,"\n");
-		fprintf(stderr,"Script commands:\n", argv[0]);
-		fprintf(stderr,"\tDFNPATH\t\t<search path for george dfn files>\n");
-		fprintf(stderr,"\tPATH\t\t<search path for files to scan>\n");
-		fprintf(stderr,"\tOUTPUT\t\t<output file>\n");
-		fprintf(stderr,"\tFIELD\t\t<field in george file>\n");
-		fprintf(stderr,"\tSOURCE\t\t<field in george file>\n");
-		fprintf(stderr,"\tSCANFILES\t[+<text>|-<text>[...]]\n");
-		fprintf(stderr,"\tSCRIPT\t\t<script file to execute>\n");
-		fprintf(stderr,"\n");
+		const char	*arg = argv[i];
+		if (arg[0] == '-')
+		{
+			switch (arg[1])
+			{
+			case 'p':
+				++i;
+				if ((sint)i == argc)
+				{
+					fprintf(stderr, "Missing <sheet path> after -p option\n");
+					usage(argv[0], stderr);
+					exit(0);
+				}
+				inputSheetPath = argv[i];
+				break;
+			default:
+				fprintf(stderr, "Unrecognized option '%c'\n", arg[1]);
+				usage(argv[0], stderr);
+				exit(0);
+				break;
+			}
+		}
+		else
+		{
+			if (CFile::getExtension(arg) == "csv")
+			{
+				inputCsvFiles.push_back(arg);
+			}
+			else
+			{
+				inputScriptFiles.push_back(arg);
+			}
+		}
 	}
-	else
-		for (int i=1; i<argc; i++)
-			executeScriptFile(argv[i]);
+
+	if (inputScriptFiles.empty() && inputCsvFiles.empty())
+	{
+		fprintf(stderr, "Missing input script file or csv file\n");
+		usage(argv[0], stderr);
+		exit(0);
+	}
+
+	for (i=0; i<inputScriptFiles.size(); ++i)
+		executeScriptFile(inputScriptFiles[i].c_str());
+
+	for (i=0; i<inputCsvFiles.size(); ++i)
+		convertCsvFile(inputCsvFiles[i]);
 
 	fprintf(stderr,"\nDone.\n");
 	getch();

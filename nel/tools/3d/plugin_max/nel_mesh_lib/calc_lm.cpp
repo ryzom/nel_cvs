@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.30 2002/01/04 18:27:30 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.31 2002/01/16 15:24:17 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2199,10 +2199,12 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		if( ! isAllFaceMapped (AllFaces.begin(), AllFaces.size() ) )
 		{
 			string thetext;
-			//thetext = "Object ";
+			thetext = "Warning ";
 			thetext += ZeNode.GetName();
 			thetext = "have all faces NOT mapped (UV2)";
-			MessageBox( NULL, thetext.c_str(), "LightMap ERROR", MB_OK|MB_ICONERROR );
+			gOptions.FeedBack->setLine (11, thetext);
+			gOptions.FeedBack->update ();
+			//MessageBox( NULL, thetext.c_str(), "LightMap ERROR", MB_OK|MB_ICONERROR );
 			return false;
 		}
 

@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.18 2002/12/09 12:13:12 coutelas Exp $
+ * $Id: type.cpp,v 1.19 2002/12/30 13:56:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -877,6 +877,13 @@ bool CType::getDefinition (uint index, std::string &label, std::string &value) c
 const string	&CType::getComment () const
 {
 	return Header.Comments;
+}
+
+// ***************************************************************************
+
+void CType::getDependencies (std::set<std::string> &dependencies) const
+{
+	
 }
 
 // ***************************************************************************

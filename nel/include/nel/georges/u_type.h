@@ -1,7 +1,7 @@
 /** \file u_type.h
  * Georges form loader interface
  *
- * $Id: u_type.h,v 1.2 2002/09/25 09:38:05 corvazier Exp $
+ * $Id: u_type.h,v 1.3 2002/12/30 13:56:56 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -100,6 +100,11 @@ public:
 	  * Get theh comments of type.
 	  */
 	virtual const std::string	&getComment () const = 0;
+
+	/**
+	  * Get dependency files
+	  */
+	virtual void	getDependencies (std::set<std::string> &dependencies) const = 0;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.14 2002/10/08 09:13:14 corvazier Exp $
+ * $Id: form_dfn.h,v 1.15 2002/12/30 13:56:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -216,6 +216,7 @@ public:
 	const std::string				&getComment () const;
 	bool							getEntryFilename (uint entry, std::string& filename) const;
 	bool							getParentFilename (uint parent, std::string &filename) const;
+	void							getDependencies (std::set<std::string> &dependencies) const;
 
 	// Get the sub dfn of a dfn
 	CFormDfn						*getSubDfn (uint index, uint &dfnIndex);

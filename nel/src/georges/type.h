@@ -1,7 +1,7 @@
 /** \file type.h
  * Georges type class
  *
- * $Id: type.h,v 1.8 2002/10/28 11:07:39 corvazier Exp $
+ * $Id: type.h,v 1.9 2002/12/30 13:56:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,6 +117,7 @@ public:
 	virtual uint				getNumDefinition () const;
 	virtual bool				getDefinition (uint index, std::string &label, std::string &value) const;
 	virtual const std::string	&getComment () const;
+	virtual	void				getDependencies (std::set<std::string> &dependencies) const;
 
 private:
 

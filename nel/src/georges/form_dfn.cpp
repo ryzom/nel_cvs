@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.16 2002/10/08 09:13:14 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.17 2002/12/30 13:56:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -801,6 +801,33 @@ void CFormDfn::warning (bool exception, const char *function, const char *format
 
 	// Set the warning
 	NLGEORGES::warning (exception, "(CFormDfn::%s) in form DFN (%s) : %s", function, _Filename.c_str (), buffer);
+}
+
+// ***************************************************************************
+
+void CFormDfn::getDependencies (std::set<std::string> &dependencies) const
+{
+	// Scan only if not already inserted
+	if (dependencies.insert (strlwr (CFile::getFilename (_Filename))).second)
+	{
+		// Add parents
+		uint i;
+		for (i=0; i<Parents.size (); i++)
+		{
+			Parents[i].Parent->getDependencies (dependencies);
+		}
+
+		// Add entries
+		for (i=0; i<Entries.size (); i++)
+		{
+			if (Entries[i].getDfnPtr ())
+				Entries[i].getDfnPtr ()->getDependencies (dependencies);
+			if (Entries[i].getTypePtr ())
+			{
+				dependencies.insert (strlwr (CFile::getFilename (Entries[i].getFilename())));
+			}
+		}
+	}
 }
 
 // ***************************************************************************

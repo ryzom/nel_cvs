@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.16 2002/10/29 17:34:42 vizerie Exp $
+ * $Id: form_elm.h,v 1.17 2002/12/30 13:56:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,6 +138,9 @@ public:
 	inline bool		convertValue (double &result, const char *value) const;
 	inline bool		convertValue (bool &result, const char *value) const;
 	inline bool		convertValue (NLMISC::CRGBA &result, const char *value) const;
+
+	// ** Get dependencies
+	virtual void	getDependencies (std::set<std::string> &dependencies) const = 0;
 
 	// ** Internal node access
 
@@ -301,7 +304,7 @@ public:
 	xmlNodePtr			write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;
 	void				unlink (CFormElm *child);
 	void				getFormName (std::string &result, const CFormElm *child) const;
-
+	void				getDependencies (std::set<std::string> &dependencies) const;
 
 	// Call by CFormLoader
 	void				read (xmlNodePtr node, CFormLoader &loader, const CFormDfn *dfn, CForm *form);
@@ -381,6 +384,7 @@ public:
 	void				unlink (CFormElm *child);
 	bool				isUsed (const CForm *form) const;
 	void				getFormName (std::string &result, const CFormElm *child) const;
+	void				getDependencies (std::set<std::string> &dependencies) const;
 
 	// Call by CFormLoader
 
@@ -429,6 +433,7 @@ public:
 	xmlNodePtr					write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;
 	bool						setParent (CFormElm *parent);
 	void						getFormName (std::string &result, const CFormElm *child) const;
+	void						getDependencies (std::set<std::string> &dependencies) const;
 
 	// Call by CFormLoader
 	void						read (xmlNodePtr node, CFormLoader &loader, const CType *type, CForm *form);

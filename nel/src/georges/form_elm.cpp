@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.35 2002/10/28 11:07:39 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.36 2002/12/30 13:56:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2146,6 +2146,22 @@ void CFormElmStruct::warning (bool exception, const char *function, const char *
 }
 
 // ***************************************************************************
+
+void CFormElmStruct::getDependencies (std::set<std::string> &dependencies) const
+{
+	// Visit the dfn
+	if (FormDfn)
+		FormDfn->getDependencies (dependencies);
+
+	// Visit elements
+	for (uint i=0; i<Elements.size (); i++)
+	{
+		if (Elements[i].Element)
+			Elements[i].Element->getDependencies (dependencies);
+	}
+}
+
+// ***************************************************************************
 // class CFormElmVirtualStruct
 // ***************************************************************************
 
@@ -2785,6 +2801,29 @@ void CFormElmArray::warning (bool exception, const char *function, const char *f
 }
 
 // ***************************************************************************
+
+void CFormElmArray::getDependencies (std::set<std::string> &dependencies) const
+{
+	if (FormDfn)
+	{
+		// Add the dfn
+		FormDfn->getDependencies (dependencies);
+
+		// Add each elements
+		for (uint i=0; i<Elements.size (); i++)
+		{
+			Elements[i].Element->getDependencies (dependencies);
+		}
+	}
+
+	if (Type)
+	{
+		// Add the type
+		Type->getDependencies (dependencies);
+	}
+}
+
+// ***************************************************************************
 // CFormElmAtom
 // ***************************************************************************
 
@@ -2798,6 +2837,12 @@ CFormElmAtom::CFormElmAtom (CForm *form, CFormElm *parentNode, const CFormDfn *p
 bool CFormElmAtom::isAtom () const
 {
 	return true;
+}
+
+// ***************************************************************************
+
+void CFormElmAtom::getDependencies (std::set<std::string> &dependencies) const
+{
 }
 
 // ***************************************************************************

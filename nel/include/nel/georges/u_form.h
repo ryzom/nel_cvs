@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form interface class
  *
- * $Id: u_form.h,v 1.4 2002/10/21 15:23:01 corvazier Exp $
+ * $Id: u_form.h,v 1.5 2002/12/30 13:56:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,11 @@ public:
 	  * Get the comment
 	  */
 	virtual const std::string &getComment () const = 0;
+
+	/**
+	  * Get dependency files
+	  */
+	virtual void	getDependencies (std::set<std::string> &dependencies) const = 0;
 };
 
 

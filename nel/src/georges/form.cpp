@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.12 2002/10/21 15:22:40 corvazier Exp $
+ * $Id: form.cpp,v 1.13 2002/12/30 13:56:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -364,6 +364,28 @@ void CForm::warning (bool exception, const char *function, const char *format, .
 
 	// Set the warning
 	NLGEORGES::warning (exception, "(CForm::%s) in form (%s) : %s", function, _Filename.c_str (), buffer);
+}
+
+// ***************************************************************************
+
+void CForm::getDependencies (std::set<std::string> &dependencies) const
+{
+	// Add me
+	if (dependencies.insert (strlwr(CFile::getFilename (_Filename))).second)
+	{
+		// Add parents
+		uint i;
+		for (i=0; i<ParentList.size (); i++)
+		{
+			if (ParentList[i].Parent)
+			{
+				ParentList[i].Parent->getDependencies (dependencies);
+			}
+		}
+
+		// Add elements
+		Elements.getDependencies (dependencies);
+	}
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.17 2002/03/26 10:11:44 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.18 2002/05/13 10:28:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,6 +248,8 @@ bool RPatchMesh::transformTile (const CTileBank &bank, uint &tile, uint &tileRot
 			}
 
 			// Transform rotation
+			if (symmetry)
+				tileRotation = (4-tileRotation)&3;
 			tileRotation += rotate;
 			tileRotation &= 3;
 		}

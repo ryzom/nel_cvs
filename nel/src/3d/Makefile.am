@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.102 2003/12/03 12:28:04 lecroart Exp $
+# $Id: Makefile.am,v 1.103 2003/12/22 13:01:21 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -203,6 +203,10 @@ libnel3d_la_SOURCES  = \
 		mesh_mrm_instance.cpp \
 		mesh_mrm_instance.h \
 		mesh_mrm_skin.cpp \
+		mesh_mrm_skinned.cpp \
+		mesh_mrm_skinned.h \
+		mesh_mrm_skinned_instance.cpp \
+		mesh_mrm_skinned_instance.h \
 		mesh_multi_lod.cpp \
 		mesh_multi_lod.h \
 		mesh_multi_lod_instance.cpp \
@@ -366,6 +370,8 @@ libnel3d_la_SOURCES  = \
 		radix_sort.h \
 		raw_skin.cpp \
 		raw_skin.h \
+		raw_skinned.cpp \
+		raw_skinned.h \
 		register_3d.cpp \
 		register_3d.h \
 		render_trav.cpp \

@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.9 2001/03/21 14:59:34 chafik Exp $
+ * $Id: agent_object.h,v 1.10 2001/04/03 13:57:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -234,11 +234,13 @@ namespace NLAIAGENT
 	class IBasicIterator
 	{
 	public:
+		IBasicIterator() {}
 		virtual const IObjetOp* operator ++ (int) = 0;
 		virtual const IObjetOp* operator -- (int) = 0;
 		virtual operator const IObjetOp*() const = 0;		
 		virtual bool isInEnd() const = 0;
 		virtual bool isInBegin() const = 0;
+		virtual ~IBasicIterator() {}
 	};
 
 	/**	
@@ -259,7 +261,7 @@ namespace NLAIAGENT
 		CTemplateIterator(const typeClass &l):_I(l.begin()),_ListType(l)
 		{
 		}
-		~CTemplateIterator()
+		virtual ~CTemplateIterator()
 		{
 		}
 
@@ -305,6 +307,10 @@ namespace NLAIAGENT
 		  {
 		  }
 
+		virtual ~CListIterator()
+		{
+		}
+
 	};
 	
 	/**
@@ -321,6 +327,10 @@ namespace NLAIAGENT
 		  CTemplateIterator<std::vector<const IObjectIA *> >(l)
 		  {
 		  }
+
+		virtual ~CVectorIterator()
+		{
+		}
 
 	};
 
@@ -345,7 +355,7 @@ namespace NLAIAGENT
 		{
 		}
 
-		~CIteratorContener()
+		virtual ~CIteratorContener()
 		{
 			delete _I;
 		}

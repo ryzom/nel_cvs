@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.6 2001/02/01 17:16:44 chafik Exp $
+ * $Id: compilateur.cpp,v 1.7 2001/04/03 13:58:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,13 +218,14 @@ namespace NLAISCRIPT
 	const NLAIAGENT::IObjectIA *CCompilateur::validateHierarchyMethode(std::list<sint32> &listH,sint32 &h,const NLAIAGENT::IObjectIA *classType,NLAIAGENT::IBaseGroupType &listName)
 	{
 		std::list<NLAISCRIPT::CStringType> listClassName;		
-		NLAIAGENT::CIteratorContener it = listName.getIterator();
-		listName.size();
+			
+		NLAIAGENT::CIteratorContener it = listName.getIterator();						
+
 		while(!it.isInEnd())
 		{
 			NLAIAGENT::CStringType &name = *((NLAIAGENT::CStringType *)it++);
 			listClassName.push_back(name.getStr().getString());			
-		}
+		}		
 		listClassName.pop_back();		
 		return getValidateHierarchyBase(classType,listH,h,listClassName);				
 	}

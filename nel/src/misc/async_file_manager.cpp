@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.5 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: async_file_manager.cpp,v 1.6 2004/10/22 13:32:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,6 +91,8 @@ bool CAsyncFileManager::cancelLoadTask(const CAsyncFileManager::ICancelCallback 
 	}
 
 	// If not found, the current running task may be the one we want to cancel. Must wait it.
+	// Beware that this code works because of the CSynchronized access we made above (ensure that the 
+	// taskmanager will end just the current task async (if any) and won't start an other one.
 	waitCurrentTaskToComplete ();
 
 	return false;

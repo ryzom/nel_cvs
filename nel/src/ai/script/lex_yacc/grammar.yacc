@@ -264,6 +264,7 @@ using  namespace NLAIFUZZY;
 								 	return 0;
 							} 
 							POINT_DEUX
+//							FactPattern
 							IDENT
 							{
 								if ( _Goal ) 
@@ -337,8 +338,15 @@ using  namespace NLAIFUZZY;
 
 								if ( classIsAnOperator() )
 								{
+
+									NLAIAGENT::CStringVarName *vvar = _LastFuzzyConds.back();
+									_LastFuzzyConds.pop_back();
+
+									NLAIAGENT::CStringVarName *vset = _LastFuzzyConds.back();
+									_LastFuzzyConds.pop_back();
+
 									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
-									op_class->addFuzzyCond(NLAIAGENT::CStringVarName("MaVar"), (NLAILOGIC::CBoolType *) NULL);
+									op_class->addFuzzyCond(vvar, vset);
 								}
 							}
 						|	FirstOrderPattern
@@ -416,26 +424,21 @@ using  namespace NLAIFUZZY;
 
 
 	FuzzyCond			:	FUZZY	PAR_G
-							Expression
+							IDENT
 							{
-								
+								char *param_name = LastyyText[1];
+								_LastFuzzyConds.push_back( new NLAIAGENT::CStringVarName( param_name ) );
 							}
 							FIS 
 							{
 								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
 							}
-							Expression
+							IDENT
 							{
-								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
+								char *param_name = LastyyText[1];
+								_LastFuzzyConds.push_back( new NLAIAGENT::CStringVarName( param_name ) );
 							}
-							PAR_D
-							{
-								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
-							}
-							POINT_VI
-							{
-								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
-							}
+							PAR_D POINT_VI
 							;
 
 
@@ -1550,4 +1553,3 @@ using  namespace NLAIFUZZY;
 						}
 						;
 %%
-

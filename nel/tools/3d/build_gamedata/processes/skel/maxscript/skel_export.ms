@@ -54,6 +54,9 @@ try
 
 					if ($ != undefined) then
 					(
+						-- Set figure mode on
+						$.controller.figureMode = true
+
 						-- Export the skeleton template
 						if (NelExportSkeleton $ output) == false then
 						(

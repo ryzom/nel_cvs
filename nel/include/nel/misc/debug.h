@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.15 2000/11/09 17:53:39 lecroart Exp $
+ * $Id: debug.h,v 1.16 2000/11/21 18:17:39 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -335,7 +335,7 @@ NULL
 
 struct EFatalError : public Exception
 {
-	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, ""); return str; }
+	virtual const char	*what () const throw () { static char str[1]; str[0] = '\0'; return str; }
 };
 
 

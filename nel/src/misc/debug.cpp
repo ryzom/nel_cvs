@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.103 2004/12/16 10:21:29 corvazier Exp $
+ * $Id: debug.cpp,v 1.104 2004/12/24 11:36:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1090,8 +1090,95 @@ void beep( uint freq, uint duration )
 
 
 //
+// Instance counter
+//
+
+CInstanceCounterManager *CInstanceCounterManager::_Instance = NULL;
+
+TInstanceCounterData::	TInstanceCounterData(char *className)
+:	_ClassName(className),
+	_InstanceCounter(0),
+	_DeltaCounter(0)
+{
+	CInstanceCounterManager::getInstance().registerInstanceCounter(this);
+}
+
+
+std::string CInstanceCounterManager::displayCounters()
+{
+	string ret = toString("Listing %u Instance counters :\n", _InstanceCounters.size());
+	std::set<TInstanceCounterData*>::iterator first(_InstanceCounters.begin()), last(_InstanceCounters.end());
+	for (; first != last; ++first)
+	{
+		TInstanceCounterData *icd = *first;
+		ret += toString("  Class '%-20s', \t%10d instances, \t%10d delta\n", 
+			icd->_ClassName, 
+			icd->_InstanceCounter, 
+			icd->_InstanceCounter - icd->_DeltaCounter);
+	}
+
+	return ret;
+}
+
+void CInstanceCounterManager::resetDeltaCounter()
+{
+	std::set<TInstanceCounterData*>::iterator first(_InstanceCounters.begin()), last(_InstanceCounters.end());
+	for (; first != last; ++first)
+	{
+		TInstanceCounterData *icd = *first;
+		icd->_DeltaCounter = icd->_InstanceCounter;
+	}
+}
+
+/** Compile time checking */
+class CFoo
+{
+//	NL_INSTANCE_COUNTER_DECL(CFoo);
+
+};
+
+//NL_INSTANCE_COUNTER_IMPL(CFoo);
+
+
+//
 // Commands
 //
+
+NLMISC_CATEGORISED_COMMAND(nel, displayInstanceCounter, "display the instance counters", "[<className>]")
+{
+	string className;
+	if (args.size() == 1)
+		className = args[0];
+	if (args.size() > 1)
+		return false;
+
+	string list = CInstanceCounterManager::getInstance().displayCounters();
+
+	vector<string> lines;
+	explode(list, "\n", lines, false);
+
+
+	for (uint i=0; i<lines.size(); ++i)
+	{
+		if (!className.empty())
+		{
+			if (lines[i].find(className) != 2)
+				continue;
+		}
+
+		log.displayNL(lines[i].c_str());
+	}
+
+	return true;
+}
+
+NLMISC_CATEGORISED_COMMAND(nel, resetInstanceCounterDelta, "reset the delta value for instance counter", "")
+{
+	CInstanceCounterManager::getInstance().resetDeltaCounter();
+
+	return true;
+}
+
 
 NLMISC_CATEGORISED_COMMAND(nel, displayMemlog, "displays the last N line of the log in memory", "[<NbLines>]")
 {

@@ -1,7 +1,7 @@
 /** \file words_dictionary.h
  * Words dictionary>
  *
- * $Id: words_dictionary.h,v 1.4 2004/08/18 17:42:35 cado Exp $
+ * $Id: words_dictionary.h,v 1.5 2004/12/24 11:36:15 boucher Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -44,6 +44,8 @@ namespace NLMISC {
 class CWordsDictionary
 {
 public:
+
+	NL_INSTANCE_COUNTER_DECL(CWordsDictionary);
 
 	/// Constructor
 	CWordsDictionary();

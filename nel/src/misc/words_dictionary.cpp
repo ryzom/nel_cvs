@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.9 2004/08/18 17:42:35 cado Exp $
+ * $Id: words_dictionary.cpp,v 1.10 2004/12/24 11:36:14 boucher Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -35,6 +35,8 @@ using namespace std;
 const string DefaultColTitle = "name";
 
 namespace NLMISC {
+
+NL_INSTANCE_COUNTER_IMPL(CWordsDictionary);
 
 /*
  * Constructor

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.74 2004/10/19 10:19:24 berenguier Exp $
+ * $Id: debug.h,v 1.75 2004/12/24 11:36:15 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/mutex.h"
 #include "nel/misc/mem_displayer.h"
 #include "nel/misc/displayer.h"
+#include <set>
 
 namespace NLMISC
 {	
@@ -586,6 +587,102 @@ private:
 #endif
 };
 
+/// Data for instance counting
+struct TInstanceCounterData
+{
+	sint32	_InstanceCounter;
+	sint32	_DeltaCounter;
+	char	*_ClassName;
+
+	TInstanceCounterData(char *className);
+};
+
+// The singleton used to display the instance counter
+class CInstanceCounterManager
+{
+public:
+	static CInstanceCounterManager &getInstance()
+	{
+		if (_Instance == NULL)
+		{
+			_Instance = new CInstanceCounterManager;
+		}
+		return *_Instance;
+	}
+
+	void registerInstanceCounter(TInstanceCounterData *counter)
+	{
+		_InstanceCounters.insert(counter);
+	}
+
+	std::string displayCounters();
+
+	void resetDeltaCounter();
+
+private:
+	static CInstanceCounterManager		*_Instance;
+	std::set<TInstanceCounterData*>		_InstanceCounters;
+};
+
+/** Utility to count instance of class. 
+ *	This class is designed to be lightweight and to trace 
+ *	the number of instance of 'tagged' class.
+ *	Commands are provided to display the actual number
+ *	of object of each class and to compute delta
+ *	between two call of the displayer.
+ *	Usage is simple, you just have to put a macro
+ *	inside the class definition to trace it's allocation
+ *	and a macro in the implementation file.
+ *	The macro only add a compiler minimum size for member
+ *	struct of 0 octets (witch can be 0 or 1 octet, compiler
+ *	dependend).
+ *	usage :
+ *	
+ *	In the header :
+ *	class foo	// This is the class we want to count instance
+ *	{
+ *		NL_INSTANCE_COUNTER_DECL(foo);
+ *	}
+ *	In the cpp :
+ *	NL_INSTANCE_COUNTER_IMPL(foo);
+ */
+#define NL_INSTANCE_COUNTER_DECL(className) \
+	struct className##InstanceCounter \
+	{ \
+		className##InstanceCounter() \
+		{ \
+			_InstanceCounterData._InstanceCounter++; \
+		} \
+		className##InstanceCounter(const className##InstanceCounter &other) \
+		{ \
+			_InstanceCounterData._InstanceCounter++; \
+		} \
+		\
+		~className##InstanceCounter()\
+		{ \
+			_InstanceCounterData._InstanceCounter--; \
+		} \
+		static sint32 getInstanceCounter() \
+		{ \
+			return _InstanceCounterData._InstanceCounter; \
+		} \
+		static sint32 getInstanceCounterDelta() \
+		{ \
+			return _InstanceCounterData._InstanceCounter - _InstanceCounterData._DeltaCounter; \
+		} \
+		static NLMISC::TInstanceCounterData	_InstanceCounterData; \
+	}; \
+	 \
+	className##InstanceCounter	_##className##InstanceCounter
+
+/// The macro to make the implementation of the counter
+#define NL_INSTANCE_COUNTER_IMPL(className) NLMISC::TInstanceCounterData className::className##InstanceCounter::_InstanceCounterData(#className);
+
+/// An utility macro to get the instance counter for a class
+#define NL_GET_INSTANCE_COUNTER(className) className::className##InstanceCounter::getInstanceCounter()
+
+/// An utility macro to get the delta since the last counter reset.
+#define NL_GET_INSTANCE_COUNTER_DELTA(className) className::className##InstanceCounter::getInstanceCounterDelta()
 
 //
 // Following are internal functions, you should never use them

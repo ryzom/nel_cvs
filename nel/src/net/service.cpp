@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.161 2003/01/16 09:16:08 lecroart Exp $
+ * $Id: service.cpp,v 1.162 2003/01/16 09:57:16 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -150,7 +150,8 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 	CLog logDisplayVars;
 	CLightMemDisplayer mdDisplayVars;
 	logDisplayVars.addDisplayer (&mdDisplayVars);
-	
+	mdDisplayVars.setParam (1024);
+
 	CVarPath varpath(rawvarpath);
 
 	if (varpath.empty())

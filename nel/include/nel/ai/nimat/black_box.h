@@ -1,7 +1,7 @@
 /** \file black_box.h
  * An interface between an agent and a C++ component.
  *
- * $Id: black_box.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: black_box.h,v 1.2 2001/01/10 10:01:25 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

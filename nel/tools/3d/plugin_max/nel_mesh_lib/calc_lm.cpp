@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.20 2001/08/29 17:15:37 besson Exp $
+ * $Id: calc_lm.cpp,v 1.21 2001/08/30 15:46:58 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2906,7 +2906,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	// Get all lights L that have influence over the mesh selected
 	supprLightNoInteractOne( AllLights, pZeMeshBuild, pZeMeshBaseBuild, ZeNode );
 	// Get all meshes that are influenced by the lights L			
-	buildWorldRT( WorldRT, AllLights, ip, absolutePath );
+	buildWorldRT( WorldRT, AllLights, ip, true );
 
 	//for( nNode=0; nNode < nNbMesh; ++nNode )
 	{
@@ -3163,7 +3163,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			LightMap.copyColToBitmap32( pLightMap, j );
 			COFile f( sSaveName );
 			pLightMap->writeTGA( f, 32 );	
-
+			pLightMap->setUploadFormat (ITexture::RGB565);
 			pLightMap->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 			pLightMap->setAllowDegradation (false);
 			if (gOptions.bShowLumel)

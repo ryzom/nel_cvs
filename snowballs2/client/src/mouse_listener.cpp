@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.cpp,v 1.10 2001/07/20 14:35:52 lecroart Exp $
+ * $Id: mouse_listener.cpp,v 1.11 2001/07/20 14:58:49 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -245,6 +245,63 @@ void C3dMouseListener::update()
 		dir+=CVector (0, 0, 1);
 		find=true;
 	}
+
+	// Character state setup
+	if (Self != NULL)
+	{
+		// modify the orientation depending on the straff
+		// The straff is determined by the keys that are down simultaneously
+		if (_AsyncListener.isKeyDown (KeyUP))
+		{
+			if (_AsyncListener.isKeyDown (KeyLEFT))
+			{
+				Self->AuxiliaryAngle = (float)Pi/4.0f;
+			}
+			else if (_AsyncListener.isKeyDown (KeyRIGHT))
+			{
+				Self->AuxiliaryAngle = -(float)Pi/4.0f;
+			}
+			else
+			{
+				Self->AuxiliaryAngle = 0;
+			}
+			_IsWalking = true;
+		}
+		else if (_AsyncListener.isKeyDown (KeyDOWN))
+		{
+			if (_AsyncListener.isKeyDown (KeyLEFT))
+			{
+				Self->AuxiliaryAngle = (float)Pi-(float)Pi/4.0f;
+			}
+			else if (_AsyncListener.isKeyDown (KeyRIGHT))
+			{
+				Self->AuxiliaryAngle = -(float)Pi+(float)Pi/4.0f;
+			}
+			else
+			{
+				Self->AuxiliaryAngle = (float)Pi;
+			}
+			_IsWalking = true;
+		}
+		else if (_AsyncListener.isKeyDown (KeyLEFT))
+		{
+			Self->AuxiliaryAngle = (float)Pi/2.0f;
+			_IsWalking = true;
+		}
+		else if (_AsyncListener.isKeyDown (KeyRIGHT))
+		{
+			Self->AuxiliaryAngle = -(float)Pi/2.0f;
+			_IsWalking = true;
+		}
+		else
+		{
+			_IsWalking = false;
+		}
+
+		if (isAiming())
+			Self->AuxiliaryAngle = 0.0f;
+	}
+
 
 	// if is aiming
 	if (_AimingState)

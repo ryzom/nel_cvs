@@ -1,7 +1,7 @@
 /** \file mouse_listener.h
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.h,v 1.6 2001/07/20 14:29:56 legros Exp $
+ * $Id: mouse_listener.h,v 1.7 2001/07/20 14:58:49 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -226,6 +226,12 @@ public:
 	bool getAimingState() const { return _AimingState; }
 	/// get the target position (only if getAimingState() == true)
 	CVector	getAimedTarget() const { return _AimedTarget; }
+	/// get the damage value
+	float getDamage() const { return _AimingDamage; }
+
+	// get the various character states
+	bool isAiming() const { return _AimingState; }
+	bool isWalking() const { return _IsWalking; }
 
 	/// Updates the mouselistener
 	void update();
@@ -236,7 +242,6 @@ public:
 	bool getInvertMouseMode() const { return _InvertedMouse; }
 	void setInvertMouseMode(bool invertMouse) { _InvertedMouse = invertMouse; }
 
-	float getDamage() const { return _AimingDamage; }
 
 private:
 	/// Internal use
@@ -260,10 +265,13 @@ private:
 	TMouseMode			_MouseMode;
 	NLMISC::CEventListenerAsync	_AsyncListener;
 
+	// viewing camera attributes
 	NL3D::UCamera		*_Camera;
 	float				_ViewLagBehind;
 	float				_ViewHeight;
 	float				_ViewTargetHeight;
+
+	// aiming system attributes
 	bool				_AimingState;
 	float				_AimingDamage;
 	float				_AimingSpeed;
@@ -275,6 +283,9 @@ private:
 	NLMISC::CVector		_AimingPosition;
 	NL3D::UInstance		*_AimingInstance;
 	bool				_InvertedMouse;
+
+	// character state
+	bool				_IsWalking;
 };
 
 //

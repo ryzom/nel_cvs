@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.31 2001/07/20 14:35:52 lecroart Exp $
+ * $Id: entities.cpp,v 1.32 2001/07/20 14:58:49 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -403,6 +403,8 @@ void stateNormal (CEntity &entity)
 		removeEntity(entity.Id);
 	}
 
+
+
 	if (entity.Type == CEntity::Self)
 	{
 		// the self entity
@@ -413,57 +415,9 @@ void stateNormal (CEntity &entity)
 
 		static bool wasAiming = false;
 		static bool wasWalking = false;
-		bool	isAiming = MouseListener->getAimingState();
-		bool	isWalking;
+		bool	isAiming = MouseListener->isAiming();
+		bool	isWalking = MouseListener->isWalking();
 
-		// modify the orientation depending on the straff
-		// The straff is determined by the keys that are down simultaneously
-		if (Driver->AsyncListener.isKeyDown (KeyUP))
-		{
-			if (Driver->AsyncListener.isKeyDown (KeyLEFT))
-			{
-				entity.AuxiliaryAngle = (float)Pi/4.0f;
-			}
-			else if (Driver->AsyncListener.isKeyDown (KeyRIGHT))
-			{
-				entity.AuxiliaryAngle = -(float)Pi/4.0f;
-			}
-			else
-			{
-				entity.AuxiliaryAngle = 0;
-			}
-			isWalking = true;
-		}
-		else if (Driver->AsyncListener.isKeyDown (KeyDOWN))
-		{
-			if (Driver->AsyncListener.isKeyDown (KeyLEFT))
-			{
-				entity.AuxiliaryAngle = (float)Pi-(float)Pi/4.0f;
-			}
-			else if (Driver->AsyncListener.isKeyDown (KeyRIGHT))
-			{
-				entity.AuxiliaryAngle = -(float)Pi+(float)Pi/4.0f;
-			}
-			else
-			{
-				entity.AuxiliaryAngle = (float)Pi;
-			}
-			isWalking = true;
-		}
-		else if (Driver->AsyncListener.isKeyDown (KeyLEFT))
-		{
-			entity.AuxiliaryAngle = (float)Pi/2.0f;
-			isWalking = true;
-		}
-		else if (Driver->AsyncListener.isKeyDown (KeyRIGHT))
-		{
-			entity.AuxiliaryAngle = -(float)Pi/2.0f;
-			isWalking = true;
-		}
-		else
-		{
-			isWalking = false;
-		}
 
 		if (isAiming && !wasAiming)
 		{
@@ -486,9 +440,6 @@ void stateNormal (CEntity &entity)
 
 		wasAiming = isAiming;
 		wasWalking = isWalking;
-
-		if (isAiming)
-			entity.AuxiliaryAngle = 0.0f;
 
 		// Interpolate the character orientation towards the server angle
 		// for smoother movements

@@ -198,14 +198,6 @@ SOURCE=..\include\nel\misc\stream.h
 
 SOURCE=..\include\nel\misc\stream_inline.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\misc\string_stream.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\string_stream.h
-# End Source File
 # End Group
 # Begin Group "Math"
 
@@ -663,6 +655,14 @@ SOURCE=..\include\nel\misc\smart_ptr.h
 # Begin Source File
 
 SOURCE=..\include\nel\misc\smart_ptr_inline.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\stop_watch.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\stop_watch.h
 # End Source File
 # Begin Source File
 

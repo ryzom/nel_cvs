@@ -1,7 +1,7 @@
 /** \file keyboard_device.h
  * <File description>
  *
- * $Id: keyboard_device.h,v 1.1 2002/03/28 10:36:37 vizerie Exp $
+ * $Id: keyboard_device.h,v 1.2 2002/04/10 12:44:17 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -43,19 +43,24 @@ namespace NLMISC
 struct IKeyboardDevice	: public IInputDevice
 {	
 	/// Max number of supported keys
-	enum { NumKeys = 256 };	
-	/** Test wether this device can make locale conversions. 
-	  * If not, U.S keyboard keys events are returned unless a conversion is provided by calling setLocale.
+	enum { NumKeys = 256 };
+	/// Get the delay before key repeat, in milliseconds
+	virtual		uint getKeyRepeatDelay() const = 0;
+	/// Get the delay before key repeat, in milliseconds
+	virtual		void setKeyRepeatDelay(uint delay) = 0;
+	/// Get the period before key repeat, in milliseconds
+	virtual		uint getKeyRepeatPeriod() const = 0;
+	/// Get the period before key repeat, in milliseconds
+	virtual		void setKeyRepeatPeriod(uint period) = 0;
+	/// Set a set of keys for which repetition is disabled
+	virtual		void disableRepetition(const TKey *keyTab, uint numKey) = 0;
+	/// Get the number of disabled keys
+	virtual		uint getNumDisabledRepetition() const = 0;
+	/** Get the disabled keys and stores in the given tab.
+	  * NB: must ensure the destination table has the right size
+	  * \see getNumDisabledKeys()
 	  */
-	virtual bool				needLocale() const = 0;
-	/** set a conversion table that can convert from a US keyboard to local keyboard
-	  * For example, it would map from a QWERTY to a AZERTY keyboard.
-	  * NB : the given pointer should valid memory as long as this device is used.
-	  * This can be NULL if you don't need conversion
-	  */
-	virtual void				setLocale(TKey conversion[NumKeys]) = 0;
-	// Get the locale conversion table, or NULL if none has been set.
-	virtual	TKey				*getLocale() const = 0;
+	virtual		void getDisabledRepetitions(TKey *destTab) const = 0;
 };
 
 

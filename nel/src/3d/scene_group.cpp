@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.1 2001/04/06 13:39:35 besson Exp $
+ * $Id: scene_group.cpp,v 1.2 2001/04/06 14:53:02 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,7 +135,7 @@ bool CInstanceGroup::addToScene (CScene& scene)
 	_Instances.resize( _InstancesInfos.size() );
 
 	std::vector<CInstance>::iterator it = _InstancesInfos.begin();
-	for( i=0; i<_InstancesInfos.size(); ++i,++it )
+	for( i=0; i<(sint)_InstancesInfos.size(); ++i,++it )
 	{
 		CInstance &rInstanceInfo = *it;
 
@@ -152,7 +152,7 @@ bool CInstanceGroup::addToScene (CScene& scene)
 	ITrav *pTrav = scene.getTrav( HrcTravId );
 
 	it = _InstancesInfos.begin();
-	for( i=0; i<_InstancesInfos.size(); ++i,++it )
+	for( i=0; i<(sint)_InstancesInfos.size(); ++i,++it )
 	{
 		CInstance &rInstanceInfo = *it;
 		if( rInstanceInfo.nParent != -1 ) // Is the instance get a parent
@@ -167,7 +167,7 @@ bool CInstanceGroup::addToScene (CScene& scene)
 bool CInstanceGroup::removeFromScene (CScene& scene)
 {
 	std::vector<CTransformShape*>::iterator it = _Instances.begin();
-	for( int i=0; i<_InstancesInfos.size(); ++i,++it )
+	for( int i=0; i<(sint)_InstancesInfos.size(); ++i,++it )
 	{
 		CTransformShape *pTShape = *it;
 

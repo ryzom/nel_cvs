@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.56 2002/08/27 17:00:22 coutelas Exp $
+ * $Id: path.cpp,v 1.57 2002/08/27 17:11:28 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -942,7 +942,12 @@ bool CFile::isDirectory (const string &filename)
 	return (res & FILE_ATTRIBUTE_DIRECTORY) != 0;
 #else // NL_OS_WINDOWS
 	struct stat buf;
-	stat (filename.c_str (), &buf);
+	int res = stat (filename.c_str (), &buf);
+	if (res == -1)
+	{
+		nlwarning ("can't stat '%s' error %d '%s'", filename.c_str(), errno, strerror(errno));
+		return false;
+	}
 	return (buf.st_mode & S_IFDIR) != 0;
 #endif // NL_OS_WINDOWS
 }

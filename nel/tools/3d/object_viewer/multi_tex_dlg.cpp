@@ -1,7 +1,7 @@
 /** \file multi_tex_dlg.cpp
  * A dialog to tune multexturing for particles that support it
  *
- * $Id: multi_tex_dlg.cpp,v 1.2 2001/12/18 18:38:41 vizerie Exp $
+ * $Id: multi_tex_dlg.cpp,v 1.3 2002/02/15 17:18:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -199,10 +199,21 @@ void CMultiTexDlg::readValues(bool alternate)
 			GetDlgItem(IDC_V_SPEED_2_ALTERNATE)->SetWindowText("");
 		}
 	}
+	sprintf(buf, "%.3f", _MTP->getBumpFactor()); GetDlgItem(IDC_BUMP_FACTOR)->SetWindowText(buf);
+
 }
 
-//======================================================
 
+//======================================================
+void	CMultiTexDlg::updateBumpFactorEnabled()
+{
+	BOOL bEnvBumpMapUsed = _MTP->getMainTexOp() == NL3D::CPSMultiTexturedParticle::EnvBumpMap ? TRUE : FALSE;
+	GetDlgItem(IDC_BUMP_FACTOR_TXT)->EnableWindow(bEnvBumpMapUsed);
+	GetDlgItem(IDC_BUMP_FACTOR)->EnableWindow(bEnvBumpMapUsed);
+}
+
+
+//======================================================
 void CMultiTexDlg::writeValues(bool alternate)
 {
 	char u1[10], u2[10], v1[10], v2[10];
@@ -246,6 +257,14 @@ void CMultiTexDlg::writeValues(bool alternate)
 				_MTP->setAlternateScrollSpeed(1, vs2);	
 			}
 		}
+	}
+
+	char bumpFactorTxt[10];
+	float bumpFactor; 
+	GetDlgItem(IDC_BUMP_FACTOR)->GetWindowText(bumpFactorTxt, 10);
+	if (sscanf(bumpFactorTxt, "%f", &bumpFactor) == 1)
+	{
+		_MTP->setBumpFactor(bumpFactor);
 	}
 }
 
@@ -296,10 +315,8 @@ void CMultiTexDlg::updateTexOp()
 	m_MainOpCtrl.SetCurSel((int) _MTP->getMainTexOp());
 	m_AlternateOpCtrl.SetCurSel((int) _MTP->getAlternateTexOp());
 	UpdateData(FALSE);
+	updateBumpFactorEnabled();
 }
-
-
-
 
 //======================================================
 void CMultiTexDlg::OnSelchangeAlternateOp() 
@@ -313,6 +330,7 @@ void CMultiTexDlg::OnSelchangeMainOp()
 {
 	UpdateData(TRUE);
 	_MTP->setMainTexOp((NL3D::CPSMultiTexturedParticle::TOperator) m_MainOpCtrl.GetCurSel());	
+	updateBumpFactorEnabled();
 	
 }
 

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.15 2000/11/22 15:56:47 cado Exp $
+ * $Id: service.h,v 1.16 2001/01/24 17:02:26 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,12 +83,16 @@ return retval; \
  * \li Arg 1 : port number for listening
  * \li Arg 2 : (optional) timeout for select in millisecond
  * \author Vianney Lecroart
+ * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
  */
 class IService
 {
 public:
+
+	/// Constructor
+	IService();
 
 	/// Initializes the service (must be called before the first call to update())
 	virtual void		init () {}
@@ -147,6 +151,9 @@ protected:
 
 	/// Process command line arguments for port and timeout
 	void getCustomParams();
+
+	/// Singleton
+	static IService				*Instance;
 
 private:
 

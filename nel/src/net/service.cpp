@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.38 2001/01/22 14:01:10 cado Exp $
+ * $Id: service.cpp,v 1.39 2001/01/24 17:02:26 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -72,6 +72,8 @@ namespace NLNET
 
 const uint32 IService::_DefaultTimeout = 1000;
 
+IService	 *IService::Instance = NULL;
+
 
 /* "Constants" */
 
@@ -140,6 +142,18 @@ static void SigHandler(int Sig)
 		}
 	}
 	nlinfo ("Unknown signal received (%d)", Sig);
+}
+
+
+
+/*
+ * Constructor
+ */
+IService::IService()
+{
+	// Singleton
+	nlassert( IService::;Instance != NULL );
+	IService::Instance = this;
 }
 
 

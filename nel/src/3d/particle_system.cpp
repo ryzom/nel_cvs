@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.82 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.83 2004/06/01 16:27:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,8 @@ uint	CParticleSystem::_NumInstances = 0;
 static const float PS_MIN_TIMEOUT = 1.f; // the test that check if there are no particles left 
 bool CParticleSystem::_SerialIdentifiers = false;
 bool CParticleSystem::_ForceDisplayBBox = false;
+CParticleSystemModel *CParticleSystem::OwnerModel = NULL;
+
 
 
 
@@ -401,9 +403,10 @@ static void displaySysPos(IDriver *drv, const CVector &pos, CRGBA col)
 
 
 ///=======================================================================================
-void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSystemShape &shape)
+void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSystemShape &shape, CParticleSystemModel &model)
 {	
 	CHECK_INTEGRITY
+	OwnerModel = &model;
 	nlassert(_CoordSystemInfo.Matrix); // matrix not set for position of system
 	if (_UserCoordSystemInfo)
 	{
@@ -995,6 +998,12 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		updateProcessIndices();
 	}
 	CHECK_INTEGRITY
+	// tmp
+	//if (f.isReading())
+	//	{
+	//		dumpHierarchy();
+	//	}
+
 }
 
 ///=======================================================================================
@@ -2193,6 +2202,28 @@ void CParticleSystem::updateProcessIndices()
 	for(uint k = 0; k < _ProcessVect.size(); ++k)
 	{
 		_ProcessVect[k]->setIndex(k);
+	}
+}
+
+
+///=======================================================================================
+void CParticleSystem::dumpHierarchy()
+{
+	for(uint k = 0; k < _ProcessVect.size(); ++k)
+	{
+		CPSLocated *loc = dynamic_cast<CPSLocated *>(_ProcessVect[k]);
+		if (loc)
+		{ 
+			nlinfo("Located k : %s @%x", loc->getName().c_str(), (int) loc);
+			for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+			{
+				CPSEmitter *emitter = dynamic_cast<CPSEmitter *>(loc->getBoundObject(l));
+				if (emitter)
+				{
+					nlinfo("    emitter %s : emit %s @%x", emitter->getName().c_str(), emitter->getEmittedType() ? emitter->getEmittedType()->getName().c_str() : "none", (int) emitter->getEmittedType());
+				}
+			}
+		}	
 	}
 }
 

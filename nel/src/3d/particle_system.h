@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.50 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: particle_system.h,v 1.51 2004/06/01 16:27:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@ namespace NL3D
 {
 
 class CParticleSystemShape;
+class CParticleSystemModel;
 class CPSLocated;
 class CPSLocatedBindable;
 class CFontGenerator;
@@ -229,7 +230,7 @@ public:
 		* \param pass the pass to be executed
 		* \see setDriver
 		*/
-		virtual void step(TPass pass, TAnimationTime ellapsedTime, CParticleSystemShape &shape);
+		virtual void step(TPass pass, TAnimationTime ellapsedTime, CParticleSystemShape &shape, CParticleSystemModel &model);
 		//@}
 
 		
@@ -1216,6 +1217,8 @@ public:
 	void		addRefForUserSysCoordInfo(uint numRefs = 1);
 	// FOR PRIVATE USE : called when one less object of the system needs the _UserCoordSystemInfo field => deallocate it when there are no references left
 	void		releaseRefForUserSysCoordInfo(uint numRefs = 1);
+	// tmp for debug : dump hierarchy of fx
+	void		dumpHierarchy();
 public:
 	// spawn info. They are shared by all PS ! This is because there can be only one PS processed at a time in the lib, so no need to store that per instance
 	typedef std::vector<CPSSpawnInfo> TSpawnInfoVect;
@@ -1242,6 +1245,7 @@ public:
 	static bool											InsideSimLoop;	
 	static bool											InsideRemoveLoop;
 	static bool											InsideNewElementsLoop;	
+	static CParticleSystemModel							*OwnerModel; // owner model for that system
 };
 
 // NOT USED FOR NOW

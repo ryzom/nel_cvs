@@ -352,82 +352,91 @@ plugin material NelMaterial
 		
 		Fn updateUI update =
 		(
-			if update == true then
+			if (version >= 4) then
 			(
-				dlBlendSrcFunc.selection = iBlendSrcFunc
-				dlBlendDestFunc.selection = iBlendDestFunc
-				dlShaderType.selection = iShaderType
-			)
-			else
-			(
-				iBlendSrcFunc = dlBlendSrcFunc.selection
-				iBlendDestFunc = dlBlendDestFunc.selection
-				iShaderType = dlShaderType.selection
-			)
+				if update == true then
+				(
+					dlBlendSrcFunc.selection = iBlendSrcFunc
+					dlBlendDestFunc.selection = iBlendDestFunc
+					dlShaderType.selection = iShaderType
+				)
+				else
+				(
+					iBlendSrcFunc = dlBlendSrcFunc.selection
+					iBlendDestFunc = dlBlendDestFunc.selection
+					iShaderType = dlShaderType.selection
+				)
 
-			-- Setup boolean value
-			bNormalShader = false
-			bUserColor = false
-			bLightmap = false
-			bSpecular = false
-			bWater = false
-			if iShaderType == ShaderNormal then
-				bNormalShader = true
-			else if iShaderType == ShaderUserColor then
-				bUserColor = true
-			else if iShaderType == ShaderLightmap then
-				bLightmap = true
-			else if iShaderType == ShaderSpecular then
-				bSpecular = true
-			else if iShaderType == ShaderWater then
-				bWater = true
+				-- Setup boolean value
+				bNormalShader = false
+				bUserColor = false
+				bLightmap = false
+				bSpecular = false
+				bWater = false
+				if iShaderType == ShaderNormal then
+					bNormalShader = true
+				else if iShaderType == ShaderUserColor then
+					bUserColor = true
+				else if iShaderType == ShaderLightmap then
+					bLightmap = true
+				else if iShaderType == ShaderSpecular then
+					bSpecular = true
+				else if iShaderType == ShaderWater then
+					bWater = true
 
-			dlVertexProgram.enabled = (not bWater) and (not bLightmap)
+				dlVertexProgram.enabled = (not bWater) and (not bLightmap)
 
-			cbUnlighted.enabled = (not bWater) and (not bLightmap)
-			lLightMapChannel.enabled = (not bWater) and bLightmap
-			ciLightMapChannel.enabled = (not bWater) and bLightmap
-			cbStainedGlassWindow.enabled = not bWater
+				cbUnlighted.enabled = (not bWater) and (not bLightmap)
+				lLightMapChannel.enabled = (not bWater) and bLightmap
+				ciLightMapChannel.enabled = (not bWater) and bLightmap
+				cbStainedGlassWindow.enabled = not bWater
 
-			cbAlphaBlend.enabled = ((not bWater) and (not bLightmap)) and (not bAlphaTest)
-			btSetBlend.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
-			btSetAdd.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
-			btSetAlphaAdd.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
-			dlBlendSrcFunc.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
-			dlBlendDestFunc.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
-			cbAlphaTest.enabled = (not bWater) and (not bAlphaBlend)
+				cbAlphaBlend.enabled = ((not bWater) and (not bLightmap)) and (not bAlphaTest)
+				btSetBlend.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
+				btSetAdd.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
+				btSetAlphaAdd.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
+				dlBlendSrcFunc.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
+				dlBlendDestFunc.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
+				cbAlphaTest.enabled = (not bWater) and (not bAlphaBlend)
 
-			cbForceZWrite.enabled = (not bWater) and (not bLightmap) and bAlphaBlend
-			cbForceNoZWrite.enabled = (not bWater) and (not bLightmap)  and (not bAlphaBlend)
-			cbAlphaVertex.enabled = (not bWater) and (not bLightmap) and (not bLightMap)
-			ciAlphaVertexChannel.enabled = (not bWater) and bAlphaVertex and (not bLightMap)
-			cbColorVertex.enabled = not bWater
+				cbForceZWrite.enabled = (not bWater) and (not bLightmap) and bAlphaBlend
+				cbForceNoZWrite.enabled = (not bWater) and (not bLightmap)  and (not bAlphaBlend)
+				cbAlphaVertex.enabled = (not bWater) and (not bLightmap) and (not bLightMap)
+				ciAlphaVertexChannel.enabled = (not bWater) and bAlphaVertex and (not bLightMap)
+				cbColorVertex.enabled = not bWater
+				
+				cfBumpUScale.enabled = bWater and (not bLightMap)
+				cfBumpVScale.enabled = bWater and (not bLightMap)
+				cfBumpUSpeed.enabled = bWater and (not bLightMap)
+				cfBumpVSpeed.enabled = bWater and (not bLightMap)
 			
-			cfBumpUScale.enabled = bWater and (not bLightMap)
-			cfBumpVScale.enabled = bWater and (not bLightMap)
-			cfBumpUSpeed.enabled = bWater and (not bLightMap)
-			cfBumpVSpeed.enabled = bWater and (not bLightMap)
-		
-			cfDisplaceMapUScale.enabled = bWater and (not bLightMap)
-			cfDisplaceMapVScale.enabled = bWater and (not bLightMap)
-			cfDisplaceMapUSpeed.enabled = bWater and (not bLightMap)
-			cfDisplaceMapVSpeed.enabled = bWater and (not bLightMap)
+				cfDisplaceMapUScale.enabled = bWater and (not bLightMap)
+				cfDisplaceMapVScale.enabled = bWater and (not bLightMap)
+				cfDisplaceMapUSpeed.enabled = bWater and (not bLightMap)
+				cfDisplaceMapVSpeed.enabled = bWater and (not bLightMap)
 
-			if (bWater == true) then
-			(
-				cbUnlighted.checked = false 
-				cbStainedGlassWindow.checked = false
-				cbAlphaTest.checked = false
-				cbForceZWrite.checked = false
-				cbForceNoZWrite.checked = false
-			)			
+				if (bWater == true) then
+				(
+					cbUnlighted.checked = false 
+					cbStainedGlassWindow.checked = false
+					cbAlphaTest.checked = false
+					cbForceZWrite.checked = false
+					cbForceNoZWrite.checked = false
+				)			
+			)
 		)
 
-		on NelParams reload do (print "reload")
+		on NelParams reload do
+		(
+		)
 
 		on NelParams open do 
 		(
 			updateUI true
+		)
+
+		on NelParams close do 
+		(
 		)
 
 		-- Update ui
@@ -441,32 +450,38 @@ plugin material NelMaterial
 		(
 			updateUI false
 		)
+
 		on cbAlphaBlend changed bNewState do
         (
 			if bAlphaBlend == true then
 				bAlphaTest = false
 			updateUI false
         )
+
 		on cbAlphaTest changed bNewState do
         (
 			if bAlphaTest == true then
 				bAlphaBlend = false
 			updateUI false
         )
+
 		on cbAlphaVertex changed bNewState do
         (
 			updateUI false
         )
+
 		on cbAlphaVertex changed bNewState do
         (
 			updateUI false
         )
+
 		on btSetBlend pressed do
 		(
 			dlBlendSrcFunc.selection = 3
 			dlBlendDestFunc.selection = 4
 			updateUI false
 		)
+
 		on btSetAdd pressed do
 		(
 			dlBlendSrcFunc.selection = 1
@@ -532,55 +547,55 @@ plugin material NelMaterial
 
 		fn updateUI update =
 		(
-			mbTexture_1.enabled = bEnableSlot_1
-			mbTexture_2.enabled = bEnableSlot_2 and (not bLightmap) and (not bUserColor)
-			mbTexture_3.enabled = bEnableSlot_3 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			mbTexture_4.enabled = bEnableSlot_4 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			mbTexture_5.enabled = bEnableSlot_5 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			mbTexture_6.enabled = bEnableSlot_6 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			mbTexture_7.enabled = bEnableSlot_7 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			mbTexture_8.enabled = bEnableSlot_8 and (not bWater) and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			cbEnableSlot_1.enabled = true
-			cbEnableSlot_2.enabled = (not bLightmap)
-			cbEnableSlot_3.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			cbEnableSlot_4.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			cbEnableSlot_5.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			cbEnableSlot_6.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			cbEnableSlot_7.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			cbEnableSlot_8.enabled = (not bWater) and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
-			btLoadShader.enabled = bNormalShader
-			dlShader.enabled = bNormalShader
+			if (version >= 4) then
+			(
+				cbEnableSlot_1.enabled = true
+				cbEnableSlot_2.enabled = (not bLightmap)
+				cbEnableSlot_3.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbEnableSlot_4.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbEnableSlot_5.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbEnableSlot_6.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbEnableSlot_7.enabled = (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbEnableSlot_8.enabled = (not bWater) and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
 
-			if bWater == true then
-			(
-				cbEnableSlot_1.text = "EnvDay......................."
-				cbEnableSlot_2.text = "EnvNight (opt)..............."
-				cbEnableSlot_3.text = "EnvDayUnder (opt)............"
-				cbEnableSlot_4.text = "EnvNightUnder (opt).........."
-				cbEnableSlot_5.text = "Bump........................."
-				cbEnableSlot_6.text = "Displace....................."
-				cbEnableSlot_7.text = "ColorAlpha (opt)............."
-				cbEnableSlot_8.text = "Unused......................."
-			)
-			else
-			(
-				if bLightmap == true then
+				mbTexture_1.enabled = bEnableSlot_1
+				mbTexture_2.enabled = bEnableSlot_2 and (not bLightmap) and (not bUserColor)
+				mbTexture_3.enabled = bEnableSlot_3 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				mbTexture_4.enabled = bEnableSlot_4 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				mbTexture_5.enabled = bEnableSlot_5 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				mbTexture_6.enabled = bEnableSlot_6 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				mbTexture_7.enabled = bEnableSlot_7 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				mbTexture_8.enabled = bEnableSlot_8 and (not bWater) and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+
+				cbTexGen_1.enabled = bNormalShader and bEnableSlot_1
+				cbTexGen_2.enabled = bNormalShader and bEnableSlot_2 and (not bLightmap) and (not bUserColor)
+				cbTexGen_3.enabled = bNormalShader and bEnableSlot_3 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbTexGen_4.enabled = bNormalShader and bEnableSlot_4 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbTexGen_5.enabled = bNormalShader and bEnableSlot_5 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbTexGen_6.enabled = bNormalShader and bEnableSlot_6 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbTexGen_7.enabled = bNormalShader and bEnableSlot_7 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+				cbTexGen_8.enabled = bNormalShader and bEnableSlot_8 and (not bLightmap) and (not bSpecular) and (not bUserColor) and (not bNormalShader)
+
+				btLoadShader.enabled = bNormalShader
+				dlShader.enabled = bNormalShader
+
+				if bWater == true then
 				(
-					cbEnableSlot_1.text = "Diffuse......................"
-					cbEnableSlot_2.text = "Unused......................."
-					cbEnableSlot_3.text = "Unused......................."
-					cbEnableSlot_4.text = "Unused......................."
-					cbEnableSlot_5.text = "Unused......................."
-					cbEnableSlot_6.text = "Unused......................."
-					cbEnableSlot_7.text = "Unused......................."
+					cbEnableSlot_1.text = "EnvDay......................."
+					cbEnableSlot_2.text = "EnvNight (opt)..............."
+					cbEnableSlot_3.text = "EnvDayUnder (opt)............"
+					cbEnableSlot_4.text = "EnvNightUnder (opt).........."
+					cbEnableSlot_5.text = "Bump........................."
+					cbEnableSlot_6.text = "Displace....................."
+					cbEnableSlot_7.text = "ColorAlpha (opt)............."
 					cbEnableSlot_8.text = "Unused......................."
 				)
 				else
 				(
-					if bUserColor == true then
+					if bLightmap == true then
 					(
 						cbEnableSlot_1.text = "Diffuse......................"
-						cbEnableSlot_2.text = "UsercolorMask................"
+						cbEnableSlot_2.text = "Unused......................."
 						cbEnableSlot_3.text = "Unused......................."
 						cbEnableSlot_4.text = "Unused......................."
 						cbEnableSlot_5.text = "Unused......................."
@@ -590,10 +605,10 @@ plugin material NelMaterial
 					)
 					else
 					(
-						if bSpecular == true then
+						if bUserColor == true then
 						(
 							cbEnableSlot_1.text = "Diffuse......................"
-							cbEnableSlot_2.text = "SpecularMap.................."
+							cbEnableSlot_2.text = "UsercolorMask................"
 							cbEnableSlot_3.text = "Unused......................."
 							cbEnableSlot_4.text = "Unused......................."
 							cbEnableSlot_5.text = "Unused......................."
@@ -603,35 +618,53 @@ plugin material NelMaterial
 						)
 						else
 						(
-							cbEnableSlot_1.text = "Texture 1...................."
-							cbEnableSlot_2.text = "Texture 2...................."
-							cbEnableSlot_3.text = "Texture 3...................."
-							cbEnableSlot_4.text = "Texture 4...................."
-							cbEnableSlot_5.text = "Texture 5...................."
-							cbEnableSlot_6.text = "Texture 6...................."
-							cbEnableSlot_7.text = "Texture 7...................."
-							cbEnableSlot_8.text = "Texture 8...................."
+							if bSpecular == true then
+							(
+								cbEnableSlot_1.text = "Diffuse......................"
+								cbEnableSlot_2.text = "SpecularMap.................."
+								cbEnableSlot_3.text = "Unused......................."
+								cbEnableSlot_4.text = "Unused......................."
+								cbEnableSlot_5.text = "Unused......................."
+								cbEnableSlot_6.text = "Unused......................."
+								cbEnableSlot_7.text = "Unused......................."
+								cbEnableSlot_8.text = "Unused......................."
+							)
+							else
+							(
+								cbEnableSlot_1.text = "Texture 1...................."
+								cbEnableSlot_2.text = "Texture 2...................."
+								cbEnableSlot_3.text = "Texture 3...................."
+								cbEnableSlot_4.text = "Texture 4...................."
+								cbEnableSlot_5.text = "Texture 5...................."
+								cbEnableSlot_6.text = "Texture 6...................."
+								cbEnableSlot_7.text = "Texture 7...................."
+								cbEnableSlot_8.text = "Texture 8...................."
+							)
 						)
 					)
 				)
-			)
 
-			if (update == true) then
-			(
-				dlShader.selection = iShader
-			)
-			else
-			(
-				iShader = dlShader.selection
-			)
+				if (update == true) then
+				(
+					dlShader.selection = iShader
+				)
+				else
+				(
+					iShader = dlShader.selection
+				)
 
-			-- Update texture name
-			updateTextureName ()
+				-- Update texture name
+				updateTextureName ()
+			)
 		)
 
 		on NelTexture open do
 		(
 			updateUI false
+		)
+
+		on NelTexture close do 
+		(
 		)
 
 		on cbEnableSlot_1 changed newState do
@@ -682,7 +715,6 @@ plugin material NelMaterial
 		on btLoadShader pressed do
 		(
 			loadShader dlShader.selection
-			messagebox ("Shader \""+dlShader.items[dlShader.selection]+"\" loaded.")
 		)
 	)
 
@@ -716,55 +748,58 @@ plugin material NelMaterial
 
 		fn updateUI update =
 		(
-			-- update droplist
-			if update == true then
+			if (version >= 4) then
 			(
-				dlRgbOperation.selection = iRgbOperation_1
-				dlRgbBlendSource.selection = iRgbBlendSource_1
-				dlRgbArg0.selection = iRgbArg0_1
-				dlRgbArg1.selection = iRgbArg1_1
-				dlRgbArg0Operand.selection = iRgbArg0Operand_1
-				dlRgbArg1Operand.selection = iRgbArg1Operand_1
-				dlAlphaOperation.selection = iAlphaOperation_1
-				dlAlphaBlendSource.selection = iAlphaBlendSource_1
-				dlAlphaArg0.selection = iAlphaArg0_1 
-				dlAlphaArg1.selection = iAlphaArg1_1 
-				dlAlphaArg0Operand.selection = iAlphaArg0Operand_1
-				dlAlphaArg1Operand.selection = iAlphaArg1Operand_1
-				dlTextureShader.selection = iTextureShader_1 
-			)
-			else
-			(
-				iRgbOperation_1 = dlRgbOperation.selection
-				iRgbBlendSource_1 = dlRgbBlendSource.selection
-				iRgbArg0_1 = dlRgbArg0.selection
-				iRgbArg1_1 = dlRgbArg1.selection
-				iRgbArg0Operand_1 = dlRgbArg0Operand.selection
-				iRgbArg1Operand_1 = dlRgbArg1Operand.selection
-				iAlphaOperation_1 = dlAlphaOperation.selection
-				iAlphaBlendSource_1 = dlAlphaBlendSource.selection
-				iAlphaArg0_1 = dlAlphaArg0.selection
-				iAlphaArg1_1 = dlAlphaArg1.selection
-				iAlphaArg0Operand_1 = dlAlphaArg0Operand.selection
-				iAlphaArg1Operand_1 = dlAlphaArg1Operand.selection
-				iTextureShader_1 = dlTextureShader.selection
-			)
+				-- update droplist
+				if update == true then
+				(
+					dlRgbOperation.selection = iRgbOperation_1
+					dlRgbBlendSource.selection = iRgbBlendSource_1
+					dlRgbArg0.selection = iRgbArg0_1
+					dlRgbArg1.selection = iRgbArg1_1
+					dlRgbArg0Operand.selection = iRgbArg0Operand_1
+					dlRgbArg1Operand.selection = iRgbArg1Operand_1
+					dlAlphaOperation.selection = iAlphaOperation_1
+					dlAlphaBlendSource.selection = iAlphaBlendSource_1
+					dlAlphaArg0.selection = iAlphaArg0_1 
+					dlAlphaArg1.selection = iAlphaArg1_1 
+					dlAlphaArg0Operand.selection = iAlphaArg0Operand_1
+					dlAlphaArg1Operand.selection = iAlphaArg1Operand_1
+					dlTextureShader.selection = iTextureShader_1 
+				)
+				else
+				(
+					iRgbOperation_1 = dlRgbOperation.selection
+					iRgbBlendSource_1 = dlRgbBlendSource.selection
+					iRgbArg0_1 = dlRgbArg0.selection
+					iRgbArg1_1 = dlRgbArg1.selection
+					iRgbArg0Operand_1 = dlRgbArg0Operand.selection
+					iRgbArg1Operand_1 = dlRgbArg1Operand.selection
+					iAlphaOperation_1 = dlAlphaOperation.selection
+					iAlphaBlendSource_1 = dlAlphaBlendSource.selection
+					iAlphaArg0_1 = dlAlphaArg0.selection
+					iAlphaArg1_1 = dlAlphaArg1.selection
+					iAlphaArg0Operand_1 = dlAlphaArg0Operand.selection
+					iAlphaArg1Operand_1 = dlAlphaArg1Operand.selection
+					iTextureShader_1 = dlTextureShader.selection
+				)
 
-			cpConstant.enabled = bEnableSlot_1 and bNormalShader
-			dlRgbOperation.enabled = bEnableSlot_1 and bNormalShader
-			dlRgbBlendSource.enabled = (bEnableSlot_1 == true) and (iRgbOperation_1 == 5) and bNormalShader
-			dlRgbArg0.enabled = bEnableSlot_1 and bNormalShader
-			dlRgbArg1.enabled = bEnableSlot_1 and bNormalShader
-			dlRgbArg0Operand.enabled = bEnableSlot_1 and bNormalShader
-			dlRgbArg1Operand.enabled = bEnableSlot_1 and bNormalShader
-			dlAlphaOperation.enabled = bEnableSlot_1 and bNormalShader
-			dlAlphaBlendSource.enabled = (bEnableSlot_1 == true) and (iAlphaBlendSource_1 == 5) and bNormalShader
-			dlAlphaArg0.enabled = bEnableSlot_1 and bNormalShader
-			dlAlphaArg1.enabled = bEnableSlot_1 and bNormalShader
-			dlAlphaArg0Operand.enabled = bEnableSlot_1 and bNormalShader
-			dlAlphaArg1Operand.enabled = bEnableSlot_1 and bNormalShader
-			dlTextureShader.enabled = bEnableSlot_1 and bNormalShader
-			sdConstantAlpha.enabled = bEnableSlot_1 and bNormalShader
+				cpConstant.enabled = bEnableSlot_1 and bNormalShader
+				dlRgbOperation.enabled = bEnableSlot_1 and bNormalShader
+				dlRgbBlendSource.enabled = (bEnableSlot_1 == true) and (iRgbOperation_1 == 5) and bNormalShader
+				dlRgbArg0.enabled = bEnableSlot_1 and bNormalShader
+				dlRgbArg1.enabled = bEnableSlot_1 and bNormalShader
+				dlRgbArg0Operand.enabled = bEnableSlot_1 and bNormalShader
+				dlRgbArg1Operand.enabled = bEnableSlot_1 and bNormalShader
+				dlAlphaOperation.enabled = bEnableSlot_1 and bNormalShader
+				dlAlphaBlendSource.enabled = (bEnableSlot_1 == true) and (iAlphaBlendSource_1 == 5) and bNormalShader
+				dlAlphaArg0.enabled = bEnableSlot_1 and bNormalShader
+				dlAlphaArg1.enabled = bEnableSlot_1 and bNormalShader
+				dlAlphaArg0Operand.enabled = bEnableSlot_1 and bNormalShader
+				dlAlphaArg1Operand.enabled = bEnableSlot_1 and bNormalShader
+				dlTextureShader.enabled = bEnableSlot_1 and bNormalShader
+				sdConstantAlpha.enabled = bEnableSlot_1 and bNormalShader
+			)
 		)
 
 		on NelMultitextureSlot1 open do
@@ -873,55 +908,58 @@ plugin material NelMaterial
 
 		fn updateUI update =
 		(
-			-- update droplist
-			if update == true then
+			if (version >= 4) then
 			(
-				dlRgbOperation.selection = iRgbOperation_2
-				dlRgbBlendSource.selection = iRgbBlendSource_2
-				dlRgbArg0.selection = iRgbArg0_2
-				dlRgbArg1.selection = iRgbArg1_2
-				dlRgbArg0Operand.selection = iRgbArg0Operand_2
-				dlRgbArg1Operand.selection = iRgbArg1Operand_2
-				dlAlphaOperation.selection = iAlphaOperation_2
-				dlAlphaBlendSource.selection = iAlphaBlendSource_2
-				dlAlphaArg0.selection = iAlphaArg0_2 
-				dlAlphaArg1.selection = iAlphaArg1_2 
-				dlAlphaArg0Operand.selection = iAlphaArg0Operand_2
-				dlAlphaArg1Operand.selection = iAlphaArg1Operand_2
-				dlTextureShader.selection = iTextureShader_2 
-			)
-			else
-			(
-				iRgbOperation_2 = dlRgbOperation.selection
-				iRgbBlendSource_2 = dlRgbBlendSource.selection
-				iRgbArg0_2 = dlRgbArg0.selection
-				iRgbArg1_2 = dlRgbArg1.selection
-				iRgbArg0Operand_2 = dlRgbArg0Operand.selection
-				iRgbArg1Operand_2 = dlRgbArg1Operand.selection
-				iAlphaOperation_2 = dlAlphaOperation.selection
-				iAlphaBlendSource_2 = dlAlphaBlendSource.selection
-				iAlphaArg0_2 = dlAlphaArg0.selection
-				iAlphaArg1_2 = dlAlphaArg1.selection
-				iAlphaArg0Operand_2 = dlAlphaArg0Operand.selection
-				iAlphaArg1Operand_2 = dlAlphaArg1Operand.selection
-				iTextureShader_2 = dlTextureShader.selection
-			)
+				-- update droplist
+				if update == true then
+				(
+					dlRgbOperation.selection = iRgbOperation_2
+					dlRgbBlendSource.selection = iRgbBlendSource_2
+					dlRgbArg0.selection = iRgbArg0_2
+					dlRgbArg1.selection = iRgbArg1_2
+					dlRgbArg0Operand.selection = iRgbArg0Operand_2
+					dlRgbArg1Operand.selection = iRgbArg1Operand_2
+					dlAlphaOperation.selection = iAlphaOperation_2
+					dlAlphaBlendSource.selection = iAlphaBlendSource_2
+					dlAlphaArg0.selection = iAlphaArg0_2 
+					dlAlphaArg1.selection = iAlphaArg1_2 
+					dlAlphaArg0Operand.selection = iAlphaArg0Operand_2
+					dlAlphaArg1Operand.selection = iAlphaArg1Operand_2
+					dlTextureShader.selection = iTextureShader_2 
+				)
+				else
+				(
+					iRgbOperation_2 = dlRgbOperation.selection
+					iRgbBlendSource_2 = dlRgbBlendSource.selection
+					iRgbArg0_2 = dlRgbArg0.selection
+					iRgbArg1_2 = dlRgbArg1.selection
+					iRgbArg0Operand_2 = dlRgbArg0Operand.selection
+					iRgbArg1Operand_2 = dlRgbArg1Operand.selection
+					iAlphaOperation_2 = dlAlphaOperation.selection
+					iAlphaBlendSource_2 = dlAlphaBlendSource.selection
+					iAlphaArg0_2 = dlAlphaArg0.selection
+					iAlphaArg1_2 = dlAlphaArg1.selection
+					iAlphaArg0Operand_2 = dlAlphaArg0Operand.selection
+					iAlphaArg1Operand_2 = dlAlphaArg1Operand.selection
+					iTextureShader_2 = dlTextureShader.selection
+				)
 
-			cpConstant.enabled = bEnableSlot_2 and bNormalShader
-			dlRgbOperation.enabled = bEnableSlot_2 and bNormalShader
-			dlRgbBlendSource.enabled = (bEnableSlot_2 == true) and (iRgbOperation_2 == 5) and bNormalShader
-			dlRgbArg0.enabled = bEnableSlot_2 and bNormalShader
-			dlRgbArg1.enabled = bEnableSlot_2 and bNormalShader
-			dlRgbArg0Operand.enabled = bEnableSlot_2 and bNormalShader
-			dlRgbArg1Operand.enabled = bEnableSlot_2 and bNormalShader
-			dlAlphaOperation.enabled = bEnableSlot_2 and bNormalShader
-			dlAlphaBlendSource.enabled = (bEnableSlot_2 == true) and (iAlphaBlendSource_2 == 5) and bNormalShader
-			dlAlphaArg0.enabled = bEnableSlot_2 and bNormalShader
-			dlAlphaArg1.enabled = bEnableSlot_2 and bNormalShader
-			dlAlphaArg0Operand.enabled = bEnableSlot_2 and bNormalShader
-			dlAlphaArg1Operand.enabled = bEnableSlot_2 and bNormalShader
-			dlTextureShader.enabled = bEnableSlot_2 and bNormalShader
-			sdConstantAlpha.enabled = bEnableSlot_2 and bNormalShader
+				cpConstant.enabled = bEnableSlot_2 and bNormalShader
+				dlRgbOperation.enabled = bEnableSlot_2 and bNormalShader
+				dlRgbBlendSource.enabled = (bEnableSlot_2 == true) and (iRgbOperation_2 == 5) and bNormalShader
+				dlRgbArg0.enabled = bEnableSlot_2 and bNormalShader
+				dlRgbArg1.enabled = bEnableSlot_2 and bNormalShader
+				dlRgbArg0Operand.enabled = bEnableSlot_2 and bNormalShader
+				dlRgbArg1Operand.enabled = bEnableSlot_2 and bNormalShader
+				dlAlphaOperation.enabled = bEnableSlot_2 and bNormalShader
+				dlAlphaBlendSource.enabled = (bEnableSlot_2 == true) and (iAlphaBlendSource_2 == 5) and bNormalShader
+				dlAlphaArg0.enabled = bEnableSlot_2 and bNormalShader
+				dlAlphaArg1.enabled = bEnableSlot_2 and bNormalShader
+				dlAlphaArg0Operand.enabled = bEnableSlot_2 and bNormalShader
+				dlAlphaArg1Operand.enabled = bEnableSlot_2 and bNormalShader
+				dlTextureShader.enabled = bEnableSlot_2 and bNormalShader
+				sdConstantAlpha.enabled = bEnableSlot_2 and bNormalShader
+			)
 		)
 
 		on NelMultitextureSlot2 open do
@@ -1030,55 +1068,58 @@ plugin material NelMaterial
 
 		fn updateUI update =
 		(
-			-- update droplist
-			if update == true then
+			if (version >= 4) then
 			(
-				dlRgbOperation.selection = iRgbOperation_3
-				dlRgbBlendSource.selection = iRgbBlendSource_3
-				dlRgbArg0.selection = iRgbArg0_3
-				dlRgbArg1.selection = iRgbArg1_3
-				dlRgbArg0Operand.selection = iRgbArg0Operand_3
-				dlRgbArg1Operand.selection = iRgbArg1Operand_3
-				dlAlphaOperation.selection = iAlphaOperation_3
-				dlAlphaBlendSource.selection = iAlphaBlendSource_3
-				dlAlphaArg0.selection = iAlphaArg0_3 
-				dlAlphaArg1.selection = iAlphaArg1_3 
-				dlAlphaArg0Operand.selection = iAlphaArg0Operand_3
-				dlAlphaArg1Operand.selection = iAlphaArg1Operand_3
-				dlTextureShader.selection = iTextureShader_3 
-			)
-			else
-			(
-				iRgbOperation_3 = dlRgbOperation.selection
-				iRgbBlendSource_3 = dlRgbBlendSource.selection
-				iRgbArg0_3 = dlRgbArg0.selection
-				iRgbArg1_3 = dlRgbArg1.selection
-				iRgbArg0Operand_3 = dlRgbArg0Operand.selection
-				iRgbArg1Operand_3 = dlRgbArg1Operand.selection
-				iAlphaOperation_3 = dlAlphaOperation.selection
-				iAlphaBlendSource_3 = dlAlphaBlendSource.selection
-				iAlphaArg0_3 = dlAlphaArg0.selection
-				iAlphaArg1_3 = dlAlphaArg1.selection
-				iAlphaArg0Operand_3 = dlAlphaArg0Operand.selection
-				iAlphaArg1Operand_3 = dlAlphaArg1Operand.selection
-				iTextureShader_3 = dlTextureShader.selection
-			)
+				-- update droplist
+				if update == true then
+				(
+					dlRgbOperation.selection = iRgbOperation_3
+					dlRgbBlendSource.selection = iRgbBlendSource_3
+					dlRgbArg0.selection = iRgbArg0_3
+					dlRgbArg1.selection = iRgbArg1_3
+					dlRgbArg0Operand.selection = iRgbArg0Operand_3
+					dlRgbArg1Operand.selection = iRgbArg1Operand_3
+					dlAlphaOperation.selection = iAlphaOperation_3
+					dlAlphaBlendSource.selection = iAlphaBlendSource_3
+					dlAlphaArg0.selection = iAlphaArg0_3 
+					dlAlphaArg1.selection = iAlphaArg1_3 
+					dlAlphaArg0Operand.selection = iAlphaArg0Operand_3
+					dlAlphaArg1Operand.selection = iAlphaArg1Operand_3
+					dlTextureShader.selection = iTextureShader_3 
+				)
+				else
+				(
+					iRgbOperation_3 = dlRgbOperation.selection
+					iRgbBlendSource_3 = dlRgbBlendSource.selection
+					iRgbArg0_3 = dlRgbArg0.selection
+					iRgbArg1_3 = dlRgbArg1.selection
+					iRgbArg0Operand_3 = dlRgbArg0Operand.selection
+					iRgbArg1Operand_3 = dlRgbArg1Operand.selection
+					iAlphaOperation_3 = dlAlphaOperation.selection
+					iAlphaBlendSource_3 = dlAlphaBlendSource.selection
+					iAlphaArg0_3 = dlAlphaArg0.selection
+					iAlphaArg1_3 = dlAlphaArg1.selection
+					iAlphaArg0Operand_3 = dlAlphaArg0Operand.selection
+					iAlphaArg1Operand_3 = dlAlphaArg1Operand.selection
+					iTextureShader_3 = dlTextureShader.selection
+				)
 
-			cpConstant.enabled = bEnableSlot_3 and bNormalShader
-			dlRgbOperation.enabled = bEnableSlot_3 and bNormalShader
-			dlRgbBlendSource.enabled = (bEnableSlot_3 == true) and (iRgbOperation_3 == 5) and bNormalShader
-			dlRgbArg0.enabled = bEnableSlot_3 and bNormalShader
-			dlRgbArg1.enabled = bEnableSlot_3 and bNormalShader
-			dlRgbArg0Operand.enabled = bEnableSlot_3 and bNormalShader
-			dlRgbArg1Operand.enabled = bEnableSlot_3 and bNormalShader
-			dlAlphaOperation.enabled = bEnableSlot_3 and bNormalShader
-			dlAlphaBlendSource.enabled = (bEnableSlot_3 == true) and (iAlphaBlendSource_3 == 5) and bNormalShader
-			dlAlphaArg0.enabled = bEnableSlot_3 and bNormalShader
-			dlAlphaArg1.enabled = bEnableSlot_3 and bNormalShader
-			dlAlphaArg0Operand.enabled = bEnableSlot_3 and bNormalShader
-			dlAlphaArg1Operand.enabled = bEnableSlot_3 and bNormalShader
-			dlTextureShader.enabled = bEnableSlot_3 and bNormalShader
-			sdConstantAlpha.enabled = bEnableSlot_3 and bNormalShader
+				cpConstant.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbOperation.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbBlendSource.enabled = (bEnableSlot_3 == true) and (iRgbOperation_3 == 5) and bNormalShader
+				dlRgbArg0.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbArg1.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbArg0Operand.enabled = bEnableSlot_3 and bNormalShader
+				dlRgbArg1Operand.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaOperation.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaBlendSource.enabled = (bEnableSlot_3 == true) and (iAlphaBlendSource_3 == 5) and bNormalShader
+				dlAlphaArg0.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaArg1.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaArg0Operand.enabled = bEnableSlot_3 and bNormalShader
+				dlAlphaArg1Operand.enabled = bEnableSlot_3 and bNormalShader
+				dlTextureShader.enabled = bEnableSlot_3 and bNormalShader
+				sdConstantAlpha.enabled = bEnableSlot_3 and bNormalShader
+			)
 		)
 
 		on NelMultitextureSlot3 open do
@@ -1187,55 +1228,58 @@ plugin material NelMaterial
 
 		fn updateUI update =
 		(
-			-- update droplist
-			if update == true then
+			if (version >= 4) then
 			(
-				dlRgbOperation.selection = iRgbOperation_4
-				dlRgbBlendSource.selection = iRgbBlendSource_4
-				dlRgbArg0.selection = iRgbArg0_4
-				dlRgbArg1.selection = iRgbArg1_4
-				dlRgbArg0Operand.selection = iRgbArg0Operand_4
-				dlRgbArg1Operand.selection = iRgbArg1Operand_4
-				dlAlphaOperation.selection = iAlphaOperation_4
-				dlAlphaBlendSource.selection = iAlphaBlendSource_4
-				dlAlphaArg0.selection = iAlphaArg0_4 
-				dlAlphaArg1.selection = iAlphaArg1_4 
-				dlAlphaArg0Operand.selection = iAlphaArg0Operand_4
-				dlAlphaArg1Operand.selection = iAlphaArg1Operand_4
-				dlTextureShader.selection = iTextureShader_4 
-			)
-			else
-			(
-				iRgbOperation_4 = dlRgbOperation.selection
-				iRgbBlendSource_4 = dlRgbBlendSource.selection
-				iRgbArg0_4 = dlRgbArg0.selection
-				iRgbArg1_4 = dlRgbArg1.selection
-				iRgbArg0Operand_4 = dlRgbArg0Operand.selection
-				iRgbArg1Operand_4 = dlRgbArg1Operand.selection
-				iAlphaOperation_4 = dlAlphaOperation.selection
-				iAlphaBlendSource_4 = dlAlphaBlendSource.selection
-				iAlphaArg0_4 = dlAlphaArg0.selection
-				iAlphaArg1_4 = dlAlphaArg1.selection
-				iAlphaArg0Operand_4 = dlAlphaArg0Operand.selection
-				iAlphaArg1Operand_4 = dlAlphaArg1Operand.selection
-				iTextureShader_4 = dlTextureShader.selection
-			)
+				-- update droplist
+				if update == true then
+				(
+					dlRgbOperation.selection = iRgbOperation_4
+					dlRgbBlendSource.selection = iRgbBlendSource_4
+					dlRgbArg0.selection = iRgbArg0_4
+					dlRgbArg1.selection = iRgbArg1_4
+					dlRgbArg0Operand.selection = iRgbArg0Operand_4
+					dlRgbArg1Operand.selection = iRgbArg1Operand_4
+					dlAlphaOperation.selection = iAlphaOperation_4
+					dlAlphaBlendSource.selection = iAlphaBlendSource_4
+					dlAlphaArg0.selection = iAlphaArg0_4 
+					dlAlphaArg1.selection = iAlphaArg1_4 
+					dlAlphaArg0Operand.selection = iAlphaArg0Operand_4
+					dlAlphaArg1Operand.selection = iAlphaArg1Operand_4
+					dlTextureShader.selection = iTextureShader_4 
+				)
+				else
+				(
+					iRgbOperation_4 = dlRgbOperation.selection
+					iRgbBlendSource_4 = dlRgbBlendSource.selection
+					iRgbArg0_4 = dlRgbArg0.selection
+					iRgbArg1_4 = dlRgbArg1.selection
+					iRgbArg0Operand_4 = dlRgbArg0Operand.selection
+					iRgbArg1Operand_4 = dlRgbArg1Operand.selection
+					iAlphaOperation_4 = dlAlphaOperation.selection
+					iAlphaBlendSource_4 = dlAlphaBlendSource.selection
+					iAlphaArg0_4 = dlAlphaArg0.selection
+					iAlphaArg1_4 = dlAlphaArg1.selection
+					iAlphaArg0Operand_4 = dlAlphaArg0Operand.selection
+					iAlphaArg1Operand_4 = dlAlphaArg1Operand.selection
+					iTextureShader_4 = dlTextureShader.selection
+				)
 
-			cpConstant.enabled = bEnableSlot_4 and bNormalShader
-			dlRgbOperation.enabled = bEnableSlot_4 and bNormalShader
-			dlRgbBlendSource.enabled = (bEnableSlot_4 == true) and (iRgbOperation_4 == 5) and bNormalShader
-			dlRgbArg0.enabled = bEnableSlot_4 and bNormalShader
-			dlRgbArg1.enabled = bEnableSlot_4 and bNormalShader
-			dlRgbArg0Operand.enabled = bEnableSlot_4 and bNormalShader
-			dlRgbArg1Operand.enabled = bEnableSlot_4 and bNormalShader
-			dlAlphaOperation.enabled = bEnableSlot_4 and bNormalShader
-			dlAlphaBlendSource.enabled = (bEnableSlot_4 == true) and (iAlphaBlendSource_4 == 5) and bNormalShader
-			dlAlphaArg0.enabled = bEnableSlot_4 and bNormalShader
-			dlAlphaArg1.enabled = bEnableSlot_4 and bNormalShader
-			dlAlphaArg0Operand.enabled = bEnableSlot_4 and bNormalShader
-			dlAlphaArg1Operand.enabled = bEnableSlot_4 and bNormalShader
-			dlTextureShader.enabled = bEnableSlot_4 and bNormalShader
-			sdConstantAlpha.enabled = bEnableSlot_4 and bNormalShader
+				cpConstant.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbOperation.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbBlendSource.enabled = (bEnableSlot_4 == true) and (iRgbOperation_4 == 5) and bNormalShader
+				dlRgbArg0.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbArg1.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbArg0Operand.enabled = bEnableSlot_4 and bNormalShader
+				dlRgbArg1Operand.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaOperation.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaBlendSource.enabled = (bEnableSlot_4 == true) and (iAlphaBlendSource_4 == 5) and bNormalShader
+				dlAlphaArg0.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaArg1.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaArg0Operand.enabled = bEnableSlot_4 and bNormalShader
+				dlAlphaArg1Operand.enabled = bEnableSlot_4 and bNormalShader
+				dlTextureShader.enabled = bEnableSlot_4 and bNormalShader
+				sdConstantAlpha.enabled = bEnableSlot_4 and bNormalShader
+			)
 		)
 
 		on NelMultitextureSlot4 open do
@@ -1344,55 +1388,58 @@ plugin material NelMaterial
 
 		fn updateUI update =
 		(
-			-- update droplist
-			if update == true then
+			if (version >= 4) then
 			(
-				dlRgbOperation.selection = iRgbOperation_5
-				dlRgbBlendSource.selection = iRgbBlendSource_5
-				dlRgbArg0.selection = iRgbArg0_5
-				dlRgbArg1.selection = iRgbArg1_5
-				dlRgbArg0Operand.selection = iRgbArg0Operand_5
-				dlRgbArg1Operand.selection = iRgbArg1Operand_5
-				dlAlphaOperation.selection = iAlphaOperation_5
-				dlAlphaBlendSource.selection = iAlphaBlendSource_5
-				dlAlphaArg0.selection = iAlphaArg0_5 
-				dlAlphaArg1.selection = iAlphaArg1_5 
-				dlAlphaArg0Operand.selection = iAlphaArg0Operand_5
-				dlAlphaArg1Operand.selection = iAlphaArg1Operand_5
-				dlTextureShader.selection = iTextureShader_5 
-			)
-			else
-			(
-				iRgbOperation_5 = dlRgbOperation.selection
-				iRgbBlendSource_5 = dlRgbBlendSource.selection
-				iRgbArg0_5 = dlRgbArg0.selection
-				iRgbArg1_5 = dlRgbArg1.selection
-				iRgbArg0Operand_5 = dlRgbArg0Operand.selection
-				iRgbArg1Operand_5 = dlRgbArg1Operand.selection
-				iAlphaOperation_5 = dlAlphaOperation.selection
-				iAlphaBlendSource_5 = dlAlphaBlendSource.selection
-				iAlphaArg0_5 = dlAlphaArg0.selection
-				iAlphaArg1_5 = dlAlphaArg1.selection
-				iAlphaArg0Operand_5 = dlAlphaArg0Operand.selection
-				iAlphaArg1Operand_5 = dlAlphaArg1Operand.selection
-				iTextureShader_5 = dlTextureShader.selection
-			)
+				-- update droplist
+				if update == true then
+				(
+					dlRgbOperation.selection = iRgbOperation_5
+					dlRgbBlendSource.selection = iRgbBlendSource_5
+					dlRgbArg0.selection = iRgbArg0_5
+					dlRgbArg1.selection = iRgbArg1_5
+					dlRgbArg0Operand.selection = iRgbArg0Operand_5
+					dlRgbArg1Operand.selection = iRgbArg1Operand_5
+					dlAlphaOperation.selection = iAlphaOperation_5
+					dlAlphaBlendSource.selection = iAlphaBlendSource_5
+					dlAlphaArg0.selection = iAlphaArg0_5 
+					dlAlphaArg1.selection = iAlphaArg1_5 
+					dlAlphaArg0Operand.selection = iAlphaArg0Operand_5
+					dlAlphaArg1Operand.selection = iAlphaArg1Operand_5
+					dlTextureShader.selection = iTextureShader_5 
+				)
+				else
+				(
+					iRgbOperation_5 = dlRgbOperation.selection
+					iRgbBlendSource_5 = dlRgbBlendSource.selection
+					iRgbArg0_5 = dlRgbArg0.selection
+					iRgbArg1_5 = dlRgbArg1.selection
+					iRgbArg0Operand_5 = dlRgbArg0Operand.selection
+					iRgbArg1Operand_5 = dlRgbArg1Operand.selection
+					iAlphaOperation_5 = dlAlphaOperation.selection
+					iAlphaBlendSource_5 = dlAlphaBlendSource.selection
+					iAlphaArg0_5 = dlAlphaArg0.selection
+					iAlphaArg1_5 = dlAlphaArg1.selection
+					iAlphaArg0Operand_5 = dlAlphaArg0Operand.selection
+					iAlphaArg1Operand_5 = dlAlphaArg1Operand.selection
+					iTextureShader_5 = dlTextureShader.selection
+				)
 
-			cpConstant.enabled = bEnableSlot_5 and bNormalShader
-			dlRgbOperation.enabled = bEnableSlot_5 and bNormalShader
-			dlRgbBlendSource.enabled = (bEnableSlot_5 == true) and (iRgbOperation_5 == 5) and bNormalShader
-			dlRgbArg0.enabled = bEnableSlot_5 and bNormalShader
-			dlRgbArg1.enabled = bEnableSlot_5 and bNormalShader
-			dlRgbArg0Operand.enabled = bEnableSlot_5 and bNormalShader
-			dlRgbArg1Operand.enabled = bEnableSlot_5 and bNormalShader
-			dlAlphaOperation.enabled = bEnableSlot_5 and bNormalShader
-			dlAlphaBlendSource.enabled = (bEnableSlot_5 == true) and (iAlphaBlendSource_5 == 5) and bNormalShader
-			dlAlphaArg0.enabled = bEnableSlot_5 and bNormalShader
-			dlAlphaArg1.enabled = bEnableSlot_5 and bNormalShader
-			dlAlphaArg0Operand.enabled = bEnableSlot_5 and bNormalShader
-			dlAlphaArg1Operand.enabled = bEnableSlot_5 and bNormalShader
-			dlTextureShader.enabled = bEnableSlot_5 and bNormalShader
-			sdConstantAlpha.enabled = bEnableSlot_5 and bNormalShader
+				cpConstant.enabled = bEnableSlot_5 and bNormalShader
+				dlRgbOperation.enabled = bEnableSlot_5 and bNormalShader
+				dlRgbBlendSource.enabled = (bEnableSlot_5 == true) and (iRgbOperation_5 == 5) and bNormalShader
+				dlRgbArg0.enabled = bEnableSlot_5 and bNormalShader
+				dlRgbArg1.enabled = bEnableSlot_5 and bNormalShader
+				dlRgbArg0Operand.enabled = bEnableSlot_5 and bNormalShader
+				dlRgbArg1Operand.enabled = bEnableSlot_5 and bNormalShader
+				dlAlphaOperation.enabled = bEnableSlot_5 and bNormalShader
+				dlAlphaBlendSource.enabled = (bEnableSlot_5 == true) and (iAlphaBlendSource_5 == 5) and bNormalShader
+				dlAlphaArg0.enabled = bEnableSlot_5 and bNormalShader
+				dlAlphaArg1.enabled = bEnableSlot_5 and bNormalShader
+				dlAlphaArg0Operand.enabled = bEnableSlot_5 and bNormalShader
+				dlAlphaArg1Operand.enabled = bEnableSlot_5 and bNormalShader
+				dlTextureShader.enabled = bEnableSlot_5 and bNormalShader
+				sdConstantAlpha.enabled = bEnableSlot_5 and bNormalShader
+			)
 		)
 
 		on NelMultitextureSlot5 open do
@@ -1501,55 +1548,58 @@ plugin material NelMaterial
 
 		fn updateUI update =
 		(
-			-- update droplist
-			if update == true then
+			if (version >= 4) then
 			(
-				dlRgbOperation.selection = iRgbOperation_6
-				dlRgbBlendSource.selection = iRgbBlendSource_6
-				dlRgbArg0.selection = iRgbArg0_6
-				dlRgbArg1.selection = iRgbArg1_6
-				dlRgbArg0Operand.selection = iRgbArg0Operand_6
-				dlRgbArg1Operand.selection = iRgbArg1Operand_6
-				dlAlphaOperation.selection = iAlphaOperation_6
-				dlAlphaBlendSource.selection = iAlphaBlendSource_6
-				dlAlphaArg0.selection = iAlphaArg0_6 
-				dlAlphaArg1.selection = iAlphaArg1_6 
-				dlAlphaArg0Operand.selection = iAlphaArg0Operand_6
-				dlAlphaArg1Operand.selection = iAlphaArg1Operand_6
-				dlTextureShader.selection = iTextureShader_6 
-			)
-			else
-			(
-				iRgbOperation_6 = dlRgbOperation.selection
-				iRgbBlendSource_6 = dlRgbBlendSource.selection
-				iRgbArg0_6 = dlRgbArg0.selection
-				iRgbArg1_6 = dlRgbArg1.selection
-				iRgbArg0Operand_6 = dlRgbArg0Operand.selection
-				iRgbArg1Operand_6 = dlRgbArg1Operand.selection
-				iAlphaOperation_6 = dlAlphaOperation.selection
-				iAlphaBlendSource_6 = dlAlphaBlendSource.selection
-				iAlphaArg0_6 = dlAlphaArg0.selection
-				iAlphaArg1_6 = dlAlphaArg1.selection
-				iAlphaArg0Operand_6 = dlAlphaArg0Operand.selection
-				iAlphaArg1Operand_6 = dlAlphaArg1Operand.selection
-				iTextureShader_6 = dlTextureShader.selection
-			)
+				-- update droplist
+				if update == true then
+				(
+					dlRgbOperation.selection = iRgbOperation_6
+					dlRgbBlendSource.selection = iRgbBlendSource_6
+					dlRgbArg0.selection = iRgbArg0_6
+					dlRgbArg1.selection = iRgbArg1_6
+					dlRgbArg0Operand.selection = iRgbArg0Operand_6
+					dlRgbArg1Operand.selection = iRgbArg1Operand_6
+					dlAlphaOperation.selection = iAlphaOperation_6
+					dlAlphaBlendSource.selection = iAlphaBlendSource_6
+					dlAlphaArg0.selection = iAlphaArg0_6 
+					dlAlphaArg1.selection = iAlphaArg1_6 
+					dlAlphaArg0Operand.selection = iAlphaArg0Operand_6
+					dlAlphaArg1Operand.selection = iAlphaArg1Operand_6
+					dlTextureShader.selection = iTextureShader_6 
+				)
+				else
+				(
+					iRgbOperation_6 = dlRgbOperation.selection
+					iRgbBlendSource_6 = dlRgbBlendSource.selection
+					iRgbArg0_6 = dlRgbArg0.selection
+					iRgbArg1_6 = dlRgbArg1.selection
+					iRgbArg0Operand_6 = dlRgbArg0Operand.selection
+					iRgbArg1Operand_6 = dlRgbArg1Operand.selection
+					iAlphaOperation_6 = dlAlphaOperation.selection
+					iAlphaBlendSource_6 = dlAlphaBlendSource.selection
+					iAlphaArg0_6 = dlAlphaArg0.selection
+					iAlphaArg1_6 = dlAlphaArg1.selection
+					iAlphaArg0Operand_6 = dlAlphaArg0Operand.selection
+					iAlphaArg1Operand_6 = dlAlphaArg1Operand.selection
+					iTextureShader_6 = dlTextureShader.selection
+				)
 
-			cpConstant.enabled = bEnableSlot_6 and bNormalShader
-			dlRgbOperation.enabled = bEnableSlot_6 and bNormalShader
-			dlRgbBlendSource.enabled = (bEnableSlot_6 == true) and (iRgbOperation_6 == 5) and bNormalShader
-			dlRgbArg0.enabled = bEnableSlot_6 and bNormalShader
-			dlRgbArg1.enabled = bEnableSlot_6 and bNormalShader
-			dlRgbArg0Operand.enabled = bEnableSlot_6 and bNormalShader
-			dlRgbArg1Operand.enabled = bEnableSlot_6 and bNormalShader
-			dlAlphaOperation.enabled = bEnableSlot_6 and bNormalShader
-			dlAlphaBlendSource.enabled = (bEnableSlot_6 == true) and (iAlphaBlendSource_6 == 5) and bNormalShader
-			dlAlphaArg0.enabled = bEnableSlot_6 and bNormalShader
-			dlAlphaArg1.enabled = bEnableSlot_6 and bNormalShader
-			dlAlphaArg0Operand.enabled = bEnableSlot_6 and bNormalShader
-			dlAlphaArg1Operand.enabled = bEnableSlot_6 and bNormalShader
-			dlTextureShader.enabled = bEnableSlot_6 and bNormalShader
-			sdConstantAlpha.enabled = bEnableSlot_6 and bNormalShader
+				cpConstant.enabled = bEnableSlot_6 and bNormalShader
+				dlRgbOperation.enabled = bEnableSlot_6 and bNormalShader
+				dlRgbBlendSource.enabled = (bEnableSlot_6 == true) and (iRgbOperation_6 == 5) and bNormalShader
+				dlRgbArg0.enabled = bEnableSlot_6 and bNormalShader
+				dlRgbArg1.enabled = bEnableSlot_6 and bNormalShader
+				dlRgbArg0Operand.enabled = bEnableSlot_6 and bNormalShader
+				dlRgbArg1Operand.enabled = bEnableSlot_6 and bNormalShader
+				dlAlphaOperation.enabled = bEnableSlot_6 and bNormalShader
+				dlAlphaBlendSource.enabled = (bEnableSlot_6 == true) and (iAlphaBlendSource_6 == 5) and bNormalShader
+				dlAlphaArg0.enabled = bEnableSlot_6 and bNormalShader
+				dlAlphaArg1.enabled = bEnableSlot_6 and bNormalShader
+				dlAlphaArg0Operand.enabled = bEnableSlot_6 and bNormalShader
+				dlAlphaArg1Operand.enabled = bEnableSlot_6 and bNormalShader
+				dlTextureShader.enabled = bEnableSlot_6 and bNormalShader
+				sdConstantAlpha.enabled = bEnableSlot_6 and bNormalShader
+			)
 		)
 
 		on NelMultitextureSlot6 open do
@@ -1829,6 +1879,8 @@ plugin material NelMaterial
 				)
 			)
 		)
+
+		updateToVersion4 = false
 	)
 
 	on create do 

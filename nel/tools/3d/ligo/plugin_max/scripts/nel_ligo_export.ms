@@ -100,20 +100,35 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 
 for curFileName in MaxFilesList do
 (
+	-- Free memory and file handles
+	gc ()
+	resetMAXFile #noprompt
+
 	tokenArray = filterString (getFilenameFile curFileName) "-"
 	if (tokenArray.count == 3) and (tokenArray[1] == "zonematerial")  then
 	(
-		loadMaxFile curFileName
-		DeleteDebugMarkersFn ()
-		max select all
-		print ("Exporting "+ (getFilenameFile curFileName))
+		-- INCREMENTAL : do we have to export ?
+		dstFileName = ligo_export_path + "zoneLigos\\" + tokenArray[2] + "-" + tokenArray[3] + ".ligozone"
 
-		dstFileName = ligo_export_path + tokenArray[2] + "-" + tokenArray[3] + ".ligozone"
+		-- compare the date of curFileName and dstFileName files
+		if (nelTestFileDate dstFileName curFileName) == true then
+		(
+			loadMaxFile curFileName
+			DeleteDebugMarkersFn ()
+			max select all
+			print ("Exporting "+ (getFilenameFile curFileName))
 
-		props = #( #("zone", (tokenArray[2] + "-" + tokenArray[3])), #("material", tokenArray[2]) ) 
-		addProperties $ props
+			props = #( #("zone", (tokenArray[2] + "-" + tokenArray[3])), #("material", tokenArray[2]) ) 
+			addProperties $ props
 
-		NeLLigoExportZone $ dstFileName props false false
+			dstFileName = ligo_export_path + tokenArray[2] + "-" + tokenArray[3] + ".ligozone"
+
+			NeLLigoExportZone $ dstFileName props false false
+		)
+		else
+		(
+			print ("Skipping "+ (getFilenameFile curFileName))
+		)
 	)
 )
 
@@ -121,119 +136,136 @@ for curFileName in MaxFilesList do
 
 for curFileName in MaxFilesList do
 (
+	-- Free memory and file handles
+	gc ()
+
+	-- Reset 3dsmax
+	resetMAXFile #noprompt
+
 	tokenArray = filterString (getFilenameFile curFileName) "-"
 	if (tokenArray.count == 4) and (tokenArray[1] == "zonetransition") then
 	(
-		loadMaxFile curFileName
-		DeleteDebugMarkersFn ()
-		max select all
-		print ("Exporting "+ (getFilenameFile curFileName))
-
-		cellSize = NeLLigoGetCellSize ()
-
-		-- Array of selection
-		nodeArray = #()
-		if $ == $selection then
+		-- INCREMENTAL : do we have to export ?
+		dstFileName = ligo_export_path + "zoneLigos\\" + tokenArray[2] + "-" + tokenArray[3] + "-" + tokenArray[4] + "-0.ligozone"
+		
+		-- compare the date of curFileName and dstFileName files
+		if (nelTestFileDate dstFileName curFileName) == true then
 		(
-			nodeArray = $selection as array
-		)
-		else
-		(
-			append nodeArray $
-		)
+			loadMaxFile curFileName
+			DeleteDebugMarkersFn ()
+			max select all
+			print ("Exporting "+ (getFilenameFile curFileName))
 
-		-- Ok flag
-		ok = true
-		findOne = false
+			cellSize = NeLLigoGetCellSize ()
 
-		-- Cell Size
-		if cellSize != undefined then
-		(
-			-- Array of transitions zones
-			transitionZone = #()
-			for zone = 1 to 9 do
-				append transitionZone undefined
-			for zone = 1 to nodeArray.count do
+			-- Array of selection
+			nodeArray = #()
+			if $ == $selection then
 			(
-				-- Find one
-				findOne = true;
-
-				-- Get the zone coordinates
-				x = #()
-				y = #()
-				ok = getTransitionZoneCoordinates nodeArray[zone] x y
-
-				-- No error ?
-				if ok == true then
-				(
-					-- Transition number
-					id = TransitionIds[y[1]+1][x[1]+1]
-
-					-- Store it
-					transitionZone[id] = nodeArray[zone]
-				)
+				nodeArray = $selection as array
+			)
+			else
+			(
+				append nodeArray $
 			)
 
-			-- Continue ?
-			if (ok == true) and (findOne == true) then
+			-- Ok flag
+			ok = true
+			findOne = false
+
+			-- Cell Size
+			if cellSize != undefined then
 			(
-				-- For each zone selected
+				-- Array of transitions zones
+				transitionZone = #()
 				for zone = 1 to 9 do
+					append transitionZone undefined
+				for zone = 1 to nodeArray.count do
 				(
-					-- Defined ?
-					if transitionZone[zone] != undefined then
+					-- Find one
+					findOne = true;
+
+					-- Get the zone coordinates
+					x = #()
+					y = #()
+					ok = getTransitionZoneCoordinates nodeArray[zone] x y
+
+					-- No error ?
+					if ok == true then
 					(
-						-- Zone name
-						zoneBaseName = tokenArray[2] + "-" + tokenArray[3] + "-" + tokenArray[4] + "-" + ((zone-1) as string)
+						-- Transition number
+						id = TransitionIds[y[1]+1][x[1]+1]
 
-						-- Get the destination filename for export
-						filename = ligo_export_path + zoneBaseName + ".ligozone"
+						-- Store it
+						transitionZone[id] = nodeArray[zone]
+					)
+				)
 
-						-- Make an array of properties
-						props = #( #("zone", zoneBaseName), #("transname", (tokenArray[2]+"-"+tokenArray[3]) ), #("transtype", TransitionType[zone] ), #("transtype", TransitionType[zone] ), #("transnum", (TransitionNumBis[zone] as string) ) ) 
-
-						-- Add the properties
-						addProperties transitionZone[zone] props
-
-						-- Transform the zone
-						c = instance transitionZone[zone]
-
-						-- Change the name
-						c.name = "[NELLIGO] tmp export"
-
-						-- The matrix
-						mt = transitionZone[zone].transform
-						backupPos = mt.pos
-						mt.pos = [0,0,0]
-
-						-- Scale ?
-						if TransitionScale[zone] == true then
+				-- Continue ?
+				if (ok == true) and (findOne == true) then
+				(
+					-- For each zone selected
+					for zone = 1 to 9 do
+					(
+						-- Defined ?
+						if transitionZone[zone] != undefined then
 						(
-							mt = scale mt [-1,1,1]
-							setappdata c ligo_scale_app "1"
+							-- Zone name
+							zoneBaseName = tokenArray[2] + "-" + tokenArray[3] + "-" + tokenArray[4] + "-" + ((zone-1) as string)
+
+							-- Get the destination filename for export
+							filename = ligo_export_path + zoneBaseName + ".ligozone"
+
+							-- Make an array of properties
+							props = #( #("zone", zoneBaseName), #("transname", (tokenArray[2]+"-"+tokenArray[3]) ), #("transtype", TransitionType[zone] ), #("transtype", TransitionType[zone] ), #("transnum", (TransitionNumBis[zone] as string) ) ) 
+
+							-- Add the properties
+							addProperties transitionZone[zone] props
+
+							-- Transform the zone
+							c = instance transitionZone[zone]
+
+							-- Change the name
+							c.name = "[NELLIGO] tmp export"
+
+							-- The matrix
+							mt = transitionZone[zone].transform
+							backupPos = mt.pos
+							mt.pos = [0,0,0]
+
+							-- Scale ?
+							if TransitionScale[zone] == true then
+							(
+								mt = scale mt [-1,1,1]
+								setappdata c ligo_scale_app "1"
+							)
+
+							-- Rotate
+							if TransitionRot[zone] != 0 then
+							(
+								mt = rotateZ mt (90*TransitionRot[zone])
+								setappdata c ligo_rotate_app (TransitionRot[zone] as string)
+							)
+
+							-- Translation
+							mt = translate mt ( (TransitionPos[zone] * cellSize) + backupPos)
+
+							-- Transform the node
+							c.transform = mt
+
+							-- Export the zone
+							NeLLigoExportZone c filename props false false
+
+							-- Delete
+							delete c
 						)
-
-						-- Rotate
-						if TransitionRot[zone] != 0 then
-						(
-							mt = rotateZ mt (90*TransitionRot[zone])
-							setappdata c ligo_rotate_app (TransitionRot[zone] as string)
-						)
-
-						-- Translation
-						mt = translate mt ( (TransitionPos[zone] * cellSize) + backupPos)
-
-						-- Transform the node
-						c.transform = mt
-
-						-- Export the zone
-						NeLLigoExportZone c filename props false false
-
-						-- Delete
-						delete c
 					)
 				)
 			)
+		)
+		else
+		(
+			print ("Skipping "+ (getFilenameFile curFileName))
 		)
 	)
 )

@@ -1,7 +1,7 @@
 /** \file ligo_config.h
  * Ligo config file 
  *
- * $Id: ligo_config.h,v 1.6 2004/10/07 15:42:43 boucher Exp $
+ * $Id: ligo_config.h,v 1.7 2005/01/27 15:23:22 vuarand Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -106,7 +106,9 @@ public:
 	bool isFileStaticAliasMapped(const std::string &fileName) const;
 	/// Build a standard human readable alias string
 	std::string aliasToString(uint32 fullAlias);
-
+	/// Read a standard human readable alias string
+	uint32 aliasFromString(std::string fullAlias);
+		
 
 	// Get a primitive class
 	const CPrimitiveClass					*getPrimitiveClass (const NLLIGO::IPrimitive &primitive) const;

@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.15 2004/10/07 15:42:57 boucher Exp $
+ * $Id: ligo_config.cpp,v 1.16 2005/01/27 15:23:22 vuarand Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -700,6 +700,16 @@ std::string CLigoConfig::aliasToString(uint32 fullAlias)
 
 	return toString("(A:%u:%u)", staticPart, dynPart);
 
+}
+
+uint32 CLigoConfig::aliasFromString(std::string fullAlias)
+{
+	uint32 staticPart;
+	uint32 dynPart;
+	sscanf(fullAlias.c_str(), "(A:%u:%u)", &staticPart, &dynPart);
+	
+	return ((staticPart<<getDynamicAliasSize()) & getStaticAliasMask()) | (dynPart & getDynamicAliasMask());
+	
 }
 
 

@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.3 2001/01/08 17:58:30 corvazier Exp $
+ * $Id: texture_far.cpp,v 1.4 2001/01/09 17:38:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,7 +69,8 @@ bool CTextureFar::addPatch (CPatch *pPatch, float& farUVScale, float& farUBias, 
 	nlassert (_PatchCount<NL_NUM_FAR_PATCHES_BY_TEXTURE);
 
 	// Look for a free cell
-	for (sint p=0; p<NL_NUM_FAR_PATCHES_BY_TEXTURE; p++)
+	sint p;
+	for (p=0; p<NL_NUM_FAR_PATCHES_BY_TEXTURE; p++)
 	{
 		// Cell is NULL ?
 		if (_Patches[p].Patch==NULL)
@@ -87,7 +88,8 @@ bool CTextureFar::addPatch (CPatch *pPatch, float& farUVScale, float& farUBias, 
 	int y = ((p >> NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT) * _OriginalHeight) >> NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT;
 
 	// Invalidate the rectangle
-	ITexture::touchRect(CRect (x, y, _OriginalWidth>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT, _OriginalHeight>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT));
+	CRect rect (x, y, _OriginalWidth>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT, _OriginalHeight>>NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT);
+	ITexture::touchRect (rect);
 
 	// ** Return some values
 
@@ -116,7 +118,8 @@ bool CTextureFar::removePatch (CPatch *pPatch)
 	nlassert (_PatchCount>0);
 
 	// Look for the patch free cell
-	for (sint p=0; p<NL_NUM_FAR_PATCHES_BY_TEXTURE; p++)
+	sint p;
+	for (p=0; p<NL_NUM_FAR_PATCHES_BY_TEXTURE; p++)
 	{
 		// Is the good cell ?
 		if (_Patches[p].Patch==pPatch)

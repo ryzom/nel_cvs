@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.43 2003/10/22 16:36:54 berenguier Exp $
+ * $Id: i18n.cpp,v 1.44 2003/12/08 13:19:59 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -382,7 +382,14 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 	if (fullName.empty())
 		return;
 
+	if (!CFile::fileExists(fullName))
+	{
+		nlwarning("CI18N::readTextFile : file '%s' does not exist, returing empty string", fullName.c_str());
+		return;
+	}
+
 	NLMISC::CIFile	file(fullName);
+
 
 	// Fast read all the text in binary mode.
 	std::string text;

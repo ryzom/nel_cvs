@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.33 2002/12/16 18:02:14 cado Exp $
+ * $Id: buf_sock.cpp,v 1.33.8.1 2003/08/12 16:47:20 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,6 +155,8 @@ bool CBufSock::flush()
 		uint32 oldBufferSize = _ReadyToSendBuffer.size();
 		_ReadyToSendBuffer.resize (oldBufferSize+sizeof(TBlockSize)+size);
 		*(TBlockSize*)&(_ReadyToSendBuffer[oldBufferSize])=netlen;
+		//nldebug( "O-%u %u+L%u (0x%x)", Sock->descriptor(), oldBufferSize, size, size );
+
 
 		// Append the temporary buffer to the global buffer
 		CFastMem::memcpy (&_ReadyToSendBuffer[oldBufferSize+sizeof(TBlockSize)], tmpbuffer, size);
@@ -190,6 +192,7 @@ bool CBufSock::flush()
 			if ( _RTSBIndex+len == _ReadyToSendBuffer.size() ) // for non-blocking mode
 			{
 				// If sending is ok, clear the global buffer
+				//nldebug( "O-%u all %u bytes (%u to %u) sent", Sock->descriptor(), len, _RTSBIndex, _ReadyToSendBuffer.size() );
 				_ReadyToSendBuffer.clear();
 				_RTSBIndex = 0;
 			}
@@ -197,17 +200,19 @@ bool CBufSock::flush()
 			{
 				// Or clear only the data that was actually sent
 				nlassertex( _RTSBIndex+len < _ReadyToSendBuffer.size(), ("index=%u len=%u size=%u", _RTSBIndex, len, _ReadyToSendBuffer.size()) );
+				//nldebug( "O-%u only %u B on %u (%u to %u) sent", Sock->descriptor(), len, _ReadyToSendBuffer.size()-_RTSBIndex, _RTSBIndex, _ReadyToSendBuffer.size() );
 				_RTSBIndex += len;
 				if ( _ReadyToSendBuffer.size() > 20480 ) // if big, clear data already sent
 				{
-					uint nbcpy = _ReadyToSendBuffer.size() - len;
+					uint nbcpy = _ReadyToSendBuffer.size() - _RTSBIndex;
 					for (uint i = 0; i < nbcpy; i++)
 					{
-						_ReadyToSendBuffer[i] = _ReadyToSendBuffer[i+len];
+						_ReadyToSendBuffer[i] = _ReadyToSendBuffer[i+_RTSBIndex];
 					}
 					_ReadyToSendBuffer.resize(nbcpy);
-					//_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+len );
+					//_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+_RTSBIndex );
 					_RTSBIndex = 0;
+					//nldebug( "O-%u Cleared data already sent, %u B remain", Sock->descriptor(), nbcpy );
 				}
 			}
 		}
@@ -352,7 +357,7 @@ CNonBlockingBufSock::CNonBlockingBufSock( CTcpSock *sock ) :
 	_NowReadingBuffer( false ),
 	_BytesRead( 0 ),
 	_Length( 0 ),
-	_MaxExpectedBlockSize( 0x7FFFFFF )
+	_MaxExpectedBlockSize( 1048576 )
 {
 	nlnettrace( "CNonBlockingBufSock::CNonBlockingBufSock" );
 }
@@ -394,11 +399,12 @@ bool CNonBlockingBufSock::receivePart( uint32 nbExtraBytes )
 			if ( _Length != 0 )
 			{
 				_Length = ntohl( _Length );
+				//nldebug( "I-%u L%u (0x%x) a%u", Sock->descriptor(), _Length, _Length, actuallen );
 
 				// Test size limit
 				if ( _Length > _MaxExpectedBlockSize )
 				{
-					nlwarning( "LNETL1: Socket %s received length exceeding max expected, in block header... Disconnecting", asString().c_str() );
+					nlwarning( "LNETL1: Socket %s received length %u exceeding max expected, in block header... Disconnecting", _Length, asString().c_str() );
 					throw ESocket( "Received length exceeding max expected", false );
 				}
 
@@ -426,9 +432,14 @@ bool CNonBlockingBufSock::receivePart( uint32 nbExtraBytes )
 			nldebug( "LNETL1: %s received buffer (%u bytes): [%s]", asString().c_str(), _ReceiveBuffer.size(), stringFromVector(_ReceiveBuffer).c_str() );
 #endif
 			_NowReadingBuffer = false;
+			//nldebug( "I-%u all %u B on %u", Sock->descriptor(), actuallen );
 			_BytesRead = 0;
 			return true;
 		}
+		//else
+		//{
+		//	nldebug( "I-%u only %u B on %u", actuallen, Sock->descriptor(), _Length-(_BytesRead-actuallen) );
+		//}
 	}
 
 	return false;

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.31 2001/01/29 10:46:52 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.32 2001/01/29 10:49:03 berenguier Exp $
  *
  */
 
@@ -108,7 +108,7 @@ float		CTessFace::TileDistFar= CTessFace::TileDistNear+20;
 float		CTessFace::TileDistNearSqr= sqr(CTessFace::TileDistNear);
 float		CTessFace::TileDistFarSqr= sqr(CTessFace::TileDistFar);
 float		CTessFace::OOTileDistDeltaSqr= 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
-sint		CTessFace::TileMaxSubdivision=4;
+sint		CTessFace::TileMaxSubdivision=0;
 CBSphere	CTessFace::TileFarSphere;
 CBSphere	CTessFace::TileNearSphere;
 float		CTessFace::TilePixelSize= 128;

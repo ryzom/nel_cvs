@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.15 2001/07/24 08:43:10 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.16 2001/07/25 13:06:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,6 +51,7 @@ using NLMISC::CIFile ;
 /////////////////////////////////////////
 // CParticleSystemShape implementation //
 /////////////////////////////////////////
+
 
 
 

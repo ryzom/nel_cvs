@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.34 2001/07/09 08:26:26 legros Exp $
+ * $Id: global_retriever.cpp,v 1.35 2001/07/09 09:15:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1461,7 +1461,7 @@ NLPACS::UGlobalPosition
 		CAABBox		bboxMove;
 		// must add some extent, to be sure to include snapped CLocalRetriever vertex (2.0f/256 should be sufficient).
 		// Nb: this include the precision problem just below (move a little).
-		float	radius= 4.0f/256;
+		float	radius= 4.0f/Vector2sAccuracy;
 		bboxMove.setCenter(start-CVector(radius, radius, 0));
 		bboxMove.extend(start+CVector(radius, radius, 0));
 		bboxMove.extend(end-CVector(radius, radius, 0));

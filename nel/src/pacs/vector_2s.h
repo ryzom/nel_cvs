@@ -1,7 +1,7 @@
 /** \file vector_2s.h
  * <File description>
  *
- * $Id: vector_2s.h,v 1.1 2001/06/08 15:10:18 legros Exp $
+ * $Id: vector_2s.h,v 1.2 2001/07/09 09:15:52 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,8 @@
 namespace NLPACS {
 
 
+const float		Vector2sAccuracy = 128.0f;
+
 /**
  * <Class description>
  * \author Benjamin Legros
@@ -59,7 +61,7 @@ public:		// Methods.
 //	CVector2s(float _x, float _y) : x((sint16)(_x*256.0)), y((sint16)(_y*256.0)) {}
 	/// Copy Constructor.
 	CVector2s(const CVector2s &v) : x(v.x), y(v.y) {}
-	CVector2s(const NLMISC::CVector &v) : x((sint16)(v.x*256.0f)), y((sint16)(v.y*256.0f)) {}
+	CVector2s(const NLMISC::CVector &v) : x((sint16)(v.x*Vector2sAccuracy)), y((sint16)(v.y*Vector2sAccuracy)) {}
 	//@}
 
 	/// @name Base Maths.
@@ -79,11 +81,11 @@ public:		// Methods.
 	/// @name Advanced Maths.
 	//@{
 	/// Dot product.
-	float	operator*(const CVector2s &v) const		{return (float)((sint32)x*(sint32)v.x + (sint32)y*(sint32)v.y)/65536.0f;}
+	float	operator*(const CVector2s &v) const		{return (float)((sint32)x*(sint32)v.x + (sint32)y*(sint32)v.y)/(Vector2sAccuracy*Vector2sAccuracy);}
 	/// Return the norm of the vector.
 	float	norm() const							{return (float)sqrt(sqrnorm());}
 	/// Return the square of the norm of the vector.
-	float	sqrnorm() const							{return (float)((sint32)x*(sint32)x + (sint32)y*(sint32)y)/65536.0f;}
+	float	sqrnorm() const							{return (float)((sint32)x*(sint32)x + (sint32)y*(sint32)y)/(Vector2sAccuracy*Vector2sAccuracy);}
 	/// Normalize the vector.
 	void	normalize()
 	{
@@ -122,10 +124,10 @@ public:		// Methods.
 	void	serial(NLMISC::IStream &f)				{f.serial(x,y);}
 	//@}
 
-	void				pack(const NLMISC::CVector &v)		{ x = (sint16)(v.x*256.0f); y = (sint16)(v.y*256.0f); }
-	void				pack(const NLMISC::CVector2f &v)	{ x = (sint16)(v.x*256.0f); y = (sint16)(v.y*256.0f); }
-	NLMISC::CVector2f	unpack() const						{ return NLMISC::CVector2f((float)x/256.0f, (float)y/256.0f); }
-	NLMISC::CVector		unpack3f() const					{ return NLMISC::CVector((float)x/256.0f, (float)y/256.0f, 0.0f); }
+	void				pack(const NLMISC::CVector &v)		{ x = (sint16)(v.x*Vector2sAccuracy); y = (sint16)(v.y*Vector2sAccuracy); }
+	void				pack(const NLMISC::CVector2f &v)	{ x = (sint16)(v.x*Vector2sAccuracy); y = (sint16)(v.y*Vector2sAccuracy); }
+	NLMISC::CVector2f	unpack() const						{ return NLMISC::CVector2f((float)x/Vector2sAccuracy, (float)y/Vector2sAccuracy); }
+	NLMISC::CVector		unpack3f() const					{ return NLMISC::CVector((float)x/Vector2sAccuracy, (float)y/Vector2sAccuracy, 0.0f); }
 };
 
 } // NLPACS

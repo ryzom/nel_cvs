@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.9 2002/03/04 14:54:09 corvazier Exp $
+ * $Id: std_afx.h,v 1.10 2002/06/20 08:41:12 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,8 +79,19 @@
 #include <3d/mesh_instance.h>
 #include <3d/text_context.h>
 #include <3d/skeleton_model.h>
+#include <3d/animation_set.h>
+#include <3d/channel_mixer.h>
+#include <3d/shape.h>
+#include <3d/event_mouse_listener.h>
+#include <3d/light.h>
+#include <3d/font_manager.h>
 
-#include "object_viewer.h"
+#include <nel/misc/event_listener.h>
+#include <nel/misc/stream.h>
+
+#include <nel/3d/logic_info.h>
+
+#include <nel/pacs/u_global_position.h>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

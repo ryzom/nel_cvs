@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.53 2003/03/31 09:21:43 coutelas Exp $
+ * $Id: displayer.cpp,v 1.54 2003/04/09 12:18:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,16 +190,32 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 
 	string s = ss.str();
 
-#if defined(NL_OS_WINDOWS) && defined(_CONSOLE) || !defined(NL_OS_WINDOWS)
-	// we don't use cout because sometimes, it crashs because cout isn't already init, printf doesn t crash.
-	if (!s.empty())
-		printf ("%s", s.c_str());
-	
-	if (!args.CallstackAndLog.empty())
-		printf (args.CallstackAndLog.c_str());
-	
-	fflush(stdout);
-#endif
+	static bool consoleMode = true;
+
+#if defined(NL_OS_WINDOWS)
+	static bool consoleModeTest = false;
+	if (!consoleModeTest)
+	{
+		HANDLE handle = CreateFile ("CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0);
+		consoleMode = handle != INVALID_HANDLE_VALUE;
+		if (consoleMode)
+			CloseHandle (handle);
+		consoleModeTest = true;
+	}
+#endif // NL_OS_WINDOWS
+
+	// Printf ?
+	if (consoleMode)
+	{
+		// we don't use cout because sometimes, it crashs because cout isn't already init, printf doesn t crash.
+		if (!s.empty())
+			printf ("%s", s.c_str());
+		
+		if (!args.CallstackAndLog.empty())
+			printf (args.CallstackAndLog.c_str());
+		
+		fflush(stdout);
+	}
 
 #ifdef NL_OS_WINDOWS
 	// display the string in the debugger is the application is started with the debugger

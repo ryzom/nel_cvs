@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.14 2003/03/24 18:09:02 corvazier Exp $
+ * $Id: zone_lighter.h,v 1.15 2003/04/09 12:18:18 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -473,7 +473,7 @@ private:
 	// *** The zbuffer
 
 	// ZBuffer mutex
-	NLMISC::CFastMutexMP						_Mutex;
+	NLMISC::CFastMutex						_Mutex;
 
 public:
 	// Zbuffer pixels in meters

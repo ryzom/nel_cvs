@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.29 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.30 2003/04/09 12:18:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -442,7 +442,7 @@ public:
 #define CLIPPED_ALL (CLIPPED_TOP|CLIPPED_BOTTOM|CLIPPED_LEFT|CLIPPED_RIGHT)
 
 void RenderTriangle (const CZoneLighter::CTriangle &triangle, const CZoneLighter::CLightDesc &description, CPolygon2D::TRasterVect &borders,
-					CFastMutexMP &mutex, CZoneLighter::CZBuffer &zbuffer, uint radius)
+					CFastMutex &mutex, CZoneLighter::CZBuffer &zbuffer, uint radius)
 {
 	// *** Transform it in the zbuffer basis
 

@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.16 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_particle_basic.cpp,v 1.17 2004/09/21 09:13:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -543,7 +543,7 @@ void CPSMaterial::serialMaterial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		// bit 1 : 1 if zbias is not 0, in this case zbias follows
 		uint8 flags = (isZTestEnabled() ? 1 : 0) | (getZBias() != 0.f ? 2 : 0);
 		f.serial(flags);
-		enableZTest(flags & 1 != 0);
+		enableZTest((flags & 1) != 0);
 		if (flags & 2)
 		{
 			float zBias = getZBias();

@@ -1,7 +1,7 @@
 /** \file lod_character_shape.cpp
  * <File description>
  *
- * $Id: lod_character_shape.cpp,v 1.9 2003/11/21 16:19:55 berenguier Exp $
+ * $Id: lod_character_shape.cpp,v 1.10 2004/09/21 09:13:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -586,7 +586,7 @@ const CLodCharacterShape::CVector3s	*CLodCharacterShape::getAnimKey(uint animId,
 
 	// Loop mgt.
 	if(wrapMode)
-		localTime= (float)fmod(time, anim.AnimLength);
+		localTime= (float)fmod((float)time, (float)anim.AnimLength);
 	else
 		localTime= (float)time;
 

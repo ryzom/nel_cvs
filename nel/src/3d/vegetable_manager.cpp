@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.40 2004/07/12 17:14:57 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.41 2004/09/21 09:13:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1816,9 +1816,9 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 	// Compute Bend Anim.
 
 	// AnimFrequency factor.
-	// Doing it incrementaly allow change of of frequency each frame with good results.
+	// Doing it incrementally allow change of of frequency each frame with good results.
 	_WindAnimTime+= (_Time - _WindPrecRenderTime)*_WindFrequency;
-	_WindAnimTime= fmod(_WindAnimTime, (float)NL3D_VEGETABLE_FREQUENCY_FACTOR_PREC);
+	_WindAnimTime= fmod((float)_WindAnimTime, (float)NL3D_VEGETABLE_FREQUENCY_FACTOR_PREC);
 	// NB: Leave timeBend (_WindAnimTime) as a time (ie [0..1]), because VP do a "EXP time".
 	// For incremental computing.
 	_WindPrecRenderTime= _Time;
@@ -1834,9 +1834,9 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 	for(i=0; i<NL3D_VEGETABLE_VP_LUT_SIZE; i++)
 	{
 		/* NB: this formula works quite well, because vertex BendFactor is expressed in Radian/2.
-			And since animFactor==(_CosTable[i] + 1) E [0..2], we have here an arc-cirle computing:
+			And since animFactor==(_CosTable[i] + 1) E [0..2], we have here an arc-circle computing:
 			dmove= Radius * AngleRadian/2 *  animFactor. So at max of animFactor (ie 2), we have:
-			dmove= Radius * AngleRadian, which is by definition an arc-cirle computing...
+			dmove= Radius * AngleRadian, which is by definition an arc-circle computing...
 			And so this approximate the Bend-quaternion Vertex Program.
 		*/
 		float	windForce= (_CosTable[(i+32)%64] + 1);

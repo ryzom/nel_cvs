@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.181 2004/09/17 15:05:34 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.182 2004/09/21 09:13:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,36 +31,30 @@
 
 //#define NL_PROFILE_DRIVER_OGL
 #ifdef NL_PROFILE_DRIVER_OGL
-#define H_AUTO_OGL(label) H_AUTO(label)
+#	define H_AUTO_OGL(label) H_AUTO(label)
 #else
-#define H_AUTO_OGL(label)
+#	define H_AUTO_OGL(label)
 #endif
 
 #ifdef NL_OS_WINDOWS
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#  ifdef min
-#    undef min
-#  endif
-#  ifdef max
-#    undef max
-#  endif
-
-
+#	define WIN32_LEAN_AND_MEAN
+#	include <windows.h>
+#	ifdef min
+#		undef min
+#	endif // min
+#	ifdef max
+#		undef max
+#	endif // max
 #else // NL_OS_UNIX
-
-#define GLX_GLXEXT_PROTOTYPES
-
-#include <GL/glx.h>
-
-#ifdef XF86VIDMODE
-#include <X11/extensions/xf86vmode.h>
-#endif //XF86VIDMODE
-
+#	define GLX_GLXEXT_PROTOTYPES
+#	include <GL/glx.h>
+#	ifdef XF86VIDMODE
+#		include <X11/extensions/xf86vmode.h>
+#	endif //XF86VIDMODE
 #endif // NL_OS_UNIX
 
 #include <GL/gl.h>
+
 #include "driver_opengl_extension.h"
 
 #include "3d/driver.h"

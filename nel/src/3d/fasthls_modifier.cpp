@@ -1,7 +1,7 @@
 /** \file fasthls_modifier.cpp
  * <File description>
  *
- * $Id: fasthls_modifier.cpp,v 1.3 2003/07/30 15:58:33 vizerie Exp $
+ * $Id: fasthls_modifier.cpp,v 1.4 2004/09/21 09:13:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -105,6 +105,10 @@ CRGBA		CFastHLSModifier::convert(uint H, uint L, uint S)
 	return col;
 }
 
+#ifdef NL_COMP_VC71
+#	pragma warning( push )
+#	pragma warning( disable : 4799 )
+#endif
 
 // ***************************************************************************
 uint16		CFastHLSModifier::applyHLSMod(uint16 colorIn, uint8 dHue, uint dLum, uint dSat)
@@ -247,6 +251,9 @@ uint16		CFastHLSModifier::applyHLSMod(uint16 colorIn, uint8 dHue, uint dLum, uin
 	return retVal;
 }
 
+#ifdef NL_COMP_VC71
+#	pragma warning( pop )
+#endif
 
 // ***************************************************************************
 void		CFastHLSModifier::convertDDSBitmapDXTC1Or1A(CBitmap &dst, const CBitmap &src, uint8 dh, uint dLum, uint dSat)

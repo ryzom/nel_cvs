@@ -1,7 +1,7 @@
 /** \file source_fmod.cpp
  * DirectSound sound source
  *
- * $Id: source_fmod.cpp,v 1.2 2004/09/16 16:42:48 berenguier Exp $
+ * $Id: source_fmod.cpp,v 1.3 2004/09/21 09:13:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -452,7 +452,7 @@ void CSourceFMod::updateVolume( const NLMISC::CVector& listener )
 	volumeDB= ISource::computeManualRollOff(volumeDB, dbMin, dbMax, _Alpha, sqrdist);
 	
 	// retransform to linear form
-	double	attGain= pow(10, double(volumeDB)/2000);
+	double	attGain= pow((double)10.0, double(volumeDB)/2000.0);
 	clamp(attGain, 0.f, 1.f);
 
 	// set the attenuated volume

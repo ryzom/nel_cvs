@@ -1,6 +1,6 @@
 /** \file context_sound.h
  *
- * $Id: context_sound.h,v 1.8 2004/06/11 12:29:51 boucher Exp $
+ * $Id: context_sound.h,v 1.9 2004/09/21 09:13:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,14 +114,14 @@ public:
 template <uint NbJoker, bool UseRandom, uint Shift = 5>
 class CContextSoundContainer : public IContextSoundContainer
 {
-	// speudo constante
+	// pseudo constants
 	enum
 	{
 		// Size of array : special case for 0 joker because we can't declare array of 0 elements
 		JOKER_ARRAY_SIZE = (NbJoker == 0 ? 1 : NbJoker)
 	};
 
-	typedef std::hash_map<CContextMatcher<NbJoker, UseRandom, Shift>, CSound *, CContextMatcher<NbJoker, UseRandom, Shift>::CHash>	THashContextSound;
+	typedef std::hash_map<CContextMatcher<NbJoker, UseRandom, Shift>, CSound *, typename CContextMatcher<NbJoker, UseRandom, Shift>::CHash>	THashContextSound;
 
 	virtual void		init(uint *contextArgsIndex)
 	{

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.24 2004/07/09 09:45:52 lecroart Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.25 2004/09/21 09:13:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -383,7 +383,7 @@ public:
 	
 protected:
 	// a table of Values that interpolate the values given
-	CPSVector<T>::V _Tab;
+	typename CPSVector<T>::V _Tab;
 
 
 	// number of interpolated value between each 'key'

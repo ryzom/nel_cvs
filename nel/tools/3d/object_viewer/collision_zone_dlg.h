@@ -1,7 +1,7 @@
 /** \file collision_zone_dlg.h
  * a dialog to edit collision zone properties in a particle system
  *
- * $Id: collision_zone_dlg.h,v 1.1 2001/06/25 13:21:10 vizerie Exp $
+ * $Id: collision_zone_dlg.h,v 1.2 2001/06/25 16:18:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,8 @@ typedef CEditableRangeT<float> CEditableRangeFloat ;
 
 #include "ps_wrapper.h"
 #include "dialog_stack.h"
+
+#include "3d/ps_zone.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CCollisionZoneDlg dialog

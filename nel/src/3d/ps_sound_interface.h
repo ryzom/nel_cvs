@@ -1,7 +1,7 @@
 /** \file ps_sound_interface.h
  * <File description>
  *
- * $Id: ps_sound_interface.h,v 1.1 2001/08/07 14:20:52 vizerie Exp $
+ * $Id: ps_sound_interface.h,v 1.2 2001/08/16 17:13:44 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -70,6 +70,12 @@ struct IPSSoundInstance
 						   , const NLMISC::CVector &velocity
 						   , float frequency
 						  ) = 0;
+
+	/// start to play the sound
+	virtual void play(void) = 0;
+
+	/// stop the sound
+	virtual void stop(void) = 0;
 
 	/// when this method is called, the sound is not needed anymore by the system
 	virtual void release(void) = 0;

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.32 2003/01/08 18:05:33 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.33 2003/01/09 17:08:28 lecroart Exp $
  *
  */
 
@@ -1614,19 +1614,19 @@ uint64 getSystemNetwork (uint col)
 	}
 }
 
-NLMISC_DYNVARIABLE(uint64, NetBytesSent, "Amount of bytes sent to all networks cards in bytes")
+NLMISC_DYNVARIABLE(string, NetBytesSent, "Amount of bytes sent to all networks cards in bytes")
 {
-	if (get) *pointer = getSystemNetwork (8);
+	if (get) *pointer = bytesToHumanReadable(getSystemNetwork (8));
 }
 
-NLMISC_DYNVARIABLE(uint64, NetBytesReceived, "Amount of bytes received to all networks cards in bytes")
+NLMISC_DYNVARIABLE(string, NetBytesReceived, "Amount of bytes received to all networks cards in bytes")
 {
-	if (get) *pointer = getSystemNetwork (0);
+	if (get) *pointer = bytesToHumanReadable(getSystemNetwork (0));
 }
 
-NLMISC_DYNVARIABLE(uint32, NetError, "Number of error on all networks cards")
+NLMISC_DYNVARIABLE(string, NetError, "Number of error on all networks cards")
 {
-	if (get) *pointer = (uint32) (getSystemNetwork (2) + getSystemNetwork (10));
+	if (get) *pointer = bytesToHumanReadable((uint32) (getSystemNetwork (2) + getSystemNetwork (10)));
 }
 
 #endif // NL_OS_UNIX

@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.53 2003/01/07 17:10:35 lecroart Exp $
+ * $Id: common.h,v 1.54 2003/01/09 17:08:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -304,9 +304,12 @@ sint64 atoiInt64 (const char *ident, sint64 base = 10);
 void itoaInt64 (sint64 number, char *str, sint64 base = 10);
 
 
-/// Convert a number in bytes into a string that is easily readable by an human, for example 105123 -> "102.66kb"
+/// Convert a number in bytes into a string that is easily readable by an human, for example 105123 -> "102kb"
+std::string bytesToHumanReadable (const std::string &bytes);
 std::string bytesToHumanReadable (uint32 bytes);
 
+/// Convert a human readable into a bytes,  for example "102kb" -> 105123
+uint32 humanReadableToBytes (const std::string &str);
 
 /// This function execute a program in the background and returns instantly (used for example to launch services in AES).
 /// The program will be launch in the current directory

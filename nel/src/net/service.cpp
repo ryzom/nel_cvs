@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.157 2003/01/08 18:06:28 lecroart Exp $
+ * $Id: service.cpp,v 1.158 2003/01/09 17:07:45 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1680,10 +1680,10 @@ NLMISC_COMMAND (freeze, "Freeze the service for N seconds (for debug purpose)", 
 	return true;
 }
 
-uint32 foo = 7777, bar = 6666;
+string foo = "205kb", bar = "2b";
 
-NLMISC_VARIABLE(uint32, foo, "test the get view system");
-NLMISC_VARIABLE(uint32, bar, "test the get view system");
+NLMISC_VARIABLE(string, foo, "test the get view system");
+NLMISC_VARIABLE(string, bar, "test the get view system");
 
 vector<pair<uint32,uint32> > _Entities;
 

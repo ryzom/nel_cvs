@@ -3,7 +3,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.22 2003/01/08 18:05:58 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.23 2003/01/09 17:08:32 lecroart Exp $
  *
  */
 
@@ -209,7 +209,7 @@ MYSQL *DatabaseConnection = NULL;
 
 vector<CRequest> Requests;
 
-uint32 AdminEmailAccumlationTime = 5;
+sint32 AdminEmailAccumlationTime = 5;
 
 //
 // Admin functions
@@ -223,22 +223,30 @@ void sendAdminEmail (const char *format, ...)
 	char *text;
 	NLMISC_CONVERT_VARGS (text, format, 4096);
 
-	if(Email.empty() && FirstEmailTime == 0)
+	if (AdminEmailAccumlationTime == -1)
 	{
-		Email += text;
-		FirstEmailTime = CTime::getSecondsSince1970();
+		// we don't send email so just display a warning
+		nlwarning ("%s", text);
 	}
 	else
 	{
-		Email += "\n";
-		Email += text;
+		if(Email.empty() && FirstEmailTime == 0)
+		{
+			Email += text;
+			FirstEmailTime = CTime::getSecondsSince1970();
+		}
+		else
+		{
+			Email += "\n";
+			Email += text;
+		}
+		nldebug ("pushing email into queue: %s", text);
 	}
-	nlinfo ("pushing email into queue: %s", text);
 }
 
 void updateSendAdminEmail ()
 {
-	if(!Email.empty() && FirstEmailTime != 0 && CTime::getSecondsSince1970() > FirstEmailTime + AdminEmailAccumlationTime)
+	if(!Email.empty() && FirstEmailTime != 0 && AdminEmailAccumlationTime >=0 && CTime::getSecondsSince1970() > FirstEmailTime + AdminEmailAccumlationTime)
 	{
 		vector<string> admins;
 		explode (IService::getInstance()->ConfigFile.getVar("AdminEmail").asString(), ";", admins, true);

@@ -1,7 +1,7 @@
 /** \file email.cpp
  * send email
  *
- * $Id: alarms.cpp,v 1.1 2003/01/08 18:06:28 lecroart Exp $
+ * $Id: alarms.cpp,v 1.2 2003/01/09 17:07:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,31 +139,31 @@ void updateAlarms ()
 		else
 		{
 			// compare the value
-			int err = Alarms[i].Limit;
-			int val = atoi(str.c_str());
+			uint32 err = Alarms[i].Limit;
+			uint32 val = humanReadableToBytes(str);
 			if (Alarms[i].GT && val >= err)
 			{
 				if (!Alarms[i].Activated)
 				{
-					nlinfo ("VARIABLE TOO BIG '%s' %d >= %d", Alarms[i].Name.c_str(), val, err);
+					nlinfo ("VARIABLE TOO BIG '%s' %u >= %u", Alarms[i].Name.c_str(), val, err);
 					Alarms[i].Activated = true;
-					sendAdminEmail ("Alarm: Variable %s is %d that is greater or equal than the limit %d", Alarms[i].Name.c_str(), val, err);
+					sendAdminEmail ("Alarm: Variable %s is %u that is greater or equal than the limit %u", Alarms[i].Name.c_str(), val, err);
 				}
 			}
 			else if (!Alarms[i].GT && val <= err)
 			{
 				if (!Alarms[i].Activated)
 				{
-					nlinfo ("VARIABLE TOO LOW '%s' %d <= %d", Alarms[i].Name.c_str(), val, err);
+					nlinfo ("VARIABLE TOO LOW '%s' %u <= %u", Alarms[i].Name.c_str(), val, err);
 					Alarms[i].Activated = true;
-					sendAdminEmail ("Alarm: Variable %s is %d that is lower or equal than the limit %d", Alarms[i].Name.c_str(), val, err);
+					sendAdminEmail ("Alarm: Variable %s is %u that is lower or equal than the limit %u", Alarms[i].Name.c_str(), val, err);
 				}
 			}
 			else
 			{
 				if (Alarms[i].Activated)
 				{
-					nlinfo ("variable is ok '%s' %d %s %d", Alarms[i].Name.c_str(), val, (Alarms[i].GT?"<":">"), err);
+					nlinfo ("variable is ok '%s' %u %s %u", Alarms[i].Name.c_str(), val, (Alarms[i].GT?"<":">"), err);
 					Alarms[i].Activated = false;
 				}
 			}

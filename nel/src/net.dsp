@@ -248,6 +248,14 @@ SOURCE=..\include\nel\net\unified_network.h
 # End Group
 # Begin Source File
 
+SOURCE=.\net\alarms.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\alarms.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\email.cpp
 # End Source File
 # Begin Source File

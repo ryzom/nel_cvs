@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.23 2001/10/04 12:18:32 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.24 2001/11/07 17:07:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,12 +172,23 @@ ITrack* CParticleSystemModel::getDefaultTrack (uint valueId)
 {
 	nlassert(valueId < AnimValueLast);
 	nlassert(Shape);
-	if (valueId < OwnerBit) return CTransformShape::getDefaultTrack(valueId);
+
+	CParticleSystemShape *pss = NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape);
+
+	switch (valueId)
+	{
+		case PosValue:			return pss->getDefaultPos();		
+		case RotQuatValue:		return pss->getDefaultRotQuat();
+		case ScaleValue:		return pss->getDefaultScale();		
+	}
+	if (valueId < OwnerBit) return CTransformShape::getDefaultTrack(valueId); // delegate to parent
+
+	// this value belong to us
 	if (valueId < PSTrigger) 
 	{
-		return (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape)->getUserParamDefaultTrack(valueId - (uint) PSParam0));
+		return pss->getUserParamDefaultTrack(valueId - (uint) PSParam0);
 	}
-	return NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape)->getDefaultTriggerTrack();
+	return pss->getDefaultTriggerTrack();
 }
 
 	

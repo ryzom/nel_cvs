@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.15 2002/04/16 15:41:37 lecroart Exp $
+ * $Id: command.cpp,v 1.16 2002/05/27 16:01:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -266,12 +266,12 @@ void ICommand::expand (std::string &commandName, NLMISC::CLog &log)
 		useprefix = false;
 	}
 
-	string lowerCommandName = strlwr(commandName);
+	string lowerCommandName = strlwr(const_cast<const string &>(commandName));
 	// Build the list of matching command names
 	vector<string> matchingnames;
 	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
 	{
-		string first = strlwr((*comm).first);
+		string first = strlwr(const_cast<const string &>((*comm).first));
 		if (first.find( lowerCommandName ) == 0)
 		{
 			matchingnames.push_back( (*comm).first );

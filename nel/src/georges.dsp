@@ -208,6 +208,14 @@ SOURCE=..\include\nel\georges\form_loader.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\georges\georges_loader.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\georges\georges_loader.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\georges\Item.cpp
 # ADD CPP /Yu"stdgeorges.h"
 # End Source File
@@ -259,15 +267,6 @@ SOURCE=.\georges\item_loader.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\georges\item_loader.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\Loader.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\Loader.h
 # End Source File
 # Begin Source File
 

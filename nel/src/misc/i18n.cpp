@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.5 2000/11/23 14:32:39 coutelas Exp $
+ * $Id: i18n.cpp,v 1.6 2000/11/23 16:41:33 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -33,28 +33,96 @@ using namespace std;
 
 namespace NLMISC {
 
-const char						*CI18N::_LanguageFiles[] = { "english", "french", "german" };
+const char						*CI18N::_LanguageFiles[] = { "english", "french", "fun" };
 
-map<string, string>				 CI18N::_StrMap;
+map<string, ucstring>			 CI18N::_StrMap;
 bool							 CI18N::_StrMapLoaded = false;
 string							 CI18N::_FileName;
 
-vector<string>					 CI18N::_LanguageNames;
+vector<ucstring>				 CI18N::_LanguageNames;
 bool							 CI18N::_LanguagesNamesLoaded = false;
+
+ucchar CI18N::eatChar (IStream &is)
+{
+	uint8 c;
+	ucchar code;
+	sint iterations;
+
+	is.serial (c);
+	code = c;
+
+	if ((code & 0xFE) == 0xFC)
+	{
+		code &= 0x01;
+		iterations = 5;
+	}
+	else if ((code & 0xFC) == 0xF8)
+	{
+		code &= 0x03;
+		iterations = 4;
+	}
+	else if ((code & 0xF8) == 0xF0)
+	{
+		code &= 0x07;
+		iterations = 3;
+	}
+	else if ((code & 0xF0) == 0xE0)
+	{
+		code &= 0x0F;
+		iterations = 2;
+	}
+	else if ((code & 0xE0) == 0xC0)
+	{
+		code &= 0x1F;
+		iterations = 1;
+	}
+	else if ((code & 0x80) == 0x80)
+	{
+		nlerror ("CI18N::eatChar(): Invalid UTF-8 character");
+	}
+	else
+	{
+		return code;
+	}
+
+	for (sint i = 0; i < iterations; i++)
+	{
+		uint8 ch;
+		is.serial (ch);
+
+		if ((ch & 0xC0) != 0x80)
+		{
+			nlerror ("CI18N::eatChar(): Invalid UTF-8 character");
+		}
+
+		code <<= 6;
+		code |= (ucchar)(ch & 0x3F);
+	}
+	return code;
+}
+
+void CI18N::checkASCII7B (ucchar c)
+{
+	if (c>0x7F)
+	{
+		nlerror ("CI18N::checkASCII7B: '%c' isn't ASCII 7bits", c);
+	}
+}
+
 
 void CI18N::skipComment(IStream &is, int &line)
 {
 	// the first '/' is already eated
-	char c;
+	ucchar c;
 	bool longcomment;
 
-	is.serial (c);
+	c = eatChar (is);
 	if (c == '/') longcomment = false;
 	else if (c == '*') longcomment = true;
 
 	do
 	{
-		is.serial (c);
+		c = eatChar (is);
 		if (!longcomment && c == '\n')
 		{
 			line++;
@@ -62,24 +130,24 @@ void CI18N::skipComment(IStream &is, int &line)
 		}
 		if (longcomment && c == '*')
 		{
-			is.serial (c);
+			c = eatChar (is);
 			if (c == '/') return;
 		}
 	}
 	while (true);
 }
 
-char CI18N::skipWS(IStream &is, int &line)
+ucchar CI18N::skipWS(IStream &is, int &line)
 {
-	char c;
+	ucchar c;
 	do
 	{
-		is.serial (c);
+		c = eatChar (is);
 		if (c == '\n') line++;
 		if (c == '/')
 		{
 			skipComment (is, line);
-			is.serial (c);
+			c = eatChar (is);
 		}
 	}
 	while (isspace (c));
@@ -106,7 +174,23 @@ void CI18N::createLanguageFile (uint32 lid)
 
 void CI18N::createLanguageEntry (const string &lval, const string &rval)
 {
-	for (int i = 0; i < sizeof(_LanguageFiles)/sizeof(_LanguageFiles[0]); i++)
+	sint i;
+	for (i = 0; i < (sint)lval.size () ; i++)
+	{
+		if (lval[i]>0x7F)
+		{
+			nlerror ("CI18N::createLanguageEntry(\"%s\"): your string must be ASCII 7bits ('%c' isn't ASCII 7bits)", lval, lval[i]);
+		}
+	}
+	for (i = 0; i < (sint)rval.size () ; i++)
+	{
+		if (rval[i]>0x7F)
+		{
+			nlerror ("CI18N::createLanguageEntry(\"%s\"): your string must be ASCII 7bits ('%c' isn't ASCII 7bits)", rval, rval[i]);
+		}
+	}
+
+	for (i = 0; i < sizeof(_LanguageFiles)/sizeof(_LanguageFiles[0]); i++)
 	{
 		COFile cof;
 		string fn = _LanguageFiles[i];
@@ -159,7 +243,7 @@ void CI18N::load (uint32 lid)
 	int line = 1;
 	try
 	{
-		char c;
+		ucchar c;
 		// get the language name
 		c = skipWS (cf, line);
 		if (c != '"')
@@ -168,10 +252,10 @@ void CI18N::load (uint32 lid)
 		}
 		do
 		{
-			cf.serial (c);
+			c = eatChar (cf);
 			if (c == '\\')
 			{
-				cf.serial (c);
+				c = eatChar (cf);
 			}
 			else if (c == '"') break;
 			else if (c == '\n') line++;
@@ -180,10 +264,12 @@ void CI18N::load (uint32 lid)
 
 		while (true)
 		{
-			string codstr, trsstr;
-			char c;
+			string codstr;
+			ucstring trsstr;
+			ucchar c;
 
-			codstr = trsstr = "";
+			codstr = "";
+			trsstr = "";
 
 			// get the coder string
 			c = skipWS (cf, line);
@@ -194,14 +280,15 @@ void CI18N::load (uint32 lid)
 			startstr = true;
 			do
 			{
-				cf.serial (c);
+				c = eatChar (cf);
 				if (c == '\\')
 				{
-					cf.serial (c);
+					c = eatChar (cf);
 				}
 				else if (c == '"') break;
 				else if (c == '\n') line++;
-				codstr += c;
+				checkASCII7B (c);
+				codstr += (char) c;
 			}
 			while (true);
 			startstr = false;
@@ -225,10 +312,10 @@ void CI18N::load (uint32 lid)
 			startstr = true;
 			do
 			{
-				cf.serial (c);
+				c = eatChar (cf);
 				if (c == '\\')
 				{
-					cf.serial (c);
+					c = eatChar (cf);
 				}
 				else if (c == '"') break;
 				else if (c == '\n') line++;
@@ -266,7 +353,7 @@ void CI18N::load (uint32 lid)
 	}
 }
 
-const string &CI18N::get (const char *str)
+const ucstring &CI18N::get (const char *str)
 {
 	nlassert (_StrMapLoaded);
 
@@ -279,6 +366,7 @@ const string &CI18N::get (const char *str)
 		ss << "<Not Translated>:" << str;
 
 		pair<ItStrMap, bool> pr;
+
 		pr = _StrMap.insert (ValueStrMap (str, ss.str()));
 		nlassert (pr.second);
 		it = pr.first;
@@ -293,7 +381,7 @@ const string &CI18N::get (const char *str)
 	return it->second;
 }
 
-const vector<string> &CI18N::getLanguageNames()
+const vector<ucstring> &CI18N::getLanguageNames()
 {
 	CIFile cf;
 
@@ -304,7 +392,7 @@ const vector<string> &CI18N::getLanguageNames()
 			string fn = _LanguageFiles[i];
 			fn += ".txt";
 
-			string lg;
+			ucstring lg;
 
 			if (!cf.open (fn, true))
 			{
@@ -317,7 +405,7 @@ const vector<string> &CI18N::getLanguageNames()
 				int line = 1;
 				try
 				{
-					char c;
+					ucchar c;
 					// get the language name
 					c = skipWS (cf, line);
 					if (c != '"')
@@ -326,10 +414,10 @@ const vector<string> &CI18N::getLanguageNames()
 					}
 					do
 					{
-						cf.serial (c);
+						c = eatChar (cf);
 						if (c == '\\')
 						{
-							cf.serial (c);
+							c = eatChar (cf);
 						}
 						else if (c == '"') break;
 						else if (c == '\n') line++;

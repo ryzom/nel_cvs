@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * basic types, define and class
  *
- * $Id: types_nl.h,v 1.16 2000/11/23 13:18:37 lecroart Exp $
+ * $Id: types_nl.h,v 1.17 2000/11/23 16:41:33 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -194,6 +194,15 @@ typedef std::basic_string<ucchar> ucstringbase;
 class ucstring : public ucstringbase
 {
 public:
+
+	ucstring () {}
+
+	ucstring (const ucstringbase &str) : ucstringbase (str) {}
+
+	ucstring (const std::string &str) : ucstringbase ()
+	{
+		*this=str;
+	}
 
 	ucstring &operator= (ucchar c)
 	{

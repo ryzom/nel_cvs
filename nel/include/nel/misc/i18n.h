@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation
  *
- * $Id: i18n.h,v 1.2 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: i18n.h,v 1.3 2000/11/23 16:41:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,34 +67,36 @@ public:
 
 	/// Return a vector with all language available. The vector contains the name of the language.
 	/// The index in the vector is used in \c load() function
-	static const std::vector<std::string> &getLanguageNames();
+	static const std::vector<ucstring> &getLanguageNames();
 
 	/// Load a language file depending of the language
 	static void load (uint32 lid);
 
 	/// Find a string in the selected language and return his association.
-	static const std::string &get (const char *str);
+	static const ucstring &get (const char *str);
 
 private:
 
-	typedef std::map<std::string, std::string>::iterator		 ItStrMap;
-	typedef std::map<std::string, std::string>::value_type		 ValueStrMap;
+	typedef std::map<std::string, ucstring>::iterator		 ItStrMap;
+	typedef std::map<std::string, ucstring>::value_type		 ValueStrMap;
 
-	static std::map<std::string, std::string>					 _StrMap;
+	static std::map<std::string, ucstring>					 _StrMap;
 	static bool													 _StrMapLoaded;
 
 	static std::string											 _FileName;
 	static const char											*_LanguageFiles[];
 
-	static std::vector<std::string>								 _LanguageNames;
+	static std::vector<ucstring>								 _LanguageNames;
 	static bool													 _LanguagesNamesLoaded;
 
+	static ucchar eatChar(IStream &is);
+	static void checkASCII7B (ucchar c);
 
 	static void	createLanguageFile	(uint32 lid);
 	static void createLanguageEntry (const std::string &lval, const std::string &rval);
 
 	static void skipComment			(IStream &is, int &line);
-	static char skipWS				(IStream &is, int &line);
+	static ucchar skipWS			(IStream &is, int &line);
 };
 
 

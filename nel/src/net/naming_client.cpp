@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.45 2002/05/27 16:50:50 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.46 2002/05/27 17:03:17 lecroart Exp $
  *
  */
 
@@ -183,8 +183,8 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 		if ((*it).SId == sid)
 		{
 			// check the structure
-			nlassertex ((*it).Name == name, ("%s %s",(*it).Name, name));
-			nlassertex ((*it).Addr == addr, ("%d %d",(*it).Addr, addr));
+			nlassertex ((*it).Name == name, ("%s %s",(*it).Name.c_str(), name.c_str()));
+			nlassertex ((*it).Addr == addr, ("%d %d",(*it).Addr.asString().c_str(), addr.asString().c_str()));
 
 			CNamingClient::RegisteredServices.erase (it);
 			break;

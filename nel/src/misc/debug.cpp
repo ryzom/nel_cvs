@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.7 2000/10/06 10:27:36 lecroart Exp $
+ * $Id: debug.cpp,v 1.8 2000/10/06 15:44:13 cado Exp $
  *
  * Debug
  */
@@ -42,7 +42,7 @@
  * Example :
  * \code
  * NLMISC::CStdDisplayer sd;
- * NLNET::NetDisplayer nd ( NLNET::CInetAddress( "log_service_machine", log_port ) )
+ * NLNET::CNetDisplayer nd ( NLNET::CInetAddress( "log_service_machine", log_port ) )
  * NLMISC::ErrorLog.addDisplayer( &sd );
  * NLMISC::DebugLog.addDisplayer( &nd );
  * \endcode

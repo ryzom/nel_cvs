@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.h,v 1.9 2000/10/03 13:27:11 cado Exp $
+ * $Id: message.h,v 1.10 2000/10/06 15:44:13 cado Exp $
  *
  * Interface of CMessage
  */
@@ -130,15 +130,6 @@ public:
 	{
 		return _MsgType;
 	}
-
-	/** Sets the message using an encoded input message.
-	 * \todo cado Now this is empty... It is used by CDatagramSocket so don't use CDatagramSocket
-	 * \param alldata An input message in which the header is in the payload buffer
-	 */
-	void			decode( CMessage& alldata );
-
-	/// Returns true if msgtype contains the length of a message name, and, if so, puts it into msgnamelen
-	static bool		decodeLenInMsgType( uint16 msgtype, uint16 *msgnamelen );
 
 	/// Returns message name. Valid if !typeIsNumber()
 	std::string		typeAsString() const

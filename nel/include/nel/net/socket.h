@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.13 2000/10/06 15:27:27 cado Exp $
+ * $Id: socket.h,v 1.14 2000/10/06 15:44:13 cado Exp $
  *
  * Interface for CSocket
  */
@@ -105,9 +105,9 @@ public:
 
 	/** Receives a message (returns false if !dataAvailable()) (unreliable sockets only).
 	 * The socket must have been bound before, by calling either bind() or sendTo().
-	 * \param [in] buffer Address of buffer
-	 * \param [in] len Length of buffer
-	 * \param [out] addr Address of sender
+	 * \param buffer [in] Address of buffer
+	 * \param len [in] Length of buffer
+	 * \param addr [out] Address of sender
 	 */
 	 bool	receivedFrom( CMessage& message, CInetAddress& addr );
 

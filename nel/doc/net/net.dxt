@@ -19,7 +19,7 @@ Here is the implementation point of view :
 
 \subsection networkusing Using the network engine
 
-- How can I send a message to another host ?
+- How can I send a message to another host, using the message handling system (layer 2) ?
 
 Example : I want to send the string "toto" to the host "server.nevrax.net" on port 40000 :
 \code

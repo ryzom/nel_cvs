@@ -18,15 +18,13 @@
  */
 
 /*
- * $Id: base_socket.h,v 1.8 2000/10/06 15:27:27 cado Exp $
+ * $Id: base_socket.h,v 1.9 2000/10/06 15:44:13 cado Exp $
  *
  * Interface of CBaseSocket
  */
 
 #ifndef NL_BASE_SOCKET_H
 #define NL_BASE_SOCKET_H
-
-/// \todo cado Compile on Linux
 
 #include "nel/net/inet_address.h"
 
@@ -164,9 +162,9 @@ public:
 
 	/** Receives data (returns false if !dataAvailable()) (unreliable sockets only).
 	 * The socket must have been bound before, by calling either bind() or sendTo().
-	 * \param [in] buffer Address of buffer
-	 * \param [in] len Length of buffer
-	 * \param [out] addr Address of sender
+	 * \param buffer [in] Address of buffer
+	 * \param len [in] Length of buffer
+	 * \param addr [out] Address of sender
 	 */
 	bool				receivedFrom( uint8 *buffer, uint len, CInetAddress& addr ) throw (ESocket);
 
@@ -176,9 +174,7 @@ public:
 	/// @name Sending data
 	//@{
 
-	/** Sends data to the specified host (unreliable sockets only)
-	 * \todo cado Update it
-	 */
+	/// Sends data to the specified host (unreliable sockets only)
 	void				sendTo( const uint8 *buffer, uint len, const CInetAddress& addr ) throw (ESocket);
 
 	/// Sends a message

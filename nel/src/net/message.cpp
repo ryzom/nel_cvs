@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.cpp,v 1.8 2000/10/02 16:42:23 cado Exp $
+ * $Id: message.cpp,v 1.9 2000/10/06 15:44:13 cado Exp $
  *
  * Implementation of CMessage
  */
@@ -139,41 +139,6 @@ void CMessage::clear()
 	_BufPos = _Buffer.begin();
 }
 
-
-/* Sets the message using an encoded input message.
- * @param alldata An input message in which the header is in the payload buffer
- */
-void CMessage::decode( CMessage& alldata )
-{
-	/* // DEPRECATED
-	//TODO: take CSocket::doReceive and update decode
-	// 1. Read message type
-	sint16 msgtype;
-	alldata.serial( msgtype );
-
-	// 2. Read message name (optional)
-	uint16 msgnamelen = 0;
-	char *msgname = NULL;
-	if ( CMessage::decodeLenInMsgType( msgtype, &msgnamelen ) )
-	{
-		msgname = new char[msgnamelen+1];
-		alldata.serialBuffer( (uint8*)msgname, msgnamelen );
-		msgname[msgnamelen] = '\0';
-	}
-	setHeader( msgtype, std::string( msgname!=NULL ? msgname : "" ) );
-	if ( msgname != NULL )
-	{
-		delete [] msgname;
-	}
-
-	// 3. Read message payload size
-	uint32 msgsize;
-	alldata.serial( msgsize );
-
-	// 4. Read payload buffer
-	alldata.serialBuffer( bufferToFill( msgsize ), msgsize );
-	*/
-}
 
 
 /*

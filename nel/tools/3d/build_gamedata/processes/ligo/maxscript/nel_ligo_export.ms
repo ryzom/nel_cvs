@@ -204,7 +204,7 @@ try
 						catch
 						(
 							-- Error
-							nlerror ("ERROR fata error exporting ligo zone "+curFileName)
+							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 						)
 					)
 				)
@@ -375,7 +375,7 @@ try
 								catch
 								(
 									-- Error
-									nlerror ("ERROR fata error exporting ligo zone "+curFileName)
+									nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 								)
 
 								-- Delete
@@ -447,7 +447,7 @@ try
 						catch
 						(
 							-- Error
-							nlerror ("ERROR fata error exporting ligo zone "+curFileName)
+							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 						)
 					)
 				)

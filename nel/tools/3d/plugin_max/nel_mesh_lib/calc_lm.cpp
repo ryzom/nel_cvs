@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * <File description>
  *
- * $Id: calc_lm.cpp,v 1.11 2001/07/11 08:27:24 besson Exp $
+ * $Id: calc_lm.cpp,v 1.12 2001/07/20 16:13:44 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -773,6 +773,21 @@ struct SGradient
 		vRet.R = (float)(this->GraduR*(u-this->InitU) + this->GradvR*(v-this->InitV) + this->InitR);
 		vRet.G = (float)(this->GraduG*(u-this->InitU) + this->GradvG*(v-this->InitV) + this->InitG);
 		vRet.B = (float)(this->GraduB*(u-this->InitU) + this->GradvB*(v-this->InitV) + this->InitB);
+
+		if (vRet.R < 0.0f)
+			vRet.R = 0.0f;
+		if (vRet.G < 0.0f)
+			vRet.G = 0.0f;
+		if (vRet.B < 0.0f)
+			vRet.B = 0.0f;
+
+		if (vRet.R > 255.0f)
+			vRet.R = 255.0f;
+		if (vRet.G > 255.0f)
+			vRet.G = 255.0f;
+		if (vRet.B > 255.0f)
+			vRet.B = 255.0f;
+
 		return vRet;
 	}
 
@@ -2049,7 +2064,7 @@ void CreateLMPlaneFromFace( SLMPlane &Out, CMesh::CFace *pF )
 			lumx3 = pF->Corner[2].Uvs[1].U, lumy3 = pF->Corner[2].Uvs[1].V;
 	double minx, miny;
 	double maxx, maxy;
-	uint32 j, k;
+	sint32 j, k;
 
 	minx = lumx1;
 	if( minx > lumx2 ) minx = lumx2;
@@ -3084,6 +3099,23 @@ void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< CMeshBase:
 }
 
 // -----------------------------------------------------------------------------------------------
+void convertToWorldCoordinate( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB )
+{
+	uint32 j, k;
+	CMatrix MBMatrix = getObjectToWorldMatrix( pMB, pMBB );
+	// Update vertices
+	for( j = 0; j < pMB->Vertices.size(); ++j )
+		pMB->Vertices[j] = MBMatrix * pMB->Vertices[j];
+	// Update normals
+	MBMatrix.invert();
+	MBMatrix.transpose();
+	for( j = 0; j < pMB->Faces.size(); ++j )
+		for( k = 0; k < 3 ; ++k )
+			pMB->Faces[j].Corner[k].Normal = 
+								MBMatrix.mulVector( pMB->Faces[j].Corner[k].Normal );
+}
+
+// -----------------------------------------------------------------------------------------------
 void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip, bool absPath )
 {
 	uint32 i, j, k;
@@ -3098,6 +3130,8 @@ void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip,
 	// Transform the meshbuilds vertices and normals to have world coordinates
 	for( i = 0; i < wrt.vMB.size(); ++i )
 	{
+		convertToWorldCoordinate( wrt.vMB[i], wrt.vMBB[i] );
+/*
 		CMatrix MBMatrix = getObjectToWorldMatrix( wrt.vMB[i], wrt.vMBB[i] );
 		// Update vertices
 		for( j = 0; j < wrt.vMB[i]->Vertices.size(); ++j )
@@ -3109,6 +3143,7 @@ void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip,
 			for( k = 0; k < 3 ; ++k )
 				wrt.vMB[i]->Faces[j].Corner[k].Normal = 
 									MBMatrix.mulVector( wrt.vMB[i]->Faces[j].Corner[k].Normal );
+*/
 	}
 
 	// Construct all cube grids from all lights
@@ -3462,7 +3497,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 
 
 					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
-						TempPlanes[nPlaneNb]->copyFirstLayerTo(*AllPlanes[AllPlanesPrevSize+nPlaneNb],nLight);
+						TempPlanes[nPlaneNb]->copyFirstLayerTo(*AllPlanes[AllPlanesPrevSize+nPlaneNb],(uint8)nLight);
 
 					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
 						delete TempPlanes[nPlaneNb];

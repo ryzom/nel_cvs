@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.42 2004/10/19 12:54:47 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.43 2004/10/22 15:06:52 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1188,7 +1188,7 @@ static CMesh *GetDummyMeshFromBank(CShapeBank &sb)
 {
 	NL_PS_FUNC(GetDummyMeshFromBank)
 	static const std::string dummyMeshName("dummy constraint mesh shape");
-	if (sb.isPresent(dummyMeshName) == CShapeBank::Present)
+	if (sb.getPresentState(dummyMeshName) == CShapeBank::Present)
 	{				
 		return NLMISC::safe_cast<CMesh *>(sb.addRef(dummyMeshName));
 	}
@@ -1240,7 +1240,7 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 	if (numVertsVect) numVertsVect->resize(_MeshShapeFileName.size());
 	for (uint k = 0; k < _MeshShapeFileName.size(); ++k)
 	{
-		if (_ModelBank->isPresent(_MeshShapeFileName[k]) == CShapeBank::Present)
+		if (_ModelBank->getPresentState(_MeshShapeFileName[k]) == CShapeBank::Present)
 		{
 			CMesh *mesh = dynamic_cast<CMesh *>( _ModelBank->addRef(_MeshShapeFileName[k]));
 			if (!mesh)
@@ -1294,7 +1294,7 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 				// shape not found, so not present in the shape bank -> we create a dummy shape
 			}
 
-			if (_ModelBank->isPresent(_MeshShapeFileName[k]) != CShapeBank::Present)
+			if (_ModelBank->getPresentState(_MeshShapeFileName[k]) != CShapeBank::Present)
 			{					
 				ok = false;
 				if (numVertsVect) (*numVertsVect)[k] = ShapeFileNotLoaded;

@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.31 2004/09/16 16:40:57 berenguier Exp $
+ * $Id: shape_bank.cpp,v 1.32 2004/10/22 15:06:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,16 +60,15 @@ IShape*CShapeBank::addRef(const string &shapeNameNotLwr)
 {	
 	string	shapeName= toLower(shapeNameNotLwr);
 
-	// If the shape is inserted in a shape cache remove it
+	// get the shape info (must succeed)
 	TShapeInfoMap::iterator scfpmIt = ShapePtrToShapeInfo.find( getShapePtrFromShapeName( shapeName ) );
-	if( scfpmIt != ShapePtrToShapeInfo.end() )
-	{
-		if( !scfpmIt->second.isAdded )
-		{
-			// The shape is not inserted into a cache
-			return getShapePtrFromShapeName( shapeName );
-		}
-	}
+	nlassert( scfpmIt != ShapePtrToShapeInfo.end() );
+
+	// If The shape is not inserted into a cache, just return it
+	if( !scfpmIt->second.isAdded )
+		return getShapePtrFromShapeName( shapeName );
+
+	// else If the shape is inserted in a shape cache remove it
 	scfpmIt->second.isAdded = false;
 	CShapeCache *pShpCache = scfpmIt->second.pShpCache;
 	nlassert( pShpCache != NULL );
@@ -405,7 +404,7 @@ bool CShapeBank::processWSUploadTexture (CWaitingShape &rWS, uint32 &nTotalUploa
 
 // ***************************************************************************
 
-CShapeBank::TShapeState CShapeBank::isPresent (const string &shapeNameNotLwr)
+CShapeBank::TShapeState CShapeBank::getPresentState (const string &shapeNameNotLwr)
 {
 	string	shapeName= toLower(shapeNameNotLwr);
 
@@ -804,7 +803,7 @@ void CShapeBank::preLoadShapes(const std::string &shapeCacheName,
 			linkShapeToShapeCache(fileName, shapeCacheName);
 
 			// If !present in the shapeBank
-			if( isPresent(fileName)==CShapeBank::NotPresent )
+			if( getPresentState(fileName)==CShapeBank::NotPresent )
 			{
 				// Don't load it if no more space in the cache
 				if( getShapeCacheFreeSpace(shapeCacheName)>0 )
@@ -813,7 +812,7 @@ void CShapeBank::preLoadShapes(const std::string &shapeCacheName,
 					load(fileName);
 
 					// If success
-					if( isPresent(fileName)!=CShapeBank::NotPresent )
+					if( getPresentState(fileName)==CShapeBank::Present )
 					{
 						// When a shape is first added to the bank, it is not in the cache. 
 						// add it and release it to force it to be in the cache.

@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.16 2004/07/27 17:46:13 berenguier Exp $
+ * $Id: shape_bank.h,v 1.17 2004/10/22 15:06:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,7 @@ public:
 
 	/// \name Instance Management
 	//@{
-	/// Add a reference to a shape and return the instance created.
+	/// Add a reference to a shape and return the instance created. NB: getPresentState()==Present must be tested first.
 	IShape*			addRef (const std::string &shapeName);
 
 	/** 
@@ -90,8 +90,8 @@ public:
 	  */
 	void			release (IShape* pShp);
 
-	/// Return TRUE if the shape is present in the bank. Process the waiting shapes.
-	TShapeState		isPresent (const std::string &shapeName);
+	/// Return the shape state. Process the waiting shapes.
+	TShapeState		getPresentState (const std::string &shapeName);
 
 	/** Return the IShape from the bank. Unlike addRef, no reference is added. 
 	 *	Thus the returning shape sould be used temporarily

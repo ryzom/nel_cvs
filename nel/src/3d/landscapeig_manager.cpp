@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.15 2004/06/21 17:38:41 lecroart Exp $
+ * $Id: landscapeig_manager.cpp,v 1.16 2004/10/22 15:06:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,9 +152,9 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc, UDriv
 										// Shape present ?
 										CShapeBank *shapeBank = _scene.getShapeBank();
 										IShape *shape = NULL;
-										if (shapeBank->isPresent (shapeName) == CShapeBank::NotPresent)
+										if (shapeBank->getPresentState (shapeName) == CShapeBank::NotPresent)
 											shapeBank->load (shapeName);
-										if (shapeBank->isPresent (shapeName) == CShapeBank::Present)
+										if (shapeBank->getPresentState (shapeName) == CShapeBank::Present)
 											shape = shapeBank->addRef(shapeName);
 
 										// Shape loaded ?

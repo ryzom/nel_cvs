@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.16 2004/07/13 16:15:10 vizerie Exp $
+ * $Id: flare_shape.cpp,v 1.17 2004/10/22 15:06:52 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -199,10 +199,10 @@ CMesh *CFlareShape::getOcclusionTestMesh(CShapeBank &sb)
 	if (_OcclusionTestMesh) return _OcclusionTestMesh;
 	if (_OcclusionMeshNotFound) return NULL;
 	if (_OcclusionTestMeshName.empty()) return NULL;
-	if (!sb.isPresent(_OcclusionTestMeshName))
+	if (sb.getPresentState(_OcclusionTestMeshName)!=CShapeBank::Present)
 	{
 		sb.load(_OcclusionTestMeshName);
-		if (!sb.isPresent(_OcclusionTestMeshName))
+		if (sb.getPresentState(_OcclusionTestMeshName)!=CShapeBank::Present)
 		{
 			_OcclusionMeshNotFound = true;
 			return NULL;

@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.19 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: animation_set.cpp,v 1.20 2004/10/22 15:06:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -301,7 +301,7 @@ void	CAnimationSet::preloadSSSShapes(IDriver &drv, CShapeBank &shapeBank)
 		shapeBank.linkShapeToShapeCache(fileName, shapeCacheName);
 		
 		// If !present in the shapeBank
-		if( shapeBank.isPresent(fileName)==CShapeBank::NotPresent )
+		if( shapeBank.getPresentState(fileName)==CShapeBank::NotPresent )
 		{
 			// Don't load it if no more space in the cache
 			if( shapeBank.getShapeCacheFreeSpace(shapeCacheName)>0 )
@@ -310,7 +310,7 @@ void	CAnimationSet::preloadSSSShapes(IDriver &drv, CShapeBank &shapeBank)
 				shapeBank.load(fileName);
 				
 				// If success
-				if( shapeBank.isPresent(fileName)!=CShapeBank::NotPresent )
+				if( shapeBank.getPresentState(fileName)==CShapeBank::Present )
 				{
 					// When a shape is first added to the bank, it is not in the cache. 
 					// add it and release it to force it to be in the cache.

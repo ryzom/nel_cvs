@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.129 2004/09/20 11:55:25 berenguier Exp $
+ * $Id: scene.cpp,v 1.130 2004/10/22 15:06:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -629,7 +629,7 @@ void CScene::updateWaitingInstances(double systemTimeEllapsed)
 	TWaitingInstancesMMap::iterator wimmIt = _WaitingInstances.begin();
 	while( wimmIt != _WaitingInstances.end() )
 	{
-		CShapeBank::TShapeState st = _ShapeBank->isPresent (wimmIt->first);
+		CShapeBank::TShapeState st = _ShapeBank->getPresentState (wimmIt->first);
 		if (st == CShapeBank::AsyncLoad_Error)
 		{
 			// Delete the waiting instance - Nobody can be informed of that...
@@ -690,11 +690,11 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 	nlassert( _ShapeBank != NULL );
 	
 	// If the shape is not present in the bank
-	if (_ShapeBank->isPresent( shapeName ) != CShapeBank::Present)
+	if (_ShapeBank->getPresentState( shapeName ) != CShapeBank::Present)
 	{
 		// Load it from file
 		_ShapeBank->load( shapeName );
-		if (_ShapeBank->isPresent( shapeName ) != CShapeBank::Present)
+		if (_ShapeBank->getPresentState( shapeName ) != CShapeBank::Present)
 		{
 			return NULL;
 		}
@@ -760,7 +760,7 @@ void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pIns
 	// Add the instance request
 	_WaitingInstances.insert(TWaitingInstancesMMap::value_type(shapeName,pInstance));
 	// If the shape is not present in the bank
-	if (_ShapeBank->isPresent( shapeName ) != CShapeBank::Present)
+	if (_ShapeBank->getPresentState( shapeName ) != CShapeBank::Present)
 	{
 		// Load it from file asynchronously
 		_ShapeBank->loadAsync( toLower(shapeName), getDriver(), position, NULL, selectedTexture);

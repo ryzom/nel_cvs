@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.78 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.79 2004/10/22 15:06:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -857,7 +857,7 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver, uint selec
 			if (allShapesToLoad.find(shapeName) == allShapesToLoad.end())
 			{
 				allShapesToLoad.insert (shapeName);
-				if (scene.getShapeBank()->isPresent(shapeName) != CShapeBank::Present)
+				if (scene.getShapeBank()->getPresentState(shapeName) != CShapeBank::Present)
 				{
 					// Load it from file asynchronously
 					scene.getShapeBank()->loadAsync (shapeName, scene.getDriver(), rInstanceInfo.Pos, &_AddToSceneSignal, selectedTexture);

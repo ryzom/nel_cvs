@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.129 2004/10/12 15:59:27 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.130 2004/10/22 15:07:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2101,7 +2101,7 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 	// *** Add the shape
 
 	// Store the shape pointer
-	if (CNELU::ShapeBank->isPresent(meshName))
+	if (CNELU::ShapeBank->getPresentState(meshName)!=CShapeBank::NotPresent)
 	{
 		delete pMeshShape;
 	}
@@ -2319,7 +2319,7 @@ uint CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName)
 	// *** Add the shape
 
 	// Store the shape pointer
-	if (CNELU::ShapeBank->isPresent(skelName))
+	if (CNELU::ShapeBank->getPresentState(skelName)!=CShapeBank::NotPresent)
 	{
 		delete pSkelShape;
 	}

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.213 2004/09/22 18:22:41 distrib Exp $
+ * $Id: service.cpp,v 1.214 2004/10/21 11:48:03 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -250,7 +250,7 @@ void cbDirectoryChanged (IVariable &var)
 
 void cbReceiveShardId (CMessage& msgin, const string &serviceName, uint16 serviceId)
 {
-	uint32	shardId;
+	uint8 shardId;
 	msgin.serial(shardId);
 
 	if (serviceName != "WS")
@@ -259,7 +259,7 @@ void cbReceiveShardId (CMessage& msgin, const string &serviceName, uint16 servic
 		return;
 	}
 
-	nlinfo("SERVICE: set ShardId to %d", shardId);
+	nlinfo("SERVICE: set ShardId to %hu", (uint16)shardId);
 	IService::getInstance()->_ShardId = shardId;
 }
 

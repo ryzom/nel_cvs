@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.14 2004/08/13 18:54:53 brigand Exp $
+ * $Id: eid_translator.h,v 1.15 2004/08/14 10:17:37 brigand Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -146,7 +146,6 @@ private:
 
 	friend void cbInvalidEntityNamesFilename(const std::string &filename);
 	friend struct entityNameValidClass;
-	NLMISC_CATEGORISED_COMMAND_FRIEND(nel,findEIdByUser);
 	NLMISC_CATEGORISED_COMMAND_FRIEND(nel,findEIdByUser);
 	NLMISC_CATEGORISED_COMMAND_FRIEND(nel,findEIdByEntity);
 	NLMISC_CATEGORISED_COMMAND_FRIEND(nel,entityNameValid);

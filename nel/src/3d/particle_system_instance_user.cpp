@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.18 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.19 2002/10/29 14:40:00 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -379,6 +379,13 @@ void		CParticleSystemInstanceUser::setAsyncTextureDistance(float dist)
 float		CParticleSystemInstanceUser::getAsyncTextureDistance() const
 {
 	return 0;
+}
+void		CParticleSystemInstanceUser::setAsyncTextureDirty(bool flag)
+{
+}
+bool		CParticleSystemInstanceUser::isAsyncTextureDirty() const
+{
+	return false;
 }
 
 

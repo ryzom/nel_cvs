@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.15 2002/10/25 15:58:42 berenguier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.16 2002/10/29 14:40:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,7 @@ CMeshBaseInstance::CMeshBaseInstance()
 	_AsyncTextureToLoadRefCount= 0;
 	_AsyncTextureMode= false;
 	_AsyncTextureReady= true;
+	_AsyncTextureDirty= false;
 	_AsyncTextureDistance= 0;
 
 	// I am a CMeshBaseInstance!!
@@ -291,6 +292,11 @@ void CMeshBaseInstance::selectTextureSet(uint id)
 		}
 	}
 
+	// Flag the instance as AsyncTextureDirty if in this mode
+	if(_AsyncTextureMode)
+	{
+		setAsyncTextureDirty(true);
+	}
 }
 
 
@@ -368,6 +374,9 @@ void			CMeshBaseInstance::enableAsyncTextureMode(bool enable)
 				}
 			}
 		}
+
+		// For convenience, flag the instance as Dirty.
+		setAsyncTextureDirty(true);
 	}
 	// else, AsyncTextureMode disabled
 	else

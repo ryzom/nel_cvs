@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.13 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: instance_user.h,v 1.14 2002/10/29 14:40:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,12 +93,7 @@ public:
 		return dynamic_cast<UInstanceMaterial&>(_Materials[materialId]);
 	}
 
-	virtual void selectTextureSet(uint id)
-	{
-		NL3D_MEM_INSTANCE
-		CMeshBaseInstance *mbi  = NLMISC::safe_cast<CMeshBaseInstance *>(_Instance);
-		mbi->selectTextureSet(id);
-	}
+	virtual void selectTextureSet(uint id);
 	// @}
 
 
@@ -136,6 +131,8 @@ public:
 	virtual	bool		isAsyncTextureReady() ;
 	virtual	void		setAsyncTextureDistance(float dist) ;
 	virtual	float		getAsyncTextureDistance() const ;
+	virtual	void		setAsyncTextureDirty(bool flag);
+	virtual	bool		isAsyncTextureDirty() const;
 	// @}
 
 };

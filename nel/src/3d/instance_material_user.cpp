@@ -1,7 +1,7 @@
 /** \file instance_material_user.cpp
  * <File description>
  *
- * $Id: instance_material_user.cpp,v 1.5 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: instance_material_user.cpp,v 1.6 2002/10/29 14:40:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,7 +88,10 @@ void				CInstanceMaterialUser::setTextureFileName(const std::string &fileName, u
 			nlwarning("UInstanceMaterialUser::setTextureFileName : the texture is not a texture file");
 			return;
 		}
+		// replace the fileName
 		_AsyncTextureBlock->TextureNames[stage]= fileName;
+		// Flag the instance.
+		_MBI->setAsyncTextureDirty(true);
 	}
 	else
 	{

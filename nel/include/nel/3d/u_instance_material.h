@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * <File description>
  *
- * $Id: u_instance_material.h,v 1.7 2002/08/19 09:30:31 berenguier Exp $
+ * $Id: u_instance_material.h,v 1.8 2002/10/29 14:40:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,7 +117,10 @@ public:
 	virtual bool				isTextureFile(uint stage = 0) const = 0;
 	/// Get the fileName used by the n-th texture file. (must be a texture file or an assertion is raised)
 	virtual std::string			getTextureFileName(uint stage = 0) const = 0;
-	/// Set the fileName used by the n-th texture file. (must be a texture file or an assertion is raised)
+	/** Set the fileName used by the n-th texture file. (must be a texture file or an assertion is raised)
+	 *	NB: if success and if instanceOwner->getAsyncTextureMode()==true, then instanceOwner->setAsyncTextureDirty(true) 
+	 *	is called
+	 */
 	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0) = 0;		
 };
 

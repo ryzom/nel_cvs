@@ -1,7 +1,7 @@
 /** \file async_texture_manager.cpp
  * <File description>
  *
- * $Id: async_texture_manager.cpp,v 1.2 2002/10/25 16:13:10 berenguier Exp $
+ * $Id: async_texture_manager.cpp,v 1.3 2002/10/29 14:40:00 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -157,6 +157,8 @@ uint			CAsyncTextureManager::addTextureRef(const string &textName, CMeshBaseInst
 		CTextureEntry	*text= new CTextureEntry();
 		_TextureEntries[i]= text;
 		text->Texture= new CTextureFile;
+		// Do not allow degradation.
+		text->Texture->setAllowDegradation(false);
 
 		// add to map.
 		it= _TextureEntryMap.insert(make_pair(textName, i)).first;
@@ -716,6 +718,8 @@ void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
 		// create a new TextureFile, with no sharing system.
 		nlassert(textLod->Texture==NULL);
 		textLod->Texture= new CTextureFile;
+		// Do not allow degradation.
+		textLod->Texture->setAllowDegradation(false);
 		textLod->Texture->enableSharing(false);
 		textLod->Texture->setFileName(textLod->TextureEntry->Texture->getFileName());
 		textLod->Texture->setMipMapSkipAtLoad(textLod->Level);

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.16 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: particle_system_instance_user.h,v 1.17 2002/10/29 14:40:00 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -130,6 +130,8 @@ public:
 	virtual	bool		isAsyncTextureReady() ;
 	virtual	void		setAsyncTextureDistance(float dist) ;
 	virtual	float		getAsyncTextureDistance() const ;
+	virtual	void		setAsyncTextureDirty(bool flag);
+	virtual	bool		isAsyncTextureDirty() const;
 
 private:
 	/// list of observers

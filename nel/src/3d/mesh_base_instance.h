@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.18 2002/10/25 15:58:42 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.19 2002/10/29 14:40:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,6 +164,7 @@ public:
 	 *	When it swap from false to true, each texture file in Materials are replaced with 
 	 *	"blank.tga", and true fileNames are copied into AsyncTextures.
 	 *	When it swap from true to false, the inverse is applied.
+	 *	NB: calling enableAsyncTextureMode(true) calls setAsyncTextureDirty(true)
 	 */
 	void			enableAsyncTextureMode(bool enable);
 	bool			getAsyncTextureMode() const {return _AsyncTextureMode;}
@@ -184,6 +185,14 @@ public:
 	 */
 	void			setAsyncTextureDistance(float dist) {_AsyncTextureDistance= dist;}
 	float			getAsyncTextureDistance() const {return _AsyncTextureDistance;}
+
+	/** User is free to flag this state, to know if startAsyncTextureLoading() should be called. 
+	 *	Internal system don't use this flag. 
+	 *	Default is false
+	 */
+	void			setAsyncTextureDirty(bool flag) {_AsyncTextureDirty= flag;}
+	/// see dirtAsyncTextureState()
+	bool			isAsyncTextureDirty() const {return _AsyncTextureDirty;}
 	// @}
 
 
@@ -216,6 +225,7 @@ private:
 	/// 0 if all the texture are async loaded. Setup by the CAsyncTextureManager
 	friend	class	CAsyncTextureManager;
 	sint							_AsyncTextureToLoadRefCount;
+	bool							_AsyncTextureDirty;
 	bool							_AsyncTextureMode;
 	bool							_AsyncTextureReady;
 	// A copy of AsyncTextures done at each startAsyncTextureLoading().

@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.10 2002/10/25 15:50:09 berenguier Exp $
+ * $Id: u_instance.h,v 1.11 2002/10/29 14:40:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,9 @@ public:
 	virtual	uint				getNumMaterials() const =0;
 	/// return a local access on a material, to change its values. (NB: overwrited, if animated).
 	virtual	UInstanceMaterial	&getMaterial(uint materialId)=0;
-	/// Select textures of material among several sets (if available)
+	/** Select textures of material among several sets (if available)
+	 *	NB: if success and if getAsyncTextureMode()==true, then setAsyncTextureDirty(true) is called
+	 */
 	virtual void selectTextureSet(uint id)=0;
 	// @}
 
@@ -130,6 +132,7 @@ public:
 	 *	When it swap from false to true, each texture file in Materials are replaced with 
 	 *	"blank.tga", and true fileNames are copied into AsyncTextures.
 	 *	When it swap from true to false, the inverse is applied.
+	 *	NB: calling enableAsyncTextureMode(true) calls setAsyncTextureDirty(true)
 	 */
 	virtual	void		enableAsyncTextureMode(bool enable) =0;
 	virtual	bool		getAsyncTextureMode() const =0;
@@ -152,6 +155,14 @@ public:
 	/** \see setAsyncTextureDistance()
 	 */
 	virtual	float		getAsyncTextureDistance() const =0;
+
+	/** User is free to flag this state, to know if startAsyncTextureLoading() should be called. 
+	 *	Internal system don't use this flag. 
+	 *	Default is false
+	 */
+	virtual	void		setAsyncTextureDirty(bool flag) =0;
+	/// see dirtAsyncTextureState()
+	virtual	bool		isAsyncTextureDirty() const =0;
 
 	// @}
 

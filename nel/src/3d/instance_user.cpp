@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.14 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: instance_user.cpp,v 1.15 2002/10/29 14:40:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,8 +116,18 @@ float		CInstanceUser::getShapeDistMax() const
 
 
 // ***************************************************************************
+void		CInstanceUser::selectTextureSet(uint id)
+{
+	NL3D_MEM_INSTANCE
+	CMeshBaseInstance *mbi  = NLMISC::safe_cast<CMeshBaseInstance *>(_Instance);
+	mbi->selectTextureSet(id);
+}
+
+
+// ***************************************************************************
 void		CInstanceUser::enableAsyncTextureMode(bool enable) 
 {
+	NL3D_MEM_INSTANCE
 	nlassert(_Instance->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
 	mbi->enableAsyncTextureMode(enable) ;
@@ -125,6 +135,7 @@ void		CInstanceUser::enableAsyncTextureMode(bool enable)
 // ***************************************************************************
 bool		CInstanceUser::getAsyncTextureMode() const 
 {
+	NL3D_MEM_INSTANCE
 	nlassert(_Instance->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
 	return mbi->getAsyncTextureMode() ;
@@ -132,6 +143,7 @@ bool		CInstanceUser::getAsyncTextureMode() const
 // ***************************************************************************
 void		CInstanceUser::startAsyncTextureLoading() 
 {
+	NL3D_MEM_INSTANCE
 	nlassert(_Instance->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
 	mbi->startAsyncTextureLoading();
@@ -139,6 +151,7 @@ void		CInstanceUser::startAsyncTextureLoading()
 // ***************************************************************************
 bool		CInstanceUser::isAsyncTextureReady() 
 {
+	NL3D_MEM_INSTANCE
 	nlassert(_Instance->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
 	return mbi->isAsyncTextureReady();
@@ -146,6 +159,7 @@ bool		CInstanceUser::isAsyncTextureReady()
 // ***************************************************************************
 void		CInstanceUser::setAsyncTextureDistance(float dist)
 {
+	NL3D_MEM_INSTANCE
 	nlassert(_Instance->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
 	mbi->setAsyncTextureDistance(dist);
@@ -153,9 +167,26 @@ void		CInstanceUser::setAsyncTextureDistance(float dist)
 // ***************************************************************************
 float		CInstanceUser::getAsyncTextureDistance() const
 {
+	NL3D_MEM_INSTANCE
 	nlassert(_Instance->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
 	return mbi->getAsyncTextureDistance();
+}
+// ***************************************************************************
+void		CInstanceUser::setAsyncTextureDirty(bool flag)
+{
+	NL3D_MEM_INSTANCE
+	nlassert(_Instance->isMeshBaseInstance());
+	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
+	mbi->setAsyncTextureDirty(flag);
+}
+// ***************************************************************************
+bool		CInstanceUser::isAsyncTextureDirty() const
+{
+	NL3D_MEM_INSTANCE
+	nlassert(_Instance->isMeshBaseInstance());
+	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
+	return mbi->isAsyncTextureDirty();
 }
 
 

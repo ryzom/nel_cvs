@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.5 2001/01/16 14:46:56 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.6 2001/01/24 14:12:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,15 +43,13 @@
 #endif
 #include <GL/glext.h>	// Please download it from http://oss.sgi.com/projects/ogl-sample/ABI/"
 
-#ifdef GL_GLEXT_VERSION_EXT			// Old glext.h define GL_GLEXT_VERSION_EXT not GL_GLEXT_VERSION
-  #if GL_GLEXT_VERSION_EXT < 7
-    #error "I need a newer <GL/glext.h>. Please download it from http://oss.sgi.com/projects/ogl-sample/ABI/"
-  #endif // GL_GLEXT_VERSION_EXT < 7
-#else // GL_GLEXT_VERSION_EXT
-  #if GL_GLEXT_VERSION < 7
-    #error "I need a newer <GL/glext.h>. Please download it from http://oss.sgi.com/projects/ogl-sample/ABI/"
-  #endif // GL_GLEXT_VERSION < 7
-#endif 
+#ifndef GL_GLEXT_VERSION
+#error "I need a newer <GL/glext.h>. Please download it from http://oss.sgi.com/projects/ogl-sample/ABI/"
+#endif // GL_GLEXT_VERSION
+
+#if GL_GLEXT_VERSION < 7
+#error "I need a newer <GL/glext.h>. Please download it from http://oss.sgi.com/projects/ogl-sample/ABI/"
+#endif // GL_GLEXT_VERSION < 7
 
 namespace	NL3D
 {

@@ -1,7 +1,7 @@
 /** \file lod_character_shape.cpp
  * <File description>
  *
- * $Id: lod_character_shape.cpp,v 1.6 2002/11/14 17:27:32 berenguier Exp $
+ * $Id: lod_character_shape.cpp,v 1.7 2002/11/28 14:11:02 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -638,7 +638,9 @@ void			CLodCharacterShape::startBoneColor(std::vector<NLMISC::CRGBAF>	&tmpColors
 // ***************************************************************************
 void			CLodCharacterShape::addBoneColor(uint boneId, CRGBA	color, std::vector<NLMISC::CRGBAF> &tmpColors) const
 {
-	nlassert(boneId<_Bones.size());
+	// Yoyo: This is an error to not have the same skeleton that the one stored in the lod shape. But must not crash
+	if(boneId>=_Bones.size())
+		return;
 	const CBoneInfluence	&bone= _Bones[boneId];
 
 	// for all vertices influenced by this bone, must influence the color

@@ -1,7 +1,7 @@
 /** \file primitive_class.h
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.h,v 1.8 2004/06/18 15:18:22 ledorze Exp $
+ * $Id: primitive_class.h,v 1.8.4.1 2004/09/13 15:56:40 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -58,7 +58,8 @@ public:
 		Point,
 		Path,
 		Bitmap,
-		Zone
+		Zone,
+		Alias
 	}						Type;
 
 	/// Constructor
@@ -103,10 +104,12 @@ public:
 		public:
 			std::string		Name;
 			bool			GenID;
+
 			bool			operator== (const CDefaultValue &other) const
 			{
 				return (Name == other.Name) && (GenID == other.GenID);
 			}
+
 			bool			operator< (const CDefaultValue &other) const
 			{
 				if (Name < other.Name) 

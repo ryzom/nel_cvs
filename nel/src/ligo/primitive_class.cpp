@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.14 2004/06/21 17:38:43 lecroart Exp $
+ * $Id: primitive_class.cpp,v 1.14.4.1 2004/09/13 15:56:41 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -237,6 +237,8 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 			Type = Zone;
 		else if (type == "bitmap")
 			Type = Bitmap;
+		else if (type == "alias")
+			Type = Alias;
 		else 
 		{
 			config.syntaxError (filename, primitiveNode, "Unknown primitive type (%s)", type.c_str ());

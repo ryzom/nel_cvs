@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.39 2004/03/22 11:40:59 berenguier Exp $
+ * $Id: config_file.h,v 1.39.4.1 2004/09/13 15:56:41 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,23 +157,23 @@ public:
 		/// Set the content of the variable as a float
 		void				setAsFloat	(float val, int index=0);
 		/// Set the content of the variable as a STL string
-		void				setAsString	(std::string val, int index=0);
+		void				setAsString	(const std::string &val, int index=0);
 
 		/// Force the content of the variable to be a single integer
 		void				forceAsInt	(int val);
 		/// Force the content of the variable to be a single double
 		void				forceAsDouble	(double val);
 		/// Force the content of the variable to be a single string
-		void				forceAsString	(std::string val);
+		void				forceAsString	(const std::string &val);
 		
 		/// Set the content of the aray variable as an integer
-		void				setAsInt	(std::vector<int> vals);
+		void				setAsInt	(const std::vector<int> &vals);
 		/// Set the content of the aray variable as a double
-		void				setAsDouble	(std::vector<double> vals);
+		void				setAsDouble	(const std::vector<double> &vals);
 		/// Set the content of the aray variable as a float
-		void				setAsFloat	(std::vector<float> vals);
+		void				setAsFloat	(const std::vector<float> &vals);
 		/// Set the content of the aray variable as a string
-		void				setAsString	(std::vector<std::string> vals);
+		void				setAsString	(const std::vector<std::string> &vals);
 		
 		//@}
 

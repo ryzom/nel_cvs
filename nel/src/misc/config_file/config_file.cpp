@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.59 2004/03/22 11:41:18 berenguier Exp $
+ * $Id: config_file.cpp,v 1.59.4.1 2004/09/13 15:56:41 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,7 +136,7 @@ void CConfigFile::CVar::setAsFloat (float val, int index)
 	setAsDouble (val, index);
 }
 
-void CConfigFile::CVar::setAsString (std::string val, int index)
+void CConfigFile::CVar::setAsString (const std::string &val, int index)
 {
 	if (Type != T_STRING) throw EBadType (Name, Type, T_STRING);
 	else if (index > (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
@@ -165,7 +165,7 @@ void CConfigFile::CVar::forceAsDouble	(double val)
 	Root = false;
 }
 
-void CConfigFile::CVar::forceAsString	(std::string val)
+void CConfigFile::CVar::forceAsString	(const std::string &val)
 {
 	Type= T_STRING;
 	IntValues.clear();
@@ -175,21 +175,21 @@ void CConfigFile::CVar::forceAsString	(std::string val)
 	Root = false;
 }
 
-void CConfigFile::CVar::setAsInt (std::vector<int> vals)
+void CConfigFile::CVar::setAsInt (const std::vector<int> &vals)
 {
 	if (Type != T_INT) throw EBadType (Name, Type, T_INT);
 	else IntValues = vals;
 	Root = false;
 }
 
-void CConfigFile::CVar::setAsDouble (std::vector<double> vals)
+void CConfigFile::CVar::setAsDouble (const std::vector<double> &vals)
 {
 	if (Type != T_REAL) throw EBadType (Name, Type, T_REAL);
 	else RealValues = vals;
 	Root = false;
 }
 
-void CConfigFile::CVar::setAsFloat (std::vector<float> vals)
+void CConfigFile::CVar::setAsFloat (const std::vector<float> &vals)
 {
 	if (Type != T_REAL) throw EBadType (Name, Type, T_REAL);
 	else
@@ -202,7 +202,7 @@ void CConfigFile::CVar::setAsFloat (std::vector<float> vals)
 	Root = false;
 }
 
-void CConfigFile::CVar::setAsString (std::vector<std::string> vals)
+void CConfigFile::CVar::setAsString (const std::vector<std::string> &vals)
 {
 	if (Type != T_STRING) throw EBadType (Name, Type, T_STRING);
 	else StrValues = vals;

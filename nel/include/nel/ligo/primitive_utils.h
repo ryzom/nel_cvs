@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.6 2004/08/20 08:05:05 boucher Exp $
+ * $Id: primitive_utils.h,v 1.6.4.1 2004/09/13 15:56:40 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -343,7 +343,7 @@ inline bool saveXmlPrimitiveFile(CPrimitives &primDoc, const std::string &fileNa
  *	you must use filterPrimitiveChilds to do this.
  */
 template <class Pred>
-IPrimitive *getPrimitiveChild(IPrimitive *parent, Pred &predicate)
+IPrimitive *getPrimitiveChild(const IPrimitive *parent, Pred &predicate)
 {
 	for (uint i=0; i<parent->getNumChildren(); ++i)
 	{
@@ -389,8 +389,8 @@ void filterPrimitiveChilds(IPrimitive *parent, Pred &predicate, TPrimitiveSet &r
 }
 
 
-/** Build a string that reprensent the path to a node 
- *	Note that the reverse operation does not garantie to
+/** Build a string that represent the path to a node 
+ *	Note that the reverse operation does not guarantie to
  *	return a unique node because there is no name 
  *	uniqueness constrains in the primitive system.
  */

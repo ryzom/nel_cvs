@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.35 2004/07/19 08:15:57 boucher Exp $
+ * $Id: primitive.cpp,v 1.35.4.1 2004/09/13 15:56:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,14 +29,18 @@
 #include "nel/ligo/ligo_config.h"
 #include "nel/ligo/primitive_class.h"
 #include "nel/misc/i_xml.h"
+#include "nel/misc/path.h"
 
 using namespace NLMISC;
 using namespace std;
 
-#define NLLIGO_PRIMITVE_VERSION 0
+const uint32 NLLIGO_PRIMITIVE_VERSION = 1;
 
 namespace NLLIGO
 {
+
+CPrimitiveContext	*CPrimitiveContext::_Instance = NULL;
+
 
 // ***************************************************************************
 // XML helpers
@@ -101,6 +105,48 @@ bool GetPropertyString (string &result, const char *filename, xmlNodePtr xmlNode
 
 // ***************************************************************************
 
+bool ReadInt (const char *propName, int &result, const char *filename, xmlNodePtr xmlNode)
+{
+	string value;
+	if (GetPropertyString (value, filename, xmlNode, propName))
+	{
+		result = atoi (value.c_str ());
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+void WriteInt (const char *propName, int value, xmlNodePtr xmlNode)
+{
+	// Set properties
+	xmlSetProp (xmlNode, (const xmlChar*)propName, (const xmlChar*)(toString (value).c_str ()));
+}
+
+// ***************************************************************************
+
+bool ReadUInt (const char *propName, uint &result, const char *filename, xmlNodePtr xmlNode)
+{
+	string value;
+	if (GetPropertyString (value, filename, xmlNode, propName))
+	{
+		result = strtoul (value.c_str (), NULL, 10);
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+void WriteUInt (const char *propName, uint value, xmlNodePtr xmlNode)
+{
+	// Set properties
+	xmlSetProp (xmlNode, (const xmlChar*)propName, (const xmlChar*)(toString (value).c_str ()));
+}
+
+// ***************************************************************************
+
 bool ReadFloat (const char *propName, float &result, const char *filename, xmlNodePtr xmlNode)
 {
 	string value;
@@ -110,6 +156,14 @@ bool ReadFloat (const char *propName, float &result, const char *filename, xmlNo
 		return true;
 	}
 	return false;
+}
+
+// ***************************************************************************
+
+void WriteFloat (const char *propName, float value, xmlNodePtr xmlNode)
+{
+	// Set properties
+	xmlSetProp (xmlNode, (const xmlChar*)propName, (const xmlChar*)(toString (value).c_str ()));
 }
 
 // ***************************************************************************
@@ -150,13 +204,6 @@ void WriteVector (const CPrimVector &point, xmlNodePtr xmlNode)
 		xmlSetProp (xmlNode, (const xmlChar*)"SELECTED", (const xmlChar*)"true");
 }
 
-// ***************************************************************************
-
-void WriteFloat (const char *propName, float value, xmlNodePtr xmlNode)
-{
-	// Set properties
-	xmlSetProp (xmlNode, (const xmlChar*)propName, (const xmlChar*)(toString (value).c_str ()));
-}
 
 // ***************************************************************************
 
@@ -955,6 +1002,12 @@ void CPrimRegion::serial (IStream &f)
 // IPrimitive
 // ***************************************************************************
 
+IPrimitive::IPrimitive () 
+{
+	_Parent = NULL;
+}
+
+
 IPrimitive::IPrimitive (const IPrimitive &node)
 {
 	_Parent = NULL;
@@ -1022,6 +1075,31 @@ void IPrimitive::updateChildId (uint index)
 	for (i=index; i<count; i++)
 		_Children[i]->_ChildId = i;
 }
+
+// ***************************************************************************
+
+void IPrimitive::branchLink()
+{
+	onBranchLink();
+	std::vector<IPrimitive*>::iterator first(_Children.begin()), last(_Children.end());
+	for (; first != last; ++first)
+	{
+		(*first)->branchLink();
+	}
+}
+
+// ***************************************************************************
+
+void IPrimitive::branchUnlink()
+{
+	onBranchUnlink();
+	std::vector<IPrimitive*>::iterator first(_Children.begin()), last(_Children.end());
+	for (; first != last; ++first)
+	{
+		(*first)->branchUnlink();
+	}
+}
+
 
 // ***************************************************************************
 
@@ -1462,6 +1540,28 @@ void IPrimitive::removeChildren ()
 
 // ***************************************************************************
 
+bool IPrimitive::unlinkChild(IPrimitive *child)
+{
+	uint childId;
+	if (getChildId(childId, child))
+	{
+		child->onUnlinkFromParent();
+		child->branchUnlink();
+		_Children.erase (_Children.begin()+childId);
+		updateChildId (childId);
+		child->_Parent = NULL;
+		child->_ChildId = NULL;
+		return true;
+	}
+	else
+	{
+		nlwarning("NLLIGO::IPrimitive::unlinkChild : invalid child, can't unlink (child : %p)", child);
+	}
+	return false;
+}
+
+// ***************************************************************************
+
 bool IPrimitive::insertChild (IPrimitive *primitive, uint index)
 {
 	// At the end ?
@@ -1480,6 +1580,10 @@ bool IPrimitive::insertChild (IPrimitive *primitive, uint index)
 
 	// Link to the parent
 	primitive->_Parent = this;
+
+	// signaling
+	primitive->onLinkToParent();
+	primitive->branchLink();
 
 	return true;
 }
@@ -1660,6 +1764,8 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 					type="CPrimPath";
 				if (type=="zone")
 					type="CPrimZone";
+				if (type=="alias")
+					type="CPrimAlias";
 				IPrimitive *primitive = static_cast<IPrimitive *> (CClassRegistry::create (type));
 
 				// Primitive type not found ?
@@ -1674,6 +1780,7 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 
 				// Add it
 				insertChild (primitive);
+
 			}
 			else
 			{
@@ -1861,19 +1968,168 @@ uint IPrimitive::getNumProperty () const
 }
 
 // ***************************************************************************
+
+
+// ***************************************************************************
+// CPrimAlias
+// ***************************************************************************
+
+CPrimAlias::CPrimAlias() :
+	_Container(NULL),
+	_Alias(0)
+{
+}
+
+CPrimAlias::CPrimAlias(const CPrimAlias &other)
+	: IPrimitive(other)
+{
+	// clear the container reference and alias
+	_Container = NULL;
+	_Alias = other._Alias;
+}
+
+CPrimAlias::~CPrimAlias()
+{
+	if (_Container)
+		onBranchUnlink();
+}
+
+void CPrimAlias::onBranchLink()
+{
+	CPrimitiveContext	&ctx = CPrimitiveContext::instance();
+	// context must be set when handling alias
+	nlassert(ctx.CurrentPrimitive);
+	nlassert(_Container ==  NULL || _Container == ctx.CurrentPrimitive);
+
+	_Container = ctx.CurrentPrimitive;
+
+	// generate a new alias, eventually keeping the current one if any and if still available
+	_Alias = _Container->genAlias(this, _Alias);
+}
+
+void CPrimAlias::onBranchUnlink()
+{
+	nlassert(_Container !=  NULL);
+	_Container->releaseAlias(this, _Alias);
+	_Container = NULL;
+
+	// NB : we keep the alias value for next linkage
+}
+
+uint32	CPrimAlias::getAlias() const
+{
+	return _Alias;
+}
+
+uint32	CPrimAlias::getFullAlias() const
+{
+	nlassert(_Container != NULL);
+	return _Container->buildFullAlias(_Alias);
+}
+
+// Read the primitive
+bool CPrimAlias::read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config)
+{
+	// Read alias
+	xmlNodePtr ptNode = CIXml::getFirstChildNode (xmlNode, "ALIAS");
+	if (ptNode)
+	{
+		int val;
+		if (ReadInt ("VALUE", val, filename, ptNode))
+		{
+			_Alias = uint32(val);
+
+//			nlassert( CPrimitiveContext::instance().CurrentPrimitive);
+////			nlassert(_Container);
+//			 CPrimitiveContext::instance().CurrentPrimitive->reserveAlias(_Alias);
+//			// set to null, it will be rewrited by onBranchLink callback
+////			_Container = NULL;
+		}
+		else
+		{
+			// error in format !
+			nlwarning("CPrimAlias::read: Can't find xml property 'VALUE' in element <ALIAS>");
+			return false;
+		}
+	}
+	else 
+	{
+		// error in format !
+		nlwarning("CPrimAlias::read: Can't find xml element <ALIAS>");
+		return false;
+	}
+
+	return IPrimitive::read (xmlNode, filename, version, config);
+}
+// Write the primitive
+void CPrimAlias::write (xmlNodePtr xmlNode, const char *filename) const
+{
+	// Write alias
+	xmlNodePtr ptNode = xmlNewChild(xmlNode, NULL, (const xmlChar*)"ALIAS", NULL);
+	WriteInt("VALUE", int(_Alias), ptNode);
+
+	IPrimitive::write (xmlNode, filename);
+}
+
+// Create a copy of this primitive
+IPrimitive *CPrimAlias::copy () const
+{
+	// NB : this will not call the reserveAlias on the container
+	CPrimAlias *pa = new CPrimAlias(*this);
+
+	// clear the alias and container reference
+	pa->_Alias = 0;
+	pa->_Container = 0;
+
+	return pa;
+}
+// serial for binary save
+void CPrimAlias::serial (NLMISC::IStream &f)
+{
+	IPrimitive::serial(f);
+
+	f.serial(_Alias);
+
+//	if (f.isReading())
+//	{
+//		nlassert(_Container);
+//		_Container->reserveAlias(_Alias);
+//	}
+}
+
+
+// ***************************************************************************
 // CPrimitives
 // ***************************************************************************
 
-CPrimitives::CPrimitives ()
+CPrimitives::CPrimitives () :
+	_LigoConfig(NULL)
 {
+	// init the alias generator
+	_LastGeneratedAlias = 0;	
+	_AliasStaticPart = 0;
+
 	RootNode = static_cast<CPrimNode *> (CClassRegistry::create ("CPrimNode"));
+
+	// get the current ligo context (if any)
+	_LigoConfig = CPrimitiveContext::instance().CurrentLigoConfig;
 }
 
 // ***************************************************************************
 
 CPrimitives::CPrimitives (const CPrimitives &other)
 {
+	_LastGeneratedAlias = other._LastGeneratedAlias;
+	// get the current ligo context (if any)
+	_LigoConfig = CPrimitiveContext::instance().CurrentLigoConfig;
+
+	CPrimitives *temp = CPrimitiveContext::instance().CurrentPrimitive;
+	CPrimitiveContext::instance().CurrentPrimitive = this;
+	// copy the nodes
 	RootNode = static_cast<CPrimNode *> (((IPrimitive*)other.RootNode)->copy ());
+	RootNode->branchLink();
+
+	CPrimitiveContext::instance().CurrentPrimitive = temp;
 }
 
 // ***************************************************************************
@@ -1882,6 +2138,132 @@ CPrimitives::~CPrimitives ()
 {
 	delete RootNode;
 }
+
+// ***************************************************************************
+
+uint32 CPrimitives::getAliasStaticPart()
+{
+	return _AliasStaticPart;
+}
+
+// ***************************************************************************
+
+uint32 CPrimitives::buildFullAlias(uint32 dynamicPart)
+{
+	if (_LigoConfig)
+	{
+		return _LigoConfig->buildAlias(_AliasStaticPart, dynamicPart, true);
+	}
+	else
+		return dynamicPart;
+}
+
+
+// ***************************************************************************
+
+uint32 CPrimitives::genAlias(const IPrimitive *prim, uint32 preferedAlias)
+{
+	nlassert(_LigoConfig);
+	uint32 ret;
+
+	if (preferedAlias != 0)
+	{
+		// only dynamic part allowed here
+		nlassert(preferedAlias == (preferedAlias & _LigoConfig->getDynamicAliasMask()));
+		// check is the prefered alias is not already in use
+		map<uint32, const IPrimitive*>::iterator it(_AliasInUse.find(preferedAlias));
+		if (it == _AliasInUse.end())
+		{
+			// this alias is available, just use it
+//			nldebug("Alias: added alias %u, %u alias used", preferedAlias, _AliasInUse.size()+1);
+			_AliasInUse.insert(make_pair(preferedAlias, prim));
+			return preferedAlias;
+		}
+		else
+		{
+			// check who own the alias now
+			if (it->second == prim)
+			{
+				// ok, the alias is already own by this primitive
+//				nldebug("Alias: using alias %u, %u alias used", preferedAlias, _AliasInUse.size()+1);
+				return preferedAlias;
+			}
+		}
+	}
+
+	// make sure there are some free aliases
+	uint32 mask = _LigoConfig->getDynamicAliasMask();
+	nlassert(_AliasInUse.size() < mask);
+	
+	// increment alias counter
+	++_LastGeneratedAlias;
+	// mask with the dynamic alias mask
+	_LastGeneratedAlias &= _LigoConfig->getDynamicAliasMask();
+
+	ret = _LastGeneratedAlias;
+
+	while (_AliasInUse.find(ret) != _AliasInUse.end())
+	{
+		// this alias is already in use ! generate a new one
+		// increment, mask, affect...
+		++_LastGeneratedAlias;
+		_LastGeneratedAlias &= _LigoConfig->getDynamicAliasMask();
+		ret = _LastGeneratedAlias;
+	}
+
+	// insert the alias
+//	nldebug("Alias: added alias %u, %u alias in use", ret, _AliasInUse.size()+1);
+	_AliasInUse.insert(make_pair(ret, prim));
+
+	return ret;
+}
+
+//void CPrimitives::reserveAlias(uint32 dynamicAlias)
+//{
+//	// need ligo config
+//	nlassert(_LigoConfig);
+//	// only dynamic part allowed here
+//	nlassert(dynamicAlias == (dynamicAlias & _LigoConfig->getDynamicAliasMask()));
+//	std::set<uint32>::iterator it(_AliasInUse.find(dynamicAlias));
+//	// warn if already found
+//	if (it != _AliasInUse.end())
+//	{
+//		const string &fileName = _LigoConfig->getFileNameForStaticAlias(_AliasStaticPart);
+//		if (fileName.empty())
+//			nlwarning("Dynamic Alias %u is already in use");
+//		else
+//			nlwarning("Dynamic Alias %u is already in use in file '%s'", 
+//				dynamicAlias,
+//				fileName.c_str());
+//		return;
+//	}
+//
+//	// insert the alias
+//	nldebug("Alias: added alias %u, %u alias in use", dynamicAlias, _AliasInUse.size()+1);
+//	_AliasInUse.insert(dynamicAlias);
+//}
+//
+void CPrimitives::releaseAlias(const IPrimitive *prim, uint32 alias)
+{
+	// need ligo config
+	nlassert(_LigoConfig);
+	// only dynamic part allowed here
+	nlassert(alias == (alias & _LigoConfig->getDynamicAliasMask()));
+	std::map<uint32, const IPrimitive*>::iterator it(_AliasInUse.find(alias));
+	// need to be found
+	nlassert(it != _AliasInUse.end());
+
+	if (it->second != prim)
+	{
+		nlwarning("CPrimitives::releaseAlias: The alias %u is own by another primitive !", alias);
+		return;
+	}
+
+	// remove this alias
+//	nldebug("Alias: remove alias %u, %u alias left", it->first, _AliasInUse.size()-1);
+	_AliasInUse.erase(it);
+}
+
 
 // ***************************************************************************
 
@@ -1897,6 +2279,12 @@ bool CPrimitives::read (xmlNodePtr xmlNode, const char *filename, CLigoConfig &c
 {
 	nlassert (xmlNode);
 
+	if (_LigoConfig)
+	{
+		// try to get the static alias mapping
+		_AliasStaticPart = _LigoConfig->getFileStaticAliasMapping(CFile::getFilename(filename));
+	}
+
 	// Clear the primitives
 	RootNode->removeChildren ();
 	RootNode->removeProperties ();
@@ -1909,15 +2297,30 @@ bool CPrimitives::read (xmlNodePtr xmlNode, const char *filename, CLigoConfig &c
 		if (GetPropertyString (versionName, filename, xmlNode, "VERSION"))
 		{
 			// Get the version
-			uint version = atoi (versionName.c_str ());
+			uint32 version = atoi (versionName.c_str ());
 
 			// Check the version
-			if (version <= NLLIGO_PRIMITVE_VERSION)
+			if (version <= NLLIGO_PRIMITIVE_VERSION)
 			{
 				// Read the primitives
 				xmlNode = GetFirstChildNode (xmlNode, filename, "ROOT_PRIMITIVE");
 				if (xmlNode)
 				{
+					if (version > 0)
+					{
+						xmlNodePtr subNode = GetFirstChildNode(xmlNode, filename, "ALIAS");
+						if (subNode)
+						{
+							uint temp;
+							ReadUInt("LAST_GENERATED", temp, filename, subNode);
+							_LastGeneratedAlias = temp;
+						}
+						else
+							_LastGeneratedAlias = 0;
+					}
+					else
+						_LastGeneratedAlias = 0;
+
 					// Read the primitive tree
 					((IPrimitive*)RootNode)->read (xmlNode, filename, version, config);
 				}
@@ -1962,10 +2365,12 @@ void CPrimitives::write (xmlNodePtr root, const char *filename) const
 	nlassert (root);
 
 	// Version node
-	xmlSetProp (root, (const xmlChar*)"VERSION", (const xmlChar*)toString (NLLIGO_PRIMITVE_VERSION).c_str ());
+	xmlSetProp (root, (const xmlChar*)"VERSION", (const xmlChar*)toString (NLLIGO_PRIMITIVE_VERSION).c_str ());
 
 	// The primitive root node
 	xmlNodePtr nameNode = xmlNewChild ( root, NULL, (const xmlChar*)"ROOT_PRIMITIVE", NULL);
+	xmlNodePtr subNode = xmlNewChild ( nameNode, NULL, (const xmlChar*)"ALIAS", NULL);
+	WriteUInt("LAST_GENERATED", _LastGeneratedAlias, subNode);
 
 	// Write the primitive tree
 	((IPrimitive*)RootNode)->write (nameNode, filename);
@@ -1975,6 +2380,14 @@ void CPrimitives::write (xmlNodePtr root, const char *filename) const
 
 void CPrimitives::serial(NLMISC::IStream &f)
 {
+	uint currentVersion = NLLIGO_PRIMITIVE_VERSION;
+	f.serialVersion(currentVersion);
+
+	if (currentVersion == 0)
+	{
+		f.serial(_LastGeneratedAlias);
+	}
+
 	if (f.isReading())
 	{
 		RootNode->removeChildren ();
@@ -2130,6 +2543,13 @@ void CPrimitives::convert (const CPrimRegion &region)
 
 // ***************************************************************************
 
+CPrimitiveContext::CPrimitiveContext(): 
+	CurrentLigoConfig(NULL),
+	CurrentPrimitive(NULL)		
+{
+}
+
+
 void Register ()
 {
 	NLMISC_REGISTER_CLASS(CPropertyString);
@@ -2139,6 +2559,7 @@ void Register ()
 	NLMISC_REGISTER_CLASS(CPrimPoint);
 	NLMISC_REGISTER_CLASS(CPrimPath);
 	NLMISC_REGISTER_CLASS(CPrimZone);
+	NLMISC_REGISTER_CLASS(CPrimAlias);
 }
 
 // ***************************************************************************

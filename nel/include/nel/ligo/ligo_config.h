@@ -1,7 +1,7 @@
 /** \file ligo_config.h
  * Ligo config file 
  *
- * $Id: ligo_config.h,v 1.4 2004/06/15 13:22:49 corvazier Exp $
+ * $Id: ligo_config.h,v 1.4.4.1 2004/09/13 15:56:40 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@ namespace NLLIGO
 {
 
 class IPrimitive;
+class CPrimitive;
 
 /**
  *  Ligo config file 
@@ -63,6 +64,9 @@ public:
 	  */
 	bool readPrimitiveClass (const char *fileName);
 
+	bool reloadIndexFile(const std::string &indexFileName = std::string());
+
+
 	/// Reset the primitive configurations
 	void resetPrimitiveConfiguration ();
 
@@ -81,6 +85,28 @@ public:
 	std::string	PrimitiveClassFilename;
 
 	/// \name Primitive class accessors
+
+	/// Get the dynamic bit size for alias
+	uint32 getDynamicAliasSize() const;
+	/// Get the dynamic bit mask for alias
+	uint32 getDynamicAliasMask() const;
+	/// Get the static bit size for alias
+	uint32 getStaticAliasSize() const;
+	/// Get the static bit mask for alias
+	uint32 getStaticAliasMask() const;
+	/// Build an alias given a static and dynamic part
+	uint32 buildAlias(uint32 staticPart, uint32 dynamicPart, bool warnIfOverload = true) const;
+	/// register filename to static alias translation
+	void registerFileToStaticAliasTranslation(const std::string &fileName, uint32 staticPart);
+	/// get the static alias mapping (or 0 if no mapping defined)
+	uint32 getFileStaticAliasMapping(const std::string &fileName) const;
+	/// get the filename for a static alias (or empty string for 0)
+	const std::string &getFileNameForStaticAlias(uint32 staticAlias) const;
+	/// Check if a file is already mapped
+	bool isFileStaticAliasMapped(const std::string &fileName) const;
+	/// Build a standard human readable alias string
+	std::string aliasToString(uint32 fullAlias);
+
 
 	// Get a primitive class
 	const CPrimitiveClass					*getPrimitiveClass (const NLLIGO::IPrimitive &primitive) const;
@@ -113,7 +139,7 @@ public:
 	void syntaxError (const char *filename, xmlNodePtr xmlNode, const char *format, ...);
 	virtual void errorMessage (const char *format, ... );
 
-	// Acces to the config string
+	// Access to the config string
 	const std::vector<std::string> &getContextString () const;
 
 	// Access the primitive configuration
@@ -138,6 +164,14 @@ private:
 
 	// The primitive configurations
 	std::vector<CPrimitiveConfigurations>	_PrimitiveConfigurations;
+
+	// Dynamic alias bit count
+	uint32				_DynamicAliasBitCount;
+
+	/// Name of the index file
+	std::string			_IndexFileName;
+	// Static alias part file mapping : filename -> staticAliasPart
+	std::map<std::string, uint32>		_StaticAliasFileMapping;
 };
 
 }

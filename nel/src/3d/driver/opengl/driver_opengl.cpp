@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.67 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.68 2001/02/05 17:00:04 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -843,10 +843,10 @@ bool			CDriverGL::clipRect(NLMISC::CRect &rect)
 
 	sint32	xr=rect.right() ,yr=rect.bottom();
 	
-	clamp((sint32)rect.X, (sint32)0, (sint32)width);
-	clamp((sint32)rect.Y, (sint32)0, (sint32)height);
-	clamp((sint32)xr, (sint32)rect.X, (sint32)width);
-	clamp((sint32)yr, (sint32)rect.Y, (sint32)height);
+	clamp((sint32&)rect.X, (sint32)0, (sint32)width);
+	clamp((sint32&)rect.Y, (sint32)0, (sint32)height);
+	clamp((sint32&)xr, (sint32)rect.X, (sint32)width);
+	clamp((sint32&)yr, (sint32)rect.Y, (sint32)height);
 	rect.Width= xr-rect.X;
 	rect.Height= yr-rect.Y;
 

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: new_path.cpp,v 1.1 2001/11/22 11:08:27 lecroart Exp $
+ * $Id: new_path.cpp,v 1.2 2001/11/22 11:23:58 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -23,13 +23,16 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/debug.h"
 #include <fstream>
+
+#include "nel/misc/debug.h"
 
 #include "nel/misc/new_path.h"
 
 #ifdef NL_OS_WINDOWS
-#include <windows.h>
+#	include <windows.h>
+#else
+#	include <dirent.h>
 #endif // NL_OS_WINDOWS
 
 using namespace std;
@@ -107,8 +110,8 @@ void CNewPath::remapExtension (const string &ext1, const string &ext2, bool subs
 		inst->_Extensions.erase (inst->_Extensions.begin() + n);
 
 		// remove mapping in the map
-		std::map<std::string, CNewFileEntry>::iterator it = inst->_Files.begin();
-		std::map<std::string, CNewFileEntry>::iterator nit = it;
+		map<string, CNewFileEntry>::iterator it = inst->_Files.begin();
+		map<string, CNewFileEntry>::iterator nit = it;
 		while (it != inst->_Files.end ())
 		{
 			nit++;
@@ -134,7 +137,7 @@ void CNewPath::remapExtension (const string &ext1, const string &ext2, bool subs
 
 		// adding mapping into the map
 		vector<string> newFiles;
-		std::map<std::string, CNewFileEntry>::iterator it = inst->_Files.begin();
+		map<string, CNewFileEntry>::iterator it = inst->_Files.begin();
 		while (it != inst->_Files.end ())
 		{
 			if (!(*it).second.Remapped && (*it).second.Extension == ext1)
@@ -146,7 +149,7 @@ void CNewPath::remapExtension (const string &ext1, const string &ext2, bool subs
 					string file = (*it).first.substr (0, pos + 1);
 					file += ext2;
 
-					std::map<std::string, CNewFileEntry>::iterator nit = inst->_Files.find (file);
+					map<string, CNewFileEntry>::iterator nit = inst->_Files.find (file);
 					if (nit != inst->_Files.end())
 					{
 						nlwarning ("CNewPath::remapExtension(%s, %s): The file '%s' is in conflict with the remapping file '%s', skip it", ext1.c_str(), ext2.c_str(), file.c_str(), (*it).first.c_str());
@@ -168,7 +171,7 @@ string CNewPath::lookup (const string &filename)
 {
 	// Try to find in the map directories
 	CNewPath *inst = CNewPath::getInstance();
-	std::map<std::string, CNewFileEntry>::iterator it = inst->_Files.find (filename);
+	map<string, CNewFileEntry>::iterator it = inst->_Files.find (filename);
 
 	// If found in the map, returns it
 	if (it != inst->_Files.end())
@@ -234,8 +237,9 @@ string CNewPath::standardizePath (const string &path)
 	return newPath;
 }
 
-#define dirent WIN32_FIND_DATA
-#define DIR	void
+#ifdef NL_OS_WINDOWS
+#	define dirent	WIN32_FIND_DATA
+#	define DIR		void
 
 static string sDir;
 static char sDirBackup[512];
@@ -304,22 +308,36 @@ dirent *readdir (DIR *dir)
 	return &findData;
 }
 
+#endif // NL_OS_WINDOWS
+
 bool isdirectory (dirent *de)
 {
 	nlassert (de != NULL);
+#ifdef NL_OS_WINDOWS
 	return (de->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+#else
+	return (de->d_type & DT_DIR) != 0;
+#endif // NL_OS_WINDOWS
 }
 
 bool isfile (dirent *de)
 {
 	nlassert (de != NULL);
+#ifdef NL_OS_WINDOWS
 	return (de->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+#else
+	return (de->d_type & DT_DIR) == 0;
+#endif // NL_OS_WINDOWS
 }
 
 string getname (dirent *de)
 {
 	nlassert (de != NULL);
+#ifdef NL_OS_WINDOWS
 	return de->cFileName;
+#else
+	return de->d_name;
+#endif // NL_OS_WINDOWS
 }
 
 void CNewPath::getPathContent (const string &path, bool recurse, bool wantDir, bool wantFile, vector<string> &result)
@@ -377,7 +395,7 @@ void CNewPath::getPathContent (const string &path, bool recurse, bool wantDir, b
 		getPathContent (recursPath[i], recurse, wantDir, wantFile, result);
 }
 
-void CNewPath::addSearchPath (const std::string &path, bool recurse, bool alternative)
+void CNewPath::addSearchPath (const string &path, bool recurse, bool alternative)
 {
 	CNewPath *inst = CNewPath::getInstance();
 
@@ -456,7 +474,7 @@ void CNewPath::addSearchPath (const std::string &path, bool recurse, bool altern
 	}
 }
 
-void CNewPath::addSearchFile (const std::string &file, bool remap, const string &virtual_ext)
+void CNewPath::addSearchFile (const string &file, bool remap, const string &virtual_ext)
 {
 	CNewPath *inst = CNewPath::getInstance();
 
@@ -495,7 +513,7 @@ void CNewPath::addSearchFile (const std::string &file, bool remap, const string 
 		ext = virtual_ext;
 	}
 
-	std::map<std::string, CNewFileEntry>::iterator it = inst->_Files.find (filename);
+	map<string, CNewFileEntry>::iterator it = inst->_Files.find (filename);
 	if (it == inst->_Files.end ())
 	{
 		// ok, the room is empty, let s add it
@@ -523,7 +541,7 @@ void CNewPath::addSearchFile (const std::string &file, bool remap, const string 
 	}
 }
 
-void CNewPath::addSearchListFile (const std::string &filename, bool recurse, bool alternative)
+void CNewPath::addSearchListFile (const string &filename, bool recurse, bool alternative)
 {
 	CNewPath *inst = CNewPath::getInstance();
 
@@ -553,7 +571,7 @@ void CNewPath::addSearchListFile (const std::string &filename, bool recurse, boo
 }
 
 
-void CNewPath::addSearchBigFile (const std::string &filename, bool recurse, bool alternative)
+void CNewPath::addSearchBigFile (const string &filename, bool recurse, bool alternative)
 {
 	// TODO & CHECK
 	nlwarning ("CNewPath::addSearchBigFile(): not impremented");
@@ -564,7 +582,7 @@ void CNewPath::insertFileInMap (const string &filename, const string &filepath, 
 	CNewPath *inst = CNewPath::getInstance();
 
 	// find if the file already exist
-	std::map<string, CNewFileEntry>::iterator it = inst->_Files.find (filename);
+	map<string, CNewFileEntry>::iterator it = inst->_Files.find (filename);
 	if (it != inst->_Files.end ())
 	{
 		nlwarning ("CNewPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path);
@@ -582,7 +600,7 @@ void CNewPath::display ()
 	nlinfo ("Contents of the map:");
 	nlinfo ("%-25s %-5s %-5s %s", "filename", "ext", "remap", "full path");
 	nlinfo ("----------------------------------------------------");
-	for (std::map<std::string, CNewFileEntry>::iterator it = inst->_Files.begin(); it != inst->_Files.end (); it++)
+	for (map<string, CNewFileEntry>::iterator it = inst->_Files.begin(); it != inst->_Files.end (); it++)
 	{
 		nlinfo ("%-25s %-5s %-5d %s", (*it).first.c_str(), (*it).second.Extension.c_str(), (*it).second.Remapped, (*it).second.Path.c_str());
 	}
@@ -672,7 +690,7 @@ string CPath::lookup (const string &filename, bool throwException)
 
 //********************************* CNewFile
 
-int CNewFile::getLastSeparator (const std::string &filename)
+int CNewFile::getLastSeparator (const string &filename)
 {
 	int pos = filename.find_last_of ('/');
 	if (pos == string::npos)
@@ -682,7 +700,7 @@ int CNewFile::getLastSeparator (const std::string &filename)
 	return pos;
 }
 
-std::string CNewFile::getFilename (const std::string &filename)
+string CNewFile::getFilename (const string &filename)
 {
 	int pos = CNewFile::getLastSeparator(filename);
 	if (pos != string::npos)
@@ -691,7 +709,7 @@ std::string CNewFile::getFilename (const std::string &filename)
 		return filename;
 }
 
-std::string CNewFile::getFilenameWithoutExtension (const std::string &filename)
+string CNewFile::getFilenameWithoutExtension (const string &filename)
 {
 	string filename2 = getFilename (filename);
 	int pos = filename2.find_last_of ('.');
@@ -701,7 +719,7 @@ std::string CNewFile::getFilenameWithoutExtension (const std::string &filename)
 		return filename2.substr (0, pos);
 }
 
-std::string CNewFile::getExtension (const std::string &filename)
+string CNewFile::getExtension (const string &filename)
 {
 	int pos = filename.find_last_of ('.');
 	if (pos == string::npos)
@@ -710,7 +728,7 @@ std::string CNewFile::getExtension (const std::string &filename)
 		return filename.substr (pos + 1);
 }
 
-std::string CNewFile::getPath (const std::string &filename)
+string CNewFile::getPath (const string &filename)
 {
 	int pos = CNewFile::getLastSeparator(filename);
 	if (pos != string::npos)
@@ -719,7 +737,7 @@ std::string CNewFile::getPath (const std::string &filename)
 		return filename;
 }
 
-bool CNewFile::isDirectory (const std::string &filename)
+bool CNewFile::isDirectory (const string &filename)
 {
 	DWORD res = GetFileAttributes(filename.c_str());
 	nlassert (res != -1);

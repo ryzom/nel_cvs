@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.20 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.21 2004/03/16 10:46:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -280,7 +280,7 @@ public:
 		  * The container type is likely to change depending on memory requirement.
 		  */
 		//typedef CSnappedVector<T> TContType;
-		typedef CPSVector<T>::V TContType;
+		typedef typename CPSVector<T>::V TContType;
 
 		/// The type used by the container. Its is the type used to instanciate this template.
 		typedef T value_type;

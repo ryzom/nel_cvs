@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.45 2004/06/23 09:13:26 besson Exp $
+ * $Id: u_driver.h,v 1.46 2004/06/29 13:33:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -323,6 +323,12 @@ public:
 	 * Frustum setuped to UCamera frustum.
 	 */
 	virtual	void			setMatrixMode3D(UCamera &camera) =0;
+	/** Set depth range. Depth range specify a linear mapping from device z coordinates (in the [-1, 1] range) to window coordinates (in the [0, 1] range)
+	  * This mapping occurs after clipping of primitives and division by w of vertices coordinates.
+	  * Default range is [0, 1].	  
+	  * NB : znear should be different from zfar or an assertion is raised	  	  
+	  */
+	virtual void			setDepthRange(float znear, float zfar) = 0;
 
 	// @}
 

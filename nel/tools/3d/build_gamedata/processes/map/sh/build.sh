@@ -101,8 +101,22 @@ for i in panoply/*.[tT][gG][aA] ; do
 	../../idle.bat
 done
 
+
+# Bin
+hls_bank_maker='../../bin/hls_bank_maker.exe'
+
+# build the HLSBank (if hlsInfo present, and if build wanted)
+hls_bank_file_name=`cat ../../cfg/config.cfg | grep "hls_bank_file_name" | sed -e 's/hls_bank_file_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+if test "$hls_bank_file_name" ; then
+	rm $hls_bank_file_name
+	$hls_bank_maker hlsinfo $hls_bank_file_name
+fi
+
+
 # Put old panoply in cache
 rm -r cache/* 2>> log.log
 rmdir cache 2>> log.log
 mv panoply cache 2>> log.log
+mv hlsinfo/* cache 2>> log.log
+rm -r hlsinfo/* 2>> log.log
 mkdir panoply 2>> log.log

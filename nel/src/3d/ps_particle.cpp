@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.21 2001/06/18 16:32:38 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.22 2001/06/25 13:39:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/ps_attrib_maker.h"
 #include "3d/texture_grouped.h"
 #include "3d/scene.h"
+#include "3d/shape_bank.h"
 #include "3d/transform_shape.h"
 
 
@@ -36,10 +37,35 @@
 #include "nel/misc/file.h"
 #include "nel/misc/line.h"
 
+#include "3d/dru.h"
+
+
 #include <algorithm>
 
 
+
+
+
+
 namespace NL3D {
+
+
+/** this macro check wether a pointer is inside a given VB. Has memory in Vertex Buffer if accessed directly, 
+  * we can't detect memory overwrite
+  * the first parameter is the VB, the second is a pointrer into it
+  */
+
+#define CHECK_VERTEX_BUFFER(vb, pt) nlassert((uint8 *) (pt) >= (uint8 *) (vb).getVertexCoordPointer()  \
+									&& (uint8 *) (pt) < ((uint8 *) (vb).getVertexCoordPointer() + (vb).getVertexSize() * (vb).getNumVertices())) ;
+
+
+// this macro check the memory integrity (windows platform for now). It may be useful after violent vb access
+#if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)
+	#include <crtdbg.h>
+	#define PARTICLES_CHECK_MEM nlassert(_CrtCheckMemory()) ;
+#else
+	#define PARTICLES_CHECK_MEM
+#endif
 
 
 
@@ -71,6 +97,8 @@ const uint constraintMeshBufSize = 64 ; // number of meshs to be processed at on
 
 void CPSParticle::showTool()
 {
+	PARTICLES_CHECK_MEM ;
+
 	uint32 size = _Owner->getSize() ;
 	if (!size) return ;		
 	setupDriverModelMatrix() ;	
@@ -127,6 +155,8 @@ void CPSParticle::showTool()
 
 		CDRU::drawLinesUnlit(lines, mat, *getDriver() ) ;
 	}
+
+	PARTICLES_CHECK_MEM ;
 }
 
 
@@ -613,6 +643,7 @@ void CPSDot::resize(uint32 size)
 void CPSDot::draw(void)
 {
 	
+	PARTICLES_CHECK_MEM ;
 	// we create a vertex buffer that contains all the particles before to show them
 	uint32 size = _Owner->getSize() ;
 
@@ -650,6 +681,7 @@ void CPSDot::draw(void)
 			uint32 stride = _Vb.getVertexSize() ;
 			do
 			{
+				CHECK_VERTEX_BUFFER(_Vb, currPos) ;
 				*((CVector *) currPos) =  *it ;	
 				++it  ;
 				currPos += stride ;
@@ -669,6 +701,7 @@ void CPSDot::draw(void)
 	}
 	while (leftToDo) ;
 
+	PARTICLES_CHECK_MEM ;
 }
 
 
@@ -853,12 +886,15 @@ if (_UseTextureScheme) // if it has a constant texture we are sure it has been s
 
 /// create the face look at by giving a texture and an optionnal color
 CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex), _MotionBlurCoeff(0.f)
+														, _Threshold(0.5f)
 {	
 	_Name = std::string("LookAt") ;
 }
 
 void CPSFaceLookAt::draw(void)
 {
+	PARTICLES_CHECK_MEM ;
+
 	nlassert(_Owner) ;
 
 	const uint32 size = _Owner->getSize() ;
@@ -961,21 +997,25 @@ void CPSFaceLookAt::draw(void)
 				{
 					while (it != endIt)
 					{
+						CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
 						((CVector *) ptPos)->x = it->x  + *currentSize * v1.x ;  			
 						((CVector *) ptPos)->y = it->y  + *currentSize * v1.y ;  			
 						((CVector *) ptPos)->z = it->z  + *currentSize * v1.z ;  			
 						ptPos += stride ;
 
+						CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
 						((CVector *) ptPos)->x = it->x  + *currentSize * v2.x ;  			
 						((CVector *) ptPos)->y = it->y  + *currentSize * v2.y ;  			
 						((CVector *) ptPos)->z = it->z  + *currentSize * v2.z ;  			
 						ptPos += stride ;
 
+						CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
 						((CVector *) ptPos)->x = it->x  - *currentSize * v1.x ;  			
 						((CVector *) ptPos)->y = it->y  - *currentSize * v1.y ;  			
 						((CVector *) ptPos)->z = it->z  - *currentSize * v1.z ;  			
 						ptPos += stride ;
 
+						CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
 						((CVector *) ptPos)->x = it->x  - *currentSize * v2.x ;  			
 						((CVector *) ptPos)->y = it->y  - *currentSize * v2.y ;  			
 						((CVector *) ptPos)->z = it->z  - *currentSize * v2.z ;  			
@@ -1062,7 +1102,7 @@ void CPSFaceLookAt::draw(void)
 
 						
 
-								
+								CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
 								*(CVector *) ptPos = *it - mbv2 ;												
 								*(CVector *) (ptPos + stride) = *it  + mbv1 ;  			
 								*(CVector *) (ptPos + stride2) = *it + mbv2 ;	
@@ -1071,6 +1111,11 @@ void CPSFaceLookAt::draw(void)
 							}
 							else // speed too small, we must avoid a zero divide
 							{
+								CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride) ;
+								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2) ;
+								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3) ;
+
 								*(CVector *) ptPos = *it - *currentSize * v2 ;
 								*(CVector *) (ptPos + stride) = *it  + *currentSize * v1 ;  			
 								*(CVector *) (ptPos + stride2) = *it + *currentSize * v2 ;	
@@ -1079,7 +1124,12 @@ void CPSFaceLookAt::draw(void)
 						}
 						else
 						{
-								 *(CVector *) ptPos = *it - *currentSize * v2 ;
+								CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride) ;
+								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2) ;
+								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3) ;
+
+								*(CVector *) ptPos = *it - *currentSize * v2 ;
 								*(CVector *) (ptPos + stride) = *it  + *currentSize * v1 ;  			
 								*(CVector *) (ptPos + stride2) = *it + *currentSize * v2 ;	
 								*(CVector *) (ptPos + stride3) = *it - *currentSize * v1 ;	
@@ -1149,6 +1199,11 @@ void CPSFaceLookAt::draw(void)
 					v1 = *currentSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
 					v2 = *currentSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ;
 					
+					CHECK_VERTEX_BUFFER(_Vb, ptPos) ;
+					CHECK_VERTEX_BUFFER(_Vb, ptPos + stride) ;
+					CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2) ;
+					CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3) ;
+
 					*(CVector *) ptPos = *it  + v1 ;  			
 					*(CVector *) (ptPos + stride) = *it + v2 ;	
 					*(CVector *) (ptPos + stride2) = *it - v1 ;
@@ -1171,7 +1226,7 @@ void CPSFaceLookAt::draw(void)
 
 	}
 
-
+	PARTICLES_CHECK_MEM ;
 
 
 }
@@ -1233,6 +1288,7 @@ void CPSFanLight::setPhaseSpeed(float multiplier)
 
 void CPSFanLight::draw(void)
 {
+	PARTICLES_CHECK_MEM ;
 	nlassert(_RandomPhaseTabInitialized) ;
 
 	setupDriverModelMatrix() ;
@@ -1365,7 +1421,9 @@ void CPSFanLight::draw(void)
 		}	
 
 		for (;posIt != endPosIt ; ++posIt, ++timeIt)
-		{		
+		{	
+			
+			CHECK_VERTEX_BUFFER(_Vb, ptVect) ;
 			*(CVector *) ptVect = *posIt ;
 			
 			// the start angle
@@ -1401,6 +1459,8 @@ void CPSFanLight::draw(void)
 
 	driver->activeVertexBuffer(_Vb) ;	
 	driver->renderTriangles(_Mat, _IndexBuffer, size * _NbFans) ;
+
+	PARTICLES_CHECK_MEM ;
 }
 
 void CPSFanLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
@@ -1562,6 +1622,7 @@ void CPSTailDot::init(void)
 
 void CPSTailDot::draw(void)
 {
+	PARTICLES_CHECK_MEM ;
 	// the number of particles
 	const uint32 size = _Owner->getSize() ;
 
@@ -1612,6 +1673,10 @@ void CPSTailDot::draw(void)
 		currVertex = firstVertex ;
 		for (k = 0 ; k < size ; ++k)
 		{
+			CHECK_VERTEX_BUFFER(_Vb, currVertex + colorOff) ;
+			CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
+
+
 			*(CRGBA *) (currVertex + colorOff) = CRGBA::Black ;
 			// copy the next vertex pos
 			*(CVector *) currVertex = *(CVector *) (currVertex + vSize) ;
@@ -1625,9 +1690,12 @@ void CPSTailDot::draw(void)
 			lumi += lumiStep ;			
 			for (k = 0 ; k < size ; ++k)
 			{
+				CHECK_VERTEX_BUFFER(_Vb, currVertex + colorOff) ;
+				CHECK_VERTEX_BUFFER(_Vb, currVertex + vSize + colorOff) ;
 				// get the color of the next vertex and modulate
 				((CRGBA *) (currVertex + colorOff))->modulateFromui(*(CRGBA *) (currVertex + vSize + colorOff), ratio) ;
 				// copy the next vertex pos
+				CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 				*(CVector *) currVertex = *(CVector *) (currVertex + vSize) ;
 				currVertex += tailVSize  ;			
 			}
@@ -1643,6 +1711,7 @@ void CPSTailDot::draw(void)
 
 		for (currVertex = firstVertex ; currVertex != lastVert ; )
 		{
+			CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 			*(CVector *) currVertex = *(CVector *) (currVertex + vSize) ;			
 			currVertex += vSize ;
 		}	
@@ -1672,6 +1741,7 @@ void CPSTailDot::draw(void)
 	{	
 		for (posIt = _Owner->getPos().begin() ; posIt != endPosIt ; ++posIt)
 		{
+			CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 			*(CVector *) currVertex = *posIt ;
 			currVertex += tailVSize ;
 		}
@@ -1684,6 +1754,7 @@ void CPSTailDot::draw(void)
 		// copy the position after transformation
 		for (posIt = _Owner->getPos().begin() ; posIt != endPosIt ; ++posIt)
 		{
+			CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 			*(CVector *) currVertex = m * (*posIt) ;
 			currVertex += tailVSize ;
 		}
@@ -1706,6 +1777,8 @@ void CPSTailDot::draw(void)
 	driver->activeVertexBuffer(_Vb) ;		
 	_Pb.setNumLine(size * _TailNbSeg) ;
 	driver->render(_Pb, _Mat) ;
+
+	PARTICLES_CHECK_MEM
 }
 
 
@@ -1812,6 +1885,7 @@ void CPSTailDot::setupColor(void)
 			const CRGBA &color = _UseColorScheme ? CRGBA::Black : _Color ;
 			for (k = 0 ; k < size * (_TailNbSeg + 1) ; ++k)
 			{
+					CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 					*(CRGBA *) currVertex = color ;
 					currVertex += vSize ;
 			}
@@ -1829,6 +1903,7 @@ void CPSTailDot::setupColor(void)
 				lumi += lumiStep ;			
 				for (k = 0 ; k < size ; ++k)
 				{				
+					CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 					*(CRGBA *)currVertex = col ;				
 					currVertex += tailVSize  ;			
 				}
@@ -1862,6 +1937,9 @@ void CPSTailDot::newElement(void)
 			{
 				for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
 				{
+					CHECK_VERTEX_BUFFER(_Vb, currVert) ;
+					CHECK_VERTEX_BUFFER(_Vb, currVert + _Vb.getColorOff()) ;
+
 					*(CVector *) currVert = pos ;
 					*(CRGBA *) (currVert + _Vb.getColorOff()) = CRGBA::Black ;
 
@@ -1874,7 +1952,9 @@ void CPSTailDot::newElement(void)
 												 : _Owner->getOwner()->getSysMat() ;
 				for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
 				{
+					CHECK_VERTEX_BUFFER(_Vb, currVert) ;
 					*(CVector *) currVert = m * pos ;
+					CHECK_VERTEX_BUFFER(_Vb, currVert + _Vb.getColorOff()) ;
 					*(CRGBA *) (currVert + _Vb.getColorOff()) = CRGBA::Black ;
 
 					currVert += vSize ; // go to next vertex
@@ -1892,6 +1972,7 @@ void CPSTailDot::newElement(void)
 			{
 				for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
 				{
+					CHECK_VERTEX_BUFFER(_Vb, currVert) ;
 					*(CVector *) currVert = pos ;			
 					currVert += vSize ; // go to next vertex
 				}
@@ -1902,6 +1983,7 @@ void CPSTailDot::newElement(void)
 												 : _Owner->getOwner()->getSysMat() ;
 				for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
 				{
+					CHECK_VERTEX_BUFFER(_Vb, currVert) ;
 					*(CVector *) currVert = m * pos ;			
 					currVert += vSize ; // go to next vertex
 				}
@@ -2208,6 +2290,9 @@ void CPSRibbon::decalRibbons(CRibbonsDesc &rb, const uint32 size)
 				*posIt = *(posIt + 1) ;
 				for (l = 0 ; l < _ShapeNbSeg ; ++l)
 				{
+					CHECK_VERTEX_BUFFER(rb._Vb, currVertex) ;
+					CHECK_VERTEX_BUFFER(rb._Vb, currVertex + sSize) ;
+
 					CVector &v = *(CVector *) currVertex ;				
 					// points the same vertex in the next slice in the current ribbon
 					const CVector &vNext = *(CVector *) (currVertex + sSize) ;				
@@ -2239,11 +2324,15 @@ void CPSRibbon::decalRibbons(CRibbonsDesc &rb, const uint32 size)
 				{
 					// decal the center of the slice
 
+					CHECK_VERTEX_BUFFER(rb._Vb, currVertex + sSize + colorOff) ;
 					const CRGBA nextCol = *(CRGBA *) (currVertex + sSize + colorOff) ;
 					
 					*posIt = *(posIt + 1) ;
 					for (l = 0 ; l < _ShapeNbSeg ; ++l)
 					{
+						CHECK_VERTEX_BUFFER(rb._Vb, currVertex) ;
+						CHECK_VERTEX_BUFFER(rb._Vb, currVertex + sSize) ;
+
 						CVector &v = *(CVector *) currVertex ;				
 						// points the same vertex in the next slice in the current ribbon
 						const CVector &vNext = *(CVector *) (currVertex + sSize) ;				
@@ -2253,6 +2342,7 @@ void CPSRibbon::decalRibbons(CRibbonsDesc &rb, const uint32 size)
 
 						// decal color
 
+						CHECK_VERTEX_BUFFER(rb._Vb, currVertex + colorOff) ;
 						*(CRGBA *) (currVertex + colorOff) = nextCol  ;
 
 						// points next vertex in current slice
@@ -2286,6 +2376,10 @@ void CPSRibbon::decalRibbons(CRibbonsDesc &rb, const uint32 size)
 					*posIt = *(posIt + 1) ;
 					for (l = 0 ; l < _ShapeNbSeg ; ++l)
 					{
+						CHECK_VERTEX_BUFFER(rb._Vb, currVertex) ;
+						CHECK_VERTEX_BUFFER(rb._Vb, currVertex + colorOff) ;
+						CHECK_VERTEX_BUFFER(rb._Vb, currVertex + sSize) ;
+
 						CVector &v = *(CVector *) currVertex ;				
 						// points the same vertex in the next slice in the current ribbon
 						const CVector &vNext = *(CVector *) (currVertex + sSize) ;				
@@ -2430,6 +2524,7 @@ void CPSRibbon::computeLastSlice(CRibbonsDesc &rb, const uint32 size)
 		{
 				
 			const CVector &v = *shapeIt ;
+			CHECK_VERTEX_BUFFER(rb._Vb, currVertex) ;
 			*(CVector *) currVertex = *posIt + scale * (shapeMat * CVector( ca * v.x - sa * v.y 
 																			,sa * v.x + ca * v.y
 																			,v.z)) ;
@@ -2442,6 +2537,7 @@ void CPSRibbon::computeLastSlice(CRibbonsDesc &rb, const uint32 size)
 			currVertex -= sSize ; // go back to the start of the slice
 			for (l = 0 ; l < _ShapeNbSeg ; ++l)
 			{
+				CHECK_VERTEX_BUFFER(rb._Vb, currVertex + colorOff) ;
 				*(CRGBA *) (currVertex + colorOff) = col ;
 				currVertex += vSize ;
 			}
@@ -2480,6 +2576,8 @@ void CPSRibbon::render(CRibbonsDesc &rb, const uint32 size)
 void CPSRibbon::draw(void)
 {	
 	
+	PARTICLES_CHECK_MEM ;
+
 	const uint32 size = _Owner->getSize() ;
 
 
@@ -2531,6 +2629,8 @@ void CPSRibbon::draw(void)
 					
 		}
 	}
+
+	PARTICLES_CHECK_MEM ;
 }
 
 
@@ -2672,6 +2772,7 @@ void CPSRibbon::initRibbonPos(CRibbonsDesc &rb, uint32 index, const CVector &aPo
 	// at start, all pos are the same, e.g centered on the particle
 	for (uint32 k = 0 ; k < ((_TailNbSeg + 1) * _ShapeNbSeg) ; ++k)
 	{
+		CHECK_VERTEX_BUFFER(rb._Vb, currVertex) ;
 		*(CVector *) currVertex = pos ;		
 		currVertex += vSize ;
 	}		
@@ -2724,6 +2825,7 @@ void CPSRibbon::setupColor(CRibbonsDesc &rb)
 		
 		for (k = 0 ; k < size * (_TailNbSeg + 1) * _ShapeNbSeg  ; ++k)
 		{
+				CHECK_VERTEX_BUFFER(rb._Vb, currVertex) ;
 				*(CRGBA *) currVertex = _Color ;
 				currVertex += vSize ;
 		}
@@ -2743,6 +2845,7 @@ void CPSRibbon::setupColor(CRibbonsDesc &rb)
 			{	
 				for (m = 0 ; m < _ShapeNbSeg ; ++m)
 				{
+					CHECK_VERTEX_BUFFER(rb._Vb, currVertex) ;
 					*(CRGBA *) currVertex = col ;				
 					currVertex += vSize ;
 				}
@@ -2792,10 +2895,14 @@ void CPSRibbon::deleteElement(uint32 index)
 
 		// color must be set to black if there's a color scheme, and no color fading
 		// otherwise, the color remains unchanged
+		CHECK_VERTEX_BUFFER(_DyingRibbons->_Vb, currVertex + colorOff) ;
 		const CRGBA col = _UseColorScheme && !_ColorFading ? CRGBA::Black : *(CRGBA *) (currVertex + colorOff) ;
 
 		for (uint32 k = 0 ; k < _ShapeNbSeg ; ++k)
 		{
+			CHECK_VERTEX_BUFFER(_DyingRibbons->_Vb, currVertex) ;
+			CHECK_VERTEX_BUFFER(_DyingRibbons->_Vb, currVertex + colorOff) ;
+
 			*(CVector *) currVertex = center ;
 			*(CRGBA *) (currVertex + colorOff) = col ;
 			currVertex += vSize ;
@@ -3024,6 +3131,8 @@ CPSFace::CPSFace(CSmartPtr<ITexture> tex) : CPSQuad(tex)
 
 void CPSFace::draw(void)
 {
+	PARTICLES_CHECK_MEM ;
+
 	nlassert(_Owner) ;
 
 	const uint32 size = _Owner->getSize() ;
@@ -3131,21 +3240,25 @@ void CPSFace::draw(void)
 			
 				const CPlaneBasis &currBasis = _PrecompBasis[*indexIt].Basis ;
 
+				CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis.X.x ;  			
 				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis.X.y ;  			
 				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis.X.z ;  			
 				currVertex += stride ;
 
+				CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis.Y.x ;  			
 				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis.Y.y ;  			
 				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis.Y.z ;  			
 				currVertex += stride ;
 
+				CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis.X.x ;  			
 				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis.X.y ;  			
 				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis.X.z ;  			
 				currVertex += stride ;
 
+				CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis.Y.x ;  			
 				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis.Y.y ;  			
 				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis.Y.z ;  			
@@ -3226,21 +3339,25 @@ void CPSFace::draw(void)
 			
 
 				// we use this instead of the + operator, because we avoid 4 constructor calls this way
+				CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis->X.x ;  			
 				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis->X.y ;  			
 				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis->X.z ;  			
 				currVertex += vSize ;
 
+				CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis->Y.x ;  			
 				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis->Y.y ;  			
 				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis->Y.z ;  			
 				currVertex += vSize ;
 
+				CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis->X.x ;  			
 				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis->X.y ;  			
 				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis->X.z ;  			
 				currVertex += vSize ;
 
+				CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis->Y.x ;  			
 				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis->Y.y ;  			
 				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis->Y.z ;  			
@@ -3269,7 +3386,7 @@ void CPSFace::draw(void)
 
 
 
-
+	PARTICLES_CHECK_MEM ;
 	
 
 
@@ -3462,6 +3579,8 @@ void CPSShockWave::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 void CPSShockWave::draw(void)
 {
+	PARTICLES_CHECK_MEM ;
+
 	nlassert(_Owner) ;
 	const uint32 size = _Owner->getSize() ;
 	if (!size) return ;
@@ -3557,8 +3676,10 @@ void CPSShockWave::draw(void)
 			{
 				radVect = *ptCurrSize * (CPSUtil::getCos((sint32) currAngle) * ptCurrBasis->X + CPSUtil::getSin((sint32) currAngle) * ptCurrBasis->Y) ;
 				innerVect = _RadiusRatio * radVect ;
+				CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 				* (CVector *) currVertex = *posIt + radVect ;
 				currVertex += vSize ;
+				CHECK_VERTEX_BUFFER(_Vb, currVertex) ;
 				* (CVector *) currVertex = *posIt + innerVect ;
 				currVertex += vSize ;
 
@@ -3585,6 +3706,7 @@ void CPSShockWave::draw(void)
 	}
 	while (leftToDo) ;
 
+	PARTICLES_CHECK_MEM ;
 
 }
 
@@ -3791,6 +3913,8 @@ void CPSMesh::deleteElement(uint32 index)
 
 void CPSMesh::draw(void)
 {
+	PARTICLES_CHECK_MEM ;
+
 	nlassert(_Owner) ;
 	const uint32 size = _Owner->getSize() ;
 	if (!size) return ;
@@ -3921,6 +4045,7 @@ void CPSMesh::draw(void)
 	}
 	while (leftToDo) ;
 
+	PARTICLES_CHECK_MEM ;
 }
 
 void CPSMesh::resize(uint32 size)
@@ -3957,6 +4082,8 @@ CPSMesh::~CPSMesh()
 
 static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveBlock &destBlock, uint nbReplicate, uint vertOffset)
 {
+	PARTICLES_CHECK_MEM ;
+
 	// this must be update each time a new primitive is added
 	
 	// loop counters, and index of the current primitive in the dest pb
@@ -4038,10 +4165,11 @@ static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveB
 
 	// TODO quad / strips duplication : (unimplemented in primitive blocks for now)
 
+	PARTICLES_CHECK_MEM ;
 }
 
 
-void CPSConstraintMesh::build(const std::string meshFileName)
+void CPSConstraintMesh::setShape(const std::string &meshFileName)
 {
 	_MeshShapeFileName = meshFileName ;
 	_Touched = true ;
@@ -4153,6 +4281,8 @@ void CPSConstraintMesh::setupPreRotatedVb(sint vertexFlags)
 	
 void CPSConstraintMesh::setupVb(sint vertexFlags)
 {
+	PARTICLES_CHECK_MEM ;
+
 	nlassert(vertexFlags & IDRV_VF_XYZ) ; // need the position at least
 
 	_MeshBatchVb.setVertexFormat(vertexFlags) ;
@@ -4169,6 +4299,8 @@ void CPSConstraintMesh::setupVb(sint vertexFlags)
 	{
 		memcpy((uint8 *) _MeshBatchVb.getVertexCoordPointer() + k * mSize, _ModelVb->getVertexCoordPointer(), mSize) ;
 	}
+
+	PARTICLES_CHECK_MEM ;
 }
 
 
@@ -4320,6 +4452,7 @@ void CPSConstraintMesh::clean(void)
 
 void CPSConstraintMesh::draw(void)
 {
+	PARTICLES_CHECK_MEM ;
 	nlassert(_Owner) ;
 
 	update() ; // update mesh datas if needed
@@ -4408,6 +4541,11 @@ void CPSConstraintMesh::draw(void)
 			{
 				do
 				{
+					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currVertex) ;
+					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex + pNormalOff) ;
+					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex) ;
+					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex + normalOff) ;
+
 					* (CVector *) currVertex =  mat.mulVector(* (CVector *) currSrcVertex) ;
 					* (CVector *) (currVertex + pNormalOff) =  mat.mulVector(* (CVector *) (currSrcVertex + normalOff) ) ;
 					currVertex += vpSize ;
@@ -4419,7 +4557,11 @@ void CPSConstraintMesh::draw(void)
 			{
 				// no normal included
 				do
-				{					
+				{	
+					
+					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currVertex) ;	
+					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex) ;					
+
 					* (CVector *) currVertex =  mat.mulVector(* (CVector *) currSrcVertex) ;
 					currVertex += vpSize ;
 					currSrcVertex += vSize ;
@@ -4465,6 +4607,11 @@ void CPSConstraintMesh::draw(void)
 					// offset of normals in the prerotated mesh				
 					do
 					{
+						CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex) ;	
+						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex) ;	
+						CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex + pNormalOff) ;	
+						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex + normalOff) ;	
+
 						// translate and resize the vertex (relatively to the mesh origin)
 						*(CVector *) currVertex = *posIt + *ptCurrSize * *(CVector *) currSrcVertex  ;										
 						// copy the normal
@@ -4481,6 +4628,9 @@ void CPSConstraintMesh::draw(void)
 
 					do
 					{
+						CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex) ;	
+						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex) ;							
+						
 						// translate and resize the vertex (relatively to the mesh origin)
 						*(CVector *) currVertex = *posIt + *ptCurrSize * *(CVector *) currSrcVertex  ;																
 
@@ -4522,7 +4672,7 @@ void CPSConstraintMesh::draw(void)
 	}
 	else
 	{
-		// we don't have precomputed mesh there ... so each mesh must be trnasformed, which is the worst case
+		// we don't have precomputed mesh there ... so each mesh must be transformed, which is the worst case
 
 		
 	
@@ -4587,6 +4737,11 @@ void CPSConstraintMesh::draw(void)
 					// offset of normals in the prerotated mesh				
 					do
 					{
+						CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex) ;	
+						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex) ;	
+						CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex + normalOff) ;	
+						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex + normalOff) ;	
+
 						// translate and resize the vertex (relatively to the mesh origin)
 						*(CVector *) currVertex = *posIt + sM * *(CVector *) currSrcVertex  ;										
 						// copy the normal
@@ -4606,6 +4761,8 @@ void CPSConstraintMesh::draw(void)
 
 					do
 					{
+						CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex) ;	
+						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex) ;	
 						// translate and resize the vertex (relatively to the mesh origin)
 						*(CVector *) currVertex = *posIt + sM * *(CVector *) currSrcVertex  ;																
 
@@ -4631,9 +4788,9 @@ void CPSConstraintMesh::draw(void)
 			{
 				// TODO : update this when new primitive will be added
 
-				rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri() * toProcess) ;
-				rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * toProcess) ;
-				rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * toProcess) ;
+				rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri() * toProcess / constraintMeshBufSize) ;
+				rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * toProcess / constraintMeshBufSize) ;
+				rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * toProcess / constraintMeshBufSize) ;
 
 				driver->render(rdrPassIt->Pb, rdrPassIt->Mat) ;
 
@@ -4645,6 +4802,8 @@ void CPSConstraintMesh::draw(void)
 		while (leftToDo) ;
 
 	}
+
+	PARTICLES_CHECK_MEM ;
 }
 
 

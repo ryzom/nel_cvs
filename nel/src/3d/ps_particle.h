@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.2 2001/06/19 16:02:34 vizerie Exp $
+ * $Id: ps_particle.h,v 1.3 2001/06/25 13:39:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@
 #include "3d/vertex_buffer.h"
 #include "3d/primitive_block.h"
 #include "3d/mesh.h"
-
+#include "3d/scene.h"
 
 
 namespace NL3D {
@@ -446,6 +446,51 @@ struct CPSHintParticleRotateTheSame
 } ;
 
 
+
+/// base struct for particle that have a tail
+
+struct CPSTailParticle
+{
+	/** (de)activate color fading
+	 * when its done, colors fades to black along the tail
+	 */
+	virtual void setColorFading(bool onOff = true) = 0 ;
+
+	/// test wether color fading is activated
+	virtual bool getColorFading(void) const = 0 ;
+		
+		
+	/// there may be a maximum with some particles	
+	virtual void setTailNbSeg(uint32 nbSeg) = 0 ;
+
+	// get the number of segments in the tail
+	virtual	uint32 getTailNbSeg(void) const = 0 ;
+
+	
+	/** tells in which basis is the tail
+	 *  It requires one transform per particle if it is not the same as the located that hold that particle
+	 *  The default is false. With that you can control if a rotation of the system will rotate the tail
+	 */
+	virtual void setSystemBasis(bool yes) = 0 ;
+
+		
+	/// return true if the tails are in the system basis
+	virtual bool isInSystemBasis(void) const = 0 ;
+} ;
+
+
+
+/// base struct for particles that can have a shape
+struct CPSShapeParticle
+{
+	/// set a new shape
+	virtual void setShape(const std::string &shape) = 0 ;
+
+	/// get the shape used for those particles	
+	virtual std::string getShape(void) const = 0 ;
+} ;
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -491,6 +536,9 @@ class CPSDot : public CPSParticle, public CPSColoredParticle
 		/// we don't save datas so it does nothing for now
 		void deleteElement(uint32) {}
 } ;
+
+
+ 
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -595,11 +643,22 @@ public:
 		_Threshold = threshold ;
 	}
 
+	/// set the motion blur coeff (0 = none)
+	void setMotionBlurCoeff(float coeff) { _MotionBlurCoeff = coeff ; }
+
+	/// set the motion blur threshold
+	void setMotionBlurThreshold(float threshold) { _Threshold = threshold ; }
+
+
+
 	/** return the motion blur coeff (0.f means none)
 	 *  \see  activateMotionBlur()
 	 */
 	float getMotionBlurCoeff(void) const { return _MotionBlurCoeff ; }
 
+	/// get the motion blur threshold
+	float getMotionBlurThreshold(void) const { return _Threshold ; }
+	
 	/// we don't save datas so it does nothing for now
 	void newElement(void) {}
 
@@ -655,6 +714,9 @@ public:
 	 */
 	void setPhaseSpeed(float multiplier) ;
 
+	/// get the speed for phase
+	float getPhaseSpeed(void) const { return _PhaseSpeed / 256.0f ; }
+
 	// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
 	virtual void updateMatAndVbForColor(void) ;
 
@@ -702,7 +764,7 @@ protected:
  *  These particle are like dot, but a tail is following them. The number of line in the tails can be tuned
  */
 
-class CPSTailDot : public CPSParticle, public CPSColoredParticle
+class CPSTailDot : public CPSParticle, public CPSColoredParticle, public CPSTailParticle
 {
 	public:
 		/// process one pass for the particle	
@@ -731,7 +793,7 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 		void setTailNbSeg(uint32 nbSeg) ;
 
 		// get the number of segments in the tail
-		uint getTailNbSeg(uint32 getNbSeg) const { return _TailNbSeg ; }
+		uint32 getTailNbSeg(void) const { return _TailNbSeg ; }
 
 		NLMISC_DECLARE_CLASS(CPSTailDot) ;
 
@@ -803,6 +865,7 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
  */
 
 class CPSRibbon : public CPSParticle, public CPSSizedParticle, public CPSColoredParticle, public CPSRotated2DParticle
+				  , public CPSTailParticle
 {
 		public:
 		/// process one pass for the particle	
@@ -852,7 +915,7 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle, public CPSColored
 		void setTailNbSeg(uint32 nbSeg) ;
 
 		// get the number of segments in the tail
-		uint32 getTailNbSeg(uint32 getNbSeg) const { return _TailNbSeg ; }
+		uint32 getTailNbSeg(void) const { return _TailNbSeg ; }
 
 		/** set a new shape for the ribbon
 		 * If the number of vertices in the shape has changed, the previous ribbon will be desroyed
@@ -1274,6 +1337,7 @@ protected:
 
 class CPSMesh : public  CPSParticle, public CPSSizedParticle
 				, public CPSRotated3DPlaneParticle, public CPSRotated2DParticle
+				, public CPSShapeParticle
 {
 public:
 	/// construct the system by using the given shape for mesh
@@ -1286,9 +1350,8 @@ public:
 	/// set a new shape for that kind of particles
 	void setShape(const std::string &shape) { _Shape = shape ; }
 
-	/// get the shape used for thos particles
-	
-	const std::string &getShape(void) const { return _Shape ; }
+	/// get the shape used for those particles	
+	std::string getShape(void) const { return _Shape ; }
 
 		/// serialisation. Derivers must override this, and call their parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
@@ -1349,6 +1412,7 @@ protected:
 class CPSConstraintMesh : public  CPSParticle, public CPSSizedParticle
 						, public CPSRotated3DPlaneParticle
 						, public CPSHintParticleRotateTheSame
+						, public CPSShapeParticle
 {
 public:	
 	CPSConstraintMesh() : _ModelShape(NULL), _ModelVb(NULL), _ModelBank(NULL), _Touched(false)
@@ -1360,7 +1424,11 @@ public:
 
 	/** construct the mesh by using the given mesh shape file	
 	 */
-	void build(const std::string meshFileName) ;
+	void setShape(const std::string &meshFileName) ;
+
+
+	/// get the shape used for those particles	
+	std::string getShape(void) const { return _MeshShapeFileName ; }
 
 	/** Tells that all meshs are turning in the same manner, and only have a rotationnal bias
 	 *  This is a lot faster then other method. Any previous set scheme for 3d rotation is kept.

@@ -594,6 +594,10 @@ SOURCE=..\include\nel\misc\ucstring.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\unicode.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\words_dictionary.cpp
 # End Source File
 # Begin Source File

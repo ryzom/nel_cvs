@@ -1,7 +1,0 @@
-
-
-Process dependencies note:
-==========================
-
-This process must be executed after "skel" process and "anim" process:
-

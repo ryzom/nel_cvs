@@ -1,1 +1,0 @@
-bash sh\light.sh

@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.19 2003/10/17 16:28:00 ledorze Exp $
+ * $Id: smart_ptr.h,v 1.20 2003/10/22 14:38:01 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -545,6 +545,17 @@ public:
     bool operator!=(const CDbgPtr &p) const
 	{
 		return	Ptr!=p.Ptr;
+	}
+
+    bool operator==(int p) const
+	{
+		nlassert(p == 0);
+		return	Ptr==0;
+	}
+    bool operator!=(int p) const
+	{
+		nlassert(p == 0);
+		return	Ptr!=0;
 	}
 };
 

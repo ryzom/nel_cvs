@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.6 2002/05/30 16:17:33 vizerie Exp $
+ * $Id: hierarchical_timer.cpp,v 1.7 2002/05/30 19:33:51 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,6 +28,10 @@
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/common.h"
 #include "nel/misc/debug.h"
+
+#ifdef NL_CPU_INTEL
+#include "nel/misc/time_nl.h"
+#endif
 
 #include <map>
 
@@ -234,7 +238,7 @@ void	CHTimer::startBench(bool wantStandardDeviation /*= false*/)
 		double freq = (double) getProcessorFrequency();
 		_MsPerTick = 1000 / (double) freq;
 #	else
-		_MsPerTick = ticksToSecond(1000);
+		_MsPerTick = CTime::ticksToSecond(1000);
 #	endif
 	CSimpleClock::init();
 	_RootNode.Owner = &_RootTimer;

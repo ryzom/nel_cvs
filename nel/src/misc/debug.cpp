@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.61 2002/08/23 12:53:52 lecroart Exp $
+ * $Id: debug.cpp,v 1.62 2002/08/27 10:02:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,7 @@
 #endif
 
 #include <stdarg.h>
+#include <iostream>
 
 using namespace std;
  
@@ -180,25 +181,6 @@ void initDebug2 (bool logInFile)
 }
 
 
-void getCallStackAndLog (string &result, sint skipNFirst)
-{
-#ifdef NL_OS_WINDOWS
-	try
-	{
-		DWORD array[1];
-		array[0] = skipNFirst;
-		RaiseException (0xACE0ACE, 0, 1, array);
-	}
-	catch (Exception &e)
-	{
-		result += e.what();
-	}
-#else
-	result += "No callstack available";
-#endif
-}
-
-
 #ifdef NL_OS_WINDOWS
 
 //
@@ -255,6 +237,23 @@ static DWORD __stdcall GetModuleBase(HANDLE hProcess, DWORD dwReturnAddress)
 	return 0;
 }
 
+LPVOID __stdcall FunctionTableAccess (HANDLE hProcess, DWORD AddrBase)
+{
+	AddrBase = 0x40291f;
+	DWORD addr = SymGetModuleBase (hProcess, AddrBase);
+	HRESULT hr = GetLastError ();
+	
+	IMAGEHLP_MODULE moduleInfo;
+	moduleInfo.SizeOfStruct = sizeof(IMAGEHLP_MODULE);
+	SymGetModuleInfo(hProcess, addr, &moduleInfo);
+	hr = GetLastError ();
+	SymLoadModule(hProcess, NULL, NULL, NULL, 0, 0);
+	hr = GetLastError ();
+
+	LPVOID temp = SymFunctionTableAccess (hProcess, AddrBase);
+	hr = GetLastError ();
+	return temp;
+}
 
 class EDebug : public ETrapDebug
 {
@@ -372,6 +371,9 @@ public:
 	// display the callstack
 	void addStackAndLogToReason (sint skipNFirst = 0)
 	{
+		// ace hack
+		skipNFirst = 0;
+		
 		DWORD symOptions = SymGetOptions();
 		symOptions |= SYMOPT_LOAD_LINES;
 		symOptions &= ~SYMOPT_UNDNAME;
@@ -394,7 +396,7 @@ public:
 		{
 			SetLastError(0);
 			BOOL res = StackWalk (IMAGE_FILE_MACHINE_I386, getProcessHandle(), GetCurrentThread(), &callStack,
-				m_pexp->ContextRecord, NULL, SymFunctionTableAccess, GetModuleBase/*SymGetModuleBase*/, NULL);
+				m_pexp->ContextRecord, NULL, FunctionTableAccess, GetModuleBase, NULL);
 
 			if (res == FALSE || callStack.AddrFrame.Offset == 0)
 				break;
@@ -433,6 +435,56 @@ public:
 		::ZeroMemory (&line, sizeof (line));
 		line.SizeOfStruct = sizeof(line);
 
+		// "Debugging Applications" John Robbins
+		// The problem is that the symbol engine finds only those source
+		// line addresses (after the first lookup) that fall exactly on
+		// a zero displacement. I'll walk backward 100 bytes to
+		// find the line and return the proper displacement.
+		bool ok = true;
+		DWORD displacement = 0 ;
+		DWORD resdisp;
+		while (!SymGetLineFromAddr (getProcessHandle(), addr - displacement, (DWORD*)&resdisp, &line))
+		{        
+			if (100 == ++displacement)
+			{
+				ok = false;
+				break;
+			}
+		}
+
+		// "Debugging Applications" John Robbins
+		// I found the line, and the source line information is correct, so
+		// change the displacement if I had to search backward to find the source line.
+		if (displacement)    
+			resdisp = displacement;    
+
+		if (ok)
+		{
+			str = line.FileName;
+			str += "(" + toString (line.LineNumber) + ")";
+		}
+		else
+		{
+			HRESULT hr = GetLastError();
+			IMAGEHLP_MODULE module;
+			::ZeroMemory (&module, sizeof(module));
+			module.SizeOfStruct = sizeof(module);
+
+			if (SymGetModuleInfo (getProcessHandle(), addr, &module))
+			{
+				str = module.ModuleName;
+			}
+			else
+			{
+				HRESULT hr = GetLastError ();
+				str = "<NoModule>";
+			}
+			char tmp[32];
+			sprintf (tmp, "!0x%X", addr);
+			str += tmp;
+		}
+
+		/*
 		DWORD disp;
 		if (SymGetLineFromAddr (getProcessHandle(), addr, &disp, &line))
 		{
@@ -452,12 +504,14 @@ public:
 			}
 			else
 			{
+				HRESULT hr = GetLastError ();
 				str = "<NoModule>";
 			}
 			char tmp[32];
 			sprintf (tmp, "!0x%X", addr);
 			str += tmp;
 		}
+		str +=" DEBUG:"+toString("0x%08X", addr);*/
 		
 		return str;
 	}
@@ -658,6 +712,10 @@ private:
 	EXCEPTION_POINTERS * m_pexp;
 };
 
+// workaround of VCPP synchronous exception and se translator
+bool global_force_exception_flag = false;
+#define WORKAROUND_VCPP_SYNCHRONOUS_EXCEPTION  if (global_force_exception_flag) force_exception_frame();
+void force_exception_frame(...) {std::cout.flush();}
 
 static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)
 {
@@ -679,6 +737,27 @@ static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)
 }
 
 #endif // NL_OS_WINDOWS
+
+void getCallStackAndLog (string &result, sint skipNFirst)
+{
+#ifdef NL_OS_WINDOWS
+	try
+	{
+		WORKAROUND_VCPP_SYNCHRONOUS_EXCEPTION // force to install a exception frame		
+			
+		DWORD array[1];
+		array[0] = skipNFirst;
+		RaiseException (0xACE0ACE, 0, 1, array);
+	}
+	catch (EDebug &e)
+	{
+		result += e.what();
+	}
+#else
+	result += "No callstack available";
+#endif
+}
+
 
 void createDebug (const char *logPath, bool logInFile)
 {

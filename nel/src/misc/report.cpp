@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.1 2002/08/23 12:17:40 lecroart Exp $
+ * $Id: report.cpp,v 1.2 2002/08/27 10:02:27 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -188,7 +188,7 @@ TReportResult report (const std::string &title, const std::string &header, const
 
 
 	// create the window
-	dialog = CreateWindow ("NLReportWindow", formatedTitle.c_str(), WS_OVERLAPPED | WS_CAPTION | WS_THICKFRAME, CW_USEDEFAULT, CW_USEDEFAULT, 456, 375,  NULL, NULL, GetModuleHandle(NULL), NULL);
+	dialog = CreateWindow ("NLReportWindow", formatedTitle.c_str(), WS_DLGFRAME | WS_CAPTION /*| WS_THICKFRAME*/, CW_USEDEFAULT, CW_USEDEFAULT, 456, 375,  NULL, NULL, GetModuleHandle(NULL), NULL);
 
 	// create the font
 	HFONT font = CreateFont (-12, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial");
@@ -286,7 +286,7 @@ TReportResult report (const std::string &title, const std::string &header, const
 
 	IgnoreNextTime = ignoreNextTime;
 
-	ShowWindow(dialog, SW_SHOW);
+	SetWindowPos (dialog, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 
 	NeedExit = false;
 

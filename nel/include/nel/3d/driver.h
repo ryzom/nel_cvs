@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.14 2000/11/10 13:39:55 viau Exp $
+ * $Id: driver.h,v 1.15 2000/11/13 11:26:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -323,7 +323,7 @@ typedef std::vector<GfxMode> ModeList;
 
 // --------------------------------------------------
 
-class CEventEmitter
+class IEventEmitter
 {
 };
 

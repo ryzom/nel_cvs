@@ -83,7 +83,7 @@ public:
 
 	virtual bool			activate(void);
 
-	virtual NLMISC::IEventEmitter*	getEventEmitter(void) { return((NLMISC::IEventEmitter*)&_EventEmitter); };
+	virtual NLMISC::IEventEmitter*	getEventEmitter(void) { return&_EventEmitter; };
 
 	virtual bool			clear2D(CRGBA& rgba);
 

@@ -1,7 +1,7 @@
 /** \file event_emitter.h
  * <File description>
  *
- * $Id: event_emitter.h,v 1.4 2000/11/13 11:25:35 corvazier Exp $
+ * $Id: event_emitter.h,v 1.5 2000/11/13 11:30:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,7 @@ public:
  * \author Nevrax France
  * \date 2000
  */
-class CEventEmitterWin32
+class CEventEmitterWin32 : public IEventEmitter
 {
 public:
 	CEventEmitterWin32 ()

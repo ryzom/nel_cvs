@@ -142,8 +142,14 @@ fn selectAllPatch =
 -- Get the ig name of this object
 fn getIg node =
 (
-	return (getappdata node NEL3D_APPDATA_IGNAME)
+	igName = (getappdata node NEL3D_APPDATA_IGNAME)
+	if igName == "" then
+	(
+		return undefined
+	)
+	return igName
 )
+
 
 
 
@@ -204,6 +210,33 @@ fn exportInstanceGroupFromZone inputFile outputPath =
 			)
 		)
 	)
+
+	for node in lights do
+	(
+		ig = getIg node
+		if (ig != undefined) then
+		(
+			-- Found ?
+			found = false
+
+			-- Already found ?
+			for j = 1 to ig_array.count do
+			(
+				if (ig_array[j]==ig) then
+				(								
+					found = true
+					exit
+				)
+			)
+
+			-- Found ?
+			if (found == false) then
+			(
+				append ig_array ig
+			)
+		)
+	)
+
 
 	-- Have some ig ?
 	if (ig_array.count != 0) then

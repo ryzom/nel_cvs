@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.19 2001/02/28 14:21:13 berenguier Exp $
+ * $Id: text_context.h,v 1.20 2001/02/28 15:06:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -298,7 +298,7 @@ public:
 		std::map<uint32,CComputedString>::iterator itstr = _StringList.find(i);
 		nlassert(itstr!= _StringList.end());
 		
-		(*itstr).second.render2D(*NL3D::CNELU::Driver,
+		(*itstr).second.render2D(*_Driver,
 								x,z,
 								_HotSpot,
 								_ScaleX,_ScaleZ);

@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.3 2002/10/25 15:45:59 berenguier Exp $
+ * $Id: algo.h,v 1.4 2002/11/12 15:56:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -132,6 +132,20 @@ static inline	void fastClamp8(sint &v)
 	clamp(v, 0, 255);
 #endif
 }
+
+
+// ***************************************************************************
+/** return true if the string strIn verify the wildcard string wildCard.
+ *	eg: 
+ *		testWildCard("azert", "*")== true
+ *		testWildCard("azert", "??er*")== true
+ *		testWildCard("azert", "*er*")== true
+ *		testWildCard("azert", "azert*")== true
+ *	Undefined result if s has some '*', 
+ *	return false if wildcard has some "**" or "*?"
+ *	NB: case-sensitive
+ */
+bool		testWildCard(const char *strIn, const char *wildCard);
 
 
 } // NLMISC

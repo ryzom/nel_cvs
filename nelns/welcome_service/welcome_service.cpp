@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.34 2004/06/30 15:40:39 legros Exp $
+ * $Id: welcome_service.cpp,v 1.35 2004/07/08 08:41:17 legros Exp $
  *
  */
 
@@ -70,19 +70,33 @@ CVariable<sint> PlayerLimit(
 // Forward declaration of callback cbShardOpenStateFile (see ShardOpenStateFile variable)
 void	cbShardOpenStateFile(IVariable &var);
 
-/**
- * ShardOpen
- * true if shard is open to public
- */
-CVariable<bool>		ShardOpen("ShardOpen", "Indicates if shard is open to public (that is no priviledged users)", true, 0, true);
+// Types of open state
+enum TShardOpenState
+{
+	ClosedForAll = 0,
+	OpenOnlyForAllowed = 1,
+	OpenForAll = 2
+};
 
 /**
  * ShardOpen
+ * true if shard is open to public
+ * 0 means closed for all but :DEV:
+ * 1 means open only for groups in config file (see OpenGroups variable) and :DEV:
+ * 2 means open for all
+ */
+CVariable<uint>		ShardOpen("ShardOpen", "Indicates if shard is open to public (0 closed for all but :DEV:, 1 open only for groups in cfg, 2 open for all)", 2, 0, true);
+
+/**
+ * ShardOpenStateFile
  * true if shard is open to public
  */
 CVariable<string>	ShardOpenStateFile("ShardOpenStateFile", "Name of the file that contains ShardOpen state", "", 0, true, cbShardOpenStateFile);
 
-
+/**
+ * OpenGroups
+ */
+CVariable<string>	OpenGroups("OpenGroups", "list of groups allowed at ShardOpen Level 1", "", 0, true);
 
 
 /**
@@ -344,6 +358,47 @@ void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, uint
 	}
 }
 
+
+/*
+ * Set Shard Open State
+ * uint8	Open State (0 closed for all, 1 open for groups in cfg, 2 open for all)
+ */
+void cbSetShardOpen(CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	uint8 shardOpenState;
+	msgin.serial (shardOpenState);
+
+	if (shardOpenState > OpenForAll)
+	{
+		shardOpenState = OpenForAll;
+	}
+
+	ShardOpen = shardOpenState;
+}
+
+// forward declaration to callback
+void	cbShardOpenStateFile(IVariable &var);
+
+/*
+ * Restore Shard Open state from config file or from file if found
+ */
+void cbRestoreShardOpen(CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	// first restore state from config file
+	CConfigFile::CVar*	var = IService::getInstance()->ConfigFile.getVarPtr("ShardOpen");
+	if (var != NULL)
+	{
+		ShardOpen = var->asInt();
+	}
+
+	// then restore state from state file, if it exists
+	cbShardOpenStateFile(ShardOpenStateFile);
+}
+
+
+
+
+
 // a new front end connecting to me, add it
 void cbFESConnection (const std::string &serviceName, uint16 sid, void *arg)
 {
@@ -447,6 +502,9 @@ TUnifiedCallbackItem FESCallbackArray[] =
 {
 	{ "SCS", cbFESShardChooseShard },
 	{ "CC", cbFESClientConnected },
+
+	{ "SET_SHARD_OPEN",		cbSetShardOpen },
+	{ "RESTORE_SHARD_OPEN",	cbRestoreShardOpen },
 };
 
 
@@ -491,22 +549,45 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 		return;
 	}
 
-	// Check the player limit number
-	// condition is like:
-	// if user has no privilege and
-	//		shard is closed or
-	//		shard player limit is reached (if any)
-	//	-> refuse user
-	if (userPriv.empty() && ( !ShardOpen || (   (PlayerLimit.get() != -1) && (totalNbUsers >= (uint)(PlayerLimit.get()))   ) ) )
+
+
+	bool	authorizeUser = false;
+	bool	forceAuthorize = false;
+
+	if (userPriv == ":DEV:")
+	{
+		// devs have all privileges
+		authorizeUser = true;
+		forceAuthorize = true;
+	}
+	else if (ShardOpen != ClosedForAll)
+	{
+		const std::string&	allowedGroups = OpenGroups;
+		bool				userInOpenGroups = (allowedGroups.find(userPriv) != std::string::npos);
+
+		// open for all or user is privileged
+		authorizeUser = (ShardOpen == OpenForAll || userInOpenGroups);
+		// let authorized users to force access even if limit is reached
+		forceAuthorize = userInOpenGroups;
+	}
+
+	bool	shardLimitReached = ( (PlayerLimit.get() != -1) && (totalNbUsers >= (uint)PlayerLimit.get()) );
+
+	if (!forceAuthorize && (!authorizeUser || shardLimitReached))
 	{
 		// answer the LS that we can't accept the user
 		CMessage msgout ("SCS");
-		string reason = "The shard is currently full, please try again in 5 minutes.";
+		string reason;
+		if (shardLimitReached)
+			reason = "The shard is currently full, please try again in 5 minutes.";
+		else
+			reason = "The shard is closed.";
 		msgout.serial (reason);
 		msgout.serial (cookie);
 		CUnifiedNetwork::getInstance()->send(sid, msgout);
 		return;
 	}
+
 
 	CMessage msgout ("CS");
 	msgout.serial (cookie);
@@ -607,9 +688,9 @@ void	updateShardOpenFromFile(const std::string& filename)
 	{
 		char	readBuffer[256];
 		f.getline(readBuffer, 256);
-		ShardOpen = (atoi(readBuffer) != 0);
+		ShardOpen = atoi(readBuffer);
 
-		nlinfo("Updated ShardOpen state to '%s' from file '%s'", (ShardOpen ? "true" : "false"), filename.c_str());
+		nlinfo("Updated ShardOpen state to '%d' from file '%s'", ShardOpen, filename.c_str());
 	}
 	catch (Exception& e)
 	{
@@ -707,12 +788,7 @@ public:
 		 * read config variable ShardOpenStateFile to update
 		 * 
 		 */
-		CConfigFile::CVar*	shardOpenStateFile = ConfigFile.getVarPtr("ShardOpenStateFile");
-		// if doesn't exist, keep ShardOpen variable state unchanged
-		if (shardOpenStateFile != NULL)
-		{
-			cbShardOpenStateFile(ShardOpenStateFile);
-		}
+		cbShardOpenStateFile(ShardOpenStateFile);
 	}
 };
 

@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.18 2004/11/15 10:24:27 lecroart Exp $
+ * $Id: sstring.h,v 1.19 2004/11/26 21:28:19 miller Exp $
  */
 
 
@@ -145,6 +145,11 @@ public:
 	/// A handy utility routine for knowing if a character is a valid subsequent char for a keyword (a..z, '_', '0'..'9')
 	static bool isValidKeywordChar(char c); 
 
+	/// A handy utility routine for knowing if a character is a hex digit 0..9, a..f
+	static bool isHexChar(char c);
+	/// A handy utility routine for converting a hex digit to a numeric value 0..15
+	static char convertHexChar(char c);
+
 	// a handy routine that tests whether a given string is a valid file name or not
 	// "\"hello there\\bla\""	is valid 
 	// "hello there\\bla"		is not valid - missing quotes
@@ -157,6 +162,10 @@ public:
 	bool isValidUnquotedFileName() const;
 	// a handy routine that tests whether or not a given string is a valid keyword
 	bool isValidKeyword() const;
+	// a handy routine that tests whether or not a given string is quote encapsulated
+	bool isQuoted(	bool useAngleBrace=false,						// treat '<' and '>' as brackets
+					bool useSlashStringEscape=true,					// treat '\' as escape char so "\"" == '"'
+					bool useRepeatQuoteStringEscape=true) const;	// treat """" as '"'
 
 	///	Search for the closing delimiter matching the opening delimiter at position 'startPos' in the 'this' string
 	/// on error returns startPos
@@ -239,8 +248,14 @@ public:
 	bool splitByOneOfSeparators(	const CSString& separators, CVectorSString& result,
 									bool useAngleBrace=false,				// treat '<' and '>' as brackets
 									bool useSlashStringEscape=true,			// treat '\' as escape char so "\"" == '"'
-									bool useRepeatQuoteStringEscape=true	// treat """" as '"'
+									bool useRepeatQuoteStringEscape=true,	// treat """" as '"'
+									bool retainSeparators=false				// have the separators turn up in the result vector
 								 ) const;
+
+	/// join an array of strings to form a single string (appends to the existing content of this string)
+	/// if this string is not empty then a separator is added between this string and the following
+	const CSString& join(const std::vector<CSString>& strings, const CSString& separator="");
+	const CSString& join(const std::vector<CSString>& strings, char separator);
 
 	/// Return a copy of the string with leading and trainling spaces removed
 	CSString strip() const;
@@ -260,10 +275,40 @@ public:
 					bool useRepeatQuoteStringEscape=true	// treat """" as '"'
 					) const;
 
+	/// if a string is not already encapsulated in quotes then return quote() else return *this
+	CSString quoteIfNotQuoted(	bool useSlashStringEscape=true,			// treat '\' as escape char so "\"" == '"'
+								bool useRepeatQuoteStringEscape=true	// treat """" as '"'
+								) const;
+
+	/// if a string is not a single word and is not already encapsulated in quotes then return quote() else return *this
+	CSString quoteIfNotAtomic(	bool useSlashStringEscape=true,			// treat '\' as escape char so "\"" == '"'
+								bool useRepeatQuoteStringEscape=true	// treat """" as '"'
+								) const;
+
 	/// strip delimiting quotes and clear through escape characters as necessary
 	CSString unquote(bool useSlashStringEscape=true,		// treat '\' as escape char so "\"" == '"'
 					 bool useRepeatQuoteStringEscape=true	// treat """" as '"'
 					) const;
+
+	/// equivalent to if (isQuoted()) unquote()
+	CSString unquoteIfQuoted(bool useSlashStringEscape=true,
+					 bool useRepeatQuoteStringEscape=true
+					) const;
+
+	///	encode special characters such as quotes, gt, lt, etc to xml encoding
+	/// the isParameter paramter is true if the string is to be used in an XML parameter block
+	CSString encodeXML(bool isParameter=false) const;
+
+	///	decode special characters such as quotes, gt, lt, etc from xml encoding
+	CSString decodeXML() const;
+
+	/// verifies whether a string contains sub-strings that correspond to xml special character codes
+	bool isEncodedXML() const;
+
+	/// verifies whether a string contains any XML incompatible characters
+	/// in this case the string can be converted to xml compatible format via encodeXML()
+	/// the isParameter paramter is true if the string is to be used in an XML parameter block
+	bool isXMLCompatible(bool isParameter=false) const;
 
 	/// Replacing all occurences of one string with another
 	CSString replace(const char *toFind,const char *replacement) const;
@@ -701,7 +746,8 @@ inline CSString CSString::firstWordOrWords(bool truncateThis,bool useSlashString
 	if (isStringDelimiter((*this)[startPos]))
 	{
 		uint32 endPos= findMatchingDelimiterPos(false,useSlashStringEscape,useRepeatQuoteStringEscape,startPos);
-		CSString result=substr(startPos+1,endPos-startPos-1);
+		CSString result=substr(startPos,endPos-startPos+1);
+		result=result.unquote(useSlashStringEscape,useRepeatQuoteStringEscape);
 		if (truncateThis)
 			*this=leftCrop(endPos+1);
 		return result;
@@ -827,6 +873,11 @@ inline bool CSString::isValidFileNameChar(char c)
 	return false;
 }
 
+inline bool CSString::isQuoted(bool useAngleBrace,bool useSlashStringEscape,bool useRepeatQuoteStringEscape) const
+{
+	return (left(1)=="\"") && (right(1)=="\"") && isDelimitedMonoBlock(useAngleBrace,useSlashStringEscape,useRepeatQuoteStringEscape);
+}
+
 inline bool CSString::isValidKeywordFirstChar(char c)
 {
 	if (c>='a' && c<='z') return true;
@@ -842,6 +893,22 @@ inline bool CSString::isValidKeywordChar(char c)
 	if (c>='0' && c<='9') return true;
 	if (c=='_') return true;
 	return false;
+}
+
+inline bool CSString::isHexChar(char c) 
+{
+	if (c>='0' && c<='9') return true;
+	if (c>='A' && c<='F') return true;
+	if (c>='a' && c<='f') return true;
+	return false;
+}
+
+inline char CSString::convertHexChar(char c) 
+{
+	if (c>='0' && c<='9') return c-'0';
+	if (c>='A' && c<='F') return c-'A';
+	if (c>='a' && c<='f') return c-'a';
+	return 0;
 }
 
 inline bool CSString::isValidFileName() const
@@ -1209,7 +1276,8 @@ inline bool CSString::splitBySeparator(	char separator, CVectorSString& result,
 inline bool CSString::splitByOneOfSeparators(	const CSString& separators, CVectorSString& result,
 												bool useAngleBrace,				// treat '<' and '>' as brackets
 												bool useSlashStringEscape,		// treat '\' as escape char so "\"" == '"'
-												bool useRepeatQuoteStringEscape	// treat """" as '"'
+												bool useRepeatQuoteStringEscape,// treat """" as '"'
+												bool retainSeparators			// have the separators turn up in the result vector
 											 ) const
 {
 	CSString s=*this;
@@ -1217,12 +1285,55 @@ inline bool CSString::splitByOneOfSeparators(	const CSString& separators, CVecto
 	{
 		uint32 pre=s.size();
 		result.push_back(s.splitToOneOfSeparators(	separators,true,useAngleBrace,useSlashStringEscape,
-													useRepeatQuoteStringEscape,true ));
+													useRepeatQuoteStringEscape,!retainSeparators ));
+
+		// if we failed to extract a string segment then we must be looking at a separator
+		if (result.back().empty())
+		{
+			if (!s.empty())
+			{
+				result.back()=s[0];
+				s=s.leftCrop(1);
+			}
+			else
+				result.pop_back();
+		}
+
 		uint32 post=s.size();
 		if (post>=pre)
 			return false;
 	}
 	return true;
+}
+
+inline const CSString& CSString::join(const std::vector<CSString>& strings, const CSString& separator)
+{
+	for (uint32 i=0;i<strings.size();++i)
+	{
+		// add in separators before all but the first string
+		if (!empty())
+			operator+=(separator);
+		// append next string
+		operator+=(strings[i]);
+	}
+
+	// return a ref to ourselves
+	return *this;
+}
+
+inline const CSString& CSString::join(const std::vector<CSString>& strings, char separator)
+{
+	for (uint32 i=0;i<strings.size();++i)
+	{
+		// add in separators before all but the first string
+		if (!empty())
+			operator+=(separator);
+		// append next string
+		operator+=(strings[i]);
+	}
+
+	// return a ref to ourselves
+	return *this;
 }
 
 inline CSString CSString::strip() const
@@ -1292,43 +1403,342 @@ inline CSString CSString::quote(bool useSlashStringEscape,bool useRepeatQuoteStr
 		{
 		case '\"': 
 			if (useSlashStringEscape)
+			{
 				result+="\\\"";
+				continue;
+			}
 			else if (useRepeatQuoteStringEscape)
+			{
 				result+="\"\"";
-			else
-				result+="\"";
+				continue;
+			}
 			break;
-		case '\\':
-			if (useSlashStringEscape)
-				result+="\\\\";
-			else
-				result+="\\";
+		case '\\':	if (useSlashStringEscape)	{	result+="\\\\";	continue;	}	break;
+		case '\a':	if (useSlashStringEscape)	{	result+="\\a";	continue;	}	break;
+		case '\b':	if (useSlashStringEscape)	{	result+="\\b";	continue;	}	break;
+		case '\f':	if (useSlashStringEscape)	{	result+="\\f";	continue;	}	break;
+		case '\n':	if (useSlashStringEscape)	{	result+="\\n";	continue;	}	break;
+		case '\r':	if (useSlashStringEscape)	{	result+="\\r";	continue;	}	break;
+		case '\t':	if (useSlashStringEscape)	{	result+="\\t";	continue;	}	break;
+		case '\v':	if (useSlashStringEscape)	{	result+="\\v";	continue;	}	break;
 			break;
-		default:
-			result+=(*this)[i];
+		default: 
+			if ((unsigned char)(*this)[i]<32 && useSlashStringEscape)
+			{
+				result+=NLMISC::toString("\\x%02x",(*this)[i]);
+				continue;
+			}
+			break;
 		}
+		result+=(*this)[i];
 	}
 	result+='\"';
 
 	return result;
 }
 
+inline CSString CSString::quoteIfNotQuoted(	bool useSlashStringEscape, bool useRepeatQuoteStringEscape ) const
+{
+	if (empty()||(*this)[0]!='\"'||!isDelimitedMonoBlock(false,useSlashStringEscape,useRepeatQuoteStringEscape))
+		return quote(useSlashStringEscape,useRepeatQuoteStringEscape);
+
+	return *this;
+}
+
+inline CSString CSString::quoteIfNotAtomic(	bool useSlashStringEscape, bool useRepeatQuoteStringEscape ) const
+{
+	if (empty())
+		return "\"\"";
+
+	uint32 i=1;
+	if ((*this)[0]>='0' && (*this)[0]<='9'||(*this)[0]=='-')
+	{
+		for (i=1;i<size();++i)
+			if ((*this)[i]<'0' || (*this)[i]>'9')
+				break;
+	}
+	else if ( CSString::isValidKeywordFirstChar((*this)[0]) ) 
+	{
+		for (i=1;i<size();++i)
+			if (!CSString::isValidFileNameChar((*this)[i]))
+				break;
+	}
+	else if ((*this)[0]=='\"' && isDelimitedMonoBlock(false,useSlashStringEscape,useRepeatQuoteStringEscape))
+	{
+		i=size();
+	}
+	if (i!=size())
+		return quote(useSlashStringEscape,useRepeatQuoteStringEscape);
+
+	return *this;
+}
+
 inline CSString CSString::unquote(bool useSlashStringEscape,bool useRepeatQuoteStringEscape) const
 {
 	CSString result=stripBlockDelimiters(false,useSlashStringEscape,useRepeatQuoteStringEscape);
-
 	uint32 i,j;
-	for (i=0,j=0;i<size();++i,++j)
+	for (i=0,j=0;i<result.size();++i,++j)
 	{
 		if (useSlashStringEscape && result[i]=='\\')
+		{
 			++i;
-		else if (useRepeatQuoteStringEscape && (i+1<size()) && result[i]=='\"' && result[i+1]=='\"')
+			if (i<result.size())
+			{
+				switch(result[i])
+				{
+				case 'a': result[i]='\a'; break;
+				case 'b': result[i]='\b'; break;
+				case 'f': result[i]='\f'; break;
+				case 'n': result[i]='\n'; break;
+				case 'r': result[i]='\r'; break;
+				case 't': result[i]='\t'; break;
+				case 'v': result[i]='\v'; break;
+
+				case '0': 
+				case '1': 
+				case '2': 
+				case '3':
+					{
+						char hold=result[i]-'0';
+						++i;
+						if (i<result.size() && result[i]>='0' && result[i]<='7')
+						{
+							hold=8*hold+(result[i]-'0');
+							++i;
+							if (i<result.size() && result[i]>='0' && result[i]<='7')
+							{
+								hold=8*hold+(result[i]-'0');
+								++i;
+							}
+						}
+						result[j]=hold;
+						continue;
+					}
+					break;
+
+				case '4': 
+				case '5': 
+				case '6': 
+				case '7': 
+					{
+						char hold=result[i]-'0';
+						++i;
+						if (i<result.size() && result[i]>='0' && result[i]<='7')
+						{
+							hold=8*hold+(result[i]-'0');
+							++i;
+						}
+						result[j]=hold;
+						continue;
+					}
+					break;
+
+				case 'x':
+					if (i+1<result.size() && isHexChar(result[i+1]))
+					{
+						char hold=convertHexChar(result[i+1]);
+						i+=2;
+						if (i<result.size() && isHexChar(result[i]))
+						{
+							hold=8*hold+convertHexChar(result[i]);
+							++i;
+						}
+						result[j]=hold;
+						continue;
+					}
+					break;
+				}
+			}
+		}
+		else if (useRepeatQuoteStringEscape && (i+1<result.size()) && result[i]=='\"' && result[i+1]=='\"')
 			++i;
-		if (i<size())
+		if (i<result.size())
 			result[j]=result[i];
+	}
+	if (i!=j)
+		result.resize(j);
+
+	return result;
+}
+
+inline CSString CSString::unquoteIfQuoted(bool useSlashStringEscape,bool useRepeatQuoteStringEscape) const
+{
+	if (isQuoted())
+		return unquote(useSlashStringEscape,useRepeatQuoteStringEscape);
+	else
+		return *this;
+}
+
+inline CSString CSString::encodeXML(bool isParameter) const
+{
+	CSString result;
+
+	for (uint32 i=0;i<size();++i)
+	{
+		unsigned char c= (*this)[i];
+		switch(c)
+		{
+		// special xml characters
+		case '\"':	result+="&quot;";	continue;
+		case '&':	result+="&amp;";	continue;
+		case '<':	result+="&lt;";		continue;
+		case '>':	result+="&gt;";		continue;
+
+		// characters that are not allowed inside a parameter block
+		case '\n':
+		case '\r':
+		case '\t':
+			if (!isParameter) { result+=c; continue; }
+		}
+
+		// hex coding for extended characters
+		if (c<32 || c>127)
+		{
+			result+="&#x";
+			result+= ((c>>4)>=10? 'A'+(c>>4)-10: '0'+(c>>4));
+			result+= ((c&15)>=10? 'A'+(c&15)-10: '0'+(c&15));
+			result+=";";
+			continue;
+		}
+
+		// all the special cases are catered for... treat this as a normal character
+		result+=c;
 	}
 
 	return result;
+}
+
+inline CSString CSString::decodeXML() const
+{
+	CSString result;
+
+	for (uint32 i=0;i<size();++i)
+	{
+		breakable
+		{
+			if((*this)[i]=='&')
+			{
+				// special xml characters
+				if (substr(i+1,5)=="quot;")	{ i+=5; result+='\"'; continue; }
+				if (substr(i+1,4)=="amp;")	{ i+=4; result+='&'; continue; }
+				if (substr(i+1,3)=="lt;")	{ i+=3; result+='<'; continue; }
+				if (substr(i+1,3)=="gt;")	{ i+=3; result+='>'; continue; }
+
+				// hex coding for extended characters
+				if ((size()-i)>=6)
+				{
+					if ((*this)[i+5]!=';') break;
+					if ((*this)[i+1]!='#') break;
+					if ((*this)[i+2]!='x') break;
+
+					char c;
+					if ((*this)[i+3]>='0'&&(*this)[i+3]<='9')		c= char(16*((*this)[i+3]-'0'));
+					else if ((*this)[i+3]>='A'&&(*this)[i+3]<='F')	c= char(16*((*this)[i+3]-'A')+160);
+					else											break;
+
+					if ((*this)[i+4]>='0'&&(*this)[i+4]<='9')		c+= char((*this)[i+4]-'0');
+					else if ((*this)[i+4]>='A'&&(*this)[i+4]<='F')	c+= char((*this)[i+4]-'A'+10);
+					else											break;
+
+					i+=5;
+					result+=c;
+					continue;
+				}
+			}
+		}
+
+		// all the special cases are catered for... treat this as a normal character
+		result+=(*this)[i];
+	}
+
+	return result;
+}
+
+inline bool CSString::isEncodedXML() const
+{
+	bool foundToken= false;
+
+	for (uint32 i=size();i--;)
+	{
+		switch((*this)[i])
+		{
+		// decoded special xml characters
+		case '\"':
+		case '<':
+		case '>':
+		case '&':
+			return false;
+
+		case ';':
+			// encoded special xml characters
+			if (i>=5 && substr(i-5,5)=="&quot")	{ foundToken= true; i-=5; break; }
+			if (i>=4 && substr(i-4,4)=="&amp")	{ foundToken= true; i-=4; break; }
+			if (i>=3 && substr(i-3,3)=="&lt")	{ foundToken= true; i-=3; break; }
+			if (i>=3 && substr(i-3,3)=="&gt")	{ foundToken= true; i-=3; break; }
+
+			// hex coding for extended characters
+			if (i>=5)
+			{
+				if ((*this)[i-5]!='&') continue;
+				if ((*this)[i-4]!='#') continue;
+				if ((*this)[i-3]!='x') continue;
+				if (!((*this)[i-2]>='0'&&(*this)[i-2]<='9')&&!((*this)[i-2]>='A'&&(*this)[i-2]<='F')) continue;
+				if (!((*this)[i-1]>='0'&&(*this)[i-1]<='9')&&!((*this)[i-1]>='A'&&(*this)[i-1]<='F')) continue;
+				
+				i-=5;
+				foundToken= true;
+			}
+		}
+	}
+
+	return foundToken;
+}
+
+inline bool CSString::isXMLCompatible(bool isParameter) const
+{
+	for (uint32 i=size();i--;)
+	{
+		switch((*this)[i])
+		{
+		// decoded special xml characters
+		case '\"':
+		case '<':
+		case '>':
+		case '&':
+			return false;
+
+		case ';':
+			// encoded special xml characters
+			if (i>=5 && substr(i-5,5)=="&quot")	{ i-=5; continue; }
+			if (i>=4 && substr(i-4,4)=="&amp")	{ i-=4; continue; }
+			if (i>=3 && substr(i-3,3)=="&lt")	{ i-=3; continue; }
+			if (i>=3 && substr(i-3,3)=="&gt")	{ i-=3; continue; }
+
+			// hex coding for extended characters
+			if (i>=5)
+			{
+				if ((*this)[i-5]!='&') continue;
+				if ((*this)[i-4]!='#') continue;
+				if ((*this)[i-3]!='x') continue;
+				if (!((*this)[i-2]>='0'&&(*this)[i-2]<='9')&&!((*this)[i-2]>='A'&&(*this)[i-2]<='F')) continue;
+				if (!((*this)[i-1]>='0'&&(*this)[i-1]<='9')&&!((*this)[i-1]>='A'&&(*this)[i-1]<='F')) continue;
+				
+				i-=5;
+				continue;
+			}
+
+		// characters that are not allowed inside a parameter block
+		case '\n':
+		case '\r':
+		case '\t':
+			if (!isParameter) continue;
+		}
+
+		if ((*this)[i]>127 || (*this)[i]<32)
+			return false;
+	}
+
+	return true;
 }
 
 inline CSString CSString::replace(const char *toFind,const char *replacement) const

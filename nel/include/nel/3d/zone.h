@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.13 2000/12/13 12:54:07 berenguier Exp $
+ * $Id: zone.h,v 1.14 2000/12/15 15:10:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -353,8 +353,7 @@ private:
 	friend	class CPatch;
 
 	// Local info for CTessFace tiles. CZone must setup them at the begining at refine()/render().
-	// Should we compute the error metric part for tile?? Stored by Zone. By patch, it is Too slow, regarding
-	// the cost of computing this errormetric in CTessFace::updateErrorMetric().
+	// Should we compute the error metric part for tile?? Stored by Zone, as a pre-pass because test is made by patch.
 	bool			ComputeTileErrorMetric;
 	// REMIND: can't have any patch/zone global, since a propagated split()/updateErrorMetric() can arise.
 

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.19 2000/12/11 15:50:20 berenguier Exp $
+ * $Id: tessellation.h,v 1.20 2000/12/15 15:10:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
 #include "nel/3d/uv.h"
+#include "nel/3d/bsphere.h"
 
 
 namespace	NL3D
@@ -47,7 +48,7 @@ using NLMISC::CMatrix;
 class	CPatch;
 class	CPatchRdrPass;
 class	CVertexBuffer;
-
+class	CTessFace;
 
 // ***************************************************************************
 const	float	OO32768= 1.0f/0x8000;
@@ -75,6 +76,17 @@ struct	CTileMaterial
 };
 
 
+// ***************************************************************************
+struct	CTileRenderPtrs
+{
+	// The linked list.
+	CTessFace		*RenderPrec[NL3D_MAX_TILE_PASS];
+	CTessFace		*RenderNext[NL3D_MAX_TILE_PASS];
+
+	// ptrs are Null by default.
+	CTileRenderPtrs();
+};
+
 
 // ***************************************************************************
 /**
@@ -94,6 +106,15 @@ public:
 
 	// The vertex index for the tile.
 	uint32			TileIndex;
+
+	// The date of vertex getTileIndex() for the tile.
+	// This system doesn't work on FarVertex, since FarVertices are shared through patch.
+	uint32			TileDate;
+
+	ITileUv()
+	{
+		TileDate= 0;
+	}
 };
 
 
@@ -209,11 +230,14 @@ public:
 	CVector			StartPos, EndPos;
 	// The index of current far vertex.
 	uint32			FarIndex;
+	// The swap, for geomorph "optim"
+	bool			GeomDone;
 
 	CTessVertex()
 	{
 		// Must init to 0.
 		FarIndex= 0;
+		GeomDone= false;
 	}
 };
 
@@ -292,12 +316,15 @@ public:
 	float			Size;				// /2 at each split.
 	CVector			Center;				// Center of the face.
 	float			ProjectedSize;		// The result of errormetric: the projected size of face.
+	float			ErrorMetric;		// equal to ProjectedSize, but greater for the transition Far-Near.
 	sint			ProjectedSizeDate;	// The date of errormetric update.
 	// @}
 
 
 	// For Render.
+	CTessFace		*RenderPrec;
 	CTessFace		*RenderNext;
+	CTileRenderPtrs	*TileRdrPtr;
 
 public:
 	CTessFace();
@@ -330,9 +357,6 @@ public:
 	// if NeedCompute, refine the node, and his sons.
 	void			refine();
 
-	// Build the render list. (insert leaves...).
-	void			appendToRenderList(CTessFace *&root);
-
 
 	// Used by CPatch::unbind(). isolate the tesselation from other patchs.
 	void			unbind(CPatch *except[4]);
@@ -353,6 +377,8 @@ public:
 	// LANDSCAPE RENDERING CONTEXT.  Landscape must setup it at the begining at refine()/render().
 	// The current date of LandScape for refine only.
 	static	sint	CurrentDate;
+	// The current date of LandScape for render only.
+	static	uint32	CurrentRenderDate;
 	// The center view for refinement.
 	static	CVector RefineCenter;
 	// What is the treshold for tessellation.
@@ -374,6 +400,8 @@ public:
 	static	float	OOTileDistDeltaSqr;
 	// The tiles are not subdivided above this limit (but because of enforced splits). Default: 4 => 50cm.
 	static	sint	TileMaxSubdivision;
+	// The sphere for TileFar test.
+	static	CBSphere	TileFarSphere;
 
 
 	// Render Global info. Used by Patch.

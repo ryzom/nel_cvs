@@ -4,7 +4,7 @@
  *
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries.
  *
- * $Id: driver.h,v 1.36 2000/12/12 10:04:27 berenguier Exp $
+ * $Id: driver.h,v 1.37 2000/12/15 15:10:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -253,6 +253,15 @@ public:
 	void					setColor(uint idx, CRGBA rgba);
 	void					setSpecular(uint idx, CRGBA rgba);
 	void					setWeight(uint idx, uint8 wgt, float w);
+
+
+	// It is an error (assert) to query a vertex offset of a vertex component not setuped in setVertexFormat().
+	// NB: The Vertex offset is always 0.
+	sint					getNormalOff() const {nlassert(_Flags & IDRV_VF_NORMAL); return _NormalOff;}
+	sint					getTexCoordOff(uint8 stage=0) const  {nlassert(_Flags & IDRV_VF_UV[stage]); return _UVOff[stage];}
+	sint					getColorOff() const {nlassert(_Flags & IDRV_VF_COLOR); return _RGBAOff;}
+	sint					getSpecularOff() const {nlassert(_Flags & IDRV_VF_SPECULAR); return _SpecularOff;}
+	sint					getWeightOff(sint wgt) const {nlassert(_Flags & IDRV_VF_W[wgt]); return _WOff[wgt];}
 
 
 	void*					getVertexCoordPointer(uint idx=0);

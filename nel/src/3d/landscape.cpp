@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.22 2000/12/13 15:01:46 corvazier Exp $
+ * $Id: landscape.cpp,v 1.23 2000/12/15 15:10:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,7 +136,7 @@ void			CLandscape::init(bool bumpTiles)
 bool			CLandscape::addZone(const CZone	&newZone)
 {
 	// -1. Update globals
-	updateGlobals ();
+	updateGlobals (CVector::Null);
 
 	uint16	zoneId= newZone.getZoneId();
 
@@ -152,7 +152,7 @@ bool			CLandscape::addZone(const CZone	&newZone)
 bool			CLandscape::removeZone(uint16 zoneId)
 {
 	// -1. Update globals
-	updateGlobals ();
+	updateGlobals (CVector::Null);
 
 	if(Zones.find(zoneId)==Zones.end())
 		return false;
@@ -166,7 +166,7 @@ bool			CLandscape::removeZone(uint16 zoneId)
 void			CLandscape::clear()
 {
 	// -1. Update globals
-	updateGlobals ();
+	updateGlobals (CVector::Null);
 
 	// Build the list of zoneId.
 	vector<uint16>	zoneIds;
@@ -186,9 +186,8 @@ void			CLandscape::clear()
 void			CLandscape::clip(const CVector &refineCenter, const std::vector<CPlane>	&pyramid)
 {
 	// -1. Update globals
-	updateGlobals ();
+	updateGlobals (refineCenter);
 
-	CTessFace::RefineCenter= refineCenter;
 
 	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
 	{
@@ -202,9 +201,8 @@ void			CLandscape::refine(const CVector &refineCenter)
 		return;
 
 	// -1. Update globals
-	updateGlobals ();
+	updateGlobals (refineCenter);
 
-	CTessFace::RefineCenter= refineCenter;
 	// Increment the update date.
 	CTessFace::CurrentDate++;
 
@@ -214,7 +212,7 @@ void			CLandscape::refine(const CVector &refineCenter)
 	}
 }
 // ***************************************************************************
-void			CLandscape::updateGlobals () const
+void			CLandscape::updateGlobals (const CVector &refineCenter) const
 {
 	// Setup CTessFace static members...
 	CTessFace::TileDistNear = _TileDistNear;
@@ -222,6 +220,11 @@ void			CLandscape::updateGlobals () const
 	CTessFace::TileDistNearSqr = sqr(CTessFace::TileDistNear);
 	CTessFace::TileDistFarSqr = sqr(CTessFace::TileDistFar);
 	CTessFace::OOTileDistDeltaSqr = 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
+
+	// Refine Center*.
+	CTessFace::RefineCenter= refineCenter;
+	CTessFace::TileFarSphere.Center= CTessFace::RefineCenter;
+	CTessFace::TileFarSphere.Radius= CTessFace::TileDistFar;
 }
 // ***************************************************************************
 void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doTileAddPass)
@@ -231,7 +234,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 	sint		i;
 
 	// -1. Update globals
-	updateGlobals ();
+	updateGlobals (refineCenter);
 
 	// 0. preRender pass.
 	//===================
@@ -254,6 +257,8 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 		CPatchRdrPass::resetGlobalTriList();
 
 		// Process all zones.
+		// Inc at each pass!!
+		CTessFace::CurrentRenderDate++;
 		for(it= Zones.begin();it!=Zones.end();it++)
 		{
 			(*it).second->renderTile(i);

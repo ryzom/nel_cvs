@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.19 2000/12/13 14:58:32 corvazier Exp $
+ * $Id: landscape.h,v 1.20 2000/12/15 15:10:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,7 +183,7 @@ private:
 	void			getTileUvScaleBias(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias);
 
 	// Update globals value to CTessFace
-	void updateGlobals () const;
+	void updateGlobals (const CVector &refineCenter) const;
 
 private:
 	TZoneMap		Zones;

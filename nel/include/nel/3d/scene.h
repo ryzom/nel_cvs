@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.11 2000/12/13 10:25:22 berenguier Exp $
+ * $Id: scene.h,v 1.12 2000/12/15 15:10:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,6 +181,10 @@ public:
 	/// Create a model, instance of the shape "shapename". If not present, try to load it via the shapeServer.
 	/// If fails, return NULL.
 	virtual	CTransformShape	*createInstance(const std::string &shapeName);
+	/** Delete an instance via his pointer. This is a synonym for deleteModel().
+	 * \see deleteModel()
+	 */
+	void	deleteInstance(IModel *model) {deleteModel(model);}
 	//@}
 
 

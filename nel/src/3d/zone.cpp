@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.19 2000/12/11 15:52:33 berenguier Exp $
+ * $Id: zone.cpp,v 1.20 2000/12/15 15:10:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -579,7 +579,7 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 
 	// Fill computeTileErrorMetric.
 	CBSphere		zonesphere(ZoneBB.getCenter(), ZoneBB.getRadius());
-	if(zonesphere.intersect(CBSphere(CTessFace::RefineCenter, CTessFace::TileDistFar)))
+	if(zonesphere.intersect(CTessFace::TileFarSphere))
 		ComputeTileErrorMetric= true;
 	else
 		ComputeTileErrorMetric= false;
@@ -588,6 +588,34 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 	if(Patchs.size()==0)
 	{
 		ClipResult= ClipOut;
+	}
+
+
+	// Clip By Patch Pass.
+	//--------------------
+	if(ClipResult==ClipOut)
+	{
+		CPatch		*pPatch= &(*Patchs.begin());
+		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+		{
+			pPatch->forceClip();
+		}
+	}
+	else if(ClipResult==ClipIn)
+	{
+		CPatch		*pPatch= &(*Patchs.begin());
+		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+		{
+			pPatch->forceNoClip();
+		}
+	}
+	else
+	{
+		CPatch		*pPatch= &(*Patchs.begin());
+		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+		{
+			pPatch->clip(CurrentPyramid);
+		}
 	}
 
 }
@@ -658,6 +686,8 @@ static	void	checkTess()
 void			CZone::refine()
 {
 	nlassert(Compiled);
+	// Must be 2^X-1.
+	static const	sint	hideRefineFreq= 7;
 
 	// TempYoyo.
 	// For the monkey bind test.
@@ -674,43 +704,40 @@ void			CZone::refine()
 
 	
 	// Force refine of invisible zones only every 8 times.
-	if(ClipResult==ClipOut && (CTessFace::CurrentDate&7)!=(ZoneId&7))
+	if(ClipResult==ClipOut && (CTessFace::CurrentDate & hideRefineFreq)!=(ZoneId & hideRefineFreq))
 		return;
 	// Fuck stlport....
 	if(Patchs.size()==0)
 		return;
 
-	// Else refine ALL patchs (even those which may be invisible).
 	CPatch		*pPatch= &(*Patchs.begin());
-	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+	if(ClipResult==ClipSide)
 	{
-		pPatch->refine();
+		// Force refine of invisible patchs only every 8 times.
+		// NB: do this only if zone is clipSide
+		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+		{
+			if(pPatch->isClipped() && (CTessFace::CurrentDate & hideRefineFreq)!=(n & hideRefineFreq))
+				continue;
+			pPatch->refine();
+		}
 	}
+	else
+	{
+		// Else refine ALL patchs (even those which may be invisible).
+		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+		{
+			pPatch->refine();
+		}
+	}
+
 }
 // ***************************************************************************
 void			CZone::preRender()
 {
 	nlassert(Compiled);
-
-	// Clip Pass.
 	if(ClipResult==ClipOut)
 		return;
-	else if(ClipResult==ClipIn)
-	{
-		CPatch		*pPatch= &(*Patchs.begin());
-		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
-		{
-			pPatch->forceNoClip();
-		}
-	}
-	else
-	{
-		CPatch		*pPatch= &(*Patchs.begin());
-		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
-		{
-			pPatch->clip(CurrentPyramid);
-		}
-	}
 
 	// PreRender Pass.
 	CPatch		*pPatch= &(*Patchs.begin());

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.19 2000/12/13 10:25:22 berenguier Exp $
+ * $Id: patch.h,v 1.20 2000/12/15 15:10:35 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -196,6 +196,8 @@ public:
 
 	/// Classify this patch as UnClipped.
 	void			forceNoClip() {Clipped= false;}
+	/// Classify this patch as Clipped.
+	void			forceClip() {Clipped= true;}
 	/// Classify this patch.
 	void			clip(const std::vector<CPlane>	&pyramid);
 	/// Refine / geomorph this patch. Even if clipped.
@@ -209,8 +211,8 @@ public:
 
 
 	// For CZone changePatchTexture only.
-	void			deleteTileUvs() {Son0->deleteTileUvs(); Son1->deleteTileUvs();}
-	void			recreateTileUvs() {Son0->recreateTileUvs(); Son1->recreateTileUvs();}
+	void			deleteTileUvs();
+	void			recreateTileUvs();
 
 
 	// Serial just the un-compiled part.
@@ -218,6 +220,10 @@ public:
 
 	// unpack the patch into a floating point one.
 	void			unpack(CBezierPatch	&p) const;
+
+
+	// only usefull for CZone refine.
+	bool			isClipped() const {return Clipped;}
 
 // Private part.
 private:
@@ -255,8 +261,13 @@ private:
 	float			OOTransitionSqrDelta;
 	// are we cliped?
 	bool			Clipped;
+	// Do we must compute the Tile errormetric part??
+	bool			ComputeTileErrorMetric;
 	// The root for render.
 	CTessFace		*RdrRoot;
+	CTessFace		*RdrTileRoot[NL3D_MAX_TILE_PASS];
+	// The N tess faces for this patch.
+	sint			NCurrentFaces;
 
 
 private:
@@ -270,6 +281,11 @@ private:
 	CTessVertex		*getRootVertexForEdge(sint edge) const;
 	void			changeEdgeNeighbor(sint edge, CTessFace *to);
 
+	// For rdr.
+	void			appendFaceToRenderList(CTessFace *face);
+	void			appendFaceToTileRdrList(CTessFace *face);
+	void			removeFaceFromRenderList(CTessFace *face);
+
 	// Texture mgt.
 	CPatchRdrPass	*getFarRenderPass(sint farLevel, float &farUVScale, float &farUBias, float &farVBias);
 	// For CTessFace::computeMaterial(). Return the render pass for this material, given the number of the tile, and the
@@ -281,10 +297,9 @@ private:
 	// For Render
 	sint			getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc);
 	sint			getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc);
-	sint			getTileIndex(CTessVertex *vert, ITileUv *uv, sint idUv);
+	void			computeTileVertex(CTessVertex *vert, ITileUv *uv, sint idUv);
 
-	static sint		resetTileIndices(CTessFace *rdrRoot);
-	static sint		resetFarIndices(CTessFace *rdrRoot);
+	static void		resetFarIndices(CTessFace *rdrRoot);
 
 
 private:

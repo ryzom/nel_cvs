@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.9 2000/12/12 10:04:48 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.10 2000/12/15 15:10:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -279,18 +279,14 @@ void CVertexBuffer::setNormalCoord(uint idx, const CVector &v)
 void CVertexBuffer::setColor(uint idx, CRGBA rgba)
 {
 	uint8*	ptr;
+	CRGBA	*pCol;
 
 	nlassert(_Flags & IDRV_VF_COLOR);
 
 	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
 	ptr+=_RGBAOff;
-	*ptr=rgba.R;
-	ptr++;
-	*ptr=rgba.G;
-	ptr++;
-	*ptr=rgba.B;
-	ptr++;
-	*ptr=rgba.A;
+	pCol= (CRGBA*)ptr;
+	*pCol= rgba;
 }
 
 // --------------------------------------------------
@@ -298,18 +294,14 @@ void CVertexBuffer::setColor(uint idx, CRGBA rgba)
 void CVertexBuffer::setSpecular(uint idx, CRGBA rgba)
 {
 	uint8*	ptr;
+	CRGBA	*pCol;
 
 	nlassert(_Flags & IDRV_VF_SPECULAR);
 
 	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
 	ptr+=_SpecularOff;
-	*ptr=rgba.R;
-	ptr++;
-	*ptr=rgba.G;
-	ptr++;
-	*ptr=rgba.B;
-	ptr++;
-	*ptr=rgba.A;
+	pCol= (CRGBA*)ptr;
+	*pCol= rgba;
 }
 
 // --------------------------------------------------

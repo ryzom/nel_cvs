@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.25 2000/12/13 15:01:46 corvazier Exp $
+ * $Id: tessellation.cpp,v 1.26 2000/12/15 15:10:56 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -74,6 +74,17 @@ CTileMaterial::CTileMaterial()
 
 
 // ***************************************************************************
+CTileRenderPtrs::CTileRenderPtrs()
+{
+	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+	{
+		RenderPrec[i]=NULL;
+		RenderNext[i]=NULL;
+	}
+}
+
+
+// ***************************************************************************
 // ***************************************************************************
 // CTessFace
 // ***************************************************************************
@@ -81,6 +92,7 @@ CTileMaterial::CTileMaterial()
 
 // ***************************************************************************
 sint		CTessFace::CurrentDate=0;
+uint32		CTessFace::CurrentRenderDate=0;
 CVector		CTessFace::RefineCenter= CVector::Null;
 float		CTessFace::RefineThreshold= 0.005f;
 float		CTessFace::OORefineThreshold= 1.0f / CTessFace::RefineThreshold;
@@ -95,6 +107,7 @@ float		CTessFace::TileDistNearSqr= sqr(CTessFace::TileDistNear);
 float		CTessFace::TileDistFarSqr= sqr(CTessFace::TileDistFar);
 float		CTessFace::OOTileDistDeltaSqr= 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
 sint		CTessFace::TileMaxSubdivision=0;
+CBSphere	CTessFace::TileFarSphere;
 
 float		CTessFace::Far0Dist= 200;		// 200m.
 float		CTessFace::Far1Dist= 400;		// 400m.
@@ -151,6 +164,7 @@ CTessFace::CTessFace()
 	NeedCompute= false;	
 
 	TileMaterial= NULL;
+	TileRdrPtr= NULL;
 	TileUvBase= TileUvLeft= TileUvRight= NULL;
 	// TileId and TileType undefined.
 
@@ -202,11 +216,11 @@ void			CTessFace::computeTileErrorMetric()
 		nearLimit= (1<<Patch->TileLimitLevel) * RefineThreshold * (OO32768*(32768>>Level));
 		nlassert(Level<14);
 		// If we are not so subdivided.
-		if(ProjectedSize<nearLimit)
+		if(ErrorMetric<nearLimit)
 		{
 			if(sqrdist< TileDistNearSqr)
 			{
-				ProjectedSize=nearLimit;
+				ErrorMetric=nearLimit;
 			}
 			else
 			{
@@ -215,7 +229,7 @@ void			CTessFace::computeTileErrorMetric()
 				// sqr gives better result, by smoothing more the start of transition.
 				f= sqr((1-f));
 				f= sqr(f);
-				ProjectedSize= nearLimit*f + ProjectedSize*(1-f);
+				ErrorMetric= nearLimit*f + ErrorMetric*(1-f);
 
 				// If threshold is big like 0.5, transition is still hard, and pops occurs. But The goal is 
 				// 0.005 and less, so don't bother. 
@@ -226,7 +240,7 @@ void			CTessFace::computeTileErrorMetric()
 
 
 // ***************************************************************************
-inline void		CTessFace::updateErrorMetric()
+void		CTessFace::updateErrorMetric()
 {
 	// If already updated for this pass...
 	if(ProjectedSizeDate>= CurrentDate)
@@ -237,7 +251,7 @@ inline void		CTessFace::updateErrorMetric()
 
 	// trivial formula.
 	//-----------------
-	ProjectedSize= Size/ sqrdist;
+	ErrorMetric= ProjectedSize= Size/ sqrdist;
 
 
 	// Hoppe97 formula:  k²= a² * ("v-e"² - ((v-e).n)²) / "v-e"^4.
@@ -269,7 +283,7 @@ inline void		CTessFace::updateErrorMetric()
 	// TileMode Impact.
 	//-----------------
 	// TileMode Impact. We must split at least at TileLimitLevel.
-	if(Patch->Zone->ComputeTileErrorMetric && Level<Patch->TileLimitLevel)
+	if(Patch->ComputeTileErrorMetric && Level<Patch->TileLimitLevel)
 	{
 		computeTileErrorMetric();
 	}
@@ -718,6 +732,21 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 		}
 	}
 
+
+	// 6. Fathers must compute their errormetric.
+	//-------------------------------------------
+	NeedCompute=true;
+
+	
+	// 7. Must remove father from rdr list, and insert sons.
+	//------------------------------------------------------
+	Patch->removeFaceFromRenderList(f0);
+	Patch->removeFaceFromRenderList(f1);
+	Patch->appendFaceToRenderList(f0l);
+	Patch->appendFaceToRenderList(f0r);
+	Patch->appendFaceToRenderList(f1l);
+	Patch->appendFaceToRenderList(f1r);
+
 }
 
 
@@ -807,6 +836,11 @@ void		CTessFace::split(bool propagateSplit)
 	{
 		heritTileMaterial();
 	}
+	if(SonLeft->Level >= Patch->TileLimitLevel)
+	{
+		SonLeft->TileRdrPtr= new CTileRenderPtrs;
+		SonRight->TileRdrPtr= new CTileRenderPtrs;
+	}
 
 	// 3. Update/Create Vertex infos.
 	//-------------------------------
@@ -891,6 +925,16 @@ void		CTessFace::split(bool propagateSplit)
 		nlassert(SonLeft->isLeaf() && SonRight->isLeaf());
 	}
 
+	// 6. Fathers must compute their errormetric.
+	//-------------------------------------------
+	NeedCompute=true;
+
+
+	// 7. Must remove father from rdr list, and insert sons.
+	//------------------------------------------------------
+	Patch->removeFaceFromRenderList(this);
+	Patch->appendFaceToRenderList(SonLeft);
+	Patch->appendFaceToRenderList(SonRight);
 
 }
 
@@ -911,7 +955,7 @@ bool		CTessFace::canMerge(bool testEm)
 	if(testEm)
 	{
 		updateErrorMetric();
-		float	ps2= ProjectedSize;
+		float	ps2= ErrorMetric;
 		ps2*= OORefineThreshold;
 		if(ps2>=1.0f)
 			return false;
@@ -966,7 +1010,15 @@ void		CTessFace::doMerge()
 			delete SonLeft->VBase;
 
 
-		// 2. Let's merge Uv.
+		// 2. Must remove sons from rdr list, and insert father.
+		//------------------------------------------------------
+		// Must do it before the TileRdrPtr is released.
+		Patch->removeFaceFromRenderList(SonLeft);
+		Patch->removeFaceFromRenderList(SonRight);
+		Patch->appendFaceToRenderList(this);
+
+		
+		// 3. Let's merge Uv.
 		//-------------------
 		// Delete Uv.
 		// Must do it for face1 and face2 separately, since they may not have same tile level (if != patch).
@@ -987,8 +1039,14 @@ void		CTessFace::doMerge()
 			if(!FBase || !FBase->isLeaf() || !sameTile(this, FBase))
 				delete SonLeft->TileUvBase;
 		}
-		
-		// 3. Let's merge Face.
+		if(SonLeft->Level >= Patch->TileLimitLevel)
+		{
+			delete SonLeft->TileRdrPtr;
+			delete SonRight->TileRdrPtr;
+		}
+
+
+		// 4. Let's merge Face.
 		//-------------------
 		// Change father 's neighbor pointers.
 		FLeft= SonLeft->FBase;
@@ -1021,6 +1079,13 @@ void		CTessFace::doMerge()
 		// NB: this work even if neigbor is rectangular (see tesselation rules in splitRectangular()).
 		if(!FLeft || !FLeft->isLeaf())
 			delete SonLeft->VBase;
+
+
+		// 2. Must remove sons from rdr list, and insert father.
+		//------------------------------------------------------
+		Patch->removeFaceFromRenderList(SonLeft);
+		Patch->removeFaceFromRenderList(SonRight);
+		Patch->appendFaceToRenderList(this);
 
 
 		// 3. Let's merge Face.
@@ -1079,7 +1144,7 @@ void		CTessFace::refine()
 	// In Tile/Far Transition zone, force the needCompute.
 	// This is important, since the rule "the error metric of the son is appoximately the half of 
 	// the father" is no more true, and then a son should be tested as soon as possible.
-	if(Patch->Zone->ComputeTileErrorMetric && Level<Patch->TileLimitLevel)
+	if(Patch->ComputeTileErrorMetric && Level<Patch->TileLimitLevel)
 	{
 		NeedCompute= true;
 	}
@@ -1088,7 +1153,7 @@ void		CTessFace::refine()
 	if(NeedCompute)
 	{
 		updateErrorMetric();
-		float	ps=ProjectedSize;
+		float	ps=ErrorMetric;
 		ps*= OORefineThreshold;
 		// 1.0f is the point of split().
 		// 2.0f is the end of geomorph.
@@ -1097,77 +1162,109 @@ void		CTessFace::refine()
 		// 0. Test split/merge.
 		//---------------------
 		// If wanted, not already done, and limit not reached, split().
-		if(ps>1.0f && isLeaf() && Level< (Patch->TileLimitLevel+TileMaxSubdivision) )
+		if(isLeaf())
 		{
-			split();
+			if(ps>1.0f && Level< (Patch->TileLimitLevel+TileMaxSubdivision) )
+				split();
 		}
-		// Else, if splitted, must merge (if not already the case).
-		else if(ps<1.0f && !isLeaf())
+		else
 		{
-			// Merge only if agree, and neighbors agree.
-			// canMerge() test all the good thing: FBase==CantMergeFace, or this is rectangular etc...
-			// The test is propagated to neighbors.
-			if(canMerge(true))
+			// Else, if splitted, must merge (if not already the case).
+			if(ps<1.0f)
 			{
-				merge();
+				// Merge only if agree, and neighbors agree.
+				// canMerge() test all the good thing: FBase==CantMergeFace, or this is rectangular etc...
+				// The test is propagated to neighbors.
+				if(canMerge(true))
+				{
+					merge();
+				}
 			}
 		}
 
 
 		// 1. Geomorph.
 		//-------------
-		// NB: the geomoprh may be done twice here (this, and FBase).
-		// But errorMetric are not computed twice.
-		if(ps>1.0f && !isLeaf())
+		// Here, GeomDone is used to do the geomorph only one time per vertex. This is a hack trick, but it works 
+		// everywhere  BUT in borders of the screen (since the neighbor patch may not be here). It is not a problem,
+		// since border vertices will be done at the next frame, and so the only one problem is that geomorph are made 
+		// at half rate on those vertices on border screen....
+		// If we don't use this trick, the geomorph would be done twice, one for the face and one for his FBase.
+		// NB: errorMetric are never computed twice.
+		// NB: do geomoprh only if patch is visible. (refine may be done on clipped patch, to have correct patchs)
+		if(!isLeaf() && ps>1.0f && !Patch->Clipped)
 		{
 			// NB: morph ptr is good even with rectangular patch. See splitRectangular().
 			CTessVertex		*morph=SonLeft->VBase;
-			float			pgeom= ps;
-
-			// get the neighbor, to have the max projectedsize.
-			// => geo-split() at the maximum level of the two faces.
-			CTessFace	*nbor;
-			if(!isRectangular())
-				nbor= FBase;
-			else
-				nbor= FLeft;	// Rectangular subdivision...
-			if(nbor && nbor!=&CantMergeFace)
+			if(morph->GeomDone)
 			{
-				nbor->updateErrorMetric();
-				float	ps2= nbor->ProjectedSize;
-				ps2*= OORefineThreshold;
-				pgeom= max(pgeom, ps2);
+				morph->GeomDone= false;
 			}
+			else
+			{
+				morph->GeomDone= true;
 
-			// Interpolate beetween trheshold and treshold*2 => beetween 1.0 and 2.0
-			float		delta= pgeom - 1.0f;
-			clamp(delta, 0.0f,1.0f);
-			morph->Pos= morph->StartPos *(1-delta) + morph->EndPos * delta;
+				float			pgeom= ps;
+
+				// get the neighbor, to have the max projectedsize.
+				// => geo-split() at the maximum level of the two faces.
+				CTessFace	*nbor;
+				if(!isRectangular())
+					nbor= FBase;
+				else
+					nbor= FLeft;	// Rectangular subdivision...
+				if(nbor && nbor!=&CantMergeFace)
+				{
+					nbor->updateErrorMetric();
+					float	ps2= nbor->ErrorMetric;
+					ps2*= OORefineThreshold;
+					pgeom= max(pgeom, ps2);
+				}
+
+				// Interpolate beetween trheshold and treshold*2 => beetween 1.0 and 2.0
+				if(pgeom<=1.0f)
+					morph->Pos= morph->StartPos;
+				else if(pgeom>=2.0f)
+					morph->Pos= morph->EndPos;
+				else
+				{
+					float		delta= pgeom - 1.0f;
+					morph->Pos= morph->StartPos *(1-delta) + morph->EndPos * delta;
+				}
+			}
 		}
 
 
 
 		// 2. Update NeedCompute.
 		//-----------------------
-		// If below a merge(), I may not need to compute.
-		if(Father && isLeaf() && ps<ChildrenStartComputeLimit/2)	// 1.9/2
+		if(isLeaf())
 		{
-			NeedCompute= false;
+			// If below a merge(), I may not need to compute.
+			// Do this only if I am not a parent.
+			if(Father && ps<ChildrenStartComputeLimit*0.5)	// 1.9/2
+			{
+				NeedCompute= false;
+			}
 		}
-		if(!isLeaf() && ps>ChildrenStartComputeLimit)	// 1.9
+		else
 		{
-			// The sons may split soon.
-			SonLeft->NeedCompute= true;
-			SonRight->NeedCompute= true;
-
-		}
-		// If grandfather (may arise in enforced splits problem..., especially near tile subdivision).
-		if(!isLeaf() && (!SonLeft->isLeaf() || !SonRight->isLeaf()))
-		{
-			// The sons must test if they have to merge.
-			// Else, we may have split which are blocked, and so never merged...
-			SonLeft->NeedCompute= true;
-			SonRight->NeedCompute= true;
+			// We may force our sons to compute, only if they are not already at MaxSubdivision.
+			if(SonLeft->Level<Patch->TileLimitLevel+TileMaxSubdivision)
+			{
+				// If SonLeft reach the tile level, we must test ps with ProjectedSize, not ErrorMetric...
+				// Why? because of computeTileErrorMetric() which makes a false (too big) value.
+				// Tiles faces ErrorMetric do NOT computeTileErrorMetric, so this test.
+				if(SonLeft->Level>=Patch->TileLimitLevel)
+					ps= ProjectedSize*OORefineThreshold;
+				if(ps>ChildrenStartComputeLimit)	// 1.9
+				{
+					// The sons may split soon.
+					SonLeft->NeedCompute= true;
+					SonRight->NeedCompute= true;
+				}
+			}
+			// NB: NeedCompute is automatically set to true in split().
 		}
 	}
 	if(SonLeft)
@@ -1669,22 +1766,6 @@ void		CTessFace::updateBind()
 
 
 // ***************************************************************************
-void		CTessFace::appendToRenderList(CTessFace *&root)
-{
-	if(isLeaf())
-	{
-		RenderNext= root;
-		root= this;
-	}
-	else
-	{
-		SonLeft->appendToRenderList(root);
-		SonRight->appendToRenderList(root);
-	}
-}
-
-
-// ***************************************************************************
 bool		CTessFace::isRectangular() const
 {
 	return Level<Patch->SquareLimitLevel;
@@ -1752,6 +1833,12 @@ void		CTessFace::recreateTileUvs()
 
 		SonLeft->recreateTileUvs();
 		SonRight->recreateTileUvs();
+	}
+	else
+	{
+		// Do this only for tiles.
+		if(TileMaterial)
+			Patch->appendFaceToTileRdrList(this);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.24 2000/12/13 15:01:46 corvazier Exp $
+ * $Id: patch.cpp,v 1.25 2000/12/15 15:10:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,10 @@ CPatch::CPatch()
 	OrderT=0;
 	Son0=NULL;
 	Son1=NULL;
+	RdrRoot= NULL;
+	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		RdrTileRoot[i]=NULL;
+	NCurrentFaces= 0;
 	Clipped=false;
 
 	// To force computation of texture info on next preRender().
@@ -84,6 +88,10 @@ void			CPatch::release()
 	OrderT=0;
 	Son0=NULL;
 	Son1=NULL;
+	RdrRoot= NULL;
+	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		RdrTileRoot[i]=NULL;
+	NCurrentFaces= 0;
 	Clipped=false;
 
 	// To force computation of texture info on next preRender().
@@ -151,6 +159,110 @@ CAABBox			CPatch::buildBBox() const
 	// TODO_NOISE: modulate with the displacement map.
 
 	return ret;
+}
+
+
+// ***************************************************************************
+void			CPatch::appendFaceToRenderList(CTessFace *face)
+{
+	NCurrentFaces++;
+
+	// Update Gnal render.
+	//====================
+	// update Next.
+	face->RenderNext= RdrRoot;
+	if(RdrRoot)
+		RdrRoot->RenderPrec= face;
+	// update Prec.
+	face->RenderPrec= NULL;
+	RdrRoot= face;
+
+	// Update Tile render.
+	//====================
+	appendFaceToTileRdrList(face);
+}
+
+
+// ***************************************************************************
+void			CPatch::appendFaceToTileRdrList(CTessFace *face)
+{
+	// Update Tile render.
+	//====================
+	if(face->TileRdrPtr)
+	{
+		// For all valid pass, update their links.
+		for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		{
+			CPatchRdrPass	*tilePass= face->TileMaterial->Pass[i];
+			// If tile i enabled.
+			if(tilePass)
+			{
+				// Yes, it is hard to understand.... :)
+				// update Next.
+				face->TileRdrPtr->RenderNext[i]= RdrTileRoot[i];
+				if(RdrTileRoot[i])
+					RdrTileRoot[i]->TileRdrPtr->RenderPrec[i]= face;
+				// update Prec.
+				face->TileRdrPtr->RenderPrec[i]= NULL;
+				RdrTileRoot[i]= face;
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+void			CPatch::removeFaceFromRenderList(CTessFace *face)
+{
+	NCurrentFaces--;
+
+	// Update Gnal render.
+	//====================
+	// update Prec.
+	if(!face->RenderPrec)
+	{
+		nlassert(RdrRoot==face);
+		RdrRoot= face->RenderNext;
+	}
+	else
+	{
+		face->RenderPrec->RenderNext= face->RenderNext;
+	}
+	// update Next.
+	if(face->RenderNext)
+		face->RenderNext->RenderPrec= face->RenderPrec;
+	face->RenderNext= NULL;
+	face->RenderPrec= NULL;
+
+
+	// Update Tile render.
+	//====================
+	if(face->TileMaterial)
+	{
+		for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		{
+			CPatchRdrPass	*tilePass= face->TileMaterial->Pass[i];
+			// If tile pass enabled.
+			if(tilePass)
+			{
+				// Yes, it is hard to understand.... :)
+				// update Prec.
+				if(!face->TileRdrPtr->RenderPrec[i])
+				{
+					nlassert(RdrTileRoot[i]==face);
+					RdrTileRoot[i]= face->TileRdrPtr->RenderNext[i];
+				}
+				else
+				{
+					face->TileRdrPtr->RenderPrec[i]->TileRdrPtr->RenderNext[i]= face->TileRdrPtr->RenderNext[i];
+				}
+				// update Next.
+				if(face->TileRdrPtr->RenderNext[i])
+					face->TileRdrPtr->RenderNext[i]->TileRdrPtr->RenderPrec[i]= face->TileRdrPtr->RenderPrec[i];
+				face->TileRdrPtr->RenderNext[i]= NULL;
+				face->TileRdrPtr->RenderPrec[i]= NULL;
+			}
+		}
+	}
 }
 
 
@@ -254,6 +366,16 @@ void			CPatch::makeRoots()
 	// No tile info.
 	Son1->Size= ErrorSize/2;
 	Son1->Center= (Son1->VBase->EndPos + Son1->VLeft->EndPos + Son1->VRight->EndPos)/3;
+
+
+	// Prepare the render list...
+	RdrRoot= NULL;
+	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		RdrTileRoot[i]=NULL;
+	NCurrentFaces= 0;
+	appendFaceToRenderList(Son0);
+	appendFaceToRenderList(Son1);
+
 }
 
 
@@ -313,6 +435,16 @@ CVector			CPatch::computeVertex(float s, float t) const
 // ***************************************************************************
 void			CPatch::refine()
 {
+	if(Zone->ComputeTileErrorMetric)
+	{
+		// Must test more precisely...
+		if(BSphere.intersect(CTessFace::TileFarSphere))
+			ComputeTileErrorMetric= true;
+		else
+			ComputeTileErrorMetric= false;
+	}
+	else
+		ComputeTileErrorMetric= false;
 	nlassert(Son0);
 	nlassert(Son1);
 	Son0->refine();
@@ -338,35 +470,14 @@ void			CPatch::clip(const std::vector<CPlane>	&pyramid)
 
 
 // ***************************************************************************
-sint			CPatch::resetTileIndices(CTessFace *pFace)
+void			CPatch::resetFarIndices(CTessFace *pFace)
 {
-	sint	ret=0;
-	for(;pFace; pFace=pFace->RenderNext)
-	{
-		// If tile level reached for this face.
-		if(pFace->TileMaterial)
-		{
-			pFace->TileUvBase->TileIndex= 0;
-			pFace->TileUvLeft->TileIndex= 0;
-			pFace->TileUvRight->TileIndex= 0;
-			ret++;
-		}
-	}
-
-	return ret;
-}
-// ***************************************************************************
-sint			CPatch::resetFarIndices(CTessFace *pFace)
-{
-	sint	ret=0;
 	for(;pFace; pFace=pFace->RenderNext)
 	{
 		pFace->VBase->FarIndex= 0;
 		pFace->VLeft->FarIndex= 0;
 		pFace->VRight->FarIndex= 0;
-		ret++;
 	}
-	return ret;
 }
 
 // ***************************************************************************
@@ -427,12 +538,6 @@ void			CPatch::preRender()
 			Pass1= NULL;
 	}
 
-
-	// Make render list.
-	//==================
-	RdrRoot= NULL;
-	Son0->appendToRenderList(RdrRoot);
-	Son1->appendToRenderList(RdrRoot);
 }
 
 
@@ -445,16 +550,16 @@ sint			CPatch::getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc)
 		vert->FarIndex= CTessFace::CurrentVertexIndex++;
 
 		// Set Pos.
-		CTessFace::CurrentVB->setVertexCoord(vert->FarIndex, vert->Pos.x, vert->Pos.y, vert->Pos.z);
+		CTessFace::CurrentVB->setVertexCoord(vert->FarIndex, vert->Pos);
 
 		// Set Uvs.
-		float	u,v;
-		u= pc.getS()* Far0UVScale + Far0UBias;
-		v= pc.getT()* Far0UVScale + Far0VBias;
-		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, u, v);
+		static CUV		uv;
+		uv.U= pc.getS()* Far0UVScale + Far0UBias;
+		uv.V= pc.getT()* Far0UVScale + Far0VBias;
+		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, uv);
 
 		// Compute color.
-		CRGBA	col(255,255,255,255);
+		static CRGBA	col(255,255,255,255);
 		// TODO_CLOUD: use normal information, for cloud attenuation, in RGB fields.
 		// For Far0, alpha is un-usefull.
 		CTessFace::CurrentVB->setColor(vert->FarIndex, col);
@@ -472,16 +577,16 @@ sint			CPatch::getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc)
 		vert->FarIndex= CTessFace::CurrentVertexIndex++;
 
 		// Set Pos.
-		CTessFace::CurrentVB->setVertexCoord(vert->FarIndex, vert->Pos.x, vert->Pos.y, vert->Pos.z);
+		CTessFace::CurrentVB->setVertexCoord(vert->FarIndex, vert->Pos);
 
 		// Set Uvs.
-		float	u,v;
-		u= pc.getS()* Far1UVScale + Far1UBias;
-		v= pc.getT()* Far1UVScale + Far1VBias;
-		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, u, v);
+		static CUV		uv;
+		uv.U= pc.getS()* Far1UVScale + Far1UBias;
+		uv.V= pc.getT()* Far1UVScale + Far1VBias;
+		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, uv);
 
 		// Compute color.
-		CRGBA	col(255,255,255,255);
+		static CRGBA	col(255,255,255,255);
 		// TODO_CLOUD: use normal information, for cloud attenuation, in RGB fields.
 		// For Far1, use alpha fro transition.
 		float	f= (vert->Pos - CTessFace::RefineCenter).sqrnorm();
@@ -497,32 +602,41 @@ sint			CPatch::getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc)
 
 
 // ***************************************************************************
-sint			CPatch::getTileIndex(CTessVertex *vert, ITileUv *uv, sint idUv)
+// Local for computeTileVertex only. Setuped in CPatch::renderTiles().
+static	uint8	*CurVBPtr;
+static	sint	CurVertexSize;
+static	sint	CurUV0Off;
+static	sint	CurUV1Off;
+static	sint	CurColorOff;
+void			CPatch::computeTileVertex(CTessVertex *vert, ITileUv *uv, sint idUv)
 {
-	if(uv->TileIndex==0)
-	{
-		// Compute/build the new vertex.
-		uv->TileIndex= CTessFace::CurrentVertexIndex++;
+	// Compute/build the new vertex.
+	uv->TileDate=CTessFace::CurrentRenderDate;
+	uv->TileIndex= CTessFace::CurrentVertexIndex++;
 
-		// Set Pos.
-		CTessFace::CurrentVB->setVertexCoord(uv->TileIndex, vert->Pos.x, vert->Pos.y, vert->Pos.z);
+	// Set Pos.
+	//CTessFace::CurrentVB->setVertexCoord(uv->TileIndex, vert->Pos);
+	*(CVector*)CurVBPtr= vert->Pos;
 
-		// Set Uvs.
-		// TODO_BUMP: chose beetween bump and normal uvs. Always normal here.
-		ITileUvNormal	*uvn= (ITileUvNormal*)uv;
-		CPassUvNormal	&uvpass= uvn->UvPasses[idUv];
-		CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 0, uvpass.PUv0.U, uvpass.PUv0.V);
-		CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 1, uvpass.PUv1.U, uvpass.PUv1.V);
+	// Set Uvs.
+	// TODO_BUMP: chose beetween bump and normal uvs. Always normal here.
+	ITileUvNormal	*uvn= (ITileUvNormal*)uv;
+	CPassUvNormal	&uvpass= uvn->UvPasses[idUv];
+	//CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 0, uvpass.PUv0);
+	//CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 1, uvpass.PUv1);
+	*(CUV*)(CurVBPtr+CurUV0Off)= uvpass.PUv0;
+	*(CUV*)(CurVBPtr+CurUV1Off)= uvpass.PUv0;
 
-		// Compute color.
-		CRGBA	col(255,255,255,255);
-		// TODO_CLOUD/TODO_ADDITIVE: use cloud color information for RGB. And use alpha global for global apparition of 
-		// additives tiles only.
-		CTessFace::CurrentVB->setColor(uv->TileIndex, col);
-		// END!!
-	}
+	// Compute color.
+	static CRGBA	col(255,255,255,255);
+	// TODO_CLOUD/TODO_ADDITIVE: use cloud color information for RGB. And use alpha global for global apparition of 
+	// additives tiles only.
+	//CTessFace::CurrentVB->setColor(uv->TileIndex, col);
+	*(CRGBA*)(CurVBPtr+CurColorOff)= col;
+	// END!!
 
-	return uv->TileIndex;
+	// Inc the ptr.
+	CurVBPtr+= CurVertexSize;
 }
 
 
@@ -531,10 +645,10 @@ void			CPatch::renderFar0()
 {
 	if(Pass0 && !Clipped)
 	{
-		sint	nTris= resetFarIndices(RdrRoot);
+		resetFarIndices(RdrRoot);
 		// Realloc if necessary the VertexBuffer.
-		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
-			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*nTris);
+		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*NCurrentFaces)
+			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*NCurrentFaces);
 		// Add tris.
 		CTessFace	*pFace= RdrRoot;
 		for(;pFace; pFace=pFace->RenderNext)
@@ -552,10 +666,10 @@ void			CPatch::renderFar1()
 {
 	if(Pass1 && !Clipped)
 	{
-		sint	nTris= resetFarIndices(RdrRoot);
+		resetFarIndices(RdrRoot);
 		// Realloc if necessary the VertexBuffer.
-		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
-			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*nTris);
+		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*NCurrentFaces)
+			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*NCurrentFaces);
 		// Add tris.
 		CTessFace	*pFace= RdrRoot;
 		for(;pFace; pFace=pFace->RenderNext)
@@ -572,27 +686,40 @@ void			CPatch::renderTile(sint pass)
 	// If tile mode.
 	if(Far0==0 && !Clipped)
 	{
-		sint	nTris= resetTileIndices(RdrRoot);
 		// Realloc if necessary the VertexBuffer (at max possible).
-		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*nTris)
-			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*nTris);
+		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*NCurrentFaces)
+			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*NCurrentFaces);
+
+		// Setup local VB infos, for getTileIndex().
+		CurVBPtr= (uint8*)(CTessFace::CurrentVB->getVertexCoordPointer(CTessFace::CurrentVertexIndex));
+		CurVertexSize= CTessFace::CurrentVB->getVertexSize();
+		CurUV0Off= CTessFace::CurrentVB->getTexCoordOff(0);
+		CurUV1Off= CTessFace::CurrentVB->getTexCoordOff(1);
+		CurColorOff= CTessFace::CurrentVB->getColorOff();
+
 		// Add tris.
-		CTessFace	*pFace= RdrRoot;
-		for(;pFace; pFace=pFace->RenderNext)
+		CTessFace	*pFace= RdrTileRoot[pass];
+		for(;pFace; pFace=pFace->TileRdrPtr->RenderNext[pass])
 		{
-			// If tile level reached for this face.
-			if(pFace->TileMaterial)
-			{
-				CPatchRdrPass	*tilePass= pFace->TileMaterial->Pass[pass];
-				// If tile pass enabled.
-				if(tilePass)
-				{
-					sint	idUv=pFace->TileMaterial->PassToUv[pass];
-					tilePass->addTri(getTileIndex(pFace->VBase, pFace->TileUvBase, idUv),
-							getTileIndex(pFace->VLeft, pFace->TileUvLeft, idUv),
-							getTileIndex(pFace->VRight, pFace->TileUvRight, idUv));
-				}
-			}
+			CPatchRdrPass	*tilePass= pFace->TileMaterial->Pass[pass];
+			nlassert(tilePass);
+			sint	idUv=pFace->TileMaterial->PassToUv[pass];
+
+			// The 3 vertices.
+			ITileUv	*tileUvBase=pFace->TileUvBase;
+			ITileUv	*tileUvLeft=pFace->TileUvLeft;
+			ITileUv	*tileUvRight=pFace->TileUvRight;
+
+			// If not computed, compute them.
+			if(tileUvBase->TileDate!=CTessFace::CurrentRenderDate)
+				computeTileVertex(pFace->VBase, tileUvBase, idUv);
+			if(tileUvLeft->TileDate!=CTessFace::CurrentRenderDate)
+				computeTileVertex(pFace->VLeft, tileUvLeft, idUv);
+			if(tileUvRight->TileDate!=CTessFace::CurrentRenderDate)
+				computeTileVertex(pFace->VRight, tileUvRight, idUv);
+
+			// addTri to render pass.
+			tilePass->addTri(tileUvBase->TileIndex, tileUvLeft->TileIndex, tileUvRight->TileIndex);
 		}
 	}
 }
@@ -868,6 +995,26 @@ void			CPatch::getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvS
 	}
 
 }
+
+
+// ***************************************************************************
+void			CPatch::deleteTileUvs()
+{
+	Son0->deleteTileUvs();
+	Son1->deleteTileUvs();
+}
+
+
+// ***************************************************************************
+void			CPatch::recreateTileUvs()
+{
+	// Reset the Tile rdr list.
+	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		RdrTileRoot[i]=NULL;
+	Son0->recreateTileUvs();
+	Son1->recreateTileUvs();
+	a14.avg2(a04, a24);
+		neighborEdge.MultipleBindNum= 0;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.23 2003/03/06 10:58:11 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.24 2003/06/30 09:30:27 lecroart Exp $
  *
  */
 
@@ -267,8 +267,17 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 
 	CLoginCookie cookie;
 	msgin.serial (cookie);
-	string userName;
+	string userName, userPriv;
 	msgin.serial (userName);
+
+	try
+	{
+		msgin.serial (userPriv);
+	}
+	catch (Exception &e)
+	{
+		nlwarning ("LS didn't give me the user privilege for user '%s', set to empty", userName.c_str());
+	}
 
 	CFES *best = findBestFES();
 	if (best == NULL)
@@ -284,7 +293,8 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 
 	CMessage msgout ("CS");
 	msgout.serial (cookie);
-	msgout.serial (userName);
+	msgout.serial (userName, userPriv);
+
 	CUnifiedNetwork::getInstance()->send (best->SId, msgout);
 	best->NbEstimatedUser++;
 }
@@ -320,23 +330,29 @@ void cbLSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint
 // connection to the LS, send the identification message
 void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 {
-	CMessage msgout ("WS_IDENT");
 	sint32 shardId;
 	
-	try
+	if (IService::getInstance()->haveArg('S'))
 	{
+		// use the command line param if set
+		shardId = atoi(IService::getInstance()->getArg('S').c_str());
+	}
+	else if (IService::getInstance()->ConfigFile.exists ("ShardId"))
+	{
+		// use the config file param if set
 		shardId = IService::getInstance()->ConfigFile.getVar ("ShardId").asInt();
 	}
-	catch(Exception &)
+	else
 	{
 		shardId = -1;
 	}
 
 	if (shardId == -1)
 	{
-		nlerror ("ShardId variable in the config file must be valid (>0)");
+		nlerror ("ShardId variable must be valid (>0)");
 	}
 
+	CMessage msgout ("WS_IDENT");
 	msgout.serial (shardId);
 	CUnifiedNetwork::getInstance()->send (sid, msgout);
 

@@ -1,7 +1,7 @@
 /** \file black_box.h
  * An interface between an agent and a C++ component.
  *
- * $Id: black_box.h,v 1.2 2001/01/10 10:01:25 robert Exp $
+ * $Id: black_box.h,v 1.3 2001/01/30 17:41:34 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,10 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_IA_BLACK_BOX_
-#define NL_IA_BLACK_BOX_
+#ifndef NL_AI_BLACK_BOX_
+#define NL_AI_BLACK_BOX_
 
-namespace NLIANIMAT
+namespace NLAINIMAT
 {
 	typedef std::string tString;
 	typedef std::list<tString> tCommandList;
@@ -99,4 +99,4 @@ namespace NLIANIMAT
 	};
 }
 
-#endif //NL_IA_BLACK_BOX_
+#endif //NL_AI_BLACK_BOX_

@@ -2093,6 +2093,11 @@ BEGIN
         MENUITEM "&Reset camera",               ID_VIEW_RESET_CAMERA
         MENUITEM SEPARATOR
         MENUITEM "Set lag",                     IDM_SET_LAG
+        MENUITEM SEPARATOR
+        MENUITEM "Activate texture set 1",      IDM_ACTIVATE_TEXTURE_SET_1
+        MENUITEM "Activate texture set 2",      IDM_ACTIVATE_TEXTURE_SET_2
+        MENUITEM "Activate texture set 3",      IDM_ACTIVATE_TEXTURE_SET_3
+        MENUITEM "Activate texture set 4",      IDM_ACTIVATE_TEXTURE_SET_4
     END
     POPUP "&Scene"
     BEGIN

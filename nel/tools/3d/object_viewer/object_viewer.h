@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.28 2001/11/26 13:14:44 vizerie Exp $
+ * $Id: object_viewer.h,v 1.29 2002/02/04 17:41:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,6 +171,9 @@ public:
 
 	// remove all instances from the scene
 	void					 removeAllInstancesFromScene();
+
+	/// Force all the instances of the scene to use the given texture set (if available)
+	void activateTextureSet(uint index);
 
 	// Load a mesh
 	bool loadMesh (std::vector<std::string> &meshFilename, const char* skeleton="");

@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.3 2002/02/21 17:36:55 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.4 2002/02/27 15:26:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,8 @@ CPSTailDot::TVBMap			CPSTailDot::_FadedColoredVBMap;    // index / vertex buffer
 CPSTailDot::CPSTailDot() : _ColorFading(false), _GlobalColor(false), _Touch(true)
 {
 	setInterpolationMode(Linear);
-	setSegDuration(0.04f);
+	setSegDuration(0.06f);
+	_Name = std::string("TailDot");
 }
 
 //=======================================================	
@@ -77,8 +78,7 @@ CPSTailDot::~CPSTailDot()
 void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 
-	sint ver = f.serialVersion(2);
-
+	sint ver = f.serialVersion(3);
 	if (ver == 1)
 	{
 		nlassert(f.isReading());
@@ -118,12 +118,12 @@ void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		bool   systemBasisEnabled;
 
 		CPSColoredParticle::serialColorScheme(f);	
-		f.serial(tailNbSegs, colorFading, systemBasisEnabled);
-		
+		f.serial(tailNbSegs, colorFading, systemBasisEnabled);		
+
+		_ColorFading = colorFading;
 		_NbSegs = tailNbSegs >> 1;
 		if (_NbSegs < 2) _NbSegs = 2;
-		setInterpolationMode(Linear);
-
+		setInterpolationMode(Linear);	
 		serialMaterial(f);
 
 
@@ -141,9 +141,14 @@ void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		bool colorFading = _ColorFading;
 		f.serial(colorFading);
 		_ColorFading = colorFading;
-
+		if (ver >= 3)
+		{
+			uint32 tailNbSegs = _NbSegs;
+			f.serial(tailNbSegs);
+		}
 		if (f.isReading())
 		{
+			setTailNbSeg(_NbSegs);
 			touch();
 		}
 	}	
@@ -233,33 +238,36 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	CVertexBuffer				&VB = VBnPB.VB;
 	CPrimitiveBlock				&PB = VBnPB.PB;
 	const uint32				vertexSize  = VB.getVertexSize();
-	uint						colorOffset;
-	const uint32				vertexSizeX2  = vertexSize << 1;		
-	CMatrix mat =  _Owner->isInSystemBasis() ? getViewMat()  *  getSysMat()
-																  : getViewMat();
+	uint						colorOffset;	
+	
 	IDriver *drv = this->getDriver();
 	setupDriverModelMatrix();
 	drv->activeVertexBuffer(VB);
 	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose		
 	const uint numRibbonBatch = getNumRibbonsInVB(); // number of ribons to process at once		
-	if (_UsedNbSegs == 0) return;	
+	if (_UsedNbSegs == 0) return;
+
 	////////////////////
-	// material setup //
+	// Material setup //
 	////////////////////
-	CParticleSystem &ps = *(_Owner->getOwner());
-	bool useGlobalColor = ps.getColorAttenuationScheme() != NULL;
-	if (useGlobalColor != _GlobalColor)
-	{
-		touch();
-	}
-	updateMaterial();
-	setupGlobalColor();
-	//
-	if (_ColorScheme)
-	{
-		colorOffset = VB.getColorOff();	
-	}	
-	//	
+		CParticleSystem &ps = *(_Owner->getOwner());
+		bool useGlobalColor = ps.getColorAttenuationScheme() != NULL;
+		if (useGlobalColor != _GlobalColor)
+		{
+			touch();
+		}
+		updateMaterial();
+		setupGlobalColor();
+		//
+		if (_ColorScheme)
+		{
+			colorOffset = VB.getColorOff();	
+		}	
+
+	/////////////////////
+	// Compute ribbons //
+	/////////////////////
+	
 	uint toProcess;
 	uint ribbonIndex = 0; // index of the first ribbon in the batch being processed	
 	uint32 fpRibbonIndex = 0; // fixed point index in source
@@ -268,13 +276,13 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		toProcess = std::min((uint) (nbRibbons - ribbonIndex) /* = left to do */, numRibbonBatch);
 		currVert = (uint8 *) VB.getVertexCoordPointer();
 			
-		/// compute colors colors
+		/// compute colors
 		if (_ColorScheme)
 		{			
-			_ColorScheme->makeN(this->_Owner, ribbonIndex, currVert + colorOffset, vertexSize, toProcess, _NbSegs + 1, srcStep);			
+			_ColorScheme->makeN(this->_Owner, ribbonIndex, currVert + colorOffset, vertexSize, toProcess, _UsedNbSegs + 1, srcStep);			
 		}			
 		uint k = toProcess;
-		const uint ribbonSize = vertexSize * (_NbSegs + 1); // size of a ribbon in the vertex buffer											
+		const uint ribbonSize = vertexSize * (_UsedNbSegs + 1); // size of a ribbon in the vertex buffer											
 		//////////////////////////////////////////////////////////////////////////////////////
 		// interpolate and project points the result is directly setup in the vertex buffer //
 		//////////////////////////////////////////////////////////////////////////////////////
@@ -288,7 +296,7 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 			{
 				// the parent class has a method to get the ribbons positions
 				computeRibbon((uint) (fpRibbonIndex >> 16), (CVector *) currVert, vertexSize);
-				currVert += vertexSize * (_NbSegs + 1);
+				currVert += vertexSize * (_UsedNbSegs + 1);
 				fpRibbonIndex += srcStep;
 			}
 			while (--k);			
@@ -303,7 +311,7 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 				// we compute each pos thanks to the parametric curve				
 				_Owner->integrateSingle(date - _UsedSegDuration * (_UsedNbSegs + 1), _UsedSegDuration, _UsedNbSegs + 1, (uint) (fpRibbonIndex >> 16),
 										(NLMISC::CVector *) currVert, vertexSize);
-				currVert += vertexSize * (_NbSegs + 1);
+				currVert += vertexSize * (_UsedNbSegs + 1);
 				fpRibbonIndex += srcStep;
 			}
 			while (--k);
@@ -430,34 +438,18 @@ void	CPSTailDot::updateMaterial()
 				}
 				_Mat.setTexture(0, ptGradTexture);
 				CPSMaterial::forceTexturedMaterialStages(2); // use constant color 0 * diffuse, 1 stage needed				
-				_Mat.texEnvOpRGB(0, CMaterial::Modulate);
-				_Mat.texEnvOpAlpha(0, CMaterial::Modulate);
-				_Mat.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcColor);
-				_Mat.texEnvArg1RGB(0, CMaterial::Constant, CMaterial::SrcColor);
-				_Mat.texEnvArg0Alpha(0, CMaterial::Texture, CMaterial::SrcAlpha);
-				_Mat.texEnvArg1Alpha(0, CMaterial::Constant, CMaterial::SrcAlpha);
-
-				_Mat.texEnvOpRGB(1, CMaterial::Modulate);
-				_Mat.texEnvOpAlpha(1, CMaterial::Modulate);
-				_Mat.texEnvArg0RGB(1, CMaterial::Previous, CMaterial::SrcColor);
-				_Mat.texEnvArg1RGB(1, CMaterial::Diffuse, CMaterial::SrcColor);
-				_Mat.texEnvArg0Alpha(1, CMaterial::Previous, CMaterial::SrcAlpha);
-				_Mat.texEnvArg1Alpha(1, CMaterial::Diffuse, CMaterial::SrcAlpha);
+				SetupModulatedStage(_Mat, 0, CMaterial::Texture, CMaterial::Constant);
+				SetupModulatedStage(_Mat, 1, CMaterial::Previous, CMaterial::Diffuse);
 			}
 			else // per ribbon color with global color 
 			{
 				CPSMaterial::forceTexturedMaterialStages(1); // use constant color 0 * diffuse, 1 stage needed				
-				_Mat.texEnvOpRGB(0, CMaterial::Modulate);
-				_Mat.texEnvOpAlpha(0, CMaterial::Modulate);
-				_Mat.texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
-				_Mat.texEnvArg1RGB(0, CMaterial::Constant, CMaterial::SrcColor);
-				_Mat.texEnvArg0Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
-				_Mat.texEnvArg1Alpha(0, CMaterial::Constant, CMaterial::SrcAlpha);		
+				SetupModulatedStage(_Mat, 0, CMaterial::Diffuse, CMaterial::Constant);
 			}
 		}
 		else
 		{	
-			if (_ColorFading) // per ribbon color, no fading
+			if (_ColorFading) // per ribbon color, fading
 			{				
 				if (ptGradTexture == NULL) // have we got a gradient texture ?
 				{
@@ -465,12 +457,7 @@ void	CPSTailDot::updateMaterial()
 				}
 				_Mat.setTexture(0, ptGradTexture);
 				CPSMaterial::forceTexturedMaterialStages(1);
-				_Mat.texEnvOpRGB(0, CMaterial::Modulate);
-				_Mat.texEnvOpAlpha(0, CMaterial::Modulate);
-				_Mat.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcColor);
-				_Mat.texEnvArg1RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
-				_Mat.texEnvArg0Alpha(0, CMaterial::Texture, CMaterial::SrcAlpha);
-				_Mat.texEnvArg1Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
+				SetupModulatedStage(_Mat, 0, CMaterial::Texture, CMaterial::Diffuse);
 			}
 			else // per color ribbon with no fading, and no global color
 			{
@@ -479,41 +466,16 @@ void	CPSTailDot::updateMaterial()
 		}
 	}
 	else // GLOBAL COLOR
-	{
-		if (ps.getColorAttenuationScheme())
+	{		
+		if (_ColorFading)
 		{
-			if (_ColorFading)
-			{								
-				CPSMaterial::forceTexturedMaterialStages(1); // use constant color 0 * diffuse, 1 stage needed				
-				_Mat.texEnvOpRGB(0, CMaterial::Modulate);
-				_Mat.texEnvOpAlpha(0, CMaterial::Modulate);
-				_Mat.texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
-				_Mat.texEnvArg1RGB(0, CMaterial::Constant, CMaterial::SrcColor);
-				_Mat.texEnvArg0Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
-				_Mat.texEnvArg1Alpha(0, CMaterial::Constant, CMaterial::SrcAlpha);								
-			}
-			else // color attenuation, no fading : 
-			{
-				CPSMaterial::forceTexturedMaterialStages(0); // no texture use constant diffuse only				
-			}
+			CPSMaterial::forceTexturedMaterialStages(1); // use constant color 0 * diffuse, 1 stage needed
+			SetupModulatedStage(_Mat, 0, CMaterial::Diffuse, CMaterial::Constant);
 		}
-		else
-		{	
-			if (_ColorFading)
-			{
-				CPSMaterial::forceTexturedMaterialStages(1); // use constant color 0 * diffuse, 1 stage needed				
-				_Mat.texEnvOpRGB(0, CMaterial::Modulate);
-				_Mat.texEnvOpAlpha(0, CMaterial::Modulate);
-				_Mat.texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
-				_Mat.texEnvArg1RGB(0, CMaterial::Constant, CMaterial::SrcColor);
-				_Mat.texEnvArg0Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
-				_Mat.texEnvArg1Alpha(0, CMaterial::Constant, CMaterial::SrcAlpha);
-			}
-			else // constant color
-			{
-				CPSMaterial::forceTexturedMaterialStages(0); // no texture use constant diffuse only			
-			}
-		}
+		else // constant color
+		{
+			CPSMaterial::forceTexturedMaterialStages(0); // no texture use constant diffuse only			
+		}		
 	}
 
 	_Touch = false;

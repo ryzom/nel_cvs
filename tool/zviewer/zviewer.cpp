@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.16 2002/04/12 16:20:03 berenguier Exp $
+ * $Id: zviewer.cpp,v 1.17 2003/11/07 16:30:17 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -317,7 +317,7 @@ void displayZones()
 	ViewerCfg.TextContext.printfAt(0.5f,0.5f,"Creating landscape...");
 	CNELU::swapBuffers();
 	
-	Landscape = (CLandscapeModel*)CNELU::Scene.createModel(LandscapeModelId);
+	Landscape = (CLandscapeModel*)CNELU::Scene->createModel(LandscapeModelId);
 	Landscape->Landscape.setTileNear(ViewerCfg.LandscapeTileNear);
 	Landscape->Landscape.setThreshold(ViewerCfg.LandscapeThreshold);
 
@@ -410,11 +410,11 @@ void displayZones()
 		CTileSet *tileSet=Landscape->Landscape.TileBank.getTileSet (ts);
 		sint tl;
 		for (tl=0; tl<tileSet->getNumTile128(); tl++)
-			Landscape->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTile128(tl), 1);
+			Landscape->Landscape.flushTiles (CNELU::Scene->getDriver(), (uint16)tileSet->getTile128(tl), 1);
 		for (tl=0; tl<tileSet->getNumTile256(); tl++)
-			Landscape->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTile256(tl), 1);
+			Landscape->Landscape.flushTiles (CNELU::Scene->getDriver(), (uint16)tileSet->getTile256(tl), 1);
 		for (tl=0; tl<CTileSet::count; tl++)
-			Landscape->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTransition(tl)->getTile (), 1);
+			Landscape->Landscape.flushTiles (CNELU::Scene->getDriver(), (uint16)tileSet->getTransition(tl)->getTile (), 1);
 	}
 		
 
@@ -461,7 +461,7 @@ void displayZones()
 			file.close();
 
 			// Add it to the scene.
-			group.addToScene (CNELU::Scene);
+			group.addToScene (*CNELU::Scene);
 		}
 		catch(Exception &e)
 		{
@@ -493,7 +493,7 @@ void displayZones()
 	CNELU::EventServer.addEmitter(CNELU::Driver->getEventEmitter());
 	CNELU::AsyncListener.addToServer(CNELU::EventServer);
 	
-	MoveListener.init(&CNELU::Scene, ViewerCfg.Width, ViewerCfg.Height, *CNELU::Camera);
+	MoveListener.init(CNELU::Scene, ViewerCfg.Width, ViewerCfg.Height, *CNELU::Camera);
 	MoveListener.addToServer(CNELU::EventServer);
 	MoveListener.setPos( ViewerCfg.Position );	
 
@@ -629,17 +629,17 @@ void displayZones()
 		//=======
 		CNELU::clearBuffers(ViewerCfg.Background);
 		CNELU::Driver->clearZBuffer();
-		CNELU::Scene.render();
+		CNELU::Scene->render();
 
 				
 		if(showInfos)
 		{
 			
 			// black top quad
-			CDRU::drawQuad(0,0.97f,1.0f,1.0f,*CNELU::Driver,CRGBA(0,0,0),CNELU::Scene.getViewport());
+			CDRU::drawQuad(0,0.97f,1.0f,1.0f,*CNELU::Driver,CRGBA(0,0,0),CNELU::Scene->getViewport());
 
 			// black bottom quad
-			CDRU::drawQuad(0,0,1.0f,0.03f,*CNELU::Driver,CRGBA(0,0,0),CNELU::Scene.getViewport());
+			CDRU::drawQuad(0,0,1.0f,0.03f,*CNELU::Driver,CRGBA(0,0,0),CNELU::Scene->getViewport());
 
 			
 			ViewerCfg.TextContext.setFontSize(12);

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.15 2001/05/31 08:29:26 vizerie Exp $
+ * $Id: mesh.h,v 1.16 2001/05/31 09:33:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,13 +190,13 @@ public:
 	// @{
 
 	/// Get the number of materials in the mesh
-	uint getNbMaterial()
+	uint getNbMaterial() const
 	{
 		return _Materials.size();
 	}
 
-	/// Get the materials number id in the materials list
-	const CMaterial& getMaterial(uint id)
+	/// Get a material
+	const CMaterial& getMaterial(uint id) const
 	{
 		return _Materials[id];
 	}

@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.7 2002/06/04 10:07:43 hanappe Exp $
+ * $Id: sound_driver.h,v 1.8 2002/06/28 19:34:16 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,6 +111,9 @@ public:
 	/// Create the listener instance
 	virtual	IListener		*createListener() = 0;
 
+	/// Return the maximum number of sources that can created
+	virtual uint			countMaxSources() = 0;
+
 	/// Create a source
 	virtual	ISource			*createSource() = 0;
 
@@ -119,7 +122,10 @@ public:
 
 
 	/// Commit all the changes made to 3D settings of listener and sources
-	virtual void			commit3DChanges() {}
+	virtual void			commit3DChanges() = 0;
+
+	/// Write information about the driver to the output stream.
+	virtual void			writeProfile(std::ostream& out) = 0;
 
 	// Does not create a sound loader
 

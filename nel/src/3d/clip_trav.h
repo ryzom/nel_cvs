@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.22 2004/05/11 16:36:46 berenguier Exp $
+ * $Id: clip_trav.h,v 1.23 2004/06/23 09:11:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -185,8 +185,8 @@ private:
 
 	void	loadBalanceSkeletonCLod();
 
-	// Process the skeleton for ShadowMap.
-	void	clipSkeletonShadowMaps();
+	// clip the shadow casters to know if they still need some process
+	void	clipShadowCasters();
 };
 
 

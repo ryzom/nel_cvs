@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.11 2004/04/26 13:48:24 corvazier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.12 2004/06/23 09:11:27 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -240,14 +240,6 @@ void			CShadowMapManager::setQuadGridSize(uint size, float cellSize)
 void			CShadowMapManager::addShadowCaster(CTransform *model)
 {
 	_ShadowCasters.push_back(model);
-}
-
-// ***************************************************************************
-void			CShadowMapManager::addShadowCasterGenerate(CTransform *model)
-{
-	_GenerateShadowCasters.push_back(model);
-	// Indicate this model that it will render its ShadowMap
-	model->setGeneratingShadowMap(true);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.21 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_instance.cpp,v 1.22 2004/06/23 09:11:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,6 @@ namespace NL3D
 CMeshInstance::CMeshInstance()
 {
 	_ShadowMap= NULL;
-	_ShadowGeom= NULL;
 
 	// LoadBalancing is not usefull for Mesh, because meshs cannot be reduced in faces.
 	// Override CTransformShape state.
@@ -177,11 +176,7 @@ void		CMeshInstance::generateShadowMap(const CVector &lightDir)
 	// ****
 	updateShadowMap(driver);
 
-	if(_ShadowMap)
-	{
-		nlassert(_ShadowGeom);
-	}
-	if(!_ShadowMap || (_ShadowGeom->CasterTriangles.getNumIndexes()==0))
+	if(!_ShadowMap)
 		return;
 
 	// compute the ProjectionMatrix.
@@ -205,11 +200,19 @@ void		CMeshInstance::generateShadowMap(const CVector &lightDir)
 	driver->setupViewMatrix(cameraMatrix.inverted());
 	driver->setupModelMatrix(localPosMatrix);
 
-	// render the Cached VB/Primtives
-	driver->activeVertexBuffer(_ShadowGeom->CasterVBuffer);
+	// render the Mesh
 	CMaterial	&castMat= renderTrav.getShadowMapManager().getCasterShadowMaterial();
-	driver->activeIndexBuffer(_ShadowGeom->CasterTriangles);
-	driver->renderTriangles(castMat, 0, _ShadowGeom->CasterTriangles.getNumIndexes()/3);
+	CMesh		*mesh= (CMesh*)(IShape*)Shape;
+	driver->activeVertexBuffer( const_cast<CVertexBuffer&>(mesh->getVertexBuffer()) );
+	for(uint mb=0;mb<mesh->getNbMatrixBlock();mb++)
+	{
+		for(uint rp=0;rp<mesh->getNbRdrPass(mb);rp++)
+		{
+			const CIndexBuffer	&pb= mesh->getRdrPassPrimitiveBlock(mb, rp);
+			driver->activeIndexBuffer(const_cast<CIndexBuffer&>(pb));
+			driver->renderTriangles(castMat, 0, pb.getNumIndexes()/3);
+		}
+	}
 
 	// Infos.
 	// ****
@@ -238,95 +241,32 @@ CShadowMap	*CMeshInstance::getShadowMap()
 }
 
 // ***************************************************************************
-void		CMeshInstance::deleteShadowMap()
-{
-	if(_ShadowMap)
-	{
-		nlassert(_ShadowGeom);
-		delete _ShadowMap;
-		delete _ShadowGeom;
-		_ShadowMap= NULL;
-		_ShadowGeom= NULL;
-	}
-	nlassert(_ShadowGeom==NULL && _ShadowMap==NULL);
-}
-
-// ***************************************************************************
 void		CMeshInstance::createShadowMap()
 {
 	// create the shadowMap
 	if(!_ShadowMap)
 	{
-		uint i;
-
 		_ShadowMap= new CShadowMap(&getOwnerScene()->getRenderTrav().getShadowMapManager());
-
-		// Init the shadowGeom.
-		_ShadowGeom= new CShadowGeom;
-
-		// create a VBuffer with only Position Data
-		CMesh	*mesh= safe_cast<CMesh*>((IShape*)Shape);
-		const CVertexBuffer	&vbSrc= mesh->getVertexBuffer();
-		// init
-		_ShadowGeom->CasterVBuffer.setVertexFormat(CVertexBuffer::PositionFlag);
-		uint	numVerts= vbSrc.getNumVertices();
-		_ShadowGeom->CasterVBuffer.setNumVertices(numVerts);
-		CVertexBufferRead srcvba;
-		vbSrc.lock (srcvba);
-		CVertexBufferReadWrite dstvba;
-		_ShadowGeom->CasterVBuffer.lock (dstvba);
-		// fill
-		for(i=0;i<numVerts;i++)
-		{
-			dstvba.setVertexCoord(i, *srcvba.getVertexCoordPointer(i));
-		}
-
-		// TODO: OPTIM : VBHard
-		/* TODO: OPTIM : must store the shadow Geometry in the mesh and not in the instance (in shadowMap)!
-			Not very interesting to optimize because casters will be only skeletons 
-			(even the items like swords won't be rendered in CMeshInstance since sticked to a skeleton)
-		*/
-
-		// Copy All triangles in the PB cache.
-		uint	nbMB= mesh->getNbMatrixBlock();
-		// count tris
-		uint	numTris= 0;
-		for(i=0;i<nbMB;i++)
-		{
-			uint	nbRP= mesh->getNbRdrPass(i);
-			for(uint j=0;j<nbRP;j++)
-			{
-				numTris+= mesh->getRdrPassPrimitiveBlock(i, j).getNumIndexes()/3;
-			}
-		}
-		if(numTris)
-		{
-			// allocate
-			_ShadowGeom->CasterTriangles.setNumIndexes(numTris*3);
-			// Copy.
-			CIndexBufferReadWrite iba;
-			_ShadowGeom->CasterTriangles.lock(iba);
-			uint32	*triPtr= iba.getPtr();
-			for(i=0;i<nbMB;i++)
-			{
-				uint	nbRP= mesh->getNbRdrPass(i);
-				for(uint j=0;j<nbRP;j++)
-				{
-					uint	passNummTri= mesh->getRdrPassPrimitiveBlock(i, j).getNumIndexes()/3;
-					CIndexBufferRead iba;
-					mesh->getRdrPassPrimitiveBlock(i, j).lock (iba);
-					memcpy(triPtr, iba.getPtr(), passNummTri*3*sizeof(uint32));
-					triPtr+= passNummTri*3;
-				}
-			}
-		}
+		getOwnerScene()->registerShadowCasterToList(this);
 	}
 }
 
+// ***************************************************************************
+void		CMeshInstance::deleteShadowMap()
+{
+	if(_ShadowMap)
+	{
+		delete _ShadowMap;
+		_ShadowMap= NULL;
+		getOwnerScene()->unregisterShadowCasterToList(this);
+	}
+}
 
 // ***************************************************************************
 void		CMeshInstance::updateShadowMap(IDriver *driver)
 {
+	nlassert(_ShadowMap);
+	
 	// create/update texture
 	if(_ShadowMap->getTextureSize()!=getOwnerScene()->getShadowMapTextureSize())
 	{
@@ -334,28 +274,6 @@ void		CMeshInstance::updateShadowMap(IDriver *driver)
 	}
 }
 
-
-// ***************************************************************************
-void	CMeshInstance::traverseRender()
-{
-	CMeshBaseInstance::traverseRender();
-
-	/*
-		Doing like this (and not like skeleton scheme) result in 2 problems:
-			- MehsInstance ShadowMap Casting are not "Loded" ie they are computed each frame.
-			- The shadow is displayed only if the mesh is, which is conceptually false.
-		BUT this is just an easy demo of ShadowMap.
-		Additionally, still do the correct test: if I am son of a SkeletonModel, then I don't have to cast my 
-		shadowMap since my skeleton father will do it for me.
-	*/
-	if(canCastShadowMap() && _AncestorSkeletonModel==NULL )
-	{
-		// Since the mesh is rendered, add it to the list.
-		getOwnerScene()->getRenderTrav().getShadowMapManager().addShadowCaster(this);
-		// Compute each frame.
-		getOwnerScene()->getRenderTrav().getShadowMapManager().addShadowCasterGenerate(this);
-	}
-}
 
 // ***************************************************************************
 bool	CMeshInstance::computeWorldBBoxForShadow(NLMISC::CAABBox &worldBB)

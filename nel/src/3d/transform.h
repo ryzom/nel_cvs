@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.52 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: transform.h,v 1.53 2004/06/23 09:11:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -767,6 +767,9 @@ private:
 	/// see setMeanColor()
 	CRGBA				_MeanColor;
 
+	/// For Shadow Caster registration to list
+	std::list<CTransform*>::iterator		_ItShadowCasterInScene;
+	
 
 	/// \name State Flag mgt (boolean compression)
 	// @{
@@ -910,9 +913,10 @@ protected:
 	// @{
 	/** To implement for ShadowCaster support. typically allocate a CShadowMap and store
 	 *	NB: the texture doesn't have to be inited at this time. Update it each frame in generateShadowMap()
+	 *	MUST call registerShadowCasterToList()
      */
 	virtual void			createShadowMap() {}
-	/// To implement for ShadowCaster support. typically free the shadowMap
+	/// To implement for ShadowCaster support. typically free the shadowMap + MUST call unregisterShadowCasterToList()
 	virtual void			deleteShadowMap() {}
 	// @}
 

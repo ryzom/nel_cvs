@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.53 2004/05/03 16:42:28 corvazier Exp $
+ * $Id: scene.h,v 1.54 2004/06/23 09:11:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -511,13 +511,21 @@ public:
 
 	/// \name Private
 	// @{
+	/// The scene owns a list of skeleton models. Added/Removed by CSkeletonModel intModel()/dtor
 	typedef std::list<CSkeletonModel*>		TSkeletonModelList;
 	typedef TSkeletonModelList::iterator	ItSkeletonModelList;
-	/// The scene owns a list of skeleton models. Added/Removed by CSkeletonModel intModel()/dtor
 	ItSkeletonModelList			appendSkeletonModelToList(CSkeletonModel *skel);
 	void						eraseSkeletonModelToList(ItSkeletonModelList	it);
 	ItSkeletonModelList			getSkeletonModelListBegin() {return _SkeletonModelList.begin();}
 	ItSkeletonModelList			getSkeletonModelListEnd() {return _SkeletonModelList.end();}
+
+	/// The scene owns a list of CTransform enabled to Cast shadows. Added/Removed by createShadowMap()/deleteShadowMap()
+	typedef std::list<CTransform*>				TShadowCasterList;
+	typedef TShadowCasterList::iterator			ItShadowCasterList;
+	void						registerShadowCasterToList(CTransform *sc);
+	void						unregisterShadowCasterToList(CTransform *sc);
+	ItShadowCasterList			getShadowCasterListBegin() {return _ShadowCasterList.begin();}
+	ItShadowCasterList			getShadowCasterListEnd() {return _ShadowCasterList.end();}
 	// @}
 
 
@@ -717,7 +725,9 @@ private:
 
 	IWaterSurfaceAddedCallback	*_WaterCallback;
 
-
+	// List of shadow casters in the scene
+	TShadowCasterList			_ShadowCasterList;
+	
 // ******************
 private:
 	struct	CModelEntry

@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.43 2004/05/11 16:36:46 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.44 2004/06/23 09:11:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -445,13 +445,13 @@ void CClipTrav::traverse()
 	if (Scene->SonsOfAncestorSkeletonModelGroup)
 		Scene->SonsOfAncestorSkeletonModelGroup->traverseClip();
 
-	// For All Skeletons, clip their ShadowMap possible projection against the frustum only.
+	// For All Shadow Casters (skeletons + others), clip their ShadowMap possible projection against the frustum only.
 	// =========================
 	/*
-		Done here, because can't do in clip() in case of a skeleton in a cluster 
-		(We insert in cluster with the SkeletonModel BBox, not the SkeletonModel + Shadow BBox).
+		Done here, because can't do in clip() in case of a Model in a cluster 
+		(We insert in cluster with the Model BBox, not the Model + Shadow BBox).
 	*/
-	clipSkeletonShadowMaps();
+	clipShadowCasters();
 
 	// Update Here the Skin render Lists of All visible Skeletons
 	// =========================
@@ -576,11 +576,11 @@ struct	CFadeShadowMapSort
 };
 
 // ***************************************************************************
-void	CClipTrav::clipSkeletonShadowMaps()
+void	CClipTrav::clipShadowCasters()
 {
-	H_AUTO( NL3D_TravClip_SkeletonShadow );
+	H_AUTO( NL3D_TravClip_ShadowCasters );
 
-	CScene::ItSkeletonModelList		itSkel;
+	CScene::ItShadowCasterList		itShadowCaster;
 
 	float	dFade= NL3D_SMM_FADE_SPEED * Scene->getEllapsedTime();
 	float	distFadeStart= Scene->getShadowMapDistFadeStart();
@@ -593,122 +593,122 @@ void	CClipTrav::clipSkeletonShadowMaps()
 	uint	maxCastInScreen= Scene->getShadowMapMaxCasterInScreen();
 	uint	maxCastAround= Scene->getShadowMapMaxCasterAround();
 
-	// **** First select Skeleton ShadowMap to Render
 
-	// Lod Skeletons that will cast ShadowMaps.
-	static std::vector<CFadeShadowMapSort>		aroundCastSkeletons;
-	static std::vector<CFadeShadowMapSort>		screenCastSkeletons;
-	aroundCastSkeletons.clear();
-	screenCastSkeletons.clear();
+	// **** First select ShadowCasters that are visible or that may have their shadow visible
 
-	// For all skeleton casters
-	for(itSkel= Scene->getSkeletonModelListBegin(); itSkel!=Scene->getSkeletonModelListEnd(); itSkel++)
+	// Lod Models that will cast ShadowMaps.
+	static std::vector<CFadeShadowMapSort>		aroundCasters;
+	static std::vector<CFadeShadowMapSort>		screenCasters;
+	aroundCasters.clear();
+	screenCasters.clear();
+
+	// For all casters
+	for(itShadowCaster= Scene->getShadowCasterListBegin(); itShadowCaster!=Scene->getShadowCasterListEnd(); itShadowCaster++)
 	{
-		CSkeletonModel	*sm= *itSkel;
+		CTransform		*sc= *itShadowCaster;
+		nlassert(sc->canCastShadowMap());
 
-		// if the sm cast shadow
-		if( sm->canCastShadowMap() )
+		CShadowMap		*shadowMap= sc->getShadowMap();
+		nlassert( shadowMap );
+
+		// Binded to an Ancestor skeleton?? If so, don't render since the Ancestor Skeleton render all of his sons
+		// Additionally, no-op if this caster is hidden in HRC!!
+		if( sc->_AncestorSkeletonModel==NULL && sc->isHrcVisible() )
 		{
-			CShadowMap		*shadowMap= sm->getShadowMap();
-			nlassert( shadowMap );
-
-			// Is a Root Sm ?? Other Skeletons ShadowMaps are not render since the 
-			// Ancestor Skeleton render all of his sons. Additionally, no-op if this skeleton is hidden in HRC!!
-			if( sm->_AncestorSkeletonModel==NULL && sm->isHrcVisible() )
-			{
-				bool	visible= false;
-				// if we are already visible, then its ok, we either don't need to test.
-				if(sm->isClipVisible())
-					visible= true;
-				else
-				{
-					// TODO_SHADOW: Select a better "Skeleton Sphere". It depends also on Sticked objects/Skeletons.
-					// Build the sphere around the skeleton that can receive shadow.
-					CBSphere	sphere;
-					// Suppose an Object sphere of 3 meter radius, centered on Skeleton Pos.
-					const	float	objectRadius= 3.f;
-					sphere.Center= sm->getWorldMatrix().getPos();
-					// Add to this spehre the max Depth extent. 
-					// NB: works because suppose that the Shadow BBox include the Skeleton Center.
-					sphere.Radius= objectRadius + Scene->getShadowMapMaxDepth();
-
-					// Clip This sphere against the Frustum.
-					visible= true;
-					for(uint i=0;i<WorldFrustumPyramid.size();i++)
-					{
-						// if SpherMax OUT return false.
-						float	d= WorldFrustumPyramid[i]*sphere.Center;
-						if(d>sphere.Radius)
-						{
-							visible= false;
-							break;
-						}
-					}
-				}
-
-				// If the ShadowMap is visible, add it to the List Of ShadowMap to Render.
-				if(visible)
-					Scene->getRenderTrav().getShadowMapManager().addShadowCaster(sm);
-
-				// update Fading.
-				CFadeShadowMapSort	fsms;
-				fsms.Model= sm;
-				fsms.Dist= (sm->getWorldMatrix().getPos() - CamPos).norm();
-				// lod In and Out.
-				aroundCastSkeletons.push_back(fsms);
-				if(visible)
-					screenCastSkeletons.push_back(fsms);
-				// Compute normal Distance fading.
-				shadowMap->DistanceFade= (fsms.Dist-distFadeStart)*OODeltaDistFade;
-				// Increment the TemporalFadeOut by default  (see below)
-				shadowMap->TemporalOutScreenFade+= dFade;
-				// if !visible, increment the InScreenFadeAccum
-				if(!visible)
-					shadowMap->InScreenFadeAccum+= dFade;
-			}
-			// If the skeleton is not visible, or if temporary bound to a AncestorSkeletonModel
+			bool	visible= false;
+			// if we are already visible, then its ok, we either don't need to test.
+			if(sc->isClipVisible())
+				visible= true;
+			// else do a bigger test
 			else
 			{
-				// Increment the TemporalFadeOut. Because since will be hidden (or sticked) 
-				// for a long time, allow the process to free texture.
-				shadowMap->TemporalOutScreenFade+= dFade;
-				// Since not visible, increment the InScreenFadeAccum
-				shadowMap->InScreenFadeAccum+= dFade;
+				// TODO_SHADOW: Select a better "Caster Sphere". 
+				// If the model "sc" is a CSkeletonModel, It depends also on Sticked objects/Skeletons.
+				// Build the sphere around the caster that can receive shadow.
+				CBSphere	sphere;
+				// Suppose an Object sphere of 3 meter radius, centered on caster Pos.
+				const	float	objectRadius= 3.f;
+				sphere.Center= sc->getWorldMatrix().getPos();
+				// Add to this sphere the max Depth extent. 
+				// NB: works because suppose that the Shadow BBox include the model Center.
+				sphere.Radius= objectRadius + Scene->getShadowMapMaxDepth();
+
+				// Clip This sphere against the Frustum.
+				visible= true;
+				for(uint i=0;i<WorldFrustumPyramid.size();i++)
+				{
+					// if SpherMax OUT return false.
+					float	d= WorldFrustumPyramid[i]*sphere.Center;
+					if(d>sphere.Radius)
+					{
+						visible= false;
+						break;
+					}
+				}
 			}
+
+			// If the ShadowMap is visible, add it to the List Of ShadowMap to Render.
+			if(visible)
+				Scene->getRenderTrav().getShadowMapManager().addShadowCaster(sc);
+
+			// update Fading.
+			CFadeShadowMapSort	fsms;
+			fsms.Model= sc;
+			fsms.Dist= (sc->getWorldMatrix().getPos() - CamPos).norm();
+			// lod In and Out.
+			aroundCasters.push_back(fsms);
+			if(visible)
+				screenCasters.push_back(fsms);
+			// Compute normal Distance fading.
+			shadowMap->DistanceFade= (fsms.Dist-distFadeStart)*OODeltaDistFade;
+			// Increment the TemporalFadeOut by default  (see below)
+			shadowMap->TemporalOutScreenFade+= dFade;
+			// if !visible, increment the InScreenFadeAccum
+			if(!visible)
+				shadowMap->InScreenFadeAccum+= dFade;
+		}
+		// If the model is not visible, or if temporary bound to a AncestorSkeletonModel
+		else
+		{
+			// Increment the TemporalFadeOut. Because since will be hidden (or sticked) 
+			// for a long time, allow the process to free texture.
+			shadowMap->TemporalOutScreenFade+= dFade;
+			// Since not visible, increment the InScreenFadeAccum
+			shadowMap->InScreenFadeAccum+= dFade;
 		}
 	}
 
-	// **** Load Balance Skeletons that cast ShadowMaps around, 
+	// **** Load Balance Models that cast ShadowMaps around, 
 
-	sort(aroundCastSkeletons.begin(), aroundCastSkeletons.end());
-	sort(screenCastSkeletons.begin(), screenCastSkeletons.end());
+	sort(aroundCasters.begin(), aroundCasters.end());
+	sort(screenCasters.begin(), screenCasters.end());
 
 	// For All Around nearest Casters, decrement their fadeOutScreen
-	uint	numNearCast= min((uint)aroundCastSkeletons.size(), maxCastAround);
+	uint	numNearCast= min((uint)aroundCasters.size(), maxCastAround);
 	uint	i;
 	for(i=0;i<numNearCast;i++)
 	{
-		CTransform	*model= aroundCastSkeletons[i].Model;
+		CTransform	*model= aroundCasters[i].Model;
 		CShadowMap	*shadowMap= model->getShadowMap();
 		// Decrement the fade. *2 because default incremented above.
 		shadowMap->TemporalOutScreenFade-= 2*dFade;
 	}
 
 	// For InScreen Casters, increment or decrement their fadeInScreen. Also resolve InScreenFadeAccum.
-	numNearCast= min((uint)screenCastSkeletons.size(), maxCastInScreen);
+	numNearCast= min((uint)screenCasters.size(), maxCastInScreen);
 	// nearest: decrement fadeInScreen, and remove accum
 	for(i=0;i<numNearCast;i++)
 	{
-		CShadowMap	*shadowMap= screenCastSkeletons[i].Model->getShadowMap();
+		CShadowMap	*shadowMap= screenCasters[i].Model->getShadowMap();
 		// Decrement the fade.
 		shadowMap->TemporalInScreenFade-= dFade + shadowMap->InScreenFadeAccum;
 		// Since visible and resolved, reset accum
 		shadowMap->InScreenFadeAccum= 0;
 	}
 	// farthest: increment fadeInScreen, and append accum
-	for(i=numNearCast;i<screenCastSkeletons.size();i++)
+	for(i=numNearCast;i<screenCasters.size();i++)
 	{
-		CShadowMap	*shadowMap= screenCastSkeletons[i].Model->getShadowMap();
+		CShadowMap	*shadowMap= screenCasters[i].Model->getShadowMap();
 		// Increment the fade.
 		shadowMap->TemporalInScreenFade+= dFade + shadowMap->InScreenFadeAccum;
 		// Since visible and resolved, reset accum
@@ -717,42 +717,41 @@ void	CClipTrav::clipSkeletonShadowMaps()
 
 
 	// clamp values, and release texture where appropriated
-	for(itSkel= Scene->getSkeletonModelListBegin(); itSkel!=Scene->getSkeletonModelListEnd(); itSkel++)
+	for(itShadowCaster= Scene->getShadowCasterListBegin(); itShadowCaster!=Scene->getShadowCasterListEnd(); itShadowCaster++)
 	{
-		CSkeletonModel	*sm= *itSkel;
-		// if the sm cast shadow (whatever displayed or not)
-		if( sm->canCastShadowMap() )
-		{
-			CShadowMap		*shadowMap= sm->getShadowMap();
-			shadowMap->processFades();
-		}
+		CTransform	*sc= *itShadowCaster;
+		nlassert(sc->canCastShadowMap());
+
+		CShadowMap		*shadowMap= sc->getShadowMap();
+		shadowMap->processFades();
 	}
 
 	// **** Use the rendered Skeletons ShadowMap to select the Ones that will be generated this Frame.
 	Scene->getRenderTrav().getShadowMapManager().selectShadowMapsToGenerate(Scene);
 
 
-	/* **** Then for All Skeleton not visibles but that will generate their shadowMap, 
-		we must compute the LightTraversal(for ShadowLight direction) and AnimDetailTraversal (for bone 
-		animation)
+	/* **** Then for All ShadowCasters not visibles but that will generate their shadowMap, 
+		- we must compute the LightTraversal(for ShadowLight direction)
+		- for skeleton models only, we must compute the AnimDetailTraversal (for bone animation)
 		We MUST NOT flag the skeleton as Visible, and we MUST NOT insert in LoadBalancing 
 		(since won't be rendered)
 		NB: Do nothing for Sons of the Ancestor Skeleton because:
 			1/ light do nothing with them (see std clip)
 			2/ animDetail will be called recursively (see std clip and CSkeletonModel::traverseAnimDetail())
 	*/
-	for(itSkel= Scene->getSkeletonModelListBegin(); itSkel!=Scene->getSkeletonModelListEnd(); itSkel++)
+	for(itShadowCaster= Scene->getShadowCasterListBegin(); itShadowCaster!=Scene->getShadowCasterListEnd(); itShadowCaster++)
 	{
-		CSkeletonModel	*sm= *itSkel;
+		CTransform	*sc= *itShadowCaster;
 		// compute its shadowMap this frame? and not visible?
-		if(sm->isGeneratingShadowMap() && !sm->isClipVisible() )
+		if(sc->isGeneratingShadowMap() && !sc->isClipVisible() )
 		{
-			nlassert(sm->_AncestorSkeletonModel==NULL);
-			// Add it only to the lightTrav and AnimDetailTrav
-			if( sm->isLightable() )
-				Scene->getLightTrav().addLightedModel(sm);
-			if( sm->isAnimDetailable() )
-				Scene->getAnimDetailTrav().addVisibleModel(sm);
+			nlassert(sc->_AncestorSkeletonModel==NULL);
+			// Add it only to the lightTrav
+			if( sc->isLightable() )
+				Scene->getLightTrav().addLightedModel(sc);
+			// If it is a skeleton, add it also to the anim detail
+			if( sc->isSkeleton() && sc->isAnimDetailable() )
+				Scene->getAnimDetailTrav().addVisibleModel(sc);
 		}
 	}
 }

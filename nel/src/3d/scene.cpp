@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.122 2004/06/21 17:38:41 lecroart Exp $
+ * $Id: scene.cpp,v 1.123 2004/06/23 09:11:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -976,6 +976,21 @@ CScene::ItSkeletonModelList	CScene::appendSkeletonModelToList(CSkeletonModel *sk
 void					CScene::eraseSkeletonModelToList(CScene::ItSkeletonModelList	it)
 {
 	_SkeletonModelList.erase(it);
+}
+
+// ***************************************************************************
+void					CScene::registerShadowCasterToList(CTransform *sc)
+{
+	nlassert(sc);
+	_ShadowCasterList.push_front(sc);
+	sc->_ItShadowCasterInScene= _ShadowCasterList.begin();
+}
+
+// ***************************************************************************
+void					CScene::unregisterShadowCasterToList(CTransform *sc)
+{
+	nlassert(sc);
+	_ShadowCasterList.erase(sc->_ItShadowCasterInScene);
 }
 
 

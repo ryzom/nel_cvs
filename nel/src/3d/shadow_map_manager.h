@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.h
  * <File description>
  *
- * $Id: shadow_map_manager.h,v 1.6 2004/04/08 19:48:20 berenguier Exp $
+ * $Id: shadow_map_manager.h,v 1.7 2004/06/23 09:11:27 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -73,10 +73,6 @@ public:
 	 *	NB: model->setGeneratingShadowMap(true); are called for each model selected
 	 */
 	void			selectShadowMapsToGenerate(CScene *scene);
-	/** Add Manually a ShadowCaster that will compute his ShadowMap this pass.
-	 *	NB: model->setGeneratingShadowMap(true); is called
-	 */
-	void			addShadowCasterGenerate(CTransform *model);
 	/// Add a ShadowRecevier visible in this scene for this pass
 	void			addShadowReceiver(CTransform *model);
 

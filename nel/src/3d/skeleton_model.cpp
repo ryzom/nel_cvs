@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.55 2003/12/08 10:17:54 vizerie Exp $
+ * $Id: skeleton_model.cpp,v 1.56 2004/06/23 09:11:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1855,6 +1855,7 @@ void			CSkeletonModel::createShadowMap()
 	if(!_ShadowMap)
 	{
 		_ShadowMap= new CShadowMap(&getOwnerScene()->getRenderTrav().getShadowMapManager());
+		getOwnerScene()->registerShadowCasterToList(this);
 	}
 }
 
@@ -1865,6 +1866,7 @@ void			CSkeletonModel::deleteShadowMap()
 	{
 		delete _ShadowMap;
 		_ShadowMap= NULL;
+		getOwnerScene()->unregisterShadowCasterToList(this);
 	}
 }
 

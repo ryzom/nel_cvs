@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.15 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_instance.h,v 1.16 2004/06/23 09:11:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,10 +88,6 @@ protected:
 
 	/// \name Special Traverse Feature.
 	// @{
-	/** just a specialisation to maybe add the ShadowMap Caster. This is not Clip or ShadowMapCaster Loding 
-	 *	REGULAR but this is just a test...
-	 */
-	virtual void	traverseRender();
 	// @}
 
 	// called at instanciation
@@ -111,15 +107,6 @@ private:
 
 	// MeshInstances can generate Shadow Map
 	CShadowMap			*_ShadowMap;
-	// A cache to store Shadow Generation Geometry
-	struct	CShadowGeom
-	{
-		/// This is a cache for the Caster Model. stores its simplified geometry for rendering in this buffer.
-		CVertexBuffer					CasterVBuffer;
-		/// A cache for the caster triangles primitives.
-		CIndexBuffer					CasterTriangles;
-	};
-	CShadowGeom			*_ShadowGeom;
 
 	void			updateShadowMap(IDriver *driver);
 protected:

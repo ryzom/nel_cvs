@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: matrix.cpp,v 1.6 2000/09/21 12:35:59 berenguier Exp $
+ * $Id: matrix.cpp,v 1.7 2000/09/21 12:40:18 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -588,7 +588,7 @@ CMatrix		CMatrix::operator*(const CMatrix &m) const
 		ret.a33+= a34*m.a43;
 	}
 	// Modify Scale.
-	if( (StateBit & MAT_SCALEUNI) && !(StateBit & MAT_SCALEANY) )
+	if( (ret.StateBit & MAT_SCALEUNI) && !(ret.StateBit & MAT_SCALEANY) )
 		ret.Scale33= Scale33*m.Scale33;
 	else
 		ret.Scale33=1;

@@ -132,6 +132,7 @@ _GUID=$BUILTIN(GUID)
 ; STLport
 
 _STLD::basic_string<*>=<_M_start,s>
+_STLD::basic_stringstream<*>=<_M_buf._M_str._M_start,s>
 _STLD::vector<*>=size=<size(),d> begin=<_M_start,x>
 _STLD::set<*>=size=<size(),d>
 _STLD::list<*>=size=<size(),d>

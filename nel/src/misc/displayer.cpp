@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.52 2003/02/10 16:36:49 coutelas Exp $
+ * $Id: displayer.cpp,v 1.53 2003/03/31 09:21:43 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -386,12 +386,16 @@ void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mes
 	if (_FilePointer > (FILE*)1)
 	{
 		// if the file is too big (>5mb), rename it and create another one (check only after 20 lines to speed up)
-		if (_LastLogSizeChecked++ > 20 && ftell (_FilePointer) > 5*1024*1024)
+		if (_LastLogSizeChecked++ > 20)
 		{
+		  int res = ftell (_FilePointer);
+		  if (res > 5*1024*1024)
+		    {
 			fclose (_FilePointer);
 			rename (_FileName.c_str(), CFile::findNewFile (_FileName).c_str());
 			_FilePointer = (FILE*) 1;
 			_LastLogSizeChecked = 0;
+		    }
 		}
 	}
 

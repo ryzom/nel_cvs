@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.20 2002/06/12 10:13:07 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.21 2002/06/12 16:49:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -230,7 +230,7 @@ void CWinDisplayer::updateLabels ()
 		CSynchronized<std::vector<CLabelEntry> >::CAccessor access (&_Labels);
 		for (uint i = 0; i < access.value().size(); i++)
 		{
-			if (!access.value()[i].Value.empty())
+			if (access.value()[i].NeedUpdate && !access.value()[i].Value.empty())
 			{
 				if (access.value()[i].Hwnd == NULL)
 				{
@@ -266,6 +266,7 @@ void CWinDisplayer::updateLabels ()
 				}
 
 				SendMessage ((HWND)access.value()[i].Hwnd, WM_SETTEXT, 0, (LONG) n.c_str());
+				access.value()[i].NeedUpdate = false;
 			}
 		}
 	}

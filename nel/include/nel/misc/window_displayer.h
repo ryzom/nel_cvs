@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.h,v 1.6 2002/06/12 10:13:03 lecroart Exp $
+ * $Id: window_displayer.h,v 1.7 2002/06/12 16:49:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,9 +79,10 @@ protected:
 
 	struct CLabelEntry
 	{
-		CLabelEntry (const std::string &value) : Hwnd(NULL), Value(value) { }
+		CLabelEntry (const std::string &value) : Hwnd(NULL), Value(value), NeedUpdate(true) { }
 		void		*Hwnd;
-		std::string	Value;
+		std::string	 Value;
+		bool		 NeedUpdate;
 	};
 
 	// buffer that contains the text that the DT will have to display

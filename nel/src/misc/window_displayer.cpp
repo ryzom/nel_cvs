@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.cpp,v 1.4 2002/05/27 16:48:42 lecroart Exp $
+ * $Id: window_displayer.cpp,v 1.5 2002/06/12 16:49:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,11 @@ void CWindowDisplayer::setLabel (uint label, const string &value)
 	{
 		CSynchronized<std::vector<CLabelEntry> >::CAccessor access (&_Labels);
 		nlassert (label < access.value().size());
-		access.value()[label].Value = value;
+		if (access.value()[label].Value != value)
+		{
+			access.value()[label].Value = value;
+			access.value()[label].NeedUpdate = true;
+		}
 	}
 }
 

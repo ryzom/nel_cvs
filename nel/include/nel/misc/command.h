@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.16 2002/06/06 13:12:50 lecroart Exp $
+ * $Id: command.h,v 1.17 2002/11/29 10:07:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ namespace NLMISC {
  * \date 2001
  */
 #define NLMISC_COMMAND(__name,__help,__args) \
-struct __name##Class: public ICommand \
+struct __name##Class: public NLMISC::ICommand \
 { \
 	__name##Class() : NLMISC::ICommand(#__name,__help,__args) { } \
 	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log); \
@@ -99,7 +99,7 @@ bool __name##Class::execute(const std::vector<std::string> &args, NLMISC::CLog &
  * \date 2001
  */
 #define NLMISC_VARIABLE(__type,__var,__help) \
-CVariable<__type> __var##Instance(#__var, __help " (" #__type ")", &__var)
+NLMISC::CVariable<__type> __var##Instance(#__var, __help " (" #__type ")", &__var)
 
 
 

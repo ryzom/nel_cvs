@@ -1,7 +1,7 @@
 /** \file command/main.cpp
  * example of the NeL command system (misc/command.h)
  *
- * $Id: main.cpp,v 1.1 2002/04/17 08:08:31 lecroart Exp $
+ * $Id: main.cpp,v 1.2 2002/11/29 10:08:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,10 +33,6 @@
 
 // include the command system
 #include "nel/misc/command.h"
-
-
-using namespace std;
-using namespace NLMISC;
 
 
 //
@@ -90,7 +86,7 @@ uint32 MyVar6;
 sint32 MyVar7;
 uint64 MyVar8;
 sint64 MyVar9;
-string MyVar10;
+std::string MyVar10;
 char MyVar12;
 ucchar MyVar13;
 float MyVar14;
@@ -117,7 +113,7 @@ NLMISC_VARIABLE(uint32, MyVar6, "a dummy variable");
 NLMISC_VARIABLE(sint32, MyVar7, "a dummy variable");
 NLMISC_VARIABLE(uint64, MyVar8, "a dummy variable");
 NLMISC_VARIABLE(sint64, MyVar9, "a dummy variable");
-NLMISC_VARIABLE(string, MyVar10, "a dummy variable");
+NLMISC_VARIABLE(std::string, MyVar10, "a dummy variable");
 NLMISC_VARIABLE(char, MyVar12, "a dummy variable");
 NLMISC_VARIABLE(ucchar, MyVar13, "a dummy variable");
 NLMISC_VARIABLE(float, MyVar14, "a dummy variable");
@@ -166,36 +162,36 @@ NLMISC_DYNVARIABLE(int,PrivVar,"dummy variable")
 //
 
 // look at the log sample
-CLog log;
+NLMISC::CLog mylog;
 // look at the log sample
-CStdDisplayer sd;
+NLMISC::CStdDisplayer mysd;
 
 int main (int argc, char **argv)
 {
 	// look at the debug sample
-	createDebug();
+	NLMISC::createDebug();
 
 	// look at the log sample
-	log.addDisplayer(&sd);
+	mylog.addDisplayer(&mysd);
 
 	printf("Type a command, 'help' or 'quit'\n");
 
 	while (true)
 	{
 		// display prompt
-		cout << "> ";
+		std::cout << "> ";
 		fflush(stdout);
 
 		// get command line
-		string commandLine;
-		getline(cin,commandLine, '\n');
+		std::string commandLine;
+		std::getline(std::cin, commandLine, '\n');
 
 		if (commandLine == "quit")
 			break;
 
 		// execute the command line. it will try to find the command or the
 		// variable and call the associated code
-		ICommand::execute(commandLine, log);
+		NLMISC::ICommand::execute(commandLine, mylog);
 	}
 	
 	return EXIT_SUCCESS;

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.12 2002/01/28 14:53:45 vizerie Exp $
+ * $Id: zone_lighter.cpp,v 1.13 2002/01/29 15:37:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,6 +147,11 @@ int main(int argc, char* argv[])
 
 				// Add it to the current path
 				CPath::addSearchPath (maps_path);
+
+				// Get the water path
+				string water_map_path = parameter.getVar ("water_map_path").asString();
+				CPath::addSearchPath(water_map_path);
+
 
 				// A landscape allocated with new: it is not delete because destruction take 3 secondes more!
 				CLandscape *landscape=new CLandscape;

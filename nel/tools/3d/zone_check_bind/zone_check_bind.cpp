@@ -1,7 +1,7 @@
 /** \file zone_check_bind.cpp
  * This tool check that each patch of a zone to see wether they are bound correctly.
  *
- * $Id: zone_check_bind.cpp,v 1.3 2002/04/02 17:05:36 vizerie Exp $
+ * $Id: zone_check_bind.cpp,v 1.4 2002/04/04 08:59:57 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -438,6 +438,14 @@ int main(int argc, char* argv[])
 	}
 
 	std::string zonePaths(argv[1]);
+
+
+	if (zonePaths.empty())
+	{
+		nlinfo("Need a zone path");
+		return -1;
+	}
+
 	CPath::addSearchPath(zonePaths);
 	
 	// Contains all the zone in the directory

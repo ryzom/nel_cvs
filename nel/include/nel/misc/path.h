@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.31 2002/12/06 12:41:25 corvazier Exp $
+ * $Id: path.h,v 1.32 2002/12/16 16:40:10 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -319,11 +319,22 @@ struct CFile
 	  */
 	static bool moveFile(const char *dest, const char *src);
 
-	/** create a directory
+	/** Create a directory
 	  *	\return true if succes
 	  */
 	static bool	createDirectory(const std::string &dirname);
 
+	/** Try to set the file access to read/write if not already set.
+	 * return true if the file doesn't exists or if the file already have RW access.
+	 * Work actually only on Windows and returns always true on other platforms.
+	 * \return true if RW access is granted
+	 */
+	static bool	setRWAccess(const std::string &filename);
+
+	/** Delete a file if possible (change the write access if possible)
+	* \return true if the delete occurs.
+	*/
+	static bool deleteFile(const std::string &filename);
 };
 
 

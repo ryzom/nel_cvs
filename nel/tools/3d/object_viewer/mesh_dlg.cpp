@@ -1,6 +1,6 @@
 /** \file mesh_dlg.cpp
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.cpp,v 1.1 2001/06/25 13:27:25 vizerie Exp $
+ * $Id: mesh_dlg.cpp,v 1.2 2001/06/27 16:53:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,7 @@ END_MESSAGE_MAP()
 
 void CMeshDlg::OnBrowseShape() 
 {
+	
 	CFileDialog fd(TRUE, ".shape", "*.shape", 0, NULL, this) ;
 	if (fd.DoModal() == IDOK)
 	{
@@ -100,8 +101,6 @@ void CMeshDlg::OnBrowseShape()
 		{
 			MessageBox(e.what(), "shape loading error") ;
 		}		
-
-
 	}
-	
+	UpdateData(false) ;
 }

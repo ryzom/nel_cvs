@@ -1,0 +1,58 @@
+
+/**
+\page 3d_overview NeL 3d pipeline overview
+
+\author Cyril Corvazier
+
+
+The rendering process is composed of several traversals. Each tranversals make actions on there models using an observer.
+The rendering process is done following this pipeline:
+
+	- Traversal transform's animation
+	- Traversal transform
+	- Traversal load balancing stats
+	- Traversal view determination (culling)
+	- Traversal detail animation
+	- Traversal lighting
+	- Traversal render
+
+\subsection trans_anim Traversal transform's animation
+
+This traversal must eval the transform's animated value to get the final parent relative world matrix of each traversal.
+We must do this pass to know where each model is.
+
+\subsection trans Traversal transform
+
+This traversal compose each transform's matrix with the parent one to get the final world matrix.
+This pass is used to perform hierarchical animation of models.
+
+\subsection balance Traversal load balancing
+
+This traversal eval for each model traversed how many resources it needs to be rendered.
+It count the number of primitives it needs to be rendered and amount of vram used by its textures.
+
+\subsection cull Traversal view determination
+
+This traversal clip model that are not visible. It uses a cluster/portal for interior and a frustrum clipping for exterior.
+
+\subsection detail_anim Traversal detail animation
+
+This traversal compute the animation for all values not animated in the first pass (transform animation).
+Animation is made in 2 passes because the first must be done to get models's world bounding box used in
+view determination. The second pass is made only on visible objects.
+
+\subsection lighting Traversal lighting
+
+This traversal compute dynamic lighting of each visible model with not cliped lights.
+
+\subsection render Traversal render
+
+Render is the most complex traversal. 
+
+	- If model uses skinning, it will perform the computation of bones world matrix. Matrix have been set by second animation pass but they need to be composed with there parent.
+	- If model have an inverse kinematics solver attached, eval it now.
+	- If model supports resources load balancing, it will determine the final count of primitives used to render the object. For that it will balance the count of resources attribued to its group on the distance.
+	- Build the primitives to send to the driver.
+	- Render the primitives
+
+*/

@@ -11,6 +11,7 @@
 #include "mshtml.h"
 
 #include "nel/misc/config_file.h"
+#include "nel/misc/path.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -22,6 +23,10 @@ CConfigFile ConfigFile;
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+const char *PleaseWaitFilename = "pleasewait.html";
+string PleaseWaitFullPath;
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CNel_launcherDlg dialog
@@ -65,6 +70,9 @@ BOOL CNel_launcherDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	//CWebBrowser2 m_browser - member variable  
+
+	PleaseWaitFullPath = CPath::getFullPath (PleaseWaitFilename, false);
+	m_explore.Navigate(PleaseWaitFullPath.c_str(), NULL, NULL, NULL, NULL);
 
 	ConfigFile.load ("nel_launcher.cfg");
 
@@ -118,7 +126,7 @@ END_EVENTSINK_MAP()
 
 void CNel_launcherDlg::OnBeforeNavigate2Explorer1(LPDISPATCH pDisp, VARIANT FAR* URL, VARIANT FAR* Flags, VARIANT FAR* TargetFrameName, VARIANT FAR* PostData, VARIANT FAR* Headers, BOOL FAR* Cancel) 
 {
-	CString cstr = URL->bstrVal;
+/*	CString cstr = URL->bstrVal;
 	string str = string((const char*)cstr);
 
 	if (str.find("?nel_quit=1") != string::npos)	
@@ -202,7 +210,7 @@ void CNel_launcherDlg::OnBeforeNavigate2Explorer1(LPDISPATCH pDisp, VARIANT FAR*
 	_chdir (path.c_str());
 	_execvp (exe.c_str(), args);
 	exit(0);
-	
+*/	
 /*	string cmd;
 
 	cmd=exe+" "+rawargs;
@@ -242,18 +250,112 @@ void CNel_launcherDlg::OnDocumentCompleteExplorer1(LPDISPATCH pDisp, VARIANT FAR
 		hr = lpDispatch->QueryInterface(IID_IHTMLDocument2, (LPVOID*) &pHTMLDocument2);
 		lpDispatch->Release();
 
+		if (FAILED(hr))
+			return;
+
+		if (pHTMLDocument2 == NULL)
+			return;
+
 		IHTMLElement* pBody;
 		hr = pHTMLDocument2->get_body(&pBody);
 
 		if (FAILED(hr))
 			return;
 
+		if (pBody == NULL)
+			return;
+
 		BSTR bstr;                
 		pBody->get_innerHTML(&bstr);
 		CString csourceCode( bstr );
-		string sourceCode( (LPCSTR)csourceCode );
-		
+		string str( (LPCSTR)csourceCode );
+
 		SysFreeString(bstr);
 		pBody->Release();
+
+
+		// now I have the web page, look if there's something interesting in it.
+
+		// if something start with <!--nel it s cool
+		if (str.find ("<!--nel") == string::npos) return;
+
+		string token ("nel_exe=");
+		int spos = str.find (token);
+		if (spos == string::npos) return;
+
+		int spos2 = str.find (" ", spos+token.size ());
+		if (spos == string::npos) return;
+
+		string path;
+		string exe = str.substr (spos+token.size (), spos2-spos-token.size ());
+
+		CConfigFile::CVar *var = ConfigFile.getVarPtr (exe);
+		if (var == NULL)
+		{
+			char str[1024];
+			smprintf (str, 1024, "Don't know the executable filename for the application '%s'", exe.c_str ());
+			MessageBox (str, "nel_launcher error");
+			exit(0);
+		}
+		else
+		{
+			exe = var->asString (0);
+			path = var->asString (1);
+		}
+
+		token = "nel_args=";
+		spos = str.find (token);
+		if (spos == string::npos) return;
+
+		spos2 = str.find ("-->", spos+token.size ()+1);
+		if (spos == string::npos) return;
+
+		string rawargs = str.substr (spos+token.size (), spos2-spos-token.size ());
+
+		// convert the command line in an array of string for the _execvp() function
+
+		vector<string> vargs;
+		const char *args[50];
+		int argspos = 0;
+
+		uint pos1 = 0, pos2 = 0;
+		while (true)
+		{
+			pos2 = rawargs.find(" ", pos1);
+			if (pos2==string::npos)
+			{
+				if(pos1!=rawargs.size())
+				{
+					string res = rawargs.substr (pos1);
+					vargs.push_back (res);
+				}
+				break;
+			}
+			if(pos1 != pos2)
+			{
+				string res = rawargs.substr (pos1, pos2-pos1);
+				vargs.push_back (res);
+			}
+			pos1 = pos2+1;
+		}
+
+		int i;
+		int size;
+		if(vargs.size()>47) size = 47;
+		else size = vargs.size();
+
+		args[0] = exe.c_str ();
+		for(i = 0; i < size; i++)
+		{
+			args[i+1] = vargs[i].c_str ();
+		}
+		args[i+1] = NULL;
+
+
+		// execute, should better use CreateProcess()
+
+		_chdir (path.c_str());
+		_execvp (exe.c_str(), args);
+		exit(0);
 	}
 }

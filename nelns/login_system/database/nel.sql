@@ -1,11 +1,9 @@
+# MySQL-Front Dump 2.4
 #
-# Database structure
-#
+# Host: localhost   Database: nel
+#--------------------------------------------------------
+# Server version 3.23.34
 
-
-CREATE DATABASE nel;
-
-USE nel;
 
 #
 # Table structure for table 'shard'
@@ -13,13 +11,13 @@ USE nel;
 
 CREATE TABLE `shard` (
   `ShardId` int(10) NOT NULL auto_increment,
-  `WsAddr` tinytext,
+  `WsAddr` varchar(64) default NULL,
   `NbPlayers` int(10) unsigned default '0',
-  `ShardName` tinytext,
+  `ShardName` varchar(64) default NULL,
   `Online` tinyint(1) unsigned default '0',
-  `ProgramName` tinytext NOT NULL,
+  `ProgramName` varchar(64) NOT NULL default '',
   PRIMARY KEY  (`ShardId`)
-) TYPE=MyISAM COMMENT='contains all shard informations for login system';
+) TYPE=MyISAM COMMENT='contains all shards informations for login system';
 
 
 
@@ -29,10 +27,10 @@ CREATE TABLE `shard` (
 
 CREATE TABLE `user` (
   `UId` int(10) NOT NULL auto_increment,
-  `Login` tinytext NOT NULL,
+  `Login` varchar(64) NOT NULL default '',
   `Password` tinytext NOT NULL,
   `ShardId` int(10) NOT NULL default '-1',
   `State` enum('Offline','Online') NOT NULL default 'Offline',
   PRIMARY KEY  (`UId`)
-) TYPE=MyISAM COMMENT='contains all user informations for login system';
+) TYPE=MyISAM COMMENT='contains all users informations for login system';
 

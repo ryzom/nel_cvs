@@ -10,24 +10,10 @@
 /**	TODO:
 
   - find a way to remove the right-click-popup-window in the IE
-  - find a way to remove the reight scroll bar when it s not needed
-  - find a way to display a please wait loading page when getting from web
-
-  - display a please wait login at the startup before loading index.html of the other side
+  - find a way to remove the right scroll bar when it s not needed
   - if load page error, trap it and display an error, retry, quit...
 
   */
-
-
-
-
-
-
-
-
-
-
-
 
 
 

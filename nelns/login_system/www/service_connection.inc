@@ -127,13 +127,13 @@
 				$msgin->serialstring($cookie);
 				$msgin->serialstring($addr);
 
-				$res = 'http://launch.html?nel_exe='.$programname.'&nel_args='.$cookie.' '.$addr;
+				$res = '<!--nel nel_exe='.$programname.' nel_args='.$cookie.' '.$addr.'-->';
 				$ok = true;
 			}
 			else
 			{
 				// can't accept it, display the error
-				echo "Can't connect to the shard: $reason";
+				// echo "Can't connect to the shard: $reason";
 			}
 
 			//printf("receive response '$reason' '$cookie' '$addr'<br>");

@@ -91,7 +91,6 @@
 		}
 		else
 		{
-			echo "<h1>You have to identify</h1>";
 			return 0;
 		}
 	}
@@ -106,6 +105,9 @@
 				<title>login form</title>
 			</head>
 			<body>
+			<h1>Welcome to the NeL login system</h1>
+			<p>Please enter your login and your password. If the login is not already existing, it'll be automatically added to the database.</p>
+			<p>You have to enable cookies in your browser to use this application.</p>
 			<form method="post" action="<?php echo basename($PHP_SELF); ?>" name=loginform> 
 				<table frame=void rules=none WIDTH="300"> 
 					<tr>
@@ -120,11 +122,8 @@
 					<tr> 
 						<td align="left"> &nbsp; </td>
 						<td align="left"> <input type=submit value="login" > </td>
-					<tr> 
-						<td align="left"> <a href="http://quit.html?nel_quit=1">quit</a></td>
-						<td align="left"> &nbsp; </td>
 
-				</table> 
+				</table>
 			</form> 
 				<script type="text/javascript"> 
 				<!-- 
@@ -151,7 +150,7 @@
 		}
 		else
 		{
-			echo '<h1>Please, select a shard:<h1>';
+			echo '<h1>Please, select a shard:</h1>';
 			while($row = mysql_fetch_array($result))
 			{
 				echo "<li>";
@@ -200,24 +199,24 @@
 
 			if (connectToLS($programname, $shardid, $id, $res))
 			{
-				echo 'Access validated, click on the link below to launch the client<br>';
-				echo '<a href="'.$res.'">launch</a>';
+				echo '<h1>Access validated</h1>Please wait while launching the application...<br>';
+				echo $res;
 			}
 			else
 			{
-				echo "Access denied: $res";
+				echo "<h1>Access denied</h1>$res";
 			}
 		}
 		else
 		{
 			// user logged, display the available shard
 
-			echo "id: '$id' login: '$login' password: '$password'<br>";
+			// echo "id: '$id' login: '$login' password: '$password'<br>";
+			echo "hello $login, nice to meet you.";
 
 			displayAvailableShards ();
 
 			echo '<a href="'.basename($PHP_SELF).'?cmd=logout">logout</a><br>';
-			echo '<a href="http://quit.html?nel_quit=1">quit</a><br>';
 		}
 	}
 ?>

@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.35 2001/11/08 09:51:21 berenguier Exp $
+ * $Id: tile_bank.cpp,v 1.36 2001/11/23 13:15:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,8 @@
 
 #include "nel/misc/stream.h"
 #include "nel/misc/common.h"
+#include "nel/misc/path.h"
+#include "nel/misc/file.h"
 #include <string>
 
 using namespace NLMISC;
@@ -642,6 +644,20 @@ const CTileVegetableDesc	&CTileBank::getTileVegetableDesc(uint tileNumber) const
 
 
 // ***************************************************************************
+void CTileBank::loadTileVegetableDescs()
+{
+	// For all tileSets.
+	uint tileSet;
+	
+	for(tileSet=0; tileSet<_TileSetVector.size(); tileSet++)
+	{
+		// load their fileName
+		_TileSetVector[tileSet].loadTileVegetableDesc();
+	}
+}
+
+
+// ***************************************************************************
 void	CTileBank::initTileVegetableDescs(CVegetableManager *vegetableManager)
 {
 	// For all tileSets.
@@ -652,7 +668,6 @@ void	CTileBank::initTileVegetableDescs(CVegetableManager *vegetableManager)
 		CTileVegetableDesc	&tvd= _TileSetVector[tileSet].getTileVegetableDesc();
 		tvd.registerToManager(vegetableManager);
 	}
-
 }
 
 
@@ -834,7 +849,8 @@ void CTileSet::serial(IStream &f) throw(EStream)
 	// serial vegetable info.
 	if (streamver>=3)
 	{
-		f.serial(_TileVegetableDesc);
+		// serialisze only the FileName, not the descrpitor
+		f.serial(_TileVegetableDescFileName);
 	}
 
 	// New version
@@ -1434,6 +1450,11 @@ void CTileSet::cleanUnusedData ()
 
 
 // ***************************************************************************
+void CTileSet::setTileVegetableDescFileName (const std::string &fileName)
+{
+	_TileVegetableDescFileName= fileName;
+}
+// ***************************************************************************
 void CTileSet::setTileVegetableDesc (const CTileVegetableDesc	&tvd)
 {
 	_TileVegetableDesc= tvd;
@@ -1449,6 +1470,25 @@ CTileVegetableDesc			&CTileSet::getTileVegetableDesc()
 const CTileVegetableDesc	&CTileSet::getTileVegetableDesc() const
 {
 	return _TileVegetableDesc;
+}
+
+// ***************************************************************************
+void CTileSet::loadTileVegetableDesc()
+{
+	if(_TileVegetableDescFileName!="")
+	{
+		try
+		{
+			string	fname= CPath::lookup(_TileVegetableDescFileName);
+			CIFile	f(fname);
+			// load the TileVegetableDesc
+			f.serial(_TileVegetableDesc);
+		}
+		catch(Exception &e)
+		{
+			nlinfo("Error loading TileVegetableDesc: %s", e.what());
+		}
+	}
 }
 
 

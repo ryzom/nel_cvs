@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.4 2001/11/08 09:51:21 berenguier Exp $
+ * $Id: tile_bank.h,v 1.5 2001/11/23 13:15:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -312,7 +312,14 @@ public:
 	void setTileTransitionAlpha (TTransition transition, const std::string& name, CTileBank& bank, const CTileBorder& border, uint8 rotAlpha);
 	void setBorder (CTile::TBitmap type, const CTileBorder& border);
 	void setDisplacement (TDisplacement displacement, const std::string& fileName, CTileBank& bank);
+	// Set the fileName for TileVegetableDesc.
+	void setTileVegetableDescFileName (const std::string &fileName);
+	// For edition: change the tileVegetableDesc. NB: only the TileVegetableDescFileName is serialised.
 	void setTileVegetableDesc (const CTileVegetableDesc	&tvd);
+	/** try to load the vegetable tile desc associated with the fileName (nlinfo() if can't)
+	 *	lookup into CPath. no-op if string=="".
+	 */
+	void loadTileVegetableDesc();
 
 	// check
 	TError checkTile128 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante);
@@ -420,6 +427,7 @@ private:
 	uint32 _DisplacementBitmap[CTileSet::CountDisplace];
 	// the info for TileVegetable
 	CTileVegetableDesc		_TileVegetableDesc;
+	std::string				_TileVegetableDescFileName;
 
 	static const sint _Version;
 	static const char* _ErrorMessage[CTileSet::errorCount];
@@ -560,6 +568,9 @@ public:
 	// Remove a displacement map
 	void removeDisplacementMap (uint mapId);
 
+	/// \name Vegetable
+	// @{
+
 	/** 
 	  * Return the tilenoisemap pointer for this tile and subnoise tile
 	  */
@@ -571,9 +582,18 @@ public:
 	const CTileVegetableDesc	&getTileVegetableDesc(uint tileNumber) const;
 
 	/**
-	 *	register all CVegetable to the Manager.
+	 *	you should call this method, after serialising the TileBank, and before CLandscape::initTileBanks()
+	 *	You must call CLandscape::initTileBanks() after calling this method
+	 *	for each tileSet call CTileSet::loadTileVegetableDesc()
+	 */
+	void loadTileVegetableDescs();
+
+	/**
+	 *	register all CVegetable to the Manager. called by CLandscape::initTileBanks()
 	 */
 	void initTileVegetableDescs(CVegetableManager *vegetableManager);
+
+	// @}
 
 
 	void makeAllPathRelative ();

@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.12 2001/11/12 14:00:07 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.13 2001/11/23 13:15:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,9 @@ void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::s
 	_Landscape->Landscape.TileBank.makeAllExtensionDDS();
 	// No absolute path
 	_Landscape->Landscape.TileBank.setAbsPath ("");
+
+	// After loading the TileBank, and before initTileBanks(), must load the vegetables descritpor
+	_Landscape->Landscape.TileBank.loadTileVegetableDescs();
 
 	CIFile farbankFile(CPath::lookup(farBankFile));
 	_Landscape->Landscape.TileFarBank.serial(farbankFile);

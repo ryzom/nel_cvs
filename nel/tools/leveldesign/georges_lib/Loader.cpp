@@ -60,12 +60,24 @@ CMoldElt* CLoader::LoadMold( const CStringEx _sxfilename, const CStringEx _sxdat
 
 void CLoader::SetWorkDirectory( const CStringEx _sxworkdirectory )
 {
-	sxworkdirectory = _sxworkdirectory;
+	if( sxworkdirectory != _sxworkdirectory )
+	{
+		sxworkdirectory = _sxworkdirectory;
+		NLMISC::CPath::removeAllAlternativeSearchPath();
+		NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
+		NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
+	}
 }
 
 void CLoader::SetRootDirectory( const CStringEx _sxrootdirectory )
 {
-	sxrootdirectory = _sxrootdirectory;
+	if( sxrootdirectory != _sxrootdirectory )
+	{
+		sxrootdirectory = _sxrootdirectory;
+		NLMISC::CPath::removeAllAlternativeSearchPath();
+		NLMISC::CPath::addSearchPath( sxworkdirectory, true, true );
+		NLMISC::CPath::addSearchPath( sxrootdirectory, true, true );
+	}
 }
 
 CStringEx CLoader::GetWorkDirectory() const

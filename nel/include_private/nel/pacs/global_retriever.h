@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.6 2001/06/01 09:56:55 berenguier Exp $
+ * $Id: global_retriever.h,v 1.7 2001/06/05 13:50:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -313,6 +313,11 @@ public:
 	 */
 	const TCollisionSurfaceDescVector	&testBBoxRot(const CGlobalPosition &start, 
 		const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const;
+
+	/** return the mean height of the surface under pos..
+	 *
+	 */
+	float				getMeanHeight(const CGlobalPosition &pos);
 	// @}
 
 

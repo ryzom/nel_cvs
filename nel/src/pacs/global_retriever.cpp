@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.18 2001/06/01 09:56:55 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.19 2001/06/05 13:50:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1260,6 +1260,31 @@ void	NLPACS::CGlobalRetriever::testRotCollisionWithCollisionChains(CCollisionSur
 			break;
 	}
 
+}
+
+
+// ***************************************************************************
+float			NLPACS::CGlobalRetriever::getMeanHeight(const CGlobalPosition &pos)
+{
+	// get instance/localretriever.
+	const CRetrieverInstance	&instance = getInstance(pos.InstanceId);
+	const CLocalRetriever		&retriever= _RetrieverBank->getRetriever(instance.getRetrieverId());
+
+	// find quad leaf.
+	const CQuadLeaf	*leaf = retriever.getSurfaces()[pos.LocalPosition.Surface].getQuadTree().getLeaf(pos.LocalPosition.Estimation);
+
+	// if there is no acceptable leaf, just give up
+	if (leaf == NULL)
+	{
+		nlinfo("wazzaaaaaa!");
+		return pos.LocalPosition.Estimation.z;
+	}
+	else
+	{
+		// else return mean height.
+		float	meanHeight = (leaf->getMinHeight()+leaf->getMaxHeight())*0.5f;
+		return meanHeight;
+	}
 }
 
 

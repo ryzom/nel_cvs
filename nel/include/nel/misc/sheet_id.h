@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.3 2002/06/04 08:41:06 besson Exp $
+ * $Id: sheet_id.h,v 1.4 2002/06/07 09:04:23 puzin Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -47,6 +47,8 @@ class CSheetId
 {
 
 public :
+	/// Unknow CSheetId is similar as an NULL pointer.
+	static const CSheetId Unknown;
 
 	/**
 	 *	Constructor

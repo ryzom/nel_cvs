@@ -48,6 +48,7 @@ namespace NLAIAGENT
 		_OnActivateIndex = a._OnActivateIndex;
 		_OnUnActivateIndex = a._OnUnActivateIndex;
 		_TopLevel = a._TopLevel;
+		_IsPaused = false;
 	}
 
 	CActorScript::CActorScript(IAgentManager *manager, 
@@ -60,6 +61,7 @@ namespace NLAIAGENT
 		_OnActivateIndex = -1;
 		_OnUnActivateIndex = -1;
 		_TopLevel = NULL;
+		_IsPaused = false;
 	}	
 
 	CActorScript::CActorScript(IAgentManager *manager, bool stay_alive) : CAgentScript( manager )
@@ -68,6 +70,7 @@ namespace NLAIAGENT
 		_OnActivateIndex = -1;
 		_OnUnActivateIndex = -1;
 		_TopLevel = NULL;
+		_IsPaused = false;
 	}
 
 	CActorScript::~CActorScript()
@@ -200,7 +203,7 @@ namespace NLAIAGENT
 					_OnRestartIndex = r.top().Index;
 					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
 					context->Self = this;
-					runMethodeMember( _OnPauseIndex ,context);
+					runMethodeMember( _OnRestartIndex ,context);
 					_OnRestartIndex = -1;
 				}
 			}

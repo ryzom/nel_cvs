@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Position Service.
  *
- * $Id: main.cpp,v 1.11 2002/03/25 10:16:32 lecroart Exp $
+ * $Id: main.cpp,v 1.12 2002/10/10 17:51:46 lecroart Exp $
  */
 
 /*
@@ -43,9 +43,8 @@
 
 #include <nel/misc/time_nl.h>
 
-// We're using the NeL Service framework, and layer 4
+// We're using the NeL Service framework, and layer 5
 #include <nel/net/service.h>
-#include <nel/net/net_manager.h>
 
 #include <map>
 #include <list>
@@ -98,14 +97,8 @@ list<_snowball> snoList;
  * Function:   cbAddEntity
  *             Callback function called when the Position Service receive a
  *             "ADD_ENTITY" message
- * Arguments:
- *             - msgin:  the incomming message
- *             - from:   the "sockid" of the sender (usually useless for a
- *                       CCallbackClient)
- *             - server: the CCallbackNetBase object (which really is a
- *                       CCallbackServer object, for a server)
  ****************************************************************************/
-void cbAddEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
+void cbAddEntity (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	bool    all;
 	uint32  id;
@@ -122,7 +115,7 @@ void cbAddEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 
 	// Prepare to send back the message.
 	all = true;
-	CMessage msgout( CNetManager::getSIDA( "POS" ), "ADD_ENTITY" );
+	CMessage msgout( "ADD_ENTITY" );
 	msgout.serial( all );
 	msgout.serial( id );
 	msgout.serial( id );
@@ -134,7 +127,7 @@ void cbAddEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	 * Send the message to all the connected Frontend. If we decide to send
 	 * it back to the sender, that last argument should be 'from' inteed of '0'
 	 */
-	CNetManager::send( "POS", msgout, 0 );
+	CUnifiedNetwork::getInstance ()->send( "FS", msgout );
 
 	nldebug( "SB: Send back ADD_ENTITY line." );
 
@@ -143,7 +136,7 @@ void cbAddEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	_pmap::iterator ItPlayer;
 	for (ItPlayer = playerList.begin(); ItPlayer != playerList.end(); ++ItPlayer)
 	{
-		CMessage msgout( CNetManager::getSIDA( "POS" ), "ADD_ENTITY" );
+		CMessage msgout( "ADD_ENTITY" );
 		msgout.serial( all );
 		msgout.serial( id );
 		msgout.serial( ((*ItPlayer).second).id );
@@ -151,14 +144,13 @@ void cbAddEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 		msgout.serial( ((*ItPlayer).second).race );
 		msgout.serial( ((*ItPlayer).second).position );
 
-		CNetManager::send( "POS", msgout, from );
+		CUnifiedNetwork::getInstance ()->send( sid, msgout);
 	}
 
 	nldebug( "SB: Send ADD_ENTITY line about all already connected clients to the new one." );
 
 	// ADD the current added entity in the player list.
-	playerList.insert( _pmap::value_type( id,
-										  _player( id, name, race, startPoint ) ));
+	playerList.insert( make_pair( id, _player( id, name, race, startPoint ) ));
 }
 
 
@@ -166,14 +158,8 @@ void cbAddEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
  * Function:   cbPosition
  *             Callback function called when the Position Service receive a
  *             "ENTITY_POS" message
- * Arguments:
- *             - msgin:  the incomming message
- *             - from:   the "sockid" of the sender (usually useless for a
- *                       CCallbackClient)
- *             - server: the CCallbackNetBase object (which really is a
- *                       CCallbackServer object, for a server)
  ****************************************************************************/
-void cbPosition ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
+void cbPosition (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	uint32  id;
 	CVector pos;
@@ -201,17 +187,16 @@ void cbPosition ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	}
 
 	// Prepare to send back the message.
-	CMessage msgout( CNetManager::getSIDA( "POS" ), "ENTITY_POS" );
+	CMessage msgout( "ENTITY_POS" );
 	msgout.serial( id );
 	msgout.serial( pos );
 	msgout.serial( angle );
 	msgout.serial( state );
 
 	/*
-	 * Send the message to all the connected Frontend. If we decide to send
-	 * it back to the sender, that last argument should be 'from' inteed of '0'
+	 * Send the message to all the connected Frontend.
 	 */
-	CNetManager::send( "POS", msgout, 0 );
+	CUnifiedNetwork::getInstance ()->send( "FS", msgout );
 
 	//nldebug( "SB: Send back ENTITY_POS line." );
 }
@@ -221,14 +206,8 @@ void cbPosition ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
  * Function:   cbRemoveEntity
  *             Callback function called when the Position Service receive a
  *             "REMOVE_ENTITY" message
- * Arguments:
- *             - msgin:  the incomming message
- *             - from:   the "sockid" of the sender (usually useless for a
- *                       CCallbackClient)
- *             - server: the CCallbackNetBase object (which really is a
- *                       CCallbackServer object, for a server)
  ****************************************************************************/
-void cbRemoveEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
+void cbRemoveEntity (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	uint32 id;
 
@@ -237,14 +216,13 @@ void cbRemoveEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	nldebug( "SB: Received REMOVE_ENTITY line." );
 
 	// Prepare to send back the message.
-	CMessage msgout( CNetManager::getSIDA( "POS" ), "REMOVE_ENTITY" );
+	CMessage msgout( "REMOVE_ENTITY" );
 	msgout.serial( id );
 
 	/*
-	 * Send the message to all the connected Frontend. If we decide to send
-	 * it back to the sender, that last argument should be 'from' inteed of '0'
+	 * Send the message to all the connected Frontend.
 	 */
-	CNetManager::send( "POS", msgout, 0 );
+	CUnifiedNetwork::getInstance ()->send( "FS", msgout );
 
 	// Remove player form the player list.
 	playerList.erase( id );	
@@ -258,14 +236,8 @@ void cbRemoveEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
  * Function:   cbSnowball
  *             Callback function called when the Position Service receive a
  *             "SNOWBALL" message
- * Arguments:
- *             - msgin:  the incomming message
- *             - from:   the "sockid" of the sender (usually useless for a
- *                       CCallbackClient)
- *             - server: the CCallbackNetBase object (which really is a
- *                       CCallbackServer object, for a server)
  ****************************************************************************/
-void cbSnowball ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
+void cbSnowball (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	static uint32 snowballId = START_SNOW_ID;
 
@@ -290,7 +262,7 @@ void cbSnowball ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	snoList.push_front( snowball );
 
 	// Prepare to send back the message.
-	CMessage msgout( CNetManager::getSIDA( "POS" ), "SNOWBALL" );
+	CMessage msgout( "SNOWBALL" );
 	msgout.serial( snowballId );
 	msgout.serial( playerId );
 	msgout.serial( start );
@@ -301,10 +273,9 @@ void cbSnowball ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	snowballId++;
 
 	/*
-	 * Send the message to all the connected Frontend. If we decide to send
-	 * it back to the sender, that last argument should be 'from' inteed of '0'
+	 * Send the message to all the connected Frontend.
 	 */
-	CNetManager::send( "POS", msgout, 0 );
+	CUnifiedNetwork::getInstance ()->send( "FS", msgout );
 
 	nldebug( "SB: Send back SNOWBALL line." );
 }
@@ -315,7 +286,7 @@ void cbSnowball ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
  *
  * It define the functions to call when receiving a specific message
  ****************************************************************************/
-TCallbackItem CallbackArray[] =
+TUnifiedCallbackItem CallbackArray[] =
 {
 	{ "ADD_ENTITY",    cbAddEntity    },
 	{ "ENTITY_POS",    cbPosition     },
@@ -336,13 +307,13 @@ TCallbackItem CallbackArray[] =
  ****************************************************************************/
 void SendHITMsg ( uint32 snowball, uint32 victim, bool direct )
 {
-	CMessage msgout( CNetManager::getSIDA( "POS" ), "HIT" );
+	CMessage msgout( "HIT" );
 
 	msgout.serial( snowball );
 	msgout.serial( victim );
 	msgout.serial( direct );
 
-	CNetManager::send( "POS", msgout, 0 );
+	CUnifiedNetwork::getInstance ()->send( "FS", msgout );
 }
 
 
@@ -352,13 +323,6 @@ void SendHITMsg ( uint32 snowball, uint32 victim, bool direct )
 class CPositionService : public IService
 {
 public:
-
-	// Initialisation
-	void init()
-	{
-		DebugLog->addNegativeFilter ("NETL");
-		DebugLog->addNegativeFilter ("SB:");
-	}
 
 	// Update fonction, called at every frames
 	bool update()
@@ -460,13 +424,7 @@ public:
  *    - and callback actions set to "CallbackArray"
  *
  ****************************************************************************/
-NLNET_OLD_SERVICE_MAIN( CPositionService,
-					"POS",
-					"position_service",
-					0,
-					CallbackArray,
-					SNOWBALLS_CONFIG,
-					SNOWBALLS_LOGS )
+NLNET_SERVICE_MAIN( CPositionService, "POS", "position_service", 0, CallbackArray, SNOWBALLS_CONFIG, SNOWBALLS_LOGS )
 
 
 /* end of file */

@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Frontend Service.
  *
- * $Id: main.cpp,v 1.14 2002/09/23 17:23:29 lecroart Exp $
+ * $Id: main.cpp,v 1.15 2002/10/10 17:51:46 lecroart Exp $
  */
 
 /*
@@ -41,7 +41,7 @@
 
 #include <nel/misc/vector.h>
 
-// We're using the NeL Service framework and layer 4.
+// We're using the NeL Service framework and layer 5
 #include <nel/net/service.h>
 #include <nel/net/login_server.h>
 
@@ -52,6 +52,7 @@ using namespace NLMISC;
 using namespace NLNET;
 using namespace std;
 
+CCallbackServer *Clients = 0;
 
 //TSockId clientfrom;
 
@@ -60,14 +61,14 @@ using namespace std;
  * to a Connection
  */
 
-struct _player
+struct CPlayer
 {
-	_player(uint32 Id, TSockId Con) : id(Id), con(Con) { }
+	CPlayer(uint32 Id, TSockId Con) : id(Id), con(Con) { }
 	uint32   id;
 	TSockId  con;
 };
 
-typedef map<uint32, _player> _pmap;
+typedef map<uint32, CPlayer> _pmap;
 
 _pmap localPlayers;
 
@@ -82,21 +83,19 @@ void cbChatClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
 	string message;
 
 	// Input from the client is stored.
-	msgin.serial( message );
+	msgin.serial (message);
 
 	// Prepare the message to send to the CHAT service
-	CMessage msgout( CNetManager::getSIDA( "CHAT" ), "CHAT" );
-	msgout.serial( message );
+	CMessage msgout ("CHAT");
+	msgout.serial (message);
 
 	/*
 	 * The incomming message from the client is sent to the CHAT service
 	 * under the "CHAT" identification.
 	 */
-	CNetManager::send( "CHAT", msgout );
+	CUnifiedNetwork::getInstance ()->send( "CHAT", msgout );
 
-	nldebug( "SB: Received CHAT message \"%s\" from client \"%s\"",
-			message.c_str(),
-			clientcb.hostAddress(from).asString().c_str() );
+	nldebug("SB: Received CHAT message \"%s\" from client \"%s\"", message.c_str(), clientcb.hostAddress(from).asString().c_str());
 }
 
 
@@ -105,19 +104,19 @@ void cbChatClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
  *
  * Receive chat messages from the Chat Service to send it to all the clients.
  ****************************************************************************/
-void cbChatService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
+void cbChatService (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	string  message;
 
 	// Input: process the reply of the chat service
-	msgin.serial( message );
+	msgin.serial (message);
 
 	// Output: send the reply to the client
-	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "CHAT" );
-	msgout.serial( message );
+	CMessage msgout ("CHAT");
+	msgout.serial (message);
 
 	// Send the message to all connected clients
-	CNetManager::send( "CLIENT", msgout, 0 );
+	Clients->send (msgout, InvalidSockId);
 
 	nldebug( "SB: Sent chat message \"%s\" to all clients", message.c_str());
 }
@@ -142,7 +141,7 @@ void cbPosClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
 	msgin.serial( state );
 
 	// Prepare the message to send to the Position service
-	CMessage msgout( CNetManager::getSIDA( "POS" ), "ENTITY_POS" );
+	CMessage msgout ("ENTITY_POS");
 	msgout.serial( id );
 	msgout.serial( pos );
 	msgout.serial( angle );
@@ -152,7 +151,7 @@ void cbPosClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
 	 * The incomming message from the client is sent to the Position service
 	 * under the "POS" identification.
 	 */
-	CNetManager::send( "POS", msgout );
+	CUnifiedNetwork::getInstance ()->send( "POS", msgout );
 
 	//nldebug( "SB: Received ENTITY_POS from the client");
 }
@@ -164,7 +163,7 @@ void cbPosClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
  * Receive position messages from the Position Service to send it to all the
  * clients.
  ****************************************************************************/
-void cbPosService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
+void cbPosService (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	uint32  id;
 	CVector pos;
@@ -178,14 +177,14 @@ void cbPosService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	msgin.serial( state );
 
 	// Output: send the reply to the client
-	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "ENTITY_POS" );
+	CMessage msgout( "ENTITY_POS" );
 	msgout.serial( id );
 	msgout.serial( pos );
 	msgout.serial( angle );
 	msgout.serial( state );
 
 	// Send the message to all connected clients
-	CNetManager::send( "CLIENT", msgout, 0 );
+	Clients->send(msgout, InvalidSockId);
 
 	//nldebug( "SB: Sent ENTITY_POS message to all the connected clients");
 }
@@ -211,7 +210,7 @@ void cbAddClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
 	msgin.serial( start );
 
 	// Prepare the message to send to the Position service
-	CMessage msgout( CNetManager::getSIDA( "POS" ), "ADD_ENTITY" );
+	CMessage msgout( "ADD_ENTITY" );
 	msgout.serial( id );
 	msgout.serial( name );
 	msgout.serial( race );
@@ -221,7 +220,7 @@ void cbAddClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
 	 * The incomming message from the client is sent to the Position service
 	 * under the "POS" identification.
 	 */
-	CNetManager::send( "POS", msgout );
+	CUnifiedNetwork::getInstance ()->send( "POS", msgout );
 
 	nldebug( "SB: Received ADD_ENTITY from the client");
 }
@@ -233,7 +232,7 @@ void cbAddClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
  * Receive an ADD_ENTITY messages from the Position Service to send it to all
  * the clients.
  ****************************************************************************/
-void cbAddService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
+void cbAddService (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	bool    all;
 	uint32  to;
@@ -251,7 +250,7 @@ void cbAddService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	msgin.serial( start );
 
 	// Output: prepare the reply to the clients
-	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "ADD_ENTITY" );
+	CMessage msgout( "ADD_ENTITY" );
 	msgout.serial( id );
 	msgout.serial( name );
 	msgout.serial( race );
@@ -260,7 +259,7 @@ void cbAddService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	if ( all == true )
 	{
 		// Send the message to all connected clients
-		CNetManager::send( "CLIENT", msgout, 0 );
+		Clients->send(msgout, InvalidSockId );
 
 		nldebug( "SB: Sent ADD_ENTITY message to all the connected clients");
 	}
@@ -276,7 +275,7 @@ void cbAddService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 		else
 		{
 			TSockId conToClient = ((*ItPlayer).second).con;
-			CNetManager::send( "CLIENT", msgout, conToClient );
+			Clients->send( msgout, conToClient );
 
 			nldebug( "SB: Sent ADD_ENTITY about all the connected clients to the new client.");
 		}
@@ -299,14 +298,14 @@ void cbRemoveClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb 
 	msgin.serial( id );
 
 	// Prepare the message to send to the Position service
-	CMessage msgout( CNetManager::getSIDA( "POS" ), "REMOVE_ENTITY" );
+	CMessage msgout( "REMOVE_ENTITY" );
 	msgout.serial( id );
 
 	/*
 	 * The incomming message from the client is sent to the Position service
 	 * under the "POS" identification.
 	 */
-	CNetManager::send( "POS", msgout );
+	CUnifiedNetwork::getInstance ()->send( "POS", msgout );
 
 	nldebug( "SB: Received REMOVE_ENTITY from the client");
 }
@@ -318,7 +317,7 @@ void cbRemoveClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb 
  * Receive an REMOVE_ENTITY messages from the Position Service to send it to all
  * the clients.
  ****************************************************************************/
-void cbRemoveService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
+void cbRemoveService (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	uint32  id;
 
@@ -326,11 +325,11 @@ void cbRemoveService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb
 	msgin.serial( id );
 
 	// Output: send the reply to the client
-	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "REMOVE_ENTITY" );
+	CMessage msgout( "REMOVE_ENTITY" );
 	msgout.serial( id );
 
 	// Send the message to all connected clients
-	CNetManager::send( "CLIENT", msgout, 0 );
+	Clients->send( msgout, InvalidSockId );
 
 	nldebug( "SB: Sent REMOVE_ENTITY message to all the connected clients");
 }
@@ -342,7 +341,7 @@ void cbRemoveService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb
  * Receive an SNOWBALL messages from the Position Service to send it to all
  * the clients.
  ****************************************************************************/
-void cbSnowballService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
+void cbSnowballService (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	uint32  id,
 			playerId;
@@ -360,7 +359,7 @@ void cbSnowballService ( CMessage& msgin, TSockId from, CCallbackNetBase& server
 	msgin.serial( explosionRadius );
 
 	// Output: send the reply to the client
-	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "SNOWBALL" );
+	CMessage msgout( "SNOWBALL" );
 	msgout.serial( id );
 	msgout.serial( playerId );
 	msgout.serial( start );
@@ -369,7 +368,7 @@ void cbSnowballService ( CMessage& msgin, TSockId from, CCallbackNetBase& server
 	msgout.serial( explosionRadius );
 
 	// Send the message to all connected clients
-	CNetManager::send( "CLIENT", msgout, 0 );
+	Clients->send( msgout, InvalidSockId );
 
 	nldebug( "SB: Sent SNOWBALL message to all the connected clients");
 }
@@ -397,7 +396,7 @@ void cbSnowballClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientc
 	msgin.serial( explosionRadius );
 
 	// Prepare the message to send to the Position service
-	CMessage msgout( CNetManager::getSIDA( "POS" ), "SNOWBALL" );
+	CMessage msgout( "SNOWBALL" );
 	msgout.serial( playerId );
 	msgout.serial( start );
 	msgout.serial( target );
@@ -408,7 +407,7 @@ void cbSnowballClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientc
 	 * The incomming message from the client is sent to the Position service
 	 * under the "POS" identification.
 	 */
-	CNetManager::send( "POS", msgout );
+	CUnifiedNetwork::getInstance ()->send( "POS", msgout );
 
 	nldebug( "SB: Received SNOWBALL from the client");
 }
@@ -420,7 +419,7 @@ void cbSnowballClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientc
  * Receive an HIT messages from the Position Service to send it to all
  * the clients.
  ****************************************************************************/
-void cbHitService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
+void cbHitService (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	uint32  snowballId,
 			victimId;
@@ -432,66 +431,49 @@ void cbHitService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	msgin.serial( direct );
 
 	// Output: send the reply to the client
-	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "HIT" );
+	CMessage msgout( "HIT" );
 	msgout.serial( snowballId );
 	msgout.serial( victimId );
 	msgout.serial( direct );
 
 	// Send the message to all connected clients
-	CNetManager::send( "CLIENT", msgout, 0 );
+	Clients->send( msgout, InvalidSockId);
 
 	nldebug( "SB: Sent HIT message to all the connected clients");
 }
 
 
-/****************************************************************************
- * ClientCallbackArray
- *
- * It define the functions to call when receiving a specific message from the
- * client
- ****************************************************************************/
+/**
+ * Contains all callbacks from client
+ */
 TCallbackItem ClientCallbackArray[] =
 {
 	{ "ADD_ENTITY",    cbAddClient      },
 	{ "ENTITY_POS",    cbPosClient      },
 	{ "CHAT",          cbChatClient     },
 	{ "REMOVE_ENTITY", cbRemoveClient   },
-	{ "SNOWBALL",      cbSnowballClient }
+	{ "SNOWBALL",      cbSnowballClient },
 };
 
 
-/****************************************************************************
- * ChatCallbackArray
- *
- * It define the functions to call when receiving a specific message from
- * the Chat service
- ****************************************************************************/
-TCallbackItem ChatCallbackArray[] =
+/**
+ * Contains *all* callbacks from the shard
+ */
+TUnifiedCallbackItem CallbackArray[] =
 {
-	{ "CHAT", cbChatService }
-};
-
-
-/****************************************************************************
- * PosCallbackArray
- *
- * It define the functions to call when receiving a specific message from
- * the Position service
- ****************************************************************************/
-TCallbackItem PosCallbackArray[] =
-{
-	{ "ADD_ENTITY",    cbAddService      },
-	{ "ENTITY_POS",    cbPosService      },
-	{ "REMOVE_ENTITY", cbRemoveService   },
-	{ "SNOWBALL",      cbSnowballService },
-	{ "HIT",           cbHitService }
+	{ "CHAT",			cbChatService		},
+	{ "ADD_ENTITY",		cbAddService		},
+	{ "ENTITY_POS",		cbPosService		},
+	{ "REMOVE_ENTITY",	cbRemoveService		},
+	{ "SNOWBALL",		cbSnowballService	},
+	{ "HIT",			cbHitService		},
 };
 
 
 /****************************************************************************
  * Connection callback for the Chat service
  ****************************************************************************/
-void onReconnectChat ( const std::string &serviceName, TSockId from, void *arg )
+void onReconnectChat (const std::string &serviceName, uint16 sid, void *arg)
 {
 	nldebug( "SB: Chat Service reconnected" );
 }
@@ -500,7 +482,7 @@ void onReconnectChat ( const std::string &serviceName, TSockId from, void *arg )
 /****************************************************************************
  * Disonnection callback for the Chat service
  ****************************************************************************/
-void onDisconnectChat ( const std::string &serviceName, TSockId from, void *arg )
+void onDisconnectChat (const std::string &serviceName, uint16 sid, void *arg)
 {
 	/* Note: messages already forwarded should get no reply, but it may occure
 	 * (e.g. if the server reconnects before the forwarding of a message and
@@ -516,7 +498,7 @@ void onDisconnectChat ( const std::string &serviceName, TSockId from, void *arg 
 /****************************************************************************
  * Connection callback for the Position service
  ****************************************************************************/
-void onReconnectPosition ( const std::string &serviceName, TSockId from, void *arg )
+void onReconnectPosition (const std::string &serviceName, uint16 sid, void *arg)
 {
 	nldebug( "SB: Position Service reconnected" );
 }
@@ -525,7 +507,7 @@ void onReconnectPosition ( const std::string &serviceName, TSockId from, void *a
 /****************************************************************************
  * Disonnection callback for the Position service
  ****************************************************************************/
-void onDisconnectPosition ( const std::string &serviceName, TSockId from, void *arg )
+void onDisconnectPosition (const std::string &serviceName, uint16 sid, void *arg)
 {
 	/* Note: messages already forwarded should get no reply, but it may occure
 	 * (e.g. if the server reconnects before the forwarding of a message and
@@ -550,23 +532,20 @@ void onConnectionClient (TSockId from, const CLoginCookie &cookie)
 	nlinfo( "The client with uniq Id %u is connected", id );
 
 	// Add new client to the list of player managed by this FrontEnd
-	pair<_pmap::iterator, bool>
-		player = localPlayers.insert( _pmap::value_type( id,
-														 _player( id,
-																  from )));
+	pair<_pmap::iterator, bool> player = localPlayers.insert( make_pair( id, CPlayer( id, from )));
 	
 	// store the player info in appId
 
 	_pmap::iterator it = player.first;
-	_player *p = &((*it).second);
+	CPlayer *p = &((*it).second);
 	from->setAppId((uint64)(uint)p);
 
 	// Output: send the IDENTIFICATION number to the new connected client
-	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "IDENTIFICATION" );
+	CMessage msgout( "IDENTIFICATION" );
 	msgout.serial( id );
 
 	// Send the message to connected client "from"
-	CNetManager::send( "CLIENT", msgout, from );
+	Clients->send( msgout, from );
 
 	nldebug( "SB: Sent IDENTIFICATION message to the new client");
 }
@@ -575,15 +554,16 @@ void onConnectionClient (TSockId from, const CLoginCookie &cookie)
 /****************************************************************************
  * Disonnection callback for a client
  ****************************************************************************/
-void onDisconnectClient (const std::string &serviceName, TSockId from, void *arg)
+void onDisconnectClient ( TSockId from, void *arg )
 {
 	uint32 id;
 
 	uint64 i = from->appId();
+
 	if(i == 0)
 		return;
 
-	_player *p = (_player *)(uint)i;
+	CPlayer *p = (CPlayer *)(uint)i;
 	id = p->id;
 
 	nlinfo( "A client with uniq Id %u has disconnected", id );
@@ -595,11 +575,11 @@ void onDisconnectClient (const std::string &serviceName, TSockId from, void *arg
 	localPlayers.erase( id );
 
 	// Output: send the REMOVE_ENTITY to the position manager.
-	CMessage msgout( CNetManager::getSIDA( "POS" ), "REMOVE_ENTITY" );
+	CMessage msgout( "REMOVE_ENTITY" );
 	msgout.serial( id );
 
 	// Send the message to the position manager
-	CNetManager::send( "POS", msgout);
+	CUnifiedNetwork::getInstance ()->send( "POS", msgout);
 
 	nldebug( "SB: Sent REMOVE_ENTITY message to the position manager.");
 }
@@ -615,79 +595,56 @@ public:
 	// Initialisation
 	void init()
 	{
-		DebugLog->addNegativeFilter ("NETL");
-		DebugLog->addNegativeFilter ("SB:");
 
+		// Create the server where the client must connect into
+		// In a real game, it should be an UDP server with specific protocol to manage packet lost and so on.
 
-		NLNET::TServiceId sid;
-		CNetManager::addServer ("CLIENT", 37000, sid, true);
-
-		// Connect the frontend to the login system
-		CLoginServer::init( *(CCallbackServer*)CNetManager::getNetBase("CLIENT"), onConnectionClient);
+		Clients = new CCallbackServer ();
+		nlassert (Clients != 0);
 
 		// Set the callbacks for that connection (comming from the Chat service)
-		CNetManager::addCallbackArray( "CLIENT",
-									   ClientCallbackArray,
-									   sizeof(ClientCallbackArray)/sizeof(ClientCallbackArray[0]) );
-
-		/********************************************************************
-		 * Client connection management
-		 */
+		Clients->addCallbackArray (ClientCallbackArray, sizeof(ClientCallbackArray)/sizeof(ClientCallbackArray[0]));
 
 		// Set the callbacks for the client disconnection of the Frontend
-		CNetManager::setDisconnectionCallback( "CLIENT", onDisconnectClient, NULL );
+		Clients->setDisconnectionCallback (onDisconnectClient, 0);
+		
+		Clients->init (37000);
 
-		/********************************************************************
-		 * Chat Service connection management
-		 */
-
-		// Connect (as a client) to the Chat Service (as a server)
-		CNetManager::addClient( "CHAT" );
-
-		// Set the callbacks for that connection (comming from the Chat service)
-		CNetManager::addCallbackArray( "CHAT",
-									   ChatCallbackArray,
-									   sizeof(ChatCallbackArray)/sizeof(ChatCallbackArray[0]) );
+		// Connect the frontend to the login system
+		CLoginServer::init( *Clients, onConnectionClient);
 
 		/*
 		 * Set the callback function when the Chat service reconnect to the
 		 * frontend
 		 */
-		CNetManager::setConnectionCallback( "CHAT", onReconnectChat, NULL );
+		CUnifiedNetwork::getInstance ()->setServiceUpCallback ("CHAT", onReconnectChat, 0);
 
 		/*
 		 * Set the callback function when the Chat service disconnect from
 		 * frontend
 		 */
-		CNetManager::setDisconnectionCallback( "CHAT", onDisconnectChat, NULL );
-
-		/********************************************************************
-		 * Position Service connection management
-		 */
-
-		// Connect (as a client) to the Position Service (as a server)
-		CNetManager::addClient( "POS" );
-
-		/*
-		 * Set the callbacks for that connection (comming from the Position
-		 * service)
-		 */
-		CNetManager::addCallbackArray( "POS",
-									   PosCallbackArray,
-									   sizeof(PosCallbackArray)/sizeof(PosCallbackArray[0]) );
+		CUnifiedNetwork::getInstance ()->setServiceDownCallback ("CHAT", onDisconnectChat, 0);
 
 		/*
 		 * Set the callback function when the Position service reconnect to the
 		 * frontend
 		 */
-		CNetManager::setConnectionCallback( "POS", onReconnectPosition, NULL );
+		CUnifiedNetwork::getInstance ()->setServiceUpCallback ("POS", onReconnectPosition, 0);
 
 		/*
 		 * Set the callback function when the Position service disconnect from
 		 * frontend
 		 */
-		CNetManager::setDisconnectionCallback( "POS", onDisconnectPosition, NULL );
+		CUnifiedNetwork::getInstance ()->setServiceDownCallback ("POS", onDisconnectPosition, 0);
+	}
 
+	bool update ()
+	{
+		// Manage messages from clients
+		Clients->update ();
+
+		// we want to continue
+		return true;
 	}
 };
 
@@ -700,17 +657,11 @@ public:
  *    - based on the "CFrontEndService" class
  *    - having the short name "FS"
  *    - having the long name "frontend_service"
- *    - listening on the port "0"
- *    - and callback actions set to "ClientCallbackArray"
+ *    - listening on the port "0" (dynamically determined)
+ *    - and shard callback set to "CallbackArray"
  *
  ****************************************************************************/
-NLNET_OLD_SERVICE_MAIN( CFrontEndService,
-					"FS",
-					"frontend_service",
-					0,
-					OldEmptyCallbackArray,
-					SNOWBALLS_CONFIG,
-					SNOWBALLS_LOGS )
+NLNET_SERVICE_MAIN (CFrontEndService, "FS", "frontend_service", 0, CallbackArray, SNOWBALLS_CONFIG, SNOWBALLS_LOGS)
 
 
 /* end of file */

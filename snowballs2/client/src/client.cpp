@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs main file
  *
- * $Id: client.cpp,v 1.55 2002/09/16 14:55:23 lecroart Exp $
+ * $Id: client.cpp,v 1.56 2002/10/10 17:52:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -219,11 +219,6 @@ int main(int argc, char **argv)
 	// Set the cache size for the font manager (in bytes)
 	Driver->setFontManagerMaxMemory (2000000);
 
-	// Init the mouse so it's trapped by the main window.
-	Driver->showCursor(false);
-	Driver->setCapture(true);
-	Driver->setMousePos(0.5f, 0.5f);
-
 	// Create a Text context for later text rendering
 	TextContext = Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
 
@@ -309,11 +304,19 @@ int main(int argc, char **argv)
 												 ConfigFile.getVar("StartPoint").asFloat(1),
 												 ConfigFile.getVar("StartPoint").asFloat(2)));
 
-	// Init the network structure
-	displayLoadingState ("Initialize Network");
-	initNetwork(cookie, fsaddr);
+	if (ConfigFile.getVar("Local").asInt() == 0 && !cookie.empty (), !fsaddr.empty ())
+	{
+		// Init the network structure
+		displayLoadingState ("Initialize Network");
+		initNetwork(cookie, fsaddr);
+	}
 
 	displayLoadingState ("Ready !!!");
+
+	// Init the mouse so it's trapped by the main window.
+	Driver->showCursor(false);
+	Driver->setCapture(true);
+	Driver->setMousePos(0.5f, 0.5f);
 
 	// Display the first line
 	nlinfo ("Welcome to Snowballs !");
@@ -323,24 +326,16 @@ int main(int argc, char **argv)
 	// Get the current time
 	NewTime = CTime::getLocalTime();
 
-	// If auto login, we launch the login request interface
-//	if (ConfigFile.getVar("AutoLogin").asInt() == 1)
-//		startLoginInterface ();
-
 	while ((!NeedExit) && Driver->isActive())
 	{
 		// Update the login request interface
-//		updateLoginInterface ();
 		
 		// Clear all buffers
 		Driver->clearBuffers (CRGBA (0, 0, 0));
 
 		// Update the time counters
 		LastTime = NewTime;
-		NewTime = /*CTime::ticksToSecond (CTime::getPerformanceTime())*1000;*/CTime::getLocalTime();
-
-		// Update animation
-//		updateAnimation ();
+		NewTime = CTime::getLocalTime();
 
 		// Update all entities positions
 		MouseListener->update();
@@ -570,6 +565,17 @@ void displayLoadingState (char *state)
 	TextContext->setHotSpot (UTextContext::BottomRight);
 	TextContext->setFontSize (15);
 	TextContext->printAt (0.99f, 0.01f, ucstring("(compiled " __DATE__ " " __TIME__ ")"));
+
+	TextContext->setHotSpot (UTextContext::BottomLeft);
+	TextContext->setFontSize (15);
+#ifdef NL_DEBUG
+	string version = "Debug Version";
+#elif defined (NL_RELEASE)
+	string version = "Release Version";
+#else
+	string version = "Unknown Version";
+#endif
+	TextContext->printAt (0.01f, 0.01f, ucstring(version));
 
 	Driver->swapBuffers ();
 }

@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Chat Service.
  *
- * $Id: main.cpp,v 1.6 2002/03/25 10:16:32 lecroart Exp $
+ * $Id: main.cpp,v 1.7 2002/10/10 17:51:46 lecroart Exp $
  */
 
 /*
@@ -43,7 +43,7 @@
 
 #include <nel/misc/debug.h>
 
-// We're using the NeL Service framework, and layer 4
+// We're using the NeL Service framework, and layer 5
 #include <nel/net/service.h>
 
 
@@ -55,14 +55,8 @@ using namespace NLNET;
  * Function:   cbChat
  *             Callback function called when the Chat Service receive a "CHAT"
  *             message
- * Arguments:
- *             - msgin:  the incoming message
- *             - from:   the "sockid" of the sender (usually useless for a
- *                       CCallbackClient)
- *             - server: the CCallbackNetBase object (which really is a
- *                       CCallbackServer object, for a server)
  ****************************************************************************/
-void cbChat ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
+void cbChat (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	string message;
 
@@ -71,16 +65,15 @@ void cbChat ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	nldebug( "SB: Received CHAT line: \"%s\"", message.c_str() );
 
 	// Prepare to send back the message.
-	CMessage msgout( CNetManager::getSIDA( "CHAT" ), "CHAT" );
+	CMessage msgout( "CHAT" );
 	msgout.serial( message );
 
 	/*
-	 * Send the message to all the connected Frontend. If we decide to send
-	 * it back to the sender, that last argument should be 'from' inteed of '0'
+	 * Send the message to all the connected Frontend.
 	 */
-	CNetManager::send( "CHAT", msgout, 0 );
+	CUnifiedNetwork::getInstance ()->send( "FS", msgout );
 
-	nldebug( "SB: Send CHAT line: \"%s\"", message.c_str() );
+	nldebug( "SB: Sent to every front end service CHAT line: \"%s\"", message.c_str() );
 }
 
 
@@ -89,24 +82,9 @@ void cbChat ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
  *
  * It define the functions to call when receiving a specific message
  ****************************************************************************/
-TCallbackItem CallbackArray[] =
+TUnifiedCallbackItem CallbackArray[] =
 {
 	{ "CHAT", cbChat }
-};
-
-/****************************************************************************
- * CChatService
- ****************************************************************************/
-class CChatService : public IService
-{
-public:
-
-	// Initialisation
-	void init()
-	{
-		DebugLog->addNegativeFilter ("NETL");
-		DebugLog->addNegativeFilter ("SB:");
-	}
 };
 
 
@@ -122,13 +100,7 @@ public:
  *    - and callback actions set to "CallbackArray"
  *
  ****************************************************************************/
-NLNET_OLD_SERVICE_MAIN( CChatService,
-					"CHAT",
-					"chat_service",
-					0,
-					CallbackArray,
-					SNOWBALLS_CONFIG,
-					SNOWBALLS_LOGS )
+NLNET_SERVICE_MAIN( IService, "CHAT", "chat_service", 0, CallbackArray, SNOWBALLS_CONFIG, SNOWBALLS_LOGS )
 
 
 /* end of file */

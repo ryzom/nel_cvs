@@ -117,6 +117,24 @@ Package=<4>
 
 ###############################################################################
 
+Project: "login_service"=..\nelns\login_service\login_service.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name net
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "misc"=..\nel\src\misc.dsp - Package Owner=<4>
 
 Package=<5>
@@ -129,7 +147,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "nel_launcher"=..\test\nel_launcher\nel_launcher.dsp - Package Owner=<4>
+Project: "nel_launcher"=..\nelns\login_system\nel_launcher_windows\nel_launcher.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

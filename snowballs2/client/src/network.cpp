@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.19 2002/09/16 14:55:23 lecroart Exp $
+ * $Id: network.cpp,v 1.20 2002/10/10 17:52:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ static void cbClientDisconnected (TSockId from, void *arg)
 {
 	nlwarning ("You lost the connection to the server");
 
-	askString ("You are offline!!!", "", 2, CRGBA(64,0,0,128));
+	askString ("You lost the connection to the server!!!", "", 2, CRGBA(64,0,0,128));
 }
 
 static void cbAddEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -228,10 +228,6 @@ static void cbIdentification (CMessage &msgin, TSockId from, CCallbackNetBase &n
 	sendAddEntity (Self->Id, Self->Name, 1, Self->Position);
 }
 
-/*static void cbDummy (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
-{
-}*/
-
 // Array that contains all callback that could comes from the server
 static TCallbackItem ClientCallbackArray[] =
 {
@@ -242,7 +238,6 @@ static TCallbackItem ClientCallbackArray[] =
 	{ "CHAT", cbChat },
 	{ "SNOWBALL", cbSnowball },
 	{ "IDENTIFICATION", cbIdentification },
-//	{ "", cbDummy },
 };
 
 
@@ -319,9 +314,14 @@ void	initNetwork(const std::string &lc, const std::string &addr)
 
 	string fsaddr;
 	if (addr.empty())
-		fsaddr = ConfigFile.getVar("FrontendServiceAddress").asString ();
+		fsaddr = ConfigFile.getVar("FSHost").asString ();
 	else
 		fsaddr = addr;
+
+	if(fsaddr.find (":") == string::npos)
+	{
+		fsaddr += ":37000";
+	}
 
 	CLoginCookie loginCookie;
 	if (!lc.empty ())

@@ -104,7 +104,7 @@ one. If you hit someone, your score increases, and the snowed opponent
 becomes immune to further snowing (he flashes on the screen) for 5s. He
 cannot retaliate while invulnerable.
 
-If you get stuck somehow, remove the client.CFG file from your client
+If you get stuck somehow, remove the client.cfg file from your client
 directory, and restart. Good luck. If you find a penguin named TMS on
 the server, it's me, throw me a low one :)
 
@@ -115,8 +115,6 @@ the server, it's me, throw me a low one :)
 Use the mouse to look around.
 Use arrow keys to move forward, backward, strafe left and strafe right.
 
-F1: go online (display the login interface)
-F2: go offline
 F3: switch on/off the wireframe mode
 F4: clear the chat window
 F5: switch on/off the chat text
@@ -124,7 +122,7 @@ F6: switch on/off the radar
 F7: zoom out the radar
 F8: zoom in the radar
 F9: capture or uncapture the mouse
-F10: Windows menu
+F10: Windows menu (Windows only)
 F11: reset player position
 F12: take a screenshot
 SHIFT-ESC: quit

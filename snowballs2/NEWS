@@ -1,6 +1,7 @@
 
-No news, good news ...
+October 10 2002
+===============
 
-Currently, this file exist to get rid of an Automake error. The content of
-that file will be what it should be at the next release.
+* Snowballs server now use Layer5 instead of Layer4 that is deprecated
 
+* Snowballs client can run without server with Local=1; in the client.cfg

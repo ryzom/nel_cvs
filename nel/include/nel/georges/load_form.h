@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.32 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: load_form.h,v 1.33 2004/11/30 13:27:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 #include "nel/misc/sheet_id.h"
+#include "nel/misc/algo.h"
 
 #include "nel/georges/u_form_loader.h"
 #include "nel/georges/u_form.h"
@@ -123,6 +124,7 @@ const uint32		PACKED_SHEET_VERSION = 5;
 const uint32		PACKED_SHEET_VERSION_COMPATIBLE = 0;
 
 
+// ***************************************************************************
 /** This function is used to load values from georges sheet in a quick way.
  * \param sheetFilter a string to filter the sheet (ie: ".item")
  * \param packedFilename the name of the file that this function will generate (extension must be "packed_sheets")
@@ -136,6 +138,7 @@ void loadForm (const std::string &sheetFilter, const std::string &packedFilename
 	loadForm(vs, packedFilename, container, updatePackedSheet, errorIfPackedSheetNotGood);
 }
 
+// ***************************************************************************
 /** This function is used to load values from georges sheet in a quick way.
  * \param sheetFilter a vector of string to filter the sheet in the case you need more than one filter
  * \param packedFilename the name of the file that this function will generate (extension must be "packed_sheets")
@@ -499,6 +502,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 }
 
 
+// ***************************************************************************
 /** This function is used to load values from georges sheet in a quick way.
  * \param sheetFilter a string to filter the sheet (ie: ".item")
  * \param packedFilename the name of the file that this function will generate (extension must be "packed_sheets")
@@ -513,6 +517,7 @@ void loadForm (const std::string &sheetFilter, const std::string &packedFilename
 }
 
 
+// ***************************************************************************
 /** This function is used to load values from georges sheet in a quick way.
  * \param sheetFilter a vector of string to filter the sheet in the case you need more than one filter
  * \param packedFilename the name of the file that this function will generate (extension must be "packed_sheets")
@@ -862,6 +867,110 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	// housekeeping
 	sheetNames.clear ();
 }
+
+// ***************************************************************************
+template <class T>
+void loadFormNoPackedSheet (const std::string &sheetFilter, std::map<NLMISC::CSheetId, T> &container, const std::string &wildcardFilter)
+{
+	std::vector<std::string> vs;
+	vs.push_back(sheetFilter);
+	loadFormNoPackedSheet(vs, container, wildcardFilter);
+}
+
+// ***************************************************************************
+/** This function is used to load values from georges sheet in a quick way.
+ *	NB: no packedsheet is given for load/write
+ * \param sheetFilters a vector of string to filter the sheet (by extension) in the case you need more than one filter
+ * \param wildcardFilter an additional by sheet filter (must include the extension)
+ * \param container the map that will be filled by this function
+ */
+template <class T>
+void loadFormNoPackedSheet (const std::vector<std::string> &sheetFilters, std::map<NLMISC::CSheetId, T> &container, const std::string &wildcardFilter)
+{
+	// make sure the CSheetId singleton has been properly initialised
+	NLMISC::CSheetId::init(false);
+
+	// build a vector of the sheetFilters sheet ids (ie: "item")
+	std::vector<NLMISC::CSheetId> sheetIds;
+	std::vector<std::string> filenames;
+	for (uint i = 0; i < sheetFilters.size(); i++)
+		NLMISC::CSheetId::buildIdVector(sheetIds, filenames, sheetFilters[i]);
+
+
+	// if there s no file, nothing to do
+	if (sheetIds.empty())
+		return;
+
+
+	// compute sheets that needs to be recomputed
+	std::vector<uint> NeededToRecompute;
+	for (uint k = 0; k < filenames.size(); k++)
+	{
+		std::string p = NLMISC::CPath::lookup (filenames[k], false, false);
+		if (p.empty()) continue;
+		// check if wildcardok
+		if(!wildcardFilter.empty() && !NLMISC::testWildCard(p,wildcardFilter)) continue;
+
+		NeededToRecompute.push_back(k);
+	}
+	nlinfo ("%d sheets checked, %d need to be recomputed", filenames.size(), NeededToRecompute.size());
+	
+	
+	NLMISC::TTime last = NLMISC::CTime::getLocalTime ();
+	NLMISC::TTime start = NLMISC::CTime::getLocalTime ();
+	NLGEORGES::UFormLoader *formLoader = NULL;
+	NLMISC::CSmartPtr<NLGEORGES::UForm> form;
+	std::vector<NLMISC::CSmartPtr<NLGEORGES::UForm> >	cacheFormList;
+	
+	// For all sheets need to recompute
+	for (uint j = 0; j < NeededToRecompute.size(); j++)
+	{
+		if(NLMISC::CTime::getLocalTime () > last + 5000)
+		{
+			last = NLMISC::CTime::getLocalTime ();
+			if(j>0)
+				nlinfo ("%.0f%% completed (%d/%d), %d seconds remaining", (float)j*100.0/NeededToRecompute.size(),j,NeededToRecompute.size(), (NeededToRecompute.size()-j)*(last-start)/j/1000);
+		}
+
+		// create the georges loader if necessary
+		if (formLoader == NULL)
+		{
+			NLMISC::WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
+			formLoader = NLGEORGES::UFormLoader::createLoader ();
+		}
+
+		//	cache used to retain information (to optimize time).
+		if (form)
+			cacheFormList.push_back	(form);
+		
+		// Load the form with given sheet id
+		form = formLoader->loadForm (sheetIds[NeededToRecompute[j]].toString().c_str ());
+		if (form)
+		{
+			// add the new creature, it could be already loaded by the packed sheets but will be overwrite with the new one
+			typedef typename std::map<NLMISC::CSheetId, T>::iterator TType1;
+            typedef typename std::pair<TType1, bool> TType2;
+			TType2 res = container.insert(std::make_pair(sheetIds[NeededToRecompute[j]],T()));
+
+			(*res.first).second.readGeorges (form, sheetIds[NeededToRecompute[j]]);
+		}
+	}
+
+	if(NeededToRecompute.size() > 0)
+		nlinfo ("%d seconds to recompute %d sheets", (uint32)(NLMISC::CTime::getLocalTime()-start)/1000, NeededToRecompute.size());
+
+	// free the georges loader if necessary
+	if (formLoader != NULL)
+	{
+		NLGEORGES::UFormLoader::releaseLoader (formLoader);
+		NLMISC::WarningLog->removeFilter ("CFormLoader: Can't open the form file");
+	}
+
+	// housekeeping
+	sheetIds.clear ();
+	filenames.clear ();
+}
+
 #endif // NL_LOAD_FORM_H
 
 /* End of load_form.h */

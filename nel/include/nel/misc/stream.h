@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.29 2000/11/28 11:17:20 berenguier Exp $
+ * $Id: stream.h,v 1.30 2000/12/05 10:37:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -610,6 +610,7 @@ public:
 	 */
 	virtual sint32		getPos () throw(EStream);
 
+
 protected:
 
 	/** 
@@ -618,6 +619,14 @@ protected:
 	 * For example, CFile::close() must call it, so it will work correctly with next serialPtr()
 	 */
 	void				resetPtrTable();
+
+	/**
+	 * Change, in live, the state of the inputStream. This could be usefull in certain case.
+	 * The deriver which would want to do such a thing must call this method, and implement his own behavior.
+	 * In certain case, it should call resetPtrTable() if he want to reset the stream ptr info (maybe always)...
+	 */
+	void				setInOut(bool inputStream);
+
 
 public:
 	//@{

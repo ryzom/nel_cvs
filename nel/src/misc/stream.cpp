@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.12 2000/11/21 14:53:41 valignat Exp $
+ * $Id: stream.cpp,v 1.13 2000/12/05 10:37:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -276,6 +276,12 @@ bool			IStream::seek (sint32 offset, TSeekOrigin origin) throw(EStream)
 sint32			IStream::getPos () throw(EStream)
 {
 	throw ESeekNotSupported();
+}
+
+// ======================================================================================================
+void			IStream::setInOut(bool inputStream)
+{
+	_InputStream= inputStream;
 }
 
 

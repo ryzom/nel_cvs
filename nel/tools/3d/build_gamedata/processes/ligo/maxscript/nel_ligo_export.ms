@@ -154,13 +154,13 @@ fn getIg node =
 
 
 -- Export collisions from the current loaded zone
-fn exportCollisionsFromZone outputPath =
+fn exportCollisionsFromZone outputPath filename =
 (
 	max select all
 	-- Export the collision
 	if (NelExportCollision ($selection as array) outputPath) == false then
 	(
-			nlerror ("ERROR exporting collision "+files[i])
+			nlerror ("No collision exported"+filename)
 	)
 	else
 	(
@@ -425,7 +425,7 @@ try
 						-- export collisions
 						try
 						(
-							exportCollisionsFromZone (ligo_export_path + "cmb\\")
+							exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
 						)
 						catch
 						(
@@ -616,7 +616,7 @@ try
 								-- export collisions
 								try
 								(
-									exportCollisionsFromZone (ligo_export_path + "cmb\\")
+									exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
 								)
 								catch
 								(
@@ -708,7 +708,7 @@ try
 						-- export collisions
 						try
 						(
-							exportCollisionsFromZone (ligo_export_path + "cmb\\")
+							exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
 						)
 						catch
 						(

@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.11 2002/06/13 16:47:19 corvazier Exp $
+ * $Id: script.cpp,v 1.12 2002/07/12 08:37:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,9 +35,6 @@
 #include "ligo/transition.h"
 #include "ligo/zone_bank.h"
 
-// From nel patch lib
-#include "../../plugin_max/nel_patch_lib/rpo.h"
-
 // From nel 3d
 #include <3d/zone.h>
 #include <3d/nelu.h>
@@ -62,6 +59,10 @@
 #include "stdmat.h"
 #include "definsfn.h"
 
+// From nel patch lib
+#include "../../plugin_max/nel_patch_lib/rpo.h"
+#include "../../plugin_max/nel_mesh_lib/export_nel.h"
+
 // Visual
 #include <direct.h>
 
@@ -69,6 +70,9 @@ using namespace std;
 using namespace NLMISC;
 using namespace NLLIGO;
 using namespace NL3D;
+
+// APP DATA
+#define NEL3D_APPDATA_LIGO_USE_BOUNDINGBOX	(1342141818)
 
 // ***************************************************************************
 
@@ -904,7 +908,53 @@ Value* check_zone_with_transition_cf (Value** arg_list, int count)
 }
 
 // ***************************************************************************
- 
+
+// Get the zone mask
+void getSquareMask (CZone &zone, std::vector<bool> &mask, uint &width, uint &height, float cellSize)
+{
+	CZoneInfo zoneInfo;
+	zone.retrieve (zoneInfo);
+
+	// Look for bounding box of the zone, min size 1x1
+	sint maxX = 1;
+	sint maxY = 1;
+
+	// For each patches
+	uint i;
+	for (i=0; i<zoneInfo.Patchs.size (); i++)
+	{
+		CPatchInfo &patch = zoneInfo.Patchs[i];
+		
+		// For each vertex
+		uint v;
+		for (v=0; v<4; v++)
+		{
+			// Get the cel position
+			sint positionX = (uint)((patch.Patch.Vertices[v].x + cellSize/2) / cellSize);
+			sint positionY = (uint)((patch.Patch.Vertices[v].y + cellSize/2) / cellSize);
+
+			// PosX
+			if (positionX>maxX)
+				maxX = positionX;
+
+			// PosY
+			if (positionY>maxY)
+				maxY = positionY;
+		}
+	}
+
+	// Set the size
+	width = (uint)maxX;
+	height = (uint)maxY;
+
+	// Set the mask
+	uint size = width*height;
+	mask.resize (0);
+	mask.resize (size, true);
+}
+
+// ***************************************************************************
+
 /// Export a ligo zone
 Value* export_zone_cf (Value** arg_list, int count)
 {
@@ -942,274 +992,305 @@ Value* export_zone_cf (Value** arg_list, int count)
 	// The fifth arg
 	bool weWantToMakeASnapshot = (arg_list[4]->to_bool() != FALSE);
 
-	// For each array elements
-	uint i;
-	for (i=0; i<(uint)array->size; i++)
+	// Load the ligofile
+	CLigoConfig config;
+	if (!CMaxToLigo::loadLigoConfigFile (config, *MAXScript_interface, errorInDialog))
 	{
-		// Check that we have an array
-		type_check(array->get (i+1), Array, message);
-
-		// Check we have 2 strings
-		Array *cell = (Array*)array->get (i+1);
-		if (cell->size != 2)
-		{
-			// Output an error
-			CMaxToLigo::errorMessage ("Error: category arguments are not 2 strings", "NeL Ligo export zone", 
-				*MAXScript_interface, errorInDialog);
-			return &false_value;
-		}
-		type_check (cell->get(1), String, message);
-		type_check (cell->get(2), String, message);
-
-		// Get the strings
-		categories[i].first = cell->get(1)->to_string();
-		categories[i].second = cell->get(2)->to_string();
+		// Output an error
+		CMaxToLigo::errorMessage ("Error: can't load the config file ligoscape.cfg", "NeL Ligo check zone", 
+			*MAXScript_interface, errorInDialog);
 	}
-
-	// Get a Object pointer
-	ObjectState os=node->EvalWorldState(ip->GetTime()); 
-
-	// Ok ?
-	if (os.obj)
+	else
 	{
-		// Convert in 3ds NeL patch mesh
-		RPO *tri = (RPO *) os.obj->ConvertToType(ip->GetTime(), RYKOLPATCHOBJ_CLASS_ID);
-		if (tri)
+		// For each array elements
+		uint i;
+		for (i=0; i<(uint)array->size; i++)
 		{
-			// Load the ligofile
-			CLigoConfig config;
-			if (!CMaxToLigo::loadLigoConfigFile (config, *MAXScript_interface, errorInDialog))
+			// Check that we have an array
+			type_check(array->get (i+1), Array, message);
+
+			// Check we have 2 strings
+			Array *cell = (Array*)array->get (i+1);
+			if (cell->size != 2)
 			{
 				// Output an error
-				CMaxToLigo::errorMessage ("Error: can't load the config file ligoscape.cfg", "NeL Ligo export zone", 
+				CMaxToLigo::errorMessage ("Error: category arguments are not 2 strings", "NeL Ligo export zone", 
 					*MAXScript_interface, errorInDialog);
+				return &false_value;
 			}
-			else
+			type_check (cell->get(1), String, message);
+			type_check (cell->get(2), String, message);
+
+			// Get the strings
+			categories[i].first = cell->get(1)->to_string();
+			categories[i].second = cell->get(2)->to_string();
+		}
+
+		// Get a Object pointer
+		ObjectState os=node->EvalWorldState(ip->GetTime()); 
+
+		// Ok ?
+		if (os.obj)
+		{
+			// Convert in 3ds NeL patch mesh
+			RPO *tri = (RPO *) os.obj->ConvertToType(ip->GetTime(), RYKOLPATCHOBJ_CLASS_ID);
+			if (tri)
 			{
-				// Build a filename
-				char drive[512];
-				char path[512];
-				char finalpath[512];
-				char name[512];
-				char ext[512];
-				_splitpath (fileName.c_str(), drive, path, name, ext);
-
-				// Build the zone filename
-				char outputFilenameZone[512];
-				strcpy (finalpath, path);
-				strcat (finalpath, "zones\\");
-				_makepath (outputFilenameZone, drive, finalpath, name, ".zone");
-
-				// Build the snap shot filename
-				char outputFilenameSnapShot[512];
-				strcpy (finalpath, path);
-				strcat (finalpath, "zoneBitmaps\\");
-				_makepath (outputFilenameSnapShot, drive, finalpath, name, ".tga");
-
-				// Build the ligozone filename
-				char outputFilenameLigozone[512];
-				strcpy (finalpath, path);
-				strcat (finalpath, "zoneLigos\\");
-				_makepath (outputFilenameLigozone, drive, finalpath, name, ".ligozone");
-
-				// Build the zone
-				CZone zone;
-				if (!tri->rpatch->exportZone (node, &tri->patch, zone, 0))
+				// Load the ligofile
+				CLigoConfig config;
+				if (!CMaxToLigo::loadLigoConfigFile (config, *MAXScript_interface, errorInDialog))
 				{
-					// Error, zone can't be exported
-					CMaxToLigo::errorMessage ("Error: can't export the Nel zone, check bind errors.", "NeL Ligo export zone", 
+					// Output an error
+					CMaxToLigo::errorMessage ("Error: can't load the config file ligoscape.cfg", "NeL Ligo export zone", 
 						*MAXScript_interface, errorInDialog);
 				}
 				else
 				{
-					// The zone template
-					CZoneTemplate zoneTemplate;
+					// Build a filename
+					char drive[512];
+					char path[512];
+					char finalpath[512];
+					char name[512];
+					char ext[512];
+					_splitpath (fileName.c_str(), drive, path, name, ext);
 
-					// Build the zone template
-					bool res = CMaxToLigo::buildZoneTemplate (node, tri->patch, zoneTemplate, config, ScriptErrors[0], ip->GetTime());
+					// Build the zone filename
+					char outputFilenameZone[512];
+					strcpy (finalpath, path);
+					strcat (finalpath, "zones\\");
+					_makepath (outputFilenameZone, drive, finalpath, name, ".zone");
 
-					// Success ?
-					if (res)
+					// Build the snap shot filename
+					char outputFilenameSnapShot[512];
+					strcpy (finalpath, path);
+					strcat (finalpath, "zoneBitmaps\\");
+					_makepath (outputFilenameSnapShot, drive, finalpath, name, ".tga");
+
+					// Build the ligozone filename
+					char outputFilenameLigozone[512];
+					strcpy (finalpath, path);
+					strcat (finalpath, "zoneLigos\\");
+					_makepath (outputFilenameLigozone, drive, finalpath, name, ".ligozone");
+
+					// Build the zone
+					CZone zone;
+					if (!tri->rpatch->exportZone (node, &tri->patch, zone, 0))
 					{
-						// Build the zone mask
+						// Error, zone can't be exported
+						CMaxToLigo::errorMessage ("Error: can't export the Nel zone, check bind errors.", "NeL Ligo export zone", 
+							*MAXScript_interface, errorInDialog);
+					}
+					else
+					{
+						// The zone mask
 						std::vector<bool> mask;
 						uint width;
 						uint height;
-						zoneTemplate.getMask (mask, width, height);
 
-						// The bank
-						static CTileBank *tileBank=NULL;
-
-						// Catch exception
-						try
+						// Calc zone mask or force bounding mask ?
+						bool useBoundingBox = CExportNel::getScriptAppData (node, NEL3D_APPDATA_LIGO_USE_BOUNDINGBOX, 0) != 0;
+						bool maskOk = false;
+						
+						if (useBoundingBox)
 						{
-							// Load the bank
-							if (tileBank == NULL)
+							// Get the square zone
+							getSquareMask (zone, mask, width, height, config.CellSize);
+							maskOk = true;
+						}
+						else
+						{
+							// The zone template
+							CZoneTemplate zoneTemplate;
+
+							// Build the zone template
+							bool res = CMaxToLigo::buildZoneTemplate (node, tri->patch, zoneTemplate, config, ScriptErrors[0], ip->GetTime());
+
+							// Success ?
+							if (res)
 							{
-								CIFile fileBank;
-								if (fileBank.open (GetBankPathName ()))
-								{
-									// Create an xml stream
-									CTileBank *tileBankSerial = new CTileBank;
-									tileBankSerial->serial (fileBank);
-									tileBank = tileBankSerial;
-								}
-								else
-								{
-									// Error message
-									char tmp[512];
-									smprintf (tmp, 512, "Can't open the bank file %s for writing.", GetBankPathName ().c_str() );
-									CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
-								}
+								// Build the zone mask
+								zoneTemplate.getMask (mask, width, height);
+								maskOk = true;
 							}
+						}
 
-							if (tileBank != NULL)
+						// Continue ?
+						if (maskOk)
+						{
+							// The bank
+							static CTileBank *tileBank=NULL;
+
+							// Catch exception
+							try
 							{
-								// The .TGA
-								if (weWantToMakeASnapshot)
+								// Load the bank
+								if (tileBank == NULL)
 								{
-									CBitmap snapshot;
-									if (MakeSnapShot (zone, snapshot, *tileBank, width, height, config, errorInDialog))
+									CIFile fileBank;
+									if (fileBank.open (GetBankPathName ()))
 									{
-
-										// Output the snap shot
-										COFile outputSnapShot;
-										if (outputSnapShot.open (outputFilenameSnapShot))
-										{
-											// Write the tga file
-											snapshot.writeTGA (outputSnapShot, 32);
-										}
+										// Create an xml stream
+										CTileBank *tileBankSerial = new CTileBank;
+										tileBankSerial->serial (fileBank);
+										tileBank = tileBankSerial;
 									}
 									else
 									{
 										// Error message
 										char tmp[512];
-										smprintf (tmp, 512, "Can't open the tga file %s for writing.", outputFilenameSnapShot);
+										smprintf (tmp, 512, "Can't open the bank file %s for writing.", GetBankPathName ().c_str() );
 										CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 									}
 								}
 
-								// The .ZONE
+								if (tileBank != NULL)
 								{
-									COFile outputZone;
-									if (outputZone.open (outputFilenameZone))
+									// The .TGA
+									if (weWantToMakeASnapshot)
 									{
-										// Serial the NeL zone
-										zone.serial (outputZone);
-									}
-									else
-									{
-										// Error message
-										char tmp[512];
-										smprintf (tmp, 512, "Can't open the NeL zone file %s for writing.", outputFilenameZone);
-										CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
-									}
-								}
-
-
-								// The .LIGOZONE
-								{
-									// Is filled ?
-									uint j;
-									for (j=0; j<mask.size(); j++)
-										if (!mask[j]) break;
-									
-									// Add filled zone	
-									if (j >= mask.size())
-									{
-										categories.push_back (pair<string,string> ("filled", "yes"));
-									}
-									else
-									{
-										categories.push_back (pair<string,string> ("filled", "no"));
-									}
-
-									// Add the zone categorie
-									if (width == height)
-									{
-										categories.push_back (pair<string,string> ("square", "yes"));
-									}
-									else
-									{
-										categories.push_back (pair<string,string> ("square", "no"));
-									}
-
-									// Add the size category
-									char size[30];
-									smprintf (size, 30, "%dx%d", width, height);
-									categories.push_back (pair<string,string> ("size", size));
-
-									// Create the zone bank element
-									CZoneBankElement bankElm;
-									bankElm.setMask (mask, width,height);
-
-									// Add the category
-									for (j=0; j<categories.size(); j++)
-									{
-										bankElm.addCategory (strlwr (categories[j].first), strlwr (categories[j].second));
-									}
-
-
-									// Write the zone
-									COFile outputLigoZone;
-
-									// Catch exception
-									try
-									{
-										// Open the selected zone file
-										if (outputLigoZone.open (outputFilenameLigozone))
+										CBitmap snapshot;
+										if (MakeSnapShot (zone, snapshot, *tileBank, width, height, config, errorInDialog))
 										{
-											// Create an xml stream
-											COXml outputXml;
-											outputXml.init (&outputLigoZone);
 
-											// Serial the class
-											bankElm.serial (outputXml);
-
-											// Return true
-											return &true_value;
+											// Output the snap shot
+											COFile outputSnapShot;
+											if (outputSnapShot.open (outputFilenameSnapShot))
+											{
+												// Write the tga file
+												snapshot.writeTGA (outputSnapShot, 32);
+											}
 										}
 										else
 										{
 											// Error message
 											char tmp[512];
-											smprintf (tmp, 512, "Can't open the ligozone file %s for writing.", outputFilenameLigozone );
+											smprintf (tmp, 512, "Can't open the tga file %s for writing.", outputFilenameSnapShot);
 											CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 										}
 									}
-									catch (Exception &e)
+
+									// The .ZONE
 									{
-										// Error message
-										char tmp[512];
-										smprintf (tmp, 512, "Error while writing the file %s : %s", outputFilenameLigozone, e.what());
-										CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+										COFile outputZone;
+										if (outputZone.open (outputFilenameZone))
+										{
+											// Serial the NeL zone
+											zone.serial (outputZone);
+										}
+										else
+										{
+											// Error message
+											char tmp[512];
+											smprintf (tmp, 512, "Can't open the NeL zone file %s for writing.", outputFilenameZone);
+											CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+										}
+									}
+
+
+									// The .LIGOZONE
+									{
+										// Is filled ?
+										uint j;
+										for (j=0; j<mask.size(); j++)
+											if (!mask[j]) break;
+										
+										// Add filled zone	
+										if (j >= mask.size())
+										{
+											categories.push_back (pair<string,string> ("filled", "yes"));
+										}
+										else
+										{
+											categories.push_back (pair<string,string> ("filled", "no"));
+										}
+
+										// Add the zone categorie
+										if (width == height)
+										{
+											categories.push_back (pair<string,string> ("square", "yes"));
+										}
+										else
+										{
+											categories.push_back (pair<string,string> ("square", "no"));
+										}
+
+										// Add the size category
+										char size[30];
+										smprintf (size, 30, "%dx%d", width, height);
+										categories.push_back (pair<string,string> ("size", size));
+
+										// Create the zone bank element
+										CZoneBankElement bankElm;
+										bankElm.setMask (mask, width,height);
+
+										// Add the category
+										for (j=0; j<categories.size(); j++)
+										{
+											bankElm.addCategory (strlwr (categories[j].first), strlwr (categories[j].second));
+										}
+
+
+										// Write the zone
+										COFile outputLigoZone;
+
+										// Catch exception
+										try
+										{
+											// Open the selected zone file
+											if (outputLigoZone.open (outputFilenameLigozone))
+											{
+												// Create an xml stream
+												COXml outputXml;
+												outputXml.init (&outputLigoZone);
+
+												// Serial the class
+												bankElm.serial (outputXml);
+
+												// Return true
+												return &true_value;
+											}
+											else
+											{
+												// Error message
+												char tmp[512];
+												smprintf (tmp, 512, "Can't open the ligozone file %s for writing.", outputFilenameLigozone );
+												CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+											}
+										}
+										catch (Exception &e)
+										{
+											// Error message
+											char tmp[512];
+											smprintf (tmp, 512, "Error while writing the file %s : %s", outputFilenameLigozone, e.what());
+											CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+										}
 									}
 								}
 							}
-						}
-						catch (Exception &e)
-						{
-							// Error message
-							char tmp[512];
-							smprintf (tmp, 512, "Error while loading the file bank %s : %s", GetBankPathName ().c_str(), e.what());
-							CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+							catch (Exception &e)
+							{
+								// Error message
+								char tmp[512];
+								smprintf (tmp, 512, "Error while loading the file bank %s : %s", GetBankPathName ().c_str(), e.what());
+								CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+							}
 						}
 					}
 				}
+			}
+			else
+			{
+				// Output an error
+				CMaxToLigo::errorMessage ("Error: can't convert the object in 3ds NeL patch mesh object", 
+					"NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 			}
 		}
 		else
 		{
 			// Output an error
 			CMaxToLigo::errorMessage ("Error: can't convert the object in 3ds NeL patch mesh object", 
-				"NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+				"NeL Ligo check zone", *MAXScript_interface, errorInDialog);
 		}
-	}
-	else
-	{
-		// Output an error
-		CMaxToLigo::errorMessage ("Error: can't convert the object in 3ds NeL patch mesh object", 
-			"NeL Ligo check zone", *MAXScript_interface, errorInDialog);
 	}
 
 	// Return false

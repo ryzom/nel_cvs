@@ -788,6 +788,10 @@ SOURCE=.\sh\setup.sh
 # End Source File
 # Begin Source File
 
+SOURCE=.\update_local_tools.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\update_tools.bat
 # End Source File
 # End Group

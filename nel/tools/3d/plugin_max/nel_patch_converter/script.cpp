@@ -1,7 +1,7 @@
 /** \file script.cpp
  * <File description>
  *
- * $Id: script.cpp,v 1.7 2002/06/20 17:17:05 corvazier Exp $
+ * $Id: script.cpp,v 1.8 2002/07/12 08:37:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,7 @@ using namespace std;
 #include "MAXObj.h"
 #include "Parser.h"
 #include "modstack.h"
+#include "decomp.h"
 
 #include "max.h"
 #include "stdmat.h"
@@ -84,6 +85,8 @@ def_visible_primitive( get_selected_vertex,		"GetRykolSelVertex");
 def_visible_primitive( get_selected_patch,		"GetRykolSelPatch");
 def_visible_primitive( get_selected_tile,		"GetRykolSelTile");
 def_visible_primitive( get_patch_vertex,		"NeLGetPatchVertex");
+def_visible_primitive( attach,					"NeLAttachPatchMesh");
+def_visible_primitive( weld,					"NeLWeldPatchMesh");
 
 
 def_visible_primitive( get_tile_tile_number,	"NelGetTileTileNumber");
@@ -1254,6 +1257,8 @@ Value* get_patch_vertex_cf (Value** arg_list, int count)
 	return Integer::intern(nRet);
 }
 
+
+
 Value*
 get_patch_count_cf(Value** arg_list, int count)
 {
@@ -1640,6 +1645,342 @@ Value* set_tile_bank_cf (Value** arg_list, int count)
 	return &true_value;
 }
 
+//int attachReorient = 0;
+
+void DoAttach(INode *node, PatchMesh *patch, RPatchMesh *rpatch, INode *attNode, PatchMesh *attPatch, RPatchMesh *rattPatch, Interface *ip)
+{
+	// Transform the shape for attachment:
+	// If reorienting, just translate to align pivots
+	// Otherwise, transform to match our transform
+	Matrix3 attMat(1);
+	if (0)
+	{
+		Matrix3 thisTM = node->GetNodeTM(ip->GetTime());
+		Matrix3 thisOTMBWSM = node->GetObjTMBeforeWSM(ip->GetTime());
+		Matrix3 thisPivTM = thisTM * Inverse(thisOTMBWSM);
+		Matrix3 otherTM = attNode->GetNodeTM(ip->GetTime());
+		Matrix3 otherOTMBWSM = attNode->GetObjTMBeforeWSM(ip->GetTime());
+		Matrix3 otherPivTM = otherTM * Inverse(otherOTMBWSM);
+		Point3 otherObjOffset = attNode->GetObjOffsetPos();
+		attMat = Inverse(otherPivTM) * thisPivTM;
+	}
+	else 
+	{
+		attMat = attNode->GetObjectTM(ip->GetTime()) *
+			Inverse(node->GetObjectTM(ip->GetTime()));
+	}
+
+	// RB 3-17-96 : Check for mirroring
+	AffineParts parts;
+	decomp_affine(attMat, &parts);
+	if (parts.f < 0.0f)
+	{
+		int v[8], ct, ct2, j;
+		Point3 p[9];
+		
+		for (int i = 0; i < attPatch->numPatches; i++)
+		{
+
+			// Re-order rpatch
+			if (attPatch->patches[i].type == PATCH_QUAD)
+			{
+				UI_PATCH rpatch=rattPatch->getUIPatch (i);
+				int ctU=rpatch.NbTilesU<<1;
+				int ctV=rpatch.NbTilesV<<1;
+				for (int nU=0; nU<ctU; nU++)
+				{
+					for (int nV=0; nV<ctV; nV++)
+					{
+						rattPatch->getUIPatch (i).getTileDesc (nU+nV*ctU)=rpatch.getTileDesc (ctU-1-nU+(ctV-1-nV)*ctU);
+					}
+				}
+				for (nU=0; nU<ctU+1; nU++)
+				{
+					for (int nV=0; nV<ctV+1; nV++)
+					{
+						rattPatch->getUIPatch (i).setColor (nU+nV*(ctU+1), rpatch.getColor (ctU-nU+(ctV-nV)*ctU));
+					}
+				}
+			}
+
+			// Re-order vertices
+			ct = attPatch->patches[i].type == PATCH_QUAD ? 4 : 3;
+			for (j = 0; j < ct; j++)
+			{
+				v[j] = attPatch->patches[i].v[j];
+			}
+			for (j = 0; j < ct; j++)
+			{
+				attPatch->patches[i].v[j] = v[ct - j - 1];
+			}
+			
+			// Re-order vecs
+			ct  = attPatch->patches[i].type == PATCH_QUAD ? 8 : 6;
+			ct2 = attPatch->patches[i].type == PATCH_QUAD ? 5 : 3;
+			for (j = 0; j < ct; j++)
+			{
+				v[j] = attPatch->patches[i].vec[j];
+			}
+			for (j = 0; j < ct; j++, ct2--)
+			{
+				if (ct2 < 0)
+					ct2 = ct - 1;
+				attPatch->patches[i].vec[j] = v[ct2];
+			}
+			
+			// Re-order enteriors
+			if (attPatch->patches[i].type == PATCH_QUAD)
+			{
+				ct = 4;
+				for (j = 0; j < ct; j++)
+				{
+					v[j] = attPatch->patches[i].interior[j];
+				}
+				for (j = 0; j < ct; j++)
+				{
+					attPatch->patches[i].interior[j] = v[ct - j - 1];
+				}
+			}
+			
+			// Re-order aux
+			if (attPatch->patches[i].type == PATCH_TRI)
+			{
+				ct = 9;
+				for (j = 0; j < ct; j++)
+				{
+					p[j] = attPatch->patches[i].aux[j];
+				}
+				for (j = 0; j < ct; j++)
+				{
+					attPatch->patches[i].aux[j] = p[ct - j - 1];
+				}
+			}
+			
+			// Re-order TV faces if present
+			for (int chan = 0; chan < patch->getNumMaps(); ++chan)
+			{
+				if (attPatch->tvPatches[chan])
+				{
+					ct = 4;
+					for (j = 0; j < ct; j++)
+					{
+						v[j] = attPatch->tvPatches[chan][i].tv[j];
+					}
+					for (j = 0; j < ct; j++)
+					{
+						attPatch->tvPatches[chan][i].tv[j] = v[ct - j - 1];
+					}
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < attPatch->numVerts; ++i)
+		attPatch->verts[i].p = attPatch->verts[i].p * attMat;
+	for (i = 0; i < attPatch->numVecs; ++i)
+		attPatch->vecs[i].p = attPatch->vecs[i].p * attMat;
+	attPatch->computeInteriors();
+
+	// theHold.Begin();
+
+	// Combine the materials of the two nodes.
+	int mat2Offset = 0;
+	Mtl *m1 = node->GetMtl();
+	Mtl *m2 = attNode->GetMtl();
+	bool condenseMe = FALSE;
+	if (m1 && m2 &&(m1 != m2))
+	{
+		//if (attachMat == ATTACHMAT_IDTOMAT)
+		{
+			int ct = 1;
+			if (m1->IsMultiMtl())
+				ct = m1->NumSubMtls();
+			for (int i = 0; i < patch->numPatches; ++i)
+			{
+				int mtid = patch->getPatchMtlIndex(i);
+				if (mtid >= ct)
+					patch->setPatchMtlIndex(i, mtid % ct);
+			}
+			FitPatchIDsToMaterial(*attPatch, m2);
+			/*if (condenseMat)
+				condenseMe = TRUE;*/
+		}
+		// the theHold calls here were a vain attempt to make this all undoable.
+		// This should be revisited in the future so we don't have to use the SYSSET_CLEAR_UNDO.
+		// theHold.Suspend();
+		/*if (attachMat == ATTACHMAT_MATTOID)
+		{
+			m1 = FitMaterialToPatchIDs(*patch, m1);
+			m2 = FitMaterialToPatchIDs(*attPatch, m2);
+		}*/
+		
+		Mtl *multi = CombineMaterials(m1, m2, mat2Offset);
+		/*if (attachMat == ATTACHMAT_NEITHER)
+			mat2Offset = 0;*/
+		// theHold.Resume();
+		// We can't be in face subobject mode, else we screw up the materials:
+		DWORD oldSL = patch->selLevel;
+		DWORD roldSL = patch->selLevel;
+		patch->selLevel = PATCH_OBJECT;
+		rpatch->SetSelLevel (EP_OBJECT);
+		node->SetMtl(multi);
+		patch->selLevel = oldSL;
+		rpatch->SetSelLevel (roldSL);
+		m1 = multi;
+		// canUndo = FALSE;	// Absolutely cannot undo material combinations.
+	}
+	if (!m1 && m2)
+	{
+		// We can't be in face subobject mode, else we screw up the materials:
+		DWORD oldSL = patch->selLevel;
+		DWORD roldSL = rpatch->GetSelLevel();
+		patch->selLevel = PATCH_OBJECT;
+		rpatch->SetSelLevel (EP_OBJECT);
+		node->SetMtl(m2);
+		patch->selLevel = oldSL;
+		rpatch->SetSelLevel (roldSL);
+		m1 = m2;
+	}
+
+	// Start a restore object...
+	// if (theHold.Holding())
+		// theHold.Put(new PatchRestore(patchData, this, patch, rpatch, "DoAttach"));
+
+	// Do the attach
+	patch->Attach(attPatch, mat2Offset);
+	rpatch->Attach(rattPatch, *patch);
+	// patchData->UpdateChanges(patch, rpatch);
+	// patchData->TempData(this)->Invalidate(PART_TOPO | PART_GEOM);
+
+	// Get rid of the original node
+	ip->DeleteNode(attNode);
+
+	// ResolveTopoChanges();
+	// theHold.Accept(GetString(IDS_TH_ATTACH));
+
+	if (m1 && condenseMe)
+	{
+		// Following clears undo stack.
+		// patch = patchData->TempData(this)->GetPatch(ip->GetTime(), rpatch);
+		m1 = CondenseMatAssignments(*patch, m1);
+	}
+}
+
+
+
+Value*
+attach_cf (Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (2)
+	check_arg_count(attach, 2, count);
+
+	// Check to see if the arguments match up to what we expect
+	// We want to use 'TurnAllTexturesOn <object to use>'
+	type_check(arg_list[0], MAXNode, "NeLAttachPatchMesh [RykolPatchMeshSrc] [RykolPatchMeshDest]");
+	type_check(arg_list[1], MAXNode, "NeLAttachPatchMesh [RykolPatchMeshSrc] [RykolPatchMeshDest]");
+
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	// Get a INode pointer from the argument passed to us
+	INode *nodeSrc = arg_list[0]->to_node();
+	INode *nodeDest = arg_list[1]->to_node();
+	nlassert (nodeSrc);
+	nlassert (nodeDest);
+
+	// Get a Object pointer
+	ObjectState osSrc = nodeSrc->EvalWorldState (ip->GetTime()); 
+	ObjectState osDest = nodeDest->EvalWorldState (ip->GetTime()); 
+
+	// ok ?
+	bool bRet=false;
+
+	if (osSrc.obj && osDest.obj)
+	{
+		// Get class id
+		if ( (osSrc.obj->CanConvertToType(RYKOLPATCHOBJ_CLASS_ID)) && (osDest.obj->CanConvertToType(RYKOLPATCHOBJ_CLASS_ID)))
+		{
+			RPO *triSrc = (RPO *) osSrc.obj->ConvertToType(ip->GetTime(), 
+				RYKOLPATCHOBJ_CLASS_ID);
+			RPO *triDest = (RPO *) osDest.obj->ConvertToType(ip->GetTime(), 
+				RYKOLPATCHOBJ_CLASS_ID);
+			if (triSrc && triDest)
+			{
+				DoAttach (nodeDest, &triDest->patch, triDest->rpatch, nodeSrc, &triSrc->patch, triSrc->rpatch, ip);
+				bRet=true;
+			}
+			// Note that the TriObject should only be deleted
+			// if the pointer to it is not equal to the object
+			// pointer that called ConvertToType()
+			if (osSrc.obj != triSrc)
+				delete triSrc;
+
+			// redraw and update
+			triDest->patch.InvalidateGeomCache();
+			triDest->rpatch->InvalidateChannels(PART_ALL);
+			nodeDest->NotifyDependents(FOREVER, PART_ALL, REFMSG_CHANGE); 
+			ip->RedrawViews(ip->GetTime());
+		}
+	}
+
+	return bRet?&true_value:&false_value;
+}
+
+Value*
+weld_cf (Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (2)
+	check_arg_count(attach, 2, count);
+
+	// Check to see if the arguments match up to what we expect
+	// We want to use 'TurnAllTexturesOn <object to use>'
+	type_check(arg_list[0], MAXNode, "NeLWeldPatchMesh [RykolPatchMeshSrc] [threshold]");
+	type_check(arg_list[1], Float, "NeLWeldPatchMesh [RykolPatchMeshSrc] [threshold]");
+
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	// Get a INode pointer from the argument passed to us
+	INode *nodeSrc = arg_list[0]->to_node();
+	float threshold = arg_list[1]->to_float();
+	nlassert (nodeSrc);
+
+	// Get a Object pointer
+	ObjectState osSrc = nodeSrc->EvalWorldState (ip->GetTime()); 
+
+	// ok ?
+	bool bRet=false;
+
+	if (osSrc.obj)
+	{
+		// Get class id
+		if (osSrc.obj->CanConvertToType(RYKOLPATCHOBJ_CLASS_ID))
+		{
+			RPO *triSrc = (RPO *) osSrc.obj->ConvertToType(ip->GetTime(), 
+				RYKOLPATCHOBJ_CLASS_ID);
+			if (triSrc)
+			{
+				triSrc->patch.vertSel.SetAll ();
+				triSrc->patch.Weld (threshold, TRUE);
+				triSrc->rpatch->Weld (&triSrc->patch);
+				bRet=true;
+			}
+			// Note that the TriObject should only be deleted
+			// if the pointer to it is not equal to the object
+			// pointer that called ConvertToType()
+			if (osSrc.obj != triSrc)
+				delete triSrc;
+
+			// redraw and update
+			triSrc->patch.InvalidateGeomCache();
+			triSrc->rpatch->InvalidateChannels(PART_ALL);
+			nodeSrc->NotifyDependents(FOREVER, PART_ALL, REFMSG_CHANGE); 
+			ip->RedrawViews(ip->GetTime());
+		}
+	}
+
+	return bRet?&true_value:&false_value;
+}
 
 /*===========================================================================*\
  |	MAXScript Plugin Initialization

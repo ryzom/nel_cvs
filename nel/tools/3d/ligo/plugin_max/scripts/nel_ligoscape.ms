@@ -78,6 +78,7 @@ ligo_passable_app		= ligo
 ligo_rotate_app			= 1266703978
 ligo_scale_app			= 1266703979
 ligo_instance_app		= 1266703980
+ligo_use_boundingbox	= 1342141818
 
 -- Project file list
 
@@ -690,7 +691,13 @@ fn export_and_check_and_debug_zone checkOnly debug displayMB =
 				-- Make a full path
 				filename = ligo_root_path+ligo_material_path+matname+ligo_material_ext
 
-				if (NeLLigoCheckZoneWithMaterial $ filename true) == false then
+				-- Don't check flag ?
+				if (getAppData $ ligo_use_boundingbox) != "0" then
+					dontCheck = true
+				else
+					dontCheck = false
+
+				if (dontCheck == false) and ( (NeLLigoCheckZoneWithMaterial $ filename true) == false ) then
 				(
 					-- Backup selection
 					backupSelect = $selection as array
@@ -3100,7 +3107,9 @@ group "Directories"
 		makedir ligo_root_path
 		makedir (ligo_root_path+"\\materials")
 		makedir (ligo_root_path+"\\transitions")
-		-- makedir (ligo_root_path+"\\zones")
+		makedir (ligo_export_path+"\\zones")
+		makedir (ligo_export_path+"\\zonebitmaps")
+		makedir (ligo_export_path+"\\zoneLigos")
 	)
 
 	fn findID node =

@@ -1,7 +1,7 @@
 /** \file text_context.cpp
  * <File description>
  *
- * $Id: text_context.cpp,v 1.8 2003/09/25 12:13:12 corvazier Exp $
+ * $Id: text_context.cpp,v 1.8.8.1 2004/10/28 17:42:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,6 +62,8 @@ CTextContext::~CTextContext()
 {
 	if (_FontGen)
 		delete _FontGen;
+	if (_FontManager)
+		_FontManager->invalidate();
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -112,6 +114,7 @@ uint32 CTextContext::textPush (const ucstring &str)
 
 	// compute the string.
 	uint32 index = _CacheFreePlaces[_CacheNbFreePlaces-1];
+	nlassert (index < _CacheStrings.size());
 	CComputedString &strToFill = _CacheStrings[index];
 	_FontManager->computeString (str, _FontGen, _Color
 		, _FontSize, _Driver, strToFill, _Keep800x600Ratio);
@@ -124,6 +127,7 @@ uint32 CTextContext::textPush (const ucstring &str)
 // ------------------------------------------------------------------------------------------------
 void CTextContext::erase (uint32 i)
 {
+	nlassertex ((i < _CacheStrings.size()), ("try to erase an unknown text"));
 	if (_CacheFreePlaces.size() == _CacheNbFreePlaces)
 	{
 		_CacheFreePlaces.push_back (i);

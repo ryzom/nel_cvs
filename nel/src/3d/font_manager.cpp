@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.42 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: font_manager.cpp,v 1.42.8.1 2004/10/28 17:42:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -311,7 +311,13 @@ string CFontManager::getCacheInformation() const
 	return str;
 }
 
-
+// ***************************************************************************
+void CFontManager::invalidate()
+{
+	if (_TexFont)
+		_TexFont = NULL;
+	_TexFont = new CTextureFont;
+}
 
 
 

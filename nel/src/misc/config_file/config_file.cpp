@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.23 2001/06/27 08:28:33 lecroart Exp $
+ * $Id: config_file.cpp,v 1.24 2001/07/02 11:42:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,14 +105,16 @@ const std::string &CConfigFile::CVar::asString (int index) const
 void CConfigFile::CVar::setAsInt (int val, int index)
 {
 	if (Type != T_INT) throw EBadType (Name, Type, T_INT);
-	else if (index >= (int)IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
+	else if (index > (int)IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
+	else if (index == (int)IntValues.size ()) IntValues.push_back(val);
 	else IntValues[index] = val;
 }
 
 void CConfigFile::CVar::setAsDouble (double val, int index)
 {
 	if (Type != T_REAL) throw EBadType (Name, Type, T_REAL);
-	else if (index >= (int)RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
+	else if (index > (int)RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
+	else if (index == (int)RealValues.size ()) RealValues.push_back(val);
 	else RealValues[index] = val;
 }
 
@@ -124,7 +126,8 @@ void CConfigFile::CVar::setAsFloat (float val, int index)
 void CConfigFile::CVar::setAsString (std::string val, int index)
 {
 	if (Type != T_STRING) throw EBadType (Name, Type, T_STRING);
-	else if (index >= (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
+	else if (index > (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
+	else if (index == (int)StrValues.size ()) StrValues.push_back(val);
 	else StrValues[index] = val;
 }
 

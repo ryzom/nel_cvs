@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.22 2001/06/27 08:28:33 lecroart Exp $
+ * $Id: config_file.h,v 1.23 2001/07/02 11:42:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,6 +141,7 @@ public:
 		//@}
 
 		/// \name Set the variable content.
+		/// If the index is the size of the array, the value will be append at the end.
 		//@{
 		/// Set the content of the variable as an integer
 		void				setAsInt	(int val, int index=0);

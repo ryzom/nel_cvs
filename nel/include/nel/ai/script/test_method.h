@@ -1,7 +1,7 @@
 /** \file test_method.h
  * Library class exemple for the binary test.
  *
- * $Id: test_method.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
+ * $Id: test_method.h,v 1.6 2001/07/12 09:47:40 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@ namespace NLAISCRIPT
 			TIsNULL, ///Test if an expression is NULL;
 			TRand1,
 			TRand2,
+			TDiscretRand,
 			TConst,
 			TLastM ///The count of export method.
 		};
@@ -103,6 +104,7 @@ namespace NLAISCRIPT
 		}
 
 		double rand(double,double) const;
+		sint dRand(sint, sint) const;
 		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *mathodName,const NLAIAGENT::IObjectIA &) const;		
 		virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 heritance, sint32 index, NLAIAGENT::IObjectIA *);
 		virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index,NLAIAGENT::IObjectIA *);

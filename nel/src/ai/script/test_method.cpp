@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: test_method.cpp,v 1.8 2001/04/05 15:29:03 chafik Exp $
+ * $Id: test_method.cpp,v 1.9 2001/07/12 09:47:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,6 +116,19 @@ namespace NLAISCRIPT
 											CLibTest::CheckAll,
 											2,
 											new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType))));
+
+		CLibTest::StaticMethod[CLibTest::TDiscretRand] = new CLibTest::CMethodCall(
+											"DRand", 
+											CLibTest::TDiscretRand, 
+											new NLAISCRIPT::CParam(2,new NLAISCRIPT::COperandSimpleListOr(2,
+																		new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType),
+																		new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType)),
+																		new NLAISCRIPT::COperandSimpleListOr(2,
+																		new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType),
+																		new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType))),
+											CLibTest::CheckAll,
+											2,
+											new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::UInt32Type::IdUInt32Type))));
 
 	}
 
@@ -251,6 +264,15 @@ namespace NLAISCRIPT
 				r.Result = new NLAIAGENT::DDigitalType(rand(p1->getNumber(),p2->getNumber()));
 				return r;
 			}
+
+		case CLibTest::TDiscretRand:
+			{
+				NLAIAGENT::CIteratorContener iter = ((NLAIAGENT::IBaseGroupType *)p)->getIterator();
+				NLAIAGENT::DDigitalType *p1 = (NLAIAGENT::DDigitalType *)(iter ++);
+				NLAIAGENT::DDigitalType *p2 = (NLAIAGENT::DDigitalType *)(iter ++);
+				r.Result = new NLAIAGENT::UInt32Type(dRand((sint)p1->getNumber(), (sint)p2->getNumber()));
+				return r;
+			}
 		}
 		return r;
 	}
@@ -262,6 +284,17 @@ namespace NLAISCRIPT
 		r /= ((double)RAND_MAX);
 
 		return d1 + r*(d2 - d1);
+
+	}
+
+	sint CLibTest::dRand(sint d1, sint d2) const
+	{
+		time_t t;
+		time(&t);
+		srand((sint)(t & 0xffffffffffff) );
+		double r = (double)::rand()/(double)RAND_MAX;		
+
+		return d1 + (sint)(r*(double)(d2 - d1));
 
 	}
 

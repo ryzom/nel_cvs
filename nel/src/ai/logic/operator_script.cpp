@@ -157,8 +157,15 @@ namespace NLAIAGENT
 				}
 			}
 
-			if ( _CurrentGoal != NULL && _CurrentGoal->isSelected() )
-				return CAgentScript::run();
+			if ( _CurrentGoal != NULL)
+			{
+				if(_CurrentGoal->isSelected()) return CAgentScript::run();
+				else
+				{
+					processMessages();
+					return IObjectIA::ProcessRun;
+				}
+			}		
 		}
 		else
 		{

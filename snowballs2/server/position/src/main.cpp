@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Position Service.
  *
- * $Id: main.cpp,v 1.3 2001/07/24 17:30:03 lecroart Exp $
+ * $Id: main.cpp,v 1.4 2001/07/24 20:09:48 valignat Exp $
  */
 
 /*
@@ -305,14 +305,17 @@ public:
 	// Update fonction, called at every frames
 	bool update()
 	{
-		TTime time = CTime::getLocalTime();
+		TTime currentTime = CTime::getLocalTime();
 		list<_snowball>::iterator ItSnowball;
-		for (ItSnowball = snoList.begin(); ItSnowball != snoList.end(); ++ItSnowball)
+		ItSnowball = snoList.begin();
+		while (  ItSnowball != snoList.end() )
 		{
+			list<_snowball>::iterator ItSb = ItSnowball++;
 			// Removed outdated snowballs
-			if ( (*ItSnowball).getStopTime() < time )
+			if ( (*ItSb).getStopTime() < currentTime )
 			{
-				snoList.erase( ItSnowball );
+				snoList.erase( ItSb );
+				nlinfo( "Removed outdated SNOWBALL.");
 			}
 
 			// ?????????????????????????????????????????????????????????????

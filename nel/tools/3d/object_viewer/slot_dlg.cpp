@@ -578,8 +578,16 @@ void CSlotDlg::updateScrollBar ()
 	info.fMask=SIF_ALL;
 	info.nMin=0;
 	info.nMax=10000;
-	info.nPage=(int)(10000.f*(AnimationLength/SpeedFactor)/(EndAnimTime-StartAnimTime));
-	info.nPos=(int)(10000.f*((float)Offset-StartAnimTime)/(EndAnimTime-StartAnimTime));
+	if (fabs(EndAnimTime-StartAnimTime)<0.00001f)
+	{
+		info.nPage=1;
+		info.nPos=0;
+	}
+	else
+	{
+		info.nPage=(int)(10000.f*(AnimationLength/SpeedFactor)/(EndAnimTime-StartAnimTime));
+		info.nPos=(int)(10000.f*((float)Offset-StartAnimTime)/(EndAnimTime-StartAnimTime));
+	}
 
 	// Set scrollbar infos
 	ScrollBarCtrl.SetScrollInfo (&info, TRUE);

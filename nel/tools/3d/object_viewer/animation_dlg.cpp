@@ -315,7 +315,11 @@ void CAnimationDlg::updateBar ()
 	UpdateData();
 	
 	// Set cursor position
-	int position=(int)((CurrentFrame-Start)*65535.f/(End-Start));
+	int position;
+	if (fabs (End-Start)<0.00001f)
+		position=0;
+	else
+		position=(int)((CurrentFrame-Start)*65535.f/(End-Start));
 	clamp (position, 0, 65535);
 	TimeLineCtrl.SetPos(position);
 

@@ -1,4 +1,4 @@
-/*!
+/**
 
 \page general NeL Whitepaper
 \author Vincent Archer <archer@nevrax.org>
@@ -28,10 +28,11 @@ that is pretty much a standard in GNU tools and other environment-portable packa
 NeL library top level thus has a configure.in, which autoconf/autoheader turns into
 the classic configure script.
 
-That directory, and all its subdirectories, has Makefile.am, which automake uses to
+That directory, and all its subdirectories, has a Makefile.am, which automake uses to
 generate a set of Makefile.in. All modifications (notably adding source files) are made
 into the Makefile.am files themselves, and never to Makefile.in or Makefile. The .am
-template is stored in the CVS tree, but not the rest.
+template is stored in the CVS tree, but not the rest. A full regeneration of the files
+must be done after a checkout.
 
 \subsection winbuild Windows build
 
@@ -39,7 +40,22 @@ template is stored in the CVS tree, but not the rest.
 
 \section components Components
 
-[to be completed]
+\subsection component3d 3D viewer/mapper
+
+\subsection componentai Artificial Intelligence
+
+\subsection componentdb Database & File
+
+\subsection componentnet Network
+
+\subsection componentpython Python scripting
+
+\subsection componentsys System
+
+\subsection componentmisc Miscellaneous
+
+This contains all the various utility functions, classes and objects that are not
+complex and large enough to warrant their own separate component.
 
 \section externals External components
 

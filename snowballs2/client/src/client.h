@@ -1,7 +1,7 @@
 /** \file client.h
  * 
  *
- * $Id: client.h,v 1.4 2001/07/12 13:51:37 legros Exp $
+ * $Id: client.h,v 1.5 2001/07/12 14:18:54 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define CLIENT_H
 
 #include <nel/misc/config_file.h>
+#include <nel/misc/time_nl.h>
 
 
 namespace NL3D
@@ -43,6 +44,8 @@ extern NL3D::UDriver			*Driver;
 extern NL3D::UScene				*Scene;
 extern NL3D::UTextContext		*TextContext;
 extern NL3D::U3dMouseListener	*MouseListener;
+
+extern NLMISC::TTime			LastTime, NewTime;
 
 #endif // CLIENT_H
 

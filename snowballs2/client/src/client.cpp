@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.16 2001/07/12 13:53:18 legros Exp $
+ * $Id: client.cpp,v 1.17 2001/07/12 14:18:54 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,7 +164,7 @@ int main(int argc, char **argv)
 	// Display the firsts line
 	nlinfo ("Welcome to Snowballs 2");
 
-	LastTime = CTime::getLocalTime();
+	NewTime = CTime::getLocalTime();
 
 	while ((!NeedExit) && Driver->isActive())
 	{
@@ -191,7 +191,12 @@ int main(int argc, char **argv)
 		// Render
 		Scene->render ();
 
+		// update the time counters
+		LastTime = NewTime;
+		NewTime = CTime::getLocalTime();
 
+		// Update all entities at once
+		updateEntities();
 		
 		// Update the commands panel
 		if (ShowCommands) updateCommands ();

@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.2 2001/07/12 13:51:37 legros Exp $
+ * $Id: entities.h,v 1.3 2001/07/12 14:18:54 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,26 +28,36 @@
 
 #include <string>
 
+#include <nel/misc/vector.h>
+
 namespace NLPACS
 {
 	class UMovePrimitive;
 };
 
+namespace NL3D
+{
+	class UInstance;
+};
+
 class CEntity
 {
 public:
-	
-	uint32 Id;
 
-	std::string Name;
+	uint32						Id;
 
-	float x, y, z, speed, angle;
+	std::string					Name;
+
+	NLMISC::CVector				Position;
+	float						Speed, 
+								Angle;
 
 	enum TType { Self, Other, Snowball };
 	
 	TType Type;
 
 	NLPACS::UMovePrimitive		*MovePrimitive;
+	NL3D::UInstance				*Instance;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.2 2001/07/12 13:51:37 legros Exp $
+ * $Id: entities.cpp,v 1.3 2001/07/12 14:18:54 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #include <nel/misc/command.h>
 #include <nel/misc/log.h>
 #include <nel/misc/displayer.h>
+#include <nel/misc/vector.h>
+#include <nel/misc/vectord.h>
 
 #include <nel/3d/u_camera.h>
 #include <nel/3d/u_driver.h>
@@ -80,7 +82,7 @@ EIT findEntity (uint32 eid, bool needAssert = true)
 }
 
 
-void addEntity (uint32 eid, CEntity::TType type)
+void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 {
 	nlinfo ("adding entity %d", eid);
 
@@ -96,9 +98,10 @@ void addEntity (uint32 eid, CEntity::TType type)
 	entity.Id = eid;
 	entity.Type = type;
 	entity.Name = "Entity"+toString(rand());
+	entity.Position = startPosition;
 	entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
 
-	// setup the move primitive depending on the type of entity
+	// setup the move primitive and the mesh instance depending on the type of entity
 	switch (type)
 	{
 	case CEntity::Self:
@@ -110,6 +113,9 @@ void addEntity (uint32 eid, CEntity::TType type)
 		entity.MovePrimitive->setObstacle(true);
 		entity.MovePrimitive->setRadius(0.5f);
 		entity.MovePrimitive->setHeight(1.8f);
+		entity.MovePrimitive->insertInWorldImage(0);
+		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
+		entity.Instance = Scene->createInstance("barman.shape");
 		break;
 	case CEntity::Other:
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
@@ -120,6 +126,7 @@ void addEntity (uint32 eid, CEntity::TType type)
 		entity.MovePrimitive->setObstacle(true);
 		entity.MovePrimitive->setRadius(0.5f);
 		entity.MovePrimitive->setHeight(1.8f);
+		entity.Instance = Scene->createInstance("barman.shape");
 		break;
 	case CEntity::Snowball:
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
@@ -130,6 +137,7 @@ void addEntity (uint32 eid, CEntity::TType type)
 		entity.MovePrimitive->setObstacle(false);
 		entity.MovePrimitive->setRadius(0.2f);
 		entity.MovePrimitive->setHeight(0.4f);
+		entity.Instance = Scene->createInstance("barman.shape");
 		break;
 	}
 }
@@ -149,6 +157,9 @@ void updateEntities ()
 {
 	/// \todo
 
+	// compute the collision for the primitives inserted in the move container	
+	double	dt = (double)(NewTime-LastTime) / 1000.0;
+	MoveContainer->evalCollision(dt, 0);
 }
 
 void cbUpdateRadar (CConfigFile::CVar &var)
@@ -200,8 +211,8 @@ void updateRadar ()
 		float userPosX, userPosY;
 
 		// convert from world coords to radar coords (0.0 -> 1.0)
-		userPosX = (*eit).second.x;
-		userPosY = (*eit).second.y;
+		userPosX = (*eit).second.Position.x;
+		userPosY = (*eit).second.Position.y;
 
 		// userPosX and userPosY must be between 0.0 -> 1.0
 
@@ -236,9 +247,7 @@ NLMISC_COMMAND(add_entity,"add a local entity","<x> <y>")
 
 	static uint32 nextEID = 0;
 	uint32 eid = nextEID++;
-	addEntity (eid, CEntity::Other);
+	addEntity (eid, CEntity::Other, CVector(x, y, 0.0f));
 	EIT eit = findEntity (eid);
-	(*eit).second.x = x;
-	(*eit).second.y = y;
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.177 2003/03/18 10:24:43 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.178 2003/03/27 17:37:31 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1364,10 +1364,9 @@ bool CDriverGL::swapBuffers()
 
 
 	/* PATCH For Possible NVidia Synchronisation.
-		seems to still be a problem for GeFroce2MX400 with 4.1.0.9 driver (at least this configuration....)
 	/*/
 	// Because of Bug with GeForce, must finishFence() for all VBHard.
-	set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
+	/*set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
 	while(itVBHard != _VertexBufferHardSet.Set.end() )
 	{
 		// Need only to do it for NVidia VB ones.
@@ -1376,15 +1375,14 @@ bool CDriverGL::swapBuffers()
 			CVertexBufferHardGLNVidia	*vbHardNV= static_cast<CVertexBufferHardGLNVidia*>(*itVBHard);
 			// If needed, "flush" these VB.
 			vbHardNV->finishFence();
-			vbHardNV->GPURenderingAfterFence= false;
 		}
 		itVBHard++;
-	}
-	/* Need to Do this code only if Synchronisation PATCH not done!
+	}*/
+	/* Need to Do this code only if Synchronisation PATCH before not done!
 		AS NV_Fence GeForce Implementation says. Test each frame the NVFence, until completion. 
 		NB: finish is not required here. Just test. This is like a "non block synchronisation"
 	 */
-	/*set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
+	set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
 	while(itVBHard != _VertexBufferHardSet.Set.end() )
 	{
 		if((*itVBHard)->NVidiaVertexBufferHard)
@@ -1394,13 +1392,10 @@ bool CDriverGL::swapBuffers()
 			{
 				// update Fence Cache.
 				vbHardNV->testFence();
-				// If now cleared, update GPURenderingAfterFence flag
-				if(!vbHardNV->isFenceSet())
-					vbHardNV->GPURenderingAfterFence= false;
 			}
 		}
 		itVBHard++;
-	}*/
+	}
 
 
 #ifdef NL_OS_WINDOWS

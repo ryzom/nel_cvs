@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.7 2003/03/17 17:32:02 berenguier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.8 2003/03/27 17:37:31 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -312,12 +312,12 @@ void		*CVertexBufferHardGLNVidia::lock()
 	{
 		// Set a new fence at the current position in the command stream, replacing the old one
 		setFence();
+		// And so the GPU has rendered all our primitives.
+		GPURenderingAfterFence= false;
 	}
 
 	// Ensure the GPU has finished with the current VBHard.
 	finishFence();
-	// And so the GPU has rendered all our primitives.
-	GPURenderingAfterFence= false;
 
 
 	return _VertexPtr;
@@ -393,7 +393,9 @@ void			CVertexBufferHardGLNVidia::testFence()
 	{
 		// Don't stall the CPU
 		GLboolean	b= nglTestFenceNV(_Fence);
-		_FenceSet= b!=0;
+		// if completed
+		if(b==GL_TRUE)
+			_FenceSet= false;
 	}
 }
 

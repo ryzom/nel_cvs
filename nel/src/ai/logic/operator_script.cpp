@@ -164,6 +164,7 @@ namespace NLAIAGENT
 				if ( _CurrentGoal == NULL && ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL )
 				{
 					_CurrentGoal = selectGoal();							// Select a goal among possible ones
+					_CurrentGoal->incRef();
 					_CurrentGoal->addSuccessor( (IBasicAgent *) this );		// Adds the operator to the list of operators launched for this goal
 					linkGoalArgs( _CurrentGoal );							// Instanciates the goal's args values into the operator's components
 				}

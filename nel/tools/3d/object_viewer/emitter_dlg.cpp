@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.4 2001/06/25 13:16:34 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.5 2001/06/27 16:50:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,7 +161,7 @@ BOOL CEmitterDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-	
+	RECT r ;
 	
 	uint posX = 13 ;
 	uint posY = 60 ;
@@ -214,8 +214,28 @@ BOOL CEmitterDlg::OnInitDialog()
 		da->init(posX, posY, this) ;
 		_DirectionWrapper.E = dynamic_cast<NL3D::CPSEmitterDirection *>(_Emitter) ;
 		da->setWrapper(&_DirectionWrapper) ;
-		posY += 120 ;
+		da->GetClientRect(&r) ;
+		posY += r.bottom ;
 	}
+
+	// radius  for conic emitter
+	if (dynamic_cast<NL3D::CPSEmitterConic *>(_Emitter))
+	{
+		CEditableRangeFloat *ecr = new CEditableRangeFloat(std::string("CONIC EMITTER RADIUS"), 0.1f, 2.1f) ;
+		pushWnd(ecr) ;
+		_ConicEmitterRadiusWrapper.E = dynamic_cast<NL3D::CPSEmitterConic *>(_Emitter) ;
+		ecr->setWrapper(&_ConicEmitterRadiusWrapper) ;
+		ecr->init(posX + 80, posY, this) ;
+
+		CStatic *s = new CStatic ;			
+		pushWnd(s) ;
+		s->Create("Radius :", SS_LEFT, CRect(posX, posY + 10 , posX + 70, posY + 32), this) ;
+		s->ShowWindow(SW_SHOW) ;
+
+		ecr->GetClientRect(&r) ;
+		posY += r.bottom ;
+	}
+
 
 	m_UseSpeedBasis = _Emitter->isSpeedBasisEmissionEnabled() ;
 

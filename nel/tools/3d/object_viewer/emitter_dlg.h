@@ -1,7 +1,7 @@
 /** \file emitter_dlg.h
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.h,v 1.3 2001/06/25 13:16:34 vizerie Exp $
+ * $Id: emitter_dlg.h,v 1.4 2001/06/27 16:50:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,7 @@ protected:
 		// period of emission //
 		////////////////////////
 
-			struct tagPeriodWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat 
+			struct CPeriodWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat 
 			{
 			   NL3D::CPSEmitter *E ;
 			   float get(void) const { return E->getPeriod() ; }
@@ -125,7 +125,7 @@ protected:
 		// number of particle to generate each time //
 		//////////////////////////////////////////////
 
-			struct tagGenNbWrapper : public IPSWrapperUInt, IPSSchemeWrapperUInt 
+			struct CGenNbWrapper : public IPSWrapperUInt, IPSSchemeWrapperUInt 
 			{
 			   NL3D::CPSEmitter *E ;
 			   uint32 get(void) const { return E->getGenNb() ; }
@@ -138,7 +138,7 @@ protected:
 		// wrappers to emitters that have strenght modulation //
 		////////////////////////////////////////////////////////
 
-			struct tagModulateStrenghtWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat 
+			struct CModulateStrenghtWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat 
 			{
 			   NL3D::CPSModulatedEmitter *E ;
 			   float get(void) const { return E->getEmitteeSpeed() ; }
@@ -151,7 +151,7 @@ protected:
 		// wrappers to set the speed inheritance factor //
 		//////////////////////////////////////////////////
 
-			struct tagSpeedInheritanceFactorWrapper : public IPSWrapperFloat
+			struct CSpeedInheritanceFactorWrapper : public IPSWrapperFloat
 			{
 			   NL3D::CPSEmitter *E ;
 			   float get(void) const { return E->getSpeedInheritanceFactor() ; }
@@ -162,12 +162,25 @@ protected:
 		// wrappers to tune the direction of emitters //
 		////////////////////////////////////////////////
 
-			struct tagDirectionWrapper : public IPSWrapper<NLMISC::CVector>
+			struct CDirectionWrapper : public IPSWrapper<NLMISC::CVector>
 			{
 			   NL3D::CPSEmitterDirection *E ;
 			   NLMISC::CVector get(void) const { return E->getDir() ; }
 			   void set(const NLMISC::CVector &d){ E->setDir(d) ; }	
 			} _DirectionWrapper ;
+
+		//////////////////////////////////////////////
+		// wrapper to tune the radius of an emitter //
+		//////////////////////////////////////////////
+		
+			struct CConicEmitterRadiusWrapper : public IPSWrapperFloat
+			{
+			   NL3D::CPSEmitterConic *E ;
+			   float get(void) const { return E->getRadius() ; }
+			   void set(const float &f) { E->setRadius(f) ; }	
+			} _ConicEmitterRadiusWrapper ;
+
+
 
 
 

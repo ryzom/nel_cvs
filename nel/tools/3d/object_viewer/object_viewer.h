@@ -1,5 +1,27 @@
-// object_viewer.h : main header file for the OBJECT_VIEWER DLL
-//
+/** \file object_viewer.cpp
+ * main header file for the OBJECT_VIEWER DLL
+ *
+ * $Id: object_viewer.h,v 1.5 2001/04/26 17:57:41 corvazier Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
 
 #if !defined(AFX_OBJECT_VIEWER_H__9B22CB84_1929_11D5_9CD4_0050DAC3A412__INCLUDED_)
 #define AFX_OBJECT_VIEWER_H__9B22CB84_1929_11D5_9CD4_0050DAC3A412__INCLUDED_
@@ -31,6 +53,7 @@
 #include <nel/3d/event_mouse_listener.h>
 #include <nel/3d/light.h>
 #include <nel/misc/event_listener.h>
+#include <nel/misc/stream.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CObject_viewerApp
@@ -57,6 +80,25 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 
+class CMeshDesc
+{
+public:
+	CMeshDesc () {};
+	CMeshDesc (const char* meshName, const char* skeletonName)
+	{
+		MeshName=meshName;
+		SkeletonName=skeletonName;
+	}
+	std::string		MeshName;
+	std::string		SkeletonName;
+	void			serial (NLMISC::IStream& s)
+	{
+		int ver=s.serialVersion (0);
+		s.serial (MeshName);
+		s.serial (SkeletonName);
+	}
+};
+
 class CObjectViewer : public IObjectViewer, public NLMISC::IEventListener
 {
 	friend class CSceneDlg;
@@ -77,11 +119,11 @@ public:
 	// Set single animtion.
 	void setSingleAnimation (NL3D::CAnimation*	pAnim, const char* name);
 
-	// Add a shape and return an instance of this shape
-	NL3D::CTransformShape	*addShape (NL3D::IShape* pShape, const char* name, const char *animBaseName);
+	// Add a mesh
+	NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, NL3D::IShape* pSkelShape, const char* name, const char *animBaseName);
 
-	// Load a shape
-	bool loadShape (const char* filename);
+	// Load a mesh
+	bool loadMesh (const char* meshFilename, const char* skeleton="");
 
 	// Set ambient color
 	void setAmbientColor (const NLMISC::CRGBA& color);
@@ -117,6 +159,7 @@ private:
 	CSceneDlg									*_SceneDlg;
 	std::vector<std::string>					_ListShapeBaseName;
 	std::vector<std::string>					_ListShape;
+	std::vector<CMeshDesc>						_ListMeshes;
 	std::vector<class NL3D::CTransformShape*>	_ListTransformShape;
 	NL3D::CAnimationSet							_AnimationSet;
 	NL3D::CChannelMixer							_ChannelMixer;

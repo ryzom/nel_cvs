@@ -1,5 +1,27 @@
-// object_viewer.cpp : Defines the initialization routines for the DLL.
-//
+/** \file object_viewer.cpp
+ * : Defines the initialization routines for the DLL.
+ *
+ * $Id: object_viewer.cpp,v 1.6 2001/04/26 17:57:41 corvazier Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
 
 #include "std_afx.h"
 
@@ -417,21 +439,21 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 	_MouseListener.setMatrix (mt);
 
 	// serial list of shape
-	std::vector<std::string> stringArray=_ListShape;
+	std::vector<CMeshDesc> meshArray=_ListMeshes;
 
 	// serial list of shape
-	f.serialCont (stringArray);
+	f.serialCont (meshArray);
 
 	// If reading, read shapes
 	if (f.isReading ())
 	{
 		// Load each shape
-		for (uint s=0; s<stringArray.size(); s++)
-			loadShape (stringArray[s].c_str());
+		for (uint s=0; s<meshArray.size(); s++)
+			loadMesh (meshArray[s].MeshName.c_str(), meshArray[s].SkeletonName.c_str());
 	}
 
 	// List of animation
-	stringArray=_AnimationSetDlg->_ListAnimation;
+	std::vector<std::string> stringArray=_AnimationSetDlg->_ListAnimation;
 
 	// Serial the list
 	f.serialCont (stringArray);
@@ -489,7 +511,7 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 
 // ***************************************************************************
 
-bool CObjectViewer::loadShape (const char* filename)
+bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -497,13 +519,24 @@ bool CObjectViewer::loadShape (const char* filename)
 	char drive[256];
 	char dir[256];
 	char path[256];
-	_splitpath (filename, drive, dir, NULL, NULL);
+
+	// Add search path for the mesh
+	_splitpath (meshFilename, drive, dir, NULL, NULL);
 	_makepath (path, drive, dir, NULL, NULL);
 	CPath::addSearchPath (path);
 
+	// Add search path for the skeleton
+	_splitpath (skeleton, drive, dir, NULL, NULL);
+	_makepath (path, drive, dir, NULL, NULL);
+	CPath::addSearchPath (path);
+
+	// Shape pointer
+	IShape *shapeMesh=NULL;
+	IShape *shapeSkel=NULL;
+
 	// Open a file
 	CIFile file;
-	if (file.open (filename))
+	if (file.open (meshFilename))
 	{
 		// Sream a shape
 		CShapeStream streamShape;
@@ -513,9 +546,7 @@ bool CObjectViewer::loadShape (const char* filename)
 			streamShape.serial (file);
 
 			// Add the shape
-			addShape (streamShape.getShapePointer(), filename, "");
-
-			return true;
+			shapeMesh=streamShape.getShapePointer();
 		}
 		catch (Exception& e)
 		{
@@ -526,9 +557,64 @@ bool CObjectViewer::loadShape (const char* filename)
 	{
 		// Create a message
 		char msg[512];
-		_snprintf (msg, 512, "Can't open the file %s for reading.", filename);
+		_snprintf (msg, 512, "Can't open the file %s for reading.", meshFilename);
 		_SceneDlg->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 	}
+
+	// Continue ?
+	if (shapeMesh)
+	{
+		// Skel error ?
+		bool skelError=false;
+
+		if (skeleton)
+		{
+			// Open a file
+			if (file.open (skeleton))
+			{
+				// Sream a shape
+				CShapeStream streamShape;
+				try
+				{
+					// Stream it
+					streamShape.serial (file);
+
+					// Add the shape
+					shapeSkel=streamShape.getShapePointer();
+				}
+				catch (Exception& e)
+				{
+					_SceneDlg->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+
+					// error
+					skelError=true;
+				}
+			}
+			else
+			{
+				// Create a message
+				char msg[512];
+				_snprintf (msg, 512, "Can't open the file %s for reading.", meshFilename);
+				_SceneDlg->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+
+				// error
+				skelError=true;
+			}
+		}
+
+		// Remove the mesh shape ?
+		if (skelError)
+		{
+			if (shapeMesh)
+				delete shapeMesh;
+			shapeMesh=NULL;
+		}
+	}
+
+	// Add the shape
+	if (shapeMesh)
+		addMesh (shapeMesh, shapeSkel, meshFilename, "");
+
 	return false;
 }
 
@@ -543,12 +629,14 @@ void CObjectViewer::resetCamera ()
 
 // ***************************************************************************
 
-CTransformShape	*CObjectViewer::addShape (IShape* pShape, const char* name, const char *animBaseName)
+CTransformShape	*CObjectViewer::addMesh (NL3D::IShape* pMeshShape, NL3D::IShape* pSkelShape, const char* name, const char *animBaseName)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+	// *** Add the shape
+
 	// Store the shape pointer
-	CNELU::ShapeBank->add (name, CSmartPtr<IShape> (pShape));
+	CNELU::ShapeBank->add (name, CSmartPtr<IShape> (pMeshShape));
 
 	// Store the name of the shape
 	_ListShape.push_back (name);

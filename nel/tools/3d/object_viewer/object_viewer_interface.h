@@ -1,5 +1,26 @@
-// object_viewer.h : main header file for the OBJECT_VIEWER DLL
-//
+/** \file object_viewer_interface.cpp
+ *
+ * $Id: object_viewer_interface.h,v 1.4 2001/04/26 17:57:41 corvazier Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
 
 #ifndef OBJECT_VIEWER_INTERFACE
 #define OBJECT_VIEWER_INTERFACE
@@ -38,11 +59,11 @@ public:
 	// Release the UI
 	virtual void releaseUI ()=0;
 
-	// Add a shape
-	virtual NL3D::CTransformShape	*addShape (NL3D::IShape* pShape, const char* name, const char *animBaseName)=0;
+	// Add a mesh
+	virtual NL3D::CTransformShape	*addMesh (NL3D::IShape* pMeshShape, NL3D::IShape* pSkelShape, const char* name, const char *animBaseName)=0;
 
-	// Load a shape
-	virtual bool loadShape (const char* filename)=0;
+	// Load a mesh
+	virtual bool loadMesh (const char* meshFilename, const char* skeleton)=0;
 
 	// Load a shape
 	virtual void resetCamera ()=0;

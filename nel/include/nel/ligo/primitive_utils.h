@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.9 2004/09/15 13:27:02 boucher Exp $
+ * $Id: primitive_utils.h,v 1.10 2004/09/19 01:57:53 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -166,7 +166,7 @@ struct TPrimitivePropertyPredicate
  *	match a given predicate.
  *	The primitive are tested recursively starting at an arbitrary node in the
  *	primitive tree.
- *	Application code just need to call getNetMatch until it return NULL indicating
+ *	Application code just need to call getNextMatch until it return NULL indicating
  *	there is no more node that match the predicate.
  */
 template <class Pred = TPrimitiveClassPredicate>
@@ -349,7 +349,9 @@ IPrimitive *getPrimitiveChild(IPrimitive *parent, Pred &predicate)
 	{
 		IPrimitive *child;
 		if (parent->getChild(child, i) && predicate(child))
+		{
 			return child;
+		}
 	}
 
 	return NULL;
@@ -389,8 +391,8 @@ void filterPrimitiveChilds(IPrimitive *parent, Pred &predicate, TPrimitiveSet &r
 }
 
 
-/** Build a string that reprensent the path to a node 
- *	Note that the reverse operation does not garantie to
+/** Build a string that represent the path to a node 
+ *	Note that the reverse operation does not guarantie to
  *	return a unique node because there is no name 
  *	uniqueness constrains in the primitive system.
  */

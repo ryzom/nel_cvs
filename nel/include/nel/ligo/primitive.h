@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.33 2004/09/13 16:54:50 boucher Exp $
+ * $Id: primitive.h,v 1.34 2004/09/19 01:57:53 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -576,6 +576,8 @@ private:
 */
 class CPrimAlias : public IPrimitive
 {
+	friend CPrimitives;
+
 	/// The 'dynamic' part of the alias
 	uint32				_Alias;
 	/// The primitive container
@@ -599,6 +601,8 @@ class CPrimAlias : public IPrimitive
 	virtual void onBranchLink();
 	// callback called just before the node is removed from it's parent
 	virtual void onBranchUnlink();
+
+	void regenAlias();
 
 public:
 	// \name From IClassable
@@ -697,6 +701,11 @@ public:
 //	void			reserveAlias(uint32 dynamicAlias);
 	// Remove an alias from the list of alias in use (dynamic part only)
 	void			releaseAlias(const IPrimitive *prim, uint32 dynamicAlias);
+
+	// Force the assignation of the specified alias the the primitive. If another primitive
+	// already old the alias, this other primitive is assigned a new alias.
+	void			forceAlias(CPrimAlias *prim, uint32 alias);
+
 
 private:
 	// Conversion internal methods

@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.5 2001/01/12 11:49:58 portier Exp $
+ * $Id: mailbox.cpp,v 1.6 2001/01/15 17:58:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -530,18 +530,18 @@ namespace NLAIAGENT
 		{
 			father = father->getParent();
 
-	#ifdef _DEBUG
+#ifdef _DEBUG
 				const char *dbg_this_type = 	(const char *) getType();
 				const char *dbg_father_type = 	(const char *) getParent()->getType();
-	#endif
+#endif
 			
 			if ( father != NULL )	
 			{
-				NLAIC::CIdentType f_type = father->getType();
+				const NLAIC::CIdentType &f_type = father->getType();
 
-	#ifdef _DEBUG
+#ifdef _DEBUG
 				const char *dbg_ffather_type = 	(const char *) father->getType();
-	#endif
+#endif
 
 
 				if( ((const NLAIC::CTypeOfObject &) f_type) & NLAIC::CTypeOfObject::tAgentInterpret )	// Le père ets il un agent scripté?

@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: message.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
+ * $Id: message.cpp,v 1.4 2001/01/15 17:58:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,10 @@ namespace NLAIAGENT
 		os.serial( *_MsgGroup );
 		os.serial( (NLAIC::CIdentType &) _Message->getType() );
 		os.serial( *_Message );
+
+		sint32 i = _Performatif;
+		os.serial(i);
+		os.serial(_comeFromC_PLUS);
 	}
 	
 	void IMessageBase::load(NLMISC::IStream &is)
@@ -91,6 +95,10 @@ namespace NLAIAGENT
 		if(_Message != NULL) _Message->release();
 		_Message = (IBaseGroupType *)id.allocClass();
 		is .serial( *_Message );
+		sint32 i = _Performatif;
+		is.serial(i);
+		_Performatif = (TPerformatif)i;
+		is.serial(_comeFromC_PLUS);
 	}
 
 	void IMessageBase::getDebugString(char *t) const

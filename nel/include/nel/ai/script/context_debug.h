@@ -1,7 +1,7 @@
 /** \file context_debug.h
  * Debug informations in the context.
  *
- * $Id: context_debug.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: context_debug.h,v 1.5 2001/01/15 17:58:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -152,6 +152,12 @@ namespace NLAISCRIPT
 
 		/// Store the last command Line.
 		void setLastCommandLine(const char* c);
+
+		///For reinit the context after using.
+		void init()
+		{
+			if(Active) _DebugMode = stepByStepMode;
+		}
 	};
 }
 

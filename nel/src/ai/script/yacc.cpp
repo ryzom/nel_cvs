@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.6 2001/01/12 11:52:20 portier Exp $
+ * $Id: yacc.cpp,v 1.7 2001/01/15 17:58:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -718,8 +718,8 @@ namespace NLAISCRIPT
 	void CCompilateur::callFunction()
 	{
 #ifdef NL_DEBUG
-	char mName[1024];
-	char pName[1024];
+	char mName[1024*8];
+	char pName[1024*8];
 	_LastStringParam.back()->getDebugString(mName);
 	_Param.back()->getDebugString(pName);	
 	//sint32 i = _TypeList.size();
@@ -795,12 +795,19 @@ namespace NLAISCRIPT
 	nameRun->getDebugString(mName);
 #endif
 			_Param.back()->incRef();
-			if(_LastbaseClass) _LastbaseClass->incRef();
+			int baseIsNew = false;
+			if(_LastbaseClass == NULL)
+			{
+				_LastbaseClass = new COperandSimple(new NLAIC::CIdentType (_SelfClass.get()->getType()));
+				_LastbaseClass->incRef();
+				baseIsNew = true;
+			}
+			_LastbaseClass->incRef();
 			c = getMethodConstraint(CConstraintFindRun((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,0,_LastbaseClass,nameRun,_Param.back(),0,0));
 			if(c == NULL)
 			{				
 				_Param.back()->incRef();
-				if(_LastbaseClass) _LastbaseClass->incRef();
+				if(_LastbaseClass && !baseIsNew) _LastbaseClass->incRef();
 				c = new CConstraintFindRun((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,0,_LastbaseClass,nameRun,_Param.back(),yyLine,yyColone);				
 				c->incRef();
 				_MethodConstraint.push_back(c);

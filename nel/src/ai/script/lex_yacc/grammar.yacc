@@ -2,12 +2,12 @@
 #include <malloc.h>
 #include <list>
 #define PARSER_NO_REDEF_YYTABLE_H_
-#include "script/compilateur.h"
-#include "script/constraint.h"
-#include "script/type_def.h"
-#include "script/object_unknown.h"
-#include "logic/logic.h"
-#include "fuzzy/fuzzy.h"
+#include "nel/ai/script/compilateur.h"
+#include "nel/ai/script/constraint.h"
+#include "nel/ai/script/type_def.h"
+#include "nel/ai/script/object_unknown.h"
+#include "nel/ai/logic/logic.h"
+#include "nel/ai/fuzzy/fuzzy.h"
 
 
 using  namespace NLAISCRIPT;
@@ -77,7 +77,7 @@ using  namespace NLAIFUZZY;
 						|	MessageManager 							
 							PAR_G PAR_D	
 							{
-								initMessageManager();
+									initMessageManager();
 							}			
 							DuCode
 							END
@@ -828,7 +828,7 @@ using  namespace NLAIFUZZY;
 	Variable			:	IDENT
 							{
 								_LasVarStr.clear();
-								_LasVarStr.push_back(LastyyText[1]);
+								_LasVarStr.push_back(NLAISCRIPT::CStringType(LastyyText[1]));
 								_LastFact.VarType = varTypeUndef;
 								_IsFacteurIsExpression = false;								
 							}

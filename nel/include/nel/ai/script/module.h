@@ -1,7 +1,7 @@
 /** \file module.h
  * Class op-code storage.
  *
- * $Id: module.h,v 1.4 2001/01/12 09:52:55 chafik Exp $
+ * $Id: module.h,v 1.5 2001/01/15 17:58:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 namespace NLAISCRIPT
 {
 	///this typedef define an correct std::map for store local variable in the heap.
-	typedef std::map<NLAISCRIPT::CStringType , NLAIAGENT::IObjectIA *,std::less<NLAISCRIPT::CStringType> > tDicoStr;
+	typedef std::map<NLAISCRIPT::CStringType , NLAIAGENT::IObjectIA * > tDicoStr;
 
 	/**
 	* Class IBlock.
@@ -47,7 +47,7 @@ namespace NLAISCRIPT
 
 	protected:
 		///this typedef define an correct std::map iterator for store local variable in the heap.
-		typedef std::map<NLAISCRIPT::CStringType , NLAIAGENT::IObjectIA *,std::less<NLAISCRIPT::CStringType> >::iterator tDicoStrIter;
+		typedef std::map<NLAISCRIPT::CStringType , NLAIAGENT::IObjectIA *>::iterator tDicoStrIter;
 		
 	private:
 		///Op-code that define the block. This object is build at the end of parse.
@@ -136,7 +136,7 @@ namespace NLAISCRIPT
 		bool allocLocVar(const char *name, NLAIAGENT::IObjectIA *var)
 		{
 			if(getVar(name) != NULL) return false;
-			_DicoLocVar->insert(tDicoStr::value_type(name,var));		
+			_DicoLocVar->insert(tDicoStr::value_type(NLAISCRIPT::CStringType(name),var));		
 			return true;
 		}
 

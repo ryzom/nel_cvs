@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.6 2001/01/12 09:52:56 chafik Exp $
+ * $Id: codage.cpp,v 1.7 2001/01/15 17:58:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,7 +125,7 @@ namespace NLAISCRIPT
 		{	
 			i = runOpCode(p);
 		}
-
+		_Ip = 0;
 		_RunState.ResultState = NLAIAGENT::processIdle;
 		return _RunState;
 	}

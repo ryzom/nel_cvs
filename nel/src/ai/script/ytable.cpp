@@ -1070,7 +1070,7 @@ case 4:
 case 7:
 #line 79 "grammar.yacc"
 {
-								initMessageManager();
+									initMessageManager();
 							;
     break;}
 case 8:
@@ -1795,7 +1795,7 @@ case 137:
 #line 829 "grammar.yacc"
 {
 								_LasVarStr.clear();
-								_LasVarStr.push_back(LastyyText[1]);
+								_LasVarStr.push_back(NLAISCRIPT::CStringType(LastyyText[1]));
 								_LastFact.VarType = varTypeUndef;
 								_IsFacteurIsExpression = false;								
 							;

@@ -1,7 +1,7 @@
 /** \file thread.h
  * thread interface
  *
- * $Id: thread.h,v 1.6 2001/01/10 10:08:27 lecroart Exp $
+ * $Id: thread.h,v 1.7 2001/01/15 17:58:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,9 @@ public:
 	int bidon;
 	// Called when a thread is run.
 	virtual void run()=0;
+	virtual ~IRunnable()
+	{
+	}
 };
 
 /**

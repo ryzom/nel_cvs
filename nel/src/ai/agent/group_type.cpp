@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: group_type.cpp,v 1.5 2001/01/15 17:58:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -300,7 +300,7 @@ namespace NLAIAGENT
 	void CGroupType::getDebugString(char *text) const
 	{		
 				
-		sprintf(text,"[",_List.size());
+		sprintf(text,"[");
 		sint32 k = 0;
 		std::list<const IObjectIA *>::const_iterator i = _List.begin();
 		while(i != _List.end())

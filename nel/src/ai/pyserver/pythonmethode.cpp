@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.6 2001/01/12 13:02:29 portier Exp $
+ * $Id: pythonmethode.cpp,v 1.7 2001/01/15 17:58:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -203,6 +203,8 @@ namespace NLAIPYSERVER
 		k = (char *)Py_GetPath();
 		
 		PyObject *O = Py_InitModule("RysonSytemeIO",M_Constructeur);		
+
+		delete PathPython;
 
 		char CodeExec[] =	"import sys\n"
 							"from RysonSytemeIO import *\n"

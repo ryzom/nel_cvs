@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.10 2001/01/12 09:52:55 chafik Exp $
+ * $Id: codage.h,v 1.11 2001/01/15 17:58:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -350,6 +350,12 @@ namespace NLAISCRIPT
 			if(InputOutput != NULL) InputOutput->incRef();
 		}
 
+		///For reinit the context after using.
+		void init()
+		{
+			ContextDebug.init();
+		}
+
 		///set the input output class.
 		void setIO(NLAIC::IIO *io)
 		{
@@ -609,6 +615,11 @@ namespace NLAISCRIPT
 		operator uint32 ()
 		{
 			return _Ip;
+		}
+
+		void init()
+		{
+			_Ip = 0;
 		}
 
 		/// get the op code from the curent position.

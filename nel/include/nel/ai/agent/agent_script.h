@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.5 2001/01/12 13:01:47 portier Exp $
+ * $Id: agent_script.h,v 1.6 2001/01/15 17:58:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,7 +75,7 @@ namespace NLAIAGENT
 		///Vector for store agent operator.
 		std::vector<NLAILOGIC::IBaseOperator *> _Operators;
 		///The manager where the agent is run this manager have the agent script context.
-		IAgentManager *_AgentManager;
+		IAgentManager *_AgentManager;		
 		/**
 		This is a mail box for script send message. Note that if message have a run message for prossing message, this message is achieve in this mail box, 
 		else he is achive in the base class mail box.

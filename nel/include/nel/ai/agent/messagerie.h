@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: messagerie.h,v 1.6 2001/01/09 17:16:52 chafik Exp $
+ * $Id: messagerie.h,v 1.7 2001/01/15 17:58:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,8 @@
 namespace NLAIAGENT
 {	
 	class CIdentType;
-	class IBasicAgent;	
+	class IBasicAgent;
+	
 
 	/**		
 		Abstract Base class for message, all message tansited by agent have this class as base class.
@@ -46,6 +47,18 @@ namespace NLAIAGENT
 	*/
 	class IMessageBase: public IBaseGroupType
 	{
+	public:
+		enum TPerformatif
+		{
+			PUndefine,
+			PExec,
+			PAchieve,
+			PAsk,
+			PBreak,
+			PTell,
+			PKill
+		};
+
 	private:
 		///Who send the message.
 		IObjectIA *_Sender;
@@ -61,6 +74,10 @@ namespace NLAIAGENT
 		sint32 _ReservedMethodIndexVar;
 		///if the message come from script then this reserved variable represent the offset of the base class which the Run(MSG) is.
 		sint32 _ReservedHeritanceIndexVar;
+		///This variable define the performatif for agent dialog protocole. 
+		TPerformatif _Performatif;
+		///This bool allow to know here the message come from: scriptes agent or hard coded agent.
+		bool _comeFromC_PLUS;
 
 	protected:
 		void setMessageGroup(IBaseGroupType *g)
@@ -80,6 +97,8 @@ namespace NLAIAGENT
 			_ReservedHeritanceIndexVar = 0;
 			_Receiver = NULL;
 			_Continuation = NULL;
+			_Performatif = PUndefine;
+			_comeFromC_PLUS = true;
 		}
 		IMessageBase(IObjectIA *sender,IBaseGroupType *g):_Sender(sender),_MsgGroup(NULL),_Message(g)
 		{
@@ -87,6 +106,8 @@ namespace NLAIAGENT
 			_ReservedHeritanceIndexVar = 0;
 			_Receiver = NULL;
 			_Continuation = NULL;
+			_Performatif = PUndefine;
+			_comeFromC_PLUS = true;
 		}
 		IMessageBase(IObjectIA *sender, IBasicMessageGroup &msg_group,IBaseGroupType *g):
 			_Sender(sender),_MsgGroup((IBasicMessageGroup *)msg_group.clone()),_Message(g)
@@ -95,6 +116,8 @@ namespace NLAIAGENT
 			_ReservedHeritanceIndexVar = 0;
 			_Receiver = NULL;
 			_Continuation = NULL;
+			_Performatif = PUndefine;
+			_comeFromC_PLUS = true;
 		}
 		IMessageBase(const IMessageBase &m)
 		{
@@ -106,6 +129,8 @@ namespace NLAIAGENT
 			_ReservedHeritanceIndexVar = m._ReservedHeritanceIndexVar;
 			_Receiver = m._Receiver;
 			_Continuation = m._Continuation;			
+			_Performatif = m._Performatif;
+			_comeFromC_PLUS = m._comeFromC_PLUS;
 		}
 
 		virtual ~IMessageBase()
@@ -125,6 +150,16 @@ namespace NLAIAGENT
 		void setGroup(IBasicMessageGroup &grp)
 		{			
 			_MsgGroup = (IBasicMessageGroup *)grp.clone();
+		}
+
+		void setPerformatif(TPerformatif p)
+		{
+			_Performatif = p;
+		}
+
+		const TPerformatif &getPerformatif()
+		{
+			return _Performatif;
 		}
 
 		///\name Set and get agent sender reciver and third

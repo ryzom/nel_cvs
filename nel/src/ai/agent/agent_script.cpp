@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.8 2001/01/12 11:49:58 portier Exp $
+ * $Id: agent_script.cpp,v 1.9 2001/01/15 17:58:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,7 @@ namespace NLAIAGENT
 
 			if(((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{
-				incRef();
+				///incRef();
 				((CAgentScript *)_Components[i])->setParent( (const IWordNumRef *) *this);
 				( (CScriptMailBox *) ((CAgentScript *)_Components[i])->getLocalMailBox() )->setIndex(nb_scripted);
 				nb_scripted++;
@@ -76,7 +76,7 @@ namespace NLAIAGENT
 		}
 		
 		_AgentManager = a._AgentManager;
-		if(_AgentManager) _AgentManager->incRef();
+		//if(_AgentManager) _AgentManager->incRef();
 
 		std::vector<NLAILOGIC::IBaseOperator *>::const_iterator it_o = a._Operators.begin();
 		while ( it_o != a._Operators.end() )
@@ -92,6 +92,7 @@ namespace NLAIAGENT
 		_Components = NULL;
 		_NbComponents = 0;		
 		_AgentManager = manager;
+		//MangerIsReferenced = false;
 		_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
 		_ScriptMail->incRef();
 	}
@@ -119,7 +120,7 @@ namespace NLAIAGENT
 
 			if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{
-				incRef();
+				//incRef();
 				((CAgentScript *)o)->setParent( (const IWordNumRef *) *this);
 				( (CScriptMailBox *) ((CAgentScript *)_Components[id_c])->getLocalMailBox() )->setIndex( nb_scripted );
 				nb_scripted++;
@@ -142,7 +143,7 @@ namespace NLAIAGENT
 			_Components[i]->release();
 		delete[] _Components;
 		
-		if(_AgentManager != NULL) _AgentManager->release();
+		//if(_AgentManager != NULL) _AgentManager->release();
 		
 		if ( _ScriptMail != NULL )
 			_ScriptMail->release();
@@ -150,13 +151,13 @@ namespace NLAIAGENT
 
 	void CAgentScript::setAgentManager(IAgentManager *manager)
 	{
-		if(_AgentManager != NULL) _AgentManager->release();
+		//if(_AgentManager != NULL) _AgentManager->release();
 		_AgentManager = manager;
 		for ( int i = 0; i < _NbComponents; i++ )
 		{
 			if(((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{
-				_AgentManager->incRef();
+				//_AgentManager->incRef();
 				((CAgentScript *)_Components[i])->setAgentManager(_AgentManager);
 			}
 		}

@@ -1,6 +1,6 @@
 /** \file dup_ps.cpp
  *
- * $Id: dup_ps.cpp,v 1.3 2003/07/01 14:08:41 vizerie Exp $
+ * $Id: dup_ps.cpp,v 1.4 2003/10/23 09:22:44 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -120,8 +120,9 @@ NL3D::CParticleSystemProcess	*DupPSLocated(const CParticleSystemProcess *in)
 			  * We can't duplicate the object direclty (it may be referencing other objects in the system, so these objects will be copied too...)
 			  */
 			 std::auto_ptr<CParticleSystem> newPS(DupSerializable<CDupObjPolicy>(in->getOwner()));	
-			return newPS->detach(index);
-			
+			 // scene pointer is not serialised, but 'detach' may need the scene to be specified
+			 newPS->setScene(in->getOwner()->getScene());
+			return newPS->detach(index);			
 		}
 	}
 	catch (NLMISC::EStream &e)

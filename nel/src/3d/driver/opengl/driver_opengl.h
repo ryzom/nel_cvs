@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.77 2001/07/24 09:14:48 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.78 2001/07/31 12:11:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -584,6 +584,7 @@ private:
 	CVector						_WorldLightDirection[MaxLight];		// World direction of the lights.
 
 	// Prec settings, for optimisation.
+	// NB: CRefPtr are not used for mem/spped optimisation. setupMaterial() and setupTexture() reset those states.
 	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
 	CMaterial*				_CurrentMaterial;
 	CMaterial::CTexEnv		_CurrentTexEnv[IDRV_MAT_MAXTEXTURES];

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.33 2001/07/11 08:24:59 besson Exp $
+ * $Id: driver_opengl_material.cpp,v 1.34 2001/07/31 12:11:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	//==========================
 	// Must setup textures each frame. (need to test if touched).
 	// Must separate texture setup and texture activation in 2 "for"...
-	// because setupTexture() may modify the stage 0.
+	// because setupTexture() may disable all stage.
 	for(stage=0 ; stage<getNbTextureStages() ; stage++)
 	{
 		ITexture	*text= mat.getTexture(stage);
@@ -174,7 +174,11 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		// Optimize: reset all flags at the end.
 		mat.clearTouched(0xFFFFFFFF);
 
-		// Since modified, must rebind all openGL states.
+		// Since modified, must rebind all openGL states. And do this also for the delete/new problem.
+		/* If an old material is deleted, _CurrentMaterial is invalid. But this is grave only if a new 
+			material is created, with the same pointer (bad luck). Since an newly allocated material always 
+			pass here before use, we are sure to avoid any problems.
+		*/
 		_CurrentMaterial= NULL;
 	}
 

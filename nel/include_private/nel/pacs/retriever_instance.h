@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.3 2001/05/31 12:30:18 berenguier Exp $
+ * $Id: retriever_instance.h,v 1.4 2001/06/07 12:14:33 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,7 +105,7 @@ protected:
 	std::vector<CAStarNodeInfo>			_NodesInformation;
 	
 	/// Used to retrieve the surface. Internal use only, to avoid large amount of new/delete
-	std::vector<uint8>					_RetrieveTable;
+	mutable std::vector<uint8>			_RetrieveTable;
 
 protected:
 	/// The id of this instance.
@@ -189,7 +189,7 @@ public:
 	 * WARNING: the estimated position is a GLOBAL position, and the returned position
 	 * is a LOCAL position (to the retriever).
 	 */
-	CLocalRetriever::CLocalPosition		retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever);
+	CLocalRetriever::CLocalPosition		retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever) const;
 
 	/// Serialises this CRetrieverInstance.
 	void								serial(NLMISC::IStream &f);

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.10 2001/06/06 10:17:44 corvazier Exp $
+ * $Id: global_retriever.h,v 1.11 2001/06/07 12:14:33 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,7 +151,7 @@ public:
 	//@{
 
 	/// Retrieves the position of an estimated point in the global retriever.
-	CGlobalPosition					retrievePosition(const NLMISC::CVector &estimated);
+	CGlobalPosition					retrievePosition(const NLMISC::CVector &estimated) const;
 
 	/// Converts a global position object into a 'human-readable' CVector.
 	NLMISC::CVector					getGlobalPosition(const CGlobalPosition &global) const;

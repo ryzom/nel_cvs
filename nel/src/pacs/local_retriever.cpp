@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.15 2001/06/07 08:23:47 legros Exp $
+ * $Id: local_retriever.cpp,v 1.16 2001/06/07 12:14:51 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -211,7 +211,7 @@ void	NLPACS::CLocalRetriever::dumpSurface(uint surf) const
 	const CRetrievableSurface	&surface = _Surfaces[surf];
 
 	nlinfo("dump surf %d", surf);
-	nlinfo("%d chains", surface._Chains.size());
+	nlinfo("%d chains, %d loops", surface._Chains.size(), surface._Loops.size());
 	
 	uint	i, j, k;
 
@@ -219,16 +219,31 @@ void	NLPACS::CLocalRetriever::dumpSurface(uint surf) const
 	{
 		uint			chainId = surface._Chains[i].Chain;
 		const CChain	&chain = _Chains[chainId];
-		nlinfo("-- chain %d[%d]: %d subchains left=%d right=%d", i, chainId, chain.getSubChains().size(), chain.getLeft(), chain.getRight());
+		nlinfo("-- chain %d[%d]: %d sub left=%d right=%d", i, chainId, chain.getSubChains().size(), chain.getLeft(), chain.getRight());
 
 		for (j=0; j<chain.getSubChains().size(); ++j)
 		{
 			const COrderedChain3f	&ochain = _FullOrderedChains[chain.getSubChain(j)];
 			nlinfo("     subchain %d[%d]: forward=%d", j, chain.getSubChain(j), ochain.isForward());
 			for (k=0; k<ochain.getVertices().size(); ++k)
-				nlinfo("       v[%d]=(%f,%f,%f)", k, ochain.getVertices()[k].x, ochain.getVertices()[k].y, ochain.getVertices()[k].z);
+				nlinfo("       v[%d]=(%.3f,%.3f,%.3f)", k, ochain.getVertices()[k].x, ochain.getVertices()[k].y, ochain.getVertices()[k].z);
 		}
 
+	}
+
+	for (i=0; i<surface._Loops.size(); ++i)
+	{
+		const CRetrievableSurface::TLoop	&loop = surface._Loops[i];
+		nlinfo("-- loop %d: %d chains length=%.2f", i, loop.size(), loop.Length);
+		static char	wbuffer[256];
+		static char	buffer[10240];
+		sprintf(buffer, "    chains:");
+		for (j=0; j<loop.size(); ++j)
+		{
+			sprintf(wbuffer, " %d[%d]", loop[j], surface._Chains[loop[j]].Chain);
+			strcat(buffer, wbuffer);
+		}
+		nlinfo("%s", buffer);
 	}
 }
 
@@ -532,6 +547,8 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 			for (k=0; k<_Surfaces[i]._Loops[j].size(); ++k)
 				_Surfaces[i]._Loops[j].Length += _Chains[_Surfaces[i]._Chains[_Surfaces[i]._Loops[j][k]].Chain].getLength();
 		}
+
+//		dumpSurface(i);
 	}
 }
 
@@ -548,46 +565,6 @@ void	NLPACS::CLocalRetriever::sortTips()
 void	NLPACS::CLocalRetriever::findEdgeTips()
 {
 	uint	i, j;
-
-/*
-	// prepares some flags...
-	for (i=0; i<_Tips.size(); ++i)
-		_Tips[i].Edges &= 0xF;
-
-	// for each chain, checks on which edge it is located
-	// then mark the tips of the chain, and adds them to
-	// the _EdgeTips tables...
-	for (i=0; i<_Chains.size(); ++i)
-	{
-		CChain	&chain = _Chains[i];
-
-		// it the chain belongs to an edge
-		if (chain._Edge >= 0)
-		{
-			uint	edge = 1<<chain._Edge;
-			// extracts start and stop tips.
-			uint	start = chain._StartTip,
-					stop = chain._StopTip;
-
-			// and marks them (if they were not yet)
-			if (!(_Tips[start].Edges & (edge<<4)))
-			{
-				_EdgeTips[chain._Edge].push_back(start);
-				_Tips[start].Edges |= (edge<<4);
-			}
-
-			if (!(_Tips[stop].Edges & (edge<<4)))
-			{
-				_EdgeTips[chain._Edge].push_back(stop);
-				_Tips[stop].Edges |= (edge<<4);
-			}
-		}
-	}
-
-	// clears uses flags
-	for (i=0; i<_Tips.size(); ++i)
-		_Tips[i].Edges &= 0xF;
-*/
 
 	for (i=0; i<_Tips.size(); ++i)
 		for (j=0; j<4; ++j)
@@ -942,6 +919,8 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 	}
 
 	path.push_back(CVector2s(A.Estimation));
+
+	dumpSurface(surfaceId);
 
 	for (i=0; i<intersections.size(); )
 	{

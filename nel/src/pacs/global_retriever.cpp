@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.22 2001/06/06 14:43:28 legros Exp $
+ * $Id: global_retriever.cpp,v 1.23 2001/06/07 12:14:51 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -174,9 +174,9 @@ NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint x, uint 
 
 //
 
-NLPACS::CGlobalRetriever::CGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated)
+NLPACS::CGlobalRetriever::CGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated) const
 {
-	CRetrieverInstance	&instance = getInstanceFullAccess(estimated);
+	const CRetrieverInstance	&instance = getInstance(estimated);
 	CLocalRetriever::CLocalPosition	localPosition = instance.retrievePosition(estimated, _RetrieverBank->getRetriever(instance.getRetrieverId()));
 	return CGlobalPosition(instance.getInstanceId(), localPosition);
 }

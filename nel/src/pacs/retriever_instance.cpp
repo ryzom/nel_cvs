@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.11 2001/06/07 08:23:47 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.12 2001/06/07 12:14:51 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -258,7 +258,7 @@ void	NLPACS::CRetrieverInstance::unlink(vector<CRetrieverInstance> &instances)
 
 
 
-NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever)
+NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever) const
 {
 	CVector							localEstimated;
 	CLocalRetriever::CLocalPosition	retrieved;

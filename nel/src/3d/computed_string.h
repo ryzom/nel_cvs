@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.10 2003/01/23 17:59:29 berenguier Exp $
+ * $Id: computed_string.h,v 1.11 2003/09/15 12:01:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,9 +57,15 @@ public:
 public:
 	CRenderStringBuffer();
 	virtual ~CRenderStringBuffer();
-
+	
 	/// render and make empty the render string buffer. see CComputedString::render2DClip()
 	void	flush(IDriver& driver, CMaterial *fontMat);
+	
+	/** render and make empty the render string buffer. see CComputedString::render2DProjected()
+	 *  The driver view and model matrices have to be setuped as material zbuffer flags by the user.
+	 *	This method only render string quads.
+	 */
+	void	flushUnProjected(IDriver& driver, CMaterial *fontMat, bool zwrite);
 };
 
 
@@ -173,6 +179,12 @@ public:
 					float x, float z,
 					float xmin=0, float ymin=0, float xmax=1, float ymax=1
 					);
+
+	/** Special for interface. same as render2DClip but unproject the vertices using a frustum.
+	 *	Use the method CRenderStringBuffer::flush() to flush it all.
+	 */
+	void render2DUnProjected (IDriver& driver, CRenderStringBuffer &rdrBuffer, class NL3D::CFrustum &frustum,
+					float x, float z, float depth, float xmin=0, float ymin=0, float xmax=1, float ymax=1);
 
 	/** 
 	 * Render the unicode string in a driver, in 3D with a user matrix.

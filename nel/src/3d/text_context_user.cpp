@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.17 2003/06/18 14:38:57 corvazier Exp $
+ * $Id: text_context_user.cpp,v 1.18 2003/09/15 12:01:16 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -307,6 +307,14 @@ void CTextContextUser::printClipAt(URenderStringBuffer &renderBuffer, float x, f
 	_TextContext.printClipAt(static_cast<CRenderStringBuffer&>(renderBuffer), x, y, i, xmin, ymin, xmax, ymax);
 	// Don't need to restore Matrix context here since no driver change
 }
+void CTextContextUser::printClipAtUnProjected(URenderStringBuffer &renderBuffer, class NL3D::CFrustum &frustum, float x, float y, float depth, uint32 i, float xmin, float ymin, float xmax, float ymax)
+{
+	NL_ALLOC_CONTEXT( 3dTCPt1 )
+		NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
+	
+	_TextContext.printClipAtUnProjected(static_cast<CRenderStringBuffer&>(renderBuffer), frustum, x, y, depth, i, xmin, ymin, xmax, ymax);
+	// Don't need to restore Matrix context here since no driver change
+}
 void CTextContextUser::printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax)
 {
 	NL_ALLOC_CONTEXT( 3dTCPt2 )
@@ -390,14 +398,24 @@ void					CTextContextUser::deleteRenderBuffer(URenderStringBuffer *buffer)
 void					CTextContextUser::flushRenderBuffer(URenderStringBuffer *buffer)
 {
 	NL_ALLOC_CONTEXT( 3dTCBuf )
-	nlassert(buffer);
+		nlassert(buffer);
 	CRenderStringBuffer	*rdrBuffer= static_cast<CRenderStringBuffer*>(buffer);
 	if(rdrBuffer->NumQuads)
 	{
 		rdrBuffer->flush(*_Driver, _TextContext.getFontManager()->getFontMaterial());
-
+		
 		// must restore the Matrix context if some display done.
 		_DriverUser->restoreMatrixContext();
+	}
+}
+void					CTextContextUser::flushRenderBufferUnProjected(URenderStringBuffer *buffer, bool zwrite)
+{
+	NL_ALLOC_CONTEXT( 3dTCBuf )
+		nlassert(buffer);
+	CRenderStringBuffer	*rdrBuffer= static_cast<CRenderStringBuffer*>(buffer);
+	if(rdrBuffer->NumQuads)
+	{
+		rdrBuffer->flushUnProjected(*_Driver, _TextContext.getFontManager()->getFontMaterial(), zwrite);
 	}
 }
 

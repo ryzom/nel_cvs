@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.15 2003/07/08 16:18:05 corvazier Exp $
+ * $Id: u_text_context.h,v 1.16 2003/09/15 12:01:17 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,8 @@
 namespace NL3D {
 
 class	UDriver;
-
+class	UMaterial;
+class	CFrustum;
 
 // ***************************************************************************
 /** Abstract Class to render string into a temporary buffer
@@ -253,6 +254,10 @@ public:
 	  * z : if the hotspot is bottom z is the position of the line of the string, not the bottom of the string bounding box !
 	*/
 	virtual	void			printClipAt (URenderStringBuffer &renderBuffer, float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
+	/** Same as printClipAt but special version for planar 3d interface: the final vertices are unproject using a frustum.
+	  * depth is the positive depth to used to unproject the string
+	*/
+	virtual	void			printClipAtUnProjected (URenderStringBuffer &renderBuffer, class NL3D::CFrustum &frustum, float x, float y, float depth, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
 	// TEMP
 	virtual	void			printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
 	/**
@@ -290,9 +295,12 @@ public:
 	/// create a renderBuffer for printClipAt(). Must delete it with deleteRenderBuffer()
 	virtual URenderStringBuffer		*createRenderBuffer() = 0;
 	virtual void					deleteRenderBuffer(URenderStringBuffer *buffer) = 0;
+
+	/// Flush the rendered string buffer. This method sets the driver matrix to a 2d11 matrix and sets ztest to always and disable z write.
 	virtual void					flushRenderBuffer(URenderStringBuffer *buffer) = 0;
-
-
+	
+	/// Flush the rendered string buffer. This method doesn't change the current matrices nor the material properties.
+	virtual void					flushRenderBufferUnProjected(URenderStringBuffer *buffer, bool zwrite) = 0;
 };
 
 

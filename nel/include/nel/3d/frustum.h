@@ -1,7 +1,7 @@
 /** \file frustum.h
  * <File description>
  *
- * $Id: frustum.h,v 1.6 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: frustum.h,v 1.7 2003/09/15 12:01:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,11 +89,23 @@ public:
 	  */
 	CVector			project(const CVector &vec) const;
 
+	/** project a vector (x,y,z) onto frustum.
+	  * \param vec the point in 3D frustum space. Axis is NL3D axis: Xright, Yfront, Ztop.
+	  * \return the point in 2D: Xright, Ytop, Z=0.  Screen is mapped to X:[0..1], Y: [0..1] Z is a positive screen depth in world units.
+	  */
+	CVector			projectZ(const CVector &vec) const;
+
 	/** unproject a point from screen to the frustum space.
 	 * \param vec the point on the screen, in Left hand axis (XRight, YTop, ZFront). Z must be in [0..1] and hyperbolic.
 	 * \return the point in the frustum space (NL3D right hand axis).
 	 */
 	CVector			unProject(const CVector &vec) const;
+
+	/** unproject a point from screen to the frustum space.
+	 * \param vec the point on the screen, in Left hand axis (XRight, YTop, ZFront). Z is a positive depth in world unit.
+	 * \return the point in the frustum space (NL3D right hand axis).
+	 */
+	CVector			unProjectZ(const CVector &vec) const;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.29 2003/01/23 17:59:29 berenguier Exp $
+ * $Id: computed_string.cpp,v 1.30 2003/09/15 12:01:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/texture.h"
 #include "3d/primitive_block.h"
 #include "3d/material.h"
+#include "nel/3d/frustum.h"
 
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/debug.h"
@@ -371,6 +372,217 @@ void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuf
 	}
 }
 
+/*------------------------------------------------------------------*\
+							render2DUnProjected()
+\*------------------------------------------------------------------*/
+void CComputedString::render2DUnProjected (IDriver& driver, CRenderStringBuffer &rdrBuffer, class NL3D::CFrustum &frustum,
+					float x, float z, float depth, float xmin, float zmin, float xmax, float zmax)
+{
+	if (Vertices.getNumVertices() == 0)
+		return;
+	if(SelectSize==0)
+		return;
+
+	// get window size
+	uint32	wndWidth, wndHeight;
+	driver.getWindowSize(wndWidth, wndHeight);
+	// scale to window size.
+	x*= wndWidth;
+	z*= wndHeight;
+	xmin*= wndWidth;
+	xmax*= wndWidth;
+	zmin*= wndHeight;
+	zmax*= wndHeight;
+
+	// Test String Bound against clip window
+	// If entirely out skip
+	if (((x+XMin) > xmax) || ((x+XMax) < xmin) ||
+		((z+ZMin) > zmax) || ((z+ZMax) < zmin))
+		return;
+
+	// test if entirely in.
+	bool	allIn;
+	allIn=	((x+XMin) >= (xmin-0.001f)) && ((x+XMax) <= (xmax+0.001f)) &&
+			((z+ZMin) >= (zmin-0.001f)) && ((z+ZMax) <= (zmax+0.001f));
+
+
+	// How many quad to render?
+	uint	nNumQuadSrc= Vertices.getNumVertices()/4;
+	nNumQuadSrc= min(nNumQuadSrc, (uint)SelectSize);
+
+	// Enlarge dest Buffer if needed
+	if( (rdrBuffer.NumQuads+nNumQuadSrc)*4 > rdrBuffer.Vertices.getNumVertices() )
+	{
+		rdrBuffer.Vertices.setNumVertices( (rdrBuffer.NumQuads+nNumQuadSrc)*4 );
+	}
+
+	// prepare copy.
+	sint	ofsSrcUV= Vertices.getTexCoordOff();
+	sint	ofsDstUV= rdrBuffer.Vertices.getTexCoordOff();
+	sint	ofsDstColor= rdrBuffer.Vertices.getColorOff();
+	uint8	*srcPtr= (uint8*)Vertices.getVertexCoordPointer();
+	uint8	*dstPtr= (uint8*)rdrBuffer.Vertices.getVertexCoordPointer(rdrBuffer.NumQuads*4);
+	sint	srcSize= Vertices.getVertexSize();
+	sint	dstSize= rdrBuffer.Vertices.getVertexSize();
+
+	// decal src for selection
+	srcPtr+= SelectStart*4 * srcSize;
+
+	uint8	*dstPtrBackup = dstPtr;
+
+	// **** clipping?
+	if(allIn)
+	{
+		// copy All vertices 
+		uint numVerts= nNumQuadSrc*4;
+		for(uint i=0;i<numVerts;i++)
+		{
+			// copy and translate pos
+			((CVector*)dstPtr)->x= x + ((CVector*)srcPtr)->x;
+			((CVector*)dstPtr)->z= z + ((CVector*)srcPtr)->z;
+			
+			// uv
+			*((CUV*)(dstPtr+ofsDstUV))= *((CUV*)(srcPtr+ofsSrcUV));
+			// color
+			*((CRGBA*)(dstPtr+ofsDstColor))= Color;
+
+			// next
+			srcPtr+= srcSize;
+			dstPtr+= dstSize;
+		}
+
+		// update the rdrBuffer
+		rdrBuffer.NumQuads+= nNumQuadSrc;
+	}
+	else
+	{
+		uint	nNumQuadClipped= 0;
+
+		// the real number of vertices to comute (with selection)
+		uint	numVerts= nNumQuadSrc*4;
+
+		// clip into VerticesClipped
+		CVector *pIniPos0 = (CVector*)srcPtr;
+		CVector *pIniPos2 = (CVector*)(((uint8*)pIniPos0) + srcSize*2);
+		CVector *pClipPos0 = (CVector*)dstPtr;
+		CVector *pClipPos1 = (CVector*)(((uint8*)pClipPos0) + dstSize);
+		CVector *pClipPos2 = (CVector*)(((uint8*)pClipPos1) + dstSize);
+		CVector *pClipPos3 = (CVector*)(((uint8*)pClipPos2) + dstSize);
+		CUV *pClipUV0 = (CUV*)(dstPtr + ofsDstUV );
+		CUV *pClipUV1 = (CUV*)(((uint8*)pClipUV0) + dstSize);
+		CUV *pClipUV2 = (CUV*)(((uint8*)pClipUV1) + dstSize);
+		CUV *pClipUV3 = (CUV*)(((uint8*)pClipUV2) + dstSize);
+		float ratio;
+		for (uint32 i = 0; i < numVerts; i+=4)
+		{
+			if (((x+pIniPos0->x) > xmax) || ((x+pIniPos2->x) < xmin) ||
+				((z+pIniPos0->z) > zmax) || ((z+pIniPos2->z) < zmin))
+			{
+				// Totally clipped do nothing
+			}
+			else
+			{
+				// copy with no clip
+				// v0
+				*((CVector*) (dstPtr + dstSize*0))= *((CVector*) (srcPtr + srcSize*0));
+				*((CUV*)	 (dstPtr + dstSize*0 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*0 + ofsSrcUV));
+				*((CRGBA*)	 (dstPtr + dstSize*0 + ofsDstColor))= Color;
+				// v1
+				*((CVector*) (dstPtr + dstSize*1))= *((CVector*) (srcPtr + srcSize*1));
+				*((CUV*)	 (dstPtr + dstSize*1 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*1 + ofsSrcUV));
+				*((CRGBA*)	 (dstPtr + dstSize*1 + ofsDstColor))= Color;
+				// v2
+				*((CVector*) (dstPtr + dstSize*2))= *((CVector*) (srcPtr + srcSize*2));
+				*((CUV*)	 (dstPtr + dstSize*2 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*2 + ofsSrcUV));
+				*((CRGBA*)	 (dstPtr + dstSize*2 + ofsDstColor))= Color;
+				// v3
+				*((CVector*) (dstPtr + dstSize*3))= *((CVector*) (srcPtr + srcSize*3));
+				*((CUV*)	 (dstPtr + dstSize*3 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*3 + ofsSrcUV));
+				*((CRGBA*)	 (dstPtr + dstSize*3 + ofsDstColor))= Color;
+
+
+				// translate dest
+				pClipPos0->x += x; pClipPos1->x += x; pClipPos2->x += x; pClipPos3->x += x;
+				pClipPos0->z += z; pClipPos1->z += z; pClipPos2->z += z; pClipPos3->z += z;
+				if ((pClipPos0->x >= xmin) && (pClipPos0->z >= zmin) && (pClipPos2->x <= xmax) && (pClipPos2->z <= zmax))
+				{
+					// Not clipped
+				}
+				else
+				{
+					// Partially clipped
+
+					if (pClipPos0->x < xmin)
+					{
+						ratio = ((float)(xmin - pClipPos0->x))/((float)(pClipPos1->x - pClipPos0->x));
+						pClipPos3->x = pClipPos0->x = xmin;
+						pClipUV0->U += ratio*(pClipUV1->U - pClipUV0->U);
+						pClipUV3->U += ratio*(pClipUV2->U - pClipUV3->U);
+					}
+
+					if (pClipPos0->z < zmin)
+					{
+						ratio = ((float)(zmin - pClipPos0->z))/((float)(pClipPos3->z - pClipPos0->z));
+						pClipPos1->z = pClipPos0->z = zmin;
+						pClipUV0->V += ratio*(pClipUV3->V - pClipUV0->V);
+						pClipUV1->V += ratio*(pClipUV2->V - pClipUV1->V);
+					}
+
+					if (pClipPos2->x > xmax)
+					{
+						ratio = ((float)(xmax - pClipPos2->x))/((float)(pClipPos3->x - pClipPos2->x));
+						pClipPos2->x = pClipPos1->x = xmax;
+						pClipUV2->U += ratio*(pClipUV3->U - pClipUV2->U);
+						pClipUV1->U += ratio*(pClipUV0->U - pClipUV1->U);
+					}
+
+					if (pClipPos2->z > zmax)
+					{
+						ratio = ((float)(zmax - pClipPos2->z))/((float)(pClipPos1->z - pClipPos2->z));
+						pClipPos2->z = pClipPos3->z = zmax;
+						pClipUV2->V += ratio*(pClipUV1->V - pClipUV2->V);
+						pClipUV3->V += ratio*(pClipUV0->V - pClipUV3->V);
+					}
+				}
+				
+				// next quad out
+				++nNumQuadClipped;
+				pClipPos0 = (CVector*)(((uint8*)pClipPos0) + dstSize*4);
+				pClipPos1 = (CVector*)(((uint8*)pClipPos0) + dstSize);
+				pClipPos2 = (CVector*)(((uint8*)pClipPos1) + dstSize);
+				pClipPos3 = (CVector*)(((uint8*)pClipPos2) + dstSize);
+				pClipUV0 = (CUV*)( ((uint8*)pClipUV0) + dstSize*4 );
+				pClipUV1 = (CUV*)(((uint8*)pClipUV0) + dstSize);
+				pClipUV2 = (CUV*)(((uint8*)pClipUV1) + dstSize);
+				pClipUV3 = (CUV*)(((uint8*)pClipUV2) + dstSize);
+				dstPtr+=  4*dstSize;
+			}
+			// next quad in
+			pIniPos0 = (CVector*)(((uint8*)pIniPos0) + srcSize*4);
+			pIniPos2 = (CVector*)(((uint8*)pIniPos0) + srcSize*2);
+			srcPtr+=  4*srcSize;
+		}
+
+		// update the rdrBuffer
+		rdrBuffer.NumQuads+= nNumQuadClipped;
+	}
+
+	const float OOW = 1.f / (float)wndWidth;
+	const float OOH = 1.f / (float)wndHeight;
+	
+	while (dstPtrBackup != dstPtr)
+	{
+		// Unproject it
+		CVector tmp;
+		tmp.x = ((CVector*)dstPtrBackup)->x * OOW;
+		tmp.y = ((CVector*)dstPtrBackup)->z * OOH;
+		tmp.z = depth;
+		*((CVector*)dstPtrBackup) = frustum.unProjectZ(tmp);
+		dstPtrBackup += dstSize;
+	}
+	
+}
+
 // ***************************************************************************
 CRenderStringBuffer::CRenderStringBuffer()
 {
@@ -391,14 +603,14 @@ void	CRenderStringBuffer::flush(IDriver& driver, CMaterial *fontMat)
 {
 	if(NumQuads==0)
 		return;
-
+	
 	// get window size
 	uint32	wndWidth, wndHeight;
 	driver.getWindowSize(wndWidth, wndHeight);
-
+	
 	// **** setup driver context
 	driver.setFrustum(0, (float)wndWidth, 0, (float)wndHeight, -1, 1, false);  // resX/resY
-
+	
 	// view matrix and model matrix <-> identity
 	driver.setupViewMatrix (CMatrix::Identity);
 	driver.setupModelMatrix (CMatrix::Identity);
@@ -406,10 +618,31 @@ void	CRenderStringBuffer::flush(IDriver& driver, CMaterial *fontMat)
 	// setup material
 	fontMat->setZFunc (CMaterial::always);
 	fontMat->setZWrite (false);
-
+	
 	// setup vertices clipped
 	driver.activeVertexBuffer (Vertices);
+	
+	// *** rendering
+	driver.renderQuads (*fontMat, 0, NumQuads );
+	
+	// *** reset
+	NumQuads= 0;
+}
 
+
+// ***************************************************************************
+void	CRenderStringBuffer::flushUnProjected(IDriver& driver, CMaterial *fontMat, bool zwrite)
+{
+	if(NumQuads==0)
+		return;
+	
+	// setup material
+	fontMat->setZFunc (CMaterial::lessequal);
+	fontMat->setZWrite (zwrite);
+	
+	// setup vertices clipped
+	driver.activeVertexBuffer (Vertices);
+	
 	// *** rendering
 	driver.renderQuads (*fontMat, 0, NumQuads );
 

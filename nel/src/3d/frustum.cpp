@@ -1,7 +1,7 @@
 /** \file frustum.cpp
  * <File description>
  *
- * $Id: frustum.cpp,v 1.11 2003/05/28 12:55:27 vizerie Exp $
+ * $Id: frustum.cpp,v 1.12 2003/09/15 12:01:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,6 +119,51 @@ CVector			CFrustum::project(const CVector &vec) const
 }
 
 
+// ***************************************************************************
+CVector			CFrustum::projectZ(const CVector &vec) const
+{
+	NL3D_MEM_FRUSTRUM
+		CVector		ret;
+	float		decalX, decalY;
+	float		w, h;
+	float		OOw, OOh;
+	
+	// Fast transform to openGL like axis.
+	CVector		pt;
+	pt.x= vec.x;
+	pt.y= vec.z;
+	pt.z= -vec.y;
+	
+	decalX= (Right+Left);
+	decalY= (Top+Bottom);
+	w= Right-Left;
+	h= Top-Bottom;
+	OOw= 1.0f/w;
+	OOh= 1.0f/h;
+	
+	// project to -1..+1.
+	if(Perspective)
+	{
+		ret.x= (2*Near*pt.x + decalX*pt.z)*OOw;
+		ret.x/= -pt.z;
+		ret.y= (2*Near*pt.y + decalY*pt.z)*OOh;
+		ret.y/= -pt.z;
+	}
+	else
+	{
+		ret.x= (2*pt.x-decalX)*OOw;
+		ret.y= (2*pt.y-decalY)*OOh;
+	}
+	
+	
+	// Map it to 0..1.
+	ret.x= 0.5f*(ret.x+1);
+	ret.y= 0.5f*(ret.y+1);
+	ret.z= pt.z;
+	
+	return ret;
+}
+
 
 // ***************************************************************************
 CVector			CFrustum::unProject(const CVector &vec) const
@@ -127,14 +172,11 @@ CVector			CFrustum::unProject(const CVector &vec) const
 	CVector		ret;
 	float		decalX, decalY;
 	float		w, h;
-	float		OOw, OOh;
 
 	decalX= (Right+Left);
 	decalY= (Top+Bottom);
 	w= Right-Left;
 	h= Top-Bottom;
-	OOw= 1.0f/w;
-	OOh= 1.0f/h;
 
 	// vec is a vector in a left hand axis.
 	CVector		pt;
@@ -170,7 +212,65 @@ CVector			CFrustum::unProject(const CVector &vec) const
 		pt.x= pt.x*Wh;
 		pt.y= pt.y*Wh;
 		ret.x= (pt.x*w-decalX*Zin)/(2*Near);
-		ret.y= (pt.y*w-decalY*Zin)/(2*Near);
+		ret.y= (pt.y*h-decalY*Zin)/(2*Near);
+		ret.z= Zin;
+	}
+	else
+	{
+		// NOT DONE YET.
+		nlstop;
+		/*ret.x= (pt.x*w+decalX)/2;
+		ret.y= (pt.y*h+decalY)/2;
+		*/
+	}
+
+	// Fast transform from openGL like axis.
+	pt =ret;
+	ret.x= pt.x;
+	ret.y= -pt.z;
+	ret.z= pt.y;
+
+	return ret;
+}
+
+
+// ***************************************************************************
+CVector			CFrustum::unProjectZ(const CVector &vec) const
+{
+	NL3D_MEM_FRUSTRUM
+	CVector		ret;
+	float		decalX, decalY;
+	float		w, h;
+
+	decalX= (Right+Left);
+	decalY= (Top+Bottom);
+	w= Right-Left;
+	h= Top-Bottom;
+
+	// vec is a vector in a left hand axis.
+	CVector		pt;
+	pt.x= vec.x;
+	pt.y= vec.y;
+	pt.z= vec.z;
+	
+	// Map it to -1..1
+	pt.x= 2*(pt.x-0.5f);
+	pt.y= 2*(pt.y-0.5f);
+
+	// unproject
+	if(Perspective)
+	{
+		// w of homogenous coordinate.
+		float	Wh;
+		float	Zin;
+		Wh= pt.z;
+		Zin= -pt.z;
+
+		// unproject.  (Projection is: x'= x/w.  y'= y/w).
+		pt.x= pt.x*Wh;
+		pt.y= pt.y*Wh;
+		ret.x= (pt.x*w-decalX*Zin)/(2*Near);
+		ret.y= (pt.y*h-decalY*Zin)/(2*Near);
 		ret.z= Zin;
 	}
 	else

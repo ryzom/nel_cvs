@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.55 2003/04/30 13:00:14 lecroart Exp $
+ * $Id: displayer.cpp,v 1.56 2003/09/09 15:23:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -343,6 +343,12 @@ void CFileDisplayer::setParam (const std::string &filename, bool eraseLastLog)
 			// can't do nlwarning or infinite recurs
 			printf ("CFileDisplayer::setParam(): Can't open and clear the log file '%s'\n", filename.c_str());
 		}
+	}
+
+	if (_FilePointer > (FILE*)1)
+	{
+		fclose (_FilePointer);
+		_FilePointer = (FILE*)1;
 	}
 }
 

@@ -1,0 +1,43 @@
+************************************************
+* NeL plug-ins for 3dsmax 3.1 compilation notes
+************************************************
+
+* $Id: compilation_notes.txt,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+
+** PROJECTS **
+
+There is three plug-ins in this package:
+
+1) nel_export : an export /view utility plug-in for NeL.
+2) nel_patch_converted : a patch converter to translate max patches in NeL patches.
+3) tile_utility : an utility plug-in to load tile banks in 3dsmax.
+
+** DEPENDENCIES **
+
+Thoses plug-ins need some sub projects to work with:
+
+1) NeL 3d library
+2) NeL misc library
+3) NeL openGL driver
+4) nel_mesh_lib : library of functions to convert max Meshes and animation data in NeL format.
+5) nel_patch_lib : library of functions to convert max patches in NeL format.
+6) object_viewer : the common NeL tool to watch nel objects and animations.
+7) nel_3dsmax_shared : shared dll for NeL plug-ins
+
+** INSTALL **
+
+Once all those projects are compiled you should have:
+
+* nelexport.dlu
+* neltileutility.dlu
+* nelconvertpatch.dlm. 
+
+Thoses dll must go in a plugins directory of 3dsmax. (ex: c:/3dsmax3_1/plugins)
+
+* nel_3dsmax_shared.dll
+* object_viewer.dll
+* nel_drv_opengl_win.dll
+
+Thoses dll must go in the 3dsmax root directory. (ex: c:/3dsmax3_1)
+
+** HAVE SOME FUN **

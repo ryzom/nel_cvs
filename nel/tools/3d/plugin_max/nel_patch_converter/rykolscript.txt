@@ -1,0 +1,173 @@
+rykolscript.txt
+---------------
+
+RykolPatchObject script fonctions:
+
+**********************************************
+SetRykolPatchSteps node step
+
+Like SetPatchSteps but works with rykolpatch. 
+
+**********************************************
+SetRykolTileSteps node step
+
+Set the tile step of a RykolPatchObject. 
+
+"node" must be a RykolPatchObject.
+"step" an integer in range [-4;4].
+
+**********************************************
+GetRykolTileCount node
+
+Return the number of tile in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+
+**********************************************
+GetRykolPatchCount node
+
+Return the number of patch in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+
+**********************************************
+GetRykolSelEdges node
+
+Return an array of integer. Each integer is the index of a selected edge in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+
+**********************************************
+GetRykolEdgesVert1 node edge
+
+Return the index of the first vertex of the edge in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+"edge" is the index of the selected edge.
+
+**********************************************
+GetRykolEdgesVert2 node edge
+
+Return the index of the second vertex of the edge in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+"edge" is the index of the selected edge.
+
+**********************************************
+GetRykolEdgesVect1 node edge
+
+Return the index of the first vector of the edge in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+"edge" is the index of the selected edge.
+
+**********************************************
+GetRykolEdgesVect2 node edge
+
+Return the index of the second vector of the edge in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+"edge" is the index of the selected edge.
+
+**********************************************
+GetRykolVertexPos node vertex
+
+Return the position of the vertex in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+"vertex" is the index of the vetrex.
+
+**********************************************
+SetRykolVertexPos node vertex
+
+Set the position of the vertex in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+"vertex" is the index of the vetrex.
+
+**********************************************
+GetRykolVectorPos node vector
+
+Return the position of the vector in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+"vector" is the index of the vector.
+
+**********************************************
+SetRykolVectorPos node vector
+
+Set the position of the vector in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+"vector" is the index of the vector.
+
+**********************************************
+GetRykolVectorCount node
+
+Return the number of vector in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+
+**********************************************
+GetRykolVertexCount node
+
+Return the number of vertex in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+
+**********************************************
+SetRykolInteriorMode node patch mode
+
+Set the patch auto interior mode
+
+"node" must be a RykolPatchObject.
+"patch" must be the index of the patch
+"mode" must be 0 for manual and 1 for auto
+
+**********************************************
+RykolComputeInterior node
+
+Recompute auto interior vertex
+
+"node" must be a RykolPatchObject.
+
+**********************************************
+SetRykolTileMode node mode
+
+Set the tile mode
+
+"node" must be a RykolPatchObject.
+"mode" must be 0 for modeNormal and 1 for tileMode
+
+**********************************************
+GetRykolSelVertex node
+
+Return an array of integer. Each integer is the index of a selected vertex in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+
+**********************************************
+GetRykolSelPatch node
+
+Return an array of integer. Each integer is the index of a selected patch in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+
+**********************************************
+GetRykolSelTile node
+
+Return an array of integer. Each integer is the index of a selected tile in the selected RykolPatchObject.
+
+"node" must be a RykolPatchObject.
+
+**********************************************
+NelExportShape node filename
+
+Export a shape file with the node. Filename is the output filename.
+
+"node" must be a trimeshable object.
+
+**********************************************
+NelViewShape ()
+
+View the selected shapes with the NeL engine.

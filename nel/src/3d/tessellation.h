@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.18 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: tessellation.h,v 1.19 2004/10/19 12:59:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,7 +200,7 @@ struct	CTileMaterial
 	CTessList<CTileFace>	TileFaceList[NL3D_MAX_TILE_FACE];
 
 	// FaceVectors.
-	uint32			*TileFaceVectors[NL3D_MAX_TILE_FACE];
+	TLandscapeIndexType		*TileFaceVectors[NL3D_MAX_TILE_FACE];
 
 
 	// The global id of the little lightmap part for this tile.

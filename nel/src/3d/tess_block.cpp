@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * <File description>
  *
- * $Id: tess_block.cpp,v 1.13 2003/04/23 10:10:39 berenguier Exp $
+ * $Id: tess_block.cpp,v 1.14 2004/10/19 12:59:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,12 +183,17 @@ void			CTessBlock::refillFaceVectorFar0()
 
 		// Fill this faceVector, with FarFaceList
 		CTessFace	*pFace;
-		uint32		*dest= Far0FaceVector+1;
+		TLandscapeIndexType	*dest= Far0FaceVector+1;
 		for(pFace= FarFaceList.begin(); pFace; pFace= (CTessFace*)pFace->Next)
 		{
-			*(dest++)= pFace->FVBase->Index0;
-			*(dest++)= pFace->FVLeft->Index0;
-			*(dest++)= pFace->FVRight->Index0;
+			#if defined(NL_DEBUG) && defined(NL_LANDSCAPE_INDEX16)
+				nlassert(pFace->FVBase->Index0 <= 0xffff);				
+				nlassert(pFace->FVLeft->Index0 <= 0xffff);
+				nlassert(pFace->FVRight->Index0 <= 0xffff);
+			#endif
+			*(dest++)= (TLandscapeIndexType) pFace->FVBase->Index0;
+			*(dest++)= (TLandscapeIndexType) pFace->FVLeft->Index0;
+			*(dest++)= (TLandscapeIndexType) pFace->FVRight->Index0;
 		}
 	}
 }
@@ -228,12 +233,17 @@ void			CTessBlock::refillFaceVectorFar1()
 		nlassert(Far1FaceVector!=NULL);
 		// Fill this faceVector, with FarFaceList
 		CTessFace	*pFace;
-		uint32		*dest= Far1FaceVector+1;
+		TLandscapeIndexType	*dest= Far1FaceVector+1;
 		for(pFace= FarFaceList.begin(); pFace; pFace= (CTessFace*)pFace->Next)
 		{
-			*(dest++)= pFace->FVBase->Index1;
-			*(dest++)= pFace->FVLeft->Index1;
-			*(dest++)= pFace->FVRight->Index1;
+			#if defined(NL_DEBUG) && defined(NL_LANDSCAPE_INDEX16)
+				nlassert(pFace->FVBase->Index1 <= 0xffff);				
+				nlassert(pFace->FVLeft->Index1 <= 0xffff);
+				nlassert(pFace->FVRight->Index1 <= 0xffff);
+			#endif
+			*(dest++)= (TLandscapeIndexType) pFace->FVBase->Index1;
+			*(dest++)= (TLandscapeIndexType) pFace->FVLeft->Index1;
+			*(dest++)= (TLandscapeIndexType) pFace->FVRight->Index1;
 		}
 	}
 }
@@ -276,7 +286,7 @@ void			CTessBlock::refillFaceVectorTile()
 			for(uint facePass=0; facePass<NL3D_MAX_TILE_FACE; facePass++)
 			{
 				CTessList<CTileFace>	&faceList= RdrTileRoot[tileId]->TileFaceList[facePass];
-				uint32					*faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
+				TLandscapeIndexType		*faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
 				// If some triangles create them.
 				if(faceList.size()>0)
 				{
@@ -284,12 +294,17 @@ void			CTessBlock::refillFaceVectorTile()
 
 					// Fill this faceVector, with the TileFaceList
 					CTileFace	*pFace;
-					uint32		*dest= faceVector+1;
+					TLandscapeIndexType	*dest= faceVector+1;
 					for(pFace= faceList.begin(); pFace; pFace= (CTileFace*)pFace->Next)
 					{
-						*(dest++)= pFace->V[CTessFace::IdUvBase]->Index;
-						*(dest++)= pFace->V[CTessFace::IdUvLeft]->Index;
-						*(dest++)= pFace->V[CTessFace::IdUvRight]->Index;
+						#if defined(NL_DEBUG) && defined(NL_LANDSCAPE_INDEX16)
+							nlassert(pFace->V[CTessFace::IdUvBase]->Index <= 0xffff);				
+							nlassert(pFace->V[CTessFace::IdUvLeft]->Index <= 0xffff);
+							nlassert(pFace->V[CTessFace::IdUvRight]->Index <= 0xffff);
+						#endif
+						*(dest++)= (TLandscapeIndexType) pFace->V[CTessFace::IdUvBase]->Index;
+						*(dest++)= (TLandscapeIndexType) pFace->V[CTessFace::IdUvLeft]->Index;
+						*(dest++)= (TLandscapeIndexType) pFace->V[CTessFace::IdUvRight]->Index;
 					}
 				}
 			}
@@ -311,7 +326,7 @@ void			CTessBlock::createFaceVectorTile(CLandscapeFaceVectorManager &mgr)
 			for(uint facePass=0; facePass<NL3D_MAX_TILE_FACE; facePass++)
 			{
 				CTessList<CTileFace>	&faceList= RdrTileRoot[tileId]->TileFaceList[facePass];
-				uint32		*&faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
+				TLandscapeIndexType		*&faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
 				// If some triangles create them.
 				if(faceList.size()>0)
 				{
@@ -337,7 +352,7 @@ void			CTessBlock::deleteFaceVectorTile(CLandscapeFaceVectorManager &mgr)
 			// For all Pass faces of the tile.
 			for(uint facePass=0; facePass<NL3D_MAX_TILE_FACE; facePass++)
 			{
-				uint32		*&faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
+				TLandscapeIndexType	*&faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
 				// If the faceVector exist, delete it.
 				if(faceVector)
 				{

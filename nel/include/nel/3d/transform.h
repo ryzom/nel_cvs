@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: transform.h,v 1.2 2000/10/10 16:12:04 berenguier Exp $
+ * $Id: transform.h,v 1.3 2000/10/17 16:51:17 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -26,8 +26,9 @@ namespace	NL3D
 {
 
 
-using namespace NLMISC;
-using namespace NLMISC;
+using NLMISC::CVector;
+using NLMISC::CPlane;
+using NLMISC::CMatrix;
 
 
 class	CTransformHrcObs;

@@ -1,7 +1,7 @@
 /** \file zone_bank.cpp
  * Zone Bank
  *
- * $Id: zone_bank.cpp,v 1.7 2001/11/27 16:15:30 besson Exp $
+ * $Id: zone_bank.cpp,v 1.8 2001/12/17 13:55:54 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -56,13 +56,13 @@ void CZoneBankElement::addCategory (const std::string &CatType, const std::strin
 // ---------------------------------------------------------------------------
 const string& CZoneBankElement::getName ()
 {
-	return getCategory ("Zone");
+	return getCategory ("zone");
 }
 
 // ---------------------------------------------------------------------------
 const string& CZoneBankElement::getSize ()
 {
-	return getCategory ("Size");
+	return getCategory ("size");
 }
 
 // ---------------------------------------------------------------------------
@@ -156,9 +156,9 @@ void CZoneBank::debugSaveInit (CZoneBankElement &zbeTmp, const string &fileName)
 void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 {
 	CZoneBankElement zbeTmp;
-	zbeTmp.addCategory ("Zone", "Zone001");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("Material", "titFleur");
+	zbeTmp.addCategory ("zone", "Zone001");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("material", "titFleur");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "Zone001.ligozone");
@@ -166,18 +166,18 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	
 
-	zbeTmp.addCategory ("Zone", "Zone002");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("Material", "titFleur");
+	zbeTmp.addCategory ("zone", "Zone002");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("material", "titFleur");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "Zone002.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
-	zbeTmp.addCategory ("Zone", "Zone003");
-	zbeTmp.addCategory ("Size", "2x2");
-	zbeTmp.addCategory ("Material", "titFleur");
+	zbeTmp.addCategory ("zone", "Zone003");
+	zbeTmp.addCategory ("size", "2x2");
+	zbeTmp.addCategory ("material", "titFleur");
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (false);
@@ -187,9 +187,9 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
-	zbeTmp.addCategory ("Zone", "Zone004");
-	zbeTmp.addCategory ("Size", "2x2");
-	zbeTmp.addCategory ("Material", "grozFleur");
+	zbeTmp.addCategory ("zone", "Zone004");
+	zbeTmp.addCategory ("size", "2x2");
+	zbeTmp.addCategory ("material", "grozFleur");
 	zbeTmp._Mask.push_back (false);
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
@@ -199,18 +199,18 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
-	zbeTmp.addCategory ("Zone", "Zone005");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("Material", "grozFleur");
+	zbeTmp.addCategory ("zone", "Zone005");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("material", "grozFleur");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "Zone005.ligozone");
 	zbeTmp._CategoriesMap.clear ();
 	zbeTmp._Mask.clear ();
 
-	zbeTmp.addCategory ("Zone", "Zone006");
-	zbeTmp.addCategory ("Size", "4x2");
-	zbeTmp.addCategory ("Material", "grozFleur");
+	zbeTmp.addCategory ("zone", "Zone006");
+	zbeTmp.addCategory ("size", "4x2");
+	zbeTmp.addCategory ("material", "grozFleur");
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (false);
@@ -225,9 +225,9 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "Zone007");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("Material", "grozFleur");
+	zbeTmp.addCategory ("zone", "Zone007");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("material", "grozFleur");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "Zone007.ligozone");
@@ -235,9 +235,9 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "Zone008");
-	zbeTmp.addCategory ("Size", "2x2");
-	zbeTmp.addCategory ("Material", "prairie");
+	zbeTmp.addCategory ("zone", "Zone008");
+	zbeTmp.addCategory ("size", "2x2");
+	zbeTmp.addCategory ("material", "prairie");
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
@@ -248,9 +248,9 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "Zone009");
-	zbeTmp.addCategory ("Size", "2x2");
-	zbeTmp.addCategory ("Material", "prairie");
+	zbeTmp.addCategory ("zone", "Zone009");
+	zbeTmp.addCategory ("size", "2x2");
+	zbeTmp.addCategory ("material", "prairie");
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
 	zbeTmp._Mask.push_back (true);
@@ -261,9 +261,9 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "Zone010");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("Material", "prairie");
+	zbeTmp.addCategory ("zone", "Zone010");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("material", "prairie");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "Zone010.ligozone");
@@ -271,11 +271,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "WT0");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
-	zbeTmp.addCategory ("TransType", "Flat");
-	zbeTmp.addCategory ("TransNum", "0");
+	zbeTmp.addCategory ("zone", "WT0");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "grozFleur-prairie");
+	zbeTmp.addCategory ("transtype", "Flat");
+	zbeTmp.addCategory ("transnum", "0");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "WT0.ligozone");
@@ -283,11 +283,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "WT1");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
-	zbeTmp.addCategory ("TransType", "Flat");
-	zbeTmp.addCategory ("TransNum", "1");
+	zbeTmp.addCategory ("zone", "WT1");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "grozFleur-prairie");
+	zbeTmp.addCategory ("transtype", "Flat");
+	zbeTmp.addCategory ("transnum", "1");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "WT1.ligozone");
@@ -295,11 +295,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "WT2");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
-	zbeTmp.addCategory ("TransType", "Flat");
-	zbeTmp.addCategory ("TransNum", "2");
+	zbeTmp.addCategory ("zone", "WT2");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "grozFleur-prairie");
+	zbeTmp.addCategory ("transtype", "Flat");
+	zbeTmp.addCategory ("transnum", "2");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "WT2.ligozone");
@@ -307,11 +307,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "WT3");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
-	zbeTmp.addCategory ("TransType", "CornerA");
-	zbeTmp.addCategory ("TransNum", "3");
+	zbeTmp.addCategory ("zone", "WT3");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "grozFleur-prairie");
+	zbeTmp.addCategory ("transtype", "CornerA");
+	zbeTmp.addCategory ("transnum", "3");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "WT3.ligozone");
@@ -319,11 +319,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "WT4");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
-	zbeTmp.addCategory ("TransType", "CornerA");
-	zbeTmp.addCategory ("TransNum", "4");
+	zbeTmp.addCategory ("zone", "WT4");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "grozFleur-prairie");
+	zbeTmp.addCategory ("transtype", "CornerA");
+	zbeTmp.addCategory ("transnum", "4");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "WT4.ligozone");
@@ -331,11 +331,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "WT5");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
-	zbeTmp.addCategory ("TransType", "CornerA");
-	zbeTmp.addCategory ("TransNum", "5");
+	zbeTmp.addCategory ("zone", "WT5");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "grozFleur-prairie");
+	zbeTmp.addCategory ("transtype", "CornerA");
+	zbeTmp.addCategory ("transnum", "5");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "WT5.ligozone");
@@ -343,11 +343,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "WT6");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
-	zbeTmp.addCategory ("TransType", "CornerB");
-	zbeTmp.addCategory ("TransNum", "6");
+	zbeTmp.addCategory ("zone", "WT6");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "grozFleur-prairie");
+	zbeTmp.addCategory ("transtype", "CornerB");
+	zbeTmp.addCategory ("transnum", "6");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "WT6.ligozone");
@@ -355,11 +355,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "WT7");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
-	zbeTmp.addCategory ("TransType", "CornerB");
-	zbeTmp.addCategory ("TransNum", "7");
+	zbeTmp.addCategory ("zone", "WT7");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "grozFleur-prairie");
+	zbeTmp.addCategory ("transtype", "CornerB");
+	zbeTmp.addCategory ("transnum", "7");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "WT7.ligozone");
@@ -367,11 +367,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "WT8");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
-	zbeTmp.addCategory ("TransType", "CornerB");
-	zbeTmp.addCategory ("TransNum", "8");
+	zbeTmp.addCategory ("zone", "WT8");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "grozFleur-prairie");
+	zbeTmp.addCategory ("transtype", "CornerB");
+	zbeTmp.addCategory ("transnum", "8");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "WT8.ligozone");
@@ -379,11 +379,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "ZT0");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
-	zbeTmp.addCategory ("TransType", "Flat");
-	zbeTmp.addCategory ("TransNum", "0");
+	zbeTmp.addCategory ("zone", "ZT0");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "titFleur-grozFleur");
+	zbeTmp.addCategory ("transtype", "Flat");
+	zbeTmp.addCategory ("transnum", "0");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "ZT0.ligozone");
@@ -391,11 +391,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "ZT1");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
-	zbeTmp.addCategory ("TransType", "Flat");
-	zbeTmp.addCategory ("TransNum", "1");
+	zbeTmp.addCategory ("zone", "ZT1");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "titFleur-grozFleur");
+	zbeTmp.addCategory ("transtype", "Flat");
+	zbeTmp.addCategory ("transnum", "1");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "ZT1.ligozone");
@@ -403,11 +403,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "ZT2");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
-	zbeTmp.addCategory ("TransType", "Flat");
-	zbeTmp.addCategory ("TransNum", "2");
+	zbeTmp.addCategory ("zone", "ZT2");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "titFleur-grozFleur");
+	zbeTmp.addCategory ("transtype", "Flat");
+	zbeTmp.addCategory ("transnum", "2");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "ZT2.ligozone");
@@ -415,11 +415,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "ZT3");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
-	zbeTmp.addCategory ("TransType", "CornerA");
-	zbeTmp.addCategory ("TransNum", "3");
+	zbeTmp.addCategory ("zone", "ZT3");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "titFleur-grozFleur");
+	zbeTmp.addCategory ("transtype", "CornerA");
+	zbeTmp.addCategory ("transnum", "3");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "ZT3.ligozone");
@@ -427,11 +427,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "ZT4");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
-	zbeTmp.addCategory ("TransType", "CornerA");
-	zbeTmp.addCategory ("TransNum", "4");
+	zbeTmp.addCategory ("zone", "ZT4");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "titFleur-grozFleur");
+	zbeTmp.addCategory ("transtype", "CornerA");
+	zbeTmp.addCategory ("transnum", "4");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "ZT4.ligozone");
@@ -439,11 +439,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "ZT5");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
-	zbeTmp.addCategory ("TransType", "CornerA");
-	zbeTmp.addCategory ("TransNum", "5");
+	zbeTmp.addCategory ("zone", "ZT5");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "titFleur-grozFleur");
+	zbeTmp.addCategory ("transtype", "CornerA");
+	zbeTmp.addCategory ("transnum", "5");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "ZT5.ligozone");
@@ -451,11 +451,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "ZT6");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
-	zbeTmp.addCategory ("TransType", "CornerB");
-	zbeTmp.addCategory ("TransNum", "6");
+	zbeTmp.addCategory ("zone", "ZT6");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "titFleur-grozFleur");
+	zbeTmp.addCategory ("transtype", "CornerB");
+	zbeTmp.addCategory ("transnum", "6");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "ZT6.ligozone");
@@ -463,11 +463,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "ZT7");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
-	zbeTmp.addCategory ("TransType", "CornerB");
-	zbeTmp.addCategory ("TransNum", "7");
+	zbeTmp.addCategory ("zone", "ZT7");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "titFleur-grozFleur");
+	zbeTmp.addCategory ("transtype", "CornerB");
+	zbeTmp.addCategory ("transnum", "7");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "ZT7.ligozone");
@@ -475,11 +475,11 @@ void CZoneBank::debugInit(const std::string &sPath) // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
-	zbeTmp.addCategory ("Zone", "ZT8");
-	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
-	zbeTmp.addCategory ("TransType", "CornerB");
-	zbeTmp.addCategory ("TransNum", "8");
+	zbeTmp.addCategory ("zone", "ZT8");
+	zbeTmp.addCategory ("size", "1x1");
+	zbeTmp.addCategory ("transname", "titFleur-grozFleur");
+	zbeTmp.addCategory ("transtype", "CornerB");
+	zbeTmp.addCategory ("transnum", "8");
 	zbeTmp._Mask.push_back (true);
 	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
 	debugSaveInit (zbeTmp, sPath + "ZT8.ligozone");

@@ -1,7 +1,7 @@
 /** \file zone_bank.h
  * Zone Bank
  *
- * $Id: zone_bank.h,v 1.7 2001/11/27 16:15:30 besson Exp $
+ * $Id: zone_bank.h,v 1.8 2001/12/17 13:55:54 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -34,6 +34,18 @@
 namespace NLLIGO
 {
 
+// Categories that MUST exist
+// (zone)
+// (size)
+// (material) or (transname + transtype + transnum)
+
+// All categories are string but some categories are particular string:
+// zone is any string
+// size is two number separated by a 'x'
+// material is any string
+// transname is two string (of materials separated by a '-')
+// transnum is a number
+// transtype is a string among (flat, cornera, cornerb)
 
 // ***************************************************************************
 
@@ -46,13 +58,13 @@ class CZoneBankElement
 {
 
 	// Category stuff
-	// The key is the Type of the category	(Ex: "Material", "Size", ...)
+	// The key is the Type of the category	(Ex: "material", "size", ...)
 	// The second element is the value		(Ex: "Grass", "2x2", ...)
 	std::map<std::string, std::string>	_CategoriesMap;
 
 	// In this list the category type and value must be unique and 2 categories MUST
-	// appears : "Zone" (The zone name) and "Size" (*x* (ex:4x4 3x1 etc...))
-	// Some categories used in WorldEditor : "Material", "Transition"
+	// appears : "zone" (The zone name) and "size" (*x* (ex:4x4 3x1 etc...))
+	// Some categories used in WorldEditor : "material", "transition"
 	uint8					_SizeX, _SizeY;
 	std::vector<bool>		_Mask;
 

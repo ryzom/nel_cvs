@@ -1,7 +1,7 @@
 /** \file ps_plane_basis.h
  * <File description>
  *
- * $Id: ps_plane_basis.h,v 1.6 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_plane_basis.h,v 1.7 2004/03/16 10:26:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/traits_nl.h"
 #include "3d/ps_util.h"
 #include "3d/ps_attrib_maker_helper.h"
 

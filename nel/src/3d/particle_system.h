@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.18 2001/09/07 11:56:37 vizerie Exp $
+ * $Id: particle_system.h,v 1.19 2001/09/26 17:43:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,9 +53,6 @@ struct UPSSoundServer;
 
 
 
-
-
-
 /// number user params for a particle system
 const uint MaxPSUserParam = 4;
 
@@ -83,6 +80,8 @@ class CParticleSystem
 {
 
 public:
+	// the pass that is applied on particles
+	enum TPass { Anim, SolidRender, BlendRender, ToolRender };
 
 	//*****************************************************************************************************
 
@@ -173,7 +172,7 @@ public:
 		* \param pass the pass to be executed
 		* \see setDriver
 		*/
-		virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime);
+		virtual void step(TPass pass, CAnimationTime ellapsedTime);
 		//@}
 
 		
@@ -571,9 +570,12 @@ public:
 	
 
 protected:
+	/// process a pass on the bound located
+	void					stepLocated(TPSProcessPass pass, CAnimationTime et);
 
 	/// when set to true, the system will compute his BBox every time computeBBox is called
 	bool					 _ComputeBBox;
+	bool					 _BBoxTouched;
 	NLMISC::CAABBox			 _PreComputedBBox;
 
 	// the driver used for rendering

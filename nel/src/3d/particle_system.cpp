@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.35 2001/09/07 11:56:37 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.36 2001/09/26 17:43:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,6 +76,7 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 									, _MaxViewDist(PSDefaultMaxViewDist)
 									, _LODRatio(0.5f)
 									, _ComputeBBox(true)
+									, _BBoxTouched(true)
 									, _DieCondition(none)
 									, _DelayBeforeDieTest(0.2f) 
 									, _DestroyModelWhenOutOfRange(false)
@@ -170,56 +171,94 @@ bool CParticleSystem::hasParticles(void) const
 }
 
 
-void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
-{	
-	CAnimationTime et = ellapsedTime;
-	uint32 nbPass = 1;
 
-	if (pass == PSSolidRender ||pass == PSBlendRender)
-	{
-		++_Date; // update time		 
-	}
-	else if (_AccurateIntegration && pass != PSToolRender)
-	{
-		if (et > _TimeThreshold)
-		{
-			nbPass = (uint32) ceilf(et / _TimeThreshold);
-			if (nbPass > _MaxNbIntegrations)
-			{ 
-				nbPass = _MaxNbIntegrations;
-				et = _CanSlowDown ? _TimeThreshold : (ellapsedTime / nbPass);
-			}
-			else
-			{
-				et = ellapsedTime / nbPass;
-			}
-		}
-	}
 
-	if (pass == PSMotion)
-	{
-		// store the view matrix for the rendring pass
-		 // it is needed for FaceLookat or the like		
-		// update current lod ratio
-
-		const CVector d = _SysMat.getPos() - _ViewMat.getPos();		
-		_OneMinusCurrentLODRatio = 1.f - (d.norm() * _InvCurrentViewDist);
-		if (_OneMinusCurrentLODRatio < 0) _OneMinusCurrentLODRatio = 0.f;		
-		
-	
-		// update system date
-		_SystemDate += ellapsedTime;
-	
-	}
-	
-	do
+void CParticleSystem::stepLocated(TPSProcessPass pass, CAnimationTime et)
+{
+	if (pass == PSSolidRender || pass == PSBlendRender || pass == PSToolRender)
 	{
 		for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 		{
 			(*it)->step(pass, et);
 		}
 	}
-	while (--nbPass);
+	else
+	{
+		for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
+		{
+			if (!(*it)->isParametricMotionEnabled()) (*it)->step(pass, et);
+		}
+	}
+}
+
+void CParticleSystem::step(TPass pass, CAnimationTime ellapsedTime)
+{		
+	switch (pass)
+	{
+		case SolidRender:
+			++_Date; // update time		 
+			stepLocated(PSSolidRender, ellapsedTime);
+		break;
+		case BlendRender:
+			++_Date; // update time
+			stepLocated(PSBlendRender, ellapsedTime);
+		break;
+		case ToolRender:
+			stepLocated(PSToolRender, ellapsedTime);
+		break;
+		case Anim:
+		{
+		
+			_BBoxTouched = true;
+			CAnimationTime et = ellapsedTime;
+			uint nbPass = 1;
+			if (_AccurateIntegration)
+			{
+				if (et > _TimeThreshold)
+				{
+					nbPass = (uint32) ceilf(et / _TimeThreshold);
+					if (nbPass > _MaxNbIntegrations)
+					{ 
+						nbPass = _MaxNbIntegrations;
+						et = _CanSlowDown ? _TimeThreshold : (ellapsedTime / nbPass);
+					}
+					else
+					{
+						et = ellapsedTime / nbPass;
+					}
+				}			
+			}
+
+			// store the view matrix for lod computation, and further rendering pass
+			// update current lod ratio
+			const CVector d = _SysMat.getPos() - _ViewMat.getPos();		
+			_OneMinusCurrentLODRatio = 1.f - (d.norm() * _InvCurrentViewDist);
+			if (_OneMinusCurrentLODRatio < 0) _OneMinusCurrentLODRatio = 0.f;								
+
+			// process passes
+			do
+			{
+				stepLocated(PSEmit, et);
+				stepLocated(PSCollision, et);
+				stepLocated(PSMotion, et);
+				stepLocated(PSCollision, et);
+				stepLocated(PSDynamic, et);
+				stepLocated(PSPostdynamic, et);										
+			}
+			while (--nbPass);
+			
+			// perform parametric motion if present
+			for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
+			{
+				if ((*it)->isParametricMotionEnabled()) (*it)->performParametricMotion(_SystemDate, ellapsedTime);
+			}
+			
+
+			// update system date
+			_SystemDate += ellapsedTime;
+		}
+	}	
+		
 }
 
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
@@ -329,7 +368,7 @@ void CParticleSystem::remove(CParticleSystemProcess *ptr)
 
 void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 {
-	if (!_ComputeBBox)
+	if (!_ComputeBBox || !_BBoxTouched)
 	{
 		aabbox = _PreComputedBBox;
 		return;
@@ -364,7 +403,8 @@ void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 		aabbox.setHalfSize(NLMISC::CVector::Null);
 	}
 	
-	_PreComputedBBox = aabbox;	
+	_BBoxTouched = false;
+	_PreComputedBBox = aabbox;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.25 2001/06/28 07:56:17 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.26 2001/07/03 08:34:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3927,6 +3927,8 @@ void CPSShockWave::resize(uint32 aSize)
 CMesh *CreateDummyShape(void)
 {
 	CMesh::CMeshBuild mb ;
+	CMeshBase::CMeshBaseBuild mbb;
+
 	mb.VertexFlags = IDRV_VF_XYZ | IDRV_VF_UV[0] ;
 	mb.Vertices.push_back(CVector(-.5f, -.5f, -.5f)) ;
 	mb.Vertices.push_back(CVector(.5f, -.5f, -.5f)) ;
@@ -3989,9 +3991,9 @@ CMesh *CreateDummyShape(void)
 	mat.setLighting(false) ;
 	mat.setColor(CRGBA::White) ;
 
-	mb.Materials.push_back(mat) ;
+	mbb.Materials.push_back(mat) ;
 	CMesh *m = new CMesh ;
-	m->build(mb) ;
+	m->build(mbb, mb) ;
 	return m ;
 } 
 

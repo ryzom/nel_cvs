@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.12 2003/09/01 12:22:25 lecroart Exp $
+ * $Id: admin.cpp,v 1.13 2003/09/01 16:23:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,7 +93,7 @@ uint32 RequestTimeout = 4;	// in second
 // Callbacks
 //
 
-static void cbInformations (CMessage &msgin, const std::string &serviceName, uint16 sid)
+static void cbInfo (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	nlinfo ("Updating informations");
 
@@ -183,7 +183,7 @@ static void cbAESDisconnection (const std::string &serviceName, uint16 sid, void
 
 static TUnifiedCallbackItem CallbackArray[] =
 {
-	{ "INFORMATIONS",	cbInformations },
+	{ "INFO",			cbInfo },
 	{ "GET_VIEW",		cbServGetView },
 	{ "STOPS",			cbStopService },
 	{ "EXEC_COMMAND",	cbExecCommand },

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.53 2003/08/26 14:52:50 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.54 2003/09/01 16:23:33 lecroart Exp $
  *
  */
 
@@ -304,7 +304,7 @@ CVariable2<int> Toto("Toto", "help", 10);
 
 void sendInformations (uint16 sid)
 {
-	CMessage msgout ("INFORMATIONS");
+	CMessage msgout ("INFO");
 	msgout.serialCont(AdminAlarms);
 	msgout.serialCont(GraphUpdate);
 	for (uint j = 0; j < Services.size(); j++)
@@ -1296,7 +1296,7 @@ static void cbLog /*(CMessage& msgin, TSockId from, CCallbackNetBase &netbase)*/
 	CNetManager::send ("AESAS", msgout);*/
 }
 
-static void cbInformations (CMessage &msgin, const std::string &serviceName, uint16 sid)
+static void cbAESInfo (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	nlinfo ("Updating all informations for AES and hosted service");
 
@@ -1486,12 +1486,7 @@ static TUnifiedCallbackItem CallbackArray[] =
 	{ "GRAPH_UPDATE", cbGraphUpdate },
 	
 	{ "REJECTED", cbRejected },
-};
-
-// don't mix because we have to add this callbackarray IN the init()
-static TUnifiedCallbackItem InformationCallbackArray[] =
-{
-	{ "INFORMATIONS", cbInformations },
+	{ "AES_INFO", cbAESInfo },
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1673,9 +1668,6 @@ public:
 		// add connection to the admin service
 		CUnifiedNetwork::getInstance()->setServiceUpCallback ("AS", ASConnection, NULL);
 		CUnifiedNetwork::getInstance()->setServiceDownCallback ("AS", ASDisconnection, NULL);
-
-		// we must set after others to be sure that it will erase the old one on admin.cpp in net module
-		CUnifiedNetwork::getInstance()->addCallbackArray (InformationCallbackArray, sizeof(InformationCallbackArray)/sizeof(InformationCallbackArray[0]));
 
 		string ASHost = ConfigFile.getVar ("ASHost").asString ();
 		if (ASHost.find (":") == string::npos)

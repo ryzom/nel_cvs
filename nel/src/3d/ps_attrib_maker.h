@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.3 2001/07/04 12:36:55 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.4 2001/07/04 16:00:26 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -387,20 +387,23 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 
 			
 			// dummy post increment
-			operator++(int)
-			{								
+			CRandomIterator &operator++(int)
+			{			
+				return *this ;
 			}
 			// dummy pre-increment
-			operator++()
-			{						
+			CRandomIterator &operator++()
+			{				
+				return *this ;
 			}
 			// dummy post decrement
 			operator--(int)
 			{			
 			}
 			// dummy pre-decrement
-			operator--()
+			CRandomIterator &operator--()
 			{				
+				return this ;
 			}
 
 		} ;

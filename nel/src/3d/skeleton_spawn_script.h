@@ -1,7 +1,7 @@
 /** \file skeleton_spawn_script.h
  * <File description>
  *
- * $Id: skeleton_spawn_script.h,v 1.1 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: skeleton_spawn_script.h,v 1.2 2004/08/23 18:04:56 lecroart Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 
+#include "3d/transform_shape.h"
 
 namespace NL3D 
 {
@@ -36,7 +37,6 @@ namespace NL3D
 
 class CScene;
 class CSkeletonModel;
-class CTransformShape;
 
 
 // ***************************************************************************

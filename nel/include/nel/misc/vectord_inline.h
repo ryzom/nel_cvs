@@ -1,7 +1,7 @@
 /** \file vectord_inline.h
  * CVectorD class inline definitions.
  *
- * $Id: vectord_inline.h,v 1.7 2002/08/21 09:36:01 lecroart Exp $
+ * $Id: vectord_inline.h,v 1.8 2003/10/24 13:27:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,6 +184,15 @@ inline	void	CVectorD::serial(IStream &f)
 {
 	f.serial(x,y,z);
 }
+inline	void CVectorD::copyTo(CVector &dest) const
+{
+	dest.set((float) x, (float) y, (float) z);
+}
+inline CVector CVectorD::asVector() const
+{
+	return CVector((float) x, (float) y, (float) z);
+}
+
 
 
 }

@@ -1,7 +1,7 @@
 /** \file vectord.h
  * CVectorD class
  *
- * $Id: vectord.h,v 1.3 2000/12/20 10:19:46 saffray Exp $
+ * $Id: vectord.h,v 1.4 2003/10/24 13:27:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,6 +125,10 @@ public:		// Methods.
 	void	serial(IStream &f);
 	CVectorD &operator=(const CVector &v);
 	operator CVector() const;
+	// copy content into a CVector
+	void copyTo(CVector &dest) const;
+	// conersion to a CVector
+	CVector asVector() const;
 	//@}
 
 	// friends.

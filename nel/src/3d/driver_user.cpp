@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.48 2004/08/10 08:24:10 besson Exp $
+ * $Id: driver_user.cpp,v 1.49 2004/08/13 15:32:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -162,7 +162,7 @@ CDriverUser::CDriverUser (uint windowIcon, bool direct3d)
 	_WindowInit= false;
 
 	// Init of VBuffers/PBs for 2D/3D interface.
-	_VBFlat.setVertexFormat(CVertexBuffer::PositionFlag);
+	_VBFlat.setVertexFormat(CVertexBuffer::PositionFlag);	
 	_VBColor.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag);
 	_VBUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	_VBColorUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
@@ -180,6 +180,13 @@ CDriverUser::CDriverUser (uint windowIcon, bool direct3d)
 	_VBColorUv.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
 	_VBQuadsColUv.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
 	_VBQuadsColUv2.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
+	// names
+	_VBFlat.setName("_VBFlat");
+	_VBColor.setName("_VBColor");
+	_VBUv.setName("_VBUv");
+	_VBColorUv.setName("_VBColorUv");
+	_VBQuadsColUv.setName("_VBQuadsColUv");
+	_VBQuadsColUv2.setName("_VBQuadsColUv2");
 
 	_PBLine.setNumIndexes(2);
 	CIndexBufferReadWrite iba;
@@ -190,6 +197,9 @@ CDriverUser::CDriverUser (uint windowIcon, bool direct3d)
 	iba.setTri(0, 0, 1, 2);
 
 	_ShapeBank._DriverUser = this;
+
+	NL_SET_IB_NAME(_PBLine, "CDriverUser::_PBLine");
+	NL_SET_IB_NAME(_PBTri, "CDriverUser::_PBTri");
 }
 // ***************************************************************************
 CDriverUser::~CDriverUser()
@@ -1615,6 +1625,7 @@ void CDriverUser::deleteWaterEnvMap(UWaterEnvMap *map)
 	delete (CWaterEnvMapUser *) map;
 }
 
+// ***************************************************************************
 void CDriverUser::setCullMode(TCullMode cullMode)
 {
 	NL3D_MEM_DRIVER
@@ -1622,6 +1633,7 @@ void CDriverUser::setCullMode(TCullMode cullMode)
 	_Driver->setCullMode((IDriver::TCullMode) cullMode);
 }
 
+// ***************************************************************************
 UDriver::TCullMode CDriverUser::getCullMode() const
 {
 	NL3D_MEM_DRIVER
@@ -1634,3 +1646,24 @@ UDriver::TCullMode CDriverUser::getCullMode() const
 // ***************************************************************************
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

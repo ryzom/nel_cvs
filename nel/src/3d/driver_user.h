@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.44 2004/08/03 16:30:29 vizerie Exp $
+ * $Id: driver_user.h,v 1.45 2004/08/13 15:32:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
+#include "nel/misc/hierarchical_timer.h"
 #include "nel/3d/u_driver.h"
 #include "nel/3d/u_material.h"
 #include "3d/event_mouse_listener.h"
@@ -459,6 +460,12 @@ public:
 
 	virtual	void			profileVBHardAllocation(std::vector<std::string> &result);
 
+	virtual	void			startProfileIBLock();
+	
+	virtual	void			endProfileIBLock(std::vector<std::string> &result);
+		 
+	virtual	void			profileIBAllocation(std::vector<std::string> &result);
+
 	virtual	void			profileTextureUsage(std::vector<std::string> &result);
 		
 	// @}
@@ -490,6 +497,7 @@ public:
 	virtual UWaterEnvMap *createWaterEnvMap();	
 	virtual void		  deleteWaterEnvMap(UWaterEnvMap *map);
 	// @}
+	
 
 public:
 	/// \name Accessor for CSeneUser.
@@ -518,3 +526,24 @@ public:
 #endif // NL_DRIVER_USER_H
 
 /* End of driver_user.h */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

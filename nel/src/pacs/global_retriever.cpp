@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.91 2004/02/04 09:54:52 legros Exp $
+ * $Id: global_retriever.cpp,v 1.92 2004/03/15 11:14:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2059,7 +2059,7 @@ NLPACS::UGlobalPosition
 		{
 			// if not, just return start.
 			//nlstop;
-			nlwarning ("BEN: you must fix this, it s happen!!!");
+			//nlwarning ("BEN: you must fix this, it s happen!!!");
 			return startPos;
 		}
 		// Since we are sure we have same movement than prec testMove(), no need to rebuild cst.CollisionChains.

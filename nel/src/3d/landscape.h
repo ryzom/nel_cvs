@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.32 2002/02/18 12:55:00 lecroart Exp $
+ * $Id: landscape.h,v 1.33 2002/03/18 14:45:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -481,6 +481,24 @@ public:
 	// @}
 
 
+	/// \name Precision ZBuffer mgt.
+	// @{
+
+	/** Set the ModelPosition (for Precision ZBuffer purpose). NB: the model Pos may be floor-ed 
+	  *	(for greater float precision). Should be setup to the camera position each frame.
+	  *
+	  *	NB: if vertexProgram is used, it is as faster as before (because of geomorph done each frame, 
+	  *	and because of VP MAD instruction).
+	  *	NB: if vertexProgram is not used, it is a little slower, because of the substraction.
+	  */
+	void			setPZBModelPosition(const CVector &pos);
+
+	/// \see setPZBModelPosition()
+	const CVector	&getPZBModelPosition() const {return _PZBModelPosition;}
+
+	// @}
+
+
 // ********************************
 private:
 	// Private part used by CTessFace / CPatch / CZone.
@@ -775,6 +793,13 @@ private:
 	 */
 	const CTileVegetableDesc	&getTileVegetableDesc(uint16 tileId);
 
+	// @}
+
+
+	/// \name Precision ZBuffer mgt.
+	// @{
+	/// \see setPZBModelPosition()
+	CVector						_PZBModelPosition;
 	// @}
 
 };

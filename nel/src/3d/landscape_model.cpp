@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.20 2002/03/15 16:10:44 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.21 2002/03/18 14:45:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,8 +106,16 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 
 	CRenderTrav		*trav= (CRenderTrav*)Trav;
 
+	// Change the landscape cetner. All Geomorphed pos (in VertexBuffer only or during VertexProgram)
+	// substract this position.
+	landModel->Landscape.setPZBModelPosition(trav->CamPos);
+
+	// setup the model matrix
 	CMatrix		m;
 	m.identity();
+	// ZBuffer Precion: set the modelMatrix to the current landscape PZBModelPosition.
+	// NB: don't use trav->CamPos directly because setPZBModelPosition() may modify the position
+	m.setPos(landModel->Landscape.getPZBModelPosition());
 	trav->getDriver()->setupModelMatrix(m);
 
 

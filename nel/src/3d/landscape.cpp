@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.104 2002/02/28 12:59:49 besson Exp $
+ * $Id: landscape.cpp,v 1.105 2002/03/18 14:45:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -223,6 +223,7 @@ CLandscape::CLandscape() :
 	_VegetableManagerEnabled= false;
 	_DriverOkForVegetable= false;
 
+	_PZBModelPosition= CVector::Null;
 }
 // ***************************************************************************
 CLandscape::~CLandscape()
@@ -712,6 +713,9 @@ void			CLandscape::updateGlobalsAndLockBuffers (const CVector &refineCenter)
 	CLandscapeGlobals::TileNearSphere.Center= CLandscapeGlobals::RefineCenter;
 	CLandscapeGlobals::TileNearSphere.Radius= CLandscapeGlobals::TileDistNear;
 
+	// PZBModelPosition
+	CLandscapeGlobals::PZBModelPosition= _PZBModelPosition;
+
 	// VB Allocators.
 	CLandscapeGlobals::CurrentFar0VBAllocator= &_Far0VB;
 	CLandscapeGlobals::CurrentFar1VBAllocator= &_Far1VB;
@@ -960,6 +964,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		driver->setConstant(6, CLandscapeGlobals::TileDistFarSqr, CLandscapeGlobals::OOTileDistDeltaSqr, 0, 0);
 		// c[8..11] take the ModelView Matrix.
 		driver->setConstantMatrix(8, IDriver::ModelView, IDriver::Identity);
+		// c[12] take the current landscape Center / delta Pos to apply
+		driver->setConstant(12, &_PZBModelPosition);
 	}
 
 
@@ -2525,6 +2531,13 @@ void		CLandscape::getTessellationLeaves(std::vector<const CTessFace*>  &leaves) 
 		}
 	}
 
+}
+
+
+// ***************************************************************************
+void		CLandscape::setPZBModelPosition(const CVector &pos)
+{
+	_PZBModelPosition= pos;
 }
 
 

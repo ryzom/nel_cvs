@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.6 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: landscape_def.h,v 1.7 2002/03/18 14:45:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,6 +89,9 @@ public:
 	static	float	RefineThreshold;
 	// Guess.
 	static	float	OORefineThreshold;
+
+	// The center of the landscape (near CameraCenter), for better ZBuffer precision.
+	static	CVector PZBModelPosition;
 
 
 	// Tile Global Info.

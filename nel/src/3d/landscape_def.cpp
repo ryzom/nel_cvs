@@ -1,7 +1,7 @@
 /** \file landscape_def.cpp
  * Definition for Landscape
  *
- * $Id: landscape_def.cpp,v 1.4 2002/02/28 12:59:49 besson Exp $
+ * $Id: landscape_def.cpp,v 1.5 2002/03/18 14:45:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,8 @@ sint		CLandscapeGlobals::CurrentRenderDate=0;
 CVector		CLandscapeGlobals::RefineCenter= CVector::Null;
 float		CLandscapeGlobals::RefineThreshold= 0.001f;
 float		CLandscapeGlobals::OORefineThreshold= 1.0f / CLandscapeGlobals::RefineThreshold;
+
+CVector		CLandscapeGlobals::PZBModelPosition= CVector::Null;
 
 float		CLandscapeGlobals::TileDistNear= 50;
 float		CLandscapeGlobals::TileDistFar= CLandscapeGlobals::TileDistNear+20;

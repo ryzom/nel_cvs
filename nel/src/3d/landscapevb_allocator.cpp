@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.6 2002/02/28 12:59:49 besson Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.7 2002/03/18 14:45:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -384,6 +384,7 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 	c[6]= {TileDistFarSqr, OOTileDistDeltaSqr, *, *}
 	c[7]= ???
 	c[8..11]= ModelView Matrix (for Fog).
+	c[12]= PZBModelPosition: landscape center / delta Position to apply before multipliying by mviewMatrix
 
 
 	Fog Note:
@@ -460,8 +461,11 @@ const char* NL3D_LandscapeCommonStartProgram=
 	ADD R0.x, R0.x, -c[4].y;		# R0.x= ErrorMetric Max - 1							\n\
 	MAX R0.x, R0.x, c[4].x;																\n\
 	MIN R0.x, R0.x, c[4].y;			# R0.x= geomBlend= clamp(R0.x, 0, 1);				\n\
+																						\n\
+	# NB: Can't use MAD R1.xyz, v[11], R0.x, v[0], because can't acces 2 inputs in one op.	\n\
+	# Hence, can use a MAD to Sub the Landscape Center _PZBModelPosition				\n\
+	MAD	R1.xyz, v[11], R0.x, -c[12];													\n\
 	# trick here: since R1.w= 0, and v[0].w= 1, final R1.w==1.							\n\
-	MUL	R1.xyz, v[11], R0.x;		# Can't use MAD, because can't acces 2 inputs in one op.	\n\
 	ADD	R1, R1, v[0];				# R1= geomBlend * (EndPos-StartPos) + StartPos		\n\
 ";
 

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.20 2002/03/14 18:18:27 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.21 2002/03/18 14:45:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,7 +83,8 @@ void		CRenderTrav::traverse()
 
 	// Bind to Driver.
 	getDriver()->setFrustum(Left, Right, Bottom, Top, Near, Far, Perspective);
-	getDriver()->setupViewMatrix(ViewMatrix);
+	// Use setupViewMatrixEx() for ZBuffer precision.
+	getDriver()->setupViewMatrixEx(ViewMatrix, CamPos);
 	getDriver()->setupViewport(_Viewport);
 
 	// reset the light setup, and set global ambient.

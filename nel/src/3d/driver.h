@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.29 2002/03/14 18:06:48 vizerie Exp $
+ * $Id: driver.h,v 1.30 2002/03/18 14:45:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -233,6 +233,20 @@ public:
 	 * NB: you must setupViewMatrix() BEFORE setupModelMatrix(), or else undefined results.
 	 */
 	virtual void			setupViewMatrix(const CMatrix& mtx)=0;
+
+	/** setup the view matrix (inverse of camera matrix). 
+	 *	Extended: give a cameraPos (mtx.Pos() is not taken into account but for getViewMatrix()), 
+	 *	so the driver use it to remove translation from all ModelMatrixes (and lights pos). 
+	 *	This approach improves greatly ZBuffer precision.
+	 *
+	 *	This is transparent to user, and getViewMatrix() return mtx (as in setupViewMatrix()).
+	 *
+	 * NB: you must setupViewMatrixEx() BEFORE setupModelMatrix(), or else undefined results.
+	 *
+	 * \param mtx the same view matrix (still with correct "inversed" camera position) as if passed in setupViewMatrix()
+	 * \param cameraPos position of the camera (before inversion, ie mtx.getPos()!=cameraPos ).
+	 */
+	virtual void			setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)=0;
 
 	/** setup a model matrix. IDdriver::MaxModelMatrix (16) can be setuped.
 	 * The 0th model matrix is the principal one. Others are only usefull fro skinning (see CVertexBuffer, and setupVertexMode).

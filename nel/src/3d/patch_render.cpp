@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.9 2002/02/28 12:59:50 besson Exp $
+ * $Id: patch_render.cpp,v 1.10 2002/03/18 14:45:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -976,8 +976,8 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 	// If not VertexProgram (NB: Suppose BTB kill this test).
 	if( !CLandscapeGlobals::VertexProgramEnabled )
 	{
-		// Set Pos.
-		*(CVector*)CurVBPtr= pVert->Src->Pos;
+		// Set Pos. Set it local to the current center of landscape
+		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 		// Set Uvs.
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff0)= uv;
 	}
@@ -1034,8 +1034,8 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 	// If not VertexProgram (NB: Suppose BTB kill this test).
 	if( !CLandscapeGlobals::VertexProgramEnabled )
 	{
-		// Set Pos.
-		*(CVector*)CurVBPtr= pVert->Src->Pos;
+		// Set Pos. Set it local to the current center of landscape
+		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 		// Set Uvs.
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff0)= uv;
 		// Set default color.
@@ -1090,8 +1090,8 @@ inline void		CPatch::fillTileVertexVB(CTessNearVertex *pVert)
 	// If not VertexProgram (NB: Suppose BTB kill this test).
 	if( !CLandscapeGlobals::VertexProgramEnabled )
 	{
-		// Set Pos.
-		*(CVector*)CurVBPtr= pVert->Src->Pos;
+		// Set Pos. Set it local to the current center of landscape
+		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 		// Set Uvs.
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
@@ -1281,8 +1281,8 @@ void		CPatch::computeGeomorphFar0VertexListVB(CTessList<CTessFarVertex>  &vertLi
 		CurVBPtr= (uint8*)CLandscapeGlobals::CurrentFar0VBInfo.VertexCoordPointer;
 		CurVBPtr+= pVert->Index0 * CLandscapeGlobals::CurrentFar0VBInfo.VertexSize;
 
-		// Set Geomorphed Position.
-		*(CVector*)CurVBPtr= pVert->Src->Pos;
+		// Set Geomorphed Position. Set it local to the current center of landscape
+		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 	}
 }
 
@@ -1301,8 +1301,8 @@ void		CPatch::computeGeomorphAlphaFar1VertexListVB(CTessList<CTessFarVertex>  &v
 
 		// NB: the filling order of data is important, for AGP write combiners.
 
-		// Set Geomorphed Position.
-		*(CVector*)CurVBPtr= pVert->Src->Pos;
+		// Set Geomorphed Position. Set it local to the current center of landscape
+		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 
 		// Set Alpha color.
 		static CRGBA	col(255,255,255,255);
@@ -1329,8 +1329,8 @@ void		CPatch::computeGeomorphTileVertexListVB(CTessList<CTessNearVertex>  &vertL
 		CurVBPtr= (uint8*)CLandscapeGlobals::CurrentTileVBInfo.VertexCoordPointer;
 		CurVBPtr+= pVert->Index * CLandscapeGlobals::CurrentTileVBInfo.VertexSize;
 
-		// Set Geomorphed Position.
-		*(CVector*)CurVBPtr= pVert->Src->Pos;
+		// Set Geomorphed Position. Set it local to the current center of landscape
+		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 	}
 }
 

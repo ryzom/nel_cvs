@@ -1,7 +1,7 @@
 /** \file ps_int.h
  * <File description>
  *
- * $Id: ps_int.h,v 1.4 2001/09/12 13:19:07 vizerie Exp $
+ * $Id: ps_int.h,v 1.5 2002/02/15 17:06:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,11 +61,6 @@ public:
 	}
 	CPSAttribMakerBase *clone() const { return new CPSUIntBlender(*this); }
 };
-
-
-
-
-
 
 
 /// This is a int gradient class
@@ -149,8 +144,6 @@ public:
 	NLMISC_DECLARE_CLASS(CPSUIntBinOp);
 	CPSAttribMakerBase *clone() const { return new CPSUIntBinOp(*this); }
 };
-
-
 
 
 

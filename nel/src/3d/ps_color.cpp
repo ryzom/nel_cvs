@@ -1,7 +1,7 @@
 /** \file ps_color.cpp
  * <File description>
  *
- * $Id: ps_color.cpp,v 1.6 2001/07/12 15:51:21 vizerie Exp $
+ * $Id: ps_color.cpp,v 1.7 2002/02/15 17:02:28 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "3d/ps_color.h"
+#include "3d/ps_register_color_attribs.h"
 
 
 namespace NL3D {
@@ -33,12 +34,21 @@ using NLMISC::CRGBA ;
 CRGBA CPSColorGradient::_DefaultGradient[] = { CRGBA::White, CRGBA::Black } ;
 
 
+///======================================================================================
 CPSColorGradient::CPSColorGradient(const CRGBA *colorTab, uint32 nbValues, uint32 nbStages, float nbCycles) 
 				: CPSValueGradient<CRGBA>(nbCycles)
 {
 	_F.setValues(colorTab, nbValues, nbStages) ;
 }
 
-
+///======================================================================================
+void PSRegisterColorAttribs()
+{
+	NLMISC_REGISTER_CLASS(CPSColorBlender);
+	NLMISC_REGISTER_CLASS(CPSColorMemory);
+	NLMISC_REGISTER_CLASS(CPSColorBinOp);
+	NLMISC_REGISTER_CLASS(CPSColorBlenderExact);
+	NLMISC_REGISTER_CLASS(CPSColorGradient);
+}
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file ps_int.cpp
  * <File description>
  *
- * $Id: ps_int.cpp,v 1.5 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_int.cpp,v 1.6 2002/02/15 17:06:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "3d/ps_int.h"
+#include "3d/ps_register_int_attribs.h"
 
 
 namespace NL3D {
@@ -46,6 +47,19 @@ CPSUIntGradient::CPSUIntGradient(const uint32 *intTab, uint32 nbValues, uint32 n
 	_F.setValues(intTab, nbValues, nbStages);
 }
 
+
+/// Register attribute makers based on int (used in particle systems)
+void PSRegisterIntAttribs()
+{
+	NLMISC_REGISTER_CLASS(CPSIntBlender);		
+	NLMISC_REGISTER_CLASS(CPSIntMemory);		
+	NLMISC_REGISTER_CLASS(CPSIntBinOp);		
+	NLMISC_REGISTER_CLASS(CPSIntGradient);
+	NLMISC_REGISTER_CLASS(CPSUIntBlender);		
+	NLMISC_REGISTER_CLASS(CPSUIntMemory);		
+	NLMISC_REGISTER_CLASS(CPSUIntBinOp);		
+	NLMISC_REGISTER_CLASS(CPSUIntGradient);
+}
 
 
 } // NL3D

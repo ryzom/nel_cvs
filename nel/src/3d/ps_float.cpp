@@ -1,7 +1,7 @@
 /** \file ps_size.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.10 2001/10/02 16:38:13 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.11 2002/02/15 17:04:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,8 @@
  */
 
 #include "3d/ps_float.h"
-#include <3d/fast_floor.h>
+#include "3d/ps_register_float_attribs.h"
+#include "3d/fast_floor.h"
 
 namespace NL3D {
 
@@ -50,9 +51,6 @@ CPSFloatGradient::CPSFloatGradient(const float *floatTab, uint32 nbValues, uint3
 // CPSFloatBezierCurve implementation     //
 ////////////////////////////////////////////
 
-
-		
-
 CPSFloatCurveFunctor::CPSFloatCurveFunctor() : _Smoothing(true), _NumSamples(128)
 {
 	_CtrlPoints.push_back(CCtrlPoint(0, 0.5f));
@@ -60,11 +58,13 @@ CPSFloatCurveFunctor::CPSFloatCurveFunctor() : _Smoothing(true), _NumSamples(128
 	updateTab();	
 }
 
+///=======================================================================================
 void CPSFloatCurveFunctor::sortPoints(void)
 {
 	std::sort(_CtrlPoints.begin(), _CtrlPoints.end());
 }
 
+///=======================================================================================
 void CPSFloatCurveFunctor::addControlPoint(const CCtrlPoint &ctrlPoint)
 {
 	_CtrlPoints.push_back(ctrlPoint);
@@ -72,12 +72,13 @@ void CPSFloatCurveFunctor::addControlPoint(const CCtrlPoint &ctrlPoint)
 	updateTab();
 }
 
-
+///=======================================================================================
 const CPSFloatCurveFunctor::CCtrlPoint &CPSFloatCurveFunctor::getControlPoint(uint index) const
 {
 	return _CtrlPoints[index];
 }
-		
+
+///=======================================================================================
 void CPSFloatCurveFunctor::setCtrlPoint(uint index, const CCtrlPoint &ctrlPoint)
 {
 	nlassert(ctrlPoint.Date >= 0 && ctrlPoint.Date <= 1);
@@ -86,7 +87,7 @@ void CPSFloatCurveFunctor::setCtrlPoint(uint index, const CCtrlPoint &ctrlPoint)
 	updateTab();
 }
 
-
+///=======================================================================================
 void CPSFloatCurveFunctor::removeCtrlPoint(uint index)
 {
 	nlassert(_CtrlPoints.size() > 1);
@@ -94,7 +95,7 @@ void CPSFloatCurveFunctor::removeCtrlPoint(uint index)
 	updateTab();
 }
 
-
+///=======================================================================================
 void CPSFloatCurveFunctor::setNumSamples(uint32 numSamples)
 {
 	nlassert(numSamples > 0);
@@ -102,7 +103,7 @@ void CPSFloatCurveFunctor::setNumSamples(uint32 numSamples)
 	updateTab();
 }
 
-
+///=======================================================================================
 float CPSFloatCurveFunctor::getValue(float date) const
 {
 	nlassert(date >= 0 && date <= 1);
@@ -135,7 +136,7 @@ float CPSFloatCurveFunctor::getValue(float date) const
 	}
 }
 
-
+///=======================================================================================
 void CPSFloatCurveFunctor::updateTab(void)
 {
 	float step  = 1.f / _NumSamples;
@@ -148,7 +149,7 @@ void CPSFloatCurveFunctor::updateTab(void)
 	}
 }
 
-
+///=======================================================================================
 void CPSFloatCurveFunctor::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1);
@@ -160,6 +161,7 @@ void CPSFloatCurveFunctor::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	}
 }
 
+///=======================================================================================
 float CPSFloatCurveFunctor::getSlope(uint index) const
 {	
 	// tangent for first point
@@ -184,12 +186,21 @@ float CPSFloatCurveFunctor::getSlope(uint index) const
 																	  : 1e6f;	
 }
 
-
+///=======================================================================================
 void CPSFloatCurveFunctor::enableSmoothing(bool enable /* = true*/)
 { 
 	_Smoothing = enable;
 	updateTab();
 }
 
+///=======================================================================================
+void PSRegisterFloatAttribs()
+{
+	NLMISC_REGISTER_CLASS(CPSFloatBlender);		
+	NLMISC_REGISTER_CLASS(CPSFloatGradient);
+	NLMISC_REGISTER_CLASS(CPSFloatMemory);
+	NLMISC_REGISTER_CLASS(CPSFloatBinOp);
+	NLMISC_REGISTER_CLASS(CPSFloatCurve);		
+}
 
 } // NL3D

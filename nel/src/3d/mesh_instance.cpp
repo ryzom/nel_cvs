@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.19 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: mesh_instance.cpp,v 1.20 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,15 +65,7 @@ CMeshInstance::~CMeshInstance()
 	}
 
 	// delete the shadowMap
-	if(_ShadowMap)
-	{
-		nlassert(_ShadowGeom);
-		delete _ShadowMap;
-		delete _ShadowGeom;
-		_ShadowMap= NULL;
-		_ShadowGeom= NULL;
-	}
-	nlassert(_ShadowGeom==NULL && _ShadowMap==NULL);
+	deleteShadowMap();
 }
 
 
@@ -245,14 +237,30 @@ CShadowMap	*CMeshInstance::getShadowMap()
 }
 
 // ***************************************************************************
-void		CMeshInstance::updateShadowMap(IDriver *driver)
+void		CMeshInstance::deleteShadowMap()
 {
-	// create the shadowMap if not already done.
+	if(_ShadowMap)
+	{
+		nlassert(_ShadowGeom);
+		delete _ShadowMap;
+		delete _ShadowGeom;
+		_ShadowMap= NULL;
+		_ShadowGeom= NULL;
+	}
+	nlassert(_ShadowGeom==NULL && _ShadowMap==NULL);
+}
+
+// ***************************************************************************
+void		CMeshInstance::createShadowMap()
+{
+	// create the shadowMap
 	if(!_ShadowMap)
 	{
 		uint i;
 
-		_ShadowMap= new CShadowMap;
+		_ShadowMap= new CShadowMap(&getOwnerScene()->getRenderTrav().getShadowMapManager());
+
+		// Init the shadowGeom.
 		_ShadowGeom= new CShadowGeom;
 
 		// create a VBuffer with only Position Data
@@ -304,7 +312,12 @@ void		CMeshInstance::updateShadowMap(IDriver *driver)
 			}
 		}
 	}
+}
 
+
+// ***************************************************************************
+void		CMeshInstance::updateShadowMap(IDriver *driver)
+{
 	// create/update texture
 	if(_ShadowMap->getTextureSize()!=getOwnerScene()->getShadowMapTextureSize())
 	{

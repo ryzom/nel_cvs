@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.19 2003/03/28 15:53:01 berenguier Exp $
+ * $Id: clip_trav.h,v 1.20 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,6 +183,9 @@ private:
 	std::vector<CSkeletonKey>	_TmpSortSkeletons;
 
 	void	loadBalanceSkeletonCLod();
+
+	// Process the skeleton for ShadowMap.
+	void	clipSkeletonShadowMaps();
 };
 
 

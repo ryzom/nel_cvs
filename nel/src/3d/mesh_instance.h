@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.13 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.14 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,6 +121,9 @@ private:
 	CShadowGeom			*_ShadowGeom;
 
 	void			updateShadowMap(IDriver *driver);
+protected:
+	virtual void			createShadowMap();
+	virtual void			deleteShadowMap();
 };
 
 

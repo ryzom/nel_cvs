@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.h
  * <File description>
  *
- * $Id: shadow_map_manager.h,v 1.1 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: shadow_map_manager.h,v 1.2 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -45,7 +45,8 @@ class	CTransform;
 #define	NL3D_SMM_QUADGRID_SIZE		16
 #define	NL3D_SMM_QUADCELL_SIZE		8.0f
 #define	NL3D_SMM_MAX_TEXTDEST_SIZE	512
-
+#define	NL3D_SMM_MAX_FREETEXT		20
+#define	NL3D_SMM_FADE_SPEED			0.5f
 
 // ***************************************************************************
 /**
@@ -69,11 +70,11 @@ public:
 	void			addShadowCaster(CTransform *model);
 	/** From List of ShadowCaster, select a sub - part (so called Loding ShadowMap Casters)
 	 *	NB: Beware that this clear the currentlist of shadowMap to generate
-	 *	NB: model->setRenderingShadowMap(true); are called for each model selected
+	 *	NB: model->setGeneratingShadowMap(true); are called for each model selected
 	 */
 	void			selectShadowMapsToGenerate(CScene *scene);
 	/** Add Manually a ShadowCaster that will compute his ShadowMap this pass.
-	 *	NB: model->setRenderingShadowMap(true); is called
+	 *	NB: model->setGeneratingShadowMap(true); is called
 	 */
 	void			addShadowCasterGenerate(CTransform *model);
 	/// Add a ShadowRecevier visible in this scene for this pass
@@ -96,6 +97,17 @@ public:
 
 	/// Get the typical Material for Caster
 	CMaterial		&getCasterShadowMaterial() {return _CasterShadowMaterial;}
+
+
+	/// \name Texture Allocation
+	// @{
+	/// Allocate a texture for a shadowMap. NB: owned by a smartPtr. nlassert powerof2
+	ITexture		*allocateTexture(uint textSize);
+	/** Release this one.
+	 *	NB: the texture is not deleted, but still will be used for later use
+	 */
+	void			releaseTexture(ITexture *text);
+	// @}
 
 // ******************
 private:
@@ -147,6 +159,15 @@ private:
 	CMaterial					_CasterShadowMaterial;
 
 	void			clearGenerateShadowCasters();
+
+	// Texture allocation
+	typedef	std::map<ITexture *, CSmartPtr<ITexture> >	TTextureMap;
+	typedef	TTextureMap::iterator						ItTextureMap;
+	TTextureMap					_ShadowTextureMap;
+	// List of free shadow textures
+	std::vector<ItTextureMap>	_FreeShadowTextures;
+	// Called at each renderGenerate().
+	void						garbageShadowTextures(CScene *scene);
 };
 
 

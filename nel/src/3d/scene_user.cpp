@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.46 2003/08/07 09:10:55 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.47 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1070,6 +1070,46 @@ bool			CSceneUser::getEnableShadowPolySmooth() const
 	return _Scene.getEnableShadowPolySmooth();
 }
 
+// ***************************************************************************
+void			CSceneUser::setShadowMapDistFadeStart(float dist)
+{
+	_Scene.setShadowMapDistFadeStart(dist);
+}
+// ***************************************************************************
+float			CSceneUser::getShadowMapDistFadeStart() const
+{
+	return _Scene.getShadowMapDistFadeStart();
+}
+// ***************************************************************************
+void			CSceneUser::setShadowMapDistFadeEnd(float dist)
+{
+	_Scene.setShadowMapDistFadeEnd(dist);
+}
+// ***************************************************************************
+float			CSceneUser::getShadowMapDistFadeEnd() const
+{
+	return _Scene.getShadowMapDistFadeEnd();
+}
+// ***************************************************************************
+void			CSceneUser::setShadowMapMaxCasterInScreen(uint num)
+{
+	_Scene.setShadowMapMaxCasterInScreen(num);
+}
+// ***************************************************************************
+uint			CSceneUser::getShadowMapMaxCasterInScreen() const
+{
+	return _Scene.getShadowMapMaxCasterInScreen();
+}
+// ***************************************************************************
+void			CSceneUser::setShadowMapMaxCasterAround(uint num)
+{
+	_Scene.setShadowMapMaxCasterAround(num);
+}
+// ***************************************************************************
+uint			CSceneUser::getShadowMapMaxCasterAround() const
+{
+	return _Scene.getShadowMapMaxCasterAround();
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.34 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.35 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -506,6 +506,9 @@ private:
 	CShadowMap			*_ShadowMap;
 	void			updateShadowMap(IDriver *driver);
 	void			renderShadowSkins(CMaterial	&castMat);
+protected:
+	virtual void			createShadowMap();
+	virtual void			deleteShadowMap();
 
 };
 

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.47 2003/08/07 09:10:55 corvazier Exp $
+ * $Id: scene.h,v 1.48 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -567,6 +567,19 @@ public:
 	void			enableShadowPolySmooth(bool enable);
 	/// get Enable Polygon Smoothing flag
 	bool			getEnableShadowPolySmooth() const;
+
+	/// ShadowMap Distance Fade Start (40 default)
+	void			setShadowMapDistFadeStart(float dist);
+	float			getShadowMapDistFadeStart() const {return _ShadowMapDistFadeStart;}
+	/// ShadowMap Distance Fade end (50 default)
+	void			setShadowMapDistFadeEnd(float dist);
+	float			getShadowMapDistFadeEnd() const {return _ShadowMapDistFadeEnd;}
+	/// ShadowMap max Caster In Screen (optimize CPU/GPU)
+	void			setShadowMapMaxCasterInScreen(uint num);
+	uint			getShadowMapMaxCasterInScreen() const {return _ShadowMapMaxCasterInScreen;}
+	/// ShadowMap max Caster Around (optimize memory)
+	void			setShadowMapMaxCasterAround(uint num);
+	uint			getShadowMapMaxCasterAround() const {return _ShadowMapMaxCasterAround;}
 	// @}
 
 private:
@@ -723,6 +736,11 @@ private:
 	uint			_ShadowMapTextureSize;
 	float			_ShadowMapMaxDepth;
 	uint			_ShadowMapBlurSize;
+	float			_ShadowMapDistFadeStart;
+	float			_ShadowMapDistFadeEnd;
+	uint			_ShadowMapMaxCasterInScreen;
+	uint			_ShadowMapMaxCasterAround;
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.40 2003/08/07 08:53:50 berenguier Exp $
+ * $Id: u_scene.h,v 1.41 2003/08/12 17:28:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -526,6 +526,20 @@ public:
 	virtual	void			enableShadowPolySmooth(bool enable) =0;
 	/// get Enable Polygon Smoothing flag
 	virtual	bool			getEnableShadowPolySmooth() const =0;
+
+	/// ShadowMap Distance Fade Start (40 default)
+	virtual	void			setShadowMapDistFadeStart(float dist) =0;
+	virtual	float			getShadowMapDistFadeStart() const =0;
+	/// ShadowMap Distance Fade end (50 default)
+	virtual	void			setShadowMapDistFadeEnd(float dist) =0;
+	virtual	float			getShadowMapDistFadeEnd() const =0;
+	/// ShadowMap max Caster In Screen (optimize CPU/GPU)
+	virtual	void			setShadowMapMaxCasterInScreen(uint num) =0;
+	virtual	uint			getShadowMapMaxCasterInScreen() const =0;
+	/// ShadowMap max Caster Around (optimize memory)
+	virtual	void			setShadowMapMaxCasterAround(uint num) =0;
+	virtual	uint			getShadowMapMaxCasterAround() const =0;
+
 	// @}
 
 };

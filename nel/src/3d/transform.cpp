@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.64 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: transform.cpp,v 1.65 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1299,5 +1299,30 @@ void			CTransform::getReceiverBBox(CAABBox &bbox)
 	bbox.setCenter(CVector::Null);
 	bbox.setHalfSize(CVector::Null);
 }
+
+// ***************************************************************************
+void			CTransform::enableCastShadowMap(bool state)
+{
+	bool	precState= canCastShadowMap();
+
+	if(modelCanCastShadowMap()) 
+		setStateFlag(IsFinalShadowMapCaster, state);
+	else
+		setStateFlag(IsFinalShadowMapCaster, false);
+
+	// if just enabled, create the shadowMap
+	if(canCastShadowMap() && !precState)
+	{
+		createShadowMap();
+		// The user must have created it.
+		nlassert(getShadowMap());
+	}
+	// if just disabled, free ressource
+	else if(!canCastShadowMap() && precState)
+	{
+		deleteShadowMap();
+	}
+}
+
 
 }

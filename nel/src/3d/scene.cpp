@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.108 2003/08/07 09:10:55 corvazier Exp $
+ * $Id: scene.cpp,v 1.109 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,11 @@ const	float	NL3D_QuadGridClipMaxDist= 1000;
 #define	NL3D_SCENE_DEFAULT_SHADOW_MAP_SIZE		64
 #define	NL3D_SCENE_DEFAULT_SHADOW_MAP_DEPTH		8.f
 #define	NL3D_SCENE_DEFAULT_SHADOW_MAP_BLUR_SIZE	2
+#define	NL3D_SCENE_DEFAULT_SHADOW_MAP_DIST_FADE_START			40
+#define	NL3D_SCENE_DEFAULT_SHADOW_MAP_DIST_FADE_END				50
+#define	NL3D_SCENE_DEFAULT_SHADOW_MAP_MAX_CASTER_IN_SCREEN		16
+#define	NL3D_SCENE_DEFAULT_SHADOW_MAP_MAX_CASTER_AROUND			64
+
 
 namespace NL3D
 {
@@ -173,7 +178,11 @@ CScene::CScene()
 
 	_ShadowMapTextureSize= NL3D_SCENE_DEFAULT_SHADOW_MAP_SIZE;
 	_ShadowMapMaxDepth= NL3D_SCENE_DEFAULT_SHADOW_MAP_DEPTH;
-	_ShadowMapBlurSize= NL3D_SCENE_DEFAULT_SHADOW_MAP_BLUR_SIZE;;
+	_ShadowMapBlurSize= NL3D_SCENE_DEFAULT_SHADOW_MAP_BLUR_SIZE;
+	_ShadowMapDistFadeStart= NL3D_SCENE_DEFAULT_SHADOW_MAP_DIST_FADE_START;
+	_ShadowMapDistFadeEnd= NL3D_SCENE_DEFAULT_SHADOW_MAP_DIST_FADE_END;
+	_ShadowMapMaxCasterInScreen= NL3D_SCENE_DEFAULT_SHADOW_MAP_MAX_CASTER_IN_SCREEN;
+	_ShadowMapMaxCasterAround= NL3D_SCENE_DEFAULT_SHADOW_MAP_MAX_CASTER_AROUND;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -1053,6 +1062,28 @@ void			CScene::enableShadowPolySmooth(bool enable)
 bool			CScene::getEnableShadowPolySmooth() const
 {
 	return RenderTrav.getShadowMapManager().getEnableShadowPolySmooth();
+}
+
+
+// ***************************************************************************
+void			CScene::setShadowMapDistFadeStart(float dist)
+{
+	_ShadowMapDistFadeStart= max(0.f, dist);
+}
+// ***************************************************************************
+void			CScene::setShadowMapDistFadeEnd(float dist)
+{
+	_ShadowMapDistFadeEnd= max(0.f, dist);
+}
+// ***************************************************************************
+void			CScene::setShadowMapMaxCasterInScreen(uint num)
+{
+	_ShadowMapMaxCasterInScreen= num;
+}
+// ***************************************************************************
+void			CScene::setShadowMapMaxCasterAround(uint num)
+{
+	_ShadowMapMaxCasterAround= num;
 }
 
 

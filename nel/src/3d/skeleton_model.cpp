@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.46 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.47 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,10 +146,7 @@ CSkeletonModel::~CSkeletonModel()
 	setLodCharacterShape(-1);
 
 	// delete the shadowMap
-	if(_ShadowMap)
-	{
-		delete _ShadowMap;
-	}
+	deleteShadowMap();
 }
 
 
@@ -572,7 +569,7 @@ void	CSkeletonModel::traverseAnimDetail()
 	CSkeletonModel		*rootSM= _AncestorSkeletonModel;
 	if(!rootSM)	rootSM= this;
 	// do the test.
-	if(rootSM->isRenderingShadowMap() && isDisplayedAsLodCharacter() && isHrcVisible() )
+	if(rootSM->isGeneratingShadowMap() && isDisplayedAsLodCharacter() && isHrcVisible() )
 	{
 		tempAvoidCLod= true;
 		// Disable it just the time of this AnimDetail
@@ -1658,9 +1655,6 @@ void		CSkeletonModel::generateShadowMap(const CVector &lightDir)
 	// ****
 	updateShadowMap(driver);
 
-	if(!_ShadowMap)
-		return;
-
 	// compute the ProjectionMatrix.
 	// ****
 
@@ -1716,13 +1710,29 @@ CShadowMap	*CSkeletonModel::getShadowMap()
 }
 
 // ***************************************************************************
-void		CSkeletonModel::updateShadowMap(IDriver *driver)
+void			CSkeletonModel::createShadowMap()
 {
-	// create the shadowMap if not already done.
+	// create the shadowMap
 	if(!_ShadowMap)
 	{
-		_ShadowMap= new CShadowMap;
+		_ShadowMap= new CShadowMap(&getOwnerScene()->getRenderTrav().getShadowMapManager());
 	}
+}
+
+// ***************************************************************************
+void			CSkeletonModel::deleteShadowMap()
+{
+	if(_ShadowMap)
+	{
+		delete _ShadowMap;
+		_ShadowMap= NULL;
+	}
+}
+
+// ***************************************************************************
+void		CSkeletonModel::updateShadowMap(IDriver *driver)
+{
+	nlassert(_ShadowMap);
 
 	// create/update texture
 	if(_ShadowMap->getTextureSize()!=getOwnerScene()->getShadowMapTextureSize())

@@ -1,7 +1,7 @@
 /** \file shadow_map.cpp
  * <File description>
  *
- * $Id: shadow_map.cpp,v 1.1 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: shadow_map.cpp,v 1.2 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/common.h"
 #include "3d/driver.h"
 #include "3d/scene.h"
+#include "3d/shadow_map_manager.h"
 
 
 using namespace std;
@@ -39,10 +40,19 @@ namespace NL3D {
 
 
 // ***************************************************************************
-CShadowMap::CShadowMap()
+CShadowMap::CShadowMap(CShadowMapManager *smm)
 {
+	nlassert(smm);
+	_ShadowMapManager= smm;
 	_TextSize= 0;
 	LastGenerationFrame= 0;
+	DistanceFade= 0;
+	TemporalOutScreenFade= 0;
+	TemporalInScreenFade= 0;
+	_FadeAround= 0;
+	_FinalFade= 1;
+	// see doc why 1.
+	InScreenFadeAccum= 1;
 }
 
 
@@ -62,14 +72,12 @@ void			CShadowMap::initTexture(uint textSize)
 	resetTexture();
 	textSize= raiseToNextPowerOf2(textSize);
 	_TextSize= textSize;
-	// NB: the format must be RGBA; else slow copyFrameBufferToTexture()
-	uint8	*tmpMem= new uint8[4*_TextSize*_TextSize];
-	_Texture = new CTextureMem (tmpMem, 4*_TextSize*_TextSize, true, false, _TextSize, _TextSize);
-	_Texture->setWrapS (ITexture::Clamp);
-	_Texture->setWrapT (ITexture::Clamp);
-	_Texture->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
-	_Texture->generate();
-	_Texture->setReleasable (false);
+
+	// Allocate in the Manager.
+	_Texture= _ShadowMapManager->allocateTexture(_TextSize);
+
+	// Since our texture has changed, it is no more valid. reset counter.
+	LastGenerationFrame= 0;
 }
 
 
@@ -77,7 +85,11 @@ void			CShadowMap::initTexture(uint textSize)
 void			CShadowMap::resetTexture()
 {
 	// release the SmartPtr
-	_Texture= NULL;
+	if(_Texture)
+	{
+		_ShadowMapManager->releaseTexture(_Texture);
+		_Texture= NULL;
+	}
 	_TextSize= 0;
 }
 
@@ -171,5 +183,29 @@ void			CShadowMap::buildProjectionInfos(const CMatrix &cameraMatrix, const CVect
 	// compute The clipPlanes and bbox.
 	buildClipInfoFromMatrix();
 }
+
+
+// ***************************************************************************
+void			CShadowMap::processFades()
+{
+	clamp(DistanceFade, 0.f, 1.f);
+	clamp(TemporalOutScreenFade, 0.f, 1.f);
+	clamp(TemporalInScreenFade, 0.f, 1.f);
+
+	_FadeAround= max(DistanceFade, TemporalOutScreenFade);
+	_FinalFade= max(_FadeAround, TemporalInScreenFade);
+
+	/* if the fadeAround is 1, then release the texture
+		Don't take _FinalFade because this last may change too much cause of TemporalInScreenFade.
+		While FadeAround is somewhat stable (as entities and the camera don't move too much),
+		TemporalInScreenFade is dependent of camera rotation.
+
+		=> _FinalFade allow to not draw too much shadows (CPU gain),
+		while FadeAround allow in addition the capacity to not use too much texture memory
+	*/
+	if(getFadeAround()==1)
+		resetTexture();
+}
+
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.1 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.2 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/dru.h"
 #include "3d/texture_mem.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/fast_floor.h"
 
 
 using namespace NLMISC;
@@ -215,7 +216,7 @@ void			CShadowMapManager::addShadowCasterGenerate(CTransform *model)
 {
 	_GenerateShadowCasters.push_back(model);
 	// Indicate this model that it will render its ShadowMap
-	model->setRenderingShadowMap(true);
+	model->setGeneratingShadowMap(true);
 }
 
 // ***************************************************************************
@@ -233,6 +234,9 @@ void			CShadowMapManager::addShadowReceiver(CTransform *model)
 void			CShadowMapManager::renderGenerate(CScene *scene)
 {
 	H_AUTO( NL3D_ShadowManager_Generate );
+
+	// Each frame, do a small garbage collector for unused free textures.
+	garbageShadowTextures(scene);
 
 	IDriver *driverForShadowGeneration= scene->getRenderTrav().getAuxDriver();
 
@@ -467,8 +471,10 @@ void			CShadowMapManager::renderProject(CScene *scene)
 	{
 		CTransform	*caster= _ShadowCasters[i];
 		CShadowMap	*sm= caster->getShadowMap();
-		// NB: the ShadowCaster may not have shadomap yet, for example because of Generate selection...
-		if(sm && sm->getTexture())
+		nlassert(sm);
+		// NB: the ShadowCaster may not have a texture yet, for example because of Generate selection...
+		// If the final fade is 1, don't render!
+		if( sm->getTexture() && sm->getFinalFade()<1 )
 		{
 			CVector		casterPos= caster->getWorldMatrix().getPos();
 
@@ -509,6 +515,15 @@ void			CShadowMapManager::renderProject(CScene *scene)
 			clamp(R,0U,255U);
 			clamp(G,0U,255U);
 			clamp(B,0U,255U);
+			/// Finally "modulate" with FinalFade.
+			if(sm->getFinalFade()>0)
+			{
+				sint	factor= OptFastFloor( 256 * sm->getFinalFade() );
+				clamp(factor, 0, 256);
+				R= 255*factor + R*(256-factor); R>>=8;
+				G= 255*factor + G*(256-factor); G>>=8;
+				B= 255*factor + B*(256-factor); B>>=8;
+			}
 			_ReceiveShadowMaterial.setColor(CRGBA(R,G,B,255));
 
 
@@ -812,23 +827,31 @@ void			CShadowMapManager::selectShadowMapsToGenerate(CScene *scene)
 
 	// **** Select
 	// For all ShadowCaster inserted
-	vector<CShadowMapSort>		sortList;
-	sortList.resize(_ShadowCasters.size());
+	static vector<CShadowMapSort>		sortList;
+	sortList.clear();
+	sortList.reserve(_ShadowCasters.size());
 	for(i=0;i<_ShadowCasters.size();i++)
 	{
 		CTransform	*caster= _ShadowCasters[i];
-		sortList[i].Caster= caster;
-		// If the shadowMap exist, take the last frame of generation, else suppose 0.
-		sint64		lastFrameGen= 0;
-		if(caster->getShadowMap())
-			lastFrameGen= caster->getShadowMap()->LastGenerationFrame;
-		// The Weight is the positive delta of frame
-		sortList[i].Weight= (float)(scene->getNumRender() - lastFrameGen);
-		// Modulated by Caster Distance from Camera.
-		float	distToCam= (caster->getWorldMatrix().getPos() - camPos).norm();
-		distToCam= max(distToCam, minCamDist);
-		// The farthest, the less important
-		sortList[i].Weight/= distToCam;
+		/* If the shadowMap exist, and if not totaly faded
+			NB: take FinalFade here because if 1, it won't be rendered in renderProject()
+			so don't really need to update (usefull for update reason, but LastGenerationFrame do the job)
+		*/
+		if(caster->getShadowMap() && caster->getShadowMap()->getFinalFade()<1 )
+		{
+			CShadowMapSort		sms;
+			sms.Caster= caster;
+			// The Weight is the positive delta of frame
+			sms.Weight= (float)(scene->getNumRender() - caster->getShadowMap()->LastGenerationFrame);
+			// Modulated by Caster Distance from Camera.
+			float	distToCam= (caster->getWorldMatrix().getPos() - camPos).norm();
+			distToCam= max(distToCam, minCamDist);
+			// The farthest, the less important
+			sms.Weight/= distToCam;
+
+			// Append
+			sortList.push_back(sms);
+		}
 	}
 
 	// Sort increasing
@@ -846,7 +869,7 @@ void			CShadowMapManager::selectShadowMapsToGenerate(CScene *scene)
 	// For All selected models, indicate that they will generate shadowMap for this Frame.
 	for(i=0;i<_GenerateShadowCasters.size();i++)
 	{
-		_GenerateShadowCasters[i]->setRenderingShadowMap(true);
+		_GenerateShadowCasters[i]->setGeneratingShadowMap(true);
 	}
 }
 
@@ -857,10 +880,103 @@ void			CShadowMapManager::clearGenerateShadowCasters()
 	// Reset first each flag of all models
 	for(uint i=0;i<_GenerateShadowCasters.size();i++)
 	{
-		_GenerateShadowCasters[i]->setRenderingShadowMap(false);
+		_GenerateShadowCasters[i]->setGeneratingShadowMap(false);
 	}
 
 	_GenerateShadowCasters.clear();
+}
+
+// ***************************************************************************
+ITexture		*CShadowMapManager::allocateTexture(uint textSize)
+{
+	nlassert( isPowerOf2(textSize) );
+
+	// **** First, find a free texture already allocated.
+	if(!_FreeShadowTextures.empty())
+	{
+		ITexture	*freeText= _FreeShadowTextures.back()->second;
+		// If Ok for the size.
+		if(freeText->getWidth() == textSize)
+		{
+			// take this texture => no more free.
+			_FreeShadowTextures.pop_back();
+			return freeText;
+		}
+		// else, suppose that we still take this slot.
+		else
+		{
+			// but since bad size, delete this slot from the map and create a new one (below)
+			_ShadowTextureMap.erase(_FreeShadowTextures.back());
+			// no more valid it
+			_FreeShadowTextures.pop_back();
+		}
+	}
+
+	// **** Else Allocate new one.
+	// NB: the format must be RGBA; else slow copyFrameBufferToTexture()
+	uint8	*tmpMem= new uint8[4*textSize*textSize];
+	ITexture	*text;
+	text = new CTextureMem (tmpMem, 4*textSize*textSize, true, false, textSize, textSize);
+	text->setWrapS (ITexture::Clamp);
+	text->setWrapT (ITexture::Clamp);
+	text->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
+	text->generate();
+	text->setReleasable (false);
+
+	// Setup in the map.
+	_ShadowTextureMap[text]= text;
+
+	return text;
+}
+
+// ***************************************************************************
+void			CShadowMapManager::releaseTexture(ITexture *text)
+{
+	if(!text)
+		return;
+
+	ItTextureMap	it= _ShadowTextureMap.find(text);
+	nlassert(it!=_ShadowTextureMap.end());
+
+	// Don't release it, but insert in Free Space
+	_FreeShadowTextures.push_back(it);
+}
+
+// ***************************************************************************
+void			CShadowMapManager::garbageShadowTextures(CScene *scene)
+{
+	uint	defSize= scene->getShadowMapTextureSize();
+
+	// For all Free Textures only, release the one that are no more of the wanted default ShadowMap Size.
+	std::vector<ItTextureMap>::iterator		itVec= _FreeShadowTextures.begin();
+	for(;itVec!=_FreeShadowTextures.end();)
+	{
+		if((*itVec)->second->getWidth() != defSize)
+		{
+			// release the map texture iterator
+			_ShadowTextureMap.erase(*itVec);
+			// release the Vector Free iterator.
+			itVec= _FreeShadowTextures.erase(itVec);
+		}
+		else
+		{
+			itVec++;
+		}
+	}
+
+	// For memory optimisation, allow only a small extra of Texture allocated.
+	if(_FreeShadowTextures.size()>NL3D_SMM_MAX_FREETEXT)
+	{
+		// Release the extra texture (Hysteresis: divide by 2 the max wanted free to leave)
+		uint	startToFree= NL3D_SMM_MAX_FREETEXT/2;
+		for(uint i=startToFree;i<_FreeShadowTextures.size();i++)
+		{
+			// Free the texture entry.
+			_ShadowTextureMap.erase(_FreeShadowTextures[i]);
+		}
+		// resize vector
+		_FreeShadowTextures.resize(startToFree);
+	}
 }
 
 

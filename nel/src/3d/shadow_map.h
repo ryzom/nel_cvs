@@ -1,7 +1,7 @@
 /** \file shadow_map.h
  * <File description>
  *
- * $Id: shadow_map.h,v 1.1 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: shadow_map.h,v 1.2 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -41,6 +41,7 @@ using	NLMISC::CPlane;
 using	NLMISC::CRefPtr;
 using	NLMISC::CAABBox;
 
+class	CShadowMapManager;
 
 // ***************************************************************************
 /**
@@ -76,10 +77,29 @@ public:
 	// Filled by ShadowMapManager. This is the Last Frame Id we had update the texture.
 	uint64					LastGenerationFrame;
 
+
+	/** They are the fade of the shadowMap, for Lod Shadow display. 0-1 values.
+	 *	NB: if DistanceFade==1 or TemporalOutScreenFade==1, then the ShadowMap Texture is released.
+	 *	Final Fade is the max of the 3.
+	 */
+	// Value computed according to pos of skeleton and Max Shadow Display value.
+	float					DistanceFade;
+	// Value computed according to pos of skeleton and other skeletons in the area (whatever the visible state)
+	float					TemporalOutScreenFade;
+	// Value computed according to pos of skeleton and other skeletons in the frustum
+	float					TemporalInScreenFade;
+	/** This value represent the fade time we don't know what to do with TemporalInScreenFade because the
+	 *	shadowMap is not visible or frustum-clipped.
+	 *	Once the shadowMap will be visible again, This will be add/removed (according to TemporalInScreenFade
+	 *	rules) to the TemporalInScreenFade.
+	 *	NB: by default the value is 1 so the initial state is correct when you enable cast shadowMap!
+	 */
+	float					InScreenFadeAccum;
+
 public:
 
-	/// Constructor
-	CShadowMap();
+	/// Constructor. NB: ptr is owned => shadowMap should no still live while smm dead.
+	CShadowMap(CShadowMapManager *smm);
 	~CShadowMap();
 
 	/// create the Texture. It reset the texture if not of same size.
@@ -116,9 +136,23 @@ public:
 	void			buildClipInfoFromMatrix();
 	// @}
 
+	/** Clamp Fades to 0-1. Additionaly reset the texture if DistanceFade>=1 or TemporalOutScreenFade>=1
+	 *	See Implementation for Why. Additionally compile getFadeAround() and getFadeInScreen()
+	 */
+	void			processFades();
+
+	/// return compiled max of DistanceFade and TemporalOutScreenFade. 
+	float			getFadeAround() const {return _FadeAround;}
+	/// same but maximize with the TemporalInScreenFade;
+	float			getFinalFade() const {return _FinalFade;}
+
+// *************
 private:
 	NLMISC::CSmartPtr<ITexture>		_Texture;
 	uint32							_TextSize;
+	CShadowMapManager				*_ShadowMapManager;
+	float							_FadeAround;
+	float							_FinalFade;
 
 };
 

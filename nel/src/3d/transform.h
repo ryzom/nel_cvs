@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.43 2003/08/08 16:55:47 vizerie Exp $
+ * $Id: transform.h,v 1.44 2003/08/12 17:28:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -456,12 +456,15 @@ public:
 	 *	NB: It is the deriver work to call CRenderTrav::getShadowMapManager().addShadowReceiver() or
 	 *	CRenderTrav::getShadowMapManager().addShadowCaster(), typically in traverseHRC() or in traverseRender()
 	 *	NB: when _AncestorSkeletonModel!=NULL, the shadowMapCaster should not be Added.
+	 *	NB: Deriver must also implement createShadowMap() and deleteShadowMap() protected callBacks,
+	 *	if it supports CastShadowMaping
 	 */
 	// @{
 	/** By default, map shadow casting is disabled. This enabled shadow for this model. 
 	 *	Fails if the model don't support dynamic Map Shadow Casting (eg landscape)
+	 *	Dervier note: createShadowMap() and deleteShadowMap() is called here.
 	 */
-	void				enableCastShadowMap(bool state) {if(modelCanCastShadowMap()) setStateFlag(IsFinalShadowMapCaster, state);}
+	void				enableCastShadowMap(bool state);
 	/// true if the instance cast shadow. By default false
 	bool				canCastShadowMap() const {return getStateFlag(IsFinalShadowMapCaster)!=0;}
 
@@ -507,8 +510,8 @@ public:
 	virtual const CMatrix	&getReceiverRenderWorldMatrix() const {return getWorldMatrix();}
 
 	/// For ShadowMapManager. true if the model is rendering its ShadowMap this frame.
-	void				setRenderingShadowMap(bool state) {if(canCastShadowMap()) setStateFlag(IsRenderingShadowMap, state);}
-	bool				isRenderingShadowMap() const {return getStateFlag(IsRenderingShadowMap)!=0;}
+	void				setGeneratingShadowMap(bool state) {if(canCastShadowMap()) setStateFlag(IsGeneratingShadowMap, state);}
+	bool				isGeneratingShadowMap() const {return getStateFlag(IsGeneratingShadowMap)!=0;}
 
 	/** Special For Skeleton Caster. When Skeletons cast shadows, they first compute the WorldBBox.
 	 *	The model should compute its bbox in World (best fit). 
@@ -772,7 +775,7 @@ private:
 		IsFinalShadowMapCaster=	0x200000,	// set if the model can cast ShadowMap AND the user want it
 		IsShadowMapReceiver=	0x400000,	// set if the model can receive ShadowMap
 		IsFinalShadowMapReceiver= 0x800000,	// set if the model can receive ShadowMap AND the user want it
-		IsRenderingShadowMap=	0x1000000,	// temp set if the model is asked to render its shadowMap this frame.
+		IsGeneratingShadowMap=	0x1000000,	// temp set if the model is asked to render its shadowMap this frame.
 		
 		// NB: may continue on >=0x2000000
 	};
@@ -869,6 +872,15 @@ protected:
 	CLoadBalancingGroup		*_LoadBalancingGroup;
 	// @}
 
+	/// \name ShadowMap
+	// @{
+	/** To implement for ShadowCaster support. typically allocate a CShadowMap and store
+	 *	NB: the texture doesn't have to be inited at this time. Update it each frame in generateShadowMap()
+     */
+	virtual void			createShadowMap() {}
+	/// To implement for ShadowCaster support. typically free the shadowMap
+	virtual void			deleteShadowMap() {}
+	// @}
 
 };
 

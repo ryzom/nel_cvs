@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.29 2001/07/24 08:39:07 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.30 2001/08/06 10:02:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -4733,7 +4733,7 @@ static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveB
 
 uint32 CPSConstraintMesh::getMaxNumFaces(void) const
 {
-	nlassert(_ModelVb) ;
+//	nlassert(_ModelVb) ;
 	return _NumFaces * _Owner->getMaxSize() ;
 	
 }

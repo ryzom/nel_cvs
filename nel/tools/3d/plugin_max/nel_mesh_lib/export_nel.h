@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.38 2001/12/12 11:23:59 vizerie Exp $
+ * $Id: export_nel.h,v 1.39 2001/12/13 14:58:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -507,6 +507,7 @@ private:
 			ColorVertex = false;
 			AlphaVertexChannel = 0;
 			MappingChannelUsed = 0;
+			TextureMatrixEnabled = false;
 		};
 
 		// Remap UV channel

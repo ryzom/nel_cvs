@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.9 2002/10/25 15:59:38 berenguier Exp $
+ * $Id: texture.h,v 1.10 2003/03/31 10:29:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -361,6 +361,10 @@ public:
 		/// Does this texture is a cube texture
 		virtual bool isTextureCube() const { return false; }	
 	// @}
+
+	// is this texture a bumpmap ?
+	virtual bool isBumpMap() const { return false; }
+		
 
 //****************************
 // Private part.

@@ -1,7 +1,7 @@
 /** \file texture_bump.h
  * <File description>
  *
- * $Id: texture_bump.h,v 1.5 2002/02/15 17:12:31 vizerie Exp $
+ * $Id: texture_bump.h,v 1.6 2003/03/31 10:29:59 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ public:
 
 	bool					isSharingEnabled() const { return !_DisableSharing; }
 
-	/// absolute offsets are taken from the gradient of the height map
+	/// deprecated : absolute offsets are taken from the gradient of the height map
 	void					setAbsoluteOffsets(bool use = true) { _UseAbsoluteOffsets = true; }
 	bool					getAbsoluteOffsets() const { return _UseAbsoluteOffsets; }
 
@@ -83,8 +83,20 @@ public:
 		return _NormalizationFactor; 
 	}
 
+	/** Use signed format or not. Default is to used signed format
+	  * NB : when RGBA upload format is used, the format is never signed
+	  * NB : this has effect only if the deprecated option 'setAbsoluteOffsets' is false
+	  * NB : this flag is not serialized
+	  */
+	void					setSignedFormat(bool formatSigned) { _Signed = formatSigned; }
+	bool					getSignedFormat() const { return _Signed; }	
+	
+
 	// inherited from ITexture. release this texture, and its datas
 	virtual void release();	
+
+	// this is a bump texture
+	virtual bool isBumpMap() const { return true; }
 	
 protected:
 	// inherited from ITexture. Generate this bumpmap pixels
@@ -94,6 +106,7 @@ protected:
 	bool						_DisableSharing;
 	bool						_UseAbsoluteOffsets;
 	bool						_ForceNormalize;
+	bool                        _Signed;
 private:
 	/// we don't allow for mipmap for bump so we redefine this to prevent the user from doing this on the base class Itexture
 	virtual         void setFilterMode(TMagFilter magf, TMinFilter minf);

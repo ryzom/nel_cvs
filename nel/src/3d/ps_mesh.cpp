@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.44 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_mesh.cpp,v 1.45 2005/02/14 15:49:12 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -214,7 +214,7 @@ bool CPSMesh::hasTransparentFaces(void)
 bool CPSMesh::hasOpaqueFaces(void)
 {
 	NL_PS_FUNC(CPSMesh_hasOpaqueFaces)
-	/// we don't draw any tri ! (the meshs are drawn by the scene)
+	/// We don't draw any tri !
 	return false;
 }
 
@@ -307,7 +307,7 @@ void CPSMesh::deleteElement(uint32 index)
 void CPSMesh::step(TPSProcessPass pass)
 {
 	NL_PS_FUNC(CPSMesh_step)
-	if (pass == PSSolidRender)			
+	if (pass == PSMotion)			
 	{
 		updatePos();
 	}

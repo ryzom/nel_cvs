@@ -1,7 +1,7 @@
 /** \file logic_event.cpp
  * 
  *
- * $Id: logic_event.cpp,v 1.1 2002/02/14 12:58:03 corvazier Exp $
+ * $Id: logic_event.cpp,v 1.2 2002/03/25 16:20:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include "nel/logic/logic_event.h"
 #include "nel/logic/logic_state_machine.h"
 
-#include "nel/net/service_5.h"
+#include "nel/net/service.h"
 
 using namespace NLMISC;
 using namespace NLNET;

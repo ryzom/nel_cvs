@@ -1,7 +1,7 @@
 /** \file logic_state_machine.h
  * 
  *
- * $Id: logic_state_machine.h,v 1.2 2002/02/20 18:05:33 lecroart Exp $
+ * $Id: logic_state_machine.h,v 1.3 2002/03/25 16:19:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "logic_variable.h"
 #include "logic_condition.h"
 
-#include "nel/net/service_5.h"
+#include "nel/net/service.h"
 
 #include <vector>
 #include <map>

@@ -1,7 +1,7 @@
 /** \file logic_variable.h
  * 
  *
- * $Id: logic_state.h,v 1.1 2002/02/14 12:58:09 corvazier Exp $
+ * $Id: logic_state.h,v 1.2 2002/03/25 16:19:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/entity_id.h"
 
-#include "nel/net/service_5.h"
+#include "nel/net/service.h"
 
 //#include "game_share/sid.h"
 

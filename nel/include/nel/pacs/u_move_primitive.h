@@ -1,7 +1,7 @@
 /** \file u_move_primitive.h
  * Description of movables primitives.
  *
- * $Id: u_move_primitive.h,v 1.6 2001/06/26 09:48:32 corvazier Exp $
+ * $Id: u_move_primitive.h,v 1.7 2001/06/26 09:57:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,84 +203,7 @@ public:
 	  */
 	virtual void	setRadius (float radius) =0;
 
-	/// \name Setup the primitive dynamic parts.
-
-	/**
-	  * Set the new orientation of the move primitive. Only for the box primitives.
-	  *
-	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
-	  * image where you have modify it before modify any other dynamic properties in another world image.
-	  *
-	  * \param rot is the new OZ rotation in radian.
-	  * \param worldImage is the world image in which the primitive must be oriented.
-	  */
-	virtual void	setOrientation (double rot, uint8 worldImage) =0;
-
-	/// \name Move the primitive.
-
-	/**
-	  * Insert the primitive in a world image of the move container.
-	  * 
-	  * This primitive must a collisionable primitive.
-	  *
-	  * \param worldImage is the number of the world image where you want to insert the primitive.
-	  */
-	virtual void	insertInWorldImage (uint8 worldImage) =0;
-
-	/**
-	  * Remove the primitive from a world image of the move container.
-	  *
-	  * This primitive must a collisionable primitive.
-	  *
-	  * \param worldImage is the number of the world image from where you want to remove the primitive.
-	  */
-	virtual void	removeFromWorldImage (uint8 worldImage) =0;
-
-	/**
-	  * Set the global position of the move primitive. Setting the global position 
-	  * can take a long time if you use a UGlobalRetriever. Set the position with
-	  * this method only the first time or for teleporting.
-	  *
-	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
-	  * image where you have modify it before modify any other dynamic properties in another world image.
-	  *
-	  * \param pos is the new global position of the primitive.
-	  */
-	virtual void	setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage) =0;
-
-	/**
-	  * Set the global position of the move primitive. This method is fast because 
-	  * you must pass the global position of the primitive.
-	  *
-	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
-	  * image where you have modify it before modify any other dynamic properties in another world image.
-	  *
-	  * \param pos is the new global position of the primitive.
-	  */
-	virtual void	setGlobalPosition (const UGlobalPosition& pos, uint8 worldImage) =0;
-
-	/**
-	  * Move the primitive.
-	  * This method is fast. Use it to move primitives.
-	  *
-	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
-	  * image where you have modify it before modify any other dynamic properties in another world image.
-	  *
-	  * \param speed is the speed of the primitive.
-	  */
-	virtual void	move (const NLMISC::CVectorD& speed, uint8 worldImage) =0;
-
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/// \name Access the primitive.
+	/// \name Access the primitive static parts.
 
 	/**
 	  * Set the primitive type.
@@ -346,14 +269,14 @@ public:
 	  *
 	  * \param height is the new height size of the box. It the size of the sides aligned on OZ.
 	  */
-	virtual void			getHeight (float height) const =0;
+	virtual float			getHeight () const =0;
 
 	/**
 	  * Set the cylinder size. Only for cylinder.
 	  *
 	  * \param radius is the new radius size of the cylinder.
 	  */
-	virtual void			getRadius (float radius) const =0;
+	virtual float			getRadius () const =0;
 
 	/// \name Setup the primitive dynamic parts.
 
@@ -366,7 +289,20 @@ public:
 	  * \param rot is the new OZ rotation in radian.
 	  * \param worldImage is the world image in which the primitive must be oriented.
 	  */
-	virtual void			getOrientation (double rot, uint8 worldImage) const =0;
+	virtual void	setOrientation (double rot, uint8 worldImage) =0;
+
+	/// \name Access the primitive dynamic parts.
+
+	/**
+	  * Set the new orientation of the move primitive. Only for the box primitives.
+	  *
+	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
+	  * image where you have modify it before modify any other dynamic properties in another world image.
+	  *
+	  * \param rot is the new OZ rotation in radian.
+	  * \param worldImage is the world image in which the primitive must be oriented.
+	  */
+	virtual double			getOrientation (uint8 worldImage) const =0;
 
 	/**
 	  * Set the global position of the move primitive. This method is fast because 
@@ -396,6 +332,60 @@ public:
 	  * \Return the new speed vector.
 	  */
 	virtual const NLMISC::CVectorD&	getSpeed (uint8 worldImage) const =0;
+
+	/// \name Move the primitive.
+
+	/**
+	  * Insert the primitive in a world image of the move container.
+	  * 
+	  * This primitive must a collisionable primitive.
+	  *
+	  * \param worldImage is the number of the world image where you want to insert the primitive.
+	  */
+	virtual void	insertInWorldImage (uint8 worldImage) =0;
+
+	/**
+	  * Remove the primitive from a world image of the move container.
+	  *
+	  * This primitive must a collisionable primitive.
+	  *
+	  * \param worldImage is the number of the world image from where you want to remove the primitive.
+	  */
+	virtual void	removeFromWorldImage (uint8 worldImage) =0;
+
+	/**
+	  * Set the global position of the move primitive. Setting the global position 
+	  * can take a long time if you use a UGlobalRetriever. Set the position with
+	  * this method only the first time or for teleporting.
+	  *
+	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
+	  * image where you have modify it before modify any other dynamic properties in another world image.
+	  *
+	  * \param pos is the new global position of the primitive.
+	  */
+	virtual void	setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage) =0;
+
+	/**
+	  * Set the global position of the move primitive. This method is fast because 
+	  * you must pass the global position of the primitive.
+	  *
+	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
+	  * image where you have modify it before modify any other dynamic properties in another world image.
+	  *
+	  * \param pos is the new global position of the primitive.
+	  */
+	virtual void	setGlobalPosition (const UGlobalPosition& pos, uint8 worldImage) =0;
+
+	/**
+	  * Move the primitive.
+	  * This method is fast. Use it to move primitives.
+	  *
+	  * If you modify a noncollisionable primitive with this method, you must evaluate in the world
+	  * image where you have modify it before modify any other dynamic properties in another world image.
+	  *
+	  * \param speed is the speed of the primitive.
+	  */
+	virtual void	move (const NLMISC::CVectorD& speed, uint8 worldImage) =0;
 };
 
 

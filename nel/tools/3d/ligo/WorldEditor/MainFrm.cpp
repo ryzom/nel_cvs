@@ -531,6 +531,8 @@ void CMainFrame::OnMenuFileExportToLevelD ()
 	dialog.TileBankFile = _Environnement.ExportOptions.TileBankFile.c_str();
 	dialog.HeightMapFile = _Environnement.ExportOptions.HeightMapFile.c_str();
 	dialog.ZFactor = toString(_Environnement.ExportOptions.ZFactor).c_str();
+	dialog.HeightMapFile2 = _Environnement.ExportOptions.HeightMapFile2.c_str();
+	dialog.ZFactor2 = toString(_Environnement.ExportOptions.ZFactor2).c_str();
 	dialog.Lighting = _Environnement.ExportOptions.Light;
 
 	if (dialog.DoModal() == IDOK)
@@ -540,6 +542,8 @@ void CMainFrame::OnMenuFileExportToLevelD ()
 		_Environnement.ExportOptions.TileBankFile = (LPCSTR)dialog.TileBankFile;
 		_Environnement.ExportOptions.HeightMapFile = (LPCSTR)dialog.HeightMapFile;
 		_Environnement.ExportOptions.ZFactor = (float)atof ((LPCSTR)dialog.ZFactor);
+		_Environnement.ExportOptions.HeightMapFile2 = (LPCSTR)dialog.HeightMapFile2;
+		_Environnement.ExportOptions.ZFactor2 = (float)atof ((LPCSTR)dialog.ZFactor2);
 		_Environnement.ExportOptions.Light = dialog.Lighting;
 
 		CExportCBDlg *pDlg = new CExportCBDlg();

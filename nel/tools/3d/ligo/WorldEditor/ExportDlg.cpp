@@ -40,6 +40,8 @@ void CExportDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_TILEBANKFILE, TileBankFile);
 	DDX_Text(pDX, IDC_EDIT_HEIGHTMAPFILE, HeightMapFile);
 	DDX_Text(pDX, IDC_EDIT_ZFACTOR, ZFactor);
+	DDX_Text(pDX, IDC_EDIT_HEIGHTMAPFILE2, HeightMapFile2);
+	DDX_Text(pDX, IDC_EDIT_ZFACTOR2, ZFactor2);
 
 	if (pDX->m_bSaveAndValidate)
 	{
@@ -76,6 +78,7 @@ BEGIN_MESSAGE_MAP(CExportDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_OUTZONEDIR, OnButtonOutzonedir)
 	ON_BN_CLICKED(IDC_BUTTON_TILEBANKFILE, OnButtonTilebankfile)
 	ON_BN_CLICKED(IDC_BUTTON_HEIGHTMAPFILE, OnButtonHeightmapfile)
+	ON_BN_CLICKED(IDC_BUTTON_HEIGHTMAPFILE2, OnButtonHeightmapfile2)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -157,7 +160,7 @@ void CExportDlg::OnButtonOutzonedir()
 }
 
 // ---------------------------------------------------------------------------
-void CExportDlg::OnButtonTilebankfile() 
+void CExportDlg::OnButtonTilebankfile()
 {
 	CFileDialog dialog (true, "smallbank", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, "SmallBank (*.smallbank)|*.smallbank", this);
 	if (dialog.DoModal() == IDOK)
@@ -168,12 +171,23 @@ void CExportDlg::OnButtonTilebankfile()
 }
 
 // ---------------------------------------------------------------------------
-void CExportDlg::OnButtonHeightmapfile() 
+void CExportDlg::OnButtonHeightmapfile()
 {
 	CFileDialog dialog (true, "tga", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, "Grayscale Tga (*.tga)|*.tga", this);
 	if (dialog.DoModal() == IDOK)
 	{
 		HeightMapFile = dialog.GetPathName ();
+	}
+	UpdateData (FALSE); // Upload
+}
+
+// ---------------------------------------------------------------------------
+void CExportDlg::OnButtonHeightmapfile2()
+{
+	CFileDialog dialog (true, "tga", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, "Grayscale Tga (*.tga)|*.tga", this);
+	if (dialog.DoModal() == IDOK)
+	{
+		HeightMapFile2 = dialog.GetPathName ();
 	}
 	UpdateData (FALSE); // Upload
 }

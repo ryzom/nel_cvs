@@ -53,6 +53,7 @@
 #define IDC_EDITMAXX                    1034
 #define IDC_BUTTON_HEIGHTMAPFILE        1034
 #define IDC_EDITMAXY                    1035
+#define IDC_BUTTON_HEIGHTMAPFILE2       1035
 #define IDC_COMBOMATERIAL               1036
 #define IDC_EDITZONEBASEX               1037
 #define IDC_EDITXOFFSET                 1038
@@ -67,6 +68,7 @@
 #define IDC_ADDTYPE                     1046
 #define IDC_EDIT_HEIGHTMAPFILE          1046
 #define IDC_EDITTYPE                    1047
+#define IDC_EDIT_HEIGHTMAPFILE2         1047
 #define IDC_BUTTONCOLOR                 1048
 #define IDC_EDITNAME                    1049
 #define IDC_COMBOTYPE                   1050
@@ -75,6 +77,7 @@
 #define IDC_PROGRESS                    1053
 #define IDC_PASSTEXT                    1054
 #define IDC_EDIT_ZFACTOR                1055
+#define IDC_EDIT_ZFACTOR2               1056
 #define IDC_RADIOLIGHTNOISE             2042
 #define IDC_RADIOLIGHTPATCH             2043
 #define IDC_RADIOLIGHTNO                2044

@@ -1,7 +1,7 @@
 /** \file export.cpp
  * Implementation of export from leveldesign data to client data
  *
- * $Id: export.cpp,v 1.2 2002/01/28 17:37:00 besson Exp $
+ * $Id: export.cpp,v 1.3 2002/01/29 15:12:32 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,13 +52,14 @@ SExportOptions::SExportOptions ()
 	ZoneRegion = NULL;
 	CellSize = 160.0f;
 	ZFactor = 1.0f;
+	ZFactor2 = 1.0f;
 	Light = false;
 }
 
 // ---------------------------------------------------------------------------
 void SExportOptions::serial (NLMISC::IStream& s)
 {
-	int version = s.serialVersion (4);
+	int version = s.serialVersion (5);
 
 	s.serial (OutZoneDir);
 	s.serial (RefZoneDir);
@@ -74,6 +75,13 @@ void SExportOptions::serial (NLMISC::IStream& s)
 
 	if (version > 3)
 		s.serial (Light);
+
+	if (version > 4)
+	{
+		s.serial (ZFactor);
+		s.serial (HeightMapFile2);
+		s.serial (ZFactor2);
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -147,6 +155,27 @@ bool CExport::export (SExportOptions &options, IExportCB *expCB)
 				_ExportCB->dispWarning (string("Cant load height map : ") + _Options->HeightMapFile);
 			delete _HeightMap;
 			_HeightMap = NULL;
+		}
+	}
+
+	// --- height map 2
+	if (_ExportCB != NULL)
+		_ExportCB->dispPass ("Loading height map");
+	_HeightMap2 = NULL;
+	if (_Options->HeightMapFile != "")
+	{
+		_HeightMap2 = new CBitmap;
+		try 
+		{
+			CIFile inFile (_Options->HeightMapFile2);
+			_HeightMap2->load (inFile);
+		}
+		catch (Exception &)
+		{
+			if (_ExportCB != NULL)
+				_ExportCB->dispWarning (string("Cant load height map : ") + _Options->HeightMapFile2);
+			delete _HeightMap2;
+			_HeightMap2 = NULL;
 		}
 	}
 
@@ -855,21 +884,31 @@ void CExport::cutZone (NL3D::CZone &bigZone, NL3D::CZone &unitZone, sint32 nPosX
 // ---------------------------------------------------------------------------
 float CExport::getHeight (float x, float y)
 {
-	if (_HeightMap == NULL)
-		return 0.0f;
+	float deltaZ = 0.0f, deltaZ2 = 0.0f;
+	CRGBAF color;
 
 	y = -y;
 
 	clamp (x, 0.0f, _Options->CellSize*256.0f);
 	clamp (y, 0.0f, _Options->CellSize*256.0f);
 
-	CRGBAF color = _HeightMap->getColor(x / (_Options->CellSize*256.0f), y / (_Options->CellSize*256.0f));
+	if (_HeightMap == NULL)
+	{
+		color = _HeightMap->getColor (x/(_Options->CellSize*256.0f), y/(_Options->CellSize*256.0f));
+		deltaZ = color.A;
+		deltaZ = deltaZ - 127.0f; // Median intensity is 127
+		deltaZ *= _Options->ZFactor;
+	}
 
-	float deltaZ = color.A;
-	deltaZ = deltaZ - 127.0f; // Median intensity is 127
-	deltaZ *= _Options->ZFactor;
+	if (_HeightMap2 != NULL)
+	{
+		color = _HeightMap2->getColor (x/(_Options->CellSize*256.0f), y/(_Options->CellSize*256.0f));
+		deltaZ2 = color.A;
+		deltaZ2 = deltaZ2 - 127.0f; // Median intensity is 127
+		deltaZ2 *= _Options->ZFactor2;
+	}
 
-	return deltaZ;
+	return (deltaZ + deltaZ2);
 }
 
 // ---------------------------------------------------------------------------
@@ -942,16 +981,16 @@ void CExport::light (NL3D::CZone &zoneOut, NL3D::CZone &zoneIn)
 		CPatchInfo &rPI = vPI[i];
 		vertices.resize((rPI.OrderT*4+1)*(rPI.OrderS*4+1));
 
-		for (k = 0; k < (rPI.OrderT*4+1); ++k)
-		for (j = 0; j < (rPI.OrderS*4+1); ++j)
+		for (k = 0; k < (uint32)(rPI.OrderT*4+1); ++k)
+		for (j = 0; j < (uint32)(rPI.OrderS*4+1); ++j)
 		{
 			s = (((float)j) / (rPI.OrderS*4));
 			t = (((float)k) / (rPI.OrderT*4));
 			vertices[j+k*(rPI.OrderS*4+1)] = pCP->computeVertex(s, t);
 		}
 
-		for (k = 0; k < (rPI.OrderT*4); ++k)
-		for (j = 0; j < (rPI.OrderS*4); ++j)
+		for (k = 0; k < (uint32)(rPI.OrderT*4); ++k)
+		for (j = 0; j < (uint32)(rPI.OrderS*4); ++j)
 		{
 			v[0] = vertices[(j+0)+(k+0)*(rPI.OrderS*4+1)];
 			v[1] = vertices[(j+1)+(k+0)*(rPI.OrderS*4+1)];
@@ -978,8 +1017,8 @@ void CExport::light (NL3D::CZone &zoneOut, NL3D::CZone &zoneIn)
 
 		CPatchInfo &rPI = vPI[i];
 
-		for (k = 0; k < (rPI.OrderT*4); ++k)
-		for (j = 0; j < (rPI.OrderS*4); ++j)
+		for (k = 0; k < (uint32)(rPI.OrderT*4); ++k)
+		for (j = 0; j < (uint32)(rPI.OrderS*4); ++j)
 		{
 			s = ((0.5f+(float)j) / (rPI.OrderS*4));
 			t = ((0.5f+(float)k) / (rPI.OrderT*4));

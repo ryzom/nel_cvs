@@ -24,6 +24,8 @@ public:
 	CString	TileBankFile;
 	CString	HeightMapFile;
 	CString	ZFactor;
+	CString	HeightMapFile2;
+	CString	ZFactor2;
 	uint8	Lighting;
 	//}}AFX_DATA
 
@@ -40,11 +42,12 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CExportDlg)
-	virtual void OnOK();
-	afx_msg void OnButtonRefzonedir();
-	afx_msg void OnButtonOutzonedir();
-	afx_msg void OnButtonTilebankfile();
-	afx_msg void OnButtonHeightmapfile();
+	virtual void OnOK ();
+	afx_msg void OnButtonRefzonedir ();
+	afx_msg void OnButtonOutzonedir ();
+	afx_msg void OnButtonTilebankfile ();
+	afx_msg void OnButtonHeightmapfile ();
+	afx_msg void OnButtonHeightmapfile2 ();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -4,7 +4,7 @@
  * Get the .land, the reference zones and the heightmap and generate
  * all zones that will be next welded and lighted.
  *
- * $Id: export.h,v 1.2 2002/01/28 17:37:00 besson Exp $
+ * $Id: export.h,v 1.3 2002/01/29 15:12:32 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,8 @@ struct SExportOptions
 	
 	std::string		HeightMapFile;
 	float			ZFactor;
+	std::string		HeightMapFile2;
+	float			ZFactor2;
 
 	uint8			Light; // Roughly light the zone (0-none, 1-patch, 2-noise)
 	
@@ -119,6 +121,7 @@ private:
 
 	NL3D::CTileBank		*_ZeTileBank;
 	NLMISC::CBitmap		*_HeightMap;
+	NLMISC::CBitmap		*_HeightMap2;
 	
 private:
 

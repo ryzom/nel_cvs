@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.21 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.22 2002/07/25 17:38:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,9 +136,10 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 6:
+		- _DistMax
 	Version 5:
 		- _AutoAnim
-
 	Version 4:
 		- _UseLightingLocalAttenuation
 	Version 3:
@@ -151,7 +152,7 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- 1st version.
 	*/
-	sint ver = f.serialVersion(5);
+	sint ver = f.serialVersion(6);
 
 	if (ver >= 2)
 	{
@@ -188,6 +189,8 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_AutoAnim);
 	}
 
+	if(ver >= 6)
+		f.serial(_DistMax);
 }
 
 

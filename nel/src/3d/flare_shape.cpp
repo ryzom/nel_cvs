@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.9 2002/05/14 13:03:27 vizerie Exp $
+ * $Id: flare_shape.cpp,v 1.10 2002/07/25 17:38:34 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -54,7 +54,7 @@ CFlareShape::CFlareShape()  : _Color(NLMISC::CRGBA::White), _Persistence(1), _Sp
 
 void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);
+	int ver = f.serialVersion(2);
 	f.serial(_Color, _Persistence, _Spacing);	
 	f.serial(_Attenuable);
 	if (_Attenuable)
@@ -83,6 +83,9 @@ void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_DazzleColor, _DazzleAttenuationRange);
 	}
 	f.serial(_InfiniteDist);
+
+	if (ver >= 2)
+		f.serial( _DistMax );
 }
 
 	

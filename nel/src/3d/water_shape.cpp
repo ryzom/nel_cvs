@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.19 2002/07/08 12:59:49 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.20 2002/07/25 17:38:34 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -417,7 +417,7 @@ const ITexture		*CWaterShape::getHeightMap(uint k) const
 
 void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(1);
+	sint ver = f.serialVersion(2);
 	// serial 'shape' 
 	f.serial(_Poly);
 	// serial heightMap identifier
@@ -457,9 +457,10 @@ void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_WaveHeightFactor);
 
 	if (ver >= 1)
-	{
-		f.serial(_ComputeLightmap);
-	}
+		f.serial (_DistMax);
+
+	if (ver >= 2)
+		f.serial (_ComputeLightmap);
 }
 
 //============================================

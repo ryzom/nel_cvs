@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.2 2001/01/15 15:15:46 coutelas Exp $
+ * $Id: texture_font.cpp,v 1.3 2001/04/19 11:10:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,9 +36,9 @@ namespace NL3D
 \*==================================================================*/
 
 /*------------------------------------------------------------------*\
-							generate()
+							doGenerate()
 \*------------------------------------------------------------------*/
-void CTextureFont::generate()
+void CTextureFont::doGenerate()
 {
 	// getting bitmap infos
 	uint32 pitch = 0;

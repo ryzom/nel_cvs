@@ -1,7 +1,7 @@
 /** \file texture_font.h
  * <File description>
  *
- * $Id: texture_font.h,v 1.4 2001/01/15 14:57:56 coutelas Exp $
+ * $Id: texture_font.h,v 1.5 2001/04/19 11:10:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,7 @@ public:
 	}
 
 	// Generate the texture
-	void generate();
+	void doGenerate();
 
 	/// the unicode character
 	ucchar Char;

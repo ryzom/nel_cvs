@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.7 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: texture_far.h,v 1.8 2001/04/19 11:10:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,11 +121,11 @@ public:
 	bool						removePatch (CPatch *pPatch);
 
 	/**
-	 *  Generate the texture. See ITexture::generate().
+	 *  Generate the texture. See ITexture::doGenerate().
 	 *
-	 *  \see ITexture::generate()
+	 *  \see ITexture::doGenerate()
 	 */
-	virtual void				generate();
+	virtual void				doGenerate();
 
 	// Data
 

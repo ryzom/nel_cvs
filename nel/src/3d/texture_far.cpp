@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.8 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: texture_far.cpp,v 1.9 2001/04/19 11:10:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -149,8 +149,8 @@ bool CTextureFar::removePatch (CPatch *pPatch)
 	return (_PatchCount == 0);
 }
 
-// Generate the texture. See ITexture::generate().
-void CTextureFar::generate ()
+// Generate the texture. See ITexture::doGenerate().
+void CTextureFar::doGenerate ()
 {
 	// Resize
 	CBitmap::resize (_OriginalWidth, _OriginalHeight, RGBA);

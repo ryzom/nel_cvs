@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.4 2001/01/03 18:14:48 coutelas Exp $
+ * $Id: texture_file.cpp,v 1.5 2001/04/19 11:10:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,9 +39,9 @@ namespace NL3D
 \*==================================================================*/
 
 /*------------------------------------------------------------------*\
-							generate()
+							doGenerate()
 \*------------------------------------------------------------------*/
-void CTextureFile::generate()
+void CTextureFile::doGenerate()
 {
 	NLMISC::CIFile f;
 	//nldebug(_FileName.c_str());

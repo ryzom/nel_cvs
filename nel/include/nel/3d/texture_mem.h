@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.2 2001/01/08 17:58:29 corvazier Exp $
+ * $Id: texture_mem.h,v 1.3 2001/04/19 11:10:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ public:
 	/** 
 	 * Generate the texture
 	 */	
-	void generate();
+	void doGenerate();
 
 
 	/// Todo: serialize a mem texture.

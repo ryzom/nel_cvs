@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.3 2001/01/05 10:57:30 berenguier Exp $
+ * $Id: texture_file.h,v 1.4 2001/04/19 11:10:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,7 +95,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void generate();
+	void doGenerate();
 
 	/// Save the texture file name.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream)

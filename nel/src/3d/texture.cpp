@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.14 2001/01/05 10:59:54 berenguier Exp $
+ * $Id: texture.cpp,v 1.15 2001/04/19 11:10:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NL3D
 ITexture::ITexture()
 {
 	_Touched= false;
+	_GoodGenerate= false;
 	_Releasable= true;
 	_WrapS= _WrapT= Repeat;
 	_UploadFormat= Auto;

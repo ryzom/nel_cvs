@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.25 2001/03/30 12:50:01 berenguier Exp $
+ * $Id: texture.h,v 1.26 2001/04/19 11:10:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,6 +195,7 @@ public:
 	{ 
 		_ListInvalidRect.clear (); 
 		_Touched=true; 
+		_GoodGenerate= false;
 	}
 
 	/**
@@ -217,6 +218,8 @@ public:
 			// Touch flag
 			_Touched=true; 
 		}
+
+		_GoodGenerate= false;
 	}
 
 	
@@ -248,7 +251,7 @@ public:
 	 * texture is used for the first time or if it is touched, the driver will call this method.
 	 * For exemple, a texture file will load the bitmap in this method.
 	 *
-	 * If the invalidate rect list is empty, generate() must rebuild all the texture.
+	 * If the invalidate rect list is empty, generate() rebuild all the texture.
 	 * If the invalidate rect list is not empty, generate() rebuilds only the invalidate rectangles 
 	 * in the list.
 	 *
@@ -258,16 +261,26 @@ public:
 	 * After generation, if the texture is releasable, the driver will release the texture by calling
 	 * release(). 
 	 *
+	 * NB: a flag is maintained to see if the generated bitmap is coherent with texture description (see touch*()).
+	 * So if you do {generate(); generate();}, you only get 1 real bitmap generation...
+	 *
 	 * \see isAllInvalidated(), touch(), touched(), touchRect(), clearTouched(), _ListInvalidRect
 	 * \see getReleasable(), setReleasable()
 	 */	
-	virtual void generate() = 0;
+	void generate()
+	{
+		if(!_GoodGenerate)
+		{
+			doGenerate();
+			_GoodGenerate=true;
+		}
+	}
 
 
 	/** 
 	 * Release the texure (free memory)
 	 */	
-	void release() { reset(); }
+	void release() { reset(); _GoodGenerate= false; }
 
 	/** 
 	 * Does this texture support sharing system.
@@ -295,7 +308,22 @@ protected:
 	// Derived texture should set it to true when they are updated.
 	bool		_Touched;
 
+
+	/** 
+	 * Generate the texture pixels.
+	 * 
+	 * If the invalidate rect list is empty, generate() must rebuild all the texture.
+	 * If the invalidate rect list is not empty, generate() rebuilds only the invalidate rectangles 
+	 * in the list.
+	 *
+	 * \see isAllInvalidated(), touch(), touched(), touchRect(), clearTouched(), _ListInvalidRect, generate()
+	 * \see getReleasable(), setReleasable()
+	 */	
+	virtual void doGenerate() = 0;
+
+
 private:
+	bool			_GoodGenerate;
 	bool			_Releasable;
 	TUploadFormat	_UploadFormat;
 	TWrapMode		_WrapS;

@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.20 2003/06/30 09:49:27 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.21 2004/09/03 09:19:55 legros Exp $
  *
  */
 
@@ -519,10 +519,125 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 }
 
 
+static void	cbWSReportFSState(CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	sint	shardPos = findShardWithSId (sid);
+
+	if (shardPos == -1)
+	{
+		nlwarning ("unknown WS %d reported state of a fs", sid);
+		return;
+	}
+
+	CShard&	shard = Shards[shardPos];
+
+	TServiceId	FSSId;
+	bool		alive;
+	bool		patching;
+	std::string	patchURI;
+
+	msgin.serial(FSSId);
+	msgin.serial(alive);
+	msgin.serial(patching);
+	msgin.serial(patchURI);
+
+	if (!alive)
+	{
+		nlinfo("Shard %d frontend %d reported as offline", shard.ShardId, FSSId);
+		std::vector<CFrontEnd>::iterator	itfs;
+		for (itfs=shard.FrontEnds.begin(); itfs!=shard.FrontEnds.end(); ++itfs)
+		{
+			if ((*itfs).SId == FSSId)
+			{
+				shard.FrontEnds.erase(itfs);
+				break;
+			}
+		}
+	}
+	else
+	{
+		CFrontEnd*	updateFS = NULL;
+		std::vector<CFrontEnd>::iterator	itfs;
+		for (itfs=shard.FrontEnds.begin(); itfs!=shard.FrontEnds.end(); ++itfs)
+		{
+			if ((*itfs).SId == FSSId)
+			{
+				// update FS state
+				CFrontEnd&	fs = (*itfs);
+				fs.Patching = patching;
+				fs.PatchURI = patchURI;
+
+				updateFS = &fs;
+
+				break;
+			}
+		}
+
+		if (itfs == shard.FrontEnds.end())
+		{
+			nlinfo("Shard %d frontend %d reported as online", shard.ShardId, FSSId);
+			// unknown fs, create new entry
+			shard.FrontEnds.push_back(CFrontEnd(FSSId, patching, patchURI));
+
+			updateFS = &(shard.FrontEnds.back());
+		}
+
+		if (updateFS != NULL)
+		{
+			nlinfo("Shard %d frontend %d status updated: patching=%s patchURI=%s", shard.ShardId, FSSId, (updateFS->Patching ? "yes" : "no"), updateFS->PatchURI.c_str());
+		}
+	}
+
+	// update DynPatchURLS in database
+	std::string	dynPatchURL;
+	uint	i;
+	for (i=0; i<shard.FrontEnds.size(); ++i)
+	{
+		if (shard.FrontEnds[i].Patching)
+		{
+			if (!dynPatchURL.empty())
+				dynPatchURL += ' ';
+			dynPatchURL += shard.FrontEnds[i].PatchURI;
+		}
+	}
+
+	string query = "UPDATE shard SET DynPatchURL='"+dynPatchURL+"' WHERE ShardId='"+toString(shard.ShardId)+"'";
+	sint ret = mysql_query (DatabaseConnection, query.c_str ());
+	if (ret != 0)
+	{
+		nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+		return;
+	}
+}
+
+static void	cbWSReportNoPatch(CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	sint	shardPos = findShardWithSId (sid);
+
+	if (shardPos == -1)
+	{
+		nlwarning ("unknown WS %d reported state of a fs", sid);
+		return;
+	}
+
+	CShard&	shard = Shards[shardPos];
+
+	string query = "UPDATE shard SET DynPatchURL='' WHERE ShardId='"+toString(shard.ShardId)+"'";
+	sint ret = mysql_query (DatabaseConnection, query.c_str ());
+	if (ret != 0)
+	{
+		nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
+		return;
+	}
+}
+
 static const TUnifiedCallbackItem WSCallbackArray[] =
 {
-	{ "CC", cbWSClientConnected },
-	{ "WS_IDENT", cbWSIdentification },
+	{ "CC",					cbWSClientConnected },
+	{ "WS_IDENT",			cbWSIdentification },
+
+	{ "REPORT_FS_STATE",	cbWSReportFSState },
+	{ "REPORT_NO_PATCH",	cbWSReportNoPatch },
 };
 
 

@@ -149,6 +149,8 @@
 					$res = $res."999999|";
 					$res = $res.$row["WsAddr"]."|";
 					$res = $res.$row["PatchURL"];
+					if (strlen($row["DynPatchURL"]) > 0)
+						$res = $res."|".$row["DynPatchURL"];
 					$res = $res."\n";
 				}
 			}
@@ -172,7 +174,7 @@
 		$result = mysql_query ($query) or die ("0:Can't execute the query: ".$query);
 
 		if (mysql_num_rows ($result) != 1)
-			die ("0:Can't select the user $login");
+			die ("0:Unknown login $login (error code 64)");
 
 		$res_array = mysql_fetch_array($result);
 		$salt = substr($res_array['Password'], 0, 2);
@@ -204,10 +206,29 @@
 		{
 			// user selected a shard, try to add the user to the shard
 
-			if (askClientConnection($shardid, $id, $login, $priv, $extended, $res))
+			if (askClientConnection($shardid, $id, $login, $priv, $extended, $res, $patchURLS))
 			{
 				// access granted, send cookie and addr
 				echo "1:".$res;
+
+				// LS sent patching URLS? Add them at the end of the string
+				if (strlen($patchURLS) > 0)
+					echo ' '.$patchURLS;
+
+/*
+				// OBSOLETE: emergency patch URI already sent at displayAvailableShards - no need to add it
+				// There is a default patching address? Add it at the end of the patching URLS
+				$query = "SELECT PatchURL FROM shard WHERE ShardId='$shardid'";
+				$result = mysql_query($query);
+				if ($result && ($array=mysql_fetch_array($result)))
+				{
+					$patchURL = $array['PatchURL'];
+					if (strlen($patchURL) > 0)
+					{
+						echo (strlen($patchURLS) > 0 ? '|' : ' ').$patchURL;
+					}
+				}
+*/
 			}
 			else
 			{

@@ -164,7 +164,7 @@
 		return true;
 	}
 
-	function askClientConnection ($shardid, $uid, $name, $priv, $extended, &$res)
+	function askClientConnection ($shardid, $uid, $name, $priv, $extended, &$res, &$patchURLS)
 	{
 		$ok = false;
 
@@ -218,7 +218,14 @@
 				return $ok;
 			}
 
+			$patchURLS = '';
+			if (!$msgin->serialstring($patchURLS))
+			{
+				$patchURLS = '';
+			}
+
 			$res = $cookie.' '.$addr;
+
 			$ok = true;
 		}
 		else

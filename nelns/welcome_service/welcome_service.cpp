@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.39 2004/08/25 16:48:58 guignot Exp $
+ * $Id: welcome_service.cpp,v 1.40 2004/09/03 09:19:35 legros Exp $
  *
  */
 
@@ -97,6 +97,17 @@ CVariable<string>	ShardOpenStateFile("ws", "ShardOpenStateFile", "Name of the fi
  * OpenGroups
  */
 CVariable<string>	OpenGroups("ws", "OpenGroups", "list of groups allowed at ShardOpen Level 1", "", 0, true);
+
+/**
+ * OpenFrontEndThreshold
+ * The FS balance algorithm works like this:
+ * - select the least loaded frontend
+ * - if this frontend has more than the OpenFrontEndThreshold
+ *   - try to open a new frontend
+ *   - reselect least loaded frontend
+ */
+CVariable<uint>		OpenFrontEndThreshold("ws", "OpenFrontEndThreshold", "Limit number of players on all FS to decide to open a new FS", 800,	0, true );
+
 
 
 /**
@@ -225,15 +236,65 @@ string FrontEndAddress;
 
 /// \todo ace: code a better heuristic to distribute user on FES (using NbUser and not only NbEstimatedUser)
 
+
+
+
+enum TFESState
+{
+	PatchOnly,
+	AcceptClientOnly
+};
+
 struct CFES
 {
-	CFES (TServiceId sid) : SId(sid), NbEstimatedUser(0), NbUser(0) { }
+	CFES (TServiceId sid) : SId(sid), NbPendingUsers(0), NbEstimatedUser(0), NbUser(0), State(PatchOnly) { }
 
 	TServiceId	SId;				// Connection to the front end
+	uint32		NbPendingUsers;		// Number of not yet connected users (but rooted to this frontend)
 	uint32		NbEstimatedUser;	// Number of user that already routed to this FES. This number could be different with the NbUser if
 									// some users are not yet connected on the FES (used to equilibrate connection to all front end).
 									// This number *never* decrease, it's just to fairly distribute user.
 	uint32		NbUser;				// Number of user currently connected on this front end
+
+	TFESState	State;				// State of frontend (patching/accepting clients)
+	std::string	PatchAddress;		// Address of frontend patching server
+
+	uint32		getUsersCountHeuristic() const
+	{
+		//return NbEstimatedUser;
+		return NbUser + NbPendingUsers;
+	}
+
+	void		setToAcceptClients()
+	{
+		if (State == AcceptClientOnly)
+			return;
+
+		// tell FS to accept client
+		State = AcceptClientOnly;
+		CMessage	msgOpenFES("FS_ACCEPT");
+		CUnifiedNetwork::getInstance()->send(SId, msgOpenFES);
+
+		// report state to LS
+		bool	dummy;
+		reportStateToLS(dummy, true);
+	}
+
+	void		reportStateToLS(bool& reportPatching, bool alive = true)
+	{
+		// report to LS
+
+		bool	patching = (State == PatchOnly);
+		if (alive && patching)
+			reportPatching = true;
+
+		CMessage	msgout("REPORT_FS_STATE");
+		msgout.serial(SId);
+		msgout.serial(alive);
+		msgout.serial(patching);
+		msgout.serial(PatchAddress);
+		CUnifiedNetwork::getInstance()->send("LS", msgout);
+	}
 };
 
 list<CFES> FESList;
@@ -245,18 +306,46 @@ list<CFES> FESList;
 CFES *findBestFES ( uint& totalNbUsers )
 {
 	totalNbUsers = 0;
-	if (FESList.empty ()) return NULL;
-	list<CFES>::iterator best = FESList.begin();
-	for (list<CFES>::iterator it = best; it != FESList.end(); it++)
+
+	CFES*	best = NULL;
+
+	for (list<CFES>::iterator it=FESList.begin(); it!=FESList.end(); ++it)
 	{
-		if ((*it).NbEstimatedUser < (*best).NbEstimatedUser)
+		if ((*it).State == AcceptClientOnly)
 		{
-			best = it;
+			if (best == NULL || best->getUsersCountHeuristic() > (*it).getUsersCountHeuristic())
+				best = &(*it);
+
+			totalNbUsers += (*it).NbUser;
 		}
-		totalNbUsers += (*it).NbUser;
+
 	}
-	return &(*best);
+
+	return best;
 }
+
+/**
+ * Select a frontend in patch mode to open
+ * Returns true if a new FES was open, false if no FES could be open
+ */
+bool	openNewFES()
+{
+	for (list<CFES>::iterator it=FESList.begin(); it!=FESList.end(); ++it)
+	{
+		if ((*it).State == PatchOnly)
+		{
+			nlinfo("openNewFES: ask the FS %d to accept clients", (*it).SId);
+
+			// switch FES to AcceptClientOnly
+			(*it).setToAcceptClients();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
 
 void displayFES ()
 {
@@ -267,6 +356,11 @@ void displayFES ()
 	}
 	nlinfo ("End of the list");
 }
+
+
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -306,6 +400,20 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 		{
 			msgout.serial (FrontEndAddress);
 		}
+
+		// build patch server list
+		std::string	PatchURLS;
+		for (list<CFES>::iterator it=FESList.begin(); it!=FESList.end(); ++it)
+		{
+			if ((*it).State == PatchOnly && !(*it).PatchAddress.empty())
+			{
+				if (!PatchURLS.empty())
+					PatchURLS += '|';
+				PatchURLS += (*it).PatchAddress;
+			}
+		}
+
+		msgout.serial(PatchURLS);
 	}
 	
 	CUnifiedNetwork::getInstance()->send ("LS", msgout);
@@ -335,7 +443,14 @@ void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, uint
 	{
 		if ((*it).SId == sid)
 		{
-			if (con) (*it).NbUser++;
+			if (con)
+			{
+				(*it).NbUser++;
+
+				// the client connected, it's no longer pending
+				if ((*it).NbPendingUsers > 0)
+					(*it).NbPendingUsers--;
+			}
 			else
 			{
 				if ( (*it).NbUser != 0 )
@@ -349,12 +464,78 @@ void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, uint
 	{
 		// we know that this user is on this FES
 		UserIdSockAssociations.insert (make_pair (userid, sid));
-
 	}
 	else
 	{
 		// remove the user
 		UserIdSockAssociations.erase (userid);
+	}
+}
+
+// This function is called when a FES rejected a client' cookie
+void	cbFESRemovedPendingCookie(CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	// client' cookie rejected, no longer pending
+	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
+	{
+		if ((*it).SId == sid)
+		{
+			if ((*it).NbPendingUsers > 0)
+				--(*it).NbPendingUsers;
+			break;
+		}
+	}
+}
+
+// This function is called by FES to setup its PatchAddress
+void	cbFESPatchAddress(CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	std::string	address;
+	msgin.serial(address);
+
+	bool		acceptClients;
+	msgin.serial(acceptClients);
+
+	nldebug("Received patch server address '%s' from service %s %d", address.c_str(), serviceName.c_str(), sid);
+
+	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
+	{
+		if ((*it).SId == sid)
+		{
+			nldebug("Affected patch server address '%s' to frontend %s %d", address.c_str(), serviceName.c_str(), sid);
+			(*it).PatchAddress = address;
+			(*it).State = (acceptClients ? AcceptClientOnly : PatchOnly);
+			if (acceptClients)
+				nldebug("Frontend %s %d reported to accept client, patching unavailable for that server", address.c_str(), serviceName.c_str(), sid);
+			else
+				nldebug("Frontend %s %d reported to be in patching mode", address.c_str(), serviceName.c_str(), sid);
+
+			bool	dummy;
+			(*it).reportStateToLS(dummy);
+			break;
+		}
+	}
+}
+
+// This function is called by FES to setup the right number of players (if FES was already present before WS launching)
+void	cbFESNbPlayers(CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	uint32	nbPlayers;
+	msgin.serial(nbPlayers);
+
+	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
+	{
+		if ((*it).SId == sid)
+		{
+			nldebug("Frontend '%d' reported %d online users", sid, nbPlayers);
+			(*it).NbUser = nbPlayers;
+			if (nbPlayers != 0 && (*it).State == PatchOnly)
+			{
+				nlwarning("Frontend %d is in state PatchOnly, yet reports to have online %d players, state AcceptClientOnly is forced (FS_ACCEPT message sent)");
+				(*it).setToAcceptClients();
+			}
+			break;
+		}
 	}
 }
 
@@ -406,6 +587,9 @@ void cbFESConnection (const std::string &serviceName, uint16 sid, void *arg)
 	nldebug("new FES connection: sid %u", sid);
 	displayFES ();
 
+	bool	dummy;
+	FESList.back().reportStateToLS(dummy);
+
 	// Reset NbEstimatedUser to NbUser for all front-ends
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
 	{
@@ -443,6 +627,9 @@ void cbFESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 				}
 				itc = nitc;
 			}
+
+			bool	dummy;
+			(*it).reportStateToLS(dummy, false);
 
 			// remove the FES
 			FESList.erase (it);
@@ -500,8 +687,11 @@ void cbServiceDown (const std::string &serviceName, uint16 sid, void *arg)
 // Callback Array for message from FES
 TUnifiedCallbackItem FESCallbackArray[] =
 {
-	{ "SCS", cbFESShardChooseShard },
-	{ "CC", cbFESClientConnected },
+	{ "SCS",				cbFESShardChooseShard },
+	{ "CC",					cbFESClientConnected },
+	{ "RPC",				cbFESRemovedPendingCookie },
+	{ "FEPA",				cbFESPatchAddress },
+	{ "NBPLAYERS",			cbFESNbPlayers },
 
 	{ "SET_SHARD_OPEN",		cbSetShardOpen },
 	{ "RESTORE_SHARD_OPEN",	cbRestoreShardOpen },
@@ -545,6 +735,8 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 		nlwarning ("LS didn't give me the extended data for user '%s', set to empty", userName.c_str());
 	}
 
+
+/*
 	uint totalNbUsers;
 	CFES *best = findBestFES( totalNbUsers );
 	if (best == NULL)
@@ -557,7 +749,32 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 		CUnifiedNetwork::getInstance()->send(sid, msgout);
 		return;
 	}
+*/
 
+	uint	totalNbUsers;
+	CFES*	best = findBestFES( totalNbUsers );
+
+	// could not find a good FES or best FES has more players than balance limit
+	if (best == NULL || best->getUsersCountHeuristic() >= OpenFrontEndThreshold)
+	{
+		// open a new frontend
+		openNewFES();
+
+		// reselect best FES (will return newly open FES, or previous if no more FES available)
+		best = findBestFES(totalNbUsers);
+
+		// check there is a FES available
+		if (best == NULL)
+		{
+			// answer the LS that we can't accept the user
+			CMessage msgout ("SCS");
+			string reason = "No front-end server available";
+			msgout.serial (reason);
+			msgout.serial (cookie);
+			CUnifiedNetwork::getInstance()->send(sid, msgout);
+			return;
+		}
+	}
 
 
 	bool	authorizeUser = false;
@@ -604,6 +821,7 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 
 	CUnifiedNetwork::getInstance()->send (best->SId, msgout);
 	best->NbEstimatedUser++;
+	best->NbPendingUsers++;
 }
 
 void cbFailed (CMessage &msgin, const std::string &serviceName, uint16 sid)
@@ -664,6 +882,17 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 	CUnifiedNetwork::getInstance()->send (sid, msgout);
 
 	nlinfo ("Connected to %s-%hu and sent identification with shardId '%d'", serviceName.c_str(), sid, shardId);
+
+	bool	reportPatching = false;
+	list<CFES>::iterator	itfs;
+	for (itfs=FESList.begin(); itfs!=FESList.end(); ++itfs)
+		(*itfs).reportStateToLS(reportPatching);
+
+	if (!reportPatching)
+	{
+		CMessage	msgout("REPORT_NO_PATCH");
+		CUnifiedNetwork::getInstance()->send("LS", msgout);
+	}
 }
 
 

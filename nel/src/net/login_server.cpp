@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.36 2004/08/25 16:50:33 guignot Exp $
+ * $Id: login_server.cpp,v 1.37 2004/09/03 09:20:28 legros Exp $
  *
  */
 
@@ -82,6 +82,13 @@ TNewClientCallback NewClientCallback = NULL;
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+void	notifyWSRemovedPendingCookie(CLoginCookie& cookie)
+{
+	CMessage msgout ("RPC");	// remove pending cookie
+	msgout.serial(cookie);
+	CUnifiedNetwork::getInstance()->send ("WS", msgout);
+}
+
 void refreshPendingList ()
 {
 	// delete too old cookie
@@ -93,6 +100,7 @@ void refreshPendingList ()
 		if ((*it).Time < Time - TimeBeforeEraseCookie)
 		{
 			nlinfo("LS: Removing cookie '%s' because too old", (*it).Cookie.toString().c_str());
+			notifyWSRemovedPendingCookie((*it).Cookie);
 			it = PendingUsers.erase (it);
 		}
 		else
@@ -125,6 +133,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 		{
 			// the cookie already exists, erase it and return false
 			nlwarning ("LS: Cookie %s is already in the pending user list", cookie.toString().c_str());
+			notifyWSRemovedPendingCookie((*it).Cookie);
 			PendingUsers.erase (it);
 			reason = "cookie already exists";
 			break;

@@ -1,7 +1,7 @@
 /** \file connection_web.cpp
  * 
  *
- * $Id: connection_web.cpp,v 1.9 2004/08/25 16:48:58 guignot Exp $
+ * $Id: connection_web.cpp,v 1.10 2004/09/03 09:19:55 legros Exp $
  *
  */
 
@@ -105,6 +105,19 @@ static void cbWSShardChooseShard/* (CMessage &msgin, TSockId from, CCallbackNetB
 		string addr;
 		msgin.serial (addr);
 		msgout.serial (addr);
+
+		// read patch addresses sent by WS
+		std::string	patchURLS;
+		try
+		{
+			msgin.serial(patchURLS);
+		}
+		catch (Exception&)
+		{
+			patchURLS.clear();
+		}
+
+		msgout.serial(patchURLS);
 	}
 
 	WebServer->send (msgout, (TSockId)cookie.getUserAddr ());

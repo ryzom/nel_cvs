@@ -176,6 +176,26 @@ SOURCE=.\3d\tessellation.cpp
 SOURCE=..\include\nel\3d\tessellation.h
 # End Source File
 # End Group
+# Begin Group "Driver"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\include\nel\3d\driver.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\material.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\primitive_block.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vertex_buffer.cpp
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\bitmap.cpp

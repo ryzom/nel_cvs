@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.h,v 1.5 2002/07/16 13:15:40 lecroart Exp $
+ * $Id: sound_anim_manager.h,v 1.6 2002/07/25 13:33:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 
 #include "nel/misc/vector.h"
+#include "sound/sound.h"
 #include <hash_map>
 
 	
@@ -38,7 +39,6 @@ namespace NLSOUND {
 //class CSoundAnimPlayer;
 class CSoundAnimation;
 class UAudioMixer;
-
 
 // Comparision for const char*
 struct eqsndanim
@@ -111,13 +111,13 @@ public:
 	 *  or -1 if the animation was not found.
  	 *  \param name The id of the animation to play.
 	 */
-	virtual TSoundAnimPlayId		playAnimation(TSoundAnimId id, float time, NLMISC::CVector* position);
+	virtual TSoundAnimPlayId		playAnimation(TSoundAnimId id, float time, CSoundContext &context);
 
 	/** Start playing a sound animation. Returns an id number of this playback instance
 	 *  or -1 if the animation was not found.
  	 *  \param name The name of the animation to play.
 	 */
-	virtual TSoundAnimPlayId		playAnimation(std::string& name, float time, NLMISC::CVector* position);
+	virtual TSoundAnimPlayId		playAnimation(std::string& name, float time, CSoundContext &context);
 
 	/** Stop the playing of a sound animation. 
  	 *  \param name The playback id that was returned by playAnimation.
@@ -137,7 +137,7 @@ public:
 	 *  Both lastTime and curTime are measured relatively from the beginning of the
 	 *  animation.
 	 */
-	virtual void					playAnimation(TSoundAnimId id, float lastTime, float curTime, NLMISC::CVector& position);
+	virtual void					playAnimation(TSoundAnimId id, float lastTime, float curTime, CSoundContext &context);
 
 protected:
 

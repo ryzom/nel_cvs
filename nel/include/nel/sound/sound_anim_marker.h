@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.h
  * A sound event marer on a sound track
  *
- * $Id: sound_anim_marker.h,v 1.2 2002/06/28 19:41:13 hanappe Exp $
+ * $Id: sound_anim_marker.h,v 1.3 2002/07/25 13:33:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,7 @@ public:
 	virtual void			getSounds(std::vector<const char*>& sounds);
 
 	/** Play all the sounds of this marker */
-	virtual void			play(UAudioMixer* mixer, NLMISC::CVector& position);
+	virtual void			play(UAudioMixer* mixer, CSoundContext &context);
 
 
 protected:

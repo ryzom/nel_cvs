@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.h
  * A sound event marer on a sound track
  *
- * $Id: sound_animation.h,v 1.4 2002/07/03 10:00:49 vizerie Exp $
+ * $Id: sound_animation.h,v 1.5 2002/07/25 13:33:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,7 +92,7 @@ public:
 	virtual void				setDirty(bool b)						{ _Dirty = b; }
 
 	/** Play the sounds of the markers that fall within the specified time interval. */
-	virtual void				play(UAudioMixer* mixer, float lastTime, float curTime, NLMISC::CVector& position);
+	virtual void				play(UAudioMixer* mixer, float lastTime, float curTime, CSoundContext &context);
 
 protected:
 

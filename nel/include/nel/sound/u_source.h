@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.10 2001/09/10 17:27:39 cado Exp $
+ * $Id: u_source.h,v 1.11 2002/07/25 13:33:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,24 @@ class CVector;
 
 
 namespace NLSOUND {
+
+
+static const uint SoundContextNbArgs = 10;
+
+struct CSoundContext
+{
+	// -1 for args is a special value means that unset. Don't use negative number
+	
+	CSoundContext() : Position(NLMISC::CVector::Null), PreviousRandom(100)
+	{
+		for (uint i = 0; i < SoundContextNbArgs; i++)
+			Args[i] = -1;
+	}
+
+	NLMISC::CVector Position;
+	sint32	Args[SoundContextNbArgs];
+	uint32	PreviousRandom;
+};
 
 
 class CSound;
@@ -82,12 +100,11 @@ class USource
 public:
 
 	/// Change the sound binded to the source
-	virtual void					setSound( TSoundId id ) = 0;
+	virtual void					setSound( TSoundId id, CSoundContext *context = 0 ) = 0;
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound() = 0;
 	/// Change the priority of the source
 	virtual void					setPriority( TSoundPriority pr, bool redispatch=true ) = 0;
-
 
 	/// \name Playback control
 	//@{

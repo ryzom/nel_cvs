@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.10 2002/04/29 13:12:10 berenguier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.11 2002/05/07 09:27:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -188,7 +188,7 @@ void CCoarseMeshManager::CRenderPass::init (uint blockSize)
 	VBlockSize = blockSize;
 
 	// Set vertex type
-	VBuffer.setVertexFormat (NL3D_COARSEMESH_VERTEX_FORMAT);
+	VBuffer.setVertexFormat (NL3D_COARSEMESH_VERTEX_FORMAT_MGR);
 
 	// Reserve the vertex buffer
 	VBuffer.reserve (NL3D_COARSEMESH_VERTEXBUFFER_RESERVE*VBlockSize);

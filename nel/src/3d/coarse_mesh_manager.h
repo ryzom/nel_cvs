@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.10 2002/04/29 13:12:10 berenguier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.11 2002/05/07 09:27:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,10 @@ namespace NL3D
 #define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_MASK	(NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY-1)
 #define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY		(1<<NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_SHIFT)
 #define NL3D_COARSEMESH_VERTEXBUFFER_RESERVE			10
-#define NL3D_COARSEMESH_VERTEX_FORMAT					(CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag|CVertexBuffer::PrimaryColorFlag)
+// The vertex Format used by the coarseMesh manager
+#define NL3D_COARSEMESH_VERTEX_FORMAT_MGR				(CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag|CVertexBuffer::PrimaryColorFlag)
+// The Vertex Format used for export CoarseMesh. MUST NOT HAVE color (important for material coloring/alphaTrans)
+#define NL3D_COARSEMESH_VERTEX_FORMAT_EXPORT			(CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag)
 #define NL3D_COARSEMESH_PRIMITIVE_BLOCK_SIZE			100
 
 // ***************************************************************************
@@ -74,8 +77,11 @@ const NLMISC::CClassId		CoarseMeshManagerId=NLMISC::CClassId(0x77554f87, 0x5bb37
  *
  * Vertices get a uniform color per instance at the "setColorMesh" call.
  *
- * All coarse meshes must use a common vertex format. It is a pos + normal + UV + vertex color vertex format.
- * (NL3D_COARSEMESH_VERTEX_FORMAT)
+ * All coarse meshes must use a common vertex format. It is a pos + UV vertex format.
+ * (NL3D_COARSEMESH_VERTEX_FORMAT_EXPORT)
+ *
+ * Internally the CCoarseMeshManager store meshes with pos + UV + color vertex format, to color instances
+ * (NL3D_COARSEMESH_VERTEX_FORMAT_MGR)
  *
  * Coarse meshes must use indexed triangle primitive in a single render pass in a single matrix block.
  *

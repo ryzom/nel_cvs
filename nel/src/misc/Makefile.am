@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.72 2004/01/29 10:51:09 lecroart Exp $
+# $Id: Makefile.am,v 1.73 2004/03/16 10:02:43 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -35,6 +35,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         events.cpp                         \
                         fast_mem.cpp                       \
                         file.cpp                           \
+                        fixed_size_allocator.cpp           \
                         game_device_events.cpp             \
                         geom_ext.cpp                       \
                         gtk_displayer.cpp                  \
@@ -52,6 +53,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         mem_stream.cpp                     \
                         mutex.cpp                          \
 			noise_value.cpp                    \
+			object_arena_allocator.cpp         \
                         o_xml.cpp                          \
                         p_thread.cpp                       \
                         path.cpp                           \

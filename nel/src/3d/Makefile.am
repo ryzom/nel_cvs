@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.103 2003/12/22 13:01:21 lecroart Exp $
+# $Id: Makefile.am,v 1.104 2004/03/16 10:02:43 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -52,6 +52,8 @@ libnel3d_la_SOURCES  = \
 		camera.h \
 		camera_user.cpp \
 		camera_user.h \
+		camera_col.cpp \
+		camera_col.h \
 		channel.h \
 		channel_mixer.cpp \
 		channel_mixer.h \
@@ -290,6 +292,7 @@ libnel3d_la_SOURCES  = \
 		ps_attrib_maker_helper.cpp \
 		ps_attrib_maker_helper.h \
 		ps_attrib_maker_iterators.h \
+		ps_attrib_maker_template.cpp \
 		ps_attrib_maker_template.h \
 		ps_color.cpp \
 		ps_color.h \
@@ -506,6 +509,8 @@ libnel3d_la_SOURCES  = \
 		transform_user.h \
 		trav_scene.cpp \
 		trav_scene.h \
+		u_shape.cpp \
+		u_shape.h \
 		vegetable_blend_layer_model.cpp \
 		vegetable_blend_layer_model.h \
 		vegetable_clip_block.cpp \

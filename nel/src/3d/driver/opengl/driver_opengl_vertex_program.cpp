@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertx_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.3 2001/10/08 15:01:15 corvazier Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.4 2001/10/18 11:51:29 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -65,6 +65,12 @@ CVertexProgamDrvInfosGL::CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInf
 bool CDriverGL::isVertexProgramSupported () const
 {
 	return _Extensions.NVVertexProgram;
+}
+
+// ***************************************************************************
+bool CDriverGL::isVertexProgramEmulated () const
+{
+	return _Extensions.NVVertexProgramEmulated;
 }
 
 

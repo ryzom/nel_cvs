@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.15 2001/09/14 17:27:22 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.16 2001/10/18 11:51:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,7 @@ struct	CGlExtensions
 
 	// Optionnal Extensions.
 	bool	ARBTextureCompression;
-	// NB: Fence is not here, because NVVertexArrayRange is false if GL_NV_fence is not here.
+	// NB: Fence extension is not here, because NVVertexArrayRange is false if GL_NV_fence is not here.
 	bool	NVVertexArrayRange;
 	uint	NVVertexArrayRangeMaxVertex;
 	bool	EXTTextureCompressionS3TC;
@@ -82,6 +82,8 @@ struct	CGlExtensions
 	bool	NVTextureEnvCombine4;
 	bool	ARBTextureCubeMap;
 	bool	NVVertexProgram;
+	// true if NVVertexProgram and if we know that VP is emulated
+	bool	NVVertexProgramEmulated;
 
 public:
 	CGlExtensions()
@@ -99,6 +101,8 @@ public:
 		EXTSeparateSpecularColor= false;
 		NVTextureEnvCombine4= false;
 		ARBTextureCubeMap= false;
+		NVVertexProgram= false;
+		NVVertexProgramEmulated= false;
 	};
 };
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.18 2001/10/16 16:45:23 berenguier Exp $
+ * $Id: driver.h,v 1.19 2001/10/18 11:51:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -660,6 +660,12 @@ public:
 	  * Does the driver supports vertex programs ?
 	  */
 	virtual bool			isVertexProgramSupported () const =0;
+
+	/**
+	  * Does the driver supports vertex program, but emulated by CPU ?
+	  */
+	virtual bool			isVertexProgramEmulated () const =0;
+
 
 	/**
 	  * Activate / disactivate a vertex program

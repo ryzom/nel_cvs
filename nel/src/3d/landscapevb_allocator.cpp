@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.4 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.5 2001/10/18 11:51:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,7 +83,8 @@ void			CLandscapeVBAllocator::updateDriver(IDriver *driver)
 		// If change of driver, delete the VertexProgram first, if any
 		deleteVertexProgram();
 		// Then rebuild VB format, and VertexProgram, if needed.
-		setupVBFormatAndVertexProgram(_Driver->isVertexProgramSupported());
+		// Do it only if VP supported by GPU.
+		setupVBFormatAndVertexProgram(_Driver->isVertexProgramSupported()  && !_Driver->isVertexProgramEmulated());
 
 		// must reallocate the VertexBuffer.
 		if( _NumVerticesAllocated>0 )

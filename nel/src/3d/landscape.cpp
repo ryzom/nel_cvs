@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.85 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: landscape.cpp,v 1.86 2001/10/18 11:51:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -427,7 +427,8 @@ void			CLandscape::setDriver(IDriver *drv)
 		_Driver= drv;
 
 		// Does the driver support VertexShader???
-		_VertexShaderOk= _Driver->isVertexProgramSupported();
+		// only if VP supported by GPU.
+		_VertexShaderOk= (_Driver->isVertexProgramSupported() && !_Driver->isVertexProgramEmulated());
 	}
 }
 

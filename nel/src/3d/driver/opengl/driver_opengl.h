@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.91 2001/10/16 16:45:23 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.92 2001/10/18 11:51:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -797,6 +797,7 @@ private:
 	// @{
 
 	bool			isVertexProgramSupported () const;
+	bool			isVertexProgramEmulated () const;
 	bool			activeVertexProgram (CVertexProgram *program);
 	void			setConstant (uint index, float, float, float, float);
 	void			setConstant (uint index, double, double, double, double);

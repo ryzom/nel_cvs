@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.17 2001/09/14 17:27:22 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.18 2001/10/18 11:51:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -505,6 +505,10 @@ void	registerGlExtensions(CGlExtensions &ext)
 
 	// Check vertex program
 	ext.NVVertexProgram = setupNVVertexProgram(glext);
+	// For now, the only way to know if emulation, is to test some extension which exist only on GeForce3.
+	// if GL_NV_texture_shader is not here, then we are not on GeForce3.
+	ext.NVVertexProgramEmulated= ext.NVVertexProgram && (strstr(glext, "GL_NV_texture_shader")==NULL);
+
 }
 
 

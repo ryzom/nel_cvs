@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.16 2004/04/09 13:07:44 lecroart Exp $
+ * $Id: track_keyframer.h,v 1.17 2004/07/09 09:45:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -548,7 +548,7 @@ public:
  * \author Nevrax France
  * \date 2001
  */
-class CTrackKeyFramerLinear<CKeyQuat, CQuat> : public ITrackKeyFramer<CKeyQuat>
+template<> class CTrackKeyFramerLinear<CKeyQuat, CQuat> : public ITrackKeyFramer<CKeyQuat>
 {
 public:
 
@@ -587,7 +587,7 @@ public:
  * \author Nevrax France
  * \date 2001
  */
-class CTrackKeyFramerLinear<CKeyRGBA, NLMISC::CRGBA>: public ITrackKeyFramer<CKeyRGBA>
+template<> class CTrackKeyFramerLinear<CKeyRGBA, NLMISC::CRGBA>: public ITrackKeyFramer<CKeyRGBA>
 {
 public:
 

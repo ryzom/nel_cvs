@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.15 2004/07/06 14:28:32 cado Exp $
+ * $Id: variable.h,v 1.16 2004/07/09 09:45:52 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -383,7 +383,7 @@ private:
 	bool _First;
 };
 
-class CVariable<std::string> : public IVariable
+template<> class CVariable<std::string> : public IVariable
 {
 public:
 	

@@ -1,7 +1,7 @@
 /** \file animated_value.h
  * Class IAnimatedValue
  *
- * $Id: animated_value.h,v 1.5 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: animated_value.h,v 1.6 2004/07/09 09:45:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,7 +125,7 @@ public:
  * \author Nevrax France
  * \date 2001
  */
-class CAnimatedValueBlendable<NLMISC::CQuat> : public IAnimatedValue
+template<> class CAnimatedValueBlendable<NLMISC::CQuat> : public IAnimatedValue
 {
 public:
 	/// A quat blend method.
@@ -177,7 +177,7 @@ public:
  * \author Nevrax France
  * \date 2001
  */
-class CAnimatedValueBlendable<NLMISC::CRGBA> : public IAnimatedValue
+template<> class CAnimatedValueBlendable<NLMISC::CRGBA> : public IAnimatedValue
 {
 public:
 	/// A quat blend method.

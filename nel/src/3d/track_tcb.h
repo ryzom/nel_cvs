@@ -1,7 +1,7 @@
 /** \file track_tcb.h
  * ITrack TCB implementation
  *
- * $Id: track_tcb.h,v 1.5 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: track_tcb.h,v 1.6 2004/07/09 09:45:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -377,7 +377,7 @@ private:
  * \author Nevrax France
  * \date 2001
  */
-class CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CAngleAxis> : public ITrackKeyFramer<CKeyTCBQuat>, 
+template<> class CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CAngleAxis> : public ITrackKeyFramer<CKeyTCBQuat>, 
 	private CTCBTools<CKeyTCBQuat, NLMISC::CAngleAxis, std::map<TAnimationTime, CKeyTCBQuat> >
 {
 public:

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.23 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.24 2004/07/09 09:45:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -432,7 +432,7 @@ public:
 
 // tool function used by CPSValueGradientFunc<T>::setValues(
 template <typename T> 
-inline void computeGradient(const T *valueTab, uint32 numValues, uint32 nbStages, CPSVector<T>::V &grad, T &minValue, T &maxValue)
+inline void computeGradient(const T *valueTab, uint32 numValues, uint32 nbStages, typename CPSVector<T>::V &grad, T &minValue, T &maxValue)
 {
 	minValue = maxValue = valueTab[0];
 	float step = 1.0f / float(nbStages);

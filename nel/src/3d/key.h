@@ -1,7 +1,7 @@
 /** \file key.h
  * class CKey
  *
- * $Id: key.h,v 1.2 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: key.h,v 1.3 2004/07/09 09:45:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -184,7 +184,7 @@ public:
  * \author Nevrax France
  * \date 2001
  */
-class	CKeyTCB<NLMISC::CAngleAxis> : public CKey<NLMISC::CAngleAxis>
+template<> class	CKeyTCB<NLMISC::CAngleAxis> : public CKey<NLMISC::CAngleAxis>
 {
 public:
 
@@ -232,7 +232,7 @@ public:
  * \author Nevrax France
  * \date 2001
  */
-class	CKeyBezier<NLMISC::CQuat> : public CKey<NLMISC::CQuat>
+template<> class	CKeyBezier<NLMISC::CQuat> : public CKey<NLMISC::CQuat>
 {
 public:
 

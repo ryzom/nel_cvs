@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.4 2001/03/19 15:38:51 berenguier Exp $
+ * $Id: transform_user.h,v 1.5 2001/03/23 10:09:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,6 +125,20 @@ public:
 	virtual	void			setRotQuat(const CQuat &quat)
 	{
 		_Transform->setRotQuat(quat);
+	}
+	virtual	void			setRotQuat(const CVector &jdir)
+	{
+		CMatrix	mat;
+		mat.setRot(CVector::I, jdir, CVector::K);
+		mat.normalize(CMatrix::YZX);
+		setRotQuat(mat.getRot());
+	}
+	virtual	void			setRotQuat(const CVector &jdir, const CVector &vup)
+	{
+		CMatrix	mat;
+		mat.setRot(CVector::I, jdir, vup);
+		mat.normalize(CMatrix::YZX);
+		setRotQuat(mat.getRot());
 	}
 	virtual	void			setScale(const CVector &scale)
 	{

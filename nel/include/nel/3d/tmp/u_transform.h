@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.2 2001/03/19 15:38:51 berenguier Exp $
+ * $Id: u_transform.h,v 1.3 2001/03/23 10:09:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,14 @@ public:
 	virtual	void			setRotEuler(const CVector &rot)=0;
 	/// Work only in RotQuat mode (nlassert).
 	virtual	void			setRotQuat(const CQuat &quat)=0;
+	/** Work only in RotQuat mode (nlassert). 
+	 * Build a quaternion from a forward direction (a J vector). there is no roll... jdir do not need to be noramlized.
+	 */
+	virtual	void			setRotQuat(const CVector &jdir)=0;
+	/** Work only in RotQuat mode (nlassert). 
+	 * Build a quaternion from a forward direction (a J vector). the roll is determined with help of the vector up vup... vectors do not need to be noramlized.
+	 */
+	virtual	void			setRotQuat(const CVector &jdir, const CVector &vup)=0;
 	/// Work only in Rot* mode (nlassert).
 	virtual	void			setScale(const CVector &scale)=0;
 	/// Work only in Rot* mode (nlassert).

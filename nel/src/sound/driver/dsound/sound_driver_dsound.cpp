@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.21 2003/07/03 15:17:25 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.22 2003/07/10 14:01:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -575,7 +575,10 @@ CSoundDriverDSound::~CSoundDriverDSound()
 
 	// free the enumerated list
 	if (CDeviceDescription::_List)
+	{
 		delete CDeviceDescription::_List;
+		CDeviceDescription::_List = NULL;
+	}
 }
 // ******************************************************************
 

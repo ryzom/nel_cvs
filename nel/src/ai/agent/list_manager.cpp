@@ -1,6 +1,6 @@
 /** \file list_manager.cpp
  *
- * $Id: list_manager.cpp,v 1.6 2001/04/03 15:09:35 chafik Exp $
+ * $Id: list_manager.cpp,v 1.7 2001/04/26 17:13:51 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,9 @@ namespace NLAIAGENT
 
 	const IObjectIA *IListBasicManager::operator[] (sint32 index) const
 	{	
+#ifdef NL_DEBUG
+		sint s = _List->size();
+#endif
 		return (*_List)[index];
 	}	
 

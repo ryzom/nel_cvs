@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.58 2001/04/24 09:06:56 chafik Exp $
+ * $Id: agent_script.cpp,v 1.59 2001/04/26 17:13:50 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1029,7 +1029,7 @@ namespace NLAIAGENT
 
 	bool CAgentScript::haveActivity() const
 	{
-		return (_AgentClass->getRunMethod() >= 0);
+		return _AgentClass != NULL && (_AgentClass->getRunMethod() >= 0);
 	}
 
 	const IObjectIA::CProcessResult &CAgentScript::run()

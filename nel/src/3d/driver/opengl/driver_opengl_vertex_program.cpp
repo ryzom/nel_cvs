@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.16 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.17 2003/03/31 11:58:27 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -293,7 +293,7 @@ static uint convInputRegisterToVBFlag(uint index)
 
 
 // A macro to debug the generated instruction
-#define DEBUG_SETUP_EXT_VERTEX_SHADER
+//#define DEBUG_SETUP_EXT_VERTEX_SHADER
 
 #ifdef DEBUG_SETUP_EXT_VERTEX_SHADER
 	#define EVS_INFO(what) nlinfo(what)
@@ -386,22 +386,75 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 	// clear last error
 	GLenum glError = glGetError();
 
+	//variants[EVSSecondaryColorVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_NORMALIZED_RANGE_EXT, 1);variants[EVSSecondaryColorVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_NORMALIZED_RANGE_EXT, 1);
+
 	// allocate the symbols
 	nglBindVertexShaderEXT(id);
 	nglBeginVertexShaderEXT();
-	{				
+	{	
+		
 		// Allocate register and variant
+		
+		// allocate registers
 		GLuint firstRegister = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_LOCAL_EXT, GL_FULL_RANGE_EXT, 12); // 12 register
 		GLuint firstTempRegister = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_LOCAL_EXT, GL_FULL_RANGE_EXT, 4); // 4  temp register used for swizzle & indexing
 		GLuint firstTempScalar = nglGenSymbolsEXT(GL_SCALAR_EXT, GL_LOCAL_EXT, GL_FULL_RANGE_EXT, 3); // 3  temp scalars used for EXPP & LOGG emulation
-		GLuint firstAddressRegister = nglGenSymbolsEXT(GL_SCALAR_EXT, GL_LOCAL_EXT, GL_FULL_RANGE_EXT, 1);
+		GLuint firstAddressRegister = nglGenSymbolsEXT(GL_SCALAR_EXT, GL_LOCAL_EXT, GL_FULL_RANGE_EXT, 1);		
 
-		// allocate variants
-		variants[EVSSecondaryColorVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_NORMALIZED_RANGE_EXT, 1);
-		variants[EVSFogCoordsVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_FULL_RANGE_EXT, 1);
-		variants[EVSSkinWeightVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_NORMALIZED_RANGE_EXT, 1);
-		variants[EVSPaletteSkinVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_FULL_RANGE_EXT, 1);
-
+		// allocate needed variants				
+		if (CVPParser::isInputUsed(program, CVPOperand::ISecondaryColor)) 
+		{		
+			variants[EVSSecondaryColorVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_NORMALIZED_RANGE_EXT, 1);variants[EVSSecondaryColorVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_NORMALIZED_RANGE_EXT, 1);
+			if (!variants[EVSSecondaryColorVariant])
+			{
+				nlwarning("EXT_vertex_shader : can't allocate variant for secondary color");
+				return false;
+			}
+		}
+		else
+		{
+			variants[EVSSecondaryColorVariant] = 0;
+		}
+		if (CVPParser::isInputUsed(program, CVPOperand::IFogCoord)) 
+		{		
+			variants[EVSFogCoordsVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_FULL_RANGE_EXT, 1);variants[EVSSecondaryColorVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_FULL_RANGE_EXT, 1);
+			if (!variants[EVSFogCoordsVariant])
+			{
+				nlwarning("EXT_vertex_shader : can't allocate variant for fog coords");
+				return false;
+			}
+		}
+		else
+		{
+			variants[EVSFogCoordsVariant] = 0;
+		}
+		if (CVPParser::isInputUsed(program, CVPOperand::IWeight)) 
+		{		
+			variants[EVSSkinWeightVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_FULL_RANGE_EXT, 1);variants[EVSSecondaryColorVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_NORMALIZED_RANGE_EXT, 1);
+			if (!variants[EVSSkinWeightVariant])
+			{
+				nlwarning("EXT_vertex_shader : can't allocate variant for skin weight");
+				return false;
+			}
+		}
+		else
+		{
+			variants[EVSSkinWeightVariant] = 0;
+		}
+		if (CVPParser::isInputUsed(program, CVPOperand::IPaletteSkin)) 
+		{		
+			variants[EVSPaletteSkinVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_FULL_RANGE_EXT, 1);variants[EVSSecondaryColorVariant] = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_VARIANT_EXT, GL_FULL_RANGE_EXT, 1);
+			if (!variants[EVSPaletteSkinVariant])
+			{
+				nlwarning("EXT_vertex_shader : can't allocate variant for palette skin");
+				return false;
+			}
+		}
+		else
+		{
+			variants[EVSPaletteSkinVariant] = 0;
+		}
+		
 		// allocate one temporary register for fog before conversion
 		GLuint fogTemp = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_LOCAL_EXT, GL_FULL_RANGE_EXT, 1);
 
@@ -439,17 +492,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 			nlwarning("Unable to allocate address register for EXT_vertex_shader");
 			return false;
 		}
-
-		uint k;
-		for(k = 0; k < EVSNumVariants; ++k)
-		{
-			if (variants[k] == 0)
-			{
-				nlwarning("Unable to allocate variants for EXT_vertex_shader");
-				return false;
-			}
-		}
-
+		
 		// Mask of output component that are being written
 		uint componentWritten[16];
 		std::fill(componentWritten, componentWritten + 16, 0);
@@ -463,7 +506,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 
 		uint l;
 		// convert each instruction of the vertex program
-		for(k = 0; k < program.size(); ++k)
+		for(uint k = 0; k < program.size(); ++k)
 		{
 			// get src values, eventually applying swizzle, negate, and index on them
 			uint numSrc = program[k].getNumUsedSrc();
@@ -498,7 +541,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 								srcValue[l] = _EVSTexHandle[operand.Value.InputRegisterValue - 8];
 								if (srcValue[l] == 0)
 								{								
-									nlwarning("Trying to read an unaccessible texture coords for the device when using EXT_vertex_shader, shader loading failed");
+									nlwarning("Trying to read an unaccessible texture coords for the device when using EXT_vertex_shader, shader loading failed.");
 									return false;
 								}
 							}
@@ -510,7 +553,8 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 					}
 					break;
 					case CVPOperand::Constant: 
-						srcValue[l] = _EVSConstantHandle + operand.Value.ConstantValue; 
+						nlassert(operand.Value.ConstantValue < _EVSNumConstant); // constant index too high
+						srcValue[l] = _EVSConstantHandle + operand.Value.ConstantValue; 												
 						EVS_INFO(("Src = constant" + toString(operand.Value.ConstantValue)).c_str());
 					break;
 					case CVPOperand::Variable: 
@@ -589,8 +633,12 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 
 			uint writeMask = program[k].Dest.WriteMask;
 			CVPInstruction::EOpcode opcode = program[k].Opcode;
-			uint outputRegisterIndex = destOperand.Value.OutputRegisterValue;
-			nlassert(outputRegisterIndex < 16);
+			uint outputRegisterIndex = 0;
+			if (destOperand.Type != CVPOperand::AddressRegister)
+			{			
+				outputRegisterIndex = destOperand.Value.OutputRegisterValue;
+				nlassert(outputRegisterIndex < 16);
+			}
 
 			// Tells wether the output has already been written before the final write mask. This happens with instructions LOG, EXPP, LIT, RSQ and RCP,
 			// because they write their output component by components
@@ -648,7 +696,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 				break;
 				case  CVPInstruction::MOV:
 				{											
-					nglShaderOp1EXT(GL_OP_MOV_EXT, destValue, srcValue[0]);
+					nglShaderOp1EXT(GL_OP_MOV_EXT, destValue, srcValue[0]);					
 					EVS_INFO("GL_OP_MOV_EXT");
 					++numOp;					
 				}
@@ -1003,11 +1051,11 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 
 		
 
-		// if color have not been written, write with default values
+		// if color have not been written, write with default values		
 		if (componentWritten[CVPOperand::OPrimaryColor] == 0)
 		{
 			// we specify vertex coord has input for swizzle, but we don't read any component.. 
-			doSwizzle(GL_OUTPUT_COLOR0_EXT, _EVSPositionHandle, GL_ONE_EXT, GL_ONE_EXT, GL_ONE_EXT, GL_ONE_EXT);
+			doSwizzle(GL_OUTPUT_COLOR0_EXT, _EVSPositionHandle, GL_ZERO_EXT, GL_ZERO_EXT, GL_ZERO_EXT, GL_ONE_EXT);
 			EVS_INFO("Swizzle (Complete primary color)");
 			++numSwizzle;
 		}
@@ -1035,8 +1083,8 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 		if (componentWritten[CVPOperand::OFogCoord] == 0xf)
 		{
 			// Well this could be avoided, but we should make 2 cases for each vertex program.. :(
-			doSwizzle(firstTempRegister, _EVSConstantHandle + 96, GL_X_EXT, GL_X_EXT, GL_X_EXT, GL_X_EXT);
-			doSwizzle(firstTempRegister + 1, _EVSConstantHandle + 96, GL_Y_EXT, GL_Y_EXT, GL_Y_EXT, GL_Y_EXT);			
+			doSwizzle(firstTempRegister, _EVSConstantHandle + _EVSNumConstant, GL_X_EXT, GL_X_EXT, GL_X_EXT, GL_X_EXT);
+			doSwizzle(firstTempRegister + 1, _EVSConstantHandle + _EVSNumConstant, GL_Y_EXT, GL_Y_EXT, GL_Y_EXT, GL_Y_EXT);			
 			nglShaderOp3EXT(GL_OP_MADD_EXT, firstTempRegister + 2, fogTemp, firstTempRegister, firstTempRegister + 1);
 			EVS_INFO("Use MAD for fog conversion");
 			nglExtractComponentEXT(GL_OUTPUT_FOG_EXT, firstTempRegister + 2, 0);
@@ -1048,8 +1096,8 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 	}
 	nglEndVertexShaderEXT();
 
-	glError = glGetError();
-	nlassert(glError == GL_NO_ERROR);
+	/*glError = glGetError();
+	nlassert(glError == GL_NO_ERROR);*/
 
 	GLboolean optimizedShader;
 	glGetBooleanv(GL_VERTEX_SHADER_OPTIMIZED_EXT, &optimizedShader);

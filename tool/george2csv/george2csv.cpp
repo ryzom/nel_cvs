@@ -74,8 +74,47 @@ string				inputSheetPath;
 bool				inputSheetPathLoaded = false;
 map<string, string>	inputSheetPathContent;
 
-const char				*SEPARATOR = ";";
+const char	*SEPARATOR = ";";
+const char	*ARRAY_SEPARATOR = "|";
 
+
+class	CDfnField
+{
+public:
+
+	explicit	CDfnField	(const std::string	&name)	:	_name(name), _isAnArray(false)
+	{}
+	
+	CDfnField	(const std::string	&name, const bool &isAnArray)	:	_name(name), _isAnArray(isAnArray)
+	{}
+	
+	virtual	~CDfnField	()
+	{}
+
+	bool	operator	<(const CDfnField &other)	const
+	{
+		return	_name<other._name;
+	}
+
+	bool	operator	==(const CDfnField &other)	const
+	{
+		return	_name==other._name;
+	}
+
+	const	std::string	&getName		()	const
+	{
+		return	_name;
+	}
+
+	const	bool	&isAnArray	()	const
+	{
+		return	_isAnArray;
+	}
+	
+private:
+	bool		_isAnArray;
+	std::string	_name;
+};
 
 /*
 	Some routines for dealing with script input
@@ -148,6 +187,45 @@ void buildFileVector(std::vector<std::string> &filenames,std::string filespec)
 }
 
 
+void	addQuotesRoundString	(std::string	&valueString)
+{
+	// add quotes round strings
+	std::string hold=valueString;
+	valueString.erase();
+	valueString='\"';
+	for (unsigned i=0;i<hold.size();i++)
+	{
+		if (hold[i]=='\"')
+			valueString+="\"\"";
+		else
+			valueString+=hold[i];
+	}
+	valueString+='\"';	
+}
+
+void	setErrorString	(std::string	&valueString, const UFormElm::TEval &evaluated, const UFormElm::TWhereIsValue	&where)
+{
+	if	(evaluated==UFormElm::NoEval)
+	{
+		switch(where)
+		{
+		case UFormElm::ValueForm:			valueString="ValueForm"; break;
+		case UFormElm::ValueParentForm:		valueString="ValueParentForm"; break;
+		case UFormElm::ValueDefaultDfn:		valueString="ValueDefaultDfn"; break;
+		case UFormElm::ValueDefaultType:	valueString="ValueDefaultType"; break;
+		default: valueString="ERR";
+		}
+		
+	}
+	else
+	{
+		valueString="ERR";
+	}
+	
+}
+
+
+
 /*
 	Scanning the files ... this is the business!!
 */
@@ -183,11 +261,14 @@ void scanFiles(std::string filespec)
 
 	for (uint j = 0; j < filenames.size(); j++)
 	{
-		if(NLMISC::CTime::getLocalTime () > last + 5000)
+		if	(NLMISC::CTime::getLocalTime () > last + 5000)
 		{
 			last = NLMISC::CTime::getLocalTime ();
-			if(j>0)
+			if	(j>0)
+			{
 				nlinfo ("%.0f%% completed (%d/%d), %d seconds remaining", (float)j*100.0/filenames.size(),j,filenames.size(), (filenames.size()-j)*(last-start)/j/1000);
+			}
+
 		}
 
 		//std::string p = NLMISC::CPath::lookup (filenames[j], false, false);
@@ -204,48 +285,97 @@ void scanFiles(std::string filespec)
 		// Load the form with given sheet id
 //		form = formLoader->loadForm (sheetIds[j].toString().c_str ());
 		form = formLoader->loadForm (filenames[j].c_str ());
-		if (form)
+		if	(form)
 		{
 			// the form was found so read the true values from George
-			std::string s;
+//			std::string s;
 			fprintf(Outf,"%s",CFile::getFilenameWithoutExtension(filenames[j]));
-			for (unsigned i=0;i<fields.size();i++)
+			for	(unsigned i=0;i<fields.size();i++)
 			{
 				UFormElm::TWhereIsValue where;
-				bool result=form->getRootNode ().getValueByName(s,fields[i]._name.c_str(),fields[i]._evaluated,&where);
-				if (!result)
+				UFormElm	*fieldForm=NULL;
+				std::string	valueString;
+				
+				form->getRootNode ().getNodeByName(&fieldForm, fields[i]._name.c_str());
+
+				if	(fieldForm)
 				{
-					if (fields[i]._evaluated)
-						s="ERR";
-					else switch(where)
+					if	(fieldForm->isArray())	//	if its an array
 					{
-						case UFormElm::ValueForm: s="ValueForm"; break;
-						case UFormElm::ValueParentForm: s="ValueParentForm"; break;
-						case UFormElm::ValueDefaultDfn: s="ValueDefaultDfn"; break;
-						case UFormElm::ValueDefaultType: s="ValueDefaultType"; break;
-						default: s="ERR";
+						uint	arraySize=0,arrayIndex=0;
+						fieldForm->getArraySize(arraySize);
+						while (arrayIndex<arraySize)
+						{
+							if	(fieldForm->getArrayValue(valueString,arrayIndex,fields[i]._evaluated, &where))
+								addQuotesRoundString	(valueString);
+							else
+								setErrorString	(valueString, fields[i]._evaluated, where);
+
+							arrayIndex++;
+							if (arrayIndex<arraySize)	//	another value in the array..
+								valueString+=ARRAY_SEPARATOR;
+						}
+
 					}
-				}
-				else
-				{
-					// add quotes round strings
-					std::string hold=s;
-					s.erase();
-					s='\"';
-					for (unsigned i=0;i<hold.size();i++)
+					else
 					{
-						if (hold[i]=='\"')
-							s+="\"\"";
+						if	(form->getRootNode ().getValueByName(valueString,fields[i]._name.c_str(),fields[i]._evaluated,&where))	//fieldForm->getValue(valueString,fields[i]._evaluated))
+							addQuotesRoundString	(valueString);
 						else
-							s+=hold[i];
+							setErrorString	(valueString, fields[i]._evaluated, where);
 					}
-					s+='\"';
+
 				}
-				fprintf(Outf,"%s%s", SEPARATOR, s);
+//				else	//	node not found.
+//				{
+//					setErrorString	(valueString, fields[i]._evaluated, where);
+//				}
+
+				fprintf(Outf,"%s%s", SEPARATOR, valueString);
+				
+//				UFormElm::TWhereIsValue where;
+//
+//				bool result=form->getRootNode ().getValueByName(s,fields[i]._name.c_str(),fields[i]._evaluated,&where);
+//				if (!result)
+//				{
+//					if (fields[i]._evaluated)
+//					{
+//						s="ERR";
+//					}
+//					else
+//					{
+//						switch(where)
+//						{
+//						case UFormElm::ValueForm: s="ValueForm"; break;
+//						case UFormElm::ValueParentForm: s="ValueParentForm"; break;
+//						case UFormElm::ValueDefaultDfn: s="ValueDefaultDfn"; break;
+//						case UFormElm::ValueDefaultType: s="ValueDefaultType"; break;
+//						default: s="ERR";
+//						}
+//						
+//					}
+//					
+//				}
+//				else
+//				{
+//					// add quotes round strings
+//					std::string hold=s;
+//					s.erase();
+//					s='\"';
+//					for (unsigned i=0;i<hold.size();i++)
+//					{
+//						if (hold[i]=='\"')
+//							s+="\"\"";
+//						else
+//							s+=hold[i];
+//					}
+//					s+='\"';
+//				}
+//				fprintf(Outf,"%s%s", SEPARATOR, s);
 			}
 			fprintf(Outf,"\n");
-
 		}
+
 	}
 
 	// free the georges loader if necessary
@@ -407,7 +537,8 @@ void	loadSheetPath()
 	for (i=0; i<files.size(); ++i)
 	{
 		string& filename = files[i];
-		string& filebase = CFile::getFilenameWithoutExtension(filename);
+//		string& filebase = CFile::getFilenameWithoutExtension(filename);
+		string& filebase = CFile::getFilename(filename);
 		inputSheetPathContent[filebase] = filename;
 	}
 
@@ -418,7 +549,7 @@ void	loadSheetPath()
 /*
  *
  */
-void fillFromDFN( UFormLoader *formLoader, set<string>& dfnFields, UFormDfn *formDfn, const string& rootName, const string& dfnFilename )
+void fillFromDFN( UFormLoader *formLoader, set<CDfnField>& dfnFields, UFormDfn *formDfn, const string& rootName, const string& dfnFilename )
 {
 	uint i;
 	for ( i=0; i!=formDfn->getNumEntry(); ++i )
@@ -454,7 +585,8 @@ void fillFromDFN( UFormLoader *formLoader, set<string>& dfnFields, UFormDfn *for
 			}
 			case UFormDfn::EntryType:
 			{
-				dfnFields.insert( rootBase + entryName );
+				const	std::string	finalName(rootBase+entryName);
+				dfnFields.insert( CDfnField(finalName, array) );
 				//nlinfo( "DFN entry: %s (in %s)", (rootBase + entryName).c_str(), dfnFilename.c_str() );
 				break;
 			}
@@ -528,7 +660,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 	vector<bool> activeFields( fields.size(), true );
 
 	// Load DFN (generation only)
-	set<string> dfnFields;
+	set<CDfnField>	dfnFields;
 	if ( generate )
 	{
 		formDfn = formLoader->loadFormDfn( (sheetType + ".dfn").c_str() );
@@ -552,7 +684,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			}
 			else
 			{
-				set<string>::iterator ist = dfnFields.find( fields[i] );
+				set<CDfnField>::iterator ist = dfnFields.find( CDfnField(fields[i]) );
 				if ( ist == dfnFields.end() )
 				{
 					nlinfo( "Skipping field #%u (%s, not found in %s DFN)", i, fields[i].c_str(), sheetType.c_str() );
@@ -682,14 +814,16 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			continue;
 
 		//nldebug( "%s: %u", args[0].c_str(), args.size() );
-		string& filebase = dirmapSheetCode + args[0];
-		strlwr( filebase );
-		string filename, dirbase;
-		bool isNewSheet;
+		string	filebase = dirmapSheetCode+args[0]+"."+sheetType;
+		strlwr	(filebase);
+		string	filename, dirbase;
+		bool	isNewSheet=true;
 
 		// Locate existing sheet
-		map<string, string>::iterator it = inputSheetPathContent.find( CFile::getFilenameWithoutExtension( filebase ) );
-		if ( it == inputSheetPathContent.end() )
+//		map<string, string>::iterator it = inputSheetPathContent.find( CFile::getFilenameWithoutExtension( filebase ) );
+		map<string, string>::iterator it = inputSheetPathContent.find( CFile::getFilename( filebase ) );
+		
+		if	(it == inputSheetPathContent.end())
 		{
 			// Not found
 			if ( ! generate )
@@ -766,10 +900,12 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			isNewSheet = false;
 		}
 
+		const	UFormElm	&rootForm=form->getRootNode();
 		bool displayed = false;
 		bool isModified = false;
 		uint i;
-		for ( i=1; i<args.size() && i<fields.size(); ++i )
+		for (	i=1;	i<args.size		()
+					&&	i<fields.size	();	++i )
 		{
 			const string	&var = fields[i];
 			string			&val = args[i];
@@ -785,64 +921,173 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 				continue;
 
 			// Special case for parent sheet
-			if ( var == "parent" ) // already case-lowered
+			if	(var == "parent") // already case-lowered
 			{
 				vector<string> parentVals;
-				explode( val, ":", parentVals );
+				explode( val, ARRAY_SEPARATOR, parentVals );
 				if ( (parentVals.size() == 1) && (parentVals[0].empty()) )
 					parentVals.clear();
+
 				if ( (isNewSheet || ForceInsertParents) && (! parentVals.empty()) )
 				{
 					// This is slow. Opti: insertParent() should have an option to do it without loading the form
-					CSmartPtr<CForm> parentForm = (CForm*)formLoader->loadForm( val.c_str() );
+					//	parent have same type that this object (postulat).
+					string	localExtension=(val.find(addExtension)==string::npos)?addExtension:"";
+					string	parentName=val+localExtension;
+				
+					CSmartPtr<CForm> parentForm = (CForm*)formLoader->loadForm(CFile::getFilename(parentName.c_str()).c_str());	//parentName.c_str());
 					if ( ! parentForm )
-						nlwarning( "Can't load parent form %s", val.c_str() );
+					{
+						nlwarning( "Can't load parent form %s", parentName.c_str() );
+					}
 					else
 					{
 						for ( uint p=0; p!=parentVals.size(); ++p )
-							form->insertParent( p, val.c_str(), parentForm );
+						{
+							form->insertParent( p, parentName.c_str(), parentForm );
+							isModified=true;
+							displayed = true;
+						}
 						nldebug( "Inserted %u parent(s)", parentVals.size() );
 					}
+
 				}
 				// NOTE: Changing the parent is not currently implemented!
 				continue;
 			}
 
-			if ( ! val.empty() )
+			const	UFormElm	*fieldForm=NULL;
+						
+			if	(rootForm.getNodeByName(&fieldForm, var.c_str()))
 			{
-				if (val[0] == '"')
-					val.erase(0, 1);
-				if (val.size()>0 && val[val.size()-1] == '"')
-					val.resize(val.size()-1);
-
-				if (val == "ValueForm" ||
-					val == "ValueParentForm" ||
-					val == "ValueDefaultDfn" ||
-					val == "ValueDefaultType" ||
-					val == "ERR")
-					continue;
-			}
-
-			if ( ! isNewSheet )
-			{
-				string	test;
-				if ( form->getRootNode().getValueByName(test, var.c_str()) && (test == val) )
+				UFormDfn	*dfnForm=const_cast<UFormElm&>(rootForm).getStructDfn();
+				nlassert(dfnForm);
+								
+				vector<string> memberVals;
+				explode( val, ARRAY_SEPARATOR, memberVals );
+				uint32	memberIndex=0;
+				
+				while (memberIndex<memberVals.size())
 				{
-					continue;
+					const	uint	currentMemberIndex=memberIndex;
+					std::string		memberVal=memberVals[memberIndex];
+					memberIndex++;
+					
+					if	(!memberVal.empty())
+					{
+						if (memberVal[0] == '"')
+							memberVal.erase(0, 1);
+						if (memberVal.size()>0 && memberVal[memberVal.size()-1] == '"')
+							memberVal.resize(memberVal.size()-1);
+						
+						if (memberVal == "ValueForm" ||
+							memberVal == "ValueParentForm" ||
+							memberVal == "ValueDefaultDfn" ||
+							memberVal == "ValueDefaultType" ||
+							memberVal == "ERR")
+							continue;
+					}
+
+
+					//				nlassert(fieldDfn);
+					//				virtual bool getEntryFilenameExt (uint entry, std::string &name) const = 0;
+					//				virtual bool getEntryFilename (uint entry, std::string &name) const = 0;
+					if (dfnForm)
+					{
+						string	fileName;
+						string	fileNameExt;
+						bool	toto=false;
+						static	string	filenameTyp("filename.typ");
+						string	extension;
+			
+						uint	fieldIndex;
+						if (dfnForm->getEntryIndexByName (fieldIndex, var))	//	field exists.
+						{
+							dfnForm->getEntryFilename(fieldIndex,fileName);
+							if (fileName==filenameTyp)
+							{
+								dfnForm->getEntryFilenameExt(fieldIndex,fileNameExt);
+								if (	!fileNameExt.empty()
+									&&	fileNameExt!="*.*")
+								{
+									string::size_type	index=fileNameExt.find(".");
+									if (index==string::npos)	//	not found.
+									{
+										extension=fileNameExt;
+									}
+									else
+									{
+										extension=fileNameExt.substr(index+1);
+									}
+									
+									if	(memberVal.find(extension)==string::npos)	// extension not found.
+									{
+										memberVal=NLMISC::toString("%s.%s",memberVal.c_str(),extension.c_str());
+									}
+									
+								}
+								
+							}
+							
+						}
+						
+					}
+					
+
+					if	(dfnForm->isAnArrayEntryByName(var))
+					{
+						if	(	!isNewSheet
+							&&	fieldForm!=NULL)
+						{
+							string	test;
+							if	(	fieldForm->getArrayValue(test, currentMemberIndex)
+								&&	test==memberVal	)
+							{
+								continue;
+							}
+
+						}
+						//nldebug( "%s: %s '%s'", args[0].c_str(), var.c_str(), memberVal.c_str() );
+						// need to put the value at the correct index.
+						const	std::string	fieldName=NLMISC::toString("%s[%d]", var.c_str(), currentMemberIndex).c_str();
+						const_cast<UFormElm&>(rootForm).setValueByName(memberVal.c_str(), fieldName.c_str());
+						isModified=true;
+						displayed = true;
+					}
+					else
+					{
+						if	(!isNewSheet)
+						{
+							string	test;
+							if	(	rootForm.getValueByName(test,var.c_str())
+								&&	test==memberVal	)
+							{
+								continue;
+							}
+							
+						}					
+						//nldebug( "%s: %s '%s'", args[0].c_str(), var.c_str(), memberVal.c_str() );
+						const_cast<UFormElm&>(rootForm).setValueByName(memberVal.c_str(), var.c_str());
+						isModified=true;
+						displayed = true;
+					}
+					
+					if	(!isNewSheet)
+					{
+						isModified = true;
+						if (!displayed)
+							nldebug("in %s:", filename.c_str());
+						displayed = true;
+						nldebug("%s = %s", var.c_str(), memberVal.c_str());
+					}
+
 				}
+
 			}
-
-			//nldebug( "%s: %s '%s'", args[0].c_str(), var.c_str(), val.c_str() );
-			form->getRootNode().setValueByName(val.c_str(), var.c_str());
-
-			if ( ! isNewSheet )
+			else	//	field Node not found :\ (bad)
 			{
-				isModified = true;
-				if (!displayed)
-					nldebug("in %s:", filename.c_str());
-				displayed = true;
-				nldebug("%s = %s", var.c_str(), val.c_str());
 			}
+			
 		}
 
 		if ( ! isNewSheet )
@@ -859,15 +1104,35 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			if ( WriteSheetsToDisk )
 			{
 				++nbWritten;
-				string path = isNewSheet ? OutputPath : "";
-				string ext = (filename.find( addExtension ) == string::npos) ? addExtension : "";
-				COFile	output( path + dirbase + filename + ext );
-				form->write(output, true);
+				string	path = isNewSheet ? OutputPath : "";
+				string	ext = (filename.find( addExtension ) == string::npos) ? addExtension : "";
+				string	absoluteFileName=path + dirbase + filename + ext;
+				
+//				nlinfo("opening: %s",  absoluteFileName.c_str() );
+				COFile	output(absoluteFileName);
+				if	(!output.isOpen())
+				{
+					nlinfo("creating path: %s",  (path + dirbase).c_str() );
+					NLMISC::CFile::createDirectory(path + dirbase);
+				}
+
+//				nlinfo("opening2: %s",  absoluteFileName.c_str() );
+				output.open	(absoluteFileName);
+				
+				if (!output.isOpen())
+				{					
+					nlinfo("ERROR! cannot create file path: %s",  absoluteFileName.c_str() );
+				}
+				else
+				{
+					form->write(output, true);
+				}					
+
 			}
 			clearSheet( form, &form->getRootNode() );
 		}
-	}
 
+	}
 	nlinfo( "%u sheets processed (%u new, %u modified, %u unchanged - %u written)", nbNewSheets+nbModifiedSheets+nbUnchangedSheets, nbNewSheets, nbModifiedSheets, nbUnchangedSheets, nbWritten );
 	UFormLoader::releaseLoader (formLoader);
 }

@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * <File description>
  *
- * $Id: mutex.cpp,v 1.6 2001/04/06 16:05:24 lecroart Exp $
+ * $Id: mutex.cpp,v 1.7 2001/04/06 16:45:39 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#define _GNU_SOURCE
+
+
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/mutex.h"
@@ -37,10 +40,11 @@
 
 #elif defined NL_OS_UNIX
 
+
 #include <pthread.h>
 #include <errno.h>
 //TEST
-#include <unistd.h>
+//#include <unistd.h>
 #include <iostream>
 using namespace std;
 #endif // NL_OS_WINDOWS/NL_OS_UNIX

@@ -1,13 +1,13 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.110 2002/03/20 12:43:49 lecroart Exp $
+ * $Id: service.cpp,v 1.111 2002/03/25 09:23:39 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
  */
 
-/* Copyright, 2000 Nevrax Ltd.
+/* Copyright, 2001 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify
@@ -30,6 +30,10 @@
 
 #ifdef NL_OS_WINDOWS
 
+//
+// Includes
+//
+
 // these defines is for IsDebuggerPresent(). it'll not compile on windows 95
 // just comment this and the IsDebuggerPresent to compile on windows 95
 #	define _WIN32_WINDOWS	0x0410
@@ -42,6 +46,7 @@
 
 #endif
 
+#include <stdlib.h>
 #include <signal.h>
 
 #include "nel/misc/config_file.h"
@@ -50,14 +55,18 @@
 #include "nel/misc/window_displayer.h"
 #include "nel/misc/gtk_displayer.h"
 #include "nel/misc/win_displayer.h"
+#include "nel/misc/path.h"
 
 #include "nel/net/naming_client.h"
 #include "nel/net/service.h"
-#include "nel/net/net_displayer.h"
-#include "nel/net/net_log.h"
-#include "nel/net/unitime.h"
-#include "nel/net/callback_server.h"
+#include "nel/net/unified_network.h"
 #include "nel/net/net_manager.h"
+#include "nel/net/net_displayer.h"
+
+
+//
+// Namespace
+//
 
 using namespace std;
 using namespace NLMISC;
@@ -65,6 +74,7 @@ using namespace NLMISC;
 
 namespace NLNET
 {
+
 
 //
 // Constants
@@ -79,64 +89,142 @@ static const char *SignalName[]=
   "SIGABRT", "SIGFPE", "SIGILL", "SIGINT", "SIGSEGV", "SIGTERM"
 };
 
+
 //
 // Variables
 //
 
-static sint ExitSignalAsked = 0;
-static CStdDisplayer sd;
-
-// services stat
-static sint32  _NetSpeedLoop, _UserSpeedLoop;
 
 // class static member
+IService	*IService::_Instance = NULL;
 
-string		 IService::_ShortName;
-string		 IService::_LongName;
-string		 IService::_AliasName;
-string		 IService::_ConfigDir;
-string		 IService::_LogDir;
+static sint ExitSignalAsked = 0;
 
-uint16		 IService::_DefaultPort		= 0;
-TTime		 IService::_UpdateTimeout	= 100;
-CEntityId	 IService::_NextEntityId;
-
-IService	*IService::Instance			= NULL;
-CConfigFile  IService::ConfigFile;
-
-
-//
-// Prototypes
-//
-
-static void sigHandler (int Sig);
-
-//
-// Functions
-//
+// services stat
+static sint32 NetSpeedLoop, UserSpeedLoop;
 
 // this is the thread that initialized the signal redirection
 // we ll ignore other thread signals
 static uint SignalisedThread;
 
-static void initSignal()
+static CFileDisplayer fd;
+static CNetDisplayer commandDisplayer(false);
+static CLog commandLog;
+
+
+//
+// Callback managing
+//
+
+void AESConnection (const string &serviceName, TSockId from, void *arg)
 {
-	SignalisedThread = getThreadId ();
-#ifdef NL_DEBUG
-	// in debug mode, we only trap the SIGINT signal
-	signal(Signal[3], sigHandler);
-	nldebug("Signal : %s (%d) trapped", SignalName[3], Signal[3]);
-#else
-	// in release, redirect all signals
-/* don't redirect now because to hard to debug...
-	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
+	// established a connection to the AES, identify myself
+
+	//
+	// Sends the identification message with the name of the service and all commands available on this service
+	//
+
+	CMessage msgout (CNetManager::getSIDA ("AES"), "SID");
+	msgout.serial (IService::getInstance()->_AliasName, IService::getInstance()->_ShortName, IService::getInstance()->_LongName);
+	ICommand::serialCommands (msgout);
+	CNetManager::send ("AES", msgout);
+
+	if (IService::getInstance()->_Initialized)
 	{
-		signal(Signal[i], sigHandler);
-		nldebug("Signal %s (%d) trapped", SignalName[i], Signal[i]);
+		CMessage msgout2 (CNetManager::getSIDA ("AES"), "SR");
+		CNetManager::send ("AES", msgout2);
 	}
-*/
-#endif
+
+	// add the displayer to the standard logger
+	CCallbackClient *client = dynamic_cast<CCallbackClient *>(CNetManager::getNetBase("AES"));
+	commandDisplayer.setLogServer (client);
+	commandLog.addDisplayer (&commandDisplayer);
 }
+
+void AESConnection5 (const string &serviceName, uint16 sid, void *arg)
+{
+	// established a connection to the AES, identify myself
+
+	//
+	// Sends the identification message with the name of the service and all commands available on this service
+	//
+
+	CMessage msgout ("SID");
+	msgout.serial (IService::getInstance()->_AliasName, IService::getInstance()->_ShortName, IService::getInstance()->_LongName);
+	ICommand::serialCommands (msgout);
+	CUnifiedNetwork::getInstance()->send("AES", msgout);
+
+	if (IService::getInstance()->_Initialized)
+	{
+		CMessage msgout2 ("SR");
+		CUnifiedNetwork::getInstance()->send("AES", msgout2);
+	}
+
+	// add the displayer to the standard logger
+	TSockId			hid;
+	CCallbackClient *client = dynamic_cast<CCallbackClient *>(CUnifiedNetwork::getInstance()->getNetBase("AES", hid));
+	commandDisplayer.setLogServer (client);
+	commandLog.addDisplayer (&commandDisplayer);
+}
+
+static void AESDisconnection (const string &serviceName, TSockId from, void *arg)
+{
+	commandLog.removeDisplayer (&commandDisplayer);
+}
+
+
+static void AESDisconnection5 (const std::string &serviceName, uint16 sid, void *arg)
+{
+	commandLog.removeDisplayer (&commandDisplayer);
+}
+
+
+static void cbExecCommand (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	string command;
+	msgin.serial (command);
+
+	ICommand::execute (command, commandLog);
+}
+
+static void cbExecCommand5 (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	string command;
+	msgin.serial (command);
+
+	ICommand::execute (command, commandLog);
+}
+
+
+// if we receive the stop service, we try to exit now
+static void cbStopService (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	ExitSignalAsked = 0xFFFF;
+}
+
+static void cbStopService5 (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	ExitSignalAsked = 0xFFFF;
+}
+
+
+// layer4
+static TCallbackItem AESCallbackArray[] =
+{
+	{ "STOPS", cbStopService },
+	{ "EXEC_COMMAND", cbExecCommand },
+};
+
+// layer 5
+static TUnifiedCallbackItem AESCallbackArray5[] =
+{
+	{ "STOPS", cbStopService5 },
+	{ "EXEC_COMMAND", cbExecCommand5 },
+};
+
+//
+// Signals managing
+//
 
 // This function is called when a signal comes
 static void sigHandler(int Sig)
@@ -184,149 +272,76 @@ static void sigHandler(int Sig)
 	nlinfo ("Unknown signal received (%d)", Sig);
 }
 
+// Initialise the signal redirection
+static void initSignal()
+{
+	SignalisedThread = getThreadId ();
+#ifdef NL_DEBUG
+	// in debug mode, we only trap the SIGINT signal
+	signal(Signal[3], sigHandler);
+	nldebug("Signal : %s (%d) trapped", SignalName[3], Signal[3]);
+#else
+	// in release, redirect all signals
+/* don't redirect now because to hard to debug...
+	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
+	{
+		signal(Signal[i], sigHandler);
+		nldebug("Signal %s (%d) trapped", SignalName[i], Signal[i]);
+	}
+*/
+#endif
+}
 
+//
+// Class implementation
+//
 
-/*
- * Constructor
- */
-IService::IService()
+// Ctor
+IService::IService() :
+	_Initialized(false), _WindowDisplayer(NULL), _UpdateTimeout(100), _Port(0), _RecordingState(CCallbackNetBase::Off), _SId(0), _Status(0), _IsService5(false)
 {
 	// Singleton
-	nlassert( IService::Instance == NULL );
-	IService::Instance = this;
-	_Initialized = false;
-	_WindowDisplayer = NULL;
+	nlassert( _Instance == NULL );
+
+	_Instance = this;
 }
 
 
-/*
- * Process command line arguments for port and timeout (commented till the new argument param management)
- */
-void IService::getCustomParams()
+
+bool IService::haveArg (char argName)
 {
 	for (uint32 i = 0; i < _Args.size(); i++)
 	{
-		if (_Args[i][0] == '-')
+		if (_Args[i].size() >= 2 && _Args[i][0] == '-')
 		{
-			if (_Args[i][1] == 'n')
+			if (_Args[i][1] == argName)
 			{
-				_AliasName = _Args[i].substr (2);
-			}
-			else
-			{
-				nlwarning ("Unknown parameter: %s", _Args[i].c_str());
+				return true;
 			}
 		}
 	}
+	return false;
+}
 
-/*	// At the moment we don't have a processing system yet
-	if ( _Args.size() > 1 )
+string IService::getArg (char argName)
+{
+	for (uint32 i = 0; i < _Args.size(); i++)
 	{
-		stringstream ss( _Args[1] );
-		uint port;
-		ss >> port;
-		_Port = (uint16)port; 
-		return;
-
-		if ( _Args.size() > 2 )
+		if (_Args[i].size() >= 2 && _Args[i][0] == '-')
 		{
-			stringstream ss( _Args[2] );
-			uint timeout;
-			ss >> timeout;
-			_UpdateTimeout = timeout;
-			return;
+			if (_Args[i][1] == argName)
+			{
+				return _Args[i].substr(2);
+			}
 		}
 	}
-*/
-}
-
-CLog _commandLog;
-CNetDisplayer _commandDisplayer(false);
-
-void AESConnection (const string &serviceName, TSockId from, void *arg)
-{
-	// established a connection to the AES, identify myself
-
-	//
-	// Sends the identification message with the name of the service and all commands available on this service
-	//
-
-	CMessage msgout (CNetManager::getSIDA ("AES"), "SID");
-	msgout.serial (IService::_AliasName, IService::_ShortName, IService::_LongName);
-	ICommand::serialCommands (msgout);
-	CNetManager::send ("AES", msgout);
-
-	if (IService::Instance->_Initialized)
-	{
-		CMessage msgout2 (CNetManager::getSIDA ("AES"), "SR");
-		CNetManager::send ("AES", msgout2);
-	}
-
-	// add the displayer to the standard logger
-	CCallbackClient *client = dynamic_cast<CCallbackClient *>(CNetManager::getNetBase("AES"));
-	_commandDisplayer.setLogServer (client);
-	_commandLog.addDisplayer (&_commandDisplayer);
+	throw Exception ("Parameter '-%c' is not found in command line", argName);
 }
 
 
-void AESDisconnection (const string &serviceName, TSockId from, void *arg)
+void IService::setArgs (const char *args)
 {
-	_commandLog.removeDisplayer (&_commandDisplayer);
-}
-
-static void cbExecCommand (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	string command;
-	msgin.serial (command);
-
-	ICommand::execute (command, _commandLog);
-}
-
-// if we receive the stop service, we try to exit now
-static void cbStopService (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	ExitSignalAsked = 0xFFFF;
-}
-
-
-static TCallbackItem AESCallbackArray[] =
-{
-	{ "STOPS", cbStopService },
-	{ "EXEC_COMMAND", cbExecCommand },
-};
-
-/*
- * Returns a pointer to the CCallbackServer object
- */
-CCallbackServer *IService::getServer()
-{
-	return dynamic_cast<CCallbackServer*>(CNetManager::getNetBase(IService::_ShortName));
-}
-
-static CFileDisplayer fd;
-
-void IService::setServiceName (const char *shortName, const char *longName)
-{
-	_ShortName = shortName;
-	_LongName = longName;
-
-	// now we have the service name, we create the log with this service
-
-	createDebug ();
-
-	fd.setParam (getLogDir() + _LongName + ".log", false);
-
-	DebugLog->addDisplayer (&fd);
-	InfoLog->addDisplayer (&fd);
-	WarningLog->addDisplayer (&fd);
-	AssertLog->addDisplayer (&fd);
-	ErrorLog->addDisplayer (&fd);
-}
-
-
-sint IService::main (char *args)
-{
-	_Args.push_back ("program name");
+	_Args.push_back ("<ProgramName>");
 
 	string sargs (args);
 	sint pos1 = 0, pos2 = 0;
@@ -339,21 +354,31 @@ sint IService::main (char *args)
 		_Args.push_back (sargs.substr (pos1, pos2-pos1));
 	}
 	while (pos2 != string::npos);
-
-	return main ();
 }
 
-sint IService::main (int argc, char **argv)
+void IService::setArgs (int argc, const char **argv)
 {
 	for (sint i = 0; i < argc; i++)
 	{
 		_Args.push_back (argv[i]);
 	}
-	return main ();
 }
 
+/*
+ * Returns a pointer to the CCallbackServer object
+ */
+CCallbackServer *IService::getServer()
+{
+	if (isService5())
+		return NULL;
+	else
+		return dynamic_cast<CCallbackServer*>(CNetManager::getNetBase(IService::_ShortName));
+}
+
+
+
 // The main function of the service
-sint IService::main ()
+sint IService::main (const char *serviceShortName, const char *serviceLongName, uint16 servicePort, const char *configDir, const char *logDir)
 {
 	bool userInitCalled = false;
 	bool resyncEvenly = false;
@@ -361,18 +386,48 @@ sint IService::main ()
 	try
 	{
 		//
-		// init debug stuffs
+		// init parameters
 		//
 
-		createDebug ();
+		_ConfigDir = CPath::standardizePath(configDir);
+		_LogDir = CPath::standardizePath(logDir);
+		_ShortName = serviceShortName;
+		_LongName = serviceLongName;
+
+		//
+		// init debug/log stuffs (must be first things otherwise we can't log if errors)
+		//
+
+		// get the log dir if any in the command line
+		if (haveArg('L'))
+			_LogDir = CPath::standardizePath(getArg('L'));
+
+		// get the config file dir if any in the command line
+		if (haveArg('C'))
+			_ConfigDir = CPath::standardizePath(getArg('C'));
+
+		createDebug (_LogDir.c_str());
 
 		DebugLog->addNegativeFilter ("NETL");
+
+		// we create the log with service name filename ("test_service.log" for example)
+		fd.setParam (_LogDir + _LongName + ".log", false);
+
+		DebugLog->addDisplayer (&fd);
+		InfoLog->addDisplayer (&fd);
+		WarningLog->addDisplayer (&fd);
+		AssertLog->addDisplayer (&fd);
+		ErrorLog->addDisplayer (&fd);
 
 		//
 		// Load the config file
 		//
 
-		ConfigFile.load (getConfigDir() + _LongName + ".cfg");
+		ConfigFile.load (_ConfigDir + _LongName + ".cfg");
+
+		//
+		// Create the window if neeeded
+		//
 
 		try
 		{
@@ -434,45 +489,19 @@ sint IService::main ()
 			scrollLabel = _WindowDisplayer->createLabel ("");
 		}
 
-		nlinfo ("Starting Service '%s' using NeL ("__DATE__" "__TIME__")", _ShortName.c_str());
+		nlinfo ("Starting Service %d '%s' using NeL ("__DATE__" "__TIME__")", isService5()?5:4, _ShortName.c_str());
 
 		//
 		// Display command line arguments
 		//
 
-		nlinfo ("args = %d", _Args.size ());
+		nlinfo ("nb args = %d", _Args.size ());
 		for (uint i = 0; i < _Args.size (); i++)
 		{
 			nlinfo ("argv[%d] = '%s'", i, _Args[i].c_str ());
 		}
 
 		setStatus (EXIT_SUCCESS);
-
-
-		//
-		// Initialize the network system
-		//
-
-		string localhost;
-		try
-		{
-			// Initialize WSAStartup and network stuffs
-			CSock::initNetwork();
-
-			// Get the localhost name
-			localhost = CInetAddress::localHost().hostName();
-		}
-		catch (NLNET::ESocket &)
-		{
-			localhost = "<UnknownHost>";
-		}
-
-		// Set the localhost name and service name to the logger
-		string processName = localhost;
-		processName += '/';
-		processName += _ShortName;
-		CLog::setProcessName (processName);
-
 
 		//
 		// Redirect signal if needed (in release mode only)
@@ -529,23 +558,57 @@ sint IService::main ()
 
 
 		//
+		// Initialize the network system
+		//
+		
+		string localhost;
+		try
+		{
+			// Initialize WSAStartup and network stuffs
+			CSock::initNetwork();
+
+			// Get the localhost name
+			localhost = CInetAddress::localHost().hostName();
+		}
+		catch (NLNET::ESocket &)
+		{
+			localhost = "<UnknownHost>";
+		}
+
+		// Set the localhost name and service name to the logger
+		string processName = localhost;
+		processName += '/';
+		processName += _ShortName;
+		CLog::setProcessName (processName);
+
+
+		//
 		// Initialize server parameters
 		//
 
-		// 1: get the port from the service application
-		_Port = IService::_DefaultPort;
-
-		// 2: get the port from config file if in it
+		// Get the port from config file or in the macro (overload the port set by the user init())
 		try
 		{
+			// set the listen port with the value in the config file if any
 			_Port = ConfigFile.getVar("Port").asInt();
 		}
-		catch ( EUnknownVar& )
+		catch (EUnknownVar &)
 		{
+			// set the listen port with the value in the NLNET_SERVICE_MAIN macro
+			_Port = servicePort;
 		}
 
-		
-		getCustomParams();
+		// set the listen port if there are a port arg in the command line
+		if (haveArg('P'))
+		{
+			_Port = atoi(getArg('P').c_str());
+		}
+
+		// set the aliasname if is present in the command line
+		if (haveArg('N'))
+		{
+			_AliasName = getArg('N');
+		}
 
 		// Load the recording state from the config file
 		try
@@ -584,6 +647,7 @@ sint IService::main ()
 			CMessage::setDefaultStringMode( false );
 		}
 
+/*
 		//
 		// Layer4 Startup (Connect to the Naming Service (except for the NS itself and Login Service))
 		//
@@ -611,29 +675,19 @@ sint IService::main ()
 		{
 			CNetManager::init( NULL, _RecordingState );
 		}
+*/
 
-		//
-		// Connect to the local AES and send identification
-		//
+		///
+		/// Layer5 Startup
+		///
 
-		if (_ShortName != "AES" && _ShortName != "AS")
-		{
-			CNetManager::setConnectionCallback ("AES", AESConnection, NULL);
-			CNetManager::setDisconnectionCallback ("AES", AESDisconnection, NULL);
-			CNetManager::addClient ("AES", "localhost:49997");
-			CNetManager::addCallbackArray ("AES", AESCallbackArray, sizeof(AESCallbackArray)/sizeof(AESCallbackArray[0]));
-		}
-
-		//
-		// Add the server of this service
-		//
-
+		// get the sid
 		try
 		{
 			sint32 sid = ConfigFile.getVar("SId").asInt();
 			if (sid<0 || sid>255)
 			{
-				nlwarning("Bad SId in the config file, %d is not in [0;255] range", sid);
+				nlwarning("Bad SId value in the config file, %d is not in [0;255] range", sid);
 				_SId = 0;
 			}
 			else
@@ -647,8 +701,109 @@ sint IService::main ()
 			_SId = 0;
 		}
 
-		CNetManager::addServer (_ShortName, _Port, _SId);
-		CNetManager::addCallbackArray (_ShortName, _CallbackArray, _CallbackArraySize);
+
+		// look if we don't want to use NS
+		bool DontUseNS;
+		try
+		{
+			// if we set the value in the config file, get it
+			DontUseNS = ConfigFile.getVar("DontUseNS").asInt() == 1;
+		}
+		catch ( EUnknownVar& )
+		{
+			// if not, we use ns only if service is not ns, ls, aes, as
+			DontUseNS = (IService::_ShortName == "NS" || IService::_ShortName == "LS" || IService::_ShortName == "AES" || IService::_ShortName == "AS");
+		}
+
+		// normal setup for the common services
+		if (!DontUseNS)
+		{
+			bool ok = false;
+			while (!ok)
+			{
+				// read the naming service address from the config file
+				string LSAddr = ConfigFile.getVar("NSHost").asString();
+				
+				// if there's no port to the NS, use the default one 50000
+				if (LSAddr.find(":") == string::npos)
+						LSAddr += ":50000";
+
+				CInetAddress loc(LSAddr);
+				try
+				{
+					if (isService5())
+						CUnifiedNetwork::getInstance()->init (&loc, _RecordingState, _ShortName, _Port, _SId);
+					else
+						CNetManager::init( &loc, _RecordingState );
+
+					ok = true;
+				}
+				catch (ESocketConnectionFailed &)
+				{
+					nlwarning ("Could not connect to the Naming Service (%s). Retrying in a few seconds...", loc.asString().c_str());
+					nlSleep (5000);
+				}
+			}
+		}
+		else
+		{
+			if (isService5())
+				CUnifiedNetwork::getInstance()->init(NULL, _RecordingState, _ShortName, _Port, _SId);
+			else
+				CNetManager::init( NULL, _RecordingState );
+		}
+
+
+		//
+		// Connect to the local AES and send identification
+		//
+
+		// look if we don't want to use NS
+		bool DontUseAES;
+		try
+		{
+			// if we set the value in the config file, get it
+			DontUseAES = ConfigFile.getVar("DontUseAES").asInt() == 1;
+		}
+		catch ( EUnknownVar& )
+		{
+			// if not, we use aes only if service is not aes or as
+			DontUseAES = (_ShortName == "AES" || _ShortName == "AS");
+		}
+
+		if (!DontUseAES)
+		{
+			if (isService5())
+			{
+				CUnifiedNetwork::getInstance()->setServiceUpCallback ("AES", AESConnection5, NULL);
+				CUnifiedNetwork::getInstance()->setServiceDownCallback ("AES", AESDisconnection5, NULL);
+				CUnifiedNetwork::getInstance()->addService ("AES", CInetAddress("localhost:49997"), false);
+				CUnifiedNetwork::getInstance()->addCallbackArray (AESCallbackArray5, sizeof(AESCallbackArray5)/sizeof(AESCallbackArray5[0]));
+			}
+			else
+			{
+				CNetManager::setConnectionCallback ("AES", AESConnection, NULL);
+				CNetManager::setDisconnectionCallback ("AES", AESDisconnection, NULL);
+				CNetManager::addClient ("AES", "localhost:49997");
+				CNetManager::addCallbackArray ("AES", AESCallbackArray, sizeof(AESCallbackArray)/sizeof(AESCallbackArray[0]));
+			}
+		}
+
+
+		//
+		// Add callback array
+		//
+
+		if (isService5())
+		{
+			// add callback set in the NLNET_SERVICE_MAIN macro
+			NLNET::CUnifiedNetwork::getInstance()->addCallbackArray(_CallbackArray5, _CallbackArraySize);
+		}
+		else
+		{
+			CNetManager::addServer (_ShortName, _Port, _SId);
+			CNetManager::addCallbackArray (_ShortName, _CallbackArray, _CallbackArraySize);
+		}
 
 		//
 		// Now we have the service id, we can set the entites id generator
@@ -656,12 +811,24 @@ sint IService::main ()
 
 		_NextEntityId.setServiceId(_SId);
 
+
 		//
 		// Call the user service init
 		//
 
 		userInitCalled = true; // the bool must be put *before* the call to init()
 		init ();
+
+
+		//
+		// Connects to the present services
+		// WARNING: only after the user init() was called because the
+		// addService may call up service callbacks.
+		//
+
+		if (isService5())
+			CUnifiedNetwork::getInstance()->connect();
+
 
 		//
 		// Register the name to the NS (except for the NS itself)
@@ -780,11 +947,20 @@ sint IService::main ()
 		// Say to the AES that the service is ready
 		//
 
-		if (_ShortName != "AES" && _ShortName != "AS")
+		if (!DontUseAES)
 		{
-			// send the ready message (service init finished)
-			CMessage msgout (CNetManager::getSIDA ("AES"), "SR");
-			CNetManager::send ("AES", msgout);
+			if (isService5())
+			{
+				// send the ready message (service init finished)
+				CMessage msgout ("SR");
+				CUnifiedNetwork::getInstance()->send("AES", msgout);
+			}
+			else
+			{
+				// send the ready message (service init finished)
+				CMessage msgout (CNetManager::getSIDA ("AES"), "SR");
+				CNetManager::send ("AES", msgout);
+			}
 		}
 
 		_Initialized = true;
@@ -818,17 +994,22 @@ sint IService::main ()
 	
 			CConfigFile::checkConfigFiles ();
 
-			// get and manage layer 4 messages
-			CNetManager::update (_UpdateTimeout);
+			if (isService5())
+			{
+				// get and manage layer 5 messages
+				CUnifiedNetwork::getInstance()->update (_UpdateTimeout);
+			}
+			else
+			{
+				// get and manage layer 4 messages
+				CNetManager::update (_UpdateTimeout);
+			}
 			
-			// TEMP: always sleep one millisecond for multitasking
-//			nlSleep (1);
-/*
 			// resync the clock every hours
 			if (resyncEvenly)
 			{
 				static TTime LastSyncTime = CTime::getLocalTime ();
-*/
+
 				//---------------------------------------
 				// To simulate Ctrl-C in the debugger... Exit after 1 min !
 				/*if (CTime::getLocalTime () - LastSyncTime > 60 * 1000 )
@@ -842,47 +1023,59 @@ sint IService::main ()
 					CUniTime::syncUniTimeFromService ( _RecordingState );
 					LastSyncTime = CTime::getLocalTime ();
 				}
-			}
 */
+			}
 
-			_NetSpeedLoop = (sint32) (CTime::getLocalTime () - before);
-			_UserSpeedLoop = (sint32) (before - bbefore);
+			NetSpeedLoop = (sint32) (CTime::getLocalTime () - before);
+			UserSpeedLoop = (sint32) (before - bbefore);
 
 			if (_WindowDisplayer != NULL)
 			{
+				uint64 rcv, snd, rcvq, sndq;
+				if (isService5())
+				{
+					rcv = CUnifiedNetwork::getInstance()->getBytesReceived ();
+					snd = CUnifiedNetwork::getInstance()->getBytesSent ();
+					rcvq = CUnifiedNetwork::getInstance()->getReceiveQueueSize ();
+					sndq = CUnifiedNetwork::getInstance()->getSendQueueSize ();
+				}
+				else
+				{
+					rcv = CNetManager::getBytesReceived ();
+					snd = CNetManager::getBytesSent ();
+					rcvq = CNetManager::getReceiveQueueSize ();
+					sndq = CNetManager::getSendQueueSize ();
+				}
+
 				string str;
 				str = "NetLop: ";
-				str += toString (_NetSpeedLoop);
+				str += toString (NetSpeedLoop);
 				_WindowDisplayer->setLabel (speedNetLabel, str);
 				str = "UsrLop: ";
-				str += toString (_UserSpeedLoop);
+				str += toString (UserSpeedLoop);
 				_WindowDisplayer->setLabel (speedUsrLabel, str);
 				str = "Rcv: ";
-				str += toString (CNetManager::getBytesReceived ());
+				str += toString (rcv);
 				_WindowDisplayer->setLabel (rcvLabel, str);
 				str = "Snd: ";
-				str += toString (CNetManager::getBytesSent ());
+				str += toString (snd);
 				_WindowDisplayer->setLabel (sndLabel, str);
 				str = "RcvQ: ";
-				str += toString (CNetManager::getReceiveQueueSize ());
+				str += toString (rcvq);
 				_WindowDisplayer->setLabel (rcvQLabel, str);
 				str = "SndQ: ";
-				str += toString (CNetManager::getSendQueueSize ());
+				str += toString (sndq);
 				_WindowDisplayer->setLabel (sndQLabel, str);
 
 				// display the scroll text
 				static string foo =	"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! "
 									"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! ";
 				static int pos = 0;
-				_WindowDisplayer->setLabel (scrollLabel, foo.substr (pos%(foo.size()/2), 10));
-				pos++;
+				_WindowDisplayer->setLabel (scrollLabel, foo.substr ((pos++)%(foo.size()/2), 10));
 			}
 
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
 
-			// now, sleep the rest of the time if needed
-//			if (_UpdateTimeout > 0 && delta <= _UpdateTimeout)
-//				nlSleep (_UpdateTimeout - delta);
 		}
 		while (true);
 	}
@@ -924,14 +1117,20 @@ sint IService::main ()
 		if (userInitCalled)
 			release ();
 
-
 		//
-		// Disconnect from the Naming Service, if necessary
+		// Delete all network connection (naming client also)
 		//
 
-		CNetManager::release ();
+		if (isService5())
+			CUnifiedNetwork::getInstance()->release ();
+		else
+			CNetManager::release ();
 
 		CSock::releaseNetwork ();
+
+		//
+		// Remove the window displayer
+		//
 
 		if (_WindowDisplayer != NULL)
 		{
@@ -941,9 +1140,8 @@ sint IService::main ()
 			ErrorLog->removeDisplayer (_WindowDisplayer);
 			AssertLog->removeDisplayer (_WindowDisplayer);
 
-			// Never delete the windows displayer because another thread could use it
-			//delete _WindowDisplayer;
-			//_WindowDisplayer = NULL;
+			delete _WindowDisplayer;
+			_WindowDisplayer = NULL;
 		}
 
 		nlinfo ("Service released succesfuly");
@@ -981,34 +1179,58 @@ sint IService::main ()
 // Commands and Variables for controling all services
 //
 
-NLMISC_VARIABLE(sint32, _NetSpeedLoop, "duration of the last network loop (in ms)");
-NLMISC_VARIABLE(sint32, _UserSpeedLoop, "duration of the last user loop (in ms)");
+NLMISC_VARIABLE(sint32, NetSpeedLoop, "duration of the last network loop (in ms)");
+NLMISC_VARIABLE(sint32, UserSpeedLoop, "duration of the last user loop (in ms)");
 
-NLMISC_DYNVARIABLE(uint64, _ReceivedBytes, "total of bytes received by this service")
+NLMISC_DYNVARIABLE(uint64, ReceivedBytes, "total of bytes received by this service")
 {
 	// we can only read the value
-	if (get) *pointer = CNetManager::getBytesReceived ();
+	if (get)
+	{
+		if (IService::getInstance()->isService5 ())
+			*pointer = CUnifiedNetwork::getInstance()->getBytesReceived ();
+		else
+			*pointer = CNetManager::getBytesReceived ();
+	}
 }
 
-NLMISC_DYNVARIABLE(uint64, _SentBytes, "total of bytes sended by this service")
+NLMISC_DYNVARIABLE(uint64, SentBytes, "total of bytes sent by this service")
 {
 	// we can only read the value
-	if (get) *pointer = CNetManager::getBytesSent ();
+	if (get)
+	{
+		if (IService::getInstance()->isService5 ())
+			*pointer = CUnifiedNetwork::getInstance()->getBytesSent ();
+		else
+			*pointer = CNetManager::getBytesSent ();
+	}
 }
 
-NLMISC_DYNVARIABLE(uint64, _ReceivedQueueSize, "current size in bytes of the received queue size")
+NLMISC_DYNVARIABLE(uint64, ReceivedQueueSize, "current size in bytes of the received queue size")
 {
 	// we can only read the value
-	if (get) *pointer = CNetManager::getReceiveQueueSize ();
+	if (get)
+	{
+		if (IService::getInstance()->isService5 ())
+			*pointer = CUnifiedNetwork::getInstance()->getReceiveQueueSize ();
+		else
+			*pointer = CNetManager::getReceiveQueueSize ();
+	}
 }
 
-NLMISC_DYNVARIABLE(uint64, _SentQueueSize, "current size in bytes of the sended queue size")
+NLMISC_DYNVARIABLE(uint64, SentQueueSize, "current size in bytes of the sent queue size")
 {
 	// we can only read the value
-	if (get) *pointer = CNetManager::getSendQueueSize ();
+	if (get)
+	{
+		if (IService::getInstance()->isService5 ())
+			*pointer = CUnifiedNetwork::getInstance()->getSendQueueSize ();
+		else
+			*pointer = CNetManager::getSendQueueSize ();
+	}
 }
 
-NLMISC_COMMAND (_quit, "exit the service", "")
+NLMISC_COMMAND (quit, "exit the service", "")
 {
 	if(args.size() != 0) return false;
 
@@ -1017,7 +1239,7 @@ NLMISC_COMMAND (_quit, "exit the service", "")
 	return true;
 }
 
-NLMISC_COMMAND (_brutal_quit, "exit the service brutally", "")
+NLMISC_COMMAND (brutal_quit, "exit the service brutally", "")
 {
 	if(args.size() != 0) return false;
 
@@ -1026,8 +1248,9 @@ NLMISC_COMMAND (_brutal_quit, "exit the service brutally", "")
 	return true;
 }
 
+
 #ifdef MUTEX_DEBUG
-NLMISC_COMMAND (_mutex, "display mutex values", "")
+NLMISC_COMMAND (mutex, "display mutex values", "")
 {
 	if(args.size() != 0) return false;
 
@@ -1045,5 +1268,32 @@ NLMISC_COMMAND (_mutex, "display mutex values", "")
 	return true;
 }
 #endif // MUTEX_DEBUG
+
+NLMISC_COMMAND (service_info, "display information about this service", "")
+{
+	if(args.size() != 0) return false;
+
+	log.displayNL ("Service %d '%s' '%s' '%s' using NeL ("__DATE__" "__TIME__")", IService::getInstance()->isService5()?5:4, IService::getInstance()->_ShortName.c_str(), IService::getInstance()->_LongName.c_str(), IService::getInstance()->_AliasName.c_str());
+	return true;
+}
+
+/*
+NLMISC_COMMAND (time, "displays the universal time", "")
+{
+	if(args.size() != 0) return false;
+
+	if ( CUniTime::Sync )
+	{
+		log.displayNL ("CTime::getLocalTime(): %"NL_I64"dms, CUniTime::getUniTime(): %"NL_I64"dms", CTime::getLocalTime (), CUniTime::getUniTime ());
+		log.displayNL ("CUniTime::getStringUniTime(): '%s'", CUniTime::getStringUniTime());
+	}
+	else
+	{
+		log.displayNL ("CTime::getLocalTime(): %"NL_I64"dms <Universal time not sync>", CTime::getLocalTime ());
+	}
+
+	return true;
+}
+*/
 
 } //NLNET

@@ -294,6 +294,9 @@ plugin material NelMaterial
 			Spinner   cfDisplaceMapUSpeed      ""  range:[-10,10,0.01] type:#float scale:0.001 align:#left width:70
 			Label	lbDisplaceMapVSpeed "DisplaceMap V Speed :" align:#left across:2
 			Spinner   cfDisplaceMapVSpeed      ""  range:[-10,10,0.01] type:#float scale:0.001 align:#left width:70
+
+			CheckBox cbCalcWaterLightmap "Replace / modulate diffuse map by lightmap during lighting"
+
 		)
 		group "Extended"
 		(

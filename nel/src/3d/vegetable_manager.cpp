@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.34 2003/07/30 16:08:14 vizerie Exp $
+ * $Id: vegetable_manager.cpp,v 1.35 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1911,7 +1911,7 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 
 
 	// compute the angleAxis corresponding to direction
-	// perform a 90° rotation to get correct angleAxis
+	// perform a 90deg rotation to get correct angleAxis
 	_AngleAxis.set(-_WindDirection.y,_WindDirection.x,0);
 
 

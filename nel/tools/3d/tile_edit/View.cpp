@@ -480,7 +480,7 @@ int TileList::setTileTransitionAlpha (int tile, const std::string& name, int rot
 				{
 					static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
 					if (indexError!=-1)
-						sprintf (sMsg, "%s\nIncompatible with tile n°%d\nPixel: %d (%s)", CTileSet::getErrorMessage (error), indexError,
+						sprintf (sMsg, "%s\nIncompatible with tile nb %d\nPixel: %d (%s)", CTileSet::getErrorMessage (error), indexError,
 							pixel, comp[composante]);
 					else
 						sprintf (sMsg, "%s\nIncompatible with the 128x128 tile\nPixel: %d (%s)", CTileSet::getErrorMessage (error),

@@ -1,7 +1,7 @@
 /** \file mini_col.h
  * <File description>
  *
- * $Id: mini_col.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mini_col.h,v 1.2 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,7 +72,7 @@ public:
 	void			setCenter(const CVector& center);
 
 
-	/** This function test if a move is OK, by snaping it to ground, and test if angle is<45°.
+	/** This function test if a move is OK, by snaping it to ground, and test if angle is<45deg.
 	 * If !OK, cur is set to prec, and false is returned.
 	 */
 	bool			testMove(const CVector &prec, CVector &cur);

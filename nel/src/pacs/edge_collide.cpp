@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.17 2003/07/03 13:03:44 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.18 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -340,7 +340,7 @@ float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &del
 			 and on Surface SA, and suppose there is an other chain SB/SC the circle collide with. If we 
 			 return 1 (no collision), SB/SC won't be detected (because only SA/?? chains will be tested) and 
 			 so the cylinder will penetrate SB/SC...
-			 This case arise at best if chains SA/SB and chain SB/SC do an angle of 45°
+			 This case arise at best if chains SA/SB and chain SB/SC do an angle of 45deg
 
 			 \todo yoyo: this is a Hack.
 			*/

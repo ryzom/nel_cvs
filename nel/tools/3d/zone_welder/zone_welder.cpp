@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.17 2002/08/30 14:03:58 corvazier Exp $
+ * $Id: zone_welder.cpp,v 1.18 2003/09/26 14:25:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -216,7 +216,7 @@ void weldZones(const char *center)
 		CZoneSmoother::CZoneInfo	smoothZones[5];
 		smoothZones[0].ZoneId= centerZoneId;
 		smoothZones[0].Patchs= &centerZonePatchs;
-		// 30° ???
+		// 30deg ???
 		zonesmoother.smoothTangents(smoothZones, (float)(Pi/6));
 	}
 

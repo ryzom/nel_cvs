@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.17 2003/04/25 13:44:37 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.18 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,7 @@ void			CPatch::computeNewFar(const NLMISC::CBSphere &patchSphere, sint &newFar0,
 					bool bRot;
 					_PatchRdrPassFar0=Zone->Landscape->getFarRenderPass(this, newFar0, Far0UScale, Far0VScale, Far0UBias, Far0VBias, bRot);
 
-					// Flags is set if the far texture is rotated of 90° to the left
+					// Flags is set if the far texture is rotated of 90deg to the left
 					if (bRot)
 						Flags|=NL_PATCH_FAR0_ROTATED;
 					else
@@ -187,7 +187,7 @@ void			CPatch::computeNewFar(const NLMISC::CBSphere &patchSphere, sint &newFar0,
 					_PatchRdrPassFar1=Zone->Landscape->getFarRenderPass(this, newFar1, Far1UScale, Far1VScale, Far1UBias, Far1VBias, bRot);
 					nlassert (_PatchRdrPassFar1);
 
-					// Flags is set if the far texture is rotated of 90° to the left
+					// Flags is set if the far texture is rotated of 90deg to the left
 					if (bRot)
 						Flags|=NL_PATCH_FAR1_ROTATED;
 					else

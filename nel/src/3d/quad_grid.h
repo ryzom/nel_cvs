@@ -1,7 +1,7 @@
 /** \file 3d/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.5 2002/09/09 09:52:32 coutelas Exp $
+ * $Id: quad_grid.h,v 1.6 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,7 +141,7 @@ public:
 	  *	Speed is in O(1 * L*H) where L*H is the number of squares surrounded by the element
 	  *
 	  *	Warning! : bboxmin and bboxmax are multiplied by matrix setuped by changeBase. This work for any
-	  *	matrix with 90° rotations (min and max are recomputed internally), but not with any rotation (43° ...)
+	  *	matrix with 90deg rotations (min and max are recomputed internally), but not with any rotation (43° ...)
 	  *	because of the nature of AABBox. To do this correclty you should compute the bbox min and max in the 
 	  *	basis given in changeBase, and insert() with multiplying min and max with inverse of this basis.
 	  *	eg:

@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.38 2003/07/01 15:28:09 distrib Exp $
+ * $Id: export_material.cpp,v 1.39 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -160,7 +160,7 @@ IMeshVertexProgram           *CExportNel::buildMeshMaterialShaderVP(NL3D::CMater
 
 // Build an array of NeL material corresponding with max material at this node. Return the number of material exported.
 // Fill an array to remap the 3ds vertexMap channels for each materials. maxBaseBuild.RemapChannel.size() must be == to materials.size(). 
-// maxBaseBuild.RemapChannel[mat].size() is the final count of NeL vertexMap channels used for the material n° mat.
+// maxBaseBuild.RemapChannel[mat].size() is the final count of NeL vertexMap channels used for the material nb mat.
 // For each NeL channel of a material, copy the 3ds channel maxBaseBuild.RemapChannel[nelChannel]._IndexInMaxMaterial using the transformation matrix
 // maxBaseBuild.RemapChannel[nelChannel]._UVMatrix.
 // maxBaseBuild.NeedVertexColor will be true if at least one material need vertex color. Forced to true if lightmaps are used.
@@ -1201,7 +1201,7 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 		}
 
 		
-		//  1°) build a texture that can either be a file texture or a multifile texture
+		//  1) build a texture that can either be a file texture or a multifile texture
 
 		ITexture  *srcTex;
 		const uint numNelTextureSlots = 8;
@@ -1262,7 +1262,7 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 			static_cast<CTextureFile *>(srcTex)->setFileName (ConvertTexFileName(pBitmap->GetMapName(), _AbsolutePath));
 		}
 
-		// 2 °) Use this texture 'as it', or duplicate it to create the faces of a cube map
+		// 2) Use this texture 'as it', or duplicate it to create the faces of a cube map
 
 		// Force cubic
 		if (forceCubic)

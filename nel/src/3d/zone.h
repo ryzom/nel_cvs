@@ -1,7 +1,7 @@
 /** \file 3d/zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.18 2003/04/23 10:07:41 berenguier Exp $
+ * $Id: zone.h,v 1.19 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,7 +215,7 @@ public:
 	/** Adjusts a CPatchInfo array to get a symmetrized / rotated zone with matching oriented tiles.
 	  * This method only adjuste tile and vertex color array, does'nt transform vertices.
 	  *
-	  * Transform an array of patchInfo by a symmetry on OY axis followed by a 90° CCW rotation (0, 1, 2, 3).
+	  * Transform an array of patchInfo by a symmetry on OY axis followed by a 90deg CCW rotation (0, 1, 2, 3).
 	  *
 	  * The method doesn't transform vertices.
 	  * If symmetry, the method invert 0-3 and 1-2 vertices indexes to get CCW oriented patches. It will fix bind informations.

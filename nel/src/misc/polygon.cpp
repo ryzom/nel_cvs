@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.17 2002/11/05 11:32:07 vizerie Exp $
+ * $Id: polygon.cpp,v 1.18 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -858,7 +858,7 @@ void		CPolygon2D::buildConvexHull(CPolygon2D &dest) const
 	}
 	
 
-	// 1°) find the highest point p of the set. We are sure it belongs to the hull
+	// 1) find the highest point p of the set. We are sure it belongs to the hull
 	pIndex = 0;
 	p = Vertices[0];
 	for (k = 1; k < numVerts; ++k)

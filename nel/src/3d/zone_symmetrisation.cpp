@@ -1,7 +1,7 @@
 /** \file zone_symmetrisation.cpp
  * Environnement used to symmetrise zones
  *
- * $Id: zone_symmetrisation.cpp,v 1.5 2003/04/23 10:06:09 corvazier Exp $
+ * $Id: zone_symmetrisation.cpp,v 1.6 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -214,14 +214,14 @@ bool CZoneSymmetrisation::build (const std::vector<CPatchInfo> &patchInfo, float
 		if (!setTileState (patch, i, snapCell, weldThreshold, patchState, toOriginalSpace, bank))
 		{
 			// Push an error
-			errorDesc.Errors.push_back ("Patch n°"+toString (i)+" is invalid");
+			errorDesc.Errors.push_back ("Patch nb "+toString (i)+" is invalid");
 		}
 
 		// Set the oriented patch state
 		if (!setOrientedTileState (patch, i, snapCell, weldThreshold, patchState, toOriginalSpace, bank))
 		{
 			// Push an error
-			errorDesc.Errors.push_back ("Patch n°"+toString (i)+" is invalid");
+			errorDesc.Errors.push_back ("Patch nb "+toString (i)+" is invalid");
 		}
 	}
 

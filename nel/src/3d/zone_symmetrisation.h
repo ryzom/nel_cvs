@@ -1,7 +1,7 @@
 /** \file zone_symmetrisation.h
  * Environnement used to symmetrise zones
  *
- * $Id: zone_symmetrisation.h,v 1.1 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: zone_symmetrisation.h,v 1.2 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -45,7 +45,7 @@ class CTileBank;
  *
  * There is two states for a tile : Regular or Goofy.
  * If the tile is regular, it doesn't need specific transformation when the zone is symmetrise.
- * If the tile is goofy, the tile must be rotate by 180° more to be correct.
+ * If the tile is goofy, the tile must be rotate by 180deg more to be correct.
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France

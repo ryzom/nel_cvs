@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.135 2003/08/19 14:11:34 berenguier Exp $
+ * $Id: landscape.cpp,v 1.136 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1153,7 +1153,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// Active VB.
 	// ==================
 
-	// Active the good VB, and maybe activate the VertexProgram N°0.
+	// Active the good VB, and maybe activate the VertexProgram Nb 0.
 	_TileVB.activate(0);
 
 

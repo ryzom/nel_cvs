@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.8 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_far.h,v 1.9 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ public:
 	 *  \param farUVScale will receive the scale to use to compute the UV coordinates
 	 *  \param farUBias will receive the U Bias to use to compute the UV coordinates
 	 *  \param farVBias will receive the V Bias to use to compute the UV coordinates
-	 *  \param bRot will receive true if the texture is rotated of 90° to the left or false. 
+	 *  \param bRot will receive true if the texture is rotated of 90deg to the left or false. 
 	 *         You should take care of this value to compute UV coordinates.
 	 */
 	void						allocatePatch (CPatch *pPatch, uint farIndex, float& farUScale, float& farVScale, float& farUBias, float& farVBias, bool& bRot);

@@ -1,7 +1,7 @@
 /** \file quat.h
  * CQuat class
  *
- * $Id: quat.h,v 1.7 2003/07/28 17:29:29 berenguier Exp $
+ * $Id: quat.h,v 1.8 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -382,7 +382,7 @@ CQuatT<T>	CQuatT<T>::squadrev(const CAngleAxis &rot, const CQuatT<T>& q0, const 
 	// multirev.
 	//==============
 
-	// rotation of 180° around rot.Axis.  (=> sin(a/2)==sin(Pi/2)==1, and c(a/2)=0).
+	// rotation of 180deg around rot.Axis.  (=> sin(a/2)==sin(Pi/2)==1, and c(a/2)=0).
 	qaxis.set(rot.Axis.x, rot.Axis.y, rot.Axis.z, 0);
 
 	// the number of revisions (float!)

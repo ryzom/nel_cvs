@@ -1,7 +1,7 @@
 /** \file zone_region.h
  * <File description>
  *
- * $Id: zone_region.h,v 1.4 2003/09/01 12:05:57 lecroart Exp $
+ * $Id: zone_region.h,v 1.5 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,7 +101,7 @@ protected:
 	{
 		std::string			ZoneName;
 		uint8				PosX, PosY; // Position in a large piece
-		uint8				Rot, Flip; // Rot 0-0°, 1-90°, 2-180°, 3-270°, Flip 0-false, 1-true
+		uint8				Rot, Flip; // Rot 0-0deg, 1-90deg, 2-180deg, 3-270deg, Flip 0-false, 1-true
 
 		// Work Data : For transition				[2 3]
 		std::string			SharingMatNames[4];	//  [0 1]

@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.10 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: tile_bank.h,v 1.11 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -369,7 +369,7 @@ public:
 	const std::string& getTileVegetableDescFileName () const;
 
 	/** 
-	  * Return the file name of the displacement map for the map n° displacement.
+	  * Return the file name of the displacement map for the map nb displacement.
 	  * This file name is relative at the absolute path.
 	  */
 	uint getDisplacementTile (TDisplacement displacement) const

@@ -1,7 +1,7 @@
 /** \file point_light_named_array.h
  * <File description>
  *
- * $Id: point_light_named_array.h,v 1.5 2003/08/19 14:11:34 berenguier Exp $
+ * $Id: point_light_named_array.h,v 1.6 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,7 +54,7 @@ public:
 
 	/** sort pointLights and make Groups by name for setFactor().
 	 *	indexRemap gets news Ids for pointLights. 
-	 *	eg: old PointLight n°0 is now at indexRemap[0].
+	 *	eg: old PointLight nb 0 is now at indexRemap[0].
 	 */
 	void			build(const std::vector<CPointLightNamed> &pointLights, std::vector<uint> &indexRemap);
 

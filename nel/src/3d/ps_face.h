@@ -1,7 +1,7 @@
 /** \file ps_face.h
  * Face particles.
  *
- * $Id: ps_face.h,v 1.3 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_face.h,v 1.4 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NL3D
 /**
  * A face particle
  * Unlike FaceLookAt, these particle can have an orientation in space.
- * They are drawn with an angle bias of 45° in their local basis (for optimisation purpose)
+ * They are drawn with an angle bias of 45deg in their local basis (for optimisation purpose)
  *
  *          ^ y
  *          |

@@ -1,7 +1,7 @@
 /** \file zone_smoother.h
  * <File description>
  *
- * $Id: zone_smoother.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: zone_smoother.h,v 1.2 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ public:
 	 *  generated: this patch edge is not modified.
 	 *	nlstop if zones[0]==NULL.
 	 * \param angleThreshold if angle beetween (patch_interior - tangent) and (neighbor_patch_interior - tangent) is 
-	 *	above angleThreshold, no smooth is done on this tangent. Default: 30°.
+	 *	above angleThreshold, no smooth is done on this tangent. Default: 30deg.
 	 * \param continuityC1. when a smooth is done on a tangent, tangent is forced such that the 2 interiors and the 
 	 *	tangent are colinear, so continuity G1 is assured. if continuityC1 is true, then tangent is set to the middle of 
 	 *	the interiors (continuity C1). If false, tangent is setup so that previous distance ratio are kept.

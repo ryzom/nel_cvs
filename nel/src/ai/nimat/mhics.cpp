@@ -1,7 +1,7 @@
 /** \file mhics.cpp
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.cpp,v 1.13 2003/09/22 08:45:11 robert Exp $
+ * $Id: mhics.cpp,v 1.14 2003/09/26 14:25:33 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -690,7 +690,7 @@ CMHiCSagent::~CMHiCSagent()
 /// function used in debug to change a TTargetId in a string
 std::string CMHiCSagent::targetId2String(TTargetId id) const
 {
-/*	// Le format est celui pour afficher en debug le N° comme dans Ryzom.
+/*	// Le format est celui pour afficher en debug le Nb comme dans Ryzom.
 	uint32 aiBoteId = id;
 	uint32 managerID = (aiBoteId>>(8+12))&( (1<<10)-1 );
 	uint32 groupeID = (aiBoteId>>8)&( (1<<12)-1 );

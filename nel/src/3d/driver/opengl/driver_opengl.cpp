@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.34 2000/12/18 15:30:11 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.35 2000/12/19 09:47:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,7 @@ uint CDriverGL::_Registered=0;
 const uint32		CDriverGL::ReleaseVersion = 0x0;
 
 #ifdef NL_OS_WINDOWS
+
 __declspec(dllexport) IDriver* NL3D_createIDriverInstance ()
 {
 	return new CDriverGL;
@@ -76,7 +77,36 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
-#endif // NL_OS_WINDOWS
+
+#elif defined (NL_OS_UNIX)
+
+extern "C"
+{
+IDriver* NL3D_createIDriverInstance ()
+{
+	return new CDriverGL;
+}
+
+uint32 NL3D_interfaceVersion ()
+{
+	return IDriver::InterfaceVersion;
+}
+}
+
+static Bool WndProc(Display *d, XEvent *e, char *arg)
+{
+  nlinfo("glop %d %d", e->type, e->xmap.window);
+  CDriverGL *pDriver = (CDriverGL*)arg;
+  if (pDriver != NULL)
+    {
+      // Process the message by the emitter
+      pDriver->_EventEmitter.processMessage();
+    }
+  // TODO i'don t know what to return exactly
+  return (e->type == MapNotify) && (e->xmap.window == (Window) arg);
+}
+
+#endif // NL_OS_UNIX
 
 CDriverGL::CDriverGL()
 {
@@ -241,24 +271,24 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
     wglMakeCurrent(_hDC,_hRC);
 
 
-#else // NL_OS_WINDOWS
+#elif defined(NL_OS_UNIX)
 
 	dpy = XOpenDisplay(NULL);
 	nlassert (dpy != NULL);
 
-	static int gl_attribs[20];
-	memset(&gl_attribs, 0, 20*sizeof(int));
+	int sAttribList[] =
+	{
+	GLX_RGBA,
+	GLX_RED_SIZE, 1,
+	GLX_GREEN_SIZE, 1,
+	GLX_BLUE_SIZE, 1,
+	GLX_DEPTH_SIZE, 16,
+	GLX_BUFFER_SIZE, 32, 
+	GLX_DOUBLEBUFFER,
+	None
+	};
 
-	int i = 0;
-	gl_attribs[i++] = GLX_BUFFER_SIZE;
-	gl_attribs[i++] = 16;
-	gl_attribs[i++] = GLX_DOUBLEBUFFER;
-	gl_attribs[i++] = GLX_RGBA;
-	gl_attribs[i++] = GLX_DEPTH_SIZE;
-	gl_attribs[i++] = 16;
-	//	gl_attribs[i++] = ;
-
-	XVisualInfo *visual_info = glXChooseVisual (dpy, DefaultScreen(dpy), gl_attribs);
+	XVisualInfo *visual_info = glXChooseVisual (dpy, DefaultScreen(dpy), sAttribList);
 
 	nlassert(visual_info != NULL);
 
@@ -266,7 +296,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 
 	nlassert(ctx != NULL);
 
-	Colormap cmap = XCreateColormap (dpy, RootWindow(dpy, visual_info->screen), visual_info->visual, AllocNone);
+	Colormap cmap = XCreateColormap (dpy, RootWindow(dpy, DefaultScreen(dpy)), visual_info->visual, AllocNone);
 
 	XSetWindowAttributes attr;
 	attr.colormap = cmap;
@@ -274,8 +304,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 	attr.override_redirect = False;
 	int attr_flags = CWOverrideRedirect | CWColormap | CWBackPixel;
 
-	win = XCreateWindow (dpy, RootWindow(dpy, visual_info->screen), 0, 0, mode.Width, mode.Height, 0, mode.Depth, InputOutput, visual_info->visual, attr_flags, &attr);
-	
+	win = XCreateWindow (dpy, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, mode.Width, mode.Height, 0, visual_info->depth, InputOutput, visual_info->visual, attr_flags, &attr);	
+
 	nlassert(win);
 
 	XSizeHints size_hints;
@@ -297,11 +327,21 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 	glXMakeCurrent (dpy, win, ctx);
 	XMapRaised (dpy, win);
 
-	XSelectInput (dpy, win, KeyPressMask|KeyReleaseMask);
+	XSelectInput (dpy, win,
+		      KeyPressMask|
+		      KeyReleaseMask|
+		      ButtonPressMask|
+		      ButtonReleaseMask|
+		      PointerMotionMask
+		      );
+
+	XMapWindow(dpy, win);
+   
+	XEvent event;
+	XIfEvent(dpy, &event, WaitForNotify, (char *)this);
 
 #endif // NL_OS_WINDOWS
 
-	
 	glViewport(0,0,mode.Width,mode.Height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -317,7 +357,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 	glDisable(GL_FOG);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_LINE_SMOOTH);
-    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	glDepthFunc(GL_LEQUAL);
@@ -333,6 +373,12 @@ bool CDriverGL::activate()
 	if (hglrc!=_hRC)
 	{
 		wglMakeCurrent(_hDC,_hRC);
+	}
+#elif defined (NL_OS_UNIX)
+	GLXContext nctx=glXGetCurrentContext();
+	if (nctx != NULL && nctx!=ctx)
+	{
+		glXMakeCurrent(dpy, win,ctx);
 	}
 #endif // NL_OS_WINDOWS
 	return true;

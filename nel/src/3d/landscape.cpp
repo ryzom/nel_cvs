@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.10 2000/12/01 11:14:46 corvazier Exp $
+ * $Id: landscape.cpp,v 1.11 2000/12/01 16:35:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,40 @@ using namespace std;
 namespace NL3D 
 {
 
+// ***************************************************************************
+
+// Bitmap Cross
+
+class CTextureCross : public ITexture
+{
+public:
+	/** 
+	 * Generate the texture
+	 * \author Stephane Coutelas
+	 * \date 2000
+	 */	
+	virtual void generate()
+	{
+		// Resize
+		resize (16, 16);
+
+		// Null
+		memset (&_Data[0][0], 16*16*4, 0);
+
+		// Cross
+		for (int x=0; x<16; x++)
+		{
+			_Data[0][(x*4)]=0xff;
+			_Data[0][(x*4*16*4)]=0xff;
+			_Data[0][(x*4)+(x*4*16)]=0xff;
+			_Data[0][(x*4)+(x*4*16)+1]=0xff;
+			_Data[0][(x*4)+(x*4*16)+2]=0xff;
+			_Data[0][(16*4-x*4)+(x*4*16)]=0xff;
+			_Data[0][(16*4-x*4)+(x*4*16)+1]=0xff;
+			_Data[0][(16*4-x*4)+(x*4*16)+2]=0xff;
+		}
+	}
+};
 
 // ***************************************************************************
 // TODO: may change this.
@@ -301,7 +335,12 @@ void			CLandscape::loadTile(const CTileKey &key)
 	{
 		// Diffuse part, Must be here, so always return some texture, dummy texture if necessary.
 		if(tile==NULL)
-			textName= "YourMotherInShort";		// To have the dummy texture "?"  :)
+		{
+			if(key.TileId==0xFFFF)
+				textName= "YourMotherInShortWithACross";
+			else
+				textName= "YourMotherInShort";		// To have the dummy texture "?"  :)
+		}
 		else
 			textName= tile->getFileName(CTile::diffuse);
 	}
@@ -324,7 +363,10 @@ void			CLandscape::loadTile(const CTileKey &key)
 		// If just inserted, SmartPtr is NULL!!  :)
 		if(!text)
 		{
-			TileTextureMap[textName]= text= new CTextureFile(textName);
+			if(textName== "YourMotherInShortWithACross")
+				TileTextureMap[textName]= text= new CTextureCross;
+			else
+				TileTextureMap[textName]= text= new CTextureFile(textName);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.13 2001/10/10 15:38:09 besson Exp $
+ * $Id: mesh_base.cpp,v 1.14 2001/12/12 10:25:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,7 @@ CMeshBase::CMeshBase()
 // ***************************************************************************
 void			CMeshBase::setAnimatedMaterial(uint id, const std::string &matName)
 {
+	nlassert(!matName.empty());
 	if(id<_Materials.size())
 	{
 		// add / replace animated material.

@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.67 2003/11/18 13:59:03 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.68 2003/11/25 14:40:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,7 @@ const float PSDefaultMaxViewDist = 300.f;
 CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _FontGenerator(NULL),
 									 _FontManager(NULL),
-									 _FatherSkelCoordSystemInfo(NULL),
+									 _UserCoordSystemInfo(NULL),
 									 _Date(0),
 									 _LastUpdateDate(-1),
 									 _CurrEditedElementLocated(NULL),
@@ -122,7 +122,9 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _ForceGlobalColorLighting(false),
 									 _AutoComputeDelayBeforeDeathTest(true),
 									 _AutoCount(false),
-									 _InverseEllapsedTime(0.f)								 
+									 _InverseEllapsedTime(0.f),
+									 _HiddenAtCurrentFrame(true),
+									 _HiddenAtPreviousFrame(true)
 
 {
 	std::fill(_UserParam, _UserParam + MaxPSUserParam, 0);	
@@ -249,7 +251,7 @@ CParticleSystem::~CParticleSystem()
 		delete _ColorAttenuationScheme;
 	if (_UserParamGlobalValue)
 		delete _UserParamGlobalValue;
-	delete _FatherSkelCoordSystemInfo;
+	delete _UserCoordSystemInfo;
 	#ifdef NL_DEBUG
 		--_NumInstances;
 	#endif
@@ -348,13 +350,13 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 {	
 	CHECK_INTEGRITY
 	nlassert(_CoordSystemInfo.Matrix); // matrix not set for position of system
-	if (_FatherSkelCoordSystemInfo)
+	if (_UserCoordSystemInfo)
 	{
 		nlassert(_CoordSystemInfo.Matrix);
 	}
 	switch (pass)
 	{
-		case SolidRender:
+		case SolidRender:			
 			/// When shared, the LOD ratio must be computed there
 			if (_Sharing)
 			{
@@ -367,7 +369,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			stepLocated(PSSolidRender, ellapsedTime, ellapsedTime);
 
 		break;
-		case BlendRender:			
+		case BlendRender:					
 			/// When shared, the LOD ratio must be computed there
 			if (_Sharing)
 			{
@@ -383,7 +385,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			stepLocated(PSToolRender, ellapsedTime, ellapsedTime);
 		break;
 		case Anim:
-		{			
+		{						
 			// update user param from global value if needed, unless this behaviour is bypassed has indicated by a flag in _BypassGlobalUserParam
 			if (_UserParamGlobalValue)
 			{
@@ -460,11 +462,23 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			}
 
 			// set start position. Used by emitters that emit from Local basis to world
-			_CoordSystemInfo.CurrentDeltaPos = _CoordSystemInfo.OldPos - _CoordSystemInfo.Matrix->getPos();			
-			if (_FatherSkelCoordSystemInfo)
+			if (!(_HiddenAtPreviousFrame && !_HiddenAtCurrentFrame))
+			{			
+				_CoordSystemInfo.CurrentDeltaPos = _CoordSystemInfo.OldPos - _CoordSystemInfo.Matrix->getPos();						
+				if (_UserCoordSystemInfo)
+				{
+					CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
+					csi.CurrentDeltaPos = csi.OldPos - csi.Matrix->getPos();
+				}
+			}
+			else
 			{
-				CCoordSystemInfo &csi = _FatherSkelCoordSystemInfo->CoordSystemInfo;
-				csi.CurrentDeltaPos = csi.OldPos - csi.Matrix->getPos();
+				_CoordSystemInfo.CurrentDeltaPos = NLMISC::CVector::Null;
+				if (_UserCoordSystemInfo)
+				{
+					CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
+					csi.CurrentDeltaPos = NLMISC::CVector::Null;
+				}
 			}
 			//displaySysPos(_Driver, _CurrentDeltaPos + _OldSysMat.getPos(), CRGBA::Red);
 			// process passes
@@ -474,9 +488,9 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			{					
 				// position of the system at the end of the integration
 				_CoordSystemInfo.CurrentDeltaPos += (_CoordSystemInfo.Matrix->getPos() - _CoordSystemInfo.OldPos) * (et * _InverseEllapsedTime);
-				if (_FatherSkelCoordSystemInfo)
+				if (_UserCoordSystemInfo)
 				{
-					CCoordSystemInfo &csi = _FatherSkelCoordSystemInfo->CoordSystemInfo;
+					CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
 					csi.CurrentDeltaPos += (csi.Matrix->getPos() - csi.OldPos) * (et * _InverseEllapsedTime);
 				}
 
@@ -510,11 +524,13 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			
 			// memorize position of matrix for next frame (becomes old position)
 			_CoordSystemInfo.OldPos = _CoordSystemInfo.Matrix->getPos();
-			if (_FatherSkelCoordSystemInfo)
+			if (_UserCoordSystemInfo)
 			{
-				CCoordSystemInfo &csi = _FatherSkelCoordSystemInfo->CoordSystemInfo;
+				CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
 				csi.OldPos =  csi.Matrix->getPos();
 			}
+
+			_HiddenAtPreviousFrame = _HiddenAtCurrentFrame;
 		}
 	}	
 	CHECK_INTEGRITY
@@ -570,12 +586,12 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			delete _UserParamGlobalValue;
 		_UserParamGlobalValue = NULL;
 		_BypassGlobalUserParam = 0;
-		// see if some process need to access the father skeleton matrix
-		delete _FatherSkelCoordSystemInfo;
-		_FatherSkelCoordSystemInfo = NULL;
+		// see if some process need to access the user matrix
+		delete _UserCoordSystemInfo;
+		_UserCoordSystemInfo = NULL;
 		for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 		{			
-			addRefForSkeletonSysCoordInfo((*it)->getFatherSkelMatrixUsageCount());			
+			addRefForUserSysCoordInfo((*it)->getUserMatrixUsageCount());			
 		}
 	}
 	else
@@ -862,32 +878,32 @@ void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 
 ///=======================================================================================
 void CParticleSystem::setSysMat(const CMatrix *m)
-{
-	nlassert(m);
+{	
+	_CoordSystemInfo.Matrix = m;
 	if (_SystemDate == 0.f)
 	{			
-		_CoordSystemInfo.OldPos = m->getPos();		
-	}	
-	_CoordSystemInfo.Matrix = m;	
+		_CoordSystemInfo.OldPos = m ? m->getPos() : CVector::Null;
+	}
+	if (!m) return;
 	_CoordSystemInfo.InvMatrix = _CoordSystemInfo.Matrix->inverted();	
 }
 
 ///=======================================================================================
-void CParticleSystem::setFatherSkeletonMatrix(const NLMISC::CMatrix *m)
-{
-	nlassert(m);
-	if (!_FatherSkelCoordSystemInfo) return; // no process in the system references the father skeleton matrix
-	CCoordSystemInfo &csi = _FatherSkelCoordSystemInfo->CoordSystemInfo;
+void CParticleSystem::setUserMatrix(const NLMISC::CMatrix *m)
+{	
+	if (!_UserCoordSystemInfo) return; // no process in the system references the user matrix
+	CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
+	csi.Matrix = m;
 	if (_SystemDate == 0.f)
 	{	
-		csi.OldPos = m->getPos();; // _CoordSystemInfo.Matrix is relevant if at least one call to setSysMat has been performed before
+		csi.OldPos = m ? m->getPos() : getSysMat().getPos(); // _CoordSystemInfo.Matrix is relevant if at least one call to setSysMat has been performed before
 	}	
-	csi.Matrix = m;	
+	if (!m) return;
 	csi.InvMatrix = csi.Matrix->inverted();
-	// build conversion matrix between father skeleton matrix & fx matrix
+	// build conversion matrix between father user matrix & fx matrix
 	// TODO : lazy evaluation for this ?
-	_FatherSkelCoordSystemInfo->SkelBasisToFXBasis = _CoordSystemInfo.InvMatrix * *(csi.Matrix);
-	_FatherSkelCoordSystemInfo->FXBasisToSkelBasis =  csi.InvMatrix * getSysMat();
+	_UserCoordSystemInfo->UserBasisToFXBasis = _CoordSystemInfo.InvMatrix * *(csi.Matrix);
+	_UserCoordSystemInfo->FXBasisToUserBasis =  csi.InvMatrix * getSysMat();
 }
 
 ///=======================================================================================
@@ -977,10 +993,10 @@ void CParticleSystem::getLODVect(NLMISC::CVector &v, float &offset,  TPSMatrixMo
 			offset = - _InvertedViewMat.getPos() * v;
 		}
 		break;
-		case PSFatherSkeletonWorldMatrix:
+		case PSUserMatrix:
 		{
-			const CVector tv = getInvertedFatherSkeletonMatrix().mulVector(_InvertedViewMat.getJ());
-			const CVector org = getInvertedFatherSkeletonMatrix() * _InvertedViewMat.getPos();
+			const CVector tv = getInvertedUserMatrix().mulVector(_InvertedViewMat.getJ());
+			const CVector org = getInvertedUserMatrix() * _InvertedViewMat.getPos();
 			v = _InvCurrentViewDist * tv;
 			offset = - org * v;
 		}
@@ -1254,15 +1270,15 @@ void CParticleSystem::interpolateFXPosDelta(NLMISC::CVector &dest, TAnimationTim
 }
 
 ///=======================================================================================
-void CParticleSystem::interpolateFatherSkeletonPosDelta(NLMISC::CVector &dest, TAnimationTime deltaT)
+void CParticleSystem::interpolateUserPosDelta(NLMISC::CVector &dest, TAnimationTime deltaT)
 {
-	if (!_FatherSkelCoordSystemInfo) 
+	if (!_UserCoordSystemInfo) 
 	{
 		interpolateFXPosDelta(dest, deltaT);
 	}
 	else
 	{
-		CCoordSystemInfo &csi = _FatherSkelCoordSystemInfo->CoordSystemInfo;
+		CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
 		dest = csi.CurrentDeltaPos - (deltaT * _InverseEllapsedTime) * (csi.Matrix->getPos() - csi.OldPos);
 	}
 }
@@ -1793,40 +1809,40 @@ void CParticleSystem::matrixModeChanged(CParticleSystemProcess *proc, TPSMatrixM
 	nlassert(proc);
 	// check that the located belong to that system
 	nlassert(isProcess(proc));
-	if (oldMode != PSFatherSkeletonWorldMatrix && newMode == PSFatherSkeletonWorldMatrix)
+	if (oldMode != PSUserMatrix && newMode == PSUserMatrix)
 	{
-		addRefForSkeletonSysCoordInfo();
+		addRefForUserSysCoordInfo();
 	}
-	else if (oldMode == PSFatherSkeletonWorldMatrix && newMode != PSFatherSkeletonWorldMatrix)
+	else if (oldMode == PSUserMatrix && newMode != PSUserMatrix)
 	{
-		releaseRefForSkeletonSysCoordInfo();
+		releaseRefForUserSysCoordInfo();
 	}
 }
 
 ///=======================================================================================
-void CParticleSystem::addRefForSkeletonSysCoordInfo(uint numRefs)
+void CParticleSystem::addRefForUserSysCoordInfo(uint numRefs)
 {
 	if (!numRefs) return;
-	if (!_FatherSkelCoordSystemInfo)
+	if (!_UserCoordSystemInfo)
 	{
-		_FatherSkelCoordSystemInfo = new CFatherSkelCoordSystemInfo;
+		_UserCoordSystemInfo = new CUserCoordSystemInfo;
 	}
-	nlassert(_FatherSkelCoordSystemInfo)
-	_FatherSkelCoordSystemInfo->NumRef += numRefs;
+	nlassert(_UserCoordSystemInfo)
+	_UserCoordSystemInfo->NumRef += numRefs;
 	
 }
 
 ///=======================================================================================
-void CParticleSystem::releaseRefForSkeletonSysCoordInfo(uint numRefs)
+void CParticleSystem::releaseRefForUserSysCoordInfo(uint numRefs)
 {
 	if (!numRefs) return;
-	nlassert(_FatherSkelCoordSystemInfo);	
-	nlassert(numRefs <= _FatherSkelCoordSystemInfo->NumRef)
-	_FatherSkelCoordSystemInfo->NumRef -= numRefs;
-	if (_FatherSkelCoordSystemInfo->NumRef == 0)
+	nlassert(_UserCoordSystemInfo);	
+	nlassert(numRefs <= _UserCoordSystemInfo->NumRef)
+	_UserCoordSystemInfo->NumRef -= numRefs;
+	if (_UserCoordSystemInfo->NumRef == 0)
 	{
-		delete _FatherSkelCoordSystemInfo;
-		_FatherSkelCoordSystemInfo = NULL;
+		delete _UserCoordSystemInfo;
+		_UserCoordSystemInfo = NULL;
 	}
 }
 
@@ -1834,19 +1850,19 @@ void CParticleSystem::releaseRefForSkeletonSysCoordInfo(uint numRefs)
 void CParticleSystem::checkIntegrity()
 {
 	// do some checks
-	uint fatherSkeletonMatrixUsageCount = 0;
+	uint userMatrixUsageCount = 0;
 	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{			
-		fatherSkeletonMatrixUsageCount += (*it)->getFatherSkelMatrixUsageCount();
+		userMatrixUsageCount += (*it)->getUserMatrixUsageCount();
 	}
-	if (fatherSkeletonMatrixUsageCount == 0)
+	if (userMatrixUsageCount == 0)
 	{	
-		nlassert(_FatherSkelCoordSystemInfo == NULL);
+		nlassert(_UserCoordSystemInfo == NULL);
 	}
 	else
 	{
-		nlassert(_FatherSkelCoordSystemInfo != NULL);
-		nlassert(_FatherSkelCoordSystemInfo->NumRef == fatherSkeletonMatrixUsageCount);
+		nlassert(_UserCoordSystemInfo != NULL);
+		nlassert(_UserCoordSystemInfo->NumRef == userMatrixUsageCount);
 	}
 }
 

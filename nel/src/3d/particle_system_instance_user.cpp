@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.25 2003/11/06 14:50:25 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.26 2003/11/25 14:40:11 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -490,6 +490,15 @@ bool CParticleSystemInstanceUser::isGlobalUserParamValueBypassed(uint userParamI
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	return isGlobalUserParamValueBypassed(userParamIndex);
 }
+
+//===================================================================
+void CParticleSystemInstanceUser::setUserMatrix(const NLMISC::CMatrix *userMat)
+{
+	NL3D_MEM_PS_INSTANCE
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	psm->setUserMatrix(userMat);
+}
+
 
 } // NL3D
 

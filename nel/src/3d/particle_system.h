@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.42 2003/11/18 13:59:03 vizerie Exp $
+ * $Id: particle_system.h,v 1.43 2003/11/25 14:40:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,17 +155,23 @@ public:
 	
 	///\name Position of the system
 		//@{
+			/** Hide / show the system
+			  * This just duplicates the 'hiden' flag of matching transform (instance of CParticleSystemModel)
+			  * If the system goes from 'hide' to 'show', then no trails are generated
+			  */
+			void	hide(bool hidden) {	_HiddenAtCurrentFrame = hidden; }
+		
 			/** Set the matrix for elements with matrixMode == PSFXMatrix.
 			  * NB: The previous matrix position is backuped during this call (used to interpolate the system position during integration),
 			  * so this should be called only once per frame
-			  * NB : pointer to the matrix should remains valid as long as that particle system exists (not copy of the matrix is kept)
+			  * NB : pointer to the matrix should remains valid as long as that particle system exists (no copy of the matrix is kept)
 			  */		 
 			void setSysMat(const NLMISC::CMatrix *m);
 
-			/** The same as 'setSysMat', but to set the matrix for elements with matrixMode == PSFatherSkeletonMatrix.
-              * NB : this should be called after 'setSysMat' for the current frame
+			/** The same as 'setSysMat', but to set the matrix for elements with matrixMode == PSUserMatrix              
+			  * NB : pointer to the matrix should remains valid as long as that particle system exists (no copy of the matrix is kept)
 			  */
-			void setFatherSkeletonMatrix(const NLMISC::CMatrix *m);
+			void setUserMatrix(const NLMISC::CMatrix *m);
 			
 			/// return the matrix of the system
 			const NLMISC::CMatrix &getSysMat() const 
@@ -176,27 +182,27 @@ public:
 			/// return the inverted matrix of the system
 			const NLMISC::CMatrix &getInvertedSysMat() const { return _CoordSystemInfo.InvMatrix; } 
 
-			/** return the matrix of the father skeleton
-			  * NB : to save memory, the father skel matrix is actually saved when at least one instance of CPSLocated that belongs to the system
-			  * makes a reference on it. This is usually the case when CPSLocated::setMatrixMode(PSFatherSkeletonMatrix) is called.
-			  * If no reference is made, then the system matrix is returned instead.
+			/** return the user matrix
+			  * NB : to save memory, the user matrix is actually saved when at least one instance of CPSLocated that belongs to the system
+			  * makes a reference on it. This is usually the case when CPSLocated::setMatrixMode(PSUserMatrix) is called.
+			  * If no reference is made, then the fx matrix is returned instead
 			  */
-			const NLMISC::CMatrix &getFatherSkeletonMatrix() const 
+			const NLMISC::CMatrix &getUserMatrix() const 
 			{ 
-				return _FatherSkelCoordSystemInfo ? *(_FatherSkelCoordSystemInfo->CoordSystemInfo.Matrix) : getSysMat(); 
+				return (_UserCoordSystemInfo && _UserCoordSystemInfo->CoordSystemInfo.Matrix) ? *(_UserCoordSystemInfo->CoordSystemInfo.Matrix) : getSysMat(); 
 			}		
 
-			/** return the inverted matrix of the father skeleton
-			  * NB : to save memory, the father skel matrix is actually saved when at least one instance of CPSLocated that belongs to the system
-			  * makes a reference on it. This is usually the case when CPSLocated::setMatrixMode(PSFatherSkeletonMatrix) is called.
+			/** return the inverted user matrix
+			  * NB : to save memory, the user matrix is actually saved when at least one instance of CPSLocated that belongs to the system
+			  * makes a reference on it. This is usually the case when CPSLocated::setMatrixMode(PSUserMatrix) is called.
 			  * If no reference is made, then the inverted system matrix is returned instead.
 			  */
-			const NLMISC::CMatrix &getInvertedFatherSkeletonMatrix() const { return _FatherSkelCoordSystemInfo ? _FatherSkelCoordSystemInfo->CoordSystemInfo.InvMatrix : getInvertedSysMat(); } 
+			const NLMISC::CMatrix &getInvertedUserMatrix() const { return (_UserCoordSystemInfo && _UserCoordSystemInfo->CoordSystemInfo.Matrix) ? _UserCoordSystemInfo->CoordSystemInfo.InvMatrix : getInvertedSysMat(); } 
 
-			// conversion matrix (from father skeleton matrix to fx matrix)
-			const NLMISC::CMatrix &getFatherSkeletonToFXMatrix() const { return _FatherSkelCoordSystemInfo ? _FatherSkelCoordSystemInfo->SkelBasisToFXBasis : NLMISC::CMatrix::Identity; }
-			// conversion matrix (from fx matrix to father skeleton matrix)
-			const NLMISC::CMatrix &getFXToFatherSkeletonMatrix() const { return _FatherSkelCoordSystemInfo ? _FatherSkelCoordSystemInfo->FXBasisToSkelBasis : NLMISC::CMatrix::Identity; }
+			// conversion matrix (from user matrix to fx matrix)
+			const NLMISC::CMatrix &getUserToFXMatrix() const { return (_UserCoordSystemInfo && _UserCoordSystemInfo->CoordSystemInfo.Matrix) ? _UserCoordSystemInfo->UserBasisToFXBasis : NLMISC::CMatrix::Identity; }
+			// conversion matrix (from fx matrix to user matrix)
+			const NLMISC::CMatrix &getFXToUserMatrix() const { return (_UserCoordSystemInfo && _UserCoordSystemInfo->CoordSystemInfo.Matrix) ? _UserCoordSystemInfo->FXBasisToUserBasis : NLMISC::CMatrix::Identity; }
 			
 			/** set the view matrix  
 			  * This must be called otherwise results can't be correct
@@ -1053,23 +1059,23 @@ private:
 	};
 
 
-	class CFatherSkelCoordSystemInfo
+	class CUserCoordSystemInfo
 	{
 	public:
 		CCoordSystemInfo	CoordSystemInfo;		
-		NLMISC::CMatrix		SkelBasisToFXBasis; // conversion matrix : from Skel basis to FX Basis
-		NLMISC::CMatrix		FXBasisToSkelBasis; // conversion matrix : from FX basis to Skel Basis		
-		uint16				NumRef; // number of objects in the system that use position of the father skeleton
-		                            // because this is used rarely, we allocate memory to track the father skeleton matrix only when needed
+		NLMISC::CMatrix		UserBasisToFXBasis; // conversion matrix : from user basis to FX Basis
+		NLMISC::CMatrix		FXBasisToUserBasis; // conversion matrix : from FX basis to user Basis		
+		uint16				NumRef; // number of objects in the system that use position of the user matrix
+		                            // because this is used rarely, we allocate memory to track the user matrix position only when needed
 	public:
-		CFatherSkelCoordSystemInfo()
+		CUserCoordSystemInfo()
 		{
 			NumRef = 0;
 		}
 	};
 
 	CCoordSystemInfo		   _CoordSystemInfo;				// coordinate system infos for this fx
-	CFatherSkelCoordSystemInfo *_FatherSkelCoordSystemInfo;     // coordinate system infos for an hypothetic skeleton parent (if that fx is sticked)
+	CUserCoordSystemInfo	   *_UserCoordSystemInfo;           // coordinate system infos for an hypothetic user matrix
 	
 		
 	
@@ -1164,6 +1170,8 @@ private:
 	bool										_ForceGlobalColorLighting            : 1;
 	bool										_AutoComputeDelayBeforeDeathTest     : 1;
 	bool										_AutoCount							 : 1;
+	bool										_HiddenAtCurrentFrame				 : 1;
+	bool										_HiddenAtPreviousFrame				 : 1;
 
 	/// Inverse of the ellapsed time (call to step, valid only for motion pass)
 	float										_InverseEllapsedTime;	
@@ -1174,16 +1182,16 @@ private:
 public:
 	// For use by emitters only : This compute a delta of position of the fx matrix to ensure that spawning position are correct when the system moves
 	void		interpolateFXPosDelta(NLMISC::CVector &dest, TAnimationTime deltaT);
-	// For use by emitters only : This compute a delta of position of the fatherSkeletonMatrix to ensure that spawning position are correct when the system moves
-	void		interpolateFatherSkeletonPosDelta(NLMISC::CVector &dest, TAnimationTime deltaT);
+	// For use by emitters only : This compute a delta of position of the user matrix to ensure that spawning position are correct when the system moves
+	void		interpolateUserPosDelta(NLMISC::CVector &dest, TAnimationTime deltaT);
 	// For use by emitters only : Get the current emit ratio when auto-LOD is used. Valid only during the 'Emit' pass
 	float		getAutoLODEmitRatio() const { return _AutoLODEmitRatio; }	
 	// For private used by CPSLocated instances : should be called when the matrix mode of a located has changed
 	void		matrixModeChanged(CParticleSystemProcess *proc, TPSMatrixMode oldMode, TPSMatrixMode newMode);
-	// FOR PRIVATE USE : called when one more object of the system needs the _FatherSkelCoordSystemInfo field => so allocate it if needed.
-	void		addRefForSkeletonSysCoordInfo(uint numRefs = 1);
-	// FOR PRIVATE USE : called when one less object of the system needs the _FatherSkelCoordSystemInfo field => deallocate it when there are no references left
-	void		releaseRefForSkeletonSysCoordInfo(uint numRefs = 1);
+	// FOR PRIVATE USE : called when one more object of the system needs the _UserCoordSystemInfo field => so allocate it if needed.
+	void		addRefForUserSysCoordInfo(uint numRefs = 1);
+	// FOR PRIVATE USE : called when one less object of the system needs the _UserCoordSystemInfo field => deallocate it when there are no references left
+	void		releaseRefForUserSysCoordInfo(uint numRefs = 1);
 };
 
 

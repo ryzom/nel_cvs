@@ -1,7 +1,7 @@
 /** \file color_modifier.h
  * A class describing color modifications
  *
- * $Id: color_modifier.h,v 1.1 2002/02/06 10:12:55 vizerie Exp $
+ * $Id: color_modifier.h,v 1.2 2002/02/06 13:15:46 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -27,7 +27,9 @@
 #ifndef _COLOR_MODIFIER_H
 #define _COLOR_MODIFIER_H
 
+#include <nel/misc/types_nl.h>
 #include <vector>
+#include <string>
 
 namespace NLMISC
 {
@@ -47,14 +49,20 @@ struct CColorModifier
 	float Luminosity;
 	float Contrast;
 
-	char  ColID; // used to build the output fileNames
+	std::string  ColID; // used to build the output fileNames
 
 	/// just convert the pixels of a bitmap by using the alpha of the given mask
 	void convertBitmap(NLMISC::CBitmap &destBitmap, const NLMISC::CBitmap &srcBitmap, const NLMISC::CBitmap &mask) const;
 
 	/** compute the averaged H, S and L from a bitmap	  
 	  */
-	static void evalBitmapStats(const NLMISC::CBitmap &srcBitmap, const NLMISC::CBitmap &mask, float &H, float &S, float &L);
+	static void evalBitmapStats(const NLMISC::CBitmap &srcBitmap,
+								const NLMISC::CBitmap &mask,
+								float &H,
+								float &S,
+								float &L,
+								uint8 &greyLevel
+							   );	
 
 };
 

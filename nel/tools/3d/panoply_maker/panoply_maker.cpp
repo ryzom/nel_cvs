@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.1 2002/02/06 10:12:55 vizerie Exp $
+ * $Id: panoply_maker.cpp,v 1.2 2002/02/06 13:15:46 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -53,7 +53,7 @@ struct CBuildInfo
 	std::string					 InputPath;
 	std::string					 OutputPath;
 	std::vector<std::string>     BitmapExtensions; // the supported extension for bitmaps
-	char						 DefaultChar;
+	std::string					 DefaultChar;
 	TColorMaskVect				 ColorMasks;
 };
 
@@ -132,12 +132,7 @@ int main(int argc, char* argv[])
 			/// default ascii character for unused masks
 			try
 			{
-				std::string default_col_char = cf.getVar ("default_col_char").asString();
-				if (default_col_char.size() != 1)
-				{				
-					throw std::exception("Color ids must be made of 1 character, other sizes are invalid");
-				}
-				bi.DefaultChar = default_col_char[0];
+				bi.DefaultChar = cf.getVar ("default_col_char").asString();								
 			}
 			catch (NLMISC::EUnknownVar &)
 			{
@@ -224,13 +219,7 @@ static void BuildMasksFromConfigFile(NLMISC::CConfigFile &cf,
 			cm.Lightness       = lightness.asFloat(l);
 			cm.Saturation      = saturation.asFloat(l);
 
-
-			if (colorIDs.asString(l).size() != 1)
-			{				
-				throw std::exception("Color ids must be made of 1 character, other sizes are invalid");
-			}
-
-			cm.ColID = colorIDs.asString(l)[0];
+			cm.ColID = colorIDs.asString(l);
 		}
 	}
 }
@@ -343,7 +332,7 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 	{	
 		resultBitmap = srcBitmap;
 		uint l;
-		std::string outputFileName = fileName + "_";
+		std::string outputFileName = fileName;
 		/// build current tex
 		for (l  = 0; l < masks.size(); ++l)
 		{

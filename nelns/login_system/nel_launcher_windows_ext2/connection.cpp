@@ -1,6 +1,6 @@
-/** \file connexion.h
+/** \file connexion.cpp
  *
- * $Id: connection.cpp,v 1.3 2004/01/07 18:45:39 distrib Exp $
+ * $Id: connection.cpp,v 1.4 2004/01/08 11:38:58 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -146,18 +146,18 @@ string checkLogin(const string &login, const string &password, const string &cli
 	Login = Password = ClientApp = "";
 
 	if(!connect())
-		return "Can't connect";
+		return "Can't connect (error code 1)";
 
 	if(!send(ConfigFile.getVar("StartupPage").asString()+"?login="+login+"&password="+password+"&clientApplication="+clientApp))
-		return "Can't send";
+		return "Can't send (error code 2)";
 
 	string res;
 		
 	if(!receive(res))
-		return "Can't receive";
+		return "Can't receive (error code 3)";
 
 	if(res.empty())
-		return "Empty answer from server";
+		return "Empty answer from server (error code 4)";
 
 	if(res[0] == '0')
 	{
@@ -186,7 +186,7 @@ string checkLogin(const string &login, const string &password, const string &cli
 		{
 			nlwarning("bad shard lines number %d != %d", lines.size(), nbs+1);
 			nlwarning("'%s'", res.c_str());
-			return "bad lines numbers";
+			return "bad lines numbers (error code 5)";
 		}
 
 		for(uint i = 1; i < lines.size(); i++)
@@ -207,7 +207,7 @@ string checkLogin(const string &login, const string &password, const string &cli
 			{
 				nlwarning("bad | numbers %d != %d", res.size(), 7);
 				nlwarning("'%s'", lines[i].c_str());
-				return "bad pipe numbers";
+				return "bad pipe numbers (error code 6)";
 			}
 			Shards.push_back(CShard(res[0], atoi(res[1].c_str())>0, atoi(res[2].c_str()), res[3], atoi(res[4].c_str()), res[5], res[6]));
 		}
@@ -230,22 +230,22 @@ string selectShard(uint32 shardId, string &cookie, string &addr)
 {
 	cookie = addr = "";
 
-	if(!connect()) return "Can't connect";
+	if(!connect()) return "Can't connect (error code 7)";
 
-	if(Login.empty()) return "Empty Login";
-	if(Password.empty()) return "Empty Password";
-	if(ClientApp.empty()) return "Empty Client Application";
+	if(Login.empty()) return "Empty Login (error code 8)";
+	if(Password.empty()) return "Empty Password (error code 9)";
+	if(ClientApp.empty()) return "Empty Client Application (error code 10)";
 	
 	if(!send(ConfigFile.getVar("StartupPage").asString()+"?cmd=login&shardid="+toString(shardId)+"&login="+Login+"&password="+Password+"&clientApplication="+ClientApp))
-		return "Can't send";
+		return "Can't send (error code 11)";
 	
 	string res;
 	
 	if(!receive(res))
-		return "Can't receive";
+		return "Can't receive (error code 12)";
 
 	if(res.empty())
-		return "Empty result";
+		return "Empty result (error code 13)";
 
 	if(res[0] == '0')
 	{
@@ -263,7 +263,7 @@ string selectShard(uint32 shardId, string &cookie, string &addr)
 		if(line.size() != 2)
 		{
 			nlwarning("bad launch lines number %d != %d", line.size(), 2);
-			return "bad launch line number";
+			return "bad launch line number (error code 14)";
 		}
 		
 		cookie = line[0].substr(2);
@@ -276,7 +276,5 @@ string selectShard(uint32 shardId, string &cookie, string &addr)
 		return res;
 	}
 
-	nlinfo("all received '%s'", res.c_str());
-	
 	return "";
 }

@@ -1,5 +1,26 @@
-// nel_launcher_dlg.cpp : implementation file
-//
+/** \file nel_launcher_dlg.cpp
+ *
+ * $Id: nel_launcher_dlg.cpp,v 1.3 2004/01/08 11:38:58 lecroart Exp $
+ */
+
+/* Copyright, 2004 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NELNS.
+ * NEVRAX NELNS is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NELNS is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NELNS; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
 
 #include "std_afx.h"
 
@@ -19,7 +40,22 @@ CConfigFile ConfigFile;
 bool VerboseLog = false;
 
 static CFileDisplayer NLFileDisplayer("nel_launcher.log", true);
+static DispayerAdded = false;
 
+void quit()
+{
+	if(DispayerAdded)
+	{
+		createDebug();
+		DebugLog->removeDisplayer(&NLFileDisplayer);
+		InfoLog->removeDisplayer(&NLFileDisplayer);
+		WarningLog->removeDisplayer(&NLFileDisplayer);
+		ErrorLog->removeDisplayer(&NLFileDisplayer);
+		AssertLog->removeDisplayer(&NLFileDisplayer);
+	}
+	
+	exit(0);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CNeLLauncherDlg dialog
@@ -72,14 +108,15 @@ BOOL CNeLLauncherDlg::OnInitDialog()
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
-	
+
 	createDebug();
 	DebugLog->addDisplayer(&NLFileDisplayer);
 	InfoLog->addDisplayer(&NLFileDisplayer);
 	WarningLog->addDisplayer(&NLFileDisplayer);
 	ErrorLog->addDisplayer(&NLFileDisplayer);
 	AssertLog->addDisplayer(&NLFileDisplayer);
-	
+	DispayerAdded = true;
+
 	nlinfo("Loading config file");
 
 	ConfigFile.load("nel_launcher.cfg");
@@ -131,7 +168,7 @@ HCURSOR CNeLLauncherDlg::OnQueryDragIcon()
 	return (HCURSOR) m_hIcon;
 }
 
-void CNeLLauncherDlg::OnLogin() 
+void CNeLLauncherDlg::OnLogin()
 {
 	nlinfo("OnLogin called");
 
@@ -292,7 +329,7 @@ void CNeLLauncherDlg::OnConnect()
 
 	if(!p)
 	{
-		MessageBox("Please, select a shard and then press Connect", "Warning");
+		MessageBox("Please, select a shard and then press Connect button", "Information");
 		return;
 	}
 
@@ -326,7 +363,7 @@ void CNeLLauncherDlg::OnConnect()
 
 		if(!Shards[i].Online)
 		{
-			MessageBox("You can't connect to an offline shard", "Error");
+			MessageBox("You can't connect to an offline shard (error code 15)", "Error");
 			goto end;
 		}
 
@@ -336,8 +373,14 @@ void CNeLLauncherDlg::OnConnect()
 		{
 			// We need to patch first
 
-			if(IDCANCEL == MessageBox("You need to patch to access to this shard", "Warning", MB_OKCANCEL))
+			if(IDCANCEL == MessageBox("You need to patch to access to this shard", "Information", MB_OKCANCEL))
 			{
+				goto end;
+			}
+
+			if(Shards[i].PatchURL.empty())
+			{
+				MessageBox("You can't patch because the PatchURL isn't setup in database (error code 16)", "Error");
 				goto end;
 			}
 
@@ -413,11 +456,11 @@ void CNeLLauncherDlg::LaunchClient(const string &cookie, const string &addr)
 	// execute, should better use CreateProcess()
 	if(_execvp(rapp.c_str(), args) == -1)
 	{
-		MessageBox("Can't execute the game", "Error");
+		MessageBox("Can't execute the game (error code 17)", "Error");
 	}
 	else
 	{
-		exit(0);
+		quit();
 	}
 }
 
@@ -461,13 +504,7 @@ void CNeLLauncherDlg::OnCancel()
 {
 	nlinfo("OnCancel called");
 
-	createDebug();
-	DebugLog->removeDisplayer(&NLFileDisplayer);
-	InfoLog->removeDisplayer(&NLFileDisplayer);
-	WarningLog->removeDisplayer(&NLFileDisplayer);
-	ErrorLog->removeDisplayer(&NLFileDisplayer);
-	AssertLog->removeDisplayer(&NLFileDisplayer);
+	quit();
 
-	exit(0);
 	CDialog::OnCancel();
 }

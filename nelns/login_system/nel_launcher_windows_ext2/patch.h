@@ -1,9 +1,9 @@
 /** \file patch.h
  *
- * $Id: patch.h,v 1.1 2004/01/06 16:01:32 lecroart Exp $
+ * $Id: patch.h,v 1.2 2004/01/08 11:38:58 lecroart Exp $
  */
 
-/* Copyright, 2000 Nevrax Ltd.
+/* Copyright, 2004 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify

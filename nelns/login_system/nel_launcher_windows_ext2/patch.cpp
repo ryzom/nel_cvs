@@ -1,9 +1,9 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.1 2004/01/06 15:54:58 lecroart Exp $
+ * $Id: patch.cpp,v 1.2 2004/01/08 11:38:58 lecroart Exp $
  */
 
-/* Copyright, 2003 Nevrax Ltd.
+/* Copyright, 2004 Nevrax Ltd.
  *
  * This file is part of NEVRAX NELNS.
  * NEVRAX NELNS is free software; you can redistribute it and/or modify
@@ -87,7 +87,7 @@ void setRWAccess (const string &filename)
 	if (!NLMISC::CFile::setRWAccess(filename))
 	{
 		nlwarning ("Can't have read/write access to '%s' file : code=%d %s", filename.c_str(), errno, strerror(errno));
-		throw Exception ("Can't have read/write access to '%s' file : code=%d %s", filename.c_str(), errno, strerror(errno));
+		throw Exception ("Can't have read/write access to '%s' file : code=%d %s (error code 18)", filename.c_str(), errno, strerror(errno));
 	}
 }
 
@@ -97,7 +97,7 @@ string deleteFile (const string &filename, bool throwException=true)
 
 	if (!NLMISC::CFile::deleteFile(filename))
 	{
-		string str = toString("Can't delete '%s' file : code=%d %s", filename.c_str(), errno, strerror(errno));
+		string str = toString("Can't delete '%s' file : code=%d %s (error code 19)", filename.c_str(), errno, strerror(errno));
 		nlwarning (str.c_str());
 		if(throwException)
 			throw Exception (str);
@@ -116,12 +116,12 @@ void setVersion(const std::string &version)
 	FILE *fp = fopen (fn.c_str(), "wb");
 	if (fp == NULL)
 	{
-		throw Exception ("Can't open file '%s' : code=%d %s", fn.c_str (), errno, strerror(errno));
+		throw Exception ("Can't open file '%s' : code=%d %s (error code 20)", fn.c_str (), errno, strerror(errno));
 	}
 
 	if (fputs (version.c_str (), fp) == EOF)
 	{
-		throw Exception ("Can't write file '%s' : code=%d %s", fn.c_str (), errno, strerror(errno));
+		throw Exception ("Can't write file '%s' : code=%d %s (error code 21)", fn.c_str (), errno, strerror(errno));
 	}
 	fclose (fp);
 }
@@ -141,7 +141,7 @@ string getVersion()
 		}
 		else
 		{
-			throw Exception ("Can't read file '%s' : code=%d %s", fn.c_str (), errno, strerror(errno));
+			throw Exception ("Can't read file '%s' : code=%d %s (error code 22)", fn.c_str (), errno, strerror(errno));
 		}
 		fclose (fp);
 	}
@@ -224,7 +224,7 @@ private:
 				setState(true, true, "Creating patch directory");
 				if (_mkdir ("patch") == -1)
 				{
-					throw Exception ("Can't create patch directory : code=%d %s", errno, strerror(errno));
+					throw Exception ("Can't create patch directory : code=%d %s (error code 23)", errno, strerror(errno));
 				}
 			}
 
@@ -238,7 +238,7 @@ private:
 			{
 				int gzerrno;
 				const char *gzerr = gzerror (gz, &gzerrno);
-				throw Exception ("Can't open file '%s': code=%d %s", DirFilename.c_str(), gzerrno, gzerr);
+				throw Exception ("Can't open file '%s': code=%d %s (error code 24)", DirFilename.c_str(), gzerrno, gzerr);
 			}
 
 			vector<CEntry> filesList;
@@ -251,12 +251,12 @@ private:
 			{
 				int gzerrno;
 				const char *gzerr = gzerror (gz, &gzerrno);
-				throw Exception ("Can't read header of'%s' : code=%d %s", DirFilename.c_str(), gzerrno, gzerr);
+				throw Exception ("Can't read header of'%s' : code=%d %s (error code 25)", DirFilename.c_str(), gzerrno, gzerr);
 			}
 
 			if (string(buffer) != "FILESLIST\n")
 			{
-				throw Exception ("%s has not a valid content '%s' : code=8888", DirFilename.c_str(), buffer);
+				throw Exception ("%s has not a valid content '%s' : code=8888 (error code 26)", DirFilename.c_str(), buffer);
 			}
 
 			while (!gzeof(gz))
@@ -265,7 +265,7 @@ private:
 				{
 					int gzerrno;
 					const char *gzerr = gzerror (gz, &gzerrno);
-					throw Exception ("Can't read '%s' : code=%d %s", DirFilename.c_str(), gzerrno, gzerr);
+					throw Exception ("Can't read '%s' : code=%d %s (error code 27)", DirFilename.c_str(), gzerrno, gzerr);
 				}
 				
 				string b = buffer;
@@ -354,7 +354,7 @@ private:
 					) 
 				{
 					// error occurs during the launch
-					string str = toString("Can't execute '%s': code=%d %s", RelaunchNelLauncherBatchFilename.c_str(), errno, strerror(errno));
+					string str = toString("Can't execute '%s': code=%d %s (error code 28)", RelaunchNelLauncherBatchFilename.c_str(), errno, strerror(errno));
 					throw Exception (str);
 				}
 				
@@ -369,7 +369,7 @@ private:
 				FILE *fp = fopen (UpdateNelLauncherBatchFilename.c_str(), "wt");
 				if (fp == NULL)
 				{
-					string err = toString("Can't open file '%s' for writing: code=%d %s", UpdateNelLauncherBatchFilename.c_str(), errno, strerror(errno));
+					string err = toString("Can't open file '%s' for writing: code=%d %s (error code 29)", UpdateNelLauncherBatchFilename.c_str(), errno, strerror(errno));
 					throw Exception (err);
 				}
 
@@ -436,7 +436,7 @@ private:
 					) 
 				{
 					// error occurs during the launch
-					string str = toString("Can't execute '%s': code=%d %s", UpdateNelLauncherBatchFilename.c_str(), errno, strerror(errno));
+					string str = toString("Can't execute '%s': code=%d %s (error code 30)", UpdateNelLauncherBatchFilename.c_str(), errno, strerror(errno));
 					throw Exception (str);
 				}
 				
@@ -444,7 +444,7 @@ private:
 				CloseHandle( pi.hProcess );
 				CloseHandle( pi.hThread );
 				
-				exit(0);
+				quit();
 			}
 
 			// get files if necessary
@@ -568,6 +568,7 @@ private:
 			{
 				err += toString("code=%d %s", errno, strerror (errno));
 			}
+			err += " (error code 31)";
 			deleteFile (filename);
 			throw Exception (err);
 		}
@@ -578,7 +579,7 @@ private:
 		FILE *fp = fopen (dest.c_str(), "wb");
 		if (fp == NULL)
 		{
-			string err = toString("Can't open file '%s' : code=%d %s", dest.c_str(), errno, strerror(errno));
+			string err = toString("Can't open file '%s' : code=%d %s, (error code 32)", dest.c_str(), errno, strerror(errno));
 			
 			gzclose(gz);
 			deleteFile (filename);
@@ -601,7 +602,7 @@ private:
 				gzclose(gz);
 				fclose(fp);
 				//deleteFile (filename);
-				throw Exception ("Can't read compressed file '%s' (after %d bytes) : code=%d %s", filename.c_str(), currentSize, gzerrno, gzerr);
+				throw Exception ("Can't read compressed file '%s' (after %d bytes) : code=%d %s, (error code 33)", filename.c_str(), currentSize, gzerrno, gzerr);
 			}
 
 			currentSize += res;
@@ -611,7 +612,7 @@ private:
 			if(VerboseLog) nlinfo("fwrite returns %d", res2);
 			if (res2 != res)
 			{
-				string err = toString("Can't write file '%s' : code=%d %s", dest.c_str(), errno, strerror(errno));
+				string err = toString("Can't write file '%s' : code=%d %s (error code 34)", dest.c_str(), errno, strerror(errno));
 
 				gzclose(gz);
 				fclose(fp);
@@ -663,13 +664,17 @@ private:
 				DWORD errcode = GetLastError ();
 				if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
 					errcode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-					(LPTSTR) &lpMsgBuf, 0, NULL) == 0)
+					(LPTSTR) &lpMsgBuf, 0, NULL) > 0)
 				{
 					errorstr = (LPCTSTR)lpMsgBuf;
+					LocalFree(lpMsgBuf);
 				}
-				LocalFree(lpMsgBuf);
+				else
+				{
+					errorstr = "FormatMessage can't get the message";
+				}
 				
-				throw Exception ("InternetOpen() failed: %s (ec %d)", errorstr.c_str(), errcode);
+				throw Exception ("InternetOpen() failed: %s (ec %d) (error code 35)", errorstr.c_str(), errcode);
 			}
 		}
 
@@ -682,20 +687,24 @@ private:
 			DWORD errcode = GetLastError ();
 			if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
 				errcode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-				(LPTSTR) &lpMsgBuf, 0, NULL) == 0)
+				(LPTSTR) &lpMsgBuf, 0, NULL) > 0)
 			{
 				errorstr = (LPCTSTR)lpMsgBuf;
+				LocalFree(lpMsgBuf);
 			}
-			LocalFree(lpMsgBuf);
+			else
+			{
+				errorstr = "FormatMessage can't get the message";
+			}
 
-			throw Exception ("InternetOpenUrl() failed on file '%s': %s (ec %d)", source.c_str (), errorstr.c_str(), errcode);
+			throw Exception ("InternetOpenUrl() failed on file '%s': %s (ec %d) (error code 36)", source.c_str (), errorstr.c_str(), errcode);
 		}
 
 		setRWAccess(dest);
 		FILE *fp = fopen (dest.c_str(), "wb");
 		if (fp == NULL)
 		{
-			throw Exception ("Can't open file '%s' for writing: code=%d %s", dest.c_str (), errno, strerror(errno));
+			throw Exception ("Can't open file '%s' for writing: code=%d %s (error code 37)", dest.c_str (), errno, strerror(errno));
 		}
 
 		CurrentFilesToGet++;
@@ -713,15 +722,20 @@ private:
 				DWORD errcode = GetLastError ();
 				if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
 					errcode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-					(LPTSTR) &lpMsgBuf, 0, NULL) == 0)
+					(LPTSTR) &lpMsgBuf, 0, NULL) > 0)
 				{
 					errorstr = (LPCTSTR)lpMsgBuf;
+					LocalFree(lpMsgBuf);
 				}
-				LocalFree(lpMsgBuf);
+				else
+				{
+					errorstr = "FormatMessage can't get the message";
+				}
+				
 				fclose(fp);
 				deleteFile (dest);
 
-				throw Exception ("InternetOpenUrl() failed on file '%s': %s (ec %d)", source.c_str (), errorstr.c_str(), errcode);
+				throw Exception ("InternetOpenUrl() failed on file '%s': %s (ec %d) (error code 38)", source.c_str (), errorstr.c_str(), errcode);
 			}
 			else
 			{
@@ -734,7 +748,7 @@ private:
 				int res2 = fwrite (buffer, 1, realSize, fp);
 				if ((DWORD)res2 != realSize)
 				{
-					string err = toString("Can't write file '%s' : code=%d %s", dest.c_str(), errno, strerror(errno));
+					string err = toString("Can't write file '%s' : code=%d %s (error code 39)", dest.c_str(), errno, strerror(errno));
 
 					fclose(fp);
 					deleteFile (dest);
@@ -760,13 +774,17 @@ private:
 			DWORD errcode = GetLastError ();
 			if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
 				errcode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-				(LPTSTR) &lpMsgBuf, 0, NULL) == 0)
+				(LPTSTR) &lpMsgBuf, 0, NULL) > 0)
 			{
 				errorstr = (LPCTSTR)lpMsgBuf;
+				LocalFree(lpMsgBuf);
 			}
-			LocalFree(lpMsgBuf);
+			else
+			{
+				errorstr = "FormatMessage can't get the message";
+			}
 			
-			throw Exception ("InternetCloseHandle() failed on file '%s': %s (ec %d)", source.c_str (), errorstr.c_str(), errcode);
+			throw Exception ("InternetCloseHandle() failed on file '%s': %s (ec %d) (error code 40)", source.c_str (), errorstr.c_str(), errcode);
 		}
 	}
 

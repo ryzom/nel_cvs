@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.7 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.8 2001/10/03 09:13:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1359,17 +1359,19 @@ public:
 	/// inherited from CPSAttribMaker
 	virtual void *make(CPSLocated *loc, uint32 startIndex, void *output, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const
 	{
+		if (!numAttrib) return output;
 		void *tab = output;
 		if (!allowNoCopy || sizeof(T) != stride)
 		{
 			// we just copy what we have memorized
 			CPSAttrib<T>::const_iterator it = _T.begin() + startIndex, endIt = _T.begin() + startIndex + numAttrib;
-			while (it != endIt)
+			do
 			{
 				*(T *) tab = *it;
 				++it;
 				tab = (uint8 *) tab + stride;
 			}
+			while (it != endIt);
 			return output;
 		}
 		else

@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.4 2002/12/03 17:59:28 robert Exp $
+ * $Id: classifier.h,v 1.5 2002/12/05 18:28:37 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include <list>
 #include <map>
+#include <set>
 
 namespace NLAINIMAT
 {
@@ -54,8 +55,8 @@ private :
 		char getValue();
 
 	private :
-		std::map<std::string, char>::const_iterator	_itSensor;	// A reference to the sensor associate with this condition.
-		char										_value;		// The condition value;
+		std::map<std::string, char>::const_iterator	_itSensor;			// A reference to the sensor associate with this condition.
+		char										_value;				// The condition value;
 	};
 
 	 // A classifier is a three parts components (condition, priority, behavior).
@@ -72,8 +73,9 @@ private :
 	};
 
 private :
-	TSensorMap				_sensors;		// The sensors are the inputs of the classifier system.
-	std::list<CClassifier*>	_classifiers;	// The classifiers are the rules of the classifier system.
+	TSensorMap						_sensors;			// The sensors are the inputs of the classifier system.
+	std::map<sint16, CClassifier*>	_classifiers;		// The classifiers are the rules of the classifier system.
+	sint16							_ClassifierNumber;	// Number of classifiers
 
 public :
 	/// Destructor
@@ -94,9 +96,16 @@ public :
 	/**
 	  * Select a behavior according to the values in the sensorMap.
 	  * \param sensorMap is a map whose key is the sensor name and value the sensor value.
-	  * \return is the behvior of the selected classifier.
+	  * \return is the number of the selected classifier.
 	  */
-	std::string selectBehavior(const TSensorMap &sensorMap);
+	sint16 selectBehavior(const TSensorMap &sensorMap);
+
+	/**
+	  * Give the action part of a given Classifier.
+	  * \param classifierNumber is the number of the classifier.
+	  * \return is the condition part of the wanted Classifier.
+	  */
+	std::string getActionPart(sint16 classifierNumber);
 
 	void getDebugString(std::string &t) const;
 };
@@ -187,18 +196,19 @@ private :
 	TEnergyByMotivation							_EnergyByMotivation; // <MotivationSource, motivationValue>
 };
 
+
 /**
-  * A net of a Classifier System.
+  * A Modular Hierarchical Classifier System.
+  * This is the base component where all rules are stored.
   * \author Gabriel ROBERT
   * \author Nevrax France
   * \date 2002
   */
-class CNetCS
+class CMHiCSbase
 {
 public :
-
-	CNetCS();
-	virtual ~CNetCS();
+	CMHiCSbase();
+	virtual ~CMHiCSbase();
 
 	/// Add a new action in the net.
 	void addActionCS(const CActionCS &action);
@@ -207,6 +217,48 @@ public :
 	 Exemple : Figthing is a virtual action. It may satisfy the anger motivation and is a motivation for guive a sword slash.
 	 */
 	void addVirtualActionCS(const CActionCS &action);
+
+	/**
+	  * Select a behavior according to the values in the sensorMap.
+	  * \param motivationName is the name of the CS that must be activated
+	  * \param sensorMap is a map whose key is the sensor name and value the sensor value.
+	  * \return is the number of the the selected classifier.
+	  */
+	sint16 selectBehavior(std::string motivationName, const TSensorMap &sensorMap);
+
+	/**
+	  * Give the action part of a given Classifier.
+	  * \param motivationName is the name of the CS
+	  * \param classifierNumber is the number of the classifier.
+	  * \return is the condition part of the wanted Classifier.
+	  */
+	std::string getActionPart(std::string motivationName, sint16 classifierNumber);
+
+	// To now if a behav selected by a CS is an action (if not, it's a common CS)
+	bool isAnAction(std::string behav) const;
+
+	/// Chaine de debug
+	void getDebugString(std::string &t) const;
+	
+private :
+	std::map<std::string, CClassifierSystem>	_ClassifierSystems;						// <motivationName, classeur> CS by motivation name.
+	std::set<std::string>						_ActionSet;							// Set of all executablle actions
+};
+
+
+/**
+  * A Modular Hierarchical Classifier System.
+  * This is the agent component where motivations levels and perceptions are stored.
+  * \author Gabriel ROBERT
+  * \author Nevrax France
+  * \date 2002
+  */
+class CMHiCSagent
+{
+public :
+
+	CMHiCSagent(CMHiCSbase* pMHiCSbase);
+	virtual ~CMHiCSagent();
 
 	/// Donne la Puissance Propre d'une Motivation
 	void setMotivationPP(std::string motivationName, sint16 PP);
@@ -220,21 +272,26 @@ public :
 	/// Update the values in the NetCS
 	void run();
 
-	/// Updtae the sensors value
+	/// Update the sensors value
 	void setSensors(const TSensorMap &sensorMap);
 
 	/// Chaine de debug
 	void getDebugString(std::string &t) const;
 
 private :
-	struct CMotivateCS
+	class CMotivateCS
 	{
-		CClassifierSystem	CS;
+	public :
+		sint16				ClassifierNumber;
 		CMotivationEnergy	MotivationIntensity;
-		std::string			LastMotivedAction;
+	public :
+		CMotivateCS()
+		{
+			ClassifierNumber = -1;
+		}
 	};
+	CMHiCSbase*									_pMHiCSbase;						// A pointer on the rules base.
 	std::map<std::string, CMotivateCS>			_ClassifiersAndMotivationIntensity;	// <motivationName, classeur> the motivationName is also the CS name.
-//	std::map<std::string, CClassifierSystem>	_Classifiers;						// <motivationName, classeur> Ensemble de mes règles
 	TSensorMap									_SensorsValues;						// Valeurs des senseurs
 	std::map<std::string, CMotivationEnergy>	_ActionsExecutionIntensity;			// <actionName, ExecutionIntensity>
 };

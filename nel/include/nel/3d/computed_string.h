@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.2 2000/11/22 10:11:35 coutelas Exp $
+ * $Id: computed_string.h,v 1.3 2000/11/23 10:47:49 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,3 +139,4 @@ struct CComputedString
 #endif // NL_COMPUTED_STRING_H
 
 /* End of computed_string.h */
+

@@ -21,6 +21,7 @@ class CItem
 {
 protected:
 	CLoader* pl;
+	CStringEx sxlocalworkdirectory;
 	CItemEltStruct* pitemes;
 	CItemEltList* pitemelparents;
 	CItemEltAtom* pitemeacomments;
@@ -32,9 +33,11 @@ public:
 	void Clear();
 	void SetLoader( CLoader* const _pl );
 	void New( const CStringEx& _sxdfnfilename );
-	void Load( const CStringEx& _sxfilename );
-	void Load( const CStringEx& _sxfilename, const CStringEx _sxdate ); 
-	void Save( const CStringEx& _sxfilename );
+	void Load( const CStringEx& _sxfullname );
+	void Load( const CStringEx& _sxfullname, const CStringEx _sxdate ); 
+	void Load( const CStringEx& _sxfullname, CStringEx& _sxlocalworkdirectory );
+	void Load( const CStringEx& _sxfullname, const CStringEx& _sxlocalworkdirectory, const CStringEx _sxdate ); 
+	void Save( const CStringEx& _sxfullname );
 
 	void SetCurrentValue( const unsigned int _index, const CStringEx s );
 	unsigned int GetNbElt() const;

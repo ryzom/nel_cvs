@@ -44,10 +44,16 @@ void CItem::SetLoader( CLoader* const _pl )
 {
 	nlassert( _pl );
 	pl = _pl;
+	sxlocalworkdirectory = pl->GetWorkDirectory();
 }
+
+
 
 void CItem::Load( const CStringEx& _sxfullname )
 {
+	CStringEx sxsavedir = pl->GetWorkDirectory(); 
+	pl->SetWorkDirectory( sxlocalworkdirectory );
+
 	// Load the form
 	CForm form, formcurrent, formparent;
 	pl->LoadForm( formcurrent, _sxfullname );
@@ -82,6 +88,24 @@ void CItem::Load( const CStringEx& _sxfullname )
 
 	// Fill the tree with current's form
 	pitemes->FillCurrent( formcurrent.GetBody() );
+
+	pl->SetWorkDirectory( sxsavedir );
+}
+
+void CItem::Load( const CStringEx& _sxfullname, const CStringEx _sxdate )
+{
+} 
+
+void CItem::Load( const CStringEx& _sxfullname, CStringEx& _sxlocalworkdirectory )
+{
+	sxlocalworkdirectory = _sxlocalworkdirectory;
+	Load( _sxfullname );
+}
+
+void CItem::Load( const CStringEx& _sxfullname, const CStringEx& _sxlocalworkdirectory, const CStringEx _sxdate ) 
+{
+	sxlocalworkdirectory = _sxlocalworkdirectory;
+	Load( _sxfullname, _sxdate );
 }
 
 void CItem::New( const CStringEx& _sxdfnfilename )
@@ -91,10 +115,6 @@ void CItem::New( const CStringEx& _sxdfnfilename )
 	nlassert( pmed );
 	pitemes = new CItemEltStruct( pl );
 	pitemes->BuildItem( pmed );
-}
-
-void CItem::Load( const CStringEx& _sxfilename, const CStringEx _sxdate ) 
-{
 }
 
 void CItem::Save( const CStringEx& _sxfilename )

@@ -866,6 +866,14 @@ SOURCE=.\3d\mesh_vertex_program.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\meshvp_per_pixel_light.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\meshvp_per_pixel_light.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\meshvp_wind_tree.cpp
 # End Source File
 # Begin Source File
@@ -903,6 +911,14 @@ SOURCE=.\3d\skeleton_shape.cpp
 # Begin Source File
 
 SOURCE=.\3d\skeleton_shape.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tangent_space_build.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tangent_space_build.h
 # End Source File
 # Begin Source File
 

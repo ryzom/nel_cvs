@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.17 2001/11/29 16:37:07 legros Exp $
+ * $Id: global_retriever.h,v 1.18 2002/02/01 10:59:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,7 +152,7 @@ public:
 
 
 	/// Gets the vector of retriever instances that compose the global retriever.
-	const std::vector<CRetrieverInstance>	getInstances() const { return _Instances; }
+	const std::vector<CRetrieverInstance>	&getInstances() const { return _Instances; }
 
 	/// Gets the retriever instance referred by its id.
 	const CRetrieverInstance		&getInstance(uint id) const { return _Instances[id]; }

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.163 2002/09/24 14:40:40 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.164 2002/10/08 09:43:01 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -424,9 +424,14 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		_pfd.cColorBits   = (char)_Depth;
 		// Choose best suited Depth Buffer.
 		if(_Depth<=16)
+		{
 			_pfd.cDepthBits   = 16;
+		}
 		else
-			_pfd.cDepthBits   = 24;
+		{
+			_pfd.cDepthBits = 24;
+			_pfd.cAlphaBits	= 8;
+		}
 		_pfd.iLayerType	  = PFD_MAIN_PLANE;
 		pf=ChoosePixelFormat(tempHDC,&_pfd);
 		if (!pf) 
@@ -670,9 +675,14 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		_pfd.cColorBits   = (char)_Depth;
 		// Choose best suited Depth Buffer.
 		if(_Depth<=16)
+		{
 			_pfd.cDepthBits   = 16;
+		}
 		else
-			_pfd.cDepthBits   = 24;
+		{
+			_pfd.cDepthBits = 24;
+			_pfd.cAlphaBits	= 8;
+		}
 		_pfd.iLayerType	  = PFD_MAIN_PLANE;
 		pf=ChoosePixelFormat(_hDC,&_pfd);
 		if (!pf) 

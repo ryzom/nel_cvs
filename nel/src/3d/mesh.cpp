@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.14 2001/04/24 14:59:20 corvazier Exp $
+ * $Id: mesh.cpp,v 1.15 2001/05/07 14:45:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,6 +127,13 @@ bool	CMesh::CCornerTmp::operator<(const CCornerTmp &c) const
 CMesh::CMesh()
 {
 	_Skinned= false;
+
+	// To have same functionnality than previous version, init to identity.
+	_DefaultPos.setValue(CVector(0,0,0));
+	_DefaultPivot.setValue(CVector(0,0,0));
+	_DefaultRotEuler.setValue(CVector(0,0,0));
+	_DefaultRotQuat.setValue(CQuat::Identity);
+	_DefaultScale.setValue(CVector(1,1,1));
 }
 
 

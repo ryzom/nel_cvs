@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.13 2001/07/13 17:08:50 vizerie Exp $
+ * $Id: mem_stream.h,v 1.14 2001/10/09 16:35:57 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,7 +120,7 @@ public:
 	 * If isReading(), it is the number of bytes that can be read,
 	 * otherwise it is the number of bytes that have been written.
 	 */
-	uint32			length() const
+	virtual uint32	length() const
 	{
 		if ( isReading() )
 		{
@@ -173,10 +173,10 @@ public:
 	uint8			*bufferToFill( uint32 msgsize );
 
 	/// Transforms the message from input to output or from output to input
-	void			invert();
+	virtual void	invert();
 
 	/// Force to reset the ptr table
-	void				resetPtrTable() { IStream::resetPtrTable() ; }
+	void			resetPtrTable() { IStream::resetPtrTable() ; }
 
 protected:
 
@@ -184,7 +184,6 @@ protected:
 	uint32			lengthS() const
 	{
 		return _BufPos-_Buffer.begin();
-
 	}
 
 	/// Returns the "read" message size (number of bytes to read)

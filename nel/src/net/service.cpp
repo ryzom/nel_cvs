@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.144 2002/09/09 12:01:40 coutelas Exp $
+ * $Id: service.cpp,v 1.145 2002/09/16 14:58:01 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -932,7 +932,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		_NextEntityId.setServiceId(_SId);
 
 		// Set the localhost name and service name and the sid
-		CLog::setProcessName (localhost+"/"+_ShortName+"-"+toString(_SId));
+		CLog::setProcessName (localhost+"/"+_ShortName+"-"+toString((uint16)_SId));
 
 
 		//

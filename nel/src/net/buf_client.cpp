@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.21 2002/08/23 07:57:41 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.22 2002/09/26 15:23:00 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -293,6 +293,10 @@ void CBufClient::update()
 	// Disconnection event if disconnected
 	if ( ! ( _BufSock->Sock->connected() && sendingok ) )
 	{
+		if ( _BufSock->Sock->connected() )
+		{
+			_BufSock->Sock->disconnect();
+		}
 		_BufSock->advertiseDisconnection( this, NULL );
 	}
 }
@@ -308,14 +312,20 @@ void CBufClient::disconnect( bool quick )
 	// Do not allow to disconnect a socket that is not connected
 	nlassert( _BufSock->connectedState() );
 
-	// Flush sending is asked for
-	if ( ! quick )
+	// When the NS tells us to remove this connection AND the connection has physically
+	// disconnected but not yet logically (i.e. disconnection event not processed yet),
+	// skip flushing and physical active disconnection
+	if ( _BufSock->Sock->connected() )
 	{
-		_BufSock->flush();
-	}
+		// Flush sending is asked for
+		if ( ! quick )
+		{
+			_BufSock->flush();
+		}
 
-	// Disconnect and prevent from advertising the disconnection
-	_BufSock->disconnect( false );
+		// Disconnect and prevent from advertising the disconnection
+		_BufSock->disconnect( false );
+	}
 
 	// Empty the receive queue
 	{
@@ -381,8 +391,11 @@ CBufClient::~CBufClient()
 	// Disconnect if not done
 	if ( _BufSock->Sock->connected() )
 	{
+		nlassert( _BufSock->connectedState() );
+
 		disconnect( true );
 	}
+
 	// Clean thread termination
 	if ( _RecvThread != NULL )
 	{

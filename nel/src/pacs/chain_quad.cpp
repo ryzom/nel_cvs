@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.8 2001/06/13 08:46:42 legros Exp $
+ * $Id: chain_quad.cpp,v 1.9 2001/07/31 11:36:21 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -261,6 +261,7 @@ void			CChainQuad::addEdgeToQuadNode(list<CEdgeChainEntry> &quadNode, sint ochai
 			// selection is faster if we only manages a single start/end block.
 			it->EdgeStart= min(it->EdgeStart, (uint16)edgeId);
 			it->EdgeEnd= max(it->EdgeEnd, (uint16)(edgeId+1));
+			return;
 		}
 	}
 

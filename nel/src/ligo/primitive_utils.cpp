@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.cpp,v 1.4 2004/08/20 08:05:05 boucher Exp $
+ * $Id: primitive_utils.cpp,v 1.5 2004/09/13 16:54:50 boucher Exp $
  */
 
 #include <nel/ligo/primitive_utils.h>
@@ -80,7 +80,7 @@ void selectPrimByPath(IPrimitive *rootNode, const std::string &path, TPrimitiveS
 			NLMISC::explode(tmpName,".",name);
 
 			bool test=false;
-			for(int k=0;k<name.size();k++)
+			for(uint k=0;k<name.size();k++)
 			{				
 				if (name.at(k)==parts[i+k])
 					test=true;	

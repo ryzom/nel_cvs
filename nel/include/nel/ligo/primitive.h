@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.32 2004/09/07 21:04:28 cado Exp $
+ * $Id: primitive.h,v 1.33 2004/09/13 16:54:50 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -187,6 +187,7 @@ public:
  */
 class IPrimitive : public NLMISC::IStreamable
 {
+	friend class CPrimitives;
 public:
 
 	// Deprecated
@@ -204,10 +205,8 @@ public:
 	};
 
 	/// \name Hierarchy
-	IPrimitive () 
-	{
-		_Parent = NULL;
-	};
+	IPrimitive ();
+	
 	virtual ~IPrimitive ();
 
 	IPrimitive (const IPrimitive &node);
@@ -242,13 +241,16 @@ public:
 	/** Get the id of the child, return 0xffffffff if not found */
 	bool				getChildId (uint &childId, const IPrimitive *child) const;
 
-	/** Remove a child primitive */
+	/** Remove and delete a child primitive */
 	bool				removeChild (IPrimitive *child);
 
-	/** Remove a child primitive */
+	/** Remove and delete a child primitive */
 	bool				removeChild (uint childId);
 
-	/** Remove all children primitives */
+	/// Remove the child primitive from the children list, don't delete it
+	bool				unlinkChild(IPrimitive *child);
+
+	/** Remove and delete all children primitives */
 	void				removeChildren ();
 
 	/** 
@@ -366,6 +368,20 @@ public:
 
 private:
 
+	// callback called just after the node is attach under a parent
+	virtual void onLinkToParent() {}
+	// callback called just before the node is removed from it's parent
+	virtual void onUnlinkFromParent() {}
+
+	/// Callback called just after an ancestor is linked
+	virtual void onBranchLink() {}
+	/// Callback called just before an ancestor is unlinked
+	virtual void onBranchUnlink() {}
+
+	// internal recusive call
+	void branchLink();
+	void branchUnlink();
+
 	// Update child Id
 	void updateChildId (uint index);
 
@@ -391,7 +407,7 @@ private:
 
 // ***************************************************************************
 
-// Simple prmiitive node
+// Simple primitive node
 class CPrimNode : public IPrimitive
 {
 public:
@@ -515,11 +531,11 @@ public:
 
 	// Returns true if the vector v is inside of the patatoid
 	static bool contains (const NLMISC::CVector &v, const std::vector<NLMISC::CVector> &points);
-	// Returns true if the vector v is inside of the patatoid and set the distance of the nearest segement and the position of the nearsest point.
+	// Returns true if the vector v is inside of the patatoid and set the distance of the nearest segment and the position of the nearest point.
 	static bool contains (const NLMISC::CVector &v, const std::vector<NLMISC::CVector> &points, float &distance, NLMISC::CVector &nearPos, bool isPath);
 	// Returns true if the vector v is inside of the patatoid
 	static bool contains (const NLMISC::CVector &v, const std::vector<CPrimVector> &points);
-	// Returns true if the vector v is inside of the patatoid and set the distance of the nearest segement and the position of the nearsest point.
+	// Returns true if the vector v is inside of the patatoid and set the distance of the nearest segment and the position of the nearest point.
 	static bool contains (const NLMISC::CVector &v, const std::vector<CPrimVector> &points, float &distance, NLMISC::CVector &nearPos, bool isPath);
 
 	/// Returns the barycenter of the zone (warning, it may be outside of the zone if it is not convex). Returns CVector::Null if there is no vertex.
@@ -549,6 +565,67 @@ private:
 
 	// \name From IPrimitive
 	virtual IPrimitive *copy () const;
+};
+
+
+// ***************************************************************************
+
+/** This primitive type is used to handle unique alias across a primitive file.
+ *	Usage of this primitive imply the setting of the appropriate 'ligo context'
+ *	before reading or copy/pasting alias.
+*/
+class CPrimAlias : public IPrimitive
+{
+	/// The 'dynamic' part of the alias
+	uint32				_Alias;
+	/// The primitive container
+	class CPrimitives	*_Container;
+
+	// Needed overloads (not used)
+	virtual uint				getNumVector () const
+	{
+		return 0;
+	};
+	virtual const CPrimVector	*getPrimVector () const
+	{
+		return NULL;
+	}
+	virtual CPrimVector			*getPrimVector ()
+	{
+		return NULL;
+	}
+
+
+	virtual void onBranchLink();
+	// callback called just before the node is removed from it's parent
+	virtual void onBranchUnlink();
+
+public:
+	// \name From IClassable
+	NLMISC_DECLARE_CLASS (CPrimAlias);
+
+	// private default constructor
+	CPrimAlias();
+	// copy constructor needed
+	CPrimAlias(const CPrimAlias &other);
+
+	~CPrimAlias();
+
+	// return the dynamic part of the alias
+	uint32	getAlias() const;
+
+	// Return the full alias, merge of the static and dynamic part
+	uint32	getFullAlias() const;
+
+	// Read the primitive
+	virtual bool read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config);
+	// Write the primitive
+	virtual void write (xmlNodePtr xmlNode, const char *filename) const;
+	// Create a copy of this primitive
+	virtual IPrimitive *copy () const;
+	// serial for binary save
+	virtual void serial (NLMISC::IStream &f);
+
 };
 
 // ***************************************************************************
@@ -609,15 +686,63 @@ public:
 	// Root primitive hierarchy
 	CPrimNode		*RootNode;
 
+	// get the static alias part for this primitive
+	uint32			getAliasStaticPart();
+	// Build an alias by combining the static and dynamic part
+	uint32			buildFullAlias(uint32 dynamicPart);
+
+	// Generate a new unique alias (dynamic part only)
+	uint32			genAlias(const IPrimitive *prim, uint32 preferedAlias = 0);
+	// Reserve an alias and store it in the used alias list (dynamic part only)
+//	void			reserveAlias(uint32 dynamicAlias);
+	// Remove an alias from the list of alias in use (dynamic part only)
+	void			releaseAlias(const IPrimitive *prim, uint32 dynamicAlias);
+
 private:
 	// Conversion internal methods
 	void			convertAddPrimitive (IPrimitive *child, const IPrimitive *prim, bool hidden);
 	void			convertPrimitive (const IPrimitive *prim, bool hidden);
 
-	// Last generated unique ID
+	/// Optional context information
+	CLigoConfig			*_LigoConfig;
+	/// Static part alias mapping (can be 0 if no mapping is defined)
+	uint32				_AliasStaticPart;
+	/// Last generated Alias, used to compute the next alias
+	uint32				_LastGeneratedAlias;
+	/// List of alias in use in the primitive (dynamic part only)
+	std::map<uint32, const IPrimitive*>	_AliasInUse;
 };
 
 // ***************************************************************************
+
+/** Singleton to manage special loading feature related to
+ *	unique alias assignment
+ */
+class CPrimitiveContext
+{
+	static CPrimitiveContext	*_Instance;
+
+	// private ctor
+	CPrimitiveContext();
+public:
+
+	// get the singleton reference
+	static CPrimitiveContext	&instance()
+	{
+		if (!_Instance)
+		{
+			_Instance = new CPrimitiveContext;
+		}
+
+		return *_Instance;
+	}
+
+	/// The current ligo configuration file.
+	CLigoConfig		*CurrentLigoConfig;
+	/// The current primitives container.
+	CPrimitives		*CurrentPrimitive;
+
+};
 
 
 } // namespace NLLIGO

@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.11 2004/06/15 13:22:50 corvazier Exp $
+ * $Id: ligo_config.cpp,v 1.12 2004/09/13 16:54:50 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #include <nel/misc/i_xml.h>
 #include <nel/misc/path.h>
 #include <nel/misc/file.h>
+
+#include <stdlib.h>
 
 using namespace std;
 using namespace NLMISC;
@@ -101,6 +103,45 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName)
 			// Check the header
 			if (strcmp ((const char*)root->name, "NEL_LIGO_PRIMITIVE_CLASS") == 0)
 			{
+				// ALIAS_DYNAMIC_BITS
+				xmlNodePtr aliasBits = CIXml::getFirstChildNode (root, "ALIAS_DYNAMIC_BITS");
+				if (aliasBits)
+				{
+					string bits;
+					if (getPropertyString (bits, filename.c_str(), aliasBits, "BIT_COUNT"))
+					{
+						_DynamicAliasBitCount = std::min(32, ::atoi(bits.c_str()));
+					}
+					else
+						return false;
+					
+				}
+				else
+				{
+					// by default, set the size of dynamic alias to 32 bits
+					_DynamicAliasBitCount = 32;
+				}
+				// ALIAS_STATIC_FILE_ID
+				xmlNodePtr indexFileNameNode = CIXml::getFirstChildNode (root, "ALIAS_STATIC_FILE_ID");
+				if (indexFileNameNode)
+				{
+					string indexFileName;
+					if (getPropertyString (indexFileName, filename.c_str(), indexFileNameNode, "FILE_NAME"))
+					{
+						// load the configuration file
+						reloadIndexFile(indexFileName);
+					}
+					else
+						return false;
+					
+				}
+				else
+				{
+					// by default, set the size of dynamic alias to 32 bits
+					_DynamicAliasBitCount = 32;
+				}
+
+
 				// Get the first primitive description
 				xmlNodePtr primitive = CIXml::getFirstChildNode (root, "PRIMITIVE");
 				if (primitive)
@@ -121,7 +162,7 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName)
 							}
 							else
 							{
-								syntaxError (filename.c_str(), root, "Class (%s) aready defined", name.c_str ());
+								syntaxError (filename.c_str(), root, "Class (%s) already defined", name.c_str ());
 							}
 						}
 						else
@@ -181,6 +222,64 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName)
 		errorMessage ("Can't open the file %s for reading.", filename.c_str());
 	}
 	return false;
+}
+
+// ***************************************************************************
+
+bool CLigoConfig::reloadIndexFile(const std::string &indexFileName)
+{
+	if (_IndexFileName.empty() && indexFileName.empty())
+	{
+		nlwarning("CLigoConfig::reloadIndexFile: no file name specified and index file not previously loaded, can't load anything");
+		return false;
+	}
+
+	if (!_IndexFileName.empty() && !indexFileName.empty() && _IndexFileName != indexFileName)
+	{
+		nlwarning("CLigoConfig::reloadIndexFile: index file already loaded as '%s', can't load another file '%s'!",
+			_IndexFileName.c_str(),
+			indexFileName.c_str());
+		return false;
+	}
+
+	if (_IndexFileName.empty())
+		_IndexFileName = indexFileName;
+
+	// load the configuration file
+	CConfigFile cf;
+	cf.load(_IndexFileName);
+
+	// get the variable
+	CConfigFile::CVar *files = cf.getVarPtr("Files");
+	if (files != NULL)
+	{
+		for (int i=0; i<files->size()/2; ++i)
+		{
+			string fileName;
+			uint32 index;
+
+			fileName = files->asString(i*2);
+			index = files->asInt(i*2+1);
+
+			if (isFileStaticAliasMapped(fileName))
+			{
+				// check that the mapping as not changed
+				if (getFileStaticAliasMapping(fileName) != index)
+				{
+					nlwarning("CLigoConfig::reloadIndexFile: the mapping for the file '%s' as changed from %u to %u in the config file, the change is ignored",
+						fileName.c_str(),
+						index, 
+						getFileStaticAliasMapping(fileName));
+				}
+			}
+			else
+			{
+				registerFileToStaticAliasTranslation(fileName, index);
+			}
+		}
+	}
+
+	return true;
 }
 
 // ***************************************************************************
@@ -449,5 +548,155 @@ bool CLigoConfig::isStaticChild (const NLLIGO::IPrimitive &primitive)
 }
 
 // ***************************************************************************
+	
+/// Get the dynamic bit size for alias
+uint32 CLigoConfig::getDynamicAliasSize() const
+{
+	return _DynamicAliasBitCount;
+}
+
+// ***************************************************************************
+/// Get the dynamic bit mask for alias
+uint32 CLigoConfig::getDynamicAliasMask() const
+{
+	// this 'strange' test because VC fail to generate a correct shift if 
+	// _DynamicAliasBitCount is 32 bits.
+	// The generated code lead to no shift at all and return 0 instead of 0xffffffff
+	if (_DynamicAliasBitCount >= 32)
+		return 0xffffffff;
+	else
+		return (1U<<_DynamicAliasBitCount)-1;
+}
+
+// ***************************************************************************
+/// Get the static bit size for alias
+uint32 CLigoConfig::getStaticAliasSize() const
+{
+	return 32-_DynamicAliasBitCount;
+}
+
+// ***************************************************************************
+/// Get the static bit mask for alias
+uint32 CLigoConfig::getStaticAliasMask() const
+{
+	// the opposite of the dynamic mask
+	return ~getDynamicAliasMask();
+}
+
+// ***************************************************************************
+/// Build an alias given a static and dynamic part
+uint32 CLigoConfig::buildAlias(uint32 staticPart, uint32 dynamicPart, bool warnIfOverload) const
+{
+	if (warnIfOverload)
+	{
+		if (staticPart != (staticPart & (getStaticAliasMask()>>getDynamicAliasSize())))
+		{
+			nlwarning("CLigoConfig::buildAlias: staticPart 0x%x is outside the mask 0x%x",
+				staticPart,
+				getStaticAliasMask()>>getDynamicAliasSize());
+		}
+		if (dynamicPart != (dynamicPart & getDynamicAliasMask()))
+		{
+			nlwarning("CLigoConfig::buildAlias: dynamicPart 0x%x is outside the mask 0x%x",
+				dynamicPart,
+				getDynamicAliasMask());
+		}
+	}
+
+	return dynamicPart | (staticPart << _DynamicAliasBitCount);
+}
+
+// ***************************************************************************
+
+void CLigoConfig::registerFileToStaticAliasTranslation(const std::string &fileName, uint32 staticPart)
+{
+	// check the existing mapping
+	std::map<std::string, uint32>::iterator first(_StaticAliasFileMapping.begin()), last(_StaticAliasFileMapping.end());
+	for (; first != last; ++first)
+	{
+		if (first->second == staticPart)
+		{
+			nlassertex(false, ("While registering static alias %u to file '%s', the alias is already assigned to file '%s'",
+				staticPart,
+				fileName.c_str(),
+				first->first.c_str()));
+		}
+	}
+	if ((staticPart<<getDynamicAliasSize()) != ((staticPart<<getDynamicAliasSize()) & getStaticAliasMask()))
+	{
+		nlwarning("CLigoConfig::registerStaticAliasTranslation: staticPart 0x%x(%u) is outside the mask 0x%x, the staticPart will be clipped to 0x%x(%u)",
+			staticPart,
+			staticPart,
+			getStaticAliasMask(),
+			staticPart & getStaticAliasMask(),
+			staticPart & getStaticAliasMask());
+	
+		staticPart = (staticPart & getStaticAliasMask());
+	}
+
+
+	_StaticAliasFileMapping[fileName] = staticPart;
+}
+
+const std::string &CLigoConfig::getFileNameForStaticAlias(uint32 staticAlias) const
+{
+	std::map<std::string, uint32>::const_iterator first(_StaticAliasFileMapping.begin()), last(_StaticAliasFileMapping.end());
+
+	for (; first != last; ++first)
+	{
+		if (first->second == staticAlias)
+			return first->first;
+	}
+	static string emptyString;
+
+	return emptyString;
+}
+
+
+// ***************************************************************************
+
+uint32 CLigoConfig::getFileStaticAliasMapping(const std::string &fileName) const
+{
+	std::map<std::string, uint32>::const_iterator it(_StaticAliasFileMapping.find(fileName));
+
+	if (it != _StaticAliasFileMapping.end())
+	{
+		return it->second;
+	}
+	else
+		// no mapping defined.
+		return 0;
+}
+
+// ***************************************************************************
+
+bool CLigoConfig::isFileStaticAliasMapped(const std::string &fileName) const
+{
+	std::map<std::string, uint32>::const_iterator it(_StaticAliasFileMapping.find(fileName));
+
+	if (it != _StaticAliasFileMapping.end())
+	{
+		return true;
+	}
+	else
+		// no mapping defined.
+		return false;
+}
+
+
+std::string CLigoConfig::aliasToString(uint32 fullAlias)
+{
+	uint32 staticPart;
+	uint32 dynPart;
+
+	staticPart = (fullAlias & getStaticAliasMask())>>getDynamicAliasSize();
+	dynPart = fullAlias & getDynamicAliasMask();
+
+	return toString("(A:%u:%u)", staticPart, dynPart);
 
 }
+
+
+}
+
+

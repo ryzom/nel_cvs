@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.32 2004/10/22 15:06:52 berenguier Exp $
+ * $Id: shape_bank.cpp,v 1.33 2004/10/25 11:59:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std3d.h"
 
 #include "3d/shape_bank.h"
-#include "3d/mesh.h"
+#include "3d/mesh_base.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/rect.h"
@@ -162,7 +162,7 @@ void CShapeBank::processWaitingShapes ()
 				if (nTotalUploaded > _MaxUploadPerFrame)
 					break;
 
-				CMesh *pMesh = dynamic_cast<CMesh*>(pShp);
+				CMeshBase *pMesh = dynamic_cast<CMeshBase*>(pShp);
 				if( pMesh != NULL )
 				{
 					uint8 j;
@@ -186,6 +186,29 @@ void CShapeBank::processWaitingShapes ()
 
 										if (!processWSUploadTexture (rWS, nTotalUploaded, rMat.getTexture(j)))
 											break;
+									}
+									else
+									{
+										/* 
+											Must release texture data because of the following scenario (common!)
+											- An IG with 2 different meshs is async loaded
+											- the 2 meshs access the same texture "pipo.tga"
+											- in CAsyncFileManager3D::loadMesh(), if this case arise, the
+												textures are loaded twice in RAM!!!! (is managed per mesh, but not
+												thourhg meshs)
+											- hence the first mesh setup and upload above the texture in VRAM
+												but the second still have data in RAM!! (because 2nd will 
+												say that isTextureExist() ....
+
+											Note: you could say that the cool stuff would be to not load the 2 :)
+												but it appears that this case arise rarely because of the following statement:
+												- while the second mesh is async loaded, the first upload in VRAM
+													so there is good change that the second don't load the texture
+													(isTextureExist() return true in the thread)
+										*/
+										ITexture	*tex= rMat.getTexture(j);
+										if(tex->getReleasable())
+											tex->release();
 									}
 								}
 								++rWS.UpTextProgress;
@@ -214,6 +237,13 @@ void CShapeBank::processWaitingShapes ()
 										if (!processWSUploadTexture (rWS, nTotalUploaded, pText))
 											break;
 									}
+									else
+									{
+										// see above for explanation
+										if(pText->getReleasable())
+											pText->release();
+									}
+
 									++rWS.UpTextProgress;
 								}
 								++CurrentProgress;
@@ -516,7 +546,49 @@ void CShapeBank::cancelLoadAsync (const std::string &shapeNameNotLwr)
 		{
 			// nlinfo("unloadasync %s", shapeName);
 			CAsyncFileManager3D::getInstance().cancelLoadMesh (shapeName);
-			// TODO : Cancel the texture upload
+
+			// If the state is not Delete, or Error, then the mesh has not been added to the map.
+			if(wsmmIt->second.State!=AsyncLoad_Delete && wsmmIt->second.State!=AsyncLoad_Error)
+			{
+				/* but it can still have been loaded:
+					- just ended in above cancelLoadMesh() because it was the current task
+					- ended in async far before this cancelLoadAsync() call, but processWaintingShape() still
+						not called on it
+				   In this case we have to delete this shape, or even cancel texture upload!
+				   NB: don't forget that the load can still be a fail too....
+				*/
+				IShape	*shape= wsmmIt->second.ShapePtr;
+				if(shape!=NULL && shape!=(IShape*)-1)
+				{
+					// this ptr should not be added to the map
+					nlassert(ShapePtrToShapeInfo.find(shape)==ShapePtrToShapeInfo.end());
+					
+					// Before deleting this shape, we must ensure it is not currently uploading texture
+					if(wsmmIt->second.State==AsyncLoad_Texture)
+					{
+						/* if it was uploading a texture, then force him to end, else may have a bug 
+							in this scenario (very improbable, but possible I think):
+								- a mesh is loaded asynchronously, and reference a texture "pipo.tga"
+								- mesh load async is ended, and the texture is not found in the driver 
+									=> texture generate()-d too
+								- mesh state is AsyncLoad_Texture, and begin (but doesn't end) to upload the texture
+								- an other mesh is created syncrhonously using also this texture (thus 
+									found in driver, and so just referencing it, no generate)
+								- the async mesh is then canceled, while the texture has not end to load!
+								- the texture is still in memory (the sync mesh still point to it), but with
+									partialy uploaded data!
+						*/
+						// \todo yoyo: should be very rare, and don't know if really happens. must do tests
+						//forceEndUpLoadTexture(wsmmIt->second);
+					}
+
+					// then delete this shape
+					delete shape;
+					wsmmIt->second.ShapePtr= NULL;
+				}
+			}
+
+			// erase this waiting shape
 			WaitingShapes.erase (wsmmIt); // Delete the waiting shape
 		}
 	}

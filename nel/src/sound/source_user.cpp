@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: source_user.cpp,v 1.2 2001/07/13 09:47:11 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "driver/source.h"
 #include "track.h"
 #include "sound.h"
+#include "audio_mixer_user.h"
 
 
 using namespace NLMISC;
@@ -44,7 +45,7 @@ CSourceUser::CSourceUser( TSoundId id ) :
 	_Priority(MidPri), _Playing(false),
 	_Position(CVector::Null), _Velocity(CVector::Null), _Direction(CVector::Null),
 	_Gain(1.0f), _RelativeMode(false), _Looping(false),
-	_Track(NULL), _Sync(true)
+	_Track(NULL), _ParentSource(NULL)
 {
 	setSound( id );
 }
@@ -61,10 +62,7 @@ CSourceUser::~CSourceUser()
 		{
 			_Track->DrvSource->stop();
 		}
-		_Track->setAvailable( true );
-#ifdef NL_DEBUG
-		_Track->UserSource = NULL;
-#endif
+		_Track->setUserSource( NULL );
 	}
 }
 
@@ -79,10 +77,6 @@ void					CSourceUser::setSound( TSoundId id )
 	{
 		_Gain = _Sound->getGain();
 	}
-	else
-	{
-		// TODO
-	}
 
 	// Set the buffer
 	if ( _Track != NULL )
@@ -96,14 +90,6 @@ void					CSourceUser::setSound( TSoundId id )
 			_Track->DrvSource->setMinMaxDistances( _Sound->getMinDistance(), _Sound->getMaxDistance() );
 			_Track->DrvSource->setCone( _Sound->getConeInnerAngle(), _Sound->getConeOuterAngle(), _Sound->getConeOuterGain() );
 		}
-		else
-		{
-			// TODO
-		}
-	}
-	else
-	{
-		_Sync = false;
 	}
 }
 
@@ -111,11 +97,15 @@ void					CSourceUser::setSound( TSoundId id )
 /*
  * Change the priority of the source
  */
-void					CSourceUser::setPriority( TSoundPriority pr )
+void					CSourceUser::setPriority( TSoundPriority pr, bool redispatch )
 {
 	_Priority = pr;
 
-	// TODO
+	// Redispatch the tracks if needed
+	if ( redispatch )
+	{
+		CAudioMixerUser::instance()->balanceSources();
+	}
 }
 
 
@@ -128,10 +118,6 @@ void					CSourceUser::setLooping( bool l )
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->setLooping( true );
-	}
-	else
-	{
-		_Sync = false;
 	}
 }
 
@@ -160,13 +146,9 @@ void					CSourceUser::play()
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->play();
-		nldebug( "AM: Playing source in mix" );
+		nldebug( "AM: Playing source" );
 	}
-	else
-	{
-		_Sync = false;
-	}
-	_Playing = true; // TODO: when the playing stops on its own (no looping), set _Playing to false
+	_Playing = true;
 }
 
 
@@ -178,11 +160,7 @@ void					CSourceUser::stop()
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->stop();
-		nldebug( "AM: Source stopped from mix" );
-	}
-	else
-	{
-		_Sync = false;
+		nldebug( "AM: Source stopped" );
 	}
 	_Playing = false;
 }
@@ -201,10 +179,23 @@ void					CSourceUser::setPosition( const NLMISC::CVector& pos )
 	{
 		_Track->DrvSource->setPosition( pos );
 	}
+}
+
+
+/* Get the position vector.
+ * If the parent source is not null, return its position.
+ */
+void					CSourceUser::getPosition( NLMISC::CVector& pos ) const
+{
+	if ( _ParentSource == NULL )
+	{
+		pos = _Position;
+	}
 	else
 	{
-		_Sync = false;
+		_ParentSource->getPosition( pos );
 	}
+	
 }
 
 
@@ -220,10 +211,6 @@ void					CSourceUser::setVelocity( const NLMISC::CVector& vel )
 	{
 		_Track->DrvSource->setVelocity( vel );
 	}
-	else
-	{
-		_Sync = false;
-	}
 }
 
 
@@ -238,10 +225,6 @@ void					CSourceUser::setDirection( const NLMISC::CVector& dir )
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->setDirection( dir );
-	}
-	else
-	{
-		_Sync = false;
 	}
 }
 
@@ -261,10 +244,6 @@ void					CSourceUser::setGain( float gain )
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->setGain( gain );
-	}
-	else
-	{
-		_Sync = false;
 	}
 }
 
@@ -314,10 +293,6 @@ void					CSourceUser::setSourceRelativeMode( bool mode )
 	{
 		_Track->DrvSource->setSourceRelativeMode( mode );
 	}
-	else
-	{
-		_Sync = false;
-	}
 }
 
 
@@ -330,8 +305,6 @@ void					CSourceUser::copyToTrack()
 
 	nlassert( _Sound->getBuffer() != NULL );
 	_Track->DrvSource->setStaticBuffer( _Sound->getBuffer() );
-
-	// TODO: if track not playing and source playing, play
 
 	_Track->DrvSource->setPosition( _Position );
 	_Track->DrvSource->setVelocity( _Velocity );
@@ -360,50 +333,38 @@ void					CSourceUser::enterTrack( CTrack *track )
 	{
 		nlassert( _Sound != NULL );
 		copyToTrack(); // must always be synchronized, because the tracks may not have the default settings
-#ifdef NL_DEBUG
-		_Track->UserSource = this;
-#endif
-		_Sync = true;
+		_Track->setUserSource( this );
+		if ( _Playing )
+		{
+			// Play physically
+			_Track->DrvSource->play();
+		}
 		nldebug( "AM: Source selected for playing" );
 	}
 	else
 	{
-		_Sync = false;
 		nldebug( "AM: Source unselected" );
 	}
 }
 
 
 /*
- * Serialize (only a subset)
+ * Unset the corresponding track
  */
-/*void					CSourceUser::serial( NLMISC::IStream& s )
+void					CSourceUser::leaveTrack()
 {
-	// If you change this, increment the version number in CEnvSoundUser::load() !
+	if ( _Track != NULL )
+	{
+		_Track->setUserSource( NULL );
 
-	s.serialPtr( _Sound );
-	s.serial( _Position );
-}*/
-
-
-/*
- * Assignment operator
- */
-/*CSourceUser&			CSourceUser::operator=( const CSourceUser& src )
-{
-	_Sound = src._Sound;
-	_Priority = src._Priority;
-	_Playing = src._Playing;
-	_Looping = src._Looping;
-	_Position = src._Position;
-	_Velocity = src._Velocity;
-	_Direction = src._Direction;
-	_Gain = src._Gain;
-	_RelativeMode = src._RelativeMode;
-	_Track = src._Track;
-	_Sync = src._Sync;
-	return *this;
-}*/
+		if ( _Playing )
+		{
+			// Stop to play physically
+			_Track->DrvSource->stop();
+		}
+	}
+	enterTrack( NULL );
+}
 
 
 } // NLSOUND

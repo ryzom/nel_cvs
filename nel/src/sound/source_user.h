@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: source_user.h,v 1.2 2001/07/13 09:47:11 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,9 @@ public:
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound()									{ return _Sound; }
 	/// Change the priority of the source
-	virtual void					setPriority( TSoundPriority pr );
+	virtual void					setPriority( TSoundPriority pr, bool redispatch=true );
+	/// Return the priority
+	TSoundPriority					getPriority()								{ return _Priority; }
 
 
 	/// \name Playback control
@@ -86,9 +88,9 @@ public:
 	 */
 	virtual void					setPosition( const NLMISC::CVector& pos );
 	/** Get the position vector.
-	 * See setPosition() for details.
+	 * If the parent source is not null, return its position.
 	 */
-	virtual void					getPosition( NLMISC::CVector& pos ) const	{ pos = _Position; }
+	virtual void					getPosition( NLMISC::CVector& pos ) const;
 	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
 	virtual void					setVelocity( const NLMISC::CVector& vel );
 	/// Get the velocity vector
@@ -118,20 +120,17 @@ public:
 	virtual bool					getSourceRelativeMode() const				{ return _RelativeMode; }
 
 
+	/// Set the parent source (see getPosition()) (default: NULL)
+	void							setParentSource( CSourceUser *src )			{ _ParentSource = src; }
 	/** Set the corresponding track	(NULL allowed, sets no track)
 	 * Don't set a non-null track if getSound() is null.
 	 */
 	void							enterTrack( CTrack *track );
 	/// Unset the corresponding track
-	void							leaveTrack()								{ enterTrack( NULL ); }
+	void							leaveTrack();
 	/// Return the track
 	CTrack							*getTrack()									{ return _Track; }
 	
-	// Serialize (only a subset)
-	//void							serial( NLMISC::IStream& s );
-	// Assignment operator
-	//CSourceUser&					operator=( const CSourceUser& src );
-
 protected:
 
 	/// Copy the source data into the corresponding track (_Track must be not null)
@@ -155,8 +154,8 @@ private:
 	// Corresponding track (if selected for playing)
 	CTrack							*_Track;
 
-	// True if synchronized with a track \todo Cado: _Sync could be removed
-	bool							_Sync;
+	// Parent source (see getPosition())
+	CSourceUser						*_ParentSource;
 };
 
 

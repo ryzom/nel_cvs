@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.72 2004/07/08 16:11:15 berenguier Exp $
+ * $Id: export_nel.h,v 1.73 2005/01/05 14:57:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -307,8 +307,9 @@ public:
 	  * Build a NeL meshBuild
 	  * 
 	  * This method does not care of the skeletonShape
+	  * if isMorphTarget is true, no "mrm/normal mesh interface" is built
 	  */
-	NL3D::CMesh::CMeshBuild*		createMeshBuild(INode& node, TimeValue tvTime, NL3D::CMesh::CMeshBaseBuild*& baseBuild, const NLMISC::CMatrix &finalSpace = NLMISC::CMatrix::Identity);
+	NL3D::CMesh::CMeshBuild*		createMeshBuild(INode& node, TimeValue tvTime, NL3D::CMesh::CMeshBaseBuild*& baseBuild, const NLMISC::CMatrix &finalSpace = NLMISC::CMatrix::Identity, bool isMorphTarget= false);
 
 	/** Test wether the node has app datas specifying interface meshs.
 	  * \see applyInterfaceToMeshBuild
@@ -859,11 +860,13 @@ private:
 	  * Build a NeL mesh interface
 	  *
 	  * if skeletonShape is NULL, no skinning is exported.
+	  * if isMorphTarget is true, no "mrm/normal mesh interface" is built
 	  */
 	void							buildMeshInterface (TriObject &tri, NL3D::CMesh::CMeshBuild& buildMesh, const NL3D::CMeshBase::CMeshBaseBuild& buildBaseMesh, 
 														const CMaxMeshBaseBuild& maxBaseBuild, INode& node, TimeValue time, const TInodePtrInt* nodeMap, 
 														const NLMISC::CMatrix& newBasis=NLMISC::CMatrix::Identity, 
-														const NLMISC::CMatrix& finalSpace=NLMISC::CMatrix::Identity);
+														const NLMISC::CMatrix& finalSpace=NLMISC::CMatrix::Identity,
+														bool isMorphTarget= false);
 
 
 	/**

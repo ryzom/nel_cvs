@@ -1,6 +1,6 @@
 /** \file export_mesh_interface.cpp
  *
- * $Id: export_mesh_interface.cpp,v 1.9 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: export_mesh_interface.cpp,v 1.10 2005/01/05 14:57:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,6 @@
 #include "3d/quad_grid.h"
 #include "3d/mesh_mrm_skinned.h"
 #include "export_appdata.h"
-
 
 
 
@@ -662,6 +661,7 @@ static bool BuildMeshInterfaces(const char *cMaxFileName, std::vector<CMeshInter
 		{
 			if (!meshInterface.Verts.empty())
 			{			
+				nldebug("adding interface %d from %s", meshInterfaces.size(), exportNel.getNelObjectName(**it).c_str());
 				// well we could avoid a vector copy
 				meshInterfaces.push_back(meshInterface);
 			}

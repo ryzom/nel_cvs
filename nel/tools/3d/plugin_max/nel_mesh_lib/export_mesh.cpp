@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.70 2004/10/05 10:12:31 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.71 2005/01/05 14:57:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,7 @@ void buildNeLMatrix (CMatrix& tm, const CVector& scale, const CQuat& rot, const 
 // ***************************************************************************
 
 
-CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, CMesh::CMeshBaseBuild*& baseBuild, const CMatrix &masterNodeMat)
+CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, CMesh::CMeshBaseBuild*& baseBuild, const CMatrix &masterNodeMat, bool isMorphTarget)
 {
 	CMesh::CMeshBuild *pMeshBuild = new CMesh::CMeshBuild();
 	baseBuild = new CMeshBase::CMeshBaseBuild();
@@ -111,7 +111,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, CM
 			convertMatrix (nodeMatrix, nodeMatrixMax);
 
 			buildBaseMeshInterface (*baseBuild, maxBaseBuild, node, tvTime, nodeMatrix);
-			buildMeshInterface (*tri, *pMeshBuild, *baseBuild, maxBaseBuild, node, tvTime, NULL, CMatrix::Identity, masterNodeMat);
+			buildMeshInterface (*tri, *pMeshBuild, *baseBuild, maxBaseBuild, node, tvTime, NULL, CMatrix::Identity, masterNodeMat, isMorphTarget);
 		
 
 			// Delete the triObject if we should...
@@ -629,7 +629,7 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 // Build a mesh interface
 void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMesh, const NL3D::CMeshBase::CMeshBaseBuild& buildBaseMesh, 
 									 const CMaxMeshBaseBuild& maxBaseBuild, INode& node, TimeValue time, const TInodePtrInt* nodeMap, 
-									 const CMatrix& newBasis, const CMatrix& finalSpace)
+									 const CMatrix& newBasis, const CMatrix& finalSpace, bool isMorphTarget)
 {
 	// Get a pointer on the 3dsmax mesh
 	Mesh *pMesh=&tri.mesh;
@@ -1088,19 +1088,23 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	buildMesh.Interfaces.clear();
 	buildMesh.InterfaceLinks.clear();
 
-	// Apply normal correction if there is a mesh interface
-	if (skined)
-	{	
-		applyInterfaceToMeshBuild(node, buildMesh, NLMISC::CMatrix::Identity, time);
-	}
-	else
+	// don't do it for morph target (unusefull and slow)
+	if(!isMorphTarget)
 	{
-		// go from export space to local
-		// and then go to world space
-		Matrix3 toWorldMax = node.GetObjectTM(time);
-		NLMISC::CMatrix toWorld;
-		convertMatrix(toWorld, toWorldMax);		
-		applyInterfaceToMeshBuild(node, buildMesh, toWorld * FromExportSpace, time);
+		// Apply normal correction if there is a mesh interface
+		if (skined)
+		{	
+			applyInterfaceToMeshBuild(node, buildMesh, NLMISC::CMatrix::Identity, time);
+		}
+		else
+		{
+			// go from export space to local
+			// and then go to world space
+			Matrix3 toWorldMax = node.GetObjectTM(time);
+			NLMISC::CMatrix toWorld;
+			convertMatrix(toWorld, toWorldMax);		
+			applyInterfaceToMeshBuild(node, buildMesh, toWorld * FromExportSpace, time);
+		}
 	}
 
 
@@ -1207,7 +1211,8 @@ void CExportNel::getBSMeshBuild (std::vector<CMesh::CMeshBuild*> &bsList, INode 
 
 		CBlendShape bs;
 		CMeshBase::CMeshBaseBuild *pMBB = NULL;		
-		bsList[j] = createMeshBuild (*pNode, time, pMBB, finalSpace);
+		// get the meshbuild of the morhp target
+		bsList[j] = createMeshBuild (*pNode, time, pMBB, finalSpace, true);
 		delete pMBB;
 		// copy src normals from src mesh for vertices that are on interfaces
 		CMesh::CMeshBuild *mb = bsList[j];
@@ -1463,7 +1468,8 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 		CMatrix finalSpace = CMatrix::Identity;
 		if (skined)
 			convertMatrix(finalSpace, node.GetNodeTM(time));
-		CMesh::CMeshBuild *pMB = createMeshBuild (*pNode, time, pMBB, finalSpace);
+		// get the meshbuild of the morhp target
+		CMesh::CMeshBuild *pMB = createMeshBuild (*pNode, time, pMBB, finalSpace, true);
 
 		// Same number of faces and vertices ?
 		if (vertexCount != pMB->Vertices.size())

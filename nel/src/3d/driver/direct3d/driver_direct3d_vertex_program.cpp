@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex_program.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex_program.cpp,v 1.4 2004/10/05 17:06:43 vizerie Exp $
+ * $Id: driver_direct3d_vertex_program.cpp,v 1.5 2004/10/07 18:30:50 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -308,6 +308,25 @@ bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 				#endif // NL_DEBUG_D3D
 				return false;
 			}
+
+			// TMP fix for Radeon 8500/9000/9200
+			// Currently they hang when PaletteSkin / SkinWeight are present in the vertex declaration, but not used
+			// so disable them in the vertex declaration
+			// We don't use these component in vertex programs currently..
+			#ifdef NL_DEBUG
+				for(uint k = 0; k < parsedProgram.size(); ++k)
+				{
+					for(uint l = 0; l < parsedProgram[k].getNumUsedSrc(); ++l)
+					{
+						const CVPOperand &op = parsedProgram[k].getSrc(l);
+						if (op.Type == CVPOperand::InputRegister)
+						{
+							nlassert(op.Value.InputRegisterValue != CVPOperand::IWeight);
+							nlassert(op.Value.InputRegisterValue != CVPOperand::IPaletteSkin);
+						}				
+					}
+				}
+			#endif
 
 			// Dump the vertex program
 			std::string dest;

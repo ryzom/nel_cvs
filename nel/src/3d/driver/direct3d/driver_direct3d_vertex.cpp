@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex.cpp,v 1.11 2004/10/05 17:17:47 vizerie Exp $
+ * $Id: driver_direct3d_vertex.cpp,v 1.12 2004/10/07 18:31:16 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -522,57 +522,60 @@ bool CDriverD3D::createVertexDeclaration (uint16 vertexFormat, const uint8 *type
 		// Slot used ?
 		if (vertexFormat & (1<<i))
 		{			
+			if ((i != CVertexBuffer::Weight && i != CVertexBuffer::PaletteSkin) || _PixelShaderVersion != D3DPS_VERSION(1, 4)) // fix for radeon 8500/9000/9200 : hand when this is declared and not used
+																															   // don't let gap for other cards else render bug on some ...
+			{
+				D3DVERTEXELEMENT9 &vertexElement = declaration.VertexElements[j];
+				vertexElement.Stream = 0;
+				vertexElement.Type = RemapVertexBufferTypeNeL2D3D[(uint)typeArray[i]];
+				vertexElement.Offset = offset;
+				vertexElement.Method = D3DDECLMETHOD_DEFAULT;						
+				vertexElement.Usage = RemapVertexBufferUsageNeL2D3D[(uint)i];
+				if (aliasDiffuseToSpecular && i == CVertexBuffer::PrimaryColor)
+				{
+					vertexElement.UsageIndex = 1; // Map to specular stream -> this free PrimaryColor to build a constant
+												  // Ueful to emulate per stage constant (which we can do on 2 stages only)
+				}
+				else
+				{
+					vertexElement.UsageIndex = RemapVertexBufferIndexNeL2D3D[(uint)i];
+				}
 
-			D3DVERTEXELEMENT9 &vertexElement = declaration.VertexElements[j];
-			vertexElement.Stream = 0;
-			vertexElement.Type = RemapVertexBufferTypeNeL2D3D[(uint)typeArray[i]];
-			vertexElement.Offset = offset;
-			vertexElement.Method = D3DDECLMETHOD_DEFAULT;						
-			vertexElement.Usage = RemapVertexBufferUsageNeL2D3D[(uint)i];
-			if (aliasDiffuseToSpecular && i == CVertexBuffer::PrimaryColor)
-			{
-				vertexElement.UsageIndex = 1; // Map to specular stream -> this free PrimaryColor to build a constant
-				                              // Ueful to emulate per stage constant (which we can do on 2 stages only)
-			}
-			else
-			{
-				vertexElement.UsageIndex = RemapVertexBufferIndexNeL2D3D[(uint)i];
-			}
-
-			// nico : Fix for Radeon 7xxx series
-			// Vertex declaration doesn't work when the vertex layout has vertex color defined after tex coord.
-			// For example, the following layout (Position/TexCoord0/Diffuse) will silently be converted into (Position/Diffuse/TexCoord0)
-			// It seems that the driver tries to map the vertex declaration to the matching FVF. FVF has a prefined order and requires Diffuse to appear
-			// before texture coordinates in the vertex. Don't know if it is a limitation of D3D related to the 7xxx sries of if it is a driver bug.
-			// The D3D debug dll doesn't issue a warning about it.
-			// To solve this 2 vertex streams are declared :
-			// - First streams contains Position/Normal/Texcoord
-			// - When vertex color are used, second stream contains Diffuse/Specular vertex component(s)
-			// In fact the 2 streams map to the same vertex buffer, but the 2nd stream has an added offset to point on the color component
-			// I tried to add this offset directly into the vertex declaration, but D3D complains about it...
-			// If the following field contains a non 0 value, then a second stream must be used for diffuse/specular with the given offset	
-			if (_NbNeLTextureStages == 3)
-			{
-				if (vertexElement.Usage == D3DDECLUSAGE_COLOR)
-				{	
-					if (bypassDiffuse)
-					{
-						continue;
-					}
-					vertexElement.Stream = 1;
-					if (colorOffset == 0)
-					{
-						vertexElement.Offset = 0;
-						colorOffset = offset;						
-					}
-					else
-					{
-						vertexElement.Offset = 4;
-					}
+				// nico : Fix for Radeon 7xxx series
+				// Vertex declaration doesn't work when the vertex layout has vertex color defined after tex coord.
+				// For example, the following layout (Position/TexCoord0/Diffuse) will silently be converted into (Position/Diffuse/TexCoord0)
+				// It seems that the driver tries to map the vertex declaration to the matching FVF. FVF has a prefined order and requires Diffuse to appear
+				// before texture coordinates in the vertex. Don't know if it is a limitation of D3D related to the 7xxx sries of if it is a driver bug.
+				// The D3D debug dll doesn't issue a warning about it.
+				// To solve this 2 vertex streams are declared :
+				// - First streams contains Position/Normal/Texcoord
+				// - When vertex color are used, second stream contains Diffuse/Specular vertex component(s)
+				// In fact the 2 streams map to the same vertex buffer, but the 2nd stream has an added offset to point on the color component
+				// I tried to add this offset directly into the vertex declaration, but D3D complains about it...
+				// If the following field contains a non 0 value, then a second stream must be used for diffuse/specular with the given offset	
+				if (_NbNeLTextureStages == 3)
+				{
+					if (vertexElement.Usage == D3DDECLUSAGE_COLOR)
+					{	
+						if (bypassDiffuse)
+						{
+							continue;
+						}
+						vertexElement.Stream = 1;
+						if (colorOffset == 0)
+						{
+							vertexElement.Offset = 0;
+							colorOffset = offset;						
+						}
+						else
+						{
+							vertexElement.Offset = 4;
+						}
+					}				
 				}				
-			}				
+				j++;
+			}			
 			offset += CVertexBuffer::SizeType[typeArray[i]];
-			j++;
 		}
 	}		
 

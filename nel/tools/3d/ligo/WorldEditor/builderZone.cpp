@@ -380,6 +380,7 @@ bool CBuilderZone::init (const string &sPathName, bool makeAZone)
 	string sZoneBankPath = sPathName;
 	sZoneBankPath += "ZoneLigos\\";
 	// Init the ZoneBank
+	_ZoneBank.debugInit("C:\\Ryzom\\code\\nel\\tools\\leveldesign\\syk");
 	_ZoneBank.reset ();
 	initZoneBank (sZoneBankPath);
 	
@@ -515,6 +516,10 @@ bool CBuilderZone::load (const char *fileName, const char *path)
 	if (_ZoneRegionNames[i] == sTmp)
 	{
 		_ZoneRegionSelected = i;
+		_Display->_Offset.x = _Display->_CellSize*(_ZoneRegions[_ZoneRegionSelected]->getMinX() +
+													_ZoneRegions[_ZoneRegionSelected]->getMaxX()) / 2.0f;
+		_Display->_Offset.y = _Display->_CellSize*(_ZoneRegions[_ZoneRegionSelected]->getMinY() + 
+													_ZoneRegions[_ZoneRegionSelected]->getMaxY()) / 2.0f;
 		calcMask ();
 		if (_Display)
 			_Display->OnDraw (NULL);
@@ -562,6 +567,10 @@ bool CBuilderZone::load (const char *fileName, const char *path)
 
 	_ZoneRegions[_ZoneRegionSelected]->init (&_ZoneBank, this);
 
+	_Display->_Offset.x = _Display->_CellSize*(_ZoneRegions[_ZoneRegionSelected]->getMinX() + 
+												_ZoneRegions[_ZoneRegionSelected]->getMaxX()) / 2.0f;
+	_Display->_Offset.y = _Display->_CellSize*(_ZoneRegions[_ZoneRegionSelected]->getMinY() + 
+												_ZoneRegions[_ZoneRegionSelected]->getMaxY()) / 2.0f;
 	calcMask ();
 	if (_Display)
 		_Display->OnDraw (NULL);
@@ -1178,9 +1187,9 @@ void CBuilderZone::generate (sint32 nMinX, sint32 nMinY, sint32 nMaxX, sint32 nM
 	for (sint32 i = nMinX; i <= nMaxX; ++i)
 	{
 		// Generate zone name
-		string ZoneName = NLMISC::toString(-nZoneBaseY-j) + "_";
-		ZoneName += ('a' + (nZoneBaseX+i)/26);
-		ZoneName += ('a' + (nZoneBaseX+i)%26);
+		string ZoneName = NLMISC::toString(-nZoneBaseY-(j-nMinY)) + "_";
+		ZoneName += ('a' + (nZoneBaseX+(i-nMinX))/26);
+		ZoneName += ('a' + (nZoneBaseX+(i-nMinX))%26);
 		CZoneBankElement *pZBE = _ZoneBank.getElementByZoneName (ZoneName);
 		if (pZBE != NULL)
 		{

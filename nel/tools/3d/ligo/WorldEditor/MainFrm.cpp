@@ -97,7 +97,8 @@ CMainFrame::CMainFrame()
 {
 	_Mode = 0;
 	_SplitterCreated = false;
-	CreateX = CreateY = CreateCX = CreateCY =0;
+	CreateX = CreateY = CreateCX = CreateCY = 0;
+	_MasterCB = NULL;
 }
 
 // ---------------------------------------------------------------------------
@@ -117,7 +118,7 @@ void CMainFrame::loadLand (const char* str, const char* path)
 	AFX_MANAGE_STATE (AfxGetStaticModuleState());
 	_ZoneBuilder.load (str, path);
 	_ZoneBuilder.stackReset ();
-	OnMenuModeZone ();
+	//OnMenuModeZone ();
 }
 
 // ---------------------------------------------------------------------------
@@ -125,7 +126,7 @@ void CMainFrame::loadPrim (const char* str, const char* path)
 {
 	AFX_MANAGE_STATE (AfxGetStaticModuleState());
 	_PRegionBuilder.load (str, path);
-	OnMenuModeLogic ();
+	//OnMenuModeLogic ();
 }
 
 // ---------------------------------------------------------------------------
@@ -143,12 +144,25 @@ int CMainFrame::OnCreate (LPCREATESTRUCT lpCreateStruct)
 	if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP
-		| CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
-		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
+	if ((CreateCX == 0)&&(CreateCY == 0))
 	{
-		TRACE0("Failed to create toolbar\n");
-		return -1;      // fail to create
+		if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP
+			| CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
+			!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
+		{
+			TRACE0("Failed to create toolbar\n");
+			return -1;      // fail to create
+		}
+	}
+	else // Mode light
+	{
+		if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP
+			| CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
+			!m_wndToolBar.LoadToolBar(IDR_MAINFRAME_LIGHT))
+		{
+			TRACE0("Failed to create toolbar\n");
+			return -1;      // fail to create
+		}
 	}
 
 	if (!m_wndStatusBar.Create(this, WS_CHILD | WS_VISIBLE | CBRS_BOTTOM
@@ -210,7 +224,7 @@ BOOL CMainFrame::OnCreateClient (LPCREATESTRUCT, CCreateContext* pContext)
 
 	// add the second splitter pane - an input view in column 1
 	if (!m_wndSplitter.CreateView(0, 1,
-		RUNTIME_CLASS(CToolsZone), CSize(100, 100), pContext))
+		RUNTIME_CLASS(CToolsLogic), CSize(100, 100), pContext))
 	{
 		TRACE0("Failed to create second pane\n");
 		return FALSE;
@@ -269,6 +283,17 @@ void CMainFrame::initTools()
 		adjustSplitter ();
 	}
 	SetActiveView ((CView*)m_wndSplitter.GetPane(0,0));
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::primZoneModified()
+{
+	if (_MasterCB != NULL)
+	{
+		vector<string> allNames;
+		_PRegionBuilder.getAllPrimZoneNames (allNames);
+		_MasterCB->setAllPrimZoneNames (allNames);
+	}
 }
 
 // ---------------------------------------------------------------------------

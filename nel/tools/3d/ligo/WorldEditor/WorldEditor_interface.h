@@ -1,6 +1,6 @@
 /** \file WorldEditor_interface.h
  *
- * $Id: WorldEditor_interface.h,v 1.2 2001/11/27 16:15:30 besson Exp $
+ * $Id: WorldEditor_interface.h,v 1.3 2001/12/28 14:57:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,24 @@
 // Increment this version number each time you distribute a new version of the dll.
 #define WORLDEDITOR_VERSION 1
 
+#include <vector>
+#include <string>
+
+// ***************************************************************************
+// IMasterCB
+// ***************************************************************************
+// This class is the master callbacks. This is a group of events when the 
+// worldeditor makes special actions.
+class IMasterCB
+{
+public:
+	// fill the vector passed in argument with the new list of primZone when the list changes
+	virtual void setAllPrimZoneNames (std::vector<std::string> &primZoneList) = 0;
+};
+
+// ***************************************************************************
+// IWorldEditor
+// ***************************************************************************
 class IWorldEditor
 {
 public:
@@ -55,8 +73,14 @@ public:
 	// Set the root path directory
 	virtual void setRootDir (const char *sPathName)=0;
 
+	// Set the root path directory
+	virtual void setMasterCB (IMasterCB *pMCB)=0;
+
 	// Create the default files given the base name (add extension)
-	virtual void createDefaultFiles(const char *fileBaseName)=0;
+	virtual void createDefaultFiles (const char *fileBaseName)=0;
+
+	// Create a default .prim file
+	virtual void createEmptyPrimFile (const char *fullName)=0;
 
 	// Load a specific file and make it by default
 	virtual void loadFile(const char *fileName)=0;

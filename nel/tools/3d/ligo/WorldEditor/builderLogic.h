@@ -99,6 +99,7 @@ public:
 
 	const char* getName (HTREEITEM item);
 	const char* getLayerName (HTREEITEM item);
+	void getAllPrimZoneNames (std::vector<std::string> &allNames);
 	bool isHidden (HTREEITEM item);
 	void setName (HTREEITEM item, const char *pStr);
 	void setLayerName (HTREEITEM item, const char *pStr);
@@ -112,6 +113,8 @@ public:
 	void setSelVerticesOnSelPB (NLMISC::CVector &v);
 	void delSelVerticesOnSelPB ();
 	void stackSelPB ();
+
+	std::string getZonesNameAt (NLMISC::CVector &v);
 
 	void render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax);
 

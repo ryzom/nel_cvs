@@ -67,6 +67,7 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON    DISCARDABLE     "res\\WorldEditor.ico"
+IDR_MAINFRAME_LIGHT     ICON    DISCARDABLE     "res\\icon1.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -74,6 +75,7 @@ IDR_MAINFRAME           ICON    DISCARDABLE     "res\\WorldEditor.ico"
 //
 
 IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+IDR_MAINFRAME_LIGHT     BITMAP  DISCARDABLE     "res\\toolbar1.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -88,6 +90,11 @@ BEGIN
     BUTTON      ID_MODE_TYPE
     SEPARATOR
     BUTTON      ID_MODE_SELECT
+END
+
+IDR_MAINFRAME_LIGHT TOOLBAR DISCARDABLE  16, 16
+BEGIN
+    BUTTON      ID_MODE_TYPE
 END
 
 
@@ -126,6 +133,34 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Undo",                       ID_MODE_UNDO
         MENUITEM "&Redo",                       ID_MODE_REDO
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM "&Grid",                       ID_VIEW_GRID, CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "&Background",                 ID_VIEW_BACKGROUND
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About WorldEditor...",       ID_APP_ABOUT
+    END
+END
+
+IDR_MAINFRAME_LIGHT MENU DISCARDABLE 
+BEGIN
+    POPUP "&Close"
+    BEGIN
+        MENUITEM "&Unload Landscape",           ID_FILE_UNLOAD
+        MENUITEM "Unload &Logic",               ID_FILE_UNLOADLOGIC
+    END
+    POPUP "&Mode"
+    BEGIN
+        MENUITEM "Type",                        ID_MODE_TYPE
+        MENUITEM "Move",                        ID_MODE_MOVE
+        MENUITEM "Undo",                        ID_MODE_UNDO
+        MENUITEM "Redo",                        ID_MODE_REDO
     END
     POPUP "&View"
     BEGIN

@@ -228,7 +228,10 @@ void CToolsLogic::OnMenuCreate()
 			}
 			break;
 		}
+		// Callback handling
+		_MainFrame->primZoneModified();
 	}
+
 }
 
 // ---------------------------------------------------------------------------
@@ -237,6 +240,9 @@ void CToolsLogic::OnMenuDelete()
 	HTREEITEM item = GetTreeCtrl().GetSelectedItem ();
 	GetTreeCtrl().DeleteItem (item);
 	_MainFrame->_PRegionBuilder.del (item);
+
+	// Callback handling
+	_MainFrame->primZoneModified();
 }
 
 // ---------------------------------------------------------------------------
@@ -402,10 +408,13 @@ BOOL CCreateDialog::OnInitDialog ()
 		ComboType.InsertString (-1, TypesForInit->operator[](i).Name.c_str());
 	}
 
-	if (ComboType.SelectString (0, LayerName) == CB_ERR)
-		ComboType.SetCurSel (0);
-	UpdateData();
-	OnSelChange();
+	if (TypesForInit->size()>0)
+	{
+		if (ComboType.SelectString (0, LayerName) == CB_ERR)
+			ComboType.SetCurSel (0);
+		UpdateData();
+		OnSelChange();
+	}
 	
 	return true;
 }
@@ -484,11 +493,11 @@ void CCreateDialog::OnSelChange ()
 		++nPreNum;
 		char sNumTmp[2];
 		sNumTmp[1] = 0;
-		sNumTmp[0] = '0'+(nPreNum/100)%10;
+		sNumTmp[0] = '0'+((nPreNum/100)%10);
 		strcat (Name, sNumTmp);
-		sNumTmp[0] = '0'+(nPreNum/10 )%10;
+		sNumTmp[0] = '0'+((nPreNum/10 )%10);
 		strcat (Name, sNumTmp);
-		sNumTmp[0] = '0'+(nPreNum/1  )%10;
+		sNumTmp[0] = '0'+((nPreNum/1  )%10);
 		strcat (Name, sNumTmp);
 	}
 

@@ -6,10 +6,10 @@
 
 // ***************************************************************************
 
-#define STRING_UNUSED		"< UNUSED >"
-#define STRING_OUT_OF_BOUND "< OOB >"
+#include "../lib/zone_region.h"
 
 // ***************************************************************************
+
 namespace NLLIGO
 {
 	class CZoneBank;
@@ -26,7 +26,7 @@ class CBuilderZone;
 // ***************************************************************************
 
 // CZoneRegion contains informations about the zones painted
-class CBuilderZoneRegion
+class CBuilderZoneRegion : public NLLIGO::CZoneRegion
 {
 
 public:
@@ -37,23 +37,27 @@ public:
 		std::vector<uint8>	Tab;
 	};
 
+public:
+
+	CBuilderZoneRegion ();
+
+	// Tools
+	void				rotFlip (SPiece &sMask, uint8 rot, uint8 flip);
+
+	// New interface
+	void				init (NLLIGO::CZoneBank *pBank, CBuilderZone *pBuilder);
+	void				add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIGO::CZoneBankElement *pElt);
+	void				del (sint32 x, sint32 y, bool transition=false, void *pInternal=NULL);
+	void				move (sint32 x, sint32 y);
+	void				setStart (sint32 x, sint32 y);
+	void				reduceMin ();
+
+	void				serial (NLMISC::IStream &f);
+
+	// Accessors
+	bool				getMustAskSave () { return _MustAskSave; }
+	
 private:
-
-	// An element of the grid
-	struct SZoneUnit
-	{
-		std::string			ZoneName;
-		uint8				PosX, PosY; // Position in a large piece
-		uint8				Rot, Flip; // Rot 0-0°, 1-90°, 2-180°, 3-270°, Flip 0-false, 1-true
-
-		// Work Data : For transition				[2 3]
-		std::string			SharingMatNames[4];	//  [0 1]
-		uint8				SharingCutEdges[4]; // 0-Up, 1-Down, 2-Left, 3-Right (value [0-2])
-
-		SZoneUnit();
-		void			serial (NLMISC::IStream &f);
-		const SZoneUnit&operator=(const SZoneUnit&zu);
-	};
 
 	// An element of the graph
 	struct SMatNode
@@ -64,16 +68,10 @@ private:
 
 private:
 
-	std::vector<SZoneUnit>		_Zones;
-	sint32						_MinX, _MinY;
-	sint32						_MaxX, _MaxY;
-
 	bool						_MustAskSave;
 
 	NLLIGO::CZoneBank			*_ZeBank;
 	CBuilderZone				*_Builder; // To use the global mask
-
-	static std::string			_StringOutOfBound;
 
 	std::vector<SMatNode>		_MatTree; // The tree of transition between materials
 
@@ -96,34 +94,6 @@ private:
 	void				setRot (sint32 x, sint32 y, uint8 rot);
 	void				setFlip (sint32 x, sint32 y, uint8 flip);
 
-public:
-
-	CBuilderZoneRegion ();
-
-	// Tools
-	void				rotFlip (SPiece &sMask, uint8 rot, uint8 flip);
-
-	// New interface
-	void				init (NLLIGO::CZoneBank *pBank, CBuilderZone *pBuilder);
-	void				add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIGO::CZoneBankElement *pElt);
-	void				del (sint32 x, sint32 y, bool transition=false, void *pInternal=NULL);
-	void				serial (NLMISC::IStream &f);
-	void				move (sint32 x, sint32 y);
-	void				setStart (sint32 x, sint32 y);
-	void				reduceMin ();
-
-	// Accessors
-	const std::string	&getName (sint32 x, sint32 y);
-	uint8				getPosX (sint32 x, sint32 y);
-	uint8				getPosY (sint32 x, sint32 y);
-	uint8				getRot (sint32 x, sint32 y);
-	uint8				getFlip (sint32 x, sint32 y);
-
-	sint32				getMinX () { return _MinX; }
-	sint32				getMaxX () { return _MaxX; }
-	sint32				getMinY () { return _MinY; }
-	sint32				getMaxY () { return _MaxY; }
-	bool				getMustAskSave () { return _MustAskSave; }
 };
 
 #endif // BUILDERZONEREGION_H

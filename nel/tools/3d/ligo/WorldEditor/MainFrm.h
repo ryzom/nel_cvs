@@ -20,6 +20,10 @@
 
 // ---------------------------------------------------------------------------
 
+class IMasterCB;
+
+// ---------------------------------------------------------------------------
+
 class CType 
 {
 public:
@@ -54,6 +58,7 @@ public:
 	CBuilderZone		_ZoneBuilder;
 	sint32				_Mode;	// 0-Mode Zone, 1-Mode Logic
 	std::string			_RootDir;
+	IMasterCB			*_MasterCB;
 
 	std::vector<CType>	_Types;
 
@@ -67,6 +72,8 @@ public:
 	void initDisplay();
 	void uninitTools();
 	void initTools();
+
+	void primZoneModified();
 
 	// Initialize the main frame (must be done before init of the tools)
 	bool init (bool bMakeAZone = true);
@@ -89,7 +96,7 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-protected:  // control bar embedded members
+public:  // control bar embedded members
 	CStatusBar		m_wndStatusBar;
 	CToolBar		m_wndToolBar;
 	CSplitterWnd	m_wndSplitter; // GetPane(0,0) == CDisplay, GetPane(0,1) == CTools

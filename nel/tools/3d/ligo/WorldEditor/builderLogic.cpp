@@ -184,16 +184,18 @@ void CBuilderLogic::updateToolsLogic ()
 // ---------------------------------------------------------------------------
 bool CBuilderLogic::load (const char *fileName, const char *path)
 {
-	string sTmp = fileName;
+	string sTmp = string(path) + string("\\") + string(fileName);
 	for (uint32 i = 0; i < _PRegions.size(); ++i)
-	if (_PRegions[i]->Name == sTmp)
 	{
-		_RegionSelected = i;
-		updateToolsLogic ();
-		if (_Display)
-			_Display->OnDraw (NULL);
-		return true;
-	}
+		if (_FullNames[i] == sTmp)
+		{
+			_RegionSelected = i;
+			updateToolsLogic ();
+			if (_Display)
+				_Display->OnDraw (NULL);
+			return true;
+		}
+	}		
 
 	uint32 nPos = _PRegions.size ();
 	_PRegions.push_back (new CPrimRegion);
@@ -432,7 +434,7 @@ void CBuilderLogic::del (HTREEITEM item)
 		// Delete the entry in the document
 		if (_StackPR.isEmpty())
 			_StackPR.add (&PRegion);
-
+		// Delete in the region
 		switch (rPB.Type)
 		{
 			case 0:
@@ -455,13 +457,13 @@ void CBuilderLogic::del (HTREEITEM item)
 				PRegion.VZones.resize (PRegion.VZones.size()-1);
 			break;
 		}
-
+		// Update position
 		map<HTREEITEM, SPrimBuild>::iterator it2 = _Primitives.begin ();
 		while (it2 != _Primitives.end())
 		{
 			SPrimBuild &rPB2 = it2->second;
 
-			if (rPB2.Type == rPB.Type)
+			if ((rPB2.PRegion == rPB.PRegion)&&(rPB2.Type == rPB.Type))
 				if (rPB2.Pos > rPB.Pos)
 					rPB2.Pos -= 1;
 				
@@ -551,7 +553,7 @@ void CBuilderLogic::regionHideType (uint32 nPos, const string &Type, bool bHide)
 				case 2: Name = _PRegions[nPos]->VZones[rPB.Pos].Name; break;
 			}
 
-			int i = 0;
+			uint32 i = 0;
 			while (Name[i] != '-') ++i;
 			i++;
 			while ((Name[i] != '-') && (i < Name.size()))
@@ -702,6 +704,15 @@ const char* CBuilderLogic::getLayerName (HTREEITEM item)
 		}
 		return NULL;
 	}
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::getAllPrimZoneNames (vector<string> &allNames)
+{
+	allNames.clear ();
+	for (uint32 i = 0; i < _PRegions.size(); ++i)
+		for (uint32 j = 0; j < _PRegions[i]->VZones.size(); ++j)
+			allNames.push_back (_PRegions[i]->VZones[j].Name);
 }
 
 
@@ -1005,6 +1016,31 @@ void CBuilderLogic::stackSelPB ()
 }
 
 // ---------------------------------------------------------------------------
+string CBuilderLogic::getZonesNameAt (CVector &v)
+{
+	string ret;
+	for (uint32 i = 0; i < _PRegions.size(); ++i)
+	{
+		for (uint32 j = 0; j < _PRegions[i]->VZones.size(); ++j)
+		{
+			CPrimZone *pz = &_PRegions[i]->VZones[j];
+			if (pz->contains(v))
+			{
+				if (ret.size() == 0)
+				{
+					ret += pz->Name;
+				}
+				else
+				{
+					ret += ", " + pz->Name;
+				}
+			}
+		}
+	}
+	return ret;
+}
+
+// ---------------------------------------------------------------------------
 CRGBA CBuilderLogic::findColor(const string &LayerName)
 {
 	vector<CType> &rTypes = _Display->_MainFrame->_Types;
@@ -1079,6 +1115,12 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 		}
 
 		col.A = 192;
+
+		if (nNbVec == 0)
+		{
+			++it;
+			continue;
+		}
 
 		if (clip(pVec, nNbVec, viewMin, viewMax))
 		{
@@ -1171,7 +1213,7 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 		
 		if ((curPB.Type == 1) || (curPB.Type == 2)) // For Pathes and Zones
 		{
-			int nNbLineToDraw = (curPB.Type == 2)?(nNbVec):(nNbVec-1);
+			uint32 nNbLineToDraw = (curPB.Type == 2)?(nNbVec):(nNbVec-1);
 			if ((nNbLineToDraw == 1)&&(curPB.Type == 2))
 				nNbLineToDraw = 0;
 			for (i = 0; i < nNbLineToDraw; ++i)

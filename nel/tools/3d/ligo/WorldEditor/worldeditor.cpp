@@ -1,7 +1,7 @@
 /** \file WorldEditor.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: worldeditor.cpp,v 1.4 2001/12/17 13:54:50 besson Exp $
+ * $Id: worldeditor.cpp,v 1.5 2001/12/28 14:57:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,6 +139,7 @@ CWorldEditor::CWorldEditor ()
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 //	init3d ();
 	_MainFrame = NULL;
+	_MCB = NULL;
 	_RootDir = "";
 }
 
@@ -170,13 +171,45 @@ void CWorldEditor::setRootDir (const char *sPathName)
 
 // ***************************************************************************
 
+void CWorldEditor::setMasterCB (IMasterCB *pMCB)
+{
+	_MCB = pMCB;
+	if (_MainFrame != NULL)
+		_MainFrame->_MasterCB = _MCB;
+}
+
+// ***************************************************************************
+
 void CWorldEditor::createDefaultFiles (const char *fileBaseName)
 {
 	// The primitive region
-	CPrimRegion reg;
+	createEmptyPrimFile (fileBaseName);
+
+	// The landscape region
+	CBuilderZoneRegion bzr;
 	string fileName = fileBaseName;
+	COFile file;
+	fileName += ".land";
+	file.open (fileName);
+	bzr.serial (file);
+	file.close();
+}
+
+// ***************************************************************************
+
+void CWorldEditor::createEmptyPrimFile (const char *fullName)
+{
+	CPrimRegion reg;
+	string fileName = fullName;
 	fileName += ".prim";
-	reg.Name = fileName;
+
+	char drive[_MAX_DRIVE];
+	char dir[_MAX_DIR];
+	char fname[_MAX_FNAME];
+	char ext[_MAX_EXT];
+	_splitpath (fileName.c_str(), drive, dir, fname, ext);
+
+	reg.Name = fname;
 	COFile file;
 	file.open (fileName);
 	COXml output;
@@ -184,14 +217,6 @@ void CWorldEditor::createDefaultFiles (const char *fileBaseName)
 	reg.serial (output);
 	output.flush ();
 	file.close ();
-
-	// The landscape region
-	CBuilderZoneRegion bzr;
-	fileName = fileBaseName;
-	fileName += ".land";
-	file.open (fileName);
-	bzr.serial (file);
-	file.close();
 }
 
 // ***************************************************************************
@@ -270,28 +295,17 @@ void CWorldEditor::initUILight (int x, int y, int cx, int cy)
 	_MainFrame->CreateY = y;
 	_MainFrame->CreateCX = cx;
 	_MainFrame->CreateCY = cy;
-	BOOL bRet = _MainFrame->LoadFrame (IDR_MAINFRAME, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
-	CMenu* pMenu = _MainFrame->GetMenu();
+	BOOL bRet = _MainFrame->LoadFrame (IDR_MAINFRAME_LIGHT, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
 	theApp.m_pMainWnd = _MainFrame;
 
-	if (pMenu != NULL && pMenu->GetMenuItemCount() > 0)
-	{
-		pMenu->ModifyMenu (0, MF_BYPOSITION, 0, "&Close");
-		pMenu = pMenu->GetSubMenu (0);
-
-		while (pMenu->GetMenuItemCount() > 0)
-			pMenu->DeleteMenu(0, MF_BYPOSITION);
-
-		pMenu->InsertMenu(-1, MF_BYPOSITION, ID_FILE_UNLOAD, "&Unload Landscape");
-		pMenu->InsertMenu(-1, MF_BYPOSITION, ID_FILE_UNLOADLOGIC, "U&nload Logic");
-		// force a redraw of the menu bar
-		_MainFrame->DrawMenuBar();
-	}
+	if (_MCB != NULL)
+		_MainFrame->_MasterCB = _MCB;
 	_MainFrame->setRootDir (_RootDir.c_str());
 	_MainFrame->ShowWindow (SW_SHOW);
 	_MainFrame->UpdateWindow ();
 	_MainFrame->init (false);
 	_MainFrame->initDisplay ();
+	_MainFrame->_Mode = 1;
 	_MainFrame->initTools ();
 }
 

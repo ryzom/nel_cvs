@@ -14,60 +14,10 @@ using namespace NLLIGO;
 // CBuilderZoneRegion
 // ***************************************************************************
 
-std::string CBuilderZoneRegion::_StringOutOfBound;
-
-// ---------------------------------------------------------------------------
-CBuilderZoneRegion::SZoneUnit::SZoneUnit()
-{
-	ZoneName = STRING_UNUSED;
-	PosX = PosY = 0;
-	Rot = Flip = 0;
-	SharingMatNames[0] = STRING_UNUSED;
-	SharingMatNames[1] = STRING_UNUSED;
-	SharingMatNames[2] = STRING_UNUSED;
-	SharingMatNames[3] = STRING_UNUSED;
-	SharingCutEdges[0] = 0;
-	SharingCutEdges[1] = 0;
-	SharingCutEdges[2] = 0;
-	SharingCutEdges[3] = 0;
-}
-
-// ---------------------------------------------------------------------------
-void CBuilderZoneRegion::SZoneUnit::serial (NLMISC::IStream &f)
-{
-	f.serial (ZoneName);
-	f.serial (PosX);
-	f.serial (PosY);
-	f.serial (Rot);
-	f.serial (Flip);
-
-	for (uint32 i = 0; i < 4; ++i)
-	{
-		f.serial (SharingMatNames[i]);
-		f.serial (SharingCutEdges[i]);
-	}
-}
-
-// ---------------------------------------------------------------------------
-const CBuilderZoneRegion::SZoneUnit& CBuilderZoneRegion::SZoneUnit::operator=(const CBuilderZoneRegion::SZoneUnit&zu)
-{
-	this->ZoneName	= zu.ZoneName;
-	this->PosX		= zu.PosX;
-	this->PosY		= zu.PosY;
-	this->Rot		= zu.Rot;
-	this->Flip		= zu.Flip;
-	for (uint32 i = 0; i < 4; ++i)
-	{
-		this->SharingMatNames[i] = zu.SharingMatNames[i];
-		this->SharingCutEdges[i] = zu.SharingCutEdges[i];
-	}
-	return *this;
-}
 
 // ---------------------------------------------------------------------------
 CBuilderZoneRegion::CBuilderZoneRegion ()
 {
-	_StringOutOfBound = STRING_OUT_OF_BOUND;
 	_MinX = _MinY = 0;
 	_MaxX = _MaxY = 0;
 	SZoneUnit zuTmp;
@@ -1196,14 +1146,7 @@ void CBuilderZoneRegion::del (sint32 x, sint32 y, bool transition, void *pIntern
 // ---------------------------------------------------------------------------
 void CBuilderZoneRegion::serial (NLMISC::IStream &f)
 {
-	sint32 version = f.serialVersion (0);
-	f.serialCheck ((uint32)'DNAL');
-	f.serial (_MinX);
-	f.serial (_MinY);
-	f.serial (_MaxX);
-	f.serial (_MaxY);
-	f.serialCont (_Zones);
-
+	CZoneRegion::serial(f);
 	_MustAskSave = false;
 }
 
@@ -1439,76 +1382,6 @@ void CBuilderZoneRegion::reduceMin ()
 	{
 		resize (newMinX, newMaxX, newMinY, newMaxY);
 		_MustAskSave = true;
-	}
-}
-
-// ---------------------------------------------------------------------------
-const string &CBuilderZoneRegion::getName (sint32 x, sint32 y)
-{
-	if ((x < _MinX) || (x > _MaxX) ||
-		(y < _MinY) || (y > _MaxY))
-	{
-		return _StringOutOfBound;
-	}
-	else
-	{
-		return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].ZoneName;
-	}
-}
-
-// ---------------------------------------------------------------------------
-uint8 CBuilderZoneRegion::getPosX (sint32 x, sint32 y)
-{
-	if ((x < _MinX) || (x > _MaxX) ||
-		(y < _MinY) || (y > _MaxY))
-	{
-		return 0;
-	}
-	else
-	{
-		return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].PosX;
-	}
-}
-
-// ---------------------------------------------------------------------------
-uint8 CBuilderZoneRegion::getPosY (sint32 x, sint32 y)
-{
-	if ((x < _MinX) || (x > _MaxX) ||
-		(y < _MinY) || (y > _MaxY))
-	{
-		return 0;
-	}
-	else
-	{
-		return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].PosY;
-	}
-}
-
-// ---------------------------------------------------------------------------
-uint8 CBuilderZoneRegion::getRot (sint32 x, sint32 y)
-{
-	if ((x < _MinX) || (x > _MaxX) ||
-		(y < _MinY) || (y > _MaxY))
-	{
-		return 0;
-	}
-	else
-	{
-		return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].Rot;
-	}
-}
-
-// ---------------------------------------------------------------------------
-uint8 CBuilderZoneRegion::getFlip (sint32 x, sint32 y)
-{
-	if ((x < _MinX) || (x > _MaxX) ||
-		(y < _MinY) || (y > _MaxY))
-	{
-		return 0;
-	}
-	else
-	{
-		return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].Flip;
 	}
 }
 

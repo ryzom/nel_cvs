@@ -28,6 +28,10 @@ BEGIN_MESSAGE_MAP(CDisplay, CView)
 	ON_WM_RBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_WM_CHAR()
+	ON_WM_TIMER()
+	ON_WM_CREATE()
+	ON_WM_DESTROY()
+
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -42,6 +46,8 @@ CDisplay::CDisplay ()
 	_MouseLeftDown = false;
 	_MouseMidDown = false;
 	_MouseMoved = false;
+	_MouseMoving = false;
+	_Counter = 0;
 	_Factor = 1.0f;
 	_Offset = CVector(0.0f, 0.0f, 0.0f);
 	_DisplayGrid = true;
@@ -69,7 +75,6 @@ void CDisplay::init (CMainFrame *pMF)
 	CNELU::initDriver(512, 512, 32, true, this->m_hWnd);
 	CNELU::initScene(CViewport());
 
-
 	// setMatrixMode2D11
 	CFrustum	f(0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f,false);
 	CVector		I(1,0,0);
@@ -86,9 +91,15 @@ void CDisplay::init (CMainFrame *pMF)
 	CNELU::Driver->activate ();
 	CNELU::clearBuffers ();
 	CNELU::swapBuffers ();
-	OnDraw (NULL);
 
-	
+	_FontManager.setMaxMemory(2000000);
+	_TextContext.init (CNELU::Driver, &_FontManager);	
+	_TextContext.setFontGenerator ("n019003l.pfb");	
+	_TextContext.setHotSpot (CComputedString::TopLeft);
+	_TextContext.setColor (CRGBA(255,255,255));
+	_TextContext.setFontSize (20);
+
+	OnDraw (NULL);
 }
 
 // ---------------------------------------------------------------------------
@@ -190,9 +201,35 @@ void CDisplay::OnDraw (CDC* pDC)
 	if (_DisplaySelection)
 		renderSelection ();
 
+	if (_TextToDisplay != "")
+	{
+		CRect rect;
+	
+		GetClientRect (rect);
+		float x = ((float)_LastMousePos.x) / ((float)rect.Width());
+		float y = 1.0f- (((float)_LastMousePos.y+20.0f) / ((float)rect.Height()));
+		_TextContext.printfAt (x, y, _TextToDisplay.c_str());
+	}
+
 	CNELU::Scene.render ();
 	
 	CNELU::swapBuffers ();
+}
+
+// ---------------------------------------------------------------------------
+int CDisplay::OnCreate (LPCREATESTRUCT lpCreateStruct)
+{
+	if (CView::OnCreate (lpCreateStruct) == -1)
+		return -1;
+	SetTimer (1, 200, NULL);
+	return 0;
+}
+
+// ---------------------------------------------------------------------------
+void CDisplay::OnDestroy ()
+{
+	KillTimer (1);
+	CView::OnDestroy ();
 }
 
 // ---------------------------------------------------------------------------
@@ -325,6 +362,7 @@ void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 {
 	if (_MainFrame == NULL)
 		return;
+	_MouseMoving = true;
 	// Get the current position in world
 	_CurPos = convertToWorld (point);
 	_MouseMoved = true;
@@ -354,7 +392,6 @@ void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 				_SelectionMax = _CurPos;
 			}
 		}
-		_LastMousePos = point;
 		OnPaint();
 	}
 
@@ -386,9 +423,10 @@ void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 		_Offset.x -= dx * (_InitViewMax.x-_InitViewMin.x) * _Factor;
 		_Offset.y -= dy * (_InitViewMax.y-_InitViewMin.y) * _Factor;
 
-		_LastMousePos = point;
 		OnPaint();
 	}
+
+	_LastMousePos = point;
 
 	// Display the current position in the world in the status bar
 	_MainFrame->displayCoordinates (_CurPos);
@@ -404,4 +442,30 @@ void CDisplay::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
 		if (GetAsyncKeyState(0x59)) // Y
 			_MainFrame->onMenuModeRedo ();
 	}
+}
+
+// ---------------------------------------------------------------------------
+void CDisplay::OnTimer (UINT nIDEvent)
+{
+	if ((CNELU::Driver == NULL)||(_MainFrame == NULL))
+		return;
+
+	if (_MouseMoving)
+		_Counter = 0;
+	else
+		_Counter++;
+	_MouseMoving = false;
+
+	if (_Counter == 5)
+	{
+		_TextToDisplay = _MainFrame->_PRegionBuilder.getZonesNameAt (convertToWorld(_LastMousePos));
+		OnDraw (NULL);
+	}
+	else
+	{
+		_TextToDisplay = "";
+	}
+
+	if (_Counter > (5+1))
+		_Counter = (5+1);
 }

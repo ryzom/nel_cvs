@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.189 2003/06/04 08:26:26 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.190 2003/08/07 08:56:56 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -288,6 +288,12 @@ CDriverGL::CDriverGL()
 ///	buildCausticCubeMapTex();
 
 	_SpecularBatchOn= false;
+
+	_PolygonSmooth= false;
+
+	_VBHardProfiling= false;
+	_CurVBHardLockCount= 0;
+	_NumVBHardProfileFrame= 0;
 }
 
 
@@ -1193,6 +1199,21 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 		// Not special TexEnv.
 		_CurrentTexEnvSpecial[stage]= TexEnvSpecialDisabled;
 				
+		// set All TexGen by default to identity matrix (prefer use the textureMatrix scheme)
+		_DriverGLStates.activeTextureARB(stage);
+		GLfloat		params[4];
+		params[0]=1; params[1]=0; params[2]=0; params[3]=0;
+		glTexGenfv(GL_S, GL_OBJECT_PLANE, params);
+		glTexGenfv(GL_S, GL_EYE_PLANE, params);
+		params[0]=0; params[1]=1; params[2]=0; params[3]=0;
+		glTexGenfv(GL_T, GL_OBJECT_PLANE, params);
+		glTexGenfv(GL_T, GL_EYE_PLANE, params);
+		params[0]=0; params[1]=0; params[2]=1; params[3]=0;
+		glTexGenfv(GL_R, GL_OBJECT_PLANE, params);
+		glTexGenfv(GL_R, GL_EYE_PLANE, params);
+		params[0]=0; params[1]=0; params[2]=0; params[3]=1;
+		glTexGenfv(GL_Q, GL_OBJECT_PLANE, params);
+		glTexGenfv(GL_Q, GL_EYE_PLANE, params);
 	}
 	resetTextureShaders();
 
@@ -1487,6 +1508,13 @@ bool CDriverGL::swapBuffers()
 
 	// Reset the texture set
 	_TextureUsed.clear();
+
+	// Reset Profile VBHardLock
+	if(_VBHardProfiling)
+	{
+		_CurVBHardLockCount= 0;
+		_NumVBHardProfileFrame++;
+	}
 
 	return true;
 }
@@ -2102,6 +2130,29 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 	_FogEnd = end;
 }
 
+
+// ***************************************************************************
+float			CDriverGL::getFogStart() const
+{
+	return _FogStart;
+}
+
+// ***************************************************************************
+float			CDriverGL::getFogEnd() const
+{
+	return _FogEnd;
+}
+
+// ***************************************************************************
+CRGBA			CDriverGL::getFogColor() const
+{
+	CRGBA	ret;
+	ret.R= (uint8)(_CurrentFogColor[0]*255);
+	ret.G= (uint8)(_CurrentFogColor[1]*255);
+	ret.B= (uint8)(_CurrentFogColor[2]*255);
+	ret.A= (uint8)(_CurrentFogColor[3]*255);
+	return ret;
+}
 
 
 // ***************************************************************************
@@ -2860,6 +2911,97 @@ uint	CDriverGL::getSwapVBLInterval()
 #endif
 }
 
+// ***************************************************************************
+void	CDriverGL::enablePolygonSmoothing(bool smooth)
+{
+	if(smooth)
+		glEnable(GL_POLYGON_SMOOTH);
+	else
+		glDisable(GL_POLYGON_SMOOTH);
+	_PolygonSmooth= smooth;
+}
+
+// ***************************************************************************
+bool	CDriverGL::isPolygonSmoothingEnabled() const
+{
+	return _PolygonSmooth;
+}
+
+
+
+// ***************************************************************************
+void	CDriverGL::startProfileVBHardLock()
+{
+	if(_VBHardProfiling)
+		return;
+
+	// start
+	_VBHardProfiles.clear();
+	_VBHardProfiles.reserve(50);
+	_VBHardProfiling= true;
+	_CurVBHardLockCount= 0;
+	_NumVBHardProfileFrame= 0;
+}
+
+// ***************************************************************************
+void	CDriverGL::endProfileVBHardLock(vector<std::string> &result)
+{
+	if(!_VBHardProfiling)
+		return;
+
+	// Fill infos.
+	result.clear();
+	result.resize(_VBHardProfiles.size());
+	for(uint i=0;i<_VBHardProfiles.size();i++)
+	{
+		const	uint tmpSize= 256;
+		char	tmp[tmpSize];
+		CVBHardProfile	&vbProf= _VBHardProfiles[i];
+		const char	*vbName;
+		if(vbProf.VBHard && !vbProf.VBHard->getName().empty())
+		{
+			vbName= vbProf.VBHard->getName().c_str();
+		}
+		else
+		{
+			vbName= "????";
+		}
+		// Display in ms.
+		smprintf(tmp, tmpSize, "%16s%c: %2.3f ms", vbName, vbProf.Change?'*':' ', 
+			CTime::ticksToSecond(vbProf.AccumTime)*1000 / _NumVBHardProfileFrame);
+
+		result[i]= tmp;
+	}
+
+	// clear.
+	_VBHardProfiling= false;
+	contReset(_VBHardProfiles);
+}
+
+// ***************************************************************************
+void	CDriverGL::appendVBHardLockProfile(NLMISC::TTicks time, IVertexBufferHard *vb)
+{
+	// must allocate a new place?
+	if(_CurVBHardLockCount>=_VBHardProfiles.size())
+	{
+		_VBHardProfiles.resize(_VBHardProfiles.size()+1);
+		// set the original VBHard
+		_VBHardProfiles[_CurVBHardLockCount].VBHard= vb;
+	}
+
+	// Accumulate.
+	_VBHardProfiles[_CurVBHardLockCount].AccumTime+= time;
+	// if change of VBHard for this chrono place
+	if(_VBHardProfiles[_CurVBHardLockCount].VBHard != vb)
+	{
+		// flag, and set new
+		_VBHardProfiles[_CurVBHardLockCount].VBHard= vb;
+		_VBHardProfiles[_CurVBHardLockCount].Change= true;
+	}
+
+	// next!
+	_CurVBHardLockCount++;
+}
 
 
 } // NL3D

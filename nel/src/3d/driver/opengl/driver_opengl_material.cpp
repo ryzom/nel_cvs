@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.73 2003/05/06 15:29:35 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.74 2003/08/07 08:56:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,11 +133,19 @@ void CDriverGL::setTextureEnvFunction(uint stage, CMaterial& mat)
 			// Enable it
 			_DriverGLStates.enableTexGen (stage, true);
 
-			// Cubic or normal ?
-			if (text->isTextureCube ())
-				_DriverGLStates.setTexGenMode (stage, GL_REFLECTION_MAP_ARB);
-			else
-				_DriverGLStates.setTexGenMode (stage, GL_SPHERE_MAP);
+			CMaterial::TTexCoordGenMode	mode= mat.getTexCoordGenMode(stage);
+			if(mode==CMaterial::TexCoordGenReflect)
+			{
+				// Cubic or normal ?
+				if (text->isTextureCube ())
+					_DriverGLStates.setTexGenMode (stage, GL_REFLECTION_MAP_ARB);
+				else
+					_DriverGLStates.setTexGenMode (stage, GL_SPHERE_MAP);
+			}
+			else if(mode==CMaterial::TexCoordGenObjectSpace)
+				_DriverGLStates.setTexGenMode (stage, GL_OBJECT_LINEAR);
+			else if(mode==CMaterial::TexCoordGenEyeSpace)
+				_DriverGLStates.setTexGenMode (stage, GL_EYE_LINEAR);
 		}
 		else
 		{

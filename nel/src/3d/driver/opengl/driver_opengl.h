@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.149 2003/05/22 09:02:56 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.150 2003/08/07 08:56:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,6 +71,7 @@
 #include "3d/texture_cube.h"
 #include "3d/vertex_program_parse.h"
 #include "nel/3d/viewport.h"
+#include "nel/misc/time_nl.h"
 
 
 #ifdef NL_OS_WINDOWS
@@ -354,6 +355,10 @@ public:
 	
 	uint32					getUsedTextureMemory() const;
 
+	virtual	void			startProfileVBHardLock();
+
+	virtual	void			endProfileVBHardLock(std::vector<std::string> &result);
+
 	virtual bool			release();
 
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
@@ -438,6 +443,9 @@ public:
 	virtual	void			enableFog(bool enable);
 	/// setup fog parameters. fog must enabled to see result. start and end are in [0,1] range.
 	virtual	void			setupFog(float start, float end, CRGBA color);
+	virtual	float			getFogStart() const;
+	virtual	float			getFogEnd() const;
+	virtual	CRGBA			getFogColor() const;
 	// @}
 
 	/// \name texture addressing modes
@@ -468,6 +476,8 @@ public:
 	virtual	NLMISC::CRGBA	getBlendConstantColor() const;
 	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties);
 	virtual	void			finish();
+	virtual	void			enablePolygonSmoothing(bool smooth);
+	virtual	bool			isPolygonSmoothingEnabled() const;
 	// @}
 
 
@@ -895,6 +905,27 @@ private:
 	bool												_SumTextureMemoryUsed;
 	std::set<CTextureDrvInfosGL*>						_TextureUsed;
 	uint							computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const;
+
+	// VBHard Lock Profiling
+	struct	CVBHardProfile
+	{
+		NLMISC::CRefPtr<IVertexBufferHard>		VBHard;
+		NLMISC::TTicks							AccumTime;
+		// true if the VBHard was not always the same for the same chronogical place.
+		bool									Change;
+		CVBHardProfile()
+		{
+			AccumTime= 0;
+			Change= false;
+		}
+	};
+	// The Profiles in chronogical order.
+	bool												_VBHardProfiling;
+	std::vector<CVBHardProfile>							_VBHardProfiles;
+	uint												_CurVBHardLockCount;
+	uint												_NumVBHardProfileFrame;
+	void							appendVBHardLockProfile(NLMISC::TTicks time, IVertexBufferHard *vb);
+
 	// @}
 
 	/// \name Vertex program interface
@@ -1027,6 +1058,7 @@ private:
 	// @}
 
 
+	bool				_PolygonSmooth;
 };
 
 

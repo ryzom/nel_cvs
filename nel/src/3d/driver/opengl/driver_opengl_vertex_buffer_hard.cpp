@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.9 2003/03/31 11:53:39 vizerie Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.10 2003/08/07 08:56:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -315,9 +315,23 @@ void		*CVertexBufferHardGLNVidia::lock()
 		GPURenderingAfterFence= false;
 	}
 
+	// Lock Profile?
+	TTicks	beforeLock;
+	if(_Driver->_VBHardProfiling)
+	{
+		beforeLock= CTime::getPerformanceTime();
+	}
+
 	// Ensure the GPU has finished with the current VBHard.
 	finishFence();
 
+	// Lock Profile?
+	if(_Driver->_VBHardProfiling)
+	{
+		TTicks	afterLock;
+		afterLock= CTime::getPerformanceTime();
+		_Driver->appendVBHardLockProfile(afterLock-beforeLock, this);
+	}
 
 	return _VertexPtr;
 }

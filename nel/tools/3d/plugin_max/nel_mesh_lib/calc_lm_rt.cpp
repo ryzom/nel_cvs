@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.cpp
  * Raytrace part of the lightmap calculation
  *
- * $Id: calc_lm_rt.cpp,v 1.11 2004/06/08 15:08:36 berenguier Exp $
+ * $Id: calc_lm_rt.cpp,v 1.12 2004/11/02 16:16:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -431,7 +431,7 @@ void CRTWorld::getAllSelectedNode	(vector< CMesh::CMeshBuild* > &Meshes,
 	}
 
 	// Add the included 
-	set<INode*>::iterator ite = includeNode.begin();
+	set<INode*>::const_iterator ite = includeNode.begin();
 	while (ite != includeNode.end())
 	{
 		// Add the included object

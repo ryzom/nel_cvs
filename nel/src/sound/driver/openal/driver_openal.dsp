@@ -153,5 +153,56 @@ SOURCE=.\source_al.cpp
 
 SOURCE=.\source_al.h
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\..\distrib\nel\lib\nlmisc_debug.lib
+
+!IF  "$(CFG)" == "driver_openal - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "driver_openal - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "driver_openal - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\..\distrib\nel\lib\nlmisc.lib
+
+!IF  "$(CFG)" == "driver_openal - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "driver_openal - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "driver_openal - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\..\distrib\nel\lib\nlmisc_rd.lib
+
+!IF  "$(CFG)" == "driver_openal - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "driver_openal - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "driver_openal - Win32 ReleaseDebug"
+
+!ENDIF 
+
+# End Source File
 # End Target
 # End Project

@@ -1,7 +1,7 @@
 /** \file particle_system_edit.h
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.h,v 1.11 2003/04/14 15:32:50 vizerie Exp $
+ * $Id: particle_system_edit.h,v 1.12 2003/08/08 16:58:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,7 @@ namespace NL3D
 
 
 class CAutoLODDlg;
+class CParticleTreeCtrl;
 
 class CUserParamWrapper : public IPSWrapperFloat
 {
@@ -93,7 +94,7 @@ class CParticleSystemEdit : public CDialog, public CDialogStack, public IPopupNo
 {
 // Construction
 public:
-	CParticleSystemEdit(NL3D::CParticleSystem *ps);   // standard constructor
+	CParticleSystemEdit(NL3D::CParticleSystem *ps, CParticleTreeCtrl *ptc);   // standard constructor
 
 	~CParticleSystemEdit();
 
@@ -119,6 +120,7 @@ public:
 	BOOL	m_DieWhenOutOfFrustum;
 	BOOL	m_EnableLoadBalancing;
 	BOOL	m_BypassMaxNumSteps;
+	BOOL	m_ForceLighting;
 	//}}AFX_DATA
 
 
@@ -139,7 +141,7 @@ protected:
 	CEditableRangeUInt  *_MaxIntegrationStepDlg; 
 	CDialog				*_AutoLODDlg;
 	CDialog				*_GlobalColorDlg;
-
+	CParticleTreeCtrl   *_ParticleTreeCtrl;
 
 	// Generated message map functions
 	//{{AFX_MSG(CParticleSystemEdit)
@@ -167,6 +169,7 @@ protected:
 	afx_msg void OnGlobalUserParam3();
 	afx_msg void OnGlobalUserParam4();
 	afx_msg void OnBypassMaxNumSteps();
+	afx_msg void OnForceGlobalLighitng();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

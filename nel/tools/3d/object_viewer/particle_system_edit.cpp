@@ -1,7 +1,7 @@
  /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.17 2003/08/04 13:07:48 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.18 2003/08/08 16:58:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,11 +28,14 @@
 #include "object_viewer.h"
 #include "particle_system_edit.h"
 #include "3d/particle_system.h"
+#include "3d/particle_system_model.h"
 #include "3d/ps_color.h"
 #include "editable_range.h"
 #include "auto_lod_dlg.h"
 #include "ps_global_color_dlg.h"
 #include "choose_name.h"
+#include "particle_tree_ctrl.h"
+#include "particle_dlg.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -49,11 +52,13 @@ CLODRatioWrapper CParticleSystemEdit::_LODRatioWrapper;
 CUserParamWrapper CParticleSystemEdit::_UserParamWrapper[4];
 
 //=====================================================
-CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps)
+CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps, CParticleTreeCtrl *ptc)
 	: _PS(ps), _TimeThresholdDlg(NULL), _MaxIntegrationStepDlg(NULL)
 		, _MaxViewDistDlg(NULL), _LODRatioDlg(NULL), _AutoLODDlg(NULL),
-		_GlobalColorDlg(NULL)
+		_GlobalColorDlg(NULL),
+		_ParticleTreeCtrl(ptc)
 {
+	nlassert(ptc);
 	//{{AFX_DATA_INIT(CParticleSystemEdit)
 	m_AccurateIntegration = FALSE;
 	m_EnableSlowDown = FALSE;
@@ -61,6 +66,7 @@ CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps)
 	m_DieWhenOutOfFrustum = FALSE;
 	m_EnableLoadBalancing = FALSE;
 	m_BypassMaxNumSteps = FALSE;
+	m_ForceLighting = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -101,7 +107,7 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	_LODRatioDlg->init(87, 357, this);
 
 
-	_TimeThresholdDlg = new CEditableRangeFloat (std::string("TIME THRESHOLD"), 0, 0.5f);
+	_TimeThresholdDlg = new CEditableRangeFloat (std::string("TIME THRESHOLD"), 0.005f, 0.5f);
 	_TimeThresholdWrapper.PS = _PS;
 	_TimeThresholdDlg->enableLowerBound(0, true);
 	_TimeThresholdDlg->setWrapper(&_TimeThresholdWrapper);
@@ -160,6 +166,7 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 
 	m_EnableLoadBalancing = _PS->isLoadBalancingEnabled();
 	_MaxIntegrationStepDlg->EnableWindow(_PS->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
+	m_ForceLighting = _PS->getForceGlobalColorLightingFlag();
 
 	UpdateData(FALSE);
 	ShowWindow(SW_SHOW);	
@@ -253,6 +260,7 @@ void CParticleSystemEdit::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_DIE_WHEN_OUT_OF_FRUSTRUM, m_DieWhenOutOfFrustum);
 	DDX_Check(pDX, IDC_ENABLE_LOAD_BALANCING, m_EnableLoadBalancing);
 	DDX_Check(pDX, IDC_BYPASS_MAX_NUM_STEPS, m_BypassMaxNumSteps);
+	DDX_Check(pDX, IDC_FORCE_GLOBAL_LIGHITNG, m_ForceLighting);
 	//}}AFX_DATA_MAP
 }
 
@@ -283,6 +291,7 @@ BEGIN_MESSAGE_MAP(CParticleSystemEdit, CDialog)
 	ON_BN_CLICKED(IDC_GLOBAL_USER_PARAM_3, OnGlobalUserParam3)
 	ON_BN_CLICKED(IDC_GLOBAL_USER_PARAM_4, OnGlobalUserParam4)
 	ON_BN_CLICKED(IDC_BYPASS_MAX_NUM_STEPS, OnBypassMaxNumSteps)
+	ON_BN_CLICKED(IDC_FORCE_GLOBAL_LIGHITNG, OnForceGlobalLighitng)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -694,4 +703,12 @@ void CParticleSystemEdit::OnBypassMaxNumSteps()
 	}
 	_PS->setBypassMaxNumIntegrationSteps(m_BypassMaxNumSteps != FALSE);	
 	_MaxIntegrationStepDlg->EnableWindow(_PS->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
+}
+
+//=====================================================
+void CParticleSystemEdit::OnForceGlobalLighitng() 
+{
+	UpdateData(TRUE);
+	_PS->setForceGlobalColorLightingFlag(m_ForceLighting != 0);
+	_ParticleTreeCtrl->getParticleDlg()->getCurrPSModel()->touchLightableState();
 }

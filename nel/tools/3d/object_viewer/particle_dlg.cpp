@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.18 2003/03/26 10:28:30 berenguier Exp $
+ * $Id: particle_dlg.cpp,v 1.19 2003/08/08 16:58:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,18 +60,9 @@
 
 
 
-using namespace NL3D ;
+using namespace NL3D;
 
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CParticleDlg dialog
-
-
-
+//**************************************************************************************************************************
 CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame)
 	: CDialog(CParticleDlg::IDD, pParent), MainFrame(mainFrame), CurrentRightPane(NULL), _ObjView(main)
 
@@ -83,41 +74,43 @@ CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame*
 	nlverify (FontManager = main->getFontManager());
 	nlverify (FontGenerator = main->getFontGenerator());
 
-	resetSystem() ;
+	resetSystem();
 
 
-	ParticleTreeCtrl = new CParticleTreeCtrl(this) ;
-	StartStopDlg = new CStartStopParticleSystem(this) ;
+	ParticleTreeCtrl = new CParticleTreeCtrl(this);
+	StartStopDlg = new CStartStopParticleSystem(this);
 
 
 	/** register us, so that our 'go' method will be called
 	  * this gives us a chance to display a bbox when needed
 	  */
-	_ObjView->registerMainLoopCallBack(this) ;
+	_ObjView->registerMainLoopCallBack(this);
 
 
 	
 
 }
 
+//**************************************************************************************************************************
 void CParticleDlg::resetSystem(void)
 {
-	const std::string emptySystemName("private_empty_particle_system.ps") ;
-	CParticleSystem emptyPS ;
+	const std::string emptySystemName("private_empty_particle_system.ps");
+	CParticleSystem emptyPS;
 	
-	CParticleSystemShape *pss = new NL3D::CParticleSystemShape ;
-	pss->buildFromPS(emptyPS) ;
-	CNELU::Scene.getShapeBank()->add(emptySystemName, pss) ;
+	CParticleSystemShape *pss = new NL3D::CParticleSystemShape;
+	pss->buildFromPS(emptyPS);
+	CNELU::Scene.getShapeBank()->add(emptySystemName, pss);
 	
-	_CurrSystemModel = (NL3D::CParticleSystemModel *) CNELU::Scene.createInstance(emptySystemName) ;
+	_CurrSystemModel = (NL3D::CParticleSystemModel *) CNELU::Scene.createInstance(emptySystemName);
+	_CurrSystemModel->setTransformMode(NL3D::CTransform::DirectMatrix);
 
 	// link to the root for manipulation
 	_ObjView->getSceneRoot()->hrcLinkSon(_CurrSystemModel);
 
-	_CurrSystemModel->enableDisplayTools() ;
-	_CurrSystemModel->enableAutoGetEllapsedTime(false) ;		
-	_CurrSystemModel->setEllapsedTime(0.f) ;
-	_CurrSystemModel->setEditionMode(true) ; // enable edition mode
+	_CurrSystemModel->enableDisplayTools();
+	_CurrSystemModel->enableAutoGetEllapsedTime(false);		
+	_CurrSystemModel->setEllapsedTime(0.f);
+	_CurrSystemModel->setEditionMode(true); // enable edition mode
 											 // this will prevent it from being removed when it is too far
 										     // this also allow us to safely keep a pointer on it
 	for(uint k = 0; k < NL3D::MaxPSUserParam; ++k)
@@ -125,38 +118,38 @@ void CParticleDlg::resetSystem(void)
 		_CurrSystemModel->bypassGlobalUserParamValue(k);
 	}
 
-	_CurrPS = _CurrSystemModel->getPS() ;
+	_CurrPS = _CurrSystemModel->getPS();
 
-	_CurrPS->setFontManager(FontManager) ;
-	_CurrPS->setFontGenerator(FontGenerator) ;
+	_CurrPS->setFontManager(FontManager);
+	_CurrPS->setFontGenerator(FontGenerator);
 }
 
+//**************************************************************************************************************************
 void CParticleDlg::moveElement(const NLMISC::CMatrix &mat)
 {
-	ParticleTreeCtrl->moveElement(mat) ;
+	ParticleTreeCtrl->moveElement(mat);
 }
 
+//**************************************************************************************************************************
 NLMISC::CMatrix CParticleDlg::getElementMatrix(void) const
 {
-	return ParticleTreeCtrl->getElementMatrix() ;
+	return ParticleTreeCtrl->getElementMatrix();
 }
 
-
-
+//**************************************************************************************************************************
 CParticleDlg::~CParticleDlg()
 {
-	//NL3D::CNELU::Scene.deleteInstance(_CurrSystemModel) ;
+	//NL3D::CNELU::Scene.deleteInstance(_CurrSystemModel);
 
-	_ObjView->removeMainLoopCallBack(this) ;
+	_ObjView->removeMainLoopCallBack(this);
 	
-	delete ParticleTreeCtrl ;
-	delete CurrentRightPane ;
+	delete ParticleTreeCtrl;
+	delete CurrentRightPane;
 
-	delete StartStopDlg ;
+	delete StartStopDlg;
 }
 
-
-
+//**************************************************************************************************************************
 void CParticleDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -174,33 +167,32 @@ BEGIN_MESSAGE_MAP(CParticleDlg, CDialog)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-/////////////////////////////////////////////////////////////////////////////
-// CParticleDlg message handlers
-
+//**************************************************************************************************************************
 void CParticleDlg::OnDestroy() 
 {
 	setRegisterWindowState (this, REGKEY_OBJ_PARTICLE_DLG);
 	CDialog::OnDestroy();		
 }
 
+//**************************************************************************************************************************
 BOOL CParticleDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
 
-	CRect r ;
-	GetWindowRect(&r) ;
+	CRect r;
+	GetWindowRect(&r);
 	
 	ParticleTreeCtrl->Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD | WS_BORDER
 							   | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_EDITLABELS 
-							   | TVS_DISABLEDRAGDROP , r, this, 0x1005) ;
+							   | TVS_DISABLEDRAGDROP , r, this, 0x1005);
 
 
-	ParticleTreeCtrl->buildTreeFromPS(_CurrPS, _CurrSystemModel) ;
-	ParticleTreeCtrl->init() ;
-	ParticleTreeCtrl->ShowWindow(SW_SHOW) ;
+	ParticleTreeCtrl->buildTreeFromPS(_CurrPS, _CurrSystemModel);
+	ParticleTreeCtrl->init();
+	ParticleTreeCtrl->ShowWindow(SW_SHOW);
 
 
-	StartStopDlg->Create(IDD_PARTICLE_SYSTEM_START_STOP, this) ;	
+	StartStopDlg->Create(IDD_PARTICLE_SYSTEM_START_STOP, this);	
 
 
 
@@ -208,24 +200,22 @@ BOOL CParticleDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-
-
-
+//**************************************************************************************************************************
 void CParticleDlg::OnSize(UINT nType, int cx, int cy) 
 {	
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	bool blocked = false ;
+	bool blocked = false;
 
 	if (ParticleTreeCtrl->m_hWnd && this->m_hWnd)
 	{	
 
-		CRect r = getTreeRect(cx, cy) ;			
-		ParticleTreeCtrl->MoveWindow(&r) ;
+		CRect r = getTreeRect(cx, cy);			
+		ParticleTreeCtrl->MoveWindow(&r);
 
 		if (CurrentRightPane)
 		{								
-			CurrentRightPane->MoveWindow(r.right + 10, r.top, r.right + CurrRightPaneWidth + 10, r.top + CurrRightPaneHeight) ;
+			CurrentRightPane->MoveWindow(r.right + 10, r.top, r.right + CurrRightPaneWidth + 10, r.top + CurrRightPaneHeight);
 		}
 		
 
@@ -236,78 +226,78 @@ void CParticleDlg::OnSize(UINT nType, int cx, int cy)
 	}
 }
 
-
+//**************************************************************************************************************************
 CRect CParticleDlg::getTreeRect(int cx, int cy) const
 {
-	const uint ox = 10, oy = 10 ;
+	const uint ox = 10, oy = 10;
 
 	if (CurrentRightPane)
 	{		
-		CRect res(ox, oy, cx - CurrRightPaneWidth - 10, cy - 10) ; 
-		return res ;
+		CRect res(ox, oy, cx - CurrRightPaneWidth - 10, cy - 10); 
+		return res;
 	}
 	else
 	{
-		CRect res(ox, oy, cx - 10, cy - 10) ;
-		return res ;
+		CRect res(ox, oy, cx - 10, cy - 10);
+		return res;
 	}
 }
 
+//**************************************************************************************************************************
 void CParticleDlg::setRightPane(CWnd *pane)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	if (CurrentRightPane)
 	{
-		CurrentRightPane->DestroyWindow() ;
+		CurrentRightPane->DestroyWindow();
 	}
-	delete CurrentRightPane ;
-	CurrentRightPane = pane ;
-	RECT r ;	
+	delete CurrentRightPane;
+	CurrentRightPane = pane;
+	RECT r;	
 	if (pane)
 	{
 		
-		pane->ShowWindow(SW_SHOW) ;
+		pane->ShowWindow(SW_SHOW);
 	
 	
-		CurrentRightPane->GetClientRect(&r) ;
+		CurrentRightPane->GetClientRect(&r);
 
-		CurrRightPaneWidth = r.right ;
-		CurrRightPaneHeight = r.bottom ;
+		CurrRightPaneWidth = r.right;
+		CurrRightPaneHeight = r.bottom;
 	
 	}
 
-	GetClientRect(&r) ;
-	this->SendMessage(WM_SIZE, SIZE_RESTORED, r.right + (r.bottom << 16)) ;	
-	GetWindowRect(&r) ;
-	this->MoveWindow(&r) ;
+	GetClientRect(&r);
+	this->SendMessage(WM_SIZE, SIZE_RESTORED, r.right + (r.bottom << 16));	
+	GetWindowRect(&r);
+	this->MoveWindow(&r);
 	if (CurrentRightPane)
 	{
-		CurrentRightPane->Invalidate() ;
+		CurrentRightPane->Invalidate();
 	}
-	this->Invalidate() ;
-	ParticleTreeCtrl->Invalidate() ;
+	this->Invalidate();
+	ParticleTreeCtrl->Invalidate();
 }
 
-
-
+//**************************************************************************************************************************
 LRESULT CParticleDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
 {
 
 	if (message == WM_GETMINMAXINFO)
 	{
-		sint cx = 150, cy = 150 ;
+		sint cx = 150, cy = 150;
 		if (CurrentRightPane)
 		{
-			RECT r ;
-			CurrentRightPane->GetClientRect(&r) ;
-			cx += CurrRightPaneWidth ;
-			if (cy < (CurrRightPaneHeight + 20) ) cy = CurrRightPaneHeight + 20 ;
+			RECT r;
+			CurrentRightPane->GetClientRect(&r);
+			cx += CurrRightPaneWidth;
+			if (cy < (CurrRightPaneHeight + 20) ) cy = CurrRightPaneHeight + 20;
 		}
 
 
-		MINMAXINFO *inf = 	(MINMAXINFO *) lParam ;
-		inf->ptMinTrackSize.x = cx ;
-		inf->ptMinTrackSize.y = cy ;
+		MINMAXINFO *inf = 	(MINMAXINFO *) lParam;
+		inf->ptMinTrackSize.x = cx;
+		inf->ptMinTrackSize.y = cy;
 
 	}
 	
@@ -315,24 +305,27 @@ LRESULT CParticleDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	
 }
 
+//**************************************************************************************************************************
 void CParticleDlg::OnShowWindow(BOOL bShow, UINT nStatus) 
 {
 	CDialog::OnShowWindow(bShow, nStatus);
-	StartStopDlg->ShowWindow(bShow) ;	
+	StartStopDlg->ShowWindow(bShow);	
 		
 }
 
-
+//**************************************************************************************************************************
 void CParticleDlg::go(void)
 {
 	if (StartStopDlg->isBBoxDisplayEnabled() && _CurrPS)
 	{
-		NLMISC::CAABBox b ;
-		_CurrPS->getLastComputedBBox(b) ;
-		NL3D::CNELU::Driver->setupModelMatrix(_CurrPS->getSysMat()) ;
-		NL3D::CPSUtil::displayBBox(NL3D::CNELU::Driver, b, _CurrPS->getAutoComputeBBox() ? CRGBA::White : CRGBA::Red) ;
+		NLMISC::CAABBox b;
+		_CurrPS->getLastComputedBBox(b);
+		NL3D::CNELU::Driver->setupModelMatrix(_CurrPS->getSysMat());
+		NL3D::CPSUtil::displayBBox(NL3D::CNELU::Driver, b, _CurrPS->getAutoComputeBBox() ? CRGBA::White : CRGBA::Red);
 	}
 }
+
+//**************************************************************************************************************************
 void CParticleDlg::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
 {
 	if (nChar == (UINT) 'p' || nChar == (UINT) 'P' || nChar == (UINT) ' ')
@@ -343,3 +336,33 @@ void CParticleDlg::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	
 	CDialog::OnChar(nChar, nRepCnt, nFlags);
 }
+
+//**************************************************************************************************************************
+const NLMISC::CMatrix &CParticleDlg::getPSMatrix() const
+{
+	nlassert(_CurrSystemModel);
+	return _CurrSystemModel->getMatrix();
+}
+
+//**************************************************************************************************************************
+const NLMISC::CMatrix &CParticleDlg::getPSWorldMatrix() const
+{
+	nlassert(_CurrSystemModel);
+	return _CurrSystemModel->getWorldMatrix();
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::setPSMatrix(const NLMISC::CMatrix &mat)
+{
+	nlassert(_CurrSystemModel);
+	_CurrSystemModel->setMatrix(mat);
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::setPSWorldMatrix(const NLMISC::CMatrix &mat)
+{
+	nlassert(_CurrSystemModel);
+	CMatrix invParentMat =  _CurrSystemModel->getMatrix() * _CurrSystemModel->getWorldMatrix().inverted();
+	_CurrSystemModel->setMatrix(invParentMat * mat);
+}
+

@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.h,v 1.9 2002/04/25 08:30:41 vizerie Exp $
+ * $Id: particle_dlg.h,v 1.10 2003/08/08 16:58:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,17 +44,17 @@
 
 namespace NL3D
 {
-	class CParticleSystem ;
-	class CParticleSystemModel ;	
-	class CFontManager ;
-	class CFontGenerator ;
-} ;
+	class CParticleSystem;
+	class CParticleSystemModel;	
+	class CFontManager;
+	class CFontGenerator;
+};
 
 
-class CStartStopParticleSystem ;
-class CSceneDlg ;
-class CParticleTreeCtrl ;
-class CMainFrame ;
+class CStartStopParticleSystem;
+class CSceneDlg;
+class CParticleTreeCtrl;
+class CMainFrame;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -64,10 +64,10 @@ class CParticleDlg : public CDialog, public CObjectViewer::IMainLoopCallBack
 {
 // Construction
 public:
-	CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame) ;
-	~CParticleDlg() ;
+	CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame);
+	~CParticleDlg();
 
-	void setRightPane(CWnd *pane) ;
+	void setRightPane(CWnd *pane);
 
 // Dialog Data
 	//{{AFX_DATA(CParticleDlg)
@@ -87,80 +87,80 @@ public:
 
 	public:
 	// the tree for viewing the system
-	CParticleTreeCtrl *ParticleTreeCtrl ;
+	CParticleTreeCtrl *ParticleTreeCtrl;
 
 	// inherited from CObjectViewer::IMainLoopCallBack
-	void go(void) ;
+	void go(void);
 
 public:
 
-	friend class CParticleTreeCtrl ;
+	friend class CParticleTreeCtrl;
 	/// reset the particle system (but doesn't update the window showing it)
-	void resetSystem(void) ;
+	void resetSystem(void);
 
-	NL3D::CParticleSystem *getCurrPS() { return _CurrPS ; }
-	const NL3D::CParticleSystem *getCurrPS() const  { return _CurrPS ; }
+	NL3D::CParticleSystem *getCurrPS() { return _CurrPS; }
+	const NL3D::CParticleSystem *getCurrPS() const  { return _CurrPS; }
 
 
-	NL3D::CParticleSystemModel *getCurrPSModel() { return _CurrSystemModel ; }
-	const NL3D::CParticleSystemModel *getCurrPSModel() const  { return _CurrSystemModel ; }
+	NL3D::CParticleSystemModel *getCurrPSModel() { return _CurrSystemModel; }
+	const NL3D::CParticleSystemModel *getCurrPSModel() const  { return _CurrSystemModel; }
 
 	// set a new particle system that is the current system
 	void setNewCurrPS(NL3D::CParticleSystem *ps, NL3D::CParticleSystemModel *psm)
 	{
-		_CurrPS = ps ;
-		_CurrSystemModel = psm ;
+		_CurrPS = ps;
+		_CurrSystemModel = psm;
 	}
 
-
-
+	// get matrix of current fx
+	const NLMISC::CMatrix &getPSMatrix() const;
+	// set matrix of current fx
+	void setPSMatrix(const NLMISC::CMatrix &mat);
+	// get world matrix of current fx
+	const NLMISC::CMatrix &getPSWorldMatrix() const;	
+	// set world matrix of current fx
+	void setPSWorldMatrix(const NLMISC::CMatrix &mat);
 	
 	// move the current selected element using the given matrix
-	void moveElement(const NLMISC::CMatrix &mat) ;
+	void moveElement(const NLMISC::CMatrix &mat);	
 
 	// get the matrix of the current selected element selected, or identity if there's none
-	NLMISC::CMatrix getElementMatrix(void) const ;
+	NLMISC::CMatrix getElementMatrix(void) const;
 	
 	// the scene dialog
 	CMainFrame *MainFrame;
 
 
 	// the fonts used for particle edition
-	NL3D::CFontManager *FontManager ;
-	NL3D::CFontGenerator *FontGenerator ;
+	NL3D::CFontManager *FontManager;
+	NL3D::CFontGenerator *FontGenerator;
 
 
 	// get the current right pane of the editor (NULL if none)
-	CWnd *getRightPane(void) { return CurrentRightPane ; }
-	const CWnd *getRightPane(void) const { return CurrentRightPane ; }
+	CWnd *getRightPane(void) { return CurrentRightPane; }
+	const CWnd *getRightPane(void) const { return CurrentRightPane; }
 
 
-	CStartStopParticleSystem *StartStopDlg ;
+	CStartStopParticleSystem *StartStopDlg;
 
 protected:
-
-	
-
-
-
-	CObjectViewer *_ObjView ;
-	
+	CObjectViewer *_ObjView;	
 
 	// the current system that is being edited
-	NL3D::CParticleSystem *_CurrPS ;
+	NL3D::CParticleSystem *_CurrPS;
 
 	// the current model that holds our system
-	NL3D::CParticleSystemModel *_CurrSystemModel ;
+	NL3D::CParticleSystemModel *_CurrSystemModel;
 
 	
 
 
 
 	// the current right pane of the editor
-	CWnd *CurrentRightPane ;
-	sint32 CurrRightPaneWidth, CurrRightPaneHeight ;
+	CWnd *CurrentRightPane;
+	sint32 CurrRightPaneWidth, CurrRightPaneHeight;
 
-	CRect getTreeRect(int cx, int cy) const ;
+	CRect getTreeRect(int cx, int cy) const;
 
 
 	// Generated message map functions

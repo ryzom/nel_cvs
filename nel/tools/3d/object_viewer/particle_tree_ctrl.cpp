@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.44 2003/07/03 15:39:19 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.45 2003/08/08 16:58:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "particle_dlg.h"
 #include "start_stop_particle_system.h"
 #include "edit_ps_sound.h"
+#include "edit_ps_light.h"
 #include "dup_ps.h"
  
 
@@ -95,7 +96,7 @@ const char *PS_NO_FINITE_DURATION_ARROR_MSG = "Can't perform operation : the sys
 static std::map<std::string, uint> _PSElementIdentifiers;
 
 
-//=====================================================================================================
+//****************************************************************************************************************
 CParticleTreeCtrl::CParticleTreeCtrl(CParticleDlg *pdlg) : _ParticleDlg(pdlg), _LastClickedPS(NULL)
 {
 	CBitmap bm[NumIconIDs];
@@ -107,13 +108,13 @@ CParticleTreeCtrl::CParticleTreeCtrl(CParticleDlg *pdlg) : _ParticleDlg(pdlg), _
 	}
 }
 
-//=====================================================================================================
+//****************************************************************************************************************
 CParticleTreeCtrl::~CParticleTreeCtrl()
 {
 	reset();	
 }
 
-//=====================================================================================================
+//****************************************************************************************************************
 void CParticleTreeCtrl::reset()
 {
 	for (std::vector<CNodeType *>::iterator it = _NodeTypes.begin(); it != _NodeTypes.end(); ++it)
@@ -123,8 +124,7 @@ void CParticleTreeCtrl::reset()
 	_NodeTypes.clear();
 }
 
-
-//=====================================================================================================
+//****************************************************************************************************************
 void CParticleTreeCtrl::rebuildLocatedInstance(void)
 {
 	HTREEITEM currPS = GetRootItem(), currLocated;
@@ -295,6 +295,13 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 				_ParticleDlg->setRightPane(epss);
 			}
 			else
+			if (dynamic_cast<NL3D::CPSLight *>(nt->Bind))
+			{
+				CEditPSLight *epsl =  new CEditPSLight(static_cast<NL3D::CPSLight *>(nt->Bind));
+				epsl->init(_ParticleDlg);
+				_ParticleDlg->setRightPane(epsl);
+			}
+			else
 			{
 				CLocatedBindableDialog *lbd = new CLocatedBindableDialog(nt->Bind);
 				lbd->init(_ParticleDlg);
@@ -313,7 +320,7 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 		break;
 		case CNodeType::particleSystem:
 		{
-			CParticleSystemEdit *pse = new CParticleSystemEdit(nt->PS);
+			CParticleSystemEdit *pse = new CParticleSystemEdit(nt->PS, this);
 			pse->init(_ParticleDlg);
 			_ParticleDlg->setRightPane(pse);
 			if (_LastClickedPS)
@@ -345,13 +352,10 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 			
 		}
 		break;
-	}
-	
-	
+	}		
 }
 
-
-
+//****************************************************************************************************************
 void CParticleTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point) 
 {
 
@@ -430,6 +434,7 @@ void CParticleTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 
 }
 
+//****************************************************************************************************************
 BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) 
 {
 
@@ -585,6 +590,14 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			{
 				(static_cast<NL3D::CPSSound *>(toCreate))->stopSound();
 			}
+		break;
+
+		///////////////
+		//    light  //
+		///////////////
+		case IDM_LIGHT_LOC:  createLocAndBindable = true;
+		case IDM_LIGHT:
+			toCreate = new NL3D::CPSLight;			
 		break;
 
 		//////////////
@@ -812,6 +825,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 					if (newModel)
 					{		
+						newModel->setTransformMode(NL3D::CTransform::DirectMatrix);
+						newModel->setMatrix(NLMISC::CMatrix::Identity);
 						// link to the root for manipulation
 						_ParticleDlg->_ObjView->getSceneRoot()->hrcLinkSon(newModel);
 
@@ -1088,20 +1103,10 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		_ParticleDlg->getCurrPSModel()->touchLightableState();
 		Invalidate();
 	}
-
-
-
-
-
-
-
-
-
-
-
 	return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 
+//****************************************************************************************************************
 std::pair<CParticleTreeCtrl::CNodeType *, HTREEITEM> CParticleTreeCtrl::createLocated(NL3D::CParticleSystem *ps, HTREEITEM headItem)
 { 
 	std::string name; 
@@ -1134,7 +1139,7 @@ std::pair<CParticleTreeCtrl::CNodeType *, HTREEITEM> CParticleTreeCtrl::createLo
 }
 
 
-
+//****************************************************************************************************************
 /// The user finished to edit a label in the tree
 void CParticleTreeCtrl::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult) 
 {
@@ -1171,9 +1176,10 @@ void CParticleTreeCtrl::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
 }
 
 
+//****************************************************************************************************************
 void CParticleTreeCtrl::moveElement(const NLMISC::CMatrix &m)
 {
-	static NLMISC::CMatrix mat;
+	NLMISC::CMatrix mat;
 
 	// no == operator yet... did the matrix change ?
 	if (m.getPos() == mat.getPos()
@@ -1182,40 +1188,52 @@ void CParticleTreeCtrl::moveElement(const NLMISC::CMatrix &m)
 		&& m.getK() == mat.getK() 
 	   ) return;
 
-
-	mat = m;
+	nlassert(_ParticleDlg);	
 	
 	// the current element must be an instance
 	if (::IsWindow(m_hWnd))
 	{
 		HTREEITEM currItem = GetSelectedItem();
 		if (currItem)
-		{
-			CWnd *rightPane = _ParticleDlg->getRightPane();
-			NL3D::IPSMover *psm = NULL;
-			if (dynamic_cast<CPSMoverDlg *>(rightPane ))
+		{			
+			CNodeType *nt = (CNodeType *) GetItemData(currItem);
+			if (nt->Type == CNodeType::locatedInstance)
 			{
-				CPSMoverDlg *rp = (CPSMoverDlg *) rightPane;
-				psm = ((CPSMoverDlg *) rightPane)->getMoverInterface();
-												
-				if (psm && !psm->onlyStoreNormal())
-				{									
-					psm->setMatrix(rp->getLocatedIndex(), mat);										
+				if (nt->Loc->isInSystemBasis())
+				{
+					mat = _ParticleDlg->getPSWorldMatrix().inverted() * m;	
 				}
 				else
 				{
-					rp->getLocated()->getPos()[rp->getLocatedIndex()] = mat.getPos();
+					mat = m;
 				}
 
-				// update the dialog				
-				rp->updatePosition();
+				CWnd *rightPane = _ParticleDlg->getRightPane();
+				NL3D::IPSMover *psm = NULL;
+				if (dynamic_cast<CPSMoverDlg *>(rightPane ))
+				{
+					CPSMoverDlg *rp = (CPSMoverDlg *) rightPane;
+					psm = ((CPSMoverDlg *) rightPane)->getMoverInterface();
+													
+					if (psm && !psm->onlyStoreNormal())
+					{									
+						psm->setMatrix(rp->getLocatedIndex(), mat);										
+					}
+					else
+					{
+						rp->getLocated()->getPos()[rp->getLocatedIndex()] = mat.getPos();
+					}
+
+					// update the dialog				
+					rp->updatePosition();
+				}
 			}
 		}
 	}
 }
 
 
-
+//****************************************************************************************************************
 NLMISC::CMatrix CParticleTreeCtrl::getElementMatrix(void) const
 {
 	HTREEITEM currItem = GetSelectedItem();
@@ -1228,6 +1246,10 @@ NLMISC::CMatrix CParticleTreeCtrl::getElementMatrix(void) const
 			NLMISC::CMatrix m;
 			m.identity();
 			m.setPos(pos);
+			if (nt->Loc->isInSystemBasis())
+			{
+				m = _ParticleDlg->getPSWorldMatrix() * m;
+			}
 			return m; 
 		}
 	}
@@ -1235,7 +1257,7 @@ NLMISC::CMatrix CParticleTreeCtrl::getElementMatrix(void) const
 	return NLMISC::CMatrix::Identity;
 }
 
-
+//****************************************************************************************************************
 void CParticleTreeCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
 {
 	// TODO: Add your message handler code here and/or call default

@@ -289,8 +289,12 @@
 #define IDC_VECT_I                      1128
 #define IDD_CHOOSE_BG_COLOR             1128
 #define IDC_VECT_MINUS_I                1129
+#define IDD_PS_LIGHT                    1129
 #define IDC_VECT_J                      1130
+#define IDB_LIGHT_ATTEN_START           1130
 #define IDC_VECT_MINUS_J                1131
+#define IDB_LIGHT_ATTEN_END             1131
+#define IDD_CHOOSE_SUN_COLOR            1131
 #define IDC_CUSTOM_DIRECTION            1132
 #define IDC_VECT_K                      1134
 #define IDC_VECT_MINUS_K                1135
@@ -585,6 +589,14 @@
 #define IDC_BYPASS_MAX_NUM_STEPS        1366
 #define IDC_MAX_DIST_BIAS_TEXT          1367
 #define IDC_INVALID_BUILD               1367
+#define IDC_COLOR_PLACEHOLDER           1368
+#define IDC_ATTEN_START_PLACEHOLDER     1369
+#define IDC_ATTEN_END_PLACEHOLDER       1370
+#define IDC_FORCE_GLOBAL_LIGHITNG       1370
+#define ID_GLOBAL_COLOR_LIGHTING        1371
+#define IDC_SPECULAR                    1372
+#define IDC_DIFFUSE                     1373
+#define IDC_AMBIENT                     1374
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -756,14 +768,19 @@
 #define ID_SCENE_CAMERA_7               32921
 #define ID_WINDOW_CHOOSE_FRAME_DELAY    32955
 #define ID_WINDOW_CHOOSE_BG_COLOR       32956
+#define IDM_LIGHT                       32957
+#define IDM_LIGHT_LOC                   32958
+#define ID_EDIT_MOVE_FX                 32959
+#define ID_VIEW_RESET_FX_ROOT           32960
+#define ID_WINDOW_CHOOSE_SUN_COLOR      32961
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1129
-#define _APS_NEXT_COMMAND_VALUE         32957
-#define _APS_NEXT_CONTROL_VALUE         1368
+#define _APS_NEXT_RESOURCE_VALUE        1132
+#define _APS_NEXT_COMMAND_VALUE         32962
+#define _APS_NEXT_CONTROL_VALUE         1373
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

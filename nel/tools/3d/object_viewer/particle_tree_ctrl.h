@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.h,v 1.12 2003/04/14 15:32:50 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.13 2003/08/08 16:58:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,7 +97,8 @@ public:
 	NLMISC::CMatrix			getElementMatrix(void) const ;
 	// reset the list of node in the tree (but don't delete the tree)
 	void					reset();
-
+	//
+	CParticleDlg		   *getParticleDlg() const { return _ParticleDlg; }
 protected:
 	//{{AFX_MSG(CParticleTreeCtrl)
 	afx_msg void OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult);

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.25 2003/06/30 15:32:11 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.26 2003/08/08 16:58:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@ using NL3D::CPSLocatedBindable;
 // CLocatedBindableDialog dialog
 
 
+//***********************************************************************************
 CLocatedBindableDialog::CLocatedBindableDialog(NL3D::CPSLocatedBindable *bindable)
 	: _Bindable(bindable), _SizeCtrl(NULL)
 {
@@ -66,6 +67,7 @@ CLocatedBindableDialog::CLocatedBindableDialog(NL3D::CPSLocatedBindable *bindabl
 }
 
 /// dtor
+//***********************************************************************************
 CLocatedBindableDialog::~CLocatedBindableDialog()
 {
 	if (_SizeCtrl)
@@ -75,7 +77,7 @@ CLocatedBindableDialog::~CLocatedBindableDialog()
 	}
 }
 
-
+//***********************************************************************************
 void CLocatedBindableDialog::init(CParticleDlg* pParent)
 {
 	Create(IDD_LOCATED_BINDABLE, pParent);
@@ -100,7 +102,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		GetDlgItem(IDC_NO_AUTO_LOD)->ShowWindow(FALSE);
 	}
 
-	uint yPos = 35;
+	uint yPos = 60;
 	const uint xPos = 5;
 	RECT rect;
 
@@ -119,6 +121,18 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 	{
 		NL3D::CPSParticle *p = (NL3D::CPSParticle *) _Bindable;
 
+		// check support for lighting
+		if (p->supportGlobalColorLighting())
+		{
+			GetDlgItem(ID_GLOBAL_COLOR_LIGHTING)->ShowWindow(SW_SHOW);
+			// if global color lighting is forced for all objects, don't allow to modify
+			GetDlgItem(ID_GLOBAL_COLOR_LIGHTING)->EnableWindow(ps->getForceGlobalColorLightingFlag() ? FALSE : TRUE);
+			((CButton *) GetDlgItem(ID_GLOBAL_COLOR_LIGHTING))->SetCheck(p->usesGlobalColorLighting() ? 1 : 0);
+		}
+		else
+		{
+			GetDlgItem(ID_GLOBAL_COLOR_LIGHTING)->ShowWindow(SW_HIDE);
+		}
 		// check support for color
 		if (dynamic_cast<NL3D::CPSColoredParticle *>(_Bindable))
 		{
@@ -419,8 +433,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		{
 			NL3D::CPSTexturedParticleNoAnim *tp = dynamic_cast<NL3D::CPSTexturedParticleNoAnim *>(_Bindable);
 			_TextureNoAnimWrapper.TP = tp;
-			CTextureChooser *tc = new CTextureChooser(dynamic_cast<NL3D::CPSMultiTexturedParticle *>(_Bindable));
-;			
+			CTextureChooser *tc = new CTextureChooser(dynamic_cast<NL3D::CPSMultiTexturedParticle *>(_Bindable));			
 			tc->enableRemoveButton();
 			tc->setWrapper(&_TextureNoAnimWrapper);
 			pushWnd(tc);
@@ -505,9 +518,11 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			yPos += rect.bottom + 3;
 		}		
 	}	
+	UpdateData();
 }
 
 
+//***********************************************************************************
 void CLocatedBindableDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -525,12 +540,14 @@ BEGIN_MESSAGE_MAP(CLocatedBindableDialog, CDialog)
 	ON_BN_CLICKED(IDC_SIZE_WIDTH, OnSizeWidth)
 	ON_BN_CLICKED(IDC_SIZE_HEIGHT, OnSizeHeight)
 	ON_BN_CLICKED(IDC_NO_AUTO_LOD, OnNoAutoLod)
+	ON_BN_CLICKED(ID_GLOBAL_COLOR_LIGHTING, OnGlobalColorLighting)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedBindableDialog message handlers
 
+//***********************************************************************************
 void CLocatedBindableDialog::OnSelchangeBlendingMode() 
 {
 	UpdateData();
@@ -542,6 +559,7 @@ void CLocatedBindableDialog::OnSelchangeBlendingMode()
 }
 
 
+//***********************************************************************************
 void CLocatedBindableDialog::updateIndependantSizes() 
 {
 	UpdateData();
@@ -553,6 +571,7 @@ void CLocatedBindableDialog::updateIndependantSizes()
 }
 
 
+//***********************************************************************************
 // user asked for independant sizes
 void CLocatedBindableDialog::OnIndeSizes() 
 {
@@ -565,7 +584,7 @@ void CLocatedBindableDialog::OnIndeSizes()
 	updateSizeControl();	
 }
 
-
+//***********************************************************************************
 uint CLocatedBindableDialog::updateSizeControl()
 {	
 	HBITMAP bmh;
@@ -615,18 +634,29 @@ uint CLocatedBindableDialog::updateSizeControl()
 	return rect.bottom + 3;		
 }
 
+//***********************************************************************************
 void CLocatedBindableDialog::OnSizeWidth() 
 {
 	updateSizeControl();		
 }
 
+//***********************************************************************************
 void CLocatedBindableDialog::OnSizeHeight() 
 {
 	updateSizeControl();	
 }
 
+//***********************************************************************************
 void CLocatedBindableDialog::OnNoAutoLod() 
 {
 	NL3D::CPSParticle *p = NLMISC::safe_cast<NL3D::CPSParticle *>(_Bindable);
 	p->disableAutoLOD(((CButton *) GetDlgItem(IDC_NO_AUTO_LOD))->GetCheck() != 0);
+}
+
+//***********************************************************************************
+void CLocatedBindableDialog::OnGlobalColorLighting() 
+{	
+	NL3D::CPSParticle *p = NLMISC::safe_cast<NL3D::CPSParticle *>(_Bindable);
+	p->enableGlobalColorLighting(((CButton *) GetDlgItem(ID_GLOBAL_COLOR_LIGHTING))->GetCheck() == 1);
+	_ParticleDlg->getCurrPSModel()->touchLightableState();
 }

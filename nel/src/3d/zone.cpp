@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.31 2001/02/20 11:05:06 berenguier Exp $
+ * $Id: zone.cpp,v 1.32 2001/02/23 09:06:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -895,17 +895,27 @@ void			CZone::resetRenderFar()
 
 
 // ***************************************************************************
-void			CZone::changePatchTexture(sint numPatch, const std::vector<CTileElement> &tiles)
+void			CZone::changePatchTextureAndColor (sint numPatch, const std::vector<CTileElement> *tiles, const std::vector<CTileColor> *colors)
 {
 	nlassert(numPatch>=0);
 	nlassert(numPatch<getNumPatchs());
 	
 
 	// Update the patch texture.
-	nlassert(Patchs[numPatch].Tiles.size() ==tiles.size() );
-	Patchs[numPatch].Tiles= tiles;
+	if (tiles)
+	{
+		nlassert( Patchs[numPatch].Tiles.size() == tiles->size() );
+		Patchs[numPatch].Tiles = *tiles;
+	}
 
-	if (Compiled)
+	// Update the patch colors.
+	if (colors)
+	{
+		nlassert( Patchs[numPatch].TileColors.size() == colors->size() );
+		Patchs[numPatch].TileColors = *colors;
+	}
+
+	if (Compiled&&(tiles||colors))
 	{
 		Patchs[numPatch].deleteTileUvs();
 		Patchs[numPatch].recreateTileUvs();
@@ -921,6 +931,17 @@ const std::vector<CTileElement> &CZone::getPatchTexture(sint numPatch) const
 
 	// Update the patch texture.
 	return Patchs[numPatch].Tiles;
+}
+
+
+// ***************************************************************************
+const std::vector<CTileColor> &CZone::getPatchColor(sint numPatch) const
+{
+	nlassert(numPatch>=0);
+	nlassert(numPatch<getNumPatchs());
+
+	// Update the patch texture.
+	return Patchs[numPatch].TileColors;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.23 2001/02/22 13:40:23 berenguier Exp $
+ * $Id: zone.h,v 1.24 2001/02/23 09:06:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -288,9 +288,10 @@ public:
 	 * Update and refresh a patch texture.
 	 * Usefull for Tile edition. Even if patch is in tile mode, it is refreshed...
 	 * \param numPatch the index of patch in this zone which will receive his new texture. assert if bad id.
-	 * \param tiles the patch texture. assert if not of good size (OrderS*OrderT).
+	 * \param tiles the patch texture. assert if not of good size (OrderS*OrderT). Can be NULL if you don't want to change the patch texture.
+	 * \param colors the patch texture. assert if not of good size ((OrderS+1)*(OrderT+1)). Can be NULL if you don't want to change the patch colors.
 	 */
-	void			changePatchTexture(sint numPatch, const std::vector<CTileElement> &tiles);
+	void			changePatchTextureAndColor (sint numPatch, const std::vector<CTileElement> *tiles, const std::vector<CTileColor> *colors);
 
 	/** 
 	 * Get a patch texture.
@@ -301,6 +302,16 @@ public:
 	 * \see getPatch()
 	 */
 	const std::vector<CTileElement> &getPatchTexture(sint numPatch) const;
+
+	/** 
+	 * Get a patch colors
+	 * Return the color array.
+	 * \param numPatch the index of patch in this zone which will get his colors. assert if bad id.
+	 * \param 
+	 * \return The tiles the patch colors. The size should be (OrderS+1)*(OrderT+1).
+	 * \see getPatch()
+	 */
+	const std::vector<CTileColor> &getPatchColor(sint numPatch) const;
 
 	/**
 	 *  Get the landscape in which is placed this zone. If no landscape, return NULL.

@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Implementation for CInetAddress.
  *
- * $Id: inet_address.cpp,v 1.29 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: inet_address.cpp,v 1.30 2001/05/15 14:45:38 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -347,7 +347,7 @@ std::string CInetAddress::asIPString() const
  */
 void CInetAddress::serial( NLMISC::IStream& s )
 {
-	s.serial( _HostName );
+	//s.serial( _HostName );
 	s.serialBuffer( (uint8*)_SockAddr, sizeof(*_SockAddr) ); // this is possible only because the contents of _SockAddr is platform-independant !
 	s.serial( _Valid );
 }

@@ -259,14 +259,6 @@ SOURCE=..\include\nel\3d\bezier_patch.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\height_map.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\height_map.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\landscape.cpp
 # End Source File
 # Begin Source File
@@ -775,6 +767,10 @@ SOURCE=.\3d\frustum.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\height_map.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\instance_group_user.cpp
 # End Source File
 # Begin Source File
@@ -900,6 +896,10 @@ SOURCE=..\include\nel\3d\tmp\animation_time.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\tmp\frustum.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tmp\height_map.h
 # End Source File
 # Begin Source File
 

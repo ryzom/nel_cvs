@@ -1,7 +1,7 @@
 /** \file height_map.cpp
  * <File description>
  *
- * $Id: height_map.cpp,v 1.1 2001/04/23 16:34:08 berenguier Exp $
+ * $Id: height_map.cpp,v 1.2 2001/04/24 09:36:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/height_map.h"
+#include "nel/3d/tmp/height_map.h"
 
 
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.1 2001/02/28 16:19:35 berenguier Exp $
+ * $Id: u_landscape.h,v 1.2 2001/04/24 09:36:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,6 +120,19 @@ public:
 	// @{
 	/// Return the name of the zone around a particular position (in NL3D basis!).
 	virtual	std::string	getZoneName(const CVector &pos) =0;
+	// @}
+
+
+	/// \name HeightField DeltaZ.
+	// @{
+	/// return the HeightField DeltaZ for the 2D position. (0,0,dZ) is returned.
+	virtual	CVector		getHeightFieldDeltaZ(float x, float y) const =0;
+	/** set the HeightField data. NB: take lot of place in memory.
+	 * only one is possible. You should setup this heightfield around the zones which will be loaded.
+	 * It is applied only when a zone is loaded, so you should setup it 2km around the user, each time you move too far 
+	 * from a previous place (eg 160m from last setup).
+	 */
+	virtual	void		setHeightField(const CHeightMap &hf) =0;
 	// @}
 
 };

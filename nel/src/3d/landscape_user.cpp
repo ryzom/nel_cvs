@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.2 2001/04/19 08:24:34 puzin Exp $
+ * $Id: landscape_user.cpp,v 1.3 2001/04/24 09:36:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -176,5 +176,19 @@ std::string	CLandscapeUser::getZoneName(const CVector &pos)
 {
 	return _ZoneManager.getZoneName((uint)pos.x, (uint)(-pos.y), 0, 0).first;
 }
+
+
+//****************************************************************************
+CVector		CLandscapeUser::getHeightFieldDeltaZ(float x, float y) const
+{
+	return _Landscape->Landscape.getHeightFieldDeltaZ(x,y);
+}
+
+//****************************************************************************
+void		CLandscapeUser::setHeightField(const CHeightMap &hf)
+{
+	_Landscape->Landscape.setHeightField(hf);
+}
+
 
 } // NL3D

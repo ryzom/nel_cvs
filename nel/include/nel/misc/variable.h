@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.4 2003/09/03 13:50:56 lecroart Exp $
+ * $Id: variable.h,v 1.5 2003/09/03 14:12:44 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -395,13 +395,13 @@ public:
 		return get().c_str();
 	}
 
-	void set (const T &val)
+	void set (const std::string &val)
 	{
 		_Value = val;
 		if (ChangeCallback) ChangeCallback(*this);
 	}
 
-	const T &get () const
+	const std::string &get () const
 	{
 		return _Value;
 	}
@@ -431,7 +431,7 @@ public:
 
 private:
 
-	T _Value;
+	std::string _Value;
 };
 
 

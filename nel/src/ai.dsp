@@ -1,4 +1,4 @@
-# Microsoft Developer Studio Project File - Name="ai_lib" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="ai" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
@@ -259,6 +259,10 @@ SOURCE=.\ai\agent\msg_action.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\msg_connect.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\msg_container.cpp
 # End Source File
 # Begin Source File
@@ -288,6 +292,10 @@ SOURCE=.\ai\agent\msg_notify.cpp
 # Begin Source File
 
 SOURCE=.\ai\agent\msg_on_change.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\agent\msg_setvalue.cpp
 # End Source File
 # Begin Source File
 
@@ -419,6 +427,10 @@ SOURCE=..\include\nel\ai\agent\msg_action.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\agent\msg_connect.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\agent\msg_container.h
 # End Source File
 # Begin Source File
@@ -431,6 +443,10 @@ SOURCE=..\include\nel\ai\agent\msg_fact.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\agent\msg_getvalue.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\agent\msg_goal.h
 # End Source File
 # Begin Source File
@@ -440,6 +456,10 @@ SOURCE=..\include\nel\ai\agent\msg_group.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\msg_notify.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\msg_setvalue.h
 # End Source File
 # Begin Source File
 
@@ -927,7 +947,15 @@ SOURCE=.\ai\script\interpret_message_action.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\script\interpret_message_connect.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\script\interpret_message_getvalue.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\script\interpret_message_setvalue.cpp
 # End Source File
 # Begin Source File
 
@@ -1072,6 +1100,18 @@ SOURCE=..\include\nel\ai\script\interpret_actor.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\script\interpret_message_action.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\script\interpret_message_connect.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\script\interpret_message_getvalue.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\script\interpret_message_setvalue.h
 # End Source File
 # Begin Source File
 

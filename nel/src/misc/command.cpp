@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.12 2002/04/11 13:13:02 cado Exp $
+ * $Id: command.cpp,v 1.13 2002/04/11 16:00:58 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -247,9 +247,25 @@ end:
 /*
  * Command name completion.
  * Case-sensitive. Displays the list after two calls with the same non-unique completion.
+ * Completes commands used with "help " as well.
  */
-void ICommand::expand (std::string &commandName)
+void ICommand::expand (std::string &commandName, NLMISC::CLog &log)
 {
+	// Take out the string before the last separator and remember it as a prefix
+	sint lastseppos = commandName.find_last_of( " " );
+	string prefix;
+	bool useprefix;
+	if ( lastseppos != string::npos )
+	{
+		prefix = commandName.substr( 0, lastseppos+1 );
+		commandName.erase( 0, lastseppos+1 );
+		useprefix = true;
+	}
+	else
+	{
+		useprefix = false;
+	}
+
 	// Build the list of matching command names
 	vector<string> matchingnames;
 	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
@@ -263,56 +279,66 @@ void ICommand::expand (std::string &commandName)
 	// Do not complete if there is no result
 	if ( matchingnames.empty() )
 	{
-		nlinfo( "No matching command" );
-		return;
+		log.displayNL( "No matching command" );
+		goto returnFromExpand;
 	}
 
 	// Complete if there is a single result
 	if ( matchingnames.size() == 1 )
 	{
 		commandName = matchingnames.front();
-		return;
+		goto returnFromExpand;
 	}
 
 	// Try to complete to the common part if there are several results
-	// Stop loop when a name size is i or names[i] are different
-	string commonstr = commandName;
-	uint i = commandName.size();
-	while ( true )
 	{
-		char letter = 0;
-		vector<string>::iterator imn;
-		for ( imn=matchingnames.begin(); imn!=matchingnames.end(); ++imn )
+		// Stop loop when a name size is i or names[i] are different
+		string commonstr = commandName;
+		uint i = commandName.size();
+		while ( true )
 		{
-			// Return common string if the next letter is not the same in all matching names
-			if ( ((*imn).size() == i) || ( (letter!=0) && ((*imn)[i] != letter) ) )
+			char letter = 0;
+			vector<string>::iterator imn;
+			for ( imn=matchingnames.begin(); imn!=matchingnames.end(); ++imn )
 			{
-				nlinfo( "(Matching command not unique)" );
-				static string lastCommandName;
-				commandName = commonstr;
-				if ( lastCommandName == commandName )
+				// Return common string if the next letter is not the same in all matching names
+				if ( ((*imn).size() == i) || ( (letter!=0) && ((*imn)[i] != letter) ) )
 				{
-					// Display all the matching names 
-					vector<string>::iterator imn2;
-					stringstream ss;
-					ss << "Matching commands:" << endl;
-					for ( imn2=matchingnames.begin(); imn2!=matchingnames.end(); ++imn2 )
+					log.displayNL( "(Matching command not unique)" );
+					static string lastCommandName;
+					commandName = commonstr;
+					if ( lastCommandName == commandName )
 					{
-						ss << " " << (*imn2);
+						// Display all the matching names 
+						vector<string>::iterator imn2;
+						stringstream ss;
+						ss << "Matching commands:" << endl;
+						for ( imn2=matchingnames.begin(); imn2!=matchingnames.end(); ++imn2 )
+						{
+							ss << " " << (*imn2);
+						}
+						log.displayNL( "%s", ss.str().c_str() );
 					}
-					nlinfo( "%s", ss.str().c_str() );
+					lastCommandName = commandName;
+					goto returnFromExpand;
 				}
-				lastCommandName = commandName;
-				return;
+				// Add the next letter to the common string if it is the same in all matching names
+				else if ( letter == 0 )
+				{
+					letter = (*imn)[i];
+				}
 			}
-			// Add the next letter to the common string if it is the same in all matching names
-			else if ( letter == 0 )
-			{
-				letter = (*imn)[i];
-			}
+			commonstr += letter;
+			++i;
 		}
-		commonstr += letter;
-		++i;
+	}
+
+returnFromExpand:
+
+	// Put back the prefix
+	if ( useprefix )
+	{
+		commandName = prefix + commandName;
 	}
 }
 

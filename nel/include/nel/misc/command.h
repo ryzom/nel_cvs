@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.14 2002/04/11 13:13:24 cado Exp $
+ * $Id: command.h,v 1.15 2002/04/11 16:02:23 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,8 +203,9 @@ public:
 
 	/** Command name completion.
 	 * Case-sensitive. Displays the list after two calls with the same non-unique completion.
+     * Completes commands used with prefixes (such as "help " for example) as well.
 	 */
-	static void	expand (std::string &commandName);
+	static void	expand (std::string &commandName, NLMISC::CLog &log=*InfoLog);
 
 	static void serialCommands (IStream &f);
 

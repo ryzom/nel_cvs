@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.23 2001/07/02 11:42:36 lecroart Exp $
+ * $Id: config_file.h,v 1.24 2001/10/05 15:05:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,6 +106,8 @@ namespace NLMISC
  * Operators are '+', '-', '*', '/'.
  * You can't use operators on a array variable, for example, you can't do \cvar13=var12+1.
  * If you have 2 variables with the same name, the first value will be remplaced by the second one.
+ *
+ * \bug if you terminate the config file with a comment without carriage returns it'll generate an exception, add a carriage returns
  *
  * \author Vianney Lecroart
  * \author Nevrax France

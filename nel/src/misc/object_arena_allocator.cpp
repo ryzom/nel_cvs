@@ -1,6 +1,6 @@
 /** \file object_arena_allocator.cpp
  *
- * $Id: object_arena_allocator.cpp,v 1.2 2004/03/05 16:47:24 vizerie Exp $
+ * $Id: object_arena_allocator.cpp,v 1.3 2004/05/18 14:35:01 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -69,7 +69,7 @@ void *CObjectArenaAllocator::alloc(uint size)
 			}
 		}
 	#endif
-	if (size > _MaxAllocSize)
+	if (size >= _MaxAllocSize)
 	{
 		// use standard allocator
 		uint8 *block = new uint8[size + sizeof(uint)]; // an additionnal uint is needed to store size of block 
@@ -81,6 +81,7 @@ void *CObjectArenaAllocator::alloc(uint size)
 		return block + sizeof(uint);
 	}
 	uint entry = ((size + (_Granularity - 1)) / _Granularity) ;
+	nlassert(entry < _ObjectSizeToAllocator.size());
 	if (!_ObjectSizeToAllocator[entry])
 	{
 		_ObjectSizeToAllocator[entry] = new CFixedSizeAllocator(entry * _Granularity + sizeof(uint), _MaxAllocSize / size); // an additionnal uint is needed to store size of block
@@ -101,9 +102,9 @@ void *CObjectArenaAllocator::alloc(uint size)
 void CObjectArenaAllocator::free(void *block)
 {
 	if (!block) return;
-	uint8 *realBlock = (uint8 *) block - sizeof(uint); // a uin is used at start of block to give its size
+	uint8 *realBlock = (uint8 *) block - sizeof(uint); // a uint is used at start of block to give its size
 	uint size = *(uint *) realBlock;
-	if (size > _MaxAllocSize)
+	if (size >= _MaxAllocSize)
 	{
 		#ifdef NL_DEBUG
 				std::map<void *, uint>::iterator it = _MemBlockToAllocID.find(realBlock);

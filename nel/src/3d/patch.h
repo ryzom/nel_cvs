@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.30 2002/07/23 12:20:31 corvazier Exp $
+ * $Id: patch.h,v 1.31 2002/08/21 17:14:47 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -333,9 +333,6 @@ public:
 	// Lumel array compressed.
 	std::vector<uint8>			CompressedLumels;
 
-	// Lumel array uncompressed.
-	std::vector<uint8>			UncompressedLumels;
-
 	// There is OrderS*OrderT tiles. CZone build it at build() time.
 	std::vector<CTileElement>	Tiles;
 
@@ -500,7 +497,7 @@ public:
 	  *
 	  *  \param pShadow is a pointer on the destination lumel buffer. Size must be ((OrderS*4/ratio)+1)*((OrderT*4/ratio)+1).
 	  *  \param ratio is the one over the ratio of the texture destination. Must be 1 or 2.
-	  *  \see packShadowMap(), resetCompressedLumels(), clearUncompressedLumels()
+	  *  \see packShadowMap(), resetCompressedLumels()
 	  */
 	void			unpackShadowMap (uint8 *pShadow);
 
@@ -510,23 +507,16 @@ public:
 	  *  This method compress the lumels passed in parameter and stored them in its Lumels member.
 	  *
 	  *  \param pShadow is a pointer on the destination lumel buffer. Size must be (OrderS*4+1)*(OrderS*4+1).
-	  *  \see unpackShadowMap(), resetCompressedLumels(), clearUncompressedLumels()
+	  *  \see unpackShadowMap(), resetCompressedLumels()
 	  */
 	void			packShadowMap (const uint8 *pLumel);
 
 	/**
 	  *  Rebuild the packed lumels without shadow. Only the interpolated color will be used.
 	  *
-	  *  \see packShadowMap(), unpackShadowMap(), clearUncompressedLumels()
-	  */
-	void			resetCompressedLumels ();
-
-	/**
-	  *  Clear the uncompressed lumel of the patch.
-	  *
 	  *  \see packShadowMap(), unpackShadowMap()
 	  */
-	void			clearUncompressedLumels ();
+	void			resetCompressedLumels ();
 
 	/** Debug purpose only : setup the colors of this patch so that it shows which tiles
 	  * have vegetable disabled, or are above, below water.

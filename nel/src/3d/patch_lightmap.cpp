@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.7 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: patch_lightmap.cpp,v 1.8 2002/08/21 17:14:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,7 @@ namespace NL3D
 
 // ***************************************************************************
 // Precalc table used to decompress shadow map
+// NB: if you want to change thoses values, see unpackLumelBlock, cause hardcoded.
 static const uint NL3DDecompressLumelFactor0Case0[8]=
 {
 	7, 0, 6, 5, 4, 3, 2, 1
@@ -72,71 +73,61 @@ void		CPatch::unpackLumelBlock (uint8 *dest, const uint8 *src)
 	uint alpha0=src[0];
 	uint alpha1=src[1];
 
-	// To read codes
-	sint codeBitOffset=7;
-	uint firstBlock=src[2];
-	uint secondBlock=src[3];
-	src+=4;
-
-	// Uncompress 16 codes
-	uint codes[4*4];
-
-	// For each code
-	uint lumel;
-	for (lumel=0; lumel<16; lumel++)
-	{
-		// Get the code
-		if (codeBitOffset>2)
-			codes[lumel]=(firstBlock>>(codeBitOffset-2))&0x7;
-		else
-			codes[lumel]=((firstBlock<<(2-codeBitOffset))&0x7) | ((secondBlock>>(6+codeBitOffset))&0x7);
-
-		// Next bit
-		codeBitOffset-=3;
-		if (codeBitOffset<0)
-		{
-			// Crop bit index
-			codeBitOffset&=0x7;
-
-			// Second become first
-			firstBlock=secondBlock;
-
-			// New second
-			if (lumel<13)
-			{
-				secondBlock=*src;
-				src++;
-			}
-		}
-	}
-
+	// precompute the 8 possible values, for each possible code.
+	// ------------------
+	uint8	values[8];
 	// Case 0
 	if (alpha0>alpha1)
 	{
-		// For each lumel
-		for (lumel=0; lumel<16; lumel++)
-		{
-			// Decompress the data
-			uint code=codes[lumel];
-			dest[lumel]=(uint8)((NL3DDecompressLumelFactor0Case0[code]*alpha0+NL3DDecompressLumelFactor1Case0[code]*alpha1)/7);
-		}
+		// unrolled, and hardcoded for faster compute
+		values[0]= alpha0;
+		values[1]= alpha1;
+		values[2]= (uint8) ( (alpha0*219 + alpha1*37 ) >>8 ) ;	// 6*256/7
+		values[3]= (uint8) ( (alpha0*183 + alpha1*73 ) >>8 ) ;	// 5*256/7
+		values[4]= (uint8) ( (alpha0*146 + alpha1*110) >>8 ) ;	// 4*256/7
+		values[5]= (uint8) ( (alpha0*110 + alpha1*146) >>8 ) ;	// 3*256/7
+		values[6]= (uint8) ( (alpha0*73  + alpha1*183) >>8 ) ;	// 2*256/7
+		values[7]= (uint8) ( (alpha0*37  + alpha1*219) >>8 ) ;	// 1*256/7
 	}
 	// Case 1
 	else
 	{
-		// For each lumel
-		for (lumel=0; lumel<16; lumel++)
+		// unrolled, and hardcoded for faster compute
+		values[0]= alpha0;
+		values[1]= alpha1;
+		values[2]= (uint8) ( (alpha0*205 + alpha1*51 ) >>8 ) ;	// 4*256/5
+		values[3]= (uint8) ( (alpha0*154 + alpha1*102) >>8 ) ;	// 3*256/5
+		values[4]= (uint8) ( (alpha0*102 + alpha1*154) >>8 ) ;	// 2*256/5
+		values[5]= (uint8) ( (alpha0*51  + alpha1*205) >>8 ) ;	// 1*256/5
+		values[6]= 0;
+		values[7]= 255;
+	}
+
+
+	// For each pixel, set the value according to the code
+	// ------------------
+	uint	block8Pixs[2];
+	// Split the 48 bits data in 2 24 bits pass.
+	block8Pixs[0]= ((uint)src[2]<<16) + ((uint)src[3]<<8) + ((uint)src[4]) ;
+	block8Pixs[1]= ((uint)src[5]<<16) + ((uint)src[6]<<8) + ((uint)src[7]) ;
+
+	// write all lumels
+	for(uint i=0; i<2; i++)
+	{
+		uint	blockPix= block8Pixs[i];
+		// parse the 8 pixs, and write seq to dest
+		for(uint n=8; n>0; n--, dest++)
 		{
-			// Decompress the data
-			uint code=codes[lumel];
-			if (code<6)
-				dest[lumel]=(uint8)((NL3DDecompressLumelFactor0Case1[code]*alpha0+NL3DDecompressLumelFactor1Case1[code]*alpha1)/5);
-			else if (code==6)
-				dest[lumel]=0;
-			else if (code==7)
-				dest[lumel]=255;
+			uint code= (blockPix>>21)&0x7;
+
+			// read LUT, and store
+			*dest= values[code];
+
+			// shift the block
+			blockPix<<= 3;
 		}
 	}
+
 }
 
 // ***************************************************************************
@@ -611,38 +602,18 @@ void		CPatch::computeTileLightmapPixelAutomatic(uint ts, uint tt, uint s, uint t
 // ***************************************************************************
 void		CPatch::getTileLumelmapPrecomputed(uint ts, uint tt, uint8 *dest, uint stride)
 {
-	// Uncompressed ?
-	if (UncompressedLumels.empty())
-	{
-		// Unpack the lumels
-		uint8 buffer[NL_LUMEL_BY_TILE*NL_LUMEL_BY_TILE];
-		unpackLumelBlock (buffer, &(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]));
+	// Unpack the lumels
+	uint8 buffer[NL_LUMEL_BY_TILE*NL_LUMEL_BY_TILE];
+	unpackLumelBlock (buffer, &(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]));
 
-		// Retrun it
-		uint	x, y;
-		for(y=0; y<NL_LUMEL_BY_TILE; y++)
-		{
-			for(x=0; x<NL_LUMEL_BY_TILE; x++)
-			{
-				// lumel
-				dest[y*stride + x]= buffer[x+(y<<NL_LUMEL_BY_TILE_SHIFT)];
-			}
-		}
-	}
-	else
+	// Retrun it
+	uint	x, y;
+	for(y=0; y<NL_LUMEL_BY_TILE; y++)
 	{
-		// Offset in the lumel
-		uint offset=ts+tt*(OrderS<<NL_LUMEL_BY_TILE_SHIFT);
-
-		// For each lumels
-		uint	x, y;
-		for(y=0; y<NL_LUMEL_BY_TILE; y++)
+		for(x=0; x<NL_LUMEL_BY_TILE; x++)
 		{
-			for(x=0; x<NL_LUMEL_BY_TILE; x++)
-			{
-				// lumel
-				dest[y*stride + x]= UncompressedLumels[offset + x + (y<<NL_LUMEL_BY_TILE_SHIFT)];
-			}
+			// lumel
+			dest[y*stride + x]= buffer[x+(y<<NL_LUMEL_BY_TILE_SHIFT)];
 		}
 	}
 }
@@ -651,17 +622,8 @@ void		CPatch::getTileLumelmapPrecomputed(uint ts, uint tt, uint8 *dest, uint str
 // ***************************************************************************
 void		CPatch::getTileLumelmapPixelPrecomputed(uint ts, uint tt, uint s, uint t, uint8 &dest) const
 {
-	// Uncompressed ?
-	if (UncompressedLumels.empty())
-	{
-		// Return the lumel
-		dest= getUnpackLumelBlock (&(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]), s+(t<<2));
-	}
-	else
-	{
-		// Return the lumel
-		dest= UncompressedLumels[ts+tt*(OrderS<<NL_LUMEL_BY_TILE_SHIFT)+s+(t*OrderS<<2)];
-	}
+	// Return the lumel
+	dest= getUnpackLumelBlock (&(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]), s+(t<<2));
 }
 
 
@@ -670,38 +632,18 @@ void		CPatch::computeTileLightmapPrecomputed(uint ts, uint tt, CRGBA *dest, uint
 {
 	// Lumel table
 	const CRGBA* colorTable=getLandscape ()->getStaticLight ();
-	// Uncompressed ?
-	if (UncompressedLumels.empty())
-	{
-		// Unpack the lumels
-		uint8 buffer[NL_LUMEL_BY_TILE*NL_LUMEL_BY_TILE];
-		unpackLumelBlock (buffer, &(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]));
+	// Unpack the lumels
+	uint8 buffer[NL_LUMEL_BY_TILE*NL_LUMEL_BY_TILE];
+	unpackLumelBlock (buffer, &(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]));
 
-		// Retrun it
-		uint	x, y;
-		for(y=0; y<NL_LUMEL_BY_TILE; y++)
-		{
-			for(x=0; x<NL_LUMEL_BY_TILE; x++)
-			{
-				// lumel
-				dest[y*stride + x]=colorTable[buffer[x+(y<<NL_LUMEL_BY_TILE_SHIFT)]];
-			}
-		}
-	}
-	else
+	// Retrun it
+	uint	x, y;
+	for(y=0; y<NL_LUMEL_BY_TILE; y++)
 	{
-		// Offset in the lumel
-		uint offset=ts+tt*(OrderS<<NL_LUMEL_BY_TILE_SHIFT);
-
-		// For each lumels
-		uint	x, y;
-		for(y=0; y<NL_LUMEL_BY_TILE; y++)
+		for(x=0; x<NL_LUMEL_BY_TILE; x++)
 		{
-			for(x=0; x<NL_LUMEL_BY_TILE; x++)
-			{
-				// lumel
-				dest[y*stride + x]=colorTable[UncompressedLumels[offset + x + (y<<NL_LUMEL_BY_TILE_SHIFT)]];
-			}
+			// lumel
+			dest[y*stride + x]=colorTable[buffer[x+(y<<NL_LUMEL_BY_TILE_SHIFT)]];
 		}
 	}
 }
@@ -717,82 +659,30 @@ void		CPatch::computeTileLightmapEdgePrecomputed(uint ts, uint tt, uint edge, CR
 	// Lumel table
 	const CRGBA* colorTable=getLandscape ()->getStaticLight ();
 
-	// Uncompressed ?
-	if (UncompressedLumels.empty())
-	{
-		// Witch corner to start ?
-		uint pixel=NL3DPixelStartLumel[edge];
-		uint delta=NL3DDeltaLumel[edge];
+	// Witch corner to start ?
+	uint pixel=NL3DPixelStartLumel[edge];
+	uint delta=NL3DDeltaLumel[edge];
 
-		// For each lumels
-		const uint8 *src=&(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]);
-		uint x;
-		if (inverse)
+	// For each lumels
+	const uint8 *src=&(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]);
+	uint x;
+	if (inverse)
+	{
+		uint inverseStride=stride*(4-1);
+		for(x=0; x<4; x++)
 		{
-			uint inverseStride=stride*(4-1);
-			for(x=0; x<4; x++)
-			{
-				// lumel
-				dest[inverseStride-x*stride]=colorTable[getUnpackLumelBlock (src, pixel)];
-				pixel+=delta;
-			}
-		}
-		else
-		{
-			for(x=0; x<4; x++)
-			{
-				// lumel
-				dest[x*stride]=colorTable[getUnpackLumelBlock (src, pixel)];
-				pixel+=delta;
-			}
+			// lumel
+			dest[inverseStride-x*stride]=colorTable[getUnpackLumelBlock (src, pixel)];
+			pixel+=delta;
 		}
 	}
 	else
 	{
-		// Offset in the lumel
-		uint offset=ts+tt*(OrderS<<NL_LUMEL_BY_TILE_SHIFT);
-
-		// Start and delta
-		uint lumelS=OrderS<<2;
-		uint delta=lumelS;
-		switch (edge)
+		for(x=0; x<4; x++)
 		{
-		case 0:
-			delta=lumelS;
-			break;
-		case 1:
-			offset+=lumelS*3;
-			delta=1;
-			break;
-		case 2:
-			offset+=3;
-			delta=lumelS;
-			break;
-		case 3:
-			delta=1;
-			break;
-		}
-
-		// For each lumels
-		uint x;
-		if (inverse)
-		{
-			for(x=0; x<4; x++)
-			{
-				uint inverseStride=stride*(4-1);
-				// lumel
-				dest[inverseStride-x*stride]=colorTable[UncompressedLumels[offset]];
-				offset+=delta;
-			}
-		}
-		else
-		{
-			for(x=0; x<4; x++)
-			{
-				// lumel
-				dest[x*stride]=colorTable[UncompressedLumels[offset]];
-				offset+=delta;
-			}
+			// lumel
+			dest[x*stride]=colorTable[getUnpackLumelBlock (src, pixel)];
+			pixel+=delta;
 		}
 	}
 }
@@ -803,17 +693,8 @@ void		CPatch::computeTileLightmapPixelPrecomputed(uint ts, uint tt, uint s, uint
 	// Lumel table
 	const CRGBA* colorTable=getLandscape ()->getStaticLight ();
 
-	// Uncompressed ?
-	if (UncompressedLumels.empty())
-	{
-		// Return the lumel
-		*dest=colorTable[getUnpackLumelBlock (&(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]), s+(t<<2))];
-	}
-	else
-	{
-		// Return the lumel
-		*dest=colorTable[UncompressedLumels[ts+tt*(OrderS<<NL_LUMEL_BY_TILE_SHIFT)+s+(t*OrderS<<2)]];
-	}
+	// Return the lumel
+	*dest=colorTable[getUnpackLumelBlock (&(CompressedLumels[(ts + (tt*OrderS))*NL_BLOCK_LUMEL_COMPRESSED_SIZE]), s+(t<<2))];
 }
 
 
@@ -1477,14 +1358,6 @@ void		CPatch::resetCompressedLumels ()
 
 	// No line have shadows.
 	memset (&CompressedLumels[0], 0, size);
-}
-
-// ***************************************************************************
-void		CPatch::clearUncompressedLumels ()
-{
-	// Erase the uncompressed array
-	if (UncompressedLumels.begin()!=UncompressedLumels.end())
-		contReset (UncompressedLumels);
 }
 
 

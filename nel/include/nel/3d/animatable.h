@@ -1,7 +1,7 @@
 /** \file animatable.h
  * Class IAnimatable
  *
- * $Id: animatable.h,v 1.5 2001/03/19 14:07:57 berenguier Exp $
+ * $Id: animatable.h,v 1.6 2001/03/27 17:34:24 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,7 +130,7 @@ public:
 	  * \param chanMixer is the channel mixer. Should not be NULL. for anim detail purpose , the IAnimatable may store a RefPtr on this channel mixer.
 	  * \param prefix prefix to be append to valueNames
 	  */
-	virtual	void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix) =0;
+	virtual	void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix=std::string()) =0;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file 3d/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.6 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: quad_grid.h,v 1.7 2004/10/20 16:42:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/matrix.h"
-#include "nel/misc/stl_block_list.h"
+#include "nel/misc/object_vector.h"
 #include "nel/misc/common.h"
 #include <vector>
 
@@ -64,10 +64,6 @@ using NLMISC::CVector;
  *
  * For maximum allocation speed Efficiency, it uses a CBlockMemory<CNode> to allocate elements at insert().
  * DefaultBlockSize is 16, but you can change it at construction.
- *
- * because elements may lies in multiples squares, QuadGrid use lists per square which points on elements.
- * For faster allocation, it uses a CSTLBlockList<>. The entire quadGrid has its own CBlockMemory for the 
- * CSTLBlockLists. memoryBlockSize is the same than the blockSize for allocation of nodes.
  *
  * \author Lionel Berenguier
  * \author Nevrax France
@@ -205,7 +201,30 @@ public:
 // =================
 // =================
 private:// Classes.
+	class CNode;
 
+	/** A circular list node for the list of node per Quad element.
+	 *	The root node have Node==NULL
+	 */
+	class	CQuadNode
+	{
+	public:
+		CQuadNode	*Prev,*Next;
+		CNode		*Node;
+		
+		CQuadNode() : Prev(NULL), Next(NULL), Node(NULL) {}
+
+		// can't call this at ctor since copied in array
+		void	initRoot()
+		{
+			Prev= this;
+			Next= this;
+			Node= NULL;
+		}
+	};
+
+	/** A base node (not circular) for the list of selected or unselected node
+	 */
 	class	CBaseNode
 	{
 	public:
@@ -213,21 +232,15 @@ private:// Classes.
 		bool		Selected;		// true if owned by _SelectedList, or by _UnSelectedList.
 		CBaseNode() {Prev= Next= NULL;}
 	};
-
+	
+	/** An element inserted in the quadGrid. T + Link-list variables (CBaseNode and QuadNodes)
+	 */
 	class	CNode : public CBaseNode
 	{
 	public:
 		T		Elt;
-		uint16	x0,x1;			// The location of the elt in the grid. Used for erase().
-		uint16	y0,y1;
-	};
-
-	class	CQuadNode
-	{
-	public:
-		NLMISC::CSTLBlockList<CNode*>	Nodes;
-
-		CQuadNode(NLMISC::CBlockMemory<CNode*, false> *bm) : Nodes(bm) {}
+		// A node can be contained in L*H squares. This vector is a place holder for each node of each quad list
+		NLMISC::CObjectVector<CQuadNode>	QuadNodes;
 	};
 
 private:// Atttributes.
@@ -241,8 +254,6 @@ private:// Atttributes.
 	CBaseNode			_UnSelectedList;	// circular list of elements not selected
 	// The memory for nodes
 	NLMISC::CBlockMemory<CNode>					_NodeBlockMemory;
-	// The memory for node list
-	NLMISC::CBlockMemory<CNode*, false>			_NodeListBlockMemory;
 
 
 private:// Methods.
@@ -321,10 +332,15 @@ private:// Methods.
 	// Try to add each node of the quad node list.
 	void		addQuadNodeToSelection(CQuadNode	&quad)
 	{
-		typename NLMISC::CSTLBlockList<CNode*>::iterator	itNode;
-		for(itNode= quad.Nodes.begin();itNode!=quad.Nodes.end();itNode++)
+		// NB: the root quadNode does not contains any Node
+		nlassert(quad.Node==NULL);
+		CQuadNode	*qn= quad.Next;
+		// until we roll all the circular list
+		while(qn!=&quad)
 		{
-			addToSelection(*itNode);
+			nlassert(qn->Node);
+			addToSelection(qn->Node);
+			qn= qn->Next;
 		}
 	}
 
@@ -410,7 +426,7 @@ public:
 
 // ***************************************************************************
 template<class T>	CQuadGrid<T>::CQuadGrid(uint memoryBlockSize) : 
-	_NodeBlockMemory(memoryBlockSize), _NodeListBlockMemory(memoryBlockSize)
+	_NodeBlockMemory(memoryBlockSize)
 {
 	_SizePower=4;
 	_Size=1<<_SizePower;
@@ -421,7 +437,6 @@ template<class T>	CQuadGrid<T>::CQuadGrid(uint memoryBlockSize) :
 template<class T>	CQuadGrid<T>::~CQuadGrid()
 {
 	clear();
-	// must clear the array, before _NodeListBlockMemory.purge() is called.
 	_Grid.clear();
 }
 // ***************************************************************************
@@ -438,7 +453,10 @@ template<class T>	void		CQuadGrid<T>::create(uint size, float eltSize)
 	nlassert(size<=32768);
 	_SizePower= NLMISC::getPowerOf2(size);
 	_Size=1<<_SizePower;
-	_Grid.resize(_Size*_Size, CQuadNode(&_NodeListBlockMemory));
+	_Grid.resize(_Size*_Size);
+	// Init QuadNode Root (can't be done in ctor() because of vector<> copy)
+	for(uint i=0;i<_Grid.size();i++)
+		_Grid[i].initRoot();
 
 	nlassert(eltSize>0);
 	_EltSize= eltSize;
@@ -467,33 +485,22 @@ template<class T>	void		CQuadGrid<T>::clear()
 // ***************************************************************************
 template<class T>	typename CQuadGrid<T>::CIterator	CQuadGrid<T>::erase(typename CQuadGrid<T>::CIterator it)
 {
-	sint	x,y;
 	CNode	*ptr= it._Ptr;
 
 	if(!ptr)
 		return end();
 
-	// First erase all references to it.
+	// First erase from all QuadNode list
 	//==================================
-	for(y= ptr->y0;y<ptr->y1;y++)
+	for(uint i=0;i<ptr->QuadNodes.size();i++)
 	{
-		sint	xe,ye;
-		ye= y &(_Size-1);
-		for(x= ptr->x0;x<ptr->x1;x++)
-		{
-			xe= x &(_Size-1);
-			CQuadNode	&quad= _Grid[(ye<<_SizePower)+xe];
-			typename NLMISC::CSTLBlockList<CNode*>::iterator	itNode;
-			for(itNode= quad.Nodes.begin();itNode!=quad.Nodes.end();itNode++)
-			{
-				if((*itNode)==ptr)
-				{
-					quad.Nodes.erase(itNode);
-					break;
-				}
-			}
-		}
+		CQuadNode	&qn= ptr->QuadNodes[i];
+		// unlink from circular list
+		qn.Next->Prev= qn.Prev;
+		qn.Prev->Next= qn.Next;
 	}
+	ptr->QuadNodes.clear();
+
 
 	// Then delete it..., and update selection linked list.
 	//=====================================================
@@ -534,23 +541,36 @@ template<class T>	typename CQuadGrid<T>::CIterator	CQuadGrid<T>::insert(const NL
 	sint	x1,y1;
 	selectQuads(bmin, bmax, x0,x1, y0,y1);
 
-	ptr->x0= x0;
-	ptr->x1= x1;
-	ptr->y0= y0;
-	ptr->y1= y1;
+	// must fit at lease in one quad
+	sint	wn= x1-x0;
+	sint	hn= y1-y0;
+	nlassert(wn>0 && hn>0);
+	// NB: this allocation may be slow (don't use BlockMemory system). But STLPort smallblock alloc 
+	// works quite well (if <128 bytes, ie a block of 10 squares)
+	ptr->QuadNodes.resize(wn*hn);
 
 	// Then for all of them, insert the node in their list.
 	//=====================================================
 	sint	x,y;
-	for(y= ptr->y0;y<ptr->y1;y++)
+	for(y= y0;y<y1;y++)
 	{
-		sint	xe,ye;
-		ye= y &(_Size-1);
-		for(x= ptr->x0;x<ptr->x1;x++)
+		sint	xg,yg;		// x,y in grid (_Grid[])
+		sint	xn,yn;		// x,y in node array (ptr->QuadNodes[])
+		yg= y &(_Size-1);
+		yn= y-y0;
+		for(x= x0;x<x1;x++)
 		{
-			xe= x &(_Size-1);
-			CQuadNode	&quad= _Grid[(ye<<_SizePower)+xe];
-			quad.Nodes.push_back(ptr);
+			xg= x &(_Size-1);
+			xn= x-x0;
+			CQuadNode	&quadRoot= _Grid[(yg<<_SizePower)+xg];
+			CQuadNode	&quadNew= ptr->QuadNodes[yn*wn+xn];
+			// let point on the node created
+			quadNew.Node= ptr;
+			// insert in back of list
+			quadNew.Next= &quadRoot;
+			quadNew.Prev= quadRoot.Prev;
+			quadRoot.Prev->Next= &quadNew;
+			quadRoot.Prev= &quadNew;
 		}
 	}
 

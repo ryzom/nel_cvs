@@ -1,6 +1,6 @@
 -- plugin to edit a nel flare
 plugin Geometry nel_flare
-name:"Flare"
+name:"Nel flare"
 category:"Nel Tools"
 classID:#(0x4e913532, 0x3c2f2307)
 extends:Sphere
@@ -62,7 +62,8 @@ extends:Sphere
 		HasDazzle				 type:#boolean  animatable:false default:  false ui:UIHasDazzle
 		DazzleColor				 type:#color	animatable:false default:  white ui:UIDazzleColor
 		DazzleAttenuationRange	 type:#float	animatable:false default:  0.5   ui:UIDazzleAttenuationRange
-
+		MaxViewDist				 type:#float	animatable:false default:  1000  ui:UIMaxViewDist
+		MaxViewDistRatio		 type:#float	animatable:false default:  0.9   ui:UIMaxViewDistRatio
 	)
 
 	rollout param "Parameters"
@@ -76,6 +77,12 @@ extends:Sphere
 		checkbox	UIHasDazzle			 "Enable dazzle  :"		   type:#boolean
 		spinner     UIDazzleAttenuationRange  "dazzle atten.:" 	   range:[0,20,1]  type:#float align:#left
 		colorpicker UIDazzleColor 		"dazzle color" 	               color:white 
+
+		group "Distance"
+		(
+			spinner     UIMaxViewDist		"Max view dist." 	   range:[0,1000,1]  type:#float align:#left
+			spinner     UIMaxViewDistRatio  "Atten. start" range:[0,0.9,0.05]  type:#float align:#left
+		)
 		
 		group "Flare 0"
 		(

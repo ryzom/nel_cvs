@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.18 2001/09/17 14:01:26 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.19 2001/12/18 18:33:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -502,7 +502,7 @@ void CAttribDlg::OnEditScheme()
 }
 
 
-void CAttribDlg::childPopupDestroyed(CWnd *child)
+void CAttribDlg::childPopupClosed(CWnd *child)
 {
 	EnableWindow(TRUE);
 	if (!_SchemeEditionDlg) return;

@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.h,v 1.10 2001/09/17 14:01:26 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.11 2001/12/18 18:33:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,7 +182,7 @@ protected:
 	virtual bool isClampingSupported(void) const = 0;
 
 	/// inherited from IPopupNotify
-	virtual void childPopupDestroyed(CWnd *child);
+	virtual void childPopupClosed(CWnd *child);
 
 
 	// the dialog used to tune the nb cycles param (when available)

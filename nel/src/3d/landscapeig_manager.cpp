@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.13 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: landscapeig_manager.cpp,v 1.14 2003/12/10 10:17:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,28 +145,31 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc, UDriv
 							_ig.getShapeName(i, shapeName);
 							if (!shapeName.empty ())
 							{
-								// Insert a new shape ?
-								if (_ShapeAdded.find(shapeName) == _ShapeAdded.end())
+								if (strlwr(CFile::getExtension(shapeName)) != "pacs_prim")
 								{
-									// Shape present ?
-									CShapeBank *shapeBank = _scene.getShapeBank();
-									IShape *shape = NULL;
-									if (shapeBank->isPresent (shapeName) == CShapeBank::NotPresent)
-										shapeBank->load (shapeName);
-									if (shapeBank->isPresent (shapeName) == CShapeBank::Present)
-										shape = shapeBank->addRef(shapeName);
-
-									// Shape loaded ?
-									if (shape)
+									// Insert a new shape ?
+									if (_ShapeAdded.find(shapeName) == _ShapeAdded.end())
 									{
-										// Insert the shape
-										CSmartPtr<IShape> *smartPtr = new CSmartPtr<IShape>;
-										*smartPtr = shape;
-										_ShapeAdded.insert (TShapeMap::value_type (shapeName, smartPtr));
+										// Shape present ?
+										CShapeBank *shapeBank = _scene.getShapeBank();
+										IShape *shape = NULL;
+										if (shapeBank->isPresent (shapeName) == CShapeBank::NotPresent)
+											shapeBank->load (shapeName);
+										if (shapeBank->isPresent (shapeName) == CShapeBank::Present)
+											shape = shapeBank->addRef(shapeName);
 
-										// Flush the shape
-										IDriver	*_driver = static_cast<CDriverUser*>(driver)->getDriver();
-										shape->flushTextures(*_driver, selectedTexture);
+										// Shape loaded ?
+										if (shape)
+										{
+											// Insert the shape
+											CSmartPtr<IShape> *smartPtr = new CSmartPtr<IShape>;
+											*smartPtr = shape;
+											_ShapeAdded.insert (TShapeMap::value_type (shapeName, smartPtr));
+
+											// Flush the shape
+											IDriver	*_driver = static_cast<CDriverUser*>(driver)->getDriver();
+											shape->flushTextures(*_driver, selectedTexture);
+										}
 									}
 								}
 							}

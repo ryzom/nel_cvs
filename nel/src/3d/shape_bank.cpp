@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.24 2003/10/22 13:40:39 besson Exp $
+ * $Id: shape_bank.cpp,v 1.25 2003/12/10 10:17:50 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -425,15 +425,23 @@ void CShapeBank::load (const string &shapeNameNotLwr)
 		try
 		{
 			CShapeStream mesh;
-			CIFile meshfile(CPath::lookup(shapeName));
-			meshfile.serial( mesh );
-			meshfile.close();
+			CIFile meshfile;
+			if (meshfile.open(CPath::lookup(shapeName)))
+			{
+				meshfile.serial( mesh );
+				meshfile.close();
+			}
+			else
+			{
+				nlwarning ("CShapeBank::load() : Can't open file %s", shapeName.c_str());
+			}
 
 			// Add the shape to the map.
 			add( shapeName, mesh.getShapePointer() );
 		}
-		catch(EPathNotFound &)
+		catch(Exception &e)
 		{
+			nlwarning ("CShapeBank::load() : %s", e.what());
 			return;
 		}
 	}	

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.36 2002/05/28 13:53:20 berenguier Exp $
+ * $Id: object_viewer.h,v 1.37 2002/06/20 08:42:27 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@
 #define REGKEY_OBJ_WATERPOOL_DLG "Software\\Nevrax\\nel\\object_viewer\\daynight_dlg"
 #define REGKEY_OBJ_VIEW_VEGETABLE_DLG "Software\\Nevrax\\nel\\object_viewer\\vegetable_dlg"
 #define REGKEY_OBJ_GLOBAL_WIND_DLG "Software\\Nevrax\\nel\\object_viewer\\global_wind_dlg"
-
+#define REGKEY_OBJ_SOUND_ANIM_DLG "Software\\Nevrax\\nel\\object_viewer\\sound_anim_dlg"
 
 
 
@@ -81,6 +81,7 @@ class CDayNightDlg ;
 class CWaterPoolEditor;
 class CVegetableDlg ;
 class CGlobalWindDlg ;
+class CSoundAnimDlg;
 
 
 
@@ -263,6 +264,9 @@ public:
 	// Add an animation
 	void addAnimation (NL3D::CAnimation* anim, const char* filename, const char* name, uint instance);
 
+	// Update all objects that depend on the animation set
+	void refreshAnimationListeners();
+
 	// Load a shape
 	void resetCamera ();
 
@@ -418,6 +422,7 @@ private:
 	CDayNightDlg								*_DayNightDlg;
 	CWaterPoolEditor							*_WaterPoolDlg;
 	CVegetableDlg								*_VegetableDlg;
+	CSoundAnimDlg								*_SoundAnimDlg;
 	uint32										_SelectedObject;
 
 	// Vector of loaded instance

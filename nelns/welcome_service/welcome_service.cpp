@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.32 2004/06/29 15:27:13 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.33 2004/06/30 15:39:58 legros Exp $
  *
  */
 
@@ -50,6 +50,8 @@
 #include "nel/misc/command.h"
 #include "nel/misc/variable.h"
 #include "nel/misc/log.h"
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
 
 #include "nel/net/service.h"
 #include "nel/net/unified_network.h"
@@ -64,6 +66,23 @@ CVariable<sint> PlayerLimit(
 	"PlayerLimit", "Rough max number of players accepted on this shard (-1 for Unlimited)",
 	5000,
 	0, true );
+
+// Forward declaration of callback cbShardOpenStateFile (see ShardOpenStateFile variable)
+void	cbShardOpenStateFile(IVariable &var);
+
+/**
+ * ShardOpen
+ * true if shard is open to public
+ */
+CVariable<bool>		ShardOpen("ShardOpen", "Indicates if shard is open to public (that is no priviledged users)", false, 0, true);
+
+/**
+ * ShardOpen
+ * true if shard is open to public
+ */
+CVariable<string>	ShardOpenStateFile("ShardOpenStateFile", "Name of the file that contains ShardOpen state", "", 0, true, cbShardOpenStateFile);
+
+
 
 
 /**
@@ -473,7 +492,12 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	}
 
 	// Check the player limit number
-	if ((PlayerLimit.get() != -1) && (totalNbUsers >= (uint)(PlayerLimit.get())))
+	// condition is like:
+	// if user has no privilege and
+	//		shard is closed or
+	//		shard player limit is reached (if any)
+	//	-> refuse user
+	if (userPriv.empty() && ( !ShardOpen || (   (PlayerLimit.get() != -1) && (totalNbUsers >= (uint)(PlayerLimit.get()))   ) ) )
 	{
 		// answer the LS that we can't accept the user
 		CMessage msgout ("SCS");
@@ -560,6 +584,69 @@ void cbUpdateExpectedServices( CConfigFile::CVar& var )
 }
 
 
+/*
+ * ShardOpen update functions/callbacks etc.
+ */
+
+/**
+ * updateShardOpenFromFile()
+ * Update ShardOpen from a file.
+ * Read a line of text in the file, converts it to int (atoi), then casts into bool for ShardOpen.
+ */
+void	updateShardOpenFromFile(const std::string& filename)
+{
+	CIFile	f;
+
+	if (!f.open(filename))
+	{
+		nlwarning("Failed to update ShardOpen from file '%s', couldn't open file", filename.c_str());
+		return;
+	}
+
+	try
+	{
+		char	readBuffer[256];
+		f.getline(readBuffer, 256);
+		ShardOpen = (atoi(readBuffer) != 0);
+
+		nlinfo("Updated ShardOpen state to '%s' from file '%s'", (ShardOpen ? "true" : "false"), filename.c_str());
+	}
+	catch (Exception& e)
+	{
+		nlwarning("Failed to update ShardOpen from file '%s', exception raised while getline() '%s'", filename.c_str(), e.what());
+	}
+}
+
+std::string	ShardOpenStateFileName;
+
+/**
+ * cbShardOpenStateFile()
+ * Callback for ShardOpenStateFile
+ */
+void	cbShardOpenStateFile(IVariable &var)
+{
+	// remove previous file change callback
+	if (!ShardOpenStateFileName.empty())
+	{
+		CFile::removeFileChangeCallback(ShardOpenStateFileName);
+		nlinfo("Removed callback for ShardOpenStateFileName file '%s'", ShardOpenStateFileName.c_str());
+	}
+
+	ShardOpenStateFileName = var.toString();
+
+	if (!ShardOpenStateFileName.empty())
+	{
+		// set new callback for the file
+		CFile::addFileChangeCallback(ShardOpenStateFileName, updateShardOpenFromFile);
+		nlinfo("Set callback for ShardOpenStateFileName file '%s'", ShardOpenStateFileName.c_str());
+
+		// and update state from file...
+		updateShardOpenFromFile(ShardOpenStateFileName);
+	}
+}
+
+
+
 // Callback Array for message from LS
 TUnifiedCallbackItem LSCallbackArray[] =
 {
@@ -614,6 +701,18 @@ public:
 		// List of expected service instances
 		ConfigFile.setCallback( "ExpectedServices", cbUpdateExpectedServices );
 		cbUpdateExpectedServices( ConfigFile.getVar( "ExpectedServices" ) );
+
+
+		/*
+		 * read config variable ShardOpenStateFile to update
+		 * 
+		 */
+		CConfigFile::CVar*	shardOpenStateFile = ConfigFile.getVarPtr("ShardOpenStateFile");
+		// if doesn't exist, keep ShardOpen variable state unchanged
+		if (shardOpenStateFile != NULL)
+		{
+			cbShardOpenStateFile(ShardOpenStateFile);
+		}
 	}
 };
 
@@ -681,3 +780,5 @@ NLMISC_COMMAND( displayOnlineServices, "Display the online service instances", "
 }
 
 NLMISC_VARIABLE( bool, OnlineStatus, "Main online status of the shard" );
+
+

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.63 2004/06/15 13:34:48 cado Exp $
+ * $Id: admin_executor_service.cpp,v 1.64 2004/06/30 15:39:59 legros Exp $
  *
  */
 
@@ -64,6 +64,7 @@
 #include "nel/misc/path.h"
 #include "nel/misc/value_smoother.h"
 #include "nel/misc/singelton.h"
+#include "nel/misc/file.h"
 
 #include "nel/net/service.h"
 #include "nel/net/unified_network.h"
@@ -1738,6 +1739,36 @@ NLMISC_COMMAND( displayLogReport, "Display summary of a part of the log report b
 		// By service
 		MainLogReport.reportByService( args[0], &log );
 	}
+
+	return true;
+}
+
+/*
+ * Command to allow AES to create a file with content
+ */
+NLMISC_COMMAND( createFile, "Create a file and fill it with given content", "<filename> <content>" )
+{
+	// check args
+	if (args.size() != 2)
+		return false;
+
+	COFile	f;
+	if (!f.open(args[0]))
+	{
+		log.displayNL("Failed to open file '%s' in write mode", args[1].c_str());
+		return false;
+	}
+
+	// check something to write, in case serialBuffer() doesn't accept empty buffer
+	if (!args[1].empty())
+	{
+		// dirty const cast, but COFile won't erase buffer content
+		char*	buffer = const_cast<char*>(args[1].c_str());
+
+		f.serialBuffer((uint8*)buffer, args[1].size());
+	}
+
+	f.close();
 
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.25 2003/03/03 13:00:45 boucher Exp $
+ * $Id: i18n.cpp,v 1.26 2003/03/03 16:14:56 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -248,7 +248,7 @@ void CI18N::setPath (const char* str)
 void CI18N::load (uint32 lid)
 {
 	nlassert (lid < _NbLanguages);
-	nlassert (_LanguagesNamesLoaded);
+//	nlassert (_LanguagesNamesLoaded);
 
 	std::string fileName  = _LanguageCodes[lid] + ".uxt";
 
@@ -444,7 +444,7 @@ const ucstring &CI18N::get (const std::string &label)
 	if (it != _StrMap.end())
 		return it->second;
 
-	nlwarning("The string %s did not exist in language %s", label.c_str(), _LanguageCodes[_SelectedLanguage].c_str);
+	nlwarning("The string %s did not exist in language %s", label.c_str(), _LanguageCodes[_SelectedLanguage].c_str());
 
 	return _NotTranslatedValue;
 }

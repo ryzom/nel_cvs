@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.10 2001/03/07 14:53:57 cado Exp $
+ * $Id: displayer.cpp,v 1.11 2001/03/09 14:56:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
@@ -130,6 +131,9 @@ void CStdDisplayer::doDisplay (time_t date, CLog::TLogType logType, const string
 		ss << logTypeToString(logType);
 		needSpace = true;
 	}
+
+	// Write thread identifier
+	ss << setw(5) << getThreadId();
 
 	if (filename != NULL)
 	{

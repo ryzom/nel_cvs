@@ -1,7 +1,7 @@
 /** \file triangle.h
  * <File description>
  *
- * $Id: triangle.h,v 1.1 2001/02/28 14:31:21 berenguier Exp $
+ * $Id: triangle.h,v 1.2 2001/06/11 13:33:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,13 @@ public:
 	  *  \return true if the segement [p0,p1] intersects the triangle else false.
 	  */
 	bool intersect (const CVector& p0, const CVector& p1, CVector& hit, const class NLMISC::CPlane& plane) const;
+
+	/** 3D Gradient computation.
+	 * Given 3 values at the 3 corners 'ci' (gouraud, uv....), this method compute the gradients Grad.
+	 * The formula to compute the interpolated value according to a 3d position 'v' in space is then simply: \n
+	 *	c(v)= c0 + grad*(v-V0)
+	 */
+	void	computeGradient(float c0, float c1, float c2, CVector &grad) const;
 };
 
 

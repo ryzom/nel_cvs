@@ -1,7 +1,7 @@
 /** \file triangle.cpp
  * <File description>
  *
- * $Id: triangle.cpp,v 1.2 2001/04/04 10:10:59 legros Exp $
+ * $Id: triangle.cpp,v 1.3 2001/06/11 13:33:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,51 @@ bool CTriangle::intersect (const CVector& p0, const CVector& p1, CVector& hit, c
 
 	return (d0 < +EPSILON && d1 < +EPSILON && d2 < +EPSILON) ||
 		   (d0 > -EPSILON && d1 > -EPSILON && d2 > -EPSILON);
+}
+
+
+
+// ***************************************************************************
+void	CTriangle::computeGradient(float c0, float c1, float c2, CVector &grad) const
+{
+	// Compute basis for 2D triangle.
+	CVector		locI, locJ, locK;
+	locI= V1-V0;
+	locJ= V2-V0;
+	locK= locI^locJ;
+	locK.normalize();
+	locI.normalize();
+	locJ= locK^locI;
+
+	// compute triangle in 2D.
+	CTriangle	tri2D;
+	tri2D.V0.set(0,0,0);
+	tri2D.V1.x= (V1-V0)*locI;
+	tri2D.V1.y= (V1-V0)*locJ;
+	tri2D.V1.z= 0;
+	tri2D.V2.x= (V2-V0)*locI;
+	tri2D.V2.y= (V2-V0)*locJ;
+	tri2D.V2.z= 0;
+
+	// Compute 2D Gradients.
+	float	dx01= tri2D.V1.x - tri2D.V0.x;
+	float	dx02= tri2D.V2.x - tri2D.V0.x;
+	float	dy01= tri2D.V1.y - tri2D.V0.y;
+	float	dy02= tri2D.V2.y - tri2D.V0.y;
+	float	dc01= c1 - c0;
+	float	dc02= c2 - c0;
+	float	gd= dx02*dy01 - dx01*dy02;
+	float	OOgd;
+	if(gd!=0)
+		OOgd= 1.0f/gd;
+	else
+		OOgd= 1;	// for now, do not manage correctly this case.
+	float	gx, gy;
+	gx= (dc02*dy01 - dc01*dy02) * OOgd;
+	gy= (dc01*dx02 - dc02*dx01) * OOgd;
+
+	// transform in 3D.
+	grad= locI*gx + locJ*gy;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file item.cpp
  * Georges system files
  *
- * $Id: item.cpp,v 1.3 2002/03/04 12:53:29 cado Exp $
+ * $Id: item.cpp,v 1.4 2002/03/12 09:22:57 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -474,6 +474,11 @@ void CItem::DelParent( const unsigned int _index )
 			vsxparents.erase( it );
 			return;
 		}
+}
+
+void CItem::ClearParents ()
+{
+	vsxparents.clear();
 }
 
 }

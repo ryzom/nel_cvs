@@ -1,7 +1,7 @@
 /** \file u_visual_collision_entity.h
  * <File description>
  *
- * $Id: u_visual_collision_entity.h,v 1.7 2002/02/18 13:23:34 berenguier Exp $
+ * $Id: u_visual_collision_entity.h,v 1.8 2002/05/23 14:40:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,8 @@
 namespace NL3D 
 {
 
+
+class	UDriver;
 
 using	NLMISC::CVector;
 
@@ -104,6 +106,17 @@ public:
 	 *	the object won't be too darken.
 	 */
 	virtual bool	getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient) =0;
+	// @}
+
+
+	/// \name Debug display
+	// @{
+
+	/** Draw lines for the landscape quadgrid collision faces under us
+	 *	NB: a drv.setMatrixMode3D() should have been done before.
+	 */
+	virtual void	displayDebugGrid(UDriver &drv) const =0;
+
 	// @}
 
 

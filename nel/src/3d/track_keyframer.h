@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.7 2001/10/16 14:57:07 corvazier Exp $
+ * $Id: track_keyframer.h,v 1.8 2001/11/05 09:30:31 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,10 +201,13 @@ public:
 		// First previous ?
 		if ((!_MapKey.empty())&&(ite!=_MapKey.begin()))
 		{
-			// Previous
-			ite--;
-			previous= &(ite->second);
-			datePrevious=ite->first;
+			if (ite!=_MapKey.end())
+			{
+				// Previous
+				ite--;
+				previous= &(ite->second);
+				datePrevious=ite->first;
+			}
 		}
 		else if (!_MapKey.empty())
 		{

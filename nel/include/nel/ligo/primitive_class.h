@@ -1,7 +1,7 @@
 /** \file primitive_class.h
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.h,v 1.11 2004/10/07 15:42:43 boucher Exp $
+ * $Id: primitive_class.h,v 1.12 2004/11/09 15:34:58 legros Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -176,6 +176,9 @@ public:
 
 		// Sort entry in combo box
 		bool		SortEntries;
+
+		// Editable
+		bool		Editable;
 
 		// Display horizontal slider in multiline edit box
 		bool		DisplayHS;

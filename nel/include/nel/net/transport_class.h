@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.4 2002/02/19 13:14:53 lecroart Exp $
+ * $Id: transport_class.h,v 1.5 2002/03/14 13:50:20 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -144,6 +144,19 @@ public:
 	 */
 	template <class T> void property (const std::string &name, TProp type, T defaultValue, T &value)
 	{
+		switch (type)
+		{
+		case PropUInt8: case PropSInt8: case PropBool: nlassert(sizeof(T) == sizeof (uint8)); break;
+		case PropUInt16: case PropSInt16: nlassert(sizeof(T) == sizeof (uint16)); break;
+		case PropUInt32: case PropSInt32: nlassert(sizeof(T) == sizeof (uint32)); break;
+		case PropUInt64: case PropSInt64: nlassert(sizeof(T) == sizeof (uint64)); break;
+		case PropFloat: nlassert(sizeof(T) == sizeof (float)); break;
+		case PropDouble: nlassert(sizeof(T) == sizeof (double)); break;
+		case PropString: nlassert(sizeof(T) == sizeof (string)); break;
+		case PropEntityId: nlassert(sizeof(T) == sizeof (CEntityId)); break;
+		default: nlerror ("property %s have unknown type %d", name.c_str(), type);
+		}
+
 		if (Mode == 2)			// write
 		{
 			// send only if needed
@@ -163,7 +176,7 @@ public:
 			val += NLMISC::toString (defaultValue);
 			val += " val: ";
 			val += NLMISC::toString (value);
-			nlinfo ("  prop %s %d: %s", name.c_str(), type, val.c_str());
+			nldebug ("NETTC:   prop %s %d: %s", name.c_str(), type, val.c_str());
 		}
 		else
 		{
@@ -194,7 +207,7 @@ public:
 				val += NLMISC::toString (*it);
 				val += " ";
 			}
-			nlinfo ("  prop %s %d: %d elements ( %s)", name.c_str(), type, value.size(), val.c_str());
+			nldebug ("NETTC:   prop %s %d: %d elements ( %s)", name.c_str(), type, value.size(), val.c_str());
 		}
 		else
 		{
@@ -349,7 +362,7 @@ private:
 	static void unregisterClass ();
 
 	// Fill the States merging local and other side class
-	static void registerOtherSideClass (uint16 sid, TOtherSideRegisteredClass &osrc);
+	static void registerOtherSideClass (uint8 sid, TOtherSideRegisteredClass &osrc);
 
 	// Create a message with local transport classes to send to the other side
 	static void createLocalRegisteredClassMessage ();
@@ -357,13 +370,14 @@ private:
 	// Send the local transport classes to another service using the service id
 	static void sendLocalRegisteredClass (uint8 sid)
 	{
-		nlinfo ("sendLocalRegisteredClass to %d", sid);
+		nldebug ("NETTC: sendLocalRegisteredClass to %d", sid);
 		createLocalRegisteredClassMessage ();
 		NLNET::CUnifiedNetwork::getInstance()->send (sid, TempMessage);
 	}
 
 	// Display a specific registered class (debug purpose)
 	static void displayLocalRegisteredClass (CRegisteredClass &c);
+	static void displayDifferentClass (uint8 sid, const std::string &className, const std::vector<CRegisteredBaseProp> &otherClass, const std::vector<CRegisteredBaseProp *> &myClass);
 
 
 	//
@@ -394,7 +408,7 @@ inline void CTransportClass::className (const std::string &name)
 	}
 	else if (Mode == 4) // display
 	{
-		nlinfo ("class %s:", name.c_str());
+		nldebug ("NETTC: class %s:", name.c_str());
 	}
 	else
 	{

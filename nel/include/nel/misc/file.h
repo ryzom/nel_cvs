@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.h,v 1.8 2000/11/21 13:32:54 berenguier Exp $
+ * $Id: file.h,v 1.9 2000/12/21 14:49:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,19 +42,41 @@ namespace NLMISC
  */
 struct EFile : public EStream
 {
-	virtual const char	*what() const throw() {return "File Error";}
+public:
+	EFile() { }
+	EFile( const std::string& filename )
+	{
+		_Reason = "Unknown file error in "+filename;
+	}
+
+	virtual const char	*what() const throw() { return _Reason.c_str(); }
+
+protected:
+	std::string	_Reason;
 };
+
 struct EFileNotOpened : public EFile
 {
-	virtual const char	*what() const throw() {return "File Not Opened";}
+	EFileNotOpened( const std::string& filename )
+	{
+		_Reason = "File '"+filename+"' not opened";
+	}
 };
+
 struct EReadError : public EFile
 {
-	virtual const char	*what() const throw() {return "Read Error (End of file??)";}
+	EReadError( const std::string& filename )
+	{
+		_Reason = "Read error (End of file??) in file '" +filename+"'";
+	}
 };
+
 struct EWriteError : public EFile
 {
-	virtual const char	*what() const throw() {return "Write Error";}
+	EWriteError( const std::string& filename )
+	{
+		_Reason = "Write Error in file '" +filename+"'";
+	}
 };
 
 
@@ -70,11 +92,11 @@ class CIFile : public IStream
 public:		// Basic Usage.
 	/// Object. NB: destructor close() the stream.
 	CIFile();
-	CIFile(std::string path, bool text=false);
+	CIFile(const std::string &path, bool text=false);
 	~CIFile();
 
 	/// Open a file for reading. false if failed. close() if a file was opened.
-	bool	open(std::string path, bool text=false);
+	bool	open(const std::string &path, bool text=false);
 
 	
 public:		// Advanced Usage.
@@ -93,6 +115,7 @@ protected:
 
 private:
 	FILE	*_F;
+	std::string _FileName;
 };
 
 
@@ -108,11 +131,11 @@ class COFile : public IStream
 public:		// Basic Usage.
 	/// Object. NB: destructor close() the stream.
 	COFile();
-	COFile(std::string path, bool append=false, bool text=false);
+	COFile(const std::string &path, bool append=false, bool text=false);
 	~COFile();
 
 	/// Open a file for writing. false if failed. close() if a file was opened.
-	bool	open(std::string path, bool append=false, bool text=false);
+	bool	open(const std::string &path, bool append=false, bool text=false);
 
 	
 public:		// Advanced Usage.
@@ -133,6 +156,7 @@ protected:
 
 private:
 	FILE	*_F;
+	std::string _FileName;
 };
 
 

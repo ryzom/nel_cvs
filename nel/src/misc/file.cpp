@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.11 2000/11/21 13:31:41 berenguier Exp $
+ * $Id: file.cpp,v 1.12 2000/12/21 14:49:04 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ CIFile::CIFile() : IStream(true, true)
 }
 
 // ======================================================================================================
-CIFile::CIFile(std::string path, bool text) : IStream(true, true)
+CIFile::CIFile(const std::string &path, bool text) : IStream(true, true)
 {
 	_F=NULL;
 	open(path, text);
@@ -52,7 +52,7 @@ CIFile::~CIFile()
 	close();
 }
 // ======================================================================================================
-bool	CIFile::open(std::string path, bool text)
+bool	CIFile::open(const std::string &path, bool text)
 {
 	close();
 
@@ -62,6 +62,7 @@ bool	CIFile::open(std::string path, bool text)
 	mode[2] = '\0';
 
 	_F=fopen(path.c_str(), mode);
+	_FileName = path;
 
 	return _F!=NULL;
 }
@@ -87,9 +88,9 @@ void	CIFile::flush()
 void		CIFile::serialBuffer(uint8 *buf, uint len) throw(EReadError)
 {
 	if(!_F)
-		throw	EFileNotOpened();
+		throw	EFileNotOpened(_FileName);
 	if(fread(buf, 1, len, _F) < len)
-		throw	EReadError();
+		throw	EReadError(_FileName);
 }
 // ======================================================================================================
 void		CIFile::serialBit(bool &bit) throw(EReadError)
@@ -146,10 +147,11 @@ sint32		CIFile::getpos () throw(EStream)
 COFile::COFile() : IStream(false, true)
 {
 	_F=NULL;
+	_FileName = "";
 }
 
 // ======================================================================================================
-COFile::COFile(std::string path, bool append, bool text) : IStream(false, true)
+COFile::COFile(const std::string &path, bool append, bool text) : IStream(false, true)
 {
 	_F=NULL;
 	open(path, append, text);
@@ -161,7 +163,7 @@ COFile::~COFile()
 	close();
 }
 // ======================================================================================================
-bool	COFile::open(std::string path, bool append, bool text)
+bool	COFile::open(const std::string &path, bool append, bool text)
 {
 	close();
 
@@ -171,6 +173,7 @@ bool	COFile::open(std::string path, bool append, bool text)
 	mode[2] = '\0';
 
 	_F=fopen(path.c_str(), mode);
+	_FileName = path;
 
 	return _F!=NULL;
 }
@@ -198,9 +201,9 @@ void	COFile::flush()
 void		COFile::serialBuffer(uint8 *buf, uint len) throw(EWriteError)
 {
 	if(!_F)
-		throw	EFileNotOpened();
+		throw	EFileNotOpened(_FileName);
 	if(fwrite(buf, 1, len, _F) < len)
-		throw	EWriteError();
+		throw	EWriteError(_FileName);
 }
 // ======================================================================================================
 void		COFile::serialBit(bool &bit) throw(EWriteError)

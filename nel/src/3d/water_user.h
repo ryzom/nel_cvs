@@ -1,7 +1,7 @@
 /** \file water_user.h
  * class that implements the user interface for water
  *
- * $Id: water_user.h,v 1.1 2001/11/21 16:05:44 vizerie Exp $
+ * $Id: water_user.h,v 1.2 2002/02/13 17:57:30 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@ namespace NL3D
 class CWaterInstanceUser : public CInstanceUser, public UWaterInstance
 {
 public:		
+	CWaterInstanceUser(CScene *scene, IModel *trans) : CInstanceUser(scene, trans) {}
 	virtual uint32	getWaterHeightMapID() const;
 	virtual float	getHeightFactor() const;	
 	virtual float   getHeight(const NLMISC::CVector2f &pos);

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.31 2004/05/06 13:29:13 berenguier Exp $
+ * $Id: zone_lighter.cpp,v 1.32 2004/05/06 15:34:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,7 +108,7 @@ struct CInstanceGroupRef
 //=======================================================================================
 // load additionnal ig from a village (ryzom specific)
 static void loadIGFromVillage(const NLGEORGES::UFormElm *villageItem, const std::string &continentName,
-							  uint villageIndex, std::list<CInstanceGroupRef> &instanceGroups)
+							  uint villageIndex, std::list<CInstanceGroupRef> &instanceGroups, CConfigFile::CVar &additionalIgNames)
 {	
 	const NLGEORGES::UFormElm *igNamesItem;
 	if (! (villageItem->getNodeByName (&igNamesItem, "IgList") && igNamesItem) )
@@ -141,8 +141,20 @@ static void loadIGFromVillage(const NLGEORGES::UFormElm *villageItem, const std:
 			nlwarning("Ig name of ig #%d in the continent form %s, in village #%d is an empty string", l, continentName.c_str(), villageIndex);
 			continue;
 		}
-
+		// ensure .ig
 		igName = CFile::getFilenameWithoutExtension(igName) + ".ig";
+		
+		// verify that the ig is not already added (case of tr_water.ig in additional_igs)
+		for(uint igAdd= 0;igAdd<(uint)additionalIgNames.size();igAdd++)
+		{
+			if( strlwr(additionalIgNames.asString()) == strlwr(igName) )
+			{
+				nlwarning("Skipping Village Ig %s, cause already exist in additional ig", igName.c_str());
+				continue;
+			}
+		}
+
+		// add this ig
 		string nameLookup = CPath::lookup (igName, false, true);
 		if (!nameLookup.empty())
 		{		
@@ -181,8 +193,8 @@ static void loadIGFromVillage(const NLGEORGES::UFormElm *villageItem, const std:
 //=======================================================================================
 // load additionnal ig from a continent (ryzom specific)
 static void loadIGFromContinent(NLMISC::CConfigFile &parameter, std::list<CInstanceGroupRef> &instanceGroups,
-								const std::vector<std::string> &zoneNameArray
-							   )
+								const std::vector<std::string> &zoneNameArray,
+							    CConfigFile::CVar &additionalIgNames)
 {
 		
 	try
@@ -253,7 +265,7 @@ static void loadIGFromContinent(NLMISC::CConfigFile &parameter, std::list<CInsta
 					if (NLMISC::nlstricmp(CFile::getFilenameWithoutExtension(zoneNameArray[l]), zoneName) == 0)																  
 					{										
 						// ok, it is in the dependant zones
-						loadIGFromVillage(currVillage, continentName, k, instanceGroups);
+						loadIGFromVillage(currVillage, continentName, k, instanceGroups, additionalIgNames);
 						break;
 					}
 				}					
@@ -654,7 +666,7 @@ int main(int argc, char* argv[])
 					if (loadInstanceGroup)
 					{
 						// Ryzom specific : additionnal villages from a continent form
-						loadIGFromContinent(parameter, instanceGroup, zoneNameArray);
+						loadIGFromContinent(parameter, instanceGroup, zoneNameArray, additionnal_ig);
 					}
 				}
 

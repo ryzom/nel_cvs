@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.8 2001/10/11 16:42:45 besson Exp $
+ * $Id: time_nl.cpp,v 1.9 2001/11/27 11:15:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,9 +114,18 @@ TTicks CTime::getPerformanceTime ()
 	else
 		return 0;
 #else // NL_OS_WINDOWS
-	return 0;
+	unsigned long long int x;
+	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x) : : "eax", "edx");
+	return x;
 #endif // NL_OS_WINDOWS
 }
+/*
+#define GETTICKS(t) asm volatile ("push %%esi\n\t" "mov %0, %%esi" : : "r" (t)); \
+                      asm volatile ("push %eax\n\t" "push %edx"); \
+                      asm volatile ("rdtsc"); \
+                      asm volatile ("movl %eax, (%esi)\n\t" "movl %edx, 4(%esi)"); \
+                      asm volatile ("pop %edx\n\t" "pop %eax\n\t" "pop %esi"); 
+*/
 
 
 /*
@@ -131,9 +140,9 @@ double CTime::ticksToSecond (TTicks ticks)
 		return (double)(sint64)ticks/(double)ret.QuadPart;
 	}
 	else
-		return 0.0;
+		return double(ticks);
 #else // NL_OS_WINDOWS
-	return 0.0;
+	return double(ticks);
 #endif // NL_OS_WINDOWS
 }
 

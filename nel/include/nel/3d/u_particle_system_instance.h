@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.13 2003/12/05 11:08:43 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.14 2004/03/04 14:35:55 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -196,9 +196,12 @@ public:
 	   * - in world (identity matrix)
 	   * - local to the particle system (matrix of the particle system)
 	   * - local to the coord. sys. defined by the user matrix
-	   *	   	   
+	   *
+	   * NB : matrix is updated at next 'render'
 	   */
 	 virtual void	setUserMatrix(const NLMISC::CMatrix &userMat) = 0;
+	 // set the user matrix with instant update (is system present)
+	 virtual void	forceSetUserMatrix(const NLMISC::CMatrix &userMat) = 0;
 
 	 /** Force to instanciate the system resource even if not visible. Useful for 'spell like' effects that need accurate timing.
 	   * If not used, the fx would only start when it enters the camera, and thus could be late.
@@ -207,6 +210,14 @@ public:
 	   * \TODO : detect the 'SpellFX' flag of fx at loading to automate this ? (not useful for projectile, though, so it may be better to let the decision to the caller for now..)
 	   */
 	 virtual void   forceInstanciate() = 0;
+
+	 /** Set z-bias for all objects in the particle system (except for meshs). Works even is isPresent() returns false.
+	   * Value is in world coordinates.
+	   */
+	 virtual void	setZBias(float value) = 0;
+
+	 // debug : force to display all system bboxs
+	 static void forceDisplayBBox(bool on);
 
 };
 

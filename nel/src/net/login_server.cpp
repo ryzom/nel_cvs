@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.21 2003/01/03 16:51:22 lecroart Exp $
+ * $Id: login_server.cpp,v 1.22 2003/01/06 17:32:33 cado Exp $
  *
  */
 
@@ -288,6 +288,9 @@ void CLoginServer::init (CUdpSock &server, TDisconnectClientCallback dc)
 
 string CLoginServer::isValidCookie (const CLoginCookie &lc)
 {
+	if (AcceptInvalidCookie)
+		return "";
+
 	if (!lc.isValid())
 		return "The cookie is invalid";
 

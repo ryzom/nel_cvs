@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.15 2001/12/31 13:32:39 lecroart Exp $
+ * $Id: service_5.cpp,v 1.16 2002/01/14 17:51:17 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -516,7 +516,18 @@ sint IService5::main ()
 		// Initialize server parameters
 		//
 
+		// 1: get the port from the service application
 		_Port = IService5::_DefaultPort;
+
+		// 2: get the port from config file if in it
+		try
+		{
+			_Port = ConfigFile.getVar("Port").asInt();
+		}
+		catch ( EUnknownVar& )
+		{
+		}
+
 
 		getCustomParams();
 

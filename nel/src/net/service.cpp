@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.104 2001/12/28 17:06:52 lecroart Exp $
+ * $Id: service.cpp,v 1.105 2002/01/14 17:51:17 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -525,8 +525,19 @@ sint IService::main ()
 		// Initialize server parameters
 		//
 
+		// 1: get the port from the service application
 		_Port = IService::_DefaultPort;
 
+		// 2: get the port from config file if in it
+		try
+		{
+			_Port = ConfigFile.getVar("Port").asInt();
+		}
+		catch ( EUnknownVar& )
+		{
+		}
+
+		
 		getCustomParams();
 
 		// Load the recording state from the config file

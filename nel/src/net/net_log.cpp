@@ -1,7 +1,7 @@
 /** \file net_log.cpp
  * <File description>
  *
- * $Id: net_log.cpp,v 1.5 2000/12/13 14:38:14 cado Exp $
+ * $Id: net_log.cpp,v 1.6 2000/12/13 15:15:11 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,7 @@ void CNetLog::output( const char *srchost, uint8 msgnum,
 {
 	char line [1024];
 	smprintf( line, 1024, "@@%"NL_I64"d@%s@%hu@%s@%s@%s@%u@", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
-			 srchost, (uint16)msgnum, _LocalHostAndService.c_str(), desthost, msgname, msgsize );
+			 srchost, (uint16)msgnum, _LocalHostAndService->c_str(), desthost, msgname, msgsize );
 
 	displayRawNL( line );
 }
@@ -69,7 +69,8 @@ void CNetLog::output( const char *srchost, uint8 msgnum,
 void CNetLog::input( const char *srchost, uint8 msgnum, const char *desthost )
 {
 	char line [1024];
-	smprintf( line, 1024, "##%"NL_I64"d#%s#%hu#%s#%s#", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0), srchost, msgnum, _LocalHostAndService.c_str(), desthost );
+	smprintf( line, 1024, "##%"NL_I64"d#%s#%hu#%s#%s#", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
+			  srchost, msgnum, _LocalHostAndService->c_str(), desthost );
 	displayRawNL( line );
 }
 

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.13 2002/08/07 07:46:21 lecroart Exp $
+ * $Id: coarse_mesh_manager.h,v 1.14 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,15 +39,14 @@ namespace NL3D
 
 // ***************************************************************************
 
-#define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_SHIFT	3
-#define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_MASK	(NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY-1)
-#define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY		(1<<NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_SHIFT)
-#define NL3D_COARSEMESH_VERTEXBUFFER_RESERVE			10
+// Number of vertices that can be rendered in one pass
+#define NL3D_COARSEMESH_VERTEXBUFFER_SIZE				2000
+// Number of trianges that can be rendered in one pass
+#define NL3D_COARSEMESH_TRIANGLE_SIZE					1000
 // The vertex Format used by the coarseMesh manager
 #define NL3D_COARSEMESH_VERTEX_FORMAT_MGR				(CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag|CVertexBuffer::PrimaryColorFlag)
 // The Vertex Format used for export CoarseMesh. MUST NOT HAVE color (important for material coloring/alphaTrans)
 #define NL3D_COARSEMESH_VERTEX_FORMAT_EXPORT			(CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag)
-#define NL3D_COARSEMESH_PRIMITIVE_BLOCK_SIZE			100
 
 // ***************************************************************************
 
@@ -55,9 +54,6 @@ class CMeshGeom;
 class CTransformShape;
 class CTextureFile;
 
-// ***************************************************************************
-
-const NLMISC::CClassId		CoarseMeshManagerId=NLMISC::CClassId(0x77554f87, 0x5bb373d8);
 
 // ***************************************************************************
 
@@ -65,17 +61,6 @@ const NLMISC::CClassId		CoarseMeshManagerId=NLMISC::CClassId(0x77554f87, 0x5bb37
  * Management of coarse meshes.
  *
  * This container will render meshes with very low polygon count efficiently.
- *
- * Coarse meshes are merged in render passes. They are inserted in the render pass depending there
- * number of vertices, with a granularity (NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY).
- *
- * If NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY is 8, all meshes with 1 to 7 vertices will be rendered
- * at the same time using the same vertex buffer, the same material and the same matrix.
- * Then, meshes with 8 to 15 vertices will be rendered at the same time. etc..
- *
- * Vertices are softly transformed in world space at the "setMatrixMesh" call.
- *
- * Vertices get a uniform color per instance at the "setColorMesh" call.
  *
  * All coarse meshes must use a common vertex format. It is a pos + UV vertex format.
  * (NL3D_COARSEMESH_VERTEX_FORMAT_EXPORT)
@@ -93,250 +78,60 @@ const NLMISC::CClassId		CoarseMeshManagerId=NLMISC::CClassId(0x77554f87, 0x5bb37
  *
  * The manager must have been setuped with the common texture.
  *
- * NB: the manager is not renderable, because CoarseMeshManager must be rendered at end of frame in a direct call 
- *	by CRenderTrav::traverse(), after coarse mesh instances added/removed in
- *
- * \author Cyril 'Hulud' Corvazier
+ * \author Cyril 'Hulud' Corvazier, Lionel Berenguier
  * \author Nevrax France
  * \date 2001
  */
-class CCoarseMeshManager : public CTransform
+class CCoarseMeshManager
 {
 public:
-
-	enum
-	{
-		CantAddCoarseMesh = 0xffffffff
-	};
 
 	/// Constructor
 	CCoarseMeshManager ();
 
 	/// Set texture file to use with this coarse mesh
-	void setTextureFile (const char* file);
+	void		setTextureFile (const char* file);
 
 	/**
 	  * Add a coarse mesh in the manager. If an error occured, it returns CantAddCoarseMesh.
-	  * Error can be too much vertex, wrong vertex format.
+	  *	\param vBuffer the VertexBuffer pre-transformed / Colored. Size MUST be numVertices*NL3D_COARSEMESH_VERTEX_FORMAT_MGR
+	  *	\param indexBuffer containing triangles that will be inserted.
+	  *	\return false if the mesh can't be added to this pass BECAUSE OF TOO MANY VERTICES or TOO MANY PRIMITIVES reason
+	  *	You may call flushRender(), then restart a block. 
+	  *	NB: if numVertices>NL3D_COARSEMESH_VERTEXBUFFER_SIZE or if numTriangles>NL3D_COARSEMESH_TRIANGLE_SIZE, it will always
+	  *	return false
 	  */
-	uint64 addMesh (const CMeshGeom& geom);
-
-	/**
-	  * Remove a coarse mesh in the manager
-	  */
-	void removeMesh (uint64 id);
-
-	/**
-	  * Set the matrix of a mesh
-	  */
-	void setMatrixMesh (uint64 id, const CMeshGeom& geom, const CMatrix& matrix);
-
-	/**
-	  * Set color of a mesh
-	  */
-	void setColorMesh (uint64 id, const CMeshGeom& geom, NLMISC::CRGBA color);
+	bool		addMesh (uint numVertices, const uint8 *vBuffer, uint numTris, const uint32 *indexBuffer);
 
 	/**
 	  * Render the container
 	  */
-	void render (IDriver *drv);
-
-	/**
-	  * Register class id.
-	  */
-	static void		registerBasic();
+	void		flushRender (IDriver *drv);
 
 	/**
 	  *	Get material of the container. For rendering purpose only.
 	  */
-	CMaterial		&getMaterial() {return _Material;}
+	CMaterial	&getMaterial() {return _Material;}
+
+	/// Get the VertexSize of the MGR format
+	uint		getVertexSize() const {return _VBuffer.getVertexSize();}
+	uint		getUVOff() const {return (uint)_VBuffer.getTexCoordOff(0);}
+	uint		getColorOff() const {return (uint)_VBuffer.getColorOff();}
 
 private:
 
-	/**
-	  * Build a manager id
-	  */
-	static uint64 buildId (uint32 renderPassId, uint32 renderPassMeshId)
-	{
-		return ((uint64)renderPassId|(((uint64)renderPassMeshId)<<32));
-	}
-
-	/**
-	  * Get the render pass id
-	  */
-	static uint32 getRenderPassId (uint64 id)
-	{
-		return (uint32)(id&0xFFFFFFFF);
-	}
-
-	/**
-	  * Get the render pass mesh id
-	  */
-	static uint32 getRenderPassMeshId (uint64 id)
-	{
-		return (uint32)(id>>32);
-	}
-
-	class CRenderPass
-	{
-	public:
-		enum
-		{
-			CantAddMesh = 0xffffffff
-		};
-
-		/**
-		  * Init
-		  */
-		void init (uint blockSize);
-
-		/**
-		  * Add a coarse mesh in the render pass
-		  */
-		uint32 addMesh (const CMeshGeom& geom);
-
-		/**
-		  * Get a tri count of a mesh.
-		  */
-		uint	getTriCount (const CMeshGeom& geom);
-
-		/**
-		  * Remove a coarse mesh in the manager
-		  */
-		void removeMesh (uint32 id);
-
-		/**
-		  * Set the matrix of a mesh
-		  */
-		void setMatrixMesh (uint32 id, const CMeshGeom& geom, const CMatrix& matrix);
-
-		/**
-		  * Set the color of a mesh
-		  */
-		void setColorMesh (uint32 id, uint nVertices, NLMISC::CRGBA color);
-
-		/**
-		  * Render the container
-		  */
-		void render (IDriver *drv, CMaterial& mat);
-	private:
-
-		/**
-		  * Build a mesh id
-		  */
-		static uint32 buildId (uint16 primitiveBlockId, uint16 vertexBufferId)
-		{
-			return ((uint32)primitiveBlockId|(((uint32)vertexBufferId)<<16));
-		}
-
-		/**
-		  * Get the primitive block id
-		  */
-		static uint16 getPrimitiveblockId (uint32 id)
-		{
-			return (uint16)(id & 0xFFFF);
-		}
-
-		/**
-		  * Get the vertexbuffer id
-		  */
-		static uint16 getVertexBufferId (uint32 id)
-		{
-			return (uint16)(id>>16);
-		}
-
-		/**
-		  * Primitive block info
-		  */
-		class CPrimitiveBlockInfo
-		{
-		public:
-			enum
-			{
-				Failed = 0,
-				Success = 1,
-			};
-
-			/**
-			  * Add a coarse mesh in the primitive block. Return CPrimitiveBlockInfo::Failed is not enought space.
-			  */
-			uint	addMesh (uint16 vertexBufferId, const CMeshGeom& geom, uint32 firstVertexIndex, uint triCount);
-
-			/**
-			  * Add a coarse mesh from the primitive block.
-			  */
-			void removeMesh (uint16 vertexBufferId);
-
-			/// The mesh info in the block
-			class CMeshInfo
-			{
-			public:
-				/// Ctor
-				CMeshInfo (uint offset, uint length, uint16 vertexBufferId)
-				{
-					Offset=offset;
-					Length=length;
-					VertexBufferId=vertexBufferId;
-				}
-
-				/// Mesh first triangle offset
-				uint	Offset;
-
-				/// Mesh triangle list length
-				uint	Length;
-
-				/// Vertex buffer Id
-				uint16	VertexBufferId;
-			};
-
-			/// Init
-			void init (uint size);
-
-			/// The primitive block
-			CPrimitiveBlock					PrimitiveBlock;
-
-			/// The mesh id list
-			std::list< CMeshInfo >			MeshIdList;
-		};
-
-		uint								VBlockSize;
-		CVertexBuffer						VBuffer;
-		std::list< uint16 >					FreeVBlock;
-		std::list< CPrimitiveBlockInfo >	PrimitiveBlockInfoList;
-	};
-
-	// Indexes allocation
-	typedef std::map< uint, CRenderPass >	TRenderingPassMap;
-	TRenderingPassMap						_RenderPass;
+	CVertexBuffer						_VBuffer;
+	std::vector<uint32>					_Triangles;
+	uint								_CurrentNumVertices;
+	uint								_CurrentNumTriangles;
 
 	// The unique texture used by all the coarse object inserted in the container.
-	CSmartPtr<CTextureFile>					_Texture;
+	CSmartPtr<CTextureFile>				_Texture;
 
 	// The unique material used by all the coarse object inserted in the container.
-	CMaterial								_Material;
-
-	static IModel	*creator() {return new CCoarseMeshManager;}
+	CMaterial							_Material;
 };
 
-// ***************************************************************************
-
-/**
- * This observer:
- * - return false at clip.
- *	MeshMultiLod rendering
- */
-class	CCoarseMeshClipObs : public CTransformClipObs
-{
-public:
-
-	/// From CTransformClipObs
-	// @{
-	virtual	bool	clip(IBaseClipObs *caller);
-	// @}
-
-	// The creator.
-	static IObs	*creator() {return new CCoarseMeshClipObs;}
-};
 
 } // NL3D
 

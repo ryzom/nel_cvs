@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.92 2003/03/11 09:41:14 berenguier Exp $
+ * $Id: scene.cpp,v 1.93 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,8 +71,7 @@
 using namespace std;
 using namespace NLMISC;
 
-#define NL3D_SCENE_STATIC_COARSE_MANAGER_TEXTURE	"nel_coarse_texture.tga"
-#define NL3D_SCENE_DYNAMIC_COARSE_MANAGER_TEXTURE	NL3D_SCENE_STATIC_COARSE_MANAGER_TEXTURE
+#define NL3D_SCENE_COARSE_MANAGER_TEXTURE	"nel_coarse_texture.tga"
 
 #define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dInst )
 #define NL3D_MEM_MOT						NL_ALLOC_CONTEXT( 3dMot )
@@ -104,7 +103,6 @@ void	CScene::registerBasics()
 	CSkeletonModel::registerBasic();
 	CParticleSystemModel::registerBasic() ;
 	CMeshMultiLodInstance::registerBasic();
-	CCoarseMeshManager::registerBasic();
 	CCluster::registerBasic();
 	CFlareModel::registerBasic();
 	CSkipModel::registerBasic();
@@ -134,9 +132,6 @@ CScene::CScene()
 
 	_ShapeBank = NULL;
 
-	_StaticCoarseMeshManager = NULL;
-	_DynamicCoarseMeshManager = NULL;
-
 	Root= NULL;
 	SkipModelRoot= NULL;
 	SonsOfAncestorSkeletonModelGroup= NULL;
@@ -165,6 +160,10 @@ CScene::CScene()
 	_FilterRenderFlags= ~0;
 
 	_NextRenderProfile= false;
+
+	// Init default _CoarseMeshManager
+	_CoarseMeshManager= new CCoarseMeshManager;
+	_CoarseMeshManager->setTextureFile (NL3D_SCENE_COARSE_MANAGER_TEXTURE);
 }
 // ***************************************************************************
 void	CScene::release()
@@ -237,6 +236,13 @@ void	CScene::release()
 	// reset the _LodCharacterManager
 	if(_LodCharacterManager)
 		_LodCharacterManager->reset();
+
+	// delete the coarseMeshManager
+	if(_CoarseMeshManager)
+	{
+		delete _CoarseMeshManager;
+		_CoarseMeshManager= NULL;
+	}
 }
 // ***************************************************************************
 CScene::~CScene()
@@ -312,17 +318,6 @@ void	CScene::initDefaultRoots()
 	RenderTrav->unlink(NULL, LightModelRoot);
 	// inform the LightTrav of this model.
 	LightTrav->setLightModelRoot(LightModelRoot);
-}
-
-// ***************************************************************************
-void	CScene::initCoarseMeshManager ()
-{
-	_StaticCoarseMeshManager=(CCoarseMeshManager*)createModel (CoarseMeshManagerId);
-	_DynamicCoarseMeshManager=(CCoarseMeshManager*)createModel (CoarseMeshManagerId);
-
-	// Init default texture files
-	_StaticCoarseMeshManager->setTextureFile (NL3D_SCENE_STATIC_COARSE_MANAGER_TEXTURE);
-	_DynamicCoarseMeshManager->setTextureFile (NL3D_SCENE_DYNAMIC_COARSE_MANAGER_TEXTURE);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.34 2003/03/11 09:41:14 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.35 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,31 +191,13 @@ float			CSceneUser::getGroupNbFaceAsked (const std::string &group) const
 
 // ***************************************************************************
 
-void CSceneUser::setStaticCoarseMeshManagerTexture (const char *sPath)
+void CSceneUser::setCoarseMeshManagerTexture (const char *sPath)
 {
 	NL3D_MEM_LOD
 	NL3D_HAUTO_LOAD_LOD;
 
 	// Get the manager
-	CCoarseMeshManager *manager=_Scene.getStaticCoarseMeshManager ();
-
-	// Does it exist ?
-	if (manager)
-	{
-		// Set the texture
-		manager->setTextureFile (sPath);
-	}
-}
-
-// ***************************************************************************
-
-void CSceneUser::setDynamicCoarseMeshManagerTexture (const char *sPath)
-{
-	NL3D_MEM_LOD
-	NL3D_HAUTO_LOAD_LOD;
-
-	// Get the manager
-	CCoarseMeshManager *manager=_Scene.getDynamicCoarseMeshManager ();
+	CCoarseMeshManager *manager=_Scene.getCoarseMeshManager ();
 
 	// Does it exist ?
 	if (manager)
@@ -939,9 +921,6 @@ CSceneUser::CSceneUser(CDriverUser *drv)
 
 	// Init the world instance group
 	_Scene.initGlobalnstanceGroup();
-
-	// Init coarse mesh manager
-	_Scene.initCoarseMeshManager ();
 
 	// init QuadGridClipManager
 	_Scene.initQuadGridClipManager ();

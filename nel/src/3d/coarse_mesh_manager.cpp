@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.14 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.15 2003/03/13 14:15:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,32 +30,22 @@
 #include "3d/texture_file.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "3d/clip_trav.h"
+#include "nel/misc/fast_mem.h"
 
+
+using namespace NLMISC;
 
 namespace NL3D 
 {
 
 
-H_AUTO_DECL( NL3D_StaticLod_AddDelMesh )
-H_AUTO_DECL( NL3D_StaticLod_UpdateMesh )
+H_AUTO_DECL( NL3D_StaticLod_AddMesh )
 
-
-// ***************************************************************************
-
-void	CCoarseMeshManager::registerBasic()
-{
-	CMOT::registerModel (CoarseMeshManagerId, TransformId, CCoarseMeshManager::creator);
-	CMOT::registerObs (ClipTravId, CoarseMeshManagerId, CCoarseMeshClipObs::creator);
-}
 
 // ***************************************************************************
 
 CCoarseMeshManager::CCoarseMeshManager()
 {
-	// Set as opaque
-	setTransparency (false);
-	setOpacity (true);
-
 	// ** Init texture
 
 	_Texture=new CTextureFile ();
@@ -73,6 +63,13 @@ CCoarseMeshManager::CCoarseMeshManager()
 
 	// Texture
 	_Material.setTexture (0, _Texture);
+
+	// ** Init Geometry
+	_VBuffer.setVertexFormat(NL3D_COARSEMESH_VERTEX_FORMAT_MGR);
+	_VBuffer.setNumVertices(NL3D_COARSEMESH_VERTEXBUFFER_SIZE);
+	_Triangles.resize(NL3D_COARSEMESH_TRIANGLE_SIZE*3);
+	_CurrentNumVertices= 0;
+	_CurrentNumTriangles= 0;
 }
 
 // ***************************************************************************
@@ -84,544 +81,67 @@ void CCoarseMeshManager::setTextureFile (const char* file)
 
 // ***************************************************************************
 
-uint64 CCoarseMeshManager::addMesh (const CMeshGeom& geom)
+bool CCoarseMeshManager::addMesh (uint numVertices, const uint8 *vBuffer, uint numTris, const uint32 *indexBuffer)
 {
-	H_AUTO_USE( NL3D_StaticLod_AddDelMesh );
+	H_AUTO_USE( NL3D_StaticLod_AddMesh );
 
-	// Get vertex buffer ref
-	const CVertexBuffer &vertexBuffer=geom.getVertexBuffer();
+	// if 0 mesh, quit
+	if(numTris==0 || numVertices==0)
+		return true;
 
-	// *** Find the good render pass
+	// check vertex size
+	if(_CurrentNumVertices + numVertices > NL3D_COARSEMESH_VERTEXBUFFER_SIZE)
+		return false;
 
-	// Normalized number of vertex
-	uint32 renderPass = vertexBuffer.getNumVertices () / NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY;
-	if (NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_MASK&vertexBuffer.getNumVertices ())
-		renderPass++;
+	// check tri size
+	if(_CurrentNumTriangles + numTris> NL3D_COARSEMESH_TRIANGLE_SIZE)
+		return false;
+	
+	// Copy Vertices to VBuffer
+	uint	baseVertex= _CurrentNumVertices;
+	CFastMem::memcpy(_VBuffer.getVertexCoordPointer(baseVertex), vBuffer, numVertices*_VBuffer.getVertexSize());
+	// next
+	_CurrentNumVertices+= numVertices;
 
-	// Look for the good rendering pass
-	TRenderingPassMap::iterator ite=_RenderPass.find (renderPass);
-
-	// Not found ?
-	if ( ite==_RenderPass.end() )
+	// Copy tris to triangles, adding baseVertex to index
+	uint32			*triDst= &_Triangles[_CurrentNumTriangles*3];
+	const uint32	*triSrc= indexBuffer;
+	uint	numIdx= numTris*3;
+	// NB: for the majority of CoarseMesh (4 faces==48 bytes of indices), not interressant to use CFastMem::precache()
+	for(;numIdx>0;numIdx--, triSrc++, triDst++)
 	{
-		// Add the rendering pass
-		_RenderPass.insert (TRenderingPassMap::value_type (renderPass, CRenderPass()));
-		ite=_RenderPass.find (renderPass);
-		ite->second.init (renderPass*NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY);
+		*triDst= *triSrc + baseVertex;
 	}
+	// next
+	_CurrentNumTriangles+= numTris;
 
-	// Ok, add the mesh
-	uint32 id=ite->second.addMesh (geom);
-	if (id==CRenderPass::CantAddMesh)
-		return CantAddCoarseMesh;
-	else
-		// Return an id
-		return buildId (renderPass, id);
+	return true;
 }
 
 // ***************************************************************************
 
-void CCoarseMeshManager::removeMesh (uint64 id)
-{
-	H_AUTO_USE( NL3D_StaticLod_AddDelMesh );
-
-	// Get the render pass id
-	uint32 renderPass = getRenderPassId (id);
-
-	// Find the render pass
-	TRenderingPassMap::iterator ite=_RenderPass.find (renderPass);
-
-	// Not found ?
-	nlassert ( ite!=_RenderPass.end() );
-
-	// remove it
-	ite->second.removeMesh (getRenderPassMeshId (id));
-}
-
-// ***************************************************************************
-
-void CCoarseMeshManager::setMatrixMesh (uint64 id, const CMeshGeom& geom, const CMatrix& matrix)
-{
-	H_AUTO_USE( NL3D_StaticLod_UpdateMesh );
-
-	// Get the render pass id
-	uint32 renderPass = getRenderPassId (id);
-
-	// Find the render pass
-	TRenderingPassMap::iterator ite=_RenderPass.find (renderPass);
-
-	// Not found ?
-	nlassert ( ite!=_RenderPass.end() );
-
-	// remove it
-	ite->second.setMatrixMesh (getRenderPassMeshId (id), geom, matrix);
-}
-
-// ***************************************************************************
-
-void CCoarseMeshManager::setColorMesh (uint64 id, const CMeshGeom& geom, NLMISC::CRGBA color)
-{
-	H_AUTO_USE( NL3D_StaticLod_UpdateMesh );
-
-	// Get the render pass id
-	uint32 renderPass = getRenderPassId (id);
-
-	// Find the render pass
-	TRenderingPassMap::iterator ite=_RenderPass.find (renderPass);
-
-	// Not found ?
-	nlassert ( ite!=_RenderPass.end() );
-
-	// remove it
-	ite->second.setColorMesh (getRenderPassMeshId (id), geom.getVertexBuffer().getNumVertices(), color);
-}
-
-// ***************************************************************************
-
-void CCoarseMeshManager::render (IDriver *drv)
+void CCoarseMeshManager::flushRender (IDriver *drv)
 {
 	H_AUTO( NL3D_StaticLod_Render );
 
-	// Set Ident matrix
-	drv->setupModelMatrix (CMatrix::Identity);
-
-	// Render each render pass
-	TRenderingPassMap::iterator ite=_RenderPass.begin ();
-	while (ite!=_RenderPass.end())
+	// If not empty, render
+	if(_CurrentNumVertices && _CurrentNumTriangles)
 	{
-		// Render the rendering pass
-		ite->second.render (drv, _Material);
+		// Set Ident matrix
+		drv->setupModelMatrix (CMatrix::Identity);
 
-		// Next render pass
-		ite++;
-	}
-}
+		// Set VB
+		drv->activeVertexBuffer(_VBuffer);
 
-// ***************************************************************************
-
-void CCoarseMeshManager::CRenderPass::init (uint blockSize)
-{
-	// Block size
-	VBlockSize = blockSize;
-
-	// Set vertex type
-	VBuffer.setVertexFormat (NL3D_COARSEMESH_VERTEX_FORMAT_MGR);
-
-	// Reserve the vertex buffer
-	VBuffer.reserve (NL3D_COARSEMESH_VERTEXBUFFER_RESERVE*VBlockSize);
-}
-
-// ***************************************************************************
-
-uint32 CCoarseMeshManager::CRenderPass::addMesh (const CMeshGeom& geom)
-{
-	// Is there a free vertex buffer ?
-	uint16 vertexBufferId;
-	std::list< uint16 >::iterator iteBegin=FreeVBlock.begin();
-	if (iteBegin != FreeVBlock.end())
-	{
-		// Get a free id
-		vertexBufferId=*iteBegin;
-		FreeVBlock.erase (iteBegin);
-	}
-	else
-	{
-		// Number of vertex in the vertex buffer
-		uint vertexCount=VBuffer.getNumVertices ();
-
-		// Is the vertex buffer filled ?
-		if (VBuffer.capacity () == vertexCount)
-		{
-			// Double it's capacity
-			VBuffer.reserve (vertexCount*2);
-		}
-
-		// *** Make a new block
-
-		// Resize the vertex buffer
-		VBuffer.setNumVertices (vertexCount+VBlockSize);
-
-		// Set mesh id
-		vertexBufferId = vertexCount / VBlockSize;
+		// render
+		drv->renderTriangles(_Material, &_Triangles[0], _CurrentNumTriangles);
 	}
 
-	// *** Copy the vertices
-
-	// Src vertex buffer
-	const CVertexBuffer &vbSrc=geom.getVertexBuffer();
-
-	// Check the vertex format
-	nlassert (vbSrc.getVertexFormat() & (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag) );
-
-	// Number of source vertex
-	uint32 nbVSrc = vbSrc.getNumVertices();
-	nlassert (nbVSrc<=VBlockSize);
-
-	// First vertex index
-	uint firstVertex=vertexBufferId*VBlockSize;
-
-	// Copy vector
-	const void *vSrc = vbSrc.getVertexCoordPointer (0);
-	void *vDest = VBuffer.getVertexCoordPointer (firstVertex);
-	
-	// Copy it
-	for(uint i=0; i<nbVSrc;i++)
-	{
-		CVector	&dstPos= *(CVector*)vDest;
-		CUV		&dstUV= *(CUV*) ((uint8*)vDest + VBuffer.getTexCoordOff() );
-		CRGBA	&dstRGBA= *(CRGBA*) ((uint8*)vDest + VBuffer.getColorOff() );
-		CVector	&srcPos= *(CVector*)vSrc;
-		CUV		&srcUV= *(CUV*) ((uint8*)vSrc + VBuffer.getTexCoordOff() );
-
-		// copy color/uv
-		dstPos= srcPos;
-		dstUV= srcUV;
-		// init color to full white
-		dstRGBA= CRGBA::White;
-
-		// next
-		vSrc= (uint8*)vSrc + vbSrc.getVertexSize();
-		vDest= (uint8*)vDest + VBuffer.getVertexSize();
-	}
-
-	// *** Setup primitives indexes
-
-	// Get number of tri in this geom
-	uint triCount=getTriCount (geom);
-
-	// Try to add the primitive in a primitive blocks
-	bool added=false;
-	uint16 primitiveBlockId=0;
-	std::list< CPrimitiveBlockInfo >::iterator ite=PrimitiveBlockInfoList.begin();
-	while (ite!=PrimitiveBlockInfoList.end())
-	{
-		// Add it
-		if ( (ite->addMesh (vertexBufferId, geom, firstVertex, triCount)) != CPrimitiveBlockInfo::Failed )
-		{
-			added=true;
-			break;
-		}
-
-		// Next primitive block
-		ite++;
-		primitiveBlockId++;
-	}
-
-	// Can't be added ?
-	if (ite==PrimitiveBlockInfoList.end())
-	{
-		// Add a primitive block
-		PrimitiveBlockInfoList.push_back (CPrimitiveBlockInfo());
-		ite=PrimitiveBlockInfoList.end();
-		ite--;
-
-		// Resize it
-		ite->init (NL3D_COARSEMESH_PRIMITIVE_BLOCK_SIZE);
-
-		// Add the mesh
-		if (ite->addMesh (vertexBufferId, geom, firstVertex, triCount)!=CPrimitiveBlockInfo::Failed)
-			added=true;
-	}
-
-	// Can be added ?
-	if (!added)
-		// Return error
-		return CantAddMesh;
-
-	// Return an id
-	return buildId (primitiveBlockId, vertexBufferId);
+	// reset
+	_CurrentNumVertices= 0;
+	_CurrentNumTriangles= 0;
 }
 
-// ***************************************************************************
 
-uint CCoarseMeshManager::CRenderPass::getTriCount (const CMeshGeom& geom)
-{
-	// Check count
-	uint count = 0;
-
-	// Count number of triangles
-	uint numMatrixBlock=geom.getNbMatrixBlock();
-	uint matrixBlock;
-	for (matrixBlock=0; matrixBlock<numMatrixBlock; matrixBlock++)
-	{
-		// One render pass
-		uint numRenderPass=geom.getNbRdrPass (matrixBlock);
-		uint renderPass;
-		for (renderPass=0; renderPass<numRenderPass; renderPass++)
-		{
-			// Get the render pass
-			const CPrimitiveBlock &pBlock=geom.getRdrPassPrimitiveBlock (matrixBlock, renderPass);
-
-			// Check there is enought room to insert this primitives
-			uint renderPassNumTri=pBlock.getNumTri ();
-			count+=renderPassNumTri;
-		}
-	}
-
-	// Return count
-	return count;
-}
-
-// ***************************************************************************
-
-void CCoarseMeshManager::CRenderPass::removeMesh (uint32 id)
-{
-	// Get ids
-	uint16 primitiveBlockId=getPrimitiveblockId (id);
-	uint16 vertexBufferId=getVertexBufferId (id);
-
-	// *** Free the vertex buffer
-	FreeVBlock.push_back (vertexBufferId);
-
-	// *** Remove the primitive block
-
-	// Find the primitive block
-	std::list< CPrimitiveBlockInfo >::iterator ite=PrimitiveBlockInfoList.begin();
-	for (uint i=0; i<primitiveBlockId; i++)
-		ite++;
-
-	// Some checks
-	nlassert (ite!=PrimitiveBlockInfoList.end());
-
-	// Remove from there
-	ite->removeMesh (vertexBufferId);
-}
-
-// ***************************************************************************
-
-void CCoarseMeshManager::CRenderPass::setMatrixMesh (uint32 id, const CMeshGeom& geom, const CMatrix& matrix)
-{
-	// Is there a free vertex buffer ?
-	uint16 vertexBufferId=getVertexBufferId (id);
-
-	// *** Transform the vertices
-
-	// Src vertex buffer
-	const CVertexBuffer &vbSrc=geom.getVertexBuffer();
-
-	// Check the vertex format
-	nlassert (vbSrc.getVertexFormat() & (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag) );
-
-	// Number of source vertices
-	uint32 nbVSrc = vbSrc.getNumVertices();
-	nlassert (nbVSrc<=VBlockSize);
-	//int normalOffset = vbSrc.getNormalOff();
-
-	// Vertex size
-	uint vtSrcSize=vbSrc.getVertexSize ();
-	uint vtDstSize=VBuffer.getVertexSize ();
-
-	// Copy vector
-	const uint8 *vSrc = (const uint8 *)vbSrc.getVertexCoordPointer (0);
-	uint8 *vDest = (uint8 *)VBuffer.getVertexCoordPointer (vertexBufferId*VBlockSize);
-	
-	// Transform it
-	for (uint i=0; i<nbVSrc; i++)
-	{
-		// Transform position
-		*(CVector*)vDest = matrix.mulPoint (*(const CVector*)vSrc);
-
-		// Transform normal
-//		*(CVector*)(vDest+normalOffset) = matrix.mulVector (*(const CVector*)(vSrc+normalOffset));
-
-		// Next point
-		vSrc+=vtSrcSize;
-		vDest+=vtDstSize;
-	}
-}
-
-// ***************************************************************************
-
-void CCoarseMeshManager::CRenderPass::setColorMesh (uint32 id, uint nVertices, CRGBA color)
-{
-	// Is there a free vertex buffer ?
-	uint16 vertexBufferId=getVertexBufferId (id);
-
-	// *** Copy color to vertices
-
-	// Number of source vertices
-	uint32 nbVSrc = nVertices;
-	nlassert (nbVSrc<=VBlockSize);
-
-	// Vertex size
-	uint vtDstSize=VBuffer.getVertexSize ();
-
-	// Copy vector
-	uint8 *vDest = (uint8 *)VBuffer.getVertexCoordPointer (vertexBufferId*VBlockSize);
-	vDest+= VBuffer.getColorOff();
-	
-	// Transform it
-	for (uint i=0; i<nbVSrc; i++)
-	{
-		// Transform position
-		*(CRGBA*)vDest = color;
-
-		// Next point
-		vDest+=vtDstSize;
-	}
-}
-
-// ***************************************************************************
-
-void CCoarseMeshManager::CRenderPass::render (IDriver *drv, CMaterial& mat)
-{
-	// Active the vertex buffer
-	drv->activeVertexBuffer (VBuffer);
-
-	// For each primitive block
-	std::list< CPrimitiveBlockInfo >::iterator ite=PrimitiveBlockInfoList.begin();
-	while (ite!=PrimitiveBlockInfoList.end())
-	{
-		// Render it
-		drv->render (ite->PrimitiveBlock, mat);
-
-		// Next primitive block
-		ite++;
-	}
-}
-
-// ***************************************************************************
-
-uint CCoarseMeshManager::CRenderPass::CPrimitiveBlockInfo::addMesh (uint16 vertexBufferId, const CMeshGeom& geom, uint32 firstVertexIndex, uint triCount)
-{
-	// Get num tri in the primitive block
-	uint oldNumTri=PrimitiveBlock.getNumTri();
-
-	// Check capacity
-	if ( triCount <= (PrimitiveBlock.capacityTri()-oldNumTri) )
-	{
-#ifdef NL_DEBUG
-		// Check count
-		uint checkCount = 0;
-#endif // NL_DEBUG
-
-		// Resize pblock
-		PrimitiveBlock.setNumTri (oldNumTri+triCount);
-
-		// Destination pointer 
-		uint32 *pTriDest=PrimitiveBlock.getTriPointer ()+3*oldNumTri;
-
-		// First index for the object
-		uint firstIndex=firstVertexIndex;
-
-		// Count number of triangles
-		uint numMatrixBlock=geom.getNbMatrixBlock();
-		uint matrixBlock;
-		for (matrixBlock=0; matrixBlock<numMatrixBlock; matrixBlock++)
-		{
-			// One render pass
-			uint numRenderPass=geom.getNbRdrPass (matrixBlock);
-			uint renderPass;
-			for (renderPass=0; renderPass<numRenderPass; renderPass++)
-			{
-				// Get the render pass
-				const CPrimitiveBlock &pBlock=geom.getRdrPassPrimitiveBlock (matrixBlock, renderPass);
-
-				// Check there is enought room to insert this primitives
-				uint renderPassNumIndex=3*pBlock.getNumTri ();
-#ifdef NL_DEBUG
-				checkCount+=pBlock.getNumTri ();
-#endif // NL_DEBUG
-
-				// Tri pointer
-				const uint32 *pTriSrc=pBlock.getTriPointer ();
-
-				// Insert and remap indexes
-				for (uint index=0; index<renderPassNumIndex; index++)
-				{
-					// Copy and remap the vertex indexes
-					*pTriDest=pTriSrc[index]+firstIndex;
-					pTriDest++;
-				}
-			}
-		}
-
-#ifdef NL_DEBUG
-		// Checks
-		nlassert (checkCount==triCount);
-#endif // NL_DEBUG
-
-		// Add a mesh info in the list
-		MeshIdList.push_back (CMeshInfo (oldNumTri, triCount, vertexBufferId));
-
-		return Success;
-	}
-	else
-		return Failed;
-}
-
-// ***************************************************************************
-
-void CCoarseMeshManager::CRenderPass::CPrimitiveBlockInfo::removeMesh (uint16 vertexBufferId)
-{
-	// Get mesh info
-	std::list< CMeshInfo >::iterator ite=MeshIdList.begin();
-	while (ite!=MeshIdList.end())
-	{
-		// Good geom ?
-		if (ite->VertexBufferId == vertexBufferId)
-		{
-			// Remove indexes of this primitive
-			uint numIndexLeft=(PrimitiveBlock.getNumTri()-(ite->Offset+ite->Length))*3;
-
-			// Source triangles
-			const uint32 *pTriSrc=PrimitiveBlock.getTriPointer ()+3*(ite->Offset+ite->Length);
-
-			// Destination triangles
-			uint32 *pTriDest=PrimitiveBlock.getTriPointer ()+3*ite->Offset;
-
-			// Copy indexes
-			for (uint index=0; index<numIndexLeft; index++)
-			{
-				pTriDest[index]=pTriSrc[index];
-			}
-
-			// Resize primitive block
-			PrimitiveBlock.setNumTri (PrimitiveBlock.getNumTri()-ite->Length);
-
-			// Backup iterator
-			std::list< CMeshInfo >::iterator iteOther=ite;
-
-			// Patch offset for each others meshes in the primitive block
-			while (iteOther!=MeshIdList.end())
-			{
-				// Remap offset
-				iteOther->Offset-=ite->Length;
-
-				// Next mesh
-				iteOther++;
-			}
-
-			// Remove info from list
-			MeshIdList.erase (ite);
-
-			// Exit
-			return;
-		}
-
-		// Next 
-		ite++;
-	}
-
-	// Check it has been found
-	nlassert (ite!=MeshIdList.end());
-}
-
-// ***************************************************************************
-
-void CCoarseMeshManager::CRenderPass::CPrimitiveBlockInfo::init (uint size)
-{
-	// Reserve triangles
-	PrimitiveBlock.reserveTri (size);
-}
-
-// ***************************************************************************
-
-bool	CCoarseMeshClipObs::clip(IBaseClipObs *caller)
-{
-	return false;
-}
-
-// ***************************************************************************
 
 } // NL3D

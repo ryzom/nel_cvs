@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.40 2003/03/11 09:39:42 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.41 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,10 +227,8 @@ void		CRenderTrav::traverse()
 		Important to render them at end of Opaque rendering, because coarses instances are created/removed during
 		this model opaque rendering pass.
 	*/
-	// Render dynamic one.
-	Scene->getDynamicCoarseMeshManager()->render(Driver);
-	// Render static one.
-	Scene->getStaticCoarseMeshManager()->render(Driver);
+	if( Scene->getCoarseMeshManager() )
+		Scene->getCoarseMeshManager()->flushRender(Driver);
 
 
 	// Profile this frame?

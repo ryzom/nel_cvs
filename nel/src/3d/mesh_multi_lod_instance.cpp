@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.13 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.14 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,14 +44,14 @@ namespace NL3D
 	// No flags
 	Flags=0;
 	_CoarseMeshDistance = -1.f;
+	_LastCoarseMesh= NULL;
+	_LastCoarseMeshNumVertices= 0;
 }
 
 // ***************************************************************************
 
 CMeshMultiLodInstance::~CMeshMultiLodInstance ()
 {
-	// delete instances from manager
-	deleteCoarseInstances();
 }
 
 
@@ -61,44 +61,6 @@ void		CMeshMultiLodInstance::registerBasic()
 {
 	CMOT::registerModel (MeshMultiLodInstanceId, MeshBaseInstanceId, CMeshMultiLodInstance::creator);
 	CMOT::registerObs (LoadBalancingTravId, MeshMultiLodInstanceId, CMeshMultiLodBalancingObs::creator);
-	CMOT::registerObs (ClipTravId, MeshMultiLodInstanceId, CMeshMultiLodClipObs::creator);
-}
-
-
-// ***************************************************************************
-void		CMeshMultiLodInstance::deleteCoarseInstances()
-{
-	// If at least one coarse instance is created
-	if( Flags & (Coarse0Loaded|Coarse1Loaded) )
-	{
-		// Cast shape
-		CMeshMultiLod *shape=safe_cast<CMeshMultiLod*> ((IShape*)Shape);
-
-		// Manager pointer
-		CCoarseMeshManager *manager;
-
-		// Get the manager
-		if (shape->isStatic ())
-			manager=getScene()->getStaticCoarseMeshManager ();
-		else
-			manager=getScene()->getDynamicCoarseMeshManager ();
-
-		// Manager ok ?
-		if (manager)
-		{
-			// Coarse mesh loaded ?
-			if (Flags&Coarse0Loaded)
-			{
-				manager->removeMesh (CoarseMeshId[0]);
-				Flags&= ~Coarse0Loaded;
-			}
-			if (Flags&Coarse1Loaded)
-			{
-				manager->removeMesh (CoarseMeshId[1]);
-				Flags&= ~Coarse1Loaded;
-			}
-		}
-	}
 }
 
 
@@ -117,43 +79,6 @@ CRGBA		CMeshMultiLodInstance::getCoarseMeshLighting()
 	sunContrib.A= 255;
 
 	return sunContrib;
-}
-
-
-// ***************************************************************************
-bool		CMeshMultiLodClipObs::clip(IBaseClipObs *caller)
-{
-	// Call Base method. If clipped
-	if( !CTransformShapeClipObs::clip(caller) )
-	{
-		// If the clip is due to a DistMax reason, must delete Coarses instances.
-		if(CTransformShapeClipObs::isLastClipDueToDistMax())
-		{
-			CMeshMultiLodInstance	*inst= (CMeshMultiLodInstance*)Model;
-			inst->deleteCoarseInstances();
-		}
-
-		// return result of clip
-		return false;
-	}
-	else
-		// return result of clip
-		return true;
-}
-
-
-// ***************************************************************************
-void		CMeshMultiLodClipObs::forceClip(TClipReason clipReason)
-{
-	// If the clip is due to a DistMax reason, must delete Coarses instances.
-	if(clipReason == IBaseClipObs::DistMaxClip)
-	{
-		CMeshMultiLodInstance	*inst= (CMeshMultiLodInstance*)Model;
-		inst->deleteCoarseInstances();
-	}
-
-	// Call Base method (traverse Sons)
-	CTransformShapeClipObs::forceClip(clipReason);
 }
 
 
@@ -322,5 +247,88 @@ void		CMeshMultiLodInstance::initRenderFilterType()
 			_RenderFilterType= UScene::FilterMeshLodNoVP;
 	}
 }
+
+
+// ***************************************************************************
+void		CMeshMultiLodInstance::setUVCoarseMesh( CMeshGeom &geom, uint vtDstSize, uint dstUvOff )
+{
+	// *** Copy UVs to the vertices
+
+	// Src vertex buffer
+	const CVertexBuffer &vbSrc=geom.getVertexBuffer();
+
+	// Check the vertex format and src Vertices
+	nlassert (vbSrc.getVertexFormat() & (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag) );
+	nlassert (vbSrc.getNumVertices()==_LastCoarseMeshNumVertices);
+
+	// src Vertex size
+	uint vtSrcSize=vbSrc.getVertexSize ();
+
+	// Copy vector
+	const uint8 *vSrc = (const uint8 *)vbSrc.getTexCoordPointer(0,0);
+	uint8 *vDest = &_CoarseMeshVB[0];
+	vDest+= dstUvOff;
+
+	// Transform it
+	for (uint i=0; i<_LastCoarseMeshNumVertices; i++)
+	{
+		// Transform position
+		*(CUV*)vDest = *(const CUV*)vSrc;
+
+		// Next point
+		vSrc+=vtSrcSize;
+		vDest+=vtDstSize;
+	}
+}
+// ***************************************************************************
+void		CMeshMultiLodInstance::setPosCoarseMesh( CMeshGeom &geom, const CMatrix &matrix, uint vtDstSize )
+{
+	// *** Transform the vertices
+
+	// Src vertex buffer
+	const CVertexBuffer &vbSrc=geom.getVertexBuffer();
+
+	// Check the vertex format and src Vertices
+	nlassert (vbSrc.getVertexFormat() & (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag) );
+	nlassert (vbSrc.getNumVertices()==_LastCoarseMeshNumVertices);
+
+	// src Vertex size
+	uint vtSrcSize=vbSrc.getVertexSize ();
+
+	// Copy vector
+	const uint8 *vSrc = (const uint8 *)vbSrc.getVertexCoordPointer (0);
+	uint8 *vDest = &_CoarseMeshVB[0];
+	
+	// Transform it
+	for (uint i=0; i<_LastCoarseMeshNumVertices; i++)
+	{
+		// Transform position
+		*(CVector*)vDest = matrix.mulPoint (*(const CVector*)vSrc);
+
+		// Next point
+		vSrc+=vtSrcSize;
+		vDest+=vtDstSize;
+	}
+}
+// ***************************************************************************
+void		CMeshMultiLodInstance::setColorCoarseMesh( CRGBA color, uint vtDstSize, uint dstColorOff )
+{
+	// *** Copy color to vertices
+
+	// Copy vector
+	uint8 *vDest = &_CoarseMeshVB[0];
+	vDest+= dstColorOff;
+	
+	// Transform it
+	for (uint i=0; i<_LastCoarseMeshNumVertices; i++)
+	{
+		// Transform position
+		*(CRGBA*)vDest = color;
+
+		// Next point
+		vDest+=vtDstSize;
+	}
+}
+
 
 } // NL3D

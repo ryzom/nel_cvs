@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.14 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.15 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,8 @@
 namespace NL3D 
 {
 
+class	CMeshGeom;
+
 // ***************************************************************************
 // ClassIds.
 const NLMISC::CClassId		MeshMultiLodInstanceId=NLMISC::CClassId(0x1ade6ef8, 0x75c5a84);
@@ -63,26 +65,19 @@ public:
 	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
 
 
-	/** erase Coarses instances from coarseMesh Manager (if instances exist)
-	 */
-	void				deleteCoarseInstances();
-
-
 	enum
 	{
 		Lod0Blend		=	0x1,
-		Coarse0Loaded	=	0x2,
-		Coarse1Loaded	=	0x4,
 	};
 
 	/// Call at the begining of the program, to register the model, and the basic observers.
 	static	void	registerBasic();
 
 	/// Last Matrix date for Lods
-	uint64			_LastLodMatrixDate[2];
+	uint64			_LastLodMatrixDate;
 
 	/// Last Lighting date for Lods
-	sint64			_LastLodLightingDate[2];
+	sint64			_LastLodLightingDate;
 
 
 	// return the contribution of lights (for Coarse Mesh render).
@@ -107,8 +102,10 @@ private:
 	/// Active blending on lod 0
 	uint	Flags;
 
-	/// Coarse mesh id
-	uint64	CoarseMeshId[2];
+	/// Coarse mesh transformed and Lighted. NB: array allocated at instanciation. => no allocation during time.
+	std::vector<uint8>		_CoarseMeshVB;
+	CMeshGeom				*_LastCoarseMesh;
+	uint					_LastCoarseMeshNumVertices;
 
 	/// Computed polygon count for the load balancing result
 	float	PolygonCountLod0;
@@ -126,32 +123,11 @@ private:
 
 	/// get average color for Sun lighting. Get result from _LightContribution
 	CRGBA			getCoarseMeshLighting();
-};
 
-
-// ***************************************************************************
-/**
- * This observer:
- * - leave the notification system to DO NOTHING.
- * - extend clip() method to update CoarseMeshManager
- *
- * \sa CClipTrav CTransformClipObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CMeshMultiLodClipObs : public CTransformShapeClipObs
-{
-public:
-
-	/// clip the shape
-	virtual	bool	clip(IBaseClipObs *caller);
-
-	// override method. If distMaxClip, then must delete coarse Instances.
-	virtual	void	forceClip(TClipReason clipReason);
-
-
-	static IObs	*creator() {return new CMeshMultiLodClipObs;}
+	// Methods to fill The coarse VBuffer
+	void			setUVCoarseMesh( CMeshGeom &geom, uint vtDstSize, uint dstUvOff );
+	void			setPosCoarseMesh( CMeshGeom &geom, const CMatrix &matrix, uint vtDstSize );
+	void			setColorCoarseMesh( CRGBA color, uint vtDstSize, uint dstColorOff );
 };
 
 

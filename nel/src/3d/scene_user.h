@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.37 2003/03/11 09:41:14 berenguier Exp $
+ * $Id: scene_user.h,v 1.38 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -219,8 +219,7 @@ public:
 
 	/// \name Coarse meshes mgt.
 	//@{
-	virtual void				setStaticCoarseMeshManagerTexture (const char *sPath);
-	virtual void				setDynamicCoarseMeshManagerTexture (const char *sPath);
+	virtual void				setCoarseMeshManagerTexture (const char *sPath);
 	virtual void				setCoarseMeshLightingUpdate(uint8 period);
 	virtual uint8				getCoarseMeshLightingUpdate() const;
 	//@}

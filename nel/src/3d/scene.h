@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.36 2003/03/11 09:41:14 berenguier Exp $
+ * $Id: scene.h,v 1.37 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -149,8 +149,6 @@ public:
 	void			initDefaultRoots();
 	/// Create the world instance group (with only one cluster)
 	void			initGlobalnstanceGroup();
-	/// Create coarse meshes manager.
-	void			initCoarseMeshManager ();
 	/// init QuadGridClipManager
 	void			initQuadGridClipManager ();
 	/// Set the driver to render Traversal.
@@ -317,13 +315,9 @@ public:
 
 	/// \name Coarse meshes managers.
 	//@{
-	CCoarseMeshManager		*getStaticCoarseMeshManager ()
+	CCoarseMeshManager		*getCoarseMeshManager ()
 	{
-		return _StaticCoarseMeshManager;
-	}
-	CCoarseMeshManager		*getDynamicCoarseMeshManager ()
-	{
-		return _DynamicCoarseMeshManager;
+		return _CoarseMeshManager;
 	}
 
 	/**
@@ -567,8 +561,8 @@ private:
 
 	/// \name Coarse meshes managers.
 	//@{
-	CRefPtr<CCoarseMeshManager>	_StaticCoarseMeshManager;
-	CRefPtr<CCoarseMeshManager>	_DynamicCoarseMeshManager;
+	// The Coarse Mesh Manager. Owned by the scene
+	CCoarseMeshManager			*_CoarseMeshManager;
 	// CLodCharacterManager is not a model. setuped by user
 	CLodCharacterManager		*_LodCharacterManager;
 	//@}

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.29 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.30 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "nel/misc/hierarchical_timer.h"
 
 using namespace NLMISC;
+using namespace std;
 
 namespace NL3D 
 {
@@ -61,9 +62,6 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 
 	// Resize the array
 	_MeshVector.resize (mbuild.LodMeshes.size());
-
-	// Number of coarse meshes
-	uint coarse=0;
 
 	// For each slots
 	for (uint slot=0; slot<mbuild.LodMeshes.size(); slot++)
@@ -88,18 +86,8 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 		// Coarse mesh ?
 		if (mbuild.LodMeshes[slot].Flags & CMeshMultiLodBuild::CBuildSlot::CoarseMesh)
 		{
-			// Warning: no more than 2 coarse meshes in a lod mesh!
-			nlassert (coarse<=1);
-
 			// Flag
 			_MeshVector[slot].Flags|=CMeshSlot::CoarseMesh;
-
-			// Flag coarse ID
-			if (coarse==1)
-				_MeshVector[slot].Flags|=CMeshSlot::CoarseMeshId;
-
-			// One more
-			coarse++;
 		}
 
 		// Is opaque
@@ -184,8 +172,9 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 		_MeshVector[k].B=_MeshVector[k].EndPolygonCount-_MeshVector[k].A*endDist;
 	}
 
-	// End: compile the max distance of display
+	// End: compile some stuff
 	compileDistMax();
+	compileCoarseMeshes();
 }
 
 // ***************************************************************************
@@ -195,12 +184,13 @@ CTransformShape	*CMeshMultiLod::createInstance(CScene &scene)
 	// Create a CMeshInstance, an instance of a multi lod mesh.
 	CMeshMultiLodInstance *mi=(CMeshMultiLodInstance*)scene.createModel(NL3D::MeshMultiLodInstanceId);
 	mi->Shape= this;
-	mi->_LastLodMatrixDate[0]=0;
-	mi->_LastLodMatrixDate[1]=0;
+	mi->_LastLodMatrixDate=0;
 
 	// instanciate the material part of the Mesh, ie the CMeshBase.
 	CMeshBase::instanciateMeshBase(mi, &scene);
 
+	// Create the necessary space for Coarse Instanciation
+	instanciateCoarseMeshSpace(mi);
 
 	// For all lods, do some instance init for MeshGeom
 	for(uint i=0; i<_MeshVector.size(); i++)
@@ -246,16 +236,8 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 
 	// Static or dynamic coarse mesh ?
 	CCoarseMeshManager *manager;
-	if (_StaticLod)
-	{
-		// Get the static coarse mesh manager
-		manager=instance->getScene()->getStaticCoarseMeshManager();
-	}
-	else
-	{
-		// Get the dynamic coarse mesh manager
-		manager=instance->getScene()->getDynamicCoarseMeshManager();
-	}
+	// Get the coarse mesh manager
+	manager=instance->getScene()->getCoarseMeshManager();
 
 	// *** Render Lods
 
@@ -306,42 +288,6 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 		// Render first lod in blend mode. Don't disable ZWrite for Lod0
 		renderMeshGeom (instance->Lod0, drv, instance, instance->PolygonCountLod0, rdrFlags, instance->BlendFactor, manager);
 	}
-
-	// *** Remove unused coarse meshes.
-	// Manager must exist beacuse a mesh has been loaded...
-	if (manager)
-	{
-		uint meshCount=_MeshVector.size();
-		for (uint j=0; j<meshCount; j++)
-		{
-			// Is this slot a CoarseMesh?
-			if ( _MeshVector[j].Flags&CMeshSlot::CoarseMesh )
-			{
-				// Are we in Alpha Blend Transition?
-				bool	alphaTrans= instance->Flags&CMeshMultiLodInstance::Lod0Blend;
-				// we must remove coarse if the slot is not used, or if we are in Alpha Transition.
-				// NB: only Lod0 can use CoarseMesh (see code before)
-				if ( alphaTrans || (j!=instance->Lod0) )
-				{
-					// Get coarse id
-					uint coarseId=(_MeshVector[j].Flags&CMeshSlot::CoarseMeshId)?1:0;
-					uint flag=CMeshMultiLodInstance::Coarse0Loaded<<coarseId;
-					
-					// Coarse mesh loaded ?
-					if ( instance->Flags&flag )
-					{
-						// Yes, remove it..
-
-						// Remove the lod
-						manager->removeMesh (instance->CoarseMeshId[coarseId]);
-
-						// Clear the flag
-						instance->Flags&=~flag;
-					}
-				}
-			}
-		}
-	}
 }
 
 // ***************************************************************************
@@ -361,10 +307,11 @@ void CMeshMultiLod::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialCont (_MeshVector);
 
 
-	// if reading, compile the new max distance of display
+	// if reading, compile some stuff
 	if (f.isReading())
 	{
 		compileDistMax();
+		compileCoarseMeshes();
 	}
 }
 
@@ -483,6 +430,7 @@ void CMeshMultiLod::CMeshSlot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 CMeshMultiLod::CMeshSlot::CMeshSlot ()
 {
 	MeshGeom=NULL;
+	CoarseNumTris= 0;
 }
 
 // ***************************************************************************
@@ -551,67 +499,88 @@ void CMeshMultiLod::renderCoarseMesh (uint slot, IDriver *drv, CMeshMultiLodInst
 	if(manager==NULL)
 		return;
 
+	// get the scene
+	CScene	*scene= trans->getScene();
+	if(!scene)
+		return;
+
+	// If filtered...
+	if( (scene->getFilterRenderFlags() & UScene::FilterCoarseMesh)==0 )
+		return;
+
 	// Ref
 	CMeshSlot &slotRef=_MeshVector[slot];
 
 	// the slot must be a Coarse mesh
 	nlassert(slotRef.Flags&CMeshSlot::CoarseMesh);
 
-	// Mask
-	uint coarseId=(slotRef.Flags&CMeshSlot::CoarseMeshId)?1:0;
-	uint maskFlag = CMeshMultiLodInstance::Coarse0Loaded<<coarseId;
-
 	// Get a pointer on the geom mesh
 	CMeshGeom *meshGeom= safe_cast<CMeshGeom*>(slotRef.MeshGeom);
 
-	// Added in the manager ?
-	if ( (trans->Flags&maskFlag) == 0)
+	// ** If not the same as Before (or if NULL before...)
+	if ( trans->_LastCoarseMesh!=meshGeom )
 	{
-		// Add to the manager
-		trans->CoarseMeshId[coarseId]=manager->addMesh (*meshGeom);
-			
-		// Added ?
-		if (trans->CoarseMeshId[coarseId]!=CCoarseMeshManager::CantAddCoarseMesh)
-			// Flag it
-			trans->Flags|=maskFlag;
+		uint	numVerts= meshGeom->getVertexBuffer().getNumVertices();
+		uint	numTris= slotRef.CoarseNumTris;
+		// If empty meshGeom, erase cache (each frame, ugly but error mgt here...)
+		if( numTris==0 || numVerts==0 )
+			trans->_LastCoarseMesh= NULL;
+		else
+		{
+			// Cache
+			trans->_LastCoarseMesh= meshGeom;
+			trans->_LastCoarseMeshNumVertices= numVerts;
 
-		// Dirt the matrix
-		trans->_LastLodMatrixDate[coarseId]=0;
-		// Dirt the lighting. NB: period maximum is 255. Hence the -256, to ensure lighting compute now
-		trans->_LastLodLightingDate[coarseId]= -0x100;
+			// Check setuped size.
+			nlassert( trans->_CoarseMeshVB.size() >= numVerts*manager->getVertexSize() );
+
+			// Fill only UVs here. (Pos updated in Matrix pass. Color in Lighting Pass)
+			trans->setUVCoarseMesh( *meshGeom, manager->getVertexSize(), manager->getUVOff() );
+
+			// Dirt the matrix
+			trans->_LastLodMatrixDate=0;
+			// Dirt the lighting. NB: period maximum is 255. Hence the -256, to ensure lighting compute now
+			trans->_LastLodLightingDate= -0x100;
+		}
 	}
 
-	// Finally loaded ?
-	if (trans->Flags&maskFlag)
+	// ** If setuped, update and render
+	if( trans->_LastCoarseMesh )
 	{
 		// Matrix has changed ?
-		if ( trans->ITransformable::compareMatrixDate (trans->_LastLodMatrixDate[coarseId]) )
+		if ( trans->ITransformable::compareMatrixDate (trans->_LastLodMatrixDate) )
 		{
 			// Get date
-			trans->_LastLodMatrixDate[coarseId] = trans->ITransformable::getMatrixDate();
+			trans->_LastLodMatrixDate = trans->ITransformable::getMatrixDate();
 
 			// Set matrix
-			manager->setMatrixMesh ( trans->CoarseMeshId[coarseId], *meshGeom, trans->getMatrix() );
+			trans->setPosCoarseMesh ( *meshGeom, trans->getMatrix(), manager->getVertexSize() );
 		}
 
 		// Lighting: test if must update lighting, according to date of HrcTrav (num of CScene::render() call).
-		CScene	*scene= trans->getScene();
-		if(scene)
+		sint64	currentDate= scene->getHrcTrav()->CurrentDate;
+		if( trans->_LastLodLightingDate < currentDate - scene->getCoarseMeshLightingUpdate() )
 		{
-			sint64	currentDate= scene->getHrcTrav()->CurrentDate;
-			if( trans->_LastLodLightingDate[coarseId] < currentDate - scene->getCoarseMeshLightingUpdate() )
-			{
-				// reset the date.
-				trans->_LastLodLightingDate[coarseId]= currentDate;
+			// reset the date.
+			trans->_LastLodLightingDate= currentDate;
 
-				// get average sun color
-				CRGBA	sunContrib= trans->getCoarseMeshLighting();
+			// get average sun color
+			CRGBA	sunContrib= trans->getCoarseMeshLighting();
 
-				// Set color
-				manager->setColorMesh ( trans->CoarseMeshId[coarseId], *meshGeom, sunContrib );
-			}
+			// Set color
+			trans->setColorCoarseMesh ( sunContrib, manager->getVertexSize(), manager->getColorOff() );
+		}
+
+		// Add dynamic to the manager
+		if( !manager->addMesh(trans->_LastCoarseMeshNumVertices, &trans->_CoarseMeshVB[0], slotRef.CoarseNumTris, &slotRef.CoarseTriangles[0] ) )
+		{
+			// If failure, flush the manager
+			manager->flushRender(drv);
+			// then try to re-add. No-op if fails this time..
+			manager->addMesh(trans->_LastCoarseMeshNumVertices, &trans->_CoarseMeshVB[0], slotRef.CoarseNumTris, &slotRef.CoarseTriangles[0]  );
 		}
 	}
+
 }
 
 // ***************************************************************************
@@ -766,6 +735,75 @@ void	CMeshMultiLod::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *tr
 		profileMeshGeom (instance->Lod0, rdrTrav, instance, instance->PolygonCountLod0, rdrFlags);
 	}
 }
+
+// ***************************************************************************
+void	CMeshMultiLod::instanciateCoarseMeshSpace(CMeshMultiLodInstance *mi)
+{
+	CCoarseMeshManager	*manager= mi->getScene()->getCoarseMeshManager();
+
+	if(manager)
+	{
+		// For all MeshSlots that have a CoarseMesh, count max Coarse NumVertices;
+		uint	numVertices= 0;
+		for(uint i=0;i<_MeshVector.size();i++)
+		{
+			CMeshSlot	&slotRef= _MeshVector[i];
+			if( slotRef.Flags & CMeshSlot::CoarseMesh )
+			{
+				// Get a pointer on the geom mesh
+				CMeshGeom *meshGeom= safe_cast<CMeshGeom*>(slotRef.MeshGeom);
+				numVertices= max(numVertices, (uint)meshGeom->getVertexBuffer().getNumVertices() );
+			}
+		}
+
+		// Then allocate vertex space for dest manager vertex size.
+		mi->_CoarseMeshVB.resize( numVertices*manager->getVertexSize() );
+	}
+}
+
+// ***************************************************************************
+void	CMeshMultiLod::compileCoarseMeshes()
+{
+	// For All Slots that are CoarseMeshes.
+	for(uint i=0;i<_MeshVector.size();i++)
+	{
+		CMeshSlot	&slotRef= _MeshVector[i];
+		if( slotRef.Flags & CMeshSlot::CoarseMesh )
+		{
+			// reset
+			slotRef.CoarseNumTris= 0;
+
+			// Get a pointer on the geom mesh
+			CMeshGeom *meshGeom= safe_cast<CMeshGeom*>(slotRef.MeshGeom);
+
+			// For All RdrPass of the 1st matrix block
+			if( meshGeom->getNbMatrixBlock()>0 )
+			{
+				// 1st count
+				for(uint i=0;i<meshGeom->getNbRdrPass(0);i++)
+				{
+					slotRef.CoarseNumTris+= meshGeom->getRdrPassPrimitiveBlock(0, i).getNumTri();
+				}
+
+				// 2snd allocate and fill
+				if( slotRef.CoarseNumTris )
+				{
+					slotRef.CoarseTriangles.resize(slotRef.CoarseNumTris * 3);
+					uint32	*dstPtr= &slotRef.CoarseTriangles[0];
+					for(uint i=0;i<meshGeom->getNbRdrPass(0);i++)
+					{
+						const CPrimitiveBlock	&pb= meshGeom->getRdrPassPrimitiveBlock(0, i);
+						uint	numTris= pb.getNumTri();
+						memcpy(dstPtr, pb.getTriPointer(), numTris*3*sizeof(uint32));
+						dstPtr+= numTris*3;
+					}
+				}
+			}
+		}
+	}
+}
+
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.20 2003/03/11 09:39:26 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.21 2003/03/13 14:15:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,8 +71,6 @@ public:
 			  * BlendIn:	if this flag is specified, this mesh will blend before be displayed.
 			  * BlendOut:	if this flag is specified, this mesh will blend before disapear.
 			  * CoarseMesh: if this flag is specified, this mesh is a coarse mesh.
-			  * StaticCoarseMesh: if this flag and CoarseMesh are specified, this mesh is a static 
-			  *		coarse mesh else if only CoarseMesh is specified, this mesh is a dynamic coarse mesh.
 			  */
 			enum
 			{
@@ -207,7 +205,6 @@ private:
 			CoarseMesh			=	0x04,
 			IsOpaque			=	0x08,
 			IsTransparent		=	0x10,
-			CoarseMeshId		=	0x20,
 		};
 
 		/// Ctor
@@ -235,6 +232,10 @@ private:
 		/// Blend On/Off, misc flags
 		uint8		Flags;
 
+		// For Coarse Mesh only. Precomputed Triangles indexes.
+		uint					CoarseNumTris;
+		std::vector<uint32>		CoarseTriangles;
+
 		/// Serial
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
@@ -245,7 +246,7 @@ private:
 		bool isTransparent() { return (Flags&IsTransparent)!=0; }
 	};
 
-	/// Static or dynamic load ?
+	/// Static or dynamic load ? Yoyo: no more used, but leave for possible usage later...
 	bool						_StaticLod;
 
 	/// Vector of meshes
@@ -265,6 +266,12 @@ private:
 
 	/// copileDistMax when builded/loaded.
 	void	compileDistMax();
+
+	/// compile Coarse Meshs when builded/loaded.
+	void	compileCoarseMeshes();
+
+	/// called at createInstance() time
+	void	instanciateCoarseMeshSpace(CMeshMultiLodInstance *mi);
 
 	friend class CMeshMultiLodBalancingObs;
 };

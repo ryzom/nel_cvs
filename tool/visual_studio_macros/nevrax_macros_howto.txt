@@ -1,15 +1,26 @@
 Mode d'emploi des macros Nevrax
 02/08/00 cado@nevrax.com
-$Id: ModeEmploi.txt,v 1.2 2000/09/07 14:15:26 berenguier Exp $
+$Id: nevrax_macros_howto.txt,v 1.1 2000/09/07 14:58:14 cado Exp $
 ----------
 
+1. Nouveautés du 07/09/2000
+---------------------------
 
-1. Installation
+- La macro NevraxNewClass vous demande et mémorise votre nom, pour
+l'insérer dans le champ \name de Doxygen.
+- La macro NevraxNewClass teste l'existence des répertoires et des
+fichiers : elle vérifie que les fichiers .h et .cpp n'existent pas
+déjà, que les répertoires des fichiers include et source existent
+bien, et vous informe quand le fichier .h de l'éventuelle classe de
+base n'existe pas.
+
+
+2. Installation
 ---------------
 
 a. Dans Visual Studio, menu Tools, Macros,
 Options>>, Loaded Files,
-Browse, R:\code\tool\VisualStudioMacros\nevrax_macros.dsm,
+Browse, R:\code\tools\VisualStudioMacros\nevrax_macros.dsm,
 Close
 
 b. (Facultatif) Raccourci clavier : Menu Tools, Macros, choisir
@@ -25,7 +36,7 @@ Studio, choisir une image pour le bouton (par exemple le petit crayon
 jaune), OK, Close.
 
 
-2. Utilisation
+1. Utilisation
 --------------
 
 - NevraxToggleHCPP (raccourci-clavier "Ctrl-<" installé en 1.b. ci-dessus)
@@ -37,7 +48,7 @@ jaune), OK, Close.
   Ryzom. Les étapes :
   1. Choix du nom de la classe. Ex: CMaClasse
   2. Confirmation du nom des fichiers .h et .cpp à créer. Ex: Pour
-     CMaClasse, la macro propose ma_classe
+     CMaClasse, la macro propose ma_classe.
   3. Confirmation du répertoire des sources .cpp. Par défaut :
      R:\code\nel\src
   4. Confirmation du répertoire des includes .h. Par défaut :
@@ -46,13 +57,18 @@ jaune), OK, Close.
      être tapé une fois par session de Visual Studio, après il est
      mémorisé. Exs: misc ou system ou 3d ou ia ou network ou database
      Les répertoires ainsi formés (ex: R:\code\nel\src\misc et
-     R:\code\nel\include\nel\misc) doivent déjà exister
-  6. Choix d'une classe de base (si la nouvelle classe doit être
+     R:\code\nel\include\nel\misc) doivent déjà exister, sans
+     quoi Visual Studio déclenchera une "unknown error" lors de la
+     sauvegarde du fichier.
+  6. Choix ou confirmation du nom du programmeur. Comme dans l'étape
+     précédente, on le tape une seule fois par session de Visual
+     Studio.
+  7. Choix d'une classe de base (si la nouvelle classe doit être
      dérivée d'une classe parente) (ex: CBaseClass) ou NO BASE CLASS.
-  7. Si vous avez entré une classe de base, vous devez entrer le
+  8. Si vous avez entré une classe de base, vous devez entrer le
      nom du fichier include de cette classe. Ex: nel/misc/base_class
      N'oubliez pas le chemin d'accès (comme dans l'exemple ci-dessus).
   Remarque :
-  Le bouton Annuler fonctionne seulement dans les étapes 1,2,6,7
+  Le bouton Annuler fonctionne seulement dans les étapes 1,2,6,7,8
   (merci VBScript !). Si vous vous trompez en 3,4 ou 5, cliquez sur
   Annuler dans l'étape 6.

@@ -1,7 +1,7 @@
 /** \file color_edit.cpp
  * a dialog to edit a color (or call the windows color dialog)
  *
- * $Id: color_edit.cpp,v 1.3 2001/06/25 13:19:48 vizerie Exp $
+ * $Id: color_edit.cpp,v 1.4 2001/07/04 12:23:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ void CColorEdit::init(uint32 x, uint32 y, CWnd *pParent)
 	m_RedCtrl.SetScrollRange(0, 255) ;
 	m_GreenCtrl.SetScrollRange(0, 255);
 	m_BlueCtrl.SetScrollRange(0, 255);
+	m_AlphaCtrl.SetScrollRange(0, 255);
 
 	MoveWindow(x, y, r.right, r.bottom) ;	
 	updateColorFromReader() ;
@@ -68,6 +69,7 @@ void CColorEdit::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CColorEdit)
+	DDX_Control(pDX, IDC_ALPHA_AMOUNT, m_AlphaCtrl);
 	DDX_Control(pDX, IDC_GREEN_AMOUNT, m_GreenCtrl);
 	DDX_Control(pDX, IDC_BLUE_AMOUNT, m_BlueCtrl);
 	DDX_Control(pDX, IDC_RED_AMOUNT, m_RedCtrl);
@@ -84,6 +86,7 @@ void CColorEdit::updateColorFromReader(void)
 		m_RedCtrl.SetScrollPos(col.R) ;
 		m_GreenCtrl.SetScrollPos(col.G) ;
 		m_BlueCtrl.SetScrollPos(col.B) ;
+		m_AlphaCtrl.SetScrollPos(col.A) ;
 		m_Color.setColor(col) ;
 		UpdateData(FALSE) ;
 	}
@@ -126,6 +129,11 @@ void CColorEdit::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		{
 			col.B = nPos ;
 			m_BlueCtrl.SetScrollPos(nPos) ;
+		}	
+		if (pScrollBar == &m_AlphaCtrl)
+		{
+			col.A = nPos ;
+			m_AlphaCtrl.SetScrollPos(nPos) ;
 		}	
 		
 		m_Color.setColor(col) ;

@@ -1,7 +1,7 @@
 /** \file color_edit.h
  * a dialog to edit a color (or call the windows color dialog)
  *
- * $Id: color_edit.h,v 1.4 2001/06/25 13:19:48 vizerie Exp $
+ * $Id: color_edit.h,v 1.5 2001/07/04 12:23:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CColorEdit)
 	enum { IDD = IDD_COLOR_EDIT };
+	CScrollBar	m_AlphaCtrl;
 	CScrollBar	m_GreenCtrl;
 	CScrollBar	m_BlueCtrl;
 	CScrollBar	m_RedCtrl;

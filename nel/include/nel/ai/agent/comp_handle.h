@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: comp_handle.h,v 1.2 2001/05/22 16:08:01 chafik Exp $
+ * $Id: comp_handle.h,v 1.3 2001/06/18 13:57:19 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,7 @@ namespace NLAIAGENT
 
 			~CComponentHandle()
 			{
+				if(_CompName != NULL) _CompName->release();
 //				if ( _Comp )
 //					_Comp->release();
 			}

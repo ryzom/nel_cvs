@@ -111,6 +111,7 @@
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\lib"
+				IgnoreDefaultLibraryNames="libcmt.lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/object_viewer.pdb"
 				SubSystem="2"

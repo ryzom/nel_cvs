@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.12 2003/04/02 09:47:49 coutelas Exp $
+ * $Id: sheet_id.h,v 1.13 2003/09/08 08:20:00 berenguier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -63,6 +63,9 @@ public :
 	// build from a string and returns true if the build succeed
 	bool	 build(const std::string& sheetName);
 
+	// build from a SubSheetId and a type
+	void	 build(uint32 shortId, uint8 type);
+
 	/**
 	 *	Load the association sheet ref / sheet name 
 	 */
@@ -81,7 +84,7 @@ public :
 	/**
 	 * Return the sheet sub id (sub part of the sheetid)
 	 */
-	uint8 getShortId() const { return _Id.IdInfos.Id; }
+	uint32 getShortId() const { return _Id.IdInfos.Id; }
 
 	/**
 	 *	Operator=

@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.23 2003/08/27 16:16:25 distrib Exp $
+ * $Id: sheet_id.cpp,v 1.24 2003/09/08 08:20:18 berenguier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -539,5 +539,15 @@ const std::string &CSheetId::fileExtensionFromType(uint8 type)
 	return _FileExtensions[type];
 
 } // fileExtensionFromType //
+
+//-----------------------------------------------
+//	build
+//
+//-----------------------------------------------
+void	CSheetId::build(uint32 shortId, uint8 type)
+{
+	_Id.IdInfos.Id= shortId;
+	_Id.IdInfos.Type= type;
+}
 
 } // NLMISC

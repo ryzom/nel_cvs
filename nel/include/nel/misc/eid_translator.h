@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.2 2003/04/16 18:51:36 lecroart Exp $
+ * $Id: eid_translator.h,v 1.2.2.1 2003/05/06 15:24:03 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -101,6 +101,10 @@ private:
 	static CEntityIdTranslator *Instance;
 
 	void save ();
+
+	// Returns true if the username is valid.
+	// It means that there only alphabetic and numerical character and the name is at least 3 characters long.
+	bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName);
 
 	std::string FileName;
 };

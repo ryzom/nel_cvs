@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.6 2003/04/17 08:42:11 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.6.2.1 2003/05/06 15:24:19 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -110,11 +110,37 @@ CEntityId CEntityIdTranslator::getByEntity (const ucstring &entityName)
 	return CEntityId::Unknown;
 }
 
+bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName)
+{
+	// 3 char at least
+	if (entityName.size() < 3)
+		return false;
+
+	for (uint i = 0; i < entityName.size(); i++)
+	{
+		// only accept name with alphabetic and numeric value [a-zA-Z0-9]
+		if (!isalnum (entityName[i]))
+		{
+			nlinfo ("Bad entity name '%s' (only char and num)", entityName.toString().c_str());
+			return false;
+		}
+	}
+	return true;
+}
+
 bool CEntityIdTranslator::entityNameExists (const ucstring &entityName)
 {
+	bool ok = isValidEntityName (entityName);
+	
+	// if bad name, don't accept it
+	if (!ok) return true;
+
+	// Names are stored in case dependant, so we have to test them without case.
+	string lowerName = strlwr (entityName.toString());
+
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
-		if ((*it).second.EntityName == entityName)
+		if (strlwr ((*it).second.EntityName.toString()) == lowerName)
 		{
 			return true;
 		}
@@ -126,18 +152,18 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 {
 	if (RegisteredEntities.find (eid) != RegisteredEntities.end ())
 	{
-		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EId is already in the map", eid.toString().c_str(), entityName.c_str(), uid, userName.c_str());
+		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EId is already in the map", eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		return;
 	}
 
 	if (entityNameExists(entityName))
 	{
-		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EntityName is already in the map", eid.toString().c_str(), entityName.c_str(), uid, userName.c_str());
+		nlwarning ("Can't register EId %s EntityName %s UId %d UserName %s because EntityName is already in the map", eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 		return;
 	}
 	
 	RegisteredEntities.insert (make_pair(eid, CEntityIdTranslator::CEntity(entityName, uid, userName)));
-	nlinfo ("Registered %s with %s %d %s", eid.toString().c_str(), entityName.c_str(), uid, userName.c_str());
+	nlinfo ("Registered %s with %s %d %s", eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 
 	save ();
 }
@@ -152,7 +178,7 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 		return;
 	}
 	
-	nlinfo ("Unregister %s with %s %d %s", eid.toString().c_str(), (*it).second.EntityName.c_str(), (*it).second.UId, (*it).second.UserName.c_str());
+	nlinfo ("Unregister %s with %s %d %s", eid.toString().c_str(), (*it).second.EntityName.toString().c_str(), (*it).second.UId, (*it).second.UserName.c_str());
 	RegisteredEntities.erase (eid);
 	
 	save ();
@@ -304,7 +330,7 @@ NLMISC_COMMAND(findEIdByEntity,"Find entity id using the entity name","<entityna
 
 	CEntityIdTranslator::getInstance()->getEntityIdInfo(eid, entityName, uid, userName);
 
-	log.displayNL("EId %s EntityName '%s' UId %d UserName '%s'", eid.toString().c_str(), entityName.c_str(), uid, userName.c_str());
+	log.displayNL("EId %s EntityName '%s' UId %d UserName '%s'", eid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 	
 	return true;
 }

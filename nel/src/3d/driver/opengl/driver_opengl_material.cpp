@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.21 2001/01/23 15:39:41 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.22 2001/01/25 10:21:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,16 +75,24 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	CShaderGL*	pShader;
 	GLenum		glenum;
 	uint32		touched=mat.getTouched();
+	sint		stage;
 
 
 	// 0. Setup / Bind Textures.
 	//==========================
 	// Must setup textures each frame. (need to test if touched).
-	for(sint stage=0 ; stage<getNbTextureStages() ; stage++)
+	// Must separate texture setup and texture activation in 2 "for"...
+	// because setupTexture() may modify the stage 0.
+	for(stage=0 ; stage<getNbTextureStages() ; stage++)
 	{
 		ITexture	*text= mat.getTexture(stage);
 		if (text != NULL && !setupTexture(*text))
 			return(false);
+	}
+	// Activate the textures.
+	for(stage=0 ; stage<getNbTextureStages() ; stage++)
+	{
+		ITexture	*text= mat.getTexture(stage);
 
 		// activate the texture, or disable texturing if NULL.
 		activateTexture(stage,text);

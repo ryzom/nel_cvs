@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.20 2001/01/23 15:39:41 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.21 2001/01/25 10:17:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,8 +34,25 @@
 using	namespace NLMISC;
 using	namespace std;
 
+
 namespace NL3D
 {
+
+
+// ***************************************************************************
+CTextureDrvInfosGL::CTextureDrvInfosGL()
+{
+	// The id is auto created here.
+	glGenTextures(1,&ID);
+	Compressed= false;
+}
+// ***************************************************************************
+CTextureDrvInfosGL::~CTextureDrvInfosGL()
+{
+	// The id is auto deleted here.
+	glDeleteTextures(1,&ID);
+}
+
 
 
 // ***************************************************************************
@@ -255,9 +272,10 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			CTextureDrvInfosGL*	gltext;
 			gltext= getTextureGl(tex);
 
-			// Must backup the previous binded texture in the current ARB stage.
-			GLint		backupBind;
-			glGetIntegerv(GL_TEXTURE_BINDING_2D, &backupBind);
+			// system of "backup the previous binded texture" seems to not work with some drivers....
+			glActiveTextureARB(GL_TEXTURE0_ARB);
+			glEnable(GL_TEXTURE_2D);
+
 
 			// Bind this texture, for reload...
 			glBindTexture(GL_TEXTURE_2D, gltext->ID);
@@ -410,8 +428,9 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
 
 
-			// MUST restore the previous binded texture!!!
-			glBindTexture(GL_TEXTURE_2D, backupBind);
+			// reset the stage 0
+			glDisable(GL_TEXTURE_2D);
+			_CurrentTexture[0]= NULL;
 		}
 
 

@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.40 2004/05/24 16:10:16 berenguier Exp $
+ * $Id: file.cpp,v 1.41 2005/01/26 16:02:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -554,8 +554,17 @@ void	COFile::internalClose(bool success)
 			if (success)
 			{
 				CFile::deleteFile (_FileName);
-				if (!CFile::moveFile (_FileName.c_str(), _TempFileName.c_str()))
-					throw ERenameError (_TempFileName, _FileName);
+
+				// Bug under windows, sometimes the file is not deleted
+				uint retry = 1000;
+				while (--retry)
+				{
+					if (CFile::moveFile (_FileName.c_str(), _TempFileName.c_str()))
+						break;
+					nlSleep (0);
+				}
+				if (!retry)
+					throw ERenameError (_FileName, _TempFileName);
 			}
 			else
 				CFile::deleteFile (_TempFileName);

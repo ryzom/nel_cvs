@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * TODO: File description
  *
- * $Id: skeleton_model.h,v 1.45 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.46 2005/03/11 15:13:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -333,6 +333,10 @@ public:
 	 */
 	void			computeLodTexture();
 
+	/// Set the emissive of the skeleton model, when it is rendered in CLod form. Default to Black
+	void			setLodEmit(NLMISC::CRGBA emit) {_LodEmit= emit;}
+	NLMISC::CRGBA	getLodEmit() const {return _LodEmit;}
+	
 	// @}
 
 	/// \name Load balancing methods
@@ -521,6 +525,10 @@ private:
 	/** dirt when a bindSkin/stickObject/detachSkeletonSon is called
 	 */
 	bool					_CLodVertexAlphaDirty;
+
+	/// see setLodEmit()
+	NLMISC::CRGBA			_LodEmit;
+
 
 	void				dirtLodVertexAlpha() {_CLodVertexAlphaDirty= true;}
 	

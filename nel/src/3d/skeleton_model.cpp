@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * TODO: File description
  *
- * $Id: skeleton_model.cpp,v 1.64 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.65 2005/03/11 15:13:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,6 +136,8 @@ CSkeletonModel::CSkeletonModel()
 
 	_CLodVertexAlphaDirty= true;
 	
+	_LodEmit= CRGBA::Black;
+
 	// Inform the transform that I am a skeleton
 	CTransform::setIsSkeleton(true);
 
@@ -1382,6 +1384,8 @@ void			CSkeletonModel::renderCLod()
 	// modulate sun contribution
 	mainDiffuse.modulateFromuiRGBOnly(mainDiffuse, lightContrib->SunContribution );
 	CVector	mainLightDir= scene->getSunDirection();
+	// Add ambient with Lod Emit
+	mainAmbient.addRGBOnly(mainAmbient, _LodEmit);
 
 
 	/* During night, and in the buildings, it may be better to use one of the other Points lights

@@ -1,7 +1,7 @@
 /** \file u_skeleton.cpp
  * TODO: File description
  *
- * $Id: u_skeleton.cpp,v 1.7 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: u_skeleton.cpp,v 1.8 2005/03/11 15:13:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -507,6 +507,18 @@ void USkeleton::getStickedObjects(std::vector<UTransform> &sticks)
 void USkeleton::cast(UTransform object)
 {
 	attach(dynamic_cast<CSkeletonModel*>(object.getObjectPtr()));
+}
+
+// ***************************************************************************
+void			USkeleton::setLodEmit(NLMISC::CRGBA emit)
+{
+	getObjectPtr()->setLodEmit(emit);
+}
+
+// ***************************************************************************
+NLMISC::CRGBA	USkeleton::getLodEmit() const
+{
+	return getObjectPtr()->getLodEmit();
 }
 
 

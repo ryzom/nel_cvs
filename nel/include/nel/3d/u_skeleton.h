@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * TODO: File description
  *
- * $Id: u_skeleton.h,v 1.23 2005/03/10 17:26:47 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.24 2005/03/11 15:15:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -182,6 +182,10 @@ public:
 	 */
 	void		computeLodTexture();
 
+	/// Set the emissive of the skeleton model, when it is rendered in CLod form. Default to Black
+	void			setLodEmit(NLMISC::CRGBA emit);
+	NLMISC::CRGBA	getLodEmit() const;
+	
 	// @}
 
 

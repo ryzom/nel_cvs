@@ -1,7 +1,7 @@
 /** \file u_instance.cpp
  * Interface for instance objects.
  *
- * $Id: u_instance.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
+ * $Id: u_instance.cpp,v 1.6 2005/03/11 15:13:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -340,7 +340,19 @@ void UInstance::setDistMax(float distMax)
 }
 
 // ***************************************************************************
+UShape		UInstance::getShape() const
+{
+	NL3D_MEM_INSTANCE
+		
+	CTransformShape	*object = getObjectPtr();
+	if(!object)
+		return UShape();
+	
+	// get the shape name
+	return UShape(object->Shape);
+}
 
+// ***************************************************************************
 const std::string &UInstance::getShapeName() const
 {
 	NL3D_MEM_INSTANCE

@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * Interface for instance objects.
  *
- * $Id: u_instance.h,v 1.20 2005/02/22 10:14:13 besson Exp $
+ * $Id: u_instance.h,v 1.21 2005/03/11 15:15:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "u_transform.h"
 #include "u_instance_material.h"
+#include "u_shape.h"
 #include "nel/misc/aabbox.h"
 
 
@@ -182,6 +183,9 @@ public:
 	  * \param  forceBaseCaps When true, the driver is considered to have the most basic required caps (2 stages hardwares, no pixelShader), so that any fancy material will fail the test.
 	  */
 	bool		supportMaterialRendering(UDriver &drv, bool forceBaseCaps);
+
+	/// get the shape. NULL if no instance bound
+	UShape		getShape() const;
 
 	// get the shape name. empty if no instance bound
 	const std::string &getShapeName() const;

@@ -1,7 +1,7 @@
 /** \file u_shape.cpp
  * TODO: File description
  *
- * $Id: u_shape.cpp,v 1.6 2005/02/22 10:19:12 besson Exp $
+ * $Id: u_shape.cpp,v 1.7 2005/03/11 15:13:05 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -88,6 +88,33 @@ void		UShape::getVisualCollisionMesh(UVisualCollisionMesh	&colMesh) const
 		// attach the possible col mesh
 		colMesh.attach(mesh->getVisualCollisionMesh());
 	}
+}
+
+// ***************************************************************************
+uint				UShape::getNumMaterials() const
+{
+	CMeshBase			*mesh= dynamic_cast<CMeshBase*>(_Object);
+	if(mesh)
+	{
+		return mesh->getNbMaterial();
+	}
+
+	// fails => return 0
+	return 0;
+}
+
+// ***************************************************************************
+UMaterial		UShape::getMaterial(uint materialId) const
+{
+	CMeshBase			*mesh= dynamic_cast<CMeshBase*>(_Object);
+	if(mesh)
+	{
+		if(materialId<mesh->getNbMaterial())
+			return UMaterial(&mesh->getMaterial(materialId));
+	}
+
+	// fails => return NULL material
+	return UMaterial();
 }
 
 

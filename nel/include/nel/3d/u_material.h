@@ -1,7 +1,7 @@
 /** \file u_material.h
  * User interface for material.
  *
- * $Id: u_material.h,v 1.8 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: u_material.h,v 1.9 2005/03/11 15:15:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -162,10 +162,24 @@ public:
 
 	// @}
 
+
+	/// \name Lighted material mgt. Relevant only if isLighted(). Used for get of UShape
+	// @{
+	bool				isLighted() const;
+	CRGBA				getEmissive() const;
+	CRGBA				getAmbient() const;
+	/// return diffuse part. NB: A==opacity.
+	CRGBA				getDiffuse() const;
+	uint8				getOpacity() const;
+	CRGBA				getSpecular() const;
+	float				getShininess() const;
+	// @}
+	
+
 	/// \name Culling
 	// @{
-		void			setDoubleSided(bool doubleSided = true);
-		bool			getDoubleSided() const;
+	void			setDoubleSided(bool doubleSided = true);
+	bool			getDoubleSided() const;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file u_shape.h
  * Game interface for managing shape.
  *
- * $Id: u_shape.h,v 1.3 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: u_shape.h,v 1.4 2005/03/11 15:15:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "u_material.h"
 #include <vector>
 
 
@@ -64,6 +65,21 @@ public:
 	 */
 	void			getVisualCollisionMesh(UVisualCollisionMesh	&colMesh) const;
 
+	/// \name Material access.
+	// @{
+	/** return number of materials this mesh instance use.
+	 *	return 0 if not supported (not a CMeshBase)
+	 */
+	uint			getNumMaterials() const;
+	/** return a local access on a material, typically to get diffuse etc...
+	 *	return NULL if not supported (not a CMeshBase) or if materialId is too big
+	 *	You should typically just read material values since some mutators (selectTextureSet...) may lead
+	 *	to undefined behaviors
+	 */
+	UMaterial		getMaterial(uint materialId) const;
+	// @}
+
+	
 	/// Proxy interface
 
 	/// Constructors

@@ -1,7 +1,7 @@
 /** \file u_material.cpp
  * User interface for material.
  *
- * $Id: u_material.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
+ * $Id: u_material.cpp,v 1.5 2005/03/11 15:13:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -360,6 +360,55 @@ void			UMaterial::initUnlit()
 	object->initUnlit();
 }
 
+
 // ***************************************************************************
+bool			UMaterial::isLighted() const
+{
+	NL3D_MEM_MATERIAL
+	CMaterial *object = getObjectPtr();
+	return object->isLighted();
+}
+// ***************************************************************************
+CRGBA			UMaterial::getEmissive() const
+{
+	NL3D_MEM_MATERIAL
+	CMaterial *object = getObjectPtr();
+	return object->getEmissive();
+}
+// ***************************************************************************
+CRGBA			UMaterial::getAmbient() const
+{
+	NL3D_MEM_MATERIAL
+	CMaterial *object = getObjectPtr();
+	return object->getAmbient();
+}
+// ***************************************************************************
+CRGBA			UMaterial::getDiffuse() const
+{
+	NL3D_MEM_MATERIAL
+	CMaterial *object = getObjectPtr();
+	return object->getDiffuse();
+}
+// ***************************************************************************
+uint8			UMaterial::getOpacity() const
+{
+	NL3D_MEM_MATERIAL
+	CMaterial *object = getObjectPtr();
+	return object->getOpacity();
+}
+// ***************************************************************************
+CRGBA			UMaterial::getSpecular() const
+{
+	NL3D_MEM_MATERIAL
+	CMaterial *object = getObjectPtr();
+	return object->getSpecular();
+}
+// ***************************************************************************
+float			UMaterial::getShininess() const
+{
+	NL3D_MEM_MATERIAL
+	CMaterial *object = getObjectPtr();
+	return object->getShininess();
+}
 
 } // NL3D

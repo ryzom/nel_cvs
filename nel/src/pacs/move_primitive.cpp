@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.3 2001/05/22 08:35:19 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.4 2001/05/22 08:47:21 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,7 +84,7 @@ bool CMovePrimitive::evalCollision (CMovePrimitive& other, CCollisionDesc& desc,
 
 				default:
 				// Should not go here
-				nlstop
+				nlstop;
 				}
 			}
 
@@ -112,13 +112,13 @@ bool CMovePrimitive::evalCollision (CMovePrimitive& other, CCollisionDesc& desc,
 
 				default:
 				// Should not go here
-				nlstop
+				nlstop;
 				}
 			}
 
 		default:
 			// Should not go here
-			nlstop
+			nlstop;
 		}	
 	}
 

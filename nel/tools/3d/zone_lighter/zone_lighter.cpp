@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.1 2001/01/11 16:02:14 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.2 2001/01/15 15:45:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,13 +33,32 @@
 using namespace NLMISC;
 using namespace NL3D;
 
+// Eval the normal of the border of a patch for somewhere on a edge
+CVector getEdgeNormal (const CBezierPatch& patch, uint edge, float whereOnEdge)
+{
+	switch (edge)
+	{
+	case 0:
+		return patch.evalNormal (0.f, whereOnEdge);
+	case 1:
+		return patch.evalNormal (whereOnEdge, 1.f);
+	case 2:
+		return patch.evalNormal (1.f, 1.f-whereOnEdge);
+	case 3:
+		return patch.evalNormal (1.f-whereOnEdge, 0.f);
+	default:
+		nlassert (0);		// no!
+	}
+	return CVector::Null;
+}
+
 int main(int argc, char* argv[])
 {
 	// Good number of args ?
-	if (argc<6)
+	if (argc<7)
 	{
 		// Help message
-		printf ("zone_lighter [zonein.zone] [zoneout.zone] [SunDirectionX] [SunDirectionY] [SunDirectionZ]\n");
+		printf ("zone_lighter [zonein.zone] [zoneout.zone] [SunDirectionX] [SunDirectionY] [SunDirectionZ] [NormalThreshold (deg)]\n");
 	}
 	else
 	{
@@ -52,6 +71,9 @@ int main(int argc, char* argv[])
 			// The sun position
 			CVector lightDir ((float)atof (argv[3]), (float)atof (argv[4]), (float)atof (argv[5]));
 			lightDir.normalize();
+
+			// The normal threshold
+			float normalThreshold=(float)cos((float)atof (argv[6])*Pi/180.f);
 
 			// Load the zone
 			try
@@ -79,8 +101,8 @@ int main(int argc, char* argv[])
 					for (uint s=0; s<numS; s++)
 					{
 						// offset on the patch. (center off the lumel)
-						float fS=((float)s)/(float)numS;
-						float fT=((float)t)/(float)numT;
+						float fS=((float)s)/(float)(numS-1);
+						float fT=((float)t)/(float)(numT-1);
 
 						// Get the position on the patch
 						CVector pos=patchs[patch].Patch.eval (fS, fT);
@@ -88,8 +110,44 @@ int main(int argc, char* argv[])
 						// Get the normal on the patch
 						CVector normal=patchs[patch].Patch.evalNormal (fS, fT);
 
+						// Normal accumulator
+						CVector normalAccu=normal;
+
+						// Border values
+						const float fBorder[4]={1.f-fT, 1.f-fS, fT, fS};
+
+						// Border ?
+						int border;
+						for (border=0; border<4; border++)
+						{
+							// This normal is on this border ?
+							if (((border==0)&&(s==0))||
+								((border==1)&&(t==(numT-1)))||
+								((border==2)&&(s==(numS-1)))||
+								((border==3)&&(t==0)))
+							{
+								// If no bind and the neighboord patch is in the same zone
+								if ((patchs[patch].BindEdges[border].NPatchs==1)&&(patchs[patch].BindEdges[border].ZoneId==zone.getZoneId()))
+								{
+									// Get the normal of the neighborhood
+									CVector normalN=getEdgeNormal (patchs[patchs[patch].BindEdges[border].Next[0]].Patch, 
+										patchs[patch].BindEdges[border].Edge[0], fBorder[border]);
+
+									// Check normal threshold
+									if (normalN*normal>normalThreshold)
+									{
+										// add this normal
+										normalAccu+=normalN;
+									}
+								}
+							}
+						}
+
+						// Normalize
+						normalAccu.normalize();
+
 						// Simple lighting
-						sint nLum=(sint)(255.f*((lightDir*normal)+1.f)/2.f);
+						sint nLum=(sint)(255.f*(-lightDir*normalAccu));
 						clamp (nLum, 0, 255);
 
 						// Assign

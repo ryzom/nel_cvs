@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.4 2001/08/23 12:31:37 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.5 2001/08/29 12:36:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,27 +180,29 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 		for (v=0; v<pi.OrderT; v++)
 		for (u=0; u<pi.OrderS; u++)
 		{
+			tileDesc &desc=getUIPatch (i).getTileDesc (u+v*pi.OrderS);
 			for (int l=0; l<3; l++)
 			{
-				if (l>=getUIPatch (i).getTileDesc (u+v*pi.OrderS).getNumLayer ())
+				if (l>=desc.getNumLayer ())
 				{
 					pi.Tiles[u+v*pi.OrderS].Tile[l]=0xffff;
 				}
 				else
 				{
-					pi.Tiles[u+v*pi.OrderS].Tile[l]=getUIPatch (i).getTileDesc (u+v*pi.OrderS).getLayer (l).Tile;
-					pi.Tiles[u+v*pi.OrderS].setTileOrient (l, getUIPatch (i).getTileDesc (u+v*pi.OrderS).getLayer (l).Rotate);
+					pi.Tiles[u+v*pi.OrderS].Tile[l]=desc.getLayer (l).Tile;
+					pi.Tiles[u+v*pi.OrderS].setTileOrient (l, desc.getLayer (l).Rotate);
 				}
 			}
 			if (pi.Tiles[u+v*pi.OrderS].Tile[0]==0xffff)
 				pi.Tiles[u+v*pi.OrderS].setTile256Info (false, 0);
 			else
 			{
-				if (getUIPatch (i).getTileDesc (u+v*pi.OrderS).getCase()==0)
+				if (desc.getCase()==0)
 					pi.Tiles[u+v*pi.OrderS].setTile256Info (false, 0);
 				else
-					pi.Tiles[u+v*pi.OrderS].setTile256Info (true, getUIPatch (i).getTileDesc (u+v*pi.OrderS).getCase()-1);
+					pi.Tiles[u+v*pi.OrderS].setTile256Info (true, desc.getCase()-1);
 			}
+			pi.Tiles[u+v*pi.OrderS].setTileSubNoise (desc.getDisplace());
 		}
 
 		// ** Export tile colors
@@ -225,6 +227,23 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 		// ** Export tile shading
 
 		pi.Lumels.resize ((pi.OrderS*4)*(pi.OrderT*4), 255);
+
+		// ---
+		// --- Smooth flags
+		// ---
+
+		// Clear smooth flags
+		pi.Flags&=~0xf;
+
+		for (int edge=0; edge<4; edge++)
+		{
+			// Edge smooth ?
+			if (!getUIPatch (i).getEdgeFlag (edge))
+			{
+				// Don't smooth
+				pi.Flags|=(1<<edge);
+			}
+		}
 
 		// Add this tile info
 		patchinfo.push_back(pi);
@@ -356,14 +375,6 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 				}				
 			}
 		}
-	}
-
-	// ---
-	// --- Smooth flags
-	// ---
-	for (int neighbor=0; neighbor<4; neighbor++)
-	{
-		// Only one neighbor ?
 	}
 
 	zone.build(zoneId, patchinfo, std::vector<CBorderVertex>());

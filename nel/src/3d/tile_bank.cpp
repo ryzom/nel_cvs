@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.27 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.28 2001/08/29 12:36:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,9 @@
  */
 
 #include "3d/tile_bank.h"
+#include "3d/texture_file.h"
+#include "3d/tile_noise_map.h"
+
 #include "nel/misc/stream.h"
 #include "nel/misc/common.h"
 #include <string>
@@ -67,6 +70,7 @@ void CTileLand::setName (const std::string& name)
 { 
 	_Name=name;
 };
+// ***************************************************************************
 
 
 // ***************************************************************************
@@ -77,7 +81,16 @@ void CTileLand::setName (const std::string& name)
 
 
 // ***************************************************************************
-const sint CTileBank::_Version=3;
+const sint CTileBank::_Version=4;
+// ***************************************************************************
+CTileBank::CTileBank ()
+{
+	// Default _DisplacementMap
+	_DisplacementMap.resize (1);
+
+	// Fill it with 0
+	_DisplacementMap[0].setEmpty ();
+}
 // ***************************************************************************
 void    CTileBank::serial(IStream &f) throw(EStream)
 {
@@ -94,7 +107,19 @@ void    CTileBank::serial(IStream &f) throw(EStream)
 
 	switch (streamver)
 	{
+	case 4:
+		// Displacement map array
+		f.serialCont (_DisplacementMap);
+		if (f.isReading())
+		{
+			// Checks
+			nlassert (_DisplacementMap.size()>0);
+
+			// Set first empty
+			_DisplacementMap[0].setEmpty ();
+		}
 	case 3:
+		// Absolute path
 		f.serial (_AbsPath);
 	case 2:
 		// Serial all containers
@@ -291,15 +316,6 @@ void CTileBank::computeXRef ()
 	}
 }
 // ***************************************************************************
-void CTileBank::getTileXRef (int tile, int &tileSet, int &number, TTileType& type) const
-{
-	nlassert (tile>=0);
-	nlassert (tile<(sint)_TileXRef.size());
-	tileSet=_TileXRef[tile]._XRefTileSet;
-	number=_TileXRef[tile]._XRefTileNumber;
-	type=_TileXRef[tile]._XRefTileType;
-}
-// ***************************************************************************
 void CTileBank::xchgTileset (sint firstTileSet, sint secondTileSet)
 {
 	// Some check
@@ -392,6 +408,203 @@ void CTileBank::makeAllExtensionDDS ()
 	}
 
 }
+// ***************************************************************************
+void CTileBank::cleanUnusedData ()
+{
+	// Clean each tileset
+	for (uint i=0; i<_TileSetVector.size(); i++)
+	{
+		// Clean the tileset
+		_TileSetVector[i].cleanUnusedData ();
+	}
+
+	// Clear the land vector
+	_LandVector.clear();
+}
+// ***************************************************************************
+CTileNoiseMap *CTileBank::getTileNoiseMap (uint tileNumber, uint tileSubNoise)
+{
+	// Check tile number..
+	if (tileNumber<_TileVector.size())
+	{
+		// Get tileset number
+		uint tileSet=_TileXRef[tileNumber]._XRefTileSet;
+
+		// Checks
+		nlassert (tileSet<_TileSetVector.size());
+		nlassert (tileSubNoise<CTileSet::CountDisplace);
+		nlassert (_TileSetVector[tileSet]._DisplacementBitmap[tileSubNoise]<_DisplacementMap.size());
+
+		// Return the tile noise map
+		CTileNoise &tileNoise=_DisplacementMap[_TileSetVector[tileSet]._DisplacementBitmap[tileSubNoise]];
+
+		// Not loaded ?
+		if (tileNoise._TileNoiseMap==NULL)
+		{
+			// Load a bitmap
+			CTextureFile texture (getAbsPath()+tileNoise._FileName);
+			texture.loadGrayscaleAsAlpha (false);
+			texture.generate ();
+			texture.convertToType (CBitmap::Luminance);
+
+			// Alloc
+			tileNoise._TileNoiseMap=new CTileNoiseMap;
+
+			// Good size ?
+			if ((texture.getWidth ()==NL3D_TILE_NOISE_MAP_SIZE)&&(texture.getHeight()==NL3D_TILE_NOISE_MAP_SIZE))
+			{
+				// Copy
+				memcpy (tileNoise._TileNoiseMap->Pixels, &texture.getPixels()[0], NL3D_TILE_NOISE_MAP_SIZE*NL3D_TILE_NOISE_MAP_SIZE);
+
+				// Remap lumels
+				for (uint i=0; i<NL3D_TILE_NOISE_MAP_SIZE*NL3D_TILE_NOISE_MAP_SIZE; i++)
+				{
+					tileNoise._TileNoiseMap->Pixels[i]=(sint8)((uint8)tileNoise._TileNoiseMap->Pixels[i]-128);
+					if (tileNoise._TileNoiseMap->Pixels[i]==-128)
+						tileNoise._TileNoiseMap->Pixels[i]=-127;
+				}
+			}
+			else
+			{
+				// Not good size, copy a static map
+				sint8 notGoodSizeForm[NL3D_TILE_NOISE_MAP_SIZE*NL3D_TILE_NOISE_MAP_SIZE]=
+				{
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 99, 99, 99, 99, 99, 99, 99, 99, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 99, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 99, 00, 99, 99, 99, 99, 99, 99, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 99, 00, 99, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 99, 00, 99, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 99, 00, 99, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 99, 00, 99, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 99, 00, 99, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 99, 00, 99, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 99, 00, 99, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 99, 00, 99, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 99, 00, 99, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 99, 00, 99, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 99, 99, 99, 99, 99, 99, 00, 99, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 99, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 99, 99, 99, 99, 99, 99, 99, 99, 00,
+					00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00
+				};
+
+				// Copy
+				memcpy (tileNoise._TileNoiseMap->Pixels, notGoodSizeForm, NL3D_TILE_NOISE_MAP_SIZE*NL3D_TILE_NOISE_MAP_SIZE);
+			}
+		}
+
+		// Return the noise map
+		return tileNoise._TileNoiseMap;
+	}
+	else
+	{
+		// Checks
+		nlassert (_DisplacementMap[0]._TileNoiseMap);
+		return _DisplacementMap[0]._TileNoiseMap;
+	}
+}
+// ***************************************************************************
+void CTileBank::removeDisplacementMap (uint mapId)
+{
+	// Checks
+	nlassert (mapId<_DisplacementMap.size());
+
+	if (mapId!=0)
+	{
+		// Check if another tileSet uses it
+		for (uint tileSet=0; tileSet<_TileSetVector.size(); tileSet++)
+		{
+			// It uses it ?
+			for (uint tile=0; tile<CTileSet::CountDisplace; tile++)
+			{
+				// The same ?
+				if (_TileSetVector[tileSet]._DisplacementBitmap[tile]==mapId)
+					// Stop
+					break;
+			}
+			if (tile!=CTileSet::CountDisplace)
+				break;
+		}
+		if (tileSet==_TileSetVector.size())
+		{
+			// Remove it
+			_DisplacementMap[mapId].reset();
+			
+			// Last element ?
+			if (mapId==_DisplacementMap.size()-1)
+			{
+				// Resize the array ?
+				while ((mapId>0)&&(_DisplacementMap[mapId]._FileName==""))
+					_DisplacementMap.resize (mapId--);
+			}
+		}
+	}
+}
+// ***************************************************************************
+uint CTileBank::getDisplacementMap (const string &fileName)
+{
+	// Lower string
+	string lower=fileName;
+	lower=strlwr (lower);
+
+	// Look for this texture filename
+	uint noiseTile;
+	for (noiseTile=0; noiseTile<_DisplacementMap.size(); noiseTile++)
+	{
+		// Same name ?
+		if (lower==_DisplacementMap[noiseTile]._FileName)
+			return noiseTile;
+	}
+
+	// Look for a free space
+	for (noiseTile=0; noiseTile<_DisplacementMap.size(); noiseTile++)
+	{
+		// Same name ?
+		if (_DisplacementMap[noiseTile]._FileName=="")
+			break;
+	}
+	if (noiseTile==_DisplacementMap.size())
+	{
+		// Add a tile
+		_DisplacementMap.resize (noiseTile+1);
+	}
+
+	// Set the file name
+	_DisplacementMap[noiseTile]._FileName=lower;
+
+	return noiseTile;
+}
+// ***************************************************************************
+const char* CTileBank::getDisplacementMap (uint noiseMap)
+{
+	return _DisplacementMap[noiseMap]._FileName.c_str();
+}
+// ***************************************************************************
+void CTileBank::setDisplacementMap (uint noiseMap, const char *newName)
+{
+	_DisplacementMap[noiseMap]._FileName=newName;
+}
+// ***************************************************************************
+uint CTileBank::getDisplacementMapCount () const
+{
+	return _DisplacementMap.size();
+}
+// ***************************************************************************
 
 
 // ***************************************************************************
@@ -471,7 +684,7 @@ void CTile::clearTile (CTile::TBitmap type)
 
 
 // ***************************************************************************
-const sint CTileSet::_Version=1;
+const sint CTileSet::_Version=2;
 // ***************************************************************************
 const char* CTileSet::_ErrorMessage[CTileSet::errorCount]=
 {
@@ -545,6 +758,14 @@ const CTileSet::TFlagBorder CTileSet::_TransitionFlags[CTileSet::count][4]=
 	{_1110,_1111,_1111,_0001}	// tile 47
 };
 // ***************************************************************************
+CTileSet::CTileSet ()
+{
+	// Default, tileset 0
+	uint displace;
+	for (displace=FirstDisplace; displace<CountDisplace; displace++)
+		_DisplacementBitmap[displace]=0;
+}
+// ***************************************************************************
 void CTileSet::setName (const std::string& name)
 {
 	_Name=name;
@@ -561,52 +782,56 @@ void CTileSet::serial(IStream &f) throw(EStream)
 
 	CTileBorder tmp;
 
-	switch (streamver)
+	// New version
+	if (streamver>=2)
 	{
-	case 1:
-		// Serial displacement map filename
+		uint displace;
+		for (displace=FirstDisplace; displace<CountDisplace; displace++)
+			f.serial (_DisplacementBitmap[displace]);
+	}
+
+	// Serial displacement map filename, obsolete
+	if (streamver==1)
+	{
+		// Remove obsolete data
+		string tmp;
+		for (uint displace=FirstDisplace; displace<CountDisplace; displace++)
+			f.serial (tmp);
+	}
+
+	int i;
+	f.serial (_Name);
+	f.serialCont (_Tile128);
+	f.serialCont (_Tile256);
+	for (i=0; i<count; i++)
+		f.serial (_TileTransition[i]);
+	f.serialCont (_ChildName);
+	f.serial (_Border128[CTile::diffuse]);
+	f.serial (_Border128[CTile::additive]);
+
+	// old field, border bump 128
+	if (streamver==0)
+		f.serial (tmp);
+
+	f.serial (_Border256[CTile::diffuse]);
+	f.serial (_Border256[CTile::additive]);
+
+	// old field, border bump 256
+	if (streamver==0)
+		f.serial (tmp);
+
+	for (i=0; i<count; i++)
+	{
+		f.serial (_BorderTransition[i][CTile::diffuse]);
+		f.serial (_BorderTransition[i][CTile::additive]);
+		f.serial (_BorderTransition[i][CTile::alpha]);
+
+		// Reset the diffuse and alpha border if old version
+		if (streamver==0)
 		{
-			for (uint displace=FirstDisplace; displace<CountDisplace; displace++)
-				f.serial (_DisplacementFileName[displace]);
+			_BorderTransition[i][CTile::diffuse].reset();
+			_BorderTransition[i][CTile::alpha].reset();
 		}
-	case 0:
-		{
-			int i;
-			f.serial (_Name);
-			f.serialCont (_Tile128);
-			f.serialCont (_Tile256);
-			for (i=0; i<count; i++)
-				f.serial (_TileTransition[i]);
-			f.serialCont (_ChildName);
-			f.serial (_Border128[CTile::diffuse]);
-			f.serial (_Border128[CTile::additive]);
-
-			// old field, border bump 128
-			if (streamver==0)
-				f.serial (tmp);
-
-			f.serial (_Border256[CTile::diffuse]);
-			f.serial (_Border256[CTile::additive]);
-
-			// old field, border bump 256
-			if (streamver==0)
-				f.serial (tmp);
-
-			for (i=0; i<count; i++)
-			{
-				f.serial (_BorderTransition[i][CTile::diffuse]);
-				f.serial (_BorderTransition[i][CTile::additive]);
-				f.serial (_BorderTransition[i][CTile::alpha]);
-
-				// Reset the diffuse and alpha border if old version
-				if (streamver==0)
-				{
-					_BorderTransition[i][CTile::diffuse].reset();
-					_BorderTransition[i][CTile::alpha].reset();
-				}
-			}
-		}
-		break;
 	}
 }
 // ***************************************************************************
@@ -1110,24 +1335,46 @@ void CTileSet::deleteBordersIfLast (const CTileBank& bank, CTile::TBitmap type)
 	_Border256[type].reset();
 }
 // ***************************************************************************
-void CTileSet::clearDisplacement (TDisplacement displacement)
+void CTileSet::clearDisplacement (TDisplacement displacement, CTileBank& bank)
 {
 	// checks
 	nlassert (displacement>=FirstDisplace);
 	nlassert (displacement<=LastDisplace);
 
-	// Clear file name
-	_DisplacementFileName[displacement]="";
+	// Backup the id
+	int id=_DisplacementBitmap[displacement];
+
+	// Clear map id
+	_DisplacementBitmap[displacement]=0;
+
+	// Tell the bank we remove it
+	bank.removeDisplacementMap (id);
 }
 // ***************************************************************************
-void CTileSet::setDisplacement (TDisplacement displacement, const std::string& fileName)
+void CTileSet::setDisplacement (TDisplacement displacement, const std::string& fileName, CTileBank& bank)
 {
 	// checks
 	nlassert (displacement>=FirstDisplace);
 	nlassert (displacement<=LastDisplace);
 
-	// Clear file name
-	_DisplacementFileName[displacement]=fileName;
+	// Clear it
+	bank.removeDisplacementMap (_DisplacementBitmap[displacement]);
+
+	// Get displacement map
+	_DisplacementBitmap[displacement]=bank.getDisplacementMap (fileName);
+}
+// ***************************************************************************
+void CTileSet::cleanUnusedData ()
+{
+	_Name="";
+	_ChildName.clear();
+	_Border128[0].reset ();
+	_Border128[1].reset ();
+	_Border256[0].reset ();
+	_Border256[1].reset ();
+	for (uint i=0; i<count; i++)
+	for (uint j=0; j<CTile::bitmapCount; j++)
+		_BorderTransition[i][j].reset();
 }
 
 // ***************************************************************************
@@ -1387,6 +1634,102 @@ void CTileSetTransition::serial(class NLMISC::IStream &f) throw(EStream)
 		break;
 	}
 }
+// ***************************************************************************
 
+
+// ***************************************************************************
+// ***************************************************************************
+// CTileNoise.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+CTileNoise::CTileNoise ()
+{
+	// Not loaded
+	_TileNoiseMap=NULL;
+	_FileName="";
+}
+// ***************************************************************************
+CTileNoise::CTileNoise (const CTileNoise &src)
+{
+	// Default ctor
+	this->CTileNoise::CTileNoise ();
+
+	// Copy
+	*this=src;
+}
+// ***************************************************************************
+CTileNoise::~CTileNoise ()
+{
+	if (_TileNoiseMap)
+	{
+		delete _TileNoiseMap;
+		_TileNoiseMap=NULL;
+	}
+}
+// ***************************************************************************
+CTileNoise& CTileNoise::operator= (const CTileNoise &src)
+{
+	// Copy the filename
+	_FileName=src._FileName;
+
+	// Tile noise map ?
+	if (src._TileNoiseMap)
+	{
+		if (_TileNoiseMap==NULL)
+		{
+			// Allocate it
+			_TileNoiseMap=new CTileNoiseMap;
+		}
+
+		// Copy the noise map
+		*_TileNoiseMap=*src._TileNoiseMap;
+	}
+	else
+	{
+		// Erase the map
+		if (_TileNoiseMap)
+		{
+			delete _TileNoiseMap;
+			_TileNoiseMap=NULL;
+		}
+	}
+	return *this;
+}
+// ***************************************************************************
+void CTileNoise::serial (IStream& f)
+{
+	// Version
+	f.serialVersion (0);
+
+	// Serial the file name
+	f.serial (_FileName);
+}
+// ***************************************************************************
+#include <crtdbg.h>
+void CTileNoise::setEmpty ()
+{
+	// Reset it
+	reset();
+	_FileName="EmptyDisplacementMap";
+	_TileNoiseMap=new CTileNoiseMap();
+	memset (_TileNoiseMap->Pixels, 0, NL3D_TILE_NOISE_MAP_SIZE*NL3D_TILE_NOISE_MAP_SIZE);
+}
+// ***************************************************************************
+void CTileNoise::reset()
+{
+	// Erase the map
+	if (_TileNoiseMap)
+	{
+		delete _TileNoiseMap;
+		_TileNoiseMap=NULL;
+	}
+
+	// Erase filename
+	_FileName="";
+}
+// ***************************************************************************
 
 }	// NL3D

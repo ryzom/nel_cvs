@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.2 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: tile_bank.h,v 1.3 2001/08/29 12:36:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -274,6 +274,7 @@ class CTileSet
 {
 	friend class CTileBank;
 public:
+
 	enum TError { ok=0, topInterfaceProblem, bottomInterfaceProblem, leftInterfaceProblem,
 		rightInterfaceProblem, addFirstA128128, topBottomNotTheSame, rightLeftNotTheSame, 
 		sizeInvalide, errorCount };
@@ -281,6 +282,9 @@ public:
 	enum TDisplacement { FirstDisplace=0, LastDisplace=15, CountDisplace=16 };
 	enum TBorder { top=0, bottom, left, right, borderCount };
 	enum TFlagBorder { _1111=0,	_0111, _1110, _0001, _1000, _0000, dontcare=-1 };
+
+	// Ctor
+	CTileSet ();
 
 	// add
 	void addTile128 (int& indexInTileSet, CTileBank& bank);
@@ -294,7 +298,7 @@ public:
 	void clearTile128 (int indexInTileSet, CTile::TBitmap type, CTileBank& bank);
 	void clearTile256 (int indexInTileSet, CTile::TBitmap type, CTileBank& bank);
 	void clearTransition (TTransition transition, CTile::TBitmap type, CTileBank& bank);
-	void clearDisplacement (TDisplacement displacement);
+	void clearDisplacement (TDisplacement displacement, CTileBank& bank);
 
 	// set
 	void setName (const std::string& name);
@@ -303,24 +307,13 @@ public:
 	void setTileTransition (TTransition transition, const std::string& name, CTile::TBitmap type, CTileBank& bank, const CTileBorder& border);
 	void setTileTransitionAlpha (TTransition transition, const std::string& name, CTileBank& bank, const CTileBorder& border, uint8 rotAlpha);
 	void setBorder (CTile::TBitmap type, const CTileBorder& border);
-	void setDisplacement (TDisplacement displacement, const std::string& fileName);
+	void setDisplacement (TDisplacement displacement, const std::string& fileName, CTileBank& bank);
 
 	// check
 	TError checkTile128 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante);
 	TError checkTile256 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante);
 	TError checkTileTransition (TTransition transition, CTile::TBitmap type, const CTileBorder& border, int& indexError,
 		int& pixel, int& composante);
-
-	// is
-	bool isDisplacement (TDisplacement displacement)
-	{
-		// checks
-		nlassert (displacement>=FirstDisplace);
-		nlassert (displacement<=LastDisplace);
-
-		// return file name
-		return *(_DisplacementFileName[displacement].c_str())!=0;
-	}
 
 	// get
 	const std::string& getName () const;
@@ -361,14 +354,14 @@ public:
 	  * Return the file name of the displacement map for the map n° displacement.
 	  * This file name is relative at the absolute path.
 	  */
-	const std::string& getDisplacementFileName (TDisplacement displacement)
+	uint getDisplacementTile (TDisplacement displacement) const
 	{
 		// checks
 		nlassert (displacement>=FirstDisplace);
 		nlassert (displacement<=LastDisplace);
 
 		// return file name
-		return _DisplacementFileName[displacement];
+		return _DisplacementBitmap[displacement];
 	}
 
 	// Static methods
@@ -389,6 +382,9 @@ public:
 	static TTransition rotateTransition (TTransition transition);
 
 	// other
+
+	void cleanUnusedData ();
+
 	void addChild (const std::string& name);
 	void removeChild (const std::string& name);
 	bool isChild (const std::string& name)
@@ -411,12 +407,49 @@ private:
 	CTileBorder _Border128[2];
 	CTileBorder _Border256[2];
 	CTileBorder _BorderTransition[count][CTile::bitmapCount];
-	std::string _DisplacementFileName[CTileSet::CountDisplace];
+	uint32 _DisplacementBitmap[CTileSet::CountDisplace];
 
 	static const sint _Version;
 	static const char* _ErrorMessage[CTileSet::errorCount];
 	static const TFlagBorder _TransitionFlags[count][4];
 };
+
+
+/**
+ * This class manage tile noise.
+ * \author Cyril Corvazier
+ * \author Nevrax France
+ * \date 2000
+ */
+class CTileNoise
+{
+	friend class CTileBank;
+public:
+	// Ctor
+	CTileNoise ();
+
+	// Copy ctor
+	CTileNoise (const CTileNoise &src);
+
+	// Dtor
+	~CTileNoise ();
+
+	// Copy operator
+	CTileNoise& operator= (const CTileNoise &src);
+
+	// Serial
+	void serial (NLMISC::IStream& f);
+
+	// Make a blank tile noise
+	void setEmpty ();
+
+	// Empty the tile noise
+	void reset();
+private: 
+	class CTileNoiseMap		*_TileNoiseMap;
+	std::string				_FileName;
+};
+
 
 /**
  * This class manage tile texture. It can load banktile description file 
@@ -430,6 +463,10 @@ class CTileBank
 	friend class CTileSet;
 public:
 	enum TTileType { _128x128=0, _256x256, transition, undefined };
+	
+	// Ctor
+	CTileBank ();
+
 	// Get
 	sint getLandCount () const 
 	{ 
@@ -475,6 +512,9 @@ public:
 	void clear ();
 	sint getNumBitmap (CTile::TBitmap bitmap) const;
 	void computeXRef ();
+	
+	// Remove data unused in realtime
+	void cleanUnusedData ();
 
 	/**
 	  * Return the xref for a tile.
@@ -484,7 +524,34 @@ public:
 	  * \param number will receive the number of the tile in the tileset.
 	  * \param type is the type of tile.
 	  */
-	void getTileXRef (int tile, int &tileSet, int &number, TTileType& type) const;
+	void getTileXRef (int tile, int &tileSet, int &number, TTileType& type) const
+	{
+		nlassert (tile>=0);
+		nlassert (tile<(sint)_TileXRef.size());
+		tileSet=_TileXRef[tile]._XRefTileSet;
+		number=_TileXRef[tile]._XRefTileNumber;
+		type=_TileXRef[tile]._XRefTileType;
+	}
+
+	// Get number of displacement map
+	uint getDisplacementMapCount () const;
+
+	// Get filename
+	const char* getDisplacementMap (uint noiseMap);
+
+	// Get filename
+	void setDisplacementMap (uint noiseMap, const char *newName);
+
+	// Add a displacement map
+	uint getDisplacementMap (const std::string &fileName);
+
+	// Remove a displacement map
+	void removeDisplacementMap (uint mapId);
+
+	/** 
+	  * Return the tilenoisemap pointer for this tile and subnoise tile
+	  */
+	CTileNoiseMap *getTileNoiseMap (uint tileNumber, uint tileSubNoise);
 
 	void makeAllPathRelative ();
 	/// This method change ".tga" of texture filename, to ".dds". Do this only for Additive and Diffuse part (not alpha).
@@ -521,12 +588,12 @@ private:
 	};
 	std::vector<CTileLand>	_LandVector;
 	std::vector<CTileSet>	_TileSetVector;
-	std::vector<CTile>	_TileVector;
+	std::vector<CTile>		_TileVector;
 	std::vector<CTileXRef>	_TileXRef;
+	std::vector<CTileNoise>	_DisplacementMap;
 	std::string			_AbsPath;
 	static const sint	_Version;
 };
-
 
 
 }

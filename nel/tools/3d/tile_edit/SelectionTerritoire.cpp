@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(SelectionTerritoire, CDialog)
 	ON_BN_CLICKED(ID_SAVE, OnSave)
 	ON_BN_CLICKED(ID_SAVE_AS, OnSaveAs)
 	ON_BN_CLICKED(IDC_PATH, OnPath)
+	ON_BN_CLICKED(ID_EXPORT, OnExport)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -432,17 +433,17 @@ void SelectionTerritoire::OnSave()
 {
 	// TODO: Add extra validation here
 	CString str = DefautPath + MainFileName;
-	Save (str);
+	Save (str, tileBank);
 }
 
-void SelectionTerritoire::Save(const char* path)
+void SelectionTerritoire::Save(const char* path, CTileBank &toSave)
 {
 	// TODO: Add extra validation here
 	{
 		COFile stream;
 		if (stream.open ((const char*)path))
 		{
-			tileBank.serial (stream);
+			toSave.serial (stream);
 		}
 	}
 }
@@ -455,7 +456,7 @@ void SelectionTerritoire::OnSaveAs()
  	CFileDialog sFile(false, "bank", DefautPath+MainFileName, 0, szFilter, this);
 	if (sFile.DoModal()==IDOK)
 	{
-		Save (sFile.GetPathName());
+		Save (sFile.GetPathName(), tileBank);
 		MainFileOk = 1;
 		CButton *button = (CButton*)GetDlgItem(IDC_ADD_TERRITOIRE);
 		button->EnableWindow(true);
@@ -597,6 +598,31 @@ void SelectionTerritoire::OnPath()
 					}
 				}
 
+				// For all tiles, check we can change the path
+				for (uint noise=1; noise<tileBank.getDisplacementMapCount (); noise++)
+				{
+					// Bitmap string
+					const char *bitmapPath=tileBank.getDisplacementMap (noise);
+
+					// not empty ?
+					if (strcmp (bitmapPath, "")!=0)
+					{
+						// Check the path
+						if (CheckPath (bitmapPath, path)==false)
+						{
+							// Bad path
+							goodPath=false;
+
+							// Make a message
+							sprintf (msg, "Path %s can't be found in bitmap %s. Continue ?", path, bitmapPath);
+
+							// Message
+							if (MessageBox (msg, "TileEdit", MB_YESNO|MB_ICONQUESTION)==IDNO)
+								break;
+						}
+					}
+				}
+
 				// Good path ?
 				if (goodPath)
 				{
@@ -623,7 +649,7 @@ void SelectionTerritoire::OnPath()
 								// not empty ?
 								if (bitmapPath!="")
 								{
-									// Check the path
+									// Remove the absolute path
 									bool res=RemovePath (bitmapPath, path);
 									nlassert (res);
 
@@ -632,6 +658,24 @@ void SelectionTerritoire::OnPath()
 								}
 							}
 						}	
+					}
+
+					// For all tiles, check we can change the path
+					for (uint noise=1; noise<tileBank.getDisplacementMapCount (); noise++)
+					{
+						// Bitmap string
+						string bitmapPath=tileBank.getDisplacementMap (noise);
+
+						// not empty ?
+						if (bitmapPath!="")
+						{
+							// Remove the absolute path
+							bool res=RemovePath (bitmapPath, path);
+							nlassert (res);
+
+							// Set the bitmap
+							tileBank.setDisplacementMap (noise, bitmapPath.c_str());
+						}
 					}
 				}
 				else
@@ -653,5 +697,24 @@ void SelectionTerritoire::OnPath()
 
 		// Remove path from all tiles
 		//tileBank
+	}
+}
+
+void SelectionTerritoire::OnExport() 
+{
+	// TODO: Add your control notification handler code here
+	static char BASED_CODE szFilter[] = 
+		"NeL tile bank files (*.smallbank)|*.smallbank|All Files (*.*)|*.*||";
+ 	CFileDialog sFile(false, "*.smallbank", DefautPath+"*.smallbank", 0, szFilter, this);
+	if (sFile.DoModal()==IDOK)
+	{
+		// Copy the bank
+		CTileBank copy=tileBank;
+
+		// Remove unused data
+		copy.cleanUnusedData ();
+
+		// Save it
+		Save (sFile.GetPathName(), copy);
 	}
 }

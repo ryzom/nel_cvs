@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.10 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: landscape.h,v 1.11 2001/08/29 12:36:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -613,9 +613,6 @@ private:
 	// @{
 	// guess.
 	bool			_NoiseEnabled;
-
-	/// Retrieve the Tile Noise Map for the wanted tile/tileSubNoise.
-	CTileNoiseMap	*getTileNoiseMap(uint16 tileId, uint tileSubNoise);
 	// @}
 
 

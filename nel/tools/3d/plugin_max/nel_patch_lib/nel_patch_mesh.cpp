@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * <File description>
  *
- * $Id: nel_patch_mesh.cpp,v 1.1 2001/04/26 16:37:32 corvazier Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.2 2001/08/29 12:36:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1764,6 +1764,7 @@ IOResult RPatchMesh::Load(ILoad *iload)
 
 	switch (nVersion)
 	{
+	case RPATCHMESH_SERIALIZE_VERSION_8:
 	case RPATCHMESH_SERIALIZE_VERSION_7:
 	case RPATCHMESH_SERIALIZE_VERSION_6:
 	case RPATCHMESH_SERIALIZE_VERSION_5:
@@ -1809,6 +1810,10 @@ IOResult RPatchMesh::Load(ILoad *iload)
 						else
 							getUIPatch (i).getTileDesc (j)._Flags=0;
 						
+						// Clear displace flags in version lower than 8
+						if (nVersion<RPATCHMESH_SERIALIZE_VERSION_8)
+							getUIPatch (i).getTileDesc (j).setDisplace (0);
+
 						for (int k=0; k<3; k++)
 						{	
 							bool invert;

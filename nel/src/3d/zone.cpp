@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.47 2001/08/23 12:32:08 corvazier Exp $
+ * $Id: zone.cpp,v 1.48 2001/08/29 12:36:56 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1167,7 +1167,7 @@ void			CZone::changePatchTextureAndColor (sint numPatch, const std::vector<CTile
 		Patchs[numPatch].TileColors = *colors;
 	}
 
-	if (Compiled&&(tiles||colors))
+	if (Compiled)
 	{
 		Patchs[numPatch].deleteTileUvs();
 		Patchs[numPatch].recreateTileUvs();

@@ -17,6 +17,7 @@
 #define IDS_SPIN                        5
 #define ID_SAVE_AS                      5
 #define ID_ROT3                         5
+#define ID_EXPORT                       6
 #define IDD_PANEL                       101
 #define IDD_TERRITOIRE                  101
 #define IDC_CURSOR1                     104

@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "tile_edit_exe.h"
 #include "SelectionTerritoire.h"
-#include "checkversion.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -47,14 +46,6 @@ BOOL CTile_edit_exeApp::InitInstance()
 	// If you are not using these features and wish to reduce the size
 	//  of your final executable, you should remove from the following
 	//  the specific initialization routines you do not need.
-
-	// Check version
-	static bool bPassed=false;
-	if (!bPassed)
-	{
-		CheckPluginVersion ("tile edit\\tile_edit.exe");
-		bPassed=true;
-	}
 
 	Start();
 

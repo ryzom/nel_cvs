@@ -383,19 +383,35 @@ int TileList::setDisplacement (int tile, const std::string& name)
 	std::string troncated=name;
 	if (RemovePath (troncated, tileBank2.getAbsPath ().c_str()))
 	{
-		// change the file name of the displacement map
-		tileBank2.getTileSet(_tileSet)->setDisplacement ((CTileSet::TDisplacement)tile, troncated);
-
-		// not loaded
-		theListDisplacement[tile].loaded=0;
-
 		// load it
-		if (name!="")
+		if (troncated!="")
 		{
-			if (!_LoadBitmap(tileBank2.getAbsPath() + name, &theListDisplacement[tile].BmpInfo, theListDisplacement[tile].Bits, NULL, 0))
-				MessageBox (NULL, (tileBank2.getAbsPath() + name).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
+			// not loaded
+			theListDisplacement[tile].loaded=0;
+
+			if (!_LoadBitmap(tileBank2.getAbsPath() + troncated, &theListDisplacement[tile].BmpInfo, theListDisplacement[tile].Bits, NULL, 0))
+				MessageBox (NULL, (tileBank2.getAbsPath() + troncated).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
 			else
-				theListDisplacement[tile].loaded=1;
+			{
+				// Check the size
+				if ((theListDisplacement[tile].BmpInfo.bmiHeader.biWidth!=32)||(-theListDisplacement[tile].BmpInfo.bmiHeader.biHeight!=32))
+				{
+					// Error message
+					MessageBox (NULL, "Invalid size: displacement map must be 32x32 8 bits.", troncated.c_str(),
+						MB_OK|MB_ICONEXCLAMATION);
+
+					// Free the bitmap
+					theListDisplacement[tile].Bits.resize (0);
+				}
+				else
+				{
+					// Loaded
+					theListDisplacement[tile].loaded=1;
+
+					// change the file name of the displacement map
+					tileBank2.getTileSet(_tileSet)->setDisplacement ((CTileSet::TDisplacement)tile, troncated, tileBank2);
+				}
+			}
 		}
 	}
 	else
@@ -562,7 +578,9 @@ void TileList::clearTransition (int index, CTile::TBitmap bitmap)
 void TileList::clearDisplacement (int index)
 {
 	// Clear the displacement map filename
-	tileBank2.getTileSet (_tileSet)->clearDisplacement ((CTileSet::TDisplacement)index);
+	tileBank2.getTileSet (_tileSet)->clearDisplacement ((CTileSet::TDisplacement)index, tileBank2);
+	theListDisplacement[index].loaded=0;
+	theListDisplacement[index].Bits.resize(0);
 }
 
 tilelist::iterator TileList::GetFirst(int n)
@@ -1142,7 +1160,7 @@ void CTView::DrawTile(tilelist::iterator i,CDC *pDC,int clear, int n)
 		}
 		break;
 	case 3:
-		pth = tileBank2.getTileSet (InfoList._tileSet)->getDisplacementFileName ((CTileSet::TDisplacement)i->id);
+		pth = tileBank2.getDisplacementMap (tileBank2.getTileSet (InfoList._tileSet)->getDisplacementTile ((CTileSet::TDisplacement)i->id));
 		break;
 	}
 

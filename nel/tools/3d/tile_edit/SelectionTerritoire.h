@@ -12,6 +12,11 @@
 
 extern void Start(void);
 
+namespace NL3D
+{
+	class CTileBank;
+}
+
 class SelectionTerritoire : public CDialog
 {
 // Construction
@@ -59,8 +64,9 @@ protected:
 	virtual void OnSave();
 	virtual void OnSaveAs();
 	afx_msg void OnPath();
+	afx_msg void OnExport();
 	//}}AFX_MSG
-	void Save(const char* path);
+	void Save(const char* path, NL3D::CTileBank &toSave);
 
 	DECLARE_MESSAGE_MAP()
 };

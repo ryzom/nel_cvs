@@ -360,10 +360,6 @@ SOURCE=.\Browse.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\checkversion.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\custom.cpp
 # End Source File
 # Begin Source File
@@ -470,10 +466,6 @@ SOURCE=.\Pic\readpic.h
 # Begin Source File
 
 SOURCE=.\Browse.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\checkversion.h
 # End Source File
 # Begin Source File
 

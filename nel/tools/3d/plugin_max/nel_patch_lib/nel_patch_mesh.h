@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * <File description>
  *
- * $Id: nel_patch_mesh.h,v 1.3 2001/08/23 12:31:37 corvazier Exp $
+ * $Id: nel_patch_mesh.h,v 1.4 2001/08/29 12:36:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,7 @@ extern HINSTANCE hInstance;
 
 extern ClassDesc* GetRPODesc();
 
+#define RPATCHMESH_SERIALIZE_VERSION_8 8
 #define RPATCHMESH_SERIALIZE_VERSION_7 7
 #define RPATCHMESH_SERIALIZE_VERSION_6 6
 #define RPATCHMESH_SERIALIZE_VERSION_5 5
@@ -60,7 +61,7 @@ extern ClassDesc* GetRPODesc();
 #define RPATCHMESH_SERIALIZE_VERSION_3 3
 #define RPATCHMESH_SERIALIZE_VERSION_2 2
 #define RPATCHMESH_SERIALIZE_VERSION_1 1
-#define RPATCHMESH_SERIALIZE_VERSION RPATCHMESH_SERIALIZE_VERSION_7
+#define RPATCHMESH_SERIALIZE_VERSION RPATCHMESH_SERIALIZE_VERSION_8
 
 #define EP_OBJECT	0
 #define EP_VERTEX	1
@@ -140,16 +141,20 @@ public:
 
 class tileDesc
 {
-#define CASE_MASK 0x7
+#define CASE_MASK 0x0007
+#define DISPLACE_SHIFT 3
+#define DISPLACE_COUNT 16
+#define DISPLACE_MASK ((DISPLACE_COUNT-1)<<DISPLACE_SHIFT)
 	friend class RPatchMesh;
 public:
-	void setTile (int num, int ncase, tileIndex tile0, tileIndex tile1, tileIndex tile2)
+	void setTile (int num, int ncase, int displace, tileIndex tile0, tileIndex tile1, tileIndex tile2)
 	{
 		_Num=num;
 		_MatIDTab[0]=tile0;
 		_MatIDTab[1]=tile1;
 		_MatIDTab[2]=tile2;
 		setCase (ncase);
+		setDisplace (displace);
 	}
 	tileIndex& getLayer (int num)
 	{
@@ -189,6 +194,16 @@ public:
 		nlassert ((nCase>=0)&&(nCase<5));
 		_Flags&=~CASE_MASK;
 		_Flags|=nCase;
+	}
+	uint8 getDisplace () const
+	{
+		return (uint8)((_Flags&DISPLACE_MASK)>>DISPLACE_SHIFT);
+	}
+	void setDisplace (uint8 nDisplace)
+	{
+		nlassert ((nDisplace>=0)&&(nDisplace<DISPLACE_COUNT));
+		_Flags&=~DISPLACE_MASK;
+		_Flags|=(nDisplace<<DISPLACE_SHIFT);
 	}
 private:
 	tileIndex _MatIDTab[3];

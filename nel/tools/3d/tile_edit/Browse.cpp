@@ -537,8 +537,8 @@ unsigned long Browse::MyControllingFunction( void* pParam )
 			}
 			break;
 		case 3:
-			// Get diaplcement filename
-			path = tileBank2.getTileSet (br->m_ctrl.InfoList._tileSet)->getDisplacementFileName((CTileSet::TDisplacement)i);
+			// Get diplacement filename
+			path = tileBank2.getDisplacementMap (tileBank2.getTileSet (br->m_ctrl.InfoList._tileSet)->getDisplacementTile ((CTileSet::TDisplacement)i));
 			break;
 		}
 		std::vector<NLMISC::CBGRA>* pAlpha=NULL;

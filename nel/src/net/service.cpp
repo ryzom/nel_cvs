@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.26 2000/12/07 15:18:42 cado Exp $
+ * $Id: service.cpp,v 1.27 2000/12/07 16:32:42 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -237,6 +237,7 @@ sint IService::main (int argc, char **argv)
 			if ( nd->connected() )
 			{
 				NetLog.addDisplayer( nd );
+				NetLog.addDisplayer( new CStdDisplayer() );
 			}
 
 			// Talk with the NS

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.32 2002/03/12 14:12:49 legros Exp $
+ * $Id: unified_network.cpp,v 1.33 2002/03/14 09:47:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1087,6 +1087,14 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host)
 	}
 }
 
+TUnifiedMsgCallback CUnifiedNetwork::findCallback (const std::string &callbackName)
+{
+	TMsgMappedCallback::iterator	itcb = _Callbacks.find(callbackName);
+	if (itcb == _Callbacks.end())
+		return NULL;
+	else
+		return (*itcb).second;
+}
 
 //
 //
@@ -1189,5 +1197,144 @@ void	CUnifiedNetwork::CUnifiedConnection::reset()
 	AutoCheck = false;
 }
 
-} // NLNET
 
+//
+// Commands
+//
+
+static bool createMessage (CMessage &msgout, const vector<string> &args, CLog &log)
+{
+	for (uint i = 2; i < args.size (); i+=2)
+	{
+		string type = args[i+0];
+		string value = args[i+1];
+
+			 if (type == "s8")			{ sint8  v = atoi(value.c_str()); msgout.serial (v); }
+		else if (type == "s16")			{ sint16 v = atoi(value.c_str()); msgout.serial (v); }
+		else if (type == "s32")			{ sint32 v = atoi(value.c_str()); msgout.serial (v); }
+		else if (type == "s64")			{ sint64 v = atoi(value.c_str()); msgout.serial (v); }
+		else if (type == "u8")			{ uint8  v = atoi(value.c_str()); msgout.serial (v); }
+		else if (type == "u16")			{ uint16 v = atoi(value.c_str()); msgout.serial (v); }
+		else if (type == "u32")			{ uint32 v = atoi(value.c_str()); msgout.serial (v); }
+		else if (type == "u64")			{ uint64 v = atoi(value.c_str()); msgout.serial (v); }
+		else if (type == "b")			{ bool v = atoi(value.c_str()) == 1; msgout.serial (v); }
+		else if (type == "s")			{ msgout.serial (value); }
+		else { log.displayNL ("type '%s' is not a valid type", type.c_str()); return false; }
+	}
+	return true;
+}
+
+/*
+ * Simulate a message that comes from the network.
+ *
+ * for the bool (b type), you must set the value to 1 or 0
+ * for the string (s type), we don't manage space inside a string
+ * for stl containers, you have first to put a u32 type that is the size of the container and after all elements
+ * (ex: if you want to put a vector<uint16> that have 3 elements: u32 3 u16 10 u16 11 u16 12)
+ *
+ * ex: msgin 128 REGISTER u32 10 u32 541 u32 45
+ * You'll receive a fake message REGISTER that seems to come from the service number 128 with 3 uint32.
+ *
+ */
+
+NLMISC_COMMAND(msgin, "Simulate an input message from another service", "<ServiceName>|<ServiceId> <MessageName> [<ParamType> <Param>]*")
+{
+	if(args.size() < 2) return false;
+	
+	uint16 serviceId = atoi (args[0].c_str());
+	string serviceName = args[0].c_str();
+	string messageName = args[1].c_str();
+	
+	if (serviceId > 255)
+	{
+		log.displayNL ("Service Id %d must be between [1;255]", serviceId);
+		return false;
+	}
+	
+	if ((args.size()-2) % 2 != 0)
+	{
+		log.displayNL ("The number of parameter must be a multiple of 2");
+		return false;
+	}
+
+	CMessage msg (messageName);
+	msg.clear ();
+
+	if (!createMessage (msg, args, log))
+		return false;
+
+	msg.invert ();
+
+	TUnifiedMsgCallback cb = CUnifiedNetwork::getInstance()->findCallback (messageName);
+	
+	if (cb == NULL)
+	{
+		log.displayNL ("Callback for message '%s' is not found", messageName.c_str());
+	}
+	else
+	{
+		cb (msg, serviceName, serviceId);
+	}
+	
+		
+	return true;
+}
+
+/*
+ * Create a message and send it to the specified service
+ *
+ * for the bool (b type), you must set the value to 1 or 0
+ * for the string (s type), we don't manage space inside a string
+ * for stl containers, you have first to put a u32 type that is the size of the container and after all elements
+ * (ex: if you want to put a vector<uint16> that have 3 elements: u32 3 u16 10 u16 11 u16 12)
+ *
+ * ex: msgin 128 REGISTER u32 10 u32 541 u32 45
+ * You'll send a real message REGISTER to the service number 128 with 3 uint32.
+ *
+ */
+
+NLMISC_COMMAND(msgout, "Send a message to a specified service", "<ServiceName>|<ServiceId> <MessageName> [<ParamType> <Param>]*")
+{
+	if(args.size() < 2) return false;
+	
+	uint16 serviceId = atoi (args[0].c_str());
+	string serviceName = args[0].c_str();
+	string messageName = args[1].c_str();
+	
+	if (serviceId > 255)
+	{
+		log.displayNL ("Service Id %d must be between [1;255]", serviceId);
+		return false;
+	}
+	
+	if ((args.size()-2) % 2 != 0)
+	{
+		log.displayNL ("The number of parameter must be a multiple of 2");
+		return false;
+	}
+
+	CMessage msg (messageName);
+
+	if (!createMessage (msg, args, log))
+		return false;
+
+	TSockId host = 0;
+	CCallbackNetBase *cnb = NULL;
+
+	if (serviceId != 0)
+		cnb = CUnifiedNetwork::getInstance()->getNetBase ((uint8)serviceId, host);
+	else
+		cnb = CUnifiedNetwork::getInstance()->getNetBase (serviceName, host);
+
+	if (cnb == NULL)
+	{
+		log.displayNL ("'%s' is a bad <ServiceId> or <ServiceName>", args[0].c_str());
+		return false;
+	}
+
+	cnb->send (msg, host);
+	
+	return true;
+}
+
+} // NLNET

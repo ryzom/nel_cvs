@@ -1,7 +1,7 @@
 /** \file network_viewer.cpp
  * network_viewer prototype
  *
- * $Id: network_viewer.cpp,v 1.2 2000/12/08 18:11:43 lecroart Exp $
+ * $Id: network_viewer.cpp,v 1.3 2000/12/12 16:44:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -137,14 +137,22 @@ void switchView ()
 	}
 }
 
-CMsg &findOrAddMsg (sint32 cnxsrc, sint32 num)
+CMsg &findOrAddMsg (sint32 cnxsrc, sint32 num, bool send)
 {
 	for (sint32 i = 0; i < (sint32) Msgs.size (); i++)
 	{
-		if (Msgs[i].cnxsrc == cnxsrc && Msgs[i].num == num && (Msgs[i].timesrc == 0 || Msgs[i].timedst == 0))
+		if (Msgs[i].cnxsrc == cnxsrc && Msgs[i].num == num)
 		{
-			// found it, return it
-			return Msgs[i];
+			if (send && Msgs[i].timesrc != 0)
+			{
+				// found it, return it
+				return Msgs[i];
+			}
+			else if (!send && Msgs[i].timedst != 0)
+			{
+				// found it, return it
+				return Msgs[i];
+			}
 		}
 	}
 	Msgs.push_back (CMsg());
@@ -205,7 +213,7 @@ sint32 findOrAddHost (string hostsrcname)
 
 void finalize (CMsg &m)
 {
-	nlinfo ("%"NL_I64"d '%s' --'%s'--> '%s' %"NL_I64"d", m.timesrc, Cnxs[m.cnxsrc].name.c_str(), m.name.c_str(), Cnxs[m.cnxdst].name.c_str(), m.timedst);
+	nlinfo ("* %"NL_I64"d '%s' --'%s'--> '%s' %"NL_I64"d", m.timesrc, Cnxs[m.cnxsrc].name.c_str(), m.name.c_str(), Cnxs[m.cnxdst].name.c_str(), m.timedst);
 	for (sint32 i = 0; i < (sint32) Msgs.size (); i++)
 	{
 		CMsg &m2 = Msgs[i];
@@ -226,7 +234,7 @@ void finalize (CMsg &m)
 void setMessage (TTime timesrc, string cnxsrcname, sint32 num, string procsrcname, string cnxdstname, string name, sint32 size)
 {
 	sint32 cnxsrc = findOrAddCnx (cnxsrcname);
-	CMsg &m = findOrAddMsg(cnxsrc, num);
+	CMsg &m = findOrAddMsg(cnxsrc, num, false);
 	m.timesrc = timesrc;
 	m.cnxsrc = cnxsrc;
 	m.num = num;
@@ -251,7 +259,7 @@ void setMessage (TTime timesrc, string cnxsrcname, sint32 num, string procsrcnam
 void setMessage (TTime timedst, string cnxsrcname, sint32 num, string procdstname)
 {
 	sint32 cnxsrc = findOrAddCnx (cnxsrcname);
-	CMsg &m = findOrAddMsg(cnxsrc, num);
+	CMsg &m = findOrAddMsg(cnxsrc, num, true);
 	m.timedst = timedst;
 	m.cnxsrc = cnxsrc;
 	m.num = num;
@@ -601,10 +609,14 @@ class CCCallback : public IEventListener
 		else if (event==EventMouseUpId)
 		{
 			CEventMouseUp &ec = (CEventMouseUp &) event;
-			if (down && mx == ec.X && my == ec.Y)
+			if (ec.Button == 1 && down && mx == ec.X && my == ec.Y)
 			{
 				SelectedLine = findLine (mx, my);
 				down = false;	
+			}
+			else if (ec.Button == 4)
+			{
+				SelectedLine = -1;
 			}
 		}
 	}
@@ -671,13 +683,15 @@ void cbProcessReceivedMsg( CMessage& message, TSenderId from )
 	// Process received message
 	string logstr;
 	message.serial( logstr );
-//	NLMISC::InfoLog.displayRaw( "FW: '%s'", logstr.c_str() );
 
 	// @@DATE@HOTE_SRC(IP/PORT)@NUM@PROCESS(SERVICE/PID)@HOTE_DEST(IP/PORT)@NOM_MESSAGE@TAILLE_MSG@
 	string tok = "@@";
 	uint res = logstr.find (tok);
 	if (res != logstr.npos)
 	{
+		NLMISC::InfoLog.displayRaw( "S%s", logstr.c_str() );
+
+		
 		res += tok.size ();
 
 		string timesrcname;
@@ -719,6 +733,8 @@ void cbProcessReceivedMsg( CMessage& message, TSenderId from )
 	res = logstr.find (tok2);
 	if (res != logstr.npos)
 	{
+		NLMISC::InfoLog.displayRaw( "R%s", logstr.c_str() );
+
 		res += tok.size ();
 
 		string timedstname;

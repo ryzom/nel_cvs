@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.227 2004/10/08 13:32:55 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.228 2004/10/19 12:46:36 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -3437,6 +3437,16 @@ void CDriverGL::finish()
 	H_AUTO_OGL(CDriverGL_finish)
 	
 	glFinish();
+	
+		
+}
+
+// ***************************************************************************
+void CDriverGL::flush()
+{
+	H_AUTO_OGL(CDriverGL_flush)
+	
+	glFlush();
 	
 		
 }

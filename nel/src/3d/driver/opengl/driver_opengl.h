@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.183 2004/10/05 17:05:39 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.184 2004/10/19 12:46:36 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,7 +104,7 @@ void displayGLError(GLenum error);
 }
 */
 
-
+#define UNSUPPORTED_INDEX_OFFSET_MSG "Unsupported by driver, check IDriver::supportIndexOffset."
 
 
 namespace NL3D {
@@ -254,7 +254,8 @@ public:
 class	CIndexBufferInfo
 {
 public:
-	const uint32			*_Values;
+	const void				*_Values;
+	CIndexBuffer::TFormat    _Format;
 
 	CIndexBufferInfo ();
 	void					setupIndexBuffer(CIndexBuffer &vb);
@@ -387,6 +388,8 @@ public:
 	virtual bool			supportVolatileVertexBuffer() const;
 
 	virtual	bool			supportCloudRenderSinglePass() const;
+
+	virtual bool			supportIndexOffset() const { return false; /* feature only supported in D3D for now */ }
 	
 
 	virtual	bool			slowUnlockVertexBufferHard() const;
@@ -408,6 +411,10 @@ public:
 	virtual bool			renderRawLines(CMaterial& Mat, uint32 startIndex, uint32 numLines);
 	virtual bool			renderRawTriangles(CMaterial& Mat, uint32 startIndex, uint32 numTris);
 	virtual bool			renderRawQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads);
+	//
+	virtual bool			renderLinesWithIndexOffset(CMaterial& mat, uint32 firstIndex, uint32 nlines, uint indexOffset) { nlassertex(0, (UNSUPPORTED_INDEX_OFFSET_MSG)); return false; }
+	virtual bool			renderTrianglesWithIndexOffset(CMaterial& mat, uint32 firstIndex, uint32 ntris, uint indexOffset) { nlassertex(0, (UNSUPPORTED_INDEX_OFFSET_MSG)); return false; }
+	virtual bool			renderSimpleTrianglesWithIndexOffset(uint32 firstIndex, uint32 ntris, uint indexOffset) { nlassertex(0, (UNSUPPORTED_INDEX_OFFSET_MSG)); return false; }
 
 	virtual bool			swapBuffers();
 
@@ -557,6 +564,7 @@ public:
 	virtual	NLMISC::CRGBA	getBlendConstantColor() const;
 	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties);
 	virtual	void			finish();
+	virtual	void			flush();
 	virtual	void			enablePolygonSmoothing(bool smooth);
 	virtual	bool			isPolygonSmoothingEnabled() const;
 	// @}

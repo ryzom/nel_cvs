@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.1 2002/03/13 13:52:46 cado Exp $
+ * $Id: hierarchical_timer.h,v 1.2 2002/04/30 10:13:59 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -51,7 +51,10 @@
 #define H_BEFORE(__name)	static CHTimer	__name##_timer(#__name); __name##_timer.before();
 #define H_AFTER(__name)		__name##_timer.after();
 
-//#define H_AUTO(__name)		static CHTimer	__name##_timer(#_name); CAutoTimer	__name##_auto(__name##_timer);
+#define H_AUTO(__name)		static CHTimer	__name##_timer(#__name); CAutoTimer	__name##_auto(&__name##_timer);
+
+// display the timer info after each loop call
+#define H_AUTO_INST(__name)	static CHTimer	__name##_timer(#__name); CAutoTimer	__name##_auto(&__name##_timer, true);
 
 
 
@@ -134,7 +137,7 @@ public:
 	}
 
 	/// Stops a measuring session
-	void	after()
+	void	after(bool displayAfter = false)
 	{
 		uint32	dt;
 #ifdef NL_OS_WINDOWS
@@ -154,6 +157,9 @@ public:
 		nlassertex(_Stack.back() == this, ("in %s, _StackTop at %s", _Name, _Stack.back()->_Name));
 		++_NumTests;
 		_Stack.pop_back();
+
+		if (displayAfter)
+			nlinfo("FEHTIMER> %s %.3fms loop number %d", _Name, dt*_MsPerTick, _NumTests);
 	}
 
 	//
@@ -213,9 +219,10 @@ class CAutoTimer
 {
 private:
 	CHTimer		*_HTimer;
+	bool		_DisplayAfter;
 public:
-	CAutoTimer(CHTimer *timer) : _HTimer(timer) { _HTimer->before(); }
-	~CAutoTimer() { _HTimer->after(); }
+	CAutoTimer(CHTimer *timer, bool displayAfter=false) : _HTimer(timer), _DisplayAfter(displayAfter) { _HTimer->before(); }
+	~CAutoTimer() { _HTimer->after(_DisplayAfter); }
 };
 
 #else // ALLOW_TIMING_MEASURES

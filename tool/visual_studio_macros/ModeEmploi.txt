@@ -1,6 +1,6 @@
 Mode d'emploi des macros Nevrax
 02/08/00 cado@nevrax.com
-$Id: ModeEmploi.txt,v 1.1 2000/08/02 14:13:09 cado Exp $
+$Id: ModeEmploi.txt,v 1.2 2000/09/07 14:15:26 berenguier Exp $
 ----------
 
 
@@ -9,7 +9,7 @@ $Id: ModeEmploi.txt,v 1.1 2000/08/02 14:13:09 cado Exp $
 
 a. Dans Visual Studio, menu Tools, Macros,
 Options>>, Loaded Files,
-Browse, R:\code\tools\VisualStudioMacros\nevrax_macros.dsm,
+Browse, R:\code\tool\VisualStudioMacros\nevrax_macros.dsm,
 Close
 
 b. (Facultatif) Raccourci clavier : Menu Tools, Macros, choisir

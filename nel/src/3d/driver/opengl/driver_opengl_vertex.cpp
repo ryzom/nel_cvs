@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.43 2004/04/05 12:30:25 besson Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.44 2004/04/06 13:40:39 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -32,8 +32,11 @@
 #include "driver_opengl_vertex_buffer_hard.h"
 
 
+
+
 using namespace std;
 using namespace NLMISC;
+
 
 
 
@@ -54,6 +57,9 @@ using namespace NLMISC;
 
 namespace NL3D
 {
+
+
+		
 
 // ***************************************************************************
 
@@ -247,7 +253,9 @@ bool CDriverGL::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 		setupPass(pass);		
 		// draw the primitives.
 		if(nlines)
+		{
 			glDrawElements(GL_LINES,2*nlines,GL_UNSIGNED_INT,_LastIB._Values+firstIndex);
+		}
 	}
 	// end multipass.
 	endMultiPass();
@@ -285,9 +293,11 @@ bool CDriverGL::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris)
 	{
 		// setup the pass.
 		setupPass(pass);		
-		// draw the primitives.
+		// draw the primitives.		
 		if(ntris)
+		{			
 			glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT,_LastIB._Values+firstIndex);
+		}
 	}
 	// end multipass.
 	endMultiPass();
@@ -321,7 +331,7 @@ bool CDriverGL::renderSimpleTriangles(uint32 firstTri, uint32 ntris)
 	// render primitives.
 	//==============================
 	// NO MULTIPASS HERE!!
-	// draw the primitives. (nb: ntrsi>0).
+	// draw the primitives. (nb: ntrsi>0).	 	
 	glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, _LastIB._Values+firstTri);
 
 	// Profiling.
@@ -436,7 +446,9 @@ bool CDriverGL::renderRawTriangles(CMaterial& mat, uint32 startIndex, uint32 num
 		setupPass(pass);
 		// draw the primitives.
 		if(numTris)
+		{			
 			glDrawArrays(GL_TRIANGLES, startIndex*3, numTris*3);
+		}
 	}
 	// end multipass.
 	endMultiPass();
@@ -504,7 +516,7 @@ bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuad
 		if (startIndex < QUAD_BATCH_SIZE)
 		{
 			// draw first quads (as pair of tri to have guaranteed orientation)
-			uint numQuadsToDraw = std::min(QUAD_BATCH_SIZE - startIndex, numQuads);
+			uint numQuadsToDraw = std::min(QUAD_BATCH_SIZE - startIndex, numQuads);			
 			glDrawElements(GL_TRIANGLES, 6 * numQuadsToDraw, GL_UNSIGNED_SHORT, defaultIndices + 6 * startIndex);
 			numLeftQuads -= numQuadsToDraw;
 			currIndex += 4 * numQuadsToDraw;
@@ -533,7 +545,7 @@ bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuad
 					*curr++ = vertexIndex + 3;
 					vertexIndex += 4;
 				} 
-				while(curr != end);
+				while(curr != end);				
 				glDrawElements(GL_TRIANGLES, 6 * numQuadsToDraw, GL_UNSIGNED_SHORT, indices);
 			}
 			else
@@ -553,7 +565,7 @@ bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuad
 					*curr++ = vertexIndex + 3;
 					vertexIndex += 4;
 				} 
-				while(curr != end);
+				while(curr != end);				
 				glDrawElements(GL_TRIANGLES, 6 * numQuadsToDraw, GL_UNSIGNED_INT, indices);
 			}
 			numLeftQuads -= numQuadsToDraw;
@@ -957,7 +969,8 @@ void		CDriverGL::toggleGlArraysForARBVertexProgram()
 		// Disable all standards ptrs.
 		_DriverGLStates.enableVertexArray(false);
 		_DriverGLStates.enableNormalArray(false);
-		_DriverGLStates.enableColorArray(false);		
+		_DriverGLStates.enableColorArray(false);
+		_DriverGLStates.enableSecondaryColorArray(false);
 		for(sint i=0; i<inlGetNumTextStages(); i++)
 		{
 			_DriverGLStates.clientActiveTextureARB(i);
@@ -1382,7 +1395,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 			setupGlArraysForARBVertexProgram(vb);
 		}
 	}
-	else
+	else if (_Extensions.EXTVertexShader)
 	{
 		toggleGlArraysForEXTVertexShader();
 		// Use a vertex program ?
@@ -1395,7 +1408,11 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 			setupGlArraysForEXTVertexShader(vb);
 		}		
 	}
-	
+	else
+	{
+		// no vertex programs
+		setupGlArraysStd(vb);
+	}	
 	// Reset specials flags.
 	_LastVertexSetupIsLightMap= false;
 }

@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.15 2000/11/22 13:14:21 berenguier Exp $
+ * $Id: matrix.cpp,v 1.16 2000/11/30 18:13:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,6 +130,17 @@ void		CMatrix::setRot(const float m33[9], bool hintNoScale)
 	a21= m33[1]; a22= m33[4]; a23= m33[7]; 
 	a31= m33[2]; a32= m33[5]; a33= m33[8]; 
 }
+// ======================================================================================================
+void		CMatrix::setRot(const CVector &v, TRotOrder ro)
+{
+	CMatrix		rot;
+	rot.identity();
+	rot.rotate(v, ro);
+	float	m33[9];
+	rot.getRot(m33);
+	setRot(m33, true);
+}
+
 // ======================================================================================================
 void		CMatrix::setPos(const CVector &v)
 {

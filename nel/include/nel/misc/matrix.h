@@ -1,7 +1,7 @@
 /** \file matrix.h
  * <description>
  *
- * $Id: matrix.h,v 1.9 2000/11/23 16:53:29 cado Exp $
+ * $Id: matrix.h,v 1.10 2000/11/30 18:13:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,11 @@ public:
 	 * If set to true and your rotation is not an orthonormal basis, unpredictable result are excepted.
 	 */
 	void		setRot(const float m33[9], bool hintNoScale=false);
+	/** Explicit setup the Rotation matrix (base) as a Euler rotation matrix.
+	 * \param v a vector of 3 angle (in radian), giving rotation around each axis (x,y,z)
+	 * \param ro the order of transformation applied. if ro==XYZ, then the transform is M=M*Rx*Ry*Rz
+	 */
+	void		setRot(const CVector &v, TRotOrder ro);
 	/** Explicit setup the Translation component.
 	 * v==Null is tested to see if the matrix now have a translation component.
 	 * \param v the translation vector.

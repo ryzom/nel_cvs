@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.5 2001/04/27 12:15:50 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.6 2001/05/02 13:25:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,6 +117,8 @@ namespace NLAIAGENT
 		delete CAgentManagerTimer::IdAgentTimer;
 		CAgentManagerTimer::IdAgentTimer = NULL;				
 		delete CAgentManagerTimer::TimerManager;
+		delete CAgentManagerTimer::RunTimer;
+		delete CAgentManagerTimer::TimerManagerRun;
 	}
 
 //##################################

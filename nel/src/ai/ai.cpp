@@ -146,6 +146,6 @@ namespace NLAILINK
 		NLAISCRIPT::CCompilateur *comp = new NLAISCRIPT::CCompilateur(Interface, scriptSrc.c_str(), scriptSrc.size(), sourceCode);
 		NLAIAGENT::IObjectIA::CProcessResult r = comp->Compile();
 		sourceCode->release();
-
+		delete comp;
 	}
 }

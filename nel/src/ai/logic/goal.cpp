@@ -103,7 +103,7 @@ namespace NLAILOGIC
 		if ( _Name ) 
 			strcat( text, _Name->getString() );
 		char buf[1024];
-		sprintf(buf," PRI = %d", priority() );
+		sprintf(buf," PRI = %f", priority() );
 		strcat(text, buf);
 		strcat(text," PRE = ");
 		int i;

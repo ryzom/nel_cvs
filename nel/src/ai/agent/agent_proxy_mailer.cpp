@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.8 2001/04/12 08:26:41 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.9 2001/05/02 13:25:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ namespace NLAIAGENT
 			return IObjectIA::CProcessResult();
 		}
 		else
-		{
+		{			
 			return MainAgent->sendMessage(*_AgentRef,msg);
 		}
 	}

@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.13 2001/04/04 10:06:37 chafik Exp $
+ * $Id: message_script.cpp,v 1.14 2001/05/02 13:25:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,21 +36,21 @@ namespace NLAIAGENT
 	CMessageScript::CMessageScript(const CMessageScript &m):IMessageBase(m)
 	{
 		_MessageClass = m._MessageClass;
-		if ( _MessageClass )
-			_MessageClass->incRef();		
+		/*if ( _MessageClass )
+			_MessageClass->incRef();*/
 		//CVectorGroupType *x = new CVectorGroupType(m.size());
 	}
 	
 	CMessageScript::CMessageScript(NLAISCRIPT::CMessageClass *b) : _MessageClass( b )
 	{
-		if ( _MessageClass )
-			_MessageClass->incRef();
+		/*if ( _MessageClass )
+			_MessageClass->incRef();*/
 	}
 
 	CMessageScript::CMessageScript( std::list<IObjectIA *> &components, NLAISCRIPT::CMessageClass *message_class ): _MessageClass( message_class )
 	{	
-		if ( _MessageClass )
-			_MessageClass->incRef();
+		/*if ( _MessageClass )
+			_MessageClass->incRef();*/
 
 		// Creates the static components array
 		CVectorGroupType *x = new CVectorGroupType(components.size());
@@ -68,8 +68,8 @@ namespace NLAIAGENT
 
 	CMessageScript::~CMessageScript()
 	{
-		if ( _MessageClass )
-			_MessageClass->release();		
+		/*if ( _MessageClass )
+			_MessageClass->release();		*/
 	}
 
 	sint32 CMessageScript::getMethodIndexSize() const

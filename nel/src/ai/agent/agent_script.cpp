@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.60 2001/04/27 07:59:46 portier Exp $
+ * $Id: agent_script.cpp,v 1.61 2001/05/02 13:25:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -614,7 +614,6 @@ namespace NLAIAGENT
 			_DynamicAgentName.erase(debut,p.second);			
 			r.Result = new DigitalType(1.0);
 			return r;
-			//throw;
 		}		
 		r.Result = &DigitalType::NullOperator;
 		r.Result->incRef();

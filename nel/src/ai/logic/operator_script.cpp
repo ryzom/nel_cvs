@@ -70,7 +70,7 @@ namespace NLAIAGENT
 		else
 			strcat(t,"idle>");
 		char pri_buf[1024];
-		sprintf(pri_buf," <P %d>", priority() );
+		sprintf(pri_buf," <P %f>", priority() );
 		strcat(t, pri_buf);
 	}
 

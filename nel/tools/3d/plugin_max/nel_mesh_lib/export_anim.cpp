@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.3 2001/06/11 07:31:13 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.4 2001/06/12 13:31:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -666,7 +666,7 @@ class CDoomyKey : public IKey
 // Create the matrix tracks
 void CExportNel::createBipedKeyFramer (ITrack *&nelRot, ITrack *&nelPos, bool isRot, bool isPos, float ticksPerSecond, 
 									   const Interval& range, int oRT, const CExportDesc& desc, INode& node, 
-									   const std::set<TimeValue>& ikeys, Interface *ip)
+									   const std::map<TimeValue, bool>& ikeys, Interface *ip)
 {
 	nelRot=NULL;
 	nelPos=NULL;
@@ -688,156 +688,181 @@ void CExportNel::createBipedKeyFramer (ITrack *&nelRot, ITrack *&nelPos, bool is
 			nelRot=new TMRot;
 		if (isPos)
 			nelPos=new TMPos;
-	}
 
-	// Set the range
-	if ((!(FOREVER==range))&&(!(NEVER==range)))
-	{
-		if (isRot)
-			((TMRot*)nelRot)->unlockRange (CExportNel::convertTime (range.Start()), CExportNel::convertTime (range.End()));
-		if (isPos)
-			((TMPos*)nelPos)->unlockRange (CExportNel::convertTime (range.Start()), CExportNel::convertTime (range.End()));
-	}
-
-	// Set the out of range type
-	switch (oRT)
-	{
-	case ORT_LOOP:
-		if (isRot)
-			((TMRot*)nelRot)->setLoopMode(true);
-		if (isPos)
-			((TMPos*)nelPos)->setLoopMode(true);
-		break;
-	case ORT_CONSTANT:
-	case ORT_CYCLE:
-	default:
-		if (isRot)
-			((TMRot*)nelRot)->setLoopMode(false);
-		if (isPos)
-			((TMPos*)nelPos)->setLoopMode(false);
-		break;
-	}
-
-	// Enum the keys
-	float firstKey;
-	float lastKey;
-	CQuat previous;
-	std::set<TimeValue>::const_iterator ite=ikeys.begin();
-	uint key=0;
-	while (ite!=ikeys.end())
-	{
-		// First key ?
-		if (ite==ikeys.begin())
-			firstKey=convertTime (*ite);
-
-		// Last key ?
-		lastKey=convertTime (*ite);
-
-		// Allocate the key
-		TMRotKey		theRot;
-		TMPosKey		thePos;
-
-		// Access biped ease / bias / continuity / tension by script !!
-		// Get tcb value..
-		
-		// Rotation
-		if (isRot)
+		// Set the range
+		if ((!(FOREVER==range))&&(!(NEVER==range)))
 		{
-			// Use script to access some values
-			if (getBipedKeyInfo (ip, getName (node).c_str(), "bias", key, theRot.Bias))
-				theRot.Bias=(theRot.Bias-25.f)/25.f;
-			else
-				theRot.Bias=0.f;
-			if (getBipedKeyInfo (ip, getName (node).c_str(), "continuity", key, theRot.Continuity))
-				theRot.Continuity=(theRot.Continuity-25.f)/25.f;
-			else
-				theRot.Continuity=0.f;
-			if (getBipedKeyInfo (ip, getName (node).c_str(), "tension", key, theRot.Tension))
-				theRot.Tension=(theRot.Tension-25.f)/25.f;
-			else
-				theRot.Tension=0.f;
-			if (getBipedKeyInfo (ip, getName (node).c_str(), "easeTo", key, theRot.EaseTo))
-				theRot.EaseTo/=50.f;
-			else
-				theRot.EaseTo=0.f;
-			if (getBipedKeyInfo (ip, getName (node).c_str(), "easeFrom", key, theRot.EaseFrom))
-				theRot.EaseFrom/=50.f;
-			else
-				theRot.EaseFrom=0.f;
+			if (isRot)
+				((TMRot*)nelRot)->unlockRange (CExportNel::convertTime (range.Start()), CExportNel::convertTime (range.End()));
+			if (isPos)
+				((TMPos*)nelPos)->unlockRange (CExportNel::convertTime (range.Start()), CExportNel::convertTime (range.End()));
 		}
 
-		if (isPos)
+		// Set the out of range type
+		switch (oRT)
 		{
-			// Use script to access some values
-			if (getBipedKeyInfo (ip, getName (node).c_str(), "bias", key, thePos.Bias))
-				thePos.Bias=(thePos.Bias-25.f)/25.f;
-			else
-				thePos.Bias=0.f;
-			if (getBipedKeyInfo (ip, getName (node).c_str(), "continuity", key, thePos.Continuity))
-				thePos.Continuity=(thePos.Continuity-25.f)/25.f;
-			else
-				thePos.Continuity=0.f;
-			if (getBipedKeyInfo (ip, getName (node).c_str(), "tension", key, thePos.Tension))
-				thePos.Tension=(thePos.Tension-25.f)/25.f;
-			else
-				thePos.Tension=0.f;
-			if (getBipedKeyInfo (ip, getName (node).c_str(), "easeTo", key, thePos.EaseTo))
-				thePos.EaseTo/=50.f;
-			else
-				thePos.EaseTo=0.f;
-			if (getBipedKeyInfo (ip, getName (node).c_str(), "easeFrom", key, thePos.EaseFrom))
-				thePos.EaseFrom/=50.f;
-			else
-				thePos.EaseFrom=0.f;
+		case ORT_LOOP:
+			if (isRot)
+				((TMRot*)nelRot)->setLoopMode(true);
+			if (isPos)
+				((TMPos*)nelPos)->setLoopMode(true);
+			break;
+		case ORT_CONSTANT:
+		case ORT_CYCLE:
+		default:
+			if (isRot)
+				((TMRot*)nelRot)->setLoopMode(false);
+			if (isPos)
+				((TMPos*)nelPos)->setLoopMode(false);
+			break;
 		}
 
-		// Get the local matrix
-		Matrix3 localMatrix;
-		getLocalMatrix (localMatrix, node, *ite);
-
-		// Decomp in scale, rot and pos.
-		CQuat tmpQuat;
-		CQuat tmpPrevious=previous;
-		CVector scale;
-		decompMatrix (scale, tmpQuat, thePos.Value, localMatrix);
-		tmpQuat.normalize();
-
-		// Make closest with previous
-		if (ite!=ikeys.begin())
+		// Enum the keys
+		float firstKey;
+		float lastKey;
+		CQuat previous;
+		std::map<TimeValue, bool>::const_iterator ite=ikeys.begin();
+		uint key=0;
+		while (ite!=ikeys.end())
 		{
-			tmpQuat.makeClosest (tmpPrevious);
+			// First key ?
+			if (ite==ikeys.begin())
+				firstKey=convertTime (ite->first);
+
+			// Last key ?
+			lastKey=convertTime (ite->first);
+
+			// Allocate the key
+			TMRotKey		theRot;
+			TMPosKey		thePos;
+
+			// Access biped ease / bias / continuity / tension by script !!
+			// Get tcb value..
+			
+			// Rotation
+			if (isRot)
+			{
+				if (ite->second)
+				{
+					// Use script to access some values
+					if (getBipedKeyInfo (ip, getName (node).c_str(), "bias", key, theRot.Bias))
+						theRot.Bias=(theRot.Bias-25.f)/25.f;
+					else
+						theRot.Bias=0.f;
+					if (getBipedKeyInfo (ip, getName (node).c_str(), "continuity", key, theRot.Continuity))
+						theRot.Continuity=(theRot.Continuity-25.f)/25.f;
+					else
+						theRot.Continuity=0.f;
+					if (getBipedKeyInfo (ip, getName (node).c_str(), "tension", key, theRot.Tension))
+						theRot.Tension=(theRot.Tension-25.f)/25.f;
+					else
+						theRot.Tension=0.f;
+					if (getBipedKeyInfo (ip, getName (node).c_str(), "easeTo", key, theRot.EaseTo))
+						theRot.EaseTo/=50.f;
+					else
+						theRot.EaseTo=0.f;
+					if (getBipedKeyInfo (ip, getName (node).c_str(), "easeFrom", key, theRot.EaseFrom))
+						theRot.EaseFrom/=50.f;
+					else
+						theRot.EaseFrom=0.f;
+				}
+				else
+				{
+					// Use script to access some values
+					theRot.Bias=0.f;
+					theRot.Continuity=0.f;
+					theRot.Tension=0.f;
+					theRot.EaseTo=0.f;
+					theRot.EaseFrom=0.f;
+				}
+			}
+
+			if (isPos)
+			{
+				if (ite->second)
+				{
+					// Use script to access some values
+					if (getBipedKeyInfo (ip, getName (node).c_str(), "bias", key, thePos.Bias))
+						thePos.Bias=(thePos.Bias-25.f)/25.f;
+					else
+						thePos.Bias=0.f;
+					if (getBipedKeyInfo (ip, getName (node).c_str(), "continuity", key, thePos.Continuity))
+						thePos.Continuity=(thePos.Continuity-25.f)/25.f;
+					else
+						thePos.Continuity=0.f;
+					if (getBipedKeyInfo (ip, getName (node).c_str(), "tension", key, thePos.Tension))
+						thePos.Tension=(thePos.Tension-25.f)/25.f;
+					else
+						thePos.Tension=0.f;
+					if (getBipedKeyInfo (ip, getName (node).c_str(), "easeTo", key, thePos.EaseTo))
+						thePos.EaseTo/=50.f;
+					else
+						thePos.EaseTo=0.f;
+					if (getBipedKeyInfo (ip, getName (node).c_str(), "easeFrom", key, thePos.EaseFrom))
+						thePos.EaseFrom/=50.f;
+					else
+						thePos.EaseFrom=0.f;
+				}
+				else
+				{
+					// Use script to access some values
+					thePos.Bias=0.f;
+					thePos.Continuity=0.f;
+					thePos.Tension=0.f;
+					thePos.EaseTo=0.f;
+					thePos.EaseFrom=0.f;
+				}
+			}
+
+			// Get the local matrix
+			Matrix3 localMatrix;
+			getLocalMatrix (localMatrix, node, ite->first);
+
+			// Decomp in scale, rot and pos.
+			CQuat tmpQuat;
+			CQuat tmpPrevious=previous;
+			CVector scale;
+			decompMatrix (scale, tmpQuat, thePos.Value, localMatrix);
+			tmpQuat.normalize();
+
+			// Make closest with previous
+			if (ite!=ikeys.begin())
+			{
+				tmpQuat.makeClosest (tmpPrevious);
+			}
+
+			// Set previous
+			previous=tmpQuat;
+
+			// Relative quaternion
+			if (ite!=ikeys.begin())
+			{
+				tmpQuat*=tmpPrevious.inverted();
+			}
+
+			// Convert quat to angle axis.
+			theRot.Value=tmpQuat.getAngleAxis();
+
+			// Add the good keys
+			if (isRot)
+				((TMRot*)nelRot)->addKey (theRot, convertTime (ite->first));
+			if (isPos)
+				((TMPos*)nelPos)->addKey (thePos, convertTime (ite->first));
+
+			// Ite ++
+			if (ite->second)
+				key++;
+			ite++;
 		}
 
-		// Set previous
-		previous=tmpQuat;
-
-		// Relative quaternion
-		if (ite!=ikeys.begin())
+		// Invalid interval ? Take the inteval of the keyfarmer
+		if ((FOREVER==range)||(NEVER==range))
 		{
-			tmpQuat*=tmpPrevious.inverted();
+			if (isRot)
+				((TMRot*)nelRot)->unlockRange (firstKey, lastKey);
+			if (isPos)
+				((TMPos*)nelPos)->unlockRange (firstKey, lastKey);
 		}
-
-		// Convert quat to angle axis.
-		theRot.Value=tmpQuat.getAngleAxis();
-
-		// Add the good keys
-		if (isRot)
-			((TMRot*)nelRot)->addKey (theRot, convertTime (*ite));
-		if (isPos)
-			((TMPos*)nelPos)->addKey (thePos, convertTime (*ite));
-
-		// Ite ++
-		ite++;
-		key++;
-	}
-
-	// Invalid interval ? Take the inteval of the keyfarmer
-	if ((FOREVER==range)||(NEVER==range))
-	{
-		if (isRot)
-			((TMRot*)nelRot)->unlockRange (firstKey, lastKey);
-		if (isPos)
-			((TMPos*)nelPos)->unlockRange (firstKey, lastKey);
 	}
 }
 
@@ -1068,8 +1093,8 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 				// For rotation
 				if (type==typeRotation)
 				{
-					std::set<TimeValue> keySet;
-					addKeyTime (c, keySet, false);
+					std::map<TimeValue, bool> keySet;
+					addBipedKeyTime (c, keySet, false, ip, getName (*(INode*)&node).c_str());
 					createBipedKeyFramer (pTrack, doomy, true, false, ticksPerSecond, range, oRT, desc, *(INode*)&node, keySet, ip);
 				}
 			}
@@ -1085,8 +1110,8 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 		if (type==typePos)
 		{
 			// Create key set
-			std::set<TimeValue> keySet;
-			addKeyTime (c, keySet, true);
+			std::map<TimeValue, bool> keySet;
+			addBipedKeyTime (c, keySet, true, ip, getName (*(INode*)&node).c_str());
 			createBipedKeyFramer (doomy, pTrack, false, true, ticksPerSecond, range, oRT, desc, *(INode*)&node, keySet, ip);
 		}
 	}
@@ -1097,10 +1122,19 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 
 // --------------------------------------------------
 
-void CExportNel::addKeyTime (Control& c, std::set<TimeValue>& keySet, bool subKeys)
+// TODO: remove interpolation when IK is available
+#define NEL3D_IKBLEND_OVERSAMPLING 30
+
+void CExportNel::addBipedKeyTime (Control& c, std::map<TimeValue, bool>& keySet, bool subKeys, Interface *ip, const char *nodeName)
 {
 	// ** Get the 3dsmax key control.
 	IKeyControl *ikeys=GetKeyControlInterface ((&c));
+
+	// IK blend available ?
+	float ikBlend;
+	bool ikBlendAvalaible = false;
+	if (nodeName)
+		ikBlendAvalaible = getBipedKeyInfo (ip, nodeName, "IkBlend", 0, ikBlend);
 
 	// Ikey controler ?
 	if (ikeys)
@@ -1108,13 +1142,53 @@ void CExportNel::addKeyTime (Control& c, std::set<TimeValue>& keySet, bool subKe
 		// Key the keys
 		CDoomyKey key;
 		int numKeys = ikeys->GetNumKeys();
+		
+		// Step for interpolation
+		int interpolationStep=(NEL3D_IKBLEND_OVERSAMPLING*GetTicksPerFrame())/GetFrameRate();
+
 		for (int i=0; i<numKeys; i++) 
 		{
 			// Get the key
 			ikeys->GetKey(i, &key);
 
+			// Get the next Ik blend
+			float nextIkBlend;
+			if (ikBlendAvalaible)
+			{
+				CDoomyKey nextKey;
+				if (i<numKeys-1)
+				{
+					// Copy Ik blend value
+					nextIkBlend=ikBlend;
+
+					// Get next ik blend value
+					getBipedKeyInfo (ip, nodeName, "IkBlend", i+1, nextIkBlend);
+
+					// Get next key
+					ikeys->GetKey(i+1, &nextKey);
+
+					// Oversampling ?
+					if ( (ikBlend > 0.001) || (nextIkBlend > 0.001) )
+					{
+						// Ok, let's oversample
+						TimeValue thisTime=key.time+interpolationStep;
+						while (thisTime<nextKey.time)
+						{
+							// Add ghost frames
+							keySet.insert (std::map<TimeValue, bool>::value_type (thisTime, false));
+
+							// Next ghost key
+							thisTime+=interpolationStep;
+						}
+					}
+				}
+			}
+
 			// Inset the key time
-			keySet.insert (key.time);
+			keySet.insert (std::map<TimeValue, bool>::value_type (key.time, true));
+
+			// Copy ikblend
+			ikBlend=nextIkBlend;
 		}
 	}
 
@@ -1133,7 +1207,7 @@ void CExportNel::addKeyTime (Control& c, std::set<TimeValue>& keySet, bool subKe
 				// Get the controller pointer of this sub anim
 				Control* c2=GetControlInterface (c.SubAnim(s));
 				if (c2)
-					addKeyTime (*c2, keySet, true);
+					addBipedKeyTime (*c2, keySet, true, ip, NULL);
 			}
 		}
 	}

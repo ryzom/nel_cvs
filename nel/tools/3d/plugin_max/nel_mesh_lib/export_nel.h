@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.2 2001/06/11 09:21:53 besson Exp $
+ * $Id: export_nel.h,v 1.3 2001/06/12 13:31:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,7 +198,7 @@ public:
 	// Create the transform matrix tracks
 	static void						createBipedKeyFramer (NL3D::ITrack *&nelRot, NL3D::ITrack *&nelPos, bool isRot, bool isPos, 
 														float ticksPerSecond, const Interval& range, int oRT, const CExportDesc& desc, 
-														INode& node, const std::set<TimeValue>& ikeys, Interface *ip);
+														INode& node, const std::map<TimeValue, bool>& ikeys, Interface *ip);
 
 	// convert to nel time value
 	static NL3D::CAnimationTime		convertTime (TimeValue time);
@@ -392,7 +392,9 @@ private:
 	static void						addTexTracks (NL3D::CAnimation& animation, Texmap& tex, const char* parentName);
 
 	// Add controller key time in the set
-	static void						addKeyTime (Control& c, std::set<TimeValue>& ikeys, bool subKeys);
+	static void						addBipedKeyTime (Control& c, std::map<TimeValue, bool>& keySet, bool subKeys, Interface *ip, 
+													const char *nodeName);
+	
 
 	// Get a biped key parameter using script
 	static bool						getBipedKeyInfo (Interface *ip, const char* nodeName, const char* paramName, uint key, float& res);

@@ -27,7 +27,7 @@ CFG=ai_lib - Win32 DebugFast
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "ai_lib - Win32 Release"
@@ -49,7 +49,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\lib\nlai_lib.lib"
 
@@ -72,7 +72,7 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\lib\nlai_lib_debug.lib"
 
@@ -95,7 +95,7 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\lib\nlai_lib_rd.lib"
 
@@ -118,9 +118,9 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\lib\nlai_lib_debug.lib"
-# ADD LIB32 /nologo /out:"..\lib\nlai_lib_debug.lib"
+# ADD LIB32 /nologo /out:"..\lib\nlai_lib_debug_fast.lib"
 
 !ENDIF 
 
@@ -199,10 +199,6 @@ SOURCE=.\ai\agent\basic_agent.cpp
 # Begin Source File
 
 SOURCE=.\ai\agent\digital.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ai\agent\gd_agent_script.cpp
 # End Source File
 # Begin Source File
 
@@ -351,10 +347,6 @@ SOURCE=..\include\nel\ai\agent\agentpack.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\baseai.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\ai\agent\gd_agent_script.h
 # End Source File
 # Begin Source File
 
@@ -879,10 +871,6 @@ SOURCE=.\ai\script\context_debug.cpp
 # Begin Source File
 
 SOURCE=.\ai\script\factor_type.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ai\script\gd_agent_class.cpp
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.11 2001/11/27 14:04:06 lecroart Exp $
+ * $Id: time_nl.cpp,v 1.12 2001/11/27 14:11:35 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,7 +115,7 @@ TTicks CTime::getPerformanceTime ()
 		return 0;
 #else // NL_OS_WINDOWS
 	unsigned long long int x;
-	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x) : : "eax", "edx");
+	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
 	return x;
 #endif // NL_OS_WINDOWS
 }
@@ -164,10 +164,11 @@ double CTime::ticksToSecond (TTicks ticks)
 			TTicks tickDelta = tickAfter - tickBefore;
 
 			freq = 1000 * tickDelta / timeDelta;
-
 			benchFrequency = false;
 		}
 
+		nlinfo ("freq = %f", (double)freq);
+		
 		return (double)(sint64)ticks/(double)freq;
 	}
 }

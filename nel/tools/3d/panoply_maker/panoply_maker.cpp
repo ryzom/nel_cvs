@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.16 2002/07/09 08:13:50 corvazier Exp $
+ * $Id: panoply_maker.cpp,v 1.17 2002/07/11 13:46:38 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -388,17 +388,23 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 		NLMISC::CIFile is;
 		try
 		{
-			is.open(bi.InputPath + fileNameWithExtension);
-			depth = srcBitmap.load(is);
-			if (depth == 0 || srcBitmap.getPixels().empty())
-			{
-				throw NLMISC::Exception(std::string("Failed to load bitmap ") + bi.InputPath + fileNameWithExtension);
+			if (is.open(bi.InputPath + fileNameWithExtension))
+			{			
+				depth = srcBitmap.load(is);
+				if (depth == 0 || srcBitmap.getPixels().empty())
+				{
+					throw NLMISC::Exception(std::string("Failed to load bitmap ") + bi.InputPath + fileNameWithExtension);
+				}
+				if (srcBitmap.PixelFormat != NLMISC::CBitmap::RGBA)
+				{
+					srcBitmap.convertToType(NLMISC::CBitmap::RGBA);
+				}
 			}
-			if (srcBitmap.PixelFormat != NLMISC::CBitmap::RGBA)
+			else
 			{
-				srcBitmap.convertToType(NLMISC::CBitmap::RGBA);
-			}
-			
+				nlwarning("Unable to open %s. Processing next", (bi.InputPath + fileNameWithExtension).c_str());
+				return;
+			}			
 		}
 		catch (NLMISC::Exception &)
 		{
@@ -430,29 +436,36 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 			NLMISC::CIFile is;
 			try
 			{
-				is.open(maskFileName);
-				if (li.Mask.load(is) == 0)
-				{
-					throw NLMISC::Exception(std::string("Failed to load mask ") + maskFileName);
-				}
-				if (li.Mask.getPixels().empty())
-				{
-					throw NLMISC::Exception(std::string("Failed to load mask ") + maskFileName);
-				}
 
-				if (li.Mask.PixelFormat != NLMISC::CBitmap::RGBA)
-				{
-					li.Mask.convertToType(NLMISC::CBitmap::RGBA);
-				}
+				if (is.open(maskFileName))
+				{				
+					if (li.Mask.load(is) == 0)
+					{
+						throw NLMISC::Exception(std::string("Failed to load mask ") + maskFileName);
+					}
+					if (li.Mask.getPixels().empty())
+					{
+						throw NLMISC::Exception(std::string("Failed to load mask ") + maskFileName);
+					}
 
-				/// make sure the mask has the same size
-				if (li.Mask.getWidth() != srcBitmap.getWidth()
-					|| li.Mask.getHeight() != srcBitmap.getHeight())
-				{
-					throw NLMISC::Exception("Bitmap and mask do not have the same size");
-				}
+					if (li.Mask.PixelFormat != NLMISC::CBitmap::RGBA)
+					{
+						li.Mask.convertToType(NLMISC::CBitmap::RGBA);
+					}
 
-				masks.push_back(li);	
+					/// make sure the mask has the same size
+					if (li.Mask.getWidth() != srcBitmap.getWidth()
+						|| li.Mask.getHeight() != srcBitmap.getHeight())
+					{
+						throw NLMISC::Exception("Bitmap and mask do not have the same size");
+					}
+					masks.push_back(li);
+				}
+				else
+				{
+					nlwarning("Unable to open %s. Processing next", maskFileName.c_str());
+					return;
+				}
 			}
 			catch (std::exception &e)
 			{
@@ -497,8 +510,14 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 			try
 			{			
 				NLMISC::COFile os;
-				os.open(bi.OutputPath + "/" + outputFileName + ".tga");
-				resultBitmap.writeTGA(os, depth);
+				if (os.open(bi.OutputPath + "/" + outputFileName + ".tga"))
+				{
+					resultBitmap.writeTGA(os, depth);
+				}
+				else
+				{
+					nlwarning(("Couldn't open " + bi.OutputPath + outputFileName + ".tga for writing").c_str());
+				}
 			}
 			catch(NLMISC::EStream &e)
 			{

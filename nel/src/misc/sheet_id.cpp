@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.10 2002/07/10 16:52:08 lecroart Exp $
+ * $Id: sheet_id.cpp,v 1.11 2002/07/12 15:56:19 fleury Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -188,7 +188,9 @@ CSheetId& CSheetId::operator=( const string& sheetName )
 {
 	nlassert(_Initialised);
 
-	map<string,uint32>::const_iterator itId = _SheetNameToId.find( sheetName );
+	// FIXED : 12/07/02 David -> use strlwr
+	map<string,uint32>::const_iterator itId = _SheetNameToId.find( strlwr(sheetName) );
+//	map<string,uint32>::const_iterator itId = _SheetNameToId.find( sheetName );
 	if( itId != _SheetNameToId.end() )
 	{
 		_Id.Id = (*itId).second;

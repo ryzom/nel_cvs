@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.26 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.27 2002/11/14 12:58:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,6 @@ namespace NL3D
 
 class CSkeletonShape;
 class CTransformClipObs;
-class CSkeletonModelClipObs;
 class CLodCharacterManager;
 
 
@@ -234,10 +233,16 @@ public:
 	/// see setLodCharacterDistance. 0 if disabled
 	float			getLodCharacterDistance() const {return _LodCharacterDistance;}
 
-	/** Called by CTransformClipObs. update the flag _DisplayedAsLodCharacter.
-	 *	No-op if already done (compare clipTrav current date).
+	/** Called in ClipTrav pass. Used to update the flag _DisplayedAsLodCharacter.
+	 *	return 0 if CLod not enabled. Else return a priority>0 computed from curDistance/LodCharacterDistance
+	 *	return 0 too if the skeleton is not visible or if his ancestorSkeletonModel is not visible.
+	 *	If priority is >1 then the skeleton must be displayed in CLod form
 	 */
-	void			updateDisplayLodCharacterFlag(const CClipTrav *clipTrav);
+	float			computeDisplayLodCharacterPriority() const;
+
+	/** Called in ClipTrav pass. setup the flag.
+	 */
+	void			setDisplayLodCharacterFlag(bool displayCLod);
 
 	/** Called by CTransform::setMeanColor()
 	 */
@@ -287,7 +292,6 @@ protected:
 private:
 	static IModel	*creator() {return new CSkeletonModel;}
 	friend	class CSkeletonShape;
-	friend	class CSkeletonModelClipObs;
 	friend	class CSkeletonModelAnimDetailObs;
 	friend	class CSkeletonModelRenderObs;
 	friend	class CTransformClipObs;
@@ -299,7 +303,14 @@ public:
 	{
 		return _ClipObs->Visible;
 	}
+
+	// update if needed the renderList
+	void						updateSkinRenderLists();
+
 private:
+
+	// The iterator of the skeleton inserted in the scene
+	std::list<CSkeletonModel*>::iterator	_ItSkeletonInScene;
 
 	/// skins/sticked objects
 	typedef	std::set<CTransform*>		TTransformSet;
@@ -324,9 +335,6 @@ private:
 	CMRMLevelDetail				_LevelDetail;
 	// build a bug-free level detail
 	void						buildDefaultLevelDetail();
-
-	// update if needed the renderList
-	void						updateSkinRenderLists();
 
 	/// \name Bone Usage.
 	// @{
@@ -402,9 +410,7 @@ private:
 
 	/// see setLodCharacterDistance
 	float					_LodCharacterDistance;
-
-	/// The last date _DisplayedAsLodCharacter has been computed
-	sint64					_DisplayLodCharacterDate;
+	float					_OOLodCharacterDistance;
 
 	/// The Lod instance. -1 by default
 	CLodCharacterInstance	_CLodInstance;
@@ -423,27 +429,6 @@ private:
 	// The traversal of the Scene which owns this Skeleton.
 	CHrcTrav		*HrcTrav;
 	CClipTrav		*ClipTrav;
-};
-
-
-// ***************************************************************************
-/**
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CSkeletonModelClipObs : public CTransformShapeClipObs
-{
-public:
-
-	/** this do :
-	 *  - call CTransformShapeClipObs::traverse()
-	 *  - update _DisplayedAsLodCharacter flag
-	 */
-	virtual	void	traverse(IObs *caller);
-
-public:
-	static IObs	*creator() {return new CSkeletonModelClipObs;}
 };
 
 

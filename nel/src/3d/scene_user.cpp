@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.30 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.31 2002/11/14 12:55:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -961,6 +961,18 @@ CSceneUser::~CSceneUser()
 	_Scene.setCam(NULL);
 	_CurrentCamera= NULL;
 	_DriverUser= NULL;
+}
+
+// ***************************************************************************
+void		CSceneUser::setMaxSkeletonsInNotCLodForm(uint m)
+{
+	_Scene.setMaxSkeletonsInNotCLodForm(m);
+}
+
+// ***************************************************************************
+uint		CSceneUser::getMaxSkeletonsInNotCLodForm() const
+{
+	return _Scene.getMaxSkeletonsInNotCLodForm();
 }
 
 

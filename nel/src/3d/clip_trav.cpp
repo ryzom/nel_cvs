@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.26 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.27 2002/11/14 12:55:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,9 @@
 #include "3d/quad_grid_clip_manager.h"
 #include "3d/root_model.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "3d/scene.h"
+#include "3d/skeleton_model.h"
+#include "3d/fast_floor.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -316,11 +319,38 @@ void CClipTrav::traverse()
 	}
 
 
+	// Load Balance the Skeleton CLod state here. 
+	// =========================
+	/* Can't do it in LoadBalancingTrav because sons with _AncestorSkeletonModel!=NULL may be hiden if a skeleton
+		is displayed in CLod mode.
+		So must do it here, then clip all sons of AncestoreSkeletonModelGroup.
+	*/
+	loadBalanceSkeletonCLod();
+
+
 	// At the end of the clip traverse, must update clip for Objects which have a skeleton ancestor
 	// =========================
 	// those are linked to the SonsOfAncestorSkeletonModelGroup, so traverse it now.
 	if (SonsOfAncestorSkeletonModelGroup)
 		SonsOfAncestorSkeletonModelGroup->getObs(ClipTravId)->traverse(NULL);
+
+
+	// Update Here the Skin render Lists of All visible Skeletons
+	// =========================
+	/*
+		Done here, because AnimDetail and Render need correct lists. NB: important to do it 
+		before Render Traversal, because updateSkinRenderLists() may change the transparency flag!!
+		NB: can't do it in the clipObs of the skeleton since _DisplayLodCharacterFlag must be updated for this frame.
+	*/
+	CScene::ItSkeletonModelList		itSkel;
+	for(itSkel= Scene->getSkeletonModelListBegin(); itSkel!=Scene->getSkeletonModelListEnd(); itSkel++)
+	{
+		CSkeletonModel	*sm= *itSkel;
+		// if visible
+		if(sm->isClipVisible())
+			sm->updateSkinRenderLists();
+	}
+
 }
 
 
@@ -398,6 +428,59 @@ void CClipTrav::addVisibleObs(CTransformClipObs *obs)
 	_VisibleList.push_back(obs);
 }
 
+
+// ***************************************************************************
+void CClipTrav::loadBalanceSkeletonCLod()
+{
+	CScene::ItSkeletonModelList		itSkel;
+	_TmpSortSkeletons.clear();
+
+	// **** compute CLod priority of each skeleton,
+	for(itSkel= Scene->getSkeletonModelListBegin(); itSkel!=Scene->getSkeletonModelListEnd(); itSkel++)
+	{
+		CSkeletonModel	*sm= *itSkel;
+		float	pr= sm->computeDisplayLodCharacterPriority();
+		// If valid priority (CLOd enabled, and skeleton visible)
+		if(pr>0)
+		{
+			// if the priority is >1, then display as CLod
+			if(pr>1)
+				sm->setDisplayLodCharacterFlag(true);
+			// else load balance.
+			else
+			{
+				CSkeletonKey	key;
+				// don't bother OptFastFloor precision. NB: 0<pr<=1 here.
+				key.Priority= OptFastFloor(pr*0xFFFFFF00);
+				key.SkeletonModel= sm;
+				_TmpSortSkeletons.push_back(key);
+			}
+		}
+	}
+
+	// **** sort by priority in ascending order
+	uint	nMaxSkelsInNotCLodForm= Scene->getMaxSkeletonsInNotCLodForm();
+	// Optim: need it only if too many skels
+	if(_TmpSortSkeletons.size()>nMaxSkelsInNotCLodForm)
+	{
+		sort(_TmpSortSkeletons.begin(), _TmpSortSkeletons.end());
+	}
+
+	// **** set CLod flag 
+	uint	n= min(nMaxSkelsInNotCLodForm, _TmpSortSkeletons.size());
+	uint	i;
+	// The lowest priority are displayed in std form
+	for(i=0;i<n;i++)
+	{
+		_TmpSortSkeletons[i].SkeletonModel->setDisplayLodCharacterFlag(false);
+	}
+	// the other are displayed in CLod form
+	for(i=n;i<_TmpSortSkeletons.size();i++)
+	{
+		_TmpSortSkeletons[i].SkeletonModel->setDisplayLodCharacterFlag(true);
+	}
+
+}
 
 
 }

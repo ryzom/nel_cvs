@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.51 2002/11/08 18:40:33 berenguier Exp $
+ * $Id: transform.cpp,v 1.52 2002/11/14 12:55:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -732,9 +732,6 @@ void	CTransformClipObs::traverse(IObs *caller)
 			// Special test: if we are sticked to a skeletonModel, and if we are still visible, maybe we don't have to
 			if(Visible && transform->_FatherSkeletonModel)
 			{
-				// must ensure the skeleton has computed the state
-				transform->_FatherSkeletonModel->updateDisplayLodCharacterFlag(clipTrav);
-
 				// if our skeletonModel father is displayed with a Lod, maybe we are not to be displayed
 				if(transform->_FatherSkeletonModel->isDisplayedAsLodCharacter())
 				{

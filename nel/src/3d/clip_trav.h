@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.13 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: clip_trav.h,v 1.14 2002/11/14 12:55:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,12 +162,28 @@ public:
 	// For skeleton stickObject.
 	CRootModel		*SonsOfAncestorSkeletonModelGroup;
 
+// **********************
 private:
 	friend class	IBaseClipObs;
 
 	std::vector<CTransformClipObs*>	_VisibleList;
 
 	CQuadGridClipManager		*_QuadGridClipManager;
+
+	// For skeleton CLod Load balancing
+	struct	CSkeletonKey
+	{
+		uint				Priority;
+		CSkeletonModel		*SkeletonModel;
+
+		bool	operator<(const CSkeletonKey &k) const
+		{
+			return Priority<k.Priority;
+		}
+	};
+	std::vector<CSkeletonKey>	_TmpSortSkeletons;
+
+	void	loadBalanceSkeletonCLod();
 };
 
 

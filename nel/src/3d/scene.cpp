@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.88 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: scene.cpp,v 1.89 2002/11/14 12:56:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,6 +157,8 @@ CScene::CScene()
 	_AsyncTextureManager= NULL;
 
 	_NumRender = 0;
+
+	_MaxSkeletonsInNotCLodForm= 20;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -950,6 +952,26 @@ void		CScene::setGlobalWindDirection(const CVector &gwd)
 	_GlobalWindDirection= gwd;
 	_GlobalWindDirection.z= 0;
 	_GlobalWindDirection.normalize();
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+/// Private
+// ***************************************************************************
+// ***************************************************************************
+
+// ***************************************************************************
+CScene::ItSkeletonModelList	CScene::appendSkeletonModelToList(CSkeletonModel *skel)
+{
+	_SkeletonModelList.push_front(skel);
+	return _SkeletonModelList.begin();
+}
+
+// ***************************************************************************
+void					CScene::eraseSkeletonModelToList(CScene::ItSkeletonModelList	it)
+{
+	_SkeletonModelList.erase(it);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.41 2002/10/10 14:53:55 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.42 2002/11/14 12:55:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -578,8 +578,6 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 			if(Visible && m->_FatherSkeletonModel)
 			{
 				CClipTrav		*clipTrav= NLMISC::safe_cast<CClipTrav*>(Trav);
-				// must ensure the skeleton has computed the state
-				m->_FatherSkeletonModel->updateDisplayLodCharacterFlag(clipTrav);
 
 				// if our skeletonModel father is displayed with a Lod, maybe we are not to be displayed
 				if(m->_FatherSkeletonModel->isDisplayedAsLodCharacter())

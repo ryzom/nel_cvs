@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.34 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: scene.h,v 1.35 2002/11/14 12:56:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,6 +74,7 @@ class	CInstanceGroup;
 class	CSkipModel;
 class	CLodCharacterManager;
 class	CAsyncTextureManager;
+class	CSkeletonModel;
 
 
 // ***************************************************************************
@@ -300,9 +301,16 @@ public:
 	enum			TPolygonBalancingMode {PolygonBalancingOff=0, PolygonBalancingOn, PolygonBalancingClamp, CountPolygonBalancing};
 
 	/// Set the PolygonBalancingMode
-	void			setPolygonBalancingMode(TPolygonBalancingMode polBalMode);
+	void					setPolygonBalancingMode(TPolygonBalancingMode polBalMode);
 	/// Get the PolygonBalancingMode
 	TPolygonBalancingMode	getPolygonBalancingMode() const;
+
+
+	/** LoadBalancing for CLod and Skeletons.
+	 *	Setup the max number of skeletons displayed in std way (ie not CLod). Default is 20.
+	 */
+	void					setMaxSkeletonsInNotCLodForm(uint m) {_MaxSkeletonsInNotCLodForm= m;}
+	uint					getMaxSkeletonsInNotCLodForm() const {return _MaxSkeletonsInNotCLodForm;}
 
 	//@}
 
@@ -452,6 +460,18 @@ public:
 	/// Set the async texture manager
 	void						setAsyncTextureManager(CAsyncTextureManager *mgr) {_AsyncTextureManager= mgr;}
 
+
+	/// \name Private
+	// @{
+	typedef std::list<CSkeletonModel*>		TSkeletonModelList;
+	typedef TSkeletonModelList::iterator	ItSkeletonModelList;
+	/// The scene owns a list of skeleton models. Added/Removed by CSkeletonModel intModel()/dtor
+	ItSkeletonModelList			appendSkeletonModelToList(CSkeletonModel *skel);
+	void						eraseSkeletonModelToList(ItSkeletonModelList	it);
+	ItSkeletonModelList			getSkeletonModelListBegin() {return _SkeletonModelList.begin();}
+	ItSkeletonModelList			getSkeletonModelListEnd() {return _SkeletonModelList.end();}
+	// @}
+
 private:
 	typedef			std::map<sint, ITravScene*>	TTravMap;
 	TTravMap		RenderTraversals;	// Sorted via their getRenderOrder().
@@ -555,6 +575,12 @@ private:
 
 	// The async texture manager, setuped by the user.
 	CAsyncTextureManager		*_AsyncTextureManager;
+
+
+	// List of skeletons in the scene
+	TSkeletonModelList			_SkeletonModelList;
+	// Max Skeleton displayed as std.
+	uint						_MaxSkeletonsInNotCLodForm;
 
 };
 

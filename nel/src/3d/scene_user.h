@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.35 2002/10/29 17:17:28 corvazier Exp $
+ * $Id: scene_user.h,v 1.36 2002/11/14 12:55:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -211,6 +211,9 @@ public:
 	virtual	void				setGroupLoadMaxPolygon(const std::string &group, uint nFaces);
 	virtual	uint				getGroupLoadMaxPolygon(const std::string &group);
 	virtual float				getGroupNbFaceAsked (const std::string &group) const;
+
+	virtual void				setMaxSkeletonsInNotCLodForm(uint m);
+	virtual uint				getMaxSkeletonsInNotCLodForm() const;
 
 	//@}
 

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.36 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.37 2002/11/14 12:58:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,6 @@ namespace NL3D
 void		CSkeletonModel::registerBasic()
 {
 	CMOT::registerModel(SkeletonModelId, TransformShapeId, CSkeletonModel::creator);
-	CMOT::registerObs(ClipTravId, SkeletonModelId, CSkeletonModelClipObs::creator);
 	CMOT::registerObs(AnimDetailTravId, SkeletonModelId, CSkeletonModelAnimDetailObs::creator);
 	CMOT::registerObs(RenderTravId, SkeletonModelId, CSkeletonModelRenderObs::creator);
 }
@@ -83,7 +82,7 @@ CSkeletonModel::CSkeletonModel()
 	ClipTrav= NULL;
 	_DisplayedAsLodCharacter= false;
 	_LodCharacterDistance= 0;
-	_DisplayLodCharacterDate= -1;
+	_OOLodCharacterDistance= 0;
 
 	_DefaultMRMSetup= true;
 
@@ -119,6 +118,13 @@ CSkeletonModel::CSkeletonModel()
 // ***************************************************************************
 CSkeletonModel::~CSkeletonModel()
 {
+	// if initModel() called
+	if(ClipTrav)
+	{
+		// remove from scene
+		ClipTrav->Scene->eraseSkeletonModelToList(_ItSkeletonInScene);
+	}
+
 
 	// detach skeleton sons from skins.
 	while(_Skins.begin()!=_Skins.end())
@@ -145,6 +151,9 @@ void	CSkeletonModel::initModel()
 	HrcTrav= (CHrcTrav*)HrcObs->Trav;
 	IObs			*ClipObs= getObs(NL3D::ClipTravId);
 	ClipTrav= (CClipTrav*)ClipObs->Trav;
+
+	// Link this skeleton to the CScene.
+	_ItSkeletonInScene= ClipTrav->Scene->appendSkeletonModelToList(this);
 
 	// Call base class
 	CTransformShape::initModel();
@@ -696,6 +705,10 @@ void		CSkeletonModel::computeAllBones(const CMatrix &modelWorldMatrix)
 void		CSkeletonModel::setLodCharacterDistance(float dist)
 {
 	_LodCharacterDistance= max(dist, 0.f);
+	if(_LodCharacterDistance>0)
+		_OOLodCharacterDistance= 1.0f/_LodCharacterDistance;
+	else
+		_OOLodCharacterDistance= 0;
 }
 
 // ***************************************************************************
@@ -834,68 +847,59 @@ void		CSkeletonModel::setLodCharacterWrapMode(bool wrapMode)
 
 
 // ***************************************************************************
-void		CSkeletonModel::updateDisplayLodCharacterFlag(const CClipTrav *clipTrav)
+float		CSkeletonModel::computeDisplayLodCharacterPriority() const
 {
-	// If this compute has not been already done during this clip pass, do it.
-	if(_DisplayLodCharacterDate < clipTrav->CurrentDate)
+	// if enabled
+	if(_LodCharacterDistance>0 && _CLodInstance.ShapeId>=0)
 	{
-		bool	precFlag= _DisplayedAsLodCharacter;
+		CVector		globalPos;
+		/* \todo yoyo: bad test of visibility. If the skeleton is hidden but has a _AncestorSkeletonModel 
+			wich is visible, then it is supposed to be visible (in this test), but only for The CLod LoadBalancing 
+			(priority not 0). Not so important...
+		*/
 
-		// reset
-		_DisplayedAsLodCharacter= false;
-
-		// if enabled
-		if(_LodCharacterDistance!=0 && _CLodInstance.ShapeId>=0)
+		// Get object position, test visibility;
+		// If has a skeleton ancestor, take his world position instead, because ours is invalid.
+		if( _HrcObs->_AncestorSkeletonModel != NULL)
 		{
-			CVector		globalPos;
-
-			// Get object position. 
-			// If has a skeleton ancestor, take his world position instead, because ours is invalid.
-			if( _HrcObs->_AncestorSkeletonModel != NULL)
-				// take ancestor world position
-				globalPos= _HrcObs->_AncestorSkeletonModel->getWorldMatrix().getPos();
-			else
-				// take our world position
-				globalPos= _HrcObs->WorldMatrix.getPos();
-
-			// compute distance from camera.
-			float	dist= (clipTrav->CamPos - globalPos).norm();
-
-			// compare with param.
-			if(dist>_LodCharacterDistance)
-				_DisplayedAsLodCharacter= true;
+			// if the ancestore is clipped, quit
+			if( !_HrcObs->_AncestorSkeletonModel->isClipVisible() )
+				return 0;
+			// take ancestor world position
+			globalPos= _HrcObs->_AncestorSkeletonModel->getWorldMatrix().getPos();
+		}
+		else
+		{
+			// if the skeleton is clipped, quit
+			if( !isClipVisible() )
+				return 0;
+			// take our world position
+			globalPos= _HrcObs->WorldMatrix.getPos();
 		}
 
-		// If the flag has changed since last frame, must recompute bone Usage.
-		if(precFlag != _DisplayedAsLodCharacter)
-			_BoneToComputeDirty= true;
+		// compute distance from camera.
+		float	dist= (ClipTrav->CamPos - globalPos).norm();
 
-		// Ok, just do it one time per clip pass.
-		_DisplayLodCharacterDate= clipTrav->CurrentDate;
+		// compute priority
+		return dist*_OOLodCharacterDistance;
 	}
+	else
+		return 0;
 }
 
 
 // ***************************************************************************
-void		CSkeletonModelClipObs::traverse(IObs *caller)
+void		CSkeletonModel::setDisplayLodCharacterFlag(bool displayCLod)
 {
-	// call base clip method
-	CTransformShapeClipObs::traverse(caller);
-
-	// some extra stuff if visible
-	if (Visible)
+	// if enabled
+	if(_LodCharacterDistance>0 && _CLodInstance.ShapeId>=0)
 	{
-		// update the _DisplayedAsLodCharacter flag
-		CClipTrav		*clipTrav= (CClipTrav*)Trav;
-		CSkeletonModel	*sm= (CSkeletonModel*)Model;
-		// do it if not already done
-		sm->updateDisplayLodCharacterFlag(clipTrav);
+		// If the flag has changed since last frame, must recompute bone Usage.
+		if(_DisplayedAsLodCharacter != displayCLod)
+			_BoneToComputeDirty= true;
 
-		/* Update Here the Skin render Lists.
-			Done here, because AnimDetail and Render need correct lists. NB: important to do it 
-			before Render Traversal, because updateSkinRenderLists() may change the transparency flag!!
-		*/
-		sm->updateSkinRenderLists();
+		// set new state
+		_DisplayedAsLodCharacter= displayCLod;
 	}
 }
 
@@ -1388,8 +1392,12 @@ void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*
 // ***************************************************************************
 float			CSkeletonModel::getNumTriangles (float distance)
 {
-	// NB: this is an approximation, but this is continious.
-	return _LevelDetail.getNumTriangles(distance);
+	// If the skeleton is displayed as a CLod suppose 0 triangles.
+	if( isDisplayedAsLodCharacter() )
+		return 0;
+	else
+		// NB: this is an approximation, but this is continious.
+		return _LevelDetail.getNumTriangles(distance);
 }
 
 // ***************************************************************************

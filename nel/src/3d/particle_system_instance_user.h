@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.24 2003/11/25 16:57:20 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.25 2003/12/05 11:08:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -120,6 +120,9 @@ public:
 		virtual bool		   hasEmmiters() const;
 	// @}
 		virtual bool		   isShared() const;
+
+	// force instanciation of system
+	virtual void   forceInstanciate();
 
 
 	// No-op for ParticleSystem

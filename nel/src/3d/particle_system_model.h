@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.37 2003/11/25 16:57:20 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.38 2003/12/05 11:08:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -277,6 +277,7 @@ public:
 	void setUserMatrix(const NLMISC::CMatrix &userMatrix) { _UserMatrix = userMatrix; }	
 	const NLMISC::CMatrix &getUserMatrix() const { return _UserMatrix; }
 
+	void forceInstanciate();
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:

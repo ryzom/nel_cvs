@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.43 2003/11/25 14:40:32 vizerie Exp $
+ * $Id: particle_system.h,v 1.44 2003/12/05 11:08:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -657,6 +657,9 @@ public:
             */
 		  void				setUserColor(NLMISC::CRGBA userColor) { _UserColor = userColor; } 
 		  NLMISC::CRGBA		getUserColor() const { return _UserColor; }		  
+
+		  // shortcut : test il global color is used (not white)
+		  bool				isUserColorUsed() const { return _UserColor != NLMISC::CRGBA::White; }  
 			
 		  /** Get the current global color of the system. (It is updated just before drawing...). It there's
 		    * no color attenuation scheme it can be assumed to be the same than the user color

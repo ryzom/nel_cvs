@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.4 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.5 2003/12/05 11:08:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -533,6 +533,7 @@ void CPSQuad::updateMatBeforeRendering(IDriver *drv)
 		/// update the material if the global color of the system is variable		
 		if (_ColorScheme != NULL && 
 			(ps.getColorAttenuationScheme() != NULL ||
+			 ps.isUserColorUsed() ||
 			 ps.getForceGlobalColorLightingFlag() ||
 			 usesGlobalColorLighting()
 			)
@@ -555,7 +556,7 @@ void CPSQuad::updateMatBeforeRendering(IDriver *drv)
 			{
 				col.modulateFromColor(ps.getGlobalColorLighted(), _Color);
 			}
-			else if (ps.getColorAttenuationScheme() != NULL)
+			else if (ps.getColorAttenuationScheme() != NULL || ps.isUserColorUsed())
 			{
 				col.modulateFromColor(ps.getGlobalColor(), _Color);
 			}	

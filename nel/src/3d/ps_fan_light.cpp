@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.6 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_fan_light.cpp,v 1.7 2003/12/05 11:08:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -319,7 +319,7 @@ inline void CPSFanLight::setupMaterial()
 		{		
 			col.modulateFromColor(ps.getGlobalColorLighted(), _Color);
 		}
-		else if (ps.getColorAttenuationScheme() != NULL)
+		else if (ps.getColorAttenuationScheme() != NULL || ps.isUserColorUsed())
 		{
 			col.modulateFromColor(ps.getGlobalColor(), _Color);			
 		}

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.10 2003/11/27 11:36:38 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.11 2003/12/05 11:08:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -371,7 +371,7 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		CPSMaterial::forceModulateConstantColor(true, ps.getGlobalColorLighted());
 	}
 	else
-	if (ps.getColorAttenuationScheme() != NULL)
+	if (ps.getColorAttenuationScheme() != NULL || ps.isUserColorUsed())
 	{		
 		CPSMaterial::forceModulateConstantColor(true, ps.getGlobalColor());		
 	}

@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.4 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.5 2003/12/05 11:08:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -300,6 +300,7 @@ void CPSShockWave::draw(bool opaque)
 	/// update the material if the global color of the system is variable		
 	if (_ColorScheme != NULL && 
 		(ps.getColorAttenuationScheme() != NULL ||
+		 ps.isUserColorUsed() ||
 		 ps.getForceGlobalColorLightingFlag()   || 
 		 usesGlobalColorLighting()
 		)
@@ -324,7 +325,7 @@ void CPSShockWave::draw(bool opaque)
 			_Mat.setColor(col);
 		}
 		else
-		if (!ps.getColorAttenuationScheme())
+		if (!ps.getColorAttenuationScheme() || ps.isUserColorUsed())
 		{
 			_Mat.setColor(_Color);
 		}

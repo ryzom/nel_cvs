@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.60 2003/11/25 16:57:20 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.61 2003/12/05 11:08:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,7 +75,6 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 	// RenderFilter: We are a Landscape
 	_RenderFilterType= UScene::FilterPS;
 }
-
 
 ///=====================================================================================
 void CParticleSystemModel::setEditionMode(bool enable /*= true*/)
@@ -893,6 +892,14 @@ void CParticleSystemModel::setUserColor(NLMISC::CRGBA userColor)
 {
 	if (_ParticleSystem) _ParticleSystem->setUserColor(userColor);
 	_UserColor = userColor;
+}
+
+//===================================================================
+void CParticleSystemModel::forceInstanciate()
+{
+	if (_Invalidated) return;
+	if (_ParticleSystem) return;
+	reallocRsc();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.8 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.9 2003/12/05 11:08:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -264,7 +264,7 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	// Material setup //
 	////////////////////
 		CParticleSystem &ps = *(_Owner->getOwner());
-		bool useGlobalColor = ps.getColorAttenuationScheme() != NULL;
+		bool useGlobalColor = ps.getColorAttenuationScheme() != NULL || ps.isUserColorUsed();
 		if (useGlobalColor != _GlobalColor)
 		{
 			_GlobalColor = useGlobalColor; 
@@ -449,7 +449,7 @@ void	CPSTailDot::updateMaterial()
 	CParticleSystem &ps = *(_Owner->getOwner());
 	if (_ColorScheme)
 	{	// PER RIBBON COLOR
-		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting() || ps.getColorAttenuationScheme())		
+		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting() || ps.getColorAttenuationScheme() || ps.isUserColorUsed())		
 		{
 			if (_ColorFading) // global color + fading + per ribbon color
 			{
@@ -536,7 +536,7 @@ void	CPSTailDot::setupGlobalColor()
 			}
 		}
 		else
-		if (ps.getColorAttenuationScheme())
+		if (ps.getColorAttenuationScheme() || ps.isUserColorUsed())
 		{			
 			NLMISC::CRGBA col;
 			col.modulateFromColor(ps.getGlobalColor(), _Color);

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.29 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.30 2003/12/05 11:08:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1724,7 +1724,7 @@ void	CPSConstraintMesh::setupRenderPasses(float date, TRdrPassSet &rdrPasses, bo
 			{								
 				NLMISC::CRGBA col;
 				col.modulateFromColor(SourceMat.getColor(), _Color);
-				if (ps.getColorAttenuationScheme() == NULL)
+				if (ps.getColorAttenuationScheme() == NULL || ps.isUserColorUsed())
 				{
 					col.modulateFromColor(col, ps.getGlobalColor());
 				}

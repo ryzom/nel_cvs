@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.27 2003/11/25 16:57:20 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.28 2003/12/05 11:08:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -497,6 +497,14 @@ void CParticleSystemInstanceUser::setUserMatrix(const NLMISC::CMatrix &userMat)
 	NL3D_MEM_PS_INSTANCE
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	psm->setUserMatrix(userMat);
+}
+
+//===================================================================
+void CParticleSystemInstanceUser::forceInstanciate()
+{
+	NL3D_MEM_PS_INSTANCE
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	psm->forceInstanciate();
 }
 
 

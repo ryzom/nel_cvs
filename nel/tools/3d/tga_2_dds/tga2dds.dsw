@@ -27,6 +27,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "s3tc_compressor_lib"=..\s3tc_compressor_lib\s3tc_compressor_lib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "tga2dds"=.\tga2dds.dsp - Package Owner=<4>
 
 Package=<5>
@@ -40,6 +52,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name s3tc_compressor_lib
     End Project Dependency
 }}}
 

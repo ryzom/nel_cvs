@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.32 2004/07/16 07:31:12 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.33 2004/07/20 12:25:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,6 +126,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		GetDlgItem(IDC_ZBIAS)->ShowWindow(SW_HIDE);
 	}
 	GetDlgItem(IDC_ALIGN_ON_MOTION)->ShowWindow(SW_HIDE);
+	GetDlgItem(IDC_ZALIGN)->ShowWindow(SW_HIDE);
 	// enable disable z-test	
 	//
 	if (dynamic_cast<NL3D::CPSParticle *>(_Bindable))
@@ -245,7 +246,10 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			mbc->GetClientRect(&rect);
 			yPos += rect.bottom + 3;				
 			GetDlgItem(IDC_ALIGN_ON_MOTION)->ShowWindow(SW_SHOW);
+			GetDlgItem(IDC_ZALIGN)->ShowWindow(SW_SHOW);
 			((CButton *) GetDlgItem(IDC_ALIGN_ON_MOTION))->SetCheck(fla->getAlignOnMotion());
+			((CButton *) GetDlgItem(IDC_ZALIGN))->SetCheck(fla->getAlignOnZAxis());
+			updateValidWndForAlignOnMotion(fla->getAlignOnMotion());
 		}
 
 		// if we're dealing with a shockwave, we add dlg for the radius cut, and the number of segments
@@ -565,6 +569,7 @@ BEGIN_MESSAGE_MAP(CLocatedBindableDialog, CDialog)
 	ON_BN_CLICKED(IDC_ZTEST, OnZtest)
 	ON_EN_CHANGE(IDC_ZBIAS, OnChangeZbias)
 	ON_EN_KILLFOCUS(IDC_ZBIAS, OnKillfocusZbias)
+	ON_BN_CLICKED(IDC_ZALIGN, OnZalign)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -705,6 +710,13 @@ void CLocatedBindableDialog::OnAlignOnMotion()
 	bool align = ((CButton *) GetDlgItem(IDC_ALIGN_ON_MOTION))->GetCheck() != 0;
 	NL3D::CPSFaceLookAt *fla = NLMISC::safe_cast<NL3D::CPSFaceLookAt *>(_Bindable);
 	fla->setAlignOnMotion(align);
+	updateValidWndForAlignOnMotion(align);	
+	updateModifiedFlag();
+}
+
+//***********************************************************************************
+void CLocatedBindableDialog::updateValidWndForAlignOnMotion(bool align)
+{
 	BOOL enable = align ? FALSE : TRUE;
 	for(uint k = 0; k < _MotionBlurWnd.size(); ++k)
 	{
@@ -717,8 +729,8 @@ void CLocatedBindableDialog::OnAlignOnMotion()
 		{		
 			_MotionBlurWnd[k]->EnableWindow(enable);
 		}
-	}	
-	updateModifiedFlag();
+	}
+	GetDlgItem(IDC_ZALIGN)->EnableWindow(enable);
 }
 
 //***********************************************************************************
@@ -787,4 +799,12 @@ void CLocatedBindableDialog::OnChangeZbias()
 void CLocatedBindableDialog::OnKillfocusZbias() 
 {
 	updateZBias();	
+}
+
+//***************************************************************************************************************************
+void CLocatedBindableDialog::OnZalign() 
+{	
+	bool align = ((CButton *) GetDlgItem(IDC_ZALIGN))->GetCheck() != 0;
+	NL3D::CPSFaceLookAt *fla = NLMISC::safe_cast<NL3D::CPSFaceLookAt *>(_Bindable);
+	fla->setAlignOnZAxis(align);
 }

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.20 2004/06/17 08:12:28 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.21 2004/07/20 12:25:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,6 +122,7 @@ protected:
 	afx_msg void OnZtest();
 	afx_msg void OnChangeZbias();
 	afx_msg void OnKillfocusZbias();
+	afx_msg void OnZalign();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -307,6 +308,7 @@ protected:
 
 	void updateModifiedFlag() { if (_Node) _Node->setModified(true); }
 	void touchPSState();
+	void updateValidWndForAlignOnMotion(bool align);
 };
 
 //{{AFX_INSERT_LOCATION}}

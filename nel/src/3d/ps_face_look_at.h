@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.h
  * Face look at particles.
  *
- * $Id: ps_face_look_at.h,v 1.7 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_face_look_at.h,v 1.8 2004/07/20 12:24:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,10 +107,12 @@ public:
 	/// from CPSParticle : return true if there are lightable faces in the object
 	virtual bool			hasLightableFaces() { 	return false; }
 
-	// Force faces to be aligned on motion. This bypass motion blur
+	// Force faces to be aligned on motion. This bypass motion blur / align on z axis
 	void					setAlignOnMotion(bool align) { _AlignOnMotion = align; }
 	bool					getAlignOnMotion() const { return _AlignOnMotion; }
-	
+	// Force lookat to align with the z-axis
+	void					setAlignOnZAxis(bool align) { _AlignOnZAxis = align; }
+	bool					getAlignOnZAxis() const { return _AlignOnZAxis; }
 protected:
 	friend class			CPSFaceLookAtHelper;	/// used for implementation only
 	float					_MotionBlurCoeff;	
@@ -123,6 +125,7 @@ protected:
 	} _SecondSize;
 	bool					_IndependantSizes;
 	bool                    _AlignOnMotion;
+	bool					_AlignOnZAxis;
 	virtual void			draw(bool opaque);
 	void					newElement(const CPSEmitterInfo &info);
 	void					deleteElement(uint32);

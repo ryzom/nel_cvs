@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.35 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_located.h,v 1.36 2004/07/20 12:24:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -389,6 +389,7 @@ public:
 	*  This allow to  have object that always faces the user, whatever basis they are in
 	*/
 	NLMISC::CVector computeI(void) const;
+	NLMISC::CVector	computeIWithZAxisAligned(void)  const;
 
 	/** Compute a vector that will map to (0 1 0) after view and model transform.
 	*  This allow to  have object that always faces the user, whatever basis they are in
@@ -399,6 +400,7 @@ public:
 	*  This allow to  have object that always faces the user, whatever basis they are in
 	*/
 	NLMISC::CVector computeK(void) const;
+	NLMISC::CVector	computeKWithZAxisAligned(void)  const;
 
 	/** call this if you need collision infos.
 	*  The collide info attribute is not included by default to save memory.
@@ -843,15 +845,17 @@ public:
 	 *  This allow to  have object that always faces the user, whatever basis they are in
 	 */
 	inline NLMISC::CVector	computeI(void)  const { return _Owner->computeI(); }
-
+	// Same version, but with Z-Axis aligned on world z-axis
+	inline NLMISC::CVector	computeIWithZAxisAligned(void)  const { return _Owner->computeIWithZAxisAligned(); }
 	/** Compute a vector that will map to (0 1 0) after view and model transform.
 	 *  This allow to  have object that always faces the user, whatever basis they are in
 	 */
-	inline NLMISC::CVector	computeJ(void)  const { return _Owner->computeJ(); }
+	inline NLMISC::CVector	computeJ(void)  const { return _Owner->computeJ(); }	
 	 /** Compute a vector that will map to (0 0 1) after view and model transform.
 	 *  This allow to  have object that always faces the user, whatever basis they are in
 	 */
  	 inline NLMISC::CVector computeK(void)  const { return _Owner->computeK(); }
+	 inline NLMISC::CVector	computeKWithZAxisAligned(void)  const { return _Owner->computeKWithZAxisAligned(); }
 	 /// get the located that owns this bindable
 	 CPSLocated				*getOwner(void) { return _Owner; }
 	 /// get the located that owns this bindable (const version)

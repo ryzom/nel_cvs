@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.12 2004/06/02 16:30:30 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.13 2004/07/20 12:24:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -405,9 +405,21 @@ public:
 		la._Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
 		la.setupDriverModelMatrix();
 		driver->activeVertexBuffer(vb);	
-		const CVector I = la.computeI();
-		const CVector J = la.computeJ();
-		const CVector K = la.computeK();		
+		CVector I;
+		CVector J;
+		CVector K;
+		if (!la._AlignOnZAxis)
+		{		
+			I = la.computeI();
+			J = la.computeJ();
+			K = la.computeK();
+		}
+		else
+		{
+			I = la.computeIWithZAxisAligned();			
+			K = la.computeKWithZAxisAligned();
+			J = K ^ I;
+		}
 		const float *rotTable = CPSRotated2DParticle::getRotTable();	
 		// for each the particle can be constantly rotated or have an independant rotation for each particle
 		// number of face left, and number of face to process at once
@@ -917,7 +929,8 @@ CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex),
                                                         _MotionBlurCoeff(0.f),
 														_Threshold(0.5f),
 														_IndependantSizes(false),
-														_AlignOnMotion(false)
+														_AlignOnMotion(false),
+														_AlignOnZAxis(false)
 {	
 	_SecondSize.Owner = this;
 	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("LookAt");
@@ -949,8 +962,9 @@ void CPSFaceLookAt::resize(uint32 capacity)
 ///===========================================================================================
 void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	// version 4 : added 'align on z-axis' flag
 	// version 3 : added 'align on motion' flag
-	sint ver = f.serialVersion(3);
+	sint ver = f.serialVersion(4);
 	CPSQuad::serial(f);
 	CPSRotated2DParticle::serialAngle2DScheme(f);	
 	f.serial(_MotionBlurCoeff);
@@ -969,6 +983,10 @@ void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if (ver >= 3)
 	{
 		f.serial(_AlignOnMotion);
+	}
+	if (ver >= 4)
+	{
+		f.serial(_AlignOnZAxis);
 	}
 	if (f.isReading())
 	{

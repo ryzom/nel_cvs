@@ -620,10 +620,12 @@ BEGIN
     CONTROL         "Align on motion",IDC_ALIGN_ON_MOTION,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,82,21,57,8
     CONTROL         "Z-Test",IDC_ZTEST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    142,21,31,9
-    LTEXT           "ZBias",IDC_ZBIAS_TEXT,180,21,19,8
-    EDITTEXT        IDC_ZBIAS,200,19,32,11,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    177,21,31,9
+    LTEXT           "ZBias",IDC_ZBIAS_TEXT,211,21,19,8
+    EDITTEXT        IDC_ZBIAS,232,19,32,11,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_AUTOHSCROLL
+    CONTROL         "Z-Align",IDC_ZALIGN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,141,20,32,10
 END
 
 IDD_COLOR_EDIT DIALOG DISCARDABLE  0, 0, 226, 32

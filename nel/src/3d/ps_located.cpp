@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.72 2004/06/29 15:02:38 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.73 2004/07/20 12:24:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -658,6 +658,40 @@ NLMISC::CVector CPSLocated::computeI(void) const
 }
 
 ///***************************************************************************************
+NLMISC::CVector CPSLocated::computeIWithZAxisAligned(void) const
+{
+	CHECK_PS_INTEGRITY
+	const NLMISC::CMatrix &sysMat = _Owner->getSysMat();
+	const CVector &camI = _Owner->getInvertedViewMat().getI();		
+	CVector I(camI.x, camI.y, 0.f);
+	I.normalize();
+	if (getMatrixMode() == PSIdentityMatrix)
+	{		
+		if (!sysMat.hasScalePart())
+		{			
+			return I;
+		}
+		else
+		{		
+			return sysMat.getScaleUniform() * I;
+		}
+	}
+	else
+	{
+		if (!sysMat.hasScalePart())
+		{
+			// we must express the I vector in the system basis, so we need to multiply it by the inverted matrix of the system
+			return getWorldToLocalMatrix().mulVector(I);
+		}
+		else
+		{
+			return sysMat.getScaleUniform() * getWorldToLocalMatrix().mulVector(I);
+		}
+	}
+	CHECK_PS_INTEGRITY
+}
+
+///***************************************************************************************
 NLMISC::CVector CPSLocated::computeJ(void) const 
 {
 	CHECK_PS_INTEGRITY
@@ -695,6 +729,7 @@ NLMISC::CVector CPSLocated::computeK(void) const
 	const NLMISC::CMatrix &sysMat = _Owner->getSysMat();
 	if (getMatrixMode() == PSIdentityMatrix)
 	{
+		
 		if (!sysMat.hasScalePart())
 		{
 			return _Owner->getInvertedViewMat().getK();
@@ -717,6 +752,37 @@ NLMISC::CVector CPSLocated::computeK(void) const
 		}
 	}
 	CHECK_PS_INTEGRITY
+}
+
+///***************************************************************************************
+NLMISC::CVector CPSLocated::computeKWithZAxisAligned(void) const
+{
+	CHECK_PS_INTEGRITY
+		const NLMISC::CMatrix &sysMat = _Owner->getSysMat();
+	if (getMatrixMode() == PSIdentityMatrix)
+	{
+		if (!sysMat.hasScalePart())
+		{
+			return CVector::K;
+		}
+		else
+		{
+			return CVector(0.f, 0.f, sysMat.getScaleUniform());
+		}
+	}
+	else
+	{
+		if (!sysMat.hasScalePart())
+		{
+			// we must express the K vector in the system basis, so we need to multiply it by the inverted matrix of the system
+			return getWorldToLocalMatrix().mulVector(CVector::K);
+		}
+		else
+		{
+			return getWorldToLocalMatrix().mulVector(CVector(0.f, 0.f, sysMat.getScaleUniform()));
+		}
+	}
+	CHECK_PS_INTEGRITY	
 }
 
 ///***************************************************************************************

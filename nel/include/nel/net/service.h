@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.79 2005/01/24 14:32:38 corvazier Exp $
+ * $Id: service.h,v 1.80 2005/01/25 16:42:39 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -336,7 +336,9 @@ public:
 	 * will then happen after you call clearForClosure().
 	 * 
 	 * If you don't provide a callback here, or if you call with NULL, the service will exit
-	 * immediately when asked to quit.
+	 * immediately when asked to quit. The provided callback is not taken into account until
+	 * the Mirror Service is detected. If there is no mirror service running and the service
+	 * is requested to quit, it will quit immediately.
 	 */
 	void								setClosureClearanceCallback( TRequestClosureClearanceCallback cb ) { _RequestClosureClearanceCallback = cb; }
 

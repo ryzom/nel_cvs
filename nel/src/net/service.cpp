@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.218 2005/01/24 14:32:38 corvazier Exp $
+ * $Id: service.cpp,v 1.219 2005/01/25 16:42:38 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -158,7 +158,14 @@ static CVariable<uint32>		UpdateAssertionThreadTimeout("nel", "UpdateAssertionTh
 // Flag to enable/disable the flushing of the sending queues when the service is shut down
 // Default: false (matches the former behaviour)
 // Set it to true in services that need to send data on exit (for instance in their release() method)
-CVariable<bool>					FlushSendingQueuesOnExit("nel", "FlushSendingQueuesOnExit", "Flag to enable/disable the flushing of the sending queues when the service is shut down", false, 0, true );
+CVariable<bool>					FlushSendingQueuesOnExit("nel", "FlushSendingQueuesOnExit",
+	"Flag to enable/disable the flushing of the sending queues when the service is shut down", false, 0, true );
+
+// If FlushSendingQueuesOnExit is on, only the sending queues to these specified services will be flushed
+// Format: service short names separated by ':'
+// Default: "" (all will be flushed if FlushSendingQueuesOnExit is on, none if it is off)
+CVariable<string>				NamesOfOnlyServiceToFlushSending("nel", "NamesOfOnlyServiceToFlushSending",
+	"If FlushSendingQueuesOnExit is on, only the sending queues to these specified services will be flushed (ex: \"WS:LS\"; all will be flushed if empty string)", "", 0, true );
 
 
 //
@@ -1352,7 +1359,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Delete all network connection (naming client also)
 		//
 
-		CUnifiedNetwork::getInstance()->release (FlushSendingQueuesOnExit.get());
+		std::vector<std::string> namesOfOnlyServiceToFlushSendingV;
+		explode( NamesOfOnlyServiceToFlushSending, ":", namesOfOnlyServiceToFlushSendingV, true );
+		CUnifiedNetwork::getInstance()->release (FlushSendingQueuesOnExit.get(), namesOfOnlyServiceToFlushSendingV);
 
 		CSock::releaseNetwork ();
 

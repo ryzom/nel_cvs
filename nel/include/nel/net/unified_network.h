@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.47 2004/12/22 19:44:28 cado Exp $
+ * $Id: unified_network.h,v 1.48 2005/01/25 16:42:39 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -113,10 +113,15 @@ public:
 	void	connect();
 
 	/** Closes the connection to the naming service, every other connection and free.
-	 * \param mustFlushSendQueues If true, all send queues will be really sent before disconnecting. In some cases disconnect(true) can take a while.
+	 * \param mustFlushSendQueues If true, all send queues or only queues in namesOfOnlyServiceToFlushSending
+	 * will be really sent before disconnecting. In some cases disconnect(true) can take a while.
+	 * \param namesOfOnlyServiceToFlushSending When mustFlushSendQueues is true, this param can hold
+	 * a list of service short names. Only the send queues to the services specified
+	 * will be flushed (and waited) at exit. If the list is empty (and mustFlushSendQueues is true),
+	 * all the queues will be flushed (and waited).
 	 * See also "Handling network congestion" in CUnifiedNetwork above comments, and tryFlushAllQueues().
 	 */
-	void	release (bool mustFlushSendQueues=true);
+	void	release (bool mustFlushSendQueues=true, const std::vector<std::string>& namesOfOnlyServiceToFlushSending=std::vector<std::string>() );
 
 	/** Adds a specific service to the list of connected services.
 	 */
@@ -156,15 +161,17 @@ public:
 	 */
 	void	sendAll (const CMessage &msg, uint8 nid=0xFF);
 
-	/** Flush all the sending queues, and report the number of bytes still pending.
+	/** Flush all or part of the sending queues, and report the number of bytes still pending.
 	 * To ensure manually all data are sent before stopping a service, you may want
 	 * to repeat calling this method evenly until it returns 0. The default release(false) of
 	 * CUnifiedNetwork only flushes each connection once, but if the network is
 	 * congested (when there are big streams to send) the first flush may not
 	 * succeed to send entire buffers.
+	 * \param namesOfOnlyServiceToFlushSending If not empty, only the send queues to the
+	 * services specified (by short name) will be flushed.
 	 * See also "Handling network congestion" in CUnifiedNetwork above comments.
 	 */
-	uint	tryFlushAllQueues();
+	uint	tryFlushAllQueues(const std::vector<std::string>& namesOfOnlyServiceToFlushSending=std::vector<std::string>());
 
 	/** Sets callback for incoming connections.
 	 * On a client, the callback will be call when the connection to the server is established (the first connection or after the server shutdown and started)

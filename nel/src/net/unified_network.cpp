@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.88 2005/01/05 18:23:11 cado Exp $
+ * $Id: unified_network.cpp,v 1.89 2005/01/25 16:42:38 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -629,7 +629,7 @@ void	CUnifiedNetwork::connect()
 	}
 }
 
-void	CUnifiedNetwork::release( bool mustFlushSendQueues )
+void	CUnifiedNetwork::release(bool mustFlushSendQueues, const std::vector<std::string>& namesOfOnlyServiceToFlushSending)
 {
 	if (!_Initialised)
 		return;
@@ -642,7 +642,7 @@ void	CUnifiedNetwork::release( bool mustFlushSendQueues )
 		nlinfo( "HNETL5: Flushing sending queues..." );
 		float totalBytes;
 		uint bytesRemaining, i=0;
-		while ( (bytesRemaining = tryFlushAllQueues()) != 0 )
+		while ( (bytesRemaining = tryFlushAllQueues( namesOfOnlyServiceToFlushSending )) != 0 )
 		{
 			if ( i == 0 )
 				totalBytes = (float)bytesRemaining;
@@ -1373,8 +1373,10 @@ void	CUnifiedNetwork::sendAll(const CMessage &msgout, uint8 nid)
 /* Flush all the sending queues, and report the number of bytes still pending.
  * To ensure all data are sent before stopping a service, you may want to repeat
  * calling this method evenly until it returns 0.
+ * \param namesOfOnlyServiceToFlushSending If not empty, only the send queues to the
+ * services specified (by short name) will be flushed.
  */
-uint	CUnifiedNetwork::tryFlushAllQueues()
+uint	CUnifiedNetwork::tryFlushAllQueues(const std::vector<std::string>& namesOfOnlyServiceToFlushSending)
 {
 	H_AUTO(L5FlushAll);
 	uint bytesRemaining = 0;
@@ -1382,6 +1384,12 @@ uint	CUnifiedNetwork::tryFlushAllQueues()
 	{ 
 		H_AUTO(UNFABrowseConnections); 
 		CUnifiedConnection &uc = _IdCnx[_UsedConnection[k]]; 
+
+		// Skip the connection if it is not found in the 'only' list (except if the list is empty)
+		if ( (! namesOfOnlyServiceToFlushSending.empty()) &&
+			 (std::find( namesOfOnlyServiceToFlushSending.begin(), namesOfOnlyServiceToFlushSending.end(), uc.ServiceName ) == namesOfOnlyServiceToFlushSending.end()) )
+			 continue;
+
 		nlassert (uc.State == CUnifiedNetwork::CUnifiedConnection::Ready); 
 		for (uint j = 0; j < uc.Connection.size (); j++) 
 		{ 

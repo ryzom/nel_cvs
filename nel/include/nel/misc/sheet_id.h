@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.19 2004/07/30 15:37:05 boucher Exp $
+ * $Id: sheet_id.h,v 1.20 2005/02/08 18:32:12 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -41,6 +41,10 @@ namespace NLMISC {
 #  define NL_DEBUG_SHEET_ID
 #endif
 
+// Use 24 bits id and 8 bits file types
+#define NL_SHEET_ID_ID_BITS		24
+#define NL_SHEET_ID_TYPE_BITS	32 - NL_SHEET_ID_ID_BITS
+
 /**
  * CSheetId
  *
@@ -66,10 +70,10 @@ public :
 	explicit CSheetId( const std::string& sheetName );
 
 	// build from a string and returns true if the build succeed
-	bool	 build(const std::string& sheetName);
+	bool	 buildSheetId(const std::string& sheetName);
 
 	// build from a SubSheetId and a type
-	void	 build(uint32 shortId, uint8 type);
+	void	 buildSheetId(uint32 shortId, uint32 type);
 
 	/**
 	 *	Load the association sheet ref / sheet name 
@@ -89,7 +93,7 @@ public :
 	/**
 	 * Return the sheet type (sub part of the sheetid)
 	 */
-	uint8 getType() const { return _Id.IdInfos.Type; }
+	uint32 getSheetType() const { return _Id.IdInfos.Type; }
 
 	/**
 	 * Return the sheet sub id (sub part of the sheetid)
@@ -145,7 +149,7 @@ public :
 	 *  if (type != -1) then restrict list to given type
 	 */
 	static void display();
-	static void display(uint8 type);
+	static void display(uint32 type);
 
 	/**
 	 *  Generate a vector of all the sheet ids of a given type 
@@ -153,8 +157,8 @@ public :
 	 *  note: fileExtension *not* include the '.' eg "bla" and *not* ".bla"
 	 **/
 	static void buildIdVector(std::vector <CSheetId> &result);
-	static void buildIdVector(std::vector <CSheetId> &result, uint8 type);
-	static void buildIdVector(std::vector <CSheetId> &result, std::vector <std::string> &resultFilenames, uint8 type);
+	static void buildIdVector(std::vector <CSheetId> &result, uint32 type);
+	static void buildIdVector(std::vector <CSheetId> &result, std::vector <std::string> &resultFilenames, uint32 type);
 	static void buildIdVector(std::vector <CSheetId> &result, const std::string &fileExtension);
 	static void buildIdVector(std::vector <CSheetId> &result, std::vector <std::string> &resultFilenames, const std::string &fileExtension);
 
@@ -162,7 +166,7 @@ public :
 	 *  Convert between file extensions and numeric sheet types
 	 *  note: fileExtension *not* include the '.' eg "bla" and *not* ".bla"
 	 **/
-	static const std::string &fileExtensionFromType(uint8 type);
+	static const std::string &fileExtensionFromType(uint32 type);
 	static uint32 typeFromFileExtension(const std::string &fileExtension);
 
 private :
@@ -174,8 +178,8 @@ private :
 		
 		struct
 		{
-			uint32	Type	: 8;
-			uint32	Id		: 24;
+			uint32	Type	: NL_SHEET_ID_TYPE_BITS;
+			uint32	Id		: NL_SHEET_ID_ID_BITS;
 		} IdInfos;
 	};
 	TSheetId _Id;

@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.33 2004/10/15 13:42:16 berenguier Exp $
+ * $Id: sheet_id.cpp,v 1.34 2005/02/08 18:32:30 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -91,7 +91,7 @@ CSheetId::CSheetId( uint32 sheetRef)
 //-----------------------------------------------
 CSheetId::CSheetId( const string& sheetName )
 {
-	if (!build(sheetName))
+	if (!buildSheetId(sheetName))
 	{
 		nlwarning("SHEETID: The sheet '%s' is not in sheet_id.bin, setting it to Unknown",sheetName.c_str());
 		*this = Unknown;
@@ -104,7 +104,7 @@ CSheetId::CSheetId( const string& sheetName )
 //	Build
 //
 //-----------------------------------------------
-bool CSheetId::build(const std::string& sheetName)
+bool CSheetId::buildSheetId(const std::string& sheetName)
 {
 	nlassert(_Initialised);
 
@@ -142,7 +142,7 @@ void CSheetId::loadSheetId ()
 		_SheetNameToId.clear ();
 
 		// reserve space for the vector of file extensions
-		_FileExtensions.resize(256);
+		_FileExtensions.resize(1 << NL_SHEET_ID_TYPE_BITS);
 
 		// Get the map from the file
 		map<uint32,string> tempMap;
@@ -234,7 +234,7 @@ void CSheetId::loadSheetId ()
 				// work out the type value for this entry in the map
 				TSheetId sheetId;
 				sheetId.Id=(*itStr).first;
-				uint8 type=	sheetId.IdInfos.Type;
+				uint32 type = sheetId.IdInfos.Type;
  
 				// check whether we need to add an entry to the file extensions vector
 				if (_FileExtensions[type].empty())
@@ -432,7 +432,7 @@ void CSheetId::display()
 //	display
 //
 //-----------------------------------------------
-void CSheetId::display(uint8 type)
+void CSheetId::display(uint32 type)
 {
 	nlassert(_Initialised);
 
@@ -443,7 +443,7 @@ void CSheetId::display(uint8 type)
 		TSheetId sheetId;
 		sheetId.Id=(*itStr).first;
  
-		// decide whether or not to dsiplay the entry
+		// decide whether or not to display the entry
 		if (type==sheetId.IdInfos.Type)
 		{
 			//nlinfo("%d %s",(*itStr).first,(*itStr).second.c_str());
@@ -476,9 +476,10 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result)
 //	buildIdVector
 //
 //-----------------------------------------------
-void CSheetId::buildIdVector(std::vector <CSheetId> &result,uint8 type)
+void CSheetId::buildIdVector(std::vector <CSheetId> &result, uint32 type)
 {
 	nlassert(_Initialised);
+	nlassert(type < (1 << NL_SHEET_ID_TYPE_BITS));
 
 	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -500,9 +501,10 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result,uint8 type)
 //	buildIdVector
 //
 //-----------------------------------------------
-void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::string> &resultFilenames,uint8 type)
+void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::string> &resultFilenames,uint32 type)
 {
 	nlassert(_Initialised);
+	nlassert(type < (1 << NL_SHEET_ID_TYPE_BITS));
 
 	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -529,7 +531,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result,const std::string &f
 {
 	uint32 type=typeFromFileExtension(fileExtension);
 	if (type!=(uint32)~0)
-		buildIdVector(result,(uint8)type);
+		buildIdVector(result, type);
 
 } // buildIdVector //
 
@@ -540,8 +542,8 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result,const std::string &f
 void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::string> &resultFilenames,const std::string &fileExtension)
 {
 	uint32 type=typeFromFileExtension(fileExtension);
-	if (type!=(uint32)~0)
-		buildIdVector(result,resultFilenames, (uint8)type);
+	if (type != (uint32)~0)
+		buildIdVector(result,resultFilenames, type);
 
 } // buildIdVector //
 
@@ -567,10 +569,10 @@ uint32 CSheetId::typeFromFileExtension(const std::string &fileExtension)
 //	fileExtensionFromType
 //
 //-----------------------------------------------
-const std::string &CSheetId::fileExtensionFromType(uint8 type)
+const std::string &CSheetId::fileExtensionFromType(uint32 type)
 {
 	nlassert(_Initialised);
-	nlassert(type<256);
+	nlassert(type < (1<<NL_SHEET_ID_TYPE_BITS));
 
 	return _FileExtensions[type];
 
@@ -580,8 +582,11 @@ const std::string &CSheetId::fileExtensionFromType(uint8 type)
 //	build
 //
 //-----------------------------------------------
-void	CSheetId::build(uint32 shortId, uint8 type)
+void	CSheetId::buildSheetId(uint32 shortId, uint32 type)
 {
+	nlassert(shortId < (1<<NL_SHEET_ID_ID_BITS));
+	nlassert(type < (1<<NL_SHEET_ID_TYPE_BITS));
+
 	_Id.IdInfos.Id= shortId;
 	_Id.IdInfos.Type= type;
 

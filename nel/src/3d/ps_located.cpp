@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.74 2004/07/21 11:13:54 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.75 2004/07/22 08:55:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2084,7 +2084,9 @@ TAnimationTime CPSLocated::computeDateFromCollisionToNextSimStep(uint particleIn
 	float ageAtStart = CParticleSystem::RealEllapsedTime > particleAgeInSeconds ? CParticleSystem::RealEllapsedTime - particleAgeInSeconds : 0.f;
 	ageAtStart /= CParticleSystem::RealEllapsedTimeRatio;
 	// compute time to collision. The 'NewSpeed' field is swapped with speed of particle at the sim step start when 'updateCollision' is called, and thus contains the old speed.
-	float timeToCollision = _Collisions[particleIndex].Dist / _Collisions[particleIndex].NewSpeed.norm();
+	float norm = _Collisions[particleIndex].NewSpeed.norm();
+	if (norm == 0.f) return 0.f;
+	float timeToCollision = _Collisions[particleIndex].Dist / norm;
 	// So time from collision to end of sim step is :
 	TAnimationTime result = CParticleSystem::EllapsedTime - ageAtStart - timeToCollision;	
 	return std::max(0.f, result);

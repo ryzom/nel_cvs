@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.10 2003/06/04 17:23:40 vizerie Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.11 2003/12/18 18:02:52 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -165,6 +165,8 @@ CTransformShape *CSegRemanenceShape::createInstance(CScene &scene)
 	sr->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
 	sr->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );
 	sr->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
+
+	sr->setSliceTime(_SliceTime);
 
 	return sr;
 }

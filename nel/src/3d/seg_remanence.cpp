@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.11 2003/06/04 15:09:26 vizerie Exp $
+ * $Id: seg_remanence.cpp,v 1.12 2003/12/18 18:02:52 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -68,6 +68,7 @@ CSegRemanence::CSegRemanence() : _NumSlice(0),
 								 _Stopping(false),
 								 _Restarted(false),
 								 _UnrollRatio(0),
+								 _SliceTime(0.05f),
 								 _AniMat(NULL),
 								 _LastSampleFrame(0)
 {	
@@ -154,7 +155,7 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb,
 	#endif
 	for(k = 0; k < numCorners; ++k)
 	{
-		_Ribbons[k].fillVB(datas, vertexSize, srs->getNumSlices(), srs->getSliceTime());
+		_Ribbons[k].fillVB(datas, vertexSize, srs->getNumSlices(), _SliceTime);
 		datas += (_NumSlice + 1) * vertexSize;
 	}	
 	
@@ -174,11 +175,11 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb,
 	if (!_Stopping)
 	{
 		if (_UnrollRatio != 1.f)
-		_UnrollRatio = std::min(1.f, _UnrollRatio + scene->getEllapsedTime() / (srs->getNumSlices() * srs->getSliceTime()));
+		_UnrollRatio = std::min(1.f, _UnrollRatio + scene->getEllapsedTime() / (srs->getNumSlices() * _SliceTime));
 	}
 	else
 	{
-		_UnrollRatio = std::max(0.f, _UnrollRatio - srs->getRollupRatio() * scene->getEllapsedTime() / (srs->getNumSlices() * srs->getSliceTime()));
+		_UnrollRatio = std::max(0.f, _UnrollRatio - srs->getRollupRatio() * scene->getEllapsedTime() / (srs->getNumSlices() * _SliceTime));
 		if (_UnrollRatio == 0.f)
 		{
 			_Stopping = false;
@@ -312,7 +313,7 @@ void CSegRemanence::samplePos(float date)
 		uint numCorners = _Ribbons.size();
 		for(uint k = 0; k < numCorners; ++k)
 		{		
-			_Ribbons[k].samplePos(getWorldMatrix() * srs->getCorner(k), date, srs->getSliceTime());
+			_Ribbons[k].samplePos(getWorldMatrix() * srs->getCorner(k), date, _SliceTime);
 		}
 		if (_Restarted)
 		{
@@ -358,6 +359,7 @@ void CSegRemanence::traverseHrc()
 //===============================================================
 void CSegRemanence::start()
 {
+	if (_SliceTime == 0.f) return;
 	if (_Started && !_Stopping) return;
 	restart();		
 }
@@ -476,6 +478,14 @@ void CSegRemanence::traverseAnimDetail()
 		}
 	}
 }
+
+//===============================================================
+void CSegRemanence::setSliceTime(float duration)
+{
+	stopNoUnroll();
+	_SliceTime = duration;
+}
+
 
 
 }

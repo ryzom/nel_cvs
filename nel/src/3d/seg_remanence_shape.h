@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.h
  *
- * $Id: seg_remanence_shape.h,v 1.6 2003/06/04 15:09:26 vizerie Exp $
+ * $Id: seg_remanence_shape.h,v 1.7 2003/12/18 18:02:52 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -56,7 +56,7 @@ class CVertexBuffer;
 
 /** Shape for the remanence of a segment (sword stroke ..)
   *
-  * NB this doesn't support texture animation (used for enrolling)
+  * NB this doesn't support material with animated texture matrix (texture matrix is used internally)
   *
   * \author Nicolas Vizerie
   * \author Nevrax France

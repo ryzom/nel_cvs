@@ -1,6 +1,6 @@
 /** \file seg_remanence.h
  * A segment that let a remanence on the screen (for sword trace)
- * $Id: seg_remanence.h,v 1.6 2003/06/04 15:09:26 vizerie Exp $
+ * $Id: seg_remanence.h,v 1.7 2003/12/18 18:02:52 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -66,7 +66,7 @@ public:
 	/// Call at the begining of the program, to register the model
 	static	void			registerBasic();
 	/// to instanciate that model from a scene
-	static CTransform			*creator() { return new CSegRemanence; }	
+	static CTransform		*creator() { return new CSegRemanence; }	
 	// Render this model with currently setupped material and matrix
 	void					render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb, CMaterial &mat);
 	// sample current position
@@ -105,7 +105,7 @@ public:
 
 	enum	TAnimValues
 	{
-		OwnerBit= CTransformShape::AnimValueLast, 
+		OwnerBit= CTransformShape::AnimValueLast,
 
 		AnimValueLast,
 	};
@@ -118,6 +118,16 @@ public:
 	// @{
 	//virtual void	traverseHrc();
 	virtual void	traverseAnimDetail();
+	// @}
+
+	/** \name slice time. Gives the time between 2 sampled position of the trail
+	  */
+	// @{
+	/** Change the sampling period.
+	  * NB : if the trail was started, then it is reseted by a call to stopNoUnroll	  
+	  */
+	void setSliceTime(float duration);
+	float getSliceTime() const { return _SliceTime; }	
 	// @}
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,6 +165,7 @@ private:
 	float				_StartDate;
 	float				_CurrDate;
 	float				_UnrollRatio;	
+	float				_SliceTime;
 	CAnimatedMaterial   *_AniMat;	
 	uint64				_LastSampleFrame;
 

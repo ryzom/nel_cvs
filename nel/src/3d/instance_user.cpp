@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.19 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: instance_user.cpp,v 1.20 2003/12/18 18:03:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "3d/instance_user.h"
 #include "3d/mesh_multi_lod_instance.h"
+#include "3d/seg_remanence.h"
 #include "nel/misc/debug.h"
 
 
@@ -205,6 +206,21 @@ float CInstanceUser::getCoarseMeshDist() const
 	return mmli ? mmli->getCoarseMeshDist() : -1.f;
 }
 
+// ***************************************************************************
+void CInstanceUser::setSliceTime(float duration)
+{
+	CSegRemanence *sr = dynamic_cast<CSegRemanence *>(_Instance);
+	if (!sr) return;
+	sr->setSliceTime(duration);
+}
+
+// ***************************************************************************
+float CInstanceUser::getSliceTime() const
+{
+	CSegRemanence *sr = dynamic_cast<CSegRemanence *>(_Instance);
+	if (!sr) return 0.f;
+	return sr->getSliceTime();
+}
 
 
 } // NL3D

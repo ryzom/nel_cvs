@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.12 2002/11/18 17:54:39 vizerie Exp $
+ * $Id: u_instance.h,v 1.13 2003/12/18 18:02:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,6 +173,14 @@ public:
 	/// see dirtAsyncTextureState()
 	virtual	bool		isAsyncTextureDirty() const =0;
 
+	// @}
+
+	/** Trails specific. Set the slice time (period used to sample the trail pos)
+	  * If the object is not a trail, this has no effect
+	  */
+	// @{
+	virtual void		setSliceTime(float duration) = 0;
+	virtual float		getSliceTime() const = 0;
 	// @}
 
 };

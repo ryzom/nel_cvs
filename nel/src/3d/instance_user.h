@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.18 2003/10/22 13:40:39 besson Exp $
+ * $Id: instance_user.h,v 1.19 2003/12/18 18:03:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,6 +147,10 @@ public:
 	virtual	void		setAsyncTextureDirty(bool flag);
 	virtual	bool		isAsyncTextureDirty() const;
 	// @}
+
+	// trails
+	virtual void		setSliceTime(float duration);
+	virtual float		getSliceTime() const;
 
 };
 

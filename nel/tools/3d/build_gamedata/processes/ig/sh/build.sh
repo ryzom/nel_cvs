@@ -25,12 +25,18 @@ date
 # ************************************************
 
 # Get the primitive directory
-continentdir=`cat ../../cfg/config.cfg | grep "leveldesign_igexport_continent_dir" | sed -e 's/leveldesign_igexport_continent_dir//' | sed -e 's/ //g' | sed -e 's/=//g'`
+continentdir=`cat ../../cfg/config.cfg | grep "leveldesign_igexport_continent_dir" | sed -e 's/leveldesign_igexport_continent_dir//' | sed -e 's/ //g' | sed -e 's/=//g' | sed -e 's/;//g'`
+
+# Get the database directory
+database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Get the primitive directories
+ligo_ig_primitive_directory=`cat ../../cfg/directories.cfg | grep "ligo_ig_primitive_directory" | sed -e 's/ligo_ig_primitive_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the form directory
 form_dir=`cat ../../cfg/site.cfg | grep "level_design_directory" | sed -e 's/level_design_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
-if ( test "$continentdir" )
+if ( test "$continentdir" || test "$ligo_ig_primitive_directory" )
 then
 	land_name=`cat ../../cfg/config.cfg | grep "ligo_export_land" | sed -e 's/ligo_export_land//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
@@ -59,7 +65,12 @@ then
 		echo "CellSize = 160.0;" >> prim_export.cfg
 
 		# Set the continent directory to export
-		echo "PrimDir = $continentdir" >> prim_export.cfg
+		echo "PrimDirs = {" >> prim_export.cfg
+		echo " $continentdir," >> prim_export.cfg
+		for dir in $ligo_ig_primitive_directory ; do
+			echo " \"$database_directory/$dir\"," >> prim_export.cfg
+		done
+		echo "};" >> prim_export.cfg
 
 		# Set the dfn directory to export
 		echo "FormDir = \"$form_dir\";" >> prim_export.cfg

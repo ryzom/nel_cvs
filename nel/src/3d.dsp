@@ -301,6 +301,19 @@ SOURCE=.\3d\transform_shape.h
 # Begin Source File
 
 SOURCE=.\3d\water_model.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+# ADD CPP /W3
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1290,6 +1303,14 @@ SOURCE=.\3d\visual_collision_manager_user.cpp
 
 SOURCE=.\3d\visual_collision_manager_user.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\water_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\water_user.h
+# End Source File
 # End Group
 # Begin Group "User"
 
@@ -1429,6 +1450,10 @@ SOURCE=..\include\nel\3d\u_visual_collision_entity.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\u_visual_collision_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\u_water.h
 # End Source File
 # Begin Source File
 

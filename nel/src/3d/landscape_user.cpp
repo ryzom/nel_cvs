@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.45 2004/05/26 16:47:03 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.46 2004/08/03 16:26:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -600,16 +600,29 @@ const CVector	&CLandscapeUser::getRefineCenterUser() const
 	return _Landscape->getRefineCenterUser();
 }
 
+
 // ***************************************************************************
-void CLandscapeUser::setTileCallback(ULandscapeTileCallback *cb)
+void CLandscapeUser::addTileCallback(ULandscapeTileCallback *cb)
 {
-	_Landscape->Landscape.setTileCallback(cb);
+	NL3D_MEM_LANDSCAPE
+	NL3D_HAUTO_UI_LANDSCAPE;
+	_Landscape->Landscape.addTileCallback(cb);
 }
 
 // ***************************************************************************
-ULandscapeTileCallback *CLandscapeUser::getTileCallback() const
+void CLandscapeUser::removeTileCallback(ULandscapeTileCallback *cb)
 {
-	return _Landscape->Landscape.getTileCallback(); 
+	NL3D_MEM_LANDSCAPE
+	NL3D_HAUTO_UI_LANDSCAPE;
+	_Landscape->Landscape.removeTileCallback(cb);
+}
+
+// ***************************************************************************
+bool CLandscapeUser::isTileCallback(ULandscapeTileCallback *cb)
+{
+	NL3D_MEM_LANDSCAPE
+	NL3D_HAUTO_UI_LANDSCAPE;
+	return _Landscape->Landscape.isTileCallback(cb);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.28 2004/05/26 16:47:03 berenguier Exp $
+ * $Id: landscape_user.h,v 1.29 2004/08/03 16:26:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,8 +199,9 @@ public:
 
 	/// \name TileCallback
 	// @{
-	virtual	void					setTileCallback(ULandscapeTileCallback *cb);
-	virtual	ULandscapeTileCallback *getTileCallback() const;
+	virtual	void					addTileCallback(ULandscapeTileCallback *cb);	
+	virtual	void					removeTileCallback(ULandscapeTileCallback *cb);	
+	virtual	bool					isTileCallback(ULandscapeTileCallback *cb);
 	// @}
 
 public:

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.96 2004/01/26 10:35:03 vizerie Exp $
+ * $Id: patch.cpp,v 1.97 2004/08/03 16:25:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -980,8 +980,8 @@ void			CPatch::appendTileMaterialToRenderList(CTileMaterial *tm)
 	{
 		createVegetableBlock(numtb, tm->TileS, tm->TileT);
 	}
-	ULandscapeTileCallback *tileCallback = getLandscape()->getTileCallback();
-	if (tileCallback)
+	const std::vector<ULandscapeTileCallback *> &tc = getLandscape()->getTileCallbacks();	
+	if (!tc.empty())
 	{
 		CBezierPatch	*bpatch= unpackIntoCache();
 		CTileAddedInfo tai;
@@ -995,7 +995,10 @@ void			CPatch::appendTileMaterialToRenderList(CTileMaterial *tm)
 		tai.Normal = bpatch->evalNormal( (tm-> TileS + 0.5f) / OrderS, (tm->TileT + 0.5f) / OrderT);
 		tai.TileID = (uint64) tm; // pointer to tile material serves as a unique identifier
 		//
-		tileCallback->tileAdded(tai);
+		for(std::vector<ULandscapeTileCallback *>::const_iterator it = tc.begin(); it != tc.end(); ++it)
+		{
+			(*it)->tileAdded(tai);
+		}		
 	}
 }
 // ***************************************************************************
@@ -1028,10 +1031,14 @@ void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
 	// dec ref the context, deleting it if needed.
 	decRefDLMContext();
 
-	ULandscapeTileCallback *tileCallback = getLandscape()->getTileCallback();
-	if (tileCallback)
+	const std::vector<ULandscapeTileCallback *> &tc = getLandscape()->getTileCallbacks();	
+	if (!tc.empty())
 	{
-		tileCallback->tileRemoved((uint64) tm); // pointer to tile material serves as a unique identifier
+		//
+		for(std::vector<ULandscapeTileCallback *>::const_iterator it = tc.begin(); it != tc.end(); ++it)
+		{
+			(*it)->tileRemoved((uint64) tm); // pointer to tile material serves as a unique identifier
+		}		
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.57 2004/04/08 19:48:20 berenguier Exp $
+ * $Id: landscape.h,v 1.58 2004/08/03 16:27:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -625,10 +625,10 @@ public:
 
 	/// \name Tile added/removed callback
 	// @{
-	// Set a new callback to know when a tile is added/removed. Calling with NULL removes the callback.
-	void					setTileCallback(ULandscapeTileCallback *cb) { _TileCallback = cb; }	
-	// get the current tile callback callback
-	ULandscapeTileCallback *getTileCallback() const { return _TileCallback; }
+	void										 addTileCallback(ULandscapeTileCallback *cb);	
+	void										 removeTileCallback(ULandscapeTileCallback *cb);
+	bool										 isTileCallback(ULandscapeTileCallback *cb) const;
+	const std::vector<ULandscapeTileCallback *> &getTileCallbacks() const { return _TileCallbacks; }		
 	// @}
 
 	// lockBuffers(), called by updateGlobalsAndLockBuffers().
@@ -645,8 +645,7 @@ private:
 	friend class	CPatch;
 	friend class	CZone;
 
-
-	ULandscapeTileCallback			*_TileCallback;
+	std::vector<ULandscapeTileCallback *> _TileCallbacks;
 
 	/// \name Allocators.
 	// @{

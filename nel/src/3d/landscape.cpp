@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.147 2004/05/17 12:01:02 berenguier Exp $
+ * $Id: landscape.cpp,v 1.148 2004/08/03 16:27:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -265,7 +265,6 @@ CLandscape::CLandscape() :
 	if( CLandscapeGlobals::PassTriArray.getNumIndexes() < 1000 )
 		CLandscapeGlobals::PassTriArray.setNumIndexes( 1000 );
 
-	_TileCallback =	NULL;
 	_LockCount = 0;
 
 	_TextureTileCategory= new ITexture::CTextureCategory("LANDSCAPE TILES");
@@ -3792,6 +3791,30 @@ float CLandscape::getCameraCollision(const CVector &start, const CVector &end, f
 {
 	return _ShadowPolyReceiver.getCameraCollision(start, end, radius, cone);
 }
+
+// ***************************************************************************
+bool CLandscape::isTileCallback(ULandscapeTileCallback *cb) const
+{
+	return std::find(_TileCallbacks.begin(), _TileCallbacks.end(), cb) != _TileCallbacks.end();
+}
+
+// ***************************************************************************
+void CLandscape::addTileCallback(ULandscapeTileCallback *cb)
+{
+	nlassert(cb);
+	nlassert(!isTileCallback(cb)); // callback added twice
+	_TileCallbacks.push_back(cb);
+}
+
+// ***************************************************************************
+void CLandscape::removeTileCallback(ULandscapeTileCallback *cb)
+{
+	nlassert(cb);
+	std::vector<ULandscapeTileCallback *>::iterator it = std::find(_TileCallbacks.begin(), _TileCallbacks.end(), cb);
+	nlassert(it != _TileCallbacks.end());
+	_TileCallbacks.erase(it);
+}
+
 
 
 } // NL3D

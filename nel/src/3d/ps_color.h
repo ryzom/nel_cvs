@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.6 2002/01/28 14:27:30 vizerie Exp $
+ * $Id: ps_color.h,v 1.7 2003/04/09 16:03:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "3d/ps_attrib_maker_template.h"
 #include "3d/ps_attrib_maker_bin_op.h"
+#include "3d/ps_attrib_maker_helper.h"
 #include "nel/misc/rgba.h"
 #include "nel/3d/animation_time.h"
 

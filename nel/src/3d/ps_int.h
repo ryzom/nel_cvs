@@ -1,7 +1,7 @@
 /** \file ps_int.h
  * <File description>
  *
- * $Id: ps_int.h,v 1.5 2002/02/15 17:06:10 vizerie Exp $
+ * $Id: ps_int.h,v 1.6 2003/04/09 16:03:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "3d/ps_attrib_maker_template.h"
 #include "3d/ps_attrib_maker_bin_op.h"
+#include "3d/ps_attrib_maker_helper.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.13 2003/02/03 15:56:04 coutelas Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.14 2003/04/09 16:03:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1321,13 +1321,13 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 /**  This class is an attribute maker that has memory, all what is does is to duplicate its mem when 'make' is called
   *  It own an attribute maker that tells how to produce the attribute from its emiter date, speed and so on ...
   */
-template <typename T> class CPSAttribMakerMemory : public CPSAttribMaker<T>
+template <typename T> class CPSAttribMakerMemoryBase : public CPSAttribMaker<T>
 {
 public:	
 
 	///\TODO : create a base class for CPSAttribMaker, that don't have the attributes not needed for this class
 	/// ctor (note : we don't use the nbCycle field ...)
-	CPSAttribMakerMemory() : CPSAttribMaker<T>(1.f), _Scheme(NULL)
+	CPSAttribMakerMemoryBase() : CPSAttribMaker<T>(1.f), _Scheme(NULL)
 	{
 		_HasMemory = true;
 	}
@@ -1378,7 +1378,7 @@ public:
 
 
 	// copy ctor
-	CPSAttribMakerMemory(const CPSAttribMakerMemory &src) : CPSAttribMaker<T>(src) // parent copy ctor
+	CPSAttribMakerMemoryBase(const CPSAttribMakerMemoryBase &src) : CPSAttribMaker<T>(src) // parent copy ctor
 	{
 		nlassert(src._Scheme);
 		std::auto_ptr<CPSAttribMaker<T> > s(NLMISC::safe_cast<CPSAttribMaker<T> *>(src._Scheme->clone()));
@@ -1387,7 +1387,7 @@ public:
 		this->_Scheme = s.release();
 	}
 	/// dtor
-	~CPSAttribMakerMemory()
+	~CPSAttribMakerMemoryBase()
 	{
 		if (_Scheme)
 		{
@@ -1621,15 +1621,101 @@ protected:
 	CPSAttrib<T> _T;
 
 	// the default value for generation (when no emitter can be used)
-	T _DefaultValue;
+	T _DefaultValue;	
 
 	/** this attribute maker tells us how to produce arguments from an emitter. as an example, we may want to have a gradient
 	  * of color : the emitter emit green then blue particles, following a gradient. the color is produced by _Scheme and 
 	  * _T stores it
 	  */
 	CPSAttribMaker<T> *_Scheme;
-
 };
+
+
+/** Standard version for attrib maker memory : don't redefine the getMinValue & getMaxValue methods -> meaningful for ordered sets only
+  */
+template <typename T> class CPSAttribMakerMemory : public CPSAttribMakerMemoryBase<T>
+{
+public:	
+	// default ctor
+	CPSAttribMakerMemory() : CPSAttribMakerMemoryBase<T>() {}
+	CPSAttribMakerMemory(const CPSAttribMakerMemory &other) : CPSAttribMakerMemoryBase<T>(other) {}
+};
+
+/** specializations for integral types : they have method getMin & getMax
+  * We update the min & max value each time a new element is inserted so it is just a minoration or a majoration of the real value.
+  * But as told in CPSAttribMaker, we just need an approximation
+  */ 
+/** specialization for uint32
+  */
+template <>
+class CPSAttribMakerMemory<uint32> : public  CPSAttribMakerMemoryBase<uint32>
+{
+public:
+	// default ctor
+	CPSAttribMakerMemory() : CPSAttribMakerMemoryBase<uint32>() {}
+	// copy ctor
+	CPSAttribMakerMemory(const CPSAttribMakerMemory<uint32> &other) : CPSAttribMakerMemoryBase<uint32>(other)
+	{
+		_MinValue = other._MinValue;
+		_MaxValue = other._MaxValue;
+	}
+	// serial. Should update min / max when reading
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	virtual uint32 getMinValue(void) const { return _MinValue; }	
+	virtual uint32 getMaxValue(void) const { return _MaxValue; }
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
+private:
+	uint32 _MinValue;
+	uint32 _MaxValue;
+};
+/** specialization for sint32
+  */
+template <>
+class CPSAttribMakerMemory<sint32> : public  CPSAttribMakerMemoryBase<sint32>
+{
+public:
+	// default ctor
+	CPSAttribMakerMemory() : CPSAttribMakerMemoryBase<sint32>() {}
+	// copy ctor
+	CPSAttribMakerMemory(const CPSAttribMakerMemory<sint32> &other) : CPSAttribMakerMemoryBase<sint32>(other)
+	{
+		_MinValue = other._MinValue;
+		_MaxValue = other._MaxValue;
+	}
+	// serial. Should update min / max when reading
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	virtual sint32 getMinValue(void) const { return _MinValue; }	
+	virtual sint32 getMaxValue(void) const { return _MaxValue; }
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
+private:
+	sint32 _MinValue;
+	sint32 _MaxValue;
+};
+/** specialization for float
+  */
+template <>
+class CPSAttribMakerMemory<float> : public  CPSAttribMakerMemoryBase<float>
+{
+public:
+	// default ctor
+	CPSAttribMakerMemory() : CPSAttribMakerMemoryBase<float>() {}
+	// copy ctor
+	CPSAttribMakerMemory(const CPSAttribMakerMemory<float> &other) : CPSAttribMakerMemoryBase<float>(other)
+	{
+		_MinValue = other._MinValue;
+		_MaxValue = other._MaxValue;
+	}
+	// serial. Should update min / max when reading
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	virtual float getMinValue(void) const { return _MinValue; }	
+	virtual float getMaxValue(void) const { return _MaxValue; }
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
+private:
+	float _MinValue;
+	float _MaxValue;
+};
+
+
 
 
 

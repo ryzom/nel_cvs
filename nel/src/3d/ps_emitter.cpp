@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.45 2003/04/07 12:34:45 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.46 2003/04/09 16:03:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -468,8 +468,11 @@ void CPSEmitter::processRegularEmissionWithNoLOD(TAnimationTime ellapsedTime)
 				  */
 				if (currEmitPeriod == emitPeriod) 
 				{
-					// TODO: see if the scheme could effectively produce null periods!
-					replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+					// if there possibility to have 0 in the scheme ?
+					if (_PeriodScheme->getMinValue() <= 0.f && _PeriodScheme->getMaxValue() >= 0.f)
+					{											
+						replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+					}
 				}				
 			}
 		}
@@ -634,8 +637,11 @@ void CPSEmitter::processRegularEmission(TAnimationTime ellapsedTime, float emitL
 				  */
 				if (currEmitPeriod == emitPeriod) 
 				{
-					// TODO: see if the scheme could effectively produce null periods!
-					replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+					// if there possibility to have 0 in the scheme ?
+					if (_PeriodScheme->getMinValue() <= 0.f && _PeriodScheme->getMaxValue() >= 0.f)
+					{											
+						replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+					}
 				}				
 			}
 		}
@@ -974,8 +980,11 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 				  */
 				if (currEmitPeriod == emitPeriod) 
 				{
-					// TODO: see if the scheme could effectively produce null periods!
-					replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+					// if there possibility to have 0 in the scheme ?
+					if (_PeriodScheme->getMinValue() <= 0.f && _PeriodScheme->getMaxValue() >= 0.f)
+					{											
+						replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+					}
 				}				
 			}
 		}
@@ -1393,8 +1402,11 @@ void CPSEmitter::processRegularEmissionConsistentWithNoLOD(TAnimationTime ellaps
 				  */
 				if (currEmitPeriod == emitPeriod) 
 				{
-					// TODO: see if the scheme could effectively produce null periods!
-					replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+					// if there possibility to have 0 in the scheme ?
+					if (_PeriodScheme->getMinValue() <= 0.f && _PeriodScheme->getMaxValue() >= 0.f)
+					{											
+						replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+					}
 				}				
 			}
 		}

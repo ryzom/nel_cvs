@@ -1,7 +1,7 @@
 /** \file ps_float.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.15 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_float.cpp,v 1.16 2003/04/09 16:03:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,7 @@ CPSFloatGradient::CPSFloatGradient(const float *floatTab, uint32 nbValues, uint3
 CPSFloatCurveFunctor::CPSFloatCurveFunctor() : _NumSamples(128), _Smoothing(true)
 {
 	_CtrlPoints.push_back(CCtrlPoint(0, 0.5f));
-	_CtrlPoints.push_back(CCtrlPoint(1, 0.5f));
+	_CtrlPoints.push_back(CCtrlPoint(1, 0.5f));	
 	updateTab();	
 }
 
@@ -144,10 +144,17 @@ void CPSFloatCurveFunctor::updateTab(void)
 	float step  = 1.f / _NumSamples;
 	float d = 0.f;
 	_Tab.resize(_NumSamples + 1);
-	for (uint k = 0; k <= _NumSamples; ++k)
+	uint k;
+	for (k = 0; k <= _NumSamples; ++k)
 	{
 		_Tab[k] = getValue(d);
 		d += step;
+	}
+	_MinValue = _MaxValue = _Tab[0];
+	for (k = 1; k <= _NumSamples; ++k)
+	{		
+		_MinValue = std::min(_MinValue, _Tab[k]);
+		_MaxValue = std::max(_MaxValue, _Tab[k]);
 	}
 }
 

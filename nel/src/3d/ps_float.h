@@ -1,7 +1,7 @@
 /** \file ps_float.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.10 2002/11/14 17:34:37 vizerie Exp $
+ * $Id: ps_float.h,v 1.11 2003/04/09 16:03:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "3d/ps_attrib_maker_template.h"
 #include "3d/ps_attrib_maker_bin_op.h"
+#include "3d/ps_attrib_maker_helper.h"
 #include "nel/3d/animation_time.h"
 #include <algorithm>
 #include <nel/misc/vector_h.h>
@@ -168,6 +169,9 @@ class CPSFloatCurveFunctor
 		/// serialization
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
+		float	getMinValue() const { return _MinValue; }
+		float	getMaxValue() const { return _MaxValue; }
+
 	protected:		
 		/// get the tangent (slope in our case) for the key at the given position
 		float getSlope(uint index) const ;
@@ -179,6 +183,8 @@ class CPSFloatCurveFunctor
 		uint32						_NumSamples;
 		std::vector<float>			_Tab; // sampled version of the curve		
 		bool						_Smoothing;
+		float						_MinValue;
+		float						_MaxValue;
 };
 
 
@@ -194,6 +200,8 @@ public:
 	CPSFloatCurve() : CPSAttribMakerT<float, CPSFloatCurveFunctor>(1) {}
 	NLMISC_DECLARE_CLASS(CPSFloatCurve);
 	CPSAttribMakerBase *clone() const { return new CPSFloatCurve(*this); }
+	virtual float getMinValue(void) const { return _F.getMinValue(); }	
+	virtual float getMaxValue(void) const { return _F.getMaxValue(); }
 };
 
 

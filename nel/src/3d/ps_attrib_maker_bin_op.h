@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.h
  * <File description>
  *
- * $Id: ps_attrib_maker_bin_op.h,v 1.7 2002/02/15 17:01:29 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op.h,v 1.8 2003/04/09 16:03:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,12 +40,12 @@ struct CPSBinOp
 {
 	enum BinOp
 	{
-		  selectArg1 = 0
-		, selectArg2
-		, modulate
-		, add
-		, subtract
-		, last
+		selectArg1 = 0,
+		selectArg2,
+		modulate,
+		add,
+		subtract,
+		last
 	};
 };
 
@@ -169,6 +169,10 @@ public:
 		/// get the current operator
 		CPSBinOp::BinOp getOp(void) const { return _Op; }
 	//@}
+
+	// from CPSAttribMaker
+	virtual T getMinValue(void) const { return T() ; /* no mean by default */ }	
+	virtual T getMaxValue(void) const { return T() ; /* no mean by default */ }
 
 protected:
 	void   *makePrivate	(T *buf1,

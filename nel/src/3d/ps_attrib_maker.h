@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.12 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_attrib_maker.h,v 1.13 2003/04/09 16:03:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -206,7 +206,9 @@ public:
 
 	
 
-	/// get the max value (meaningful for ordered set only)
+	/// get the max value, or an evalution that is guaranteed to be > to it (meaningful for ordered set only)
+	virtual T getMinValue(void) const { return T() ; /* no mean by default */ }
+	/// get the min value, or an evalution that is guaranteed to be < to it (meaningful for ordered set only)
 	virtual T getMaxValue(void) const { return T() ; /* no mean by default */ }
 
 

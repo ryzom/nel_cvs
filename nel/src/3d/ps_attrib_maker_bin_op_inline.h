@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op_inline.h
  * implementation of binary operator in particle systems
  *
- * $Id: ps_attrib_maker_bin_op_inline.h,v 1.5 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_attrib_maker_bin_op_inline.h,v 1.6 2003/04/09 16:03:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,6 +79,11 @@ inline CPlaneBasis PSBinOpSubtract(CPlaneBasis p1, CPlaneBasis p2)
 }
 
 
+template <>
+inline uint32 PSBinOpSubtract(uint32 lhs, uint32 rhs)
+{
+	return rhs > lhs ? 0 : lhs - rhs; // avoid overflow	
+}
 
  
 template <>
@@ -107,6 +112,167 @@ inline NLMISC::CRGBA PSBinOpSubtract(NLMISC::CRGBA t1, NLMISC::CRGBA t2)
 	return r;
 }
 
+
+/////////////////////////////////////////////////////////////////////////////
+// CPSAttribMakerBinOp specializations to return the correct min/max value //
+/////////////////////////////////////////////////////////////////////////////
+//*************************************************************************************************************
+/** template specialization implementations
+  * They're useful to get the correct min / max values depending on the type
+  */
+
+	
+//***********************************************************************
+uint32 CPSAttribMakerBinOp<uint32>::getMinValue(void) const
+{
+	nlassert(_Arg[0] && _Arg[1]);
+	switch(_Op)
+	{
+		case 	CPSBinOp::selectArg1: return _Arg[0]->getMinValue();
+		case	CPSBinOp::selectArg2: return _Arg[1]->getMinValue();
+		case	CPSBinOp::modulate:   return _Arg[0]->getMinValue() * _Arg[1]->getMinValue();
+		case	CPSBinOp::add:		  return _Arg[0]->getMinValue() + _Arg[1]->getMinValue();
+		case	CPSBinOp::subtract:
+		{
+			uint32 lhs = _Arg[0]->getMinValue();
+			uint32 rhs = _Arg[1]->getMaxValue();
+			return rhs > rhs ? 0 : lhs - rhs;
+		}
+		break;
+		default:
+			nlassert(0);
+		break;
+	};
+	return 0;
+}
+
+//***********************************************************************
+uint32 CPSAttribMakerBinOp<uint32>::getMaxValue(void) const
+{
+	nlassert(_Arg[0] && _Arg[1]);
+	switch(_Op)
+	{
+		case 	CPSBinOp::selectArg1: return _Arg[0]->getMaxValue();
+		case	CPSBinOp::selectArg2: return _Arg[1]->getMaxValue();
+		case	CPSBinOp::modulate:   return _Arg[0]->getMaxValue() * _Arg[1]->getMaxValue();
+		case	CPSBinOp::add:		  return _Arg[0]->getMaxValue() + _Arg[1]->getMaxValue();
+		case	CPSBinOp::subtract:
+		{
+			uint32 lhs = _Arg[0]->getMaxValue();
+			uint32 rhs = _Arg[1]->getMinValue();
+			return rhs > rhs ? 0 : lhs - rhs;
+		}
+		break;
+		default:
+			nlassert(0);
+		break;
+	};
+	return 0;
+}
+
+//***********************************************************************
+sint32 CPSAttribMakerBinOp<sint32>::getMinValue(void) const
+{
+	nlassert(_Arg[0] && _Arg[1]);
+	switch(_Op)
+	{
+		case 	CPSBinOp::selectArg1: return _Arg[0]->getMinValue();
+		case	CPSBinOp::selectArg2: return _Arg[1]->getMinValue();
+		case	CPSBinOp::modulate:
+		{
+			// we're dealing with signed values
+			sint32 min0 = _Arg[0]->getMinValue();
+			sint32 min1 = _Arg[1]->getMinValue();
+			sint32 max0 = _Arg[0]->getMaxValue();
+			sint32 max1 = _Arg[1]->getMaxValue();
+			return NLMISC::minof(min0 * min1, min0 * max1, max0 * min1, max0 * max1);
+		}			
+		case	CPSBinOp::add:		  return _Arg[0]->getMinValue() + _Arg[1]->getMinValue();
+		case	CPSBinOp::subtract:   return _Arg[0]->getMinValue() - _Arg[1]->getMaxValue();				
+		default:
+			nlassert(0);
+		break;
+	};
+	return 0;
+}
+
+//***********************************************************************
+sint32 CPSAttribMakerBinOp<sint32>::getMaxValue(void) const
+{
+	nlassert(_Arg[0] && _Arg[1]);
+	switch(_Op)
+	{
+		case 	CPSBinOp::selectArg1: return _Arg[0]->getMaxValue();
+		case	CPSBinOp::selectArg2: return _Arg[1]->getMaxValue();
+		case	CPSBinOp::modulate:
+		{
+			// we're dealing with signed values
+			sint32 min0 = _Arg[0]->getMinValue();
+			sint32 min1 = _Arg[1]->getMinValue();
+			sint32 max0 = _Arg[0]->getMaxValue();
+			sint32 max1 = _Arg[1]->getMaxValue();
+			return NLMISC::maxof(min0 * min1, min0 * max1, max0 * min1, max0 * max1);
+		}			
+		case	CPSBinOp::add:		  return _Arg[0]->getMaxValue() + _Arg[1]->getMaxValue();
+		case	CPSBinOp::subtract:   return _Arg[0]->getMaxValue() - _Arg[1]->getMinValue();				
+		default:
+			nlassert(0);
+		break;
+	};
+	return 0;
+}
+
+//***********************************************************************
+float CPSAttribMakerBinOp<float>::getMinValue(void) const
+{
+	nlassert(_Arg[0] && _Arg[1]);
+	switch(_Op)
+	{
+		case 	CPSBinOp::selectArg1: return _Arg[0]->getMinValue();
+		case	CPSBinOp::selectArg2: return _Arg[1]->getMinValue();
+		case	CPSBinOp::modulate:
+		{
+			// we're dealing with signed values
+			float min0 = _Arg[0]->getMinValue();
+			float min1 = _Arg[1]->getMinValue();
+			float max0 = _Arg[0]->getMaxValue();
+			float max1 = _Arg[1]->getMaxValue();
+			return NLMISC::minof(min0 * min1, min0 * max1, max0 * min1, max0 * max1);
+		}			
+		case	CPSBinOp::add:		  return _Arg[0]->getMinValue() + _Arg[1]->getMinValue();
+		case	CPSBinOp::subtract:   return _Arg[0]->getMinValue() - _Arg[1]->getMaxValue();				
+		default:
+			nlassert(0);
+		break;
+	};
+	return 0;
+}
+
+//***********************************************************************
+float CPSAttribMakerBinOp<float>::getMaxValue(void) const
+{
+	nlassert(_Arg[0] && _Arg[1]);
+	switch(_Op)
+	{
+		case 	CPSBinOp::selectArg1: return _Arg[0]->getMaxValue();
+		case	CPSBinOp::selectArg2: return _Arg[1]->getMaxValue();
+		case	CPSBinOp::modulate:
+		{
+			// we're dealing with signed values
+			float min0 = _Arg[0]->getMinValue();
+			float min1 = _Arg[1]->getMinValue();
+			float max0 = _Arg[0]->getMaxValue();
+			float max1 = _Arg[1]->getMaxValue();
+			return NLMISC::maxof(min0 * min1, min0 * max1, max0 * min1, max0 * max1);
+		}			
+		case	CPSBinOp::add:		  return _Arg[0]->getMaxValue() + _Arg[1]->getMaxValue();
+		case	CPSBinOp::subtract:   return _Arg[0]->getMaxValue() - _Arg[1]->getMinValue();				
+		default:
+			nlassert(0);
+		break;
+	};
+	return 0;
+}
 
 ////////////////////////////////////////
 // CPSAttribMakerBinOp implementation //
@@ -513,7 +679,7 @@ inline void	CPSAttribMakerBinOp<T>::makeNPrivate(T *buf1,
 
 //=================================================================================================================
 template <class T>
-void    CPSAttribMakerBinOp<T>::makeN(CPSLocated *loc,
+inline void CPSAttribMakerBinOp<T>::makeN(CPSLocated *loc,
 									  uint32 startIndex,
 									  void *tab,
 									  uint32 stride,
@@ -534,7 +700,7 @@ void    CPSAttribMakerBinOp<T>::makeN(CPSLocated *loc,
 
 //=================================================================================================================
 template <class T>
-void    CPSAttribMakerBinOp<T>::serial		  (NLMISC::IStream &f) throw(NLMISC::EStream)
+inline void    CPSAttribMakerBinOp<T>::serial		  (NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	if (f.isReading())
 	{
@@ -550,7 +716,7 @@ void    CPSAttribMakerBinOp<T>::serial		  (NLMISC::IStream &f) throw(NLMISC::ESt
 
 //=================================================================================================================
 template <class T>
-void    CPSAttribMakerBinOp<T>::deleteElement (uint32 index)
+inline void    CPSAttribMakerBinOp<T>::deleteElement (uint32 index)
 {
 	if (_Arg[0]->hasMemory())	_Arg[0]->deleteElement(index);
 	if (_Arg[1]->hasMemory())	_Arg[1]->deleteElement(index);
@@ -560,7 +726,7 @@ void    CPSAttribMakerBinOp<T>::deleteElement (uint32 index)
 
 //=================================================================================================================
 template <class T>
-void    CPSAttribMakerBinOp<T>::newElement	  (CPSLocated *emitterLocated, uint32 emitterIndex)
+inline void    CPSAttribMakerBinOp<T>::newElement	  (CPSLocated *emitterLocated, uint32 emitterIndex)
 {
 	if (_Arg[0]->hasMemory())	_Arg[0]->newElement(emitterLocated, emitterIndex);
 	if (_Arg[1]->hasMemory())	_Arg[1]->newElement(emitterLocated, emitterIndex);
@@ -572,7 +738,7 @@ void    CPSAttribMakerBinOp<T>::newElement	  (CPSLocated *emitterLocated, uint32
 
 //=================================================================================================================
 template <class T>
-void	CPSAttribMakerBinOp<T>::resize		  (uint32 capacity, uint32 nbPresentElements)
+inline void	CPSAttribMakerBinOp<T>::resize		  (uint32 capacity, uint32 nbPresentElements)
 {
 	nlassert(capacity < (1 << 16));
 	_MaxSize = capacity;
@@ -580,6 +746,9 @@ void	CPSAttribMakerBinOp<T>::resize		  (uint32 capacity, uint32 nbPresentElement
 	if (_Arg[0]->hasMemory())	_Arg[0]->resize(capacity, nbPresentElements);
 	if (_Arg[1]->hasMemory())	_Arg[1]->resize(capacity, nbPresentElements);
 }
+
+
+
 
 
 } // NL3D

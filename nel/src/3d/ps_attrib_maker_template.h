@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.16 2003/02/03 16:42:13 coutelas Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.17 2003/04/09 16:03:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,6 +138,10 @@ public:
 		{
 			return std::max((*this)(0), (*this)(1));
 		}
+		T getMinValue(void) const
+		{
+			return std::min((*this)(0), (*this)(1));
+		}
 	//@}
 
 protected:
@@ -167,6 +171,7 @@ public:
 	}
 
 	virtual T getMaxValue(void) const { return _F.getMaxValue(); }
+	virtual T getMinValue(void) const { return _F.getMinValue(); }
 
 	// serialization is done by CPSAttribMakerT
 };
@@ -243,6 +248,10 @@ public:
 	{
 		return std::max((*this)(0), (*this)(1));
 	}
+	T getMinValue(void) const
+	{
+		return std::min((*this)(0), (*this)(1));
+	}
 
 protected:
 	T  _Values[n + 1];
@@ -267,7 +276,8 @@ public:
 	CPSValueBlenderSample(float nbCycles) : CPSAttribMakerT<T, CPSValueBlendSampleFunc<T, n> >(nbCycles)
 	{
 	}
-	virtual T getMaxValue(void) const { return _F.getMaxValue(); }	
+	virtual T getMaxValue(void) const { return _F.getMaxValue(); }
+	virtual T getMinValue(void) const { return _F.getMinValue(); }
 };
 
 
@@ -347,6 +357,11 @@ public:
 		return _MaxValue;
 	}
 
+	T getMinValue(void) const
+	{
+		return _MinValue;
+	}
+
 	/// ctor
 	CPSValueGradientFunc() : _NbStages(0), _NbValues(0)
 	{
@@ -370,6 +385,7 @@ protected:
 
 	// the max value
 	T _MaxValue;
+	T _MinValue;
 };
 
 
@@ -392,6 +408,7 @@ public:
 	{
 	}
 	virtual T getMaxValue(void) const { return _F.getMaxValue(); }
+	virtual T getMinValue(void) const { return _F.getMinValue(); }
 };
 
 
@@ -411,7 +428,7 @@ inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValu
 	nlassert(nbStages > 0);
 
 	_NbStages = nbStages;
-	_MaxValue = valueTab[0];
+	_MaxValue = _MinValue = valueTab[0];
 	_NbValues = (numValues - 1) * nbStages;
 	_Tab.resize(_NbValues + 1);
 
@@ -422,12 +439,10 @@ inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValu
 	typename std::vector<T>::iterator dest = _Tab.begin();
 	// copy the tab performing linear interpolation between values given in parameter
 	for (uint32 k = 0; k  < (numValues - 1); ++k)
-	{				
-		if (!(valueTab[k] < _MaxValue))
-		{
-			_MaxValue = valueTab[k];
-		}
-
+	{	
+		_MaxValue = std::max(_MaxValue, valueTab[k]);
+		_MinValue = std::min(_MinValue, valueTab[k]);
+		
 		alpha = 0;
 
 		for(uint32 l = 0; l < nbStages; ++l)

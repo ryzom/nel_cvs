@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.16 2002/10/10 13:31:31 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.17 2003/04/09 16:03:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,8 +63,38 @@ public:
 	iterator end(void) { return _Tab + _Size; }
 	const_iterator end(void) const { return _Tab + _Size; }
 
-	T &operator[](uint index) { nlassert(index < _Size && _Size); return _Tab[index]; }
-	const T &operator[](uint index) const { nlassert(index < _Size && _Size); return _Tab[index]; }
+	T &operator[](uint index) 
+	{ 
+		#ifdef NL_DEBUG
+			nlassert(index < _Size && _Size);
+		#endif
+		return _Tab[index];
+	}
+	const T &operator[](uint index) const 
+	{ 
+		#ifdef NL_DEBUG
+			nlassert(index < _Size && _Size);
+		#endif
+		return _Tab[index]; 
+	}
+
+	T &back() 
+	{ 
+		#ifdef NL_DEBUG
+			nlassert(_Size > 0);
+		#endif
+		return _Tab[_Size - 1];
+	}
+
+	const T &back() const
+	{ 
+		#ifdef NL_DEBUG
+			nlassert(_Size > 0);
+		#endif
+		return _Tab[_Size - 1];
+	}
+
+	bool empty() const { return _Size == 0; }	
 
 	/// set a new usable size 
 	void reserve(uint capacity)
@@ -78,9 +108,9 @@ public:
 
 			
 		
-			for (iterator src = _Tab, end = _Tab + (capacity < _Size ? capacity : _Size), dest = newTab 
-				; src != end 
-				; ++ src, ++dest)
+			for (iterator src = _Tab, end = _Tab + (capacity < _Size ? capacity : _Size), dest = newTab;
+			     src != end;
+				 ++ src, ++dest)
 			{
 				new ((void *) dest) T(*src); // copy object
 			}
@@ -296,6 +326,20 @@ public:
 			#endif
 			return _Tab[index]; 
 		}
+
+		// get a const reference on the last element
+		const T &back() const
+		{
+			return _Tab.back();
+		}
+
+		// get a reference on the last element
+		T &back()
+		{
+			return _Tab.back();
+		}
+
+
 	//@}
 
 
@@ -392,7 +436,7 @@ void CPSAttrib<T>::remove(uint32 index)
 template <typename T> 
 void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	sint ver = f.serialVersion(3);
+	sint ver = f.serialVersion(4);
 
 	// in the first version, size was duplicated, we were using a std::vector ...
 	if (ver == 1)
@@ -437,7 +481,7 @@ void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		}*/
 	}	
 
-	if (ver == 3)
+	if (ver >= 3)
 	{
 		f.serial(_MaxSize);
 		_Tab.reserve(_MaxSize);
@@ -448,19 +492,32 @@ void CPSAttrib<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			_Tab.clear();
 			uint32 size, maxsize;
-			f.serial(size, maxsize);
-			_Tab.reserve(maxsize);
-			for (uint k = 0; k < size; ++k)
+			if (ver == 3)
+			{			
+				f.serial(size, maxsize);
+				//_Tab.reserve(maxsize);
+			}
+			else
 			{
-				T tmp;
-				f.serial(tmp);
-				_Tab.push_back(tmp);
+				f.serial(size);
+			}
+			_Tab.resize(size);
+			for (uint k = 0; k < size; ++k)
+			{				
+				f.serial(_Tab[k]);				
 			}
 		}
 		else
 		{
 			uint32 size = _Tab.size(), capacity = _Tab.capacity();
-			f.serial(size, capacity);
+			if (ver == 3)
+			{
+				f.serial(size, capacity);
+			}
+			else
+			{
+				f.serial(size);
+			}
 			for (uint k = 0; k < size; ++k)
 			{
 				f.serial(_Tab[k]);

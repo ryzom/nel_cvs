@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.4 2001/07/18 14:00:37 corvazier Exp $
+ * $Id: u_instance_group.h,v 1.5 2001/08/02 12:52:06 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,9 @@
 #define NL_U_INSTANCE_GROUP_H
 
 #include "nel/misc/types_nl.h"
+
+#include <vector>
+#include <string>
 
 namespace NLMISC
 {
@@ -74,6 +77,14 @@ public:
 	virtual uint getNumInstance () const=0;
 
 	/**
+	  * Return the name of the shape refered by an instance of the group.
+	  *
+	  * \param instanceNb is the number of the instance.
+	  * \return the name of the shape.
+	  */
+	virtual const std::string& getShapeName (uint instanceNb) const=0;
+
+	/**
 	  * Return the name of an instance of the group.
 	  *
 	  * \param instanceNb is the number of the instance.
@@ -104,6 +115,61 @@ public:
 	  * \return the scale of the instance.
 	  */
 	virtual const NLMISC::CVector& getInstanceScale (uint instanceNb) const=0;
+
+
+	/**
+	 * Create the link between scene and instance group before the addToScene
+	 * to allow the instance group to be moved without being linked to a father 
+	 * cluster system.
+	 */
+	virtual void createRoot (class UScene &scene)=0;
+
+	/**
+	 * All the instances must be checked against the following cluster system
+	 */
+	virtual void setClusterSystem (class UInstanceGroup *pClusterSystem)=0;
+
+	/**
+	 * Get all dynamic portals in the instance group
+	 * \return a vector of portal names
+	 */
+	virtual void getDynamicPortals (std::vector<std::string> &names)=0;
+
+	/**
+	 * Set the state of a dynamic portal
+	 * \param name is the name of the dynamic portal to open or close
+	 * \param opened is the state the portal will have (true=opened, false=closed)
+	 */
+	virtual void setDynamicPortal (std::string& name, bool opened)=0;
+
+	/**
+	 * Get the state of a dynamic portal
+	 * \return the state (true=opened, false=closed) of a dynamic portal
+	 */
+	virtual bool getDynamicPortal (std::string& name)=0;
+
+	/**
+	 * Set the position of the instance group
+	 * Take care if the instance group is a cluster system, you must not move it
+	 * outside its father cluster which is assigned at addToScene moment.
+	 */
+	virtual void			setPos (const NLMISC::CVector &pos)=0;
+
+	/**
+	 * Set the rotation of the instance group
+	 */
+	virtual void			setRotQuat (const NLMISC::CQuat &q)=0;
+
+	/**
+	 * Get the position
+	 */
+	virtual NLMISC::CVector getPos ()=0;
+
+	/**
+	 * Get the rotation
+	 */
+	virtual NLMISC::CQuat	getRotQuat ()=0;
+
 };
 
 

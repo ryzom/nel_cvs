@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_transform.h,v 1.2 2001/08/02 12:52:06 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_TRANSFORM_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/3d/u_instance_group.h"
 #include "nel/3d/u_transformable.h"
 
 
@@ -80,7 +81,10 @@ public:
 	 * \param newFather the new Father. If NULL, the transform will be linked to the root of the hierarchy (Default!).
 	 */
 	virtual	void			parent(UTransform *newFather)=0;
-	// @}
+
+
+	virtual void			setClusterSystem (UInstanceGroup *pIG)=0; 
+// @}
 
 
 	/// \name visibility

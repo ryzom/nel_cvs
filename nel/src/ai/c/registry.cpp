@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.9 2001/05/10 15:15:57 portier Exp $
+ * $Id: registry.cpp,v 1.10 2001/06/25 15:00:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,7 +144,8 @@ namespace NLAIC
 	// Creates a new instance from a class using its identifier
 	IBasicInterface *CRegistry::createInstance(const CIdentType &ident)
 	{
-		return createInstance(getNumIdent(ident));	}
+		return createInstance(getNumIdent(ident));	
+	}
 
 	// Creates a new instance from a class using its class name in the registry
 	IBasicInterface *CRegistry::createInstance(const char *class_name)

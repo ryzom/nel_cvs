@@ -27,7 +27,7 @@ namespace NLAILINK
 		NLAIC::initRegistry();
 		NLAISCRIPT::initExternalLib();		
 		NLAIAGENT::CAgentScript::initAgentScript();
-		NLAIAGENT::CFsmScript::initClass();
+		NLAIAGENT::CActorScript::initClass();
 		NLAIAGENT::CProxyAgentMail::initClass();
 		NLAISCRIPT::CLibTest::initClass();
 

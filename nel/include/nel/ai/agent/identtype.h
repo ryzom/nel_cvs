@@ -1,7 +1,7 @@
 /** \file identtype.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.27 2002/08/21 13:58:17 lecroart Exp $
+ * $Id: identtype.h,v 1.28 2004/01/15 17:26:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -312,7 +312,7 @@ namespace NLAIAGENT
 		{			
 		}		
 
-		CIdent(const std::string &typeName,uint64 id,uint8 creator = ServerId,uint8 dyn = ServerId):CAgentNumber(id,creator,dyn),TypeName(typeName)
+		CIdent(const std::string &typeName,uint64 id,uint8 creator = _ServerId,uint8 dyn = _ServerId):CAgentNumber(id,creator,dyn),TypeName(typeName)
 		{			
 		}
 

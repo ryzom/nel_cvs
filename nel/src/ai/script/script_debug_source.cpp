@@ -1,7 +1,7 @@
 /** \file script_debug_source.cpp
  * <File description>
  *
- * $Id: script_debug_source.cpp,v 1.1 2001/01/23 15:47:17 robert Exp $
+ * $Id: script_debug_source.cpp,v 1.2 2001/01/25 17:23:55 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,7 @@ std::string CScriptDebugSourceFile::getSourceBuffer() const
 	FILE* f;
 	sint32 size;
 	char* buf;
+	std::string ret;
 
 	// Read the file
 	f = fopen(_SourceName.c_str(),"rb");
@@ -76,7 +77,11 @@ std::string CScriptDebugSourceFile::getSourceBuffer() const
 	buf[0] = ' ';
 	buf[size+1] = '\n';
 	buf[size+2] = 0;
-	return std::string(buf);
+
+	ret = buf;
+	delete[] buf;
+	
+	return ret;
 }
 
 ///	Save the class in a stream.

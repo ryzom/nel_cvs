@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.8 2002/07/30 10:09:59 coutelas Exp $
+ * $Id: load_form.h,v 1.9 2002/07/30 12:00:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -197,6 +197,8 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	NLMISC::TTime last = NLMISC::CTime::getLocalTime ();
 	NLMISC::TTime start = NLMISC::CTime::getLocalTime ();
 
+	NLMISC::CSmartPtr<NLGEORGES::UForm> form;
+
 	for (uint j = 0; j < NeededToRecompute.size(); j++)
 	{
 		if(NLMISC::CTime::getLocalTime () > last + 5000)
@@ -214,7 +216,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		}
 
 		// Load the form with given sheet id
-		NLMISC::CSmartPtr<NLGEORGES::UForm> form = formLoader->loadForm (sheetIds[j].toString().c_str ());
+		form = formLoader->loadForm (sheetIds[j].toString().c_str ());
 		if (form)
 		{
 /*			if (packedFiledate > 0)
@@ -223,8 +225,8 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 					nlinfo ("loadForm(): the sheet '%s' is newer than the packed one, I reload it", p.c_str());
 				else
 					nlinfo ("loadForm(): the sheet '%s' is not in the packed sheets, I load it", p.c_str());
-			}
-*/			
+			}*/
+			
 			// add the new creature, it could be already loaded by the packed sheets but will be overwrite with the new one
 			std::pair<std::map<NLMISC::CSheetId, T>::iterator, bool> res = container.insert(std::make_pair(sheetIds[j],T()));
 

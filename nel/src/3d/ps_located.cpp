@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.59 2003/08/19 12:52:51 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.60 2003/08/22 08:58:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -762,10 +762,22 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 
 	// get the convertion matrix  from the emitter basis to the emittee basis
 	// if the emitter is null, we assume that the coordinate are given in the chosen basis for this particle type
-
-	
-	
-	if (_MaxSize == _Size) return -1;
+		
+	if (_MaxSize == _Size) 
+	{
+		if (_Owner && _Owner->getAutoCountFlag() && getMaxSize() < ((1 << 16) - 1) )
+		{
+			// we are probably in edition mode -> auto-count mode helps to compute ideal particle array size
+			// but at the expense of costly allocations
+			uint maxSize = getMaxSize();
+			resize(maxSize == 0 ? 1 : NLMISC::raiseToNextPowerOf2(maxSize) - 1); // force a reserve with next power of 2 (no important in edition mode)
+			resize(maxSize + 1);
+		}
+		else
+		{		
+			return -1;
+		}
+	}
 	if (_CollisionInfo)
 	{
 		_CollisionInfo->insert();

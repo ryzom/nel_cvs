@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.11 2001/10/29 09:35:56 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.12 2002/01/28 14:53:45 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/shape.h"
 #include "3d/transform_shape.h"
 #include "3d/register_3d.h"
+#include "3d/water_shape.h"
 
 #include "../zone_welder/zone_utility.h"	// load a header file from zone_welder project
 
@@ -80,7 +81,9 @@ class CMyZoneLighter : public CZoneLighter
 	{
 		// Progress bar
 		char msg[512];
-		sprintf (msg, "\r%s: %s", message, progressbar[(uint)(progress*(float)BAR_LENGTH)]);
+		uint mess = (uint) (progress * (float)BAR_LENGTH);
+		
+		sprintf (msg, "\r%s: %s", message, progressbar[std::min((uint) (BAR_LENGTH - 1), mess)]);
 		for (uint i=strlen(msg); i<79; i++)
 			msg[i]=' ';
 		msg[i]=0;
@@ -88,6 +91,9 @@ class CMyZoneLighter : public CZoneLighter
 		printf ("\r");
 	}
 };
+
+
+
 
 int main(int argc, char* argv[])
 {
@@ -98,7 +104,7 @@ int main(int argc, char* argv[])
 	if (argc<5)
 	{
 		// Help message
-		printf ("zone_lighter [zonein.zone] [zoneout.zone] [parameter_file] [dependancy_file]\n");
+		printf ("%s [zonein.zone] [zoneout.zone] [parameter_file] [dependancy_file]\n", argv[0]);
 	}
 	else
 	{
@@ -166,6 +172,8 @@ int main(int argc, char* argv[])
 				// Load ig of the zone
 				string igName=ig_path+getName (argv[1])+".ig";
 
+				bool zoneIgLoaded;
+
 				// Try to open the file
 				if (inputFile.open (igName))
 				{
@@ -178,11 +186,13 @@ int main(int argc, char* argv[])
 
 					// Add to the list
 					instanceGroup.push_back (group);
+					zoneIgLoaded = true;
 				}
 				else
 				{
 					// Warning
 					fprintf (stderr, "Warning: can't load instance group %s\n", igName.c_str());
+					zoneIgLoaded = false;
 				}
 
 				// Get bank path
@@ -224,36 +234,43 @@ int main(int argc, char* argv[])
 				if (loadInstanceGroup)
 				{
 					// Additionnal instance group
-					CConfigFile::CVar &additionnal_ig= parameter.getVar ("additionnal_ig");
-					for (uint add=0; add<(uint)additionnal_ig.size(); add++)
+					try
 					{
-						// Input file
-						CIFile inputFile;
-
-						// Name of the instance group
-						string name=ig_path+additionnal_ig.asString(add);
-
-						// Try to open the file
-						if (inputFile.open (name))
+						CConfigFile::CVar &additionnal_ig = parameter.getVar ("additionnal_ig");									
+						for (uint add=0; add<(uint)additionnal_ig.size(); add++)
 						{
-							// New ig
-							CInstanceGroup *group=new CInstanceGroup;
+							// Input file
+							CIFile inputFile;
 
-							// Serial it
-							group->serial (inputFile);
-							inputFile.close();
+							// Name of the instance group
+							string name=ig_path+additionnal_ig.asString(add);
 
-							// Add to the list
-							instanceGroup.push_back (group);
+							// Try to open the file
+							if (inputFile.open (name))
+							{
+								// New ig
+								CInstanceGroup *group=new CInstanceGroup;
+
+								// Serial it
+								group->serial (inputFile);
+								inputFile.close();
+
+								// Add to the list
+								instanceGroup.push_back (group);
+							}
+							else
+							{
+								// Error
+								nlwarning ("ERROR can't load instance group %s\n", name.c_str());
+
+								// Stop before build
+								continu=false;
+							}
 						}
-						else
-						{
-							// Error
-							nlwarning ("ERROR can't load instance group %s\n", name.c_str());
-
-							// Stop before build
-							continu=false;
-						}
+					}
+					catch (NLMISC::EUnknownVar &)
+					{
+						nlinfo("No additionnal ig's to load");
 					}
 				}
 				
@@ -339,6 +356,22 @@ int main(int argc, char* argv[])
 				lighterDesc.LightDirection.z=sun_direction.asFloat(2);
 				lighterDesc.LightDirection.normalize ();
 
+				// Water rendering parameters
+				CConfigFile::CVar &water_zbias = parameter.getVar ("water_shadow_bias");
+				lighterDesc.WaterShadowBias = water_zbias.asFloat();
+
+				CConfigFile::CVar &water_ambient = parameter.getVar ("water_ambient");
+				lighterDesc.WaterAmbient = water_ambient.asFloat();
+
+				CConfigFile::CVar &water_diffuse = parameter.getVar ("water_diffuse");
+				lighterDesc.WaterDiffuse = water_diffuse.asFloat();
+				
+				CConfigFile::CVar &modulate_water_color = parameter.getVar ("modulate_water_color");
+				lighterDesc.ModulateWaterColor = modulate_water_color.asInt() != 0;
+
+				CConfigFile::CVar &sky_contribution_for_water = parameter.getVar ("sky_contribution_for_water");
+				lighterDesc.SkyContributionForWater = sky_contribution_for_water.asInt() != 0;
+
 				// Oversampling
 				CConfigFile::CVar &oversampling = parameter.getVar ("oversampling");
 				sint oversmaplingValue=oversampling.asInt();
@@ -405,6 +438,11 @@ int main(int argc, char* argv[])
 				// Sky contribution
 				CConfigFile::CVar &sky_intensity = parameter.getVar ("sky_intensity");
 				lighterDesc.SkyIntensity=sky_intensity.asFloat ();
+
+				// Vegetable Height
+				CConfigFile::CVar &vegetable_height = parameter.getVar ("vegetable_height");
+				lighterDesc.VegetableHeight=vegetable_height.asFloat ();
+
 
 				// A vector of CZoneLighter::CTriangle
 				vector<CZoneLighter::CTriangle> vectorTriangle;
@@ -481,6 +519,27 @@ int main(int argc, char* argv[])
 
 							// Add triangles
 							lighter.addTriangles (*iteMap->second, mt, vectorTriangle);
+
+							/** If it is a lightable shape and we are dealing with the ig of the main zone,
+							  * add it to the lightable shape list
+							  */
+							IShape *shape = iteMap->second;
+							if (ite == instanceGroup.begin()  /* are we dealing with main zone */ 
+								&& zoneIgLoaded               /* ig of the main zone loaded successfully (so its indeed the ig of the first zone) ? */								
+								&& CZoneLighter::isLightableShape(*shape)
+							   )
+							{
+								lighter.addLightableShape(shape, mt);
+							}
+
+							/** If it is a water shape, add it to the lighter, so that it can check
+							  * which tiles are above / below water for this zone. The result is saved in the flags of tiles.
+							  * A tile that have their flags set to VegetableDisabled won't get setupped
+							  */
+							if (dynamic_cast<NL3D::CWaterShape *>(shape))
+							{
+								lighter.addWaterShape(static_cast<NL3D::CWaterShape *>(shape), mt);
+							}
 						}
 					}
 

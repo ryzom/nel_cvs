@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.6 2002/06/06 14:44:32 vizerie Exp $
+ * $Id: export_collision.cpp,v 1.7 2002/07/29 10:12:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,10 +263,8 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 
 	CVector	hs = box.getHalfSize();
 	if (hs.x > 255.0f || hs.y > 255.0f)
-		MessageBox (_Ip->GetMAXHWnd(), 
-					"The bounding box of the selection exceeds 512 meters large!", 
-					"NeL export collision", MB_OK|MB_ICONEXCLAMATION);
-
+		outputErrorMessage ("The bounding box of the selection exceeds 512 meters large!");
+		
 	// report warnings
 	if (!warnings.empty())
 	{
@@ -274,9 +272,7 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 		for (i=0; i<warnings.size(); ++i)
 			message += string("\n")+warnings[i];
 
-		MessageBox (_Ip->GetMAXHWnd(), 
-					(message+"\n\n(This message was copied in the clipboard)").c_str(), 
-					"NeL export collision", MB_OK|MB_ICONEXCLAMATION);
+		outputErrorMessage ((message+"\n\n(This message was copied in the clipboard)").c_str());
 
 		if (OpenClipboard (NULL))
 		{
@@ -303,9 +299,7 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 		for (i=0; i<errors.size(); ++i)
 			message += string("\n")+errors[i];
 
-		MessageBox (theCNelExport._Ip->GetMAXHWnd(), 
-					(message+"\n\n(This message was copied in the clipboard)").c_str(), 
-					"NeL export collision", MB_OK|MB_ICONEXCLAMATION);
+		outputErrorMessage ((message+"\n\n(This message was copied in the clipboard)").c_str());
 
 		if (OpenClipboard (NULL))
 		{

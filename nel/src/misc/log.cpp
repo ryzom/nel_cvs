@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.28 2001/05/09 17:09:37 berenguier Exp $
+ * $Id: log.cpp,v 1.29 2001/06/21 12:34:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,7 @@ void CLog::setPosition (sint line, char *filename)
 	if ( ! DebugLog->noDisplayer() )
 	{
 		_Mutex.enter();
-		_PosSet = true;
+		_PosSet++;
 	    _Line = line;
 		_FileName = filename;
 	}
@@ -76,11 +76,11 @@ void CLog::unsetPosition()
 {
 	nlassert( !noDisplayer() );
 
-	if ( _PosSet )
+	if ( _PosSet > 0 )
 	{
 		_FileName = NULL;
 		_Line = -1;
-		_PosSet = false;
+		_PosSet--;
 		_Mutex.leave(); // needs setPosition() to have been called
 	}
 }

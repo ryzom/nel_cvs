@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.18 2004/03/05 16:37:55 boucher Exp $
+ * $Id: i18n.h,v 1.19 2004/04/27 12:04:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,6 +109,11 @@ public:
 
 	/// Find a string in the selected language and return his association.
 	static const ucstring &get (const std::string &label);
+
+	// Test if a string has a translation in the selected language. 
+	// NB : The empty string is considered to have a translation
+	static bool			   hasTranslation(const std::string &label);
+
 
 	/// Temporary, we don't have file system for now, so we do a tricky cheat. there s not check so be careful!
 //	static void setPath (const char* str);

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.50 2004/04/01 18:57:31 boucher Exp $
+ * $Id: i18n.cpp,v 1.51 2004/04/27 12:04:04 vizerie Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -164,6 +164,15 @@ const ucstring &CI18N::get (const std::string &label)
 
 	return badString;
 }
+
+bool CI18N::hasTranslation(const std::string &label)
+{
+	if (label.empty()) return true;	
+	
+	StrMapContainer::iterator it(_StrMap.find(label));	
+	return it != _StrMap.end();		
+}
+
 
 ucstring CI18N::getCurrentLanguageName ()
 {

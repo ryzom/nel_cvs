@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.18 2001/06/28 15:47:44 chafik Exp $
+ * $Id: baseai.h,v 1.19 2001/06/29 08:17:58 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -272,7 +272,7 @@ namespace NLAIAGENT
 		virtual void setStaticMember(sint32,IObjectIA *);
 
 		/**
-		getMethodIndexSize define the nomber of external method.
+		getMethodIndexSize define the nomber of method define in the class.
 		*/
 		virtual sint32 getMethodIndexSize() const;
 		/**

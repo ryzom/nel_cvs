@@ -1,7 +1,7 @@
 /** \file baseai.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.26 2002/06/17 14:16:54 chafik Exp $
+ * $Id: baseai.h,v 1.27 2002/08/01 14:17:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,9 +417,9 @@ namespace NLAIAGENT
 	class IConnectIA: public IRefrence
 	{
 	private:
-		typedef std::list<const IConnectIA *> tListiBasic;
-		typedef std::list<const IConnectIA *>::iterator tListiBasicItr;
-		typedef std::list<const IConnectIA *>::const_iterator tListiBasicCstItr;
+		typedef std::set<const IConnectIA *> tListiBasic;
+		typedef std::set<const IConnectIA *>::iterator tListiBasicItr;
+		typedef std::set<const IConnectIA *>::const_iterator tListiBasicCstItr;
 
 	protected:
 		tListiBasic _Connection;

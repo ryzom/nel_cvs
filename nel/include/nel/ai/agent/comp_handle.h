@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: comp_handle.h,v 1.6 2002/06/21 15:57:13 robert Exp $
+ * $Id: comp_handle.h,v 1.7 2002/08/01 14:17:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,13 +92,19 @@ namespace NLAIAGENT
 						CGroupType *param = new CGroupType();
 						param->push( (IObjectIA *) new CStringType(*_CompName) );
 						IObjectIA::CProcessResult comp = ( (CAgentScript *) _CompFather)->getDynamicAgent(param);
-						param->pop();
+						//param->pop();
 						delete param;
 						NLAIAGENT::IBaseGroupType *result = (NLAIAGENT::IBaseGroupType *) comp.Result;
 						if ( result->size() >  0 )
+						{
 							_Comp = result->get();
+							((IObjectIA *)_Comp)->incRef();							
+						}
 						else
 							_Comp = NULL;
+
+						if(result != NULL) 
+									result->release();
 					}
 				}
 			}

@@ -1,7 +1,7 @@
 /** \file agent_3dvector.h
  * <File description>
  *
- * $Id: agent_3dvector.h,v 1.9 2002/03/12 15:52:38 chafik Exp $
+ * $Id: agent_3dvector.h,v 1.10 2002/08/01 14:17:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -193,16 +193,14 @@ namespace NLAIAGENT
 		virtual IObjetOp *operator != (IObjetOp &a) const
 		{
 			NLMISC::CVectorD v = (NLMISC::CVectorD)((const IVector &)a).getValue();			
-			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value != v);
-			x->incRef();
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value != v);			
 			return x;
 		}
 
 		virtual IObjetOp *operator == (IObjetOp &a) const
 		{
 			NLMISC::CVectorD v = (NLMISC::CVectorD)((const IVector &)a).getValue();			
-			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value == v);
-			x->incRef();
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value == v);			
 			return x;
 		}
 

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.55 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: scene.h,v 1.56 2004/06/29 13:44:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,8 +115,7 @@ class	CVisualCollisionManager;
 class CScene
 {
 public:
-
-
+	
 	/// \name Basic registration.
 	//@{
 	/// Register Basic models
@@ -164,8 +163,9 @@ public:
 	 * This call t->traverse() function to registered render traversal following their order given.
 	 * \param doHrcPass set it to false to indicate that the CHrcTrav have not to be traversed. UseFull to optimize if 
 	 * you know that NONE of your models have moved (a good example is a shoot of the scene from different cameras).
+	 * \param renderPart a combination of UScene::TRenderPart flags, allow to choose which part of the scene must be rendered
 	 */
-	void			render(bool	doHrcPass=true);
+	void			render(bool	doHrcPass=true, UScene::TRenderPart renderPart = UScene::RenderAll);
 	//@}
 
 	/** Update instances that are loaded asynchronously
@@ -603,6 +603,15 @@ public:
 	void			setWaterCallback(IWaterSurfaceAddedCallback *wcb) { _WaterCallback = wcb; }
 	IWaterSurfaceAddedCallback *getWaterCallback() const { return _WaterCallback; }
 
+	// Add a new occlusion query object that must be tested at the end of the rendering
+	void		    insertInOcclusionQueryList(CFlareModel *fm)
+	{
+		fm->Next = _FirstFlare;
+		_FirstFlare = fm;
+	}
+
+	// debugging aid : draw all occlusion test mesh that are used by flares
+	void			renderOcclusionTestMeshs();
 private:
 
 	/// The camera / Viewport.
@@ -726,6 +735,9 @@ private:
 
 	IWaterSurfaceAddedCallback	*_WaterCallback;
 
+
+	CFlareModel	*_FirstFlare; // first flare to test for occlusion query
+
 	// List of shadow casters in the scene
 	TShadowCasterList			_ShadowCasterList;
 	
@@ -766,9 +778,12 @@ private:
 	uint			_ShadowMapMaxCasterAround;
 	CVisualCollisionManager		*_VisualCollisionManagerForShadow;
 
-	// Delaied model delete
+	// Delayed model delete
 	bool			_DeleteModelLater;
 	std::vector<CTransform*>	_ToDelete;
+
+	UScene::TRenderPart	_RenderedPart;
+	void			renderOcclusionTestMeshsWithCurrMaterial();
 };
 
 

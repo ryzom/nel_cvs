@@ -68,15 +68,28 @@ date
 # List the zones to weld
 list_zone=`ls -1 zone_exported/*.zone`
 
-# Weld zones
+# Build a zones list to weld
+echo -- Build a list of file to weld
+rm zone_to_weld.txt 2> /dev/null
 for i in $list_zone ; do
   dest=`echo $i | sed -e 's/zone_exported/zone_welded/g' | sed -e 's/.zone/.zonew/g'`
   if ( ! test -e $dest ) || ( test $i -nt $dest )
   then
-    echo -- Weld $i
-    echo -- Weld $i >> log.log
-    $exec_timeout $weld_timeout $zone_welder $i $dest
-	echo 
+	echo $i >> zone_to_weld.txt
   fi
 done
 
+# Weld the zone
+if (test -f zone_to_weld.txt) 
+then
+	list_zone=`cat zone_to_weld.txt`
+	for i in $list_zone ; do
+		echo -- Weld $i
+		echo -- Weld $i >> log.log
+	    $exec_timeout $weld_timeout $zone_welder $i $dest
+		echo 
+	done
+fi
+
+# Build a zones list to weld
+rm zone_to_weld.txt 2> /dev/null

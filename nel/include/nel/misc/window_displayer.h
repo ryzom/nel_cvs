@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.h,v 1.4 2002/06/06 13:12:50 lecroart Exp $
+ * $Id: window_displayer.h,v 1.5 2002/06/06 17:44:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ class CWindowDisplayer : public NLMISC::IDisplayer
 public:
 
 	CWindowDisplayer (const char *displayerName = "") :
-	  IDisplayer(displayerName), _Init(false), _ToolBarHeight(25), _InputEditHeight(25),
+	  IDisplayer(displayerName), _Init(false), _ToolBarHeight(18), _InputEditHeight(25),
 		_Buffer("CWindowDisplayer::_Buffer"), _Labels("CWindowDisplayer::_Labels"), _CommandsToExecute("CWindowDisplayer::_CommandsToExecute"),
 		_Continue(true), _Thread(NULL)
 	  { }

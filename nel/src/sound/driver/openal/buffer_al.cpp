@@ -1,7 +1,7 @@
 /** \file buffer_al.cpp
  * OpenAL buffer
  *
- * $Id: buffer_al.cpp,v 1.7 2002/11/04 15:40:44 boucher Exp $
+ * $Id: buffer_al.cpp,v 1.8 2003/03/03 13:01:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ CBufferAL::~CBufferAL()
 	sdal->removeBuffer( this );
 }
 
-void CBufferAL::presetName(const std::string &bufferName)
+void CBufferAL::presetName(const NLMISC::TStringId &bufferName)
 {
 	_Name = bufferName;
 }

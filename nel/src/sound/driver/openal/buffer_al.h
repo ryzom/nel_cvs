@@ -1,7 +1,7 @@
 /** \file buffer_al.h
  * OpenAL buffer
  *
- * $Id: buffer_al.h,v 1.6 2002/11/04 15:40:44 boucher Exp $
+ * $Id: buffer_al.h,v 1.7 2003/03/03 13:01:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,7 +93,7 @@ public:
 	/// Set the name of the buffer
 	virtual void		setName(std::string& name)				{ _Name = name; }
 
-	virtual void		presetName(const std::string &bufferName);
+	virtual void		presetName(const NLMISC::TStringId &bufferName);
 
 private:
 
@@ -101,7 +101,7 @@ private:
 	ALuint				_BufferName;
 
 	// Buffer name as string
-	std::string			_Name;
+	NLMISC::TStringId	_Name;
 
 	// Sample format
 	ALenum				_SampleFormat;

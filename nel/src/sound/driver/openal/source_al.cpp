@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.14 2003/01/10 17:11:56 boucher Exp $
+ * $Id: source_al.cpp,v 1.15 2003/03/03 13:01:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -411,7 +411,7 @@ void					CSourceAL::getCone( float& innerAngle, float& outerAngle, float& outerG
  */
 void					CSourceAL::setEAXProperty( uint prop, void *value, uint valuesize )
 {
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 	if ( EAXSetProp != NULL )
 	{
 		EAXSetProp( &DSPROPSETID_EAX_SourceProperties, prop, _SourceName, value, valuesize );

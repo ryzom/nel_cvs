@@ -1,7 +1,7 @@
 /** \file sound_driver_al.cpp
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.cpp,v 1.13 2003/01/10 17:11:56 boucher Exp $
+ * $Id: sound_driver_al.cpp,v 1.14 2003/03/03 13:01:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ using namespace NLMISC;
 namespace NLSOUND {
 
 
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 // EAXSet global function
 EAXSet					EAXSetProp = NULL;
 
@@ -172,7 +172,7 @@ bool		CSoundDriverAL::init()
 	nlinfo( "Loading OpenAL lib: %s, %s, %s", alversion, alrenderer, alvendor );
 	nlinfo( "Listing extensions: %s", alext );
 
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
     // Set EAX environment if EAX is available
 	if ( alIsExtensionPresent((ALubyte *)"EAX") == AL_TRUE ) // or EAX2.0
 	{

@@ -1,7 +1,7 @@
 /** \file listener_al.cpp
  * OpenAL sound listener
  *
- * $Id: listener_al.cpp,v 1.10 2003/01/10 17:11:56 boucher Exp $
+ * $Id: listener_al.cpp,v 1.11 2003/03/03 13:01:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -212,7 +212,7 @@ void					CListenerAL::setRolloffFactor( float f )
  */
 void					CListenerAL::setEnvironment( uint env, float size )
 {
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 	if ( EAXSetProp != NULL )
 	{
 		EAXSetProp( &DSPROPSETID_EAX_ListenerProperties, DSPROPERTY_EAXLISTENER_ENVIRONMENT, 0, &env, sizeof(unsigned long) );
@@ -227,7 +227,7 @@ void					CListenerAL::setEnvironment( uint env, float size )
  */
 void					CListenerAL::setEAXProperty( uint prop, void *value, uint valuesize )
 {
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 	if ( EAXSetProp != NULL )
 	{
 		EAXSetProp( &DSPROPSETID_EAX_ListenerProperties, prop, 0, value, valuesize );

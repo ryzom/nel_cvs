@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.210 2004/04/06 13:42:35 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.211 2004/04/08 09:05:45 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -56,6 +56,7 @@
 #include "nel/misc/rect.h"
 #include "nel/misc/di_event_emitter.h"
 #include "nel/misc/mouse_device.h"
+#include "nel/misc/hierarchical_timer.h"
 #include "driver_opengl_vertex_buffer_hard.h"
 
 
@@ -300,6 +301,7 @@ CDriverGL::CDriverGL()
 	_VBHardProfiling= false;
 	_CurVBHardLockCount= 0;
 	_NumVBHardProfileFrame= 0;
+	_Interval = 1;
 }
 
 
@@ -1155,7 +1157,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	if(_SupportVBHard)
 	{
 		// try to allocate 16Mo by default of AGP Ram.
-		initVertexArrayRange(NL3D_DRV_VERTEXARRAY_AGP_INIT_SIZE, 0);
+		initVertexBufferHard(NL3D_DRV_VERTEXARRAY_AGP_INIT_SIZE, 0);
 
 		// If not success to allocate at least a minimum space in AGP, then disable completely VBHard feature
 		if( _AGPVertexArrayRange->sizeAllocated()==0 )
@@ -1294,6 +1296,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 				}
 			}
 	}
+
+	// Reset the vbl interval
+	setSwapVBLInterval(_Interval);
 
 	return true;
 }
@@ -2111,7 +2116,7 @@ const char *CDriverGL::getVideocardInformation ()
 	const char *renderer = (const char *) glGetString (GL_RENDERER);
 	const char *version = (const char *) glGetString (GL_VERSION);
 
-	smprintf(name, 1024, "%s / %s / %s", vendor, renderer, version);
+	smprintf(name, 1024, "OpenGL / %s / %s / %s", vendor, renderer, version);
 	return name;
 }
 
@@ -2211,6 +2216,7 @@ void CDriverGL::getBuffer (CBitmap &bitmap)
 	CRect	rect(0,0);
 	getWindowSize(rect.Width, rect.Height);
 	getBufferPart(bitmap, rect);
+	bitmap.flipV();
 }
 
 bool CDriverGL::fillBuffer (CBitmap &bitmap)
@@ -3079,10 +3085,11 @@ void CDriverGL::finish()
 // ***************************************************************************
 void	CDriverGL::setSwapVBLInterval(uint interval)
 {
+	_Interval = interval;
 #ifdef NL_OS_WINDOWS
-	if(_Extensions.WGLEXTSwapControl)
+	if(_Extensions.WGLEXTSwapControl && _Initialized)
 	{
-		wglSwapIntervalEXT(interval);
+		wglSwapIntervalEXT(_Interval);
 	}
 #endif
 }
@@ -3093,12 +3100,12 @@ uint	CDriverGL::getSwapVBLInterval()
 #ifdef NL_OS_WINDOWS
 	if(_Extensions.WGLEXTSwapControl)
 	{
-		return wglGetSwapIntervalEXT();
+		return _Interval;
 	}
 	else
-		return 0;
+		return 1;
 #else
-	return 0;
+	return 1;
 #endif
 }
 
@@ -3203,7 +3210,7 @@ void	CDriverGL::profileVBHardAllocation(std::vector<std::string> &result)
 {
 	result.clear();
 	result.reserve(1000);
-	result.push_back(toString("Memory Allocated: %4d Ko in AGP / %4df Ko in VRAM", 
+	result.push_back(toString("Memory Allocated: %4d Ko in AGP / %4d Ko in VRAM", 
 		getAvailableVertexAGPMemory()/1000, getAvailableVertexVRAMMemory()/1000 ));
 	result.push_back(toString("Num VBHard: %d", _VertexBufferHardSet.Set.size()));
 
@@ -3393,6 +3400,31 @@ CVertexBuffer::TVertexColorType CDriverGL::getVertexColorFormat() const
 bool CDriverGL::activeShader(CShader *shd)
 {
 	return false;
+}
+
+// ***************************************************************************
+
+void CDriverGL::startBench (bool wantStandardDeviation, bool quick, bool reset)
+{
+	CHTimer::startBench (wantStandardDeviation, quick, reset);
+}
+
+// ***************************************************************************
+
+void CDriverGL::endBench ()
+{
+	CHTimer::endBench ();
+}
+
+// ***************************************************************************
+
+void CDriverGL::displayBench (class NLMISC::CLog *log)
+{
+	// diplay
+	CHTimer::displayHierarchicalByExecutionPathSorted(log, CHTimer::TotalTime, true, 48, 2);
+	CHTimer::displayHierarchical(log, true, 48, 2);
+	CHTimer::displayByExecutionPath(log, CHTimer::TotalTime);
+	CHTimer::display(log, CHTimer::TotalTime);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.5 2004/03/30 14:36:43 berenguier Exp $
+ * $Id: driver_direct3d.h,v 1.6 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,7 @@ using NLMISC::CMatrix;
 using NLMISC::CVector;
 
 class	CDriverD3D;
+class	CTextureDrvInfosD3D;
 
 // ***************************************************************************
 class CTextureDrvInfosD3D : public ITextureDrvInfos
@@ -185,8 +186,13 @@ class CVBDrvInfosD3D : public IVBDrvInfos
 public:
 	IDirect3DVertexDeclaration9		*VertexDecl;
 	IDirect3DVertexBuffer9			*VertexBuffer;
-	bool							UseVertexColor;
-	uint8							Stride;
+	uint							Offset;				// Vertex buffer offset
+	bool							UseVertexColor:1;
+	bool							Hardware:1;
+	bool							Volatile:1; 		// Volatile vertex buffer
+	bool							VolatileRAM:1;
+	uint							VolatileLockTime;	// Volatile vertex buffer
+	uint8							Stride:8;
 
 	CVBDrvInfosD3D(IDriver *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb);
 	virtual ~CVBDrvInfosD3D();
@@ -200,6 +206,10 @@ class CIBDrvInfosD3D : public IIBDrvInfos
 {
 public:
 	IDirect3DIndexBuffer9			*IndexBuffer;
+	uint							Offset;				// Index buffer offset
+	bool							Volatile:1; 		// Volatile index buffer
+	bool							VolatileRAM:1;
+	uint							VolatileLockTime;	// Volatile index buffer
 
 	CIBDrvInfosD3D(IDriver *drv, ItIBDrvInfoPtrList it, CIndexBuffer *vb);
 	virtual ~CIBDrvInfosD3D();
@@ -278,6 +288,68 @@ public:
 
 // ***************************************************************************
 
+/* Volatile buffers.
+ *
+ * The volatile buffer system is a double buffer allocated during the render pass by objects that needs
+ * a temporary buffer to render vertex or indexes. Each lock allocates a buffer region
+ * and locks it with the NOOVERWRITE flag. Locks are not blocked. The buffer is reset at each frame begin.
+ * There is a double buffer to take benefit of the "over swapbuffer" parallelisme.
+ */
+
+// ***************************************************************************
+
+class CVolatileVertexBuffer
+{
+public:
+	CVolatileVertexBuffer();
+	~CVolatileVertexBuffer();
+
+	CDriverD3D					*Driver;
+	IDirect3DVertexBuffer9		*VertexBuffer;
+	uint						Size;
+	CVertexBuffer::TLocation	Location;
+	uint						CurrentIndex;
+
+	/* size is in bytes */
+	void	init (CVertexBuffer::TLocation	location, uint size, CDriverD3D *driver);
+	void	release ();
+
+	// Runtime buffer access, no-blocking lock.
+	void	*lock (uint size, uint stride, uint &offset);
+	void	unlock ();
+
+	// Runtime reset (called at the begining of the frame rendering), blocking lock here.
+	void	reset ();
+};
+
+// ***************************************************************************
+
+class CVolatileIndexBuffer
+{
+public:
+	CVolatileIndexBuffer();
+	~CVolatileIndexBuffer();
+
+	CDriverD3D					*Driver;
+	IDirect3DIndexBuffer9		*IndexBuffer;
+	uint						Size;
+	CIndexBuffer::TLocation		Location;
+	uint						CurrentIndex;
+
+	/* size is in bytes */
+	void	init (CIndexBuffer::TLocation	location, uint size, CDriverD3D *driver);
+	void	release ();
+
+	// Runtime buffer access, no-blocking lock.
+	void	*lock (uint size, uint &offset);
+	void	unlock ();
+
+	// Runtime reset (called at the begining of the frame rendering), blocking lock here.
+	void	reset ();
+};
+
+// ***************************************************************************
+
 class CDriverD3D : public IDriver, ID3DXEffectStateManager 
 {
 public:
@@ -318,14 +390,12 @@ public:
 	virtual bool			init (uint windowIcon = 0);
 	virtual bool			setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBadDisplay);
 	virtual bool			release();
-	// todo hulud d3d switch mode
 	virtual bool			setMode(const GfxMode& mode);
 	virtual bool			getModes(std::vector<GfxMode> &modes);
 	virtual bool			getCurrentScreenMode(GfxMode &mode);
 	virtual bool			activate();
 	virtual bool			isActive ();
-	// todo hulud d3d vertex buffer hard
-	virtual	bool			initVertexArrayRange(uint agpMem, uint vramMem) {return false;};
+	virtual	bool			initVertexBufferHard(uint agpMem, uint vramMem);
 
 	// Windows interface
 	virtual void*			getDisplay();
@@ -339,8 +409,7 @@ public:
 	virtual void			disableHardwareVertexProgram();
 	virtual void			disableHardwareIndexArrayAGP();
 	virtual void			disableHardwareVertexArrayAGP();
-	// todo hulud d3d vertex buffer hard
-	virtual void			disableHardwareTextureShader() {};
+	virtual void			disableHardwareTextureShader();
 	virtual void			forceDXTCCompression(bool dxtcComp);
 	virtual void			forceTextureResize(uint divisor);
 
@@ -348,9 +417,7 @@ public:
 	virtual uint			getNumAdapter() const;
 	virtual bool			getAdapter(uint adapter, CAdapter &desc) const;
 	virtual bool			setAdapter(uint adapter);
-	// todo hulud d3d vertex buffer hard
 	virtual uint32			getAvailableVertexAGPMemory ();
-	// todo hulud d3d texture
 	virtual uint32			getAvailableVertexVRAMMemory ();
 	virtual	sint			getNbTextureStages() const;
 	virtual	bool			supportVertexBufferHard() const;
@@ -360,8 +427,7 @@ public:
 	virtual	uint			getMaxVerticesByVertexBufferHard() const;
 	virtual uint32			getImplementationVersion () const;
 	virtual const char*		getDriverInformation ();
-	// todo hulud d3d
-	virtual const char*		getVideocardInformation () {return "";};
+	virtual const char*		getVideocardInformation ();
 	virtual CVertexBuffer::TVertexColorType getVertexColorFormat() const;
 
 	// Textures
@@ -374,27 +440,30 @@ public:
 
 	// Material
 	virtual bool			setupMaterial(CMaterial& mat);
+	virtual bool			supportCloudRenderSinglePass () const;
 
 	// Buffer
 	virtual bool			clear2D(CRGBA rgba);
 	virtual bool			clearZBuffer(float zval=1);
 	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha);
 	virtual bool			swapBuffers();
-	virtual void			getBuffer (CBitmap &bitmap) {};
+	virtual void			getBuffer (CBitmap &bitmap);	// Only 32 bits back buffer supported
+	// todo hulud d3d buffers
 	virtual void			getZBuffer (std::vector<float>  &zbuffer) {};
-	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect) {};
+	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect);	// Only 32 bits back buffer supported
+	// todo hulud d3d buffers
 	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) {};
 	virtual bool			setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace);
 	virtual bool			copyTargetToTexture (ITexture *tex, uint32 offsetx, uint32 offsety, uint32 x, uint32 y, uint32 width, 
 													uint32 height, uint32 mipmapLevel);
 	virtual bool			getRenderTargetSize (uint32 &width, uint32 &height);
-	virtual bool			fillBuffer (CBitmap &bitmap) {return false;};
+	virtual bool			fillBuffer (CBitmap &bitmap);
 
 	// Performances
-	virtual void			startSpecularBatch() {};
-	virtual void			endSpecularBatch() {};
-	virtual void			setSwapVBLInterval(uint interval) {};
-	virtual uint			getSwapVBLInterval() {return 0;};
+	virtual void			startSpecularBatch();
+	virtual void			endSpecularBatch();
+	virtual void			setSwapVBLInterval(uint interval);
+	virtual uint			getSwapVBLInterval();
 	virtual void			swapTextureHandle(ITexture &tex0, ITexture &tex1);
 	virtual	uint			getTextureHandle(const ITexture&tex);
 
@@ -417,7 +486,7 @@ public:
 	virtual bool			activeIndexBuffer(CIndexBuffer& IB);
 
 	// UV
-	virtual	void			mapTextureStageToUV(uint stage, uint uv) {};
+	virtual	void			mapTextureStageToUV(uint stage, uint uv);
 
 	// Render
 	virtual bool			renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines);
@@ -428,18 +497,18 @@ public:
 	virtual bool			renderRawTriangles(CMaterial& Mat, uint32 startIndex, uint32 numTris);
 	virtual bool			renderRawQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads);
 	virtual void			setPolygonMode (TPolygonMode mode);
-	virtual	void			finish() {};
+	virtual	void			finish();
 
 	// Profile
-	virtual	void			profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut) {};
-	virtual	uint32			profileAllocatedTextureMemory() {return 0;};
-	virtual	uint32			profileSetupedMaterials() const {return 0;};
-	virtual	uint32			profileSetupedModelMatrix() const {return 0;};
-	virtual void			enableUsedTextureMemorySum (bool enable) {};
-	virtual uint32			getUsedTextureMemory() const {return 0;};
-	virtual	void			startProfileVBHardLock() {};
-	virtual	void			endProfileVBHardLock(std::vector<std::string> &result) {};
-	virtual	void			profileVBHardAllocation(std::vector<std::string> &result) {};
+	virtual	void			profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut);
+	virtual	uint32			profileAllocatedTextureMemory();
+	virtual	uint32			profileSetupedMaterials() const;
+	virtual	uint32			profileSetupedModelMatrix() const;
+	virtual void			enableUsedTextureMemorySum (bool enable);
+	virtual uint32			getUsedTextureMemory() const;
+	virtual	void			startProfileVBHardLock();
+	virtual	void			endProfileVBHardLock(std::vector<std::string> &result);
+	virtual	void			profileVBHardAllocation(std::vector<std::string> &result);
 
 	// Misc
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
@@ -454,11 +523,12 @@ public:
 	virtual uint							 getDoubleClickDelay(bool hardwareMouse);
 
 	// Lights
-	virtual uint			getMaxLight () const {return 0;};
+	virtual uint			getMaxLight () const;
 	virtual void			setLight (uint8 num, const CLight& light);
 	virtual void			enableLight (uint8 num, bool enable=true);
+	// todo hulud d3d light
 	virtual void			setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float shininess) {};
-	virtual void			setAmbientColor (CRGBA color) {};
+	virtual void			setAmbientColor (CRGBA color);
 
 	// Fog
 	virtual	bool			fogEnabled();
@@ -469,34 +539,42 @@ public:
 	virtual	CRGBA			getFogColor() const;
 
 	// Texture addressing modes
+	// todo hulud d3d adressing mode
 	virtual bool			supportTextureShaders() const {return false;};
 	virtual	bool			supportMADOperator() const;
+	// todo hulud d3d adressing mode
 	virtual bool			isWaterShaderSupported() const {return false;};
+	// todo hulud d3d adressing mode
 	virtual bool			isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) const {return false;};
+	// todo hulud d3d adressing mode
 	virtual void			setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4]) {};
 
 	// EMBM support
+	// todo hulud d3d EMBM
 	virtual bool			supportEMBM() const	 {return false;};
+	// todo hulud d3d EMBM
 	virtual bool			isEMBMSupportedAtStage(uint stage) const {return false;};
+	// todo hulud d3d EMBM
 	virtual void			setEMBMMatrix(const uint stage, const float mat[4]) {};
+	// todo hulud d3d EMBM
 	virtual bool			supportPerPixelLighting(bool specular) const {return false;};
 
 	// Blend
-	virtual	bool			supportBlendConstantColor() const {return false;};
-	virtual	void			setBlendConstantColor(NLMISC::CRGBA col) {};
-	virtual	NLMISC::CRGBA	getBlendConstantColor() const {return CRGBA::White;};
+	virtual	bool			supportBlendConstantColor() const;
+	virtual	void			setBlendConstantColor(NLMISC::CRGBA col);
+	virtual	NLMISC::CRGBA	getBlendConstantColor() const;
 
 	// Monitor properties
-	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties) {return false;};
+	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties);
 
 	// Polygon smoothing
-	virtual	void			enablePolygonSmoothing(bool smooth) {};
-	virtual	bool			isPolygonSmoothingEnabled() const {return false;};
+	virtual	void			enablePolygonSmoothing(bool smooth);
+	virtual	bool			isPolygonSmoothingEnabled() const;
 
 	// Material multipass
-	virtual sint			beginMaterialMultiPass() { return 0; }
-	virtual void			setupMaterialPass(uint pass) { 	}
-	virtual void			endMaterialMultiPass() {  }
+	virtual sint			beginMaterialMultiPass();
+	virtual void			setupMaterialPass(uint pass);
+	virtual void			endMaterialMultiPass();
 
 	// Vertex program
 	virtual bool			isVertexProgramSupported () const;
@@ -512,9 +590,7 @@ public:
 	virtual void			setConstantFog (uint index);
 	virtual void			enableVertexProgramDoubleSidedColor(bool doubleSided);
 	virtual bool		    supportVertexProgramDoubleSidedColor() const;
-	
 
-	virtual bool			supportCloudRenderSinglePass () const { return false; }
 	/** Shader implementation
 	  * 
 	  * Shader can assume this states are setuped:
@@ -524,6 +600,11 @@ public:
 	  * AlphaOp[n] = DISABLE;
     */
 	virtual bool			activeShader(CShader *shd);
+
+	// Bench
+	virtual void startBench (bool wantStandardDeviation = false, bool quick = false, bool reset = true);
+	virtual void endBench ();
+	virtual void displayBench (class NLMISC::CLog *log);
 
 private:
 
@@ -551,6 +632,7 @@ private:
 			MatrixState,
 			VBState,
 			IBState,
+			VertexDecl,
 			LightState,
 			RenderTargetState,
 		}				Type;
@@ -693,7 +775,9 @@ private:
 			Type = VBState;
 			VertexBuffer = NULL;
 		}
-		CRefPtr<CVertexBuffer>			VertexBuffer;
+		IDirect3DVertexBuffer9			*VertexBuffer;
+		UINT							Offset;
+		UINT							Stride;
 	};
 
 	// Render index buffer
@@ -704,7 +788,18 @@ private:
 			Type = IBState;
 			IndexBuffer = NULL;
 		}
-		CRefPtr<CIndexBuffer>			IndexBuffer;
+		IDirect3DIndexBuffer9			*IndexBuffer;
+	};
+
+	// Render vertex decl
+	struct CVertexDeclState : public CRenderVariable
+	{
+		CVertexDeclState()
+		{
+			Type = VertexDecl;
+			Decl = NULL;
+		}
+		IDirect3DVertexDeclaration9		*Decl;
 	};
 
 	// Render vertex buffer
@@ -714,7 +809,7 @@ private:
 		{
 			Type = LightState;
 			Enabled = false;
-			SettingsTouched = true;
+			SettingsTouched = false;
 			EnabledTouched = true;
 			Light.Type = D3DLIGHT_POINT;
 			Light.Range = 1;
@@ -758,12 +853,25 @@ private:
 	// Friends
 	friend void D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	friend class CTextureDrvInfosD3D;
+	friend class CVBDrvInfosD3D;
+	friend class CIBDrvInfosD3D;
+	friend class CVolatileVertexBuffer;
+	friend class CVolatileIndexBuffer;
+
+	// Init render states
+	void initRenderVariables();
 
 	// Reset render states
 	void resetRenderVariables();
 
 	// Update all modified render states
 	void updateRenderVariables();
+
+	// Reset the driver, release the lost resources
+	bool reset (const GfxMode& mode);
+
+	// Handle window size change
+	bool handlePossibleSizeChange();
 
 	// Touch a render variable
 	inline void touchRenderVariable (CRenderVariable *renderVariable)
@@ -869,6 +977,13 @@ private:
 		setSamplerState (stage, D3DSAMP_MAGFILTER, d3dtext->MagFilter);
 		setSamplerState (stage, D3DSAMP_MINFILTER, d3dtext->MinFilter);
 		setSamplerState (stage, D3DSAMP_MIPFILTER, d3dtext->MipFilter);
+
+		// Profile, log the use of this texture
+		if (_SumTextureMemoryUsed)
+		{
+			// Insert the pointer of this texture
+			_TextureUsed.insert (d3dtext);
+		}
 	}
 
 	// Access vertex program
@@ -1019,6 +1134,57 @@ private:
 		}
 	}
 
+	// Set the vertex buffer
+	inline void setVertexBuffer (IDirect3DVertexBuffer9 *vertexBuffer, UINT offset, UINT stride, bool useVertexColor, uint size)
+	{
+		nlassert (_DeviceInterface);
+
+		// Ref on the state
+#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+		if ((_VertexBufferCache.VertexBuffer != vertexBuffer) || (_VertexBufferCache.Offset != offset))
+#endif // NL_D3D_USE_RENDER_STATE_CACHE
+		{
+			_VertexBufferCache.VertexBuffer = vertexBuffer;
+			_VertexBufferCache.Offset = 0;
+			_VertexBufferCache.Stride = stride;
+			touchRenderVariable (&_VertexBufferCache);
+		}
+		_UseVertexColor = useVertexColor;
+		_VertexBufferSize = size;
+		_VertexBufferOffset = offset;
+	}
+
+	// Set the index buffer
+	inline void setIndexBuffer (IDirect3DIndexBuffer9 *indexBuffer, uint offset)
+	{
+		nlassert (_DeviceInterface);
+
+		// Ref on the state
+#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+		if (_IndexBufferCache.IndexBuffer != indexBuffer)
+#endif // NL_D3D_USE_RENDER_STATE_CACHE
+		{
+			_IndexBufferCache.IndexBuffer = indexBuffer;
+			touchRenderVariable (&_IndexBufferCache);
+		}
+		_IndexBufferOffset = offset;
+	}
+
+	// Set the vertex declaration
+	inline void setVertexDecl (IDirect3DVertexDeclaration9  *vertexDecl)
+	{
+		nlassert (_DeviceInterface);
+
+		// Ref on the state
+#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+		if (_VertexDeclCache.Decl != vertexDecl)
+#endif // NL_D3D_USE_RENDER_STATE_CACHE
+		{
+			_VertexDeclCache.Decl = vertexDecl;
+			touchRenderVariable (&_VertexDeclCache);
+		}
+	}
+
 	// Access matrices
 	inline uint remapMatrixIndex (D3DTRANSFORMSTATETYPE type)
 	{
@@ -1109,14 +1275,11 @@ private:
 
 	D3DFORMAT getD3DDestTextureFormat (ITexture& tex);
 	// Generates the texture, degades it, creates / resizes the d3d surface. Don't fill the surface.
-	bool generateD3DTexture (ITexture& tex, bool textureDegradation, D3DFORMAT &destFormat, D3DFORMAT &srcFormat, uint &firstMipMap, bool &cube, 
-		bool renderTarget);
+	bool generateD3DTexture (ITexture& tex, bool textureDegradation, D3DFORMAT &destFormat, D3DFORMAT &srcFormat, uint &firstMipMap, bool &cube);
 	// Return the memory used by the surface described iwith the parameters
 	uint32 computeTextureMemoryUsage (uint width, uint height, uint levels, D3DFORMAT destFormat, bool cube);
 	// Upload a texture part
 	bool uploadTextureInternal (ITexture& tex, NLMISC::CRect& rect, uint8 destMipmap, uint8 srcMipmap, D3DFORMAT destFormat, D3DFORMAT srcFormat);
-	// Internal setuptexture method
-	bool setupTextureInternal (ITexture& tex, bool bUpload, bool &bAllUploaded, bool bMustRecreateSharedTexture, bool renderTarget);
 
 	// *** Matrix helper
 
@@ -1131,17 +1294,13 @@ private:
 	bool createVertexDeclaration (uint16 vertexFormat, const uint8 *typeArray,
 										IDirect3DVertexDeclaration9 **vertexDecl, 
 										uint *stride = NULL);
-	// Restaure a resident vertex buffer to system memory
-	void restaureVertexBuffer (CVBDrvInfosD3D &vertexBuffer);
 
 	// *** Index buffer helper
-
-	// Restaure a resident index buffer to system memory
-	void restaureIndexBuffer (CIBDrvInfosD3D &indexBuffer);
 
 	// *** Multipass helpers
 
 	void initInternalShaders();
+	void releaseInternalShaders();
 	bool setShaderTexture (uint textureHandle, ITexture *texture);
 	
 	bool validateShader(CShader *shader);
@@ -1240,7 +1399,10 @@ private:
 	sint32					_WindowX;
 	sint32					_WindowY;
 	bool					_DestroyWindow;
+	bool					_Maximized;
+	bool					_HandlePossibleSizeChangeNextSize;
 	GfxMode					_CurrentMode;
+	uint					_Interval;
 
 	// Directx
 	uint32					_Adapter;
@@ -1274,6 +1436,9 @@ private:
 	float					_FogStart;
 	float					_FogEnd;
 
+	// Vertex memory available
+	uint32					_AGPMemoryAllocated;
+	uint32					_VRAMMemoryAllocated;
 
 	// Textures caps
 	D3DFORMAT				_PreferedTextureFormat[ITexture::UploadFormatCount];
@@ -1285,13 +1450,44 @@ private:
 	bool					_DisableHardwareVertexProgram;
 	bool					_DisableHardwareVertexArrayAGP;
 	bool					_DisableHardwareIndexArrayAGP;
+	bool					_DisableHardwarePixelShader;
 	bool					_MADOperatorSupported;
 	sint					_NbNeLTextureStages;			// Number of texture stage for NeL (max IDRV_MAT_MAXTEXTURES)
-	// sint					_NbTextureStages;				// Number of texture stage available
 	uint					_MaxVerticesByVertexBufferHard;
+	uint					_MaxLight;
 
 	// Profiling
-	uint32					_AllocatedTextureMemory;
+	CPrimitiveProfile									_PrimitiveProfileIn;
+	CPrimitiveProfile									_PrimitiveProfileOut;
+	uint32												_AllocatedTextureMemory;
+	uint32												_NbSetupMaterialCall;
+	uint32												_NbSetupModelMatrixCall;
+	bool												_SumTextureMemoryUsed;
+	std::set<CTextureDrvInfosD3D*>						_TextureUsed;
+
+	// VBHard Lock Profiling
+	struct	CVBHardProfile
+	{
+		NLMISC::CRefPtr<CVertexBuffer>			VBHard;
+		NLMISC::TTicks							AccumTime;
+		// true if the VBHard was not always the same for the same chronogical place.
+		bool									Change;
+		CVBHardProfile()
+		{
+			AccumTime= 0;
+			Change= false;
+		}
+	};
+	
+	// The Profiles in chronogical order.
+	bool												_VBHardProfiling;
+	std::vector<CVBHardProfile>							_VBHardProfiles;
+	uint												_CurVBHardLockCount;
+	uint												_NumVBHardProfileFrame;
+	void												appendVBHardLockProfile(NLMISC::TTicks time, CVertexBuffer *vb);
+
+	// VBHard profile
+	std::set<CVBDrvInfosD3D*>							_VertexBufferHardSet;
 
 	// The render variables
 	CRenderState			_RenderStateCache[MaxRenderState];
@@ -1304,16 +1500,34 @@ private:
 	CPixelShaderPtrState	_PixelShaderCache;
 	CVertexProgramConstantState	_VertexProgramConstantCache[MaxVertexProgramConstantState];
 	CPixelShaderConstantState	_PixelShaderConstantCache[MaxPixelShaderConstantState];
-	CVBState				_VertexBuffer;
-	CIBState				_IndexBuffer;
+	CVertexDeclState		_VertexDeclCache;
 	CLightState				_LightCache[MaxLight];
 	CRenderTargetState		_RenderTarget;
 
-	// The last vertex buffer needs vertex color
+	// Vertex buffer cache
+	CVBState				_VertexBufferCache;
+	uint					_VertexBufferSize;
+	uint					_VertexBufferOffset;
 	bool					_UseVertexColor;
+
+	// Index buffer cache
+	CIBState				_IndexBufferCache;
+	uint					_IndexBufferOffset;		// Current index buffer offset
+
+	// The last vertex buffer needs vertex color
 	bool					_FogEnabled;
 
 	// *** Internal resources
+
+	// Current render pass
+	uint					_CurrentRenderPass;
+
+
+	// Volatile double buffers
+	CVolatileVertexBuffer	_VolatileVertexBufferRAM[2];
+	CVolatileVertexBuffer	_VolatileVertexBufferAGP[2];
+	CVolatileIndexBuffer	_VolatileIndexBufferRAM[2];
+	CVolatileIndexBuffer	_VolatileIndexBufferAGP[2];
 
 	// Vertex declaration list
 	std::list<CVertexDeclaration>	_VertexDeclarationList;
@@ -1333,7 +1547,6 @@ private:
 		LPDIRECT3DBASETEXTURE9	D3DTexture;
 	};
 	std::vector<CTextureRef>	_CurrentShaderTextures;
-
 
 	// The last material setuped
 	CMaterial				*_CurrentMaterial;
@@ -1356,6 +1569,7 @@ private:
 	CShader					_ShaderLightmap2Blend;
 	CShader					_ShaderLightmap3Blend;
 	CShader					_ShaderLightmap4Blend;
+	CShader					_ShaderCloud;
 
 	// Backup frame buffer
 	IDirect3DSurface9		*_BackBuffer;
@@ -1397,6 +1611,22 @@ private:
 	floats[2] = (float)rgba.B * (1.f/255.f);floats[3] = (float)rgba.A * (1.f/255.f);}
 
 // ***************************************************************************
+
+// nbPixels is pixel count, not a byte count !
+inline void copyRGBA2BGRA (uint32 *dest, const uint32 *src, uint nbPixels)
+{
+	while (nbPixels != 0)
+	{
+		register uint32 color = *src;
+		*dest = (color & 0xff00ff00) | ((color&0xff)<<16) | ((color&0xff0000)>>16);
+		dest++;
+		src++;
+		nbPixels--;
+	}
+}
+
+// ***************************************************************************
+
 
 } // NL3D
 

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.2 2004/04/08 09:05:45 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -270,7 +270,7 @@ bool CDriverD3D::validateShader(CShader *shader)
 			D3DXTECHNIQUE_DESC desc;
 			nlverify (shaderInfo->Effect->GetTechniqueDesc(hCurrentTechnique, &desc) == D3D_OK);
 
-			// Check this is compatible with _NbTextureStages
+			// Check this is compatible
 			const uint len = strlen(desc.Name);
 			if (len)
 			{
@@ -313,6 +313,9 @@ bool CDriverD3D::validateShader(CShader *shader)
 
 bool CDriverD3D::activeShader(CShader *shd)
 {
+	if (_DisableHardwarePixelShader)
+		return false;
+
 	// Clear current textures
 	_CurrentShaderTextures.clear();
 
@@ -386,6 +389,24 @@ void CDriverD3D::initInternalShaders()
 	setFx(_ShaderLightmap2Blend,lightmap2blend);
 	setFx(_ShaderLightmap3Blend,lightmap3blend);
 	setFx(_ShaderLightmap4Blend,lightmap4blend);
+	setFx(_ShaderCloud,cloud);
+}
+
+// ***************************************************************************
+
+void CDriverD3D::releaseInternalShaders()
+{
+	_ShaderLightmap0._DrvInfo.kill();
+	_ShaderLightmap1._DrvInfo.kill();
+	_ShaderLightmap2._DrvInfo.kill();
+	_ShaderLightmap3._DrvInfo.kill();
+	_ShaderLightmap4._DrvInfo.kill();
+	_ShaderLightmap0Blend._DrvInfo.kill();
+	_ShaderLightmap1Blend._DrvInfo.kill();
+	_ShaderLightmap2Blend._DrvInfo.kill();
+	_ShaderLightmap3Blend._DrvInfo.kill();
+	_ShaderLightmap4Blend._DrvInfo.kill();
+	_ShaderCloud._DrvInfo.kill();
 }
 
 // ***************************************************************************
@@ -413,5 +434,14 @@ bool CDriverD3D::setShaderTexture (uint textureHandle, ITexture *texture)
 	return true;
 }
 
+// ***************************************************************************
+
+void CDriverD3D::disableHardwareTextureShader()
+{
+	_DisableHardwarePixelShader = true;
+	_PixelShader = false;
+}
+
+// ***************************************************************************
 
 } // NL3D

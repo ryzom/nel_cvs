@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.41 2004/03/29 08:29:46 boucher Exp $
+ * $Id: vertex_buffer.cpp,v 1.42 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,6 +109,7 @@ CVertexBuffer::CVertexBuffer()
 	_PreferredMemory = RAMPreferred;
 	_Location = NotResident;
 	_ResidentSize = 0;
+	_KeepLocalMemory = false;
 
 	// Default routing
 	uint i; 
@@ -129,6 +130,8 @@ CVertexBuffer::CVertexBuffer(const CVertexBuffer &vb)
 	_PreferredMemory = RAMPreferred;
 	_Location = NotResident;
 	_ResidentSize = 0;
+	_KeepLocalMemory = false;
+
 	operator=(vb);
 
 	// Default routing
@@ -164,6 +167,7 @@ CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
 	_NonResidentVertices = vb._NonResidentVertices;
 	_VertexColorFormat = vb._VertexColorFormat;
 	_PreferredMemory = vb._PreferredMemory;
+	_KeepLocalMemory = vb._KeepLocalMemory;
 	uint i;
 	_LockCounter = 0;
 	_LockedBuffer = NULL;
@@ -970,11 +974,12 @@ bool CVertexBuffer::setVertexColorFormat (TVertexColorType format)
 
 // --------------------------------------------------
 
-void CVertexBuffer::setPreferredMemory (TPreferredMemory preferredMemory)
+void CVertexBuffer::setPreferredMemory (TPreferredMemory preferredMemory, bool keepLocalMemory)
 {
-	if (_PreferredMemory != preferredMemory)
+	if ((_PreferredMemory != preferredMemory) || (_KeepLocalMemory != keepLocalMemory))
 	{
 		_PreferredMemory = preferredMemory;
+		_KeepLocalMemory = keepLocalMemory;
 
 		// Force non resident
 		restaureNonResidentMemory();
@@ -991,20 +996,21 @@ void CVertexBuffer::setLocation (TLocation newLocation)
 		nlassert (DrvInfos);
 
 		// Current size of the buffer
-		const uint size = _Capacity*_VertexSize;
+		const uint size = ((_PreferredMemory==RAMVolatile)||(_PreferredMemory==AGPVolatile))?_NbVerts*_VertexSize:_Capacity*_VertexSize;
 
 		// The buffer must not be resident
 		if (_Location != NotResident)
 			setLocation (NotResident);
 
 		// Copy the buffer containt
-		uint8 *dest = DrvInfos->lock (0, 0, false);
-		nlassert (_NonResidentVertices.size() == size);	// Internal buffer must have the good size
+		uint8 *dest = DrvInfos->lock (0, size, false);
+		nlassert (size<=_NonResidentVertices.size());	// Internal buffer must have the good size
 		memcpy (dest, &(_NonResidentVertices[0]), size);
 		DrvInfos->unlock(0, 0);
 
-		// Reset the non resident container
-		contReset(_NonResidentVertices);
+		// Reset the non resident container if not a static preferred memory and not put in RAM
+		if ((_PreferredMemory != StaticPreferred) && (_Location != RAMResident) && !_KeepLocalMemory)
+			contReset(_NonResidentVertices);
 
 		// Clear touched flags
 		resetTouchFlags ();
@@ -1021,13 +1027,13 @@ void CVertexBuffer::setLocation (TLocation newLocation)
 		_NonResidentVertices.resize (size);
 
 		// If resident in RAM, backup the data in non resident memory
-		if (_Location == RAMResident)
+		if ((_Location == RAMResident) && (_PreferredMemory != RAMVolatile) && (_PreferredMemory != AGPVolatile) && !_KeepLocalMemory)
 		{
 			// The driver must have setuped the driver info
 			nlassert (DrvInfos);
 
 			// Copy the old buffer data
-			const uint8 *src = DrvInfos->lock (0, 0, true);
+			const uint8 *src = DrvInfos->lock (0, _ResidentSize, true);
 			if (!_NonResidentVertices.empty())
 				memcpy (&(_NonResidentVertices[0]), src, std::min (size, (uint)_ResidentSize));
 			DrvInfos->unlock(0, 0);
@@ -1051,6 +1057,21 @@ void CVertexBuffer::restaureNonResidentMemory()
 
 	// Must kill the drv mirror of this VB.
 	DrvInfos.kill();
+}
+
+// --------------------------------------------------
+
+void CVertexBuffer::fillBuffer ()
+{
+	if (DrvInfos && _KeepLocalMemory)
+	{
+		// Copy the local memory in local memory
+		const size = _NbVerts*_VertexSize;
+		nlassert (size<=_NonResidentVertices.size());
+		uint8 *dest = DrvInfos->lock (0, size, false);
+		memcpy (dest, &(_NonResidentVertices[0]), size);
+		DrvInfos->unlock(0, size);
+	}
 }
 
 // --------------------------------------------------

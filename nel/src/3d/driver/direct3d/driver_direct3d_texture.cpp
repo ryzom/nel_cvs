@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.2 2004/03/30 14:36:43 berenguier Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.3 2004/04/08 09:05:45 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -47,11 +47,10 @@ namespace NL3D
 
 std::vector<uint8> CDriverD3D::_TempBuffer;
 
-extern uint textureCount = 0;
-
 // ***************************************************************************
 
-CTextureDrvInfosD3D::CTextureDrvInfosD3D(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverD3D *drvGl, bool renderTarget) : ITextureDrvInfos(drv, it)
+CTextureDrvInfosD3D::CTextureDrvInfosD3D(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverD3D *drvD3D, bool renderTarget) 
+					: ITextureDrvInfos(drv, it)
 {
 	Texture = NULL;
 	Texture2d = NULL;
@@ -60,7 +59,7 @@ CTextureDrvInfosD3D::CTextureDrvInfosD3D(IDriver *drv, ItTexDrvInfoPtrMap it, CD
 	RenderTarget = renderTarget;
 
 	// Nb: at Driver dtor, all tex infos are deleted, so _Driver is always valid.
-	_Driver= drvGl;
+	_Driver= drvD3D;
 }
 
 // ***************************************************************************
@@ -73,11 +72,13 @@ CTextureDrvInfosD3D::~CTextureDrvInfosD3D()
 		Texture = NULL;
 		Texture2d = NULL;
 		TextureCube = NULL;
-		textureCount--;
 	}
 
 	// release profiling texture mem.
-	_Driver->_AllocatedTextureMemory-= TextureMemory;
+	_Driver->_AllocatedTextureMemory -= TextureMemory;
+
+	// release in TextureUsed.
+	_Driver->_TextureUsed.erase (this);
 }
 
 // ***************************************************************************
@@ -85,7 +86,7 @@ CTextureDrvInfosD3D::~CTextureDrvInfosD3D()
 bool CDriverD3D::setupTexture (ITexture& tex)
 {
 	bool nTmp;
-	return setupTextureInternal (tex, true, nTmp, false, false);
+	return setupTextureEx (tex, true, nTmp, false);
 }
 
 // ***************************************************************************
@@ -291,22 +292,7 @@ uint32 CDriverD3D::computeTextureMemoryUsage (uint width, uint height, uint leve
 
 // ***************************************************************************
 
-// nbPixels is pixel count, not a byte count !
-inline void copyRGBA2BGRA (uint32 *dest, const uint32 *src, uint nbPixels)
-{
-	while (nbPixels != 0)
-	{
-		register uint32 color = *src;
-		*dest = (color & 0xff00ff00) | ((color&0xff)<<16) | ((color&0xff0000)>>16);
-		dest++;
-		src++;
-		nbPixels--;
-	}
-}
-
-// ***************************************************************************
-
-bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3DFORMAT &destFormat, D3DFORMAT &srcFormat, uint &firstMipMap, bool &cube, bool renderTarget)
+bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3DFORMAT &destFormat, D3DFORMAT &srcFormat, uint &firstMipMap, bool &cube)
 {
 	// Regenerate all the texture.
 	tex.generate();
@@ -323,6 +309,7 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 	UINT height;
 	UINT levels;
 	bool srcFormatCompressed;
+	bool renderTarget;
 	const uint faceCount = cube?6:1;
 	uint face;
 	for (face=0; face<faceCount; face++)
@@ -331,14 +318,28 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 		ITexture *texture = cube?(static_cast<CTextureCube*>(&tex)->getTexture((CTextureCube::TFace)face)):&tex;
 
 		// getD3DTextureFormat choose a d3d dest and a src format. src format should be the tex one.
-		srcFormatCompressed = RemapTextureFormatCompressedTypeNeL2D3D[texture->getPixelFormat()];
-		srcFormat = RemapTextureFormatTypeNeL2D3D[texture->getPixelFormat()];
-		destFormat = getD3DDestTextureFormat (tex);
+		if (face==0)
+		{
+			srcFormatCompressed = RemapTextureFormatCompressedTypeNeL2D3D[texture->getPixelFormat()];
+			srcFormat = RemapTextureFormatTypeNeL2D3D[texture->getPixelFormat()];
+			destFormat = getD3DDestTextureFormat (*texture);
+		}
+		else
+		{
+			// All cube texture must have the same format
+			nlassert (srcFormatCompressed == RemapTextureFormatCompressedTypeNeL2D3D[texture->getPixelFormat()]);
+			nlassert (srcFormat == RemapTextureFormatTypeNeL2D3D[texture->getPixelFormat()]);
+			nlassert (destFormat == getD3DDestTextureFormat (*texture));
+		}
+		
+		// Should not happen
+		nlassert (!((srcFormatCompressed) && (destFormat == D3DFMT_A8R8G8B8)));
 
 		// Get new texture format
 		width = texture->getWidth();
 		height = texture->getHeight();
 		levels = texture->getMipMapCount();
+		renderTarget = texture->getRenderTarget();
 		firstMipMap = 0;
 
 		// Texture degradation
@@ -375,6 +376,15 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 		}
 	}
 
+	// If compressed, width and height must be 4x4 aligned
+	if (srcFormatCompressed)
+	{
+		if (width & 3)
+			width = (width & ~3)+4;
+		if (height & 3)
+			height = (height & ~3)+4;
+	}
+
 	// Got an old texture ?
 	if (d3dtext->Texture &&  
 							(	
@@ -405,8 +415,7 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 	if (d3dtext->Texture == NULL)
 	{
 		// profiling: count TextureMemory usage.
-		d3dtext->TextureMemory = computeTextureMemoryUsage (width, height, levels, destFormat, cube);
-		_AllocatedTextureMemory += d3dtext->TextureMemory;
+		uint32 textureMeory = computeTextureMemoryUsage (width, height, levels, destFormat, cube);
 
 		// Create the texture
 		bool createSuccess;
@@ -425,7 +434,9 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 		if (!createSuccess)
 			return false;
 
-		textureCount++;
+		// Stats
+		d3dtext->TextureMemory = textureMeory;
+		_AllocatedTextureMemory += d3dtext->TextureMemory;
 
 		// Copy parameters
 		d3dtext->Width = width;
@@ -442,13 +453,6 @@ bool CDriverD3D::generateD3DTexture (ITexture& tex, bool textureDegradation, D3D
 // ***************************************************************************
 
 bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded, bool bMustRecreateSharedTexture)
-{
-	return setupTextureInternal (tex, bUpload, bAllUploaded, bMustRecreateSharedTexture, false);
-}
-
-// ***************************************************************************
-
-bool CDriverD3D::setupTextureInternal (ITexture& tex, bool bUpload, bool &bAllUploaded, bool bMustRecreateSharedTexture, bool renderTarget)
 {
 	bAllUploaded = false;
 	
@@ -481,7 +485,6 @@ bool CDriverD3D::setupTextureInternal (ITexture& tex, bool bUpload, bool &bAllUp
 	bool	mustLoadAll= false;
 	bool	mustLoadPart= false;
 
-
 	// A. Share mgt.
 	//==============
 	if(tex.supportSharing())
@@ -510,7 +513,7 @@ bool CDriverD3D::setupTextureInternal (ITexture& tex, bool bUpload, bool &bAllUp
 				// insert into driver map. (so it is deleted when driver is deleted).
 				itTex= (rTexDrvInfos.insert(make_pair(name, (ITextureDrvInfos*)NULL))).first;
 				// create and set iterator, for future deletion.
-				itTex->second= tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosD3D(this, itTex, this, renderTarget);
+				itTex->second= tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosD3D(this, itTex, this, tex.getRenderTarget());
 
 				// need to load ALL this texture.
 				mustLoadAll= true;
@@ -539,7 +542,7 @@ bool CDriverD3D::setupTextureInternal (ITexture& tex, bool bUpload, bool &bAllUp
 			// Must create it. Create auto a D3D id (in constructor).
 			// Do not insert into the map. This un-shared texture will be deleted at deletion of the texture.
 			// Inform ITextureDrvInfos by passing NULL _Driver.
-			tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosD3D(NULL, ItTexDrvInfoPtrMap(), this, renderTarget);
+			tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosD3D(NULL, ItTexDrvInfoPtrMap(), this, tex.getRenderTarget());
 
 			// need to load ALL this texture.
 			mustLoadAll= true;
@@ -565,7 +568,7 @@ bool CDriverD3D::setupTextureInternal (ITexture& tex, bool bUpload, bool &bAllUp
 			D3DFORMAT destFormat;
 			uint firstMipMap;
 			bool cube;
-			if (generateD3DTexture (tex, true, destFormat, srcFormat, firstMipMap, cube, renderTarget))
+			if (generateD3DTexture (tex, true, destFormat, srcFormat, firstMipMap, cube))
 			{
 				if((tex.getSize()>0) || cube)
 				{
@@ -577,18 +580,18 @@ bool CDriverD3D::setupTextureInternal (ITexture& tex, bool bUpload, bool &bAllUp
 					}
 
 					// Must upload the texture ?
-					if (bUpload)
+					if (bUpload && !tex.getRenderTarget())
 					{
 						// Update the pixels
 						uint i;
 						UINT destLevel = 0;
 						uint blockCount = d3dtext->Height>>(d3dtext->SrcCompressed?2:0);
 						uint lineWidth = d3dtext->Width;
-						const uint pixelSize = CBitmap::bitPerPixels[tex.getPixelFormat()];
+						const uint srcPixelSize = getPixelFormatSize (srcFormat);
 						for(i=firstMipMap;i<d3dtext->Levels;i++, destLevel++)
 						{
 							// Size of a line
-							const uint blockSize = ((lineWidth*pixelSize)>>3)<<(d3dtext->SrcCompressed?2:0);
+							const uint blockSize = ((lineWidth*srcPixelSize)>>3)<<(d3dtext->SrcCompressed?2:0);
 
 							// Several faces for cube texture
 							const uint numFaces = d3dtext->IsCube?6:1;
@@ -647,7 +650,7 @@ bool CDriverD3D::setupTextureInternal (ITexture& tex, bool bUpload, bool &bAllUp
 										{
 											if (srcFormat == D3DFMT_A8R8G8B8)
 											{
-												const uint8 *src = &(tex.getPixels(i)[0]);
+												const uint8 *src = &(texture->getPixels(i)[0]);
 
 												// Fill the temp buffer with BGRA info
 												_TempBuffer.resize (blockCount*blockSize);
@@ -678,13 +681,14 @@ bool CDriverD3D::setupTextureInternal (ITexture& tex, bool bUpload, bool &bAllUp
 												D3DXLoadSurfaceFromMemory (pDestSurface, NULL, NULL, &(texture->getPixels(i)[0]), srcFormat,
 													blockSize, NULL, &rect, D3DX_FILTER_NONE, 0);
 											}
+											pDestSurface->Release();
 										}
 									}
 								}
 							}
 
 							// Next level
-							lineWidth = max((UINT)(lineWidth>>1), (UINT)(d3dtext->SrcCompressed?pixelSize>>1:1));
+							lineWidth = max((UINT)(lineWidth>>1), (UINT)(d3dtext->SrcCompressed?srcPixelSize>>1:1));
 							blockCount = max((UINT)(blockCount>>1), 1U);
 						}
 
@@ -708,12 +712,12 @@ bool CDriverD3D::setupTextureInternal (ITexture& tex, bool bUpload, bool &bAllUp
 			D3DFORMAT srcFormat;
 			uint firstMipMap;
 			bool cube;
-			if (CDriverD3D::generateD3DTexture (tex, false, destFormat, srcFormat, firstMipMap, cube, renderTarget))
+			if (CDriverD3D::generateD3DTexture (tex, false, destFormat, srcFormat, firstMipMap, cube))
 			{
 				// No degradation in load part
 				nlassert (firstMipMap == 0);
 
-				if(tex.getSize()>0 && bUpload)
+				if(tex.getSize()>0 && bUpload && !tex.getRenderTarget())
 				{
 					// For all rect, update the texture/mipmap.
 					//===============================================
@@ -804,6 +808,7 @@ bool CDriverD3D::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 	rect.Height = y1 - y0;
 
 	// Texture format
+	nlassert (!tex.isTextureCube());
 	D3DFORMAT srcFormat = RemapTextureFormatTypeNeL2D3D[tex.getPixelFormat()];
 	D3DFORMAT destFormat = getD3DDestTextureFormat (tex);
 
@@ -824,10 +829,30 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 	// The line width of that mipmap level
 	uint lineWidth = max(d3dtext->Width>>srcMipmap, d3dtext->SrcCompressed?pixelSize>>1:1);
 
-	const sint	x0= rect.X;
-	const sint	y0= rect.Y;
-	const sint	x1= rect.X+rect.Width;
-	const sint	y1= rect.Y+rect.Height;
+	sint	x0= rect.X;
+	sint	y0= rect.Y;
+	sint	x1= rect.X+rect.Width;
+	sint	y1= rect.Y+rect.Height;
+
+	if (d3dtext->SrcCompressed)
+	{
+		// Must be aligned on 4x4
+		nlassert ((x0 & 0x3) == 0);
+		nlassert ((y0 & 0x3) == 0);
+		nlassert (((x1 & 0x3) == 0) || (x1<4));
+		nlassert (((y1 & 0x3) == 0) || (y1<4));
+
+		/*
+		 * D3D NOTES :	- DXTC textures can't be created with size < 4 pixels. 
+		 *				- Locks on DXTC textures must not be 4x4 aligned if the mipmap surface width or height are < 4. It can happen only 
+		 * for mipmap levels > 0.
+		 *				- Locks on DXTC textures must be aligned in all other cases.
+		 */
+		if (x1 & 0x3)
+			x1 = std::min ((x1 & ~0x3) + 4, std::max ((sint)1, (sint)(d3dtext->Width>>destMipmap)));
+		if (y1 & 0x3)
+			y1 = std::min ((y1 & ~0x3) + 4, std::max ((sint)1, (sint)(d3dtext->Height>>destMipmap)));
+	}
 
 	// Size of a line
 	const uint lineSize = ((lineWidth*pixelSize)>>3)<<(d3dtext->SrcCompressed?2:0);
@@ -925,6 +950,7 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 					lineSize, NULL, &srcRect, D3DX_FILTER_NONE, 0) != D3D_OK)
 					return false;
 			}
+			pDestSurface->Release();
 		}
 	}
 
@@ -1008,6 +1034,10 @@ uint CDriverD3D::getTextureHandle(const ITexture &tex)
 
 bool CDriverD3D::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace)
 {
+	// Check the texture is a render target
+	if (tex)
+		nlassertex (tex->getRenderTarget(), ("The texture must be a render target. Call ITexture::setRenderTarget(true)."));
+
 	if (tex == NULL)
 	{
 		_InvertCullMode = false;
@@ -1041,7 +1071,7 @@ bool CDriverD3D::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 widt
 
 		// Setup the new texture
 		bool nTmp;
-		if (!setupTextureInternal (*tex, false, nTmp, false, true))
+		if (!setupTextureEx (*tex, false, nTmp, false))
 			return false;
 
 		// Get texture info
@@ -1055,7 +1085,10 @@ bool CDriverD3D::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 widt
 		else
 			surfaceOk = d3dtext->TextureCube->GetCubeMapSurface(RemapCubeFaceTypeNeL2D3D[cubeFace], mipmapLevel, &pDestSurface) == D3D_OK;
 		if (surfaceOk)
+		{
 			setRenderTarget (pDestSurface, tex, (uint8)mipmapLevel, (uint8)cubeFace);
+			pDestSurface->Release();
+		}
 		else
 			return false;
 	}

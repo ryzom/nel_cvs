@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Index buffers.
  *
- * $Id: index_buffer.cpp,v 1.2 2004/03/23 16:32:27 corvazier Exp $
+ * $Id: index_buffer.cpp,v 1.3 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ CIndexBuffer::CIndexBuffer()
 	_PreferredMemory = RAMPreferred;
 	_Location = NotResident;
 	_ResidentSize = 0;
+	_KeepLocalMemory = false;
 }
 
 // ***************************************************************************
@@ -69,6 +70,7 @@ CIndexBuffer::CIndexBuffer(const CIndexBuffer &vb)
 	_PreferredMemory = RAMPreferred;
 	_Location = NotResident;
 	_ResidentSize = 0;
+	_KeepLocalMemory = false;
 	operator=(vb);
 }
 
@@ -95,6 +97,7 @@ CIndexBuffer	&CIndexBuffer::operator=(const CIndexBuffer &vb)
 	_Capacity = vb._Capacity;
 	_NonResidentIndexes = vb._NonResidentIndexes;
 	_PreferredMemory = vb._PreferredMemory;
+	_KeepLocalMemory = vb._KeepLocalMemory;
 
 	// Set touch flags
 	_InternalFlags |= TouchedAll;
@@ -106,11 +109,12 @@ CIndexBuffer	&CIndexBuffer::operator=(const CIndexBuffer &vb)
 
 // ***************************************************************************
 
-void CIndexBuffer::setPreferredMemory (TPreferredMemory preferredMemory)
+void CIndexBuffer::setPreferredMemory (TPreferredMemory preferredMemory, bool keepLocalMemory)
 {
-	if (_PreferredMemory != preferredMemory)
+	if ((_PreferredMemory != preferredMemory) || (_KeepLocalMemory != keepLocalMemory))
 	{
 		_PreferredMemory = preferredMemory;
+		_KeepLocalMemory = keepLocalMemory;
 
 		// Force non resident
 		restaureNonResidentMemory();
@@ -182,25 +186,29 @@ void CIndexBuffer::setLocation (TLocation newLocation)
 		// The driver must have setuped the driver info
 		nlassert (DrvInfos);
 
+		// Current size of the buffer
+		const uint size = ((_PreferredMemory==RAMVolatile)||(_PreferredMemory==AGPVolatile))?_NbIndexes:_Capacity;
+
 		// The buffer must not be resident
 		if (_Location != NotResident)
 			setLocation (NotResident);
 
 		// Copy the buffer containt
-		uint32 *dest = DrvInfos->lock (0, 0, false);
+		uint32 *dest = DrvInfos->lock (0, size, false);
 		nlassert (_NonResidentIndexes.size() == _Capacity);	// Internal buffer must have the good size
 		if (_Capacity != 0)
-			memcpy (dest, &(_NonResidentIndexes[0]), _Capacity*sizeof(uint32));
+			memcpy (dest, &(_NonResidentIndexes[0]), size*sizeof(uint32));
 		DrvInfos->unlock(0, 0);
 
-		// Reset the non resident container
-		contReset(_NonResidentIndexes);
+		// Reset the non resident container if not a static preferred memory and not put in RAM
+		if ((_PreferredMemory != StaticPreferred) && (_Location != RAMResident) && !_KeepLocalMemory)
+			contReset(_NonResidentIndexes);
 
 		// Clear touched flags
 		resetTouchFlags ();
 
 		_Location =	newLocation;
-		_ResidentSize = _Capacity*sizeof(uint32);
+		_ResidentSize = _Capacity;
 	}
 	else
 	{
@@ -208,14 +216,14 @@ void CIndexBuffer::setLocation (TLocation newLocation)
 		_NonResidentIndexes.resize (_Capacity);
 
 		// If resident in RAM, backup the data in non resident memory
-		if (_Location == RAMResident)
+		if ((_Location == RAMResident) && (_PreferredMemory != RAMVolatile) && (_PreferredMemory != AGPVolatile) && !_KeepLocalMemory)
 		{
 			// The driver must have setuped the driver info
 			nlassert (DrvInfos);
 
 			// Copy the old buffer data
-			const uint32 *src = DrvInfos->lock (0, 0, true);
-			uint size = std::min ((uint)(_Capacity*sizeof(uint32)), (uint)_ResidentSize);
+			const uint32 *src = DrvInfos->lock (0, _ResidentSize, true);
+			uint size = std::min ((uint)(_Capacity*sizeof(uint32)), (uint)(_ResidentSize*sizeof(uint32)));
 			if (size)
 				memcpy (&(_NonResidentIndexes[0]), src, size);
 			DrvInfos->unlock(0, 0);
@@ -296,6 +304,20 @@ void CIndexBuffer::serial(NLMISC::IStream &f)
 	{
 		// Force non resident
 		restaureNonResidentMemory();
+	}
+}
+
+// ***************************************************************************
+
+void CIndexBuffer::fillBuffer ()
+{
+	if (DrvInfos && _KeepLocalMemory)
+	{
+		// Copy the local memory in local memory
+		nlassert (_NbIndexes<=_NonResidentIndexes.size());
+		uint32 *dest = DrvInfos->lock (0, _NbIndexes, false);
+		memcpy (dest, &(_NonResidentIndexes[0]), _NbIndexes*sizeof(uint32));
+		DrvInfos->unlock(0, _NbIndexes);
 	}
 }
 

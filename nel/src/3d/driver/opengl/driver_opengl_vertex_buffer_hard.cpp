@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.13 2004/04/05 07:52:58 corvazier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.14 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -111,8 +111,11 @@ bool			CVertexArrayRangeNVidia::allocate(uint32 size, CVertexBuffer::TPreferredM
 	case CVertexBuffer::AGPPreferred: 
 		_VertexArrayPtr= wglAllocateMemoryNV(size, 0, 0, 0.5f);
 		break;
-	case CVertexBuffer::VRAMPreferred:
-		_VertexArrayPtr= wglAllocateMemoryNV(size, 0, 0, 1.0f);
+	case CVertexBuffer::StaticPreferred:
+		if (_Driver->getStaticMemoryToVRAM())
+			_VertexArrayPtr= wglAllocateMemoryNV(size, 0, 0, 1.0f);
+		else
+			_VertexArrayPtr= wglAllocateMemoryNV(size, 0, 0, 0.5f);
 		break;
 	};
 #endif	// NL_OS_WINDOWS
@@ -340,7 +343,7 @@ void		CVertexBufferHardGLNVidia::unlock()
 }
 
 // ***************************************************************************
-void		CVertexBufferHardGLNVidia::unlock(uint startVert, uint endVert)
+void		CVertexBufferHardGLNVidia::unlock(uint start, uint end)
 {
 	// no op.
 	// NB: start-end only usefull for ATI ext.
@@ -457,8 +460,11 @@ bool					CVertexArrayRangeATI::allocate(uint32 size, CVertexBuffer::TPreferredMe
 	case CVertexBuffer::AGPPreferred: 
 		_VertexObjectId= nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
 		break;
-	case CVertexBuffer::VRAMPreferred:
-		_VertexObjectId= nglNewObjectBufferATI(size, NULL, GL_STATIC_ATI);
+	case CVertexBuffer::StaticPreferred:
+		if (_Driver->getStaticMemoryToVRAM())
+			_VertexObjectId= nglNewObjectBufferATI(size, NULL, GL_STATIC_ATI);
+		else
+			_VertexObjectId= nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
 		break;
 	};
 
@@ -652,19 +658,19 @@ void		CVertexBufferHardGLATI::unlock()
 
 
 // ***************************************************************************
-void		CVertexBufferHardGLATI::unlock(uint startVert, uint endVert)
+void		CVertexBufferHardGLATI::unlock(uint start, uint end)
 {
-	// clamp endVert.
-	if(endVert>VB->getNumVertices())
-		endVert=VB->getNumVertices();
+	// clamp end.
+	if(end>VB->getNumVertices())
+		end=VB->getNumVertices()*VB->getVertexSize();
 
 	// verify bound.
-	if(startVert>=endVert)
+	if(start>=end)
 		return;
 
 	// Copy a subset of the mirror into the ATI Vertex Object
-	uint	size= (endVert-startVert)*VB->getVertexSize();
-	uint	srcOffStart= startVert*VB->getVertexSize();
+	uint	size= end-start;
+	uint	srcOffStart= start;
 	uint	dstOffStart= ((uint)_VertexPtr - NL3D_DRV_ATI_FAKE_MEM_START) + srcOffStart;
 	// copy.
 	nglUpdateObjectBufferATI(getATIVertexObjectId(), dstOffStart,
@@ -750,8 +756,11 @@ bool CVertexArrayRangeMapObjectATI::allocate(uint32 size, CVertexBuffer::TPrefer
 		case CVertexBuffer::AGPPreferred: 
 			vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
 			break;
-		case CVertexBuffer::VRAMPreferred:
-			vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_STATIC_ATI);
+		case CVertexBuffer::StaticPreferred:
+			if (_Driver->getStaticMemoryToVRAM())
+				vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_STATIC_ATI);
+			else
+				vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
 			break;
 	}
 	if (vertexObjectId)
@@ -785,8 +794,11 @@ IVertexBufferHardGL *CVertexArrayRangeMapObjectATI::createVBHardGL(uint size, CV
 		case CVertexBuffer::AGPPreferred: 
 			vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
 			break;
-		case CVertexBuffer::VRAMPreferred:
-			vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_STATIC_ATI);
+		case CVertexBuffer::StaticPreferred:
+			if (_Driver->getStaticMemoryToVRAM())
+				vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_STATIC_ATI);
+			else
+				vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
 			break;
 	};
 
@@ -860,7 +872,7 @@ void		*CVertexBufferHardGLMapObjectATI::getPointer()
 }
 
 // ***************************************************************************
-void CVertexBufferHardGLMapObjectATI::unlock(uint startVert,uint endVert)
+void CVertexBufferHardGLMapObjectATI::unlock(uint start,uint endVert)
 {
 	unlock(); // can't do a lock on a range of the vb..
 }
@@ -986,8 +998,11 @@ IVertexBufferHardGL *CVertexArrayRangeARB::createVBHardGL(uint size, CVertexBuff
 		case CVertexBuffer::AGPPreferred: 
 			nglBufferDataARB(GL_ARRAY_BUFFER_ARB, size, NULL, GL_DYNAMIC_DRAW_ARB);
 			break;
-		case CVertexBuffer::VRAMPreferred:
-			nglBufferDataARB(GL_ARRAY_BUFFER_ARB, size, NULL, GL_STATIC_DRAW_ARB);
+		case CVertexBuffer::StaticPreferred:
+			if (_Driver->getStaticMemoryToVRAM())
+				nglBufferDataARB(GL_ARRAY_BUFFER_ARB, size, NULL, GL_STATIC_DRAW_ARB);
+			else
+				nglBufferDataARB(GL_ARRAY_BUFFER_ARB, size, NULL, GL_DYNAMIC_DRAW_ARB);
 			break;
 		default:
 			nlassert(0);

@@ -1,7 +1,7 @@
 /** \file cloud.h
  * Cloud definition to work with the cloudscape
  *
- * $Id: cloud.h,v 1.3 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: cloud.h,v 1.4 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -141,7 +141,6 @@ private:
 	SCloudTextureClamp	*_CloudTexClamp;
 
 	// BillBoard
-/* todo hulud remove */
 public:
 	// The billboard is a texture where the cloud is rendered
 	uint32									_BillSize; // ( The texture is always sqare)

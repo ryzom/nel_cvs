@@ -36,6 +36,7 @@ lightmap1blend          FX      DISCARDABLE     "lightmap1blend.fx"
 lightmap2blend          FX      DISCARDABLE     "lightmap2blend.fx"
 lightmap3blend          FX      DISCARDABLE     "lightmap3blend.fx"
 lightmap4blend          FX      DISCARDABLE     "lightmap4blend.fx"
+cloud                   FX      DISCARDABLE     "cloud.fx"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.8 2004/04/07 14:02:48 berenguier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.9 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -412,9 +412,6 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 		uint blurTarget = 0;
 		for(i=0;i<numBlur;i++)
 		{
-			// copy from FB to BlurTexture
-			/* todo hulud remove
-			copyScreenToBlurTexture(driverForShadowGeneration, numPassSC, numTextW, numTextH, baseTextureSize);*/
 			// Set the blur texture target
 			blurTarget = (i+1)&1;
 			const uint blurSource = i&1;
@@ -446,7 +443,7 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 				{
 					uint	bts= baseTextureSize;
 
-					// Try the temporary buffer trick (openGL)
+					// todo hulud : Try the temporary buffer trick (openGL)
 					//if (!driverForShadowGeneration->copyTargetToTexture (text, 0, 0, textX*bts, textY*bts, bts, bts))
 					{
 						// Copy the texture
@@ -922,6 +919,7 @@ void			CShadowMapManager::updateBlurTexture(uint w, uint h)
 		_BlurTexture[i]->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 		_BlurTexture[i]->generate();
 		_BlurTexture[i]->setReleasable (false);
+		_BlurTexture[i]->setRenderTarget (true);
 	}
 
 	// set to the material
@@ -1152,6 +1150,7 @@ ITexture		*CShadowMapManager::allocateTexture(uint textSize)
 	text->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 	text->generate();
 	text->setReleasable (false);
+	text->setRenderTarget (true);
 
 	// Setup in the map.
 	_ShadowTextureMap[text]= text;

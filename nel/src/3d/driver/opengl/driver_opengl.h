@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.165 2004/04/06 13:42:04 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.166 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -348,7 +348,7 @@ public:
 
 	virtual	uint			getMaxVerticesByVertexBufferHard() const;
 
-	virtual	bool			initVertexArrayRange(uint agpMem, uint vramMem);
+	virtual	bool			initVertexBufferHard(uint agpMem, uint vramMem);
 
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB);
 
@@ -534,6 +534,11 @@ public:
 
 	virtual CVertexBuffer::TVertexColorType getVertexColorFormat() const;
 
+	// Bench
+	virtual void startBench (bool wantStandardDeviation = false, bool quick = false, bool reset = true);
+	virtual void endBench ();
+	virtual void displayBench (class NLMISC::CLog *log);
+
 private:
 	virtual class IVertexBufferHardGL	*createVertexBufferHard(uint size, uint numVertices, CVertexBuffer::TPreferredMemory vbType, CVertexBuffer *vb);
 	friend class					CTextureDrvInfosGL;
@@ -560,6 +565,7 @@ private:
 	DEVMODE						_OldScreenMode;
 	NLMISC::CEventEmitterMulti	_EventEmitter; // this can contains a win emitter and eventually a direct input emitter	
 	bool						_DestroyWindow;
+	uint						_Interval;
 
 	// Off-screen rendering in Dib section
 	HPBUFFERARB					_PBuffer;

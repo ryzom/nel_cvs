@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.45 2004/04/07 09:59:49 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.46 2004/04/08 09:05:45 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -187,6 +187,9 @@ bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 	if (VB.getNumVertices()==0)
 		return true;
+
+	// Fill the buffer if in local memory
+	VB.fillBuffer ();
 
 	// Get VB flags, to setup matrixes and arrays.
 	flags=VB.getVertexFormat();
@@ -683,8 +686,11 @@ IVertexBufferHardGL	*CDriverGL::createVertexBufferHard(uint size, uint numVertic
 	case CVertexBuffer::AGPPreferred: 
 		vertexArrayRange= _AGPVertexArrayRange;
 		break;
-	case CVertexBuffer::VRAMPreferred:
-		vertexArrayRange= _VRAMVertexArrayRange;
+	case CVertexBuffer::StaticPreferred:
+		if (getStaticMemoryToVRAM())
+			vertexArrayRange= _VRAMVertexArrayRange;
+		else
+			vertexArrayRange= _AGPVertexArrayRange;
 		break;
 	};
 
@@ -1499,7 +1505,7 @@ void			CDriverGL::resetVertexArrayRange()
 
 
 // ***************************************************************************
-bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
+bool			CDriverGL::initVertexBufferHard(uint agpMem, uint vramMem)
 {
 	if(!supportVertexBufferHard())
 		return false;
@@ -1548,7 +1554,7 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 		vramMem= max(vramMem, (uint)NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE);
 		while(vramMem>= NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
 		{
-			if(_VRAMVertexArrayRange->allocate(vramMem, CVertexBuffer::VRAMPreferred))
+			if(_VRAMVertexArrayRange->allocate(vramMem, CVertexBuffer::StaticPreferred))
 				break;
 			else
 			{

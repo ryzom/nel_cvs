@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.34 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.35 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -476,7 +476,7 @@ void CMeshMultiLod::renderMeshGeom (uint slot, IDriver *drv, CMeshMultiLodInstan
 				CMeshGeom *meshGeom= safe_cast<CMeshGeom*>(slotRef.MeshGeom);
 
 				// Force corse mesh vertex buffer in system memory
-				const_cast<CVertexBuffer&>(meshGeom->getVertexBuffer ()).setPreferredMemory (CVertexBuffer::RAMPreferred);
+				const_cast<CVertexBuffer&>(meshGeom->getVertexBuffer ()).setPreferredMemory (CVertexBuffer::RAMPreferred, false);
 
 				meshGeom->renderSimpleWithMaterial(drv, trans->getWorldMatrix(), material);
 

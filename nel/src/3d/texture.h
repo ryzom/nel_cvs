@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.17 2004/03/30 14:36:29 berenguier Exp $
+ * $Id: texture.h,v 1.18 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -390,7 +390,16 @@ public:
 
 	// is this texture a bumpmap ?
 	virtual bool isBumpMap() const { return false; }
-		
+
+	/** Render target texture
+	 *  Active / disable render target abilities for this texture.
+	 */
+	void	setRenderTarget (bool enable);
+
+	/** Render target texture
+	 *  Get render target abilities for this texture.
+	 */
+	bool	getRenderTarget () const { return _RenderTarget; }
 
 //****************************
 // Private part.
@@ -415,6 +424,7 @@ protected:
 private:
 	bool			_GoodGenerate;
 	bool			_Releasable;
+	bool			_RenderTarget;
 	TUploadFormat	_UploadFormat;
 	TWrapMode		_WrapS;
 	TWrapMode		_WrapT;

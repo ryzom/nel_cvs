@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.cpp,v 1.83 2004/04/07 17:12:03 berenguier Exp $
+ * $Id: driver.cpp,v 1.84 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,8 @@ const uint32 IDriver::InterfaceVersion = 0x51;
 IDriver::IDriver() : _SyncTexDrvInfos( "IDriver::_SyncTexDrvInfos" )
 {
 	_PolygonMode= Filled;
+	_StaticMemoryToVRAM=false;
+	_ResetCounter=0;
 }
 
 // ***************************************************************************
@@ -320,6 +322,13 @@ void			IDriver::getTextureShareName (const ITexture& tex, string &output)
 }
 
 // ***************************************************************************
+
+void			IDriver::setStaticMemoryToVRAM (bool staticMemoryToVRAM)
+{ 
+	_StaticMemoryToVRAM=staticMemoryToVRAM; 
+}
+
+// ***************************************************************************
 class CTextureDebugInfo 
 {
 public:
@@ -431,6 +440,6 @@ void IDriver::profileTextureUsage(std::vector<std::string> &result)
 	result.push_back(toString("Total: %d Ko", totalSize/1024));
 }
 
+// ***************************************************************************
 
 }
-

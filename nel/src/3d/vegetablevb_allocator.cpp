@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.cpp
  * <File description>
  *
- * $Id: vegetablevb_allocator.cpp,v 1.13 2004/03/31 14:30:06 berenguier Exp $
+ * $Id: vegetablevb_allocator.cpp,v 1.14 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,7 +91,7 @@ void			CVegetableVBAllocator::updateDriver(IDriver *driver)
 	// test change of driver.
 	nlassert(driver && !_VBHard.isLocked());
 	// If change of driver
-	if( _Driver==NULL || driver!=_Driver )
+	if( _Driver==NULL || driver!=_Driver || (!_VBHard.isResident() && (_VBHard.capacity()!=0)))
 	{
 		// delete old VBHard.
 		deleteVertexBufferHard();
@@ -343,7 +343,7 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 			if(numVertices <= _MaxVertexInBufferHard)
 			{
 				_VBHard = _VBSoft;
-				_VBHard.setPreferredMemory(CVertexBuffer::AGPPreferred);
+				_VBHard.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
 				_VBHard.setNumVertices (_MaxVertexInBufferHard);
 
 				// Force this VB to be hard

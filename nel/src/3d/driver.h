@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.69 2004/04/01 09:40:26 berenguier Exp $
+ * $Id: driver.h,v 1.70 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,6 +156,8 @@ protected:
 	TPolygonMode			_PolygonMode;
 	TVtxPrgDrvInfoPtrList	_VtxPrgDrvInfos;
 	TShaderDrvInfoPtrList	_ShaderDrvInfos;
+
+	uint					_ResetCounter;
 
 public:
 							IDriver(void);
@@ -351,6 +353,21 @@ public:
 	virtual	bool			slowUnlockVertexBufferHard() const =0;
 
 
+	/* Returns true if static vertex and index buffers must by allocated in VRAM, false in AGP.
+	 * Default is false. 
+	 */
+	bool					getStaticMemoryToVRAM() const { return _StaticMemoryToVRAM; }
+
+	/* Set to true if static vertex and index buffers must by allocated in VRAM, false in AGP.
+	 * Default is false.
+	 */
+	void					setStaticMemoryToVRAM(bool staticMemoryToVRAM);
+
+	/** Return the driver reset counter.
+	 *  The reset counter is incremented at each driver reset.
+	 */
+	uint					getResetCounter () const { return _ResetCounter; }
+
 	/** return How many vertices VertexBufferHard support
 	 */
 	virtual	uint			getMaxVerticesByVertexBufferHard() const =0;
@@ -358,20 +375,20 @@ public:
 
 	/** Allocate the initial VertexArray Memory. (no-op if !supportVertexBufferHard()).
 	 *	VertexArrayRange is first reseted, so any VBhard created before will be deleted.
-	 *	NB: call it after setDisplay(). But setDisplay() by default call initVertexArrayRange(16Mo, 0);
+	 *	NB: call it after setDisplay(). But setDisplay() by default call initVertexBufferHard(16Mo, 0);
 	 *	so this is not necessary.
 	 *	NB: If allocation fails, mem/=2, and retry, until mem < 500K.
 	 *	\param agpMem ammount of AGP Memory required. if 0, reseted.
 	 *	\param vramMem ammount of VRAM Memory required. if 0, reseted.
 	 *	\return false if one the Buffer has not been allocated (at least at 500K).
 	 */
-	virtual	bool			initVertexArrayRange(uint agpMem, uint vramMem=0) =0;
+	virtual	bool			initVertexBufferHard(uint agpMem, uint vramMem=0) =0;
 
-	/** Return the amount of AGP memory allocated by initVertexArrayRange() to store vertices.
+	/** Return the amount of AGP memory allocated by initVertexBufferHard() to store vertices.
 	*/
 	virtual uint32			getAvailableVertexAGPMemory () =0;
 
-	/** Return the amount of video memory allocated by initVertexArrayRange() to store vertices.
+	/** Return the amount of video memory allocated by initVertexBufferHard() to store vertices.
 	*/
 	virtual uint32			getAvailableVertexVRAMMemory () =0;
 	
@@ -478,7 +495,7 @@ public:
 	virtual bool			swapBuffers(void)=0;
 
 	/** set the number of VBL wait when a swapBuffers() is issued. 0 means no synchronisation to the VBL
-	 *	Default depends of the 3D driver setup. Values >1 may be clamped to 1 by the driver.
+	 *	Default is 1. Values >1 may be clamped to 1 by the driver.
 	 */
 	virtual void			setSwapVBLInterval(uint interval)=0;
 	/// get the number of VBL wait when a swapBuffers() is issued. 0 means no synchronisation to the VBL
@@ -667,7 +684,7 @@ public:
 	/// Get the position of the window always (0,0) in fullscreen
 	virtual void			getWindowPos (uint32 &x, uint32 &y) = 0;
 	
-	/** get the RGBA back buffer
+	/** get the RGBA back buffer. After swapBuffers(), the content of the back buffer is undefined.
 	  *
 	  * \param bitmap the buffer will be written in this bitmap
 	  */
@@ -679,7 +696,7 @@ public:
 	  */
 	virtual void			getZBuffer (std::vector<float>  &zbuffer) = 0;
 
-	/** get a part of the RGBA back buffer
+	/** get a part of the RGBA back buffer. After swapBuffers(), the content of the back buffer is undefined.
 	  * NB: 0,0 is the bottom left corner of the screen.
 	  *
 	  * \param bitmap the buffer will be written in this bitmap
@@ -716,6 +733,8 @@ public:
 	  * and not to the x, y, width and height parameters.
 	  *
 	  * The texture content can be lost after the first setRenderTarget().
+	  *
+	  * The texture must have the render target abilities enabled. (ITexture::setRenderTarget ())
 	  *
 	  * \param tex					the texture to render into.
 	  * \param x					x position within the destination texture of the renderable area.
@@ -1073,6 +1092,20 @@ public:
 	  */
 	virtual CVertexBuffer::TVertexColorType getVertexColorFormat() const =0;
 
+	/// \name Bench
+	// @{
+
+	// Start the bench. See CHTimer::startBench();
+	virtual void startBench (bool wantStandardDeviation = false, bool quick = false, bool reset = true) =0;
+
+	// End the bench. See CHTimer::endBench();
+	virtual void endBench () =0;
+
+	// Display the bench result
+	virtual void displayBench (class NLMISC::CLog *log) =0;
+
+	// @}
+
 protected:
 	friend	class	IVBDrvInfos;
 	friend	class	IIBDrvInfos;
@@ -1090,6 +1123,9 @@ protected:
 	void			removeMatDrvInfoPtr(ItMatDrvInfoPtrList shaderIt);
 	void			removeShaderDrvInfoPtr(ItShaderDrvInfoPtrList shaderIt);
 	void			removeVtxPrgDrvInfoPtr(ItVtxPrgDrvInfoPtrList vtxPrgDrvInfoIt);
+
+private:
+	bool			_StaticMemoryToVRAM;
 };
 
 // --------------------------------------------------

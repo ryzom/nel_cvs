@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.144 2004/04/07 17:03:53 berenguier Exp $
+ * $Id: landscape.cpp,v 1.145 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1032,6 +1032,11 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 
 	H_AFTER( NL3D_Landscape_Render_PreRender );
 	H_BEFORE( NL3D_Landscape_Render_Refill );
+
+	// Check if the vertex buffers must be refilled
+	_Far0VB.checkVertexBuffersResident();
+	_Far1VB.checkVertexBuffersResident();
+	_TileVB.checkVertexBuffersResident();
 
 	// Reallocation Mgt. If any of the VB is reallocated, we must refill it entirely.
 	// NB: all VBs are refilled entirely. It is not optimal (maybe 3* too slow), but reallocation are supposed

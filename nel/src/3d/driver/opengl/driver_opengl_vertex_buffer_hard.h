@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.h
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.h,v 1.7 2004/04/01 19:08:18 vizerie Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.h,v 1.8 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -86,7 +86,7 @@ public:
 	// ATI and NVidia have their own methods.
 	virtual	void		*lock() = 0;
 	virtual	void		unlock() = 0;
-	virtual void		unlock(uint startVert, uint endVert) = 0;
+	virtual void		unlock(uint start, uint end) = 0;
 	virtual void		*getPointer() = 0;
 
 	virtual	void			enable() =0;
@@ -182,7 +182,7 @@ public:
 	// @{
 	virtual	void		*lock();
 	virtual	void		unlock();
-	virtual void		unlock(uint startVert, uint endVert);
+	virtual void		unlock(uint start, uint end);
 	virtual void		*getPointer();
 	virtual	void		enable();
 	virtual	void		disable();
@@ -306,7 +306,7 @@ public:
 	// @{
 	virtual	void		*lock();
 	virtual	void		unlock();
-	virtual void		unlock(uint startVert, uint endVert);
+	virtual void		unlock(uint start, uint end);
 	virtual void		*getPointer();
 	virtual	void		enable();
 	virtual	void		disable();
@@ -398,7 +398,7 @@ public:
 	// @{
 	virtual	void		*lock();
 	virtual	void		unlock();
-	virtual void		unlock(uint startVert, uint endVert);
+	virtual void		unlock(uint start, uint end);
 	virtual void		*getPointer();
 	virtual	void		enable();
 	virtual	void		disable();

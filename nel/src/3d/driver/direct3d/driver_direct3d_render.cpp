@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_render.cpp,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_direct3d_render.cpp,v 1.2 2004/04/08 09:05:45 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -45,19 +45,10 @@ using namespace NLMISC;
 namespace NL3D 
 {
 
-// todo hulud beginscene
-extern bool begun;
-
 // ***************************************************************************
 
 bool CDriverD3D::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 {
-	if (!begun)
-	{
-		_DeviceInterface->BeginScene();
-		begun = true;
-	}
-
 	// Setup material
 	if ( !setupMaterial(mat) )
 		return false;
@@ -65,7 +56,7 @@ bool CDriverD3D::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 	if (nlines == 0)
 		return false;
 
-	if (_VertexBuffer.VertexBuffer && _IndexBuffer.IndexBuffer)
+	if (_VertexBufferCache.VertexBuffer && _IndexBufferCache.IndexBuffer)
 	{
 		uint pass;
 		beginMultiPass ();
@@ -74,11 +65,16 @@ bool CDriverD3D::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 			// Active the pass
 			activePass (pass);
 
-			_DeviceInterface->DrawIndexedPrimitive (D3DPT_LINELIST, 0, 0, _VertexBuffer.VertexBuffer->getNumVertices(), 
-				firstIndex, nlines);
+			_DeviceInterface->DrawIndexedPrimitive (D3DPT_LINELIST, _VertexBufferOffset, 0, _VertexBufferSize, 
+				firstIndex+_IndexBufferOffset, nlines);
 		}
 		endMultiPass ();
 	}
+
+	// Stats
+	_PrimitiveProfileIn.NLines += nlines;
+	_PrimitiveProfileOut.NLines += nlines*_CurrentShaderPassCount;
+
 	return true;
 }
 
@@ -86,12 +82,6 @@ bool CDriverD3D::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 
 bool CDriverD3D::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris)
 {
-	if (!begun)
-	{
-		_DeviceInterface->BeginScene();
-		begun = true;
-	}
-
 	// Setup material
 	if ( !setupMaterial(mat) )
 		return false;
@@ -99,7 +89,7 @@ bool CDriverD3D::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris
 	if (ntris == 0)
 		return false;
 
-	if (_VertexBuffer.VertexBuffer && _IndexBuffer.IndexBuffer)
+	if (_VertexBufferCache.VertexBuffer && _IndexBufferCache.IndexBuffer)
 	{
 		uint pass;
 		beginMultiPass ();
@@ -108,11 +98,16 @@ bool CDriverD3D::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris
 			// Active the pass
 			activePass (pass);
 
-			_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, 0, 0, _VertexBuffer.VertexBuffer->getNumVertices(), 
-				firstIndex, ntris);
+			_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset, 0, _VertexBufferSize, 
+				firstIndex+_IndexBufferOffset, ntris);
 		}
 		endMultiPass ();
 	}
+
+	// Stats
+	_PrimitiveProfileIn.NTriangles += ntris;
+	_PrimitiveProfileOut.NTriangles += ntris*_CurrentShaderPassCount;
+
 	return true;
 }
 
@@ -120,21 +115,20 @@ bool CDriverD3D::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris
 
 bool CDriverD3D::renderSimpleTriangles(uint32 firstIndex, uint32 ntris)
 {
-	if (!begun)
-	{
-		_DeviceInterface->BeginScene();
-		begun = true;
-	}
-
 	nlassert (ntris != 0);
-	nlassert (_VertexBuffer.VertexBuffer);
-	nlassert (_IndexBuffer.IndexBuffer);
+	nlassert (_VertexBufferCache.VertexBuffer);
+	nlassert (_IndexBufferCache.IndexBuffer);
 
 	// Update matrix and Light if needed
 	updateRenderVariables();
 
-	_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, 0, 0, _VertexBuffer.VertexBuffer->getNumVertices(), 
-		firstIndex, ntris);
+	_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset, 0, _VertexBufferSize, 
+		firstIndex+_IndexBufferOffset, ntris);
+
+	// Stats
+	_PrimitiveProfileIn.NTriangles += ntris;
+	_PrimitiveProfileOut.NTriangles += ntris;
+
 	return true;
 }
 
@@ -142,18 +136,11 @@ bool CDriverD3D::renderSimpleTriangles(uint32 firstIndex, uint32 ntris)
 
 bool CDriverD3D::renderRawPoints(CMaterial& mat, uint32 firstIndex, uint32 numPoints)
 {
-	// todo hulud beginscene
-	if (!begun)
-	{
-		_DeviceInterface->BeginScene();
-		begun = true;
-	}
-
 	// Setup material
 	if ( !setupMaterial(mat) )
 		return false;
 
-	if (_VertexBuffer.VertexBuffer)
+	if (_VertexBufferCache.VertexBuffer)
 	{
 		uint pass;
 		beginMultiPass ();
@@ -162,29 +149,27 @@ bool CDriverD3D::renderRawPoints(CMaterial& mat, uint32 firstIndex, uint32 numPo
 			// Active the pass
 			activePass (pass);
 
-			_DeviceInterface->DrawPrimitive (D3DPT_POINTLIST, firstIndex, numPoints);
+			_DeviceInterface->DrawPrimitive (D3DPT_POINTLIST, _VertexBufferOffset+firstIndex, numPoints);
 		}
 		endMultiPass ();
 	}
+
+	// Stats
+	_PrimitiveProfileIn.NPoints += numPoints;
+	_PrimitiveProfileOut.NPoints += numPoints*_CurrentShaderPassCount;
+
 	return true;
 }
 
 // ***************************************************************************
 
-bool CDriverD3D::renderRawLines(CMaterial& mat, uint32 firstIndex, uint32 numPoints)
+bool CDriverD3D::renderRawLines(CMaterial& mat, uint32 firstIndex, uint32 numLines)
 {
-	// todo hulud beginscene
-	if (!begun)
-	{
-		_DeviceInterface->BeginScene();
-		begun = true;
-	}
-
 	// Setup material
 	if ( !setupMaterial(mat) )
 		return false;
 
-	if (_VertexBuffer.VertexBuffer)
+	if (_VertexBufferCache.VertexBuffer)
 	{
 		uint pass;
 		beginMultiPass ();
@@ -193,29 +178,27 @@ bool CDriverD3D::renderRawLines(CMaterial& mat, uint32 firstIndex, uint32 numPoi
 			// Active the pass
 			activePass (pass);
 
-			_DeviceInterface->DrawPrimitive (D3DPT_LINELIST, firstIndex, numPoints);
+			_DeviceInterface->DrawPrimitive (D3DPT_LINELIST, _VertexBufferOffset+firstIndex, numLines);
 		}
 		endMultiPass ();
 	}
+
+	// Stats
+	_PrimitiveProfileIn.NLines += numLines;
+	_PrimitiveProfileOut.NLines += numLines*_CurrentShaderPassCount;
+
 	return true;
 }
 
 // ***************************************************************************
 
-bool CDriverD3D::renderRawTriangles(CMaterial& mat, uint32 firstIndex, uint32 numPoints)
+bool CDriverD3D::renderRawTriangles(CMaterial& mat, uint32 firstIndex, uint32 numTris)
 {
-	// todo hulud beginscene
-	if (!begun)
-	{
-		_DeviceInterface->BeginScene();
-		begun = true;
-	}
-
 	// Setup material
 	if ( !setupMaterial(mat) )
 		return false;
 
-	if (_VertexBuffer.VertexBuffer)
+	if (_VertexBufferCache.VertexBuffer)
 	{
 		uint pass;
 		beginMultiPass ();
@@ -224,10 +207,15 @@ bool CDriverD3D::renderRawTriangles(CMaterial& mat, uint32 firstIndex, uint32 nu
 			// Active the pass
 			activePass (pass);
 
-			_DeviceInterface->DrawPrimitive (D3DPT_TRIANGLELIST, firstIndex, numPoints);
+			_DeviceInterface->DrawPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset+firstIndex, numTris);
 		}
 		endMultiPass ();
 	}
+
+	// Stats
+	_PrimitiveProfileIn.NTriangles += numTris;
+	_PrimitiveProfileOut.NTriangles += numTris*_CurrentShaderPassCount;
+
 	return true;
 }
 
@@ -303,13 +291,6 @@ void CDriverD3D::setDebugMaterial()
 
 bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuads)
 {
-	// todo hulud beginscene
-	if (!begun)
-	{
-		_DeviceInterface->BeginScene();
-		begun = true;
-	}
-
 	if (numQuads == 0)
 		return false;
 
@@ -321,7 +302,7 @@ bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQua
 	{
 		// Resize it
 		_QuadIndexes.setNumIndexes(numQuadsNeeded);
-		_QuadIndexes.setPreferredMemory (CIndexBuffer::VRAMPreferred);
+		_QuadIndexes.setPreferredMemory (CIndexBuffer::RAMPreferred, false);
 
 		// Fill the index buffer in VRAM
 		CIndexBufferReadWrite iba;
@@ -335,7 +316,7 @@ bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQua
 	if ( !setupMaterial(mat) )
 		return false;
 
-	if (_VertexBuffer.VertexBuffer)
+	if (_VertexBufferCache.VertexBuffer)
 	{
 		uint pass;
 		beginMultiPass ();
@@ -344,11 +325,16 @@ bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQua
 			// Active the pass
 			activePass (pass);
 
-			_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, startIndex, 0, _VertexBuffer.VertexBuffer->getNumVertices()-startIndex,
-				0, numQuads*2);
+			_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset, 0, _VertexBufferSize-startIndex,
+				startIndex, numQuads*2);
 		}
 		endMultiPass ();
 	}
+
+	// Stats
+	_PrimitiveProfileIn.NTriangles += numQuads*2;
+	_PrimitiveProfileOut.NTriangles += numQuads*2*_CurrentShaderPassCount;
+
 	return true;
 }
 

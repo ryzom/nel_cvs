@@ -1,7 +1,7 @@
 /** \file driver_direct3d_light.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_light.cpp,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_direct3d_light.cpp,v 1.2 2004/04/08 09:05:45 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -109,6 +109,20 @@ void CDriverD3D::enableLight (uint8 index, bool enable)
 			touchRenderVariable (&_LightCache[index]);
 		}
 	}
+}
+
+// ***************************************************************************
+
+uint CDriverD3D::getMaxLight () const 
+{
+	return _MaxLight;
+}
+
+// ***************************************************************************
+
+void CDriverD3D::setAmbientColor (CRGBA color)
+{
+	setRenderState(D3DRS_AMBIENT, NL_D3DCOLOR_RGBA(color));
 }
 
 // ***************************************************************************

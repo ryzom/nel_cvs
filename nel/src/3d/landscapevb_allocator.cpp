@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.14 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.15 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -284,7 +284,7 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 	unlockBuffer();
 
 	// This always works.
-	_VB.setPreferredMemory(CVertexBuffer::AGPPreferred);
+	_VB.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
 	_VB.setNumVertices(numVertices);
 	_VB.setName (_VBName);
 }

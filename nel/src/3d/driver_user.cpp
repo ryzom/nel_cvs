@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.43 2004/03/23 10:23:47 vizerie Exp $
+ * $Id: driver_user.cpp,v 1.44 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,6 +167,7 @@ CDriverUser::CDriverUser (uint windowIcon, bool direct3d)
 	_VBUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	_VBColorUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
 	_VBQuadsColUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
+	_VBQuadsColUv.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
 	_VBQuadsColUv2.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag);
 	// max is quad.
 	_VBFlat.setNumVertices(4);
@@ -1564,5 +1565,27 @@ bool CDriverUser::supportMADOperator() const
 	return _Driver->supportMADOperator();
 }
 
+// ***************************************************************************
+
+void CDriverUser::startBench (bool wantStandardDeviation, bool quick, bool reset)
+{
+	_Driver->startBench (wantStandardDeviation, quick, reset);
+}
+
+// ***************************************************************************
+
+void CDriverUser::endBench ()
+{
+	_Driver->endBench ();
+}
+
+// ***************************************************************************
+
+void CDriverUser::displayBench (class NLMISC::CLog *log)
+{
+	_Driver->displayBench (log);
+}
+
+// ***************************************************************************
 
 } // NL3D

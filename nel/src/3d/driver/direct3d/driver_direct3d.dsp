@@ -120,6 +120,10 @@ LINK32=link.exe
 # PROP Default_Filter "*.fx"
 # Begin Source File
 
+SOURCE=.\cloud.fx
+# End Source File
+# Begin Source File
+
 SOURCE=.\lightmap0.fx
 # End Source File
 # Begin Source File
@@ -195,6 +199,10 @@ SOURCE=.\driver_direct3d_material.cpp
 # Begin Source File
 
 SOURCE=.\driver_direct3d_matrix.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\driver_direct3d_profile.cpp
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file vertex_stream_manager.cpp
  * <File description>
  *
- * $Id: vertex_stream_manager.cpp,v 1.2 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vertex_stream_manager.cpp,v 1.3 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -80,7 +80,7 @@ void			CVertexStreamManager::init(IDriver *driver, uint vertexFormat, uint maxVe
 			_VB[i].setUVRouting (j, 0);
 
 		_VB[i].setNumVertices (maxVertices);
-		_VB[i].setPreferredMemory (CVertexBuffer::AGPPreferred);
+		_VB[i].setPreferredMemory (CVertexBuffer::AGPPreferred, false);
 		_VB[i].setName(vbName + NLMISC::toString(i));
 	}
 

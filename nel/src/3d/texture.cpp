@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.22 2004/01/30 13:48:22 besson Exp $
+ * $Id: texture.cpp,v 1.23 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@ ITexture::ITexture()
 	_Touched= false;
 	_GoodGenerate= false;
 	_Releasable= true;
+	_RenderTarget= false;
 	_WrapS= _WrapT= Repeat;
 	_UploadFormat= Auto;
 	_MagFilter= Linear;
@@ -79,6 +80,7 @@ ITexture &ITexture::operator=(const ITexture &tex)
 	_WrapT= tex._WrapT;
 	_MagFilter= tex._MagFilter;
 	_MinFilter= tex._MinFilter; 
+	_RenderTarget= tex._RenderTarget;
 	touch();
 	return *this;
 }
@@ -150,6 +152,14 @@ void	ITexture::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_LoadGrayscaleAsAlpha);
 }
 
+// ***************************************************************************
 
+void ITexture::setRenderTarget (bool enable)
+{
+	_RenderTarget = enable;
+	touch ();
+}
+
+// ***************************************************************************
 
 } // NL3D

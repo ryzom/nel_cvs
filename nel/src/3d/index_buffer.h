@@ -1,7 +1,7 @@
 /** \file index_buffer.h
  * Index buffers.
  *
- * $Id: index_buffer.h,v 1.2 2004/03/23 16:32:27 corvazier Exp $
+ * $Id: index_buffer.h,v 1.3 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,8 +55,9 @@ typedef	TIBDrvInfoPtrList::iterator		ItIBDrvInfoPtrList;
 // **********************************
 class IIBDrvInfos : public CRefCount
 {
-private:
+protected:
 	IDriver				*_Driver;
+private:
 	ItIBDrvInfoPtrList	_DriverIterator;
 
 public:
@@ -65,9 +66,9 @@ public:
 	IIBDrvInfos(IDriver	*drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib) {_Driver= drv; _DriverIterator= it; IndexBufferPtr = ib;}
 
 	/** Lock method.
-	  * \param first is the first index to be accessed. Put 0 to select all the indexes. What ever is this index, 
-	  * the indexices in the index buffer remain the same.
-	  * \param last is the last index to be accessed + 1. Put 0 to select all the indexes.
+	  * \param first is the first index to be accessed. What ever is this index, 
+	  * the returned pointer always points on the vertex 0.
+	  * \param last is the last index to be accessed + 1. Must not be 0.
 	  */
 	virtual uint32	*lock (uint first, uint last, bool readOnly) =0;
 
@@ -92,6 +93,9 @@ public:
  * The index buffers resident in AGP and VRAM are writeonly, i-e, you can't read them after a lock(). If you change the capacity 
  * of the format of a writeonly buffer, the content is lost.
  *
+ * Volatile buffers must be completely filled at each pass. They are lost after each swapBuffers(). They are writeonly.
+ * Volatile buffers must be resized before the lock call. Only one lock per render must be done with volatile buffers.
+ *
  */
 /* *** IMPORTANT ********************
  * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
@@ -110,9 +114,11 @@ public:
 	  */
 	enum TPreferredMemory
 	{
-		RAMPreferred = 0,
-		AGPPreferred,
-		VRAMPreferred,
+		RAMPreferred = 0,	// A block of driver RAM memory is allocated for this buffer. The buffer is read/write.
+		AGPPreferred,		// A block of driver AGP memory is allocated for this buffer. The buffer is writeonly.
+		StaticPreferred,	// The buffer will not be modified. A block of driver AGP or VRAM memory is allocated for this buffer. The buffer is writeonly.
+		RAMVolatile,		// A block of temporary driver RAM memory will be returned by lock(). The buffer must be entirely filled after each swapBuffers(). The buffer is writeonly.
+		AGPVolatile,		// A block of temporary driver AGP memory will be returned by lock(). The buffer must be entirely filled after each swapBuffers(). The buffer is writeonly.
 		PreferredCount,
 	};
 
@@ -155,12 +161,15 @@ public:
 
 	/** Used by the driver implementation. The driver must first allocate its internal buffer and fill DrvInfos. Then it has to call setLocation(true).
 	  *
-	  * If newLocation!=NotResident, setLocation() will copy the non resident buffer in the choosed resident memory, release the non resident memory and 
-	  * untouch the buffer.
+	  * If newLocation!=NotResident, setLocation() will copy the non resident buffer in the choosed resident memory and 
+	  * untouch the buffer. If the buffer preferres RAM or AGP memory, it will release the non resident memory.
 	  *
-	  * If newLocation==NotResident, setLocation() will realloc the non resident buffer, copy the index data if the buffer was resident in RAM. Then
+	  * If newLocation==NotResident, setLocation() will realloc the non resident buffer, copy the vertex data if the buffer was resident in RAM. Then
 	  * it will touch the buffer.*/
 	void					setLocation (TLocation newLocation);	// The driver implementation must set the location after activeIndexBuffer.
+
+	/** Called by the driver implementation during the buffer activation */
+	void					fillBuffer ();
 	// @}
 
 public:
@@ -190,28 +199,52 @@ public:
 	CIndexBuffer			&operator=(const CIndexBuffer &vb);
 
 	/**
-	  * Set the index buffer preferred memory. Default preferred memory is RAM.
+	  * Set the buffer preferred memory. Default preferred memory is RAM.
+	  *
+	  * Preferre RAM if the buffer is changed several times in the same render pass.
+	  * Preferre AGP if the buffer is changed only one time in the same render pass.
+	  * Preferre Static if the buffer is changed only one time for initialisation.
+	  *
+	  * If static memory is chosen, the driver will choose VRAM or AGP depending of the user configuration.
+	  *
+	  * If static or RAM memory is preferred, the buffer won't be lost after a driver reset.
+	  *
+	  * If the buffer preferres AGP memory, the buffer is lost after a driver reset. When the buffer is lost, it returns
+	  * in a non resident state. The state must be tested at each pass with isResident(). If the buffer is in a
+	  * non resident state, the user must refill it.
 	  *
 	  * If VRAM memory allocation failed, the driver will try with AGP and then with RAM.
 	  * If AGP memory allocation failed, the driver will try with RAM.
-	  * RAM allocation should never failed
+	  * RAM allocation should never failed.
 	  *
  	  *	Performance note:
-	  *	 - for RAM CIndexBuffer, you can read / write as you like.
-	  *	 - for AGP CIndexBuffer, you should write sequentially to take full advantage of the write combiners.
-	  *	 - for VRAM CIndexBuffer, you should write only one time, to init.
+	  *	 - for RAM CVertexBuffer, you can read / write as you like.
+	  *	 - for AGP CVertexBuffer, you should write sequentially to take full advantage of the write combiners. You can't read.
+	  *	 - for VRAM CVertexBuffer, you should write only one time, to init. You can't read.
 	  *
-	  * If the index buffer is resident in AGP or VRAM, the data are lost.
-	  * The index buffer is no more resident.
-	  * The index buffer is invalidated.
-	  * The index buffer must be unlocked before the call.
+ 	  * Volatile buffers must be completely filled at each pass. They are lost after each swapBuffers(). They are writeonly.
+	  * Volatile buffers must be resized before the lock call. Only one lock per render must be done with volatile buffers if
+	  * keepLocalMemory is false.
+	  *
+	  * If keepLocalMemory is true, lock() will return a local memory pointer. The local memory will copied in resident memory
+	  * during the activation of the buffer. The not all the buffer capacity is copied but only the used size.
+	  *
+	  * If the buffer preferres AGP memory, the data are lost.
+	  * The buffer is no more resident.
+	  * The buffer is invalidated.
+	  * The buffer must be unlocked before the call.
 	  */
-	void setPreferredMemory (TPreferredMemory preferredMemory);
+	void setPreferredMemory (TPreferredMemory preferredMemory, bool keepLocalMemory);
 
 	/**
 	  * Get the index buffer preferred memory.
 	  */
 	TPreferredMemory getPreferredMemory () const { return _PreferredMemory; }
+
+	/**
+	  * Get the keep local memory flag.
+	  */
+	bool getKeepLocalMemory () const { return _KeepLocalMemory; }
 
 	/**
 	  * Get the index buffer current location.
@@ -351,6 +384,9 @@ private:
 
 	// Resident buffer size
 	uint32					_ResidentSize;
+
+	// Keep in local memory
+	bool					_KeepLocalMemory;
 };
 
 /**
@@ -485,7 +521,11 @@ inline void CIndexBuffer::lock (CIndexBufferReadWrite &accessor, uint first, uin
 
 		// No
 		if (isResident())
+		{
+			if (last == 0)
+				last = _NbIndexes;
 			_LockedBuffer = DrvInfos->lock (first, last, false);
+		}
 		else
 		{
 			if (_NonResidentIndexes.empty())
@@ -515,6 +555,8 @@ inline void CIndexBuffer::lock (CIndexBufferRead &accessor, uint first, uint las
 		// No
 		if (isResident())
 		{
+			if (last == 0)
+				last = _NbIndexes;
 			// Can read it ?
 			nlassertex (_Location==RAMResident, ("Try to read a write only index buffer"));
 			_LockedBuffer = DrvInfos->lock (first, last, true);

@@ -1,7 +1,7 @@
 /** \file cloud.cpp
  * cloud implementation
  *
- * $Id: cloud.cpp,v 1.6 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: cloud.cpp,v 1.7 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -323,6 +323,7 @@ void CCloud::reset (NL3D::CCamera *pViewer)
 		_TexBill->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 		_TexBill->generate();
 		_TexBill->setReleasable (false);
+		_TexBill->setRenderTarget (true);
 	}
 	if (_OldBillSize != 4)
 	{
@@ -334,6 +335,7 @@ void CCloud::reset (NL3D::CCamera *pViewer)
 		_TexOldBill->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 		_TexOldBill->generate();
 		_TexOldBill->setReleasable (false);
+		_TexOldBill->setRenderTarget (true);
 	}
 	setMode2D ();
 
@@ -623,6 +625,7 @@ void CCloud::genBill (CCamera *pCam, uint32 nBillSize)
 		_TexBill->setWrapT (ITexture::Clamp);
 		_TexBill->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 		_TexBill->setReleasable (false);
+		_TexBill->setRenderTarget (true);
 		_TexBill->generate();
 	}
 

@@ -10,6 +10,7 @@ Requirements
       - OpenAL         <URL:http://www.openal.org/>             (NeL Sound)
       - Python 1.5     <URL:http://www.python.org/>             (NeL AI)
       - Direct Input 8 <URL:http://www.microsoft.com/directx>   (NeL MISC, Windows version)
+      - DirectX 9.0b   <URL:http://www.microsoft.com/directx>   (NeL 3D, Windows direct3d version)
       - EAX 2          <URL:http://eax.creative.com/>           (NeL Sound, Windows version)
 
    (Greater version of these libraries should also be ok, if not, contact us)

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.42 2004/03/30 14:35:30 berenguier Exp $
+ * $Id: u_driver.h,v 1.43 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,7 +199,7 @@ public:
 	virtual	void			swapBuffers() =0;
 
 	/** set the number of VBL wait when a swapBuffers() is issued. 0 means no synchronisation to the VBL
-	 *	Default depends of the 3D driver setup. Values >1 may be clamped to 1 by the driver.
+	 *	Default is 1. Values >1 may be clamped to 1 by the driver.
 	 */
 	virtual void			setSwapVBLInterval(uint interval) =0;
 	/// get the number of VBL wait when a swapBuffers() is issued. 0 means no synchronisation to the VBL
@@ -435,7 +435,7 @@ public:
 	*/
 	virtual uint32			getAvailableVertexVRAMMemory () =0;
 
-	/** get the RGBA back buffer
+	/** get the RGBA back buffer. After swapBuffers(), the content of the back buffer is undefined.
 	  *
 	  * \param bitmap the buffer will be written in this bitmap
 	  */
@@ -447,7 +447,7 @@ public:
 	  */
 	virtual void			getZBuffer (std::vector<float>  &zbuffer) = 0;
 
-	/** get a part of the RGBA back buffer
+	/** get a part of the RGBA back buffer. After swapBuffers(), the content of the back buffer is undefined.
 	  * NB: 0,0 is the bottom left corner of the screen.
 	  *
 	  * \param bitmap the buffer will be written in this bitmap
@@ -680,6 +680,20 @@ public:
 
 	// see if the tex env operator CMaterial::Mad is supported
 	virtual	bool				supportMADOperator() const = 0;
+
+	/// \name Bench
+	// @{
+
+	// Start the bench. See CHTimer::startBench();
+	virtual void startBench (bool wantStandardDeviation = false, bool quick = false, bool reset = true) =0;
+
+	// End the bench. See CHTimer::endBench();
+	virtual void endBench () =0;
+
+	// Display the bench result
+	virtual void displayBench (class NLMISC::CLog *log) =0;
+
+	// @}
 
 public:
 

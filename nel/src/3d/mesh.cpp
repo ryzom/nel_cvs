@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.81 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: mesh.cpp,v 1.82 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -436,7 +436,7 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 
 	// Set the vertex buffer preferred memory
 	bool avoidVBHard= _Skinned || ( _MeshMorpher && _MeshMorpher->BlendShapes.size()>0 );
-	_VBuffer.setPreferredMemory (avoidVBHard?CVertexBuffer::RAMPreferred:CVertexBuffer::AGPPreferred);
+	_VBuffer.setPreferredMemory (avoidVBHard?CVertexBuffer::RAMPreferred:CVertexBuffer::StaticPreferred, false);
 
 	// End!!
 	// Some runtime not serialized compilation
@@ -530,7 +530,7 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 
 	// Soft vb if not supported by the driver
 	if (drv->slowUnlockVertexBufferHard())
-		_VBuffer.setPreferredMemory (CVertexBuffer::RAMPreferred);
+		_VBuffer.setPreferredMemory (CVertexBuffer::RAMPreferred, false);
 
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel		*skeleton;
@@ -950,13 +950,6 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// Some runtime not serialized compilation
 	if(f.isReading())
 		compileRunTime();
-
-	// Set the preferred memory
-	if (ver < 5)
-	{
-		bool avoidVBHard= _Skinned || ( _MeshMorpher && _MeshMorpher->BlendShapes.size()>0 );
-		_VBuffer.setPreferredMemory (avoidVBHard?CVertexBuffer::RAMPreferred:CVertexBuffer::AGPPreferred);
-	}
 }
 
 
@@ -993,6 +986,9 @@ void	CMeshGeom::compileRunTime()
 		_SupportMBRFlags|= MBROk;
 	if(supportMBRPerMaterial)
 		_SupportMBRFlags|= MBRSortPerMaterial;
+
+	bool avoidVBHard= _Skinned || ( _MeshMorpher && _MeshMorpher->BlendShapes.size()>0 );
+	_VBuffer.setPreferredMemory (avoidVBHard?CVertexBuffer::RAMPreferred:CVertexBuffer::StaticPreferred, false);
 }
 
 // ***************************************************************************

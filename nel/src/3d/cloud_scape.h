@@ -1,7 +1,7 @@
 /** \file cloud.h
  * Cloud definition to work with the cloudscape
  *
- * $Id: cloud_scape.h,v 1.4 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: cloud_scape.h,v 1.5 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -188,6 +188,9 @@ private:
 
 	SCloudTexture3D			Tex3DTemp;
 	SCloudTextureClamp		TexClamp;
+
+	// Driver reset counter initial value
+	uint					_ResetCounter;
 
 	friend class CCloud;
 };

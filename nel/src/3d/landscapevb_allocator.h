@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.h
  * <File description>
  *
- * $Id: landscapevb_allocator.h,v 1.7 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: landscapevb_allocator.h,v 1.8 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,7 @@ public:
 	// a buildVBInfo() should be done and ALL data are lost, so all VB must be rewrited.
 	bool			reallocationOccurs() const {return _ReallocationOccur;}
 	void			resetReallocation();
+	void			checkVertexBuffersResident() {_ReallocationOccur|=!_VB.isResident();}
 
 	// Allocate free vertices in VB. (AGP or RAM). work with locked or unlocked buffer.
 	// NB: if reallocationOccurs(), then ALL data are lost.

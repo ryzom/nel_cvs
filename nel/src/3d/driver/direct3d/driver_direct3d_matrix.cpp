@@ -1,7 +1,7 @@
 /** \file driver_direct3d_matrix.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_matrix.cpp,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_direct3d_matrix.cpp,v 1.2 2004/04/08 09:05:45 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -200,6 +200,9 @@ void CDriverD3D::setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)
 
 void CDriverD3D::setupModelMatrix(const CMatrix& mtx)
 {
+	// Stats
+	_NbSetupModelMatrixCall++;
+
 	// Remeber the model matrix
 	_UserModelMtx= mtx;
 

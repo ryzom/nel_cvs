@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.2 2004/03/23 10:26:09 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.3 2004/04/08 09:05:45 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -226,6 +226,9 @@ void CMaterialDrvInfosD3D::buildTexEnv (uint stage, const CMaterial::CTexEnv &en
 bool CDriverD3D::setupMaterial (CMaterial& mat)
 {
 	CMaterialDrvInfosD3D*	pShader;
+
+	// Stats
+	_NbSetupMaterialCall++;
 
 	// Max texture
 	const uint maxTexture = inlGetNumTextStages();
@@ -582,7 +585,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 		// Handle backside
 		setRenderState (D3DRS_CULLMODE, _DoubleSided?D3DCULL_NONE:_InvertCullMode?D3DCULL_CCW:D3DCULL_CW);
 
-		if (matShader == CMaterial::Normal || matShader == CMaterial::Specular)
+		if (matShader == CMaterial::Normal || matShader == CMaterial::Specular || matShader == CMaterial::Cloud)
 		{
 			// Active states
 			bool blend = (flags&IDRV_MAT_BLEND) != 0;
@@ -804,6 +807,29 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 				setTextureState (1, D3DTSS_COLORARG0, D3DTA_CURRENT);
 				setTextureState (1, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 				setTextureState (1, D3DTSS_COLORARG2, D3DTA_CURRENT|D3DTA_ALPHAREPLICATE);
+			}
+			break;
+		case CMaterial::Cloud:
+			{
+				activeShader (&_ShaderCloud);
+
+				// Get the shader
+				nlassert (_CurrentShader);
+				CShaderDrvInfosD3D *shaderInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);
+
+				// Set the constant
+				ID3DXEffect			*effect = shaderInfo->Effect;
+				float colors[4];
+				CRGBA color = mat.getColor();
+				color.R = 255;
+				color.G = 255;
+				color.B = 255;
+				NL_FLOATS(colors,color);
+				effect->SetFloatArray (shaderInfo->FactorHandle[0], colors, 4);
+
+				// Set the texture
+				if (!setShaderTexture (0, mat.getTexture(0)) || !setShaderTexture (1, mat.getTexture(1)))
+					return false;
 			}
 			break;
 		}
@@ -1195,6 +1221,87 @@ IDirect3DPixelShader9	*CDriverD3D::buildPixelShader (const CNormalShaderDesc &no
 	}
 
 	return normalPixelShaders.back().PixelShader;
+}
+
+// ***************************************************************************
+
+void CDriverD3D::startSpecularBatch()
+{
+	/* Not used in direct3d, use normal caching */
+}
+
+// ***************************************************************************
+
+void CDriverD3D::endSpecularBatch()
+{
+	/* Not used in direct3d, use normal caching */
+}
+
+// ***************************************************************************
+
+bool CDriverD3D::supportBlendConstantColor() const
+{
+	/* Not supported in D3D */
+	return false;
+};
+
+// ***************************************************************************
+
+void CDriverD3D::setBlendConstantColor(NLMISC::CRGBA col)
+{
+	/* Not supported in D3D */
+};
+
+// ***************************************************************************
+
+NLMISC::CRGBA CDriverD3D::getBlendConstantColor() const
+{
+	/* Not supported in D3D */
+	return CRGBA::White;
+};
+
+// ***************************************************************************
+
+void CDriverD3D::enablePolygonSmoothing(bool smooth)
+{
+	/* Not supported in D3D */
+}
+
+// ***************************************************************************
+
+bool CDriverD3D::isPolygonSmoothingEnabled() const
+{
+	/* Not supported in D3D */
+	return false;
+}
+
+// ***************************************************************************
+
+sint CDriverD3D::beginMaterialMultiPass()
+{ 
+	beginMultiPass ();
+	return _CurrentShaderPassCount;
+}
+
+// ***************************************************************************
+
+void CDriverD3D::setupMaterialPass(uint pass)
+{ 
+	activePass (pass);
+}
+
+// ***************************************************************************
+
+void CDriverD3D::endMaterialMultiPass()
+{
+	endMultiPass ();
+}
+
+// ***************************************************************************
+
+bool CDriverD3D::supportCloudRenderSinglePass () const
+{
+	return _PixelShader;
 }
 
 // ***************************************************************************

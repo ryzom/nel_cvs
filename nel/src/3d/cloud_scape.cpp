@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.8 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: cloud_scape.cpp,v 1.9 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -135,16 +135,19 @@ void SCloudTexture3D::init (uint32 nWidth, uint32 nHeight, uint32 nDepth)
 	Tex->setWrapT (ITexture::Clamp);
 	Tex->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 	Tex->setReleasable (false);
+	Tex->setRenderTarget (true);
 	Tex->generate ();
 	Tex2->setWrapS (ITexture::Clamp);
 	Tex2->setWrapT (ITexture::Clamp);
 	Tex2->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 	Tex2->setReleasable (false);
+	Tex2->setRenderTarget (true);
 	Tex2->generate ();
 	TexBuffer->setWrapS (ITexture::Clamp);
 	TexBuffer->setWrapT (ITexture::Clamp);
 	TexBuffer->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 	TexBuffer->setReleasable (false);
+	TexBuffer->setRenderTarget (true);
 	TexBuffer->generate ();
 
 	ToLightRGB.setTexture (0, Tex);
@@ -304,6 +307,7 @@ CCloudScape::~CCloudScape ()
 // ------------------------------------------------------------------------------------------------
 void CCloudScape::init (SCloudScapeSetup *pCSS, NL3D::CCamera *pCamera)
 {
+	_ResetCounter = _Driver->getResetCounter();
 	_ViewerCam = pCamera;
 	
 	_Noise3D.init();
@@ -572,6 +576,24 @@ void CCloudScape::anim (double dt, NL3D::CCamera *pCamera)
 
 	// Backup fog
 	_Driver->enableFog (fog);
+
+	// Has the driver been reseted ?
+	if (_ResetCounter != _Driver->getResetCounter())
+	{
+		/* Yes. Force the rebuild of all the clouds not setuped in VRAM */
+		_ResetCounter = _Driver->getResetCounter();
+		i = 0;
+		while (i < MAX_CLOUDS)
+		{
+			while (_ShouldProcessCloud[i] && 
+				(!_AllClouds[i]._TexBill->setupedIntoDriver() || !_AllClouds[i]._TexOldBill->setupedIntoDriver()))
+			{
+				// Force a cloudscape rebuild
+				anim (41.0/1000.0, _ViewerCam);
+			}
+			i++;
+		}
+	}
 }
 
 // ------------------------------------------------------------------------------------------------

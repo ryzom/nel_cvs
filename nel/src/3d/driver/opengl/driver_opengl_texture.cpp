@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.73 2004/04/01 19:09:07 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.74 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1615,6 +1615,10 @@ uint CDriverGL::getTextureHandle(const ITexture &tex)
 
 bool CDriverGL::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace)
 {
+	// Check the texture is a render target
+	if (tex)
+		nlassertex (tex->getRenderTarget(), ("The texture must be a render target. Call ITexture::setRenderTarget(true)."));
+
 	// Have a previous texture ?
 	if (_TextureTarget && _TextureTarget != tex && _TextureTargetUpdload)
 	{

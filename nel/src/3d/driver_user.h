@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.39 2004/03/30 14:36:29 berenguier Exp $
+ * $Id: driver_user.h,v 1.40 2004/04/08 09:05:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -469,6 +469,13 @@ public:
 	// @}
 
 	virtual	bool				supportMADOperator() const;
+
+	/// \name Bench
+	// @{
+	virtual void startBench (bool wantStandardDeviation = false, bool quick = false, bool reset = true);
+	virtual void endBench ();
+	virtual void displayBench (class NLMISC::CLog *log);
+	// @}
 
 public:
 	/// \name Accessor for CSeneUser.

@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.19 2001/02/16 14:26:34 cado Exp $
+ * $Id: common.h,v 1.20 2001/02/20 11:09:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,7 @@ template<class T>	inline T sqr(const T &v)
 }
 
 
-/** Force v to be inside the interval [min,max]
+/** Force v to be inside the interval [min,max]. Warning: implicit cast are made if T,U or V are different.
  */
 template<class T, class U, class V>	inline void clamp(T &v, const U &min, const V &max)
 {

@@ -1,7 +1,7 @@
 /** \file memory/heap_allocator_inline.h
  * A Heap allocator, inline functions
  *
- * $Id: heap_allocator_inline.h,v 1.4 2005/02/21 17:02:46 corvazier Exp $
+ * $Id: heap_allocator_inline.h,v 1.5 2005/02/23 09:09:17 guignot Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@
 #if defined (NL_OS_WINDOWS)
 #define NL_ALLOC_STOP(adr) { char _adr[512]; sprintf (_adr, "NLMEMORY stop on block 0x%x\n", (int)adr); OutputDebugString (_adr); _asm { int 3 } }
 #else
-#define NL_ALLOC_STOP(str) { fprintf (stderr, "NLMEMORY stop on block 0x%x\n", (int)adr); abort(); }
+#define NL_ALLOC_STOP(adr) { fprintf (stderr, "NLMEMORY stop on block 0x%x\n", (int)adr); abort(); }
 #endif
 
 // *********************************************************

@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * <File description>
  *
- * $Id: play_list_user.h,v 1.1 2001/03/29 09:55:30 berenguier Exp $
+ * $Id: play_list_user.h,v 1.2 2001/03/29 12:09:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/3d/animation_set.h"
 #include "nel/3d/channel_mixer.h"
 #include "nel/3d/animation_playlist.h"
+#include "nel/3d/transform_user.h"
 
 
 namespace NL3D 
@@ -69,6 +70,24 @@ public:
 		nlassert((uint)UPlayList::empty == (uint)CAnimationPlaylist::empty);
 		nlassert((uint)UPlayList::WrapModeCount == (uint)CAnimationPlaylist::WrapModeCount);
 	}
+
+
+	/// \name Animatable Link.
+	// @{
+	virtual	void	registerTransform(UTransform *object)
+	{
+		CTransformUser	*obj= dynamic_cast<CTransformUser*>(object);
+		nlassert(obj);
+
+		// Register the transform to the channel mixer.
+		obj->getTransform()->registerToChannelMixer(&_ChannelMixer, "");
+	}
+	virtual	void	resetAllChannels()
+	{
+		_ChannelMixer.resetChannels();
+	}
+
+	// @}
 
 
 	/// \name Animation Setup.

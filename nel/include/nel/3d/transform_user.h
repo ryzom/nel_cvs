@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.5 2001/03/23 10:09:24 berenguier Exp $
+ * $Id: transform_user.h,v 1.6 2001/03/29 12:09:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -244,12 +244,17 @@ public:
 	// @}
 
 public:
-	/// \name Accessor for CSeneUser.
+	/// \name Accessor for CSeneUser / Other.
 	// @{
 	CScene		*getScene()
 	{
 		return _Scene;
 	}
+	CTransform	*getTransform()
+	{
+		return _Transform;
+	}
+
 	// @}
 
 };

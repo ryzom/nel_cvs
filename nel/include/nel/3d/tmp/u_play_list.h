@@ -1,7 +1,7 @@
 /** \file u_play_list.h
  * <File description>
  *
- * $Id: u_play_list.h,v 1.2 2001/03/29 09:54:04 berenguier Exp $
+ * $Id: u_play_list.h,v 1.3 2001/03/29 12:09:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,10 +34,16 @@ namespace NL3D
 {
 
 
+class	UTransform;
+
+
 // ***************************************************************************
 /**
  * A playlist/channelmixer, from which you setup your mix of animations (blend, skeleton template weight...).
- * NB: a playlist is played through UPlayListManager::animate().
+ * Once this UPlayList is created from the UPlayListManager (with an UAnimationSet), you just need to registerTransform()
+ * your object(s)  (eg: an UInstance). Then you can use all the Animation setup function to blend, mix, setup time etc...
+ *
+ * NB: a playlist is actually played through UPlayListManager::animate().
  * NB: all AnimationTime are in second.
  * \author Lionel Berenguier
  * \author Nevrax France
@@ -76,6 +82,26 @@ public:
 
 
 public:
+
+
+	/// \name Animatable Link.
+	// @{
+
+	/** register an Animatable object (UTransform, UCamera, UInstance...) to the playlist.
+	 * Before deleting this Animatable object, you SHOULD UPlayList::resetAllChannels() or delete 
+	 * the playlist from the playlistmanager.
+	 *
+	 * \param object is the object which will be affected by this animation playlist.
+	 */
+	virtual	void	registerTransform(UTransform *object) =0;
+
+	/** Reset all channels so that no more Animatable object (Transforms etc...) are linked to this PLayList.
+	 * Hence, the playlist has no effect on anything.
+	 */
+	virtual	void	resetAllChannels() =0;
+
+	// @}
+
 
 
 	/// \name Animation Setup.

@@ -1,7 +1,7 @@
 /** \file u_play_list_manager.h
  * <File description>
  *
- * $Id: u_play_list_manager.h,v 1.2 2001/03/29 09:54:04 berenguier Exp $
+ * $Id: u_play_list_manager.h,v 1.3 2001/03/29 12:09:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,15 +57,21 @@ protected:
 public:
 
 	/** Create a playlist, instance of an animation set. nlerror if(animSet==NULL).
+	 * \param animSet the UAnimationSet you want to instanciate into a UPlayList.
+	 * \return the new created playlist.
 	 */
 	virtual	UPlayList	*createPlayList(UAnimationSet	*animSet) =0;
 	/** Delete a playlist. nlerror if not found. no-op if playList==NULL.
+	 * \param playList the playList you want to delete.
 	 */
 	virtual	void		deletePlayList(UPlayList *playList) =0;
 
 
 	/** Animate all the playlist. Only the globals channels are animated.
-	 * NB: all AnimationTime are in second.
+	 * NB: all objects registered to the playLists (see registerTransform) are updated, BUT the detail channels 
+	 * (like materials channels) which may be updated during UScene::render(), only if they are visibles...
+	 *
+	 * \param time the effective currentTime in second.
 	 */
 	virtual	void		animate(CAnimationTime	time) =0;
 

@@ -1,6 +1,6 @@
 /** \file export_remanence.cpp
  *
- * $Id: export_remanence.cpp,v 1.1 2002/07/03 09:16:49 vizerie Exp $
+ * $Id: export_remanence.cpp,v 1.2 2002/07/03 13:11:38 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -88,13 +88,24 @@ NL3D::IShape *CExportNel::buildRemanence(INode& node, TimeValue time)
 	int numPieces = so->NumberOfPieces(time, 0);
 	srs->setNumCorners(numPieces + 1);
 
+	// build offset matrix
+	Matrix3 invNodeTM = node.GetNodeTM(time);
+	invNodeTM.Invert();
+
+	// Get the object matrix
+	Matrix3 objectTM = node.GetObjectTM(time);
+
+	// Compute the local to world matrix
+	Matrix3 objectToLocal = objectTM*invNodeTM;	
+
+
 	for(uint k = 0; k <= (uint) numPieces; ++k)
 	{
 		Point3 pos;		
 		pos = (k == 0) ? so->InterpPiece3D(time, 0, 0, 0.f)
 					   : so->InterpPiece3D(time, 0, k - 1, 1.f);		
-		NLMISC::CVector nelPos;
-		convertVector(nelPos, pos);
+		NLMISC::CVector nelPos;		
+		convertVector(nelPos, objectToLocal * pos);
 		srs->setCorner(k, nelPos);
 	}
 

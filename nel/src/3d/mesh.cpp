@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.16 2001/05/09 17:08:27 berenguier Exp $
+ * $Id: mesh.cpp,v 1.17 2001/06/11 07:31:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -754,13 +754,13 @@ void	CMesh::buildSkin(CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces)
 		CMatrixBlockRemap	&remap= blockRemaps[i];
 
 		// First bkup the bone ids in remap table.
-		for(j=0;j<(sint)mBlock.NumMatrix;)
+		for(j=0;j<(sint)mBlock.NumMatrix;j++)
 		{
 			remap.Remap[j]= mBlock.MatrixId[j];
 		}
 
 		// For all ids of this blocks, try to mirror them.
-		for(j=0;j<(sint)mBlock.NumMatrix;)
+		for(j=0;j<(sint)mBlock.NumMatrix;j++)
 		{
 			// get the location of this bone in the prev bone.
 			sint	idLoc= mPrevBlock.getMatrixIdLocation(mBlock.MatrixId[j]);
@@ -780,7 +780,7 @@ void	CMesh::buildSkin(CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces)
 		}
 
 		// Then build the Remap table, to re-order faces matrixId which use this matrix block.
-		for(j=0;j<(sint)mBlock.NumMatrix;)
+		for(j=0;j<(sint)mBlock.NumMatrix;j++)
 		{
 			// get the boneid which was at this position j before.
 			uint	boneId= remap.Remap[j];

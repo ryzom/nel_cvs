@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.60 2003/11/18 13:45:36 lecroart Exp $
+ * $Id: debug.h,v 1.61 2003/12/30 11:15:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,14 +71,13 @@ void setAssert (bool assert);
 void beep( uint freq, uint duration );
 
 
-// Need a breakpoint in the assert / verify macro
-extern bool DebugNeedAssert;
+typedef std::string (*TCrashCallback)();
 
-// Internal process, don't use it
-extern bool NoAssert;
+// this function enables user application to add information in the log when a crash occurs
+void setCrashCallback(TCrashCallback crashCallback);
 
-// Internal process, don't use it
-extern bool GlobalAssertCall;
+
+
 
 // Macros
 
@@ -534,6 +533,26 @@ template<class T, class U>	inline T	type_cast(U o)
   */
 #define nlctassert(cond) sizeof(uint[(cond) ? 1 : 0]);
 
+
+
+
+
+
+
+
+
+//
+// Following are internal functions, you should never use them
+//
+
+// Need a breakpoint in the assert / verify macro
+extern bool DebugNeedAssert;
+
+// Internal process, don't use it
+extern bool NoAssert;
+
+// Internal process, don't use it
+extern bool GlobalAssertCall;
 
 /// Never use this function (internal use only)
 void nlFatalError (const char *format, ...);

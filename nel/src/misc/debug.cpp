@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.84 2003/12/29 13:36:25 lecroart Exp $
+ * $Id: debug.cpp,v 1.85 2003/12/30 11:15:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,6 +97,15 @@ CMsgBoxDisplayer *DefaultMsgBoxDisplayer = NULL;
 
 static CStdDisplayer *sd = NULL;
 static CFileDisplayer *fd = NULL;
+
+
+static TCrashCallback CrashCallback = NULL;
+
+void setCrashCallback(TCrashCallback crashCallback)
+{
+	CrashCallback = crashCallback;
+}
+
 
 void setAssert (bool assert)
 {
@@ -449,6 +458,26 @@ public:
 		_Reason += "-------------------------------\n";
 
 		nlverify (SymCleanup(getProcessHandle()) == TRUE);
+
+		// add specific information about the application
+		if(CrashCallback)
+		{
+			_Reason += "User Crash Callback:\n";
+			_Reason += "-------------------------------\n";
+			static bool looping = false;
+			if(looping)
+			{
+				_Reason += "******* WARNING: crashed in the user crash callback *******\n";
+				looping = false;
+			}
+			else
+			{
+				looping = true;
+				_Reason += CrashCallback();
+				looping = false;
+			}
+			_Reason += "-------------------------------\n";
+		}
 	}
 
 	string getSourceInfo (DWORD addr)
@@ -821,7 +850,7 @@ void getCallStackAndLog (string &result, sint skipNFirst)
 	}
 #else
 
-	// there s no stack on linux, only get the log without filters
+	// there s no stack on GNU/Linux, only get the log without filters
 
 	result += "No callstack available";
 	result += "-------------------------------\n";
@@ -838,6 +867,26 @@ void getCallStackAndLog (string &result, sint skipNFirst)
 	}
 	result += "-------------------------------\n";
 
+	// add specific information about the application
+	if(CrashCallback)
+	{
+		_Reason += "User Crash Callback:\n";
+		_Reason += "-------------------------------\n";
+		static bool looping = false;
+		if(looping)
+		{
+			_Reason += "******* WARNING: crashed in the user crash callback *******\n";
+			looping = false;
+		}
+		else
+		{
+			looping = true;
+			_Reason += CrashCallback();
+			looping = false;
+		}
+		_Reason += "-------------------------------\n";
+	}
+	
 #endif
 }
 

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.21 2002/02/21 17:40:17 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.22 2002/02/27 15:45:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -336,12 +336,12 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			CEditableRangeUInt *nbs;
 			if (!dynamic_cast<NL3D::CPSRibbonLookAt *>(_Bindable))
 			{
-				nbs = new CEditableRangeUInt(std::string("TAIL_NB_SEGS"), 1, 255);
-				nbs->enableLowerBound(0, true);
+				nbs = new CEditableRangeUInt(std::string("TAIL_NB_SEGS_"), 2, 16);
+				nbs->enableLowerBound(1, true);
 			}
 			else
 			{
-				nbs = new CEditableRangeUInt(std::string("LOOKAT_RIBBON_TAIL_NB_SEGS"), 2, 255);
+				nbs = new CEditableRangeUInt(std::string("LOOKAT_RIBBON_TAIL_NB_SEGS_"), 2, 16);
 				nbs->enableLowerBound(1, true);
 			}
 

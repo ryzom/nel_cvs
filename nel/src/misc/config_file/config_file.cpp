@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.14 2000/12/22 17:42:01 coutelas Exp $
+ * $Id: config_file.cpp,v 1.15 2001/01/10 18:06:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -362,11 +362,10 @@ uint32 CConfigFile::getLastModified ()
 
 void CConfigFile::checkConfigFiles ()
 {
-	static clock_t LastCheckClock = clock ();
+	static time_t LastCheckTime = time (NULL);
+	if (_Timeout > 0 && (float)(time (NULL) - LastCheckTime)*1000.0f < (float)_Timeout) return;
 
-	if (_Timeout > 0 && (float)(clock () - LastCheckClock)*1000.0f/(float)CLOCKS_PER_SEC < (float)_Timeout) return;
-
-	LastCheckClock = clock ();
+	LastCheckTime = time (NULL);
 
 	for (vector<CConfigFile *>::iterator it = _ConfigFiles.begin (); it != _ConfigFiles.end (); it++)
 	{

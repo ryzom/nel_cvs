@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.69 2003/11/21 16:19:55 berenguier Exp $
+ * $Id: transform.cpp,v 1.70 2003/11/28 16:20:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -189,6 +189,7 @@ CTransform::~CTransform()
 	}
 
 	// remove me from parents in Hrc and Clip
+	setStateFlag(ForceClipRoot, false); // ensure that not 'glued' to the root so that the following call will succeed
 	hrcUnlink();
 	clipUnlinkFromAll();
 
@@ -705,7 +706,7 @@ void	CTransform::updateWorld()
 			_WorldDate= getOwnerScene()->getHrcTrav().CurrentDate;
 
 			// Add the model to the moving object list, only if I am a transform shape
-			if (!_Frozen && isTransformShape())
+			if (!_Frozen && isTransformShape() && !getStateFlag(ForceClipRoot))
 				getOwnerScene()->getHrcTrav()._MovingObjects.push_back (static_cast<CTransformShape*>(this));
 		}
 	}
@@ -1183,6 +1184,9 @@ void			CTransform::hrcUnlink()
 	if(_HrcParent==NULL)
 		return;
 
+	// if ForceClipRoot flag is set, then the fx can't be linked elsewhere in the hierarchy
+	nlassert(!getStateFlag(ForceClipRoot));
+
 	// unlink my parent from me.
 	_HrcNode.unlink();
 
@@ -1370,6 +1374,23 @@ void CTransform::forceCompute()
 	// compute
 	update();
 	updateWorldMatrixFromFather();
+}
+
+// ***************************************************************************
+void CTransform::setForceClipRoot(bool forceClipRoot)
+{
+	if (forceClipRoot == (getStateFlag(ForceClipRoot) != 0)) return;
+	if (forceClipRoot)
+	{
+		// unlink from previous father and link to the root
+		hrcUnlink();
+		if (_OwnerScene)
+		{
+			_OwnerScene->getRoot()->hrcLinkSon(this);
+		}
+		setClusterSystem(NULL);
+	}
+	setStateFlag(ForceClipRoot, forceClipRoot);
 }
 
 

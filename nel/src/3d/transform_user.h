@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.22 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: transform_user.h,v 1.23 2003/11/28 16:20:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,6 +106,11 @@ public:
 	{
 		NL3D_MEM_TRANSFORM
 		nlassert(_Transform) ; // object invalid now ...
+		if (_Transform->getForceClipRoot())
+		{
+			nlwarning("Transform has been flagged to be glued to the root, can't change parent. See UTransform::setForceClipRoot(bool).");
+			return;
+		}
 		if(newFather)
 		{
 			// link me to other.
@@ -275,8 +280,20 @@ public:
 	virtual bool			canReceiveShadowMap() const;
 	// @}
 
+	virtual void		setForceClipRoot(bool forceClipRoot)
+	{
+		NL3D_MEM_TRANSFORM
+		_Transform->setForceClipRoot(forceClipRoot);
+	}
+
+	virtual bool		getForceClipRoot() const
+	{
+		NL3D_MEM_TRANSFORM
+		return _Transform->getForceClipRoot();
+	}
+
 public:
-	/// \name Accessor for CSeneUser / Other.
+	/// \name Accessor for CSceneUser / Other.
 	// @{
 	CScene		*getScene()
 	{

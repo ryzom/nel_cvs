@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.16 2003/10/10 07:12:31 besson Exp $
+ * $Id: transform_user.cpp,v 1.17 2003/11/28 16:20:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,11 @@ void CTransformUser::setClusterSystem (UInstanceGroup *pIG)
 	NL3D_HAUTO_SET_CLUSTER_SYSTEM
 
 	nlassert(_Transform) ; // object invalid now ...
+	if (_Transform->getForceClipRoot())
+	{
+		nlwarning("Transform has been flagged to be glued to the root, and thus can't be clusterized. See UTransform::setForceClipRoot(bool).");
+		return;
+	}
 	if ((pIG == NULL) || (pIG == (UInstanceGroup*)-1))
 	{
 		if (pIG == NULL)

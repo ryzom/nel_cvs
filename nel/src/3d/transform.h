@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.47 2003/11/06 14:53:55 vizerie Exp $
+ * $Id: transform.h,v 1.48 2003/11/28 16:20:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -316,7 +316,7 @@ public:
 	}
 
 
-	void				setClusterSystem (CInstanceGroup *pIG) { _ClusterSystem = pIG; }
+	void				setClusterSystem (CInstanceGroup *pCS);
 	CInstanceGroup*		getClusterSystem () { return _ClusterSystem; }
 
 
@@ -528,7 +528,14 @@ public:
 
 	// @}
 
-	
+	/** Force the transform to always be attached to the root
+	  * As a consequence, it can't be inserted into a cluster system (even the root cluster)
+	  * and is thus always visible when in the frustum (not clusterized)
+	  * NB : any call to setClusterSystem will cause an assertion when the flag is set
+	  * NB : any call to hrcUnlink will cause an assertion when the flag is set (must remain linked to the root)
+      */
+	void				setForceClipRoot(bool forceClipRoot);
+	bool				getForceClipRoot() const { return getStateFlag(ForceClipRoot); }	
 
 
 // ********
@@ -673,7 +680,7 @@ protected:
 	bool				getShowWhenLODSticked() const { return _ForceCLodSticked; }
 
 	// force to compute that transform matrix (useful if matrix needed but clipped because sticked to a clipped skeleton for example)
-	void				forceCompute();
+	void				forceCompute();	
 
 private:
 	static CTransform	*creator() {return new CTransform;}
@@ -788,7 +795,10 @@ private:
 		IsShadowMapReceiver=	0x400000,	// set if the model can receive ShadowMap
 		IsFinalShadowMapReceiver= 0x800000,	// set if the model can receive ShadowMap AND the user want it
 		IsGeneratingShadowMap=	0x1000000,	// temp set if the model is asked to render its shadowMap this frame.
-		
+
+		ForceClipRoot			= 0x2000000 // Force the object to always be attached to the root
+		                                    // As a consequence, it can't be inserted into a cluster system (even the root cluster)
+											// and is thus always visible when in the frustum
 		// NB: may continue on >=0x2000000
 	};
 
@@ -895,6 +905,18 @@ protected:
 	// @}
 
 };
+
+/////////////
+// INLINES //
+/////////////
+inline void	CTransform::setClusterSystem(CInstanceGroup *pCS)
+{
+	if (pCS != NULL)
+	{
+		nlassert(!getStateFlag(ForceClipRoot)); // the transform must be linked to the root, and have not cluster system when this flag is set
+	}
+	_ClusterSystem = pCS;
+}
 
 
 } // namespace NL3D

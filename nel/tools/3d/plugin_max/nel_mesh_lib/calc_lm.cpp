@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.51 2004/02/04 11:17:51 besson Exp $
+ * $Id: calc_lm.cpp,v 1.52 2004/04/14 12:35:29 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/triangle.h"
 #include "nel/misc/bsphere.h"
+#include "nel/misc/path.h"
 #include "nel/3d/quad_tree.h"
 #include "3d/scene_group.h"
 #include "3d/skeleton_shape.h"
@@ -2100,6 +2101,44 @@ void sans_majuscule_au_debut_LinkToObjectAround (CMesh::CMeshBuild *pMB, CMeshBa
 }
 */
 
+void createLightmapLog (COFile &outputLog, const char *outputDirectory, const char *projectName, const char *objectName)
+{
+	string outputFilename = CPath::standardizePath (outputDirectory, true);
+	outputFilename += projectName;
+	outputFilename += "_";
+	outputFilename += objectName;
+	outputFilename += ".txt";
+	if (!outputLog.open (outputFilename, false, true, false))
+	{
+		nlwarning ("Can't open the file %s for writing.", outputFilename.c_str());
+	}
+}
+
+void appendLightmapLog (COFile &outputLog, const char *lightmapName, const vector<sint32> lightIndexes, const vector<SLightBuild> &lights)
+{
+	try
+	{
+		string text;
+		text = lightmapName;
+		text += " :\n";
+
+		// Dump light name used on this lightmap
+		uint i;
+		for (i=0; i<lightIndexes.size(); i++)
+		{
+			text += "\t";
+			text += lights[lightIndexes[i]].Name;
+			text += "\n";
+		}
+		
+		outputLog.serialBuffer ((uint8*)text.c_str(), text.size());
+	}
+	catch (exception &e)
+	{
+		nlwarning ("Error writing the file : %s", e.what());
+	}
+}
+
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
@@ -2108,7 +2147,7 @@ void sans_majuscule_au_debut_LinkToObjectAround (CMesh::CMeshBuild *pMB, CMeshBa
 // absolutePath tell this code to put the name of the lightmap in absolute or relative path
 // this is very usefull for viewer inside MAX
 bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild, INode& ZeNode, 
-							TimeValue tvTime, uint firstMaterial )
+							TimeValue tvTime, uint firstMaterial, bool outputLightmapLog)
 {
 	DWORD t = timeGetTime();
 
@@ -2468,6 +2507,15 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		
 		// Save the lightmap				
 		// Assign the name of the lightmap and get the complete save name
+			
+		// Get the name of the max project
+		char projectName[512];
+		_splitpath (_Ip->GetCurFileName(), NULL, NULL, projectName, NULL);
+
+		// Add lightmap information in the lightmap log
+		COFile outputLog;
+		if (outputLightmapLog)
+			createLightmapLog (outputLog, gOptions.sExportLighting.c_str(), projectName, ZeNode.GetName());
 
 		// Update UV coords to Texture space
 		PutFaceUV1InTextureCoord( LightMap.w, LightMap.h, AllFaces.begin(), AllFaces.size() );
@@ -2483,10 +2531,6 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			sprintf( tmp, "%d", nLightMapNb );
 			sSaveName += tmp;
 			sSaveName += ".tga";
-			
-			// Get the name of the max project
-			char projectName[512];
-			_splitpath (_Ip->GetCurFileName(), NULL, NULL, projectName, NULL);
 
 			// Concat name of the project with name of the file
 			sSaveName = (const char*)projectName + std::string ("_") + sSaveName;
@@ -2551,6 +2595,10 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 					mprintf (message);
 				}
 			}
+
+			// Add lightmap information in the lightmap log
+			if (outputLightmapLog)
+				appendLightmapLog (outputLog, sSaveName.c_str(), vvLights[j], AllLights);
 
 			if (gOptions.b8BitsLightmap)
 				pLightMap->setUploadFormat (ITexture::Luminance);

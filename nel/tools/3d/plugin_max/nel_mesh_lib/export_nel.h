@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.69 2004/02/11 12:00:07 berenguier Exp $
+ * $Id: export_nel.h,v 1.70 2004/04/14 12:35:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,6 +136,7 @@ struct CExportNelOptions
 	bool bShadow;
 	bool bExportLighting;
 	bool bExportBgColor;
+	bool OutputLightmapLog;
 	std::string sExportLighting;
 	sint32 nExportLighting;
 	float rLumelSize;
@@ -155,6 +156,7 @@ struct CExportNelOptions
 		bShadow = false;
 		bExportLighting = false;
 		bExportBgColor = true;
+		OutputLightmapLog = false;
 		sExportLighting = "c:\\temp";
 		nExportLighting = 0; // Normal lighting
 		rLumelSize = 0.25f;
@@ -170,11 +172,13 @@ struct CExportNelOptions
 
 	void serial(NLMISC::IStream& stream)
 	{
-		sint version = stream.serialVersion (5);
+		sint version = stream.serialVersion (6);
 
 		// Check version
 		switch (version)
 		{
+		case 6:
+			stream.serial (OutputLightmapLog);
 		case 5:
 			stream.serial (b8BitsLightmap);
 		case 4:
@@ -361,7 +365,7 @@ public:
 	bool							calculateLM (NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
 												NL3D::CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild,
 												INode& ZeNode, 
-												TimeValue tvTime, uint firstMaterial);
+												TimeValue tvTime, uint firstMaterial, bool outputLightmapLog);
 
 	bool							calculateLMRad(NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
 												NL3D::CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild,

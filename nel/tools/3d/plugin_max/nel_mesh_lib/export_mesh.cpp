@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.64 2004/04/07 09:56:26 berenguier Exp $
+ * $Id: export_mesh.cpp,v 1.65 2004/04/14 12:35:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -348,7 +348,7 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 					buildMeshInterface (*tri, buildMesh, buildBaseMesh, maxBaseBuild, node, time, nodeMap);
 
 					if( hasLightMap( node, time ) && _Options.bExportLighting )
-						calculateLM(&buildMesh, &buildBaseMesh, node, time, maxBaseBuild.FirstMaterial);
+						calculateLM(&buildMesh, &buildBaseMesh, node, time, maxBaseBuild.FirstMaterial, _Options.OutputLightmapLog);
 
 					// optimized materials remap
 					std::vector<sint>	materialRemap;
@@ -1334,7 +1334,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, TimeValue time, const TInodeP
 			}
 
 			if( hasLightMap( node, time ) && _Options.bExportLighting )
-				calculateLM(&buildMesh, &buildBaseMesh, node, time, maxBaseBuild.FirstMaterial);
+				calculateLM(&buildMesh, &buildBaseMesh, node, time, maxBaseBuild.FirstMaterial, _Options.OutputLightmapLog);
 
 			// MRM mesh ?
 			if (getScriptAppData (&node, NEL3D_APPDATA_LOD_MRM, 0) && (!coarseMesh) )

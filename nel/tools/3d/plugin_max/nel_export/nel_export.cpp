@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.36 2004/01/29 10:37:29 besson Exp $
+ * $Id: nel_export.cpp,v 1.37 2004/04/14 12:35:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,6 +91,10 @@ int CALLBACK OptionsDialogCallback (
 				SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTLIGHTING), BM_SETCHECK, BST_CHECKED, 0 );
 			else
 				SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTLIGHTING), BM_SETCHECK, BST_UNCHECKED, 0 );
+			if( theExportSceneStruct.OutputLightmapLog )
+				SendMessage( GetDlgItem(hwndDlg,IDC_CHECKOUTPUTLIGHTMAPLOG), BM_SETCHECK, BST_CHECKED, 0 );
+			else
+				SendMessage( GetDlgItem(hwndDlg,IDC_CHECKOUTPUTLIGHTMAPLOG), BM_SETCHECK, BST_UNCHECKED, 0 );
 			if( theExportSceneStruct.bShadow)
 				SendMessage( GetDlgItem(hwndDlg,IDC_SHADOW), BM_SETCHECK, BST_CHECKED, 0 );
 			else
@@ -171,6 +175,10 @@ int CALLBACK OptionsDialogCallback (
 						theExportSceneStruct.bExportLighting = true;
 					else
 						theExportSceneStruct.bExportLighting = false;
+					if( SendMessage( GetDlgItem(hwndDlg,IDC_CHECKOUTPUTLIGHTMAPLOG), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+						theExportSceneStruct.OutputLightmapLog = true;
+					else
+						theExportSceneStruct.OutputLightmapLog = false;
 					SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTLIGHTING), WM_GETTEXT, 1024, (long)tmp );
 					theExportSceneStruct.sExportLighting = tmp;
 					if( SendMessage( GetDlgItem(hwndDlg,IDC_RADIONORMALEXPORTLIGHTING), BM_GETCHECK, 0, 0 ) == BST_CHECKED )

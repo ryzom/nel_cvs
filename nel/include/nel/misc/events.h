@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.12 2000/12/01 10:09:10 corvazier Exp $
+ * $Id: events.h,v 1.13 2000/12/04 12:02:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -230,15 +230,18 @@ enum TMouseButton
 
 /**
  * CEventKeyDown
+ * Send when a key is push down. The key type is Key and FirstTime is true if the previous key state wasn't pushed.
  */
 class CEventKeyDown : public CEvent
 {
 public:
-	CEventKeyDown (TKey key, IEventEmitter* emitter) : CEvent (emitter, EventKeyDownId)
+	CEventKeyDown (TKey key, bool bFirstTime, IEventEmitter* emitter) : CEvent (emitter, EventKeyDownId)
 	{
 		Key=key;
+		FirstTime=bFirstTime;
 	}
 	TKey Key;
+	bool FirstTime;
 };
 
 /**

@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.12 2000/12/01 10:12:02 corvazier Exp $
+ * $Id: event_emitter.cpp,v 1.13 2000/12/04 12:01:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,7 @@ void CEventEmitterWin32::processMessage (uint32 hWnd, uint32 msg, uint32 wParam,
 	switch (msg)
 	{
 	case WM_KEYDOWN:
-		server->postEvent (new CEventKeyDown ((TKey)wParam, this));
+		server->postEvent (new CEventKeyDown ((TKey)wParam, (((int) wParam)&(1<<30))==0, this));
 		break;
 	case WM_KEYUP:
 		server->postEvent (new CEventKeyUp ((TKey)wParam, this));

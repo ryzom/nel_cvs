@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * <File description>
  *
- * $Id: u_instance_material.h,v 1.11 2003/03/04 15:53:30 berenguier Exp $
+ * $Id: u_instance_material.h,v 1.12 2003/11/06 09:29:27 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,6 +71,7 @@ public:
 	virtual void			setBlendFunc(TBlend src, TBlend dst) =0;
 	virtual void			setSrcBlend(TBlend val) =0;
 	virtual void			setDstBlend(TBlend val) =0;
+	virtual void			setAlphaTestThreshold(float at) =0;
 
 	virtual bool			getBlend() const =0;
 	virtual TBlend			getSrcBlend(void)  const =0;

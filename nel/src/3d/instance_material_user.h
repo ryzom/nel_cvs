@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.12 2002/11/25 14:49:08 vizerie Exp $
+ * $Id: instance_material_user.h,v 1.13 2003/11/06 09:29:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,6 +256,11 @@ public:
 	{
 		NL3D_MEM_MATERIAL_INSTANCE
 		_Material->setDstBlend((CMaterial::TBlend)(uint32)val);
+	}
+	virtual void			setAlphaTestThreshold(float at)
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		_Material->setAlphaTestThreshold(at);
 	}
 
 	virtual bool			getBlend() const 

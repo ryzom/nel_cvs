@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: matrix.cpp,v 1.9 2000/10/06 10:42:03 berenguier Exp $
+ * $Id: matrix.cpp,v 1.10 2000/10/09 14:53:44 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -16,6 +16,7 @@
 
 #include "nel/misc/matrix.h"
 #include "nel/misc/plane.h"
+#include "nel/misc/debug.h"
 #include <algorithm>
 using namespace std;
 
@@ -41,7 +42,7 @@ namespace	NLMISC
 #define	MAT_IDENTITY	32
 
 
-#define	CHECK_VALID() assert(StateBit & MAT_MVALID)
+#define	CHECK_VALID() nlassert(StateBit & MAT_MVALID)
 
 
 // Matrix elements.
@@ -79,7 +80,7 @@ CMatrix::CMatrix(const CMatrix &m)
 // ======================================================================================================
 CMatrix		&CMatrix::operator=(const CMatrix &m)
 {
-	assert(m.StateBit & MAT_MVALID);
+	nlassert(m.StateBit & MAT_MVALID);
 
 	StateBit= m.StateBit;
 	Scale33= m.Scale33;
@@ -510,7 +511,7 @@ void		CMatrix::scale(const CVector &v)
 CMatrix		CMatrix::operator*(const CMatrix &m) const
 {
 	CHECK_VALID();
-	assert(m.StateBit & MAT_MVALID);
+	nlassert(m.StateBit & MAT_MVALID);
 
 	CMatrix		ret;
 	// Do ret= M1*M2, where M1=*this and M2=m.
@@ -973,7 +974,7 @@ CVector		CMatrix::mulPoint(const CVector &v) const
 // ======================================================================================================
 CPlane		operator*(const CPlane &p, const CMatrix &m)
 {
-	assert(m.StateBit & MAT_MVALID);
+	nlassert(m.StateBit & MAT_MVALID);
 
 	CPlane	ret;
 

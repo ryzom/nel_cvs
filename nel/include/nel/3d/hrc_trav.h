@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: hrc_trav.h,v 1.1 2000/10/06 16:44:27 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.2 2000/10/09 14:53:44 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -192,7 +192,7 @@ public:
 		// update the traversal according to the model.
 		update();
 		// Recompute the matrix, according to caller matrix mode, and local matrix.
-		assert(!caller || dynamic_cast<IBaseHrcObs*>(caller));
+		nlassert(!caller || dynamic_cast<IBaseHrcObs*>(caller));
 		updateWorld(static_cast<IBaseHrcObs*>(caller));
 		// DoIt the sons.
 		traverseSons();

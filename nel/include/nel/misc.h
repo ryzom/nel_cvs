@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: misc.h,v 1.1 2000/09/12 08:29:35 lecroart Exp $
+ * $Id: misc.h,v 1.2 2000/10/09 14:53:44 lecroart Exp $
  *
  * Main misc header that include all misc files
  */
@@ -16,8 +16,8 @@
 #ifndef NL_MISC_H
 #define NL_MISC_H
 
-#include "misc/assert.h"
 #include "misc/class_registry.h"
+#include "misc/debug.h"
 #include "misc/file.h"
 #include "misc/stream.h"
 #include "misc/types_nl.h"

@@ -8,13 +8,13 @@
  */
 
 /*
- * $Id: class_registry.cpp,v 1.2 2000/09/14 16:40:53 cado Exp $
+ * $Id: class_registry.cpp,v 1.3 2000/10/09 14:53:44 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
 
 #include "nel/misc/class_registry.h"
-#include "nel/misc/assert.h"
+#include "nel/misc/debug.h"
 #include <typeinfo>
 using namespace std;
 
@@ -41,7 +41,7 @@ IClassable	*CClassRegistry::create(const string &className)  throw(ERegistry)
 	{
 		IClassable	*ptr;
 		ptr=it->Creator();
-		assert(CClassRegistry::checkObject(ptr));
+		nlassert(CClassRegistry::checkObject(ptr));
 		return ptr;
 	}
 
@@ -56,7 +56,7 @@ void		CClassRegistry::registerClass(const string &className, IClassable* (*creat
 	node.TypeIdCheck= typeidCheck;
 	if(!RegistredClasses.insert(node).second)
 	{
-		assert(false);
+		nlstop;
 		throw ERegisteredClass();
 	}
 }

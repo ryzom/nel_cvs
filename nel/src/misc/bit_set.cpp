@@ -8,12 +8,13 @@
  */
 
 /*
- * $Id: bit_set.cpp,v 1.2 2000/10/09 14:48:03 berenguier Exp $
+ * $Id: bit_set.cpp,v 1.3 2000/10/09 14:53:44 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
 
 #include "nel/misc/bit_set.h"
+#include "nel/misc/debug.h"
 #include <algorithm>
 using namespace std;
 
@@ -92,7 +93,7 @@ uint	CBitSet::size() const
 }
 void	CBitSet::set(sint bitNumber, bool value)
 {
-	assert(bitNumber>=0 && bitNumber<NumBits);
+	nlassert(bitNumber>=0 && bitNumber<NumBits);
 
 	uint	mask= bitNumber&(BITLEN-1);
 	mask= 1<<mask;
@@ -103,7 +104,7 @@ void	CBitSet::set(sint bitNumber, bool value)
 }
 bool	CBitSet::get(sint bitNumber) const
 {
-	assert(bitNumber>=0 && bitNumber<NumBits);
+	nlassert(bitNumber>=0 && bitNumber<NumBits);
 
 	uint	mask= bitNumber&(BITLEN-1);
 	mask= 1<<mask;
@@ -111,7 +112,7 @@ bool	CBitSet::get(sint bitNumber) const
 }
 bool	CBitSet::operator[](sint bitNumber) const
 {
-	assert(bitNumber>=0 && bitNumber<NumBits);
+	nlassert(bitNumber>=0 && bitNumber<NumBits);
 
 	uint	mask= bitNumber&(BITLEN-1);
 	mask= 1<<mask;

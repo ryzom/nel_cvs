@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.h,v 1.6 2000/10/09 14:39:47 corvazier Exp $
+ * $Id: debug.h,v 1.7 2000/10/09 14:53:44 lecroart Exp $
  *
  * This file contains all features that help us to debug applications/
  */
@@ -310,6 +310,13 @@ void NLMISC_InitDebug ();
 #define nlstopex(str) ;
 
 #endif // NL_DEBUG
+
+
+// undef default assertto force people to use nlassert
+#ifdef assert
+#undef assert
+#endif
+#define assert(a) you_must_not_use_assert__use_rk_assert__read_debug_h_file
 
 } // NLMISC
 

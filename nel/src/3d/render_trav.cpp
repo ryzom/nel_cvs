@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: render_trav.cpp,v 1.1 2000/10/06 16:43:58 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.2 2000/10/09 14:53:44 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -79,11 +79,11 @@ void		CRenderTrav::addRenderObs(IBaseRenderObs *o)
 void		IBaseRenderObs::init()
 {
 	IObs::init();
-	assert( dynamic_cast<IBaseHrcObs*> (getObs(HrcTravId)) );
+	nlassert( dynamic_cast<IBaseHrcObs*> (getObs(HrcTravId)) );
 	HrcObs= static_cast<IBaseHrcObs*> (getObs(HrcTravId));
-	assert( dynamic_cast<IBaseClipObs*> (getObs(ClipTravId)) );
+	nlassert( dynamic_cast<IBaseClipObs*> (getObs(ClipTravId)) );
 	ClipObs= static_cast<IBaseClipObs*> (getObs(ClipTravId));
-	assert( dynamic_cast<IBaseLightObs*> (getObs(LightTravId)) );
+	nlassert( dynamic_cast<IBaseLightObs*> (getObs(LightTravId)) );
 	LightObs= static_cast<IBaseLightObs*> (getObs(LightTravId));
 }
 

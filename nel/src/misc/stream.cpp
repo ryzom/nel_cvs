@@ -8,13 +8,13 @@
  */
 
 /*
- * $Id: stream.cpp,v 1.7 2000/09/19 08:48:21 berenguier Exp $
+ * $Id: stream.cpp,v 1.8 2000/10/09 14:53:44 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
 
 #include "nel/misc/stream.h"
-#include "nel/misc/assert.h"
+#include "nel/misc/debug.h"
 using namespace std;
 
 
@@ -81,7 +81,7 @@ void			IStream::serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream)
 				if(ptr==NULL)
 					throw EUnregisteredClass();
 
-				assert(CClassRegistry::checkObject(ptr));
+				nlassert(CClassRegistry::checkObject(ptr));
 
 				// Read the object!
 				ptr->serial(*this);
@@ -109,7 +109,7 @@ void			IStream::serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream)
 			// If the Id was not yet registered (ie insert works).
 			if( _IdMap.insert( ValueIdMap(node, ptr) ).second==true )
 			{
-				assert(CClassRegistry::checkObject(ptr));
+				nlassert(CClassRegistry::checkObject(ptr));
 
 				// Write the class name.
 				string	className=ptr->getClassName();

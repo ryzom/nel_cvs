@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: clip_trav.cpp,v 1.1 2000/10/06 16:43:58 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.2 2000/10/09 14:53:44 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -97,9 +97,9 @@ void		CClipTrav::setRenderTrav(CRenderTrav	*trav)
 void		IBaseClipObs::init()
 {
 	IObs::init();
-	assert( dynamic_cast<IBaseHrcObs*> (getObs(HrcTravId)) );
+	nlassert( dynamic_cast<IBaseHrcObs*> (getObs(HrcTravId)) );
 	HrcObs= static_cast<IBaseHrcObs*> (getObs(HrcTravId));
-	assert( dynamic_cast<IBaseRenderObs*> (getObs(RenderTravId)) );
+	nlassert( dynamic_cast<IBaseRenderObs*> (getObs(RenderTravId)) );
 	RenderObs= static_cast<IBaseRenderObs*> (getObs(RenderTravId));
 }
 // ***************************************************************************
@@ -107,7 +107,7 @@ void		IBaseClipObs::traverse(IObs *caller)
 {
 	update();
 
-	assert(!caller || dynamic_cast<IBaseClipObs*>(caller));
+	nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
 	bool	renderable;
 
 	Visible= false;
@@ -118,7 +118,7 @@ void		IBaseClipObs::traverse(IObs *caller)
 		// Insert the model in the render list.
 		if(renderable)
 		{
-			assert(dynamic_cast<CClipTrav*>(Trav));
+			nlassert(dynamic_cast<CClipTrav*>(Trav));
 			static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
 		}
 		// DoIt the sons.

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: tile_bank.cpp,v 1.1 2000/10/06 10:04:39 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.2 2000/10/09 14:53:44 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -102,7 +102,7 @@ void CTileBankLand::getMatchingTile (std::vector<sint32> vectTiles, sint32 trans
 	{
 		// Get the tile
 		CTileBankTile *tile=getTile (*ite);
-		assert (tile);
+		nlassert (tile);
 
 		// Check if it's a good tile
 		for (int start=0; start<4; start++)

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: scene.cpp,v 1.1 2000/10/06 16:43:58 berenguier Exp $
+ * $Id: scene.cpp,v 1.2 2000/10/09 14:53:44 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -83,7 +83,7 @@ void	CScene::initDefaultRoots()
 // ***************************************************************************
 void	CScene::addTrav(ITrav *v)
 {
-	assert(v);
+	nlassert(v);
 	sint	order=0;
 
 	ITravScene	*sv= dynamic_cast<ITravScene*>(v);
@@ -101,7 +101,7 @@ void	CScene::addTrav(ITrav *v)
 // ***************************************************************************
 void	CScene::render(bool	doHrcPass)
 {
-	assert(CurrentCamera);
+	nlassert(CurrentCamera);
 
 	// Use the camera to setup Clip / Render pass.
 	float left, right, bottom, top, znear, zfar;

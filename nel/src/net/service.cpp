@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.cpp,v 1.8 2000/10/09 14:12:37 lecroart Exp $
+ * $Id: service.cpp,v 1.9 2000/10/09 14:53:44 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -17,15 +17,14 @@
 
 #include <stdlib.h>
 #include <signal.h>
+#include <iostream>
 
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 
 #include "nel/net/service.h"
 
-#include <iostream>
 using namespace std;
-
 using namespace NLMISC;
 
 namespace NLNET

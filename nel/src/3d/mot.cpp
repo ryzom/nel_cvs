@@ -8,14 +8,14 @@
  */
 
 /*
- * $Id: mot.cpp,v 1.2 2000/10/06 16:43:42 berenguier Exp $
+ * $Id: mot.cpp,v 1.3 2000/10/09 14:53:44 lecroart Exp $
  *
  * The Model / Observer / Traversal  (MOT) paradgim.
  */
 
 
 #include "nel/3d/mot.h"
-#include "nel/misc/assert.h"
+#include "nel/misc/debug.h"
 #include "nel/misc/stream.h"
 #include <algorithm>
 #include <list>
@@ -37,8 +37,8 @@ namespace	NL3D
 // ***************************************************************************
 void	CMOT::registerModel(const CClassId &idModel, const CClassId &idModelBase, IModel* (*creator)())
 {
-	assert(idModel!=CClassId::Null);
-	assert(creator);
+	nlassert(idModel!=CClassId::Null);
+	nlassert(creator);
 	// idModelBase may be Null...
 
 	CModelEntry		e;
@@ -53,9 +53,9 @@ void	CMOT::registerModel(const CClassId &idModel, const CClassId &idModelBase, I
 // ***************************************************************************
 void	CMOT::registerObs(const CClassId &idTrav, const CClassId &idModel, IObs* (*creator)())
 {
-	assert(idTrav!=CClassId::Null);
-	assert(idModel!=CClassId::Null);
-	assert(creator);
+	nlassert(idTrav!=CClassId::Null);
+	nlassert(idModel!=CClassId::Null);
+	nlassert(creator);
 
 	CObsEntry		e;
 	e.ModelId= idModel;
@@ -69,9 +69,9 @@ void	CMOT::registerObs(const CClassId &idTrav, const CClassId &idModel, IObs* (*
 // ***************************************************************************
 void	CMOT::addTrav(ITrav *v)
 {
-	assert(v);
+	nlassert(v);
 	CClassId	idTrav= v->getClassId();
-	assert(idTrav!=CClassId::Null);
+	nlassert(idTrav!=CClassId::Null);
 
 	CTravEntry	e;
 	e.TravId= idTrav;
@@ -97,7 +97,7 @@ ITrav	*CMOT::getTrav(const CClassId &idTrav) const
 // ***************************************************************************
 IModel	*CMOT::createModel(const CClassId &idModel) const
 {
-	assert(idModel!=CClassId::Null);
+	nlassert(idModel!=CClassId::Null);
 
 	CModelEntry	e;
 	e.ModelId= idModel;
@@ -116,7 +116,7 @@ IModel	*CMOT::createModel(const CClassId &idModel) const
 		{
 			// Create observer.
 			IObs	*obs= createObs((*itTrav).Trav, idModel);
-			assert(obs);
+			nlassert(obs);
 			// Init model.
 			obs->Model= m;
 			obs->Trav= (*itTrav).Trav;
@@ -142,9 +142,9 @@ IModel	*CMOT::createModel(const CClassId &idModel) const
 // ***************************************************************************
 IObs	*CMOT::createObs(const ITrav *trav, const CClassId &idModel) const
 {
-	assert(trav);
+	nlassert(trav);
 	CClassId idTrav= trav->getClassId();
-	assert(idTrav!=CClassId::Null);
+	nlassert(idTrav!=CClassId::Null);
 
 	if(idModel==CClassId::Null)
 	{
@@ -166,7 +166,7 @@ IObs	*CMOT::createObs(const ITrav *trav, const CClassId &idModel) const
 		set<CModelEntry>::iterator	it;
 		it= Models.find(e);
 
-		assert(it!=Models.end());
+		nlassert(it!=Models.end());
 
 		return createObs(trav, (*it).BaseModelId);
 	}
@@ -208,22 +208,22 @@ void	ITrav::link(IModel *m1, IModel *m2) const
 {
 	IObs	*o1,*o2;
 
-	assert(m2);
+	nlassert(m2);
 	CClassId	travId= getClassId();
 
 	if(m1)
 	{
 		o1= m1->getObs(travId);
-		assert(o1);
+		nlassert(o1);
 	}
 	else
 	{
 		o1= Root;
-		assert(o1);
+		nlassert(o1);
 	}
 	o2= m2->getObs(travId);
-	assert(o1);
-	assert(o2);
+	nlassert(o1);
+	nlassert(o2);
 	o2->addParent(o1);
 	o1->addChild(o2);
 }
@@ -232,22 +232,22 @@ void	ITrav::unlink(IModel *m1, IModel *m2) const
 {
 	IObs	*o1,*o2;
 
-	assert(m2);
+	nlassert(m2);
 	CClassId	travId= getClassId();
 
 	if(m1)
 	{
 		o1= m1->getObs(travId);
-		assert(o1);
+		nlassert(o1);
 	}
 	else
 	{
 		o1= Root;
-		assert(o1);
+		nlassert(o1);
 	}
 	o2= m2->getObs(travId);
-	assert(o1);
-	assert(o2);
+	nlassert(o1);
+	nlassert(o2);
 	o2->delParent(o1);
 	o1->delChild(o2);
 }
@@ -439,7 +439,7 @@ void	IObs::update()
 // ***************************************************************************
 void	IObs::addChild(IObs *son)
 {
-	assert(son);
+	nlassert(son);
 
 	// insert (if not exist).
 	Sons.insert(son);
@@ -447,7 +447,7 @@ void	IObs::addChild(IObs *son)
 // ***************************************************************************
 void	IObs::delChild(IObs *son)
 {
-	assert(son);
+	nlassert(son);
 
 	// Just erase (if possible).
 	Sons.erase(son);
@@ -455,7 +455,7 @@ void	IObs::delChild(IObs *son)
 // ***************************************************************************
 void	IObs::addParent(IObs *father)
 {
-	assert(father);
+	nlassert(father);
 
 	if(isTreeNode())
 	{
@@ -480,7 +480,7 @@ void	IObs::addParent(IObs *father)
 // ***************************************************************************
 void	IObs::delParent(IObs *father)
 {
-	assert(father);
+	nlassert(father);
 
 	// Just erase (if possible).
 	Fathers.erase(father);
@@ -505,7 +505,7 @@ IObs	*IObs::getFirstChild() const
 // ***************************************************************************
 IObs	*IObs::getNextChild() const
 {
-	assert(SonIt!=Sons.end());
+	nlassert(SonIt!=Sons.end());
 	SonIt++;
 	if(SonIt==Sons.end())
 		return NULL;
@@ -531,7 +531,7 @@ IObs	*IObs::getFirstParent() const
 // ***************************************************************************
 IObs	*IObs::getNextParent() const
 {
-	assert(FatherIt!=Fathers.end());
+	nlassert(FatherIt!=Fathers.end());
 	FatherIt++;
 	if(FatherIt==Fathers.end())
 		return NULL;

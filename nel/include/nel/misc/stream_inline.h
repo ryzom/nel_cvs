@@ -8,16 +8,13 @@
  */
 
 /*
- * $Id: stream_inline.h,v 1.10 2000/10/06 10:27:36 lecroart Exp $
+ * $Id: stream_inline.h,v 1.11 2000/10/09 14:53:44 lecroart Exp $
  *
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  */
 
 #ifndef NL_STREAM_INLINE_H
 #define NL_STREAM_INLINE_H
-
-#include "nel/misc/assert.h"
-
 
 namespace	NLMISC
 {

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.4 2001/10/26 08:28:06 vizerie Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.5 2001/11/22 11:25:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,69 +133,69 @@ typedef void *(APIENTRY * PFNWGLFREEMEMORYNVPROC) (void *pointer);
 #define GL_MAP2_VERTEX_ATTRIB15_4_NV      0x867F
 
 #ifdef GL_GLEXT_PROTOTYPES
-extern GLboolean glAreProgramsResidentNV(GLsizei n, const GLuint *programs, GLboolean *residences);
-extern void glBindProgramNV(GLenum target, GLuint id);
-extern void glDeleteProgramsNV(GLsizei n, const GLuint *programs);
-extern void glExecuteProgramNV(GLenum target, GLuint id, const GLfloat *params);
-extern void glGenProgramsNV(GLsizei n, GLuint *programs);
-extern void glGetProgramParameterdvNV(GLenum target, GLuint index, GLenum pname, GLdouble *params);
-extern void glGetProgramParameterfvNV(GLenum target, GLuint index, GLenum pname, GLfloat *params);
-extern void glGetProgramivNV(GLuint id, GLenum pname, GLint *params);
-extern void glGetProgramStringNV(GLuint id, GLenum pname, GLubyte *program);
-extern void glGetTrackMatrixivNV(GLenum target, GLuint address, GLenum pname, GLint *params);
-extern void glGetVertexAttribdvNV(GLuint index, GLenum pname, GLdouble *params);
-extern void glGetVertexAttribfvNV(GLuint index, GLenum pname, GLfloat *params);
-extern void glGetVertexAttribivNV(GLuint index, GLenum pname, GLint *params);
-extern void glGetVertexAttribPointervNV(GLuint index, GLenum pname, GLvoid* *pointer);
-extern GLboolean glIsProgramNV(GLuint id);
-extern void glLoadProgramNV(GLenum target, GLuint id, GLsizei len, const GLubyte *program);
-extern void glProgramParameter4dNV(GLenum target, GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
-extern void glProgramParameter4dvNV(GLenum target, GLuint index, const GLdouble *v);
-extern void glProgramParameter4fNV(GLenum target, GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-extern void glProgramParameter4fvNV(GLenum target, GLuint index, const GLfloat *v);
-extern void glProgramParameters4dvNV(GLenum target, GLuint index, GLsizei count, const GLdouble *v);
-extern void glProgramParameters4fvNV(GLenum target, GLuint index, GLsizei count, const GLfloat *v);
-extern void glRequestResidentProgramsNV(GLsizei n, const GLuint *programs);
-extern void glTrackMatrixNV(GLenum target, GLuint address, GLenum matrix, GLenum transform);
-extern void glVertexAttribPointerNV(GLuint index, GLint fsize, GLenum type, GLsizei stride, const GLvoid *pointer);
-extern void glVertexAttrib1dNV(GLuint index, GLdouble x);
-extern void glVertexAttrib1dvNV(GLuint index, const GLdouble *v);
-extern void glVertexAttrib1fNV(GLuint index, GLfloat x);
-extern void glVertexAttrib1fvNV(GLuint index, const GLfloat *v);
-extern void glVertexAttrib1sNV(GLuint index, GLshort x);
-extern void glVertexAttrib1svNV(GLuint index, const GLshort *v);
-extern void glVertexAttrib2dNV(GLuint index, GLdouble x, GLdouble y);
-extern void glVertexAttrib2dvNV(GLuint index, const GLdouble *v);
-extern void glVertexAttrib2fNV(GLuint index, GLfloat x, GLfloat y);
-extern void glVertexAttrib2fvNV(GLuint index, const GLfloat *v);
-extern void glVertexAttrib2sNV(GLuint index, GLshort x, GLshort y);
-extern void glVertexAttrib2svNV(GLuint index, const GLshort *v);
-extern void glVertexAttrib3dNV(GLuint index, GLdouble x, GLdouble y, GLdouble z);
-extern void glVertexAttrib3dvNV(GLuint index, const GLdouble *v);
-extern void glVertexAttrib3fNV(GLuint index, GLfloat x, GLfloat y, GLfloat z);
-extern void glVertexAttrib3fvNV(GLuint index, const GLfloat *v);
-extern void glVertexAttrib3sNV(GLuint index, GLshort x, GLshort y, GLshort z);
-extern void glVertexAttrib3svNV(GLuint index, const GLshort *v);
-extern void glVertexAttrib4dNV(GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
-extern void glVertexAttrib4dvNV(GLuint index, const GLdouble *v);
-extern void glVertexAttrib4fNV(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-extern void glVertexAttrib4fvNV(GLuint index, const GLfloat *v);
-extern void glVertexAttrib4sNV(GLuint index, GLshort x, GLshort y, GLshort z, GLshort w);
-extern void glVertexAttrib4svNV(GLuint index, const GLshort *v);
-extern void glVertexAttrib4ubvNV(GLuint index, const GLubyte *v);
-extern void glVertexAttribs1dvNV(GLuint index, GLsizei count, const GLdouble *v);
-extern void glVertexAttribs1fvNV(GLuint index, GLsizei count, const GLfloat *v);
-extern void glVertexAttribs1svNV(GLuint index, GLsizei count, const GLshort *v);
-extern void glVertexAttribs2dvNV(GLuint index, GLsizei count, const GLdouble *v);
-extern void glVertexAttribs2fvNV(GLuint index, GLsizei count, const GLfloat *v);
-extern void glVertexAttribs2svNV(GLuint index, GLsizei count, const GLshort *v);
-extern void glVertexAttribs3dvNV(GLuint index, GLsizei count, const GLdouble *v);
-extern void glVertexAttribs3fvNV(GLuint index, GLsizei count, const GLfloat *v);
-extern void glVertexAttribs3svNV(GLuint index, GLsizei count, const GLshort *v);
-extern void glVertexAttribs4dvNV(GLuint index, GLsizei count, const GLdouble *v);
-extern void glVertexAttribs4fvNV(GLuint index, GLsizei count, const GLfloat *v);
-extern void glVertexAttribs4svNV(GLuint index, GLsizei count, const GLshort *v);
-extern void glVertexAttribs4ubvNV(GLuint index, GLsizei count, const GLubyte *v);
+extern GLboolean APIENTRY glAreProgramsResidentNV(GLsizei n, const GLuint *programs, GLboolean *residences);
+extern void APIENTRY glBindProgramNV(GLenum target, GLuint id);
+extern void APIENTRY glDeleteProgramsNV(GLsizei n, const GLuint *programs);
+extern void APIENTRY glExecuteProgramNV(GLenum target, GLuint id, const GLfloat *params);
+extern void APIENTRY glGenProgramsNV(GLsizei n, GLuint *programs);
+extern void APIENTRY glGetProgramParameterdvNV(GLenum target, GLuint index, GLenum pname, GLdouble *params);
+extern void APIENTRY glGetProgramParameterfvNV(GLenum target, GLuint index, GLenum pname, GLfloat *params);
+extern void APIENTRY glGetProgramivNV(GLuint id, GLenum pname, GLint *params);
+extern void APIENTRY glGetProgramStringNV(GLuint id, GLenum pname, GLubyte *program);
+extern void APIENTRY glGetTrackMatrixivNV(GLenum target, GLuint address, GLenum pname, GLint *params);
+extern void APIENTRY glGetVertexAttribdvNV(GLuint index, GLenum pname, GLdouble *params);
+extern void APIENTRY glGetVertexAttribfvNV(GLuint index, GLenum pname, GLfloat *params);
+extern void APIENTRY glGetVertexAttribivNV(GLuint index, GLenum pname, GLint *params);
+extern void APIENTRY glGetVertexAttribPointervNV(GLuint index, GLenum pname, GLvoid* *pointer);
+extern GLboolean APIENTRY glIsProgramNV(GLuint id);
+extern void APIENTRY glLoadProgramNV(GLenum target, GLuint id, GLsizei len, const GLubyte *program);
+extern void APIENTRY glProgramParameter4dNV(GLenum target, GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
+extern void APIENTRY glProgramParameter4dvNV(GLenum target, GLuint index, const GLdouble *v);
+extern void APIENTRY glProgramParameter4fNV(GLenum target, GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+extern void APIENTRY glProgramParameter4fvNV(GLenum target, GLuint index, const GLfloat *v);
+extern void APIENTRY glProgramParameters4dvNV(GLenum target, GLuint index, GLsizei count, const GLdouble *v);
+extern void APIENTRY glProgramParameters4fvNV(GLenum target, GLuint index, GLsizei count, const GLfloat *v);
+extern void APIENTRY glRequestResidentProgramsNV(GLsizei n, const GLuint *programs);
+extern void APIENTRY glTrackMatrixNV(GLenum target, GLuint address, GLenum matrix, GLenum transform);
+extern void APIENTRY glVertexAttribPointerNV(GLuint index, GLint fsize, GLenum type, GLsizei stride, const GLvoid *pointer);
+extern void APIENTRY glVertexAttrib1dNV(GLuint index, GLdouble x);
+extern void APIENTRY glVertexAttrib1dvNV(GLuint index, const GLdouble *v);
+extern void APIENTRY glVertexAttrib1fNV(GLuint index, GLfloat x);
+extern void APIENTRY glVertexAttrib1fvNV(GLuint index, const GLfloat *v);
+extern void APIENTRY glVertexAttrib1sNV(GLuint index, GLshort x);
+extern void APIENTRY glVertexAttrib1svNV(GLuint index, const GLshort *v);
+extern void APIENTRY glVertexAttrib2dNV(GLuint index, GLdouble x, GLdouble y);
+extern void APIENTRY glVertexAttrib2dvNV(GLuint index, const GLdouble *v);
+extern void APIENTRY glVertexAttrib2fNV(GLuint index, GLfloat x, GLfloat y);
+extern void APIENTRY glVertexAttrib2fvNV(GLuint index, const GLfloat *v);
+extern void APIENTRY glVertexAttrib2sNV(GLuint index, GLshort x, GLshort y);
+extern void APIENTRY glVertexAttrib2svNV(GLuint index, const GLshort *v);
+extern void APIENTRY glVertexAttrib3dNV(GLuint index, GLdouble x, GLdouble y, GLdouble z);
+extern void APIENTRY glVertexAttrib3dvNV(GLuint index, const GLdouble *v);
+extern void APIENTRY glVertexAttrib3fNV(GLuint index, GLfloat x, GLfloat y, GLfloat z);
+extern void APIENTRY glVertexAttrib3fvNV(GLuint index, const GLfloat *v);
+extern void APIENTRY glVertexAttrib3sNV(GLuint index, GLshort x, GLshort y, GLshort z);
+extern void APIENTRY glVertexAttrib3svNV(GLuint index, const GLshort *v);
+extern void APIENTRY glVertexAttrib4dNV(GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
+extern void APIENTRY glVertexAttrib4dvNV(GLuint index, const GLdouble *v);
+extern void APIENTRY glVertexAttrib4fNV(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+extern void APIENTRY glVertexAttrib4fvNV(GLuint index, const GLfloat *v);
+extern void APIENTRY glVertexAttrib4sNV(GLuint index, GLshort x, GLshort y, GLshort z, GLshort w);
+extern void APIENTRY glVertexAttrib4svNV(GLuint index, const GLshort *v);
+extern void APIENTRY glVertexAttrib4ubvNV(GLuint index, const GLubyte *v);
+extern void APIENTRY glVertexAttribs1dvNV(GLuint index, GLsizei count, const GLdouble *v);
+extern void APIENTRY glVertexAttribs1fvNV(GLuint index, GLsizei count, const GLfloat *v);
+extern void APIENTRY glVertexAttribs1svNV(GLuint index, GLsizei count, const GLshort *v);
+extern void APIENTRY glVertexAttribs2dvNV(GLuint index, GLsizei count, const GLdouble *v);
+extern void APIENTRY glVertexAttribs2fvNV(GLuint index, GLsizei count, const GLfloat *v);
+extern void APIENTRY glVertexAttribs2svNV(GLuint index, GLsizei count, const GLshort *v);
+extern void APIENTRY glVertexAttribs3dvNV(GLuint index, GLsizei count, const GLdouble *v);
+extern void APIENTRY glVertexAttribs3fvNV(GLuint index, GLsizei count, const GLfloat *v);
+extern void APIENTRY glVertexAttribs3svNV(GLuint index, GLsizei count, const GLshort *v);
+extern void APIENTRY glVertexAttribs4dvNV(GLuint index, GLsizei count, const GLdouble *v);
+extern void APIENTRY glVertexAttribs4fvNV(GLuint index, GLsizei count, const GLfloat *v);
+extern void APIENTRY glVertexAttribs4svNV(GLuint index, GLsizei count, const GLshort *v);
+extern void APIENTRY glVertexAttribs4ubvNV(GLuint index, GLsizei count, const GLubyte *v);
 #endif /* GL_GLEXT_PROTOTYPES */
 typedef GLboolean (APIENTRY * PFNGLAREPROGRAMSRESIDENTNVPROC) (GLsizei n, const GLuint *programs, GLboolean *residences);
 typedef void (APIENTRY * PFNGLBINDPROGRAMNVPROC) (GLenum target, GLuint id);
@@ -273,13 +273,13 @@ typedef void (APIENTRY * PFNGLVERTEXATTRIBS4UBVNVPROC) (GLuint index, GLsizei co
 #define GL_FENCE_CONDITION_NV             0x84F4
 
 #ifdef GL_GLEXT_PROTOTYPES
-extern void glDeleteFencesNV(GLsizei n, const GLuint *fences);
-extern void glGenFencesNV(GLsizei n, GLuint *fences);
-extern GLboolean glIsFenceNV(GLuint fence);
-extern GLboolean glTestFenceNV(GLuint fence);
-extern void glGetFenceivNV(GLuint fence, GLenum pname, GLint *params);
-extern void glFinishFenceNV(GLuint fence);
-extern void glSetFenceNV(GLuint fence, GLenum condition);
+extern void APIENTRY glDeleteFencesNV(GLsizei n, const GLuint *fences);
+extern void APIENTRY glGenFencesNV(GLsizei n, GLuint *fences);
+extern GLboolean APIENTRY glIsFenceNV(GLuint fence);
+extern GLboolean APIENTRY glTestFenceNV(GLuint fence);
+extern void APIENTRY glGetFenceivNV(GLuint fence, GLenum pname, GLint *params);
+extern void APIENTRY glFinishFenceNV(GLuint fence);
+extern void APIENTRY glSetFenceNV(GLuint fence, GLenum condition);
 #endif /* GL_GLEXT_PROTOTYPES */
 typedef void (APIENTRY * PFNGLDELETEFENCESNVPROC) (GLsizei n, const GLuint *fences);
 typedef void (APIENTRY * PFNGLGENFENCESNVPROC) (GLsizei n, GLuint *fences);

@@ -1,7 +1,7 @@
 /** \file skeleton_shape.h
  * <File description>
  *
- * $Id: skeleton_shape.h,v 1.1 2001/04/09 14:25:07 berenguier Exp $
+ * $Id: skeleton_shape.h,v 1.2 2001/04/13 16:39:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,7 +59,7 @@ public:
 
 
 	/// Return the id of a bone, from it's name. -1 if not present.
-	sint32			getBoneIdFromName(const std::string &name) const;
+	sint32			getBoneIdByName(const std::string &name) const;
 
 
 	/// \name From IShape

@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.6 2001/03/29 12:09:28 berenguier Exp $
+ * $Id: transform_user.h,v 1.7 2001/04/13 16:39:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/tmp/u_transform.h"
 #include "nel/3d/transform.h"
 #include "nel/3d/scene.h"
+#include "nel/3d/transformable_user.h"
 
 
 namespace NL3D 
@@ -43,7 +44,7 @@ namespace NL3D
  * \author Nevrax France
  * \date 2001
  */
-class CTransformUser : virtual public UTransform
+class CTransformUser : virtual public UTransform, public CTransformableUser
 {
 protected:
 	// The Scene.
@@ -57,16 +58,16 @@ public:
 	/// \name Object
 	// @{
 	/// Give a Scene Instance. CTransformUser owns it, and will delete it.
-	CTransformUser(CScene *scene, IModel *trans)
+	CTransformUser(CScene *scene, IModel *trans) : CTransformableUser( static_cast<ITransformable*>((CTransform*)trans) )
 	{
 		nlassert(scene && trans);
 		_Scene= scene;
 		nlassert(dynamic_cast<CTransform*>(trans));
+		// NB: _Transform is "same" pointer as ITransformable, but correclty casted.
 		_Transform= (CTransform*)trans;
 
 		// Same enums!!
 		nlassert((uint)UTransform::VisibilityCount == (uint)CHrcTrav::VisibilityCount);
-		nlassert((uint)UTransform::TransformModeCount == (uint)ITransformable::TransformModeCount);
 	}
 	virtual	~CTransformUser()
 	{
@@ -79,14 +80,6 @@ public:
 
 	/// \name Space manipulation
 	// @{
-	virtual	void			setMatrix(const CMatrix &mat)
-	{
-		_Transform->setMatrix(mat);
-	}
-	virtual	const CMatrix	&getMatrix() const	
-	{
-		return _Transform->getMatrix();
-	}
 	/// unlink this from oldparent, and make this be a son of newFather.
 	virtual	void			parent(UTransform *newFather)
 	{
@@ -104,102 +97,6 @@ public:
 			_Scene->getTrav(HrcTravId)->link(NULL, _Transform);
 		}
 	}
-	// @}
-
-
-	/// \name space set/get.
-	// @{
-
-	virtual	void			setTransformMode(TTransformMode mode, CMatrix::TRotOrder ro= CMatrix::ZXY)
-	{
-		_Transform->setTransformMode((ITransformable::TTransformMode)(uint)mode, ro);
-	}
-	virtual	void			setPos(const CVector &pos)
-	{
-		_Transform->setPos(pos);
-	}
-	virtual	void			setRotEuler(const CVector &rot)
-	{
-		_Transform->setRotEuler(rot);
-	}
-	virtual	void			setRotQuat(const CQuat &quat)
-	{
-		_Transform->setRotQuat(quat);
-	}
-	virtual	void			setRotQuat(const CVector &jdir)
-	{
-		CMatrix	mat;
-		mat.setRot(CVector::I, jdir, CVector::K);
-		mat.normalize(CMatrix::YZX);
-		setRotQuat(mat.getRot());
-	}
-	virtual	void			setRotQuat(const CVector &jdir, const CVector &vup)
-	{
-		CMatrix	mat;
-		mat.setRot(CVector::I, jdir, vup);
-		mat.normalize(CMatrix::YZX);
-		setRotQuat(mat.getRot());
-	}
-	virtual	void			setScale(const CVector &scale)
-	{
-		_Transform->setScale(scale);
-	}
-	virtual	void			setPivot(const CVector &pivot)
-	{
-		_Transform->setPivot(pivot);
-	}
-
-	virtual	TTransformMode		getTransformMode()
-	{
-		return (TTransformMode)(uint)_Transform->getTransformMode();
-	}
-	virtual	CMatrix::TRotOrder	getRotOrder()
-	{
-		return _Transform->getRotOrder();
-	}
-
-	virtual	void			getPos(CVector &pos)
-	{
-		_Transform->getPos(pos);
-	}
-	virtual	void			getRotEuler(CVector &rot)
-	{
-		_Transform->getRotEuler(rot);
-	}
-	virtual	void			getRotQuat(CQuat &quat)
-	{
-		_Transform->getRotQuat(quat);
-	}
-	virtual	void			getScale(CVector &scale)
-	{
-		_Transform->getScale(scale);
-	}
-	virtual	void			getPivot(CVector &pivot)
-	{
-		_Transform->getPivot(pivot);
-	}
-
-	virtual	CVector			getPos()
-	{
-		return _Transform->getPos();
-	}
-	virtual	CVector			getRotEuler()
-	{
-		return _Transform->getRotEuler();
-	}
-	virtual	CQuat			getRotQuat()
-	{
-		return _Transform->getRotQuat();
-	}
-	virtual	CVector			getScale()
-	{
-		return _Transform->getScale();
-	}
-	virtual	CVector			getPivot()
-	{
-		return _Transform->getPivot();
-	}
-
 	// @}
 
 
@@ -227,21 +124,6 @@ public:
 	}
 	// @}
 
-
-	/// \name Misc
-	// @{
-	/** 
-	  * Setup Matrix by the lookAt method. Work only in DirectMatrix mode and RotQuat mode (not euler...).
-	  * 
-	  * \param eye is the coordinate of the object.
-	  * \param target is the point the object look at.
-	  * \param roll is the roll angle in radian along the object's Y axis.
-	  */
-	virtual	void			lookAt (const CVector& eye, const CVector& target, float roll=0.f)
-	{
-		_Transform->lookAt(eye, target, roll);
-	}
-	// @}
 
 public:
 	/// \name Accessor for CSeneUser / Other.

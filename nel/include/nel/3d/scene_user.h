@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.3 2001/04/09 14:25:39 corvazier Exp $
+ * $Id: scene_user.h,v 1.4 2001/04/13 16:39:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/3d/instance_user.h"
 #include "nel/3d/landscape_user.h"
 #include "nel/3d/instance_group_user.h"
+#include "nel/3d/skeleton_user.h"
 
 
 namespace NL3D {
@@ -167,6 +168,9 @@ public:
 		if(model==NULL)
 			return NULL;
 
+		if( dynamic_cast<CMeshInstance*>(model)==NULL )
+			nlerror("UScene::createInstance(): shape is not a mesh");
+
 		// The component is auto added/deleted to _Scene in ctor/dtor.
 		return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );
 	}
@@ -174,6 +178,26 @@ public:
 	{
 		// The component is auto added/deleted to _Scene in ctor/dtor.
 		_Transforms.erase(dynamic_cast<CTransformUser*>(inst));
+	}
+
+
+	virtual	USkeleton		*createSkeleton(const std::string &shapeName)
+	{
+		IModel	*model= _Scene.createInstance(shapeName);
+		// If not found, return NULL.
+		if(model==NULL)
+			return NULL;
+
+		if( dynamic_cast<CSkeletonModel*>(model)==NULL )
+			nlerror("UScene::createSkeleton(): shape is not a skeletonShape");
+
+		// The component is auto added/deleted to _Scene in ctor/dtor.
+		return dynamic_cast<USkeleton*>( _Transforms.insert(new CSkeletonUser(&_Scene, model)) );
+	}
+	virtual	void			deleteSkeleton(USkeleton *skel)
+	{
+		// The component is auto added/deleted to _Scene in ctor/dtor.
+		_Transforms.erase(dynamic_cast<CTransformUser*>(skel));
 	}
 
 

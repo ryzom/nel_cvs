@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.1 2001/04/09 14:25:20 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.2 2001/04/13 16:38:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/3d/mesh_instance.h"
 #include "nel/3d/hrc_trav.h"
 #include "nel/3d/clip_trav.h"
+#include "nel/3d/skeleton_shape.h"
 
 
 namespace NL3D
@@ -157,6 +158,15 @@ void		CSkeletonModel::cacheTravs()
 
 	HrcTrav= (CHrcTrav*)HrcObs->Trav;
 	ClipTrav= (CClipTrav*)ClipObs->Trav;
+}
+
+
+// ***************************************************************************
+sint32		CSkeletonModel::getBoneIdByName(const std::string &name) const
+{
+	nlassert(dynamic_cast<CSkeletonShape*>((IShape*)Shape));
+	CSkeletonShape		*shp= (CSkeletonShape*)(IShape*)Shape;
+	return shp->getBoneIdByName(name);
 }
 
 

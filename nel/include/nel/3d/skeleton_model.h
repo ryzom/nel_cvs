@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.1 2001/04/09 14:25:07 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.2 2001/04/13 16:39:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,6 +102,13 @@ public:
 	 * NB: mi is made son of Root in Traversals Hrc and Clip.
 	 */
 	void		detachSkeletonSon(CTransform *mi);
+	// @}
+
+
+	/// \name Misc.
+	// @{
+	/// return, from skeleton shape, the BoneIdByName. -1 if not here.
+	sint32		getBoneIdByName(const std::string &name) const;
 	// @}
 
 

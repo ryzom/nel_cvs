@@ -727,6 +727,14 @@ SOURCE=..\include\nel\3d\animation_set_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\bone_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\bone_user.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\camera_user.cpp
 # End Source File
 # Begin Source File
@@ -807,6 +815,14 @@ SOURCE=..\include\nel\3d\scene_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\skeleton_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\skeleton_user.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\text_context_user.cpp
 # End Source File
 # Begin Source File
@@ -831,6 +847,14 @@ SOURCE=..\include\nel\3d\transform_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\transformable_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\transformable_user.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\viewport.cpp
 # End Source File
 # End Group
@@ -848,6 +872,10 @@ SOURCE=..\include\nel\3d\tmp\frustum.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\tmp\u_animation_set.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tmp\u_bone.h
 # End Source File
 # Begin Source File
 
@@ -887,6 +915,10 @@ SOURCE=..\include\nel\3d\tmp\u_scene.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\3d\tmp\u_skeleton.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\3d\tmp\u_text_context.h
 # End Source File
 # Begin Source File
@@ -896,6 +928,10 @@ SOURCE=..\include\nel\3d\tmp\u_texture.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\tmp\u_transform.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tmp\u_transformable.h
 # End Source File
 # Begin Source File
 

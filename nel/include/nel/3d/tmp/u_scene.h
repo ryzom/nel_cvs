@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.2 2001/04/09 14:25:39 corvazier Exp $
+ * $Id: u_scene.h,v 1.3 2001/04/13 16:39:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,8 @@ class UCamera;
 class UInstance;
 class ULandscape;
 class UInstanceGroup;
+class USkeleton;
+
 
 //****************************************************************************
 /**
@@ -99,11 +101,21 @@ public:
 
 	/** Create an instance of the shape "shapename". If not present, try to load "shapename" via CPath.
 	 * If fails (file not found), return NULL.
+	 * nlerror if the file is not a mesh file.
 	 */
 	virtual	UInstance		*createInstance(const std::string &shapeName)=0;
 	/** Delete an instance via his pointer.
 	 */
 	virtual	void			deleteInstance(UInstance *inst)=0;
+
+	/** Create a skeleton instance of the skeleton shape "shapename". If not present, try to load "shapename" via CPath.
+	 * If fails (file not found), return NULL.
+	 * nlerror if the file is not a skeleton shape file.
+	 */
+	virtual	USkeleton		*createSkeleton(const std::string &shapeName)=0;
+	/** Delete a skeleton instance via his pointer.
+	 */
+	virtual	void			deleteSkeleton(USkeleton *skel)=0;
 
 	/// Create a landscape. There could be many Landscape per Scene (Driver? :). But never tested :).
 	virtual	ULandscape		*createLandscape()=0;

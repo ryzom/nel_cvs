@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * <File description>
  *
- * $Id: skeleton_shape.cpp,v 1.1 2001/04/09 14:25:20 berenguier Exp $
+ * $Id: skeleton_shape.cpp,v 1.2 2001/04/13 16:38:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NL3D
 
 
 // ***************************************************************************
-sint32			CSkeletonShape::getBoneIdFromName(const std::string &name) const
+sint32			CSkeletonShape::getBoneIdByName(const std::string &name) const
 {
 	std::map<std::string, uint32>::const_iterator	it= _BoneMap.find(name);
 	if(it==_BoneMap.end())

@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.4 2001/03/28 12:13:31 berenguier Exp $
+ * $Id: u_transform.h,v 1.5 2001/04/13 16:39:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,7 @@
 #define NL_U_TRANSFORM_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/misc/matrix.h"
-#include "nel/misc/quat.h"
+#include "nel/3d/tmp/u_transformable.h"
 
 
 namespace NL3D 
@@ -40,13 +39,13 @@ using NLMISC::CQuat;
 
 // ***************************************************************************
 /**
- * Base interface for manipulating Movable Objects: camera, lights, instances etc...
- * By default Transformmode is RotQuat.
+ * Base interface for manipulating Movable Objects in the scene: camera, lights, instances etc...
+ * see UTransformable. A UTransform can be set in a hierachy, and can be hidden.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
  */
-class UTransform
+class UTransform : virtual public UTransformable
 {
 protected:
 
@@ -58,7 +57,7 @@ protected:
 	// @}
 
 public:
-	// Enum should be the same than in CHrcTrav, and ITransformable.
+	// Enum should be the same than in CHrcTrav.
 
 	/// The visibility flag. In the root case, Herit means Show.
 	enum	TVisibility
@@ -70,81 +69,8 @@ public:
 		VisibilityCount
 	};
 
-	// Matrix mode.
-	enum	TTransformMode
-	{
-		DirectMatrix=0,		// DirectMatrixMode .
-		RotEuler,			// Matrix is computed from sperated composantes, with euler rotation.
-		RotQuat,			// Matrix is computed from sperated composantes, with quat rotation (default).
-
-		TransformModeCount
-	};
-
 
 public:
-
-
-	/// \name Position set
-	// @{
-	/// Change the transform mode. Components or matrix are not reseted.
-	virtual	void			setTransformMode(TTransformMode mode, CMatrix::TRotOrder ro= CMatrix::ZXY)=0;
-	/// Work only in Rot* mode(nlassert).
-	virtual	void			setPos(const CVector &pos)=0;
-	/// Work only in RotEuler mode(nlassert).
-	virtual	void			setRotEuler(const CVector &rot)=0;
-	/// Work only in RotQuat mode (nlassert).
-	virtual	void			setRotQuat(const CQuat &quat)=0;
-	/** Work only in RotQuat mode (nlassert). 
-	 * Build a quaternion from a forward direction (a J vector). there is no roll... jdir do not need to be noramlized.
-	 */
-	virtual	void			setRotQuat(const CVector &jdir)=0;
-	/** Work only in RotQuat mode (nlassert). 
-	 * Build a quaternion from a forward direction (a J vector). the roll is determined with help of the vector up vup... vectors do not need to be noramlized.
-	 */
-	virtual	void			setRotQuat(const CVector &jdir, const CVector &vup)=0;
-	/// Work only in Rot* mode (nlassert).
-	virtual	void			setScale(const CVector &scale)=0;
-	/// Work only in Rot* mode (nlassert).
-	virtual	void			setPivot(const CVector &pivot)=0;
-
-	/// Work only in DirecTMatrix mode (nlassert).
-	virtual	void			setMatrix(const CMatrix &mat)=0;
-	// @}
-
-
-	/// \name Position get
-	// @{
-
-	/// get the current transform mode.
-	virtual	TTransformMode		getTransformMode()=0;
-	/// get the current rotorder (information vlaid only when RotEuler mode).
-	virtual	CMatrix::TRotOrder	getRotOrder()=0;
-
-	/// Get the matrix, compute her if necessary (work in all modes).
-	virtual	const CMatrix	&getMatrix() const	=0;
-
-	/// Work only in Rot* mode(nlassert).
-	virtual	void			getPos(CVector &pos)=0;
-	/// Work only in RotEuler mode(nlassert).
-	virtual	void			getRotEuler(CVector &rot)=0;
-	/// Work only in RotQuat mode (nlassert).
-	virtual	void			getRotQuat(CQuat &quat)=0;
-	/// Work only in Rot* mode (nlassert).
-	virtual	void			getScale(CVector &scale)=0;
-	/// Work only in Rot* mode (nlassert).
-	virtual	void			getPivot(CVector &pivot)=0;
-
-	/// Work only in Rot* mode(nlassert).
-	virtual	CVector			getPos()=0;
-	/// Work only in RotEuler mode(nlassert).
-	virtual	CVector			getRotEuler()=0;
-	/// Work only in RotQuat mode (nlassert).
-	virtual	CQuat			getRotQuat()=0;
-	/// Work only in Rot* mode (nlassert).
-	virtual	CVector			getScale()=0;
-	/// Work only in Rot* mode (nlassert).
-	virtual	CVector			getPivot()=0;
-	// @}
 
 
 	/// \name Hierarchy manipulation
@@ -167,19 +93,6 @@ public:
 	virtual	void			heritVisibility()=0;
 	/// Get the local visibility state.
 	virtual	TVisibility		getVisibility()=0;
-	// @}
-
-
-	/// \name Misc
-	// @{
-	/** 
-	  * Setup Matrix by the lookAt method. Work only in DirectMatrix mode and RotQuat mode (not euler...).
-	  * 
-	  * \param eye is the coordinate of the object.
-	  * \param target is the point the object look at.
-	  * \param roll is the roll angle in radian along the object's Y axis.
-	  */
-	virtual	void			lookAt (const CVector& eye, const CVector& target, float roll=0.f) =0;
 	// @}
 
 

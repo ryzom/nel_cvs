@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.22 2002/10/30 16:24:49 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.23 2003/01/14 13:27:32 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -147,7 +147,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 {
 	//nlassert( (nbits <= 32) && (nbits != 0) );
 	if (nbits>32 || nbits==0)
-		throw EMemStream (string("trying to serial ")+toString(nbits)+string(" %d bits"));
+		throw EMemStream (string("trying to serial ")+toString(nbits)+string(" bits"));
 
 	if ( isReading() )
 	{
@@ -248,9 +248,85 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 			displayByteBits( *_BufPos, 8, _FreeBits-1 );
 			_FreeBits = ((_FreeBits-1 - nbits) % 8) + 1; // ((uint)-1) % 8 equals 7
 		}
+	}
+}
 
+
+/*
+ * Helper for poke(), to write a value inside an output stream
+ */
+void	CBitMemStream::serialPoke( uint32 value, uint nbits )
+{
+	// Resize if necessary
+	if ( _FreeBits == 8 ) // _FreeBits is from 7 downto 1, then 8
+	{
+		_BufPos++; // increment _BufPos but do not reset (*_BufPos)
 	}
 
+	uint32 v;
+	if ( nbits != 32 ) // arg of shl/sal/shr/sal ranges from 0 to 31
+	{
+		uint32 mask = (1 << nbits) - 1;
+		v = value & mask;
+	}
+	else
+	{
+		v = value;
+	}
+
+	// Set
+	if ( nbits > _FreeBits )
+	{
+		// Longer than the room in the current byte
+		//nldebug( "Writing byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
+		displayDwordBits( value, 32, nbits-1 );
+		*_BufPos |= (v >> (nbits - _FreeBits));
+		uint filledbits = _FreeBits;
+		displayByteBits( *_BufPos, 8, filledbits-1 );
+		_FreeBits = 8;
+		serialPoke( v, nbits - filledbits );
+	}
+	else
+	{
+		// Shorter or equal
+		//nldebug( "Writing last byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
+		displayByteBits( *_BufPos, 8, 7 );
+		*_BufPos |= (v << (_FreeBits-nbits));
+		displayByteBits( *_BufPos, 8, _FreeBits-1 );
+		_FreeBits = ((_FreeBits-1 - nbits) % 8) + 1; // ((uint)-1) % 8 equals 7
+	}
+}
+
+
+/* Rewrite the nbbits lowest bits of a value at the specified position bitpos of the current output bit stream.
+ * Precondition: bitpos+nbbits <= the current length in bit of the stream.
+ */
+void	CBitMemStream::poke( uint32 value, uint bitpos, uint nbits )
+{
+#ifdef NL_DEBUG
+	nlassert( (nbits <= 32) && (nbits != 0) );
+	nlassert( ! isReading() );
+	nlassert( bitpos+nbits <= (uint)getPosInBit() );
+	uint origSize = _Buffer.size();
+#endif
+
+	// Save the current pointers of the stream, and make them point to the required position
+	uint savedFreeBits = _FreeBits;
+	uint bytepos = bitpos >> 3;
+	_FreeBits = 8 - (bitpos - (bytepos << 3));
+	uint8 *savedBufPos = _BufPos;
+	_BufPos = _Buffer.getPtr() + bytepos;
+
+	// Serial
+	serialPoke( value, nbits );
+
+	// Restore the current pointers
+	_FreeBits = savedFreeBits;
+	_BufPos = savedBufPos;
+
+#ifdef NL_DEBUG
+	nlassert( _Buffer.size() == origSize );
+#endif
 }
 
 

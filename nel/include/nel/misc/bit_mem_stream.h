@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.15 2002/10/29 10:44:23 legros Exp $
+ * $Id: bit_mem_stream.h,v 1.16 2003/01/14 13:27:04 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -171,6 +171,11 @@ public:
 		}
 	}
 
+	/* Rewrite the nbits lowest bits of a value at the specified position bitpos of the current output bit stream.
+	 * Precondition: bitpos+nbits <= the current length in bit of the stream.
+	 */
+	void			poke( uint32 value, uint bitpos, uint nbits );
+
 	/// Template serialisation (should take the one from IStream)
     template<class T>
 	void			serial(T &obj)							{ obj.serial(*this); }
@@ -287,6 +292,9 @@ public:
 	virtual void			serialCont(std::vector<bool> &cont);
 
 protected:
+
+	/// Helper for poke(), to write a value inside an output stream
+	void			serialPoke( uint32 value, uint nbits );
 
 	uint			_FreeBits; // From 8 downto 1
 

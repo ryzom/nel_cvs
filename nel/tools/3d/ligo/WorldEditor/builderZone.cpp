@@ -44,6 +44,7 @@ using NL3D::CNELU;
 CDataBase::SCacheTexture::SCacheTexture()
 {
 	Enabled = false;
+	Texture = NULL;
 }
 
 // ---------------------------------------------------------------------------
@@ -75,13 +76,31 @@ CDataBase::CDataBase ()
 // ---------------------------------------------------------------------------
 CDataBase::~CDataBase ()
 {
+	reset ();
+}
+
+// ---------------------------------------------------------------------------
+void CDataBase::reset ()
+{
+	for (uint32 i = 0; i < 64; ++i)
+	{
+		_CacheTexture[i].Enabled = false;
+		_CacheTexture[i].Texture = NULL; // Because its a smart ptr
+		_CacheTexture[i].PtrMem.resize (0);
+		_CacheTexture[i].FreePlace.resize(0);
+	}
+	
 	map<string,SElement>::iterator it = _ZoneDBmap.begin ();
 	while (it != _ZoneDBmap.end())
 	{
+		string sName = it->first;
 		SElement &rElt = it->second;
 		delete rElt.WinBitmap;
+		rElt.WinBitmap = NULL;
 		++it;
 	}
+	_ZoneDBmap.clear ();
+	_UnusedTexture = NULL;
 }
 
 // ---------------------------------------------------------------------------
@@ -199,7 +218,7 @@ CBitmap *CDataBase::getBitmap (const string &ZoneName)
 {
 	map<string,SElement>::iterator it = _ZoneDBmap.find (ZoneName);
 	if (it != _ZoneDBmap.end())
-		return it->second.WinBitmap;
+		return (it->second.WinBitmap);
 	else
 		return NULL;
 }
@@ -261,8 +280,14 @@ CBitmap *CDataBase::convertToWin (NLMISC::CBitmap *pBitmap)
 		pNewPixel[(i+j*nNewWidth)*4+2] = rPixel[(i*WIDTH_DIVISOR+j*HEIGHT_DIVISOR*pBitmap->getWidth())*4+0];
 		pNewPixel[(i+j*nNewWidth)*4+3] = rPixel[(i*WIDTH_DIVISOR+j*HEIGHT_DIVISOR*pBitmap->getWidth())*4+3];
 	}
-	pWinBitmap->CreateBitmap (nNewWidth, nNewHeight, 1, 32, pNewPixel);
-	return pWinBitmap;
+	pWinBitmap->CreateBitmap (nNewWidth, nNewHeight, 1, 32, pNewPixel);	
+	if (pNewPixel == NULL)
+	{
+		delete pWinBitmap;
+		return NULL;
+	}
+	else
+		return pWinBitmap;
 }
 
 // ---------------------------------------------------------------------------
@@ -372,22 +397,31 @@ CBuilderZone::CBuilderZone ()
 	_Display = NULL;
 	_ApplyRotCycle = 0;
 	_ApplyFlipCycle = 0;
+	_CycleSelection = false;
+	_ApplyCycleSelection = 0;
+	_NotPropagate = false;
+	_LastPathName = "";
 }
 
 // ---------------------------------------------------------------------------
 bool CBuilderZone::init (const string &sPathName, bool makeAZone)
 {
-	string sZoneBankPath = sPathName;
-	sZoneBankPath += "ZoneLigos\\";
-	// Init the ZoneBank
-//	_ZoneBank.debugInit("C:\\Ryzom\\code\\nel\\tools\\leveldesign\\syk");
-	_ZoneBank.reset ();
-	initZoneBank (sZoneBankPath);
-	
-	// Construct the DataBase from the ZoneBank
-	string sZoneBitmapPath = sPathName;
-	sZoneBitmapPath += "ZoneBitmaps\\";
-	_DataBase.init (sZoneBitmapPath.c_str(), _ZoneBank);
+	if (sPathName != _LastPathName)
+	{
+		_LastPathName = sPathName;
+		string sZoneBankPath = sPathName;
+		sZoneBankPath += "\\ZoneLigos\\";
+		// Init the ZoneBank
+// _ZoneBank.debugInit("C:\\Ryzom\\code\\nel\\tools\\leveldesign\\syk");
+		_ZoneBank.reset ();
+		initZoneBank (sZoneBankPath);
+		
+		// Construct the DataBase from the ZoneBank
+		string sZoneBitmapPath = sPathName;
+		sZoneBitmapPath += "\\ZoneBitmaps\\";
+		_DataBase.reset ();
+		_DataBase.init (sZoneBitmapPath.c_str(), _ZoneBank);
+	}
 
 	if (makeAZone)
 		newZone();
@@ -505,7 +539,14 @@ void CBuilderZone::updateToolsZone ()
 		_ToolsZone->getListCtrl()->addItem (pElt->getName());
 	}
 	_ToolsZone->getListCtrl()->setImages (vIL);
-	_CurSelectedZone = -1;
+	if (_CurrentSelection.size() > 0)
+	{
+		_ToolsZone->getListCtrl()->SetCurSel (0);
+		_CurSelectedZone = 0;
+	}
+	else
+		_CurSelectedZone = -1;
+	_ApplyCycleSelection = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -664,6 +705,14 @@ void CBuilderZone::move (sint32 x, sint32 y)
 }
 
 // ---------------------------------------------------------------------------
+uint32 CBuilderZone::countZones ()
+{
+	if (_ZoneRegions.size() == 0)
+		return 0;
+	return _ZoneRegions[_ZoneRegionSelected]->countZones ();
+}
+
+// ---------------------------------------------------------------------------
 CBuilderZone::SCacheRender::SCacheRender ()
 {
 	Used = false;
@@ -677,8 +726,6 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 {
 	sint32 i, zoneSelected;
 
-//	MessageBox(NULL, "CBuilderZone::render", "1", MB_OK);
-
 	// Reset the cache
 	for (i = 0; i < (64+2); ++i)
 	{
@@ -686,8 +733,6 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 		_CacheRender[i].PB.setNumTri (0);
 		_CacheRender[i].Used = false;
 	}
-
-//	MessageBox(NULL, "CBuilderZone::render", "2", MB_OK);
 
 	// Select all blocks visible
 	float minx = floorf(viewMin.x/_Display->_CellSize)*_Display->_CellSize;
@@ -847,6 +892,214 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 }
 
 // ---------------------------------------------------------------------------
+void CBuilderZone::renderTransition (const NLMISC::CVector &viewMin, const NLMISC::CVector &viewMax)
+{
+	// Select all blocks visible
+	float rMinX = floorf (viewMin.x / _Display->_CellSize)*_Display->_CellSize;
+	float rMinY = floorf (viewMin.y / _Display->_CellSize)*_Display->_CellSize;
+	float rMaxX = ceilf  (viewMax.x / _Display->_CellSize)*_Display->_CellSize;
+	float rMaxY = ceilf  (viewMax.y / _Display->_CellSize)*_Display->_CellSize;
+
+	sint32 nMinX = (sint32)floor (rMinX / _Display->_CellSize);
+	sint32 nMinY = (sint32)floor (rMinY / _Display->_CellSize);
+	sint32 nMaxX = (sint32)floor (rMaxX / _Display->_CellSize);
+	sint32 nMaxY = (sint32)floor (rMaxY / _Display->_CellSize);
+
+	CVertexBuffer VB , VBSel;
+	CPrimitiveBlock PB, PBSel;
+	CMaterial Mat, MatSel;
+
+	Mat.initUnlit ();
+	Mat.setBlend (false);
+	MatSel.initUnlit ();
+	MatSel.setBlend (false);
+	MatSel.setColor(NLMISC::CRGBA(255,0,0,0));
+	VB.setVertexFormat (CVertexBuffer::PositionFlag);
+	VB.setNumVertices ((nMaxX-nMinX+1)*(nMaxY-nMinY+1)*4*2);
+	VBSel.setVertexFormat (CVertexBuffer::PositionFlag);
+	VBSel.setNumVertices ((nMaxX-nMinX+1)*(nMaxY-nMinY+1)*4*2);
+	
+	sint32 nVertCount = 0;
+	sint32 nVertCountSel = 0;
+	sint32 x, y, k;
+	CVector worldPos, screenPos;
+	for (y = nMinY; y <= nMaxY; ++y)
+	for (x = nMinX; x <= nMaxX; ++x)
+	{
+		uint8 ceUp = _ZoneRegions[_ZoneRegionSelected]->getCutEdge (x, y, 0);
+		uint8 ceLeft = _ZoneRegions[_ZoneRegionSelected]->getCutEdge (x, y, 2);
+
+		if ((ceUp > 0) && (ceUp < 3))
+		for (k = 0; k < 2; ++k)
+		{
+			if (ceUp == 1)
+				worldPos.x = x * _Display->_CellSize + 3.0f * _Display->_CellSize / 12.0f;
+			else
+				worldPos.x = x * _Display->_CellSize + 7.0f * _Display->_CellSize / 12.0f;
+			worldPos.y = (y+1)*_Display->_CellSize + _Display->_CellSize / 12.0f;
+			worldPos.z = 0;
+			// World -> Screen conversion
+			screenPos.x = (worldPos.x - viewMin.x) / (viewMax.x - viewMin.x);
+			screenPos.y = 0.0f;
+			screenPos.z = (worldPos.y - viewMin.y) / (viewMax.y - viewMin.y);
+			if (k == 0)
+			{
+				VB.setVertexCoord (nVertCount, screenPos);
+				++nVertCount;
+			}
+			else
+			{
+				VBSel.setVertexCoord (nVertCountSel, screenPos);
+				++nVertCountSel;
+			}
+
+			worldPos.y = (y+1)*_Display->_CellSize - _Display->_CellSize / 12.0f;
+			screenPos.z = (worldPos.y - viewMin.y) / (viewMax.y - viewMin.y);
+			if (k == 0)
+			{
+				VB.setVertexCoord (nVertCount, screenPos);
+				++nVertCount;
+			}
+			else
+			{
+				VBSel.setVertexCoord (nVertCountSel, screenPos);
+				++nVertCountSel;
+			}
+
+			if (ceUp == 1)
+				worldPos.x = x * _Display->_CellSize + 5.0f * _Display->_CellSize / 12.0f;
+			else
+				worldPos.x = x * _Display->_CellSize + 9.0f * _Display->_CellSize / 12.0f;
+			screenPos.x = (worldPos.x - viewMin.x) / (viewMax.x - viewMin.x);
+			if (k == 0)
+			{
+				VB.setVertexCoord (nVertCount, screenPos);
+				++nVertCount;
+			}
+			else
+			{
+				VBSel.setVertexCoord (nVertCountSel, screenPos);
+				++nVertCountSel;
+			}
+
+			worldPos.y = (y+1)*_Display->_CellSize + _Display->_CellSize / 12.0f;
+			screenPos.z = (worldPos.y - viewMin.y) / (viewMax.y - viewMin.y);
+			if (k == 0)
+			{
+				VB.setVertexCoord (nVertCount, screenPos);
+				++nVertCount;
+			}
+			else
+			{
+				VBSel.setVertexCoord (nVertCountSel, screenPos);
+				++nVertCountSel;
+			}
+			ceUp = 3 - ceUp;
+		}
+
+		if ((ceLeft > 0) && (ceLeft < 3))
+		for (k = 0; k < 2; ++k)
+		{
+			worldPos.x = x * _Display->_CellSize - _Display->_CellSize / 12.0f;
+			if (ceLeft == 1)
+				worldPos.y = y * _Display->_CellSize + 3.0f * _Display->_CellSize / 12.0f;
+			else
+				worldPos.y = y * _Display->_CellSize + 7.0f * _Display->_CellSize / 12.0f;
+			worldPos.z = 0;
+			// World -> Screen conversion
+			screenPos.x = (worldPos.x - viewMin.x) / (viewMax.x - viewMin.x);
+			screenPos.y = 0.0f;
+			screenPos.z = (worldPos.y - viewMin.y) / (viewMax.y - viewMin.y);
+			if (k == 0)
+			{
+				VB.setVertexCoord (nVertCount, screenPos);
+				++nVertCount;
+			}
+			else
+			{
+				VBSel.setVertexCoord (nVertCountSel, screenPos);
+				++nVertCountSel;
+			}
+
+			worldPos.x = x * _Display->_CellSize + _Display->_CellSize / 12.0f;
+			screenPos.x = (worldPos.x - viewMin.x) / (viewMax.x - viewMin.x);
+			if (k == 0)
+			{
+				VB.setVertexCoord (nVertCount, screenPos);
+				++nVertCount;
+			}
+			else
+			{
+				VBSel.setVertexCoord (nVertCountSel, screenPos);
+				++nVertCountSel;
+			}
+
+			if (ceLeft == 1)
+				worldPos.y = y * _Display->_CellSize + 5.0f * _Display->_CellSize / 12.0f;
+			else
+				worldPos.y = y * _Display->_CellSize + 9.0f * _Display->_CellSize / 12.0f;
+			screenPos.z = (worldPos.y - viewMin.y) / (viewMax.y - viewMin.y);
+			if (k == 0)
+			{
+				VB.setVertexCoord (nVertCount, screenPos);
+				++nVertCount;
+			}
+			else
+			{
+				VBSel.setVertexCoord (nVertCountSel, screenPos);
+				++nVertCountSel;
+			}
+
+			worldPos.x = x * _Display->_CellSize - _Display->_CellSize / 12.0f;
+			screenPos.x = (worldPos.x - viewMin.x) / (viewMax.x - viewMin.x);
+			if (k == 0)
+			{
+				VB.setVertexCoord (nVertCount, screenPos);
+				++nVertCount;
+			}
+			else
+			{
+				VBSel.setVertexCoord (nVertCountSel, screenPos);
+				++nVertCountSel;
+			}
+			ceLeft = 3 - ceLeft;
+		}
+	}
+
+	VB.setNumVertices (nVertCount);
+	PB.setNumLine (nVertCount);
+	VBSel.setNumVertices (nVertCountSel);
+	PBSel.setNumLine (nVertCountSel);
+	for (x = 0; x < (nVertCount/4); ++x)
+	{
+		PB.setLine (x*4+0, x*4+0, x*4+1);
+		PB.setLine (x*4+1, x*4+1, x*4+2);
+		PB.setLine (x*4+2, x*4+2, x*4+3);
+		PB.setLine (x*4+3, x*4+3, x*4+0);
+	}
+
+	for (x = 0; x < (nVertCountSel/4); ++x)
+	{
+		PBSel.setLine (x*4+0, x*4+0, x*4+1);
+		PBSel.setLine (x*4+1, x*4+1, x*4+2);
+		PBSel.setLine (x*4+2, x*4+2, x*4+3);
+		PBSel.setLine (x*4+3, x*4+3, x*4+0);
+	}
+
+	// Render
+	CMatrix mtx;
+	mtx.identity();
+	CNELU::Driver->setupViewport (CViewport());
+	CNELU::Driver->setupViewMatrix (mtx);
+	CNELU::Driver->setupModelMatrix (mtx);
+	CNELU::Driver->setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
+	CNELU::Driver->activeVertexBuffer (VB);
+	CNELU::Driver->render (PB, Mat);
+	CNELU::Driver->activeVertexBuffer (VBSel);
+	CNELU::Driver->render (PBSel, MatSel);
+}
+
+// ---------------------------------------------------------------------------
 void CBuilderZone::displayGrid (const NLMISC::CVector &viewMin, const NLMISC::CVector &viewMax)
 {
 	// Select all blocks visible
@@ -889,7 +1142,6 @@ void CBuilderZone::displayGrid (const NLMISC::CVector &viewMin, const NLMISC::CV
 				zoneSelected = i;
 			}
 		}
-
 
 
 		//const string &sZone = _ZoneRegion.getName (x, y);
@@ -1024,6 +1276,12 @@ void CBuilderZone::add (const CVector &worldPos)
 			_CurSelectedZone = nSel;
 		}
 	}
+	if (_CycleSelection)
+	{
+		_CurSelectedZone = _ApplyCycleSelection;
+		_ApplyCycleSelection++;
+		_ApplyCycleSelection = _ApplyCycleSelection%_CurrentSelection.size();
+	}
 
 	if (_ApplyRotType == 1)
 	{
@@ -1064,8 +1322,86 @@ void CBuilderZone::add (const CVector &worldPos)
 	{
 		CZoneBankElement *pZBE = _CurrentSelection[_CurSelectedZone];
 		_ZoneRegions[_ZoneRegionSelected]->init (&_ZoneBank, this);
-		_ZoneRegions[_ZoneRegionSelected]->add (x, y, rot, flip, pZBE);
+		if (_NotPropagate)
+			_ZoneRegions[_ZoneRegionSelected]->addNotPropagate (x, y, rot, flip, pZBE);
+		else
+			_ZoneRegions[_ZoneRegionSelected]->add (x, y, rot, flip, pZBE);
 	}
+	_StackZone.add (_ZoneRegions[_ZoneRegionSelected]);
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::addTransition (const NLMISC::CVector &worldPos)
+{
+	sint32 x = (sint32)floor (worldPos.x / _Display->_CellSize);
+	sint32 y = (sint32)floor (worldPos.y / _Display->_CellSize);
+	sint32 k;
+
+	if (_ZoneRegions.size() == 0)
+		return;
+
+	if (_StackZone.isEmpty())
+		_StackZone.add (_ZoneRegions[_ZoneRegionSelected]);
+
+	// Detect if we are in a transition square to switch
+	bool bCutEdgeTouched = false;
+	for (uint8 transPos = 0; transPos < 4; ++transPos)
+	{
+		uint ce = _ZoneRegions[_ZoneRegionSelected]->getCutEdge (x, y, transPos);
+
+		if ((ce > 0) && (ce < 3))
+		for (k = 0; k < 2; ++k)
+		{
+			float xTrans, yTrans;
+
+			if ((transPos == 0) || (transPos == 1))
+			{
+				if (ce == 1)
+					xTrans = _Display->_CellSize / 3.0f;
+				else
+					xTrans = 2.0f * _Display->_CellSize / 3.0f;
+			}
+			else
+			{
+				if (transPos == 2)
+					xTrans = 0;
+				else
+					xTrans = _Display->_CellSize;
+			}
+			xTrans += x * _Display->_CellSize;
+
+			if ((transPos == 2) || (transPos == 3))
+			{
+				if (ce == 1)
+					yTrans = _Display->_CellSize / 3.0f;
+				else
+					yTrans = 2.0f * _Display->_CellSize / 3.0f;
+			}
+			else
+			{
+				if (transPos == 1)
+					yTrans = 0;
+				else
+					yTrans = _Display->_CellSize;
+			}
+			yTrans += y * _Display->_CellSize;
+
+			if ((worldPos.x >= (xTrans-_Display->_CellSize/12.0f)) && (worldPos.x <= (xTrans+_Display->_CellSize/12.0f)) &&
+				(worldPos.y >= (yTrans-_Display->_CellSize/12.0f)) && (worldPos.y <= (yTrans+_Display->_CellSize/12.0f)))
+			{
+				_ZoneRegions[_ZoneRegionSelected]->invertCutEdge (x, y, transPos);
+				bCutEdgeTouched = true;
+			}
+			ce = 3 - ce;
+		}
+	}
+
+	// If not clicked to change the cutEdge so the user want to change the transition
+	if (!bCutEdgeTouched)
+	{
+		_ZoneRegions[_ZoneRegionSelected]->cycleTransition (x, y);
+	}
+	
 	_StackZone.add (_ZoneRegions[_ZoneRegionSelected]);
 }
 

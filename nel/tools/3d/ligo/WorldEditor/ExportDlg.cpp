@@ -26,6 +26,8 @@ CExportDlg::CExportDlg(CWnd* pParent /*=NULL*/)
 	HeightMapFile = _T("");
 	ZFactor = _T("");
 	Lighting = 0;
+	ZoneMin = _T("");
+	ZoneMax = _T("");
 	//}}AFX_DATA_INIT
 }
 
@@ -42,6 +44,8 @@ void CExportDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_ZFACTOR, ZFactor);
 	DDX_Text(pDX, IDC_EDIT_HEIGHTMAPFILE2, HeightMapFile2);
 	DDX_Text(pDX, IDC_EDIT_ZFACTOR2, ZFactor2);
+	DDX_Text(pDX, IDC_EDIT_ZONEMIN, ZoneMin);
+	DDX_Text(pDX, IDC_EDIT_ZONEMAX, ZoneMax);
 
 	if (pDX->m_bSaveAndValidate)
 	{
@@ -122,7 +126,11 @@ void CExportDlg::OnButtonRefzonedir()
 	bi.lpszTitle = "Choose the path";
 	bi.ulFlags = 0;
 	bi.lpfn = expBrowseCallbackProc;
-	bi.lParam = (LPARAM)(LPCSTR)RefZoneDir;
+
+	char sDir[512];
+	strcpy(sDir, (LPCSTR)RefZoneDir);
+	bi.lParam = (LPARAM)sDir;
+
 	bi.iImage = 0;
 	pidl = SHBrowseForFolder (&bi);
 	if (!SHGetPathFromIDList(pidl, str)) 
@@ -148,7 +156,11 @@ void CExportDlg::OnButtonOutzonedir()
 	bi.lpszTitle = "Choose the path";
 	bi.ulFlags = 0;
 	bi.lpfn = expBrowseCallbackProc;
-	bi.lParam = (LPARAM)(LPCSTR)OutZoneDir;
+
+	char sDir[512];
+	strcpy(sDir, (LPCSTR)OutZoneDir);
+	bi.lParam = (LPARAM)sDir;
+
 	bi.iImage = 0;
 	pidl = SHBrowseForFolder (&bi);
 	if (!SHGetPathFromIDList(pidl, str)) 

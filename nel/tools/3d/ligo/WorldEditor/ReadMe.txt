@@ -5,11 +5,14 @@
 Keys
 ----
 
+T : Toggle mode zone/transition
+G : Toggle grid on/off
 Crtl-Z / Ctrl-Y : Undo / Redo the last action on the current mode (Prim or Land)
 Space Or Middle Button + MouseMove : Move the current view window
 Left Button : put ligozone or add/move primitive vertices
 Right Button : delete
-Middle Button Roll : zoom in/out
+Middle Button Roll Or Shift Mouse move : zoom in/out
+
 
 Remarks
 -------

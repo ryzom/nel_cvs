@@ -101,16 +101,11 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	if (commandLinePtr[strlen (commandLinePtr)-1]=='"')
 		commandLinePtr[strlen (commandLinePtr)-1]=0;
 
-	char sCurDir[MAX_PATH];
-	GetCurrentDirectory(MAX_PATH, sCurDir);
-	string sRootDir = string(sCurDir) + "\\";
-
  	// Create a object viewer
 	IWorldEditor *pWorldEditor=IWorldEditor::getInterface();
 
 	if (pWorldEditor)
 	{
-		pWorldEditor->setRootDir (sRootDir.c_str());
 		// Init ui
 		pWorldEditor->initUI ();
 

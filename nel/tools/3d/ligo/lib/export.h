@@ -4,7 +4,7 @@
  * Get the .land, the reference zones and the heightmap and generate
  * all zones that will be next welded and lighted.
  *
- * $Id: export.h,v 1.3 2002/01/29 15:12:32 besson Exp $
+ * $Id: export.h,v 1.4 2002/02/13 17:03:02 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,9 @@ struct SExportOptions
 	float			ZFactor2;
 
 	uint8			Light; // Roughly light the zone (0-none, 1-patch, 2-noise)
+
+	std::string		ZoneMin;
+	std::string		ZoneMax;
 	
 	// Options not saved
 	NLLIGO::CZoneRegion		*ZoneRegion; // The region to make
@@ -112,6 +115,10 @@ public:
 	
 	// EXPORT :
 	bool export (SExportOptions &options, IExportCB *expCB = NULL);
+
+	static std::string getZoneNameFromXY (sint32 x, sint32 y);
+	static sint32 getXFromZoneName (const std::string &ZoneName);
+	static sint32 getYFromZoneName (const std::string &ZoneName);
 
 private:
 

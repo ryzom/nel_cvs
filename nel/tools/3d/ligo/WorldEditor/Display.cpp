@@ -14,31 +14,33 @@ using namespace NL3D;
 
 // ---------------------------------------------------------------------------
 
-BEGIN_MESSAGE_MAP(CDisplay, CView)
+BEGIN_MESSAGE_MAP (CDisplay, CView)
 	//{{AFX_MSG_MAP(CMainFrame)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
-	ON_WM_PAINT()
-	ON_WM_MOUSEWHEEL()
-	ON_WM_MBUTTONDOWN()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_RBUTTONDOWN()
-	ON_WM_MBUTTONUP()
-	ON_WM_LBUTTONUP()
-	ON_WM_RBUTTONUP()
-	ON_WM_MOUSEMOVE()
-	ON_WM_CHAR()
-	ON_WM_KEYUP()
-	ON_WM_TIMER()
-	ON_WM_CREATE()
-	ON_WM_DESTROY()
+	ON_WM_PAINT ()
+	ON_WM_MOUSEWHEEL ()
+	ON_WM_MBUTTONDOWN ()
+	ON_WM_LBUTTONDOWN ()
+	ON_WM_LBUTTONDBLCLK ()
+	ON_WM_RBUTTONDOWN ()
+	ON_WM_MBUTTONUP ()
+	ON_WM_LBUTTONUP ()
+	ON_WM_RBUTTONUP ()
+	ON_WM_MOUSEMOVE ()
+	ON_WM_CHAR ()
+	ON_WM_KEYUP ()
+	ON_WM_TIMER ()
+	ON_WM_CREATE ()
+	ON_WM_DESTROY ()
+	ON_WM_SIZE ()
 
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 // ---------------------------------------------------------------------------
 
-IMPLEMENT_DYNCREATE(CDisplay, CView)
+IMPLEMENT_DYNCREATE (CDisplay, CView)
 
 // ---------------------------------------------------------------------------
 CDisplay::CDisplay ()
@@ -73,8 +75,8 @@ void CDisplay::init (CMainFrame *pMF)
 
 	//CNELU::init (512, 512, CViewport(), 32, true, this->m_hWnd);
 	//NL3D::registerSerial3d();
-	CNELU::initDriver(512, 512, 32, true, this->m_hWnd);
-	CNELU::initScene(CViewport());
+	CNELU::initDriver (512, 512, 32, true, this->m_hWnd);
+	CNELU::initScene (CViewport());
 
 	// setMatrixMode2D11
 	CFrustum	f(0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f,false);
@@ -107,8 +109,8 @@ void CDisplay::init (CMainFrame *pMF)
 void CDisplay::setCellSize (float size)
 {
 	_CellSize = size;
-	_InitViewMax = CVector(5.5f*_CellSize, 5.5f*_CellSize, 0.0f);
-	_InitViewMin = CVector(-5.5f*_CellSize, -5.5f*_CellSize, 0.0f);
+	_InitViewMax = CVector (5.5f*_CellSize, 5.5f*_CellSize, 0.0f);
+	_InitViewMin = CVector (-5.5f*_CellSize, -5.5f*_CellSize, 0.0f);
 }
 
 // ---------------------------------------------------------------------------
@@ -202,6 +204,9 @@ void CDisplay::OnDraw (CDC* pDC)
 	if (_DisplaySelection)
 		renderSelection ();
 
+	if (_MainFrame->_Mode == 2) // If we are in transition mode
+		_MainFrame->_ZoneBuilder.renderTransition (_CurViewMin, _CurViewMax);
+
 	if (_TextToDisplay != "")
 	{
 		CRect rect;
@@ -241,7 +246,7 @@ void CDisplay::OnMouseWheel (UINT nFlags, short zDelta, CPoint point)
 	else
 		_Factor /= 2.0f;
 
-	NLMISC::clamp (_Factor, 0.015625f, 4.0f);
+	NLMISC::clamp (_Factor, 0.015625f, 8.0f);
 	OnPaint();
 }
 
@@ -282,9 +287,34 @@ void CDisplay::OnLButtonDown (UINT nFlags, CPoint point)
 				_MouseOnSelection = true;
 		}
 	}
+
+	if (_MainFrame->_Mode == 2) // Mode Transition
+	{
+		_MainFrame->_ZoneBuilder.addTransition (_CurPos);
+		_LastX = (sint32)floor (_CurPos.x / _CellSize);
+		_LastY = (sint32)floor (_CurPos.y / _CellSize);
+	}
+
 	_DisplaySelection = false;
 	_MouseMoved = false;
 	_MouseLeftDown = true;
+	_LastMousePos = point;
+	OnPaint();
+}
+
+// ---------------------------------------------------------------------------
+void CDisplay::OnLButtonDblClk (UINT nFlags, CPoint point)
+{
+	if (_MouseRightDown || _MouseMidDown)
+		return;
+	_CurPos = convertToWorld (point);
+	if (_MainFrame->_Mode == 2) // Mode Transition
+	{
+		_MainFrame->_ZoneBuilder.addTransition (_CurPos);
+		_LastX = (sint32)floor (_CurPos.x / _CellSize);
+		_LastY = (sint32)floor (_CurPos.y / _CellSize);
+	}
+
 	_LastMousePos = point;
 	OnPaint();
 }
@@ -348,6 +378,7 @@ void CDisplay::OnRButtonDown (UINT nFlags, CPoint point)
 			}
 		}
 	}
+
 	_MouseRightDown = true;
 	OnPaint();
 }
@@ -363,6 +394,9 @@ void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 {
 	if (_MainFrame == NULL)
 		return;
+
+	SetFocus();
+
 	_MouseMoving = true;
 	// Get the current position in world
 	_CurPos = convertToWorld (point);
@@ -427,6 +461,19 @@ void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 		OnPaint();
 	}
 
+	if (nFlags&MK_SHIFT)
+	{
+		float zDelta = (float)((point.x - _LastMousePos.x) + (point.y - _LastMousePos.y));
+		
+		if (zDelta > 0)
+			_Factor *= 1.0f + (zDelta/50.0f);
+		else
+			_Factor /= 1.0f - (zDelta/50.0f);
+
+		NLMISC::clamp (_Factor, 0.015625f, 8.0f);
+		OnPaint();
+	}
+
 	_LastMousePos = point;
 
 	// Display the current position in the world in the status bar
@@ -440,13 +487,26 @@ void CDisplay::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
 	{
 		if (GetAsyncKeyState(0x5a)) // Z
 			_MainFrame->onMenuModeUndo ();
-		if (GetAsyncKeyState(0x59)) // Y
+		if (GetAsyncKeyState(0x41)) // A
 			_MainFrame->onMenuModeRedo ();
 	}
 
-	if (nChar == 32)
+	if (nChar == 32) // Space bar == middle mouse button
 	{
 		_MouseMidDown = true;
+	}
+
+	if ((nChar == 'g') || (nChar == 'G'))
+	{
+		_MainFrame->OnMenuViewGrid ();
+	}
+
+	if ((nChar == 't') || (nChar == 'T'))
+	{
+		if (_MainFrame->_Mode == 2)
+			_MainFrame->OnMenuModeZone ();
+		else if (_MainFrame->_Mode == 0)
+			_MainFrame->OnMenuModeTransition ();
 	}
 }
 
@@ -483,4 +543,20 @@ void CDisplay::OnTimer (UINT nIDEvent)
 
 	if (_Counter > (5+1))
 		_Counter = (5+1);
+}
+
+// ---------------------------------------------------------------------------
+void CDisplay::OnSize (UINT nType, int cx, int cy)
+{
+	if (nType == SIZE_RESTORED)
+	{
+		if ((cx > 25) && (cy > 25))
+		{
+			float xRatio = (float)(cx) / 800.0f;
+			float yRatio = (float)(cy) / 800.0f;
+
+			_InitViewMax = CVector (5.5f*xRatio*_CellSize, 5.5f*yRatio*_CellSize, 0.0f);
+			_InitViewMin = CVector (-5.5f*xRatio*_CellSize, -5.5f*yRatio*_CellSize, 0.0f);
+		}
+	}
 }

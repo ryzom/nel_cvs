@@ -27,6 +27,8 @@ public:
 	CString	HeightMapFile2;
 	CString	ZFactor2;
 	uint8	Lighting;
+	CString	ZoneMin;
+	CString	ZoneMax;
 	//}}AFX_DATA
 
 

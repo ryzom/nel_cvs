@@ -42,6 +42,7 @@ struct SEnvironnement
 	std::vector<SType>	Types;
 	NLMISC::CRGBA		BackgroundColor;
 	SExportOptions		ExportOptions;
+	std::string			DataDir;
 	// -----------------------------
 	SEnvironnement();
 	void serial (NLMISC::IStream&f);
@@ -70,8 +71,9 @@ public:
 	NLLIGO::CLigoConfig _Config;
 	CBuilderLogic		_PRegionBuilder;
 	CBuilderZone		_ZoneBuilder;
-	sint32				_Mode;	// 0-Mode Zone, 1-Mode Logic
-	std::string			_RootDir;
+	sint32				_Mode;	// 0-Mode Zone, 1-Mode Logic 2-Mode Trans
+	std::string			_ExeDir; // WorldEditor directory
+	std::string			_DataDir; // Data directory
 	IMasterCB			*_MasterCB;
 
 	//std::vector<CType>	_Types;
@@ -80,7 +82,8 @@ public:
 // Operations
 public:
 
-	void setRootDir (const char* str);
+	void setExeDir (const char* str);
+	void setDataDir (const char* str);
 	void loadLand (const char* str, const char* path);
 	void loadPrim (const char* str, const char* path);
 	void saveAll ();
@@ -134,18 +137,24 @@ protected:
 	afx_msg void OnMenuFileGenerate ();
 	afx_msg void OnMenuFileExportToLevelD ();
 	afx_msg void OnMenuFileView ();
-	afx_msg void OnMenuModeZone ();
+	afx_msg void OnMenuFileSetDataDirectory ();
 	afx_msg void OnMenuModeLogic ();
 	afx_msg void OnMenuModeType ();
 	afx_msg void onMenuModeSelectZone ();
 	afx_msg void onMenuModeMove ();
-	afx_msg void OnMenuViewGrid ();
+	afx_msg void onMenuModeCountZones ();
+	
 	afx_msg void OnMenuViewBackground ();
 	afx_msg void OnClose ();
 	afx_msg void OnSize (UINT nType, int cx, int cy);
 
 public:
 
+	afx_msg void OnMenuModeZone ();
+	afx_msg void OnMenuModeTransition ();
+
+	afx_msg void OnMenuViewGrid ();
+	
 	afx_msg void onMenuModeUndo ();
 	afx_msg void onMenuModeRedo ();
 

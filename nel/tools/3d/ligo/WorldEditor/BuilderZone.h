@@ -96,6 +96,7 @@ public:
 	~CDataBase();
 
 	bool				initFromPath (const std::string &Path);
+	void				reset ();
 	bool				init (const std::string &Path, NLLIGO::CZoneBank &zb);
 
 	CBitmap				*getBitmap (const std::string &ZoneName);
@@ -110,6 +111,7 @@ public:
 class CBuilderZone
 {
 public:
+	std::string					_LastPathName;
 
 	NLLIGO::CZoneBank			_ZoneBank;
 
@@ -141,7 +143,11 @@ public:
 	uint8		_FilterOperator4;				// 0 -> AND, 1 -> OR
 
 	bool		_RandomSelection;
+	bool		_CycleSelection;
+	uint8		_ApplyCycleSelection;
 	sint32		_CurSelectedZone;
+
+	bool		_NotPropagate;
 
 	uint8		_ApplyRot;
 	uint8		_ApplyRotType;	// (0-Normal)(1-Random)(2-Cycle)
@@ -175,8 +181,10 @@ public:
 	void				newZone (bool bDisplay=true);
 	void				unload (uint32 i);
 	void				move (sint32 x, sint32 y);
+	uint32				countZones ();
 
 	void				add (const NLMISC::CVector &worldPos);
+	void				addTransition (const NLMISC::CVector &worldPos);
 	void				del (const NLMISC::CVector &worldPos);
 
 	void				undo ();
@@ -187,6 +195,7 @@ public:
 	NLLIGO::CZoneBank	&getZoneBank () { return _ZoneBank; }
 
 	void				render (const NLMISC::CVector &viewMin, const NLMISC::CVector &viewMax);
+	void				renderTransition (const NLMISC::CVector &viewMin, const NLMISC::CVector &viewMax);
 	void				displayGrid (const NLMISC::CVector &viewMin, const NLMISC::CVector &viewMax);
 
 	uint32				getNbZoneRegion ();

@@ -222,6 +222,12 @@ void CBuilderZoneRegion::add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIG
 
 	_MustAskSave = true;
 
+	if (pElt->getCategory("transname") != STRING_NO_CAT_TYPE)
+	{
+		addTransition (x, y, nRot, nFlip, pElt);
+		return;
+	}
+
 	// Create the mask in the good rotation and flip
 	sMask.Tab.resize (sizeX*sizeY);
 	sPosX.Tab.resize (sizeX*sizeY);
@@ -286,62 +292,167 @@ void CBuilderZoneRegion::add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIG
 			setFlip (x+i, y+j, nFlip);
 		}
 	}
-	else // This element is a transition
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZoneRegion::invertCutEdge (sint32 x, sint32 y, uint8 cePos)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+		return;
+	sint32 stride = (1 + _MaxX - _MinX);
+	sint32 zonePos = (x-_MinX)+(y-_MinY)*stride;
+	CZoneBankElement *pElt = _ZeBank->getElementByZoneName (_Zones[zonePos].ZoneName);
+	if (pElt == NULL)
+		return;
+	if (pElt->getCategory("transname") == STRING_NO_CAT_TYPE)
+		return;
+
+	_MustAskSave = true;
+
+	_Zones[zonePos].SharingCutEdges[cePos] = 3 - _Zones[zonePos].SharingCutEdges[cePos];
+	updateTrans (x, y);
+
+	// If the transition number is not the same propagate the change
+	// Propagate where the edge is cut (1/3 or 2/3) and update the transition
+	if (cePos == 2)
+	if (_Zones[zonePos].SharingMatNames[0] != _Zones[zonePos].SharingMatNames[2])
 	{
-		const string &CurTrans = pElt->getCategory ("transname");
-		if (sMask.Tab.size() > 1)
-			return;
-		// Check if this is the same type of transition
-		sint32 stride = 1+_MaxX-_MinX;
-		CZoneBankElement *pEltUnder = _ZeBank->getElementByZoneName(_Zones[(x-_MinX)+(y-_MinY)*stride].ZoneName);
-		if (pEltUnder->getCategory("transname") != pElt->getCategory("transname"))
-			return;
-		if (pEltUnder->getCategory("transtype") != pElt->getCategory("transtype"))
-			return;
-		
-
-		// Place the piece
-		if (sMask.Tab[0])
-		{
-			set (x, y, sPosX.Tab[0], sPosY.Tab[0], pElt->getName(), true);
-			setRot (x, y, nRot);
-			setFlip (x, y, nFlip);
-		}
-
-		// Propagate
 		if (x > _MinX)
 		{	// [x-1][y].right = [x][y].left
-			_Zones[(x-1-_MinX)+(y-_MinY)*stride].SharingCutEdges[3] = 
-				_Zones[(x-_MinX)+(y-_MinY)*stride].SharingCutEdges[2];
+			_Zones[(x-1-_MinX)+(y-_MinY)*stride].SharingCutEdges[3] = _Zones[zonePos].SharingCutEdges[2];
 		}
-		if (y > _MinY)
-		{	// [x][y-1].up = [x][y].down
-			_Zones[(x-_MinX)+(y-1-_MinY)*stride].SharingCutEdges[0] = 
-				_Zones[(x-_MinX)+(y-_MinY)*stride].SharingCutEdges[1]; 
-		}
+		updateTrans (x-1, y);
+	}
+	if (cePos == 3)
+	if (_Zones[zonePos].SharingMatNames[1] != _Zones[zonePos].SharingMatNames[3])
+	{
 		if (x < _MaxX)
 		{	// [x+1][y].left = [x][y].right
-			_Zones[(x+1-_MinX)+(y-_MinY)*stride].SharingCutEdges[2] = 
-				_Zones[(x-_MinX)+(y-_MinY)*stride].SharingCutEdges[3]; 
+			_Zones[(x+1-_MinX)+(y-_MinY)*stride].SharingCutEdges[2] = _Zones[zonePos].SharingCutEdges[3]; 
 		}
+		updateTrans (x+1, y);
+	}
+	if (cePos == 1)
+	if (_Zones[zonePos].SharingMatNames[0] != _Zones[zonePos].SharingMatNames[1])
+	{
+		if (y > _MinY)
+		{	// [x][y-1].up = [x][y].down
+			_Zones[(x-_MinX)+(y-1-_MinY)*stride].SharingCutEdges[0] = _Zones[zonePos].SharingCutEdges[1]; 
+		}
+		updateTrans (x, y-1);
+	}
+	if (cePos == 0)
+	if (_Zones[zonePos].SharingMatNames[2] != _Zones[zonePos].SharingMatNames[3])
+	{
 		if (y < _MaxY)
 		{	// [x][y+1].down = [x][y].up
-			_Zones[(x-_MinX)+(y+1-_MinY)*stride].SharingCutEdges[1] = 
-				_Zones[(x-_MinX)+(y-_MinY)*stride].SharingCutEdges[0]; 
+			_Zones[(x-_MinX)+(y+1-_MinY)*stride].SharingCutEdges[1] = _Zones[zonePos].SharingCutEdges[0]; 
 		}
-
-		// Update
-		updateTrans (x, y);
-		if (_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[0] != _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[2])
-			updateTrans (x-1, y);
-		if (_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[1] != _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[3])
-			updateTrans (x+1, y);
-		if (_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[0] != _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[1])
-			updateTrans (x, y-1);
-		if (_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[2] != _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[3])
-			updateTrans (x, y+1);
-
+		updateTrans (x, y+1);
 	}
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZoneRegion::cycleTransition (sint32 x, sint32 y)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+		return;
+	sint32 stride = (1 + _MaxX - _MinX);
+	sint32 zonePos = (x-_MinX)+(y-_MinY)*stride;
+	CZoneBankElement *pElt = _ZeBank->getElementByZoneName (_Zones[zonePos].ZoneName);
+	if (pElt == NULL)
+		return;
+	if (pElt->getCategory("transname") == STRING_NO_CAT_TYPE)
+		return;
+
+	// \todo trap -> choose the good transition in function of the transition under the current location
+	// Choose the next possible transition if not the same as the first one
+	// Choose among all transition of the same number
+	
+	updateTrans (x, y);
+}
+
+// ---------------------------------------------------------------------------
+bool CBuilderZoneRegion::addNotPropagate (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIGO::CZoneBankElement *pElt)
+{
+	sint32 sizeX = pElt->getSizeX(), sizeY = pElt->getSizeY();
+	sint32 i, j;
+	SPiece sMask, sPosX, sPosY;
+	CToUpdate tUpdate; // Transition to update
+
+	if (!_Builder->getZoneMask (x,y))
+		return false;
+
+	_MustAskSave = true;
+
+	if (pElt->getCategory("transname") != STRING_NO_CAT_TYPE)
+	{
+		addTransition (x, y, nRot, nFlip, pElt);
+		return true;
+	}
+
+	// Create the mask in the good rotation and flip
+	sMask.Tab.resize (sizeX*sizeY);
+	sPosX.Tab.resize (sizeX*sizeY);
+	sPosY.Tab.resize (sizeX*sizeY);
+
+	for (j = 0; j < sizeY; ++j)
+	for (i = 0; i < sizeX; ++i)
+	{
+		sPosX.Tab[i+j*sizeX] = (uint8)i;
+		sPosY.Tab[i+j*sizeX] = (uint8)j;
+		sMask.Tab[i+j*sizeX] = pElt->getMask()[i+j*sizeX];
+	}
+	sPosX.w = sPosY.w = sMask.w = sizeX;
+	sPosX.h = sPosY.h = sMask.h = sizeY;
+	sMask.rotFlip (nRot, nFlip);
+	sPosX.rotFlip (nRot, nFlip);
+	sPosY.rotFlip (nRot, nFlip);
+
+	// Test if the pieces can be put (due to mask)
+	sint32 stride = (1 + _MaxX - _MinX);
+	for (j = 0; j < sMask.h; ++j)
+	for (i = 0; i < sMask.w; ++i)
+	if (sMask.Tab[i+j*sMask.w])
+	{
+		if (_Builder->getZoneMask(x+i, y+j) == false)
+			return false;
+		if (((x+i) < _MinX) || ((x+i) > _MaxX) ||
+			((y+j) < _MinY) || ((y+j) > _MaxY))
+			return false;
+		sint32 zonePos = (x+i-_MinX)+(y+j-_MinY)*stride;
+		CZoneBankElement *pEltUnder = _ZeBank->getElementByZoneName(_Zones[zonePos].ZoneName);
+		if (pEltUnder->getCategory("material") != pElt->getCategory("material"))
+			return false;
+	}
+
+	// Delete all pieces that are under the mask
+	for (j = 0; j < sMask.h; ++j)
+	for (i = 0; i < sMask.w; ++i)
+	if (sMask.Tab[i+j*sMask.w])
+	{
+		del (x+i, y+j, true, &tUpdate);
+	}
+
+	const string &CurMat = pElt->getCategory ("material");
+
+	if (CurMat != STRING_NO_CAT_TYPE)
+	{	// This element is a valid material
+		// Place the piece
+		const string &EltName = pElt->getName ();
+		for (j = 0; j < sMask.h; ++j)
+		for (i = 0; i < sMask.w; ++i)
+		if (sMask.Tab[i+j*sMask.w])
+		{
+			set (x+i, y+j, sPosX.Tab[i+j*sPosX.w], sPosY.Tab[i+j*sPosY.w], EltName);
+			setRot (x+i, y+j, nRot);
+			setFlip (x+i, y+j, nFlip);
+		}
+	}
+	
+	return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -368,6 +479,203 @@ CBuilderZoneRegion::SZoneUnit *CBuilderZoneRegion::getZoneAmongRegions (CBuilder
 	sint32 stride = (1 + pBZRfrom->_MaxX - pBZRfrom->_MinX);
 	SZoneUnit *pZU = &pBZRfrom->_Zones[(x-pBZRfrom->_MinX)+(y-pBZRfrom->_MinY)*stride];
 	return pZU;
+}
+
+// ---------------------------------------------------------------------------
+// Convert (transNum,flip,rot) to cutEdge(up,down,left,right)
+uint8 TransToEdge[72][4] =
+{	
+	{ 0, 0, 1, 1 }, // TransNum = 0, Flip = 0, Rot = 0
+	{ 2, 2, 0, 0 }, // TransNum = 0, Flip = 0, Rot = 1
+	{ 0, 0, 2, 2 }, // TransNum = 0, Flip = 0, Rot = 2
+	{ 1, 1, 0, 0 }, // TransNum = 0, Flip = 0, Rot = 3
+	{ 0, 0, 1, 1 }, // TransNum = 0, Flip = 1, Rot = 0
+	{ 2, 2, 0, 0 }, // TransNum = 0, Flip = 1, Rot = 1
+	{ 0, 0, 2, 2 }, // TransNum = 0, Flip = 1, Rot = 2
+	{ 1, 1, 0, 0 }, // TransNum = 0, Flip = 1, Rot = 3
+
+	{ 0, 0, 1, 2 }, // TransNum = 1, Flip = 0, Rot = 0
+	{ 1, 2, 0, 0 }, // TransNum = 1, Flip = 0, Rot = 1
+	{ 0, 0, 1, 2 }, // TransNum = 1, Flip = 0, Rot = 2
+	{ 1, 2, 0, 0 }, // TransNum = 1, Flip = 0, Rot = 3
+	{ 0, 0, 2, 1 }, // TransNum = 1, Flip = 1, Rot = 0
+	{ 2, 1, 0, 0 }, // TransNum = 1, Flip = 1, Rot = 1
+	{ 0, 0, 2, 1 }, // TransNum = 1, Flip = 1, Rot = 2
+	{ 2, 1, 0, 0 }, // TransNum = 1, Flip = 1, Rot = 3
+
+	{ 0, 0, 2, 2 }, // TransNum = 2, Flip = 0, Rot = 0
+	{ 1, 1, 0, 0 }, // TransNum = 2, Flip = 0, Rot = 1
+	{ 0, 0, 1, 1 }, // TransNum = 2, Flip = 0, Rot = 2
+	{ 2, 2, 0, 0 }, // TransNum = 2, Flip = 0, Rot = 3
+	{ 0, 0, 2, 2 }, // TransNum = 2, Flip = 1, Rot = 0
+	{ 1, 1, 0, 0 }, // TransNum = 2, Flip = 1, Rot = 1
+	{ 0, 0, 1, 1 }, // TransNum = 2, Flip = 1, Rot = 2
+	{ 2, 2, 0, 0 }, // TransNum = 2, Flip = 1, Rot = 3
+
+	{ 0, 1, 1, 0 }, // TransNum = 3, Flip = 0, Rot = 0
+	{ 0, 2, 0, 1 }, // TransNum = 3, Flip = 0, Rot = 1
+	{ 2, 0, 0, 2 }, // TransNum = 3, Flip = 0, Rot = 2
+	{ 1, 0, 2, 0 }, // TransNum = 3, Flip = 0, Rot = 3
+	{ 0, 2, 0, 1 }, // TransNum = 3, Flip = 1, Rot = 0
+	{ 2, 0, 0, 2 }, // TransNum = 3, Flip = 1, Rot = 1
+	{ 1, 0, 2, 0 }, // TransNum = 3, Flip = 1, Rot = 2
+	{ 0, 1, 1, 0 }, // TransNum = 3, Flip = 1, Rot = 3
+
+	{ 0, 2, 1, 0 }, // TransNum = 4, Flip = 0, Rot = 0
+	{ 0, 2, 0, 2 }, // TransNum = 4, Flip = 0, Rot = 1
+	{ 1, 0, 0, 2 }, // TransNum = 4, Flip = 0, Rot = 2
+	{ 1, 0, 1, 0 }, // TransNum = 4, Flip = 0, Rot = 3
+	{ 0, 1, 0, 1 }, // TransNum = 4, Flip = 1, Rot = 0
+	{ 2, 0, 0, 1 }, // TransNum = 4, Flip = 1, Rot = 1
+	{ 2, 0, 2, 0 }, // TransNum = 4, Flip = 1, Rot = 2
+	{ 0, 1, 2, 0 }, // TransNum = 4, Flip = 1, Rot = 3
+
+	{ 0, 2, 2, 0 }, // TransNum = 5, Flip = 0, Rot = 0
+	{ 0, 1, 0, 2 }, // TransNum = 5, Flip = 0, Rot = 1
+	{ 1, 0, 0, 1 }, // TransNum = 5, Flip = 0, Rot = 2
+	{ 2, 0, 1, 0 }, // TransNum = 5, Flip = 0, Rot = 3
+	{ 0, 1, 0, 2 }, // TransNum = 5, Flip = 1, Rot = 0
+	{ 1, 0, 0, 1 }, // TransNum = 5, Flip = 1, Rot = 1
+	{ 2, 0, 1, 0 }, // TransNum = 5, Flip = 1, Rot = 2
+	{ 0, 2, 2, 0 }, // TransNum = 5, Flip = 1, Rot = 3
+
+	{ 0, 1, 1, 0 }, // TransNum = 6, Flip = 0, Rot = 0
+	{ 0, 2, 0, 1 }, // TransNum = 6, Flip = 0, Rot = 1
+	{ 2, 0, 0, 2 }, // TransNum = 6, Flip = 0, Rot = 2
+	{ 1, 0, 2, 0 }, // TransNum = 6, Flip = 0, Rot = 3
+	{ 0, 2, 0, 1 }, // TransNum = 6, Flip = 1, Rot = 0
+	{ 2, 0, 0, 2 }, // TransNum = 6, Flip = 1, Rot = 1
+	{ 1, 0, 2, 0 }, // TransNum = 6, Flip = 1, Rot = 2
+	{ 0, 1, 1, 0 }, // TransNum = 6, Flip = 1, Rot = 3
+
+	{ 0, 2, 1, 0 }, // TransNum = 7, Flip = 0, Rot = 0
+	{ 0, 2, 0, 2 }, // TransNum = 7, Flip = 0, Rot = 1
+	{ 1, 0, 0, 2 }, // TransNum = 7, Flip = 0, Rot = 2
+	{ 1, 0, 1, 0 }, // TransNum = 7, Flip = 0, Rot = 3
+	{ 0, 1, 0, 1 }, // TransNum = 7, Flip = 1, Rot = 0
+	{ 2, 0, 0, 1 }, // TransNum = 7, Flip = 1, Rot = 1
+	{ 2, 0, 2, 0 }, // TransNum = 7, Flip = 1, Rot = 2
+	{ 0, 1, 2, 0 }, // TransNum = 7, Flip = 1, Rot = 3
+
+	{ 0, 2, 2, 0 }, // TransNum = 8, Flip = 0, Rot = 0
+	{ 0, 1, 0, 2 }, // TransNum = 8, Flip = 0, Rot = 1
+	{ 1, 0, 0, 1 }, // TransNum = 8, Flip = 0, Rot = 2
+	{ 2, 0, 1, 0 }, // TransNum = 8, Flip = 0, Rot = 3
+	{ 0, 1, 0, 2 }, // TransNum = 8, Flip = 1, Rot = 0
+	{ 1, 0, 0, 1 }, // TransNum = 8, Flip = 1, Rot = 1
+	{ 2, 0, 1, 0 }, // TransNum = 8, Flip = 1, Rot = 2
+	{ 0, 2, 2, 0 }, // TransNum = 8, Flip = 1, Rot = 3
+};
+void CBuilderZoneRegion::addTransition (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIGO::CZoneBankElement *pElt)
+{
+	uint32 i;
+	// Check that we write in an already defined place
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+		return;
+
+	// Check size
+	if ((pElt->getSizeX() != 1) || (pElt->getSizeY() != 1))
+		return;
+
+	// Check that an element already exist at position we want put the transition
+	sint32 stride = (1+_MaxX-_MinX);
+	sint32 zonePos = (x-_MinX)+(y-_MinY)*stride;
+	CZoneBankElement *pEltUnder = _ZeBank->getElementByZoneName(_Zones[zonePos].ZoneName);
+	if (pEltUnder == NULL)
+		return;
+
+	// And check that this element is also a transition and the same transition
+	if (pEltUnder->getCategory ("transname") == STRING_NO_CAT_TYPE)
+		return;
+	if (pEltUnder->getCategory ("transname") != pElt->getCategory ("transname"))
+		return;
+
+	string underType = pEltUnder->getCategory ("transtype");
+	string overType = pElt->getCategory ("transtype");
+	string underNum = pEltUnder->getCategory ("transnum");
+	string overNum = pElt->getCategory ("transnum");
+
+	bool bMustPropagate = false;
+	// Same type of transition ?
+	if (pEltUnder->getCategory ("transtype") != pElt->getCategory ("transtype"))
+	{
+		// No so random the cutEdges
+		for (i = 0; i < 4; ++i)
+		{
+			uint8 nCut = (uint8)(1.0f+NLMISC::frand(2.0f));
+			NLMISC::clamp (nCut, (uint8)1, (uint8)2);
+			_Zones[zonePos].SharingCutEdges[i] = nCut;
+		}
+		pElt = NULL;
+		bMustPropagate = true;
+	}
+	else
+	{
+		// Put exactly the transition as given
+		sint32 transnum = atoi (pElt->getCategory ("transnum").c_str());
+		sint32 flip = _Zones[zonePos].Flip;
+		sint32 rot = _Zones[zonePos].Rot;
+		sint32 pos1 = -1, pos2 = -1;
+		for (i = 0; i < 4; ++i)
+		{
+			if ((TransToEdge[transnum*8+flip*4+rot][i] != 0) && 
+				(TransToEdge[transnum*8+flip*4+rot][i] != _Zones[zonePos].SharingCutEdges[i]))
+				bMustPropagate = true;
+			_Zones[zonePos].SharingCutEdges[i] = TransToEdge[transnum*8+flip*4+rot][i];
+			if ((pos1 != -1) && (_Zones[zonePos].SharingCutEdges[i] != 0))
+				pos2 = i;
+			if ((pos1 == -1) && (_Zones[zonePos].SharingCutEdges[i] != 0))
+				pos1 = i;
+		}
+		// Exchange cutedges != 0 one time /2 to permit all positions
+		if ((transnum == 1) || (transnum == 4) || (transnum == 7))
+		if (pElt->getName() == pEltUnder->getName())
+		{
+			bMustPropagate = true;
+			_Zones[zonePos].SharingCutEdges[pos1] = 3 - _Zones[zonePos].SharingCutEdges[pos1];
+			_Zones[zonePos].SharingCutEdges[pos2] = 3 - _Zones[zonePos].SharingCutEdges[pos2];
+		}
+	}
+	updateTrans (x, y, pElt);
+
+	// If the transition number is not the same propagate the change
+	if (bMustPropagate)
+	{
+		// Propagate where the edge is cut (1/3 or 2/3) and update the transition
+		if (_Zones[zonePos].SharingMatNames[0] != _Zones[zonePos].SharingMatNames[2])
+		{
+			if (x > _MinX)
+			{	// [x-1][y].right = [x][y].left
+				_Zones[(x-1-_MinX)+(y-_MinY)*stride].SharingCutEdges[3] = _Zones[zonePos].SharingCutEdges[2];
+			}
+			updateTrans (x-1, y);
+		}
+		if (_Zones[zonePos].SharingMatNames[1] != _Zones[zonePos].SharingMatNames[3])
+		{
+			if (x < _MaxX)
+			{	// [x+1][y].left = [x][y].right
+				_Zones[(x+1-_MinX)+(y-_MinY)*stride].SharingCutEdges[2] = _Zones[zonePos].SharingCutEdges[3]; 
+			}
+			updateTrans (x+1, y);
+		}
+		if (_Zones[zonePos].SharingMatNames[0] != _Zones[zonePos].SharingMatNames[1])
+		{
+			if (y > _MinY)
+			{	// [x][y-1].up = [x][y].down
+				_Zones[(x-_MinX)+(y-1-_MinY)*stride].SharingCutEdges[0] = _Zones[zonePos].SharingCutEdges[1]; 
+			}
+			updateTrans (x, y-1);
+		}
+		if (_Zones[zonePos].SharingMatNames[2] != _Zones[zonePos].SharingMatNames[3])
+		{
+			if (y < _MaxY)
+			{	// [x][y+1].down = [x][y].up
+				_Zones[(x-_MinX)+(y+1-_MinY)*stride].SharingCutEdges[1] = _Zones[zonePos].SharingCutEdges[0]; 
+			}
+			updateTrans (x, y+1);
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -493,59 +801,72 @@ void CBuilderZoneRegion::putTransitions (sint32 inX, sint32 inY, const SPiece &r
 		if ((x < pBZR->_MinX)||(x > pBZR->_MaxX)||(y < pBZR->_MinY)||(y > pBZR->_MaxY))
 			continue;
 
+		sint32 nCurrentZone = (x-pBZR->_MinX)+(y-pBZR->_MinY)*stride;
 		for (i = 0; i < 4; ++i)
 		{
 			uint8 nCut = (uint8)(1.0f+NLMISC::frand(2.0f));
 			NLMISC::clamp (nCut, (uint8)1, (uint8)2);
-			rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingCutEdges[i] = nCut;
+			rZones[nCurrentZone].SharingCutEdges[i] = nCut;
 		}
 		// Propagate
-		if (rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[0] != 
-			rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[2])
+		if (rZones[nCurrentZone].SharingMatNames[0] != rZones[nCurrentZone].SharingMatNames[2])
 		{	// [x-1][y].right = [x][y].left
 			CBuilderZoneRegion *pBZR2 = pBZR;
 			SZoneUnit *pZU = getZoneAmongRegions (pBZR2, x-1, y);
 			if (pZU != NULL)
 			{
-				pZU->SharingCutEdges[3] = rZones[(x-pBZR->_MinX)+(y-_MinY)*stride].SharingCutEdges[2]; 
+				pZU->SharingCutEdges[3] = rZones[nCurrentZone].SharingCutEdges[2];
 				ptUpdate->add (pBZR2, x-1, y, "");
 			}
 		}
+		else
+		{
+			rZones[nCurrentZone].SharingCutEdges[2] = 0;
+		}
 
-		if (rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[0] != 
-			rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[1])
+		if (rZones[nCurrentZone].SharingMatNames[0] != rZones[nCurrentZone].SharingMatNames[1])
 		{	// [x][y-1].up = [x][y].down
 			CBuilderZoneRegion *pBZR2 = pBZR;
 			SZoneUnit *pZU = getZoneAmongRegions (pBZR2, x, y-1);
 			if (pZU != NULL)
 			{
-				pZU->SharingCutEdges[0] = rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingCutEdges[1]; 
+				pZU->SharingCutEdges[0] = rZones[nCurrentZone].SharingCutEdges[1]; 
 				ptUpdate->add (pBZR2, x, y-1, "");
 			}
 		}
+		else
+		{
+			rZones[nCurrentZone].SharingCutEdges[1] = 0;
+		}
 
-		if (rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[3] != 
-			rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[1])
+		if (rZones[nCurrentZone].SharingMatNames[3] != rZones[nCurrentZone].SharingMatNames[1])
 		{	// [x+1][y].left = [x][y].right
 			CBuilderZoneRegion *pBZR2 = pBZR;
 			SZoneUnit *pZU = getZoneAmongRegions (pBZR2, x+1, y);
 			if (pZU != NULL)
 			{
-				pZU->SharingCutEdges[2] = rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingCutEdges[3]; 
+				pZU->SharingCutEdges[2] = rZones[nCurrentZone].SharingCutEdges[3]; 
 				ptUpdate->add (pBZR2, x+1, y, "");
 			}
 		}
+		else
+		{
+			rZones[nCurrentZone].SharingCutEdges[3] = 0;
+		}
 
-		if (rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[2] != 
-			rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingMatNames[3])
+		if (rZones[nCurrentZone].SharingMatNames[2] != rZones[nCurrentZone].SharingMatNames[3])
 		{	// [x][y+1].down = [x][y].up
 			CBuilderZoneRegion *pBZR2 = pBZR;
 			SZoneUnit *pZU = getZoneAmongRegions (pBZR2, x, y+1);
 			if (pZU != NULL)
 			{
-				pZU->SharingCutEdges[1] = rZones[(x-pBZR->_MinX)+(y-pBZR->_MinY)*stride].SharingCutEdges[0]; 
+				pZU->SharingCutEdges[1] = rZones[nCurrentZone].SharingCutEdges[0]; 
 				ptUpdate->add (pBZR2, x, y+1, "");
 			}
+		}
+		else
+		{
+			rZones[nCurrentZone].SharingCutEdges[0] = 0;
 		}
 	}	
 
@@ -621,7 +942,7 @@ void CBuilderZoneRegion::putTransitions (sint32 inX, sint32 inY, const SPiece &r
 
 
 // ---------------------------------------------------------------------------
-void CBuilderZoneRegion::putTransition (sint32 x, sint32 y, const string &MatName)
+/*void CBuilderZoneRegion::putTransition (sint32 x, sint32 y, const string &MatName)
 {
 	const string &rSZone = getName (x, y);
 	if (rSZone != STRING_UNUSED)
@@ -669,7 +990,7 @@ void CBuilderZoneRegion::putTransition (sint32 x, sint32 y, const string &MatNam
 	if (_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[2] != _Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[3])
 		updateTrans (x, y+1);
 }
-
+*/
 // ---------------------------------------------------------------------------
 struct STrans
 {
@@ -699,14 +1020,14 @@ STrans TranConvTable[128] =
 	{ 8,0,0 }, // Quart = 1, CutEdge = 3, Np = 0
 	{ 8,3,1 }, // Quart = 1, CutEdge = 3, Np = 1
 
-	{ 6,1,0 }, // Quart = 2, CutEdge = 0, Np = 0
-	{ 6,0,1 }, // Quart = 2, CutEdge = 0, Np = 1
-	{ 7,0,1 }, // Quart = 2, CutEdge = 1, Np = 0
-	{ 7,0,1 }, // Quart = 2, CutEdge = 1, Np = 1
-	{ 7,1,0 }, // Quart = 2, CutEdge = 2, Np = 0
-	{ 7,1,0 }, // Quart = 2, CutEdge = 2, Np = 1
-	{ 8,1,0 }, // Quart = 2, CutEdge = 3, Np = 0
-	{ 8,0,1 }, // Quart = 2, CutEdge = 3, Np = 1
+	{ 7,0,1 }, // Quart = 2, CutEdge = 0, Np = 0
+	{ 7,0,1 }, // Quart = 2, CutEdge = 0, Np = 1
+	{ 6,0,1 }, // Quart = 2, CutEdge = 1, Np = 0
+	{ 6,1,0 }, // Quart = 2, CutEdge = 1, Np = 1
+	{ 8,1,0 }, // Quart = 2, CutEdge = 2, Np = 0
+	{ 8,0,1 }, // Quart = 2, CutEdge = 2, Np = 1
+	{ 7,1,0 }, // Quart = 2, CutEdge = 3, Np = 0
+	{ 7,1,0 }, // Quart = 2, CutEdge = 3, Np = 1
 
 	{ 0,0,0 }, // Quart = 3, CutEdge = 0, Np = 0
 	{ 0,0,1 }, // Quart = 3, CutEdge = 0, Np = 1
@@ -717,14 +1038,14 @@ STrans TranConvTable[128] =
 	{ 2,0,0 }, // Quart = 3, CutEdge = 3, Np = 0
 	{ 2,0,1 }, // Quart = 3, CutEdge = 3, Np = 1
 
-	{ 6,3,0 }, // Quart = 4, CutEdge = 0, Np = 0
-	{ 6,2,1 }, // Quart = 4, CutEdge = 0, Np = 1
-	{ 7,2,1 }, // Quart = 4, CutEdge = 1, Np = 0
-	{ 7,2,1 }, // Quart = 4, CutEdge = 1, Np = 1
-	{ 7,3,0 }, // Quart = 4, CutEdge = 2, Np = 0
-	{ 7,3,0 }, // Quart = 4, CutEdge = 2, Np = 1
-	{ 8,3,0 }, // Quart = 4, CutEdge = 3, Np = 0
-	{ 8,2,1 }, // Quart = 4, CutEdge = 3, Np = 1
+	{ 7,3,0 }, // Quart = 4, CutEdge = 0, Np = 0
+	{ 7,3,0 }, // Quart = 4, CutEdge = 0, Np = 1
+	{ 8,3,0 }, // Quart = 4, CutEdge = 1, Np = 0
+	{ 8,2,1 }, // Quart = 4, CutEdge = 1, Np = 1
+	{ 6,3,0 }, // Quart = 4, CutEdge = 2, Np = 0
+	{ 6,2,1 }, // Quart = 4, CutEdge = 2, Np = 1
+	{ 7,2,1 }, // Quart = 4, CutEdge = 3, Np = 0
+	{ 7,2,1 }, // Quart = 4, CutEdge = 3, Np = 1
 
 	{ 0,3,0 }, // Quart = 5, CutEdge = 0, Np = 0
 	{ 0,3,1 }, // Quart = 5, CutEdge = 0, Np = 1
@@ -753,14 +1074,14 @@ STrans TranConvTable[128] =
 	{ 3,2,0 }, // Quart = 7, CutEdge = 3, Np = 0
 	{ 3,1,1 }, // Quart = 7, CutEdge = 3, Np = 1
 
-	{ 6,2,0 }, // Quart = 8, CutEdge = 0, Np = 0
-	{ 6,1,1 }, // Quart = 8, CutEdge = 0, Np = 1
-	{ 7,2,0 }, // Quart = 8, CutEdge = 1, Np = 0
-	{ 7,2,0 }, // Quart = 8, CutEdge = 1, Np = 1
-	{ 7,1,1 }, // Quart = 8, CutEdge = 2, Np = 0
-	{ 7,1,1 }, // Quart = 8, CutEdge = 2, Np = 1
-	{ 8,2,0 }, // Quart = 8, CutEdge = 3, Np = 0
-	{ 8,1,1 }, // Quart = 8, CutEdge = 3, Np = 1
+	{ 8,2,0 }, // Quart = 8, CutEdge = 0, Np = 0
+	{ 8,1,1 }, // Quart = 8, CutEdge = 0, Np = 1
+	{ 7,1,1 }, // Quart = 8, CutEdge = 1, Np = 0
+	{ 7,1,1 }, // Quart = 8, CutEdge = 1, Np = 1
+	{ 7,2,0 }, // Quart = 8, CutEdge = 2, Np = 0
+	{ 7,2,0 }, // Quart = 8, CutEdge = 2, Np = 1
+	{ 6,2,0 }, // Quart = 8, CutEdge = 3, Np = 0
+	{ 6,1,1 }, // Quart = 8, CutEdge = 3, Np = 1
 
 	{ 0,0,0 }, // Quart = 9, CutEdge = 0, Np = 0 UNUSED
 	{ 0,0,0 }, // Quart = 9, CutEdge = 0, Np = 1 UNUSED
@@ -771,50 +1092,50 @@ STrans TranConvTable[128] =
 	{ 0,0,0 }, // Quart = 9, CutEdge = 3, Np = 0 UNUSED
 	{ 0,0,0 }, // Quart = 9, CutEdge = 3, Np = 1 UNUSED
 
-	{ 0,1,0 }, // Quart = 10, CutEdge = 0, Np = 0
-	{ 0,1,1 }, // Quart = 10, CutEdge = 0, Np = 1
-	{ 1,1,0 }, // Quart = 10, CutEdge = 1, Np = 0
-	{ 1,1,0 }, // Quart = 10, CutEdge = 1, Np = 1
-	{ 1,1,1 }, // Quart = 10, CutEdge = 2, Np = 0
-	{ 1,1,1 }, // Quart = 10, CutEdge = 2, Np = 1
-	{ 2,1,0 }, // Quart = 10, CutEdge = 3, Np = 0
-	{ 2,1,0 }, // Quart = 10, CutEdge = 3, Np = 1
+	{ 2,1,0 }, // Quart = 10, CutEdge = 0, Np = 0
+	{ 2,1,1 }, // Quart = 10, CutEdge = 0, Np = 1
+	{ 1,1,1 }, // Quart = 10, CutEdge = 1, Np = 0
+	{ 1,1,1 }, // Quart = 10, CutEdge = 1, Np = 1
+	{ 1,1,0 }, // Quart = 10, CutEdge = 2, Np = 0
+	{ 1,1,0 }, // Quart = 10, CutEdge = 2, Np = 1
+	{ 0,1,0 }, // Quart = 10, CutEdge = 3, Np = 0
+	{ 0,1,1 }, // Quart = 10, CutEdge = 3, Np = 1
 
-	{ 5,3,0 }, // Quart = 11, CutEdge = 0, Np = 0
-	{ 5,2,1 }, // Quart = 11, CutEdge = 0, Np = 1
-	{ 4,3,0 }, // Quart = 11, CutEdge = 1, Np = 0
-	{ 4,3,0 }, // Quart = 11, CutEdge = 1, Np = 1
-	{ 4,2,1 }, // Quart = 11, CutEdge = 2, Np = 0
-	{ 4,2,1 }, // Quart = 11, CutEdge = 2, Np = 1
-	{ 3,3,0 }, // Quart = 11, CutEdge = 3, Np = 0
-	{ 3,2,1 }, // Quart = 11, CutEdge = 3, Np = 1
+	{ 4,3,0 }, // Quart = 11, CutEdge = 0, Np = 0
+	{ 4,3,0 }, // Quart = 11, CutEdge = 0, Np = 1
+	{ 5,3,0 }, // Quart = 11, CutEdge = 1, Np = 0
+	{ 5,2,1 }, // Quart = 11, CutEdge = 1, Np = 1
+	{ 3,3,0 }, // Quart = 11, CutEdge = 2, Np = 0
+	{ 3,2,1 }, // Quart = 11, CutEdge = 2, Np = 1
+	{ 4,2,1 }, // Quart = 11, CutEdge = 3, Np = 0
+	{ 4,2,1 }, // Quart = 11, CutEdge = 3, Np = 1
 
-	{ 0,2,0 }, // Quart = 12, CutEdge = 0, Np = 0
-	{ 0,2,1 }, // Quart = 12, CutEdge = 0, Np = 1
-	{ 1,2,0 }, // Quart = 12, CutEdge = 1, Np = 0
-	{ 1,2,0 }, // Quart = 12, CutEdge = 1, Np = 1
-	{ 1,2,1 }, // Quart = 12, CutEdge = 2, Np = 0
-	{ 1,2,1 }, // Quart = 12, CutEdge = 2, Np = 1
-	{ 2,2,0 }, // Quart = 12, CutEdge = 3, Np = 0
-	{ 2,2,1 }, // Quart = 12, CutEdge = 3, Np = 1
+	{ 2,2,0 }, // Quart = 12, CutEdge = 0, Np = 0
+	{ 2,2,1 }, // Quart = 12, CutEdge = 0, Np = 1
+	{ 1,2,1 }, // Quart = 12, CutEdge = 1, Np = 0
+	{ 1,2,1 }, // Quart = 12, CutEdge = 1, Np = 1
+	{ 1,2,0 }, // Quart = 12, CutEdge = 2, Np = 0
+	{ 1,2,0 }, // Quart = 12, CutEdge = 2, Np = 1
+	{ 0,2,0 }, // Quart = 12, CutEdge = 3, Np = 0
+	{ 0,2,1 }, // Quart = 12, CutEdge = 3, Np = 1
 
-	{ 5,1,0 }, // Quart = 13, CutEdge = 0, Np = 0
-	{ 5,0,1 }, // Quart = 13, CutEdge = 0, Np = 1
-	{ 4,1,0 }, // Quart = 13, CutEdge = 1, Np = 0
-	{ 4,1,0 }, // Quart = 13, CutEdge = 1, Np = 1
-	{ 4,0,1 }, // Quart = 13, CutEdge = 2, Np = 0
-	{ 4,0,1 }, // Quart = 13, CutEdge = 2, Np = 1
-	{ 3,1,0 }, // Quart = 13, CutEdge = 3, Np = 0
-	{ 3,0,1 }, // Quart = 13, CutEdge = 3, Np = 1
+	{ 4,0,1 }, // Quart = 13, CutEdge = 0, Np = 0
+	{ 4,0,1 }, // Quart = 13, CutEdge = 0, Np = 1
+	{ 3,1,0 }, // Quart = 13, CutEdge = 1, Np = 0
+	{ 3,0,1 }, // Quart = 13, CutEdge = 1, Np = 1
+	{ 5,1,0 }, // Quart = 13, CutEdge = 2, Np = 0
+	{ 5,0,1 }, // Quart = 13, CutEdge = 2, Np = 1
+	{ 4,1,0 }, // Quart = 13, CutEdge = 3, Np = 0
+	{ 4,1,0 }, // Quart = 13, CutEdge = 3, Np = 1
 
-	{ 5,0,0 }, // Quart = 14, CutEdge = 0, Np = 0
-	{ 5,3,1 }, // Quart = 14, CutEdge = 0, Np = 1
-	{ 4,3,1 }, // Quart = 14, CutEdge = 1, Np = 0
-	{ 4,3,1 }, // Quart = 14, CutEdge = 1, Np = 1
-	{ 4,0,0 }, // Quart = 14, CutEdge = 2, Np = 0
-	{ 4,0,0 }, // Quart = 14, CutEdge = 2, Np = 1
-	{ 3,0,0 }, // Quart = 14, CutEdge = 3, Np = 0
-	{ 3,3,1 }, // Quart = 14, CutEdge = 3, Np = 1
+	{ 3,0,0 }, // Quart = 14, CutEdge = 0, Np = 0
+	{ 3,3,1 }, // Quart = 14, CutEdge = 0, Np = 1
+	{ 4,0,0 }, // Quart = 14, CutEdge = 1, Np = 0
+	{ 4,0,0 }, // Quart = 14, CutEdge = 1, Np = 1
+	{ 4,3,1 }, // Quart = 14, CutEdge = 2, Np = 0
+	{ 4,3,1 }, // Quart = 14, CutEdge = 2, Np = 1
+	{ 5,0,0 }, // Quart = 14, CutEdge = 3, Np = 0
+	{ 5,3,1 }, // Quart = 14, CutEdge = 3, Np = 1
 
 	{ 0,0,0 }, // Quart = 15, CutEdge = 0, Np = 0 UNUSED
 	{ 0,0,0 }, // Quart = 15, CutEdge = 0, Np = 1 UNUSED
@@ -827,7 +1148,7 @@ STrans TranConvTable[128] =
 };
 
 // ---------------------------------------------------------------------------
-void CBuilderZoneRegion:: updateTrans (sint32 x, sint32 y)
+void CBuilderZoneRegion::updateTrans (sint32 x, sint32 y, CZoneBankElement *pElt)
 {
 	if ((x < _MinX) || (x > _MaxX) || (y < _MinY) || (y > _MaxY))
 		return;
@@ -919,6 +1240,10 @@ void CBuilderZoneRegion:: updateTrans (sint32 x, sint32 y)
 			nCutEdge |= 1 << nPosCorner;
 		++nPosCorner;
 	}
+	else
+	{
+		_Zones[x+y*stride].SharingCutEdges[0] = 0;
+	}
 
 	// Same for down edge
 	if ((nQuart == 1)||(nQuart == 2)||(nQuart == 5)||(nQuart == 10)||(nQuart == 13)||(nQuart == 14))
@@ -926,6 +1251,10 @@ void CBuilderZoneRegion:: updateTrans (sint32 x, sint32 y)
 		if (_Zones[x+y*stride].SharingCutEdges[1] == 2)
 			nCutEdge |= 1 << nPosCorner;
 		++nPosCorner;
+	}
+	else
+	{
+		_Zones[x+y*stride].SharingCutEdges[1] = 0;
 	}
 
 	// Same for left edge
@@ -935,6 +1264,10 @@ void CBuilderZoneRegion:: updateTrans (sint32 x, sint32 y)
 			nCutEdge |= 1 << nPosCorner;
 		++nPosCorner;
 	}
+	else
+	{
+		_Zones[x+y*stride].SharingCutEdges[2] = 0;
+	}
 
 	// Same for right edge
 	if ((nQuart == 2)||(nQuart == 3)||(nQuart == 7)||(nQuart == 8)||(nQuart == 12)||(nQuart == 13))
@@ -943,8 +1276,12 @@ void CBuilderZoneRegion:: updateTrans (sint32 x, sint32 y)
 			nCutEdge |= 1 << nPosCorner;
 		++nPosCorner;
 	}
+	else
+	{
+		_Zones[x+y*stride].SharingCutEdges[3] = 0;
+	}
 
-	nlassert (nPosCorner == 2); // If not this means that more than 2 edges are cut which is nont possible
+	nlassert (nPosCorner == 2); // If not this means that more than 2 edges are cut which is not possible
 
 	STrans Trans, TransTmp1, TransTmp2;
 
@@ -964,10 +1301,16 @@ void CBuilderZoneRegion:: updateTrans (sint32 x, sint32 y)
 
 	if (selection.size() > 0)
 	{
-		nTrans = (uint32)(NLMISC::frand (1.0) * selection.size());
-		NLMISC::clamp (nTrans, (sint32)0, (sint32)(selection.size()-1));
-
-		_Zones[x+y*stride].ZoneName = selection[nTrans]->getName();
+		if (pElt != NULL)
+		{
+			_Zones[x+y*stride].ZoneName = pElt->getName();
+		}
+		else
+		{
+			nTrans = (uint32)(NLMISC::frand (1.0) * selection.size());
+			NLMISC::clamp (nTrans, (sint32)0, (sint32)(selection.size()-1));
+			_Zones[x+y*stride].ZoneName = selection[nTrans]->getName();
+		}
 		_Zones[x+y*stride].PosX = _Zones[x+y*stride].PosY = 0;
 		_Zones[x+y*stride].Rot = Trans.Rot;
 		_Zones[x+y*stride].Flip = Trans.Flip;
@@ -1141,6 +1484,21 @@ void CBuilderZoneRegion::del (sint32 x, sint32 y, bool transition, void *pIntern
 		if (!transition)
 			reduceMin ();
 	}
+	else
+	{
+		if ((x < _MinX) || (x > _MaxX) || (y < _MinY) || (y > _MaxY))
+			return;
+		sint32 stride = (1+_MaxX-_MinX); // Nb to go to next line
+
+		_Zones[(x-_MinX)+(y-_MinY)*stride].ZoneName = STRING_UNUSED;
+		_Zones[(x-_MinX)+(y-_MinY)*stride].PosX = 0;
+		_Zones[(x-_MinX)+(y-_MinY)*stride].PosY = 0;
+		for (uint32 i = 0; i < 4; ++i)
+		{
+			_Zones[(x-_MinX)+(y-_MinY)*stride].SharingMatNames[i] = STRING_UNUSED;
+			_Zones[(x-_MinX)+(y-_MinY)*stride].SharingCutEdges[i] = 0;
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -1159,6 +1517,21 @@ void CBuilderZoneRegion::move (sint32 x, sint32 y)
 	_MaxY += y;
 
 	_MustAskSave = true;
+}
+
+// ---------------------------------------------------------------------------
+uint32 CBuilderZoneRegion::countZones ()
+{
+	sint32 x, y;
+	sint32 stride = (1+_MaxX-_MinX); // Nb to go to next line
+	uint32 counter = 0;
+	
+	for (y = _MinY; y <= _MaxY; ++y)
+	for (x = _MinX; x <= _MaxX; ++x)
+	if (_Zones[(x-_MinX)+(y-_MinY)*stride].ZoneName != STRING_UNUSED)
+		++counter;
+
+	return counter;
 }
 
 // ---------------------------------------------------------------------------
@@ -1245,37 +1618,6 @@ void CBuilderZoneRegion::set (sint32 x, sint32 y, sint32 PosX, sint32 PosY,
 		{
 			pZU->SharingMatNames[0] = sMatName;
 		}
-
-		/*
-		if (x > _MinX)
-		{
-			_Zones[(x-1-_MinX)+(y-_MinY)*stride].SharingMatNames[1] = sMatName;
-			_Zones[(x-1-_MinX)+(y-_MinY)*stride].SharingMatNames[3] = sMatName;
-			if (y > _MinY)
-				_Zones[(x-1-_MinX)+(y-1-_MinY)*stride].SharingMatNames[3] = sMatName;
-			if (y < _MaxY)
-				_Zones[(x-1-_MinX)+(y+1-_MinY)*stride].SharingMatNames[1] = sMatName;
-		}
-		if (y > _MinY)
-		{
-			_Zones[(x-_MinX)+(y-1-_MinY)*stride].SharingMatNames[2] = sMatName;
-			_Zones[(x-_MinX)+(y-1-_MinY)*stride].SharingMatNames[3] = sMatName;
-		}
-		if (y < _MaxY)
-		{
-			_Zones[(x-_MinX)+(y+1-_MinY)*stride].SharingMatNames[0] = sMatName;
-			_Zones[(x-_MinX)+(y+1-_MinY)*stride].SharingMatNames[1] = sMatName;
-		}
-		if (x < _MaxX)
-		{
-			_Zones[(x+1-_MinX)+(y-_MinY)*stride].SharingMatNames[0] = sMatName;
-			_Zones[(x+1-_MinX)+(y-_MinY)*stride].SharingMatNames[2] = sMatName;
-			if (y > _MinY)
-				_Zones[(x+1-_MinX)+(y-1-_MinY)*stride].SharingMatNames[2] = sMatName;
-			if (y < _MaxY)
-				_Zones[(x+1-_MinX)+(y+1-_MinY)*stride].SharingMatNames[0] = sMatName;
-		}
-		*/
 	}
 }
 

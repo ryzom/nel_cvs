@@ -50,17 +50,21 @@ void SType::serial (NLMISC::IStream&f)
 // CType
 
 // ---------------------------------------------------------------------------
-SEnvironnement::SEnvironnement()
+SEnvironnement::SEnvironnement ()
 {
 }
 
 // ---------------------------------------------------------------------------
 void SEnvironnement::serial (NLMISC::IStream&f)
 {
-	int version = f.serialVersion(0);
+	int version = f.serialVersion (1);
+
 	f.serialCont (Types);
 	f.serial (BackgroundColor);
 	f.serial (ExportOptions);
+
+	if (version > 0)
+		f.serial (DataDir);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -86,14 +90,17 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_FILE_GENERATE, OnMenuFileGenerate)
 	ON_COMMAND(ID_FILE_EXPORT, OnMenuFileExportToLevelD)
 	ON_COMMAND(ID_FILE_VIEW, OnMenuFileView)
+	ON_COMMAND(ID_FILE_SETDATADIR, OnMenuFileSetDataDirectory)
 	ON_COMMAND(ID_FILE_EXIT, OnMenuFileExit)
 	ON_COMMAND(ID_MODE_ZONE, OnMenuModeZone)
+	ON_COMMAND(ID_MODE_TRANSITION, OnMenuModeTransition)
 	ON_COMMAND(ID_MODE_LOGIC, OnMenuModeLogic)
 	ON_COMMAND(ID_MODE_TYPE, OnMenuModeType)
 	ON_COMMAND(ID_MODE_SELECT, onMenuModeSelectZone)
 	ON_COMMAND(ID_MODE_UNDO, onMenuModeUndo)
 	ON_COMMAND(ID_MODE_REDO, onMenuModeRedo)
 	ON_COMMAND(ID_MODE_MOVE, onMenuModeMove)
+	ON_COMMAND(ID_MODE_COUNT_ZONES, onMenuModeCountZones)
 	ON_COMMAND(ID_VIEW_GRID, OnMenuViewGrid)
 	ON_COMMAND(ID_VIEW_BACKGROUND, OnMenuViewBackground)
 
@@ -120,6 +127,10 @@ CMainFrame::CMainFrame()
 	_SplitterCreated = false;
 	CreateX = CreateY = CreateCX = CreateCY = 0;
 	_MasterCB = NULL;
+	char curDir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, curDir);
+	_ExeDir = string(curDir) + "\\";
+	_DataDir = string(curDir) + "\\";
 }
 
 // ---------------------------------------------------------------------------
@@ -128,9 +139,28 @@ CMainFrame::~CMainFrame()
 }
 
 // ---------------------------------------------------------------------------
-void CMainFrame::setRootDir (const char* str)
+void CMainFrame::setExeDir (const char* str)
 {
-	_RootDir = str;
+	AFX_MANAGE_STATE (AfxGetStaticModuleState());
+	_ExeDir = str;
+	if ((str[strlen(str)-1] != '\\') || (str[strlen(str)-1] != '/'))
+		_ExeDir += "\\";
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::setDataDir (const char* str)
+{
+	AFX_MANAGE_STATE (AfxGetStaticModuleState());
+	bool bPutZoneModeAtTheEnd = (_Mode == 0); // Mode Zone
+
+	OnMenuModeLogic ();
+	_DataDir = str;
+	if ((str[strlen(str)-1] != '\\') && (str[strlen(str)-1] != '/'))
+		_DataDir += "\\";
+	_Environnement.DataDir = _DataDir;
+	_ZoneBuilder.init (_DataDir, false);
+	if (bPutZoneModeAtTheEnd)
+		OnMenuModeZone ();
 }
 
 // ---------------------------------------------------------------------------
@@ -320,9 +350,28 @@ void CMainFrame::primZoneModified()
 // ---------------------------------------------------------------------------
 void CMainFrame::displayCoordinates (CVector &v)
 {
-//	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	std::string sTmp;
 	sTmp = "( " + toString(v.x) + " , " + toString(v.y) + " )";
+
+	for (uint32 i = sTmp.size(); i < 30; ++i)
+		sTmp += "_";
+	// Write the zone name
+	sint32 x, y;
+
+	CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
+	x = (sint32)(v.x / dispWnd->_CellSize);
+	y = (sint32)(v.y / dispWnd->_CellSize);
+	if ((v.x >= 0) && (x <= 255) && (v.y <= 0) && (y >= -255))
+	{
+		sTmp += toString(-(y)) + " ";
+		sTmp += ('A' + ((x)/26));
+		sTmp += ('A' + ((x)%26));
+	}
+	else
+	{
+		sTmp += "NOT A VALID ZONE";
+	}
+
 	m_wndStatusBar.SetWindowText (sTmp.c_str());
 }
 
@@ -357,7 +406,7 @@ bool CMainFrame::init (bool bMakeAZone)
 	// Load the Ligoscape.cfg
 	try
 	{
-		string sConfigFileName = _RootDir;
+		string sConfigFileName = _ExeDir;
 		sConfigFileName += "ligoscape.cfg";
 		// Load the config file
 		_Config.read (sConfigFileName.c_str());
@@ -371,27 +420,38 @@ bool CMainFrame::init (bool bMakeAZone)
 		_Config.Snap = 1.0f;
 	}
 
-	// Initialize the zoneBuilder (load bank and this kind of stuff)
-	_ZoneBuilder.init (_RootDir, bMakeAZone);
-
 	// Load the WorldEditor.cfg
 	try
 	{
 		CIFile fileIn;
-		string sWorldEdCfg = _RootDir;
+		string sWorldEdCfg = _ExeDir;
 		sWorldEdCfg += "WorldEditor.cfg";
 		fileIn.open (sWorldEdCfg.c_str());
 		fileIn.serial (_Environnement);
 		// Update all from environnement
 		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
 		dispWnd->setBackgroundColor (_Environnement.BackgroundColor);
+		if (bMakeAZone) // Do we are launched in a stand alone mode ?
+		{
+			_DataDir = _Environnement.DataDir; // Yes get the data path from cfg file
+			if ((_DataDir[_DataDir.size()-1] != '\\') && (_DataDir[_DataDir.size()-1] != '/'))
+			{
+				_DataDir += "\\";
+				_Environnement.DataDir += "\\";
+			}
+		}
 	}
+
 	catch (Exception& e)
 	{
 		MessageBox (e.what(), "Warning");
 		SEnvironnement newEnv;
 		_Environnement = newEnv;
 	}
+
+	// Initialize the zoneBuilder (load bank and this kind of stuff)
+	_ZoneBuilder.init (_DataDir, bMakeAZone);
+
 	return false;
 }
 
@@ -402,7 +462,7 @@ void CMainFrame::uninit ()
 	try
 	{
 		COFile fileOut;
-		string sWorldEdCfg = _RootDir;
+		string sWorldEdCfg = _ExeDir;
 		sWorldEdCfg += "WorldEditor.cfg";
 		fileOut.open (sWorldEdCfg.c_str());
 		fileOut.serial(_Environnement);
@@ -534,6 +594,8 @@ void CMainFrame::OnMenuFileExportToLevelD ()
 	dialog.HeightMapFile2 = _Environnement.ExportOptions.HeightMapFile2.c_str();
 	dialog.ZFactor2 = toString(_Environnement.ExportOptions.ZFactor2).c_str();
 	dialog.Lighting = _Environnement.ExportOptions.Light;
+	dialog.ZoneMin = _Environnement.ExportOptions.ZoneMin.c_str();
+	dialog.ZoneMax = _Environnement.ExportOptions.ZoneMax.c_str();
 
 	if (dialog.DoModal() == IDOK)
 	{
@@ -545,6 +607,8 @@ void CMainFrame::OnMenuFileExportToLevelD ()
 		_Environnement.ExportOptions.HeightMapFile2 = (LPCSTR)dialog.HeightMapFile2;
 		_Environnement.ExportOptions.ZFactor2 = (float)atof ((LPCSTR)dialog.ZFactor2);
 		_Environnement.ExportOptions.Light = dialog.Lighting;
+		_Environnement.ExportOptions.ZoneMin = (LPCSTR)dialog.ZoneMin;
+		_Environnement.ExportOptions.ZoneMax = (LPCSTR)dialog.ZoneMax;
 
 		CExportCBDlg *pDlg = new CExportCBDlg();
 		//Check if new succeeded and we got a valid pointer to a dialog object
@@ -561,7 +625,7 @@ void CMainFrame::OnMenuFileExportToLevelD ()
 		}
 
 		_Environnement.ExportOptions.ZoneRegion = (NLLIGO::CZoneRegion*)_ZoneBuilder.getPtrCurZoneRegion();
-		_Environnement.ExportOptions.LigoBankDir = _RootDir + "ZoneLigos";
+		_Environnement.ExportOptions.LigoBankDir = _DataDir + "ZoneLigos";
 		Export.export (_Environnement.ExportOptions, pDlg->getExportCB());
 
 		pDlg->setFinishedButton ();
@@ -571,6 +635,48 @@ void CMainFrame::OnMenuFileExportToLevelD ()
 		}
 		pDlg->DestroyWindow ();
 	}
+}
+
+// ---------------------------------------------------------------------------
+int CALLBACK dataDirBrowseCallbackProc (HWND hwnd,UINT uMsg,LPARAM lp, LPARAM pData) 
+{
+	switch (uMsg) 
+	{
+		case BFFM_INITIALIZED: 
+			SendMessage (hwnd, BFFM_SETSELECTION, TRUE, pData);
+		break;
+		default:
+		break;
+	}
+	return 0;
+}
+
+void CMainFrame::OnMenuFileSetDataDirectory ()
+{
+	BROWSEINFO	bi;
+	char		str[MAX_PATH];
+	ITEMIDLIST*	pidl;
+	char sTemp[1024];
+
+	bi.hwndOwner = this->m_hWnd;
+	bi.pidlRoot = NULL;
+	bi.pidlRoot = NULL;
+	bi.pszDisplayName = sTemp;
+	bi.lpszTitle = "Choose the path";
+	bi.ulFlags = 0;
+	bi.lpfn = dataDirBrowseCallbackProc;
+
+	char sDir[512];
+	strcpy(sDir, _DataDir.c_str());
+	bi.lParam = (LPARAM)sDir;
+
+	bi.iImage = 0;
+	pidl = SHBrowseForFolder (&bi);
+	if (!SHGetPathFromIDList(pidl, str)) 
+	{
+		return;
+	}
+	setDataDir (str);
 }
 
 // ---------------------------------------------------------------------------
@@ -585,12 +691,34 @@ void CMainFrame::OnMenuModeZone ()
 	CMenu *menu = GetMenu();
 	menu->CheckMenuItem (ID_MODE_ZONE, MF_CHECKED|MF_BYCOMMAND);
 	menu->CheckMenuItem (ID_MODE_LOGIC, MF_UNCHECKED|MF_BYCOMMAND);
-	if (_Mode != 0) // Mode Zone
+	menu->CheckMenuItem (ID_MODE_TRANSITION, MF_UNCHECKED|MF_BYCOMMAND);
+	if (_Mode == 1) // if we were in Logic mode switch
 	{
-		uninitTools();
+		uninitTools ();
 		_Mode = 0;
-		initTools();
+		initTools ();
 	}
+	_Mode = 0;
+	CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
+	dispWnd->OnDraw	(NULL);
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnMenuModeTransition ()
+{
+	CMenu *menu = GetMenu();
+	menu->CheckMenuItem (ID_MODE_ZONE, MF_UNCHECKED|MF_BYCOMMAND);
+	menu->CheckMenuItem (ID_MODE_LOGIC, MF_UNCHECKED|MF_BYCOMMAND);
+	menu->CheckMenuItem (ID_MODE_TRANSITION, MF_CHECKED|MF_BYCOMMAND);
+	if (_Mode == 1) // if we were in Logic mode switch
+	{
+		uninitTools ();
+		_Mode = 0;
+		initTools ();
+	}
+	_Mode = 2;
+	CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
+	dispWnd->OnDraw	(NULL);
 }
 
 // ---------------------------------------------------------------------------
@@ -599,6 +727,7 @@ void CMainFrame::OnMenuModeLogic ()
 	CMenu *menu = GetMenu();
 	menu->CheckMenuItem (ID_MODE_ZONE, MF_UNCHECKED|MF_BYCOMMAND);
 	menu->CheckMenuItem (ID_MODE_LOGIC, MF_CHECKED|MF_BYCOMMAND);
+	menu->CheckMenuItem (ID_MODE_TRANSITION, MF_UNCHECKED|MF_BYCOMMAND);
 	if (_Mode != 1) // Mode Logic
 	{
 		uninitTools();
@@ -636,7 +765,7 @@ void CMainFrame::onMenuModeSelectZone ()
 // ---------------------------------------------------------------------------
 void CMainFrame::onMenuModeUndo ()
 {
-	if (_Mode == 0) // Mode Zone
+	if ((_Mode == 0) || (_Mode == 2)) // Mode Zone or Mode Transition
 		_ZoneBuilder.undo ();
 	else
 		_PRegionBuilder.undo ();
@@ -645,7 +774,7 @@ void CMainFrame::onMenuModeUndo ()
 // ---------------------------------------------------------------------------
 void CMainFrame::onMenuModeRedo ()
 {
-	if (_Mode == 0) // Mode Zone
+	if ((_Mode == 0) || (_Mode == 2)) // Mode Zone or Mode Transition
 		_ZoneBuilder.redo ();
 	else
 		_PRegionBuilder.redo ();
@@ -658,7 +787,7 @@ void CMainFrame::onMenuModeMove ()
 	if (dialog.DoModal() == IDOK)
 	if (_ZoneBuilder._ZoneRegionNames.size() > 0)
 	{
-		_ZoneBuilder.move (dialog.XOffset, dialog.YOffset);		
+		_ZoneBuilder.move (dialog.XOffset, dialog.YOffset);
 		string tmp = _ZoneBuilder._ZoneRegionNames[_ZoneBuilder._ZoneRegionSelected], tmp2;
 		for(uint32 i = 0; i < tmp.size(); ++i)
 			if (tmp[i] == '.')
@@ -669,6 +798,17 @@ void CMainFrame::onMenuModeMove ()
 		_PRegionBuilder.move (tmp2, dialog.XOffset*_Config.CellSize, dialog.YOffset*_Config.CellSize);
 		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
 		dispWnd->OnDraw	(NULL);
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::onMenuModeCountZones ()
+{
+	if (_ZoneBuilder._ZoneRegionNames.size() > 0)
+	{
+		uint32 nNbZones = _ZoneBuilder.countZones ();
+		string tmp = "There are " + toString(nNbZones) + " zones";
+		MessageBox(tmp.c_str(), "Information", MB_ICONINFORMATION|MB_OK);
 	}
 }
 
@@ -708,6 +848,13 @@ void CMainFrame::OnClose ()
 // ---------------------------------------------------------------------------
 void CMainFrame::OnSize (UINT nType, int cx, int cy)
 {
+	if (nType != SIZE_MINIMIZED)
+	{
+		if (cx < 100)
+			cx = 100;
+		if (cy < 100)
+			cy = 100;
+	}
 	CFrameWnd::OnSize (nType, cx, cy);
 	if (nType != SIZE_MINIMIZED)
 		adjustSplitter ();
@@ -722,7 +869,7 @@ void CMainFrame::adjustSplitter ()
 		GetClientRect (&r);
 		if (r.right-r.left > 380)
 		{
-			if (_Mode == 0) // Mode Zone
+			if ((_Mode == 0) || (_Mode == 2)) // Mode Zone
 				m_wndSplitter.SetColumnInfo (0, r.right-r.left-380, 100); // 380 really experimental value
 			
 			if (_Mode == 1) // Mode Logic

@@ -1,6 +1,6 @@
 /** \file WorldEditor_interface.h
  *
- * $Id: WorldEditor_interface.h,v 1.4 2002/01/16 15:22:32 besson Exp $
+ * $Id: WorldEditor_interface.h,v 1.5 2002/02/13 17:03:01 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,8 +72,11 @@ public:
 	// Get the main frame
 	virtual void*getMainFrame ()=0;
 
-	// Set the root path directory
-	virtual void setRootDir (const char *sPathName)=0;
+	// Set the root path directory for the executable(s)
+	virtual void setExeDir (const char *sPathName)=0;
+
+	// Set the root path directory for the data
+	virtual void setDataDir (const char *sPathName)=0;
 
 	// Set the root path directory
 	virtual void setMasterCB (IMasterCB *pMCB)=0;

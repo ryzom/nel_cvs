@@ -33,6 +33,7 @@
 #define IDC_AND4                        1014
 #define IDC_OR4                         1015
 #define IDC_RANDOM                      1018
+#define IDC_NOT_PROPAGATE               1019
 #define IDC_ROT0                        1020
 #define IDC_ROT90                       1021
 #define IDC_ROT180                      1022
@@ -44,6 +45,7 @@
 #define IDC_FLIPRANDOM                  1028
 #define IDC_FLIPCYCLE                   1029
 #define IDC_LISTZONE                    1030
+#define IDC_FULL_CYCLE                  1030
 #define IDC_BUTTON1                     1031
 #define IDC_BUTTON_REFZONEDIR           1031
 #define IDC_EDITMINX                    1032
@@ -78,6 +80,8 @@
 #define IDC_PASSTEXT                    1054
 #define IDC_EDIT_ZFACTOR                1055
 #define IDC_EDIT_ZFACTOR2               1056
+#define IDC_EDIT_ZONEMIN                1057
+#define IDC_EDIT_ZONEMAX                1058
 #define IDC_RADIOLIGHTNOISE             2042
 #define IDC_RADIOLIGHTPATCH             2043
 #define IDC_RADIOLIGHTNO                2044
@@ -104,6 +108,9 @@
 #define ID_VIEW_BACKGROUND              32792
 #define ID_BUTTON32795                  32795
 #define ID_FILE_VIEW                    32797
+#define ID_FILE_SETDATADIR              32798
+#define ID_MODE_TRANSITION              32799
+#define ID_MODE_COUNT_ZONES             32800
 
 // Next default values for new objects
 // 
@@ -111,8 +118,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        144
-#define _APS_NEXT_COMMAND_VALUE         32798
-#define _APS_NEXT_CONTROL_VALUE         1057
+#define _APS_NEXT_COMMAND_VALUE         32801
+#define _APS_NEXT_CONTROL_VALUE         1059
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

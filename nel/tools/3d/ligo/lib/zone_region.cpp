@@ -1,7 +1,7 @@
 /** \file zone_region.cpp
  * <File description>
  *
- * $Id: zone_region.cpp,v 1.2 2002/01/16 15:22:33 besson Exp $
+ * $Id: zone_region.cpp,v 1.3 2002/02/13 17:03:02 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,6 +167,20 @@ uint8 CZoneRegion::getFlip (sint32 x, sint32 y)
 	else
 	{
 		return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].Flip;
+	}
+}
+
+// ---------------------------------------------------------------------------
+uint8 CZoneRegion::getCutEdge (sint32 x, sint32 y, uint8 pos)
+{
+	if ((x < _MinX) || (x > _MaxX) ||
+		(y < _MinY) || (y > _MaxY))
+	{
+		return 0;
+	}
+	else
+	{
+		return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)].SharingCutEdges[pos];
 	}
 }
 

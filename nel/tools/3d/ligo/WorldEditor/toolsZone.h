@@ -95,6 +95,8 @@ public:
 	afx_msg void OnSelectAnd4 ();
 	afx_msg void OnSelectOr4 ();
 	afx_msg void OnSelectRandom ();
+	afx_msg void OnSelectCycle ();
+	afx_msg void OnSelectNotPropagate ();
 
 	afx_msg void OnSelectRot0 ();
 	afx_msg void OnSelectRot90 ();

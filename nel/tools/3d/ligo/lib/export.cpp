@@ -1,7 +1,7 @@
 /** \file export.cpp
  * Implementation of export from leveldesign data to client data
  *
- * $Id: export.cpp,v 1.3 2002/01/29 15:12:32 besson Exp $
+ * $Id: export.cpp,v 1.4 2002/02/13 17:03:01 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,7 +59,7 @@ SExportOptions::SExportOptions ()
 // ---------------------------------------------------------------------------
 void SExportOptions::serial (NLMISC::IStream& s)
 {
-	int version = s.serialVersion (5);
+	int version = s.serialVersion (6);
 
 	s.serial (OutZoneDir);
 	s.serial (RefZoneDir);
@@ -81,6 +81,12 @@ void SExportOptions::serial (NLMISC::IStream& s)
 		s.serial (ZFactor);
 		s.serial (HeightMapFile2);
 		s.serial (ZFactor2);
+	}
+
+	if (version > 5)
+	{
+		s.serial (ZoneMin);
+		s.serial (ZoneMax);
 	}
 }
 
@@ -162,7 +168,7 @@ bool CExport::export (SExportOptions &options, IExportCB *expCB)
 	if (_ExportCB != NULL)
 		_ExportCB->dispPass ("Loading height map");
 	_HeightMap2 = NULL;
-	if (_Options->HeightMapFile != "")
+	if (_Options->HeightMapFile2 != "")
 	{
 		_HeightMap2 = new CBitmap;
 		try 
@@ -191,6 +197,31 @@ bool CExport::export (SExportOptions &options, IExportCB *expCB)
 	sint32 nMaxX = _Options->ZoneRegion->getMaxX() > 255 ? 255 : _Options->ZoneRegion->getMaxX();
 	sint32 nMinY = _Options->ZoneRegion->getMinY() > 0 ? 0 : _Options->ZoneRegion->getMinY();
 	sint32 nMaxY = _Options->ZoneRegion->getMaxY() < -255 ? -255 : _Options->ZoneRegion->getMaxY();
+
+	if ((_Options->ZoneMin != "") && (_Options->ZoneMax != ""))
+	{
+		_Options->ZoneMin = strupr (_Options->ZoneMin);
+		_Options->ZoneMax = strupr (_Options->ZoneMax);
+		sint32 nNewMinX = getXFromZoneName (_Options->ZoneMin);
+		sint32 nNewMinY = getYFromZoneName (_Options->ZoneMin);
+		sint32 nNewMaxX = getXFromZoneName (_Options->ZoneMax);
+		sint32 nNewMaxY = getYFromZoneName (_Options->ZoneMax);
+
+		if (nNewMinX > nNewMaxX) 
+			swap (nNewMinX, nNewMaxX);
+		if (nNewMinY > nNewMaxY) 
+			swap (nNewMinY, nNewMaxY);
+
+		if (nNewMinX > nMinX)
+			nMinX = nNewMinX;
+		if (nNewMinY > nMinY)
+			nMinY = nNewMinY;
+
+		if (nNewMaxX < nMaxX)
+			nMaxX = nNewMaxX;
+		if (nNewMaxY < nMaxY)
+			nMaxY = nNewMaxY;
+	}
 
 	sint32 nTotalFile = (1 + nMaxY - nMinY) * (1 + nMaxX - nMinX);
 	sint32 nCurrentFile = 0;
@@ -334,9 +365,7 @@ void CExport::treatPattern (sint32 x, sint32 y,
 		string DstZoneFileName;
 		try
 		{
-			DstZoneFileName = toString(-(y+deltaY+j)) + "_";
-			DstZoneFileName += ('A' + ((x+deltaX+i)/26));
-			DstZoneFileName += ('A' + ((x+deltaX+i)%26));
+			DstZoneFileName = getZoneNameFromXY(x+deltaX+i, y+deltaY+j);
 			//////// ATTENTION
 			//////// ATTENTION
 			//////// ATTENTION				il faut remettre en .zone pour la release !!!
@@ -781,9 +810,10 @@ void CExport::transformZone (CZone &zeZone, sint32 nPosX, sint32 nPosY, uint8 nR
 void CExport::cutZone (NL3D::CZone &bigZone, NL3D::CZone &unitZone, sint32 nPosX, sint32 nPosY,
 						vector<bool> &PatchTransfered)
 {
-	string DstZoneFileName = toString(-(nPosY)) + "_";
-	DstZoneFileName += ('A' + ((nPosX)/26));
-	DstZoneFileName += ('A' + ((nPosX)%26));
+	string DstZoneFileName = getZoneNameFromXY (nPosX, nPosY);
+	//string DstZoneFileName = toString(-(nPosY)) + "_";
+	//DstZoneFileName += ('A' + ((nPosX)/26));
+	//DstZoneFileName += ('A' + ((nPosX)%26));
 
 	uint32 i, j, k;
 	vector<CPatchInfo>		SrcPI;
@@ -892,7 +922,7 @@ float CExport::getHeight (float x, float y)
 	clamp (x, 0.0f, _Options->CellSize*256.0f);
 	clamp (y, 0.0f, _Options->CellSize*256.0f);
 
-	if (_HeightMap == NULL)
+	if (_HeightMap != NULL)
 	{
 		color = _HeightMap->getColor (x/(_Options->CellSize*256.0f), y/(_Options->CellSize*256.0f));
 		deltaZ = color.A;
@@ -1030,4 +1060,51 @@ void CExport::light (NL3D::CZone &zoneOut, NL3D::CZone &zoneIn)
 	}
 
 	zoneOut.build (zoneIn.getZoneId(), vPI, vBV);
+}
+
+// ---------------------------------------------------------------------------
+string CExport::getZoneNameFromXY (sint32 x, sint32 y)
+{
+	string tmp;
+
+	if ((y>0) || (y<-255) || (x<0) || (x>255))
+		return "NOT VALID";
+	tmp = toString(-1-y) + "_";
+	tmp += ('A' + (x/26));
+	tmp += ('A' + (x%26));
+	return tmp;
+}
+
+// ---------------------------------------------------------------------------
+sint32 CExport::getXFromZoneName (const string &ZoneName)
+{
+	string xStr, yStr;
+	uint32 i = 0;
+	while (ZoneName[i] != '_')
+	{
+		yStr += ZoneName[i]; ++i;
+	}
+	++i;
+	while (i < ZoneName.size())
+	{
+		xStr += ZoneName[i]; ++i;
+	}
+	return ((xStr[0] - 'A')*26 + (xStr[1] - 'A'));
+}
+
+// ---------------------------------------------------------------------------
+sint32 CExport::getYFromZoneName (const string &ZoneName)
+{
+	string xStr, yStr;
+	uint32 i = 0;
+	while (ZoneName[i] != '_')
+	{
+		yStr += ZoneName[i]; ++i;
+	}
+	++i;
+	while (i < ZoneName.size())
+	{
+		xStr += ZoneName[i]; ++i;
+	}
+	return -1-atoi(yStr.c_str());
 }

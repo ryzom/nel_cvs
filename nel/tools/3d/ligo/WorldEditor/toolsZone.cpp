@@ -210,6 +210,8 @@ BEGIN_MESSAGE_MAP (CToolsZone, CFormView)
 	ON_BN_CLICKED (IDC_AND4, OnSelectAnd4)
 	ON_BN_CLICKED (IDC_OR4, OnSelectOr4)
 	ON_BN_CLICKED (IDC_RANDOM, OnSelectRandom)
+	ON_BN_CLICKED (IDC_FULL_CYCLE, OnSelectCycle)
+	ON_BN_CLICKED (IDC_NOT_PROPAGATE, OnSelectNotPropagate)
 
 	ON_BN_CLICKED (IDC_ROT0, OnSelectRot0)
 	ON_BN_CLICKED (IDC_ROT90, OnSelectRot90)
@@ -390,7 +392,8 @@ void CToolsZone::OnSize (UINT nType, int cx, int cy)
 	CFormView::OnSize (nType, cx, cy);
 	// Resize list ctrl to fill the whole view.
 	if (_ListCreated)
-		getListCtrl()->MoveWindow (10, LIST_TOP, cx-20, cy-(LIST_TOP+10));
+		if ((cx > 25) && (cy > (LIST_TOP+10)))
+			getListCtrl()->MoveWindow (10, LIST_TOP, cx-20, cy-(LIST_TOP+10));
 }
 
 // ---------------------------------------------------------------------------
@@ -539,6 +542,30 @@ void CToolsZone::OnSelectOr4 ()
 void CToolsZone::OnSelectRandom()
 {
 	_MainFrame->_ZoneBuilder._RandomSelection = !_MainFrame->_ZoneBuilder._RandomSelection;
+	if (_MainFrame->_ZoneBuilder._RandomSelection)
+	{
+		CButton *pBut = (CButton*)GetDlgItem (IDC_FULL_CYCLE);
+		pBut->SetCheck (0);
+		_MainFrame->_ZoneBuilder._CycleSelection = false;
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectCycle ()
+{
+	_MainFrame->_ZoneBuilder._CycleSelection = !_MainFrame->_ZoneBuilder._CycleSelection;
+	if (_MainFrame->_ZoneBuilder._CycleSelection)
+	{
+		CButton *pBut = (CButton*)GetDlgItem (IDC_RANDOM);
+		pBut->SetCheck (0);
+		_MainFrame->_ZoneBuilder._RandomSelection = false;
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectNotPropagate ()
+{
+	_MainFrame->_ZoneBuilder._NotPropagate = !_MainFrame->_ZoneBuilder._NotPropagate;
 }
 
 // ---------------------------------------------------------------------------

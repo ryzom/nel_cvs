@@ -124,16 +124,21 @@ BEGIN
         MENUITEM "Export For LevelD.",          ID_FILE_EXPORT
         MENUITEM "&View",                       ID_FILE_VIEW
         MENUITEM SEPARATOR
+        MENUITEM "Set Data Director&y",         ID_FILE_SETDATADIR
+        MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_FILE_EXIT
     END
     POPUP "&Mode"
     BEGIN
         MENUITEM "&Zone",                       ID_MODE_ZONE, CHECKED
+        MENUITEM "&Transition",                 ID_MODE_TRANSITION
         MENUITEM "&Logic",                      ID_MODE_LOGIC
-        MENUITEM "&Type",                       ID_MODE_TYPE
+        MENUITEM SEPARATOR
+        MENUITEM "T&ype",                       ID_MODE_TYPE
         MENUITEM SEPARATOR
         MENUITEM "&Select Zone",                ID_MODE_SELECT
         MENUITEM "&Move",                       ID_MODE_MOVE
+        MENUITEM "Count Zones",                 ID_MODE_COUNT_ZONES
         MENUITEM SEPARATOR
         MENUITEM "&Undo",                       ID_MODE_UNDO
         MENUITEM "&Redo",                       ID_MODE_REDO
@@ -285,6 +290,10 @@ BEGIN
                     103,94,46,10
     CONTROL         "Random",IDC_RANDOM,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,189,7,43,10
+    CONTROL         "Not Propagate",IDC_NOT_PROPAGATE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,177,95,62,10
+    CONTROL         "Full Cycle",IDC_FULL_CYCLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,189,16,46,10
 END
 
 IDD_SELECTZONE DIALOG DISCARDABLE  0, 0, 186, 95
@@ -334,22 +343,22 @@ BEGIN
     EDITTEXT        IDC_EDITYOFFSET,49,23,40,14,ES_AUTOHSCROLL
 END
 
-IDD_EXPORT DIALOG DISCARDABLE  0, 0, 186, 215
+IDD_EXPORT DIALOG DISCARDABLE  0, 0, 186, 252
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Export To Client"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,129,177,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,129,194,50,14
+    DEFPUSHBUTTON   "OK",IDOK,129,213,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,231,50,14
     EDITTEXT        IDC_EDIT_REFZONEDIR,7,16,153,14,ES_AUTOHSCROLL
     LTEXT           "Reference Zones Directory",IDC_STATIC,7,7,86,8
     PUSHBUTTON      "...",IDC_BUTTON_REFZONEDIR,166,16,13,14
-    GROUPBOX        "Lighting",IDC_STATIC,7,178,118,30
+    GROUPBOX        "Lighting",IDC_STATIC,7,215,118,30
     CONTROL         "Noise",IDC_RADIOLIGHTNOISE,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,13,191,34,10
+                    WS_GROUP,15,228,34,10
     CONTROL         "Patch",IDC_RADIOLIGHTPATCH,"Button",BS_AUTORADIOBUTTON,
-                    51,191,35,10
-    CONTROL         "No",IDC_RADIOLIGHTNO,"Button",BS_AUTORADIOBUTTON,89,191,
+                    53,228,35,10
+    CONTROL         "No",IDC_RADIOLIGHTNO,"Button",BS_AUTORADIOBUTTON,91,228,
                     25,10
     LTEXT           "Output Zones Directory",IDC_STATIC,7,33,74,8
     EDITTEXT        IDC_EDIT_OUTZONEDIR,7,42,153,14,ES_AUTOHSCROLL
@@ -367,6 +376,11 @@ BEGIN
     PUSHBUTTON      "...",IDC_BUTTON_HEIGHTMAPFILE2,166,141,13,14
     EDITTEXT        IDC_EDIT_ZFACTOR2,119,157,40,14,ES_AUTOHSCROLL
     LTEXT           "Height Factor 2",IDC_STATIC,63,160,50,8
+    LTEXT           "ZoneMin",IDC_STATIC,15,191,29,8
+    EDITTEXT        IDC_EDIT_ZONEMIN,50,188,40,14,ES_AUTOHSCROLL
+    LTEXT           "ZoneMax",IDC_STATIC,99,191,31,8
+    EDITTEXT        IDC_EDIT_ZONEMAX,133,188,40,14,ES_AUTOHSCROLL
+    GROUPBOX        "Export Limiter",IDC_STATIC,7,178,172,27
 END
 
 IDD_TYPEMANAGER DIALOG DISCARDABLE  0, 0, 186, 156
@@ -526,7 +540,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 179
         TOPMARGIN, 7
-        BOTTOMMARGIN, 208
+        BOTTOMMARGIN, 245
     END
 
     IDD_TYPEMANAGER, DIALOG

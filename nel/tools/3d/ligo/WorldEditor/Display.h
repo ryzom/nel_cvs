@@ -79,6 +79,7 @@ private:
 	afx_msg void OnMButtonDown	(UINT nFlags, CPoint point);
 	afx_msg void OnMButtonUp	(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDown	(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDblClk (UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp	(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonDown	(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonUp	(UINT nFlags, CPoint point);
@@ -86,6 +87,7 @@ private:
 	afx_msg void OnChar (UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnKeyUp (UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnTimer (UINT nIDEvent);
+	afx_msg void OnSize (UINT nType, int cx, int cy);
 
 	DECLARE_MESSAGE_MAP()
 

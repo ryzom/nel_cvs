@@ -40,8 +40,12 @@ public:
 	// New interface
 	void				init (NLLIGO::CZoneBank *pBank, CBuilderZone *pBuilder);
 	void				add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIGO::CZoneBankElement *pElt);
+	void				invertCutEdge (sint32 x, sint32 y, uint8 cePos);
+	void				cycleTransition (sint32 x, sint32 y);
+	bool				addNotPropagate (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIGO::CZoneBankElement *pElt);
 	void				del (sint32 x, sint32 y, bool transition=false, void *pInternal=NULL);
 	void				move (sint32 x, sint32 y);
+	uint32				countZones ();
 	void				setStart (sint32 x, sint32 y);
 	void				reduceMin ();
 
@@ -70,11 +74,13 @@ private:
 
 private:
 
+	void				addTransition (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIGO::CZoneBankElement *pElt);
+	
 	void				addToUpdateAndCreate (CBuilderZoneRegion* pBZRfrom, sint32 sharePos, sint32 x, sint32 y, const std::string &sNewMat, void *pInt1, void *pInt2);
 
 	void				putTransitions (sint32 x, sint32 y, const NLLIGO::SPiece &rMask, const std::string &MatName, void *pInternal);
-	void				putTransition (sint32 x, sint32 y, const std::string &MatName);
-	void				updateTrans (sint32 x, sint32 y);
+	//void				putTransition (sint32 x, sint32 y, const std::string &MatName);
+	void				updateTrans (sint32 x, sint32 y, NLLIGO::CZoneBankElement *pElt = NULL);
 
 	std::string			getNextMatInTree(const std::string &sMatA, const std::string &sMatB);
 	void				tryPath (uint32 posA, uint32 posB, std::vector<uint32> &vPath);

@@ -1,7 +1,7 @@
 /** \file zone_bank.h
  * Zone Bank
  *
- * $Id: zone_bank.h,v 1.8 2001/12/17 13:55:54 besson Exp $
+ * $Id: zone_bank.h,v 1.9 2002/02/13 17:03:02 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -78,7 +78,7 @@ public:
 	void setMask (const std::vector<bool> &mask, uint8 sizeX, uint8 sizeY);
 
 	void addCategory (const std::string &CatType, const std::string &CatValue);
-	const std::string &getName ();
+	const std::string &getName (); // Return the value of the "zone" category
 	const std::string &getSize ();
 	uint8 getSizeX () { return _SizeX; }
 	uint8 getSizeY () { return _SizeY; }

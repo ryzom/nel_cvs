@@ -1,7 +1,7 @@
 /** \file zone_region.h
  * <File description>
  *
- * $Id: zone_region.h,v 1.2 2002/01/16 15:22:33 besson Exp $
+ * $Id: zone_region.h,v 1.3 2002/02/13 17:03:02 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,7 @@ public:
 	uint8				getPosY (sint32 x, sint32 y);
 	uint8				getRot (sint32 x, sint32 y);
 	uint8				getFlip (sint32 x, sint32 y);
+	uint8				getCutEdge (sint32 x, sint32 y, uint8 pos); // pos==0 -> getUpCE, pos==1 -> getDownCE, ...
 
 	sint32				getMinX () { return _MinX; }
 	sint32				getMaxX () { return _MaxX; }

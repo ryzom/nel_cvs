@@ -1,7 +1,7 @@
 /** \file WorldEditor.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: worldeditor.cpp,v 1.5 2001/12/28 14:57:11 besson Exp $
+ * $Id: worldeditor.cpp,v 1.6 2002/02/13 17:03:01 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,7 +140,11 @@ CWorldEditor::CWorldEditor ()
 //	init3d ();
 	_MainFrame = NULL;
 	_MCB = NULL;
-	_RootDir = "";
+
+	char sCurDir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, sCurDir);
+	_ExeDir = string(sCurDir) + "\\";
+	_DataDir = string(sCurDir) + "\\";
 }
 
 // ***************************************************************************
@@ -164,9 +168,20 @@ void *CWorldEditor::getMainFrame ()
 
 // ***************************************************************************
 
-void CWorldEditor::setRootDir (const char *sPathName)
+void CWorldEditor::setDataDir (const char *sPathName)
 {
-	_RootDir = sPathName;
+	_DataDir = sPathName;
+	if (_MainFrame != NULL)
+		_MainFrame->setDataDir (_DataDir.c_str());
+}
+
+// ***************************************************************************
+
+void CWorldEditor::setExeDir (const char *sPathName)
+{
+	_ExeDir = sPathName;
+	if (_MainFrame != NULL)
+		_MainFrame->setExeDir (_ExeDir.c_str());
 }
 
 // ***************************************************************************
@@ -273,10 +288,9 @@ void CWorldEditor::initUI (HWND parent)
 
 	BOOL bRet = _MainFrame->LoadFrame (IDR_MAINFRAME, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
 
-	_MainFrame->setRootDir (_RootDir.c_str());
 	_MainFrame->ShowWindow (SW_SHOW);
 	_MainFrame->UpdateWindow ();
-	_MainFrame->init ();
+	_MainFrame->init (true); // Launched in stand alone mode
 	_MainFrame->initDisplay ();
 	_MainFrame->initTools ();
 }
@@ -300,10 +314,11 @@ void CWorldEditor::initUILight (int x, int y, int cx, int cy)
 
 	if (_MCB != NULL)
 		_MainFrame->_MasterCB = _MCB;
-	_MainFrame->setRootDir (_RootDir.c_str());
+	_MainFrame->setExeDir (_ExeDir.c_str());
+	_MainFrame->setDataDir (_DataDir.c_str());
 	_MainFrame->ShowWindow (SW_SHOW);
 	_MainFrame->UpdateWindow ();
-	_MainFrame->init (false);
+	_MainFrame->init (false); // Launched from master tool
 	_MainFrame->initDisplay ();
 	_MainFrame->_Mode = 1;
 	_MainFrame->initTools ();

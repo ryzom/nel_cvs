@@ -49,6 +49,7 @@ CBuilderLogic::CBuilderLogic()
 	_ItemSelected = NULL;
 	_RegionSelected = -1;
 	_ToolsLogic = NULL;
+	_Display = NULL;
 }
 
 // ---------------------------------------------------------------------------
@@ -71,6 +72,7 @@ void CBuilderLogic::uninit()
 	{
 		askSaveRegion (i);
 	}
+	_Display = NULL;
 }
 
 // ---------------------------------------------------------------------------

@@ -10,7 +10,8 @@ class CWorldEditor : public IWorldEditor
 {
 
 	CMainFrame	*_MainFrame;
-	std::string _RootDir;
+	std::string _DataDir;
+	std::string _ExeDir;
 	IMasterCB	*_MCB;
 
 public:
@@ -34,8 +35,11 @@ public:
 	// Get the main frame
 	virtual void*getMainFrame ();
 
-	// Set the root path directory
-	virtual void setRootDir (const char *sPathName);
+	// Set the root path directory where is the executable
+	virtual void setExeDir (const char *sPathName);
+
+	// Set the root path directory where are the data
+	virtual void setDataDir (const char *sPathName);
 
 	// To communicate the list of primzone to the master
 	virtual void setMasterCB (IMasterCB *pMCB);

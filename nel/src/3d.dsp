@@ -322,6 +322,14 @@ SOURCE=..\include\nel\3d\frustum.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\polygon.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\polygon.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\uv.cpp
 # End Source File
 # Begin Source File
@@ -426,6 +434,14 @@ SOURCE=..\include\nel\3d\event_mouse_listener.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mini_col.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\mini_col.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mot.cpp
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -469,6 +485,14 @@ SOURCE=.\3d\scene.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\scene.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\triangle.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\triangle.h
 # End Source File
 # End Target
 # End Project

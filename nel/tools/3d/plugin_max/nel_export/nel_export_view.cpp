@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.40 2002/09/16 08:19:38 berenguier Exp $
+ * $Id: nel_export_view.cpp,v 1.41 2003/04/15 13:28:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,7 @@
 #include "../nel_mesh_lib/export_appdata.h"
 
 #include "nel/misc/time_nl.h"
+#include "nel/misc/config_file.h"
 
 #include "nel_export.h"
 #include "progress.h"
@@ -104,6 +105,70 @@ public:
 
 // -----------------------------------------------------------------------------------------------
 
+void regsiterOVPath ()
+{
+// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
+#ifdef NL_DEBUG_FAST
+	HMODULE hModule = GetModuleHandle("object_viewer_debug_fast.dll");
+#elif defined (NL_DEBUG)
+	HMODULE hModule = GetModuleHandle("object_viewer_debug.dll");
+#elif defined (NL_RELEASE_DEBUG)
+	HMODULE hModule = GetModuleHandle("object_viewer_rd.dll");
+#else
+	HMODULE hModule = GetModuleHandle("object_viewer.dll");
+#endif
+	nlassert (hModule);		
+	char sModulePath[256];
+	int res=GetModuleFileName(hModule, sModulePath, 256);
+	nlassert(res);
+	char SDrive[512];
+	char SDir[512];
+	_splitpath (sModulePath, SDrive, SDir, NULL, NULL);
+	_makepath (sModulePath, SDrive, SDir, "object_viewer", ".cfg");
+
+	// Load the config file
+	CConfigFile cf;
+	cf.load (sModulePath);
+
+	try
+	{
+		// Add search pathes
+		CConfigFile::CVar &search_pathes = cf.getVar ("search_pathes");
+		for (uint i=0; i<(uint)search_pathes.size(); i++)
+			CPath::addSearchPath (search_pathes.asString(i));
+	}
+	catch(EUnknownVar &)
+	{}
+
+	try
+	{
+		// Add recusrive search pathes
+		CConfigFile::CVar &recursive_search_pathes = cf.getVar ("recursive_search_pathes");
+		for (uint i=0; i<(uint)recursive_search_pathes.size(); i++)
+			CPath::addSearchPath (recursive_search_pathes.asString(i), true, false);
+	}
+	catch(EUnknownVar &)
+	{}
+
+	// Add extension remapping
+	try
+	{
+		CConfigFile::CVar &extensions_remapping = cf.getVar ("extensions_remapping");
+		if (extensions_remapping.size()%2 != 0)
+		{
+			nlwarning ("extensions_remapping must have a multiple of 2 entries (ex: extensions_remapping={\"dds\",\"tga\"};)");
+		}
+		else
+		{
+			for (uint i=0; i<(uint)extensions_remapping.size(); i+=2)
+				CPath::remapExtension(extensions_remapping.asString(i), extensions_remapping.asString(i+1), true);
+		}
+	}
+	catch (EUnknownVar &)
+	{
+	}
+}
+
 void CNelExport::viewMesh (TimeValue time)
 {
 	// Register classes
@@ -111,6 +176,9 @@ void CNelExport::viewMesh (TimeValue time)
 
 	CScene::registerBasics ();
 	
+	// Register CPath in our module
+	regsiterOVPath ();
+
 	// Create an object viewer
 	IObjectViewer* view = IObjectViewer::getInterface();
 

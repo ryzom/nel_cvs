@@ -17,6 +17,7 @@
 #include "sound_anim_dlg.h"
 #include "fog_dlg.h"
 #include "scene_rot_dlg.h"
+#include "skeleton_scale_dlg.h"
 #include "light_group_factor.h"
 #include <nel/misc/file.h>
 #include <3d/nelu.h>
@@ -104,6 +105,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	ChooseFrameDelayWindow=false;
 	ChooseBGColorWindow=false;
 	ChooseSunColorWindow=false;
+	SkeletonScaleWindow= false;
 	MouseMoveType= MoveCamera;
 	MoveMode=ObjectMode;
 	X=true;
@@ -166,9 +168,13 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_WINDOW_CHOOSE_SUN_COLOR, OnWindowChooseSunColor)
 	ON_COMMAND(ID_SCENE_SETLIGHTGROUPFACTOR, OnSetLightGroupFactor)
 	ON_COMMAND(IDM_SHOW_SCENE_MATRIX, OnShowSceneMatrix)
+	ON_COMMAND(iDM_SHOW_OCCLUSION_TEST_MESHS, OnShowOcclusionTestMeshs)
 	ON_COMMAND(IDM_SHOW_FX_MATRIX, OnShowFXMatrix)
 	ON_COMMAND(IDM_SHOW_FX_USER_MATRIX, OnShowFXUserMatrix)
-	ON_COMMAND(iDM_SHOW_OCCLUSION_TEST_MESHS, OnShowOcclusionTestMeshs)
+	ON_UPDATE_COMMAND_UI(IDM_SHOW_SCENE_MATRIX, OnUpdateShowSceneMatrix)
+	ON_UPDATE_COMMAND_UI(IDM_SHOW_FX_MATRIX, OnUpdateShowFXMatrix)
+	ON_UPDATE_COMMAND_UI(IDM_SHOW_FX_USER_MATRIX, OnUpdateShowFXUserMatrix)
+	ON_UPDATE_COMMAND_UI(iDM_SHOW_OCCLUSION_TEST_MESHS, OnUpdateShowOcclusionTestMeshs)
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMATION, OnUpdateWindowAnimation)
@@ -181,7 +187,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_CHOOSE_FRAME_DELAY, OnUpdateWindowChooseFrameDelay)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_CHOOSE_BG_COLOR, OnUpdateWindowBGColor)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_CHOOSE_SUN_COLOR, OnUpdateWindowSunColor)
-	ON_UPDATE_COMMAND_UI(ID_SCENE_SETLIGHTGROUPFACTOR, OnUpdateWindowLightGroup)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_OBJECTMODE, OnUpdateViewObjectmode)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTPERSONMODE, OnUpdateViewFirstpersonmode)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_CAMERAMODE, OnUpdateViewCamera)
@@ -191,10 +196,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVEELEMENT, OnUpdateEditMoveelement)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVE_FX, OnUpdateEditMoveFX)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVE_FX_USER_MATRIX, OnUpdateEditMoveFXUserMatrix)
-	ON_UPDATE_COMMAND_UI(IDM_SHOW_SCENE_MATRIX, OnUpdateShowSceneMatrix)
-	ON_UPDATE_COMMAND_UI(IDM_SHOW_FX_MATRIX, OnUpdateShowFXMatrix)
-	ON_UPDATE_COMMAND_UI(IDM_SHOW_FX_USER_MATRIX, OnUpdateShowFXUserMatrix)
-	ON_UPDATE_COMMAND_UI(iDM_SHOW_OCCLUSION_TEST_MESHS, OnUpdateShowOcclusionTestMeshs)
+	ON_UPDATE_COMMAND_UI(ID_SCENE_SETLIGHTGROUPFACTOR, OnUpdateWindowLightGroup)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)	
 	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)	
 	ON_COMMAND_RANGE(IDM_ACTIVATE_TEXTURE_SET_1, IDM_ACTIVATE_TEXTURE_SET_8, OnActivateTextureSet)
@@ -214,6 +216,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(IDM_RESET_FX_USER_MATRIX, OnViewResetFXUserMatrix)	
 	ON_COMMAND(ID_VIEW_SET_SCENE_ROTATION, OnViewSetSceneRotation)
 	ON_COMMAND(ID_SHOOT_SCENE, OnShootScene)
+	ON_COMMAND(ID_WINDOW_SKELETON_SCALE, OnWindowSkeletonScale)
+	ON_UPDATE_COMMAND_UI(ID_WINDOW_SKELETON_SCALE, OnUpdateWindowSkeletonScale)
 	//}}AFX_MSG_MAP
 	ON_COMMAND_RANGE(ID_SCENE_CAMERA_FIRST, ID_SCENE_CAMERA_LAST, OnSceneCamera)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_SCENE_CAMERA_FIRST, ID_SCENE_CAMERA_LAST, OnUpdateSceneCamera)
@@ -250,6 +254,7 @@ void CMainFrame::update ()
 	ObjView->_ChooseFrameDelayDlg->ShowWindow (ChooseFrameDelayWindow?SW_SHOW:SW_HIDE);
 	ObjView->_ChooseBGColorDlg->ShowWindow (ChooseBGColorWindow?SW_SHOW:SW_HIDE);
 	ObjView->_ChooseSunColorDlg->ShowWindow (ChooseSunColorWindow?SW_SHOW:SW_HIDE);
+	ObjView->_SkeletonScaleDlg->ShowWindow (SkeletonScaleWindow?SW_SHOW:SW_HIDE);
 }
 
 // ***************************************************************************
@@ -296,6 +301,8 @@ void CMainFrame::registerValue (bool read)
 			RegQueryValueEx (hKey, "ViewChooseBGColor", 0, &type, (LPBYTE)&ChooseBGColorWindow, &len);
 			len=sizeof (BOOL);
 			RegQueryValueEx (hKey, "ViewChooseSunColor", 0, &type, (LPBYTE)&ChooseSunColorWindow, &len);
+			len=sizeof (BOOL);
+			RegQueryValueEx (hKey, "ViewSkeletonScaleWindow", 0, &type, (LPBYTE)&SkeletonScaleWindow, &len);
 		}
 	}
 	else
@@ -321,6 +328,7 @@ void CMainFrame::registerValue (bool read)
 			RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&MoveMode, sizeof(uint));
 			RegSetValueEx(hKey, "BackGroundColor", 0, REG_BINARY, (LPBYTE)&BgColor, sizeof(NLMISC::CRGBA));
 			RegSetValueEx(hKey, "GlobalWindPower", 0, REG_BINARY, (LPBYTE)&GlobalWindPower, sizeof(float));
+			RegSetValueEx(hKey, "ViewSkeletonScaleWindow", 0, REG_BINARY, (LPBYTE)&SkeletonScaleWindow, sizeof(bool));
 		}
 	}
 }
@@ -1420,3 +1428,14 @@ void CMainFrame::OnUpdateSceneCamera(CCmdUI* pCmdUI)
 
 // ***************************************************************************
 
+
+void CMainFrame::OnWindowSkeletonScale() 
+{
+	SkeletonScaleWindow^= true;
+	update ();
+}
+
+void CMainFrame::OnUpdateWindowSkeletonScale(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (ChooseBGColorWindow);
+}

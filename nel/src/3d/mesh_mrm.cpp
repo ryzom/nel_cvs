@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.71 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_mrm.cpp,v 1.72 2004/07/01 09:36:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3303,6 +3303,72 @@ void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial 
 	drv->renderTriangles(castMat, 0, numTris);
 }
 
+
+// ***************************************************************************
+bool		CMeshMRMGeom::getSkinBoneBBox(CSkeletonModel *skeleton, NLMISC::CAABBox &bbox, uint boneId) const
+{
+	bbox.setCenter(CVector::Null);
+	bbox.setHalfSize(CVector::Null);
+
+	if(!skeleton)
+		return false;
+
+	// get the bindpos of the wanted bone
+	nlassert(boneId<skeleton->Bones.size());
+	const CMatrix		&invBindPos= skeleton->Bones[boneId].getBoneBase().InvBindPos;
+
+
+	// Find the Geomorph space: to process only real vertices, not geomorphed ones.
+	uint	nGeomSpace= 0;
+	uint	lod;
+	for (lod=0; lod<_Lods.size(); lod++)
+	{
+		nGeomSpace= max(nGeomSpace, (uint)_Lods[lod].Geomorphs.size());
+	}
+	
+	// Prepare Sphere compute
+	nlassert(_OriginalSkinVertices.size() == _SkinWeights.size());
+	bool	bbEmpty= true;
+	
+	// Remap the vertex, and compute the wanted bone bbox
+	// for true vertices
+	for (uint vert=nGeomSpace; vert<_SkinWeights.size(); vert++)
+	{
+		// get the vertex position.
+		CVector		vertex= _OriginalSkinVertices[vert];
+		
+		// For each weight
+		uint weight;
+		for (weight=0; weight<NL3D_MESH_SKINNING_MAX_MATRIX; weight++)
+		{
+			// Active ?
+			if ((_SkinWeights[vert].Weights[weight]>0)||(weight==0))
+			{
+				// Check id is the wanted one
+				if(_SkinWeights[vert].MatrixId[weight]==boneId)
+				{
+					// transform the vertex pos in BoneSpace
+					CVector		p= invBindPos * vertex;
+					// extend the bone bbox.
+					if(bbEmpty)
+					{
+						bbox.setCenter(p);
+						bbEmpty= false;
+					}
+					else
+					{
+						bbox.extend(p);
+					}
+				}
+			}
+			else
+				break;
+		}				
+	}
+
+	// return true if some influence found
+	return !bbEmpty;
+}
 
 
 } // NL3D

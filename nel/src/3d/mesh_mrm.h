@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.49 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_mrm.h,v 1.50 2004/07/01 09:36:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -245,6 +245,9 @@ public:
 	/// see CTransform::getSkinBoneSphere() doc for the meaning of this value. computeBonesId must has been called before.
 	const std::vector<NLMISC::CBSphere>	&getSkinBoneSphere() const {return _BonesSphere;}
 
+	/// Called for edition purpose (slow  O(NVertex) ). computeBonesId must has been called before.
+	bool			getSkinBoneBBox(CSkeletonModel *skeleton, NLMISC::CAABBox &bbox, uint boneId) const;
+	
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.55 2004/06/29 13:34:23 vizerie Exp $
+ * $Id: transform.h,v 1.56 2004/07/01 09:36:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -433,6 +433,16 @@ public:
 	uint32				isSkeleton() const {return getStateFlag(IsSkeleton);}
 	/// non-zero if the model is skinned onto a skeleton.
 	uint32				isSkinned() const {return getStateFlag(IsSkinned);}
+	/** Called for edition purpose (slow call O(NVertex))
+	 *	It return the BBox (local to the Bone at its bind pos) of all of the vertices 
+	 *	of this mesh that are bound to this bone
+	 *	NB: the instance must be skinned to the skeleton instance, BUT the result is not modified
+	 *	by current bone world matrix (eg: no current scale influence)
+	 *	\param boneId: the id of the skeleton's bone (wich the instance is skinned to)
+	 *	\param bbox: the bbox (in bone basis) filled if return is true
+	 *	\return false if no vertices are bound to
+	 */
+	virtual bool		getSkinBoneBBox(NLMISC::CAABBox &bbox, uint boneId) {return false;}
 	// @}
 
 

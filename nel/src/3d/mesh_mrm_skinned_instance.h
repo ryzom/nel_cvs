@@ -2,7 +2,7 @@
  * Optimised instance for skinned object with MRM, 1 UV coordinates, 1 to 4 skinning weight and 256 matrices.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned_instance.h,v 1.1 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: mesh_mrm_skinned_instance.h,v 1.2 2004/07/01 09:36:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,9 @@ protected:
 	virtual	sint			renderShadowSkinGeom(uint remainingVertices, uint8 *vbDest);
 	virtual	void			renderShadowSkinPrimitives(CMaterial &castMat, IDriver *drv, uint baseVertex);
 
+	/// Called for edition purpose (slow call O(NVertex))
+	virtual bool			getSkinBoneBBox(NLMISC::CAABBox &bbox, uint boneId);
+	
 	// @}
 
 

@@ -61,6 +61,7 @@ public:
 	bool			ChooseFrameDelayWindow;
 	bool			ChooseBGColorWindow;
 	bool			ChooseSunColorWindow;
+	bool			SkeletonScaleWindow;
 	TMouseMove		MouseMoveType;
 	bool			X;
 	bool			Y;
@@ -182,6 +183,8 @@ public:
 	afx_msg void OnViewResetFXUserMatrix();
 	afx_msg void OnViewSetSceneRotation();
 	afx_msg void OnShootScene();
+	afx_msg void OnWindowSkeletonScale();
+	afx_msg void OnUpdateWindowSkeletonScale(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	afx_msg void OnSceneCamera(UINT id);
 	afx_msg void OnUpdateSceneCamera(CCmdUI* pCmdUI);

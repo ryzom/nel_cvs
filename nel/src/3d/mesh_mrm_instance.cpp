@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.17 2003/09/01 09:19:48 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.18 2004/07/01 09:36:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,6 +143,20 @@ const std::vector<NLMISC::CBSphere>	*CMeshMRMInstance::getSkinBoneSphere() const
 
 	// get it.
 	return &pMesh->getMeshGeom().getSkinBoneSphere();
+}
+
+
+// ***************************************************************************
+bool			CMeshMRMInstance::getSkinBoneBBox(NLMISC::CAABBox &bbox, uint boneId)
+{
+	// Get a pointer on the shape
+	CMeshMRM *pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+	
+	// Recompute the id, and skin spheres, if needed
+	pMesh->computeBonesId (_FatherSkeletonModel);
+	
+	// get it.
+	return pMesh->getMeshGeom().getSkinBoneBBox(_FatherSkeletonModel, bbox, boneId);
 }
 
 

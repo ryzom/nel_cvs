@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.123 2004/06/29 13:40:25 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.124 2004/07/01 09:37:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,7 @@
 #include "choose_bg_color_dlg.h"
 #include "choose_sun_color_dlg.h"
 #include "choose_frame_delay.h"
+#include "skeleton_scale_dlg.h"
 #include "graph.h"
 
 
@@ -244,6 +245,7 @@ CObjectViewer::CObjectViewer ()
 	_SoundAnimDlg = NULL;
 	_VegetableDlg = NULL;
 	_GlobalWindDlg = NULL;
+	_SkeletonScaleDlg = NULL;
 
 
 	// no frame delay is the default
@@ -581,6 +583,7 @@ CObjectViewer::~CObjectViewer ()
 	removeWindow(_ChooseBGColorDlg);	
 	removeWindow(_VegetableDlg);	
 	removeWindow(_GlobalWindDlg);	
+	removeWindow(_SkeletonScaleDlg);	
 	delete _FontGenerator;	
 }
 
@@ -786,6 +789,11 @@ bool CObjectViewer::initUI (HWND parent)
 	_ChooseSunColorDlg = new CChooseSunColorDlg(CNELU::Scene, _MainFrame);
 	_ChooseSunColorDlg->Create(IDD_CHOOSE_SUN_COLOR, _MainFrame);
 	getRegisterWindowState (_ChooseSunColorDlg, REGKEY_CHOOSE_SUN_COLOR_DLG, false);
+
+	// Create skeleton scale dlg
+	_SkeletonScaleDlg = new CSkeletonScaleDlg(_MainFrame);
+	_SkeletonScaleDlg->Create(IDD_SKELETON_SCALE_DLG, _MainFrame);
+	getRegisterWindowState (_SkeletonScaleDlg, REGKEY_SKELETON_SCALE_DLG, false);
 
 
 	_MainFrame->update ();
@@ -1237,6 +1245,10 @@ void CObjectViewer::go ()
 			if (_FXUserMatrixVisible) drawFXUserMatrix();
 			if (_SceneMatrixVisible) drawSceneMatrix();			
 			
+			// draw Skeleton Scale Dlg selection
+			if(_SkeletonScaleDlg)
+				_SkeletonScaleDlg->drawSelection();
+
 			// Test Window Keys
 			bool	keyWndOk= false;
 			if (CNELU::AsyncListener.isKeyPushed(Key1))
@@ -2346,6 +2358,9 @@ uint CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName)
 		iInfo->Saved.SkeletonId = 0xffffffff;
 		_ListInstance.push_back (iInfo);	
 
+		// set this skeleton for Skeleton Scale edition
+		_SkeletonScaleDlg->setSkeletonToEdit(skelModel, skelName);
+
 		// Return the instance
 		return _ListInstance.size()-1;
 	}
@@ -2539,6 +2554,10 @@ void CObjectViewer::removeAllInstancesFromScene()
 		_SlotDlg->refresh (TRUE);
 		_SoundAnimDlg->refresh (TRUE);
 	}
+
+	// remove any skeleton edited
+	if(_InstanceRunning)
+		_SkeletonScaleDlg->setSkeletonToEdit(NULL, "");
 }
 
 

@@ -289,6 +289,10 @@ SOURCE=.\set_value_dlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\skeleton_scale_dlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\skippable_message_box.cpp
 # End Source File
 # Begin Source File
@@ -420,6 +424,10 @@ SOURCE=.\select_string.h
 # Begin Source File
 
 SOURCE=.\set_value_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\skeleton_scale_dlg.h
 # End Source File
 # Begin Source File
 

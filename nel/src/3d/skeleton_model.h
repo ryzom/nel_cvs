@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.39 2003/11/26 13:44:00 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.40 2004/07/01 09:36:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,6 +149,15 @@ public:
 	 *	NB: this is automatically called by bindSkin()/detachSkeletonSon()
 	 */
 	void		dirtSkinRenderLists() {_SkinToRenderDirty= true;}
+
+	/** return the set of skins added with bindSkin()
+	 */
+	const std::set<CTransform*>		&getSkins() const {return _Skins;};
+
+	/** return the set of stickedObjects added with stickObject()
+	 */
+	const std::set<CTransform*>		&getStickedObjects() const {return _StickedObjects;};
+
 	// @}
 
 

@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangent space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.h,v 1.4 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_mrm_skinned.h,v 1.5 2004/07/01 09:36:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -215,6 +215,9 @@ public:
 	/// see CTransform::getSkinBoneSphere() doc for the meaning of this value. computeBonesId must has been called before.
 	const std::vector<NLMISC::CBSphere>	&getSkinBoneSphere() const {return _BonesSphere;}
 
+	/// Called for edition purpose (slow  O(NVertex) ). computeBonesId must has been called before.
+	bool			getSkinBoneBBox(CSkeletonModel *skeleton, NLMISC::CAABBox &bbox, uint boneId) const;
+	
 	// @}
 
 

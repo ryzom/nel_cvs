@@ -321,6 +321,7 @@
 #define IDC_BG_COLOR                    1144
 #define IDB_START_MULTIPLE_SYSTEM       1144
 #define IDD_CHOOSE_ANIM                 1145
+#define IDD_SKELETON_SCALE_DLG          1146
 #define IDC_EDIT_INPUT                  1147
 #define IDC_ENABLE_SLOW_DOWN            1148
 #define IDC_FORCE_LIFE_TIME_UPDATE      1149
@@ -401,13 +402,19 @@
 #define IDC_SLIDER_VEGETABLE_WIND_POWER 1198
 #define IDC_ANIM_SPEED                  1198
 #define IDC_LIGHT_GROUP1                1198
+#define IDC_SSD_SLIDER_BONE_SX          1198
 #define IDC_SLIDER_ANGLE_MAX            1199
 #define IDC_SLIDER_VEGETABLE_WIND_BENDSTART 1199
 #define IDC_LIGHT_GROUP2                1199
+#define IDC_SSD_SLIDER_BONE_SY          1199
 #define IDC_LIST_VEGETABLE              1200
 #define IDC_SLIDER_VEGETABLE_WIND_FREQUENCY 1200
 #define IDC_LIGHT_GROUP3                1200
+#define IDC_SSD_SLIDER_BONE_SZ          1200
+#define IDC_SSD_SLIDER_SKIN_SX          1201
+#define IDC_SSD_SLIDER_SKIN_SY          1202
 #define IDC_AUTOMATIC_WAVES_GENERATION  1203
+#define IDC_SSD_SLIDER_SKIN_SZ          1203
 #define IDC_VEGETABLE_NOISE_VALUE_NAME  1204
 #define IDC_LOAD_POOL                   1205
 #define IDC_SAVE_POOL                   1206
@@ -576,7 +583,9 @@
 #define IDC_RMANIMSOUND                 1345
 #define IDC_ANIM_SOUND_REMOVE           1345
 #define IDC_ROTY                        1345
+#define IDC_SSD_EDIT_BONE_SZ            1345
 #define IDC_ANIM_SOUND_SAVE             1346
+#define IDC_SSD_EDIT_SKIN_SZ            1346
 #define IDC_SOUNDANIMINFO               1347
 #define IDC_ROTZ                        1347
 #define IDC_SOUNDANIMSCROLL             1348
@@ -647,6 +656,23 @@
 #define IDC_BUTTON_COLOR_START2         1404
 #define IDC_STICK_BONE                  1409
 #define IDC_RESTICK_ALL                 1410
+#define IDC_SSD_LIST                    1411
+#define IDC_SSD_EDIT_BONE_SX            1412
+#define IDC_SSD_EDIT_BONE_SY            1413
+#define IDC_SSD_EDIT_SKIN_SX            1414
+#define IDC_SSD_EDIT_SKIN_SY            1415
+#define IDC_SSD_BUTTON_SAVE             1416
+#define IDC_SSD_BUTTON_SAVEAS           1417
+#define IDC_SSD_BUTTON_UNDO             1418
+#define IDC_SSD_STATIC_FILENAME         1419
+#define IDC_SSD_STATIC_BONE_SX          1420
+#define IDC_SSD_STATIC_BONE_SY          1421
+#define IDC_SSD_STATIC_BONE_SZ          1422
+#define IDC_SSD_STATIC_SKIN_SX          1423
+#define IDC_SSD_STATIC_SKIN_SY          1424
+#define IDC_SSD_STATIC_SKIN_SZ          1425
+#define IDC_SSD_BUTTON_REDO             1426
+#define IDC_SSD_BUTTON_MIRROR           1427
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -906,15 +932,16 @@
 #define IDM_REMOVE_ALL_PS               32981
 #define IDM_SAVE_PS_AS                  32982
 #define iDM_SHOW_OCCLUSION_TEST_MESHS   32983
+#define ID_WINDOW_SKELETON_SCALE        32984
 #define ID_PS_EDITOR_STATUS             36111
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1146
-#define _APS_NEXT_COMMAND_VALUE         32984
-#define _APS_NEXT_CONTROL_VALUE         1411
+#define _APS_NEXT_RESOURCE_VALUE        1147
+#define _APS_NEXT_COMMAND_VALUE         32985
+#define _APS_NEXT_CONTROL_VALUE         1428
 #define _APS_NEXT_SYMED_VALUE           1001
 #endif
 #endif

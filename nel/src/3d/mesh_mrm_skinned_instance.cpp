@@ -2,7 +2,7 @@
  * Optimised instance for skinned object with MRM, 1 UV coordinates, 1 to 4 skinning weight and 256 matrices.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned_instance.cpp,v 1.1 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: mesh_mrm_skinned_instance.cpp,v 1.2 2004/07/01 09:36:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,6 +144,20 @@ const std::vector<NLMISC::CBSphere>	*CMeshMRMSkinnedInstance::getSkinBoneSphere(
 
 	// get it.
 	return &pMesh->getMeshGeom().getSkinBoneSphere();
+}
+
+
+// ***************************************************************************
+bool			CMeshMRMSkinnedInstance::getSkinBoneBBox(NLMISC::CAABBox &bbox, uint boneId)
+{
+	// Get a pointer on the shape
+	CMeshMRMSkinned *pMesh = NLMISC::safe_cast<CMeshMRMSkinned *>((IShape*)Shape);
+	
+	// Recompute the id, and skin spheres, if needed
+	pMesh->computeBonesId (_FatherSkeletonModel);
+	
+	// get it.
+	return pMesh->getMeshGeom().getSkinBoneBBox(_FatherSkeletonModel, bbox, boneId);
 }
 
 

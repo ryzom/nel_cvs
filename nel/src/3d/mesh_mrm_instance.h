@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_mrm_instance.h,v 1.15 2003/09/01 09:19:48 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.16 2004/07/01 09:36:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,9 @@ protected:
 	virtual	bool			supportShadowSkinGrouping() const;
 	virtual	sint			renderShadowSkinGeom(uint remainingVertices, uint8 *vbDest);
 	virtual	void			renderShadowSkinPrimitives(CMaterial &castMat, IDriver *drv, uint baseVertex);
+
+	/// Called for edition purpose (slow call O(NVertex))
+	virtual bool			getSkinBoneBBox(NLMISC::CAABBox &bbox, uint boneId);
 
 	// @}
 

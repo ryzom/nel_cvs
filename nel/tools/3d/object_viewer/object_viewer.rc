@@ -536,7 +536,7 @@ IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 131, 268
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Particle system start/stop"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Button1",IDC_START_PICTURE,7,6,24,24,BS_BITMAP
     PUSHBUTTON      "Button1",IDC_STOP_PICTURE,69,6,24,24,BS_BITMAP
@@ -1723,6 +1723,79 @@ BEGIN
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
+IDD_SKELETON_SCALE_DLG DIALOGEX 0, 0, 302, 361
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Skeleton Scale Edition"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_SSD_LIST,5,15,140,340,LBS_NOINTEGRALHEIGHT | 
+                    LBS_EXTENDEDSEL | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    CONTROL         "Slider1",IDC_SSD_SLIDER_BONE_SX,"msctls_trackbar32",
+                    TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,175,100,
+                    15,75
+    EDITTEXT        IDC_SSD_EDIT_BONE_SX,170,85,25,15,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN,
+                    WS_EX_RIGHT
+    CONTROL         "Slider1",IDC_SSD_SLIDER_BONE_SY,"msctls_trackbar32",
+                    TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,220,100,
+                    15,75
+    EDITTEXT        IDC_SSD_EDIT_BONE_SY,215,85,25,15,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN,
+                    WS_EX_RIGHT
+    CONTROL         "Slider1",IDC_SSD_SLIDER_BONE_SZ,"msctls_trackbar32",
+                    TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,265,100,
+                    15,75
+    EDITTEXT        IDC_SSD_EDIT_BONE_SZ,260,85,25,15,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN,
+                    WS_EX_RIGHT
+    CONTROL         "Slider1",IDC_SSD_SLIDER_SKIN_SX,"msctls_trackbar32",
+                    TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,175,226,
+                    15,75
+    EDITTEXT        IDC_SSD_EDIT_SKIN_SX,170,210,25,15,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN,
+                    WS_EX_RIGHT
+    CONTROL         "Slider1",IDC_SSD_SLIDER_SKIN_SY,"msctls_trackbar32",
+                    TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,220,226,
+                    15,75
+    EDITTEXT        IDC_SSD_EDIT_SKIN_SY,215,210,25,15,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN,
+                    WS_EX_RIGHT
+    CONTROL         "Slider1",IDC_SSD_SLIDER_SKIN_SZ,"msctls_trackbar32",
+                    TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,265,226,
+                    15,75
+    EDITTEXT        IDC_SSD_EDIT_SKIN_SZ,260,210,25,15,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN,
+                    WS_EX_RIGHT
+    LTEXT           "X",IDC_STATIC,180,75,10,8
+    LTEXT           "X",IDC_STATIC,180,200,10,8
+    LTEXT           "Y",IDC_STATIC,225,75,10,8
+    LTEXT           "Y",IDC_STATIC,225,200,10,8
+    LTEXT           "Z",IDC_STATIC,270,200,10,8
+    LTEXT           "Z",IDC_STATIC,270,75,10,8
+    GROUPBOX        "Skin Scale (slower)",IDC_STATIC,150,190,150,115
+    GROUPBOX        "Bone Scale",IDC_STATIC,150,65,150,115
+    LTEXT           "Bone List",IDC_STATIC,5,5,140,10
+    PUSHBUTTON      "Save",IDC_SSD_BUTTON_SAVE,155,340,60,15
+    PUSHBUTTON      "Save As...",IDC_SSD_BUTTON_SAVEAS,230,340,60,15
+    LTEXT           "Skeleton Edited:",IDC_STATIC,155,310,145,10
+    LTEXT           "Object Edited",IDC_SSD_STATIC_FILENAME,155,325,145,10
+    LTEXT           "%",IDC_STATIC,196,88,8,10
+    LTEXT           "%",IDC_STATIC,241,89,8,10
+    LTEXT           "%",IDC_STATIC,286,88,8,10
+    LTEXT           "%",IDC_STATIC,286,214,8,10
+    LTEXT           "%",IDC_STATIC,241,215,8,10
+    LTEXT           "%",IDC_STATIC,196,214,8,10
+    LTEXT           "100%",IDC_SSD_STATIC_BONE_SX,155,135,20,10
+    LTEXT           "100%",IDC_SSD_STATIC_BONE_SY,195,135,20,10
+    LTEXT           "100%",IDC_SSD_STATIC_BONE_SZ,245,135,20,10
+    LTEXT           "100%",IDC_SSD_STATIC_SKIN_SX,155,255,20,10
+    LTEXT           "100%",IDC_SSD_STATIC_SKIN_SY,195,255,20,10
+    LTEXT           "100%",IDC_SSD_STATIC_SKIN_SZ,245,255,20,10
+    PUSHBUTTON      "Undo",IDC_SSD_BUTTON_UNDO,155,40,60,15
+    PUSHBUTTON      "Redo",IDC_SSD_BUTTON_REDO,230,40,60,15
+    PUSHBUTTON      "Mirror Selected",IDC_SSD_BUTTON_MIRROR,155,15,135,15
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2323,6 +2396,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 287
     END
+
+    IDD_SKELETON_SCALE_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 295
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 354
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2659,6 +2740,7 @@ BEGIN
         MENUITEM "Choose frame delay",          ID_WINDOW_CHOOSE_FRAME_DELAY
         MENUITEM "Background color",            ID_WINDOW_CHOOSE_BG_COLOR
         MENUITEM "Sun color",                   ID_WINDOW_CHOOSE_SUN_COLOR
+        MENUITEM "Skeleton Scale",              ID_WINDOW_SKELETON_SCALE
     END
     POPUP "&Help"
     BEGIN

@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.11 2001/06/06 08:24:07 vizerie Exp $
+ * $Id: ps_located.h,v 1.12 2001/06/06 12:23:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -225,14 +225,12 @@ public:
 
 	/// Retrieve min duration of locateds. They must not be immortal -> nlassert
 	CAnimationTime getMinLife(void) const 
-	{ 
-		nlassert(!_LastForever) ;
+	{ 	
 		return _MinLife ; 	 
 	}
 	/// Retrieve max duration of locateds. They must not be immortal -> nlassert
 	CAnimationTime getMaxLife(void) const 
-	{ 
-		nlassert(!_LastForever) ;
+	{ 	
 		return _MaxLife ; 
 	}
 

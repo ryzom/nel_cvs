@@ -544,6 +544,10 @@ SOURCE=.\processes\ig\4_install.bat
 # End Source File
 # Begin Source File
 
+SOURCE=.\processes\ig\sh\build.sh
+# End Source File
+# Begin Source File
+
 SOURCE=.\processes\ig\sh\export.sh
 # End Source File
 # Begin Source File

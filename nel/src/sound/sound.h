@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.7 2001/08/28 16:59:34 cado Exp $
+ * $Id: sound.h,v 1.8 2001/08/30 17:05:28 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,7 +164,7 @@ class ESoundFileNotFound : public NLMISC::Exception
 {
 public:
 	ESoundFileNotFound( const std::string filename ) :
-	  NLMISC::Exception( (std::string("Sound file not found: ")+filename).c_str() ) {}
+	  NLMISC::Exception( (std::string("Sound file not found, or invalid file format: ")+filename).c_str() ) {}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.53 2002/10/29 17:20:16 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.54 2002/11/07 14:31:05 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -680,10 +680,13 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 					break;
 				}
 			}
+
+			// If we don't found a valid network, we'll try with the first one.
+			// It's happen, for example, when you try to connect to a service that is not in the network but use IP translation
 			if (j == laddr.size ())
 			{
-				nlinfo ("I can't access '%s' because I haven't a net card on this network", addr[i].asString ().c_str ());
-				continue;
+				nlwarning ("I can't access '%s' because I haven't a net card on this network, we'll use the first network", addr[i].asString ().c_str ());
+				j = 0;
 			}
 		}
 

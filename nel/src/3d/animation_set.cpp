@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.8 2001/03/19 13:19:44 corvazier Exp $
+ * $Id: animation_set.cpp,v 1.9 2001/03/29 09:50:40 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,6 +82,8 @@ void CAnimationSet::reset ()
 {
 	_Animation.clear();
 	_SkeletonWeight.clear();
+	_AnimationName.clear();
+	_SkeletonWeightName.clear();
 	_ChannelIdByName.clear();
 	_AnimationIdByName.clear();
 	_SkeletonWeightIdByName.clear();

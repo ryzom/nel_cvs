@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.80 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.81 2004/11/03 17:24:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,9 @@
 #include "background_source.h"
 #include "clustered_sound.h"
 #include "background_sound_manager.h"
+#include "music_sound_manager.h"
+#include "music_sound.h"
+#include "music_source.h"
 
 #include "nel/georges/u_form_loader.h"
 #include "nel/georges/u_form.h"
@@ -115,6 +118,7 @@ CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL),
 									 _NbTracks(0),
 									 _Leaving(false),
 									 _BackgroundSoundManager(0),
+									 _BackgroundMusicManager(0),
 									 _PlayingSources(0),
 									 _PlayingSourcesMuted(0),
 									 _ClusteredSound(0),
@@ -158,12 +162,23 @@ CAudioMixerUser::~CAudioMixerUser()
 {
 	nldebug( "AM: Releasing..." );
 
-	if (_ClusteredSound != 0)
+	if (_ClusteredSound != NULL)
+	{
 		delete _ClusteredSound;
+		_ClusteredSound= NULL;
+	}
 
-	if (_BackgroundSoundManager != 0)
+	if (_BackgroundSoundManager != NULL)
+	{
 		delete _BackgroundSoundManager;
-//	CBackgroundSoundManager::release();
+		_BackgroundSoundManager= NULL;
+	}
+	
+	if (_BackgroundMusicManager != NULL)
+	{
+		delete _BackgroundMusicManager;
+		_BackgroundMusicManager= NULL;
+	}
 
 	reset();
 
@@ -450,6 +465,11 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 
 	// Create the background sound manager.
 	_BackgroundSoundManager = new CBackgroundSoundManager();
+
+
+	// Create the background music manager
+	_BackgroundMusicManager = new CMusicSoundManager();
+
 
 	// Load the sound bank singleton
 	CSoundBank::instance()->load();
@@ -1382,6 +1402,9 @@ void				CAudioMixerUser::update()
 	// update the background sound
 	_BackgroundSoundManager->updateBackgroundStatus();
 
+	// update the background music
+	_BackgroundMusicManager->update();
+
 	uint i;
 	// Check all playing track and stop any terminated buffer.
 	for (i=0; i<_NbTracks; ++i)
@@ -1689,6 +1712,12 @@ retrySound:
 		// This is a background sound.
 		CBackgroundSound	*bgSound = static_cast<CBackgroundSound	*>(id);
 		ret = new CBackgroundSource(bgSound, spawn, cb, userParam, cluster);
+	}
+	else if (id->getSoundType() == CSound::SOUND_MUSIC)
+	{
+		// This is a background music sound
+		CMusicSound *music_sound= static_cast<CMusicSound*>(id);
+		ret = new CMusicSource(music_sound, spawn, cb, userParam, cluster);
 	}
 	else if (id->getSoundType() == CSound::SOUND_CONTEXT)
 	{
@@ -2345,9 +2374,23 @@ void	CAudioMixerUser::setMusicVolume(float gain)
 }
 
 // ***************************************************************************
+float	CAudioMixerUser::getMusicLength()
+{
+	if(getSoundDriver())
+		getSoundDriver()->getMusicLength();
+	return 0;
+}
+
+// ***************************************************************************
 bool	CAudioMixerUser::getSongTitle(const std::string &filename, std::string &result, uint fileOffset, uint fileSize)
 {
 	return getSoundDriver()->getSongTitle(filename, result, fileOffset, fileSize);
+}
+
+// ***************************************************************************
+void	CAudioMixerUser::enableBackgroundMusic(bool enable)
+{
+	getBackgroundMusicManager()->enable(enable);
 }
 
 } // NLSOUND

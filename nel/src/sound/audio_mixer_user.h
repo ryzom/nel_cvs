@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.53 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: audio_mixer_user.h,v 1.54 2004/11/03 17:24:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@ class CSoundBank;
 class CSourceCommon;
 class CClusteredSound;
 class CBackgroundSoundManager;
+class CMusicSoundManager;
 
 /*
  * Max number of tracks (physical sources)
@@ -332,7 +333,10 @@ public:
 	virtual void	resumeMusic();
 	virtual bool	isMusicEnded();
 	virtual void	setMusicVolume(float gain);
+	virtual float	getMusicLength();
 	virtual bool	getSongTitle(const std::string &filename, std::string &result, uint fileOffset=0, uint fileSize=0);
+	virtual void	enableBackgroundMusic(bool enable);
+	CMusicSoundManager *getBackgroundMusicManager() const {return _BackgroundMusicManager;}
 
 public:
 	/// Interface for registering object in the mixer update.
@@ -498,6 +502,9 @@ private:
 	// For debug purpose only (not called)
 	void		debugLogEvent(const char *reason);
 	
+	// Instance of the background music manager
+	CMusicSoundManager			*_BackgroundMusicManager;
+
 public: 
 	struct TSampleBankHeader
 	{

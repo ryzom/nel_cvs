@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.24 2004/09/01 08:28:04 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.25 2004/11/03 17:24:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1140,7 +1140,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 					}
 					else
 					{
-						if (distance < sd.MaxDist)
+						if (sd.MaxDist>0 && distance < sd.MaxDist)
 						{
 							// compute the gain.
 //							gain = (sd.MaxDist - distance) / sd.MaxDist;
@@ -1169,57 +1169,96 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 				{
 					TSoundStatus &ss = first->second;
 
-					if (maskFactor > 0.0f && ss.Gain > 0)
+					// special algo for music sound (don't influence / use maskFactor strategy)
+					bool	musicSound= ss.SoundData.Sound && ss.SoundData.Sound->getSoundType()==CSound::SOUND_MUSIC;
+
+					// ---- music sound special case (music competition is managed specially in the CMusicSoundManager)
+					if(musicSound)
 					{
-						float gain;
-						
-						if (!ss.SoundData.IsPath && ss.SoundData.Points.size() > 1)
-							gain = maskFactor * ss.Gain;
-						else
-							gain = ss.Gain;
-
-//						maskFactor -= ss.Gain;
-
-						ss.SoundData.Selected = true;
-
-//						if (ss.Gain == 1)
-//						if (ss.Distance == 0)
-						if (ss.Inside)
+						if (ss.Gain > 0)
 						{
-							// inside a pattate, then decrease the mask factor will we are more inside the patate
-							maskFactor -= first->second.Distance / INSIDE_FALLOF;
-							clamp(maskFactor, 0.0f, 1.0f);
-						}
-
-						// start the soond (if needed) and update the volume.
-
-						if (ss.SoundData.Source == 0)
-						{
-							// try to create the source.
-							ss.SoundData.Source = static_cast<CSourceCommon*>(mixer->createSource(ss.SoundData.Sound, false, 0, 0, rootCluster));
-						}
-						if (ss.SoundData.Source != 0)
-						{
-							// set the volume
-							ss.SoundData.Source->setRelativeGain(gain);
-							// and the position
-							ss.Position.z = _LastPosition.z + BACKGROUND_SOUND_ALTITUDE;
-							ss.SoundData.Source->setPos(ss.Position);
-
-//							nldebug("Setting source %s at %f", ss.SoundData.SoundName.c_str(), gain);
-							if (!ss.SoundData.Source->isPlaying())
+							ss.SoundData.Selected = true;
+							
+							// start the sound (if needed) and update the volume.
+							if (ss.SoundData.Source == 0)
 							{
-								// start the sound is needed.
-								ss.SoundData.Source->play();
+								// try to create the source.
+								ss.SoundData.Source = static_cast<CSourceCommon*>(mixer->createSource(ss.SoundData.Sound, false, 0, 0, rootCluster));
 							}
-							else if (ss.SoundData.Source->getType() != CSourceCommon::SOURCE_SIMPLE)
-								ss.SoundData.Source->checkup();
+							if (ss.SoundData.Source != 0)
+							{
+								// update the position (not used I think, but maybe important...)
+								ss.Position.z = _LastPosition.z + BACKGROUND_SOUND_ALTITUDE;
+								ss.SoundData.Source->setPos(ss.Position);
+								
+								if (!ss.SoundData.Source->isPlaying())
+								{
+									// start the sound is needed.
+									ss.SoundData.Source->play();
+								}
+							}
+						}
+						else if (ss.SoundData.Source != 0 && ss.SoundData.Source->isPlaying())
+						{
+							// stop this too far source.
+							ss.SoundData.Source->stop();
 						}
 					}
-					else if (ss.SoundData.Source != 0 && ss.SoundData.Source->isPlaying())
+					// ---- standard sound case
+					else
 					{
-						// stop this too far source.
-						ss.SoundData.Source->stop();
+						if (maskFactor > 0.0f && ss.Gain > 0)
+						{
+							float gain;
+							
+							if (!ss.SoundData.IsPath && ss.SoundData.Points.size() > 1)
+								gain = maskFactor * ss.Gain;
+							else
+								gain = ss.Gain;
+
+//							maskFactor -= ss.Gain;
+
+							ss.SoundData.Selected = true;
+
+//							if (ss.Gain == 1)
+//							if (ss.Distance == 0)
+							if (ss.Inside)
+							{
+								// inside a pattate, then decrease the mask factor will we are more inside the patate
+								maskFactor -= first->second.Distance / INSIDE_FALLOF;
+								clamp(maskFactor, 0.0f, 1.0f);
+							}
+
+							// start the sound (if needed) and update the volume.
+
+							if (ss.SoundData.Source == 0)
+							{
+								// try to create the source.
+								ss.SoundData.Source = static_cast<CSourceCommon*>(mixer->createSource(ss.SoundData.Sound, false, 0, 0, rootCluster));
+							}
+							if (ss.SoundData.Source != 0)
+							{
+								// set the volume
+								ss.SoundData.Source->setRelativeGain(gain);
+								// and the position
+								ss.Position.z = _LastPosition.z + BACKGROUND_SOUND_ALTITUDE;
+								ss.SoundData.Source->setPos(ss.Position);
+
+//								nldebug("Setting source %s at %f", ss.SoundData.SoundName.c_str(), gain);
+								if (!ss.SoundData.Source->isPlaying())
+								{
+									// start the sound is needed.
+									ss.SoundData.Source->play();
+								}
+								else if (ss.SoundData.Source->getType() != CSourceCommon::SOURCE_SIMPLE)
+									ss.SoundData.Source->checkup();
+							}
+						}
+						else if (ss.SoundData.Source != 0 && ss.SoundData.Source->isPlaying())
+						{
+							// stop this too far source.
+							ss.SoundData.Source->stop();
+						}
 					}
 				}
 			} 

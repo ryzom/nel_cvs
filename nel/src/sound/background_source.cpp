@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: background_source.cpp,v 1.7 2003/08/21 09:27:38 boucher Exp $
+ * $Id: background_source.cpp,v 1.8 2004/11/03 17:24:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,6 @@ void CBackgroundSource::setGain( float gain )
 			first->Source->setGain(first->Source->getSound()->getGain() * gain);
 			first->Source->setRelativeGain(_Gain);
 		}
-//			first->Source->setRelativeGain(_Gain);
 	}
 }
 void CBackgroundSource::setRelativeGain( float gain )

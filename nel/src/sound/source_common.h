@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.h,v 1.9 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: source_common.h,v 1.10 2004/11/03 17:24:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,8 @@ public:
 	{
 		SOURCE_SIMPLE,
 		SOURCE_COMPLEX,
-		SOURCE_BACKGROUND
+		SOURCE_BACKGROUND,
+		SOURCE_MUSIC
 	};
 
 	CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam, NL3D::CCluster *cluster);

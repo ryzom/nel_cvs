@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.17 2004/05/27 17:42:23 boucher Exp $
+ * $Id: sound_bank.cpp,v 1.18 2004/11/03 17:24:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "complex_sound.h"
 #include "context_sound.h"
 #include "background_sound.h"
+#include "music_sound.h"
 
 #include "nel/georges/u_form_loader.h"
 #include "nel/georges/u_form_elm.h"
@@ -216,6 +217,9 @@ public:
 				break;
 			case CSound::SOUND_BACKGROUND:
 				Sound = new CBackgroundSound();
+				break;
+			case CSound::SOUND_MUSIC:
+				Sound = new CMusicSound();
 				break;
 			default:
 				Sound = 0;

@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.19 2004/06/09 14:09:08 berenguier Exp $
+ * $Id: sound.h,v 1.20 2004/11/03 17:24:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,8 @@ public:
 		SOUND_SIMPLE,
 		SOUND_COMPLEX,
 		SOUND_BACKGROUND,
-		SOUND_CONTEXT
+		SOUND_CONTEXT,
+		SOUND_MUSIC
 	};
 
 

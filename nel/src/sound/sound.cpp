@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a generic sound and its static properties
  *
- * $Id: sound.cpp,v 1.29 2003/07/03 15:16:12 boucher Exp $
+ * $Id: sound.cpp,v 1.30 2004/11/03 17:24:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "complex_sound.h"
 #include "background_sound.h"
 #include "context_sound.h"
+#include "music_sound.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -77,6 +78,11 @@ CSound *CSound::createSound(const std::string &filename, NLGEORGES::UFormElm& fo
 		else if (dfnName == "context_sound.dfn")
 		{
 			ret = new CContextSound();
+			ret->importForm(filename, formRoot);
+		}
+		else if (dfnName == "music_sound.dfn")
+		{
+			ret = new CMusicSound();
 			ret->importForm(filename, formRoot);
 		}
 		else

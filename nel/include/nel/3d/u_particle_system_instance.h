@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.12 2003/11/25 16:56:35 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.13 2003/12/05 11:08:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -199,6 +199,14 @@ public:
 	   *	   	   
 	   */
 	 virtual void	setUserMatrix(const NLMISC::CMatrix &userMat) = 0;
+
+	 /** Force to instanciate the system resource even if not visible. Useful for 'spell like' effects that need accurate timing.
+	   * If not used, the fx would only start when it enters the camera, and thus could be late.
+	   * The system must have persistence when it is not visible (for example be flagged as 'SpellFX) or the system will only persist for 1 frame.
+	   * NB : no effect if the fx has been invalidated (because it is finished) or if it is already instanciated
+	   * \TODO : detect the 'SpellFX' flag of fx at loading to automate this ? (not useful for projectile, though, so it may be better to let the decision to the caller for now..)
+	   */
+	 virtual void   forceInstanciate() = 0;
 
 };
 

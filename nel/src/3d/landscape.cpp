@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.136 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: landscape.cpp,v 1.137 2004/01/26 10:34:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,6 +263,8 @@ CLandscape::CLandscape() :
 	// Alloc some global space for tri rendering.
 	if( CLandscapeGlobals::PassTriArray.size() < 1000 )
 		CLandscapeGlobals::PassTriArray.resize( 1000 );
+
+	_TileCallback =	NULL;
 
 }
 // ***************************************************************************
@@ -3685,6 +3687,26 @@ void			CLandscape::receiveShadowMap(IDriver *drv, CShadowMap *shadowMap, const C
 		2/ Our Landscape VP is not a simple matrix mul. Lot of vertex mul/add are done fpr geomorphs
 	*/
 	_ShadowPolyReceiver.render(drv, const_cast<CMaterial&>(shadowMat), shadowMap, casterPos, CVector(0,0,0.02f)-pzb);
+}
+
+// ***************************************************************************
+void CLandscape::invalidateAllTiles()
+{
+	
+	updateGlobalsAndLockBuffers(CVector::Null);								
+	for(TZoneMap::iterator it = Zones.begin(); it != Zones.end(); ++it)
+	{
+		if (it->second->Compiled)
+		{
+			for(uint k = 0; k < it->second->Patchs.size(); ++k)
+			{																			
+				it->second->Patchs[k].deleteTileUvs();
+				it->second->Patchs[k].recreateTileUvs();
+			}
+		}
+	}	
+	unlockBuffers();
+	updateTessBlocksFaceVector();	
 }
 
 

@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.22 2003/11/18 11:02:51 berenguier Exp $
+ * $Id: landscape_user.h,v 1.23 2004/01/26 10:34:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,7 @@ public:
 	virtual	void	refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, std::vector<std::string> &zonesRemoved, 
 		NLMISC::IProgressCallback &progress);
 	virtual	void	getAllZoneLoaded(std::vector<std::string>	&zoneLoaded) const;
+	virtual void    invalidateAllTiles();	
 	// @}
 
 
@@ -194,6 +195,12 @@ public:
 	// @{
 	virtual void			enableReceiveShadowMap(bool state);
 	virtual bool			canReceiveShadowMap() const;
+	// @}
+
+	/// \name TileCallback
+	// @{
+	virtual	void					setTileCallback(ULandscapeTileCallback *cb);
+	virtual	ULandscapeTileCallback *getTileCallback() const;
 	// @}
 
 public:

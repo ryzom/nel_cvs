@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.22 2003/11/18 11:03:16 berenguier Exp $
+ * $Id: u_landscape.h,v 1.23 2004/01/26 10:34:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,21 @@ namespace NL3D
 using	NLMISC::CVector;
 using	NLMISC::CRGBA;
 
+struct CTileAddedInfo
+{
+	uint64			TileID;
+	NLMISC::CVector Corners[4];
+	NLMISC::CVector Center;
+	NLMISC::CVector	Normal;
+};
+
+/** Callback to know when a tile of a landscape has been added/removed  
+  */
+struct ULandscapeTileCallback
+{	
+	virtual void tileAdded(const CTileAddedInfo &infos) = 0;
+	virtual void tileRemoved(uint64 id) = 0;
+};
 
 // ***************************************************************************
 /**
@@ -100,6 +115,8 @@ public:
 	 *	\zonesLoaded array of name of the zones added, without extension (eg: "150_EM").
 	 */
 	virtual	void	getAllZoneLoaded(std::vector<std::string>	&zoneLoaded) const =0;
+	// invalidate all tiles (this forces the tile callback to be called again)
+	virtual void    invalidateAllTiles() = 0;
 	// @}
 
 
@@ -262,6 +279,16 @@ public:
 	/// true if the instance receive shadow. By default false
 	virtual bool			canReceiveShadowMap() const =0;
 	// @}
+
+	/// \name Tile added/removed callback
+	// @{
+	// Set a new callback to know when a tile is added/removed. Calling with NULL removes the callback.
+	virtual	void					setTileCallback(ULandscapeTileCallback *cb) = 0;
+	// get the current tile callback callback
+	virtual	ULandscapeTileCallback *getTileCallback() const = 0;
+	// @}
+
+
 };
 
 

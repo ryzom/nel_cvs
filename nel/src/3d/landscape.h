@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.49 2003/08/19 15:13:27 berenguier Exp $
+ * $Id: landscape.h,v 1.50 2004/01/26 10:34:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,6 +115,7 @@ public:
 };
 
 
+struct ULandscapeTileCallback;
 
 // ***************************************************************************
 /**
@@ -212,6 +213,9 @@ public:
 	/// Enable the noise or not. NB: only new tesselation computed is modified, so you should call it only at init time.
 	void			setNoiseMode(bool enabled);
 	bool			getNoiseMode() const;
+
+	// invalidate all the tiles (force the tiles callbakc to be called again)
+	void invalidateAllTiles();	
 
 	// \todo yoyo: other landscape param setup (Transition etc...).
 	// Store it by landscape, and not only globally in CLandscapeGlobals statics.
@@ -603,6 +607,14 @@ public:
 	// @}
 
 
+	/// \name Tile added/removed callback
+	// @{
+	// Set a new callback to know when a tile is added/removed. Calling with NULL removes the callback.
+	void					setTileCallback(ULandscapeTileCallback *cb) { _TileCallback = cb; }	
+	// get the current tile callback callback
+	ULandscapeTileCallback *getTileCallback() const { return _TileCallback; }
+	// @}
+
 // ********************************
 private:
 	// Private part used by CTessFace / CPatch / CZone.
@@ -610,6 +622,8 @@ private:
 	friend class	CPatch;
 	friend class	CZone;
 
+
+	ULandscapeTileCallback			*_TileCallback;
 
 	/// \name Allocators.
 	// @{
@@ -672,7 +686,6 @@ private:
 
 	// System: update UL links, but don't call _TextureFars.erase()
 	void clearFarRenderPass (CPatchRdrPass* pass);
-
 
 
 private:
@@ -979,6 +992,7 @@ private:
 	void						appendToShadowPolyReceiver(CTessFace *face);
 	void						removeFromShadowPolyReceiver(CTessFace *face);
 	// @}
+	
 };
 
 

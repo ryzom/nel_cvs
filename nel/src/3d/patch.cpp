@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.95 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: patch.cpp,v 1.96 2004/01/26 10:35:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "3d/light_influence_interpolator.h"
 #include "3d/patchdlm_context.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/3d/u_landscape.h"
 
 using	namespace	std;
 using	namespace	NLMISC;
@@ -979,7 +980,23 @@ void			CPatch::appendTileMaterialToRenderList(CTileMaterial *tm)
 	{
 		createVegetableBlock(numtb, tm->TileS, tm->TileT);
 	}
-
+	ULandscapeTileCallback *tileCallback = getLandscape()->getTileCallback();
+	if (tileCallback)
+	{
+		CBezierPatch	*bpatch= unpackIntoCache();
+		CTileAddedInfo tai;
+		//		
+		tai.Corners[0] = bpatch->eval((float) tm->TileS / OrderS, (float) tm->TileT / OrderT);
+		tai.Corners[1] = bpatch->eval((tm-> TileS + 1.f) / OrderS, (float) tm->TileT / OrderT);
+		tai.Corners[2] = bpatch->eval( (tm-> TileS + 1.f) / OrderS, (tm->TileT + 1.f) / OrderT);
+		tai.Corners[3] = bpatch->eval( (float) tm-> TileS / OrderS, (tm->TileT + 1.f) / OrderT);
+		tai.Center = bpatch->eval( (tm-> TileS + 0.5f) / OrderS, (tm->TileT + 0.5f) / OrderT);
+		//
+		tai.Normal = bpatch->evalNormal( (tm-> TileS + 0.5f) / OrderS, (tm->TileT + 0.5f) / OrderT);
+		tai.TileID = (uint64) tm; // pointer to tile material serves as a unique identifier
+		//
+		tileCallback->tileAdded(tai);
+	}
 }
 // ***************************************************************************
 void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
@@ -1010,6 +1027,12 @@ void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
 	//==========
 	// dec ref the context, deleting it if needed.
 	decRefDLMContext();
+
+	ULandscapeTileCallback *tileCallback = getLandscape()->getTileCallback();
+	if (tileCallback)
+	{
+		tileCallback->tileRemoved((uint64) tm); // pointer to tile material serves as a unique identifier
+	}
 }
 
 

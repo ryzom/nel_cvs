@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.39 2003/11/18 11:02:51 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.40 2004/01/26 10:34:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,14 @@ void	CLandscapeUser::setZonePath(const std::string &zonePath)
 	NL3D_HAUTO_UI_LANDSCAPE;
 	_ZoneManager.setZonePath(zonePath);
 }
+
+//****************************************************************************
+void CLandscapeUser::invalidateAllTiles()
+{
+	NL3D_MEM_LANDSCAPE
+	_Landscape->Landscape.invalidateAllTiles();
+}
+
 //****************************************************************************
 void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile)
 {
@@ -535,6 +543,19 @@ const CVector	&CLandscapeUser::getRefineCenterUser() const
 {
 	return _Landscape->getRefineCenterUser();
 }
+
+// ***************************************************************************
+void CLandscapeUser::setTileCallback(ULandscapeTileCallback *cb)
+{
+	_Landscape->Landscape.setTileCallback(cb);
+}
+
+// ***************************************************************************
+ULandscapeTileCallback *CLandscapeUser::getTileCallback() const
+{
+	return _Landscape->Landscape.getTileCallback(); 
+}
+
 
 
 } // NL3D

@@ -54,7 +54,11 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 opengl32.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 opengl32.lib libjpeg.lib /nologo /subsystem:windows /machine:I386
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=copy /Y release\bug_report.exe r:\code\ryzom
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "bug_report - Win32 Debug"
 
@@ -80,7 +84,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 opengl32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 opengl32.lib libjpeg.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "bug_report - Win32 ReleaseDebug"
 
@@ -107,7 +111,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 opengl32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 opengl32.lib /nologo /subsystem:windows /debug /machine:I386
+# ADD LINK32 opengl32.lib libjpeg.lib /nologo /subsystem:windows /debug /machine:I386
 
 !ENDIF 
 

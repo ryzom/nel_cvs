@@ -59,52 +59,6 @@ BOOL CBug_reportApp::InitInstance()
 	CBug_reportDlg dlg;
 	m_pMainWnd = &dlg;
 
-	char *cmd = GetCommandLine ();
-
-	// skip the program name
-	if (cmd[0] == '"')
-		cmd = strchr (cmd+1, '"') + 1;
-
-	while(true)
-	{
-		char *token1;
-		static bool first = true;
-		if (first)
-		{
-			token1 = strtok( cmd, " " );
-			first = false;
-		}
-		else
-			token1 = strtok( NULL, " " );
-
-		if (token1 == NULL)
-			break;
-
-		char *token2 = strtok( NULL, " " );
-		if (token2 == NULL)
-			break;
-
-		if (string(token1) == "ClientVersion")
-			dlg.set (IDC_CLIENTVERSION, token2);
-		else if (string(token1) == "ShardVersion")
-			dlg.set (IDC_SHARDVERSION, token2);
-		else if (string(token1) == "ShardName")
-			dlg.set (IDC_SHARDNAME, token2);
-		else if (string(token1) == "AttachedFile")
-			dlg.set (IDC_ATTACHEDFILE, token2);
-		else if (string(token1) == "AttachedFile")
-			dlg.set (IDC_ATTACHEDFILE, token2);
-		else if (string(token1) == "Language")
-			dlg.set (IDC_LANGUAGE, token2);
-		else if (string(token1) == "DumpFilename")
-			dlg.DumpFilename = token2;
-		else
-			MessageBox (NULL, "Bad command line option", token1, MB_OK);
-	}
-	
-	
-	
-	
 	int nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
 	{

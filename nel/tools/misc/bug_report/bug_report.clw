@@ -45,7 +45,7 @@ Class=CBug_reportDlg
 [DLG:IDD_BUG_REPORT_DIALOG (English (U.S.))]
 Type=1
 Class=CBug_reportDlg
-ControlCount=33
+ControlCount=34
 Control1=IDSENDREPORT,button,1342242816
 Control2=IDCANCEL,button,1342242816
 Control3=IDC_SUBJECT,edit,1350631552
@@ -79,4 +79,5 @@ Control30=IDC_REQUESTOR,edit,1350631552
 Control31=IDC_STATIC,static,1342308352
 Control32=IDC_STATIC,static,1342308352
 Control33=IDC_QUEUE,combobox,1344339971
+Control34=IDC_TEST,button,1342242816
 

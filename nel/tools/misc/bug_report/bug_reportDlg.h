@@ -20,8 +20,8 @@ public:
 	std::string get (int nID);
 	void		set (int nID, const std::string &val, bool enable = true);
 	void		setFocus (int nID);
+	void		setDumpFilename (const std::string &dump);
 	
-	std::string	DumpFilename;
 	std::string	SMTPServer, ToEmail;
 
 // Dialog Data
@@ -48,6 +48,7 @@ protected:
 	afx_msg void OnClear();
 	afx_msg void OnAttachfile();
 	afx_msg void OnNoattach();
+	afx_msg void OnTest();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

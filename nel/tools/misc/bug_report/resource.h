@@ -22,6 +22,7 @@
 #define IDC_NOATTACH                    1017
 #define IDC_QUEUE                       1018
 #define IDC_ATTACHEDFILE                1019
+#define IDC_TEST                        1020
 
 // Next default values for new objects
 // 

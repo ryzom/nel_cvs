@@ -9,9 +9,16 @@
 #include "bug_report.h"
 #include "bug_reportDlg.h"
 
+#undef min
+#undef max
+
+#define USE_JPEG
+
 #include "nel/misc/system_info.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
+#include "nel/misc/file.h"
+#include "nel/misc/bitmap.h"
 #include "nel/misc/path.h"
 #include "nel/net/email.h"
 
@@ -63,7 +70,6 @@ void CBug_reportDlg::setFocus (int nID)
 		wnd->SetFocus();
 }
 
-
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	return DefWindowProc(hWnd, message, wParam, lParam);
@@ -79,19 +85,26 @@ string getGraphicCardInformation ()
 	int pf;
 	WNDCLASS		wc;
 
-	memset(&wc,0,sizeof(wc));
-	wc.style			= CS_HREDRAW | CS_VREDRAW ;//| CS_DBLCLKS;
-	wc.lpfnWndProc		= (WNDPROC)WndProc;
-	wc.cbClsExtra		= 0;
-	wc.cbWndExtra		= 0;
-	wc.hInstance		= GetModuleHandle(NULL);
-	wc.hIcon			= NULL;
-	wc.hCursor			= LoadCursor(NULL,IDC_ARROW);
-	wc.hbrBackground	= WHITE_BRUSH;
-	wc.lpszClassName	= "BRClass";
-	wc.lpszMenuName		= NULL;
-	if ( !RegisterClass(&wc) ) 
-		return "<NoInfo>";
+	static bool reg = false;
+
+	if (!reg)
+	{
+		memset(&wc,0,sizeof(wc));
+		wc.style			= CS_HREDRAW | CS_VREDRAW ;//| CS_DBLCLKS;
+		wc.lpfnWndProc		= (WNDPROC)WndProc;
+		wc.cbClsExtra		= 0;
+		wc.cbWndExtra		= 0;
+		wc.hInstance		= GetModuleHandle(NULL);
+		wc.hIcon			= NULL;
+		wc.hCursor			= LoadCursor(NULL,IDC_ARROW);
+		wc.hbrBackground	= WHITE_BRUSH;
+		wc.lpszClassName	= "BRClass";
+		wc.lpszMenuName		= NULL;
+		if ( !RegisterClass(&wc) ) 
+			return "<NoInfo>";
+
+		reg = true;
+	}
 
 	ULONG WndFlags=WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS;
 	WndFlags&=~WS_VISIBLE;
@@ -193,6 +206,30 @@ string getGraphicCardInformation ()
 	return res;
 }
 
+void CBug_reportDlg::setDumpFilename (const std::string &DumpFilename)
+{
+	string s;
+	
+	if (!DumpFilename.empty())
+	{
+		FILE *fp = fopen (DumpFilename.c_str(), "rb");
+		if (fp != NULL)
+		{
+			char buf[10000];
+			int end = fread (buf, 1, 10000-1, fp);
+			buf[end] = '\0';
+			s = buf;
+			fclose (fp);
+		}
+	}
+	
+	s += CSystemInfo::getMem() + "\r\n";
+	s += CSystemInfo::getOS() + "\r\n";
+	s += CSystemInfo::getProc() + "\r\n";
+	s += getGraphicCardInformation () + "\r\n";
+	set (IDC_DESCRIPTIONEX, s, true);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CBug_reportDlg dialog
@@ -221,6 +258,7 @@ BEGIN_MESSAGE_MAP(CBug_reportDlg, CDialog)
 	ON_BN_CLICKED(IDC_CLEAR, OnClear)
 	ON_BN_CLICKED(IDC_ATTACHFILE, OnAttachfile)
 	ON_BN_CLICKED(IDC_NOATTACH, OnNoattach)
+	ON_BN_CLICKED(IDC_TEST, OnTest)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -238,6 +276,52 @@ BOOL CBug_reportDlg::OnInitDialog()
 
 	OnClear ();
 	
+	char *cmd = GetCommandLine ();
+
+	// skip the program name
+	if (cmd[0] == '"')
+		cmd = strchr (cmd+1, '"') + 1;
+	else
+		cmd = strchr (cmd, ' ') + 1;
+	
+	while(true)
+	{
+		char *token1;
+		static bool first = true;
+		if (first)
+		{
+			token1 = strtok( cmd, " " );
+			first = false;
+		}
+		else
+			token1 = strtok( NULL, " " );
+		
+		if (token1 == NULL)
+			break;
+		
+		char *token2 = strtok( NULL, " " );
+		if (token2 == NULL)
+			break;
+		
+		if (string(token1) == "ClientVersion")
+			set (IDC_CLIENTVERSION, token2);
+		else if (string(token1) == "ShardVersion")
+			set (IDC_SHARDVERSION, token2);
+		else if (string(token1) == "ShardName")
+			set (IDC_SHARDNAME, token2);
+		else if (string(token1) == "AttachedFile")
+			set (IDC_ATTACHEDFILE, token2);
+		else if (string(token1) == "Language")
+			set (IDC_LANGUAGE, token2);
+		else if (string(token1) == "DumpFilename")
+			setDumpFilename (token2);
+		else
+			MessageBox ("Bad command line option", token1);
+	}
+	
+
+
+
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -301,6 +385,15 @@ void CBug_reportDlg::OnSendreport()
 	
 //	if (sendEmail ("192.168.254.1", "lecroart@nevrax.com", "piuzzi@nevrax.com", "", body, attachedFile, false))
 //	if (sendEmail ("192.168.254.1", "lecroart@nevrax.com", "lecroart@nevrax.com", "", body, attachedFile, false))
+
+	if (attachedFile.empty())
+		nlinfo ("--- sending email:");
+	else
+		nlinfo ("--- sending email with attached file '%s':", attachedFile.c_str());
+
+	nlinfo ("%s", body.c_str());
+	nlinfo ("--- end sending email");
+
 	if (sendEmail (SMTPServer, requestor, ToEmail, "", body, attachedFile, false))
 	{
 		MessageBox ("Report successfully sent. Thank you for your help", "Success");
@@ -314,7 +407,7 @@ void CBug_reportDlg::OnSendreport()
 
 void CBug_reportDlg::OnClear() 
 {
-	set(IDC_LANGUAGE, "francais");
+	set(IDC_LANGUAGE, "english");
 	set(IDC_SUBJECT, "");
 	set(IDC_CLIENTVERSION, "");
 	set(IDC_SHARDNAME, "");
@@ -328,7 +421,7 @@ void CBug_reportDlg::OnClear()
 	set(IDC_ATTACHEDFILE, "");
 /////// TEMP
 	/*
-	set(IDC_LANGUAGE, "francais");
+	set(IDC_LANGUAGE, "english");
 	set(IDC_SUBJECT, "subject");
 	set(IDC_CLIENTVERSION, "0.2.0");
 	set(IDC_SHARDNAME, "OFFLINE");
@@ -372,31 +465,7 @@ void CBug_reportDlg::OnClear()
 		exit (0);
 	}
 
-	static bool alreadySet = false;
-	if (!alreadySet)
-	{
-		string s;
-
-		if (!DumpFilename.empty())
-		{
-			FILE *fp = fopen (DumpFilename.c_str(), "rb");
-			if (fp != NULL)
-			{
-				char buf[10000];
-				int end = fread (buf, 1, 10000-1, fp);
-				buf[end] = '\0';
-				s = buf;
-				fclose (fp);
-			}
-		}
-
-		s += CSystemInfo::getMem() + "\r\n";
-		s += CSystemInfo::getOS() + "\r\n";
-		s += CSystemInfo::getProc() + "\r\n";
-		s += getGraphicCardInformation () + "\r\n";
-		set (IDC_DESCRIPTIONEX, s, true);
-		alreadySet = true;
-	}
+	setDumpFilename("");
 
 	setFocus (IDC_SUBJECT);
 }
@@ -411,4 +480,21 @@ void CBug_reportDlg::OnAttachfile()
 void CBug_reportDlg::OnNoattach() 
 {
 	set (IDC_ATTACHEDFILE, "", true);
+}
+
+void CBug_reportDlg::OnTest() 
+{
+
+	CIFile cif;
+	cif.open("E:\\nevrax\\ryzom\\screenshots\\city\\Species1City01.tga");
+	NLMISC::CBitmap toto;
+	toto.load (cif);
+	cif.close ();
+
+	COFile cof;
+	cof.open("toto.jpg");
+	toto.writeJPG (cof);
+	cof.close ();
+
+	//system ("Debug\\bug_report.exe ClientVersion 0.5.0 ShardVersion 2.5.0 ShardName OFFLINE Language english AttachedFile toto.jpg DumpFilename bug_reportDlg.h");
 }

@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.16 2001/10/25 16:09:36 chafik Exp $
+ * $Id: ai_exception.h,v 1.17 2001/10/29 15:54:46 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -51,6 +51,13 @@ namespace NLAIE
 		IException()
 		{
 		}		
+
+		IException(const IException &e):NLMISC::Exception(e.what())
+		{
+		}		
+		IException(const std::string &reason): NLMISC::Exception(reason)
+		{
+		}		
 		virtual const IException *clone() const = 0;
 		virtual ~IException()
 		{
@@ -59,26 +66,14 @@ namespace NLAIE
 
 	class CExceptionContainer: public IException
 	{
-	private:
-		IException *_Excep;
+	
 	public:
-		CExceptionContainer(const CExceptionContainer &exc);
-		CExceptionContainer(const IException &exc);/*:_Excep((IException *)exc.clone())
-		{
-		}*/
-		
-		const char *what() const throw() 
-		{
-			return _Excep->what();
-		}
+		CExceptionContainer(const CExceptionContainer &exc);		
+		CExceptionContainer(const std::string &name);
 
-		virtual const IException *clone() const;/*
-		{
-			return new CExceptionContainer(*_Excep->clone());
-		}*/
+		virtual const IException *clone() const;		
 		virtual ~CExceptionContainer()
-		{
-			delete _Excep;
+		{			
 		}
 	};
 
@@ -86,19 +81,11 @@ namespace NLAIE
 	{		
 	public:
 		
-		CExceptionIndexError()
+		CExceptionIndexError(): IException("Depacement de résolution sur les index")
 		{
-		}
-		
-		const char *what() const throw() 
-		{
-			return "Depacement de résolution sur les index";
 		}
 
-		virtual const IException *clone() const;/*
-		{
-			return new CExceptionIndexError();
-		}*/
+		virtual const IException *clone() const;
 
 		virtual ~CExceptionIndexError()
 		{
@@ -110,19 +97,11 @@ namespace NLAIE
 	
 	public:
 		
-		CExceptionIndexHandeledError()
+		CExceptionIndexHandeledError(): IException("l'index ne pointe pas rien un agent")
 		{
 		}
-		
-		const char *what() const throw() 
-		{
-			return "l'index ne pointe pas rien un agent";
-		}
-
-		virtual const IException *clone() const;/*
-		{
-			return new CExceptionIndexHandeledError();
-		}*/
+			
+		virtual const IException *clone() const;
 
 		virtual ~CExceptionIndexHandeledError()
 		{
@@ -131,16 +110,10 @@ namespace NLAIE
 
 	class CExceptionUnRegisterClassError: public IException
 	{
-	private:	
-		std::string _ClassName;
+	private:			
 	public:
 		CExceptionUnRegisterClassError(const CExceptionUnRegisterClassError &e);		
 		CExceptionUnRegisterClassError(const std::string &name);
-
-		const char *what() const throw() 
-		{
-			return _ClassName.c_str();
-		}
 
 		virtual const IException *clone() const;
 
@@ -151,28 +124,16 @@ namespace NLAIE
 	};
 
 	class CExceptionObjectNotFoundError: public IException
-	{
-	private:	
-		std::string _ClassName;
+	{	
 	public:
-		CExceptionObjectNotFoundError(const CExceptionObjectNotFoundError &e)
-		{
-			_ClassName = e._ClassName;
+		CExceptionObjectNotFoundError(const CExceptionObjectNotFoundError &e):IException(e)
+		{			
 		}
-		CExceptionObjectNotFoundError(const std::string &name)
-		{
-			_ClassName = name;			
-		}
+		CExceptionObjectNotFoundError(const std::string &name):IException(name)
+		{			
+		}		
 
-		const char *what() const throw() 
-		{
-			return _ClassName.c_str();
-		}
-
-		virtual const IException *clone() const;/*
-		{
-			return new CExceptionObjectNotFoundError(_ClassName);
-		}*/
+		virtual const IException *clone() const;
 
 		~CExceptionObjectNotFoundError()
 		{		
@@ -180,25 +141,14 @@ namespace NLAIE
 	};
 
 	class CExceptionNotImplemented: public IException
-	{
-	private:
-		std::string _Text;
+	{	
 	public:
 
 		CExceptionNotImplemented(const CExceptionNotImplemented &e);		
 		
-		CExceptionNotImplemented(const std::string &text);
-		
+		CExceptionNotImplemented(const std::string &text);				
 
-		const char *what() const throw() 
-		{
-			return _Text.c_str();
-		}
-
-		virtual const IException *clone() const;/*
-		{
-			return new CExceptionNotImplemented(_Text);
-		}*/
+		virtual const IException *clone() const;
 
 		virtual ~CExceptionNotImplemented()
 		{			
@@ -206,25 +156,14 @@ namespace NLAIE
 	};
 
 	class CExceptionUnReference: public IException
-	{
-	private:
-		std::string _Text;
+	{	
 	public:
 
-		CExceptionUnReference(const CExceptionUnReference &e);		
-
+		CExceptionUnReference(const CExceptionUnReference &e);
 		CExceptionUnReference(const std::string &text);
-		CExceptionUnReference(char *text);
+		//CExceptionUnReference(char *text);		
 
-		const char *what() const throw() 
-		{
-			return _Text.c_str();
-		}
-
-		virtual const IException *clone() const;/*
-		{
-			return new CExceptionUnReference(_Text);
-		}*/
+		virtual const IException *clone() const;
 
 		virtual ~CExceptionUnReference()
 		{			
@@ -233,29 +172,18 @@ namespace NLAIE
 
 	class CExceptionAllReadyExist: public IException
 	{
-	private:
-		std::string _Text;
+	
 	public:
 
-		CExceptionAllReadyExist(const CExceptionAllReadyExist &e)
-		{
-			_Text = e._Text;			
+		CExceptionAllReadyExist(const CExceptionAllReadyExist &e):IException(e)
+		{			
 		}
 		
-		CExceptionAllReadyExist(const std::string &text)
-		{
-			_Text = text;			
+		CExceptionAllReadyExist(const std::string &name):IException(name)
+		{		
 		}
-
-		const char *what() const throw() 
-		{
-			return _Text.c_str();
-		}
-
-		virtual const IException *clone() const;/*
-		{
-			return new CExceptionAllReadyExist(_Text);
-		}*/
+		
+		virtual const IException *clone() const;
 
 		virtual ~CExceptionAllReadyExist()
 		{		

@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.9 2001/10/25 16:09:24 chafik Exp $
+ * $Id: agent_init.cpp,v 1.10 2001/10/29 15:54:34 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,18 +90,16 @@ void staticReleaseLibClass()
 namespace NLAIE
 {		
 	
-	CExceptionContainer::CExceptionContainer(const CExceptionContainer &exc)
-	{
-		_Excep = (IException *)exc.clone();
+	CExceptionContainer::CExceptionContainer(const CExceptionContainer &e):IException(e)
+	{		
 	}
-	CExceptionContainer::CExceptionContainer(const IException &exc)
+	
+	CExceptionContainer::CExceptionContainer(const std::string &name):IException(name)
 	{
-		_Excep = (IException *)exc.clone();
 	}
-
 	const IException *CExceptionContainer::clone() const
 	{
-		return new CExceptionContainer(*_Excep->clone());
+		return new CExceptionContainer(*this);
 	}
 
 	const IException *CExceptionIndexError::clone() const
@@ -114,63 +112,57 @@ namespace NLAIE
 	}
 
 
-	CExceptionUnRegisterClassError::CExceptionUnRegisterClassError(const CExceptionUnRegisterClassError &e)
-	{
-		_ClassName = e._ClassName;		
+	CExceptionUnRegisterClassError::CExceptionUnRegisterClassError(const CExceptionUnRegisterClassError &e):IException(e)
+	{		
 	}
 
-	CExceptionUnRegisterClassError::CExceptionUnRegisterClassError(const std::string &name)
-	{
-		_ClassName = name;
+	CExceptionUnRegisterClassError::CExceptionUnRegisterClassError(const std::string &name):IException(name)
+	{		
 	}
 	const IException *CExceptionUnRegisterClassError::clone() const
 	{
-		return new CExceptionUnRegisterClassError(_ClassName);
+		return new CExceptionUnRegisterClassError(*this);
 	}
 
 	const IException *CExceptionObjectNotFoundError::clone() const
 	{
-		return new CExceptionObjectNotFoundError(_ClassName);
+		return new CExceptionObjectNotFoundError(*this);
 	}
 
-	CExceptionNotImplemented::CExceptionNotImplemented(const CExceptionNotImplemented &e)
-	{
-		_Text = e._Text;		
+	CExceptionNotImplemented::CExceptionNotImplemented(const CExceptionNotImplemented &e):IException(e)
+	{	
 	}
 		
-	CExceptionNotImplemented::CExceptionNotImplemented(const std::string &text)
-	{
-		_Text = text;		
+	CExceptionNotImplemented::CExceptionNotImplemented(const std::string &name):IException(name)
+	{		
 	}
 
 	const IException *CExceptionNotImplemented::clone() const
 	{
-		return new CExceptionNotImplemented(_Text);
+		return new CExceptionNotImplemented(*this);
 	}
 
 
-	CExceptionUnReference::CExceptionUnReference(const CExceptionUnReference &e)
-	{
-		_Text = e._Text;			
+	CExceptionUnReference::CExceptionUnReference(const CExceptionUnReference &e):IException(e)
+	{		
 	}
 
-	CExceptionUnReference::CExceptionUnReference(const std::string &text)
-	{
-		_Text = text;			
+	CExceptionUnReference::CExceptionUnReference(const std::string &text):IException(text)
+	{		
 	}
 
-	CExceptionUnReference::CExceptionUnReference(char *text)
+	/*CExceptionUnReference::CExceptionUnReference(char *text)
 	{
 		_Text = std::string(text);
-	}
+	}*/
 
 	const IException *CExceptionUnReference::clone() const
 	{
-		return new CExceptionUnReference(_Text);
+		return new CExceptionUnReference(*this);
 	}
 
 	const IException *CExceptionAllReadyExist::clone() const
 	{
-		return new CExceptionAllReadyExist(_Text);
+		return new CExceptionAllReadyExist(*this);
 	}
 }

@@ -1,7 +1,7 @@
 /** \file object_type.h
  * class encaputation a type of object.
  *
- * $Id: object_type.h,v 1.8 2001/10/25 08:57:13 chafik Exp $
+ * $Id: object_type.h,v 1.9 2001/10/29 15:54:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,9 +49,9 @@ namespace NLAIAGENT
 
 		}
 
-		const NLAIC::CIdentType &getType() const/// throw (NLAIE::CExceptionUnReference)
+		const NLAIC::CIdentType &getType() const
 		{
-			if(_Type == NULL) throw NLAIE::CExceptionUnReference((const char *)"object type is unreference");
+			if(_Type == NULL) throw NLAIE::CExceptionUnReference(std::string("object type is unreference"));
 			return *_Type;
 		}
 

@@ -1,6 +1,6 @@
 /** \file constraint.cpp
  *
- * $Id: constraint.cpp,v 1.13 2001/10/29 10:21:49 chafik Exp $
+ * $Id: constraint.cpp,v 1.14 2001/10/29 15:54:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -286,11 +286,11 @@ namespace NLAISCRIPT
 				{			
 					std::pair<int, CCodeBrancheRun *> &p = _Code.back();
 					IOpCode *op = (*p.second)[p.first];//
-#ifdef NL_DEBUG
+/*#ifdef NL_DEBUG
 					std::string dbugS;
 					p.second->getDebugString(dbugS);
 					NLAIC::Out("%s \n\tindex <%d> \n\tRef of IOpCode int setOpCode is %d\n", dbugS.c_str(), p.first, op->getRef());
-#endif
+#endif*/
 					op->release();
 					(*p.second)[p.first] = x;
 					_Code.pop_back();			

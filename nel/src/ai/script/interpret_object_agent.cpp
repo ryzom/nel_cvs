@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.38 2001/10/29 10:44:23 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.39 2001/10/29 15:54:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -348,11 +348,11 @@ namespace NLAISCRIPT
 	/// Adds a static component to an agent
 	sint32 CAgentClass::registerComponent(const NLAIAGENT::IVarName &type_name)
 	{			
-#ifdef NL_DEBUG
+/*#ifdef NL_DEBUG
 		std::string dbugS;
 		type_name.getDebugString(dbugS);
 		NLAIC::Out("registerComponent<%s>\n", dbugS.c_str());
-#endif
+#endif*/
 		CComponent *c = new CComponent();
 		c->RegisterName = (NLAIAGENT::IVarName *)type_name.clone();
 		c->ObjectName = NULL;

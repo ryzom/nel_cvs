@@ -1,6 +1,6 @@
 /** \file texture_chooser.h
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.h,v 1.5 2001/07/04 17:14:11 vizerie Exp $
+ * $Id: texture_chooser.h,v 1.6 2001/12/06 16:59:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,30 +35,37 @@
 #include "nel/misc/smart_ptr.h"
 #include "3d/texture.h"
 #include "edit_attrib_dlg.h"
+#include "popup_notify.h"
 
 #include "ps_wrapper.h"
 
 
 using NLMISC::CSmartPtr ;
 
+namespace NL3D
+{
+	class CPSMultiTexturedParticle;
+}
 
+class CMultiTexDlg;
 
 
 /////////////////////////////////////////////////////////////////////////////
 // CTextureChooser dialog
 
-class CTextureChooser : public CEditAttribDlg
+class CTextureChooser : public CEditAttribDlg, IPopupNotify
 {
 // Construction
 public:
 	// construct the object with the given texture
-	CTextureChooser();   // standard constructor
+	CTextureChooser(NL3D::CPSMultiTexturedParticle *mtp = NULL);   // standard constructor
 
 	~CTextureChooser();
 
+	/// when initing, you can also provide a point to a mutltitextured particle
 	virtual void init(uint32 x, uint32 y, CWnd *pParent = NULL) ;
-
-
+	
+	BOOL EnableWindow( BOOL bEnable);
 
 	// set a wrapper to get the datas
 	void setWrapper(IPSWrapperTexture *wrapper) { _Wrapper = wrapper ; }
@@ -69,6 +76,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CTextureChooser)
 	enum { IDD = IDD_TEXTURE_CHOOSER };
+	CButton	m_MultiTexCtrl;
 	//}}AFX_DATA
 
 
@@ -83,7 +91,8 @@ public:
 protected:
 	bool _EnableRemoveButton ;
 	IPSWrapperTexture *_Wrapper ;
-
+	NL3D::CPSMultiTexturedParticle *_MTP;
+	CMultiTexDlg	  *_MultiTexDlg;
 	// handle to the current bitmap being displayed
 	HBITMAP _CurrBitmap ;
 
@@ -96,12 +105,18 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CTextureChooser)
 	virtual BOOL OnInitDialog();
-	afx_msg void OnBrowseTexture();
 	afx_msg void OnPaint();
 	afx_msg void OnRemoveTexture();
+	afx_msg void OnEditMultitexturing();
+	afx_msg void OnEnableMultitexturing();
+	afx_msg void OnBrowseTexture();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP() ;
 
+	/// inherited from IPopupNotify
+	void childPopupDestroyed(CWnd *child);
+
+	void updateMultiTexCtrl();
 	
 } ;
 

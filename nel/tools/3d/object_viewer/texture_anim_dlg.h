@@ -8,25 +8,29 @@
 #include "ps_wrapper.h"
 #include "3d/ps_particle.h"
 #include "value_gradient_dlg.h"
+#include "popup_notify.h"
 
 
 namespace NL3D
 {
 	class CPSTexturedParticle ;
+	class CPSMultiTexturedParticle ;
+
 }
 
 class CTextureChooser ;
 class CAttribDlgInt ;
 class CValueGradientDlg ;
+class CMultiTexDlg;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTextureAnimDlg dialog
 
-class CTextureAnimDlg : public CDialog
+class CTextureAnimDlg : public CDialog, IPopupNotify
 {
 // Construction
 public:
-	CTextureAnimDlg(NL3D::CPSTexturedParticle *p);   // standard constructor
+	CTextureAnimDlg(NL3D::CPSTexturedParticle *p, NL3D::CPSMultiTexturedParticle *mtp = NULL);   // standard constructor
 	~CTextureAnimDlg() ;
 
 	void init(sint x, sint y, CWnd *pParent) ;
@@ -35,8 +39,11 @@ public:
 	enum { IDD = IDD_TEXTURE_ANIM };
 	CButton	m_ChooseTextures;
 	BOOL	m_EnableTextureAnim;
+	BOOL	m_MultiTexEnable;
 	//}}AFX_DATA
 
+
+	BOOL EnableWindow( BOOL bEnable);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -48,6 +55,8 @@ public:
 // Implementation
 protected:
 	NL3D::CPSTexturedParticle *_EditedParticle ;
+	NL3D::CPSMultiTexturedParticle *_MTP;
+
 
 	// dialog to choose a constant texture
 	CTextureChooser *_TextureChooser ;
@@ -55,10 +64,15 @@ protected:
 	// dialog to have a theme or constant value for texture id
 	CAttribDlgInt *_TextureIndexDialog ;
 
+	
+	CMultiTexDlg *_MultiTexDlg;
+
 	// Generated message map functions
 	//{{AFX_MSG(CTextureAnimDlg)
 	afx_msg void OnChooseTextures();
 	afx_msg void OnEnableTextureAnim();
+	afx_msg void OnMultiTex();
+	afx_msg void OnEditMultitex();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -126,6 +140,10 @@ protected:
 		} _TextureWrapper ;
 
 	} _GradientInterface ;
+
+
+	/// inherited from IPopuNotify
+	void childPopupDestroyed(CWnd *child);
 
 };
 

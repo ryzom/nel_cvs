@@ -7,9 +7,14 @@
 #include "attrib_dlg.h"
 #include "texture_chooser.h"
 #include "3d/ps_particle.h"
+#include "3d/ps_particle_basic.h"
 #include "3d/texture_grouped.h"
 #include "3d/texture_file.h"
+
+
 #include "nel/misc/smart_ptr.h"
+#include "multi_tex_dlg.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -21,45 +26,74 @@ static char THIS_FILE[] = __FILE__;
 // CTextureAnimDlg dialog
 
 
-CTextureAnimDlg::CTextureAnimDlg(NL3D::CPSTexturedParticle *p) : _EditedParticle(p)
-			, _TextureChooser(NULL), _TextureIndexDialog(NULL)
+CTextureAnimDlg::CTextureAnimDlg(NL3D::CPSTexturedParticle *p, NL3D::CPSMultiTexturedParticle *mtp /*= NULL*/) : _EditedParticle(p),
+			_TextureChooser(NULL), _TextureIndexDialog(NULL), _MTP(mtp), _MultiTexDlg(NULL)
 {	
-	nlassert(p) ;
+	nlassert(p);
 	//{{AFX_DATA_INIT(CTextureAnimDlg)	
-	m_EnableTextureAnim = p->getTextureGroup() ? TRUE : FALSE ;
-	//}}AFX_DATA_INIT	
+	m_EnableTextureAnim = p->getTextureGroup() ? TRUE : FALSE;
+	m_MultiTexEnable = FALSE;
+	//}}AFX_DATA_INIT
 }
 
 CTextureAnimDlg::~CTextureAnimDlg()
 {	
-	cleanCtrl() ;
+	if (_MultiTexDlg)
+	{
+		_MultiTexDlg->DestroyWindow();
+		delete _MultiTexDlg;
+	}
+	cleanCtrl();	
 }
 
 
 
+BOOL CTextureAnimDlg::EnableWindow( BOOL bEnable)
+{
+	if (_TextureChooser) _TextureChooser->EnableWindow(bEnable);	
+	GetDlgItem(IDC_CHOOSE_TEXTURES)->EnableWindow(bEnable & m_EnableTextureAnim);
+	GetDlgItem(IDC_ENABLE_TEXTURE_ANIM)->EnableWindow(bEnable);
+	if (_MTP)
+	{		
+		((CButton *) GetDlgItem(IDC_MULTITEX))->EnableWindow(bEnable);
+		GetDlgItem(IDC_EDIT_MULTITEX)->EnableWindow(bEnable & (_MTP->isMultiTextureEnabled() ? 1 : 0));			
+	}
+	if (_TextureIndexDialog)
+	{
+		_TextureIndexDialog->EnableWindow(bEnable);
+	}
+	return CDialog::EnableWindow(bEnable);
+}
+
 void CTextureAnimDlg::init(sint x, sint y, CWnd *pParent)
 {
-	Create(IDD_TEXTURE_ANIM, pParent) ; 
-	RECT r ;
-	GetClientRect(&r) ;
-	MoveWindow(x, y, x + r.right, y + r.bottom) ;
-	setupCtrl() ;
-	ShowWindow(SW_SHOW) ;
+	Create(IDD_TEXTURE_ANIM, pParent); 
+	RECT r;
+	GetClientRect(&r);
+	MoveWindow(x, y, x + r.right, y + r.bottom);
+	setupCtrl();
+	if (!_MTP)
+	{
+		GetDlgItem(IDC_MULTITEX)->ShowWindow(FALSE);
+		GetDlgItem(IDC_EDIT_MULTITEX)->ShowWindow(FALSE);
+		GetDlgItem(IDC_MULTITEX_BORDER)->ShowWindow(FALSE);
+	}
+	ShowWindow(SW_SHOW);
 }
 
 void CTextureAnimDlg::cleanCtrl(void)
 {
 	if (_TextureChooser)
 	{
-		_TextureChooser->DestroyWindow() ;
-		delete _TextureChooser ;
-		_TextureChooser = NULL ;
+		_TextureChooser->DestroyWindow();
+		delete _TextureChooser;
+		_TextureChooser = NULL;
 	}
 	if (_TextureIndexDialog)
 	{
-		_TextureIndexDialog->DestroyWindow() ;
-		delete _TextureIndexDialog ;
-		_TextureIndexDialog = NULL ;
+		_TextureIndexDialog->DestroyWindow();
+		delete _TextureIndexDialog;
+		_TextureIndexDialog = NULL;
 	}
 }
 
@@ -69,26 +103,48 @@ void CTextureAnimDlg::setupCtrl(void)
 	// is there an animation ?
 	if (_EditedParticle->getTextureGroup())
 	{
-		_TextureIndexDialog = new CAttribDlgInt("TEXTURE_INDEX", 0, _EditedParticle->getTextureGroup()->getNbTextures() - 1) ;
-		
-		_TextureIndexWrapper.P = _EditedParticle ;
-		_TextureIndexDialog->setWrapper(&_TextureIndexWrapper ) ;			
-		_TextureIndexDialog->setSchemeWrapper(&_TextureIndexWrapper ) ;
+		if (!_TextureIndexDialog)
+		{
+			_TextureIndexDialog = new CAttribDlgInt("TEXTURE_INDEX", 0, _EditedParticle->getTextureGroup()->getNbTextures() - 1);
+			
+			_TextureIndexWrapper.P = _EditedParticle;
+			_TextureIndexDialog->setWrapper(&_TextureIndexWrapper );			
+			_TextureIndexDialog->setSchemeWrapper(&_TextureIndexWrapper );
 
-		HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_ANIM_SEQUENCE)) ;
-		_TextureIndexDialog->init(bmh, 10, 30, this) ;		
-		m_ChooseTextures.EnableWindow(TRUE) ;
+			HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_ANIM_SEQUENCE));
+			_TextureIndexDialog->init(bmh, 0, 30, this);		
+			m_ChooseTextures.EnableWindow(TRUE);
+		}
+		if (_MTP)
+		{
+			int display = _MTP->isMultiTextureEnabled() ? 1 : 0;
+			m_MultiTexEnable = display;
+			GetDlgItem(IDC_EDIT_MULTITEX)->EnableWindow(display);		
+			GetDlgItem(IDC_MULTITEX)->EnableWindow(TRUE);
+		}	
 	}
 	else // no animation, just show a texture chooser
 	{
-		_TextureChooser = new CTextureChooser ;
+		_TextureChooser = new CTextureChooser(_MTP);
 			
-		_TextureWrapper.P = _EditedParticle ;
-		_TextureChooser->setWrapper(&_TextureWrapper) ;
-		_TextureChooser->init(0, 30, this) ;
-		m_ChooseTextures.EnableWindow(FALSE) ;
+		_TextureWrapper.P = _EditedParticle;
+		_TextureChooser->setWrapper(&_TextureWrapper);
+		_TextureChooser->init(0, 30, this);
+		m_ChooseTextures.EnableWindow(FALSE);
+
+		if (_MTP)
+		{
+			
+			((CButton *) GetDlgItem(IDC_MULTITEX))->SetCheck(0);
+			GetDlgItem(IDC_EDIT_MULTITEX)->EnableWindow(0);		
+			GetDlgItem(IDC_MULTITEX)->EnableWindow(0);
+		}	
 	}
-	UpdateData(FALSE) ;
+
+	
+
+
+	UpdateData(FALSE);
 }
 
 
@@ -100,6 +156,7 @@ void CTextureAnimDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CTextureAnimDlg)
 	DDX_Control(pDX, IDC_CHOOSE_TEXTURES, m_ChooseTextures);
 	DDX_Check(pDX, IDC_ENABLE_TEXTURE_ANIM, m_EnableTextureAnim);
+	DDX_Check(pDX, IDC_MULTITEX, m_MultiTexEnable);
 	//}}AFX_DATA_MAP
 }
 
@@ -108,6 +165,8 @@ BEGIN_MESSAGE_MAP(CTextureAnimDlg, CDialog)
 	//{{AFX_MSG_MAP(CTextureAnimDlg)
 	ON_BN_CLICKED(IDC_CHOOSE_TEXTURES, OnChooseTextures)
 	ON_BN_CLICKED(IDC_ENABLE_TEXTURE_ANIM, OnEnableTextureAnim)
+	ON_BN_CLICKED(IDC_MULTITEX, OnMultiTex)
+	ON_BN_CLICKED(IDC_EDIT_MULTITEX, OnEditMultitex)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -117,31 +176,31 @@ END_MESSAGE_MAP()
 void CTextureAnimDlg::OnChooseTextures() 
 {
 	
-	_GradientInterface.P = _EditedParticle ;	
-	CValueGradientDlg vd(&_GradientInterface , false, this, NULL, false, 1) ;
+	_GradientInterface.P = _EditedParticle;	
+	CValueGradientDlg vd(&_GradientInterface , false, this, NULL, false, 1);
 	
-	_GradientInterface.Dlg = &vd ;
-	vd.DoModal() ;	
+	_GradientInterface.Dlg = &vd;
+	vd.DoModal();	
 }
 
 void CTextureAnimDlg::OnEnableTextureAnim() 
 {
-	UpdateData() ;
+	UpdateData();
 	if (!m_EnableTextureAnim)
 	{
-		_EditedParticle->setTexture(NULL) ;
+		_EditedParticle->setTexture(NULL);
 	}
 	else
 	{
 		// put a dummy texture as a first texture
-		NLMISC::CSmartPtr<NL3D::ITexture> tex = (NL3D::ITexture *) new NL3D::CTextureFile(std::string("")) ;
-		NL3D::CTextureGrouped *tg = new NL3D::CTextureGrouped ;
-		tg->setTextures(&tex, 1) ;
-		_EditedParticle->setTextureGroup(tg) ;
-		_EditedParticle->setTextureIndex(0) ;		
+		NLMISC::CSmartPtr<NL3D::ITexture> tex = (NL3D::ITexture *) new NL3D::CTextureFile(std::string(""));
+		NL3D::CTextureGrouped *tg = new NL3D::CTextureGrouped;
+		tg->setTextures(&tex, 1);
+		_EditedParticle->setTextureGroup(tg);
+		_EditedParticle->setTextureIndex(0);		
 	}
-	cleanCtrl() ;
-	setupCtrl() ;
+	cleanCtrl();
+	setupCtrl();
 }
 
 
@@ -153,86 +212,86 @@ void CTextureAnimDlg::OnEnableTextureAnim()
 
 CEditAttribDlg *CTextureAnimDlg::CGradientInterface::createDialog(uint index, CValueGradientDlg *grad)
 {
-	CTextureChooser *tc = new CTextureChooser() ;
-	_TextureWrapper.P = P ;
-	_TextureWrapper.Dlg = Dlg ;
-	_TextureWrapper.Index = index ;
-	tc->setWrapper(&_TextureWrapper) ;
-	return tc ;
+	CTextureChooser *tc = new CTextureChooser();
+	_TextureWrapper.P = P;
+	_TextureWrapper.Dlg = Dlg;
+	_TextureWrapper.Index = index;
+	tc->setWrapper(&_TextureWrapper);
+	return tc;
 }
 void CTextureAnimDlg::CGradientInterface::modifyGradient(TAction action, uint index)
 {
-	nlassert(P) ;
-	nlassert(P->getTextureGroup()) ;
-	std::vector< NLMISC::CSmartPtr<NL3D::ITexture> > textureList ;
-	textureList.resize(P->getTextureGroup()->getNbTextures()) ;
-	P->getTextureGroup()->getTextures(&textureList[0]) ;
+	nlassert(P);
+	nlassert(P->getTextureGroup());
+	std::vector< NLMISC::CSmartPtr<NL3D::ITexture> > textureList;
+	textureList.resize(P->getTextureGroup()->getNbTextures());
+	P->getTextureGroup()->getTextures(&textureList[0]);
 
 	switch(action)
 	{
 		case IValueGradientDlgClient::Add:
 		{
 			// we duplicate the last texture, so that they have the same size
-			NLMISC::CSmartPtr<NL3D::ITexture> lastTex = textureList[textureList.size() - 1] ;
-			textureList.push_back(lastTex) ;		
+			NLMISC::CSmartPtr<NL3D::ITexture> lastTex = textureList[textureList.size() - 1];
+			textureList.push_back(lastTex);		
 		}
-		break ;
+		break;
 		case IValueGradientDlgClient::Insert:
 		{
 			// we duplicate the current texture, so that they have the same size
-			NLMISC::CSmartPtr<NL3D::ITexture> tex = textureList[index] ;
-			textureList.insert(textureList.begin() + index, tex) ;			
+			NLMISC::CSmartPtr<NL3D::ITexture> tex = textureList[index];
+			textureList.insert(textureList.begin() + index, tex);			
 		}			
-		break ;
+		break;
 		case IValueGradientDlgClient::Delete:		
-			textureList.erase(textureList.begin() + index) ;						
-		break ;
+			textureList.erase(textureList.begin() + index);						
+		break;
 	}
 
-	P->getTextureGroup()->setTextures(&textureList[0], textureList.size()) ;
+	P->getTextureGroup()->setTextures(&textureList[0], textureList.size());
 }
 void CTextureAnimDlg::CGradientInterface::displayValue(CDC *dc, uint index, sint x, sint y)
 {
-	const uint tSize = 20 ;
-	NLMISC::CSmartPtr<NL3D::ITexture> tex = P->getTextureGroup()->getTexture(index) ;
-	tex->generate() ;
+	const uint tSize = 20;
+	NLMISC::CSmartPtr<NL3D::ITexture> tex = P->getTextureGroup()->getTexture(index);
+	tex->generate();
 
 	// make copy of the texture
-	NLMISC::CBitmap cb(* ((NL3D::ITexture *) tex)) ;
+	NLMISC::CBitmap cb(* ((NL3D::ITexture *) tex));
 
-	cb.convertToType(NLMISC::CBitmap::RGBA) ;
-	cb.resample(tSize, tSize) ;
+	cb.convertToType(NLMISC::CBitmap::RGBA);
+	cb.resample(tSize, tSize);
 	
 
-	uint32 *dat  = (uint32 *) &(cb.getPixels()[0]) ;
+	uint32 *dat  = (uint32 *) &(cb.getPixels()[0]);
 
-	HBITMAP myBitmap = ::CreateBitmap(tSize, tSize, 1, 32, dat) ;
+	HBITMAP myBitmap = ::CreateBitmap(tSize, tSize, 1, 32, dat);
 	
-	HDC bitmapDc = ::CreateCompatibleDC(dc->m_hDC) ;
-	HGDIOBJ old = ::SelectObject(bitmapDc, myBitmap) ;
+	HDC bitmapDc = ::CreateCompatibleDC(dc->m_hDC);
+	HGDIOBJ old = ::SelectObject(bitmapDc, myBitmap);
 
 	// display the texture
-	::BitBlt(dc->m_hDC, x + 20, y + 10, tSize, tSize, bitmapDc, 0, 0, SRCCOPY) ;
+	::BitBlt(dc->m_hDC, x + 20, y + 10, tSize, tSize, bitmapDc, 0, 0, SRCCOPY);
 
 	// free resources
-	::SelectObject(bitmapDc, old) ;
-	::DeleteDC(bitmapDc) ;
-	::DeleteObject(myBitmap) ;
+	::SelectObject(bitmapDc, old);
+	::DeleteDC(bitmapDc);
+	::DeleteObject(myBitmap);
 
 }
 uint32 CTextureAnimDlg::CGradientInterface::getSchemeSize(void) const
 {
-	nlassert(P->getTextureGroup()) ;
-	return P->getTextureGroup()->getNbTextures() ;
+	nlassert(P->getTextureGroup());
+	return P->getTextureGroup()->getNbTextures();
 }
 uint32 CTextureAnimDlg::CGradientInterface::getNbSteps(void) const
 {
-	return 1 ;
+	return 1;
 }
 void CTextureAnimDlg::CGradientInterface::setNbSteps(uint32 value)
 {
 	// this should never be called, as we don't allow nbsteps to be called
-	nlassert(false) ;
+	nlassert(false);
 }
 
 
@@ -243,43 +302,66 @@ void CTextureAnimDlg::CGradientInterface::setNbSteps(uint32 value)
 
 NL3D::ITexture *CTextureAnimDlg::CGradientInterface::CTextureWrapper::get(void)
 {
-	nlassert(P) ;
-	nlassert(P->getTextureGroup()) ;
-	return P->getTextureGroup()->getTexture(Index) ;
+	nlassert(P);
+	nlassert(P->getTextureGroup());
+	return P->getTextureGroup()->getTexture(Index);
 }
 void CTextureAnimDlg::CGradientInterface::CTextureWrapper::set(NL3D::ITexture *t)
 {
-	nlassert(P) ;
-	nlassert(P->getTextureGroup()) ;
+	nlassert(P);
+	nlassert(P->getTextureGroup());
 
 	// if a texture is added, it must have the same size than other textures
 	if (P->getTextureGroup()->getNbTextures() > 1)
 	{
-		NLMISC::CSmartPtr<NL3D::ITexture> tex = P->getTextureGroup()->getTexture(0) ;
-		tex->generate() ;
-		t->generate() ;
+		NLMISC::CSmartPtr<NL3D::ITexture> tex = P->getTextureGroup()->getTexture(0);
+		tex->generate();
+		t->generate();
 
 		if (t->getWidth() != tex->getWidth() || t->getHeight() != tex->getHeight())
 		{
-			::MessageBox(NULL, "All textures must have the same size !", "error", MB_OK) ;
-			return ;
+			::MessageBox(NULL, "All textures must have the same size !", "error", MB_OK);
+			return;
 		}
 
 		if (t->PixelFormat != tex->PixelFormat)
 		{
-			::MessageBox(NULL, "All textures must have the same pixel format !", "error", MB_OK) ;
-			return ;
+			::MessageBox(NULL, "All textures must have the same pixel format !", "error", MB_OK);
+			return;
 		}
 	}
 
-	std::vector< NLMISC::CSmartPtr<NL3D::ITexture> > textureList ;
-	textureList.resize(P->getTextureGroup()->getNbTextures()) ;
-	P->getTextureGroup()->getTextures(&textureList[0]) ;
+	std::vector< NLMISC::CSmartPtr<NL3D::ITexture> > textureList;
+	textureList.resize(P->getTextureGroup()->getNbTextures());
+	P->getTextureGroup()->getTextures(&textureList[0]);
 
-	textureList[Index] = t ;
+	textureList[Index] = t;
 
 
-	P->getTextureGroup()->setTextures(&textureList[0], textureList.size()) ;
+	P->getTextureGroup()->setTextures(&textureList[0], textureList.size());
 	
-	Dlg->invalidateGrad() ;
+	Dlg->invalidateGrad();
+}
+
+void CTextureAnimDlg::OnMultiTex() 
+{
+	UpdateData();
+	_MTP->enableMultiTexture(m_MultiTexEnable ? true : false /* VC WARNING */);
+	setupCtrl();
+}
+
+void CTextureAnimDlg::childPopupDestroyed(CWnd *child)
+{
+	nlassert(_MultiTexDlg == child);
+	_MultiTexDlg->DestroyWindow();
+	delete _MultiTexDlg;
+	_MultiTexDlg = NULL;
+	EnableWindow(TRUE);
+}
+
+void CTextureAnimDlg::OnEditMultitex() 
+{	
+	EnableWindow(FALSE);
+	_MultiTexDlg = new 	CMultiTexDlg(_MTP, this, this);
+	_MultiTexDlg->init(this);
 }

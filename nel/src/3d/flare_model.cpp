@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.15 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: flare_model.cpp,v 1.16 2002/12/04 09:46:10 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -205,7 +205,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 						   / (float) (width>>1);
 
 	// check for dazzle and draw it
-	if (fs->hasDazzle())
+	/*if (fs->hasDazzle())
 	{
 		if (norm < fs->getDazzleAttenuationRange())
 		{
@@ -226,7 +226,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 
 			drv->renderQuads(material, 0, 1);
 		}
-	}		
+	}	*/	
 	if (!fs->getAttenuable() )
 	{
 		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * m->_Intensity));

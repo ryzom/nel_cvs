@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera interface between the game and NeL
  *
- * $Id: camera.cpp,v 1.16 2001/07/24 17:29:23 lecroart Exp $
+ * $Id: camera.cpp,v 1.17 2001/07/27 09:05:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,9 +92,9 @@ void	initCamera()
 	CamCollisionEntity->setCeilMode(true);
 
 	// Create the snowing particle system
-	//Snow = Scene->createInstance("snow.ps");
+	Snow = Scene->createInstance("snow.ps");
 	// And setup it
-	//Snow->setTransformMode (UTransformable::DirectMatrix);
+	Snow->setTransformMode (UTransformable::DirectMatrix);
 
 	//
 	// Setup the sky scene
@@ -104,7 +104,7 @@ void	initCamera()
 
 	SkyCamera = SkyScene->getCam ();
 	SkyCamera->setTransformMode (UTransformable::DirectMatrix);
-	// et the very same frustum as the main camera
+	// Set the very same frustum as the main camera
 	SkyCamera->setFrustum (Camera->getFrustum ());
 
 	Sky = SkyScene->createInstance("sky.shape");
@@ -130,8 +130,8 @@ void	updateCamera()
 {
 	// Set the new position of the snow emitter
 	CMatrix	mat = CMatrix::Identity;
-	mat.setPos (Camera->getMatrix().getPos());
-	//Snow->setMatrix(mat);
+	mat.setPos (Camera->getMatrix().getPos()/*+CVector (0.0f, 0.0f, -10.0f)*/);
+	Snow->setMatrix(mat);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.27 2002/04/09 12:23:52 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.28 2002/04/18 16:53:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -317,7 +317,14 @@ void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 		// debug features, we number all packet to be sure that they are all sent and received
 		// \todo remove this debug feature when ok
 //		nldebug ("send message number %u", hostid->SendNextValue);
-		*(uint32*)&buffer[0] = hostid->SendNextValue++;
+#ifdef NL_BIG_ENDIAN
+		uint32 val = NLMISC_BSWAP32(hostid->SendNextValue);
+#else
+		uint32 val = hostid->SendNextValue;
+#endif
+
+		*(uint32*)&buffer[0] = val;
+		hostid->SendNextValue++;
 
 		pushBufferToHost( buffer, hostid );
 	}
@@ -341,7 +348,13 @@ void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 							// debug features, we number all packet to be sure that they are all sent and received
 							// \todo remove this debug feature when ok
 //							nldebug ("send message number %u", (*ipb)->SendNextValue);
-							*(uint32*)&buffer[0] = (*ipb)->SendNextValue++;
+#ifdef NL_BIG_ENDIAN
+							uint32 val = NLMISC_BSWAP32((*ipb)->SendNextValue);
+#else
+							uint32 val = (*ipb)->SendNextValue;
+#endif
+							*(uint32*)&buffer[0] = val;
+							(*ipb)->SendNextValue++;
 
 							pushBufferToHost( buffer, *ipb );
 						}
@@ -461,8 +474,13 @@ void CBufServer::receive( std::vector<uint8>& buffer, TSockId* phostid )
 
 	// debug features, we number all packet to be sure that they are all sent and received
 	// \todo remove this debug feature when ok
+#ifdef NL_BIG_ENDIAN
+	uint32 val = NLMISC_BSWAP32(*(uint32*)&buffer[0]);
+#else
 	uint32 val = *(uint32*)&buffer[0];
-//	nldebug ("receive message number %u", val);
+#endif
+
+	//	nldebug ("receive message number %u", val);
 	if ((*phostid)->ReceiveNextValue != val)
 	{
 		nlstopex (("LNETL1: !!!LOST A MESSAGE!!! I received the message number %u but I'm waiting the message number %u (cnx %s), warn lecroart@nevrax.com with the log now please", val, (*phostid)->ReceiveNextValue, (*phostid)->asString().c_str()));

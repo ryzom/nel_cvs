@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.19 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.20 2002/04/18 16:53:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,7 +97,13 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 	// \todo remove this debug feature when ok
 	// fill the number
 	uint32 *val = (uint32*)buffer.buffer ();
-	*val = SendNextValue++;
+#ifdef NL_BIG_ENDIAN
+	*val = NLMISC_BSWAP32(SendNextValue);
+#else
+	*val = SendNextValue;
+#endif
+	SendNextValue++;
+
 
 #ifdef USE_MESSAGE_RECORDER
 	if ( _MR_RecordingState != Replay )
@@ -225,7 +231,12 @@ void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 
 		// debug features, we number all packet to be sure that they are all sent and received
 		// \todo remove this debug feature when ok
+#ifdef NL_BIG_ENDIAN
+		uint32 val = NLMISC_BSWAP32(*(uint32*)buffer.buffer ());
+#else
 		uint32 val = *(uint32*)buffer.buffer ();
+#endif
+
 //		nldebug ("receive message number %u", val);
 		if (ReceiveNextValue != val)
 		{

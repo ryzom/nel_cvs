@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.49 2002/04/30 15:11:17 portier Exp $
+ * $Id: agent_script.h,v 1.50 2002/05/03 14:34:51 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,7 @@ namespace NLAIAGENT
 			TFather, ///Get the father of the agent.
 			TSelf, ///Get The self pointer.
 			TGetName, ///Get the name of the agent in the manager child list.
+			TGetClass,
 			TRunTellComponent, ///transmit Message to an compoment.
 			TRunAskComponent, ///transmit Message to an compoment.
 			TRunAskParentNotify, ///the offest of the runAskParentNotify method.

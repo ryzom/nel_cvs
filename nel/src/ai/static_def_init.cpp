@@ -407,6 +407,13 @@
 		NLAIC::CTypeOfOperator::opNeg | 
 		NLAIC::CTypeOfOperator::opNot ); 
 
+	const NLAIC::CIdentType CInternalGoal::IdInternalGoal = NLAIC::CIdentType( "InternalGoalObject", NLAIC::CSelfClassFactory( CInternalGoal( CStringVarName("Inst") )),
+		NLAIC::CTypeOfObject::tLogic,
+		NLAIC::CTypeOfOperator::opEq |
+		NLAIC::CTypeOfOperator::opNeg | 
+		NLAIC::CTypeOfOperator::opNot ); 
+
+
 	const NLAIC::CIdentType CGoalStack::IdGoalStack = NLAIC::CIdentType( "GoalStack", NLAIC::CSelfClassFactory( CGoalStack( )),
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opEq |

@@ -1,7 +1,7 @@
 /** \file goal.h
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.22 2002/04/30 15:11:17 portier Exp $
+ * $Id: goal.h,v 1.23 2002/05/03 14:34:51 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,66 @@ namespace NLAILOGIC
 /*			virtual void setTopLevel(NLAIAGENT::CAgentScript *);
 			const NALAIGENT::CAgentScript *getTOpLevel() const;*/
 
+	};
+
+	class CInternalGoal : public IGoal
+	{
+		private:
+			NLAIAGENT::IObjectIA *_Property;
+		public:
+
+			CInternalGoal();
+			CInternalGoal(const NLAIAGENT::IVarName &, TTypeOfGoal mode = achieveOnce);
+			CInternalGoal(const NLAIAGENT::IVarName &, std::list<const NLAIAGENT::IObjectIA *> &,TTypeOfGoal mode = achieveOnce);
+			CInternalGoal(const CInternalGoal &);
+			virtual ~CInternalGoal();
+
+			void setArgs(std::list<NLAIAGENT::IObjectIA *> &);
+			const std::vector<NLAIAGENT::IObjectIA *> &getArgs();
+
+			static const NLAIC::CIdentType IdInternalGoal;
+
+			void addSuccessor(NLAIAGENT::IBasicAgent *);
+			void addPredecessor(NLAIAGENT::IBasicAgent *);
+
+//			virtual void failure();
+//			virtual void success();
+
+			virtual void operatorSuccess(NLAIAGENT::IBasicAgent *);
+			virtual void operatorFailure(NLAIAGENT::IBasicAgent *);
+
+			const std::vector<IBaseOperator *> getOperators();
+
+			const NLAIC::IBasicType *clone() const;
+			const NLAIC::IBasicType *newInstance() const;
+			void save(NLMISC::IStream &os);
+			void load(NLMISC::IStream &is);
+			virtual void getDebugString(std::string &) const;
+			bool isTrue() const;
+			float truthValue() const;
+			const IObjectIA::CProcessResult &run();
+			bool isEqual(const CInternalGoal &a) const;
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
+			const NLAIC::CIdentType &getType() const;
+
+			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
+			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p);
+			sint32 getMethodIndexSize() const;
+
+
+			virtual bool operator==(const CInternalGoal &);
+
+			void setSender(NLAIAGENT::IBasicAgent *);
+			void setReceiver(NLAIAGENT::IBasicAgent *);
+
+			NLAIAGENT::IBasicAgent *getSender();
+			NLAIAGENT::IBasicAgent *getReceiver();
+
+			virtual void cancel();
+			virtual float priority() const;
+
+			void setProperty(NLAIAGENT::IObjectIA *);
 	};
 }
 

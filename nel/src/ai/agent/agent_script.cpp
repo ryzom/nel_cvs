@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.111 2002/04/30 15:11:45 portier Exp $
+ * $Id: agent_script.cpp,v 1.112 2002/05/03 14:34:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -244,6 +244,15 @@ namespace NLAIAGENT
 																			new NLAISCRIPT::CObjectUnknown(
 																			new NLAISCRIPT::COperandSimple(
 																			new NLAIC::CIdentType(CStringType::IdStringType))));
+
+		StaticMethod[CAgentScript::TGetClass] = new CAgentScript::CMethodCall(	"GetClass", 
+																			CAgentScript::TGetClass, 
+																			NULL,CAgentScript::CheckCount,
+																			0,
+																			new NLAISCRIPT::CObjectUnknown(
+																			new NLAISCRIPT::COperandSimple(
+																			new NLAIC::CIdentType(CStringType::IdStringType))));
+
 
 		StaticMethod[CAgentScript::TRemoveChild] = new CAgentScript::CMethodCall(	_REMOVECHILD_, 
 																				CAgentScript::TRemoveChild, 
@@ -1566,6 +1575,15 @@ namespace NLAIAGENT
 				return r;
 			}
 
+		case TGetClass:
+			{
+				IObjectIA::CProcessResult r;
+				NLAIC::CIdentType &idtype = (NLAIC::CIdentType &) getType();
+				std::string classname = idtype.getClassName();
+				r.Result = new CStringType( CStringVarName( classname.c_str() ) );
+				return r;
+			}
+
 		case TRemoveChild:
 			{
 				return removeDynamic((IBaseGroupType *)o);
@@ -1678,6 +1696,16 @@ namespace NLAIAGENT
 				r.Result = new CStringType(CStringVarName("Unknown"));
 				return r;
 			}
+
+		case TGetClass:
+			{
+				IObjectIA::CProcessResult r;
+				NLAIC::CIdentType &idtype = (NLAIC::CIdentType &) getType();
+				std::string classname = idtype.getClassName();
+				r.Result = new CStringType( CStringVarName( classname.c_str() ) );
+				return r;
+			}
+
 
 		case TRunAskParentNotify:
 			{				

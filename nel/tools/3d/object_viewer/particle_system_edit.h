@@ -35,6 +35,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CParticleSystemEdit)
 	enum { IDD = IDD_EDIT_PARTICLE_SYSTEM };
+	CButton	m_PerformMotionWhenOutOfFrustumDlg;
 	CComboBox	m_DieOnEvent;
 	CButton	m_PrecomputeBBoxCtrl;
 	CEdit	m_BBoxZCtrl;
@@ -44,7 +45,8 @@ public:
 	BOOL	m_AccurateIntegration;
 	BOOL	m_EnableSlowDown;
 	BOOL	m_DieWhenOutOfRange;
-	BOOL	m_DieWhenOutOfFrustrum;
+	BOOL	m_DieWhenOutOfFrustum;
+	BOOL	m_PerformMotionWhenOutOfFrustum;
 	//}}AFX_DATA
 
 
@@ -75,7 +77,8 @@ protected:
 	afx_msg void OnDieWhenOutOfRange();
 	afx_msg void OnSelchangePsDieOnEvent();
 	afx_msg void OnChangeApplyAfterDelay();
-	afx_msg void OnDieWhenOutOfFrustrum();
+	afx_msg void OnDieWhenOutOfFrustum();
+	afx_msg void OnPerformMotionWhenOutOfFrustum();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

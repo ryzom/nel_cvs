@@ -113,8 +113,7 @@ CSoundPage::CSoundPage(CWnd* pParent /*=NULL*/)
 	m_Looped = FALSE;
 	m_Stereo = _T("");
 	m_Pitch = 1.0f;
-	m_Pitch = 0.0f;
-	m_Looping = FALSE;
+	m_Looping = false;
 	//}}AFX_DATA_INIT
 
 	_CurrentSound = NULL;
@@ -202,7 +201,6 @@ void CSoundPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSoundPage, CDialog)
 	//{{AFX_MSG_MAP(CSoundPage)
 	ON_BN_CLICKED(IDC_Pos3D, OnPos3D)
-	ON_BN_CLICKED(IDC_Apply, OnApply)
 	ON_BN_CLICKED(IDC_ChooseFile, OnChooseFile)
 	ON_BN_CLICKED(IDC_Remove, OnRemove)
 	ON_BN_CLICKED(IDC_PlaySound, OnPlaySound)
@@ -218,8 +216,9 @@ BEGIN_MESSAGE_MAP(CSoundPage, CDialog)
 	ON_BN_CLICKED(IDC_ButtonHelp, OnButtonHelp)
 	ON_EN_CHANGE(IDC_EditGain, OnChangeEditGain)
 	ON_BN_CLICKED(IDC_ButtonTestOuterGain, OnButtonTestOuterGain)
-	ON_BN_CLICKED(IDC_Cancel, OnCancel)
 	ON_EN_CHANGE(IDC_EditPitch, OnChangeEditPitch)
+	ON_BN_CLICKED(IDC_Cancel, OnCancel)
+	ON_BN_CLICKED(IDC_Home, OnHome)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -302,6 +301,27 @@ void		CSoundPage::getPropertiesFromSound()
 }
 
 
+/*
+ *
+ */
+void CSoundPage::UpdateCurrentSound()
+{
+	CString name = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem );
+	if ( ! m_Pos3D )
+	{
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Looping!=0, m_Pos3D!=0 );
+	}
+	else
+	{
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Looping!=0, m_Pos3D!=0,
+			m_MinDist, m_MaxDist, degToRad((float)m_InnerAngleDeg), degToRad((float)m_OuterAngleDeg), m_OuterGain );
+	}
+	// Argument checking is already done by the dialog wizard
+}
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CSoundPage message handlers
 
@@ -353,45 +373,78 @@ void CSoundPage::OnPos3D()
 /*
  *
  */
-void CSoundPage::OnApply() 
+void CSoundPage::apply()
 {
-	if ( _Source != NULL )
+	if ( _CurrentSound )
 	{
-		_Source->stop();
+		if ( _Source != NULL )
+		{
+			_Source->stop();
+		}
+
+		UpdateData( true );
+
+		UpdateCurrentSound();
+
+		(static_cast<CSource_sounds_builderDlg*>(GetOwner()))->setModified();
+
+		nlassert( _Tree );
+
+		if ( m_Filename != "" )
+		{
+			CString s = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem ) + " (" + m_Filename + ")";
+			_Tree->SetItemText( _HItem, s );
+		}
+
+		//_Tree->SelectItem( NULL );
+
+		GetOwner()->SetFocus();
 	}
-
-	UpdateData( true );
-
-	UpdateCurrentSound();
-
-	(static_cast<CSource_sounds_builderDlg*>(GetOwner()))->setModified();
-
-	nlassert( _Tree && _CurrentSound );
-
-	if ( m_Filename != "" )
-	{
-		CString s = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem ) + " (" + m_Filename + ")";
-		_Tree->SetItemText( _HItem, s );
-	}
-
-	_Tree->SelectItem( NULL );
-
-	GetOwner()->SetFocus();
 }
 
 
 /*
  *
  */
-void CSoundPage::OnCancel() 
+void CSoundPage::rename( CString s )
+{
+	getPropertiesFromSound();
+	nlassert( _Tree );
+	_Tree->SetItemText( _HItem, s );
+	UpdateCurrentSound();
+}
+
+
+/*
+ * Reverts the changes
+ */
+void CSoundPage::OnCancel()
+{
+	getPropertiesFromSound();
+}
+
+
+/*
+ * Unselects the current sound
+ */
+void CSoundPage::cancel()
 {
 	if ( _Source != NULL )
 	{
 		_Source->stop();
 	}
 
+	_CurrentSound = NULL;
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnHome() 
+{
 	nlassert( _Tree );
-	_Tree->SelectItem( NULL );
+	_Tree->SelectItem( _Tree->GetRootItem() );
 	GetOwner()->SetFocus();
 }
 
@@ -409,7 +462,7 @@ void CSoundPage::OnChooseFile()
 		m_Filename = opendlg.GetFileName();
 		try 
 		{
-			LoadSound();
+			loadSound();
 		}
 		catch ( Exception& e )
 		{
@@ -425,7 +478,7 @@ void CSoundPage::OnChooseFile()
 /*
  *
  */
-bool CSoundPage::LoadSound()
+bool CSoundPage::loadSound()
 {
 	UpdateCurrentSound();
 	nlassert( _CurrentSound );
@@ -447,11 +500,23 @@ bool CSoundPage::LoadSound()
  */
 void CSoundPage::OnRemove() 
 {
-	if ( AfxMessageBox( "Are you sure to remove the current sound from the list ?", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+	removeSound();
+}
+
+
+/*
+ *
+ */
+void CSoundPage::removeSound()
+{
+	/*if ( AfxMessageBox( "Are you sure to remove the current sound from the list ?", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+	{*/
+	if ( _CurrentSound )
 	{
-		nlassert( _Tree && _CurrentSound );
+		nlassert( _Tree );
 		_Tree->DeleteItem( _HItem );
 	}
+	/*}*/
 }
 
 
@@ -465,7 +530,7 @@ void CSoundPage::Play( bool outsidecone )
 	// Load sound
 	try 
 	{
-		if ( LoadSound() )
+		if ( loadSound() )
 		{
 			UpdateData( false );
 			
@@ -547,25 +612,6 @@ void CSoundPage::OnButtonTestOuterGain()
 	UpdateData( true );
 	m_Looped = false;
 	Play( true );
-}
-
-
-/*
- *
- */
-void CSoundPage::UpdateCurrentSound()
-{
-	CString name = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem );
-	if ( ! m_Pos3D )
-	{
-		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Looping!=0, m_Pos3D!=0 );
-	}
-	else
-	{
-		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Looping!=0, m_Pos3D!=0,
-			m_MinDist, m_MaxDist, degToRad((float)m_InnerAngleDeg), degToRad((float)m_OuterAngleDeg), m_OuterGain );
-	}
-	// Argument checking is already done by the dialog wizard
 }
 
 

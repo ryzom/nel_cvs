@@ -53,6 +53,11 @@ public:
 	void		setTree( CTreeCtrl *tree )						  { _Tree = tree; }
 	void		setCurrentSound( CSound *sound, HTREEITEM hitem );
 	void		getPropertiesFromSound();
+	void		removeSound();
+	void		apply();
+	void		cancel();
+	bool		loadSound();
+	void		rename( CString s );
 
 // Implementation
 protected:
@@ -60,7 +65,6 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CSoundPage)
 	afx_msg void OnPos3D();
-	afx_msg void OnApply();
 	afx_msg void OnChooseFile();
 	afx_msg void OnCancel();
 	afx_msg void OnRemove();
@@ -79,6 +83,7 @@ protected:
 	afx_msg void OnChangeEditGain();
 	afx_msg void OnButtonTestOuterGain();
 	afx_msg void OnChangeEditPitch();
+	afx_msg void OnHome();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -90,9 +95,9 @@ protected:
 
 	void						UpdateCurrentSound();
 	void						UpdateStereo();
-	bool						LoadSound();
 	void						DrawCones();
 	void						Play( bool ousidecone );
+
 };
 
 //{{AFX_INSERT_LOCATION}}

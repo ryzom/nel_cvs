@@ -35,18 +35,19 @@ BEGIN
     CONTROL         "Tree1",IDC_TREE1,"SysTreeView32",TVS_HASLINES | 
                     TVS_EDITLABELS | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | 
                     WS_BORDER | WS_TABSTOP,5,25,175,225
-    PUSHBUTTON      "Add a Sound",IDC_AddSound,65,5,55,14
+    PUSHBUTTON      "Add a Sound",IDC_AddSound,125,5,55,14
     PUSHBUTTON      "Save File...",IDC_Save,350,5,50,14
     PUSHBUTTON      "Load File...",IDC_Load,295,5,50,14
-    PUSHBUTTON      "Up",IDC_MoveUp,125,5,25,14,NOT WS_VISIBLE
-    PUSHBUTTON      "Down",IDC_MoveDown,155,5,25,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Up",IDC_MoveUp,185,5,25,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Down",IDC_MoveDown,215,5,25,14,NOT WS_VISIBLE
     PUSHBUTTON      "Import Names...",IDC_Import,5,5,55,14
-    LTEXT           "Directions\n\n1) Import sound names\n2) Set their properties, listen them and apply them\n3) Save them in a file",
+    LTEXT           "Directions\n\n1) Import sound names or wav files\n2) Set their properties, listen them and apply them\n3) Save them in a file",
                     IDC_STATIC,190,30,205,45
     LTEXT           "Later, to change or add sounds :\n\n1) Load your file back\n2) Import the sound names again if they have been updated\n3) Set their properties and apply them\n4) Save them again",
                     IDC_STATIC,190,80,205,50
-    LTEXT           "You can also add a sound and set its name.",IDC_STATIC,
-                    190,140,205,35
+    LTEXT           "You can also add sounds (button), rename them (long click or 'F2' key), and remove them (button or 'Del' key). Importing an existing name or wav file does not change the existing sound.",
+                    IDC_STATIC,190,140,205,35
+    PUSHBUTTON      "Import wav Files...",IDC_ImpDir,65,5,55,15
 END
 
 IDD_SoundPage DIALOG DISCARDABLE  183, 20, 222, 237
@@ -62,8 +63,7 @@ BEGIN
     CONTROL         "Ext. 3D Properties",IDC_Pos3D,"Button",BS_AUTOCHECKBOX | 
                     BS_LEFTTEXT | WS_GROUP | WS_TABSTOP,9,75,73,10
     GROUPBOX        " 3D Properties ",IDC_Pos3DGroup,10,90,200,115,WS_GROUP
-    DEFPUSHBUTTON   "Apply",IDC_Apply,10,210,50,14,WS_GROUP
-    PUSHBUTTON      "Cancel",IDC_Cancel,65,210,50,14,WS_GROUP
+    PUSHBUTTON      "Undo",IDC_Cancel,15,210,50,14,WS_GROUP
     LTEXT           "Min dist.",IDC_MinDist,15,105,60,8
     LTEXT           "Max dist.",IDC_MaxDist,15,120,60,8
     EDITTEXT        IDC_EditMaxDist,75,120,40,12,ES_AUTOHSCROLL
@@ -74,7 +74,7 @@ BEGIN
     LTEXT           "Cone Outer Gain",IDC_ConeOuterGain,15,165,60,8
     EDITTEXT        IDC_EditOuterGain,75,165,40,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EditMinDist,75,105,40,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "Remove",IDC_Remove,160,210,50,14
+    PUSHBUTTON      "Remove",IDC_Remove,70,210,50,14
     PUSHBUTTON      "Play",IDC_PlaySound,160,35,50,14
     CONTROL         "Play Looped",IDC_Looped,"Button",BS_AUTOCHECKBOX | 
                     BS_PUSHLIKE | WS_TABSTOP,160,55,50,15
@@ -100,6 +100,7 @@ BEGIN
                     TBS_NOTICKS | WS_TABSTOP,115,45,30,15
     CONTROL         "Looping",IDC_Looping,"Button",BS_AUTOCHECKBOX | 
                     BS_LEFTTEXT | WS_TABSTOP,9,61,73,10
+    PUSHBUTTON      "Home",IDC_Home,160,210,50,14,WS_GROUP
 END
 
 

@@ -16,8 +16,8 @@
 #define IDC_Pos3D                       1008
 #define IDC_Pos3DGroup                  1009
 #define IDC_Save                        1010
-#define IDC_Apply                       1011
 #define IDC_Cancel                      1012
+#define IDC_Home                        1013
 #define IDC_EditMaxDist                 1014
 #define IDC_EditInnerAngle              1015
 #define IDC_EditOuterAngle              1016
@@ -49,6 +49,7 @@
 #define IDC_EditPitch                   1048
 #define IDC_SliderPitch                 1049
 #define IDC_Looping                     1050
+#define IDC_ImpDir                      1051
 
 // Next default values for new objects
 // 
@@ -56,7 +57,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        129
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1051
+#define _APS_NEXT_CONTROL_VALUE         1052
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -5,8 +5,13 @@
 #include "source_sounds_builder.h"
 #include "source_sounds_builderDlg.h"
 
+#include <io.h>
+
 #include "nel/misc/file.h"
+#include "nel/misc/path.h"
 using namespace NLMISC;
+
+#include "file_dialog.h"
 
 #include <string>
 #include <fstream>
@@ -50,6 +55,8 @@ BEGIN_MESSAGE_MAP(CSource_sounds_builderDlg, CDialog)
 	ON_BN_CLICKED(IDC_Import, OnImport)
 	ON_NOTIFY(TVN_BEGINLABELEDIT, IDC_TREE1, OnBeginlabeleditTree1)
 	ON_NOTIFY(TVN_ENDLABELEDIT, IDC_TREE1, OnEndlabeleditTree1)
+	ON_BN_CLICKED(IDC_ImpDir, OnImpDir)
+	ON_NOTIFY(TVN_KEYDOWN, IDC_TREE1, OnKeydownTree1)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -135,20 +142,21 @@ void CSource_sounds_builderDlg::ResetTree()
  */
 void CSource_sounds_builderDlg::OnAddSound() 
 {
-	AddSound( "<New Sound>" );
+	HTREEITEM hitem = AddSound( "<New Sound>" );
+	m_Tree.EditLabel( hitem );
 }
 
 
 /*
  *
  */
-void CSource_sounds_builderDlg::AddSound( const char *name )
+HTREEITEM CSource_sounds_builderDlg::AddSound( const char *name )
 {
 	_Sounds.push_back( new CSound() );
 	HTREEITEM item = m_Tree.InsertItem( name, m_Tree.GetRootItem(), TVI_LAST );
 	m_Tree.SetItemData( item, _Sounds.size()-1 );
 	m_Tree.Expand( m_Tree.GetRootItem(), TVE_EXPAND );
-	m_Tree.EditLabel( item );
+	return item;
 }
 
 
@@ -159,11 +167,13 @@ void CSource_sounds_builderDlg::OnBeginlabeleditTree1(NMHDR* pNMHDR, LRESULT* pR
 {
 	TV_DISPINFO* pTVDispInfo = (TV_DISPINFO*)pNMHDR;
 
-	CString s = m_Tree.GetItemText( pTVDispInfo->item.hItem );
-	if ( (s != "") && (s[0] == '<' ) )
+	if ( pTVDispInfo->item.hItem != m_Tree.GetRootItem() )
 	{
-		// Sound added by the user
+		CString name = SoundName( pTVDispInfo->item.hItem );
+		m_Tree.GetEditControl()->SetWindowText( name );
 		m_Tree.SelectItem( pTVDispInfo->item.hItem );
+		GetDlgItem( IDC_Import )->EnableWindow( false );
+		GetDlgItem( IDC_ImpDir )->EnableWindow( false );
 		GetDlgItem( IDC_AddSound )->EnableWindow( false );
 		*pResult = 0;
 	}
@@ -184,16 +194,29 @@ void CSource_sounds_builderDlg::OnEndlabeleditTree1(NMHDR* pNMHDR, LRESULT* pRes
 	if ( (pTVDispInfo->item.pszText != NULL) && (pTVDispInfo->item.pszText[0] != '\0') )
 	{
 		// Changed
-		CString s;
-		s.Format( "%s*", pTVDispInfo->item.pszText );
-		m_Tree.SetItemText( pTVDispInfo->item.hItem, s );
+		uint32 index = m_Tree.GetItemData( pTVDispInfo->item.hItem );
+		nlassert( index < _Sounds.size() );
+		if ( _Sounds[index]->getFilename() == "" )
+		{
+			CString s;
+			s.Format( "%s*", pTVDispInfo->item.pszText );
+			m_Tree.SetItemText( pTVDispInfo->item.hItem, s );
+		}
+		else
+		{
+			_SoundPage->setCurrentSound( _Sounds[index], pTVDispInfo->item.hItem );
+			_SoundPage->rename( pTVDispInfo->item.pszText );
+			_SoundPage->apply();
+		}
 	}
 	else
 	{
 		// Cancelled
-		m_Tree.SetItemText( pTVDispInfo->item.hItem, "<New Sound>*" );
+		//m_Tree.SetItemText( pTVDispInfo->item.hItem, "<New Sound>*" );
 	}
 
+	GetDlgItem( IDC_Import )->EnableWindow( true );
+	GetDlgItem( IDC_ImpDir )->EnableWindow( true );
 	GetDlgItem( IDC_AddSound )->EnableWindow( true );
 	*pResult = 0;
 }
@@ -206,13 +229,14 @@ void CSource_sounds_builderDlg::OnSelchangedTree1(NMHDR* pNMHDR, LRESULT* pResul
 {
 	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
 
+	_SoundPage->apply();
+
 	if ( (pNMTreeView->itemNew.hItem != NULL) && (pNMTreeView->itemNew.hItem != m_Tree.GetRootItem()) )
 	{
 		uint32 index = m_Tree.GetItemData( pNMTreeView->itemNew.hItem );
 		nlassert( index < _Sounds.size() );
 		_SoundPage->setCurrentSound( _Sounds[index], pNMTreeView->itemNew.hItem );
 		_SoundPage->ShowWindow( SW_SHOW );
-		((CButton*)GetDlgItem( IDC_Save ))->EnableWindow( false );
 		_SoundPage->SetFocus();
 		_SoundPage->getPropertiesFromSound();
 	}
@@ -220,7 +244,6 @@ void CSource_sounds_builderDlg::OnSelchangedTree1(NMHDR* pNMHDR, LRESULT* pResul
 	{
 		_SoundPage->ShowWindow( SW_HIDE );
 		_SoundPage->setCurrentSound( NULL, NULL );
-		((CButton*)GetDlgItem( IDC_Save ))->EnableWindow( true );
 	}
 
 	*pResult = 0;
@@ -234,6 +257,8 @@ void CSource_sounds_builderDlg::OnDeleteitemTree1(NMHDR* pNMHDR, LRESULT* pResul
 {
 	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
 
+	_SoundPage->cancel();
+	
 	nlassert( pNMTreeView );
 	if ( pNMTreeView->itemOld.hItem != m_Tree.GetRootItem() )
 	{
@@ -319,16 +344,30 @@ void CSource_sounds_builderDlg::OnMoveDown()
 CString CSource_sounds_builderDlg::SoundName( HTREEITEM hitem )
 {
 	CString s = m_Tree.GetItemText( hitem );
-	uint last;
-	if ( s[s.GetLength()-1] == '*' )
+	sint last;
+	if ( s != "" )
 	{
-		last = s.GetLength()-2;
+		if ( s[s.GetLength()-1] == '*' )
+		{
+			last = s.GetLength()-2;
+		}
+		else
+		{
+			last = s.ReverseFind( '(' )-2;
+		}
+		if ( last >= 0 )
+		{
+			return s.Left( last+1 );
+		}
+		else
+		{
+			return s;
+		}
 	}
 	else
 	{
-		last = s.ReverseFind( '(' )-2;
+		return s;
 	}
-	return s.Left( last+1 );
 }
 
 
@@ -337,6 +376,8 @@ CString CSource_sounds_builderDlg::SoundName( HTREEITEM hitem )
  */
 void CSource_sounds_builderDlg::OnSave() 
 {
+	_SoundPage->apply();
+
 	// Prompt filename
 	CFileDialog savedlg( false, "nss", "sounds.nss", OFN_OVERWRITEPROMPT, "NeL Source Sounds (*.nss)|*.nss||", this );
 	if ( savedlg.DoModal()==IDOK )
@@ -416,7 +457,7 @@ void CSource_sounds_builderDlg::OnLoad()
 /*
  *
  */
-HTREEITEM CSource_sounds_builderDlg::FindInTree( char *name )
+HTREEITEM CSource_sounds_builderDlg::FindInTree( const char *name )
 {
 	HTREEITEM hitem = m_Tree.GetChildItem( m_Tree.GetRootItem() );
 	while ( hitem != NULL )
@@ -460,6 +501,8 @@ void CSource_sounds_builderDlg::OnImport()
 			// Note2: does not check if there is twice the same name
 		}
 		fs.close();
+
+		waitcursor.Restore();
 	}
 }
 
@@ -471,8 +514,8 @@ void CSource_sounds_builderDlg::OnOK()
 {
 	// (Disable dialog closure by Enter)
 
-	// Exit from label editing if one label in the tree control is in editing mode
-	_SoundPage->SetFocus();
+	_SoundPage->apply();
+	//_SoundPage->SetFocus(); // to Exit from label editing if one label in the tree control is in editing mode (in apply())
 }
 
 
@@ -498,4 +541,119 @@ void CSource_sounds_builderDlg::OnCancel()
 			CDialog::OnCancel();
 		}
 	}
+}
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnImpDir() 
+{
+	// Prompt filename (CMultiFileDialog is a workaround class derived from CFileDialog)
+	CMultiFileDialog opendlg( true, "wav", "", OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_HIDEREADONLY, "Wave files (*.wav)|*.wav||", this );
+
+	if ( opendlg.DoModal()==IDOK )
+	{
+		CWaitCursor waitcursor;
+
+		POSITION pos = opendlg.GetStartPosition();
+		CString pathname;
+		char drive[_MAX_DRIVE];
+		char dir[_MAX_DIR];
+		char fname[_MAX_FNAME];
+		char ext[_MAX_EXT];
+		uint total = 0, err = 0;
+		if ( pos != NULL )
+		{
+			do
+			{
+				pathname = opendlg.GetNextPathName( pos );
+				_splitpath( pathname, drive, dir, fname, ext );
+				err += addSoundAndFile( string(fname) );
+				total += 1;
+			}
+			while ( pos != NULL );
+		}
+
+		/* // OLD
+		_finddata_t fileinfo;
+		long hf = _findfirst( "*.wav", &fileinfo );
+		if ( hf != -1 )
+		{
+			addSoundAndFile( fileinfo.name );
+			while ( _findnext( hf, &fileinfo ) == 0 )
+			{
+				addSoundAndFile( fileinfo.name );
+			}
+			_findclose( hf );
+		}*/
+
+		waitcursor.Restore();
+
+		if ( err != 0 )
+		{
+			CString s;
+			s.Format( "%u files on %u could not be loaded. Check the sounds for which 'Mono' or 'Stereo' is not visible", err, total );
+			AfxMessageBox( s, MB_ICONWARNING );
+		}
+	}
+	else if ( CommDlgExtendedError() != 0 )
+	{
+		CString s;
+		s.Format( "File dialog error %u", CommDlgExtendedError() );
+		MessageBox( s );
+	}
+}
+
+
+/*
+ * Return 0 if success, 1 if error
+ */
+uint CSource_sounds_builderDlg::addSoundAndFile( const string& name )
+{
+	// Add new name if not already existing (useful for new versions of the names file)
+	HTREEITEM hitem = FindInTree( name.c_str() );
+	if ( hitem == NULL )
+	{
+		hitem = AddSound( string(name + " (" + name + ".wav)").c_str() );
+		uint32 index = m_Tree.GetItemData( hitem );
+		nlassert( index < _Sounds.size() );
+		_Sounds[index]->setProperties( name, name + ".wav", 1.0f, 1.0f, false, false );
+		_SoundPage->setCurrentSound( _Sounds[index], hitem );
+		_SoundPage->getPropertiesFromSound();
+		try
+		{
+			_SoundPage->loadSound();
+		}
+		catch( Exception& )
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnKeydownTree1(NMHDR* pNMHDR, LRESULT* pResult) 
+{
+	TV_KEYDOWN* pTVKeyDown = (TV_KEYDOWN*)pNMHDR;
+
+	if ( pTVKeyDown->wVKey == VK_DELETE )
+	{
+		// Remove sound
+		_SoundPage->removeSound();
+	}
+	else if (  pTVKeyDown->wVKey == VK_F2 )
+	{
+		// Rename sound
+		if ( m_Tree.GetSelectedItem() != NULL )
+		{
+			m_Tree.EditLabel( m_Tree.GetSelectedItem() );
+		}
+	}
+
+	*pResult = 0;
 }

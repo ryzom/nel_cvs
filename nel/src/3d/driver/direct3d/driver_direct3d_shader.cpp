@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.4 2004/07/06 13:58:19 berenguier Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.5 2004/07/06 16:51:27 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -351,6 +351,8 @@ bool CDriverD3D::activeShader(CShader *shd)
 				shaderInfo->ColorHandle[i] = shaderInfo->Effect->GetParameterByName(NULL, name.c_str());
 				name = "factor" + toString (i);
 				shaderInfo->FactorHandle[i] = shaderInfo->Effect->GetParameterByName(NULL, name.c_str());
+				name = "scalar" + toString (i);
+				shaderInfo->ScalarHandle[i] = shaderInfo->Effect->GetParameterByName(NULL, name.c_str());
 			}
 		}
 		else
@@ -372,10 +374,21 @@ bool CDriverD3D::activeShader(CShader *shd)
 	return true;
 }
 
-// ***************************************************************************
 
-#define setFx(a,b) {a.setName(#b);a.setText((const char *)LockResource(LoadResource(HInstDLL, FindResource(HInstDLL, MAKEINTRESOURCE(b), "FX"))));\
-nlverify (activeShader (&a));}
+// ***************************************************************************
+// tmp for debug
+static void setFX(CShader &s, const char *name, INT rsc, CDriverD3D *drv)
+{
+	HRSRC hrsrc = FindResource(HInstDLL, MAKEINTRESOURCE(rsc), "FX");
+	HGLOBAL hglob = LoadResource(HInstDLL, hrsrc);
+	const char *datas = (const char *) LockResource(hglob);
+	s.setName(name);
+	s.setText(datas);
+	nlverify (drv->activeShader (&s));
+}
+
+
+#define setFx(a,b) { setFX(a, #b, b, this); }
 
 void CDriverD3D::initInternalShaders()
 {
@@ -400,7 +413,10 @@ void CDriverD3D::initInternalShaders()
 	setFx(_ShaderLightmap3BlendX2,lightmap3blend_x2);
 	setFx(_ShaderLightmap4BlendX2,lightmap4blend_x2);
 	setFx(_ShaderCloud,cloud);
+	setFx(_ShaderWaterNoDiffuse,water_no_diffuse);	
+	setFx(_ShaderWaterDiffuse,water_diffuse);	
 }
+
 
 // ***************************************************************************
 
@@ -427,6 +443,8 @@ void CDriverD3D::releaseInternalShaders()
 	_ShaderLightmap3BlendX2._DrvInfo.kill();
 	_ShaderLightmap4BlendX2._DrvInfo.kill();
 	_ShaderCloud._DrvInfo.kill();
+	_ShaderWaterNoDiffuse._DrvInfo.kill();	
+	_ShaderWaterDiffuse._DrvInfo.kill();	
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.16 2002/04/09 12:27:13 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.17 2002/04/11 16:03:18 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,7 +155,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					TextSend[0] = TextSend[1] = (char)0xFF;
 					SendMessage (cwd->_HInputEdit, WM_GETTEXT, (WPARAM)20000-1, (LPARAM)TextSend);
 					string str = TextSend;
-					ICommand::expand (str);
+					ICommand::expand (str, *InfoLog);
 					SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)str.c_str());
 
 					SendMessage (cwd->_HInputEdit, EM_SETSEL, str.size(), str.size());

@@ -1,7 +1,7 @@
 /** \file interpret_methodes.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: interpret_methodes.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: interpret_methodes.h,v 1.5 2001/01/17 17:20:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,12 +52,26 @@ namespace NLAISCRIPT
 
 	public:
 		static const NLAIC::CIdentType IdParam;		
-
+		
 		CParam();
+
 		CParam(const CParam &);
+
+		/*
+		This constructor allow to define an inline for defining method arg.
+		for use that you must give the nomber of IOpType* that define the maethod argument.
+\code
+exemple:
+	CParam(3,new COperandVoid(),new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::IntegerType::IdIntegerType)),
+								new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::IntegerType::IdIntegerType)));
+\endcode
+		*/
+		CParam(int count, ...);
+
 		~CParam();
 		///Need to know if a CParam is equal as an ather.
 		bool operator == (const CParam &p) const;
+
 		/**
 		Return the distance between to arguments.
 		An infinite result is defined by a negative value and represent an unequal argument.

@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.9 2001/01/17 16:53:23 chafik Exp $
+ * $Id: interpret_methodes.cpp,v 1.10 2001/01/17 17:20:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 #include "nel/ai/script/interpret_methodes.h"
 #include "nel/ai/script/type_def.h"
 #include <math.h>
+#include <stdarg.h>
 
 namespace NLAISCRIPT
 {
@@ -38,7 +39,17 @@ namespace NLAISCRIPT
 			_Param[i] = (IOpType *)p._Param[i]->clone();//new NLAIC::CIdentType(*p._Param[i]);
 		}
 	}
-	
+	CParam::CParam(int count, ...)
+	{
+		va_list marker;
+		
+		va_start( marker, count );
+		while(count --)
+		{
+			IOpType *o = va_arg( marker, IOpType *);
+			_Param.push_back(o);
+		}
+	}
 	bool CParam::operator == (const CParam &p) const
 	{
 		sint32 l;
@@ -47,8 +58,7 @@ namespace NLAISCRIPT
 		{
 			IOpType &p1 = *_Param[i], &p2 = *p._Param[i];
 			if(p1.getConstraintTypeOf() == NULL || p2.getConstraintTypeOf() == NULL) return false;
-			if(!(*p1.getConstraintTypeOf() == *p2.getConstraintTypeOf())) return false;
-			
+			if(!(*p1.getConstraintTypeOf() == *p2.getConstraintTypeOf())) return false;			
 		}
 		return true;
 	}

@@ -1,7 +1,7 @@
 /** \file dx_event_emitter.h
  * <File description>
  *
- * $Id: di_event_emitter.h,v 1.1 2002/03/28 10:46:04 vizerie Exp $
+ * $Id: di_event_emitter.h,v 1.2 2002/03/29 15:06:07 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -44,7 +44,7 @@
 #include "nel/misc/rect.h"
 #include "nel/misc/game_device.h"
 #include <windows.h>
-#include <DX8/dinput.h>
+#include <dinput.h>
 
 
 

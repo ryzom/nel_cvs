@@ -1,7 +1,7 @@
 /** \file vector_2f.cpp
  * <File description>
  *
- * $Id: vector_2f.cpp,v 1.1 2001/05/09 09:37:50 berenguier Exp $
+ * $Id: vector_2f.cpp,v 1.2 2001/12/12 15:59:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 namespace NLMISC
 {
 
-
+const CVector2f CVector2f::Null(0, 0);
 
 } // NLMISC
 

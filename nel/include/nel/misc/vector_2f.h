@@ -1,7 +1,7 @@
 /** \file vector_2f.h
  * <File description>
  *
- * $Id: vector_2f.h,v 1.2 2001/06/13 12:25:36 legros Exp $
+ * $Id: vector_2f.h,v 1.3 2001/12/12 16:00:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,6 +126,10 @@ public:		// Methods.
 	// friends.
 	friend	CVector2f	operator*(float f, const CVector2f &v0);
 
+	/// @name Constants
+	//@{
+	static const CVector2f Null;
+	//@}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.39 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.40 2004/03/23 10:24:17 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -430,12 +430,35 @@ bool CDriverGL::renderRawTriangles(CMaterial& mat, uint32 startIndex, uint32 num
 
 bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuads)
 {
+	if (!numQuads) return true;
+	
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
 	// setup material
 	if ( !setupMaterial(mat) )
-		return false;
+		return false;	
+
+	const uint32 QUAD_BATCH_SIZE = 2048;
+	static GLshort defaultIndices[QUAD_BATCH_SIZE * 6];
+	static bool	init = false;
+	if (!init)
+	{
+		// setup the base index buffer
+		for(uint k = 0; k < QUAD_BATCH_SIZE; ++k)
+		{
+			// first tri
+			defaultIndices[k * 6] = (GLshort) (k * 4);
+			defaultIndices[k * 6 + 1] = (GLshort) (k * 4 + 1);
+			defaultIndices[k * 6 + 2] = (GLshort) (k * 4 + 2);			
+			// second tri
+			defaultIndices[k * 6 + 3] = (GLshort) (k * 4);
+			defaultIndices[k * 6 + 4] = (GLshort) (k * 4 + 2);			
+			defaultIndices[k * 6 + 5] = (GLshort) (k * 4 + 3);
+			
+		}
+		init = true;
+	}
 
 	// render primitives.
 	//==============================
@@ -447,9 +470,69 @@ bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuad
 	{
 		// setup the pass.
 		setupPass(pass);
-		// draw the primitives.
-		if(numQuads)
-			glDrawArrays(GL_QUADS, startIndex << 2, numQuads << 2) ;
+		
+		uint32 currIndex = startIndex;
+		uint32 numLeftQuads = numQuads;
+
+		// draw first batch of quads using the static setupped array
+		if (startIndex < QUAD_BATCH_SIZE)
+		{
+			// draw first quads (as pair of tri to have guaranteed orientation)
+			uint numQuadsToDraw = std::min(QUAD_BATCH_SIZE - startIndex, numQuads);
+			glDrawElements(GL_TRIANGLES, 6 * numQuadsToDraw, GL_UNSIGNED_SHORT, defaultIndices + 6 * startIndex);
+			numLeftQuads -= numQuadsToDraw;
+			currIndex += 4 * numQuadsToDraw;
+		}
+
+		// draw remaining quads
+		while (numLeftQuads)
+		{
+			// TODO : resetting vertex pointer would avoid the need to rebuild indices each times
+			uint32 numQuadsToDraw = std::min(numLeftQuads, QUAD_BATCH_SIZE);
+			// draw all quads
+			if (4 * numQuadsToDraw + currIndex <= (1 << 16))
+			{
+				// indices fits on 16 bits
+				GLshort indices[QUAD_BATCH_SIZE * 6];
+				GLshort *curr = indices;
+				GLshort *end = indices + 6 * numQuadsToDraw;
+				uint16 vertexIndex = (uint16) currIndex;
+				do 
+				{
+					*curr++ = vertexIndex;
+					*curr++ = vertexIndex + 2;
+					*curr++ = vertexIndex + 1;
+					*curr++ = vertexIndex;
+					*curr++ = vertexIndex + 2;
+					*curr++ = vertexIndex + 3;
+					vertexIndex += 4;
+				} 
+				while(curr != end);
+				glDrawElements(GL_TRIANGLES, 6 * numQuadsToDraw, GL_UNSIGNED_SHORT, indices);
+			}
+			else
+			{	
+				// indices fits on 32 bits
+				GLint indices[QUAD_BATCH_SIZE];
+				GLint *curr = indices;
+				GLint *end = indices + 6 * numQuadsToDraw;
+				uint32 vertexIndex = currIndex;
+				do 
+				{
+					*curr++ = vertexIndex;
+					*curr++ = vertexIndex + 2;
+					*curr++ = vertexIndex + 1;
+					*curr++ = vertexIndex;
+					*curr++ = vertexIndex + 2;
+					*curr++ = vertexIndex + 3;
+					vertexIndex += 4;
+				} 
+				while(curr != end);
+				glDrawElements(GL_TRIANGLES, 6 * numQuadsToDraw, GL_UNSIGNED_INT, indices);
+			}
+			numLeftQuads -= numQuadsToDraw;
+			currIndex += 4 * numQuadsToDraw;
+		}
 	}
 	// end multipass.
 	endMultiPass();

@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.70 2004/06/03 09:23:26 besson Exp $
+ * $Id: ps_located.cpp,v 1.71 2004/06/17 08:03:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -916,8 +916,9 @@ void CPSLocated::postNewElement(const NLMISC::CVector &pos,
 	
 
 	// create a request to create a new element
-	CParticleSystem::CSpawnVect &sp = *CParticleSystem::_Spawns[getIndex()];
-	if (sp.MaxNumSpawns == sp.SpawnInfos.size()) return; // no more place to spawn
+	CParticleSystem::CSpawnVect &sp = *CParticleSystem::_Spawns[getIndex()];	
+	if (!_Owner->getAutoCountFlag() && sp.MaxNumSpawns == sp.SpawnInfos.size()) return; // no more place to spawn
+	if (getMaxSize() >= ((1 << 16) - 1)) return;
 	sp.SpawnInfos.resize(sp.SpawnInfos.size() + 1);
 	CPSSpawnInfo &si = sp.SpawnInfos.back();	
 	si.EmitterInfo.Pos = emitterLocated.getPos()[indexInEmitter];
@@ -2230,8 +2231,16 @@ void CPSLocated::addNewlySpawnedParticles()
 	#endif
 		CParticleSystem::CSpawnVect &spawns = *CParticleSystem::_Spawns[getIndex()];
 		if (spawns.SpawnInfos.empty()) return;
-		CParticleSystem::_SpawnPos.resize(getMaxSize());
-		uint numSpawns = std::min((uint) (_MaxSize - _Size), (uint) spawns.SpawnInfos.size());
+		uint numSpawns = 0;
+		if (!_Owner->getAutoCountFlag())
+		{
+			CParticleSystem::_SpawnPos.resize(getMaxSize());
+			numSpawns = std::min((uint) (_MaxSize - _Size), (uint) spawns.SpawnInfos.size());
+		}
+		else
+		{
+			numSpawns = (uint) spawns.SpawnInfos.size();
+		}
 		CParticleSystem::TSpawnInfoVect::const_iterator endIt = spawns.SpawnInfos.begin() + numSpawns;
 		if (_LastForever)
 		{		
@@ -2241,7 +2250,9 @@ void CPSLocated::addNewlySpawnedParticles()
 			}
 		}
 		else
-		{			
+		{		
+			// to avoid warning in autocount mode
+			CParticleSystem::InsideSimLoop = false;
 			for (CParticleSystem::TSpawnInfoVect::const_iterator it = spawns.SpawnInfos.begin(); it !=endIt; ++it)
 			{
 				sint32 insertionIndex = newElement(*it, false, CParticleSystem::EllapsedTime);
@@ -2260,6 +2271,7 @@ void CPSLocated::addNewlySpawnedParticles()
 					CParticleSystem::_ParticleRemoveListIndex[insertionIndex] = CParticleSystem::_ParticleToRemove.size() - 1;
 				}
 			}
+			CParticleSystem::InsideSimLoop = true;
 		}
 		spawns.SpawnInfos.clear();
 	#ifdef NL_DEBUG

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.42 2003/12/08 13:18:02 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.43 2003/12/31 16:11:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -328,7 +328,7 @@ public:
 
 public:
 	/// Interface for registering object in the mixer update.
-	class IMixerUpdate
+	class IMixerUpdate : public NLMISC::CDbgRefCount<IMixerUpdate>
 	{
 	public:
 		virtual void onUpdate() =0;
@@ -344,7 +344,7 @@ public:
 	void						unregisterUpdate(IMixerUpdate *pmixerUpdate);
 
 	/// Intergace for registering object in the mixer eventlist.
-	class IMixerEvent
+	class IMixerEvent : public NLMISC::CDbgRefCount<IMixerEvent>
 	{
 	public:
 		virtual void onEvent() =0;
@@ -382,7 +382,8 @@ private:
 	typedef std::hash_set<CSourceCommon*, THashPtr<CSourceCommon*> >					TSourceContainer;
 	typedef std::hash_set<IMixerUpdate*, THashPtr<IMixerUpdate*> >						TMixerUpdateContainer;
 	typedef std::hash_map<IBuffer*, std::vector<class CSound*>, THashPtr<IBuffer*> >	TBufferToSourceContainer;
-	typedef std::multimap<NLMISC::TTime, IMixerEvent*>									TTimedEventContainer;
+//	typedef std::multimap<NLMISC::TTime, IMixerEvent*>									TTimedEventContainer;
+	typedef std::multimap<NLMISC::TTime, NLMISC::CDbgPtr<IMixerEvent> >									TTimedEventContainer;
 	typedef std::multimap<IMixerEvent*, TTimedEventContainer::iterator>					TEventContainer;
 
 	/// Identify the parameter controled by user var.
@@ -438,6 +439,8 @@ private:
 	bool						_AutoLoadSample;
 	/// flag for usage of ADPCM mixing
 	bool						_UseADPCM;
+	/// flag for usage of eax
+	bool						_UseEax;
 
 	/// The vector of curently free tracks.
 	std::vector<CTrack*>		_FreeTracks;

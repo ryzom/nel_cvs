@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.9 2003/08/21 09:27:11 boucher Exp $
+ * $Id: background_sound_manager.h,v 1.10 2003/12/31 16:11:54 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -222,6 +222,8 @@ private:
 		NLMISC::CVector		MaxBox;
 		/// The vector of points composing the patatoid.
 		std::vector<NLMISC::CVector>	Points;
+
+		void serial(NLMISC::IStream &s);
 	};
 	/// Container for the banks primitive.
 	std::vector<TBanksData>		_Banks;
@@ -256,6 +258,8 @@ private:
 		std::vector<NLMISC::CVector>	Points;
 		/// Flag telling if this sound is currently selected for play by bounding box.
 		bool				Selected;
+
+		void serial(NLMISC::IStream &s);
 	};
 	/// Array of vector of sound data.
 	std::vector<TSoundData>		_Layers[BACKGROUND_LAYER];
@@ -294,6 +298,8 @@ private:
 		NLMISC::CVector					MinBox;
 		/// The max vector of the bounding box
 		NLMISC::CVector					MaxBox;
+
+		void serial(NLMISC::IStream &s);
 	};
 	/// Container for the fx primitive.
 	std::vector<TFxZone>		_FxZones;

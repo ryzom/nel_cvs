@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.24 2003/12/29 13:33:28 lecroart Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.25 2003/12/31 16:11:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -453,6 +453,33 @@ bool CSoundDriverDSound::init(HWND wnd, bool useEax, IStringMapperProvider *stri
         throw ESoundDriver("Failed to create set the format of the primary buffer");
     }
 
+	// Fill the buffer with silence
+/*	LPVOID ptr;
+	DWORD bytes;
+
+	HRESULT hr = _PrimaryBuffer->Lock(0, 0, &ptr, &bytes, NULL, NULL, DSBLOCK_ENTIREBUFFER);
+	if (FAILED(hr))
+	{
+		switch (hr)
+		{
+		case DSERR_BUFFERLOST:
+			throw ESoundDriver("Failed to lock the DirectSound primary buffer : DSERR_BUFFERLOST");
+		case DSERR_INVALIDCALL:
+			throw ESoundDriver("Failed to lock the DirectSound primary buffer : DSERR_INVALIDCALL");
+		case DSERR_INVALIDPARAM:
+			throw ESoundDriver("Failed to lock the DirectSound primary buffer : DSERR_INVALIDPARAM");
+		case DSERR_PRIOLEVELNEEDED:
+			throw ESoundDriver("Failed to lock the DirectSound primary buffer : DSERR_PRIOLEVELNEEDED");
+		default:
+			throw ESoundDriver("Failed to lock the DirectSound primary buffer : unkown error");
+		
+		}
+	}
+
+	memset(ptr, 0, bytes);
+	
+	_PrimaryBuffer->Unlock(ptr, bytes, 0, 0);
+*/
 
     uint32 numBuffers = countHw3DBuffers();
 	if (numBuffers == 0)

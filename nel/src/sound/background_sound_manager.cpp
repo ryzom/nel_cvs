@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.22 2003/12/08 13:18:02 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.23 2003/12/31 16:11:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -618,6 +618,7 @@ void CBackgroundSoundManager::loadSoundsFromRegion(const CPrimRegion &region)
 void CBackgroundSoundManager::load (const string &continent, NLLIGO::CLigoConfig &config)
 {
 	NL_ALLOC_CONTEXT(NLSOUND_CBackgroundSoundManager);
+	uint32	PACKED_VERSION = 1;
 	// First, try to load from a .primitive file (contain everythink)
 	{
 		CIFile file;
@@ -626,20 +627,74 @@ void CBackgroundSoundManager::load (const string &continent, NLLIGO::CLigoConfig
 		primitives.RootNode = new CPrimNode;
 		string fn = continent+"_audio.primitive";
 
-		nlinfo ("loading '%s'", fn.c_str());
-
 		string path = CPath::lookup(fn, false);
 
 		if(!path.empty() && file.open (path))
 		{
-			CIXml xml;
-			xml.init (file);
+			// first, try to load the binary version (if up to date)
+			{
+				uint32 version;
+				string filename = continent+".background_primitive";
+				string binPath = CPath::lookup(filename, false, false, false);
+				if (!binPath.empty() 
+					&& (CFile::getFileModificationDate(binPath) > CFile::getFileModificationDate(path)))
+				{
+					CIFile binFile(binPath);
+					binFile.serial(version);
 
-			primitives.read(xml.getRootNode(), fn.c_str(), config);
+					if (version == PACKED_VERSION)
+					{
+						nlinfo ("loading '%s'", filename.c_str());
+						_Banks.clear();
+						binFile.serialCont(_Banks);
+						for (uint i=0; i<BACKGROUND_LAYER; ++i)
+						{
+							_Layers[i].clear();
+							binFile.serialCont(_Layers[i]);
+						}
+						_FxZones.clear();
+						binFile.serialCont(_FxZones);
+
+						// jobs done !
+						return;
+					}
+				}
+			}
+			
+			nlinfo ("loading '%s'", fn.c_str());
+
+			CIXml xml;
+			{
+				H_AUTO(BackgroundSoundMangerLoad_xml_init);
+				xml.init (file);
+			}
+
+			{
+				H_AUTO(BackgroundSoundMangerLoad_primitive_read);
+				primitives.read(xml.getRootNode(), fn.c_str(), config);
+			}
 //			region.serial(xml);
 			file.close ();
 
-			loadAudioFromPrimitives(*primitives.RootNode);
+			{
+				H_AUTO(BackgroundSoundMangerLoad_loadAudioFromPrimitive);
+				loadAudioFromPrimitives(*primitives.RootNode);
+			}
+
+			// store the binary version of the audio primitive for later use
+			CAudioMixerUser *mixer = CAudioMixerUser::instance();
+			if (mixer->getPackedSheetUpdate())
+			{
+				// need to update packed sheet, so write the binary primitive version
+				string filename = mixer->getPackedSheetPath()+"/"+continent+".background_primitive";
+				COFile file(filename);
+
+				file.serial(PACKED_VERSION);
+				file.serialCont(_Banks);
+				for (uint i=0; i<BACKGROUND_LAYER; ++i)
+					file.serialCont(_Layers[i]);
+				file.serialCont(_FxZones);
+			}
 
 			////////////////////////////////////////////////
 			// Jobs done !
@@ -1395,5 +1450,59 @@ void CBackgroundSoundManager::setDayNightRatio(float ratio)
 
 }
 */
+
+void CBackgroundSoundManager::TBanksData::serial(NLMISC::IStream &s)
+{
+	s.serialCont(Banks);
+	s.serial(MinBox);
+	s.serial(MaxBox);
+	s.serialCont(Points);
+}
+
+void CBackgroundSoundManager::TSoundData::serial(NLMISC::IStream &s)
+{
+	std::string str;
+
+	if (s.isReading())
+	{
+		CAudioMixerUser *mixer = CAudioMixerUser::instance();
+		s.serial(str);
+		SoundName = NLMISC::CStringMapper::map(str);
+		Sound = mixer->getSoundId(SoundName);
+		Source = NULL;
+		Selected = false;
+	}
+	else
+	{
+		s.serial(const_cast<std::string&>(NLMISC::CStringMapper::unmap(SoundName)));
+	}
+	s.serial(MinBox);
+	s.serial(MaxBox);
+	s.serial(Surface);
+	s.serial(MaxDist);
+	s.serial(IsPath);
+	s.serialCont(Points);
+}
+
+void CBackgroundSoundManager::TFxZone::serial(NLMISC::IStream &s)
+{
+	std::string str;
+
+	if (s.isReading())
+	{
+		s.serial(str);
+		FxName= NLMISC::CStringMapper::map(str);
+	}
+	else
+	{
+		s.serial(const_cast<std::string&>(NLMISC::CStringMapper::unmap(FxName)));
+	}
+
+	s.serialCont(Points);
+	s.serial(MinBox);
+	s.serial(MaxBox);
+}
+
+
 } // NLSOUND
 

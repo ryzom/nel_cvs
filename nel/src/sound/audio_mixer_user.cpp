@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.62 2003/12/29 13:33:27 lecroart Exp $
+ * $Id: audio_mixer_user.cpp,v 1.63 2003/12/31 16:11:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,10 +71,6 @@ using namespace std;
 
 namespace NLSOUND {
 
-
-#if defined(NL_DEBUG) || defined(NL_DEBUG_FAST)
-CAudioMixerUser::IMixerEvent	*CurrentEvent = 0;
-#endif
 
 
 #define NL_TRACE_MIXER 0
@@ -367,6 +363,7 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 	_profile(( "AM: ---------------------------------------------------------------" ));
 	_profile(( "AM: DRIVER: %s", NLSOUND_DLL_NAME ));
 
+	_UseEax = useEax;
 	_UseADPCM = useADPCM;
 	_AutoLoadSample = autoLoadSample;
 	
@@ -792,7 +789,9 @@ void	CAudioMixerUser::buildSampleBankList()
 	}
 */
 	// update the searh path content
-	CPath::addSearchPath(_SamplePath);
+	bool compressed = CPath::isMemoryCompressed();
+	if (!compressed)
+		CPath::addSearchPath(_SamplePath);
 }
 
 
@@ -1330,7 +1329,8 @@ void				CAudioMixerUser::update()
 				{
 					// add an event
 //					nldebug ("Add event %p", first->second);
-					TTimedEventContainer::iterator it(_EventList.insert(*first));
+//					TTimedEventContainer::iterator it(_EventList.insert(*first));
+					TTimedEventContainer::iterator it(_EventList.insert(make_pair(first->first, NLMISC::CDbgPtr<IMixerEvent>(first->second))));
 					_Events.insert(make_pair(first->second, it));
 				}
 				else
@@ -1341,8 +1341,8 @@ void				CAudioMixerUser::update()
 					for (; first2 != last2; ++first2)
 					{
 						// remove the event
-						nldebug("Remove event %p", first2->second->second);
-						_EventList.erase(first2->second);
+						nldebug("Remove event %p", first2->second->second.ptr());
+						_EventList.erase(first2->second->first);
 					}
 					_Events.erase(range.first, range.second);
 				}
@@ -1354,13 +1354,14 @@ void				CAudioMixerUser::update()
 		TTime now = NLMISC::CTime::getLocalTime();
 		while (!_EventList.empty() && _EventList.begin()->first <= now)
 		{
-#if defined(NL_DEBUG) || defined(NL_DEBUG_FAST)
-			CurrentEvent = _EventList.begin()->second;
-#endif
-//			nldebug("Sending Event %p", _EventList.begin()->second);
-			_EventList.begin()->second->onEvent();
+			CAudioMixerUser::IMixerEvent	*CurrentEvent = _EventList.begin()->second;
+			if (CurrentEvent != NULL)
+			{
+	//			nldebug("Sending Event %p", _EventList.begin()->second);
+				CurrentEvent->onEvent();
+			}
 			TEventContainer::iterator it(_Events.lower_bound(_EventList.begin()->second));
-			while (it->first == _EventList.begin()->second)
+			while (it->first == _EventList.begin()->second.ptr())
 			{
 				if (it->second == _EventList.begin())
 				{
@@ -1434,6 +1435,7 @@ void				CAudioMixerUser::update()
 							// update the relative gain
 							_Tracks[i]->DrvSource->setGain(source->getRelativeGain()*source->getGain()*css->Gain);
 #if EAX_AVAILABLE == 1
+							if (_UseEax)
 							{
 								H_AUTO(NLSOUND_SetEaxProperties)
 								// update the occlusion parameters
@@ -2074,8 +2076,16 @@ void CAudioMixerUser::removeEvents( CAudioMixerUser::IMixerEvent *pmixerEvent)
 {
 	nlassert(pmixerEvent != 0);
 //	nldebug("Removing event %p", pmixerEvent);
-	// store the pointer fot future removal.
+	// store the pointer for future removal.
 	_EventListUpdate.push_back(make_pair(0, pmixerEvent));
+	// clear the pointer to avoid calling on somethink deleted
+	pair<TEventContainer::iterator, TEventContainer::iterator> range = _Events.equal_range(pmixerEvent);
+	TEventContainer::iterator first(range.first), last(range.second);
+	for (; first != last; ++first)
+	{
+		first->second->second = 0;
+	}
+	_Events.erase(range.first, range.second);
 }
 
 void CAudioMixerUser::setBackgroundFlags(const TBackgroundFlags &backgroundFlags)

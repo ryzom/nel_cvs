@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.26 2003/12/08 13:18:02 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.27 2003/12/31 16:11:54 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -300,7 +300,6 @@ void CSourceDSound::init(LPDIRECTSOUND8 directSound, bool useEax)
 	nldebug("Created DirectX secondary buffer @ %p", _SecondaryBuffer);
 
 	// Fill the buffer with silence
-
 	LPVOID ptr;
 	DWORD bytes;
 

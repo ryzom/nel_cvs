@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.49 2002/06/19 09:02:36 berenguier Exp $
+ * $Id: particle_system.cpp,v 1.50 2002/06/19 10:12:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -754,8 +754,7 @@ uint CParticleSystem::getIndexOf(const CParticleSystemProcess *process) const
 		if (_ProcessVect[k] == process) return k;
 	}
 	nlassert(0); // not a process of this system
-	// Avoid warning.
-	return 0;
+	return 0; // for warning
 }
 
 ///=======================================================================================

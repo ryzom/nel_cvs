@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.5 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: network.cpp,v 1.6 2001/07/19 09:06:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -176,9 +176,9 @@ NLMISC_COMMAND(connect,"connect to the login system","<login> <password>")
 	// check args, if there s not the right number of parameter, return bad
 	if (args.size() != 2) return false;
 
-	string LoginSystemHost = ConfigFile.getVar("LoginSystemHost").asString ();
+	string LoginSystemAddress = ConfigFile.getVar("LoginSystemAddress").asString ();
 
-	string res = CLoginClient::authenticate (LoginSystemHost+":49999", args[0], args[1], 1);
+	string res = CLoginClient::authenticate (LoginSystemAddress+":49999", args[0], args[1], 1);
 	if (!res.empty ()) log.displayNL ("Authentification failed: %s", res.c_str());
 
 	log.displayNL ("Please select a shard in the list using \"/select <num>\" where <num> is the shard number");

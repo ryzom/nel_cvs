@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.35 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: client.cpp,v 1.36 2001/07/19 09:06:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -470,8 +470,8 @@ void updateLoginInterface ()
 				nlinfo ("password entered");
 				string password = str;
 
-				string LoginSystemHost = ConfigFile.getVar("LoginSystemHost").asString ();
-				string res = CLoginClient::authenticate (LoginSystemHost+":49999", login, password, 1);
+				string LoginSystemAddress = ConfigFile.getVar("LoginSystemAddress").asString ();
+				string res = CLoginClient::authenticate (LoginSystemAddress+":49999", login, password, 1);
 
 				if (!res.empty ())
 				{

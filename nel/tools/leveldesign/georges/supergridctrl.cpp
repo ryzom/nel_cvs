@@ -2543,7 +2543,7 @@ CItemInfo* CSuperGridCtrl::CopyData(CItemInfo* lpSrc)
 int CSuperGridCtrl::GetIcon(const CTreeItem* pItem)
 {
 	return pItem->m_lpNodeInfo->GetImage();
-	return 0;//just take the first item in CImageList ..what ever that is
+	//return 0;//just take the first item in CImageList ..what ever that is
 }
 
 

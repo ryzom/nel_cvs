@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.7 2001/07/06 12:51:23 corvazier Exp $
+ * $Id: nel_export.h,v 1.8 2001/08/08 09:04:46 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,6 +79,8 @@ public:
 	//static  bool	calculateLM(NL3D::CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode, Interface& ip, TimeValue tvTime, bool absolutePath);
 	static	bool	exportInstanceGroup	(std::string filename, std::vector<INode*>& vectNode, Interface& ip );
 	static	bool	exportSkeleton	(const char *sPath, INode* pNode, Interface& ip, TimeValue time);
+
+	static	bool	exportCollision	(const char *sPath, std::vector<INode *> &nodes, Interface& ip, TimeValue time, CExportNelOptions &opt);
 
 	static	void	viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt);
 

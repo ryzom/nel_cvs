@@ -143,6 +143,10 @@ SOURCE=.\export_anim.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\export_collision.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\export_light.cpp
 # End Source File
 # Begin Source File

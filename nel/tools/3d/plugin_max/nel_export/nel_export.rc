@@ -26,21 +26,22 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_PANEL DIALOG DISCARDABLE  0, 0, 108, 194
+IDD_PANEL DIALOG DISCARDABLE  0, 0, 108, 217
 STYLE WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
     PUSHBUTTON      "Export model",ID_SAVEMODEL,10,10,85,15
     PUSHBUTTON      "Export model animations",ID_SAVE_MODEL_ANIM,10,90,85,15
-    PUSHBUTTON      "View the scene",ID_VIEW,10,131,85,15
+    PUSHBUTTON      "View the scene",ID_VIEW,10,152,85,15
     PUSHBUTTON      "Export scene animations",ID_SAVE_SCENE_ANIM,10,110,85,
                     15
     PUSHBUTTON      "Export skeleton weights",ID_SAVESWT,10,50,85,15
     PUSHBUTTON      "Export Instance Group",ID_EXPORTINSTANCEGROUP,10,70,85,
                     15
     PUSHBUTTON      "Export skeleton",ID_SAVESKELETON,10,30,85,15
-    PUSHBUTTON      "Options",ID_OPTIONS,10,152,85,15
-    PUSHBUTTON      "Node properties",ID_NODE_PROPERTIES,10,172,85,15
+    PUSHBUTTON      "Options",ID_OPTIONS,10,173,85,15
+    PUSHBUTTON      "Node properties",ID_NODE_PROPERTIES,10,195,85,15
+    PUSHBUTTON      "Export Collision",ID_SAVECOLLISION,10,131,85,15
 END
 
 IDD_SWT DIALOG DISCARDABLE  0, 0, 186, 63
@@ -119,7 +120,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 101
         TOPMARGIN, 7
-        BOTTOMMARGIN, 187
+        BOTTOMMARGIN, 210
     END
 
     IDD_SWT, DIALOG
@@ -198,16 +199,18 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
+            VALUE "Comments", "TECH: \0"
             VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "Geometry Export/View\0"
             VALUE "FileVersion", "3.0.0.0\0"
             VALUE "InternalName", "CNelExport\0"
             VALUE "LegalCopyright", "\0"
+            VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "CNelExport.dlu\0"
+            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "3D Studio MAX\0"
             VALUE "ProductVersion", "3.0.0.0\0"
-            VALUE "FileDescription", "Geometry Export/View\0"
-            VALUE "Comments", "TECH: \0"
-            VALUE "LegalTrademarks", "\0"
+            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.17 2001/08/01 14:24:55 besson Exp $
+ * $Id: export_nel.h,v 1.18 2001/08/08 09:04:46 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include <3d/track_keyframer.h>
 #include <3d/bone.h>
 #include <nel/3d/animation_time.h>
+#include <pacs/collision_mesh_build.h>
 
 #define UVGEN_MISSING (-1)
 #define UVGEN_OBJXYZ (MAX_MESHMAPS+1)
@@ -281,6 +282,12 @@ public:
 
 	// Enable / disable the skin modifier
 	static void						enableSkinModifier (INode& node, bool enable);
+
+	// *********************
+	// *** Ëxport collision
+	// *********************
+
+	static NLPACS::CCollisionMeshBuild*	createCollisionMeshBuild(std::vector<INode *> &nodes, TimeValue tvTime);
 
 	// *********************
 	// *** Ëxport misc

@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.8 2001/07/06 12:51:23 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.9 2001/08/08 09:04:46 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@ ClassDesc2* GetCNelExportDesc() {return &CNelExportDesc;}
 
 static const char *zoneFilter="NeL zone file (*.zone)\0*.zone\0All files (*.*)\0*.*\0";
 static const char *meshFilter="NeL shape file (*.shape)\0*.shape\0All files (*.*)\0*.*\0";
+static const char *collisionFilter="NeL collision file (*.cmb)\0*.cmb\0All files (*.*)\0*.*\0";
 static const char *animModelFilter="NeL model animation file (*.anim)\0*.anim\0All files (*.*)\0*.*\0";
 static const char *SWTFilter="NeL Skeleton Weight Template file (*.swt)\0*.swt\0All files (*.*)\0*.*\0";
 static const char *InstanceGroupFilter="NeL Instance Group file (*.ig)\0*.ig\0All files (*.*)\0*.*\0";
@@ -321,6 +322,57 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 							}
 						}
 					}
+				}
+				break;
+			// ---
+			case ID_SAVECOLLISION:
+				{
+					// Get time
+					TimeValue time=theCNelExport.ip->GetTime();
+					
+					// Get node count
+					int nNumSelNode=theCNelExport.ip->GetSelNodeCount();
+
+					std::vector<INode *>	nodes;
+
+					// Save all selected objects
+					for (int nNode=0; nNode<nNumSelNode; nNode++)
+					{
+						// Get the node
+						INode* pNode=theCNelExport.ip->GetSelNode (nNode);
+
+						// It is a zone ?
+						if (RPO::isZone (*pNode, time))
+						{
+						}
+						// Try to export a mesh
+						else if (CExportNel::isMesh (*pNode, time))
+						{
+							nodes.push_back(pNode);
+						}
+					}
+
+					// Name of the node
+					char sNodeMsg[256];
+					sprintf (sNodeMsg, "Save collision mesh build...");
+
+					// Save path
+					char sSavePath[256];
+					strcpy (sSavePath, "");
+
+					// Choose a file to export
+					if (theCNelExport.SelectFileForSave(hWnd, sNodeMsg, collisionFilter, sSavePath))
+					{
+						// Export the mesh
+						if (!theCNelExport.exportCollision (sSavePath, nodes, *theCNelExport.ip, time, theExportSceneStruct))
+						{
+							// Error message
+							char sErrorMsg[512];
+							sprintf (sErrorMsg, "Error exporting the collision in the file\n%s", sSavePath);
+							MessageBox (hWnd, sErrorMsg, "NeL export", MB_OK|MB_ICONEXCLAMATION);
+						}
+					}
+
 				}
 				break;
 			// ---

@@ -324,10 +324,6 @@ SOURCE=.\processes\zone\export_build_data.bat
 # End Source File
 # Begin Source File
 
-SOURCE=.\processes\zone\sh\install.sh
-# End Source File
-# Begin Source File
-
 SOURCE=.\processes\zone\log.log
 # End Source File
 # Begin Source File
@@ -1085,6 +1081,50 @@ SOURCE=.\processes\pacs_prim\sh\install.sh
 # Begin Source File
 
 SOURCE=.\processes\pacs_prim\maxscript\pacs_prim_export.ms
+# End Source File
+# End Group
+# Begin Group "Zone_light"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\processes\zone_light\0_setup.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\1_clean.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\2_export.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\3_build.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\4_install.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\sh\build.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\export_build_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone_light\sh\install.sh
 # End Source File
 # End Group
 # End Target

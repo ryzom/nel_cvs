@@ -1,3 +1,3 @@
 @echo off
 
-bash sh\install.sh
+echo ***** > log.log

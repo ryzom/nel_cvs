@@ -19,9 +19,6 @@ build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_director
 # Get the zone directories
 zone_source_directories=`cat ../../cfg/directories.cfg | grep "zone_source_directory" | sed -e 's/zone_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
-# Get the water maps directories
-water_map_directories=`cat ../../cfg/directories.cfg | grep "zone_source_directory" | sed -e 's/zone_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-
 # Get the ligo value
 ligo_flag=`cat ../../cfg/config.cfg | grep "process_to_complete" | grep "ligo"`
 
@@ -96,15 +93,3 @@ then
 	done
 	cd ..
 fi
-
-# ****************************
-
-
-
-#copy each water map before lightmapping
-for i in $zone_source_directories ; do
-	cp $i/*.*  water_shapes_lighted
-done
-
-
-

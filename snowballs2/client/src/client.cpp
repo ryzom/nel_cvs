@@ -1,10 +1,10 @@
 /** \file client.cpp
- * Client prototype
+ * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.2 2001/07/11 15:32:26 legros Exp $
+ * $Id: client.cpp,v 1.3 2001/07/11 15:38:57 lecroart Exp $
  */
 
-/* Copyright, 2000 Nevrax Ltd.
+/* Copyright, 2001 Nevrax Ltd.
  *
  * This file is part of NEVRAX SNOWBALLS.
  * NEVRAX SNOWBALLS is free software; you can redistribute it and/or modify

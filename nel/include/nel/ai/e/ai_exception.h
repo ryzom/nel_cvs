@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.6 2001/01/31 14:32:28 chafik Exp $
+ * $Id: ai_exception.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -189,7 +189,7 @@ namespace NLAIE
 		char *_Text;
 	public:
 		
-		CExceptionNotImplemented(char *text)
+		CExceptionNotImplemented(const char *text)
 		{
 			_Text = new char [strlen(text) + 1];
 			strcpy(_Text,text);

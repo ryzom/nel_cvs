@@ -1,6 +1,6 @@
 /** \file msg_goal.cpp
  *
- * $Id: msg_goal.cpp,v 1.9 2001/05/02 13:58:26 portier Exp $
+ * $Id: msg_goal.cpp,v 1.10 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,19 +79,10 @@ namespace NLAIAGENT
 			return IdGoalMsg;
 	}	
 
-	void CGoalMsg::getDebugString(char *t) const
+	void CGoalMsg::getDebugString(std::string &t) const
 	{
-/*		double i = ((const INombreDefine *)getFront())->getNumber();
-		if(i != 0.0)
-		{
-			char txt[1024*4];
-			get()->getDebugString(txt);
-			sprintf(t,"CGoalMsg<true,%s>",txt);
-		}
-		else
-		{*/
-			sprintf(t,"CGoalMsg<false,NULL>");
-//		}
+		
+		t += "CGoalMsg<false,NULL>";
 	}
 
 
@@ -130,7 +121,7 @@ namespace NLAIAGENT
 				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->getFront()->clone();
 				param->popFront();
 #ifdef NL_DEBUG
-				char buffer[1024 * 2];
+				std::string buffer;
 				goal->getDebugString( buffer );
 #endif
 				set(0, goal);
@@ -196,19 +187,10 @@ namespace NLAIAGENT
 			return IdCancelGoalMsg;
 	}	
 
-	void CCancelGoalMsg::getDebugString(char *t) const
+	void CCancelGoalMsg::getDebugString(std::string &t) const
 	{
-/*		double i = ((const INombreDefine *)getFront())->getNumber();
-		if(i != 0.0)
-		{
-			char txt[1024*4];
-			get()->getDebugString(txt);
-			sprintf(t,"CCancelGoalMsg<true,%s>",txt);
-		}
-		else
-		{*/
-			sprintf(t,"CCancelGoalMsg<false,NULL>");
-//		}
+
+			t += "CCancelGoalMsg<false,NULL>";
 	}
 
 
@@ -247,7 +229,7 @@ namespace NLAIAGENT
 				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->getFront()->clone();
 				param->popFront();
 #ifdef NL_DEBUG
-				char buffer[1024 * 2];
+				std::string buffer;
 				goal->getDebugString( buffer );
 #endif
 				set(0, goal);

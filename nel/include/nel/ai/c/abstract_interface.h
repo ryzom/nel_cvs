@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.15 2001/03/14 13:19:25 chafik Exp $
+ * $Id: abstract_interface.h,v 1.16 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 
 #include <map>
 #include <iostream>
+#include <string>
 #include "nel/misc/file.h"
 #include "nel/ai/e/ai_exception.h"
 
@@ -45,6 +46,9 @@ namespace NLAIC //Gen pour general.
 {
 	///this method give an char pointer hows it contents a string define by a const char* same as printf. It use for initialise string objects.
 	char *stringBuild(const char *str, ...);	
+
+	///this method give an char pointer hows it contents a string define by a const char* same as printf. It use for initialise string objects.
+	std::string stringGetBuild(const char *str, ...);	
 
 	/**
 	IPointerGestion define a reference for an objects. It use for manager objects. 
@@ -271,7 +275,7 @@ namespace NLAIC //Gen pour general.
 		/**
 		This is a Debug function, text is an character pointer to receive the debug text output, the debug text containe all think sensible to interset user. 
 		*/		
-		virtual void getDebugString(char *) const = 0;
+		virtual void getDebugString(std::string &) const = 0;
 
 		virtual ~IBasicType()
 		{
@@ -393,9 +397,10 @@ namespace NLAIC //Gen pour general.
 		}		
 		
 		///Get debufg string.
-		void getDebugString(char *text) const
-		{
-			sprintf(text,"CSelfClassFactory sur l'interface %s",(const char *)_Inst->getType());
+		void getDebugString(std::string &text) const
+		{			
+			//sprintf(text,"CSelfClassFactory sur l'interface %s",(const char *)_Inst->getType());
+			text = stringGetBuild("CSelfClassFactory sur l'interface %s",(const char *)_Inst->getType());
 		}		
 
 		///Get the type of the class, the type is the builder type.

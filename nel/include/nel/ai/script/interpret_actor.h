@@ -18,7 +18,7 @@ namespace NLAISCRIPT
 
 		const NLAIC::IBasicType *clone() const;
 		const NLAIC::IBasicType *newInstance() const;
-		void getDebugString(char *t) const;
+		virtual void getDebugString(std::string &) const;
 
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;
 

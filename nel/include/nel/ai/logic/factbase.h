@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Factbase, a container for 0 or first order logic asserts and facts of an agent
  *
- * $Id: factbase.h,v 1.4 2001/01/24 09:08:36 portier Exp $
+ * $Id: factbase.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,7 @@ namespace NLAILOGIC
 			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *) const;					
+			virtual void getDebugString(std::string &) const;
 
 			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();

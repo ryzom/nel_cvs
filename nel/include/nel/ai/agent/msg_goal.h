@@ -1,6 +1,6 @@
 /** \file msg_goal.h
  *
- * $Id: msg_goal.h,v 1.6 2001/04/17 09:26:09 portier Exp $
+ * $Id: msg_goal.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ namespace NLAIAGENT
 			return new CGoalMsg();
 		}
 		const NLAIC::CIdentType &getType() const;
-		void getDebugString(char *t) const;
+		void getDebugString(std::string &t) const;
 
 
 		tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
@@ -81,7 +81,7 @@ namespace NLAIAGENT
 			return new CCancelGoalMsg();
 		}
 		const NLAIC::CIdentType &getType() const;
-		void getDebugString(char *t) const;
+		void getDebugString(std::string &t) const;
 
 
 		tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;

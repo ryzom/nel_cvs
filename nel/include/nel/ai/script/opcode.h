@@ -1,7 +1,7 @@
 /** \file opcode.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode.h,v 1.8 2001/04/17 09:26:09 portier Exp $
+ * $Id: opcode.h,v 1.9 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,12 +66,14 @@ namespace NLAISCRIPT
 			context.Stack[(int)context.Stack] = obj;
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
+		
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char X[1024*8];
+			std::string X;
 			_B->getDebugString(X);
-			sprintf(str,"ldb %s",X);		
+			str = "ldb ";
+			str += X;
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -151,11 +153,12 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}	
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char X[1024*8];
+			std::string X;
 			((NLAIAGENT::IObjectIA *)context.Stack)->getDebugString(X);
-			sprintf(str,"-%s",X);		
+			str +="-";
+			str += X;		
 		}
 		const NLAIC::IBasicType *clone() const 
 		{			
@@ -215,12 +218,15 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const 
+		void getDebugResult(std::string &str,CCodeContext &context) const 
 		{
-			char X[1024*8],Y[1024*8];
+			std::string X,Y;
 			context.Stack[(int)context.Stack - 1]->getDebugString(X);
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"%s + %s",X,Y);		
+
+			str = X;
+			str += " + ";
+			str += Y;		
 		}	
 
 		const NLAIC::IBasicType *clone() const 
@@ -281,12 +287,15 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 		
-		void getDebugResult(char *str,CCodeContext &context) const 
+		void getDebugResult(std::string &str,CCodeContext &context) const 
 		{
-			char X[1024*8],Y[1024*8];
+			std::string X,Y;
 			context.Stack[(int)context.Stack - 1]->getDebugString(X);
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"%s - %s",X,Y);	
+			
+			str = X;
+			str += " - ";
+			str += Y;
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -348,12 +357,15 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char X[1024*8],Y[1024*8];
+			std::string X,Y;
 			context.Stack[(int)context.Stack - 1]->getDebugString(X);
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"%s / %s",X,Y);	
+			
+			str = X;
+			str += " / ";
+			str += Y;
 		}
 		const NLAIC::IBasicType *clone() const
 		{
@@ -415,12 +427,15 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char X[1024*8],Y[1024*8];
+			std::string X,Y;
 			context.Stack[(int)context.Stack - 1]->getDebugString(X);
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"%s * %s",X,Y);	
+			
+			str = X;
+			str += " * ";
+			str += Y;
 		}
 		const NLAIC::IBasicType *clone() const
 		{
@@ -483,12 +498,15 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char X[1024*8],Y[1024*8];
+			std::string X,Y;
 			context.Stack[(int)context.Stack - 1]->getDebugString(X);
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"%s > %s",X,Y);	
+			
+			str = X;
+			str += " > ";
+			str += Y;
 		}
 		const NLAIC::IBasicType *clone() const
 		{
@@ -551,12 +569,15 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char X[1024*8],Y[1024*8];
+			std::string X,Y;
 			context.Stack[(int)context.Stack - 1]->getDebugString(X);
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"%s < %s",X,Y);	
+			
+			str = X;
+			str += " < ";
+			str += Y;
 		}
 		const NLAIC::IBasicType *clone() const
 		{
@@ -618,12 +639,15 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char X[1024*8],Y[1024*8];
+			std::string X,Y;
 			context.Stack[(int)context.Stack - 1]->getDebugString(X);
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"%s = %s",X,Y);	
+			
+			str = X;
+			str += " = ";
+			str += Y;
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -686,12 +710,15 @@ namespace NLAISCRIPT
 			context.Stack--;
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char X[1024*8],Y[1024*8];
+			std::string X,Y;
 			context.Stack[(int)context.Stack - 1]->getDebugString(X);
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"%s >= %s",X,Y);	
+			
+			str = X;
+			str += " >= ";
+			str += Y;
 		}
 		const NLAIC::IBasicType *clone() const
 		{
@@ -753,12 +780,15 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char X[1024*8],Y[1024*8];
+			std::string X,Y;
 			context.Stack[(int)context.Stack - 1]->getDebugString(X);
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"%s <= %s",X,Y);	
+			
+			str = X;
+			str += " <= ";
+			str += Y;
 		}
 		
 		const NLAIC::IBasicType *clone() const
@@ -822,12 +852,15 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char X[1024*8],Y[1024*8];
+			std::string X,Y;
 			context.Stack[(int)context.Stack - 1]->getDebugString(X);
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"%s != %s",X,Y);	
+			
+			str = X;
+			str += " != ";
+			str += Y;
 		}
 		const NLAIC::IBasicType *clone() const
 		{
@@ -890,11 +923,13 @@ namespace NLAISCRIPT
 			//context.Stack--;
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char Y[1024*8];
+			std::string Y;
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"!%s",Y);
+			
+			str = " ! ";
+			str += Y;
 		}
 		const NLAIC::IBasicType *clone() const
 		{
@@ -960,11 +995,11 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const 
+		void getDebugResult(std::string &str,CCodeContext &context) const 
 		{
-			char X[1024*8];		
+			std::string X;		
 			context.Stack[(int)context.Stack]->getDebugString(X);
-			sprintf(str,"if !(%s) is false then goto %d",X,_N);	
+			str = NLAIC::stringGetBuild("if !(%s) is false then goto %d",X.c_str(),_N);	
 		}
 		const NLAIC::IBasicType *clone() const
 		{
@@ -1026,9 +1061,9 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"goto %d",_N);	
+			str = NLAIC::stringGetBuild("goto %d",_N);	
 		}
 		const NLAIC::IBasicType *clone() const
 		{
@@ -1103,11 +1138,11 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char Y[1024*8];					
+			std::string Y;					
 			context.Stack[(int)context.Stack]->getDebugString(Y);
-			sprintf(str,"Affectation<%d> a %s",_I,Y);	
+			str = NLAIC::stringGetBuild("Affectation<%d> a %s",_I,Y.c_str());
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -1163,7 +1198,7 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		void getDebugResult(char *str,CCodeContext &context) const;
+		void getDebugResult(std::string &str,CCodeContext &context) const;
 
 		const NLAIC::IBasicType *clone() const;
 
@@ -1205,7 +1240,7 @@ namespace NLAISCRIPT
 		
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
-		void getDebugResult(char *str,CCodeContext &context) const;		
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
 
 		const NLAIC::IBasicType *clone() const
 		{
@@ -1269,10 +1304,10 @@ namespace NLAISCRIPT
 		
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
 			
-			sprintf(str,"Affectation du membre");	
+			str = "Affectation du membre";
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -1334,10 +1369,9 @@ namespace NLAISCRIPT
 		
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		void getDebugResult(char *str,CCodeContext &context) const
-		{
-			
-			sprintf(str,"Affectation du membre %d",_I);	
+		void getDebugResult(std::string &str,CCodeContext &context) const
+		{			
+			str = NLAIC::stringGetBuild("Affectation du membre %d",_I);	
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -1398,9 +1432,9 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{					
-			sprintf(str,"Reservation d'un espace memoir locale pour une variable Ó l'emplacement %d",(int)context.Heap);				
+			str = NLAIC::stringGetBuild("Reservation d'un espace memoir locale pour une variable à l'emplacement %d",(int)context.Heap);				
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -1446,7 +1480,7 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		void getDebugResult(char *str,CCodeContext &context) const;
+		void getDebugResult(std::string &str,CCodeContext &context) const;
 
 		const NLAIC::IBasicType *clone() const;
 
@@ -1475,9 +1509,9 @@ namespace NLAISCRIPT
 			context.Heap.pushMark();	
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"Marque le bloc de memoire Ó %d",(int)context.Heap);	
+			str = NLAIC::stringGetBuild("Marque le bloc de memoire a %d",(int)context.Heap);	
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -1527,9 +1561,9 @@ namespace NLAISCRIPT
 			context.Heap -= i;
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"libere le bloc de memoire de %d Ó %d",(int)context.Heap.mark(),(int)context.Heap);	
+			str = NLAIC::stringGetBuild("libere le bloc de memoire de %d Ó %d",(int)context.Heap.mark(),(int)context.Heap);	
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -1575,7 +1609,7 @@ namespace NLAISCRIPT
 
 		virtual ~CFreeAllocDebug();
 
-		void getDebugResult(char *str,CCodeContext &context) const;
+		void getDebugResult(std::string &str,CCodeContext &context) const;
 
 		const NLAIC::IBasicType *clone() const;
 
@@ -1602,9 +1636,9 @@ namespace NLAISCRIPT
 		{		
 			return NLAIAGENT::IObjectIA::ProcessEnd;
 		}
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"Stop");	
+			str = "Stop";
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -1653,9 +1687,9 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;
 		}
 		
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"No operation");	
+			str = "No operation";
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -1699,17 +1733,17 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context)
 		{
-			char f[1024*8];
+			std::string f;
 			context.Stack[(int)context.Stack]->getDebugString(f);
 			( (NLAILOGIC::CFactPattern  *) context.Stack[(int)context.Stack] )->propagate();
 			return NLAIAGENT::IObjectIA::ProcessIdle;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char f[1024*8];
+			std::string f;
 			context.Stack[(int)context.Stack]->getDebugString(f);
-			sprintf(str,"tell %s",f);
+			str = NLAIC::stringGetBuild("tell %s",f.c_str());
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -1728,9 +1762,9 @@ namespace NLAISCRIPT
 			return IdTellOpCode;
 		}
 
-		void getDebugString(char *str) const
+		void getDebugString(std::string &str) const
 		{
-			sprintf(str,"tell");
+			str = "tell";
 		}
 
 		void save(NLMISC::IStream &os)
@@ -1771,12 +1805,12 @@ namespace NLAISCRIPT
 			return NLAIAGENT::IObjectIA::ProcessIdle;;
 		}
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{
-			char buf[1024*8];
+			std::string buf;
 			NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
 			param->getDebugString(buf);
-			sprintf(str,"ldb %s -> [%s]", buf, buf);		
+			str = NLAIC::stringGetBuild("ldb %s -> [%s]", buf.c_str(), buf.c_str());
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -1841,9 +1875,9 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{						
-			sprintf(str,"MarkMsg for method %d in heritance %d", _I, _Heritance);					
+			str = NLAIC::stringGetBuild("MarkMsg for method %d in heritance %d", _I, _Heritance);					
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -1908,7 +1942,7 @@ namespace NLAISCRIPT
 		
 		
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
-		void getDebugResult(char *str,CCodeContext &context) const;		
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
 
 		const NLAIC::IBasicType *clone() const
 		{
@@ -1965,7 +1999,7 @@ namespace NLAISCRIPT
 		virtual ~CFindRunMsg();
 		
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
-		void getDebugResult(char *str,CCodeContext &context) const;		
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
 
 		const NLAIC::IBasicType *clone() const;		
 
@@ -2015,7 +2049,7 @@ namespace NLAISCRIPT
 
 		virtual ~CAddParamNameDebug();
 
-		void getDebugResult(char *str,CCodeContext &context) const;
+		void getDebugResult(std::string &str,CCodeContext &context) const;
 
 		const NLAIC::IBasicType *clone() const;
 

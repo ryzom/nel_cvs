@@ -1,7 +1,7 @@
 /** \file fuzzyfact.cpp
  * Fuzzy facts
  *
- * $Id: fuzzyfact.cpp,v 1.5 2001/01/17 10:47:05 chafik Exp $
+ * $Id: fuzzyfact.cpp,v 1.6 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,12 +52,7 @@ namespace NLAIFUZZY
 	CFuzzyVar *CFuzzyFact::var()
 	{
 		return _Var;
-	}
-
-	void CFuzzyFact::getDebugString(char *)
-	{
-
-	}
+	}	
 
 	void CFuzzyFact::load(NLMISC::IStream &)
 	{
@@ -98,11 +93,11 @@ namespace NLAIFUZZY
 		return clone();
 	}
 
-	void CFuzzyFact::getDebugString(char *txt) const
+	void CFuzzyFact::getDebugString(std::string &txt) const
 	{
-		char buf[1024];
+		std::string buf;
 		_Set->getDebugString( buf );
-		sprintf(txt, "CFuzzyFact (%s IS %d)", buf, _Value);
+		txt += NLAIC::stringGetBuild("CFuzzyFact (%s IS %d)", buf.c_str(), _Value);
 	}
 
 	bool CFuzzyFact::isTrue() const

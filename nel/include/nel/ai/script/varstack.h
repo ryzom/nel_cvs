@@ -1,7 +1,7 @@
 
 /** \file varstack.h
  *
- * $Id: varstack.h,v 1.6 2001/01/17 10:32:29 chafik Exp $
+ * $Id: varstack.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,11 +120,11 @@ namespace NLAISCRIPT
 			return IdVarPStack;
 		}		
 
-		void getDebugString(char *text) const
+		void getDebugString(std::string &text) const
 		{		
-			char valVar[200];
+			std::string valVar;
 			_LocalTableRef[_Val]->getDebugString(valVar);
-			sprintf(text,"CVarPStack<%d>: _vale<%d> pointe la variable %s",this,_Val,valVar);
+			text = NLAIC::stringGetBuild("CVarPStack<%d>: _vale<%d> pointe la variable %s",this,_Val,valVar.c_str());
 		}
 
 		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const
@@ -344,14 +344,14 @@ namespace NLAISCRIPT
 			return IdVarPStackParam;
 		}		
 
-		void getDebugString(char *text) const
+		void getDebugString(std::string &text) const
 		{		
-			char valVar[200];
+			std::string valVar;
 			CVarPStack::_LocalTableRef[_Val + _Shift]->getDebugString(valVar);
 #ifdef NL_DEBUG			
-			sprintf(text,"Stack<%d,%s>: pointe la variable %s",_Val,_NameVar->getString(),valVar);
+			text = NLAIC::stringGetBuild("Stack<%d,%s>: pointe la variable %s",_Val,_NameVar->getString(),valVar.c_str());
 #else			
-			sprintf(text,"Stack<%d>: pointe la variable %s",_Val,valVar);
+			text = NLAIC::stringGetBuild("Stack<%d>: pointe la variable %s",_Val,valVar.c_str());
 #endif
 		}
 

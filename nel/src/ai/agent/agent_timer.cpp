@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.8 2001/05/15 12:55:21 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.9 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -307,11 +307,11 @@ namespace NLAIAGENT
 		else CAgentScript::onKill(a);
 	}
 
-	void CAgentWatchTimer::getDebugString(char *t) const
+	void CAgentWatchTimer::getDebugString(std::string &t) const
 	{
-		char s[256*4];
+		std::string s;
 		((const IWordNumRef &)*this).getNumIdent().getDebugString(s);
-		sprintf(t,"timer: %s",s);
+		t = NLAIC::stringGetBuild("timer: %s",s.c_str());
 	}
 
 	void CAgentWatchTimer::detach()
@@ -320,9 +320,9 @@ namespace NLAIAGENT
 		if(_MSG != NULL) _MSG->release();
 		_MSG = NULL;
 		CVectorGroupType g(1);
-		char t[256*4];
+		std::string t;
 		((const IWordNumRef &)*this).getNumIdent().getDebugString(t);		
-		g.set(0,new CStringType(CStringVarName(t)));
+		g.set(0,new CStringType(CStringVarName(t.c_str())));
 		IObjectIA::CProcessResult r;
 		if(CAgentManagerTimer::TimerManager != NULL)
 		{
@@ -336,9 +336,9 @@ namespace NLAIAGENT
 	void CAgentWatchTimer::attach()
 	{		
 		CVectorGroupType g(2);
-		char t[256*4];
+		std::string t;
 		((const IWordNumRef &)*this).getNumIdent().getDebugString(t);		
-		g.set(0,new CStringType(CStringVarName(t)));
+		g.set(0,new CStringType(CStringVarName(t.c_str())));
 		this->incRef();
 		g.set(1,this);
 		NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
@@ -591,9 +591,9 @@ namespace NLAIAGENT
 			if(_Timer->getRef() == 1)
 			{
 				CVectorGroupType g(1);			
-				char t[256*4];
-				((const IWordNumRef &)*_Timer).getNumIdent().getDebugString(t);		
-				g.set(0,new CStringType(CStringVarName(t)));
+				std::string t;
+				((const IWordNumRef &)*_Timer).getNumIdent().getDebugString(t);
+				g.set(0,new CStringType(CStringVarName(t.c_str())));
 				if(CAgentManagerTimer::TimerManager != NULL)
 				{
 					NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
@@ -604,7 +604,7 @@ namespace NLAIAGENT
 		}
 	}
 
-	void CAgentTimerHandle::getDebugString(char *t) const
+	void CAgentTimerHandle::getDebugString(std::string &t) const
 	{
 		_Timer->getDebugString(t);		
 	}

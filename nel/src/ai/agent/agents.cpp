@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.32 2001/04/24 09:06:56 chafik Exp $
+ * $Id: agents.cpp,v 1.33 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,9 +83,9 @@ namespace NLAIAGENT
 		return m;
 	}
 	
-	void IAgent::getDebugString(char *t) const
+	void IAgent::getDebugString(std::string &t) const
 	{
-		sprintf(t,"class IAgent<%4x>",this);
+		t += NLAIC::stringGetBuild("class IAgent<%4x>",this);
 	}
 
 	bool IAgent::isEqual(const IBasicObjectIA &a) const
@@ -439,9 +439,9 @@ namespace NLAIAGENT
 		case _GetNumId:		
 			{				
 				IObjectIA::CProcessResult a;				
-				char t[256*4];
+				std::string t;
 				((const IWordNumRef &)*this).getNumIdent().getDebugString(t);
-				a.Result = new CStringType(CStringVarName(t));
+				a.Result = new CStringType(CStringVarName(t.c_str()));
 				return a;
 			}
 			break;
@@ -467,11 +467,11 @@ namespace NLAIAGENT
 		}
 		else
 		{
-			char debugString[1024*4];
-			char text[2048*8];
+			std::string debugString;
+			std::string text;
 			getDebugString(debugString);
-			sprintf(text,"runAsk(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
-			throw NLAIE::CExceptionNotImplemented(text);
+			text += NLAIC::stringGetBuild("runAsk(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString.c_str());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return NULL;
 		}		
 	}
@@ -489,11 +489,11 @@ namespace NLAIAGENT
 		}
 		else
 		{
-			char debugString[1024*4];
-			char text[2048*8];
+			std::string debugString;
+			std::string text;
 			getDebugString(debugString);
-			sprintf(text,"runAsk(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
-			throw NLAIE::CExceptionNotImplemented(text);
+			text += NLAIC::stringGetBuild("runTell(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString.c_str());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return NULL;
 		}
 	}	

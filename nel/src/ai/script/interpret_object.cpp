@@ -1,6 +1,6 @@
 /** \file object.cpp
  *
- * $Id: interpret_object.cpp,v 1.8 2001/03/14 13:19:34 chafik Exp $
+ * $Id: interpret_object.cpp,v 1.9 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,9 +133,9 @@ namespace NLAISCRIPT
 		_Inst = (IClassInterpret *)c.clone();
 	}
 
-	void CClassInterpretFactory::getDebugString(char *text) const
+	void CClassInterpretFactory::getDebugString(std::string &text) const
 	{
-		sprintf(text,"class factory: CClassInterpretFactory fabrique des instances pour l'interface %s",(const char *)_Inst->getType());
+		text += NLAIC::stringGetBuild("class factory: CClassInterpretFactory fabrique des instances pour l'interface %s",(const char *)_Inst->getType());
 	}
 
 	const NLAIC::IBasicType *CClassInterpretFactory::clone() const

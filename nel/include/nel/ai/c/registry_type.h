@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.11 2001/04/17 09:26:09 portier Exp $
+ * $Id: registry_type.h,v 1.12 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,9 +207,9 @@ namespace NLAIC
 			os.serial( bytes );
 		}
 
-		virtual void getDebugString(char *t) const 
+		virtual void getDebugString(std::string &t) const 
 		{
-			sprintf(t,"CBinaryType <%d>",_Bites);
+			t = stringGetBuild("CBinaryType <%d>",_Bites);
 		}
 
 		virtual void load(NLMISC::IStream &is)

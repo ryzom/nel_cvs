@@ -131,16 +131,16 @@ namespace NLAISCRIPT
 		return instance;
 	}
 
-	void COperatorClass::getDebugString(char *t) const
+	void COperatorClass::getDebugString(std::string &t) const
 	{
-		strcpy( t, "<COperatorClass>");
+		t += "<COperatorClass>";
 		int i;
 		for ( i = 0; i < (int) _Vars.size(); i++ )
 		{
-			char buf[1024];
+			std::string buf;
 			_Vars[i]->getDebugString(buf);
-			strcat(t,"   -");
-			strcat(t, buf);
+			t += "   -";
+			t += buf;
 		}
 	}
 
@@ -174,8 +174,10 @@ namespace NLAISCRIPT
 		bool is_valid = !res->empty();
 		while ( res->size() )
 		{
-			char buffer[2054];
+#ifdef NL_DEBUG
+			std::string buffer;
 			res->front()->getDebugString( buffer );
+#endif
 			res->front()->release();
 			res->pop_front();
 		}
@@ -288,8 +290,10 @@ namespace NLAISCRIPT
 		{
 			NLAILOGIC::CFact *tmp = buildFromVars( _Conds[i], _PosVarsCond[i], unified );
 			result->push_back( tmp );
-			char buffer[1024];
+#ifdef NL_DEBUG
+			std::string buffer;
 			tmp->getDebugString(buffer);
+#endif
 		}
 		unified->release();
 		return result;
@@ -298,15 +302,19 @@ namespace NLAISCRIPT
 	std::list<NLAILOGIC::CFact *> *COperatorClass::forward(std::list<NLAILOGIC::CFact *> &facts)
 	{
 		NLAILOGIC::CValueSet *unified = unifyForward( facts );
-		char buf[1024];
+#ifdef NL_DEBUG
+		std::string buf;
 		unified->getDebugString( buf );
+#endif
 		std::list<NLAILOGIC::CFact *> *result = new std::list<NLAILOGIC::CFact *>;
 		for (sint32 i = 0; i < (sint32) _Concs.size(); i++ )
 		{
 			NLAILOGIC::CFact *tmp = buildFromVars( _Concs[i], _PosVarsConc[i], unified );
 			result->push_back( tmp );
-			char buffer[1024];
+#ifdef NL_DEBUG
+			std::string buffer;
 			tmp->getDebugString(buffer);
+#endif
 		}
 		unified->release();
 		return result;

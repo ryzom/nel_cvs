@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base variable class for first order and fuzzy logic
  *
- * $Id: var.h,v 1.4 2001/03/01 15:16:47 portier Exp $
+ * $Id: var.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,7 +74,7 @@ namespace NLAILOGIC {
 			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *text) const;
+			virtual void getDebugString(std::string &) const;
 			virtual bool isEqual(const CVar &a) const;
 			virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
 			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;

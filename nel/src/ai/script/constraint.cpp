@@ -1,6 +1,6 @@
 /** \file constraint.cpp
  *
- * $Id: constraint.cpp,v 1.9 2001/01/29 11:11:42 chafik Exp $
+ * $Id: constraint.cpp,v 1.10 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,13 +51,13 @@ namespace NLAISCRIPT
 	{
 		if(_Satisfied) return;
 #ifdef NL_DEBUG
-		char mtxt[1024*2];
-		char ptxt[1024*2];
-		char txt[1024*8];
+		std::string mtxt;
+		std::string ptxt;
+		std::string txt;
 		
 		_MethodName->getDebugString(mtxt);
 		_Param->getDebugString(ptxt);
-		sprintf(txt,"%s%s",mtxt,ptxt);
+		txt = mtxt + ptxt;
 #endif	
 		const NLAIAGENT::IObjectIA *cl = NULL;
 		bool isMember = true;
@@ -72,15 +72,15 @@ namespace NLAISCRIPT
 			}
 			else
 			{	
-				char txt[1024*8];
-				char param[1024*8];
-				char Method[1024*8];
+				std::string txt;
+				std::string param;
+				std::string Method;
 				
 				_Param->getDebugString(param);
 				_MethodName->getDebugString(Method);
-				sprintf(txt,"can't find the method '%s%s'",Method,param);
-				_Txt = new char [strlen(txt) + 1];
-				strcpy(_Txt,txt);
+				txt = NLAIC::stringGetBuild("can't find the method '%s%s'",Method.c_str(),param.c_str());
+				_Txt = new char [strlen(txt.c_str()) + 1];
+				strcpy(_Txt,txt.c_str());
 				return;
 			}			
 		}
@@ -92,15 +92,15 @@ namespace NLAISCRIPT
 			}
 			catch(NLAIE::IException &e)
 			{
-				char txt[1024*8];
-				char param[1024*8];
-				char Method[1024*8];
+				std::string txt;
+				std::string param;
+				std::string Method;
 				
 				_Param->getDebugString(param);
 				_MethodName->getDebugString(Method);
-				sprintf(txt,"error '%s' when serch '%s%s'",(char *) e.what(),Method,param);
-				_Txt = new char [strlen(txt) + 1];
-				strcpy(_Txt,txt);
+				txt += NLAIC::stringGetBuild("error '%s' when serch '%s%s'",(char *) e.what(),Method.c_str(),param.c_str());
+				_Txt = new char [strlen(txt.c_str()) + 1];
+				strcpy(_Txt,txt.c_str());
 				return;
 
 			}
@@ -116,15 +116,15 @@ namespace NLAISCRIPT
 				}
 				catch(NLAIE::IException &)
 				{
-					char txt[1024*8];
-					char param[1024*8];
-					char Method[1024*8];
+					std::string txt;
+					std::string param;
+					std::string Method;
 					
 					_Param->getDebugString(param);
 					_MethodName->getDebugString(Method);
-					sprintf(txt,"can't find the method '%s%s'",Method,param);
-					_Txt = new char [strlen(txt) + 1];
-					strcpy(_Txt,txt);
+					txt += NLAIC::stringGetBuild("can't find the method '%s%s'",Method.c_str(),param.c_str());
+					_Txt = new char [strlen(txt.c_str()) + 1];
+					strcpy(_Txt,txt.c_str());
 					
 				}
 			}
@@ -132,15 +132,15 @@ namespace NLAISCRIPT
 		if(_M.MethodName == NULL)
 		{			
 
-			char txt[1024*8];
-			char param[1024*8];
-			char Method[1024*8];
+			std::string txt;
+			std::string param;
+			std::string Method;
 			
 			_Param->getDebugString(param);
 			_MethodName->getDebugString(Method);
-			sprintf(txt,"can't finde the methode '%s%s'",Method,param);
-			_Txt = new char [strlen(txt) + 1];
-			strcpy(_Txt,txt);
+			txt += NLAIC::stringGetBuild("can't find the method '%s%s'",Method.c_str(),param.c_str());
+			_Txt = new char [strlen(txt.c_str()) + 1];
+			strcpy(_Txt,txt.c_str());
 		}
 		else
 		{

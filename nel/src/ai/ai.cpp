@@ -111,9 +111,9 @@ namespace NLAILINK
 		virtual void save(NLMISC::IStream &os)
 		{
 		}
-		void getDebugString(char *t) const
+		void getDebugString(std::string &t) const
 		{
-			sprintf(t,"this is a IOConsolInterface");
+			t += "this is a IOConsolInterface";
 		}
 
 		virtual const NLAIC::IBasicType *clone() const

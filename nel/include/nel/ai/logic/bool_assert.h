@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Bool asserts for rules and operators
  *
- * $Id: bool_assert.h,v 1.5 2001/01/11 17:02:18 chafik Exp $
+ * $Id: bool_assert.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ namespace NLAILOGIC {
 			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *text) const;
+			virtual void getDebugString(std::string &) const;
 			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
 

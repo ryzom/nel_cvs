@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.66 2001/05/22 08:45:15 chafik Exp $
+ * $Id: agent_script.cpp,v 1.67 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -474,31 +474,31 @@ namespace NLAIAGENT
 		return instance;
 	}
 
-	void CAgentScript::getDebugString(char *t) const
+	void CAgentScript::getDebugString(std::string &t) const
 	{		
-		sprintf(t,"class type <%s> ",(const char *)getType());
+		t += NLAIC::stringGetBuild("class type <%s> ",(const char *)getType());
 		if ( _AgentClass )
-			sprintf(&t[strlen(t)],"<%s> (scripted)  -StaticComponents:\n",(const char *)_AgentClass->getType());
+			t += NLAIC::stringGetBuild("<%s> (scripted)  -StaticComponents:\n",(const char *)_AgentClass->getType());
 		else
-			sprintf(&t[strlen(t)],"<undefined_class> (scripted) -StaticComponents:\n");
+			t += "<undefined_class> (scripted) -StaticComponents:\n";
 
-		char buf[1024*8];
+			std::string buf;
 		for (int i = 0; i < _NbComponents; i++ )
 		{
-			strcat(t, "\t\t");
+			t += "\t\t";
 			if ( _AgentClass->getComponentName(i) )
 			{
-				strcat(t, _AgentClass->getComponentName(i) );
+				t += _AgentClass->getComponentName(i);
 			}
 			else
-				strcat(t, "<unnamed>");
+				t += "<unnamed>";
 
-			strcat(t, "\t\t");
+			t += "\t\t";
 			_Components[i]->getDebugString(buf);
-			strcat(t, "[ ");
-			strcat(t, buf);
-			strcat(t, " ]");
-			if(i != (_NbComponents-1)) strcat(t, "\n");
+			t += "[ ";
+			t += buf;
+			t += " ]";
+			if(i != (_NbComponents-1)) t += "\n";
 		}
 	}
 
@@ -648,7 +648,7 @@ namespace NLAIAGENT
 	IObjectIA::CProcessResult CAgentScript::getDynamicName(NLAIAGENT::IBaseGroupType *g)
 	{	
 #ifdef NL_DEBUG
-	char txt[1024*8];
+		std::string txt;
 	g->getDebugString(txt);
 #endif
 
@@ -1389,12 +1389,13 @@ namespace NLAIAGENT
 	tQueue CAgentScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{		
 #ifdef NL_DEBUG	
-		char nameM[1024*4];
-		char nameP[1024*4];
-		char name[1024*8];
+		std::string nameM;
+		std::string nameP;
+		std::string name;
 		methodName->getDebugString(nameM);
 		param.getDebugString(nameP);
-		sprintf(name,"%s%s",nameM,nameP);
+		name = nameM;
+		name += nameP;
 
 		const char *dbg_class_name = (const char *) getType();
 		const char *dbg_base_class_name = NULL;

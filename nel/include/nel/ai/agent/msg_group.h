@@ -1,7 +1,7 @@
 /** \file msg_group.h
  * class for define a group of message (a group of message is same as a performative.
  *
- * $Id: msg_group.h,v 1.3 2001/01/17 10:32:29 chafik Exp $
+ * $Id: msg_group.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,11 +99,11 @@ namespace NLAIAGENT
 		virtual bool operator==(const IBasicMessageGroup &grp) const
 		{
 			return ( this->_Id == grp.getId());
-		}
+		}		
 
-		virtual void getDebugString(char *t) const
+		virtual void getDebugString(std::string &t) const
 		{
-			sprintf(t,"CMessageGroup<%d>",_Id);
+			t += NLAIC::stringGetBuild("CMessageGroup<%d>",_Id);
 		}
 
 		virtual const NLAIC::CIdentType &getType() const;		

@@ -1,7 +1,7 @@
 /** \file actor.h
  *	
  *
- * $Id: actor.h,v 1.5 2001/01/31 14:01:54 chafik Exp $
+ * $Id: actor.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,7 +96,7 @@ namespace NLAIAGENT
 			//@{
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
-			virtual void getDebugString(char *t) const;
+			virtual void getDebugString(std::string &t) const;
 			virtual bool isEqual(const IBasicObjectIA &a) const;
 			virtual void processMessages();
 			virtual const CProcessResult &run();			

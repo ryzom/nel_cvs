@@ -1,7 +1,7 @@
 /** \file fuzzyvar.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: fuzzyvar.cpp,v 1.8 2001/04/17 09:26:03 portier Exp $
+ * $Id: fuzzyvar.cpp,v 1.9 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,18 +219,16 @@ namespace NLAIFUZZY
 		}
 	}
  
-	void CFuzzyVar::getDebugString(char *txt) const
+	void CFuzzyVar::getDebugString(std::string &txt) const
 	{
-		sprintf(txt, "CFuzzyVar<%s> = %f\n", getName().getString(), _Value);
+		txt += NLAIC::stringGetBuild("CFuzzyVar<%s> = %f\n", getName().getString(), _Value);
 		for(sint32 i = 0; i < (sint32) _sets.size(); i++)
 		{
 			if ( _sets[i]->isIn( _Value ) )
 			{
-				char buf[512];
-				char buf2[512];
+				std::string buf;				
 				_sets[i]->getDebugString(buf);
-				sprintf(buf2, "  %s %f\n", buf, _sets[i]->membership( _Value ) );
-				strcat(txt, buf2);
+				txt += NLAIC::stringGetBuild("  %s %f\n", buf.c_str(), _sets[i]->membership( _Value ) );				
 			}
 		}
 	}
@@ -314,18 +312,20 @@ namespace NLAIFUZZY
 
 		IObjectIA::CProcessResult r;
 
-		char buf[1024];
+		std::string buf;
 		NLAIAGENT::IObjetOp *x= NULL;
 		if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 		{
 			NLAIAGENT::IObjetOp *x = (NLAIAGENT::IObjetOp *) ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
 			( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
 
-
+#ifdef NL_DEBUG
 			x->getDebugString(buf);
+#endif
 		}
-
+#ifdef NL_DEBUG
 		getDebugString(buf);
+#endif
 
 		sint32 base = IBaseVar::getMethodIndexSize();
 		sint32 op_add_subset = base+1;

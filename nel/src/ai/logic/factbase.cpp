@@ -164,9 +164,9 @@ namespace NLAILOGIC
 		}
 	}
 
-	void CFactBase::getDebugString(char *txt) const
+	void CFactBase::getDebugString(std::string &txt) const
 	{
-		strcpy(txt,"CFactBase");
+		txt += "CFactBase";
 	}
 	
 	bool CFactBase::isEqual(const IBasicObjectIA &a) const

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic rules with forward and backward chaining
  *
- * $Id: rule.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: rule.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,7 @@ namespace NLAILOGIC
 			virtual const NLAIC::CIdentType &getType() const;				
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
-			virtual void getDebugString(char *text) const;
+			virtual void getDebugString(std::string &) const;
 			CValueSet *unifyLiaisonBack(CValueSet *, std::list<NLAIAGENT::IObjetOp *> &, std::vector<sint32> &, bool &);
 
 			CVarSet *backWard(CFactPattern  *);

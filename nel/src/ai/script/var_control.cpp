@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.18 2001/04/05 15:29:03 chafik Exp $
+ * $Id: var_control.cpp,v 1.19 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -481,8 +481,8 @@ namespace NLAISCRIPT
 	{
 
 #ifdef NL_DEBUG
-	char mName[1024];
-	char pName[1024];
+	std::string mName;
+	std::string pName;
 	_LastStringParam.back()->getDebugString(mName);
 	_Param.back()->getDebugString(pName);
 #endif

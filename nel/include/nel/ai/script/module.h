@@ -1,7 +1,7 @@
 /** \file module.h
  * Class op-code storage.
  *
- * $Id: module.h,v 1.8 2001/01/23 15:46:50 robert Exp $
+ * $Id: module.h,v 1.9 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,7 +221,7 @@ namespace NLAISCRIPT
 			return IdBlock;
 		}
 
-		void getDebugString(char *) const
+		void getDebugString(std::string &) const
 		{
 		}
 

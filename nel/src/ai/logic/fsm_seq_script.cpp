@@ -58,16 +58,16 @@ namespace NLAIAGENT
 		return instance;
 	}
 	
-	void CSeqFsmScript::getDebugString(char *t) const
+	void CSeqFsmScript::getDebugString(std::string &t) const
 	{
 		if ( _AgentClass )
 		{
-			char buf[1024 * 4];
+			std::string buf;
 			_AgentClass->getDebugString(buf);
-			strcpy(t,buf);
+			t += buf;
 		}
 		else
-			strcpy(t,"<CSeqFsmScript>");
+			t += "<CSeqFsmScript>";
 	}
 
 	bool CSeqFsmScript::isEqual(const IBasicObjectIA &a) const
@@ -154,7 +154,7 @@ namespace NLAIAGENT
 		IObjectIA::CProcessResult r;
 
 #ifdef NL_DEBUG
-		char buf[1024];
+		std::string buf;
 		getDebugString(buf);
 #endif
 

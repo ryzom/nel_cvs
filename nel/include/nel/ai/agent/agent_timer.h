@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.4 2001/04/25 10:06:20 chafik Exp $
+ * $Id: agent_timer.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -129,9 +129,9 @@ namespace NLAIAGENT
 			return *IdAgentManagerTimer;
 		}
 
-		void getDebugString(char *t) const
+		void getDebugString(std::string &t) const
 		{
-			sprintf(t,"lib for Timer access manager");
+			t += "lib for Timer access manager";
 		}
 
 		void save(NLMISC::IStream &os)
@@ -178,7 +178,7 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual const NLAIC::CIdentType &getType() const;
-		virtual void getDebugString(char *t) const;
+		virtual void getDebugString(std::string &t) const;
 		virtual void onKill(IConnectIA *A);
 
 		uint getClock() const
@@ -276,7 +276,7 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual const NLAIC::CIdentType &getType() const;
-		virtual void getDebugString(char *t) const;
+		virtual void getDebugString(std::string &t) const;
 		virtual void save(NLMISC::IStream &os);		
 		virtual void load(NLMISC::IStream &is);
 		virtual const NLAIAGENT::IObjectIA::CProcessResult &run(){return NLAIAGENT::IObjectIA::ProcessRun;}

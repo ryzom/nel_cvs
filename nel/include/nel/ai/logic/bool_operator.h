@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	0 order logic operators base class 
  *
- * $Id: bool_operator.h,v 1.5 2001/01/25 10:09:48 portier Exp $
+ * $Id: bool_operator.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,7 @@ namespace NLAILOGIC {
 			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *text) const;
+			virtual void getDebugString(std::string &) const;
 			virtual bool isEqual(const CBoolOperator &) const;
 			virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
 			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;

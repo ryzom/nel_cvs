@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.20 2001/05/10 15:15:57 portier Exp $
+ * $Id: interpret_object_message.cpp,v 1.21 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,7 +80,7 @@ namespace NLAISCRIPT
 		return instance;
 	}
 
-	void CMessageClass::getDebugString(char *t) const
+	void CMessageClass::getDebugString(std::string &t) const
 	{
 	}
 

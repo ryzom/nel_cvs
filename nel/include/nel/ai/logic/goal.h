@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.11 2001/05/11 14:11:44 portier Exp $
+ * $Id: goal.h,v 1.12 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,7 @@ namespace NLAILOGIC
 			const NLAIC::IBasicType *newInstance() const;
 			void save(NLMISC::IStream &os);
 			void load(NLMISC::IStream &is);
-			void getDebugString(char *text) const;
+			virtual void getDebugString(std::string &) const;
 			bool isTrue() const;
 			float truthValue() const;
 			const IObjectIA::CProcessResult &run();

@@ -1,6 +1,6 @@
 /** \file interpret_object_manager.cpp
  *
- * $Id: interpret_object_manager.cpp,v 1.6 2001/03/29 16:32:20 chafik Exp $
+ * $Id: interpret_object_manager.cpp,v 1.7 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,10 +73,10 @@ namespace NLAISCRIPT
 		return instance;
 	}
 
-	void CManagerClass::getDebugString(char *t) const
+	void CManagerClass::getDebugString(std::string &t) const
 	{
-		sprintf(t,"CManagerClass: ");
-		CAgentClass::getDebugString(&t[strlen(t)]);		
+		t += "CManagerClass: ";
+		CAgentClass::getDebugString(t);
 	}
 
 	NLAIAGENT::IObjectIA *CManagerClass::buildNewInstance() const

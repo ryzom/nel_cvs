@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.9 2001/01/23 09:15:44 chafik Exp $
+ * $Id: agent_digital.h,v 1.10 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,11 +83,10 @@ namespace NLAIAGENT
 		}
 
 		virtual const NLAIC::CIdentType &getType() const;		
-		
-
-		virtual void getDebugString(char *text) const
-		{
-			sprintf(text,"<float> %f",getValue());
+			
+		virtual void getDebugString(std::string &text) const
+		{			
+			text += NLAIC::stringGetBuild("<float> %f",getValue());
 		}		
 
 		virtual const CProcessResult &run();
@@ -149,9 +148,9 @@ namespace NLAIAGENT
 
 		virtual const CProcessResult &run();
 		
-		virtual void getDebugString(char *text) const
+		virtual void getDebugString(std::string &text) const
 		{
-			sprintf(text,"_Value<%f> [_inf<%f> _sup<%f>]",getValue(),getInf(),getSup());
+			text += NLAIC::stringGetBuild("_Value<%f> [_inf<%f> _sup<%f>]",getValue(),getInf(),getSup());
 		}
 		//@}
 
@@ -210,9 +209,9 @@ namespace NLAIAGENT
 		virtual const NLAIC::CIdentType &getType() const;		
 		
 
-		virtual void getDebugString(char *text) const
+		virtual void getDebugString(std::string &text) const
 		{
-			sprintf(text,"%.5e",getValue());
+			text += NLAIC::stringGetBuild("%.5e",getValue());
 		}		
 
 		virtual const CProcessResult &run();
@@ -275,9 +274,9 @@ namespace NLAIAGENT
 
 		virtual const CProcessResult &run();
 		
-		virtual void getDebugString(char *text) const
+		virtual void getDebugString(std::string &text) const
 		{
-			sprintf(text,"_Value<%e> [_inf<%e> _sup<%e>]",getValue(),getInf(),getSup());
+			text += NLAIC::stringGetBuild("_Value<%e> [_inf<%e> _sup<%e>]",getValue(),getInf(),getSup());
 		}
 		//@}
 
@@ -332,9 +331,10 @@ namespace NLAIAGENT
 		virtual const NLAIC::CIdentType &getType() const;		
 		
 
-		virtual void getDebugString(char *text) const
+		virtual void getDebugString(std::string &text) const
 		{
-			sprintf(text,"%d",getValue());
+
+			text += NLAIC::stringGetBuild("%d",getValue());
 		}		
 
 		virtual const CProcessResult &run();
@@ -387,9 +387,9 @@ namespace NLAIAGENT
 		virtual const NLAIC::CIdentType &getType() const;		
 		
 
-		virtual void getDebugString(char *text) const
+		virtual void getDebugString(std::string &text) const
 		{
-			sprintf(text,"%d",getValue());
+			text += NLAIC::stringGetBuild("%d",getValue());
 		}		
 
 		virtual const CProcessResult &run();
@@ -441,9 +441,9 @@ namespace NLAIAGENT
 		virtual const NLAIC::CIdentType &getType() const;		
 		
 
-		virtual void getDebugString(char *text) const
+		virtual void getDebugString(std::string &text) const
 		{
-			sprintf(text,"%c",getValue());
+			text += NLAIC::stringGetBuild("%c",getValue());
 		}		
 
 		virtual const CProcessResult &run();

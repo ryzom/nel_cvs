@@ -319,8 +319,10 @@ namespace NLAILOGIC
 		{
 			CFact *tmp = buildFromVars( _Conds[i], _PosVarsCond[i], unified );
 			result->push_back( tmp );
-			char buffer[1024];
+#ifdef NL_DEBUG
+			std::string buffer;
 			tmp->getDebugString(buffer);
+#endif
 		}
 		unified->release();
 		return result;
@@ -329,15 +331,22 @@ namespace NLAILOGIC
 	std::list<CFact *> *CFirstOrderOperator::forward(std::list<CFact *> &facts)
 	{
 		CValueSet *unified = unifyForward( facts );
-		char buf[1024];
+
+#ifdef NL_DEBUG
+		std::string buf;
 		unified->getDebugString( buf );
+#endif
+
 		std::list<CFact *> *result = new std::list<CFact *>;
 		for (sint32 i = 0; i < (sint32) _Concs.size(); i++ )
 		{
 			CFact *tmp = buildFromVars( _Concs[i], _PosVarsConc[i], unified );
 			result->push_back( tmp );
-			char buffer[1024];
+
+#ifdef NL_DEBUG
+			std::string buffer;
 			tmp->getDebugString(buffer);
+#endif
 		}
 		unified->release();
 		return result;
@@ -366,8 +375,10 @@ namespace NLAILOGIC
 						for (sint32 i = 0; i < (sint32) _Concs.size(); i++ )
 						{
 							CFact *r = buildFromVars( _Concs[i], _PosVarsConc[i], links->front() );
-							char buf[1024];
+#ifdef NL_DEBUG
+							std::string buf;
 							r->getDebugString( buf );
+#endif
 							// Tests if the fact is already in the conflicts list
 							bool found = false;
 							std::list<CFact *>::iterator it_c = conflicts->begin();
@@ -378,8 +389,10 @@ namespace NLAILOGIC
 							}
 							if ( !found )
 							{
-								char buf[1024];
+#ifdef NL_DEBUG
+								std::string buf;
 								r->getDebugString( buf );
+#endif
 								conflicts->push_back( r );
 							}
 						}
@@ -425,14 +438,18 @@ namespace NLAILOGIC
 		{
 
 			CValueSet *l = *it_l;
-			char buf[512];
+#ifdef NL_DEBUG
+			std::string buf;
 			l->getDebugString( buf );
+#endif
 
 			CValueSet *result = unifyLiaison( l, fact, pos_vals );
 			if ( result )
 			{
-				char buf[512];
+#ifdef NL_DEBUG
+				std::string buf;
 				result->getDebugString( buf );
+#endif
 
 				if ( result->undefined() == 0 )
 				{
@@ -487,49 +504,49 @@ namespace NLAILOGIC
 	{
 	}
 
-	void CFirstOrderOperator::getDebugString(char *txt) const
+	void CFirstOrderOperator::getDebugString(std::string &txt) const
 	{
-		sprintf(txt,"Operator:\n   -Preconditions:\n");
+		txt += "Operator:\n   -Preconditions:\n";
 		if ( _Comment )
 		{
-			strcat( txt, _Comment );
-			strcat( txt, "\n" );
+			txt += _Comment;
+			txt += "\n";
 		}
 
 		std::vector<IBaseAssert *>::const_iterator it_a = _Conds.begin();
 		std::vector<std::vector<sint32> >::const_iterator it_p = _PosVarsCond.begin();
 		while ( it_a != _Conds.end() )
 		{
-			char buf[512];
+			std::string buf;
 			(*it_a)->getDebugString(buf);
-			strcat(txt, "    ( ");
-			strcat(txt, buf);
+			txt += "    ( ";
+			txt += buf;
 			for (sint32 i = 0; i < (sint32) (*it_p).size(); i++ )
 			{
-				strcat(txt, _Vars[ (*it_p)[i] ]->getName().getString() );
-				strcat(txt, " ");
+				txt += _Vars[ (*it_p)[i] ]->getName().getString();
+				txt += " ";
 			}
-			strcat(txt, ")\n");
+			txt += ")\n";
 
 			it_a++;
 			it_p++;
 		}
 
-		strcat(txt, "  -Postconditions:\n");
+		txt += "  -Postconditions:\n";
 		it_a = _Concs.begin();
 		it_p = _PosVarsConc.begin();
 		while ( it_a != _Concs.end() )
 		{
-			char buf[512];
+			std::string buf;
 			(*it_a)->getDebugString(buf);
-			strcat(txt, "    ( ");
-			strcat(txt, buf);
+			txt += "    ( ";
+			txt += buf;
 			for (sint32 i = 0; i < (sint32) (*it_p).size(); i++ )
 			{
-				strcat(txt, _Vars[ (*it_p)[i] ]->getName().getString() );
-				strcat(txt, " ");
+				txt += _Vars[ (*it_p)[i] ]->getName().getString();
+				txt += " ";
 			}
-			strcat(txt, ")\n");
+			txt += ")\n";
 
 			it_a++;
 			it_p++;
@@ -589,8 +606,10 @@ namespace NLAILOGIC
 		bool is_valid = !res->empty();
 		while ( res->size() )
 		{
-			char buffer[2054];
+#ifdef NL_DEBUG
+			std::string buffer;
 			res->front()->getDebugString( buffer );
+#endif
 			res->front()->release();
 			res->pop_front();
 		}

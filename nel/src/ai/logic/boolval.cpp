@@ -76,13 +76,13 @@ namespace NLAILOGIC
 //		is >> _Value;	
 	}
 
-	void CBoolType::getDebugString(char *text) const
+	void CBoolType::getDebugString(std::string &text) const
 	{
-		strcpy( text ,"CBoolType<");
+		text += "CBoolType<";
 		if ( _Value )
-			strcat( text , "true" );
+			text += "true";
 		else
-			strcat( text , "false" );
+			text += "false";
 	}
 
 	bool CBoolType::isTrue() const

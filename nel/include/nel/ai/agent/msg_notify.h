@@ -1,6 +1,6 @@
 /** \file msg_notify.h
  *
- * $Id: msg_notify.h,v 1.5 2001/03/07 11:26:12 chafik Exp $
+ * $Id: msg_notify.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ namespace NLAIAGENT
 			return new CNotifyParentScript();
 		}
 		const NLAIC::CIdentType &getType() const;
-		void getDebugString(char *t) const;
+		void getDebugString(std::string &t) const;
 		//@}			
 
 	};

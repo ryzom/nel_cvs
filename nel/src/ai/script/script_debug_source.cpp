@@ -1,7 +1,7 @@
 /** \file script_debug_source.cpp
  * <File description>
  *
- * $Id: script_debug_source.cpp,v 1.2 2001/01/25 17:23:55 robert Exp $
+ * $Id: script_debug_source.cpp,v 1.3 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,10 +113,11 @@ const NLAIC::IBasicType *CScriptDebugSourceFile::newInstance() const
 	return x;
 }
 
-void CScriptDebugSourceFile::getDebugString(char *text) const
+void CScriptDebugSourceFile::getDebugString(std::string &text) const
 {
-	strcpy( text ,"CScriptDebugSourceFile<");
-	strcat( text , _SourceName.c_str());
+	text += "CScriptDebugSourceFile<";
+	text += _SourceName;
+	text += ">";
 }
 
 //*********************
@@ -169,12 +170,13 @@ const NLAIC::IBasicType *CScriptDebugSourceMemory::newInstance() const
 	return x;
 }
 
-void CScriptDebugSourceMemory::getDebugString(char *text) const
+void CScriptDebugSourceMemory::getDebugString(std::string &text) const
 {
-	strcpy( text ,"CScriptDebugSourceMemory<");
-	strcat( text , _SourceName.c_str());
-	strcat( text , "\nValue : ");
-	strcat( text , _Code.c_str());
+	text += "CScriptDebugSourceMemory<";
+	text += _SourceName;
+	text += ">";
+	text += "\nValue : ";
+	text += _Code;
 }
 
 } // NLAISCRIPT

@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.13 2001/04/10 12:35:18 chafik Exp $
+ * $Id: opcode.cpp,v 1.14 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,9 +78,9 @@ namespace NLAISCRIPT
 		return NLAIAGENT::processIdle;
 	}
 
-	void CLocAllocDebug::getDebugResult(char *str,CCodeContext &context) const
+	void CLocAllocDebug::getDebugResult(std::string &str,CCodeContext &context) const
 	{					
-		sprintf(str,"Reservation d'un espace memoir locale pour une variable à l'emplacement %d",(sint32)context.Heap);				
+		str += NLAIC::stringGetBuild("Reservation d'un espace memoir locale pour une variable à l'emplacement %d",(sint32)context.Heap);				
 	}
 
 	const NLAIC::IBasicType *CLocAllocDebug::clone() const
@@ -142,23 +142,23 @@ namespace NLAISCRIPT
 		return NLAIAGENT::processIdle;
 	}
 
-	void CAffHeapMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
+	void CAffHeapMemberiOpCode::getDebugResult(std::string &str,CCodeContext &context) const
 	{	
-		char txt[1024*8];
-		char txtClass[1024*8];
+		std::string txt;
+		std::string txtClass;
 		((NLAIAGENT::IObjectIA *)context.Stack)->getDebugString(txt);
 		((NLAIAGENT::IObjectIA *)context.Heap[(int)_N])->getDebugString(txtClass);
 		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Heap[(int)_N]);			
 		std::list<sint32>::const_iterator i = _I.begin();
 		sint32 n = _I.size();
-		sprintf(str,"Affecte le membre sur le heap : %s ",txtClass);
+		str += NLAIC::stringGetBuild("Affecte le membre sur le heap : %s ",txtClass.c_str());
 		while(n --)
 		{
-			sprintf(&str[strlen(str)],"%d",*i++);
-			if(n) strcat(str,"->");
+			str += NLAIC::stringGetBuild("%d",*i++);
+			if(n) str += "->";
 		}		
-		strcat(str," a la valeur: ");
-		strcat(str,txt);
+		str += " a la valeur: ";
+		str += txt;
 	}
 
 	NLAIAGENT::TProcessStatement CAffOpCodeDebug::runOpCode(CCodeContext &context)
@@ -182,11 +182,11 @@ namespace NLAISCRIPT
 		return NLAIAGENT::processIdle;
 	}
 
-	void CAffOpCodeDebug::getDebugResult(char *str,CCodeContext &context) const
+	void CAffOpCodeDebug::getDebugResult(std::string &str,CCodeContext &context) const
 	{
-		char Y[1024*8];					
+		std::string Y;
 		context.Stack[(int)context.Stack]->getDebugString(Y);
-		sprintf(str,"Affectation<%d> a %s",_I,Y);	
+		str += NLAIC::stringGetBuild("Affectation<%d> a %s",_I,Y.c_str());
 	}
 
 	const NLAIC::IBasicType *CAffOpCodeDebug::clone() const
@@ -250,9 +250,9 @@ namespace NLAISCRIPT
 
 		return NLAIAGENT::processIdle;
 	}
-	void CFreeAllocDebug::getDebugResult(char *str,CCodeContext &context) const
+	void CFreeAllocDebug::getDebugResult(std::string &str,CCodeContext &context) const
 	{		
-		sprintf(str,"libere le bloc de memoire de %d à %d",(sint32)context.Heap.mark(),(sint32)context.Heap);	
+		str += NLAIC::stringGetBuild("libere le bloc de memoire de %d à %d",(sint32)context.Heap.mark(),(sint32)context.Heap);	
 	}
 
 	const NLAIC::IBasicType *CFreeAllocDebug::clone() const
@@ -340,13 +340,13 @@ namespace NLAISCRIPT
 		return NLAIAGENT::processIdle;
 	}
 
-	void CFindRunMsg::getDebugResult(char *str,CCodeContext &context) const
+	void CFindRunMsg::getDebugResult(std::string &str,CCodeContext &context) const
 	{
-		char m[1024*4];
-		char p[1024*4];
+		std::string m;
+		std::string p;
 		_MethodName->getDebugString(m);
 		_Param->getDebugString(p);
-		sprintf(str,"find '%s%s' for %s",m,p, (const char *)context.Self->getType());
+		str += NLAIC::stringGetBuild("find '%s%s' for %s",m.c_str() ,p.c_str(), (const char *)context.Self->getType());
 	}
 
 	const NLAIC::IBasicType *CFindRunMsg::clone() const
@@ -416,9 +416,9 @@ namespace NLAISCRIPT
 	{
 	}
 
-	void CMsgSetSender::getDebugResult(char *str,CCodeContext &context) const
+	void CMsgSetSender::getDebugResult(std::string &str,CCodeContext &context) const
 	{		
-		sprintf(str,"MsgSetSender");
+		str += "MsgSetSender";
 	}
 
 	//*************************************
@@ -442,9 +442,9 @@ namespace NLAISCRIPT
 		return NLAIAGENT::processIdle;
 	}
 	
-	void CAddParamNameDebug::getDebugResult(char *str,CCodeContext &context) const
+	void CAddParamNameDebug::getDebugResult(std::string &str,CCodeContext &context) const
 	{		
-		sprintf(str,"Build a name liste that match the actual function parameters values.");
+		str = "Build a name liste that match the actual function parameters values.";
 	}
 
 	const NLAIC::IBasicType *CAddParamNameDebug::clone() const

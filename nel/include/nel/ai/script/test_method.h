@@ -1,7 +1,7 @@
 /** \file test_method.h
  * Library class exemple for the binary test.
  *
- * $Id: test_method.h,v 1.4 2001/04/05 15:29:15 chafik Exp $
+ * $Id: test_method.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,9 +129,9 @@ namespace NLAISCRIPT
 			return IdLibTest;
 		}
 
-		void getDebugString(char *t) const
+		virtual void getDebugString(std::string &t) const
 		{
-			sprintf(t,"lib for serveral testing state");
+			t = "lib for serveral testing state";
 		}
 
 		void save(NLMISC::IStream &os)

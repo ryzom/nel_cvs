@@ -1,6 +1,6 @@
 /** \file character.cpp
  *
- * $Id: character.cpp,v 1.6 2001/04/05 15:29:02 chafik Exp $
+ * $Id: character.cpp,v 1.7 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,7 +101,7 @@ namespace NLAICHARACTER
 		is.serial(_Name);
 	}
 
-	void CCharacterChild::getDebugString(char *text) const
+	void CCharacterChild::getDebugString(std::string &text) const
 	{
 	}
 

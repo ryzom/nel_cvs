@@ -2,7 +2,7 @@
  *	
  *	Sequential states machine
  *
- * $Id: fsm_seq_script.h,v 1.1 2001/03/28 12:48:54 portier Exp $
+ * $Id: fsm_seq_script.h,v 1.2 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,7 @@ namespace NLAIAGENT
 			/// Inherited functions
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
-			virtual void getDebugString(char *t) const;
+			virtual void getDebugString(std::string &) const;
 			virtual bool isEqual(const IBasicObjectIA &a) const;
 //			virtual void processMessages();
 //			virtual const CProcessResult &run();

@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.18 2001/04/04 16:33:47 portier Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.19 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,10 +169,10 @@ namespace NLAISCRIPT
 #ifdef NL_DEBUG
 		if(NL_AI_DEBUG_SERVER)
 		{
-			char chaine[1024*32];
+			std::string chaine;
 			op.getDebugResult(chaine,p);
 #ifdef NL_OS_WINDOWS
-			OutputDebugString(chaine);
+			OutputDebugString(chaine.c_str());
 			OutputDebugString("\n");
 #endif
 		}
@@ -210,7 +210,7 @@ namespace NLAISCRIPT
 		}
 	}
 
-	void CCodeBrancheRunDebug::getDebugResult(char *str,CCodeContext &p) const
+	void CCodeBrancheRunDebug::getDebugResult(std::string &str,CCodeContext &p) const
 	{		
 		_TableCode[_Ip]->getDebugResult(str,p);
 	}
@@ -431,6 +431,7 @@ namespace NLAISCRIPT
 			if (bufX[0] == 0)
 			{
 				// The variable wasn't composit.
+				std::string buf;
 				base->getDebugString(buf);
 				InputOutput->Echo("%s\n",buf);
 			}
@@ -454,6 +455,7 @@ namespace NLAISCRIPT
 				j = base->getStaticMemberIndex(NLAIAGENT::CStringVarName(bufX));
 				if (j >= 0)
 				{
+					std::string buf;
 					base->getStaticMember(j)->getDebugString(buf);
 					InputOutput->Echo("%s\n",buf);
 				}
@@ -469,10 +471,10 @@ namespace NLAISCRIPT
 		if (P.Param.size() >0 )
 		{
 			NLAIAGENT::CIteratorContener Ita = ((NLAIAGENT::CGroupType *) P.ContextDebug.Param.back())->getIterator();
-			NLAIAGENT::CIteratorContener Itb = ((NLAIAGENT::CGroupType *) P.Param.back())->getIterator();;
-			char buf[1024*8];
+			NLAIAGENT::CIteratorContener Itb = ((NLAIAGENT::CGroupType *) P.Param.back())->getIterator();;			
 			while(!Ita.isInEnd())
 			{			
+				std::string buf;
 				NLAIAGENT::CStringType *o = (NLAIAGENT::CStringType *)Ita++;
 				NLAIAGENT::CStringType *p = (NLAIAGENT::CStringType *)Itb++;
 				p->getDebugString(buf);

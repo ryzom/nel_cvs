@@ -1,7 +1,7 @@
 /** \file libcode.h
  * Library class exemple for the script.
  *
- * $Id: libcode.h,v 1.6 2001/04/17 09:26:09 portier Exp $
+ * $Id: libcode.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,9 +89,9 @@ namespace NLAISCRIPT
 			return IdCallPrint;
 		}
 
-		void getDebugString(char *t) const
+		virtual void getDebugString(std::string &t) const
 		{
-			sprintf(t,"Print()");
+			t = "Print()";
 		}
 
 		void save(NLMISC::IStream &os)

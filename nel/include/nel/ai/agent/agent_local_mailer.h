@@ -1,7 +1,7 @@
 /** \file agent_local_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_local_mailer.h,v 1.3 2001/02/08 17:27:45 chafik Exp $
+ * $Id: agent_local_mailer.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,10 +97,10 @@ namespace NLAIAGENT
 			return x;
 		}
 
-		virtual void getDebugString(char *t) const
+		virtual void getDebugString(std::string &t) const
 		{
-			if(_HostAgent != NULL) 	sprintf(t,"CLocalAgentMail for '%s' agents",(const char *)_HostAgent->getType());
-			else sprintf(t,"CLocalAgentMail for 'NILL' agents");
+			if(_HostAgent != NULL) 	t += NLAIC::stringGetBuild("CLocalAgentMail for '%s' agents",(const char *)_HostAgent->getType());
+			else t += "CLocalAgentMail for 'NILL' agents";
 		}
 		//@}
 

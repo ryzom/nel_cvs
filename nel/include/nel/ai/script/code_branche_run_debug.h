@@ -1,7 +1,7 @@
 /** \file code_branche_run_debug.h
  * A debug version of CCodeBrancheRun. It keep a trace between original source code and OpCode.
  *
- * $Id: code_branche_run_debug.h,v 1.5 2001/01/23 15:46:23 robert Exp $
+ * $Id: code_branche_run_debug.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
  */
 
 /** Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,7 @@ namespace NLAISCRIPT
 		void initCode(const CCodeBrancheRunDebug &l);
 
 		/// Return a debug string
-		void getDebugResult(char *str,CCodeContext &context) const;
+		void getDebugResult(std::string &str, CCodeContext &context) const;
 
 		/**	The true run of this class
 		 *	param self A reference to the IObjectIA which call this ICodeBranche

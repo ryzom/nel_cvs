@@ -1,7 +1,7 @@
 /** \file fuzzyset.h
  *	Basic fuzzy sets
  *
- * $Id: fuzzyset.h,v 1.4 2001/04/24 08:28:21 portier Exp $
+ * $Id: fuzzyset.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,7 @@ namespace NLAIFUZZY {
 			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *txt) const;
+			virtual void getDebugString(std::string &) const;
 			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();
 
@@ -114,7 +114,7 @@ namespace NLAIFUZZY {
 			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *) const;
+			virtual void getDebugString(std::string &) const;
 			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();
 			virtual void init(NLAIAGENT::IObjectIA *);
@@ -141,7 +141,7 @@ namespace NLAIFUZZY {
 			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *) const;
+			virtual void getDebugString(std::string &) const;
 			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();
 
@@ -171,7 +171,7 @@ namespace NLAIFUZZY {
 			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *) const;
+			virtual void getDebugString(std::string &) const;
 			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();
 
@@ -200,7 +200,7 @@ namespace NLAIFUZZY {
 			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *) const;
+			virtual void getDebugString(std::string &) const;
 			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();
 

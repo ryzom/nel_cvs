@@ -1,7 +1,7 @@
 /** \file fuzzyvar.h
  *	Dexcribes a fuzzy variable with its fuzzy sets and defuzzyfication method
  *
- * $Id: fuzzyvar.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: fuzzyvar.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,7 @@ namespace NLAIFUZZY
 			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *txt) const;
+			virtual void getDebugString(std::string &) const;
 			virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
 			bool isEqual(const CFuzzyVar &a) const;
 			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;

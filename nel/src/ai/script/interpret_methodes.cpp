@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.15 2001/04/17 09:26:03 portier Exp $
+ * $Id: interpret_methodes.cpp,v 1.16 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -210,7 +210,7 @@ namespace NLAISCRIPT
 		}
 	}
 
-	void CParam::getDebugString(char *t) const
+	void CParam::getDebugString(std::string &t) const
 	{		
 		getString(t);
 	}
@@ -255,24 +255,24 @@ namespace NLAISCRIPT
 		return IdParam;
 	}
 
-	void CParam::getString(char *txt) const
+	void CParam::getString(std::string &txt) const
 	{
-		strcpy(txt,"(");
+		txt += "(";
 		if(size())
 		{		
 			int i;
 			for( i = 0; i < size() - 1; i++)
 			{
 				const NLAIC::CIdentType *id = _Param[i]->getConstraintTypeOf();
-				if(id) strcat(txt,(const char *)*id);
-				else strcat(txt,"UNDEF");
-				strcat(txt,",");
+				if(id) txt += (const char *)*id;
+				else txt += "UNDEF";
+				txt += ",";
 			}
 			const NLAIC::CIdentType *id = _Param[i]->getConstraintTypeOf();
-			if(id) strcat(txt,(const char *)*id);
-			else strcat(txt,"UNDEF");
+			if(id) txt += (const char *)*id;
+			else txt += "UNDEF";
 		}
-		strcat(txt,")");
+		txt += ")";
 	}
 
 
@@ -386,11 +386,11 @@ namespace NLAISCRIPT
 		return _TypeOfMethode;
 	}
 
-	void CMethodeName::getDebugString(char *t) const
+	void CMethodeName::getDebugString(std::string &t) const
 	{
-		char txt[2048*4];
+		std::string txt;
 		_Param.getDebugString(txt);
-		sprintf(t, "%s%s",_MethodeName->getString(),txt);
+		t += std::string(_MethodeName->getString()) + txt;
 	}
 
 	void CMethodeName::save(NLMISC::IStream &os)

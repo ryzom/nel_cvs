@@ -63,21 +63,21 @@ namespace NLAILOGIC
 		return _Assert;
 	}
 
-	void CFact::getDebugString(char *txt) const
+	void CFact::getDebugString(std::string &txt) const
 	{
-		char buf[512];
+		std::string buf;
 		_Assert->getDebugString(buf);
-		sprintf(txt,"<CFact> %s\n", buf);
+		txt += NLAIC::stringGetBuild("<CFact> %s\n", buf.c_str());
 		for (sint32 i = 0; i < _NbValues; i++ )
 		{
-			strcat( txt, " , ");
+			txt += " , ";
 			if ( _Values[i] )
 			{
 				_Values[i]->getDebugString( buf );
 
-				strcat( txt, buf );
+				 txt += buf;
 			}
-			else strcat( txt, "NULL");
+			else txt += "NULL";
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file fuzzyrule.cpp
  * Fuzzy rules
  *
- * $Id: fuzzyrule.cpp,v 1.5 2001/01/17 10:47:05 chafik Exp $
+ * $Id: fuzzyrule.cpp,v 1.6 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,30 +110,25 @@ namespace NLAIFUZZY
 		// TODO: exception
 	}
 
-	void CFuzzyRule::getDebugString(char *txt) const
-	{
-		char buf_cond[512];
-		char buf_conc[512];
-		buf_cond[0] = 0;
-		buf_conc[0] = 0;
+	void CFuzzyRule::getDebugString(std::string &txt) const
+	{		
+		std::string buf_cond;
+		std::string buf_conc;		
 
 		//FuzzyCond::getDebugString(buf_cond);
 		for ( sint32 i = 0; i < (sint32) _Vars.size(); i++ )
 		{
-			strcat(buf_conc, "(");
-			strcat(buf_conc, _Vars[i]->getName().getString() );
-			strcat(buf_conc, " is ");
-			strcat(buf_conc, _Sets[i]->getName() );
-			strcat(buf_conc, ")");
+			buf_conc += "(";
+			buf_conc += _Vars[i]->getName().getString() ;
+			buf_conc += " is ";
+			buf_conc += _Sets[i]->getName() ;
+			buf_conc += ")";
 			
 			if ( i < (sint32) (_Vars.size() - 1) )
-				strcat(buf_conc, " and ");
+				buf_conc += " and ";
 		}
-
-	/*	if ( _Comment )
-			sprintf(txt,"// %s\nif\n %s\n then\n %s", _Comment, buf_cond, buf_conc);
-		else*/
-			sprintf(txt,"if\n %s\n then\n %s", buf_cond, buf_conc);
+	
+		txt += NLAIC::stringGetBuild("if\n %s\n then\n %s", buf_cond.c_str(), buf_conc.c_str());
 	}
 
 	void CFuzzyRule::save(NLMISC::IStream &os)

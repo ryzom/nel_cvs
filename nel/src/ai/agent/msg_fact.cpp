@@ -1,6 +1,6 @@
 /** \file msg_fact.cpp
  *
- * $Id: msg_fact.cpp,v 1.1 2001/03/08 13:52:04 portier Exp $
+ * $Id: msg_fact.cpp,v 1.2 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,18 +79,18 @@ namespace NLAIAGENT
 			return IdFactMsg;
 	}	
 
-	void CFactMsg::getDebugString(char *t) const
+	void CFactMsg::getDebugString(std::string &t) const
 	{
 		double i = ((const INombreDefine *)getFront())->getNumber();
 		if(i != 0.0)
 		{
-			char txt[1024*4];
+			std::string txt;
 			get()->getDebugString(txt);
-			sprintf(t,"<CFactMsg> %s",txt);
+			t += NLAIC::stringGetBuild("<CFactMsg> %s",txt.c_str());
 		}
 		else
 		{
-			sprintf(t,"<CFactMsg> NULL");
+			t += "<CFactMsg> NULL";
 		}
 	}
 
@@ -130,7 +130,7 @@ namespace NLAIAGENT
 				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->get();
 				param->popFront();
 #ifdef NL_DEBUG
-				char buffer[1024 * 2];
+				std::string buffer;
 				goal->getDebugString( buffer );
 #endif
 				set(0, goal);

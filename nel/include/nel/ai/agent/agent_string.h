@@ -1,7 +1,7 @@
 /** \file agent_string.h
  * class for string manipulation.
  *
- * $Id: agent_string.h,v 1.6 2001/04/19 08:11:57 chafik Exp $
+ * $Id: agent_string.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -244,9 +244,9 @@ namespace NLAIAGENT
 			return clone();
 		}
 
-		void getDebugString(char *text) const
+		void getDebugString(std::string &text) const
 		{
-			sprintf(text,"'%s'",_Name);
+			text = NLAIC::stringGetBuild("'%s'",_Name);			
 		}
 	};	
 
@@ -359,7 +359,7 @@ namespace NLAIAGENT
 		void load(NLMISC::IStream &is);
 		const NLAIC::IBasicType *clone() const;
 		const NLAIC::IBasicType *newInstance() const;
-		void getDebugString(char *text) const;
+		void getDebugString(std::string &text) const;
 
 		virtual ~CIndexedVarName();
 

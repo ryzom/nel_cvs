@@ -1,7 +1,7 @@
 /** \file interpret_fsm.h
  *	Interpret class for operators
  *
- * $Id: interpret_fsm.h,v 1.2 2001/04/17 09:26:09 portier Exp $
+ * $Id: interpret_fsm.h,v 1.3 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,7 @@ public:
 
 		const NLAIC::IBasicType *clone() const;
 		const NLAIC::IBasicType *newInstance() const;
-		void getDebugString(char *t) const;
+		virtual void getDebugString(std::string &) const;
 
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;
 	};

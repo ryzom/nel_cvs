@@ -1,6 +1,6 @@
 /** \file list_manager.cpp
  *
- * $Id: list_manager.cpp,v 1.8 2001/05/10 15:15:57 portier Exp $
+ * $Id: list_manager.cpp,v 1.9 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,11 +67,11 @@ namespace NLAIAGENT
 		is .serial( *_List );
 	}	
 
-	void IListBasicManager::getDebugString(char *t) const
+	void IListBasicManager::getDebugString(std::string &t) const
 	{		
-		char b[8*1024];
-		_List->getDebugString(b);		
-		sprintf(t,"IListBasicManager<%4x>: _List:'%s'",this,b);
+		std::string b;
+		_List->getDebugString(b);
+		t += NLAIC::stringGetBuild("IListBasicManager<%4x>: _List:'%s'",this,b.c_str());
 	}
 
 	IObjectIA &IListBasicManager::operator = (const IObjectIA &b)

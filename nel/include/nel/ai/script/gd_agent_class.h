@@ -1,7 +1,7 @@
 /** \file gd_agent_class.h
  * Class for define a goals driven agent, using a factbase and a goal stack
  *
- * $Id: gd_agent_class.h,v 1.1 2001/02/28 09:45:15 portier Exp $
+ * $Id: gd_agent_class.h,v 1.2 2001/05/22 16:08:01 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -44,7 +44,7 @@ namespace NLAISCRIPT
 		//@{
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;
-//		virtual void getDebugString(char *t) const;
+		//virtual void getDebugString(char *t) const;
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;		
 		//@}
 

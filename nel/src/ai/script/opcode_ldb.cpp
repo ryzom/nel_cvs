@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.9 2001/03/29 10:26:57 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.10 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,11 +34,12 @@ namespace NLAISCRIPT
 		return NLAIAGENT::IObjectIA::ProcessIdle;
 	}
 
-	void CLdbOpCode::getDebugResult(char *str,CCodeContext &context) const
+	void CLdbOpCode::getDebugResult(std::string &str,CCodeContext &context) const
 	{			
-		char X[1024*8];
+		std::string X;
 		_B->getDebugString(X);
-		sprintf(str,"ldb %s",X);		
+		str += "ldb ";
+		str += X;		
 	}
 	NLAIAGENT::TProcessStatement CLdbMemberOpCode::runOpCode(CCodeContext &context)
 	{
@@ -47,10 +48,10 @@ namespace NLAISCRIPT
 		return NLAIAGENT::IObjectIA::ProcessIdle;;
 	}
 
-	void CLdbMemberOpCode::getDebugResult(char *str,CCodeContext &context) const
+	void CLdbMemberOpCode::getDebugResult(std::string &str,CCodeContext &context) const
 	{
 					
-		sprintf(str,"ldb le composant membre %d de la class '%s'",_B,(const char *)((NLAIAGENT::IObjectIA *)(context.Self))->getType());		
+		str += NLAIC::stringGetBuild("ldb le composant membre %d de la class '%s'",_B,(const char *)((NLAIAGENT::IObjectIA *)(context.Self))->getType());
 	}
 
 
@@ -69,7 +70,7 @@ namespace NLAISCRIPT
 		return NLAIAGENT::processIdle;
 	}
 
-	void CLdbStackMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
+	void CLdbStackMemberiOpCode::getDebugResult(std::string &str,CCodeContext &context) const
 	{	
 		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Stack);		
 		std::list<sint32>::const_iterator i = _I.begin();
@@ -78,9 +79,9 @@ namespace NLAISCRIPT
 		{
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
-		char txt[1024*8];
+		std::string txt;
 		a->getStaticMember(*i)->getDebugString(txt);
-		sprintf(str,"ldb %s le composan membre sur la pile de la class '%s'",txt,(const char *)a->getType());
+		str += NLAIC::stringGetBuild("ldb %s le composan membre sur la pile de la class '%s'",txt.c_str(),(const char *)a->getType());
 	}
 
 	NLAIAGENT::TProcessStatement CLdbHeapMemberiOpCode::runOpCode(CCodeContext &context)
@@ -103,7 +104,7 @@ namespace NLAISCRIPT
 		return NLAIAGENT::processIdle;
 	}
 
-	void CLdbHeapMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
+	void CLdbHeapMemberiOpCode::getDebugResult(std::string &str,CCodeContext &context) const
 	{						
 		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Heap[(int)_N];
 #ifdef NL_DEBUG
@@ -116,9 +117,9 @@ namespace NLAISCRIPT
 		{
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
-		char txt[1024*8];
+		std::string txt;
 		a->getDebugString(txt);
-		sprintf(str,"ldb %s le composant membre sur le heap de la class '%s'",txt,(const char *)a->getType());		
+		str += NLAIC::stringGetBuild("ldb %s le composant membre sur le heap de la class '%s'",txt.c_str(),(const char *)a->getType());		
 	}
 
 	NLAIAGENT::TProcessStatement CLdbMemberiOpCode::runOpCode(CCodeContext &context)
@@ -135,7 +136,7 @@ namespace NLAISCRIPT
 		return NLAIAGENT::IObjectIA::ProcessIdle;
 	}
 
-	void CLdbMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
+	void CLdbMemberiOpCode::getDebugResult(std::string &str,CCodeContext &context) const
 	{			
 		NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Self;
 		std::list<sint32>::const_iterator i = _I.begin();
@@ -146,7 +147,7 @@ namespace NLAISCRIPT
 			obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(j);
 		}			
 					
-		sprintf(str,"ldb le composant membre <%d> member de la class '%s'",j,(const char *)obj->getType());		
+		str += NLAIC::stringGetBuild("ldb le composant membre <%d> member de la class '%s'",j,(const char *)obj->getType());		
 	}
 
 	NLAIAGENT::TProcessStatement CLdbRefOpCode::runOpCode(CCodeContext &context)
@@ -156,10 +157,10 @@ namespace NLAISCRIPT
 		return NLAIAGENT::IObjectIA::ProcessIdle;;
 	}
 
-	void CLdbRefOpCode::getDebugResult(char *str,CCodeContext &context) const
+	void CLdbRefOpCode::getDebugResult(std::string &str,CCodeContext &context) const
 	{
-		char X[1024*16];	
+		std::string X;
 		context.Heap[_B]->getDebugString(X);
-		sprintf(str,"ldb<%d>: %s",_B,X);
+		str += NLAIC::stringGetBuild("ldb<%d>: %s",_B,X.c_str());
 	}
 }

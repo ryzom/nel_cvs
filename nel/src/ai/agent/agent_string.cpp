@@ -1,6 +1,6 @@
 /** \file agent_string.cpp
  *
- * $Id: agent_string.cpp,v 1.2 2001/02/13 10:43:30 chafik Exp $
+ * $Id: agent_string.cpp,v 1.3 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -287,7 +287,7 @@ namespace NLAIAGENT
 		return x;
 	}
 
-	void CIndexedVarName::getDebugString(char *text) const
+	void CIndexedVarName::getDebugString(std::string &text) const
 	{
 		
 	}

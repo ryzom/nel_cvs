@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: comp_handle.h,v 1.1 2001/02/28 09:42:37 portier Exp $
+ * $Id: comp_handle.h,v 1.2 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,7 +74,7 @@ namespace NLAIAGENT
 #ifdef _DEBUG
 					const char *dbg_father_type = (const char *) _CompFather->getType();
 					const char *dbg_comp_name = (const char *) _CompName->getType();
-					char buffer[1024 * 8];
+					std::string buffer;
 					_CompName->getDebugString(buffer);
 #endif
 

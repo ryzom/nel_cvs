@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.19 2001/04/27 07:59:46 portier Exp $
+ * $Id: mailbox.cpp,v 1.20 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,9 +174,9 @@ namespace NLAIAGENT
 		return IdSimpleLocalMailBox;
 	}
 
-	void CSimpleLocalMailBox::getDebugString(char *t) const
+	void CSimpleLocalMailBox::getDebugString(std::string &t) const
 	{
-		sprintf(t,"class CSimpleLocalMailBox");
+		t += "class CSimpleLocalMailBox";
 	}
 
 	void CSimpleLocalMailBox::save(NLMISC::IStream &os)
@@ -459,9 +459,9 @@ namespace NLAIAGENT
 		return getState();
 	}
 
-	void CLocalMailBox::getDebugString(char *t) const
+	void CLocalMailBox::getDebugString(std::string &t) const
 	{
-		sprintf(t,"class CLocalMailBox");
+		t += "class CLocalMailBox";
 	}
 
 	void CLocalMailBox::fillMailBox()

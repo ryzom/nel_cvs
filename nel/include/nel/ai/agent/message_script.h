@@ -1,7 +1,7 @@
 /** \file message_script.h
  * class for script message.
  *
- * $Id: message_script.h,v 1.8 2001/03/01 15:16:47 portier Exp $
+ * $Id: message_script.h,v 1.9 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,7 +78,7 @@ namespace NLAIAGENT
 			virtual void save(NLMISC::IStream &os);
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
-			virtual void getDebugString(char *t) const;			
+			virtual void getDebugString(std::string &t) const;			
 			virtual const NLAIC::CIdentType &getType() const;
 			//@}			
 

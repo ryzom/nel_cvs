@@ -97,13 +97,13 @@ namespace NLAILOGIC
 	}
 
 
-	void CBoolAssert::getDebugString(char *text) const
+	void CBoolAssert::getDebugString(std::string &text) const
 	{
-		strcpy( text, "<CBoolAssert> = ");
+		text += "<CBoolAssert> = ";
 		if ( _Value )
-			strcat( text, "true" );
+			text += "true" ;
 		else
-			strcat( text, "false" );
+			text += "false" ;
 	}
 
 	bool CBoolAssert::isEqual(const IBasicObjectIA &a) const

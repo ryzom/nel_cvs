@@ -76,9 +76,11 @@ namespace NLAILOGIC
 		IObjetOp *x = (IObjetOp *) ((IBaseGroupType *) param)->getFront();
 		((IBaseGroupType *)param)->popFront();
 
-		char buf[1024];
+#ifdef NL_DEBUG
+		std::string buf;
 		x->getDebugString(buf);
 		getDebugString(buf);
+#endif
 
 		if ( id == ( IObjetOp::getMethodIndexSize() + 1 ) )
 		{
@@ -197,14 +199,14 @@ namespace NLAILOGIC
 		_Value->load(is);	
 	}
 
-	void CVar::getDebugString(char *text) const
+	void CVar::getDebugString(std::string &text) const
 	{
-		char buf[512];
+		std::string buf;
 		if ( _Value )
 			_Value->getDebugString( buf );
 		else
-			strcpy(buf,"<undefined>");
-		sprintf(text, "CVar<%s> = %s <%s>\n",_Name->getString(), buf , this);
+			buf = "<undefined>";
+		text += NLAIC::stringGetBuild("CVar<%s> = %s <%s>\n",_Name->getString(), buf.c_str() , this);
 	}
 
 	bool CVar::isEqual(const CVar &a) const

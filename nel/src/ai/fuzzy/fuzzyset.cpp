@@ -1,7 +1,7 @@
 /** \file fuzzyset.cpp
  * Fuzzy sets: triangle, trapeze...
  *
- * $Id: fuzzyset.cpp,v 1.7 2001/05/10 15:15:57 portier Exp $
+ * $Id: fuzzyset.cpp,v 1.8 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,9 +141,9 @@ namespace NLAIFUZZY
 	{
 	}
 
-	void CFuzzyInterval::getDebugString(char *txt) const
+	void CFuzzyInterval::getDebugString(std::string &txt) const
 	{
-		sprintf(txt,"%s [%f , %f]", _Name, _Min, _Max);
+		txt += NLAIC::stringGetBuild("%s [%f , %f]", _Name, _Min, _Max);
 	}
 
 	bool CFuzzyInterval::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
@@ -248,9 +248,9 @@ namespace NLAIFUZZY
 	{
 	}
 
-	void CRightFuzzySet::getDebugString(char *txt) const
+	void CRightFuzzySet::getDebugString(std::string &txt) const
 	{
-		sprintf(txt,"CRightFuzzySet %s [%f , %f , %f]", _Name, _X1, _X2, _X3);
+		txt += NLAIC::stringGetBuild("CRightFuzzySet %s [%f , %f , %f]", _Name, _X1, _X2, _X3);
 	}
 	
 	bool CRightFuzzySet::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
@@ -271,8 +271,8 @@ namespace NLAIFUZZY
 	{
 
 #ifdef NL_DEBUG	
-	char nameP[1024*4];
-	char nameM[1024*4];
+	std::string nameP;
+	std::string nameM;
 	funcName->getDebugString(nameM);
 	params.getDebugString(nameP);
 
@@ -428,7 +428,7 @@ namespace NLAIFUZZY
 	void CTriangleFuzzySet::init(NLAIAGENT::IObjectIA *params)
 	{
 #ifdef NL_DEBUG
-		char buf[1024 * 8];
+		std::string buf;
 		params->getDebugString(buf);
 #endif
 
@@ -513,9 +513,9 @@ namespace NLAIFUZZY
 		is.serial( _X3 );
 	}
 
-	void CTriangleFuzzySet::getDebugString(char *txt) const
+	void CTriangleFuzzySet::getDebugString(std::string &txt) const
 	{
-		sprintf(txt,"CTriangleFuzzySet %s [%f , %f , %f]", _Name, _X1, _X2, _X3);
+		txt += NLAIC::stringGetBuild("CTriangleFuzzySet %s [%f , %f , %f]", _Name, _X1, _X2, _X3);
 	}
 	
 	bool CTriangleFuzzySet::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
@@ -626,9 +626,9 @@ namespace NLAIFUZZY
 	{
 	}
 
-	void CLeftFuzzySet::getDebugString(char *txt) const
+	void CLeftFuzzySet::getDebugString(std::string &txt) const
 	{
-		sprintf(txt,"CLeftFuzzySet %s [%f , %f , %f]", _Name, _X1, _X2, _X3);
+		txt += NLAIC::stringGetBuild("CLeftFuzzySet %s [%f , %f , %f]", _Name, _X1, _X2, _X3);
 	}
 	
 	bool CLeftFuzzySet::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
@@ -749,9 +749,9 @@ namespace NLAIFUZZY
 	{
 	}
 
-	void CTrapezeFuzzySet::getDebugString(char *txt) const
+	void CTrapezeFuzzySet::getDebugString(std::string &txt) const
 	{
-		sprintf(txt,"CTrapezeFuzzySet %s [%f , %f , %f , %f]", _Name, _X1, _X2, _X3, _X4);
+		txt += NLAIC::stringGetBuild("CTrapezeFuzzySet %s [%f , %f , %f , %f]", _Name, _X1, _X2, _X3, _X4);
 	}
 	
 	bool CTrapezeFuzzySet::isEqual(const NLAIAGENT::IBasicObjectIA &a) const

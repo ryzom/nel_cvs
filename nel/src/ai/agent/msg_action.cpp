@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_action.cpp,v 1.4 2001/05/02 13:58:26 portier Exp $
+ * $Id: msg_action.cpp,v 1.5 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,12 +79,12 @@ namespace NLAIAGENT
 			return IdSuccessMsg;
 	}	
 
-	void CSuccessMsg::getDebugString(char *t) const
+	void CSuccessMsg::getDebugString(std::string &t) const
 	{
 		double i = ((const INombreDefine *)getFront())->getNumber();
-		char txt[1024*4];
+		std::string txt;
 		get()->getDebugString(txt);
-		sprintf(t,"CSuccessMsg<%s>",txt);
+		t += NLAIC::stringGetBuild("CSuccessMsg<%s>",txt.c_str());
 	}
 
 
@@ -123,7 +123,7 @@ namespace NLAIAGENT
 				IObjectIA *param = (IObjectIA *) arg->get()->clone();
 				arg->popFront();
 #ifdef NL_DEBUG
-				char buffer[1024 * 2];
+				std::string buffer;
 				param->getDebugString( buffer );
 #endif
 				set(0, param);
@@ -189,12 +189,12 @@ namespace NLAIAGENT
 			return IdFailureMsg;
 	}	
 
-	void CFailureMsg::getDebugString(char *t) const
+	void CFailureMsg::getDebugString(std::string &t) const
 	{
 		double i = ((const INombreDefine *)getFront())->getNumber();
-		char txt[1024*4];
+		std::string txt;
 		get()->getDebugString(txt);
-		sprintf(t,"CFailureMsg<%s>",txt);
+		t += NLAIC::stringGetBuild("CFailureMsg<%s>",txt.c_str());
 	}
 
 
@@ -233,7 +233,7 @@ namespace NLAIAGENT
 				IObjectIA *param = (IObjectIA *) arg->get()->clone();
 				arg->popFront();
 #ifdef NL_DEBUG
-				char buffer[1024 * 2];
+				std::string buffer;
 				param->getDebugString( buffer );
 #endif
 				set(0, param);

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: fo_operator.h,v 1.4 2001/01/25 10:09:48 portier Exp $
+ * $Id: fo_operator.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,7 +95,7 @@ namespace NLAILOGIC
 			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *text) const;
+			virtual void getDebugString(std::string &) const;
 			virtual bool isEqual(const CFirstOrderOperator &a) const;
 			virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
 			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;

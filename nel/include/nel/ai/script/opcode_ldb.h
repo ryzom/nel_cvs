@@ -1,7 +1,7 @@
 /** \file opcode_ldb.h
  * Sevral op-code for loading object to the stack.
  *
- * $Id: opcode_ldb.h,v 1.6 2001/04/17 09:26:09 portier Exp $
+ * $Id: opcode_ldb.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		void getDebugResult(char *str,CCodeContext &context) const;
+		void getDebugResult(std::string &,CCodeContext &context) const;
 
 		const NLAIC::IBasicType *clone() const
 		{
@@ -60,7 +60,7 @@ namespace NLAISCRIPT
 			return IdLdbOpCode;
 		}
 
-		void getDebugString(char *) const{ }
+		void getDebugString(std::string &) const{ }
 
 		void save(NLMISC::IStream &os)
 		{
@@ -98,7 +98,7 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
-		void getDebugResult(char *str,CCodeContext &context) const;		
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
 
 		const NLAIC::IBasicType *clone() const
 		{
@@ -114,9 +114,9 @@ namespace NLAISCRIPT
 		const NLAIC::CIdentType &getType() const
 		{
 			return IdLdbMemberOpCode;
-		}
+		}		
 
-		void getDebugString(char *) const{ }
+		void getDebugString(std::string &) const{ }
 
 		void save(NLMISC::IStream &os)
 		{
@@ -150,7 +150,7 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
-		void getDebugResult(char *str,CCodeContext &context) const;		
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
 
 		const NLAIC::IBasicType *clone() const
 		{
@@ -168,7 +168,7 @@ namespace NLAISCRIPT
 			return IdLdbStackMemberiOpCode;
 		}
 
-		void getDebugString(char *) const{ }
+		void getDebugString(std::string &) const{ }
 
 		void save(NLMISC::IStream &os)
 		{			
@@ -201,7 +201,7 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		void getDebugResult(char *str,CCodeContext &context) const;		
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
 
 		const NLAIC::IBasicType *clone() const
 		{
@@ -219,7 +219,7 @@ namespace NLAISCRIPT
 			return IdLdbHeapMemberiOpCode;
 		}
 
-		void getDebugString(char *) const{ }
+		void getDebugString(std::string &) const{ }
 
 		void save(NLMISC::IStream &os)
 		{			
@@ -254,7 +254,7 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
-		void getDebugResult(char *str,CCodeContext &context) const;		
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
 
 		const NLAIC::IBasicType *clone() const
 		{
@@ -272,7 +272,7 @@ namespace NLAISCRIPT
 			return IdLdbMemberiOpCode;
 		}
 
-		void getDebugString(char *) const{ }
+		void getDebugString(std::string &) const{ }
 
 		void save(NLMISC::IStream &os)
 		{			
@@ -304,7 +304,7 @@ namespace NLAISCRIPT
 		
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
-		void getDebugResult(char *str,CCodeContext &context) const;
+		void getDebugResult(std::string &str,CCodeContext &context) const;
 
 		const NLAIC::IBasicType *clone() const
 		{

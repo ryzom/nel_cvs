@@ -1,7 +1,7 @@
 /** \file list_manager.h
  * Sevral class for objects manipulation.
  *
- * $Id: list_manager.h,v 1.4 2001/03/06 14:09:35 robert Exp $
+ * $Id: list_manager.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ namespace NLAIAGENT
 
 		virtual void save(NLMISC::IStream &os);
 		virtual void load(NLMISC::IStream &is);
-		virtual void getDebugString(char *t) const;
+		virtual void getDebugString(std::string &t) const;
 		//@}
 
 		///Get the list of message contents.

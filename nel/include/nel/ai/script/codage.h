@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.14 2001/04/17 09:26:09 portier Exp $
+ * $Id: codage.h,v 1.15 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -381,9 +381,9 @@ namespace NLAISCRIPT
 		{
 			return clone();
 		}
-		void getDebugString(char *t) const
+		void getDebugString(std::string &t) const
 		{
-			sprintf(t,"CCodeContext");
+			t = NLAIC::stringGetBuild("CCodeContext");
 		}
 		void save(NLMISC::IStream &f)
 		{			
@@ -636,14 +636,14 @@ namespace NLAISCRIPT
 		virtual const NLAIAGENT::IObjectIA::CProcessResult &run(CCodeContext &);
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
-		void getDebugResult(char *str,CCodeContext &context) const;		
+		void getDebugResult(std::string &str,CCodeContext &context) const;		
 		//@}
 
 		/// \name IBasicInterface method.
 		//@{
 		void save(NLMISC::IStream &f);	
 		void load(NLMISC::IStream &f);	
-		void getDebugString(char *) const;
+		void getDebugString(std::string &) const;
 		const NLAIC::CIdentType &getType() const;		
 		const NLAIC::IBasicType *clone() const 
 		{

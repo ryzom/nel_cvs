@@ -1,7 +1,7 @@
 /** \file object_type.h
  * class encaputation a type of object.
  *
- * $Id: object_type.h,v 1.6 2001/04/17 09:26:09 portier Exp $
+ * $Id: object_type.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,11 +63,11 @@ namespace NLAIAGENT
 		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();			
-		}
+		}		
 
-		void getDebugString(char *txt) const
+		void getDebugString(std::string &txt) const
 		{			
-			sprintf(txt,"CObjectType< _Type < %s > >", (const char *)*_Type);			
+			txt += NLAIC::stringGetBuild("CObjectType< _Type < %s > >", (const char *)*_Type);
 		}
 
 		void save(NLMISC::IStream &os)

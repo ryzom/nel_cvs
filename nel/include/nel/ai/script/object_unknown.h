@@ -1,7 +1,7 @@
 /** \file object_unknown.h
  * Class for store an IOpType.
  *
- * $Id: object_unknown.h,v 1.6 2001/03/08 13:42:56 portier Exp $
+ * $Id: object_unknown.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,15 +88,15 @@ namespace NLAISCRIPT
 			return clone();			
 		}
 
-		void getDebugString(char *txt) const
+		void getDebugString(std::string &txt) const
 		{
 			const NLAIC::CIdentType *id = _opType->getConstraintTypeOf();
 			if(id)
 			{
-				sprintf(txt,"CObjectUnknown< _opType < %s > >", (const char *)*id);
+				txt += NLAIC::stringGetBuild("CObjectUnknown< _opType < %s > >", (const char *)*id);
 			}
 			else 
-				sprintf(txt,"CObjectUnknown< _opType < NULL > >");
+				txt += "CObjectUnknown< _opType < NULL > >";
 		}
 
 		void save(NLMISC::IStream &os)

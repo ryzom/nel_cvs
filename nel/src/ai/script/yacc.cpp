@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.21 2001/04/13 09:44:56 chafik Exp $
+ * $Id: yacc.cpp,v 1.22 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -707,6 +707,7 @@ namespace NLAISCRIPT
 		{
 			debugAttrib = new NLAIAGENT::CVectorGroupType();			
 		}
+		else debugAttrib = NULL;
 
 		while(_Attrib.size() != 0)
 		{
@@ -803,8 +804,8 @@ namespace NLAISCRIPT
 	bool CCompilateur::callFunction()
 	{
 #ifdef NL_DEBUG
-	char mName[1024*8];
-	char pName[1024*8];
+	std::string mName;
+	std::string pName;
 	_LastStringParam.back()->getDebugString(mName);
 	_Param.back()->getDebugString(pName);	
 	//sint32 i = _TypeList.size();

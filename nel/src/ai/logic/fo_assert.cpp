@@ -148,11 +148,11 @@ namespace NLAILOGIC
 	{
 	}
 
-	void CFirstOrderAssert::getDebugString(char *text) const
+	void CFirstOrderAssert::getDebugString(std::string &text) const
 	{
-		char buf[512];
+		std::string buf;
 		getName().getDebugString(buf);
-		sprintf(text, "<CFirstOrderAssert> %s", buf);
+		text += NLAIC::stringGetBuild("<CFirstOrderAssert> %s", buf.c_str());
 	}
 
 	bool CFirstOrderAssert::isEqual(const CFirstOrderAssert &a) const
@@ -239,10 +239,12 @@ namespace NLAILOGIC
 		std::list<CValueSet *>::iterator it_l = _Facts.begin();
 		while ( it_l != _Facts.end() )
 		{
-			char buffer[1024];
+#ifdef NL_DEBUG
+			std::string buffer;
 			(*it_l)->getDebugString(buffer);
-			char buffer2[1024];
+			std::string buffer2;
 			fact->getDebugString(buffer2);
+#endif
 
 			liaison = (*it_l)->unify( (CValueSet *) fact );
 			if ( liaison )
@@ -284,3 +286,4 @@ namespace NLAILOGIC
 		return result;
 	}
 }
+

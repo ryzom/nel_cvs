@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.13 2001/03/14 13:19:34 chafik Exp $
+ * $Id: libcode.cpp,v 1.14 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,9 +109,9 @@ namespace NLAISCRIPT
 		NLAIAGENT::CIteratorContener i = g->getIterator();
 		while(!i.isInEnd())
 		{
-			char temp[1024*8];
+			std::string temp;
 			(i++)->getDebugString(temp);				
-			str += NLAIAGENT::CStringVarName(temp);
+			str += NLAIAGENT::CStringVarName(temp.c_str());
 			if(!i.isInEnd()) str += NLAIAGENT::CStringVarName(" ");
 		}
 
@@ -124,19 +124,19 @@ namespace NLAISCRIPT
 
 	NLAIAGENT::IObjectIA::CProcessResult CCallPrint::printList(const NLAIAGENT::IBaseGroupType *g)
 	{
-		char str[1024*32];		
+		std::string str;		
 		NLAIAGENT::CIteratorContener i = g->getIterator();
-		strcpy(str,"");
+		
 		while(!i.isInEnd())
 		{
-			char temp[1024*24];
-			(i++)->getDebugString(temp);				
-			strcat(str,temp);
-			if(!i.isInEnd()) strcat(str," ");
+			std::string temp;
+			(i++)->getDebugString(temp);
+			str += temp.c_str();
+			if(!i.isInEnd()) str += " ";
 		}
 
 		NLAIAGENT::IObjectIA::CProcessResult r;
-		inputOutput->Echo("%s\n",str);		
+		inputOutput->Echo("%s\n",str.c_str());		
 		r.ResultState =  NLAIAGENT::processIdle;
 		r.Result =  NULL;
 		return r;

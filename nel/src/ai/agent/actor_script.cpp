@@ -180,13 +180,13 @@ namespace NLAIAGENT
 		return instance;
 	}
 	
-	void CActorScript::getDebugString(char *t) const
+	void CActorScript::getDebugString(std::string &t) const
 	{
-		strcpy(t,"CActorScript ");
+		t = "CActorScript ";
 		if ( _IsActivated )
-			strcat(t, "<active>");
+			t += "<active>";
 		else
-			strcat(t, "<idle>");
+			t += "<idle>";
 	}
 
 	bool CActorScript::isEqual(const IBasicObjectIA &a) const
@@ -372,7 +372,7 @@ namespace NLAIAGENT
 			{
 #ifdef _DEBUG
 				const char *dbg_param_type = (const char *) params->getType();
-				char dbg_param_string[1024 * 8];
+				std::string dbg_param_string;
 				params->getDebugString(dbg_param_string);
 #endif
 				const IObjectIA *fw = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();
@@ -406,7 +406,7 @@ namespace NLAIAGENT
 			{
 #ifdef _DEBUG
 				const char *dbg_param_type = (const char *) params->getType();
-				char dbg_param_string[1024 * 8];
+				std::string dbg_param_string;
 				params->getDebugString(dbg_param_string);
 #endif
 				const IObjectIA *child = ( ((NLAIAGENT::IBaseGroupType *)params) )->get();

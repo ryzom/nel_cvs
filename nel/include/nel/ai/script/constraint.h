@@ -1,7 +1,7 @@
 /** \file constraint.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: constraint.h,v 1.8 2001/04/17 09:26:09 portier Exp $
+ * $Id: constraint.h,v 1.9 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -274,7 +274,7 @@ namespace NLAISCRIPT
 		char *_TxtInfo;		
 		int _PosHeap;
 		bool _DelCType;
-		CFunctionTag _M;
+		CFunctionTag _M;		
 		
 	public:
 		CConstraintMethode(TCallTypeOpCode callType,int posHeap,IConstraint *baseClass,NLAIAGENT::IBaseGroupType *methodName,CParam *param,int lin,int col):
@@ -282,14 +282,17 @@ namespace NLAISCRIPT
 		{						
 			_Txt = NULL;
 			_Type = NULL;
-			char txt[1028*8];
-			char m[1028*8];
-			char p[1028*8];
+			std::string txt;
+			std::string m;
+			std::string p;
 			_MethodName->getDebugString(m);
 			_Param->getDebugString(p);
-			sprintf(txt,"constraint<CConstraintMethode> for %s%s at line %d",m,p,_Lin);
-			_TxtInfo = new char [strlen(txt) + 1];
-			strcpy(_TxtInfo,txt);			
+			txt = "constraint<CConstraintMethode> for";
+			txt += m;
+			txt += p;
+			txt += NLAIC::stringGetBuild(" at line %d",_Lin);
+			_TxtInfo = new char [strlen(txt.c_str()) + 1];
+			strcpy(_TxtInfo,txt.c_str());			
 			_DelCType = false;
 		}
 		/// \name IConstraint method.

@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.7 2001/03/14 13:19:34 chafik Exp $
+ * $Id: ident_type.cpp,v 1.8 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,14 +35,26 @@ namespace NLAIC
 {	
 	char *stringBuild(const char *str, ...)
 	{		
-		char	temp[32*1024];		
+		char	temp[64*1024];
 		va_list argument;
-		va_start (argument, str);	
+		va_start (argument, str);
 		
 		vsprintf(temp, str, argument);
 		char *s = new char [strlen(temp)+1];
 		strcpy(s,temp);
 		return s;
+	}	
+
+	std::string stringGetBuild(const char *str, ...)
+	{
+
+		char	temp[64*1024];
+		va_list argument;
+		va_start (argument, str);
+		
+		vsprintf(temp, str, argument);			
+		return std::string(temp);
+
 	}
 
 	CIdentType CIdentType::VoidType = CIdentType("VOID",CTypeOfObject::tObject,CTypeOfOperator(0),-1);

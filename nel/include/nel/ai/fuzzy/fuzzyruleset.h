@@ -1,7 +1,7 @@
 /** \file fuzzyruleset.h
  *	A set of fuzzy rules which desribes a fuzzy controler
  *
- * $Id: fuzzyruleset.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: fuzzyruleset.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ namespace NLAIFUZZY
 			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual void getDebugString(char *text) const;
+			virtual void getDebugString(std::string &) const;
 			const NLAIC::CIdentType &getType() const;
 			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &) const;
 			virtual void init(NLAIAGENT::IObjectIA *);

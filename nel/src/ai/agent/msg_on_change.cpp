@@ -1,6 +1,6 @@
 /** \file msg_on_change.cpp
  *
- * $Id: msg_on_change.cpp,v 1.2 2001/03/07 15:25:21 chafik Exp $
+ * $Id: msg_on_change.cpp,v 1.3 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,18 +77,18 @@ namespace NLAIAGENT
 			return IdOnChangeMsg;
 	}	
 
-	void COnChangeMsg::getDebugString(char *t) const
+	void COnChangeMsg::getDebugString(std::string &t) const
 	{
 		double i = ((const INombreDefine *)getFront())->getNumber();
 		if(i != 0.0)
 		{
-			char txt[1024*4];
+			std::string txt;
 			get()->getDebugString(txt);
-			sprintf(t,"COnChangeMsg<true,%s>",txt);
+			t += NLAIC::stringGetBuild("COnChangeMsg<true,%s>",txt.c_str());
 		}
 		else
 		{
-			sprintf(t,"COnChangeMsg<false,NULL>");
+			t = "COnChangeMsg<false,NULL>";
 		}
 	}
 

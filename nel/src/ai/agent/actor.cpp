@@ -116,15 +116,15 @@ namespace NLAIAGENT
 		else 
 			m = new CActor(NULL);
 		return m;
-	}
-	
-	void CActor::getDebugString(char *t) const
+	}	
+
+	void CActor::getDebugString(std::string &t) const
 	{
-		strcpy(t,"CActor ");
+		t = "CActor ";
 		if ( _IsActivated )
-			strcat(t, "<active>");
+			t += "<active>";
 		else
-			strcat(t, "<idle>");
+			t += "<idle>";
 	}
 
 	bool CActor::isEqual(const IBasicObjectIA &a) const
@@ -216,8 +216,10 @@ namespace NLAIAGENT
 
 		IObjectIA::CProcessResult r;
 
-		char buf[1024];
+#ifdef NL_DEBUG
+		std::string buf;
 		getDebugString(buf);
+#endif
 
 		id = id - IAgent::getMethodIndexSize();
 		

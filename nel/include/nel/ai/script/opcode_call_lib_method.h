@@ -1,7 +1,7 @@
 /** \file opcode_call_lib_method.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode_call_lib_method.h,v 1.5 2001/04/17 09:26:09 portier Exp $
+ * $Id: opcode_call_lib_method.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,9 +45,9 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 		
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"call the methode %d",_Id);	
+			str = NLAIC::stringGetBuild("call the methode %d",_Id);	
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -101,9 +101,9 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"call the methode %d member of the %d derivation",_Id,_Inheritance);
+			str = NLAIC::stringGetBuild("call the methode %d member of the %d derivation",_Id,_Inheritance);
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -161,9 +161,9 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"call the methode %d member of the %d derivation",_Id,_Inheritance);
+			str = NLAIC::stringGetBuild("call the methode %d member of the %d derivation",_Id,_Inheritance);
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -221,9 +221,9 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 		
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"call the methode %d",_Id);	
+			str = NLAIC::stringGetBuild("call the methode %d",_Id);	
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -286,9 +286,9 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"call the methode %d member of the %d derivation",_Id,_Inheritance);
+			str = NLAIC::stringGetBuild("call the methode %d member of the %d derivation",_Id,_Inheritance);
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -354,9 +354,9 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"call the methode %d member of the %d derivation",_Id,_Inheritance);
+			str = NLAIC::stringGetBuild("call the methode %d member of the %d derivation",_Id,_Inheritance);
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -426,9 +426,9 @@ namespace NLAISCRIPT
 
 		virtual NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 		
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"call the methode frome the stack");	
+			str = NLAIC::stringGetBuild("call the methode frome the stack");	
 		}
 
 		const NLAIC::IBasicType *clone() const
@@ -529,9 +529,9 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 		
-		void getDebugResult(char *str,CCodeContext &context) const
+		void getDebugResult(std::string &str,CCodeContext &context) const
 		{		
-			sprintf(str,"call the methode frome the heap");	
+			str = NLAIC::stringGetBuild("call the methode frome the heap");	
 		}
 
 		const NLAIC::IBasicType *clone() const

@@ -1,6 +1,6 @@
 /** \file msg_notify.cpp
  *
- * $Id: msg_notify.cpp,v 1.8 2001/03/08 13:42:34 portier Exp $
+ * $Id: msg_notify.cpp,v 1.9 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,18 +86,18 @@ namespace NLAIAGENT
 			return IdNotifyParentScript;
 	}	
 
-	void CNotifyParentScript::getDebugString(char *t) const
+	void CNotifyParentScript::getDebugString(std::string &t) const
 	{
 		double i = ((const INombreDefine *)getFront())->getNumber();
 		if(i != 0.0)
 		{
-			char txt[1024*4];
+			std::string txt;
 			get()->getDebugString(txt);
-			sprintf(t,"CNotifyParentScript<true,%s>",txt);
+			t += NLAIC::stringGetBuild("CNotifyParentScript<true,%s>",txt.c_str());
 		}
 		else
 		{
-			sprintf(t,"CNotifyParentScript<false,NULL>");
+			t += "CNotifyParentScript<false,NULL>";
 		}
 	}
 }

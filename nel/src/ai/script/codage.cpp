@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.15 2001/04/10 12:35:18 chafik Exp $
+ * $Id: codage.cpp,v 1.16 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,7 +83,7 @@ namespace NLAISCRIPT
 		return x;
 	}
 
-	void CCodeBrancheRun::getDebugString(char *) const
+	void CCodeBrancheRun::getDebugString(std::string &) const
 	{		
 	}
 
@@ -147,11 +147,11 @@ namespace NLAISCRIPT
 #ifdef NL_DEBUG
 		if(NL_AI_DEBUG_SERVER)
 		{
-			char chaine[1024*8];
+			std::string chaine;
 			op.getDebugResult(chaine,p);
-			strcat(chaine,"\n");
+			chaine += "\n";
 #ifdef NL_OS_WINDOWS
-			OutputDebugString(chaine);
+			OutputDebugString(chaine.c_str());
 #endif
 		}
 #endif
@@ -179,7 +179,7 @@ namespace NLAISCRIPT
 
 	}
 
-	void CCodeBrancheRun::getDebugResult(char *str,CCodeContext &P) const
+	void CCodeBrancheRun::getDebugResult(std::string &str,CCodeContext &P) const
 	{		
 		_TableCode[_Ip]->getDebugResult(str,P);
 	}

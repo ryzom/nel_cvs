@@ -1,6 +1,6 @@
 /** \file gd_agent_script.cpp
  *
- * $Id: gd_agent_script.cpp,v 1.3 2001/05/10 15:15:57 portier Exp $
+ * $Id: gd_agent_script.cpp,v 1.4 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,18 +82,18 @@ namespace NLAIAGENT
 		return instance;
 	}
 	
-	void CGDAgentScript::getDebugString(char *t) const
+	/*void CGDAgentScript::getDebugString(std::string &t) const
 	{
 		if ( _AgentClass )
 		{
-			char buf[1024 * 4];
+			std::string buf[1024 * 4];
 			_AgentClass->getDebugString(buf);
-			strcpy(t,"<GDAGentScript>");
-			strcat(t,buf);
+			t += "<GDAGentScript>");
+			t += buf;
 		}
 		else
-			strcpy(t,"<CGDAgentScript>");
-	}
+			t += "<CGDAgentScript>";
+	}*/
 
 
 

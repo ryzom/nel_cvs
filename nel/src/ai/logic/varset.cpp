@@ -96,16 +96,16 @@ namespace NLAILOGIC
 		}
 	}
 
-	void CVarSet::getDebugString(char *text) const
+	void CVarSet::getDebugString(std::string &text) const
 	{
-		strcpy(text,"CVarSet\n");
-		char buf[256];
+		text += "CVarSet\n";
+		std::string buf;
 
 		std::vector<IBaseVar *>::const_iterator it_var = _Vars.begin();
 		while ( it_var != _Vars.end() )
 		{
  			(*it_var)->getDebugString( buf );
-			strcat(text,buf);
+			text += buf;
 			it_var++;
 		}
 	}
@@ -396,18 +396,20 @@ namespace NLAILOGIC
 		return clone();
 	}
 
-	void CFactPattern::getDebugString(char *text) const
+	void CFactPattern::getDebugString(std::string &text) const
 	{
-		char buf[256];
+		std::string buf("NULL");
 		if ( _Assert )
 			_Assert->getDebugString( buf );
-		sprintf(text,"CFactPattern Assert<%s>\n", buf);
+
+		text += NLAIC::stringGetBuild("CFactPattern Assert<%s>\n", buf.c_str());
 
 		std::vector<IBaseVar *>::const_iterator it_var = _Vars.begin();
 		while ( it_var != _Vars.end() )
 		{
+			buf[0] = 0;
  			(*it_var)->getDebugString( buf );
-			strcat(text,buf);
+			text += buf;
 			it_var++;
 		}
 	}

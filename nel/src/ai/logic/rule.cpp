@@ -177,10 +177,12 @@ namespace NLAILOGIC
 				CValueSet *conflit = new CValueSet( *it_conf , *it_pos );
 				
 				/////////////////////
-				char buf[512];
-				char buf2[512];
+#ifdef NL_DEBUG
+				std::string buf;
+				std::string buf2;
 				(*it_conc)->getDebugString( buf );
 				conflit->getDebugString( buf2 );
+#endif
 				//TRACE("\nCONCLUSION DE LA REGLE: \n   ASSERTION: %s   VALEURS: %s\n", buf, buf2);
 				/////////////////////
 				it_conc++;
@@ -233,40 +235,39 @@ namespace NLAILOGIC
 		return IdRule;
 	}
 
-	void CRule::getDebugString(char *txt) const
-	{
-		txt[0] = 0;
-		strcpy(txt, "CRule\n - Conditions: ");
+	void CRule::getDebugString(std::string &txt) const
+	{		
+		txt += "CRule\n - Conditions: ";
 		std::vector<IBaseBoolType *>::const_iterator it_c = _Conds.begin();
 		while ( it_c != _Conds.end() )
 		{
-			char buf[512];
+			std::string buf;
 			( *it_c )->getDebugString( buf );
-			strcat( txt, "    - ");
-			strcat( txt, buf );
+			txt += "    - ";
+			txt += buf;
 			it_c++;
 		}
 
-		strcat(txt, "\n - Conclusions: ");
+		txt += "\n - Conclusions: ";
 		
 		std::vector<IBaseAssert *>::const_iterator it_cc = _Concs.begin();
 
 		while ( it_cc != _Concs.end() )
 		{
-			char buf[512];
+			std::string buf;
 			( *it_cc )->getDebugString( buf );
-			strcat( txt, "    - ");
-			strcat( txt, buf );
+			txt += "    - ";
+			txt += buf;
 			it_cc++;
 		}
 
-		strcat(txt, "\n - Variables ");
+		txt += "\n - Variables ";
 		for (sint32 i = 0; i < (sint32)_Vars.size(); i++ )
 		{
-			char buf[512];
+			std::string buf;
 			_Vars[ i ]->getDebugString( buf );
-			strcat( txt, "    - ");
-			strcat( txt, buf );
+			txt += "    - ";
+			txt += buf;
 		}
 	}
 
@@ -359,21 +360,26 @@ namespace NLAILOGIC
 					while ( it_i != (*it_p).end() )
 					{
 						sint32 i = *it_i;
-						char buf[512];
+#ifdef NL_DEBUG
+						std::string buf;
 						(*result)[ *it_i ]->getDebugString(buf);
+#endif
+
 						n->setValue( pos_r, (*result)[ *it_i ] );
 						it_i++;
 						pos_r++;
 					}
 					unified_list->push_back( n );
 				}
-
+#ifdef NL_DEBUG
 				else 
 				{
 					// Ceux là on continue à les propager en arrière!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-					char test[1024 * 2];
+
+					std::string test;
 					result->getDebugString( test );
 				}
+#endif
 			}
 			it_l++;
 		}
@@ -430,9 +436,10 @@ namespace NLAILOGIC
 		}
 		defined = ( nb_undefined == 0 );
 
-
-		char buf[2048];
+#ifdef NL_DEBUG
+		std::string buf;
 		unified->getDebugString(buf);
+#endif
 
 
 		return unified;

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Set of values
  *
- * $Id: valueset.h,v 1.4 2001/03/08 13:42:56 portier Exp $
+ * $Id: valueset.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,7 @@ namespace NLAILOGIC {
 			sint32 size();
 			sint32 undefined() const;
 			std::list<NLAIAGENT::IObjetOp *> *getValues();
-			virtual void getDebugString(char *) const;
+			virtual void getDebugString(std::string &) const;
 
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;

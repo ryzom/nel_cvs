@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.28 2001/04/12 14:15:30 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.29 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -371,9 +371,9 @@ namespace NLAISCRIPT
 		{
 
 #ifdef NL_DEBUG
-			char buffer[1024 * 8];
+			std::string buffer;
 			name.getDebugString( buffer );
-			char buffer2[1024 * 8];
+			std::string buffer2;
 			_Components[i]->ObjectName->getDebugString( buffer2 );
 #endif
 			if (_Components[i]->ObjectName !=NULL && (*_Components[i]->ObjectName) == name) 
@@ -424,7 +424,7 @@ namespace NLAISCRIPT
 
 #ifdef NL_DEBUG
 		const char *dbg_this_type = (const char *) getType();
-		char buffer[1024 * 8];
+		std::string buffer;
 		name.getDebugString(buffer);
 #endif
 
@@ -578,11 +578,11 @@ namespace NLAISCRIPT
 	sint32 CAgentClass::addBrancheCode(const NLAIAGENT::IVarName &name,const CParam &param)
 	{	
 #ifdef NL_DEBUG
-	char txtClass[2048*8];
-	char txt[2048*8];
+	std::string txtClass;
+	std::string txt;
 	param.getDebugString(txtClass);
-	sprintf(txt,"%s%s",name.getString(),txtClass);
-	sprintf(txtClass,getClassName()->getString());			
+	txt = name.getString() + txtClass;
+	txtClass = getClassName()->getString();
 #endif
 		sint32 i = findMethod(name,param);		
 		if(i >= 0) 
@@ -599,11 +599,12 @@ namespace NLAISCRIPT
 			}
 			else
 			{				
-				char txtP[2048*8];
-				char txt[2048*8];
+
+				std::string txtP;
+				std::string txt;
 				param.getDebugString(txtP);
-				sprintf(txt,"%s%s is all ready defined in '%s'",name.getString(),txtP,getClassName()->getString());				
-				throw NLAIE::CExceptionAllReadyExist(txt);
+				txt = NLAIC::stringGetBuild("%s%s is all ready defined in '%s'",name.getString(),txtP.c_str(),getClassName()->getString());				
+				throw NLAIE::CExceptionAllReadyExist((char *)txt.c_str());
 			}
 		}
 		else
@@ -751,7 +752,7 @@ namespace NLAISCRIPT
 			{
 				CMethodeName *m = &t->getBrancheCode(i);
 #ifdef NL_DEBUG
-	char txt[2048*8];
+	std::string txt;
 	m->getDebugString(txt);	
 #endif
 				m->incRef();
@@ -837,9 +838,9 @@ namespace NLAISCRIPT
 		return x;
 	}
 
-	void CAgentClass::getDebugString(char *t) const
+	void CAgentClass::getDebugString(std::string &t) const
 	{
-		sprintf(t,"<CAgentClass> %s\n", getClassName()->getString() );
+		t += NLAIC::stringGetBuild("<CAgentClass> %s\n", getClassName()->getString() );
 	}
 
 	void CAgentClass::save(NLMISC::IStream &os)

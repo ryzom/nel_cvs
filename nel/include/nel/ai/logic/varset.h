@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Set of variables
  *
- * $Id: varset.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: varset.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ namespace NLAILOGIC {
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual const NLAIC::CIdentType &getType() const;			
-			virtual void getDebugString(char *text) const;
+			virtual void getDebugString(std::string &) const;
 			virtual float truthValue() const;			
 			virtual const CProcessResult &run();
 			virtual bool isEqual(const CVarSet &a) const;
@@ -93,7 +93,7 @@ namespace NLAILOGIC {
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual const NLAIC::CIdentType &getType() const;			
-			virtual void getDebugString(char *text) const;
+			virtual void getDebugString(std::string &text) const;
 			virtual void propagate();
 	};
 }

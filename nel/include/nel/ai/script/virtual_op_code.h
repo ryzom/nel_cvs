@@ -1,6 +1,6 @@
 /** \file virtual_op_code.h
  * Basic definition for op-codes maniputation.
- * $Id: virtual_op_code.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: virtual_op_code.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ namespace NLAISCRIPT
 		///Computation of the op-code with a given context.
 		virtual	NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context) = 0;
 		///gets debug string from the op-code.
-		virtual void getDebugResult(char *str,CCodeContext &context) const = 0;
+		virtual void getDebugResult(std::string &str,CCodeContext &context) const = 0;
 		virtual ~IOpCode()
 		{
 		}
@@ -104,7 +104,7 @@ namespace NLAISCRIPT
 		}
 
 		const NLAIAGENT::IObjectIA::CProcessResult &run(){return NLAIAGENT::IObjectIA::ProcessRun;}
-		void getDebugString(char *) const{ }
+		void getDebugString(std::string &) const{ }
 		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const{ return true;}	
 
 		virtual ~IOpRunCode()

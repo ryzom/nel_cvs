@@ -1,6 +1,6 @@
 /** \file msg_debug.cpp
  *
- * $Id: msg_debug.cpp,v 1.1 2001/03/07 13:07:40 chafik Exp $
+ * $Id: msg_debug.cpp,v 1.2 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,8 +58,8 @@ namespace NLAIAGENT
 			return IdMsgDebug;
 	}	
 
-	void CMsgDebug::getDebugString(char *t) const
+	void CMsgDebug::getDebugString(std::string &t) const
 	{		
-		sprintf(t,"CMsgDebug");		
+		t += "CMsgDebug";
 	}
 }

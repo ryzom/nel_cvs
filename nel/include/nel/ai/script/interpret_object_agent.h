@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.15 2001/04/17 09:26:09 portier Exp $
+ * $Id: interpret_object_agent.h,v 1.16 2001/05/22 16:08:01 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -176,7 +176,7 @@ namespace NLAISCRIPT
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;
-		virtual void getDebugString(char *t) const;
+		virtual void getDebugString(std::string &) const;
 		virtual void save(NLMISC::IStream &);
 		virtual void load(NLMISC::IStream &);
 		virtual const NLAIAGENT::IObjectIA::CProcessResult &run();

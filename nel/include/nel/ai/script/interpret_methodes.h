@@ -1,7 +1,7 @@
 /** \file interpret_methodes.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: interpret_methodes.h,v 1.8 2001/04/17 09:26:09 portier Exp $
+ * $Id: interpret_methodes.h,v 1.9 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@ namespace NLAISCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/
+
 	class CParam : public NLAIAGENT::IObjectIA
 	{
 	private:		
@@ -106,7 +107,7 @@ exemple:
 		virtual const NLAIC::CIdentType &getType() const;
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;
-		virtual void getDebugString(char *) const;
+		virtual void getDebugString(std::string &) const;
 		virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &) const;
 		void load(NLMISC::IStream &);
 		void save(NLMISC::IStream &);		
@@ -120,7 +121,7 @@ exemple:
 
 		void setInfo(NLAIAGENT::IBaseGroupType	*);
 
-		void getString(char *txt) const;		
+		void getString(std::string &txt) const;		
 	};
 
 	/**
@@ -167,7 +168,7 @@ exemple:
 		virtual const NLAIC::CIdentType &getType() const;
 		virtual const NLAIC::IBasicType *clone() const;
 		const NLAIC::IBasicType *newInstance() const;
-		virtual void getDebugString(char *) const;
+		virtual void getDebugString(std::string &) const;
 		virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &) const;
 		virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
 		//@}

@@ -100,35 +100,34 @@ namespace NLAILOGIC
 		IObjectIA::load( is );
 	}
 
-	void CGoal::getDebugString(char *text) const
+	void CGoal::getDebugString(std::string &text) const
 	{
-		strcpy( text ,"<CGoal> (");
+		text += "<CGoal> (";
 		if ( _Name ) 
-			strcat( text, _Name->getString() );
-		char buf[1024];
+			text += _Name->getString();
+		std::string buf;
 		int i;
 		for ( i = 0; i < (int) _Args.size(); i++ )
 		{
 			_Args[i]->getDebugString(buf);
-			strcat(text," ");
-			strcat(text, buf);
+			text += " ";
+			text += buf;
 		}
-		strcat(text,") - ");
+		text += ") - ";
 
-		sprintf(buf," PRI = %f", priority() );
-		strcat(text, buf);
-		strcat(text," PRE = ");
+		text += NLAIC::stringGetBuild(" PRI = %f", priority() );
+		text += " PRE = ";
 
 		for ( i = 0; i < (int) _Predecessors.size(); i++ )
 		{
 			_Predecessors[i]->getDebugString( buf );
-			strcat(text, buf);
+			text += buf;
 		}
-		strcat(text," POST = ");
+		text += " POST = ";
 		for ( i = 0; i < (int) _Successors.size(); i++ )
 		{
 			_Successors[i]->getDebugString( buf );
-			strcat(text, buf);
+			text += buf;
 		}
 	}
 
@@ -181,8 +180,8 @@ namespace NLAILOGIC
 	{
 
 #ifdef NL_DEBUG	
-	char nameP[1024*4];
-	char nameM[1024*4];
+		std::string nameP;
+		std::string nameM;
 	funcName->getDebugString(nameM);
 	params.getDebugString(nameP);
 

@@ -1,7 +1,7 @@
 /** \file fuzzyfact.h
  *	This class describes the output of a fuzzy rule for a particular fuzzy set
  *
- * $Id: fuzzyfact.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: fuzzyfact.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,8 +47,7 @@ namespace NLAIFUZZY
 			IFuzzySet *set();
 			CFuzzyVar *var();
 			double value();
-
-			virtual void getDebugString(char *);
+			
 			virtual void load(NLMISC::IStream &is);
 			virtual void save(NLMISC::IStream &os) ;
 
@@ -60,7 +59,7 @@ namespace NLAIFUZZY
 			virtual const NLAIC::CIdentType &getType() const;
 			const NLAIC::IBasicType *clone() const;
 			const NLAIC::IBasicType *newInstance() const;
-			virtual void getDebugString(char *) const;
+			virtual void getDebugString(std::string &) const;
 			
 			bool isTrue() const;
 	};

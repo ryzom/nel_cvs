@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.18 2001/05/17 14:38:54 robert Exp $
+ * $Id: identtype.h,v 1.19 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,8 +207,10 @@ namespace NLAIAGENT
 			AgentNumber = x;*/
 
 		}
+
+		
 		///Have a debug string.
-		virtual void getDebugString(char *str) const;		
+		virtual void getDebugString(std::string &str) const;		
 
 		/// \name NLMISC::IStreamable method.
 		//@{
@@ -308,11 +310,13 @@ namespace NLAIAGENT
 			TypeName = s;
 		}
 
+		
+
 		///Have a debug string.
-		virtual void getDebugString(char *str) const
+		virtual void getDebugString(std::string &str) const
 		{
 			CAgentNumber::getDebugString(str);
-			sprintf(&str[strlen(str)]," '%s'",TypeName.data());
+			str += NLAIC::stringGetBuild(" '%s'",TypeName.data());
 		}
 
 		const std::string &getTypeName() const

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.31 2001/05/15 13:35:23 chafik Exp $
+ * $Id: agent_script.h,v 1.32 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -292,7 +292,7 @@ namespace NLAIAGENT
 		virtual void save(NLMISC::IStream &os);
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;
-		virtual void getDebugString(char *t) const;
+		virtual void getDebugString(std::string &t) const;
 		virtual const NLAIC::CIdentType &getType() const;
 		//@}
 

@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.16 2001/04/24 08:28:21 portier Exp $
+ * $Id: actor_script.h,v 1.17 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,7 @@ namespace NLAIAGENT
 			/// Inherited functions
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
-			virtual void getDebugString(char *t) const;
+			virtual void getDebugString(std::string &t) const;
 			virtual bool isEqual(const IBasicObjectIA &a) const;
 			virtual void processMessages();
 			virtual const CProcessResult &run();

@@ -1,7 +1,7 @@
 /** \file msg_on_change.h
  *
  *
- * $Id: msg_on_change.h,v 1.1 2001/03/06 14:09:35 robert Exp $
+ * $Id: msg_on_change.h,v 1.2 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ namespace NLAIAGENT
 			return new COnChangeMsg();
 		}
 		const NLAIC::CIdentType &getType() const;
-		void getDebugString(char *t) const;
+		void getDebugString(std::string &t) const;
 
 
 		tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;

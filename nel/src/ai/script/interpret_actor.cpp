@@ -50,7 +50,7 @@ namespace NLAISCRIPT
 		return instance;
 	}
 
-	void CActorClass::getDebugString(char *t) const
+	void CActorClass::getDebugString(std::string &t) const
 	{
 	}
 

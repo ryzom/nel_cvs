@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.18 2001/04/12 08:33:11 chafik Exp $
+ * $Id: group_type.cpp,v 1.19 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -325,20 +325,19 @@ namespace NLAIAGENT
 		}
 	}			
 
-	void CGroupType::getDebugString(char *text) const
-	{		
-				
-		sprintf(text,"[");
+	void CGroupType::getDebugString(std::string &text) const
+	{						
+		text += "[";
 		sint32 k = 0;
 		std::list<const IObjectIA *>::const_iterator i = _List.begin();
 		while(i != _List.end())
 		{
-			char temp[1024*8];
+			std::string temp;
 			(*i++)->getDebugString(temp);				
-			strcat(text,temp);
-			if(i != _List.end()) strcat(text," ");
+			text += temp;
+			if(i != _List.end()) text += " ";
 		}
-		strcat(text,"]");
+		text += "]";
 	}	
 
 //	IObjetOp *CGroupType::operator ! () const;
@@ -675,28 +674,28 @@ namespace NLAIAGENT
 		}
 	}			
 
-	void CVectorGroupType::getDebugString(char *text) const
+	void CVectorGroupType::getDebugString(std::string &text) const
 	{		
 		
 		if(_Vector.size())
 		{			
-			sprintf(text,"[",_Vector.size());
+			text += "[";
 			sint32 k = 0;
 			std::vector<const IObjectIA *>::const_iterator i = _Vector.begin();
 			while(i != _Vector.end())
 			{
-				char temp[1024*8];
+				std::string temp;
 				const IObjectIA *o = *i++;
 				o->getDebugString(temp);				
-				strcat(text,temp);
-				if(i != _Vector.end()) strcat(text," ");
+				text += temp;
+				if(i != _Vector.end()) text += " ";
 			}
-			strcat(text,"]");
+			text += "]";
 
 		}
 		else
 		{
-			sprintf(text,"CVectorGroupType<%04x>: <empty>",this);
+			text += NLAIC::stringGetBuild("CVectorGroupType<%04x>: <empty>",this);
 		}		
 	}	
 

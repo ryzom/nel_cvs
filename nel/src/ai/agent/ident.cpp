@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.12 2001/04/10 16:18:45 chafik Exp $
+ * $Id: ident.cpp,v 1.13 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,10 +136,10 @@ namespace NLAIAGENT
 		CreatorId = atoiInt64(creator);
 		DynamicId = atoiInt64(dyn);
 	}
+	
 
-	void CAgentNumber::getDebugString(char *str) const 
-	{									
-		str[0] = 0;
+	void CAgentNumber::getDebugString(std::string &str) const 
+	{											
 		char b[256];
 		memset(b,0,255);
 		memset(b,'0',18);
@@ -166,7 +166,7 @@ namespace NLAIAGENT
 			b[18 - n] = baseTable[(x & 15)];
 			x >>= 4;
 		}
-		strcat(str,b);
+		str += std::string(b);
 	}
 
 	const NLAIC::CIdentType &CLocWordNumRef::getType() const

@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.13 2001/05/11 14:11:44 portier Exp $
+ * $Id: operator_script.h,v 1.14 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,7 @@ namespace NLAIAGENT
 			/// Inherited functions
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
-			virtual void getDebugString(char *t) const;
+			virtual void getDebugString(std::string &) const;
 			virtual bool isEqual(const IBasicObjectIA &a) const;
 //			virtual void processMessages();
 			virtual const CProcessResult &run();

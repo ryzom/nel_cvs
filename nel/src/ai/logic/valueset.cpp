@@ -215,11 +215,13 @@ namespace NLAILOGIC
 
 		// -----------------
 
-		char buf[512];
+#ifdef NL_DEBUG
+		std::string buf;
 		this->getDebugString(buf);
-		char buf2[512];
+		std::string buf2;
 		CValueSet tmp(_NbValues, vals, pos_vals);
 		tmp.getDebugString(buf2);
+#endif
 		//TRACE(" \nUNIFICATION:\n VS = %s\n VP = %s \n", buf, buf2);
 		
 		// -----------------
@@ -431,20 +433,20 @@ namespace NLAILOGIC
 		}
 	}
 
-	void CValueSet::getDebugString(char *txt) const
+	void CValueSet::getDebugString(std::string &txt) const
 	{
-		char buf[512];
-		strcpy(txt," <CValueSet> ");
+		std::string buf;
+		txt += " <CValueSet> ";
 		for (sint32 i = 0; i < _NbValues; i++ )
 		{
-			strcat( txt, " , ");
+			txt += " , ";
 			if ( _Values[i] )
 			{
 				_Values[i]->getDebugString( buf );
 
-				strcat( txt, buf );
+				txt += buf ;
 			}
-			else strcat( txt, "NULL");
+			else txt += "NULL";
 		}
 	}
 

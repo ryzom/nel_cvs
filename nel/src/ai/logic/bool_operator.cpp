@@ -146,34 +146,34 @@ namespace NLAILOGIC
 		return instance;
 	}
 
-	void CBoolOperator::getDebugString(char *text) const
+	void CBoolOperator::getDebugString(std::string &text) const
 	{
-		strcpy( text, "<CBoolOperator>\n  -Preconditions:\n");
+		text += "<CBoolOperator>\n  -Preconditions:\n";
 
 		sint32 i;
 		for ( i = 0; i < (sint32) _Conds.size() ; i++ )
 		{
 			if ( _CondsVal[i] )
-				strcat(text, "    ");
+				text += "    ";
 			else
-				strcat(text, "     !");
-			strcat(text, _Conds[i]->getName().getString() );
+				text += "     !";
+			text += _Conds[i]->getName().getString();
 
 			if ( _CondsVal[i] == _Conds[i]->isTrue() )
-				strcat( text, " (true)\n");
+				text += " (true)\n";
 			else
-				strcat( text, " (false)\n");
+				text += " (false)\n";
 		}
 
-		strcat(text, "  -Postconditions:\n");
+		text += "  -Postconditions:\n";
 		for ( i = 0; i < (sint32) _Concs.size() ; i++ )
 		{
 			if ( _ConcsVal[i] )
-				strcat(text, "      ");
+				text += "      ";
 			else
-				strcat(text, "   !");
-			strcat(text, _Concs[i]->getName().getString() );
-			strcat(text,"\n");
+				text += "   !";
+			text += _Concs[i]->getName().getString();
+			text += "\n";
 		}
 	}
 

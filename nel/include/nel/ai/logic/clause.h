@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic condition
  *
- * $Id: clause.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: clause.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,7 @@ namespace NLAILOGIC {
 			CClause(std::list<CFactPattern   *> &);
 			~CClause();
 			virtual void addCond(CFactPattern   *cond);
-			virtual void getDebugString(char *) const;
+			virtual void getDebugString(std::string &) const;
 			virtual CVarSet *unify(CVarSet *);
 			CValueSet *unifyLiaison( const CValueSet *, std::list<NLAIAGENT::IObjetOp *> *, std::vector<sint32> &);
 			virtual void propagate(std::list<NLAIAGENT::IObjetOp *> *, std::vector<sint32> &);

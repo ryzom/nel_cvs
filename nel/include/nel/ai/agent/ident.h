@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.17 2001/03/26 14:49:56 chafik Exp $
+ * $Id: ident.h,v 1.18 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -282,10 +282,11 @@ namespace NLAIAGENT
 			}
 
 		}
+
+		
 		///Have a debug string.
-		void getDebugString(char *str) const 
-		{									
-			str[0] = 0;
+		void getDebugString(std::string &str) const 
+		{												
 			char b[sizeof(T)*8 + 1];
 			b[sizeof(T)*8] = 0;
 			sint i;
@@ -303,7 +304,7 @@ namespace NLAIAGENT
 					}
 					s >>= 1;
 				}							
-				strcat(str,b);
+				str += std::string(b);
 			}
 		}
 		
@@ -392,9 +393,9 @@ namespace NLAIAGENT
 		void load(NLMISC::IStream &is)
 		{
 			_Id.load(is);
-		}
+		}		
 		
-		void getDebugString(char *str) const
+		void getDebugString(std::string &str) const
 		{
 			_Id.getDebugString(str);
 		}
@@ -555,12 +556,12 @@ namespace NLAIAGENT
 		CLocWordNumRef():_Stock(NULL)
 		{
 		}
-
-		void getDebugString(char *t) const
-		{
-			char i[256*8];
+		
+		void getDebugString(std::string &t) const
+		{			
+			std::string i;
 			_Id.getDebugString(i);
-			sprintf(t,"CLocWordNumRef<%d>: _Id <%s>",this,i);
+			t += NLAIC::stringGetBuild("CLocWordNumRef<%d>: _Id <%s>",this,i.c_str());
 		}
 
 		/// \name IBasicInterface method.

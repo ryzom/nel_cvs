@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.9 2001/04/17 09:26:09 portier Exp $
+ * $Id: mailbox.h,v 1.10 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual const NLAIC::CIdentType &getType() const;
-		virtual void getDebugString(char *t) const;
+		virtual void getDebugString(std::string &t) const;
 		virtual void save(NLMISC::IStream &os);
 		virtual void load(NLMISC::IStream &is);
 		virtual void onKill(IConnectIA *);
@@ -162,7 +162,7 @@ namespace NLAIAGENT
 			virtual void setState(TProcessStatement state, IObjectIA *result);
 			virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &grp*/) const;
 			virtual const IObjectIA::CProcessResult &run();
-			virtual void getDebugString(char *t) const;
+			virtual void getDebugString(std::string &t) const;
 			/*virtual void addGroup(IBasicMessageGroup &grp);
 			virtual std::list<IBasicMessageGroup *> &getGroups() ;
 			virtual void removeGroup(IBasicMessageGroup &grp);*/

@@ -1,7 +1,7 @@
 /** \file object_ident.h
  * class for identification an objects fonctionality.
  *
- * $Id: object_ident.h,v 1.4 2001/04/17 09:26:09 portier Exp $
+ * $Id: object_ident.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,7 +70,7 @@ namespace NLAIAGENT
 			return _Id;
 		}
 		
-		void getDebugString(char *text) const
+		void getDebugString(std::string &text) const
 		{
 			_Id.getDebugString(text);
 		}

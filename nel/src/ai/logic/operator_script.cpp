@@ -56,7 +56,7 @@ namespace NLAIAGENT
 		return instance;
 	}
 	
-	void COperatorScript::getDebugString(char *t) const
+	void COperatorScript::getDebugString(std::string &t) const
 	{
 		/*
 		if ( _AgentClass )
@@ -213,7 +213,7 @@ namespace NLAIAGENT
 		while ( it_arg != args.end() )
 		{
 #ifdef NL_DEBUG
-			char buffer[1024 * 4];
+			std::string buffer;
 			(*it_arg)->getDebugString( buffer );
 #endif
 			it_arg++;

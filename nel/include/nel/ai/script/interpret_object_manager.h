@@ -1,7 +1,7 @@
 /** \file interpret_object_list.h
  * Class for define an agent manager.
  *
- * $Id: interpret_object_manager.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
+ * $Id: interpret_object_manager.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -42,7 +42,7 @@ namespace NLAISCRIPT
 		//@{
 		const NLAIC::IBasicType *clone() const;
 		const NLAIC::IBasicType *newInstance() const;
-		void getDebugString(char *t) const;
+		virtual void getDebugString(std::string &) const;
 
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;
 		//@}

@@ -1,7 +1,7 @@
 /** \file fuzzycond.cpp
  * Fuzzy conditions
  *
- * $Id: fuzzycond.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
+ * $Id: fuzzycond.cpp,v 1.5 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,9 +38,9 @@ namespace NLAIFUZZY
 		_Set = set;
 	}
 
-	void CSimpleFuzzyCond::getDebugString(char *txt) const
+	void CSimpleFuzzyCond::getDebugString(std::string &txt) const
 	{
-		sprintf(txt, "(%s is %s)", _Var->getName().getString(), _Set->getName() );
+		txt += NLAIC::stringGetBuild("(%s is %s)", _Var->getName().getString(), _Set->getName() );
 	}
 
 	bool CSimpleFuzzyCond::isTrue()

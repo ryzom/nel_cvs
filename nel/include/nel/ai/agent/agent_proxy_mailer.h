@@ -1,7 +1,7 @@
 /** \file agent_server_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_proxy_mailer.h,v 1.12 2001/05/17 14:11:37 chafik Exp $
+ * $Id: agent_proxy_mailer.h,v 1.13 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,15 +88,15 @@ namespace NLAIAGENT
 			else return new CProxyAgentMail();			
 		}
 
-		virtual void getDebugString(char *t) const
+		virtual void getDebugString(std::string &t) const
 		{
 			if(_AgentRef != NULL)
 			{
-				char text[200];
+				std::string text;
 				_AgentRef->getDebugString(text);
-				sprintf(t,"CProxyAgentMail for '%s' agents",text);
+				t = NLAIC::stringGetBuild("CProxyAgentMail for '%s' agents",text);
 			}
-			else sprintf(t,"CProxyAgentMail 'NILL' agents");
+			else t = "CProxyAgentMail 'NILL' agents";
 		}
 		//@}
 

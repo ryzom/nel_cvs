@@ -1,7 +1,7 @@
 /** \file script_debug_source.h
  * <File description>
  *
- * $Id: script_debug_source.h,v 1.1 2001/01/23 15:46:40 robert Exp $
+ * $Id: script_debug_source.h,v 1.2 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,7 +94,7 @@ public:
 
 	const NLAIC::IBasicType* newInstance() const;
 
-	void getDebugString(char *text) const;
+	virtual void getDebugString(std::string &) const;
 };
 
 
@@ -131,7 +131,7 @@ public:
 
 	const NLAIC::IBasicType* newInstance() const;
 
-	void getDebugString(char *text) const;
+	virtual void getDebugString(std::string &) const;
 };
 
 } // NLAISCRIPT

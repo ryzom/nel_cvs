@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.16 2001/04/05 16:29:41 portier Exp $
+ * $Id: agent.h,v 1.17 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,16 +75,27 @@ namespace NLAIAGENT
 		virtual IObjectIA *run(const IMessageBase &m);		
 
 
+		
+
 		/**
 		RunExec is to processing reltative to PExec Performatif. its call from the IObjectIA *run(const IMessageBase &m) method.
 		*/
 		virtual IMessageBase *runExec(const IMessageBase &m)
 		{
-			char debugString[1024*4];
-			char text[2048*8];
+			std::string debugString;
+			std::string text;
 			getDebugString(debugString);
-			sprintf(text,"IMessageBase *runExec(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
-			throw NLAIE::CExceptionNotImplemented(text);
+			text = "IMessageBase *runExec(";
+			text += (const char *)m.getType();
+			text += " note implementaited for the '";
+			text += (const char *)getType();
+			text += "' interface for the instence '";
+			text += (const char *)getType();
+			text += "' '";
+			text += debugString;
+			text += "'";
+			
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return NULL;
 		}
 
@@ -93,11 +104,20 @@ namespace NLAIAGENT
 		*/
 		virtual IMessageBase *runEven(const IMessageBase &m)
 		{
-			char debugString[1024*4];
-			char text[2048*8];
+			std::string debugString;
+			std::string text;
 			getDebugString(debugString);
-			sprintf(text,"IMessageBase *runEven(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
-			throw NLAIE::CExceptionNotImplemented(text);
+			text = "IMessageBase *runEven(";
+			text += (const char *)m.getType();
+			text += " note implementaited for the '";
+			text += (const char *)getType();
+			text += "' interface for the instence '";
+			text += (const char *)getType();
+			text += "' '";
+			text += debugString;
+			text += "'";
+
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return NULL;
 		}
 
@@ -106,11 +126,20 @@ namespace NLAIAGENT
 		*/
 		virtual IMessageBase *runAchieve(const IMessageBase &m)
 		{
-			char debugString[1024*4];
-			char text[2048*8];
+			std::string debugString;
+			std::string text;
 			getDebugString(debugString);
-			sprintf(text,"runAchieve(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
-			throw NLAIE::CExceptionNotImplemented(text);
+			text = "IMessageBase *runAchieve(";
+			text += (const char *)m.getType();
+			text += " note implementaited for the '";
+			text += (const char *)getType();
+			text += "' interface for the instence '";
+			text += (const char *)getType();
+			text += "' '";
+			text += debugString;
+			text += "'";
+			
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return NULL;
 		}
 
@@ -129,11 +158,20 @@ namespace NLAIAGENT
 		*/
 		virtual IMessageBase *runBreak(const IMessageBase &m)
 		{
-			char debugString[1024*4];
-			char text[2048*8];
+			std::string debugString;
+			std::string text;
 			getDebugString(debugString);
-			sprintf(text,"runBreak(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
-			throw NLAIE::CExceptionNotImplemented(text);
+			text = "IMessageBase *runBreak(";
+			text += (const char *)m.getType();
+			text += " note implementaited for the '";
+			text += (const char *)getType();
+			text += "' interface for the instence '";
+			text += (const char *)getType();
+			text += "' '";
+			text += debugString;
+			text += "'";
+			
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return NULL;
 		}
 
@@ -142,11 +180,20 @@ namespace NLAIAGENT
 		*/
 		virtual IMessageBase *runKill(const IMessageBase &m)
 		{
-			char debugString[1024*4];
-			char text[2048*8];
+			std::string debugString;
+			std::string text;
 			getDebugString(debugString);
-			sprintf(text,"runKill(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
-			throw NLAIE::CExceptionNotImplemented(text);
+			text = "IMessageBase *runKill(";
+			text += (const char *)m.getType();
+			text += " note implementaited for the '";
+			text += (const char *)getType();
+			text += "' interface for the instence '";
+			text += (const char *)getType();
+			text += "' '";
+			text += debugString;
+			text += "'";
+			
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return NULL;
 		}
 
@@ -155,11 +202,20 @@ namespace NLAIAGENT
 		*/
 		virtual IMessageBase *runError(const IMessageBase &m)
 		{
-			char debugString[1024*4];
-			char text[2048*8];
+			std::string debugString;
+			std::string text;
 			getDebugString(debugString);
-			sprintf(text,"runError(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
-			throw NLAIE::CExceptionNotImplemented(text);
+			text = "IMessageBase *runError(";
+			text += (const char *)m.getType();
+			text += " note implementaited for the '";
+			text += (const char *)getType();
+			text += "' interface for the instence '";
+			text += (const char *)getType();
+			text += "' '";
+			text += debugString;
+			text += "'";
+			
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return NULL;
 		}
 
@@ -168,11 +224,20 @@ namespace NLAIAGENT
 		*/
 		virtual IMessageBase *runService(const IMessageBase &m)
 		{
-			char debugString[1024*4];
-			char text[2048*8];
+			std::string debugString;
+			std::string text;
 			getDebugString(debugString);
-			sprintf(text,"runService(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
-			throw NLAIE::CExceptionNotImplemented(text);
+			text = "IMessageBase *runService(";
+			text += (const char *)m.getType();
+			text += " note implementaited for the '";
+			text += (const char *)getType();
+			text += "' interface for the instence '";
+			text += (const char *)getType();
+			text += "' '";
+			text += debugString;
+			text += "'";
+			
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return NULL;
 		}
 
@@ -329,7 +394,7 @@ namespace NLAIAGENT
 		//@{
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;
-		virtual void getDebugString(char *t) const;
+		virtual void getDebugString(std::string &t) const;
 		virtual const NLAIC::CIdentType &getType() const;
 		virtual void save(NLMISC::IStream &os);
 		virtual void load(NLMISC::IStream &is);		

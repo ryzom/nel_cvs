@@ -53,7 +53,7 @@ namespace NLAISCRIPT
 		return instance;
 	}
 
-	void CFsmClass::getDebugString(char *t) const
+	void CFsmClass::getDebugString(std::string &t) const
 	{
 		CAgentClass::getDebugString(t);
 	}

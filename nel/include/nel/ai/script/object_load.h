@@ -1,7 +1,7 @@
 /** \file object_load.h
  * Sevral class for loading object from the context.
  *
- * $Id: object_load.h,v 1.5 2001/01/17 10:32:29 chafik Exp $
+ * $Id: object_load.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ namespace NLAISCRIPT
 		virtual const NLAIAGENT::IBaseGroupType *getParam(CCodeContext &context) const = 0;
 		//@}
 
-		virtual void getDebugString(char *) const{}
+		virtual void getDebugString(std::string &) const{}
 		virtual ~ILoadObject()
 		{
 		}

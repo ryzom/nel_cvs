@@ -2,7 +2,7 @@
 
 /** \file msg_fact.h
  *
- * $Id: msg_fact.h,v 1.2 2001/04/17 09:26:09 portier Exp $
+ * $Id: msg_fact.h,v 1.3 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ namespace NLAIAGENT
 			return new CFactMsg();
 		}
 		const NLAIC::CIdentType &getType() const;
-		void getDebugString(char *t) const;
+		void getDebugString(std::string &t) const;
 
 
 		tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;

@@ -180,16 +180,15 @@ namespace NLAILOGIC
 		delete vars_cond;
 	}
 
-	void CClause::getDebugString(char *txt) const
-	{
-		txt[0] = 0;
-		strcpy(txt, "CClause ");
+	void CClause::getDebugString(std::string &txt) const
+	{		
+		txt += "CClause ";
 		for (sint32 i = 0; i < (sint32)_Vars.size(); i++ )
 		{
-			char buf[512];
+			std::string buf;
 			_Vars[ i ]->getDebugString( buf );
-			strcat( txt, "  - ");
-			strcat( txt, buf );
+			txt += "  - ";
+			txt += buf;
 		}
 	}
 
@@ -296,7 +295,7 @@ namespace NLAILOGIC
 		std::list<CValueSet *>::iterator it_vs = _Conflits.begin();
 		while ( it_vs != _Conflits.end() )
 		{
-			char buf[512];
+			std::string buf;
 			( *it_vs )->getDebugString( buf );
 			it_vs++;
 		}
@@ -307,9 +306,8 @@ namespace NLAILOGIC
 		std::list<CValueSet *>::iterator it_vs = _BufLiaisons.begin();
 		while ( it_vs != _BufLiaisons.end() )
 		{
-			char buf[512];
-			( *it_vs )->getDebugString( buf );
-			//TRACE("\n BUFFER: %s \n",buf);
+			std::string buf;
+			( *it_vs )->getDebugString( buf );			
 			it_vs++;
 		}
 	}
@@ -319,9 +317,8 @@ namespace NLAILOGIC
 		std::list<CValueSet *>::iterator it_vs = _Liaisons.begin();
 		while ( it_vs != _Liaisons.end() )
 		{
-			char buf[512];
-			( *it_vs )->getDebugString( buf );
-			//TRACE(" LIAISON: %s \n",buf);
+			std::string buf;
+			( *it_vs )->getDebugString( buf );			
 			it_vs++;
 		}
 	}
@@ -333,7 +330,7 @@ namespace NLAILOGIC
 		while ( !_BufLiaisons.empty() )
 		{
 			_Liaisons.push_back( _BufLiaisons.front() );
-			char buf[512];
+			std::string buf;
 			_BufLiaisons.front()->getDebugString( buf );
 			//TRACE ( "Ajout de la liaison du buffer: %s ", buf );
 			_BufLiaisons.pop_front();

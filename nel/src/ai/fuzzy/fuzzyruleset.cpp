@@ -1,7 +1,7 @@
 /** \file fuzzyruleset.cpp
  *	A container for fuzzy rules
  *	
- * $Id: fuzzyruleset.cpp,v 1.5 2001/01/17 10:47:05 chafik Exp $
+ * $Id: fuzzyruleset.cpp,v 1.6 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,12 +80,12 @@ namespace NLAIFUZZY
 */
 	}
 
-	void CFuzzyRuleSet::getDebugString(char *txt) const
+	void CFuzzyRuleSet::getDebugString(std::string &txt) const
 	{	
 		if ( _Comment )
-			sprintf(txt, "CFuzzyRuleSet %S\n (%d rule)", _Comment, _Rules.size());
+			txt += NLAIC::stringGetBuild("CFuzzyRuleSet %s\n (%d rule)", _Comment, _Rules.size());
 		else
-			sprintf(txt, "CFuzzyRuleSet \n (%d rule)", _Rules.size());
+			txt += NLAIC::stringGetBuild("CFuzzyRuleSet \n (%d rule)", _Rules.size());
 	}
 
 	const NLAIC::CIdentType &CFuzzyRuleSet::getType() const

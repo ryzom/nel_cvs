@@ -1,7 +1,7 @@
 /** \file interpret_fuzzytype.cpp
  * Base class for the integration of fuzzy facts in conditions
  *
- * $Id: fuzzytype.cpp,v 1.5 2001/01/17 10:47:05 chafik Exp $
+ * $Id: fuzzytype.cpp,v 1.6 2001/05/22 16:08:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,9 +56,9 @@ namespace NLAIFUZZY
 		is.serial(_Threshold);
 	}
 
-	void FuzzyType::getDebugString(char *text) const
+	void FuzzyType::getDebugString(std::string &text) const
 	{
-		sprintf(text,"FuzzyType<%d>",_Value);
+		text += NLAIC::stringGetBuild("FuzzyType<%d>",_Value);
 	}
 	
 	bool FuzzyType::isTrue() const

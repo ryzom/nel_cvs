@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.14 2001/05/02 13:25:01 chafik Exp $
+ * $Id: message_script.cpp,v 1.15 2001/05/22 16:08:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -344,28 +344,28 @@ namespace NLAIAGENT
 		return instance;
 	}
 
-	void CMessageScript::getDebugString(char *t) const
+	void CMessageScript::getDebugString(std::string &t) const
 	{
 		if ( _MessageClass )
-			sprintf(t,"<%s> (scripted)\n   -StaticComponents:\n",(const char *)_MessageClass->getType());
+			t += NLAIC::stringGetBuild("<%s> (scripted)\n   -StaticComponents:\n",(const char *)_MessageClass->getType());
 		else
-			strcat(t,"<undefined_class> (scripted)\n   -StaticComponents:\n");
+			t += NLAIC::stringGetBuild("<undefined_class> (scripted)\n   -StaticComponents:\n");
 
-		char buf[2048];
+		std::string buf;
 		for (sint32 i = 0; i < size(); i++ )
 		{
-			strcat(t, "     ");
+			t += "     ";
 			if ( _MessageClass->getComponentName(i) )
 			{
-				strcat(t, _MessageClass->getComponentName(i) );
+				t += _MessageClass->getComponentName(i);
 			}
 			else
-				strcat(t, "<unnamed>");
+				t += "<unnamed>";
 
-			strcat(t, "     ");
+			t += "     ";
 			(*this)[i]->getDebugString(buf);
-			strcat(t, buf);
-			strcat(t, "\n");
+			t += buf;
+			t += "\n";
 		}
 	}
 

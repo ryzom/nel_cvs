@@ -1,7 +1,7 @@
 /** \file msg_container.h
  * class for container of message in the mail box.
  *
- * $Id: msg_container.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: msg_container.h,v 1.3 2001/05/22 16:08:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,7 +80,7 @@ namespace NLAIAGENT {
 			virtual const NLAIC::CIdentType &getType() const;			
 
 			// TODO
-			void getDebugString(char *t) const { t[0] = 0; }
+			void getDebugString(std::string &t) const {  }
 
 			virtual void addMessage(IMessageBase *); 
 			virtual std::list<const IMessageBase *> *CVectorMsgContainer::pumpMessages(const IBasicMessageGroup &);

@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.31 2002/06/03 15:28:35 berenguier Exp $
+ * $Id: export_anim.cpp,v 1.32 2002/06/05 15:46:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1634,7 +1634,8 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 		}
 	}
 
-	if (bodyBiped)
+	//if a biped body, or if must export his position track (clavicle...)
+	if (bodyBiped || ( animBuildCtx && animBuildCtx->mustExportBipedBonePos((INode*)&node) ) )
 	{
 		NL3D::ITrack	*doomy;
 
@@ -1718,15 +1719,21 @@ void				CExportNel::buildBipedInformation(CAnimationBuildCtx &animBuildCtx, INod
 		(transform->ClassID() == BIPBODY_CONTROL_CLASS_ID || transform->ClassID() == BIPSLAVE_CONTROL_CLASS_ID) 
 		)
 	{
-		// Yes, add it to the array.
+		// Yes, Add the node
+		//===============
 		CAnimationBuildCtx::CBipedNode	bipNode;
 		bipNode.Node= &node;
+
+		// add it to the array.
 		animBuildCtx.BipedNodes.push_back(bipNode);
 
-		// ** Get the 3dsmax key control.
+
+		// Update Ctx anim range
+		//===============
+		// Get the 3dsmax key control.
 		IKeyControl *ikeys=GetKeyControlInterface (transform);
 
-		// If has keys, update ctx range.
+		// If has keys
 		if(ikeys && ikeys->GetNumKeys()>0)
 		{
 			CDoomyKey key;
@@ -1821,6 +1828,14 @@ void				CExportNel::overSampleBipedAnimation(CAnimationBuildCtx &animBuildCtx, u
 		animBuildCtx.BipedNodes[i].Keys.reserve(numKeys);
 	}
 
+	// For each bone, true if must export his Pos track.
+	std::vector<bool>	bpExportPos;
+	bpExportPos.resize(animBuildCtx.BipedNodes.size());
+	for(i=0;i<animBuildCtx.BipedNodes.size();i++)
+	{
+		bpExportPos[i]= animBuildCtx.mustExportBipedBonePos(animBuildCtx.BipedNodes[i].Node);
+	}
+
 	// For all time Values usefull for the Biped.
 	TimeValue	time;
 	for(time= animBuildCtx.BipedRangeMin; time<=animBuildCtx.BipedRangeMax; time+= interpolationStep)
@@ -1839,13 +1854,21 @@ void				CExportNel::overSampleBipedAnimation(CAnimationBuildCtx &animBuildCtx, u
 			CAnimationBuildCtx::CBipedKey		bpKey;
 			bpKey.Time= time;
 
-			// Get the local matrix
-			Matrix3 localMatrix;
-			getLocalMatrix (localMatrix, *bpNode.Node, time);
-
-			// Decomp in scale, rot and pos.
-			decompMatrix (bpKey.Scale, bpKey.Quat, bpKey.Pos, localMatrix);
-			bpKey.Quat.normalize();
+			// For faster interpolation, use simpler getLocalMatrix when possible
+			if( !bpExportPos[i] )
+			{
+				// can use it because RotQuat is the same with this method or with getNELBoneLocalTM()
+				Matrix3 localTM (TRUE);
+				getLocalMatrix (localTM, *bpNode.Node, time);
+				// NB: with this method the NEL local pos and local scale are false, but doesn't matter since not used...
+				decompMatrix (bpKey.Scale, bpKey.Quat, bpKey.Pos, localTM);
+				bpKey.Quat.normalize();
+			}
+			else
+			{
+				// Get the NEL local TM, with correct position
+				getNELBoneLocalTM(*bpNode.Node, time, bpKey.Scale, bpKey.Quat, bpKey.Pos);
+			}
 
 			// Add the key.
 			bpNode.Keys.push_back(bpKey);
@@ -1884,6 +1907,27 @@ void				CExportNel::overSampleBipedAnimation(CAnimationBuildCtx &animBuildCtx, u
 		setBipedInplaceMode (getName (*node).c_str(), "inPlaceMode", pm.InPlaceMode);
 	}
 
+
+	// TestYoyo. To see what Pos are animated. Strange biped stuff
+	//=========================
+	/*for(i=0; i<animBuildCtx.BipedNodes.size(); i++)
+	{
+		CAnimationBuildCtx::CBipedNode		&bpNode= animBuildCtx.BipedNodes[i];
+		if(bpNode.Keys.size()==0)
+			return;
+
+		// Test all track pos
+		CVector		posRef= bpNode.Keys[0].Pos;
+		for(uint j=1;j<bpNode.Keys.size();j++)
+		{
+			if( (bpNode.Keys[j].Pos-posRef).norm()>0.001 )
+			{
+				std::string	name= getName(*bpNode.Node);
+				nlinfo(name.c_str());
+			}
+		}
+	}*/
+
 }
 
 
@@ -1897,14 +1941,56 @@ CExportNel::CAnimationBuildCtx::CAnimationBuildCtx()
 // ***************************************************************************
 void				CExportNel::CAnimationBuildCtx::compileBiped()
 {
-	_BipedMap.clear();
+	uint	i;
 
-	for(uint i=0;i<BipedNodes.size();i++)
+	// Build _BipedMap
+	_BipedMap.clear();
+	for(i=0;i<BipedNodes.size();i++)
 	{
 		// Add entry in map.
 		_BipedMap[BipedNodes[i].Node]= i;
 	}
+
+	// Build set of bones to Export Pos Track.
+	_ExportBipedBonePosSet.clear();
+	for(i=0;i<BipedNodes.size();i++)
+	{
+		INode	*node= BipedNodes[i].Node;
+
+		// Get the matrix controler
+		Control *transform= node->GetTMController();
+		nlassert (transform);
+		// If this is node is a Biped controller.
+		if( transform->ClassID() == BIPBODY_CONTROL_CLASS_ID )
+		{
+			// Add him to the set.
+			_ExportBipedBonePosSet.insert(node);
+
+			// Must add the clavicles of this biped too (Biped stuff).
+			addLimbNodeToExportPos(node, "#larm");
+			addLimbNodeToExportPos(node, "#rarm");
+		}
+	}
 }
+
+
+// ***************************************************************************
+void				CExportNel::CAnimationBuildCtx::addLimbNodeToExportPos(INode *rootNode, const char *limbId)
+{
+	char script[512];
+	INode		*limbNode= NULL;
+
+	// evaluate script.
+	_snprintf (script, 512, "biped.getNode $'%s' %s", CExportNel::getName(*rootNode).c_str(), limbId);
+	// If script is ok.
+	if( CExportNel::scriptEvaluate (script, &limbNode, scriptNode) )
+	{
+		// add to the array if success
+		if(limbNode)
+			_ExportBipedBonePosSet.insert(limbNode);
+	}
+}
+
 
 // ***************************************************************************
 CExportNel::CAnimationBuildCtx::CBipedNode		*CExportNel::CAnimationBuildCtx::getBipedNodeInfo(INode *node)
@@ -1914,4 +2000,12 @@ CExportNel::CAnimationBuildCtx::CBipedNode		*CExportNel::CAnimationBuildCtx::get
 		return NULL;
 	else
 		return &BipedNodes[it->second];
+}
+
+
+// ***************************************************************************
+bool				CExportNel::CAnimationBuildCtx::mustExportBipedBonePos(INode *node)
+{
+	// true if found in the set.
+	return (_ExportBipedBonePosSet.find(node)!=_ExportBipedBonePosSet.end());
 }

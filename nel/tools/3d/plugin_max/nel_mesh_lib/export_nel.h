@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.53 2002/06/03 15:28:36 berenguier Exp $
+ * $Id: export_nel.h,v 1.54 2002/06/05 15:46:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,7 @@ enum TNelScriptValueType
 	scriptNothing,
 	scriptFloat,
 	scriptBool,
+	scriptNode,
 };
 
 // ***************************************************************************
@@ -422,6 +423,16 @@ public:
 
 	// Enable / disable the skin modifier
 	static void						enableSkinModifier (INode& node, bool enable);
+
+	/// return true if the bone must unherit his father scale. Special cases for biped, biped father etc...
+	bool							getNELUnHeritFatherScale(INode &node);
+
+	/**	This method do the same thing as getLocalMatrix() mut manages complexs cases of Scale unheritance,
+		strange Biped node Scale stuff, etc.... 
+	 */
+	void							getNELBoneLocalTM(INode &node, TimeValue time,
+		NLMISC::CVector &nelScale, NLMISC::CQuat &nelQuat, NLMISC::CVector &nelPos);
+
 
 	// **************
 	// *** Ëxport Lod
@@ -855,6 +866,7 @@ private:
 		struct	CBipedKey
 		{
 			TimeValue			Time;
+			// The correct Nel Local TM
 			NLMISC::CVector		Pos;
 			NLMISC::CQuat		Quat;
 			NLMISC::CVector		Scale;
@@ -879,16 +891,30 @@ private:
 		
 		bool			hasBipedNodes() const {return BipedNodes.size()>0;}
 
-		// compile the bipedMap from BipedNodes.
+		// compile the bipedMap from BipedNodes, and other infos
 		void			compileBiped();
 
 		// From a node, get its associated CBipedNode in the BipedNodes array.
 		CBipedNode		*getBipedNodeInfo(INode *node);
 
+		/* return true if this node must export Track Position. It returns true for bodyBiped and LClavicle and RClavicle
+			limb for now.
+			NB: We use script to now if the node is a clavicle (ie not hack-tested by node name)
+			But this slow test is done in compileBiped().
+		*/
+		bool			mustExportBipedBonePos(INode *node);
+
 	private:
 		// Map from INode * to CBiped Id in BipedNodes
 		typedef	std::map<INode*, uint>	TBipedMap;
 		TBipedMap						_BipedMap;
+
+		// List of node which must export their position.
+		typedef	std::set<INode*>		TBipedSet;
+		TBipedSet						_ExportBipedBonePosSet;
+
+		// Add a limb node to the _ExportBipedBonePosSet. eg: #larm.
+		void							addLimbNodeToExportPos(INode *rootNode, const char *limbId);
 	};
 
 	// Bkup ctx of a biped bone.
@@ -902,9 +928,19 @@ private:
 
 
 	// 
-	void							buildBipedInformation(CAnimationBuildCtx &animBuildCtx, INode &node);
+	void			buildBipedInformation(CAnimationBuildCtx &animBuildCtx, INode &node);
 	// 
-	void							overSampleBipedAnimation(CAnimationBuildCtx &animBuildCtx, uint overSampleValue);
+	void			overSampleBipedAnimation(CAnimationBuildCtx &animBuildCtx, uint overSampleValue);
+
+
+	/// return the Nel Scale Reference node if any.
+	INode	*getNELScaleReferenceNode(INode &node);
+
+	/// return true if the node has a biped controller (either body or slave).
+	bool		isBipedNode(INode &node);
+
+	/// As part of getNELBoneLocalTM.
+	void		getNELBoneLocalScale(INode &node, TimeValue time, NLMISC::CVector &nelScale);
 
 private:
 

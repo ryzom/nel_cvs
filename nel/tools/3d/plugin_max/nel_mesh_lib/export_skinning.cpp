@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.16 2002/05/24 14:15:13 berenguier Exp $
+ * $Id: export_skinning.cpp,v 1.17 2002/06/05 15:46:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,203 @@ void CExportNel::buildSkeletonShape (CSkeletonShape& skeletonShape, INode& node,
 	skeletonShape.build (bonesArray);
 }
 
+
+// ***************************************************************************
+bool CExportNel::isBipedNode(INode &node)
+{
+	bool	ret= false;
+	Control	*c= node.GetTMController();
+	if( c && (
+		c->ClassID() == BIPSLAVE_CONTROL_CLASS_ID ||
+		c->ClassID() == BIPBODY_CONTROL_CLASS_ID ))
+		ret= true;
+
+	return ret;
+}
+
+
+// ***************************************************************************
+bool CExportNel::getNELUnHeritFatherScale(INode &node)
+{
+	// Default.
+	bool	ret= false;
+
+
+	/* If my parent exist, and if my parent is a BipedNode, always suppose I must unherit scale.
+		This is because Biped NodeTM always have a Scale 1,1,1. Hence Sons bones do not herit scale.
+	*/
+	INode	*parentNode= node.GetParentNode();
+	if(parentNode && isBipedNode(*parentNode) )
+	{
+		ret= true;
+	}
+	// Else, test the std way.
+	else
+	{
+		// Get the TM controler
+		Control *c;
+		c = node.GetTMController();
+
+		// If a TM controler exist
+		if (c)
+		{
+			// Get the inherit flags
+			DWORD flags=c->GetInheritanceFlags();
+
+			// Unherit scale if all scale inherit flags are cleared
+			ret= (flags&(INHERIT_SCL_X|INHERIT_SCL_Y|INHERIT_SCL_Z))!=0;
+		}
+	}
+
+	return ret;
+}
+
+
+// ***************************************************************************
+INode *CExportNel::getNELScaleReferenceNode(INode &node)
+{
+	INode	*referenceNode= NULL;
+
+	bool	exportScale= getScriptAppData (&node, NEL3D_APPDATA_EXPORT_BONE_SCALE, BST_UNCHECKED)==BST_CHECKED;
+	// Get the reference node
+	if(exportScale)
+	{
+		std::string	boneScaleNameExt= getScriptAppData (&node, NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT, "");
+		if(!boneScaleNameExt.empty())
+		{
+			std::string	boneScaleName= getName(node) + boneScaleNameExt;
+			// Get the reference node
+			referenceNode= _Ip->GetINodeByName(boneScaleName.c_str());
+		}
+	}
+
+	return referenceNode;
+}
+
+
+// ***************************************************************************
+void CExportNel::getNELBoneLocalScale(INode &node, TimeValue time, NLMISC::CVector &nelScale)
+{
+	// To get the correct local Scale, we use an other bone as reference (if present)
+	INode	*referenceNode= getNELScaleReferenceNode(node);
+
+	// get the Max local pos.
+	Matrix3 localTM (TRUE);
+	getLocalMatrix (localTM, node, time);
+	NLMISC::CVector		maxScale;
+	NLMISC::CQuat		maxRot;
+	NLMISC::CVector		maxPos;
+	decompMatrix (maxScale, maxRot, maxPos, localTM);
+
+
+	// Biped node case, take the scale from ratio with the reference node.
+	if(isBipedNode(node))
+	{
+		// Replace scale with ratio from reference value, if possible
+		if (referenceNode)
+		{
+			ScaleValue	scaleValue;
+			// get my Offset scale.
+			CVector		myScale;
+			scaleValue = node.GetObjOffsetScale();
+			myScale.x= scaleValue.s.x;
+			myScale.y= scaleValue.s.y;
+			myScale.z= scaleValue.s.z;
+
+			// get its Offset scale.
+			CVector		refScale;
+			scaleValue = referenceNode->GetObjOffsetScale();
+			refScale.x= scaleValue.s.x;
+			refScale.y= scaleValue.s.y;
+			refScale.z= scaleValue.s.z;
+
+			// Get The ratio as the result
+			nelScale.x= myScale.x / refScale.x;
+			nelScale.y= myScale.y / refScale.y;
+			nelScale.z= myScale.z / refScale.z;
+		}
+		else
+		{
+			// Not present, suppose no scale.
+			nelScale.set(1,1,1);
+		}
+
+	}
+	// get the scale from std way.
+	else
+	{
+		// Get the scale from localMatrix.
+		nelScale= maxScale;
+	}
+
+}
+
+
+// ***************************************************************************
+void CExportNel::getNELBoneLocalTM(INode &node, TimeValue time,
+		NLMISC::CVector &nelScale, NLMISC::CQuat &nelQuat, NLMISC::CVector &nelPos)
+{
+	// get the Max local pos.
+	Matrix3 localTM (TRUE);
+	getLocalMatrix (localTM, node, time);
+	NLMISC::CVector		maxScale;
+	NLMISC::CQuat		maxRot;
+	NLMISC::CVector		maxPos;
+	decompMatrix (maxScale, maxRot, maxPos, localTM);
+
+	// get bone Rot.
+	//=============
+
+	// Same Rot.
+	nelQuat= maxRot;
+	nelQuat.normalize();
+
+
+	// get Bone Scale.
+	//=============
+
+	// Get the NEL local scale.
+	getNELBoneLocalScale(node, time, nelScale);
+
+	// get bone Pos.
+	//=============
+
+	// Default is same pos.
+	nelPos= maxPos;
+
+	/* The following is important To have correct NEL position
+		Let me explain: 
+			- Biped bones NodeTM have correct World Position, but NodeTM.Scale == 1,1,1 (always)
+				We can get the bone local scale from OffsetScale, this why we need a Reference Node, to perform the 
+				difference (because the Reference Node ofsset scale is not a 1,1,1 scale)
+			- Nel bones Pos are the LOCAL pos, and they INHERIT parent scale (like in Maya).
+				Nel UnheritScale is used to unherit the scale from father to the rotation/scale only part of the son.
+		The problem is that if we export Position default pos from the current scaled "node", we will have the 
+		"already scaled from father Local Pos" from Biped. Instead we want the "not scaled from father Local Pos"
+		because NEL will do the "scaled from father" job in RealTime.
+		
+		So to get the correct local Position, we must remove the fahter Nel Local Scale.
+	*/
+
+	// If my father is a biped bone, then do special stuff.
+	INode	*parentNode= node.GetParentNode();
+	// NB: don't need to test If I must unherit scale, because sons of Biped nodes always unherit scale...
+	if(parentNode && isBipedNode(*parentNode))
+	{
+		/* In this case, I must remove my father Nel scale, because the biped NodeTM has a scale 1,1,1.
+			Hence the Local position, computed with getLocalMatrix(), we have is false.
+		*/
+		CVector		fatherScale;
+		// NB: avoid calling getNELBoneLocalTM() for father else Recursive call untill to the root !!!
+		// We need just the scale here.
+		getNELBoneLocalScale(*parentNode, time, fatherScale);
+		nelPos.x/= fatherScale.x;
+		nelPos.y/= fatherScale.y;
+		nelPos.z/= fatherScale.z;
+	}
+}
+
+
 // ***************************************************************************
 
 void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node, mapBoneBindPos* mapBindPos, TInodePtrInt& mapId, 
@@ -132,103 +329,24 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 
 	// ** Set inherit flags
 
-	// Get the TM controler
-	Control *c;
-	c = node.GetTMController();
+	// Must remove Scale from my father??
+	bone.UnheritScale= getNELUnHeritFatherScale(node);
 
-	// If a TM controler existd
-	if (c)
-	{
-		// Get the inherit flags
-		DWORD flags=c->GetInheritanceFlags();
-
-		// Unherit scale if all scale inherit flags are cleared
-		bone.UnheritScale=(flags&(INHERIT_SCL_X|INHERIT_SCL_Y|INHERIT_SCL_Z))!=0;
-	}
 
 	// **** Set default tracks
 
-	// Get the local matrix for the default pos
-	Matrix3 localTM (TRUE);
-
-
-	// To get the correct local Scale, we use an other bone as reference (if present)
-	INode	*referenceNode= NULL;
-	bool	exportScale= getScriptAppData (&node, NEL3D_APPDATA_EXPORT_BONE_SCALE, BST_UNCHECKED)==BST_CHECKED;
-	// Get the reference node
-	if(exportScale)
-	{
-		std::string	boneScaleNameExt= getScriptAppData (&node, NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT, "");
-		if(!boneScaleNameExt.empty())
-		{
-			std::string	boneScaleName= getName(node) + boneScaleNameExt;
-			// Get the reference node
-			referenceNode= _Ip->GetINodeByName(boneScaleName.c_str());
-		}
-	}
-
-	// Get the local matrix for the default pos.
-	// Root must be exported with Identity because path are setuped interactively in the root of the skeleton
-	if(id!=0)
-	{
-		// take it from reference if exist. 
-		if (referenceNode)
-		{
-			/* This is important To have correct NEL position default pos.
-				Let me explain: 
-					- Biped bones NodeTM have correct World Position, but NodeTM.Scale == 1,1,1.
-						We can get the bone scale from OffsetScale, this why we need a Reference Node, to perform the 
-						difference (because the Reference Node ofsset scale is not a 1,1,1 scale)
-					- Nel bones Pos are the LOCAL pos, and they INHERIT parent scale (like in Maya).
-						Nel UnheritScale is used to unherit the scale from father to the rotation/scale part of the son.
-				The problem is that if we export Position default pos from the current scaled "node", we will have the 
-				"already scaled from father Local Pos" from Biped. Instead we want the "not scaled from father Local Pos"
-				because NEL will do the "scaled from father" job in RealTime.
-				
-				So to get the correct local Position, an easy method is to get it from reference node, since this one suit 
-				our needs here.
-			*/
-			getLocalMatrix (localTM, *referenceNode, time);
-		}
-		else
-		{
-			getLocalMatrix (localTM, node, time);
-		}
-	}
-	else
-	{
-		int thisIsABodyControl=0;
-	}
-
-	// Decomp the matrix to get default animations tracks
+	// Get the Nel Local TM
 	NLMISC::CVector		nelScale;
 	NLMISC::CQuat		nelRot;
 	NLMISC::CVector		nelPos;
-	decompMatrix (nelScale, nelRot, nelPos, localTM);
+	getNELBoneLocalTM(node, time, nelScale, nelRot, nelPos);
 
-	// Replace scale with ratio from reference value, if possible
-	if (referenceNode)
+	// Root must be exported with Identity because path are setuped interactively in the root of the skeleton
+	if(id==0)
 	{
-
-		ScaleValue	scaleValue;
-		// get my Offset scale.
-		CVector		myScale;
-		scaleValue = node.GetObjOffsetScale();
-		myScale.x= scaleValue.s.x;
-		myScale.y= scaleValue.s.y;
-		myScale.z= scaleValue.s.z;
-
-		// get its Offset scale.
-		CVector		refScale;
-		scaleValue = referenceNode->GetObjOffsetScale();
-		refScale.x= scaleValue.s.x;
-		refScale.y= scaleValue.s.y;
-		refScale.z= scaleValue.s.z;
-
-		// Get The ratio as the result
-		nelScale.x= myScale.x / refScale.x;
-		nelScale.y= myScale.y / refScale.y;
-		nelScale.z= myScale.z / refScale.z;
+		// Keep only the scale, because this last is not animated.
+		nelPos= CVector::Null;
+		nelRot= CQuat::Identity;
 	}
 
 	// Set the default tracks
@@ -260,7 +378,8 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 	// Compute the matrix the normal way ?
 	if (!matrixComputed)
 	{
-		// if we have a reference node, ie the one with the good original scale used for bindPos, must use it.
+		// if we have a reference node, ie the one with the good original pos/rot/scale used for bindPos, must use it.
+		INode	*referenceNode= getNELScaleReferenceNode(node);
 		if (referenceNode)
 		{
 			worldTM= referenceNode->GetNodeTM (time);

@@ -1,7 +1,7 @@
 /** \file export_script.cpp
  * Export script utility from 3dsmax
  *
- * $Id: export_script.cpp,v 1.7 2002/04/23 16:30:59 vizerie Exp $
+ * $Id: export_script.cpp,v 1.8 2002/06/05 15:46:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,8 @@ bool CExportNel::scriptEvaluate (const char *script, void *out, TNelScriptValueT
 			case scriptBool:
 				*(bool*)out=vl.result->to_bool()!=FALSE;
 				break;
+			case scriptNode:
+				*(INode**)out= vl.result->to_node();
 			}
 		}
 	}

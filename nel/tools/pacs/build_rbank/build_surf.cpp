@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.11 2003/01/06 18:18:04 legros Exp $
+ * $Id: build_surf.cpp,v 1.12 2003/01/07 11:24:49 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -477,7 +477,7 @@ void	NLPACS::CSurfElement::computeQuantas()
 //	hasOutside = !zbbox.include(v0) || !zbbox.include(v1) || !zbbox.include(v2);
 //	IsMergable = hasInside && !hasOutside;
 
-	QuantHeight = (uint8)(fmod((v0.z+v1.z+v2.z)/3.0f, 2.0))%255;
+	QuantHeight = ((uint8)(floor(fmod((v0.z+v1.z+v2.z)/3.0f, 2.0))))%255;
 	
 	Area = 0.5f*n.norm();
 

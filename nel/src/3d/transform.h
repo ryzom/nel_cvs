@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.54 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: transform.h,v 1.55 2004/06/29 13:34:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -569,6 +569,9 @@ public:
 	void				setForceClipRoot(bool forceClipRoot);
 	bool				getForceClipRoot() const { return getStateFlag(ForceClipRoot) != 0; }	
 
+
+	// test if the model is a flare
+	virtual	bool isFlare() const { return false; }	
 
 // ********
 private:

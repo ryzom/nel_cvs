@@ -1,7 +1,7 @@
 /** \file stl_block_list.h
  * <File description>
  *
- * $Id: stl_block_list.h,v 1.2 2001/12/27 17:14:51 berenguier Exp $
+ * $Id: stl_block_list.h,v 1.3 2002/10/28 11:22:49 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,26 +49,31 @@ template <class T>
 class CSTLBlockList : public std::list<T, CSTLBlockAllocator<T> >
 {
 public:
-    explicit CSTLBlockList(CBlockMemory<T, false> *bm ) :
-		std::list<T, CSTLBlockAllocator<T> >(CSTLBlockAllocator<T>(bm))
-    {
-    }
 
-    explicit CSTLBlockList(size_type n, CBlockMemory<T, false> *bm ) :
-		std::list<T, CSTLBlockAllocator<T> >(n,T(),CSTLBlockAllocator<T>(bm))
-    {
-    }
+	typedef typename NLMISC::CSTLBlockList<T>::size_type TSizeType;
+	typedef typename NLMISC::CSTLBlockList<T>::const_iterator TBlockListConstIt;
 
-	explicit CSTLBlockList(size_type n, const T& v, CBlockMemory<T, false> *bm ) :
-		std::list<T, CSTLBlockAllocator<T> >(n,v,CSTLBlockAllocator<T>(bm))
-    {
-    }
+	explicit CSTLBlockList(CBlockMemory<T, false> *bm ) :
+	std::list<T, CSTLBlockAllocator<T> >(CSTLBlockAllocator<T>(bm))
+	{
+	}
+
+	explicit CSTLBlockList(TSizeType n, CBlockMemory<T, false> *bm ) :
+	std::list<T, CSTLBlockAllocator<T> >(n,T(),CSTLBlockAllocator<T>(bm))
+	{
+	}
+
+	explicit CSTLBlockList(TSizeType n, const T& v, CBlockMemory<T, false> *bm ) :
+	std::list<T, CSTLBlockAllocator<T> >(n,v,CSTLBlockAllocator<T>(bm))
+	{
+	}
 
 
-    CSTLBlockList(const_iterator first,const_iterator last, CBlockMemory<T, false> *bm ):
-		std::list<T, CSTLBlockAllocator<T> >(first,last,CSTLBlockAllocator<T>(bm))
-    {
-    }
+	CSTLBlockList(TBlockListConstIt first,TBlockListConstIt last, CBlockMemory<T, false> *bm ):
+	std::list<T, CSTLBlockAllocator<T> >(first,last,CSTLBlockAllocator<T>(bm))
+	{
+	}
+
 };
 
 

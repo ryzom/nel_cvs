@@ -1,7 +1,7 @@
 /** \file vertex_stream_manager.cpp
  * TODO: File description
  *
- * $Id: vertex_stream_manager.cpp,v 1.6 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vertex_stream_manager.cpp,v 1.7 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/vertex_stream_manager.h"
+#include "vertex_stream_manager.h"
 #include "nel/misc/hierarchical_timer.h"
 
 

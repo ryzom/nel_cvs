@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * TODO: File description
  *
- * $Id: particle_system.cpp,v 1.89 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: particle_system.cpp,v 1.90 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,25 +27,25 @@
 
 
 
-#include "3d/particle_system.h"
-#include "3d/ps_located.h"
-#include "3d/driver.h"
-#include "3d/vertex_buffer.h"
-#include "3d/material.h"
-#include "3d/index_buffer.h"
-#include "3d/nelu.h"
-#include "3d/ps_util.h"
-#include "3d/ps_particle.h"
-#include "3d/ps_emitter.h"
-#include "3d/ps_sound.h"
-#include "3d/particle_system_shape.h"
-#include "3d/ps_located.h"
+#include "particle_system.h"
+#include "ps_located.h"
+#include "driver.h"
+#include "vertex_buffer.h"
+#include "material.h"
+#include "index_buffer.h"
+#include "nelu.h"
+#include "ps_util.h"
+#include "ps_particle.h"
+#include "ps_emitter.h"
+#include "ps_sound.h"
+#include "particle_system_shape.h"
+#include "ps_located.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/file.h"
 #include "nel/misc/stream.h"
 
 // tmp
-#include "3d/particle_system_model.h"
+#include "particle_system_model.h"
 
 
 #ifdef NL_DEBUG

@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.25 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_mesh.h,v 1.26 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,15 +28,15 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/class_registry.h"
-#include "3d/ps_particle_basic.h"
-#include "3d/ps_attrib.h"
-#include "3d/ps_plane_basis.h"
-#include "3d/vertex_buffer.h"
-#include "3d/material.h"
-#include "3d/index_buffer.h"
-#include "3d/shape.h"
-#include "3d/mesh.h"
-#include "3d/particle_system.h"
+#include "ps_particle_basic.h"
+#include "ps_attrib.h"
+#include "ps_plane_basis.h"
+#include "vertex_buffer.h"
+#include "material.h"
+#include "index_buffer.h"
+#include "shape.h"
+#include "mesh.h"
+#include "particle_system.h"
 
 
 #include <string>

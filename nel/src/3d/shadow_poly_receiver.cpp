@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * TODO: File description
  *
- * $Id: shadow_poly_receiver.cpp,v 1.13 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.14 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #include "std3d.h"
 
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/shadow_poly_receiver.h"
-#include "3d/shadow_map.h"
-#include "3d/driver.h"
-#include "3d/camera_col.h"
+#include "shadow_poly_receiver.h"
+#include "shadow_map.h"
+#include "driver.h"
+#include "camera_col.h"
 
 
 using	namespace std;

@@ -1,7 +1,7 @@
 /** \file point_light_model.h
  * TODO: File description
  *
- * $Id: point_light_model.h,v 1.7 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: point_light_model.h,v 1.8 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_POINT_LIGHT_MODEL_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/transform.h"
-#include "3d/fast_ptr_list.h"
+#include "transform.h"
+#include "fast_ptr_list.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file u_shape.cpp
  * TODO: File description
  *
- * $Id: u_shape.cpp,v 1.5 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: u_shape.cpp,v 1.6 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -26,8 +26,8 @@
 
 #include "std3d.h"
 #include "nel/3d/u_shape.h"
-#include "3d/mesh.h"
-#include "3d/mesh_multi_lod.h"
+#include "mesh.h"
+#include "mesh_multi_lod.h"
 #include "nel/3d/u_visual_collision_mesh.h"
 
 

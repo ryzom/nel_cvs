@@ -1,7 +1,7 @@
 /** \file u_instance.cpp
  * Interface for instance objects.
  *
- * $Id: u_instance.cpp,v 1.4 2004/07/27 17:46:13 berenguier Exp $
+ * $Id: u_instance.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,13 +26,13 @@
 #include "std3d.h"
 
 #include "nel/3d/u_instance.h"
-#include "3d/transform_shape.h"
-#include "3d/driver_user.h"
-#include "3d/mesh_multi_lod_instance.h"
-#include "3d/seg_remanence.h"
+#include "transform_shape.h"
+#include "driver_user.h"
+#include "mesh_multi_lod_instance.h"
+#include "seg_remanence.h"
 #include "nel/misc/debug.h"
-#include "3d/scene.h"
-#include "3d/shape_bank.h"
+#include "scene.h"
+#include "shape_bank.h"
 
 
 using	namespace NLMISC;

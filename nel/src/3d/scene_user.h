@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * TODO: File description
  *
- * $Id: scene_user.h,v 1.60 2005/01/20 11:13:37 berenguier Exp $
+ * $Id: scene_user.h,v 1.61 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,12 +28,12 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_scene.h"
-#include "3d/driver_user.h"
-#include "3d/landscape_user.h"
-#include "3d/cloud_scape_user.h"
-#include "3d/instance_group_user.h"
-#include "3d/visual_collision_manager_user.h"
-#include "3d/play_list_manager_user.h"
+#include "driver_user.h"
+#include "landscape_user.h"
+#include "cloud_scape_user.h"
+#include "instance_group_user.h"
+#include "visual_collision_manager_user.h"
+#include "play_list_manager_user.h"
 
 #define NL3D_MEM_SCENE						NL_ALLOC_CONTEXT( 3dScene )
 #define NL3D_MEM_SCENE_INIT					NL_ALLOC_CONTEXT( 3dScIni )

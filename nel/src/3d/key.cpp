@@ -1,7 +1,7 @@
 /** \file key.cpp
  * TODO: File description
  *
- * $Id: key.cpp,v 1.8 2004/11/15 10:24:35 lecroart Exp $
+ * $Id: key.cpp,v 1.9 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/key.h"
+#include "key.h"
 
 
 namespace NL3D 

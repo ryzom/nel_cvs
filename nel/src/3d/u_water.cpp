@@ -1,7 +1,7 @@
 /** \file u_water.cpp
  * User interface for water manipulation
  *
- * $Id: u_water.cpp,v 1.3 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: u_water.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #include "std3d.h"
 
 #include "nel/3d/u_water.h"
-#include "3d/water_pool_manager.h"
-#include "3d/water_height_map.h"
-#include "3d/water_model.h"
-#include "3d/driver_user.h"
+#include "water_pool_manager.h"
+#include "water_height_map.h"
+#include "water_model.h"
+#include "driver_user.h"
 
 #define NL3D_MEM_WATER						NL_ALLOC_CONTEXT( 3dWater )
 

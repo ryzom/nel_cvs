@@ -1,7 +1,7 @@
 /** \file tile_color.cpp
  * TODO: File description
  *
- * $Id: tile_color.cpp,v 1.4 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: tile_color.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/tile_color.h"
+#include "tile_color.h"
 
 
 namespace NL3D 

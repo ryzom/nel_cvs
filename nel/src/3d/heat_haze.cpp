@@ -1,7 +1,7 @@
 /** \file heat_haze.cpp
  * TODO: File description
  *
- * $Id: heat_haze.cpp,v 1.3 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: heat_haze.cpp,v 1.4 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #include "std3d.h"
 
 
-#include "3d/heat_haze.h"
-#include "3d/scene.h"
-#include "3d/deform_2d.h"
+#include "heat_haze.h"
+#include "scene.h"
+#include "deform_2d.h"
 #include "nel/misc/vector_2f.h"
 
 namespace NL3D

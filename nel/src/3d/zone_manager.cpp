@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.21 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: zone_manager.cpp,v 1.22 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include <iostream>
 
-#include "3d/zone_manager.h"
+#include "zone_manager.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 

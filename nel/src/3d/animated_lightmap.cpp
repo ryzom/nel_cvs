@@ -1,7 +1,7 @@
 /** \file animated_lightmap.cpp
  * TODO: File description
  *
- * $Id: animated_lightmap.cpp,v 1.6 2004/11/15 10:24:31 lecroart Exp $
+ * $Id: animated_lightmap.cpp,v 1.7 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/animated_lightmap.h"
-#include "3d/scene.h"
+#include "animated_lightmap.h"
+#include "scene.h"
 #include "nel/misc/common.h"
 
 using namespace NLMISC;

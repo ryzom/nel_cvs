@@ -1,7 +1,7 @@
 /** \file heat_haze.h
  * TODO: File description
  *
- * $Id: heat_haze.h,v 1.2 2004/11/15 10:24:33 lecroart Exp $
+ * $Id: heat_haze.h,v 1.3 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
-#include "3d/vertex_buffer.h"
+#include "vertex_buffer.h"
 
 namespace NL3D {
 

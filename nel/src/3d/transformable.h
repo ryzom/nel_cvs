@@ -1,7 +1,7 @@
 /** \file transformable.h
  * TODO: File description
  *
- * $Id: transformable.h,v 1.4 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: transformable.h,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,9 +29,9 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/quat.h"
-#include "3d/animatable.h"
-#include "3d/animated_value.h"
-#include "3d/track.h"
+#include "animatable.h"
+#include "animated_value.h"
+#include "track.h"
 
 
 namespace NL3D

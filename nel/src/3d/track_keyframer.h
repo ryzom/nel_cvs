@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.19 2005/01/18 10:07:17 guignot Exp $
+ * $Id: track_keyframer.h,v 1.20 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_TRACK_KEYFRAMER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/track.h"
-#include "3d/key.h"
+#include "track.h"
+#include "key.h"
 #include <map>
 #include <memory>
 #include "nel/misc/matrix.h"

@@ -1,7 +1,7 @@
 /** \file ps_register_attribs.cpp
  * 
  *
- * $Id: ps_register_attribs.cpp,v 1.2 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_register_attribs.cpp,v 1.3 2005/02/22 10:19:11 besson Exp $
  */
 /* Copyright, 2002 Nevrax Ltd.
  *
@@ -25,12 +25,12 @@
 #include "std3d.h"
 
 
-#include "3d/ps_util.h"
+#include "ps_util.h"
 
-#include "3d/ps_register_int_attribs.h"
-#include "3d/ps_register_float_attribs.h"
-#include "3d/ps_register_color_attribs.h"
-#include "3d/ps_register_plane_basis_attribs.h"
+#include "ps_register_int_attribs.h"
+#include "ps_register_float_attribs.h"
+#include "ps_register_color_attribs.h"
+#include "ps_register_plane_basis_attribs.h"
 
 
 

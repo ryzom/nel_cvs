@@ -1,7 +1,7 @@
 /** \file collision_callback.cpp
  * TODO: File description
  *
- * $Id: collision_callback.cpp,v 1.4 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: collision_callback.cpp,v 1.5 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdpacs.h"
 
-#include "pacs/collision_callback.h"
+#include "collision_callback.h"
 
 
 namespace NLPACS 

@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * TODO: File description
  *
- * $Id: zone.cpp,v 1.75 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: zone.cpp,v 1.76 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/zone.h"
-#include "3d/landscape.h"
-#include "3d/zone_symmetrisation.h"
+#include "zone.h"
+#include "landscape.h"
+#include "zone_symmetrisation.h"
 #include "nel/misc/common.h"
 #include "nel/misc/hierarchical_timer.h"
 

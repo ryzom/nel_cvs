@@ -1,7 +1,7 @@
 /** \file ps_fan_light.h
  * FanLight particles
  *
- * $Id: ps_fan_light.h,v 1.12 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_fan_light.h,v 1.13 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_PS_FAN_LIGHT_H
 #define NL_PS_FAN_LIGHT_H
 
-#include "3d/ps_particle_basic.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
+#include "ps_particle_basic.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 
 #include <vector>
 #include <hash_map>

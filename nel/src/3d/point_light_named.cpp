@@ -1,7 +1,7 @@
 /** \file point_light_named.cpp
  * TODO: File description
  *
- * $Id: point_light_named.cpp,v 1.6 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: point_light_named.cpp,v 1.7 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/point_light_named.h"
+#include "point_light_named.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.cpp
  * Interface for particule system.
  *
- * $Id: u_particle_system_instance.cpp,v 1.2 2004/06/01 16:22:03 vizerie Exp $
+ * $Id: u_particle_system_instance.cpp,v 1.3 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #include "std3d.h"
 
 #include "nel/3d/u_particle_system_instance.h"
-#include "3d/particle_system.h"
-#include "3d/particle_system_shape.h"
-#include "3d/ps_emitter.h"
-#include "3d/particle_system_model.h"
+#include "particle_system.h"
+#include "particle_system_shape.h"
+#include "ps_emitter.h"
+#include "particle_system_model.h"
 
 #define NL3D_MEM_PS_INSTANCE						NL_ALLOC_CONTEXT( 3dPS )
 

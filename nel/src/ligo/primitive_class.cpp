@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.18 2005/01/11 13:18:23 corvazier Exp $
+ * $Id: primitive_class.cpp,v 1.19 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -23,11 +23,11 @@
  * MA 02111-1307, USA.
  */
 
-#include <nel/ligo/primitive_class.h>
-#include <nel/ligo/primitive.h>
-#include <nel/ligo/ligo_config.h>
-#include <nel/misc/i_xml.h>
-#include <nel/misc/path.h>
+#include "nel/ligo/primitive_class.h"
+#include "nel/ligo/primitive.h"
+#include "nel/ligo/ligo_config.h"
+#include "nel/misc/i_xml.h"
+#include "nel/misc/path.h"
 
 using namespace std;
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * TODO: File description
  *
- * $Id: flare_shape.cpp,v 1.19 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: flare_shape.cpp,v 1.20 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,12 +25,12 @@
 
 #include "std3d.h"
 
-#include "3d/flare_shape.h"
-#include "3d/flare_model.h"
-#include "3d/scene.h"
-#include "3d/driver.h"
-#include "3d/mesh.h"
-#include "3d/shape_bank.h"
+#include "flare_shape.h"
+#include "flare_model.h"
+#include "scene.h"
+#include "driver.h"
+#include "mesh.h"
+#include "shape_bank.h"
 
 
 

@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.41 2004/10/19 12:48:15 vizerie Exp $
+ * $Id: dru.cpp,v 1.42 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,23 +26,23 @@
 #include "std3d.h"
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/dynloadlib.h"
 
-#include "3d/dru.h"
-#include "3d/driver.h"
-#include "3d/material.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
+#include "dru.h"
+#include "driver.h"
+#include "material.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 
 
 #ifdef NL_OS_WINDOWS
-
-#include <windows.h>
-
+# include <windows.h>
 #else // NL_OS_WINDOWS
-
-#include <dlfcn.h>
-
+# include <dlfcn.h>
 #endif // NL_OS_WINDOWS
+
+using namespace NLMISC;
+using namespace std;
 
 namespace NL3D 
 {
@@ -61,29 +61,33 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 	IDRV_CREATE_PROC	createDriver = NULL;
 	IDRV_VERSION_PROC	versionDriver = NULL;
 
-#ifdef NL_OS_WINDOWS
+//#ifdef NL_OS_WINDOWS
 
 	// WINDOWS code.
-	HINSTANCE			hInst;
+//	HINSTANCE			hInst;
 
-	hInst=LoadLibrary(NL3D_GL_DLL_NAME);
+//	hInst=LoadLibrary(NL3D_GL_DLL_NAME);
+	CLibrary	driverLib;
 
-	if (!hInst)
+//	if (!hInst)
+	if (!driverLib.loadLibrary(NL3D_GL_DLL_NAME, true, true, false))
 	{
 		throw EDruOpenglDriverNotFound();
 	}
 
-	char buffer[1024], *ptr;
-	SearchPath (NULL, NL3D_GL_DLL_NAME, NULL, 1023, buffer, &ptr);
-	nlinfo ("Using the library '"NL3D_GL_DLL_NAME"' that is in the directory: '%s'", buffer);
+//	char buffer[1024], *ptr;
+//	SearchPath (NULL, NL3D_GL_DLL_NAME, NULL, 1023, buffer, &ptr);
+	nlinfo ("Using the library '"NL3D_GL_DLL_NAME"' that is in the directory: '%s'", driverLib.getLibFileName().c_str());
 
-	createDriver = (IDRV_CREATE_PROC) GetProcAddress (hInst, IDRV_CREATE_PROC_NAME);
+//	createDriver = (IDRV_CREATE_PROC) GetProcAddress (hInst, IDRV_CREATE_PROC_NAME);
+	createDriver = (IDRV_CREATE_PROC) driverLib.getSymbolAddress(IDRV_CREATE_PROC_NAME);
 	if (createDriver == NULL)
 	{
 		throw EDruOpenglDriverCorrupted();
 	}
 
-	versionDriver = (IDRV_VERSION_PROC) GetProcAddress (hInst, IDRV_VERSION_PROC_NAME);
+//	versionDriver = (IDRV_VERSION_PROC) GetProcAddress (hInst, IDRV_VERSION_PROC_NAME);
+	versionDriver = (IDRV_VERSION_PROC) driverLib.getSymbolAddress(IDRV_VERSION_PROC_NAME);
 	if (versionDriver != NULL)
 	{
 		if (versionDriver()<IDriver::InterfaceVersion)
@@ -92,36 +96,36 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 			throw EDruOpenglDriverUnknownVersion();
 	}
 
-#elif defined (NL_OS_UNIX)
-
-	void *handle = dlopen(NL3D_GL_DLL_NAME, RTLD_NOW);
-
-	if (handle == NULL)
-	{
-		nlwarning ("when loading dynamic library '%s': %s", NL3D_GL_DLL_NAME, dlerror());
-		throw EDruOpenglDriverNotFound();
-	}
-
-	/* Not ANSI. Might produce a warning */
-	createDriver = (IDRV_CREATE_PROC) dlsym (handle, IDRV_CREATE_PROC_NAME);
-	if (createDriver == NULL)
-	{
-		nlwarning ("when getting function in dynamic library '%s': %s", NL3D_GL_DLL_NAME, dlerror());
-		throw EDruOpenglDriverCorrupted();
-	}
-
-	versionDriver = (IDRV_VERSION_PROC) dlsym (handle, IDRV_VERSION_PROC_NAME);
-	if (versionDriver != NULL)
-	{
-		if (versionDriver()<IDriver::InterfaceVersion)
-			throw EDruOpenglDriverOldVersion();
-		else if (versionDriver()>IDriver::InterfaceVersion)
-			throw EDruOpenglDriverUnknownVersion();
-	}
-
-#else // NL_OS_UNIX
-#error "Dynamic DLL loading not implemented!"
-#endif // NL_OS_UNIX
+//#elif defined (NL_OS_UNIX)
+//
+//	void *handle = dlopen(NL3D_GL_DLL_NAME, RTLD_NOW);
+//
+//	if (handle == NULL)
+//	{
+//		nlwarning ("when loading dynamic library '%s': %s", NL3D_GL_DLL_NAME, dlerror());
+//		throw EDruOpenglDriverNotFound();
+//	}
+//
+//	/* Not ANSI. Might produce a warning */
+//	createDriver = (IDRV_CREATE_PROC) dlsym (handle, IDRV_CREATE_PROC_NAME);
+//	if (createDriver == NULL)
+//	{
+//		nlwarning ("when getting function in dynamic library '%s': %s", NL3D_GL_DLL_NAME, dlerror());
+//		throw EDruOpenglDriverCorrupted();
+//	}
+//
+//	versionDriver = (IDRV_VERSION_PROC) dlsym (handle, IDRV_VERSION_PROC_NAME);
+//	if (versionDriver != NULL)
+//	{
+//		if (versionDriver()<IDriver::InterfaceVersion)
+//			throw EDruOpenglDriverOldVersion();
+//		else if (versionDriver()>IDriver::InterfaceVersion)
+//			throw EDruOpenglDriverUnknownVersion();
+//	}
+//
+//#else // NL_OS_UNIX
+//#error "Dynamic DLL loading not implemented!"
+//#endif // NL_OS_UNIX
 
 	IDriver		*ret= createDriver();
 	if (ret == NULL)
@@ -140,26 +144,31 @@ IDriver		*CDRU::createD3DDriver() throw (EDru)
 	IDRV_VERSION_PROC	versionDriver = NULL;
 
 	// WINDOWS code.
-	HINSTANCE			hInst;
+//	HINSTANCE			hInst;
 
-	hInst=LoadLibrary(NL3D_D3D_DLL_NAME);
+//	hInst=LoadLibrary(NL3D_D3D_DLL_NAME);
 
-	if (!hInst)
+	CLibrary driverLib;
+	
+//	if (!hInst)
+	if (!driverLib.loadLibrary(NL3D_D3D_DLL_NAME, true, true, false))
 	{
 		throw EDruDirect3dDriverNotFound();
 	}
 
-	char buffer[1024], *ptr;
-	SearchPath (NULL, NL3D_D3D_DLL_NAME, NULL, 1023, buffer, &ptr);
-	nlinfo ("Using the library '"NL3D_D3D_DLL_NAME"' that is in the directory: '%s'", buffer);
+//	char buffer[1024], *ptr;
+//	SearchPath (NULL, NL3D_D3D_DLL_NAME, NULL, 1023, buffer, &ptr);
+	nlinfo ("Using the library '"NL3D_D3D_DLL_NAME"' that is in the directory: '%s'", driverLib.getLibFileName().c_str());
 
-	createDriver = (IDRV_CREATE_PROC) GetProcAddress (hInst, IDRV_CREATE_PROC_NAME);
+//	createDriver = (IDRV_CREATE_PROC) GetProcAddress (hInst, IDRV_CREATE_PROC_NAME);
+	createDriver = (IDRV_CREATE_PROC) driverLib.getSymbolAddress(IDRV_CREATE_PROC_NAME);
 	if (createDriver == NULL)
 	{
 		throw EDruDirect3dDriverCorrupted();
 	}
 
-	versionDriver = (IDRV_VERSION_PROC) GetProcAddress (hInst, IDRV_VERSION_PROC_NAME);
+//	versionDriver = (IDRV_VERSION_PROC) GetProcAddress (hInst, IDRV_VERSION_PROC_NAME);
+	versionDriver = (IDRV_VERSION_PROC) driverLib.getSymbolAddress(IDRV_VERSION_PROC_NAME);
 	if (versionDriver != NULL)
 	{
 		if (versionDriver()<IDriver::InterfaceVersion)

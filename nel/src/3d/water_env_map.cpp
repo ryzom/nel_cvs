@@ -1,6 +1,6 @@
 /** \file water_env_map.cpp
  *
- * $Id: water_env_map.cpp,v 1.6 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: water_env_map.cpp,v 1.7 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -24,10 +24,10 @@
 
 #include "std3d.h"
 #include "water_env_map.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
-#include "3d/material.h"
-#include "3d/driver.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
+#include "material.h"
+#include "driver.h"
 #include "nel/3d/u_water_env_map.h"
 #include "nel/misc/common.h"
 #include "nel/3d/viewport.h"

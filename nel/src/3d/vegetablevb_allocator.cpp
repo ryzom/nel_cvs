@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.cpp
  * TODO: File description
  *
- * $Id: vegetablevb_allocator.cpp,v 1.16 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetablevb_allocator.cpp,v 1.17 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #include "std3d.h"
 
 
-#include "3d/vegetablevb_allocator.h"
-#include "3d/vegetable_def.h"
+#include "vegetablevb_allocator.h"
+#include "vegetable_def.h"
 
 
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_cluster.h
  * TODO: File description
  *
- * $Id: quad_grid_clip_cluster.h,v 1.7 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: quad_grid_clip_cluster.h,v 1.8 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #define NL_QUAD_GRID_CLIP_CLUSTER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/clip_trav.h"
+#include "clip_trav.h"
 #include "nel/misc/aabbox.h"
-#include "3d/fast_ptr_list.h"
+#include "fast_ptr_list.h"
 
 
 namespace NL3D 

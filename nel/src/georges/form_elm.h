@@ -1,7 +1,7 @@
 /** \file form_elm.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.25 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: form_elm.h,v 1.26 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 
-#include "georges/form_dfn.h"
+#include "form_dfn.h"
 
 #define NLGEORGES_FIRST_ROUND 0
 #define NLGEORGES_MAX_RECURSION 100

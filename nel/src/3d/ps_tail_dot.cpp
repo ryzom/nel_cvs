@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.18 2004/10/19 12:56:13 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.19 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,11 +25,11 @@
 
 #include "std3d.h"
 
-#include "3d/ps_tail_dot.h"
-#include "3d/ps_macro.h"
-#include "3d/driver.h"
-#include "3d/particle_system.h"
-#include "3d/texture_mem.h"
+#include "ps_tail_dot.h"
+#include "ps_macro.h"
+#include "driver.h"
+#include "particle_system.h"
+#include "texture_mem.h"
 #include "nel/misc/smart_ptr.h"
 
 #include <memory>

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * TODO: File description
  *
- * $Id: vegetable_manager.cpp,v 1.46 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: vegetable_manager.cpp,v 1.47 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,16 +26,16 @@
 #include "std3d.h"
 
 
-#include "3d/vegetable_manager.h"
-#include "3d/driver.h"
-#include "3d/texture_file.h"
+#include "vegetable_manager.h"
+#include "driver.h"
+#include "texture_file.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/vegetable_quadrant.h"
-#include "3d/dru.h"
-#include "3d/radix_sort.h"
-#include "3d/scene.h"
-#include "3d/vegetable_blend_layer_model.h"
-#include "3d/vegetable_light_ex.h"
+#include "vegetable_quadrant.h"
+#include "dru.h"
+#include "radix_sort.h"
+#include "scene.h"
+#include "vegetable_blend_layer_model.h"
+#include "vegetable_light_ex.h"
 #include "nel/misc/hierarchical_timer.h"
 
 #include <algorithm>

@@ -1,7 +1,7 @@
 /** \file hls_texture_manager.cpp
  * TODO: File description
  *
- * $Id: hls_texture_manager.cpp,v 1.3 2004/11/15 10:24:33 lecroart Exp $
+ * $Id: hls_texture_manager.cpp,v 1.4 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 #include "std3d.h"
-#include "3d/hls_texture_manager.h"
+#include "hls_texture_manager.h"
 #include "nel/misc/common.h"
 #include "nel/misc/algo.h"
 

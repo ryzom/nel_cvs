@@ -1,7 +1,7 @@
 /** \file visual_collision_manager_user.h
  * UVisualCollisionManager implementation.
  *
- * $Id: visual_collision_manager_user.h,v 1.9 2004/08/03 16:16:39 vizerie Exp $
+ * $Id: visual_collision_manager_user.h,v 1.10 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_visual_collision_manager.h"
-#include "3d/visual_collision_manager.h"
-#include "3d/landscape_user.h"
-#include "3d/visual_collision_entity_user.h"
-#include "3d/ptr_set.h"
+#include "visual_collision_manager.h"
+#include "landscape_user.h"
+#include "visual_collision_entity_user.h"
+#include "ptr_set.h"
 
 #define NL3D_MEM_VISUAL_COLLISION						NL_ALLOC_CONTEXT( 3dVsCol )
 #define NL3D_MEM_CAMERA_COLLISION						NL_ALLOC_CONTEXT( 3dCmCol )

@@ -1,7 +1,7 @@
 /** \file zone_corner_smoother.cpp
  * TODO: File description
  *
- * $Id: zone_corner_smoother.cpp,v 1.3 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: zone_corner_smoother.cpp,v 1.4 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/zone_corner_smoother.h"
-#include "3d/patchuv_locator.h"
+#include "zone_corner_smoother.h"
+#include "patchuv_locator.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file ps_register_forces.cpp
  * 
  *
- * $Id: ps_register_forces.cpp,v 1.2 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_register_forces.cpp,v 1.3 2005/02/22 10:19:11 besson Exp $
  */
 /* Copyright, 2002 Nevrax Ltd.
  *
@@ -25,8 +25,8 @@
 #include "std3d.h"
 
 
-#include "3d/ps_util.h"
-#include "3d/ps_force.h"
+#include "ps_util.h"
+#include "ps_force.h"
 
 
 

@@ -1,7 +1,7 @@
 /** \file retrievable_surface.cpp
  *
  *
- * $Id: retrievable_surface.cpp,v 1.12 2003/03/24 16:40:05 legros Exp $
+ * $Id: retrievable_surface.cpp,v 1.13 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdpacs.h"
 
-#include "pacs/retrievable_surface.h"
+#include "retrievable_surface.h"
 
 using namespace std;
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file trav_scene.cpp
  * TODO: File description
  *
- * $Id: trav_scene.cpp,v 1.4 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: trav_scene.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/trav_scene.h"
-#include "3d/scene.h"
+#include "trav_scene.h"
+#include "scene.h"
 
 
 

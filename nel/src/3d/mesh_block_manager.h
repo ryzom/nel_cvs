@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.h
  * TODO: File description
  *
- * $Id: mesh_block_manager.h,v 1.5 2004/11/15 10:24:43 lecroart Exp $
+ * $Id: mesh_block_manager.h,v 1.6 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_MESH_BLOCK_MANAGER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/mesh_geom.h"
-#include "3d/vertex_buffer_heap.h"
+#include "mesh_geom.h"
+#include "vertex_buffer_heap.h"
 
 
 namespace NL3D 

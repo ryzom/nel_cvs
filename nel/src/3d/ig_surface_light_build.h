@@ -1,7 +1,7 @@
 /** \file ig_surface_light_build.h
  * TODO: File description
  *
- * $Id: ig_surface_light_build.h,v 1.4 2004/11/15 10:24:34 lecroart Exp $
+ * $Id: ig_surface_light_build.h,v 1.5 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector_2f.h"
-#include "3d/surface_light_grid.h"
-#include "3d/mesh.h"
+#include "surface_light_grid.h"
+#include "mesh.h"
 
 
 namespace NL3D 

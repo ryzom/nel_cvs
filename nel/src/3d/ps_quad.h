@@ -1,7 +1,7 @@
 /** \file ps_quad.h
  * Base quads particles.
  *
- * $Id: ps_quad.h,v 1.11 2004/06/02 16:30:11 vizerie Exp $
+ * $Id: ps_quad.h,v 1.12 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_PS_QUAD_H
 #define NL_PS_QUAD_H
 
-#include "3d/ps_particle_basic.h"
-#include "3d/vertex_buffer.h"
+#include "ps_particle_basic.h"
+#include "vertex_buffer.h"
 
 namespace NL3D 
 {

@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.cpp
  * TODO: File description
  *
- * $Id: visual_collision_manager.cpp,v 1.15 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: visual_collision_manager.cpp,v 1.16 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,12 +25,12 @@
 
 #include "std3d.h"
 
-#include "3d/visual_collision_manager.h"
-#include "3d/visual_collision_entity.h"
-#include "3d/landscape.h"
-#include "3d/camera_col.h"
-#include "3d/shadow_map.h"
-#include "3d/light.h"
+#include "visual_collision_manager.h"
+#include "visual_collision_entity.h"
+#include "landscape.h"
+#include "camera_col.h"
+#include "shadow_map.h"
+#include "light.h"
 #include "nel/misc/common.h"
 
 

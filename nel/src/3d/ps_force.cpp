@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * TODO: File description
  *
- * $Id: ps_force.cpp,v 1.39 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_force.cpp,v 1.40 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,17 +25,17 @@
 
 #include "std3d.h"
 
-#include "3d/ps_force.h"
-#include "3d/driver.h"
-#include "3d/index_buffer.h"
-#include "3d/material.h"
-#include "3d/vertex_buffer.h"
-#include "3d/computed_string.h"
-#include "3d/font_manager.h"
-#include "3d/particle_system.h"
+#include "ps_force.h"
+#include "driver.h"
+#include "index_buffer.h"
+#include "material.h"
+#include "vertex_buffer.h"
+#include "computed_string.h"
+#include "font_manager.h"
+#include "particle_system.h"
 #include "nel/misc/common.h"
-#include "3d/ps_util.h"
-#include "3d/ps_misc.h"
+#include "ps_util.h"
+#include "ps_misc.h"
 
 namespace NL3D {
 

@@ -1,7 +1,7 @@
 /** \file zone_tgt_smoother.cpp
  * TODO: File description
  *
- * $Id: zone_tgt_smoother.cpp,v 1.11 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: zone_tgt_smoother.cpp,v 1.12 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/zone_tgt_smoother.h"
+#include "zone_tgt_smoother.h"
 #include "nel/misc/plane.h"
 using namespace std;
 using namespace NLMISC;

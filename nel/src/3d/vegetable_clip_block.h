@@ -1,7 +1,7 @@
 /** \file vegetable_clip_block.h
  * TODO: File description
  *
- * $Id: vegetable_clip_block.h,v 1.3 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: vegetable_clip_block.h,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,8 +29,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/bsphere.h"
-#include "3d/tess_list.h"
-#include "3d/vegetable_sort_block.h"
+#include "tess_list.h"
+#include "vegetable_sort_block.h"
 
 
 namespace NL3D 

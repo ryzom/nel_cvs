@@ -1,7 +1,7 @@
 /** \file root_model.h
  * TODO: File description
  *
- * $Id: root_model.h,v 1.5 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: root_model.h,v 1.6 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_ROOT_MODEL_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/transform.h"
+#include "transform.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file tile_light_influence.cpp
  * TODO: File description
  *
- * $Id: tile_light_influence.cpp,v 1.4 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: tile_light_influence.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/tile_light_influence.h"
+#include "tile_light_influence.h"
 #include "nel/misc/debug.h"
 
 

@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * TODO: File description
  *
- * $Id: skeleton_shape.cpp,v 1.15 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: skeleton_shape.cpp,v 1.16 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/skeleton_shape.h"
-#include "3d/skeleton_model.h"
-#include "3d/scene.h"
+#include "skeleton_shape.h"
+#include "skeleton_model.h"
+#include "scene.h"
 #include "nel/misc/bsphere.h"
 
 using namespace std;

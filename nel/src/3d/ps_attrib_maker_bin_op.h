@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.h
  * TODO: File description
  *
- * $Id: ps_attrib_maker_bin_op.h,v 1.10 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_attrib_maker_bin_op.h,v 1.11 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -219,7 +219,7 @@ protected:
 
 } // NL3D
 
-#include "3d/ps_attrib_maker_bin_op_inline.h"
+#include "ps_attrib_maker_bin_op_inline.h"
 
 
 #endif // NL_PS_ATTRIB_MAKER_BIN_OP_H

@@ -1,7 +1,7 @@
 /** \file u_instance_material.cpp
  * TODO: File description
  *
- * $Id: u_instance_material.cpp,v 1.3 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: u_instance_material.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #include "std3d.h"
 
 #include "nel/3d/u_instance_material.h"
-#include "3d/async_texture_block.h"
-#include "3d/mesh_base_instance.h"
-#include "3d/driver.h"
-#include "3d/texture_mem.h"
-#include "3d/texture_file.h"
+#include "async_texture_block.h"
+#include "mesh_base_instance.h"
+#include "driver.h"
+#include "texture_mem.h"
+#include "texture_file.h"
 
 #define NL3D_MEM_MATERIAL_INSTANCE						NL_ALLOC_CONTEXT( 3dMatI )
 

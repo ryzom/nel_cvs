@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.h
  *
- * $Id: seg_remanence_shape.h,v 1.8 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: seg_remanence_shape.h,v 1.9 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -32,12 +32,12 @@
 #include "nel/misc/aabbox.h"
 
 
-#include "3d/texture.h"
-#include "3d/shape.h"
-#include "3d/material.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
-#include "3d/animated_material.h"
+#include "texture.h"
+#include "shape.h"
+#include "material.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
+#include "animated_material.h"
 
 
 

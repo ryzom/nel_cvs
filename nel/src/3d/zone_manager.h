@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.14 2004/05/26 16:07:07 berenguier Exp $
+ * $Id: zone_manager.h,v 1.15 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,10 +29,10 @@
 #include <string>
 #include <map>
 #include "nel/misc/types_nl.h"
-#include "3d/zone.h"
+#include "zone.h"
 
-#include "3d/async_file_manager_3d.h"
-#include "3d/zone_search.h"
+#include "async_file_manager_3d.h"
+#include "zone_search.h"
 
 
 namespace NL3D

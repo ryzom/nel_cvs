@@ -1,7 +1,7 @@
 /** \file raw_skin.h
  * Packed struct used for faster Software skinning
  *
- * $Id: raw_skin.h,v 1.4 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: raw_skin.h,v 1.5 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -30,8 +30,8 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/uv.h"
 #include "nel/misc/object_vector.h"
-#include "3d/mesh.h"
-#include "3d/mrm_mesh.h"
+#include "mesh.h"
+#include "mrm_mesh.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file skeleton_spawn_script.cpp
  * TODO: File description
  *
- * $Id: skeleton_spawn_script.cpp,v 1.3 2004/11/26 17:30:22 berenguier Exp $
+ * $Id: skeleton_spawn_script.cpp,v 1.4 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -25,11 +25,11 @@
 
 
 #include "std3d.h"
-#include "3d/skeleton_spawn_script.h"
-#include "3d/skeleton_model.h"
-#include "3d/mesh_base_instance.h"
-#include "3d/scene.h"
-#include "3d/particle_system_model.h"
+#include "skeleton_spawn_script.h"
+#include "skeleton_model.h"
+#include "mesh_base_instance.h"
+#include "scene.h"
+#include "particle_system_model.h"
 #include "nel/misc/common.h"
 #include "nel/misc/algo.h"
 

@@ -1,7 +1,7 @@
 /** \file exterior_mesh.h
  * 
  *
- * $Id: exterior_mesh.h,v 1.3 2002/12/18 14:57:14 legros Exp $
+ * $Id: exterior_mesh.h,v 1.4 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,11 +34,11 @@
 
 #include "nel/misc/aabbox.h"
 
-#include "pacs/vector_2s.h"
-#include "pacs/surface_quad.h"
-#include "pacs/chain.h"
-#include "pacs/retrievable_surface.h"
-#include "pacs/chain_quad.h"
+#include "vector_2s.h"
+#include "surface_quad.h"
+#include "chain.h"
+#include "retrievable_surface.h"
+#include "chain_quad.h"
 
 #include "nel/pacs/u_global_position.h"
 

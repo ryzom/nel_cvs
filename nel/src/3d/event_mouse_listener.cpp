@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * TODO: File description
  *
- * $Id: event_mouse_listener.cpp,v 1.16 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: event_mouse_listener.cpp,v 1.17 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/event_mouse_listener.h"
+#include "event_mouse_listener.h"
 #include "nel/misc/event_server.h"
-#include "3d/camera.h"
+#include "camera.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/quat.h"
 

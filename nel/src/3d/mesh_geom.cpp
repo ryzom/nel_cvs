@@ -1,7 +1,7 @@
 /** \file mesh_geom.cpp
  * TODO: File description
  *
- * $Id: mesh_geom.cpp,v 1.7 2004/11/15 10:24:43 lecroart Exp $
+ * $Id: mesh_geom.cpp,v 1.8 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_geom.h"
-#include "3d/mesh_block_manager.h"
+#include "mesh_geom.h"
+#include "mesh_block_manager.h"
 
 
 namespace NL3D 

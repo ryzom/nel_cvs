@@ -1,7 +1,7 @@
 /** \file track_keyframer.cpp
  * TODO: File description
  *
- * $Id: track_keyframer.cpp,v 1.9 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: track_keyframer.cpp,v 1.10 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/track_keyframer.h"
+#include "track_keyframer.h"
 
 
 namespace NL3D

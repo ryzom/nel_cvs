@@ -1,7 +1,7 @@
 /** \file listener_fmod.h
  * DirectSound sound listener
  *
- * $Id: listener_fmod.h,v 1.1 2004/08/30 12:35:19 berenguier Exp $
+ * $Id: listener_fmod.h,v 1.2 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_LISTENER_FMOD_H
 
 
-#include "sound/driver/listener.h"
+#include "../listener.h"
 #include "nel/misc/matrix.h"
 //#include <windows.h>
 #include "../sound_driver.h"

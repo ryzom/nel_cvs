@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * TODO: File description
  *
- * $Id: ps_attrib_maker_helper.h,v 1.23 2005/02/17 17:14:04 berenguier Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.24 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_PS_ATTRIB_MAKER_HELPER_H
 #define NL_PS_ATTRIB_MAKER_HELPER_H
 
-#include "3d/ps_attrib_maker.h"
+#include "ps_attrib_maker.h"
 
 #include "nel/misc/fast_floor.h" // inline assembly for fast float<->int conversions
-#include "3d/ps_attrib_maker_iterators.h" // some iterators we use 
+#include "ps_attrib_maker_iterators.h" // some iterators we use 
 
 namespace NL3D 
 {

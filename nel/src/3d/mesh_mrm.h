@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * TODO: File description
  *
- * $Id: mesh_mrm.h,v 1.53 2004/11/15 10:24:44 lecroart Exp $
+ * $Id: mesh_mrm.h,v 1.54 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,21 +27,21 @@
 #define NL_MESH_MRM_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/shape.h"
-#include "3d/driver.h"
+#include "shape.h"
+#include "driver.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/uv.h"
-#include "3d/vertex_buffer.h"
-#include "3d/material.h"
-#include "3d/index_buffer.h"
-#include "3d/animated_material.h"
-#include "3d/mesh_base.h"
-#include "3d/mesh.h"
-#include "3d/mrm_mesh.h"
-#include "3d/mrm_parameters.h"
-#include "3d/bone.h"
-#include "3d/mesh_geom.h"
-#include "3d/mrm_level_detail.h"
+#include "vertex_buffer.h"
+#include "material.h"
+#include "index_buffer.h"
+#include "animated_material.h"
+#include "mesh_base.h"
+#include "mesh.h"
+#include "mrm_mesh.h"
+#include "mrm_parameters.h"
+#include "bone.h"
+#include "mesh_geom.h"
+#include "mrm_level_detail.h"
 #include <set>
 #include <vector>
 

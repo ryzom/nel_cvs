@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * TODO: File description
  *
- * $Id: scene_group.cpp,v 1.80 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: scene_group.cpp,v 1.81 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,19 +25,19 @@
 
 #include "std3d.h"
 
-#include "3d/scene_group.h"
+#include "scene_group.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/matrix.h"
-#include "3d/scene.h"
-#include "3d/transform_shape.h"
-#include "3d/mesh_instance.h"
-#include "3d/shape_bank.h"
+#include "scene.h"
+#include "transform_shape.h"
+#include "mesh_instance.h"
+#include "shape_bank.h"
 #include "nel/3d/u_instance_group.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
-#include "3d/text_context.h"
-#include "3d/water_model.h"
-#include "3d/water_shape.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
+#include "text_context.h"
+#include "water_model.h"
+#include "water_shape.h"
 #include "nel/misc/polygon.h"
 
 

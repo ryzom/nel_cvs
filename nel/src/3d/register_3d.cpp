@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * TODO: File description
  *
- * $Id: register_3d.cpp,v 1.32 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: register_3d.cpp,v 1.33 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,31 +26,31 @@
 #include "std3d.h"
 
 
-#include "3d/register_3d.h"
-#include "3d/texture_font.h"
-#include "3d/texture_file.h"
-#include "3d/texture_blank.h"
-#include "3d/texture_mem.h"
-#include "3d/texture_grouped.h"
-#include "3d/texture_cube.h"
-#include "3d/mesh.h"
-#include "3d/mesh_multi_lod.h"
-#include "3d/skeleton_shape.h"
-#include "3d/track_keyframer.h"
-#include "3d/ps_util.h"
-#include "3d/mesh_mrm.h"
-#include "3d/mesh_mrm_skinned.h"
-#include "3d/flare_shape.h"
-#include "3d/water_shape.h"
-#include "3d/seg_remanence_shape.h"
-#include "3d/texture_bump.h"
-#include "3d/texture_emboss.h"
-#include "3d/texture_blend.h"
-#include "3d/texture_multi_file.h"
-#include "3d/meshvp_wind_tree.h"
-#include "3d/meshvp_per_pixel_light.h"
-#include "3d/track_sampled_quat.h"
-#include "3d/track_sampled_vector.h"
+#include "register_3d.h"
+#include "texture_font.h"
+#include "texture_file.h"
+#include "texture_blank.h"
+#include "texture_mem.h"
+#include "texture_grouped.h"
+#include "texture_cube.h"
+#include "mesh.h"
+#include "mesh_multi_lod.h"
+#include "skeleton_shape.h"
+#include "track_keyframer.h"
+#include "ps_util.h"
+#include "mesh_mrm.h"
+#include "mesh_mrm_skinned.h"
+#include "flare_shape.h"
+#include "water_shape.h"
+#include "seg_remanence_shape.h"
+#include "texture_bump.h"
+#include "texture_emboss.h"
+#include "texture_blend.h"
+#include "texture_multi_file.h"
+#include "meshvp_wind_tree.h"
+#include "meshvp_per_pixel_light.h"
+#include "track_sampled_quat.h"
+#include "track_sampled_vector.h"
 
 
 

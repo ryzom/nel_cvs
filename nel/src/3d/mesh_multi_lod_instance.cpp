@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.17 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.18 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_multi_lod_instance.h"
-#include "3d/mesh_multi_lod.h"
-#include "3d/coarse_mesh_manager.h"
-#include "3d/scene.h"
+#include "mesh_multi_lod_instance.h"
+#include "mesh_multi_lod.h"
+#include "coarse_mesh_manager.h"
+#include "scene.h"
 
 #include "nel/misc/debug.h"
 

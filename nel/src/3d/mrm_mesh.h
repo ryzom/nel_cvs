@@ -1,7 +1,7 @@
 /** \file mrm_mesh.h
  * Internal mesh for CMRMBuilder.
  *
- * $Id: mrm_mesh.h,v 1.8 2002/11/20 10:20:36 berenguier Exp $
+ * $Id: mrm_mesh.h,v 1.9 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/vector_h.h"
 #include "nel/misc/vector.h"
-#include "3d/mesh.h"
+#include "mesh.h"
 #include <vector>
 
 

@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.14 2004/10/19 12:49:58 vizerie Exp $
+ * $Id: landscape_def.h,v 1.15 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/bsphere.h"
-#include "3d/landscapevb_info.h"
-#include "3d/index_buffer.h"
+#include "landscapevb_info.h"
+#include "index_buffer.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.10 2003/05/07 09:05:57 legros Exp $
+ * $Id: chain.h,v 1.11 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include <vector>
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
-#include "pacs/vector_2s.h"
+#include "vector_2s.h"
 #include "nel/misc/file.h"
 
 namespace NLPACS

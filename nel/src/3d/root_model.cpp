@@ -1,7 +1,7 @@
 /** \file root_model.cpp
  * TODO: File description
  *
- * $Id: root_model.cpp,v 1.5 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: root_model.cpp,v 1.6 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/root_model.h"
-#include "3d/scene.h"
+#include "root_model.h"
+#include "scene.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file hls_color_texture.cpp
  * TODO: File description
  *
- * $Id: hls_color_texture.cpp,v 1.3 2004/11/15 10:24:33 lecroart Exp $
+ * $Id: hls_color_texture.cpp,v 1.4 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -24,9 +24,9 @@
  */
 
 #include "std3d.h"
-#include "3d/hls_color_texture.h"
+#include "hls_color_texture.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/fasthls_modifier.h"
+#include "fasthls_modifier.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/bitmap.h"
 #include "nel/misc/system_info.h"

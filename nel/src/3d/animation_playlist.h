@@ -1,7 +1,7 @@
 /** \file animation_playlist.h
  * TODO: File description
  *
- * $Id: animation_playlist.h,v 1.6 2004/11/15 10:24:31 lecroart Exp $
+ * $Id: animation_playlist.h,v 1.7 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_ANIMATION_PLAYLIST_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/channel_mixer.h"
+#include "channel_mixer.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file primitive_world_image.h
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.h,v 1.10 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: primitive_world_image.h,v 1.11 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 
-#include "pacs/move_container.h"
+#include "move_container.h"
 
 
 namespace NLPACS {

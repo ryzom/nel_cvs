@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.11 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: tile_bank.h,v 1.12 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include <vector>
 #include <set>
 #include <string>
-#include "3d/tile_vegetable_desc.h"
+#include "tile_vegetable_desc.h"
 
 
 namespace	NLMISC

@@ -1,7 +1,7 @@
 /** \file raw_skinned.cpp
  * Packed struct used for faster Software skinning
  *
- * $Id: raw_skinned.cpp,v 1.1 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: raw_skinned.cpp,v 1.2 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 #include "std3d.h"
-#include "3d/raw_skinned.h"
+#include "raw_skinned.h"
 
 
 using namespace NLMISC;

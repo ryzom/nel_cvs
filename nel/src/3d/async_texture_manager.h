@@ -1,7 +1,7 @@
 /** \file async_texture_manager.h
  * TODO: File description
  *
- * $Id: async_texture_manager.h,v 1.7 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: async_texture_manager.h,v 1.8 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 
 #include "nel/misc/types_nl.h"
-#include "3d/texture_file.h"
-#include "3d/hls_texture_manager.h"
+#include "texture_file.h"
+#include "hls_texture_manager.h"
 #include <vector>
 #include "nel/misc/bitmap.h"
 

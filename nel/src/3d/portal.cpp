@@ -1,7 +1,7 @@
 /** \file portal.cpp
  * Implementation of a portal
  *
- * $Id: portal.cpp,v 1.13 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: portal.cpp,v 1.14 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,15 +25,15 @@
 
 #include "std3d.h"
 
-#include "3d/portal.h"
+#include "portal.h"
 #include "nel/misc/string_mapper.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/polygon.h"
 #include "nel/misc/triangle.h"
-#include "3d/scene.h"
-#include "3d/transform_shape.h"
-#include "3d/mesh_instance.h"
+#include "scene.h"
+#include "transform_shape.h"
+#include "mesh_instance.h"
 
 using namespace NLMISC;
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.13 2004/10/08 13:34:30 lecroart Exp $
+ * $Id: retriever_bank.h,v 1.14 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@
 #include "nel/misc/common.h"
 #include "nel/misc/path.h"
 
-#include "pacs/local_retriever.h"
+#include "local_retriever.h"
 #include "nel/pacs/u_retriever_bank.h"
 
 namespace NLPACS

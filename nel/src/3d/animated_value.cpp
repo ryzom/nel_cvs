@@ -1,7 +1,7 @@
 /** \file animated_value.cpp
  * TODO: File description
  *
- * $Id: animated_value.cpp,v 1.8 2004/11/15 10:24:31 lecroart Exp $
+ * $Id: animated_value.cpp,v 1.9 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/animated_value.h"
+#include "animated_value.h"
 
 
 namespace NL3D 

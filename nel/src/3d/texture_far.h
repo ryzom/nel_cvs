@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * TODO: File description
  *
- * $Id: texture_far.h,v 1.10 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: texture_far.h,v 1.11 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rect.h"
-#include "3d/texture.h"
-#include "3d/tile_far_bank.h"
+#include "texture.h"
+#include "tile_far_bank.h"
 
 /* NB: those Values work only if NL_MAX_TILES_BY_PATCH_EDGE is 16.
 	asserted in the cpp.

@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * TODO: File description
  *
- * $Id: mesh_mrm_instance.h,v 1.17 2004/11/15 10:24:44 lecroart Exp $
+ * $Id: mesh_mrm_instance.h,v 1.18 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #define NL_MESH_MRM_INSTANCE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/mesh_base_instance.h"
-#include "3d/material.h"
-#include "3d/animated_material.h"
+#include "mesh_base_instance.h"
+#include "material.h"
+#include "animated_material.h"
 
 
 namespace NL3D

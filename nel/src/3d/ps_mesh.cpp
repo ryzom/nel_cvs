@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.45 2005/02/14 15:49:12 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.46 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,19 +25,19 @@
 
 #include "std3d.h"
 
-#include "3d/ps_mesh.h"
-#include "3d/ps_macro.h"
-#include "3d/shape.h"
-#include "3d/mesh.h"
-#include "3d/transform_shape.h"
-#include "3d/shape_bank.h"
-#include "3d/texture_mem.h"
-#include "3d/scene.h"
-#include "3d/ps_located.h"
-#include "3d/particle_system.h"
-#include "3d/particle_system_shape.h"
-#include "3d/particle_system_model.h"
-#include "3d/ps_iterator.h"
+#include "ps_mesh.h"
+#include "ps_macro.h"
+#include "shape.h"
+#include "mesh.h"
+#include "transform_shape.h"
+#include "shape_bank.h"
+#include "texture_mem.h"
+#include "scene.h"
+#include "ps_located.h"
+#include "particle_system.h"
+#include "particle_system_shape.h"
+#include "particle_system_model.h"
+#include "ps_iterator.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/path.h"
 

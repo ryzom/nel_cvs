@@ -2,7 +2,7 @@
  * Optimised instance for skinned object with MRM, 1 UV coordinates, 1 to 4 skinning weight and 256 matrices.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned_instance.h,v 1.2 2004/07/01 09:36:02 berenguier Exp $
+ * $Id: mesh_mrm_skinned_instance.h,v 1.3 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,9 +28,9 @@
 #define NL_MESH_MRM_SKINNED_INSTANCE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/mesh_base_instance.h"
-#include "3d/material.h"
-#include "3d/animated_material.h"
+#include "mesh_base_instance.h"
+#include "material.h"
+#include "animated_material.h"
 
 
 namespace NL3D

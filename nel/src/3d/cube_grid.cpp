@@ -1,7 +1,7 @@
 /** \file cube_grid.cpp
  * TODO: File description
  *
- * $Id: cube_grid.cpp,v 1.3 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: cube_grid.cpp,v 1.4 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/cube_grid.h"
+#include "cube_grid.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file zone_corner_smoother.h
  * TODO: File description
  *
- * $Id: zone_corner_smoother.h,v 1.2 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: zone_corner_smoother.h,v 1.3 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_ZONE_CORNER_SMOOTHER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/zone.h"
+#include "zone.h"
 #include <map>
 #include <vector>
 

@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.6 2004/10/28 17:43:00 corvazier Exp $
+ * $Id: font_manager.h,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,9 +28,9 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
-#include "3d/texture.h"
-#include "3d/material.h"
-#include "3d/texture_font.h"
+#include "texture.h"
+#include "material.h"
+#include "texture_font.h"
 
 #include <map>
 #include <list>

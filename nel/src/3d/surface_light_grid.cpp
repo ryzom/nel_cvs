@@ -1,7 +1,7 @@
 /** \file surface_light_grid.cpp
  * TODO: File description
  *
- * $Id: surface_light_grid.cpp,v 1.9 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: surface_light_grid.cpp,v 1.10 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,13 +25,13 @@
 
 #include "std3d.h"
 
-#include "3d/surface_light_grid.h"
+#include "surface_light_grid.h"
 #include "nel/misc/common.h"
-#include "3d/ig_surface_light.h"
+#include "ig_surface_light.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/light_influence_interpolator.h"
-#include "3d/point_light_named.h"
-#include "3d/scene_group.h"
+#include "light_influence_interpolator.h"
+#include "point_light_named.h"
+#include "scene_group.h"
 
 
 using namespace NLMISC;

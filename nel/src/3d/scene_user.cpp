@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * TODO: File description
  *
- * $Id: scene_user.cpp,v 1.69 2005/02/21 17:09:48 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.70 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,16 +29,16 @@
 #include "nel/3d/u_instance.h"
 #include "nel/3d/u_camera.h"
 #include "nel/3d/u_skeleton.h"
-#include "3d/scene_user.h"
-#include "3d/skeleton_model.h"
-#include "3d/coarse_mesh_manager.h"
-#include "3d/point_light_model.h"
-#include "3d/lod_character_manager.h"
-#include "3d/lod_character_shape.h"
-#include "3d/lod_character_shape_bank.h"
+#include "scene_user.h"
+#include "skeleton_model.h"
+#include "coarse_mesh_manager.h"
+#include "point_light_model.h"
+#include "lod_character_manager.h"
+#include "lod_character_shape.h"
+#include "lod_character_shape_bank.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/async_texture_manager.h"
-#include "3d/water_env_map_user.h"
+#include "async_texture_manager.h"
+#include "water_env_map_user.h"
 
 
 using namespace NLMISC;

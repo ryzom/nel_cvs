@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.h
  * TODO: File description
  *
- * $Id: vegetable_blend_layer_model.h,v 1.6 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: vegetable_blend_layer_model.h,v 1.7 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_VEGETABLE_BLEND_LAYER_MODEL_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/transform.h"
+#include "transform.h"
 
 
 namespace	NL3D

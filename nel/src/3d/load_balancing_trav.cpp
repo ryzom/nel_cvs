@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.18 2003/11/24 09:24:21 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.19 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,12 +25,12 @@
 
 #include "std3d.h"
 
-#include "3d/load_balancing_trav.h"
-#include "3d/hrc_trav.h"
-#include "3d/clip_trav.h"
+#include "load_balancing_trav.h"
+#include "hrc_trav.h"
+#include "clip_trav.h"
 #include "nel/misc/common.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/transform.h"
+#include "transform.h"
 
 
 using namespace std;

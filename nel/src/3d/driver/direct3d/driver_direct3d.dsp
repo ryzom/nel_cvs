@@ -39,7 +39,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "../../../../obj/Release/driver_direct3d"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "driver_direct3d_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stddirect3d.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /I "../../../../include" /I "../.." /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "driver_direct3d_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stddirect3d.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c
@@ -48,7 +48,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /pdb:none /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_r.dll"
+# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /pdb:none /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_r.dll" /libpath:"../../../../nel/lib"
 
 !ELSEIF  "$(CFG)" == "driver_direct3d - Win32 Debug"
 
@@ -58,7 +58,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../obj/Debug/driver_direct3d"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_WINDOWS" /D "_USRDLL" /D "driver_direct3d_EXPORTS" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stddirect3d.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../../../../include" /I "../.." /D "_WINDOWS" /D "_USRDLL" /D "driver_direct3d_EXPORTS" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stddirect3d.h" /FD /GZ /c
 # SUBTRACT CPP /Fr
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c
@@ -67,7 +67,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_d.dll" /pdbtype:sept
+# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_d.dll" /pdbtype:sept /libpath:"../../../../nel/lib"
 
 !ELSEIF  "$(CFG)" == "driver_direct3d - Win32 ReleaseDebug"
 
@@ -77,7 +77,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../obj/ReleaseDebug/driver_direct3d"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_WINDOWS" /D "_USRDLL" /D "driver_direct3d_EXPORTS" /D "NL_RELEASE_DEBUG" /D "LIBXML_STATIC" /D "WIN32" /D "NDEBUG" /D "_MBCS" /Yu"stddirect3d.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /I "../../../../include" /I "../.." /D "_WINDOWS" /D "_USRDLL" /D "driver_direct3d_EXPORTS" /D "NL_RELEASE_DEBUG" /D "LIBXML_STATIC" /D "WIN32" /D "NDEBUG" /D "_MBCS" /Yu"stddirect3d.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c
@@ -86,7 +86,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_rd.dll" /pdbtype:sept
+# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_rd.dll" /pdbtype:sept /libpath:"../../../../nel/lib"
 
 !ELSEIF  "$(CFG)" == "driver_direct3d - Win32 DebugFast"
 
@@ -96,7 +96,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../obj/DebugFast/driver_direct3d"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_WINDOWS" /D "_USRDLL" /D "driver_direct3d_EXPORTS" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stddirect3d.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /I "../../../../include" /I "../.." /D "_WINDOWS" /D "_USRDLL" /D "driver_direct3d_EXPORTS" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stddirect3d.h" /FD /GZ /c
 # SUBTRACT CPP /Gf /Fr
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c
@@ -105,7 +105,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_df.dll" /pdbtype:sept
+# ADD LINK32 d3dx9.lib d3d9.lib dinput.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_direct3d_win_df.dll" /pdbtype:sept /libpath:"../../../../lib"
 
 !ENDIF 
 

@@ -1,7 +1,7 @@
 /** \file bone.h
  * TODO: File description
  *
- * $Id: bone.h,v 1.11 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: bone.h,v 1.12 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_BONE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/transformable.h"
-#include "3d/channel_mixer.h"
+#include "transformable.h"
+#include "channel_mixer.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/bsphere.h"
 

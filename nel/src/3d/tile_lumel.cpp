@@ -1,7 +1,7 @@
 /** \file tile_lumel.cpp
  * TODO: File description
  *
- * $Id: tile_lumel.cpp,v 1.4 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: tile_lumel.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/tile_lumel.h"
+#include "tile_lumel.h"
 
 using namespace NLMISC;
 

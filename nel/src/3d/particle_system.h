@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * TODO: File description
  *
- * $Id: particle_system.h,v 1.53 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: particle_system.h,v 1.54 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,11 +34,11 @@
 #include "nel/misc/object_arena_allocator.h"
 #include "nel/3d/animation_time.h"
 #include "nel/3d/animation_time.h"
-#include "3d/animated_value.h"
-#include "3d/particle_system_process.h"
-#include "3d/ps_lod.h"
-#include "3d/ps_attrib_maker.h"
-#include "3d/ps_spawn_info.h"
+#include "animated_value.h"
+#include "particle_system_process.h"
+#include "ps_lod.h"
+#include "ps_attrib_maker.h"
+#include "ps_spawn_info.h"
 
 #include <map>
 

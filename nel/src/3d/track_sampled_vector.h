@@ -1,7 +1,7 @@
 /** \file track_sampled_vector.h
  * TODO: File description
  *
- * $Id: track_sampled_vector.h,v 1.3 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: track_sampled_vector.h,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/object_vector.h"
 #include "nel/misc/quat.h"
-#include "3d/track_sampled_common.h"
+#include "track_sampled_common.h"
 
 
 namespace NL3D {

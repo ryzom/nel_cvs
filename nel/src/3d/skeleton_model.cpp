@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * TODO: File description
  *
- * $Id: skeleton_model.cpp,v 1.62 2005/02/21 17:09:48 corvazier Exp $
+ * $Id: skeleton_model.cpp,v 1.63 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,20 +26,20 @@
 #include "std3d.h"
 
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/skeleton_model.h"
-#include "3d/hrc_trav.h"
-#include "3d/clip_trav.h"
-#include "3d/anim_detail_trav.h"
-#include "3d/render_trav.h"
-#include "3d/skeleton_shape.h"
-#include "3d/scene.h"
-#include "3d/lod_character_manager.h"
-#include "3d/lod_character_shape.h"
+#include "skeleton_model.h"
+#include "hrc_trav.h"
+#include "clip_trav.h"
+#include "anim_detail_trav.h"
+#include "render_trav.h"
+#include "skeleton_shape.h"
+#include "scene.h"
+#include "lod_character_manager.h"
+#include "lod_character_shape.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/aabbox.h"
-#include "3d/vertex_stream_manager.h"
-#include "3d/mesh_base_instance.h"
-#include "3d/async_texture_manager.h"
+#include "vertex_stream_manager.h"
+#include "mesh_base_instance.h"
+#include "async_texture_manager.h"
 
 
 

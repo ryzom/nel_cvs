@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.27 2004/10/18 16:12:41 berenguier Exp $
+ * $Id: channel_mixer.cpp,v 1.28 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/channel_mixer.h"
-#include "3d/track.h"
-#include "3d/animatable.h"
-#include "3d/skeleton_weight.h"
+#include "channel_mixer.h"
+#include "track.h"
+#include "animatable.h"
+#include "skeleton_weight.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 #include "nel/misc/hierarchical_timer.h"

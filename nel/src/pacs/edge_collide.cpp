@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.19 2004/03/15 11:14:55 legros Exp $
+ * $Id: edge_collide.cpp,v 1.20 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdpacs.h"
 
-#include "pacs/edge_collide.h"
+#include "edge_collide.h"
 
 using namespace NLMISC;
 using namespace std;

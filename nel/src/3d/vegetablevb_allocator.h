@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.h
  * TODO: File description
  *
- * $Id: vegetablevb_allocator.h,v 1.6 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetablevb_allocator.h,v 1.7 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_VEGETABLEVB_ALLOCATOR_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/driver.h"
+#include "driver.h"
 
 
 namespace NL3D 

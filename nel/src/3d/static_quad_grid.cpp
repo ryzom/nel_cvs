@@ -1,7 +1,7 @@
 /** \file static_quad_grid.cpp
  * TODO: File description
  *
- * $Id: static_quad_grid.cpp,v 1.3 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: static_quad_grid.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/static_quad_grid.h"
+#include "static_quad_grid.h"
 
 
 namespace NL3D 

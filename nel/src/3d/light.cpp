@@ -1,7 +1,7 @@
 /** \file 3d/light.cpp
  * CLight definition
  *
- * $Id: light.cpp,v 1.8 2004/06/22 10:08:10 berenguier Exp $
+ * $Id: light.cpp,v 1.9 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/light.h"
+#include "light.h"
 
 using namespace NLMISC;
 

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.37 2004/12/17 09:35:08 lecroart Exp $
+ * $Id: driver_direct3d.h,v 1.38 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,16 +42,16 @@
 #include "nel/misc/win_event_emitter.h"
 #include "nel/3d/viewport.h"
 #include "nel/3d/scissor.h"
-#include "3d/driver.h"
-#include "3d/material.h"
-#include "3d/shader.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
-#include "3d/ptr_set.h"
-#include "3d/texture_cube.h"
-#include "3d/occlusion_query.h"
-#include "3d/vertex_program_parse.h"
-#include "3d/light.h"
+#include "driver.h"
+#include "material.h"
+#include "shader.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
+#include "ptr_set.h"
+#include "texture_cube.h"
+#include "occlusion_query.h"
+#include "vertex_program_parse.h"
+#include "light.h"
 //
 #include <algorithm>
 

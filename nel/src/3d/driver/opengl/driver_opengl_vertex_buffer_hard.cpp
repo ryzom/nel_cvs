@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * TODO: File description
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.20 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.21 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "driver_opengl.h"
 #include "driver_opengl_vertex_buffer_hard.h"
 
-#include "3d/vertex_buffer.h"
+#include "../../vertex_buffer.h"
 
 using	namespace std;
 using	namespace NLMISC;

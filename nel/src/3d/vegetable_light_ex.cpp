@@ -1,7 +1,7 @@
 /** \file vegetable_light_ex.cpp
  * TODO: File description
  *
- * $Id: vegetable_light_ex.cpp,v 1.4 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetable_light_ex.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/vegetable_light_ex.h"
-#include "3d/point_light_named.h"
+#include "vegetable_light_ex.h"
+#include "point_light_named.h"
 
 
 namespace NL3D 

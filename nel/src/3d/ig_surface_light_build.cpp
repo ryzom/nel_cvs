@@ -1,7 +1,7 @@
 /** \file ig_surface_light_build.cpp
  * TODO: File description
  *
- * $Id: ig_surface_light_build.cpp,v 1.5 2004/11/15 10:24:34 lecroart Exp $
+ * $Id: ig_surface_light_build.cpp,v 1.6 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/ig_surface_light_build.h"
-#include "3d/scene_group.h"
+#include "ig_surface_light_build.h"
+#include "scene_group.h"
 
 
 using namespace NLMISC;

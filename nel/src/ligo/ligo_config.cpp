@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.17 2005/01/31 13:52:39 lecroart Exp $
+ * $Id: ligo_config.cpp,v 1.18 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -23,13 +23,13 @@
  * MA 02111-1307, USA.
  */
 
-#include <nel/ligo/ligo_config.h>
+#include "nel/ligo/ligo_config.h"
 
-#include <nel/ligo/primitive.h>
-#include <nel/misc/config_file.h>
-#include <nel/misc/i_xml.h>
-#include <nel/misc/path.h>
-#include <nel/misc/file.h>
+#include "nel/ligo/primitive.h"
+#include "nel/misc/config_file.h"
+#include "nel/misc/i_xml.h"
+#include "nel/misc/path.h"
+#include "nel/misc/file.h"
 
 #include <cstdlib>
 

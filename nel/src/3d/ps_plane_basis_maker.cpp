@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.cpp
  * TODO: File description
  *
- * $Id: ps_plane_basis_maker.cpp,v 1.15 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_plane_basis_maker.cpp,v 1.16 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #include "std3d.h"
 
 
-#include "3d/ps_plane_basis_maker.h"
-#include "3d/ps_register_plane_basis_attribs.h"
+#include "ps_plane_basis_maker.h"
+#include "ps_register_plane_basis_attribs.h"
 
 namespace NL3D 
 {

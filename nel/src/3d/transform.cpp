@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * TODO: File description
  *
- * $Id: transform.cpp,v 1.78 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: transform.cpp,v 1.79 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,11 +25,11 @@
 
 #include "std3d.h"
 
-#include "3d/transform.h"
-#include "3d/skeleton_model.h"
-#include "3d/scene.h"
-#include "3d/scene_group.h"
-#include "3d/root_model.h"
+#include "transform.h"
+#include "skeleton_model.h"
+#include "scene.h"
+#include "scene_group.h"
+#include "root_model.h"
 #include "nel/3d/u_transform.h"
 #include "nel/misc/fast_floor.h"
 #include "nel/misc/hierarchical_timer.h"

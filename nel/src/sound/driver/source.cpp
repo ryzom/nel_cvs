@@ -1,7 +1,7 @@
 /** \file source.cpp
  * TODO: File description
  *
- * $Id: source.cpp,v 1.3 2004/11/15 10:25:07 lecroart Exp $
+ * $Id: source.cpp,v 1.4 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-#include "sound/driver/source.h"
+#include "source.h"
 #include "nel/misc/common.h"
+
+void foo_source_lowlevel() {}
 
 using namespace NLMISC;
 

@@ -1,7 +1,7 @@
 /** \file radix_sort.cpp
  * TODO: File description
  *
- * $Id: radix_sort.cpp,v 1.3 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: radix_sort.cpp,v 1.4 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/radix_sort.h"
+#include "radix_sort.h"
 
 
 namespace NL3D {

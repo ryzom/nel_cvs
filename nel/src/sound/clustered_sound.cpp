@@ -1,7 +1,7 @@
 /** \file clustered_sound.cpp
  * 
  *
- * $Id: clustered_sound.cpp,v 1.23 2004/11/15 10:25:06 lecroart Exp $
+ * $Id: clustered_sound.cpp,v 1.24 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -29,12 +29,12 @@
 #include "nel/georges/u_form.h"
 #include "nel/georges/u_form_elm.h"
 #include "nel/georges/load_form.h"
-#include "3d/std3d.h"
-#include "3d/scene.h"
-#include "3d/scene_user.h"
-#include "3d/cluster.h"
-#include "3d/portal.h"
-#include "sound/driver/listener.h"
+#include "../3d/std3d.h"
+#include "../3d/scene.h"
+#include "../3d/scene_user.h"
+#include "../3d/cluster.h"
+#include "../3d/portal.h"
+#include "driver/listener.h"
 #include "audio_mixer_user.h"
 #include "driver/sound_driver.h"
 #if EAX_AVAILABLE == 1

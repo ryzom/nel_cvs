@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * TODO: File description
  *
- * $Id: driver_opengl_states.h,v 1.20 2004/11/15 10:24:55 lecroart Exp $
+ * $Id: driver_opengl_states.h,v 1.21 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_DRIVER_OPENGL_STATES_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/vertex_buffer.h"
+#include "../../vertex_buffer.h"
 #include <GL/gl.h>
 
 

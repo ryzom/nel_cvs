@@ -1,7 +1,7 @@
 /** \file mesh.h
  * TODO: File description
  *
- * $Id: mesh.h,v 1.47 2004/12/07 17:57:50 vizerie Exp $
+ * $Id: mesh.h,v 1.48 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,19 +27,19 @@
 #define NL_MESH_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/shape.h"
-#include "3d/driver.h"
+#include "shape.h"
+#include "driver.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/uv.h"
 #include "nel/misc/bit_set.h"
-#include "3d/vertex_buffer.h"
-#include "3d/material.h"
-#include "3d/index_buffer.h"
-#include "3d/animated_material.h"
-#include "3d/mesh_base.h"
-#include "3d/mesh_geom.h"
-#include "3d/mesh_morpher.h"
-#include "3d/mesh_vertex_program.h"
+#include "vertex_buffer.h"
+#include "material.h"
+#include "index_buffer.h"
+#include "animated_material.h"
+#include "mesh_base.h"
+#include "mesh_geom.h"
+#include "mesh_morpher.h"
+#include "mesh_vertex_program.h"
 #include <set>
 #include <vector>
 
@@ -423,7 +423,7 @@ public:
 	}
 
 	/// get the number of BlendShapes
-	uint getNbBlendShapes() const { if(_MeshMorpher) return _MeshMorpher->BlendShapes.size(); }
+	uint getNbBlendShapes() const { if(_MeshMorpher) return _MeshMorpher->BlendShapes.size(); return 0; }
 	
 	/** Tool function to retrieve vector geometry only of the mesh. 
 	 *	return false if the vbuffer cannot be read (resident)

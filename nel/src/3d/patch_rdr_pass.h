@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.h
  * TODO: File description
  *
- * $Id: patch_rdr_pass.h,v 1.6 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: patch_rdr_pass.h,v 1.7 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,9 +28,9 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
-#include "3d/driver.h"
-#include "3d/landscape_def.h"
-#include "3d/patch.h"
+#include "driver.h"
+#include "landscape_def.h"
+#include "patch.h"
 #include <vector>
 
 

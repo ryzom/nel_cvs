@@ -1,7 +1,7 @@
 /** \file light_contribution.cpp
  * TODO: File description
  *
- * $Id: light_contribution.cpp,v 1.5 2004/11/15 10:24:39 lecroart Exp $
+ * $Id: light_contribution.cpp,v 1.6 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/light_contribution.h"
+#include "light_contribution.h"
 
 
 namespace NL3D {

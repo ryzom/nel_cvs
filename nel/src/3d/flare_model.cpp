@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * TODO: File description
  *
- * $Id: flare_model.cpp,v 1.32 2005/02/21 17:09:48 corvazier Exp $
+ * $Id: flare_model.cpp,v 1.33 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,15 +25,15 @@
 
 #include "std3d.h"
 
-#include "3d/flare_model.h"
-#include "3d/flare_shape.h"
-#include "3d/driver.h"
-#include "3d/material.h"
-#include "3d/dru.h"
-#include "3d/scene.h"
-#include "3d/render_trav.h"
-#include "3d/occlusion_query.h"
-#include "3d/mesh.h"
+#include "flare_model.h"
+#include "flare_shape.h"
+#include "driver.h"
+#include "material.h"
+#include "dru.h"
+#include "scene.h"
+#include "render_trav.h"
+#include "occlusion_query.h"
+#include "mesh.h"
 #include "nel/3d/viewport.h"
 #include "nel/misc/common.h"
 

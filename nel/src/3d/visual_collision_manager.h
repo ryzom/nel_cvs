@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.h
  * TODO: File description
  *
- * $Id: visual_collision_manager.h,v 1.10 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: visual_collision_manager.h,v 1.11 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/block_memory.h"
-#include "3d/patch.h"
-#include "3d/landscape.h"
-#include "3d/quad_grid.h"
-#include "3d/visual_collision_mesh.h"
+#include "patch.h"
+#include "landscape.h"
+#include "quad_grid.h"
+#include "visual_collision_mesh.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file u_transformable.cpp
  * Interface for transformable objects.
  *
- * $Id: u_transformable.cpp,v 1.1 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: u_transformable.cpp,v 1.2 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std3d.h"
 
 #include "nel/3d/u_transformable.h"
-#include "3d/transformable.h"
+#include "transformable.h"
 
 #define NL3D_MEM_TRANSFORMABLE						NL_ALLOC_CONTEXT( 3dTrabl )
 

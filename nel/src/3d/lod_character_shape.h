@@ -1,7 +1,7 @@
 /** \file lod_character_shape.h
  * TODO: File description
  *
- * $Id: lod_character_shape.h,v 1.7 2004/11/15 10:24:41 lecroart Exp $
+ * $Id: lod_character_shape.h,v 1.8 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
-#include "3d/mesh.h"
+#include "mesh.h"
 
 
 namespace NL3D 

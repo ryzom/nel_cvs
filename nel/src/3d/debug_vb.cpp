@@ -1,6 +1,6 @@
 /** \file debug_vb.cpp
  *
- * $Id: debug_vb.cpp,v 1.2 2004/10/19 12:41:22 vizerie Exp $
+ * $Id: debug_vb.cpp,v 1.3 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -24,8 +24,8 @@
 
 #include "std3d.h"
 #include "debug_vb.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 
 namespace NL3D
 {

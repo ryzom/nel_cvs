@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * TODO: File description
  *
- * $Id: landscape_user.h,v 1.30 2004/11/15 10:24:37 lecroart Exp $
+ * $Id: landscape_user.h,v 1.31 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,9 +28,9 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_landscape.h"
-#include "3d/landscape_model.h"
-#include "3d/zone_manager.h"
-#include "3d/scene.h"
+#include "landscape_model.h"
+#include "zone_manager.h"
+#include "scene.h"
 
 #define NL3D_MEM_LANDSCAPE						NL_ALLOC_CONTEXT( 3dLand )
 

@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * TODO: File description
  *
- * $Id: nelu.cpp,v 1.36 2004/11/15 10:24:45 lecroart Exp $
+ * $Id: nelu.cpp,v 1.37 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,12 +28,12 @@
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 
-#include "3d/nelu.h"
-#include "3d/dru.h"
-#include "3d/camera.h"
-#include "3d/register_3d.h"
-#include "3d/init_3d.h"
-#include "3d/vertex_stream_manager.h"
+#include "nelu.h"
+#include "dru.h"
+#include "camera.h"
+#include "register_3d.h"
+#include "init_3d.h"
+#include "vertex_stream_manager.h"
 #include "nel/misc/debug.h"
 using namespace std;
 using namespace NLMISC;

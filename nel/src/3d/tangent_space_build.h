@@ -1,7 +1,7 @@
 /** \file tangent_space_build.h
  * A function that add tangent space information to a vertex buffer
  *
- * $Id: tangent_space_build.h,v 1.2 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: tangent_space_build.h,v 1.3 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #define NL_TANGENT_SPACE_BUILD_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/mesh.h"
+#include "mesh.h"
 
 namespace NL3D
 {

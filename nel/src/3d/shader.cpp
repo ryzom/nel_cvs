@@ -1,7 +1,7 @@
 /** \file shader.cpp
  * TODO: File description
  *
- * $Id: shader.cpp,v 1.6 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: shader.cpp,v 1.7 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/shader.h"
-#include "3d/driver.h"
+#include "shader.h"
+#include "driver.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.h
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.h,v 1.13 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_ribbon_look_at.h,v 1.14 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #define NL_PS_PARTICLE_RIBBON_LOOK_AT_H
 
 
-#include "3d/ps_ribbon_base.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
+#include "ps_ribbon_base.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 #include <hash_map>
 
 

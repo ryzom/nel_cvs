@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * TODO: File description
  *
- * $Id: animation.cpp,v 1.20 2004/11/15 10:24:31 lecroart Exp $
+ * $Id: animation.cpp,v 1.21 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/animation.h"
-#include "3d/animation_set.h"
-#include "3d/track.h"
-#include "3d/track_sampled_quat_small_header.h"
+#include "animation.h"
+#include "animation_set.h"
+#include "track.h"
+#include "track_sampled_quat_small_header.h"
 
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"

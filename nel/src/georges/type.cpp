@@ -1,7 +1,7 @@
 /** \file type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.23 2004/11/15 10:24:58 lecroart Exp $
+ * $Id: type.cpp,v 1.24 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,9 +31,9 @@
 #include "nel/misc/path.h"
 #include "nel/georges/u_type.h"
 
-#include "georges/form.h"
-#include "georges/form_elm.h"
-#include "georges/form_loader.h"
+#include "form.h"
+#include "form_elm.h"
+#include "form_loader.h"
 
 #include "type.h"
 

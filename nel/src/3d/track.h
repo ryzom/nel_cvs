@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.7 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: track.h,v 1.8 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "nel/3d/animation_time.h"
 #include "nel/3d/u_track.h"
 
-#include "3d/animated_value.h"
+#include "animated_value.h"
 
 
 namespace NL3D 

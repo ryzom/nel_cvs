@@ -1,7 +1,7 @@
 /** \file stddsound.cpp
  * 
  *
- * $Id: stddsound.cpp,v 1.2 2004/11/15 10:25:07 lecroart Exp $
+ * $Id: stddsound.cpp,v 1.3 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,3 +24,7 @@
  */
 
 #include "stddsound.h"
+
+
+// Foo function to remove disabled warning
+void foo_stddsound() {};

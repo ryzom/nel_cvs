@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * TODO: File description
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.15 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.16 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,12 +25,12 @@
 
 #include "std3d.h"
 
-#include "3d/quad_grid_clip_manager.h"
-#include "3d/scene.h"
-#include "3d/transform_shape.h"
-#include "3d/clip_trav.h"
+#include "quad_grid_clip_manager.h"
+#include "scene.h"
+#include "transform_shape.h"
+#include "clip_trav.h"
 #include "nel/misc/aabbox.h"
-#include "3d/cluster.h"
+#include "cluster.h"
 #include "nel/misc/hierarchical_timer.h"
 
 

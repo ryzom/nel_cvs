@@ -1,7 +1,7 @@
 /** \file primitive_block_pacs.cpp
  * Block of PACS primitives
  *
- * $Id: primitive_block_pacs.cpp,v 1.7 2003/11/14 09:48:04 corvazier Exp $
+ * $Id: primitive_block_pacs.cpp,v 1.8 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdpacs.h"
 #include "nel/misc/i_xml.h"
-#include "pacs/primitive_block.h"
+#include "primitive_block.h"
 #include <memory>
 
 

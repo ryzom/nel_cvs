@@ -1,7 +1,7 @@
 /** \file mesh_blender.h
  * TODO: File description
  *
- * $Id: mesh_blender.h,v 1.2 2004/11/15 10:24:42 lecroart Exp $
+ * $Id: mesh_blender.h,v 1.3 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_MESH_BLENDER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/material.h"
+#include "material.h"
 
 
 namespace NL3D 

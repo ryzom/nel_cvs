@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * TODO: File description
  *
- * $Id: vegetable_manager.h,v 1.21 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetable_manager.h,v 1.22 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,14 +32,14 @@
 #include "nel/misc/block_memory.h"
 #include "nel/misc/vector_2f.h"
 #include "nel/misc/smart_ptr.h"
-#include "3d/vegetable_clip_block.h"
-#include "3d/vegetable_sort_block.h"
-#include "3d/vegetable_instance_group.h"
-#include "3d/vegetable_shape.h"
-#include "3d/vegetablevb_allocator.h"
-#include "3d/material.h"
-#include "3d/driver.h"
-#include "3d/vegetable_uv8.h"
+#include "vegetable_clip_block.h"
+#include "vegetable_sort_block.h"
+#include "vegetable_instance_group.h"
+#include "vegetable_shape.h"
+#include "vegetablevb_allocator.h"
+#include "material.h"
+#include "driver.h"
+#include "vegetable_uv8.h"
 
 
 namespace NL3D 

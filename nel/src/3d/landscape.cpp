@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * TODO: File description
  *
- * $Id: landscape.cpp,v 1.153 2004/12/14 13:02:44 berenguier Exp $
+ * $Id: landscape.cpp,v 1.154 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,25 +26,25 @@
 #include "std3d.h"
 
 
-#include "3d/landscape.h"
-#include "3d/landscape_model.h"
+#include "landscape.h"
+#include "landscape_model.h"
 #include "nel/misc/bsphere.h"
-#include "3d/texture_file.h"
-#include "3d/texture_far.h"
-#include "3d/landscape_profile.h"
+#include "texture_file.h"
+#include "texture_far.h"
+#include "landscape_profile.h"
 #include "nel/3d/height_map.h"
-#include "3d/tile_noise_map.h"
-#include "3d/vegetable_manager.h"
-#include "3d/vegetable.h"
-#include "3d/landscape_vegetable_block.h"
+#include "tile_noise_map.h"
+#include "vegetable_manager.h"
+#include "vegetable.h"
+#include "landscape_vegetable_block.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/tile_vegetable_desc.h"
-#include "3d/texture_dlm.h"
-#include "3d/patchdlm_context.h"
+#include "tile_vegetable_desc.h"
+#include "texture_dlm.h"
+#include "patchdlm_context.h"
 #include "nel/misc/hierarchical_timer.h"
 
 
-#include "3d/vertex_program.h"
+#include "vertex_program.h"
 
 
 

@@ -1,7 +1,7 @@
 /** \file move_cell.cpp
  * TODO: File description
  *
- * $Id: move_cell.cpp,v 1.6 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: move_cell.cpp,v 1.7 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "stdpacs.h"
 
-#include "pacs/move_cell.h"
-#include "pacs/move_element.h"
-#include "pacs/move_primitive.h"
+#include "move_cell.h"
+#include "move_element.h"
+#include "move_primitive.h"
 
 namespace NLPACS 
 {

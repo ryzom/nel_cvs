@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * TODO: File description
  *
- * $Id: particle_system_shape.h,v 1.26 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: particle_system_shape.h,v 1.27 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,8 +30,8 @@
 #include "nel/misc/class_id.h"
 #include "nel/misc/mem_stream.h"
 #include "nel/misc/smart_ptr.h"
-#include "3d/shape.h"
-#include "3d/track.h"
+#include "shape.h"
+#include "track.h"
 
 namespace NLMISC
 {

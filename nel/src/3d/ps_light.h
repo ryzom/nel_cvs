@@ -1,6 +1,6 @@
 /** \file ps_light.h
  *
- * $Id: ps_light.h,v 1.2 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_light.h,v 1.3 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #define NL_PS_LIGHT_H
 
 
-#include "3d/ps_located.h"
-#include "3d/ps_attrib.h"
+#include "ps_located.h"
+#include "ps_attrib.h"
 
 namespace NL3D
 {

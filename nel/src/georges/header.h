@@ -1,7 +1,7 @@
 /** \file header.h
  * Georges header file class
  *
- * $Id: header.h,v 1.4 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: header.h,v 1.5 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_HEADER_H
 #define NL_HEADER_H
 
-#include	"nel/misc/types_nl.h"
+#include "nel/misc/types_nl.h"
 
 namespace NLGEORGES
 {

@@ -1,7 +1,7 @@
 /** \file hrc_trav.cpp
  * TODO: File description
  *
- * $Id: hrc_trav.cpp,v 1.13 2004/11/15 10:24:33 lecroart Exp $
+ * $Id: hrc_trav.cpp,v 1.14 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/hrc_trav.h"
+#include "hrc_trav.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/scene.h"
+#include "scene.h"
 
 using namespace std;
 using namespace NLMISC;

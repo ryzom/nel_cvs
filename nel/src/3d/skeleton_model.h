@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * TODO: File description
  *
- * $Id: skeleton_model.h,v 1.43 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: skeleton_model.h,v 1.44 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,11 +28,11 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/object_vector.h"
-#include "3d/transform_shape.h"
-#include "3d/bone.h"
-#include "3d/mrm_level_detail.h"
-#include "3d/lod_character_instance.h"
-#include "3d/skeleton_spawn_script.h"
+#include "transform_shape.h"
+#include "bone.h"
+#include "mrm_level_detail.h"
+#include "lod_character_instance.h"
+#include "skeleton_spawn_script.h"
 
 namespace NLMISC
 {

@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.h
  * TODO: File description
  *
- * $Id: visual_collision_entity.h,v 1.13 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: visual_collision_entity.h,v 1.14 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/point_light_influence.h"
-#include "3d/patch.h"
-#include "3d/landscape_collision_grid.h"
+#include "patch.h"
+#include "landscape_collision_grid.h"
 
 
 namespace NL3D 

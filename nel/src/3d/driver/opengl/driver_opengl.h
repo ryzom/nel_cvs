@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.186 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.187 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,27 +57,27 @@
 
 #include "driver_opengl_extension.h"
 
-#include "3d/driver.h"
-#include "3d/material.h"
-#include "3d/shader.h"
-#include "3d/vertex_buffer.h"
+#include "../../driver.h"
+#include "../../material.h"
+#include "../../shader.h"
+#include "../../vertex_buffer.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/event_emitter.h"
 #include "nel/misc/bit_set.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/ptr_set.h"
+#include "../../ptr_set.h"
 #include "nel/misc/heap_memory.h"
 #include "nel/misc/event_emitter_multi.h"
 #include "driver_opengl_states.h"
-#include "3d/texture_cube.h"
-#include "3d/vertex_program_parse.h"
+#include "../../texture_cube.h"
+#include "../../vertex_program_parse.h"
 #include "nel/3d/viewport.h"
 #include "nel/3d/scissor.h"
-#include "3d/light.h"
+#include "../../light.h"
 #include "nel/misc/time_nl.h"
-#include "3d/occlusion_query.h"
+#include "../../occlusion_query.h"
 
 
 #ifdef NL_OS_WINDOWS

@@ -1,7 +1,7 @@
 /** \file meshvp_per_pixel_light.h
  * TODO: File description
  *
- * $Id: meshvp_per_pixel_light.h,v 1.4 2004/11/15 10:24:44 lecroart Exp $
+ * $Id: meshvp_per_pixel_light.h,v 1.5 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_MESHVP_PER_PIXEL_LIGHT_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/mesh_vertex_program.h"
-#include "3d/vertex_program.h"
+#include "mesh_vertex_program.h"
+#include "vertex_program.h"
 
 
 #include <memory>

@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * TODO: File description
  *
- * $Id: water_shape.cpp,v 1.38 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: water_shape.cpp,v 1.39 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,14 +25,14 @@
 
 #include "std3d.h"
 
-#include "3d/water_shape.h"
-#include "3d/water_model.h"
-#include "3d/vertex_buffer.h"
-#include "3d/texture_bump.h"
-#include "3d/texture_blend.h"
-#include "3d/scene.h"
-#include "3d/water_pool_manager.h"
-#include "3d/water_height_map.h"
+#include "water_shape.h"
+#include "water_model.h"
+#include "vertex_buffer.h"
+#include "texture_bump.h"
+#include "texture_blend.h"
+#include "scene.h"
+#include "water_pool_manager.h"
+#include "water_height_map.h"
 #include <memory>
 
 

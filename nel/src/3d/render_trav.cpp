@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * TODO: File description
  *
- * $Id: render_trav.cpp,v 1.64 2005/02/15 18:41:36 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.65 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,25 +25,25 @@
 
 #include "std3d.h"
 
-#include "3d/render_trav.h"
-#include "3d/hrc_trav.h"
-#include "3d/clip_trav.h"
-#include "3d/light_trav.h"
-#include "3d/driver.h"
-#include "3d/light.h"
-#include "3d/skeleton_model.h"
-#include "3d/scene.h"
-#include "3d/coarse_mesh_manager.h"
-#include "3d/lod_character_manager.h"
-#include "3d/water_model.h"
-#include "3d/water_shape.h"
+#include "render_trav.h"
+#include "hrc_trav.h"
+#include "clip_trav.h"
+#include "light_trav.h"
+#include "driver.h"
+#include "light.h"
+#include "skeleton_model.h"
+#include "scene.h"
+#include "coarse_mesh_manager.h"
+#include "lod_character_manager.h"
+#include "water_model.h"
+#include "water_shape.h"
 #include "nel/misc/hierarchical_timer.h"
 
-#include "3d/transform.h"
+#include "transform.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/vertex_stream_manager.h"
-#include "3d/landscape_model.h"
-#include "3d/shape_bank.h"
+#include "vertex_stream_manager.h"
+#include "landscape_model.h"
+#include "shape_bank.h"
 
 using namespace std;
 using namespace NLMISC;

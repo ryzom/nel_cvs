@@ -1,7 +1,7 @@
 /** \file ps_int.cpp
  * TODO: File description
  *
- * $Id: ps_int.cpp,v 1.8 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_int.cpp,v 1.9 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/ps_int.h"
-#include "3d/ps_register_int_attribs.h"
+#include "ps_int.h"
+#include "ps_register_int_attribs.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file vertex_program.cpp
  * Vertex program definition
  *
- * $Id: vertex_program.cpp,v 1.3 2002/02/28 12:59:52 besson Exp $
+ * $Id: vertex_program.cpp,v 1.4 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/vertex_program.h"
+#include "vertex_program.h"
 
-#include "3d/driver.h"
+#include "driver.h"
 
 
 namespace NL3D 

@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.16 2004/10/19 12:57:47 vizerie Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.17 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -24,10 +24,10 @@
 
 #include "std3d.h"
 
-#include "3d/seg_remanence_shape.h"
-#include "3d/seg_remanence.h"
-#include "3d/driver.h"
-#include "3d/scene.h"
+#include "seg_remanence_shape.h"
+#include "seg_remanence.h"
+#include "driver.h"
+#include "scene.h"
 //
 #include "nel/misc/bsphere.h"
 

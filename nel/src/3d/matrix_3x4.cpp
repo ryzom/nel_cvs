@@ -1,7 +1,7 @@
 /** \file matrix_3x4.cpp
  * TODO: File description
  *
- * $Id: matrix_3x4.cpp,v 1.2 2004/11/15 10:24:42 lecroart Exp $
+ * $Id: matrix_3x4.cpp,v 1.3 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/matrix_3x4.h"
+#include "matrix_3x4.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file cloud_scape_user.cpp
  * implementation of the user interface for water
  *
- * $Id: cloud_scape_user.cpp,v 1.4 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: cloud_scape_user.cpp,v 1.5 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #include "std3d.h"
 
 #include "nel/3d/u_cloud_scape.h"
-#include "3d/cloud_scape_user.h"
-#include "3d/driver_user.h"
-#include "3d/cloud_scape.h"
-#include "3d/scene.h"
+#include "cloud_scape_user.h"
+#include "driver_user.h"
+#include "cloud_scape.h"
+#include "scene.h"
 
 
 namespace NL3D 

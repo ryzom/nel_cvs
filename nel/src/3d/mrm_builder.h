@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * A Builder of MRM.
  *
- * $Id: mrm_builder.h,v 1.11 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: mrm_builder.h,v 1.12 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,12 +28,12 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/uv.h"
-#include "3d/mrm_mesh.h"
-#include "3d/mrm_internal.h"
-#include "3d/mrm_parameters.h"
-#include "3d/mesh.h"
-#include "3d/mesh_mrm.h"
-#include "3d/mesh_mrm_skinned.h"
+#include "mrm_mesh.h"
+#include "mrm_internal.h"
+#include "mrm_parameters.h"
+#include "mesh.h"
+#include "mesh_mrm.h"
+#include "mesh_mrm_skinned.h"
 #include <map>
 
 

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * TODO: File description
  *
- * $Id: ps_emitter.cpp,v 1.63 2005/01/31 13:51:41 lecroart Exp $
+ * $Id: ps_emitter.cpp,v 1.64 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #include "std3d.h"
 
 #include <cstdlib>
-#include "3d/ps_emitter.h"
-#include "3d/material.h"
+#include "ps_emitter.h"
+#include "material.h"
 #include "nel/misc/line.h"
-#include "3d/dru.h"
-#include "3d/particle_system.h"
+#include "dru.h"
+#include "particle_system.h"
 
 namespace NL3D {
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.81 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: driver.h,v 1.82 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,12 +35,12 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/uv.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/texture.h"
-#include "3d/shader.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
-#include "3d/vertex_program.h"
-#include "3d/material.h"
+#include "texture.h"
+#include "shader.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
+#include "vertex_program.h"
+#include "material.h"
 #include "nel/misc/mutex.h"
 #include "nel/3d/primitive_profile.h"
 

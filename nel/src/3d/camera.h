@@ -1,7 +1,7 @@
 /** \file camera.h
  * TODO: File description
  *
- * $Id: camera.h,v 1.7 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: camera.h,v 1.8 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_CAMERA_H
 
 #include "nel/3d/frustum.h"
-#include "3d/transform.h"
+#include "transform.h"
 
 
 namespace	NL3D

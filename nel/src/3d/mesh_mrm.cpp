@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * TODO: File description
  *
- * $Id: mesh_mrm.cpp,v 1.79 2005/01/28 13:10:48 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.80 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,19 +29,19 @@
 #include "nel/misc/system_info.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/fast_mem.h"
-#include "3d/mesh_mrm.h"
-#include "3d/mrm_builder.h"
-#include "3d/mrm_parameters.h"
-#include "3d/mesh_mrm_instance.h"
-#include "3d/scene.h"
-#include "3d/skeleton_model.h"
-#include "3d/stripifier.h"
-#include "3d/mesh_blender.h"
-#include "3d/render_trav.h"
+#include "mesh_mrm.h"
+#include "mrm_builder.h"
+#include "mrm_parameters.h"
+#include "mesh_mrm_instance.h"
+#include "scene.h"
+#include "skeleton_model.h"
+#include "stripifier.h"
+#include "mesh_blender.h"
+#include "render_trav.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/raw_skin.h"
-#include "3d/shifted_triangle_cache.h"
-#include "3d/texture_file.h"
+#include "raw_skin.h"
+#include "shifted_triangle_cache.h"
+#include "texture_file.h"
 
 
 using namespace NLMISC;

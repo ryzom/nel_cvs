@@ -1,7 +1,7 @@
 /** \file animation_optimizer.cpp
  * TODO: File description
  *
- * $Id: animation_optimizer.cpp,v 1.6 2004/11/15 10:24:31 lecroart Exp $
+ * $Id: animation_optimizer.cpp,v 1.7 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,14 +25,14 @@
 
 #include "std3d.h"
 
-#include "3d/animation_optimizer.h"
+#include "animation_optimizer.h"
 #include "nel/misc/mem_stream.h"
 #include "nel/misc/vectord.h"
-#include "3d/track.h"
-#include "3d/track_keyframer.h"
-#include "3d/animation.h"
-#include "3d/track_sampled_quat.h"
-#include "3d/track_sampled_vector.h"
+#include "track.h"
+#include "track_keyframer.h"
+#include "animation.h"
+#include "track_sampled_quat.h"
+#include "track_sampled_vector.h"
 
 
 using	namespace NLMISC;

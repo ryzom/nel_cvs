@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * TODO: File description
  *
- * $Id: ps_attrib.h,v 1.23 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_attrib.h,v 1.24 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/3d/animation_time.h"
-#include "3d/ps_allocator.h"
+#include "ps_allocator.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/common.h"

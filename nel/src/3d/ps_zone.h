@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * TODO: File description
  *
- * $Id: ps_zone.h,v 1.14 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_zone.h,v 1.15 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
-#include "3d/ps_force.h"
-#include "3d/ps_edit.h"
-#include "3d/ps_attrib.h"
-#include "3d/ps_plane_basis.h"
+#include "ps_force.h"
+#include "ps_edit.h"
+#include "ps_attrib.h"
+#include "ps_plane_basis.h"
 
 
 namespace NL3D {

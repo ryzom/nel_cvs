@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * TODO: File description
  *
- * $Id: animation_set.cpp,v 1.21 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: animation_set.cpp,v 1.22 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/animation_set.h"
-#include "3d/driver.h"
-#include "3d/shape_bank.h"
+#include "animation_set.h"
+#include "driver.h"
+#include "shape_bank.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"

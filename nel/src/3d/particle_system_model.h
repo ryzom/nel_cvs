@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * TODO: File description
  *
- * $Id: particle_system_model.h,v 1.45 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: particle_system_model.h,v 1.46 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,13 +29,13 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/contiguous_block_allocator.h"
-#include "3d/transform_shape.h"
-#include "3d/particle_system.h"
-#include "3d/particle_system_manager.h"
-#include "3d/clip_trav.h"
-#include "3d/anim_detail_trav.h"
-#include "3d/load_balancing_trav.h"
-#include "3d/scene.h"
+#include "transform_shape.h"
+#include "particle_system.h"
+#include "particle_system_manager.h"
+#include "clip_trav.h"
+#include "anim_detail_trav.h"
+#include "load_balancing_trav.h"
+#include "scene.h"
 
 // tmp
 #include "nel/misc/hierarchical_timer.h"

@@ -1,7 +1,7 @@
 /** \file tile_vegetable_desc.cpp
  * TODO: File description
  *
- * $Id: tile_vegetable_desc.cpp,v 1.6 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: tile_vegetable_desc.cpp,v 1.7 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/tile_vegetable_desc.h"
+#include "tile_vegetable_desc.h"
 #include "nel/misc/common.h"
-#include "3d/vegetable_manager.h"
+#include "vegetable_manager.h"
 
 
 using namespace NLMISC;

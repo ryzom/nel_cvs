@@ -32,9 +32,9 @@
 #include "nel/misc/matrix.h"
 #include "nel/misc/rgba.h"
 
-#include "3d/transform.h"
-#include "3d/quad_grid.h"
+#include "transform.h"
+#include "quad_grid.h"
 
-#include "3d/debug_vb.h"
+#include "debug_vb.h"
 
 

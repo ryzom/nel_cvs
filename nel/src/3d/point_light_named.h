@@ -1,7 +1,7 @@
 /** \file point_light_named.h
  * TODO: File description
  *
- * $Id: point_light_named.h,v 1.4 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: point_light_named.h,v 1.5 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_POINT_LIGHT_NAMED_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/point_light.h"
+#include "point_light.h"
 #include "nel/misc/stream.h"
 
 

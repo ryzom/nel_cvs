@@ -1,7 +1,7 @@
 /** \file driver_direct3d_index.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_index.cpp,v 1.13 2004/10/19 12:43:30 vizerie Exp $
+ * $Id: driver_direct3d_index.cpp,v 1.14 2005/02/22 10:19:22 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -27,8 +27,8 @@
 
 #include "stddirect3d.h"
 
-#include "3d/index_buffer.h"
-#include "3d/light.h"
+#include "../../index_buffer.h"
+#include "../../light.h"
 #include "nel/misc/rect.h"
 #include "nel/misc/di_event_emitter.h"
 #include "nel/misc/mouse_device.h"

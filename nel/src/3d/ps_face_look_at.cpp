@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.16 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_face_look_at.cpp,v 1.17 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,11 +25,11 @@
 
 #include "std3d.h"
 
-#include "3d/ps_face_look_at.h"
-#include "3d/ps_macro.h"
-#include "3d/driver.h"
-#include "3d/ps_iterator.h"
-#include "3d/particle_system.h"
+#include "ps_face_look_at.h"
+#include "ps_macro.h"
+#include "driver.h"
+#include "ps_iterator.h"
+#include "particle_system.h"
 #include "nel/misc/fast_floor.h"
 
 

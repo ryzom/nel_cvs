@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * TODO: File description
  *
- * $Id: mesh_mrm_instance.cpp,v 1.19 2004/11/15 10:24:44 lecroart Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.20 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,13 +25,13 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_mrm_instance.h"
-#include "3d/mesh_mrm.h"
-#include "3d/skeleton_model.h"
-#include "3d/raw_skin.h"
-#include "3d/shifted_triangle_cache.h"
+#include "mesh_mrm_instance.h"
+#include "mesh_mrm.h"
+#include "skeleton_model.h"
+#include "raw_skin.h"
+#include "shifted_triangle_cache.h"
 #include "nel/3d/u_scene.h"
-#include "3d/scene.h"
+#include "scene.h"
 
 
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file 3d/zone.h
  * TODO: File description
  *
- * $Id: zone.h,v 1.25 2005/01/31 13:51:41 lecroart Exp $
+ * $Id: zone.h,v 1.26 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,11 +31,11 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/bit_set.h"
-#include "3d/tessellation.h"
-#include "3d/patch.h"
-#include "3d/bezier_patch.h"
-#include "3d/point_light_named.h"
-#include "3d/point_light_named_array.h"
+#include "tessellation.h"
+#include "patch.h"
+#include "bezier_patch.h"
+#include "point_light_named.h"
+#include "point_light_named_array.h"
 #include <cstdio>
 #include <vector>
 #include <map>

@@ -1,7 +1,7 @@
 /** \file point_light_named_array.cpp
  * TODO: File description
  *
- * $Id: point_light_named_array.cpp,v 1.10 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: point_light_named_array.cpp,v 1.11 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/point_light_named_array.h"
-#include "3d/scene.h"
+#include "point_light_named_array.h"
+#include "scene.h"
 #include <algorithm>
 
 

@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * TODO: File description
  *
- * $Id: texture_bump.cpp,v 1.15 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: texture_bump.cpp,v 1.16 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/texture_bump.h"
+#include "texture_bump.h"
 
 
 

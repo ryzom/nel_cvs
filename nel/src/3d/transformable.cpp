@@ -1,7 +1,7 @@
 /** \file transformable.cpp
  * TODO: File description
  *
- * $Id: transformable.cpp,v 1.15 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: transformable.cpp,v 1.16 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/transformable.h"
-#include "3d/channel_mixer.h"
+#include "transformable.h"
+#include "channel_mixer.h"
 
 
 namespace NL3D 

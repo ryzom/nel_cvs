@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.19 2004/05/06 13:26:04 berenguier Exp $
+ * $Id: zone_lighter.h,v 1.20 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,11 +37,11 @@
 #include "nel/misc/mutex.h"
 
 #include "nel/3d/frustum.h"
-#include "3d/zone.h"
-#include "3d/quad_grid.h"
-#include "3d/cube_grid.h"
-#include "3d/patchuv_locator.h"
-#include "3d/tile_light_influence.h"
+#include "zone.h"
+#include "quad_grid.h"
+#include "cube_grid.h"
+#include "patchuv_locator.h"
+#include "tile_light_influence.h"
 
 #include <list>
 

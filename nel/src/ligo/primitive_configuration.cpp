@@ -1,7 +1,7 @@
 /** \file primitive_configuration.cpp
  * Ligo primitive configuration description.
  *
- * $Id: primitive_configuration.cpp,v 1.6 2004/06/21 17:38:43 lecroart Exp $
+ * $Id: primitive_configuration.cpp,v 1.7 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -23,10 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-#include <nel/ligo/primitive_configuration.h>
-#include <nel/ligo/ligo_config.h>
-#include <nel/ligo/primitive.h>
-#include <nel/misc/i_xml.h>
+#include "nel/ligo/primitive_configuration.h"
+#include "nel/ligo/ligo_config.h"
+#include "nel/ligo/primitive.h"
+#include "nel/misc/i_xml.h"
 
 using namespace std;
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file target_anim_ctrl.cpp
  * TODO: File description
  *
- * $Id: target_anim_ctrl.cpp,v 1.2 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: target_anim_ctrl.cpp,v 1.3 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #include "std3d.h"
 #include "nel/misc/common.h"
 #include "nel/3d/target_anim_ctrl.h"
-#include "3d/bone.h"
-#include "3d/skeleton_model.h"
-#include "3d/scene.h"
+#include "bone.h"
+#include "skeleton_model.h"
+#include "scene.h"
 
 using namespace std;
 using namespace NLMISC;

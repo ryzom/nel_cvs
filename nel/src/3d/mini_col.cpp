@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * TODO: File description
  *
- * $Id: mini_col.cpp,v 1.19 2004/11/15 10:24:44 lecroart Exp $
+ * $Id: mini_col.cpp,v 1.20 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/mini_col.h"
+#include "mini_col.h"
 #include "nel/misc/aabbox.h"
-#include "3d/quad_grid.h"
+#include "quad_grid.h"
 using namespace NLMISC;
 using namespace std;
 

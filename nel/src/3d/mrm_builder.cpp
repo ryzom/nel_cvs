@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.34 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mrm_builder.cpp,v 1.35 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/mrm_builder.h"
-#include "3d/mrm_parameters.h"
+#include "mrm_builder.h"
+#include "mrm_parameters.h"
 using namespace NLMISC;
 using namespace std;
 

@@ -1,7 +1,7 @@
 /** \file source_fmod.h
  * DirectSound sound source
  *
- * $Id: source_fmod.h,v 1.1 2004/08/30 12:35:19 berenguier Exp $
+ * $Id: source_fmod.h,v 1.2 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_SOURCE_FMOD_H
 #define NL_SOURCE_FMOD_H
 
-#include "sound/driver/source.h"
+#include "../source.h"
 #include "../sound_driver.h"
 #include "../buffer.h"
 

@@ -1,7 +1,7 @@
 /** \file play_list_manager.cpp
  * TODO: File description
  *
- * $Id: play_list_manager.cpp,v 1.9 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: play_list_manager.cpp,v 1.10 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/play_list_manager.h"
+#include "play_list_manager.h"
 
 
 namespace NL3D 

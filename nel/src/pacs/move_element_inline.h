@@ -1,7 +1,7 @@
 /** \file move_element_inline.h
  * Element to insert in sorted lists
  *
- * $Id: move_element_inline.h,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: move_element_inline.h,v 1.3 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
-#include "pacs/move_primitive.h"
+#include "move_primitive.h"
 
 
 namespace NLPACS 

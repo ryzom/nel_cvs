@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * TODO: File description
  *
- * $Id: water_shape.h,v 1.19 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: water_shape.h,v 1.20 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "nel/misc/class_id.h"
 #include "nel/misc/vector_2f.h"
 #include "nel/misc/polygon.h"
-#include "3d/track.h"
+#include "track.h"
 #include "nel/3d/animation_time.h"
 
 
@@ -41,9 +41,9 @@
 
 
 
-#include "3d/shape.h"
-#include "3d/vertex_buffer.h"
-#include "3d/driver.h"
+#include "shape.h"
+#include "vertex_buffer.h"
+#include "driver.h"
 
 #include <memory>
 

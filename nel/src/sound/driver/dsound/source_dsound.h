@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.14 2004/08/30 12:44:26 berenguier Exp $
+ * $Id: source_dsound.h,v 1.15 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_SOURCE_DSOUND_H
 #define NL_SOURCE_DSOUND_H
 
-#include "sound/driver/source.h"
+#include "../source.h"
 #include "../sound_driver.h"
 #include "../buffer.h"
 

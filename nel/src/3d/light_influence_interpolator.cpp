@@ -1,7 +1,7 @@
 /** \file light_influence_interpolator.cpp
  * TODO: File description
  *
- * $Id: light_influence_interpolator.cpp,v 1.4 2004/11/15 10:24:39 lecroart Exp $
+ * $Id: light_influence_interpolator.cpp,v 1.5 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/light_influence_interpolator.h"
+#include "light_influence_interpolator.h"
 #include "nel/misc/debug.h"
-#include "3d/point_light_named.h"
+#include "point_light_named.h"
 
 
 namespace NL3D 

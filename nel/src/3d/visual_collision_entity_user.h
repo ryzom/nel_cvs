@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.h
  * UVisualCollisionEntity implementation.
  *
- * $Id: visual_collision_entity_user.h,v 1.11 2004/07/20 16:24:32 berenguier Exp $
+ * $Id: visual_collision_entity_user.h,v 1.12 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_visual_collision_entity.h"
-#include "3d/visual_collision_entity.h"
-#include "3d/visual_collision_manager.h"
+#include "visual_collision_entity.h"
+#include "visual_collision_manager.h"
 
 #define NL3D_MEM_ENTITY_USER						NL_ALLOC_CONTEXT( 3dEnty )
 

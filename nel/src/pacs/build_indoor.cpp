@@ -1,7 +1,7 @@
 /** \file build_indoor.cpp
  * 
  *
- * $Id: build_indoor.cpp,v 1.5 2003/08/27 09:25:39 legros Exp $
+ * $Id: build_indoor.cpp,v 1.6 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,9 +28,9 @@
 
 #include "stdpacs.h"
 
-#include "pacs/collision_mesh_build.h"
-#include "pacs/local_retriever.h"
-#include "pacs/exterior_mesh.h"
+#include "collision_mesh_build.h"
+#include "local_retriever.h"
+#include "exterior_mesh.h"
 
 #include "build_indoor.h"
 

@@ -1,7 +1,7 @@
 /** \file u_point_light.cpp
  * User interface for point lights.
  *
- * $Id: u_point_light.cpp,v 1.4 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: u_point_light.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "nel/misc/debug.h"
 #include "nel/3d/u_point_light.h"
-#include "3d/point_light_model.h"
+#include "point_light_model.h"
 
 #define NL3D_MEM_POINTLIGHT						NL_ALLOC_CONTEXT( 3dPtLgt )
 

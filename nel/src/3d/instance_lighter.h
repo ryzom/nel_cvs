@@ -1,7 +1,7 @@
 /** \file instance_lighter.h
  * TODO: File description
  *
- * $Id: instance_lighter.h,v 1.7 2004/11/15 10:24:35 lecroart Exp $
+ * $Id: instance_lighter.h,v 1.8 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,13 +31,13 @@
 #include "nel/misc/triangle.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/matrix.h"
-#include "3d/scene_group.h"
-#include "3d/landscape.h"
-#include "3d/shape.h"
-#include "3d/mesh.h"
-#include "3d/mesh_mrm.h"
-#include "3d/cube_grid.h"
-#include "3d/ig_surface_light_build.h"
+#include "scene_group.h"
+#include "landscape.h"
+#include "shape.h"
+#include "mesh.h"
+#include "mesh_mrm.h"
+#include "cube_grid.h"
+#include "ig_surface_light_build.h"
 
 
 namespace NL3D 

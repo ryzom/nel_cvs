@@ -1,7 +1,7 @@
 /** \file async_texture_block.h
  * TODO: File description
  *
- * $Id: async_texture_block.h,v 1.2 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: async_texture_block.h,v 1.3 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_ASYNC_TEXTURE_BLOCK_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/material.h"
+#include "material.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * TODO: File description
  *
- * $Id: mesh_base.cpp,v 1.33 2004/11/15 10:24:42 lecroart Exp $
+ * $Id: mesh_base.cpp,v 1.34 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_base.h"
-#include "3d/mesh_base_instance.h"
-#include "3d/lod_character_texture.h"
-#include "3d/visual_collision_mesh.h"
+#include "mesh_base.h"
+#include "mesh_base_instance.h"
+#include "lod_character_texture.h"
+#include "visual_collision_mesh.h"
 
 
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file light_user.h
  * TODO: File description
  *
- * $Id: light_user.h,v 1.3 2004/11/15 10:24:40 lecroart Exp $
+ * $Id: light_user.h,v 1.4 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_light.h"
-#include "3d/light.h"
+#include "light.h"
 
 #define NL3D_MEM_LIGHT						NL_ALLOC_CONTEXT( 3dLight )
 

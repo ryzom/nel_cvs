@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * TODO: File description
  *
- * $Id: text_context_user.h,v 1.19 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: text_context_user.h,v 1.20 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_text_context.h"
-#include "3d/text_context.h"
-#include "3d/driver_user.h"
+#include "text_context.h"
+#include "driver_user.h"
 
 #define NL3D_MEM_TEXT_CONTEXT						NL_ALLOC_CONTEXT( 3dTxtCx )
 

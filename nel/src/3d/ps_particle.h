@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * 
  *
- * $Id: ps_particle.h,v 1.22 2002/02/15 17:08:43 vizerie Exp $
+ * $Id: ps_particle.h,v 1.23 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,14 +31,14 @@
   */
 
 
-#include "3d/ps_dot.h"
-#include "3d/ps_face_look_at.h"
-#include "3d/ps_fan_light.h"
-#include "3d/ps_tail_dot.h"
-#include "3d/ps_ribbon.h"
-#include "3d/ps_ribbon_look_at.h"
-#include "3d/ps_face.h"
-#include "3d/ps_shockwave.h"
+#include "ps_dot.h"
+#include "ps_face_look_at.h"
+#include "ps_fan_light.h"
+#include "ps_tail_dot.h"
+#include "ps_ribbon.h"
+#include "ps_ribbon_look_at.h"
+#include "ps_face.h"
+#include "ps_shockwave.h"
 
 
 #endif // NL_PS_PARTICLE_H

@@ -1,7 +1,7 @@
 /** \file vertex_buffer_heap.cpp
  * TODO: File description
  *
- * $Id: vertex_buffer_heap.cpp,v 1.7 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vertex_buffer_heap.cpp,v 1.8 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/vertex_buffer_heap.h"
+#include "vertex_buffer_heap.h"
 #include "nel/misc/common.h"
 
 using namespace NLMISC;

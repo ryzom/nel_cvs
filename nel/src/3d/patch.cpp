@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * TODO: File description
  *
- * $Id: patch.cpp,v 1.101 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: patch.cpp,v 1.102 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,18 +26,18 @@
 #include "std3d.h"
 
 
-#include "3d/patch.h"
-#include "3d/tessellation.h"
-#include "3d/bezier_patch.h"
-#include "3d/zone.h"
-#include "3d/landscape.h"
+#include "patch.h"
+#include "tessellation.h"
+#include "bezier_patch.h"
+#include "zone.h"
+#include "landscape.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
-#include "3d/patchuv_locator.h"
-#include "3d/vegetable_manager.h"
+#include "patchuv_locator.h"
+#include "vegetable_manager.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/light_influence_interpolator.h"
-#include "3d/patchdlm_context.h"
+#include "light_influence_interpolator.h"
+#include "patchdlm_context.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/3d/u_landscape.h"
 

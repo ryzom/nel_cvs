@@ -1,7 +1,7 @@
 /** \file point_light_model.cpp
  * TODO: File description
  *
- * $Id: point_light_model.cpp,v 1.9 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: point_light_model.cpp,v 1.10 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,11 +25,11 @@
 
 #include "std3d.h"
 
-#include "3d/point_light_model.h"
-#include "3d/light_trav.h"
-#include "3d/root_model.h"
-#include "3d/skeleton_model.h"
-#include "3d/scene.h"
+#include "point_light_model.h"
+#include "light_trav.h"
+#include "root_model.h"
+#include "skeleton_model.h"
+#include "scene.h"
 
 
 using namespace NLMISC;

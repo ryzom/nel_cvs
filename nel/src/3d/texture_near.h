@@ -1,7 +1,7 @@
 /** \file texture_near.h
  * TODO: File description
  *
- * $Id: texture_near.h,v 1.5 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: texture_near.h,v 1.6 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
-#include "3d/texture.h"
+#include "texture.h"
 
 
 // Size of a TileLightmap. Must be 10 now, because we have 2x2 tiles per Tilelightmap.

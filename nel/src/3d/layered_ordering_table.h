@@ -1,7 +1,7 @@
 /** \file layered_ordering_table.h
  * TODO: File description
  *
- * $Id: layered_ordering_table.h,v 1.6 2004/11/15 10:24:39 lecroart Exp $
+ * $Id: layered_ordering_table.h,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_LAYERED_ORDERING_TABLE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/ordering_table.h"
+#include "ordering_table.h"
 
 namespace NL3D {
 

@@ -1,7 +1,7 @@
 /** \file chain_quad.h
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.h,v 1.4 2003/03/13 15:02:05 corvazier Exp $
+ * $Id: chain_quad.h,v 1.5 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/aabbox.h"
-#include "pacs/chain.h"
-#include "pacs/collision_surface_temp.h"
+#include "chain.h"
+#include "collision_surface_temp.h"
 #include <vector>
 
 

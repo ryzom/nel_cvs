@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.50 2004/09/17 15:04:03 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.51 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "driver_opengl.h"
 #include "driver_opengl_extension.h"
-#include "3d/material.h"
+#include "../../material.h"
 
 // ***************************************************************************
 #ifdef NL_OS_WINDOWS

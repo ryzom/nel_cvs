@@ -1,7 +1,7 @@
 /** \file mesh_blender.cpp
  * TODO: File description
  *
- * $Id: mesh_blender.cpp,v 1.4 2004/11/15 10:24:42 lecroart Exp $
+ * $Id: mesh_blender.cpp,v 1.5 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_blender.h"
-#include "3d/driver.h"
+#include "mesh_blender.h"
+#include "driver.h"
 #include "nel/misc/fast_floor.h"
 
 

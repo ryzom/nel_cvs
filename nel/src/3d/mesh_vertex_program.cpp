@@ -1,7 +1,7 @@
 /** \file mesh_vertex_program.cpp
  * TODO: File description
  *
- * $Id: mesh_vertex_program.cpp,v 1.3 2004/11/15 10:24:44 lecroart Exp $
+ * $Id: mesh_vertex_program.cpp,v 1.4 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_vertex_program.h"
+#include "mesh_vertex_program.h"
 
 
 namespace NL3D 

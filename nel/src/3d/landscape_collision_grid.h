@@ -1,7 +1,7 @@
 /** \file landscape_collision_grid.h
  * TODO: File description
  *
- * $Id: landscape_collision_grid.h,v 1.2 2004/11/15 10:24:36 lecroart Exp $
+ * $Id: landscape_collision_grid.h,v 1.3 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_LANDSCAPE_COLLISION_GRID_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/patch.h"
-#include "3d/visual_collision_manager.h"
+#include "patch.h"
+#include "visual_collision_manager.h"
 #include <vector>
 
 

@@ -1,7 +1,7 @@
 /** \file stripifier.h
  * TODO: File description
  *
- * $Id: stripifier.h,v 1.3 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: stripifier.h,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_STRIPIFIER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/index_buffer.h"
+#include "index_buffer.h"
 
 
 namespace NL3D {

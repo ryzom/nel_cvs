@@ -17,4 +17,4 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/vector.h"
 
-#include "sound/driver/sound_driver.h"
+#include "../sound_driver.h"

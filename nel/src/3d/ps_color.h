@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * TODO: File description
  *
- * $Id: ps_color.h,v 1.11 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_color.h,v 1.12 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,10 +27,10 @@
 #define NL_PS_COLOR_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/ps_attrib_maker_template.h"
-#include "3d/ps_attrib_maker_bin_op.h"
-#include "3d/ps_attrib_maker_helper.h"
-#include "3d/driver.h"
+#include "ps_attrib_maker_template.h"
+#include "ps_attrib_maker_bin_op.h"
+#include "ps_attrib_maker_helper.h"
+#include "driver.h"
 #include "nel/misc/rgba.h"
 #include "nel/3d/animation_time.h"
 

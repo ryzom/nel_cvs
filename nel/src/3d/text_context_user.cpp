@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * TODO: File description
  *
- * $Id: text_context_user.cpp,v 1.21 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: text_context_user.cpp,v 1.22 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/text_context_user.h"
+#include "text_context_user.h"
 #include "nel/misc/hierarchical_timer.h"
 
 

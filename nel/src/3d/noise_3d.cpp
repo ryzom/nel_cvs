@@ -1,7 +1,7 @@
 /** \file noise_3d.cpp
  * cloud_scape implementation
  *
- * $Id: noise_3d.cpp,v 1.6 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: noise_3d.cpp,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 #include "noise_3d.h"
-#include "3d/driver.h"
+#include "driver.h"
 
 using namespace NLMISC;
 

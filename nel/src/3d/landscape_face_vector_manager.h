@@ -1,7 +1,7 @@
 /** \file landscape_face_vector_manager.h
  * TODO: File description
  *
- * $Id: landscape_face_vector_manager.h,v 1.4 2004/11/15 10:24:36 lecroart Exp $
+ * $Id: landscape_face_vector_manager.h,v 1.5 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include <vector>
-#include "3d/index_buffer.h"
+#include "index_buffer.h"
 
 
 namespace NL3D {

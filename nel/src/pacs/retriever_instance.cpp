@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.45 2003/08/27 09:25:39 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.46 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "stdpacs.h"
 
-#include "pacs/retriever_instance.h"
-#include "pacs/global_retriever.h"
+#include "retriever_instance.h"
+#include "global_retriever.h"
 
 using namespace std;
 using namespace NLMISC;

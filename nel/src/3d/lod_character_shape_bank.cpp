@@ -1,7 +1,7 @@
 /** \file lod_character_shape_bank.cpp
  * TODO: File description
  *
- * $Id: lod_character_shape_bank.cpp,v 1.3 2004/11/15 10:24:41 lecroart Exp $
+ * $Id: lod_character_shape_bank.cpp,v 1.4 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/lod_character_shape_bank.h"
-#include "3d/lod_character_shape.h"
+#include "lod_character_shape_bank.h"
+#include "lod_character_shape.h"
 
 
 using namespace NLMISC;

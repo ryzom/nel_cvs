@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.21 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_particle_basic.h,v 1.22 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,10 +29,10 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector_2f.h"
 #include "nel/misc/stream.h"
-#include "3d/ps_located.h"
-#include "3d/ps_plane_basis.h"
-#include "3d/material.h"
-#include "3d/ps_attrib_maker.h"
+#include "ps_located.h"
+#include "ps_plane_basis.h"
+#include "material.h"
+#include "ps_attrib_maker.h"
 
 namespace NL3D 
 {

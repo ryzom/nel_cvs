@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * TODO: File description
  *
- * $Id: shape_bank.cpp,v 1.34 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: shape_bank.cpp,v 1.35 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/shape_bank.h"
-#include "3d/mesh_base.h"
+#include "shape_bank.h"
+#include "mesh_base.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/rect.h"

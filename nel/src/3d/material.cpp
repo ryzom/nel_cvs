@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.52 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: material.cpp,v 1.53 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/material.h"
-#include "3d/texture.h"
-#include "3d/shader.h"
-#include "3d/driver.h"
+#include "material.h"
+#include "texture.h"
+#include "shader.h"
+#include "driver.h"
 #include "nel/misc/stream.h"
 
 using namespace std;

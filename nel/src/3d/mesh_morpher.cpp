@@ -1,7 +1,7 @@
 /** \file mesh_morpher.cpp
  * TODO: File description
  *
- * $Id: mesh_morpher.cpp,v 1.12 2004/11/15 10:24:43 lecroart Exp $
+ * $Id: mesh_morpher.cpp,v 1.13 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_morpher.h"
-#include "3d/vertex_buffer.h"
-#include "3d/raw_skin.h"
+#include "mesh_morpher.h"
+#include "vertex_buffer.h"
+#include "raw_skin.h"
 
 
 using namespace std;

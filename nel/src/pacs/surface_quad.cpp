@@ -1,7 +1,7 @@
 /** \file surface_quad.cpp
  *
  *
- * $Id: surface_quad.cpp,v 1.11 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: surface_quad.cpp,v 1.12 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "nel/misc/file.h"
 
-#include "pacs/surface_quad.h"
+#include "surface_quad.h"
 
 #include <vector>
 

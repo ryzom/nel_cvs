@@ -1,6 +1,6 @@
 /** \file ps_allocator.cpp
  *
- * $Id: ps_allocator.cpp,v 1.4 2005/02/15 15:28:01 berenguier Exp $
+ * $Id: ps_allocator.cpp,v 1.5 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -23,8 +23,8 @@
  */
 
 #include "std3d.h"
-#include "3d/particle_system_process.h"
-#include "3d/ps_allocator.h"
+#include "particle_system_process.h"
+#include "ps_allocator.h"
 
 namespace NL3D
 {

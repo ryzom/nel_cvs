@@ -1,7 +1,7 @@
 /** \file zone_symmetrisation.cpp
  * Environnement used to symmetrise zones
  *
- * $Id: zone_symmetrisation.cpp,v 1.9 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: zone_symmetrisation.cpp,v 1.10 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -24,9 +24,9 @@
  */
 
 #include "std3d.h"
-#include "3d/zone_symmetrisation.h"
-#include "3d/zone.h"
-#include "3d/tile_bank.h"
+#include "zone_symmetrisation.h"
+#include "zone.h"
+#include "tile_bank.h"
 
 using namespace std;
 using namespace NLMISC;

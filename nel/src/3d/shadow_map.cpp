@@ -1,7 +1,7 @@
 /** \file shadow_map.cpp
  * TODO: File description
  *
- * $Id: shadow_map.cpp,v 1.4 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: shadow_map.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -25,11 +25,11 @@
 
 #include "std3d.h"
 
-#include "3d/shadow_map.h"
-#include "3d/texture_mem.h"
+#include "shadow_map.h"
+#include "texture_mem.h"
 #include "nel/misc/common.h"
-#include "3d/driver.h"
-#include "3d/shadow_map_manager.h"
+#include "driver.h"
+#include "shadow_map_manager.h"
 
 
 using namespace std;

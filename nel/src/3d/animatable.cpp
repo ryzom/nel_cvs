@@ -1,7 +1,7 @@
 /** \file animatable.cpp
  * Class IAnimatable
  *
- * $Id: animatable.cpp,v 1.9 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: animatable.cpp,v 1.10 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/animatable.h"
-#include "3d/channel_mixer.h"
+#include "animatable.h"
+#include "channel_mixer.h"
 
 
 namespace NL3D 

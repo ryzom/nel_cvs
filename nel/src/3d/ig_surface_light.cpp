@@ -1,7 +1,7 @@
 /** \file ig_surface_light.cpp
  * TODO: File description
  *
- * $Id: ig_surface_light.cpp,v 1.8 2004/11/15 10:24:33 lecroart Exp $
+ * $Id: ig_surface_light.cpp,v 1.9 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/ig_surface_light.h"
+#include "ig_surface_light.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.h
  * TODO: File description
  *
- * $Id: visual_collision_mesh.h,v 1.7 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: visual_collision_mesh.h,v 1.8 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -30,8 +30,8 @@
 #include "nel/misc/object_vector.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/aabbox.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 
 
 namespace NL3D 

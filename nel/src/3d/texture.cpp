@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.24 2004/08/13 15:44:03 vizerie Exp $
+ * $Id: texture.cpp,v 1.25 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/texture.h"
-#include "3d/driver.h"
+#include "texture.h"
+#include "driver.h"
 #include <vector>
 
 

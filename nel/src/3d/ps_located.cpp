@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * TODO: File description
  *
- * $Id: ps_located.cpp,v 1.79 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_located.cpp,v 1.80 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,24 +31,24 @@
 #include "nel/misc/aabbox.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/common.h"
-#include "3d/ps_util.h"
-#include "3d/particle_system.h"
-#include "3d/ps_zone.h"
-#include "3d/driver.h"
-#include "3d/material.h"
-#include "3d/dru.h"
-#include "3d/ps_located.h"
-#include "3d/ps_particle.h"
-#include "3d/ps_force.h"
-#include "3d/ps_emitter.h"
-#include "3d/ps_misc.h"
+#include "ps_util.h"
+#include "particle_system.h"
+#include "ps_zone.h"
+#include "driver.h"
+#include "material.h"
+#include "dru.h"
+#include "ps_located.h"
+#include "ps_particle.h"
+#include "ps_force.h"
+#include "ps_emitter.h"
+#include "ps_misc.h"
 
 #include "nel/misc/line.h"
 #include "nel/misc/system_info.h"
 #include "nel/misc/common.h"
 
 //
-#include "3d/particle_system_model.h"
+#include "particle_system_model.h"
 
 
 #ifdef NL_DEBUG

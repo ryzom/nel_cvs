@@ -1,7 +1,7 @@
 /** \file collision_ot.cpp
  * TODO: File description
  *
- * $Id: collision_ot.cpp,v 1.5 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: collision_ot.cpp,v 1.6 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "stdpacs.h"
 
-#include "pacs/collision_ot.h"
-#include "pacs/move_primitive.h"
+#include "collision_ot.h"
+#include "move_primitive.h"
 
 
 namespace NLPACS 

@@ -1,7 +1,7 @@
 /** \file vegetable_uv8.cpp
  * TODO: File description
  *
- * $Id: vegetable_uv8.cpp,v 1.2 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetable_uv8.cpp,v 1.3 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/vegetable_uv8.h"
+#include "vegetable_uv8.h"
 
 
 namespace NL3D 

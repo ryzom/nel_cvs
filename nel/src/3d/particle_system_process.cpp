@@ -1,7 +1,7 @@
 /** \file particle_system_process.cpp
  * TODO: File description
  *
- * $Id: particle_system_process.cpp,v 1.9 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: particle_system_process.cpp,v 1.10 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/particle_system_process.h"
-#include "3d/particle_system.h"
+#include "particle_system_process.h"
+#include "particle_system.h"
 
 uint PSEnterLeaveDepth = 0;
 uint PSEnterLeaveMaxDepth = 1;

@@ -1,6 +1,6 @@
 /** \file seg_remanence.h
  * A segment that let a remanence on the screen (for sword trace)
- * $Id: seg_remanence.h,v 1.8 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: seg_remanence.h,v 1.9 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #define NL_SEG_REMANENCE_H
 
 #include "nel/misc/vector.h"
-#include "3d/transform_shape.h"
-#include "3d/transform.h"
-#include "3d/animated_material.h"
+#include "transform_shape.h"
+#include "transform.h"
+#include "animated_material.h"
 
 #include <deque>
 

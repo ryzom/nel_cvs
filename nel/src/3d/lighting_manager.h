@@ -1,7 +1,7 @@
 /** \file lighting_manager.h
  * TODO: File description
  *
- * $Id: lighting_manager.h,v 1.6 2004/11/15 10:24:40 lecroart Exp $
+ * $Id: lighting_manager.h,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_LIGHTING_MANAGER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/quad_grid.h"
+#include "quad_grid.h"
 #include "nel/misc/bsphere.h"
 #include "nel/3d/point_light_influence.h"
 #include <vector>

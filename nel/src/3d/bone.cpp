@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * TODO: File description
  *
- * $Id: bone.cpp,v 1.15 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: bone.cpp,v 1.16 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/bone.h"
+#include "bone.h"
 #include "nel/3d/anim_ctrl.h"
 #include "nel/misc/hierarchical_timer.h"
 

@@ -1,7 +1,7 @@
 /** \file async_file_manager_3d.cpp
  * TODO: File description
  *
- * $Id: async_file_manager_3d.cpp,v 1.11 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.12 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,13 +25,13 @@
 
 #include "std3d.h"
 
-#include "3d/async_file_manager_3d.h"
-#include "3d/shape.h"
-#include "3d/mesh.h"
-#include "3d/texture_file.h"
-#include "3d/scene_group.h"
+#include "async_file_manager_3d.h"
+#include "shape.h"
+#include "mesh.h"
+#include "texture_file.h"
+#include "scene_group.h"
 
-#include "3d/instance_group_user.h"
+#include "instance_group_user.h"
 
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"

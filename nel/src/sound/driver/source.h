@@ -1,7 +1,7 @@
 /** \file source.h
  * ISource: sound source interface
  *
- * $Id: source.h,v 1.14 2004/08/30 12:34:25 berenguier Exp $
+ * $Id: source.h,v 1.15 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
-#include "sound/driver/sound_driver.h"
+#include "sound_driver.h"
 
 namespace NLSOUND {
 

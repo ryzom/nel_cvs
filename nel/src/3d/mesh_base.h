@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * TODO: File description
  *
- * $Id: mesh_base.h,v 1.21 2004/11/15 10:24:42 lecroart Exp $
+ * $Id: mesh_base.h,v 1.22 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,11 +27,11 @@
 #define NL_MESH_BASE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/shape.h"
-#include "3d/driver.h"
-#include "3d/material.h"
-#include "3d/animated_material.h"
-#include "3d/animated_morph.h"
+#include "shape.h"
+#include "driver.h"
+#include "material.h"
+#include "animated_material.h"
+#include "animated_morph.h"
 #include <set>
 #include <vector>
 

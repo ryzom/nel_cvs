@@ -1,7 +1,7 @@
 /** \file tess_face_priority_list.cpp
  * TODO: File description
  *
- * $Id: tess_face_priority_list.cpp,v 1.8 2005/01/31 13:51:41 lecroart Exp $
+ * $Id: tess_face_priority_list.cpp,v 1.9 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/tess_face_priority_list.h"
+#include "tess_face_priority_list.h"
 #include "nel/misc/debug.h"
 #include <cmath>
-#include "3d/tessellation.h"
+#include "tessellation.h"
 #include "nel/misc/fast_floor.h"
 
 

@@ -1,6 +1,6 @@
 /** \file context_sound.h
  *
- * $Id: context_sound.h,v 1.9 2004/09/21 09:13:41 lecroart Exp $
+ * $Id: context_sound.h,v 1.10 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 
 #include "sound.h"
 #include <hash_map>
-#include <nel/misc/fast_mem.h>
-#include <nel/misc/string_mapper.h>
+#include "nel/misc/fast_mem.h"
+#include "nel/misc/string_mapper.h"
 
 namespace NLSOUND {
 

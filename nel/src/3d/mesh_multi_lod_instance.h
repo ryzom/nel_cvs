@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.17 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.18 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/class_id.h"
 
-#include "3d/mesh_base_instance.h"
+#include "mesh_base_instance.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * TODO: File description
  *
- * $Id: ps_attrib_maker.h,v 1.19 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_attrib_maker.h,v 1.20 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/object_arena_allocator.h"
-#include "3d/ps_located.h"
-#include "3d/ps_attrib.h"
-#include "3d/vertex_buffer.h"
-#include "3d/ps_spawn_info.h"
+#include "ps_located.h"
+#include "ps_attrib.h"
+#include "vertex_buffer.h"
+#include "ps_spawn_info.h"
 #include "nel/misc/stream.h"
 
 

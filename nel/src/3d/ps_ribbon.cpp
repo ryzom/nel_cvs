@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.25 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_ribbon.cpp,v 1.26 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,12 +25,12 @@
 
 #include "std3d.h"
 
-#include "3d/ps_ribbon.h"
-#include "3d/ps_macro.h"
-#include "3d/particle_system.h"
-#include "3d/driver.h"
-#include "3d/ps_util.h"
-#include "3d/texture_mem.h"
+#include "ps_ribbon.h"
+#include "ps_macro.h"
+#include "particle_system.h"
+#include "driver.h"
+#include "ps_util.h"
+#include "texture_mem.h"
 #include "nel/misc/matrix.h"
 
 namespace NL3D 
@@ -200,7 +200,7 @@ void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 		f.serial(drEnabled);				
 		f.serial(tailNbSegs);
-		ITexture *tex;
+		ITexture *tex = NULL;
 		f.serialPolyPtr(tex);
 		_Tex = tex;
 		if (_Tex != NULL)

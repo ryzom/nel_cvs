@@ -1,7 +1,7 @@
 /** \file noise_3d.h
  * Cloud definition to work with the cloudscape
  *
- * $Id: noise_3d.h,v 1.4 2004/11/15 10:24:45 lecroart Exp $
+ * $Id: noise_3d.h,v 1.5 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -28,10 +28,10 @@
 
 // ------------------------------------------------------------------------------------------------
 
-#include "3d/material.h"
-#include "3d/texture.h"
-#include "3d/texture_mem.h"
-#include "3d/vertex_buffer.h"
+#include "material.h"
+#include "texture.h"
+#include "texture_mem.h"
+#include "vertex_buffer.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/geom_ext.h"
 

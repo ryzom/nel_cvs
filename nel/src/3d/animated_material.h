@@ -1,7 +1,7 @@
 /** \file animated_material.h
  * TODO: File description
  *
- * $Id: animated_material.h,v 1.6 2004/11/15 10:24:31 lecroart Exp $
+ * $Id: animated_material.h,v 1.7 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,9 +29,9 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
-#include "3d/animatable.h"
-#include "3d/material.h"
-#include "3d/track.h"
+#include "animatable.h"
+#include "material.h"
+#include "track.h"
 #include <map>
 
 

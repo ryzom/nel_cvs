@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * TODO: File description
  *
- * $Id: particle_system_model.cpp,v 1.73 2005/02/21 17:09:48 corvazier Exp $
+ * $Id: particle_system_model.cpp,v 1.74 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,14 +28,14 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/particle_system_model.h"
-#include "3d/particle_system_shape.h"
-#include "3d/particle_system.h"
-#include "3d/scene.h"
-#include "3d/anim_detail_trav.h"
-#include "3d/clip_trav.h"
-#include "3d/render_trav.h"
-#include "3d/skeleton_model.h"
+#include "particle_system_model.h"
+#include "particle_system_shape.h"
+#include "particle_system.h"
+#include "scene.h"
+#include "anim_detail_trav.h"
+#include "clip_trav.h"
+#include "render_trav.h"
+#include "skeleton_model.h"
 
 #include "cluster.h" // ask trap
 

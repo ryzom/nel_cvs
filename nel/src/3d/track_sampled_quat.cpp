@@ -1,7 +1,7 @@
 /** \file track_sampled_quat.cpp
  * TODO: File description
  *
- * $Id: track_sampled_quat.cpp,v 1.5 2004/11/15 10:24:51 lecroart Exp $
+ * $Id: track_sampled_quat.cpp,v 1.6 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,8 +27,8 @@
 
 #include "nel/misc/quat.h"
 #include "nel/misc/common.h"
-#include "3d/track_sampled_quat.h"
-#include "3d/track_sampled_quat_small_header.h"
+#include "track_sampled_quat.h"
+#include "track_sampled_quat_small_header.h"
 
 using namespace NLMISC;
 using namespace std;

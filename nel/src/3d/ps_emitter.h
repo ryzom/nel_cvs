@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * TODO: File description
  *
- * $Id: ps_emitter.h,v 1.32 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_emitter.h,v 1.33 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,12 +27,12 @@
 #define NL_PS_EMITTER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/ps_located.h"
-#include "3d/ps_attrib_maker.h"
-#include "3d/ps_edit.h"
-#include "3d/ps_plane_basis.h"
-#include "3d/ps_direction.h"
-#include "3d/particle_system.h"
+#include "ps_located.h"
+#include "ps_attrib_maker.h"
+#include "ps_edit.h"
+#include "ps_plane_basis.h"
+#include "ps_direction.h"
+#include "particle_system.h"
 
 
 namespace NL3D {

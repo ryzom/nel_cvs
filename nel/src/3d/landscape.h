@@ -1,7 +1,7 @@
 /** \file landscape.h
  * TODO: File description
  *
- * $Id: landscape.h,v 1.59 2004/11/15 10:24:35 lecroart Exp $
+ * $Id: landscape.h,v 1.60 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,21 +31,21 @@
 #include "nel/misc/class_id.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/triangle.h"
-#include "3d/zone.h"
-#include "3d/tile_bank.h"
-#include "3d/patch_rdr_pass.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
-#include "3d/material.h"
-#include "3d/tile_far_bank.h"
-#include "3d/texture_near.h"
-#include "3d/quad_grid.h"
+#include "zone.h"
+#include "tile_bank.h"
+#include "patch_rdr_pass.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
+#include "material.h"
+#include "tile_far_bank.h"
+#include "texture_near.h"
+#include "quad_grid.h"
 #include "nel/misc/block_memory.h"
-#include "3d/landscapevb_allocator.h"
-#include "3d/landscape_face_vector_manager.h"
-#include "3d/tess_face_priority_list.h"
+#include "landscapevb_allocator.h"
+#include "landscape_face_vector_manager.h"
+#include "tess_face_priority_list.h"
 #include "nel/3d/point_light_influence.h"
-#include "3d/shadow_poly_receiver.h"
+#include "shadow_poly_receiver.h"
 
 #include <map>
 

@@ -1,7 +1,7 @@
 /** \file zone_symmetrisation.h
  * Environnement used to symmetrise zones
  *
- * $Id: zone_symmetrisation.h,v 1.2 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: zone_symmetrisation.h,v 1.3 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_ZONE_SYMMETRISATION_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/patchuv_locator.h"
-#include "3d/patch.h"
+#include "patchuv_locator.h"
+#include "patch.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file collision_ot.h
  * Collision descriptor for time odered table
  *
- * $Id: collision_ot.h,v 1.6 2003/10/10 10:08:49 corvazier Exp $
+ * $Id: collision_ot.h,v 1.7 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_COLLISION_OT_H
 
 #include "nel/misc/types_nl.h"
-#include "pacs/collision_desc.h"
-#include "pacs/global_retriever.h"
+#include "collision_desc.h"
+#include "global_retriever.h"
 
 
 namespace NLPACS 

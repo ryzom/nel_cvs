@@ -1,7 +1,7 @@
 /** \file landscape_profile.h
  * Yoyo: for landscape profile only.
  *
- * $Id: landscape_profile.h,v 1.6 2003/04/15 09:29:51 berenguier Exp $
+ * $Id: landscape_profile.h,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_LANDSCAPE_PROFILE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/tessellation.h"
+#include "tessellation.h"
 
 
 // Yoyo: hide this if do not want to profile landscape.

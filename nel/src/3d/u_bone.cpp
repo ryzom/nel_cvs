@@ -1,7 +1,7 @@
 /** \file u_bone.cpp
  * User interface for bones.
  *
- * $Id: u_bone.cpp,v 1.4 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: u_bone.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/bone.h"
+#include "bone.h"
 #include "nel/3d/u_bone.h"
 
 #define NL3D_MEM_BONES						NL_ALLOC_CONTEXT( 3dBones )

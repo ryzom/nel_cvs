@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * TODO: File description
  *
- * $Id: texture_file.h,v 1.15 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: texture_file.h,v 1.16 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_TEXTURE_FILE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/texture.h"
+#include "texture.h"
 
 
 namespace NL3D

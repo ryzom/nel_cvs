@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.15 2004/10/19 12:55:58 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.16 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,12 +25,12 @@
 
 #include "std3d.h"
 
-#include "3d/ps_macro.h"
-#include "3d/ps_shockwave.h"
-#include "3d/driver.h"
-#include "3d/texture_grouped.h"
-#include "3d/ps_iterator.h"
-#include "3d/particle_system.h"
+#include "ps_macro.h"
+#include "ps_shockwave.h"
+#include "driver.h"
+#include "texture_grouped.h"
+#include "ps_iterator.h"
+#include "particle_system.h"
 
 
 namespace NL3D 

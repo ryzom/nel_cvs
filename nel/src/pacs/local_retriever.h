@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.30 2004/10/08 14:06:06 legros Exp $
+ * $Id: local_retriever.h,v 1.31 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,13 +37,13 @@
 #include "nel/misc/aabbox.h"
 #include "nel/misc/polygon.h"
 
-#include "pacs/vector_2s.h"
-#include "pacs/surface_quad.h"
-#include "pacs/chain.h"
-#include "pacs/retrievable_surface.h"
-#include "pacs/chain_quad.h"
-#include "pacs/exterior_mesh.h"
-#include "pacs/face_grid.h"
+#include "vector_2s.h"
+#include "surface_quad.h"
+#include "chain.h"
+#include "retrievable_surface.h"
+#include "chain_quad.h"
+#include "exterior_mesh.h"
+#include "face_grid.h"
 
 #include "nel/pacs/u_global_position.h"
 

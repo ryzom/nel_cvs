@@ -1,6 +1,6 @@
 /** \file ps_light.cpp
  *
- * $Id: ps_light.cpp,v 1.9 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: ps_light.cpp,v 1.10 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -24,11 +24,11 @@
 
 
 #include "std3d.h"
-#include "3d/ps_light.h"
-#include "3d/point_light_model.h"
-#include "3d/scene.h"
-#include "3d/particle_system.h"
-#include "3d/ps_util.h"
+#include "ps_light.h"
+#include "point_light_model.h"
+#include "scene.h"
+#include "particle_system.h"
+#include "ps_util.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/vector.h"
 

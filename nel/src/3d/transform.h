@@ -1,7 +1,7 @@
 /** \file transform.h
  * TODO: File description
  *
- * $Id: transform.h,v 1.59 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: transform.h,v 1.60 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,18 +26,18 @@
 #ifndef NL_TRANSFORM_H
 #define NL_TRANSFORM_H
 
-#include "3d/hrc_trav.h"
-#include "3d/track.h"
-#include "3d/transformable.h"
-#include "3d/animated_value.h"
-#include "3d/channel_mixer.h"
+#include "hrc_trav.h"
+#include "track.h"
+#include "transformable.h"
+#include "animated_value.h"
+#include "channel_mixer.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/aabbox.h"
-#include "3d/light_contribution.h"
-#include "3d/lighting_manager.h"
+#include "light_contribution.h"
+#include "lighting_manager.h"
 #include "nel/misc/class_id.h"
-#include "3d/fast_ptr_list.h"
+#include "fast_ptr_list.h"
 
 
 namespace	NLMISC

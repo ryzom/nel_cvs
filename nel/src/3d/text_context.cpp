@@ -1,7 +1,7 @@
 /** \file text_context.cpp
  * TODO: File description
  *
- * $Id: text_context.cpp,v 1.10 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: text_context.cpp,v 1.11 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/text_context.h"
-#include "3d/font_generator.h"
+#include "text_context.h"
+#include "font_generator.h"
 
 namespace NL3D {
 

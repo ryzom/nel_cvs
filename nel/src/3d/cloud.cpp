@@ -1,7 +1,7 @@
 /** \file cloud.cpp
  * cloud implementation
  *
- * $Id: cloud.cpp,v 1.8 2004/04/27 12:17:18 vizerie Exp $
+ * $Id: cloud.cpp,v 1.9 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -24,13 +24,13 @@
  */
 
 #include "std3d.h"
-#include "3d/material.h"
+#include "material.h"
 #include "cloud.h"
 #include "cloud_scape.h"
 #include "noise_3d.h"
 #include "nel/3d/scissor.h"
 #include "nel/3d/viewport.h"
-#include "3d/driver.h"
+#include "driver.h"
 
 using namespace NLMISC;
 

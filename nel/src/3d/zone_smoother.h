@@ -1,7 +1,7 @@
 /** \file zone_smoother.h
  * TODO: File description
  *
- * $Id: zone_smoother.h,v 1.3 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: zone_smoother.h,v 1.4 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_ZONE_SMOOTHER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/zone.h"
+#include "zone.h"
 #include "nel/misc/common.h"
 #include <map>
 

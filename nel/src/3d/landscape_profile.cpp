@@ -1,7 +1,7 @@
 /** \file landscape_profile.cpp
  * TODO: File description
  *
- * $Id: landscape_profile.cpp,v 1.8 2004/11/15 10:24:37 lecroart Exp $
+ * $Id: landscape_profile.cpp,v 1.9 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/landscape_profile.h"
+#include "landscape_profile.h"
 
 
 namespace NL3D 

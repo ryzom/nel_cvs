@@ -1,7 +1,7 @@
 /** \file fast_ptr_list.cpp
  * TODO: File description
  *
- * $Id: fast_ptr_list.cpp,v 1.2 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: fast_ptr_list.cpp,v 1.3 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 
 #include "std3d.h"
-#include "3d/fast_ptr_list.h"
+#include "fast_ptr_list.h"
 
 using namespace std;
 

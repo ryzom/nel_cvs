@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * TODO: File description
  *
- * $Id: ps_force.h,v 1.21 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_force.h,v 1.22 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,12 +27,12 @@
 #define NL_PS_FORCE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/ps_located.h"
-#include "3d/ps_util.h"
-#include "3d/ps_attrib_maker.h"
-#include "3d/ps_edit.h"
-#include "3d/ps_direction.h"
-#include "3d/particle_system.h"
+#include "ps_located.h"
+#include "ps_util.h"
+#include "ps_attrib_maker.h"
+#include "ps_edit.h"
+#include "ps_direction.h"
+#include "particle_system.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file animated_lightmap.h
  * TODO: File description
  *
- * $Id: animated_lightmap.h,v 1.5 2004/11/15 10:24:31 lecroart Exp $
+ * $Id: animated_lightmap.h,v 1.6 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,8 +29,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
-#include "3d/animatable.h"
-#include "3d/track.h"
+#include "animatable.h"
+#include "track.h"
 #include <map>
 
 

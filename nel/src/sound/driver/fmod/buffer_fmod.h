@@ -1,7 +1,7 @@
 /** \file buffer_fmod.h
  * FMod buffer
  *
- * $Id: buffer_fmod.h,v 1.1 2004/08/30 12:35:19 berenguier Exp $
+ * $Id: buffer_fmod.h,v 1.2 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_BUFFER_FMOD_H
 
 
-#include "sound/driver/buffer.h"
-#include "fmod.h"
+#include "../buffer.h"
+#include <fmod.h>
 
 
 namespace NLSOUND {

@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.h
  * TODO: File description
  *
- * $Id: anim_detail_trav.h,v 1.10 2004/11/15 10:24:31 lecroart Exp $
+ * $Id: anim_detail_trav.h,v 1.11 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/plane.h"
-#include "3d/trav_scene.h"
+#include "trav_scene.h"
 
 
 namespace NL3D

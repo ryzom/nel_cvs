@@ -1,7 +1,7 @@
 /** \file track_sampled_common.cpp
  * TODO: File description
  *
- * $Id: track_sampled_common.cpp,v 1.4 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: track_sampled_common.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "nel/misc/quat.h"
 #include "nel/misc/common.h"
 #include "nel/misc/algo.h"
-#include "3d/track_sampled_common.h"
+#include "track_sampled_common.h"
 #include "nel/misc/vectord.h"
 
 using namespace NLMISC;

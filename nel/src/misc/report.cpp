@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.15 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: report.cpp,v 1.16 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <malloc.h>
-#include <nel/misc/common.h>
+#include "nel/misc/common.h"
 
 #include "nel/misc/report.h"
 

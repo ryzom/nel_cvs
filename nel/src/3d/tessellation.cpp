@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * TODO: File description
  *
- * $Id: tessellation.cpp,v 1.69 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: tessellation.cpp,v 1.70 2005/02/22 10:19:12 besson Exp $
  *
  */
 
@@ -26,13 +26,13 @@
 
 #include "std3d.h"
 
-#include "3d/tessellation.h"
-#include "3d/patch.h"
-#include "3d/zone.h"
+#include "tessellation.h"
+#include "patch.h"
+#include "zone.h"
 #include "nel/misc/common.h"
-#include "3d/landscape_profile.h"
-#include "3d/landscape.h"
-#include "3d/patchdlm_context.h"
+#include "landscape_profile.h"
+#include "landscape.h"
+#include "patchdlm_context.h"
 using namespace NLMISC;
 using namespace std;
 

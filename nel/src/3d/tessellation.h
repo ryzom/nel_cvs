@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * TODO: File description
  *
- * $Id: tessellation.h,v 1.20 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: tessellation.h,v 1.21 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,9 +31,9 @@
 #include "nel/misc/uv.h"
 #include "nel/misc/bsphere.h"
 #include "nel/misc/vector_2f.h"
-#include "3d/tess_list.h"
-#include "3d/tess_face_priority_list.h"
-#include "3d/landscape_def.h"
+#include "tess_list.h"
+#include "tess_face_priority_list.h"
+#include "landscape_def.h"
 
 
 namespace	NL3D

@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * TODO: File description
  *
- * $Id: texture_font.cpp,v 1.23 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: texture_font.cpp,v 1.24 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #include "std3d.h"
 #include <map>
 
-#include "3d/texture_font.h"
-#include "3d/font_generator.h"
+#include "texture_font.h"
+#include "font_generator.h"
 
 #include "nel/misc/common.h"
 #include "nel/misc/rect.h"

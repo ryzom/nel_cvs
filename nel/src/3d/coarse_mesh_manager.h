@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.19 2004/10/19 12:41:06 vizerie Exp $
+ * $Id: coarse_mesh_manager.h,v 1.20 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,10 +29,10 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
 
-#include "3d/transform.h"
-#include "3d/material.h"
-#include "3d/index_buffer.h"
-#include "3d/vertex_buffer.h"
+#include "transform.h"
+#include "material.h"
+#include "index_buffer.h"
+#include "vertex_buffer.h"
 
 namespace NL3D 
 {

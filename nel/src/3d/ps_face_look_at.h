@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.h
  * Face look at particles.
  *
- * $Id: ps_face_look_at.h,v 1.8 2004/07/20 12:24:18 vizerie Exp $
+ * $Id: ps_face_look_at.h,v 1.9 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_PS_FACE_LOOK_AT_H
 #define NL_PS_FACE_LOOK_AT_H
 
-#include "3d/ps_particle_basic.h"
-#include "3d/ps_quad.h"
-#include "3d/ps_iterator.h"
+#include "ps_particle_basic.h"
+#include "ps_quad.h"
+#include "ps_iterator.h"
 
 namespace NL3D 
 {

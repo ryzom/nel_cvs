@@ -1,7 +1,7 @@
 /** \file cube_map_builder.h
  * a function that helps to build cube maps
  *
- * $Id: cube_map_builder.h,v 1.4 2002/03/14 18:06:30 vizerie Exp $
+ * $Id: cube_map_builder.h,v 1.5 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #ifndef CUBE_MAP_BUILDER_H
 #define CUBE_MAP_BUILDER_H
 
-#include <nel/misc/rgba.h>
+#include "nel/misc/rgba.h"
 
 namespace NLMISC
 {

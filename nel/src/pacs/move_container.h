@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.18 2003/10/10 10:08:48 corvazier Exp $
+ * $Id: move_container.h,v 1.19 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/pool_memory.h"
-#include "pacs/move_cell.h"
-#include "pacs/collision_ot.h"
+#include "move_cell.h"
+#include "collision_ot.h"
 #include "nel/pacs/u_move_container.h"
-#include "pacs/collision_surface_temp.h"
+#include "collision_surface_temp.h"
 
 #define NELPACS_CONTAINER_TRIGGER_DEFAULT_SIZE 100
 

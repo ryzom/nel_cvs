@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * TODO: File description
  *
- * $Id: landscape_model.h,v 1.14 2004/11/15 10:24:36 lecroart Exp $
+ * $Id: landscape_model.h,v 1.15 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #define NL_LANDSCAPE_MODEL_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/transform.h"
-#include "3d/render_trav.h"
-#include "3d/landscape.h"
+#include "transform.h"
+#include "render_trav.h"
+#include "landscape.h"
 
 
 namespace NL3D 

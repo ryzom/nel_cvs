@@ -1,7 +1,7 @@
 /** \file index_buffer.cpp
  * Index buffers.
  *
- * $Id: index_buffer.cpp,v 1.8 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: index_buffer.cpp,v 1.9 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/index_buffer.h"
-#include "3d/driver.h"
+#include "index_buffer.h"
+#include "driver.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/fast_mem.h"
 

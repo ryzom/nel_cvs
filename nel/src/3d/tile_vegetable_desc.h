@@ -1,7 +1,7 @@
 /** \file tile_vegetable_desc.h
  * TODO: File description
  *
- * $Id: tile_vegetable_desc.h,v 1.4 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: tile_vegetable_desc.h,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,9 +28,9 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
-#include "3d/landscape_def.h"
-#include "3d/vegetable.h"
-#include "3d/vegetable_def.h"
+#include "landscape_def.h"
+#include "vegetable.h"
+#include "vegetable_def.h"
 #include <vector>
 
 namespace NL3D 

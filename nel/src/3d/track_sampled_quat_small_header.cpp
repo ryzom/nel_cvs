@@ -1,7 +1,7 @@
 /** \file track_sampled_quat_small_header.cpp
  * TODO: File description
  *
- * $Id: track_sampled_quat_small_header.cpp,v 1.2 2004/11/15 10:24:51 lecroart Exp $
+ * $Id: track_sampled_quat_small_header.cpp,v 1.3 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/track_sampled_quat_small_header.h"
+#include "track_sampled_quat_small_header.h"
 #include "nel/misc/algo.h"
 
 

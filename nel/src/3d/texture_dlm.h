@@ -1,7 +1,7 @@
 /** \file texture_dlm.h
  * TODO: File description
  *
- * $Id: texture_dlm.h,v 1.7 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: texture_dlm.h,v 1.8 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
-#include "3d/texture.h"
-#include "3d/landscape_def.h"
+#include "texture.h"
+#include "landscape_def.h"
 
 
 #ifdef	NL_DLM_TILE_RES

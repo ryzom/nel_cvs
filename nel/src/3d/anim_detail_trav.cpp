@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * TODO: File description
  *
- * $Id: anim_detail_trav.cpp,v 1.15 2004/11/15 10:24:31 lecroart Exp $
+ * $Id: anim_detail_trav.cpp,v 1.16 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/anim_detail_trav.h"
-#include "3d/hrc_trav.h"
-#include "3d/transform.h"
-#include "3d/skeleton_model.h"
+#include "anim_detail_trav.h"
+#include "hrc_trav.h"
+#include "transform.h"
+#include "skeleton_model.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/debug.h"
 

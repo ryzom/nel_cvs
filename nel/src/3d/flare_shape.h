@@ -1,7 +1,7 @@
 /** \file flare_shape.h
  * TODO: File description
  *
- * $Id: flare_shape.h,v 1.13 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: flare_shape.h,v 1.14 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,9 +29,9 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/class_id.h"
 #include "nel/3d/animation_time.h"
-#include "3d/shape.h"
-#include "3d/texture.h"
-#include "3d/track.h"
+#include "shape.h"
+#include "texture.h"
+#include "track.h"
 
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.25 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.26 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 
-#include "3d/mesh.h"
-#include "3d/mesh_base.h"
-#include "3d/mesh_geom.h"
-#include "3d/mrm_parameters.h"
+#include "mesh.h"
+#include "mesh_base.h"
+#include "mesh_geom.h"
+#include "mrm_parameters.h"
 
 namespace NL3D 
 {

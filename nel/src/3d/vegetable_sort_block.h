@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.h
  * TODO: File description
  *
- * $Id: vegetable_sort_block.h,v 1.7 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetable_sort_block.h,v 1.8 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,9 +29,9 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/object_vector.h"
-#include "3d/tess_list.h"
-#include "3d/index_buffer.h"
-#include "3d/vegetable_instance_group.h"
+#include "tess_list.h"
+#include "index_buffer.h"
+#include "vegetable_instance_group.h"
 
 
 namespace NL3D 

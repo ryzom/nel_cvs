@@ -1,7 +1,7 @@
 /** \file buffer.h
  * IBuffer: sound buffer interface
  *
- * $Id: buffer.h,v 1.8 2004/02/23 14:38:44 lecroart Exp $
+ * $Id: buffer.h,v 1.9 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/string_mapper.h"
-#include "sound/driver/sound_driver.h"
+#include "sound_driver.h"
 
 
 namespace NLSOUND {

@@ -1,7 +1,7 @@
 /** \file deform_2d.cpp
  * TODO: File description
  *
- * $Id: deform_2d.cpp,v 1.8 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: deform_2d.cpp,v 1.9 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,19 +25,19 @@
 
 #include "std3d.h"
 
-#include "3d/deform_2d.h"
+#include "deform_2d.h"
 
 
 
 #include <vector>
 #include "nel/misc/vector_2f.h"
 #include "nel/misc/smart_ptr.h"
-#include "3d/heat_haze.h"
-#include "3d/quad_effect.h"
-#include "3d/texture_blank.h"
-#include "3d/driver.h"
-#include "3d/dru.h"
-#include "3d/material.h"
+#include "heat_haze.h"
+#include "quad_effect.h"
+#include "texture_blank.h"
+#include "driver.h"
+#include "dru.h"
+#include "material.h"
 
 namespace NL3D {
 

@@ -1,7 +1,7 @@
 /** \file mini_col.h
  * TODO: File description
  *
- * $Id: mini_col.h,v 1.3 2004/11/15 10:24:44 lecroart Exp $
+ * $Id: mini_col.h,v 1.4 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,8 +31,8 @@
 #include "nel/misc/matrix.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/triangle.h"
-#include "3d/quad_grid.h"
-#include "3d/landscape.h"
+#include "quad_grid.h"
+#include "landscape.h"
 #include <set>
 
 

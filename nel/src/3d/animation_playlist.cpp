@@ -1,7 +1,7 @@
 /** \file animation_playlist.cpp
  * TODO: File description
  *
- * $Id: animation_playlist.cpp,v 1.14 2005/01/31 13:51:41 lecroart Exp $
+ * $Id: animation_playlist.cpp,v 1.15 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/animation_playlist.h"
+#include "animation_playlist.h"
 #include "nel/misc/common.h"
 #include "nel/misc/stream.h"
 #include <cmath>

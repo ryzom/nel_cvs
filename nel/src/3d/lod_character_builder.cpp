@@ -1,7 +1,7 @@
 /** \file lod_character_builder.cpp
  * TODO: File description
  *
- * $Id: lod_character_builder.cpp,v 1.6 2004/11/15 10:24:41 lecroart Exp $
+ * $Id: lod_character_builder.cpp,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #include "std3d.h"
 
 #include "nel/misc/debug.h"
-#include "3d/lod_character_builder.h"
-#include "3d/scene.h"
-#include "3d/skeleton_shape.h"
-#include "3d/mesh.h"
-#include "3d/skeleton_model.h"
+#include "lod_character_builder.h"
+#include "scene.h"
+#include "skeleton_shape.h"
+#include "mesh.h"
+#include "skeleton_model.h"
 
 
 using namespace std;

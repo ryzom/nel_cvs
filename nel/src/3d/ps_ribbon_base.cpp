@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.15 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.16 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #include "std3d.h"
 
 #include "nel/misc/common.h"
-#include "3d/ps_ribbon_base.h"
-#include "3d/particle_system.h"
+#include "ps_ribbon_base.h"
+#include "particle_system.h"
 
 namespace NL3D 
 {

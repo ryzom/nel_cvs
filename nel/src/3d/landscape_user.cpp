@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * TODO: File description
  *
- * $Id: landscape_user.cpp,v 1.48 2004/11/15 10:24:37 lecroart Exp $
+ * $Id: landscape_user.cpp,v 1.49 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/landscape_user.h"
+#include "landscape_user.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/hierarchical_timer.h"

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * TODO: File description
  *
- * $Id: ps_util.cpp,v 1.44 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_util.cpp,v 1.45 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,23 +29,23 @@
 #include "nel/misc/aabbox.h"
 #include "nel/misc/matrix.h"
 
-#include "3d/ps_util.h"
-#include "3d/particle_system.h"
-#include "3d/driver.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
-#include "3d/material.h"
-#include "3d/nelu.h"
-#include "3d/font_generator.h"
-#include "3d/font_manager.h"
-#include "3d/computed_string.h"
-#include "3d/dru.h"
-#include "3d/ps_located.h"
-#include "3d/ps_sound.h"
-#include "3d/ps_light.h"
+#include "ps_util.h"
+#include "particle_system.h"
+#include "driver.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
+#include "material.h"
+#include "nelu.h"
+#include "font_generator.h"
+#include "font_manager.h"
+#include "computed_string.h"
+#include "dru.h"
+#include "ps_located.h"
+#include "ps_sound.h"
+#include "ps_light.h"
 
 
-#include "3d/particle_system_shape.h"
+#include "particle_system_shape.h"
 
 
 

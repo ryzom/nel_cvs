@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * TODO: File description
  *
- * $Id: camera.cpp,v 1.19 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: camera.cpp,v 1.20 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/camera.h"
-#include "3d/scene.h"
+#include "camera.h"
+#include "scene.h"
 
 
 namespace	NL3D

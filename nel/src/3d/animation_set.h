@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.9 2004/11/19 18:13:16 berenguier Exp $
+ * $Id: animation_set.h,v 1.10 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_ANIMATION_SET_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/animation.h"
-#include "3d/skeleton_weight.h"
+#include "animation.h"
+#include "skeleton_weight.h"
 #include "nel/misc/smart_ptr.h"
 #include <map>
 #include <string>

@@ -1,7 +1,7 @@
 /** \file vegetable_clip_block.cpp
  * TODO: File description
  *
- * $Id: vegetable_clip_block.cpp,v 1.4 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: vegetable_clip_block.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/vegetable_clip_block.h"
+#include "vegetable_clip_block.h"
 
 
 namespace NL3D 

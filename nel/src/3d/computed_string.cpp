@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.35 2004/09/17 15:24:55 vizerie Exp $
+ * $Id: computed_string.cpp,v 1.36 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/computed_string.h"
-#include "3d/texture.h"
-#include "3d/index_buffer.h"
-#include "3d/material.h"
+#include "computed_string.h"
+#include "texture.h"
+#include "index_buffer.h"
+#include "material.h"
 #include "nel/3d/frustum.h"
 
 #include "nel/misc/smart_ptr.h"

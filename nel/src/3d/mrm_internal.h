@@ -1,7 +1,7 @@
 /** \file mrm_internal.h
  * Internal Classes for CMRMBuilder.
  *
- * $Id: mrm_internal.h,v 1.5 2002/11/20 10:20:36 berenguier Exp $
+ * $Id: mrm_internal.h,v 1.6 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_MRM_INTERNAL_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/mrm_mesh.h"
+#include "mrm_mesh.h"
 
 
 namespace NL3D

@@ -1,7 +1,7 @@
 /** \file animation_set_user.cpp
  * TODO: File description
  *
- * $Id: animation_set_user.cpp,v 1.9 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: animation_set_user.cpp,v 1.10 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/animation_set_user.h"
-#include "3d/driver_user.h"
+#include "animation_set_user.h"
+#include "driver_user.h"
 
 
 namespace NL3D 

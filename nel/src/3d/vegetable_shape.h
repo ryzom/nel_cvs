@@ -1,7 +1,7 @@
 /** \file vegetable_shape.h
  * TODO: File description
  *
- * $Id: vegetable_shape.h,v 1.10 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetable_shape.h,v 1.11 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_VEGETABLE_SHAPE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file lod_character_shape.cpp
  * TODO: File description
  *
- * $Id: lod_character_shape.cpp,v 1.12 2004/11/15 10:24:41 lecroart Exp $
+ * $Id: lod_character_shape.cpp,v 1.13 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/lod_character_shape.h"
+#include "lod_character_shape.h"
 #include "nel/misc/vectord.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/lod_character_texture.h"
+#include "lod_character_texture.h"
 #include "nel/misc/triangle.h"
 #include "nel/misc/polygon.h"
 #include "nel/misc/hierarchical_timer.h"

@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.21 2004/07/21 15:25:52 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.22 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,17 +26,17 @@
 #include "std3d.h"
 
 
-#include "3d/patch.h"
-#include "3d/vegetable.h"
-#include "3d/vegetable_manager.h"
-#include "3d/landscape_vegetable_block.h"
-#include "3d/landscape.h"
+#include "patch.h"
+#include "vegetable.h"
+#include "vegetable_manager.h"
+#include "landscape_vegetable_block.h"
+#include "landscape.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/tile_vegetable_desc.h"
-#include "3d/vegetable_light_ex.h"
-#include "3d/patchdlm_context.h"
+#include "tile_vegetable_desc.h"
+#include "vegetable_light_ex.h"
+#include "patchdlm_context.h"
 
 
 using namespace std;

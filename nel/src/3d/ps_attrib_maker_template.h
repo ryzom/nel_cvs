@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * TODO: File description
  *
- * $Id: ps_attrib_maker_template.h,v 1.28 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.29 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_PS_ATTRIB_MAKER_TEMPLATE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/ps_attrib_maker_helper.h"
-#include "3d/ps_plane_basis.h"
+#include "ps_attrib_maker_helper.h"
+#include "ps_plane_basis.h"
 #include "nel/misc/fast_floor.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/traits_nl.h"

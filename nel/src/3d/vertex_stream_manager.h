@@ -1,7 +1,7 @@
 /** \file vertex_stream_manager.h
  * TODO: File description
  *
- * $Id: vertex_stream_manager.h,v 1.5 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vertex_stream_manager.h,v 1.6 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -30,7 +30,7 @@
 
 
 #include "nel/misc/types_nl.h"
-#include "3d/driver.h"
+#include "driver.h"
 
 
 namespace NL3D

@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * TODO: File description
  *
- * $Id: particle_system_manager.cpp,v 1.19 2005/01/20 11:13:37 berenguier Exp $
+ * $Id: particle_system_manager.cpp,v 1.20 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/particle_system_manager.h"
-#include "3d/particle_system_model.h"
-#include "3d/scene.h"
-#include "3d/skeleton_model.h"
+#include "particle_system_manager.h"
+#include "particle_system_model.h"
+#include "scene.h"
+#include "skeleton_model.h"
 
 
 namespace NL3D {

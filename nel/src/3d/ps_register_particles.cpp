@@ -1,7 +1,7 @@
 /** \file ps_register_particles.cpp
  * 
  *
- * $Id: ps_register_particles.cpp,v 1.3 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_register_particles.cpp,v 1.4 2005/02/22 10:19:11 besson Exp $
  */
 /* Copyright, 2002 Nevrax Ltd.
  *
@@ -25,10 +25,10 @@
 #include "std3d.h"
 
 
-#include "3d/ps_util.h"
-#include "3d/ps_particle.h"
-#include "3d/ps_particle2.h"
-#include "3d/ps_mesh.h"
+#include "ps_util.h"
+#include "ps_particle.h"
+#include "ps_particle2.h"
+#include "ps_mesh.h"
 
 
 namespace NL3D

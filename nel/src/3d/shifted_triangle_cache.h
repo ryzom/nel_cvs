@@ -1,7 +1,7 @@
 /** \file shifted_triangle_cache.h
  * TODO: File description
  *
- * $Id: shifted_triangle_cache.h,v 1.5 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: shifted_triangle_cache.h,v 1.6 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/object_vector.h"
-#include "3d/index_buffer.h"
+#include "index_buffer.h"
 
 
 namespace NL3D 

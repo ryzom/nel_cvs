@@ -1,7 +1,7 @@
 /** \file edge_quad.h
  * a quadgrid of list of edge for the exterior collision mesh.
  *
- * $Id: edge_quad.h,v 1.2 2002/06/07 12:34:37 legros Exp $
+ * $Id: edge_quad.h,v 1.3 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/aabbox.h"
-#include "pacs/exterior_mesh.h"
-#include "pacs/collision_surface_temp.h"
+#include "exterior_mesh.h"
+#include "collision_surface_temp.h"
 #include <vector>
 
 namespace NLMISC

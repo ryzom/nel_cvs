@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.cpp
  * TODO: File description
  *
- * $Id: vegetable_blend_layer_model.cpp,v 1.13 2005/02/21 17:09:48 corvazier Exp $
+ * $Id: vegetable_blend_layer_model.cpp,v 1.14 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,14 +25,14 @@
 
 #include "std3d.h"
 
-#include "3d/vegetable_blend_layer_model.h"
-#include "3d/vegetable_manager.h"
-#include "3d/vegetable_sort_block.h"
-#include "3d/render_trav.h"
-#include "3d/clip_trav.h"
+#include "vegetable_blend_layer_model.h"
+#include "vegetable_manager.h"
+#include "vegetable_sort_block.h"
+#include "render_trav.h"
+#include "clip_trav.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/scene.h"
+#include "scene.h"
 
 
 using namespace NLMISC;

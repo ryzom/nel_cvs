@@ -1,7 +1,7 @@
 /** \file u_visual_collision_mesh.cpp
  * TODO: File description
  *
- * $Id: u_visual_collision_mesh.cpp,v 1.3 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: u_visual_collision_mesh.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std3d.h"
 
 #include "nel/3d/u_visual_collision_mesh.h"
-#include "3d/visual_collision_mesh.h"
+#include "visual_collision_mesh.h"
 
 
 namespace NL3D 

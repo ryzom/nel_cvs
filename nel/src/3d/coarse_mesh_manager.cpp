@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.21 2004/10/19 12:40:49 vizerie Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.22 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,11 +25,11 @@
 
 #include "std3d.h"
 
-#include "3d/coarse_mesh_manager.h"
-#include "3d/mesh.h"
-#include "3d/texture_file.h"
+#include "coarse_mesh_manager.h"
+#include "mesh.h"
+#include "texture_file.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/clip_trav.h"
+#include "clip_trav.h"
 #include "nel/misc/fast_mem.h"
 
 

@@ -1,7 +1,7 @@
 /** \file landscape_def.cpp
  * Definition for Landscape
  *
- * $Id: landscape_def.cpp,v 1.10 2004/10/19 12:49:58 vizerie Exp $
+ * $Id: landscape_def.cpp,v 1.11 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std3d.h"
 
 
-#include "3d/landscape_def.h"
+#include "landscape_def.h"
 #include "nel/misc/common.h"
 
 

@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * TODO: File description
  *
- * $Id: landscape_model.cpp,v 1.40 2005/02/21 17:09:48 corvazier Exp $
+ * $Id: landscape_model.cpp,v 1.41 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,11 +27,11 @@
 
 #include <vector>
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/landscape_model.h"
-#include "3d/landscape.h"
-#include "3d/cluster.h"
-#include "3d/scene.h"
-#include "3d/light_trav.h"
+#include "landscape_model.h"
+#include "landscape.h"
+#include "cluster.h"
+#include "scene.h"
+#include "light_trav.h"
 using namespace std;
 using namespace NLMISC;
 

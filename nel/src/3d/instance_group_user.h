@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.34 2004/10/25 11:53:55 berenguier Exp $
+ * $Id: instance_group_user.h,v 1.35 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_instance_group.h"
-#include "3d/scene_group.h"
+#include "scene_group.h"
 
 #define NL3D_MEM_IG						NL_ALLOC_CONTEXT( 3dIg )
 

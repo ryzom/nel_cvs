@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.18 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_particle_basic.cpp,v 1.19 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,13 +25,13 @@
 
 #include "std3d.h"
 
-#include "3d/ps_particle_basic.h"
-#include "3d/ps_macro.h"
-#include "3d/driver.h"
-#include "3d/texture_grouped.h"
-#include "3d/texture_bump.h"
-#include "3d/texture_mem.h"
-#include "3d/particle_system.h"
+#include "ps_particle_basic.h"
+#include "ps_macro.h"
+#include "driver.h"
+#include "texture_grouped.h"
+#include "texture_bump.h"
+#include "texture_mem.h"
+#include "particle_system.h"
 
 
 

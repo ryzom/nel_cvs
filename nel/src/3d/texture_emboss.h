@@ -1,6 +1,6 @@
 /** \file texture_emboss.h
  *
- * $Id: texture_emboss.h,v 1.3 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: texture_emboss.h,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 //
-#include "3d/texture.h"
+#include "texture.h"
 
 namespace NL3D {
 

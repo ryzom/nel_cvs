@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * TODO: File description
  *
- * $Id: scene_group.h,v 1.33 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: scene_group.h,v 1.34 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,12 +30,12 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/quat.h"
 #include "nel/misc/smart_ptr.h"
-#include "3d/portal.h"
-#include "3d/cluster.h"
-#include "3d/transform.h"
-#include "3d/point_light_named.h"
-#include "3d/point_light_named_array.h"
-#include "3d/ig_surface_light.h"
+#include "portal.h"
+#include "cluster.h"
+#include "transform.h"
+#include "point_light_named.h"
+#include "point_light_named_array.h"
+#include "ig_surface_light.h"
 
 #include <vector>
 

@@ -1,7 +1,7 @@
 /** \file mesh_vertex_program.h
  * TODO: File description
  *
- * $Id: mesh_vertex_program.h,v 1.6 2004/11/15 10:24:44 lecroart Exp $
+ * $Id: mesh_vertex_program.h,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/smart_ptr.h"
 
-#include "3d/material.h"
+#include "material.h"
 
 
 namespace NLMISC

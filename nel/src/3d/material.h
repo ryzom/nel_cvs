@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * TODO: File description
  *
- * $Id: material.h,v 1.31 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: material.h,v 1.32 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,8 +30,8 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/matrix.h"
-#include "3d/texture.h"
-#include "3d/shader.h"
+#include "texture.h"
+#include "shader.h"
 
 #include <memory>
 
@@ -744,7 +744,7 @@ public:
 
 } // NL3D
 
-#include "3d/driver_material_inline.h"
+#include "driver_material_inline.h"
 
 #endif // NL_MATERIAL_H
 

@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * TODO: File description
  *
- * $Id: hrc_trav.h,v 1.10 2004/11/15 10:24:33 lecroart Exp $
+ * $Id: hrc_trav.h,v 1.11 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_HRC_TRAV_H
 #define NL_HRC_TRAV_H
 
-#include "3d/trav_scene.h"
+#include "trav_scene.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/debug.h"
 

@@ -1,7 +1,7 @@
 /** \file listener.cpp
  * TODO: File description
  *
- * $Id: listener.cpp,v 1.4 2004/11/15 10:25:07 lecroart Exp $
+ * $Id: listener.cpp,v 1.5 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "sound/driver/listener.h"
+#include "listener.h"
 
 
 // leave not static else this workaround don't work

@@ -1,7 +1,7 @@
 /** \file lod_character_manager.h
  * TODO: File description
  *
- * $Id: lod_character_manager.h,v 1.6 2004/11/15 10:24:41 lecroart Exp $
+ * $Id: lod_character_manager.h,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -30,10 +30,10 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/object_vector.h"
-#include "3d/vertex_buffer.h"
-#include "3d/material.h"
-#include "3d/texture_blank.h"
-#include "3d/vertex_stream_manager.h"
+#include "vertex_buffer.h"
+#include "material.h"
+#include "texture_blank.h"
+#include "vertex_stream_manager.h"
 
 
 namespace NLMISC

@@ -1,7 +1,7 @@
 /** \file shape_bank_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: shape_bank_user.cpp,v 1.8 2004/03/12 16:27:52 berenguier Exp $
+ * $Id: shape_bank_user.cpp,v 1.9 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/shape_bank_user.h"
-#include "3d/driver_user.h"
+#include "shape_bank_user.h"
+#include "driver_user.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/big_file.h"

@@ -1,7 +1,7 @@
 /** \file track_sampled_vector.cpp
  * TODO: File description
  *
- * $Id: track_sampled_vector.cpp,v 1.4 2004/11/15 10:24:51 lecroart Exp $
+ * $Id: track_sampled_vector.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std3d.h"
 
 #include "nel/misc/common.h"
-#include "3d/track_sampled_vector.h"
+#include "track_sampled_vector.h"
 
 using namespace NLMISC;
 using namespace std;

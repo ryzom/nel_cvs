@@ -1,7 +1,7 @@
 /** \file patchuv_locator.h
  * TODO: File description
  *
- * $Id: patchuv_locator.h,v 1.5 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: patchuv_locator.h,v 1.6 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_PATCHUV_LOCATOR_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/patch.h"
+#include "patch.h"
 #include "nel/misc/vector_2f.h"
 
 

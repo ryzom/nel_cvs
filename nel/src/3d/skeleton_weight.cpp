@@ -1,7 +1,7 @@
 /** \file skeleton_weight.cpp
  * TODO: File description
  *
- * $Id: skeleton_weight.cpp,v 1.8 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: skeleton_weight.cpp,v 1.9 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/skeleton_weight.h"
+#include "skeleton_weight.h"
 #include "nel/misc/stream.h"
 
 

@@ -1,7 +1,7 @@
 /** \file ps_dot.h
  * Dot particles
  *
- * $Id: ps_dot.h,v 1.8 2004/05/19 10:19:55 vizerie Exp $
+ * $Id: ps_dot.h,v 1.9 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_PS_DOT_H
 #define NL_PS_DOT_H
 
-#include "3d/ps_particle_basic.h"
-#include "3d/vertex_buffer.h"
-#include "3d/particle_system.h"
+#include "ps_particle_basic.h"
+#include "vertex_buffer.h"
+#include "particle_system.h"
 
 
 namespace NL3D {

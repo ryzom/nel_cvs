@@ -1,7 +1,7 @@
 /** \file play_list_manager.h
  * TODO: File description
  *
- * $Id: play_list_manager.h,v 1.6 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: play_list_manager.h,v 1.7 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_PLAY_LIST_MANAGER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/animation_playlist.h"
-#include "3d/channel_mixer.h"
+#include "animation_playlist.h"
+#include "channel_mixer.h"
 #include <map>
 
 

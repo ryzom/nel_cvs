@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.17 2003/01/30 17:56:43 legros Exp $
+ * $Id: edge_quad.cpp,v 1.18 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "stdpacs.h"
 
-#include "pacs/edge_quad.h"
-#include "pacs/global_retriever.h"
+#include "edge_quad.h"
+#include "global_retriever.h"
 
 using	namespace std;
 using	namespace NLMISC;

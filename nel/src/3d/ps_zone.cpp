@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * TODO: File description
  *
- * $Id: ps_zone.cpp,v 1.31 2005/01/31 13:51:41 lecroart Exp $
+ * $Id: ps_zone.cpp,v 1.32 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,18 +25,18 @@
 
 #include "std3d.h"
 
-#include "3d/ps_zone.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
-#include "3d/material.h"
-#include "3d/ps_util.h"
-#include "3d/dru.h"
-#include "3d/particle_system.h"
+#include "ps_zone.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
+#include "material.h"
+#include "ps_util.h"
+#include "dru.h"
+#include "particle_system.h"
 #include "nel/misc/plane.h"
 
 // tmp
 
-#include "3d/particle_system_model.h"
+#include "particle_system_model.h"
 
 #include <cmath>
 #include <limits>

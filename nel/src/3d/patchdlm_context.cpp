@@ -1,7 +1,7 @@
 /** \file patchdlm_context.cpp
  * TODO: File description
  *
- * $Id: patchdlm_context.cpp,v 1.15 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: patchdlm_context.cpp,v 1.16 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,14 +25,14 @@
 
 #include "std3d.h"
 
-#include "3d/patchdlm_context.h"
-#include "3d/patch.h"
-#include "3d/bezier_patch.h"
-#include "3d/point_light.h"
-#include "3d/texture_dlm.h"
+#include "patchdlm_context.h"
+#include "patch.h"
+#include "bezier_patch.h"
+#include "point_light.h"
+#include "texture_dlm.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/tile_far_bank.h"
-#include "3d/landscape.h"
+#include "tile_far_bank.h"
+#include "landscape.h"
 #include "nel/misc/system_info.h"
 #include "nel/misc/fast_mem.h"
 

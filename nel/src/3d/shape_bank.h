@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * TODO: File description
  *
- * $Id: shape_bank.h,v 1.18 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: shape_bank.h,v 1.19 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,12 +26,12 @@
 #ifndef NL_SHAPE_BANK_H
 #define NL_SHAPE_BANK_H
 
-#include "3d/shape.h"
+#include "shape.h"
 #include "nel/misc/smart_ptr.h"
 #include <map>
 #include <list>
 
-#include "3d/async_file_manager_3d.h"
+#include "async_file_manager_3d.h"
 
 namespace NLMISC
 {

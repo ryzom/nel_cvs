@@ -1,6 +1,6 @@
 /** \file water_env_map_user.h
  *
- * $Id: water_env_map_user.h,v 1.2 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: water_env_map_user.h,v 1.3 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #define NL_WATER_ENVMAP_USER
 
 #include "nel/3d/u_water_env_map.h"
-#include "3d/water_env_map.h"
-#include "3d/driver_user.h"
+#include "water_env_map.h"
+#include "driver_user.h"
 
 namespace NL3D
 {

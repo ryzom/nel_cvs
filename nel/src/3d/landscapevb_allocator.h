@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.h
  * TODO: File description
  *
- * $Id: landscapevb_allocator.h,v 1.10 2004/11/15 10:24:38 lecroart Exp $
+ * $Id: landscapevb_allocator.h,v 1.11 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
-#include "3d/tessellation.h"
-#include "3d/vertex_buffer.h"
+#include "tessellation.h"
+#include "vertex_buffer.h"
 
 
 namespace NL3D 

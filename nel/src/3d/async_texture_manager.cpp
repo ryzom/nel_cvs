@@ -1,7 +1,7 @@
 /** \file async_texture_manager.cpp
  * TODO: File description
  *
- * $Id: async_texture_manager.cpp,v 1.11 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: async_texture_manager.cpp,v 1.12 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/async_texture_manager.h"
-#include "3d/async_file_manager_3d.h"
-#include "3d/mesh_base_instance.h"
-#include "3d/driver.h"
+#include "async_texture_manager.h"
+#include "async_file_manager_3d.h"
+#include "mesh_base_instance.h"
+#include "driver.h"
 
 
 using	namespace std;

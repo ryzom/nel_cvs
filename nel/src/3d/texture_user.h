@@ -1,7 +1,7 @@
 /** \file texture_user.h
  * TODO: File description
  *
- * $Id: texture_user.h,v 1.10 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: texture_user.h,v 1.11 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,9 +28,9 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_texture.h"
-#include "3d/texture.h"
-#include "3d/texture_file.h"
-#include "3d/texture_mem.h"
+#include "texture.h"
+#include "texture_file.h"
+#include "texture_mem.h"
 
 #define NL3D_MEM_TEXTURE						NL_ALLOC_CONTEXT( 3dTextu )
 

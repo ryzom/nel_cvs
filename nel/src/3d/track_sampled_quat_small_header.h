@@ -1,7 +1,7 @@
 /** \file track_sampled_quat_small_header.h
  * TODO: File description
  *
- * $Id: track_sampled_quat_small_header.h,v 1.2 2004/11/15 10:24:51 lecroart Exp $
+ * $Id: track_sampled_quat_small_header.h,v 1.3 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_TRACK_SAMPLED_QUAT_SMALL_HEADER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/track_sampled_quat.h"
+#include "track_sampled_quat.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * TODO: File description
  *
- * $Id: render_trav.h,v 1.30 2005/02/15 18:41:36 berenguier Exp $
+ * $Id: render_trav.h,v 1.31 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,15 +26,15 @@
 #ifndef NL_RENDER_TRAV_H
 #define NL_RENDER_TRAV_H
 
-#include "3d/trav_scene.h"
-#include "3d/ordering_table.h"
-#include "3d/layered_ordering_table.h"
+#include "trav_scene.h"
+#include "ordering_table.h"
+#include "layered_ordering_table.h"
 #include "nel/misc/rgba.h"
 #include "nel/3d/viewport.h"
-#include "3d/light_contribution.h"
-#include "3d/light.h"
-#include "3d/mesh_block_manager.h"
-#include "3d/shadow_map_manager.h"
+#include "light_contribution.h"
+#include "light.h"
+#include "mesh_block_manager.h"
+#include "shadow_map_manager.h"
 #include "nel/3d/u_scene.h"
 #include <vector>
 

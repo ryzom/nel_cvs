@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * TODO: File description
  *
- * $Id: ps_located.h,v 1.40 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_located.h,v 1.41 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,10 +35,10 @@ const uint32 DefaultMaxLocatedInstance = 1; // the default value for a located c
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
-#include "3d/particle_system_process.h"
-#include "3d/ps_attrib.h" // an attribute template container
-#include "3d/ps_lod.h"
-#include "3d/ps_spawn_info.h"		
+#include "particle_system_process.h"
+#include "ps_attrib.h" // an attribute template container
+#include "ps_lod.h"
+#include "ps_spawn_info.h"		
 #include "nel/misc/stream.h"
 //
 #include "nel/misc/object_arena_allocator.h"

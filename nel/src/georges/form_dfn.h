@@ -1,7 +1,7 @@
 /** \file form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.21 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: form_dfn.h,v 1.22 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "nel/georges/u_form_dfn.h"
 #include "nel/georges/u_form_elm.h"
 #include "header.h"
-#include "georges/type.h"
+#include "type.h"
 
 bool convertDfnFile (const char *oldFileName, const char *newFileName);
 

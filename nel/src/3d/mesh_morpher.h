@@ -1,7 +1,7 @@
 /** \file mesh_morpher.h
  * TODO: File description
  *
- * $Id: mesh_morpher.h,v 1.8 2004/11/15 10:24:43 lecroart Exp $
+ * $Id: mesh_morpher.h,v 1.9 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_MESH_MORPHER_H
 #define NL_MESH_MORPHER_H
 
-#include "3d/animated_morph.h"
+#include "animated_morph.h"
 #include "nel/misc/types_nl.h"
 #include "nel/misc/uv.h"
 #include "nel/misc/object_vector.h"

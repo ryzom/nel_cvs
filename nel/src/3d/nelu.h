@@ -1,7 +1,7 @@
 /** \file nelu.h
  * TODO: File description
  *
- * $Id: nelu.h,v 1.10 2004/11/15 10:24:45 lecroart Exp $
+ * $Id: nelu.h,v 1.11 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,9 +28,9 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
-#include "3d/scene.h"
-#include "3d/shape_bank.h"
-#include "3d/dru.h"
+#include "scene.h"
+#include "shape_bank.h"
+#include "dru.h"
 #include "nel/misc/event_server.h"
 #include "nel/misc/event_listener.h"
 #include "nel/misc/rgba.h"

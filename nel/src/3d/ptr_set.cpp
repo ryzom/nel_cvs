@@ -1,7 +1,7 @@
 /** \file ptr_set.cpp
  * TODO: File description
  *
- * $Id: ptr_set.cpp,v 1.4 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ptr_set.cpp,v 1.5 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/ptr_set.h"
+#include "ptr_set.h"
 
 
 namespace NL3D

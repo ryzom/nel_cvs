@@ -1,7 +1,7 @@
 /** \file u_transform.cpp
  * Interface for transform objects.
  *
- * $Id: u_transform.cpp,v 1.3 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: u_transform.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #include "std3d.h"
 
 #include "nel/3d/u_transform.h"
-#include "3d/transform.h"
-#include "3d/instance_group_user.h"
+#include "transform.h"
+#include "instance_group_user.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "scene_group.h"
 #include "scene.h"

@@ -1,7 +1,7 @@
 /** \file init_3d.cpp
  * 
  *
- * $Id: init_3d.cpp,v 1.6 2005/01/31 13:51:41 lecroart Exp $
+ * $Id: init_3d.cpp,v 1.7 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std3d.h"
 
 
-#include "3d/init_3d.h"
+#include "init_3d.h"
 #include <cfloat>
 
 namespace NL3D 

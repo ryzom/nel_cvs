@@ -1,7 +1,7 @@
 /** \file fasthls_modifier.cpp
  * TODO: File description
  *
- * $Id: fasthls_modifier.cpp,v 1.5 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: fasthls_modifier.cpp,v 1.6 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 
 #include "std3d.h"
-#include "3d/fasthls_modifier.h"
+#include "fasthls_modifier.h"
 #include "nel/misc/fast_floor.h"
 #include "nel/misc/bitmap.h"
 #include "nel/misc/system_info.h"

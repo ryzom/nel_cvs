@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.cpp,v 1.12 2005/01/28 13:10:48 berenguier Exp $
+ * $Id: mesh_mrm_skinned.cpp,v 1.13 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,20 +31,20 @@
 #include "nel/misc/system_info.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/fast_mem.h"
-#include "3d/mesh_mrm_skinned.h"
-#include "3d/mrm_builder.h"
-#include "3d/mrm_parameters.h"
-#include "3d/mesh_mrm_skinned_instance.h"
-#include "3d/scene.h"
-#include "3d/skeleton_model.h"
-#include "3d/stripifier.h"
-#include "3d/mesh_blender.h"
-#include "3d/render_trav.h"
+#include "mesh_mrm_skinned.h"
+#include "mrm_builder.h"
+#include "mrm_parameters.h"
+#include "mesh_mrm_skinned_instance.h"
+#include "scene.h"
+#include "skeleton_model.h"
+#include "stripifier.h"
+#include "mesh_blender.h"
+#include "render_trav.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/raw_skinned.h"
-#include "3d/shifted_triangle_cache.h"
-#include "3d/texture_file.h"
-#include "3d/matrix_3x4.h"
+#include "raw_skinned.h"
+#include "shifted_triangle_cache.h"
+#include "texture_file.h"
+#include "matrix_3x4.h"
 
 
 using namespace NLMISC;

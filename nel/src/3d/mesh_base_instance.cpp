@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * TODO: File description
  *
- * $Id: mesh_base_instance.cpp,v 1.25 2004/11/15 10:24:42 lecroart Exp $
+ * $Id: mesh_base_instance.cpp,v 1.26 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,14 +25,14 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_base_instance.h"
-#include "3d/mesh_base.h"
-#include "3d/scene.h"
-#include "3d/animation.h"
+#include "mesh_base_instance.h"
+#include "mesh_base.h"
+#include "scene.h"
+#include "animation.h"
 #include "nel/misc/debug.h"
-#include "3d/anim_detail_trav.h"
-#include "3d/texture_file.h"
-#include "3d/async_texture_manager.h"
+#include "anim_detail_trav.h"
+#include "texture_file.h"
+#include "async_texture_manager.h"
 
 
 using namespace NLMISC;

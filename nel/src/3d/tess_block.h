@@ -1,7 +1,7 @@
 /** \file tess_block.h
  * TODO: File description
  *
- * $Id: tess_block.h,v 1.11 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: tess_block.h,v 1.12 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_TESS_BLOCK_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/tessellation.h"
+#include "tessellation.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/bsphere.h"
 #include <list>

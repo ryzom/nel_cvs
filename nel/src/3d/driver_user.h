@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * TODO: File description
  *
- * $Id: driver_user.h,v 1.49 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: driver_user.h,v 1.50 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,18 +31,18 @@
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/3d/u_driver.h"
 #include "nel/3d/u_material.h"
-#include "3d/event_mouse_listener.h"
-#include "3d/driver.h"
-#include "3d/register_3d.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
-#include "3d/font_manager.h"
-#include "3d/ptr_set.h"
-#include "3d/shape_bank_user.h"
-#include "3d/light_user.h"
-#include "3d/vertex_stream_manager.h"
-#include "3d/async_texture_manager.h"
-#include "3d/lod_character_manager.h"
+#include "event_mouse_listener.h"
+#include "driver.h"
+#include "register_3d.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
+#include "font_manager.h"
+#include "ptr_set.h"
+#include "shape_bank_user.h"
+#include "light_user.h"
+#include "vertex_stream_manager.h"
+#include "async_texture_manager.h"
+#include "lod_character_manager.h"
 
 #define NL3D_MEM_DRIVER						NL_ALLOC_CONTEXT( 3dDrv )
 

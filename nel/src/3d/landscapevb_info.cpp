@@ -1,7 +1,7 @@
 /** \file landscapevb_info.cpp
  * TODO: File description
  *
- * $Id: landscapevb_info.cpp,v 1.6 2004/11/15 10:24:38 lecroart Exp $
+ * $Id: landscapevb_info.cpp,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/landscapevb_info.h"
-#include "3d/vertex_buffer.h"
-#include "3d/landscapevb_allocator.h"
+#include "landscapevb_info.h"
+#include "vertex_buffer.h"
+#include "landscapevb_allocator.h"
 
 
 namespace NL3D 

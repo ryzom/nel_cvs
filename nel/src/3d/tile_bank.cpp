@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.48 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: tile_bank.cpp,v 1.49 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/tile_bank.h"
-#include "3d/texture_file.h"
-#include "3d/tile_noise_map.h"
+#include "tile_bank.h"
+#include "texture_file.h"
+#include "tile_noise_map.h"
 
 #include "nel/misc/stream.h"
 #include "nel/misc/common.h"

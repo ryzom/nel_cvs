@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * TODO: File description
  *
- * $Id: water_model.cpp,v 1.54 2005/02/21 17:53:00 corvazier Exp $
+ * $Id: water_model.cpp,v 1.55 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,18 +29,18 @@
 #include "nel/misc/vector_h.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/3d/animation_time.h"
-#include "3d/water_model.h"
-#include "3d/water_shape.h"
-#include "3d/water_pool_manager.h"
-#include "3d/water_height_map.h"
-#include "3d/dru.h"
-#include "3d/scene.h"
-#include "3d/driver.h"
-#include "3d/render_trav.h"
-#include "3d/anim_detail_trav.h"
-#include "3d/texture_emboss.h"
-#include "3d/texture_bump.h"
-#include "3d/water_env_map.h"
+#include "water_model.h"
+#include "water_shape.h"
+#include "water_pool_manager.h"
+#include "water_height_map.h"
+#include "dru.h"
+#include "scene.h"
+#include "driver.h"
+#include "render_trav.h"
+#include "anim_detail_trav.h"
+#include "texture_emboss.h"
+#include "texture_bump.h"
+#include "water_env_map.h"
 
 
 using NLMISC::CVector2f;

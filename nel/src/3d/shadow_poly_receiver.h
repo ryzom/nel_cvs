@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.h
  * TODO: File description
  *
- * $Id: shadow_poly_receiver.h,v 1.5 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: shadow_poly_receiver.h,v 1.6 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -28,9 +28,9 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/triangle.h"
-#include "3d/quad_grid.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
+#include "quad_grid.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 
 
 namespace NL3D {

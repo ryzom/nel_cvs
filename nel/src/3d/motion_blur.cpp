@@ -1,7 +1,7 @@
 /** \file motion_blur.cpp
  * TODO: File description
  *
- * $Id: motion_blur.cpp,v 1.6 2004/11/15 10:24:44 lecroart Exp $
+ * $Id: motion_blur.cpp,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #include "std3d.h"
 
 #include "nel/misc/common.h"
-#include "3d/motion_blur.h"
-#include "3d/driver.h"
-#include "3d/texture.h"
-#include "3d/texture_blank.h"
-#include "3d/material.h"
+#include "motion_blur.h"
+#include "driver.h"
+#include "texture.h"
+#include "texture_blank.h"
+#include "material.h"
 
 
 namespace NL3D {

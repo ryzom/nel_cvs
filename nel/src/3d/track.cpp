@@ -1,7 +1,7 @@
 /** \file track.cpp
  * TODO: File description
  *
- * $Id: track.cpp,v 1.20 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: track.cpp,v 1.21 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/track.h"
+#include "track.h"
 
 #include "nel/misc/rgba.h"
 #include "nel/misc/hierarchical_timer.h"

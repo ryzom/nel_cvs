@@ -1,7 +1,7 @@
 /** \file tile_element.cpp
  * TODO: File description
  *
- * $Id: tile_element.cpp,v 1.12 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: tile_element.cpp,v 1.13 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/tile_element.h"
+#include "tile_element.h"
 #include "nel/misc/debug.h"
 
 

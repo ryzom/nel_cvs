@@ -1,7 +1,7 @@
 /** \file vectord.cpp
  * CVectorD class
  *
- * $Id: vectord.cpp,v 1.4 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: vectord.cpp,v 1.5 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "stdmisc.h"
 
-#include	"nel/misc/vectord.h"
+#include	"../../include/nel/misc/vectord.h"
 
 
 namespace	NLMISC

@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.22 2004/11/04 13:12:42 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.23 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,13 +26,13 @@
 #include "std3d.h"
 
 
-#include "3d/patch.h"
-#include "3d/tessellation.h"
-#include "3d/bezier_patch.h"
-#include "3d/zone.h"
-#include "3d/landscape.h"
-#include "3d/landscape_profile.h"
-#include "3d/patchdlm_context.h"
+#include "patch.h"
+#include "tessellation.h"
+#include "bezier_patch.h"
+#include "zone.h"
+#include "landscape.h"
+#include "landscape_profile.h"
+#include "patchdlm_context.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
 using	namespace	std;

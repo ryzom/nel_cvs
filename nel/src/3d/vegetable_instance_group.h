@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * TODO: File description
  *
- * $Id: vegetable_instance_group.h,v 1.13 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetable_instance_group.h,v 1.14 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,12 +30,12 @@
 #include "nel/misc/object_vector.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/rgba.h"
-#include "3d/tess_list.h"
-#include "3d/vegetable_instance_group.h"
-#include "3d/vegetable_def.h"
-#include "3d/vegetable_light_ex.h"
-#include "3d/vegetable_uv8.h"
-#include "3d/index_buffer.h"
+#include "tess_list.h"
+#include "vegetable_instance_group.h"
+#include "vegetable_def.h"
+#include "vegetable_light_ex.h"
+#include "vegetable_uv8.h"
+#include "index_buffer.h"
 #include <vector>
 
 

@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.21 2004/01/13 18:10:32 besson Exp $
+ * $Id: font_generator.cpp,v 1.22 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "nel/misc/common.h"
 #include "nel/misc/path.h"
 
-#include "3d/font_generator.h"
+#include "font_generator.h"
 
 using namespace std;
 

@@ -1,6 +1,6 @@
 /** \file water_env_map.h
  *
- * $Id: water_env_map.h,v 1.2 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: water_env_map.h,v 1.3 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -27,8 +27,8 @@
 
 #include "nel/misc/smart_ptr.h"
 //
-#include "3d/texture_cube.h"
-#include "3d/texture_blank.h"
+#include "texture_cube.h"
+#include "texture_blank.h"
 
 
 namespace NL3D

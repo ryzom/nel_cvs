@@ -1,7 +1,7 @@
 /** \file vegetable_shape.cpp
  * TODO: File description
  *
- * $Id: vegetable_shape.cpp,v 1.12 2005/02/08 15:01:40 lecroart Exp $
+ * $Id: vegetable_shape.cpp,v 1.13 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/vegetable_shape.h"
+#include "vegetable_shape.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 

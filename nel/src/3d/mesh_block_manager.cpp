@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.cpp
  * TODO: File description
  *
- * $Id: mesh_block_manager.cpp,v 1.9 2004/11/15 10:24:42 lecroart Exp $
+ * $Id: mesh_block_manager.cpp,v 1.10 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_block_manager.h"
+#include "mesh_block_manager.h"
 #include "nel/misc/hierarchical_timer.h"
 
 using namespace NLMISC;

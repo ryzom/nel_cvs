@@ -1,7 +1,7 @@
 /** \file buffer_dsound.h
  * DSound buffer
  *
- * $Id: buffer_dsound.h,v 1.10 2004/08/30 12:41:23 berenguier Exp $
+ * $Id: buffer_dsound.h,v 1.11 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_BUFFER_DSOUND_H
 
 
-#include "sound/driver/buffer.h"
+#include "../buffer.h"
 
 
 namespace NLSOUND {

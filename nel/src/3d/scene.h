@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.62 2005/01/20 11:13:37 berenguier Exp $
+ * $Id: scene.h,v 1.63 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,21 +27,21 @@
 #define NL_SCENE_H
 
 
-#include "3d/camera.h"
-#include "3d/shape.h"
-#include "3d/animated_lightmap.h"
-#include "3d/play_list_manager.h"
-#include "3d/quad_grid_clip_manager.h"
-#include "3d/particle_system_manager.h"
-#include "3d/animation_set.h"
+#include "camera.h"
+#include "shape.h"
+#include "animated_lightmap.h"
+#include "play_list_manager.h"
+#include "quad_grid_clip_manager.h"
+#include "particle_system_manager.h"
+#include "animation_set.h"
 // The traversals
-#include "3d/hrc_trav.h"
-#include "3d/clip_trav.h"
-#include "3d/anim_detail_trav.h"
-#include "3d/load_balancing_trav.h"
-#include "3d/light_trav.h"
-#include "3d/render_trav.h"
-#include "3d/flare_model.h"
+#include "hrc_trav.h"
+#include "clip_trav.h"
+#include "anim_detail_trav.h"
+#include "load_balancing_trav.h"
+#include "light_trav.h"
+#include "render_trav.h"
+#include "flare_model.h"
 
 
 

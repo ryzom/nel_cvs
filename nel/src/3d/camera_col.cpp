@@ -1,7 +1,7 @@
 /** \file camera_col.cpp
  * TODO: File description
  *
- * $Id: camera_col.cpp,v 1.3 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: camera_col.cpp,v 1.4 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 #include "std3d.h"
-#include "3d/camera_col.h"
+#include "camera_col.h"
 #include "nel/misc/matrix.h"
 
 using namespace std;

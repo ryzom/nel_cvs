@@ -1,7 +1,7 @@
 /** \file patch.h
  * TODO: File description
  *
- * $Id: patch.h,v 1.38 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: patch.h,v 1.39 2005/02/22 10:19:11 besson Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -34,16 +34,16 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/vector_2f.h"
 #include "nel/misc/rgba.h"
-#include "3d/tessellation.h"
+#include "tessellation.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/bsphere.h"
 #include "nel/misc/triangle.h"
 #include "nel/misc/geom_ext.h"
 #include "nel/misc/object_vector.h"
-#include "3d/tile_element.h"
-#include "3d/tile_color.h"
-#include "3d/tess_block.h"
-#include "3d/tile_light_influence.h"
+#include "tile_element.h"
+#include "tile_color.h"
+#include "tess_block.h"
+#include "tile_light_influence.h"
 #include "nel/3d/point_light_influence.h"
 
 

@@ -1,7 +1,7 @@
 /** \file ps_shockwave.h
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.h,v 1.11 2004/05/19 10:19:55 vizerie Exp $
+ * $Id: ps_shockwave.h,v 1.12 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_PS_SHOCKWAVE_H
 #define NL_PS_SHOCKWAVE_H
 
-#include "3d/ps_particle_basic.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
+#include "ps_particle_basic.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 #include <hash_map>
 
 namespace NL3D 

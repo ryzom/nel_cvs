@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.96 2004/12/08 15:22:02 vizerie Exp $
+ * $Id: global_retriever.cpp,v 1.97 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,8 +35,8 @@
 
 #include "nel/memory/memory_manager.h"
 
-#include "pacs/global_retriever.h"
-#include "pacs/retriever_bank.h"
+#include "global_retriever.h"
+#include "retriever_bank.h"
 
 #include <set>
 

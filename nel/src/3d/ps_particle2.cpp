@@ -1,7 +1,7 @@
 /** \file ps_particle2.cpp
  * TODO: File description
  *
- * $Id: ps_particle2.cpp,v 1.10 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_particle2.cpp,v 1.11 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/ps_particle2.h"
+#include "ps_particle2.h"
 
 namespace NL3D 
 {

@@ -1,7 +1,7 @@
 /** \file vegetable.h
  * TODO: File description
  *
- * $Id: vegetable.h,v 1.18 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: vegetable.h,v 1.19 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/noise_value.h"
 #include "nel/misc/vector_2f.h"
 #include "nel/misc/matrix.h"
-#include "3d/vegetable_uv8.h"
+#include "vegetable_uv8.h"
 
 
 namespace NL3D 

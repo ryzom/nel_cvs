@@ -1,7 +1,7 @@
 /** \file misc/heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.14 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: heap_allocator.cpp,v 1.15 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,9 +24,9 @@
  */
 
 /*	This file can't use Visual precompilated headers because
-	the precompilated header ("nel/misc/stdmisc.h") includes 
-	"nel/misc/types_nl.h". Before including the file 
-	"nel/misc/types_nl.h", we need to define NL_HEAP_ALLOCATOR_H
+	the precompilated header ("../../include/nel/misc/stdmisc.h") includes 
+	"../../include/nel/misc/types_nl.h". Before including the file 
+	"../../include/nel/misc/types_nl.h", we need to define NL_HEAP_ALLOCATOR_H
 	for this file to avoid new overriding. */
 
 #include "stdmisc.h"

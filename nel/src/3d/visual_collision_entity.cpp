@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * TODO: File description
  *
- * $Id: visual_collision_entity.cpp,v 1.20 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: visual_collision_entity.cpp,v 1.21 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,11 +27,11 @@
 
 #include "nel/3d/u_visual_collision_entity.h"
 
-#include "3d/visual_collision_entity.h"
-#include "3d/landscape.h"
-#include "3d/dru.h"
-#include "3d/driver.h"
-#include "3d/tile_bank.h"
+#include "visual_collision_entity.h"
+#include "landscape.h"
+#include "dru.h"
+#include "driver.h"
+#include "tile_bank.h"
 #include "nel/misc/hierarchical_timer.h"
 
 

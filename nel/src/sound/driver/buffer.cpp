@@ -1,7 +1,7 @@
 /** \file buffer.cpp
  * TODO: File description
  *
- * $Id: buffer.cpp,v 1.4 2004/11/15 10:25:07 lecroart Exp $
+ * $Id: buffer.cpp,v 1.5 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "sound/driver/buffer.h"
+#include "buffer.h"
 
 
 namespace NLSOUND {

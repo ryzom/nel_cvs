@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.h
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.h,v 1.10 2003/03/28 15:53:01 berenguier Exp $
+ * $Id: load_balancing_trav.h,v 1.11 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/plane.h"
-#include "3d/trav_scene.h"
+#include "trav_scene.h"
 #include "nel/misc/value_smoother.h"
 
 

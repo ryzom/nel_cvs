@@ -1,7 +1,7 @@
 /** \file u_skeleton.cpp
  * TODO: File description
  *
- * $Id: u_skeleton.cpp,v 1.5 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: u_skeleton.cpp,v 1.6 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,13 +28,13 @@
 #include "nel/3d/u_skeleton.h"
 #include "nel/3d/u_instance.h"
 #include "nel/3d/u_bone.h"
-#include "3d/play_list_user.h"
-#include "3d/skeleton_model.h"
-#include "3d/skeleton_model.h"
-#include "3d/mesh_base_instance.h"
+#include "play_list_user.h"
+#include "skeleton_model.h"
+#include "skeleton_model.h"
+#include "mesh_base_instance.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "3d/scene.h"
-#include "3d/shape_bank.h"
+#include "scene.h"
+#include "shape_bank.h"
 
 
 namespace NL3D

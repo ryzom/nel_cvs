@@ -1,7 +1,7 @@
 /** \file lod_character_builder.h
  * TODO: File description
  *
- * $Id: lod_character_builder.h,v 1.4 2004/11/15 10:24:41 lecroart Exp $
+ * $Id: lod_character_builder.h,v 1.5 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_LOD_CHARACTER_BUILDER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/lod_character_shape.h"
+#include "lod_character_shape.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * TODO: File description
  *
- * $Id: mesh_instance.cpp,v 1.24 2004/11/15 10:24:43 lecroart Exp $
+ * $Id: mesh_instance.cpp,v 1.25 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,11 +25,11 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_instance.h"
-#include "3d/mesh.h"
-#include "3d/skeleton_model.h"
+#include "mesh_instance.h"
+#include "mesh.h"
+#include "skeleton_model.h"
 #include "nel/3d/u_scene.h"
-#include "3d/scene.h"
+#include "scene.h"
 #include <list>
 
 using namespace std;

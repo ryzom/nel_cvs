@@ -1,7 +1,7 @@
 /** \file texture_blend.cpp
  * A helper texture class to blend between 2 others textures.
  *
- * $Id: texture_blend.cpp,v 1.4 2004/02/20 14:40:20 vizerie Exp $
+ * $Id: texture_blend.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/texture_blend.h"
+#include "texture_blend.h"
 #include "nel/misc/common.h"
 
 namespace NL3D {

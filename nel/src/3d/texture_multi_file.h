@@ -1,7 +1,7 @@
 /** \file texture_multi_file.h
  * This texture helps to manage texture sets : it identify as one texture in a group of several other textures.
  *
- * $Id: texture_multi_file.h,v 1.4 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture_multi_file.h,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_TEXTURE_MULTI_FILE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/texture.h"
+#include "texture.h"
 
 #include <string>
 

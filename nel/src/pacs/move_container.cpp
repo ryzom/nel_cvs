@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * TODO: File description
  *
- * $Id: move_container.cpp,v 1.51 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: move_container.cpp,v 1.52 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "stdpacs.h"
 
-#include "pacs/move_primitive.h"
-#include "pacs/move_element.h"
-#include "pacs/primitive_block.h"
+#include "move_primitive.h"
+#include "move_element.h"
+#include "primitive_block.h"
 
 #include "nel/misc/hierarchical_timer.h"
 

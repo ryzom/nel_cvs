@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
  * TODO: File description
  *
- * $Id: animated_material.cpp,v 1.16 2004/11/15 10:24:31 lecroart Exp $
+ * $Id: animated_material.cpp,v 1.17 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/animated_material.h"
+#include "animated_material.h"
 #include "nel/misc/common.h"
 
 using namespace NLMISC;

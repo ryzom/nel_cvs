@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.22 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: primitive_world_image.cpp,v 1.23 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,9 @@
 
 #include "nel/misc/hierarchical_timer.h"
 
-#include "pacs/primitive_world_image.h"
-#include "pacs/move_primitive.h"
-#include "pacs/move_element.h"
+#include "primitive_world_image.h"
+#include "move_primitive.h"
+#include "move_element.h"
 
 using namespace NLMISC;
 

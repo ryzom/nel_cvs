@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * TODO: File description
  *
- * $Id: ps_sound.cpp,v 1.34 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_sound.cpp,v 1.35 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 #include "nel/misc/string_mapper.h"
-#include "3d/ps_sound.h"
-#include "3d/particle_system.h"
+#include "ps_sound.h"
+#include "particle_system.h"
 #include "nel/3d/u_ps_sound_interface.h"
-#include "3d/ps_attrib_maker.h"
+#include "ps_attrib_maker.h"
 
 namespace NL3D 
 {

@@ -1,7 +1,7 @@
 /** \file move_element.cpp
  * Element to insert in sorted lists
  *
- * $Id: move_element.cpp,v 1.4 2004/10/29 18:08:47 berenguier Exp $
+ * $Id: move_element.cpp,v 1.5 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "stdpacs.h"
 
-#include "pacs/move_element.h"
-#include "pacs/move_element_inline.h"
+#include "move_element.h"
+#include "move_element_inline.h"
 
 
 // leave not static else this workaround don't work

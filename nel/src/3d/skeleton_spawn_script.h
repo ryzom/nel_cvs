@@ -1,7 +1,7 @@
 /** \file skeleton_spawn_script.h
  * TODO: File description
  *
- * $Id: skeleton_spawn_script.h,v 1.4 2004/11/26 17:30:22 berenguier Exp $
+ * $Id: skeleton_spawn_script.h,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 
-#include "3d/transform_shape.h"
+#include "transform_shape.h"
 
 namespace NL3D 
 {

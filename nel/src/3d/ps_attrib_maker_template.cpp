@@ -1,6 +1,6 @@
 /** \file ps_attrib_maker_template.cpp
  *
- * $Id: ps_attrib_maker_template.cpp,v 1.2 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_attrib_maker_template.cpp,v 1.3 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -23,7 +23,7 @@
  */
 
 #include "std3d.h"
-#include "3d/ps_attrib_maker_template.h"
+#include "ps_attrib_maker_template.h"
 #include "nel/misc/system_info.h"
 
 

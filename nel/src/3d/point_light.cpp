@@ -1,7 +1,7 @@
 /** \file point_light.cpp
  * TODO: File description
  *
- * $Id: point_light.cpp,v 1.9 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: point_light.cpp,v 1.10 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/point_light.h"
-#include "3d/light.h"
-#include "3d/transform.h"
+#include "point_light.h"
+#include "light.h"
+#include "transform.h"
 #include "nel/misc/common.h"
 #include <algorithm>
 

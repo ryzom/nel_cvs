@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.16 2004/10/19 12:53:57 vizerie Exp $
+ * $Id: ps_fan_light.cpp,v 1.17 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,12 +25,12 @@
 
 #include "std3d.h"
 
-#include "3d/ps_fan_light.h"
-#include "3d/ps_macro.h"
-#include "3d/ps_attrib_maker.h"
-#include "3d/ps_iterator.h"
-#include "3d/particle_system.h"
-#include "3d/driver.h"
+#include "ps_fan_light.h"
+#include "ps_macro.h"
+#include "ps_attrib_maker.h"
+#include "ps_iterator.h"
+#include "particle_system.h"
+#include "driver.h"
 
 
 

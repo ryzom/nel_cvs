@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * TODO: File description
  *
- * $Id: shadow_map_manager.cpp,v 1.17 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: shadow_map_manager.cpp,v 1.18 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -24,15 +24,15 @@
  */
 
 #include "std3d.h"
-#include "3d/shadow_map_manager.h"
+#include "shadow_map_manager.h"
 #include "nel/misc/aabbox.h"
-#include "3d/driver.h"
-#include "3d/scene.h"
+#include "driver.h"
+#include "scene.h"
 #include "nel/3d/viewport.h"
 #include "nel/3d/scissor.h"
-#include "3d/dru.h"
-#include "3d/texture_mem.h"
-#include "3d/visual_collision_manager.h"
+#include "dru.h"
+#include "texture_mem.h"
+#include "visual_collision_manager.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/fast_floor.h"
 

@@ -1,7 +1,7 @@
 /** \file texture_blank.cpp
  * TODO: File description
  *
- * $Id: texture_blank.cpp,v 1.4 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: texture_blank.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/texture_blank.h"
+#include "texture_blank.h"
 
 
 namespace NL3D {

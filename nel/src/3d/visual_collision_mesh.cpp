@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.cpp
  * TODO: File description
  *
- * $Id: visual_collision_mesh.cpp,v 1.6 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: visual_collision_mesh.cpp,v 1.7 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -25,11 +25,11 @@
 
 #include "std3d.h"
 
-#include "3d/visual_collision_mesh.h"
-#include "3d/quad_grid.h"
-#include "3d/camera_col.h"
-#include "3d/driver.h"
-#include "3d/shadow_map.h"
+#include "visual_collision_mesh.h"
+#include "quad_grid.h"
+#include "camera_col.h"
+#include "driver.h"
+#include "shadow_map.h"
 
 
 using namespace std;

@@ -1,7 +1,7 @@
 /** \file mrm_parameters.cpp
  * parameters of MRM build process.
  *
- * $Id: mrm_parameters.cpp,v 1.4 2002/02/28 12:59:50 besson Exp $
+ * $Id: mrm_parameters.cpp,v 1.5 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/mrm_parameters.h"
+#include "mrm_parameters.h"
 
 
 namespace NL3D

@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * TODO: File description
  *
- * $Id: tess_block.cpp,v 1.15 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: tess_block.cpp,v 1.16 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/tess_block.h"
-#include "3d/patch_rdr_pass.h"
-#include "3d/landscape_face_vector_manager.h"
+#include "tess_block.h"
+#include "patch_rdr_pass.h"
+#include "landscape_face_vector_manager.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file tile_noise_map.cpp
  * A Noise Map for landscape.
  *
- * $Id: tile_noise_map.cpp,v 1.3 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: tile_noise_map.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/tile_noise_map.h"
+#include "tile_noise_map.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.26 2005/02/21 17:09:48 corvazier Exp $
+ * $Id: background_sound_manager.cpp,v 1.27 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "nel/misc/hierarchical_timer.h"
 
 #include "nel/ligo/primitive.h"
-#include "3d/cluster.h"
+#include "../3d/cluster.h"
 
 #include "nel/sound/u_source.h"
 #include "clustered_sound.h"

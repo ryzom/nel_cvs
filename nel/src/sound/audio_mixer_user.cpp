@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.85 2005/02/17 17:15:53 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.86 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,8 +42,7 @@
 #include "nel/georges/load_form.h"
 #include "nel/georges/u_form.h"
 
-#include "3d/scene_user.h"
-
+#include "../3d/scene_user.h"
 #include "driver/sound_driver.h"
 #include "driver/buffer.h"
 

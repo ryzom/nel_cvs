@@ -1,7 +1,7 @@
 /** \file source_common.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.h,v 1.11 2004/11/15 10:25:07 lecroart Exp $
+ * $Id: source_common.h,v 1.12 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/sound/u_source.h"
-#include "3d/cluster.h"
+#include "../3d/cluster.h"
 #include "sound.h"
 
 

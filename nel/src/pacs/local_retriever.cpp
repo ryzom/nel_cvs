@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.72 2004/10/15 13:34:45 legros Exp $
+ * $Id: local_retriever.cpp,v 1.73 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,9 @@
 
 #include "nel/misc/plane.h"
 
-#include "pacs/local_retriever.h"
-#include "pacs/collision_desc.h"
-#include "pacs/retriever_instance.h"
+#include "local_retriever.h"
+#include "collision_desc.h"
+#include "retriever_instance.h"
 
 #include "nel/misc/hierarchical_timer.h"
 

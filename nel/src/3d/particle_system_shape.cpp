@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * TODO: File description
  *
- * $Id: particle_system_shape.cpp,v 1.53 2005/02/15 15:28:01 berenguier Exp $
+ * $Id: particle_system_shape.cpp,v 1.54 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,22 +25,22 @@
 
 #include "std3d.h"
 
-#include "3d/particle_system.h"
-#include "3d/particle_system_shape.h"
-#include "3d/particle_system_model.h"
-#include "3d/scene.h"
-#include "3d/driver.h"
-#include "3d/skeleton_model.h"
-#include "3d/texture_file.h"
-#include "3d/ps_allocator.h"
+#include "particle_system.h"
+#include "particle_system_shape.h"
+#include "particle_system_model.h"
+#include "scene.h"
+#include "driver.h"
+#include "skeleton_model.h"
+#include "texture_file.h"
+#include "ps_allocator.h"
 #include "nel/misc/file.h"
 #include "nel/misc/mem_stream.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/contiguous_block_allocator.h"
 
 // tmp
-#include "3d/ps_face_look_at.h"
-#include "3d/ps_force.h"
+#include "ps_face_look_at.h"
+#include "ps_force.h"
 
 namespace NL3D {
 

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.20 2004/11/29 10:50:20 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.21 2005/02/22 10:19:22 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -27,10 +27,10 @@
 
 #include "stddirect3d.h"
 
-#include "3d/vertex_buffer.h"
-#include "3d/light.h"
-#include "3d/index_buffer.h"
-#include "3d/texture_bump.h"
+#include "../../vertex_buffer.h"
+#include "../../light.h"
+#include "../../index_buffer.h"
+#include "../../texture_bump.h"
 #include "nel/misc/rect.h"
 #include "nel/misc/di_event_emitter.h"
 #include "nel/misc/mouse_device.h"

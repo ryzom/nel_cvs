@@ -1,7 +1,7 @@
 /** \file texture_bump.h
  * TODO: File description
  *
- * $Id: texture_bump.h,v 1.10 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: texture_bump.h,v 1.11 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_TEXTURE_BUMP_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/texture.h"
+#include "texture.h"
 
 namespace NL3D {
 

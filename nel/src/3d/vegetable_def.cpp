@@ -1,7 +1,7 @@
 /** \file vegetable_def.cpp
  * TODO: File description
  *
- * $Id: vegetable_def.cpp,v 1.3 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: vegetable_def.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/vegetable_def.h"
+#include "vegetable_def.h"
 
 
 namespace NL3D 

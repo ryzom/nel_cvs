@@ -1,7 +1,7 @@
 /** \file quad_effect.cpp
  * TODO: File description
  *
- * $Id: quad_effect.cpp,v 1.5 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: quad_effect.cpp,v 1.6 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/quad_effect.h"
+#include "quad_effect.h"
 #include <algorithm>
 #include <deque>
 

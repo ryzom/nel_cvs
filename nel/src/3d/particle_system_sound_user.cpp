@@ -1,7 +1,7 @@
 /** \file particle_system_sound_user.cpp
  * TODO: File description
  *
- * $Id: particle_system_sound_user.cpp,v 1.6 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: particle_system_sound_user.cpp,v 1.7 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 
 //#include "nel/3d/u_particle_system_sound.h" we don't include this to avoid a link with NLSOUND
-#include "3d/particle_system.h"
+#include "particle_system.h"
 #include "nel/3d/u_ps_sound_interface.h"
 #include "nel/3d/u_ps_sound_impl.h"
 

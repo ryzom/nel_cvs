@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.36 2004/05/26 16:08:08 berenguier Exp $
+ * $Id: global_retriever.h,v 1.37 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,16 +40,16 @@
 #include "nel/misc/mem_stream.h"
 #include "nel/misc/task_manager.h"
 
-#include "pacs/local_retriever.h"
-#include "pacs/retriever_instance.h"
-#include "pacs/vector_2s.h"
-#include "pacs/collision_surface_temp.h"
-#include "pacs/retriever_bank.h"
+#include "local_retriever.h"
+#include "retriever_instance.h"
+#include "vector_2s.h"
+#include "collision_surface_temp.h"
+#include "retriever_bank.h"
 
 #include "nel/pacs/u_global_retriever.h"
 
 
-#include "pacs/quad_grid.h"
+#include "quad_grid.h"
 
 
 namespace NLPACS

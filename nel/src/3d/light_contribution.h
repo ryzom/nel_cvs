@@ -1,7 +1,7 @@
 /** \file light_contribution.h
  * TODO: File description
  *
- * $Id: light_contribution.h,v 1.7 2004/11/15 10:24:39 lecroart Exp $
+ * $Id: light_contribution.h,v 1.8 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
-#include "3d/point_light.h"
+#include "point_light.h"
 
 
 namespace NL3D 

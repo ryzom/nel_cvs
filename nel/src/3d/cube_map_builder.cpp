@@ -1,7 +1,7 @@
 /** \file cube_map_builder.cpp
  * a function that helps to build cube maps
  *
- * $Id: cube_map_builder.cpp,v 1.6 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: cube_map_builder.cpp,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,9 +27,9 @@
 
 
 
-#include "3d/cube_map_builder.h"
-#include "3d/texture_cube.h"
-#include "3d/texture_mem.h"
+#include "cube_map_builder.h"
+#include "texture_cube.h"
+#include "texture_mem.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/rgba.h"
 

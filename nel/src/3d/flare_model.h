@@ -1,7 +1,7 @@
 /** \file flare_model.h
  * TODO: File description
  *
- * $Id: flare_model.h,v 1.9 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: flare_model.h,v 1.10 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_FLARE_MODEL_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/transform_shape.h"
-#include "3d/vertex_buffer.h"
+#include "transform_shape.h"
+#include "vertex_buffer.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file texture_user.cpp
  * TODO: File description
  *
- * $Id: texture_user.cpp,v 1.5 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: texture_user.cpp,v 1.6 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/texture_user.h"
+#include "texture_user.h"
 
 
 namespace NL3D

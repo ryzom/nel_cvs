@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.24 2004/10/19 12:55:34 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.25 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "std3d.h"
 
-#include "3d/ps_ribbon_look_at.h"
-#include "3d/particle_system.h"
-#include "3d/ps_macro.h"
-#include "3d/driver.h"
+#include "ps_ribbon_look_at.h"
+#include "particle_system.h"
+#include "ps_macro.h"
+#include "driver.h"
 
 namespace NL3D 
 {

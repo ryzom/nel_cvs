@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.h
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.h,v 1.12 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_tail_dot.h,v 1.13 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_PS_TAIL_DOT_H
 #define NL_PS_TAIL_DOT_H
 
-#include "3d/ps_ribbon_base.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
+#include "ps_ribbon_base.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 #include <hash_map>
 
 

@@ -1,7 +1,7 @@
 /** \file vegetable_quadrant.h
  * TODO: File description
  *
- * $Id: vegetable_quadrant.h,v 1.2 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetable_quadrant.h,v 1.3 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
-#include "3d/vegetable_def.h"
+#include "vegetable_def.h"
 
 
 namespace NL3D 

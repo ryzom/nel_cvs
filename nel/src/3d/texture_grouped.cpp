@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * TODO: File description
  *
- * $Id: texture_grouped.cpp,v 1.16 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: texture_grouped.cpp,v 1.17 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/texture_grouped.h"
-#include "3d/texture_file.h"
+#include "texture_grouped.h"
+#include "texture_file.h"
 #include "nel/misc/common.h"
 #include "nel/misc/path.h"
 

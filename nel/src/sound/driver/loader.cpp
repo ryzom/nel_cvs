@@ -1,7 +1,7 @@
 /** \file driver/loader.cpp
  * TODO: File description
  *
- * $Id: loader.cpp,v 1.3 2004/11/15 10:25:07 lecroart Exp $
+ * $Id: loader.cpp,v 1.4 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "sound/driver/buffer.h"
-#include "sound/driver/loader.h"
+#include "buffer.h"
+#include "loader.h"
 #include "nel/misc/debug.h"
 
 

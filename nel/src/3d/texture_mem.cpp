@@ -1,7 +1,7 @@
 /** \file texture_mem.cpp
  * TODO: File description
  *
- * $Id: texture_mem.cpp,v 1.12 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: texture_mem.cpp,v 1.13 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/texture_mem.h"
+#include "texture_mem.h"
 #include "nel/misc/mem_stream.h"
 
 #include <memory>

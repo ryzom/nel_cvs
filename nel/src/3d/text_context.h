@@ -1,7 +1,7 @@
 /** \file text_context.h
  * TODO: File description
  *
- * $Id: text_context.h,v 1.15 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: text_context.h,v 1.16 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_TEXT_CONTEXT_H
 #define NL_TEXT_CONTEXT_H
 
-#include "3d/font_manager.h"
-#include "3d/computed_string.h"
+#include "font_manager.h"
+#include "computed_string.h"
 
 
 namespace NL3D {

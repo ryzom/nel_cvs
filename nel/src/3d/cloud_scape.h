@@ -1,7 +1,7 @@
 /** \file cloud_scape.h
  * Cloud definition to work with the cloudscape
  *
- * $Id: cloud_scape.h,v 1.7 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: cloud_scape.h,v 1.8 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -28,10 +28,10 @@
 
 // ------------------------------------------------------------------------------------------------
 
-#include "3d/material.h"
-#include "3d/texture.h"
-#include "3d/texture_mem.h"
-#include "3d/vertex_buffer.h"
+#include "material.h"
+#include "texture.h"
+#include "texture_mem.h"
+#include "vertex_buffer.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/geom_ext.h"
 #include "nel/misc/value_smoother.h"

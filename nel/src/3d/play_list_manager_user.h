@@ -1,7 +1,7 @@
 /** \file play_list_manager_user.h
  * TODO: File description
  *
- * $Id: play_list_manager_user.h,v 1.7 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: play_list_manager_user.h,v 1.8 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_play_list_manager.h"
-#include "3d/play_list_manager.h"
-#include "3d/play_list_user.h"
-#include "3d/animation_set_user.h"
-#include "3d/ptr_set.h"
+#include "play_list_manager.h"
+#include "play_list_user.h"
+#include "animation_set_user.h"
+#include "ptr_set.h"
 
 #define NL3D_MEM_PLAYLIST_MANAGER						NL_ALLOC_CONTEXT( 3dPLMng )
 

@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * TODO: File description
  *
- * $Id: vegetable.cpp,v 1.21 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: vegetable.cpp,v 1.22 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/vegetable.h"
+#include "vegetable.h"
 #include "nel/misc/common.h"
-#include "3d/vegetable_manager.h"
+#include "vegetable_manager.h"
 #include "nel/misc/fast_floor.h"
 
 

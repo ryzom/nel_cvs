@@ -1,7 +1,7 @@
 /** \file zone_search.cpp
  * CZoneSearch class
  *
- * $Id: zone_search.cpp,v 1.11 2005/01/31 13:51:41 lecroart Exp $
+ * $Id: zone_search.cpp,v 1.12 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <iostream>
 
-#include "3d/zone_search.h"
+#include "zone_search.h"
 
 using namespace std;
 

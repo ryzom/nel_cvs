@@ -1,7 +1,7 @@
 /** \file patchdlm_context.h
  * TODO: File description
  *
- * $Id: patchdlm_context.h,v 1.8 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: patchdlm_context.h,v 1.9 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,11 +28,11 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/object_vector.h"
-#include "3d/tess_list.h"
+#include "tess_list.h"
 #include "nel/misc/bsphere.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/rgba.h"
-#include "3d/landscape_def.h"
+#include "landscape_def.h"
 
 
 namespace NL3D 

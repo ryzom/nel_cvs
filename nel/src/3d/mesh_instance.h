@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * TODO: File description
  *
- * $Id: mesh_instance.h,v 1.17 2004/11/15 10:24:43 lecroart Exp $
+ * $Id: mesh_instance.h,v 1.18 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,11 +27,11 @@
 #define NL_MESH_INSTANCE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/mesh_base_instance.h"
-#include "3d/material.h"
-#include "3d/animated_material.h"
-#include "3d/vertex_buffer.h"
-#include "3d/index_buffer.h"
+#include "mesh_base_instance.h"
+#include "material.h"
+#include "animated_material.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 
 
 namespace NL3D

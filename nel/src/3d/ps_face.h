@@ -1,7 +1,7 @@
 /** \file ps_face.h
  * Face particles.
  *
- * $Id: ps_face.h,v 1.6 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_face.h,v 1.7 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_PS_FACE_H
 #define NL_PS_FACE_H
 
-#include "3d/ps_quad.h"
+#include "ps_quad.h"
 //
 #include "nel/misc/traits_nl.h"
 

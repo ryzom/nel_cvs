@@ -28,10 +28,10 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.cpp,v 1.7 2004/09/24 07:56:26 boucher Exp $
+ * $Id: primitive_utils.cpp,v 1.8 2005/02/22 10:19:22 besson Exp $
  */
 
-#include <nel/ligo/primitive_utils.h>
+#include "nel/ligo/primitive_utils.h"
 
 
 namespace NLLIGO

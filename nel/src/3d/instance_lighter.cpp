@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * TODO: File description
  *
- * $Id: instance_lighter.cpp,v 1.19 2004/11/15 10:24:34 lecroart Exp $
+ * $Id: instance_lighter.cpp,v 1.20 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,13 +25,13 @@
 
 #include "std3d.h"
 
-#include "3d/instance_lighter.h"
-#include "3d/mesh_multi_lod.h"
+#include "instance_lighter.h"
+#include "mesh_multi_lod.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
-#include "3d/visual_collision_manager.h"
-#include "3d/visual_collision_entity.h"
-#include "3d/ig_surface_light_build.h"
+#include "visual_collision_manager.h"
+#include "visual_collision_entity.h"
+#include "ig_surface_light_build.h"
 
 
 using namespace std;

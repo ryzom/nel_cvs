@@ -1,6 +1,6 @@
 /** \file ps_spawn_info.h
  *
- * $Id: ps_spawn_info.h,v 1.1 2004/05/14 15:17:17 vizerie Exp $
+ * $Id: ps_spawn_info.h,v 1.2 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "nel/misc/vector.h"
 #include "nel/3d/animation_time.h"
-#include "3d/particle_system_process.h"
+#include "particle_system_process.h"
 
 namespace NL3D
 {

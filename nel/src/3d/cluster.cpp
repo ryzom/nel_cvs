@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.25 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: cluster.cpp,v 1.26 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,14 +25,14 @@
 
 #include "std3d.h"
 
-#include "3d/cluster.h"
-#include "3d/portal.h"
+#include "cluster.h"
+#include "portal.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/string_mapper.h"
-#include "3d/scene.h"
-#include "3d/transform_shape.h"
-//#include "3d/mesh_instance.h"
-#include "3d/scene_group.h"
+#include "scene.h"
+#include "transform_shape.h"
+//#include "mesh_instance.h"
+#include "scene_group.h"
 
 using namespace NLMISC;
 using namespace std;

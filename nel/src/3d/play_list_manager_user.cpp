@@ -1,7 +1,7 @@
 /** \file play_list_manager_user.cpp
  * TODO: File description
  *
- * $Id: play_list_manager_user.cpp,v 1.8 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: play_list_manager_user.cpp,v 1.9 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/play_list_manager_user.h"
+#include "play_list_manager_user.h"
 #include "nel/misc/hierarchical_timer.h"
 
 using namespace NLMISC;

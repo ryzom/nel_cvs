@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.cpp
  * TODO: File description
  *
- * $Id: vegetable_instance_group.cpp,v 1.8 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: vegetable_instance_group.cpp,v 1.9 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/vegetable_instance_group.h"
+#include "vegetable_instance_group.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.17 2005/01/20 14:17:10 berenguier Exp $
+ * $Id: water_model.h,v 1.18 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,11 +30,11 @@
 #include "nel/misc/polygon.h"
 #include "nel/3d/u_water.h"
 //
-#include "3d/transform_shape.h"
-#include "3d/material.h"
-#include "3d/vertex_buffer.h"
-#include "3d/texture_emboss.h"
-#include "3d/driver.h"
+#include "transform_shape.h"
+#include "material.h"
+#include "vertex_buffer.h"
+#include "texture_emboss.h"
+#include "driver.h"
 
 
 namespace MISC

@@ -1,7 +1,7 @@
 /** \file u_material.cpp
  * User interface for material.
  *
- * $Id: u_material.cpp,v 1.3 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: u_material.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/3d/u_material.h"
 #include "nel/3d/u_driver.h"
-#include "3d/texture_user.h"
-#include "3d/driver_user.h"
+#include "texture_user.h"
+#include "driver_user.h"
 
 #define NL3D_MEM_MATERIAL						NL_ALLOC_CONTEXT( 3dMat )
 

@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * TODO: File description
  *
- * $Id: particle_system_process.h,v 1.19 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: particle_system_process.h,v 1.20 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/3d/animation_time.h"
-#include "3d/texture.h"
+#include "texture.h"
 
 
 namespace NLMISC

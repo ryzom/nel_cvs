@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.19 2003/10/10 10:08:48 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.20 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "stdpacs.h"
 
-#include "pacs/move_primitive.h"
-#include "pacs/collision_desc.h"
-#include "pacs/move_element.h"
+#include "move_primitive.h"
+#include "collision_desc.h"
+#include "move_element.h"
 #include "nel/misc/hierarchical_timer.h"
 
 using namespace NLMISC;

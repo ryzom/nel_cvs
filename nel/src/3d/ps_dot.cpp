@@ -1,7 +1,7 @@
 /** \file ps_dot.cpp
  * Dot particles
  *
- * $Id: ps_dot.cpp,v 1.11 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: ps_dot.cpp,v 1.12 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,11 +25,11 @@
 
 #include "std3d.h"
 
-#include "3d/ps_dot.h"
-#include "3d/ps_macro.h"
-#include "3d/ps_iterator.h"
-#include "3d/driver.h"
-#include "3d/particle_system.h"
+#include "ps_dot.h"
+#include "ps_macro.h"
+#include "ps_iterator.h"
+#include "driver.h"
+#include "particle_system.h"
 #include "nel/misc/fast_mem.h"
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.40 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: zone_lighter.cpp,v 1.41 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,16 +27,16 @@
 
 #define USE_JPEG
 
-#include "3d/zone_lighter.h"
-#include "3d/landscape.h"
-#include "3d/patchuv_locator.h"
-#include "3d/shape.h"
-#include "3d/mesh.h"
-#include "3d/mesh_multi_lod.h"
-#include "3d/mesh_mrm.h"
-#include "3d/transform_shape.h"
-#include "3d/water_shape.h"
-#include "3d/texture_file.h"
+#include "zone_lighter.h"
+#include "landscape.h"
+#include "patchuv_locator.h"
+#include "shape.h"
+#include "mesh.h"
+#include "mesh_multi_lod.h"
+#include "mesh_mrm.h"
+#include "transform_shape.h"
+#include "water_shape.h"
+#include "texture_file.h"
 
 
 

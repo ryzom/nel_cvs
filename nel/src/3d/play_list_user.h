@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * TODO: File description
  *
- * $Id: play_list_user.h,v 1.11 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: play_list_user.h,v 1.12 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,9 +29,9 @@
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_play_list.h"
 #include "nel/misc/smart_ptr.h"
-#include "3d/animation_set.h"
-#include "3d/channel_mixer.h"
-#include "3d/animation_playlist.h"
+#include "animation_set.h"
+#include "channel_mixer.h"
+#include "animation_playlist.h"
 
 #define NL3D_MEM_PLAYLIST						NL_ALLOC_CONTEXT( 3dPL )
 

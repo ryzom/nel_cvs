@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * TODO: File description
  *
- * $Id: landscapevb_allocator.cpp,v 1.19 2004/11/15 10:24:38 lecroart Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.20 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 #include "std3d.h"
 
-#include "3d/landscapevb_allocator.h"
-#include "3d/driver.h"
+#include "landscapevb_allocator.h"
+#include "driver.h"
 #include "nel/misc/fast_mem.h"
 
 

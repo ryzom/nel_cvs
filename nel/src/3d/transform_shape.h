@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * TODO: File description
  *
- * $Id: transform_shape.h,v 1.28 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: transform_shape.h,v 1.29 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,11 +28,11 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
-#include "3d/transform.h"
-#include "3d/shape.h"
-#include "3d/load_balancing_trav.h"
+#include "transform.h"
+#include "shape.h"
+#include "load_balancing_trav.h"
 #include <vector>
-#include "3d/fast_ptr_list.h"
+#include "fast_ptr_list.h"
 
 
 namespace NL3D 

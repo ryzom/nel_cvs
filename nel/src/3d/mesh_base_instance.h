@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * TODO: File description
  *
- * $Id: mesh_base_instance.h,v 1.27 2004/11/15 10:24:42 lecroart Exp $
+ * $Id: mesh_base_instance.h,v 1.28 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,12 +27,12 @@
 #define NL_MESH_BASE_INSTANCE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/transform_shape.h"
-#include "3d/material.h"
-#include "3d/animated_material.h"
-#include "3d/animated_lightmap.h"
-#include "3d/animated_morph.h"
-#include "3d/async_texture_block.h"
+#include "transform_shape.h"
+#include "material.h"
+#include "animated_material.h"
+#include "animated_lightmap.h"
+#include "animated_morph.h"
+#include "async_texture_block.h"
 
 
 namespace NL3D

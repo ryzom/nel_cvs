@@ -1,7 +1,7 @@
 /** \file light_trav.h
  * TODO: File description
  *
- * $Id: light_trav.h,v 1.9 2004/11/15 10:24:40 lecroart Exp $
+ * $Id: light_trav.h,v 1.10 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_LIGHT_TRAV_H
 #define NL_LIGHT_TRAV_H
 
-#include "3d/trav_scene.h"
-#include "3d/lighting_manager.h"
-#include "3d/fast_ptr_list.h"
+#include "trav_scene.h"
+#include "lighting_manager.h"
+#include "fast_ptr_list.h"
 
 
 namespace	NL3D

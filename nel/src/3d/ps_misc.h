@@ -1,7 +1,7 @@
 /** \file ps_misc.h
  * Some functions used by the particle system
  *
- * $Id: ps_misc.h,v 1.3 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_misc.h,v 1.4 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
-#include "3d/particle_system_process.h"
+#include "particle_system_process.h"
 
 namespace NL3D   {
 

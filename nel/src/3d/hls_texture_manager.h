@@ -1,7 +1,7 @@
 /** \file hls_texture_manager.h
  * TODO: File description
  *
- * $Id: hls_texture_manager.h,v 1.2 2004/11/15 10:24:33 lecroart Exp $
+ * $Id: hls_texture_manager.h,v 1.3 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "std3d.h"
 #include "nel/misc/types_nl.h"
-#include "3d/hls_texture_bank.h"
+#include "hls_texture_bank.h"
 
 
 namespace NL3D 

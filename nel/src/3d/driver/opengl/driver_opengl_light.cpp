@@ -1,7 +1,7 @@
 /** \file driver_opengl_light.cpp
  * OpenGL driver implementation : light
  *
- * $Id: driver_opengl_light.cpp,v 1.14 2004/09/09 18:04:41 vizerie Exp $
+ * $Id: driver_opengl_light.cpp,v 1.15 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "stdopengl.h"
 
 #include "driver_opengl.h"
-#include "3d/light.h"
+#include "../../light.h"
 
 namespace NL3D 
 {

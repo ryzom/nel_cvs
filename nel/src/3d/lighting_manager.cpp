@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * TODO: File description
  *
- * $Id: lighting_manager.cpp,v 1.16 2004/11/15 10:24:40 lecroart Exp $
+ * $Id: lighting_manager.cpp,v 1.17 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/lighting_manager.h"
-#include "3d/point_light.h"
-#include "3d/transform.h"
+#include "lighting_manager.h"
+#include "point_light.h"
+#include "transform.h"
 #include "nel/misc/fast_floor.h"
 #include "nel/3d/logic_info.h"
 #include "nel/misc/aabbox.h"

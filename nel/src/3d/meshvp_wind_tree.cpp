@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * TODO: File description
  *
- * $Id: meshvp_wind_tree.cpp,v 1.14 2005/01/31 13:51:41 lecroart Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.15 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -25,13 +25,13 @@
 
 #include "std3d.h"
 
-#include "3d/meshvp_wind_tree.h"
-#include "3d/mesh_base_instance.h"
-#include "3d/scene.h"
-#include "3d/driver.h"
+#include "meshvp_wind_tree.h"
+#include "mesh_base_instance.h"
+#include "scene.h"
+#include "driver.h"
 #include <cmath>
 #include "nel/misc/common.h"
-#include "3d/render_trav.h"
+#include "render_trav.h"
 
 
 using namespace NLMISC;

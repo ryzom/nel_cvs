@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.12 2004/08/13 15:22:48 vizerie Exp $
+ * $Id: cloud_scape.cpp,v 1.13 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 #include "cloud_scape.h"
-#include "3d/driver.h"
+#include "driver.h"
 #include "nel/3d/scissor.h"
 #include "nel/3d/viewport.h"
 

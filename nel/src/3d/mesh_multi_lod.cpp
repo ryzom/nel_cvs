@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.41 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.42 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,16 +25,16 @@
 
 #include "std3d.h"
 
-#include "3d/mesh_multi_lod.h"
-#include "3d/mesh_multi_lod_instance.h"
-#include "3d/mesh_instance.h"
-#include "3d/mesh_mrm.h"
-#include "3d/scene.h"
-#include "3d/coarse_mesh_manager.h"
-#include "3d/skeleton_model.h"
+#include "mesh_multi_lod.h"
+#include "mesh_multi_lod_instance.h"
+#include "mesh_instance.h"
+#include "mesh_mrm.h"
+#include "scene.h"
+#include "coarse_mesh_manager.h"
+#include "skeleton_model.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/mesh_blender.h"
-#include "3d/visual_collision_mesh.h"
+#include "mesh_blender.h"
+#include "visual_collision_mesh.h"
 
 #include "nel/misc/debug.h"
 #include "nel/misc/hierarchical_timer.h"

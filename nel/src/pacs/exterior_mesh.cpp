@@ -1,7 +1,7 @@
 /** \file exterior_mesh.cpp
  *
  *
- * $Id: exterior_mesh.cpp,v 1.7 2003/01/30 17:56:43 legros Exp $
+ * $Id: exterior_mesh.cpp,v 1.8 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "stdpacs.h"
 
-#include "pacs/exterior_mesh.h"
-#include "pacs/local_retriever.h"
-#include "pacs/collision_desc.h"
+#include "exterior_mesh.h"
+#include "local_retriever.h"
+#include "collision_desc.h"
 
 
 using namespace std;

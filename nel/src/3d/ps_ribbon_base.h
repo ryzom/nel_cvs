@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.h
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.h,v 1.12 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_ribbon_base.h,v 1.13 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_PS_RIBBON_BASE_H
 
 
-#include "3d/ps_particle_basic.h"
+#include "ps_particle_basic.h"
 #include "nel/misc/object_vector.h"
 
 

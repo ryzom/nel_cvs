@@ -1,7 +1,7 @@
 /** \file face_grid.h
  * 
  *
- * $Id: face_grid.h,v 1.3 2002/12/18 14:57:14 legros Exp $
+ * $Id: face_grid.h,v 1.4 2005/02/22 10:19:20 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,13 +33,13 @@
 
 #include "nel/misc/aabbox.h"
 
-#include "pacs/vector_2s.h"
-#include "pacs/surface_quad.h"
-#include "pacs/chain.h"
-#include "pacs/retrievable_surface.h"
-#include "pacs/chain_quad.h"
-#include "pacs/exterior_mesh.h"
-#include "pacs/quad_grid.h"
+#include "vector_2s.h"
+#include "surface_quad.h"
+#include "chain.h"
+#include "retrievable_surface.h"
+#include "chain_quad.h"
+#include "exterior_mesh.h"
+#include "quad_grid.h"
 
 #include "nel/pacs/u_global_position.h"
 

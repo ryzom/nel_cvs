@@ -1,7 +1,7 @@
 /** \file cube_grid.h
  * TODO: File description
  *
- * $Id: cube_grid.h,v 1.3 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: cube_grid.h,v 1.4 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,8 +29,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/triangle.h"
 #include "nel/misc/plane.h"
-#include "3d/quad_grid.h"
-#include "3d/static_quad_grid.h"
+#include "quad_grid.h"
+#include "static_quad_grid.h"
 
 
 namespace NL3D {

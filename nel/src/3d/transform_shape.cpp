@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * TODO: File description
  *
- * $Id: transform_shape.cpp,v 1.43 2005/02/21 17:09:48 corvazier Exp $
+ * $Id: transform_shape.cpp,v 1.44 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,15 +27,15 @@
 
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/debug.h"
-#include "3d/driver.h"
-#include "3d/transform_shape.h"
-#include "3d/skeleton_model.h"
-#include "3d/mesh_base_instance.h"
-#include "3d/clip_trav.h"
-#include "3d/render_trav.h"
-#include "3d/load_balancing_trav.h"
-#include "3d/quad_grid_clip_cluster.h"
-#include "3d/scene.h"
+#include "driver.h"
+#include "transform_shape.h"
+#include "skeleton_model.h"
+#include "mesh_base_instance.h"
+#include "clip_trav.h"
+#include "render_trav.h"
+#include "load_balancing_trav.h"
+#include "quad_grid_clip_cluster.h"
+#include "scene.h"
 
 #define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dIns )
 

@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * TODO: File description
  *
- * $Id: landscapeig_manager.cpp,v 1.17 2004/11/15 10:24:38 lecroart Exp $
+ * $Id: landscapeig_manager.cpp,v 1.18 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #include "std3d.h"
 
 #include "nel/3d/landscapeig_manager.h"
-#include "3d/scene_user.h"
-#include "3d/instance_group_user.h"
-#include "3d/shape.h"
+#include "scene_user.h"
+#include "instance_group_user.h"
+#include "shape.h"
 #include "nel/misc/common.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"

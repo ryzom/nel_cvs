@@ -1,7 +1,7 @@
 /** \file landscape_vegetable_block.h
  * TODO: File description
  *
- * $Id: landscape_vegetable_block.h,v 1.5 2004/11/15 10:24:37 lecroart Exp $
+ * $Id: landscape_vegetable_block.h,v 1.6 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
-#include "3d/tess_list.h"
-#include "3d/landscape_def.h"
-#include "3d/vegetable_def.h"
-#include "3d/tess_block.h"
+#include "tess_list.h"
+#include "landscape_def.h"
+#include "vegetable_def.h"
+#include "tess_block.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file particle_system_manager.h
  * TODO: File description
  *
- * $Id: particle_system_manager.h,v 1.9 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: particle_system_manager.h,v 1.10 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/plane.h"
 #include "nel/3d/animation_time.h"
-#include "3d/particle_system_process.h"
+#include "particle_system_process.h"
 
 
 #include <list>

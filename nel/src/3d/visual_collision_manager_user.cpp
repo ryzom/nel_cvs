@@ -1,7 +1,7 @@
 /** \file visual_collision_manager_user.cpp
  * TODO: File description
  *
- * $Id: visual_collision_manager_user.cpp,v 1.7 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: visual_collision_manager_user.cpp,v 1.8 2005/02/22 10:19:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/visual_collision_manager_user.h"
+#include "visual_collision_manager_user.h"
 #include "nel/3d/u_visual_collision_mesh.h"
 
 

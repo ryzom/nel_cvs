@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.h
  * TODO: File description
  *
- * $Id: ps_plane_basis_maker.h,v 1.14 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.15 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #define NL_PLANE_BASIS_MAKER_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/ps_attrib_maker_template.h"
-#include "3d/ps_attrib_maker_bin_op.h"
-#include "3d/ps_plane_basis.h"
+#include "ps_attrib_maker_template.h"
+#include "ps_attrib_maker_bin_op.h"
+#include "ps_plane_basis.h"
 #include "nel/misc/fast_floor.h"
 #include "nel/misc/object_vector.h"
 

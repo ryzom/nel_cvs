@@ -1,7 +1,7 @@
 /** \file shape_bank_user.h
  * Implementation of the user interface managing shape bank.
  *
- * $Id: shape_bank_user.h,v 1.7 2004/03/12 16:27:52 berenguier Exp $
+ * $Id: shape_bank_user.h,v 1.8 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_shape_bank.h"
-#include "3d/shape_bank.h"
+#include "shape_bank.h"
 
 #define NL3D_MEM_SHAPE_BANK					NL_ALLOC_CONTEXT( 3dShpBk )
 

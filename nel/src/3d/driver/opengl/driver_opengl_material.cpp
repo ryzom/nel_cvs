@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.95 2004/11/15 10:24:55 lecroart Exp $
+ * $Id: driver_opengl_material.cpp,v 1.96 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,10 +25,10 @@
 
 #include "stdopengl.h"
 #include "driver_opengl.h"
-#include "3d/cube_map_builder.h"
-#include "3d/texture_mem.h"
-#include "3d/texture_bump.h"
-#include "3d/material.h"
+#include "../../cube_map_builder.h"
+#include "../../texture_mem.h"
+#include "../../texture_bump.h"
+#include "../../material.h"
 
 
 

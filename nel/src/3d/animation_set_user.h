@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * TODO: File description
  *
- * $Id: animation_set_user.h,v 1.15 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: animation_set_user.h,v 1.16 2005/02/22 10:19:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@
 
 #include "nel/3d/u_animation_set.h"
 
-#include "3d/animation_set.h"
+#include "animation_set.h"
 
 #define NL3D_MEM_ANIMATION_SET						NL_ALLOC_CONTEXT( 3dAnmSt )
 

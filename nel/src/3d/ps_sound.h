@@ -1,7 +1,7 @@
 /** \file ps_sound.h
  * TODO: File description
  *
- * $Id: ps_sound.h,v 1.13 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_sound.h,v 1.14 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/string_mapper.h"
-#include "3d/ps_located.h"
-#include "3d/ps_attrib.h"
+#include "ps_located.h"
+#include "ps_attrib.h"
 
 
 

@@ -1,7 +1,7 @@
 /** \file shape.cpp
  * TODO: File description
  *
- * $Id: shape.cpp,v 1.9 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: shape.cpp,v 1.10 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,9 +25,9 @@
 
 #include "std3d.h"
 
-#include "3d/shape.h"
-#include "3d/transform_shape.h"
-#include "3d/scene.h"
+#include "shape.h"
+#include "transform_shape.h"
+#include "scene.h"
 
 #include <string>
 

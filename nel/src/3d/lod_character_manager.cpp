@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * TODO: File description
  *
- * $Id: lod_character_manager.cpp,v 1.21 2004/11/15 10:24:41 lecroart Exp $
+ * $Id: lod_character_manager.cpp,v 1.22 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,13 +26,13 @@
 #include "std3d.h"
 
 #include "nel/misc/common.h"
-#include "3d/lod_character_manager.h"
-#include "3d/lod_character_shape.h"
-#include "3d/lod_character_shape_bank.h"
-#include "3d/lod_character_instance.h"
+#include "lod_character_manager.h"
+#include "lod_character_shape.h"
+#include "lod_character_shape_bank.h"
+#include "lod_character_instance.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/fast_floor.h"
-#include "3d/lod_character_texture.h"
+#include "lod_character_texture.h"
 #include "nel/misc/file.h"
 #include "nel/misc/algo.h"
 #include "nel/misc/fast_mem.h"

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.41 2004/10/25 11:53:55 berenguier Exp $
+ * $Id: instance_group_user.cpp,v 1.42 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #include "std3d.h"
 
 #include "nel/misc/debug.h"
-#include "3d/instance_group_user.h"
-#include "3d/scene_user.h"
-#include "3d/mesh_multi_lod_instance.h"
-#include "3d/text_context_user.h"
-#include "3d/particle_system_model.h"
+#include "instance_group_user.h"
+#include "scene_user.h"
+#include "mesh_multi_lod_instance.h"
+#include "text_context_user.h"
+#include "particle_system_model.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 #include "nel/3d/u_instance.h"

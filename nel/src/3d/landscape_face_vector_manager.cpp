@@ -1,7 +1,7 @@
 /** \file landscape_face_vector_manager.cpp
  * TODO: File description
  *
- * $Id: landscape_face_vector_manager.cpp,v 1.6 2004/11/15 10:24:36 lecroart Exp $
+ * $Id: landscape_face_vector_manager.cpp,v 1.7 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "std3d.h"
 
-#include "3d/landscape_face_vector_manager.h"
+#include "landscape_face_vector_manager.h"
 #include "nel/misc/debug.h"
 
 

@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.20 2004/09/02 17:05:24 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.21 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,13 +25,13 @@
 
 #include "std3d.h"
 
-#include "3d/ps_quad.h"
-#include "3d/ps_macro.h"
-#include "3d/driver.h"
-#include "3d/ps_attrib_maker.h"
-#include "3d/texture_grouped.h"
-#include "3d/particle_system.h"
-#include "3d/ps_iterator.h"
+#include "ps_quad.h"
+#include "ps_macro.h"
+#include "driver.h"
+#include "ps_attrib_maker.h"
+#include "texture_grouped.h"
+#include "particle_system.h"
+#include "ps_iterator.h"
 
 namespace NL3D 
 {

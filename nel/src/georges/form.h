@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.15 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: form.h,v 1.16 2005/02/22 10:19:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_FORM_H
 #define NL_FORM_H
 
-#include	"nel/misc/types_nl.h"
-#include	"nel/georges/u_form.h"
-#include	"form_elm.h"
-#include	"header.h"
+#include "nel/misc/types_nl.h"
+#include "nel/georges/u_form.h"
+#include "form_elm.h"
+#include "header.h"
 
 extern bool convertFormFile (const char *oldFileName, const char *newFileName);
 

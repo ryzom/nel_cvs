@@ -1,7 +1,7 @@
 /** \file landscapevb_info.h
  * TODO: File description
  *
- * $Id: landscapevb_info.h,v 1.5 2004/11/15 10:24:39 lecroart Exp $
+ * $Id: landscapevb_info.h,v 1.6 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_LANDSCAPEVB_INFO_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/vertex_buffer.h"
+#include "vertex_buffer.h"
 
 
 namespace NL3D 

@@ -1,7 +1,7 @@
 /** \file patch_noise.cpp
  * CPatch implementation of Noise
  *
- * $Id: patch_noise.cpp,v 1.8 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: patch_noise.cpp,v 1.9 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,15 +26,15 @@
 #include "std3d.h"
 
 
-#include "3d/patch.h"
-#include "3d/tessellation.h"
-#include "3d/bezier_patch.h"
-#include "3d/zone.h"
-#include "3d/landscape.h"
+#include "patch.h"
+#include "tessellation.h"
+#include "bezier_patch.h"
+#include "zone.h"
+#include "landscape.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
-#include "3d/tile_noise_map.h"
-#include "3d/patchuv_locator.h"
+#include "tile_noise_map.h"
+#include "patchuv_locator.h"
 using	namespace	std;
 using	namespace	NLMISC;
 

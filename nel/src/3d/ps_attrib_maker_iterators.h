@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_iterators.h
  * Special iterators for the private use of ps_attrib_maker_helper
  *
- * $Id: ps_attrib_maker_iterators.h,v 1.3 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: ps_attrib_maker_iterators.h,v 1.4 2005/02/22 10:19:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_PS_ATTRIB_MAKER_ITERATORS_H
 #define NL_PS_ATTRIB_MAKER_ITERATORS_H
 
-#include "3d/ps_attrib.h"
-#include "3d/ps_iterator.h"
+#include "ps_attrib.h"
+#include "ps_iterator.h"
 
 
 

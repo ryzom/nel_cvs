@@ -1,7 +1,7 @@
 /** \file skeleton_shape.h
  * TODO: File description
  *
- * $Id: skeleton_shape.h,v 1.10 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: skeleton_shape.h,v 1.11 2005/02/22 10:19:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_SKELETON_SHAPE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/shape.h"
-#include "3d/bone.h"
+#include "shape.h"
+#include "bone.h"
 #include "nel/misc/aabbox.h"
 #include <vector>
 #include <map>

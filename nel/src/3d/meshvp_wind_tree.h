@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.h
  * TODO: File description
  *
- * $Id: meshvp_wind_tree.h,v 1.8 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: meshvp_wind_tree.h,v 1.9 2005/02/22 10:19:10 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_MESHVP_WIND_TREE_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/mesh_vertex_program.h"
-#include "3d/vertex_program.h"
+#include "mesh_vertex_program.h"
+#include "vertex_program.h"
 
 
 namespace NL3D {

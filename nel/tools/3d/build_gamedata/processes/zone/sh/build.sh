@@ -5,6 +5,7 @@
 zone_dependencies='../../bin/zone_dependencies.exe'
 zone_welder='../../bin/zone_welder.exe'
 zone_lighter='../../bin/zone_lighter.exe'
+zone_ig_lighter='../../bin/zone_ig_lighter.exe'
 
 # **** Copy ig and shapes
 
@@ -87,6 +88,33 @@ for i in $list_zone_welded ; do
   then
     echo -- Light $i
     $zone_lighter $i $dest ../../cfg/properties.cfg $depend
+	echo 
+	echo 
+  fi
+done
+
+
+# **** IgLight
+
+# Log error
+echo ------- >> log.log
+echo --- Build zone : IgLight >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Build zone : IgLight 
+echo ------- 
+
+# List the zones to light their ig
+list_zone_lighted=`ls -1 zone_lighted/*.zonel`
+
+# Light zones
+for i in $list_zone_lighted ; do
+  dest=`echo $i | sed -e 's/zone_lighted/ig_lighted/g' | sed -e 's/.zonel/.ig/g'`
+  depend=`echo $i | sed -e 's/zone_lighted/zone_depend/g' | sed -e 's/.zonel/.depend/g'`
+  if ( ! test -e $dest ) || ( test $i -nt $dest )
+  then
+    echo -- IgLight $i
+    $zone_ig_lighter $i $dest ../../cfg/properties.cfg $depend
 	echo 
 	echo 
   fi

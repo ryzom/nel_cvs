@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.10 2001/07/04 12:24:32 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.11 2001/07/04 17:18:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -758,7 +758,7 @@ END_MESSAGE_MAP()
 
 	void CAttribDlgUInt::setCurrentScheme(uint index)
 	{
-		nlassert(index < 2) ;
+		nlassert(index < 3) ;
 
 
 		NL3D::CPSAttribMaker<uint32> *scheme = NULL ;

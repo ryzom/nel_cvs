@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.6 2001/06/19 08:17:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,23 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 	// It exists ?
 	if (transform)
 	{
+		// Is it a biped node ?
+		bool biped=false;
+		if ((transform->ClassID() == BIPSLAVE_CONTROL_CLASS_ID) ||
+			(transform->ClassID() == BIPBODY_CONTROL_CLASS_ID) ||
+			(transform->ClassID() == FOOTPRINT_CLASS_ID))
+			biped=true;
+
+		// If biped, remove non uniform scale
+		if (biped)
+		{
+			//Get the Biped Export Interface from the controller 
+			IBipedExport *BipIface = (IBipedExport *) transform->GetInterface(I_BIPINTERFACE);
+
+			// Remove the non uniform scale
+			BipIface->RemoveNonUniformScale(1);
+		}
+
 		// Get the Scale controler
 		Control *c=transform->GetScaleController ();
 		if (c)
@@ -174,6 +191,16 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 				name=parentName+std::string (CCamera::getRollValueName());
 				animation.addTrack (name.c_str(), pTrack);
 			}
+		}
+
+		// If biped, restaure non uniform scale
+		if (biped)
+		{
+			//Get the Biped Export Interface from the controller 
+			IBipedExport *BipIface = (IBipedExport *) transform->GetInterface(I_BIPINTERFACE);
+
+			// Restaure the non uniform scale
+			BipIface->RemoveNonUniformScale(0);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.29 2004/09/24 12:38:47 lecroart Exp $
+ * $Id: system_info.cpp,v 1.30 2004/10/29 16:38:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -738,7 +738,12 @@ uint32 getSystemMemory (const string &colname)
 string CSystemInfo::availableHDSpace (const string &filename)
 {
 #ifdef NL_OS_UNIX
-    string cmd = "df " + filename + " >/tmp/nelhdfs";
+    string cmd = "df ";
+    if(filename.empty())
+        cmd += ".";
+    else
+        cmd += filename;
+    cmd += " >/tmp/nelhdfs";
     system (cmd.c_str());
 
     int fd = open("/tmp/nelhdfs", O_RDONLY);
@@ -765,10 +770,11 @@ string CSystemInfo::availableHDSpace (const string &filename)
         if(sline.size() < 5)
             return splitted[1];
 
-        return bytesToHumanReadable(atoi(sline[3].c_str())*1024) + "/" + sline[4];
+        string space = sline[3] + "000";
+        return bytesToHumanReadable(space);
     }
 #else
-	return "NoInfo";
+    return "NoInfo";
 #endif
 }
 

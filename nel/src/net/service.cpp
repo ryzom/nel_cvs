@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.88 2001/09/20 16:43:10 cado Exp $
+ * $Id: service.cpp,v 1.89 2001/10/04 15:46:46 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -738,8 +738,11 @@ sint IService::main (void *wd)
 			if (ExitSignalAsked) break;
 
 #ifdef NL_OS_WINDOWS
-			// update the window displayer
-			((CWinDisplayer *)wd)->update ();
+			if (cwd != NULL)
+			{
+				// update the window displayer
+				cwd->update ();
+			}
 #endif // NL_OS_WINDOWS
 
 	

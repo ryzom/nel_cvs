@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.18 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: shape_bank.cpp,v 1.19 2003/01/23 15:05:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -250,23 +250,37 @@ void CShapeBank::processWaitingShapes ()
 				if (rWS.RefCnt == 0)
 				{
 					// We have to signal if we are the last
-					bool *bSignal = rWS.Signal;
-					if (bSignal != NULL)
+					uint i;
+					for (i=0; i<rWS.Signal.size (); i++)
 					{
-						bool bFound = false;
-						TWaitingShapesMap::iterator wsmmIt2 = WaitingShapes.begin();
-						while (wsmmIt2 != WaitingShapes.end())
+						bool *bSignal = rWS.Signal[i];
+						if (bSignal != NULL)
 						{
-							const string &shapeName2 = wsmmIt2->first;
-							if ((wsmmIt2->second.Signal == bSignal) && (shapeName2 != shapeName))
+							bool bFound = false;
+							TWaitingShapesMap::iterator wsmmIt2 = WaitingShapes.begin();
+							while (wsmmIt2 != WaitingShapes.end())
 							{
-								bFound = true;
-								break;
+								const string &shapeName2 = wsmmIt2->first;
+								if (shapeName2 != shapeName)
+								{
+									// Got this signal ?
+									uint j;
+									for (j=0; j<wsmmIt2->second.Signal.size (); j++)
+									{
+										if ((wsmmIt2->second.Signal[j] == bSignal))
+										{
+											bFound = true;
+											break;
+										}
+									}
+									if (j<wsmmIt2->second.Signal.size ())
+										break;
+								}
+								++wsmmIt2;
 							}
-							++wsmmIt2;
+							if (!bFound)
+								*bSignal = true;
 						}
-						if (!bFound)
-							*bSignal = true;
 					}
 					WaitingShapes.erase (wsmmIt);
 				}

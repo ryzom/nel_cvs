@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.8 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: shape_bank.h,v 1.9 2003/01/23 15:05:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,7 +166,7 @@ private:
 		IShape *ShapePtr;	// Do not work with this value that is shared between threads
 		uint32 RefCnt;		// Counter if multiple instance wants the same shape
 		TShapeState State;	// State of the waiting shape (shape in loading mode)
-		bool *Signal;		// To signal when all is done
+		std::vector<bool *>	Signal;		// To signal when all is done
 		// Upload piece by piece part
 		uint32 UpTextProgress;	// Upload Texture progress current texture or lightmap
 		uint8  UpTextMipMap;	// Upload Texture progress current mipmap
@@ -177,7 +177,7 @@ private:
 			State = AsyncLoad_Shape;
 			RefCnt = 1;
 			ShapePtr = NULL;
-			Signal = bSignal;
+			Signal.push_back (bSignal);
 			UpTextProgress = 0;
 			UpTextMipMap = 0;
 			UpTextLine = 0;

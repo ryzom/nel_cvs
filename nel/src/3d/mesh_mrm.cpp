@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.22 2001/10/10 15:38:09 besson Exp $
+ * $Id: mesh_mrm.cpp,v 1.23 2001/10/15 14:21:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/scene.h"
 #include "3d/skeleton_model.h"
 #include "nel/misc/bsphere.h"
+#include "3d/stripifier.h"
 
 
 using namespace NLMISC;
@@ -48,6 +49,45 @@ namespace NL3D
 // ***************************************************************************
 
 	
+// ***************************************************************************
+void		CMeshMRMGeom::CLod::serial(NLMISC::IStream &f)
+{
+	/*
+	Version 2:
+		- precompute of triangle order. (nothing more to load).
+	Version 1:
+		- add VertexBlocks;
+	Version 0:
+		- base vdrsion.
+	*/
+
+	sint	ver= f.serialVersion(2);
+	uint	i;
+
+	f.serial(NWedges);
+	f.serialCont(RdrPass);
+	f.serialCont(Geomorphs);
+	f.serialCont(MatrixInfluences);
+
+	// Serial array of InfluencedVertices. NB: code written so far for NL3D_MESH_SKINNING_MAX_MATRIX==4 only.
+	nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
+	for(i= 0; i<NL3D_MESH_SKINNING_MAX_MATRIX; i++)
+	{
+		f.serialCont(InfluencedVertices[i]);
+	}
+
+	if(ver>=1)
+		f.serialCont(SkinVertexBlocks);
+	else
+		buildSkinVertexBlocks();
+
+	// if >= version 2, reorder of triangles is precomputed, else compute it now.
+	if(ver<2)
+		optimizeTriangleOrder();
+
+}
+
+
 // ***************************************************************************
 void		CMeshMRMGeom::CLod::buildSkinVertexBlocks()
 {
@@ -102,6 +142,22 @@ void		CMeshMRMGeom::CLod::buildSkinVertexBlocks()
 			// Finish the preceding block (if any).
 			vBlock= NULL;
 		}
+	}
+
+}
+
+
+// ***************************************************************************
+void		CMeshMRMGeom::CLod::optimizeTriangleOrder()
+{
+	CStripifier		stripifier;
+
+	// for all rdrpass
+	for(uint  rp=0; rp<RdrPass.size(); rp++ )
+	{
+		// stripify list of triangles of this pass.
+		CRdrPass	&pass= RdrPass[rp];
+		stripifier.optimizeTriangles(pass.PBlock, pass.PBlock);
 	}
 
 }
@@ -260,16 +316,19 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 	}
 
 
-	// For AGP SKinning optim.
+	// For AGP SKinning optim, and for Render optim
 	//================================================
 	for(i=0;i<_Lods.size();i++)
 	{
 		_Lods[i].buildSkinVertexBlocks();
+		// sort triangles for better cache use.
+		_Lods[i].optimizeTriangleOrder();
 	}
 
 	// Copy Blend Shapes
 	//================================================	
 	_MeshMorpher.BlendShapes = meshBuildMRM.BlendShapes;
+
 
 }
 

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.15 2001/10/10 15:38:09 besson Exp $
+ * $Id: mesh.h,v 1.16 2001/10/15 14:21:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -582,6 +582,9 @@ private:
 
 	// build skinning.
 	void	buildSkin(CMesh::CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces);
+
+	// optimize triangles order of all render pass.
+	void	optimizeTriangleOrder();
 
 };
 

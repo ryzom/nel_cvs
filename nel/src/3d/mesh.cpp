@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.41 2001/10/10 15:38:09 besson Exp $
+ * $Id: mesh.cpp,v 1.42 2001/10/15 14:21:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/skeleton_model.h"
 #include "3d/mesh_morpher.h"
 #include "nel/misc/bsphere.h"
+#include "3d/stripifier.h"
 
 
 using namespace std;
@@ -134,6 +135,25 @@ CMeshGeom::~CMeshGeom()
 		_VertexBufferHard= NULL;
 	}
 	delete _MeshMorpher;
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::optimizeTriangleOrder()
+{
+	CStripifier		stripifier;
+
+	// for all rdrpass of all matrix blocks.
+	for(uint mb= 0;mb<_MatrixBlocks.size();mb++)
+	{
+		for(uint  rp=0; rp<_MatrixBlocks[mb].RdrPass.size(); rp++ )
+		{
+			// stripify list of triangles of this pass.
+			CRdrPass	&pass= _MatrixBlocks[mb].RdrPass[rp];
+			stripifier.optimizeTriangles(pass.PBlock, pass.PBlock);
+		}
+	}
+
 }
 
 
@@ -287,7 +307,15 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 		}
 	}
 
+	/// 6. Misc.
+	//============================
+	// BShapes
 	this->_MeshMorpher->BlendShapes = m.BlendShapes;
+
+	// sort triangles for better cache use.
+	optimizeTriangleOrder();
+
+
 	// End!!
 }
 
@@ -539,12 +567,14 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 2:
+		- precompute of triangle order. (nothing more to load).
 	Version 1:
 		- added blend shapes
 	Version 0:
 		- separate serialisation CMesh / CMeshGeom.
 	*/
-	sint ver = f.serialVersion (1);
+	sint ver = f.serialVersion (2);
 
 	if (ver >= 1)
 		f.serial (*_MeshMorpher);
@@ -560,6 +590,12 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if(f.isReading())
 	{
 		_VertexBufferHardDirty = true;
+
+		// if >= version 2, reorder of triangles is precomputed, else compute it now.
+		if(ver < 2 )
+		{
+			optimizeTriangleOrder();
+		}
 	}
 
 }

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.17 2001/10/10 15:38:09 besson Exp $
+ * $Id: mesh_mrm.h,v 1.18 2001/10/15 14:21:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,38 +256,11 @@ private:
 		}
 
 		// Serialize a Lod.
-		void	serial(NLMISC::IStream &f)
-		{
-			/*
-			Version 1:
-				- add VertexBlocks;
-			Version 0:
-				- base vdrsion.
-			*/
+		void		serial(NLMISC::IStream &f);
 
-			sint	ver= f.serialVersion(1);
-			uint	i;
-
-			f.serial(NWedges);
-			f.serialCont(RdrPass);
-			f.serialCont(Geomorphs);
-			f.serialCont(MatrixInfluences);
-
-			// Serial array of InfluencedVertices. NB: code written so far for NL3D_MESH_SKINNING_MAX_MATRIX==4 only.
-			nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
-			for(i= 0; i<NL3D_MESH_SKINNING_MAX_MATRIX; i++)
-			{
-				f.serialCont(InfluencedVertices[i]);
-			}
-
-			if(ver>=1)
-				f.serialCont(SkinVertexBlocks);
-			else
-				buildSkinVertexBlocks();
-		}
-
-
+		// Used in CMeshMRMGeom::build().
 		void		buildSkinVertexBlocks();
+		void		optimizeTriangleOrder();
 	};
 
 

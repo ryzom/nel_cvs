@@ -1672,6 +1672,34 @@ SOURCE=.\3d\quad_grid_clip_manager.cpp
 SOURCE=.\3d\quad_grid_clip_manager.h
 # End Source File
 # End Group
+# Begin Group "Stripifier"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\nv_tri_strip_objects.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\nv_tri_strip_objects.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\nv_vertex_cache.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\nv_vertex_cache.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\stripifier.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\stripifier.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\async_file_manager.cpp

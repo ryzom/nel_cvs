@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.8 2001/06/29 09:48:57 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.9 2001/06/29 14:27:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,10 +43,25 @@ void		CTransformShape::registerBasic()
 
 
 // ***************************************************************************
-float CTransformShape::getNumTriangles (float distance)
+float		CTransformShape::getNumTriangles (float distance)
 {
 	// Call shape method
 	return Shape->getNumTriangles (distance);
+}
+
+
+// ***************************************************************************
+void		CTransformShape::getShapeAABBox(NLMISC::CAABBox &bbox) const
+{
+	if(Shape)
+	{
+		Shape->getAABBox(bbox);
+	}
+	else
+	{
+		bbox.setCenter(CVector::Null);
+		bbox.setHalfSize(CVector::Null);
+	}
 }
 
 

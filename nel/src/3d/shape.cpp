@@ -1,7 +1,7 @@
 /** \file shape.cpp
  * <File description>
  *
- * $Id: shape.cpp,v 1.4 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: shape.cpp,v 1.5 2001/06/29 14:27:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,10 @@
 
 #include <string>
 
+
+using namespace NLMISC;
+
+
 namespace NL3D 
 {
 
@@ -46,6 +50,14 @@ CTransformShape		*IShape::createInstance(CScene &scene)
 	CTransformShape		*mo= (CTransformShape*)scene.createModel(NL3D::TransformShapeId);
 	mo->Shape= this;
 	return mo;
+}
+
+
+// ***************************************************************************
+void			IShape::getAABBox(CAABBox &bbox) const
+{
+	bbox.setCenter(CVector::Null);
+	bbox.setHalfSize(CVector::Null);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.4 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: mesh.h,v 1.5 2001/06/29 14:27:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,6 +182,9 @@ public:
 
 	/// get trinagle count.
 	virtual float	getNumTriangles (float distance);
+
+	/// Get bbox.
+	virtual void	getAABBox(NLMISC::CAABBox &bbox) const {bbox= getBoundingBox().getAABBox();}
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_instance.h,v 1.2 2001/06/29 14:27:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_transform.h"
+#include "nel/misc/aabbox.h"
 
 
 namespace NL3D
@@ -55,6 +56,11 @@ protected:
 	// @}
 
 public:
+
+
+	/** Get the untransformed AABBox of the mesh. NULL (gtSize()==0) if no mesh.
+	 */
+	virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const =0;
 
 
 	/// \name Material access.

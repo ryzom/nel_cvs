@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: shape.h,v 1.3 2001/06/29 14:27:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/aabbox.h"
 
 
 namespace NL3D 
@@ -90,6 +91,10 @@ public:
 	 * CTransfromShape call this method in the render traversal.
 	 */
 	virtual void				render(IDriver *drv, CTransformShape *trans)=0;
+
+	/** return the bounding box of the shape. Default is to return Null bbox.
+	 */
+	virtual	void				getAABBox(NLMISC::CAABBox &bbox) const;
 
 	/// \name Load balancing methods
 	// @{

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.9 2001/06/29 09:48:57 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.10 2001/06/29 14:27:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -435,6 +435,9 @@ public:
 	/// serial this mesh.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CMeshMRM);
+
+	/// Get bbox.
+	virtual void	getAABBox(NLMISC::CAABBox &bbox) const {bbox= getBoundingBox().getAABBox();}
 
 	// @}
 

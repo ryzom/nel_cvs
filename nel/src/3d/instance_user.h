@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.2 2001/06/19 14:28:52 berenguier Exp $
+ * $Id: instance_user.h,v 1.3 2001/06/29 14:27:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,6 +82,9 @@ public:
 		// user mats are auto deleted.
 	}
 	// @}
+
+
+	virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const;
 
 
 	/// \name Material access.

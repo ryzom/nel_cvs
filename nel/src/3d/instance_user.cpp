@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.2 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: instance_user.cpp,v 1.3 2001/06/29 14:27:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,12 @@
 namespace NL3D 
 {
 
+
+// ***************************************************************************
+void				CInstanceUser::getShapeAABBox(NLMISC::CAABBox &bbox) const
+{
+	_Instance->getShapeAABBox(bbox);
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.3 2001/06/29 09:48:57 berenguier Exp $
+ * $Id: transform_shape.h,v 1.4 2001/06/29 14:27:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,11 @@ public:
 public:
 	/// The shape, the object instancied.
 	CSmartPtr<IShape>		Shape;
+
+
+	/** Get the untransformed AABBox of the mesh. NULL (gtSize()==0) if no mesh.
+	 */
+	void					getShapeAABBox(NLMISC::CAABBox &bbox) const;
 
 
 	/// \name Load balancing methods

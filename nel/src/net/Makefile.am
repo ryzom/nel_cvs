@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.13 2001/08/28 13:00:20 valignat Exp $
+# $Id: Makefile.am,v 1.14 2001/10/16 12:20:05 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -31,7 +31,9 @@ libnelnet_la_SOURCES = buf_client.cpp                      \
                        stream_server.cpp                   \
                        tcp_sock.cpp                        \
                        udp_sock.cpp                        \
-                       unitime.cpp
+                       unitime.cpp                         \
+                       unified_network.cpp                 \
+                       service_5.cpp                       
 
 AM_CXXFLAGS          = -I$(top_srcdir)/src
 

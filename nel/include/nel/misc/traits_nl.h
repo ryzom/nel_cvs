@@ -1,6 +1,6 @@
 /** \file traits_nl.h
  *
- * $Id: traits_nl.h,v 1.2 2004/03/16 10:34:19 lecroart Exp $
+ * $Id: traits_nl.h,v 1.3 2004/03/19 17:54:08 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -60,20 +60,20 @@ struct CTraits<type>                     \
 
 // integral types
 NL_TRIVIAL_TYPE_TRAITS(bool);
-#ifdef NL_OS_WINDOWS
+#ifdef NL_COMP_VC6
 NL_TRIVIAL_TYPE_TRAITS(sint8);
 NL_TRIVIAL_TYPE_TRAITS(uint8);
-#endif // NL_OS_WINDOWS
+#endif // NL_COMP_VC6
 NL_TRIVIAL_TYPE_TRAITS(sint16);
 NL_TRIVIAL_TYPE_TRAITS(uint16);
 NL_TRIVIAL_TYPE_TRAITS(sint32);
 NL_TRIVIAL_TYPE_TRAITS(uint32);
 NL_TRIVIAL_TYPE_TRAITS(sint64);
 NL_TRIVIAL_TYPE_TRAITS(uint64);
-#ifdef NL_OS_WINDOWS
+#ifdef NL_COMP_VC6
 NL_TRIVIAL_TYPE_TRAITS(sint);
 NL_TRIVIAL_TYPE_TRAITS(uint);
-#endif // NL_OS_WINDOWS
+#endif // NL_COMP_VC6
 
 // characters 
 NL_TRIVIAL_TYPE_TRAITS(char);

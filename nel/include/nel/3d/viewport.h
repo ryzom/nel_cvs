@@ -1,7 +1,7 @@
 /** \file viewport.h
  * <File description>
  *
- * $Id: viewport.h,v 1.3 2000/12/22 13:17:09 corvazier Exp $
+ * $Id: viewport.h,v 1.4 2001/01/08 17:58:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,12 +41,10 @@ using NLMISC::CMatrix;
 /**
  * CViewport is the description of the viewport used to render with a driver
  *
- * *** IMPORTANT ********************
+ */
+/* *** IMPORTANT ********************
  * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
  * **********************************
- * \author Cyril Corvazier
- * \author Nevrax France
- * \date 2000
  */
 class CViewport
 {

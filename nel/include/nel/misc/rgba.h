@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.7 2000/12/11 15:54:48 berenguier Exp $
+ * $Id: rgba.h,v 1.8 2001/01/08 17:58:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,7 @@ public:
 	 * Serialisation.
 	 * \param f Stream used for serialisation.
 	 */
-	void    serial(class NLMISC::IStream &f);
+	void    serial (class NLMISC::IStream &f);
 
 	/** 
 	 * Blend two colors.
@@ -89,7 +89,7 @@ public:
 	 * \param c1 Color 1.
 	 * \param factor Blend factor. 0~255. 0 return c0 and 255 return c1.
 	 */
-	void blendFromui(CRGBA &c0, CRGBA &c1, uint factor); 
+	void	blendFromui (CRGBA &c0, CRGBA &c1, uint factor); 
 
 	/** 
 	 * Set colors.
@@ -98,7 +98,15 @@ public:
 	 * \param b Blue componant.
 	 * \param a Alpha componant.
 	 */
-	void set(uint8 r, uint8 g, uint8 b, uint8 a);
+	void	set (uint8 r, uint8 g, uint8 b, uint8 a);
+
+	/**
+	 * Get a 16 bits 565 pixel.
+	 */
+	uint16 get565 () const
+	{
+		return ((uint16)(R&0xf8)<<8) | ((uint16)(G&0xfc)<<3) | (uint16)(B>>3);
+	}
 
 	/// Red componant.
 	uint8	R;

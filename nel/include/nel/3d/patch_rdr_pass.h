@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.h
  * <File description>
  *
- * $Id: patch_rdr_pass.h,v 1.2 2000/12/01 16:57:15 berenguier Exp $
+ * $Id: patch_rdr_pass.h,v 1.3 2001/01/08 17:58:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,7 @@ namespace NL3D
  *
  * NB: GlobalTriList is a "grow only" vector, even across frames.... So reallocation never happens, but at begin of program.
  */
-class	CPatchRdrPass
+class	CPatchRdrPass : public CRefCount
 {
 public:
 	enum	TBlendType {Alpha=0, NegativeAlpha, Additive};
@@ -76,7 +76,7 @@ public:
 	CPatchRdrPass();
 	void			addTri(uint32 idx0, uint32 idx1, uint32 idx2);
 	void			resetTriList();
-	void			buildPBlock(CPrimitiveBlock &pb);
+	void			buildPBlock(CPrimitiveBlock &pb) const;
 
 	// The operator which compare the material.
 	bool			operator<(const CPatchRdrPass &o) const

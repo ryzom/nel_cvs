@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * basic types, define and class
  *
- * $Id: types_nl.h,v 1.20 2001/01/04 17:05:21 cado Exp $
+ * $Id: types_nl.h,v 1.21 2001/01/08 17:58:30 corvazier Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -44,6 +44,7 @@
 #ifdef WIN32
 #  define NL_OS_WINDOWS
 #  define NL_LITTLE_ENDIAN
+#  define NL_CPU_INTEL
 #  ifdef _DEBUG
 #    define NL_DEBUG
 #  else
@@ -71,6 +72,13 @@
 #  error "You need STLPort to compile this project (www.sltport.org)"
 #endif // __SGI_STL_PORT
 
+// Setup extern asm functions.
+
+#ifndef NL_NO_ASM							// If NL_NO_ASM is externely defined, don't override it.
+#  ifndef NL_CPU_INTEL						// If not on an Intel compatible plateforme (BeOS, 0x86 Linux, Windows)
+#    define NL_NO_ASM						// Don't use extern ASM. Full C++ code.
+#  endif // NL_CPU_INTEL
+#endif // NL_NO_ASM
 
 // Standard types
 

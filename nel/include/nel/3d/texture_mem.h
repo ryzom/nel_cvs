@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.1 2000/12/15 18:19:42 berenguier Exp $
+ * $Id: texture_mem.h,v 1.2 2001/01/08 17:58:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,9 +37,6 @@ namespace NL3D
 //****************************************************************************
 /**
  * CTextureMem
- * \author Cyril Corvazier
- * \author Nevrax France
- * \date 2000
  */
 class CTextureMem : public ITexture
 {
@@ -51,7 +48,6 @@ public:
 
 	/** 
 	 * Default constructor
-	 * \date 2000
 	 */	
 	CTextureMem() 
 	{ 
@@ -62,7 +58,6 @@ public:
 
 	/** 
 	 * Destructor
-	 * \date 2000
 	 */	
 	virtual ~CTextureMem() 
 	{ 
@@ -75,7 +70,6 @@ public:
 	 * constructor
 	 * \param data Pointer of the file.
 	 * \param _delete Is true if the class must delete the pointer.
-	 * \date 2000
 	 */	
 	CTextureMem(uint8 *data, uint32 lenght, bool _delete) 
 	{ 
@@ -89,7 +83,6 @@ public:
 	 * Set the pointer of the mem file containing the texture
 	 * \param data Pointer of the file.
 	 * \param _delete Is true if the class must delete the pointer.
-	 * \date 2000
 	 */	
 	void setPointer(uint8 *data, uint32 length, bool _delete) 
 	{ 
@@ -104,28 +97,24 @@ public:
 
 	/** 
 	 * Get the Pointer of the memory file containing the texture
-	 * \date 2000
 	 */	
 	uint8* getPointer() const { return _Data; } 
 
 
 	/** 
 	 * Get length of the memory file containing the texture
-	 * \date 2000
 	 */	
 	uint32 getLength() const { return _Length; } 
 
 
 	/** 
 	 * Return true if the class handle the delete of the pointer.
-	 * \date 2000
 	 */	
 	bool isDeletable() const { return _Delete; } 
 
 
 	/** 
 	 * Generate the texture
-	 * \date 2000
 	 */	
 	void generate();
 

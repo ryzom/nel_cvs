@@ -1,7 +1,7 @@
 /** \file tile_far_bank.cpp
  * <File description>
  *
- * $Id: tile_far_bank.cpp,v 1.2 2000/12/19 15:20:52 corvazier Exp $
+ * $Id: tile_far_bank.cpp,v 1.3 2001/01/08 17:58:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,9 +45,14 @@ void CTileFarBank::CTileFar::serial(IStream &f) throw(NLMISC::EStream)
 	sint streamver = f.serialVersion(_Version);
 
 	// Serial pixels
-	f.serialCont (_Pixels);
+	f.serialCont (_Pixels[diffuse][order0]);
+	f.serialCont (_Pixels[diffuse][order1]);
+	f.serialCont (_Pixels[diffuse][order2]);
+	f.serialCont (_Pixels[additive][order0]);
+	f.serialCont (_Pixels[additive][order1]);
+	f.serialCont (_Pixels[additive][order2]);
 }
-	
+
 // ***************************************************************************
 // ***************************************************************************
 // CTileFarBank.

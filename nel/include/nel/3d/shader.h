@@ -1,7 +1,7 @@
 /** \file shader.h
  * <File description>
  *
- * $Id: shader.h,v 1.2 2000/12/22 13:17:09 corvazier Exp $
+ * $Id: shader.h,v 1.3 2001/01/08 17:58:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,12 +37,10 @@ using NLMISC::CRefCount;
 /**
  * <Class description>
  *
- * *** IMPORTANT ********************
+ */
+/* *** IMPORTANT ********************
  * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
  * **********************************
- * \author Cyril Corvazier
- * \author Nevrax France
- * \date 2000
  */
 // --------------------------------------------------
 

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.22 2000/12/18 11:05:53 berenguier Exp $
+ * $Id: patch.h,v 1.23 2001/01/08 17:58:29 corvazier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -40,6 +40,10 @@
 
 namespace NL3D {
 
+#define NL_MAX_TILES_BY_PATCH_EDGE_SHIFT 4										// max 16x16 tiles by patch (shift version)
+#define NL_MAX_TILES_BY_PATCH_EDGE (1<<NL_MAX_TILES_BY_PATCH_EDGE_SHIFT)		// max 16x16 tiles by patch
+#define NL_PATCH_FAR0_ROTATED 0x1												// Flags far0 rotated
+#define NL_PATCH_FAR1_ROTATED 0x2												// Flags far1 rotated
 
 using NLMISC::CVector;
 
@@ -253,11 +257,11 @@ private:
 	sint			Far1;			// The level of second Far, for transition: 1,2 or 3. 0 means none.
 	float			Far0UVScale, Far0UBias, Far0VBias;
 	float			Far1UVScale, Far1UBias, Far1VBias;
-	// The render Pass of Far0 and Far1.
-	CPatchRdrPass	*Pass0, *Pass1;
-	// Info for alpha transition with Far1.
-	float			TransitionSqrMin;
-	float			OOTransitionSqrDelta;
+
+	// Pack 4 bytes
+	// {
+	uint8			FarRotated;		// If the flag is set, the far texture of the patch is rotated of 1 (to the left of course)
+									// Flags: NL_PATCH_FAR0_ROTATED for Far0, NL_PATCH_FAR1_ROTATED for Far1
 	// are we cliped?
 	bool			Clipped;
 	// Do we must compute the Tile errormetric part??
@@ -265,6 +269,13 @@ private:
 	// Are we in the Tile/Far transition. if ComputeTileErrorMetric==true, and TileFarTransition==false, we are 
 	// TOTALY IN the Tile zone sphere.
 	bool			TileFarTransition;
+	// }
+	
+	// The render Pass of Far0 and Far1.
+	CPatchRdrPass	*Pass0, *Pass1;
+	// Info for alpha transition with Far1.
+	float			TransitionSqrMin;
+	float			OOTransitionSqrDelta;
 	// The root for render.
 	CTessFace		*RdrRoot;
 	CTessFace		*RdrTileRoot[NL3D_MAX_TILE_PASS];
@@ -289,7 +300,6 @@ private:
 	void			removeFaceFromRenderList(CTessFace *face);
 
 	// Texture mgt.
-	CPatchRdrPass	*getFarRenderPass(sint farLevel, float &farUVScale, float &farUBias, float &farVBias);
 	// For CTessFace::computeMaterial(). Return the render pass for this material, given the number of the tile, and the
 	// desired pass. NULL may be returned if the pass is not present (eg: no alpha for this tile...).
 	CPatchRdrPass	*getTileRenderPass(sint tileId, sint pass);

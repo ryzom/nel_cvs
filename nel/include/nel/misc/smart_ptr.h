@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.11 2000/12/04 11:52:40 berenguier Exp $
+ * $Id: smart_ptr.h,v 1.12 2001/01/08 17:58:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,6 +200,8 @@ public:
     CSmartPtr& operator=(T* p);
 	/// operator=. Giving a NULL pointer is a valid operation.
     CSmartPtr& operator=(const CSmartPtr &p);
+	/// operator<. Compare the pointers.
+    bool operator<(const CSmartPtr &p) const;
 
 	// No need to do any operator==. Leave the work to cast  operator T*(void).
 };

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.27 2001/01/03 15:25:34 berenguier Exp $
+ * $Id: landscape.cpp,v 1.28 2001/01/08 17:58:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #include "nel/3d/landscape.h"
 #include "nel/3d/bsphere.h"
 #include "nel/3d/texture_file.h"
+#include "nel/3d/texture_far.h"
 using namespace NLMISC;
 using namespace std;
-
 
 namespace NL3D 
 {
@@ -92,9 +92,16 @@ const	float TileSize= 128;
 CLandscape::CLandscape()
 {
 	TileInfos.resize(NL3D::NbTilesMax);
+
+	// Resize the vectors of sert of render pass for the far texture
+	_FarRdrPassSetVectorFree.resize (getRdrPassIndexWithSize (NL_MAX_SIZE_OF_TEXTURE_EDGE, NL_MAX_SIZE_OF_TEXTURE_EDGE)+1);
+
+	// Far texture not initialized till initTileBanks is not called
+	_FarInitialized=false;
+	
 	fill(TileInfos.begin(), TileInfos.end(), (CTileInfo*)NULL);
 
-	_TileDistNear=50.f;
+	_TileDistNear=100.f;
 	_RefineMode=true;
 }
 // ***************************************************************************
@@ -119,14 +126,11 @@ void			CLandscape::init(bool bumpTiles)
 	// v3f/t2f0/t2f1/t2f2/t2f3/c4ub
 
 
-	// Fill Far mat and rdr pass.
-	// TODO_TEXTURE.
-	// For TEST only here, create The far rdrPass with random texture.
+	// Fill Far mat.
 	// Must init his BlendFunction here!!! becaus it switch between blend on/off during rendering.
 	FarMaterial.initUnlit();
 	FarMaterial.setSrcBlend(CMaterial::srcalpha);
 	FarMaterial.setDstBlend(CMaterial::invsrcalpha);
-	FarRdrPass.TextureDiffuse= new CTextureFile("white.tga");
 
 	// Init material for tile.
 	TileMaterial.initUnlit();
@@ -289,6 +293,8 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 		ItTileRdrPassSet	itTile;
 		for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
 		{
+			// Get a ref on the render pass. Const cast work because we only modify attribut from CPatchRdrPass 
+			// that don't affect the operator< of this class
 			CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
 			if(pass.NTris==0)
 				continue;
@@ -337,14 +343,23 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 	// Setup common material.
 	FarMaterial.setBlend(false);
 
-	// Render All material RdrPass.
-	// TODO_TEXTURE. For TEST only here. Do it on FarRdrPass.
-	FarRdrPass.buildPBlock(PBlock);
-	// must resetTriList at each end of each material process.
-	FarRdrPass.resetTriList();
-	FarMaterial.setTexture(FarRdrPass.TextureDiffuse);
-	driver->render(PBlock, FarMaterial);
+	// Render All material RdrPass0.
+	ItSPRenderPassSet		itTile=_FarRdrPassSet.begin();
+	while (itTile!=_FarRdrPassSet.end())
+	{
+		CPatchRdrPass	&pass= **itTile;
 
+		// Build the pblock of this render pass
+		pass.buildPBlock(PBlock);
+		
+		// must resetTriList at each end of each material process.
+		pass.resetTriList();
+		FarMaterial.setTexture(pass.TextureDiffuse);
+		driver->render(PBlock, FarMaterial);
+
+		// Next render pass
+		itTile++;
+	}
 
 	// 3. Far1Render pass.
 	//====================
@@ -366,13 +381,24 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 	// Setup common material.
 	FarMaterial.setBlend(true);
 
-	// Render All material RdrPass.
-	// TODO_TEXTURE. For TEST only here. Do it on FarRdrPass.
-	FarRdrPass.buildPBlock(PBlock);
-	// must resetTriList at each end of each material process.
-	FarRdrPass.resetTriList();
-	FarMaterial.setTexture(FarRdrPass.TextureDiffuse);
-	driver->render(PBlock, FarMaterial);
+
+	// Render All material RdrPass1.
+	itTile=_FarRdrPassSet.begin();
+	while (itTile!=_FarRdrPassSet.end())
+	{
+		CPatchRdrPass	&pass= **itTile;
+
+		// Build the pblock of this render pass
+		pass.buildPBlock(PBlock);
+		
+		// must resetTriList at each end of each material process.
+		pass.resetTriList();
+		FarMaterial.setTexture(pass.TextureDiffuse);
+		driver->render(PBlock, FarMaterial);
+
+		// Next render pass
+		itTile++;
+	}
 
 
 	// 4. "Release" texture materials.
@@ -666,6 +692,110 @@ void			CLandscape::releaseTiles(uint16 tileStart, uint16 nbTiles)
 
 // ***************************************************************************
 // ***************************************************************************
+// Far.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+CPatchRdrPass*	CLandscape::getFarRenderPass(CPatch* pPatch, uint farIndex, float& farUVScale, float& farUBias, float& farVBias, bool& bRot)
+{
+	// Check args
+	nlassert (farIndex>0);
+
+	// If no far texture, return
+	if (!_FarInitialized)
+		return NULL;
+
+	// Get size of the far texture
+	uint width=(pPatch->getOrderS ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
+	uint height=(pPatch->getOrderT ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
+
+	// Render pass index
+	uint passIndex=getRdrPassIndexWithSize (width, height);
+
+	// Look for a free render pass
+	if (_FarRdrPassSetVectorFree[passIndex].begin()==_FarRdrPassSetVectorFree[passIndex].end())
+	{
+		// Empty, add a new render pass
+		CPatchRdrPass	*pass=new CPatchRdrPass;
+
+		// Fill the render pass
+		CTextureFar *pTextureFar=new CTextureFar;
+
+		// Set the bank
+		pTextureFar->_Bank=&TileFarBank;
+
+		// Set as diffuse texture for this renderpass
+		pass->TextureDiffuse=pTextureFar;
+
+		// Set the size for this texture
+		pTextureFar->setSizeOfFarPatch (std::max (width, height), std::min (width, height));
+
+		// Add the render pass
+		_FarRdrPassSetVectorFree[passIndex].insert (pass);
+		_FarRdrPassSet.insert (pass);
+	}
+
+	// Ok, add the patch to the first render pass in the free list
+	TSPRenderPass pass=*_FarRdrPassSetVectorFree[passIndex].begin();
+
+	// Get a pointer on the diffuse far texture
+	CTextureFar *pTextureFar=(CTextureFar*)(&*(pass->TextureDiffuse));
+
+	// Add the patch to the far texture
+	if (pTextureFar->addPatch (pPatch, farUVScale, farUBias, farVBias, bRot))
+	{
+		// The render state is full, remove from the free list..
+		_FarRdrPassSetVectorFree[passIndex].erase (pass);
+	}
+
+	// Return the renderpass
+	return pass;
+}
+
+
+// ***************************************************************************
+void		CLandscape::freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint farIndex)
+{
+	// Get size of the far texture
+	uint width=(pPatch->getOrderS ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
+	uint height=(pPatch->getOrderT ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
+
+	// Render pass index
+	uint passIndex=getRdrPassIndexWithSize (width, height);
+
+	// Get a pointer on the diffuse far texture
+	CTextureFar *pTextureFar=(CTextureFar*)(&*(pass->TextureDiffuse));
+
+	// Remove from the patch from the texture if empty
+	if (pTextureFar->removePatch (pPatch))
+	{
+		// Free list empty ?
+		if (_FarRdrPassSetVectorFree[passIndex].begin()==_FarRdrPassSetVectorFree[passIndex].end())
+		{
+			// Let this render pass in the free list
+			_FarRdrPassSetVectorFree[passIndex].insert (pass);
+		}
+		else
+		{
+			// Release for good
+			_FarRdrPassSetVectorFree[passIndex].erase (pass);
+
+			// Remove from draw list
+			_FarRdrPassSet.erase (pass);
+		}
+	}
+	else
+	{
+		// Insert in the free list
+		_FarRdrPassSetVectorFree[passIndex].insert (pass);
+	}
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
 // Misc.
 // ***************************************************************************
 // ***************************************************************************
@@ -843,6 +973,133 @@ void			CLandscape::buildCollideFaces(sint zoneId, sint patch, std::vector<CTrian
 			}
 		}
 	}
+}
+
+
+// ***************************************************************************
+uint			CLandscape::getRdrPassIndexWithSize (uint width, uint height)
+{
+	// Check no NULL size
+	nlassert (width);
+	nlassert (height);
+
+	// Find width order
+	int orderWidth=0;
+	while (!(width&(1<<orderWidth)))
+		orderWidth++;
+
+	// Find heightorder
+	int orderHeight=0;
+	while (!(height&(1<<orderHeight)))
+		orderHeight++;
+
+	if (orderWidth>orderHeight)
+	{
+		return NL_MAX_SIZE_OF_TEXTURE_EDGE_SHIFT*orderHeight+orderWidth;
+	}
+	else
+	{
+		return NL_MAX_SIZE_OF_TEXTURE_EDGE_SHIFT*orderWidth+orderHeight;
+	}
+}
+
+#define NL_TILE_FAR_SIZE_ORDER0 (NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)
+#define NL_TILE_FAR_SIZE_ORDER1 ((NL_NUM_PIXELS_ON_FAR_TILE_EDGE>>1)*(NL_NUM_PIXELS_ON_FAR_TILE_EDGE>>1))
+#define NL_TILE_FAR_SIZE_ORDER2 ((NL_NUM_PIXELS_ON_FAR_TILE_EDGE>>2)*(NL_NUM_PIXELS_ON_FAR_TILE_EDGE>>2))
+
+// ***************************************************************************
+// internal use
+bool			CLandscape::eraseTileFarIfNotGood (uint tileNumber, uint sizeOrder0, uint sizeOrder1, uint sizeOrder2)
+{
+	// The same tiles ?
+	bool bSame=true;
+
+	// It is the same tile ?
+	if (TileFarBank.getTile (tileNumber)->isFill (CTileFarBank::diffuse))
+	{
+		// Good diffuse size ?
+		if (
+			(TileFarBank.getTile (tileNumber)->getSize (CTileFarBank::diffuse, CTileFarBank::order0) != sizeOrder0) ||
+			(TileFarBank.getTile (tileNumber)->getSize (CTileFarBank::diffuse, CTileFarBank::order1) != sizeOrder1) ||
+			(TileFarBank.getTile (tileNumber)->getSize (CTileFarBank::diffuse, CTileFarBank::order2) != sizeOrder2)
+			)
+		{
+			TileFarBank.getTile (tileNumber)->erasePixels (CTileFarBank::diffuse);
+			bSame=false;
+		}
+	}
+
+	// It is the same tile ?
+	if (TileFarBank.getTile (tileNumber)->isFill (CTileFarBank::additive))
+	{
+		// Good additive size ?
+		if (
+			(TileFarBank.getTile (tileNumber)->getSize (CTileFarBank::additive, CTileFarBank::order0) != sizeOrder0) ||
+			(TileFarBank.getTile (tileNumber)->getSize (CTileFarBank::additive, CTileFarBank::order1) != sizeOrder1) ||
+			(TileFarBank.getTile (tileNumber)->getSize (CTileFarBank::additive, CTileFarBank::order2) != sizeOrder2)
+			)
+		{
+			TileFarBank.getTile (tileNumber)->erasePixels (CTileFarBank::additive);
+			bSame=false;
+		}
+	}
+
+	// Return true if the tiles seem to be the sames
+	return bSame;
+}
+
+// ***************************************************************************
+bool			CLandscape::initTileBanks ()
+{
+	// *** Check the two banks are OK
+	_FarInitialized=false;
+
+	// Compatibility check
+	bool bCompatibility=true;
+
+	// Same number of tiles
+	if (TileBank.getTileCount()==TileFarBank.getNumTile())
+	{
+		// Same tileSet
+		for (int tileSet=0; tileSet<TileBank.getTileSetCount(); tileSet++)
+		{
+			// Same tile128
+			int tile;
+			for (tile=0; tile<TileBank.getTileSet(tileSet)->getNumTile128(); tile++)
+			{
+				// tile number
+				uint tileNumber=TileBank.getTileSet(tileSet)->getTile128(tile);
+
+				// erase the tiles if not good
+				bCompatibility&=eraseTileFarIfNotGood (tileNumber, NL_TILE_FAR_SIZE_ORDER0, NL_TILE_FAR_SIZE_ORDER1, NL_TILE_FAR_SIZE_ORDER2);
+			}
+
+			// Same tile256
+			for (tile=0; tile<TileBank.getTileSet(tileSet)->getNumTile256(); tile++)
+			{
+				// tile number
+				uint tileNumber=TileBank.getTileSet(tileSet)->getTile256(tile);
+
+				// erase the tiles if not good
+				bCompatibility&=eraseTileFarIfNotGood (tileNumber, NL_TILE_FAR_SIZE_ORDER0<<2, NL_TILE_FAR_SIZE_ORDER1<<2, NL_TILE_FAR_SIZE_ORDER2<<2);
+			}
+
+			// Same transition
+			for (tile=0; tile<CTileSet::count; tile++)
+			{
+				// tile number
+				uint tileNumber=TileBank.getTileSet(tileSet)->getTransition(tile)->getTile();
+
+				// erase the tiles if not good
+				bCompatibility&=eraseTileFarIfNotGood (tileNumber, NL_TILE_FAR_SIZE_ORDER0, NL_TILE_FAR_SIZE_ORDER1, NL_TILE_FAR_SIZE_ORDER2);
+			}
+		}
+		
+		// Far actived!
+		_FarInitialized=true;
+	}
+
+	return bCompatibility;
 }
 
 

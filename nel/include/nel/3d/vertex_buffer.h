@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.2 2000/12/22 13:17:09 corvazier Exp $
+ * $Id: vertex_buffer.h,v 1.3 2001/01/08 17:58:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,12 +75,10 @@ const uint32	IDRV_VF_UV[IDRV_VF_MAXSTAGES]	= { 0x00000100,0x00000200,0x00000400,
 /**
  * <Class description>
  *
- * *** IMPORTANT ********************
+ */
+/* *** IMPORTANT ********************
  * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
  * **********************************
- * \author Cyril Corvazier
- * \author Nevrax France
- * \date 2000
  */
 // All these flags are similar to DX8
 class CVertexBuffer : public CRefCount

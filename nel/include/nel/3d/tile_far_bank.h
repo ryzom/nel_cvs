@@ -1,7 +1,7 @@
 /** \file tile_far_bank.h
  * <File description>
  *
- * $Id: tile_far_bank.h,v 1.3 2000/12/20 15:32:40 corvazier Exp $
+ * $Id: tile_far_bank.h,v 1.4 2001/01/08 17:58:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,8 +29,13 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/common.h"
 
 #include <vector>
+
+// Pixel count in far tiles
+#define NL_NUM_PIXELS_ON_FAR_TILE_EDGE_SHIFT 2											// a 128x128 far tile is a 4x4 bitmap in far 0
+#define NL_NUM_PIXELS_ON_FAR_TILE_EDGE (1<<NL_NUM_PIXELS_ON_FAR_TILE_EDGE_SHIFT)	// a 128x128 far tile is a 4x4 bitmap in far 0
 
 namespace NLMISC 
 {
@@ -50,6 +55,9 @@ namespace NL3D
 class CTileFarBank
 {
 public:
+	// Order of the tile
+	enum TFarOrder { order0=0, order1=1, order2=2, orderCount };
+	enum TFarType { diffuse=0, additive=1, typeCount };
 
 	/// Constructor
 	CTileFarBank();
@@ -66,29 +74,44 @@ public:
 		}
 
 		/// Return the pointer on the pixels data. Call this method only if isFill () returns true. 
-		const NLMISC::CRGBA*		getPixels () const
+		const NLMISC::CRGBA*		getPixels (TFarType type, TFarOrder order) const
 		{
-			return &_Pixels[0];
+			return &_Pixels[type][order][0];
 		}
 
 		/// Return true if pixel value are presents, else return false.
-		bool				isFill () const
+		bool				isFill (TFarType type) const
 		{
-			return _Pixels.size()!=0;
+			return _Pixels[type][0].begin()!=_Pixels[type][0].end();
 		}
 
 		/// Return the pixel array size. Should be 0 for empty, 64 for a 128x128 tile and 256 for a 256x256 tile.
-		sint				getSize () const
+		uint				getSize (TFarType type, TFarOrder order) const
 		{
-			return (sint)_Pixels.size();
+			return _Pixels[type][order].size();
+		}
+
+		/// Set the pixel array of a far Tile
+		void				setPixels (TFarType type, TFarOrder order, NLMISC::CRGBA* pixels, uint size)
+		{
+			_Pixels[type][order].resize (size);
+			memcpy (&_Pixels[type][order][0], pixels, size*sizeof(NLMISC::CRGBA));
+		}
+
+		/// Erase a pixel array type
+		void				erasePixels (TFarType type)
+		{
+			NLMISC::contReset (_Pixels[type][order0]);
+			NLMISC::contReset (_Pixels[type][order1]);
+			NLMISC::contReset (_Pixels[type][order2]);
 		}
 
 		/// Serial this tile
-		void				serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
+		void				serial (class NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	private:
 		/// RGBA Pixels vector
-		std::vector<NLMISC::CRGBA>	_Pixels;
+		std::vector<NLMISC::CRGBA>	_Pixels[typeCount][orderCount];
 
 		/// The version of this class
 		static const sint	_Version;
@@ -116,6 +139,12 @@ public:
 	CTileFar*				getTile (sint tile)
 	{
 		return &_TileVector[tile];
+	}
+
+	/// Get the tile size
+	static uint				getFarTileEdgeSize (TFarOrder order)
+	{
+		return 4>>(uint)order;
 	}
 
 	/// Serial this bank

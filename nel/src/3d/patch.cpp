@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.26 2000/12/18 11:06:13 berenguier Exp $
+ * $Id: patch.cpp,v 1.27 2001/01/08 17:58:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,10 @@ CPatch::CPatch()
 	// To force computation of texture info on next preRender().
 	Far0= -1;
 	Far1= -1;
+
+	// Null the two passes
+	Pass0=NULL;
+	Pass1=NULL;
 }
 // ***************************************************************************
 CPatch::~CPatch()
@@ -498,55 +502,158 @@ void			CPatch::preRender()
 
 	// Classify the patch.
 	//====================
-	sint	far0,far1;
+	sint	newFar0,newFar1;
 	float	r= (CTessFace::RefineCenter-BSphere.Center).norm() - BSphere.Radius;
 	float	rr;
 	if(r<CTessFace::TileDistNear)
-		rr= r-CTessFace::TileDistNear, far0= 0;
+		rr= r-CTessFace::TileDistNear, newFar0= 0;
 	else if(r<CTessFace::Far0Dist)
-		rr= r-CTessFace::Far0Dist, far0= 1;
+		rr= r-CTessFace::Far0Dist, newFar0= 1;
 	else if(r<CTessFace::Far1Dist)
-		rr= r-CTessFace::Far1Dist, far0= 2;
+		rr= r-CTessFace::Far1Dist, newFar0= 2;
 	else
-		far0= 3;
+		newFar0= 3;
 	// Transition with the next level.
-	far1=0;
-	if(far0<3 && rr>-(CTessFace::FarTransition+2*BSphere.Radius))
+	newFar1=0;
+	if(newFar0<3 && rr>-(CTessFace::FarTransition+2*BSphere.Radius))
 	{
-		far1= far0+1;
+		newFar1= newFar0+1;
 	}
 
 
 	// Update Texture Info.
 	//=====================
-	if(far0!=Far0 || far1!=Far1)
+	if(newFar0!=Far0 || newFar1!=Far1)
 	{
-		Far0= far0;
-		Far1= far1;
-		// Compute / get the texture Far.
-		if(Far0>=1)
-			Pass0= getFarRenderPass(Far0, Far0UVScale, Far0UBias, Far0VBias);
-		else
-			Pass0= NULL;
-		if(Far1>=1)
-		{
-			Pass1= getFarRenderPass(Far1, Far1UVScale, Far1UBias, Far1VBias);
-			// Compute info for transition.
-			float	farDist;
-			switch(Far1)
-			{
-				case 1: farDist= CTessFace::TileDistNear; break;
-				case 2: farDist= CTessFace::Far0Dist; break;
-				case 3: farDist= CTessFace::Far1Dist; break;
-				default: nlstop;
-			};
-			TransitionSqrMin= sqr(farDist-CTessFace::FarTransition);
-			OOTransitionSqrDelta= 1.0f/(sqr(farDist)-TransitionSqrMin);
-		}
-		else
-			Pass1= NULL;
-	}
+		// Backup old pass0
+		CPatchRdrPass	*oldPass0=Pass0;
+		CPatchRdrPass	*oldPass1=Pass1;
+		float oldFar0UVScale=Far0UVScale;
+		float oldFar0UBias=Far0UBias;
+		float oldFar0VBias=Far0VBias;
+		uint8 oldFlags=FarRotated;
 
+		// Don't delete the pass0 if the new newFar1 will use it
+		if ((newFar1==Far0)&&(Far0>0))
+			Pass0=NULL;
+
+		// Don't delete the pass1 if the new newFar0 will use it
+		if ((newFar0==Far1)&&(Far1>0))
+			Pass1=NULL;
+
+		// Pass0 have changed ?
+		if (newFar0!=Far0)
+		{
+			// Compute / get the texture Far.
+			if(newFar0>0)
+			{
+				// Free the old pass, don't used any more
+				if (Pass0)
+					Zone->Landscape->freeFarRenderPass (this, Pass0, Far0);
+
+				// Can we use the old pass1 ?
+				if (newFar0==Far1)
+				{
+					// Yes, recycle it!
+					Pass0=oldPass1;
+
+					// Copy uv coordinates
+					Far0UVScale=Far1UVScale;
+					Far0UBias=Far1UBias;
+					Far0VBias=Far1VBias;
+
+					// Copy rotation flag
+					FarRotated&=~NL_PATCH_FAR0_ROTATED;			// erase it
+					if (FarRotated&NL_PATCH_FAR1_ROTATED)
+						FarRotated|=NL_PATCH_FAR0_ROTATED;			// copy it
+				}
+				else	// get a new render pass
+				{
+					// Rotation boolean
+					bool bRot;
+					Pass0=Zone->Landscape->getFarRenderPass(this, newFar0, Far0UVScale, Far0UBias, Far0VBias, bRot);
+
+					// Flags is set if the far texture is rotated of 90° to the left
+					if (bRot)
+						FarRotated|=NL_PATCH_FAR0_ROTATED;
+					else
+						FarRotated&=~NL_PATCH_FAR0_ROTATED;
+				}
+			}
+			else	// no more far pass0
+			{
+				if (Pass0)
+				{
+					Zone->Landscape->freeFarRenderPass (this, Pass0, Far0);
+					Pass0=NULL;
+				}
+			}
+		}
+
+		// Pass1 have changed ?
+		if (newFar1!=Far1)
+		{
+			// Now let's go with pass1
+			if(newFar1>0)
+			{
+				// Delete the pass1 if not used any more
+				if (Pass1)
+					Zone->Landscape->freeFarRenderPass (this, Pass1, Far1);
+
+				// Can we use the old pass1 ?
+				if (newFar1==Far0)
+				{
+					// Yes, recycle it!
+					Pass1=oldPass0;
+
+					// Copy uv coordinates
+					Far1UVScale=oldFar0UVScale;
+					Far1UBias=oldFar0UBias;
+					Far1VBias=oldFar0VBias;
+
+					// Copy rotation flag
+					FarRotated&=~NL_PATCH_FAR1_ROTATED;			// erase it
+					if (oldFlags&NL_PATCH_FAR0_ROTATED)
+						FarRotated|=NL_PATCH_FAR1_ROTATED;			// copy it
+				}
+				else	// get a new render pass
+				{
+					// Rotation boolean
+					bool bRot;
+					Pass1=Zone->Landscape->getFarRenderPass(this, newFar1, Far1UVScale, Far1UBias, Far1VBias, bRot);
+
+					// Flags is set if the far texture is rotated of 90° to the left
+					if (bRot)
+						FarRotated|=NL_PATCH_FAR1_ROTATED;
+					else
+						FarRotated&=~NL_PATCH_FAR1_ROTATED;
+				}
+
+				// Compute info for transition.
+				float	farDist;
+				switch(newFar1)
+				{
+					case 1: farDist= CTessFace::TileDistNear; break;
+					case 2: farDist= CTessFace::Far0Dist; break;
+					case 3: farDist= CTessFace::Far1Dist; break;
+					default: nlstop;
+				};
+				TransitionSqrMin= sqr(farDist-CTessFace::FarTransition);
+				OOTransitionSqrDelta= 1.0f/(sqr(farDist)-TransitionSqrMin);
+			}
+			else	// no more far pass1
+			{
+				if (Pass1)
+				{
+					Zone->Landscape->freeFarRenderPass (this, Pass1, Far1);
+					Pass1=NULL;
+				}
+			}
+		}
+	}
+	// Set new far values
+	Far0= newFar0;
+	Far1= newFar1;
 }
 
 
@@ -563,8 +670,16 @@ sint			CPatch::getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc)
 
 		// Set Uvs.
 		static CUV		uv;
-		uv.U= pc.getS()* Far0UVScale + Far0UBias;
-		uv.V= pc.getT()* Far0UVScale + Far0VBias;
+		if (FarRotated&NL_PATCH_FAR0_ROTATED)
+		{
+			uv.U= pc.getT()* Far0UVScale + Far0UBias;
+			uv.V= (1.f-pc.getS())* Far0UVScale + Far0VBias;
+		}
+		else
+		{
+			uv.U= pc.getS()* Far0UVScale + Far0UBias;
+			uv.V= pc.getT()* Far0UVScale + Far0VBias;
+		}
 		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, uv);
 
 		// Compute color.
@@ -590,8 +705,16 @@ sint			CPatch::getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc)
 
 		// Set Uvs.
 		static CUV		uv;
-		uv.U= pc.getS()* Far1UVScale + Far1UBias;
-		uv.V= pc.getT()* Far1UVScale + Far1VBias;
+		if (FarRotated&NL_PATCH_FAR1_ROTATED)
+		{
+			uv.U= pc.getT()* Far1UVScale + Far1UBias;
+			uv.V= (1.f-pc.getS())* Far1UVScale + Far1VBias;
+		}
+		else
+		{
+			uv.U= pc.getS()* Far1UVScale + Far1UBias;
+			uv.V= pc.getT()* Far1UVScale + Far1VBias;
+		}
 		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, uv);
 
 		// Compute color.
@@ -666,6 +789,29 @@ void			CPatch::renderFar0()
 						getFarIndex0(pFace->VLeft, pFace->PVLeft),
 						getFarIndex0(pFace->VRight, pFace->PVRight));
 		}
+
+		// Check the pass is in the set
+#ifdef NL_DEBUG
+		if (Pass0)
+		{
+			nlassert (Zone->Landscape->_FarRdrPassSet.find (Pass0)!=Zone->Landscape->_FarRdrPassSet.end());
+			if (Zone->Landscape->_FarRdrPassSet.find (Pass0)==Zone->Landscape->_FarRdrPassSet.end())
+			{
+				bool bFound=false;
+				{
+					for (sint t=0; t<(sint)Zone->Landscape->_FarRdrPassSetVectorFree.size(); t++)
+					{
+						if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (Pass0)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
+						{
+							bFound=true;
+							break;
+						}
+					}
+				}
+				nlassert (bFound);
+			}
+		}
+#endif // NL_DEBUG
 	}
 }
 
@@ -687,6 +833,29 @@ void			CPatch::renderFar1()
 						getFarIndex1(pFace->VLeft, pFace->PVLeft),
 						getFarIndex1(pFace->VRight, pFace->PVRight));
 		}
+
+		// Check the pass is in the set
+#ifdef NL_DEBUG
+		if (Pass1)
+		{
+			nlassert (Zone->Landscape->_FarRdrPassSet.find (Pass1)!=Zone->Landscape->_FarRdrPassSet.end());
+			if (Zone->Landscape->_FarRdrPassSet.find (Pass1)==Zone->Landscape->_FarRdrPassSet.end())
+			{
+				bool bFound=false;
+				{
+					for (sint t=0; t<(sint)Zone->Landscape->_FarRdrPassSetVectorFree.size(); t++)
+					{
+						if (Zone->Landscape->_FarRdrPassSetVectorFree[t].find (Pass1)!=Zone->Landscape->_FarRdrPassSetVectorFree[t].end())
+						{
+							bFound=true;
+							break;
+						}
+					}
+				}
+				nlassert (bFound);
+			}
+		}
+#endif // NL_DEBUG
 	}
 }
 // ***************************************************************************
@@ -936,18 +1105,6 @@ void			CPatch::serial(NLMISC::IStream &f)
 	f.serial(Tangents[4], Tangents[5], Tangents[6], Tangents[7]);
 	f.serial(Interiors[0], Interiors[1], Interiors[2], Interiors[3]);
 	f.serialCont(Tiles);
-}
-
-
-// ***************************************************************************
-CPatchRdrPass	*CPatch::getFarRenderPass(sint farLevel, float &farUVScale, float &farUBias, float &farVBias)
-{
-	// TODO_TEXTURE.
-	// dummy texture.
-	farUBias= 0;
-	farVBias= 0;
-	farUVScale= 1.0f/farLevel;
-	return Zone->Landscape->getFarRenderPass();
 }
 
 

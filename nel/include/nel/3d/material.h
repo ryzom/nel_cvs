@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.5 2001/01/05 15:07:22 berenguier Exp $
+ * $Id: material.h,v 1.6 2001/01/08 17:58:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,14 +70,12 @@ const uint32 IDRV_MAT_DEFMAT		=	0x00000040;
 const uint32 IDRV_MAT_BLEND			=	0x00000080;
 
 /**
- * <Class description>
+ * Class CMaterial
  *
- * *** IMPORTANT ********************
+ */
+/* *** IMPORTANT ********************
  * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
  * **********************************
- * \author Cyril Corvazier
- * \author Nevrax France
- * \date 2000
  */
 class CMaterial : public CRefCount
 {

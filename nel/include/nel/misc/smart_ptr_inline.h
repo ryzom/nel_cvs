@@ -1,7 +1,7 @@
 /** \file smart_ptr_inline.h
  * SmartPtr class inline definitions.
  *
- * $Id: smart_ptr_inline.h,v 1.2 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: smart_ptr_inline.h,v 1.3 2001/01/08 17:58:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,6 +99,11 @@ template<class T>
 SMART_INLINE CSmartPtr<T>& CSmartPtr<T>::operator=(const CSmartPtr &p)
 {
 	return operator=(p.Ptr);
+}
+template<class T>    
+SMART_INLINE bool CSmartPtr<T>::operator<(const CSmartPtr &p) const
+{
+	return Ptr<p.Ptr;
 }
 
 

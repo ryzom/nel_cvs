@@ -1,7 +1,7 @@
 /** \file tile_element.h
  * <File description>
  *
- * $Id: tile_element.h,v 1.4 2000/12/06 10:16:51 berenguier Exp $
+ * $Id: tile_element.h,v 1.5 2001/01/08 17:58:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,8 @@ namespace NL3D
 #define NL_TILE_ELM_OFFSET_UVINFO			6
 #define NL_TILE_ELM_SIZE_UVINFO				3
 
+#define NL_TILE_ELM_LAYER_EMPTY				0xffff
+
 // ***************************************************************************
 /**
  * An Element for CPatchTexture. Temporary! since CPatchTexture should be compressed...
@@ -54,7 +56,7 @@ private:
 	uint16	Flags;	// Tile Orientation, and Tile 256x256 UV offset.
 
 public:
-	/** The three tile ident. 0xFFFF means no Tile for this pass. Tile[0] should be !=0xFFFF.
+	/** The three tile ident. NL_TILE_ELM_LAYER_EMPTY means no Tile for this pass. Tile[0] should be !=NL_TILE_ELM_LAYER_EMPTY.
 	 * Else cross are drawn...
 	 */
 	uint16	Tile[3];

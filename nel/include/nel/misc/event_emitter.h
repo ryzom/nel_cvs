@@ -1,7 +1,7 @@
 /** \file event_emitter.h
  * class CEventEmitter
  *
- * $Id: event_emitter.h,v 1.8 2000/12/22 13:17:09 corvazier Exp $
+ * $Id: event_emitter.h,v 1.9 2001/01/08 17:58:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,12 +40,10 @@ class CEventServer;
  * CEventEmitter
  * Send events to the event server
  *
- * *** IMPORTANT ********************
+ */
+/* *** IMPORTANT ********************
  * *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
  * **********************************
- * \author Stephane Coutelas
- * \author Nevrax France
- * \date 2000
  */
 class IEventEmitter
 {

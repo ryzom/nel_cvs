@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.cpp
  * <File description>
  *
- * $Id: patch_rdr_pass.cpp,v 1.3 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: patch_rdr_pass.cpp,v 1.4 2001/01/08 17:58:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,7 @@ void			CPatchRdrPass::addTri(uint32 idx0, uint32 idx1, uint32 idx2)
 }
 
 // ***************************************************************************
-void			CPatchRdrPass::buildPBlock(CPrimitiveBlock &pb)
+void			CPatchRdrPass::buildPBlock(CPrimitiveBlock &pb) const
 {
 	sint	idx, n, blocklen;
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.23 2001/01/03 15:25:14 berenguier Exp $
+ * $Id: landscape.h,v 1.24 2001/01/08 17:58:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,8 +37,11 @@
 #include "nel/3d/vertex_buffer.h"
 #include "nel/3d/primitive_block.h"
 #include "nel/3d/material.h"
+#include "nel/3d/tile_far_bank.h"
 #include <map>
 
+#define NL_MAX_SIZE_OF_TEXTURE_EDGE_SHIFT (NL_MAX_TILES_BY_PATCH_EDGE_SHIFT+NL_NUM_PIXELS_ON_FAR_TILE_EDGE_SHIFT)
+#define NL_MAX_SIZE_OF_TEXTURE_EDGE (1<<NL_MAX_SIZE_OF_TEXTURE_EDGE_SHIFT)		// Size max of a far texture edge in pixel
 
 namespace NL3D 
 {
@@ -62,6 +65,9 @@ const	sint	NbTilesMax= 65536;
  *		- connectivity on a edge of a zone: 1/1 only.
  *		- The value of Noise amplitude is global and cannot go over 10 meters.
  *
+ *	If you use the tiles mapped on the patches, load the near bank file (.bank) and the far bank file (.farbank)
+ *  by seralizing TileBank and TileFarBank with those files. Then call initTileBanks.
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -71,6 +77,7 @@ class CLandscape : public NLMISC::CRefCount
 public:
 	// The bank of tiles information.
 	CTileBank		TileBank;
+	CTileFarBank	TileFarBank;
 
 public:
 
@@ -91,16 +98,26 @@ public:
 	 * \return true if OK, false otherwise. As example, Fail if newZone is already connected.
 	 */
 	bool			addZone(const CZone	&newZone);
+	
 	/** remove a zone by its unique Id.
 	 * The zone is release()-ed (disconnected), then deleted.
 	 * \param zoneId the zone to be removed.
 	 * \return true if OK, false otherwise. As example, Fail if zone is not connected.
 	 */
 	bool			removeZone(uint16 zoneId);
+	
 	/// Disconnect, and Delete all zones.
 	void			clear();
+
 	/// Verify the binding of patchs zones. assert if error.
 	void			checkBinds();
+
+	/**
+	  *  Build tileBank. Call this after loading the near and far tile banks.
+	  *  
+	  *  \return true if ok, false else. If false, far texture will be desactived.
+	  */
+	bool			initTileBanks ();
 	// @}
 
 	
@@ -181,9 +198,10 @@ private:
 	friend class	CPatch;
 	friend class	CZone;
 
-	// TODO_TEXTURE.
-	// dummy Far texture here.
-	CPatchRdrPass	*getFarRenderPass() {return &FarRdrPass;}
+	// Return the render pass for a far texture here.
+	CPatchRdrPass	*getFarRenderPass(CPatch* pPatch, uint farIndex, float& far1UVScale, float& far1UBias, float& far1VBias, bool& bRot);
+	// Free the render pass for a far texture here.
+	void freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint farIndex);
 	// Return the render pass for a tile Id.
 	CPatchRdrPass	*getTileRenderPass(uint16 tileId, bool additiveRdrPass);
 	// Return the UvScaleBias for a tile Id. uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
@@ -214,9 +232,9 @@ private:
 	// The map of tile texture loaded.
 	typedef	std::map<std::string, RPTexture>	TTileTextureMap;
 	typedef	TTileTextureMap::iterator			ItTileTextureMap;
-	TTileTextureMap		TileTextureMap;
+	TTileTextureMap								TileTextureMap;
 
-
+	
 	// The additional realtime structure for a tile.
 	struct	CTileInfo
 	{
@@ -247,11 +265,29 @@ private:
 	// The Tile material.
 	CMaterial		TileMaterial;
 
-
-	// TODO_TEXTURE.
-	// For test only. The only one Far material.
+	// The Far material.
 	CMaterial		FarMaterial;
-	CPatchRdrPass	FarRdrPass;
+
+	// *** Far texture	
+
+	// ** Some types
+
+	// The vector of set of far render pass
+	typedef NLMISC::CSmartPtr<CPatchRdrPass>	TSPRenderPass;
+	typedef std::set<TSPRenderPass>				TSPRenderPassSet;
+	typedef TSPRenderPassSet::iterator			ItSPRenderPassSet;
+	typedef	std::vector<TSPRenderPassSet>		TSPRdrPassSetVector;
+	TSPRenderPassSet							_FarRdrPassSet;					// Contain all the render pass not empty for pass0 and pass1
+	TSPRdrPassSetVector							_FarRdrPassSetVectorFree;		// Contain the render pass not filled yet sorted by size for pass0 and pass1
+	bool										_FarInitialized;
+
+	// Used internaly by initTileBanks
+	bool										eraseTileFarIfNotGood (uint tileNumber, uint sizeOrder0, uint sizeOrder1, uint sizeOrder2);
+
+	// ** Some private methods
+	static uint									getRdrPassIndexWithSize (uint width, uint height);
+	void										addPatch ();
+	void										removePatch ();
 
 
 private:

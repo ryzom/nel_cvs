@@ -1,7 +1,7 @@
 /** \file driver_opengl_texture.cpp
  * OpenGL driver implementation : setupTexture
  *
- * $Id: driver_opengl_texture.cpp,v 1.12 2001/01/05 15:13:24 corvazier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.13 2001/01/08 17:58:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,7 +228,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 
 			// a. Load All the texture case.
 			//==============================
-			if(mustLoadAll)
+			if (mustLoadAll)
 			{
 				// Regenerate all the texture.
 				tex.generate();
@@ -260,7 +260,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			}
 			// b. Load part of the texture case.
 			//==================================
-			else if(mustLoadPart)
+			else if (mustLoadPart)
 			{
 				// Regenerate wanted part of the texture.
 				tex.generate();
@@ -291,8 +291,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 					// For all rect, update the texture/mipmap.
 					//===============================================
 					list<NLMISC::CRect>::iterator	itRect;
-					sint level;
-					for(itRect=tex._ListInvalidRect.begin(), level=0; itRect!=tex._ListInvalidRect.end(); level++, itRect++)
+					for(itRect=tex._ListInvalidRect.begin(); itRect!=tex._ListInvalidRect.end(); itRect++)
 					{
 						CRect	&rect= *itRect;
 						sint	x0= rect.X;
@@ -314,7 +313,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 							glPixelStorei(GL_UNPACK_ROW_LENGTH, w);
 							glPixelStorei(GL_UNPACK_SKIP_ROWS, y0);
 							glPixelStorei(GL_UNPACK_SKIP_PIXELS, x0);
-							glTexSubImage2D(GL_TEXTURE_2D,level, x0, y0, x1-x0, y1-y0, GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+							glTexSubImage2D(GL_TEXTURE_2D,i, x0, y0, x1-x0, y1-y0, GL_RGBA,GL_UNSIGNED_BYTE, ptr );
 
 							// Next mipmap!!
 							// floor .

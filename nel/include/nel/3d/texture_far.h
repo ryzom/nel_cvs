@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.3 2000/12/22 10:42:05 corvazier Exp $
+ * $Id: texture_far.h,v 1.4 2001/01/08 17:58:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,14 +30,31 @@
 #include "nel/3d/texture.h"
 #include "nel/misc/rect.h"
 
+// Define the number of tile per tile far texture 
+#define NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT 2														// 2 (shit)
 
-namespace NL3D {
+// Same by precomputed values
+#define NL_NUM_FAR_PATCHES_BY_EDGE (1<<NL_NUM_FAR_PATCHES_BY_EDGE_SHIFT)						// 4 patches by edges
+#define NL_NUM_FAR_PATCHES_BY_EDGE_MASK (NL_NUM_FAR_PATCHES_BY_EDGE-1)							// 0x3 (mask)
+#define NL_NUM_FAR_PATCHES_BY_TEXTURE (NL_NUM_FAR_PATCHES_BY_EDGE*NL_NUM_FAR_PATCHES_BY_EDGE)	// 16 patches by CTextureFar
+
+namespace NLMISC
+{
+	class CRGBA;
+}
+
+namespace NL3D 
+{
 
 class CPatch;
+class CTileFarBank;
 
 /**
- * A CTextureFar is a set of texture used to map a whole patch when it is in far Mode. (ie not in tile mode).
- * A CTextureFar handle several tile
+ * A CTextureFar is a set of NL_NUM_FAR_PATCHES_BY_TEXTURE texture used to map a whole patch when it is in far Mode. (ie not in tile mode).
+ * A CTextureFar handle several patch texture.\\
+ *
+ * Before adding patch to the texture, you must call setSizeOfFarPatch, to intialize the texture.
+ *
  * \author Cyril Corvazier
  * \author Nevrax France
  * \date 2000
@@ -45,7 +62,6 @@ class CPatch;
 class CTextureFar : public ITexture
 {
 public:
-
 	/// Patch identifier
 	struct CPatchIdent
 	{
@@ -53,39 +69,50 @@ public:
 		CPatchIdent () {};
 
 		/// Constructor
-		CPatchIdent (CPatch* patch, uint8 order)
+		CPatchIdent (CPatch* patch)
 		{
 			Patch=patch;
-			Order=order;
 		}
 
 		// Data
 
 		// Patch pointer
 		CPatch*	Patch;
-
-		// Zone Id of the patch
-		uint8	Order;
 	};
 
 	/// Constructor
 	CTextureFar()
 	{
-		// This texture is not releasable. It stays in standard memory.
-		setReleasable (false);
+		// This texture is releasable. It doesn't stays in standard memory after been uploaded into video memory.
+		setReleasable (true);
 	}
 
-	/// Number of patches in the width
-	uint8						_WidthPatches;
-
-	/// Number of patches in the height
-	uint8						_HeightPatches;
+	/**
+	  *  Set the size of the patch stored in this texture far. Note that width must be larger than height.
+	  *  For patch with a bigger height than width, invert width and height value. So, in this texture far,
+	  *  you can store patches with a size of width*height but also patches with a size of height*width.
+	  *  
+	  *  \param width is the width of the texture far stored in this texture. Can be 64, 32, 16, 8, 4 or 2
+	  *  \param height is the height of the texture far stored in this texture. Can be 64, 32, 16, 8, 4 or 2
+	  */
+	void						setSizeOfFarPatch (sint width, sint height);
 
 	/**
-	 *  Vector of patches which texture far is stored in this CTextureFar
-	 *  Should be == to _WidthPatches*_HeightPatches
+	 *  Add a patch in the CTexture Patch. Must not be full! Return true if the texture is full after adding this patch else false.
+	 *
+	 *  \param pPatch is the pointer to the patch to add in the landscape
+	 *  \param far1UVScale will receive the scale to use to compute the UV coordinates
+	 *  \param far1UBias will receive the U Bias to use to compute the UV coordinates
+	 *  \param far1VBias will receive the V Bias to use to compute the UV coordinates
+	 *  \param bRot will receive true if the texture is rotated of 90° to the left or false. 
+	 *         You should take care of this value to compute UV coordinates.
 	 */
-	std::vector<CPatchIdent>	_Patches;
+	bool						addPatch (CPatch *pPatch, float& far1UVScale, float& far1UBias, float& far1VBias, bool& bRot);
+
+	/**
+	 *  Remove a patch in the CTexture Patch.
+	 */
+	bool						removePatch (CPatch *pPatch);
 
 	/**
 	 *  Generate the texture. See ITexture::generate().
@@ -93,11 +120,73 @@ public:
 	 *  \see ITexture::generate()
 	 */
 	virtual void				generate();
-};
 
+	// Data
+
+	/**
+	 *  Vector of patches which texture far is stored in this CTextureFar
+	 *  Should be == to _WidthPatches*_HeightPatches
+	 */
+	std::vector<CPatchIdent>	_Patches;
+
+	// Count of patch stored in this texture
+	uint32						_PatchCount;
+
+	/// A pointer on the far bank.
+	CTileFarBank*				_Bank;
+
+private:
+	/// The original size
+	uint32						_OriginalWidth;
+	uint32						_OriginalHeight;
+
+	/**
+	 *  Rebuild the rectangle passed in parameter
+	 */
+	void rebuildRectangle (uint x, uint y);
+
+	/// From IStreamable
+	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream) {}
+
+	NLMISC_DECLARE_CLASS(CTextureFar);
+};
 
 } // NL3D
 
+// For NL3D_drawFarTileInFarTexture external call
+struct NL3D_CComputeTileFar
+{
+public:
+	// TileFar pixels
+	const NLMISC::CRGBA*		SrcDiffusePixels;
+
+	// TileFar pixels
+	const NLMISC::CRGBA*		SrcAdditivePixels;
+
+	// Source deltaY
+	sint32						SrcDeltaY;
+
+	// TileFar pixels
+	NLMISC::CRGBA*				DstPixels;
+
+	// Destination offset
+	sint32						DstOffset;
+
+	// Destination deltaX
+	sint32						DstDeltaX;
+
+	// Destination deltaY
+	sint32						DstDeltaY;
+
+	// Size
+	sint32						Size;
+};
+
+// Extern ASM functions
+extern "C" void NL3D_drawFarTileInFarTexture (const NL3D_CComputeTileFar* pTileFar);
+extern "C" void NL3D_drawFarTileInFarTextureAdditive (const NL3D_CComputeTileFar* pTileFar);
+extern "C" void NL3D_drawFarTileInFarTextureAlpha (const NL3D_CComputeTileFar* pTileFar);
+extern "C" void NL3D_drawFarTileInFarTextureAdditiveAlpha (const NL3D_CComputeTileFar* pTileFar);
 
 #endif // NL_TEXTURE_FAR_H
 

@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.40 2004/09/03 09:19:35 legros Exp $
+ * $Id: welcome_service.cpp,v 1.41 2004/09/03 10:17:33 legros Exp $
  *
  */
 
@@ -70,6 +70,9 @@ CVariable<sint> PlayerLimit(
 // Forward declaration of callback cbShardOpenStateFile (see ShardOpenStateFile variable)
 void	cbShardOpenStateFile(IVariable &var);
 
+// Forward declaration of callback cbUsePatchMode
+void	cbUsePatchMode(IVariable &var);
+
 // Types of open state
 enum TShardOpenState
 {
@@ -108,6 +111,11 @@ CVariable<string>	OpenGroups("ws", "OpenGroups", "list of groups allowed at Shar
  */
 CVariable<uint>		OpenFrontEndThreshold("ws", "OpenFrontEndThreshold", "Limit number of players on all FS to decide to open a new FS", 800,	0, true );
 
+
+/**
+ * Use Patch mode
+ */
+CVariable<bool>		UsePatchMode("ws", "UsePatchMode", "Use Frontends as Patch servers (at FS startup)", true, 0, true, cbUsePatchMode );
 
 
 /**
@@ -595,6 +603,11 @@ void cbFESConnection (const std::string &serviceName, uint16 sid, void *arg)
 	{
 		(*it).NbEstimatedUser = (*it).NbUser;
 	}
+
+	if (!UsePatchMode.get())
+	{
+		FESList.back().setToAcceptClients();
+	}
 }
 
 
@@ -883,16 +896,13 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 
 	nlinfo ("Connected to %s-%hu and sent identification with shardId '%d'", serviceName.c_str(), sid, shardId);
 
+	CMessage	msgout("REPORT_NO_PATCH");
+	CUnifiedNetwork::getInstance()->send("LS", msgout);
+
 	bool	reportPatching = false;
 	list<CFES>::iterator	itfs;
 	for (itfs=FESList.begin(); itfs!=FESList.end(); ++itfs)
 		(*itfs).reportStateToLS(reportPatching);
-
-	if (!reportPatching)
-	{
-		CMessage	msgout("REPORT_NO_PATCH");
-		CUnifiedNetwork::getInstance()->send("LS", msgout);
-	}
 }
 
 
@@ -964,6 +974,28 @@ void	cbShardOpenStateFile(IVariable &var)
 	}
 }
 
+/**
+ * cbUsePatchMode()
+ * Callback for UsePatchMode
+ */
+void	cbUsePatchMode(IVariable &var)
+{
+	// if patch mode not set, set all fs in patching mode to accept clients now
+	if (!UsePatchMode.get())
+	{
+		nlinfo("UsePatchMode disabled, switch all patching servers to actual frontends");
+
+		list<CFES>::iterator	it;
+		
+		for (it=FESList.begin(); it!=FESList.end(); ++it)
+		{
+			if ((*it).State == PatchOnly)
+			{
+				(*it).setToAcceptClients();
+			}
+		}
+	}
+}
 
 
 // Callback Array for message from LS

@@ -111,6 +111,10 @@ LINK32=link.exe
 # Name "admin_service - Win32 ReleaseDebug"
 # Begin Source File
 
+SOURCE=.\admin_service.cfg
+# End Source File
+# Begin Source File
+
 SOURCE=.\admin_service.cpp
 # End Source File
 # End Target

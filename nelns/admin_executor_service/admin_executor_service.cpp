@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.6 2001/05/31 16:44:38 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.7 2001/06/07 16:19:05 lecroart Exp $
  *
  */
 
@@ -56,12 +56,13 @@ struct CService
 {
 	CService(TSockId s) : SockId(s), Id(NextId++), Ready(false) { }
 
-	TSockId	SockId;			/// connection to the service
-	uint32	Id;				/// uint32 to identify the service
-	string	AliasName;		/// alias of the service used in the AES and AS to find him (unique per AES)
-	string	ShortName;		/// name of the service in short format ("NS" for example)
-	string	LongName;		/// name of the service in long format ("naming_service")
-	bool	Ready;			/// true if the service is ready
+	TSockId			SockId;			/// connection to the service
+	uint32			Id;				/// uint32 to identify the service
+	string			AliasName;		/// alias of the service used in the AES and AS to find him (unique per AES)
+	string			ShortName;		/// name of the service in short format ("NS" for example)
+	string			LongName;		/// name of the service in long format ("naming_service")
+	bool			Ready;			/// true if the service is ready
+	vector<string>	Commands;
 
 private:
 	static	uint32 NextId;
@@ -252,12 +253,14 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 	CService *s = (CService*) from->appId();
 
 	msgin.serial (s->AliasName, s->ShortName, s->LongName);
+	msgin.serialCont (s->Commands);
 
 	nlinfo ("*:*:%d is identified to be '%s' '%s' '%s'", s->Id, s->AliasName.c_str(), s->ShortName.c_str(), s->LongName.c_str());
 
 	// broadcast the message to the admin service
 	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SID");
 	msgout.serial (s->Id, s->AliasName, s->ShortName, s->LongName);
+	msgout.serialCont (s->Commands);
 	CNetManager::send ("AESAS", msgout);
 }
 
@@ -430,10 +433,8 @@ void cbASServiceConnection (const string &serviceName, TSockId from, void *arg)
 	msgout.serial (nbs);
 	for (SIT sit = Services.begin(); sit != Services.end(); sit++)
 	{
-		msgout.serial ((*sit).Id);
-		msgout.serial ((*sit).ShortName);
-		msgout.serial ((*sit).LongName);
-		msgout.serial ((*sit).Ready);
+		msgout.serial ((*sit).Id, (*sit).AliasName, (*sit).ShortName, (*sit).LongName, (*sit).Ready);
+		msgout.serialCont ((*sit).Commands);
 	}
 	CNetManager::send ("AESAS", msgout, from);
 

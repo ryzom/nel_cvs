@@ -1,7 +1,7 @@
 /** \file u_play_list.h
  * <File description>
  *
- * $Id: u_play_list.h,v 1.4 2001/03/29 14:57:11 berenguier Exp $
+ * $Id: u_play_list.h,v 1.5 2001/03/29 15:15:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,7 +173,7 @@ public:
 	  * Wrap mode tells the play list how to use an animation when current time is not in the animation.
 	  * \param wrapMode is the mode to use.
 	  */
-	virtual	void setWrapMode (TWrapMode wrapMode)=0;
+	virtual	void setWrapMode (uint8 slot, TWrapMode wrapMode)=0;
 
 	/**
 	  * Get the wrap mode in use in the play list.
@@ -181,7 +181,7 @@ public:
 	  * Wrap mode tells the play list how to use an animation when current time is not in the animation.
 	  * \return the wrap mode in use.
 	  */
-	virtual	TWrapMode getWrapMode () const=0;
+	virtual	TWrapMode getWrapMode (uint8 slot) const=0;
 
 	// @}
 

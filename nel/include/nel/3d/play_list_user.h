@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * <File description>
  *
- * $Id: play_list_user.h,v 1.3 2001/03/29 14:57:11 berenguier Exp $
+ * $Id: play_list_user.h,v 1.4 2001/03/29 15:15:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,14 +131,14 @@ public:
 		return _PlayList.getSpeedFactor (slot);
 	}
 
-	virtual	void setWrapMode (TWrapMode wrapMode)
+	virtual	void setWrapMode (uint8 slot, TWrapMode wrapMode)
 	{
-		_PlayList.setWrapMode ((CAnimationPlaylist::TWrapMode)(uint)wrapMode);
+		_PlayList.setWrapMode (slot, (CAnimationPlaylist::TWrapMode)(uint)wrapMode);
 	}
 
-	virtual	TWrapMode getWrapMode () const
+	virtual	TWrapMode getWrapMode (uint8 slot) const
 	{
-		return (UPlayList::TWrapMode)(uint)_PlayList.getWrapMode ();
+		return (UPlayList::TWrapMode)(uint)_PlayList.getWrapMode (slot);
 	}
 
 	// @}

@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.23 2004/02/12 15:11:33 ledorze Exp $
+ * $Id: smart_ptr.h,v 1.24 2004/02/23 10:09:09 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -303,6 +303,7 @@ public:
 
 	/**
 	 * A little quick coded class made to find invalid object pointer existence while a destructor call on an objet.
+	 * Futur job is to do not have CstCDbgPtr .. (error due to a lack of time).
 	 *
 	 * Feature:
 	 *   If you try to delete an object and if there still some pointer referencing it, it causes an assertion.
@@ -346,9 +347,9 @@ public:
 //		//	check memory state ..
 //		nlassert(dbgcrefs==0x0cdcdcdcd || dbgcrefs==0x0cccccccc || dbgcrefs==0);
 //#endif
-		dbgcrefs=other.dbgcrefs;
+		dbgcrefs=0;
 		_maxRef=other._maxRef;
-		_checkOn=true;
+		_checkOn=other._checkOn;
 	}
     CDbgRefCount(sint32 maxRef=(1<<30))
 	{
@@ -412,17 +413,6 @@ public:
 	{	Ptr=NULL;	}
 
 private:	
-//    inline	CDbgPtr(const T* p)
-//	{
-//		Ptr=const_cast<T*>(p);
-//#ifdef NL_DEBUG_PTR
-//		if(Ptr)
-//		{
-//			CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
-//			ref->incRef(*this);
-//		}
-//#endif
-//	}
 
 public:
 	template	<class W>
@@ -475,8 +465,6 @@ public:
     T& operator*(void) const {	return *Ptr; }
     T* operator->(void) const {	return Ptr; }
 	
-//private:	
-//    inline	CDbgPtr& operator=(const T* p);
 
 	template	<class W>
 	inline	CDbgPtr& operator=(const W* p)
@@ -520,12 +508,6 @@ public:
 		return *this;
 	}
 	
-//public:
-//	template	<class W>
-//    inline	CDbgPtr& operator=(const W* p)
-//	{
-//		return	operator=(NLMISC::type_cast<T*>(p));
-//	}
 
     CDbgPtr& operator=(const CDbgPtr &p);
     bool operator<(const CDbgPtr &p) const;
@@ -579,50 +561,6 @@ inline CDbgPtr<T>::~CDbgPtr(void)
 #endif
 }
 
-//template<class T>
-//inline CDbgPtr<T>& CDbgPtr<T>::operator=(const T* p)
-//{
-//#ifdef NL_DEBUG_PTR	
-//    if(p)
-//	{
-//		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(p));
-//		ref->incRef(*this);
-//	}
-//    if(Ptr)
-//	{
-//		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
-//		ref->decRef(*this);
-//	}
-//	Ptr = const_cast<T*>(p);
-//	
-//#else
-//	Ptr = const_cast<T*>(p);
-//#endif
-//	return *this;
-//}
-//
-//
-//template<class T>    
-//inline CDbgPtr<T>& CDbgPtr<T>::operator=(const T* p)
-//{
-//#ifdef NL_DEBUG_PTR	
-//    if(p)
-//	{
-//		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(p));
-//		ref->incRef(*this);
-//	}
-//    if(Ptr)
-//	{
-//		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
-//		ref->decRef(*this);
-//	}
-//	Ptr = const_cast<T*>(p);
-//	
-//#else
-//	Ptr = const_cast<T*>(p);
-//#endif
-//	return *this;
-//}
 
 template<class T>    
 inline CDbgPtr<T>& CDbgPtr<T>::operator=(const CDbgPtr &p)

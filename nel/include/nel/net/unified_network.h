@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.18 2002/03/12 14:12:39 legros Exp $
+ * $Id: unified_network.h,v 1.19 2002/03/14 09:47:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -178,6 +178,9 @@ public:
 
 	/// Gets the total number of bytes queued after receiving
 	uint64				getReceiveQueueSize ();
+
+	/// Find a callback in the array
+	TUnifiedMsgCallback findCallback (const std::string &callbackName);
 
 private:
 

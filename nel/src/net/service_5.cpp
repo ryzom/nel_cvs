@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.12 2001/12/10 14:34:31 lecroart Exp $
+ * $Id: service_5.cpp,v 1.13 2001/12/10 17:52:05 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -295,6 +295,25 @@ static TUnifiedCallbackItem AESCallbackArray[] =
 	{ "STOPS", cbStopService },
 	{ "EXEC_COMMAND", cbExecCommand },
 };
+
+static CFileDisplayer fd;
+
+void IService5::setServiceName (const char *shortName, const char *longName)
+{
+	_ShortName = shortName;
+	_LongName = longName;
+
+	// now we have the service name, we create the log with this service
+
+	createDebug ();
+
+	fd.setParam (_LongName + ".log", false);
+
+	DebugLog->addDisplayer (&fd);
+	InfoLog->addDisplayer (&fd);
+	WarningLog->addDisplayer (&fd);
+	ErrorLog->addDisplayer (&fd);
+}
 
 //
 sint IService5::main (char *args)

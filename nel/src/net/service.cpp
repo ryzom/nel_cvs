@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.101 2001/12/10 14:34:31 lecroart Exp $
+ * $Id: service.cpp,v 1.102 2001/12/10 17:52:04 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -305,6 +305,26 @@ CCallbackServer *IService::getServer()
 {
 	return dynamic_cast<CCallbackServer*>(CNetManager::getNetBase(IService::_ShortName));
 }
+
+static CFileDisplayer fd;
+
+void IService::setServiceName (const char *shortName, const char *longName)
+{
+	_ShortName = shortName;
+	_LongName = longName;
+
+	// now we have the service name, we create the log with this service
+
+	createDebug ();
+
+	fd.setParam (_LongName + ".log", false);
+
+	DebugLog->addDisplayer (&fd);
+	InfoLog->addDisplayer (&fd);
+	WarningLog->addDisplayer (&fd);
+	ErrorLog->addDisplayer (&fd);
+}
+
 
 sint IService::main (char *args)
 {

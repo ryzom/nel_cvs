@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service_5.h,v 1.6 2001/12/10 14:37:18 lecroart Exp $
+ * $Id: service_5.h,v 1.7 2001/12/10 17:52:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -160,7 +160,7 @@ public:
 	sint				main (int argc, char **argv);
 	sint				main (char *args);
 
-	static void			setServiceName (const char *shortName, const char *longName) { _ShortName = shortName; _LongName = longName; }
+	static void			setServiceName (const char *shortName, const char *longName);
 
 	static void			setPort (uint16 Port) { _DefaultPort = Port; }
 

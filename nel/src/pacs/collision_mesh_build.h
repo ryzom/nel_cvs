@@ -1,7 +1,7 @@
 /** \file collision_mesh_build.h
  * 
  *
- * $Id: collision_mesh_build.h,v 1.8 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: collision_mesh_build.h,v 1.9 2002/12/31 10:07:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,6 +156,13 @@ public:
 		uint	i;
 		for (i=0; i<Vertices.size(); ++i)
 			Vertices[i] += translation;
+	}
+
+	void	transform(const NLMISC::CMatrix &tranfo)
+	{
+		uint	i;
+		for (i=0; i<Vertices.size(); ++i)
+			Vertices[i] = tranfo * Vertices[i];
 	}
 
 	NLMISC::CVector	computeTrivialTranslation() const

@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.15 2003/03/06 18:31:06 coutelas Exp $
+ * $Id: primitive.cpp,v 1.16 2003/03/06 19:47:08 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1055,10 +1055,10 @@ bool IPrimitive::getPropertyByName (const char *property_name, const IProperty *
 
 // ***************************************************************************
 
-bool IPrimitive::getPropertyByName (const char *property_name, IProperty *&result)
+bool IPrimitive::getPropertyByName (const char *property_name, IProperty *&result) const
 {
 	// Look for the property
-	std::map<std::string, IProperty*>::iterator ite = _Properties.find (property_name);
+	std::map<std::string, IProperty*>::const_iterator ite = _Properties.find (property_name);
 	if (ite != _Properties.end ())
 	{
 		result = ite->second;
@@ -1069,7 +1069,7 @@ bool IPrimitive::getPropertyByName (const char *property_name, IProperty *&resul
 
 // ***************************************************************************
 
-bool IPrimitive::getPropertyByName (const char *property_name, std::string *&result)
+bool IPrimitive::getPropertyByName (const char *property_name, std::string *&result) const
 {
 	// Get the property
 	IProperty *prop;
@@ -1113,7 +1113,7 @@ bool IPrimitive::getPropertyByName (const char *property_name, std::string &resu
 
 // ***************************************************************************
 
-bool IPrimitive::getPropertyByName (const char *property_name, std::vector<std::string> *&result)
+bool IPrimitive::getPropertyByName (const char *property_name, std::vector<std::string> *&result) const
 {
 	// Get the property
 	IProperty *prop;
@@ -1135,7 +1135,7 @@ bool IPrimitive::getPropertyByName (const char *property_name, std::vector<std::
 
 // ***************************************************************************
 
-bool IPrimitive::getPropertyByName (const char *property_name, const std::vector<std::string> *&result)
+bool IPrimitive::getPropertyByName (const char *property_name, const std::vector<std::string> *&result) const
 {
 	// Get the property
 	IProperty *prop;
@@ -1157,7 +1157,7 @@ bool IPrimitive::getPropertyByName (const char *property_name, const std::vector
 
 // ***************************************************************************
 
-bool IPrimitive::getPropertyByName (const char *property_name, NLMISC::CRGBA &result)
+bool IPrimitive::getPropertyByName (const char *property_name, NLMISC::CRGBA &result) const
 {
 	// Get the property
 	IProperty *prop;

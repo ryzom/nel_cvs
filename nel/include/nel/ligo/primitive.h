@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.18 2003/03/06 18:28:46 coutelas Exp $
+ * $Id: primitive.h,v 1.19 2003/03/06 19:47:14 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -236,17 +236,17 @@ public:
 	/** 
 	  * Get a property with its name
 	  **/
-	bool				getPropertyByName (const char *property_name, IProperty *&result);
+	bool				getPropertyByName (const char *property_name, IProperty *&result) const;
 
 	/** 
 	  * Get a string property with its name. Return false if the property is not found or is not a string property.
 	  **/
-	bool				getPropertyByName (const char *property_name, std::string *&result);
+	bool				getPropertyByName (const char *property_name, std::string *&result) const;
 
 	/** 
 	  * Get a string array property with its name. Return false if the property is not found or is not a string array property.
 	  **/
-	bool				getPropertyByName (const char *property_name, std::vector<std::string> *&result);
+	bool				getPropertyByName (const char *property_name, std::vector<std::string> *&result) const;
 
 	/** 
 	  * Get a string property with its name. Return false if the property is not found or is not a string property.
@@ -256,12 +256,12 @@ public:
 	/** 
 	  * Get a string array property with its name. Return false if the property is not found or is not a string array property.
 	  **/
-	bool				getPropertyByName (const char *property_name, const std::vector<std::string> *&result);
+	bool				getPropertyByName (const char *property_name, const std::vector<std::string> *&result) const;
 
 	/** 
 	  * Get a color property with its name. Return false if the property is not found or is not a string array property.
 	  **/
-	bool				getPropertyByName (const char *property_name, NLMISC::CRGBA &result);
+	bool				getPropertyByName (const char *property_name, NLMISC::CRGBA &result) const;
 
 	/** 
 	  * Remove a property

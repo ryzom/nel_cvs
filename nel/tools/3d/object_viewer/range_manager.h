@@ -1,7 +1,7 @@
 /** \file range_manager.h
  * the range manager helps to store user defined preference in an CEditableRange dialog
  *
- * $Id: range_manager.h,v 1.4 2001/07/04 17:15:40 vizerie Exp $
+ * $Id: range_manager.h,v 1.5 2001/09/12 13:34:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,11 +44,12 @@ public:
 	 */
 	static std::pair<T, T> GetRange(const std::string &id, const T &minRange, const T &maxRange)
 	{
+		nlassert(id != "");
 		if (_RangeMap.count(id) == 0) // not present yet ?
 		{
-			_RangeMap[id] = std::pair<T, T>(minRange, maxRange) ;			
+			_RangeMap[id] = std::pair<T, T>(minRange, maxRange);			
 		}
-		return _RangeMap[id] ;
+		return _RangeMap[id];
 	}
 
 	/** the same but no default values are provided. An assertion  occurs if not present.
@@ -57,57 +58,59 @@ public:
 	
 	static std::pair<T, T> GetRange(const std::string &id)
 	{
-		return _RangeMap[id] ;
+		nlassert(id != "");
+		return _RangeMap[id];
 	}
 
 	/// set a new value for the given range
 
 	static void SetRange(const std::string &id, const T &minRange, const T &maxRange)
 	{
-		_RangeMap[id] = std::pair<T, T>(minRange, maxRange) ;	
+		nlassert(id != "");
+		_RangeMap[id] = std::pair<T, T>(minRange, maxRange);	
 	}
 
 	/// serialization
 	static void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
-		uint32 size ;		
+		uint32 size;		
 		if (!f.isReading())
 		{
-			size = _RangeMap.size() ;
-			f.serial(size) ;
-			for (TRangeMap::const_iterator it = _RangeMap.begin() ; it != _RangeMap.end() ; ++it)
+			size = _RangeMap.size();
+			f.serial(size);
+			for (TRangeMap::const_iterator it = _RangeMap.begin(); it != _RangeMap.end(); ++it)
 			{	
-				std::string s = it->first ;
-				f.serial(s) ;
-				std::pair<T , T> value = it->second ;
-				f.serial(value.first) ;
-				f.serial(value.second) ;
+				std::string s = it->first;
+				f.serial(s);
+				std::pair<T , T> value = it->second;
+				f.serial(value.first);
+				f.serial(value.second);
 			}
 		}
 		else
 		{
-			_RangeMap.clear() ;
-			f.serial(size) ;
+			_RangeMap.clear();
+			f.serial(size);
 			while (size --)
 			{
-				std::string id ;
-				std::pair<T , T> value ;
-				f.serial(id) ;
-				f.serial(value.first) ;
-				f.serial(value.second) ;
-				_RangeMap[id] = value ;
+				std::string id;
+				std::pair<T , T> value;
+				f.serial(id);
+				f.serial(value.first);
+				f.serial(value.second);
+				_RangeMap[id] = value;
 			}
 		}
 	}
 
-	typedef std::map< std::string, std::pair<T, T> > TRangeMap ;
+	typedef std::map< std::string, std::pair<T, T> > TRangeMap;
 
 protected:
 	
 	// the map that contains the ID, and their range values
-	static TRangeMap _RangeMap ;
+	static TRangeMap _RangeMap;
 	
-} ;
+};
 
 
 

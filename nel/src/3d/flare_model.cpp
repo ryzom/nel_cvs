@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.1 2001/07/24 08:45:37 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.2 2001/07/24 10:00:55 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -81,7 +81,8 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	
 
 	static std::vector<float> v(1) ;
-	drv->getZBufferPart(v, NLMISC::CRect(xPos, yPos, 1, 1)) ;
+	NLMISC::CRect rect(xPos, yPos, 1, 1) ;
+	drv->getZBufferPart(v, rect) ;
 
 	const float z = (pt.z - trav->Near)  / (trav->Far - trav->Near) ;
 	
@@ -102,7 +103,8 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	CRGBA  col ;
 	nlassert(m->Shape) ;
 	CFlareShape *fs = NLMISC::safe_cast<CFlareShape *>((IShape *) m->Shape) ;
-	col.modulateFromui(fs->getColor(), (uint) (255.f * m->_Intensity)) ;
+	CRGBA        flareColor = fs->getColor() ; 
+	col.modulateFromui(flareColor, (uint) (255.f * m->_Intensity)) ;
 	material.setColor(col) ;
 	material.setBlend(true) ;
 	material.setBlendFunc(CMaterial::one, CMaterial::one) ;

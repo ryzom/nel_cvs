@@ -3,7 +3,7 @@ rm log.log 2> /dev/null
 
 # *** Export ig files (.ig) from Max
 
-exec_timeout='../../bin/exec_timeout.exe'
+exec_timeout='exec_timeout.exe'
 
 # Get the timeout
 timeout=`cat ../../cfg/config.cfg | grep "ig_export_timeout" | sed -e 's/ig_export_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -46,16 +46,19 @@ for i in $ig_land_source_directories ; do
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 1 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 2 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 3 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	# Idle
@@ -73,16 +76,19 @@ for i in $ig_other_source_directories ; do
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 1 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 2 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 3 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	# Idle

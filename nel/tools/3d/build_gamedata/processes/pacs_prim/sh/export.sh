@@ -3,7 +3,7 @@ rm log.log 2> /dev/null
 
 # *** Export pacs_prim files (.pacs_prim) from Max
 
-exec_timeout='../../bin/exec_timeout.exe'
+exec_timeout='exec_timeout.exe'
 
 # Get the timeout
 timeout=`cat ../../cfg/config.cfg | grep "pacs_prim_export_timeout" | sed -e 's/pacs_prim_export_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -40,16 +40,19 @@ for i in $pacs_prim_source_directories ; do
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript pacs_prim_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 1 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript pacs_prim_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 2 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript pacs_prim_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 3 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	# Idle

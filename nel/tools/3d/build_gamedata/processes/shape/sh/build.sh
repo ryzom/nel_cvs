@@ -7,10 +7,10 @@ rm log.log 2> /dev/null
 database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Bin
-tga_2_dds='../../bin/tga2dds.exe'
-build_coarse_mesh='../../bin/build_coarse_mesh.exe'
-lightmap_optimizer='../../bin/lightmap_optimizer.exe'
-build_clodtex='../../bin/build_clodtex.exe'
+tga_2_dds='tga2dds.exe'
+build_coarse_mesh='build_coarse_mesh.exe'
+lightmap_optimizer='lightmap_optimizer.exe'
+build_clodtex='build_clodtex.exe'
 
 
 # Log error

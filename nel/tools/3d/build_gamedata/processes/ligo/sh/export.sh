@@ -15,7 +15,7 @@ echo -------
 date >> log.log
 date
 
-exec_timeout='../../bin/exec_timeout.exe'
+exec_timeout='exec_timeout.exe'
 
 # Get the timeout
 timeout=`cat ../../cfg/config.cfg | grep "ligo_export_timeout" | sed -e 's/ligo_export_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -29,8 +29,8 @@ bank_filename=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_
 bankfar_filename=`cat ../../cfg/properties.cfg | grep "bankfar_name" | sed -e 's/bankfar_name//' | sed -e 's/ //g' | sed -e 's/=//g'  | sed -e 's/"//g' | sed -e 's/;//g'`
 
 # Copy the bank file
-cp $bank_filename smallbank/ligo.smallbank 2> log.log
-cp $bankfar_filename smallbank/ligo.farbank 2> log.log
+cp $bank_filename smallbank/ligo.smallbank 2>> log.log
+cp $bankfar_filename smallbank/ligo.farbank 2>> log.log
 
 # Maxdir
 max_directory=`echo $MAX_DIR | sed -e 's&\\\&/&g'`
@@ -62,15 +62,18 @@ if test -z "$land_name" ; then
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript nel_ligo_export.ms -q -mi
 
 	# Concat log.log files
+	echo Try 1 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript nel_ligo_export.ms -q -mi
 
 	# Concat log.log files
+	echo Try 2 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript nel_ligo_export.ms -q -mi
 
 	# Concat log.log files
+	echo Try 3 >> log.log
 	cat $max_directory/log.log >> log.log
 fi

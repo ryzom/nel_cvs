@@ -91,6 +91,8 @@ try
 		-- For each files
 		for i = 1 to files.count do
 		(
+			nlerror ("Scanning file "+files[i]+" ...")
+
 			try
 			(
 				-- Free memory and file handles

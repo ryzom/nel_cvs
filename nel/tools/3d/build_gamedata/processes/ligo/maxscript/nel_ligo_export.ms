@@ -183,7 +183,7 @@ fn exportCollisionsFromZone outputPath filename =
 	-- Export the collision
 	if (NelExportCollision ($selection as array) outputPath) == false then
 	(
-			nlerror ("WARNING No collision exported from file "+filename)
+		nlerror ("WARNING No collision exported from file "+filename)
 	)
 	else
 	(
@@ -414,15 +414,10 @@ fn exportInstanceGroupFromZone inputFile outputPath igName transitionZone cellSi
 				)
 				else
 				(
-					nlerror ("SKIPPED "+output)
+					nlerror ("SKIPPED ligo ig "+output)
 				)
 			)
 		)
-	)
-	else
-	(
-		-- Error
-		nlerror ("WARNING nothing exported from ig max file "+inputFile)
 	)
 )
 
@@ -457,6 +452,7 @@ try
 		tokenArray = filterString (getFilenameFile curFileName) "-"
 		if (tokenArray.count == 3) and (tokenArray[1] == "zonematerial")  then
 		(			
+			nlerror ("Scanning file "+curFileName+" ...")
 
 			-- INCREMENTAL : do we have to export ?
 			dstFileName = ligo_export_path + "zoneLigos\\" + tokenArray[2] + "-" + tokenArray[3] + ".ligozone"
@@ -507,31 +503,31 @@ try
 							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 						)
 
-						-- export matching igs
-						try
-						(
-							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
-						)
-						catch
-						(
-							nlerror("couldn't export ig for " + curFileName)
-						)
-						-- export collisions
-						try
-						(
-							exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
-						)
-						catch
-						(
-							nlerror("couldn't export collision for " + curFileName)
-						)
-
 					)
 				)
 			)
 			else
 			(
-				nlerror ("SKIP "+ (getFilenameFile curFileName))
+				nlerror ("SKIPPED ligozone "+ (getFilenameFile curFileName))
+			)
+
+			-- export matching igs
+			try
+			(
+				exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
+			)
+			catch
+			(
+				nlerror("couldn't export ig for " + curFileName)
+			)
+			-- export collisions
+			try
+			(
+				exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
+			)
+			catch
+			(
+				nlerror("couldn't export collision for " + curFileName)
 			)
 		)
 	)
@@ -549,6 +545,8 @@ try
 		tokenArray = filterString (getFilenameFile curFileName) "-"
 		if (tokenArray.count == 4) and (tokenArray[1] == "zonetransition") then
 		(
+			nlerror ("Scanning file "+curFileName+" ...")
+
 			HaveToExport = #()
 			for zone = 1 to 9 do
 			(
@@ -689,32 +687,33 @@ try
 									nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 								)
 
-								-- export igs
-								try
-								(
-									exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") (lowercase (zoneBaseName)) zone cellSize
-								)
-								catch
-								(
-									nlerror("couldn't export ig for " + curFileName)
-								)
-								-- export collisions
-								try
-								(
-									exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
-								)
-								catch
-								(
-									nlerror("couldn't export collision for " + curFileName)
-								)
-
 								-- Delete
 								delete c
 							)
 						)
 						else
 						(
-							nlerror ("SKIP "+ (getFilenameFile filename))
+							nlerror ("SKIPPED ligozone transition "+ (getFilenameFile filename))
+						)
+
+						-- export igs
+						try
+						(
+							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") (lowercase (zoneBaseName)) zone cellSize
+						)
+						catch
+						(
+							nlerror("couldn't export ig for " + curFileName)
+						)
+
+						-- export collisions
+						try
+						(
+							exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
+						)
+						catch
+						(
+							nlerror("couldn't export collision for " + curFileName)
 						)
 					)
 				)
@@ -733,6 +732,8 @@ try
 		tokenArray = filterString (getFilenameFile curFileName) "-"
 		if (tokenArray.count == 2) and (tokenArray[1] == "zonespecial")  then
 		(
+			nlerror ("Scanning file "+curFileName+" ...")
+
 			-- INCREMENTAL : do we have to export ?
 			dstFileName = ligo_export_path + "zoneLigos\\" + tokenArray[2] + ".ligozone"
 
@@ -779,35 +780,32 @@ try
 							-- Error
 							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 						)
-
-						-- export matching igs
-						try
-						(
-							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
-						)
-						catch
-						(
-							nlerror("couldn't export ig for " + curFileName)
-						)
-	
-						-- export collisions
-						try
-						(
-							exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
-						)
-						catch
-						(
-							nlerror("couldn't export collision for " + curFileName)
-						)
-
-
-
 					)
 				)
 			)
 			else
 			(
-				nlerror ("SKIP "+ (getFilenameFile curFileName))
+				nlerror ("SKIPPED ligozone special "+ (getFilenameFile curFileName))
+			)
+
+			-- export matching igs
+			try
+			(
+				exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
+			)
+			catch
+			(
+				nlerror("couldn't export ig for " + curFileName)
+			)
+
+			-- export collisions
+			try
+			(
+				exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
+			)
+			catch
+			(
+				nlerror("couldn't export collision for " + curFileName)
 			)
 		)
 	)

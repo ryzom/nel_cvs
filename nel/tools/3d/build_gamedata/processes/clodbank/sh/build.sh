@@ -22,5 +22,5 @@ clod_bank_file_name=`cat ../../cfg/config.cfg | grep "clod_bank_file_name" | sed
 
 
 # Execute the build
-../../bin/build_clod_bank.exe  cfg/local_path.cfg  $database_directory/$clod_config_file  clodbank/$clod_bank_file_name
+build_clod_bank.exe  cfg/local_path.cfg  $database_directory/$clod_config_file  clodbank/$clod_bank_file_name
 

@@ -3,8 +3,8 @@ rm log.log 2> /dev/null
 
 # Build the farbank
 
-build_farbank='../../bin/build_far_bank.exe'
-exec_timeout='../../bin/exec_timeout.exe'
+build_farbank='build_far_bank.exe'
+exec_timeout='exec_timeout.exe'
 
 # Get the timeout
 timeout=`cat ../../cfg/config.cfg | grep "farbank_build_timeout" | sed -e 's/farbank_build_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`

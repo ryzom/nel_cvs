@@ -2,7 +2,7 @@
 rm log.log 2> /dev/null
 
 # Bin
-tga_2_dds='../../bin/tga2dds.exe'
+tga_2_dds='tga2dds.exe'
 
 # *** Export interface tile (.tga)
 

@@ -3,12 +3,12 @@ rm log.log 2> /dev/null
 
 # Build zone
 
-build_rbank='../../bin/build_rbank.exe'
-build_indoor_rbank='../../bin/build_indoor_rbank.exe'
-build_ig_boxes='../../bin/build_ig_boxes.exe'
-ai_build_wmap='../../bin/ai_build_wmap_r.exe'
-get_neighbors='../../bin/get_neighbors.exe'
-exec_timeout='../../bin/exec_timeout.exe'
+build_rbank='build_rbank.exe'
+build_indoor_rbank='build_indoor_rbank.exe'
+build_ig_boxes='build_ig_boxes.exe'
+ai_build_wmap='ai_build_wmap_r.exe'
+get_neighbors='get_neighbors.exe'
+exec_timeout='exec_timeout.exe'
 
 # Get the timeout
 tessel_timeout=`cat ../../cfg/config.cfg | grep "rbank_build_tessel_timeout" | sed -e 's/rbank_build_tessel_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`

@@ -1,8 +1,8 @@
 #!/bin/bash
 rm log.log 2> /dev/null
 
-tga_2_dds='../../bin/tga2dds.exe'
-exec_timeout='../../bin/exec_timeout.exe'
+tga_2_dds='tga2dds.exe'
+exec_timeout='exec_timeout.exe'
 
 # Get the timeout
 timeout=`cat ../../cfg/config.cfg | grep "maps_build_timeout" | sed -e 's/maps_build_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`

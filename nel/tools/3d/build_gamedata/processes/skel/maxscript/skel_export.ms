@@ -30,7 +30,7 @@ fn nlerror message =
 	print message
 )
 
--- try
+try
 (
 	-- Get files in the skel_source_directory
 	files = getFiles "skel_source_directory/*.max" 
@@ -44,7 +44,9 @@ fn nlerror message =
 		-- For each files
 		for i = 1 to files.count do
 		(
-			--try
+			nlerror ("Scanning file "+files[i]+" ...")
+
+			try
 			(
 				-- Output file
 				output = ("output_directory/"+(getFilenameFile files[i])+".skel")
@@ -108,10 +110,10 @@ fn nlerror message =
 					nlerror ("SKIPPED "+files[i])
 				)
 			)
-			-- catch 
+			catch 
 			(
 				-- Error
-			--	nlerror ("ERROR error exporting skeleton in files " + files[i])
+				nlerror ("ERROR error exporting skeleton in files " + files[i])
 			)
 		)
 	)
@@ -120,10 +122,10 @@ fn nlerror message =
 		nlerror ("WARNING no skeleton file in folder skel_source_directory")
 	)
 )
--- catch 
+catch 
 (
 	-- Error
---	nlerror ("ERROR fatal error exporting skeleton in folder skel_source_directory")
+	nlerror ("ERROR fatal error exporting skeleton in folder skel_source_directory")
 )
 
 -- Bye

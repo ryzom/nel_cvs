@@ -7,7 +7,7 @@ echo > log.log
 # Make the config file
 # ********************
 
-exec_timeout='../../bin/exec_timeout.exe'
+exec_timeout='exec_timeout.exe'
 
 # Get the timeout
 land_exporter_timeout=`cat ../../cfg/config.cfg | grep "ligo_build_timeout" | sed -e 's/ligo_build_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -139,7 +139,7 @@ date >> log.log
 date
 
 echo Exporting
-$exec_timeout $land_exporter_timeout ../../bin/land_export.exe land_exporter.cfg
+$exec_timeout $land_exporter_timeout land_export.exe land_exporter.cfg
 
 # rename *.[zZ][oO][nN][eE][lL] *.[zZ][oO][nN][eE]
 # script is just too slow to do renaming... And we can't call directly dos command

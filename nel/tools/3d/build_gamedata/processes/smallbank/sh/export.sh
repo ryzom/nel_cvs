@@ -4,8 +4,8 @@ rm log.log 2> /dev/null
 # *** Export bank file (.bank) from Max
 
 # Some exe
-build_smallbank='../../bin/build_smallbank.exe'
-exec_timeout='../../bin/exec_timeout.exe'
+build_smallbank='build_smallbank.exe'
+exec_timeout='exec_timeout.exe'
 
 # Get the database directory
 database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`

@@ -4,7 +4,7 @@ rm log.log 2> /dev/null
 # *** Build map files (.tga / .dds)
 
 # Bin
-tga_2_dds='../../bin/tga2dds.exe'
+tga_2_dds='tga2dds.exe'
 
 # Log error
 echo ------- > log.log
@@ -23,7 +23,7 @@ rmdir panoply
 mkdir panoply
 
 # Bin
-panoply_maker='../../bin/panoply_maker.exe'
+panoply_maker='panoply_maker.exe'
 
 # Log error
 echo ------- > log.log
@@ -48,7 +48,7 @@ if test "$panoply_file_list" ; then
 		cp $database_directory/$psource current_panoply.cfg
 		echo "output_path=\"panoply\";" >> current_panoply.cfg
 		echo "cache_path=\"cache\";" >> current_panoply.cfg
-		../../bin/panoply_maker current_panoply.cfg
+		panoply_maker.exe current_panoply.cfg
 
 		# Idle
 		../../idle.bat
@@ -105,7 +105,7 @@ done
 
 
 # Bin
-hls_bank_maker='../../bin/hls_bank_maker.exe'
+hls_bank_maker='hls_bank_maker.exe'
 
 # build the HLSBank (if hlsInfo present, and if build wanted)
 hls_bank_file_name=`cat ../../cfg/config.cfg | grep "hls_bank_file_name" | sed -e 's/hls_bank_file_name//' | sed -e 's/ //g' | sed -e 's/=//g'`

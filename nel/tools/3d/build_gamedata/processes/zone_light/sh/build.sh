@@ -3,9 +3,9 @@ rm log.log 2> /dev/null
 
 # Build zone
 
-zone_lighter='../../bin/zone_lighter.exe'
-zone_ig_lighter='../../bin/zone_ig_lighter.exe'
-exec_timeout='../../bin/exec_timeout.exe'
+zone_lighter='zone_lighter.exe'
+zone_ig_lighter='zone_ig_lighter.exe'
+exec_timeout='exec_timeout.exe'
 
 # Get the timeout
 light_timeout=`cat ../../cfg/config.cfg | grep "zone_build_light_timeout" | sed -e 's/zone_build_light_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`

@@ -35,16 +35,19 @@ for i in $veget_source_directories ; do
 	$max_directory/3dsmax.exe -U MAXScript veget_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 1 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	$max_directory/3dsmax.exe -U MAXScript veget_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 2 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	$max_directory/3dsmax.exe -U MAXScript veget_export.ms -q -mi -vn
 
 	# Concat log.log files
+	echo Try 3 >> log.log
 	cat $max_directory/log.log >> log.log
 
 	# Idle

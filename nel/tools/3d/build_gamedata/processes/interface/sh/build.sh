@@ -29,7 +29,7 @@ for i in $interface_source_directories ; do
 	niouname=`echo $i | sed -e 's&/&_&g'`
 	rm tga_tmp/*.[tT][gG][aA]
 	cp -u -p $database_directory/$i/*.[tT][gG][aA] tga_tmp 2>> log.log
-	../../bin/build_interface tga/texture_$niouname.tga tga_tmp
+	build_interface.exe tga/texture_$niouname.tga tga_tmp
 
 	# Idle
 	../../idle.bat
@@ -44,7 +44,7 @@ for i in $interface_source_dxtc_directories ; do
 done
 
 # build all files in tga_tmp into one tga. Let the OpenGL compress it at runTime (better result for some important cases)
-../../bin/build_interface tga/texture_interfaces_dxtc.tga tga_tmp
+build_interface.exe tga/texture_interfaces_dxtc.tga tga_tmp
 # DO NOT COMPRESS ../../bin/tga2dds tga_tmp/texture_interfaces_dxtc.tga -o tga/texture_interfaces_dxtc.dds -a 5
 
 # Idle

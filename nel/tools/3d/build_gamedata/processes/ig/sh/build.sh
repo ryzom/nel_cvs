@@ -68,7 +68,7 @@ then
 		# Launch the exporter
 		# *******************
 
-		../../bin/prim_export.exe prim_export.cfg
+		prim_export.exe prim_export.cfg
 
 		# *******************
 		# Merge it with the IG_LAND exported from Max + elvated with heightmap
@@ -104,7 +104,7 @@ then
 		echo "LandFile = \"$dir_database/$dir_ligosrc/$land_name\";" >> ig_elevation.cfg
 
 
-		../../bin/ig_elevation ig_elevation.cfg
+		ig_elevation ig_elevation.cfg
 
 		# elevation of the heightmap for land_ligo
 		# ++++++++++++++++++++++++++++++++++++++++++++
@@ -136,7 +136,7 @@ then
 		land_name=`cat ../../cfg/config.cfg | grep "ligo_export_land" | sed -e 's/ligo_export_land//' | sed -e 's/ //g' | sed -e 's/=//g'`
 		echo "LandFile = \"$dir_database/$dir_ligosrc/$land_name\";" >> ig_elevation.cfg
 
-		../../bin/ig_elevation ig_elevation.cfg
+		ig_elevation ig_elevation.cfg
 
 	else
 		echo [Prim IG] OFF
@@ -162,7 +162,7 @@ for filename in $list_ig ; do
 	# Does this file exist in ig_land_max_elev ?
 	if test -e ig_land_max_elev/$filename ; then
 		# Yes, lets merge it 
-		../../bin/ig_add ig_merge_tmp/$filename ig_land_max_elev/$filename ig_land_ld/$filename ;
+		ig_add ig_merge_tmp/$filename ig_land_max_elev/$filename ig_land_ld/$filename ;
 	else
 		# No, only copy it
 		cp ig_land_ld/$filename ig_merge_tmp/$filename ;
@@ -197,7 +197,7 @@ for filename in $list_ig ; do
 	# Does this file exist in ig_land_ligo_elev ?
 	if (test -e ig_land_ligo_elev/$filename) then
 		# Yes, lets merge it 
-		../../bin/ig_add ig_land/$filename ig_merge_tmp/$filename ig_land_ligo_elev/$filename ;
+		ig_add ig_land/$filename ig_merge_tmp/$filename ig_land_ligo_elev/$filename ;
 	else
 		# No, only copy it
 		cp ig_merge_tmp/$filename ig_land/$filename ;

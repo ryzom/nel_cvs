@@ -13,4 +13,4 @@ date
 
 
 # Execute the build
-../../bin/anim_builder.exe  anim_export  anim  ../../cfg/properties.cfg
+anim_builder.exe  anim_export  anim  ../../cfg/properties.cfg

@@ -3,9 +3,9 @@ rm log.log 2> /dev/null
 
 # Build zone
 
-zone_dependencies='../../bin/zone_dependencies.exe'
-zone_welder='../../bin/zone_welder.exe'
-exec_timeout='../../bin/exec_timeout.exe'
+zone_dependencies='zone_dependencies.exe'
+zone_welder='zone_welder.exe'
+exec_timeout='exec_timeout.exe'
 
 # Get the timeout
 depend_timeout=`cat ../../cfg/config.cfg | grep "zone_build_depend_timeout" | sed -e 's/zone_build_depend_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`

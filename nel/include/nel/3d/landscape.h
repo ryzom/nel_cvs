@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.14 2000/12/06 14:32:24 berenguier Exp $
+ * $Id: landscape.h,v 1.15 2000/12/08 10:35:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,8 @@ public:
 	{
 		return _TileDistNear;
 	}
+	void	setRefineMode(bool enabled) {_RefineMode= true;}
+	bool	getRefineMode() const {return _RefineMode;}
 	// TODO: other landscape param setup (Transition etc...).
 	// Store it by landscape, and not only globally in CTessFace statics.
 
@@ -165,6 +167,7 @@ private:
 
 	// Parameters.
 	float			_TileDistNear;
+	bool			_RefineMode;
 
 	// The temp VB for tiles and far passes.
 	CVertexBuffer	FarVB;

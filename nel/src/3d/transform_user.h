@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.3 2001/07/30 14:40:14 besson Exp $
+ * $Id: transform_user.h,v 1.4 2001/07/31 08:09:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@
 namespace NL3D 
 {
 
+class UInstanceGroup;
 
 // ***************************************************************************
 /**

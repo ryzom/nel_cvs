@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.30 2000/12/08 14:54:05 lecroart Exp $
+ * $Id: service.cpp,v 1.31 2000/12/08 15:17:45 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -28,13 +28,14 @@
 
 
 #include "nel/misc/types_nl.h"
+#include "nel/net/unitime.h"
 
 #include <stdlib.h>
 #include <signal.h>
 
 #ifdef NL_OS_WINDOWS
 // these defines is for IsDebuggerPresent(). it'll not compile on windows 95
-// just comment this and the IsDebuggerPresent to compile on wiindows 95
+// just comment this and the IsDebuggerPresent to compile on windows 95
 #define _WIN32_WINDOWS	0x0410
 #define WINVER			0x0400
 #include <windows.h>
@@ -229,8 +230,11 @@ sint IService::main (int argc, char **argv)
 		getCustomParams();
 
 		// Get the universal time (useful for debugging)
-
-		CUniTime::syncUniTimeFromService ();
+		if (strcmp(_Name,"TS")!=0 && strcmp(_Name,"NS")!=0)
+		{
+			// don't call the sync if it's the Time Service and Naming Service
+			CUniTime::syncUniTimeFromService ();
+		}
 
 		// Register the name to the NS (except for the NS itself)
 		if ( strcmp( IService::_Name, "NS" ) != 0 )

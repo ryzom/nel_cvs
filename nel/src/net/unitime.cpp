@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.9 2000/11/28 15:50:33 cado Exp $
+ * $Id: unitime.cpp,v 1.10 2000/12/08 15:17:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ void CUniTime::syncUniTimeFromService ()
 {
 	uint16 validitytime;
 	CSocket server;
-	if ( CNamingClient::lookupAndConnect( "CTS", server, validitytime ) )
+	if ( CNamingClient::lookupAndConnect( "TS", server, validitytime ) )
 	{
 		sint attempt = 0;
 		TTime bestdelta = 0;
@@ -92,7 +92,7 @@ void CUniTime::syncUniTimeFromService ()
 	}
 	else
 	{
-		nlerror ("CTS not found, can't syncronize universal time");
+		nlerror ("TS not found, can't syncronize universal time");
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * CMemStream class
  *
- * $Id: mem_stream.h,v 1.7 2001/02/26 15:13:30 cado Exp $
+ * $Id: mem_stream.h,v 1.8 2001/03/13 15:57:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,6 +145,15 @@ public:
 	{
 		return _Buffer;
 	}
+
+	/// Returns the vector for external filling
+	CVector8&	bufferAsVector()
+	{
+		return _Buffer;
+	}
+
+	// When you fill the buffer externaly (using bufferAsVector) you have to reset the BufPos calling this method
+	void resetBufPos() { _BufPos = _Buffer.begin(); }
 
 	/// Fills the message buffer, for reading
 	void			fill( const uint8 *srcbuf, uint32 len );

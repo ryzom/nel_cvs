@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.15 2001/11/09 15:45:32 besson Exp $
+ * $Id: bitmap.cpp,v 1.16 2001/11/13 10:04:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2591,7 +2591,7 @@ void	CBitmap::rot90CCW()
 
 void CBitmap::blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor)
 {
-nlassert(factor >= 0 && factor <= 256)
+nlassert(factor <= 256)
 
 nlassert(Bm0._Width != 0 && Bm0._Height != 0
 		 && Bm1._Width != 0 && Bm1._Height != 0);
@@ -2629,11 +2629,6 @@ else
 this->resize(Bm0._Width, Bm0._Height, RGBA);
 
 const  uint numPix = _Width * _Height; // 4 component per pixels
-/*std::vector<uint8>::const_iterator src0		= nBm0->_Data[0].begin();
-std::vector<uint8>::const_iterator src1		= nBm1->_Data[0].begin();
-std::vector<uint8>::iterator	   dest		= this->_Data[0].begin();
-std::vector<uint8>::iterator       endPix   = dest + (numPix << 2);
-*/
 
 
 const uint8 *src0		= &(nBm0->_Data[0][0]);

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * viewer of cluster system
  *
- * $Id: main.cpp,v 1.1 2002/03/13 11:15:52 lecroart Exp $
+ * $Id: main.cpp,v 1.2 2002/03/18 10:51:30 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,8 @@ CInstanceGroup* LoadInstanceGroup(const char* sFilename)
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void LoadSceneScript (const char *ScriptName, CScene* pScene, vector<SDispCS> &DispCS, CVector &CameraStart)
+void LoadSceneScript (const char *ScriptName, CScene* pScene, vector<SDispCS> &DispCS, CVector &CameraStart, 
+					  vector<CInstanceGroup*> &vIGs)
 {
 	char nameIG[256];
 	float posx, posy, posz;
@@ -184,6 +185,7 @@ void LoadSceneScript (const char *ScriptName, CScene* pScene, vector<SDispCS> &D
 				ITemp->setRotQuat (ITemp->getRotQuat() * CQuat(CVector::K, rotk));
 				ITemp->setClusterSystem (father);
 				ITemp->addToScene (*pScene);
+				vIGs.push_back (ITemp);
 			}
 			pile.push_back (ITemp);
 		}
@@ -217,6 +219,12 @@ int WINAPI WinMain(
 	sint32 nSelected = 0;
 
 	SDispCS dcsTemp;
+
+	vector<CInstanceGroup*> vAllIGs;
+	// 2 dynamics objects
+	CTransformShape *pDynObj_InRoot;
+	CTransformShape *pDynObj_InCS;
+
 
 
 	CNELU::init (800, 600, CViewport(), 32, true);
@@ -254,12 +262,22 @@ int WINAPI WinMain(
 	// Begining of script reading
 	CVector CameraStart;
 
-	LoadSceneScript ("main.cvs", &CNELU::Scene, DispCS, CameraStart);
+	LoadSceneScript ("main.cvs", &CNELU::Scene, DispCS, CameraStart, vAllIGs);
 
 	CMatrix m = MouseListener.getViewMatrix();
 	m.setPos (CameraStart);
 	MouseListener.setMatrix (m);
 	// End of script reading
+
+	// Put a dynamic object in the root
+	pDynObj_InRoot = CNELU::Scene.createInstance ("Sphere01.shape");
+	pDynObj_InRoot->setPos (0.0f, 0.0f, 0.0f);
+	// Put a dynamic object inside
+	pDynObj_InCS = CNELU::Scene.createInstance ("Sphere01.shape");
+	pDynObj_InCS->setPos (50.0f, 50.0f, 25.0f);
+	// No automatic detection for moving objects - setup in street
+	pDynObj_InCS->setClusterSystem (vAllIGs[0]);
+
 
 	// Main loop
 	do
@@ -267,6 +285,14 @@ int WINAPI WinMain(
 		rGlobalTime = CTime::ticksToSecond(CTime::getPerformanceTime());
 		rDeltaTime = rGlobalTime - rOldGlobalTime;
 		rOldGlobalTime = rGlobalTime;
+
+		pDynObj_InRoot->setPos	(-20.0f+20.0f*sinf((float)rGlobalTime), 
+								-20.0f+20.0f*cosf((float)rGlobalTime*1.2f), 
+								20.0f*sinf((float)rGlobalTime*1.1f+0.5f));
+
+		pDynObj_InCS->setPos	(25.0f+5.0f*sinf((float)rGlobalTime*1.4f), 
+								-25.0f+5.0f*cosf((float)rGlobalTime*1.3f), 
+								25.0f+2.0f*sinf((float)rGlobalTime*1.2f+0.7f));
 
 
 		CNELU::Scene.animate ((float)rGlobalTime);
@@ -366,9 +392,9 @@ int WINAPI WinMain(
 		// ---------------
 
 		if (CNELU::AsyncListener.isKeyDown (KeySHIFT))
-			MouseListener.setSpeed (10.0f);
+			MouseListener.setSpeed (50.0f);
 		else
-			MouseListener.setSpeed (2.0f);
+			MouseListener.setSpeed (10.0f);
 
 		CNELU::Camera->setMatrix (MouseListener.getViewMatrix());
 

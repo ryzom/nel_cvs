@@ -15,7 +15,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "clusterViewer"=.\cluster_viewer.dsp - Package Owner=<4>
+Project: "cluster_viewer"=.\cluster_viewer.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -1,9 +1,22 @@
 Mode d'emploi des macros Nevrax
 02/08/00 cado@nevrax.com
-$Id: nevrax_macros_howto.txt,v 1.4 2000/09/13 16:38:13 cado Exp $
+$Id: nevrax_macros_howto.txt,v 1.5 2000/09/18 13:49:42 cado Exp $
 ----------
 
-1. Note du 13/09/2000
+1. Nouveautés du 18/09/2000
+--------------------------
+- La macro NevraxNewClass stocke votre nom dans un fichier
+(R:\code\tool\VisualStudioMacros\nevrax_new_class.cfg)
+(sauf si vous utilisez nevrax_macros_98.dsm).
+- Lorsque vous spécifiez un répertoire de travail (ex: misc,
+net), la macro définit le namespace correspondant, commençant
+par RKn dans les fichiers .h et .cpp.
+- Lorsque vous spécifiez un répertoire de travail (ex: misc,
+net), les fichiers .h et .cpp sont ajoutés dans le projet du
+même nom même si ce n'est pas le projet actif.
+
+
+2. Note du 13/09/2000
 ---------------------
 
 Dans ce document, remplacez nevrax_macros.dsm par
@@ -12,9 +25,12 @@ nevrax_macros.dsm génère une erreur en instanciant
 un objet ActiveX Automation "FileSystemObject".
 Ce problème a été constaté sous Windows 98, pas
 sous Windows 2000.
+Dans la version 98, il n'y a pas de test d'existence
+des fichiers et répertoires, et votre nom n'est pas
+stocké dans un fichier.
 
 
-2. Nouveautés du 07/09/2000
+3. Nouveautés du 07/09/2000
 ---------------------------
 
 - La macro NevraxNewClass vous demande et mémorise votre nom, pour
@@ -26,7 +42,7 @@ bien, et vous informe quand le fichier .h de l'éventuelle classe de
 base n'existe pas.
 
 
-3. Installation
+4. Installation
 ---------------
 
 a. Dans Visual Studio, menu Tools, Macros,
@@ -47,7 +63,7 @@ Studio, choisir une image pour le bouton (par exemple le petit crayon
 jaune), OK, Close.
 
 
-1. Utilisation
+5. Utilisation
 --------------
 
 - NevraxToggleHCPP (raccourci-clavier "Ctrl-<" installé en 1.b. ci-dessus)
@@ -63,8 +79,10 @@ jaune), OK, Close.
      CMaClasse, la macro propose ma_classe.
   3. Confirmation du répertoire des sources .cpp. Par défaut :
      R:\code\nel\src
+     Pour le répertoire courant du projet, entrer un point (.)
   4. Confirmation du répertoire des includes .h. Par défaut :
      R:\code\nel\include\nel
+     Pour le répertoire courant du projet, entrer un point (.)
   5. Choix ou confirmation du répertoire de travail. Celui-ci doit
      être tapé une fois par session de Visual Studio, après il est
      mémorisé. Exs: misc ou system ou 3d ou ia ou network ou database
@@ -72,6 +90,7 @@ jaune), OK, Close.
      R:\code\nel\include\nel\misc) doivent déjà exister, sans
      quoi Visual Studio déclenchera une "unknown error" lors de la
      sauvegarde du fichier.
+     Pour le répertoire courant du projet, ne rien entrer.
   6. Choix ou confirmation du nom du programmeur. Comme dans l'étape
      précédente, on le tape une seule fois par session de Visual
      Studio.

@@ -9,7 +9,7 @@
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
 ' when Scripting.FileSystemObject cannot be instanciated
-' $Id: nevrax_macros_98.dsm,v 1.1 2000/09/13 16:40:26 cado Exp $
+' $Id: nevrax_macros_98.dsm,v 1.2 2000/09/18 13:49:42 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -21,17 +21,40 @@
 ' Author : Olivier Cado
 Sub NevraxInsertFileHeader( filename )
 	ActiveDocument.Selection.StartOfDocument
+
+
 	ActiveDocument.Selection = _
 		"/* " + filename + vbLf + _
+		" *" + vbLf
+
+	ActiveDocument.Selection = _
+		" * Copyright, 2000 Nevrax Ltd." + vbLf + _
 		" *" + vbLf + _
-		" * Copyright (C) 2000 Nevrax. All rights reserved." + vbLf + _
-		" *" + vbLf + _
-		" * The redistribution, use and modification in source or binary forms of" + vbLf + _
-		" * this software is subject to the conditions set forth in the copyright" + vbLf + _
-		" * document (""Copyright"") included with this distribution." + vbLf + _
+		" * This file is part of NEVRAX NEL." + vbLf + _
+		" * NEVRAX NEL is free software; you can redistribute it and/or modify" + vbLf + _
+		" * it under the terms of the GNU General Public License as published by" + vbLf + _
+		" * the Free Software Foundation; either version 2, or (at your option)" + vbLf + _
+		" * any later version." + vbLf +_
+		" * NEVRAX NEL is distributed in the hope that it will be useful, but" + vbLf + _
+		" * WITHOUT ANY WARRANTY; without even the implied warranty of" + vbLf + _
+		" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU" + vbLf + _
+		" * General Public License for more details." + vbLf + _
+		" * You should have received a copy of the GNU General Public License" + vbLf + _
+		" * along with NEVRAX NEL; see the file COPYING. If not, write to the" + vbLf + _
+		" * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston," + vbLf + _
+		" * MA 02111-1307, USA." + vbLf
+
+'	ActiveDocument.Selection = _
+'		" * Copyright (C) 2000 Nevrax. All rights reserved." + vbLf + _
+'		" *" + vbLf + _
+'		" * The redistribution, use and modification in source or binary forms of" + vbLf + _
+'		" * this software is subject to the conditions set forth in the copyright" + vbLf + _
+'		" * document (""Copyright"") included with this distribution." + vbLf
+
+	ActiveDocument.Selection = _
 		" */" + vbLf + vbLf + _
 		"/*" + vbLf + _
-		" * $Id: nevrax_macros_98.dsm,v 1.1 2000/09/13 16:40:26 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros_98.dsm,v 1.2 2000/09/18 13:49:42 cado Exp $" + vbLf + _
 		" *" + vbLf + _
 		" * <Replace this by a description of the file>" + vbLf + _
 		" */" + vbLf
@@ -75,6 +98,22 @@ Function NevraxClassNameToFileName( classname )
 End Function
 
 
+' NevraxProjectOpen
+' Utility Function for NevraxNewClass()
+' Author : Olivier Cado
+Function NevraxProjectOpen( projname )
+	found = 0
+	dim proj
+	for i = 1 to Projects.Count
+		if Projects(i).Name = projname then
+			found = i
+			exit for
+		end if
+	next
+	NevraxProjectOpen = found
+End Function
+
+
 ' Global variable
 Dim CurrentDirectoryName
 Dim CurrentProgrammerName
@@ -83,7 +122,10 @@ Dim CurrentProgrammerName
 ' NevraxNewClass
 ' DESCRIPTION: Wizard for new class creation
 ' 1/08/2000 : added input boxes for directories
-' 7/09/2000 : added programmer's name dialog and test for file existence (dirs & files)
+' 18/09/2000 : namespace, file added to the right project
+' Weird things :
+' - Projects.Item( string ) doesn't work. Using number instead
+
 ' Author : Olivier Cado
 Sub NevraxNewClass()
 
@@ -122,6 +164,7 @@ Sub NevraxNewClass()
 		" et dans " + IncDirectory + ") ; ce nom restera mémorisé :", "Nouvelle classe (5)", CurrentDirectoryName )
 	if CurrentDirectoryName<>"" then
 		CurrentDirectoryDir = CurrentDirectoryName + "\"
+		Namesp = "NL" + ucase(CurrentDirectoryName)
 	end if
 	If InStr( IncDirectory, "nel" ) then
 		ShortIncDir = "nel/" + CurrentDirectoryName + "/"
@@ -150,6 +193,13 @@ Sub NevraxNewClass()
 	'	MsgBox "Erreur : le fichier " + FinalCPPfilename + " existe déjà !", vbExclamation
 	'	Exit Sub
 	'end if
+
+	' ** Check for open project
+	if CurrentDirectoryName=""	then
+		AddToProject = 0
+	else
+		AddToProject = NevraxProjectOpen( CurrentDirectoryName )
+	end if
 
 	' ** Programmer's name
 	if CurrentProgrammerName = "" then
@@ -184,15 +234,25 @@ Sub NevraxNewClass()
 	Documents.Add( "Text" )
 	NevraxInsertFileHeader( CppFilename )
 	ActiveDocument.Selection = vbLf + "#include """ + ShortIncDir + HFilename + """" + vbLf + vbLf + vbLf
+	if ( CurrentDirectoryName<>"" ) then
+		ActiveDocument.Selection = "namespace " + Namesp + " {" + vbLf + vbLf + vbLf
+	end if
 	ActiveDocument.Selection = "/*" + vbLf + _
 		" * Constructor" + vbLf + _
 		" */" + vbLf + _
 		ClassName + "::" + ClassName + "()" + vbLf + _
 		"{" + vbLf + _
 		"}" + vbLf + vbLf + vbLf
+	if ( CurrentDirectoryName<>"" ) then
+		ActiveDocument.Selection = "} // " + Namesp + vbLf
+	end if
 	' Warning: ActiveDocument.Save raises an "Unknown error" if the directory does not exist"
 	ActiveDocument.Save( FinalCPPfilename )
-	ActiveProject.AddFile( FinalCPPfilename )
+	if AddToProject=0 then
+		ActiveProject.AddFile( FinalCPPfilename )
+	else
+		Projects(AddToProject).AddFile( FinalCPPfilename )
+	end if
 
 	' ** Now write .h
 	Documents.Add( "Text" )
@@ -201,6 +261,9 @@ Sub NevraxNewClass()
 		"#define " + UniqueName + vbLf + vbLf
 	if AncClassName <> "" then
 		ActiveDocument.Selection = "#include """ + AncHFilename + """" + vbLf + vbLf
+	end if
+	if ( CurrentDirectoryName<>"" ) then
+		ActiveDocument.Selection = vbLf + "namespace " + Namesp + " {" + vbLf + vbLf
 	end if
 	ActiveDocument.Selection = vbLf + _
 		"/**" + vbLf + _
@@ -219,11 +282,18 @@ Sub NevraxNewClass()
 		"	/// Constructor" + vbLf + _
 		"	" + ClassName + "();" + vbLf + vbLf + _
 		"};" + vbLf + vbLf
-	ActiveDocument.Selection = "#endif // " + UniqueName + vbLf
+	if ( CurrentDirectoryName<>"" ) then
+		ActiveDocument.Selection = vbLf + "} // " + Namesp + vbLf + vbLf
+	end if
+	ActiveDocument.Selection = vbLf + "#endif // " + UniqueName + vbLf
 	ActiveDocument.Selection = vbLf + "/* End of " + HFilename + " */" + vbLf
 	' Warning: ActiveDocument.Save raises an "Unknown error" if the directory does not exist"
 	ActiveDocument.Save( FinalHfilename )
-	ActiveProject.AddFile( FinalHfilename )
+	if AddToProject=0 then
+		ActiveProject.AddFile( FinalHfilename )
+	else
+		Projects(AddToProject).AddFile( FinalHfilename )
+	end if
 
 End Sub
 

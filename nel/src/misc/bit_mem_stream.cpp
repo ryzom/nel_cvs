@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.29 2003/07/09 15:16:36 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.30 2003/09/01 14:31:16 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -814,7 +814,8 @@ std::string		CBitMemStream::getSerialItem( const TBMSSerialInfo& serialItem )
 				s[len+1] = ']';
 				break;
 			}
-		//default:
+		default:
+		  break;
 		}
 	}
 

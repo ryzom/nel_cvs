@@ -1,7 +1,7 @@
 /** \file algo.cpp
  * <File description>
  *
- * $Id: algo.cpp,v 1.5 2003/02/26 16:45:28 legros Exp $
+ * $Id: algo.cpp,v 1.6 2003/09/01 14:31:16 distrib Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -116,8 +116,8 @@ bool		testWildCard(const char *strIn, const char *wildCard)
 // ***************************************************************************
 void		splitString(const std::string &str, const std::string &separator, std::vector<std::string> &retList)
 {
-	sint	pos=0;
-	sint	newPos=0;
+	uint	pos=0;
+	uint	newPos=0;
 	retList.clear();
 	while( (newPos= str.find(separator,pos)) != string::npos)
 	{
@@ -128,7 +128,7 @@ void		splitString(const std::string &str, const std::string &separator, std::vec
 		pos= newPos+separator.size();
 	}
 	// copy the last substr
-	if( pos<(sint)str.size() )
+	if( pos<(uint)str.size() )
 		retList.push_back(str.substr(pos, str.size()-pos));
 }
 

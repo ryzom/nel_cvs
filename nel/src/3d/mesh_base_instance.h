@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.25 2003/07/11 12:47:33 corvazier Exp $
+ * $Id: mesh_base_instance.h,v 1.26 2004/10/05 17:02:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -252,6 +252,7 @@ public:
 
 	/// CMeshVPWindTree instance specific part.
 	float		_VPWindTreePhase;		// Phase time of the wind animation. 0-1
+	bool		_VPWindTreeFixed;       // Enable lighting for mesh vp wind tree material when no vp are available (else vertex color is used to tint the object ...)
 
 };
 

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.23 2003/07/15 08:36:52 corvazier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.24 2004/10/05 17:02:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,7 @@ CMeshBaseInstance::CMeshBaseInstance()
 	_AsyncTextureReady= true;
 	_AsyncTextureDirty= false;
 	_AsyncTextureDistance= 0;
+	_VPWindTreeFixed = false;
 
 	// I am a CMeshBaseInstance!!
 	CTransform::setIsMeshBaseInstance(true);

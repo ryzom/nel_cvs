@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.85 2004/08/13 15:38:05 vizerie Exp $
+ * $Id: mesh.cpp,v 1.86 2004/10/05 17:03:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@
 #include "3d/matrix_3x4.h"
 #include "3d/render_trav.h"
 #include "3d/visual_collision_mesh.h"
-
+#include "3d/meshvp_wind_tree.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -602,7 +602,25 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 		invertedObjectMatrix = trans->getWorldMatrix().inverted();
 		// really ok if success to begin VP
 		useMeshVP= _MeshVertexProgram->begin(drv, ownerScene, mi, invertedObjectMatrix, renderTrav->CamPos);
+		if (!useMeshVP && !mi->_VPWindTreeFixed)
+		{
+			if (dynamic_cast<CMeshVPWindTree *>(&(*_MeshVertexProgram)))
+			{
+				// fix for mesh tree v.p : all material should be lighted
+				for(uint mb=0;mb<_MatrixBlocks.size();mb++)
+				{
+					CMatrixBlock	&mBlock= _MatrixBlocks[mb];
+					for(uint i=0;i<mBlock.RdrPass.size();i++)
+					{	
+						CMaterial &mat=mi->Materials[mBlock.RdrPass[i].MaterialId];
+						mat.setLighting(true, mat.getEmissive(), mat.getAmbient(), mat.getDiffuse(), mat.getSpecular());
+					}
+				}
+			}
+			mi->_VPWindTreeFixed = true;
+		}
 	}
+	
 	
 
 	// Render the mesh.

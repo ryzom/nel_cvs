@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_render.cpp,v 1.3 2004/04/20 16:55:38 vizerie Exp $
+ * $Id: driver_direct3d_render.cpp,v 1.4 2004/08/03 15:22:55 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -207,7 +207,7 @@ bool CDriverD3D::renderRawTriangles(CMaterial& mat, uint32 firstIndex, uint32 nu
 			// Active the pass
 			activePass (pass);
 
-			_DeviceInterface->DrawPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset+firstIndex, numTris);
+			_DeviceInterface->DrawPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset+ 3 * firstIndex, numTris);
 		}
 		endMultiPass ();
 	}

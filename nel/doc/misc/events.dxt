@@ -62,18 +62,18 @@ When a call to the method pump is done, the server pumps its emitters for events
 in the list. 
 
 
-\image html event_pump.gif
+\image html event_pump.png
 
 Then, for each event, according to their id, the server applies the right callbacks stored in the multimap.
 
-\image html event_listener.gif
+\image html event_listener.png
 
 
 As for emitters, both server and class know the IListener. The listener callback is the operator() 
 which takes an event in parameter. Thus, the user defines the listener/callback he needs and adds it to 
 the server.
 
-\image html event_callback.gif
+\image html event_callback.png
 
 
 \subsection event_example Example :

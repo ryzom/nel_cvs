@@ -21,7 +21,7 @@ totally independant from each other so you can use only the parts you really nee
 A good example is the platform Nevrax intends to use NeL for. That platform uses the
 following architecture:
 
-\image html Architect.gif
+\image html architect.png
 
 \section build Building system
 

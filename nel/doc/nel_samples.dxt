@@ -1,0 +1,103 @@
+/**
+
+\page nelsamples NeL Samples
+
+$Id: nel_samples.dxt,v 1.1 2002/04/11 07:30:55 lecroart Exp $
+
+\author Olivier Cado, Vianney Lecroart
+
+\date 06/15/2001
+
+\section samisc NeL Misc Samples
+
+\e Document \e under \e construction
+
+\subsection samisccommand command
+
+\e Document \e under \e construction
+
+\subsection samiscconfigfile configfile
+
+\e Document \e under \e construction
+
+\subsection samiscdebug debug
+
+\e Document \e under \e construction
+
+\subsection samisclog log
+
+\e Document \e under \e construction
+
+\subsection sanetlogin_system login_system
+
+\e Document \e under \e construction
+
+\subsection sanetservice service
+
+\e Document \e under \e construction
+
+\section sanetwork NeL Net Samples
+
+Two sample projects are provided. They illustrate the usage of layers 3 et 4 (report to the document on the structure of NeL Net for further explanation on the layers 0..4), and of the serialization of data to/from network messages (NLNET::CMessage).
+
+\subsection sanetlayer3 net_layer3
+
+This project demonstrates the usage of layer 3 (NLNET::CCallbackClient, NLNET::CCallbackServer) and the
+service framework (NLNET::IService). It contains three programs: a client, a front-end service and a ping service.
+
+- The client connects to a front-end server at localhost:37000.
+It sends pings and expects pongs (ping replies).
+- The front-end server expects pings, and forward them to
+the real ping server (known as "PS" in the naming service).
+When the ping server sends a pong back, the front-end server forwards it to the client.
+- The ping service (PS) expects pings and sends pongs back.
+
+To run the front-end service and the ping service, ensure
+their config files, frontend_service.cfg and ping_service.cfg,
+are located in the directory where they are run. These files
+state the address of the naming service.
+
+\subsection sanetlayer4 net_layer4
+
+This project demonstrates the usage of layer 4 (NLNET::CNetManager), the
+service framework (NLNET::IService), and the connection and disconnection callbacks.
+It contains three programs: a client, a front-end service and a ping service.
+The functionalities are close to the ones of the previous sample.
+
+- The client connects to a front-end server at localhost:37000.
+It sends pings and expects pongs (ping replies).
+- This front-end server expects pings, and forward them to
+the real ping server. When the ping server sends a pong back,
+the front-end server forwards it to the client.
+Even if the connection to the ping server is broken, our
+front-end server will keep storing the ping messages and
+will forward them when the connection is restored, thanks
+to layer 4.
+- The ping service (PS) expects pings and sends pongs back.
+
+To run the front-end service and the ping service, ensure
+their config files, frontend_service.cfg and ping_service.cfg,
+are located in the directory where they are run. These files
+state the address of the naming service.
+
+
+
+\section sa3d NeL 3D Samples
+
+\e Document \e under \e construction
+
+\subsection sa3dfont font
+
+\e Document \e under \e construction
+
+\section sapacs NeL PACS Samples
+
+\e Document \e under \e construction
+
+
+\section saai NeL AI Samples
+
+\e Document \e under \e construction
+
+
+*/

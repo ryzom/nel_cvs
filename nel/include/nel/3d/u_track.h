@@ -1,7 +1,7 @@
 /** \file u_track.h
  * User interface to access tracks fonctionnalities
  *
- * $Id: u_track.h,v 1.2 2001/07/04 08:53:08 corvazier Exp $
+ * $Id: u_track.h,v 1.3 2001/08/28 15:56:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,6 +165,20 @@ public:
 
 	// @}
 };
+
+
+/** This is a keyframer track interface.
+  * Once you've got a track, you can know wether its a keyframer track by using a dynamic_cast
+  */
+class UTrackKeyframer
+{
+public:
+	/** Retrieve the keys that are in the given range ]t1, t2] of the track. They can then be evaluated
+	  * \param result a vector that will be cleared, and filled with the date ofthe keys
+	  */
+	void getKeysInRange(CAnimationTime t1, CAnimationTime t2, std::vector<CAnimationTime> &result);	
+};
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.37 2002/03/29 14:58:33 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.38 2002/04/02 13:38:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1703,9 +1703,14 @@ void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 			if( pP1->msk[j+k*pP1->w] == 1 )
 			{
 				sint32 nNbNormals = (sint32)pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].A;
-				pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].R /= nNbNormals;
-				pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].G /= nNbNormals;
-				pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].B /= nNbNormals;
+
+				// Avoid divid by zero
+				if (nNbNormals)
+				{
+					pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].R /= nNbNormals;
+					pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].G /= nNbNormals;
+					pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].B /= nNbNormals;
+				}
 				pP1->col[j + k*pP1->w+pP1->w*pP1->h*nLayerNb].A = 1.0f;
 				pP1->msk[j + k*pP1->w] = 4;
 			}

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.37 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.38 2002/04/04 12:31:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -196,10 +196,10 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 		if (clid.PartA() == NEL_FLARE_CLASS_ID_A /*&& clid.PartB() == NEL_FLARE_CLASS_ID_B*/)
 		{
 			// build the shape
-			CFlareShape *fs = new CFlareShape;
+			CFlareShape *fshape = new CFlareShape;
 
 			Point3 col;
-			float persistence, size, spacing, attenuationRange, pos, maxViewDistRatio;
+			float persistence, size, spacing, attenuationRange, pos, maxViewDist = 1000.f, maxViewDistRatio = 0.9f;
 			int   attenuable;
 			int	  firstFlareKeepSize;
 			int   hasDazzle;
@@ -207,41 +207,45 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 
 			// retrieve the color of the flare from the node
 			CExportNel::getValueByNameUsingParamBlock2(node, "ColorParam", (ParamType2)TYPE_RGBA, &col, 0);
-			fs->setColor(NLMISC::CRGBA((uint) (255.f * col.x), (uint) (255.f * col.y), (uint) (255.f * col.z)));
+			fshape->setColor(NLMISC::CRGBA((uint) (255.f * col.x), (uint) (255.f * col.y), (uint) (255.f * col.z)));
 			// retrieve the persistence of the flare
 			CExportNel::getValueByNameUsingParamBlock2(node, "PersistenceParam", (ParamType2)TYPE_FLOAT, &persistence, 0);
-			fs->setPersistence(persistence);
+			fshape->setPersistence(persistence);
 			// retrieve spacing of the flare
 			CExportNel::getValueByNameUsingParamBlock2(node, "Spacing", (ParamType2)TYPE_FLOAT, &spacing, 0);
-			fs->setFlareSpacing(spacing);
+			fshape->setFlareSpacing(spacing);
 			// retrieve use of radial attenuation
 			CExportNel::getValueByNameUsingParamBlock2(node, "Attenuable", (ParamType2) TYPE_BOOL, &attenuable, 0);			
 			if (attenuable)
 			{
-				fs->setAttenuable();
+				fshape->setAttenuable();
 				CExportNel::getValueByNameUsingParamBlock2(node, "AttenuationRange", (ParamType2) TYPE_FLOAT, &attenuationRange, 0);			
-				fs->setAttenuationRange(attenuationRange);
+				fshape->setAttenuationRange(attenuationRange);
 			}			
 			CExportNel::getValueByNameUsingParamBlock2(node, "FirstFlareKeepSize", (ParamType2) TYPE_BOOL, &firstFlareKeepSize, 0);			
-			fs->setFirstFlareKeepSize(firstFlareKeepSize ? true : false); // avoid VC++ warning
+			fshape->setFirstFlareKeepSize(firstFlareKeepSize ? true : false); // avoid VC++ warning
 
 			/// check for dazzle
 			CExportNel::getValueByNameUsingParamBlock2(node, "HasDazzle", (ParamType2) TYPE_BOOL, &hasDazzle, 0);			
 
 			if (hasDazzle)
 			{
-				fs->enableDazzle();
+				fshape->enableDazzle();
 				// get dazzle color
 				CExportNel::getValueByNameUsingParamBlock2(node, "DazzleColor", (ParamType2) TYPE_RGBA, &col, 0);			
-				fs->setDazzleColor(NLMISC::CRGBA((uint) (255.f * col.x), (uint) (255.f * col.y), (uint) (255.f * col.z)));
+				fshape->setDazzleColor(NLMISC::CRGBA((uint) (255.f * col.x), (uint) (255.f * col.y), (uint) (255.f * col.z)));
 				// get dazzle attenuation range
 				CExportNel::getValueByNameUsingParamBlock2(node, "DazzleAttenuationRange", (ParamType2) TYPE_FLOAT, &attenuationRange, 0);			
-				fs->setDazzleAttenuationRange(attenuationRange);
+				fshape->setDazzleAttenuationRange(attenuationRange);
 			}
 
 			/// retrieve maxViewDistRatio
-			CExportNel::getValueByNameUsingParamBlock2(node, "MaxViewDistRatio", (ParamType2) TYPE_BOOL, &maxViewDistRatio, 0);
-			fs->setMaxViewDistRatio(maxViewDistRatio);
+			CExportNel::getValueByNameUsingParamBlock2(node, "MaxViewDist", (ParamType2) TYPE_FLOAT, &maxViewDist, 0);
+			fshape->setMaxViewDist(maxViewDist);
+
+			/// retrieve maxViewDistRatio
+			CExportNel::getValueByNameUsingParamBlock2(node, "MaxViewDistRatio", (ParamType2) TYPE_FLOAT, &maxViewDistRatio, 0);
+			fshape->setMaxViewDistRatio(maxViewDistRatio);
 
 
 
@@ -250,11 +254,11 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 			{
 				char out[16]; sprintf(out, "size%d", k);
 				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2)TYPE_FLOAT, &size, 0);
-				fs->setSize(k, size);
+				fshape->setSize(k, size);
 				// get relative position
 				sprintf(out, "pos%d", k);
 				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2)TYPE_FLOAT, &pos, 0);
-				fs->setRelativePos(k, pos);
+				fshape->setRelativePos(k, pos);
 
 				// check wether the flare is used
 				int texUsed;
@@ -268,19 +272,19 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 					CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2) TYPE_STRING, &fileName, 0);
 					if (_AbsolutePath)
 					{
-						fs->setTexture(k, new NL3D::CTextureFile(fileName.c_str()));
+						fshape->setTexture(k, new NL3D::CTextureFile(fileName.c_str()));
 					}
 					else
 					{
 						char fName[_MAX_FNAME];
 						// get file name only
 						::_splitpath(fileName.c_str(), NULL, NULL, fName, NULL);
-						fs->setTexture(k, new NL3D::CTextureFile(fName));
+						fshape->setTexture(k, new NL3D::CTextureFile(fName));
 					}
 				}
 				else
 				{
-					fs->setTexture(k, NULL);
+					fshape->setTexture(k, NULL);
 				}	
 			}
 
@@ -292,10 +296,10 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 			Point3  fp = localTM.GetTrans();
 
 			// export default transformation
-			fs->getDefaultPos()->setValue( CVector(fp.x, fp.y, fp.z) );					
+			fshape->getDefaultPos()->setValue( CVector(fp.x, fp.y, fp.z) );					
 			
 
-			return fs;
+			return fshape;
 		}
 
 

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.34 2004/07/22 08:55:50 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.35 2005/02/14 17:23:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,6 +124,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		GetDlgItem(IDC_BLENDING_MODE_STATIC)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_ZTEST)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_ZBIAS)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_ZBIAS_TEXT)->ShowWindow(SW_HIDE);
 	}
 	GetDlgItem(IDC_ALIGN_ON_MOTION)->ShowWindow(SW_HIDE);
 	GetDlgItem(IDC_ZALIGN)->ShowWindow(SW_HIDE);

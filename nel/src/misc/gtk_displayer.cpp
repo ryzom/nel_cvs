@@ -1,7 +1,7 @@
 /** \file gtk_displayer.cpp
  * Gtk Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: gtk_displayer.cpp,v 1.5 2003/01/17 14:13:13 lecroart Exp $
+ * $Id: gtk_displayer.cpp,v 1.6 2003/05/13 16:27:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,7 +53,19 @@ using namespace std;
 
 namespace NLMISC {
 
-GtkWidget *RootWindow = NULL, *OutputText = NULL, *InputText = NULL, *hrootbox = NULL;
+//
+// Variables
+//
+
+static vector<string> CommandHistory;
+static uint32 CommandHistoryPos = 0;
+static CLog *Log = 0;
+	
+static GtkWidget *RootWindow = NULL, *OutputText = NULL, *InputText = NULL, *hrootbox = NULL;
+
+//
+// Functions
+//
 
 CGtkDisplayer::~CGtkDisplayer ()
 {
@@ -170,9 +182,6 @@ gint delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
 	return FALSE;
 }
 
-vector<string> CommandHistory;
-uint32 CommandHistoryPos = 0;
-
 gint KeyIn(GtkWidget *Widget, GdkEventKey *Event, gpointer *Data)
 {
 	switch (Event->keyval)
@@ -216,7 +225,9 @@ gint cbValidateCommand (GtkWidget *widget, GdkEvent *event, gpointer data)
 	string cmd = gtk_entry_get_text (GTK_ENTRY(widget));
 	CommandHistory.push_back (cmd);
 	// execute the command
-	ICommand::execute (cmd, *InfoLog);
+	if(Log == NULL)
+		Log = InfoLog;
+	ICommand::execute (cmd, *Log);
 	// clear the input text
 	gtk_entry_set_text (GTK_ENTRY(widget), "");
 	CommandHistoryPos = CommandHistory.size();
@@ -248,7 +259,7 @@ void CGtkDisplayer::setTitleBar (const string &titleBar)
 	gtk_window_set_title (GTK_WINDOW (RootWindow), wn.c_str());
 }
 
-void CGtkDisplayer::open (std::string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww)
+void CGtkDisplayer::open (std::string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww, CLog *log)
 {
 	_HistorySize = hs;
 
@@ -260,6 +271,8 @@ void CGtkDisplayer::open (std::string titleBar, bool iconified, sint x, sint y, 
 		hs = 10000;
 
 	gtk_init (NULL, NULL);
+
+	Log = log;
 
 	// Root window
 	RootWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);

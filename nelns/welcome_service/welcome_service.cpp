@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.28 2004/03/31 11:56:33 cado Exp $
+ * $Id: welcome_service.cpp,v 1.29 2004/04/01 09:44:23 cado Exp $
  *
  */
 
@@ -303,7 +303,11 @@ void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, uint
 		if ((*it).SId == sid)
 		{
 			if (con) (*it).NbUser++;
-			else (*it).NbUser--;
+			else
+			{
+				if ( (*it).NbUser != 0 )
+					(*it).NbUser--;
+			}
 			break;
 		}
 	}

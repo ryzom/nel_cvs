@@ -40,7 +40,7 @@ namespace NLAIPYSERVER
 	//!Met le Mode debug à ON
 		bool	setDebug()
 		{
-			return (_DebugMode = true);
+			return (_DebugMode = true); 
 		}
 
 		sint32	getDebugStat()

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.51 2001/11/26 13:37:15 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.52 2001/12/26 16:09:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1784,6 +1784,8 @@ void		CObjectViewer::loadVegetableLandscapeCfg(NLMISC::CConfigFile &cf)
 	{
 		CConfigFile::CVar &thre= cf.getVar("veget_landscape_threshold");
 		_VegetableLandscapeThreshold= thre.asFloat();
+		// clamp to avoid divide/0.
+		_VegetableLandscapeThreshold= max(_VegetableLandscapeThreshold, 0.001f);
 	}
 	catch (EUnknownVar &)
 	{

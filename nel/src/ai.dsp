@@ -43,7 +43,6 @@ RSC=rc.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# SUBTRACT CPP /Z<none>
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -90,7 +89,6 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /Zi /Od /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# SUBTRACT CPP /FA<none>
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -176,6 +174,10 @@ SOURCE=.\ai\agent\ident.cpp
 # Begin Source File
 
 SOURCE=.\ai\agent\init_agent.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\agent\list_manager.cpp
 # End Source File
 # Begin Source File
 
@@ -280,6 +282,14 @@ SOURCE=..\include\nel\ai\agent\baseai.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\ident.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\key_agent.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\list_manager.h
 # End Source File
 # Begin Source File
 
@@ -984,30 +994,6 @@ SOURCE=..\include\nel\ai\e\ai_exception.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\e\nel_exception_def.h
-# End Source File
-# End Group
-# End Group
-# Begin Group "nimat"
-
-# PROP Default_Filter ""
-# Begin Group "n_cpp"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\ai\nimat\classifier.cpp
-# End Source File
-# End Group
-# Begin Group "n_h"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\include\nel\ai\nimat\black_box.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\ai\nimat\classifier.h
 # End Source File
 # End Group
 # End Group

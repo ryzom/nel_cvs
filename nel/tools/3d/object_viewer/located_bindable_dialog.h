@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.8 2001/07/04 12:19:17 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.9 2001/07/12 16:08:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,9 +47,7 @@ namespace NL3D
 
 using NLMISC::CRGBA ;
 
-// located_bindable_dialog.h : header file
-//
-
+class CParticleDlg ;
 
 
 
@@ -65,7 +63,7 @@ public:
 
 
 	// init the dialog as a child of the given wnd
-	void init(CWnd* pParent = NULL) ;
+	void init(CParticleDlg* pParent) ;
 // Dialog Data
 	//{{AFX_DATA(CLocatedBindableDialog)
 	enum { IDD = IDD_LOCATED_BINDABLE };
@@ -87,7 +85,7 @@ public:
 protected:
 
 	NL3D::CPSLocatedBindable *_Bindable ;
-
+	CParticleDlg* _ParticleDlg ;
 
 
 	// Generated message map functions

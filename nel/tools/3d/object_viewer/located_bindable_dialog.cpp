@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.9 2001/07/04 17:17:52 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.10 2001/07/12 16:08:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/ps_force.h"
 #include "3d/ps_emitter.h"
 #include "3d/ps_zone.h"
+#include "3d/particle_system_model.h"
 
 
 #include "texture_chooser.h"
@@ -69,10 +70,11 @@ CLocatedBindableDialog::CLocatedBindableDialog(NL3D::CPSLocatedBindable *bindabl
 }
 
 
-void CLocatedBindableDialog::init(CWnd* pParent)
+void CLocatedBindableDialog::init(CParticleDlg* pParent)
 {
 	Create(IDD_LOCATED_BINDABLE, pParent) ;
 	ShowWindow(SW_SHOW) ;
+	_ParticleDlg = pParent ;
 
 	uint yPos = 35 ;
 	const uint xPos = 5 ;
@@ -400,4 +402,5 @@ void CLocatedBindableDialog::OnSelchangeBlendingMode()
 	NL3D::CPSMaterial *m = dynamic_cast<NL3D::CPSMaterial *>(_Bindable) ;
 	nlassert(m) ;
 	m->setBlendingMode( (NL3D::CPSMaterial::TBlendingMode) m_BlendingMode.GetCurSel()) ;	
+	_ParticleDlg->getCurrPSModel()->touchTransparencyState() ;
 }

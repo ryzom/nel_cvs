@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.9 2001/09/07 11:46:03 besson Exp $
+ * $Id: texture_font.cpp,v 1.10 2001/09/07 12:51:29 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,13 +36,18 @@ using namespace NLMISC;
 namespace NL3D
 {
 
-
+// Config 1
 const int TextureSizeX = 1024;
 const int TextureSizeY = 1024; // If change this value -> change NbLine too
 const int Categories[TEXTUREFONT_NBCATEGORY] = { 8, 16, 24, 32, 64 };
 const int NbLine[TEXTUREFONT_NBCATEGORY] = { 8, 24, 16, 4, 1 }; // Based on textsize
 
-
+/*	
+const int TextureSizeX = 256;
+const int TextureSizeY = 256;
+const int Categories[TEXTUREFONT_NBCATEGORY] = { 8, 16, 24, 32 };
+const int NbLine[TEXTUREFONT_NBCATEGORY] = { 4, 6, 4, 1 }; // Based on textsize
+*/
 // ---------------------------------------------------------------------------
 uint32 CTextureFont::SLetterKey::getVal()
 {

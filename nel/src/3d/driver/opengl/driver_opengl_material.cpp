@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.84 2004/04/01 19:10:06 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.85 2004/04/06 13:41:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -254,6 +254,8 @@ void CDriverGL::setTextureShaders(const uint8 *addressingModes, const CSmartPtr<
 	}	
 }
 
+
+
 // --------------------------------------------------
 
 bool CDriverGL::setupMaterial(CMaterial& mat)
@@ -459,7 +461,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			CRGBA	col= mat.getColor();			
 			glColor4ub(col.R, col.G, col.B, col.A);			
 			_DriverGLStates.setVertexColorLighted(false);
-		}
+		}		
 		
 		
 		// Fog Part.
@@ -2021,7 +2023,7 @@ void CDriverGL::setupWaterPassARB(const CMaterial &mat)
 		{
 			/** Unfortunately, the EXT_vertex_shader extension has to output the fog values in the [0, 1] range to work with the standard pipeline.
 			  * So we must add a special path for this case, where the fog coordinate is 'unscaled' again.
-			  * NB : this is fixed in later drivers (from 6.14.10.6343), so chek this
+			  * NB : this is fixed in later drivers (from 6.14.10.6343), so check this
 			  */
 			if (_Extensions.EXTVertexShader && !_ATIFogRangeFixed)
 			{

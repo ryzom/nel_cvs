@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.15 2002/05/28 08:08:55 legros Exp $
+ * $Id: u_global_retriever.h,v 1.16 2002/06/07 12:34:23 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,12 +79,17 @@ public:
 	virtual const std::string		&getIdentifier(const UGlobalPosition &pos) const =0;
 
 	/**
-	  * Builds a instance of retriever, and link it on the ground (or wherever)
+	  * Builds an instance of retriever, and link it on the ground (or wherever)
 	  * \param id a valid retriever id to be instanciated
 	  * \param a valid position where the retriever should be instanciated
 	  * \return false if failed
 	  */
-	virtual bool					buildInstance(const std::string &id, const NLMISC::CVectorD &position) =0;
+	virtual bool					buildInstance(const std::string &id, const NLMISC::CVectorD &position, sint32 &instanceId) =0;
+
+	/**
+	  * Removes an instance of retriever (perform all unlinks necessary)
+	  */
+	virtual void					removeInstance(sint32 instanceId) =0;
 
 	/**
 	  * Returns the material corresponding to the global position

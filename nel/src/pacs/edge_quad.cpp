@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.11 2002/04/03 13:23:34 lecroart Exp $
+ * $Id: edge_quad.cpp,v 1.12 2002/06/07 12:34:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,9 +49,7 @@ CEdgeQuad::CEdgeQuad()
 // ***************************************************************************
 CEdgeQuad::~CEdgeQuad()
 {
-	free(_QuadData);
-	_QuadData= NULL;
-	_QuadDataLen= 0;
+	clear();
 }
 // ***************************************************************************
 CEdgeQuad::CEdgeQuad(const CEdgeQuad &o)
@@ -97,7 +95,20 @@ CEdgeQuad	&CEdgeQuad::operator=(const CEdgeQuad &o)
 	return *this;
 }
 
+// ***************************************************************************
+void	CEdgeQuad::clear()
+{
+	free(_QuadData);
+	_QuadData= NULL;
+	_QuadDataLen= 0;
 
+	_Quad.clear();
+	_EdgeEntries.clear();
+	_Width = 0;
+	_Height = 0;
+	_X = 0;
+	_Y = 0;
+}
 
 // ***************************************************************************
 void			CEdgeQuad::getGridBounds(sint32 &x0, sint32 &y0, sint32 &x1, sint32 &y1, const CVector &minP, const CVector &maxP) const

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.20 2002/05/28 08:09:13 legros Exp $
+ * $Id: global_retriever.h,v 1.21 2002/06/07 12:34:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -238,7 +238,12 @@ public:
 	  * \param a valid position where the retriever should be instanciated
 	  * \return false if failed
 	  */
-	bool							buildInstance(const std::string &id, const NLMISC::CVectorD &position);
+	bool							buildInstance(const std::string &id, const NLMISC::CVectorD &position, sint32 &instanceId);
+
+	/**
+	  * Removes an instance of retriever (perform all unlinks necessary)
+	  */
+	void							removeInstance(sint32 instanceId);
 
 	/// Snaps to interior ground.
 //	void							snapToInteriorGround(UGlobalPosition &position) const;

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.34 2002/04/03 13:23:34 lecroart Exp $
+ * $Id: retriever_instance.cpp,v 1.35 2002/06/07 12:34:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,8 @@ void	NLPACS::CRetrieverInstance::resetLinks()
 	for (i=0; i<_Neighbors.size(); ++i)
 		_Neighbors[i] = -1;
 	_BorderChainLinks.clear();
+
+	_ExteriorEdgeQuad.removeLinks();
 }
 
 void	NLPACS::CRetrieverInstance::resetLinks(uint32 id)
@@ -62,12 +64,9 @@ void	NLPACS::CRetrieverInstance::resetLinks(uint32 id)
 	uint	i;
 	for (i=0; i<_BorderChainLinks.size(); ++i)
 		if (_BorderChainLinks[i].Instance == (uint16)id)
-		{
-			_BorderChainLinks[i].Instance = 0xFFFF;
-			_BorderChainLinks[i].BorderChainId = 0xFFFF;
-			_BorderChainLinks[i].ChainId = 0xFFFF;
-			_BorderChainLinks[i].SurfaceId = 0xFFFF;
-		}
+			_BorderChainLinks[i].reset();
+
+	_ExteriorEdgeQuad.removeLinks(id);
 }
 
 void	NLPACS::CRetrieverInstance::reset()
@@ -81,6 +80,9 @@ void	NLPACS::CRetrieverInstance::reset()
 	_Orientation = 0;
 	_Origin = CVector::Null;
 	_Type = CLocalRetriever::Landscape;
+	_BorderChainLinks.clear();
+	_ExteriorEdgeQuad.clear();
+
 	resetLinks();
 }
 
@@ -255,6 +257,8 @@ void	NLPACS::CRetrieverInstance::unlink(vector<CRetrieverInstance> &instances)
 
 	for (i=0; i<_Neighbors.size(); ++i)
 		instances[_Neighbors[i]].resetLinks(_InstanceId);
+
+	resetLinks();
 }
 
 

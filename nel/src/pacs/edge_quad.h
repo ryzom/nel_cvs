@@ -1,7 +1,7 @@
 /** \file edge_quad.h
  * a quadgrid of list of edge for the exterior collision mesh.
  *
- * $Id: edge_quad.h,v 1.1 2001/08/07 14:14:32 legros Exp $
+ * $Id: edge_quad.h,v 1.2 2002/06/07 12:34:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,6 +71,9 @@ public:
 	/// operator=.
 	CEdgeQuad &operator=(const CEdgeQuad &o);
 
+	/// clear
+	void			clear();
+
 
 	/// build a chain quad, with a list of exterior Edges and the global retriever
 	void			build(const CExteriorMesh &em,
@@ -106,6 +109,30 @@ public:
 	/// serial.
 	void								serial(NLMISC::IStream &f);
 
+	///
+	void								removeLinks(sint32 instanceId)
+	{
+		uint	i;
+		for (i=0; i<_EdgeEntries.size(); ++i)
+		{
+			if (_EdgeEntries[i].Exterior.RetrieverInstanceId == instanceId)
+			{
+				_EdgeEntries[i].Exterior.RetrieverInstanceId = -1;
+				_EdgeEntries[i].Exterior.SurfaceId = -1;
+			}
+		}
+	}
+
+	///
+	void								removeLinks()
+	{
+		uint	i;
+		for (i=0; i<_EdgeEntries.size(); ++i)
+		{
+			_EdgeEntries[i].Exterior.RetrieverInstanceId = -1;
+			_EdgeEntries[i].Exterior.SurfaceId = -1;
+		}
+	}
 
 // **************************
 private:

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.62 2002/06/06 15:29:20 legros Exp $
+ * $Id: global_retriever.cpp,v 1.63 2002/06/07 12:34:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -597,9 +597,11 @@ const string	&NLPACS::CGlobalRetriever::getIdentifier(const NLPACS::UGlobalPosit
 
 //
 
-bool			NLPACS::CGlobalRetriever::buildInstance(const string &id, const NLMISC::CVectorD &position)
+bool			NLPACS::CGlobalRetriever::buildInstance(const string &id, const NLMISC::CVectorD &position, sint32 &instanceId)
 {
 	sint32	retrieverId = getIdentifier(id);
+
+	instanceId = -1;
 
 	// check retriever exists
 	if (retrieverId < 0)
@@ -614,9 +616,31 @@ bool			NLPACS::CGlobalRetriever::buildInstance(const string &id, const NLMISC::C
 	// links new instance to its neighbors
 	makeLinks(instance.getInstanceId());
 
+	instanceId = instance.getInstanceId();
+
 	return true;
 }
 
+//
+
+void		NLPACS::CGlobalRetriever::removeInstance(sint32 instanceId)
+{
+	if (instanceId < 0 || instanceId >= (sint32)_Instances.size() || _Instances[instanceId].getInstanceId() < 0)
+	{
+		nlwarning("CGlobalRetriever::removeInstance(): Can't unlink instance %d, doesn't exist", instanceId);
+		return;
+	}
+
+	// get instance
+	CRetrieverInstance	&instance = _Instances[instanceId];
+
+	// unlink it from others
+	instance.unlink(_Instances);
+
+
+}
+
+//
 
 //
 /*

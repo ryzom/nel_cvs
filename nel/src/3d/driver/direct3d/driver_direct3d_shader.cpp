@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.9 2004/09/07 15:25:29 vizerie Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.10 2004/09/17 15:07:42 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -218,7 +218,7 @@ HRESULT CDriverD3D::SetTransform(D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX* p
 HRESULT CDriverD3D::SetVertexShader(LPDIRECT3DVERTEXSHADER9 pShader)
 {
 	H_AUTO_D3D(CDriverD3D_SetVertexShader)
-	setVertexProgram (pShader);
+	setVertexProgram (pShader, NULL);
 	return D3D_OK;
 }
 
@@ -260,7 +260,7 @@ HRESULT CDriverD3D::SetVertexShaderConstantI(UINT StartRegister, CONST INT* pCon
 CShaderDrvInfosD3D::CShaderDrvInfosD3D(IDriver *drv, ItShaderDrvInfoPtrList it) : IShaderDrvInfos(drv, it)
 {
 	H_AUTO_D3D(CShaderDrvInfosD3D_CShaderDrvInfosD3D)
-	Validated = false;
+	Validated = false;	
 }
 
 // ***************************************************************************
@@ -268,7 +268,7 @@ CShaderDrvInfosD3D::CShaderDrvInfosD3D(IDriver *drv, ItShaderDrvInfoPtrList it) 
 CShaderDrvInfosD3D::~CShaderDrvInfosD3D()
 {
 	H_AUTO_D3D(CShaderDrvInfosD3D_CShaderDrvInfosD3DDtor)
-	Effect->Release();
+	Effect->Release();	
 }
 
 // ***************************************************************************
@@ -512,6 +512,37 @@ void CDriverD3D::disableHardwareTextureShader()
 	_PixelShader = false;
 	*/
 }
+
+
+
+// ***************************************************************************
+void CDriverD3D::notifyAllShaderDrvOfLostDevice()
+{
+	for(TShaderDrvInfoPtrList::iterator it = _ShaderDrvInfos.begin(); it != _ShaderDrvInfos.end(); ++it)
+	{
+		nlassert(*it);
+		CShaderDrvInfosD3D *drvInfo = NLMISC::safe_cast<CShaderDrvInfosD3D *>(*it);
+		if (drvInfo->Effect)
+		{
+			nlverify(drvInfo->Effect->OnLostDevice() == D3D_OK);
+		}
+	}
+}
+
+// ***************************************************************************
+void CDriverD3D::notifyAllShaderDrvOfResetDevice()
+{
+	for(TShaderDrvInfoPtrList::iterator it = _ShaderDrvInfos.begin(); it != _ShaderDrvInfos.end(); ++it)
+	{
+		nlassert(*it);
+		CShaderDrvInfosD3D *drvInfo = NLMISC::safe_cast<CShaderDrvInfosD3D *>(*it);
+		if (drvInfo->Effect)
+		{
+			nlverify(drvInfo->Effect->OnResetDevice() == D3D_OK);
+		}
+	}
+}
+
 
 // ***************************************************************************
 //

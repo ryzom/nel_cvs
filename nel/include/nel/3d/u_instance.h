@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * Interface for instance objects.
  *
- * $Id: u_instance.h,v 1.18 2004/06/21 09:43:20 berenguier Exp $
+ * $Id: u_instance.h,v 1.19 2004/07/27 17:48:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -182,6 +182,12 @@ public:
 	  * \param  forceBaseCaps When true, the driver is considered to have the most basic required caps (2 stages hardwares, no pixelShader), so that any fancy material will fail the test.
 	  */
 	bool		supportMaterialRendering(UDriver &drv, bool forceBaseCaps);
+
+	// get the shape name. empty if no instance bound
+	const std::string &getShapeName() const;
+
+	// dynamic cast from a transform. empty if cast fail
+	void		cast(UTransform object);
 
 	/// Proxy interface
 

@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.19 2004/07/08 16:09:18 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.20 2004/07/27 17:48:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,9 @@ public:
 	 * NB: mi is placed at root of hierarchy.
 	 */
 	void		detachSkeletonSon(UTransform mi);
+	/** Get the array of sticked objects
+	 */
+	void		getStickedObjects(std::vector<UTransform> &sticks);
 	// @}
 
 
@@ -211,6 +214,9 @@ public:
 	void					setSSSWODir(const NLMISC::CVector &dir);
 	const NLMISC::CVector	&getSSSWODir() const;
 	
+	// get the shape name. empty if no instance bound
+	const std::string		&getShapeName() const;
+	
 	// @}
 
 
@@ -224,6 +230,9 @@ public:
 	/// return NULL if bad BoneId
 	IAnimCtrl	*getBoneAnimCtrl(uint boneId) const;
 	// @}
+
+	// dynamic cast from a transform. empty if cast fail
+	void		cast(UTransform object);
 
 	/// Proxy interface
 

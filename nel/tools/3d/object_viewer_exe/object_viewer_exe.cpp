@@ -20,6 +20,15 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	registerSerial3d ();
 	CScene::registerBasics ();
 
+	// Remove command line ""
+	char commandLine[512];
+	char *commandLinePtr=commandLine;
+	strcpy (commandLine, lpCmdLine);
+	if (commandLine[0]=='"')
+		commandLinePtr++;
+	if (commandLinePtr[strlen (commandLinePtr)-1]=='"')
+		commandLinePtr[strlen (commandLinePtr)-1]=0;
+
  	// Create a object viewer
 	IObjectViewer *objectViewer=IObjectViewer::getInterface();
 
@@ -29,10 +38,10 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		objectViewer->initUI ();
 
 		// Argument ?
-		if (strcmp (lpCmdLine, "")!=0)
+		if (strcmp (commandLinePtr, "")!=0)
 		{
 			// Try to load a shape
-			if (objectViewer->loadMesh (lpCmdLine, ""))
+			if (objectViewer->loadMesh (commandLinePtr, ""))
 			{
 				// Reset the camera
 				objectViewer->resetCamera ();

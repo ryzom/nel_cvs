@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.101 2002/01/28 14:46:01 vizerie Exp $
+ * $Id: landscape.cpp,v 1.102 2002/01/28 17:28:10 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -688,7 +688,11 @@ void			CLandscape::updateGlobalsAndLockBuffers (const CVector &refineCenter)
 
 	// RefineThreshold.
 	CLandscapeGlobals::RefineThreshold= _Threshold;
-	CLandscapeGlobals::OORefineThreshold= 1.0f / CLandscapeGlobals::RefineThreshold;
+
+	if (_Threshold == 0.0f)
+		CLandscapeGlobals::OORefineThreshold = FLT_MAX;
+	else
+		CLandscapeGlobals::OORefineThreshold = 1.0f / CLandscapeGlobals::RefineThreshold;
 
 	// Refine Center*.
 	CLandscapeGlobals::RefineCenter= refineCenter;

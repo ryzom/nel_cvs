@@ -1,7 +1,7 @@
 /** \file zone_symmetrisation.cpp
  * Environnement used to symmetrise zones
  *
- * $Id: zone_symmetrisation.cpp,v 1.2 2002/11/06 12:23:26 corvazier Exp $
+ * $Id: zone_symmetrisation.cpp,v 1.3 2003/03/05 16:01:12 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -272,7 +272,7 @@ bool CZoneSymmetrisation::build (const std::vector<CPatchInfo> &patchInfo, float
 	}
 
 	// Returns true if no error
-	return errorDesc.Errors.size () == 0;
+	return true; // errorDesc.Errors.size () == 0;
 }
 
 // ***************************************************************************

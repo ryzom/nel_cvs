@@ -811,5 +811,49 @@ SOURCE=.\processes\vegetset\export_build_data.bat
 SOURCE=.\processes\vegetset\sh\install.sh
 # End Source File
 # End Group
+# Begin Group "Rbank Files"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\processes\rbank\0_setup.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\rbank\1_clean.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\rbank\2_export.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\rbank\3_build.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\rbank\4_install.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\rbank\sh\build.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\rbank\cfg\config.cfg
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\rbank\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\rbank\export_build_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\rbank\sh\install.sh
+# End Source File
+# End Group
 # End Target
 # End Project

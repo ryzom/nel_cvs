@@ -6,17 +6,21 @@ fn clearlog =
 	createFile filename
 )
 
+-- Clear log
+clearlog ()
+
+nlErrorFilename = ((getdir #maxroot)+"log.log")
+nlErrorStream = openFile nlErrorFilename mode:"a"
+if nlErrorStream == undefined then
+	nlErrorStream = createFile nlErrorFilename
+
 -- Log a message
 fn nlerror message =
 (
-	filename = ((getdir #maxroot)+"log.log")
-	stream = openFile filename mode:"a"
-	if stream == undefined then
-		stream = createFile filename
-	if stream != undefined then
+	if nlErrorStream != undefined then
 	(
-		format "%\n" message to:stream
-		close stream
+		format "%\n" message to:nlErrorStream
+		flush nlErrorStream
 	)
 
 	-- To the console
@@ -52,9 +56,6 @@ Fn findID node =
 	Z_ID = num_sub_id*256 + alpha_sub_id
 	return Z_ID
 )
-
--- Clear log
-clearlog ()
 
 try
 (

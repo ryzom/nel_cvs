@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.50 2004/03/23 10:15:49 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.51 2004/04/09 14:25:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -276,9 +276,9 @@ void		CRenderTrav::traverse()
 	// Render Transparent stuff.
 	// =============================
 
-	 // Render transparent materials (draw higher priority first)
+	 // Render transparent materials (draw higher priority last, because their appear in front)
 	_CurrentPassOpaque = false;
-	for(std::vector<CLayeredOrderingTable<CTransform> >::reverse_iterator it = _OrderTransparentListByPriority.rbegin(); it != _OrderTransparentListByPriority.rend(); ++it)
+	for(std::vector<CLayeredOrderingTable<CTransform> >::iterator it = _OrderTransparentListByPriority.begin(); it != _OrderTransparentListByPriority.end(); ++it)
 	{		
 		it->begin(_LayersRenderingOrder);	
 		while( it->get() != NULL )
@@ -291,7 +291,7 @@ void		CRenderTrav::traverse()
 	// Profile this frame?
 	if(Scene->isNextRenderProfile())
 	{
-		for(std::vector<CLayeredOrderingTable<CTransform> >::reverse_iterator it = _OrderTransparentListByPriority.rbegin(); it != _OrderTransparentListByPriority.rend(); ++it)
+		for(std::vector<CLayeredOrderingTable<CTransform> >::iterator it = _OrderTransparentListByPriority.begin(); it != _OrderTransparentListByPriority.end(); ++it)
 		{
 			it->begin();
 			while( it->get() != NULL )
@@ -1061,7 +1061,8 @@ void			CRenderTrav::renderLandscapes()
 
 // ***************************************************************************
 void CRenderTrav::setupTransparencySorting(uint8 maxPriority /*=0*/,uint NbDistanceEntries /*=1024*/)
-{	
+{		
+	NLMISC::contReset(_OrderTransparentListByPriority); // avoid useless object copy when vector is resized (every element is reseted anyway)
 	_OrderTransparentListByPriority.resize((uint) maxPriority + 1);
 	for(uint k = 0; k < _OrderTransparentListByPriority.size(); ++k)
 	{

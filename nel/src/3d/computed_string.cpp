@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.28 2003/01/22 18:00:01 berenguier Exp $
+ * $Id: computed_string.cpp,v 1.29 2003/01/23 17:59:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,14 +143,49 @@ void CComputedString::render2D (IDriver& driver,
 	driver.renderQuads (*Material, SelectStart, min(nNumQuad, SelectSize) );
 }
 
+
+/*------------------------------------------------------------------*\
+							render3D()
+\*------------------------------------------------------------------*/
+void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
+{
+	if (Vertices.getNumVertices() == 0)
+		return;
+
+	// get window size
+	uint32	wndWidth, wndHeight;
+	driver.getWindowSize(wndWidth, wndHeight);
+	// scale according to window height (backward compatibility)
+	matrix.scale(1.0f/wndHeight);
+
+	// Computing hotspot translation vector
+	CVector hotspotVector = getHotSpotVector(hotspot);
+	matrix.translate(hotspotVector);
+
+	// render
+	driver.setupModelMatrix(matrix);
+	driver.activeVertexBuffer(Vertices);
+
+	// Rendering each primitive blocks
+	Material->setZFunc (CMaterial::lessequal);
+	Material->setZWrite (true);
+	Material->setColor (Color);
+	// Clamp for selection
+	uint32	nNumQuad= Vertices.getNumVertices()/4;
+	driver.renderQuads (*Material, SelectStart, min(nNumQuad, SelectSize) );
+}
+
+
 /*------------------------------------------------------------------*\
 							render2DClip()
 \*------------------------------------------------------------------*/
-void CComputedString::render2DClip (IDriver& driver, 
+void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuffer, 
 					float x, float z,
 					float xmin, float zmin, float xmax, float zmax)
 {
 	if (Vertices.getNumVertices() == 0)
+		return;
+	if(SelectSize==0)
 		return;
 
 	// get window size
@@ -176,45 +211,72 @@ void CComputedString::render2DClip (IDriver& driver,
 			((z+ZMin) >= zmin) && ((z+ZMax) <= zmax);
 
 
-	// **** setup driver context
-	driver.setFrustum(0, (float)wndWidth, 0, (float)wndHeight, -1, 1, false);  // resX/resY
+	// How many quad to render?
+	uint	nNumQuadSrc= Vertices.getNumVertices()/4;
+	nNumQuadSrc= min(nNumQuadSrc, (uint)SelectSize);
 
-	// view matrix <-> identity
-	driver.setupViewMatrix (CMatrix::Identity);
-	
-	// rendering each primitives 
-	Material->setZFunc (CMaterial::always);
-	Material->setZWrite (false);
-	Material->setColor (Color);
+	// Enlarge dest Buffer if needed
+	if( (rdrBuffer.NumQuads+nNumQuadSrc)*4 > rdrBuffer.Vertices.getNumVertices() )
+	{
+		rdrBuffer.Vertices.setNumVertices( (rdrBuffer.NumQuads+nNumQuadSrc)*4 );
+	}
+
+	// prepare copy.
+	sint	ofsSrcUV= Vertices.getTexCoordOff();
+	sint	ofsDstUV= rdrBuffer.Vertices.getTexCoordOff();
+	sint	ofsDstColor= rdrBuffer.Vertices.getColorOff();
+	uint8	*srcPtr= (uint8*)Vertices.getVertexCoordPointer();
+	uint8	*dstPtr= (uint8*)rdrBuffer.Vertices.getVertexCoordPointer(rdrBuffer.NumQuads*4);
+	sint	srcSize= Vertices.getVertexSize();
+	sint	dstSize= rdrBuffer.Vertices.getVertexSize();
+
+	// decal src for selection
+	srcPtr+= SelectStart*4 * srcSize;
 
 	// **** clipping?
-	uint32 nNumQuad = 0;
 	if(allIn)
 	{
-		// tansformation matrix initialized to identity
-		CMatrix matrix;
-		matrix.translate(CVector(x,0,z));
-		driver.setupModelMatrix (matrix);
-		// setup original vertices 
-		nNumQuad= Vertices.getNumVertices()/4;
-		driver.activeVertexBuffer(Vertices);
+		// copy All vertices 
+		uint numVerts= nNumQuadSrc*4;
+		for(uint i=0;i<numVerts;i++)
+		{
+			// copy and translate pos
+			((CVector*)dstPtr)->x= x + ((CVector*)srcPtr)->x;
+			((CVector*)dstPtr)->y= ((CVector*)srcPtr)->y;
+			((CVector*)dstPtr)->z= z + ((CVector*)srcPtr)->z;
+			// uv
+			*((CUV*)(dstPtr+ofsDstUV))= *((CUV*)(srcPtr+ofsSrcUV));
+			// color
+			*((CRGBA*)(dstPtr+ofsDstColor))= Color;
+
+			// next
+			srcPtr+= srcSize;
+			dstPtr+= dstSize;
+		}
+
+		// update the rdrBuffer
+		rdrBuffer.NumQuads+= nNumQuadSrc;
 	}
 	else
 	{
+		uint	nNumQuadClipped= 0;
+
+		// the real number of vertices to comute (with selection)
+		uint	numVerts= nNumQuadSrc*4;
+
 		// clip into VerticesClipped
-		VerticesClipped.setNumVertices (Vertices.getNumVertices());
-		CVector *pIniPos0 = (CVector*)Vertices.getVertexCoordPointer (0);
-		CVector *pIniPos2 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*2);
-		CVector *pClipPos0 = (CVector*)VerticesClipped.getVertexCoordPointer (0);
-		CVector *pClipPos1 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize());
-		CVector *pClipPos2 = (CVector*)(((char*)pClipPos1) + Vertices.getVertexSize());
-		CVector *pClipPos3 = (CVector*)(((char*)pClipPos2) + Vertices.getVertexSize());
-		CUV *pClipUV0 = (CUV*)VerticesClipped.getTexCoordPointer (0, 0);
-		CUV *pClipUV1 = (CUV*)(((char*)pClipUV0) + Vertices.getVertexSize());
-		CUV *pClipUV2 = (CUV*)(((char*)pClipUV1) + Vertices.getVertexSize());
-		CUV *pClipUV3 = (CUV*)(((char*)pClipUV2) + Vertices.getVertexSize());
+		CVector *pIniPos0 = (CVector*)srcPtr;
+		CVector *pIniPos2 = (CVector*)(((uint8*)pIniPos0) + srcSize*2);
+		CVector *pClipPos0 = (CVector*)dstPtr;
+		CVector *pClipPos1 = (CVector*)(((uint8*)pClipPos0) + dstSize);
+		CVector *pClipPos2 = (CVector*)(((uint8*)pClipPos1) + dstSize);
+		CVector *pClipPos3 = (CVector*)(((uint8*)pClipPos2) + dstSize);
+		CUV *pClipUV0 = (CUV*)(dstPtr + ofsDstUV );
+		CUV *pClipUV1 = (CUV*)(((uint8*)pClipUV0) + dstSize);
+		CUV *pClipUV2 = (CUV*)(((uint8*)pClipUV1) + dstSize);
+		CUV *pClipUV3 = (CUV*)(((uint8*)pClipUV2) + dstSize);
 		float ratio;
-		for (uint32 i = 0; i < Vertices.getNumVertices(); i+=4)
+		for (uint32 i = 0; i < numVerts; i+=4)
 		{
 			if (((x+pIniPos0->x) > xmax) || ((x+pIniPos2->x) < xmin) ||
 				((z+pIniPos0->z) > zmax) || ((z+pIniPos2->z) < zmin))
@@ -223,8 +285,26 @@ void CComputedString::render2DClip (IDriver& driver,
 			}
 			else
 			{
-				memcpy (pClipPos0, pIniPos0, Vertices.getVertexSize()*4);
+				// copy with no clip
+				// v0
+				*((CVector*) (dstPtr + dstSize*0))= *((CVector*) (srcPtr + srcSize*0));
+				*((CUV*)	 (dstPtr + dstSize*0 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*0 + ofsSrcUV));
+				*((CRGBA*)	 (dstPtr + dstSize*0 + ofsDstColor))= Color;
+				// v1
+				*((CVector*) (dstPtr + dstSize*1))= *((CVector*) (srcPtr + srcSize*1));
+				*((CUV*)	 (dstPtr + dstSize*1 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*1 + ofsSrcUV));
+				*((CRGBA*)	 (dstPtr + dstSize*1 + ofsDstColor))= Color;
+				// v2
+				*((CVector*) (dstPtr + dstSize*2))= *((CVector*) (srcPtr + srcSize*2));
+				*((CUV*)	 (dstPtr + dstSize*2 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*2 + ofsSrcUV));
+				*((CRGBA*)	 (dstPtr + dstSize*2 + ofsDstColor))= Color;
+				// v3
+				*((CVector*) (dstPtr + dstSize*3))= *((CVector*) (srcPtr + srcSize*3));
+				*((CUV*)	 (dstPtr + dstSize*3 + ofsDstUV))= *((CUV*)(srcPtr + srcSize*3 + ofsSrcUV));
+				*((CRGBA*)	 (dstPtr + dstSize*3 + ofsDstColor))= Color;
 
+
+				// translate dest
 				pClipPos0->x += x; pClipPos1->x += x; pClipPos2->x += x; pClipPos3->x += x;
 				pClipPos0->z += z; pClipPos1->z += z; pClipPos2->z += z; pClipPos3->z += z;
 				if ((pClipPos0->x >= xmin) && (pClipPos0->z >= zmin) && (pClipPos2->x <= xmax) && (pClipPos2->z <= zmax))
@@ -267,60 +347,74 @@ void CComputedString::render2DClip (IDriver& driver,
 						pClipUV3->V += ratio*(pClipUV0->V - pClipUV3->V);
 					}
 				}
-				++nNumQuad;
-				pClipPos0 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize()*4);
-				pClipPos1 = (CVector*)(((char*)pClipPos0) + Vertices.getVertexSize());
-				pClipPos2 = (CVector*)(((char*)pClipPos1) + Vertices.getVertexSize());
-				pClipPos3 = (CVector*)(((char*)pClipPos2) + Vertices.getVertexSize());
-				pClipUV0 = (CUV*)( ((char*)pClipUV0) + Vertices.getVertexSize()*4 );
-				pClipUV1 = (CUV*)(((char*)pClipUV0) + Vertices.getVertexSize());
-				pClipUV2 = (CUV*)(((char*)pClipUV1) + Vertices.getVertexSize());
-				pClipUV3 = (CUV*)(((char*)pClipUV2) + Vertices.getVertexSize());
+
+				// next quad out
+				++nNumQuadClipped;
+				pClipPos0 = (CVector*)(((uint8*)pClipPos0) + dstSize*4);
+				pClipPos1 = (CVector*)(((uint8*)pClipPos0) + dstSize);
+				pClipPos2 = (CVector*)(((uint8*)pClipPos1) + dstSize);
+				pClipPos3 = (CVector*)(((uint8*)pClipPos2) + dstSize);
+				pClipUV0 = (CUV*)( ((uint8*)pClipUV0) + dstSize*4 );
+				pClipUV1 = (CUV*)(((uint8*)pClipUV0) + dstSize);
+				pClipUV2 = (CUV*)(((uint8*)pClipUV1) + dstSize);
+				pClipUV3 = (CUV*)(((uint8*)pClipUV2) + dstSize);
+				dstPtr+=  4*dstSize;
 			}
-			pIniPos0 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*4);
-			pIniPos2 = (CVector*)(((char*)pIniPos0) + Vertices.getVertexSize()*2);
+			// next quad in
+			pIniPos0 = (CVector*)(((uint8*)pIniPos0) + srcSize*4);
+			pIniPos2 = (CVector*)(((uint8*)pIniPos0) + srcSize*2);
+			srcPtr+=  4*srcSize;
 		}
 
-		// identity
-		driver.setupModelMatrix (CMatrix::Identity);
-		// setup vertices clipped
-		driver.activeVertexBuffer (VerticesClipped);
+		// update the rdrBuffer
+		rdrBuffer.NumQuads+= nNumQuadClipped;
 	}
-
-	// *** rendering
-	// Clamp for selection
-	driver.renderQuads (*Material, SelectStart, min((uint32)nNumQuad, SelectSize) );
 }
 
-/*------------------------------------------------------------------*\
-							render3D()
-\*------------------------------------------------------------------*/
-void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
+// ***************************************************************************
+CRenderStringBuffer::CRenderStringBuffer()
 {
-	if (Vertices.getNumVertices() == 0)
+	// Use color per vertex
+	Vertices.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::PrimaryColorFlag);
+	NumQuads= 0;
+}
+
+
+// ***************************************************************************
+CRenderStringBuffer::~CRenderStringBuffer()
+{
+}
+
+
+// ***************************************************************************
+void	CRenderStringBuffer::flush(IDriver& driver, CMaterial *fontMat)
+{
+	if(NumQuads==0)
 		return;
 
 	// get window size
 	uint32	wndWidth, wndHeight;
 	driver.getWindowSize(wndWidth, wndHeight);
-	// scale according to window height (backward compatibility)
-	matrix.scale(1.0f/wndHeight);
 
-	// Computing hotspot translation vector
-	CVector hotspotVector = getHotSpotVector(hotspot);
-	matrix.translate(hotspotVector);
+	// **** setup driver context
+	driver.setFrustum(0, (float)wndWidth, 0, (float)wndHeight, -1, 1, false);  // resX/resY
 
-	// render
-	driver.setupModelMatrix(matrix);
-	driver.activeVertexBuffer(Vertices);
+	// view matrix and model matrix <-> identity
+	driver.setupViewMatrix (CMatrix::Identity);
+	driver.setupModelMatrix (CMatrix::Identity);
+	
+	// setup material
+	fontMat->setZFunc (CMaterial::always);
+	fontMat->setZWrite (false);
 
-	// Rendering each primitive blocks
-	Material->setZFunc (CMaterial::lessequal);
-	Material->setZWrite (true);
-	Material->setColor (Color);
-	// Clamp for selection
-	uint32	nNumQuad= Vertices.getNumVertices()/4;
-	driver.renderQuads (*Material, SelectStart, min(nNumQuad, SelectSize) );
+	// setup vertices clipped
+	driver.activeVertexBuffer (Vertices);
+
+	// *** rendering
+	driver.renderQuads (*fontMat, 0, NumQuads );
+
+	// *** reset
+	NumQuads= 0;
 }
 
 

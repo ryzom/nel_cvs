@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.10 2002/12/30 16:18:24 besson Exp $
+ * $Id: text_context.h,v 1.11 2003/01/23 17:59:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,9 @@ public:
 		_Driver= drv;
 		_FontManager= fmg;
 	}
+
+	// get the fontManager
+	CFontManager	*getFontManager() const {return _FontManager;}
 
 	/// Must be called before any print
 	void setFontGenerator (const std::string fontFileName, const std::string fontExFileName = "");
@@ -152,7 +155,7 @@ public:
 	}
 
 	/// Clip and print a string that is in the cache (it leaves the string in the cache)
-	void printClipAt (float x, float z, uint32 index, float xmin, float ymin, float xmax, float ymax)
+	void printClipAt (CRenderStringBuffer &rdrBuffer, float x, float z, uint32 index, float xmin, float ymin, float xmax, float ymax)
 	{
 		nlassert (index < _CacheStrings.size());
 		CComputedString &rCS = _CacheStrings[index];
@@ -161,10 +164,10 @@ public:
 			CRGBA	bkup = rCS.Color;
 			rCS.Color= _ShadeColor;
 			rCS.Color.A = bkup.A;
-			rCS.render2DClip(*_Driver, x+_ShadeExtent, z-_ShadeExtent, xmin, ymin, xmax, ymax);
+			rCS.render2DClip(*_Driver, rdrBuffer, x+_ShadeExtent, z-_ShadeExtent, xmin, ymin, xmax, ymax);
 			rCS.Color= bkup;
 		}
-		rCS.render2DClip (*_Driver, x, z, xmin, ymin, xmax, ymax);
+		rCS.render2DClip (*_Driver, rdrBuffer, x, z, xmin, ymin, xmax, ymax);
 	}
 
 	/// Directly print a string

@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.9 2003/01/22 18:00:01 berenguier Exp $
+ * $Id: computed_string.h,v 1.10 2003/01/23 17:59:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/driver.h"
 #include "3d/vertex_buffer.h"
 #include "3d/material.h"
+#include "nel/3d/u_text_context.h"
 #include <vector>
 
 
@@ -41,12 +42,28 @@ namespace NL3D {
 
 class CTextureFont;
 class CMatrix;
+struct CComputedString;
+
+// ***************************************************************************
+/**
+ *	A Buffer to render batch of computed string.
+ */
+class	CRenderStringBuffer : public URenderStringBuffer
+{
+public:
+	CVertexBuffer	Vertices;
+	uint			NumQuads;
+
+public:
+	CRenderStringBuffer();
+	virtual ~CRenderStringBuffer();
+
+	/// render and make empty the render string buffer. see CComputedString::render2DClip()
+	void	flush(IDriver& driver, CMaterial *fontMat);
+};
 
 
-/*******************************************************************/
-
-
-
+// ***************************************************************************
 /**
  * CComputedString
  * A CComputedString is a structure which permits to render a string
@@ -61,7 +78,6 @@ struct CComputedString
 
 public:
 	CVertexBuffer Vertices;
-	CVertexBuffer VerticesClipped;
 	CMaterial	*Material;
 	CRGBA Color;
 	/// The width of the string, in pixels (eg: 30)
@@ -112,7 +128,6 @@ public:
 		if (bSetupVB)
 		{
 			Vertices.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
-			VerticesClipped.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 		}
 		SelectStart= 0;
 		SelectSize= ~0;
@@ -148,11 +163,13 @@ public:
 					bool  roundToNearestPixel= true
 					);
 
-	/** same as render2D but clip the quads to xmin,ymin/xmax,ymax.
+	/** Special for interface. same as render2D but clip the quads to xmin,ymin/xmax,ymax.
 	 *	NB: behavior is same as render2D with: Hotspot = bottomLeft, scaleX=1, scaleZ=1, rotateY=0,
 	 *	useScreenAR43= false, roundToNearestPixel= false
+	 *	Additionnaly, this method don't render directly to the driver but add primitives to a CRenderStringBuffer
+	 *	Use the method CRenderStringBuffer::flush() to flush it all.
 	 */
-	void render2DClip (IDriver& driver, 
+	void render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuffer, 
 					float x, float z,
 					float xmin=0, float ymin=0, float xmax=1, float ymax=1
 					);

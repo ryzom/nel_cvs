@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.13 2002/12/30 16:18:24 besson Exp $
+ * $Id: text_context_user.cpp,v 1.14 2003/01/23 17:59:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -297,13 +297,13 @@ void CTextContextUser::printAt(float x, float y, uint32 i)
 	_TextContext.printAt(x, y, i);
 	_DriverUser->restoreMatrixContext();
 }
-void CTextContextUser::printClipAt(float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax)
+void CTextContextUser::printClipAt(URenderStringBuffer &renderBuffer, float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax)
 {
 	NL3D_MEM_TEXT_CONTEXT
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
-	_TextContext.printClipAt(x, y, i, xmin, ymin, xmax, ymax);
-	_DriverUser->restoreMatrixContext();
+	_TextContext.printClipAt(static_cast<CRenderStringBuffer&>(renderBuffer), x, y, i, xmin, ymin, xmax, ymax);
+	// Don't need to restore Matrix context here since no driver change
 }
 void CTextContextUser::printAt(float x, float y, ucstring ucstr) 
 {
@@ -364,6 +364,29 @@ void			CTextContextUser::dumpCacheTexture (const char *filename)
 {
 	NL3D_MEM_TEXT_CONTEXT
 	_TextContext.dumpCache (filename);
+}
+
+
+// ***************************************************************************
+URenderStringBuffer		*CTextContextUser::createRenderBuffer()
+{
+	return new CRenderStringBuffer;
+}
+void					CTextContextUser::deleteRenderBuffer(URenderStringBuffer *buffer)
+{
+	delete buffer;
+}
+void					CTextContextUser::flushRenderBuffer(URenderStringBuffer *buffer)
+{
+	nlassert(buffer);
+	CRenderStringBuffer	*rdrBuffer= static_cast<CRenderStringBuffer*>(buffer);
+	if(rdrBuffer->NumQuads)
+	{
+		rdrBuffer->flush(*_Driver, _TextContext.getFontManager()->getFontMaterial());
+
+		// must restore the Matrix context if some display done.
+		_DriverUser->restoreMatrixContext();
+	}
 }
 
 

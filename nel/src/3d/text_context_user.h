@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.12 2002/12/30 16:18:23 besson Exp $
+ * $Id: text_context_user.h,v 1.13 2003/01/23 17:59:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,7 +110,7 @@ public:
 
 	void clear()  ;
 	void printAt(float x, float y, uint32 i) ;
-	void printClipAt(float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) ;
+	void printClipAt(URenderStringBuffer &renderBuffer, float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) ;
 
 	void printAt(float x, float y, ucstring ucstr) ;
 	void printfAt(float x, float y, const char * format, ...) ;
@@ -122,6 +122,10 @@ public:
 	// @}
 
 	void			dumpCacheTexture (const char *filename);
+
+	virtual URenderStringBuffer		*createRenderBuffer();
+	virtual void					deleteRenderBuffer(URenderStringBuffer *buffer);
+	virtual void					flushRenderBuffer(URenderStringBuffer *buffer);
 
 };
 

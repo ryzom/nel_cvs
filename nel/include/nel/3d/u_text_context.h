@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.10 2002/12/30 16:18:38 besson Exp $
+ * $Id: u_text_context.h,v 1.11 2003/01/23 17:59:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,18 @@
 namespace NL3D {
 
 class	UDriver;
+
+
+// ***************************************************************************
+/** Abstract Class to render string into a temporary buffer
+ */
+class	URenderStringBuffer
+{
+public:
+	URenderStringBuffer() {}
+	virtual ~URenderStringBuffer() {}
+};
+
 
 // ***************************************************************************
 /**
@@ -236,7 +248,9 @@ public:
 	 * (rq : it leaves the string in the stack)
 	 */
 	virtual	void			printAt (float x, float y, uint32 i) = 0;
-	virtual	void			printClipAt (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
+	/** Same as printAt but special version for interface: clip and insert in a temp buffer.
+	 */
+	virtual	void			printClipAt (URenderStringBuffer &renderBuffer, float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
 	/**
 	 * compute and print a ucstring at the location (2D method) x/y E [0,1]
 	 */
@@ -268,6 +282,12 @@ public:
 
 	/// Used for debug
 	virtual void			dumpCacheTexture (const char *filename) = 0;
+
+	/// create a renderBuffer for printClipAt(). Must delete it with deleteRenderBuffer()
+	virtual URenderStringBuffer		*createRenderBuffer() = 0;
+	virtual void					deleteRenderBuffer(URenderStringBuffer *buffer) = 0;
+	virtual void					flushRenderBuffer(URenderStringBuffer *buffer) = 0;
+
 
 };
 

@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.7 2001/07/04 12:14:29 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.8 2001/07/24 08:57:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,8 @@
 #include "3d/particle_system.h"
 #include "3d/ps_located.h"
 #include "3d/particle_system_model.h"
+#include "particle_dlg.h"
+
 
 #include  <algorithm>
 
@@ -51,16 +53,23 @@ CStartStopParticleSystem::CStartStopParticleSystem(CParticleDlg *particleDlg)
 	: CDialog(CStartStopParticleSystem::IDD, particleDlg), _ParticleDlg(particleDlg), _Running(FALSE) 
 {
 	//{{AFX_DATA_INIT(CStartStopParticleSystem)
+	m_DisplayBBox = FALSE;
 	//}}AFX_DATA_INIT
 }
 
-
+bool CStartStopParticleSystem::isBBoxDisplayEnabled()
+{
+	UpdateData() ;
+	return m_DisplayBBox ? true : false ;
+}
+	
 void CStartStopParticleSystem::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CStartStopParticleSystem)
 	DDX_Control(pDX, IDC_STOP_PICTURE, m_StopPicture);
 	DDX_Control(pDX, IDC_START_PICTURE, m_StartPicture);
+	DDX_Check(pDX, IDC_DISPLAY_BBOX, m_DisplayBBox);
 	//}}AFX_DATA_MAP
 
 

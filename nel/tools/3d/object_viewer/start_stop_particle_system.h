@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.h,v 1.4 2001/06/25 12:50:37 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.5 2001/07/24 08:57:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 
 #include "nel/misc/vector.h"
 
+
 namespace NL3D
 {
 	class CParticleSystem ;
@@ -65,7 +66,8 @@ public:
 	  */	  
 	void restoreSystem() ;
 
-
+	/// send back true when bbox display is enabled
+	bool isBBoxDisplayEnabled() ;
 	
 	/// update data when a located in a particle system has been removed	
 	void removeLocated(NL3D::CPSLocated *loc) ;
@@ -156,13 +158,15 @@ public:
 
 
 
-
+	/// return true when the display bbox button is pressed...
+	bool isBBoxDisplayEnabled() ;
 
 // Dialog Data
 	//{{AFX_DATA(CStartStopParticleSystem)
 	enum { IDD = IDD_PARTICLE_SYSTEM_START_STOP };
 	CButton	m_StopPicture;
 	CButton	m_StartPicture;
+	BOOL	m_DisplayBBox;
 	//}}AFX_DATA
 
 

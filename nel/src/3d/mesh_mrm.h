@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.38 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.39 2002/11/13 17:02:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,6 +89,10 @@ public:
 	 * \param params parameters of the MRM build process.
 	 */
 	void			build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*> &bsList, uint numMaxMaterial, const CMRMParameters &params= CMRMParameters());
+
+	/// change materials Ids (called from CMesh::optimizeMaterialUsage())
+	void			applyMaterialRemap(const std::vector<sint> &remap);
+
 
 	/** Change MRM Distance setup.
 	 *	NB: no-op if distanceFinest<0, distanceMiddle<=distanceFinest or if distanceCoarsest<=distanceMiddle.
@@ -619,13 +623,18 @@ public:
 							std::vector<CMesh::CMeshBuild*> &listBS,
 							const CMRMParameters &params= CMRMParameters() );
 
-
 	/** Build a mesh, replacing old. build from a CMeshBaseBuild (materials info) and a previously builded CMeshMRMGeom.
 	 *	WARNING: This has a side effect of deleting AnimatedMaterials.
 	 *	this is much slower than CMesh::build(), because it computes the MRM.
 	 * \param params parameters of the MRM build process.
 	 */
 	void			build (CMeshBase::CMeshBaseBuild &m, const CMeshMRMGeom &mgeom);
+
+	/** Optimize material use. If a material in CMeshBase is not used by any renderPasses, it is removed, and ids are updated.
+	 *	WARNING: This has a side effect of deleting AnimatedMaterials.
+	 *	\param remap a remap material Id: newId= remap[oldId]. -1 means "no more used"
+	 */
+	void			optimizeMaterialUsage(std::vector<sint> &remap);
 
 
 	/// Compute skinning id

@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.13 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: mesh_base.h,v 1.14 2002/11/13 17:02:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -229,6 +229,13 @@ protected:
 
 	/// instanciate MeshBase part to an instance (a CMeshBaseInstance).
 	void	instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene);
+
+	/** delete any material not used, and build remap table (old to new). 
+	 *	_AnimatedMaterials are reseted
+	 *	resetLodCharacterTexture(); is called
+	 */
+	void	applyMaterialUsageOptim(const std::vector<bool> &materialUsed, std::vector<sint> &remap);
+
 
 private:
 

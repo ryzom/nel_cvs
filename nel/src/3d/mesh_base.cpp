@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.24 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.25 2002/11/13 17:02:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,9 @@
 #include "3d/mesh_base_instance.h"
 #include "3d/lod_character_texture.h"
 
+
+using namespace std;
+using namespace NLMISC;
 
 
 namespace NL3D 
@@ -319,6 +322,64 @@ void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene)
 	mi->setIsBigLightable(this->useLightingLocalAttenuation());
 
 }
+
+
+// ***************************************************************************
+void	CMeshBase::applyMaterialUsageOptim(const std::vector<bool> &materialUsed, std::vector<sint> &remap)
+{
+	nlassert(_Materials.size()==materialUsed.size());
+
+	// security reset
+	resetLodCharacterTexture();
+	_AnimatedMaterials.clear();
+
+	// init all ids to "Not Used"
+	remap.clear();
+	remap.resize(_Materials.size(), -1);
+
+	// remove unused materials and build remap
+	vector<CMaterial>::iterator		itMat= _Materials.begin();
+	uint							dstIdx= 0;
+	for(uint i=0;i<materialUsed.size();i++)
+	{
+		// if used, still use it, and remap.
+		if(materialUsed[i])
+		{
+			remap[i]= dstIdx;
+			itMat++;
+			dstIdx++;
+		}
+		// remove from the array
+		else
+		{
+			itMat= _Materials.erase(itMat);
+		}
+	}
+
+	// apply the remap to LightMaps infos
+	TLightInfoMap::iterator		itLight;
+	for(itLight= _LightInfos.begin();itLight!= _LightInfos.end();itLight++)
+	{
+		CLightInfoMapList::iterator		itList= itLight->second.begin();
+		for(;itList!=itLight->second.end();)
+		{
+			sint	newId= remap[itList->nMatNb];
+			// If material used
+			if(newId>=0)
+			{
+				// apply remap on the material id
+				itList->nMatNb= newId;
+				itList++;
+			}
+			else
+			{
+				// remove it from list of light infos
+				itList= itLight->second.erase(itList);
+			}
+		}
+	}
+}
+
 
 // ***************************************************************************
 void	CMeshBase::flushTextures(IDriver &driver)

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.54 2002/09/10 13:36:58 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.55 2002/11/13 17:02:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -454,6 +454,20 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 
 }
 
+// ***************************************************************************
+void	CMeshMRMGeom::applyMaterialRemap(const std::vector<sint> &remap)
+{
+	for(uint lod=0;lod<getNbLod();lod++)
+	{
+		for(uint rp=0;rp<getNbRdrPass(lod);rp++)
+		{
+			// remap
+			uint32	&matId= _Lods[lod].RdrPass[rp].MaterialId;
+			nlassert(remap[matId]>=0);
+			matId= remap[matId];
+		}
+	}
+}
 
 // ***************************************************************************
 void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod, IVertexBufferHard *currentVBHard)
@@ -2552,6 +2566,29 @@ void			CMeshMRM::build (CMeshBase::CMeshBaseBuild &m, const CMeshMRMGeom &mgeom)
 	_MeshMRMGeom= mgeom;
 }
 
+
+// ***************************************************************************
+void			CMeshMRM::optimizeMaterialUsage(std::vector<sint> &remap)
+{
+	// For each material, count usage.
+	vector<bool>	materialUsed;
+	materialUsed.resize(CMeshBase::_Materials.size(), false);
+	for(uint lod=0;lod<getNbLod();lod++)
+	{
+		for(uint rp=0;rp<getNbRdrPass(lod);rp++)
+		{
+			uint	matId= getRdrPassMaterial(lod, rp);
+			// flag as used.
+			materialUsed[matId]= true;
+		}
+	}
+
+	// Apply it to meshBase
+	CMeshBase::applyMaterialUsageOptim(materialUsed, remap);
+
+	// Apply lut to meshGeom.
+	_MeshMRMGeom.applyMaterialRemap(remap);
+}
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.71 2002/09/10 13:36:57 berenguier Exp $
+ * $Id: mesh.cpp,v 1.72 2002/11/13 17:02:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -448,6 +448,22 @@ void CMeshGeom::setBlendShapes(std::vector<CBlendShape>&bs)
 	_MeshMorpher->BlendShapes = bs;
 	// must update some RunTime parameters
 	compileRunTime();
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::applyMaterialRemap(const std::vector<sint> &remap)
+{
+	for(uint mb=0;mb<getNbMatrixBlock();mb++)
+	{
+		for(uint rp=0;rp<getNbRdrPass(mb);rp++)
+		{
+			// remap
+			uint32	&matId= _MatrixBlocks[mb].RdrPass[rp].MaterialId;
+			nlassert(remap[matId]>=0);
+			matId= remap[matId];
+		}
+	}
 }
 
 
@@ -2162,6 +2178,31 @@ void	CMesh::build (CMeshBase::CMeshBaseBuild &mbase, CMeshBuild &m)
 	// build the geometry.
 	_MeshGeom->build (m, mbase.Materials.size());
 }
+
+
+// ***************************************************************************
+void	CMesh::optimizeMaterialUsage(std::vector<sint> &remap)
+{
+	// For each material, count usage.
+	vector<bool>	materialUsed;
+	materialUsed.resize(CMeshBase::_Materials.size(), false);
+	for(uint mb=0;mb<getNbMatrixBlock();mb++)
+	{
+		for(uint rp=0;rp<getNbRdrPass(mb);rp++)
+		{
+			uint	matId= getRdrPassMaterial(mb, rp);
+			// flag as used.
+			materialUsed[matId]= true;
+		}
+	}
+
+	// Apply it to meshBase
+	CMeshBase::applyMaterialUsageOptim(materialUsed, remap);
+
+	// Apply lut to meshGeom.
+	_MeshGeom->applyMaterialRemap(remap);
+}
+
 
 // ***************************************************************************
 void CMesh::setBlendShapes(std::vector<CBlendShape>&bs)

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.32 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: mesh.h,v 1.33 2002/11/13 17:02:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,9 +195,15 @@ public:
 	/// Build a mesh, replacing old. WARNING: This has a side effect of deleting AnimatedMaterials.
 	void			build(CMeshBase::CMeshBaseBuild &mbase, CMeshBuild &mbuild);
 
-
 	/// Build a mesh from material info, and a builded MeshGeom. WARNING: This has a side effect of deleting AnimatedMaterials.
 	void			build(CMeshBase::CMeshBaseBuild &mbuild, CMeshGeom &meshGeom);
+
+	/** Optimize material use. If a material in CMeshBase is not used by any renderPasses, it is removed, and ids are updated.
+	 *	WARNING: This has a side effect of deleting AnimatedMaterials.
+	 *	\param remap a remap material Id: newId= remap[oldId]. -1 means "no more used"
+	 */
+	void			optimizeMaterialUsage(std::vector<sint> &remap);
+
 
 	void			setBlendShapes(std::vector<CBlendShape>&bs);
 
@@ -300,6 +306,9 @@ public:
 	void			build(CMesh::CMeshBuild &mbuild, uint numMaxMaterial);
 
 	void			setBlendShapes(std::vector<CBlendShape>&bs);
+
+	/// change materials Ids (called from CMesh::optimizeMaterialUsage())
+	void			applyMaterialRemap(const std::vector<sint> &remap);
 
 
 	/// \name From IMeshGeom

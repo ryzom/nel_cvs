@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.50 2002/09/10 13:56:05 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.51 2002/11/13 17:03:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -320,6 +320,10 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 					// Build it
 					multiMesh->build (multiLodBuild);
 
+					/* \todo yoyo: TODO_OPTIM: CMeshMultiLod::optimizeMaterialUsage();
+						must update "force material to be animatable"
+					*/
+
 					// Return this pointer
 					meshBase=multiMesh;
 
@@ -348,6 +352,9 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 					if( hasLightMap( node, time ) && _Options.bExportLighting )
 						calculateLM(&buildMesh, &buildBaseMesh, node, time, maxBaseBuild.FirstMaterial);
 
+					// optimized materials remap
+					std::vector<sint>	materialRemap;
+
 					// MRM mesh ?
 					if (getScriptAppData (&node, NEL3D_APPDATA_LOD_MRM, 0))
 					{
@@ -365,6 +372,9 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 						// Build the mesh with the build interface
 						meshMRM->build (buildBaseMesh, buildMesh, bsList, parameters);
 
+						// optimize number of material
+						meshMRM->optimizeMaterialUsage(materialRemap);
+
 						// Return this pointer
 						meshBase=meshMRM;
 					}
@@ -381,16 +391,28 @@ IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt 
 						buildMeshMorph (buildMesh, node, time, nodeMap!=NULL);
 						mesh->setBlendShapes (buildMesh.BlendShapes);
 
+						// optimize number of material
+						mesh->optimizeMaterialUsage(materialRemap);
+
 						// Return this pointer
 						meshBase=mesh;
 					}
 
+					// Animate materials (must do it after optimizeMaterialUsage());
 					if (CExportNel::getScriptAppData (&node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, 0) != 0)
 					{					
-						/// todo hulud: check if material are animated before
+						/// \todo hulud: check if material are animated before
 						for (uint i=0; i<maxBaseBuild.NumMaterials; i++)
 						{
-							meshBase->setAnimatedMaterial (i, maxBaseBuild.MaterialInfo[i].MaterialName);													
+							// get the material name of the original material (not remaped)
+							std::string	matName= maxBaseBuild.MaterialInfo[i].MaterialName;
+							// get the remaped material id.
+							sint	dstMatId= materialRemap[i];
+
+							// if this material still exist in the final data
+							if(dstMatId>=0)
+								// animate it
+								meshBase->setAnimatedMaterial (dstMatId, matName);
 						}
 					}
 				}

@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.cpp
  * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.cpp,v 1.3 2001/06/25 12:53:28 vizerie Exp $
+ * $Id: value_gradient_dlg.cpp,v 1.4 2001/06/27 16:35:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,10 +42,12 @@ static char THIS_FILE[] = __FILE__;
 
 
 CValueGradientDlg::CValueGradientDlg(IValueGradientDlgClient *clientInterface								
-									, CWnd* pParent)
+									, CWnd* pParent,  bool canTuneNbStages /* = true*/, uint minSize /*= 2*/)
 	: CDialog(CValueGradientDlg::IDD, pParent)
 	 , _ClientInterface(clientInterface)	
-	 , _EditValueDlg(NULL)	 
+	 , _EditValueDlg(NULL)
+	 , _CanTuneNbStages(canTuneNbStages)
+	 , _MinSize(minSize)
 {
 	//{{AFX_DATA_INIT(CValueGradientDlg)
 	//}}AFX_DATA_INIT
@@ -66,6 +68,7 @@ void CValueGradientDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CValueGradientDlg)
+	DDX_Control(pDX, IDC_NO_SAMPLES, m_NoSamples);
 	DDX_Control(pDX, IDC_GRADIENT_LIST, m_GradientList);
 	DDX_Control(pDX, IDC_EDITED_VALUE, m_Value);
 	DDX_Control(pDX, IDC_REMOVE_VALUE, m_RemoveCtrl);
@@ -125,7 +128,7 @@ void CValueGradientDlg::OnRemoveValue()
 		_ClientInterface->modifyGradient(IValueGradientDlgClient::Delete, m_GradientList.GetCurSel()) ;
 		m_GradientList.DeleteString(m_GradientList.GetCurSel()) ;				
 
-		if (_Size <= 2)
+		if (_Size <= _MinSize)
 		{
 			m_RemoveCtrl.EnableWindow(FALSE) ;
 		}
@@ -169,7 +172,7 @@ BOOL CValueGradientDlg::OnInitDialog()
 	
 
 
-	m_RemoveCtrl.EnableWindow(_Size > 2 ? TRUE : FALSE) ;
+	m_RemoveCtrl.EnableWindow(_Size > _MinSize ? TRUE : FALSE) ;
 
 
 	m_GradientList.SetCurSel(0) ;
@@ -177,11 +180,17 @@ BOOL CValueGradientDlg::OnInitDialog()
 	m_GradientList.setCtrlID(IDC_GRADIENT_LIST) ;
 	m_GradientList.setDrawer(_ClientInterface) ;
 
-
-	_NbStepWrapper.I = _ClientInterface ;
-	_NbStepDlg->setWrapper(&_NbStepWrapper) ;
-	_NbStepDlg->init(181, 45, this) ;
-	_NbStepDlg->enableLowerBound(0, true) ;
+	if (_CanTuneNbStages)
+	{
+		_NbStepWrapper.I = _ClientInterface ;
+		_NbStepDlg->setWrapper(&_NbStepWrapper) ;
+		_NbStepDlg->init(181, 45, this) ;
+		_NbStepDlg->enableLowerBound(0, true) ;
+	}
+	else
+	{
+		m_NoSamples.ShowWindow(SW_HIDE) ;
+	}
 
 
 	UpdateData(FALSE) ;		

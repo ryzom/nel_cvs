@@ -1,7 +1,7 @@
 /** \file value_gradient_dlg.h
  * a dialog that allows to edit a gradient of value, used in a particle system
  *
- * $Id: value_gradient_dlg.h,v 1.3 2001/06/25 12:53:28 vizerie Exp $
+ * $Id: value_gradient_dlg.h,v 1.4 2001/06/27 16:35:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,10 +88,15 @@ public:
 
 	/** construct the dialog. The user must provides an interface of type IValueGradientDlgClient	
 	 * and a pointer to the parent window
+	 * \param canTuneNbStage the gradient is sampled, and the number od intermediate values can be tuned. 
+	 *        When this is set to false, this is disabled
+	 * \param minSize the minimum number of elements that the gradient must have
 	 */
 
 	CValueGradientDlg(IValueGradientDlgClient *clientInterface						
-						, CWnd* pParent = NULL);   // standard constructor
+						, CWnd* pParent = NULL, bool canTuneNbStages = true
+						, uint minSize = 2
+					 );
 
 	/// invalidate the gradient list box
 
@@ -103,6 +108,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CValueGradientDlg)
 	enum { IDD = IDD_GRADIENT_DLG };
+	CStatic	m_NoSamples;
 	CAttribListBox	m_GradientList;
 	CStatic	m_Value;
 	CButton	m_RemoveCtrl;
@@ -119,6 +125,11 @@ public:
 // Implementation
 protected:
 
+	// the minimum number of element in the gradient
+	uint _MinSize ;
+
+	// false to disable the dialog that control the number of stages between each value
+	bool _CanTuneNbStages ;
 
 	IValueGradientDlgClient *_ClientInterface ;
 	
@@ -144,7 +155,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 	// a wrapper to tune the number of step
-	struct tagNbStepWrapper :public IPSWrapperUInt
+	struct CNbStepWrapper :public IPSWrapperUInt
 	{
 		// the interface that was passed to the dialog this struct is part of
 		IValueGradientDlgClient *I ;	

@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.15 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: big_file.cpp,v 1.16 2004/07/28 07:54:58 besson Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -112,38 +112,70 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 
 	// Result
 	if (nlfseek64 (handle.File, nFileSize-4, SEEK_SET) != 0)
+	{
+		fclose (handle.File);
+		handle.File = NULL;
 		return false;
+	}
 
 	uint32 nOffsetFromBegining;
 	if (fread (&nOffsetFromBegining, sizeof(uint32), 1, handle.File) != 1)
+	{
+		fclose (handle.File);
+		handle.File = NULL;
 		return false;
+	}
 
 	if (nlfseek64 (handle.File, nOffsetFromBegining, SEEK_SET) != 0)
+	{
+		fclose (handle.File);
+		handle.File = NULL;
 		return false;
+	}
 
 	// Read the file count
 	uint32 nNbFile;
 	if (fread (&nNbFile, sizeof(uint32), 1, handle.File) != 1)
+	{
+		fclose (handle.File);
+		handle.File = NULL;
 		return false;
+	}
 	map<string,BNPFile> tempMap;
 	for (uint32 i = 0; i < nNbFile; ++i)
 	{
 		char FileName[256];
 		uint8 nStringSize;
 		if (fread (&nStringSize, 1, 1, handle.File) != 1)
+		{
+			fclose (handle.File);
+			handle.File = NULL;
 			return false;
-		
+		}
+
 		if (fread (FileName, 1, nStringSize, handle.File) != nStringSize)
+		{
+			fclose (handle.File);
+			handle.File = NULL;
 			return false;
+		}
 
 		FileName[nStringSize] = 0;
 		uint32 nFileSize2;
 		if (fread (&nFileSize2, sizeof(uint32), 1, handle.File) != 1)
+		{
+			fclose (handle.File);
+			handle.File = NULL;
 			return false;
+		}
 
 		uint32 nFilePos;
 		if (fread (&nFilePos, sizeof(uint32), 1, handle.File) != 1)
+		{
+			fclose (handle.File);
+			handle.File = NULL;
 			return false;
+		}
 
 		BNPFile bnpfTmp;
 		bnpfTmp.Pos = nFilePos;
@@ -152,7 +184,11 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 	}
 
 	if (nlfseek64 (handle.File, 0, SEEK_SET) != 0)
+	{
+		fclose (handle.File);
+		handle.File = NULL;
 		return false;
+	}
 
 	// Convert temp map
 	if (nNbFile > 0)

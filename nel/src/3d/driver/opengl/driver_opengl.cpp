@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.191 2003/08/20 09:57:29 besson Exp $
+ * $Id: driver_opengl.cpp,v 1.192 2003/09/10 13:37:12 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1293,6 +1293,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	return true;
 }
 
+#ifdef NL_OS_WINDOWS
 // --------------------------------------------------
 // This code comes from MFC
 static void modifyStyle (HWND hWnd, int nStyleOffset, DWORD dwRemove, DWORD dwAdd)
@@ -1304,6 +1305,7 @@ static void modifyStyle (HWND hWnd, int nStyleOffset, DWORD dwRemove, DWORD dwAd
 
 	::SetWindowLong(hWnd, nStyleOffset, dwNewStyle);
 }
+#endif
 
 // --------------------------------------------------
 bool CDriverGL::setMode(const GfxMode& mode)
@@ -1312,8 +1314,10 @@ bool CDriverGL::setMode(const GfxMode& mode)
 	{
 		if (_FullScreen)
 		{
+#ifdef NL_OS_WINDOWS
 			ChangeDisplaySettings (NULL,0);
 			modifyStyle(_hWnd, GWL_STYLE, WS_POPUP, WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS);
+#endif
 		}
 		_WindowWidth  = mode.Width;
 		_WindowHeight = mode.Height;
@@ -1323,6 +1327,7 @@ bool CDriverGL::setMode(const GfxMode& mode)
 		_WindowWidth  = mode.Width;
 		_WindowHeight = mode.Height;
 
+#ifdef NL_OS_WINDOWS
 		DEVMODE		devMode;
 		if (!_FullScreen)
 		{
@@ -1346,9 +1351,11 @@ bool CDriverGL::setMode(const GfxMode& mode)
 		{
 			modifyStyle(_hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS, WS_POPUP);
 		}
+#endif
 	}
 	_FullScreen = !mode.Windowed;
 
+#ifdef NL_OS_WINDOWS
 	// Resize the window
 	RECT rc;
 	SetRect (&rc, 0, 0, _WindowWidth, _WindowHeight);
@@ -1364,11 +1371,13 @@ bool CDriverGL::setMode(const GfxMode& mode)
 	_WindowHeight = clientRect.bottom-clientRect.top;
 	_WindowX = clientRect.left;
 	_WindowY = clientRect.top;	return true;
+#endif
 }
 
 // --------------------------------------------------
 bool CDriverGL::getModes(std::vector<GfxMode> &modes)
 {
+#ifdef NL_OS_WINDOWS
 	sint modeIndex = 0;
 	DEVMODE devMode;
 	while (EnumDisplaySettings (NULL, modeIndex, &devMode))
@@ -1388,7 +1397,7 @@ bool CDriverGL::getModes(std::vector<GfxMode> &modes)
 		// Mode index
 		modeIndex++;
 	}
-
+#endif
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.90 2001/04/12 12:41:49 dayta_at_ucc.gu.uwa.edu.au Exp $
+ * $Id: driver_opengl.cpp,v 1.91 2001/04/12 13:52:58 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -75,6 +75,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 {
 	if (fdwReason == DLL_PROCESS_ATTACH)
 	{
+		// Yoyo: Vianney change: don't need to call initDebug() anymore.
+		// initDebug();
 	}
 	return true;
 }
@@ -181,6 +183,8 @@ CDriverGL::CDriverGL()
 
 	_PaletteSkinHard= false;
 	_CurrentNormalize= false;
+
+	_VertexMode= NL3D_VERTEX_MODE_NORMAL;
 }
 
 
@@ -729,8 +733,9 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	// Skin mode.
 	// NB: this test either if palette skin is enabled, or normal skinning is enabled.
 	bool	skinning= (flags & IDRV_VF_PALETTE_SKIN)!=0;
+	skinning= skinning && (_VertexMode & NL3D_VERTEX_MODE_SKINNING)!=0;
 	// NB: this test if palette skin is enabled.
-	bool	paletteSkinning= (flags & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN;
+	bool	paletteSkinning= skinning && (flags & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN;
 
 
 	// 0. Setup Matrixes.

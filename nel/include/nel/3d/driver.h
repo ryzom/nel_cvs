@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.61 2001/04/06 14:53:41 corvazier Exp $
+ * $Id: driver.h,v 1.62 2001/04/12 13:52:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,6 +100,14 @@ struct EBadDisplay : public NLMISC::Exception
 
 
 //****************************************************************************
+// Enalbe normal transformation mode.
+#define	NL3D_VERTEX_MODE_NORMAL			0
+// Use Skinning.
+#define	NL3D_VERTEX_MODE_SKINNING		1
+// NL3D_VERTEX_MODE_???  2, 4, 8 etc....
+
+
+//****************************************************************************
 // *** IMPORTANT ********************
 // *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
 // **********************************
@@ -191,13 +199,22 @@ public:
 	virtual void			setupViewMatrix(const CMatrix& mtx)=0;
 
 	/** setup a model matrix. IDdriver::MaxModelMatrix (16) can be setuped.
-	 * The 0th model matrix is the principal one. Others are only usefull fro skinning (see CVertexBuffer).
+	 * The 0th model matrix is the principal one. Others are only usefull fro skinning (see CVertexBuffer, and setupVertexMode).
 	 *
 	 * NB: you must setupModelMatrix() AFTER setupViewMatrix(), or else undefined results.
+	 *
+	 * \see setupVertexMode
 	 */
 	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n=0)=0;
 
 	virtual CMatrix			getViewMatrix(void)const=0;
+
+
+	/** setup the vertex transformation Mode. (or vertex program). This should be a ORed of NL3D_VMODE_*
+	 * Default is NL3D_VERTEX_MODE_NORMAL.
+	 */
+	virtual	void			setupVertexMode(uint vmode)=0;
+
 
 
 	/** active a current VB, for future render().
@@ -205,6 +222,10 @@ public:
 	 *
 	 * NB: software skinning (if any) will be actuallay done in render*() call, only one time per vertex.
 	 * Vertex Skinning Flags are reseted in activeVertexBuffer().
+	 *
+	 *  Skinning is enabled only when VB has skinning, and when vertexMode has flag NL3D_VERTEX_MODE_SKINNING.
+	 *
+	 * \see setupVertexMode
 	 */
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB)=0;
 
@@ -217,9 +238,13 @@ public:
 	 * NB: software skinning (if any) will be actuallay done in render*() call, only one time per vertex.
 	 * Vertex Skinning Flags are reseted in activeVertexBuffer(), but only for given range here!
 	 *
+	 *  Skinning is enabled only when VB has skinning, and when vertexMode has flag NL3D_VERTEX_MODE_SKINNING.
+	 *
 	 * \param VB the vertexBuffer to activate.
 	 * \param first the first vertex important for render (begin to 0). nlassert(first<=end);
 	 * \param end the last vertex important for render, +1. count==end-first. nlassert(end<=VB.getNumVertices);
+	 *
+	 * \see setupVertexMode
 	 */
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)=0;
 

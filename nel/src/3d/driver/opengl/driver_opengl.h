@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.58 2001/04/12 12:41:49 dayta_at_ucc.gu.uwa.edu.au Exp $
+ * $Id: driver_opengl.h,v 1.59 2001/04/12 13:52:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,6 +182,11 @@ public:
 
 	virtual CMatrix			getViewMatrix() const;
 
+	virtual	void			setupVertexMode(uint vmode)
+	{
+		_VertexMode= vmode;
+	}
+
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB);
 
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB, uint first, uint end);
@@ -323,6 +328,9 @@ private:
 	bool					_PaletteSkinHard;
 	// @}
 
+
+	// The vertex transform mode.
+	uint					_VertexMode;
 
 	// To know if matrix setup has been changed from last activeVertexBuffer() (any call to setupViewMatrix() / setupModelMatrix()).
 	bool					_MatrixSetupDirty;

@@ -1,7 +1,7 @@
 /** \file win_thread.h
  * Windows implementation of CThread class (look at thread.h)
  *
- * $Id: win_thread.h,v 1.9 2002/05/17 06:34:30 corvazier Exp $
+ * $Id: win_thread.h,v 1.9.16.1 2004/09/28 10:21:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,6 +87,7 @@ public:
 	CWinProcess (void *handle);
 
 	virtual uint64 getCPUMask();
+	virtual bool setCPUMask(uint64 mask);
 
 private:
 	void	*_ProcessHandle;

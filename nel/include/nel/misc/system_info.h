@@ -1,7 +1,7 @@
 /** \file system_info.h
  * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.11 2004/04/15 17:17:16 corvazier Exp $
+ * $Id: system_info.h,v 1.11.4.1 2004/09/28 10:21:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,16 @@ public:
 	  */
 	static bool hasSSE () {return _HaveSSE;}
 
+	/** get the CPUID (if available). Usefull for debug info
+	 */
+	static uint32 getCPUID();
+
+	/** true if the Processor has HyperThreading
+	 */
+	static bool hasHyperThreading();
+	
+	/** true if running under NT
+	 */
 	static bool isNT();
 
 	/** returns all the physical memory available on this computer

@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.27 2004/07/12 14:00:44 miller Exp $
+ * $Id: system_info.cpp,v 1.27.4.1 2004/09/28 10:20:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -427,8 +427,26 @@ string CSystemInfo::getProc ()
 	}
 
 	// Make sure to close the reg key
-
 	RegCloseKey (hKey);
+	
+	// count the number of processor (max 8, in case this code don't work well)
+	uint	numProc= 1;
+	for(uint i=1;i<8;i++)
+	{
+		string	tmp= string("Hardware\\Description\\System\\CentralProcessor\\") + toString(i);
+
+		// try to open the key
+		result = ::RegOpenKeyEx (HKEY_LOCAL_MACHINE, tmp.c_str(), 0, KEY_QUERY_VALUE, &hKey);
+		// Make sure to close the reg key
+		RegCloseKey (hKey);
+
+		if(result == ERROR_SUCCESS)
+			numProc++;
+		else
+			break;
+	}
+	ProcString += " / ";
+	ProcString += toString(numProc) + " Processors found";
 
 #elif defined NL_OS_UNIX
 
@@ -607,6 +625,58 @@ bool CSystemInfo::hasCPUID ()
 	#endif
 }
 
+
+uint32 CSystemInfo::getCPUID()
+{
+#ifdef NL_OS_WINDOWS
+	if(hasCPUID())
+	{
+		uint32 result = 0;
+		__asm
+		{
+			mov  eax,1
+			cpuid
+			mov result, edx
+		}
+		return result;
+	}
+	else
+#endif
+		return 0;
+}
+
+bool CSystemInfo::hasHyperThreading()
+{
+#ifdef NL_OS_WINDOWS
+	if(hasCPUID())
+	{
+		unsigned int reg_eax = 0;
+		unsigned int reg_edx = 0;
+		unsigned int vendor_id[3] = {0, 0, 0};
+		__asm 
+		{
+			xor eax, eax
+			cpuid
+			mov vendor_id, ebx
+			mov vendor_id + 4, edx
+			mov vendor_id + 8, ecx
+			mov eax, 1
+			cpuid
+			mov reg_eax, eax
+			mov reg_edx, edx
+		}
+
+		// pentium 4 or later processor?
+		if ( (((reg_eax & 0x0f00) == 0x0f00) || (reg_eax & 0x0f00000)) &&
+			(vendor_id[0] == 'uneG') && (vendor_id[1] == 'Ieni') && (vendor_id[2] == 'letn') )
+			return (reg_edx & 0x10000000)!=0; // Intel Processor Hyper-Threading
+
+		return false;
+	}
+	else
+#endif
+		return false;
+}
 
 bool CSystemInfo::isNT()
 {

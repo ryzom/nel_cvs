@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.7 2001/07/24 08:44:36 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.8 2001/07/25 13:10:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@ namespace NL3D {
 /// ctor
 CParticleSystemModel::CParticleSystemModel() : _ParticleSystem(NULL), _EllapsedTime(0.01f), _ToolDisplayEnabled(false)
 						, _AutoGetEllapsedTime(true), _TransparencyStateTouched(true), _Scene(NULL), _EditionMode(false)
+						, _Invalidated(false)
 {
 	setOpacity(false) ;
 	setTransparency(true) ;
@@ -41,20 +42,20 @@ CParticleSystemModel::CParticleSystemModel() : _ParticleSystem(NULL), _EllapsedT
 }
 
 
-void CParticleSystemModel::registerDtorObserver(IPSModelObserver *obs)
+void CParticleSystemModel::registerPSModelObserver(IPSModelObserver *obs)
 {
-	nlassert(!isDtorObserver(obs)) ; // this observer has already been registered
+	nlassert(!isPSModelObserver(obs)) ; // this observer has already been registered
 	_Observers.push_back(obs) ;
 }
 
-void CParticleSystemModel::removeDtorObserver(IPSModelObserver *obs)
+void CParticleSystemModel::removePSModelObserver(IPSModelObserver *obs)
 {	
-	nlassert(isDtorObserver(obs)) ; // the observer must have been registered
+	nlassert(isPSModelObserver(obs)) ; // the observer must have been registered
 	std::vector<IPSModelObserver *>::iterator it = std::find(_Observers.begin(), _Observers.end(), obs) ;
 	_Observers.erase(it) ;
 }
 
-bool CParticleSystemModel::isDtorObserver(IPSModelObserver *obs)
+bool CParticleSystemModel::isPSModelObserver(IPSModelObserver *obs)
 {
 	return std::find(_Observers.begin(), _Observers.end(), obs) != _Observers.end() ;
 }
@@ -82,13 +83,20 @@ void CParticleSystemModel::updateOpacityInfos(void)
 }
 
 CParticleSystemModel::~CParticleSystemModel()
+{	
+	delete _ParticleSystem ;
+}
+
+
+void CParticleSystemModel::invalidate(void)
 {
+	delete _ParticleSystem ;
+	_ParticleSystem = NULL ;
 	std::vector<IPSModelObserver *> copyVect(_Observers.begin(), _Observers.end()) ;
 	for (std::vector<IPSModelObserver *>::iterator it = _Observers.begin(); it != _Observers.end() ; ++it)
 	{
-		(*it)->psDestroyed(this) ;
+		(*it)->invalidPS(this) ; // if this crash, then you forgot to call removePSModelObserver !
 	}
-	delete _ParticleSystem ;
 }
 
 IAnimatedValue* CParticleSystemModel::getValue (uint valueId)
@@ -273,18 +281,15 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 				{
 					case CParticleSystem::noMoreParticles:
 						if (!ps->hasParticles())
-						{
-							nlassert(m->_Scene) ;
-														
-							m->_Scene->deleteInstance(m);						
+						{							
+							m->invalidate() ;
 							return ;
 						}
 					break ;
 					case CParticleSystem::noMoreParticlesAndEmitters:
 						if (!ps->hasParticles() && !ps->hasEmitters())
 						{
-							nlassert(m->_Scene) ;													
-							m->_Scene->deleteInstance(m);						
+							m->invalidate() ;
 							return ;
 						}
 					break ;
@@ -309,21 +314,16 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 					/// the system has gone out of the scope
 					/// for now, we just delete the system
 				
-
+					
 					if (m->_ParticleSystem->getDestroyModelWhenOutOfRange())
 					{
-						delete ps ;
-						m->_ParticleSystem = NULL ;
-						nlassert(m->_Scene) ;						
-						m->_Scene->deleteInstance(m);
+						m->invalidate() ;
 						return ;
 					}
 					else
-					{
-						delete ps ;
-						m->_ParticleSystem = NULL ;
-					}
-
+										
+					delete ps ;
+					m->_ParticleSystem = NULL ;					
 				}				
 			}
 
@@ -340,13 +340,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
        	
 		if (!m->_EditionMode)
 		{
-			if (m->_ParticleSystem->getDestroyModelWhenOutOfRange())
-			{
-				nlassert(m->_Scene) ;
-				m->_Scene->deleteInstance(m);
-				return ;
-			}
-			
+					
 			delete ps ;
 			m->_ParticleSystem = NULL ;			
 		}

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.35 2001/09/05 10:04:23 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.36 2001/09/05 15:43:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,9 @@ CObjectViewer::CObjectViewer ()
 	// Setup animation set
 	_ChannelMixer.setAnimationSet (&_AnimationSet);
 
+	// no lag is the default
+	_Lag = 0;
+
 	// Hotspot color
 	_HotSpotColor.R=255;
 	_HotSpotColor.G=255;
@@ -213,11 +216,23 @@ CObjectViewer::CObjectViewer ()
 		try
 		{
 			CConfigFile::CVar &sound_file = cf.getVar("sound_file");
-			CSoundSystem::setSoundBank(sound_file.asString().c_str());
+			for (uint i=0; i<(uint)sound_file.size(); i++)
+				CSoundSystem::addSoundBank(sound_file.asString(i).c_str());
 		}
 		catch (EUnknownVar &)
 		{
 			//::MessageBox(NULL, "warning : 'sound_file' variable not defined", "Objectviewer.cfg", MB_OK|MB_ICONEXCLAMATION);
+		}
+
+		// load the camera focal
+		try
+		{
+			CConfigFile::CVar &camera_focal = cf.getVar("camera_focal");
+			_CameraFocal = camera_focal.asFloat();
+		}
+		catch (EUnknownVar &)
+		{
+			_CameraFocal = 75.f; // default value for the focal
 		}
 
 	}
@@ -248,13 +263,13 @@ CObjectViewer::~CObjectViewer ()
 
 // ***************************************************************************
 
-void initCamera ()
+void initCamera (float focal)
 {
 	// Camera
 	CFrustum frustrum;
 	uint32 width, height;
 	CNELU::Driver->getWindowSize (width, height);
-	frustrum.initPerspective( 75.f*(float)Pi/180.f, (float)width/(float)height, 0.1f, 1000.f);
+	frustrum.initPerspective( focal *(float)Pi/180.f, (float)width/(float)height, 0.1f, 1000.f);
 	CNELU::Camera->setFrustum (frustrum);
 }
 
@@ -346,7 +361,7 @@ void CObjectViewer::initUI (HWND parent)
 	//CNELU::init (640, 480, viewport, 32, true, _MainFrame->m_hWnd);
 
 	// Camera
-	initCamera ();
+	initCamera (_CameraFocal);
 
 	// Create animation set dialog
 	_AnimationDlg=new CAnimationDlg (this, _MainFrame);
@@ -518,7 +533,7 @@ void CObjectViewer::go ()
 		}
 
 		// Reset camera aspect ratio
-		initCamera ();
+		initCamera (_CameraFocal);
 
 		if (!_MainFrame->MoveElement)
 		{
@@ -797,6 +812,16 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 		CRangeManager<sint32>::serial(f) ;
 	}
 }
+
+// ***************************************************************************
+
+bool CObjectViewer::loadInstanceGroup(const char *igFilename)
+{
+	
+	return true;
+}
+
+
 
 // ***************************************************************************
 

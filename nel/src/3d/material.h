@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.27 2004/05/14 14:57:55 berenguier Exp $
+ * $Id: material.h,v 1.28 2004/10/05 17:03:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -621,6 +621,61 @@ public:
 		{
 			setDefault();
 		}
+
+		// helpers
+		inline uint getColorArg(uint index)
+		{	
+			switch(index)
+			{
+				case 0: return Env.SrcArg0RGB;
+				case 1: return Env.SrcArg1RGB;
+				case 2: return Env.SrcArg2RGB;
+				default:
+					nlassert(0);
+				break;
+			}
+			return 0;
+		}
+		inline uint getAlphaArg(uint index)
+		{	
+			switch(index)
+			{
+				case 0: return Env.SrcArg0Alpha;
+				case 1: return Env.SrcArg1Alpha;
+				case 2: return Env.SrcArg2Alpha;
+				default:
+					nlassert(0);
+				break;
+			}
+			return 0;
+		}
+		inline uint getColorOperand(uint index)
+		{	
+			switch(index)
+			{
+				case 0: return Env.OpArg0RGB;
+				case 1: return Env.OpArg1RGB;
+				case 2: return Env.OpArg2RGB;
+				default:
+					nlassert(0);
+				break;
+			}
+			return 0;
+		}
+		inline uint getAlphaOperand(uint index)
+		{	
+			switch(index)
+			{
+				case 0: return Env.OpArg0Alpha;
+				case 1: return Env.OpArg1Alpha;
+				case 2: return Env.OpArg2Alpha;
+				default:
+					nlassert(0);
+				break;
+			}
+			return 0;
+		}
+
 	};
 
 private:

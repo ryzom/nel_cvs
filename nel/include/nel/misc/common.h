@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.34 2002/02/12 13:56:16 lecroart Exp $
+ * $Id: common.h,v 1.35 2002/02/18 12:53:55 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -240,6 +240,7 @@ public:
 	Exception();
 	Exception(const std::string &reason);
 	Exception(const char *format, ...);
+	virtual ~Exception() throw() {};
 	virtual const char	*what() const throw();
 };
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.31 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: landscape.h,v 1.32 2002/02/18 12:55:00 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,7 @@ public:
 
 public:
 	EBadBind() {}
+	~EBadBind() throw () {}
 	virtual const char	*what() const throw();
 
 };

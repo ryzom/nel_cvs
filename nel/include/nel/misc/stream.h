@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.50 2001/11/27 15:59:55 urro Exp $
+ * $Id: stream.h,v 1.51 2002/02/18 12:53:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,8 @@ struct EStream : public Exception
 	EStream( const IStream &f );
 
 	EStream( const IStream &f, const std::string& str );
+
+	virtual ~EStream() throw() {}
 
 	// May Not be Filled...
 	std::string	StreamName;

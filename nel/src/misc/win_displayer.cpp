@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.13 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.14 2002/01/15 13:36:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -427,7 +427,7 @@ void CWinDisplayer::display_main ()
 		// WARNING: READ THIS !!!!!!!!!!!!!!!! ///////////////////////////
 		// If at the release time, it freezes here, it's a microsoft bug:
 		// http://support.microsoft.com/support/kb/articles/q173/2/60.asp
-		nlSleep (0);
+		nlSleep (1);
 	}
 }
 

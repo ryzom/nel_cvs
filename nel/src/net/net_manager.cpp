@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.18 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.19 2002/01/15 13:36:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -418,7 +418,7 @@ void CNetManager::update (TTime timeout)
 			break;
 		
 		// Enable windows multithreading before rescanning all connections
-		nlSleep (0);
+		nlSleep (1);
 	}
 
 //	sint64 p3 = CTime::getPerformanceTime ();

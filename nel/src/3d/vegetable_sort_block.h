@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.h
  * <File description>
  *
- * $Id: vegetable_sort_block.h,v 1.4 2001/12/05 15:13:33 berenguier Exp $
+ * $Id: vegetable_sort_block.h,v 1.5 2002/02/18 18:11:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,6 +86,9 @@ private:
 	// This flag is set to true by CVegetableManager in addInstance() or deleteIg() if the ig impact on me.
 	// If false, updateSortBlock() is a no-op.
 	bool					_Dirty;
+
+	// This flag is cahnged by CVegetableManager in addInstance(). false by default
+	bool					_UnderWater;
 
 	/// \name Fast sorting.
 	// @{

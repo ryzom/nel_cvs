@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.10 2001/12/12 13:29:15 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.11 2002/02/18 18:11:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -291,19 +291,21 @@ void	CVegetable::generateGroupBiLinear(const CVector &posInWorld, const CVector 
 
 
 // ***************************************************************************
-void	CVegetable::reserveIgAddInstances(CVegetableInstanceGroupReserve &vegetIgReserve, uint numInstances) const
+void	CVegetable::reserveIgAddInstances(CVegetableInstanceGroupReserve &vegetIgReserve, TVegetableWater vegetWaterState, uint numInstances) const
 {
 	nlassert(_Manager);
 
-	_Manager->reserveIgAddInstances(vegetIgReserve, _VegetableShape, numInstances);
+	_Manager->reserveIgAddInstances(vegetIgReserve, _VegetableShape, (CVegetableManager::TVegetableWater)vegetWaterState, numInstances);
 }
 
 
 // ***************************************************************************
 void	CVegetable::generateInstance(CVegetableInstanceGroup *ig, const NLMISC::CMatrix &posInWorld, 
-		const NLMISC::CRGBAF &modulateAmbientColor, const NLMISC::CRGBAF &modulateDiffuseColor, float blendDistMax) const
+		const NLMISC::CRGBAF &modulateAmbientColor, const NLMISC::CRGBAF &modulateDiffuseColor, float blendDistMax,
+		TVegetableWater vegetWaterState) const
 {
 	nlassert(_Manager);
+
 
 	CVector		seed= posInWorld.getPos();
 
@@ -350,7 +352,7 @@ void	CVegetable::generateInstance(CVegetableInstanceGroup *ig, const NLMISC::CMa
 	// Append to the vegetableManager
 	// ===============
 	_Manager->addInstance(ig, _VegetableShape, finalMatrix, ambient, diffuse, 
-		bendFactor, bendPhase, BendFrequencyFactor, blendDistMax);
+		bendFactor, bendPhase, BendFrequencyFactor, blendDistMax, (CVegetableManager::TVegetableWater)vegetWaterState);
 }
 
 

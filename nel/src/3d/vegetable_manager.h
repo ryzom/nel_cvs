@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.11 2001/12/12 13:29:15 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.12 2002/02/18 18:11:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,10 @@ class	CScene;
 class CVegetableManager
 {
 public:
+	/// Micro vegetation position against Water. Above water is the default.
+	enum TVegetableWater { AboveWater = 0, UnderWater, IntersectWater, VegetInfoLast };
+
+public:
 
 	/**	
 	 * \param maxVertexVbHardUnlit maximum VertexCount in VBHard for Unlit (or precomputed lighted) vegetables
@@ -108,6 +112,8 @@ public:
 	void						deleteClipBlock(CVegetableClipBlock *clipBlock);
 
 	/** Create a SortBlock in a clipBlock where instance group (ig) will be created.
+	 *	All AlphaBlend instances created in a SortBlock should have the same vegetWaterState: AboveWater or UnderWater.
+	 *	Each time an instance is added to the sortBlock it changes the _UnderWater state of the sortBlock.
 	 *	\param center you must give an approximate center for the sortBlock (for sorting)
 	 *	\param radius you must give an approximate radius for the sortBlock (for the system to know when you are IN
 	 *	the sortBlock, and then to sort in a better way)
@@ -137,7 +143,7 @@ public:
 	 *
 	 *	More precisely:
 	 *		- For all vegetables shapes which will be created in an instance group
-	 *			- reserveIgAddInstances(ig, shape, number of instances, vegetIgReserve)
+	 *			- reserveIgAddInstances(shape, waterState, number of instances, vegetIgReserve)
 	 *		- call reserveIgCompile(ig, vegetIgReserve)
 	 *		- For all vegetables instances
 	 *			- addInstance(ig, ...)
@@ -154,7 +160,7 @@ public:
 	 *	reserveIgCompile()
 	 *	\param vegetIgReserve the object where space required for the ig is added
 	 */
-	void			reserveIgAddInstances(CVegetableInstanceGroupReserve &vegetIgReserve, CVegetableShape *shape, uint numInstances);
+	void			reserveIgAddInstances(CVegetableInstanceGroupReserve &vegetIgReserve, CVegetableShape *shape, TVegetableWater vegetWaterState, uint numInstances);
 	/** reserve the space in the ig.
 	 *	nlassert() if the ig is not empty.
 	 *  \see reserveIgAddInstances()
@@ -177,7 +183,8 @@ public:
 	void						addInstance(CVegetableInstanceGroup *ig, 
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
 		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
-		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax);
+		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax,
+		TVegetableWater vegetWaterState);
 
 	// @}
 
@@ -304,7 +311,7 @@ private:
 
 
 	/// get the rdrPass and other info for a given shape.
-	uint			getRdrPassInfoForShape(CVegetableShape *shape, 
+	uint			getRdrPassInfoForShape(CVegetableShape *shape, TVegetableWater vegetWaterState, 
 		bool &instanceLighted, bool &instanceDoubleSided, bool &instanceZSort,
 		bool &destLighted, bool &precomputeLighting);
 
@@ -368,6 +375,8 @@ private:
 	float					_ZSortLayerDistMax;
 	CScene					*_ZSortScene;
 	std::vector<CVegetableBlendLayerModel*>		_ZSortModelLayers;
+	// The same but under water
+	std::vector<CVegetableBlendLayerModel*>		_ZSortModelLayersUW;
 
 
 	/// called by CVegetableBlendLayerModel.

@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.cpp
  * <File description>
  *
- * $Id: vegetable_sort_block.cpp,v 1.3 2001/12/05 15:13:33 berenguier Exp $
+ * $Id: vegetable_sort_block.cpp,v 1.4 2002/02/18 18:11:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,7 @@ CVegetableSortBlock::CVegetableSortBlock()
 	_NTriangles= 0;
 	_NIndices= 0;
 	_Dirty= false;
+	_UnderWater= false;
 }
 
 

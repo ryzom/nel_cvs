@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.11 2002/01/22 17:13:33 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.12 2002/02/18 18:11:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,12 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 
 	// Get tile infos for vegetable
 	// =========================
+
+	// Get the state for this vegetable tile
+	CTileElement::TVegetableInfo	vegetWaterState= Tiles[tt * OrderS + ts].getVegetableState();
+	// If vegetable disabled, skip!
+	if(vegetWaterState == CTileElement::VegetableDisabled)
+		return;
 
 	// get the tileId under this tile (<=> the tile material)
 	uint	tileId= Tiles[tt * OrderS + ts].Tile[0];
@@ -157,7 +163,7 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 
 		// reseve instance space for this vegetable.
 		// instanceUVArray[i].size() is the number of instances to create.
-		veget.reserveIgAddInstances(vegetIgReserve, instanceUVArray[i].size());
+		veget.reserveIgAddInstances(vegetIgReserve, (CVegetable::TVegetableWater)vegetWaterState, instanceUVArray[i].size());
 	}
 	// actual reseve memory of the ig.
 	getLandscape()->_VegetableManager->reserveIgCompile(vegetIg, vegetIgReserve);
@@ -191,7 +197,7 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 			// generate the instance of the vegetable
 			veget.generateInstance(vegetIg, matInstance, ambientF, 
 				diffuseColorF[ (lumelT<<NL_LUMEL_BY_TILE_SHIFT) + lumelS ],
-				(distType+1) * NL3D_VEGETABLE_BLOCK_ELTDIST);
+				(distType+1) * NL3D_VEGETABLE_BLOCK_ELTDIST, (CVegetable::TVegetableWater)vegetWaterState);
 		}
 	}
 }

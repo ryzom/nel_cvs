@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.14 2001/12/12 13:29:15 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.15 2002/02/18 18:11:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,6 +101,7 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 	// init to NULL _ZSortModelLayers.
 	_NumZSortBlendLayers= max(1U, _NumZSortBlendLayers);
 	_ZSortModelLayers.resize(_NumZSortBlendLayers, NULL);
+	_ZSortModelLayersUW.resize(_NumZSortBlendLayers, NULL);
 
 
 	// UL
@@ -138,6 +139,8 @@ CVegetableManager::~CVegetableManager()
 		{
 			_ZSortScene->deleteModel(_ZSortModelLayers[i]);
 			_ZSortModelLayers[i]= NULL;
+			_ZSortScene->deleteModel(_ZSortModelLayersUW[i]);
+			_ZSortModelLayersUW[i]= NULL;
 		}
 
 		_ZSortScene= NULL;
@@ -157,10 +160,16 @@ void		CVegetableManager::createVegetableBlendLayersModels(CScene *scene)
 	{
 		// assert not already done.
 		nlassert(_ZSortModelLayers[i]==NULL);
+		nlassert(_ZSortModelLayersUW[i]==NULL);
 
 		_ZSortModelLayers[i]= (CVegetableBlendLayerModel*)scene->createModel(VegetableBlendLayerModelId);
+		_ZSortModelLayersUW[i]= (CVegetableBlendLayerModel*)scene->createModel(VegetableBlendLayerModelId);
 		// init owner.
 		_ZSortModelLayers[i]->VegetableManager= this;
+		_ZSortModelLayersUW[i]->VegetableManager= this;
+
+		// Set UnderWater layer for _ZSortModelLayersUW
+		_ZSortModelLayersUW[i]->setOrderingLayer(2);
 	}
 }
 
@@ -809,13 +818,14 @@ CVegetableShape				*CVegetableManager::getVegetableShape(const std::string &shap
 
 
 // ***************************************************************************
-uint			CVegetableManager::getRdrPassInfoForShape(CVegetableShape *shape, 
+uint			CVegetableManager::getRdrPassInfoForShape(CVegetableShape *shape, TVegetableWater vegetWaterState,
 	bool &instanceLighted, bool &instanceDoubleSided, bool &instanceZSort,
 	bool &destLighted, bool &precomputeLighting)
 {
 	instanceLighted= shape->Lighted;
 	instanceDoubleSided= shape->DoubleSided;
-	instanceZSort= shape->AlphaBlend;
+	// Disable ZSorting when we intersect water.
+	instanceZSort= shape->AlphaBlend && vegetWaterState!=IntersectWater;
 	destLighted= instanceLighted && !shape->PreComputeLighting;
 	precomputeLighting= instanceLighted && shape->PreComputeLighting;
 
@@ -847,7 +857,7 @@ uint			CVegetableManager::getRdrPassInfoForShape(CVegetableShape *shape,
 
 
 // ***************************************************************************
-void			CVegetableManager::reserveIgAddInstances(CVegetableInstanceGroupReserve &vegetIgReserve, CVegetableShape *shape, uint numInstances)
+void			CVegetableManager::reserveIgAddInstances(CVegetableInstanceGroupReserve &vegetIgReserve, CVegetableShape *shape, TVegetableWater vegetWaterState, uint numInstances)
 {
 	bool	instanceLighted;
 	bool	instanceDoubleSided;
@@ -857,7 +867,7 @@ void			CVegetableManager::reserveIgAddInstances(CVegetableInstanceGroupReserve &
 
 	// get correct rdrPass / info
 	uint	rdrPass;
-	rdrPass= getRdrPassInfoForShape(shape, instanceLighted, instanceDoubleSided, 
+	rdrPass= getRdrPassInfoForShape(shape, vegetWaterState, instanceLighted, instanceDoubleSided, 
 		instanceZSort, destLighted, precomputeLighting);
 
 	// veget rdrPass
@@ -933,7 +943,8 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig, 
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
 		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
-		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax)
+		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax,
+		TVegetableWater vegetWaterState)
 {
 	sint	i;
 
@@ -948,7 +959,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 	// get correct rdrPass / info
 	uint	rdrPass;
-	rdrPass= getRdrPassInfoForShape(shape, instanceLighted, instanceDoubleSided, 
+	rdrPass= getRdrPassInfoForShape(shape, vegetWaterState, instanceLighted, instanceDoubleSided, 
 		instanceZSort, destLighted, precomputeLighting);
 
 
@@ -1251,6 +1262,12 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		ig->_SortOwner->_Dirty= true;
 		// For deletion, inform the ig that it has instances which impact the SB.
 		ig->_HasZSortPassInstances= true;
+
+		// change UnderWater falg of the SB
+		if(vegetWaterState == AboveWater)
+			ig->_SortOwner->_UnderWater= false;
+		else if(vegetWaterState == UnderWater)
+			ig->_SortOwner->_UnderWater= true;
 
 		// static to avoid reallocation
 		static	vector<CVector>		triangleCenters;
@@ -1788,6 +1805,7 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 	{
 		// must have been created.
 		nlassert(_ZSortModelLayers[i]);
+		nlassert(_ZSortModelLayersUW[i]);
 		// NB: don't refresh list, it is done in CVegetableBlendLayerModel.
 		// We must do it here, because if vegetableManger::render() is no more called (eg: disabled),
 		// then the models must do nothing.
@@ -1800,6 +1818,7 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 		CVector		pos= viewCenter + frontVector * layerZ;
 		// special setup in the layer.
 		_ZSortModelLayers[i]->setWorldPos(pos);
+		_ZSortModelLayersUW[i]->setWorldPos(pos);
 	}
 
 	// If some vertices in arrays for ZSort rdrPass
@@ -1917,8 +1936,12 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 			sint	layer= OptFastFloor(z*256) >> 8;
 			clamp(layer, 0, (sint)_NumZSortBlendLayers-1);
 
-			// range in the correct model (NB: keep the same layer internal order).
-			_ZSortModelLayers[layer]->SortBlocks.push_back(ptrSortBlock);
+			// Range in correct layer, according to water ordering
+			if(ptrSortBlock->_UnderWater)
+				// range in the correct layermodel (NB: keep the same layer internal order).
+				_ZSortModelLayersUW[layer]->SortBlocks.push_back(ptrSortBlock);
+			else
+				_ZSortModelLayers[layer]->SortBlocks.push_back(ptrSortBlock);
 		}
 		
 	}

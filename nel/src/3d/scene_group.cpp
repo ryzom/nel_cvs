@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.51 2003/04/23 14:53:01 corvazier Exp $
+ * $Id: scene_group.cpp,v 1.52 2003/04/23 16:08:24 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -967,12 +967,15 @@ bool CInstanceGroup::removeFromScene (CScene& scene)
 	for (i = 0; i < _Portals.size(); ++i)
 	for (k = 0; k < 2; ++k)
 	{
-		for (j = 0; j < _ClusterInstances.size(); ++j)
-			if( _Portals[i]._Clusters[k] == _ClusterInstances[j] )
-				break;
+		if (_Portals[i]._Clusters[k])
+		{
+			for (j = 0; j < _ClusterInstances.size(); ++j)
+				if( _Portals[i]._Clusters[k] == _ClusterInstances[j] )
+					break;
 
-		nlassert (j!=_ClusterInstances.size());
-		_Portals[i]._Clusters[k] = &_ClusterInfos[j];
+			nlassert (j!=_ClusterInstances.size());
+			_Portals[i]._Clusters[k] = &_ClusterInfos[j];
+		}	
 	}
 
 	// Remove clusters

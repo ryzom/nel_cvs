@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.43 2004/02/20 14:42:47 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.44 2004/03/04 14:28:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,14 +32,18 @@
 #include "3d/driver.h"
 #include "3d/skeleton_model.h"
 #include "3d/texture_file.h"
+#include "3d/ps_allocator.h"
 #include "nel/misc/file.h"
 #include "nel/misc/mem_stream.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/contiguous_block_allocator.h"
 
+// tmp
+#include "3d/ps_face_look_at.h"
 
 namespace NL3D {
 
-using NLMISC::IStream;
+
 using NLMISC::CIFile;
 
 
@@ -61,7 +65,8 @@ CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f),
 											   _DestroyWhenOutOfFrustum(false),
 											   _DestroyModelWhenOutOfRange(false),
 											   _UsePrecomputedBBox(false),
-											   _Sharing(false)
+											   _Sharing(false),
+											   _NumBytesWanted(0)
 {
 	for (uint k = 0; k < 4; ++k)
 	{
@@ -172,14 +177,30 @@ void	CParticleSystemShape::getAABBox(NLMISC::CAABBox &bbox) const
 	}
 }
 
+
 ///===========================================================================
-CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
-{
+CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene, NLMISC::CContiguousBlockAllocator *blockAllocator /*= NULL*/)
+{					
 	if (_Sharing && _SharedSystem != NULL) // is sharing enabled, and is a system already instanciated
 	{
 		return _SharedSystem;
 	}
 
+	// avoid prb with concurent thread (may append if an instance group containing ps is loaded in background)
+	NLMISC::CMutex mutex;
+	mutex.enter();
+
+
+	#ifdef PS_FAST_ALLOC
+		if (blockAllocator)
+		{
+			// set new allocator for particle system memory
+			PSBlockAllocator = blockAllocator;
+			blockAllocator->init(_NumBytesWanted); // if size wanted is already known, set it		
+		}
+	#endif
+
+	//NLMISC::TTicks start = NLMISC::CTime::getPerformanceTime();
 	// copy the datas
 	CParticleSystem *myInstance = NULL;
 
@@ -190,14 +211,19 @@ CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
 	}
 
 	_ParticleSystemProto.resetPtrTable();
-	_ParticleSystemProto.seek(0, IStream::begin);
+	_ParticleSystemProto.seek(0, NLMISC::IStream::begin);
+	
+//	NLMISC::TTicks start = NLMISC::CTime::getPerformanceTime();	
 	_ParticleSystemProto.serialPtr(myInstance); // instanciate the system	
-
+/*	NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
+	nlinfo("instanciation time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(end - start)));	
+*/	
 
 	myInstance->setScene(&scene);	
 
 	if (_CachedTex.empty() && scene.getDriver())
 	{
+		//nlinfo("flushing texs");
 		// load && cache textures
 		myInstance->enumTexs(_CachedTex, *scene.getDriver());		
 		for(uint k = 0; k < _CachedTex.size(); ++k)
@@ -207,10 +233,12 @@ CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
 	}
 	else
 	{
+		/*
 		for(uint k = 0; k < _CachedTex.size(); ++k)
 		{								
-			//nlinfo(_CachedTex[k]->getShareName().c_str());
+			nlinfo(_CachedTex[k]->getShareName().c_str());
 		}
+		*/
 	}
 
 	// tmp
@@ -220,7 +248,19 @@ CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
 		_SharedSystem = myInstance; // set this as the first shared instance
 	}
 
-	return myInstance;
+	#ifdef PS_FAST_ALLOC
+		if (blockAllocator)
+		{
+			_NumBytesWanted = blockAllocator->getNumAllocatedBytes(); // now we know the number of wanted bytes, subsequent alloc can be much faster
+			PSBlockAllocator = NULL;
+		}
+	#endif
+		
+	mutex.leave();
+
+	/*NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
+	nlinfo("instanciation time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(end - start)));	*/
+	return myInstance;		
 }
 
 ///===========================================================================
@@ -247,7 +287,6 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
 	H_AUTO ( NL3D_Particles_Render );
-
 	nlassert(drv);
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(trans);
 	if (psm->_Invalidated) return;
@@ -274,21 +313,31 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 
 	ps->setDriver(drv);
 	// draw particle
-	PARTICLES_CHECK_MEM;
+	PARTICLES_CHECK_MEM;	
 	if (passOpaque)
 	{
+		PSLookAtRenderTime = 0;
+		//NLMISC::TTicks start = NLMISC::CTime::getPerformanceTime();					
 		ps->step(CParticleSystem::SolidRender, delay);
+		/*NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
+		nlinfo("Solid render time time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(end - start)));	
+		nlinfo("LookAt Render time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(PSLookAtRenderTime)));	*/
 	}
 	else
 	{
+		//PSLookAtRenderTime = 0;
+		//NLMISC::TTicks start = NLMISC::CTime::getPerformanceTime();
 		ps->step(CParticleSystem::BlendRender, delay);
+		/*NLMISC::TTicks end = NLMISC::CTime::getPerformanceTime();
+		nlinfo("Blend render time time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(end - start)));
+		nlinfo("LookAt Render time = %.2f", (float) (1000 * NLMISC::CTime::ticksToSecond(PSLookAtRenderTime)));	*/
 	}
 	PARTICLES_CHECK_MEM;
 	if (psm->isToolDisplayEnabled())
 	{
 		ps->step(CParticleSystem::ToolRender, delay);
 		PARTICLES_CHECK_MEM;
-	}
+	}	
 }
 
 ///===========================================================================
@@ -302,19 +351,34 @@ void CParticleSystemShape::flushTextures(IDriver &driver, uint selectedTexture)
 	}
 	else
 	{
-		// must create an instance just to flush the textures
-		CParticleSystem *myInstance = NULL;						
+		NLMISC::CMutex mutex;
+		mutex.enter();
 
+		// must create an instance just to flush the textures
+		CParticleSystem *myInstance = NULL;
+
+		#ifdef PS_FAST_ALLOC
+			NLMISC::CContiguousBlockAllocator blockAllocator;
+			PSBlockAllocator = &blockAllocator;
+			blockAllocator.init(300000); // we release memory just after, and we don't want to fragment the memory, so provide large enough mem		
+		#endif
 		// serialize from the memory stream	
 		if (!_ParticleSystemProto.isReading()) // we must be sure that we are reading the stream
 		{
 			_ParticleSystemProto.invert();
 		}				
 		_ParticleSystemProto.resetPtrTable();
-		_ParticleSystemProto.seek(0, IStream::begin);
+		_ParticleSystemProto.seek(0, NLMISC::IStream::begin);
 		_ParticleSystemProto.serialPtr(myInstance); // instanciate the system			
+		#ifdef PS_FAST_ALLOC
+			_NumBytesWanted = blockAllocator.getNumAllocatedBytes(); // next allocation will be fast because we know how much memory to allocate
+		#endif
 		myInstance->enumTexs(_CachedTex, driver);
-		delete myInstance;
+		delete myInstance;		
+		#ifdef PS_FAST_ALLOC
+			PSBlockAllocator = NULL;
+		#endif
+		mutex.leave();
 	}
 	for(uint k = 0; k < _CachedTex.size(); ++k)
 	{				

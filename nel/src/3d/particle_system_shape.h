@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.19 2004/02/19 09:50:46 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.20 2004/03/04 14:28:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,10 @@
 #include "3d/shape.h"
 #include "3d/track.h"
 
+namespace NLMISC
+{
+	class CContiguousBlockAllocator;
+}
 
 
 namespace NL3D {
@@ -135,9 +139,11 @@ protected:
 public:
 	/** Instanciate a particle system from this shape.
 	  * A particle system may need to call this when a system is back in the frustum
+	  * An contiguous block allocator may be provided for fast alloc, init will be called on such allocator with 0
+	  * if num bytes is unknown of with the size needed otherwise.
 	  */
-	CParticleSystem *instanciatePS(CScene &scene);
-protected:
+	CParticleSystem *instanciatePS(CScene &scene, NLMISC::CContiguousBlockAllocator *blockAllocator = NULL);
+public:
 	/// inherited from ishape
 	virtual void				flushTextures (IDriver &driver, uint selectedTexture);
 
@@ -171,6 +177,12 @@ protected:
 
 	// keep smart pointer on textures for caching, so that when flushTextures is called, subsequent 
 	std::vector<NLMISC::CSmartPtr<ITexture> > _CachedTex;
+
+	// The amount of memory needed for instanciation or 0 if not known.
+	// If the amount is known, a big block can be allocated for fast contiguous allocations
+	// Given that a .ps can allocate numerous small block, this can be slow indeed.. 
+	uint				_NumBytesWanted;
+	
 };
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.14 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_located.h,v 1.15 2002/01/28 14:30:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -249,16 +249,16 @@ public:
 	/** Set the mass of locateds.	 
 	 *  Any previous scheme for Mass is dicarded	 
 	 */
-	void setInitialMass(float mas);
+	void setInitialMass(float mass);
 
 	/** Set a scheme (allocated by new, released by that object) that generate the mass of locateds.	 
 	 *  Such a scheme can't own its memory.
 	 *  Any previous scheme for Mass is discarded	 
 	 */
-	void setMassScheme(CPSAttribMaker<float> *scheme);
+	void  setMassScheme(CPSAttribMaker<float> *scheme);
 
 	/// get the mass of created particle
-	TAnimationTime getInitialMass(void) const { return _InitialMass; }
+	float getInitialMass(void) const { return _InitialMass; }
 
 	/// get the scheme that compute mass of created particles, null if none
 	CPSAttribMaker<float> *getMassScheme(void) { return _MassScheme; }
@@ -512,8 +512,6 @@ public:
 	}
 
 protected:
-
-
 
 
 	friend class CPSForce; // this is intended only for integrable forces that want to use

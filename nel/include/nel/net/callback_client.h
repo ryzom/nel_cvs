@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.16 2004/05/07 12:56:21 cado Exp $
+ * $Id: callback_client.h,v 1.17 2004/12/22 19:44:28 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,8 +53,8 @@ public:
 	/// Sends a message to the remote host (the second parameter isn't used)
 	void	send (const CMessage &buffer, TSockId hostid = InvalidSockId, bool log = true);
 
-	/// Force to send all data pending in the send queue.
-	bool	flush (TSockId hostid = InvalidSockId);
+	/// Force to send all data pending in the send queue. hostid must be InvalidSockId here. See comment in CCallbackNetBase.
+	bool	flush (TSockId hostid = InvalidSockId, uint *nbBytesRemaining=NULL);
 	
 	/// Updates the network (call this method evenly)
 	void	update ( sint32 timeout=0 );

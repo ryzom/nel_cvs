@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.85 2004/07/12 13:58:12 miller Exp $
+ * $Id: unified_network.cpp,v 1.86 2004/12/22 19:44:29 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -55,6 +55,9 @@ CVariable<uint32> UseYieldMethod("nel", "UseYieldMethod", "0=select 1=usleep 2=n
 
 /// Reduce sending lag
 CVariable<bool> FlushSendsBeforeSleep("nel", "FlushSendsBeforeSleep", "If true, send buffers will be flushed before sleep, not in next update", true, 0, true );
+
+/// Network congestion monitoring
+CVariable<uint> L5TotalBytesInLowLevelSendQueues("nel", "L5TotalBytesInLowLevelSendQueues", "Number of bytes pending in send queues (postponed by non-blocking send()) for network congestion monitoring. N/A if FlushSendsBeforeSleep disabled)", 0, 0, true );
 
 /// Receiving size limit
 CVariablePtr<uint32> DefaultMaxExpectedBlockSize("nel", "DefaultMaxExpectedBlockSize", "If receiving more than this value in bytes, the connection will be dropped", &CBufNetBase::DefaultMaxExpectedBlockSize, true );
@@ -626,12 +629,32 @@ void	CUnifiedNetwork::connect()
 	}
 }
 
-void	CUnifiedNetwork::release()
+void	CUnifiedNetwork::release( bool mustFlushSendQueues )
 {
 	if (!_Initialised)
 		return;
 
 	if (ThreadCreator != NLMISC::getThreadId()) nlwarning ("HNETL5: Multithread access but this class is not thread safe thread creator = %u thread used = %u", ThreadCreator, NLMISC::getThreadId());
+
+	// Ensure all outgoing data are sent before disconnecting, if requested
+	if ( mustFlushSendQueues )
+	{
+		nlinfo( "HNETL5: Flushing sending queues..." );
+		float totalBytes;
+		uint bytesRemaining, i=0;
+		while ( (bytesRemaining = tryFlushAllQueues()) != 0 )
+		{
+			if ( i == 0 )
+				totalBytes = (float)bytesRemaining;
+			if ( i % 20 == 0 )
+				nldebug( "%.1f%% of %.3f KB flushed so far", // display without HNETL5 to bypass filters!
+					((float)(bytesRemaining-totalBytes))/totalBytes, totalBytes / 1024.0f );
+			++i;
+
+			nlSleep( 100 );
+		}
+		nldebug( "HNETL5: Flush done in %u steps", i+1 );
+	}
 
 	// disconnect all clients
 	if(_CbServer)
@@ -1009,24 +1032,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 		if ( FlushSendsBeforeSleep.get() )
 		{
 			// Flush all connections
-			H_AUTO(L5FlushSendsBeforeSleep);
-			for (uint k = 0; k<_UsedConnection.size(); ++k) 
-			{ 
-				H_AUTO(UNBrowseConnections); 
-				CUnifiedConnection &uc = _IdCnx[_UsedConnection[k]]; 
-				nlassert (uc.State == CUnifiedNetwork::CUnifiedConnection::Ready); 
-				for (uint j = 0; j < uc.Connection.size (); j++) 
-				{ 
-					H_AUTO(UNBrowseSubConnections); 
-					if (!uc.Connection[j].valid()) 
-						continue; 
-					
-					if (uc.Connection[j].CbNetBase->connected ()) 
-					{ 
-						uc.Connection[j].CbNetBase->flush(uc.Connection[j].HostId); 
-					} 
-				} 
-			}
+			L5TotalBytesInLowLevelSendQueues = tryFlushAllQueues();
 		}
 
 		// If it's the end, don't nlSleep()
@@ -1340,6 +1346,37 @@ void	CUnifiedNetwork::sendAll(const CMessage &msgout, uint8 nid)
 			_IdCnx[i].Connection[connectionId].CbNetBase->send (msgout, _IdCnx[i].Connection[connectionId].HostId);
 		}
 	}
+}
+
+
+/* Flush all the sending queues, and report the number of bytes still pending.
+ * To ensure all data are sent before stopping a service, you may want to repeat
+ * calling this method evenly until it returns 0.
+ */
+uint	CUnifiedNetwork::tryFlushAllQueues()
+{
+	H_AUTO(L5FlushAll);
+	uint bytesRemaining = 0;
+	for (uint k = 0; k<_UsedConnection.size(); ++k) 
+	{ 
+		H_AUTO(UNFABrowseConnections); 
+		CUnifiedConnection &uc = _IdCnx[_UsedConnection[k]]; 
+		nlassert (uc.State == CUnifiedNetwork::CUnifiedConnection::Ready); 
+		for (uint j = 0; j < uc.Connection.size (); j++) 
+		{ 
+			H_AUTO(UNFABrowseSubConnections); 
+			if (!uc.Connection[j].valid()) 
+				continue; 
+			
+			if (uc.Connection[j].CbNetBase->connected ()) 
+			{ 
+				uint bytesRemainingLocal;
+				uc.Connection[j].CbNetBase->flush(uc.Connection[j].HostId, &bytesRemainingLocal); 
+				bytesRemaining += bytesRemainingLocal;
+			} 
+		} 
+	}
+	return bytesRemaining;
 }
 
 

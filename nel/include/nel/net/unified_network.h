@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.46 2004/07/12 14:07:41 miller Exp $
+ * $Id: unified_network.h,v 1.47 2004/12/22 19:44:28 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -64,9 +64,27 @@ struct TUnifiedCallbackItem
 /**
  * Layer 5
  *
- * \author Vianney Lecroart, Benjamin Legros
+ * When calling send(), a message is stored in a queue. It will be effectively sent
+ * when a flush is done. By default, the variable FlushSendsBeforeSleep is on so that
+ * the message is sent in the same update cycle as the send() call. If FlushSendsBeforeSleep
+ * is set to off, more messages will be sent together, but with a greater delay.
+ *
+ * Handling network congestion:
+ * When a destination service is not fast enough to process the incoming messages,
+ * the uploading stream can get saturated. As a result, a single flush will not manage to send the
+ * entire data at a time. The NeL Network Layer 5 will silently continue streaming up the remaining
+ * parts of the unsent data, as long as update() is called evenly.
+ * More in depth:
+ * - Either let the layer 5 handle network congestions. If the destination service is slow or
+ * stuck and the source service still has data to send, the delivery may be delayed for a long
+ * time. If your source service is shut down (calling release()) while some data is still pending,
+ * a call to release(true) may take a while or even not exit while the destination service is stuck.
+ * - Or handle yourself network congestions by calling tryFlushAllQueues() multiple times. Then you can display
+ * the progression of sending, abort it if too long, etc.
+ *
+ * \author Vianney Lecroart, Benjamin Legros, Olivier Cado
  * \author Nevrax France
- * \date 2002
+ * \date 2002-2004
  */
 class CUnifiedNetwork
 {
@@ -95,8 +113,10 @@ public:
 	void	connect();
 
 	/** Closes the connection to the naming service, every other connection and free.
+	 * \param mustFlushSendQueues If true, all send queues will be really sent before disconnecting. In some cases disconnect(true) can take a while.
+	 * See also "Handling network congestion" in CUnifiedNetwork above comments, and tryFlushAllQueues().
 	 */
-	void	release ();
+	void	release (bool mustFlushSendQueues=true);
 
 	/** Adds a specific service to the list of connected services.
 	 */
@@ -136,6 +156,15 @@ public:
 	 */
 	void	sendAll (const CMessage &msg, uint8 nid=0xFF);
 
+	/** Flush all the sending queues, and report the number of bytes still pending.
+	 * To ensure manually all data are sent before stopping a service, you may want
+	 * to repeat calling this method evenly until it returns 0. The default release(false) of
+	 * CUnifiedNetwork only flushes each connection once, but if the network is
+	 * congested (when there are big streams to send) the first flush may not
+	 * succeed to send entire buffers.
+	 * See also "Handling network congestion" in CUnifiedNetwork above comments.
+	 */
+	uint	tryFlushAllQueues();
 
 	/** Sets callback for incoming connections.
 	 * On a client, the callback will be call when the connection to the server is established (the first connection or after the server shutdown and started)

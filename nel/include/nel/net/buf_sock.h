@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.20 2004/05/10 15:46:08 distrib Exp $
+ * $Id: buf_sock.h,v 1.21 2004/12/22 19:44:28 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,11 +105,14 @@ protected:
 	 */
 	void	setSizeFlushTrigger( sint32 size ) { _TriggerSize = size; }
 
-	/** Forces to send all data pending in the send queue
+	/** Force to send data pending in the send queue now. In the case of a non-blocking socket
+	 * (see CNonBlockingBufSock), if all the data could not be sent immediately,
+	 * the returned nbBytesRemaining value is non-zero.
+	 * \param nbBytesRemaining If the pointer is not NULL, the method sets the number of bytes still pending after the flush attempt.
 	 * \returns False if an error has occured (e.g. the remote host is disconnected).
 	 * To retrieve the reason of the error, call CSock::getLastError() and/or CSock::errorString()
 	 */
-	bool	flush();
+	bool	flush( uint *nbBytesRemaining=NULL );
 
 	//@}
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.215 2004/12/17 14:31:25 legros Exp $
+ * $Id: service.cpp,v 1.216 2004/12/22 19:44:29 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -154,6 +154,11 @@ CVariable<bool> Bench ("nel", "Bench", "1 if benching 0 if not", 0, true);
 static CTimeoutAssertionThread	MyTAT;
 static void						UpdateAssertionThreadTimeoutCB(IVariable &var) { MyTAT.timeout(atoi(var.toString().c_str())); }
 static CVariable<uint32>		UpdateAssertionThreadTimeout("nel", "UpdateAssertionThreadTimeout", "in millisecond, timeout before thread assertion", 0, 0, true, UpdateAssertionThreadTimeoutCB);
+
+// Flag to enable/disable the flushing of the sending queues when the service is shut down
+// Default: false (matches the former behaviour)
+// Set it to true in services that need to send data on exit (for instance in their release() method)
+CVariable<bool>					FlushSendingQueuesOnExit("nel", "FlushSendingQueuesOnExit", "Flag to enable/disable the flushing of the sending queues when the service is shut down", false, 0, true );
 
 
 //
@@ -1339,7 +1344,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Delete all network connection (naming client also)
 		//
 
-		CUnifiedNetwork::getInstance()->release ();
+		CUnifiedNetwork::getInstance()->release (FlushSendingQueuesOnExit.get());
 
 		CSock::releaseNetwork ();
 

@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.40 2004/08/12 17:13:21 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.41 2004/12/22 19:44:29 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,11 +130,17 @@ string stringFromVectorPart( const vector<uint8>& v, uint32 pos, uint32 len )
 
 
 /*
- * Force to send all data pending in the send queue
+ * Force to send data pending in the send queue now. In the case of a non-blocking socket
+ * (see CNonBlockingBufSock), if all the data could not be sent immediately,
+ * the returned nbBytesRemaining value is non-zero.
+ * \param nbBytesRemaining If the pointer is not NULL, the method sets the number of bytes still pending after the flush attempt.
+ * \returns False if an error has occured (e.g. the remote host is disconnected).
+ * To retrieve the reason of the error, call CSock::getLastError() and/or CSock::errorString()
+ *
  * Note: this method works with both blocking and non-blocking sockets
  * Precond: the send queue should not contain an empty block
  */
-bool CBufSock::flush()
+bool CBufSock::flush( uint *nbBytesRemaining )
 {
 	nlassert (this != InvalidSockId);	// invalid bufsock
 	//nlnettrace( "CBufSock::flush" );
@@ -195,6 +201,8 @@ bool CBufSock::flush()
 				//nldebug( "O-%u all %u bytes (%u to %u) sent", Sock->descriptor(), len, _RTSBIndex, _ReadyToSendBuffer.size() );
 				_ReadyToSendBuffer.clear();
 				_RTSBIndex = 0;
+				if ( nbBytesRemaining )
+					*nbBytesRemaining = 0;
 			}
 			else
 			{
@@ -202,6 +210,8 @@ bool CBufSock::flush()
 				nlassertex( _RTSBIndex+len < _ReadyToSendBuffer.size(), ("index=%u len=%u size=%u", _RTSBIndex, len, _ReadyToSendBuffer.size()) );
 				//nldebug( "O-%u only %u B on %u (%u to %u) sent", Sock->descriptor(), len, _ReadyToSendBuffer.size()-_RTSBIndex, _RTSBIndex, _ReadyToSendBuffer.size() );
 				_RTSBIndex += len;
+				if ( nbBytesRemaining )
+					*nbBytesRemaining = _ReadyToSendBuffer.size() - _RTSBIndex;
 				if ( _ReadyToSendBuffer.size() > 20480 ) // if big, clear data already sent
 				{
 					uint nbcpy = _ReadyToSendBuffer.size() - _RTSBIndex;
@@ -219,11 +229,21 @@ bool CBufSock::flush()
 		else
 		{
 #ifdef NL_DEBUG
-			// can happen in a normal behavior if, for example, the other side is not connected anymore
+			// Can happen in a normal behavior if, for example, the other side is not connected anymore
 			nldebug( "LNETL1: %s failed to send effectively a buffer of %d bytes", asString().c_str(), _ReadyToSendBuffer.size() );
 #endif
+			// NEW: Clearing (loosing) the buffer if the sending can't be performed at all
+			_ReadyToSendBuffer.clear();
+			_RTSBIndex = 0;
+			if ( nbBytesRemaining )
+				*nbBytesRemaining = 0;
 			return false;
 		}
+	}
+	else
+	{
+		if ( nbBytesRemaining )
+			*nbBytesRemaining = 0;
 	}
 
 	return true;

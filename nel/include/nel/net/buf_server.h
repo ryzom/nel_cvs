@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.18 2004/11/15 10:24:29 lecroart Exp $
+ * $Id: buf_server.h,v 1.19 2004/12/22 19:44:28 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,6 +179,9 @@ public:
 	 * Set hostid to InvalidSockId to disconnect all connections.
 	 * If hostid is not InvalidSockId and the socket is not connected, the method does nothing.
 	 * If quick is true, any pending data will not be sent before disconnecting.
+	 * If quick is false, a flush() will be called. In case of network congestion, the entire pending
+	 * data may not be flushed. If this is a problem, call flush() multiple times until it returns 0
+	 * before calling disconnect().
 	 */
 	void	disconnect( TSockId hostid, bool quick=false );
 
@@ -235,11 +238,14 @@ public:
 	 */
 	void	setSizeFlushTrigger( TSockId destid, sint32 size ) { nlassert( destid != InvalidSockId ); destid->setSizeFlushTrigger( size ); }
 
-	/** Force to send all data pending in the send queue.
+	/** Force to send data pending in the send queue now. If all the data could not be sent immediately,
+	 * the returned nbBytesRemaining value is non-zero.
+	 * \param destid The identifier of the destination connection.
+	 * \param nbBytesRemaining If the pointer is not NULL, the method sets the number of bytes still pending after the flush attempt.
 	 * \returns False if an error has occured (e.g. the remote host is disconnected).
 	 * To retrieve the reason of the error, call CSock::getLastError() and/or CSock::errorString()
 	 */
-	bool	flush( TSockId destid ) { nlassert( destid != InvalidSockId ); return destid->flush(); }
+	bool	flush( TSockId destid, uint *nbBytesRemaining=NULL ) { nlassert( destid != InvalidSockId ); return destid->flush( nbBytesRemaining ); }
 
 
 

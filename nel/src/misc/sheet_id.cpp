@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.27 2003/11/06 12:51:33 besson Exp $
+ * $Id: sheet_id.cpp,v 1.28 2003/11/07 11:47:54 saffray Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -128,6 +128,32 @@ void CSheetId::loadSheetId ()
 		map<uint32,string> tempMap;
 		contReset(tempMap);
 		file.serialCont(tempMap);
+		file.close();
+		
+		if (_RemoveUnknownSheet)
+		{
+			uint32 removednbfiles = 0;
+			uint32 nbfiles = tempMap.size();
+			
+			// now we remove all files that not available
+			map<uint32,string>::iterator itStr2;
+			for( itStr2 = tempMap.begin(); itStr2 != tempMap.end(); )
+			{
+				if (CPath::exists ((*itStr2).second))
+				{
+					++itStr2;
+				}
+				else
+				{
+					map<uint32,string>::iterator olditStr = itStr2;
+					//nldebug ("Removing file '%s' from CSheetId because the file not exists", (*olditStr).second.c_str ());
+					itStr2++;
+					tempMap.erase (olditStr);
+					removednbfiles++;
+				}
+			}
+			nlinfo ("SHEETID: Removed %d files on %d from CSheetId because these files doesn't exists", removednbfiles, nbfiles);
+		}		
 
 		// Convert the map to one big string and 1 static map (id to name)
 		{
@@ -173,36 +199,6 @@ void CSheetId::loadSheetId ()
 
 			// The vector of all small string is not needed anymore we have all the info in
 			// the static map and with the pointer AllStrings referencing the beginning.
-		}
-
-
-		// Close the file.
-		file.close();
-
-		if (_RemoveUnknownSheet)
-		{
-			uint32 removednbfiles = 0;
-			uint32 nbfiles = _SheetIdToName.size();
-
-			// now we remove all files that not available
-			CStaticMap<uint32,CChar>::iterator itStr2;
-			for( itStr2 = _SheetIdToName.begin(); itStr2 != _SheetIdToName.end(); )
-			{
-				if (CPath::exists ((*itStr2).second.Ptr))
-				{
-					++itStr2;
-				}
-				else
-				{
-					CStaticMap<uint32,CChar>::iterator olditStr = itStr2;
-					//nldebug ("Removing file '%s' from CSheetId because the file not exists", (*olditStr).second.c_str ());
-					itStr2++;
-					_SheetIdToName.del (olditStr);
-					removednbfiles++;
-				}
-			}
-
-			nlinfo ("SHEETID: Removed %d files on %d from CSheetId because these files doesn't exists", removednbfiles, nbfiles);
 		}
 
 		// Build the invert map (Name to Id) & file extension vector

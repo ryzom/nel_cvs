@@ -328,7 +328,7 @@ plugin material NelMaterial
     classID:#(0x64c75fec, 0x222b9eb9)
     extends:standard 
 	replaceUI:false 
-	version:10.0
+	version:11.0
 (
 	local loadShader
 	local globalUpdateUI
@@ -347,6 +347,10 @@ plugin material NelMaterial
 		bForceZWrite 	type:#boolean default:false ui:cbForceZWrite
 		bForceNoZWrite 	type:#boolean default:false ui:cbForceNoZWrite
 		bWater         	type:#boolean default:false
+
+		bWaterUseSceneEnvMapAbove type:#boolean default:false ui:cbWaterUseSceneEnvMapAbove
+		bWaterUseSceneEnvMapUnder type:#boolean default:false ui:cbWaterUseSceneEnvMapUnder
+
 
 		fBumpUScale     type:#float default: 0.01 ui:cfBumpUScale
 		fBumpVScale     type:#float default: 0.01 ui:cfBumpVScale	
@@ -565,6 +569,8 @@ plugin material NelMaterial
 			Label	 lbWaterHeightFactor "Water height factor :" align:#left across:2
 			Spinner	cfWaterHeightFactor   "" range:[0,1000,1] type:#integer align:#left width:70
 
+			CheckBox cbWaterUseSceneEnvMapAbove "Use scene envmap above water"
+			CheckBox cbWaterUseSceneEnvMapUnder "Use scene envmap under water"
 			
 			Label	cfBumpUScaleLabel "BumpMap U Scale :"  align:#left across:2
 			Spinner	cfBumpUScale      "" range:[-10,10,0.01] type:#float scale:0.001 align:#left width:70

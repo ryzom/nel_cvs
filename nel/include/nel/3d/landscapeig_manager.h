@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.h
  * <File description>
  *
- * $Id: landscapeig_manager.h,v 1.2 2002/01/02 16:19:28 berenguier Exp $
+ * $Id: landscapeig_manager.h,v 1.3 2002/01/03 17:22:35 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,13 +99,8 @@ private:
 		bool			AddedToScene;
 		std::string		FileName;
 
-		CInstanceGroupElement(UInstanceGroup	*ig= NULL, const char *fileName= NULL)
-		{
-			Ig= ig;
-			AddedToScene= false;
-			FileName= fileName;
-		}
-
+		CInstanceGroupElement(UInstanceGroup	*ig= NULL, const char *fileName= NULL);
+		
 		// delete the ig.
 		void	release();
 	};

@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.2 2002/01/02 16:19:14 berenguier Exp $
+ * $Id: landscapeig_manager.cpp,v 1.3 2002/01/03 17:22:25 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,15 @@ using namespace std;
 namespace NL3D 
 {
 
+
+// ***************************************************************************
+CLandscapeIGManager::CInstanceGroupElement::CInstanceGroupElement(UInstanceGroup *ig, const char *fileName)
+{
+	Ig = ig;
+	AddedToScene = false;
+	if (fileName != NULL)
+		FileName = fileName;
+}
 
 // ***************************************************************************
 void	CLandscapeIGManager::CInstanceGroupElement::release()

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.3 2001/03/05 09:56:11 berenguier Exp $
+ * $Id: u_driver.h,v 1.4 2001/03/06 10:15:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,20 +48,12 @@ using NLMISC::CRGBA;
 using NLMISC::CBitmap;
 
 
-class UDriver;
 class UScene;
 class UCamera;
 class UTextureFile;
 class UTextureRaw;
 class UMaterial;
 class UTextContext;
-
-
-// ***************************************************************************
-/**
- *	This is the NL3D function which build a UDriver, the root for all 3D functions.
- */
-extern	UDriver					*createDriver();
 
 
 // ***************************************************************************
@@ -397,7 +389,7 @@ public:
 	  * \param type This is the type of the message box, ie number of button and label of buttons.
 	  * \param icon This is the icon of the message box should use like warning, error etc...
 	  */
-	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
+	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon) =0;
 
 
 	/// show cursor if b is true, or hide it if b is false
@@ -425,6 +417,14 @@ public:
 	virtual TPolygonMode 	getPolygonMode () =0;
 
 	// @}
+
+
+public:
+
+	/**
+	 *	This is the static function which build a UDriver, the root for all 3D functions.
+	 */
+	static	UDriver			*createDriver();
 
 };
 

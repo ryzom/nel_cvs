@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.4 2001/03/05 09:54:45 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.5 2001/03/06 10:15:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ bool	CDriverUser::_StaticInit= false;
 
 
 // ***************************************************************************
-UDriver					*createDriver()
+UDriver					*UDriver::createDriver()
 {
 	return new CDriverUser;
 }

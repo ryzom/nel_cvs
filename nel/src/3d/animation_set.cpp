@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.3 2001/03/08 13:29:07 corvazier Exp $
+ * $Id: animation_set.cpp,v 1.4 2001/03/08 13:35:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,30 +34,6 @@ namespace NL3D
 uint CAnimationSet::getNumChannelId () const
 {
 	return _ChannelIdByName.size ();
-}
-
-// ***************************************************************************
-
-uint CAnimationSet::getChannelIdByName (const std::string& name) const
-{
-	// Look for an id with this name
-	std::map <std::string, uint32>::const_iterator ite=_ChannelIdByName.find (name);
-	if (ite!=_ChannelIdByName.end ())
-		return ite->second;
-	else
-		return NotFound;
-}
-
-// ***************************************************************************
-
-uint CAnimationSet::getAnimationIdByName (const std::string& name) const
-{
-	// Look for an id with this name
-	std::map <std::string, uint32>::const_iterator ite=_AnimationIdByName.find (name);
-	if (ite!=_AnimationIdByName.end ())
-		return ite->second;
-	else
-		return NotFound;
 }
 
 // ***************************************************************************

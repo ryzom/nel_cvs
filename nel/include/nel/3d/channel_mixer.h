@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.3 2001/03/07 17:11:46 corvazier Exp $
+ * $Id: channel_mixer.h,v 1.4 2001/03/08 13:35:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_CHANNEL_MIXER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
 #include "nel/3d/animation_time.h"
 #include "nel/3d/animation_set.h"
 #include <map>
@@ -272,7 +273,14 @@ public:
 	  * \param time is the new time to use in the slot.
 	  * \see CAnimationTime
 	  */
-	void setSlotTime (uint slot, CAnimationTime time);
+	void setSlotTime (uint slot, CAnimationTime time)
+	{
+		// Check alot arg
+		nlassert (slot<NumAnimationSlot);
+
+		// Set the time
+		_SlotArray[slot]._Time=time;
+	}
 
 	/** 
 	  * Set slot weight.
@@ -284,7 +292,14 @@ public:
 	  * \param weight is the new weight to use in the slot. No range for this weight. If the weight == 0.f, 
 	  * the slot have no effect on the final mix.
 	  */
-	void setSlotWeight (uint slot, float weigth);
+	void setSlotWeight (uint slot, float weight)
+	{
+		// Check alot arg
+		nlassert (slot<NumAnimationSlot);
+
+		// Set the time
+		_SlotArray[slot]._Weight=weight;
+	}
 
 	/** 
 	  * Empty a slot.

@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.5 2001/03/08 13:29:07 corvazier Exp $
+ * $Id: animation_set.h,v 1.6 2001/03/08 13:35:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,12 +58,28 @@ public:
 	/**
 	  * Get a channel ID with its name. If no channel is found, method returns NotFound.
 	  */
-	uint getChannelIdByName (const std::string& name) const;
+	uint getChannelIdByName (const std::string& name) const
+	{
+		// Look for an id with this name
+		std::map <std::string, uint32>::const_iterator ite=_ChannelIdByName.find (name);
+		if (ite!=_ChannelIdByName.end ())
+			return ite->second;
+		else
+			return NotFound;
+	}
 
 	/**
 	  * Get a animation ID by name. If no channel is found, method returns NotFound.
 	  */
-	uint getAnimationIdByName (const std::string& name) const;
+	uint getAnimationIdByName (const std::string& name) const
+	{
+		// Look for an id with this name
+		std::map <std::string, uint32>::const_iterator ite=_AnimationIdByName.find (name);
+		if (ite!=_AnimationIdByName.end ())
+			return ite->second;
+		else
+			return NotFound;
+	}
 
 	/**
 	  * Get a read only animation pointer.

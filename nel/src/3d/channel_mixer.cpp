@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.3 2001/03/07 17:11:46 corvazier Exp $
+ * $Id: channel_mixer.cpp,v 1.4 2001/03/08 13:35:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -213,29 +213,6 @@ void CChannelMixer::setSlotAnimation (uint slot, uint animation)
 		_Dirt=true;
 	}
 }
-
-// ***************************************************************************
-
-void CChannelMixer::setSlotTime (uint slot, CAnimationTime time)
-{
-	// Check alot arg
-	nlassert (slot<NumAnimationSlot);
-
-	// Set the time
-	_SlotArray[slot]._Time=time;
-}
-
-// ***************************************************************************
-
-void CChannelMixer::setSlotWeight (uint slot, float weight)
-{
-	// Check alot arg
-	nlassert (slot<NumAnimationSlot);
-
-	// Set the time
-	_SlotArray[slot]._Weight=weight;
-}
-
 
 // ***************************************************************************
 

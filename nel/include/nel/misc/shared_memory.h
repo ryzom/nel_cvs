@@ -1,7 +1,7 @@
 /** \file shared_memory.h
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.h,v 1.1 2002/08/08 10:17:18 cado Exp $
+ * $Id: shared_memory.h,v 1.2 2002/08/08 12:44:46 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,13 +28,15 @@
 
 #include "nel/misc/types_nl.h"
 
+#ifdef NL_OS_WINDOWS
+#include <map>
+#endif
 
 namespace NLMISC {
 
 
 #ifdef NL_OS_WINDOWS
-typedef char *TSharedMemId;
-#include <map>
+typedef const char *TSharedMemId;
 #else
 typedef key_t TSharedMemId;
 #endif

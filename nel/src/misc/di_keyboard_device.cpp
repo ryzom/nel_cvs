@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.3 2002/04/10 12:38:11 vizerie Exp $
+ * $Id: di_keyboard_device.cpp,v 1.4 2002/04/12 13:49:25 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -38,7 +38,13 @@
 #include "Mmsystem.h"
 
 
+#ifdef min
+#undef min
+#endif
 
+#ifdef
+#undef max
+#endif
 
 namespace NLMISC 
 {

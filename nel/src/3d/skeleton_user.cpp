@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.15 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: skeleton_user.cpp,v 1.16 2003/05/23 21:22:52 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -262,14 +262,14 @@ void		CSkeletonUser::changeMRMDistanceSetup(float distanceFinest, float distance
 
 
 // ***************************************************************************
-bool		CSkeletonUser::computeRenderedBBox(NLMISC::CAABBox &bbox)
+bool		CSkeletonUser::computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeInWorld)
 {
 	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
-	return _Skeleton->computeRenderedBBox(bbox);
+	return _Skeleton->computeRenderedBBox(bbox, computeInWorld);
 }
 // ***************************************************************************
-bool		CSkeletonUser::computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime, bool forceCompute /* = false */)
+bool		CSkeletonUser::computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime, bool forceCompute /* = false */, bool computeInWorld)
 {
 	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
@@ -280,7 +280,7 @@ bool		CSkeletonUser::computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playLi
 		plUser->evalPlayList(playTime);
 	}
 
-	return _Skeleton->computeCurrentBBox(bbox, forceCompute);
+	return _Skeleton->computeCurrentBBox(bbox, forceCompute, computeInWorld);
 }
 // ***************************************************************************
 void		CSkeletonUser::computeLodTexture()

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.36 2002/06/13 13:49:33 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.37 2002/06/24 17:14:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -221,6 +221,7 @@ CInstanceGroup::CInstanceGroup()
 	_AddToSceneState = StateNotAdded;
 	_TransformName = NULL;
 	_AddRemoveInstance = NULL;
+	_IGAddBeginCallback = NULL;
 }
 
 // ***************************************************************************
@@ -459,6 +460,11 @@ void CInstanceGroup::setAddRemoveInstanceCallback(IAddRemoveInstance *callback)
 	_AddRemoveInstance = callback;
 }
 
+// ***************************************************************************
+void CInstanceGroup::setIGAddBeginCallback(IIGAddBegin *callback)
+{
+	_IGAddBeginCallback = callback;
+}
 
 // ***************************************************************************
 bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
@@ -466,6 +472,9 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 	uint32 i;
 
 	_Instances.resize (_InstancesInfos.size(), NULL);
+
+	if (_IGAddBeginCallback)
+		_IGAddBeginCallback->startAddingIG(_InstancesInfos.size());
 
 	// Creation and positionning of the new instance
 
@@ -477,23 +486,29 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 		if (!rInstanceInfo.DontAddToScene)
 		{
 			string shapeName;
+			
 
-			if (rInstanceInfo.Name.find('.') == std::string::npos)
-			{
-				shapeName = rInstanceInfo.Name + ".shape";
-			}
-			else	// extension has already been added
-			{
-				shapeName = rInstanceInfo.Name;
-			}
-			strlwr (shapeName);
-
+			
 			// If there is a callback added to this instance group then transform
 			// the name of the shape to load.
-			if (_TransformName != NULL)
-				shapeName = _TransformName->transformName (shapeName);
-
+			if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
+			{												
+				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName);								
+			}
+			else			
+			{			
+				if (rInstanceInfo.Name.find('.') == std::string::npos)
+				{
+					shapeName = rInstanceInfo.Name + ".shape";
+				}
+				else	// extension has already been added
+				{
+					shapeName = rInstanceInfo.Name;
+				}
+			}
 			strlwr (shapeName);
+
+					
 			_Instances[i] = scene.createInstance (shapeName);
 			if( _Instances[i] == NULL )
 			{
@@ -717,6 +732,9 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 
 	_Instances.resize (_InstancesInfos.size(), NULL);
 
+	if (_IGAddBeginCallback)
+		_IGAddBeginCallback->startAddingIG(_InstancesInfos.size());
+
 	// Creation and positionning of the new instance
 
 	vector<CInstance>::iterator it = _InstancesInfos.begin();
@@ -728,20 +746,22 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 		{
 			string shapeName;
 
-			if (rInstanceInfo.Name.find('.') == std::string::npos)
-			{
-				shapeName = rInstanceInfo.Name + ".shape";
+			if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
+			{												
+				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName);								
 			}
-			else	// extension has already been added
-			{
-				shapeName  = rInstanceInfo.Name;
+			else			
+			{						
+				if (rInstanceInfo.Name.find('.') == std::string::npos)
+				{
+					shapeName = rInstanceInfo.Name + ".shape";
+				}
+				else	// extension has already been added
+				{
+					shapeName  = rInstanceInfo.Name;
+				}
 			}
 			shapeName = strlwr (shapeName);
-
-			// If there is a callback added to this instance group then transform
-			// the name of the shape to load.
-			if (_TransformName != NULL)
-				shapeName = _TransformName->transformName (shapeName);
 
 			shapeName = strlwr (shapeName);
 			if (allShapesToLoad.find(shapeName) == allShapesToLoad.end())

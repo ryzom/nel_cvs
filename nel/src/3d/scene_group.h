@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.17 2002/06/13 13:49:33 vizerie Exp $
+ * $Id: scene_group.h,v 1.18 2002/06/24 17:14:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,7 @@ class CTransformShape;
 class IDriver;
 class ITransformName;
 struct IAddRemoveInstance;
+struct IIGAddBegin;
 
 /**
   * A CInstanceGroup is a group of mesh instance and so composed by
@@ -207,6 +208,10 @@ public:
 
 	/// Set a callback to know when an instance has been added / removed
 	void setAddRemoveInstanceCallback(IAddRemoveInstance *callback);
+
+	/// Set a callback to know when an instance group is being created, and how many instances it contains
+	void setIGAddBeginCallback(IIGAddBegin *callback);
+
 
 
 	/**
@@ -381,6 +386,7 @@ private:
 
 	ITransformName       *_TransformName;
 	IAddRemoveInstance   *_AddRemoveInstance;
+	IIGAddBegin			 *_IGAddBeginCallback;
 };
 
 

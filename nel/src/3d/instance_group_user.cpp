@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.23 2002/06/13 13:48:14 vizerie Exp $
+ * $Id: instance_group_user.cpp,v 1.24 2002/06/24 17:10:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,6 +132,14 @@ void CInstanceGroupUser::setAddRemoveInstanceCallback(IAddRemoveInstance *callba
 {
 	_InstanceGroup.setAddRemoveInstanceCallback(callback);
 }
+
+
+// ***************************************************************************
+void CInstanceGroupUser::setIGAddBeginCallback(IIGAddBegin *callback)
+{
+	_InstanceGroup.setIGAddBeginCallback(callback);
+}
+
 
 
 // ***************************************************************************

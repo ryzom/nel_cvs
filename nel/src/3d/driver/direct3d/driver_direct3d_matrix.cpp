@@ -1,7 +1,7 @@
 /** \file driver_direct3d_matrix.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_matrix.cpp,v 1.5 2004/08/09 14:35:08 vizerie Exp $
+ * $Id: driver_direct3d_matrix.cpp,v 1.6 2004/09/17 15:08:45 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -376,7 +376,7 @@ void CDriverD3D::setDepthRange(float znear, float zfar)
 	if (_HWnd == NULL) 
 		return;
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-	if (znear != _DepthRangeNear || zfar != _DepthRangeFar)
+	NL_D3D_CACHE_TEST(CacheTest_DepthRange, znear != _DepthRangeNear || zfar != _DepthRangeFar)
 #endif
 	{
 		_DepthRangeNear = znear;

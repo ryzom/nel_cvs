@@ -1,7 +1,7 @@
 /** \file agent_proxy_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_proxy_mailer.h,v 1.16 2002/02/20 18:04:49 lecroart Exp $
+ * $Id: agent_proxy_mailer.h,v 1.17 2002/03/11 15:38:50 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,6 +144,12 @@ namespace NLAIAGENT
 			return false;
 		}
 		//@}
+
+		const CAgentNumber *getAgentRef() const
+		{			
+			return _AgentRef;			
+		}
+
 
 	};
 }

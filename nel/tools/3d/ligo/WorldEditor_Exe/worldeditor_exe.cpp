@@ -121,17 +121,16 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 			_RootDir += sDir;
 		}
 	}
-
-
-
-
+	char sCurDir[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, sCurDir);
+	string sRootDir = string(sCurDir) + "\\";
 
  	// Create a object viewer
 	IWorldEditor *pWorldEditor=IWorldEditor::getInterface();
 
 	if (pWorldEditor)
 	{
-		pWorldEditor->setRootDir (_RootDir.c_str());
+		pWorldEditor->setRootDir (sRootDir.c_str());
 		// Init ui
 		pWorldEditor->initUI ();
 

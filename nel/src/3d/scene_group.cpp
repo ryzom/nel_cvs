@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.2 2001/04/06 14:53:02 corvazier Exp $
+ * $Id: scene_group.cpp,v 1.3 2001/05/22 08:37:22 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,9 +141,12 @@ bool CInstanceGroup::addToScene (CScene& scene)
 
 		// Creation and positionning of the new instance
 		_Instances[i] = scene.createInstance ( rInstanceInfo.Name + ".shape" );
-		_Instances[i]->setPos( rInstanceInfo.Pos );
-		_Instances[i]->setRotQuat( rInstanceInfo.Rot );
-		_Instances[i]->setScale( rInstanceInfo.Scale );
+		if (_Instances[i])
+		{
+			_Instances[i]->setPos( rInstanceInfo.Pos );
+			_Instances[i]->setRotQuat( rInstanceInfo.Rot );
+			_Instances[i]->setScale( rInstanceInfo.Scale );
+		}
 	}
 
 	// Setup the hierarchy

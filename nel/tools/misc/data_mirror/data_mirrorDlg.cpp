@@ -618,7 +618,8 @@ void CData_mirrorDlg::buildSourceFiles ()
 				sint64 deltaInt = (((uint64)time1.dwHighDateTime)<<32|((uint64)time1.dwLowDateTime)) - (((uint64)time0.dwHighDateTime)<<32|((uint64)time0.dwLowDateTime));
 				double deltaInSec = (double)deltaInt;
 				deltaInSec /= 10000000.0;
-				
+				deltaInSec = fabs(deltaInSec);
+
 				if (deltaInSec > 2.0)
 				{
 					if (BinaryCompare)

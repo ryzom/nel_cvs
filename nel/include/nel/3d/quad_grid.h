@@ -1,7 +1,7 @@
 /** \file quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.2 2001/01/04 14:45:00 berenguier Exp $
+ * $Id: quad_grid.h,v 1.3 2001/06/11 09:24:42 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,6 +198,11 @@ private:// Methods.
 	// return the coordinates on the grid of what include the bbox.
 	void		selectQuads(CVector bmin, CVector bmax, sint &x0, sint &x1, sint &y0, sint &y1)
 	{
+		CVector		bminp, bmaxp;
+		bminp= bmin;
+		bmaxp= bmax;
+		bmin.minof(bminp, bmaxp);
+		bmax.maxof(bminp, bmaxp);
 		bmin/= _EltSize;
 		bmax/= _EltSize;
 		x0= (sint)(floor(bmin.x));

@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.2 2001/05/04 13:30:13 corvazier Exp $
+ * $Id: instance_group_user.h,v 1.3 2001/06/11 09:24:42 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,16 +51,19 @@ class CInstanceGroupUser : public UInstanceGroup
 {
 public:
 	// Init with a scene.
-	bool init (const std::string &instanceGroup, class CScene& scene);
+	bool load (const std::string &instanceGroup);
 
 	// Init without a scene
 	bool init (const std::string &instanceGroup);
+	bool init (const std::string &instanceGroup, CScene &scene);
 
 	// Release from a scene.
 	void release (class CScene& scene);
 
 private:
 	// From UInstanceGroup
+	void addToScene (class UScene& scene);
+	void removeFromScene (class UScene& scene);
 	uint getNumInstance () const;
 	const std::string& getInstanceName (uint instanceNb) const;
 	const NLMISC::CVector& getInstancePos (uint instanceNb) const;

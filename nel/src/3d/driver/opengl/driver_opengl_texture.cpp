@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.18 2001/01/23 09:26:06 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.19 2001/01/23 14:15:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,6 +148,22 @@ static inline GLenum	translateMinFilterToGl(ITexture::TMinFilter mode)
 
 
 // ***************************************************************************
+static inline bool		sameDXTCFormat(ITexture &tex, GLint glfmt)
+{
+	if(glfmt==GL_COMPRESSED_RGB_S3TC_DXT1_EXT && tex.PixelFormat==CBitmap::DXTC1)
+		return true;
+	if(glfmt==GL_COMPRESSED_RGBA_S3TC_DXT1_EXT && tex.PixelFormat==CBitmap::DXTC1Alpha)
+		return true;
+	if(glfmt==GL_COMPRESSED_RGBA_S3TC_DXT3_EXT && tex.PixelFormat==CBitmap::DXTC3)
+		return true;
+	if(glfmt==GL_COMPRESSED_RGBA_S3TC_DXT5_EXT && tex.PixelFormat==CBitmap::DXTC5)
+		return true;
+
+	return false;
+}
+
+
+// ***************************************************************************
 bool CDriverGL::setupTexture(ITexture& tex)
 {
 	// 0. Create/Retrieve the driver texture.
@@ -259,25 +275,44 @@ bool CDriverGL::setupTexture(ITexture& tex)
 					// Get the correct texture format from texture...
 					GLint	glfmt= getGlTextureFormat(tex, gltext->Compressed);
 
-					// TODO_DXTC if same format, and same mipmapOn/Off, use glTexCompressedImage*.
-					/*if(compatibleDXTCFormat(tex) && (tex.mipMapOff() || tex.getMipMapCount()>1) )
+					// DXTC: if same format, and same mipmapOn/Off, use glTexCompressedImage*.
+					// We cannot build the mipmaps if they are not here.
+					if(_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt) &&
+						(tex.mipMapOff() || tex.getMipMapCount()>1) )
 					{
-					}*/
-					sint	nMipMaps;
-					tex.convertToType(CBitmap::RGBA);
-					if(tex.mipMapOn())
-					{
-						tex.buildMipMaps();
-						nMipMaps= tex.getMipMapCount();
+						sint	nMipMaps;
+						if(tex.mipMapOn())
+							nMipMaps= tex.getMipMapCount();
+						else
+							nMipMaps= 1;
+
+						// Fill mipmaps.
+						for(sint i=0;i<nMipMaps;i++)
+						{
+							void	*ptr= &(*tex.getPixels(i).begin());
+							sint	size= tex.getPixels(i).size();
+							glCompressedTexImage2DARB(GL_TEXTURE_2D, i, glfmt, tex.getWidth(i),tex.getHeight(i), 0, 
+								size, ptr );
+						}
 					}
 					else
-						nMipMaps= 1;
-
-					// Fill mipmaps.
-					for(sint i=0;i<nMipMaps;i++)
 					{
-						void	*ptr= &(*tex.getPixels(i).begin());
-						glTexImage2D(GL_TEXTURE_2D,i,glfmt,tex.getWidth(i),tex.getHeight(i),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+						sint	nMipMaps;
+						tex.convertToType(CBitmap::RGBA);
+						if(tex.mipMapOn())
+						{
+							tex.buildMipMaps();
+							nMipMaps= tex.getMipMapCount();
+						}
+						else
+							nMipMaps= 1;
+
+						// Fill mipmaps.
+						for(sint i=0;i<nMipMaps;i++)
+						{
+							void	*ptr= &(*tex.getPixels(i).begin());
+							glTexImage2D(GL_TEXTURE_2D,i,glfmt,tex.getWidth(i),tex.getHeight(i),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+						}
 					}
 				}
 				//printf("%d,%d,%d\n", tex.getMipMapCount(), tex.getWidth(0), tex.getHeight(0));

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.17 2001/01/23 09:24:08 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.18 2001/01/23 14:15:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -914,7 +914,28 @@ bool CBitmap::decompressDXT1(bool alpha)
 				}
 			}
 		}
-		_Data[m]= dataTmp[m];
+
+		// Copy result into the mipmap level.
+		if(wtmp==width && htmp==height)
+		{
+			// For mipmaps level >4 pixels.
+			_Data[m]= dataTmp[m];
+		}
+		else
+		{
+			// For last mipmaps, level <4 pixels.
+			_Data[m].resize(width*height*4);
+			CRGBA	*src= (CRGBA*)&dataTmp[m][0];
+			CRGBA	*dst= (CRGBA*)&_Data[m][0];
+			uint	x,y;
+			for(y=0;y<height;y++)
+			{
+				for(x=0;x<width;x++)
+					dst[y*width+x]= src[y*wtmp+x];
+			}
+		}
+
+		// Next mipmap size.
 		width = (width+1)/2;
 		height = (height+1)/2;
 	}
@@ -1010,7 +1031,28 @@ bool CBitmap::decompressDXT3()
 				}
 			}
 		}
-		_Data[m]= dataTmp[m];
+
+		// Copy result into the mipmap level.
+		if(wtmp==width && htmp==height)
+		{
+			// For mipmaps level >4 pixels.
+			_Data[m]= dataTmp[m];
+		}
+		else
+		{
+			// For last mipmaps, level <4 pixels.
+			_Data[m].resize(width*height*4);
+			CRGBA	*src= (CRGBA*)&dataTmp[m][0];
+			CRGBA	*dst= (CRGBA*)&_Data[m][0];
+			uint	x,y;
+			for(y=0;y<height;y++)
+			{
+				for(x=0;x<width;x++)
+					dst[y*width+x]= src[y*wtmp+x];
+			}
+		}
+
+		// Next mipmap size.
 		width = (width+1)/2;
 		height = (height+1)/2;
 	}
@@ -1133,7 +1175,28 @@ bool CBitmap::decompressDXT5()
 			}
 
 		}
-		_Data[m]= dataTmp[m];
+
+		// Copy result into the mipmap level.
+		if(wtmp==width && htmp==height)
+		{
+			// For mipmaps level >4 pixels.
+			_Data[m]= dataTmp[m];
+		}
+		else
+		{
+			// For last mipmaps, level <4 pixels.
+			_Data[m].resize(width*height*4);
+			CRGBA	*src= (CRGBA*)&dataTmp[m][0];
+			CRGBA	*dst= (CRGBA*)&_Data[m][0];
+			uint	x,y;
+			for(y=0;y<height;y++)
+			{
+				for(x=0;x<width;x++)
+					dst[y*width+x]= src[y*wtmp+x];
+			}
+		}
+
+		// Next mipmap size.
 		width = (width+1)/2;
 		height = (height+1)/2;
 	}

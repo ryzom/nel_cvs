@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.42 2003/07/01 12:26:35 cado Exp $
+ * $Id: types_nl.h,v 1.43 2003/11/17 10:25:24 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -48,6 +48,11 @@
 #  define NL_OS_WINDOWS
 #  define NL_LITTLE_ENDIAN
 #  define NL_CPU_INTEL
+#  if _MSC_VER >= 1300
+#    define NL_COMP_VC7
+#  elif _MSC_VER >= 1200
+#    define NL_COMP_VC6
+#  endif
 #  ifdef _DEBUG
 #    define NL_DEBUG
 #    ifndef _STLP_USE_DEBUG_LIB
@@ -60,6 +65,7 @@
 #  endif
 #else
 #  define NL_OS_UNIX
+#  define NL_COMP_GCC
 #  ifdef WORDS_BIGENDIAN
 #    define NL_BIG_ENDIAN
 #  else

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.26 2001/05/03 13:15:20 cado Exp $
+ * $Id: log.cpp,v 1.27 2001/05/07 15:39:48 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,18 +168,21 @@ void CLog::display (const char *format, ...)
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
-	TDisplayInfo args;
-	time (&args.Date);
-	args.LogType = _LogType;
-	args.ProcessName = _ProcessName;
-	args.ThreadId = getThreadId();
-	args.Filename = _FileName;
-	args.Line = _Line;
-
-	// Send to the attached displayers
-	for (CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
+	if ( passFilter( str ) )
 	{
-		(*idi)->display( args, str );
+		TDisplayInfo args;
+		time (&args.Date);
+		args.LogType = _LogType;
+		args.ProcessName = _ProcessName;
+		args.ThreadId = getThreadId();
+		args.Filename = _FileName;
+		args.Line = _Line;
+
+		// Send to the attached displayers
+		for (CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
+		{
+			(*idi)->display( args, str );
+		}
 	}
 
 	unsetPosition();
@@ -212,7 +215,8 @@ void CLog::display (const char *format, ...)
 
 	_File = NULL;
 	_Line = 0;
-*/}
+*/
+}
 
 
 /*
@@ -249,25 +253,74 @@ void CLog::displayRaw( const char *format, ... )
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
-	TDisplayInfo args;
-	args.Date = 0;
-	args.LogType = LOG_NO;
-	args.ProcessName = "";
-	args.ThreadId = 0;
-	args.Filename = NULL;
-	args.Line = -1;
-
-	// Send to the attached displayers
-	for ( CDisplayers::iterator idi=_Displayers.begin(); idi<_Displayers.end(); idi++ )
+	if ( passFilter( str ) )
 	{
-		(*idi)->display( args, str );
+		TDisplayInfo args;
+		args.Date = 0;
+		args.LogType = LOG_NO;
+		args.ProcessName = "";
+		args.ThreadId = 0;
+		args.Filename = NULL;
+		args.Line = -1;
+
+		// Send to the attached displayers
+		for ( CDisplayers::iterator idi=_Displayers.begin(); idi<_Displayers.end(); idi++ )
+		{
+			(*idi)->display( args, str );
+		}
 	}
 
 	unsetPosition();
 }
 
 
+/*
+ * Returns true if the string must be logged, according to the current filter
+ */
+bool CLog::passFilter( const char *filter )
+{
+	bool yes = _PositiveFilter.empty();
 
+	bool found;
+	list<string>::iterator ilf;
+
+	// 1. Positive filter
+	for ( ilf=_PositiveFilter.begin(); ilf!=_PositiveFilter.end(); ++ilf )
+	{
+		found = ( strstr( filter, (*ilf).c_str() ) != NULL );
+		if ( found )
+		{
+			yes = true; // positive filter passed (no need to check another one)
+			break;
+		}
+		// else try the next one
+	}
+	if ( ! yes )
+	{
+		return false; // positive filter not passed
+	}
+
+	// 2. Negative filter
+	for ( ilf=_NegativeFilter.begin(); ilf!=_NegativeFilter.end(); ++ilf )
+	{
+		found = ( strstr( filter, (*ilf).c_str() ) != NULL );
+		if ( found )
+		{
+			return false; // negative filter not passed (no need to check another one)
+		}
+	}
+	return true; // negative filter passed
+}
+
+
+/*
+ * Removes a filter by name. Returns true if it was found.
+ */
+void CLog::removeFilter( const char *filterstr )
+{
+	_PositiveFilter.remove( filterstr );
+	_NegativeFilter.remove( filterstr );
+}
 
 
 ////////////////////////////////////////////////////
@@ -466,7 +519,7 @@ string CLog::priorityStr() const
 	default: nlstop; return "<Unknown>";
 	}
 }
-#endif
+#endif // 0
 
 } // NLMISC
 

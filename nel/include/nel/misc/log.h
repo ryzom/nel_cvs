@@ -1,7 +1,7 @@
 /** \file log.h
  * CLog class
  *
- * $Id: log.h,v 1.19 2001/05/03 13:15:11 cado Exp $
+ * $Id: log.h,v 1.20 2001/05/07 15:39:48 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 
 #include <string>
 #include <vector>
-
+#include <list>
 
 
 namespace NLMISC
@@ -41,6 +41,7 @@ class IDisplayer;
 
 /**
  * When display() is called, the logger builds a string a sends it to its attached displayers.
+ * The positive filters, if any, are applied first, then the negative filters.
  * See the nldebug/nlinfo... macros in debug.h.
  *
  * \ref log_howto
@@ -68,11 +69,16 @@ public:
 	/// Returns true if the specified displayer is attached to the log object
 	bool attached(IDisplayer *displayer) const;
 
+	/// Returns true if no displayer is attached
+	bool noDisplayer() const { return _Displayers.empty(); }
+
+
 	/// Set the name of the process
 	static void setProcessName (const std::string &processName);
 
 	/// If !noDisplayer(), sets line and file parameters, and enters the mutex. If !noDisplayer(), don't forget to call display...() after, to release the mutex.
 	void setPosition (sint line, char *fileName);
+
 
 	/// Display a string in decorated and final new line form to all attached displayers. Call setPosition() before. Releases the mutex.
 	void displayNL (const char *format, ...);
@@ -86,13 +92,26 @@ public:
 	/// Display a string (and nothing more) to all attached displayers. Call setPosition() before. Releases the mutex.
 	void displayRaw (const char *format, ...);
 
-	/// Returns true if no displayer is attached
-	bool noDisplayer() const { return _Displayers.empty(); }
+	
+	/// Adds a positive filter. Tells the logger to log only the lines that contain filterstr
+	void addPositiveFilter( const char *filterstr ) { _PositiveFilter.push_back( filterstr ); }
+
+	/// Adds a negative filter. Tells the logger to discard the lines that contain filterstr
+	void addNegativeFilter( const char *filterstr ) { _NegativeFilter.push_back( filterstr ); }
+
+	/// Reset both filters
+	void resetFilters() { _PositiveFilter.clear(); _NegativeFilter.clear(); }
+
+	/// Removes a filter by name (in both filters).
+	void removeFilter( const char *filterstr );
 
 protected:
 
 	/// Symetric to setPosition(). Automatically called by display...(). Do not call if noDisplayer().
 	void unsetPosition();
+
+	/// Returns true if the string must be logged, according to the current filter
+	bool passFilter( const char *filter );
 
 	TLogType                          _LogType;
 	static std::string		          _ProcessName;
@@ -107,6 +126,12 @@ protected:
 	CMutex							  _Mutex;
 
 	bool							  _PosSet;
+
+	/// "Discard" filter
+	std::list<std::string>			  _NegativeFilter;
+
+	/// "Crop" filter
+	std::list<std::string>			  _PositiveFilter;
 };
 
 

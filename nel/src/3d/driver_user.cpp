@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.38 2003/10/13 09:40:53 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.39 2004/02/19 09:57:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -171,6 +171,8 @@ CDriverUser::CDriverUser (uint windowIcon)
 	_PBTri.setTri(0, 0, 1, 2);
 	_PBQuad.setNumQuad(1);
 	_PBQuad.setQuad(0, 0, 1, 2, 3);
+
+	_ShapeBank._DriverUser = this;
 
 }
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.3 2001/01/30 17:58:28 lecroart Exp $
+ * $Id: ai_exception.h,v 1.4 2001/01/31 14:02:06 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -66,7 +66,7 @@ namespace NLAIE
 		{
 		}
 		
-		const char *what() const
+		const char *what() const throw() 
 		{
 			return _Excep->what();
 		}
@@ -89,7 +89,7 @@ namespace NLAIE
 		{
 		}
 		
-		const char *what() const
+		const char *what() const throw() 
 		{
 			return "Depacement de résolution sur les index";
 		}
@@ -113,7 +113,7 @@ namespace NLAIE
 		{
 		}
 		
-		const char *what() const
+		const char *what() const throw() 
 		{
 			return "l'index ne pointe pas rien un agent";
 		}
@@ -139,7 +139,7 @@ namespace NLAIE
 			strcpy(_ClassName,name);
 		}
 
-		const char *what() const
+		const char *what() const throw() 
 		{
 			return _ClassName;
 		}
@@ -167,7 +167,7 @@ namespace NLAIE
 			strcpy(_ClassName,name);
 		}
 
-		const char *what() const
+		const char *what() const throw() 
 		{
 			return _ClassName;
 		}
@@ -195,7 +195,7 @@ namespace NLAIE
 			strcpy(_Text,text);
 		}
 
-		const char *what() const
+		const char *what() const throw() 
 		{
 			return _Text;
 		}
@@ -223,7 +223,7 @@ namespace NLAIE
 			strcpy(_Text,text);
 		}
 
-		const char *what() const
+		const char *what() const throw() 
 		{
 			return _Text;
 		}
@@ -251,7 +251,7 @@ namespace NLAIE
 			strcpy(_Text,text);
 		}
 
-		const char *what() const
+		const char *what() const throw() 
 		{
 			return _Text;
 		}

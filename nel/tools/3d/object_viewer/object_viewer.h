@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.49 2003/08/22 09:04:16 vizerie Exp $
+ * $Id: object_viewer.h,v 1.50 2003/10/07 12:29:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -465,6 +465,17 @@ public:
 
 	// Reinit camera
 	void		initCamera ();
+
+	/** popup a dialog to choose a bone in the scene
+	  * \return true is a bone has been selected
+	  */
+	bool		chooseBone(const std::string &caption, NL3D::CSkeletonModel *&skel, uint &boneIndex);
+
+	// test if there's a skeleton in the scene
+	bool		isSkeletonPresent() const;
+
+	// get the main frame
+	CMainFrame *getMainFrame() const { return _MainFrame; }	
 
 private:
 

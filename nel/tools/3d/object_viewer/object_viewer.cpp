@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.105 2003/08/22 09:03:51 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.106 2003/10/07 12:29:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -645,7 +645,7 @@ void CObjectViewer::initUI (HWND parent)
 	getRegisterWindowState (_SlotDlg, REGKEY_OBJ_VIEW_SLOT_DLG, false);
 
 	// Create particle dialog
-	_ParticleDlg=new CParticleDlg (this, _MainFrame, _MainFrame);
+	_ParticleDlg=new CParticleDlg (this, _MainFrame, _MainFrame, _AnimationDlg);
 	_ParticleDlg->Create (IDD_PARTICLE);
 	getRegisterWindowState (_ParticleDlg, REGKEY_OBJ_PARTICLE_DLG, false);
 
@@ -1140,7 +1140,7 @@ void CObjectViewer::go ()
 			if (CNELU::AsyncListener.isKeyPushed(Key8))
 				_MainFrame->OnWindowGlobalwind(), keyWndOk= true;
 			if (CNELU::AsyncListener.isKeyPushed(Key9))
-				_MainFrame->OnWindowSoundAnim(), keyWndOk= true;
+				_MainFrame->OnWindowSoundAnim(), keyWndOk= true;														
 
 			// Reload texture ?
 			if (CNELU::AsyncListener.isKeyPushed(KeyR))
@@ -2065,6 +2065,45 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 	}
 	else
 		return 0xffffffff;
+}
+
+// ***************************************************************************
+bool CObjectViewer::chooseBone(const std::string &caption, NL3D::CSkeletonModel *&skel, uint &boneIndex)
+{
+	for(uint k = 0; k < _ListInstance.size(); ++k)
+	{
+		NL3D::CSkeletonModel *transformSkel = dynamic_cast<CSkeletonModel*>(_ListInstance[k]->TransformShape);
+		if (transformSkel)
+		{
+			// Make a list of bones
+			vector<string> listBones;
+			uint bone;
+			for (bone=0; bone<transformSkel->Bones.size(); bone++)
+			{
+				listBones.push_back (transformSkel->Bones[bone].getBoneName());
+			}
+			CSelectString dialogSelect (listBones, caption.c_str(), _MainFrame, false);
+			if (dialogSelect.DoModal ()==IDOK)
+			{
+				boneIndex = dialogSelect.Selection; 
+				skel = transformSkel;
+				return true;
+			}
+			return false;			
+		}
+	}
+	return false;
+}
+
+// ***************************************************************************
+bool CObjectViewer::isSkeletonPresent() const
+{
+	for(uint k = 0; k < _ListInstance.size(); ++k)
+	{
+		NL3D::CSkeletonModel *transformSkel = dynamic_cast<CSkeletonModel*>(_ListInstance[k]->TransformShape);
+		if (transformSkel) return true;
+	}
+	return false;
 }
 
 // ***************************************************************************

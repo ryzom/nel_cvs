@@ -117,13 +117,24 @@ void packSubRecurse ()
 		if (!(findData.attrib&_A_SUBDIR))
 		{
 			BNPFile ftmp;
-			ftmp.Name = findData.name;
-			ftmp.Size = findData.size;
-			ftmp.Pos = gBNPHeader.OffsetFromBeginning;
-			gBNPHeader.Files.push_back(ftmp);
-			gBNPHeader.OffsetFromBeginning += ftmp.Size;
-			append(gDestBNPFile, ftmp.Name, ftmp.Size);
-			printf("adding %s\n", findData.name);
+
+			// Check if we can read the source file
+			FILE *f = fopen (findData.name, "rb");
+			if (f != NULL)
+			{
+				fclose (f);
+				ftmp.Name = findData.name;
+				ftmp.Size = findData.size;
+				ftmp.Pos = gBNPHeader.OffsetFromBeginning;
+				gBNPHeader.Files.push_back(ftmp);
+				gBNPHeader.OffsetFromBeginning += ftmp.Size;
+				append(gDestBNPFile, ftmp.Name, ftmp.Size);
+				printf("adding %s\n", findData.name);
+			}
+			else
+			{
+				printf("error cannot open %s\n", findData.name);
+			}
 		}
 		else if ((strcmp(findData.name, ".") != 0) && (strcmp(findData.name, "..") != 0))
 		{

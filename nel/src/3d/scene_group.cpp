@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.69 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: scene_group.cpp,v 1.70 2004/04/09 14:24:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,8 @@
 #include "3d/vertex_buffer.h"
 #include "3d/index_buffer.h"
 #include "3d/text_context.h"
+#include "3d/water_model.h"
+#include "3d/water_shape.h"
 #include "nel/misc/polygon.h"
 
 
@@ -526,6 +528,10 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver, uint selectedTe
 
 	vector<CInstance>::iterator it = _InstancesInfos.begin();
 
+	// Water surface may have a callback when they are created, and this callback need their position
+	// Their position isn't set right now however, so must call that callback later
+	IWaterSurfaceAddedCallback *oldCallback = scene.getWaterCallback();
+	scene.setWaterCallback(NULL);
 	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
 	{
 		// Get the shape name
@@ -543,7 +549,7 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver, uint selectedTe
 			}
 		}
 	}
-
+	scene.setWaterCallback(oldCallback);
 	return addToSceneWhenAllShapesLoaded (scene, driver, selectedTexture);
 }
 
@@ -580,12 +586,21 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 		if (!rInstanceInfo.DontAddToScene)
 		{
 			if (_Instances[i])
-			{
+			{				
 				_Instances[i]->setPos (rInstanceInfo.Pos);
 				_Instances[i]->setRotQuat (rInstanceInfo.Rot);
 				_Instances[i]->setScale (rInstanceInfo.Scale);
 				_Instances[i]->setPivot (CVector::Null);
 
+				if (scene.getWaterCallback())
+				{				
+					CWaterModel *wm = dynamic_cast<CWaterModel *>(_Instances[i]);
+					if (wm)
+					{
+						const CWaterShape *ws = safe_cast<const CWaterShape *>((const IShape *) wm->Shape);
+						scene.getWaterCallback()->waterSurfaceAdded(ws->getShape(), wm->getMatrix());
+					}
+				}
 				// Static Light Setup
 				if( rInstanceInfo.StaticLightEnabled )
 				{

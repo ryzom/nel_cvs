@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.20 2004/03/04 14:33:44 vizerie Exp $
+ * $Id: polygon.cpp,v 1.21 2004/03/08 17:45:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1237,22 +1237,22 @@ static void ScanOuterEdgeRight(CPolygon2D::TRaster *r, float x1, float y1, float
 	sint32  iInverseSlope, iposx;
 	sint  height;
 	deltaX = x2 - x1;
-	height = (sint) (ceil(y2) - floor(y1)) ;
+	height = (sint) (ceilf(y2) - floorf(y1)) ;
 	if (height <= 0) return;
 	if (deltaX >= 0.f)
 	{							
 		if (height == 1)
 		{
-			currRaster = r + ((sint) floor(y1) - minY);
-			currRaster->second = std::max((sint) floor(x2), currRaster->second);
+			currRaster = r + ((sint) floorf(y1) - minY);
+			currRaster->second = std::max((sint) floorf(x2), currRaster->second);
 		}
 		else
 		{		
 			deltaY = y2 - y1;		
 			inverseSlope = deltaX / deltaY;
 			iInverseSlope = (sint32) (65536.0 * inverseSlope);
-			currRaster = r + ((sint) floor(y1) - minY);
-			iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceil(y1) - y1))); // sub-pixel accuracy
+			currRaster = r + ((sint) floorf(y1) - minY);
+			iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy
 			do
 			{
 				currRaster->second = std::max((sint) (iposx >> 16), currRaster->second);
@@ -1262,7 +1262,7 @@ static void ScanOuterEdgeRight(CPolygon2D::TRaster *r, float x1, float y1, float
 			}
 			while (height != 1);	
 			// correction for last line
-			currRaster->second = std::max((sint) floor(x2), currRaster->second);
+			currRaster->second = std::max((sint) floorf(x2), currRaster->second);
 		}
 	}
 	else
@@ -1270,10 +1270,10 @@ static void ScanOuterEdgeRight(CPolygon2D::TRaster *r, float x1, float y1, float
 		deltaY = y2 - y1;		
 		inverseSlope = deltaX / deltaY;
 		iInverseSlope = (sint32) (65536.0 * inverseSlope);
-		currRaster = r + ((sint) floor(y1) - minY);
-		currRaster->second = std::max((sint) floor(x1), currRaster->second);
+		currRaster = r + ((sint) floorf(y1) - minY);
+		currRaster->second = std::max((sint) floorf(x1), currRaster->second);
 		++ currRaster;
-		iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceil(y1) - y1))); // sub-pixel accuracy
+		iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy
 		while (--height)
 		{			
 			currRaster->second = std::max((sint) (iposx >> 16), currRaster->second);
@@ -1293,22 +1293,22 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 	sint32   iInverseSlope, iposx;
 	sint  height;
 	deltaX = x2 - x1;
-	height = (sint) (ceil(y2) - floor(y1)) ;
+	height = (sint) (ceilf(y2) - floorf(y1)) ;
 	if (height <= 0) return;
 	if (deltaX < 0.f)
 	{							
 		if (height == 1)
 		{
-			currRaster = r + ((sint) floor(y1) - minY);
-			currRaster->first = std::min((sint) floor(x2), currRaster->first);
+			currRaster = r + ((sint) floorf(y1) - minY);
+			currRaster->first = std::min((sint) floorf(x2), currRaster->first);
 		}
 		else
 		{		
 			deltaY = y2 - y1;		
 			inverseSlope = deltaX / deltaY;
 			iInverseSlope = (sint32) (65536.0 * inverseSlope);
-			currRaster = r + ((sint) floor(y1) - minY);
-			iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceil(y1) - y1))); // sub-pixel accuracy
+			currRaster = r + ((sint) floorf(y1) - minY);
+			iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy
 			do
 			{
 				currRaster->first = std::min((sint) (iposx >> 16), currRaster->first);
@@ -1318,7 +1318,7 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 			}
 			while (height != 1);	
 			// correction for last line
-			currRaster->first = std::min((sint) floor(x2), currRaster->first);
+			currRaster->first = std::min((sint) floorf(x2), currRaster->first);
 		}
 	}
 	else
@@ -1326,10 +1326,10 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 		deltaY = y2 - y1;		
 		inverseSlope = deltaX / deltaY;
 		iInverseSlope = (sint32) (65536.0 * inverseSlope);
-		currRaster = r + ((sint) floor(y1) - minY);
-		currRaster->first = std::min((sint) floor(x1), currRaster->first);
+		currRaster = r + ((sint) floorf(y1) - minY);
+		currRaster->first = std::min((sint) floorf(x1), currRaster->first);
 		++ currRaster;
-		iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceil(y1) - y1))); // sub-pixel accuracy
+		iposx = (sint32) (65536.0 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy
 		while (--height)
 		{			
 			currRaster->first = std::min((sint) (iposx >> 16), currRaster->first);
@@ -1341,7 +1341,7 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 
 
 // *******************************************************************************
-void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
+void CPolygon2D::computeOuterBorders(TRasterVect &borders, sint &minimumY)
 {
 	// NB : this version is not much optimized, because of the min/max test
 	// during rasterization.
@@ -1390,8 +1390,8 @@ void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
 	while (curr != last);
 
 		
-	highest = (sint) floor(fhighest);
-	lowest = (sint) floor(flowest);
+	highest = (sint) floorf(fhighest);
+	lowest = (sint) floorf(flowest);
 
 	polyHeight = lowest - highest + 1;
 	nlassert(polyHeight > 0);
@@ -1399,8 +1399,8 @@ void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
 	// make room for rasters
 	borders.resize(polyHeight);
 	// fill with xmin / xman
-	sint ileft = (sint) floor(fleft);
-	sint iright = (sint) ceil(fright);
+	sint ileft = (sint) floorf(fleft);
+	sint iright = (sint) ceilf(fright);
 	for(TRasterVect::iterator it = borders.begin(); it != borders.end(); ++it)
 	{
 		it->second = ileft;
@@ -1469,11 +1469,8 @@ void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
 	
 	if (!ccw)
 	{
-		// liste oriente dans le sens du bord droit
-		// descente
-
-		curr = pHighestRight;
-		// trace bord DROIT en descente
+		// clock wise oriented list		
+		curr = pHighestRight;		
 		do
 		{
 			next = curr + 1;
@@ -1481,8 +1478,7 @@ void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
 			ScanOuterEdgeRight(&borders[0], curr->x, curr->y, next->x, next->y, minimumY); 
 			curr = next;			
 		}
-		while (curr != plowest);
-		// remontee : trace bord gauche
+		while (curr != plowest);		
 		do
 		{
 			next = curr + 1;
@@ -1494,10 +1490,8 @@ void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
 	}
 	else
 	{
-		// liste oriente dans le sens du bord gauche
-		// descente
-		curr = pHighestLeft;
-		// trace bord GAUCHE en descente
+		// ccw oriented		
+		curr = pHighestLeft;		
 		do
 		{
 			next = curr + 1;
@@ -1505,8 +1499,7 @@ void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
 			ScanOuterEdgeLeft(&borders[0], curr->x, curr->y, next->x, next->y, minimumY);
 			curr = next;
 		}
-		while (curr != plowest);
-		// remontee trace bord DROIT
+		while (curr != plowest);		
 		do
 		{
 			next = curr + 1;
@@ -1515,6 +1508,305 @@ void CPolygon2D::computeBordersLarge(TRasterVect &borders, sint &minimumY)
 			curr = next;
 		}
 		while (curr != pHighestRight);
+	}
+}
+
+
+//=========================================================================
+// scan inner right edge of a poly
+static void ScanInnerEdge(CPolygon2D::TRaster *r, float x1, float y1, float x2, float y2, sint minY, bool rightEdge)
+{		
+	const uint rol16 = 65536;
+	CPolygon2D::TRaster *currRaster;
+	float deltaX, deltaY;
+	float inverseSlope;
+	sint32  iInverseSlope, iposx;
+	sint  height;
+	deltaX = x2 - x1;
+	height = (sint) (ceilf(y2) - floorf(y1));
+	if (height <= 0) return;
+	deltaY = y2 - y1;		
+	inverseSlope = deltaX / deltaY;
+	iInverseSlope = (sint32) (rol16 * inverseSlope);
+	currRaster = r + ((sint) floorf(y1) - minY);
+	iposx = (sint32) (rol16 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy	
+	if (rightEdge)
+	{	
+		iposx -= rol16 - 1;					
+		if (deltaX >= 0.f)
+		{	
+			// start of segment		
+			if (floorf(y1) != y1)
+			{			
+				currRaster->second = std::min((sint) floorf(x1) - 1, currRaster->second);
+				++ currRaster;
+				-- height;
+				if (height == 0) return;
+			}
+			do
+			{
+				currRaster->second = std::min((sint) (iposx >> 16), currRaster->second);
+				iposx += iInverseSlope;
+				++ currRaster;			
+			}
+			while (--height);						
+			// fill bottom of segment
+			if (ceilf(y2) != y2)
+			{
+				currRaster->second = std::min((sint) (iposx >> 16), currRaster->second);
+			}	
+		}
+		else
+		{
+			// start of segment		
+			if (floorf(y1) != y1)
+			{			
+				currRaster->second = std::min((sint) (iposx >> 16), currRaster->second);
+				++ currRaster;
+				-- height;
+				if (height == 0) return;
+			}
+			do
+			{
+				iposx += iInverseSlope;
+				currRaster->second = std::min((sint) (iposx >> 16), currRaster->second);
+				++ currRaster;			
+			}
+			while (--height);
+			// fill bottom of segment
+			if (ceilf(y2) != y2)
+			{
+				currRaster->second = std::min((sint) floorf(x2) - 1, currRaster->second);
+			}
+		}								
+	}
+	else
+	{	
+		iposx += rol16 - 1;					
+		if (deltaX < 0.f)
+		{				
+			// start of segment		
+			if (floorf(y1) != y1)
+			{			
+				currRaster->first = std::max((sint) ceilf(x1), currRaster->first);
+				++ currRaster;
+				-- height;
+				if (height == 0) return;
+			}
+			do
+			{
+				currRaster->first = std::max((sint) (iposx >> 16), currRaster->first);
+				iposx += iInverseSlope;
+				++ currRaster;			
+			}
+			while (--height);
+			// fill bottom of segment
+			if (ceilf(y2) != y2)
+			{
+				currRaster->first = std::max((sint) (iposx >> 16), currRaster->first);
+			}
+		}
+		else
+		{
+			// start of segment		
+			if (floorf(y1) != y1)
+			{			
+				currRaster->first = std::max((sint) (iposx >> 16), currRaster->first);
+				++ currRaster;
+				-- height;
+				if (height == 0) return;
+			}
+			do
+			{
+				iposx += iInverseSlope;
+				currRaster->first = std::max((sint) (iposx >> 16), currRaster->first);
+				++ currRaster;			
+			}
+			while (--height);
+			// fill bottom of segment
+			if (ceilf(y2) != y2)
+			{
+				currRaster->first = std::max((sint) ceilf(x1), currRaster->first);
+			}
+		}										
+	}
+}
+
+// *******************************************************************************
+void CPolygon2D::computeInnerBorders(TRasterVect &borders,sint &minimumY)
+{
+	if (Vertices.empty())
+	{
+		borders.clear();
+		minimumY = -1;
+		return;
+	}
+	const CVector2f *first = &Vertices[0];
+	const CVector2f *last  = first + Vertices.size();
+
+	const CVector2f *curr = first, *next, *plowest ,*phighest;
+	const CVector2f *pHighestRight, *pHighestRightNext, *pHighestLeft;
+	const CVector2f *pPrevHighestLeft;
+	double		    deltaXN, deltaYN, deltaXP, deltaYP;
+	bool		    ccw;  // true if CCW oriented
+	sint            polyHeight;
+	sint            highest, lowest;					   
+	
+	float fright   = curr->x;
+	float fleft    = curr->x;
+	float fhighest = curr->y;
+	float flowest  = curr->y;
+	plowest = phighest = curr;
+
+	// compute highest (with lowest y) and lowest (with highest y) points of the poly
+	do
+	{		
+		fright = std::max(fright, curr->x);
+		fleft  = std::min(fleft, curr->x);
+		if (curr->y > flowest)
+		{
+			flowest = curr->y;
+			plowest = curr;
+		}
+		if (curr->y < fhighest)
+		{
+			fhighest = curr->y;
+			phighest = curr;
+		}
+		++curr;
+	}
+	while (curr != last);
+
+		
+	highest = (sint) floorf(fhighest);
+	lowest = (sint) ceilf(flowest);
+
+	polyHeight = lowest - highest;
+	if (polyHeight == 0) return;
+
+	// make room for rasters
+	borders.resize(polyHeight);
+	// fill with xmin / xman
+	sint ileft = (sint) floorf(fleft) - 1;
+	sint iright = (sint) ceilf(fright);
+	for(TRasterVect::iterator it = borders.begin(); it != borders.end(); ++it)
+	{
+		it->second = iright;
+		it->first = ileft;
+	}
+
+	minimumY = highest;
+	pHighestRight = phighest;
+	for (;;)
+	{	
+		pHighestRightNext  = pHighestRight + 1;
+		if (pHighestRightNext == last) pHighestRightNext = first;
+		if (pHighestRightNext->y != pHighestRight->y) break;
+		pHighestRight = pHighestRightNext;
+	}	
+
+	pPrevHighestLeft = pHighestRight;
+	pHighestLeft = pHighestRight;
+	++pHighestLeft;
+	if (pHighestLeft == last) pHighestLeft = first;
+	
+	while (pHighestLeft->y != fhighest)
+	{
+		pPrevHighestLeft = pHighestLeft;
+		++pHighestLeft;
+		if (pHighestLeft == last) pHighestLeft = first;
+	}
+	
+
+	// we need to get the orientation of the polygon
+	// There are 2 case : flat, and non-flat top
+	
+	// check for flat top
+	if (pHighestLeft->x != pHighestRight->x)
+	{
+		// compare right and left side
+		if (pHighestLeft->x > pHighestRight->x)
+		{
+			ccw = true;  // the list is CCW oriented
+			std::swap(pHighestLeft, pHighestRight);		
+		}
+		else
+		{
+			ccw = false; // the list is CW oriented
+		}
+	}
+	else
+	{		
+		pHighestRightNext = pHighestRight + 1;
+		if (pHighestRightNext == last) pHighestRightNext = first;
+		 deltaXN = pHighestRightNext->x - pHighestRight->x;
+		 deltaYN = pHighestRightNext->y - pHighestRight->y;
+		 deltaXP = pPrevHighestLeft->x - pHighestLeft->x;
+		 deltaYP = pPrevHighestLeft->y - pHighestLeft->y;
+		 if ((deltaXN * deltaYP - deltaYN * deltaXP) < 0)
+		 {
+			ccw = true;
+			std::swap(pHighestLeft, pHighestRight);				   
+		 }
+		 else
+		 {
+			ccw = false;
+		 }
+	}
+	
+	if (!ccw)
+	{		
+		// cw oriented
+		curr = pHighestRight;		
+		do
+		{
+			next = curr + 1;
+			if (next == last) next = first;
+			ScanInnerEdge(&borders[0], curr->x, curr->y, next->x, next->y, minimumY, true); 
+			curr = next;			
+		}
+		while (curr != plowest);		
+		do
+		{
+			next = curr + 1;
+			if (next == last) next = first;
+			ScanInnerEdge(&borders[0], next->x, next->y, curr->x, curr->y, minimumY, false);
+			curr = next;
+		}
+		while (curr != pHighestLeft);
+	}
+	else
+	{
+		// ccw oriented
+		curr = pHighestLeft;		
+		do
+		{
+			next = curr + 1;
+			if (next == last) next = first;					
+			ScanInnerEdge(&borders[0], curr->x, curr->y, next->x, next->y, minimumY, false);
+			curr = next;
+		}
+		while (curr != plowest);		
+		do
+		{
+			next = curr + 1;
+			if (next == last) next = first;
+			ScanInnerEdge(&borders[0], next->x, next->y, curr->x, curr->y, minimumY, true);
+			curr = next;
+		}
+		while (curr != pHighestRight);
+	}
+	// fix for top
+	if (floorf(fhighest) != fhighest)
+	{
+		borders[0].first = 1;
+		borders[0].second = 0;
+	}
+	// fix for bottom
+	if (floorf(flowest) != flowest)
+	{
+		borders.back().first = 1;
+		borders.back().second = 0;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.12 2004/02/19 09:50:10 vizerie Exp $
+ * $Id: polygon.h,v 1.13 2004/03/08 17:45:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,16 +157,21 @@ public:
 	typedef std::vector<TRaster>  TRasterVect;
 
 	/** Compute the borders of this poly with sub-pixel accuracy. No clipping is performed.
-	  * Only points exactly inside or exactly on the left border of the polygon are kept. 	  
+	  * Only points exactly inside or exactly on the left border of the polygon are kept. 
+	  * This means that pixels are seen as points, not as surfaces.
 	  * The output is in a vector of sint pairs. minimumY is filled with the minimum y value of the poly.
 	  * Each pairs gives [xmin, xmax] for the current segment. if xmin > xmax, then no point is valid for this segment.
 	  * Otherwise, all points from x = xmin (included)  to x = xmax (included) are valids.
 	  */
 	void		computeBorders(TRasterVect &borders, sint &minimumY);
-
-	// The same as compute borders, but pixel are seen as surfaces and not as point, so any pixel that is touched by the poly will be selected
-	void		computeBordersLarge(TRasterVect &borders, sint &minimumY);
-
+	/** The same as compute borders, but pixel are seen as surfaces and not as points.
+	   * Any pixel that is touched by the poly will be selected
+	   */
+	void		computeOuterBorders(TRasterVect &borders, sint &minimumY);
+	/** The same as compute borders, but pixel are seen as surfaces and not as points
+	  * In this version, only pixels that are entirely INSIDE the poly are kept
+	  */
+	void		computeInnerBorders(TRasterVect &borders, sint &minimumY);
 	/// Test wether this polygon intersect another convex polygon. Currently not optimized.
 	bool        intersect(const CPolygon2D &other) const;
 

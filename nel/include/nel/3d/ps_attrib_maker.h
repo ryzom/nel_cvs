@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.4 2001/05/10 09:18:27 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.5 2001/05/17 10:03:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,10 @@ namespace NL3D {
 template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 {	
 	public:
+
+
+	/// compute one value of the attribute for the given index
+	virtual T get(CPSLocated *loc, uint32 index) = 0 ;
 
 	/** Fill tab with an attribute by using the given stride. It fills numAttrib attributes.
 	 *  \param loc the 'located' that hold the 'located bindable' that need an attribute to be filled
@@ -133,6 +137,9 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 	public:
 	/// the functor object 
 	F _F ;	
+
+	/// compute one value of the attribute for the given index
+	virtual T get(CPSLocated *loc, uint32 index) ;
 	
 	/** Fill tab with an attribute by using the given stride. It fills numAttrib attributes, and use it to get the
 	 * The particle life as an input
@@ -178,7 +185,16 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 ///////////////////////////////////////////////
 
 
-template <typename T, class F> void CPSAttribMakerT<T, F>::make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
+template <typename T, class F> 
+T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
+{
+	const float time = _NbCycles * loc->getTime()[index] ;
+	return _F(time - (uint32) time) ;
+	
+}
+
+template <typename T, class F> 
+void CPSAttribMakerT<T, F>::make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
 {
 	nlassert(loc) ;
 	TPSAttribTime::const_iterator it = (loc->getTime().begin() ) + startIndex ;

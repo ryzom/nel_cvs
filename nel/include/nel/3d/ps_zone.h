@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.5 2001/05/11 17:17:22 vizerie Exp $
+ * $Id: ps_zone.h,v 1.6 2001/05/17 10:03:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,9 +134,7 @@ class CPSZonePlane : public CPSZone, public IPSMover
 	public:
 		virtual void performMotion(CAnimationTime ellapsedTime) ;
 		virtual void show(CAnimationTime ellapsedTime)  ;
-		virtual void resize(uint32 size) ;
-		virtual void newElement(void) ;
-		virtual void deleteElement(uint32 index) ;
+	
 
 		NLMISC_DECLARE_CLASS(CPSZonePlane) ;
 
@@ -151,6 +149,12 @@ class CPSZonePlane : public CPSZone, public IPSMover
 	protected:
 		TPSAttribVector _Normal ;
 		CMatrix buildBasis(uint32 index) const ;
+
+		virtual void resize(uint32 size) ;
+
+		virtual void newElement(void) ;
+
+		virtual void deleteElement(uint32 index) ;
 } ;
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.7 2001/05/11 17:17:22 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.8 2001/05/17 10:03:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,6 +96,8 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSSpring) ;
 		NLMISC_REGISTER_CLASS(CPSFanLight) ;
 		NLMISC_REGISTER_CLASS(CPSTailDot) ;
+		NLMISC_REGISTER_CLASS(CPSRibbon) ;
+		NLMISC_REGISTER_CLASS(CPSFace) ;
 		NLMISC_REGISTER_CLASS(CParticleSystemShape) ;
 		// while we are here, we perform some important inits
 		CPSRotated2DParticle::initRotTable() ; // init the precalc rot table for face lookat
@@ -286,8 +288,7 @@ NLMISC::CAABBox CPSUtil::computeAABBoxUnion(const NLMISC::CAABBox &b1, const NLM
 		    ,max2 = b2.getMax() ;
 	max.maxof(max1, max2) ;
 	min.minof(min1, min2) ;
-	result.setCenter(0.5f * (max + min)) ;
-	result.setHalfSize(0.5f * (max - min)) ;	
+	result.setMinMax(min, max) ;
 	return result ;
 }
 
@@ -297,24 +298,24 @@ NLMISC::CAABBox CPSUtil::transformAABBox(const NLMISC::CMatrix &mat, const NLMIS
 	// TODO : optimize this a bit if possible
 	NLMISC::CAABBox result ;	
 
-	const CVector &m = box.getCenter() ;
-	const CVector &h = box.getHalfSize() ;
+	const CVector &m = mat * box.getCenter() ;
+	const CVector &h = mat.mulVector(box.getHalfSize()) ;
 
 	CVector tmp, min, max ;
 
 
-	min = max = m + mat.mulVector(CVector(h.x, h.y, h.z)) ;
-	tmp = m + mat.mulVector(CVector(h.x, h.y, -h.z)) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
-	tmp = m + mat.mulVector(CVector(h.x, -h.y, h.z)) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
-	tmp = m + mat.mulVector(CVector(h.x, -h.y, -h.z)) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
-	tmp = m + mat.mulVector(CVector(-h.x, h.y, h.z)) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
-	tmp = m + mat.mulVector(CVector(-h.x, h.y, -h.z)) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
-	tmp = m + mat.mulVector(CVector(-h.x, -h.y, h.z)) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
-	tmp = m + mat.mulVector(CVector(-h.x, -h.y, -h.z)) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
+	min = max = m ;
+	tmp = m + CVector(h.x, h.y, -h.z) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
+	tmp = m + CVector(h.x, -h.y, h.z) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
+	tmp = m + CVector(h.x, -h.y, -h.z) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
+	tmp = m + CVector(-h.x, h.y, h.z) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
+	tmp = m + CVector(-h.x, h.y, -h.z) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
+	tmp = m + CVector(-h.x, -h.y, h.z) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
+	tmp = m + CVector(-h.x, -h.y, -h.z) ; min.minof(min, tmp) ; max.maxof(max, tmp) ;
 
 	result.setMinMax(min, max) ;
 	
-	return result ;
+	return result ;	
 }
 
 

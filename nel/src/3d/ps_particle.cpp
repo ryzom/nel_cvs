@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.9 2001/05/11 17:17:22 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.10 2001/05/17 10:03:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -400,6 +400,74 @@ void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::
 
 
 
+//////////////////////////////////////////
+//       CPSRotated3DPlaneParticle      //
+//////////////////////////////////////////
+
+
+
+void CPSRotated3DPlaneParticle::setPlaneBasisScheme(CPSAttribMaker<CPlaneBasis> *basisMaker)
+{
+	nlassert(basisMaker) ;
+	if (_UsePlaneBasisScheme)
+	{
+		delete _PlaneBasisScheme ;
+	}
+	else
+	{
+		_UsePlaneBasisScheme = true ;
+	}
+	_PlaneBasisScheme = basisMaker ;
+}
+
+void CPSRotated3DPlaneParticle::setPlaneBasis(const CPlaneBasis &basis)
+{
+	if (_UsePlaneBasisScheme)
+	{
+		delete _PlaneBasisScheme ;
+		_PlaneBasisScheme = NULL ;
+		_UsePlaneBasisScheme = false ;
+	}
+	_PlaneBasis = basis ;
+}
+
+
+CPSRotated3DPlaneParticle::CPSRotated3DPlaneParticle() : _UsePlaneBasisScheme(false), _PlaneBasisScheme(NULL)														
+{
+	_PlaneBasis.X = CVector::I ;
+	_PlaneBasis.Y = CVector::J ;
+}
+
+
+CPSRotated3DPlaneParticle::~CPSRotated3DPlaneParticle()
+{
+	if (_UsePlaneBasisScheme)
+	{
+		delete _PlaneBasisScheme ;
+	}
+}
+
+void CPSRotated3DPlaneParticle::serialPlaneBasisScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+
+	f.serialPolyPtr(_PlaneBasisScheme) ;
+	
+	_UsePlaneBasisScheme = (_PlaneBasisScheme != NULL) ;
+
+	// TODO : remove the use of bool _Use... =, it is useless...
+
+	if (!_UsePlaneBasisScheme)
+	{
+		f.serial(_PlaneBasis) ;
+	}
+}
+
+
+
+
+
+
+
 ///////////////////////////
 // CPSDot implementation //
 ///////////////////////////
@@ -499,16 +567,12 @@ void CPSDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-
+//////////////////////////////////
+// CPSQuad implementation       //
+//////////////////////////////////
 
 
-
-	/// create the face look at by giving a texture and an optionnal color
-CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : _IndexBuffer(NULL)
+CPSQuad::CPSQuad(CSmartPtr<ITexture> tex) : _IndexBuffer(NULL)
 {
 	setTexture(tex) ;
 	init() ;
@@ -516,20 +580,54 @@ CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : _IndexBuffer(NULL)
 }
 
 
-
-
-CPSFaceLookAt::~CPSFaceLookAt()
+CPSQuad::~CPSQuad()
 {
-	delete(_IndexBuffer) ;
+	delete _IndexBuffer ;
 }
 
-void CPSFaceLookAt::resize(uint32 size)
+
+
+void CPSQuad::init(void)
+{	
+	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
+	_Mat.setZWrite(false) ;
+	_Mat.setLighting(false) ;	
+	_Mat.setBlend(true) ;
+	_Mat.setZFunc(CMaterial::less) ;
+	_Mat.setDoubleSided(true) ;
+
+
+	updateMatAndVbForColor() ;
+	updateMatAndVbForTexture() ;
+}
+
+void CPSQuad::updateMatAndVbForTexture(void)
+{	
+	_Mat.setTexture(0, _UseTextureScheme ? (ITexture *) _TexGroup : (ITexture *) _Tex) ;	
+}
+
+bool CPSQuad::completeBBox(NLMISC::CAABBox &box) const  
+{ 
+	if (!_UseSizeScheme)
+	{
+		CPSUtil::addRadiusToAABBox(box, _ParticleSize) ;
+	}
+	else
+	{
+		CPSUtil::addRadiusToAABBox(box, _SizeScheme->getMaxValue()) ;
+	}
+
+
+	return true  ;	
+}
+
+void CPSQuad::resize(uint32 size)
 {
 	_Vb.setNumVertices(size << 2) ;
 	
 	delete _IndexBuffer ;		
 
-	_IndexBuffer = new uint32[ size * 6] ;
+	_IndexBuffer = new uint32[ size * 6 ] ;
 	
 
 	// we precompute the uv's and the index buffer because they won't change
@@ -545,32 +643,14 @@ void CPSFaceLookAt::resize(uint32 size)
 		_IndexBuffer[6 * k + 4] = 4 * k + 3 ;
 		_IndexBuffer[6 * k + 5] = 4 * k + 2;			
 
-		_Vb.setTexCoord(k * 4, 0, CUV(0,0)) ;
-		_Vb.setTexCoord(k * 4 + 1, 0, CUV(1,0)) ;
-		_Vb.setTexCoord(k * 4 + 2, 0, CUV(1,1)) ;
-		_Vb.setTexCoord(k * 4 + 3, 0, CUV(0,1)) ;	
-	}
-
-		
+		_Vb.setTexCoord(k * 4, 0, CUV(0, 0)) ;
+		_Vb.setTexCoord(k * 4 + 1, 0, CUV(1, 0)) ;
+		_Vb.setTexCoord(k * 4 + 2, 0, CUV(1, 1)) ;
+		_Vb.setTexCoord(k * 4 + 3, 0, CUV(0, 1)) ;	
+	}		
 }
 
-
-
-void CPSFaceLookAt::init(void)
-{	
-	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
-	_Mat.setZWrite(false) ;
-	_Mat.setLighting(false) ;	
-	_Mat.setBlend(true) ;
-	_Mat.setZFunc(CMaterial::less) ;
-
-
-	updateMatAndVbForColor() ;
-	updateMatAndVbForTexture() ;
-}
-
-
-void CPSFaceLookAt::updateMatAndVbForColor(void)
+void CPSQuad::updateMatAndVbForColor(void)
 {
 	if (!_UseColorScheme)
 	{
@@ -589,18 +669,93 @@ void CPSFaceLookAt::updateMatAndVbForColor(void)
 	}		
 }
 
-
-void CPSFaceLookAt::updateMatAndVbForTexture(void)
-{	
-	_Mat.setTexture(0, _UseTextureScheme ? (ITexture *) _TexGroup : (ITexture *) _Tex) ;	
+void CPSQuad::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialCheck((uint32) '_QUA') ;
+	CPSParticle::serial(f) ;
+	CPSSizedParticle::serialSizeScheme(f) ;
+	CPSColoredParticle::serialColorScheme(f) ;
+	CPSTexturedParticle::serialTextureScheme(f) ;
 }
 
 
+void CPSQuad::updateVbColNUVForRender(void)
+{
+	nlassert(_Owner) ;
+
+	const uint32 quadBufferSize = 1024 ;  // size of the buffer for temporary attributes
+	const uint32 size = _Owner->getSize() ;
+
+	if (!size) return ;
+
+	if (_UseColorScheme)
+	{
+		// compute the colors, each color is replicated 4 times
+		_ColorScheme->make4(_Owner, 0, _Vb.getColorPointer(), _Vb.getVertexSize(), size) ;
+	}
 
 
+	if (_UseTextureScheme) // if it has a constant texture we are sure it has been setupped before...
+	{
+		sint32 textureIndex[quadBufferSize] ;
+		uint32 texturesLeft = size ;		
+		
+		
+		uint8 *currUV = (uint8 *) _Vb.getTexCoordPointer() ;
+		const uint8 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1 ;
+		uint k ;
+		const sint32 *currIndex ;
+
+		while (texturesLeft)
+		{			
+
+			const uint32 nbTexToProcess = texturesLeft >= quadBufferSize ? quadBufferSize : texturesLeft ;
+
+			_TextureScheme->make(_Owner, size - texturesLeft, textureIndex, sizeof(sint32), nbTexToProcess) ;
+
+			currIndex = &textureIndex[0] ;
+			for (k = 0 ; k < nbTexToProcess ; ++k, ++currIndex)
+			{
+				// for now, we don't make texture index wrapping
+				const CTextureGrouped::TFourUV &uvGroup = _TexGroup->getUVQuad((uint32) *currIndex) ;
+
+				// copy the 4 uv's for this face
+				*(CUV *) currUV = uvGroup.uv0 ;
+				*(CUV *) (currUV + stride) = uvGroup.uv1 ;
+				*(CUV *) (currUV + stride2) = uvGroup.uv2 ;
+				*(CUV *) (currUV + stride3) = uvGroup.uv3 ;
+
+				// point the next face
+				currUV += stride4 ;
+			}
+
+
+			texturesLeft -= nbTexToProcess ;
+
+		}
+	}
+}
+
+
+//////////////////////////////////
+// CPSFaceLookAt implementation //
+//////////////////////////////////
+
+/// create the face look at by giving a texture and an optionnal color
+CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex)
+{	
+}
 
 void CPSFaceLookAt::draw(void)
 {
+	nlassert(_Owner) ;
+
+	const uint32 size = _Owner->getSize() ;
+	if (!size) return ;
+
+	CPSQuad::updateVbColNUVForRender() ;
+
+	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose
 
 	const uint32 faceLookAtBufferSize = 1024 ;  // size of the buffer for temporary attributes
 
@@ -608,9 +763,7 @@ void CPSFaceLookAt::draw(void)
 	const CVector I = computeI() ;
 	const CVector K = computeK() ;
 
-	const uint32 size = _Owner->getSize() ;
-
-	if (!size) return ;
+	
 
 	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose
 
@@ -771,6 +924,7 @@ void CPSFaceLookAt::draw(void)
 	}
 	else
 	{
+		// all particle have different sizes
 
 		uint32 leftToDo = size ;
 
@@ -879,7 +1033,7 @@ void CPSFaceLookAt::draw(void)
 				}
 				else
 				{
-					// we compute 'aceLookAtBufferSize'new size and angles at a time
+					// we compute 'faceLookAtBufferSize'new size and angles at a time
 					_SizeScheme->make(_Owner, size - leftToDo, pSizes, sizeof(float), faceLookAtBufferSize) ;				
 					_Angle2DScheme->make(_Owner, size - leftToDo, pAngles, sizeof(float), faceLookAtBufferSize) ;				
 
@@ -918,15 +1072,11 @@ void CPSFaceLookAt::draw(void)
 void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 
-	f.serialCheck((uint32) 'PFLA') ;	
-	
-			
-	CPSParticle::serial(f) ;
-	CPSSizedParticle::serialSizeScheme(f) ;
-	CPSColoredParticle::serialColorScheme(f) ;
-	CPSRotated2DParticle::serialAngle2DScheme(f) ;
-	CPSTexturedParticle::serialTextureScheme(f) ;
+	f.serialCheck((uint32) 'PFLA') ;					
 
+	CPSQuad::serial(f) ;
+	CPSRotated2DParticle::serialAngle2DScheme(f) ;
+	
 	if (f.isReading())
 	{
 		init() ;		
@@ -934,20 +1084,6 @@ void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 
-bool CPSFaceLookAt::completeBBox(NLMISC::CAABBox &box) const  
-{ 
-	if (!_UseColorScheme)
-	{
-		CPSUtil::addRadiusToAABBox(box, _ParticleSize) ;
-	}
-	else
-	{
-		CPSUtil::addRadiusToAABBox(box, _SizeScheme->getMaxValue()) ;
-	}
-
-
-	return true  ;	
-}
 
 //////////////////////////////
 // fan light implementation //
@@ -1289,6 +1425,7 @@ void CPSFanLight::updateMatAndVbForColor(void)
 CPSTailDot::CPSTailDot(uint32 nbSegmentInTail) : _TailNbSeg(nbSegmentInTail), _ColorFading(true)
 												 ,_SystemBasisEnabled(false)
 {
+	nlassert(_TailNbSeg <= 255) ;
 	init() ;
 }
 
@@ -1351,7 +1488,7 @@ void CPSTailDot::draw(void)
 		// other are modulated by the ratio of the intensity n and the intensity n + 1
 		
 		// the brightness increase between each segment in the tail
-		float lumiStep = 1.f / _TailNbSeg ;
+		const float lumiStep = 1.f / _TailNbSeg ;
 		float lumi = lumiStep ;
 
 		// set the first vertex to black				
@@ -1631,7 +1768,7 @@ void CPSTailDot::newElement(void)
 		}
 		else
 		{
-			// color setup was done during setup color
+			// color setup was done during setupColor()...
 
 			// check wether the located is in the same basis than the tail
 			// Otherwise, a conversion is required for the pos
@@ -1672,7 +1809,6 @@ void CPSTailDot::deleteElement(uint32 index)
 	// destination
 	uint8 *currDestVert = (uint8 *) _Vb.getVertexCoordPointer() + (index * (_TailNbSeg + 1)) * vSize ;
 
-
 	// copy the vertices
 	memcpy(currDestVert, currSrcVert, vSize * (_TailNbSeg + 1) ) ;	
 }
@@ -1684,6 +1820,7 @@ void CPSTailDot::deleteElement(uint32 index)
 	
 void CPSTailDot::setTailNbSeg(uint32 nbSeg)
 {
+	nlassert(nbSeg <= 255) ;
 	uint32 oldTailSize = _TailNbSeg ;
 	_TailNbSeg = nbSeg ;
 
@@ -1719,6 +1856,1275 @@ void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void CPSTailDot::updateMatAndVbForColor(void)
 {
 	setupColor() ;
+}
+
+
+///////////////////////////
+// ribbon implementation //
+///////////////////////////
+
+
+// predifined shapes
+
+const CVector CPSRibbon::Losange[] = { CVector (0, 1.f, 0),
+								 CVector (1.f, 0, 0),
+								 CVector (0, -1.f, 0),
+								 CVector (-1.f, 0, 0)
+								} ;
+const uint32 CPSRibbon::NbVerticesInLosange = sizeof(Losange) / sizeof(CVector) ;
+
+
+
+const CVector  CPSRibbon::HeightSides[] = {  CVector(-0.5f, 1, 0)
+											,CVector(0.5f, 1, 0)
+											,CVector(1, 0.5f, 0)
+											,CVector(1, -0.5f, 0)
+											,CVector(0.5f, -1, 0)
+											,CVector(-0.5f, -1, 0)
+											,CVector(-1, -0.5f, 0)
+											,CVector(-1, 0.5f, 0) } ;
+
+
+
+const uint32 CPSRibbon::NbVerticesInHeightSide = sizeof(HeightSides) / sizeof(CVector) ;
+
+
+const CVector CPSRibbon::Pentagram[] = { CVector(-1, 0.5f, 0), CVector(0.5f, -1.f, 0)
+							  ,CVector(1, 0.5f, 0), CVector(-0.5f, -1.f,0)
+							  ,CVector(0, 1.f, 0)
+							} ;
+
+const uint32 CPSRibbon::NbVerticesInPentagram = sizeof(Pentagram) / sizeof(CVector) ;
+
+
+
+// ctor
+CPSRibbon::CPSRibbon(uint32 nbSegmentInTail
+				  , const CVector *shape
+				  , uint32 nbPointsInShape) 
+				  : _ColorFading(true)
+				  ,	_SystemBasisEnabled(false)	 
+				  , _DyingRibbons(false)
+				  , _NbDyingRibbons(0)
+				  , _UFactor(1.f)
+				  , _VFactor(1.f)
+{
+	init() ;
+	nlassert(_TailNbSeg >= 2) ;
+	setShape(shape, nbPointsInShape) ;
+	setTailNbSeg(nbSegmentInTail) ; 
+
+	_AliveRibbons._Ib = NULL ;
+}
+
+
+
+// dtor
+CPSRibbon::~CPSRibbon()
+{
+	delete[] _AliveRibbons._Ib ;
+	if (_DyingRibbons)
+	{
+		delete[] _DyingRibbons->_Ib ; 
+		delete _DyingRibbons ;
+	}
+}
+
+
+// querry for light persistence in ribbons
+void CPSRibbon::setPersistAfterDeath(bool persist)
+{
+	if (persist)
+	{
+		if (_DyingRibbons) return ;
+		_DyingRibbons = new CRibbonsDesc ;
+		_DyingRibbons->_Ib = NULL ;		
+		if (_Owner)
+		{
+			_DyingRibbonsLifeLeft.resize(_Owner->getMaxSize()) ;
+		}
+		_NbDyingRibbons = 0 ;
+		init(*_DyingRibbons) ;
+		setupVertexFormatNMat(*_DyingRibbons) ;
+		resizeVb(*_DyingRibbons) ;
+	}
+	else
+	{
+		if (_DyingRibbons)
+		{
+			delete[] _DyingRibbons->_Ib ; 
+			delete _DyingRibbons ;
+			_DyingRibbons = NULL ;
+		}
+	}
+}
+
+
+// set the number of segments in the tail		
+void CPSRibbon::setTailNbSeg(uint32 nbSeg)
+{	
+	
+	nlassert(nbSeg >= 2) ;
+	_TailNbSeg = nbSeg ;
+
+	resizeVb(_AliveRibbons) ;	
+	if (_DyingRibbons)
+	{
+		resizeVb(*_DyingRibbons) ;
+	}
+
+	// compute the ratio tab
+	_SliceRatioTab.resize(_TailNbSeg) ;
+
+	const float radiusStep = 1.f / _TailNbSeg ;
+	float radius = 0.f ;
+
+	for (std::vector<float>::iterator it = _SliceRatioTab.begin() ; it != _SliceRatioTab.end() ; ++it)
+	{
+		*it = radius / (radius + radiusStep) ;
+		radius += radiusStep ;
+	}
+	
+	
+}
+
+		
+void CPSRibbon::setShape(const CVector *shape, uint32 nbPointsInShape)
+{
+	nlassert(nbPointsInShape >= 3) ;
+	if (nbPointsInShape != _ShapeNbSeg)
+	{
+		resizeVb(_AliveRibbons) ;
+		if (_DyingRibbons)
+		{
+			resizeVb(*_DyingRibbons) ;
+		}
+	}
+
+	_ShapeNbSeg = nbPointsInShape ;
+	_Shape.resize(nbPointsInShape) ;
+	std::copy(shape, shape + nbPointsInShape, _Shape.begin()) ;
+	
+}
+
+void CPSRibbon::getShape(CVector *shape, uint32 nbPointsInShape) const
+{
+	std::copy(_Shape.begin(), _Shape.end(), shape) ;
+}
+
+void CPSRibbon::init(void)
+{
+	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
+	_Mat.setZWrite(false) ;
+	_Mat.setLighting(false) ;
+	_Mat.setBlend(true) ;
+	_Mat.setZFunc(CMaterial::less) ;	
+	_Mat.setDoubleSided(true) ;
+	
+	init(_AliveRibbons) ;
+	if (_DyingRibbons)
+	{
+		init(*_DyingRibbons) ;
+	}
+}
+
+
+void CPSRibbon::init(CRibbonsDesc &rb)
+{
+	rb._Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR ) ;	// no texture is the default
+}
+
+
+
+void CPSRibbon::decalRibbons(CRibbonsDesc &rb, const uint32 size)	
+{
+	if (!size) return ;
+
+	// size of the vertices
+	const uint32 vSize = rb._Vb.getVertexSize() ;
+
+	// size of a shape in bytes
+	const uint32 sSize = vSize * _ShapeNbSeg ;
+
+	// size of all the vertices for a tail
+	const uint32 tailVSize = sSize * (_TailNbSeg + 1) ;
+
+	
+	
+	// offset of the color in vertices
+	const uint32 colorOff = rb._Vb.getColorOff() ;
+
+	// address of the firstVertex
+
+	uint8 *firstVertex = (uint8 *) rb._Vb.getVertexCoordPointer() ;
+
+	// loop counters
+	uint32 k, l ;
+
+	// pointer to the current vertex
+	uint8 *currVertex ;
+
+	
+
+	// during the first pass, we resize each 'slice' in ribbons, and we decal them
+	// the first slice is centered to the tail center
+
+
+	// iterator on the center pos of each slice
+	std::vector<CVector>::iterator posIt = rb._Pos.begin() ;
+		
+	
+	// Iterator on each slice color, used to store slice color when fading is applied
+	std::vector<CRGBA>::iterator colIt ;
+
+
+	if (!_UseColorScheme)
+	{
+		// we use colors in the vertex buffer as it
+		currVertex = firstVertex ;
+		for (k = 0 ; k < size ; ++k)
+		{		
+			std::vector<float>::const_iterator ratioIt = _SliceRatioTab.begin() ;
+			for (; ratioIt != _SliceRatioTab.end() ; ++ratioIt)
+			{
+				// decal the center of the slice
+				
+				*posIt = *(posIt + 1) ;
+				for (l = 0 ; l < _ShapeNbSeg ; ++l)
+				{
+					CVector &v = *(CVector *) currVertex ;				
+					// points the same vertex in the next slice in the current ribbon
+					const CVector &vNext = *(CVector *) (currVertex + sSize) ;				
+
+					// rescale the point
+					v = *posIt + *ratioIt * (vNext - *posIt) ;
+
+					// points next vertex in current slice
+					currVertex += vSize ;
+				}
+				++posIt ;
+
+			}
+			// we didn't process the last slice
+			currVertex += sSize ;
+			++posIt ;
+		}
+	}
+	else
+	{
+		if (!_ColorFading)
+		{
+			// we just decal colors in the vertex buffer
+			currVertex = firstVertex ;
+			for (k = 0 ; k < size ; ++k)
+			{		
+				std::vector<float>::const_iterator ratioIt = _SliceRatioTab.begin() ;
+				for (; ratioIt != _SliceRatioTab.end() ; ++ratioIt)
+				{
+					// decal the center of the slice
+
+					const CRGBA nextCol = *(CRGBA *) (currVertex + sSize + colorOff) ;
+					
+					*posIt = *(posIt + 1) ;
+					for (l = 0 ; l < _ShapeNbSeg ; ++l)
+					{
+						CVector &v = *(CVector *) currVertex ;				
+						// points the same vertex in the next slice in the current ribbon
+						const CVector &vNext = *(CVector *) (currVertex + sSize) ;				
+
+						// rescale the point
+						v = *posIt + *ratioIt * (vNext - *posIt) ;
+
+						// decal color
+
+						*(CRGBA *) (currVertex + colorOff) = nextCol  ;
+
+						// points next vertex in current slice
+						currVertex += vSize ;
+					}
+					++posIt ;
+				}
+				// we didn't process the last slice
+				currVertex += sSize ;
+				++posIt ;
+			}
+		}
+		else
+		{
+			// we must apply color fading allong the ribbon
+			colIt = rb._ColTab.begin() ;
+			currVertex = firstVertex ;
+			const float colorRatioStep = 255.f / (_TailNbSeg + 1) ;
+			for (k = 0 ; k < size ; ++k)
+			{		
+				std::vector<float>::const_iterator ratioIt = _SliceRatioTab.begin() ;
+				float currColRatio = 0.f ;
+				CRGBA sliceCol ;
+				for (; ratioIt != _SliceRatioTab.end() ; ++ratioIt)
+				{
+					// decal the center of the slice
+					
+					*colIt = *(colIt + 1) ; // decal colors
+					sliceCol.modulateFromui(*colIt, (uint) currColRatio) ;
+
+					*posIt = *(posIt + 1) ;
+					for (l = 0 ; l < _ShapeNbSeg ; ++l)
+					{
+						CVector &v = *(CVector *) currVertex ;				
+						// points the same vertex in the next slice in the current ribbon
+						const CVector &vNext = *(CVector *) (currVertex + sSize) ;				
+
+						// rescale the point
+						v = *posIt + *ratioIt * (vNext - *posIt) ;
+
+						// copy color
+						*(CRGBA *) (currVertex + colorOff) = sliceCol  ;
+
+						// points next vertex in current slice
+						currVertex += vSize ;
+					}
+
+					currColRatio += colorRatioStep ;
+
+					++colIt ;
+					++posIt ;
+				}
+				// we didn't process the last slice
+				currVertex += sSize ;
+				++posIt ;
+				++colIt ;
+			}
+		}
+	}
+}
+
+
+void CPSRibbon::computeLastSlice(CRibbonsDesc &rb, const uint32 size)
+{	
+	if (!size) return ;
+
+	// size of the vertices
+	const uint32 vSize = rb._Vb.getVertexSize() ;
+
+	// size of a shape in bytes
+	const uint32 sSize = vSize * _ShapeNbSeg ;
+
+	// size of all the vertices for a tail
+	const uint32 tailVSize = sSize * (_TailNbSeg + 1) ;
+
+		
+	// offset of the color in vertices
+	const uint32 colorOff = rb._Vb.getColorOff() ;
+
+	// address of the firstVertex
+
+	uint8 *firstVertex = (uint8 *) rb._Vb.getVertexCoordPointer() ;
+
+	// loop counters
+	uint32 k, l ;
+
+	// pointer to the current vertex
+	uint8 *currSliceFirstVertex, *currVertex ;
+
+	// iterator on speed
+	// it is used to compute a basis for the shape to generate
+	TPSAttribVector::const_iterator speedIt = _Owner->getSpeed().begin() ;
+
+	// iterator on the center pos of each slice
+	std::vector<CVector>::iterator posIt ;
+
+	// Iterator on each slice color, used to store slice color when fading is applied
+	std::vector<CRGBA>::iterator colIt ;
+
+
+	// now, create the last slice for each ribbon
+	posIt = rb._Pos.begin() + _TailNbSeg ;
+
+	TPSAttribVector::const_iterator  srcPosIt = _Owner->getPos().begin() ;
+	
+	// points the first vertex of the last slice in the first ribbon
+	currSliceFirstVertex = firstVertex + sSize * _TailNbSeg ;
+
+	CMatrix shapeMat ;
+	std::vector<CVector>::const_iterator shapeIt, shapeEnd = _Shape.end() ;
+
+
+	
+
+	if (_ColorFading && _UseColorScheme)
+	{
+		 colIt = rb._ColTab.begin() + _TailNbSeg  ;
+	}
+
+	k = 0 ;
+
+	// check wether we are in the system or world basis
+
+	
+	CMatrix modelMat, rotModelMat ;
+
+	if (_Owner->isInSystemBasis() == _SystemBasisEnabled)
+	{
+		modelMat = CMatrix::Identity ;
+	}
+	else
+	{
+		modelMat = _SystemBasisEnabled ?   _Owner->getOwner()->getInvertedSysMat() 
+								:          _Owner->getOwner()->getSysMat() ;
+	}
+
+	rotModelMat = modelMat ;
+	rotModelMat.setPos(CVector::Null) ;
+
+	 
+
+	for (;;)
+	{
+				
+		*posIt = modelMat * *srcPosIt ;
+		
+
+		// compute a basis where to put the shape in
+		shapeMat = rotModelMat * CPSUtil::buildSchmidtBasis(*speedIt) ;		
+
+
+		currVertex = currSliceFirstVertex ;	
+
+		// compute the angles and 2x2 rot matrix, depending on the attributes
+
+		const float scale = _UseSizeScheme ? _SizeScheme->get(_Owner, k) : _ParticleSize ;
+		const float ca = CPSUtil::getCos(	
+											(sint32)
+											(
+												_UseAngle2DScheme ?
+												_Angle2DScheme->get(_Owner, k) : _Angle2D
+											)
+										) ;
+
+		const float sa = CPSUtil::getSin(
+											(sint32)
+											(
+												_UseAngle2DScheme ?
+												_Angle2DScheme->get(_Owner, k) : _Angle2D
+											)
+										) ;
+
+
+		for (shapeIt = _Shape.begin() ; shapeIt != shapeEnd ; ++shapeIt )
+		{
+				
+			const CVector &v = *shapeIt ;
+			*(CVector *) currVertex = *posIt + scale * (shapeMat * CVector( ca * v.x - sa * v.y 
+																			,sa * v.x + ca * v.y
+																			,v.z)) ;
+			currVertex += vSize ;
+		}
+
+		if (_UseColorScheme)
+		{			
+			const CRGBA col = _ColorScheme->get(_Owner, k) ;
+			currVertex -= sSize ; // go back to the start of the slice
+			for (l = 0 ; l < _ShapeNbSeg ; ++l)
+			{
+				*(CRGBA *) (currVertex + colorOff) = col ;
+				currVertex += vSize ;
+			}
+			if (_ColorFading)
+			{
+				*colIt = col ;			
+			}
+		}
+		// go to the first vertex of the last slice in the next ribbon
+		currSliceFirstVertex += tailVSize ;
+
+		++k ;
+
+		if (k == size) break ;
+
+		++speedIt ;		
+		posIt += _TailNbSeg + 1 ;
+		++srcPosIt ;
+
+		if (_UseColorScheme && _ColorFading)
+		{		
+			colIt += _TailNbSeg + 1 ;
+		}
+	}
+}
+
+
+void CPSRibbon::render(CRibbonsDesc &rb, const uint32 size)
+{
+	IDriver *driver = getDriver() ;	
+	driver->activeVertexBuffer(rb._Vb) ;		
+	driver->renderTriangles(_Mat, rb._Ib, 2 * size * _TailNbSeg * _ShapeNbSeg) ;		
+}
+
+
+void CPSRibbon::draw(void)
+{	
+	
+	const uint32 size = _Owner->getSize() ;
+
+
+
+   decalRibbons(_AliveRibbons, size) ;
+   computeLastSlice(_AliveRibbons, size) ;
+	
+	// now, draw the ribbons
+
+   
+
+	if (_SystemBasisEnabled)
+	{
+		getDriver()->setupModelMatrix(_Owner->getOwner()->getSysMat()) ;
+	}
+	else
+	{
+		getDriver()->setupModelMatrix(CMatrix::Identity) ;
+	}
+	
+	render(_AliveRibbons, size) ;
+
+	// deals with dying ribbons
+	if (_DyingRibbons)
+	{
+		decalRibbons(*_DyingRibbons, _NbDyingRibbons) ;
+		render(*_DyingRibbons, _NbDyingRibbons) ;
+
+		// now, check for dead ribbons
+		uint k = 0 ;
+		for (;;)
+		{
+			if (k >= _NbDyingRibbons)
+			{
+				break ;
+			}	
+			_DyingRibbonsLifeLeft[k] ++ ;
+			if (_DyingRibbonsLifeLeft[k] > (_TailNbSeg + 1))
+			{
+				copyElement(*_DyingRibbons, _NbDyingRibbons - 1, *_DyingRibbons, k) ; // replace this ribbon with the last
+				nlassert(_NbDyingRibbons) ;
+				_NbDyingRibbons -- ;
+				_DyingRibbonsLifeLeft[k] = _DyingRibbonsLifeLeft[_NbDyingRibbons ] ;
+			}
+			else
+			{
+				++k ;
+			}
+					
+		}
+	}
+}
+
+
+void CPSRibbon::resize(uint32 size)
+{		
+	resizeVb(_AliveRibbons) ;	
+	if (_DyingRibbons)
+	{
+		resizeVb(*_DyingRibbons) ;
+		_DyingRibbonsLifeLeft.resize(size) ;
+	}
+}
+
+void CPSRibbon::resizeVb(CRibbonsDesc &rb)
+{
+	
+	if (!_Owner) return ; // no attachement occured yet ...
+
+	const uint32 size = _Owner->getMaxSize() ;
+
+	// some loop counters
+	uint32 k, l, m ;
+
+	// setup the index buffer		
+	delete[] rb._Ib ;
+	rb._Ib = new uint32[6 * _ShapeNbSeg * _TailNbSeg * size] ; // 2 triangles of 6 index for each slice part
+
+	uint32 *ptCurrIndex = rb._Ib ;
+	uint32 currIndex = 0 ;
+
+	for (k = 0 ; k < size ; ++k)
+	{
+		for (l = 0 ; l < _TailNbSeg ; ++l)
+		{
+			
+			for (m = 0 ; m < _ShapeNbSeg - 1 ; ++m)
+			{
+
+			
+				*ptCurrIndex++ = currIndex ;
+				*ptCurrIndex++ = currIndex + _ShapeNbSeg ;
+				*ptCurrIndex++ = currIndex + 1;
+						
+				
+
+				*ptCurrIndex++ = currIndex + 1 ;
+				*ptCurrIndex++ = currIndex + _ShapeNbSeg ;
+				*ptCurrIndex++ = currIndex + _ShapeNbSeg + 1;
+
+				
+				++currIndex ;
+			}
+
+			// loop around the slice
+
+		
+			*ptCurrIndex++ = currIndex ;
+			*ptCurrIndex++ = currIndex + _ShapeNbSeg ;
+			*ptCurrIndex++ = currIndex - _ShapeNbSeg + 1 ;
+		
+
+			*ptCurrIndex++ = currIndex - _ShapeNbSeg + 1 ;
+			*ptCurrIndex++ = currIndex + _ShapeNbSeg ;
+			*ptCurrIndex++ = currIndex + 1 ;
+
+			++currIndex ;
+
+		}
+		currIndex += _ShapeNbSeg ;
+	
+	}
+	
+
+	
+
+	
+
+	// if the tail are not in the same basis, we need a conversion matrix
+
+	/* const CMatrix *m;
+
+	if (_SystemBasisEnabled == _Owner->isInSystemBasis())
+	{
+		m = &CMatrix::Identity ;
+	}
+	else
+	{
+		m = _SystemBasisEnabled ?  & _Owner->getOwner()->getInvertedSysMat() 
+								: &_Owner->getOwner()->getSysMat() ;
+	}*/
+
+	
+	// setup the vertex buffer and the pos vect
+
+
+
+	rb._Pos.resize(size * (_TailNbSeg + 1)) ;
+	rb._Vb.setNumVertices(size * (_TailNbSeg + 1) * _ShapeNbSeg) ;
+
+
+	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPos = _Owner->getPos().end() ;
+	
+	for ( k = 0 ; posIt != endPos ; ++posIt, ++k)
+	{
+		initRibbonPos(rb, k, *posIt) ;
+	}	
+	
+
+	setupColor(rb) ;
+	setupUV(rb) ;
+
+}
+
+void CPSRibbon::initRibbonPos(CRibbonsDesc &rb, uint32 index, const CVector &aPos)
+{
+	// aPos is in the basis chosen for this particle (system or world)
+	// we must expressed it in the tail basis
+
+	CVector pos ;
+	if (_SystemBasisEnabled == _Owner->isInSystemBasis())
+	{
+		pos = aPos ;
+	}
+	else
+	{
+		pos = _SystemBasisEnabled ?   _Owner->getOwner()->getInvertedSysMat() * aPos 
+								:     _Owner->getOwner()->getSysMat()         * aPos;
+	}
+	
+	const uint32 vSize = rb._Vb.getVertexSize() ;
+
+	uint8 *currVertex = ((uint8 *) rb._Vb.getVertexCoordPointer())
+						+ index * vSize * (_TailNbSeg + 1 ) * _ShapeNbSeg ;
+
+	std::vector<CVector>::iterator itPos = rb._Pos.begin() + (index * (_TailNbSeg + 1) ) ;	
+
+	std::fill(itPos, itPos + _TailNbSeg + 1, pos) ;	
+	
+	// at start, all pos are the same, e.g centered on the particle
+	for (uint32 k = 0 ; k < ((_TailNbSeg + 1) * _ShapeNbSeg) ; ++k)
+	{
+		*(CVector *) currVertex = pos ;		
+		currVertex += vSize ;
+	}		
+}
+
+void CPSRibbon::setupColor(CRibbonsDesc &rb)
+{
+	if (!_Owner) return ;
+		// we setup the WHOLE vb so, we need to get the max number of particles
+	const uint32 size = _Owner->getMaxSize() ;	
+
+	// size of the vertices
+	const uint32 vSize = rb._Vb.getVertexSize() ;
+
+	// size of a slice
+
+	const uint32 sSize = vSize * _ShapeNbSeg ;
+
+	// offset of the color in vertices
+	const uint32 colorOff = rb._Vb.getColorOff() ;
+
+	// first vertex
+	uint8 *firstVertex = (uint8 *) rb._Vb.getVertexCoordPointer() ;
+	
+	// point the current vertex color
+	uint8 *currVertex =  firstVertex + colorOff ;
+
+	// loop counters
+	uint k, l, m ;
+
+	
+	if (_UseColorScheme && _ColorFading)
+	{
+		// we must keep colors in a table in order to blend them correctly
+		// If there's no color fading, color are just decaled
+
+		rb._ColTab.resize(size * (_TailNbSeg + 1) ) ;
+		std::fill(rb._ColTab.begin(), rb._ColTab.end(), CRGBA::Black) ;		
+	}
+	else
+	{
+		if (rb._ColTab.size() != 0)
+		{
+			NLMISC::contReset(rb._ColTab) ;
+		}
+	}
+
+	if (!_ColorFading)
+	{
+		
+		for (k = 0 ; k < size * (_TailNbSeg + 1) * _ShapeNbSeg  ; ++k)
+		{
+				*(CRGBA *) currVertex = _Color ;
+				currVertex += vSize ;
+		}
+	}
+	else // constant color with color fading
+	{
+		const float lumiStep = 255.0f / _TailNbSeg ;
+		const  uint32 tailVSize = sSize * (_TailNbSeg + 1) ; // size of a whole tail in the vertex buffer
+		float lumi = 0.f ;
+		for (l = 0 ; l <= _TailNbSeg ; ++l)
+		{
+			currVertex = firstVertex + l * sSize + colorOff ;
+			CRGBA col ;
+			col.modulateFromui(_Color, (uint8) lumi) ;
+			lumi += lumiStep ;			
+			for (k = 0 ; k < size ; ++k)
+			{	
+				for (m = 0 ; m < _ShapeNbSeg ; ++m)
+				{
+					*(CRGBA *) currVertex = col ;				
+					currVertex += vSize ;
+				}
+				currVertex += tailVSize  - sSize ;			
+			}
+			
+		}
+
+	}
+
+
+
+
+}
+
+
+void CPSRibbon::newElement(void)
+{
+	nlassert(_Owner->getSize() != _Owner->getMaxSize()) ;
+	
+	const uint32 index = _Owner->getNewElementIndex() ; 
+
+	initRibbonPos(_AliveRibbons, index, _Owner->getPos()[index] ) ; 
+}
+		
+
+
+void CPSRibbon::deleteElement(uint32 index)
+{
+		// if the light must persist after death, we must copy it in the dying ribbon tab
+	if (_DyingRibbons)
+	{
+		nlassert(_NbDyingRibbons != _Owner->getMaxSize()) ;
+		copyElement(_AliveRibbons, index, *_DyingRibbons, _NbDyingRibbons) ;
+		_DyingRibbonsLifeLeft[_NbDyingRibbons] = 0 ;
+		// now, we setup the last slice of the ribbon so that all points are centered
+		const CVector &center = _DyingRibbons->_Pos[_NbDyingRibbons * (_TailNbSeg + 1) + _TailNbSeg] ;
+
+		const uint32 vSize = _DyingRibbons->_Vb.getVertexSize() ; // vertex size
+		const uint32 sSize = vSize * _ShapeNbSeg ;				// slice size
+		const uint32 tSize = sSize * (_TailNbSeg + 1) ; // tail size
+		const uint32 colorOff = _DyingRibbons->_Vb.getColorOff() ; // offset to color
+
+		// points the first vertex of the last slice in the ribbon that we copied
+		uint8 *currVertex = (uint8 *) _DyingRibbons->_Vb.getVertexCoordPointer() 
+						  + tSize * _NbDyingRibbons
+						  + sSize * _TailNbSeg ;
+
+		// color must be set to black if there's a color scheme, and no color fading
+		// otherwise, the color remains unchanged
+		const CRGBA col = _UseColorScheme && !_ColorFading ? CRGBA::Black : *(CRGBA *) (currVertex + colorOff) ;
+
+		for (uint32 k = 0 ; k < _ShapeNbSeg ; ++k)
+		{
+			*(CVector *) currVertex = center ;
+			*(CRGBA *) (currVertex + colorOff) = col ;
+			currVertex += vSize ;
+		}
+
+		// if there's color fading and a color scheme, color is stored in _ColTab...
+
+		if (_UseColorScheme && _ColorFading)
+		{
+			_DyingRibbons->_ColTab[_NbDyingRibbons * (_TailNbSeg + 1) + _TailNbSeg] = CRGBA::Black ;
+		}
+		
+
+		++_NbDyingRibbons ;
+	}
+
+	deleteElement(_AliveRibbons, index, _Owner->getSize()) ;
+}
+
+
+
+void CPSRibbon::deleteElement(CRibbonsDesc &rb, uint32 index, const uint32 size)
+{
+	// copy the last element over this own
+	copyElement(rb, size - 1 , rb, index) ;
+}
+
+
+void CPSRibbon::copyElement(CRibbonsDesc &rbSrc, uint32 srcIndex, CRibbonsDesc &rbDest, uint32 destIndex)
+{
+	if 	(&rbSrc == &rbDest && destIndex == srcIndex) return ;
+
+	// we copy the last element datas to this one data	
+	// size of a ribbon in byte
+
+	const uint32 ts = (_TailNbSeg + 1) ;
+
+	const uint32 rSize = rbSrc._Vb.getVertexSize() * ts * _ShapeNbSeg ;
+
+
+	// destination
+	uint8 *destVert = (uint8 *) rbDest._Vb.getVertexCoordPointer() + destIndex * rSize ;
+
+	// source
+	const uint8 *srcVert = (uint8 *) rbSrc._Vb.getVertexCoordPointer() + srcIndex * rSize ;
+
+
+	// copy the vertices
+	memcpy(destVert, srcVert, rSize ) ;	
+
+
+
+
+	// copy the pos tab ;
+	const std::vector<CVector>::iterator  destStart = rbDest._Pos.begin() ;
+	const std::vector<CVector>::const_iterator  srcStart = rbSrc._Pos.begin() ;
+
+	
+	std::copy(srcStart + ts * srcIndex, srcStart + ts * (srcIndex + 1), destStart + ts * destIndex) ;
+
+	// copy the color tab when present
+	if (_UseColorScheme && _ColorFading)
+	{
+		const std::vector<CRGBA>::iterator  destColStart = rbDest._ColTab.begin() ;	
+		const std::vector<CRGBA>::const_iterator  srcColStart = rbSrc._ColTab.begin() ;	
+		std::copy(srcColStart + ts * srcIndex, srcColStart + ts * (srcIndex +1), destColStart + ts * destIndex) ;
+	}
+}
+
+
+
+	
+
+
+void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1) ;
+	f.serialCheck((uint32) '_RIB') ;
+	CPSParticle::serial(f) ;
+	CPSColoredParticle::serialColorScheme(f) ;	
+	CPSSizedParticle::serialSizeScheme(f) ;
+	CPSRotated2DParticle::serialAngle2DScheme(f) ;
+	f.serial( _ColorFading, _SystemBasisEnabled) ;
+
+
+	// we don't save dying ribbon pos in this version
+	bool drEnabled ;
+	ITexture *tex = NULL ;
+
+	if (!f.isReading())
+	{
+		drEnabled = (_DyingRibbons != NULL) ;
+		f.serial(drEnabled) ;		
+		f.serial(_TailNbSeg) ;
+		tex = _Tex ;
+		f.serialPolyPtr(tex) ;
+		if (_Tex)
+		{
+			f.serial(_UFactor, _VFactor)  ;
+		}
+	}
+	else
+	{
+		f.serial(drEnabled) ;
+		setPersistAfterDeath(drEnabled) ;
+		uint32 tnbs ;
+		f.serial(tnbs) ;
+		setTailNbSeg(tnbs) ;
+		f.serialPolyPtr(tex) ;
+		_Tex = tex ;		
+		if (_Tex)
+		{
+			f.serial(_UFactor, _VFactor)  ;
+		}
+	}
+
+
+	// shape serialization
+
+	f.serialCont(_Shape) ;
+	_ShapeNbSeg = _Shape.size() ;
+	
+
+	// In this version we don't save the vb state, as we probably won't need it
+	// we just rebuild the vb
+	
+	if (f.isReading())
+	{
+		setupVertexFormatNMat(_AliveRibbons) ;
+		resizeVb(_AliveRibbons) ;
+		if (_DyingRibbons)
+		{
+			setupVertexFormatNMat(*_DyingRibbons) ;
+			resizeVb(*_DyingRibbons) ;
+		}		
+	}			
+
+}
+
+void CPSRibbon::updateMatAndVbForColor(void)
+{	
+	setupColor(_AliveRibbons) ;
+	if (_DyingRibbons)
+	{
+			setupColor(*_DyingRibbons) ;
+	}
+/*	if (_PersistOnDeath)
+	{
+		setupColor(DyingRibbons) ;
+	}*/
+}
+
+void CPSRibbon::updateMatAndVbForTexture(void)
+{
+	setupVertexFormatNMat(_AliveRibbons) ;
+	
+	if (_DyingRibbons)
+	{
+			setupVertexFormatNMat(*_DyingRibbons) ;
+	}
+	
+	
+	if (_Owner) 
+	{		
+		resizeVb(_AliveRibbons) ;
+		if (_DyingRibbons)
+		{
+			resizeVb(*_DyingRibbons) ;
+		}
+	}
+	
+}
+
+void  CPSRibbon::setupVertexFormatNMat(CRibbonsDesc &rb)
+{
+	if (_Tex == NULL) // no texture needed
+	{
+		rb._Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR ) ;		
+	}
+	else
+	{
+		rb._Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0] ) ;	
+		_Mat.setTexture(0, _Tex) ;
+	}
+}
+
+
+void CPSRibbon::setupUV(CRibbonsDesc &rb)
+{
+	if (_Tex)
+	{
+		uint32 size = _Owner->getMaxSize() ; 
+		uint8 *currV = (uint8 *) rb._Vb.getVertexCoordPointer() ;
+		// now, setup the uv's
+		
+		
+		for (uint32 k = 0 ; k < size ; ++k)
+		{
+			for (uint32 l = 0 ; l <= _TailNbSeg ; ++l)
+			{
+				for (uint32 m = 0 ; m < _ShapeNbSeg ; ++m)
+				{
+					*(CUV *) (currV + rb._Vb.getTexCoordOff()) = CUV(_UFactor * m / float(_ShapeNbSeg)
+															   , _VFactor * l / float(_TailNbSeg + 1)) ;
+					currV += rb._Vb.getVertexSize() ;
+				}
+				
+			}
+		}
+	}
+
+}
+
+
+////////////////////////////
+// CPSFace implementation //
+////////////////////////////
+
+
+
+
+CPSFace::CPSFace(CSmartPtr<ITexture> tex) : CPSQuad(tex)
+{    
+}
+
+void CPSFace::draw(void)
+{
+	nlassert(_Owner) ;
+
+	const uint32 size = _Owner->getSize() ;
+	if (!size) return ;
+
+
+	setupDriverModelMatrix() ;
+
+	CPSQuad::updateVbColNUVForRender() ;
+
+	const uint32 vSize = _Vb.getVertexSize() ;
+	
+	
+	uint8 *currVertex = (uint8 *) _Vb.getVertexCoordPointer() ; 
+	uint8 *endVertex ; // points the last vertex to draw in a pool of faces
+
+	const uint faceBufSize = 512 ; // compute several particles at a time
+									// if the value is too high, this may broke the cache
+									// if it is too low, to many call to the driver will be performed
+
+
+	uint32 leftFaces = size ;
+
+
+	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose
+
+	IDriver *driver = getDriver() ;
+
+
+	driver->activeVertexBuffer(_Vb) ;	
+
+	if (_PrecompBasis.size()) // do we use precomputed basis ?
+	{
+		float sizeBuf[faceBufSize] ;
+		float *ptSize ;
+
+		std::vector<uint32>::const_iterator indexIt = _IndexInPrecompBasis.begin() ;
+
+		TPSAttribVector::const_iterator posIt = _Owner->getPos().begin() ;
+
+		// if constant size is used, the pointer points always the same float 
+		uint32 ptSizeIncrement = _UseSizeScheme ? 1 : 0 ;
+
+		do
+		{
+
+			uint32 ibIndex = size - leftFaces ; 
+
+			if (_UseSizeScheme)
+			{
+				if (leftFaces > faceBufSize)
+				{
+					_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), faceBufSize) ;
+					leftFaces -= faceBufSize ;
+					endVertex = currVertex + faceBufSize * (vSize << 2) ;
+				}
+				else
+				{
+					_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), leftFaces) ;				
+					endVertex = currVertex + leftFaces * (vSize  << 2) ;
+					leftFaces = 0 ;
+				}
+				ptSize = &sizeBuf[0] ;
+			}
+			else
+			{	
+				ptSize = &_ParticleSize ;
+				if (leftFaces > faceBufSize)
+				{
+					leftFaces -= faceBufSize ;
+					endVertex = currVertex + faceBufSize * (vSize << 2) ;
+				}
+				else
+				{
+					endVertex = currVertex + leftFaces * (vSize  << 2) ;
+					leftFaces = 0 ;
+				}									
+			}
+		
+
+			// setup the vb
+
+			const uint8 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1 ;
+
+			uint32 toRender = (endVertex - currVertex) / (vSize * 4) ;
+
+			while (currVertex != endVertex)
+			{
+				// points the current basis
+				const CPlaneBasis &currBasis = _PrecompBasis[*indexIt].untrans ;
+
+				*(CVector *) currVertex	= *posIt + *ptSize * currBasis.X ;
+				*(CVector *) (currVertex + stride) = *posIt + *ptSize * currBasis.Y ;
+				*(CVector *) (currVertex + stride2) = *posIt - *ptSize * currBasis.X ;
+				*(CVector *) (currVertex + stride3) = *posIt - *ptSize * currBasis.Y ;
+			
+				currVertex += stride4 ;
+				++indexIt ;
+				++posIt ;
+			}
+				
+			
+			driver->renderTriangles(_Mat, _IndexBuffer + 6 * ibIndex, toRender << 1) ;
+
+		}
+		while (leftFaces) ;
+
+
+
+
+
+
+
+
+	}
+	else
+	{
+		// must must compute each particle basis at each time
+
+
+
+
+
+
+	}
+
+
+
+
+	
+
+
+}
+
+void CPSFace::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	CPSQuad::serial(f) ;
+	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f) ;
+}
+	
+	
+
+/// this produce a random unit vector
+static CVector MakeRandomUnitVect(void)	
+{
+	CVector v((float) ((rand() % 20000) - 10000)
+			  ,(float) ((rand() % 20000) - 10000)
+			  ,(float) ((rand() % 20000) - 10000)
+			  ) ;
+	v.normalize() ;
+	return v ;
+}
+
+void CPSFace::hintRotateTheSame(uint32 nbConfs)
+{
+	_PrecompBasis.resize(nbConfs) ;
+
+	// each precomp basis is created randomly ;
+	for (uint k = 0 ; k < nbConfs ; ++k)
+	{
+		 CVector v1 = MakeRandomUnitVect(), v2 ;
+		_PrecompBasis[k].untrans.X = v1 ;
+
+		// compute another vector that is not too much aligned with this one
+		do
+		{
+			v2 = MakeRandomUnitVect() ;
+		}
+		while (fabs(1.0f - v2 * v1) < 10E-3) ;
+
+		// now, make an orthogonal basis from them
+		v2 -= (v2 * v1) * v1 ;
+		v2.normalize() ;
+
+		_PrecompBasis[k].untrans.Y = v2 ;
+	}	
+
+	// we need to do this because nbConfs may have changed
+	fillIndexesInPrecompBasis() ;
+}
+
+
+void CPSFace::fillIndexesInPrecompBasis(void)
+{
+	const uint32 nbConf = _PrecompBasis.size() ;
+	for (std::vector<uint32>::iterator it = _IndexInPrecompBasis.begin(); it != _IndexInPrecompBasis.end() ; ++it)
+	{
+		*it = rand() % nbConf ;
+	}
+}
+
+
+
+void CPSFace::newElement(void)
+{
+	const uint32 nbConf = _PrecompBasis.size() ;
+	if (nbConf) // do we use precomputed basis ?
+	{
+		_IndexInPrecompBasis[_Owner->getNewElementIndex()] = rand() % nbConf ;
+	}
+}
+	
+	
+void CPSFace::deleteElement(uint32 index)
+{
+	// replace ourself by the last element...
+	_IndexInPrecompBasis[index] = _IndexInPrecompBasis[_Owner->getSize() - 1] ;
+}
+	
+void CPSFace::resize(uint32 size)
+{
+	if (_PrecompBasis.size()) // do we use precomputed basis ?
+	{
+		_IndexInPrecompBasis.resize(size) ;
+	}
+	CPSQuad::resize(size) ;
+
 }
 
 

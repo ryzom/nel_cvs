@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.6 2001/05/11 17:17:22 vizerie Exp $
+ * $Id: ps_force.h,v 1.7 2001/05/17 10:03:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,6 +82,7 @@ public:
 	/// Serial the force definition. MUST be called by deriver during their serialisation
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
+protected:
 
 	virtual void newElement(void) = 0 ;
 	
@@ -127,8 +128,11 @@ public:
 
 	NLMISC_DECLARE_CLASS(CPSGravity) ; 
 
+protected:
 
-	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
+	float _G ;
+
+		/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
 	virtual void newElement(void) { } ;	
 
 	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
@@ -138,10 +142,6 @@ public:
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
 	virtual void resize(uint32 size) {} ;
-
-protected:
-
-	float _G ;
 
 } ;
 
@@ -179,6 +179,10 @@ public:
 	NLMISC_DECLARE_CLASS(CPSSpring) ; 
 
 
+protected:
+
+	float _K ;
+
 	/// Inhrited from CPSLocatedBindable. we don't store additionnal information so it does nothing
 	virtual void newElement(void) { } ;	
 
@@ -189,10 +193,6 @@ public:
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
 	virtual void resize(uint32 size) {} ;
-
-protected:
-
-	float _K ;
 
 } ;
 

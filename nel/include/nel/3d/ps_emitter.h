@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.5 2001/05/11 17:17:22 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.6 2001/05/17 10:03:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,21 +85,7 @@ public:
 	*
 	*/
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
-
-	/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
-	 */
-	virtual void newElement(void) ;
 	
-	/** Delete an element given its index
-	 *  Attributes of the located that hold this bindable are still accessible for of the index given
-	 *  index out of range -> nl_assert
-	 */
-	virtual void deleteElement(uint32 index) ;
-
-	/** Resize the bindable attributes containers. DERIVERS SHOULD CALL THEIR PARENT VERSION
-	 * should not be called directly. Call CPSLocated::resize instead
-	 */
-	virtual void resize(uint32 size) ;
 
 
 	/// set thetype of located to be emitted. THIS MUST BE CALLED
@@ -133,6 +119,21 @@ protected:
      *  its usage depends on the freq member
 	 */
 	TPSAttribFloat _Phase ; 
+
+	/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
+	 */
+	virtual void newElement(void) ;
+	
+	/** Delete an element given its index
+	 *  Attributes of the located that hold this bindable are still accessible for of the index given
+	 *  index out of range -> nl_assert
+	 */
+	virtual void deleteElement(uint32 index) ;
+
+	/** Resize the bindable attributes containers. DERIVERS SHOULD CALL THEIR PARENT VERSION
+	 * should not be called directly. Call CPSLocated::resize instead
+	 */
+	virtual void resize(uint32 size) ;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.3 2001/05/08 13:37:09 vizerie Exp $
+ * $Id: ps_util.h,v 1.4 2001/05/17 10:03:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -137,10 +137,23 @@ struct CPSUtil
 
 };
 
+///////////////////////////
+// inline implementation //
+///////////////////////////
+
 void CPSUtil::addRadiusToAABBox(NLMISC::CAABBox &box, float radius)
 {
 	box.setHalfSize(box.getHalfSize() + NLMISC::CVector(radius, radius, radius) ) ;
 }
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.8 2001/05/10 09:18:27 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.9 2001/05/17 10:03:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -479,8 +479,7 @@ bool CPSLocated::computeBBox(NLMISC::CAABBox &box) const
 		max.maxof(max, v) ;		
 	}
 
-	box.setCenter(0.5f * (max + min)) ;
-	box.setHalfSize(0.5f * (max - min)) ;
+	box.setMinMax(min, max) ;	
 
 	// we've considered that located had no extent in space
 	// now, we must call each objects that are bound to the located in order

@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.9 2001/05/11 17:17:22 vizerie Exp $
+ * $Id: ps_particle.h,v 1.10 2001/05/17 10:03:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,8 +80,14 @@ public:
 
 	virtual void draw(void) = 0 ;
 
-	/**	Generate a new element for this bindable. They are generated according to the properties of the class	
-	 * \return true if it could be added
+
+	/// serialisation. Derivers must override this, and call their parent version
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{ 
+		CPSLocatedBindable::serial(f) ; 
+	}
+protected:
+		/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
 	virtual void newElement(void) = 0 ;
 	
@@ -94,19 +100,13 @@ public:
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
-	virtual void resize(uint32 size) = 0 ;
-
-	/// serialisation. Derivers must override this, and call their parent version
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-	{ 
-		CPSLocatedBindable::serial(f) ; 
-	}
-	
+	virtual void resize(uint32 size) = 0 ;	
 };
 
 
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 /// this class adds tunable color to a particle. Can be added using public multiple inheritance
@@ -180,7 +180,6 @@ class CPSSizedParticle
 
 
 /// this class adds tunable 2D rotation to a particle, it can be used by public multiple inheritance
-
 class CPSRotated2DParticle
 {
 	public:
@@ -190,7 +189,7 @@ class CPSRotated2DParticle
 		 *  It will be deleted by this object
 		 *  Output angles must range from 0.0f to 256.0f
 		 */
-		void setAngle2DScheme(CPSAttribMaker<float> *size) ;
+		void setAngle2DScheme(CPSAttribMaker<float> *scheme) ;
 
 		/** Set a constant angle for the particle. Angles range from  0.0f to 256.0f (2 pi)
 		 *	This discrad any previous scheme
@@ -238,9 +237,9 @@ class CPSRotated2DParticle
 		#endif
 } ;
 
-/// this class adds a texture to a particle. The texture can be animated or not. it can be used by public multiple inheritance
- 
-
+/** this class adds a texture to a particle. The texture can be animated or not. it can be used by public multiple inheritance.
+ *  The frame animation are all stored in the same texture for optimisation so it's not suited for large anim...
+ */
 class CPSTexturedParticle
 {
 	public:
@@ -292,6 +291,64 @@ class CPSTexturedParticle
 
 
 
+/// A basis for plane object, such as face and shockwaves
+struct CPlaneBasis
+{	
+	CVector X ;
+	CVector Y ;
+
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{
+		f.serial(X, Y) ;
+	}
+} ;
+ 
+
+
+/** this class adds tunable 3D rotation to a PLANE particle, it can be used by public multiple inheritance
+ *  It must just produce 2 vectors that give the x and y vector of the local basis.
+ */
+class CPSRotated3DPlaneParticle
+{
+	public:
+
+		/** Set an attribute maker that produce a basis
+		 *  It must have been allocated by new
+		 *  It will be deleted by this object				
+		 */
+		void setPlaneBasisScheme(CPSAttribMaker<CPlaneBasis> *basisMaker) ;
+
+		/** Set a constant basis for all particles
+		 * \see setPlaneBasisSchemeScheme()
+		 */
+
+		void setPlaneBasis(const CPlaneBasis &basis) ;
+
+		/// ctor : default have constant basis that map to the I & J vector (e.g identity)
+		CPSRotated3DPlaneParticle() ;
+
+		/// dtor
+		~CPSRotated3DPlaneParticle() ;
+
+		/// serialization. We choose a different name because of multiple-inheritance
+
+		void serialPlaneBasisScheme(NLMISC::IStream &f) throw(NLMISC::EStream) ;		
+
+
+	protected:		
+		/// if this is false, constant size will be used instead of a scheme
+
+		bool _UsePlaneBasisScheme ;
+		
+		CPSAttribMaker<CPlaneBasis> *_PlaneBasisScheme ; // used only if _UseSizeScheme is set to true							
+		
+		CPlaneBasis _PlaneBasis ; // constant basis..
+} ;
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  *	this is just a coloured dot that fade to black during its life
@@ -305,16 +362,7 @@ class CPSDot : public CPSParticle, public CPSColoredParticle
 		*/
 		virtual void draw(void) ;
 
-		/** Set the nax number of dot
-		* should not be called directly. Call CPSLocated::resize instead
-	    */
-		void resize(uint32 size) { _Vb.setNumVertices(size) ;}
-
-		/// we don't save datas so it does nothing for now
-		void newElement(void) {}
-
-		/// we don't save datas so it does nothing for now
-		void deleteElement(uint32) {}
+	
 	
 		
 		/// ctor
@@ -333,7 +381,85 @@ class CPSDot : public CPSParticle, public CPSColoredParticle
 
 		/// update the material and the vb so that they match the color scheme
 		virtual void updateMatAndVbForColor(void) ;
+		
+		/** Set the nax number of dot		
+	    */
+		void resize(uint32 size) { _Vb.setNumVertices(size) ;}
+
+		/// we don't save datas so it does nothing for now
+		void newElement(void) {}
+
+		/// we don't save datas so it does nothing for now
+		void deleteElement(uint32) {}
 } ;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/** This abstract class holds what is needed with quad particles (CPSFaceLookAt, CPSFace) e.g 
+ *  Index and vertex buffer and method to setup them
+ *  Material, and method to setup them
+ */
+
+ class CPSQuad : public CPSParticle
+	           , public CPSColoredParticle
+			   , public CPSTexturedParticle
+			   , public CPSSizedParticle
+ {
+
+	protected:
+
+		/** create the quad by giving a texture. This can't be a CTextureGrouped (for animation)
+		* animation must be set later by using setTextureScheme
+		*/
+		CPSQuad(CSmartPtr<ITexture> tex = NULL) ;
+
+		// dtor
+		virtual ~CPSQuad() ;
+
+		/// initialisations
+		virtual void init(void) ;	
+
+		/// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
+		virtual void updateMatAndVbForColor(void) ;
+
+		/// update the material and the vb so that they match the texture scheme.
+		virtual void updateMatAndVbForTexture(void) ;
+
+		/// we don't save datas so it does nothing for now
+		void newElement(void) {}
+
+		/// we don't save datas so it does nothing for now
+		void deleteElement(uint32) {}
+	
+		/// complete the bbox depending on the size of particles
+		virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
+
+		/// calculate current color and texture coordinate before any rendering
+		void updateVbColNUVForRender(void) ;
+
+
+
+		CMaterial _Mat ;
+		CVertexBuffer _Vb ;
+
+		/// an index buffer used for drawing
+		uint32 *_IndexBuffer ;
+
+		/// DERIVER MUST CALL this		 
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;	
+
+		/** Set the max number of particles. 
+		 * should not be called directly. Call CPSLocated::resize instead
+		 */
+		virtual void resize(uint32 size) ; 
+ } ;
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 /**
@@ -341,24 +467,20 @@ class CPSDot : public CPSParticle, public CPSColoredParticle
  */
 
 
-class CPSFaceLookAt : public CPSParticle, public CPSColoredParticle
-					, public CPSSizedParticle, public CPSRotated2DParticle
-					, public CPSTexturedParticle
+class CPSFaceLookAt :   public CPSQuad
+					  , public CPSRotated2DParticle
+					
 {
 public:
-	/// create the face look at by giving a texture and an optionnal color
+	/** create the face look at by giving a texture. This can't be a CTextureGrouped (for animation)
+     * animation must be set later by using setTextureScheme
+	 */
 	CPSFaceLookAt(CSmartPtr<ITexture> tex = NULL) ;
 	virtual void draw(void) ;
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 	
 	NLMISC_DECLARE_CLASS(CPSFaceLookAt) ;
-
-	virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
-
-	/** Set the max number of faceLookAt. 
-	* should not be called directly. Call CPSLocated::resize instead
-	*/
-	virtual void resize(uint32 size) ; 
+	
 		
 	/// we don't save datas so it does nothing for now
 	void newElement(void) {}
@@ -366,28 +488,11 @@ public:
 	/// we don't save datas so it does nothing for now
 	void deleteElement(uint32) {}
 
-	//dtor
-
-	~CPSFaceLookAt() ;
-protected:
-
-	/// initialisations
-	virtual void init(void) ;	
-
-	// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
-	virtual void updateMatAndVbForColor(void) ;
-
-	// update the material and the vb so that they match the texture scheme.
-	virtual void updateMatAndVbForTexture(void) ;
-
-	CMaterial _Mat ;
-	CVertexBuffer _Vb ;
-
-	// an index buffer used for drawing
-	uint32 *_IndexBuffer ;
-
-	
 } ;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 /**
@@ -407,18 +512,6 @@ public:
 
 	virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
 
-	/** Set the max number of fanlights
-	* should not be called directly. Call CPSLocated::resize instead
-	*/
-	virtual void resize(uint32 size) ; 
-	
-	/// we don't save datas so it does nothing for now
-	void newElement(void) {}
-
-	/// we don't save datas so it does nothing for now
-	void deleteElement(uint32) {}
-
-
 	/// Ctor, with the numbers of fans to draw (minimum is 3, maximum is 128)
 	CPSFanLight(uint32 nbFans = 7) ;
 
@@ -426,7 +519,7 @@ public:
 	void setNbFans(uint32 nbFans) ;
 
 	// Get the number of fans used for drawing
-	uint32 gteNbFans(void) const
+	uint32 getNbFans(void) const
 	{
 		return _NbFans ;
 	}
@@ -463,7 +556,21 @@ protected:
 	#ifdef NL_DEBUG		
 		static bool _RandomPhaseTabInitialized ;
 	#endif
+	
+	/// we don't save datas so it does nothing for now
+	void newElement(void) {}
+
+	/// we don't save datas so it does nothing for now
+	void deleteElement(uint32) {}
+
+	/// Set the max number of fanlights		
+	virtual void resize(uint32 size) ; 
+
 } ;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 /**
@@ -476,15 +583,7 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 		/// process one pass for the particle	
 		
 		virtual void draw(void) ;
-
-		/** Set the max number of TailDot
-		* should not be called directly. Call CPSLocated::resize instead
-		*/
-		void resize(uint32 size) ;
 		
-		void newElement(void) ;
-		
-		void deleteElement(uint32 index) ;
 	
 		/** (de)activate color fading
 		 * when its done, colors fades to black along the tail
@@ -498,10 +597,12 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 		/// test wether color fading is activated
 		bool getColorFading(void) const { return _ColorFading ; }
 		
-		/// ctor. It tells how many segments there are in the tail
+		/// ctor. It tells how many segments there are in the tail. 255 is the maximum
 		CPSTailDot(uint32 nbSegmentInTail = 4) ;
 
-		// set the number of segments in the tail		
+		/** set the number of segments in the tail		
+		 * 255 is the maximum
+	     */
 		void setTailNbSeg(uint32 nbSeg) ;
 
 		// get the number of segments in the tail
@@ -516,7 +617,7 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 		 *  It requires one transform per particle if it is not the same as the located that hold that particle
 		 *  The default is false. With that you can control if a rotation of the system will rotate the tail
 		 */
-		void setSystemBasis(bool yes) ;
+		void setSystemBasis(bool yes) { _SystemBasisEnabled = yes ; }
 
 		
 		/// return true if the tails are in the system basis
@@ -535,7 +636,7 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 		uint32 _TailNbSeg ;
 
 		
-		// true if the rail is in the system basis, false otherwise
+		// true if the tail is in the system basis, false otherwise
 		bool _SystemBasisEnabled ;
 
 
@@ -556,9 +657,375 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 		/// update the material and the vb so that they match the color scheme
 
 		virtual void updateMatAndVbForColor(void) ;
+
+		/// Set the max number of TailDot				
+		void resize(uint32 size) ;
+		
+		void newElement(void) ;
+		
+		void deleteElement(uint32 index) ;
+} ;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/** 'Ribbon' particle : a shape is extruded while it follows the particle, thus
+ *  giving a ribbon effect
+ *  It inherit the CPSSizedParticle class, to that, the size of the shape can be controled
+ *  It inherit the CPSRotated2DParticle class, to that, the orientation of the shape can be controled
+ *  Supports texture, but no texture animation
+ */
+
+class CPSRibbon : public CPSParticle, public CPSSizedParticle, public CPSColoredParticle, public CPSRotated2DParticle
+{
+		public:
+		/// process one pass for the particle	
+		
+		virtual void draw(void) ;
+	
+	
+		/** (de)activate color fading
+		 * when its done, colors fades to black along the ribbon
+		 */
+		void setColorFading(bool onOff = true) 
+		{ 
+			_ColorFading = onOff ; 
+			setupColor(_AliveRibbons) ;
+		}
+
+		/** When this is set to true, the ribbon light remains after it is 'destroyed'
+		 *  The default is false
+		 */
+		void setPersistAfterDeath(bool persit = true) ;
+
+		/** return true if the ribbon light persist after death 
+		 *  \see _PersistAfterDeath()
+		 */
+		bool getPersistAfterDeath(void) const { return _DyingRibbons != NULL ; }
+
+
+
+		/// test wether color fading is activated
+		bool getColorFading(void) const { return _ColorFading ; }
+		
+		/** ctor.
+		 * \param nbSegmentInTail the number of segment the ribbon has in its tail
+		 *  \param shape pointer to a shape that will be extruded along the ribbon. It must have a unit size
+		 *         and be located in the x-y plane. This will be copied
+		 *  \param nbPointsInShape : the number of points in the shape
+		 */
+		CPSRibbon(uint32 nbSegmentInTail = 256
+				  , const CVector *shape = Losange
+				  , uint32 nbPointsInShape = NbVerticesInLosange) ;
+
+
+		// dtor
+		~CPSRibbon() ;
+
+		// set the number of segments in the tail		
+		void setTailNbSeg(uint32 nbSeg) ;
+
+		// get the number of segments in the tail
+		uint32 getTailNbSeg(uint32 getNbSeg) const { return _TailNbSeg ; }
+
+		/** set a new shape for the ribbon
+		 * If the number of vertices in the shape has changed, the previous ribbon will be desroyed
+		 * In fact, their radius will be 0 all along the tail
+		 *  \param shape pointer to a shape that will be extruded along the ribbon. It must have a unit size
+		 *         and be located in the x-y plane (z can be used for effects) . This will be copied
+		 *  \param nbPointsInShape : the number of points in the shape
+		 */
+		void setShape(const CVector *shape, uint32 nbPointsInShape) ;
+
+		/// get the number of vertice in the shape used for ribbons
+		uint32 getNbVerticesInShape(void) const { return _ShapeNbSeg ; }
+		
+		/** Get a copy of the shape used for ribbon
+		 *  \param dest a table of cvector that has the right size, it will be filled with vertices
+		 *  \see getNbVerticesInShape()
+		 */
+
+		void getShape(CVector *shape, uint32 nbPointsInShape) const ;
+
+
+		NLMISC_DECLARE_CLASS(CPSRibbon) ;
+
+		///serialisation
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		
+		/** tells in which basis is the tail
+		 *  It requires one transform per particle if it is not the same as the located that hold that particle
+		 *  The default is false. With that you can control if a rotation of the system will rotate the tail
+		 */
+		void setSystemBasis(bool yes) { _SystemBasisEnabled = yes ; }
+
+		
+		/// return true if the tails are in the system basis
+		bool isInSystemBasis(void) const { return _SystemBasisEnabled ; }
+
+
+		/// Set a texture. NULL remove it
+		void setTexture(CSmartPtr<ITexture> tex, float uFactor = 1.f, float vFactor = 1.f)
+		{
+			_Tex = tex ;
+			_UFactor = uFactor ;
+			_VFactor = vFactor ;
+			updateMatAndVbForTexture() ;
+		}
+
+		/// get the texture used
+		ITexture *getTexture(void)
+		{
+			return _Tex ; 
+		}
+	
+
+		/// Predefined shape : a regular losange shape
+		static const CVector  Losange[] ;
+		/// number of vertices in the losange
+		static const uint32 NbVerticesInLosange ;
+
+		/// Predefined shape : height sides
+		static const CVector  HeightSides[] ;
+		/// number of vertices in the height side (must be 8 ... :)  )
+		static const uint32 NbVerticesInHeightSide ;
+
+		/// Predifined shape : pentagram
+		static const CVector Pentagram[] ;
+		static const uint32 NbVerticesInPentagram ;
+
+		
+
+
+	protected:
+		
+		void init(void) ;		
+
+
+		/** used to describe ribbons
+		 * we group it in a struct to
+		 * separate alive ribbon from 
+		 * ribbon that dissapear beacuse the particle has dissapear
+		 * this is needed for long ribbons because it could
+		 * be shocking to have then disappearing at once
+		 * so theyr light remains for a while
+		 */
+
+		struct CRibbonsDesc
+		{		
+
+			// vertex buffer containing vertices
+			CVertexBuffer _Vb ;	
+
+			// an index buffer
+			uint32 *_Ib ; 
+		
+			/** used to memorize the last positions in all ribbon. Position are stored consecutively		 
+			 */
+
+			std::vector<CVector> _Pos ;
+
+			// color are stored sequentially for each tail
+			std::vector<CRGBA> _ColTab ;
+		} ;
+
+
+		// material for ribbons
+		CMaterial _Mat ;
+
+		CRibbonsDesc _AliveRibbons ;
+		CRibbonsDesc *_DyingRibbons ;
+
+
+		// the number of dying ribbons that are present
+		uint32 _NbDyingRibbons ;
+
+		// a counter to tell how much frame is left for each ribbon
+		std::vector<uint32> _DyingRibbonsLifeLeft ;
+
+		//  texture, if used
+
+		CSmartPtr<ITexture> _Tex ;
+
+		// number of segments in the tail
+		uint32 _TailNbSeg ;
+
+		// number of segments in shape
+		uint32 _ShapeNbSeg ;
+
+	
+
+		// true if the tails are in the system basis
+		bool _SystemBasisEnabled ;
+
+		// for texture use only
+		float _UFactor, _VFactor ;
+
+		// the shape that is used
+		std::vector<CVector> _Shape ;
+
+		// ratio pos : it is used to determine what is the ratio size between 2 slice in a ribbon
+		std::vector<float> _SliceRatioTab ;				
+		
+		/// true if the tail color must fade to black
+		bool _ColorFading ;
+							
+		
+		/** resize and stup Vb (and index buffer also)
+		 *  \param rb a reference to the set of ribbons to setup
+		 */
+		void resizeVb(CRibbonsDesc &rb) ;
+
+		/// setup the initial colors in the whole vb : black or a precomputed gradient for constant color
+		void setupColor(CRibbonsDesc &rb) ;
+
+		/// update the material and the vb so that they match the color scheme
+		virtual void updateMatAndVbForColor(void) ;
+
+		/// init a ribbon : at start, all vertices have the same pos
+
+		void initRibbonPos(CRibbonsDesc &rb, uint32 index, const CVector &pos) ;
+
+
+		/// call when a texture has changed
+		virtual void updateMatAndVbForTexture(void) ;
+
+		/// setup the uvs
+		void setupUV(CRibbonsDesc &rb) ;
+
+
+		/// recompute slice of the ribbons, but not the last
+		void decalRibbons(CRibbonsDesc &rb, const uint32 size) ;	
+
+		/// compute last slice of the ribbons
+		void computeLastSlice(CRibbonsDesc &rb, const uint32 size);
+
+		/// render a ribbon desc
+		void render(CRibbonsDesc &rb, const uint32 size) ;
+
+
+		/// init a ribbon desc
+		void init(CRibbonsDesc &rb) ;
+
+
+		/// stup the Vb, when textures are on / off
+		void setupVertexFormatNMat(CRibbonsDesc &rb) ;
+
+		/// delete an element in the specified ribbon desc
+		void deleteElement(CRibbonsDesc &rb, uint32 index, const uint32 size) ;
+
+		/// duplicate a ribbon between ribbonDesc
+		void copyElement(CRibbonsDesc &rbSrc, uint32 srcIndex, CRibbonsDesc &rbDest, uint32 destIndex) ;
+
+
+		/// Set the max number of Ribbon				
+		void resize(uint32 size) ;
+		
+		/// add a nex ribbon
+		void newElement(void) ;
+		
+		/// delete a ribbon given its index
+		void deleteElement(uint32 index) ;
 } ;
 
 
+
+/**
+ * A face particle
+ * Unlike FaceLookAt, these particle can have an orientation in space.
+ * They are drawn with an angle bias of 45° in theyr local basis (for optimisation purpose)
+ *
+ *          ^ y
+ *          |
+ *          0
+ *         / \
+ *        /   \
+ *       3     1--> x
+ *        \   /
+ *         \ /
+ *          2
+ * If all particle must rotate the same, but with a rotattionnal bias, a hint can be provided, so that
+ * there are batch of particle that share the same orientation. The users must give the number of various phase
+ * This is the fastest.
+ * Other cases need an attribute maker that produce a couple of vectors
+ * , giving the x & y direction of the local basis (plane particle) 
+ * 
+ */
+
+
+class CPSFace       : public CPSQuad					
+					, public CPSRotated3DPlaneParticle
+{
+
+public:
+
+	/** Create the face 
+	 *  you can give a non-animated texture here
+	 */
+	CPSFace(CSmartPtr<ITexture> tex = NULL) ;
+
+	virtual void draw(void) ;
+
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+	NLMISC_DECLARE_CLASS(CPSFace) ;
+
+
+	/** Tells that all faces are turning in the same manner, and only have a rotationnal bias
+	 *  This is faster then other method. Any previous set scheme for 3d rotation is kept.
+	 *	\param: the number of rotation configuration we have. The more high it is, the slower it'll be
+	 *          If this is too low, a lot of particles will have the same orientation	           	 
+	 *          If it is 0, then the hint is disabled
+	 *  \see    CPSRotated3dPlaneParticle
+	 */
+	void hintRotateTheSame(uint32 nbConfiguration = 32) ;
+
+	/** disable the hint 'hintRotateTheSame'
+	 *  The previous set scheme for roation is used
+	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
+	 */
+	void disableHintRotateTheSame(void)
+	{
+		hintRotateTheSame(0) ;
+	}
+
+	/** check wether a call to hintRotateTheSame was performed
+	 *  \return 0 if the hint is disabled, the number of configurations else
+	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
+	 */
+
+	uint32 checkHintRotateTheSame(void) const
+	{
+		return _PrecompBasis.size() ; 
+	}
+
+
+protected:
+	
+	virtual void newElement(void) ;
+	
+	
+	virtual void deleteElement(uint32 index) ;
+	
+	virtual void resize(uint32 size) ;
+		
+	struct CPlaneBasisPair
+	{
+		// transformed and untransformed basis
+		CPlaneBasis untrans, trans ;
+	} ;
+
+	/// a set of precomp basis, before and after transfomation in world space, use if the hint 'RotateTheSame' has been called
+	std::vector< CPlaneBasisPair > _PrecompBasis ;
+
+	/// this contain an index in _PrecompBasis for each particle
+	std::vector<uint32> _IndexInPrecompBasis ;
+
+	/// fill _IndexInPrecompBasis with index in the range [0.. nb configurations[
+	void fillIndexesInPrecompBasis(void) ;
+
+} ;
 
 
 
